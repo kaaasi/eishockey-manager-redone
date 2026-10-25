@@ -142,8 +142,20 @@ public sealed partial class GameState
         }
     }
 
+    // ---- Anschlusspunkte für andere Pakete (in deren eigener partial-Datei implementieren) -------------
+
+    /// <summary>Paket „manager“: jeder Tag der Zeitleiste, bevor dessen Spiele ausgetragen werden (Tageswechsel der Finanzen).</summary>
+    partial void OnDayManager(int day);
+
+    /// <summary>Paket „manager“: neue Saison hat begonnen (Finanzbuch, Stadion …).</summary>
+    partial void OnNewSeasonManager();
+
+    /// <summary>Paket „mannschaft“: neue Saison hat begonnen (Alter, Verträge, Talente …).</summary>
+    partial void OnNewSeasonTeam();
+
     private void ProcessDay(int day, List<SeasonStep> steps)
     {
+        OnDayManager(day);
         CheckDebts(day, steps);
         if (Phase == SeasonPhase.GameOver)
             return;
@@ -355,6 +367,8 @@ public sealed partial class GameState
         Phase = SeasonPhase.Running;
         foreach (var competition in Competitions)
             competition.StartSeason(this);
+        OnNewSeasonManager();
+        OnNewSeasonTeam();
     }
 
     /// <summary>
