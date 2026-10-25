@@ -1,0 +1,1 @@
+# eishockey-manager-redone
