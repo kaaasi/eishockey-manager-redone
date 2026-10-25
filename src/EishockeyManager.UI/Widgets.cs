@@ -63,6 +63,40 @@ public static class Widgets
     public static void Lamp(Surface s, Assets a, int x, int y, bool red) =>
         s.Blit(a.Image(3), new Rect(196, red ? 219 : 225, 6, 6), x, y);
 
+    public const int ButtonWidth = 57;
+    public const int ButtonHeight = 12;
+
+    /// <summary>Grauer Knopf aus kb\2 (57 × 12), normal oder gedrückt, mit mittig gesetzter Beschriftung.</summary>
+    public static void Button(Surface s, Assets a, int x, int y, string text, bool pressed = false)
+    {
+        s.Blit(a.Image(2), new Rect(17, pressed ? 191 : 179, ButtonWidth, ButtonHeight), x, y);
+        s.TextCentered(a.Mini, x + ButtonWidth / 2 + (pressed ? 1 : 0), y + 4 + (pressed ? 1 : 0), text, 1);
+    }
+
+    public static Rect ButtonRect(int x, int y) => new(x, y, ButtonWidth, ButtonHeight);
+
+    public enum Mood { Up, Down, Same }
+
+    /// <summary>Gesicht aus kb\33 (6 × 5): grün = aufwärts, rot = abwärts, gelb = gleich.</summary>
+    public static void Smiley(Surface s, Assets a, Mood mood, int x, int y)
+    {
+        var source = mood switch
+        {
+            Mood.Up => new Rect(25, 36, 6, 5),
+            Mood.Down => new Rect(19, 36, 6, 5),
+            _ => new Rect(25, 41, 6, 5),
+        };
+        s.Blit(a.Image(33), source, x, y, transparent: 4);
+    }
+
+    /// <summary>Text mit Schatten (1 Pixel nach rechts unten), wie bei Überschriften im Original.</summary>
+    public static void ShadowText(Surface s, BitmapFont font, int centerX, int y, string text, byte color, byte shadow)
+    {
+        var x = centerX - font.Measure(text) / 2;
+        s.Text(font, x + 1, y + 1, text, shadow);
+        s.Text(font, x, y, text, color);
+    }
+
     /// <summary>Managerkopf 0–11 aus kb\0 (Zellen 40 × 40 im Raster 41).</summary>
     public static Rect HeadSource(int head) => new(head % 3 * 41, head / 3 * 41, 40, 40);
 

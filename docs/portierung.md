@@ -32,4 +32,21 @@ Kachelsymbole und Lampen stammen aus `kb\3`, Pfeile und Rollbalken aus `kb\4`.
 | Titel (`kb\197`) | ✔ |
 | Spielvorbereitung (`kb\150`): Manager, Kopfwahl, Namenseingabe, Vereinswahl, Modus, Level, Dauer, Liga, Stärke | ✔ – Reihenfolge der Vereine in der Auswahl `[APPROX]`, Laden/Netzwerk fehlen |
 | Hauptmenü: Infoleiste, große und kleine Kacheln | ✔ – Bedeutung der Lampen und Markierung der gewählten Kachel `[APPROX]` |
-| Alle Untermenüs | Platzhalter |
+| Infoleiste nach Spieltagen: „n.Spieltag“, Tabellenkurve, bisherige Begegnungen | ✔ – Kurvenmaßstab `[APPROX]` |
+| Spieltag: Banner „Ligaspiel“, „Spiele laufen“ mit Spielminute und Drittelbalken | ✔ |
+| Tabellen 1. Liga / 2. Liga / Oberliga mit Heim / Gesamt / Auswärts | ✔ |
+| Alle übrigen Untermenüs | Platzhalter |
+
+## Saisonablauf (Stand)
+
+- Kalender: Saisonstart „Sonntag, 10. Sept.“, Ligaspiele sonntags und mittwochs, Heiligabend spielfrei –
+  trifft beide Belege aus den Videos (17. Spieltag = Sonntag, 5. Nov.; 37. Spieltag = Mittwoch, 17. Januar).
+- Vier Runden à 11 Spieltage (44 Spieltage); Spielplan selbst `[APPROX]`.
+- Ergebnisse `[APPROX]`: Poisson-Modell aus der Vereinsstärke, ~6,5 Tore je Spiel, Unentschieden möglich.
+- Tabelle nach der 2-Punkte-Regel (Plus:Minus), Bilanz der letzten acht Spiele, Tendenz zum Vortag.
+- Noch offen: Playoffs, Relegation, Pokal, Europapokal, WM, Finanzen, Saisonende.
+
+## Tests
+
+- `tests/EishockeyManager.UI.Tests` spielt mit den echten Originaldateien eine komplette Hauptrunde durch
+  (Titel → Spielvorbereitung → 44 Spieltage → Tabellen). Ohne `gamedata` (z. B. auf GitHub) wird der Test übersprungen.

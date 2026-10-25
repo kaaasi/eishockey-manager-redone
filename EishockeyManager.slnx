@@ -10,5 +10,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/EishockeyManager.Formats.Tests/EishockeyManager.Formats.Tests.csproj" />
     <Project Path="tests/EishockeyManager.Core.Tests/EishockeyManager.Core.Tests.csproj" />
+    <Project Path="tests/EishockeyManager.UI.Tests/EishockeyManager.UI.Tests.csproj" />
   </Folder>
 </Solution>

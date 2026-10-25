@@ -58,7 +58,7 @@ public static class NewGame
         {
             var members = clubs.Where(c => c.League == league).Select(c => c.Index).ToList();
             Shuffle(members, random);
-            schedules[league] = Schedule.DoubleRoundRobin(members);
+            schedules[league] = Schedule.Rounds(members, rounds: 4);
         }
 
         return new GameState
@@ -67,6 +67,7 @@ public static class NewGame
             Clubs = clubs,
             Managers = managers,
             Schedules = schedules,
+            Random = random,
         };
     }
 
@@ -97,6 +98,18 @@ public static class NewGame
 
 public static class Schedule
 {
+    /// <summary>Mehrere Runden: Hin- und Rückrunde werden wiederholt (4 Runden = 44 Spieltage bei 12 Vereinen).</summary>
+    public static IReadOnlyList<MatchDay> Rounds(IReadOnlyList<int> teams, int rounds)
+    {
+        var two = DoubleRoundRobin(teams);
+        var all = new List<MatchDay>();
+        for (var r = 0; r < rounds / 2; r++)
+            all.AddRange(two.Select(d => new MatchDay(all.Count + 1, d.Matches)));
+        if (rounds % 2 == 1)
+            all.AddRange(two.Take(two.Count / 2).Select(d => new MatchDay(all.Count + 1, d.Matches)));
+        return all;
+    }
+
     /// <summary>
     /// Hin- und Rückrunde nach dem Kreisverfahren.
     /// [APPROX] Der Spielplan des Originals ist noch nicht rekonstruiert.

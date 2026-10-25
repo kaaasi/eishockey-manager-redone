@@ -45,5 +45,25 @@ public static class ScreenScript
         Click(190, 110); Move(10, 230); Save("08_hauptmenue_statistiken");
         Click(45, 110); Move(10, 230); Save("09_hauptmenue_manager");
         Click(27, 220); Save("10_platzhalter");
+        Click(160, 120); Press(Key.Escape);
+
+        // Spieltag: Banner, „Spiele laufen“, zurück ins Menü
+        Click(274, 170); Frame(); Save("11_spieltag_banner");
+        for (var i = 0; i < MatchDayScreen.BannerFrames + 40 * MatchDayScreen.FramesPerMinute; i++) Frame();
+        Save("12_spiele_laufen");
+        Press(Key.Space); Move(10, 230); Save("13_nach_spieltag");
+
+        // 16 weitere Spieltage im Schnelldurchlauf (Menü → Spieltag, Banner überspringen, zurück)
+        for (var md = 0; md < 16; md++)
+        {
+            Press(Key.Space);
+            while (host.Current is not MainMenuScreen) Press(Key.Space);
+        }
+        Move(10, 230); Save("14_nach_17_spieltagen");
+
+        // Tabelle Oberliga (Berliner SC rückt in die Oberliga)
+        Click(270, 110); Click(127, 220); Save("15_tabelle_oberliga");
+        Click(160, 170); Save("16_tabelle_oberliga_heim");
+        Press(Key.Escape); Click(270, 110); Click(27, 220); Save("17_tabelle_bundesliga");
     }
 }

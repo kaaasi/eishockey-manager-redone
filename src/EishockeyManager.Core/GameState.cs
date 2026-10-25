@@ -53,8 +53,25 @@ public sealed class GameState
 
     public int Season { get; set; } = FirstSeason;
 
-    /// <summary>Nächster Ligaspieltag (0 = vor dem ersten Spieltag).</summary>
+    /// <summary>Gespielte Ligaspieltage (0 = vor dem ersten Spieltag).</summary>
     public int PlayedMatchDays { get; set; }
+
+    /// <summary>Alle Ergebnisse der laufenden Saison.</summary>
+    public List<MatchResult> Results { get; } = [];
+
+    /// <summary>Tage (seit Saisonbeginn) der Ligaspieltage.</summary>
+    public IReadOnlyList<int> MatchDayDates => SeasonCalendar.LeagueMatchDays(LeagueMatchDays);
+
+    /// <summary>Anzahl der Ligaspieltage: vier Runden à 11 Spieltage (im Original belegt: 37. Spieltag im Januar).</summary>
+    public int LeagueMatchDays => Schedules.Values.Max(s => s.Count);
+
+    /// <summary>Aktueller Tag seit Saisonbeginn: Tag des zuletzt gespielten Spieltags.</summary>
+    public int Day => PlayedMatchDays == 0 ? 0 : MatchDayDates[PlayedMatchDays - 1];
+
+    public bool RegularSeasonOver => PlayedMatchDays >= LeagueMatchDays;
+
+    /// <summary>Zufallsquelle des Spielstands.</summary>
+    public Random Random { get; init; } = new();
 
     /// <summary>Welcher Manager gerade am Zug ist.</summary>
     public int CurrentManager { get; set; }
@@ -64,8 +81,45 @@ public sealed class GameState
     public IEnumerable<Club> LeagueClubs(League league) => Clubs.Where(c => c.League == league);
 
     /// <summary>Datumszeile der Infoleiste, z. B. „Sonntag, 10. Sept.  1993“.</summary>
-    /// <remarks>[APPROX] Das Original zählt die Wochen vom 10. September an; der genaue Kalender ist noch nicht rekonstruiert.</remarks>
-    public string DateText => $"Sonntag, 10. Sept.  {Season}";
+    public string DateText => SeasonCalendar.Format(Day, Season);
+
+    /// <summary>Spielt den nächsten Ligaspieltag in allen Ligen. Liefert false, wenn die Hauptrunde vorbei ist.</summary>
+    public bool PlayNextMatchDay()
+    {
+        if (RegularSeasonOver)
+            return false;
+        foreach (var (league, days) in Schedules)
+        {
+            if (PlayedMatchDays >= days.Count)
+                continue;
+            var day = days[PlayedMatchDays];
+            foreach (var (home, away) in day.Matches)
+            {
+                var (hg, ag) = MatchEngine.Play(Clubs[home], Clubs[away], Random);
+                Results.Add(new MatchResult(league, day.Number, home, away, hg, ag));
+            }
+        }
+        PlayedMatchDays++;
+        return true;
+    }
+
+    /// <summary>Bisherige Begegnungen zweier Vereine in dieser Saison, älteste zuerst.</summary>
+    public IEnumerable<MatchResult> Meetings(int club, int opponent) =>
+        Results.Where(r => r.Involves(club) && r.Involves(opponent));
+
+    /// <summary>Platz eines Vereins nach jedem gespielten Spieltag (für die Tabellenkurve).</summary>
+    public IReadOnlyList<int> RankHistory(int club)
+    {
+        var history = new List<int>();
+        if (Clubs[club].League is not { } league)
+            return history;
+        for (var md = 1; md <= PlayedMatchDays; md++)
+        {
+            var table = LeagueTable.Compute(this, league, TableView.Gesamt, md);
+            history.Add(table.First(r => r.Club.Index == club).Rank);
+        }
+        return history;
+    }
 
     /// <summary>Nächster Gegner des Vereins in der Liga oder null.</summary>
     public (Club Opponent, bool Home)? NextLeagueMatch(int clubIndex)

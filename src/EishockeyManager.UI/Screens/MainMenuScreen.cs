@@ -80,7 +80,7 @@ public sealed class MainMenuScreen : Screen
                 continue;
             if (i == Continue)
             {
-                Host.Show(new PlaceholderScreen(Host, "Spiele laufen", this));
+                Continue_();
                 return;
             }
             _selectedBig = i;
@@ -94,15 +94,37 @@ public sealed class MainMenuScreen : Screen
             {
                 if (input.Clicked(SmallTile(i)) && !tiles[i].IsEmpty)
                 {
-                    Host.Show(new PlaceholderScreen(Host, tiles[i].Name, this));
+                    Host.Show(OpenTile(tiles[i]));
                     return;
                 }
             }
         }
 
         if (input.Pressed(Key.Space))
-            Host.Show(new PlaceholderScreen(Host, "Spiele laufen", this));
+            Continue_();
     }
+
+    /// <summary>„und tschüß…“: nächster Spieltag.</summary>
+    private void Continue_()
+    {
+        _selectedBig = -1;
+        var game = Game;
+        if (game.RegularSeasonOver)
+        {
+            Host.Show(new PlaceholderScreen(Host, "Saisonende", this));
+            return;
+        }
+        var ownMatch = game.Managers.Any(m => game.NextLeagueMatch(m.ClubIndex) is not null);
+        Host.Show(new MatchDayScreen(Host, this, ownMatch));
+    }
+
+    private Screen OpenTile(MenuTile tile) => tile.Name switch
+    {
+        "Tabelle 1. Liga" => new TableScreen(Host, League.Bundesliga, this),
+        "Tabelle 2. Liga" => new TableScreen(Host, League.ZweiteLiga, this),
+        "Tabelle Oberliga" => new TableScreen(Host, League.Oberliga, this),
+        _ => new PlaceholderScreen(Host, tile.Name, this),
+    };
 
     public override void Draw(Surface s)
     {
@@ -151,8 +173,16 @@ public sealed class MainMenuScreen : Screen
 
         // Nachrichtenfeld
         Raised(s, new Rect(3, 32, 103, 41));
-        var message = game.PlayedMatchDays == 0 ? "Vor dem ersten Spieltag." : "";
-        s.Text(mini, 5, 35, message, Colors.White);
+        if (game.PlayedMatchDays == 0)
+            s.Text(mini, 5, 35, "Vor dem ersten Spieltag.", Colors.White);
+        else
+        {
+            s.TextCentered(mini, 55, 35, $"{game.PlayedMatchDays}.Spieltag", Colors.White);
+            var opponentIndex = game.NextLeagueMatch(manager.ClubIndex)?.Opponent.Index;
+            if (opponentIndex is { } o)
+                DrawRankCurve(s, game, o, Colors.White);
+            DrawRankCurve(s, game, manager.ClubIndex, Colors.Yellow);
+        }
 
         // Symbole: Wettbewerb, Heim/Auswärts, bisherige Begegnungen, Kontostand
         var next = game.NextLeagueMatch(manager.ClubIndex);
@@ -163,7 +193,7 @@ public sealed class MainMenuScreen : Screen
         s.Blit(sheet, new Rect(27, 231, 27, 11), 111, 61);
 
         s.TextCentered(mini, 184, 38, next?.Opponent.Name ?? "", Colors.White);
-        s.TextCentered(mini, 184, 51, "Noch keine", Colors.White); // [APPROX] bisherige Begegnungen
+        s.TextCentered(mini, 184, 51, MeetingsText(game, manager.ClubIndex, next?.Opponent.Index), Colors.White);
         s.TextCentered(mini, 184, 64, GameState.FormatMoney(manager.Money), Colors.White);
 
         // Lampen [APPROX] Bedeutung: rot = Manager am Zug
@@ -174,6 +204,67 @@ public sealed class MainMenuScreen : Screen
         Widgets.Head(s, Assets, manager.Head, 232, 33);
         Raised(s, new Rect(274, 32, 41, 42));
         Widgets.Logo(s, Assets, club.LogoGraphic, 275, 34);
+    }
+
+    /// <summary>
+    /// Bisherige Begegnungen aus Sicht des eigenen Vereins, z. B. „A 1:4,H 5:4“; „Noch keine“ ohne Begegnung.
+    /// [APPROX] Ob das Original eigene Tore zuerst nennt, ist noch offen.
+    /// </summary>
+    public static string MeetingsText(GameState game, int club, int? opponent)
+    {
+        if (opponent is not { } o)
+            return "";
+        var parts = game.Meetings(club, o).Select(r =>
+        {
+            var (f, a, home) = r.For(club);
+            return $"{(home ? 'H' : 'A')} {f}:{a}";
+        }).ToList();
+        return parts.Count == 0 ? "Noch keine" : string.Join(",", parts.TakeLast(4));
+    }
+
+    /// <summary>
+    /// Tabellenkurve im Nachrichtenfeld: Platz nach jedem Spieltag (oben = Platz 1), rechts der aktuelle Platz.
+    /// [APPROX] Maßstab und Lage aus Videobildern geschätzt.
+    /// </summary>
+    private void DrawRankCurve(Surface s, GameState game, int club, byte color)
+    {
+        var history = game.RankHistory(club);
+        if (history.Count == 0)
+            return;
+        const int left = 6, right = 84, top = 43, bottom = 68;
+        // Im Original füllt die Kurve schon nach 17 Spieltagen die ganze Breite → Maßstab = bisherige Spieltage
+        var n = Math.Max(1, history.Count - 1);
+        int X(int i) => left + i * (right - left) / n;
+        int Y(int rank) => top + (rank - 1) * (bottom - top) / 11;
+        for (var i = 0; i < history.Count; i++)
+        {
+            var x0 = X(i);
+            var y0 = Y(history[i]);
+            if (i == 0)
+            {
+                s.Set(x0, y0, color);
+                continue;
+            }
+            var x1 = X(i - 1);
+            var y1 = Y(history[i - 1]);
+            Line(s, x1, y1, x0, y0, color);
+        }
+        s.Text(Assets.Mini, right + 3, Y(history[^1]) - 2, $"{history[^1]}.", color);
+    }
+
+    private static void Line(Surface s, int x0, int y0, int x1, int y1, byte color)
+    {
+        int dx = Math.Abs(x1 - x0), dy = -Math.Abs(y1 - y0);
+        int sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1, err = dx + dy;
+        while (true)
+        {
+            s.Set(x0, y0, color);
+            if (x0 == x1 && y0 == y1)
+                break;
+            var e2 = 2 * err;
+            if (e2 >= dy) { err += dy; x0 += sx; }
+            if (e2 <= dx) { err += dx; y0 += sy; }
+        }
     }
 
     /// <summary>Erhabener Kasten wie im Original: oben/links hell, unten/rechts dunkel mit Schatten.</summary>

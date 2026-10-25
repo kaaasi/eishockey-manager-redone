@@ -22,10 +22,10 @@ public class ScheduleTests
     }
 }
 
-public class NewGameTests
+public static class TestGames
 {
     /// <summary>Synthetische Datenbank: Vereine 0–47 mit Namen „VEREIN n“ und absteigender Stärke je Liga.</summary>
-    private static ClubDatabase CreateDatabase()
+    public static ClubDatabase CreateDatabase()
     {
         var data = new byte[ClubDatabase.FileLength];
         for (var i = 0; i < ClubDatabase.ClubsWithSquad; i++)
@@ -35,6 +35,18 @@ public class NewGameTests
         }
         return ClubDatabase.Parse(data);
     }
+
+    public static GameState Create(int seed = 3)
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = 2 });
+        return NewGame.Create(CreateDatabase(), setup, seed);
+    }
+}
+
+public class NewGameTests
+{
+    private static ClubDatabase CreateDatabase() => TestGames.CreateDatabase();
 
     [Fact]
     public void Create_AssignsChosenClubAndBuildsSchedules()
@@ -50,7 +62,7 @@ public class NewGameTests
         foreach (var league in Enum.GetValues<League>())
         {
             Assert.Equal(12, game.LeagueClubs(league).Count());
-            Assert.Equal(22, game.Schedules[league].Count);
+            Assert.Equal(44, game.Schedules[league].Count);
         }
         Assert.NotNull(game.NextLeagueMatch(5));
     }

@@ -53,7 +53,7 @@ dotnet run --project src/EishockeyManager.Tools -- screens gamedata screens
 - [x] **v0.1 – Asset-Viewer:** Grafiken mit originalgetreuen Farben, Datenbank, Fonts, Halle, Figuren
 - [ ] **v0.2 – Rahmen:** Titel, Spielvorbereitung, Hauptmenü ✔ – Untermenüs folgen
 - [ ] **v0.3 – Manager & Mannschaft:** Finanzen, Werbung, Stadion, Jugend, Posteingang, Aufstellung, Taktik, Verträge, Transfer, Training
-- [ ] **v0.4 – Saison:** Spieltage („Spiele laufen“), Ergebnisberechnung, Tabellen, Paarungen, Stärken, Statistiken, Pokal, Europapokal, WM, Saisonende
+- [ ] **v0.4 – Saison:** Spieltage („Spiele laufen“) ✔, Ergebnisberechnung ✔ (angenähert), Tabellen ✔ – Paarungen, Stärken, Statistiken, Playoffs, Pokal, Europapokal, WM, Saisonende folgen
 - [ ] **v0.5 – Laden/Sichern, Einstellungen, Sound und Musik**
 - [ ] **v0.9 – Live-Spiel (optional abschaltbar):** Anzeigetafel, Reporter, Torszenen – bewusst als letzter Schritt vor v1.0
 - [ ] **v1.0 – Parität:** verhält sich wie das Original
