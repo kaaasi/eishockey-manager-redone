@@ -37,7 +37,7 @@ public sealed class MatchDayScreen : Screen
     {
         if (!_played)
         {
-            Host.Game!.PlayNextMatchDay();
+            Host.Game!.Continue();
             _played = true;
         }
 

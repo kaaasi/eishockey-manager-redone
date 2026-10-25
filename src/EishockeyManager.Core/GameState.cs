@@ -65,8 +65,8 @@ public sealed partial class GameState
     /// <summary>Anzahl der Ligaspieltage: vier Runden à 11 Spieltage (im Original belegt: 37. Spieltag im Januar).</summary>
     public int LeagueMatchDays => Schedules.Values.Max(s => s.Count);
 
-    /// <summary>Aktueller Tag seit Saisonbeginn: Tag des zuletzt gespielten Spieltags.</summary>
-    public int Day => PlayedMatchDays == 0 ? 0 : MatchDayDates[PlayedMatchDays - 1];
+    /// <summary>Aktueller Tag seit Saisonbeginn (siehe <see cref="CurrentDay"/>, Saisonablauf).</summary>
+    public int Day => CurrentDay;
 
     public bool RegularSeasonOver => PlayedMatchDays >= LeagueMatchDays;
 
