@@ -1,0 +1,64 @@
+# Stellt die Werkzeuge bereit, mit denen Claude den Code in seiner eigenen Arbeitsumgebung
+# bauen und testen kann (dort sind die Microsoft- und NuGet-Server nicht erreichbar, GitHub schon):
+#   - das offizielle .NET-SDK (Linux x64), gegen die SHA-512-Prüfsumme von Microsoft geprüft
+#   - alle NuGet-Pakete, die die Solution braucht, als Offline-Paketquelle
+# Ablage: Release "claude-werkzeuge" (Vorabversion). Läuft manuell und automatisch,
+# wenn sich Projektdateien ändern.
+name: Werkzeuge für Claude
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.csproj'
+      - 'Directory.Build.props'
+      - '.github/workflows/werkzeuge.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: werkzeuge
+  cancel-in-progress: true
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: .NET-SDK laden und prüfen
+        id: sdk
+        run: |
+          set -euo pipefail
+          META=$(curl -fsSL https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json)
+          VER=$(echo "$META" | jq -r '."latest-sdk"')
+          FILE=$(echo "$META" | jq -c --arg v "$VER" '[.releases[] | .sdks[]? // .sdk | select(.version==$v) | .files[] | select(.name=="dotnet-sdk-linux-x64.tar.gz")][0]')
+          curl -fsSL -o dotnet-sdk-linux-x64.tar.gz "$(echo "$FILE" | jq -r .url)"
+          echo "$(echo "$FILE" | jq -r .hash)  dotnet-sdk-linux-x64.tar.gz" | sha512sum -c -
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          mkdir -p "$HOME/dotnet" && tar -xzf dotnet-sdk-linux-x64.tar.gz -C "$HOME/dotnet"
+
+      - name: NuGet-Pakete sammeln
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/dotnet:$PATH" DOTNET_ROOT="$HOME/dotnet"
+          dotnet restore EishockeyManager.slnx --packages nuget-packages
+          # Hierarchische Ordnerstruktur (id/version/*.nupkg) ist direkt als Paketquelle nutzbar
+          tar -czf nuget-packages.tar.gz nuget-packages
+          du -sh nuget-packages.tar.gz
+
+      - name: Release aktualisieren
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=claude-werkzeuge
+          NOTES="Werkzeuge für Claudes Arbeitsumgebung: offizielles .NET SDK ${{ steps.sdk.outputs.version }} (ungeändert, SHA-512 geprüft) und die NuGet-Pakete der Solution (Stand: ${GITHUB_SHA::7}). Wird automatisch erneuert; kann jederzeit gelöscht werden."
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit "$TAG" -R "$GITHUB_REPOSITORY" --notes "$NOTES"
+          else
+            gh release create "$TAG" -R "$GITHUB_REPOSITORY" --prerelease --title "Werkzeuge für Claude" --notes "$NOTES"
+          fi
+          gh release upload "$TAG" dotnet-sdk-linux-x64.tar.gz nuget-packages.tar.gz -R "$GITHUB_REPOSITORY" --clobber

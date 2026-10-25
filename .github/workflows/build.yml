@@ -23,3 +23,30 @@ jobs:
 
       - name: Test
         run: dotnet test EishockeyManager.slnx -c Release --no-build --verbosity normal
+
+  # Lauffähige Zwischenstände zum Herunterladen (Actions → Lauf → Artifacts).
+  # Die Originaldateien müssen daneben im Ordner "gamedata" liegen.
+  publish:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rid: [win-x64, linux-x64, osx-arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Veröffentlichen
+        run: |
+          dotnet publish src/EishockeyManager.Desktop -c Release -r ${{ matrix.rid }} --self-contained -o out
+          dotnet publish src/EishockeyManager.Tools -c Release -r ${{ matrix.rid }} --self-contained -o out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EishockeyManager-${{ matrix.rid }}-${{ github.sha }}
+          path: out
+          retention-days: 14
