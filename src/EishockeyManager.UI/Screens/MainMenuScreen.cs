@@ -2,16 +2,6 @@ using EishockeyManager.Core;
 
 namespace EishockeyManager.UI.Screens;
 
-/// <summary>Kleine Kachel im Hauptmenü (Symbol aus kb\3, 38 × 28).</summary>
-public sealed record MenuTile(string Name, int Column, int Row)
-{
-    /// <summary>Platzhalter (Fisch) für unbelegte Plätze.</summary>
-    public static readonly MenuTile Empty = new("", 3, 4);
-
-    public bool IsEmpty => Name.Length == 0;
-    public Rect Source => new(1 + Column * 39, 87 + Row * 29, 38, 28);
-}
-
 /// <summary>
 /// Hauptmenü / Wochenübersicht: Titelleiste kb\20, Infoleiste, acht große Kacheln (kb\3) und
 /// – nach Auswahl einer großen Kachel – sechs kleine Kacheln am unteren Rand.
@@ -22,27 +12,11 @@ public sealed class MainMenuScreen : Screen
     public const int TitleBar = 20;
     public const int TileSheet = 3;
 
-    public static readonly string[] BigTiles =
-    [
-        "Manager", "Mannschaft", "Statistiken", "Tabellen",
-        "Paarungen", "Stärken", "Gemischtes", "und tschüß…",
-    ];
+    public static string[] BigTiles => MenuTiles.Big;
 
     public const int Continue = 7;
 
-    /// <summary>Kleine Kacheln je großer Kachel, wie im Original (Video); leere Plätze zeigen den Fisch.</summary>
-    public static readonly MenuTile[][] SmallTiles =
-    [
-        [new("Finanzen", 0, 0), new("Werbung", 1, 0), new("Stadion", 2, 0), new("Jugend", 3, 0), new("Neuer", 4, 0), new("Highscore", 5, 0)],
-        [new("Aufstellung", 0, 1), new("Taktik", 1, 1), new("Verträge", 2, 1), new("Transfer", 3, 1), new("Training", 4, 1), MenuTile.Empty],
-        [new("Totale", 5, 1), new("Früher", 0, 2), new("Verein", 1, 2), new("Spieler", 2, 2), new("Fairplay", 3, 2), new("WM-Statistik", 4, 2)],
-        [new("Tabelle 1. Liga", 5, 2), new("Tabelle 2. Liga", 0, 3), new("Tabelle Oberliga", 1, 3), new("Tabelle WM", 2, 3), MenuTile.Empty, MenuTile.Empty],
-        [new("Paarungen 1. Liga", 5, 2), new("Paarungen 2. Liga", 0, 3), new("Paarungen Oberliga", 1, 3), new("DEB-Pokal", 3, 3), new("Europapokal", 4, 3), new("WM", 5, 3)],
-        // [APPROX] Belegung der Stärken nicht im Video zu sehen; Länderteams laut Bildschirmtitel vorhanden.
-        [new("Stärken 1. Liga", 5, 2), new("Stärken 2. Liga", 0, 3), new("Stärken Oberliga", 1, 3), new("Stärken Länderteams", 2, 3), MenuTile.Empty, MenuTile.Empty],
-        [new("Laden", 0, 4), new("Sichern", 1, 4), new("Einstellungen", 2, 4), MenuTile.Empty, MenuTile.Empty, MenuTile.Empty],
-        [],
-    ];
+    public static MenuTile[][] SmallTiles => MenuTiles.Small;
 
     public static Rect BigTile(int i) => new(8 + i % 4 * 77, 80 + i / 4 * 60, 72, 57);
     public static Rect BigIconSource(int i) => new(1 + i % 4 * 59, 1 + i / 4 * 43, 58, 42);
@@ -118,13 +92,9 @@ public sealed class MainMenuScreen : Screen
         Host.Show(new MatchDayScreen(Host, this, ownMatch));
     }
 
-    private Screen OpenTile(MenuTile tile) => tile.Name switch
-    {
-        "Tabelle 1. Liga" => new TableScreen(Host, League.Bundesliga, this),
-        "Tabelle 2. Liga" => new TableScreen(Host, League.ZweiteLiga, this),
-        "Tabelle Oberliga" => new TableScreen(Host, League.Oberliga, this),
-        _ => new PlaceholderScreen(Host, tile.Name, this),
-    };
+    /// <summary>Bildschirm zu einer kleinen Kachel – angemeldet per <see cref="MenuEntryAttribute"/>, sonst Platzhalter.</summary>
+    private Screen OpenTile(MenuTile tile) =>
+        MenuEntries.TryCreate(tile.Name, Host, this, out var screen) ? screen! : new PlaceholderScreen(Host, tile.Name, this);
 
     public override void Draw(Surface s)
     {

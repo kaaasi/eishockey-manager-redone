@@ -113,3 +113,16 @@ public sealed class TableScreen : Screen
         _ => "Gesamt",
     };
 }
+
+/// <summary>Anmeldung der Tabellen im Hauptmenü.</summary>
+internal static class TableMenuEntries
+{
+    [MenuEntry("Tabelle 1. Liga")]
+    private static Screen FirstLeague(ScreenHost host, Screen back) => new TableScreen(host, League.Bundesliga, back);
+
+    [MenuEntry("Tabelle 2. Liga")]
+    private static Screen SecondLeague(ScreenHost host, Screen back) => new TableScreen(host, League.ZweiteLiga, back);
+
+    [MenuEntry("Tabelle Oberliga")]
+    private static Screen Oberliga(ScreenHost host, Screen back) => new TableScreen(host, League.Oberliga, back);
+}

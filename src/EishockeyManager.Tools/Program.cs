@@ -5,7 +5,7 @@ using EishockeyManager.Formats;
 //   emtool info    [spielordner]              Übersicht über alle Grafiken
 //   emtool export  [spielordner] [zielordner] Grafiken, Halle, Figuren und Fonts als PNG
 //   emtool vereine [spielordner] [nummer]     Vereine aus der Datenbank (mit Nummer: Kader)
-//   emtool screens [spielordner] [zielordner] Bildschirme ohne Fenster als PNG (Testablauf)
+//   emtool screens [spielordner] [zielordner] [ablauf …]  Bildschirme ohne Fenster als PNG
 
 var command = args.Length > 0 ? args[0].ToLowerInvariant() : "help";
 
@@ -23,7 +23,8 @@ try
             Clubs(GameData.Locate(args.ElementAtOrDefault(1)), args.ElementAtOrDefault(2));
             return 0;
         case "screens":
-            ScreenScript.Run(GameData.Locate(args.ElementAtOrDefault(1)), args.ElementAtOrDefault(2) ?? "screens");
+            EishockeyManager.Tools.Scenarios.ScenarioRunner.Run(
+                GameData.Locate(args.ElementAtOrDefault(1)), args.ElementAtOrDefault(2) ?? "screens", args.Skip(3).ToList());
             return 0;
         default:
             Console.WriteLine("""
@@ -32,10 +33,11 @@ try
                   emtool info    [spielordner]
                   emtool export  [spielordner] [zielordner]
                   emtool vereine [spielordner] [vereinsnummer]
-                  emtool screens [spielordner] [zielordner]
+                  emtool screens [spielordner] [zielordner] [ablauf …]
 
                 Ohne Spielordner wird nach einem Ordner "gamedata" gesucht.
                 """);
+            Console.WriteLine("Abläufe für screens: " + string.Join(", ", EishockeyManager.Tools.Scenarios.ScenarioRunner.All.Keys));
             return command == "help" ? 0 : 1;
     }
 }

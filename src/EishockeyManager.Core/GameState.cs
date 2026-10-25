@@ -3,14 +3,14 @@ using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core;
 
-public sealed class Player
+public sealed partial class Player
 {
     public required string Name { get; init; }
     public required PlayerRole Role { get; init; }
     public bool IsForeigner { get; init; }
 }
 
-public sealed class Club
+public sealed partial class Club
 {
     public required int Index { get; init; }
     public required string Name { get; init; }
@@ -25,7 +25,7 @@ public sealed class Club
     public List<Player> Players { get; } = [];
 }
 
-public sealed class Manager
+public sealed partial class Manager
 {
     public required string Name { get; init; }
     public required int Head { get; init; }
@@ -40,7 +40,7 @@ public sealed class Manager
 public sealed record MatchDay(int Number, IReadOnlyList<(int Home, int Away)> Matches);
 
 /// <summary>Gesamter Spielstand.</summary>
-public sealed class GameState
+public sealed partial class GameState
 {
     public const long StartMoney = 400_000;
     public const int FirstSeason = 1993;

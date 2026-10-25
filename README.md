@@ -44,8 +44,8 @@ dotnet run --project src/EishockeyManager.Tools -- info
 dotnet run --project src/EishockeyManager.Tools -- export gamedata export
 dotnet run --project src/EishockeyManager.Tools -- vereine gamedata 56
 
-# Testablauf Titel → Spielvorbereitung → Hauptmenü als PNG-Serie (für den Vergleich mit dem Original)
-dotnet run --project src/EishockeyManager.Tools -- screens gamedata screens
+# Testabläufe als PNG-Serie (für den Vergleich mit dem Original); ohne Namen: alle
+dotnet run --project src/EishockeyManager.Tools -- screens gamedata screens setup spieltag tabellen
 ```
 
 ## Fahrplan
@@ -60,4 +60,5 @@ dotnet run --project src/EishockeyManager.Tools -- screens gamedata screens
 - [ ] **danach:** neue Funktionen nach [docs/anforderungen/zusatzfunktionen.md](docs/anforderungen/zusatzfunktionen.md)
   (moderne Grafik, weitere Sprachen, Cheatmenü, Netzwerk mit Dedicated Server, Ex-/Import)
 
-Details zum aktuellen Analysestand: [docs/bestandsaufnahme.md](docs/bestandsaufnahme.md)
+Details zum aktuellen Analysestand: [docs/bestandsaufnahme.md](docs/bestandsaufnahme.md) ·
+Parallele Arbeit in Paketen: [docs/arbeitspakete.md](docs/arbeitspakete.md) · Leitfaden für Claude: [CLAUDE.md](CLAUDE.md)
