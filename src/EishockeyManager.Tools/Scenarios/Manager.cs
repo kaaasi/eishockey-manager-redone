@@ -58,6 +58,35 @@ internal static class ManagerScenarios
         Click(d, AdvertisingScreen.BoardRect(2)); AcceptFirstOffer(d, screen); d.Save("09_zweite_bande");
     }
 
+    [Scenario("stadion")]
+    private static void Stadium(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.OpenTile("Stadion");
+        var game = d.Host.Game!;
+        d.Move(1, 239); d.Save("01_stadion_start");
+        d.Move(45, 135); d.Save("02_hinweis_gastronomie");
+        d.Click(45, 135); d.Save("03_imbissbude");
+        Click(d, StadiumScreen.LevelUp); d.Save("04_restaurant");
+        Click(d, StadiumScreen.LevelBox); d.Save("05_rueckfrage");
+        d.Click(StadiumScreen.YesButton.X + 5, StadiumScreen.YesButton.Y + 3); d.Move(300, 160); d.Save("06_baustelle");
+        Click(d, StadiumScreen.TicketUp); Click(d, StadiumScreen.TicketUp);
+
+        // Bauzeit abwarten, dann alles Weitere direkt im Spielstand bauen und ansehen
+        for (var md = 0; md < 12; md++) { d.Press(Key.Escape); d.PlayMatchDay(); }
+        var stadium = game.Finance(game.ActiveManager).Stadium;
+        stadium.SetLevel(Core.StadiumFeature.Verkehrsanbindung, 1);
+        stadium.SetLevel(Core.StadiumFeature.Ueberdachung, 1);
+        stadium.SetLevel(Core.StadiumFeature.Kino, 2);
+        stadium.SetLevel(Core.StadiumFeature.Bowlingbahn, 1);
+        d.OpenTile("Stadion"); d.Move(1, 239); d.Save("07_ausgebaut");
+        stadium.SetLevel(Core.StadiumFeature.Verkehrsanbindung, 2);
+        stadium.SetLevel(Core.StadiumFeature.Ueberdachung, 2);
+        stadium.SetLevel(Core.StadiumFeature.Kino, 3);
+        stadium.SetLevel(Core.StadiumFeature.Gastronomie, 1);
+        d.Move(1, 238); d.Save("08_voll_ausgebaut");
+    }
+
     private static void Click(ScreenDriver d, Rect r) => d.Click(r.X + r.W / 2, r.Y + r.H / 2);
 
     /// <summary>Blättert, bis ein Angebot kommt, und nimmt es an.</summary>

@@ -22,10 +22,20 @@ public enum StadiumProject
     Stehplaetze,
 }
 
-/// <summary>Laufende Baustelle.</summary>
-public sealed record StadiumConstruction(StadiumProject Project, StadiumFeature Feature, int WeeksLeft, long Cost)
+/// <summary>
+/// Laufende Baustelle. <see cref="Target"/> = Zielstufe des Bereichs bzw. Zahl der Ausbauschritte bei Plätzen.
+/// </summary>
+public sealed record StadiumConstruction(StadiumProject Project, StadiumFeature Feature, int Target, int WeeksLeft, long Cost)
 {
     public int WeeksLeft { get; set; } = WeeksLeft;
+
+    /// <summary>Bezeichnung wie im Bildschirm („Kino“, „Sitzplätze“).</summary>
+    public string Label => Project switch
+    {
+        StadiumProject.Sitzplaetze => "Sitzplätze",
+        StadiumProject.Stehplaetze => "Stehplätze",
+        _ => Stadium.Features[(int)Feature].Label,
+    };
 }
 
 /// <summary>Stadion eines Managervereins (Bildschirm Stadion, kb\14).</summary>
@@ -43,9 +53,8 @@ public sealed class Stadium
         ("Zustand", ["GANZ ÜBEL", "SCHLECHT", "MITTEL", "GANZ GUT", "SEHR GUT"]),
         ("Verkehrsanb.", ["FUßWEG", "STRAßE", "AUTOBAHN"]),
         ("Gastronomie", ["OHNE", "IMBIßBUDE", "KNEIPEN", "RESTAURANT"]),
-        ("Kino", ["OHNE", "KLEIN", "MITTEL"]),
-        // [APPROX] Stufen der Bowlingbahn: in em.exe folgen nach Kino keine eigenen Texte → gleiche Liste angenommen.
-        ("Bowlingbahn", ["OHNE", "KLEIN", "MITTEL"]),
+        ("Kino", ["OHNE", "KLEIN", "MITTEL", "GROß"]),
+        ("Bowlingbahn", ["OHNE", "VORHANDEN"]),
     ];
 
     public const int SeatStep = 500;
@@ -88,30 +97,58 @@ public sealed class Stadium
         _ => new Stadium(),
     };
 
-    /// <summary>[APPROX] Kosten und Bauzeit (Wochen) des nächsten Ausbauschritts; null, wenn nichts mehr geht.</summary>
-    public (long Cost, int Weeks)? Offer(StadiumProject project, StadiumFeature feature = default)
+    /// <summary>
+    /// Kosten des ersten Ausbauschritts. Aus dem UI-Video (Oberliga, Spielbeginn): Kühlanlage 'FROSTA' 640.000 DM,
+    /// Straße 1.200.000 DM, Imbißbude 580.000 DM, Kino KLEIN 520.000 DM, Bowlingbahn 450.000 DM.
+    /// [APPROX] Überdachung, Anzeigetafel, Sitzkomfort und Zustand geschätzt; jede weitere Stufe kostet ein Vielfaches.
+    /// </summary>
+    public long FirstStepCost(StadiumFeature feature) => feature switch
     {
-        switch (project)
-        {
-            case StadiumProject.Sitzplaetze:
-                return Seats >= MaxSeats ? null : (SeatStep * 220L, 3);
-            case StadiumProject.Stehplaetze:
-                return Standing >= MaxStanding ? null : (StandingStep * 60L, 2);
-        }
-        if (IsMaxed(feature))
+        StadiumFeature.Ueberdachung => 1_500_000,
+        StadiumFeature.Anzeigetafel => 250_000,
+        StadiumFeature.Kuehlanlage => 640_000,
+        StadiumFeature.Sitzkomfort => 60L * Seats,
+        StadiumFeature.Zustand => 100_000 + 20L * Capacity,
+        StadiumFeature.Verkehrsanbindung => 1_200_000,
+        StadiumFeature.Gastronomie => 580_000,
+        StadiumFeature.Kino => 520_000,
+        _ => 450_000,
+    };
+
+    /// <summary>[APPROX] Bauzeit in Wochen je Stufe.</summary>
+    public static int WeeksPerStep(StadiumFeature feature) => feature switch
+    {
+        StadiumFeature.Ueberdachung => 8,
+        StadiumFeature.Verkehrsanbindung => 6,
+        StadiumFeature.Kino or StadiumFeature.Bowlingbahn => 5,
+        StadiumFeature.Gastronomie or StadiumFeature.Kuehlanlage => 3,
+        _ => 2,
+    };
+
+    /// <summary>
+    /// Kosten und Bauzeit für den Ausbau eines Bereichs auf <paramref name="target"/> (Stufe n → n+1 kostet
+    /// n+1 × ersten Schritt); null, wenn die Stufe nicht über der aktuellen liegt oder es sie nicht gibt.
+    /// </summary>
+    public (long Cost, int Weeks)? Offer(StadiumFeature feature, int target)
+    {
+        var current = Level(feature);
+        if (target <= current || target >= Features[(int)feature].Levels.Length)
             return null;
-        var next = Level(feature) + 1;
-        return feature switch
+        long cost = 0;
+        for (var step = current + 1; step <= target; step++)
+            cost += step * FirstStepCost(feature);
+        return (cost, (target - current) * WeeksPerStep(feature));
+    }
+
+    /// <summary>[APPROX] Plätze bauen: 500 Sitzplätze für 110.000 DM (3 Wochen), 1.000 Stehplätze für 60.000 DM (2 Wochen).</summary>
+    public (long Cost, int Weeks)? PlacesOffer(StadiumProject project, int steps = 1)
+    {
+        if (steps <= 0)
+            return null;
+        return project switch
         {
-            StadiumFeature.Ueberdachung => (next * 900_000L, next * 8),
-            StadiumFeature.Anzeigetafel => (next * 150_000L, next * 2),
-            StadiumFeature.Kuehlanlage => (next * 250_000L, next * 3),
-            StadiumFeature.Sitzkomfort => (next * 30L * Seats, 2),
-            StadiumFeature.Zustand => (next * 40_000L + Capacity * 10L, 2),
-            StadiumFeature.Verkehrsanbindung => (next * 400_000L, next * 6),
-            StadiumFeature.Gastronomie => (next * 120_000L, next * 3),
-            StadiumFeature.Kino => (next * 350_000L, next * 5),
-            StadiumFeature.Bowlingbahn => (next * 250_000L, next * 4),
+            StadiumProject.Sitzplaetze when Seats + steps * SeatStep <= MaxSeats => (steps * SeatStep * 220L, 2 + steps),
+            StadiumProject.Stehplaetze when Standing + steps * StandingStep <= MaxStanding => (steps * StandingStep * 60L, 1 + steps),
             _ => null,
         };
     }
@@ -122,13 +159,13 @@ public sealed class Stadium
         switch (construction.Project)
         {
             case StadiumProject.Sitzplaetze:
-                Seats = Math.Min(MaxSeats, Seats + SeatStep);
+                Seats = Math.Min(MaxSeats, Seats + construction.Target * SeatStep);
                 break;
             case StadiumProject.Stehplaetze:
-                Standing = Math.Min(MaxStanding, Standing + StandingStep);
+                Standing = Math.Min(MaxStanding, Standing + construction.Target * StandingStep);
                 break;
             default:
-                SetLevel(construction.Feature, Level(construction.Feature) + 1);
+                SetLevel(construction.Feature, construction.Target);
                 break;
         }
     }
@@ -144,7 +181,7 @@ public sealed class Stadium
         + 0.06 * Level(StadiumFeature.Verkehrsanbindung)
         + 0.03 * Level(StadiumFeature.Gastronomie)
         + 0.02 * Level(StadiumFeature.Kino)
-        + 0.02 * Level(StadiumFeature.Bowlingbahn);
+        + 0.04 * Level(StadiumFeature.Bowlingbahn);
 
     /// <summary>[APPROX] Gastronomie-Umsatz je Zuschauer in DM.</summary>
     public int GastronomyPerSpectator => Level(StadiumFeature.Gastronomie) switch
@@ -159,7 +196,7 @@ public sealed class Stadium
     public long MonthlyUpkeep =>
         3_000 + Capacity * 6L / 10
         + 2_000L * (Level(StadiumFeature.Ueberdachung) + Level(StadiumFeature.Anzeigetafel) + Level(StadiumFeature.Kuehlanlage))
-        - 6_000L * (Level(StadiumFeature.Kino) + Level(StadiumFeature.Bowlingbahn));
+        - 6_000L * (Level(StadiumFeature.Kino) + 2 * Level(StadiumFeature.Bowlingbahn));
 }
 
 public sealed partial class GameState
@@ -192,5 +229,40 @@ public sealed partial class GameState
         demand *= Math.Pow(10.0 / stadium.TicketPrice, 1.3);
         demand *= 0.9 + 0.2 * random.NextDouble();
         return (int)Math.Clamp(demand, 0, stadium.Capacity);
+    }
+}
+
+public sealed partial class GameState
+{
+    /// <summary>
+    /// Beginnt einen Stadionausbau („Möchten Sie Ihr Stadion ausbauen ?“): Kosten sofort (Finanzbuch „Bau“),
+    /// fertig nach der Bauzeit. Es gibt höchstens eine Baustelle. Liefert false, wenn das nicht geht.
+    /// [APPROX] Ob das Original mehrere Baustellen oder Ratenzahlung kennt, ist offen.
+    /// </summary>
+    public bool StartConstruction(Manager manager, StadiumProject project, StadiumFeature feature, int target)
+    {
+        var stadium = Finance(manager).Stadium;
+        if (stadium.Construction is not null)
+            return false;
+        var offer = project == StadiumProject.Feature ? stadium.Offer(feature, target) : stadium.PlacesOffer(project, target);
+        if (offer is not { } o)
+            return false;
+        Book(manager, FinanceCategory.Bau, -o.Cost);
+        stadium.Construction = new StadiumConstruction(project, feature, target, o.Weeks, o.Cost);
+        return true;
+    }
+
+    /// <summary>Wöchentlich: Baufortschritt. Liefert den abgeschlossenen Bau (für die Meldung im Posteingang).</summary>
+    private StadiumConstruction? AdvanceConstruction(Manager manager)
+    {
+        var stadium = Finance(manager).Stadium;
+        if (stadium.Construction is not { } construction)
+            return null;
+        construction.WeeksLeft--;
+        if (construction.WeeksLeft > 0)
+            return null;
+        stadium.Complete(construction);
+        stadium.Construction = null;
+        return construction;
     }
 }
