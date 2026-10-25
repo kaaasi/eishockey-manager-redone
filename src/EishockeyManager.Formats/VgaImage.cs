@@ -123,7 +123,7 @@ public sealed class VgaImage
         stream.Write(header);
         stream.Write(packed);
         if (Palette is not null)
-            stream.Write(Palette.Rgb[..Palette.StoredLength]);
+            stream.Write(Palette.StoredBytes);
         return stream.ToArray();
     }
 

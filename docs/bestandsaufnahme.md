@@ -1,6 +1,6 @@
 # Bestandsaufnahme der Originaldateien
 
-Stand: 25.10.2026
+Stand: 25.10.2026 · Formatdetails: [formate/dateiformate.md](formate/dateiformate.md)
 
 ## Versionen
 
@@ -20,34 +20,28 @@ ist als Referenz nützlich (gleiche Verzeichnisstruktur, ältere Datenstände).
 
 | Nummern | Inhalt | Status |
 |---|---|---|
-| 0–20, 22, 24, 25, 33, 36, 38 | Bilder und Bildschirm-Elemente (z. B. 22 = Einstellungsmenü, 5 = Wochenkalender, 16 = Siegerfoto mit Pokal) | ✔ dekodierbar ([Format](formate/vga.md)) |
-| 80–143 | 64 Symbole/Porträts à 38×38 | ✔ dekodierbar |
-| 150–152, 195, 197 | Vollbilder 320×240 | ✔ dekodierbar |
-| 21 | Standardpalette (8 Bit) | ✔ |
-| 247 | Palette (6 Bit) | ✔ erkannt, Verwendung offen |
-| 23 | Zeichensatz (wird per Name geladen) | offen |
-| 231–235 | PackBits-Daten ohne Bild-Header (erstes Wort = Dateilänge − 2) | offen |
-| 236, 242–245 | je 6048 Bytes, 16-Bit-Werte – vermutlich Kachel-/Bildschirmkarten | offen |
-| 246 | unbekanntes PackBits-ähnliches Format | offen |
-| 237–241 | Creative Voice Files (VOC) – Soundeffekte | erkannt |
-| 248 | Creative Music File (CMF) – Musik | erkannt |
+| 0–20, 22, 24, 25, 33, 36, 38 | Bilder und Bildschirm-Elemente (z. B. 0 = Managerköpfe, 5 = Training, 22 = Sternenhintergrund, 150 = Spielvorbereitung) | ✔ |
+| 80–143 | 64 Vereinslogos à 38×38 | ✔ |
+| 150–152, 195, 197 | Vollbilder 320×240 | ✔ |
+| 21, 247 | Paletten | ✔ (6-Bit-Maskierung) |
+| 23 | Vereins- und Spielerdatenbank | ✔ |
+| 231, 232 | Hallenkacheln | ✔ |
+| 233–235 | Figuren der Torszenen | ✔ |
+| 236, 242–245 | Hallenkarten | ✔ |
+| 237–241 | Soundeffekte (VOC) | erkannt, Wiedergabe offen |
+| 248 | Musik (CMF, OPL2) | erkannt, Wiedergabe offen |
+| 246 | vermutlich Animationstabelle | offen |
 
-## DOS: Torszenen `tore\`
+Dazu die Bitmapfonts mini/flow/newbold in `em.exe` (✔).
 
-- `anzahl` enthält `MAXSZENE:11|2|2`.
-- Dateien `<nr>.<variante>` mit Kennung `TOR!` am Anfang – vermutlich Animationsskripte
-  (Positionen/Bewegungen). Varianten: `ht`, `hv`, `at`, `av` (Heim/Auswärts × t/v?),
-  für Szene 2 zusätzlich `…e` und `…j`.
+## Torszenen `tore\`
 
-## Spieldaten (Vereine, Spieler)
-
-Vereins- und Spielernamen liegen **nicht** im Klartext in `em.exe`. Kandidaten sind die
-Overlay-Daten der EXE (≈ 235 KB) und die noch unbekannten Dateien 231–236/242–246.
-Texte in der EXE verwenden einen eigenen Zeichensatz: `]` = Ü, `~` = ß.
+`anzahl` enthält `MAXSZENE:11|2|2`. Dateien `<nr>.<variante>` mit Kennung `TOR!` – Positions-/Bewegungsdaten,
+Bedeutung der Rahmen (28 Bytes) noch offen.
 
 ## Nächste Schritte
 
-1. Paletten-/Farbabgleich mit Videos des Originals
-2. Zeichensatz `23.vga` entschlüsseln (für originalgetreue Texte)
-3. Speicherort der Vereins- und Spielerdaten finden
-4. Format der Torszenen (`TOR!`)
+1. Sound: VOC-Wiedergabe, CMF über OPL2-Emulation
+2. Torszenen-Format `tore\*` und `kb\246`
+3. Bildschirme nach [anforderungen/bildschirme.md](anforderungen/bildschirme.md) nachbauen, beginnend mit Titel → Setup → Hauptmenü
+4. Spielregeln aus [reverse-engineering.md](reverse-engineering.md) an `em.exe` nachprüfen
