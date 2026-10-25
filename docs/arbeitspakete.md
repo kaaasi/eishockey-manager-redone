@@ -21,7 +21,7 @@ Empfohlener Start: **saison**, **manager**, **mannschaft** parallel. **wettbewer
 
 ## Paket `saison` – Saisonablauf über mehrere Jahre
 
-Branch: `paket/saison` · Status: **umgesetzt, in Prüfung** – PRs #6 (Kalender), #8 (Ablauf), UI-PR (gestapelt:
+Branch: `paket/saison` · Status: **umgesetzt, in Prüfung** – PRs #6 (Kalender), #8 (Ablauf), #10 (Oberfläche) (gestapelt:
 `paket/saison` → `paket/saison-ablauf` → `paket/saison-ui`). Details und offene `[APPROX]`-Punkte: [saison.md](saison.md).
 Für `wettbewerbe`: DEB-Pokal, Europapokal und WM über `ISeasonCompetition` in `GameState.Competitions` anmelden.
 
