@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EishockeyManager.Formats/EishockeyManager.Formats.csproj" />
+    <Project Path="src/EishockeyManager.Tools/EishockeyManager.Tools.csproj" />
+    <Project Path="src/EishockeyManager.Viewer/EishockeyManager.Viewer.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EishockeyManager.Formats.Tests/EishockeyManager.Formats.Tests.csproj" />
+  </Folder>
+</Solution>

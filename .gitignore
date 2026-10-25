@@ -1,0 +1,32 @@
+# --- Originalspiel: niemals einchecken -------------------------------------
+# Die Originaldateien (DOS/Amiga) sind urheberrechtlich geschützt.
+# Lege sie lokal unter gamedata/ ab (siehe README).
+gamedata/
+original/
+*.adf
+*.vga
+*.voc
+*.cmf
+em.exe
+infofile
+tore/
+kb/
+high/
+
+# Exportierte Assets aus den Tools
+export/
+
+# --- .NET -------------------------------------------------------------------
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+*.DotSettings.user
+TestResults/
+artifacts/
+
+# --- Betriebssystem ---------------------------------------------------------
+.DS_Store
+Thumbs.db
