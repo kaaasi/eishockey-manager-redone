@@ -78,18 +78,11 @@ public sealed class MainMenuScreen : Screen
             Continue_();
     }
 
-    /// <summary>„und tschüß…“: nächster Spieltag.</summary>
+    /// <summary>„und tschüß…“: weiter bis zum nächsten eigenen Spiel bzw. zum Saisonende (Paket saison).</summary>
     private void Continue_()
     {
         _selectedBig = -1;
-        var game = Game;
-        if (game.RegularSeasonOver)
-        {
-            Host.Show(new PlaceholderScreen(Host, "Saisonende", this));
-            return;
-        }
-        var ownMatch = game.Managers.Any(m => game.NextLeagueMatch(m.ClubIndex) is not null);
-        Host.Show(new MatchDayScreen(Host, this, ownMatch));
+        Host.Show(new MatchDayScreen(Host, this));
     }
 
     /// <summary>Bildschirm zu einer kleinen Kachel – angemeldet per <see cref="MenuEntryAttribute"/>, sonst Platzhalter.</summary>
@@ -143,26 +136,27 @@ public sealed class MainMenuScreen : Screen
 
         // Nachrichtenfeld
         Raised(s, new Rect(3, 32, 103, 41));
+        // Datum und „n.Spieltag“ beziehen sich auf den nächsten Termin (siehe docs/saison.md)
+        var next = game.UpcomingMatch(manager.ClubIndex);
         if (game.PlayedMatchDays == 0)
             s.Text(mini, 5, 35, "Vor dem ersten Spieltag.", Colors.White);
-        else
+        else if (game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver)
         {
-            s.TextCentered(mini, 55, 35, $"{game.PlayedMatchDays}.Spieltag", Colors.White);
-            var opponentIndex = game.NextLeagueMatch(manager.ClubIndex)?.Opponent.Index;
-            if (opponentIndex is { } o)
+            if (game.UpcomingLeagueMatchDay is { } md)
+                s.TextCentered(mini, 55, 35, $"{md}.Spieltag", Colors.White);
+            if (next?.Opponent.Index is { } o)
                 DrawRankCurve(s, game, o, Colors.White);
             DrawRankCurve(s, game, manager.ClubIndex, Colors.Yellow);
         }
 
         // Symbole: Wettbewerb, Heim/Auswärts, bisherige Begegnungen, Kontostand
-        var next = game.NextLeagueMatch(manager.ClubIndex);
-        s.Blit(sheet, new Rect(78, 231, 14, 11), 111, 35);
+        s.Blit(sheet, SeasonInfo.CompetitionIcon(game, next?.Competition), 111, 35);
         if (next is { } n)
             s.Blit(sheet, n.Home ? new Rect(54, 231, 12, 11) : new Rect(66, 231, 12, 11), 126, 35);
         s.Blit(sheet, new Rect(0, 231, 27, 11), 111, 48);
         s.Blit(sheet, new Rect(27, 231, 27, 11), 111, 61);
 
-        s.TextCentered(mini, 184, 38, next?.Opponent.Name ?? "", Colors.White);
+        s.TextCentered(mini, 184, 38, next?.Opponent.Name ?? SeasonInfo.NoMatchText(game), Colors.White);
         s.TextCentered(mini, 184, 51, MeetingsText(game, manager.ClubIndex, next?.Opponent.Index), Colors.White);
         s.TextCentered(mini, 184, 64, GameState.FormatMoney(manager.Money), Colors.White);
 

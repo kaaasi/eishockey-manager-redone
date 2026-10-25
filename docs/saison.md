@@ -53,3 +53,27 @@ spielfreie Tage –, bis wieder ein Verein eines Managers spielt. Belegt: 1995/9
 
 **Erweiterung**: DEB-Pokal, Europapokal und WM melden sich über `ISeasonCompetition` in `GameState.Competitions`
 an und werden an ihren Kalendertagen aufgerufen (Infoleiste, Anhalten von „und tschüß…“, Titel am Saisonende).
+
+## Oberfläche
+
+| Bildschirm | Datei | Vorlage (Video) |
+|---|---|---|
+| „und tschüß…“: Banner („Ligaspiel“, „Play-Off / Aufstiegsrunden“ …), „Spiele laufen“ | `MatchDayScreen.cs` | 10:43, 17:27 |
+| Meisterfoto kb\16 („Deutscher Meister“, „DEB Pokalsieger“, „Europacupsieger“) | `SeasonEndTrophyScreen.cs` | 10:45, 17:35 |
+| Infoleiste nach der Vereinssaison: Zielflagge, „Saisonende“ | `MainMenuScreen.DrawInfoBar` (minimal) | 10:50, 24:50 |
+| Saisonende: Titelträger, neue Vereine je Liga (rot = Absteiger, grün = Aufsteiger, blau = Meister) | `SeasonEndScreen.cs` | 11:50, 18:36, 25:52 |
+| Fenster „Ereignisse“ mit Platzierung und Prämie je Manager | `SeasonEndSummaryScreen.cs` | 11:53, 18:38 |
+| Entlassung, Spielende | `SeasonEndGameOverScreen.cs` | – (`[APPROX]`) |
+
+Bildschirmfotos: `emtool screens gamedata <ziel> saison saison_aufstieg`.
+
+Die Pfeile vor den Vereinsnamen sind Zeichen des Mini-Fonts: `&` = Pfeil nach unten, `@` = Pfeil nach oben,
+`*` = Kreis. Die Fenster am Saisonende sind dunkler gefüllt (Palettenindex 4) als die übrigen grau-blauen Fenster.
+
+## Offen
+
+- Pokal auf dem Meisterfoto: das Original setzt je Titel einen Pokal aus den Einzelteilen in kb\16 (rechts oben)
+  zusammen; hier bleibt der Pokal des Fotos.
+- Zuordnung der Ereignissymbole (kb\13) außer „Aufstieg“; Prämien außer 1. Platz Oberliga.
+- Play-Off-Format und Termine der Aufstiegsrunden genauer am Disassembly prüfen.
+- Bisherige Begegnungen in der Infoleiste reichen im Original über Saisongrenzen hinweg (nicht Teil dieses Pakets).

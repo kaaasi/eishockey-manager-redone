@@ -21,7 +21,9 @@ Empfohlener Start: **saison**, **manager**, **mannschaft** parallel. **wettbewer
 
 ## Paket `saison` – Saisonablauf über mehrere Jahre
 
-Branch: `paket/saison` · Status: offen
+Branch: `paket/saison` · Status: **umgesetzt, in Prüfung** – PRs #6 (Kalender), #8 (Ablauf), UI-PR (gestapelt:
+`paket/saison` → `paket/saison-ablauf` → `paket/saison-ui`). Details und offene `[APPROX]`-Punkte: [saison.md](saison.md).
+Für `wettbewerbe`: DEB-Pokal, Europapokal und WM über `ISeasonCompetition` in `GameState.Competitions` anmelden.
 
 - Hauptrunde → Playoffs → Relegation (laut Video: die zwei Ersten der Oberliga und die zwei Letzten der 2. Liga spielen
   in einer Gruppe je zweimal gegeneinander, die beiden Ersten spielen in der 2. Liga) → Auf-/Abstieg → neue Saison.

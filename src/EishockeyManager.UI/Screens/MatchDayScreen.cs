@@ -1,10 +1,14 @@
+using EishockeyManager.Core;
+
 namespace EishockeyManager.UI.Screens;
 
 /// <summary>
-/// Ablauf eines Spieltags ohne Live-Spiel, wie im Original:
-/// 1. Banner „Ligaspiel“ (wenn ein Manager-Verein spielt),
+/// „und tschüß…“ ohne Live-Spiel, wie im Original: <see cref="GameState.Continue"/> spielt bis zum nächsten
+/// eigenen Spiel; angezeigt werden der Reihe nach
+/// 1. Banner („Ligaspiel“, „Play-Off / Aufstiegsrunden“ …), wenn ein Manager-Verein spielt,
 /// 2. „Spiele laufen“ mit Spielminute und drei Balken (je Drittel: gelb = gespielt, rot = offen),
-/// 3. zurück ins Hauptmenü.
+/// 3. Banner und Meisterfotos der übrigen Tage (z. B. „Deutscher Meister“),
+/// 4. zurück ins Hauptmenü – oder am 29. April der Bildschirm „Saisonende“.
 /// Klick, Leertaste oder die Vorspultaste oben rechts überspringen.
 /// </summary>
 public sealed class MatchDayScreen : Screen
@@ -13,40 +17,103 @@ public sealed class MatchDayScreen : Screen
     public const int FramesPerMinute = 3;
     public const int Minutes = 60;
 
-    public static readonly Rect Banner = new(3, 92, 314, 57);
+    public static Rect Banner => SeasonInfo.Banner;
     public static readonly Rect ProgressBox = new(3, 183, 121, 36);
     public static readonly Rect FastForward = new(249, 12, 58, 58);
 
-    private readonly MainMenuScreen _menu;
-    private readonly bool _ownMatch;
-    private int _frame;
-    private bool _played;
+    private abstract record Item;
+    private sealed record BannerItem(string Text) : Item;
+    private sealed record RunningItem : Item;
+    private sealed record ScreenItem(Func<Screen> Create) : Item;
 
-    public MatchDayScreen(ScreenHost host, MainMenuScreen menu, bool ownMatch) : base(host)
+    private readonly MainMenuScreen _menu;
+    private readonly Queue<Item> _items = new();
+    private Item? _current;
+    private int _frame;
+    private bool _started;
+
+    public MatchDayScreen(ScreenHost host, MainMenuScreen menu) : base(host) => _menu = menu;
+
+    /// <summary>Die Schritte des letzten „und tschüß…“ (für Tests).</summary>
+    public IReadOnlyList<SeasonStep> Steps { get; private set; } = [];
+
+    /// <summary>Text des gerade gezeigten Banners oder null.</summary>
+    public string? CurrentBanner => (_current as BannerItem)?.Text;
+
+    private GameState Game => Host.Game!;
+
+    public override void Enter()
     {
-        _menu = menu;
-        _ownMatch = ownMatch;
-        if (!ownMatch)
-            _frame = BannerFrames;
+        if (_started)
+            return;
+        _started = true;
+        Steps = Game.Continue();
+        foreach (var step in Steps)
+        {
+            switch (step)
+            {
+                case MatchesStep { ManagerInvolved: true } m:
+                    _items.Enqueue(new BannerItem(SeasonInfo.BannerText(m.Competition)));
+                    _items.Enqueue(new RunningItem());
+                    break;
+                case BannerStep b:
+                    _items.Enqueue(new BannerItem(b.Text));
+                    break;
+                case TrophyStep t:
+                    _items.Enqueue(new ScreenItem(() => new SeasonEndTrophyScreen(Host, t, this)));
+                    break;
+                case DismissalStep d:
+                    _items.Enqueue(new ScreenItem(() => new SeasonEndGameOverScreen(Host, d.Manager, this)));
+                    break;
+            }
+        }
+        Next();
     }
 
-    private bool ShowingBanner => _frame < BannerFrames;
-    private int Minute => Math.Clamp((_frame - BannerFrames) / FramesPerMinute, 0, Minutes);
+    private void Next()
+    {
+        _frame = 0;
+        if (_items.TryDequeue(out var item))
+        {
+            _current = item;
+            if (item is ScreenItem screen)
+                Host.Show(screen.Create());
+            return;
+        }
+
+        _current = null;
+        if (Steps.OfType<SeasonEndStep>().Any())
+            Host.Show(new SeasonEndScreen(Host, _menu));
+        else if (Game.IsGameOver)
+            Host.Show(new SeasonEndGameOverScreen(Host, null, null));
+        else
+            Host.Show(_menu);
+    }
+
+    private int Minute => Math.Clamp(_frame / FramesPerMinute, 0, Minutes);
 
     public override void Update(InputState input)
     {
-        if (!_played)
+        switch (_current)
         {
-            Host.Game!.Continue();
-            _played = true;
+            case ScreenItem:
+                // zurück vom Meisterfoto o. Ä.
+                Next();
+                return;
+            case null:
+                Next();
+                return;
         }
 
         var skip = input.LeftClick || input.Pressed(Key.Space) || input.Pressed(Key.Enter) || input.Pressed(Key.Escape);
-        if (skip && ShowingBanner)
-            _frame = BannerFrames;
-        else if (skip || Minute >= Minutes && _frame > BannerFrames + Minutes * FramesPerMinute + 20)
+        var done = _current switch
         {
-            Host.Show(_menu);
+            BannerItem => _frame >= BannerFrames,
+            _ => _frame > Minutes * FramesPerMinute + 20,
+        };
+        if (skip || done)
+        {
+            Next();
             return;
         }
         _frame++;
@@ -56,15 +123,16 @@ public sealed class MatchDayScreen : Screen
     {
         s.Palette = Assets.Palette;
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
-        DrawFastForward(s);
 
-        if (ShowingBanner)
+        if (_current is BannerItem banner)
         {
-            Widgets.Frame(s, Assets, Banner, FrameStyle.Orange);
-            Widgets.ShadowText(s, Assets.Bold, 160, 110, "Ligaspiel", 11, 198);
+            SeasonInfo.DrawBanner(s, Assets, banner.Text);
             return;
         }
+        if (_current is not RunningItem)
+            return;
 
+        DrawFastForward(s);
         Widgets.ShadowText(s, Assets.Bold, 160, 65, "Spiele laufen", Colors.TileBackground, 53);
 
         var box = ProgressBox;
