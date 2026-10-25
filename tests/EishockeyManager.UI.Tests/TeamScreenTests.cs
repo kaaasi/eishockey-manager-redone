@@ -75,4 +75,50 @@ public class TeamScreenTests
         d.Press(Key.Escape);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
+
+    [Fact]
+    public void Tactics_ModesBlocksAndSwitchToLineup()
+    {
+        var d = FlowTests.CreateDriver();
+        if (d is null)
+            return;
+        d.StartNewGame();
+        d.OpenTile("Taktik");
+        var screen = Assert.IsType<TacticsScreen>(d.Host.Current);
+        var t = d.Host.Game!.Clubs[d.Host.Game.ActiveManager.ClubIndex].Tactics;
+
+        // Feld bei AUTOM. gesperrt
+        var grund = TacticsScreen.SituationArrows(ScoreSituation.Base, attack: false);
+        d.Click(grund.X + 4, grund.Y + 2);
+        Assert.Equal(0, t.Effort(0, ScoreSituation.Base));
+
+        var mode = TacticsScreen.EffortArrows;
+        d.Click(mode.X + 4, mode.Y + 2);
+        Assert.Equal(TacticMode.Semi, t.EffortMode);
+
+        var tab = TacticsScreen.BlockTab(1);
+        d.Click(tab.X + 5, tab.Y + 5);
+        Assert.Equal(1, screen.Block);
+        d.Click(grund.X + 4, grund.Y + 2);
+        d.Click(grund.X + 4, grund.Y + 2);
+        Assert.Equal(2, t.Effort(1, ScoreSituation.Base));
+        d.Click(grund.X + 4, grund.Y + grund.H - 2);
+        Assert.Equal(1, t.Effort(1, ScoreSituation.Base));
+        Assert.Equal(0, t.Effort(0, ScoreSituation.Base));
+
+        // Minuten nur bei „Minuten-Vorgabe (s.u.)“
+        var line = TacticsScreen.LineChangeArrows;
+        while (t.LineChange != LineChangeMode.MinutesPreset)
+            d.Click(line.X + 4, line.Y + 2);
+        var minutes = TacticsScreen.MinutesArrows(0, forwards: true);
+        d.Click(minutes.X + 4, minutes.Y + 2);
+        Assert.Equal(1, t.Minutes(0, forwards: true));
+
+        d.Click(TeamUi.SwitchButton.X + 5, TeamUi.SwitchButton.Y + 5);
+        Assert.IsType<LineupScreen>(d.Host.Current);
+        d.Click(TeamUi.SwitchButton.X + 5, TeamUi.SwitchButton.Y + 5);
+        Assert.IsType<TacticsScreen>(d.Host.Current);
+        d.Press(Key.Escape);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
+    }
 }

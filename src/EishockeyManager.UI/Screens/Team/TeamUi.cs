@@ -101,6 +101,72 @@ public static class TeamUi
         s.Text(a.Mini, tx, y + 3, text, DialogDark);
     }
 
+    public const int ArrowWidth = 10;
+    public const int ArrowHeight = 17;
+    public const int CompactArrowHeight = 15;
+
+    /// <summary>Beschriftung der Taktik (Video: weiß mit schwarzem Schatten).</summary>
+    public const byte LabelColor = Colors.White;
+    public const byte LabelShadow = Colors.Black;
+
+    /// <summary>Schrift auf den Modus-Knöpfen der Taktik (Video: weiß mit Schatten 5).</summary>
+    public const byte ButtonTextColor = Colors.White;
+    public const byte ButtonTextShadow = 5;
+
+    /// <summary>Wert in einem aktiven Feld (Video: hellgraublau).</summary>
+    public const byte ActiveValueColor = 1;
+
+    /// <summary>Wert in einem abgeschalteten Feld (Video: „0“ kaum sichtbar).</summary>
+    public const byte InactiveValueColor = 3;
+
+    /// <summary>Nicht gewählte Reiter: dunkle Schrift (6) mit hellem Schatten (2); der gewählte ist weiß.</summary>
+    public const byte TabTextColor = 6;
+    public const byte TabTextShadow = 2;
+
+    /// <summary>Pfeilpaar ▲▼ aus kb\4 (10 × 17), z. B. neben den Modus-Knöpfen der Taktik.</summary>
+    public static void Arrows(Surface s, Assets a, int x, int y) =>
+        s.Blit(a.Image(4), new Rect(20, 0, ArrowWidth, ArrowHeight), x, y, transparent: 0);
+
+    /// <summary>Kompaktes Pfeilpaar (10 × 15): obere Hälfte kb\4 Zeilen 0–7, untere Zeilen 10–16 (Video: Taktik-Zeilen).</summary>
+    public static void CompactArrows(Surface s, Assets a, int x, int y)
+    {
+        s.Blit(a.Image(4), new Rect(20, 0, ArrowWidth, 8), x, y, transparent: 0);
+        s.Blit(a.Image(4), new Rect(20, 10, ArrowWidth, 7), x, y + 8, transparent: 0);
+    }
+
+    /// <summary>
+    /// Knopf aus kb\2 (57 × 12) auf beliebige Größe gestreckt: Ränder bleiben, die Mitte wird wiederholt.
+    /// Gedrückt (<paramref name="pressed"/>) = vertieftes Wertfeld. Ecken (Farbe 0) bleiben transparent.
+    /// </summary>
+    public static void StretchedButton(Surface s, Assets a, Rect r, bool pressed = false)
+    {
+        const int left = 2, right = 3, top = 2, bottom = 3, w = Widgets.ButtonWidth, h = Widgets.ButtonHeight;
+        var image = a.Image(2);
+        var sy0 = pressed ? 191 : 179;
+        for (var ty = 0; ty < r.H; ty++)
+        {
+            var sy = ty < top ? ty : ty >= r.H - bottom ? h - (r.H - ty) : top;
+            for (var tx = 0; tx < r.W; tx++)
+            {
+                var sx = tx < left ? tx : tx >= r.W - right ? w - (r.W - tx) : left;
+                var c = image.Pixels[(sy0 + sy) * image.Width + 17 + sx];
+                if (c != 0)
+                    s.Set(r.X + tx, r.Y + ty, c);
+            }
+        }
+    }
+
+    /// <summary>Beschriftung mit Schatten (Taktik).</summary>
+    public static void Label(Surface s, Assets a, int x, int y, string text, byte color = LabelColor, byte shadow = LabelShadow)
+    {
+        s.Text(a.Mini, x + 1, y + 1, text, shadow);
+        s.Text(a.Mini, x, y, text, color);
+    }
+
+    public static void LabelCentered(Surface s, Assets a, int centerX, int y, string text, byte color = LabelColor,
+        byte shadow = LabelShadow) =>
+        Label(s, a, centerX - a.Mini.Measure(text) / 2, y, text, color, shadow);
+
     /// <summary>Kurzbezeichnung der Statusspalte.</summary>
     public static string StatusText(PlayerStatus status) => status switch
     {

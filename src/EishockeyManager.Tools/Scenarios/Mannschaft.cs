@@ -31,4 +31,16 @@ internal static class Mannschaft
         d.Click(10, 10); d.Move(148, 34); d.Save("05_vier_jahre");
         d.Click(60, 145); d.Move(93, 70); d.Save("06_verhandlung_oben");
     }
+
+    [Scenario("taktik")]
+    private static void Tactics(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.OpenTile("Taktik");
+        d.Move(300, 230); d.Save("01_taktik");
+        d.Click(205, 84); d.Save("02_einsatz_semi");
+        d.Click(212, 41); d.Click(181, 104); d.Click(181, 104); d.Save("03_block2_grundwert");
+        d.Click(118, 120); d.Click(118, 120); d.Click(118, 120); d.Click(118, 120); d.Click(41, 148); d.Save("04_minuten");
+        d.Click(270, 230); d.Save("05_zur_aufstellung");
+    }
 }
