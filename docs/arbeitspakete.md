@@ -47,7 +47,9 @@ Branch: `paket/manager` · Status: offen
 
 ## Paket `mannschaft` – Kader und Spieler
 
-Branch: `paket/mannschaft` · Status: offen
+Branch: `paket/mannschaft` · Status: in Arbeit
+
+- ✔ Spielerwerte, Kader aller Vereine, Aufstellung (Core), Mannschaftsstärke → `Club.MatchStrength` in `MatchEngine`
 
 - Spielerwerte (siehe Spielerstruktur in `reverse-engineering.md`: Talent, Alter, Technik, Kondition, Form, Rolle …),
   Kader aller Vereine aus der Datenbank, Transfermarkt.
