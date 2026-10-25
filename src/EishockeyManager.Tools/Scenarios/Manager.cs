@@ -39,4 +39,33 @@ internal static class ManagerScenarios
         d.OpenTile("Finanzen"); d.Move(1, 239); d.Save("08_nach_8_spieltagen");
         d.Click(FinanceScreen.BankPicture.X + 10, FinanceScreen.BankPicture.Y + 10); d.Save("09_finanzbuch");
     }
+
+    [Scenario("werbung")]
+    private static void Advertising(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.OpenTile("Werbung");
+        var screen = (AdvertisingScreen)d.Host.Current!;
+        d.Move(1, 239); d.Save("01_werbung_start");
+        Click(d, AdvertisingScreen.BoardRect(6)); d.Save("02_bande_gewaehlt");
+        Click(d, AdvertisingScreen.ArrowDown); d.Save("03_erste_firma");
+        AcceptFirstOffer(d, screen); d.Save("04_bande_belegt");
+        Click(d, AdvertisingScreen.InfoButton); d.Save("05_firmen_info");
+        d.Click(10, 10);
+        Click(d, AdvertisingScreen.JerseyPanel); AcceptFirstOffer(d, screen); d.Save("06_trikot");
+        Click(d, AdvertisingScreen.TvPanel); AcceptFirstOffer(d, screen); d.Save("07_fernsehen");
+        Click(d, AdvertisingScreen.IcePanel); AcceptFirstOffer(d, screen); d.Save("08_eisflaeche");
+        Click(d, AdvertisingScreen.BoardRect(2)); AcceptFirstOffer(d, screen); d.Save("09_zweite_bande");
+    }
+
+    private static void Click(ScreenDriver d, Rect r) => d.Click(r.X + r.W / 2, r.Y + r.H / 2);
+
+    /// <summary>Blättert, bis ein Angebot kommt, und nimmt es an.</summary>
+    private static void AcceptFirstOffer(ScreenDriver d, AdvertisingScreen screen)
+    {
+        for (var i = 0; i < 10 && screen.CurrentOffer() is null; i++)
+            Click(d, AdvertisingScreen.ArrowDown);
+        d.Save($"_{screen.SelectedSlot}_angebot".Replace(' ', '_'));
+        Click(d, AdvertisingScreen.AcceptButton);
+    }
 }

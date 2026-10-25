@@ -41,7 +41,8 @@ Branch: `paket/manager` · Status: in Arbeit
   Abrechnung über `GameState.SettleFinances` (Aufruf in `PlayNextMatchDay`), Saisonwechsel über `StartFinanceSeason()`
 - [x] PR 2: Bildschirm Finanzen (kb\152) mit Finanzbuch – `UI/Screens/Manager/FinanceScreen.cs`, Ablauf `finanzen`;
   Bedienung (Überfahren wählt, [+]/[−] = Betrag, ◄/► = buchen) und Finanzbuch-Layout `[APPROX]`, da im Video nichts gebucht wird
-- [ ] PR 3: Werbung (kb\151, kb\11)
+- [x] PR 3: Werbung (kb\151, kb\11) – `UI/Screens/Manager/AdvertisingScreen.cs`, `Core/FinanceSponsors.cs`, Ablauf `werbung`;
+  Firmen, Sender und Firmen-Infos aus em.exe; Angebotshöhen `[APPROX]` (kalibriert auf das UI-Video), Verlängerung folgt mit PR 5
 - [ ] PR 4: Stadion (kb\14, Ausbauten kb\8)
 - [ ] PR 5: Jugend, Neuer (Posteingang), Nachrichtenleiste
 

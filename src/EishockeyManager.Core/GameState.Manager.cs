@@ -136,8 +136,12 @@ public sealed partial class GameState
     }
 
     // Erweiterungspunkte für weitere Teile des Pakets (Werbung, Stadionbau, Jugend …).
-    private long SponsorIncome(Manager manager) => 0;
+    private long SponsorIncome(Manager manager) => Finance(manager).Sponsoring.MonthlyIncome;
     private long RecurringExpenses(Manager manager) => 0;
     private void WeeklyManagerFinances(Manager manager) { }
-    private void MonthlyManagerFinances(Manager manager) { }
+
+    private void MonthlyManagerFinances(Manager manager)
+    {
+        SettleSponsoring(manager);
+    }
 }
