@@ -39,7 +39,8 @@ Branch: `paket/manager` · Status: in Arbeit
 
 - [x] PR 1: Finanzmodell im Core (Finanzbuch, Bank, Sparbuch, Aktien, Spieltagsabrechnung, Stadion-Grundwerte) –
   Abrechnung über `GameState.SettleFinances` (Aufruf in `PlayNextMatchDay`), Saisonwechsel über `StartFinanceSeason()`
-- [ ] PR 2: Bildschirm Finanzen (kb\152) mit Finanzbuch
+- [x] PR 2: Bildschirm Finanzen (kb\152) mit Finanzbuch – `UI/Screens/Manager/FinanceScreen.cs`, Ablauf `finanzen`;
+  Bedienung (Überfahren wählt, [+]/[−] = Betrag, ◄/► = buchen) und Finanzbuch-Layout `[APPROX]`, da im Video nichts gebucht wird
 - [ ] PR 3: Werbung (kb\151, kb\11)
 - [ ] PR 4: Stadion (kb\14, Ausbauten kb\8)
 - [ ] PR 5: Jugend, Neuer (Posteingang), Nachrichtenleiste

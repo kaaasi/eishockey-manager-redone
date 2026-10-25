@@ -65,7 +65,47 @@ public sealed partial class GameState
         return amount;
     }
 
-    /// <summary>Schulden des Managers bei anderen Managern minus Forderungen.</summary>
+    /// <summary>Höchstbetrag, der von der Bank geholt werden kann (Sparbuch plus freier Kreditrahmen).</summary>
+    public long MaxWithdrawal(Manager manager)
+    {
+        var bank = Finance(manager).Bank;
+        return bank.Savings + Math.Max(0, FinanceRules.CreditLimit - bank.Credit);
+    }
+
+    /// <summary>Offener Betrag, den <paramref name="borrower"/> dem <paramref name="lender"/> schuldet.</summary>
+    public long LoanAmount(int lender, int borrower) =>
+        ManagerLoans.Where(l => l.Lender == lender && l.Borrower == borrower).Sum(l => l.Amount);
+
+    /// <summary>Forderungen eines Managers an andere Manager.</summary>
+    public long ManagerReceivables(Manager manager)
+    {
+        var index = IndexOf(manager);
+        return ManagerLoans.Where(l => l.Lender == index).Sum(l => l.Amount);
+    }
+
+    /// <summary>Schulden eines Managers bei anderen Managern.</summary>
+    public long ManagerDebts(Manager manager)
+    {
+        var index = IndexOf(manager);
+        return ManagerLoans.Where(l => l.Borrower == index).Sum(l => l.Amount);
+    }
+
+    /// <summary>
+    /// Geld an einen anderen Manager geben: zuerst eigene Schulden bei ihm tilgen, den Rest verleihen.
+    /// Liefert den bewegten Betrag.
+    /// </summary>
+    public long PayToManager(int from, int to, long amount)
+    {
+        var repaid = RepayManagerLoan(from, to, amount);
+        return repaid + LendBetweenManagers(from, to, amount - repaid);
+    }
+
+    /// <summary>Zinsen pro Monat zwischen zwei Managern aus Sicht von <paramref name="self"/> (positiv = Einnahme).</summary>
+    public long ManagerLoanInterest(int self, int other) =>
+        (long)Math.Round(LoanAmount(self, other) * FinanceRules.ManagerLoanRate)
+        - (long)Math.Round(LoanAmount(other, self) * FinanceRules.ManagerLoanRate);
+
+    /// <summary>Forderungen des Managers an andere Manager minus seine Schulden bei ihnen.</summary>
     public long ManagerLoanBalance(Manager manager)
     {
         var index = IndexOf(manager);
@@ -107,7 +147,7 @@ public sealed partial class GameState
         return amount;
     }
 
-    private int IndexOf(Manager manager)
+    public int IndexOf(Manager manager)
     {
         for (var i = 0; i < Managers.Count; i++)
             if (ReferenceEquals(Managers[i], manager))

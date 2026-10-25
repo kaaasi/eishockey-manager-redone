@@ -14,6 +14,12 @@ public sealed class Stock
     /// <summary>[APPROX] Langfristiger Mittelwert, um den der Kurs schwankt.</summary>
     public required int BasePrice { get; init; }
 
+    /// <summary>[APPROX] Aktuelle Tendenz in DM pro Tag (Kurse laufen im Video in längeren Auf- und Abwärtsphasen).</summary>
+    public double Trend { get; set; }
+
+    /// <summary>Ungerundeter Kurs für die Kursrechnung (null = <see cref="Price"/>).</summary>
+    public double? Exact { get; set; }
+
     /// <summary>Kursverlauf, ältester Wert zuerst (höchstens <see cref="HistoryLength"/> Einträge).</summary>
     public List<int> History { get; } = [];
 
@@ -63,9 +69,10 @@ public sealed class StockMarket
         {
             var path = new List<int> { stock.Price };
             var price = (double)stock.Price;
+            var trend = 0.0;
             for (var i = 1; i < Stock.HistoryLength; i++)
             {
-                price = Step(price, stock.BasePrice, random);
+                (price, trend) = Step(price, trend, stock.BasePrice, random);
                 path.Add((int)Math.Round(price));
             }
             path.Reverse();
@@ -79,25 +86,28 @@ public sealed class StockMarket
     {
         foreach (var stock in Stocks)
         {
-            stock.Price = (int)Math.Round(Step(stock.Price, stock.BasePrice, random));
+            var (price, trend) = Step(stock.Exact is { } e && Math.Round(e) == stock.Price ? e : stock.Price, stock.Trend, stock.BasePrice, random);
+            stock.Exact = price;
+            stock.Trend = trend;
+            stock.Price = (int)Math.Round(price);
             stock.Record();
         }
     }
 
     /// <summary>
-    /// [APPROX] Kursmodell: meist unverändert, sonst kleiner Schritt mit Zug zum Mittelwert, selten ein Sprung.
-    /// Im Video sieht der Verlauf treppenförmig aus (waagerechte Stücke mit Sprüngen).
+    /// [APPROX] Kursmodell: Tendenz, die sich alle paar Tage ändert und zum Mittelwert zieht, dazu kleines Rauschen
+    /// und selten ein Sprung. Im Video laufen die Kurven in ruhigen Auf- und Abwärtsphasen mit 1–2 DM pro Tag,
+    /// gelegentlich mit einem Sprung von etwa 10 DM; durch das Runden auf ganze DM wirken sie treppenförmig.
     /// </summary>
-    private static double Step(double price, int basePrice, Random random)
+    private static (double Price, double Trend) Step(double price, double trend, int basePrice, Random random)
     {
-        var r = random.NextDouble();
-        if (r < 0.45)
-            return price;
-        var drift = (basePrice - price) * 0.02;
-        var change = (random.NextDouble() - 0.5) * price * 0.06;
-        if (r > 0.97)
-            change = (random.NextDouble() - 0.5) * price * 0.4;
-        return Math.Clamp(price + drift + change, 5, 999);
+        if (random.NextDouble() < 0.08)
+            trend = (random.NextDouble() - 0.5) * 0.024 * price;
+        trend += (basePrice - price) * 0.0015;
+        price += trend + (random.NextDouble() - 0.5) * 0.004 * price;
+        if (random.NextDouble() < 0.01)
+            price *= 1 + (random.NextDouble() - 0.5) * 0.16;
+        return (Math.Clamp(price, 5, 999), trend);
     }
 }
 
