@@ -137,6 +137,25 @@ public sealed class Lineup
     {
         ClearAll();
         FillGaps(squad, blocks);
+        SortBlocksByNumber();
+    }
+
+    /// <summary>Innerhalb eines Blocks stehen die Rückennummern aufsteigend (Video: „15 18 20 / 5 8“).</summary>
+    public void SortBlocksByNumber()
+    {
+        for (var b = 0; b < Blocks; b++)
+        {
+            Sort(_forwards, b, ForwardsPerBlock);
+            Sort(_defenders, b, DefendersPerBlock);
+        }
+
+        static void Sort(Player?[,] grid, int block, int count)
+        {
+            var sorted = Enumerable.Range(0, count).Select(i => grid[block, i])
+                .OrderBy(p => p is null).ThenBy(p => p?.Number ?? 0).ToList();
+            for (var i = 0; i < count; i++)
+                grid[block, i] = sorted[i];
+        }
     }
 
     /// <summary>Füllt leere Plätze der ersten <paramref name="blocks"/> Blöcke mit den besten freien Spielern.</summary>
