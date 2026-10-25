@@ -18,4 +18,17 @@ internal static class Mannschaft
         d.Click(10, 10); d.Click(60, 36); d.Click(282, 207); d.Move(282, 207); d.Save("04_torhueter_getauscht");
         d.RightClick(264, 27); d.Move(212, 157); d.Save("05_platz_geleert");
     }
+
+    [Scenario("vertraege")]
+    private static void Contracts(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.OpenTile("Verträge");
+        d.Move(148, 34); d.Save("01_vertraege");
+        d.Click(60, 31); d.Move(93, 153); d.Save("02_verhandlung");
+        d.Click(100, 136); d.Type("4"); d.Save("03_eingabe_dauer");
+        d.Press(Key.Enter); d.Click(100, 152); d.Click(30, 164); d.Save("04_angenommen");
+        d.Click(10, 10); d.Move(148, 34); d.Save("05_vier_jahre");
+        d.Click(60, 145); d.Move(93, 70); d.Save("06_verhandlung_oben");
+    }
 }

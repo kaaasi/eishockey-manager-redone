@@ -49,7 +49,7 @@ public static class TeamUi
     public static void StatusLine(Surface s, Assets a, int centerX, int y, string? text)
     {
         if (!string.IsNullOrEmpty(text))
-            s.TextCentered(a.Mini, centerX, y, text, Colors.White);
+            s.TextCentered(a.Mini, centerX, y, text, DimColor); // Video: hellgraublau (Index 1)
     }
 
     /// <summary>Zeilenmarkierung wie im Original: Linien über und unter der Zeile.</summary>
@@ -57,6 +57,48 @@ public static class TeamUi
     {
         s.HLine(x, y - 1, width, HoverColor);
         s.HLine(x, y + pitch - 1, width, HoverColor);
+    }
+
+    /// <summary>Füllfarbe der Dialoge (Vertragsverhandlung).</summary>
+    public const byte DialogFill = 4;
+
+    /// <summary>Untere und rechte Kante der Dialoge (Video: sehr dunkles Blau).</summary>
+    public const byte DialogDark = 200;
+
+    /// <summary>Schlagschatten der Dialoge, 2 px nach rechts und unten.</summary>
+    public const byte DialogShadow = 6;
+
+    /// <summary>
+    /// Dialogfenster wie die Vertragsverhandlung im Video (ca. 10:25): Füllung 4, oben und links eine weiße Linie,
+    /// unten und rechts eine dunkle, dazu 2 px Schlagschatten. Nicht der kb\2-Rahmen der großen Fenster.
+    /// [APPROX] Der Schatten ist einfarbig; das Original dunkelt den Hintergrund vermutlich ab (im Video nicht trennbar).
+    /// </summary>
+    public static void DialogFrame(Surface s, Rect r)
+    {
+        s.Fill(new Rect(r.X + 2, r.Y + r.H, r.W, 2), DialogShadow);
+        s.Fill(new Rect(r.X + r.W, r.Y + 2, 2, r.H), DialogShadow);
+        s.Fill(r, DialogFill);
+        s.HLine(r.X, r.Y, r.W - 1, Colors.White);
+        s.VLine(r.X, r.Y, r.H - 1, Colors.White);
+        s.HLine(r.X, r.Y + r.H - 1, r.W, DialogDark);
+        s.VLine(r.X + r.W - 1, r.Y, r.H, DialogDark);
+    }
+
+    /// <summary>Titel eines Dialogs (Video: beige, Index 10, mit dunklem Schatten).</summary>
+    public static void DialogTitle(Surface s, Assets a, int centerX, int y, string text) =>
+        Widgets.ShadowText(s, a.Flow, centerX, y, text, 10, 8);
+
+    /// <summary>
+    /// Knopf aus kb\2 in Dialogen: Ecken transparent, Beschriftung dunkel (200) mit hellem Schatten (1) – angepasst
+    /// an das Video der Vertragsverhandlung. <see cref="Widgets.Button"/> bleibt unverändert.
+    /// </summary>
+    public static void DialogButton(Surface s, Assets a, int x, int y, string text)
+    {
+        s.Blit(a.Image(2), new Rect(17, 179, Widgets.ButtonWidth, Widgets.ButtonHeight), x, y, transparent: 0);
+        var cx = x + Widgets.ButtonWidth / 2 + 2;
+        var tx = cx - a.Mini.Measure(text) / 2;
+        s.Text(a.Mini, tx + 1, y + 4, text, 1);
+        s.Text(a.Mini, tx, y + 3, text, DialogDark);
     }
 
     /// <summary>Kurzbezeichnung der Statusspalte.</summary>
