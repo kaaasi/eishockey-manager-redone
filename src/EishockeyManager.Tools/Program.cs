@@ -5,6 +5,7 @@ using EishockeyManager.Formats;
 //   emtool info    [spielordner]              Übersicht über alle Grafiken
 //   emtool export  [spielordner] [zielordner] Grafiken, Halle, Figuren und Fonts als PNG
 //   emtool vereine [spielordner] [nummer]     Vereine aus der Datenbank (mit Nummer: Kader)
+//   emtool screens [spielordner] [zielordner] Bildschirme ohne Fenster als PNG (Testablauf)
 
 var command = args.Length > 0 ? args[0].ToLowerInvariant() : "help";
 
@@ -21,6 +22,9 @@ try
         case "vereine":
             Clubs(GameData.Locate(args.ElementAtOrDefault(1)), args.ElementAtOrDefault(2));
             return 0;
+        case "screens":
+            ScreenScript.Run(GameData.Locate(args.ElementAtOrDefault(1)), args.ElementAtOrDefault(2) ?? "screens");
+            return 0;
         default:
             Console.WriteLine("""
                 emtool – Werkzeug für die Originaldateien des Eishockey Managers
@@ -28,6 +32,7 @@ try
                   emtool info    [spielordner]
                   emtool export  [spielordner] [zielordner]
                   emtool vereine [spielordner] [vereinsnummer]
+                  emtool screens [spielordner] [zielordner]
 
                 Ohne Spielordner wird nach einem Ordner "gamedata" gesucht.
                 """);

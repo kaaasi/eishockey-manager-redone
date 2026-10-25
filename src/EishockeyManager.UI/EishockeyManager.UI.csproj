@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>EishockeyManager.UI</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EishockeyManager.Formats\EishockeyManager.Formats.csproj" />
+    <ProjectReference Include="..\EishockeyManager.Core\EishockeyManager.Core.csproj" />
+  </ItemGroup>
+</Project>

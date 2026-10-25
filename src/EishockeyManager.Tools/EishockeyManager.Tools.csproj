@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\EishockeyManager.Formats\EishockeyManager.Formats.csproj" />
+    <ProjectReference Include="..\EishockeyManager.UI\EishockeyManager.UI.csproj" />
   </ItemGroup>
 </Project>

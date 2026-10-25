@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>EishockeyManager.Desktop</RootNamespace>
+    <AssemblyName>EishockeyManager</AssemblyName>
+    <RollForward>Major</RollForward>
+    <TieredPGO>true</TieredPGO>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EishockeyManager.UI\EishockeyManager.UI.csproj" />
+  </ItemGroup>
+</Project>

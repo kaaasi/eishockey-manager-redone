@@ -1,7 +1,7 @@
 # --- Originalspiel: niemals einchecken -------------------------------------
 # Die Originaldateien (DOS/Amiga) sind urheberrechtlich geschützt.
 # Lege sie lokal unter gamedata/ ab (siehe README).
-gamedata/
+gamedata
 original/
 *.adf
 *.vga
