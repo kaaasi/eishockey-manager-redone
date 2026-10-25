@@ -100,6 +100,7 @@ public sealed partial class GameState
             }
         }
         PlayedMatchDays++;
+        SettleFinances(Results.Where(r => r.MatchDay == PlayedMatchDays)); // Paket „manager“ (GameState.Manager.cs)
         return true;
     }
 

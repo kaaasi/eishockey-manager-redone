@@ -35,7 +35,14 @@ Branch: `paket/saison` · Status: offen
 
 ## Paket `manager` – Finanzen, Werbung, Stadion, Jugend, Posteingang
 
-Branch: `paket/manager` · Status: offen
+Branch: `paket/manager` · Status: in Arbeit
+
+- [x] PR 1: Finanzmodell im Core (Finanzbuch, Bank, Sparbuch, Aktien, Spieltagsabrechnung, Stadion-Grundwerte) –
+  Abrechnung über `GameState.SettleFinances` (Aufruf in `PlayNextMatchDay`), Saisonwechsel über `StartFinanceSeason()`
+- [ ] PR 2: Bildschirm Finanzen (kb\152) mit Finanzbuch
+- [ ] PR 3: Werbung (kb\151, kb\11)
+- [ ] PR 4: Stadion (kb\14, Ausbauten kb\8)
+- [ ] PR 5: Jugend, Neuer (Posteingang), Nachrichtenleiste
 
 - Finanzen (kb\152): Konto, Kredit, Sparbuch, vier Aktien mit Kursverlauf; Finanzbuch.
 - Werbung (kb\151, Logos kb\11): Bande, Eisfläche, Trikot, Angebote annehmen/ablehnen.
