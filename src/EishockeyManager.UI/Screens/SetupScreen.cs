@@ -100,7 +100,7 @@ public sealed class SetupScreen : Screen
             }
             else if (i == _setup.Managers.Count && input.Clicked(slot))
             {
-                _setup.Managers.Add(new ManagerSetup { Head = FirstFreeHead() });
+                _setup.Managers.Add(new ManagerSetup { Head = -1 }); // im Original bleibt das Kopffeld bis zur Auswahl leer
                 _selected = i;
                 _mode = Mode.HeadPicker;
                 return;
@@ -167,6 +167,8 @@ public sealed class SetupScreen : Screen
         {
             if (_setup.Managers[i].Name.Length == 0)
                 _setup.Managers[i].Name = $"Manager {i + 1}";
+            if (_setup.Managers[i].Head < 0)
+                _setup.Managers[i].Head = FirstFreeHead();
         }
 
         var seed = Host.Seed ?? Environment.TickCount;
@@ -288,7 +290,8 @@ public sealed class SetupScreen : Screen
         {
             var m = _setup.Managers[i];
             var y = 40 + i * SlotPitch;
-            Widgets.Head(s, Assets, m.Head, 5, y);
+            if (m.Head >= 0)
+                Widgets.Head(s, Assets, m.Head, 5, y);
             if (i == _selected && _mode != Mode.Normal)
             {
                 s.HLine(5, y - 1, 40, Colors.Yellow);

@@ -34,7 +34,7 @@ public sealed class ManagerSetup
 
     public string Name { get; set; } = "";
 
-    /// <summary>Managerkopf 0–11 (kb\0, 3 Spalten × 4 Reihen).</summary>
+    /// <summary>Managerkopf 0–11 (kb\0, 3 Spalten × 4 Reihen), −1 = noch nicht gewählt.</summary>
     public int Head { get; set; }
 
     /// <summary>Gewählter Verein (Datenbankindex 0–47) oder null = zufällig nach Liga und Stärke.</summary>
