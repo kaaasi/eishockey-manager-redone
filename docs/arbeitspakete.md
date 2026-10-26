@@ -29,6 +29,34 @@ Welle B:             speichern (endgültiges Schema, nachdem Welle A die Daten f
 `finanzen` → `Core/Finance*.cs` außer `FinanceInbox.cs`, Prämien in `SeasonFlow.cs`, `UI/Screens/Finance/**`.
 Berührungen außerhalb der eigenen Grenzen im PR begründen.
 
+### Status Spur `kader`
+
+Stand: implementiert, lokale Abnahme grün; Review und Merge stehen aus (Branch `paket/kader`).
+
+- [x] **Belege aus Original und Video:** em.exe enthält die Posteingangstexte „$ bietet Ihnen an, $^Jahre zu verlängern.“,
+  „$ kündigt an, daß er seinen Vertrag^nicht mehr verlängern wird.“, „$ gibt das Eishockeyspielen im Alter von^# Jahren
+  endgültig auf.“ und die Verhandlungsmeldungen „ist im Moment / nicht verhandlungs- / bereit.“, „wird sich mit /
+  Ablauf des Vertrages / zur Ruhe setzen.“. Im 75-Minuten-Video erscheinen 16 Ankündigungen von Spielern im letzten
+  Vertragsjahr, verteilt vom 13. September bis 30. März (15 × „von 1 auf 2/3/4 Jahre“, 1 × Absage); verlängert wird im
+  Bildschirm „Verträge“. Die Vertragsanzeige sinkt beim Saisonwechsel um ein Jahr (14.4. „2 Jahre“ → 10.9. „1 Jahr“).
+- [x] **R2-11:** Jeder Spieler eines Manager-Vereins im letzten Vertragsjahr meldet sich genau einmal je Saison im
+  Posteingang, spätestens am 30. März (`GameState.ContractNoticeDeadline`): Angebot „von 1 auf n Jahre“, Absage oder
+  (ab 33) Ruhestand. Absage/Ruhestand sperren die Verhandlung mit den Originalmeldungen; nach einem Angebot verlängert
+  der Manager im Bildschirm „Verträge“. Ruheständler verlassen den Kader mit „… gibt das Eishockeyspielen … auf.“
+- [x] **R2-12:** Kader-KI der Computervereine beim Saisonwechsel ersetzt die Überbrückung „verlängern immer“:
+  Ruhestand nach Alter (33 → 20 % … 37 → 100 %), auslaufende Verträge zu 75 % um 1–3 Jahre verlängert, sonst in den Pool;
+  Auffüllen je Position auf mindestens 2/8/10 und höchstens die Größe vor dem Wechsel (max. 25) aus dem Pool (bis 32 Jahre,
+  passend zur Vereinsstärke) oder mit Talenten aus der Spielerfabrik; Pool höchstens 60 (`TransferMarket.MaxFreeAgents`),
+  Überzählige (die ältesten) beenden die Laufbahn. Laufbahnenden in `GameState.RetiredPlayers`. Eigene Zufallsquelle
+  `ContractRandom`, damit Spielergebnisse, Markt und Finanzen ihre Folgen behalten.
+- [x] Mehrsaisonprobe `SquadLifecycleTests` (6 Wechsel, passiv und aktiv, zwei synthetische Seeds und Originaldaten Verein 42):
+  Mindestbesetzung je Computerkader, keine Spieler verloren oder doppelt (Kader + Pool + Laufbahnende), Pool begrenzt,
+  Alter 17–36, Ø 23–29. Originaldaten passiv nach 6 Wechseln: 1.322 Computerspieler, Alter 17–36, Ø 26,1 (vorher 25–37, Ø 30,9),
+  446 Neuzugänge, 408 Laufbahnenden, Pool 49.
+- Offen/Folgearbeit: Spur `speichern` muss `Notice`, `NoticeYears`, `RetiredPlayers` und den Zustand von `ContractRandom` sichern.
+  Passive Manager verlieren den Kader weiterhin (jetzt angekündigt) – das entspricht dem Video, ist aber spielerisch hart.
+  Nachrichtenleiste (`NewsBar.cs`, nicht Spur `kader`): Das Video zeigt Kopfzeile = Datum, darunter zwei Textzeilen.
+
 ## Runde 2 – Stabilisierung (abgeschlossen am 26.10.2026)
 
 Ergebnis: Welle A gemergt mit #31 (Review [pr31](reviews/2026-10-26-pr31-review.md)), Welle B mit #35

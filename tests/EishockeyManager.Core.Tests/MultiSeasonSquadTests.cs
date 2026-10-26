@@ -35,12 +35,21 @@ public class MultiSeasonSquadTests
             game.StartNextSeason();
         }
 
+        // Angepasst in Runde 3 (Spur „kader“, R2-12): Die Überbrückung „Computervereine verlängern immer“ ist durch
+        // die Kader-KI ersetzt. Spieler können nun aufhören, vertragslos werden und Neuzugänge kommen hinzu; geprüft
+        // wird weiter, dass kein Computerkader schrumpft und jeder Spieler genau einmal je Wechsel altert.
+        var retired = game.RetiredPlayers.ToHashSet();
         foreach (var club in computer)
+        {
             Assert.Equal(squads[club].Length, club.Players.Count);
+            Assert.All(club.Players, p => Assert.InRange(p.ContractYears, Contracts.MinYears, Contracts.MaxYears));
+        }
         foreach (var (player, age) in ages)
         {
-            Assert.Equal(age + 3, player.Age);
-            Assert.InRange(player.ContractYears, Contracts.MinYears, Contracts.MaxYears);
+            if (retired.Contains(player))
+                Assert.InRange(player.Age, age + 1, age + 3); // altert bis zum Laufbahnende
+            else
+                Assert.Equal(age + 3, player.Age);
         }
     }
 }

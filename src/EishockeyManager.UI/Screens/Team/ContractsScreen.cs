@@ -43,6 +43,9 @@ public sealed class ContractsScreen : Screen
 
     private Club Club => TeamUi.OwnClub(Host);
 
+    /// <summary>Offene Meldung (z. B. „… ist im Moment nicht verhandlungsbereit.“).</summary>
+    public MessageBox Message => _message;
+
     /// <summary>Spieler, mit dem gerade verhandelt wird (oder null).</summary>
     public Player? Negotiating => _player;
 
@@ -86,6 +89,12 @@ public sealed class ContractsScreen : Screen
         if (p.OnLoan)
         {
             _message.Show("Dieser Spieler ist", "nur ausgeliehen.");
+            return;
+        }
+        if (p.Notice is ContractNotice.Refused or ContractNotice.Retiring)
+        {
+            // Angekündigte Absage bzw. Ruhestand (R2-11): keine Verhandlung, Meldung aus em.exe.
+            _message.Show(Contracts.Message(p.Notice == ContractNotice.Refused ? NegotiationResult.NotWilling : NegotiationResult.Retiring, p));
             return;
         }
         _player = p;
@@ -159,7 +168,7 @@ public sealed class ContractsScreen : Screen
     {
         var game = Host.Game!;
         var result = Contracts.Offer(_player!, _years, _salary, _insured, game.PlayedMatchDays, game.Random);
-        _message.Show(Contracts.Message(result));
+        _message.Show(Contracts.Message(result, _player!));
         if (result == NegotiationResult.Accepted)
             _player = null;
     }
