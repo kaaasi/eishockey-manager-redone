@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 
@@ -42,12 +43,10 @@ public class SeasonCalendarTests
     }
 
     /// <summary>Vergleich mit der Kalendertabelle in em.exe (übersprungen ohne Originaldateien).</summary>
-    [Fact]
+    [GameDataFact]
     public void Calendar_MatchesTableInEmExe()
     {
-        GameData data;
-        try { data = GameData.Locate(); }
-        catch (DirectoryNotFoundException) { return; }
+        var data = TestGameData.Load();
         var exe = File.ReadAllBytes(Path.Combine(data.RootDirectory, "em.exe"));
         const int offset = 0x175F9;
         for (var day = 0; day < SeasonCalendar.Length; day++)

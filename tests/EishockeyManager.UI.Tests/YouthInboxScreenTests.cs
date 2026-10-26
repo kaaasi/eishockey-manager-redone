@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Core;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.ManagerArea;
@@ -7,12 +8,10 @@ namespace EishockeyManager.UI.Tests;
 /// <summary>Jugendteams, Nachrichtenleiste und Posteingang mit den Originaldateien (ohne „gamedata“ übersprungen).</summary>
 public class YouthInboxScreenTests
 {
-    [Fact]
+    [GameDataFact]
     public void YouthBars_SetFunding()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
         d.StartNewGame();
         d.OpenTile("Jugend");
         Assert.IsType<YouthScreen>(d.Host.Current);
@@ -26,12 +25,10 @@ public class YouthInboxScreenTests
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
 
-    [Fact]
+    [GameDataFact]
     public void ChartWindow_AsksSpyForTalentSearch()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
         d.StartNewGame();
         d.OpenTile("Jugend");
         var youth = Assert.IsType<YouthScreen>(d.Host.Current);
@@ -53,12 +50,10 @@ public class YouthInboxScreenTests
         Assert.IsType<YouthScreen>(d.Host.Current);
     }
 
-    [Fact]
+    [GameDataFact]
     public void NewsBar_OpensInbox_WhereQuestionsAreAnswered()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
         d.StartNewGame();
         var game = d.Host.Game!;
         var me = game.ActiveManager;

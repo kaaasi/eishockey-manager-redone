@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 using EishockeyManager.UI;
@@ -9,12 +10,10 @@ namespace EishockeyManager.UI.Tests;
 /// <summary>Abläufe der Mannschafts-Bildschirme mit den Originaldateien (ohne gamedata übersprungen).</summary>
 public class TeamScreenTests
 {
-    [Fact]
+    [GameDataFact]
     public void Lineup_ClickPlayerThenSlot_ChangesGoalkeeper()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
         d.StartNewGame();
         d.OpenTile("Aufstellung");
         Assert.IsType<LineupScreen>(d.Host.Current);
@@ -44,12 +43,10 @@ public class TeamScreenTests
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
 
-    [Fact]
+    [GameDataFact]
     public void Contracts_ExtendContract_WithInsurance()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
         d.StartNewGame();
         d.OpenTile("Verträge");
         var screen = Assert.IsType<ContractsScreen>(d.Host.Current);
@@ -76,12 +73,10 @@ public class TeamScreenTests
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
 
-    [Fact]
+    [GameDataFact]
     public void Tactics_ModesBlocksAndSwitchToLineup()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
         d.StartNewGame();
         d.OpenTile("Taktik");
         var screen = Assert.IsType<TacticsScreen>(d.Host.Current);
@@ -122,12 +117,10 @@ public class TeamScreenTests
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
 
-    [Fact]
+    [GameDataFact]
     public void Transfer_InfoBuySellAndTalent()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
         d.StartNewGame();
         d.OpenTile("Transfer");
         var screen = Assert.IsType<TransferScreen>(d.Host.Current);
@@ -173,12 +166,10 @@ public class TeamScreenTests
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
 
-    [Fact]
+    [GameDataFact]
     public void Training_SelectKindPaintUnitsAndPay()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
         d.StartNewGame();
         d.OpenTile("Training");
         var screen = Assert.IsType<TrainingScreen>(d.Host.Current);

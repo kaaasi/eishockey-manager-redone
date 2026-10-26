@@ -21,8 +21,22 @@ jobs:
       - name: Build
         run: dotnet build EishockeyManager.slnx -c Release --no-restore
 
-      - name: Test
-        run: dotnet test EishockeyManager.slnx -c Release --no-build --verbosity normal
+      # Getrennte Läufe: synthetische Tests und Tests mit Originaldaten (Trait Category=Originaldaten).
+      # Ohne Originaldateien (hier immer) meldet der zweite Lauf echte Skips; der Bericht zeigt sie sichtbar an.
+      - name: Test (synthetisch)
+        run: >
+          dotnet test EishockeyManager.slnx -c Release --no-build --verbosity normal
+          --filter "Category!=Originaldaten" --logger "trx;LogFilePrefix=synthetisch" --results-directory TestResults/synthetisch
+
+      - name: Test (Originaldaten)
+        if: success() || failure()
+        run: >
+          dotnet test EishockeyManager.slnx -c Release --no-build --verbosity normal
+          --filter "Category=Originaldaten" --logger "trx;LogFilePrefix=originaldaten" --results-directory TestResults/originaldaten
+
+      - name: Testbericht
+        if: success() || failure()
+        run: python3 .github/scripts/testbericht.py TestResults >> "$GITHUB_STEP_SUMMARY"
 
   # Lauffähige Zwischenstände zum Herunterladen (Actions → Lauf → Artifacts).
   # Die Originaldateien müssen daneben im Ordner "gamedata" liegen.

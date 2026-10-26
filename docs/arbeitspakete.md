@@ -36,6 +36,15 @@ Danach (Runde 3):    wettbewerbe, speichern, Kalibrierung Finanzen
 `mehrmanager` → `Core/NewGame.cs`, `Core/GameSetup.cs`, `Formats/ClubDatabase.cs`, `UI/Screens/SetupScreen.cs`, `UI/Screens/MainMenuScreen.cs` (Zugwechsel), `Continue()`-Einstieg in `SeasonFlow.cs`.
 Berührungen außerhalb der eigenen Grenzen im PR begründen. `GameState.Integration.cs` ändert nur der Koordinations-Chat oder die Spur mit Absprache im PR.
 
+### Status Spur `fundament`
+
+- [ ] PR 1 – Testgrundlagen (R2-05, A07, A08): Originaldaten-Tests mit `[GameDataFact]` (echtes Skip ohne Daten,
+  Pflichtlauf `EM_REQUIRE_GAMEDATA=1` scheitert), Trait `Category=Originaldaten`, CI-Bericht getrennt nach
+  synthetisch / Originaldaten / übersprungen (`.github/scripts/testbericht.py`), `ScreenDriver.PlayMatchDay()` wirft
+  `TimeoutException`, Kacheltest trennt Platzhalter und echte Bildschirme (Liste `MenuEntryTests.DocumentedPlaceholders`)
+- [ ] PR 2 – Passive Bildschirme und Tagesablauf (R2-02)
+- [ ] PR 3 – Werkzeugversionen festschreiben (A09)
+
 ### Pflichtangaben in jedem PR dieser Runde
 
 1. Base- und Head-SHA

@@ -9,6 +9,10 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Gemeinsames Attribut für Originaldaten-Tests (echtes Skip, Pflichtlauf EM_REQUIRE_GAMEDATA=1) -->
+    <Compile Include="..\EishockeyManager.UI.Tests\Support\GameDataFact.cs" Link="Support\GameDataFact.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>

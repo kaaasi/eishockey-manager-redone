@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Core;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.ManagerArea;
@@ -10,12 +11,10 @@ public class StadiumScreenTests
 {
     private static void Click(ScreenDriver d, Rect r) => d.Click(r.X + r.W / 2, r.Y + r.H / 2);
 
-    [Fact]
+    [GameDataFact]
     public void SelectLevelConfirmAndAdjustTicketPrice()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
         d.StartNewGame();
         d.OpenTile("Stadion");
         var screen = Assert.IsType<StadiumScreen>(d.Host.Current);
