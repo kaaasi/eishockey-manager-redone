@@ -114,7 +114,7 @@ Kopf: `u16 Namenszeiger, u16 Höhe, u16 Grundlinie, 96 × u16 Glyphzeiger`.
 Glyph: `u8 Breite`, dann Höhe × ⌈Breite/8⌉ Bytes (1 Bit pro Pixel, MSB zuerst).
 Die Breite enthält den Zeichenabstand bereits – Text wird **ohne** zusätzlichen Abstand gesetzt.
 
-## Sound ○
+## Sound ✔
 
 - **VOC** (`kb\237–241`, ✔ `VocFile`, Export `emtool export-sound`): Kopf „Creative Voice File“ + 0x1A, u16 Kopflänge (26),
   Version 0x010A, Prüfwert 0x1129. Blöcke Typ 1 (8 Bit unsigned, Rate = 10⁶ / (256 − TC)),
@@ -128,8 +128,17 @@ Die Breite enthält den Zeichenabstand bereits – Text wird **ohne** zusätzlic
   | 239 | 1 | 172 → 11 905 Hz | 9194 | Pfiff |
   | 240 | 1 | 101 → 6452 Hz | 906 | Puck |
   | 241 | 1 | 101 → 6452 Hz | 2574 | Check |
-- **CMF** (`kb\248`): Kopf „CTMF“ (✔ erkannt). Instrumente ab 40 (14 × 16 Byte OPL-Register), Musik ab 264, 96 Ticks/s,
-  MIDI-artige Ereignisse; Controller 0x67 = Rhythmusmodus, 0x68/0x69 Transponieren, Ende mit `FF 2F`.
+- **CMF** (`kb\248`, ✔ `CmfFile`, Wiedergabe `CmfPlayer` über `Opl2`): Kopf „CTMF“, Version 1.1. Instrumente ab 40
+  (14 × 16 Byte OPL-Register, alle Wellenformen 0), Musik ab 264, 30 Ticks je Viertel, 96 Ticks/s, Grundtempo 190.
+  Kanäle 0–5 melodisch, 11 (Bass Drum), 12 (Snare), 15 (Hi-Hat). Erstes Ereignis Controller 0x67 = 1 (Rhythmusmodus),
+  31 Programmwechsel, 4550 Noten (Ende als Note an mit Anschlag 0), Ende `FF 2F` bei Tick 16 491 = **171,8 s**.
+- **FM-Treiber**: em.exe enthält ab Datei `0x14D70` den Creative-Treiber SBFMDRV (Kennung „FMDRV“, Sprungtabelle
+  der Funktionen bei +0x261); CT-VOICE für die VOC-Effekte liegt ab `0x143B0`. Aus dem Treiber übernommen
+  (Adressen relativ zu 0x14D70, Einzelheiten in `CmfPlayer.cs`): Stimmenwahl (+0B6E), Instrument laden (+0A1E),
+  Anschlag → Trägerpegel `TL = 63 − ((63 − TL) · (Anschlag | 0x80) ≫ 8)`, Tonhöhe (+0E75: Oktave = Note/12 − 1,
+  F-Nummern-Tabelle +0305 = `round(342,92 · 2^(i/768))`, 64 Schritte je Halbton), Controller 0x66–0x69 (+0EFA),
+  Register 0xBD = 0xC0 (tiefes Tremolo/Vibrato), im Rhythmusmodus 0xE0 mit 6 Melodiestimmen.
+  Tonhöhenbeugung, Aftertouch und andere Controller ignoriert der Treiber.
 
 ## Offen
 
