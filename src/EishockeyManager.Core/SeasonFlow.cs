@@ -223,6 +223,8 @@ public sealed partial class GameState
         var playoffGames = Playoffs.PlayDate(index, day, Clubs, Random);
         PlayoffResults.AddRange(playoffGames);
         var relegationGames = RelegationGroups.SelectMany(g => g.PlayDate(index, Clubs, Random)).ToList();
+        SettlePostseasonMatches(playoffGames.Select(g => (g.Home, g.Away)) // gemeinsame Spielabrechnung (Paket „wirtschaft“)
+            .Concat(relegationGames.Select(g => (g.Home, g.Away))));
 
         var playoffInvolved = playoffGames.Any(g => Involves(g.Home, g.Away));
         var relegationInvolved = relegationGames.Any(g => Involves(g.Home, g.Away));
@@ -309,7 +311,8 @@ public sealed partial class GameState
                 });
             }
             var premium = Premium(league, rank) + (events.Contains(SeasonEvent.GermanChampion) ? 1_000_000 : 0);
-            manager.Money += premium;
+            if (premium > 0)
+                Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
             record.Managers.Add(new ManagerSeasonResult(i, club.Index, league, rank, premium, events));
         }
 

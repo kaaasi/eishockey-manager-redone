@@ -22,6 +22,9 @@ public enum FinanceCategory
     ManagerKredite,
     Jugend,
     Aktien,
+
+    /// <summary>Saisonprämien für Platzierung und Titel (Bildschirm „Saisonende“). Neu in Runde 2.</summary>
+    Praemien,
 }
 
 /// <summary>Einnahmen und Ausgaben je Kategorie für die laufende und die vorige Saison.</summary>
@@ -55,6 +58,7 @@ public sealed class FinanceBook
     {
         FinanceCategory.Gehaelter => "Gehälter",
         FinanceCategory.ManagerKredite => "Manager-Kredite",
+        FinanceCategory.Praemien => "Prämien",
         _ => category.ToString(),
     };
 }
