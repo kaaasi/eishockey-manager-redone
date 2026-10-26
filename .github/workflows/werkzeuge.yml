@@ -1,6 +1,6 @@
 # Stellt die Werkzeuge bereit, mit denen Claude den Code in seiner eigenen Arbeitsumgebung
 # bauen und testen kann (dort sind die Microsoft- und NuGet-Server nicht erreichbar, GitHub schon):
-#   - das offizielle .NET-SDK (Linux x64), gegen die SHA-512-Prüfsumme von Microsoft geprüft
+#   - das offizielle .NET-SDK (Linux x64) in der Version aus global.json, gegen die SHA-512-Prüfsumme von Microsoft geprüft
 #   - alle NuGet-Pakete, die die Solution braucht, als Offline-Paketquelle
 # Ablage: Release "claude-werkzeuge" (Vorabversion). Läuft manuell und automatisch,
 # wenn sich Projektdateien ändern.
@@ -13,6 +13,7 @@ on:
     paths:
       - '**/*.csproj'
       - 'Directory.Build.props'
+      - 'global.json'
       - '.github/workflows/werkzeuge.yml'
 
 permissions:
@@ -32,9 +33,12 @@ jobs:
         id: sdk
         run: |
           set -euo pipefail
-          META=$(curl -fsSL https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json)
-          VER=$(echo "$META" | jq -r '."latest-sdk"')
+          # Feste Version aus global.json (A09) – nicht mehr "latest-sdk"
+          VER=$(jq -r .sdk.version global.json)
+          CHANNEL=$(echo "$VER" | cut -d. -f1,2)
+          META=$(curl -fsSL "https://builds.dotnet.microsoft.com/dotnet/release-metadata/$CHANNEL/releases.json")
           FILE=$(echo "$META" | jq -c --arg v "$VER" '[.releases[] | .sdks[]? // .sdk | select(.version==$v) | .files[] | select(.name=="dotnet-sdk-linux-x64.tar.gz")][0]')
+          [ "$FILE" != "null" ] || { echo "SDK $VER nicht in den Release-Metadaten gefunden" >&2; exit 1; }
           curl -fsSL -o dotnet-sdk-linux-x64.tar.gz "$(echo "$FILE" | jq -r .url)"
           echo "$(echo "$FILE" | jq -r .hash)  dotnet-sdk-linux-x64.tar.gz" | sha512sum -c -
           echo "version=$VER" >> "$GITHUB_OUTPUT"
@@ -46,6 +50,8 @@ jobs:
           export PATH="$HOME/dotnet:$PATH" DOTNET_ROOT="$HOME/dotnet"
           dotnet restore EishockeyManager.slnx --packages nuget-packages
           # Hierarchische Ordnerstruktur (id/version/*.nupkg) ist direkt als Paketquelle nutzbar
+          # Versionsliste für den Abgleich (welches SDK und welche Pakete im Release stecken)
+          { echo "sdk ${{ steps.sdk.outputs.version }}"; find nuget-packages -mindepth 2 -maxdepth 2 -type d | sed 's|nuget-packages/||; s|/| |' | sort; } > versionen.txt
           tar -czf nuget-packages.tar.gz nuget-packages
           du -sh nuget-packages.tar.gz
 
@@ -61,4 +67,4 @@ jobs:
           else
             gh release create "$TAG" -R "$GITHUB_REPOSITORY" --prerelease --title "Werkzeuge für Claude" --notes "$NOTES"
           fi
-          gh release upload "$TAG" dotnet-sdk-linux-x64.tar.gz nuget-packages.tar.gz -R "$GITHUB_REPOSITORY" --clobber
+          gh release upload "$TAG" dotnet-sdk-linux-x64.tar.gz nuget-packages.tar.gz versionen.txt -R "$GITHUB_REPOSITORY" --clobber

@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Core;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.ManagerArea;
@@ -8,11 +9,9 @@ namespace EishockeyManager.UI.Tests;
 /// <summary>Bildschirm Finanzen mit den Originaldateien (ohne „gamedata“ übersprungen).</summary>
 public class FinanceScreenTests
 {
-    private static (ScreenDriver Driver, FinanceScreen Screen)? Open()
+    private static (ScreenDriver Driver, FinanceScreen Screen) Open()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return null;
         d.StartNewGame();
         d.OpenTile("Finanzen");
         return (d, Assert.IsType<FinanceScreen>(d.Host.Current));
@@ -26,11 +25,10 @@ public class FinanceScreenTests
             d.Click(r.X + 4, r.Y + 4);
     }
 
-    [Fact]
+    [GameDataFact]
     public void BuyAndSellStocks_WithButtons()
     {
-        if (Open() is not var (d, screen))
-            return;
+        var (d, screen) = Open();
         var game = d.Host.Game!;
         var me = game.ActiveManager;
         var price = game.Stocks.Stocks[1].Price;
@@ -56,11 +54,10 @@ public class FinanceScreenTests
         Assert.Equal(GameState.StartMoney, me.Money);
     }
 
-    [Fact]
+    [GameDataFact]
     public void Bank_DepositAndWithdraw()
     {
-        if (Open() is not var (d, screen))
-            return;
+        var (d, screen) = Open();
         var game = d.Host.Game!;
         var me = game.ActiveManager;
         var bank = game.Finance(me).Bank;
@@ -79,11 +76,10 @@ public class FinanceScreenTests
         Assert.Equal(GameState.StartMoney + 70_000, me.Money);
     }
 
-    [Fact]
+    [GameDataFact]
     public void Chart_ScrollsToHoveredStock()
     {
-        if (Open() is not var (d, screen))
-            return;
+        var (d, screen) = Open();
         var stock = d.Host.Game!.Stocks.Stocks[3];
         var row = FinanceScreen.StockRow(3);
         for (var i = 0; i < 200; i++)
@@ -92,11 +88,10 @@ public class FinanceScreenTests
         Assert.True(FinanceScreen.Chart.Contains(FinanceScreen.Chart.X, screen.ChartY(stock.Price)));
     }
 
-    [Fact]
+    [GameDataFact]
     public void FinanceBook_OpensFromBankPictureAndCloses()
     {
-        if (Open() is not var (d, screen))
-            return;
+        var (d, screen) = Open();
         d.Click(FinanceScreen.BankPicture.X + 10, FinanceScreen.BankPicture.Y + 10);
         Assert.IsType<FinanceBookScreen>(d.Host.Current);
         d.Click(10, 10);

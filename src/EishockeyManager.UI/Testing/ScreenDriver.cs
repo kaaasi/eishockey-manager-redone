@@ -93,13 +93,24 @@ public sealed class ScreenDriver
             throw new InvalidOperationException("Spielstart fehlgeschlagen.");
     }
 
-    /// <summary>Spielt einen Spieltag im Schnelldurchlauf und kehrt ins Hauptmenü zurück.</summary>
+    /// <summary>Höchstzahl der Tastendrücke, bis <see cref="PlayMatchDay"/> wieder im Hauptmenü sein muss.</summary>
+    public int MatchDayFrameLimit { get; set; } = 1000;
+
+    /// <summary>
+    /// Spielt einen Spieltag im Schnelldurchlauf und kehrt ins Hauptmenü zurück.
+    /// Wirft <see cref="TimeoutException"/>, wenn das Hauptmenü nicht innerhalb von <see cref="MatchDayFrameLimit"/>
+    /// Tastendrücken wieder erreicht wird (statt still abzubrechen).
+    /// </summary>
     public void PlayMatchDay()
     {
         Press(Key.Space);
-        var guard = 0;
-        while (Host.Current is not MainMenuScreen && guard++ < 1000)
+        for (var presses = 1; Host.Current is not MainMenuScreen; presses++)
+        {
+            if (presses >= MatchDayFrameLimit)
+                throw new TimeoutException(
+                    $"Spieltag nach {presses} Tastendrücken nicht beendet – Bildschirm {Host.Current?.GetType().Name ?? "(keiner)"} statt Hauptmenü.");
             Press(Key.Space);
+        }
     }
 
     /// <summary>Öffnet im Hauptmenü eine kleine Kachel über ihren Namen (siehe <see cref="MenuTiles"/>).</summary>

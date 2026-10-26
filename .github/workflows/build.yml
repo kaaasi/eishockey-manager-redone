@@ -11,9 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Versionen festgeschrieben (global.json, Paketversionen)
+        run: python3 .github/scripts/versionen_pruefen.py .
+
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json   # SDK-Version fest in global.json (A09)
 
       - name: Restore
         run: dotnet restore EishockeyManager.slnx
@@ -21,8 +24,22 @@ jobs:
       - name: Build
         run: dotnet build EishockeyManager.slnx -c Release --no-restore
 
-      - name: Test
-        run: dotnet test EishockeyManager.slnx -c Release --no-build --verbosity normal
+      # Getrennte Läufe: synthetische Tests und Tests mit Originaldaten (Trait Category=Originaldaten).
+      # Ohne Originaldateien (hier immer) meldet der zweite Lauf echte Skips; der Bericht zeigt sie sichtbar an.
+      - name: Test (synthetisch)
+        run: >
+          dotnet test EishockeyManager.slnx -c Release --no-build --verbosity normal
+          --filter "Category!=Originaldaten" --logger "trx;LogFilePrefix=synthetisch" --results-directory TestResults/synthetisch
+
+      - name: Test (Originaldaten)
+        if: success() || failure()
+        run: >
+          dotnet test EishockeyManager.slnx -c Release --no-build --verbosity normal
+          --filter "Category=Originaldaten" --logger "trx;LogFilePrefix=originaldaten" --results-directory TestResults/originaldaten
+
+      - name: Testbericht
+        if: success() || failure()
+        run: python3 .github/scripts/testbericht.py TestResults   # schreibt selbst in $GITHUB_STEP_SUMMARY, Annotationen ins Log
 
   # Lauffähige Zwischenstände zum Herunterladen (Actions → Lauf → Artifacts).
   # Die Originaldateien müssen daneben im Ordner "gamedata" liegen.
@@ -38,7 +55,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json   # SDK-Version fest in global.json (A09)
 
       - name: Veröffentlichen
         run: |

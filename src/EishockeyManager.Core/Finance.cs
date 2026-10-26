@@ -22,6 +22,9 @@ public enum FinanceCategory
     ManagerKredite,
     Jugend,
     Aktien,
+
+    /// <summary>Saisonprämien für Platzierung und Titel (Bildschirm „Saisonende“). Neu in Runde 2.</summary>
+    Praemien,
 }
 
 /// <summary>Einnahmen und Ausgaben je Kategorie für die laufende und die vorige Saison.</summary>
@@ -55,6 +58,7 @@ public sealed class FinanceBook
     {
         FinanceCategory.Gehaelter => "Gehälter",
         FinanceCategory.ManagerKredite => "Manager-Kredite",
+        FinanceCategory.Praemien => "Prämien",
         _ => category.ToString(),
     };
 }
@@ -78,18 +82,28 @@ public static class FinanceRules
     /// <summary>[APPROX] Höchstbetrag des Bankkredits.</summary>
     public const long CreditLimit = 1_000_000;
 
-    /// <summary>[APPROX] Monatsgehalt eines Spielers: Sockel + Faktor × Vereinsstärke.</summary>
-    public static long MonthlyWagePerPlayer(int clubStrength) => 1_400 + 80L * clubStrength;
-
-    /// <summary>[APPROX] Kadergröße für die Gehaltsrechnung, solange Kader leer sind (Testdaten, Vereine ohne Kader).</summary>
-    public const int MinimumSquad = 20;
-
     /// <summary>
-    /// [APPROX] Monatliche Gehälter eines Vereins. Sobald das Paket „mannschaft“ Verträge mit Gehältern hat,
-    /// wird hier deren Summe verwendet.
+    /// Monatliche Gehälter eines Vereins: Summe der Vertragsgehälter (<see cref="Player.MonthlySalary"/>, Bildschirm
+    /// „Verträge“). Nur ein Verein ganz ohne Kader (z. B. ein von Hand angelegter Spielstand ohne
+    /// <see cref="SquadSetup"/>) wird über die <see cref="FallbackWages"/> abgerechnet.
     /// </summary>
     public static long MonthlyWages(Club club) =>
-        Math.Max(club.Players.Count, MinimumSquad) * MonthlyWagePerPlayer(club.Strength);
+        club.Players.Count == 0 ? FallbackWages(club) : club.Players.Sum(p => (long)p.MonthlySalary);
+
+    /// <summary>Monatliche Versicherungsprämien der Verträge (Finanzbuch „Versicherung“, getrennt von den Gehältern).</summary>
+    public static long MonthlyInsurance(Club club) => club.Players.Sum(p => (long)Contracts.InsurancePremium(p));
+
+    /// <summary>
+    /// [APPROX] Ersatzformel aus Runde 1, ausdrücklich begrenzt auf Vereine ohne Kader (siehe <see cref="MonthlyWages"/>):
+    /// <see cref="MinimumSquad"/> × <see cref="MonthlyWagePerPlayer"/>. Nicht kalibriert, keine Spielregel.
+    /// </summary>
+    public static long FallbackWages(Club club) => MinimumSquad * MonthlyWagePerPlayer(club.Strength);
+
+    /// <summary>[APPROX] Monatsgehalt je Spieler der Ersatzformel: Sockel + Faktor × Vereinsstärke.</summary>
+    public static long MonthlyWagePerPlayer(int clubStrength) => 1_400 + 80L * clubStrength;
+
+    /// <summary>[APPROX] Kadergröße der Ersatzformel.</summary>
+    public const int MinimumSquad = 20;
 
     /// <summary>[APPROX] Grundeinnahmen pro Monat (Verband, Fernsehen) je Liga.</summary>
     public static long BaseIncome(League? league) => league switch

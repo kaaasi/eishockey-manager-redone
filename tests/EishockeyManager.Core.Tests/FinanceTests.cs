@@ -103,7 +103,8 @@ public class FinanceTests
         var m = game.ActiveManager;
         TestSeason.PlayRegularSeason(game);
 
-        var wages = FinanceRules.MonthlyWages(game.Clubs[m.ClubIndex]);
+        // Summe der Einzelverträge (nicht dieselbe Funktion wie die Abrechnung, siehe SalaryTests)
+        var wages = game.Clubs[m.ClubIndex].Players.Sum(p => (long)p.MonthlySalary);
         var months = Enumerable.Range(1, game.Day).Count(d => SeasonCalendar.LayoutDate(d).Day == 1);
         Assert.Equal(-wages * months, game.Finance(m).Book.Current(FinanceCategory.Gehaelter));
     }

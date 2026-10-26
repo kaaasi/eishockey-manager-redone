@@ -36,6 +36,18 @@ Danach (Runde 3):    wettbewerbe, speichern, Kalibrierung Finanzen
 `mehrmanager` → `Core/NewGame.cs`, `Core/GameSetup.cs`, `Formats/ClubDatabase.cs`, `UI/Screens/SetupScreen.cs`, `UI/Screens/MainMenuScreen.cs` (Zugwechsel), `Continue()`-Einstieg in `SeasonFlow.cs`.
 Berührungen außerhalb der eigenen Grenzen im PR begründen. `GameState.Integration.cs` ändert nur der Koordinations-Chat oder die Spur mit Absprache im PR.
 
+### Status Spur `fundament`
+
+- [x] PR 1 – Testgrundlagen (PR offen) (R2-05, A07, A08): Originaldaten-Tests mit `[GameDataFact]` (echtes Skip ohne Daten,
+  Pflichtlauf `EM_REQUIRE_GAMEDATA=1` scheitert), Trait `Category=Originaldaten`, CI-Bericht getrennt nach
+  synthetisch / Originaldaten / übersprungen (`.github/scripts/testbericht.py`), `ScreenDriver.PlayMatchDay()` wirft
+  `TimeoutException`, Kacheltest trennt Platzhalter und echte Bildschirme (Liste `MenuEntryTests.DocumentedPlaceholders`)
+- [x] PR 2 – Passive Bildschirme und Tagesablauf (R2-02, PR offen): alle `CatchUp…`-Aufrufe aus den Bildschirmen entfernt,
+  Tagesablauf in [tagesablauf.md](tagesablauf.md), Abnahmetests `PassiveScreenTests` (Zustandsabdruck, Zwillingsspiel).
+  **Neuer Folgebefund R2-02b** (Spur `wirtschaft`): erstes Öffnen von „Werbung“ verbraucht den Finanz-Zufall –
+  strenger Test liegt sichtbar übersprungen bereit
+- [ ] PR 3 – Werkzeugversionen festschreiben (A09)
+
 ### Pflichtangaben in jedem PR dieser Runde
 
 1. Base- und Head-SHA
@@ -57,7 +69,62 @@ dann Aufrufer und neue Tests prüfen → Merge durch den Koordinations-Chat. Rev
   zum Kurswert, Kredite zwischen Managern) bleiben getrennt und werden nicht als Aufwand gebucht.
 - Testanzahl ist keine Abnahme. Pixelparität und Balance werden getrennt abgenommen.
 
+### Spur `wirtschaft` – Status
+
+Branches je PR: `paket/wirtschaft-<punkt>` (Spurbranch `paket/wirtschaft`). Reihenfolge laut Auftrag; PR 2 baut auf PR 1 auf.
+
+| PR | Inhalt | Status |
+|---|---|---|
+| 1 – Spielerfabrik | `Core/Player.Factory.cs`: eine Erzeugung für Spielstart, Transfermarkt, Talentsuche (Transfer und Jugend); `PlayerFactory.Join` (Nummer, Vertrag) und `Validate` (Invarianten) für `lebenszyklus` | im Review (#16) |
+| 2 – eine Talentsuche | Jugend-„Spion“ und Transfer-Knopf rufen `GameState.StartTalentSearch` (Preis 90.000 DM laut Video − Rabatt, 4 Wochen, Ergebnis als Nachricht, neues Talent aus der Fabrik); offene Entscheidungen im PR | im Review (#17, nach #16) |
+| 3 – Gehälter/Versicherung aus Verträgen | Vertragsgehälter, Versicherung getrennt gebucht; Pauschale nur für Vereine ohne Kader | im Review (#19) |
+| 4 – Prämien, Nachsaison-Heimspiele | Kategorie „Prämien“ über `Book`; `SettleHomeMatch` für Liga, Play-Offs, Aufstiegsrunde | im Review (#21) |
+
+Hinweis für Runde 3 (Kalibrierung): Mit #19 und #21 steigt der Kontostand eines passiven Oberliga-Managers deutlich
+(Originaldaten, SC RIESSERSEE, eine Saison: 109.460 → 579.160 DM, Gehälter −666.400 → −196.700 DM).
+
+### Status Spur `mehrmanager`
+
+| Punkt | PR | Stand |
+|---|---|---|
+| R2-07 exklusive Vereinsvergabe | #18 | offen, wartet auf Review |
+| R2-06 Hot-Seat (Bereitschaftsphase, Lampen, Tag genau einmal) | #20 | offen, wartet auf Review |
+| A01 drei Stärkewerte je Verein | #22 | offen, wartet auf Review |
+| Levelgrenze: Level 0–5, Regler begrenzt statt Umlauf (DGROUP 0x11C, 0x4B3E) | siehe PR „Setup-Level“ | offen, wartet auf Review |
+
+Neue Befunde aus dem Disassembly (Details in [reverse-engineering.md](reverse-engineering.md#spiel-level)):
+Kadergröße der Manager-Vereine hängt im Original an der **Start-Liga**, nicht am Level; Level, Start-Liga und
+Start-Stärke sind im Original **globale** Setup-Werte (Remake: je Manager); Regel „eine Saison nur mit Start-Liga 0“
+ist noch nicht übernommen.
+
 ---
+
+### Integration Runde 2, Welle A (26.10.2026)
+
+PRs #16–#30 (fundament, wirtschaft, mehrmanager, sound) probeweise zusammengeführt: ein Textkonflikt in diesem Dokument,
+sonst konfliktfrei. Build ohne Warnungen; mit `EM_REQUIRE_GAMEDATA=1` und Originaldaten 327 Tests bestanden, 1 sichtbar
+übersprungen (R2-02b, siehe unten); alle 16 Bildschirmfoto-Abläufe laufen durch.
+
+**Integrationsfehler (behoben im Integrations-Commit):** Die Tests aus `mehrmanager` und `sound` waren gegen den alten
+Stand geschrieben und nutzten noch das Muster „ohne Daten still `return`“ bzw. `FlowTests.CreateDriver()`, das seit
+`fundament` ohne Daten scheitert. Folge: CI-Schritt „Test (synthetisch)“ rot, und 16 Originaldaten-Tests wären ohne
+Daten wieder still „bestanden“ (R2-05). Alle auf `[GameDataFact]` / neues `[GameDataTheory]` umgestellt.
+Ohne Daten jetzt: 281 bestanden, 42 sichtbar übersprungen; Pflichtlauf ohne Daten scheitert (46 Fälle); mit Daten 327 bestanden, 1 übersprungen (R2-02b).
+**Regel:** Tests mit Originaldaten nur noch mit `[GameDataFact]`/`[GameDataTheory]` und `TestGameData.Load()`.
+
+Befunde im Gesamtstand vom Koordinations-Chat nachgestellt (eigene Probe gegen die gebauten Assemblies):
+
+| Befund | Ergebnis im Gesamtstand |
+|---|---|
+| R2-01 Gehälter | behoben – Gehälter und Versicherung im Monat entsprechen genau der Vertragssumme nach Gehaltsänderung |
+| R2-02 Ansichten | behoben – Bildschirme schreiben keine Zeit mehr fort; **R2-02b offen**: erstes Öffnen von „Werbung“ würfelt Angebote aus (FinanceSponsors.cs) |
+| R2-03 Talente | behoben – nach Talentsuche und 40 Weiter-Schritten kein ungültiger Spieler in irgendeinem Kader |
+| R2-05 Tests | behoben – Originaldaten-Tests werden ohne Daten sichtbar übersprungen, Pflichtlauf scheitert ohne Daten |
+| R2-06 Hot-Seat | behoben – zwei Manager wechseln sich ab, je Runde genau ein Spieltag |
+| R2-07 Vereine | behoben – 200 Seeds mit Zufall + fester Wahl: keine Doppelbelegung |
+| A01 Stärketripel | behoben – alle drei Werte erhalten (Bedeutung weiter offen) |
+| Level | umgesetzt – Level 0–5 (LevelCount 6) |
+| R2-04, R2-08, R2-09 | erwartungsgemäß offen → Welle B (`lebenszyklus`) |
 
 ## Runde 1 (abgeschlossen am 26.10.2026)
 
@@ -144,6 +211,14 @@ Branch: `paket/sound` · Status: **Runde 2, Welle A** (unabhängig, keine Dateie
 - VOC-Wiedergabe (kb\237–241), CMF-Musik (kb\248) über OPL2-Emulation, Einbindung in Desktop (MonoGame `DynamicSoundEffectInstance`).
 - Einstellungen-Bildschirm (Torszenen, Lautstärken, Musik im Spiel, Vollbild).
 - Eigene Dateien: `Formats/Voc*.cs`, `Formats/Cmf*.cs`, `src/EishockeyManager.Audio/*` (neues Projekt), `UI/Screens/Settings*`.
+
+Fortschritt:
+- [x] VOC-Lader (`VocFile`, alle Blocktypen 1–9 ohne Kompression), `PcmSound`, `WavWriter`, `emtool export-sound` – Branch `paket/sound-voc`
+- [x] CMF-Lader (`CmfFile`), OPL2-Emulation (`Opl2`, eigener Code), Wiedergabe nach dem FM-Treiber in em.exe (`CmfPlayer`) – Branch `paket/sound-cmf`
+- [x] Projekt `EishockeyManager.Audio` (Mischer, ein Effektkanal wie CT-VOICE, Musik in Schleife), Desktop über `DynamicSoundEffectInstance`, F8 = Ton aus; Effektzuordnung aus dem Disassembly belegt – Branch `paket/sound-audio`
+- [x] Bildschirm Einstellungen (Kachel „Gemischtes“): Lautstärken, Musik auch im Spiel, Torszenen, Vollbild; gespeichert in `einstellungen.json` im Benutzerprofil – Branch `paket/sound-einstellungen`
+
+Offen für später: Effekte in den Torszenen auslösen (sobald es sie gibt; UI braucht dann eine Referenz auf Audio), Einstellungen „Cheats“ und „Automatisch speichern“ (gehören zu `speichern`), Einstellungen-Eintrag im Titelmenü, Musikstart/-stopp des Originals aus dem Disassembly.
 
 ## Paket `speichern` – Laden und Sichern
 

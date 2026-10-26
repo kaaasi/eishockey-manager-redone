@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Core;
 using EishockeyManager.UI;
 using EishockeyManager.UI.Screens;
@@ -7,12 +8,10 @@ namespace EishockeyManager.UI.Tests;
 /// <summary>Saisonablauf über die Oberfläche mit den Originaldateien (übersprungen ohne „gamedata“).</summary>
 public class SeasonUiTests
 {
-    [Fact]
+    [GameDataFact]
     public void ThreeSeasons_ThroughTheUserInterface()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
 
         d.StartNewGame();
         var game = d.Host.Game!;
@@ -41,12 +40,10 @@ public class SeasonUiTests
         Assert.All(game.History, r => Assert.Equal(2, r.PromotedInto[League.Oberliga].Count));
     }
 
-    [Fact]
+    [GameDataFact]
     public void InfoBar_ShowsSeasonEndAfterClubSeason()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
 
         d.StartNewGame();
         var game = d.Host.Game!;
@@ -58,12 +55,10 @@ public class SeasonUiTests
         Assert.Equal("Saisonende", SeasonInfo.NoMatchText(game));
     }
 
-    [Fact]
+    [GameDataFact]
     public void GameEnds_AfterChosenDuration()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return;
 
         d.StartNewGame();
         var game = d.Host.Game!;

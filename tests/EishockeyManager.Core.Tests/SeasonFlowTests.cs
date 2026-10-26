@@ -187,10 +187,14 @@ public class SeasonFlowTests
     public void Debts_LeadToDismissalAfterEightWeeks()
     {
         var game = Create();
-        game.ActiveManager.Money = -2_000_000;
         var steps = new List<SeasonStep>();
         while (!game.IsGameOver)
+        {
+            // Schulden festhalten: Heimspieleinnahmen dürfen sie nicht abbauen (seit Runde 2 bucht die Abrechnung
+            // die echten, niedrigeren Vertragsgehälter statt der Pauschale)
+            game.ActiveManager.Money = -2_000_000;
             steps.AddRange(game.Continue());
+        }
 
         var dismissal = Assert.Single(steps.OfType<DismissalStep>());
         Assert.Equal(Manager.DebtDaysUntilDismissal - 1, dismissal.Day);

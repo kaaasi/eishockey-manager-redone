@@ -58,7 +58,9 @@ public sealed class YouthScreen : Screen
             if (_asking && (input.Clicked(YesButton) || input.Pressed(Key.Enter)))
             {
                 _asking = false;
-                Game.StartTalentSearch(Game.ActiveManager);
+                var result = Game.StartTalentSearch(Game.ActiveManager);
+                if (result != TalentSearchStart.Started)
+                    _notice = TalentScout.Message(result);
             }
             else if (input.LeftClick || input.RightClick || input.Keys.Count > 0)
                 (_asking, _notice) = (false, null);
@@ -91,9 +93,9 @@ public sealed class YouthScreen : Screen
     {
         var me = Game.ActiveManager;
         if (Game.Finance(me).TalentSearch is not null)
-            _notice = ["Ihr 'Spion' ist schon", "auf Talentsuche."]; // [APPROX] Text nicht in em.exe gefunden
-        else if (Game.Clubs[me.ClubIndex].Players.Count >= GameState.MaxSquad)
-            _notice = ["Ihr Kader ist", "schon komplett."]; // [APPROX] Text nicht in em.exe gefunden
+            _notice = TalentScout.Message(TalentSearchStart.AlreadyRunning);
+        else if (Game.Clubs[me.ClubIndex].Players.Count >= TalentScout.MaxSquad)
+            _notice = TalentScout.Message(TalentSearchStart.SquadFull);
         else
             _asking = true;
     }

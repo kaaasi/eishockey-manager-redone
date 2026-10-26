@@ -64,7 +64,6 @@ public sealed class TrainingScreen : Screen
     public override void Enter()
     {
         var game = Host.Game!;
-        game.CatchUpTraining();
         _plan = game.PrepareTraining(game.ActiveManager);
         _pressed = false;
     }

@@ -62,19 +62,55 @@ public sealed partial class GameState
     public long MonthlyIncome(Manager manager) =>
         FinanceRules.BaseIncome(Clubs[manager.ClubIndex].League) + SponsorIncome(manager);
 
-    /// <summary>[APPROX] Regelmäßige Ausgaben pro Monat (Gehälter, Unterhalt) – Anzeige „Ausgaben“.</summary>
-    public long MonthlyExpenses(Manager manager) =>
-        FinanceRules.MonthlyWages(Clubs[manager.ClubIndex]) + Finance(manager).Stadium.MonthlyUpkeep + RecurringExpenses(manager);
+    /// <summary>
+    /// Regelmäßige Ausgaben pro Monat – Anzeige „Ausgaben“: Vertragsgehälter, Versicherungen, Unterhalt, Jugendförderung.
+    /// </summary>
+    public long MonthlyExpenses(Manager manager)
+    {
+        var club = Clubs[manager.ClubIndex];
+        return FinanceRules.MonthlyWages(club) + FinanceRules.MonthlyInsurance(club)
+            + Finance(manager).Stadium.MonthlyUpkeep + RecurringExpenses(manager);
+    }
 
     /// <summary>
-    /// Nach einem Spieltag: alle Tage seit der letzten Abrechnung bis heute abrechnen und die Heimspiele
+    /// Nach einem Ligaspieltag: alle Tage seit der letzten Abrechnung bis heute abrechnen und die Heimspiele
     /// der Managervereine auswerten. Wird von <see cref="PlayNextMatchDay"/> aufgerufen.
     /// </summary>
     public void SettleFinances(IEnumerable<MatchResult> results)
     {
         AdvanceFinanceTo(Day);
         foreach (var result in results)
-            SettleHomeGame(result);
+            SettleHomeMatch(result.Home, result.Away, result.MatchDay);
+    }
+
+    /// <summary>
+    /// Gemeinsame Spielabrechnung für alle Wettbewerbe (Liga, Play-Offs, Aufstiegsrunde; später Pokale über
+    /// <see cref="ISeasonCompetition"/>): Zuschauer, Eintritt und Gastronomie für jeden Manager des Heimvereins,
+    /// genau einmal je ausgetragenem Spiel. <paramref name="tableMatchDay"/> = Ligaspieltag, dessen Vortabelle
+    /// die Nachfrage bestimmt; nach der Hauptrunde die Abschlusstabelle.
+    /// [APPROX] Nachsaisonspiele nutzen dieselbe Zuschauerformel wie Ligaspiele (keine Neukalibrierung in Runde 2).
+    /// </summary>
+    public void SettleHomeMatch(int home, int away, int tableMatchDay)
+    {
+        foreach (var manager in Managers.Where(m => m.ClubIndex == home))
+        {
+            var finance = Finance(manager);
+            var stadium = finance.Stadium;
+            var spectators = Spectators(Clubs[home], Clubs[away], stadium, tableMatchDay, FinanceRandom);
+            var tickets = (long)spectators * stadium.TicketPrice;
+            var gastronomy = (long)spectators * stadium.GastronomyPerSpectator;
+            Book(manager, FinanceCategory.Eintritt, tickets);
+            if (gastronomy > 0)
+                Book(manager, FinanceCategory.Gastronomie, gastronomy);
+            finance.LastHomeGame = (spectators, tickets + gastronomy);
+        }
+    }
+
+    /// <summary>Spiele der Play-Offs und Aufstiegsrunden eines Termins abrechnen (nach der Hauptrunde).</summary>
+    public void SettlePostseasonMatches(IEnumerable<(int Home, int Away)> matches)
+    {
+        foreach (var (home, away) in matches)
+            SettleHomeMatch(home, away, PlayedMatchDays + 1);
     }
 
     /// <summary>Rechnet alle Tage bis einschließlich <paramref name="day"/> ab (Monats-, Wochen- und Tageswechsel).</summary>
@@ -101,22 +137,6 @@ public sealed partial class GameState
         FinanceDay = -1;
     }
 
-    private void SettleHomeGame(MatchResult result)
-    {
-        foreach (var manager in Managers.Where(m => m.ClubIndex == result.Home))
-        {
-            var finance = Finance(manager);
-            var stadium = finance.Stadium;
-            var spectators = Spectators(Clubs[result.Home], Clubs[result.Away], stadium, result.MatchDay, FinanceRandom);
-            var tickets = (long)spectators * stadium.TicketPrice;
-            var gastronomy = (long)spectators * stadium.GastronomyPerSpectator;
-            Book(manager, FinanceCategory.Eintritt, tickets);
-            if (gastronomy > 0)
-                Book(manager, FinanceCategory.Gastronomie, gastronomy);
-            finance.LastHomeGame = (spectators, tickets + gastronomy);
-        }
-    }
-
     private void WeeklyFinances()
     {
         foreach (var manager in Managers)
@@ -129,6 +149,9 @@ public sealed partial class GameState
         {
             var club = Clubs[manager.ClubIndex];
             Book(manager, FinanceCategory.Gehaelter, -FinanceRules.MonthlyWages(club));
+            var insurance = FinanceRules.MonthlyInsurance(club);
+            if (insurance > 0)
+                Book(manager, FinanceCategory.Versicherung, -insurance);
             Book(manager, FinanceCategory.Unterhalt, -Finance(manager).Stadium.MonthlyUpkeep);
             Book(manager, FinanceCategory.Sponsoren, FinanceRules.BaseIncome(club.League));
             MonthlyManagerFinances(manager);

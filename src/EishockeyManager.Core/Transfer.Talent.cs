@@ -1,58 +1,74 @@
 namespace EishockeyManager.Core;
 
-public enum TalentResult
+/// <summary>Ergebnis des Auftrags an den „Spion“ (beide Einstiege: Jugendteams und Knopf „Talent“ im Transfer).</summary>
+public enum TalentSearchStart
 {
-    /// <summary>„Ihre Talentsuche war ein Erfolg. Ein junger Spieler stößt zu Ihrem Kader.“</summary>
-    Success,
+    /// <summary>Bezahlt, der „Spion“ ist unterwegs; das Ergebnis kommt nach einigen Wochen als Nachricht.</summary>
+    Started,
 
-    /// <summary>„Ihr Talentspäher gibt die Suche ohne Erfolg auf... Pech...“</summary>
-    Failure,
+    /// <summary>Es läuft schon eine Suche.</summary>
+    AlreadyRunning,
 
+    /// <summary>„Sie haben nicht genug Geld !“</summary>
     NotEnoughMoney,
+
+    /// <summary>Kader voll.</summary>
     SquadFull,
 }
 
 /// <summary>
-/// Talentsuche (Knopf „Talent“ im Transfer): „Möchten Sie, daß Ihr 'Spion' für Sie auf Talentsuche geht?
-/// Preis: 90.000 DM“ (Video). [APPROX] Ergebnis sofort statt nach einigen Tagen, Erfolg zu 60 %;
-/// das Talent kommt aus einem Verein ohne Liga (Oberliga-Reserve), ist 17–19 Jahre alt und hat Talent 6–9.
+/// Die eine Talentsuche des Spiels: „Möchten Sie, daß Ihr 'Spion' für Sie auf Talentsuche geht?“ mit „Preis:“
+/// und „Rabatt:“ (Texte aus em.exe). Erreichbar über das Fenster „Jugendteams“ und den Knopf „Talent“ im Transfer;
+/// beide rufen <see cref="GameState.StartTalentSearch"/>. Ablauf in <c>FinanceYouth.cs</c>, Spieler aus der
+/// <see cref="PlayerFactory"/>.
 /// </summary>
+/// <remarks>
+/// Bis Runde 2 gab es zwei Suchen mit abweichenden Regeln (Transfer: 90.000 DM, sofortiges Ergebnis, 60 %,
+/// Spieler aus einem Reserveverein, Grenze 22; Jugend: 30.000 DM mit Rabatt, 4 Wochen, 40–85 %, neuer Spieler,
+/// Grenze 30). Vereinheitlicht wie unten; die mit [OFFEN] markierten Punkte sind Produktentscheidungen,
+/// die das Original nicht belegt.
+/// </remarks>
 public static class TalentScout
 {
-    public const long Cost = 90_000;
-    public const double SuccessChance = 0.6;
+    /// <summary>
+    /// Grundpreis vor Rabatt. [ORIGINAL] Video („LetsShow“, ca. 11:15, Knopf „Talent“): „Preis: 90.000 DM“.
+    /// [OFFEN] Ob dort bereits ein Rabatt abgezogen war, ist nicht zu sehen.
+    /// </summary>
+    public const long BasePrice = 90_000;
 
-    public static TalentResult Search(GameState game, Manager manager, Random random)
+    /// <summary>
+    /// „Rabatt:“ in Prozent: je 1.000 DM Jugendförderung im Monat 2 %, höchstens 50 %. [APPROX]
+    /// </summary>
+    public const int DiscountPerFundingStep = 2, MaxDiscount = 50;
+
+    /// <summary>Dauer der Suche in Wochen. [OFFEN] Nicht belegt; früher Transfer sofort, Jugend 4 Wochen.</summary>
+    public const int Weeks = 4;
+
+    /// <summary>
+    /// Höchstzahl Spieler im Kader. [OFFEN] „Schon 22 Mann im Team !“ (em.exe) gilt für Transfers; Manager-Kader
+    /// der Level 0/1 haben laut Originaltabelle aber schon 25 Spieler, daher hier die großzügige Grenze der Jugend.
+    /// </summary>
+    public const int MaxSquad = 30;
+
+    /// <summary>
+    /// Erfolgschance: 40 %, mit der besten Jugendmannschaft bis zu 85 % (1. Platz 1. Liga). [APPROX]
+    /// [OFFEN] früher Transfer pauschal 60 %.
+    /// </summary>
+    public static double SuccessChance(ManagerFinance finance)
     {
-        var club = game.Clubs[manager.ClubIndex];
-        if (manager.Money < Cost)
-            return TalentResult.NotEnoughMoney;
-        if (club.Players.Count >= TransferMarket.MaxSquad)
-            return TalentResult.SquadFull;
-        game.Book(manager, FinanceCategory.Talentsuche, -Cost);
-
-        var sources = game.Clubs.Where(c => c.League is null && !TransferMarket.IsNationalTeam(c) && c.Players.Count > 0).ToList();
-        if (random.NextDouble() >= SuccessChance || sources.Count == 0)
-            return TalentResult.Failure;
-
-        var from = sources[random.Next(sources.Count)];
-        var p = from.Players[random.Next(from.Players.Count)];
-        from.Players.Remove(p);
-        from.Lineup.Remove(p);
-        p.Age = SquadSetup.Between(random, 17, 19);
-        p.Talent = SquadSetup.Between(random, 6, 9);
-        var b = SquadSetup.BaseValue(club.Strength);
-        p.Condition = Player.Clamp(b - SquadSetup.Between(random, 2, 8));
-        p.Technique = Player.Clamp(b - SquadSetup.Between(random, 2, 8));
-        p.Form = SquadSetup.Between(random, 45, 60);
-        p.Energy = 80;
-        p.Trend = PlayerTrend.Rising;
-        p.Number = Enumerable.Range(1, 99).First(n => club.Players.All(q => q.Number != n));
-        p.ContractYears = SquadSetup.StartContractYears;
-        p.MonthlySalary = Contracts.Demand(p);
-        p.OnLoan = false;
-        p.Insured = false;
-        club.Players.Add(p);
-        return TalentResult.Success;
+        var best = finance.Youth.Min(t => t.Position);
+        return 0.4 + 0.45 * (1 - best / (double)(YouthTeam.Leagues * YouthTeam.TeamsPerLeague - 1));
     }
+
+    /// <summary>Meldung zum Start (für beide Bildschirme).</summary>
+    public static string[] Message(TalentSearchStart result) => result switch
+    {
+        TalentSearchStart.Started => ["Ihr 'Spion' geht", "auf Talentsuche."], // [APPROX] Text nicht in em.exe gefunden
+        TalentSearchStart.AlreadyRunning => ["Ihr 'Spion' ist schon", "auf Talentsuche."], // [APPROX]
+        TalentSearchStart.NotEnoughMoney => TransferMarket.Message(TransferResult.NotEnoughMoney),
+        _ => ["Ihr Kader ist", "schon komplett."], // [APPROX]
+    };
+
+    /// <summary>Knopf „Talent“ im Transfer: dieselbe Suche wie der „Spion“ im Fenster „Jugendteams“.</summary>
+    public static TalentSearchStart Search(GameState game, Manager manager) => game.StartTalentSearch(manager);
 }
