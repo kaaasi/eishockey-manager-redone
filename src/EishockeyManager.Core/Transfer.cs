@@ -19,6 +19,9 @@ public sealed class TransferListing
     /// <summary>Manager, der den Spieler auf den Markt gesetzt hat, oder null.</summary>
     public Manager? Seller { get; init; }
 
+    /// <summary>[APPROX] Vertragsloser Spieler; From ist nur noch der letzte Verein, die Ablöse ist 0.</summary>
+    public bool IsFreeAgent { get; init; }
+
     /// <summary>Spieltag, an dem der Spieler auf den Markt kam.</summary>
     public int ListedDay { get; init; }
 
@@ -80,6 +83,10 @@ public sealed class TransferMarket
 
     private readonly List<TransferListing> _listings = [];
     private readonly List<TransferBid> _bids = [];
+    private readonly List<TransferListing> _freeAgents = [];
+
+    /// <summary>Vertragslose Spieler, auch wenn die sichtbare Transferliste voll ist.</summary>
+    public IEnumerable<Player> FreeAgents => _freeAgents.Select(l => l.Player);
 
     public IReadOnlyList<TransferListing> Listings => _listings;
 
@@ -103,8 +110,21 @@ public sealed class TransferMarket
         return Math.Max(20_000, (long)Math.Round(value / 1000) * 1000);
     }
 
-    /// <summary>Neue Saison: Der Spieltagszähler beginnt wieder bei 0.</summary>
-    public void StartSeason() => UpdatedDay = 0;
+    /// <summary>Neue Saison: alte Listings und Gebote verwerfen, Markt aus den aktuellen Eigentümern neu bilden.</summary>
+    public void StartSeason(GameState game)
+    {
+        // Neue Listing-Identitäten: Auch eine noch gehaltene Referenz aus der Vorsaison ist ungültig.
+        var released = _freeAgents.ToArray();
+        _freeAgents.Clear();
+        foreach (var old in released)
+            Release(old.From, old.Player);
+        Initialize(game, game.Random);
+    }
+
+    internal void Release(Club from, Player player)
+    {
+        _freeAgents.Add(new TransferListing { Player = player, From = from, Price = 0, IsFreeAgent = true });
+    }
 
     /// <summary>Füllt den Markt zu Spielbeginn.</summary>
     public void Initialize(GameState game, Random random)
@@ -112,7 +132,9 @@ public sealed class TransferMarket
         _listings.Clear();
         _bids.Clear();
         UpdatedDay = game.PlayedMatchDays;
-        for (var i = 0; i < StartListings; i++)
+        foreach (var listing in _freeAgents.Take(StartListings))
+            _listings.Add(listing);
+        for (var i = _listings.Count; i < StartListings; i++)
             AddRandomListing(game, random);
     }
 
@@ -154,6 +176,12 @@ public sealed class TransferMarket
     /// <summary>Setzt einen Spieler eines Computervereins oder Nationalteams auf den Markt.</summary>
     private void AddRandomListing(GameState game, Random random)
     {
+        var free = _freeAgents.FirstOrDefault(l => !_listings.Contains(l));
+        if (free is not null)
+        {
+            _listings.Add(free);
+            return;
+        }
         var sources = game.Clubs.Where(c => c.Players.Count > 18 && !IsManaged(game, c)).ToList();
         if (sources.Count == 0)
             return;
@@ -192,8 +220,12 @@ public sealed class TransferMarket
     /// </summary>
     public TransferResult Buy(GameState game, Manager manager, TransferListing listing, long offer, bool loan)
     {
+        if (!game.Managers.Contains(manager) || !IsCurrentListing(game, listing)
+            || listing.From.Index == manager.ClubIndex && !listing.IsFreeAgent
+            || loan && listing.IsFreeAgent)
+            return TransferResult.Impossible;
         var club = game.Clubs[manager.ClubIndex];
-        if (offer < 1)
+        if (offer < 0 || offer == 0 && !listing.IsFreeAgent)
             return TransferResult.Unfair;
         if (club.Players.Count >= MaxSquad)
             return TransferResult.SquadFull;
@@ -203,7 +235,9 @@ public sealed class TransferMarket
             return TransferResult.Impossible;
 
         var asked = loan ? listing.LoanFee : listing.Price;
-        var ratio = offer / (double)asked;
+        if (asked < 0)
+            return TransferResult.Impossible;
+        var ratio = asked == 0 ? 1 : offer / (double)asked;
         if (ratio < 1 && (ratio <= 0.85 || game.Random.NextDouble() >= (ratio - 0.85) / 0.15))
             return TransferResult.Rejected;
 
@@ -221,12 +255,17 @@ public sealed class TransferMarket
         var from = listing.From;
         _listings.Remove(listing);
         _bids.RemoveAll(b => b.Listing == listing);
-        from.Players.Remove(p);
-        from.Lineup.Remove(p);
-        if (listing.Seller is null)
-            from.Lineup.FillGaps(from.Players); // Computerverein stellt selbst um, Manager nicht
+        if (!listing.IsFreeAgent)
+        {
+            from.Players.Remove(p);
+            from.Lineup.Remove(p);
+            if (listing.Seller is null)
+                from.Lineup.FillGaps(from.Players); // Computerverein stellt selbst um, Manager nicht
+        }
 
-        PlayerFactory.Join(to, p, loan ? 1 : SquadSetup.StartContractYears, loan);
+        var agreement = loan ? new PlayerLoan(from, p.ContractYears, p.MonthlySalary, p.Insured) : null;
+        _freeAgents.Remove(listing);
+        PlayerFactory.Join(to, p, loan ? 1 : SquadSetup.StartContractYears, loan, agreement);
     }
 
     /// <summary>Setzt einen eigenen Spieler auf den Markt („Verkaufen“).</summary>
@@ -262,12 +301,42 @@ public sealed class TransferMarket
     /// <summary>Eigene Spieler auf dem Markt.</summary>
     public TransferListing? ListingOf(Player player) => _listings.FirstOrDefault(l => l.Player == player);
 
-    /// <summary>Gebot annehmen: Spieler wechselt, der Manager erhält die Ablöse.</summary>
-    public void Accept(GameState game, TransferBid bid)
+    /// <summary>
+    /// Gebot annehmen: Spieler wechselt, der Manager erhält die Ablöse. Liefert <see cref="TransferResult.Impossible"/>,
+    /// wenn das Gebot nicht (mehr) offen oder nicht ausführbar ist; dann ändert sich weder Geld noch Kader.
+    /// </summary>
+    public TransferResult Accept(GameState game, TransferBid bid)
     {
-        if (bid.Listing.Seller is { } seller)
-            game.Book(seller, FinanceCategory.Transfers, bid.Amount);
+        // TransferBid ist ein record: Wertgleichheit reicht nicht als Nachweis eines offenen Gebots.
+        if (!_bids.Any(open => ReferenceEquals(open, bid)))
+            return TransferResult.Impossible;
+        if (bid.Amount <= 0
+            || bid.Listing.Seller is not { } seller || !IsCurrentListing(game, bid.Listing)
+            || !game.Clubs.Contains(bid.Buyer) || bid.Buyer == bid.Listing.From
+            || IsManaged(game, bid.Buyer) || bid.Buyer.Players.Count >= PlayerFactory.MaxNumber)
+        {
+            // Offenes, aber nicht mehr ausführbares Gebot (z. B. Mindestbesetzung nach einem anderen Verkauf):
+            // verwerfen, damit die Ansicht es nicht kommentarlos erneut vorlegt. [APPROX] Verhalten des Originals offen.
+            _bids.RemoveAll(open => ReferenceEquals(open, bid));
+            return TransferResult.Impossible;
+        }
+        game.Book(seller, FinanceCategory.Transfers, bid.Amount);
         Move(bid.Listing, bid.Buyer, loan: false);
+        return TransferResult.Accepted;
+    }
+
+    private bool IsCurrentListing(GameState game, TransferListing listing)
+    {
+        if (!_listings.Contains(listing) || !game.Clubs.Contains(listing.From)
+            || listing.Player.OnLoan || listing.Player.Loan is not null)
+            return false;
+        if (listing.IsFreeAgent)
+            return _freeAgents.Contains(listing) && !game.Clubs.Any(c => c.Players.Contains(listing.Player));
+        return listing.From.Players.Contains(listing.Player) && CanLeave(listing.From, listing.Player)
+            && game.Clubs.Where(c => c != listing.From).All(c => !c.Players.Contains(listing.Player))
+            && (listing.Seller is null
+                ? !IsManaged(game, listing.From)
+                : game.Managers.Contains(listing.Seller) && listing.Seller.ClubIndex == listing.From.Index);
     }
 
     /// <summary>Gebot ablehnen.</summary>

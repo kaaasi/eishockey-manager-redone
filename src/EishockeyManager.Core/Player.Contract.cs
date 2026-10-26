@@ -1,5 +1,8 @@
 namespace EishockeyManager.Core;
 
+/// <summary>Eigentümer und unveränderter Stammvertrag während einer Leihe bis zum Saisonende.</summary>
+public sealed record PlayerLoan(Club Origin, int ContractYears, int MonthlySalary, bool Insured);
+
 /// <summary>Vertragsdaten eines Spielers (Bildschirm „Verträge“: V.DAUER und Gehalt).</summary>
 public sealed partial class Player
 {
@@ -12,8 +15,10 @@ public sealed partial class Player
     /// <summary>Versicherung gegen Verletzungen (Anzeige „(v)“ hinter der Vertragsdauer).</summary>
     public bool Insured { get; set; }
 
-    /// <summary>Ausgeliehener Spieler („ (ausgeliehen)“) – kehrt zum Saisonende auf den Transfermarkt zurück.</summary>
+    /// <summary>Ausgeliehener Spieler („ (ausgeliehen)“) – kehrt zum Saisonende zum Eigentümer zurück.</summary>
     public bool OnLoan { get; set; }
+
+    public PlayerLoan? Loan { get; set; }
 
     /// <summary>
     /// Spieltag, an dem der Spieler zuletzt ein Vertragsangebot abgelehnt hat („Angebot wurde bereits abgelehnt.“),
@@ -26,6 +31,88 @@ public sealed partial class Player
 
     /// <summary>Spalte V.DAUER: „2 Jahre“, mit Versicherung „4 Jahre(v)“.</summary>
     public string ContractText => YearsText(ContractYears) + (Insured ? "(v)" : "");
+}
+
+public sealed partial class GameState
+{
+    // Vor jeder Mutation des Saisonwechsels prüfen: Ein boolesches Leihflag allein reicht nicht zur Rückgabe.
+    private void ValidateSeasonSquads()
+    {
+        var players = Clubs.SelectMany(c => c.Players).ToArray();
+        if (players.Distinct().Count() != players.Length)
+            throw new InvalidOperationException("Ein Spieler steht in mehreren Kadern.");
+        foreach (var club in Clubs)
+            foreach (var player in club.Players)
+                if (player.OnLoan != (player.Loan is not null)
+                    || player.Loan is { } loan && (!Clubs.Contains(loan.Origin) || loan.Origin == club))
+                    throw new InvalidOperationException($"Ungültiger Leihursprung für {player.Name}.");
+        // Kapazität wird nicht vorab geprüft, sondern beim Rückführen aufgelöst (siehe StartSquadSeason): So können
+        // Vorprüfung und Ausführung nicht auseinanderlaufen (Review PR35-01).
+    }
+
+    /// <summary>Gemeinsamer Kaderübergang: alle Spieler einmal altern, Leihen zurückführen, Verträge beenden.</summary>
+    private void StartSquadSeason()
+    {
+        foreach (var player in TransferMarket.FreeAgents)
+        {
+            player.Age++;
+            player.RejectedOfferDay = null;
+        }
+        // Snapshot vor Rückgaben: Vereinsreihenfolge darf keinen Spieler zweimal altern lassen.
+        var players = Clubs.SelectMany(c => c.Players.Select(p => (Club: c, Player: p))).ToArray();
+        var returns = new List<(Club Owner, Player Player)>();
+        foreach (var (club, player) in players)
+        {
+            player.Age++;
+            player.RejectedOfferDay = null;
+            var owner = club;
+            if (player.Loan is { } loan)
+            {
+                club.Players.Remove(player);
+                club.Lineup.Remove(player);
+                owner = loan.Origin;
+                player.ContractYears = loan.ContractYears;
+                player.MonthlySalary = loan.MonthlySalary;
+                player.Insured = loan.Insured;
+                player.OnLoan = false;
+                player.Loan = null;
+            }
+
+            player.ContractYears = Math.Max(0, player.ContractYears - 1);
+            // [APPROX] Integration Welle B: Computervereine verlängern auslaufende Verträge selbst, bis die Kader-KI
+            // (Verlängerung, Neuzugänge, Ruhestand) rekonstruiert ist. Ohne das wären ab der dritten Saison alle
+            // Kader leer, weil jeder Startvertrag zwei Jahre läuft. Gehalt bleibt unverändert.
+            if (player.ContractYears == 0 && !Managers.Any(m => m.ClubIndex == owner.Index))
+                player.ContractYears = SquadSetup.StartContractYears;
+            if (player.ContractYears == 0)
+            {
+                owner.Players.Remove(player);
+                owner.Lineup.Remove(player);
+                player.MonthlySalary = 0;
+                player.Insured = false;
+                TransferMarket.Release(owner, player);
+            }
+            else if (owner != club)
+                returns.Add((owner, player));
+        }
+        // Erst nach allen Abgängen Nummern vergeben, unabhängig von der Vereinsreihenfolge.
+        foreach (var (owner, player) in returns)
+        {
+            if (owner.Players.Count >= PlayerFactory.MaxNumber)
+            {
+                // [APPROX] Stammverein hat keine freie Rückennummer mehr: Spieler wird vertragslos statt verloren.
+                player.ContractYears = 0;
+                player.MonthlySalary = 0;
+                player.Insured = false;
+                TransferMarket.Release(owner, player);
+                continue;
+            }
+            player.Number = PlayerFactory.FreeNumber(owner, player);
+            owner.Players.Add(player); // Stammvertrag erhalten; Join würde ihn überschreiben.
+        }
+        CleanLineups();
+        TransferMarket.StartSeason(this);
+    }
 }
 
 /// <summary>Ergebnis einer Vertragsverhandlung.</summary>

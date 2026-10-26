@@ -28,6 +28,20 @@ public readonly record struct LineupSlot(int Block, PlayerRole Role, int Index)
     }
 }
 
+public sealed partial class GameState
+{
+    /// <summary>Bereinigung gehört zur Simulation; Ansichten dürfen weder Kader noch Aufstellung verändern.</summary>
+    private void CleanLineups()
+    {
+        foreach (var club in Clubs)
+        {
+            club.Lineup.RemoveUnavailable(club.Players);
+            if (!Managers.Any(m => m.ClubIndex == club.Index))
+                club.Lineup.FillGaps(club.Players);
+        }
+    }
+}
+
 /// <summary>
 /// Aufstellung wie im Original: vier Blöcke (3 Stürmer, 2 Verteidiger) und ein Torhüter (TW).
 /// Ein Spieler steht höchstens auf einem Platz; Plätze nehmen nur Spieler der passenden Art an.

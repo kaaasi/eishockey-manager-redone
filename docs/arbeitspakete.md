@@ -152,12 +152,90 @@ Zwei Spuren parallel, Basis `main` = `fce0760`:
 | **lebenszyklus** | `paket/lebenszyklus` | R2-04, R2-08, R2-09 | wie in der Tabelle oben; zusätzlich die Aufstellungsbereinigung beim Öffnen in den Saisonwechsel/Tagesablauf verlegen | Spieler altert, Vertrag läuft ab bzw. verkürzt sich, Leihe endet beim ursprünglichen Verein; Anfrage von Tag 231 ist in der Folgesaison nicht mehr annehmbar; zweites Annehmen ändert weder Kontostand noch Kader |
 | **ansichten** | `paket/ansichten` | R2-02b, R2-02c, R2-10 | Werbeangebote, Aktienmarkt und Standard-Trainingsplan werden im Spielablauf (Spielstart bzw. Tageshook) erzeugt, nicht beim Öffnen; Heimspieltest prüft Buchungen **je Begegnung** | Ab Spielstart alle Kacheln öffnen/schließen → vollständiger Zustandsabdruck (inkl. Zufallszustand) unverändert, Skip R2-02b entfällt; doppelte `SettleHomeMatch()` lässt den Test rot werden |
 
+### Status Spur `ansichten`
+
+- [x] R2-02b/c: Spielstart-Hook `InitializeManagerSystems()` nach der Kaderanlage erzeugt Börse, Werbeangebote und
+  Trainingspläne für alle Manager, ohne einen Tag zu verarbeiten. `Ads()` würfelt beim Lesen nichts aus;
+  `TrainingScreen.Enter()` liest den vorhandenen Plan. Monatsangebote bleiben im bestehenden Finanz-Tagesablauf.
+- [x] Fünf Regressionen vor dem Fix rot: die drei Kacheln einzeln ab Spielstart, alle Kacheln gemeinsam und der
+  ausdrücklich gezeichnete Special-Plan. Alle Kacheltests schließen Werbung ein, ohne vorbereitende Testeingriffe;
+  der R2-02b-Skip entfällt. Vollständiger Zustandsabdruck einschließlich Zufallszustand sofort und nach Tag 40 gleich.
+- [x] R2-10: Eintritt und Gastronomie entsprechen nach jedem Weiter-Schritt exakt den ausgetragenen Begegnungen
+  (kontrollierte Kapazitäten und Preise, drei Seeds, Play-Offs und Aufstiegsrunde separat nachgewiesen).
+  Mutationsprobe mit zweitem `SettleHomeMatch()` derselben Begegnung: alter Test grün, neuer Test rot
+  (77 DM erwartet, 154 DM gebucht); Mutation anschließend entfernt.
+- Validierung: Build ohne Warnungen/Fehler; 281 synthetische und 51 Originaldaten-Tests bestanden, 0 übersprungen.
+  Ohne Originaldaten: 281 bestanden, 44 sichtbar übersprungen (Theories ohne Daten nicht expandiert).
+- Restgrenze: Aufstellungsbereinigung und Kaderlebenszyklus gehören zu `lebenszyklus`; R2-10 sichert den Test ab,
+  führt keine allgemeine Idempotenz von `SettleHomeMatch()` ein. Keine neuen `[APPROX]`-Regeln.
+
 **Dateigrenzen in Welle B:**
 `lebenszyklus` → `Core/Player.Contract.cs`, `Core/Player.Factory.cs`, `Core/Transfer.cs`, `Core/FinanceInbox.cs`, `Core/Squad.Lineup.cs`,
 Saisonwechsel in `Core/SeasonFlow.cs`, `OnNewSeason…` in `GameState.Integration.cs` (im PR begründen) ·
 `ansichten` → `Core/FinanceSponsors.cs`, `Core/FinanceStocks.cs`, `Core/Squad.Training.cs`, die öffnenden Bildschirme in `UI/Screens/**`,
 `OnDay…`/Spielstart-Hook in `GameState.Integration.cs` (im PR begründen), `tests/EishockeyManager.Core.Tests/SeasonPaymentTests.cs`.
 Danach Integration Welle B mit ChatGPT-Review, anschließend Runde 3 (`wettbewerbe`, `speichern`, Finanzkalibrierung).
+
+### Status Spur `lebenszyklus` – Welle B
+
+Stand: implementiert, lokale Abnahme grün; unabhängiges Review und Merge stehen aus.
+
+- [x] R2-04: Saisonwechsel aktualisiert Alter und Restvertrag, beendet Verträge und führt Leihspieler zum
+  gespeicherten Eigentümer zurück (Stammvertrag inklusive Gehalt/Versicherung erhalten). Vorprüfung vor jeder
+  Saisonmutation; jeder Spieler altert einmal, Rückennummern werden erst nach allen Abgängen vergeben.
+  Offene Marktangebote/Gebote werden verworfen, Markt und Aufstellungen neu abgeglichen.
+- [x] R2-08: Nachrichten speichern Saison und Tag; Kreditanfragen verfallen nach sieben Simulationstagen auch
+  über den Wechsel. `Answer()` prüft die Frist zusätzlich am pausierten, noch unverarbeiteten Tag.
+- [x] R2-09: Nur ein tatsächlich offenes Gebot auf ein aktuelles Listing mit passendem Eigentümer darf buchen;
+  Wiederholung, Rückzug, Ablehnung, wertgleiche Nachbildung und Eigentümerverlust bleiben ohne Wirkung.
+- [x] Aufstellung: Bereinigung über `Continue()` und Saisonwechsel; Öffnen/Schließen verändert nichts.
+- Tests vor Fix: 9 synthetische Regressionen und 1 Originaldaten-UI-Regression rot (Alter 27 statt 28,
+  Leihe bleibt aktiv, Anfrage von Tag 231 bleibt offen, doppeltes Gebot 400.000 → 666.000 → 932.000 DM).
+  Danach zusätzliche Grenzfälle und Originaldaten-Saisonwechsel ergänzt.
+- Lokale Abnahme: Build ohne Warnungen/Fehler; **294 synthetisch + 48 mit Originaldaten bestanden,
+  1 sichtbar übersprungen** (bekanntes R2-02b, Spur `ansichten`).
+- Begrenzte Berührungen: `GameState.Integration.cs` ausschließlich `OnNewSeasonTeam`; `SeasonFlow.ProcessDay`
+  ruft die Aufstellungsbereinigung auf; `LineupScreen` verliert nur die beiden mutierenden Aufrufe.
+- Neue `[APPROX]`-Regel: ausgelaufene Verträge wechseln ablösefrei in einen erhaltenen Pool vertragsloser
+  Spieler; die sichtbare Marktliste bleibt begrenzt. Die genaue DOS-Regel ist noch nicht rekonstruiert.
+  Automatische Vertragsverlängerung/Kaderergänzung durch Computer-Transfers, neue Saison-Talente
+  und altersbedingter Ruhestand sind weiterhin offen; ohne Verlängerungen können Kader leer werden.
+  Alte Leihflags ohne gespeicherten Ursprung werden vor dem Saisonwechsel abgewiesen, nicht einem Verein zugeordnet.
+
+### Integration Runde 2, Welle B (26.10.2026)
+
+PRs #33 (`ansichten`) und #34 (`lebenszyklus`) zusammengeführt, beide auf Basis `a4c4294`: konfliktfrei.
+Build ohne Warnungen.
+
+**Integrationsfehler (behoben im Integrations-Commit):** Mit dem Vertragsablauf aus #34 waren **ab der dritten Saison
+alle Kader leer**. Jeder Startvertrag läuft zwei Jahre, und Computervereine verlängern nie. Probe mit passivem Manager:
+Am Ende der ersten Saison haben alle 36 Vereine mit Kader 20 Spieler, nach dem zweiten Saisonwechsel haben alle
+48 wählbaren Vereine 0 Spieler, und 720 Spieler liegen im Pool vertragsloser Spieler. Überbrückung `[APPROX]` in
+`Player.Contract.cs`: Computervereine verlängern auslaufende Verträge um `StartContractYears` mit gleichem Gehalt.
+Regressionstest `MultiSeasonSquadTests` (vor der Überbrückung rot): Computerkader bleiben über drei Saisonwechsel
+vollständig, jeder Spieler altert um 3 Jahre und hat einen gültigen Vertrag.
+
+| Befund | Ergebnis im Gesamtstand |
+|---|---|
+| R2-02b/c Ansichten | behoben – Werbung, Börse und Trainingsplan entstehen beim Spielstart; strenger Kacheltest ohne Skip grün |
+| R2-10 Heimspieltest | behoben – exakte Beträge je Begegnung; doppelte Abrechnung wird rot (laut PR mutationsgeprüft) |
+| R2-04 Saisonwechsel | behoben – Altern, Vertragsablauf, Leihende zum Stammverein, Markt neu |
+| R2-08 Fristen | behoben – Saison + Tag; Anfrage von Tag 231 ist in der Folgesaison nicht mehr annehmbar |
+| R2-09 Transfergebote | behoben – zweites Annehmen ohne Buchung und ohne Kaderänderung |
+| **R2-11 (neu, offen)** | Ein passiver Manager verliert zu Beginn der dritten Saison seinen gesamten Kader (alle Verträge laufen gleichzeitig aus), ohne Vorwarnung im Posteingang. Ob und wie das Original warnt oder verlängert, ist nicht rekonstruiert → Runde 3 (Kader-KI/Verträge) |
+| R2-12 (neu, offen) | Keine Neuzugänge, Talente oder Ruhestand bei Computervereinen; der Pool vertragsloser Spieler wächst und altert unbegrenzt → Runde 3 |
+
+**Review 1** ([reviews/2026-10-26-pr35-review.md](reviews/2026-10-26-pr35-review.md), Head `c4fca70`): keine Freigabe wegen
+zwei P2-Befunden; die ursprünglichen Gegenbeispiele und die Mehrsaisonprobe (4 Wechsel) wurden bestätigt.
+R2-11 bekommt die Priorität P1 und R2-12 die Priorität P2, beide für Runde 3. Behoben im zweiten Integrations-Commit:
+
+| Befund | Behebung | Regressionstest (vorher rot) |
+|---|---|---|
+| PR35-01 (P2) Leihrückgabe in vollen Computerverein: Saisonwechsel bricht nach Teilmutation ab, Spieler verloren | Vorprüfung der Kapazität entfällt; beim Rückführen gilt: Stammverein voll (99 Nummern) → Spieler wird vertragslos (`[APPROX]`). Vorprüfung und Ausführung können nicht mehr auseinanderlaufen | `WaveBReviewRegressionTests.PR3501_…` |
+| PR35-02 (P2) Ungültig gewordenes Gebot bleibt offen und erscheint nach „Annehmen“ kommentarlos erneut | `TransferMarket.Accept` liefert `TransferResult`; ein offenes, nicht mehr ausführbares Gebot wird verworfen (`[APPROX]`); die Ansicht zeigt „Der Transfer findet nicht statt.“ | `WaveBReviewRegressionTests.PR3502_…` (Core), `WaveBReviewScreenTests.PR3502_…` (echte Knöpfe) |
+
+Tests: mit Originaldaten (`EM_REQUIRE_GAMEDATA=1`) 351 bestanden, 0 übersprungen; ohne Daten 297 bestanden,
+47 sichtbar übersprungen; Pflichtlauf ohne Daten scheitert (54 Fälle). Alle Bildschirmfoto-Abläufe laufen durch.
 
 ## Runde 1 (abgeschlossen am 26.10.2026)
 
