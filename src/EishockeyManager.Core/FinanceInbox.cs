@@ -18,6 +18,8 @@ public sealed class Message
 {
     public required MessageKind Kind { get; init; }
     public required int Day { get; init; }
+    /// <summary>Saison der Erstellung; zusammen mit Day ein Zeitpunkt auf der fortlaufenden Zeitleiste.</summary>
+    public int Season { get; internal set; }
     public required string[] Lines { get; init; }
     public bool Read { get; set; }
 
@@ -51,6 +53,7 @@ public sealed partial class GameState
 
     private Message Post(Manager manager, Message message)
     {
+        message.Season = Season;
         Finance(manager).Inbox.Add(message);
         return message;
     }
@@ -77,8 +80,13 @@ public sealed partial class GameState
     /// <summary>Beantwortet eine Frage im Posteingang. Liefert false, wenn es nichts (mehr) zu beantworten gibt.</summary>
     public bool Answer(Manager manager, Message message, bool yes)
     {
-        if (!message.IsQuestion)
+        if (!Managers.Contains(manager) || !Finance(manager).Inbox.Contains(message) || !message.IsQuestion)
             return false;
+        if (MessageExpired(message, Math.Max(Day, FinanceDay)))
+        {
+            message.Done = true;
+            return false;
+        }
         message.Done = true;
         message.Read = true;
         if (!yes)
@@ -107,9 +115,12 @@ public sealed partial class GameState
     {
         foreach (var manager in Managers)
             foreach (var m in Finance(manager).Inbox)
-                if (m.Kind == MessageKind.LoanRequest && !m.Done && FinanceDay - m.Day >= LoanRequestDays)
+                if (!m.Done && MessageExpired(m, FinanceDay))
                     m.Done = true;
     }
+
+    private bool MessageExpired(Message message, int day) => message.Kind == MessageKind.LoanRequest
+        && (long)(Season - message.Season) * SeasonCalendar.Length + day - message.Day >= LoanRequestDays;
 
     /// <summary>Abgelaufener Werbevertrag: Frage nach Verlängerung oder Absage der Firma (Texte aus em.exe).</summary>
     private void ContractExpired(Manager manager, SponsorContract contract)
