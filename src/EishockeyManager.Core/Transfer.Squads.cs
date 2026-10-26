@@ -8,7 +8,7 @@ namespace EishockeyManager.Core;
 /// <remarks>
 /// [ORIGINAL] Texte aus em.exe und Ablauf aus dem 75-Minuten-Video: Spieler im letzten Vertragsjahr melden sich
 /// über die ganze Saison verteilt im Posteingang (belegt vom 13. September bis 30. März), meist mit
-/// „… bietet Ihnen an, von 1 auf 2 Jahre zu verlängern.“ (im Video 15-mal, davon 3-mal „auf 3“, einmal „auf 4“),
+/// „… bietet Ihnen an, von 1 auf 2 Jahre zu verlängern.“ (im Video 15 verschiedene: 12-mal „auf 2“, 2-mal „auf 3“, einmal „auf 4“),
 /// selten mit „… kündigt an, daß er seinen Vertrag nicht mehr verlängern wird.“ (einmal). Die Verlängerung selbst
 /// geschieht im Bildschirm „Verträge“. Das Laufbahnende meldet „… gibt das Eishockeyspielen im Alter von # Jahren
 /// endgültig auf.“, die Verhandlung „… wird sich mit Ablauf des Vertrages zur Ruhe setzen.“ bzw.
@@ -57,8 +57,8 @@ public static class SquadRules
     public static double RetirementChance(int age) =>
         age < RetireMinAge ? 0 : Math.Min(1.0, (age - RetireMinAge + 1) / (double)(RetireMaxAge - RetireMinAge + 1));
 
-    /// <summary>Angebotene Gesamtlaufzeit „von 1 auf n Jahre“: 2 (70 %), 3 (20 %), 4 (10 %). [APPROX] nach dem Video.</summary>
-    public static int OfferedYears(double roll) => roll < 0.7 ? 2 : roll < 0.9 ? 3 : 4;
+    /// <summary>Angebotene Gesamtlaufzeit „von 1 auf n Jahre“: 2 (80 %), 3 (13 %), 4 (7 %). [APPROX] Video: 12 / 2 / 1.</summary>
+    public static int OfferedYears(double roll) => roll < 0.8 ? 2 : roll < 0.93 ? 3 : 4;
 
     public static string[] OfferText(Player p, int years) =>
         [$"{p.Name} bietet Ihnen an, von 1 auf {years}", "Jahre zu verlängern."];

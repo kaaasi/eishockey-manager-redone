@@ -37,7 +37,7 @@ Stand: implementiert, lokale Abnahme grün; Review und Merge stehen aus (Branch 
   „$ kündigt an, daß er seinen Vertrag^nicht mehr verlängern wird.“, „$ gibt das Eishockeyspielen im Alter von^# Jahren
   endgültig auf.“ und die Verhandlungsmeldungen „ist im Moment / nicht verhandlungs- / bereit.“, „wird sich mit /
   Ablauf des Vertrages / zur Ruhe setzen.“. Im 75-Minuten-Video erscheinen 16 Ankündigungen von Spielern im letzten
-  Vertragsjahr, verteilt vom 13. September bis 30. März (15 × „von 1 auf 2/3/4 Jahre“, 1 × Absage); verlängert wird im
+  Vertragsjahr, verteilt vom 13. September bis 30. März (15 Angebote: 12 × „von 1 auf 2“, 2 × „auf 3“, 1 × „auf 4“; 1 Absage); verlängert wird im
   Bildschirm „Verträge“. Die Vertragsanzeige sinkt beim Saisonwechsel um ein Jahr (14.4. „2 Jahre“ → 10.9. „1 Jahr“).
 - [x] **R2-11:** Jeder Spieler eines Manager-Vereins im letzten Vertragsjahr meldet sich genau einmal je Saison im
   Posteingang, spätestens am 30. März (`GameState.ContractNoticeDeadline`): Angebot „von 1 auf n Jahre“, Absage oder
