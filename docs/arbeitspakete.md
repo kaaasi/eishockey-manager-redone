@@ -105,6 +105,13 @@ PRs #16–#30 (fundament, wirtschaft, mehrmanager, sound) probeweise zusammengef
 sonst konfliktfrei. Build ohne Warnungen; mit `EM_REQUIRE_GAMEDATA=1` und Originaldaten 327 Tests bestanden, 1 sichtbar
 übersprungen (R2-02b, siehe unten); alle 16 Bildschirmfoto-Abläufe laufen durch.
 
+**Integrationsfehler (behoben im Integrations-Commit):** Die Tests aus `mehrmanager` und `sound` waren gegen den alten
+Stand geschrieben und nutzten noch das Muster „ohne Daten still `return`“ bzw. `FlowTests.CreateDriver()`, das seit
+`fundament` ohne Daten scheitert. Folge: CI-Schritt „Test (synthetisch)“ rot, und 16 Originaldaten-Tests wären ohne
+Daten wieder still „bestanden“ (R2-05). Alle auf `[GameDataFact]` / neues `[GameDataTheory]` umgestellt.
+Ohne Daten jetzt: 281 bestanden, 42 sichtbar übersprungen; Pflichtlauf ohne Daten scheitert (46 Fälle); mit Daten 327 bestanden, 1 übersprungen (R2-02b).
+**Regel:** Tests mit Originaldaten nur noch mit `[GameDataFact]`/`[GameDataTheory]` und `TestGameData.Load()`.
+
 Befunde im Gesamtstand vom Koordinations-Chat nachgestellt (eigene Probe gegen die gebauten Assemblies):
 
 | Befund | Ergebnis im Gesamtstand |

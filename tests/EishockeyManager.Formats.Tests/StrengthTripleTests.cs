@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Formats;
 
 namespace EishockeyManager.Formats.Tests;
@@ -26,12 +27,10 @@ public class StrengthTripleTests
     }
 
     /// <summary>Originaldatenbank (übersprungen ohne Originaldateien): alle 150 Tripel byte-genau, 86 davon ungleich.</summary>
-    [Fact]
+    [GameDataFact]
     public void OriginalDatabase_AllTriplesPreserved()
     {
-        GameData game;
-        try { game = GameData.Locate(); }
-        catch (DirectoryNotFoundException) { return; }
+        var game = TestGameData.Load();
         var raw = File.ReadAllBytes(game.GraphicsPath(23));
         var db = ClubDatabase.Parse(raw);
 

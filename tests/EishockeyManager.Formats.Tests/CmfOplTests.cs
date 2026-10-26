@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Formats;
 
 namespace EishockeyManager.Formats.Tests;
@@ -367,17 +368,12 @@ public class Opl2Tests
 /// <summary>Musik des Originals kb\248 und FM-Treiber in em.exe (übersprungen ohne „gamedata“).</summary>
 public class CmfOriginalTests
 {
-    private static GameData? Game()
-    {
-        try { return GameData.Locate(); }
-        catch (DirectoryNotFoundException) { return null; }
-    }
+    private static GameData Game() => TestGameData.Load();
 
-    [Fact]
+    [GameDataFact]
     public void Music248_EventsAndDuration()
     {
-        if (Game() is not { } game)
-            return;
+        var game = Game();
         var cmf = CmfFile.Load(game.GraphicsPath(248));
         Assert.Equal(14, cmf.Instruments.Count);
         Assert.Equal(96, cmf.TicksPerSecond);
@@ -388,11 +384,10 @@ public class CmfOriginalTests
         Assert.Equal(new CmfEvent(0, 0xB0, 0x67, 1), cmf.Events[0]); // Rhythmusmodus zuerst
     }
 
-    [Fact]
+    [GameDataFact]
     public void Music248_RendersAllNotes()
     {
-        if (Game() is not { } game)
-            return;
+        var game = Game();
         var cmf = CmfFile.Load(game.GraphicsPath(248));
         var player = new CmfPlayer(cmf, 11025);
         var total = 0;
@@ -411,11 +406,10 @@ public class CmfOriginalTests
     }
 
     /// <summary>Die F-Nummern-Formel stimmt mit der Tabelle des FM-Treibers in em.exe überein.</summary>
-    [Fact]
+    [GameDataFact]
     public void FNumberTable_MatchesDriverInEmExe()
     {
-        if (Game() is not { } game)
-            return;
+        var game = Game();
         var exe = File.ReadAllBytes(Path.Combine(game.RootDirectory, "em.exe"));
         const int driver = 0x14D70;
         Assert.Equal("FMDRV"u8.ToArray(), exe[(driver + 3)..(driver + 8)]);

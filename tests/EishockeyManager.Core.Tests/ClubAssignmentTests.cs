@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 
@@ -107,12 +108,10 @@ public class ClubAssignmentTests
     }
 
     /// <summary>Gegenbeispiel aus dem Review mit der Originaldatenbank (übersprungen ohne Originaldateien).</summary>
-    [Fact]
+    [GameDataFact]
     public void ReviewCounterexample_OriginalDatabase_Seed0()
     {
-        GameData data;
-        try { data = GameData.Locate(); }
-        catch (DirectoryNotFoundException) { return; }
+        var data = TestGameData.Load();
         var database = ClubDatabase.Load(data);
 
         for (var seed = 0; seed < 20; seed++)

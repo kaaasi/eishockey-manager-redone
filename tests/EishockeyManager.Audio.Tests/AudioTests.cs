@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Audio;
 using EishockeyManager.Formats;
 
@@ -233,21 +234,16 @@ public class GameAudioTests
 /// <summary>Belege aus den Originaldateien (übersprungen ohne „gamedata“).</summary>
 public class SoundOriginalTests
 {
-    private static GameData? Game()
-    {
-        try { return GameData.Locate(); }
-        catch (DirectoryNotFoundException) { return null; }
-    }
+    private static GameData Game() => TestGameData.Load();
 
     /// <summary>
     /// Byte 3 jedes 28-Byte-Bildes einer Torszene ist der Effekt. Jubel (1) fast nur in Szenen mit Treffer (*.at/*.ht…),
     /// Pfiff (2) nie, Puck (3) am häufigsten.
     /// </summary>
-    [Fact]
+    [GameDataFact]
     public void GoalScenes_UseEffectIndices()
     {
-        if (Game() is not { } game)
-            return;
+        var game = Game();
         var counts = new int[256];
         var cheerFiles = new List<string>();
         foreach (var path in Directory.EnumerateFiles(game.GoalScenesDirectory))
@@ -271,11 +267,10 @@ public class SoundOriginalTests
     }
 
     /// <summary>Die Torszene lädt kb\(231 + i) und spielt Effekt s aus Tabelleneintrag 6 + s.</summary>
-    [Fact]
+    [GameDataFact]
     public void EmExe_LoadsSceneFilesFrom231()
     {
-        if (Game() is not { } game)
-            return;
+        var game = Game();
         var exe = File.ReadAllBytes(Path.Combine(game.RootDirectory, "em.exe"));
         Assert.Equal(new byte[] { 0x04, 0xE7 }, exe[0x568C2..0x568C4]);             // add al, 231
         Assert.Equal(new byte[] { 0x89, 0x87, 0xB9, 0xE2 }, exe[0x56934..0x56938]); // Tabelle 0xE2B9
@@ -283,11 +278,10 @@ public class SoundOriginalTests
         Assert.Equal(0xE2B9 + 6 * 4, 0xE2D1);
     }
 
-    [Fact]
+    [GameDataFact]
     public void SoundBank_LoadsAllOriginalSounds()
     {
-        if (Game() is not { } game)
-            return;
+        var game = Game();
         var bank = SoundBank.Load(game, AudioMixer.DefaultSampleRate);
         Assert.All(SoundEffects.All, e => Assert.True(bank.Has(e)));
         Assert.True(bank[SoundEffect.Crowd].HasLoop);

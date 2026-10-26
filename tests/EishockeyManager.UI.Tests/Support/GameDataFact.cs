@@ -63,3 +63,21 @@ public sealed class GameDataFactAttribute : FactAttribute, ITraitAttribute
     public string Name { get; }
     public string Value { get; }
 }
+
+/// <summary>Wie <see cref="GameDataFactAttribute"/>, für Tests mit Datenzeilen (<c>[InlineData]</c>).</summary>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+[XunitTestCaseDiscoverer("Xunit.Sdk.TheoryDiscoverer", "xunit.execution.{Platform}")]
+[TraitDiscoverer("Xunit.Sdk.TraitDiscoverer", "xunit.core")]
+public sealed class GameDataTheoryAttribute : TheoryAttribute, ITraitAttribute
+{
+    public GameDataTheoryAttribute(string name = "Category", string value = TestGameData.Category)
+    {
+        Name = name;
+        Value = value;
+        if (TestGameData.SkipReason is { } reason)
+            Skip = reason;
+    }
+
+    public string Name { get; }
+    public string Value { get; }
+}

@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens;
 
 namespace EishockeyManager.UI.Tests;
@@ -8,12 +9,10 @@ namespace EishockeyManager.UI.Tests;
 /// </summary>
 public class SetupLevelScreenTests
 {
-    [Fact]
+    [GameDataFact]
     public void LevelSlider_ReachesFiveAndStopsAtBothEnds()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return; // keine Originaldateien vorhanden
 
         d.Host.Show(new TitleScreen(d.Host));
         d.Frame();

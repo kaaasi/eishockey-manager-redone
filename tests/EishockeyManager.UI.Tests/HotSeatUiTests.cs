@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Core;
 using EishockeyManager.UI;
 using EishockeyManager.UI.Screens;
@@ -11,11 +12,9 @@ namespace EishockeyManager.UI.Tests;
 /// </summary>
 public class HotSeatUiTests
 {
-    private static (ScreenDriver Driver, GameState Game)? Start(int managers)
+    private static (ScreenDriver Driver, GameState Game) Start(int managers)
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return null;
         var setup = new GameSetup();
         int[] clubs = [2, 14, 26, 7];
         for (var i = 0; i < managers; i++)
@@ -48,13 +47,12 @@ public class HotSeatUiTests
         return redHits > greenHits;
     }
 
-    [Theory]
+    [GameDataTheory]
     [InlineData(2)]
     [InlineData(4)]
     public void Continue_PassesTurnThenPlaysDayOnce(int managers)
     {
-        if (Start(managers) is not var (d, game))
-            return;
+        var (d, game) = Start(managers);
 
         for (var turn = 0; turn < managers; turn++)
         {

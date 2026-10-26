@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using System.Buffers.Binary;
 using EishockeyManager.Formats;
 
@@ -268,7 +269,7 @@ public class WavWriterTests
 /// <summary>Die Sounddateien des Originals (übersprungen ohne „gamedata“).</summary>
 public class VocOriginalTests
 {
-    [Theory]
+    [GameDataTheory]
     [InlineData(237, 4673, 9146, true)]
     [InlineData(238, 4673, 4910, false)]
     [InlineData(239, 11905, 9194, false)]
@@ -276,9 +277,7 @@ public class VocOriginalTests
     [InlineData(241, 6452, 2574, false)]
     public void OriginalSounds_Decode(int number, int rate, int samples, bool loops)
     {
-        GameData game;
-        try { game = GameData.Locate(); }
-        catch (DirectoryNotFoundException) { return; }
+        var game = TestGameData.Load();
 
         var sound = VocFile.Load(game.GraphicsPath(number)).Decode();
         Assert.Equal(rate, sound.SampleRate);

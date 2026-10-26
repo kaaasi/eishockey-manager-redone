@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 
@@ -11,11 +12,7 @@ public class SetupLevelTests
     /// <summary>DGROUP (Segment 0x14FD) beginnt in em.exe bei Datei 0x1E00 + 0x14FD0.</summary>
     private const int DgroupFile = 0x1E00 + 0x14FD0;
 
-    private static byte[]? ReadExe()
-    {
-        try { return File.ReadAllBytes(Path.Combine(GameData.Locate().RootDirectory, "em.exe")); }
-        catch (DirectoryNotFoundException) { return null; }
-    }
+    private static byte[] ReadExe() => File.ReadAllBytes(Path.Combine(TestGameData.Load().RootDirectory, "em.exe"));
 
     [Fact]
     public void LevelRange_IsZeroToFive_DefaultThree()
@@ -25,12 +22,10 @@ public class SetupLevelTests
     }
 
     /// <summary>Höchstwerte DGROUP 0x11C und Vorgaben 0x118 (übersprungen ohne Originaldateien).</summary>
-    [Fact]
+    [GameDataFact]
     public void SliderMaxima_MatchEmExe()
     {
         var exe = ReadExe();
-        if (exe is null)
-            return; // keine Originaldateien vorhanden
 
         Assert.Equal(new byte[] { 5, 3, 2, 2 }, exe[(DgroupFile + 0x11C)..(DgroupFile + 0x120)]);
         Assert.Equal(ManagerSetup.LevelCount - 1, exe[DgroupFile + 0x11C]);
@@ -40,12 +35,10 @@ public class SetupLevelTests
     }
 
     /// <summary>Erster Streifen je Regler in kb\1, DGROUP 0x4B3E (übersprungen ohne Originaldateien).</summary>
-    [Fact]
+    [GameDataFact]
     public void SliderStrips_MatchEmExe()
     {
         var exe = ReadExe();
-        if (exe is null)
-            return;
 
         Assert.Equal(new byte[] { 0, 6, 10, 13 }, exe[(DgroupFile + 0x4B3E)..(DgroupFile + 0x4B42)]);
         foreach (var slider in Enum.GetValues<SetupSlider>())

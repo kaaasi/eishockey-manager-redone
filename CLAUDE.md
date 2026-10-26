@@ -42,7 +42,9 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
 - `src/EishockeyManager.UI` – ein `Screen` je Bildschirm, zeichnet in `Surface` (320 × 240 Byte + Palette).
   Bausteine des Originals in `Widgets.cs` (Rahmen aus kb\2, Knöpfe, Lampen, Smileys …).
 - `src/EishockeyManager.Tools` – `emtool` (Export, Datenbank, Bildschirmfotos).
-- `tests/` – xUnit. `EishockeyManager.UI.Tests` spielt mit den echten Dateien Abläufe durch (auf GitHub übersprungen).
+- `tests/` – xUnit. Tests mit Originaldaten **nur** mit `[GameDataFact]`/`[GameDataTheory]` und `TestGameData.Load()`
+  (`tests/EishockeyManager.UI.Tests/Support/GameDataFact.cs`): ohne Daten sichtbar übersprungen, mit
+  `EM_REQUIRE_GAMEDATA=1` Pflichtlauf. Nie „ohne Daten einfach `return`“.
 
 ### Zeit und Geld (verbindlich seit Integration Runde 1)
 

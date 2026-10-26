@@ -1,3 +1,4 @@
+using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Testing;
 
@@ -82,22 +83,19 @@ public class SettingsScreenTests : IDisposable
         Assert.Equal(2, GameSettings.Load(GameSettings.StorePath).MusicVolume);
     }
 
-    private static ScreenDriver? Open()
+    private static ScreenDriver Open()
     {
         var d = FlowTests.CreateDriver();
-        if (d is null)
-            return null;
         d.StartNewGame();
         d.OpenTile("Einstellungen");
         Assert.IsType<SettingsScreen>(d.Host.Current);
         return d;
     }
 
-    [Fact]
+    [GameDataFact]
     public void Tile_OpensSettingsAndEscapeReturns()
     {
-        if (Open() is not { } d)
-            return;
+        var d = Open();
         var money = d.Host.Game!.ActiveManager.Money;
         d.Press(Key.Escape);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
@@ -109,11 +107,10 @@ public class SettingsScreenTests : IDisposable
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
 
-    [Fact]
+    [GameDataFact]
     public void Arrows_ChangeVolume()
     {
-        if (Open() is not { } d)
-            return;
+        var d = Open();
         var arrows = SettingsScreen.ArrowRect(SettingsScreen.Row.EffectsVolume);
         d.Click(arrows.X + 4, arrows.Bottom - 3);   // leiser
         d.Click(arrows.X + 4, arrows.Bottom - 3);
@@ -123,11 +120,10 @@ public class SettingsScreenTests : IDisposable
         Assert.Equal(10, GameSettings.Current.MusicVolume);
     }
 
-    [Fact]
+    [GameDataFact]
     public void Cells_SetVolumeDirectly()
     {
-        if (Open() is not { } d)
-            return;
+        var d = Open();
         var cell = SettingsScreen.CellRect(SettingsScreen.Row.MusicVolume, 4);
         d.Click(cell.X + 2, cell.Y + 2);
         Assert.Equal(4, GameSettings.Current.MusicVolume);
@@ -138,11 +134,10 @@ public class SettingsScreenTests : IDisposable
         Assert.Equal(0, GameSettings.Current.MusicVolume);
     }
 
-    [Fact]
+    [GameDataFact]
     public void Rows_ToggleSwitchesAndSave()
     {
-        if (Open() is not { } d)
-            return;
+        var d = Open();
         GameSettings.StorePath = Path.Combine(_directory, "e.json");
         foreach (var row in new[] { SettingsScreen.Row.MusicInMatch, SettingsScreen.Row.GoalScenes, SettingsScreen.Row.Fullscreen })
         {
