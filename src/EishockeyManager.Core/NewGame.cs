@@ -32,26 +32,7 @@ public static class NewGame
             return club;
         }).ToList();
 
-        var managers = new List<Manager>();
-        foreach (var m in setup.Managers)
-        {
-            var clubIndex = m.ClubIndex ?? PickRandomClub(clubs, m.StartLeague, m.StartStrength, managers, random);
-            var club = clubs[clubIndex];
-
-            // [APPROX] Ein Verein ohne Liga (Index 36–47) rückt in die Oberliga und verdrängt dort
-            // einen zufälligen Verein, der von keinem Manager geführt wird.
-            if (club.League is null)
-            {
-                var candidates = clubs
-                    .Where(c => c.League == League.Oberliga && managers.All(x => x.ClubIndex != c.Index))
-                    .ToList();
-                var replaced = candidates[random.Next(candidates.Count)];
-                replaced.League = null;
-                club.League = League.Oberliga;
-            }
-
-            managers.Add(new Manager { Name = m.Name, Head = m.Head, ClubIndex = clubIndex, Level = m.Level });
-        }
+        var managers = AssignClubs(clubs, setup, random);
 
         var schedules = new Dictionary<League, IReadOnlyList<MatchDay>>();
         foreach (var league in Enum.GetValues<League>())
@@ -74,17 +55,67 @@ public static class NewGame
     }
 
     /// <summary>
-    /// Zufälliger Verein der Start-Liga aus dem gewählten Drittel (nach Stärke sortiert).
+    /// Exklusive Vereinsvergabe (Befund R2-07): Erst werden die festen Wahlen aller Manager reserviert und geprüft,
+    /// dann rücken ligalose Wahlen in die Oberliga (Verdrängung nur nicht reservierter Vereine), zuletzt folgen die
+    /// Zufallswahlen unter Ausschluss aller bereits vergebenen Vereine. Die Reihenfolge der Manager bleibt erhalten.
+    /// </summary>
+    /// <exception cref="ArgumentException">Fester Verein außerhalb 0–47 oder von zwei Managern gewählt.</exception>
+    public static List<Manager> AssignClubs(IReadOnlyList<Club> clubs, GameSetup setup, Random random)
+    {
+        var reserved = new HashSet<int>();
+        foreach (var m in setup.Managers)
+        {
+            if (m.ClubIndex is not { } chosen)
+                continue;
+            if (chosen < 0 || chosen >= SelectableClubs)
+                throw new ArgumentException($"Verein {chosen} ist nicht wählbar (0–{SelectableClubs - 1}).", nameof(setup));
+            if (!reserved.Add(chosen))
+                throw new ArgumentException($"Verein {chosen} wurde von mehreren Managern gewählt.", nameof(setup));
+        }
+
+        // [APPROX] Ein Verein ohne Liga (Index 36–47) rückt in die Oberliga und verdrängt dort einen zufälligen
+        // Verein, den kein Manager fest gewählt hat.
+        foreach (var chosen in setup.Managers.Select(m => m.ClubIndex).OfType<int>())
+        {
+            var club = clubs[chosen];
+            if (club.League is not null)
+                continue;
+            var candidates = clubs.Where(c => c.League == League.Oberliga && !reserved.Contains(c.Index)).ToList();
+            var replaced = candidates[random.Next(candidates.Count)];
+            replaced.League = null;
+            club.League = League.Oberliga;
+        }
+
+        var assigned = new int[setup.Managers.Count];
+        for (var i = 0; i < setup.Managers.Count; i++)
+        {
+            var m = setup.Managers[i];
+            if (m.ClubIndex is { } chosen)
+            {
+                assigned[i] = chosen;
+                continue;
+            }
+            assigned[i] = PickRandomClub(clubs, m.StartLeague, m.StartStrength, reserved, random);
+            reserved.Add(assigned[i]);
+        }
+
+        return setup.Managers
+            .Select((m, i) => new Manager { Name = m.Name, Head = m.Head, ClubIndex = assigned[i], Level = m.Level })
+            .ToList();
+    }
+
+    /// <summary>
+    /// Zufälliger Verein der Start-Liga aus dem gewählten Drittel (nach Stärke sortiert), ohne die vergebenen Vereine.
+    /// Ist das Drittel voll vergeben, wird aus der ganzen Liga gewählt.
     /// </summary>
     public static int PickRandomClub(IReadOnlyList<Club> clubs, League league, StartStrength strength,
-        IEnumerable<Manager> taken, Random random)
+        IReadOnlySet<int> taken, Random random)
     {
-        var used = taken.Select(m => m.ClubIndex).ToHashSet();
         var sorted = clubs.Where(c => c.League == league).OrderByDescending(c => c.Strength).ToList();
         var third = sorted.Count / 3;
-        var band = sorted.Skip((int)strength * third).Take(third).Where(c => !used.Contains(c.Index)).ToList();
+        var band = sorted.Skip((int)strength * third).Take(third).Where(c => !taken.Contains(c.Index)).ToList();
         if (band.Count == 0)
-            band = sorted.Where(c => !used.Contains(c.Index)).ToList();
+            band = sorted.Where(c => !taken.Contains(c.Index)).ToList();
         return band[random.Next(band.Count)].Index;
     }
 
