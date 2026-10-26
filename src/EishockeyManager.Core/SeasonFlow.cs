@@ -119,14 +119,25 @@ public sealed partial class GameState
     private bool ManagerPlaysOn(int day) => ActiveManagers.Any(m => MatchOn(day, m.ClubIndex) is not null);
 
     /// <summary>
-    /// „und tschüß…“: spielt den aktuellen Tag und alle folgenden Tage bis zum nächsten Spiel eines Managers,
-    /// bis zum Ende der Vereinssaison oder bis zum Saisonende. Liefert, was die Oberfläche zeigen soll.
+    /// „und tschüß…“ des Managers am Zug. Im Hot-Seat gibt es zunächst nur den Zug an den nächsten aktiven Manager
+    /// weiter (leere Liste, siehe <c>GameState.HotSeat.cs</c>). Bestätigt der letzte offene Manager, spielt es den
+    /// aktuellen Tag und alle folgenden Tage bis zum nächsten Spiel eines Managers, bis zum Ende der Vereinssaison
+    /// oder bis zum Saisonende, und beginnt eine neue Bereitschaftsphase. Liefert, was die Oberfläche zeigen soll.
     /// </summary>
     public IReadOnlyList<SeasonStep> Continue()
     {
         if (Phase is SeasonPhase.SeasonOver or SeasonPhase.GameOver)
             throw new InvalidOperationException("Die Saison ist zu Ende – zuerst StartNextSeason() aufrufen.");
+        if (PassTurn())
+            return [];
 
+        var steps = RunDays();
+        StartTurns();
+        return steps;
+    }
+
+    private List<SeasonStep> RunDays()
+    {
         var steps = new List<SeasonStep>();
         while (true)
         {

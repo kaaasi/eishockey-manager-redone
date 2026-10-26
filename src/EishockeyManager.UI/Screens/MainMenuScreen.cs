@@ -81,10 +81,19 @@ public sealed class MainMenuScreen : Screen
             Continue_();
     }
 
-    /// <summary>„und tschüß…“: weiter bis zum nächsten eigenen Spiel bzw. zum Saisonende (Paket saison).</summary>
+    /// <summary>
+    /// „und tschüß…“: Im Hot-Seat gibt der Manager am Zug nur an den nächsten noch nicht bereiten Manager ab
+    /// (Hauptmenü bleibt, Infoleiste zeigt den neuen Manager). Erst der letzte bestätigt den Tag, dann läuft er
+    /// bis zum nächsten eigenen Spiel bzw. zum Saisonende (Paket saison).
+    /// </summary>
     private void Continue_()
     {
         _selectedBig = -1;
+        if (!Game.IsLastTurnOfDay)
+        {
+            Game.Continue();
+            return;
+        }
         Host.Show(new MatchDayScreen(Host, this));
     }
 
@@ -165,9 +174,13 @@ public sealed class MainMenuScreen : Screen
         s.TextCentered(mini, 184, 51, MeetingsText(game, manager.ClubIndex, next?.Opponent.Index), Colors.White);
         s.TextCentered(mini, 184, 64, GameState.FormatMoney(manager.Money), Colors.White);
 
-        // Lampen [APPROX] Bedeutung: rot = Manager am Zug
+        // Lampen je Manager: rot = noch nicht bereit (am Zug bzw. noch dran), grün = bereit (Hot-Seat, R2-06).
+        // [APPROX] Unbelegte Lampen und entlassene Manager grün; sechs Lampen bei höchstens vier Managern nicht geklärt.
         for (var i = 0; i < 6; i++)
-            Widgets.Lamp(s, Assets, 226, 31 + i * 7, red: i == game.CurrentManager);
+        {
+            var waiting = i < game.Managers.Count && !game.Managers[i].Dismissed && !game.IsReady(game.Managers[i]);
+            Widgets.Lamp(s, Assets, 226, 31 + i * 7, red: waiting);
+        }
 
         Raised(s, new Rect(231, 32, 42, 42));
         Widgets.Head(s, Assets, manager.Head, 232, 33);
