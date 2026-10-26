@@ -60,12 +60,7 @@ public sealed class TransferScreen : Screen
 
     public PlayerInfoPopup Info => _info;
 
-    public override void Enter()
-    {
-        Market.CatchUp(Game);
-        Game.CatchUpTraining();
-        ShowNextBid();
-    }
+    public override void Enter() => ShowNextBid();
 
     private void ShowNextBid()
     {

@@ -204,8 +204,8 @@ public class TeamScreenTests
         Assert.IsType<MainMenuScreen>(d.Host.Current);
         d.PlayMatchDay();
         d.PlayMatchDay();
-        d.OpenTile("Training");
-        var days = Enumerable.Range(1, game.Day).Count(GameState.IsTrainingDay);
+        // Verarbeitet sind alle Tage vor dem angezeigten Datum; der angezeigte Tag selbst noch nicht (R2-02)
+        var days = Enumerable.Range(1, game.Day - 1).Count(GameState.IsTrainingDay);
         Assert.Equal(before - days * plan.CostPerTrainingDay, Training());
     }
 }

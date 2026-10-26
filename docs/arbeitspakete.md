@@ -42,7 +42,10 @@ Berührungen außerhalb der eigenen Grenzen im PR begründen. `GameState.Integra
   Pflichtlauf `EM_REQUIRE_GAMEDATA=1` scheitert), Trait `Category=Originaldaten`, CI-Bericht getrennt nach
   synthetisch / Originaldaten / übersprungen (`.github/scripts/testbericht.py`), `ScreenDriver.PlayMatchDay()` wirft
   `TimeoutException`, Kacheltest trennt Platzhalter und echte Bildschirme (Liste `MenuEntryTests.DocumentedPlaceholders`)
-- [ ] PR 2 – Passive Bildschirme und Tagesablauf (R2-02)
+- [ ] PR 2 – Passive Bildschirme und Tagesablauf (R2-02): alle `CatchUp…`-Aufrufe aus den Bildschirmen entfernt,
+  Tagesablauf in [tagesablauf.md](tagesablauf.md), Abnahmetests `PassiveScreenTests` (Zustandsabdruck, Zwillingsspiel).
+  **Neuer Folgebefund R2-02b** (Spur `wirtschaft`): erstes Öffnen von „Werbung“ verbraucht den Finanz-Zufall –
+  strenger Test liegt sichtbar übersprungen bereit
 - [ ] PR 3 – Werkzeugversionen festschreiben (A09)
 
 ### Pflichtangaben in jedem PR dieser Runde
