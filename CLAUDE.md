@@ -44,6 +44,14 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
 - `src/EishockeyManager.Tools` – `emtool` (Export, Datenbank, Bildschirmfotos).
 - `tests/` – xUnit. `EishockeyManager.UI.Tests` spielt mit den echten Dateien Abläufe durch (auf GitHub übersprungen).
 
+### Zeit und Geld (verbindlich seit Integration Runde 1)
+
+- **Zeit vergeht nur über `GameState.Continue()`** (Zeitleiste des Pakets `saison`). Was je Tag, Woche oder Saison
+  passieren soll, wird in `src/EishockeyManager.Core/GameState.Integration.cs` angeschlossen – keine eigenen
+  Nachhol-Zähler. Tests spulen mit `TestSeason.PlayMatchDay(game)` / `PlayRegularSeason(game)` vor.
+- **Geld nur über `GameState.Book(manager, kategorie, betrag)`** buchen (Finanzbuch), nicht `Money` direkt ändern.
+- Vor dem PR **auch gegen die anderen Pakete testen**: `git fetch origin && git rebase origin/main`, alle Tests grün.
+
 ### Neuen Bildschirm für eine Menükachel anmelden (ohne fremde Dateien zu ändern)
 
 ```csharp
