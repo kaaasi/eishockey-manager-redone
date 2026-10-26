@@ -127,23 +127,24 @@ public sealed class SetupScreen : Screen
             TryStart();
     }
 
+    /// <summary>Regler verstellen: begrenzt, kein Umlauf (siehe <see cref="SetupSliders"/>).</summary>
     private void Step(int row, int delta)
     {
-        static int Wrap(int value, int count) => (value % count + count) % count;
+        var slider = (SetupSlider)row;
         var m = Selected;
-        switch (row)
+        switch (slider)
         {
-            case 0 when m is not null:
-                m.Level = Wrap(m.Level + delta, ManagerSetup.LevelCount);
+            case SetupSlider.Level when m is not null:
+                m.Level = SetupSliders.Step(slider, m.Level, delta);
                 break;
-            case 1:
-                _setup.Duration = (GameDuration)Wrap((int)_setup.Duration + delta, 4);
+            case SetupSlider.Duration:
+                _setup.Duration = (GameDuration)SetupSliders.Step(slider, (int)_setup.Duration, delta);
                 break;
-            case 2 when m is not null:
-                m.StartLeague = (League)Wrap((int)m.StartLeague + delta, 3);
+            case SetupSlider.StartLeague when m is not null:
+                m.StartLeague = (League)SetupSliders.Step(slider, (int)m.StartLeague, delta);
                 break;
-            case 3 when m is not null:
-                m.StartStrength = (StartStrength)Wrap((int)m.StartStrength + delta, 3);
+            case SetupSlider.StartStrength when m is not null:
+                m.StartStrength = (StartStrength)SetupSliders.Step(slider, (int)m.StartStrength, delta);
                 break;
         }
     }
@@ -314,15 +315,12 @@ public sealed class SetupScreen : Screen
         s.Blit(elements, new Rect(113, _setup.EuropeAndWorldCup ? 115 : 102, 57, 13), ModeEurope.X, ModeEurope.Y);
 
         var m = Selected ?? new ManagerSetup();
-        int[] rows =
-        [
-            m.Level * 10,
-            60 + (int)_setup.Duration * 10,
-            100 + (int)m.StartLeague * 10,
-            130 + (int)m.StartStrength * 10,
-        ];
-        for (var row = 0; row < rows.Length; row++)
-            s.Blit(elements, new Rect(0, rows[row], 110, 10), Field(row).X, Field(row).Y);
+        int[] values = [m.Level, (int)_setup.Duration, (int)m.StartLeague, (int)m.StartStrength];
+        for (var row = 0; row < values.Length; row++)
+        {
+            var strip = SetupSliders.Strip((SetupSlider)row, values[row]);
+            s.Blit(elements, new Rect(0, strip * 10, 110, 10), Field(row).X, Field(row).Y);
+        }
 
         s.Blit(elements, new Rect(113, 38, 54, 38), LoadButton.X, LoadButton.Y);
     }
