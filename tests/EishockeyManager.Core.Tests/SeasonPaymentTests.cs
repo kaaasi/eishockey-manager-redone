@@ -22,38 +22,53 @@ public class SeasonPaymentTests
         + game.PlayoffResults.Count(r => r.Home == club)
         + game.RelegationGroups.Sum(g => g.Results.Count(r => r.Home == club));
 
-    private static int PostseasonHomeGames(GameState game, int club) =>
-        game.PlayoffResults.Count(r => r.Home == club) + game.RelegationGroups.Sum(g => g.Results.Count(r => r.Home == club));
-
     [Fact]
     public void EveryHomeGame_IncludingPlayoffsAndRelegation_IsSettledExactlyOnce()
     {
-        var postseason = 0;
+        var playoffs = 0;
+        var relegation = 0;
         for (var seed = 1; seed <= 3; seed++)
         {
             var game = TwoBundesligaManagers(seed);
-            var paidCalls = new int[game.Managers.Count];
+            // Nachfrage liegt sicher über diesen kleinen Kapazitäten: jede Begegnung hat einen bekannten
+            // Betrag, unabhängig vom Zuschauer-Zufall. Verschiedene Stadien decken auch falsche Zuordnungen auf.
+            for (var i = 0; i < game.Managers.Count; i++)
+            {
+                var manager = game.Managers[i];
+                manager.Money = 10_000_000; // Keine Entlassung durch die absichtlich kleinen Teststadien.
+                var stadium = game.Finance(manager).Stadium;
+                stadium.Seats = 11 + 6 * i;
+                stadium.Standing = 0;
+                stadium.TicketPrice = 7 + 6 * i;
+                stadium.SetLevel(StadiumFeature.Gastronomie, i + 1);
+            }
             while (game.Phase == SeasonPhase.Running)
             {
-                var before = game.Managers.Select(m => game.Finance(m).Book.Current(FinanceCategory.Eintritt)).ToArray();
-                game.Continue(); // höchstens ein Spieltag je Manager pro Aufruf
+                game.Continue();
                 for (var i = 0; i < game.Managers.Count; i++)
                 {
-                    var delta = game.Finance(game.Managers[i]).Book.Current(FinanceCategory.Eintritt) - before[i];
-                    Assert.True(delta >= 0);
-                    if (delta > 0)
-                        paidCalls[i]++;
+                    var manager = game.Managers[i];
+                    var finance = game.Finance(manager);
+                    var stadium = finance.Stadium;
+                    var matches = HomeGames(game, manager.ClubIndex);
+                    // Exakter Betrag für jede bislang ausgetragene Begegnung statt „positiver Continue-Schritt“.
+                    // Eine zweite SettleHomeMatch-Buchung desselben Spiels verletzt schon diese Gleichheit.
+                    Assert.Equal((long)matches * stadium.Capacity * stadium.TicketPrice,
+                        finance.Book.Current(FinanceCategory.Eintritt));
+                    Assert.Equal((long)matches * stadium.Capacity * (2 + 2 * i),
+                        finance.Book.Current(FinanceCategory.Gastronomie));
                 }
             }
 
             for (var i = 0; i < game.Managers.Count; i++)
             {
                 var club = game.Managers[i].ClubIndex;
-                Assert.Equal(HomeGames(game, club), paidCalls[i]);
-                postseason += PostseasonHomeGames(game, club);
+                playoffs += game.PlayoffResults.Count(r => r.Home == club);
+                relegation += game.RelegationGroups.Sum(g => g.Results.Count(r => r.Home == club));
             }
         }
-        Assert.True(postseason > 0, "Kein Heimspiel in Play-Offs oder Aufstiegsrunde – Test prüft nichts");
+        Assert.True(playoffs > 0, "Kein Heimspiel in Play-Offs – Test prüft nichts");
+        Assert.True(relegation > 0, "Kein Heimspiel in Aufstiegsrunde – Test prüft nichts");
     }
 
     [Fact]

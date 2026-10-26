@@ -13,17 +13,6 @@ namespace EishockeyManager.UI.Tests;
 public class PassiveScreenTests
 {
     /// <summary>
-    /// Offener Folgebefund außerhalb der Spur „fundament“ (Core/FinanceSponsors.cs): Die ersten Werbeangebote werden
-    /// beim ersten Öffnen von „Werbung“ ausgewürfelt (<c>GameState.Ads</c> → <c>RenewOffers</c>) und verbrauchen dabei
-    /// den Finanz-Zufall. Bis zur Behebung ist „Werbung“ aus den Durchläufen unten ausgenommen und
-    /// <see cref="OpeningEveryTile_IncludingAdvertising_FromFirstDay_ChangesNoGameState"/> sichtbar übersprungen.
-    /// </summary>
-    public const string AdvertisingFinding =
-        "Offener Befund R2-02b: Öffnen von „Werbung“ würfelt die ersten Angebote aus (FinanceRandom) – Core/FinanceSponsors.cs, Spur wirtschaft";
-
-    private static readonly IReadOnlySet<string> ExcludedTiles = new HashSet<string> { "Werbung" };
-
-    /// <summary>
     /// Spielt Spieltage, bis der angehaltene Tag (Datum im Hauptmenü, noch nicht verarbeitet) ein Trainingstag ist –
     /// genau die Lage, in der das frühere Nachholen in den Bildschirmen Geld, Spielerwerte und Zufall verändert hat.
     /// (Der Transfermarkt ist im regulären Ablauf beim Anhalten schon fortgeschrieben; sein Zustand wird über den
@@ -38,31 +27,15 @@ public class PassiveScreenTests
         {
             d.PlayMatchDay();
             if (GameState.IsTrainingDay(game.Day))
-            {
-                PrepareTrainingPlans(game);
                 return d;
-            }
         }
         throw new InvalidOperationException("Kein angehaltener Trainingstag gefunden.");
     }
 
-    /// <summary>
-    /// Standardplan anlegen, wie es der erste Trainingstag ohnehin tut (<see cref="GameState.TrainOneDay"/>).
-    /// Der Trainingsbildschirm legt ihn sonst beim Öffnen an – ohne Geld oder Zufall zu verbrauchen; das ist
-    /// Anzeige-Vorbereitung, kein Fortschreiben der Zeit. [Restlücke im PR beschrieben]
-    /// </summary>
-    private static void PrepareTrainingPlans(GameState game)
-    {
-        foreach (var manager in game.Managers)
-            game.PrepareTraining(manager);
-    }
-
-    private static void OpenAndCloseEveryTile(ScreenDriver d, bool includeExcluded = false)
+    private static void OpenAndCloseEveryTile(ScreenDriver d)
     {
         foreach (var name in MenuTiles.AllNames)
         {
-            if (!includeExcluded && ExcludedTiles.Contains(name))
-                continue;
             d.OpenTile(name);
             d.Frame();
             FlowTests.ReturnToMainMenu(d);
@@ -123,7 +96,7 @@ public class PassiveScreenTests
     /// Strenge Fassung für den Folgebefund: alle Kacheln einschließlich „Werbung“, schon am ersten Tag vor dem ersten
     /// Weiterspielen; Vergleich mit einem Spiel ohne Öffnen über einen Monatswechsel hinweg.
     /// </summary>
-    [GameDataFact(Skip = AdvertisingFinding)]
+    [GameDataFact]
     public void OpeningEveryTile_IncludingAdvertising_FromFirstDay_ChangesNoGameState()
     {
         var browsing = FlowTests.CreateDriver();
@@ -131,9 +104,9 @@ public class PassiveScreenTests
         browsing.StartNewGame();
         control.StartNewGame();
 
-        OpenAndCloseEveryTile(browsing, includeExcluded: true);
-        PrepareTrainingPlans(browsing.Host.Game!);
-        PrepareTrainingPlans(control.Host.Game!);
+        var before = StateFingerprint.Of(browsing.Host.Game!);
+        OpenAndCloseEveryTile(browsing);
+        AssertSame(before, StateFingerprint.Of(browsing.Host.Game!), "Spielzustand direkt nach Spielstart");
         while (browsing.Host.Game!.Day < 40)
         {
             browsing.PlayMatchDay();
@@ -141,6 +114,38 @@ public class PassiveScreenTests
         }
 
         AssertSame(StateFingerprint.Of(control.Host.Game!), StateFingerprint.Of(browsing.Host.Game!), "Spielzustand");
+    }
+
+    [GameDataTheory]
+    [InlineData("Werbung")]
+    [InlineData("Finanzen")]
+    [InlineData("Training")]
+    public void OpeningTile_FromFirstDay_ChangesNoGameState(string tile)
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var before = StateFingerprint.Of(d.Host.Game!);
+
+        d.OpenTile(tile);
+        d.Frame();
+        FlowTests.ReturnToMainMenu(d);
+
+        AssertSame(before, StateFingerprint.Of(d.Host.Game!), tile);
+    }
+
+    [GameDataFact]
+    public void OpeningTraining_PreservesExplicitlyDrawnSpecialPlan()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        d.Host.Game!.ActiveManager.Training.Fill(TrainingKind.Special);
+        var before = StateFingerprint.Of(d.Host.Game);
+
+        d.OpenTile("Training");
+        d.Frame();
+        FlowTests.ReturnToMainMenu(d);
+
+        AssertSame(before, StateFingerprint.Of(d.Host.Game), "Gezeichneter Trainingsplan");
     }
 
     /// <summary>
@@ -154,7 +159,7 @@ public class PassiveScreenTests
         var game = d.Host.Game!;
         var manager = game.ActiveManager;
         long Training() => game.Finance(manager).Book.Current(FinanceCategory.Training);
-        var oldCost = game.PrepareTraining(manager).CostPerTrainingDay;
+        var oldCost = manager.Training.CostPerTrainingDay;
         var paused = game.Day;
         var before = Training();
 
