@@ -6,7 +6,37 @@ Regeln und Einrichtung: [CLAUDE.md](../CLAUDE.md). Den Status pflegt jedes Paket
 
 **Koordination:** Der Haupt-Chat verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku.
 
-## Aktuelle Runde: Runde 2 – Stabilisierung (ab 26.10.2026)
+## Aktuelle Runde: Runde 3 – Kader, Wettbewerbe, Finanzen (ab 26.10.2026)
+
+Basis: `main` nach Integration Runde 2 (PR #35 und Nachprüfung #37). Regeln, Pflichtangaben und der Review-Ablauf
+mit ChatGPT gelten weiter (siehe Runde 2). **Neu verbindlich:** Jede Spur, die Saisonwechsel, Kader oder Geld berührt,
+liefert eine **Mehrsaisonprobe** (mindestens 4 Saisonwechsel, passiver und aktiver Manager) als Test.
+
+```
+Welle A (parallel):  kader   wettbewerbe   finanzen
+Welle B:             speichern (endgültiges Schema, nachdem Welle A die Daten festgelegt hat)
+```
+
+| Spur | Branch | Befunde | Inhalt | Verbindliche Abnahme (Regressionstest) |
+|---|---|---|---|---|
+| **kader** | `paket/kader` | R2-11 (P1), R2-12 (P2) | Vertragsende ankündigen (Posteingang/Vertragsbildschirm, Texte aus em.exe suchen) und Verlängerung ermöglichen; Kader-KI der Computervereine: Verlängerung, Neuzugänge aus dem Pool und aus Talenten, Ruhestand; ersetzt die `[APPROX]`-Überbrückung aus Welle B und begrenzt den Pool | Passiver Manager wird vor Ablauf gewarnt; nach 6 Saisonwechseln hat jeder Computerverein einen spielfähigen Kader (Mindestbesetzung je Position) mit plausibler Altersverteilung; Pool begrenzt; kein Spieler verloren oder doppelt |
+| **wettbewerbe** | `paket/wettbewerbe` | – | wie im Paketabschnitt unten: DEB-Pokal, Europapokal, WM, Freundschaftsspiele, Stärken- und Statistikbildschirme; Anschluss über `ISeasonCompetition`, Heimspiele über die gemeinsame Spielabrechnung | Jeder Wettbewerb läuft über `Continue()` vollständig durch; jedes Heimspiel genau einmal abgerechnet; Bildschirme zustandsrein; Pixelvergleich mit den Referenzbildern |
+| **finanzen** | `paket/finanzen` | Kalibrierung | Prämien, Zuschauer, Werbung, Stadion mit dem 75-Minuten-Video und em.exe abgleichen (Hinweis unten: passiver Oberliga-Manager deutlich im Plus) | Mehrsaisonprobe Oberliga und Bundesliga: Kontoverlauf passiver Manager innerhalb einer im PR begründeten Spanne; jede belegte Formel `[ORIGINAL]`, Rest `[APPROX]` |
+
+**Dateigrenzen in Welle A:**
+`kader` → `Core/Player.Contract.cs`, `Core/Player.Factory.cs`, `Core/Transfer*.cs`, `Core/FinanceInbox.cs`, Verträge-Bildschirm ·
+`wettbewerbe` → `Core/Cups*.cs`, `Core/Statistics*.cs`, `UI/Screens/Competitions/**`, `UI/Screens/Statistics/**`, Anmeldung in `SeasonFlow.cs`/`GameState.Integration.cs` nur mit Begründung ·
+`finanzen` → `Core/Finance*.cs` außer `FinanceInbox.cs`, Prämien in `SeasonFlow.cs`, `UI/Screens/Finance/**`.
+Berührungen außerhalb der eigenen Grenzen im PR begründen.
+
+## Runde 2 – Stabilisierung (abgeschlossen am 26.10.2026)
+
+Ergebnis: Welle A gemergt mit #31 (Review [pr31](reviews/2026-10-26-pr31-review.md)), Welle B mit #35
+(Review [pr35](reviews/2026-10-26-pr35-review.md), Nachprüfung [pr35-nachpruefung](reviews/2026-10-26-pr35-nachpruefung.md):
+Freigabe für `9bd8fea`). Der P3-Befund PR35-N01 (UI-Test prüfte die Meldung nicht) ist nach dem Merge behoben.
+Offen in Runde 3: R2-11, R2-12.
+
+### Ursprünglicher Plan Runde 2 (ab 26.10.2026)
 
 Grundlage: unabhängiges Folgereview [reviews/2026-10-26-folgereview.md](reviews/2026-10-26-folgereview.md) zu Commit `e1ac97e`.
 Die Befunde R2-02, R2-06, R2-07, die verkürzten Stärkewerte (A01) und die Levelgrenze wurden vom Koordinations-Chat

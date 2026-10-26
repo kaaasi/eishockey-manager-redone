@@ -203,6 +203,9 @@ public sealed class MessageBox
 
     public bool Visible => _lines.Length > 0;
 
+    /// <summary>Angezeigte Zeilen (leer, wenn keine Meldung offen ist).</summary>
+    public IReadOnlyList<string> Lines => _lines;
+
     public void Show(params string[] lines) => _lines = lines;
 
     public void Close() => _lines = [];
