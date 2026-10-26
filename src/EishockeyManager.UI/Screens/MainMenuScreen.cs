@@ -74,6 +74,9 @@ public sealed class MainMenuScreen : Screen
             }
         }
 
+        else if (ManagerArea.NewsBar.Update(Host, this, input))
+            return;
+
         if (input.Pressed(Key.Space))
             Continue_();
     }
@@ -118,6 +121,8 @@ public sealed class MainMenuScreen : Screen
                     s.HLine(r.X + 4, r.Bottom - 5, r.W - 8, Colors.Yellow);
             }
         }
+        else
+            ManagerArea.NewsBar.Draw(s, Assets, Game); // Nachrichtenleiste (Paket „manager“)
     }
 
     private void DrawInfoBar(Surface s)
