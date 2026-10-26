@@ -44,11 +44,13 @@ public sealed class DesktopGame : Game
     public DesktopGame(GameData game)
     {
         _game = game;
+        SettingsSync.Load();
         _host = new ScreenHost(new Assets(game));
         _graphics = new GraphicsDeviceManager(this)
         {
             PreferredBackBufferWidth = Surface.Width * DefaultScale,
             PreferredBackBufferHeight = Surface.Height * DefaultScale,
+            IsFullScreen = GameSettings.Current.Fullscreen,
         };
         IsMouseVisible = true;
         Window.AllowUserResizing = true;
@@ -66,7 +68,7 @@ public sealed class DesktopGame : Game
         _texture = new Texture2D(GraphicsDevice, Surface.Width, Surface.Height);
         _host.Show(new TitleScreen(_host));
         _audio = AudioOutput.Create(_game);
-        _audio.Mixer.PlayMusic();
+        SettingsSync.Apply(_graphics, _audio.Mixer, _host.Current); // startet die Musik
     }
 
     protected override void Update(GameTime gameTime)
@@ -76,12 +78,10 @@ public sealed class DesktopGame : Game
         bool Pressed(XnaKeys k) => keys.IsKeyDown(k) && !_previousKeys.IsKeyDown(k);
 
         if (Pressed(XnaKeys.F11))
-        {
-            _graphics.IsFullScreen = !_graphics.IsFullScreen;
-            _graphics.ApplyChanges();
-        }
+            SettingsSync.ToggleFullscreen();
         if (Pressed(XnaKeys.F8))
             _audio?.Mixer.ToggleMute();
+        SettingsSync.Apply(_graphics, _audio?.Mixer, _host.Current);
 
         UpdateTarget();
         _input.Reset();
