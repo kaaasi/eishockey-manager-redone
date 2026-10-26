@@ -40,7 +40,12 @@ public class WaveBReviewScreenTests
         confirm = screen.Dialog.ConfirmButton;
         d.Click(confirm.X + 5, confirm.Y + 5);
 
+        Assert.True(screen.Message.Visible, "Keine Rückmeldung zum abgelehnten Gebot");
+        Assert.Equal(TransferMarket.Message(TransferResult.Impossible), screen.Message.Lines);
         Assert.Null(screen.Dialog); // nicht kommentarlos dasselbe Gebot erneut
+        d.Click(10, 10); // Meldung schließen
+        Assert.False(screen.Message.Visible);
+        Assert.Null(screen.Dialog);
         Assert.DoesNotContain(bids[1], market.Bids);
         Assert.Equal(money, manager.Money);
         Assert.Equal(TransferMarket.MinDefenders, club.Players.Count(p => p.Role == PlayerRole.Defender));

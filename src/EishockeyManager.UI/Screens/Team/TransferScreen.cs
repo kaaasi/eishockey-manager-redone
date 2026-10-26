@@ -60,6 +60,9 @@ public sealed class TransferScreen : Screen
 
     public PlayerInfoPopup Info => _info;
 
+    /// <summary>Offene Meldung (z. B. „Der Transfer findet nicht statt.“).</summary>
+    public MessageBox Message => _message;
+
     public override void Enter() => ShowNextBid();
 
     private void ShowNextBid()
