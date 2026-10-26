@@ -49,7 +49,9 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
 - **Zeit vergeht nur über `GameState.Continue()`** (Zeitleiste des Pakets `saison`). Was je Tag, Woche oder Saison
   passieren soll, wird in `src/EishockeyManager.Core/GameState.Integration.cs` angeschlossen – keine eigenen
   Nachhol-Zähler. Tests spulen mit `TestSeason.PlayMatchDay(game)` / `PlayRegularSeason(game)` vor.
-- **Geld nur über `GameState.Book(manager, kategorie, betrag)`** buchen (Finanzbuch), nicht `Money` direkt ändern.
+- **Echte Einnahmen und Ausgaben nur über `GameState.Book(manager, kategorie, betrag)`** buchen (Finanzbuch).
+  Neutrale Umbuchungen (Bank, Sparbuch, Aktien zum Kurswert, Kredite zwischen Managern) sind kein Aufwand und bleiben getrennt.
+- **Bildschirme verändern keinen Spielzustand durch bloßes Öffnen** (kein Nachholen von Zeit, Training, Markt).
 - Vor dem PR **auch gegen die anderen Pakete testen**: `git fetch origin && git rebase origin/main`, alle Tests grün.
 
 ### Neuen Bildschirm für eine Menükachel anmelden (ohne fremde Dateien zu ändern)
@@ -91,4 +93,6 @@ Eigene Datei in `src/EishockeyManager.Tools/Scenarios/`, Methode mit `[Scenario(
   Neue Bausteine für alle → eigene Datei in `src/EishockeyManager.UI/` und im PR erwähnen.
 - Den Paketstatus in `docs/arbeitspakete.md` nur im eigenen Abschnitt pflegen.
 - Commit-Nachrichten auf Deutsch, aussagekräftig.
+- **Pflichtangaben im PR** (seit Runde 2): Base-/Head-SHA, reproduzierter Fehler vorher, Regressionstest (vor dem Fix rot),
+  ausgeführte Tests getrennt nach synthetisch / Originaldaten / übersprungen, Restlücken. Details: `docs/arbeitspakete.md`.
 - **Originaldateien, Videos oder Ausschnitte daraus niemals committen** (`.gitignore` schützt `gamedata`, `*.vga` usw.).
