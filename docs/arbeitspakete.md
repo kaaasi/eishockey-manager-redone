@@ -225,8 +225,17 @@ vollständig, jeder Spieler altert um 3 Jahre und hat einen gültigen Vertrag.
 | **R2-11 (neu, offen)** | Ein passiver Manager verliert zu Beginn der dritten Saison seinen gesamten Kader (alle Verträge laufen gleichzeitig aus), ohne Vorwarnung im Posteingang. Ob und wie das Original warnt oder verlängert, ist nicht rekonstruiert → Runde 3 (Kader-KI/Verträge) |
 | R2-12 (neu, offen) | Keine Neuzugänge, Talente oder Ruhestand bei Computervereinen; der Pool vertragsloser Spieler wächst und altert unbegrenzt → Runde 3 |
 
-Tests: mit Originaldaten (`EM_REQUIRE_GAMEDATA=1`) 348 bestanden, 0 übersprungen; ohne Daten 295 bestanden,
-46 sichtbar übersprungen; Pflichtlauf ohne Daten scheitert (53 Fälle). Alle Bildschirmfoto-Abläufe laufen durch.
+**Review 1** ([reviews/2026-10-26-pr35-review.md](reviews/2026-10-26-pr35-review.md), Head `c4fca70`): keine Freigabe wegen
+zwei P2-Befunden; die ursprünglichen Gegenbeispiele und die Mehrsaisonprobe (4 Wechsel) wurden bestätigt.
+R2-11 bekommt die Priorität P1 und R2-12 die Priorität P2, beide für Runde 3. Behoben im zweiten Integrations-Commit:
+
+| Befund | Behebung | Regressionstest (vorher rot) |
+|---|---|---|
+| PR35-01 (P2) Leihrückgabe in vollen Computerverein: Saisonwechsel bricht nach Teilmutation ab, Spieler verloren | Vorprüfung der Kapazität entfällt; beim Rückführen gilt: Stammverein voll (99 Nummern) → Spieler wird vertragslos (`[APPROX]`). Vorprüfung und Ausführung können nicht mehr auseinanderlaufen | `WaveBReviewRegressionTests.PR3501_…` |
+| PR35-02 (P2) Ungültig gewordenes Gebot bleibt offen und erscheint nach „Annehmen“ kommentarlos erneut | `TransferMarket.Accept` liefert `TransferResult`; ein offenes, nicht mehr ausführbares Gebot wird verworfen (`[APPROX]`); die Ansicht zeigt „Der Transfer findet nicht statt.“ | `WaveBReviewRegressionTests.PR3502_…` (Core), `WaveBReviewScreenTests.PR3502_…` (echte Knöpfe) |
+
+Tests: mit Originaldaten (`EM_REQUIRE_GAMEDATA=1`) 351 bestanden, 0 übersprungen; ohne Daten 297 bestanden,
+47 sichtbar übersprungen; Pflichtlauf ohne Daten scheitert (54 Fälle). Alle Bildschirmfoto-Abläufe laufen durch.
 
 ## Runde 1 (abgeschlossen am 26.10.2026)
 

@@ -166,7 +166,9 @@ public sealed class TransferScreen : Screen
             case TransferDialog.DialogKind.Sale:
                 break; // „Verkaufen“ bei einem Spieler auf dem Markt: bleibt auf dem Markt
             case TransferDialog.DialogKind.Bid:
-                Market.Accept(Game, d.Bid!);
+                var accepted = Market.Accept(Game, d.Bid!);
+                if (accepted != TransferResult.Accepted)
+                    _message.Show(TransferMarket.Message(accepted)); // „Der Transfer findet nicht statt.“
                 ShowNextBid();
                 break;
             case TransferDialog.DialogKind.Talent:

@@ -46,14 +46,8 @@ public sealed partial class GameState
                 if (player.OnLoan != (player.Loan is not null)
                     || player.Loan is { } loan && (!Clubs.Contains(loan.Origin) || loan.Origin == club))
                     throw new InvalidOperationException($"Ungültiger Leihursprung für {player.Name}.");
-
-        foreach (var club in Clubs)
-        {
-            var remaining = club.Players.Count(p => !p.OnLoan && p.ContractYears > 1);
-            var returning = players.Count(p => p.Loan is { } loan && loan.Origin == club && loan.ContractYears > 1);
-            if (remaining + returning > PlayerFactory.MaxNumber)
-                throw new InvalidOperationException($"Zu viele Rückennummern nach Leihende bei {club.Name}.");
-        }
+        // Kapazität wird nicht vorab geprüft, sondern beim Rückführen aufgelöst (siehe StartSquadSeason): So können
+        // Vorprüfung und Ausführung nicht auseinanderlaufen (Review PR35-01).
     }
 
     /// <summary>Gemeinsamer Kaderübergang: alle Spieler einmal altern, Leihen zurückführen, Verträge beenden.</summary>
@@ -104,6 +98,15 @@ public sealed partial class GameState
         // Erst nach allen Abgängen Nummern vergeben, unabhängig von der Vereinsreihenfolge.
         foreach (var (owner, player) in returns)
         {
+            if (owner.Players.Count >= PlayerFactory.MaxNumber)
+            {
+                // [APPROX] Stammverein hat keine freie Rückennummer mehr: Spieler wird vertragslos statt verloren.
+                player.ContractYears = 0;
+                player.MonthlySalary = 0;
+                player.Insured = false;
+                TransferMarket.Release(owner, player);
+                continue;
+            }
             player.Number = PlayerFactory.FreeNumber(owner, player);
             owner.Players.Add(player); // Stammvertrag erhalten; Join würde ihn überschreiben.
         }

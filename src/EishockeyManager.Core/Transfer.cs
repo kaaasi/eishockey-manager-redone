@@ -301,17 +301,28 @@ public sealed class TransferMarket
     /// <summary>Eigene Spieler auf dem Markt.</summary>
     public TransferListing? ListingOf(Player player) => _listings.FirstOrDefault(l => l.Player == player);
 
-    /// <summary>Gebot annehmen: Spieler wechselt, der Manager erhält die Ablöse.</summary>
-    public void Accept(GameState game, TransferBid bid)
+    /// <summary>
+    /// Gebot annehmen: Spieler wechselt, der Manager erhält die Ablöse. Liefert <see cref="TransferResult.Impossible"/>,
+    /// wenn das Gebot nicht (mehr) offen oder nicht ausführbar ist; dann ändert sich weder Geld noch Kader.
+    /// </summary>
+    public TransferResult Accept(GameState game, TransferBid bid)
     {
         // TransferBid ist ein record: Wertgleichheit reicht nicht als Nachweis eines offenen Gebots.
-        if (!_bids.Any(open => ReferenceEquals(open, bid)) || bid.Amount <= 0
+        if (!_bids.Any(open => ReferenceEquals(open, bid)))
+            return TransferResult.Impossible;
+        if (bid.Amount <= 0
             || bid.Listing.Seller is not { } seller || !IsCurrentListing(game, bid.Listing)
             || !game.Clubs.Contains(bid.Buyer) || bid.Buyer == bid.Listing.From
             || IsManaged(game, bid.Buyer) || bid.Buyer.Players.Count >= PlayerFactory.MaxNumber)
-            return;
+        {
+            // Offenes, aber nicht mehr ausführbares Gebot (z. B. Mindestbesetzung nach einem anderen Verkauf):
+            // verwerfen, damit die Ansicht es nicht kommentarlos erneut vorlegt. [APPROX] Verhalten des Originals offen.
+            _bids.RemoveAll(open => ReferenceEquals(open, bid));
+            return TransferResult.Impossible;
+        }
         game.Book(seller, FinanceCategory.Transfers, bid.Amount);
         Move(bid.Listing, bid.Buyer, loan: false);
+        return TransferResult.Accepted;
     }
 
     private bool IsCurrentListing(GameState game, TransferListing listing)
