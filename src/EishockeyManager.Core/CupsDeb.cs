@@ -28,8 +28,8 @@ public sealed class DebCup : ISeasonCompetition
     /// <summary>[ORIGINAL] Vertauschungen bei der Auslosung ab der zweiten Runde (em.exe 0x3494B).</summary>
     public const int DrawSwaps = 20;
 
-    /// <summary>Rundennamen für Paarungen und Statistik. [APPROX] Im Original nur „Viertelfinale“, „Halbfinale“ belegt.</summary>
-    public static readonly string[] RoundNames = ["1. Runde", "Achtelfinale", "Viertelfinale", "Halbfinale", "Endspiel"];
+    /// <summary>[ORIGINAL] Rundennamen (Texte in em.exe, DGROUP 0x2576 ff.).</summary>
+    public static readonly string[] RoundNames = ["Erste Runde", "Achtelfinale", "Viertelfinale", "Halbfinale", "Endspiel"];
 
     private readonly List<List<CupTie>> _rounds = [];
     private readonly List<int> _draw = [];
