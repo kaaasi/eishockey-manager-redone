@@ -62,6 +62,12 @@ Spur-Chat liefert PR → Koordinations-Chat prüft gegen `main` und die anderen 
 → **unabhängiges Review (ChatGPT) mit festem Base-/Head-SHA**: zuerst die reproduzierten Gegenbeispiele erneut ausführen,
 dann Aufrufer und neue Tests prüfen → Merge durch den Koordinations-Chat. Review-Ergebnisse unter `docs/reviews/`.
 
+**Review durch ChatGPT:** Der Koordinations-Chat formuliert die Review-Anfrage immer als fertigen, kopierbaren Text
+(PR, Base-/Head-SHA, Gegenbeispiele, erwartet offene Befunde, gewünschte Bewertung). ChatGPT legt das Ergebnis als
+Markdown-Datei `docs/reviews/JJJJ-MM-TT-<thema>.md` auf einem eigenen Branch `review/<thema>` ab und öffnet dazu
+einen PR, der **nur diese Datei** enthält. Ohne Schreibzugriff stellt ChatGPT die Datei zum Herunterladen bereit,
+dann legt der Koordinations-Chat sie ab. Der Review-PR wird zusammen mit dem geprüften PR gemergt.
+
 ### Grundsätze aus dem Review
 
 - Keine Finanz-Neukalibrierung, bevor Gehälter, Versicherungen, Prämien und Nachsaisonspiele korrekt gebucht werden.
@@ -125,6 +131,33 @@ Befunde im Gesamtstand vom Koordinations-Chat nachgestellt (eigene Probe gegen d
 | A01 Stärketripel | behoben – alle drei Werte erhalten (Bedeutung weiter offen) |
 | Level | umgesetzt – Level 0–5 (LevelCount 6) |
 | R2-04, R2-08, R2-09 | erwartungsgemäß offen → Welle B (`lebenszyklus`) |
+
+**Review und Merge:** ChatGPT-Review [reviews/2026-10-26-pr31-review.md](reviews/2026-10-26-pr31-review.md) am Head
+`9bddf6f`: **Freigabe für Welle A**, keine neuen P0–P2-Befunde. Gemergt als `fce0760` (PR #31, damit auch #16–#30).
+Neu bzw. präzisiert:
+
+| Befund | Inhalt | Zuständig |
+|---|---|---|
+| R2-02b | Erstes Öffnen von „Werbung“ würfelt Angebote aus, die Folgeentwicklung weicht ab | `ansichten` |
+| R2-02c | Weitere Initialisierungen beim Öffnen: „Finanzen“ erzeugt den Aktienmarkt, „Training“ den Standardplan (Folgezustand nach 8 Schritten gleich, aber nicht zustandsrein) | `ansichten` |
+| R2-10 (P3) | `SeasonPaymentTests` (Heimspiel „genau einmal“) zählt nur positive Schritte je `Continue()`; eine zweite `SettleHomeMatch()`-Buchung derselben Begegnung (+60.170 DM) bliebe unentdeckt | `ansichten` |
+| R2-09 präzisiert | `PlayerFactory.Join()` verhindert die doppelte Spielerreferenz, aber zweimaliges Annehmen bucht weiterhin 400.000 → 604.000 → 808.000 DM | `lebenszyklus` |
+
+## Runde 2, Welle B (ab 26.10.2026)
+
+Zwei Spuren parallel, Basis `main` = `fce0760`:
+
+| Spur | Branch | Befunde | Inhalt | Verbindliche Abnahme (Regressionstest) |
+|---|---|---|---|---|
+| **lebenszyklus** | `paket/lebenszyklus` | R2-04, R2-08, R2-09 | wie in der Tabelle oben; zusätzlich die Aufstellungsbereinigung beim Öffnen in den Saisonwechsel/Tagesablauf verlegen | Spieler altert, Vertrag läuft ab bzw. verkürzt sich, Leihe endet beim ursprünglichen Verein; Anfrage von Tag 231 ist in der Folgesaison nicht mehr annehmbar; zweites Annehmen ändert weder Kontostand noch Kader |
+| **ansichten** | `paket/ansichten` | R2-02b, R2-02c, R2-10 | Werbeangebote, Aktienmarkt und Standard-Trainingsplan werden im Spielablauf (Spielstart bzw. Tageshook) erzeugt, nicht beim Öffnen; Heimspieltest prüft Buchungen **je Begegnung** | Ab Spielstart alle Kacheln öffnen/schließen → vollständiger Zustandsabdruck (inkl. Zufallszustand) unverändert, Skip R2-02b entfällt; doppelte `SettleHomeMatch()` lässt den Test rot werden |
+
+**Dateigrenzen in Welle B:**
+`lebenszyklus` → `Core/Player.Contract.cs`, `Core/Player.Factory.cs`, `Core/Transfer.cs`, `Core/FinanceInbox.cs`, `Core/Squad.Lineup.cs`,
+Saisonwechsel in `Core/SeasonFlow.cs`, `OnNewSeason…` in `GameState.Integration.cs` (im PR begründen) ·
+`ansichten` → `Core/FinanceSponsors.cs`, `Core/FinanceStocks.cs`, `Core/Squad.Training.cs`, die öffnenden Bildschirme in `UI/Screens/**`,
+`OnDay…`/Spielstart-Hook in `GameState.Integration.cs` (im PR begründen), `tests/EishockeyManager.Core.Tests/SeasonPaymentTests.cs`.
+Danach Integration Welle B mit ChatGPT-Review, anschließend Runde 3 (`wettbewerbe`, `speichern`, Finanzkalibrierung).
 
 ## Runde 1 (abgeschlossen am 26.10.2026)
 
