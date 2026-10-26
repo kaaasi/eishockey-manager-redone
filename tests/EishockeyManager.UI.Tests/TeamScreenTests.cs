@@ -172,4 +172,48 @@ public class TeamScreenTests
         d.Press(Key.Escape);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
+
+    [Fact]
+    public void Training_SelectKindPaintUnitsAndPay()
+    {
+        var d = FlowTests.CreateDriver();
+        if (d is null)
+            return;
+        d.StartNewGame();
+        d.OpenTile("Training");
+        var screen = Assert.IsType<TrainingScreen>(d.Host.Current);
+        var plan = screen.Plan;
+        Assert.Equal(TrainingKind.Special, screen.Selected);
+        Assert.Equal(0, plan.Count(TrainingKind.Special)); // Standardplan
+
+        // Frei wählen und den Montag überstreichen
+        var free = TrainingScreen.KindIcon(TrainingKind.Free);
+        d.Click(free.X + 5, free.Y + 5);
+        Assert.Equal(TrainingKind.Free, screen.Selected);
+        var points = Enumerable.Range(0, TrainingPlan.UnitsPerDay)
+            .Select(u => (TrainingScreen.UnitHit(0, u).X + 3, TrainingScreen.UnitHit(0, u).Y + 3)).ToArray();
+        d.Drag(points);
+        Assert.All(Enumerable.Range(0, 4), u => Assert.Equal(TrainingKind.Free, plan[0, u]));
+
+        // Bewegen ohne Taste ändert nichts
+        var special = TrainingScreen.KindIcon(TrainingKind.Special);
+        d.Click(special.X + 5, special.Y + 5);
+        var unit = TrainingScreen.UnitHit(2, 2);
+        d.Move(unit.X + 3, unit.Y + 3);
+        Assert.Equal(TrainingKind.Free, plan[2, 2]);
+        d.Click(unit.X + 3, unit.Y + 3);
+        Assert.Equal(TrainingKind.Special, plan[2, 2]);
+        Assert.Equal(12_400, plan.WeeklyCost); // Oberliga wie im Video
+
+        // Zurück, zwei Spieltage: Kosten werden je Trainingstag abgebucht
+        var game = d.Host.Game!;
+        var money = game.ActiveManager.Money;
+        d.RightClick(160, 120);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
+        d.PlayMatchDay();
+        d.PlayMatchDay();
+        d.OpenTile("Training");
+        var days = Enumerable.Range(1, game.Day).Count(GameState.IsTrainingDay);
+        Assert.Equal(money - days * plan.CostPerTrainingDay, game.ActiveManager.Money);
+    }
 }

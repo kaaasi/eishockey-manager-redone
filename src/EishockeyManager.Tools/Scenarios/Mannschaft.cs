@@ -56,4 +56,19 @@ internal static class Mannschaft
         d.Click(10, 10); d.Click(280, 231); d.Save("05_talentsuche");
         d.Press(Key.Escape); d.Click(60, 75); d.Save("06_verkaufen");
     }
+
+    [Scenario("training")]
+    private static void Training(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.OpenTile("Training");
+        d.Move(300, 20); d.Save("01_training");
+        d.Click(70, 225); d.Drag((20, 110), (64, 110), (108, 110), (152, 110)); d.Save("02_frei_ueberstrichen");
+        d.Click(40, 225); d.Click(108, 172); d.Click(284, 172); d.Move(300, 20); d.Save("03_zwei_sonder");
+        d.Click(70, 225);
+        for (var day = 0; day < 7; day++)
+            d.Drag((20 + 44 * day, 110), (20 + 44 * day, 130), (20 + 44 * day, 175), (20 + 44 * day, 195));
+        d.Click(40, 225); d.Click(108, 172); d.Move(300, 20); d.Save("04_wie_video_1130");
+        d.RightClick(160, 120); d.PlayMatchDay(); d.PlayMatchDay(); d.OpenTile("Training"); d.Save("05_nach_zwei_spieltagen");
+    }
 }

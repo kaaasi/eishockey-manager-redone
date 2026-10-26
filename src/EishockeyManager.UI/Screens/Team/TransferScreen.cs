@@ -63,6 +63,7 @@ public sealed class TransferScreen : Screen
     public override void Enter()
     {
         Market.CatchUp(Game);
+        Game.CatchUpTraining();
         ShowNextBid();
     }
 

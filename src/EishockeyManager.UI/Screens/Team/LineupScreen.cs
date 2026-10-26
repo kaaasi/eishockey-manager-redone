@@ -47,7 +47,11 @@ public sealed class LineupScreen : Screen
 
     public static int RowAt(int y) => y < FirstRowY - 1 ? -1 : (y - FirstRowY + 1) / RowPitch;
 
-    public override void Enter() => Club.Lineup.RemoveUnavailable(Club.Players);
+    public override void Enter()
+    {
+        Host.Game!.CatchUpTraining();
+        Club.Lineup.RemoveUnavailable(Club.Players);
+    }
 
     public override void Update(InputState input)
     {

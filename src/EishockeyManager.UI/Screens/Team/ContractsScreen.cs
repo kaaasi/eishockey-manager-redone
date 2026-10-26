@@ -41,6 +41,9 @@ public sealed class ContractsScreen : Screen
 
     public ContractsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
+    /// <summary>Training bis heute fortschreiben, damit die Werte aktuell sind.</summary>
+    public override void Enter() => Host.Game!.CatchUpTraining();
+
     private Club Club => TeamUi.OwnClub(Host);
 
     /// <summary>Spieler, mit dem gerade verhandelt wird (oder null).</summary>
