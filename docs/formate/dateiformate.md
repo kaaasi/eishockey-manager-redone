@@ -116,9 +116,18 @@ Die Breite enthält den Zeichenabstand bereits – Text wird **ohne** zusätzlic
 
 ## Sound ○
 
-- **VOC** (`kb\237–241`): Kopf „Creative Voice File“ (✔ erkannt). Blöcke Typ 1 (8 Bit unsigned, Rate = 10⁶ / (256 − TC)),
-  2 (Fortsetzung), 3 (Stille), 6/7 (Wiederholung). Nach Gehör: 237 = Publikum (Schleife), 238 = Jubel, 239 = Pfiff,
-  240 = Puck, 241 = Check.
+- **VOC** (`kb\237–241`, ✔ `VocFile`, Export `emtool export-sound`): Kopf „Creative Voice File“ + 0x1A, u16 Kopflänge (26),
+  Version 0x010A, Prüfwert 0x1129. Blöcke Typ 1 (8 Bit unsigned, Rate = 10⁶ / (256 − TC)),
+  2 (Fortsetzung), 3 (Stille, Länge = u16 + 1), 6/7 (Wiederholung, Anzahl + 1 Durchläufe, 0xFFFF = endlos);
+  der Lader kennt außerdem 4/5 (übersprungen), 8 und 9. Im Spiel benutzt:
+
+  | Datei | Blöcke | TC → Rate | Abtastwerte | Nach Gehör |
+  |---|---|---|---|---|
+  | 237 | 6 (0xFFFF), 1, 7 | 42 → 4673 Hz | 9146 | Publikum (Endlosschleife) |
+  | 238 | 1 | 42 → 4673 Hz | 4910 | Jubel |
+  | 239 | 1 | 172 → 11 905 Hz | 9194 | Pfiff |
+  | 240 | 1 | 101 → 6452 Hz | 906 | Puck |
+  | 241 | 1 | 101 → 6452 Hz | 2574 | Check |
 - **CMF** (`kb\248`): Kopf „CTMF“ (✔ erkannt). Instrumente ab 40 (14 × 16 Byte OPL-Register), Musik ab 264, 96 Ticks/s,
   MIDI-artige Ereignisse; Controller 0x67 = Rhythmusmodus, 0x68/0x69 Transponieren, Ende mit `FF 2F`.
 

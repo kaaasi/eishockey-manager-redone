@@ -145,6 +145,12 @@ Branch: `paket/sound` · Status: **Runde 2, Welle A** (unabhängig, keine Dateie
 - Einstellungen-Bildschirm (Torszenen, Lautstärken, Musik im Spiel, Vollbild).
 - Eigene Dateien: `Formats/Voc*.cs`, `Formats/Cmf*.cs`, `src/EishockeyManager.Audio/*` (neues Projekt), `UI/Screens/Settings*`.
 
+Fortschritt:
+- [x] VOC-Lader (`VocFile`, alle Blocktypen 1–9 ohne Kompression), `PcmSound`, `WavWriter`, `emtool export-sound` – Branch `paket/sound-voc`
+- [ ] CMF-Lader und OPL2-Emulation
+- [ ] Projekt `EishockeyManager.Audio`, Einbindung in Desktop, F8
+- [ ] Bildschirm Einstellungen
+
 ## Paket `speichern` – Laden und Sichern
 
 Branch: `paket/speichern` · Status: **Runde 3** – endgültiges Schema erst nach Kaderlebenszyklus, Fristen und Transaktionssicherheit; muss Zufallszustand, Objektidentität und offene Vorgänge enthalten

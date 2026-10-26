@@ -4,6 +4,7 @@ using EishockeyManager.Formats;
 //
 //   emtool info    [spielordner]              Übersicht über alle Grafiken
 //   emtool export  [spielordner] [zielordner] Grafiken, Halle, Figuren und Fonts als PNG
+//   emtool export-sound [spielordner] [zielordner] Soundeffekte und Musik als WAV
 //   emtool vereine [spielordner] [nummer]     Vereine aus der Datenbank (mit Nummer: Kader)
 //   emtool screens [spielordner] [zielordner] [ablauf …]  Bildschirme ohne Fenster als PNG
 
@@ -19,6 +20,9 @@ try
         case "export":
             Export(GameData.Locate(args.ElementAtOrDefault(1)), args.ElementAtOrDefault(2) ?? "export");
             return 0;
+        case "export-sound":
+            EishockeyManager.Tools.SoundExport.Run(GameData.Locate(args.ElementAtOrDefault(1)), args.ElementAtOrDefault(2) ?? "sound");
+            return 0;
         case "vereine":
             Clubs(GameData.Locate(args.ElementAtOrDefault(1)), args.ElementAtOrDefault(2));
             return 0;
@@ -32,6 +36,7 @@ try
 
                   emtool info    [spielordner]
                   emtool export  [spielordner] [zielordner]
+                  emtool export-sound [spielordner] [zielordner]
                   emtool vereine [spielordner] [vereinsnummer]
                   emtool screens [spielordner] [zielordner] [ablauf …]
 
