@@ -11,13 +11,16 @@ public enum PlayerRole
 }
 
 /// <summary>Verein oder Nationalmannschaft aus der Datenbank.</summary>
+/// <param name="Strength">Erster Stärkewert (= <see cref="ClubStrengths.Defense"/>), wie bisher als Vereinsstärke genutzt.</param>
+/// <param name="Strengths">Alle drei Stärkewerte unverändert aus der Datei (Befund A01).</param>
 public sealed record DatabaseClub(
     int Index,
     string Name,
     int Strength,
     int LogoNumber,
     short ColorCode,
-    IReadOnlyList<DatabasePlayer> Players)
+    IReadOnlyList<DatabasePlayer> Players,
+    ClubStrengths Strengths = default)
 {
     /// <summary>Grafik des Vereinslogos (kb\80–143), oder null für Vereine ohne Logo.</summary>
     public int? LogoGraphic => LogoNumber >= 0 ? 80 + LogoNumber : null;
@@ -33,6 +36,15 @@ public sealed record DatabaseClub(
         _ => ClubCategory.EuropeanOpponent,
     };
 }
+
+/// <summary>
+/// Die drei Stärkewerte eines Vereins (Datenbank 0x016C + 3 · Index), Rohwerte unverändert.
+/// Bedeutung belegt am Lader in em.exe (Datei 0x2EF1B, siehe docs/formate/dateiformate.md):
+/// </summary>
+/// <param name="Defense">Byte 0: Basis für Kondition und Technik der Abwehr (Vereinsfelder 0x18 / 0x1A).</param>
+/// <param name="Attack">Byte 1: Basis für Kondition und Technik des Sturms (Vereinsfelder 0x19 / 0x1B).</param>
+/// <param name="Third">Byte 2: vom Lader nicht gelesen, kein anderer Leser gefunden – Bedeutung offen.</param>
+public readonly record struct ClubStrengths(byte Defense, byte Attack, byte Third);
 
 public enum ClubCategory
 {
@@ -52,7 +64,7 @@ public enum ClubCategory
 /// |--------|----------|--------|
 /// | 0x0000 | 150 × 2  | Farbcode je Verein (hi, lo als sbyte → hi·256 + lo) |
 /// | 0x012C | 64 × 1   | Logo: (b + 0xB0) &amp; 0x3F → kb\(80 + Logo).vga |
-/// | 0x016C | 150 × 3  | Stärke je Verein (drei gleiche Werte) |
+/// | 0x016C | 150 × 3  | Stärken je Verein: Abwehr, Sturm, dritter Wert (Bedeutung offen); nur bei den Europapokal-Gegnern verschieden |
 /// | 0x04AE | 64 × 523 | Vereine mit Kader: Name[23] + 25 × (Name[19] + Ausländer[1]) |
 /// | 0x876E | 86 × 23  | Namen der Europapokal-Gegner (ohne Kader) |
 ///
@@ -99,7 +111,8 @@ public sealed class ClubDatabase
         for (var i = 0; i < TotalClubs; i++)
         {
             var color = (short)((sbyte)data[ColorOffset + i * 2] * 256 + (sbyte)data[ColorOffset + i * 2 + 1]);
-            var strength = data[StrengthOffset + i * 3];
+            var at = StrengthOffset + i * 3;
+            var strengths = new ClubStrengths(data[at], data[at + 1], data[at + 2]);
 
             string name;
             var players = new List<DatabasePlayer>();
@@ -127,7 +140,7 @@ public sealed class ClubDatabase
                 name = GameText.Decode(data.Slice(offset, NameLength));
             }
 
-            clubs.Add(new DatabaseClub(i, name, strength, logo, color, players));
+            clubs.Add(new DatabaseClub(i, name, strengths.Defense, logo, color, players, strengths));
         }
 
         return new ClubDatabase(clubs);

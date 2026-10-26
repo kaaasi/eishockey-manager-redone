@@ -75,7 +75,7 @@ Ergebnis: Halle mit 1152 × 672 Pixeln, Tore links und rechts auf halber Höhe.
 |---|---|---|
 | `0x0000` | 150 × 2 | Farbcode je Verein (hi, lo als `sbyte` → hi·256 + lo) |
 | `0x012C` | 64 × 1 | Logo: `(b + 0xB0) & 0x3F` → Bild `kb\(80 + Logo).vga` |
-| `0x016C` | 150 × 3 | Stärke je Verein (drei gleiche Werte) |
+| `0x016C` | 150 × 3 | Stärken je Verein: Abwehr, Sturm, dritter Wert (siehe unten) |
 | `0x04AE` | 64 × 523 | Vereine mit Kader: Name[23] + 25 × (Name[19] + Ausländer-Flag[1]) |
 | `0x876E` | 86 × 23 | Namen der Europapokal-Gegner (ohne Kader) |
 
@@ -93,6 +93,31 @@ Kaderplätze: 0–1 Torhüter, 2–11 Verteidiger, 12–24 Stürmer. Leere Plät
 | 64–149 | Europapokal-Gegner |
 
 ○ Die Stärkewerte der Nationalmannschaften im Spiel stehen zusätzlich als Text in der EXE (DGROUP:`0x4C4E`, jeweils −2).
+
+### Stärketripel (`0x016C`) – Rohwerte und belegte Bedeutung
+
+`ClubDatabase` liefert alle drei Bytes unverändert (`DatabaseClub.Strengths`); `Strength` ist weiterhin Byte 0.
+In der Originaldatenbank sind die drei Werte bei den Vereinen 0–63 gleich und bei allen **86 Europapokal-Gegnern
+(64–149) verschieden**, z. B. Index 64: `79, 72, 74`.
+
+**Beleg im Original** – Lader der Datenbank in `em.exe`, Datei `0x2EF1B` (Code ab `0x2EFDE`, Vereinsstruktur 61 Byte
+über den Zeiger DGROUP `0x9657`). Je Verein `i` (0–149), `v = Byte[0x016C + 3·i + k]`, `t = v / 10`:
+
+| Byte `k` | Vereinsfeld | Wert |
+|---|---|---|
+| 0 | `0x18` (Kondition Abwehr) und `0x1A` (Technik Abwehr) | je `v − random(0, t) + random(0, t)` |
+| 1 | `0x19` (Kondition Sturm) und `0x1B` (Technik Sturm) | dito |
+| 2 | – | **wird vom Lader nicht gelesen** (Schleife nur `k = 0, 1`, danach Zeiger + 3) |
+
+Außerdem in derselben Schleife: Feld `0x17 = random(47, 53)`, Form `0x1C/0x1D = random(45, 55)`, für `i > 64`
+um 5 vermindert (Vergleich `i ≤ 0x40`, d. h. Index 64 selbst ohne Abzug). Für die Nationalmannschaften
+(`i` = DGROUP `[0x6AD]` = 52 bis 63) werden Kondition und Technik von Abwehr/Sturm mit den Paaren aus DGROUP `0x4C4E`
+(jeweils −2) überschrieben – die Datenbankwerte der Nationalteams wirken also nicht.
+
+**Offen:** Bedeutung von Byte 2. Im Code wurde kein weiterer Zugriff auf den Stärkebereich gefunden (Suche nach den
+Konstanten `0x016C`–`0x016E` als Additionswert: nur dieser Lader). Der Datenpuffer stammt aus dem gemeinsamen
+Grafikladepuffer (`call 0x140:0x3E`); ob er später noch gelesen wird, ist nicht geprüft. Nicht raten – erst bei einem Beleg
+(z. B. Stärkeanzeige der Europapokal-Gegner im Video) belegen.
 
 ## Texte ✔ — `GameText`
 
