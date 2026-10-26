@@ -46,14 +46,14 @@ public class StadiumTests
         Assert.False(game.StartConstruction(me, StadiumProject.Sitzplaetze, default, 1)); // nur eine Baustelle
 
         for (var i = 0; i < 20 && stadium.Construction is not null; i++)
-            game.PlayNextMatchDay();
+            TestSeason.PlayMatchDay(game);
         Assert.Null(stadium.Construction);
         Assert.Equal(1, stadium.Level(StadiumFeature.Gastronomie));
 
         var seats = stadium.Seats;
         Assert.True(game.StartConstruction(me, StadiumProject.Sitzplaetze, default, 2));
         for (var i = 0; i < 20 && stadium.Construction is not null; i++)
-            game.PlayNextMatchDay();
+            TestSeason.PlayMatchDay(game);
         Assert.Equal(seats + 2 * Stadium.SeatStep, stadium.Seats);
     }
 }

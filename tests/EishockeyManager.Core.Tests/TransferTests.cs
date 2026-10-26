@@ -129,7 +129,7 @@ public class TransferTests
             market.AdvanceDay(game, game.Random);
         var bid = Assert.Single(market.Bids);
         var money = manager.Money;
-        market.Accept(bid);
+        market.Accept(game, bid);
         Assert.DoesNotContain(player, club.Players);
         Assert.Contains(player, bid.Buyer.Players);
         Assert.Equal(money + bid.Amount, manager.Money);
@@ -140,8 +140,8 @@ public class TransferTests
     public void CatchUp_AdvancesOncePerPlayedMatchDay()
     {
         var game = TestGames.Create();
-        game.PlayNextMatchDay();
-        game.PlayNextMatchDay();
+        TestSeason.PlayMatchDay(game);
+        TestSeason.PlayMatchDay(game);
         game.TransferMarket.CatchUp(game);
         Assert.Equal(2, game.TransferMarket.UpdatedDay);
         Assert.InRange(game.TransferMarket.Listings.Count, 2, TransferMarket.MaxListings);

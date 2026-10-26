@@ -109,6 +109,7 @@ public class SeasonFlowTests
         for (var season = 0; season < 3; season++)
         {
             Assert.Equal(1993 + season, game.Season);
+            game.Managers[0].Money = 10_000_000; // Test prüft den Saisonablauf, nicht die Finanzen (keine Entlassung)
             var steps = PlaySeason(game);
             Assert.Equal(44, game.PlayedMatchDays);
             Assert.Single(steps.OfType<SeasonEndStep>());
@@ -203,9 +204,11 @@ public class SeasonFlowTests
         setup.Managers.Add(new ManagerSetup { Name = "A", ClubIndex = 2 });
         setup.Managers.Add(new ManagerSetup { Name = "B", ClubIndex = 14 });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 1);
-        game.Managers[0].Money = -1_600_000;
         while (!game.Managers[0].Dismissed)
+        {
+            game.Managers[0].Money = -1_600_000; // Einnahmen (Paket „manager“) dürfen die Schulden nicht abbauen
             game.Continue();
+        }
         Assert.False(game.IsGameOver);
         Assert.Equal(1, game.CurrentManager);
         Assert.Single(game.ActiveManagers);

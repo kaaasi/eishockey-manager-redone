@@ -175,19 +175,20 @@ public class TrainingTests
         var plan = game.PrepareTraining(manager);
         Assert.Equal(0, plan.PriceTier); // Verein 2 spielt in der 1. Liga
         plan[1, 0] = TrainingKind.Special;
-        var money = manager.Money;
+        // Trainingskosten stehen im Finanzbuch (Kontostand ändert sich auch durch andere Buchungen)
+        long Training() => game.Finance(manager).Book.Current(FinanceCategory.Training);
 
         game.CatchUpTraining();
-        Assert.Equal(money, manager.Money); // Spielbeginn: noch kein Trainingstag
+        Assert.Equal(0, Training()); // Spielbeginn: noch kein Trainingstag
 
-        game.PlayNextMatchDay();
-        game.PlayNextMatchDay();
+        TestSeason.PlayMatchDay(game);
+        TestSeason.PlayMatchDay(game);
         game.CatchUpTraining();
         var days = Enumerable.Range(1, game.Day).Count(GameState.IsTrainingDay);
         Assert.True(days > 0);
-        Assert.Equal(money - days * plan.CostPerTrainingDay, manager.Money);
+        Assert.Equal(-days * plan.CostPerTrainingDay, Training());
 
         game.CatchUpTraining();
-        Assert.Equal(money - days * plan.CostPerTrainingDay, manager.Money);
+        Assert.Equal(-days * plan.CostPerTrainingDay, Training());
     }
 }

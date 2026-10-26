@@ -103,6 +103,9 @@ public sealed class TransferMarket
         return Math.Max(20_000, (long)Math.Round(value / 1000) * 1000);
     }
 
+    /// <summary>Neue Saison: Der Spieltagszähler beginnt wieder bei 0.</summary>
+    public void StartSeason() => UpdatedDay = 0;
+
     /// <summary>Füllt den Markt zu Spielbeginn.</summary>
     public void Initialize(GameState game, Random random)
     {
@@ -204,9 +207,9 @@ public sealed class TransferMarket
         if (ratio < 1 && (ratio <= 0.85 || game.Random.NextDouble() >= (ratio - 0.85) / 0.15))
             return TransferResult.Rejected;
 
-        manager.Money -= offer;
+        game.Book(manager, FinanceCategory.Transfers, -offer);
         if (listing.Seller is { } seller)
-            seller.Money += offer;
+            game.Book(seller, FinanceCategory.Transfers, offer);
         Move(listing, club, loan);
         return TransferResult.Accepted;
     }
@@ -266,10 +269,10 @@ public sealed class TransferMarket
     public TransferListing? ListingOf(Player player) => _listings.FirstOrDefault(l => l.Player == player);
 
     /// <summary>Gebot annehmen: Spieler wechselt, der Manager erhält die Ablöse.</summary>
-    public void Accept(TransferBid bid)
+    public void Accept(GameState game, TransferBid bid)
     {
         if (bid.Listing.Seller is { } seller)
-            seller.Money += bid.Amount;
+            game.Book(seller, FinanceCategory.Transfers, bid.Amount);
         Move(bid.Listing, bid.Buyer, loan: false);
     }
 

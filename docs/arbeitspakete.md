@@ -21,8 +21,7 @@ Empfohlener Start: **saison**, **manager**, **mannschaft** parallel. **wettbewer
 
 ## Paket `saison` – Saisonablauf über mehrere Jahre
 
-Branch: `paket/saison` · Status: **umgesetzt, in Prüfung** – PRs #6 (Kalender), #8 (Ablauf), #10 (Oberfläche) (gestapelt:
-`paket/saison` → `paket/saison-ablauf` → `paket/saison-ui`). Details und offene `[APPROX]`-Punkte: [saison.md](saison.md).
+Branch: `paket/saison` · Status: **Runde 1 gemergt** (PRs #6, #8, #10). Details und offene `[APPROX]`-Punkte: [saison.md](saison.md).
 Für `wettbewerbe`: DEB-Pokal, Europapokal und WM über `ISeasonCompetition` in `GameState.Competitions` anmelden.
 
 - Hauptrunde → Playoffs → Relegation (laut Video: die zwei Ersten der Oberliga und die zwei Letzten der 2. Liga spielen
@@ -37,10 +36,11 @@ Für `wettbewerbe`: DEB-Pokal, Europapokal und WM über `ISeasonCompetition` in 
 
 ## Paket `manager` – Finanzen, Werbung, Stadion, Jugend, Posteingang
 
-Branch: `paket/manager` · Status: fertig (PRs 1–5 offen)
+Branch: `paket/manager` · Status: **Runde 1 gemergt** (PRs #3, #5, #9, #11, #13)
 
 - [x] PR 1: Finanzmodell im Core (Finanzbuch, Bank, Sparbuch, Aktien, Spieltagsabrechnung, Stadion-Grundwerte) –
-  Abrechnung über `GameState.SettleFinances` (Aufruf in `PlayNextMatchDay`), Saisonwechsel über `StartFinanceSeason()`
+  Abrechnung über `GameState.SettleFinances` (Aufruf in `PlayNextMatchDay`); Tageswechsel und Saisonwechsel laufen seit der
+  Integration über die Zeitleiste (`GameState.Integration.cs`)
 - [x] PR 2: Bildschirm Finanzen (kb\152) mit Finanzbuch – `UI/Screens/Manager/FinanceScreen.cs`, Ablauf `finanzen`;
   Bedienung (Überfahren wählt, [+]/[−] = Betrag, ◄/► = buchen) und Finanzbuch-Layout `[APPROX]`, da im Video nichts gebucht wird
 - [x] PR 3: Werbung (kb\151, kb\11) – `UI/Screens/Manager/AdvertisingScreen.cs`, `Core/FinanceSponsors.cs`, Ablauf `werbung`;
@@ -65,13 +65,13 @@ Branch: `paket/manager` · Status: fertig (PRs 1–5 offen)
 
 ## Paket `mannschaft` – Kader und Spieler
 
-Branch: `paket/mannschaft` · Status: alle fünf Kacheln umgesetzt, PRs offen
+Branch: `paket/mannschaft` · Status: **Runde 1 gemergt** (PRs #1, #2, #4, #7, #12, #14)
 
 - ✔ Spielerwerte, Kader aller Vereine, Aufstellung (Core), Mannschaftsstärke → `Club.MatchStrength` in `MatchEngine`
 - ✔ Bildschirme Aufstellung, Taktik, Verträge (mit Vertragsverhandlung) und Transfer (Kauf, Leihe, Verkauf, Talentsuche)
 - ✔ Training: Bildschirm kb\5, Kosten, Standardplan und Wirkung aus em.exe (`Squad.Training.cs`)
-- Schnittstelle für `saison`: `GameState.TrainOneDay()` an jedem Trainingstag (Mi, So) aufrufen; bis dahin schreiben
-  die Mannschafts-Bildschirme das Training mit `CatchUpTraining()` nach
+- Training und Transfermarkt laufen seit der Integration über die Zeitleiste (`GameState.Integration.cs`);
+  Trainingskosten, Transfers und Talentsuche werden im Finanzbuch gebucht
 
 - Spielerwerte (siehe Spielerstruktur in `reverse-engineering.md`: Talent, Alter, Technik, Kondition, Form, Rolle …),
   Kader aller Vereine aus der Datenbank, Transfermarkt.
@@ -83,7 +83,7 @@ Branch: `paket/mannschaft` · Status: alle fünf Kacheln umgesetzt, PRs offen
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
-Branch: `paket/wettbewerbe` · Status: wartet auf `saison`
+Branch: `paket/wettbewerbe` · Status: **startklar** (Anschluss über `ISeasonCompetition`, siehe `saison.md`)
 
 - Paarungen (Liga, Playoffs, DEB-Pokal, Europapokal, WM), Freundschaftsspiele.
 - Stärken (Ligen, Länderteams: Gesamt/Abwehr/Sturm, Smileys), Statistiken (Totale, Früher, Verein, Spieler, Fairplay, WM).
@@ -100,10 +100,31 @@ Branch: `paket/sound` · Status: offen (unabhängig)
 
 ## Paket `speichern` – Laden und Sichern
 
-Branch: `paket/speichern` · Status: wartet auf `manager` und `mannschaft` (Datenmodell)
+Branch: `paket/speichern` · Status: **startklar** (Datenmodell von `manager`, `mannschaft`, `saison` ist in `main`)
 
 - Eigenes Spielstandformat, Laden/Sichern-Dialog wie im Original (Dateiliste, Verzeichnis, Dateiname).
 - Optional: Import von Original-Spielständen `*.HOK` (Verschlüsselung in `dateiformate.md`).
+
+## Integration Runde 1 (26.10.2026) – Ergebnis und offene Punkte
+
+Die drei Pakete waren einzeln grün, zusammen schlugen 8 Tests fehl: `manager` und `mannschaft` kannten die Zeitleiste
+von `saison` noch nicht. Behoben in `src/EishockeyManager.Core/GameState.Integration.cs` (Anschlusspunkte
+`OnDayManager`, `OnNewSeasonManager`, `OnNewSeasonTeam`) und Tests, die Zeit über `TestSeason` (= `Continue()`) vorspulen.
+
+**Regel ab jetzt:** Zeit vergeht nur über `GameState.Continue()`. Wer etwas je Tag/Woche/Saison braucht, hängt sich in
+`GameState.Integration.cs` ein (bzw. ruft von dort die eigene Methode auf) – keine eigenen „CatchUp“-Zähler mehr.
+Geld immer über `GameState.Book(manager, kategorie, betrag)` buchen, nicht `Money` direkt ändern.
+
+Offene Punkte (an die Pakete verteilt):
+
+| Paket | Punkt |
+|---|---|
+| `manager` + `mannschaft` | **Talentsuche doppelt**: „Spion“ im Jugend-Fenster (`FinanceYouth.cs`) und Knopf „Talent“ im Transfer (`Transfer.Talent.cs`). Im Original eine Funktion → zusammenführen (Vorschlag: Logik in `FinanceYouth`, Transfer-Knopf ruft sie auf). |
+| `manager` | Heimspiele in Play-Offs, Aufstiegsrunde und Pokalen bringen noch keine Zuschauereinnahmen (`SettleFinances` nur für Ligaspiele). |
+| `manager` | Kalibrierung: Ein passiver Manager in der Oberliga rutscht in drei Saisons auf ca. −0,5 Mio. DM (echte Daten). Mit dem 75-Minuten-Video abgleichen. |
+| `saison` | Saisonprämien (`SeasonFlow.cs`) direkt auf `Money` – über `Book(…)` mit eigener Kategorie buchen (Finanzbuch). |
+| `mannschaft` | Saisonwechsel für den Kader (Altern, Vertragsende, neue Talente) – Anschluss `OnNewSeasonTeam` in `GameState.Integration.cs`. |
+| `mannschaft` | `CatchUpTraining()`/`TransferMarket.CatchUp()` in den Bildschirmen sind jetzt überflüssig (laufen über die Zeitleiste) – entfernen. |
 
 ## Später (nach v0.5)
 

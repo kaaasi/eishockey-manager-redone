@@ -84,7 +84,7 @@ public class FinanceTests
     {
         var game = TestGames.Create();
         var m = game.ActiveManager;
-        while (game.PlayNextMatchDay()) { }
+        TestSeason.PlayRegularSeason(game);
 
         var book = game.Finance(m).Book;
         Assert.True(book.Current(FinanceCategory.Eintritt) > 0);
@@ -101,7 +101,7 @@ public class FinanceTests
     {
         var game = TestGames.Create();
         var m = game.ActiveManager;
-        while (game.PlayNextMatchDay()) { }
+        TestSeason.PlayRegularSeason(game);
 
         var wages = FinanceRules.MonthlyWages(game.Clubs[m.ClubIndex]);
         var months = Enumerable.Range(1, game.Day).Count(d => SeasonCalendar.LayoutDate(d).Day == 1);
@@ -117,8 +117,8 @@ public class FinanceTests
         b.BuyStock(b.ActiveManager, 2, 5);
         for (var i = 0; i < 10; i++)
         {
-            a.PlayNextMatchDay();
-            b.PlayNextMatchDay();
+            TestSeason.PlayMatchDay(a);
+            TestSeason.PlayMatchDay(b);
         }
         Assert.Equal(a.Results, b.Results);
     }

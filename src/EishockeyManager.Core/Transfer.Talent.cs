@@ -29,7 +29,7 @@ public static class TalentScout
             return TalentResult.NotEnoughMoney;
         if (club.Players.Count >= TransferMarket.MaxSquad)
             return TalentResult.SquadFull;
-        manager.Money -= Cost;
+        game.Book(manager, FinanceCategory.Talentsuche, -Cost);
 
         var sources = game.Clubs.Where(c => c.League is null && !TransferMarket.IsNationalTeam(c) && c.Players.Count > 0).ToList();
         if (random.NextDouble() >= SuccessChance || sources.Count == 0)

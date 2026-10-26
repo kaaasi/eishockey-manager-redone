@@ -74,7 +74,7 @@ public class InboxYouthTests
         var me = game.ActiveManager;
         game.StartConstruction(me, StadiumProject.Feature, StadiumFeature.Anzeigetafel, 1);
         for (var i = 0; i < 10 && game.Finance(me).Stadium.Construction is not null; i++)
-            game.PlayNextMatchDay();
+            TestSeason.PlayMatchDay(game);
         Assert.Contains(game.Inbox(me), m => m.Lines[0] == "Der Stadion-Ausbau (Anzeigetafel)");
     }
 
@@ -102,7 +102,7 @@ public class InboxYouthTests
         var team = game.Finance(me).Youth[0];
         Assert.Equal((3, 6), (team.League, team.Rank));
         game.SetYouthFunding(me, YouthTeamKind.Schueler, YouthTeam.MaxFunding);
-        while (game.PlayNextMatchDay()) { }
+        TestSeason.PlayRegularSeason(game);
         Assert.True(team.Position < 17, $"Platz {team.Rank}, Liga {team.League}");
     }
 
@@ -124,7 +124,7 @@ public class InboxYouthTests
         Assert.Equal(-21_000, game.Finance(me).Book.Current(FinanceCategory.Talentsuche));
 
         for (var i = 0; i < 12 && game.Finance(me).TalentSearch is not null; i++)
-            game.PlayNextMatchDay();
+            TestSeason.PlayMatchDay(game);
         Assert.Null(game.Finance(me).TalentSearch);
         var report = Assert.Single(game.Inbox(me), m => m.Lines[0].StartsWith("Ihr"));
         if (report.Lines[0] == "Ihre Talentsuche war ein Erfolg.")

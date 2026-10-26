@@ -207,13 +207,14 @@ public class TeamScreenTests
 
         // Zurück, zwei Spieltage: Kosten werden je Trainingstag abgebucht
         var game = d.Host.Game!;
-        var money = game.ActiveManager.Money;
+        long Training() => game.Finance(game.ActiveManager).Book.Current(FinanceCategory.Training);
+        var before = Training();
         d.RightClick(160, 120);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
         d.PlayMatchDay();
         d.PlayMatchDay();
         d.OpenTile("Training");
         var days = Enumerable.Range(1, game.Day).Count(GameState.IsTrainingDay);
-        Assert.Equal(money - days * plan.CostPerTrainingDay, game.ActiveManager.Money);
+        Assert.Equal(before - days * plan.CostPerTrainingDay, Training());
     }
 }

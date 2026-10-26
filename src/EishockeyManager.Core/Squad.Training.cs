@@ -406,7 +406,7 @@ public sealed partial class GameState
         foreach (var manager in Managers)
         {
             var plan = PrepareTraining(manager);
-            manager.Money -= plan.CostPerTrainingDay;
+            Book(manager, FinanceCategory.Training, -plan.CostPerTrainingDay);
             foreach (var player in Clubs[manager.ClubIndex].Players)
                 TrainingRules.Apply(player, plan, manager.Level, Random);
         }
