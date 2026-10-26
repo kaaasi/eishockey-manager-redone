@@ -57,6 +57,20 @@ dann Aufrufer und neue Tests prüfen → Merge durch den Koordinations-Chat. Rev
   zum Kurswert, Kredite zwischen Managern) bleiben getrennt und werden nicht als Aufwand gebucht.
 - Testanzahl ist keine Abnahme. Pixelparität und Balance werden getrennt abgenommen.
 
+### Status Spur `mehrmanager`
+
+| Punkt | PR | Stand |
+|---|---|---|
+| R2-07 exklusive Vereinsvergabe | #18 | offen, wartet auf Review |
+| R2-06 Hot-Seat (Bereitschaftsphase, Lampen, Tag genau einmal) | #20 | offen, wartet auf Review |
+| A01 drei Stärkewerte je Verein | #22 | offen, wartet auf Review |
+| Levelgrenze: Level 0–5, Regler begrenzt statt Umlauf (DGROUP 0x11C, 0x4B3E) | siehe PR „Setup-Level“ | offen, wartet auf Review |
+
+Neue Befunde aus dem Disassembly (Details in [reverse-engineering.md](reverse-engineering.md#spiel-level)):
+Kadergröße der Manager-Vereine hängt im Original an der **Start-Liga**, nicht am Level; Level, Start-Liga und
+Start-Stärke sind im Original **globale** Setup-Werte (Remake: je Manager); Regel „eine Saison nur mit Start-Liga 0“
+ist noch nicht übernommen.
+
 ---
 
 ## Runde 1 (abgeschlossen am 26.10.2026)

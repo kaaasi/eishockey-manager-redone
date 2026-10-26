@@ -30,7 +30,10 @@ public sealed class ManagerSetup
 {
     public const int MaxNameLength = 16;
     public const int HeadCount = 12;
-    public const int LevelCount = 4;
+    /// <summary>
+    /// Spiel-Level 0–5. [ORIGINAL] Höchstwert DGROUP 0x11C = 5, sechs Level-Figuren in kb\1 (Streifen 0–5).
+    /// </summary>
+    public const int LevelCount = 6;
 
     public string Name { get; set; } = "";
 
@@ -40,11 +43,46 @@ public sealed class ManagerSetup
     /// <summary>Gewählter Verein (Datenbankindex 0–47) oder null = zufällig nach Liga und Stärke.</summary>
     public int? ClubIndex { get; set; }
 
-    /// <summary>Spiel-Level 0–3. Voreinstellung im Original: 3.</summary>
+    /// <summary>
+    /// Spiel-Level 0–5, Vorgabe 3 ([ORIGINAL] DGROUP 0x118). Das Spiel rechnet mit „5 − Level“ (DGROUP 0xED8),
+    /// Level 5 heißt z. B. Training immer frei. [APPROX] Im Original ist der Level ein einziger Wert für alle
+    /// Manager; das Remake führt ihn je Manager.
+    /// </summary>
     public int Level { get; set; } = 3;
 
     public League StartLeague { get; set; } = League.Bundesliga;
     public StartStrength StartStrength { get; set; } = StartStrength.Mittelfeld;
+}
+
+/// <summary>Die vier Regler rechts in der Spielvorbereitung, in der Reihenfolge der Setup-Werte DGROUP 0x118–0x11B.</summary>
+public enum SetupSlider
+{
+    Level = 0,
+    Duration = 1,
+    StartLeague = 2,
+    StartStrength = 3,
+}
+
+/// <summary>
+/// Verhalten der Regler wie im Original. [ORIGINAL] Overlay „Spielstart“ ab Datei 0x2890A in em.exe:
+/// Wert ± 1, unter 0 → 0, über dem Höchstwert (DGROUP 0x11C ff.: 5, 3, 2, 2) → Höchstwert. Kein Umlauf.
+/// </summary>
+public static class SetupSliders
+{
+    private static readonly int[] Maxima = [5, 3, 2, 2];
+    private static readonly int[] FirstStrips = [0, 6, 10, 13];
+
+    /// <summary>Höchstwert des Reglers. [ORIGINAL] DGROUP 0x11C.</summary>
+    public static int Maximum(SetupSlider slider) => Maxima[(int)slider];
+
+    /// <summary>Einen Schritt verstellen, an beiden Enden begrenzt.</summary>
+    public static int Step(SetupSlider slider, int value, int delta) => Math.Clamp(value + delta, 0, Maximum(slider));
+
+    /// <summary>
+    /// Streifen (je 10 Pixel hoch) in kb\1 für den Wert. [ORIGINAL] Wert + Tabelle DGROUP 0x4B3E (0, 6, 10, 13),
+    /// gezeichnet bei (195 | 81 + 28 · Zeile).
+    /// </summary>
+    public static int Strip(SetupSlider slider, int value) => FirstStrips[(int)slider] + value;
 }
 
 /// <summary>Alle Angaben der Spielvorbereitung (Bildschirm kb\150).</summary>
