@@ -128,6 +128,12 @@ Die Breite enthält den Zeichenabstand bereits – Text wird **ohne** zusätzlic
   | 239 | 1 | 172 → 11 905 Hz | 9194 | Pfiff |
   | 240 | 1 | 101 → 6452 Hz | 906 | Puck |
   | 241 | 1 | 101 → 6452 Hz | 2574 | Check |
+
+  **Verwendung (Disassembly, `SoundEffect.cs`):** Effekte spielt nur die Torszene. Sie lädt `kb\(231 + i)`, i = 0–13,
+  in die Zeigertabelle DGROUP 0xE2B9; Effekt-Index s (Byte 3 eines 28-Byte-Bildes in `tore\*`, ab Byte 0x54,
+  Ende 0xAAAA) spielt Eintrag 6 + s = `kb\(237 + s)`. Ist die Ausgabe frei, startet 237 neu. In den 49 Szenen:
+  s = 3 (Puck) 149×, 4 (Check) 53×, 1 (Jubel) 25× (24× am Ende von Treffer-Szenen), **2 (Pfiff) nie** –
+  weitere Aufrufer der Abspielfunktion 99F:000A gibt es nicht, der Pfiff ist im Original also nicht zu hören.
 - **CMF** (`kb\248`, ✔ `CmfFile`, Wiedergabe `CmfPlayer` über `Opl2`): Kopf „CTMF“, Version 1.1. Instrumente ab 40
   (14 × 16 Byte OPL-Register, alle Wellenformen 0), Musik ab 264, 30 Ticks je Viertel, 96 Ticks/s, Grundtempo 190.
   Kanäle 0–5 melodisch, 11 (Bass Drum), 12 (Snare), 15 (Hi-Hat). Erstes Ereignis Controller 0x67 = 1 (Rhythmusmodus),

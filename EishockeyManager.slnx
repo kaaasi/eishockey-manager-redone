@@ -3,6 +3,7 @@
     <Project Path="src/EishockeyManager.Formats/EishockeyManager.Formats.csproj" />
     <Project Path="src/EishockeyManager.Core/EishockeyManager.Core.csproj" />
     <Project Path="src/EishockeyManager.UI/EishockeyManager.UI.csproj" />
+    <Project Path="src/EishockeyManager.Audio/EishockeyManager.Audio.csproj" />
     <Project Path="src/EishockeyManager.Desktop/EishockeyManager.Desktop.csproj" />
     <Project Path="src/EishockeyManager.Tools/EishockeyManager.Tools.csproj" />
     <Project Path="src/EishockeyManager.Viewer/EishockeyManager.Viewer.csproj" />
@@ -11,5 +12,6 @@
     <Project Path="tests/EishockeyManager.Formats.Tests/EishockeyManager.Formats.Tests.csproj" />
     <Project Path="tests/EishockeyManager.Core.Tests/EishockeyManager.Core.Tests.csproj" />
     <Project Path="tests/EishockeyManager.UI.Tests/EishockeyManager.UI.Tests.csproj" />
+    <Project Path="tests/EishockeyManager.Audio.Tests/EishockeyManager.Audio.Tests.csproj" />
   </Folder>
 </Solution>

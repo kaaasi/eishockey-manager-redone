@@ -148,7 +148,7 @@ Branch: `paket/sound` · Status: **Runde 2, Welle A** (unabhängig, keine Dateie
 Fortschritt:
 - [x] VOC-Lader (`VocFile`, alle Blocktypen 1–9 ohne Kompression), `PcmSound`, `WavWriter`, `emtool export-sound` – Branch `paket/sound-voc`
 - [x] CMF-Lader (`CmfFile`), OPL2-Emulation (`Opl2`, eigener Code), Wiedergabe nach dem FM-Treiber in em.exe (`CmfPlayer`) – Branch `paket/sound-cmf`
-- [ ] Projekt `EishockeyManager.Audio`, Einbindung in Desktop, F8
+- [x] Projekt `EishockeyManager.Audio` (Mischer, ein Effektkanal wie CT-VOICE, Musik in Schleife), Desktop über `DynamicSoundEffectInstance`, F8 = Ton aus; Effektzuordnung aus dem Disassembly belegt – Branch `paket/sound-audio`
 - [ ] Bildschirm Einstellungen
 
 ## Paket `speichern` – Laden und Sichern
