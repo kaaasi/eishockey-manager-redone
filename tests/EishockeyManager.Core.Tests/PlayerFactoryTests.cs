@@ -66,10 +66,13 @@ public class PlayerFactoryTests
         var player = club.Players.Last(p => p.Role == PlayerRole.Forward);
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, player));
         var listing = game.TransferMarket.ListingOf(player)!;
-        var buyer = game.Clubs.First(c => c.League is not null && c.Index != club.Index);
+        for (var i = 0; game.TransferMarket.Bids.Count == 0 && i < 100; i++)
+            game.TransferMarket.AdvanceDay(game, game.Random);
+        var bid = Assert.Single(game.TransferMarket.Bids);
+        var buyer = bid.Buyer;
         player.Number = buyer.Players[0].Number;
 
-        game.TransferMarket.Accept(game, new TransferBid(listing, buyer, 100_000));
+        game.TransferMarket.Accept(game, bid);
         AssertComplete(buyer, player);
     }
 

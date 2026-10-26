@@ -176,6 +176,32 @@ Saisonwechsel in `Core/SeasonFlow.cs`, `OnNewSeason…` in `GameState.Integratio
 `OnDay…`/Spielstart-Hook in `GameState.Integration.cs` (im PR begründen), `tests/EishockeyManager.Core.Tests/SeasonPaymentTests.cs`.
 Danach Integration Welle B mit ChatGPT-Review, anschließend Runde 3 (`wettbewerbe`, `speichern`, Finanzkalibrierung).
 
+### Status Spur `lebenszyklus` – Welle B
+
+Stand: implementiert, lokale Abnahme grün; unabhängiges Review und Merge stehen aus.
+
+- [x] R2-04: Saisonwechsel aktualisiert Alter und Restvertrag, beendet Verträge und führt Leihspieler zum
+  gespeicherten Eigentümer zurück (Stammvertrag inklusive Gehalt/Versicherung erhalten). Vorprüfung vor jeder
+  Saisonmutation; jeder Spieler altert einmal, Rückennummern werden erst nach allen Abgängen vergeben.
+  Offene Marktangebote/Gebote werden verworfen, Markt und Aufstellungen neu abgeglichen.
+- [x] R2-08: Nachrichten speichern Saison und Tag; Kreditanfragen verfallen nach sieben Simulationstagen auch
+  über den Wechsel. `Answer()` prüft die Frist zusätzlich am pausierten, noch unverarbeiteten Tag.
+- [x] R2-09: Nur ein tatsächlich offenes Gebot auf ein aktuelles Listing mit passendem Eigentümer darf buchen;
+  Wiederholung, Rückzug, Ablehnung, wertgleiche Nachbildung und Eigentümerverlust bleiben ohne Wirkung.
+- [x] Aufstellung: Bereinigung über `Continue()` und Saisonwechsel; Öffnen/Schließen verändert nichts.
+- Tests vor Fix: 9 synthetische Regressionen und 1 Originaldaten-UI-Regression rot (Alter 27 statt 28,
+  Leihe bleibt aktiv, Anfrage von Tag 231 bleibt offen, doppeltes Gebot 400.000 → 666.000 → 932.000 DM).
+  Danach zusätzliche Grenzfälle und Originaldaten-Saisonwechsel ergänzt.
+- Lokale Abnahme: Build ohne Warnungen/Fehler; **294 synthetisch + 48 mit Originaldaten bestanden,
+  1 sichtbar übersprungen** (bekanntes R2-02b, Spur `ansichten`).
+- Begrenzte Berührungen: `GameState.Integration.cs` ausschließlich `OnNewSeasonTeam`; `SeasonFlow.ProcessDay`
+  ruft die Aufstellungsbereinigung auf; `LineupScreen` verliert nur die beiden mutierenden Aufrufe.
+- Neue `[APPROX]`-Regel: ausgelaufene Verträge wechseln ablösefrei in einen erhaltenen Pool vertragsloser
+  Spieler; die sichtbare Marktliste bleibt begrenzt. Die genaue DOS-Regel ist noch nicht rekonstruiert.
+  Automatische Vertragsverlängerung/Kaderergänzung durch Computer-Transfers, neue Saison-Talente
+  und altersbedingter Ruhestand sind weiterhin offen; ohne Verlängerungen können Kader leer werden.
+  Alte Leihflags ohne gespeicherten Ursprung werden vor dem Saisonwechsel abgewiesen, nicht einem Verein zugeordnet.
+
 ## Runde 1 (abgeschlossen am 26.10.2026)
 
 Abhängigkeiten damals: `saison` → `wettbewerbe`; `manager` und `mannschaft` erweitern Club/Player/GameState in eigenen Dateien.
