@@ -104,10 +104,13 @@ public static class PlayerFactory
     /// Nimmt einen Spieler in einen Kader auf: neue freie Rückennummer, neuer Vertrag zur Gehaltsforderung,
     /// ohne Versicherung und ohne abgelehntes Angebot. Gemeinsamer Abschluss für Transfer, Leihe und Talentsuche.
     /// </summary>
-    public static void Join(Club club, Player p, int contractYears, bool loan)
+    public static void Join(Club club, Player p, int contractYears, bool loan, PlayerLoan? agreement = null)
     {
+        if (loan != (agreement is not null) || agreement?.Origin == club)
+            throw new ArgumentException("Eine Leihe benötigt einen anderen Stammverein und dessen Vertrag.", nameof(agreement));
         p.Number = FreeNumber(club, p);
         p.OnLoan = loan;
+        p.Loan = agreement;
         p.Insured = false;
         p.RejectedOfferDay = null;
         p.ContractYears = contractYears;
@@ -140,6 +143,7 @@ public static class PlayerFactory
         Check(club.Players.Count(q => q.Number == p.Number) <= 1, $"Rückennummer {p.Number} doppelt");
         Check(p.ContractYears is >= Contracts.MinYears and <= Contracts.MaxYears, $"Vertragsdauer {p.ContractYears}");
         Check(p.MonthlySalary >= Contracts.MinSalary, $"Gehalt {p.MonthlySalary}");
+        Check(p.OnLoan == (p.Loan is not null) && p.Loan?.Origin != club, "Leihursprung fehlt oder ist ungültig");
         return problems;
     }
 }

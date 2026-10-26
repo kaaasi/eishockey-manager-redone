@@ -167,6 +167,7 @@ public sealed partial class GameState
     private void ProcessDay(int day, List<SeasonStep> steps)
     {
         OnDayManager(day);
+        CleanLineups();
         CheckDebts(day, steps);
         if (Phase == SeasonPhase.GameOver)
             return;
@@ -354,6 +355,8 @@ public sealed partial class GameState
     {
         if (Phase != SeasonPhase.SeasonOver || CurrentRecord is not { } record)
             throw new InvalidOperationException("Die Saison ist noch nicht zu Ende.");
+
+        ValidateSeasonSquads();
 
         foreach (var club in Clubs)
             if (club.Index < NewGame.SelectableClubs)

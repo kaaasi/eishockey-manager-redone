@@ -5,7 +5,7 @@ namespace EishockeyManager.Core.Tests;
 
 public class TransferTransactionRegressionTests
 {
-    public static TransferBid CreateBid(GameState game)
+    internal static TransferBid CreateBid(GameState game)
     {
         var market = game.TransferMarket;
         var club = game.Clubs[game.ActiveManager.ClubIndex];

@@ -23,9 +23,8 @@ public sealed partial class GameState
     partial void OnNewSeasonManager() => StartFinanceSeason();
 
     /// <summary>
-    /// Neue Saison für den Kader: Transfermarkt zählt die Spieltage neu. [APPROX] Altern, Vertragsende und neue
-    /// Talente sind im Paket „mannschaft“ noch nicht umgesetzt; das Training beginnt mit Tag 0 neu
-    /// (siehe <see cref="CatchUpTraining"/>).
+    /// Neue Saison: Kader, Stammverträge, Leihende, Aufstellungen und Markt gemeinsam umstellen.
+    /// Das Training beginnt mit Tag 0 neu (siehe <see cref="CatchUpTraining"/>).
     /// </summary>
-    partial void OnNewSeasonTeam() => TransferMarket.StartSeason();
+    partial void OnNewSeasonTeam() => StartSquadSeason();
 }
