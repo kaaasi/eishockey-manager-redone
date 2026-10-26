@@ -29,6 +29,44 @@ Welle B:             speichern (endgültiges Schema, nachdem Welle A die Daten f
 `finanzen` → `Core/Finance*.cs` außer `FinanceInbox.cs`, Prämien in `SeasonFlow.cs`, `UI/Screens/Finance/**`.
 Berührungen außerhalb der eigenen Grenzen im PR begründen.
 
+### Status Spur `finanzen`
+
+- Teil 1 auf `paket/finanzen`: Prämien nach Ereignissen statt geschätzter Platz-2/3-Zahlungen;
+  Meister 500.000 DM statt zusätzlich 1 Mio. DM. Belege und verbleibende Zuordnungsannahmen stehen
+  in `Core/FinancePremiums.cs`. `FinanceInbox.cs` und die Kaderlogik bleiben unberührt.
+- Regression `FinanceCalibrationTests.Premium_DependsOnTitlesAndPromotion_NotEstimatedTableAwards`:
+  gegen unveränderten Produktcode von `cc26bde` sechs von sieben Fällen rot; danach sieben grün.
+  Ein Originaldaten-Test prüft die Konto-Buchungsbytes in `em.exe` an den dokumentierten Dateioffsets.
+- Validierung Teil 1: frischer Gesamtbuild ohne Warnungen/Fehler; 304 synthetische und 59
+  Originaldaten-Fälle bestanden, 0 übersprungen. Ohne Originaldaten 304 bestanden und 49 sichtbar
+  übersprungen (Theories werden ohne Daten nicht in sämtliche Datenzeilen expandiert).
+- Mehrsaisonprobe: Start Oberliga (ESC WOLFSBURG) und Bundesliga (ESV KAUFBEUREN), Seeds 3/17/41,
+  je passiv und aktiv, vier tatsächliche Saisonwechsel über `Continue()`/`StartNextSeason()`.
+  Aktiv: Verträge regulär verlängern, Auto-Aufstellung, angebotene Werbung annehmen, Imbiss bauen.
+  Keine Geldzufuhr. Konto gegen Finanzbuch nach jedem Schritt, Vorjahresbuch nach jedem Wechsel geprüft.
+  Einzelkategorien, Start-/Endkonto, Liga und Kadergröße stehen im xUnit-Testoutput.
+- Gemessene Endkonten nach vier Wechseln: passiv Oberliga −14.330 bis 140.970 DM,
+  passiv Start-Bundesliga 3.715.170 bis 4.384.490 DM; aktiv Oberliga 2.131.369 bis 2.178.451 DM,
+  aktiv Start-Bundesliga 11.098.224 bis 12.680.139 DM. Ab-/Aufstieg bleibt möglich.
+- **Noch keine fachliche Gesamtabnahme der Finanzbalance.** Die im Test markierten Schranken
+  (passiv −1,5 bis 3 Mio. / 7 Mio. DM, aktiv bis 15 Mio. DM) sind technische Alarmgrenzen des
+  aktuellen Näherungsmodells, keine aus dem Original rekonstruierte Sollspanne.
+  Die Oberliga-Grenze erlaubt saisonale Verlust-/Gewinnschwankungen unterhalb einer Aufstiegsprämie;
+  Bundesliga berücksichtigt die höhere Zuschauerbasis und mehrere zusätzliche Heimspiele.
+  Der bekannte passive Kaderverlust ab Saison 3 und die dann einsetzende Gehaltspauschale verzerren
+  die Balance weiter; diese Probe ersetzt die Abnahme der Spur `kader` nicht.
+- Referenzstichproben der Karriere gelesen: `karriere_01000.png` (Konto 132.775 DM,
+  Einnahmen/Monat 62.747 DM, Ausgaben 120.370 DM), `karriere_01100.png` (172.799 / 63.370 /
+  120.370 DM; Zuschauerschnitt 3.049, bereinigt 2.703, Rekord 4.500), `karriere_02000.png`
+  (Rushware 13.899 DM/Monat, Einnahmen 109.450, Ausgaben 156.171 DM), `karriere_03450.png`
+  (Konto 680.742 DM, Eintritt 12 DM, 2.000 Sitz-/5.000 Stehplätze, Gastronomie OHNE).
+  Das ist eine aktiv gespielte Karriere mit Transfers, Werbung und Ausbauten, kein passiver Kontrolllauf.
+- Offen für Teil 2: Zuschauer-/Preisfunktion, Gastronomieertrag, laufender Stadionunterhalt und
+  Werbeangebotsformel bis zu den Original-Buchungen rekonstruieren. Bisherige Formeln bleiben
+  ausdrücklich `[APPROX]`; insbesondere erklären die erheblich höheren Original-Monatsausgaben
+  noch keine einzelne belegte Ersatzformel. Keine frei erfundene Ausgabenpauschale zur Erzeugung
+  eines gewünschten Minus eingeführt. Die genaue Zuordnung der 100.000-DM-Einzelprämien bleibt `[APPROX]`.
+
 ## Runde 2 – Stabilisierung (abgeschlossen am 26.10.2026)
 
 Ergebnis: Welle A gemergt mit #31 (Review [pr31](reviews/2026-10-26-pr31-review.md)), Welle B mit #35
