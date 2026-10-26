@@ -87,6 +87,42 @@ internal static class ManagerScenarios
         d.Move(1, 238); d.Save("08_voll_ausgebaut");
     }
 
+    [Scenario("jugend")]
+    private static void Youth(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.OpenTile("Jugend");
+        d.Move(1, 239); d.Save("01_jugendteams");
+        d.Click(YouthScreen.Bar(0).X + 7, YouthScreen.Bar(0).Y + 4);
+        d.Click(YouthScreen.Bar(1).Right - 1, YouthScreen.Bar(1).Y + 4);
+        d.Click(YouthScreen.Bar(2).X + 35, YouthScreen.Bar(2).Y + 4);
+        d.Move(1, 239); d.Save("02_foerderung");
+        d.Click(150, 100); d.Move(1, 239); d.Save("03_spion_rueckfrage");
+        d.Click(YouthScreen.YesButton.X + 5, YouthScreen.YesButton.Y + 4);
+        d.Click(150, 100); d.Move(1, 239); d.Save("04_spion_unterwegs");
+        d.Click(150, 100);
+        for (var md = 0; md < 30; md++) { d.Press(Key.Escape); d.PlayMatchDay(); }
+        d.OpenTile("Jugend"); d.Move(1, 239); d.Save("05_nach_30_spieltagen");
+    }
+
+    [Scenario("posteingang")]
+    private static void Inbox(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.Move(1, 1); d.Save("01_leiste_leer");
+        var game = d.Host.Game!;
+        var me = game.ActiveManager;
+        var stadium = game.Finance(me).Stadium;
+        game.StartConstruction(me, Core.StadiumProject.Feature, Core.StadiumFeature.Anzeigetafel, 1);
+        var ads = game.Ads(me);
+        ads.Offers[Core.AdSlotKind.Trikot][5] = new Core.SponsorOffer(Core.AdSlotKind.Trikot, 5, 1, 1, 9_000);
+        game.AcceptOffer(me, new Core.AdSlot(Core.AdSlotKind.Trikot), 5);
+        for (var md = 0; md < 10; md++) d.PlayMatchDay();
+        d.Move(1, 1); d.Save("02_leiste_nachricht");
+        d.Click(NewsBar.ScrollDown.X + 5, NewsBar.ScrollDown.Y + 5); d.Move(1, 1); d.Save("03_leiste_weiter");
+        d.Click(100, 210); d.Move(1, 239); d.Save("04_posteingang");
+    }
+
     private static void Click(ScreenDriver d, Rect r) => d.Click(r.X + r.W / 2, r.Y + r.H / 2);
 
     /// <summary>Blättert, bis ein Angebot kommt, und nimmt es an.</summary>

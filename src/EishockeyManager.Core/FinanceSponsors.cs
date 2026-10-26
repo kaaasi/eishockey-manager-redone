@@ -212,9 +212,11 @@ public sealed partial class GameState
         {
             Book(manager, FinanceCategory.Sponsoren, contract.MonthlyAmount);
             contract.MonthsLeft--;
-            // [APPROX] Verlängerung („Möchten Sie den Vertrag mit … verlängern ?“) folgt mit dem Posteingang.
             if (contract.MonthsLeft <= 0)
+            {
                 sponsoring.Contracts.Remove(contract);
+                ContractExpired(manager, contract);
+            }
         }
         RenewOffers(manager);
     }

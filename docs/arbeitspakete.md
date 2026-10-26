@@ -35,7 +35,7 @@ Branch: `paket/saison` · Status: offen
 
 ## Paket `manager` – Finanzen, Werbung, Stadion, Jugend, Posteingang
 
-Branch: `paket/manager` · Status: in Arbeit
+Branch: `paket/manager` · Status: fertig (PRs 1–5 offen)
 
 - [x] PR 1: Finanzmodell im Core (Finanzbuch, Bank, Sparbuch, Aktien, Spieltagsabrechnung, Stadion-Grundwerte) –
   Abrechnung über `GameState.SettleFinances` (Aufruf in `PlayNextMatchDay`), Saisonwechsel über `StartFinanceSeason()`
@@ -45,7 +45,13 @@ Branch: `paket/manager` · Status: in Arbeit
   Firmen, Sender und Firmen-Infos aus em.exe; Angebotshöhen `[APPROX]` (kalibriert auf das UI-Video), Verlängerung folgt mit PR 5
 - [x] PR 4: Stadion (kb\14, Ausbauten kb\8) – `UI/Screens/Manager/StadiumScreen.cs`, Ablauf `stadion`; Kosten der ersten
   Ausbaustufen aus dem Video, Lage von Kino/Imbiß/Kneipe `[APPROX]`, Meldung „Stadion-Ausbau abgeschlossen“ folgt mit PR 5
-- [ ] PR 5: Jugend, Neuer (Posteingang), Nachrichtenleiste
+- [x] PR 5: Jugend, Neuer (Posteingang), Nachrichtenleiste – `UI/Screens/Manager/YouthScreen.cs`, `InboxScreen.cs`,
+  `NewsBar.cs`, `Core/FinanceYouth.cs`, `Core/FinanceInbox.cs`, Abläufe `jugend` und `posteingang`; Jugendteams und
+  leere Nachrichtenleiste am Video vermessen, Meldungstexte aus em.exe (Stadion-Ausbau, Werbepartner mit
+  Verlängerungsoption, Talentsuche); Kreditanfragen unter Managern über den Posteingang. `[APPROX]`: Wirkung der
+  Förderung, Ort/Preis/Rabatt der Talentsuche („Spion“: Klick ins Fenster „Jugendteams“), Posteingang-Layout
+- Offen: Bedeutung der Kachel „Neuer“ (Symbol ist ein Managerkopf, im Video nicht geöffnet) – vorerst Posteingang;
+  Talente bekommen Alter/Stärken, sobald das Paket „mannschaft“ Spielerwerte hat
 
 - Finanzen (kb\152): Konto, Kredit, Sparbuch, vier Aktien mit Kursverlauf; Finanzbuch.
 - Werbung (kb\151, Logos kb\11): Bande, Eisfläche, Trikot, Angebote annehmen/ablehnen.

@@ -29,6 +29,9 @@ internal static class ManagerText
         return end;
     }
 
+    /// <summary>Text einer Nachricht für den Original-Font: „%“ fehlt dort, em.exe schreibt dafür „#“.</summary>
+    public static string ForFont(string text) => text.Replace('%', '#');
+
     /// <summary>„1.234 DM“ ohne Vorzeichenwechsel (Formatierung wie im Original).</summary>
     public static string Money(long amount) => Core.GameState.FormatMoney(amount);
 

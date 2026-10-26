@@ -85,6 +85,7 @@ public sealed partial class GameState
             FinanceDay++;
             var date = SeasonCalendar.LayoutDate(FinanceDay);
             Stocks.Advance(FinanceRandom);
+            ExpireMessages();
             if (FinanceDay > 0 && date.DayOfWeek == DayOfWeek.Monday)
                 WeeklyFinances();
             if (FinanceDay > 0 && date.Day == 1)
@@ -137,15 +138,17 @@ public sealed partial class GameState
 
     // Erweiterungspunkte für weitere Teile des Pakets (Werbung, Stadionbau, Jugend …).
     private long SponsorIncome(Manager manager) => Finance(manager).Sponsoring.MonthlyIncome;
-    private long RecurringExpenses(Manager manager) => 0;
+    private long RecurringExpenses(Manager manager) => Finance(manager).YouthFunding;
     private void WeeklyManagerFinances(Manager manager)
     {
-        // [APPROX] Meldung „Der Stadion-Ausbau (…) ist abgeschlossen.“ folgt mit dem Posteingang.
-        AdvanceConstruction(manager);
+        if (AdvanceConstruction(manager) is { } done)
+            ConstructionCompleted(manager, done);
+        AdvanceTalentSearch(manager);
     }
 
     private void MonthlyManagerFinances(Manager manager)
     {
         SettleSponsoring(manager);
+        SettleYouth(manager);
     }
 }

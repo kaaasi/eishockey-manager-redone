@@ -16,7 +16,8 @@ namespace EishockeyManager.UI.Screens.ManagerArea;
 /// <remarks>
 /// [APPROX] Im Video wird nur mit der Maus über die Felder gefahren, aber nichts gebucht. Bedienung daher angenommen:
 /// Überfahren wählt Bank/Manager/Aktie, [+]/[−] stellen den Betrag der jeweiligen Seite ein (Rechtsklick = zehnfach),
-/// ◄ führt die linke, ► die rechte Buchung aus; der Betrag steht im schwarzen Balken.
+/// ◄ führt die linke, ► die rechte Buchung aus; der Betrag steht im schwarzen Balken. Leihen bei einem Mitmanager
+/// schickt ihm eine Anfrage in den Posteingang.
 /// </remarks>
 public sealed class FinanceScreen : Screen
 {
@@ -224,8 +225,8 @@ public sealed class FinanceScreen : Screen
                 Game.WithdrawFromBank(Me, amount);
                 break;
             case SelectionKind.Manager:
-                // [APPROX] Laut Anleitung muss der andere Manager zustimmen (Angebot im Posteingang) – folgt mit „Neuer“.
-                Game.LendBetweenManagers(_selection.Index, Game.CurrentManager, amount);
+                // Der andere Manager bekommt eine Anfrage in den Posteingang und muss zustimmen.
+                Game.RequestLoan(Game.CurrentManager, _selection.Index, amount);
                 break;
             default:
                 Game.BuyStock(Me, _selection.Index, (int)amount);
