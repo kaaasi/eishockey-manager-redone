@@ -135,7 +135,7 @@ public static class MatchEngine
 {
     public static (int Home, int Away) Play(Club home, Club away, Random random)
     {
-        var diff = (home.Strength - away.Strength) / 30.0;
+        var diff = (home.MatchStrength - away.MatchStrength) / 30.0; // Stärke aus der Aufstellung (Paket „mannschaft“)
         var lambdaHome = 3.45 * Math.Exp(0.45 * diff);
         var lambdaAway = 3.05 * Math.Exp(-0.45 * diff);
         return (Poisson(lambdaHome, random), Poisson(lambdaAway, random));

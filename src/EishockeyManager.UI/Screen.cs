@@ -25,6 +25,9 @@ public sealed class InputState
     /// <summary>Linke Maustaste wurde in diesem Frame gedrückt.</summary>
     public bool LeftClick { get; set; }
 
+    /// <summary>Linke Maustaste ist gedrückt (auch gehalten), z. B. zum Überstreichen im Training.</summary>
+    public bool LeftDown { get; set; }
+
     /// <summary>Rechte Maustaste wurde in diesem Frame gedrückt.</summary>
     public bool RightClick { get; set; }
 
@@ -46,7 +49,7 @@ public sealed class InputState
 
     public void Reset()
     {
-        LeftClick = RightClick = false;
+        LeftClick = LeftDown = RightClick = false;
         Wheel = 0;
         Keys.Clear();
         Text = "";

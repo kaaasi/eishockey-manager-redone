@@ -83,6 +83,7 @@ public sealed class DesktopGame : Game
             _input.MouseY = (mouse.Y - _target.Y) * Surface.Height / _target.Height;
         }
         _input.LeftClick = IsActive && mouse.LeftButton == ButtonState.Pressed && _previousMouse.LeftButton == ButtonState.Released;
+        _input.LeftDown = IsActive && mouse.LeftButton == ButtonState.Pressed;
         _input.RightClick = IsActive && mouse.RightButton == ButtonState.Pressed && _previousMouse.RightButton == ButtonState.Released;
         _input.Wheel = Math.Sign(mouse.ScrollWheelValue - _previousMouse.ScrollWheelValue);
         foreach (var (xna, ui) in KeyMap)

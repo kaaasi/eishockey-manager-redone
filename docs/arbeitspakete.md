@@ -49,7 +49,13 @@ Branch: `paket/manager` · Status: offen
 
 ## Paket `mannschaft` – Kader und Spieler
 
-Branch: `paket/mannschaft` · Status: offen
+Branch: `paket/mannschaft` · Status: alle fünf Kacheln umgesetzt, PRs offen
+
+- ✔ Spielerwerte, Kader aller Vereine, Aufstellung (Core), Mannschaftsstärke → `Club.MatchStrength` in `MatchEngine`
+- ✔ Bildschirme Aufstellung, Taktik, Verträge (mit Vertragsverhandlung) und Transfer (Kauf, Leihe, Verkauf, Talentsuche)
+- ✔ Training: Bildschirm kb\5, Kosten, Standardplan und Wirkung aus em.exe (`Squad.Training.cs`)
+- Schnittstelle für `saison`: `GameState.TrainOneDay()` an jedem Trainingstag (Mi, So) aufrufen; bis dahin schreiben
+  die Mannschafts-Bildschirme das Training mit `CatchUpTraining()` nach
 
 - Spielerwerte (siehe Spielerstruktur in `reverse-engineering.md`: Talent, Alter, Technik, Kondition, Form, Rolle …),
   Kader aller Vereine aus der Datenbank, Transfermarkt.

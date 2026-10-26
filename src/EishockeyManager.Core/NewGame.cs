@@ -61,7 +61,7 @@ public static class NewGame
             schedules[league] = Schedule.Rounds(members, rounds: 4);
         }
 
-        return new GameState
+        var game = new GameState
         {
             Setup = setup,
             Clubs = clubs,
@@ -69,6 +69,8 @@ public static class NewGame
             Schedules = schedules,
             Random = random,
         };
+        SquadSetup.Initialize(game, seed); // Paket „mannschaft“: Kader, Spielerwerte, Aufstellung
+        return game;
     }
 
     /// <summary>

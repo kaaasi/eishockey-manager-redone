@@ -41,6 +41,18 @@ public sealed class ScreenDriver
     public void Click(int x, int y) => Frame(i => { i.MouseX = x; i.MouseY = y; i.LeftClick = true; });
     public void RightClick(int x, int y) => Frame(i => { i.MouseX = x; i.MouseY = y; i.RightClick = true; });
     public void Move(int x, int y) => Frame(i => { i.MouseX = x; i.MouseY = y; });
+
+    /// <summary>Linke Taste bei der ersten Position drücken, über die weiteren ziehen, dann loslassen.</summary>
+    public void Drag(params (int X, int Y)[] points)
+    {
+        for (var k = 0; k < points.Length; k++)
+        {
+            var (x, y) = points[k];
+            var first = k == 0;
+            Frame(i => { i.MouseX = x; i.MouseY = y; i.LeftDown = true; i.LeftClick = first; });
+        }
+        Move(points[^1].X, points[^1].Y);
+    }
     public void Type(string text) => Frame(i => i.Text = text);
     public void Press(Key key) => Frame(i => i.Keys.Add(key));
     public void Wheel(int delta) => Frame(i => i.Wheel = delta);

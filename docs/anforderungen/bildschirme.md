@@ -79,9 +79,10 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
   Rückennummern) und Torhüter (TW). Spieler anklicken, dann Feld (oder umgekehrt); Rechtsklick leert ein Feld.
   Unten A = Auto-Aufstellung, C = leeren, OK = übernehmen (wird beim Verlassen automatisch übernommen).
 * **Taktik:** Einsatz und Angriff je Spielstand, sechs Linienwechsel-Modi, Minuten je Reihe.
-* **Training** (`kb\5`): 7 Tage × 2 Blöcke (Woche A/B im Wechsel) × 2 Einheiten. Art unten wählen, Einheiten anklicken
-  oder überstreichen; Rechtsklick = frei. Oben Kosten pro Woche und Balken E K T (Energie, Kondition, Technik).
-  *[APPROX]* Wirkungen und Kosten sind angenähert.
+* **Training** (`kb\5`): 7 Tage × 4 Einheiten (je Tag zwei Kästen mit zwei Einheiten). Art unten wählen (gelb
+  unterstrichen), Einheiten anklicken oder mit gedrückter Taste überstreichen; Rechtsklick = zurück. Oben Kosten pro
+  Woche und Balken E K T (Energie, Kondition, Technik) je Gruppe Torhüter/Abwehr/Sturm. Nur die erste Art kostet Geld.
+  Kosten, Wirkung und Standardplan aus em.exe (siehe `reverse-engineering.md`, Abschnitt Training).
 ### Manager
 * **Finanzen** (`kb\152`): Konto, Kredit, Sparbuch; Betrag mit den Knöpfen links ändern, Stückzahl rechts; die vier
   Aktien mit Kurs, Besitz und Wert, Kursverlauf im schwarzen Feld.

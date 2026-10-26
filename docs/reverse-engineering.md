@@ -76,6 +76,38 @@ Transfers zwischen allen Vereinen, Statistiken und Ex-/Import einheitlich.
 | 0x34 | Logo |
 | 0x3B | Farbcode (16 Bit) |
  
+## Overlays: Segmente in Fernaufrufen
+
+Fernaufrufe in Overlay-Code (`call 0x38:0x2d8`) nennen nicht das Segment, sondern einen Eintrag der Segmenttabelle
+(Datei 0x163C0, 8 Byte je Eintrag, Index = Wert / 8; Verweis im `FBOV`-Kopf bei Datei 0x255B0). Beispiel: 0x38 →
+Eintrag 7 → Segment 0x99F → Datei 0x1E00 + 0x99F0 + Offset. Segment 0x0000 ist die C-Laufzeit (0x3CA = LXMUL,
+0x47C = LDIV). Einträge mit Flag 3 sind Overlay-Stubs (`INT 3Fh`).
+
+## Geldbeträge
+
+Das Original rechnet intern in **Drittel-DM**: die Ausgabefunktion 99F:02D8 rechnet Betrag × [0x7A1] / [0x79D]
+= Betrag × 1 / 3, bevor sie den Text bildet. Belegt am Training (siehe unten). Für die Pakete `manager` und
+`speichern` wichtig: Rohwerte aus em.exe oder Spielständen sind durch 3 zu teilen.
+
+## Spiel-Level
+
+Setup-Werte DGROUP 0x118–0x11B (Level, Dauer, …), Höchstwerte 0x11C ff. – Level geht im Original bis **5**
+(Vorgabe 3). Daraus 0xED8 = 5 − Level.
+
+## Training (Manager-Feld 0xA8A1, 28 Byte je Manager) – `[ORIGINAL]` in `Squad.Training.cs`
+
+* Bildschirm: Overlay-Funktion ab Datei 0x59DBF. Einheiten bei x = 14 + 44·Tag, y = 103/125/168/190, Bildchen
+  29 × 20 aus der Leiste (x = 26 + 30·Art, y = 218). Unterstreichung y = 238 (Farbe 24). Balken E/K/T bei
+  x = 148/157/166 + 2·Gruppe, Unterkante y = 93, höchstens 36 px, Farben DGROUP 0x5544.
+* Kosten: Art 0 kostet je Einheit (12.000 − 1.200·Stufe)·Preisindex/100, dazu einmal 21.000 − 6.000·Stufe
+  (Drittel-DM). Stufe = Liga bei Spielbeginn (Manager-Feld 0x9746). Abzug je Trainingstag, Anzeige ×2 pro Woche.
+* Trainingstage: zweimal pro Woche (Tag mod 7 = 0 bzw. = 4), Funktion 46E:0C89, für jeden Spieler 46E:00BC.
+* Wirkung (46E:00BC): Belastung je Art/Wert/Gruppe aus DGROUP 0x4861, Norm 0x48CD (= Belastung des Standardplans),
+  Erholung 0x48E5. Wochenbonus in %: Alter, Wiederholungen (−3), Training am Spieltag (−6/−20), fehlende Arten (−5),
+  Art 0 (+7). Ergebnis je Wert ±1 mit Wahrscheinlichkeit Abweichung/101 (Rundung 46E:000A). Spielerfeld 0x13 =
+  Belastung 50–150, Feld 0x19 = zwei versteckte Werte (Halbbytes).
+* Standardplan (46E:0653): Arten 2–8 reihum, frei an Mi/So nachmittags und Sa nachmittags; bei Level 5 immer frei.
+
 ## Noch nicht rekonstruiert (`[APPROX]` im Code)
  
 * **Spielsimulation** (Overlay 5E73): Das Remake simuliert in 10-Sekunden-Schritten mit den im Original sichtbaren
