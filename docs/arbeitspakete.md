@@ -152,6 +152,23 @@ Zwei Spuren parallel, Basis `main` = `fce0760`:
 | **lebenszyklus** | `paket/lebenszyklus` | R2-04, R2-08, R2-09 | wie in der Tabelle oben; zusätzlich die Aufstellungsbereinigung beim Öffnen in den Saisonwechsel/Tagesablauf verlegen | Spieler altert, Vertrag läuft ab bzw. verkürzt sich, Leihe endet beim ursprünglichen Verein; Anfrage von Tag 231 ist in der Folgesaison nicht mehr annehmbar; zweites Annehmen ändert weder Kontostand noch Kader |
 | **ansichten** | `paket/ansichten` | R2-02b, R2-02c, R2-10 | Werbeangebote, Aktienmarkt und Standard-Trainingsplan werden im Spielablauf (Spielstart bzw. Tageshook) erzeugt, nicht beim Öffnen; Heimspieltest prüft Buchungen **je Begegnung** | Ab Spielstart alle Kacheln öffnen/schließen → vollständiger Zustandsabdruck (inkl. Zufallszustand) unverändert, Skip R2-02b entfällt; doppelte `SettleHomeMatch()` lässt den Test rot werden |
 
+### Status Spur `ansichten`
+
+- [x] R2-02b/c: Spielstart-Hook `InitializeManagerSystems()` nach der Kaderanlage erzeugt Börse, Werbeangebote und
+  Trainingspläne für alle Manager, ohne einen Tag zu verarbeiten. `Ads()` würfelt beim Lesen nichts aus;
+  `TrainingScreen.Enter()` liest den vorhandenen Plan. Monatsangebote bleiben im bestehenden Finanz-Tagesablauf.
+- [x] Fünf Regressionen vor dem Fix rot: die drei Kacheln einzeln ab Spielstart, alle Kacheln gemeinsam und der
+  ausdrücklich gezeichnete Special-Plan. Alle Kacheltests schließen Werbung ein, ohne vorbereitende Testeingriffe;
+  der R2-02b-Skip entfällt. Vollständiger Zustandsabdruck einschließlich Zufallszustand sofort und nach Tag 40 gleich.
+- [x] R2-10: Eintritt und Gastronomie entsprechen nach jedem Weiter-Schritt exakt den ausgetragenen Begegnungen
+  (kontrollierte Kapazitäten und Preise, drei Seeds, Play-Offs und Aufstiegsrunde separat nachgewiesen).
+  Mutationsprobe mit zweitem `SettleHomeMatch()` derselben Begegnung: alter Test grün, neuer Test rot
+  (77 DM erwartet, 154 DM gebucht); Mutation anschließend entfernt.
+- Validierung: Build ohne Warnungen/Fehler; 281 synthetische und 51 Originaldaten-Tests bestanden, 0 übersprungen.
+  Ohne Originaldaten: 281 bestanden, 44 sichtbar übersprungen (Theories ohne Daten nicht expandiert).
+- Restgrenze: Aufstellungsbereinigung und Kaderlebenszyklus gehören zu `lebenszyklus`; R2-10 sichert den Test ab,
+  führt keine allgemeine Idempotenz von `SettleHomeMatch()` ein. Keine neuen `[APPROX]`-Regeln.
+
 **Dateigrenzen in Welle B:**
 `lebenszyklus` → `Core/Player.Contract.cs`, `Core/Player.Factory.cs`, `Core/Transfer.cs`, `Core/FinanceInbox.cs`, `Core/Squad.Lineup.cs`,
 Saisonwechsel in `Core/SeasonFlow.cs`, `OnNewSeason…` in `GameState.Integration.cs` (im PR begründen) ·

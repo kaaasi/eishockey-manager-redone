@@ -6,6 +6,20 @@ namespace EishockeyManager.Core;
 /// </summary>
 public sealed partial class GameState
 {
+    /// <summary>
+    /// Spielstart nach der Kaderanlage: Börse, Werbeangebote und Trainingspläne für alle Manager vorbereiten.
+    /// Verarbeitet keinen Tag; die Bildschirme lesen danach ausschließlich den vorhandenen Zustand.
+    /// </summary>
+    internal void InitializeManagerSystems()
+    {
+        _ = Stocks;
+        foreach (var manager in Managers)
+        {
+            RenewOffers(manager);
+            PrepareTraining(manager);
+        }
+    }
+
     /// <summary>Jeder Tag der Zeitleiste, bevor dessen Spiele ausgetragen werden.</summary>
     partial void OnDayManager(int day)
     {

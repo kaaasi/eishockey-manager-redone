@@ -51,6 +51,7 @@ public static class NewGame
             Random = random,
         };
         SquadSetup.Initialize(game, seed); // Paket „mannschaft“: Kader, Spielerwerte, Aufstellung
+        game.InitializeManagerSystems();
         return game;
     }
 

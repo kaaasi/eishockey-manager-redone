@@ -136,14 +136,8 @@ public sealed partial class ManagerFinance
 
 public sealed partial class GameState
 {
-    /// <summary>Werbung eines Managers; beim ersten Zugriff gibt es die ersten Angebote.</summary>
-    public Sponsoring Ads(Manager manager)
-    {
-        var sponsoring = Finance(manager).Sponsoring;
-        if (sponsoring.Offers.Count == 0)
-            RenewOffers(manager);
-        return sponsoring;
-    }
+    /// <summary>Werbung eines Managers; Angebote entstehen beim Spielstart und Monatswechsel.</summary>
+    public Sponsoring Ads(Manager manager) => Finance(manager).Sponsoring;
 
     /// <summary>Würfelt die Angebote neu aus (monatlich). Partner mit laufendem Vertrag dieser Art bieten nichts an.</summary>
     public void RenewOffers(Manager manager)
