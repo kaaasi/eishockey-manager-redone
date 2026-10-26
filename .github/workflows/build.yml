@@ -36,7 +36,7 @@ jobs:
 
       - name: Testbericht
         if: success() || failure()
-        run: python3 .github/scripts/testbericht.py TestResults >> "$GITHUB_STEP_SUMMARY"
+        run: python3 .github/scripts/testbericht.py TestResults   # schreibt selbst in $GITHUB_STEP_SUMMARY, Annotationen ins Log
 
   # Lauffähige Zwischenstände zum Herunterladen (Actions → Lauf → Artifacts).
   # Die Originaldateien müssen daneben im Ordner "gamedata" liegen.

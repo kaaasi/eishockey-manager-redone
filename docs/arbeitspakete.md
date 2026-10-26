@@ -38,7 +38,7 @@ Berührungen außerhalb der eigenen Grenzen im PR begründen. `GameState.Integra
 
 ### Status Spur `fundament`
 
-- [ ] PR 1 – Testgrundlagen (R2-05, A07, A08): Originaldaten-Tests mit `[GameDataFact]` (echtes Skip ohne Daten,
+- [x] PR 1 – Testgrundlagen (PR offen) (R2-05, A07, A08): Originaldaten-Tests mit `[GameDataFact]` (echtes Skip ohne Daten,
   Pflichtlauf `EM_REQUIRE_GAMEDATA=1` scheitert), Trait `Category=Originaldaten`, CI-Bericht getrennt nach
   synthetisch / Originaldaten / übersprungen (`.github/scripts/testbericht.py`), `ScreenDriver.PlayMatchDay()` wirft
   `TimeoutException`, Kacheltest trennt Platzhalter und echte Bildschirme (Liste `MenuEntryTests.DocumentedPlaceholders`)

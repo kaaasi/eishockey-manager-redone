@@ -49,8 +49,8 @@ def _report(report, annotations) -> int:
 
     synthetic_run = count("synthetisch", "Passed") + count("synthetisch", "Failed")
     data_run = count("originaldaten", "Passed") + count("originaldaten", "Failed")
-    skipped = [(n, why) for g in groups.values() for n, o, _, why in g if o == "NotExecuted"]
-    failed = [n for g in groups.values() for n, o, _, _ in g if o == "Failed"]
+    skipped = sorted((n, why) for g in groups.values() for n, o, _, why in g if o == "NotExecuted")
+    failed = sorted(n for g in groups.values() for n, o, _, _ in g if o == "Failed")
 
     print("## Testbericht\n", file=report)
     print("| Art | ausgeführt | davon fehlgeschlagen |", file=report)
@@ -64,8 +64,8 @@ def _report(report, annotations) -> int:
         for name, why in skipped:
             print(f"- `{name}` – {why.strip() or 'ohne Grund'}", file=report)
         print("\n</details>\n", file=report)
-        annotations.append(f"::warning title=Übersprungene Tests::{len(skipped)} Tests mit Originaldaten wurden übersprungen "
-              f"(keine Originaldateien). Sie gelten nicht als bestanden.")
+        annotations.append(f"::warning title=Übersprungene Tests::{len(skipped)} Tests wurden übersprungen "
+              f"(Gründe im Testbericht). Sie gelten nicht als bestanden.")
     if failed:
         print("### Fehlgeschlagen\n", file=report)
         for name in failed:
