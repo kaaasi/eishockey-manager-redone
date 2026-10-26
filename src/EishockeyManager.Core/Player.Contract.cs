@@ -85,6 +85,11 @@ public sealed partial class GameState
             }
 
             player.ContractYears = Math.Max(0, player.ContractYears - 1);
+            // [APPROX] Integration Welle B: Computervereine verlängern auslaufende Verträge selbst, bis die Kader-KI
+            // (Verlängerung, Neuzugänge, Ruhestand) rekonstruiert ist. Ohne das wären ab der dritten Saison alle
+            // Kader leer, weil jeder Startvertrag zwei Jahre läuft. Gehalt bleibt unverändert.
+            if (player.ContractYears == 0 && !Managers.Any(m => m.ClubIndex == owner.Index))
+                player.ContractYears = SquadSetup.StartContractYears;
             if (player.ContractYears == 0)
             {
                 owner.Players.Remove(player);

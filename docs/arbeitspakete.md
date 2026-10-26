@@ -202,6 +202,32 @@ Stand: implementiert, lokale Abnahme grün; unabhängiges Review und Merge stehe
   und altersbedingter Ruhestand sind weiterhin offen; ohne Verlängerungen können Kader leer werden.
   Alte Leihflags ohne gespeicherten Ursprung werden vor dem Saisonwechsel abgewiesen, nicht einem Verein zugeordnet.
 
+### Integration Runde 2, Welle B (26.10.2026)
+
+PRs #33 (`ansichten`) und #34 (`lebenszyklus`) zusammengeführt, beide auf Basis `a4c4294`: konfliktfrei.
+Build ohne Warnungen.
+
+**Integrationsfehler (behoben im Integrations-Commit):** Mit dem Vertragsablauf aus #34 waren **ab der dritten Saison
+alle Kader leer**. Jeder Startvertrag läuft zwei Jahre, und Computervereine verlängern nie. Probe mit passivem Manager:
+Am Ende der ersten Saison haben alle 36 Vereine mit Kader 20 Spieler, nach dem zweiten Saisonwechsel haben alle
+48 wählbaren Vereine 0 Spieler, und 720 Spieler liegen im Pool vertragsloser Spieler. Überbrückung `[APPROX]` in
+`Player.Contract.cs`: Computervereine verlängern auslaufende Verträge um `StartContractYears` mit gleichem Gehalt.
+Regressionstest `MultiSeasonSquadTests` (vor der Überbrückung rot): Computerkader bleiben über drei Saisonwechsel
+vollständig, jeder Spieler altert um 3 Jahre und hat einen gültigen Vertrag.
+
+| Befund | Ergebnis im Gesamtstand |
+|---|---|
+| R2-02b/c Ansichten | behoben – Werbung, Börse und Trainingsplan entstehen beim Spielstart; strenger Kacheltest ohne Skip grün |
+| R2-10 Heimspieltest | behoben – exakte Beträge je Begegnung; doppelte Abrechnung wird rot (laut PR mutationsgeprüft) |
+| R2-04 Saisonwechsel | behoben – Altern, Vertragsablauf, Leihende zum Stammverein, Markt neu |
+| R2-08 Fristen | behoben – Saison + Tag; Anfrage von Tag 231 ist in der Folgesaison nicht mehr annehmbar |
+| R2-09 Transfergebote | behoben – zweites Annehmen ohne Buchung und ohne Kaderänderung |
+| **R2-11 (neu, offen)** | Ein passiver Manager verliert zu Beginn der dritten Saison seinen gesamten Kader (alle Verträge laufen gleichzeitig aus), ohne Vorwarnung im Posteingang. Ob und wie das Original warnt oder verlängert, ist nicht rekonstruiert → Runde 3 (Kader-KI/Verträge) |
+| R2-12 (neu, offen) | Keine Neuzugänge, Talente oder Ruhestand bei Computervereinen; der Pool vertragsloser Spieler wächst und altert unbegrenzt → Runde 3 |
+
+Tests: mit Originaldaten (`EM_REQUIRE_GAMEDATA=1`) 348 bestanden, 0 übersprungen; ohne Daten 295 bestanden,
+46 sichtbar übersprungen; Pflichtlauf ohne Daten scheitert (53 Fälle). Alle Bildschirmfoto-Abläufe laufen durch.
+
 ## Runde 1 (abgeschlossen am 26.10.2026)
 
 Abhängigkeiten damals: `saison` → `wettbewerbe`; `manager` und `mannschaft` erweitern Club/Player/GameState in eigenen Dateien.
