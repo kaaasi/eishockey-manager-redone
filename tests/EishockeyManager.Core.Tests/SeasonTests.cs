@@ -1,4 +1,5 @@
 using EishockeyManager.Core;
+using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core.Tests;
 
@@ -12,10 +13,45 @@ public class SeasonCalendarTests
     public void MatchDays_MatchObservationsFromOriginal()
     {
         var days = SeasonCalendar.LeagueMatchDays(44);
-        // Belegt in Aufnahmen: 17. Spieltag Sonntag 5. Nov., 37. Spieltag Mittwoch 17. Januar
-        Assert.Equal("Sonntag, 5. Nov.  1995", SeasonCalendar.Format(days[16], 1995));
-        Assert.Equal("Mittwoch, 17. Januar  1996", SeasonCalendar.Format(days[36], 1995));
+        // Belegt in Aufnahmen des Originals (Infoleiste des Hauptmenüs)
         Assert.Equal(0, days[0]);
+        Assert.Equal("Mittwoch, 13. Sept.  1993", SeasonCalendar.Format(days[1], 1993));
+        Assert.Equal("Sonntag, 5. Nov.  1995", SeasonCalendar.Format(days[16], 1995));
+        Assert.Equal("Freitag, 8. Dez.  1993", SeasonCalendar.Format(days[23], 1993));
+        Assert.Equal("Mittwoch, 17. Januar  1996", SeasonCalendar.Format(days[36], 1995));
+        Assert.Equal("Freitag, 2. Februar  1994", SeasonCalendar.Format(days[42], 1993));
+        Assert.Equal("Sonntag, 4. Februar  1994", SeasonCalendar.Format(days[43], 1993));
+    }
+
+    [Fact]
+    public void Calendar_HasNoLeapDay()
+    {
+        // „Donnerstag, 22. März 1995“ und „Samstag, 14. April 1995“ (Video) – auch in Schaltjahren
+        Assert.Equal("Donnerstag, 22. März  1996", SeasonCalendar.Format(193, 1995));
+        Assert.Equal("Samstag, 14. April  1996", SeasonCalendar.Format(SeasonCalendar.ClubSeasonEnd + 1, 1995));
+        Assert.Equal("Montag, 29. April  1994", SeasonCalendar.Format(SeasonCalendar.SeasonEnd, 1993));
+    }
+
+    [Fact]
+    public void Calendar_CountsPerCompetition()
+    {
+        Assert.Equal(44, SeasonCalendar.DaysOf(DayEvents.League).Count);
+        Assert.Equal(15, SeasonCalendar.DaysOf(DayEvents.Playoffs).Count);
+        Assert.All(SeasonCalendar.DaysOf(DayEvents.Playoffs), d => Assert.True(d > SeasonCalendar.LeagueMatchDays(44)[^1]));
+        Assert.Equal(DayEvents.SeasonEnd, SeasonCalendar.Events(SeasonCalendar.SeasonEnd));
+    }
+
+    /// <summary>Vergleich mit der Kalendertabelle in em.exe (übersprungen ohne Originaldateien).</summary>
+    [Fact]
+    public void Calendar_MatchesTableInEmExe()
+    {
+        GameData data;
+        try { data = GameData.Locate(); }
+        catch (DirectoryNotFoundException) { return; }
+        var exe = File.ReadAllBytes(Path.Combine(data.RootDirectory, "em.exe"));
+        const int offset = 0x175F9;
+        for (var day = 0; day < SeasonCalendar.Length; day++)
+            Assert.True((byte)SeasonCalendar.Days[day] == exe[offset + day], $"Tag {day}");
     }
 }
 

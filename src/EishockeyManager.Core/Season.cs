@@ -1,22 +1,92 @@
 namespace EishockeyManager.Core;
 
+/// <summary>Was an einem Tag der Saison stattfindet (Bitmaske wie in der Kalendertabelle von em.exe).</summary>
+[Flags]
+public enum DayEvents : byte
+{
+    None = 0,
+
+    /// <summary>Ligaspieltag. Das Original setzt drei Bits (vermutlich je Liga eins); alle Ligen spielen gemeinsam.</summary>
+    League = 7,
+    DebCup = 8,
+    WorldCup = 16,
+    EuropeanCup = 32,
+
+    /// <summary>Play-Off und Aufstiegsrunden.</summary>
+    Playoffs = 64,
+
+    /// <summary>Markierung 255: Ende der Vereinssaison (13. April) bzw. Saisonende (29. April).</summary>
+    SeasonEnd = 255,
+}
+
 /// <summary>
-/// Kalender einer Saison. Beobachtungen aus Aufnahmen des Originals:
+/// Kalender einer Saison. [ORIGINAL] Die Termine stammen aus der Kalendertabelle in em.exe
+/// (Dateioffset 0x175F9, ein Byte je Tag ab dem 10. September, Werte siehe <see cref="DayEvents"/>).
+/// Belegt in den Videos: 17. Spieltag = Sonntag, 5. Nov.; 37. Spieltag = Mittwoch, 17. Januar;
+/// 43. Spieltag = Freitag, 2. Feb.; 44. Spieltag = Sonntag, 4. Feb.; Saisonende = Montag, 29. April.
 /// <list type="bullet">
-/// <item>Jede Saison beginnt am „Sonntag, 10. Sept.“ – unabhängig vom echten Wochentag des Jahres.
-///   Die Wochentage folgen dem Kalender 1995/96 (dort war der 10.09. ein Sonntag).</item>
-/// <item>Ligaspiele finden sonntags und mittwochs statt: 17. Spieltag = Sonntag, 5. Nov.;
-///   37. Spieltag = Mittwoch, 17. Januar. Dazu passt genau ein ausgelassener Termin (Heiligabend).</item>
+/// <item>Jede Saison beginnt am „Sonntag, 10. Sept.“ – unabhängig vom echten Wochentag des Jahres.</item>
+/// <item>Das Original kennt keinen 29. Februar: „Donnerstag, 22. März“ und „Samstag, 14. April“ (Video) passen
+///   nur zu einem Kalender ohne Schalttag. Wochentage folgen daher dem Kalender 1989/90.</item>
 /// </list>
 /// </summary>
 public static class SeasonCalendar
 {
-    /// <summary>Tag 0 einer Saison im Kalenderlayout.</summary>
-    public static readonly DateOnly Layout = new(1995, 9, 10);
+    /// <summary>Tag 0 einer Saison im Kalenderlayout (Sonntag, 10.09.1989; 1990 ist kein Schaltjahr).</summary>
+    public static readonly DateOnly Layout = new(1989, 9, 10);
+
+    /// <summary>Letzter Tag der Vereinssaison (Freitag, 13. April). Danach zeigt das Hauptmenü „Saisonende“.</summary>
+    public const int ClubSeasonEnd = 215;
+
+    /// <summary>Saisonende (Montag, 29. April): Bildschirm „Saisonende“, danach beginnt die neue Saison.</summary>
+    public const int SeasonEnd = 231;
+
+    public const int Length = SeasonEnd + 1;
+
+    private static readonly int[] LeagueDays =
+    [
+        0, 3, 7, 10, 17, 21, 24, 26, 28, 31, 35, 38, 45, 49, 52, 54, 56, 63, 66, 70, 80, 84,
+        87, 89, 91, 94, 98, 101, 105, 108, 112, 115, 117, 119, 122, 126, 129, 133, 136, 138, 140, 143, 145, 147,
+    ];
+    private static readonly int[] DebCupDays = [12, 14, 19, 40, 42, 47, 96, 103, 110, 124, 125, 132, 198, 202, 209];
+    private static readonly int[] EuropeanCupDays = [55, 58, 60, 62, 65, 67, 69, 72, 74, 76, 78, 81];
+    private static readonly int[] PlayoffDays = [149, 151, 153, 156, 158, 163, 165, 168, 182, 188, 193, 195, 200, 205, 207];
+    private static readonly int[] WorldCupDays = [216, 218, 220, 222, 224, 226, 228, 230];
+
+    private static readonly DayEvents[] Table = BuildTable();
+
+    private static DayEvents[] BuildTable()
+    {
+        var table = new DayEvents[Length];
+        foreach (var d in LeagueDays) table[d] |= DayEvents.League;
+        foreach (var d in DebCupDays) table[d] |= DayEvents.DebCup;
+        foreach (var d in EuropeanCupDays) table[d] |= DayEvents.EuropeanCup;
+        foreach (var d in PlayoffDays) table[d] |= DayEvents.Playoffs;
+        foreach (var d in WorldCupDays) table[d] |= DayEvents.WorldCup;
+        table[ClubSeasonEnd] = DayEvents.SeasonEnd;
+        table[SeasonEnd] = DayEvents.SeasonEnd;
+        return table;
+    }
+
+    /// <summary>Kalendertabelle wie im Original (ein Byte je Tag, Tag 0 = 10. September).</summary>
+    public static ReadOnlySpan<DayEvents> Days => Table;
+
+    public static DayEvents Events(int day) => (uint)day < Length ? Table[day] : DayEvents.None;
+
+    /// <summary>Tage (seit Saisonbeginn) der Termine eines Wettbewerbs, aufsteigend.</summary>
+    public static IReadOnlyList<int> DaysOf(DayEvents kind) => kind switch
+    {
+        DayEvents.League => LeagueDays,
+        DayEvents.DebCup => DebCupDays,
+        DayEvents.EuropeanCup => EuropeanCupDays,
+        DayEvents.Playoffs => PlayoffDays,
+        DayEvents.WorldCup => WorldCupDays,
+        _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+    };
 
     private static readonly string[] Weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 
-    /// <summary>[APPROX] Monatsnamen: kurze ausgeschrieben, lange abgekürzt (belegt: „Sept.“, „Nov.“, „Januar“).</summary>
+    /// <summary>[APPROX] Monatsnamen: kurze ausgeschrieben, lange abgekürzt (belegt: „Sept.“, „Okt.“, „Nov.“, „Dez.“, „Januar“, „Februar“, „März“, „April“).</summary>
     private static readonly string[] Months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez."];
 
     public static DateOnly LayoutDate(int day) => Layout.AddDays(day);
@@ -28,7 +98,10 @@ public static class SeasonCalendar
     public static string Format(int day, int season)
     {
         var d = LayoutDate(day);
-        return $"{Weekdays[(int)d.DayOfWeek]}, {d.Day}. {Months[d.Month - 1]}  {Year(day, season)}";
+        // [APPROX] Ursache unbekannt: Das Original zeigt am Saisonende „Montag, 29. April“, obwohl der Kalender sonst einen Sonntag ergibt
+        // (beide Saisonenden im Video). Der Wochentag wird dort wie im Original um eins weitergezählt.
+        var weekday = ((int)d.DayOfWeek + (day == SeasonEnd ? 1 : 0)) % 7;
+        return $"{Weekdays[weekday]}, {d.Day}. {Months[d.Month - 1]}  {Year(day, season)}";
     }
 
     /// <summary>Kurzes Datum für Meldungen, z. B. „1. Nov. 1995“.</summary>
@@ -38,21 +111,9 @@ public static class SeasonCalendar
         return $"{d.Day}. {Months[d.Month - 1]} {Year(day, season)}";
     }
 
-    /// <summary>Tage (seit Saisonbeginn) der Ligaspieltage: sonntags und mittwochs ab Tag 0, ohne Heiligabend.</summary>
-    public static IReadOnlyList<int> LeagueMatchDays(int count)
-    {
-        var days = new List<int>(count);
-        for (var day = 0; days.Count < count; day++)
-        {
-            var d = LayoutDate(day);
-            if (d.DayOfWeek is not (DayOfWeek.Sunday or DayOfWeek.Wednesday))
-                continue;
-            if (d is { Month: 12, Day: 24 })
-                continue;
-            days.Add(day);
-        }
-        return days;
-    }
+    /// <summary>Tage (seit Saisonbeginn) der ersten <paramref name="count"/> Ligaspieltage.</summary>
+    public static IReadOnlyList<int> LeagueMatchDays(int count) =>
+        count <= LeagueDays.Length ? LeagueDays[..count] : throw new ArgumentOutOfRangeException(nameof(count));
 }
 
 public sealed record MatchResult(League League, int MatchDay, int Home, int Away, int HomeGoals, int AwayGoals)
@@ -74,7 +135,7 @@ public static class MatchEngine
 {
     public static (int Home, int Away) Play(Club home, Club away, Random random)
     {
-        var diff = (home.Strength - away.Strength) / 30.0;
+        var diff = (home.MatchStrength - away.MatchStrength) / 30.0; // Stärke aus der Aufstellung (Paket „mannschaft“)
         var lambdaHome = 3.45 * Math.Exp(0.45 * diff);
         var lambdaAway = 3.05 * Math.Exp(-0.45 * diff);
         return (Poisson(lambdaHome, random), Poisson(lambdaAway, random));

@@ -21,7 +21,8 @@ Empfohlener Start: **saison**, **manager**, **mannschaft** parallel. **wettbewer
 
 ## Paket `saison` – Saisonablauf über mehrere Jahre
 
-Branch: `paket/saison` · Status: offen
+Branch: `paket/saison` · Status: **Runde 1 gemergt** (PRs #6, #8, #10). Details und offene `[APPROX]`-Punkte: [saison.md](saison.md).
+Für `wettbewerbe`: DEB-Pokal, Europapokal und WM über `ISeasonCompetition` in `GameState.Competitions` anmelden.
 
 - Hauptrunde → Playoffs → Relegation (laut Video: die zwei Ersten der Oberliga und die zwei Letzten der 2. Liga spielen
   in einer Gruppe je zweimal gegeneinander, die beiden Ersten spielen in der 2. Liga) → Auf-/Abstieg → neue Saison.
@@ -35,7 +36,24 @@ Branch: `paket/saison` · Status: offen
 
 ## Paket `manager` – Finanzen, Werbung, Stadion, Jugend, Posteingang
 
-Branch: `paket/manager` · Status: offen
+Branch: `paket/manager` · Status: **Runde 1 gemergt** (PRs #3, #5, #9, #11, #13)
+
+- [x] PR 1: Finanzmodell im Core (Finanzbuch, Bank, Sparbuch, Aktien, Spieltagsabrechnung, Stadion-Grundwerte) –
+  Abrechnung über `GameState.SettleFinances` (Aufruf in `PlayNextMatchDay`); Tageswechsel und Saisonwechsel laufen seit der
+  Integration über die Zeitleiste (`GameState.Integration.cs`)
+- [x] PR 2: Bildschirm Finanzen (kb\152) mit Finanzbuch – `UI/Screens/Manager/FinanceScreen.cs`, Ablauf `finanzen`;
+  Bedienung (Überfahren wählt, [+]/[−] = Betrag, ◄/► = buchen) und Finanzbuch-Layout `[APPROX]`, da im Video nichts gebucht wird
+- [x] PR 3: Werbung (kb\151, kb\11) – `UI/Screens/Manager/AdvertisingScreen.cs`, `Core/FinanceSponsors.cs`, Ablauf `werbung`;
+  Firmen, Sender und Firmen-Infos aus em.exe; Angebotshöhen `[APPROX]` (kalibriert auf das UI-Video), Verlängerung folgt mit PR 5
+- [x] PR 4: Stadion (kb\14, Ausbauten kb\8) – `UI/Screens/Manager/StadiumScreen.cs`, Ablauf `stadion`; Kosten der ersten
+  Ausbaustufen aus dem Video, Lage von Kino/Imbiß/Kneipe `[APPROX]`, Meldung „Stadion-Ausbau abgeschlossen“ folgt mit PR 5
+- [x] PR 5: Jugend, Neuer (Posteingang), Nachrichtenleiste – `UI/Screens/Manager/YouthScreen.cs`, `InboxScreen.cs`,
+  `NewsBar.cs`, `Core/FinanceYouth.cs`, `Core/FinanceInbox.cs`, Abläufe `jugend` und `posteingang`; Jugendteams und
+  leere Nachrichtenleiste am Video vermessen, Meldungstexte aus em.exe (Stadion-Ausbau, Werbepartner mit
+  Verlängerungsoption, Talentsuche); Kreditanfragen unter Managern über den Posteingang. `[APPROX]`: Wirkung der
+  Förderung, Ort/Preis/Rabatt der Talentsuche („Spion“: Klick ins Fenster „Jugendteams“), Posteingang-Layout
+- Offen: Bedeutung der Kachel „Neuer“ (Symbol ist ein Managerkopf, im Video nicht geöffnet) – vorerst Posteingang;
+  Talente bekommen Alter/Stärken, sobald das Paket „mannschaft“ Spielerwerte hat
 
 - Finanzen (kb\152): Konto, Kredit, Sparbuch, vier Aktien mit Kursverlauf; Finanzbuch.
 - Werbung (kb\151, Logos kb\11): Bande, Eisfläche, Trikot, Angebote annehmen/ablehnen.
@@ -47,7 +65,13 @@ Branch: `paket/manager` · Status: offen
 
 ## Paket `mannschaft` – Kader und Spieler
 
-Branch: `paket/mannschaft` · Status: offen
+Branch: `paket/mannschaft` · Status: **Runde 1 gemergt** (PRs #1, #2, #4, #7, #12, #14)
+
+- ✔ Spielerwerte, Kader aller Vereine, Aufstellung (Core), Mannschaftsstärke → `Club.MatchStrength` in `MatchEngine`
+- ✔ Bildschirme Aufstellung, Taktik, Verträge (mit Vertragsverhandlung) und Transfer (Kauf, Leihe, Verkauf, Talentsuche)
+- ✔ Training: Bildschirm kb\5, Kosten, Standardplan und Wirkung aus em.exe (`Squad.Training.cs`)
+- Training und Transfermarkt laufen seit der Integration über die Zeitleiste (`GameState.Integration.cs`);
+  Trainingskosten, Transfers und Talentsuche werden im Finanzbuch gebucht
 
 - Spielerwerte (siehe Spielerstruktur in `reverse-engineering.md`: Talent, Alter, Technik, Kondition, Form, Rolle …),
   Kader aller Vereine aus der Datenbank, Transfermarkt.
@@ -59,7 +83,7 @@ Branch: `paket/mannschaft` · Status: offen
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
-Branch: `paket/wettbewerbe` · Status: wartet auf `saison`
+Branch: `paket/wettbewerbe` · Status: **startklar** (Anschluss über `ISeasonCompetition`, siehe `saison.md`)
 
 - Paarungen (Liga, Playoffs, DEB-Pokal, Europapokal, WM), Freundschaftsspiele.
 - Stärken (Ligen, Länderteams: Gesamt/Abwehr/Sturm, Smileys), Statistiken (Totale, Früher, Verein, Spieler, Fairplay, WM).
@@ -76,10 +100,31 @@ Branch: `paket/sound` · Status: offen (unabhängig)
 
 ## Paket `speichern` – Laden und Sichern
 
-Branch: `paket/speichern` · Status: wartet auf `manager` und `mannschaft` (Datenmodell)
+Branch: `paket/speichern` · Status: **startklar** (Datenmodell von `manager`, `mannschaft`, `saison` ist in `main`)
 
 - Eigenes Spielstandformat, Laden/Sichern-Dialog wie im Original (Dateiliste, Verzeichnis, Dateiname).
 - Optional: Import von Original-Spielständen `*.HOK` (Verschlüsselung in `dateiformate.md`).
+
+## Integration Runde 1 (26.10.2026) – Ergebnis und offene Punkte
+
+Die drei Pakete waren einzeln grün, zusammen schlugen 8 Tests fehl: `manager` und `mannschaft` kannten die Zeitleiste
+von `saison` noch nicht. Behoben in `src/EishockeyManager.Core/GameState.Integration.cs` (Anschlusspunkte
+`OnDayManager`, `OnNewSeasonManager`, `OnNewSeasonTeam`) und Tests, die Zeit über `TestSeason` (= `Continue()`) vorspulen.
+
+**Regel ab jetzt:** Zeit vergeht nur über `GameState.Continue()`. Wer etwas je Tag/Woche/Saison braucht, hängt sich in
+`GameState.Integration.cs` ein (bzw. ruft von dort die eigene Methode auf) – keine eigenen „CatchUp“-Zähler mehr.
+Geld immer über `GameState.Book(manager, kategorie, betrag)` buchen, nicht `Money` direkt ändern.
+
+Offene Punkte (an die Pakete verteilt):
+
+| Paket | Punkt |
+|---|---|
+| `manager` + `mannschaft` | **Talentsuche doppelt**: „Spion“ im Jugend-Fenster (`FinanceYouth.cs`) und Knopf „Talent“ im Transfer (`Transfer.Talent.cs`). Im Original eine Funktion → zusammenführen (Vorschlag: Logik in `FinanceYouth`, Transfer-Knopf ruft sie auf). |
+| `manager` | Heimspiele in Play-Offs, Aufstiegsrunde und Pokalen bringen noch keine Zuschauereinnahmen (`SettleFinances` nur für Ligaspiele). |
+| `manager` | Kalibrierung: Ein passiver Manager in der Oberliga rutscht in drei Saisons auf ca. −0,5 Mio. DM (echte Daten). Mit dem 75-Minuten-Video abgleichen. |
+| `saison` | Saisonprämien (`SeasonFlow.cs`) direkt auf `Money` – über `Book(…)` mit eigener Kategorie buchen (Finanzbuch). |
+| `mannschaft` | Saisonwechsel für den Kader (Altern, Vertragsende, neue Talente) – Anschluss `OnNewSeasonTeam` in `GameState.Integration.cs`. |
+| `mannschaft` | `CatchUpTraining()`/`TransferMarket.CatchUp()` in den Bildschirmen sind jetzt überflüssig (laufen über die Zeitleiste) – entfernen. |
 
 ## Später (nach v0.5)
 
