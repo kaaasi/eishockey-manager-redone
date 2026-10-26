@@ -11,5 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EishockeyManager.UI\EishockeyManager.UI.csproj" />
+    <ProjectReference Include="..\EishockeyManager.Audio\EishockeyManager.Audio.csproj" />
   </ItemGroup>
 </Project>

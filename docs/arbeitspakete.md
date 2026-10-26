@@ -185,6 +185,14 @@ Branch: `paket/sound` · Status: **Runde 2, Welle A** (unabhängig, keine Dateie
 - Einstellungen-Bildschirm (Torszenen, Lautstärken, Musik im Spiel, Vollbild).
 - Eigene Dateien: `Formats/Voc*.cs`, `Formats/Cmf*.cs`, `src/EishockeyManager.Audio/*` (neues Projekt), `UI/Screens/Settings*`.
 
+Fortschritt:
+- [x] VOC-Lader (`VocFile`, alle Blocktypen 1–9 ohne Kompression), `PcmSound`, `WavWriter`, `emtool export-sound` – Branch `paket/sound-voc`
+- [x] CMF-Lader (`CmfFile`), OPL2-Emulation (`Opl2`, eigener Code), Wiedergabe nach dem FM-Treiber in em.exe (`CmfPlayer`) – Branch `paket/sound-cmf`
+- [x] Projekt `EishockeyManager.Audio` (Mischer, ein Effektkanal wie CT-VOICE, Musik in Schleife), Desktop über `DynamicSoundEffectInstance`, F8 = Ton aus; Effektzuordnung aus dem Disassembly belegt – Branch `paket/sound-audio`
+- [x] Bildschirm Einstellungen (Kachel „Gemischtes“): Lautstärken, Musik auch im Spiel, Torszenen, Vollbild; gespeichert in `einstellungen.json` im Benutzerprofil – Branch `paket/sound-einstellungen`
+
+Offen für später: Effekte in den Torszenen auslösen (sobald es sie gibt; UI braucht dann eine Referenz auf Audio), Einstellungen „Cheats“ und „Automatisch speichern“ (gehören zu `speichern`), Einstellungen-Eintrag im Titelmenü, Musikstart/-stopp des Originals aus dem Disassembly.
+
 ## Paket `speichern` – Laden und Sichern
 
 Branch: `paket/speichern` · Status: **Runde 3** – endgültiges Schema erst nach Kaderlebenszyklus, Fristen und Transaktionssicherheit; muss Zufallszustand, Objektidentität und offene Vorgänge enthalten

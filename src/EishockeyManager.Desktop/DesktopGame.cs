@@ -12,7 +12,7 @@ namespace EishockeyManager.Desktop;
 
 /// <summary>
 /// Fenster für das Spiel. Die Oberfläche rendert in einen 320×240-Palettenpuffer, der hier
-/// ganzzahlig skaliert und mittig dargestellt wird (F11 = Vollbild).
+/// ganzzahlig skaliert und mittig dargestellt wird (F11 = Vollbild, F8 = Ton aus/an).
 /// </summary>
 public sealed class DesktopGame : Game
 {
@@ -32,19 +32,25 @@ public sealed class DesktopGame : Game
     private readonly InputState _input = new();
     private readonly byte[] _rgba = new byte[Surface.Width * Surface.Height * 4];
     private readonly StringBuilder _typed = new();
+    private AudioOutput? _audio;
     private SpriteBatch? _batch;
     private Texture2D? _texture;
     private MouseState _previousMouse;
     private KeyboardState _previousKeys;
     private Rectangle _target;
 
+    private readonly GameData _game;
+
     public DesktopGame(GameData game)
     {
+        _game = game;
+        SettingsSync.Load();
         _host = new ScreenHost(new Assets(game));
         _graphics = new GraphicsDeviceManager(this)
         {
             PreferredBackBufferWidth = Surface.Width * DefaultScale,
             PreferredBackBufferHeight = Surface.Height * DefaultScale,
+            IsFullScreen = GameSettings.Current.Fullscreen,
         };
         IsMouseVisible = true;
         Window.AllowUserResizing = true;
@@ -61,6 +67,8 @@ public sealed class DesktopGame : Game
         _batch = new SpriteBatch(GraphicsDevice);
         _texture = new Texture2D(GraphicsDevice, Surface.Width, Surface.Height);
         _host.Show(new TitleScreen(_host));
+        _audio = AudioOutput.Create(_game);
+        SettingsSync.Apply(_graphics, _audio.Mixer, _host.Current); // startet die Musik
     }
 
     protected override void Update(GameTime gameTime)
@@ -70,10 +78,10 @@ public sealed class DesktopGame : Game
         bool Pressed(XnaKeys k) => keys.IsKeyDown(k) && !_previousKeys.IsKeyDown(k);
 
         if (Pressed(XnaKeys.F11))
-        {
-            _graphics.IsFullScreen = !_graphics.IsFullScreen;
-            _graphics.ApplyChanges();
-        }
+            SettingsSync.ToggleFullscreen();
+        if (Pressed(XnaKeys.F8))
+            _audio?.Mixer.ToggleMute();
+        SettingsSync.Apply(_graphics, _audio?.Mixer, _host.Current);
 
         UpdateTarget();
         _input.Reset();
@@ -95,6 +103,8 @@ public sealed class DesktopGame : Game
         _host.Update(_input);
         if (_host.ExitRequested)
             Exit();
+
+        _audio?.Pump();
 
         _previousMouse = mouse;
         _previousKeys = keys;
@@ -131,6 +141,7 @@ public sealed class DesktopGame : Game
         {
             _texture?.Dispose();
             _batch?.Dispose();
+            _audio?.Dispose();
         }
         base.Dispose(disposing);
     }

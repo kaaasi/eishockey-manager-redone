@@ -139,13 +139,37 @@ Kopf: `u16 Namenszeiger, u16 Höhe, u16 Grundlinie, 96 × u16 Glyphzeiger`.
 Glyph: `u8 Breite`, dann Höhe × ⌈Breite/8⌉ Bytes (1 Bit pro Pixel, MSB zuerst).
 Die Breite enthält den Zeichenabstand bereits – Text wird **ohne** zusätzlichen Abstand gesetzt.
 
-## Sound ○
+## Sound ✔
 
-- **VOC** (`kb\237–241`): Kopf „Creative Voice File“ (✔ erkannt). Blöcke Typ 1 (8 Bit unsigned, Rate = 10⁶ / (256 − TC)),
-  2 (Fortsetzung), 3 (Stille), 6/7 (Wiederholung). Nach Gehör: 237 = Publikum (Schleife), 238 = Jubel, 239 = Pfiff,
-  240 = Puck, 241 = Check.
-- **CMF** (`kb\248`): Kopf „CTMF“ (✔ erkannt). Instrumente ab 40 (14 × 16 Byte OPL-Register), Musik ab 264, 96 Ticks/s,
-  MIDI-artige Ereignisse; Controller 0x67 = Rhythmusmodus, 0x68/0x69 Transponieren, Ende mit `FF 2F`.
+- **VOC** (`kb\237–241`, ✔ `VocFile`, Export `emtool export-sound`): Kopf „Creative Voice File“ + 0x1A, u16 Kopflänge (26),
+  Version 0x010A, Prüfwert 0x1129. Blöcke Typ 1 (8 Bit unsigned, Rate = 10⁶ / (256 − TC)),
+  2 (Fortsetzung), 3 (Stille, Länge = u16 + 1), 6/7 (Wiederholung, Anzahl + 1 Durchläufe, 0xFFFF = endlos);
+  der Lader kennt außerdem 4/5 (übersprungen), 8 und 9. Im Spiel benutzt:
+
+  | Datei | Blöcke | TC → Rate | Abtastwerte | Nach Gehör |
+  |---|---|---|---|---|
+  | 237 | 6 (0xFFFF), 1, 7 | 42 → 4673 Hz | 9146 | Publikum (Endlosschleife) |
+  | 238 | 1 | 42 → 4673 Hz | 4910 | Jubel |
+  | 239 | 1 | 172 → 11 905 Hz | 9194 | Pfiff |
+  | 240 | 1 | 101 → 6452 Hz | 906 | Puck |
+  | 241 | 1 | 101 → 6452 Hz | 2574 | Check |
+
+  **Verwendung (Disassembly, `SoundEffect.cs`):** Effekte spielt nur die Torszene. Sie lädt `kb\(231 + i)`, i = 0–13,
+  in die Zeigertabelle DGROUP 0xE2B9; Effekt-Index s (Byte 3 eines 28-Byte-Bildes in `tore\*`, ab Byte 0x54,
+  Ende 0xAAAA) spielt Eintrag 6 + s = `kb\(237 + s)`. Ist die Ausgabe frei, startet 237 neu. In den 49 Szenen:
+  s = 3 (Puck) 149×, 4 (Check) 53×, 1 (Jubel) 25× (24× am Ende von Treffer-Szenen), **2 (Pfiff) nie** –
+  weitere Aufrufer der Abspielfunktion 99F:000A gibt es nicht, der Pfiff ist im Original also nicht zu hören.
+- **CMF** (`kb\248`, ✔ `CmfFile`, Wiedergabe `CmfPlayer` über `Opl2`): Kopf „CTMF“, Version 1.1. Instrumente ab 40
+  (14 × 16 Byte OPL-Register, alle Wellenformen 0), Musik ab 264, 30 Ticks je Viertel, 96 Ticks/s, Grundtempo 190.
+  Kanäle 0–5 melodisch, 11 (Bass Drum), 12 (Snare), 15 (Hi-Hat). Erstes Ereignis Controller 0x67 = 1 (Rhythmusmodus),
+  31 Programmwechsel, 4550 Noten (Ende als Note an mit Anschlag 0), Ende `FF 2F` bei Tick 16 491 = **171,8 s**.
+- **FM-Treiber**: em.exe enthält ab Datei `0x14D70` den Creative-Treiber SBFMDRV (Kennung „FMDRV“, Sprungtabelle
+  der Funktionen bei +0x261); CT-VOICE für die VOC-Effekte liegt ab `0x143B0`. Aus dem Treiber übernommen
+  (Adressen relativ zu 0x14D70, Einzelheiten in `CmfPlayer.cs`): Stimmenwahl (+0B6E), Instrument laden (+0A1E),
+  Anschlag → Trägerpegel `TL = 63 − ((63 − TL) · (Anschlag | 0x80) ≫ 8)`, Tonhöhe (+0E75: Oktave = Note/12 − 1,
+  F-Nummern-Tabelle +0305 = `round(342,92 · 2^(i/768))`, 64 Schritte je Halbton), Controller 0x66–0x69 (+0EFA),
+  Register 0xBD = 0xC0 (tiefes Tremolo/Vibrato), im Rhythmusmodus 0xE0 mit 6 Melodiestimmen.
+  Tonhöhenbeugung, Aftertouch und andere Controller ignoriert der Treiber.
 
 ## Offen
 
