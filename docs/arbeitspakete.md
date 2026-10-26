@@ -99,6 +99,26 @@ ist noch nicht übernommen.
 
 ---
 
+### Integration Runde 2, Welle A (26.10.2026)
+
+PRs #16–#30 (fundament, wirtschaft, mehrmanager, sound) probeweise zusammengeführt: ein Textkonflikt in diesem Dokument,
+sonst konfliktfrei. Build ohne Warnungen; mit `EM_REQUIRE_GAMEDATA=1` und Originaldaten 327 Tests bestanden, 1 sichtbar
+übersprungen (R2-02b, siehe unten); alle 16 Bildschirmfoto-Abläufe laufen durch.
+
+Befunde im Gesamtstand vom Koordinations-Chat nachgestellt (eigene Probe gegen die gebauten Assemblies):
+
+| Befund | Ergebnis im Gesamtstand |
+|---|---|
+| R2-01 Gehälter | behoben – Gehälter und Versicherung im Monat entsprechen genau der Vertragssumme nach Gehaltsänderung |
+| R2-02 Ansichten | behoben – Bildschirme schreiben keine Zeit mehr fort; **R2-02b offen**: erstes Öffnen von „Werbung“ würfelt Angebote aus (FinanceSponsors.cs) |
+| R2-03 Talente | behoben – nach Talentsuche und 40 Weiter-Schritten kein ungültiger Spieler in irgendeinem Kader |
+| R2-05 Tests | behoben – Originaldaten-Tests werden ohne Daten sichtbar übersprungen, Pflichtlauf scheitert ohne Daten |
+| R2-06 Hot-Seat | behoben – zwei Manager wechseln sich ab, je Runde genau ein Spieltag |
+| R2-07 Vereine | behoben – 200 Seeds mit Zufall + fester Wahl: keine Doppelbelegung |
+| A01 Stärketripel | behoben – alle drei Werte erhalten (Bedeutung weiter offen) |
+| Level | umgesetzt – Level 0–5 (LevelCount 6) |
+| R2-04, R2-08, R2-09 | erwartungsgemäß offen → Welle B (`lebenszyklus`) |
+
 ## Runde 1 (abgeschlossen am 26.10.2026)
 
 Abhängigkeiten damals: `saison` → `wettbewerbe`; `manager` und `mannschaft` erweitern Club/Player/GameState in eigenen Dateien.
