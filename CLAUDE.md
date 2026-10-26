@@ -72,10 +72,12 @@ Eigene Datei in `src/EishockeyManager.Tools/Scenarios/`, Methode mit `[Scenario(
 
 ## 3. Originaltreue – so wird gearbeitet
 
-1. **Vorlage**: Videos des Originals (vom Nutzer im Chat hochgeladen; Index in `docs/referenz-videos.md`),
+1. **Vorlage**: Einzelbilder der Videos des Originals (1/s, schon auf 320 × 240) aus dem privaten Repo
+   `kaaasi/eishockey-manager-referenz`: `tools/claude/fetch-reference.sh [oberflaeche] [karriere] [uebersicht]` → `~/referenz/`
+   (Repo vorher per `add_repo` einbinden, access `read`; Kapitelindex in `docs/referenz-videos.md`). **Diese Bilder nie in dieses Repo kopieren.**
    Originalgrafiken (`emtool export`), Disassembly von `em.exe` (`ndisasm`, siehe `docs/reverse-engineering.md`),
    Anforderungen in `docs/anforderungen/bildschirme.md`.
-2. **Vermessen**: Videobild auf 320 × 240 bringen (720p-Video: Ausschnitt 960 × 720 ab x = 320; 360p-Video:
+2. **Vermessen**: Die Referenzbilder sind schon zugeschnitten (720p-Video: 960 × 720 ab x = 320; 360p-Video:
    480 × 360 ab x = 0). Grafikteile per Template-Matching suchen (Python mit numpy/scipy/PIL ist vorhanden).
    Videobilder sind um ca. (−0,25 | +0,5) Pixel verschoben und leicht unscharf. Details: `docs/portierung.md`.
 3. **Farben**: Paletten werden auf 6 Bit maskiert (`Palette.DacToRgb`). Häufige Indizes in `Colors` (Assets.cs).

@@ -1,6 +1,8 @@
 # Referenzvideos
 
 Zwei Let's-Play-Videos des Originals dienen als Vorlage für Optik und Ablauf. Die Videos selbst liegen nicht im Repo.
+Einzelbilder (1 pro Sekunde, 320 × 240) und Übersichtsbögen liegen im privaten Repo `kaaasi/eishockey-manager-referenz`;
+laden mit `tools/claude/fetch-reference.sh`. Dateiname = Zeitstempel, z. B. `oberflaeche_1405.png` = 14:05.
 
 ## „Die Oberfläche von EM – einmal alle Funktionen und Menüs“ (720p, 17:35)
 
