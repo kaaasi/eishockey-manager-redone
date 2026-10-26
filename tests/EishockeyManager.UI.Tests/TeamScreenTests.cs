@@ -121,4 +121,55 @@ public class TeamScreenTests
         d.Press(Key.Escape);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
+
+    [Fact]
+    public void Transfer_InfoBuySellAndTalent()
+    {
+        var d = FlowTests.CreateDriver();
+        if (d is null)
+            return;
+        d.StartNewGame();
+        d.OpenTile("Transfer");
+        var screen = Assert.IsType<TransferScreen>(d.Host.Current);
+        var game = d.Host.Game!;
+        var manager = game.ActiveManager;
+        var club = game.Clubs[manager.ClubIndex];
+        var listing = game.TransferMarket.Listings[0];
+
+        // Spielerinfo
+        var name = TransferScreen.EntryNameRow(0);
+        d.Click(name.X + 20, name.Y + 2);
+        Assert.Same(listing.Player, screen.Info.Player);
+        d.Click(PlayerInfoPopup.AhaButton.X + 5, PlayerInfoPopup.AhaButton.Y + 5);
+        Assert.False(screen.Info.Visible);
+
+        // Kaufen zum geforderten Preis
+        manager.Money = 2_000_000;
+        var buy = TransferScreen.EntryBuy(0);
+        d.Click(buy.X + 5, buy.Y + 2);
+        Assert.Equal(TransferDialog.DialogKind.Buy, screen.Dialog!.Kind);
+        d.Press(Key.Enter);
+        Assert.Null(screen.Dialog);
+        Assert.Contains(listing.Player, club.Players);
+        Assert.Equal(2_000_000 - listing.Price, manager.Money);
+        d.Click(10, 10); // Meldung schließen
+
+        // Eigenen Stürmer auf den Markt setzen
+        var rows = TeamUi.Rows(club);
+        var row = rows.ToList().FindIndex(p => p.Role == PlayerRole.Forward);
+        d.Click(60, TransferScreen.FirstRowY + TransferScreen.RowPitch * row + 2);
+        Assert.Equal(TransferDialog.DialogKind.Sale, screen.Dialog!.Kind);
+        d.Press(Key.Enter);
+        Assert.NotNull(game.TransferMarket.ListingOf(rows[row]));
+
+        // Talentsuche ablehnen
+        d.Click(TransferScreen.TalentButton.X + 5, TransferScreen.TalentButton.Y + 5);
+        Assert.Equal(TransferDialog.DialogKind.Talent, screen.Dialog!.Kind);
+        var cancel = screen.Dialog.CancelButton;
+        d.Click(cancel.X + 5, cancel.Y + 5);
+        Assert.Null(screen.Dialog);
+
+        d.Press(Key.Escape);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
+    }
 }

@@ -43,4 +43,17 @@ internal static class Mannschaft
         d.Click(118, 120); d.Click(118, 120); d.Click(118, 120); d.Click(118, 120); d.Click(41, 148); d.Save("04_minuten");
         d.Click(270, 230); d.Save("05_zur_aufstellung");
     }
+
+    [Scenario("transfer")]
+    private static void Transfer(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.OpenTile("Transfer");
+        d.Move(190, 112); d.Save("01_transfer");
+        d.Click(190, 72); d.Move(240, 200); d.Save("02_spielerinfo");
+        d.Click(196, 213); d.Click(200, 47); d.Move(160, 140); d.Save("03_kaufen");
+        d.Press(Key.Enter); d.Save("04_ergebnis");
+        d.Click(10, 10); d.Click(280, 231); d.Save("05_talentsuche");
+        d.Press(Key.Escape); d.Click(60, 75); d.Save("06_verkaufen");
+    }
 }

@@ -61,6 +61,8 @@ public static class SquadSetup
             club.Lineup.AutoFill(club.Players);
             club.ReferenceRating = TeamStrength.Rating(club.Lineup);
         }
+
+        game.TransferMarket.Initialize(game, random);
     }
 
     /// <summary>

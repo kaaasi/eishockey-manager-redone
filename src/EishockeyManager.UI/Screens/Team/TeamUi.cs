@@ -101,6 +101,9 @@ public static class TeamUi
         s.Text(a.Mini, tx, y + 3, text, DialogDark);
     }
 
+    /// <summary>Trennlinie zwischen den Einträgen der Transferliste (Video: beige, Index 93).</summary>
+    public const byte EntryLineColor = 93;
+
     public const int ArrowWidth = 10;
     public const int ArrowHeight = 17;
     public const int CompactArrowHeight = 15;
