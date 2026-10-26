@@ -4,9 +4,9 @@ namespace EishockeyManager.Core.Tests;
 
 public class SeasonFlowTests
 {
-    private static GameState Create(int clubIndex = 2, GameDuration duration = GameDuration.Unbegrenzt, int seed = 3)
+    private static GameState Create(int clubIndex = 2, GameDuration duration = GameDuration.Unbegrenzt, int seed = 3, bool debCup = true)
     {
-        var setup = new GameSetup { Duration = duration };
+        var setup = new GameSetup { Duration = duration, DebCup = debCup };
         setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = clubIndex });
         return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
     }
@@ -157,8 +157,9 @@ public class SeasonFlowTests
     [Fact]
     public void ManagerInRelegationGroup_StopsOnGroupDates()
     {
-        // Stärkster Verein der Oberliga (Index 24) wird mit diesem Startwert Erster → Aufstiegsrunde
-        var game = Create(clubIndex: 24, seed: 5);
+        // Stärkster Verein der Oberliga (Index 24) wird mit diesem Startwert Erster → Aufstiegsrunde.
+        // Ohne DEB-Pokal: dessen Termine im März/April (Halbfinale, Endspiel) wären sonst weitere Haltepunkte.
+        var game = Create(clubIndex: 24, seed: 5, debCup: false);
         while (!game.RegularSeasonOver)
             game.Continue();
         var group = game.RelegationGroups.Single(g => g.Upper == League.ZweiteLiga);

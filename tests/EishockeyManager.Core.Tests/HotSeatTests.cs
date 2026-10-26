@@ -13,7 +13,8 @@ public class HotSeatTests
 
     private static GameState Create(int managers, int seed = 1)
     {
-        var setup = new GameSetup();
+        // Ohne DEB-Pokal: jeder gemeinsame Tag ist dann ein Ligaspieltag (Pokaltage prüft DebCupTests im Hot-Seat).
+        var setup = new GameSetup { DebCup = false };
         for (var i = 0; i < managers; i++)
             setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = ClubsOf[i] });
         return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
