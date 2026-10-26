@@ -11,9 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Versionen festgeschrieben (global.json, Paketversionen)
+        run: python3 .github/scripts/versionen_pruefen.py .
+
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json   # SDK-Version fest in global.json (A09)
 
       - name: Restore
         run: dotnet restore EishockeyManager.slnx
@@ -52,7 +55,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json   # SDK-Version fest in global.json (A09)
 
       - name: Veröffentlichen
         run: |

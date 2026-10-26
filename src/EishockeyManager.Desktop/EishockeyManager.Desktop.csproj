@@ -7,7 +7,7 @@
     <TieredPGO>true</TieredPGO>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EishockeyManager.UI\EishockeyManager.UI.csproj" />
