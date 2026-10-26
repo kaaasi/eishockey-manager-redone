@@ -64,7 +64,7 @@ Branches je PR: `paket/wirtschaft-<punkt>` (Spurbranch `paket/wirtschaft`). Reih
 | PR | Inhalt | Status |
 |---|---|---|
 | 1 – Spielerfabrik | `Core/Player.Factory.cs`: eine Erzeugung für Spielstart, Transfermarkt, Talentsuche (Transfer und Jugend); `PlayerFactory.Join` (Nummer, Vertrag) und `Validate` (Invarianten) für `lebenszyklus` | im Review |
-| 2 – eine Talentsuche | Jugend-„Spion“ und Transfer-Knopf auf eine Logik | offen |
+| 2 – eine Talentsuche | Jugend-„Spion“ und Transfer-Knopf rufen `GameState.StartTalentSearch` (Preis 90.000 DM laut Video − Rabatt, 4 Wochen, Ergebnis als Nachricht, neues Talent aus der Fabrik); offene Entscheidungen im PR | im Review |
 | 3 – Gehälter/Versicherung aus Verträgen | `Contracts.MonthlyCosts` statt Pauschalformel | offen |
 | 4 – Prämien, Nachsaison-Heimspiele | Prämien über `Book`, gemeinsame Spielabrechnung | offen |
 

@@ -6,7 +6,7 @@ namespace EishockeyManager.Core.Tests;
 /// <summary>
 /// Regressionstest zu R2-03 (Folgereview 26.10.2026): Jeder Zugangspfad in einen Kader liefert einen vollständigen
 /// Spieler – Alter, im Kader eindeutige Rückennummer, gültige Werte, Energie und Vertrag.
-/// Die Prüfung steht bewusst hier im Test und nicht nur in <c>PlayerFactory.Validate</c>,
+/// Die Prüfung steht bewusst hier im Test und nicht nur in <see cref="PlayerFactory.Validate"/>,
 /// damit der Test die Fabrik nicht mit ihrer eigenen Regel abnimmt.
 /// </summary>
 public class PlayerFactoryTests
@@ -74,27 +74,7 @@ public class PlayerFactoryTests
     }
 
     [Fact]
-    public void TransferTalentButton_TalentIsComplete()
-    {
-        var game = TestGames.Create();
-        var manager = game.ActiveManager;
-        var club = game.Clubs[manager.ClubIndex];
-        // Die synthetische Datenbank hat keine Reservevereine mit Spielern: einen Rohspieler als Quelle anlegen.
-        game.Clubs.First(c => c.League is null && !TransferMarket.IsNationalTeam(c))
-            .Players.Add(new Player { Name = "RESERVE", Role = PlayerRole.Forward });
-        manager.Money = 10_000_000;
-
-        var before = club.Players.ToList();
-        for (var seed = 0; seed < 20 && club.Players.Count == before.Count; seed++)
-            TalentScout.Search(game, manager, new Random(seed));
-
-        var talent = Assert.Single(club.Players.Except(before));
-        AssertComplete(club, talent);
-        Assert.InRange(talent.Age, 17, 19);
-    }
-
-    [Fact]
-    public void YouthTalentSearch_TalentIsComplete()
+    public void TalentSearch_TalentIsComplete() // Jugend-„Spion“ und Transfer-Knopf: dieselbe Suche
     {
         var successes = 0;
         for (var seed = 0; seed < 10; seed++)
@@ -106,7 +86,9 @@ public class PlayerFactoryTests
                 team.MoveTo(0); // beste Jugend: höchste Erfolgschance
             var before = club.Players.ToList();
 
-            Assert.True(game.StartTalentSearch(manager));
+            Assert.Equal(TalentSearchStart.Started, seed % 2 == 0
+                ? game.StartTalentSearch(manager)
+                : TalentScout.Search(game, manager));
             for (var i = 0; i < 400 && game.Finance(manager).TalentSearch is not null; i++)
                 game.Continue();
             Assert.Null(game.Finance(manager).TalentSearch);

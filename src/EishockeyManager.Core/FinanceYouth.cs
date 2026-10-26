@@ -94,56 +94,43 @@ public sealed partial class ManagerFinance
 
 public sealed partial class GameState
 {
-    /// <summary>
-    /// Höchstzahl Spieler im Kader für die Talentsuche. [APPROX] Nicht belegt: Die Datenbank hat schon bis zu
-    /// 24 Spieler je Verein, „Schon 22 Mann im Team !“ (em.exe) gilt daher wohl nur für den Transfermarkt
-    /// (Paket „mannschaft“). Bis das geklärt ist, eine großzügige Grenze.
-    /// </summary>
-    public const int MaxSquad = 30;
-
-    /// <summary>[APPROX] Grundpreis und Dauer der Talentsuche; im Video wird der Spion nicht losgeschickt.</summary>
-    public const long TalentSearchBasePrice = 30_000;
-    public const int TalentSearchWeeks = 4;
-
-    /// <summary>
-    /// „Rabatt:“ auf die Talentsuche in Prozent. [APPROX] Angenommen: je 1.000 DM Jugendförderung im Monat
-    /// gibt es 2 % Rabatt, höchstens 50 % (gute Jugendarbeit macht die Suche billiger).
-    /// </summary>
+    /// <summary>„Rabatt:“ auf die Talentsuche in Prozent (siehe <see cref="TalentScout"/>).</summary>
     public int TalentSearchDiscount(Manager manager) =>
-        (int)Math.Min(50, Finance(manager).YouthFunding / YouthTeam.FundingStep * 2);
+        (int)Math.Min(TalentScout.MaxDiscount,
+            Finance(manager).YouthFunding / YouthTeam.FundingStep * TalentScout.DiscountPerFundingStep);
 
     /// <summary>„Preis:“ der Talentsuche nach Rabatt.</summary>
     public long TalentSearchPrice(Manager manager) =>
-        TalentSearchBasePrice * (100 - TalentSearchDiscount(manager)) / 100;
+        TalentScout.BasePrice * (100 - TalentSearchDiscount(manager)) / 100;
 
     /// <summary>
-    /// „Möchten Sie, daß Ihr 'Spion' für Sie auf Talentsuche geht?“ – bezahlt sofort (Finanzbuch „Talentsuche“).
-    /// Liefert false, wenn schon gesucht wird oder der Kader voll ist.
+    /// Schickt den „Spion“ los (Jugendteams und Knopf „Talent“ im Transfer) und bezahlt sofort
+    /// (Finanzbuch „Talentsuche“). Ohne Wirkung, wenn schon gesucht wird, das Geld fehlt oder der Kader voll ist.
     /// </summary>
-    public bool StartTalentSearch(Manager manager)
+    public TalentSearchStart StartTalentSearch(Manager manager)
     {
         var finance = Finance(manager);
-        if (finance.TalentSearch is not null || Clubs[manager.ClubIndex].Players.Count >= MaxSquad)
-            return false;
-        Book(manager, FinanceCategory.Talentsuche, -TalentSearchPrice(manager));
-        finance.TalentSearch = new TalentSearch { WeeksLeft = TalentSearchWeeks };
-        return true;
+        var price = TalentSearchPrice(manager);
+        if (finance.TalentSearch is not null)
+            return TalentSearchStart.AlreadyRunning;
+        if (Clubs[manager.ClubIndex].Players.Count >= TalentScout.MaxSquad)
+            return TalentSearchStart.SquadFull;
+        if (manager.Money < price)
+            return TalentSearchStart.NotEnoughMoney;
+        Book(manager, FinanceCategory.Talentsuche, -price);
+        finance.TalentSearch = new TalentSearch { WeeksLeft = TalentScout.Weeks };
+        return TalentSearchStart.Started;
     }
 
-    /// <summary>
-    /// Wöchentlich: Ergebnis der Talentsuche mit den Meldungen aus em.exe.
-    /// [APPROX] Erfolgschance 40 %, mit der besten Jugendmannschaft bis zu 85 % (1. Platz 1. Liga).
-    /// </summary>
+    /// <summary>Wöchentlich: Ergebnis der Talentsuche als Nachricht (Texte aus em.exe).</summary>
     private void AdvanceTalentSearch(Manager manager)
     {
         var finance = Finance(manager);
         if (finance.TalentSearch is not { } search || --search.WeeksLeft > 0)
             return;
         finance.TalentSearch = null;
-        var best = finance.Youth.Min(t => t.Position);
-        var chance = 0.4 + 0.45 * (1 - best / (double)(YouthTeam.Leagues * YouthTeam.TeamsPerLeague - 1));
         var club = Clubs[manager.ClubIndex];
-        if (club.Players.Count < MaxSquad && FinanceRandom.NextDouble() < chance)
+        if (club.Players.Count < TalentScout.MaxSquad && FinanceRandom.NextDouble() < TalentScout.SuccessChance(finance))
         {
             PlayerFactory.Join(club, CreateTalent(club), SquadSetup.StartContractYears, loan: false);
             Notify(manager, "Ihre Talentsuche war ein Erfolg.", "Ein junger Spieler stößt zu Ihrem Kader.");

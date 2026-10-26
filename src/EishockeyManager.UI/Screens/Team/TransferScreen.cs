@@ -107,7 +107,10 @@ public sealed class TransferScreen : Screen
         var y = input.MouseY;
         if (TalentButton.Contains(x, y))
         {
-            _dialog = TransferDialog.ForTalent();
+            if (Game.Finance(Manager).TalentSearch is not null)
+                _message.Show(TalentScout.Message(TalentSearchStart.AlreadyRunning)); // eine Suche für beide Einstiege
+            else
+                _dialog = TransferDialog.ForTalent(Game.TalentSearchPrice(Manager));
             return;
         }
 
@@ -172,13 +175,7 @@ public sealed class TransferScreen : Screen
                 ShowNextBid();
                 break;
             case TransferDialog.DialogKind.Talent:
-                _message.Show(TalentScout.Search(Game, Manager, Game.Random) switch
-                {
-                    TalentResult.Success => ["Ihre Talentsuche war ein Erfolg.", "Ein junger Spieler stößt zu Ihrem Kader."],
-                    TalentResult.NotEnoughMoney => TransferMarket.Message(TransferResult.NotEnoughMoney),
-                    TalentResult.SquadFull => TransferMarket.Message(TransferResult.SquadFull),
-                    _ => ["Ihr Talentspäher gibt die", "Suche ohne Erfolg auf... Pech..."],
-                });
+                _message.Show(TalentScout.Message(TalentScout.Search(Game, Manager)));
                 break;
         }
     }
