@@ -62,9 +62,15 @@ public sealed partial class GameState
     public long MonthlyIncome(Manager manager) =>
         FinanceRules.BaseIncome(Clubs[manager.ClubIndex].League) + SponsorIncome(manager);
 
-    /// <summary>[APPROX] Regelmäßige Ausgaben pro Monat (Gehälter, Unterhalt) – Anzeige „Ausgaben“.</summary>
-    public long MonthlyExpenses(Manager manager) =>
-        FinanceRules.MonthlyWages(Clubs[manager.ClubIndex]) + Finance(manager).Stadium.MonthlyUpkeep + RecurringExpenses(manager);
+    /// <summary>
+    /// Regelmäßige Ausgaben pro Monat – Anzeige „Ausgaben“: Vertragsgehälter, Versicherungen, Unterhalt, Jugendförderung.
+    /// </summary>
+    public long MonthlyExpenses(Manager manager)
+    {
+        var club = Clubs[manager.ClubIndex];
+        return FinanceRules.MonthlyWages(club) + FinanceRules.MonthlyInsurance(club)
+            + Finance(manager).Stadium.MonthlyUpkeep + RecurringExpenses(manager);
+    }
 
     /// <summary>
     /// Nach einem Spieltag: alle Tage seit der letzten Abrechnung bis heute abrechnen und die Heimspiele
@@ -129,6 +135,9 @@ public sealed partial class GameState
         {
             var club = Clubs[manager.ClubIndex];
             Book(manager, FinanceCategory.Gehaelter, -FinanceRules.MonthlyWages(club));
+            var insurance = FinanceRules.MonthlyInsurance(club);
+            if (insurance > 0)
+                Book(manager, FinanceCategory.Versicherung, -insurance);
             Book(manager, FinanceCategory.Unterhalt, -Finance(manager).Stadium.MonthlyUpkeep);
             Book(manager, FinanceCategory.Sponsoren, FinanceRules.BaseIncome(club.League));
             MonthlyManagerFinances(manager);
