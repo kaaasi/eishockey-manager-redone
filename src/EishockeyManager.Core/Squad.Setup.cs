@@ -54,9 +54,10 @@ public static class SquadSetup
             else
                 BuildComputerSquad(club, namePool, usedNames, random);
 
-            var number = 1;
             foreach (var p in club.Players)
-                p.Number = number++;
+                p.Number = 0;
+            foreach (var p in club.Players)
+                p.Number = PlayerFactory.FreeNumber(club, p); // 1, 2, 3 … in Kaderreihenfolge
             RollValues(club, random);
             club.Lineup.AutoFill(club.Players);
             club.ReferenceRating = TeamStrength.Rating(club.Lineup);
@@ -122,8 +123,7 @@ public static class SquadSetup
 
     /// <summary>
     /// Spielerwerte. [ORIGINAL] Teamwerte = Basis ± random(0, Basis/10) je Abwehr/Sturm (3810:4D3B),
-    /// Alter 19–31, Talent 0–9. [APPROX] Spieler streuen ±2 um den Teamwert, Form 40–60, Energie 50–80
-    /// (Bereiche aus dem Video), Gehalt aus der Stärke.
+    /// Die Werte je Spieler legt <see cref="PlayerFactory.RollSquadValues"/> fest.
     /// </summary>
     private static void RollValues(Club club, Random random)
     {
@@ -138,16 +138,7 @@ public static class SquadSetup
         }
 
         foreach (var p in club.Players)
-        {
-            p.Age = Between(random, MinAge, MaxAge);
-            p.Talent = Between(random, 0, 9);
-            p.Condition = Player.Clamp(condition[p.Role] + Between(random, -2, 2));
-            p.Technique = Player.Clamp(technique[p.Role] + Between(random, -2, 2));
-            p.Form = Between(random, 40, 60);
-            p.Energy = Between(random, 50, 80);
-            p.ContractYears = StartContractYears;
-            p.MonthlySalary = Contracts.BaseSalary(p, random);
-        }
+            PlayerFactory.RollSquadValues(p, condition[p.Role], technique[p.Role], random);
     }
 
     /// <summary>random(a, b) wie im Original: beide Grenzen inklusive. [ORIGINAL] 1058:0647</summary>

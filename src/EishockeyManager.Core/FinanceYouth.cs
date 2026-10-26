@@ -63,7 +63,6 @@ public sealed partial class GameState
     /// <summary>
     /// Monatlich: Förderung bezahlen (Finanzbuch „Jugend“) und Tabellenstand der Jugendteams fortschreiben.
     /// [APPROX] Wirkung unbekannt: volle Förderung bringt meist einen Platz nach oben, ohne Förderung geht es eher nach unten.
-    /// Talente aus der Jugend für den Kader folgen, sobald das Paket „mannschaft“ Spieler anlegen kann.
     /// </summary>
     private void SettleYouth(Manager manager)
     {
@@ -146,27 +145,18 @@ public sealed partial class GameState
         var club = Clubs[manager.ClubIndex];
         if (club.Players.Count < MaxSquad && FinanceRandom.NextDouble() < chance)
         {
-            club.Players.Add(CreateTalent());
+            PlayerFactory.Join(club, CreateTalent(club), SquadSetup.StartContractYears, loan: false);
             Notify(manager, "Ihre Talentsuche war ein Erfolg.", "Ein junger Spieler stößt zu Ihrem Kader.");
         }
         else
             Notify(manager, "Ihr Talentspäher gibt die", "Suche ohne Erfolg auf... Pech...");
     }
 
-    /// <summary>
-    /// Junger Spieler aus der Talentsuche. [APPROX] Name aus Vor- und Nachnamen zweier zufälliger Spieler der
-    /// Datenbank zusammengesetzt; Alter und Stärken legt das Paket „mannschaft“ fest.
-    /// </summary>
-    private Player CreateTalent()
+    /// <summary>Junger Spieler aus der Talentsuche, vollständig über die <see cref="PlayerFactory"/> erzeugt.</summary>
+    private Player CreateTalent(Club club)
     {
-        var all = Clubs.SelectMany(c => c.Players).ToList();
         var role = (Formats.PlayerRole)FinanceRandom.Next(3);
-        if (all.Count == 0)
-            return new Player { Name = "Talent", Role = role };
-        static string[] Parts(string name) => name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        var first = Parts(all[FinanceRandom.Next(all.Count)].Name);
-        var last = Parts(all[FinanceRandom.Next(all.Count)].Name);
-        var name = first.Length > 1 && last.Length > 0 ? $"{first[0]} {last[^1]}" : all[FinanceRandom.Next(all.Count)].Name;
-        return new Player { Name = name, Role = role };
+        var name = PlayerFactory.TalentName(Clubs.SelectMany(c => c.Players).ToList(), FinanceRandom);
+        return PlayerFactory.CreateTalent(name, role, club.Strength, FinanceRandom);
     }
 }

@@ -39,20 +39,8 @@ public static class TalentScout
         var p = from.Players[random.Next(from.Players.Count)];
         from.Players.Remove(p);
         from.Lineup.Remove(p);
-        p.Age = SquadSetup.Between(random, 17, 19);
-        p.Talent = SquadSetup.Between(random, 6, 9);
-        var b = SquadSetup.BaseValue(club.Strength);
-        p.Condition = Player.Clamp(b - SquadSetup.Between(random, 2, 8));
-        p.Technique = Player.Clamp(b - SquadSetup.Between(random, 2, 8));
-        p.Form = SquadSetup.Between(random, 45, 60);
-        p.Energy = 80;
-        p.Trend = PlayerTrend.Rising;
-        p.Number = Enumerable.Range(1, 99).First(n => club.Players.All(q => q.Number != n));
-        p.ContractYears = SquadSetup.StartContractYears;
-        p.MonthlySalary = Contracts.Demand(p);
-        p.OnLoan = false;
-        p.Insured = false;
-        club.Players.Add(p);
+        PlayerFactory.ApplyTalentValues(p, club.Strength, random);
+        PlayerFactory.Join(club, p, SquadSetup.StartContractYears, loan: false);
         return TalentResult.Success;
     }
 }

@@ -57,6 +57,17 @@ dann Aufrufer und neue Tests prüfen → Merge durch den Koordinations-Chat. Rev
   zum Kurswert, Kredite zwischen Managern) bleiben getrennt und werden nicht als Aufwand gebucht.
 - Testanzahl ist keine Abnahme. Pixelparität und Balance werden getrennt abgenommen.
 
+### Spur `wirtschaft` – Status
+
+Branches je PR: `paket/wirtschaft-<punkt>` (Spurbranch `paket/wirtschaft`). Reihenfolge laut Auftrag; PR 2 baut auf PR 1 auf.
+
+| PR | Inhalt | Status |
+|---|---|---|
+| 1 – Spielerfabrik | `Core/Player.Factory.cs`: eine Erzeugung für Spielstart, Transfermarkt, Talentsuche (Transfer und Jugend); `PlayerFactory.Join` (Nummer, Vertrag) und `Validate` (Invarianten) für `lebenszyklus` | im Review |
+| 2 – eine Talentsuche | Jugend-„Spion“ und Transfer-Knopf auf eine Logik | offen |
+| 3 – Gehälter/Versicherung aus Verträgen | `Contracts.MonthlyCosts` statt Pauschalformel | offen |
+| 4 – Prämien, Nachsaison-Heimspiele | Prämien über `Book`, gemeinsame Spielabrechnung | offen |
+
 ---
 
 ## Runde 1 (abgeschlossen am 26.10.2026)
