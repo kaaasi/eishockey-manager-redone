@@ -146,21 +146,4 @@ public class TransferTests
         Assert.Equal(2, game.TransferMarket.UpdatedDay);
         Assert.InRange(game.TransferMarket.Listings.Count, 2, TransferMarket.MaxListings);
     }
-
-    [Fact]
-    public void TalentScout_CostsMoneyAndMayAddYoungPlayer()
-    {
-        var game = TestGames.Create();
-        var manager = game.ActiveManager;
-        var club = game.Clubs[manager.ClubIndex];
-        manager.Money = 10_000;
-        Assert.Equal(TalentResult.NotEnoughMoney, TalentScout.Search(game, manager, new Random(1)));
-
-        manager.Money = 1_000_000;
-        var count = club.Players.Count;
-        var results = Enumerable.Range(0, 3).Select(i => TalentScout.Search(game, manager, new Random(i))).ToList();
-        Assert.Equal(1_000_000 - 3 * TalentScout.Cost, manager.Money);
-        Assert.Equal(count + results.Count(r => r == TalentResult.Success), club.Players.Count);
-        Assert.All(club.Players.Skip(count), p => Assert.InRange(p.Age, 17, 19));
-    }
 }

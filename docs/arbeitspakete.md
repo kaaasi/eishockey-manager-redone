@@ -69,6 +69,20 @@ dann Aufrufer und neue Tests prüfen → Merge durch den Koordinations-Chat. Rev
   zum Kurswert, Kredite zwischen Managern) bleiben getrennt und werden nicht als Aufwand gebucht.
 - Testanzahl ist keine Abnahme. Pixelparität und Balance werden getrennt abgenommen.
 
+### Spur `wirtschaft` – Status
+
+Branches je PR: `paket/wirtschaft-<punkt>` (Spurbranch `paket/wirtschaft`). Reihenfolge laut Auftrag; PR 2 baut auf PR 1 auf.
+
+| PR | Inhalt | Status |
+|---|---|---|
+| 1 – Spielerfabrik | `Core/Player.Factory.cs`: eine Erzeugung für Spielstart, Transfermarkt, Talentsuche (Transfer und Jugend); `PlayerFactory.Join` (Nummer, Vertrag) und `Validate` (Invarianten) für `lebenszyklus` | im Review (#16) |
+| 2 – eine Talentsuche | Jugend-„Spion“ und Transfer-Knopf rufen `GameState.StartTalentSearch` (Preis 90.000 DM laut Video − Rabatt, 4 Wochen, Ergebnis als Nachricht, neues Talent aus der Fabrik); offene Entscheidungen im PR | im Review (#17, nach #16) |
+| 3 – Gehälter/Versicherung aus Verträgen | Vertragsgehälter, Versicherung getrennt gebucht; Pauschale nur für Vereine ohne Kader | im Review (#19) |
+| 4 – Prämien, Nachsaison-Heimspiele | Kategorie „Prämien“ über `Book`; `SettleHomeMatch` für Liga, Play-Offs, Aufstiegsrunde | im Review (#21) |
+
+Hinweis für Runde 3 (Kalibrierung): Mit #19 und #21 steigt der Kontostand eines passiven Oberliga-Managers deutlich
+(Originaldaten, SC RIESSERSEE, eine Saison: 109.460 → 579.160 DM, Gehälter −666.400 → −196.700 DM).
+
 ---
 
 ## Runde 1 (abgeschlossen am 26.10.2026)

@@ -114,14 +114,14 @@ public class InboxYouthTests
         game.SetYouthFunding(me, YouthTeamKind.Schueler, 10_000);
         game.SetYouthFunding(me, YouthTeamKind.Jugend, 5_000);
         Assert.Equal(30, game.TalentSearchDiscount(me));
-        Assert.Equal(21_000, game.TalentSearchPrice(me));
+        Assert.Equal(63_000, game.TalentSearchPrice(me)); // 90.000 DM (Video) − 30 %
 
         var squad = game.Clubs[me.ClubIndex].Players.Count;
         var money = me.Money;
-        Assert.True(game.StartTalentSearch(me));
-        Assert.False(game.StartTalentSearch(me)); // nur eine Suche gleichzeitig
-        Assert.Equal(money - 21_000, me.Money);
-        Assert.Equal(-21_000, game.Finance(me).Book.Current(FinanceCategory.Talentsuche));
+        Assert.Equal(TalentSearchStart.Started, game.StartTalentSearch(me));
+        Assert.Equal(TalentSearchStart.AlreadyRunning, game.StartTalentSearch(me)); // nur eine Suche gleichzeitig
+        Assert.Equal(money - 63_000, me.Money);
+        Assert.Equal(-63_000, game.Finance(me).Book.Current(FinanceCategory.Talentsuche));
 
         for (var i = 0; i < 12 && game.Finance(me).TalentSearch is not null; i++)
             TestSeason.PlayMatchDay(game);
@@ -139,9 +139,9 @@ public class InboxYouthTests
         var game = TestGames.Create();
         var me = game.ActiveManager;
         var club = game.Clubs[me.ClubIndex];
-        while (club.Players.Count < GameState.MaxSquad)
+        while (club.Players.Count < TalentScout.MaxSquad)
             club.Players.Add(new Player { Name = "X", Role = Formats.PlayerRole.Forward });
-        Assert.False(game.StartTalentSearch(me));
+        Assert.Equal(TalentSearchStart.SquadFull, game.StartTalentSearch(me));
         Assert.Equal(GameState.StartMoney, me.Money);
     }
 }

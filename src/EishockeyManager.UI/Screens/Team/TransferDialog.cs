@@ -67,7 +67,8 @@ public sealed class TransferDialog
         Price = bid.Amount,
     };
 
-    public static TransferDialog ForTalent() => new(DialogKind.Talent) { Price = TalentScout.Cost };
+    /// <summary>Rückfrage zur Talentsuche mit dem Preis nach Rabatt (<see cref="GameState.TalentSearchPrice"/>).</summary>
+    public static TransferDialog ForTalent(long price) => new(DialogKind.Talent) { Price = price };
 
     private string ConfirmText => Kind switch
     {

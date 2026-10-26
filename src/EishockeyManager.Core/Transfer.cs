@@ -226,13 +226,7 @@ public sealed class TransferMarket
         if (listing.Seller is null)
             from.Lineup.FillGaps(from.Players); // Computerverein stellt selbst um, Manager nicht
 
-        p.Number = Enumerable.Range(1, 99).First(n => to.Players.All(q => q.Number != n));
-        p.OnLoan = loan;
-        p.Insured = false;
-        p.RejectedOfferDay = null;
-        p.ContractYears = loan ? 1 : SquadSetup.StartContractYears;
-        p.MonthlySalary = Contracts.Demand(p);
-        to.Players.Add(p);
+        PlayerFactory.Join(to, p, loan ? 1 : SquadSetup.StartContractYears, loan);
     }
 
     /// <summary>Setzt einen eigenen Spieler auf den Markt („Verkaufen“).</summary>
