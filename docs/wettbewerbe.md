@@ -140,3 +140,12 @@ Fortgeschrieben genau einmal je Saison am 29. April (Anschluss in `GameState.Int
 (Über-/Unterzahl, Serien), „Fairplay“ (Strafen) und „WM-Statistik“ (Spieler im WM-Kader) brauchen Tore, Vorlagen und
 Strafen je Spieler. Die heutige Spielberechnung liefert nur das Endergebnis; diese Daten entstehen erst mit dem Paket
 `livespiel`.
+
+## Freundschaftsspiele – Befund (noch nicht umgesetzt)
+
+Der einzige Freundschaftsspiel-Bildschirm in em.exe (Datei 0x3B8F7) trägt den Titel **„WM Vorbereitung“** (DGROUP
+0x68C): Spalten „Heim“/„Auswärts“, „Gegner“, „Kosten“, Meldungen „Nicht mehr als 8 Freundschaftsspiele“ und „Sie haben
+nicht genug Geld !“. Freundschaftsspiele sind im Original also Vorbereitungsspiele vor der WM mit Kosten für den Manager
+und hängen mit „Spieler in WM-Kader“ zusammen. Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga
+oder Europapokal, Heimspiel an einem freien Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht
+belegt. Ein Bildschirm „Paarungen Liga“ ist in den Referenzvideos nicht zu sehen.
