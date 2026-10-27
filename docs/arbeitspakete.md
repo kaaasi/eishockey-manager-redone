@@ -338,7 +338,7 @@ Branch: `paket/mannschaft` · Status: **Runde 1 gemergt** (PRs #1, #2, #4, #7, #
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
-Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–4 (DEB-Pokal, Europapokal, WM, Stärken) eingereicht (Review ausstehend); als Nächstes Statistiken. Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
+Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–5 (DEB-Pokal, Europapokal, WM, Stärken, Ewige Tabelle/Früher) eingereicht (Review ausstehend); als Nächstes Freundschaftsspiele. Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
 
 | PR | Inhalt | Stand |
 |---|---|---|
@@ -346,7 +346,9 @@ Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–4 (DEB-Po
 | 2 | Europapokal (Gruppe + Endrunde), Bildschirm Gruppen/Endrunde | eingereicht (baut auf PR 1 auf) |
 | 3 | WM (2 Gruppen + K.-o.), Bildschirm Gruppe/Tabelle WM | eingereicht (baut auf PR 2 auf) |
 | 4 | Stärken (Ligen, Länderteams) | eingereicht (baut auf PR 3 auf) |
-| 5 | Statistiken (Totale, Früher, Verein, Spieler, Fairplay, WM), Freundschaftsspiele, Paarungen Liga | offen |
+| 5 | Statistiken: Ewige Tabelle (Totale), Früher | eingereicht (baut auf PR 4 auf) |
+| 6 | Freundschaftsspiele, Paarungen Liga | offen |
+| – | Statistiken Spieler, Verein, Fairplay, WM-Statistik | **wartet auf `livespiel`** (Tore, Vorlagen, Strafen je Spieler) |
 
 - Paarungen (Liga, Playoffs, DEB-Pokal, Europapokal, WM), Freundschaftsspiele.
 - Stärken (Ligen, Länderteams: Gesamt/Abwehr/Sturm, Smileys), Statistiken (Totale, Früher, Verein, Spieler, Fairplay, WM).

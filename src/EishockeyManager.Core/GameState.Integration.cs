@@ -35,6 +35,11 @@ public sealed partial class GameState
 
         // Transfermarkt: je gespieltem Ligaspieltag neue Angebote und Gebote
         TransferMarket.CatchUp(this);
+
+        // Paket „wettbewerbe“: Ewige Tabelle, Ewige Bilanz und „Früher“ am Saisonende fortschreiben
+        // (vor der Titelvergabe in FinishSeason; Liga, Pokale und Abschlusstabellen stehen dann fest).
+        if (day == SeasonCalendar.SeasonEnd)
+            RecordSeasonStatistics();
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>

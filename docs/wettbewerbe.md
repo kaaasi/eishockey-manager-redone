@@ -113,3 +113,30 @@ Funktion 0x51206 (Hauptmenü → Stärken → 1. Liga, 2. Liga, Oberliga, Lände
 Pixelvergleich `emtool screens gamedata ~/work/screens staerken` (Smiley/Balken und Werte der Ligavereine maskiert, weil
 zufallsabhängig): Länderteams gegen `oberflaeche_1318` mittlere Abweichung 8,8, 3,8 % > 40; Oberliga gegen `oberflaeche_1336`
 9,5, 4,8 % > 40. Kondition und Technik der Länderteams stimmen mit dem Video überein.
+
+## Statistiken über Saisons (`Core/StatisticsHistory.cs`)
+
+Fortgeschrieben genau einmal je Saison am 29. April (Anschluss in `GameState.Integration.cs`, vor der Titelvergabe).
+
+| Regel | Beleg |
+|---|---|
+| Ewige Tabelle je Saison: Ligaplatz p (0-basiert) → 12 − p, dazu 40 (Bundesliga) bzw. 20 (2. Liga); ohne Liga 0; Meister +15, als Bundesligist +10; Erster einer unteren Liga +3; DEB-Pokalsieger +25; Europacupsieger +40 | 0x5667A; Video 16:38 (Berliner SC 5, Mannheim 52, Düsseldorf 116 nach einer Saison) |
+| Titelzähler Meister, DEB-Pokal, Europapokal je Verein | 0x2E730 (Vereinsstruktur 0x82A3 + 80 · Verein) |
+| Ewige Bilanz des Managers: Punkte, Tore, Siege, Niederlagen, Unentschieden aus den Ligaspielen, zu Hause/auswärts | Managerstruktur 0x9796 ff.; Video 16:38 (44 Spiele nach einer Saison) |
+| „Früher“: je Saison Liga (Platz bzw. Play-Off-Aus 0x33–0x35 bzw. Meister 0x80), DEB-Pokal-Runde/SIEGER, Europacup Gruppe/Endrunde/SIEGER/Nicht im Wettbewerb | 0x2C099, 0x2C9D6 |
+| `[APPROX]` 48 statt 42 Vereine in der Ewigen Tabelle | – |
+
+### Bildschirme
+
+- **„Ewige Tabelle“** (Statistiken → Totale, `UI/Screens/Statistics/EternalTableScreen.cs`): Funktion 0x2E356.
+  Fenster (50 \| 23) 9 × 6 und (50 \| 154) 9 × 4, Pokale kb\36, Pfeile kb\4 (20 \| 0) bei (165 \| 30), Liste über Zwischenbild
+  (Zeile 6 + 6 n) mit Ausschnitt nach (57 \| 58), unten Bilanz des Managers am Zug. Pixelvergleich gegen `oberflaeche_1638`
+  (Listen- und Wertebereiche maskiert): mittlere Abweichung 7,2, 1,2 % > 40.
+- **„Früher“** (`HistoryScreen.cs`): Funktion 0x2C1EE. Drei Diagrammfenster mit Achsen (Farbe 6) und Textfeld; rote
+  Markierung der angezeigten Saison (Farbe 16). Pixelvergleich gegen `oberflaeche_1652` (Text maskiert): 5,9, 1,1 % > 40.
+  `[APPROX]` Balkenhöhen und -farbe.
+
+**Nicht umgesetzt (abhängig vom Live-Spiel):** „Spieler“ (Torschützen, Vorleger, Scorer, Keeper), „Verein“
+(Über-/Unterzahl, Serien), „Fairplay“ (Strafen) und „WM-Statistik“ (Spieler im WM-Kader) brauchen Tore, Vorlagen und
+Strafen je Spieler. Die heutige Spielberechnung liefert nur das Endergebnis; diese Daten entstehen erst mit dem Paket
+`livespiel`.
