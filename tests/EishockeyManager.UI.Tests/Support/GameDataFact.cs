@@ -10,17 +10,24 @@ namespace EishockeyManager.Tests.Support;
 /// Fehlen die Dateien, werden Tests mit <see cref="GameDataFactAttribute"/> als <b>übersprungen</b> gemeldet
 /// (nicht als bestanden). Mit <c>EM_REQUIRE_GAMEDATA=1</c> werden sie trotzdem ausgeführt und scheitern
 /// an <see cref="Load"/> – so kann ein ausdrücklich angeforderter Originaldatenlauf nicht still leer bleiben.
+/// Mit <c>EM_SKIP_GAMEDATA=1</c> gelten vorhandene Originaldateien als fehlend: So lässt sich der Lauf „ohne Daten“
+/// (wie in der CI) lokal prüfen, ohne den Ordner zu verschieben (<c>tools/pruefen.sh</c>).
 /// </remarks>
 public static class TestGameData
 {
     /// <summary>Umgebungsvariable für den Pflichtlauf mit Originaldaten.</summary>
     public const string RequireVariable = "EM_REQUIRE_GAMEDATA";
 
+    /// <summary>Umgebungsvariable, mit der vorhandene Originaldaten ignoriert werden (Lauf „ohne Daten“).</summary>
+    public const string SkipVariable = "EM_SKIP_GAMEDATA";
+
     /// <summary>Kategorie (Trait „Category“), unter der die Originaldaten-Tests im Testbericht erscheinen.</summary>
     public const string Category = "Originaldaten";
 
     private static readonly Lazy<GameData?> Data = new(() =>
     {
+        if (Environment.GetEnvironmentVariable(SkipVariable) == "1")
+            return null;
         try { return GameData.Locate(); }
         catch (DirectoryNotFoundException) { return null; }
     });
