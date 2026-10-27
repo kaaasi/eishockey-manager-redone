@@ -57,9 +57,27 @@ Bei privaten Repositories unter GitHub Free sind die benötigten Branch-Protecti
 **Nach Runde 3:** G04/G05 weiter ausbauen, G08/G09, G12; erst nach fachlicher Bewertung G10.
 **Vor v1.0:** G11, G13. G14/G15 optional.
 
+
+## G16 – Agentenunabhängige Entwicklung und Ausfallsicherheit (Hoch)
+
+**Auslöser:** Wenn Claude Code sein Nutzungskontingent erreicht, soll ChatGPT oder ein anderer Agent Entwicklung, Review und bei Bedarf Integration kontrolliert fortsetzen können. Die bisherige Rollenverteilung „Claude entwickelt, ChatGPT reviewt“ ist eine Präferenz, keine technische Voraussetzung.
+
+**Maßnahmen:**
+1. Ein kurzes, toolneutrales `AGENTS.md` als verbindlichen Einstiegspunkt erstellen: Architektur, Setup, Tests, Invarianten, Branch-/PR-Regeln, Originaldaten-Schutz, Dokumentationsorte. `CLAUDE.md` behält nur Claude-spezifische Bedienhinweise und verweist auf die gemeinsamen Regeln. Widersprüche vermeiden; bestehende Detailregeln nicht unkontrolliert duplizieren.
+2. Arbeitspakete agentenunabhängig beschreiben: Issue-ID, Ziel und Akzeptanzkriterien, Base-SHA, zugewiesener Branch, erlaubte Dateigrenzen, Abhängigkeiten, Regressionstest und Originaldatenbedarf. GitHub Issues sind die kanonische Quelle für neue Pakete; laufende Runde 3 zunächst nicht umorganisieren.
+3. Standardisiertes `docs/handoffs/<issue>-<branch>.md` oder einen strukturierten Issue-Kommentar als Übergabe nutzen: Stand/Head-SHA, geänderte Dateien, Tests mit exakten Befehlen und Ergebnissen, offene Befunde, uncommittete Änderungen (müssen vor Übergabe gesichert oder explizit gemeldet sein), nächste konkrete Schritte. Keine Secrets, keine Originalassets.
+4. Übernahmeprotokoll: Übernehmender Agent liest Regeln, Issue, PR und Handoff, prüft aktuellen Head und Branchzustand, führt Basistests aus und arbeitet erst danach weiter. Kein gleichzeitiger Schreibzugriff auf denselben Branch. Wenn derselbe Branch weiterverwendet wird, erfolgt eine ausdrückliche Übergabe; sonst eigener Branch und neuer PR.
+5. Integrationsrolle nicht an Claude binden: Ein Agent kann nach Nutzerfreigabe die Leitstelle übernehmen. Unmittelbar vor Merge müssen **aktueller** Head/Base, CI auf dem Head, unabhängiges Review, Originaldatenstatus und Restlücken geprüft werden. Bei geänderten SHAs erneutes Review. GitHub Free erzwingt diese Regeln nicht serverseitig.
+6. Rollenprinzip: Implementierer soll nicht alleiniger finaler Freigeber des eigenen PR sein. Bei fehlendem zweitem Agenten entscheidet der Nutzer nach dokumentiertem Review-/Teststatus. Keine automatische Integration bei erschöpftem Kontingent.
+7. **Pilot:** Ein kleines, nichtkritisches Arbeitspaket von Claude an ChatGPT übergeben und mit dokumentierter Handoff-Checkliste, grünem CI und unabhängigem Review abschließen. Danach Format anpassen.
+
+**Abnahme:** Ein neuer Agent kann ohne Zugriff auf den bisherigen Chatverlauf binnen eines Arbeitspakets aus GitHub-Daten reproduzierbar übernehmen. Kein exklusiver Claude-Zugang, keine unbekannten lokalen Zustände, keine parallelen Branch-Schreibzugriffe.
+
+**Reihenfolge:** G16 vor bzw. gemeinsam mit G01–G03 umsetzen. Nur `AGENTS.md`, Handoff-Vorlage und Pilot zunächst; keine laufenden Branches oder Paketdateien ohne Abstimmung verändern.
+
 ## Validierungsauftrag an Claude
 1. Lies CLAUDE.md, docs/arbeitspakete.md, die aktuellen Reviews, diese Datei sowie relevante Workflow- und Core-Dateien.
 2. Verifiziere jede Beobachtung gegen den aktuellen main-Head; kennzeichne `bestätigt`, `teilweise`, `nicht bestätigt` oder `überholt`. Prüfe GitHub-Free-Funktionalität ohne Upgrade-Annahme.
-3. Prüfe bestehende Implementierungen, um Dopplungen zu vermeiden. Bewerte Nutzen, Risiko, Aufwand, Dateikonflikte und Abhängigkeiten jeder Empfehlung.
+3. Prüfe ausdrücklich G16 auf die Übernahme durch ChatGPT bei erschöpftem Claude-Kontingent. Prüfe bestehende Implementierungen, um Dopplungen zu vermeiden. Bewerte Nutzen, Risiko, Aufwand, Dateikonflikte und Abhängigkeiten jeder Empfehlung.
 4. Lege einen konkreten gestaffelten Umsetzungsplan mit kleinen PRs, Akzeptanzkriterien und Tests vor. Nur risikoarme, eindeutig bestätigte Quick Wins nach den normalen Projektregeln implementieren; keine großen Refactorings, kein Löschen von Branches und keine Änderungen an laufenden Paketdateien ohne explizite Freigabe.
 5. Jeder Implementierungs-PR enthält Base-/Head-SHA, Fehler oder Motiv, Tests, Restlücken und Auswirkungen auf GitHub-Free-Kontingente.
