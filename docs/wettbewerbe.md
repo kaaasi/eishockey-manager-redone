@@ -95,3 +95,21 @@ Ränge und Linien liegen pixelgenau.
 
 **Offen:** K.-o.-Ansicht (Knopf „Endrunde“) nicht im Video – `[APPROX]`-Liste; „Spieler in WM-Kader“/„WM Vorbereitung“
 (Abstellung der Spieler eigener Vereine) fehlt; WM-Statistik folgt mit PR 4.
+
+## Stärken (`Core/StatisticsStrength.cs`, `UI/Screens/Statistics/StrengthScreen.cs`)
+
+Funktion 0x51206 (Hauptmenü → Stärken → 1. Liga, 2. Liga, Oberliga, Länderteams):
+
+| Regel | Beleg |
+|---|---|
+| Spalten Kondition, Technik, Form, Mittel; „Gesamt“ = Mittel aus Abwehr und Sturm, „Abwehr“/„Sturm“ = Einzelwert; jede Spalte auf 0–99 begrenzt; Mittel = (K + T + F) / 3 der ungerundeten Summen | 0x5167F ff., Begrenzung 0x120:0x52; Video 13:18 (Russland 99 99 51 → 85) |
+| Sortierung absteigend nach K + T + F der Ansicht | 0x5151D |
+| Fenster 10 × 12 Teile ab (30 \| 5), Füllfläche (36 \| 9) … (262 \| 211) Farbe 4 (übermalt die Kopfzeile), Titel Flow zentriert 61 … 248, Grundlinie 19, Farbe 10, Schatten 28, Linie y = 25 | 0x5127C ff. |
+| Zeilen ab Grundlinie 34 im Abstand 15, Name x = 45, Werte ab x = 142 (je Zahl + zwölf Leerzeichen), Farbe 30 / Manager 24, Trennlinie y = 43 + 15 n | 0x515B0 ff. |
+| Smiley (240 \| 36 + 15 n), Trendbalken von x = 250 bis 204 + Vereinsfeld 0x17, Farbe 12/24/18 | 0x518AB ff. |
+| Knöpfe „Gesamt“, „Abwehr“, „Sturm“ bei x = 43 + 80 i, y = 212 | 0x51289 |
+| `[APPROX]` Ligavereine: Werte aus der Aufstellung (Verteidiger = Abwehr, Stürmer = Sturm), weil das Remake keine Teamwerte führt; Form = Mittel der Spielerform; Trendbalken aus der Form; Smiley immer gelb (Wertverlauf nicht geführt) | – |
+
+Pixelvergleich `emtool screens gamedata ~/work/screens staerken` (Smiley/Balken und Werte der Ligavereine maskiert, weil
+zufallsabhängig): Länderteams gegen `oberflaeche_1318` mittlere Abweichung 8,8, 3,8 % > 40; Oberliga gegen `oberflaeche_1336`
+9,5, 4,8 % > 40. Kondition und Technik der Länderteams stimmen mit dem Video überein.
