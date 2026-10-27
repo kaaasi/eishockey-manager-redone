@@ -31,6 +31,8 @@ public sealed partial class GameState
         _ = CupRandom;
         if (Setup.DebCup)
             Competitions.Add(new DebCup());
+        if (Setup.EuropeAndWorldCup)
+            Competitions.Add(new EuropeanCup());
         foreach (var competition in Competitions)
             competition.StartSeason(this);
     }
@@ -42,6 +44,9 @@ public sealed partial class GameState
             SettleHomeMatch(match.Home, match.Away, PlayedMatchDays + 1);
     }
 
-    /// <summary>Alle Pokalspiele (DEB-Pokal, später Europapokal/WM) dieser Saison.</summary>
-    public IEnumerable<KnockoutMatch> CupMatches => DebCup?.Matches ?? [];
+    /// <summary>Europapokal dieser Saison oder null (Spielmodus „Europapokal + WM aus“).</summary>
+    public EuropeanCup? EuropeanCup => Competitions.OfType<EuropeanCup>().FirstOrDefault();
+
+    /// <summary>Alle Pokalspiele (DEB-Pokal, Europapokal, später WM) dieser Saison.</summary>
+    public IEnumerable<KnockoutMatch> CupMatches => (DebCup?.Matches ?? []).Concat(EuropeanCup?.Matches ?? []);
 }

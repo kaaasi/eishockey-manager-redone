@@ -57,5 +57,38 @@ internal static class Wettbewerbe
             d.Host.Show(new MainMenuScreen(d.Host));
         d.OpenTile("DEB-Pokal");
         d.Frame(); d.Save("04_debpokal_runde2");
+        d.Press(Key.Space);
+    }
+
+    /// <summary>Europapokal: Gruppen vor dem ersten Termin (Video 13:11), nach der Gruppenphase, Endrunde.</summary>
+    [Scenario("europapokal")]
+    private static void European(ScreenDriver d)
+    {
+        d.StartNewGame(); // Berliner SC wie im Video
+        var game = d.Host.Game!;
+        // Gruppe aus dem Video (13:11) für den Pixelvergleich
+        var video = new[] { "JYP HT", "SSELDORFER EG", "VITKOVICE", "LION MAILAND" }
+            .Select(n => game.Clubs.First(c => c.Name.Contains(n, StringComparison.Ordinal)).Index).ToList();
+        d.Host.Show(new EuropeanCupScreen(d.Host, new MainMenuScreen(d.Host), 0, new CupGroup(1, video)));
+        d.Move(240, 230); d.Save("00_gruppe1_video_13_11");
+        d.Host.Show(new MainMenuScreen(d.Host));
+
+        d.OpenTile("Europapokal");
+        d.Frame(); d.Save("01_gruppe1");
+        d.Click(EuropeanCupScreen.LeftButton.X + 10, EuropeanCupScreen.LeftButton.Y + 10);
+        d.Frame(); d.Save("02_gruppe2");
+        d.Click(EuropeanCupScreen.RightButton.X + 10, EuropeanCupScreen.RightButton.Y + 10);
+        d.Frame(); d.Save("03_endrunde_offen");
+        d.Press(Key.Escape);
+
+        while (game.EuropeanCup!.FinalRound is null && game.Phase == SeasonPhase.Running)
+            d.PlayMatchDay();
+        if (d.Host.Current is not MainMenuScreen)
+            d.Host.Show(new MainMenuScreen(d.Host));
+        d.OpenTile("Europapokal");
+        d.Frame(); d.Save("04_gruppe1_gespielt");
+        d.Click(EuropeanCupScreen.RightButton.X + 10, EuropeanCupScreen.RightButton.Y + 10);
+        d.Frame(); d.Save("05_endrunde");
+        d.Press(Key.Escape);
     }
 }

@@ -47,10 +47,25 @@ Leere Ziehung (`03_debpokal_leer`) gegen `oberflaeche_0345` ohne Dialog: 9,4 / 2
 (Ablauf `CupDrawStep` liegt vor, die Anzeige im Spieltagsablauf fehlt); Bildschirm „DEB-Pokalspiele“ mit Ergebnissen
 (Text in em.exe, Aufbau nicht im Video).
 
-## Europapokal, WM (Vorarbeit für die nächsten PRs)
+## Europapokal (`Core/CupsEurope.cs`, `Core/CupsGroup.cs`)
 
-- Auslosung 0x341AB mit Wettbewerb 1: acht Plätze aus den Europapokal-Gegnern (Datenbank 64–149); Vereine mit
-  Stärke unter 70 nur zu einem Viertel angenommen; danach ersetzen die deutschen Teilnehmer (Liste DGROUP 0xA75D,
-  Ende 0x80) zufällige Plätze.
-- Video 13:11: „Europacup Gruppe 1“ – vier Vereine, je zwei Spiele an 4.11./11.11., 7.11./14.11., 9.11./16.11.,
-  Knöpfe „Gruppe 2“ und „Endrunde“. Video 13:13: WM „Gruppe 1“ mit sechs Ländern.
+| Regel | Beleg |
+|---|---|
+| Acht Plätze aus den Europapokal-Gegnern (Datenbank 64–149) ohne Doppelte; Gegner mit Stärke unter 70 nur zu einem Viertel angenommen | 0x341AB (Wettbewerb 1) |
+| Deutsche Teilnehmer: Deutscher Meister (zu Spielbeginn Verein 2) und Titelverteidiger, wenn deutsch (zu Spielbeginn 64 = kein deutscher Verein); jeder ersetzt einen zufälligen Platz eines ausländischen Gegners | 0x346D5, 0x43A12, DGROUP 0x388 |
+| Gruppe 1 = Plätze 0–3, Gruppe 2 = 4–7; Endrunde = Erster und Zweiter von Gruppe 1, dann von Gruppe 2 | 0x30427 |
+| Spielplan Vierergruppe „abcd / dabc / acbd“ (Sechsergruppe „abcdef / dafcbe / afcebd / cafbed / eabcdf“) | DGROUP 0x474 ff., 0x450 ff.; Video 13:11 |
+| Termine 0–5 Gruppen, 6–11 Endrunde; Sieger nach Termin 11, Meisterfoto nur für einen deutschen Sieger | 0x3139F; Karriere 29:41 |
+| `[APPROX]` Rückrunde mit getauschtem Heimrecht; Tabelle wie in der Liga; Gruppenspiele mit Unentschieden | – |
+
+### Bildschirm „Europacup Gruppe 1/2 / Endrunde“ (`UI/Screens/Competitions/EuropeanCupScreen.cs`)
+
+Funktion 0x31CD5: Fenster 13 × 10 Teile ab (4 | 3), Pokale kb\36 bei (13 | 7) und (286 | 7), Titel Bold Grundlinie 23,
+Paarungen Mini ab Grundlinie 54 (26 je Runde, 6 je Paarung; Heim x = 25 Farbe 30, „-“ x = 120, Gast x = 137 Farbe 1),
+Termine x = 230 / 276, Tabelle Flow ab Grundlinie 135 (10 je Platz), Knöpfe (79 | 196) und (193 | 196).
+Zahlen mit Mindestbreite füllen fehlende Stellen mit der Breite der Ziffer 0 auf (`CompetitionWidgets.Number`).
+
+Pixelvergleich `emtool screens gamedata ~/work/screens europapokal`, Bild `00_gruppe1_video_13_11` gegen
+`oberflaeche_1311` (Person und Mauszeiger maskiert): mittlere Abweichung 7,2, 1,9 % der Pixel über 40.
+
+**Offen:** Ergebnisse gespielter Begegnungen (Lage aus 0x3248 nicht im Video belegt).
