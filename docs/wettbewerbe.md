@@ -78,9 +78,9 @@ Pixelvergleich `emtool screens gamedata ~/work/screens europapokal`, Bild `00_gr
 | Viertelfinale nach Termin 5: A1–B4, A2–B3, A3–B2, A4–B1 (Gruppe 1 mit Heimrecht) | 0x30F8B |
 | Weiterverteilung nach jedem K.-o.-Termin (Sieger vorn) nach DGROUP 0x12C: Termin 7 Halbfinale + „SPIELE 5.-8.“, Termin 8 „ENDSPIEL“, „SPIEL UM 3./5./7.PL.“ | 0x31152, Texte DGROUP 0x1D2A ff. |
 | Weltmeister = Sieger des Endspiels; Meisterfoto „Weltmeister“ für jedes Land | 0x3136F, 0x31378 |
-| Spielwerte der Nationalteams: Tabelle DGROUP 0x4C4E (Kondition/Technik Abwehr/Sturm, je −2), Abwehr = Mittel aus Kondition und Technik | Lader 0x2EFDE; Video „Stärken Länderteams“ 13:18 |
+| Spielwerte der Nationalteams: Tabelle DGROUP 0x4C4E (je Land Kondition Abwehr, Technik Abwehr, Kondition Sturm, Technik Sturm, je −2) | Lader 0x2EFDE; Video „Stärken Länderteams – Gesamt“ 13:18 (Spalten Kondition/Technik = Mittel aus Abwehr und Sturm) |
 | `[APPROX]` Gruppeneinteilung: Original nimmt sechs aufeinanderfolgende Nationalteams, das Video zeigt aber eine andere Zusammensetzung → hier jede Saison neu gemischt | Video 13:13 |
-| `[APPROX]` Spielstärke = Mittel aus Abwehr und Sturm; K.-o.-Unentschieden mit Penaltyschießen; Plätze 9–12 nach Gruppenplatz | – |
+| `[APPROX]` Spielstärke = Mittel aus Kondition und Technik; K.-o.-Unentschieden mit Penaltyschießen; Plätze 9–12 nach Gruppenplatz | – |
 
 ### Bildschirm WM „Gruppe 1/2“ (`UI/Screens/Competitions/WorldCupScreen.cs`)
 

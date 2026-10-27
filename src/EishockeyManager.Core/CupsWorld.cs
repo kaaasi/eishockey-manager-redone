@@ -4,10 +4,11 @@ namespace EishockeyManager.Core;
 /// Spielwerte der zwölf Nationalmannschaften (Datenbank 52–63) aus em.exe.
 /// </summary>
 /// <remarks>
-/// [ORIGINAL] DGROUP 0x4C4E: je Land vier Bytes (Kondition Abwehr, Kondition Sturm, Technik Abwehr, Technik Sturm),
+/// [ORIGINAL] DGROUP 0x4C4E: je Land vier Bytes Kondition Abwehr, Technik Abwehr, Kondition Sturm, Technik Sturm,
 /// vom Lader um 2 vermindert (Datei 0x2EFDE ff.); die Datenbankwerte der Nationalteams wirken nicht.
-/// Abwehr = (Kondition + Technik) / 2 – belegt am Video „Stärken Länderteams“ (13:18): Russland 99/99 (Anzeige
-/// auf 99 begrenzt), Kanada 98/93, Schweden 91/99, Deutschland 88/91.
+/// Belegt am Video „Stärken Länderteams – Gesamt“ (13:18), dessen Spalten das Mittel aus Abwehr und Sturm zeigen
+/// (Bildschirm 0x51206, auf 99 begrenzt): Russland Kondition 99 / Technik 99, Kanada 98 / 93, Schweden 91 / 99,
+/// Deutschland 88 / 91.
 /// </remarks>
 public static class NationalTeamRatings
 {
@@ -17,20 +18,27 @@ public static class NationalTeamRatings
         90, 87, 80, 80, 69, 73, 84, 88, 89, 87, 92, 88, 73, 84, 75, 78, 82, 84, 66, 82, 102, 99, 94, 97,
     ];
 
-    /// <summary>Abwehr und Sturm (ungerundet, über 99 möglich) der Nationalmannschaft <paramref name="club"/> (52–63).</summary>
-    public static (double Defense, double Attack) Of(int club)
+    /// <summary>Kondition und Technik von Abwehr und Sturm der Nationalmannschaft <paramref name="club"/> (52–63).</summary>
+    public static (int ConditionDefense, int TechniqueDefense, int ConditionAttack, int TechniqueAttack) Of(int club)
     {
         var i = club - NationalTeams.First;
         if ((uint)i >= 12)
             throw new ArgumentOutOfRangeException(nameof(club));
-        return ((Raw[4 * i] + Raw[4 * i + 2]) / 2.0 - 2, (Raw[4 * i + 1] + Raw[4 * i + 3]) / 2.0 - 2);
+        return (Raw[4 * i] - 2, Raw[4 * i + 1] - 2, Raw[4 * i + 2] - 2, Raw[4 * i + 3] - 2);
     }
 
-    /// <summary>[APPROX] Spielstärke für die Spielberechnung: Mittel aus Abwehr und Sturm (das Remake rechnet mit einem Wert).</summary>
+    /// <summary>Kondition und Technik als Mittel aus Abwehr und Sturm (ungerundet, über 99 möglich).</summary>
+    public static (double Condition, double Technique) Average(int club)
+    {
+        var (cd, td, ca, ta) = Of(club);
+        return ((cd + ca) / 2.0, (td + ta) / 2.0);
+    }
+
+    /// <summary>[APPROX] Spielstärke für die Spielberechnung: Mittel aus Kondition und Technik (das Remake rechnet mit einem Wert).</summary>
     public static int MatchStrength(int club)
     {
-        var (defense, attack) = Of(club);
-        return (int)((defense + attack) / 2);
+        var (condition, technique) = Average(club);
+        return (int)((condition + technique) / 2);
     }
 }
 

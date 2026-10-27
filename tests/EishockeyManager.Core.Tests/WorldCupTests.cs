@@ -43,19 +43,19 @@ public class WorldCupTests
         Assert.InRange(champion, NationalTeams.First, NationalTeams.Last);
     }
 
-    /// <summary>[ORIGINAL] Spielwerte aus em.exe, Abgleich mit „Stärken Länderteams“ (Video 13:18).</summary>
+    /// <summary>[ORIGINAL] Spielwerte aus em.exe, Abgleich mit „Stärken Länderteams – Gesamt“ (Video 13:18): Kondition, Technik.</summary>
     [Theory]
-    [InlineData(52, 99, 104)] // Russland (Anzeige 99/99)
+    [InlineData(52, 99, 104)] // Russland (Anzeige auf 99 begrenzt)
     [InlineData(53, 91, 99)]  // Schweden
     [InlineData(54, 98, 93)]  // Kanada
     [InlineData(56, 88, 91)]  // Deutschland
     [InlineData(63, 96, 96)]  // Tschechei
     [InlineData(61, 72, 79)]  // Frankreich
-    public void NationalTeamRatings_MatchVideo(int club, int defense, int attack)
+    public void NationalTeamRatings_MatchVideo(int club, int condition, int technique)
     {
-        var (d, a) = NationalTeamRatings.Of(club);
-        Assert.Equal(defense, (int)d);
-        Assert.Equal(attack, (int)a);
+        var (c, t) = NationalTeamRatings.Average(club);
+        Assert.Equal(condition, (int)c);
+        Assert.Equal(technique, (int)t);
     }
 
     [Fact]
