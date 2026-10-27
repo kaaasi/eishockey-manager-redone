@@ -32,7 +32,10 @@ public sealed partial class GameState
         if (Setup.DebCup)
             Competitions.Add(new DebCup());
         if (Setup.EuropeAndWorldCup)
+        {
             Competitions.Add(new EuropeanCup());
+            Competitions.Add(new WorldCup());
+        }
         foreach (var competition in Competitions)
             competition.StartSeason(this);
     }
@@ -47,6 +50,10 @@ public sealed partial class GameState
     /// <summary>Europapokal dieser Saison oder null (Spielmodus „Europapokal + WM aus“).</summary>
     public EuropeanCup? EuropeanCup => Competitions.OfType<EuropeanCup>().FirstOrDefault();
 
-    /// <summary>Alle Pokalspiele (DEB-Pokal, Europapokal, später WM) dieser Saison.</summary>
-    public IEnumerable<KnockoutMatch> CupMatches => (DebCup?.Matches ?? []).Concat(EuropeanCup?.Matches ?? []);
+    /// <summary>Weltmeisterschaft dieser Saison oder null (Spielmodus „Europapokal + WM aus“).</summary>
+    public WorldCup? WorldCup => Competitions.OfType<WorldCup>().FirstOrDefault();
+
+    /// <summary>Alle Pokalspiele (DEB-Pokal, Europapokal, WM) dieser Saison.</summary>
+    public IEnumerable<KnockoutMatch> CupMatches =>
+        (DebCup?.Matches ?? []).Concat(EuropeanCup?.Matches ?? []).Concat(WorldCup?.Matches ?? []);
 }

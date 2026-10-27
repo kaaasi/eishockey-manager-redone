@@ -91,4 +91,34 @@ internal static class Wettbewerbe
         d.Frame(); d.Save("05_endrunde");
         d.Press(Key.Escape);
     }
+
+    /// <summary>WM: Gruppe aus dem Video (13:13), laufende Gruppen, K.-o.-Phase nach der Vereinssaison.</summary>
+    [Scenario("wm")]
+    private static void World(ScreenDriver d)
+    {
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var video = new[] { "DEUTSCHLAND", "FRANKREICH", "FINNLAND", "SCHWEIZ", "USA", "RUSSLAND" }
+            .Select(n => game.Clubs.First(c => c.Name == n).Index).ToList();
+        d.Host.Show(new WorldCupScreen(d.Host, new MainMenuScreen(d.Host), 0, new CupGroup(1, video)));
+        d.Move(300, 225); d.Save("00_gruppe1_video_13_13");
+        d.Host.Show(new MainMenuScreen(d.Host));
+
+        d.OpenTile("WM");
+        d.Frame(); d.Save("01_gruppe1");
+        d.Click(WorldCupScreen.GroupButton.X + 5, WorldCupScreen.GroupButton.Y + 5);
+        d.Frame(); d.Save("02_gruppe2");
+        d.Press(Key.Escape);
+
+        while (game.Phase != SeasonPhase.SeasonOver && game.Phase != SeasonPhase.GameOver)
+        {
+            d.Press(Key.Space);
+            if (game.WorldCup!.Knockout.Count == 3)
+                break;
+        }
+        d.Host.Show(new WorldCupScreen(d.Host, new MainMenuScreen(d.Host)));
+        d.Frame(); d.Save("03_gruppe1_gespielt");
+        d.Click(WorldCupScreen.KnockoutButton.X + 5, WorldCupScreen.KnockoutButton.Y + 5);
+        d.Frame(); d.Save("04_endrunde");
+    }
 }

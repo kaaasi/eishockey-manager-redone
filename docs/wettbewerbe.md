@@ -69,3 +69,29 @@ Pixelvergleich `emtool screens gamedata ~/work/screens europapokal`, Bild `00_gr
 `oberflaeche_1311` (Person und Mauszeiger maskiert): mittlere Abweichung 7,2, 1,9 % der Pixel über 40.
 
 **Offen:** Ergebnisse gespielter Begegnungen (Lage aus 0x3248 nicht im Video belegt).
+
+## Weltmeisterschaft (`Core/CupsWorld.cs`)
+
+| Regel | Beleg |
+|---|---|
+| Zwölf Nationalteams (Datenbank 52–63), zwei Gruppen à sechs, jeder gegen jeden an den Terminen 1–5 (14.–22.4.) | 0x30427 (Wettbewerb 0), Spielplan DGROUP 0x450 ff. |
+| Viertelfinale nach Termin 5: A1–B4, A2–B3, A3–B2, A4–B1 (Gruppe 1 mit Heimrecht) | 0x30F8B |
+| Weiterverteilung nach jedem K.-o.-Termin (Sieger vorn) nach DGROUP 0x12C: Termin 7 Halbfinale + „SPIELE 5.-8.“, Termin 8 „ENDSPIEL“, „SPIEL UM 3./5./7.PL.“ | 0x31152, Texte DGROUP 0x1D2A ff. |
+| Weltmeister = Sieger des Endspiels; Meisterfoto „Weltmeister“ für jedes Land | 0x3136F, 0x31378 |
+| Spielwerte der Nationalteams: Tabelle DGROUP 0x4C4E (Kondition/Technik Abwehr/Sturm, je −2), Abwehr = Mittel aus Kondition und Technik | Lader 0x2EFDE; Video „Stärken Länderteams“ 13:18 |
+| `[APPROX]` Gruppeneinteilung: Original nimmt sechs aufeinanderfolgende Nationalteams, das Video zeigt aber eine andere Zusammensetzung → hier jede Saison neu gemischt | Video 13:13 |
+| `[APPROX]` Spielstärke = Mittel aus Abwehr und Sturm; K.-o.-Unentschieden mit Penaltyschießen; Plätze 9–12 nach Gruppenplatz | – |
+
+### Bildschirm WM „Gruppe 1/2“ (`UI/Screens/Competitions/WorldCupScreen.cs`)
+
+Funktion 0x2F5B6: Fenster 12 × 12 Teile ab (16 | 2), Titel Bold Grundlinie 21, Linie (27 … 292 | 24), Zeilen ab Grundlinie 57
+im Abstand 28 (Farbe 7/30 im Wechsel), „n.“ Bold x = 25, 44 × „-“ Flow (Grundlinie + 7), rote Doppellinie unter Platz 4,
+Flagge = Logo des Nationalteams bei (48 | y − 18) bzw. (104 | y − 18), Punkte und Tore Bold x = 170. Angemeldet unter
+Paarungen → WM und Tabellen → Tabelle WM.
+
+Pixelvergleich `emtool screens gamedata ~/work/screens wm`, Bild `00_gruppe1_video_13_13` gegen `oberflaeche_1313`:
+mittlere Abweichung 13,1, 9,3 % der Pixel über 40 – an den kontrastreichen Flaggenkanten (Videounschärfe); Zahlen,
+Ränge und Linien liegen pixelgenau.
+
+**Offen:** K.-o.-Ansicht (Knopf „Endrunde“) nicht im Video – `[APPROX]`-Liste; „Spieler in WM-Kader“/„WM Vorbereitung“
+(Abstellung der Spieler eigener Vereine) fehlt; WM-Statistik folgt mit PR 4.
