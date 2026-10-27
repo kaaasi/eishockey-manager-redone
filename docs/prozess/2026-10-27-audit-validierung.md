@@ -38,7 +38,7 @@ Aufwand: S = unter 1 Stunde, M = halber Tag, L = mehrere Tage. Konfliktrisiko be
 | **G03** Issues | bestätigt (0 Issues) | – | ja | mittel: konfliktfreie Befundliste | weitere Statusquelle neben `arbeitspakete.md`; Zugriff der Agenten auf Issues je Werkzeug unterschiedlich | M | mittel | **angepasst, zurückgestellt:** ab Integration Runde 3 nur für Review-Befunde (eine Issue je Befund, Labels `befund`, `P0`–`P3`); Pakete bleiben in `arbeitspakete.md`. Freigabe nötig |
 | **G04** Invarianten-Tests | bestätigt als Daueraufgabe | teilweise: Mehrsaisonprobe Pflicht (Runde 3), `MultiSeasonSquadTests`, Lebenszyklus- und Ansichtstests mit Zustandsabdruck | ja | hoch | `#39` ändert gerade `MultiSeasonSquadTests` | M | hoch | **übernommen, nach Integration Runde 3 Welle A:** gemeinsamer Prüfer `GameInvariants` (Spieler eindeutig, Nummern, Verträge, Leihen, Buchungen) für alle Mehrsaisontests |
 | **G05** Originaltreue-Register | teilweise: Marker sind vorhanden und konsequent genutzt | Marker im Code (131/40) | ja | mittel | ein handgepflegtes Register veraltet sofort | S–M | mittel | **angepasst:** kein Handregister, sondern ein **erzeugter Markerbericht** (Skript, CI-Zusammenfassung). Pilotpaket für G16 |
-| **G06** CI-Aussage trennen | teilweise: Testbericht trennt synthetisch/Originaldaten/Skips und warnt bei Skips | weitgehend | ja | mittel | keins | S | mittel | **übernommen als Ergänzung:** ausdrücklicher Satz „Originaldaten in der CI nicht geprüft“ im Testbericht (PR B) |
+| **G06** CI-Aussage trennen | teilweise: Testbericht trennt synthetisch/Originaldaten/Skips und warnt bei Skips | weitgehend | ja | mittel | keins | S | mittel | **übernommen als Ergänzung:** ausdrücklicher Satz „Originaldaten in der CI nicht geprüft“ im Testbericht (#46) |
 | **G07** getrennte `publish`-Ordner | formal zutreffend, **kein Schaden nachweisbar** (siehe §1) | – | ja | gering | Trennung ändert den Inhalt der Downloads (emtool liegt bewusst neben dem Spiel, beide nutzen `gamedata/`) | S | niedrig | **verworfen** in dieser Form. Das echte Problem des Publish-Jobs ist der Speicher (N1) |
 | **G08** Branch-Bereinigung | bestätigt (45 Branches, 37 gemergt) | – | ja (inkl. „Automatically delete head branches“) | mittel | Löschen ist endgültig; Paket-Branches wurden bisher für mehrere PRs wiederverwendet | S | mittel | **übernommen, Freigabe nötig:** die 37 gemergten Branches löschen und automatisches Löschen nach Merge einschalten; künftig je PR ein frischer Branch |
 | **G09** GitHub Project | – | – | ja | gering bei einem Konto | dritte Statusquelle; Projects-Endpunkte sind aus Claudes Sitzung nicht erreichbar | M | niedrig | **verworfen** für jetzt; neu prüfen, falls Issues (G03) sich bewähren |
@@ -48,15 +48,15 @@ Aufwand: S = unter 1 Stunde, M = halber Tag, L = mehrere Tage. Konfliktrisiko be
 | **G13** Releases, ADRs | zutreffend | – | ja (Release-Dateien zählen nicht zum Artefakt-Speicher) | mittel | keins | S–M | mittel | **übernommen, angepasst:** Downloads künftig über getaggte Releases statt Artefakte je Push (zusammen mit N1); ADRs erst mit G10 |
 | **G14** CODEOWNERS | zutreffend, dass es nicht erzwingt | – | Datei ja, Wirkung nein | keiner (ein Konto) | falsche Sicherheit | S | – | **verworfen** |
 | **G15** Conventional Commits | – | – | ja | gering | widerspricht der Regel „deutsche, aussagekräftige Commit-Nachrichten“ | S | – | **verworfen**; stattdessen Pflicht-Trailer für den Agenten (AGENTS.md §6) |
-| **G16** Agentenunabhängigkeit | bestätigt: Regeln standen in `CLAUDE.md`, Setup brauchte Claude-Werkzeuge, Übergaben liefen über den Chat | teilweise: Pflichtangaben, Reviews als Dateien | ja | **hoch** | gering; `CLAUDE.md` wird umgebaut, keine offene PR ändert sie | M | **hoch** | **übernommen, umgesetzt** (PR A), Pilot geplant (§5) |
+| **G16** Agentenunabhängigkeit | bestätigt: Regeln standen in `CLAUDE.md`, Setup brauchte Claude-Werkzeuge, Übergaben liefen über den Chat | teilweise: Pflichtangaben, Reviews als Dateien | ja | **hoch** | gering; `CLAUDE.md` wird umgebaut, keine offene PR ändert sie | M | **hoch** | **übernommen, umgesetzt** (#45), Pilot geplant (§5) |
 
 ### Zusätzliche Befunde (nicht im Audit)
 
 | ID | Befund | Priorität | Maßnahme |
 |---|---|---|---|
-| **N1** | Artefakt-Speicher ca. 1,43 GB bei 500 MB Kontingent; bei gleichem Tempo wächst er im November auf ein Vielfaches. Folge ohne Zahlungsmittel: Nutzung blockiert, mindestens die Artefakt-Uploads (GitHub meldet das nicht vorab) | **hoch** | PR C: Publish nur noch manuell und bei Tags, Aufbewahrung 7 Tage; alte Artefakte löschen. **Freigabe nötig** |
+| **N1** | Artefakt-Speicher ca. 1,43 GB bei 500 MB Kontingent; bei gleichem Tempo wächst er im November auf ein Vielfaches. Folge ohne Zahlungsmittel: Nutzung blockiert, mindestens die Artefakt-Uploads (GitHub meldet das nicht vorab) | **hoch** | #47: Publish nur noch manuell und bei Tags, Aufbewahrung 7 Tage; alte Artefakte löschen. **Freigabe nötig** |
 | **N2** | Actions-Minuten ca. 1.300/Monat bei jetzigem Tempo | niedrig | beobachten; bei mehr Parallelarbeit Testläufe auf geänderte Pfade begrenzen |
-| **N3** | Lauf „ohne Originaldaten“ lokal nur durch Verschieben von `gamedata/` | mittel | `EM_SKIP_GAMEDATA=1` + `tools/pruefen.sh` (PR A) |
+| **N3** | Lauf „ohne Originaldaten“ lokal nur durch Verschieben von `gamedata/` | mittel | `EM_SKIP_GAMEDATA=1` + `tools/pruefen.sh` (#45) |
 | **N4** | Alle Agenten schreiben über das Konto `kaaasi`; ChatGPT-Commits aus Runde 2 tragen keinen Hinweis auf den Urheber | mittel | Pflicht-Trailer und `Bearbeiter:` im PR (AGENTS.md, Vorlage) |
 | **N5** | `setup-workspace.sh` setzt `gh` voraus | niedrig | AGENTS.md beschreibt den werkzeugneutralen Weg (SDK nach `global.json`, nuget.org oder Spiegel) |
 
@@ -64,9 +64,9 @@ Aufwand: S = unter 1 Stunde, M = halber Tag, L = mehrere Tage. Konfliktrisiko be
 
 | # | Maßnahme | Ziel / Nutzen | Dateien | Abhängig von | Aufwand / Risiko | Abnahme und Tests | Stand |
 |---|---|---|---|---|---|---|---|
-| M1 | **Agenten-Grundlage** (G16, G01, G02, N3, N4, N5) | jeder Agent kann ohne Chatverlauf arbeiten, übergeben, prüfen | `AGENTS.md` (neu), `CLAUDE.md`, `docs/prozess/zusammenarbeit.md`, `docs/handoffs/VORLAGE.md`, `.github/pull_request_template.md`, `tools/pruefen.sh`, `tests/…/Support/GameDataFact.cs` | – | M / gering | `tools/pruefen.sh` liefert dieselben Zahlen wie die bisherige Handprüfung; alle Regeln aus dem alten `CLAUDE.md` sind in `AGENTS.md` enthalten | **PR A** |
-| M2 | **CI-Qualität** (G06, G12 Teil 1) | Warnungen können nicht mehr unbemerkt entstehen; CI-Aussage eindeutig | `.github/workflows/build.yml` (Build-Schritt), `.github/scripts/testbericht.py` | – | S / gering | CI auf dem PR grün; Testbericht enthält den Hinweis; Build mit `-warnaserror` auf `main` und #39–#41 ohne Warnung (geprüft) | **PR B** |
-| M3 | **Artefakt-Speicher** (N1, G13 Teil 1) | Kontingent einhalten | `.github/workflows/build.yml` (Publish-Job) | Freigabe | S / mittel (Downloads ändern sich) | Publish nur bei `workflow_dispatch` und Tags `v*`, Aufbewahrung 7 Tage; danach alte Artefakte löschen | **PR C, Freigabe** |
+| M1 | **Agenten-Grundlage** (G16, G01, G02, N3, N4, N5) | jeder Agent kann ohne Chatverlauf arbeiten, übergeben, prüfen | `AGENTS.md` (neu), `CLAUDE.md`, `docs/prozess/zusammenarbeit.md`, `docs/handoffs/VORLAGE.md`, `.github/pull_request_template.md`, `tools/pruefen.sh`, `tests/…/Support/GameDataFact.cs` | – | M / gering | `tools/pruefen.sh` liefert dieselben Zahlen wie die bisherige Handprüfung; alle Regeln aus dem alten `CLAUDE.md` sind in `AGENTS.md` enthalten | [#45](https://github.com/kaaasi/eishockey-manager-redone/pull/45) |
+| M2 | **CI-Qualität** (G06, G12 Teil 1) | Warnungen können nicht mehr unbemerkt entstehen; CI-Aussage eindeutig | `.github/workflows/build.yml` (Build-Schritt), `.github/scripts/testbericht.py` | – | S / gering | CI auf dem PR grün; Testbericht enthält den Hinweis; Build mit `-warnaserror` auf `main` und #39–#41 ohne Warnung (geprüft) | [#46](https://github.com/kaaasi/eishockey-manager-redone/pull/46) |
+| M3 | **Artefakt-Speicher** (N1, G13 Teil 1) | Kontingent einhalten | `.github/workflows/build.yml` (Publish-Job) | Freigabe | S / mittel (Downloads ändern sich) | Publish nur bei `workflow_dispatch` und Tags `v*`, Aufbewahrung 7 Tage; danach alte Artefakte löschen | [#47](https://github.com/kaaasi/eishockey-manager-redone/pull/47) (Draft), Freigabe |
 | M4 | **Branch-Bereinigung** (G08) | Übersicht, weniger Altlasten | Repo-Einstellungen | Freigabe | S / gering (nur gemergte Branches) | Liste der 37 Branches vor dem Löschen erneut mit `merge-base --is-ancestor` prüfen | Freigabe |
 | M5 | **Pilot Übergabe** (G16.7) mit Paket **Markerbericht** (G05) | Nachweis, dass ein anderer Agent nur mit Repo-Informationen arbeiten kann | `tools/markerbericht.py`, CI-Zusammenfassung | M1, M2 | S–M / gering | siehe §5 | nach M1 |
 | M6 | **Abnahme `speichern` schärfen** (G11) | robustes Speicherformat | `docs/arbeitspakete.md` (Plan) | Integration Runde 3 Welle A | S / keins | Schemaversion, stabile IDs, Roundtrip, Mehrsaison-Roundtrip als Abnahme | bei Paketzuschnitt |
@@ -76,7 +76,7 @@ Aufwand: S = unter 1 Stunde, M = halber Tag, L = mehrere Tage. Konfliktrisiko be
 | M10 | **ADRs, Entkopplung** (G10, G13 Teil 2) | Entscheidungen nachvollziehbar | `docs/adr/` | `speichern` | M / gering | erste ADRs: Zeitleiste, Finanzbuch, zustandsreine Ansichten | später |
 
 **Reihenfolge:** M1 → M2 → (Freigabe) M3, M4 → M5 Pilot → Runde-3-Integration mit M6/M8 → M7 → nach Runde 3 M9 → M10.
-Keine Maßnahme ändert Dateien der offenen PRs #39–#41 (geprüft anhand ihrer Dateilisten).
+Keine Maßnahme ändert Dateien der offenen PRs #39–#41, #43, #44 (geprüft anhand ihrer Dateilisten).
 
 ## 4. Multi-Agenten-Konzept (Kurzfassung)
 

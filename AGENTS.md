@@ -52,7 +52,7 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
 - `src/EishockeyManager.Core` – Spielzustand und Regeln. `GameState`, `Club`, `Manager`, `Player` sind `partial`:
   **neue Daten eines Pakets in eine eigene Datei** (`GameState.Finanzen.cs` o. ä.).
 - `src/EishockeyManager.UI` – ein `Screen` je Bildschirm, zeichnet in `Surface` (320 × 240 Byte + Palette).
-  Bausteine des Originals in `Widgets.cs`.
+  Bausteine des Originals in `Widgets.cs` (Rahmen aus kb\2, Knöpfe, Lampen, Smileys …).
 - `src/EishockeyManager.Audio`, `src/EishockeyManager.Tools` (`emtool`: Export, Datenbank, Bildschirmfotos), `src/EishockeyManager.Viewer`.
 - `tests/` – xUnit, je Schicht ein Projekt.
 
@@ -79,10 +79,14 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
 
 ### Originaltreue
 
-Vorlage sind die Referenzbilder (1 Bild/s, 320 × 240), Originalgrafiken (`emtool export`) und die Disassembly von
-`em.exe` (`docs/reverse-engineering.md`). Vermessen per Template-Matching; Videobilder sind um ca. (−0,25 | +0,5) Pixel
-verschoben (`docs/portierung.md`). Paletten auf 6 Bit maskieren (`Palette.DacToRgb`). Anforderungen:
-`docs/anforderungen/bildschirme.md`.
+1. **Vorlage:** Referenzbilder (1 Bild/s, schon auf 320 × 240 zugeschnitten: 720p-Video 960 × 720 ab x = 320,
+   360p-Video 480 × 360 ab x = 0), Originalgrafiken (`emtool export`), Disassembly von `em.exe` (`ndisasm`,
+   `docs/reverse-engineering.md`), Anforderungen in `docs/anforderungen/bildschirme.md`.
+2. **Vermessen:** Grafikteile per Template-Matching suchen (z. B. Python mit numpy/scipy/PIL). Videobilder sind um
+   ca. (−0,25 | +0,5) Pixel verschoben und leicht unscharf (`docs/portierung.md`).
+3. **Farben:** Paletten auf 6 Bit maskieren (`Palette.DacToRgb`); häufige Indizes in `Colors` (`Assets.cs`).
+4. **Markieren:** `[ORIGINAL]` mit Fundstelle bzw. `[APPROX]` mit Begründung (Regel 2.7).
+5. **Prüfen:** Bildschirmfoto rendern, mit dem Videobild vergleichen, Test schreiben.
 
 ## 5. Tests
 
