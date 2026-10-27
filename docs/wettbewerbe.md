@@ -143,9 +143,33 @@ Strafen je Spieler. Die heutige Spielberechnung liefert nur das Endergebnis; die
 
 ## Freundschaftsspiele – Befund (noch nicht umgesetzt)
 
-Der einzige Freundschaftsspiel-Bildschirm in em.exe (Datei 0x3B8F7) trägt den Titel **„WM Vorbereitung“** (DGROUP
-0x68C): Spalten „Heim“/„Auswärts“, „Gegner“, „Kosten“, Meldungen „Nicht mehr als 8 Freundschaftsspiele“ und „Sie haben
-nicht genug Geld !“. Freundschaftsspiele sind im Original also Vorbereitungsspiele vor der WM mit Kosten für den Manager
-und hängen mit „Spieler in WM-Kader“ zusammen. Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga
-oder Europapokal, Heimspiel an einem freien Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht
-belegt. Ein Bildschirm „Paarungen Liga“ ist in den Referenzvideos nicht zu sehen.
+Freundschaftsspiele gibt es im Original nur für den **Bundestrainer** im Spielmodus „nur Weltkugel“ (WM-Modus).
+
+**Spielmodus** (Spielvorbereitung, Datei 0x28506/0x2985C): zwei Knöpfe aus kb\1 (57 × 13, Quelle x = 113), links die
+deutsche Fahne (Bit 0, y = 76/89), rechts die Weltkugel (Bit 1, y = 102/115), Vorgabe beide an. Daraus DGROUP 0xD0B9:
+nur Fahne → 2 (Liga und DEB-Pokal, kein Europapokal/WM), beide → 4, **nur Weltkugel → 1**. Im Modus 1 wird keine Liga
+gespielt (z. B. Datei 0x4C759, 0x5D4F6): Der Tageszähler springt bis zum Ereignis 0x10, Manager 0 wird Bundestrainer
+(DGROUP 0xD0BA, Datei 0x54D19/0x55809) und bekommt am Saisonende-Abschnitt die Nation DGROUP 0x6AC samt Etat
+(DGROUP 0xA055 += 0x29C, Datei 0x554A6). Das Remake deutet den linken Knopf bisher als „DEB-Pokal an/aus“ – das ist
+nicht belegt (Paket Spielvorbereitung).
+
+**Ablauf als Bundestrainer:** Der Nationalteam-Zug läuft als „Manager 5“ (DGROUP 0xA70E = 5) mit eigenem Kader und
+eigener Kachelbelegung des Hauptmenüs (Tabelle DGROUP 0x5159 + 42, Datei 0x44FBD). Dort sitzen „Spieler in WM-Kader“
+(Stub 0xF8:0x5C) und **„WM Vorbereitung“** (Stub 0xF8:0x57 → Datei 0x3B8F7, Aufruf Datei 0x457D9).
+
+**WM Vorbereitung** (Datei 0x3B8F7):
+- Fenster (16 | 2), 12 × 12 Teile; Titel Bold zentriert 0 … 319, Grundlinie 21, Farbe 7; Linie (27 … 292 | 23).
+- Zwölf Gegnerfelder 42 × 42 (4 × 3) ab (21 | 28), Schritt 43: Nationen DGROUP 0x6AD + i; die eigene Nation ist gesperrt.
+- Acht Zeilen für vereinbarte Spiele ab (193 | 28), 105 × 18, Schritt 20; Infofeld (27 | 160)–(188 | 184) mit
+  „Gegner“, „Kosten“, „Kontostand“ (Mini) und Umschalter „Heim“/„Auswärts“ (Feld 20).
+- Kosten je Gegner aus DGROUP 0x26C (12 Langwörter, im Spielstand gesichert), Heimspiel doppelt.
+- Erster Klick wählt, zweiter bestätigt. Mehr als 8 Spiele → „Nicht mehr als / 8 Freundschaftsspiele“, zu wenig Etat →
+  „Sie haben nicht / genug Geld !“. Sonst Etat − Kosten, Spiel sofort (Datei 0x3C05E), Ergebnis in DGROUP 0xD0C3 ff.
+- Wirkung: x = (Kosten / 2000 + random(0, 50)) / 50; aus Tordifferenz, x und Heim/Auswärts ergibt sich ein Bonus,
+  der auf drei Werte (Spielerfeld 0x10–0x12, höchstens 99) jedes Spielers im Nationalkader addiert wird.
+- Zähler DGROUP 0xD0C1 wird zum Saisonbeginn auf 0 gesetzt (Datei 0x30EBE).
+
+Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien
+Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Ein Bildschirm „Paarungen Liga“ ist in
+den Referenzvideos nicht zu sehen. Handbuchkorrektur im `infofile`: WM-Platzierungsspiele 9–12 (Verlierer/Sieger der
+Spiele 5–8).

@@ -338,7 +338,7 @@ Branch: `paket/mannschaft` · Status: **Runde 1 gemergt** (PRs #1, #2, #4, #7, #
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
-Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–5 (DEB-Pokal, Europapokal, WM, Stärken, Ewige Tabelle/Früher) eingereicht (Review ausstehend); als Nächstes Paarungen Liga; Freundschaftsspiele hängen am WM-Kader. Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
+Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–5 (DEB-Pokal, Europapokal, WM, Stärken, Ewige Tabelle/Früher) eingereicht (Review ausstehend); als Nächstes Paarungen Liga; Freundschaftsspiele gehören zum WM-Modus (Bundestrainer). Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
 
 | PR | Inhalt | Stand |
 |---|---|---|
@@ -348,7 +348,7 @@ Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–5 (DEB-Po
 | 4 | Stärken (Ligen, Länderteams) | eingereicht (baut auf PR 3 auf) |
 | 5 | Statistiken: Ewige Tabelle (Totale), Früher | eingereicht (baut auf PR 4 auf) |
 | 6 | Paarungen Liga (kein Videobeleg) | offen |
-| – | Freundschaftsspiele = „WM Vorbereitung“ (em.exe 0x3B8F7), WM-Kader | offen, braucht Entscheidung (siehe `wettbewerbe.md`) |
+| – | WM-Modus als Bundestrainer: WM-Kader, „WM Vorbereitung“ (Freundschaftsspiele) | offen, berührt Spielvorbereitung (siehe `wettbewerbe.md`) |
 | – | Statistiken Spieler, Verein, Fairplay, WM-Statistik | **wartet auf `livespiel`** (Tore, Vorlagen, Strafen je Spieler) |
 
 - Paarungen (Liga, Playoffs, DEB-Pokal, Europapokal, WM), Freundschaftsspiele.
