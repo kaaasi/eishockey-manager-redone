@@ -119,6 +119,9 @@ public static partial class SaveGame
             return _game;
         }
 
+        /// <summary>Probe für <see cref="CoverageProbe"/>: liest die Felder eines einzelnen Objekts.</summary>
+        public void ReadProbe(object target, Type type) => Body(target, type, root, TypeName(type));
+
         private static T Shell<T>() => (T)RuntimeHelpers.GetUninitializedObject(typeof(T));
 
         private JsonElement Property(JsonElement element, string name) =>

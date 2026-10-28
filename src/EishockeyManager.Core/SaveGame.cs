@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace EishockeyManager.Core;
@@ -10,6 +12,12 @@ public sealed record SaveLoadResult(GameState? Game, string? Error)
 {
     public bool Success => Game is not null;
 }
+
+/// <summary>
+/// Ergebnis der Feldprobe eines Zustandstyps (<see cref="SaveGame.CoverageProbe"/>): die Felder, die der Writer
+/// tatsächlich schreibt, und die Meldung des Readers beim Zurücklesen (<c>null</c> = ohne Meldung gelesen).
+/// </summary>
+public sealed record FieldProbe(IReadOnlyList<string> WrittenFields, string? ReaderError);
 
 /// <summary>
 /// Eigenes Spielstandformat (Spur „speichern“, Teil „format“; Beschreibung in <c>docs/formate/spielstand.md</c>).
@@ -178,7 +186,8 @@ public static partial class SaveGame
     /// <summary>
     /// Abnahme 5 (Vollständigkeit): Prüft über die Typen – nicht über einen Beispielspielstand –, dass jedes Feld
     /// von <see cref="GameState"/> und jeder erreichbaren Zustandsklasse gesichert werden kann. Ausgenommen ist nichts;
-    /// <see cref="GameRandom"/> wird über seinen Zustand (<see cref="RngState"/>) gesichert. Leere Liste = vollständig.
+    /// <see cref="GameRandom"/> wird über seinen Zustand (<see cref="RngState"/>) gesichert. Dazu schreibt und liest eine Probe
+    /// jedes Typs tatsächlich alle Feldnamen (#81, <see cref="CoverageProbe"/>). Leere Liste = vollständig.
     /// </summary>
     public static IReadOnlyList<string> CheckSchemaCoverage()
     {
@@ -218,19 +227,119 @@ public static partial class SaveGame
                         queue.Enqueue((implementation, $"{path}<{TypeName(implementation)}>"));
                     break;
                 case Kind.Object or Kind.Struct or Kind.Player or Kind.Club or Kind.Manager or Kind.Game:
+                    FieldInfo[] fields;
                     try
                     {
-                        foreach (var field in Fields(type))
-                            queue.Enqueue((field.FieldType, $"{TypeName(type)}.{FieldName(field)}"));
+                        fields = Fields(type);
                     }
                     catch (NotSupportedException e)
                     {
                         problems.Add($"{path}: {e.Message}");
+                        break;
                     }
+                    foreach (var field in fields)
+                        queue.Enqueue((field.FieldType, $"{TypeName(type)}.{FieldName(field)}"));
+                    problems.AddRange(ProbeProblems(type, fields));
                     break;
             }
         }
         return problems;
+    }
+
+    /// <summary>
+    /// #81: Gleicht für einen Typ ab, was Writer und Reader tatsächlich tun, mit dem Schema (<see cref="Fields"/>).
+    /// Unabhängig davon, ob der Typ in einem Beispielspielstand belegt ist.
+    /// </summary>
+    private static IEnumerable<string> ProbeProblems(Type type, FieldInfo[] fields)
+    {
+        FieldProbe probe;
+        try
+        {
+            probe = Probe(type);
+        }
+        catch (Exception e) when (e is InvalidOperationException or NotSupportedException or ArgumentException)
+        {
+            return [$"{TypeName(type)}: Writer-Probe scheitert: {e.Message}"];
+        }
+        var schema = fields.Select(FieldName).ToHashSet(StringComparer.Ordinal);
+        var problems = schema.Except(probe.WrittenFields, StringComparer.Ordinal)
+            .Select(name => $"{TypeName(type)}: Feld {name} wird nicht geschrieben.")
+            .Concat(probe.WrittenFields.Except(schema, StringComparer.Ordinal)
+                .Select(name => $"{TypeName(type)}: Feld {name} wird geschrieben, steht aber nicht im Schema."))
+            .ToList();
+        if (probe.ReaderError is not null)
+            problems.Add($"{TypeName(type)}: Reader lehnt die Probe ab: {probe.ReaderError}");
+        return problems;
+    }
+
+    /// <summary>
+    /// #81 (Abnahme 5, Nachweis über Writer und Reader): Für jeden erreichbaren Zustandstyp wird ein leeres Objekt
+    /// (alle Felder auf Standardwert) geschrieben und zurückgelesen – auch für Typen, die in keinem Beispielspielstand
+    /// vorkommen. Schlüssel ist der Typname wie in <see cref="SchemaDescription"/>.
+    /// </summary>
+    public static IReadOnlyDictionary<string, FieldProbe> CoverageProbe()
+    {
+        var result = new SortedDictionary<string, FieldProbe>(StringComparer.Ordinal);
+        foreach (var type in StateTypes())
+            if (Classify(type) is Kind.Object or Kind.Struct or Kind.Player or Kind.Club or Kind.Manager or Kind.Game)
+                result.Add(TypeName(type), Probe(type));
+        return result;
+    }
+
+    private static FieldProbe Probe(Type type)
+    {
+        using var buffer = new MemoryStream();
+        using (var json = new Utf8JsonWriter(buffer))
+            new Writer(null!, json).WriteProbe(RuntimeHelpers.GetUninitializedObject(type), type);
+        using var document = JsonDocument.Parse(buffer.ToArray());
+        var written = document.RootElement.EnumerateObject().Select(p => p.Name).ToArray();
+        string? error = null;
+        try
+        {
+            // Ohne Nullbarkeitsprüfung: Die Probe ist absichtlich leer, Pflichtverweise prüft der Ladetest (#79).
+            new Reader(document.RootElement, checkNullability: false)
+                .ReadProbe(RuntimeHelpers.GetUninitializedObject(type), type);
+        }
+        catch (Exception e) when (e is FormatException or JsonException or InvalidOperationException or InvalidCastException
+                                       or ArgumentException or KeyNotFoundException or OverflowException)
+        {
+            error = e.Message;
+        }
+        return new FieldProbe(written, error);
+    }
+
+    /// <summary>Alle von <see cref="GameState"/> aus erreichbaren Typen (Feldtypen, Elementtypen, Implementierungen).</summary>
+    private static IEnumerable<Type> StateTypes()
+    {
+        var seen = new HashSet<Type>();
+        var queue = new Queue<Type>([typeof(GameState)]);
+        while (queue.Count > 0)
+        {
+            var type = queue.Dequeue();
+            if (!seen.Add(type))
+                continue;
+            yield return type;
+            if (type.IsEnum)
+                continue;
+            switch (Classify(type))
+            {
+                case Kind.Nullable:
+                    queue.Enqueue(Nullable.GetUnderlyingType(type)!);
+                    break;
+                case Kind.Array or Kind.Array2 or Kind.List or Kind.HashSet or Kind.ReadOnlySequence or Kind.Dictionary or Kind.ReadOnlyMap:
+                    foreach (var argument in Arguments(type))
+                        queue.Enqueue(argument);
+                    break;
+                case Kind.Polymorphic:
+                    foreach (var implementation in PolymorphicTypes.Value.Values.Where(type.IsAssignableFrom))
+                        queue.Enqueue(implementation);
+                    break;
+                case Kind.Object or Kind.Struct or Kind.Player or Kind.Club or Kind.Manager or Kind.Game:
+                    foreach (var field in Fields(type))
+                        queue.Enqueue(field.FieldType);
+                    break;
+            }
+        }
     }
 
     /// <summary>

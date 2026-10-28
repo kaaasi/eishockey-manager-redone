@@ -349,6 +349,32 @@ public class SaveGameTests
         }
     }
 
+    // ---------- #81 (S71-03): Vollständigkeit über Writer und Reader ----------
+
+    /// <summary>
+    /// Für <b>jeden</b> erreichbaren Zustandstyp – auch solche, die im Beispielspielstand nie vorkommen – schreibt der
+    /// Writer genau die Felder des Schemas, und der Reader liest diese Probe ohne Meldung zurück. Vorher prüfte der
+    /// Vollständigkeitstest nur, ob die Feldtypen unterstützt werden; ein ausgelassenes Feld fiel nur im Roundtrip
+    /// und nur bei tatsächlich belegten Typen auf.
+    /// </summary>
+    [Fact]
+    public void CoverageProbe_WriterAndReaderCoverEveryFieldOfEveryType()
+    {
+        var probe = SaveGame.CoverageProbe();
+
+        // Jedes Feld des Schemas (Zeilen „Typ.Feld: Feldtyp“; nicht „Schnittstelle : Klasse“) wird genau einmal geschrieben.
+        var schemaFields = SaveGame.SchemaDescription()
+            .Where(line => line.Contains(": ", StringComparison.Ordinal) && !line.Contains(" : ", StringComparison.Ordinal))
+            .Select(line => line[..line.IndexOf(": ", StringComparison.Ordinal)])
+            .ToHashSet(StringComparer.Ordinal);
+        var written = probe.SelectMany(p => p.Value.WrittenFields.Select(f => $"{p.Key}.{f}")).ToList();
+        Assert.Equal(written.Count, written.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(schemaFields.Order(StringComparer.Ordinal), written.Order(StringComparer.Ordinal));
+
+        foreach (var (type, result) in probe)
+            Assert.True(result.ReaderError is null, $"{type}: {result.ReaderError}");
+    }
+
     [Fact]
     public void Save_RefusesBrokenPlayerIdentity()
     {

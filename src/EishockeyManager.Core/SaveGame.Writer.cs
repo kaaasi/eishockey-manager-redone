@@ -84,6 +84,9 @@ public static partial class SaveGame
             json.WriteEndObject();
         }
 
+        /// <summary>Probe für <see cref="CoverageProbe"/>: schreibt nur die Felder eines einzelnen Objekts.</summary>
+        public void WriteProbe(object value, Type type) => WriteFields(value, type);
+
         private void WriteBody(object value, Type type, string path)
         {
             _path.Push(path);

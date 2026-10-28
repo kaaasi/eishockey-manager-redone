@@ -72,7 +72,8 @@ des Schemas.
   automatischer Eigenschaften heißen wie die Eigenschaft (`Age`), andere Felder wie im Code (`_eternal`).
   Beim Laden muss jedes Feld vorhanden und keines unbekannt sein – sonst Meldung „beschädigt“.
 - **Werte:** Zahlen als JSON-Zahl; `double`/`float`/`decimal` als Zeichenkette (`"R"`, invariant, verlustfrei);
-  Aufzählungen als Name; `null` für leere Verweise.
+  Aufzählungen als Name; `null` für leere Verweise. Beim Laden ist `null` nur erlaubt, wo Feld bzw. Sammlungselement
+  laut Nullable-Annotation leer sein darf (`Club?`, `List<Player?>`); sonst Meldung „… darf nicht leer sein“ (#79).
 - **Verweise:**
   - Spieler `{"$spieler": id}` (`Player.Id`), Vereine `{"$verein": index}`, Manager `{"$manager": index}`,
     der Spielstand selbst `{"$spiel": 0}`.
@@ -94,7 +95,9 @@ des Schemas.
 Aufzählungsnamen; `SaveGame.SchemaFingerprint()` ist deren Hash. Der Test `SchemaFingerprint_MatchesSchemaVersion`
 kennt den Hash zur aktuellen Version. Wer ein Zustandsfeld hinzufügt, umbenennt oder dessen Typ ändert, erhöht
 `SchemaVersion`, trägt eine Migration ein (neues Feld mit Startwert, umbenanntes Feld verschieben) und führt den Hash
-nach. `CheckSchemaCoverage()` meldet Felder, deren Typ das Format nicht kennt (z. B. Delegaten).
+nach. `CheckSchemaCoverage()` meldet Felder, deren Typ das Format nicht kennt (z. B. Delegaten), und – über
+`SaveGame.CoverageProbe()` – jedes Feld, das der Writer nicht schreibt oder der Reader nicht zurückliest. Die Probe
+schreibt für **jeden** erreichbaren Typ ein leeres Objekt, auch für Typen, die in keinem Beispielspielstand vorkommen (#81).
 
 **Haltepunkte:** Gesichert wird zwischen zwei Aufrufen von `GameState.Continue()`. Die WM läuft nach dem Ende der
 Vereinssaison in einem einzigen Schritt; der letzte Haltepunkt davor ist `SeasonPhase.ClubSeasonOver`.
