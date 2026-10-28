@@ -39,7 +39,7 @@ public class RngTwinProbeTests
     }
 
     /// <summary>Spielt <see cref="SeasonChanges"/> Saisonwechsel über <see cref="GameState.Continue"/> und bildet den Abdruck.</summary>
-    internal static string Run(GameState game, bool active)
+    internal static string Run(GameState game, bool active, Action<GameState>? afterStep = null)
     {
         for (var change = 0; change < SeasonChanges; change++)
         {
@@ -51,11 +51,13 @@ public class RngTwinProbeTests
                 if (active)
                     ExtendOffers(game);
                 game.Continue();
+                afterStep?.Invoke(game);
             }
             Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
             game.StartNextSeason();
             if (active)
                 SignFreeAgents(game);
+            afterStep?.Invoke(game);
         }
         return Fingerprint(game);
     }
@@ -106,10 +108,16 @@ public class RngTwinProbeTests
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
     }
 
+    /// <summary>
+    /// Nicht im Abdruck: <c>Player.Id</c> (Teil „ids“) gehört nur zum Spielstandformat und verändert den Spielverlauf
+    /// nicht; so bleiben die auf <c>5f8e02a</c> ermittelten Abdrücke vergleichbar.
+    /// </summary>
+    private static readonly HashSet<string> Excluded = ["Id"];
+
     private static void Dump(StringBuilder sb, object value)
     {
         foreach (var property in value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                     .Where(p => p.GetIndexParameters().Length == 0 && IsSimple(p.PropertyType))
+                     .Where(p => p.GetIndexParameters().Length == 0 && IsSimple(p.PropertyType) && !Excluded.Contains(p.Name))
                      .OrderBy(p => p.Name, StringComparer.Ordinal))
             sb.Append(property.Name).Append('=').Append(property.GetValue(value)).Append(';');
         sb.Append('\n');

@@ -144,6 +144,6 @@ public sealed partial class GameState
     {
         var role = (Formats.PlayerRole)FinanceRandom.Next(3);
         var name = PlayerFactory.TalentName(Clubs.SelectMany(c => c.Players).ToList(), FinanceRandom);
-        return PlayerFactory.CreateTalent(name, role, club.Strength, FinanceRandom);
+        return PlayerFactory.CreateTalent(this, name, role, club.Strength, FinanceRandom);
     }
 }

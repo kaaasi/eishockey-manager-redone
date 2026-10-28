@@ -24,3 +24,21 @@ Alle sind vom Typ `GameRandom` (`src/EishockeyManager.Core/Rng.cs`).
   einen anderen Algorithmus; dessen Folge ist ohnehin nicht wiederholbar).
 
 Die Ablage in der Datei (Kennung, Schemaversion, Feldreihenfolge) legt Teil `-format` fest.
+
+## Spieler-IDs (Teil `-ids`)
+
+Jeder Spieler hat eine dauerhafte ID `Player.Id` (`src/EishockeyManager.Core/Player.Identity.cs`, `[APPROX]`:
+das Original kennt keine IDs). 0 heißt „noch nicht im Spiel“.
+
+- **Vergabe:** `GameState.NextPlayerId` zählt nur aufwärts (Start 1).
+  - Spielstart (`NewGame.Create`, nach dem Kaderaufbau): alle Kaderspieler in Vereins- und Kaderreihenfolge.
+  - Jedes Talent über `PlayerFactory.CreateTalent(game, …)`: Kader-KI der Computervereine und Talentsuche.
+  - Pool, Transfer, Leihe und Laufbahnende erzeugen keine Spieler und behalten die ID; eine ID wird nie neu vergeben,
+    auch nicht nach dem Laufbahnende.
+- Die Vergabe verbraucht keinen Zufall; die Mehrsaison-Abdrücke aus Teil `-rng` bleiben unverändert (ohne `Id`).
+- **Prüfung:** `GameState.ValidatePlayerIdentity()` meldet Spieler, die mehrfach vorkommen; ungültige oder doppelte
+  IDs; Aufstellungen mit kaderfremden Spielern; Leihen ohne Stammverein; Markt-, Gebots- und Nationalkaderverweise ins
+  Leere. `FindPlayer(id)` löst eine ID über Kader, Pool und `RetiredPlayers` auf.
+- **Für Teil `-format`** als ID zu sichern: Kader, Aufstellung/Blöcke, Transfermarkt (Angebote, Gebote), vertragsloser
+  Pool, Leihe (Stammverein über Vereinsindex), Nationalkader und `RetiredPlayers`. Vereine über ihren Index, Manager
+  über ihre Position in `Managers`. Der Posteingang hält keine Objektverweise auf Spieler, nur Text.
