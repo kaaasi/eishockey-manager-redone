@@ -60,10 +60,12 @@ DOTNET_CLI_TELEMETRY_OPTOUT=1 bash tools/pruefen.sh
 | Stand | Lauf | bestanden | fehlgeschlagen | übersprungen |
 |---|---|---:|---:|---:|
 | exakt `ad26a99` | Mit Originaldaten | – | – | keine Daten vorhanden |
-| exakt `ad26a99` | Ohne Originaldaten | ausstehend | – | – |
-| exakt `ad26a99` | Pflichtlauf ohne Daten | ausstehend | – | – |
+| exakt `ad26a99` | Ohne Originaldaten | 297 | 0 | 47 |
+| exakt `ad26a99` | Pflichtlauf ohne Daten | 297 | 54 | 0 |
 | gemeinsam `1f92a49` | Mit Originaldaten | – | – | keine Daten vorhanden |
-| gemeinsam `1f92a49` | Ohne Originaldaten | ausstehend | – | – |
-| gemeinsam `1f92a49` | Pflichtlauf ohne Daten | ausstehend | – | – |
+| gemeinsam `1f92a49` | Ohne Originaldaten | 297 | 0 | 47 |
+| gemeinsam `1f92a49` | Pflichtlauf ohne Daten | 297 | 54 | 0 |
+
+Beide Aufrufe endeten mit Exit 0; die Pflichtfehler wurden als fehlende Originaldaten bestätigt. Die Release-Builds mit Warnungen als Fehler waren erfolgreich.
 
 **Akzeptierte [APPROX]:** keine neuen fachlichen Näherungen in diesem Delta. **Grenzen/Annahmen:** Kein eigener positiver Originaldatenlauf mangels Originaldateien. Die vorigen externen Originaldaten-Nachweise der unveränderten Anwendung werden nicht als neuer eigener Lauf ausgegeben; die positive Auswertung des geänderten Prüfsystems ist zusätzlich durch den Selbsttest kontrolliert. Die fachliche Prozessfreigabe entbindet die Leitstelle nicht von der SHA-Bindung beim Merge und der Prüfung des jeweils aktuellen Integrationsstands.
