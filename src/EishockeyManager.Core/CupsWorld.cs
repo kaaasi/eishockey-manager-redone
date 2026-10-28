@@ -59,10 +59,13 @@ public static class NationalTeamRatings
 ///   „SPIEL UM 7.PL.“. Platz = Spiel · 2 + 1 (Sieger) bzw. + 2 (Verlierer).</item>
 /// <item>[ORIGINAL] Der Sieger des Endspiels ist Weltmeister (DGROUP 0xD0F3); das Meisterfoto erscheint für jedes Land
 ///   (Aufruf 0x31378 ohne Bedingung).</item>
+/// <item>[ORIGINAL] Reihenfolge der Länder: Beim Spielstart und zu jeder neuen Saison tauscht das Original 20-mal zwei
+///   zufällige Nationalteams (Datei 0x35EDD, je random(52, 63); Aufrufe Datei 0x43A17 und 0x5644E). Die Tausche wirken
+///   fort, die Gruppen sind die Plätze 1–6 und 7–12 dieser Reihenfolge.</item>
+/// <item>[ORIGINAL] Spielwerte: <see cref="GameState.NationalMatchStrength"/> – ohne Bundestrainer werden die Werte
+///   Deutschlands vor der WM neu ausgewürfelt, mit Bundestrainer zählt dessen Aufstellung ([APPROX] Stärkeformel, siehe
+///   <see cref="NationalLineup.Strength"/>).</item>
 /// </list>
-/// [APPROX] Welche Länder in welcher Gruppe stehen: Das Original nimmt sechs aufeinanderfolgende Einträge, im Video
-/// (13:13) steht in Gruppe 1 aber nicht die Datenbankfolge (Deutschland, Frankreich, Finnland, Schweiz, USA,
-/// Russland) – die Reihenfolge der Nationalteams wird also irgendwo gemischt. Hier: jede Saison neu gemischt.
 /// [APPROX] Unentschieden im K.-o.: Penaltyschießen (<see cref="KnockoutMatch.Play"/>); Plätze 9–12 nach Gruppenplatz.
 /// </remarks>
 public sealed class WorldCup : ISeasonCompetition
@@ -82,6 +85,10 @@ public sealed class WorldCup : ISeasonCompetition
     /// <summary>[ORIGINAL] DGROUP 0x12C: neuer Platz (1-basiert) von Platz i nach einem K.-o.-Termin (Sieger gerade, Verlierer ungerade).</summary>
     private static readonly int[] Advance = [9, 13, 10, 14, 11, 15, 12, 16, 17, 19, 18, 20, 21, 23, 22, 24];
 
+    /// <summary>[ORIGINAL] Zahl der Tausche je Saison (Datei 0x35FC9: Schleife bis 0x14).</summary>
+    public const int Swaps = 20;
+
+    private readonly List<int> _order = Enumerable.Range(NationalTeams.First, Teams).ToList();
     private readonly List<CupGroup> _groups = [];
     private readonly List<List<KnockoutMatch>> _knockout = [];
     private readonly int?[] _slots = new int?[24];
@@ -112,15 +119,10 @@ public sealed class WorldCup : ISeasonCompetition
         Array.Fill(_slots, null);
         Winner = null;
         Ranking = [];
-        var nations = Enumerable.Range(NationalTeams.First, Teams).ToList();
-        var random = game.CupRandom;
-        for (var i = nations.Count - 1; i > 0; i--)
-        {
-            var j = random.Next(i + 1);
-            (nations[i], nations[j]) = (nations[j], nations[i]);
-        }
-        _groups.Add(new CupGroup(1, nations.Take(GroupSize).ToList()));
-        _groups.Add(new CupGroup(2, nations.Skip(GroupSize).ToList()));
+        Mix(_order, game.CupRandom);
+        _groups.Add(new CupGroup(1, _order.Take(GroupSize).ToList()));
+        _groups.Add(new CupGroup(2, _order.Skip(GroupSize).ToList()));
+        game.StartNationalSeason();
     }
 
     /// <summary>Paarungen (Heim, Gast) eines K.-o.-Termins 0–2 oder leer, solange sie nicht feststehen.</summary>
@@ -151,13 +153,19 @@ public sealed class WorldCup : ISeasonCompetition
         return null;
     }
 
-    /// <summary>Spielt mit den Spielwerten der Nationalteams aus em.exe (<see cref="NationalTeamRatings"/>).</summary>
-    private static Club Rated(Club nation) => new()
+    /// <summary>[ORIGINAL] Datei 0x35EDD: 20-mal zwei Plätze random(0, 11) tauschen (auch denselben Platz).</summary>
+    public static void Mix(IList<int> order, Random random)
     {
-        Index = nation.Index,
-        Name = nation.Name,
-        Strength = NationalTeamRatings.MatchStrength(nation.Index),
-    };
+        for (var n = 0; n < Swaps; n++)
+        {
+            var a = random.Next(0, order.Count);
+            var b = random.Next(0, order.Count);
+            (order[a], order[b]) = (order[b], order[a]);
+        }
+    }
+
+    /// <summary>Reihenfolge der Länder nach den bisherigen Tauschen (Plätze 1–6 = Gruppe 1).</summary>
+    public IReadOnlyList<int> Order => _order;
 
     public void PlayDay(GameState game, int day, List<SeasonStep> steps)
     {
@@ -172,7 +180,7 @@ public sealed class WorldCup : ISeasonCompetition
             foreach (var group in _groups)
                 foreach (var (home, away) in group.Pairings(date))
                 {
-                    var (hg, ag) = MatchEngine.Play(Rated(game.Clubs[home]), Rated(game.Clubs[away]), random);
+                    var (hg, ag) = MatchEngine.Play(game.RatedNation(home), game.RatedNation(away), random);
                     var match = new KnockoutMatch(day, home, away, hg, ag);
                     group.Results.Add(match);
                     played.Add(match);
@@ -192,7 +200,7 @@ public sealed class WorldCup : ISeasonCompetition
         {
             var stage = date - GroupDates;
             played = KnockoutPairings(stage)
-                .Select(p => KnockoutMatch.Play(day, Rated(game.Clubs[p.Home]), Rated(game.Clubs[p.Away]), random)).ToList();
+                .Select(p => KnockoutMatch.Play(day, game.RatedNation(p.Home), game.RatedNation(p.Away), random)).ToList();
             _knockout.Add(played);
             for (var k = 0; k < 4; k++)
             {
@@ -210,8 +218,10 @@ public sealed class WorldCup : ISeasonCompetition
                 Ranking = Enumerable.Range(16, 8).Select(i => _slots[i]!.Value)
                     .Concat(new[] { a[4], b[4], a[5], b[5] }.Select(r => r.Club.Index)).ToList();
                 steps.Add(new TrophyStep(day, Core.Title.WorldChampion, Winner.Value));
+                game.SetNationalBudget(Ranking);
             }
         }
+        game.CountCaps(played);
         game.SettleCupMatches(played); // gemeinsame Spielabrechnung (Nationalteams haben keinen Manager)
         var managerClubs = game.ActiveManagers.Select(m => m.ClubIndex).ToHashSet();
         steps.Add(new MatchesStep(day, Competition.WorldCup, played.Any(m => managerClubs.Contains(m.Home) || managerClubs.Contains(m.Away))));

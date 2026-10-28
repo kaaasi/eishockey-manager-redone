@@ -79,7 +79,8 @@ Pixelvergleich `emtool screens gamedata ~/work/screens europapokal`, Bild `00_gr
 | Weiterverteilung nach jedem K.-o.-Termin (Sieger vorn) nach DGROUP 0x12C: Termin 7 Halbfinale + „SPIELE 5.-8.“, Termin 8 „ENDSPIEL“, „SPIEL UM 3./5./7.PL.“ | 0x31152, Texte DGROUP 0x1D2A ff. |
 | Weltmeister = Sieger des Endspiels; Meisterfoto „Weltmeister“ für jedes Land | 0x3136F, 0x31378 |
 | Spielwerte der Nationalteams: Tabelle DGROUP 0x4C4E (je Land Kondition Abwehr, Technik Abwehr, Kondition Sturm, Technik Sturm, je −2) | Lader 0x2EFDE; Video „Stärken Länderteams – Gesamt“ 13:18 (Spalten Kondition/Technik = Mittel aus Abwehr und Sturm) |
-| `[APPROX]` Gruppeneinteilung: Original nimmt sechs aufeinanderfolgende Nationalteams, das Video zeigt aber eine andere Zusammensetzung → hier jede Saison neu gemischt | Video 13:13 |
+| Gruppeneinteilung: Plätze 1–6 / 7–12 der Länderreihenfolge; beim Spielstart und zu jeder Saison 20 Tausche zweier Plätze random(52, 63), die Tausche wirken fort (`WorldCup.Mix`, `WorldCup.Order`) | 0x35EDD, Aufrufe 0x43A17 / 0x5644E |
+| Ohne menschlichen Bundestrainer werden die Werte Deutschlands an den Tagen mit Markierung 255 (13. und 29. April) neu ausgewürfelt: Kondition random(84, 94), Technik random(79, 89), Form random(45, 55) – die WM spielt Deutschland also nie mit den Startwerten (`GameState.NationalRatings`) | 0x554CF |
 | `[APPROX]` Spielstärke = Mittel aus Kondition und Technik; K.-o.-Unentschieden mit Penaltyschießen; Plätze 9–12 nach Gruppenplatz | – |
 
 ### Bildschirm WM „Gruppe 1/2“ (`UI/Screens/Competitions/WorldCupScreen.cs`)
@@ -93,8 +94,7 @@ Pixelvergleich `emtool screens gamedata ~/work/screens wm`, Bild `00_gruppe1_vid
 mittlere Abweichung 13,1, 9,3 % der Pixel über 40 – an den kontrastreichen Flaggenkanten (Videounschärfe); Zahlen,
 Ränge und Linien liegen pixelgenau.
 
-**Offen:** K.-o.-Ansicht (Knopf „Endrunde“) nicht im Video – `[APPROX]`-Liste; „Spieler in WM-Kader“/„WM Vorbereitung“
-(Abstellung der Spieler eigener Vereine) fehlt; WM-Statistik folgt mit PR 4.
+**Offen:** K.-o.-Ansicht (Knopf „Endrunde“) nicht im Video – `[APPROX]`-Liste; WM-Statistik wartet auf `livespiel`.
 
 ## Stärken (`Core/StatisticsStrength.cs`, `UI/Screens/Statistics/StrengthScreen.cs`)
 
@@ -141,7 +141,7 @@ Fortgeschrieben genau einmal je Saison am 29. April (Anschluss in `GameState.Int
 Strafen je Spieler. Die heutige Spielberechnung liefert nur das Endergebnis; diese Daten entstehen erst mit dem Paket
 `livespiel`.
 
-## Freundschaftsspiele – Befund (noch nicht umgesetzt)
+## Bundestrainer: WM-Kader und „WM Vorbereitung“ (`Core/CupsNational*.cs`)
 
 Freundschaftsspiele gibt es im Original nur für den **Bundestrainer** im Spielmodus „nur Weltkugel“ (WM-Modus).
 
@@ -153,21 +153,38 @@ gespielt (z. B. Datei 0x4C759, 0x5D4F6): Der Tageszähler springt bis zum Ereign
 (DGROUP 0xA055 += 0x29C, Datei 0x554A6). Das Remake deutet den linken Knopf bisher als „DEB-Pokal an/aus“ – das ist
 nicht belegt (Paket Spielvorbereitung).
 
-**Ablauf als Bundestrainer:** Der Nationalteam-Zug läuft als „Manager 5“ (DGROUP 0xA70E = 5) mit eigenem Kader und
-eigener Kachelbelegung des Hauptmenüs (Tabelle DGROUP 0x5159 + 42, Datei 0x44FBD). Dort sitzen „Spieler in WM-Kader“
-(Stub 0xF8:0x5C) und **„WM Vorbereitung“** (Stub 0xF8:0x57 → Datei 0x3B8F7, Aufruf Datei 0x457D9).
+**Ablauf als Bundestrainer:** Der Nationalteam-Zug läuft als „Manager 5“ (DGROUP 0xA70E = 5) mit eigenem Kader,
+eigenem Kontostand (DGROUP 0xA055, anfangs 0) und eigener Freischaltung der Kacheln (DGROUP 0x5159 + 42, Datei 0x44FBD):
+Mannschaft → Aufstellung, Taktik, „Transfer“ = **„Spieler in WM-Kader“** (Stub 0xF8:0x5C, Datei 0x457C0) und
+„Training“ = **„WM Vorbereitung“** (Stub 0xF8:0x57, Datei 0x457D9); dazu WM-Statistik, Tabelle WM, WM, Stärken
+Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader automatisch, wenn DGROUP 0x1DB gesetzt ist
+(Datei 0x54D25).
 
-**WM Vorbereitung** (Datei 0x3B8F7):
-- Fenster (16 | 2), 12 × 12 Teile; Titel Bold zentriert 0 … 319, Grundlinie 21, Farbe 7; Linie (27 … 292 | 23).
-- Zwölf Gegnerfelder 42 × 42 (4 × 3) ab (21 | 28), Schritt 43: Nationen DGROUP 0x6AD + i; die eigene Nation ist gesperrt.
-- Acht Zeilen für vereinbarte Spiele ab (193 | 28), 105 × 18, Schritt 20; Infofeld (27 | 160)–(188 | 184) mit
-  „Gegner“, „Kosten“, „Kontostand“ (Mini) und Umschalter „Heim“/„Auswärts“ (Feld 20).
-- Kosten je Gegner aus DGROUP 0x26C (12 Langwörter, im Spielstand gesichert), Heimspiel doppelt.
-- Erster Klick wählt, zweiter bestätigt. Mehr als 8 Spiele → „Nicht mehr als / 8 Freundschaftsspiele“, zu wenig Etat →
-  „Sie haben nicht / genug Geld !“. Sonst Etat − Kosten, Spiel sofort (Datei 0x3C05E), Ergebnis in DGROUP 0xD0C3 ff.
-- Wirkung: x = (Kosten / 2000 + random(0, 50)) / 50; aus Tordifferenz, x und Heim/Auswärts ergibt sich ein Bonus,
-  der auf drei Werte (Spielerfeld 0x10–0x12, höchstens 99) jedes Spielers im Nationalkader addiert wird.
-- Zähler DGROUP 0xD0C1 wird zum Saisonbeginn auf 0 gesetzt (Datei 0x30EBE).
+| Regel (umgesetzt in PR 6) | Beleg |
+|---|---|
+| Etat beim Amtsantritt: DGROUP 0x29C = 1.500.000 Drittel-DM = 500.000 DM; nach jeder WM 100.000 DM, Platz 1–8 (11 − Platz) · 100.000 DM | Datei 0x554A6, 0x31293 ff. |
+| Kader: höchstens 29 (Zähler &gt; 28 → abgelehnt); Klick auf Kaderspieler entlässt, Verletzte werden nicht aufgenommen | 0x3CAD5, 0x3C928 |
+| „auto“: Kader leeren, dann 3 Torhüter, 10 Verteidiger, 16 Stürmer (DGROUP 0x4EDE) – je Art der Unverletzte mit der höchsten Summe Kondition + Technik + Form | 0x3CA06, 0x3CC01 |
+| Am Saisonende kehren alle Kaderspieler zurück, das Amt endet | 0x557B0, 0x5580E |
+| Kosten (Drittel-DM, DGROUP 0x26C, je Land 52–63): 300.000, 165.000, 180.000, 135.000, 120.000, 150.000, 90.000, 60.000, 105.000, 75.000, 45.000, 195.000 – im Remake durch 3 (100.000 … 15.000 DM), Heimspiel doppelt | 0x3BE78 |
+| Höchstens 8 Spiele je Saison (DGROUP 0xD0C1), „Nicht mehr als / 8 Freundschaftsspiele“; zu wenig Geld: „Sie haben nicht / genug Geld !“ | 0x3BF9B, 0x3C2A3 |
+| Spiel sofort (0xE8:0x39), Ergebnis in DGROUP 0xD0C3 ff. | 0x3C05E, 0x3C248 |
+| Bonus: x = (Kosten in Drittel-DM / 2000 + random(0, 50)) / 50; b = eigene Tore − Gegentore; auswärts mit x &gt; 0 b += random(1, x), sonst b −= 1; x &lt; 2: b −= 2 − x − (auswärts ? 1 : 0); x &gt; 2: b += x; b auf (x &gt; 2 ? 1 : 0) … (x &lt; 2 ? 1 : 2) begrenzt; x &gt; 3: b + 1 | 0x3BFCC–0x3C183 |
+| Bonus auf drei Werte jedes Kaderspielers, einer eins weniger (x &gt; 2: der erste, sonst der zweite), höchstens 99 | 0x3C18C |
+| Länderspiele zählen für die Spieler der Aufstellung des Managers 5 | 0x872B |
+| `[APPROX]` Kandidaten: alle deutschen Spieler (keine Ausländer) der Ligavereine und des Transfermarkts, nach Summe absteigend – das Original listet seine 200 ausführlich geführten Spieler (Kader der Manager, Transfermarkt) | 0x3C5C9 |
+| `[APPROX]` Aufstellung des Nationalteams: bester Torhüter, drei Reihen à 2 Verteidiger + 3 Stürmer; Stärke = Mittel von (Kondition + Technik) / 2 über 16 Plätze (Lücken 0) | – |
+| `[APPROX]` Felder 0x10–0x12 des Kaderplatzes als Kondition, Technik, Form gedeutet (Spaltenfolge „KO TE FO“) | – |
+| `[APPROX]` Energie 70 beim Öffnen von „WM Vorbereitung“ (Kaderfeld 0x13) nicht übernommen: Bildschirme ändern beim Öffnen nichts | 0x3BB51 |
+
+Bildschirme (kein Videobeleg, Aufbau aus em.exe, Bildschirmfotos `emtool screens gamedata ~/work/screens nationalteam`):
+`UI/Screens/Competitions/NationalSquadScreen.cs` („Spieler in WM-Kader“, 0x3C37C) und `FriendliesScreen.cs`
+(„WM Vorbereitung“, 0x3B8F7), Bausteine in `NationalWidgets.cs` (Kasten 0x3B700, Mannschaftsfeld 0x3B4C6). Beide sind
+noch nicht im Hauptmenü erreichbar: Das Menü des Bundestrainers (Manager 5) folgt mit dem Spielmodus.
+
+**Noch offen (eigener PR, berührt gemeinsame Dateien):** Spielmodus „nur Weltkugel“ in der Spielvorbereitung (heute
+deutet das Remake den linken Knopf als „DEB-Pokal an/aus“), Überspringen der Vereinssaison bis zum ersten WM-Termin,
+Ernennung des Managers 0 zu jeder Saison, Hauptmenü des Bundestrainers mit der Kachelfreischaltung oben.
 
 Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien
 Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Ein Bildschirm „Paarungen Liga“ ist in

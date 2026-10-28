@@ -166,4 +166,46 @@ internal static class Wettbewerbe
         d.Move(5, 120); d.Save("03_frueher");
         d.Press(Key.Escape);
     }
+
+    /// <summary>
+    /// Bundestrainer (Spielmodus „nur Weltkugel“, kein Videobeleg): „Spieler in WM-Kader“ leer, nach „auto“ und
+    /// geblättert; „WM Vorbereitung“ mit Infofeld, gewähltem Gegner, gespielten Freundschaftsspielen und Meldung.
+    /// Der Spielmodus selbst folgt in einem eigenen PR; hier wird der Bundestrainer direkt ernannt.
+    /// </summary>
+    [Scenario("nationalteam")]
+    private static void NationalTeam(ScreenDriver d)
+    {
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        game.AppointNationalCoach(game.Managers[0]);
+        var menu = new MainMenuScreen(d.Host);
+
+        d.Host.Show(new NationalSquadScreen(d.Host, menu));
+        d.Move(5, 120); d.Save("01_wm_kader_leer");
+        d.Click(NationalSquadScreen.ButtonRect(1).X + 5, NationalSquadScreen.ButtonRect(1).Y + 5);
+        d.Move(5, 120); d.Save("02_wm_kader_auto");
+        d.Click(NationalSquadScreen.ButtonRect(2).X + 5, NationalSquadScreen.ButtonRect(2).Y + 5);
+        d.Move(5, 120); d.Save("03_wm_kader_seite2");
+
+        d.Host.Show(new FriendliesScreen(d.Host, menu));
+        d.Move(5, 120); d.Save("04_wm_vorbereitung");
+        var tile = FriendliesScreen.Tile(0);
+        d.Move(tile.X + 20, tile.Y + 20); d.Save("05_wm_vorbereitung_info");
+        d.Click(tile.X + 20, tile.Y + 20); d.Save("06_wm_vorbereitung_gewaehlt");
+        game.Managers[0].Money = 5_000_000;
+        var screen = (FriendliesScreen)d.Host.Current;
+        var others = Enumerable.Range(0, WorldCup.Teams).Where(i => screen.Nations[i] != game.NationalCoach!.Nation).ToList();
+        for (var i = 0; i < NationalCoach.MaxFriendlies; i++)
+        {
+            var t = FriendliesScreen.Tile(others[i % others.Count]);
+            d.Move(5, 120);
+            d.Click(t.X + 20, t.Y + 20);
+            d.Click(t.X + 20, t.Y + 20);
+        }
+        d.Move(5, 120); d.Save("07_wm_vorbereitung_acht_spiele");
+        d.Move(tile.X + 20, tile.Y + 20);
+        d.Click(tile.X + 20, tile.Y + 20);
+        d.Click(tile.X + 20, tile.Y + 20);
+        d.Save("08_wm_vorbereitung_meldung");
+    }
 }
