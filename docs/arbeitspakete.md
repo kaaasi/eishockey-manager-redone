@@ -10,13 +10,13 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 
 ## Aktuelle Runde: Runde 3 – Kader, Wettbewerbe, Finanzen (ab 26.10.2026)
 
-Basis: `main` nach Integration Runde 2 (PR #35 und Nachprüfung #37). Regeln, Pflichtangaben und der Review-Ablauf
-mit ChatGPT gelten weiter (siehe Runde 2). **Neu verbindlich:** Jede Spur, die Saisonwechsel, Kader oder Geld berührt,
+Basis: `main` nach Integration Runde 2 (PR #35 und Nachprüfung #37). Runde 2 und die Pakete `mannschaft`/`sound`:
+[archiv/runden-1-2.md](archiv/runden-1-2.md). Regeln und Ablauf: [AGENTS.md](../AGENTS.md), [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md). **Neu verbindlich:** Jede Spur, die Saisonwechsel, Kader oder Geld berührt,
 liefert eine **Mehrsaisonprobe** (mindestens 4 Saisonwechsel, passiver und aktiver Manager) als Test.
 
 ```
-Welle A (parallel):  kader   wettbewerbe   finanzen
-Welle B:             speichern (endgültiges Schema, nachdem Welle A die Daten festgelegt hat)
+Welle A (parallel):  kader   wettbewerbe   finanzen          → integriert mit #54 (main 5f8e02a)
+Welle B (parallel):  speichern   finanzen-2   markerbericht
 ```
 
 | Spur | Branch | Befunde | Inhalt | Verbindliche Abnahme (Regressionstest) |
@@ -125,55 +125,119 @@ Messbasis; der Rest folgt als Spur `finanzen-2`).
     Nationen und damit nie einen Manager-Verein, die Zuordnung sollte aber ausdrücklich sein → `finanzen-2`.
   - Prozess-PRs #45/#46/#50 sind noch nicht auf `main`: `tools/pruefen.sh` und `EM_SKIP_GAMEDATA` fehlen dort. Lauf 2/3
     wurden deshalb mit entfernten Originaldaten ausgeführt (Skript vom Branch `prozess/sparsam`, Lauf 1 identisch).
+- **Ergebnis (28.10.2026):** #54 gemergt mit Head `3e44a84` → `main` `5f8e02a`. Review
+  [integration-runde-3a](reviews/2026-10-28-integration-runde-3a.md) (R3A-01 P2, R3A-02/03 P3), Nachprüfung
+  [integration-runde-3a-nachpruefung](reviews/2026-10-28-integration-runde-3a-nachpruefung.md): alle drei behoben,
+  Freigabe für `3e44a84`. Die Prozess-PRs #45/#46/#50/#52 sind vor #54 gemergt; `tools/pruefen.sh` und
+  `EM_SKIP_GAMEDATA` stehen damit auf `main`. Welle A ist abgeschlossen; die übrigen Restlücken gehen an Welle B
+  (`finanzen-2`, `speichern`).
 
-## Runde 3, Welle B (ab Merge der Integration Welle A)
+## Runde 3, Welle B (ab 28.10.2026)
 
 ```
-Welle B (parallel):  speichern   finanzen-2
+Welle B (parallel):  speichern   finanzen-2   markerbericht (Pilot, ChatGPT)
 ```
 
-Base für beide Spuren: `main` nach Merge des Integrations-PR Welle A (SHA trägt die Spur in ihren Draft-PR ein).
+**Base für alle drei Spuren:** `main` `5f8e02a` (Integration Welle A, #54). Branch vom dann aktuellen `main`; den
+tatsächlichen Base-SHA trägt die Spur in ihren Draft-PR ein. `speichern` und `finanzen-2` berühren Kader oder Geld →
+Mehrsaisonprobe Pflicht. Kleine PRs je Teil (`paket/<spur>-<teil>`), jeder Teil mit eigenem rotem Regressionstest.
 
-| Spur | Branch | Befunde | Inhalt | Verbindliche Abnahme (Regressionstest) |
-|---|---|---|---|---|
-| **speichern** | `paket/speichern` | Paket `speichern` | Eigenes Spielstandformat mit Versionsnummer für den **gesamten** Zustand: Vereine, Spieler (stabile IDs statt Objektverweisen: Kader, Aufstellung, Markt, Leihen, WM-Kader, `RetiredPlayers`), Manager, Finanzbuch/Stadion/Aktien/Kredite, Posteingang mit Fristen, Vertragsankündigungen (`Notice`, `NoticeYears`), Wettbewerbe (DEB-Pokal, Europapokal, WM, Bundestrainer, Etat), Statistik („Ewige Tabelle“, „Früher“), Saisonphase und Kalender; **Zustand aller Zufallsquellen** (`Random`, `FinanceRandom`, `CupRandom`, `ContractRandom`) – `System.Random` ist nicht serialisierbar, daher eigener Generator, der die bisherige Zahlenfolge für denselben Seed beibehält. Laden/Sichern-Dialog wie im Original; Einstellung „Automatisch speichern“. Import `*.HOK` nicht in dieser Spur. | Rundlauf an beliebigen Tagen (vor/nach Pokalrunde, WM, Saisonwechsel) ergibt denselben Zustandsabdruck; Zwillingsspiel: gespeichert + geladen + 4 Saisonwechsel = ununterbrochen gespielt (Konten, Tabellen, Kader, Titel identisch); Vollständigkeitstest, der jede neue öffentliche Zustandseigenschaft ohne Sicherung meldet; fremde/alte Version wird mit Meldung abgelehnt; Öffnen des Dialogs ändert nichts |
-| **finanzen-2** | `paket/finanzen-2` | Rest aus #41 | Zuschauer-/Eintrittsfunktion, Gastronomieertrag, laufender Stadionunterhalt und Werbeangebotsformel bis zu den Original-Buchungen (em.exe) rekonstruieren; Zuordnung der 100.000-DM-Einzelprämien; Gehaltspauschale bei leerem Kader prüfen; Etat des Bundestrainers als Einnahme belegen oder korrigieren; Titelzuordnung in `FinishSeason` ausdrücklich machen | Mehrsaisonprobe (4 Wechsel, Oberliga und Bundesliga, passiv und aktiv): Kontoverlauf passiver Manager in einer **aus Original oder Video begründeten** Sollspanne statt technischer Alarmgrenzen; je Formel roter Regressionstest gegen `[ORIGINAL]`-Wert; verbleibende Näherungen `[APPROX]` |
+### Spur `speichern` – Spielstand mit Schemaversion (G11)
 
-**Dateigrenzen in Welle B:**
-`speichern` → `Core/Save*.cs`, `Core/Rng*.cs` (neuer Generator), `UI/Screens/SaveLoad/**`, Ablauf in
-`Tools/Scenarios/Speichern.cs`; Umstellung der Felder `Random`/`FinanceRandom`/`CupRandom`/`ContractRandom` und
-stabile Spieler-IDs in den jeweiligen `partial`-Dateien nur minimal und begründet ·
-`finanzen-2` → `Core/Finance*.cs` außer `FinanceInbox.cs`, Prämien- und Titelzeilen in `SeasonFlow.cs`,
-`Core/CupsNational.GameState.cs` nur für die Etatbuchung, `UI/Screens/Manager/Finance*.cs`, `StadiumScreen.cs`, `AdvertisingScreen.cs`.
-**Abhängigkeit:** Neuer Zustand aus `finanzen-2` muss gesichert werden. Wer zuerst gemergt wird, ist egal; der
-Vollständigkeitstest aus `speichern` macht fehlende Felder sichtbar, der zweite PR ergänzt sie.
+- **Ziel:** eigenes Spielstandformat für den **gesamten** Zustand, robust gegen Saisonwechsel und spätere
+  Schemaänderungen (Audit G11, [audit-validierung](prozess/2026-10-27-audit-validierung.md), Maßnahme M6).
+- **Branch / Base:** `paket/speichern[-<teil>]` von `main` (≥ `5f8e02a`). Vorschlag Teile: `-rng` (Generator),
+  `-ids` (stabile IDs), `-format` (Schema, Roundtrip), `-dialog` (Laden/Sichern, „Automatisch speichern“).
+- **Inhalt:**
+  - **Schemaversion:** jede Datei beginnt mit Kennung und ganzzahliger Schemaversion; Laden prüft beides vor dem
+    Lesen. Fremde Datei oder unbekannte (höhere) Version → Meldung, kein Teilzustand. Migrationsstelle je Version
+    vorgesehen (zunächst leer). Format ist textbasiert oder binär nach Wahl der Spur, im PR begründet und in
+    `docs/formate/` beschrieben.
+  - **Stabile IDs:** jeder Spieler bekommt eine dauerhafte ID (bei Spielstart, Talent, Pool-Zugang vergeben, nie
+    wiederverwendet). Alle Verweise werden als ID gesichert statt als Objektverweis: Kader, Aufstellung/Blöcke, Markt
+    und Pool, Leihen (inkl. ursprünglicher Verein), WM-Kader des Bundestrainers, `RetiredPlayers`, Posteingang mit
+    Spielerbezug. Vereine und Manager über ihren Index bzw. eine eigene ID.
+  - **Umfang:** Vereine, Spieler, Manager, Finanzbuch/Stadion/Aktien/Kredite/Werbung, Posteingang mit Fristen,
+    Vertragsankündigungen (`Notice`, `NoticeYears`), Wettbewerbe (DEB-Pokal, Europapokal, WM, Bundestrainer, Etat),
+    Statistik („Ewige Tabelle“, „Früher“), Saisonphase und Kalender.
+  - **Zufallszustand:** `Random`, `FinanceRandom`, `CupRandom`, `ContractRandom` auf einen eigenen, serialisierbaren
+    Generator umstellen, der für denselben Seed **dieselbe Zahlenfolge** wie `System.Random` liefert (sonst ändern sich
+    alle Mehrsaison-Referenzwerte). Die verzögerte Erzeugung (`??=` mit Saison-Seed) bleibt im Verhalten gleich und
+    wird mitgesichert (erzeugt / noch nicht erzeugt).
+  - Laden/Sichern-Dialog wie im Original (Dateiliste, Verzeichnis, Dateiname); Einstellung „Automatisch speichern“.
+    Import `*.HOK` **nicht** in dieser Spur.
+- **Abnahme (Regressionstests):**
+  1. **Generator:** für mehrere Seeds sind die ersten 10.000 Werte von `Next()`, `Next(a,b)`, `NextDouble()` gleich
+     `System.Random`; Zustand sichern → laden → Folge setzt sich identisch fort.
+  2. **IDs:** nach 4 Saisonwechseln (passiv und aktiv) sind alle IDs über Kader, Pool, Leihen und `RetiredPlayers`
+     eindeutig, kein Verweis zeigt ins Leere; eine ID wird nie neu vergeben.
+  3. **Roundtrip:** sichern → laden → sichern ergibt bytegleiche Dateien bzw. denselben Zustandsabdruck, an
+     beliebigen Tagen (vor/nach Pokalrunde, während WM, unmittelbar vor und nach dem Saisonwechsel, mit offener
+     Frist im Posteingang).
+  4. **Mehrsaison-Roundtrip (Zwillingsspiel):** gespeichert + geladen + 4 Saisonwechsel über `Continue()` =
+     ununterbrochen gespielt (Konten, Finanzbuch, Tabellen, Kader, Titel, Statistik identisch); passiv und aktiv,
+     synthetisch und mit Originaldaten.
+  5. **Vollständigkeit:** ein Test meldet jede öffentliche Zustandseigenschaft von `GameState` und den
+     Zustandsklassen, die weder gesichert noch ausdrücklich ausgenommen ist.
+  6. **Version:** fremde Datei und höhere Schemaversion werden mit Meldung abgelehnt, der laufende Zustand bleibt
+     unverändert. Öffnen und Abbrechen des Dialogs ändert nichts (zustandsrein).
+- **Dateigrenzen:** `Core/Save*.cs`, `Core/Rng*.cs` (neu), `Core/Player.Identity.cs` (neu, ID-Vergabe),
+  `UI/Screens/SaveLoad/**`, `Tools/Scenarios/Speichern.cs`, `docs/formate/spielstand.md`. Minimal und im PR begründet:
+  Umstellung der Zufallsfelder in `GameState.cs`, `GameState.Manager.cs`, `Cups.GameState.cs`,
+  `Transfer.Squads.cs`; ID-Vergabe in `NewGame.cs`/`Player.Factory.cs`; „Automatisch speichern“ in
+  `UI/Screens/Settings.cs`/`SettingsScreen.cs`.
 
-## Runde 2 – Stabilisierung (abgeschlossen am 26.10.2026)
+### Spur `finanzen-2` – Restkalibrierung (Restlücken aus #41)
 
-Ergebnis: Welle A gemergt mit #31 (Review [pr31](reviews/2026-10-26-pr31-review.md)), Welle B mit #35
-(Review [pr35](reviews/2026-10-26-pr35-review.md), Nachprüfung [pr35-nachpruefung](reviews/2026-10-26-pr35-nachpruefung.md):
-Freigabe für `9bd8fea`). Der P3-Befund PR35-N01 (UI-Test prüfte die Meldung nicht) ist nach dem Merge behoben.
-Offen in Runde 3: R2-11, R2-12.
+- **Ziel:** die in #41 als `[APPROX]` offen gelassenen Buchungspfade aus em.exe und Video rekonstruieren, sodass der
+  passive Kontoverlauf in einer **belegten** Sollspanne liegt statt in technischen Alarmgrenzen.
+- **Branch / Base:** `paket/finanzen-2[-<teil>]` von `main` (≥ `5f8e02a`). Vorschlag Teile: `-zuschauer`
+  (Zuschauer und Eintritt), `-stadion` (Unterhalt, Gastronomie), `-werbung`, `-ausgaben` (Monatsausgaben, Abnahme).
+- **Inhalt:**
+  - **Zuschauer und Eintritt:** Zuschauerfunktion (Liga, Stärke, Tabellenplatz, Preis, Kapazität Sitz/Steh) und
+    Eintrittserlös je Heimspiel bis zu den Original-Buchungen. Bezugswerte u. a. `karriere_01100.png`
+    (Schnitt 3.049, bereinigt 2.703, Rekord 4.500), `karriere_03450.png` (Eintritt 12 DM, 2.000/5.000 Plätze).
+  - **Werbung:** Formel der Werbeangebote (Betrag, Laufzeit, Häufigkeit) und laufende Einnahmen
+    (Bezug `karriere_02000.png`: Rushware 13.899 DM/Monat).
+  - **Stadionunterhalt und Gastronomie:** laufender Unterhalt je Ausbaustufe, Gastronomieertrag.
+  - **Zu niedrige Monatsausgaben:** Original 120.370 DM/Monat (`karriere_01000/01100`) bzw. 156.171 DM
+    (`karriere_02000`) gegen das Modell; fehlende Ausgabenposten in em.exe finden und je Posten belegen. **Keine
+    erfundene Pauschale**, um ein gewünschtes Minus zu erzeugen.
+  - Nebenpunkte aus Integration A: Gehaltspauschale bei leerem Kader (passiver Manager ab Saison 3,
+    −1.092.000 DM/Saison Bundesliga) prüfen; Etat des Bundestrainers als Einnahme „Prämien“ belegen oder korrigieren;
+    Titelzuordnung in `FinishSeason` ausdrücklich machen (WM-Titel nicht als `EuropeanCupWinner`); Zuordnung der
+    100.000-DM-Einzelprämien.
+- **Abnahme (Regressionstests):**
+  1. Je rekonstruierter Formel ein Test gegen den `[ORIGINAL]`-Wert (em.exe-Konstante oder Referenzbild), gegen den
+     unveränderten Code von `5f8e02a` rot; verbleibende Näherungen ausdrücklich `[APPROX]` mit Begründung.
+  2. Monatsübersicht für die Lage der Referenzbilder (Liga, Stadion, Werbung nachgestellt): Einnahmen und Ausgaben je
+     Monat innerhalb einer im PR begründeten Toleranz zu den Bildwerten.
+  3. Mehrsaisonprobe (4 Wechsel, Oberliga und Bundesliga, passiv und aktiv, mehrere Seeds): passiver Kontoverlauf in
+     einer **aus Original oder Video begründeten** Sollspanne; die Alarmgrenzen aus #41 werden ersetzt.
+  4. Jede Buchung genau einmal im Finanzbuch; Konto = Summe des Finanzbuchs nach jedem Schritt.
+- **Dateigrenzen:** `Core/Finance*.cs` außer `FinanceInbox.cs`, Prämien- und Titelzeilen in `SeasonFlow.cs`,
+  `Core/CupsNational.GameState.cs` nur für die Etatbuchung, `UI/Screens/Manager/Finance*.cs`, `StadiumScreen.cs`,
+  `AdvertisingScreen.cs`, Tests `FinanceCalibrationTests` und neue `Finance*Tests`.
 
-Plan, Spurstatus und Integrationsberichte von Runde 2: [archiv/runden-1-2.md](archiv/runden-1-2.md).
+**Abhängigkeit `speichern` ↔ `finanzen-2`:** Neuer Zustand aus `finanzen-2` (z. B. Zuschauerrekord, Werbeverträge)
+muss gesichert werden. Wer zuerst gemergt wird, ist egal: Der Vollständigkeitstest aus `speichern` meldet fehlende
+Felder, der zweite PR ergänzt sie. Ändert `speichern` den Generator, müssen die Zahlenfolgen gleich bleiben – sonst
+verschieben sich die Referenzwerte aus `finanzen-2`.
 
-## Paket `mannschaft` – Kader und Spieler
+### Spur `markerbericht` – Pilot Übergabe (ChatGPT)
 
-Branch: `paket/mannschaft` · Status: **Runde 1 gemergt** (PRs #1, #2, #4, #7, #12, #14)
+Ziel und Bewertung: [audit-validierung](prozess/2026-10-27-audit-validierung.md) §5. Voraussetzungen (#45, #46, #50)
+sind auf `main`.
 
-- ✔ Spielerwerte, Kader aller Vereine, Aufstellung (Core), Mannschaftsstärke → `Club.MatchStrength` in `MatchEngine`
-- ✔ Bildschirme Aufstellung, Taktik, Verträge (mit Vertragsverhandlung) und Transfer (Kauf, Leihe, Verkauf, Talentsuche)
-- ✔ Training: Bildschirm kb\5, Kosten, Standardplan und Wirkung aus em.exe (`Squad.Training.cs`)
-- Training und Transfermarkt laufen seit der Integration über die Zeitleiste (`GameState.Integration.cs`);
-  Trainingskosten, Transfers und Talentsuche werden im Finanzbuch gebucht
-
-- Spielerwerte (siehe Spielerstruktur in `reverse-engineering.md`: Talent, Alter, Technik, Kondition, Form, Rolle …),
-  Kader aller Vereine aus der Datenbank, Transfermarkt.
-- Aufstellung (4 Blöcke + Torhüter), Taktik (Einsatz/Angriff je Spielstand, Linienwechsel), Verträge mit Verhandlung,
-  Transfer (Kauf/Leihe), Training (kb\5: 7 Tage × 2 Blöcke × 2 Einheiten).
-- Eigene Dateien: `Core/Player*.cs`, `Core/Squad*.cs`, `Core/Transfer*.cs`, `UI/Screens/Team/*`.
-- Abnahme: alle fünf Kacheln funktionieren; Aufstellung beeinflusst die Mannschaftsstärke (Schnittstelle zu `MatchEngine`
-  mit dem Paket `saison` abstimmen).
+| Feld | Inhalt |
+|---|---|
+| Ziel | `tools/markerbericht.py` zählt `[ORIGINAL]`/`[APPROX]` je Datei und Projekt in `src/`, gibt eine Markdown-Tabelle aus; CI hängt sie an die Zusammenfassung an |
+| Branch / Base | `paket/markerbericht` von `main` (≥ `5f8e02a`) |
+| Bearbeiter | ChatGPT; nach dem ersten Commit Übergabekommentar nach `docs/handoffs/VORLAGE.md`, eine **neue** ChatGPT-Sitzung übernimmt und beendet das Paket |
+| Dateigrenzen | `tools/markerbericht.py` (neu), ein Schritt am Ende des Jobs `build` in `.github/workflows/build.yml` |
+| Abnahme | Zahlen gleich `grep -rho "\[APPROX\]\|\[ORIGINAL\]" src \| sort \| uniq -c`; Ausgabe sortiert und deterministisch; keine neuen Abhängigkeiten; CI grün; PR nach Vorlage mit `tools/pruefen.sh`-Tabelle und Trailer |
+| Review | Claude Code (Leitstelle, andere Sitzung als jede Umsetzung) |
+| Status | bereit |
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
@@ -196,46 +260,12 @@ Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–6 (DEB-Po
 - DEB-Pokal (32 Teams), Europapokal (Gruppe + Endrunde), WM (2 Gruppen + K.-o.).
 - Eigene Dateien: `Core/Cups*.cs`, `Core/Statistics*.cs`, `UI/Screens/Competitions/*`, `UI/Screens/Statistics/*`.
 
-## Paket `sound` – Sound, Musik, Einstellungen
-
-Branch: `paket/sound` · Status: **Runde 2, Welle A** (unabhängig, keine Dateien der Stabilisierungsspuren ändern)
-
-- VOC-Wiedergabe (kb\237–241), CMF-Musik (kb\248) über OPL2-Emulation, Einbindung in Desktop (MonoGame `DynamicSoundEffectInstance`).
-- Einstellungen-Bildschirm (Torszenen, Lautstärken, Musik im Spiel, Vollbild).
-- Eigene Dateien: `Formats/Voc*.cs`, `Formats/Cmf*.cs`, `src/EishockeyManager.Audio/*` (neues Projekt), `UI/Screens/Settings*`.
-
-Fortschritt:
-- [x] VOC-Lader (`VocFile`, alle Blocktypen 1–9 ohne Kompression), `PcmSound`, `WavWriter`, `emtool export-sound` – Branch `paket/sound-voc`
-- [x] CMF-Lader (`CmfFile`), OPL2-Emulation (`Opl2`, eigener Code), Wiedergabe nach dem FM-Treiber in em.exe (`CmfPlayer`) – Branch `paket/sound-cmf`
-- [x] Projekt `EishockeyManager.Audio` (Mischer, ein Effektkanal wie CT-VOICE, Musik in Schleife), Desktop über `DynamicSoundEffectInstance`, F8 = Ton aus; Effektzuordnung aus dem Disassembly belegt – Branch `paket/sound-audio`
-- [x] Bildschirm Einstellungen (Kachel „Gemischtes“): Lautstärken, Musik auch im Spiel, Torszenen, Vollbild; gespeichert in `einstellungen.json` im Benutzerprofil – Branch `paket/sound-einstellungen`
-
-Offen für später: Effekte in den Torszenen auslösen (sobald es sie gibt; UI braucht dann eine Referenz auf Audio), Einstellungen „Cheats“ und „Automatisch speichern“ (gehören zu `speichern`), Einstellungen-Eintrag im Titelmenü, Musikstart/-stopp des Originals aus dem Disassembly.
-
 ## Paket `speichern` – Laden und Sichern
 
-Branch: `paket/speichern` · Status: **Runde 3** – endgültiges Schema erst nach Kaderlebenszyklus, Fristen und Transaktionssicherheit; muss Zufallszustand, Objektidentität und offene Vorgänge enthalten
+Branch: `paket/speichern` · Status: **Runde 3, Welle B** – Plan und Abnahme im Abschnitt „Spur `speichern`“ oben
 
 - Eigenes Spielstandformat, Laden/Sichern-Dialog wie im Original (Dateiliste, Verzeichnis, Dateiname).
 - Optional: Import von Original-Spielständen `*.HOK` (Verschlüsselung in `dateiformate.md`).
-
-## Integration Runde 1
-
-Ergebnis und offene Punkte: [archiv/runden-1-2.md](archiv/runden-1-2.md). Die Regeln daraus stehen in `AGENTS.md`.
-
-## Pilot: Markerbericht (Prozess, Übergabe zwischen Agenten)
-
-Ziel und Bewertung: `docs/prozess/2026-10-27-audit-validierung.md` §5. Start nach Merge von #45 und #50.
-
-| Feld | Inhalt |
-|---|---|
-| Ziel | `tools/markerbericht.py` zählt `[ORIGINAL]`/`[APPROX]` je Datei und Projekt in `src/`, gibt eine Markdown-Tabelle aus; CI hängt sie an die Zusammenfassung an |
-| Branch / Base | `paket/markerbericht` von aktuellem `main` |
-| Bearbeiter | ChatGPT; nach dem ersten Commit Übergabe an eine **neue** ChatGPT-Sitzung, die das Paket beendet |
-| Dateigrenzen | `tools/markerbericht.py` (neu), ein Schritt am Ende des Jobs `build` in `.github/workflows/build.yml` |
-| Abnahme | Zahlen gleich `grep -rho "\[APPROX\]\|\[ORIGINAL\]" src \| sort \| uniq -c`; Ausgabe sortiert und deterministisch; keine neuen Abhängigkeiten; CI grün; PR nach Vorlage |
-| Review | Claude Code (Leitstelle) |
-| Status | offen |
 
 ## Später (nach v0.5)
 
