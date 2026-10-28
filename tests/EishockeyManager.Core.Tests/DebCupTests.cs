@@ -123,7 +123,7 @@ public class DebCupTests
                         Assert.Equal(tie.Games[0].Winner, tie.Games[1].Winner);
                     for (var g = 0; g < tie.Games.Count; g++)
                     {
-                        Assert.Equal(CupTie.Pairing(tie, g), (tie.Games[g].Home, tie.Games[g].Away));
+                        Assert.Equal(g == 1 ? (tie.Second, tie.First) : (tie.First, tie.Second), (tie.Games[g].Home, tie.Games[g].Away));
                         Assert.Equal(DebCup.DayOf(r, g), tie.Games[g].Day);
                     }
                 }

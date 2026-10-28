@@ -53,13 +53,18 @@ public sealed partial class GameState
 
     /// <summary>
     /// Ein Manager wird Bundestrainer des eigenen Landes (Datei 0x55440 ff.): Er bekommt den Etat
-    /// <see cref="NationalBudget"/> (Finanzbuch „Prämien“), der Kader beginnt leer.
+    /// <see cref="NationalBudget"/> (Finanzbuch „Prämien“), der Kader beginnt leer. Ist er in dieser Saison schon
+    /// ernannt, bleibt alles unverändert (kein zweiter Etat, Kader bleibt; Review R3A-03).
     /// </summary>
     public NationalCoach AppointNationalCoach(Manager manager)
     {
         var index = Managers.ToList().IndexOf(manager);
         if (index < 0)
             throw new ArgumentException("Unbekannter Manager.", nameof(manager));
+        if (NationalCoach is { } current)
+            return current.Manager == index
+                ? current
+                : throw new InvalidOperationException("In dieser Saison ist bereits ein anderer Manager Bundestrainer.");
         NationalCoach = new NationalCoach(index, NationalTeams.Germany);
         Book(manager, FinanceCategory.Praemien, NationalBudget);
         return NationalCoach;
