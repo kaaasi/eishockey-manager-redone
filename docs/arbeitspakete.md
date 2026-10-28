@@ -95,6 +95,57 @@ Stand: implementiert, lokale Abnahme grün; Review und Merge stehen aus (Branch 
   noch keine einzelne belegte Ersatzformel. Keine frei erfundene Ausgabenpauschale zur Erzeugung
   eines gewünschten Minus eingeführt. Die genaue Zuordnung der 100.000-DM-Einzelprämien bleibt `[APPROX]`.
 
+### Integration Runde 3, Welle A (28.10.2026)
+
+Branch `integration/runde-3a` von `main` `cc26bde`, Leitstelle Claude Code. Zusammengeführt in dieser Reihenfolge:
+#39 (kader), #40 → #43 → #44 → #48 → #49 → #51 (wettbewerbe, gestapelt), #41 (finanzen, **Teil 1**: Prämien und
+Messbasis; der Rest folgt als Spur `finanzen-2`).
+
+- Konflikte: `GameState.Integration.cs` (#39 × #49) – Vertragsankündigung und Saisonstatistik sind unabhängig, beide
+  Aufrufe bleiben im Tagesabschluss; `docs/arbeitspakete.md` (#39 × #41) – beide Statusabschnitte übernommen.
+- Integrationsfehler 1: Build mit Warnungen als Fehler scheiterte an CS8600/CS8602 im Ablauf `nationalteam`
+  (`Scenarios/Wettbewerbe.cs`, aus #51). Behoben ohne Verhaltensänderung.
+- Integrationsfehler 2: `SeasonPaymentTests.SeasonPremium_IsBookedOnce_InOwnCategory` rot („Keine Prämie gezahlt“):
+  #41 zahlt keine Tabellenprämie mehr, und mit den Wettbewerben gewinnt in Seeds 1–3 kein Manager-Verein einen Titel
+  (Meister jeweils Verein 1). Test prüft jetzt mindestens drei Seeds und weitere, bis eine Prämie gebucht wurde.
+- Mehrsaisonprobe auf dem Integrationsstand (alle Wettbewerbe, Kader-KI und Prämien gemeinsam über `Continue()`):
+  `SquadLifecycleTests` (6 Wechsel) und `FinanceCalibrationTests` (4 Wechsel, 12 Läufe) grün. Endkonten nach vier
+  Wechseln: passiv Oberliga 145.010–271.200 DM, passiv Bundesliga 4.074.640–4.718.800 DM, aktiv Oberliga
+  2.137.396–2.267.913 DM, aktiv Bundesliga 12.343.492–13.001.751 DM (innerhalb der Alarmgrenzen aus #41).
+- Bildschirmfoto-Abläufe `wettbewerbe europapokal wm staerken statistik nationalteam vertraege posteingang finanzen
+  saison saison_aufstieg`: 64 Bilder ohne Fehler; alle Wettbewerbsbilder bytegleich mit dem Stand von #51.
+  Abweichungen zu #39/#41 nur durch zusätzliche Pokalspiele (Datum der ersten Nachricht, Eintritt, Kontostand).
+- Restlücken (für Review und Welle B):
+  - Passive Manager haben ab Saison 3 einen leeren Kader (angekündigte Vertragsenden, #39) und zahlen dann die alte
+    Gehaltspauschale (−1.092.000 DM/Saison in der Bundesliga) → `finanzen-2`.
+  - `AppointNationalCoach` bucht den Etat des Bundestrainers als Einnahme „Prämien“ (#51) – Beleg prüfen → `finanzen-2`.
+  - `FinishSeason` ordnet jeden Titel außer Meister/Pokal als `EuropeanCupWinner` ein; der WM-Titel trifft nur
+    Nationen und damit nie einen Manager-Verein, die Zuordnung sollte aber ausdrücklich sein → `finanzen-2`.
+  - Prozess-PRs #45/#46/#50 sind noch nicht auf `main`: `tools/pruefen.sh` und `EM_SKIP_GAMEDATA` fehlen dort. Lauf 2/3
+    wurden deshalb mit entfernten Originaldaten ausgeführt (Skript vom Branch `prozess/sparsam`, Lauf 1 identisch).
+
+## Runde 3, Welle B (ab Merge der Integration Welle A)
+
+```
+Welle B (parallel):  speichern   finanzen-2
+```
+
+Base für beide Spuren: `main` nach Merge des Integrations-PR Welle A (SHA trägt die Spur in ihren Draft-PR ein).
+
+| Spur | Branch | Befunde | Inhalt | Verbindliche Abnahme (Regressionstest) |
+|---|---|---|---|---|
+| **speichern** | `paket/speichern` | Paket `speichern` | Eigenes Spielstandformat mit Versionsnummer für den **gesamten** Zustand: Vereine, Spieler (stabile IDs statt Objektverweisen: Kader, Aufstellung, Markt, Leihen, WM-Kader, `RetiredPlayers`), Manager, Finanzbuch/Stadion/Aktien/Kredite, Posteingang mit Fristen, Vertragsankündigungen (`Notice`, `NoticeYears`), Wettbewerbe (DEB-Pokal, Europapokal, WM, Bundestrainer, Etat), Statistik („Ewige Tabelle“, „Früher“), Saisonphase und Kalender; **Zustand aller Zufallsquellen** (`Random`, `FinanceRandom`, `CupRandom`, `ContractRandom`) – `System.Random` ist nicht serialisierbar, daher eigener Generator, der die bisherige Zahlenfolge für denselben Seed beibehält. Laden/Sichern-Dialog wie im Original; Einstellung „Automatisch speichern“. Import `*.HOK` nicht in dieser Spur. | Rundlauf an beliebigen Tagen (vor/nach Pokalrunde, WM, Saisonwechsel) ergibt denselben Zustandsabdruck; Zwillingsspiel: gespeichert + geladen + 4 Saisonwechsel = ununterbrochen gespielt (Konten, Tabellen, Kader, Titel identisch); Vollständigkeitstest, der jede neue öffentliche Zustandseigenschaft ohne Sicherung meldet; fremde/alte Version wird mit Meldung abgelehnt; Öffnen des Dialogs ändert nichts |
+| **finanzen-2** | `paket/finanzen-2` | Rest aus #41 | Zuschauer-/Eintrittsfunktion, Gastronomieertrag, laufender Stadionunterhalt und Werbeangebotsformel bis zu den Original-Buchungen (em.exe) rekonstruieren; Zuordnung der 100.000-DM-Einzelprämien; Gehaltspauschale bei leerem Kader prüfen; Etat des Bundestrainers als Einnahme belegen oder korrigieren; Titelzuordnung in `FinishSeason` ausdrücklich machen | Mehrsaisonprobe (4 Wechsel, Oberliga und Bundesliga, passiv und aktiv): Kontoverlauf passiver Manager in einer **aus Original oder Video begründeten** Sollspanne statt technischer Alarmgrenzen; je Formel roter Regressionstest gegen `[ORIGINAL]`-Wert; verbleibende Näherungen `[APPROX]` |
+
+**Dateigrenzen in Welle B:**
+`speichern` → `Core/Save*.cs`, `Core/Rng*.cs` (neuer Generator), `UI/Screens/SaveLoad/**`, Ablauf in
+`Tools/Scenarios/Speichern.cs`; Umstellung der Felder `Random`/`FinanceRandom`/`CupRandom`/`ContractRandom` und
+stabile Spieler-IDs in den jeweiligen `partial`-Dateien nur minimal und begründet ·
+`finanzen-2` → `Core/Finance*.cs` außer `FinanceInbox.cs`, Prämien- und Titelzeilen in `SeasonFlow.cs`,
+`Core/CupsNational.GameState.cs` nur für die Etatbuchung, `UI/Screens/Manager/Finance*.cs`, `StadiumScreen.cs`, `AdvertisingScreen.cs`.
+**Abhängigkeit:** Neuer Zustand aus `finanzen-2` muss gesichert werden. Wer zuerst gemergt wird, ist egal; der
+Vollständigkeitstest aus `speichern` macht fehlende Felder sichtbar, der zweite PR ergänzt sie.
+
 ## Runde 2 – Stabilisierung (abgeschlossen am 26.10.2026)
 
 Ergebnis: Welle A gemergt mit #31 (Review [pr31](reviews/2026-10-26-pr31-review.md)), Welle B mit #35
