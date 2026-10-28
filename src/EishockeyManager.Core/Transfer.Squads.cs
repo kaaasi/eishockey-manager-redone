@@ -208,7 +208,7 @@ public sealed partial class GameState
                 PlayerFactory.Join(club, p, years, loan: false);
                 return;
             }
-            var talent = PlayerFactory.CreateTalent(PlayerFactory.TalentName(names, ContractRandom), role, club.Strength, ContractRandom);
+            var talent = PlayerFactory.CreateTalent(this, PlayerFactory.TalentName(names, ContractRandom), role, club.Strength, ContractRandom);
             PlayerFactory.Join(club, talent, Math.Max(2, years), loan: false);
             names.Add(talent);
         }

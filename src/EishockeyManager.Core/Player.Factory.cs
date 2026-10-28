@@ -57,6 +57,15 @@ public static class PlayerFactory
         return p;
     }
 
+    /// <summary>Neues Talent für den laufenden Spielstand: wie oben, zusätzlich mit neuer Spieler-ID (Spur „speichern“).</summary>
+    public static Player CreateTalent(GameState game, string name, PlayerRole role, int clubStrength, Random random)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        var p = CreateTalent(name, role, clubStrength, random);
+        game.AssignPlayerId(p);
+        return p;
+    }
+
     /// <summary>
     /// Talentwerte relativ zur Stärke des aufnehmenden Vereins. [APPROX] Alter 17–19, Talent 6–9,
     /// Kondition und Technik 2–8 unter dem Basiswert des Vereins, Form 45–60, Energie 80, Tendenz steigend.
