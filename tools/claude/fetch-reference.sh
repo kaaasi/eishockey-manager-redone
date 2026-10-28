@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Lädt Referenzbilder aus dem privaten Repo kaaasi/eishockey-manager-referenz nach ~/referenz
-# (nur die genannten Ordner). Aufruf: tools/claude/fetch-reference.sh [oberflaeche] [karriere] [uebersicht]
+# (nur die genannten Ordner). Aufruf: tools/claude/fetch-reference.sh [oberflaeche] [karriere] [uebersicht] [original]
+# `original` = DOS-Originaldateien (docs/originaldateien.md).
 # Ohne Angabe: oberflaeche und uebersicht. Die Bilder niemals in dieses Repo kopieren.
 set -euo pipefail
 TARGET="${REFERENZ:-$HOME/referenz}"

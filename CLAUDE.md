@@ -13,15 +13,15 @@ git clone https://github.com/kaaasi/eishockey-manager-redone   # bzw. vorhandene
 cd eishockey-manager-redone
 ```
 
-- **Originaldateien:** Zuerst das private Repo `kaaasi/eishockey-manager-referenz` lesend einbinden.
-  Dort liegen `original/Eishockey-Manager_DOS_DE.zip` und die entpackten Dateien unter `original/gamedata/`.
-  Ablagestand und Abruf: [docs/originaldateien.md](docs/originaldateien.md). Den geladenen `gamedata`-Ordner
-  direkt verwenden; ein erneutes Hochladen im Chat ist bei vorhandenem Repo-Zugriff nicht nötig.
+- **Originaldateien:** Repo `kaaasi/eishockey-manager-referenz` per `add_repo` (access `read`) einbinden und nur
+  `original/` laden (Sparse, nicht die ~650 MB Videobilder). Details: [docs/originaldateien.md](docs/originaldateien.md).
+  Rückfallweg ohne Repo-Zugriff: ZIP aus den Dateien des claude.ai-Projekts „Eishockey Manager Redone“ (Projects-Werkzeug
+  `project_info` → `project_read`) in einen eigenen Ordner entpacken; fehlt auch die, den Nutzer bitten, sie anzuhängen.
 - **SDK und NuGet-Pakete:** Microsoft- und NuGet-Server sind aus der Arbeitsumgebung gesperrt, GitHub nicht.
 
   ```bash
-  tools/claude/setup-workspace.sh /workspace/shared/eishockey-manager-referenz/original/gamedata
-  # SDK + Pakete aus dem Release "claude-werkzeuge", verlinkt gamedata/
+  tools/claude/fetch-reference.sh original                    # Originaldateien nach ~/referenz/original/
+  tools/claude/setup-workspace.sh ~/referenz/original/gamedata # SDK + Pakete aus dem Release "claude-werkzeuge", verlinkt gamedata/
   source ~/claude-tools/env.sh
   tools/pruefen.sh
   ```
@@ -29,7 +29,7 @@ cd eishockey-manager-redone
   Fehlt das Release oder sind Pakete veraltet: `gh workflow run werkzeuge.yml -R kaaasi/eishockey-manager-redone`
   (läuft auch automatisch, wenn sich `*.csproj` auf `main` ändern).
 - **Referenzbilder:** Repo `kaaasi/eishockey-manager-referenz` per `add_repo` (access `read`) einbinden, dann
-  `tools/claude/fetch-reference.sh [oberflaeche] [karriere] [uebersicht]` → `~/referenz/`.
+  `tools/claude/fetch-reference.sh [oberflaeche] [karriere] [uebersicht]` → `~/referenz/` (ergänzt einen vorhandenen Klon).
 
 ## GitHub aus der Sitzung
 

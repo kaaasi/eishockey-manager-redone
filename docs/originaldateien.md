@@ -1,7 +1,7 @@
 # Ablage der DOS-Originaldateien
 
 Die vom Nutzer bereitgestellte DOS-Version liegt im privaten Repository
-[`kaaasi/eishockey-manager-referenz`](https://github.com/kaaasi/eishockey-manager-referenz).
+[`kaaasi/eishockey-manager-referenz`](https://github.com/kaaasi/eishockey-manager-referenz) auf `main`.
 Zugriff benötigt Leserechte auf dieses Repository, auch in einer neuen Chat- oder Arbeitsumgebung.
 
 | Inhalt | Pfad im Referenz-Repository |
@@ -11,60 +11,48 @@ Zugriff benötigt Leserechte auf dieses Repository, auch in einer neuen Chat- od
 | SHA-256-Prüfsummen für ZIP und entpackte Dateien | `original/SHA256SUMS` |
 | Herkunft und weitere Hinweise | `original/README.md` |
 
-Nachgewiesener Ablagestand:
-[`709992cad106f9f26fc32158d84e3e9fb47f36cf`](https://github.com/kaaasi/eishockey-manager-referenz/tree/709992cad106f9f26fc32158d84e3e9fb47f36cf/original),
-angelegt über [Referenz-PR #1](https://github.com/kaaasi/eishockey-manager-referenz/pull/1).
-Der folgende Abruf verwendet diesen festen Stand und funktioniert auch, solange dessen Übernahme nach `main`
-noch aussteht. ZIP und alle 166 entpackten Dateien wurden beim Ablegen auf unveränderte Inhalte geprüft.
+Abgelegt mit Commit `709992c` über [Referenz-PR #1](https://github.com/kaaasi/eishockey-manager-referenz/pull/1)
+(gemergt). Nachweis des Inhalts sind die Prüfsummen, nicht ein fester Commit.
 
 ## Laden in einer neuen Umgebung
 
-Beispiel für einen neuen lokalen Klon unter `/workspace/shared/`:
+**Nur `original/` abrufen.** Das Referenz-Repository enthält außerdem die Videobilder (rund 650 MB); ein
+vollständiger Klon lädt alles. Ein Sparse-Klon lädt nur die gewählten Ordner:
 
 ```bash
-mkdir -p /workspace/shared
 git clone --depth 1 --filter=blob:none --sparse \
-  https://github.com/kaaasi/eishockey-manager-referenz.git \
-  /workspace/shared/eishockey-manager-referenz
-git -C /workspace/shared/eishockey-manager-referenz fetch --depth 1 origin \
-  709992cad106f9f26fc32158d84e3e9fb47f36cf
-git -C /workspace/shared/eishockey-manager-referenz checkout --detach \
-  709992cad106f9f26fc32158d84e3e9fb47f36cf
-git -C /workspace/shared/eishockey-manager-referenz sparse-checkout set original
+  https://github.com/kaaasi/eishockey-manager-referenz.git ~/referenz
+git -C ~/referenz sparse-checkout add original
 ```
 
-Einen bereits vorhandenen Referenz-Klon weiterverwenden, statt ihn zu überschreiben. Vor einem Wechsel des
-lokalen Stands dortige Änderungen prüfen. `sparse-checkout set` legt die Auswahl neu fest; benötigte
-Videoreferenz-Ordner gegebenenfalls zusätzlich angeben.
+Dasselbe erledigt `tools/claude/fetch-reference.sh original` (Ziel `~/referenz`, änderbar über `REFERENZ=<pfad>`).
+Ein vorhandener Klon wird weiterverwendet; `sparse-checkout add` ergänzt die Auswahl, ohne bereits geladene
+Bildordner zu entfernen.
 
-Die Ablage in GitHub ist dauerhaft; Dateien in `/workspace/shared/` gehören dagegen zur jeweiligen
-Umgebungsinstanz. Neue Chats erhalten sie erst durch diesen Abruf oder ein entsprechend eingerichtetes
-Umgebungs-Setup. Die Setup-Konfiguration wird durch diese Dokumentation nicht automatisch geändert.
+Prüfsummen kontrollieren:
+
+```bash
+(cd ~/referenz/original && sha256sum -c --quiet SHA256SUMS) && echo OK
+```
+
+SHA-256 der unveränderten ZIP: `142fc78e9b286cb47f36baa450f5af311ac0902525564d0c30ab63697ca321f4`.
+
+Der lokale Klon gehört zur jeweiligen Umgebung; neue Chats holen ihn mit diesem Abruf erneut.
 
 ## Im Remake verwenden
 
 Erwartet werden `gamedata/em.exe`, `gamedata/kb/0.vga` und `gamedata/tore/anzahl` im Stamm des
-Code-Repositories. Den Inhalt aus `original/gamedata/` dorthin kopieren oder einen Symlink anlegen.
-Wenn dort noch kein `gamedata` existiert, beispielsweise:
+Code-Repositories. `tools/claude/setup-workspace.sh ~/referenz/original/gamedata` verlinkt den Ordner (und richtet
+SDK und Pakete ein); ohne das Skript genügt ein Symlink oder eine Kopie:
 
 ```bash
-ln -s /workspace/shared/eishockey-manager-referenz/original/gamedata \
-  /workspace/eishockey-manager-redone/gamedata
+ln -s ~/referenz/original/gamedata gamedata
 ```
 
-Weitere Worktrees können denselben Bestand über eigene `gamedata`-Symlinks nutzen. Alternativ nimmt
-`tools/claude/setup-workspace.sh` den bereits geladenen Datenordner als Argument entgegen und verlinkt ihn;
-dieses Skript lädt die Originaldaten nicht selbst.
+## Ohne Zugriff auf das Referenz-Repository
 
-Prüfsummen im Referenz-Klon kontrollieren:
-
-```bash
-cd /workspace/shared/eishockey-manager-referenz/original
-sha256sum -c SHA256SUMS
-```
-
-SHA-256 der unveränderten ZIP:
-`142fc78e9b286cb47f36baa450f5af311ac0902525564d0c30ab63697ca321f4`.
+Rückfallweg: eigene Kopie der DOS-Version, z. B. die ZIP in den Projektdateien des Nutzers, in einen eigenen Ordner
+entpacken und diesen nach `gamedata/` verlinken. Fehlt auch das, beim Nutzer anfragen.
 
 Die Originaldateien bleiben im privaten Referenz-Repository bzw. lokal im ignorierten `gamedata/`.
 In dieses Code-Repository werden nur Beschreibungen und Links übernommen.

@@ -12,7 +12,8 @@ nuget.org gesperrt sind, GitHub aber erreichbar ist. Damit Claude trotzdem alles
 
 Die Originaldateien liegen im **privaten** Repo `kaaasi/eishockey-manager-referenz`: ZIP unter
 `original/Eishockey-Manager_DOS_DE.zip`, entpackte Daten unter `original/gamedata/`.
-[Ablagestand und Abruf](../../docs/originaldateien.md) sind werkzeugneutral dokumentiert. Den geladenen
-Ordner als Argument an `setup-workspace.sh` übergeben; das Skript lädt die Originaldaten nicht selbst.
+[Ablagestand und Abruf](../../docs/originaldateien.md) sind werkzeugneutral dokumentiert. Laden mit
+`tools/claude/fetch-reference.sh original` (nur dieser Ordner), dann `setup-workspace.sh ~/referenz/original/gamedata`;
+`setup-workspace.sh` lädt die Originaldaten nicht selbst.
 In dieses Code-Repository und in dessen Werkzeug-Release gehören keine Originaldateien.
 Das Release kann jederzeit gelöscht werden – es wird beim nächsten Workflow-Lauf neu erstellt.
