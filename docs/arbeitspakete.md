@@ -366,13 +366,13 @@ Branch: `paket/mannschaft` · Status: **Runde 1 gemergt** (PRs #1, #2, #4, #7, #
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
-Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1 DEB-Pokal und PR 2 Europapokal eingereicht (Review ausstehend); als Nächstes WM, Statistiken. Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
+Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1 DEB-Pokal, PR 2 Europapokal und PR 3 WM eingereicht (Review ausstehend); als Nächstes Stärken und Statistiken. Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
 
 | PR | Inhalt | Stand |
 |---|---|---|
 | 1 | DEB-Pokal: Auslosung, Heimrecht, „best of three“, Abrechnung, Bildschirm „DEB-Pokal Auslosung“ | eingereicht |
 | 2 | Europapokal (Gruppe + Endrunde), Bildschirm Gruppen/Endrunde | eingereicht (baut auf PR 1 auf) |
-| 3 | WM (2 Gruppen + K.-o.), Tabelle WM | offen |
+| 3 | WM (2 Gruppen + K.-o.), Bildschirm Gruppe/Tabelle WM | eingereicht (baut auf PR 2 auf) |
 | 4 | Stärken, Statistiken, Freundschaftsspiele, Paarungen Liga | offen |
 
 - Paarungen (Liga, Playoffs, DEB-Pokal, Europapokal, WM), Freundschaftsspiele.

@@ -122,7 +122,9 @@ public class EuropeanCupTests
     public void FullCompetition_GroupsThenFinalRound_WinnerIsFinalLeader()
     {
         var germanTrophies = 0;
-        for (var seed = 1; seed <= 4; seed++)
+        var foreignWinners = 0;
+        // Bis beide Fälle (deutscher und ausländischer Sieger) vorkamen, höchstens 16 Saisons
+        for (var seed = 1; seed <= 16 && (germanTrophies == 0 || foreignWinners == 0 || seed <= 4); seed++)
         {
             var game = Create(seed, true, 30);
             var steps = PlayToSeasonEnd(game);
@@ -151,9 +153,13 @@ public class EuropeanCupTests
                 germanTrophies++;
             }
             else
+            {
                 Assert.Empty(trophies);
+                foreignWinners++;
+            }
         }
         Assert.True(germanTrophies > 0, "Kein deutscher Sieger – Meisterfoto ungeprüft");
+        Assert.True(foreignWinners > 0, "Kein ausländischer Sieger – fehlendes Meisterfoto ungeprüft");
     }
 
     [Fact]

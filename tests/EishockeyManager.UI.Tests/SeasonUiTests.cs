@@ -24,10 +24,12 @@ public class SeasonUiTests
             if (d.Host.Current is SeasonEndScreen) seenSeasonEnd++;
             if (d.Host.Current is SeasonEndSummaryScreen) seenSummary++;
         }
-        // Nach dem dritten Saisonende zurück ins Hauptmenü der vierten Saison
+        // Nach dem dritten Saisonende zurück ins Hauptmenü der vierten Saison. Mit WM steht vor „Saisonende“ noch das
+        // Meisterfoto „Weltmeister“ (Paket „wettbewerbe“) – der dritte Saisonende-Bildschirm erscheint erst hier.
         while (d.Host.Current is not MainMenuScreen && guard++ < 20000)
         {
             d.Press(Key.Space);
+            if (d.Host.Current is SeasonEndScreen) seenSeasonEnd++;
             if (d.Host.Current is SeasonEndSummaryScreen) seenSummary++;
         }
 
