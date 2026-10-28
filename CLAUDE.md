@@ -1,102 +1,46 @@
-# Leitfaden für Claude
+# Hinweise für Claude Code
 
-Dieses Repository portiert den **Eishockey Manager** (Software 2000, DOS 1993) nach C#/.NET 10.
-Ziel: zuerst originalgetreu (Pixel, Regeln, Abläufe), danach Erweiterungen. Sprache im Projekt: **Deutsch**
-(Code-Bezeichner englisch, Kommentare, Doku und Commit-Nachrichten deutsch).
+Die Projektregeln stehen werkzeugneutral in AGENTS.md und gelten vollständig:
 
-Mehrere Chats arbeiten parallel an verschiedenen **Arbeitspaketen** → [docs/arbeitspakete.md](docs/arbeitspakete.md).
+@AGENTS.md
 
-## 1. Arbeitsumgebung einrichten (jede neue Sitzung)
+Hier stehen nur Hinweise, die Claudes Arbeitsumgebung betreffen. Bei Widerspruch gilt AGENTS.md.
+
+## Umgebung einrichten (jede neue Sitzung)
 
 ```bash
 git clone https://github.com/kaaasi/eishockey-manager-redone   # bzw. vorhandenen Klon nutzen
 cd eishockey-manager-redone
 ```
 
-**Originaldateien** (nie ins Repo!): Die DOS-Version liegt als ZIP in den Dateien des claude.ai-Projekts
-„Eishockey Manager Redone“. Mit dem Projects-Werkzeug laden (`project_info` → Dateiname, dann `project_read`),
-in einen eigenen Ordner entpacken, z. B. `~/orig/dos` (enthält `em.exe`, `kb/`, `tore/`).
-Fehlt die Datei im Projekt, den Nutzer bitten, sie im Chat anzuhängen.
+- **Originaldateien:** Die DOS-Version liegt als ZIP in den Dateien des claude.ai-Projekts „Eishockey Manager Redone“.
+  Mit dem Projects-Werkzeug laden (`project_info` → Dateiname, dann `project_read`), in einen eigenen Ordner
+  entpacken, z. B. `~/orig/dos`. Fehlt die Datei, den Nutzer bitten, sie im Chat anzuhängen.
+- **SDK und NuGet-Pakete:** Microsoft- und NuGet-Server sind aus der Arbeitsumgebung gesperrt, GitHub nicht.
 
-**.NET-SDK und NuGet-Pakete** (Microsoft- und NuGet-Server sind aus der Arbeitsumgebung gesperrt, GitHub nicht):
+  ```bash
+  tools/claude/setup-workspace.sh ~/orig/dos   # SDK + Pakete aus dem Release "claude-werkzeuge", verlinkt gamedata/
+  source ~/claude-tools/env.sh
+  tools/pruefen.sh
+  ```
 
-```bash
-tools/claude/setup-workspace.sh ~/orig/dos   # lädt SDK + Pakete aus dem Release "claude-werkzeuge", verlinkt gamedata/
-source ~/claude-tools/env.sh
-dotnet build EishockeyManager.slnx && dotnet test EishockeyManager.slnx
-```
+  Fehlt das Release oder sind Pakete veraltet: `gh workflow run werkzeuge.yml -R kaaasi/eishockey-manager-redone`
+  (läuft auch automatisch, wenn sich `*.csproj` auf `main` ändern).
+- **Referenzbilder:** Repo `kaaasi/eishockey-manager-referenz` per `add_repo` (access `read`) einbinden, dann
+  `tools/claude/fetch-reference.sh [oberflaeche] [karriere] [uebersicht]` → `~/referenz/`.
 
-Fehlt das Release oder sind Pakete veraltet: Workflow „Werkzeuge für Claude“ starten
-(`gh workflow run werkzeuge.yml -R kaaasi/eishockey-manager-redone`). Er läuft auch automatisch, wenn sich
-`*.csproj` auf `main` ändern. GitHub GraphQL ist gesperrt → `gh api` (REST) statt `gh pr …`-Befehlen, die GraphQL nutzen.
+## GitHub aus der Sitzung
 
-## 2. Aufbau
+- GraphQL ist gesperrt → `gh api` (REST) statt `gh pr …`. PR anlegen:
+  `gh api repos/kaaasi/eishockey-manager-redone/pulls -f title=… -f head=<branch> -f base=main -f body=…`.
+- Nur repository-bezogene Endpunkte sind erreichbar (keine Nutzer-, Billing- oder Projects-Endpunkte).
+- Releases lassen sich aus der Sitzung nicht anlegen, nur über Workflows.
+- Mergen (nur als Leitstelle, nach der Merge-Prüfung in `docs/prozess/zusammenarbeit.md`) immer mit dem geprüften
+  Head-SHA: `gh api -X PUT repos/kaaasi/eishockey-manager-redone/pulls/<nr>/merge -f sha=<head> -f merge_method=merge`.
+- Commit-Trailer für Claude: `Co-Authored-By: Claude <noreply@anthropic.com>` (bzw. die Zeilen aus der Sitzungsvorgabe).
 
-```
-Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spielzustand, Regeln) → Formats (Originaldateien)
-```
+## Rolle in diesem Projekt
 
-- `src/EishockeyManager.Formats` – Dateiformate (Bilder, Paletten, Datenbank, Fonts, Halle, Figuren). Doku: `docs/formate/dateiformate.md`
-- `src/EishockeyManager.Core` – Spielzustand und Regeln. `GameState`, `Club`, `Manager`, `Player` sind `partial`:
-  **neue Daten eines Pakets in eine eigene Datei** (`GameState.Finanzen.cs` o. ä.).
-- `src/EishockeyManager.UI` – ein `Screen` je Bildschirm, zeichnet in `Surface` (320 × 240 Byte + Palette).
-  Bausteine des Originals in `Widgets.cs` (Rahmen aus kb\2, Knöpfe, Lampen, Smileys …).
-- `src/EishockeyManager.Tools` – `emtool` (Export, Datenbank, Bildschirmfotos).
-- `tests/` – xUnit. Tests mit Originaldaten **nur** mit `[GameDataFact]`/`[GameDataTheory]` und `TestGameData.Load()`
-  (`tests/EishockeyManager.UI.Tests/Support/GameDataFact.cs`): ohne Daten sichtbar übersprungen, mit
-  `EM_REQUIRE_GAMEDATA=1` Pflichtlauf. Nie „ohne Daten einfach `return`“.
-
-### Zeit und Geld (verbindlich seit Integration Runde 1)
-
-- **Zeit vergeht nur über `GameState.Continue()`** (Zeitleiste des Pakets `saison`). Was je Tag, Woche oder Saison
-  passieren soll, wird in `src/EishockeyManager.Core/GameState.Integration.cs` angeschlossen – keine eigenen
-  Nachhol-Zähler. Tests spulen mit `TestSeason.PlayMatchDay(game)` / `PlayRegularSeason(game)` vor.
-- **Echte Einnahmen und Ausgaben nur über `GameState.Book(manager, kategorie, betrag)`** buchen (Finanzbuch).
-  Neutrale Umbuchungen (Bank, Sparbuch, Aktien zum Kurswert, Kredite zwischen Managern) sind kein Aufwand und bleiben getrennt.
-- **Bildschirme verändern keinen Spielzustand durch bloßes Öffnen** (kein Nachholen von Zeit, Training, Markt).
-- Vor dem PR **auch gegen die anderen Pakete testen**: `git fetch origin && git rebase origin/main`, alle Tests grün.
-
-### Neuen Bildschirm für eine Menükachel anmelden (ohne fremde Dateien zu ändern)
-
-```csharp
-internal static class FinanzenMenuEntries
-{
-    [MenuEntry("Finanzen")]  // Name exakt wie in Screens/MenuTiles.cs
-    private static Screen Open(ScreenHost host, Screen back) => new FinanzenScreen(host, back);
-}
-```
-
-### Bildschirmfotos-Ablauf anlegen
-
-Eigene Datei in `src/EishockeyManager.Tools/Scenarios/`, Methode mit `[Scenario("finanzen")]` und `ScreenDriver`
-(`StartNewGame()`, `PlayMatchDay()`, `OpenTile("Finanzen")`, `Click`, `Type`, `Press`, `Save`). Ausführen:
-`dotnet run --project src/EishockeyManager.Tools -- screens gamedata ~/work/screens finanzen`
-
-## 3. Originaltreue – so wird gearbeitet
-
-1. **Vorlage**: Einzelbilder der Videos des Originals (1/s, schon auf 320 × 240) aus dem privaten Repo
-   `kaaasi/eishockey-manager-referenz`: `tools/claude/fetch-reference.sh [oberflaeche] [karriere] [uebersicht]` → `~/referenz/`
-   (Repo vorher per `add_repo` einbinden, access `read`; Kapitelindex in `docs/referenz-videos.md`). **Diese Bilder nie in dieses Repo kopieren.**
-   Originalgrafiken (`emtool export`), Disassembly von `em.exe` (`ndisasm`, siehe `docs/reverse-engineering.md`),
-   Anforderungen in `docs/anforderungen/bildschirme.md`.
-2. **Vermessen**: Die Referenzbilder sind schon zugeschnitten (720p-Video: 960 × 720 ab x = 320; 360p-Video:
-   480 × 360 ab x = 0). Grafikteile per Template-Matching suchen (Python mit numpy/scipy/PIL ist vorhanden).
-   Videobilder sind um ca. (−0,25 | +0,5) Pixel verschoben und leicht unscharf. Details: `docs/portierung.md`.
-3. **Farben**: Paletten werden auf 6 Bit maskiert (`Palette.DacToRgb`). Häufige Indizes in `Colors` (Assets.cs).
-4. **Markieren**: Was nicht aus dem Original belegt ist, bekommt im Code `[APPROX]` mit kurzer Begründung.
-5. **Prüfen**: Bildschirmfoto rendern, mit Videobild vergleichen, Test schreiben.
-
-## 4. Regeln für parallele Arbeit
-
-- Jedes Paket arbeitet auf einem eigenen Branch `paket/<name>` und liefert **kleine Pull Requests** gegen `main`.
-- Vor jedem Push: `git fetch origin main && git rebase origin/main`, dann bauen und **alle** Tests lokal grün.
-- Pull Request per REST: `gh api repos/kaaasi/eishockey-manager-redone/pulls -f title=… -f head=paket/<name> -f base=main -f body=…`.
-  Gemergt wird vom Koordinations-Chat (oder vom Nutzer), wenn CI grün ist.
-- **Nur die eigenen Dateien ändern.** Gemeinsame Dateien (`GameState.cs`, `MainMenuScreen.cs`, `Widgets.cs`,
-  `MenuTiles.cs`, `EishockeyManager.slnx`, `README.md`) höchstens minimal und nur wenn unvermeidbar – lieber neue Dateien.
-  Neue Bausteine für alle → eigene Datei in `src/EishockeyManager.UI/` und im PR erwähnen.
-- Den Paketstatus in `docs/arbeitspakete.md` nur im eigenen Abschnitt pflegen.
-- Commit-Nachrichten auf Deutsch, aussagekräftig.
-- **Pflichtangaben im PR** (seit Runde 2): Base-/Head-SHA, reproduzierter Fehler vorher, Regressionstest (vor dem Fix rot),
-  ausgeführte Tests getrennt nach synthetisch / Originaldaten / übersprungen, Restlücken. Details: `docs/arbeitspakete.md`.
-- **Originaldateien, Videos oder Ausschnitte daraus niemals committen** (`.gitignore` schützt `gamedata`, `*.vga` usw.).
+Claude Code ist derzeit die **Leitstelle** (siehe `docs/prozess/zusammenarbeit.md`, Ablauf `docs/vorlagen/leitstelle-start.md`):
+verteilt Pakete, integriert, gibt dem Nutzer die Review-Anfrage für ChatGPT als ausgefüllten Kurzaufruf und wertet die
+Reviews aus `docs/reviews/` aus. Antworten knapp nach `AGENTS.md` §7.
