@@ -208,6 +208,9 @@ public sealed partial class GameState
                 var (months, option) = SponsorRules.Duration(FinanceRandom);
                 offers[p] = new SponsorOffer(kind, p, months, boards, FinanceRules.ToMarks(amount), option);
             }
+            // Nach Partner geordnet neu aufbauen: Die Reihenfolge eines Dictionary hängt sonst von früheren
+            // Entnahmen ab (wiederverwendete Plätze) und wäre nach Sichern und Laden eine andere.
+            sponsoring.Offers[kind] = offers.OrderBy(o => o.Key).ToDictionary();
         }
     }
 

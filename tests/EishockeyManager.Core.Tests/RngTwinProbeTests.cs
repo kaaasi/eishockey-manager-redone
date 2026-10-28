@@ -11,16 +11,19 @@ namespace EishockeyManager.Core.Tests;
 /// Spur „speichern“, Teil „rng“ – Mehrsaisonprobe: Die Umstellung der Zufallsquellen auf <see cref="GameRandom"/>
 /// darf keinen Spielverlauf verändern. Die Abdrücke wurden auf <c>main</c> <c>5f8e02a</c> (noch mit
 /// <see cref="System.Random"/>) ermittelt und müssen nach der Umstellung unverändert sein.
+/// Spur finanzen-2 (#67) ändert die Spielregeln (Monatsabschluss, Zuschauer, Werbung, Startkonto) und damit den
+/// Verlauf; die Abdrücke sind dort mit dem unveränderten Generator neu ermittelt. Sie bleiben Referenz dafür, dass
+/// spätere Generator- oder Formatänderungen den Verlauf nicht verschieben.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "DF2E4C728CDA887D")]
-    [InlineData(true, 3, "960DCF6E91C20560")]
-    [InlineData(false, 11, "9F1D7B8F600A0346")]
-    [InlineData(true, 11, "65C75DC4E275DFC9")]
+    [InlineData(false, 3, "E20D65C2F467C3C2")]
+    [InlineData(true, 3, "066A9A72704824FC")]
+    [InlineData(false, 11, "06103A7927056450")]
+    [InlineData(true, 11, "4A241C9CF4D36C10")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -28,8 +31,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "C02392CC5FD90EBC")]
-    [InlineData(true, "72FDBB9B29D7E2F5")]
+    [InlineData(false, "0E4BEB48075C853B")]
+    [InlineData(true, "2607DB3EA74758A9")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
