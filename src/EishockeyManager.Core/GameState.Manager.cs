@@ -49,7 +49,11 @@ public sealed partial class GameState
 
     /// <summary>Finanzdaten eines Managers (beim ersten Zugriff angelegt).</summary>
     public ManagerFinance Finance(Manager manager) =>
-        manager.FinanceData ??= new ManagerFinance { Stadium = Stadium.ForLeague(Clubs[manager.ClubIndex].League) };
+        manager.FinanceData ??= new ManagerFinance
+        {
+            Stadium = Stadium.ForLeague(Clubs[manager.ClubIndex].League),
+            StartLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga,
+        };
 
     /// <summary>Bucht einen Betrag auf das Konto und ins Finanzbuch.</summary>
     public void Book(Manager manager, FinanceCategory category, long amount)
@@ -58,18 +62,26 @@ public sealed partial class GameState
         Finance(manager).Book.Add(category, amount);
     }
 
-    /// <summary>[APPROX] Regelmäßige Einnahmen pro Monat (Sponsoren, Grundeinnahmen) – Anzeige „Einnahmen“.</summary>
+    /// <summary>
+    /// Anzeige „Einnahmen“ (Werbung, Statistik): Grundeinnahmen, Werbeverträge, Zinsertrag auf Forderungen.
+    /// [ORIGINAL] em.exe 0x3E657 mit Flag 1 (Spur finanzen-2).
+    /// </summary>
     public long MonthlyIncome(Manager manager) =>
-        FinanceRules.BaseIncome(Clubs[manager.ClubIndex].League) + SponsorIncome(manager);
+        MonthlyBaseIncome(manager) + SponsorIncome(manager) + MonthlyReceivableInterest(manager);
 
     /// <summary>
-    /// Regelmäßige Ausgaben pro Monat – Anzeige „Ausgaben“: Vertragsgehälter, Versicherungen, Unterhalt, Jugendförderung.
+    /// Anzeige „Ausgaben“: Grundausgaben, Gehälter, Versicherungen, Stadionunterhalt, Jugendförderung, 5/8 der
+    /// wöchentlichen Trainingskosten, Kreditzinsen und 10 % eines negativen Kontostands. [ORIGINAL] 0x3E811 mit Flags 1, 1.
     /// </summary>
     public long MonthlyExpenses(Manager manager)
     {
         var club = Clubs[manager.ClubIndex];
-        return FinanceRules.MonthlyWages(club) + FinanceRules.MonthlyInsurance(club)
-            + Finance(manager).Stadium.MonthlyUpkeep + RecurringExpenses(manager);
+        var training = manager.Training.WeeklyCost;
+        var expenses = MonthlyBaseExpenses(manager) + FinanceRules.MonthlyWages(club) + FinanceRules.MonthlyInsurance(club)
+            + Finance(manager).Stadium.MonthlyUpkeep + RecurringExpenses(manager)
+            + training / 8 + training / 2 + MonthlyDebtInterest(manager)
+            + (manager.Money < 0 ? -manager.Money / 10 : 0);
+        return Math.Max(0, expenses);
     }
 
     /// <summary>
@@ -122,6 +134,8 @@ public sealed partial class GameState
             var date = SeasonCalendar.LayoutDate(FinanceDay);
             Stocks.Advance(FinanceRandom);
             ExpireMessages();
+            if (FinanceDay > 0)
+                AccrueDailyInterest(date);
             if (FinanceDay > 0 && date.DayOfWeek == DayOfWeek.Monday)
                 WeeklyFinances();
             if (FinanceDay > 0 && date.Day == 1)
@@ -152,11 +166,13 @@ public sealed partial class GameState
             var insurance = FinanceRules.MonthlyInsurance(club);
             if (insurance > 0)
                 Book(manager, FinanceCategory.Versicherung, -insurance);
-            Book(manager, FinanceCategory.Unterhalt, -Finance(manager).Stadium.MonthlyUpkeep);
-            Book(manager, FinanceCategory.Sponsoren, FinanceRules.BaseIncome(club.League));
+            // [ORIGINAL] Monatsabschluss 0x3F02C: Grundausgaben und Stadionunterhalt (Finanzbuch „Unterhalt“),
+            // Grundeinnahmen („Sponsoren“), danach das Zinskonto des Tagesabschlusses.
+            Book(manager, FinanceCategory.Unterhalt, -(MonthlyBaseExpenses(manager) + Finance(manager).Stadium.MonthlyUpkeep));
+            Book(manager, FinanceCategory.Sponsoren, MonthlyBaseIncome(manager));
             MonthlyManagerFinances(manager);
+            BookAccruedInterest(manager);
         }
-        PayInterest();
     }
 
     // Erweiterungspunkte für weitere Teile des Pakets (Werbung, Stadionbau, Jugend …).

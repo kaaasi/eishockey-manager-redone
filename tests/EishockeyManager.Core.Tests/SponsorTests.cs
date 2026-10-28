@@ -72,7 +72,7 @@ public class SponsorTests
         game.AdvanceFinanceTo(day);
 
         var paid = game.Finance(me).Book.Current(FinanceCategory.Sponsoren) - sponsorsBefore;
-        Assert.Equal(15_000 + FinanceRules.BaseIncome(game.Clubs[me.ClubIndex].League), paid);
+        Assert.Equal(15_000 + game.MonthlyBaseIncome(me), paid);
         Assert.Empty(game.Ads(me).Contracts);
     }
 

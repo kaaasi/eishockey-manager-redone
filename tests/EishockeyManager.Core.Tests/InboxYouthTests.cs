@@ -72,7 +72,8 @@ public class InboxYouthTests
     {
         var game = TestGames.Create();
         var me = game.ActiveManager;
-        game.StartConstruction(me, StadiumProject.Feature, StadiumFeature.Anzeigetafel, 1);
+        var stadium = game.Finance(me).Stadium;
+        game.StartConstruction(me, StadiumProject.Feature, StadiumFeature.Anzeigetafel, stadium.Level(StadiumFeature.Anzeigetafel) + 1);
         for (var i = 0; i < 10 && game.Finance(me).Stadium.Construction is not null; i++)
             TestSeason.PlayMatchDay(game);
         Assert.Contains(game.Inbox(me), m => m.Lines[0] == "Der Stadion-Ausbau (Anzeigetafel)");

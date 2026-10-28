@@ -75,7 +75,10 @@ public sealed class Stadium
     public int Standing { get; set; } = 2_500;
     public int Capacity => Seats + Standing;
 
-    /// <summary>Eintritt in DM (Video: 10 DM zu Spielbeginn), mit ▲▼ in 1-DM-Schritten.</summary>
+    /// <summary>
+    /// Eintritt in DM, mit ▲▼ in 1-DM-Schritten. [ORIGINAL] Spielstart em.exe 0x29F2E: (40 − 4 × Start-Liga) / 3,
+    /// also 13 / 12 / 10 DM für Bundesliga / 2. Liga / Oberliga (Video: 10 DM in der Oberliga).
+    /// </summary>
     public int TicketPrice { get; set; } = 10;
 
     public StadiumConstruction? Construction { get; set; }
@@ -89,13 +92,26 @@ public sealed class Stadium
 
     public bool IsMaxed(StadiumFeature feature) => Level(feature) >= Features[(int)feature].Levels.Length - 1;
 
-    /// <summary>[APPROX] Startstadion je Liga. Im Video (Oberliga): 2.000 Sitz- und 2.500 Stehplätze.</summary>
-    public static Stadium ForLeague(League? league) => league switch
+    /// <summary>
+    /// Startstadion je Liga. [ORIGINAL] Spielstart em.exe 0x29F77 ff.: 3.000 − 500 × Liga Sitzplätze, 4.500 − 1.000 × Liga
+    /// Stehplätze (Liga 0 = Bundesliga); Überdachung 2 − Liga, Anzeigetafel/Kühlanlage/Verkehrsanbindung nur in der
+    /// Bundesliga, Gastronomie (Imbißbude) in Bundesliga und 2. Liga, Zustand MITTEL. Video (Oberliga): 2.000/2.500.
+    /// </summary>
+    public static Stadium ForLeague(League? league)
     {
-        League.Bundesliga => new Stadium { Seats = 3_500, Standing = 5_000 },
-        League.ZweiteLiga => new Stadium { Seats = 2_500, Standing = 3_500 },
-        _ => new Stadium(),
-    };
+        var tier = league is { } l ? (int)l : 2;
+        var stadium = new Stadium { Seats = 3_000 - 500 * tier, Standing = 4_500 - 1_000 * tier, TicketPrice = (40 - 4 * tier) / 3 };
+        stadium.SetLevel(StadiumFeature.Ueberdachung, 2 - tier);
+        if (tier == 0)
+        {
+            stadium.SetLevel(StadiumFeature.Anzeigetafel, 1);
+            stadium.SetLevel(StadiumFeature.Kuehlanlage, 1);
+            stadium.SetLevel(StadiumFeature.Verkehrsanbindung, 1);
+        }
+        if (tier < 2)
+            stadium.SetLevel(StadiumFeature.Gastronomie, 1);
+        return stadium;
+    }
 
     /// <summary>
     /// Kosten des ersten Ausbauschritts. Aus dem UI-Video (Oberliga, Spielbeginn): Kühlanlage 'FROSTA' 640.000 DM,
@@ -192,11 +208,19 @@ public sealed class Stadium
         _ => 0,
     };
 
-    /// <summary>[APPROX] Unterhalt pro Monat: Sockel, Plätze, Ausbauten; Kino und Bowling bringen etwas ein.</summary>
-    public long MonthlyUpkeep =>
-        3_000 + Capacity * 6L / 10
-        + 2_000L * (Level(StadiumFeature.Ueberdachung) + Level(StadiumFeature.Anzeigetafel) + Level(StadiumFeature.Kuehlanlage))
-        - 6_000L * (Level(StadiumFeature.Kino) + 2 * Level(StadiumFeature.Bowlingbahn));
+    /// <summary>
+    /// Unterhalt pro Monat in Drittel-DM je Ausbaustufe. [ORIGINAL] em.exe 0x3EA0B ff. mit Tabelle DGROUP 0x94:
+    /// Überdachung 24.000, Anzeigetafel 7.500, Kühlanlage 33.000, Sitzkomfort 3.000, Zustand 4.800, Verkehrsanbindung
+    /// 9.000, Gastronomie 15.000, Kino 15.000, Bowlingbahn 7.500 (× Stufe); dazu 15 je Sitz- und 12 je Stehplatz (DGROUP 0xB8).
+    /// </summary>
+    private static readonly long[] UpkeepPerLevelThirds = [24_000, 7_500, 33_000, 3_000, 4_800, 9_000, 15_000, 15_000, 7_500];
+
+    /// <summary>Unterhalt pro Monat in Drittel-DM. [ORIGINAL] siehe <see cref="UpkeepPerLevelThirds"/>.</summary>
+    public long MonthlyUpkeepThirds =>
+        Enumerable.Range(0, FeatureCount).Sum(i => _levels[i] * UpkeepPerLevelThirds[i]) + 15L * Seats + 12L * Standing;
+
+    /// <summary>Unterhalt pro Monat in DM (Finanzbuch „Unterhalt“).</summary>
+    public long MonthlyUpkeep => FinanceRules.ToMarks(MonthlyUpkeepThirds);
 }
 
 public sealed partial class GameState

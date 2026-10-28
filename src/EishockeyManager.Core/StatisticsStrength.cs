@@ -61,6 +61,9 @@ public static class StrengthTable
 
     private static int Clamp(int v) => Math.Clamp(v, 0, 99);
 
+    /// <summary>(Kondition, Technik, Form) für Abwehr und Sturm – die Teamwerte des Originals (Vereinsfelder 0x18–0x1D); auch für die Finanzen (Spur finanzen-2).</summary>
+    public static ((double C, double T, double F) Defense, (double C, double T, double F) Attack) TeamValues(GameState game, Club club) => Values(game, club);
+
     /// <summary>(Kondition, Technik, Form) für Abwehr und Sturm.</summary>
     private static ((double C, double T, double F) Defense, (double C, double T, double F) Attack) Values(GameState game, Club club)
     {

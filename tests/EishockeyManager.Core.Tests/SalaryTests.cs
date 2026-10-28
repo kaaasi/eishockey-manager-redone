@@ -74,14 +74,15 @@ public class SalaryTests
     }
 
     [Fact]
-    public void FallbackFormula_OnlyForClubWithoutSquad()
+    public void Wages_AreContractSums_NoLumpSumWithoutSquad()
     {
+        // Spur finanzen-2: Die Ersatzpauschale für leere Kader gibt es im Original nicht (em.exe 0x3E8DC).
         var game = TestGames.Create();
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         Assert.Equal(club.Players.Sum(p => (long)p.MonthlySalary), FinanceRules.MonthlyWages(club));
 
         club.Players.Clear();
-        Assert.Equal(FinanceRules.MinimumSquad * FinanceRules.MonthlyWagePerPlayer(club.Strength), FinanceRules.MonthlyWages(club));
+        Assert.Equal(0, FinanceRules.MonthlyWages(club));
         Assert.Equal(0, FinanceRules.MonthlyInsurance(club));
     }
 }

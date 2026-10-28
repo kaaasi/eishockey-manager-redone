@@ -12,7 +12,10 @@ public sealed class BankAccount
     /// <summary>Saldo bei der Bank: Sparbuch minus Kredit (Anzeige unter dem Bankbild).</summary>
     public long Balance => Savings - Credit;
 
-    /// <summary>Zinsen pro Monat: positiv = Einnahme (Sparbuch), negativ = Ausgabe (Kredit).</summary>
+    /// <summary>
+    /// Zinsen pro Monat: positiv = Einnahme (Sparbuch), negativ = Ausgabe (Kredit). Gebucht werden sie über das
+    /// Zinskonto des Tagesabschlusses (<c>FinanceMonthly.cs</c>) aufs Konto, nicht aufs Sparbuch.
+    /// </summary>
     public long MonthlyInterest =>
         (long)Math.Round(Savings * FinanceRules.SavingsRate) - (long)Math.Round(Credit * FinanceRules.CreditRate);
 }
@@ -153,24 +156,5 @@ public sealed partial class GameState
             if (ReferenceEquals(Managers[i], manager))
                 return i;
         throw new ArgumentException("Manager gehört nicht zu diesem Spiel.", nameof(manager));
-    }
-
-    /// <summary>Monatliche Zinsen für Bank und Manager-Kredite.</summary>
-    private void PayInterest()
-    {
-        foreach (var manager in Managers)
-        {
-            var bank = Finance(manager).Bank;
-            var savingsInterest = (long)Math.Round(bank.Savings * FinanceRules.SavingsRate);
-            bank.Savings += savingsInterest;
-            Finance(manager).Book.Add(FinanceCategory.Zinsen, savingsInterest);
-            Book(manager, FinanceCategory.Zinsen, -(long)Math.Round(bank.Credit * FinanceRules.CreditRate));
-        }
-        foreach (var loan in ManagerLoans)
-        {
-            var interest = (long)Math.Round(loan.Amount * FinanceRules.ManagerLoanRate);
-            Book(Managers[loan.Borrower], FinanceCategory.ManagerKredite, -interest);
-            Book(Managers[loan.Lender], FinanceCategory.ManagerKredite, interest);
-        }
     }
 }
