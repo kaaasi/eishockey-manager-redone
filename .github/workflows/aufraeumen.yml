@@ -27,20 +27,28 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           NUR_ANZEIGEN: ${{ inputs.nur_anzeigen }}
         run: |
-          offen=$(gh api "repos/${{ github.repository }}/pulls?state=open&per_page=100" --paginate -q '.[].head.ref')
+          repo="${{ github.repository }}"; owner="${repo%%/*}"
           anzahl=0
-          echo "| Branch | Aktion |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Branch | geprüfter Stand | Aktion |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|---|" >> "$GITHUB_STEP_SUMMARY"
           for b in $(git for-each-ref --format='%(refname:lstrip=3)' refs/remotes/origin); do
             case "$b" in HEAD|main) continue ;; esac
-            if echo "$offen" | grep -qxF "$b"; then continue; fi
-            git merge-base --is-ancestor "origin/$b" origin/main || continue
+            sha=$(git rev-parse "origin/$b")
+            git merge-base --is-ancestor "$sha" origin/main || continue
+            # Offene PRs je Branch unmittelbar vor dem Löschen erneut abfragen (nicht nur einmal zu Beginn).
+            offen=$(gh api "repos/$repo/pulls?state=open&head=$owner:$b" -q 'length')
+            [ "$offen" = "0" ] || continue
             anzahl=$((anzahl+1))
             if [ "$NUR_ANZEIGEN" = "true" ]; then
-              echo "| \`$b\` | würde gelöscht |" >> "$GITHUB_STEP_SUMMARY"
+              echo "| \`$b\` | \`${sha:0:7}\` | würde gelöscht |" >> "$GITHUB_STEP_SUMMARY"
+            # Löschen nur, wenn der Branch noch genau auf dem geprüften SHA steht: Ein inzwischen gepushter Commit
+            # lässt den Push mit --force-with-lease scheitern, der Branch bleibt erhalten.
+            elif git push --force-with-lease="refs/heads/$b:$sha" origin ":refs/heads/$b"; then
+              echo "| \`$b\` | \`${sha:0:7}\` | gelöscht |" >> "$GITHUB_STEP_SUMMARY"
             else
-              git push origin --delete "$b" && echo "| \`$b\` | gelöscht |" >> "$GITHUB_STEP_SUMMARY"
+              echo "| \`$b\` | \`${sha:0:7}\` | **nicht gelöscht** (Stand hat sich geändert) |" >> "$GITHUB_STEP_SUMMARY"
             fi
           done
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "$anzahl Branches (vollständig in main, ohne offenen PR)." >> "$GITHUB_STEP_SUMMARY"
+          echo "$anzahl Branches vollständig in main, ohne offenen PR." >> "$GITHUB_STEP_SUMMARY"
+          echo "Restrisiko: Ein PR, der zwischen Abfrage und Löschen geöffnet wird, verliert seinen (bereits gemergten) Branch; der Inhalt bleibt in main." >> "$GITHUB_STEP_SUMMARY"
