@@ -77,18 +77,36 @@ public class SponsorTests
     }
 
     [Fact]
-    public void Offers_AreRenewedAndScaleWithLeague()
+    public void Offers_AtStartForEveryPartner_WithinTheOriginalEnvelope()
     {
+        // Spur finanzen-2: Beim Spielstart bekommt jede Art und jeder Partner ein Angebot (em.exe 0x3FBA0);
+        // Beträge liegen zwischen den Grenzen der Angebotsformel (0x3FC1A) für die Bewertung des Vereins.
         var (game, me) = Create();
         var ads = game.Ads(me);
+        var rating = SponsorRating.Compute(game, me);
         Assert.Equal(4, ads.Offers.Count);
-        var all = ads.Offers.Values.SelectMany(o => o.Values).ToList();
-        Assert.NotEmpty(all);
-        Assert.All(all, o =>
+        foreach (var kind in Enum.GetValues<AdSlotKind>())
         {
-            var (min, max) = SponsorRules.Range(o.Kind);
-            var factor = SponsorRules.LeagueFactor(game.Clubs[me.ClubIndex].League);
-            Assert.InRange(o.MonthlyAmount, (long)(min * o.Boards * factor), (long)(max * o.Boards * factor) + 1);
-        });
+            Assert.Equal(Sponsor.For(kind).Length, ads.Offers[kind].Count);
+            foreach (var offer in ads.Offers[kind].Values)
+            {
+                var low = FinanceRules.ToMarks(SponsorRules.OfferAmountThirds(rating - 6, kind, offer.Sponsor, 20, new MinRandom()));
+                var high = FinanceRules.ToMarks(SponsorRules.OfferAmountThirds(rating + 6, kind, offer.Sponsor, 22, new MaxRandom()));
+                Assert.InRange(offer.MonthlyAmount, low, high);
+                Assert.Contains(offer.Months, new[] { 12, 24 });
+                Assert.Contains(offer.OptionMonths, new[] { 0, 12, 24 });
+                Assert.InRange(offer.Boards, 1, kind == AdSlotKind.Bande ? 3 : 1);
+            }
+        }
+    }
+
+    private sealed class MinRandom : Random
+    {
+        public override int Next(int minValue, int maxValue) => minValue;
+    }
+
+    private sealed class MaxRandom : Random
+    {
+        public override int Next(int minValue, int maxValue) => maxValue - 1;
     }
 }

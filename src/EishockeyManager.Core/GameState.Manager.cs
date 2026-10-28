@@ -133,7 +133,10 @@ public sealed partial class GameState
             Stocks.Advance(FinanceRandom);
             ExpireMessages();
             if (FinanceDay > 0)
+            {
                 AccrueDailyInterest(date);
+                DailySponsorOffers(date);
+            }
             if (FinanceDay > 0 && date.DayOfWeek == DayOfWeek.Monday)
                 WeeklyFinances();
             if (FinanceDay > 0 && date.Day == 1)
