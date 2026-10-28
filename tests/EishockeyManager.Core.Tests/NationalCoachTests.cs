@@ -89,10 +89,11 @@ public class NationalCoachTests
         var p = new Player { Name = "A", Role = PlayerRole.Forward, Condition = 50, Technique = 98, Form = 60 };
         NationalCoach.ApplyBonus(p, x: 3, bonus: 2); // x > 2: erster Wert eins weniger
         Assert.Equal((51, 99, 62), (p.Condition, p.Technique, p.Form));
-        NationalCoach.ApplyBonus(p, x: 1, bonus: 1); // x < 3: zweiter Wert eins weniger
-        Assert.Equal((52, 99, 63), (p.Condition, p.Technique, p.Form));
-        NationalCoach.ApplyBonus(p, x: 7, bonus: 0);
-        Assert.Equal((52, 99, 63), (p.Condition, p.Technique, p.Form));
+        var q = new Player { Name = "B", Role = PlayerRole.Defender, Condition = 40, Technique = 40, Form = 40 };
+        NationalCoach.ApplyBonus(q, x: 1, bonus: 2); // x < 3: zweiter Wert eins weniger
+        Assert.Equal((42, 41, 42), (q.Condition, q.Technique, q.Form));
+        NationalCoach.ApplyBonus(q, x: 7, bonus: 0);
+        Assert.Equal((42, 41, 42), (q.Condition, q.Technique, q.Form));
     }
 
     // ---- WM-Kader ---------------------------------------------------------------------------------------------
