@@ -61,4 +61,5 @@ dotnet run --project src/EishockeyManager.Tools -- screens gamedata screens setu
   (moderne Grafik, weitere Sprachen, Cheatmenü, Netzwerk mit Dedicated Server, Ex-/Import)
 
 Details zum aktuellen Analysestand: [docs/bestandsaufnahme.md](docs/bestandsaufnahme.md) ·
-Parallele Arbeit in Paketen: [docs/arbeitspakete.md](docs/arbeitspakete.md) · Leitfaden für Claude: [CLAUDE.md](CLAUDE.md)
+Parallele Arbeit in Paketen: [docs/arbeitspakete.md](docs/arbeitspakete.md) · Regeln für alle Agenten: [AGENTS.md](AGENTS.md)
+(Claude Code zusätzlich: [CLAUDE.md](CLAUDE.md))
