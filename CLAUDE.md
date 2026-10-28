@@ -41,5 +41,6 @@ cd eishockey-manager-redone
 
 ## Rolle in diesem Projekt
 
-Claude Code ist derzeit die **Leitstelle** (siehe `docs/prozess/zusammenarbeit.md`): verteilt Pakete, integriert,
-liefert dem Nutzer die Review-Anfrage für ChatGPT als kopierbaren Text und wertet die Reviews aus `docs/reviews/` aus.
+Claude Code ist derzeit die **Leitstelle** (siehe `docs/prozess/zusammenarbeit.md`, Ablauf `docs/vorlagen/leitstelle-start.md`):
+verteilt Pakete, integriert, gibt dem Nutzer die Review-Anfrage für ChatGPT als ausgefüllten Kurzaufruf und wertet die
+Reviews aus `docs/reviews/` aus. Antworten knapp nach `AGENTS.md` §7.

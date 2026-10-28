@@ -90,9 +90,14 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
 
 ## 5. Tests
 
-- **Einheitliche Prüfung vor jedem PR: `tools/pruefen.sh`.** Baut mit Warnungen als Fehler und führt drei Läufe aus:
-  mit Originaldaten (`EM_REQUIRE_GAMEDATA=1`), ohne Originaldaten (`EM_SKIP_GAMEDATA=1`, wie die CI) und den
-  Pflichtlauf ohne Daten, der scheitern **muss**. Die ausgegebene Tabelle gehört in die PR-Beschreibung.
+- **Einheitliche Prüfung: `tools/pruefen.sh`** (baut mit Warnungen als Fehler, gibt die Tabelle für den PR aus).
+  - **Normaler PR:** `tools/pruefen.sh --schnell` – ein Lauf mit Originaldaten (`EM_REQUIRE_GAMEDATA=1`; enthält auch alle
+    synthetischen Tests). Den Lauf ohne Originaldaten übernimmt die CI. Ohne Originaldaten läuft `--schnell` wie die CI;
+    dann im PR ausdrücklich „Originaldaten nicht geprüft“ angeben.
+  - **Alle drei Läufe** (`tools/pruefen.sh` ohne Option: mit Daten, ohne Daten `EM_SKIP_GAMEDATA=1`, Pflichtlauf ohne Daten,
+    der scheitern **muss**) nur bei Integrations-PRs, Reviews und Änderungen an der Test-Infrastruktur
+    (`tests/**/Support/`, Testprojekte, `tools/pruefen.sh`, `.github/`).
+  - Während der Arbeit nur die betroffenen Tests ausführen (`dotnet test <projekt> --filter …`), die volle Prüfung erst vor dem Push.
 - Tests mit Originaldaten **nur** mit `[GameDataFact]`/`[GameDataTheory]` und `TestGameData.Load()`
   (`tests/EishockeyManager.UI.Tests/Support/GameDataFact.cs`). Nie „ohne Daten einfach `return`“.
 - Zeit in Tests nur über die Zeitleiste vorspulen: `TestSeason.PlayMatchDay(game)` / `PlayRegularSeason(game)`.
@@ -115,12 +120,29 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
   (Vorlage `docs/handoffs/VORLAGE.md`).
 - **Gemergt wird nur von der Leitstelle oder dem Nutzer** nach der Merge-Prüfung in `docs/prozess/zusammenarbeit.md`.
 
-## 7. Wo was steht
+## 7. Sparsam arbeiten
+
+Jede Nachricht und jede gelesene Datei kostet Rechenzeit (Tokens) – bei allen Agenten. Deshalb:
+
+- **Antworten an den Nutzer knapp:** Ergebnis, Entscheidungsbedarf, nächster Schritt – mit Links auf PRs und Dateien.
+  Keine Zusammenfassung des Arbeitswegs, keine Wiederholung von Inhalten, die schon in PR, Review oder Repo stehen,
+  keine Tabellen, wenn ein Satz reicht. Ausführlich nur, wenn der Nutzer es verlangt.
+- **Vorlagen nicht ausschreiben:** Start einer Spur, Review-Anfrage und Leitstelle laufen über die **Kurzaufrufe** in
+  `docs/vorlagen/`. Die Leitstelle gibt dem Nutzer nur den ausgefüllten Kurzaufruf, nie den ganzen Ablauf.
+- **Gezielt lesen:** in `docs/arbeitspakete.md` nur die aktuelle Runde und die eigene Spur; `docs/archiv/` und ältere Reviews
+  nur bei konkretem Bedarf. Diffs zuerst mit `--stat`, dann nur die relevanten Dateien. Logs gefiltert (`tail`, `grep`)
+  statt vollständig.
+- **Lange Inhalte gehören ins Repo** (Bericht, Plan, Review), im Chat steht nur der Verweis.
+- **Tests nach Bedarf** (Abschnitt 5): gezielt während der Arbeit, `--schnell` vor dem Push, volle Prüfung nur wo verlangt.
+
+## 8. Wo was steht
 
 | Thema | Datei |
 |---|---|
 | Zusammenarbeit, Rollen, Übergabe, Merge-Prüfung, GitHub-Free-Grenzen | `docs/prozess/zusammenarbeit.md` |
 | Arbeitspakete, Dateigrenzen, Abnahmekriterien, Status | `docs/arbeitspakete.md` |
+| Kurzaufrufe: Start einer Spur, Review-Anfrage, Leitstelle | `docs/vorlagen/` |
 | Unabhängige Reviews | `docs/reviews/` |
+| Abgeschlossene Runden | `docs/archiv/` |
 | Dateiformate, Reverse Engineering, Portierung | `docs/formate/`, `docs/reverse-engineering.md`, `docs/portierung.md` |
 | Saisonablauf, Tagesablauf | `docs/saison.md`, `docs/tagesablauf.md` |

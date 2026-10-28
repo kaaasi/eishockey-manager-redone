@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Einheitliche Prüfung vor jedem PR – für alle Agenten gleich (siehe AGENTS.md, Abschnitt „Tests“).
 #
-#   tools/pruefen.sh            Build + drei Testläufe, Ergebnis als Markdown-Tabelle (für die PR-Beschreibung)
-#   tools/pruefen.sh --schnell  nur Build + Lauf mit Originaldaten bzw. synthetisch
+#   tools/pruefen.sh            Build + drei Testläufe (Integration, Test-Infrastruktur), Tabelle für den PR
+#   tools/pruefen.sh --schnell  Build + ein Lauf: mit Originaldaten, falls vorhanden, sonst ohne (normaler PR)
 #
 # Läufe:
 #   1. mit Originaldaten   EM_REQUIRE_GAMEDATA=1 – scheitert, wenn gamedata/ fehlt (nur wenn vorhanden)
@@ -45,13 +45,15 @@ else
   ROWS+=("| Mit Originaldaten | – | – | – (keine Daten vorhanden) |")
 fi
 
-if [ $QUICK = 0 ]; then
+if [ $QUICK = 0 ] || [ $HAVE_DATA = 0 ]; then
   echo "== Tests ohne Originaldaten"
   EM_SKIP_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q > "$LOG/ohne.txt" 2>&1
   rc=$?; read -r p f s <<< "$(summe "$LOG/ohne.txt")"
   ROWS+=("| Ohne Originaldaten (\`EM_SKIP_GAMEDATA=1\`) | $p | $f | $s |")
   [ $rc -ne 0 ] && STATUS=1
+fi
 
+if [ $QUICK = 0 ]; then
   echo "== Pflichtlauf ohne Daten (muss scheitern)"
   EM_SKIP_GAMEDATA=1 EM_REQUIRE_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q > "$LOG/pflicht.txt" 2>&1
   rc=$?; read -r p f s <<< "$(summe "$LOG/pflicht.txt")"
