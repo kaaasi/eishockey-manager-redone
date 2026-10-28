@@ -15,12 +15,10 @@
 ## Regressionstest
 <!-- Name, was er prüft; rot vor dem Fix (wie gezeigt?), grün danach -->
 
-## Tests (`tools/pruefen.sh` zum Head)
+## Tests zum Head (Ausgabe von `tools/pruefen.sh --schnell` einfügen; volle Prüfung nur bei Integration/Test-Infrastruktur, AGENTS.md §5)
 | Lauf | bestanden | fehlgeschlagen | übersprungen |
 |---|---:|---:|---:|
 | Mit Originaldaten (`EM_REQUIRE_GAMEDATA=1`) | | | |
-| Ohne Originaldaten (`EM_SKIP_GAMEDATA=1`) | | | |
-| Pflichtlauf ohne Daten (muss scheitern) | | | |
 
 Mehrsaisonprobe (falls Kader, Geld oder Saisonwechsel berührt): <Test / –>
 

@@ -27,11 +27,12 @@ Ein Arbeitspaket ist übernahmefähig, wenn in `docs/arbeitspakete.md` (oder im 
 
 Ablauf für den übernehmenden Agenten:
 
-1. `AGENTS.md`, diesen Text und den Abschnitt der Spur in `docs/arbeitspakete.md` lesen.
+1. `AGENTS.md`, diesen Text und den Abschnitt der Spur in `docs/arbeitspakete.md` lesen (Kurzaufruf und Ablauf:
+   `docs/vorlagen/spur-start.md`).
 2. Prüfen, ob es zum Branch einen offenen PR gibt. **Gibt es einen Bearbeiter ohne Übergabekommentar, nicht anfangen**
    – den Nutzer fragen.
 3. Einrichten (AGENTS.md, Abschnitt 3), Branch auschecken, `git log -1` mit dem Head-SHA aus der letzten Übergabe
-   vergleichen, `tools/pruefen.sh` ausführen. Erst wenn der Stand übereinstimmt und grün ist, weiterarbeiten.
+   vergleichen, `tools/pruefen.sh --schnell` ausführen. Erst wenn der Stand übereinstimmt und grün ist, weiterarbeiten.
 4. Neues Paket: Branch von aktuellem `main`, sofort einen **Draft-PR** öffnen (Titel `Spur <name>: …`), in der
    Beschreibung `Bearbeiter: <Agent>` und Base-SHA eintragen. Der Draft-PR ist die Sperre für den Branch.
 5. Fertig: PR-Beschreibung nach Vorlage ausfüllen, Draft-Status aufheben („Ready for review“), Leitstelle informieren.
@@ -63,13 +64,18 @@ schreibt zuerst einen Übernahmekommentar („übernommen ab SHA …, Tests …�
 
 ## 5. Unabhängiges Review
 
-- Die Leitstelle formuliert die Review-Anfrage als fertigen Text: PR, **Base- und Head-SHA**, zu wiederholende
-  Gegenbeispiele, erwartet offene Befunde, gewünschte Bewertung, Ablageort.
+- Die Leitstelle gibt die Review-Anfrage als ausgefüllten **Kurzaufruf** aus `docs/vorlagen/review-anfrage.md`: PR,
+  **Base- und Head-SHA**, zu wiederholende Gegenbeispiele, erwartet offene Befunde, Ablageort. Der Ablauf für den
+  Reviewer steht in der Vorlage und wird nicht jedes Mal neu geschrieben.
 - Reviewer ist nie die Sitzung, die umgesetzt hat. Hat derselbe Agent umgesetzt (z. B. ChatGPT), läuft das Review
   in einer **neuen** Sitzung, die den Implementierungsverlauf nicht kennt.
 - Ergebnis: `docs/reviews/JJJJ-MM-TT-<thema>.md` auf Branch `review/<thema>`, PR mit nur dieser Datei. Ohne
   Schreibzugriff: Datei an den Nutzer, die Leitstelle legt sie ab.
 - Ändert sich der Head nach dem Review, ist eine **Nachprüfung** des Deltas nötig (`…-nachpruefung.md`).
+- **Befunde als Issues** (seit 28.10.2026): Beim Auswerten legt die Leitstelle je Befund ein Issue an – Titel
+  `<ID>: <Kurzbeschreibung>`, Labels `befund` und `P0`–`P3`, Link auf die Review-Datei. Der PR, der den Befund behebt,
+  schließt das Issue (`Fixes #<nr>` in der Beschreibung). Pakete und Status bleiben in `docs/arbeitspakete.md`.
+  Agenten ohne Zugriff auf Issues nennen die Befunde im PR; die Leitstelle legt die Issues an.
 
 ## 6. Merge-Prüfung (vor jedem Merge, von Leitstelle oder Nutzer)
 
@@ -80,7 +86,8 @@ ist deshalb verbindlich und wird im Merge-Kommentar abgehakt:
 2. [ ] **Base aktuell:** PR ist gegen den aktuellen `main` gebaut bzw. ohne Konflikt; bei neuem `main` seit dem
    Review: Integrationstest lokal wiederholen.
 3. [ ] **CI grün auf genau diesem Head** (Check-Runs des Head-SHA, nicht eines älteren Laufs).
-4. [ ] **Originaldaten-Nachweis:** Testtabelle aus `tools/pruefen.sh` mit Originaldaten zum Head (in PR oder Review).
+4. [ ] **Originaldaten-Nachweis:** Testtabelle aus `tools/pruefen.sh` mit Originaldaten zum Head (in PR oder Review);
+   bei Integrations-PRs alle drei Läufe.
 5. [ ] **Review-Freigabe** liegt als Datei in `docs/reviews/` vor; offene P0/P1/P2-Befunde behoben oder vom Nutzer
    ausdrücklich zurückgestellt.
 6. [ ] Kein Draft; Pflichtangaben vollständig; Restlücken in `docs/arbeitspakete.md` übertragen.
@@ -113,7 +120,7 @@ Es gibt **keine automatische Integration**, nur weil ein Kontingent erschöpft i
 | Branch-Schutz, Rulesets, Pflicht-Checks, Pflicht-Reviews | nicht verfügbar (API: HTTP 403 „Upgrade to GitHub Pro“) | Prozessregeln (Abschnitt 6), keine technische Sperre |
 | Merge per REST mit `sha` | verfügbar | einzige serverseitige Bindung an den geprüften Head |
 | Draft-PRs | verfügbar (#41, #42 sind Drafts) | Sperre für Branches und Zwischenstände |
-| Issues, Labels, Milestones | verfügbar, bisher ungenutzt | für neue Befunde einsetzbar (siehe Maßnahmenplan) |
+| Issues, Labels, Milestones | verfügbar | Review-Befunde als Issues (Abschnitt 5) |
 | GitHub Actions | 2.000 Minuten/Monat, 500 MB Speicher für Artefakte (stündlich gemessen) | Verbrauch beobachten; Artefakte sparsam (siehe Maßnahmenplan) |
 | CODEOWNERS | Datei möglich, ohne Branch-Schutz aber wirkungslos | nicht eingesetzt |
 
