@@ -3,16 +3,16 @@ namespace EishockeyManager.Core;
 /// <summary>Spielstand – Teil des Pakets „wettbewerbe“: Anmeldung und Abrechnung der Pokalwettbewerbe.</summary>
 public sealed partial class GameState
 {
-    private Random? _cupRandom;
+    private GameRandom? _cupRandom;
 
     /// <summary>
     /// Eigene Zufallsquelle der Pokale (Auslosung, Pokalspiele). Sie wird beim Spielstart einmal aus
     /// <see cref="Random"/> abgeleitet – unabhängig vom Spielmodus –, danach laufen Liga, Play-Offs und
     /// Aufstiegsrunden gleich, egal ob DEB-Pokal oder Europapokal/WM eingeschaltet sind.
     /// </summary>
-    public Random CupRandom
+    public GameRandom CupRandom
     {
-        get => _cupRandom ??= new Random(unchecked(Season * 6271 + Managers.Sum(m => m.ClubIndex * 37 + m.Head * 11) + Random.Next()));
+        get => _cupRandom ??= new GameRandom(unchecked(Season * 6271 + Managers.Sum(m => m.ClubIndex * 37 + m.Head * 11) + Random.Next()));
         init => _cupRandom = value;
     }
 

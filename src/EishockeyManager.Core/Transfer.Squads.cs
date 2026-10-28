@@ -78,7 +78,7 @@ public sealed partial class GameState
     /// </summary>
     public const int ContractNoticeDeadline = 201;
 
-    private Random? _contractRandom;
+    private GameRandom? _contractRandom;
 
     /// <summary>Spieler, die ihre Laufbahn beendet haben, in der Reihenfolge ihres Abschieds.</summary>
     public List<Player> RetiredPlayers { get; } = [];
@@ -86,9 +86,9 @@ public sealed partial class GameState
     /// <summary>
     /// Eigene Zufallsquelle des Kaderlebenszyklus, damit Spielergebnisse, Markt und Finanzen ihre Folgen behalten.
     /// </summary>
-    public Random ContractRandom
+    public GameRandom ContractRandom
     {
-        get => _contractRandom ??= new Random(unchecked(Season * 104_729 + Managers.Sum(m => m.ClubIndex * 37 + m.Head) + 5));
+        get => _contractRandom ??= new GameRandom(unchecked(Season * 104_729 + Managers.Sum(m => m.ClubIndex * 37 + m.Head) + 5));
         init => _contractRandom = value;
     }
 

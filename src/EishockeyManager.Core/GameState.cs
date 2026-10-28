@@ -71,7 +71,7 @@ public sealed partial class GameState
     public bool RegularSeasonOver => PlayedMatchDays >= LeagueMatchDays;
 
     /// <summary>Zufallsquelle des Spielstands.</summary>
-    public Random Random { get; init; } = new();
+    public GameRandom Random { get; init; } = new();
 
     /// <summary>Welcher Manager gerade am Zug ist.</summary>
     public int CurrentManager { get; set; }

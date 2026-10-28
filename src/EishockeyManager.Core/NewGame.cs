@@ -10,7 +10,7 @@ public static class NewGame
 
     public static GameState Create(ClubDatabase database, GameSetup setup, int seed)
     {
-        var random = new Random(seed);
+        var random = new GameRandom(seed);
 
         var clubs = database.Clubs.Select(c =>
         {
