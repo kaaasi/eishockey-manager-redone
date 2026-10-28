@@ -106,25 +106,40 @@ public class SponsorOfferTests
         Assert.Equal(8, SponsorRating.Compute(game, manager));
     }
 
+    /// <summary>Alle Angebote als Werte (Records vergleichen inhaltlich), sortiert nach Art und Partner.</summary>
+    private static List<SponsorOffer> OfferSnapshot(Sponsoring ads) =>
+        ads.Offers.OrderBy(k => k.Key).SelectMany(k => k.Value.OrderBy(o => o.Key).Select(o => o.Value)).ToList();
+
+    private static bool IsMidMonth(DateOnly date) => date.Day == DateTime.DaysInMonth(date.Year, date.Month) / 2;
+
+    /// <summary>
+    /// #77: [ORIGINAL] 0x3EE6B erneuert die Angebote am Monatsersten **und** zur Monatsmitte (Tag ⌊Monatslänge / 2⌋),
+    /// an keinem anderen Tag. Beobachtet wird der Austausch vorhandener Angebote (Inhalt, nicht nur die Anzahl)
+    /// mit festem Seed: Partner 0 wird bei jeder Erneuerung neu gewürfelt. Gegen 5f8e02a (nur monatlich) rot.
+    /// </summary>
     [Fact]
     public void Offers_RefreshOnFirstAndMidMonth_NotEveryDay()
     {
-        var game = TestGames.Create();
+        var game = TestGames.Create(3);
         var me = game.ActiveManager;
         var ads = game.Ads(me);
-        // Ein Angebot entfernen und beobachten, wann es (durch die Erneuerung) wiederkommen kann.
-        ads.Offers[AdSlotKind.Bande].Clear();
-        var day = game.FinanceDay + 1;
-        var refreshDays = new List<int>();
-        for (var d = day; d < day + 70; d++)
+        var first = game.FinanceDay + 1;
+        var changed = new List<DateOnly>();
+        var midMonthDays = 0;
+        for (var d = first; d < first + 70; d++)
         {
-            var before = ads.Offers[AdSlotKind.Bande].Count;
+            var before = OfferSnapshot(ads);
             game.AdvanceFinanceTo(d);
-            if (ads.Offers[AdSlotKind.Bande].Count != before)
-                refreshDays.Add(SeasonCalendar.LayoutDate(d).Day);
+            var date = SeasonCalendar.LayoutDate(d);
+            if (IsMidMonth(date))
+                midMonthDays++;
+            if (!before.SequenceEqual(OfferSnapshot(ads)))
+                changed.Add(date);
         }
-        Assert.NotEmpty(refreshDays);
-        Assert.All(refreshDays, dayOfMonth => Assert.True(dayOfMonth == 1 || dayOfMonth is 14 or 15, $"Erneuerung am {dayOfMonth}."));
+        Assert.True(midMonthDays >= 2, "Zeitraum ohne zwei Monatsmitten.");
+        Assert.All(changed, date => Assert.True(date.Day == 1 || IsMidMonth(date), $"Erneuerung am {date}."));
+        Assert.Equal(midMonthDays, changed.Count(IsMidMonth));
+        Assert.Contains(changed, date => date.Day == 1);
     }
 
     [Fact]
