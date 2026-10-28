@@ -193,7 +193,7 @@ internal static class Wettbewerbe
         d.Move(tile.X + 20, tile.Y + 20); d.Save("05_wm_vorbereitung_info");
         d.Click(tile.X + 20, tile.Y + 20); d.Save("06_wm_vorbereitung_gewaehlt");
         game.Managers[0].Money = 5_000_000;
-        var screen = (FriendliesScreen)d.Host.Current;
+        var screen = (FriendliesScreen)d.Host.Current!;
         var others = Enumerable.Range(0, WorldCup.Teams).Where(i => screen.Nations[i] != game.NationalCoach!.Nation).ToList();
         for (var i = 0; i < NationalCoach.MaxFriendlies; i++)
         {
