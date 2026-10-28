@@ -39,9 +39,10 @@ public class RngTwinProbeTests
     }
 
     /// <summary>Spielt <see cref="SeasonChanges"/> Saisonwechsel über <see cref="GameState.Continue"/> und bildet den Abdruck.</summary>
-    internal static string Run(GameState game, bool active, Action<GameState>? afterStep = null)
+    internal static string Run(GameState game, bool active, Action<GameState>? afterStep = null, int changes = SeasonChanges,
+        Action<GameState>? beforeChange = null)
     {
-        for (var change = 0; change < SeasonChanges; change++)
+        for (var change = 0; change < changes; change++)
         {
             for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
             {
@@ -54,6 +55,7 @@ public class RngTwinProbeTests
                 afterStep?.Invoke(game);
             }
             Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+            beforeChange?.Invoke(game);
             game.StartNextSeason();
             if (active)
                 SignFreeAgents(game);
@@ -87,6 +89,18 @@ public class RngTwinProbeTests
     /// </summary>
     internal static string Fingerprint(GameState game)
     {
+        var sb = Dump(game);
+        sb.Append(game.Random.Next()).Append('|').Append(game.FinanceRandom.Next()).Append('|')
+          .Append(game.CupRandom.Next()).Append('|').Append(game.ContractRandom.Next());
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
+    }
+
+    /// <summary>Abdruck ohne Zufallsverbrauch (Spur „speichern“, Teil „format“): Zustand plus Zufallsabbild.</summary>
+    internal static (string State, RngSnapshot Random) Snapshot(GameState game) =>
+        (Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Dump(game).ToString())))[..16], game.CaptureRng());
+
+    private static StringBuilder Dump(GameState game)
+    {
         var sb = new StringBuilder();
         sb.Append(game.Season).Append('|').Append(game.Phase).Append('|').Append(game.CurrentDay).Append('\n');
         foreach (var manager in game.Managers)
@@ -103,9 +117,7 @@ public class RngTwinProbeTests
         sb.Append("retired\n");
         foreach (var p in game.RetiredPlayers)
             Dump(sb, p);
-        sb.Append(game.Random.Next()).Append('|').Append(game.FinanceRandom.Next()).Append('|')
-          .Append(game.CupRandom.Next()).Append('|').Append(game.ContractRandom.Next());
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
+        return sb;
     }
 
     /// <summary>
