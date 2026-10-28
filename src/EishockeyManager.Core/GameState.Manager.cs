@@ -27,7 +27,7 @@ public sealed partial class Manager
 public sealed partial class GameState
 {
     private StockMarket? _stocks;
-    private Random? _financeRandom;
+    private GameRandom? _financeRandom;
 
     /// <summary>Letzter abgerechneter Tag (−1 = noch keiner).</summary>
     public int FinanceDay { get; set; } = -1;
@@ -35,9 +35,9 @@ public sealed partial class GameState
     /// <summary>
     /// Eigene Zufallsquelle der Finanzen, damit das Öffnen von Bildschirmen die Spielergebnisse nicht verändert.
     /// </summary>
-    public Random FinanceRandom
+    public GameRandom FinanceRandom
     {
-        get => _financeRandom ??= new Random(unchecked(Season * 7919 + Managers.Sum(m => m.ClubIndex * 31 + m.Head)));
+        get => _financeRandom ??= new GameRandom(unchecked(Season * 7919 + Managers.Sum(m => m.ClubIndex * 31 + m.Head)));
         init => _financeRandom = value;
     }
 
