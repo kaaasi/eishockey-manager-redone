@@ -21,8 +21,9 @@ jobs:
       - name: Restore
         run: dotnet restore EishockeyManager.slnx
 
+      # Warnungen gelten als Fehler: main und alle offenen PRs bauen ohne Warnung (Stand 27.10.2026).
       - name: Build
-        run: dotnet build EishockeyManager.slnx -c Release --no-restore
+        run: dotnet build EishockeyManager.slnx -c Release --no-restore -warnaserror
 
       # Getrennte Läufe: synthetische Tests und Tests mit Originaldaten (Trait Category=Originaldaten).
       # Ohne Originaldateien (hier immer) meldet der zweite Lauf echte Skips; der Bericht zeigt sie sichtbar an.

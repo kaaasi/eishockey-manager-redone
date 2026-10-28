@@ -59,6 +59,10 @@ def _report(report, annotations) -> int:
     print(f"| Mit Originaldaten | {data_run} | {count('originaldaten', 'Failed')} |", file=report)
     print(f"| **Übersprungen** | **{len(skipped)}** | – |", file=report)
     print(file=report)
+    if data_run == 0:
+        print("> **Originaldaten in diesem Lauf nicht geprüft.** Grün belegt nur den synthetischen Teil, nicht die "
+              "Originaltreue. Der Lauf mit Originaldaten wird lokal ausgeführt und im PR mit Zahlen nachgewiesen.\n",
+              file=report)
     if skipped:
         print(f"<details><summary>Übersprungene Tests ({len(skipped)}) – nicht geprüft</summary>\n", file=report)
         for name, why in skipped:
