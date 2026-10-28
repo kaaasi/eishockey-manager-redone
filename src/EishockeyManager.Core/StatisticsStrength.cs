@@ -23,7 +23,7 @@ public sealed record StrengthRow(Club Club, int Condition, int Technique, int Fo
 /// ungerundeten Summen. Sortiert absteigend nach dieser Summe (stabil in Datenbankreihenfolge).
 /// Belegt am Video (13:18): Russland Gesamt 99 99 51 → Mittel 85, Kanada 98 93 53 → 81.
 /// <list type="bullet">
-/// <item>Länderteams: Kondition und Technik aus <see cref="NationalTeamRatings"/> (Tabelle in em.exe).</item>
+/// <item>Länderteams: Kondition und Technik aus <see cref="GameState.NationalRatings"/> (Tabelle in em.exe, Deutschland vor der WM neu ausgewürfelt).</item>
 /// <item>[APPROX] Ligavereine: Das Original führt Teamwerte je Verein (aus der Datenbankstärke ± 10 %); das Remake
 ///   hat stattdessen Spielerwerte. Abwehr = Mittel der Verteidiger der Aufstellung, Sturm = Mittel der Stürmer.</item>
 /// <item>[APPROX] Form der Länderteams und aller Vereine: Mittel der Spielerform (Original: random(45, 55) je Feld).</item>
@@ -39,7 +39,7 @@ public static class StrengthTable
         var order = 0;
         foreach (var club in clubs)
         {
-            var (defense, attack) = Values(club);
+            var (defense, attack) = Values(game, club);
             var parts = view switch
             {
                 StrengthView.Abwehr => new[] { defense },
@@ -62,12 +62,12 @@ public static class StrengthTable
     private static int Clamp(int v) => Math.Clamp(v, 0, 99);
 
     /// <summary>(Kondition, Technik, Form) für Abwehr und Sturm.</summary>
-    private static ((double C, double T, double F) Defense, (double C, double T, double F) Attack) Values(Club club)
+    private static ((double C, double T, double F) Defense, (double C, double T, double F) Attack) Values(GameState game, Club club)
     {
         var form = Average(club.Players, p => p.Form, 50);
         if (club.Index is >= NationalTeams.First and <= NationalTeams.Last)
         {
-            var (kd, td, ks, ts) = NationalTeamRatings.Of(club.Index);
+            var (kd, td, ks, ts) = game.NationalRatings(club.Index);
             var defenders = club.Players.Where(p => p.Role == PlayerRole.Defender);
             var forwards = club.Players.Where(p => p.Role == PlayerRole.Forward);
             return ((kd, td, Average(defenders, p => p.Form, form)), (ks, ts, Average(forwards, p => p.Form, form)));

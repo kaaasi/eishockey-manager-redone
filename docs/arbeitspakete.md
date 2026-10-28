@@ -366,7 +366,7 @@ Branch: `paket/mannschaft` · Status: **Runde 1 gemergt** (PRs #1, #2, #4, #7, #
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
-Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–5 (DEB-Pokal, Europapokal, WM, Stärken, Ewige Tabelle/Früher) eingereicht (Review ausstehend); als Nächstes Paarungen Liga; Freundschaftsspiele gehören zum WM-Modus (Bundestrainer). Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
+Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–6 (DEB-Pokal, Europapokal, WM, Stärken, Ewige Tabelle/Früher, Bundestrainer) eingereicht (Review ausstehend); als Nächstes der Spielmodus „nur Weltkugel“ (Bundestrainer-Ablauf), dann Paarungen Liga. Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
 
 | PR | Inhalt | Stand |
 |---|---|---|
@@ -375,8 +375,9 @@ Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–5 (DEB-Po
 | 3 | WM (2 Gruppen + K.-o.), Bildschirm Gruppe/Tabelle WM | eingereicht (baut auf PR 2 auf) |
 | 4 | Stärken (Ligen, Länderteams) | eingereicht (baut auf PR 3 auf) |
 | 5 | Statistiken: Ewige Tabelle (Totale), Früher | eingereicht (baut auf PR 4 auf) |
-| 6 | Paarungen Liga (kein Videobeleg) | offen |
-| – | WM-Modus als Bundestrainer: WM-Kader, „WM Vorbereitung“ (Freundschaftsspiele) | offen, berührt Spielvorbereitung (siehe `wettbewerbe.md`) |
+| 6 | Bundestrainer: WM-Kader, „WM Vorbereitung“ (Freundschaftsspiele), Etat; WM: Werte Deutschlands neu ausgewürfelt, Länder 20-mal getauscht | eingereicht (baut auf PR 5 auf) |
+| 7 | Spielmodus „nur Weltkugel“: Spielvorbereitung, Vereinssaison überspringen, Menü des Bundestrainers | offen, berührt gemeinsame Dateien (siehe `wettbewerbe.md`) |
+| 8 | Paarungen Liga (kein Videobeleg) | offen |
 | – | Statistiken Spieler, Verein, Fairplay, WM-Statistik | **wartet auf `livespiel`** (Tore, Vorlagen, Strafen je Spieler) |
 
 - Paarungen (Liga, Playoffs, DEB-Pokal, Europapokal, WM), Freundschaftsspiele.

@@ -43,6 +43,10 @@ public sealed partial class GameState
         // (vor der Titelvergabe in FinishSeason; Liga, Pokale und Abschlusstabellen stehen dann fest).
         if (day == SeasonCalendar.SeasonEnd)
             RecordSeasonStatistics();
+
+        // Paket „wettbewerbe“: Werte Deutschlands ohne Bundestrainer an den Tagen mit Markierung 255 neu auswürfeln.
+        if (day is SeasonCalendar.ClubSeasonEnd or SeasonCalendar.SeasonEnd)
+            RerollNationalRatings();
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>
