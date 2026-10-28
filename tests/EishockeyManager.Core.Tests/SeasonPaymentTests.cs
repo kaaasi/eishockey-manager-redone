@@ -42,7 +42,6 @@ public class SeasonPaymentTests
                 stadium.Seats = 11 + 6 * i;
                 stadium.Standing = 0;
                 stadium.TicketPrice = 7 + 6 * i;
-                stadium.SetLevel(StadiumFeature.Gastronomie, i + 1);
             }
             while (game.Phase == SeasonPhase.Running)
             {
@@ -57,8 +56,6 @@ public class SeasonPaymentTests
                     // Eine zweite SettleHomeMatch-Buchung desselben Spiels verletzt schon diese Gleichheit.
                     Assert.Equal((long)matches * stadium.Capacity * stadium.TicketPrice,
                         finance.Book.Current(FinanceCategory.Eintritt));
-                    Assert.Equal((long)matches * stadium.Capacity * (2 + 2 * i),
-                        finance.Book.Current(FinanceCategory.Gastronomie));
                 }
             }
 

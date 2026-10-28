@@ -40,11 +40,14 @@ public sealed partial class GameState
             competition.StartSeason(this);
     }
 
-    /// <summary>Heimspiele eines Pokaltermins über die gemeinsame Spielabrechnung (genau einmal je Spiel).</summary>
-    internal void SettleCupMatches(IEnumerable<KnockoutMatch> matches)
+    /// <summary>
+    /// Heimspiele eines Pokaltermins über die gemeinsame Spielabrechnung (genau einmal je Spiel).
+    /// <paramref name="importance"/> = Wettbewerbsbonus der Zuschauerformel (Spur finanzen-2: 1 DEB-Pokal, 2 Europapokal).
+    /// </summary>
+    internal void SettleCupMatches(IEnumerable<KnockoutMatch> matches, int importance = 0)
     {
         foreach (var match in matches)
-            SettleHomeMatch(match.Home, match.Away, PlayedMatchDays + 1);
+            SettleHomeMatch(match.Home, match.Away, PlayedMatchDays + 1, importance);
     }
 
     /// <summary>Europapokal dieser Saison oder null (Spielmodus „Europapokal + WM aus“).</summary>

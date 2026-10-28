@@ -96,33 +96,31 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Gemeinsame Spielabrechnung für alle Wettbewerbe (Liga, Play-Offs, Aufstiegsrunde; später Pokale über
-    /// <see cref="ISeasonCompetition"/>): Zuschauer, Eintritt und Gastronomie für jeden Manager des Heimvereins,
-    /// genau einmal je ausgetragenem Spiel. <paramref name="tableMatchDay"/> = Ligaspieltag, dessen Vortabelle
-    /// die Nachfrage bestimmt; nach der Hauptrunde die Abschlusstabelle.
-    /// [APPROX] Nachsaisonspiele nutzen dieselbe Zuschauerformel wie Ligaspiele (keine Neukalibrierung in Runde 2).
+    /// Gemeinsame Spielabrechnung für alle Wettbewerbe (Liga, Play-Offs, Aufstiegsrunde, Pokale über
+    /// <see cref="ISeasonCompetition"/>): Zuschauer und Eintritt für jeden Manager des Heimvereins, genau einmal je
+    /// ausgetragenem Spiel. <paramref name="tableMatchDay"/> = Ligaspieltag, dessen Vortabelle die Nachfrage
+    /// bestimmt; nach der Hauptrunde die Abschlusstabelle. <paramref name="importance"/> = Wettbewerbsbonus der
+    /// Zuschauerformel (0 Liga, 1 DEB-Pokal und Play-Off/Aufstieg, 2 Europapokal).
+    /// [ORIGINAL] em.exe 0x3F7DE: Konto += Zuschauer × Eintritt; eine Gastronomie-Einnahme gibt es im Original nicht.
     /// </summary>
-    public void SettleHomeMatch(int home, int away, int tableMatchDay)
+    public void SettleHomeMatch(int home, int away, int tableMatchDay, int importance = 0)
     {
         foreach (var manager in Managers.Where(m => m.ClubIndex == home))
         {
             var finance = Finance(manager);
             var stadium = finance.Stadium;
-            var spectators = Spectators(Clubs[home], Clubs[away], stadium, tableMatchDay, FinanceRandom);
+            var spectators = Spectators(Clubs[home], Clubs[away], stadium, tableMatchDay, FinanceRandom, importance, manager.Level);
             var tickets = (long)spectators * stadium.TicketPrice;
-            var gastronomy = (long)spectators * stadium.GastronomyPerSpectator;
             Book(manager, FinanceCategory.Eintritt, tickets);
-            if (gastronomy > 0)
-                Book(manager, FinanceCategory.Gastronomie, gastronomy);
-            finance.LastHomeGame = (spectators, tickets + gastronomy);
+            finance.LastHomeGame = (spectators, tickets);
         }
     }
 
-    /// <summary>Spiele der Play-Offs und Aufstiegsrunden eines Termins abrechnen (nach der Hauptrunde).</summary>
+    /// <summary>Spiele der Play-Offs und Aufstiegsrunden eines Termins abrechnen (nach der Hauptrunde, Bonus 1).</summary>
     public void SettlePostseasonMatches(IEnumerable<(int Home, int Away)> matches)
     {
         foreach (var (home, away) in matches)
-            SettleHomeMatch(home, away, PlayedMatchDays + 1);
+            SettleHomeMatch(home, away, PlayedMatchDays + 1, importance: 1);
     }
 
     /// <summary>Rechnet alle Tage bis einschließlich <paramref name="day"/> ab (Monats-, Wochen- und Tageswechsel).</summary>

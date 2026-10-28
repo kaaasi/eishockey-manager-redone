@@ -7,7 +7,7 @@ namespace EishockeyManager.Core;
 public enum FinanceCategory
 {
     Eintritt,
-    Gastronomie,
+    // „Gastronomie“ entfällt (Spur finanzen-2): Das Original kennt keine Gastronomie-Einnahme, nur die Ausbaustufe.
     Sponsoren,
     Transfers,
     Gehaelter,

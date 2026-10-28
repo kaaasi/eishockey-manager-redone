@@ -167,7 +167,7 @@ public sealed class DebCup : ISeasonCompetition
             tie.Games.Add(match);
             played.Add(match);
         }
-        game.SettleCupMatches(played); // gemeinsame Spielabrechnung, genau einmal je Spiel
+        game.SettleCupMatches(played, importance: 1); // gemeinsame Spielabrechnung, genau einmal je Spiel
 
         if (played.Count > 0)
             steps.Add(new MatchesStep(day, Competition.DebCup, played.Any(m => managerClubs.Contains(m.Home) || managerClubs.Contains(m.Away))));
