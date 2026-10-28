@@ -78,8 +78,11 @@ public class SeasonPaymentTests
     [Fact]
     public void SeasonPremium_IsBookedOnce_InOwnCategory()
     {
+        // Seit Runde 3 (Finanzen Teil 1) gibt es Prämien nur noch für Titel und Aufstieg, nicht für
+        // Tabellenplätze. Welche Seeds einen Titel für einen Manager-Verein ergeben, hängt von allen
+        // Wettbewerben ab; deshalb mindestens drei Seeds und weiter, bis eine Prämie geprüft wurde.
         var premiums = 0L;
-        for (var seed = 1; seed <= 3; seed++)
+        for (var seed = 1; seed <= 3 || (premiums == 0 && seed <= 12); seed++)
         {
             var game = TwoBundesligaManagers(seed);
             while (game.Phase == SeasonPhase.Running || game.Phase == SeasonPhase.ClubSeasonOver)
