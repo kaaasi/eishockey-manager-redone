@@ -44,6 +44,11 @@ jobs:
         if: success() || failure()
         run: python3 .github/scripts/testbericht.py TestResults   # schreibt selbst in $GITHUB_STEP_SUMMARY, Annotationen ins Log
 
+      # Marker-Zählung je Projekt (tools/markerbericht.py) an die Zusammenfassung anhängen.
+      - name: Markerbericht
+        if: success() || failure()
+        run: python3 tools/markerbericht.py >> "$GITHUB_STEP_SUMMARY"
+
   # Lauffähige Zwischenstände zum Herunterladen (Actions → Lauf → Artifacts).
   # Die Originaldateien müssen daneben im Ordner "gamedata" liegen.
   # Nur auf Anforderung (workflow_dispatch) oder bei Versions-Tags v*: Jeder Push auf main erzeugte sonst
