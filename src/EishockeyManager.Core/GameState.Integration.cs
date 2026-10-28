@@ -31,6 +31,9 @@ public sealed partial class GameState
 
         // Transfermarkt: je gespieltem Ligaspieltag neue Angebote und Gebote
         TransferMarket.CatchUp(this);
+
+        // Verträge: Spieler im letzten Vertragsjahr kündigen an, ob sie verlängern (Spur „kader“, R2-11)
+        AnnounceContractEnds(day);
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>

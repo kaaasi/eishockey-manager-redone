@@ -78,6 +78,12 @@ public sealed class TransferMarket
     /// <summary>Anzahl Spieler auf dem Markt zu Spielbeginn (Video: 6).</summary>
     public const int StartListings = 6;
 
+    /// <summary>
+    /// Größe des Pools vertragsloser Spieler nach dem Saisonwechsel. [APPROX] Das Original führt keinen solchen
+    /// Pool sichtbar; die Grenze hält ihn klein, Überzählige (die ältesten) beenden ihre Laufbahn.
+    /// </summary>
+    public const int MaxFreeAgents = 60;
+
     /// <summary>Mindestbestand je Art im Kader, damit ein Verkauf möglich ist. [APPROX]</summary>
     public const int MinGoalkeepers = 2, MinDefenders = 4, MinForwards = 6;
 
@@ -124,6 +130,17 @@ public sealed class TransferMarket
     internal void Release(Club from, Player player)
     {
         _freeAgents.Add(new TransferListing { Player = player, From = from, Price = 0, IsFreeAgent = true });
+    }
+
+    /// <summary>Vertragsloser Spieler verlässt den Pool (Verpflichtung durch einen Computerverein oder Laufbahnende).</summary>
+    internal void Sign(Player player)
+    {
+        foreach (var listing in _freeAgents.Where(l => l.Player == player).ToList())
+        {
+            _freeAgents.Remove(listing);
+            _listings.Remove(listing);
+            _bids.RemoveAll(b => b.Listing == listing);
+        }
     }
 
     /// <summary>Füllt den Markt zu Spielbeginn.</summary>
