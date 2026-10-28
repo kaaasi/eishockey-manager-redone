@@ -26,7 +26,15 @@ mit dem Ziel, das Spiel originalgetreu nachzubauen und anschließend um neue Fun
 
 ## Originaldateien bereitstellen
 
-Den Inhalt der DOS-Version in den Ordner `gamedata/` im Repo-Stamm kopieren, sodass
+Die bereitgestellte DOS-Version liegt im privaten Repository
+[`kaaasi/eishockey-manager-referenz`](https://github.com/kaaasi/eishockey-manager-referenz):
+
+- ZIP: `original/Eishockey-Manager_DOS_DE.zip`
+- Entpackte Dateien: `original/gamedata/`
+
+[Ablagestand und Anleitung zum Laden](docs/originaldateien.md) (Leserechte auf das private Repo erforderlich).
+
+Den entpackten Inhalt in den Ordner `gamedata/` im Repo-Stamm kopieren oder dorthin verlinken, sodass
 z. B. `gamedata/em.exe`, `gamedata/kb/0.vga` und `gamedata/tore/anzahl` existieren.
 Der Ordner ist per `.gitignore` vom Einchecken ausgeschlossen.
 
