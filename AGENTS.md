@@ -97,6 +97,7 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
   - **Alle drei Läufe** (`tools/pruefen.sh` ohne Option: mit Daten, ohne Daten `EM_SKIP_GAMEDATA=1`, Pflichtlauf ohne Daten,
     der scheitern **muss**) nur bei Integrations-PRs, Reviews und Änderungen an der Test-Infrastruktur
     (`tests/**/Support/`, Testprojekte, `tools/pruefen.sh`, `.github/`).
+  - Wer `tools/pruefen.sh` ändert, führt zusätzlich `tools/pruefen-selbsttest.sh` aus (Testdouble, kein SDK nötig).
   - Während der Arbeit nur die betroffenen Tests ausführen (`dotnet test <projekt> --filter …`), die volle Prüfung erst vor dem Push.
 - Tests mit Originaldaten **nur** mit `[GameDataFact]`/`[GameDataTheory]` und `TestGameData.Load()`
   (`tests/EishockeyManager.UI.Tests/Support/GameDataFact.cs`). Nie „ohne Daten einfach `return`“.

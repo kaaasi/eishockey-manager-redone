@@ -18,6 +18,13 @@ QUICK=0; [ "${1:-}" = "--schnell" ] && QUICK=1
 LOG="$(mktemp -d)"
 STATUS=0
 
+# Bricht ab, wenn ein Lauf gar keine Testergebnisse geliefert hat (Absturz, Ladefehler).
+ergebnisse_da() {
+  if ! grep -qE "^(Passed|Failed)! " "$1"; then
+    echo "FEHLER: $2 lieferte keine Testergebnisse (Absturz oder Ladefehler) – Protokoll: $1"; tail -15 "$1"; STATUS=1; return 1
+  fi
+}
+
 # Summiert die Zeilen „Passed!/Failed! - Failed: x, Passed: y, Skipped: z“ aller Testprojekte.
 summe() {
   grep -E "^(Passed|Failed)! " "$1" | sed -E 's/.*Failed: *([0-9]+), Passed: *([0-9]+), Skipped: *([0-9]+).*/\1 \2 \3/' |
@@ -35,7 +42,7 @@ ROWS=()
 if [ $HAVE_DATA = 1 ]; then
   echo "== Tests mit Originaldaten"
   EM_REQUIRE_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q > "$LOG/mit.txt" 2>&1
-  rc=$?; read -r p f s <<< "$(summe "$LOG/mit.txt")"
+  rc=$?; ergebnisse_da "$LOG/mit.txt" "Lauf mit Originaldaten"; read -r p f s <<< "$(summe "$LOG/mit.txt")"
   ROWS+=("| Mit Originaldaten (\`EM_REQUIRE_GAMEDATA=1\`) | $p | $f | $s |")
   [ $rc -ne 0 ] && STATUS=1
   # Übersprungene Tests im Lauf mit Daten sind erklärungsbedürftig (bekannte offene Befunde).
@@ -48,19 +55,36 @@ fi
 if [ $QUICK = 0 ] || [ $HAVE_DATA = 0 ]; then
   echo "== Tests ohne Originaldaten"
   EM_SKIP_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q > "$LOG/ohne.txt" 2>&1
-  rc=$?; read -r p f s <<< "$(summe "$LOG/ohne.txt")"
+  rc=$?; ergebnisse_da "$LOG/ohne.txt" "Lauf ohne Originaldaten"; read -r p f s <<< "$(summe "$LOG/ohne.txt")"
   ROWS+=("| Ohne Originaldaten (\`EM_SKIP_GAMEDATA=1\`) | $p | $f | $s |")
   [ $rc -ne 0 ] && STATUS=1
 fi
 
 if [ $QUICK = 0 ]; then
   echo "== Pflichtlauf ohne Daten (muss scheitern)"
-  EM_SKIP_GAMEDATA=1 EM_REQUIRE_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q > "$LOG/pflicht.txt" 2>&1
+  EM_SKIP_GAMEDATA=1 EM_REQUIRE_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q \
+    --logger "trx;LogFilePrefix=pflicht" --results-directory "$LOG/pflicht" > "$LOG/pflicht.txt" 2>&1
   rc=$?; read -r p f s <<< "$(summe "$LOG/pflicht.txt")"
-  if [ $rc -eq 0 ]; then
-    ROWS+=("| Pflichtlauf ohne Daten | $p | $f | $s – **FEHLER: hätte scheitern müssen** |"); STATUS=1
-  else
+  # Gewollt ist nur ein Scheitern WEGEN fehlender Originaldaten: Testergebnisse vorhanden, mindestens ein Fehlschlag,
+  # und jeder Fehlschlag meldet die fehlenden Originaldaten. Absturz oder andere Fehler gelten als NICHT bestanden.
+  grund=$(python3 - "$LOG/pflicht" <<'PY'
+import pathlib, sys, xml.etree.ElementTree as ET
+ns = {"t": "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+failed = other = 0
+for trx in pathlib.Path(sys.argv[1]).glob("*.trx"):
+    for r in ET.parse(trx).getroot().iterfind(".//t:UnitTestResult", ns):
+        if r.get("outcome") == "Failed":
+            failed += 1
+            msg = " ".join(m.text or "" for m in r.iterfind("t:Output/t:ErrorInfo/t:Message", ns))
+            if "Originaldaten fehlen" not in msg:
+                other += 1
+print("keine-ergebnisse" if failed == 0 else f"andere-fehler:{other}" if other else "ok")
+PY
+)
+  if [ $rc -ne 0 ] && grep -qE "^(Passed|Failed)! " "$LOG/pflicht.txt" && [ "$grund" = "ok" ]; then
     ROWS+=("| Pflichtlauf ohne Daten (scheitert wie gewollt) | $p | $f | $s |")
+  else
+    ROWS+=("| Pflichtlauf ohne Daten | $p | $f | $s – **FEHLER: kein Scheitern wegen fehlender Originaldaten ($grund, Exit $rc)** |"); STATUS=1
   fi
 fi
 
