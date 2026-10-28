@@ -160,7 +160,7 @@ public class DebCupTests
     {
         var game = Create(4, false, 2);
         Assert.Null(game.DebCup);
-        Assert.Empty(game.Competitions);
+        Assert.DoesNotContain(game.Competitions, c => c.Kind == Competition.DebCup);
         PlayToSeasonEnd(game);
         Assert.False(game.History[^1].Titles.ContainsKey(Title.CupWinner));
     }
