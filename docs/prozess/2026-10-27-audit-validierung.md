@@ -110,13 +110,15 @@ Ausgeführt in [zusammenarbeit.md](zusammenarbeit.md):
   Der Agent schreibt nach dem ersten Commit einen Übergabekommentar, eine **neue** Sitzung übernimmt und beendet das Paket.
   Erfolg = Abschluss ohne Rückfrage an den Nutzer zum Inhalt. Fehlendes wird in `AGENTS.md`/`zusammenarbeit.md` nachgetragen.
 
-## 6. Offene Entscheidungen (Freigabe des Nutzers)
+## 6. Entscheidungen des Nutzers (28.10.2026: alle fünf freigegeben)
 
-1. **M3:** Publish-Job nur noch manuell und bei Tags, Aufbewahrung 7 Tage, und die vorhandenen Artefakte löschen?
-2. **M4:** Die 37 vollständig gemergten Branches löschen und „Automatically delete head branches“ einschalten?
-3. **M8:** Review-Befunde ab der Integration von Runde 3 als GitHub Issues führen?
-4. **PR #42:** Den Audit unverändert als Dokument mergen (Empfehlung: ja, zusammen mit diesem Bericht)?
-5. **M5:** Pilot wie beschrieben starten (ChatGPT setzt um, Claude Code prüft)?
+| # | Entscheidung | Umsetzung |
+|---|---|---|
+| 1 | M3 Downloads nur auf Anforderung, alte Artefakte löschen | 39 Artefakte (ca. 1,43 GB) gelöscht; Workflow-Änderung in #52 (ersetzt Draft #47) |
+| 2 | M4 gemergte Branches löschen, automatisches Löschen einschalten | aus Claudes Sitzung gesperrt (HTTP 403) → Workflow „Branches aufräumen“ in #52 (Start von Hand, mit Vorschau); „Automatically delete head branches“ schaltet der Nutzer unter Settings → General ein |
+| 3 | M8 Befunde als Issues | Labels `befund`, `P0`–`P3` angelegt; Regel in `zusammenarbeit.md` §5 |
+| 4 | Audit als Dokument mergen | #53 (ersetzt Draft #42) gemergt |
+| 5 | M5 Pilot | Paket in `docs/arbeitspakete.md` („Pilot: Markerbericht“), Start nach Merge von #45 und #50 |
 
 ## 7. Verworfene Empfehlungen und Alternativen
 

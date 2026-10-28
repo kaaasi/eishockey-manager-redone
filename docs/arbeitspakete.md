@@ -94,6 +94,20 @@ Branch: `paket/speichern` · Status: **Runde 3** – endgültiges Schema erst na
 
 Ergebnis und offene Punkte: [archiv/runden-1-2.md](archiv/runden-1-2.md). Die Regeln daraus stehen in `AGENTS.md`.
 
+## Pilot: Markerbericht (Prozess, Übergabe zwischen Agenten)
+
+Ziel und Bewertung: `docs/prozess/2026-10-27-audit-validierung.md` §5. Start nach Merge von #45 und #50.
+
+| Feld | Inhalt |
+|---|---|
+| Ziel | `tools/markerbericht.py` zählt `[ORIGINAL]`/`[APPROX]` je Datei und Projekt in `src/`, gibt eine Markdown-Tabelle aus; CI hängt sie an die Zusammenfassung an |
+| Branch / Base | `paket/markerbericht` von aktuellem `main` |
+| Bearbeiter | ChatGPT; nach dem ersten Commit Übergabe an eine **neue** ChatGPT-Sitzung, die das Paket beendet |
+| Dateigrenzen | `tools/markerbericht.py` (neu), ein Schritt am Ende des Jobs `build` in `.github/workflows/build.yml` |
+| Abnahme | Zahlen gleich `grep -rho "\[APPROX\]\|\[ORIGINAL\]" src \| sort \| uniq -c`; Ausgabe sortiert und deterministisch; keine neuen Abhängigkeiten; CI grün; PR nach Vorlage |
+| Review | Claude Code (Leitstelle) |
+| Status | offen |
+
 ## Später (nach v0.5)
 
 - `livespiel` – Anzeigetafel, Reporter, Torszenen (optional abschaltbar, letzter Schritt vor v1.0)

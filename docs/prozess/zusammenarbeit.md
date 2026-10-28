@@ -72,6 +72,10 @@ schreibt zuerst einen Übernahmekommentar („übernommen ab SHA …, Tests …�
 - Ergebnis: `docs/reviews/JJJJ-MM-TT-<thema>.md` auf Branch `review/<thema>`, PR mit nur dieser Datei. Ohne
   Schreibzugriff: Datei an den Nutzer, die Leitstelle legt sie ab.
 - Ändert sich der Head nach dem Review, ist eine **Nachprüfung** des Deltas nötig (`…-nachpruefung.md`).
+- **Befunde als Issues** (seit 28.10.2026): Beim Auswerten legt die Leitstelle je Befund ein Issue an – Titel
+  `<ID>: <Kurzbeschreibung>`, Labels `befund` und `P0`–`P3`, Link auf die Review-Datei. Der PR, der den Befund behebt,
+  schließt das Issue (`Fixes #<nr>` in der Beschreibung). Pakete und Status bleiben in `docs/arbeitspakete.md`.
+  Agenten ohne Zugriff auf Issues nennen die Befunde im PR; die Leitstelle legt die Issues an.
 
 ## 6. Merge-Prüfung (vor jedem Merge, von Leitstelle oder Nutzer)
 
@@ -116,7 +120,7 @@ Es gibt **keine automatische Integration**, nur weil ein Kontingent erschöpft i
 | Branch-Schutz, Rulesets, Pflicht-Checks, Pflicht-Reviews | nicht verfügbar (API: HTTP 403 „Upgrade to GitHub Pro“) | Prozessregeln (Abschnitt 6), keine technische Sperre |
 | Merge per REST mit `sha` | verfügbar | einzige serverseitige Bindung an den geprüften Head |
 | Draft-PRs | verfügbar (#41, #42 sind Drafts) | Sperre für Branches und Zwischenstände |
-| Issues, Labels, Milestones | verfügbar, bisher ungenutzt | für neue Befunde einsetzbar (siehe Maßnahmenplan) |
+| Issues, Labels, Milestones | verfügbar | Review-Befunde als Issues (Abschnitt 5) |
 | GitHub Actions | 2.000 Minuten/Monat, 500 MB Speicher für Artefakte (stündlich gemessen) | Verbrauch beobachten; Artefakte sparsam (siehe Maßnahmenplan) |
 | CODEOWNERS | Datei möglich, ohne Branch-Schutz aber wirkungslos | nicht eingesetzt |
 
