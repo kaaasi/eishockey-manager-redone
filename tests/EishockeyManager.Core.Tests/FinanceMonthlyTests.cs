@@ -41,7 +41,7 @@ public class FinanceMonthlyTests
         [1500, 1500, 1100, 1300, 1000, 1100, 1100, 1300, 1000, 1000, 1400, 1000, 1000, 1300, 1300, 900, 1100, 1100, 1100, 1100];
 
     [Fact]
-    public void BaseExpenses_FollowLevelAndStartLeague_AsInEmExe()
+    public void BaseExpenses_FollowLevelAndLeague_AsInEmExe()
     {
         // [ORIGINAL] 0x3E819: 130.000 − 10.000 × (5 − Level) − 20 × {2400, 1800, 990} Drittel; 2. Liga −60.000,
         // Bundesliga + 175.000 × 0,75 × 2.

@@ -24,7 +24,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
     }
 
     [Theory]
-    [InlineData(League.Bundesliga, 1, false, false, 0)]
+    [InlineData(League.Bundesliga, 1, false, false, 100000)] // Hauptrunden-Erster auch in der Bundesliga (0xE0:0x20, Spur finanzen-2)
     [InlineData(League.Bundesliga, 3, false, true, 500000)]
     [InlineData(League.Oberliga, 1, false, false, 100000)]
     [InlineData(League.Oberliga, 1, true, false, 400000)]

@@ -14,7 +14,7 @@ public static partial class FinanceRules
     /// [ORIGINAL] em.exe Datei 0x3E819 ff.: Sockel der Monatsausgaben 130.000 Drittel minus 10.000 je Stufe
     /// „5 − Level“ minus 20 × Ligawert (DGROUP 0x52C2: 2400, 1800, 990 für Bundesliga, 2. Liga, Oberliga).
     /// </summary>
-    private static readonly long[] StartLeagueExpenseFactor = [2400, 1800, 990];
+    private static readonly long[] LeagueExpenseFactor = [2400, 1800, 990];
 
     /// <summary>
     /// [ORIGINAL] 0x3E9A1 ff.: 175.000 × (Preisindex − 25) / 100 × (2 − Start-Liga) Drittel; Preisindex DGROUP 0x2BC = 100.
@@ -23,12 +23,12 @@ public static partial class FinanceRules
     public const int PriceIndex = 100;
 
     /// <summary>Grundausgaben pro Monat in Drittel-DM (ohne Gehälter, Stadion, Jugend). [ORIGINAL] 0x3E811.</summary>
-    public static long MonthlyBaseExpenseThirds(int level, League startLeague)
+    public static long MonthlyBaseExpenseThirds(int level, League league)
     {
-        var tier = (int)startLeague;
-        var thirds = 130_000L - 10_000L * (ManagerSetup.LevelCount - 1 - level) - 20L * StartLeagueExpenseFactor[tier];
+        var tier = (int)league;
+        var thirds = 130_000L - 10_000L * (ManagerSetup.LevelCount - 1 - level) - 20L * LeagueExpenseFactor[tier];
         thirds += 175_000L * (PriceIndex - 25) / 100 * (2 - tier);
-        if (startLeague == League.ZweiteLiga)
+        if (league == League.ZweiteLiga)
             thirds -= 60_000;
         return thirds;
     }
@@ -56,8 +56,11 @@ public static partial class FinanceRules
 
 public sealed partial class ManagerFinance
 {
-    /// <summary>Liga des Vereins bei Spielbeginn ([ORIGINAL] Manager-Feld 0x9746, „Stufe“ der Kosten).</summary>
-    public League StartLeague { get; set; } = League.Oberliga;
+    /// <summary>
+    /// Liga des Vereins als „Stufe“ der Kosten ([ORIGINAL] Manager-Feld 0x9746): bei Spielbeginn gesetzt und am
+    /// Saisonende aus dem Vereinsindex neu bestimmt (Datei 0x563C0), also die Liga der kommenden Saison.
+    /// </summary>
+    public League CostLeague { get; set; } = League.Oberliga;
 
     /// <summary>
     /// Zinskonto in Drittel-DM: täglich aufgelaufene Zinsen (Sparbuch, Kredite, Überziehung), gebucht am
@@ -83,7 +86,7 @@ public sealed partial class GameState
 
     /// <summary>Grundausgaben des Monats in DM (Level, Start-Liga). [ORIGINAL] 0x3E811.</summary>
     public long MonthlyBaseExpenses(Manager manager) =>
-        FinanceRules.ToMarks(FinanceRules.MonthlyBaseExpenseThirds(manager.Level, Finance(manager).StartLeague));
+        FinanceRules.ToMarks(FinanceRules.MonthlyBaseExpenseThirds(manager.Level, Finance(manager).CostLeague));
 
     /// <summary>
     /// Zinsertrag auf Forderungen pro Monat in DM, wie die Anzeige „Einnahmen“: 2,5 % auf Manager-Kredite,

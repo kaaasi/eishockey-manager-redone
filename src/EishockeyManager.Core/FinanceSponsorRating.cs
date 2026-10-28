@@ -46,7 +46,7 @@ public static class SponsorRating
     {
         var club = game.Clubs[manager.ClubIndex];
         var finance = game.Finance(manager);
-        var tier = (int)finance.StartLeague;
+        var tier = (int)finance.CostLeague;
         var random = game.FinanceRandom;
         var eternal = game.Eternal(club.Index);
 

@@ -13,7 +13,8 @@ im Remake rechnet in DM (÷ 3 am Ende).
   Stadionwert, `0x100:0x4D` Tagesabschluss, `0x100:0x52` Zuschauer, `0x100:0x57` Sponsor-Bewertung, `0x100:0x5C`
   Werbeangebote. Bank-Overlay `0x138` ab `0x57480` (`0x138:0x2A` Schulden/Zinsen).
 - Managerstruktur 0x1AF Byte je Manager; Felder (DGROUP-Offset bei Manager 0): `0x973F` Eintrittspreis (DM),
-  `0x9746` Start-Liga (0 = Bundesliga, 2 = Oberliga),
+  `0x9746` Liga als Kostenstufe (0 = Bundesliga, 2 = Oberliga; bei Spielstart gesetzt, am Saisonende aus dem
+  Vereinsindex neu bestimmt, Datei `0x563C0`),
   `0x97CE` Sponsor-Bewertung (Wort), `0x97E6/E8` Zuschauerrekord-Hilfswerte (99.999 Start), `0x97EA` **Kontostand**,
   `0x97EE` Trainingskosten/Woche, `0x97F2` zuletzt berechnete Einnahmen, `0x97F6+4·i` Darlehen (i = 0–3 Manager,
   4 = Bank; negativ = „ich schulde i“ im eigenen Satz, Zinssätze 2,5 % Manager / 4 % Bankkredit / 1 % Sparbuch),
@@ -50,9 +51,9 @@ der vier Teamwerte 122; Berliner SC 3.966 DM → 119.
 ### Ausgaben (`0x3E811`, Anzeige „Ausgaben (Gehälter…)“)
 
 ```
-grund    = 130.000 − 10.000 · (5 − Level) − 20 · T[StartLiga]        T = [2400, 1800, 990] (Bundesliga, 2. Liga, Oberliga)
-         + 175.000 · (Preisindex − 25) / 100 · (2 − StartLiga)        (Oberliga 0)
-         − 60.000 falls StartLiga = 1 (2. Liga)
+grund    = 130.000 − 10.000 · (5 − Level) − 20 · T[Liga]             T = [2400, 1800, 990] (Bundesliga, 2. Liga, Oberliga)
+         + 175.000 · (Preisindex − 25) / 100 · (2 − Liga)             (Oberliga 0)
+         − 60.000 falls Liga = 1 (2. Liga)
 gehalt   = Σ (Gehalt + Versicherung) aller eigenen Spieler, auch der auf dem Transfermarkt angebotenen
 stadion  = Σ Stufe_i · U_i, U = [24000, 7500, 33000, 3000, 4800, 9000, 15000, 15000, 7500]
            (Überdachung, Anzeigetafel, Kühlanlage, Sitzkomfort, Zustand, Verkehrsanb., Gastronomie, Kino, Bowling)
@@ -155,7 +156,21 @@ Kontostand = Feld `0x97EA`; Schulden = Σ meiner negativen Darlehenssalden; Anla
 Saldo = Kontostand + Anlagen − Schulden. Karriere-Video: Kredit 584.000 DM, Zins 23.360 DM/Monat = 4 % (Kreditlimit
 also > 500.000 DM).
 
+## Saisonende (`0x26F20` ff., Aufruf `0x5645D`)
+
+- Aufstieg (Statusbit 0 ohne Bit 1): 1.500.000 Drittel, wenn die neue Liga die Bundesliga ist, sonst 900.000
+  (= 500.000 / 300.000 DM); alle 11 Werbeverträge bekommen Flag 0x80.
+- Ereignissymbole aus Statusbits 0–6 (Tabelle `0x4B2E` = 2, 1, 0, 5, 4, 6, 8).
+- Zwei Kennungen aus dem Saisonwechsel (`0xC8:0x20`, High-/Low-Byte je Manager): Symbol 12 bzw. 3, je 300.000 Drittel
+  (100.000 DM) – nicht aufgelöst, im Remake Pokal- und Europapokalsieg.
+- `0xE0:0x20(0)` = Erster der Hauptrunde der eigenen Liga (Sortierung nach Punkten, `0x2A29D`): Symbol 13, 100.000 DM –
+  **in jeder Liga**, auch Bundesliga.
+- Meisterprämie 1.500.000 Drittel im Play-Off-Pfad (`0x55CD3`, schon in #41).
+
 ## Nebenpunkte
 
 - Gehaltspauschale bei leerem Kader: im Original Gehälter = Summe der Spieler, bei leerem Kader 0 → Pauschale entfällt.
-- Bundestrainer-Etat, Titelzuordnung, Einzelprämien: siehe Status in `docs/arbeitspakete.md` (offen).
+- Bundestrainer-Etat (`0x554A6`): `[0xA055] += [0x29C]` = Konto des Nationalteam-Datensatzes (Manager-Satz 4, Name per
+  strcpy vom Manager), nicht das Vereinskonto. Freundschaftsspiele der WM-Vorbereitung werden von dort bezahlt
+  (`0x3BFC4`). Der Rest bleibt für den nächsten Amtsantritt stehen.
+- WM-Titel: geht nur an Nationalteams; im Remake jetzt ausdrücklich ohne Vereinsprämie.

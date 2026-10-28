@@ -52,7 +52,7 @@ public sealed partial class GameState
         manager.FinanceData ??= new ManagerFinance
         {
             Stadium = Stadium.ForLeague(Clubs[manager.ClubIndex].League),
-            StartLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga,
+            CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga,
         };
 
     /// <summary>Bucht einen Betrag auf das Konto und ins Finanzbuch.</summary>
@@ -148,7 +148,11 @@ public sealed partial class GameState
     public void StartFinanceSeason()
     {
         foreach (var manager in Managers)
+        {
             Finance(manager).Book.NewSeason();
+            // [ORIGINAL] 0x563C0: Kostenstufe = Liga der neuen Saison (Spur finanzen-2).
+            Finance(manager).CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga;
+        }
         FinanceDay = -1;
     }
 

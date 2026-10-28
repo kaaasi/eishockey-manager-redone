@@ -173,7 +173,7 @@ public sealed class FriendliesScreen : Screen
             [
                 game.Clubs[hovered].Name,
                 GameState.FormatMoney(NationalCoach.FriendlyCost(hovered, Home)),
-                GameState.FormatMoney(game.Managers[coach.Manager].Money),
+                GameState.FormatMoney(game.NationalAccount), // Konto des Bundestrainers (Spur finanzen-2)
             ];
             for (var k = 0; k < 3; k++)
             {

@@ -14,6 +14,13 @@ public sealed partial class GameState
     public long NationalBudget { get; private set; } = NationalCoach.FirstBudget;
 
     /// <summary>
+    /// Konto des Bundestrainers (DM). [ORIGINAL] Datei 0x554A6: Der Etat wird dem Konto des Nationalteam-Datensatzes
+    /// (DGROUP 0xA055, Manager-Satz 4) gutgeschrieben, nicht dem Vereinskonto des Managers; Freundschaftsspiele
+    /// werden von dort bezahlt (0x3BFC4). Ein Rest bleibt für den nächsten Amtsantritt stehen. (Spur finanzen-2)
+    /// </summary>
+    public long NationalAccount { get; set; }
+
+    /// <summary>
     /// Spielwerte eines Nationalteams. [ORIGINAL] Ohne menschlichen Bundestrainer würfelt das Original die Werte
     /// des eigenen Landes an jedem Tag mit Markierung 255 (13. und 29. April) neu aus (Datei 0x554CF):
     /// Kondition random(84, 94), Technik random(79, 89), Form random(45, 55) – je Abwehr und Sturm. Bis dahin gelten
@@ -52,8 +59,8 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Ein Manager wird Bundestrainer des eigenen Landes (Datei 0x55440 ff.): Er bekommt den Etat
-    /// <see cref="NationalBudget"/> (Finanzbuch „Prämien“), der Kader beginnt leer. Ist er in dieser Saison schon
+    /// Ein Manager wird Bundestrainer des eigenen Landes (Datei 0x55440 ff.): Der Etat <see cref="NationalBudget"/>
+    /// geht auf das <see cref="NationalAccount"/>, der Kader beginnt leer. Ist er in dieser Saison schon
     /// ernannt, bleibt alles unverändert (kein zweiter Etat, Kader bleibt; Review R3A-03).
     /// </summary>
     public NationalCoach AppointNationalCoach(Manager manager)
@@ -66,7 +73,7 @@ public sealed partial class GameState
                 ? current
                 : throw new InvalidOperationException("In dieser Saison ist bereits ein anderer Manager Bundestrainer.");
         NationalCoach = new NationalCoach(index, NationalTeams.Germany);
-        Book(manager, FinanceCategory.Praemien, NationalBudget);
+        NationalAccount += NationalBudget;
         return NationalCoach;
     }
 
@@ -121,8 +128,8 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Freundschaftsspiel vereinbaren und sofort austragen („WM Vorbereitung“, Datei 0x3BF9B ff.): Kosten über das
-    /// Finanzbuch „Freundschaftsspiele“, Ergebnis, Wertebonus für alle Kaderspieler, Länderspiele der Aufstellung.
+    /// Freundschaftsspiel vereinbaren und sofort austragen („WM Vorbereitung“, Datei 0x3BF9B ff.): Kosten vom
+    /// <see cref="NationalAccount"/>, Ergebnis, Wertebonus für alle Kaderspieler, Länderspiele der Aufstellung.
     /// </summary>
     public FriendlyResult PlayFriendly(int opponent, bool home)
     {
@@ -131,11 +138,10 @@ public sealed partial class GameState
             return FriendlyResult.OwnNation;
         if (coach.Friendlies.Count >= NationalCoach.MaxFriendlies)
             return FriendlyResult.TooMany;
-        var manager = Managers[coach.Manager];
         var cost = NationalCoach.FriendlyCost(opponent, home);
-        if (manager.Money < cost)
+        if (NationalAccount < cost)
             return FriendlyResult.NotEnoughMoney;
-        Book(manager, FinanceCategory.Freundschaftsspiele, -cost);
+        NationalAccount -= cost;
 
         var random = CupRandom;
         // Reihenfolge der Zufallszahlen wie im Original: x vor dem Spiel, Bonus danach.

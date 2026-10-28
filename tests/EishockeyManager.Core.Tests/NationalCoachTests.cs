@@ -154,12 +154,13 @@ public class NationalCoachTests
         var manager = game.Managers[0];
         var before = manager.Money;
         game.AppointNationalCoach(manager);
-        Assert.Equal(before + 500_000, manager.Money);
+        Assert.Equal(before, manager.Money); // Etat aufs Bundestrainer-Konto, nicht aufs Vereinskonto (Spur finanzen-2)
+        Assert.Equal(500_000, game.NationalAccount);
         game.AutoNominate();
         var coach = game.NationalCoach!;
         var values = coach.Squad.Select(m => m.Player.Condition + m.Player.Technique + m.Player.Form).Sum();
 
-        manager.Money = 10_000_000;
+        game.NationalAccount = 10_000_000;
         var book = game.Finance(manager).Book;
         Assert.Equal(FriendlyResult.OwnNation, game.PlayFriendly(NationalTeams.Germany, true));
         for (var i = 0; i < NationalCoach.MaxFriendlies; i++)
@@ -167,8 +168,9 @@ public class NationalCoachTests
         Assert.Equal(FriendlyResult.TooMany, game.PlayFriendly(60, false));
 
         long cost = Enumerable.Range(0, 8).Sum(i => NationalCoach.FriendlyCost(52 + i % 4, i % 2 == 0));
-        Assert.Equal(10_000_000 - cost, manager.Money);
-        Assert.Equal(-cost, book.Current(FinanceCategory.Freundschaftsspiele));
+        Assert.Equal(10_000_000 - cost, game.NationalAccount);
+        Assert.Equal(before, manager.Money);
+        Assert.Equal(0, book.Current(FinanceCategory.Freundschaftsspiele));
         Assert.Equal(8, coach.Friendlies.Count);
         Assert.All(coach.Friendlies, f => Assert.Contains(NationalTeams.Germany, new[] { f.Home, f.Away }));
         Assert.True(coach.Squad.Select(m => m.Player.Condition + m.Player.Technique + m.Player.Form).Sum() >= values);
@@ -181,9 +183,9 @@ public class NationalCoachTests
         var game = Create();
         var manager = game.Managers[0];
         game.AppointNationalCoach(manager);
-        manager.Money = 199_999;
+        game.NationalAccount = 199_999;
         Assert.Equal(FriendlyResult.NotEnoughMoney, game.PlayFriendly(52, true));
-        Assert.Equal(199_999, manager.Money);
+        Assert.Equal(199_999, game.NationalAccount);
         Assert.Empty(game.NationalCoach!.Friendlies);
         Assert.Equal(0, game.Finance(manager).Book.Current(FinanceCategory.Freundschaftsspiele));
     }
@@ -286,21 +288,29 @@ public class NationalCoachTests
             PlayToSeasonEnd(game, g =>
             {
                 Assert.Equal(expectedBudget, g.NationalBudget);
-                var money = manager.Money;
+                var money = g.NationalAccount;
                 g.AppointNationalCoach(manager);
-                budget = manager.Money - money;
+                budget = g.NationalAccount - money;
                 if (!active)
                     return;
                 g.AutoNominate();
-                var before = manager.Money;
+                var before = g.NationalAccount;
+                // So viele Auswärtsspiele, wie der Etat hergibt (Spur finanzen-2: Kosten vom Bundestrainer-Konto).
                 for (var i = 0; i < NationalCoach.MaxFriendlies; i++)
-                    Assert.Equal(FriendlyResult.Played, g.PlayFriendly(52 + (i + season) % 4, false));
-                friendlies = before - manager.Money;
+                {
+                    var result = g.PlayFriendly(52 + (i + season) % 4, false);
+                    if (result == FriendlyResult.NotEnoughMoney)
+                        break;
+                    Assert.Equal(FriendlyResult.Played, result);
+                }
+                friendlies = before - g.NationalAccount;
             });
             Assert.Equal(expectedBudget, budget);
             var book = game.Finance(manager).Book;
-            Assert.Equal(-friendlies, book.Current(FinanceCategory.Freundschaftsspiele));
-            Assert.Equal(active ? NationalCoach.MaxFriendlies : 0, game.NationalCoach!.Friendlies.Count);
+            Assert.Equal(0, book.Current(FinanceCategory.Freundschaftsspiele));
+            Assert.True(friendlies >= 0 && game.NationalAccount >= 0);
+            Assert.True(!active || game.NationalCoach!.Friendlies.Count >= 1);
+            Assert.Equal(active, game.NationalCoach!.Friendlies.Count > 0);
 
             var place = game.WorldCup!.Ranking.ToList().IndexOf(NationalTeams.Germany) + 1;
             expectedBudget = NationalCoach.BudgetFor(place);
