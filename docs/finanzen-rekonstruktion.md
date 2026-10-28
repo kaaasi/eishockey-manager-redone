@@ -118,7 +118,7 @@ Saison 1 Schnitt 3.049, Minuskulisse 1.046, Rekord 4.500. Statistik „Benötigt
 
 ```
 S  = (2 − StartLiga) · (80 · Titel(0x40) + 170)
-   + 32 · (Titel(0x08) · (n+1) − 2)  + 47 · Titel(0x20) · ([0x7AF]+1)
+   + [n ≠ 0] · 32 · (Titel(0x08) · (n+1) − 2)  + 47 · Titel(0x20) · ([0x7AF]+1),   n = [0x5CF3] (DEB-Pokal-Runde)
    + 12 · (11 − Mittel der Ligaplätze der letzten ≤ 5 Saisons, ohne Historie 6)
    + Mittel(Spielerwert / 5500)  + random(20,50) · min(4, #Spieler mit Wert/7000 > random(35,55)/10)
 R  = min(100, ((S + 3 · W) / 12 + 10 · (2 − StartLiga)) · 85 / 100)
@@ -126,8 +126,12 @@ Stadionwert W (0x3EBEA) = [min(50000, (1,5·Sitz + Steh)/2) + Σ adj_i · V_i] /
    V = [4333, 2333, 1166, 2833, 2000, 3333, 2333, 3166, 2250], adj: Überdachung − 1 (falls > 0), Kühlanlage ≥ 1,
    Sitzkomfort fest 2, Zustand fest 3, sonst Stufe.
 ```
-Die Titelzähler `0x110:0x61` (Masken 0x40/0x08/0x20) sind nicht aufgelöst → im Remake `[APPROX]` über Meister/Pokal/
-Europapokal-Zähler.
+Pokalterm (Nachprüfung #75): Der Hilfswert `[bp−0xC]` startet mit **2** (0x3F840) und wird nur bei `[0x5CF3] ≠ 0` zu
+`Titel(0x08) · ([0x5CF3] + 1)` (0x3F870–0x3F898); addiert wird `32 · (Hilfswert − 2)` (0x3F8EE, `random(32, 32)`).
+`[0x5CF3]` ist die Runde des DEB-Pokals (Wettbewerb 0, Feld `[Wettbewerb + 0x5CF3]`): 0 beim Programmstart (BSS) und
+zu Beginn der Auslosung (0x341CC), 1 nach der Auslosung (0x346B3), +1 je Runde (0x348DD, höchstens 5). Ohne
+ausgelosten Pokal ist der Term also 0, danach ohne Titel −64. `n` ist damit aufgelöst; offen bleiben die Titelzähler
+`0x110:0x61` (Masken 0x40/0x08/0x20) → im Remake `[APPROX]` über Meister/Pokal/Europapokal-Zähler, und `[0x7AF]`.
 
 ### Angebote (`0x3FB47`, am 1. und zur Monatsmitte, sowie beim Spielstart)
 

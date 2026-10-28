@@ -5,14 +5,15 @@ namespace EishockeyManager.Core;
 /// (Einsprung 0x100:0x57, Manager-Feld 0x97CE):
 /// <code>
 /// S  = (2 − StartLiga) · (80 · Titel + 170)
-///    + 32 · (Pokalsiege · (n + 1) − 2)  + 47 · Europapokalsiege · (k + 1)
+///    + 32 · (Pokalsiege · (n + 1) − 2), nur wenn n ≠ 0 (n = DEB-Pokal-Runde [0x5CF3])
+///    + 47 · Europapokalsiege · (k + 1)
 ///    + 12 · (11 − Mittel der Ligaplätze der letzten ≤ 5 Saisons, ohne Historie 6)
 ///    + Mittel(Spielerwert / 5500) + random(20, 50) · min(4, Spieler mit Spielerwert / 7000 > random(35, 55) / 10)
 /// R  = min(100, ((S + 3 · Stadionwert) / 12 + 10 · (2 − StartLiga)) · 85 / 100)
 /// </code>
 /// Belege: docs/finanzen-rekonstruktion.md. Die drei Titelzähler (Masken 0x40, 0x08, 0x20 der Funktion 0x110:0x61)
 /// sind nicht aufgelöst: [APPROX] hier Meisterschaften, DEB-Pokalsiege und Europapokalsiege aus der Ewigen Tabelle,
-/// ohne die unbekannten Faktoren n und k. Spielerwerte: Kaufpreis des Remakes × 3 (Drittel) [APPROX].
+/// ohne den unbekannten Faktor k ([0x7AF]). Spielerwerte: Kaufpreis des Remakes × 3 (Drittel) [APPROX].
 /// </summary>
 public static class SponsorRating
 {
@@ -51,7 +52,15 @@ public static class SponsorRating
         var eternal = game.Eternal(club.Index);
 
         long s = (2 - tier) * (80 * eternal.Championships + 170);
-        s += 32L * eternal.CupWins;
+        // [ORIGINAL] 0x3F83B/0x3F870/0x3F8EE: Hilfswert startet mit 2 und wird nur bei [0x5CF3] ≠ 0 zu
+        // Titel(0x08) · ([0x5CF3] + 1); dazu 32 · (Hilfswert − 2). [0x5CF3] ist die Runde des DEB-Pokals (Wettbewerb 0:
+        // 0 vor der ersten Auslosung, 1 nach der Auslosung 0x346B3, je Runde +1 bei 0x348DD). Ohne Pokal also 0,
+        // mit ausgelostem Pokal und ohne Titel −64 (Review F67-01, #75).
+        // [APPROX] Das Remake lost den DEB-Pokal zu Saisonbeginn aus; die Angebote beim Spielstart entstehen vorher
+        // (n = 0 wie [0x5CF3] = 0 beim Programmstart). Titel(0x08) als DEB-Pokalsiege, siehe oben.
+        var cupRound = game.DebCup?.Rounds.Count ?? 0;
+        if (cupRound != 0)
+            s += 32L * (eternal.CupWins * (cupRound + 1) - 2);
         s += 47L * eternal.EuropeanCupWins;
 
         var history = game.ManagerHistory(game.IndexOf(manager));

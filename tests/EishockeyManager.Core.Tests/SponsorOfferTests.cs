@@ -68,6 +68,44 @@ public class SponsorOfferTests
         Assert.InRange(bundesliga, 30, 100);
     }
 
+    /// <summary>Oberliga-Verein 24, Level 3, Seed 3, ohne Kader und ohne Titel (Reproduktion aus Review F67-01, #75).</summary>
+    private static (GameState Game, Manager Manager) EmptyOberligaClub(bool debCup)
+    {
+        var setup = new GameSetup { DebCup = debCup };
+        setup.Managers.Add(new ManagerSetup { Name = "O", Head = 0, ClubIndex = 24 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
+        var manager = game.Managers[0];
+        game.Clubs[manager.ClubIndex].Players.Clear();
+        return (game, manager);
+    }
+
+    /// <summary>
+    /// #75: Der Pokalterm 32 · (Titel · (n + 1) − 2) gilt, sobald der DEB-Pokal ausgelost ist (n = Runde, em.exe 0x3F870:
+    /// nur bei [0x5CF3] ≠ 0). Ohne Titel −64: S = −64 + 12 · (11 − 6) + 3 · 22 = 62, Bewertung 62 / 12 · 85 / 100 = 4.
+    /// Ein kleinstmögliches Bandenangebot (Partner 0, m = 20) liegt damit bei 748 statt 1.497 DM.
+    /// </summary>
+    [Fact]
+    public void Rating_WithDrawnDebCup_SubtractsCupTerm()
+    {
+        var (game, manager) = EmptyOberligaClub(debCup: true);
+        Assert.Single(game.DebCup!.Rounds);
+        Assert.Equal(22, SponsorRating.StadiumWorth(game.Finance(manager).Stadium));
+        var rating = SponsorRating.Compute(game, manager);
+        Assert.Equal(4, rating);
+        Assert.Equal(748, FinanceRules.ToMarks(SponsorRules.OfferAmountThirds(rating, AdSlotKind.Bande, 0, 20, new MinRandom())));
+    }
+
+    /// <summary>
+    /// #75, Gegenprobe: Solange [0x5CF3] = 0 ist (kein DEB-Pokal ausgelost – hier: Spielmodus ohne Pokal), bleibt der
+    /// Startwert 2 und der Term 32 · (2 − 2) = 0: S = 126, Bewertung 126 / 12 · 85 / 100 = 8.
+    /// </summary>
+    [Fact]
+    public void Rating_WithoutDebCup_CupTermIsZero()
+    {
+        var (game, manager) = EmptyOberligaClub(debCup: false);
+        Assert.Equal(8, SponsorRating.Compute(game, manager));
+    }
+
     [Fact]
     public void Offers_RefreshOnFirstAndMidMonth_NotEveryDay()
     {
