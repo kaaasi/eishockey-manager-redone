@@ -102,7 +102,11 @@ public static class NewGame
         }
 
         return setup.Managers
-            .Select((m, i) => new Manager { Name = m.Name, Head = m.Head, ClubIndex = assigned[i], Level = m.Level })
+            .Select((m, i) => new Manager
+            {
+                Name = m.Name, Head = m.Head, ClubIndex = assigned[i], Level = m.Level,
+                Money = FinanceRules.StartMoney(m.Level), // [ORIGINAL] 0x29BD5 (Spur finanzen-2, #78)
+            })
             .ToList();
     }
 

@@ -58,7 +58,7 @@ public class NewGameTests
 
         Assert.Single(game.Managers);
         Assert.Equal(5, game.ActiveManager.ClubIndex);
-        Assert.Equal(GameState.StartMoney, game.ActiveManager.Money);
+        Assert.Equal(FinanceRules.StartMoney(game.ActiveManager.Level), game.ActiveManager.Money);
         foreach (var league in Enum.GetValues<League>())
         {
             Assert.Equal(12, game.LeagueClubs(league).Count());

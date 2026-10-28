@@ -44,7 +44,7 @@ public class StadiumTests
         var target = stadium.Level(StadiumFeature.Gastronomie) + 1;
         var cost = stadium.Offer(StadiumFeature.Gastronomie, target)!.Value.Cost;
         Assert.True(game.StartConstruction(me, StadiumProject.Feature, StadiumFeature.Gastronomie, target));
-        Assert.Equal(GameState.StartMoney - cost, me.Money);
+        Assert.Equal(FinanceRules.StartMoney(me.Level) - cost, me.Money);
         Assert.Equal(-cost, game.Finance(me).Book.Current(FinanceCategory.Bau));
         Assert.False(game.StartConstruction(me, StadiumProject.Sitzplaetze, default, 1)); // nur eine Baustelle
 

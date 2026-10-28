@@ -38,8 +38,8 @@ public class FinanceLoanTests
         Assert.Equal(80_000, game.PayToManager(from: 0, to: 1, 80_000));
         Assert.Equal(0, game.LoanAmount(lender: 1, borrower: 0));
         Assert.Equal(30_000, game.LoanAmount(lender: 0, borrower: 1));
-        Assert.Equal(GameState.StartMoney + 50_000 - 80_000, a.Money);
-        Assert.Equal(GameState.StartMoney - 50_000 + 80_000, b.Money);
+        Assert.Equal(FinanceRules.StartMoney(a.Level) + 50_000 - 80_000, a.Money);
+        Assert.Equal(FinanceRules.StartMoney(b.Level) - 50_000 + 80_000, b.Money);
     }
 
     [Fact]

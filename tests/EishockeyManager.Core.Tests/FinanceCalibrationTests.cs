@@ -119,7 +119,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     var capacity = stadium.Capacity;
                     game.Continue();
                     var book = game.Finance(manager).Book;
-                    Assert.Equal(GameState.StartMoney + cumulative + book.CurrentTotal, manager.Money);
+                    Assert.Equal(FinanceRules.StartMoney(manager.Level) + cumulative + book.CurrentTotal, manager.Money);
                     var homeGames = HomeGames(game, manager.ClubIndex);
                     minTickets += (homeGames - settledHomeGames) * 50L * price;
                     maxTickets += (homeGames - settledHomeGames) * (long)capacity * price;

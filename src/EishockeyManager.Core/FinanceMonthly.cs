@@ -11,6 +11,13 @@ public static partial class FinanceRules
     public const int ThirdsPerMark = 3;
 
     /// <summary>
+    /// Startkonto in DM. [ORIGINAL] em.exe 0x29BD5: 1.200.000 + 150.000 · (5 − Level) Drittel
+    /// = 400.000 + 50.000 · (5 − Level) DM (Karriere-Video Level 3: 500.000 DM, UI-Video Level 5: 400.000 DM).
+    /// </summary>
+    public static long StartMoney(int level) =>
+        ToMarks(1_200_000L + 150_000L * (ManagerSetup.LevelCount - 1 - level));
+
+    /// <summary>
     /// [ORIGINAL] em.exe Datei 0x3E819 ff.: Sockel der Monatsausgaben 130.000 Drittel minus 10.000 je Stufe
     /// „5 − Level“ minus 20 × Ligawert (DGROUP 0x52C2: 2400, 1800, 990 für Bundesliga, 2. Liga, Oberliga).
     /// </summary>

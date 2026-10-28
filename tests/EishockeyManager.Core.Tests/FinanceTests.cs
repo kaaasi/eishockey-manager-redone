@@ -13,7 +13,7 @@ public class FinanceTests
 
         Assert.Equal(100_000, game.DepositToBank(m, 100_000));
         Assert.Equal(100_000, bank.Savings);
-        Assert.Equal(GameState.StartMoney - 100_000, m.Money);
+        Assert.Equal(FinanceRules.StartMoney(m.Level) - 100_000, m.Money);
 
         Assert.Equal(150_000, game.WithdrawFromBank(m, 150_000));
         Assert.Equal(0, bank.Savings);
@@ -57,7 +57,7 @@ public class FinanceTests
 
         Assert.Equal(10, game.BuyStock(m, 0, 10));
         Assert.Equal(10L * price, game.DepotPurchaseCost(m));
-        Assert.Equal(GameState.StartMoney - 10L * price, m.Money);
+        Assert.Equal(FinanceRules.StartMoney(m.Level) - 10L * price, m.Money);
 
         stock.Price = price + 10;
         Assert.Equal(10L * (price + 10), game.DepotValue(m));
@@ -90,7 +90,7 @@ public class FinanceTests
         Assert.True(book.Current(FinanceCategory.Eintritt) > 0);
         Assert.True(book.Current(FinanceCategory.Gehaelter) < 0);
         Assert.True(book.Current(FinanceCategory.Unterhalt) < 0);
-        Assert.Equal(GameState.StartMoney + book.CurrentTotal, m.Money);
+        Assert.Equal(FinanceRules.StartMoney(m.Level) + book.CurrentTotal, m.Money);
         // Kein Absturz in den Ruin und keine Geldschwemme innerhalb einer Hauptrunde
         Assert.InRange(m.Money, -1_500_000, 3_000_000);
         Assert.NotNull(game.Finance(m).LastHomeGame);

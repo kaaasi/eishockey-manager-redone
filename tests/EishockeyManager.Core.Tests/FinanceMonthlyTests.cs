@@ -40,6 +40,21 @@ public class FinanceMonthlyTests
     private static readonly int[] BerlinerSalaries =
         [1500, 1500, 1100, 1300, 1000, 1100, 1100, 1300, 1000, 1000, 1400, 1000, 1000, 1300, 1300, 900, 1100, 1100, 1100, 1100];
 
+    /// <summary>
+    /// #78: Startkonto [ORIGINAL] em.exe 0x29BD5: 1.200.000 + 150.000 · (5 − Level) Drittel = 400.000 + 50.000 · (5 − Level) DM.
+    /// Belege: Karriere-Video 500.000 DM (Level 3), UI-Video 400.000 DM (Level 5). Vorher immer 400.000 DM.
+    /// </summary>
+    [Theory]
+    [InlineData(0, 650_000)]
+    [InlineData(3, 500_000)]
+    [InlineData(5, 400_000)]
+    public void StartMoney_FollowsLevel_AsInEmExe(int level, long expected)
+    {
+        Assert.Equal(expected, FinanceRules.StartMoney(level));
+        var (_, me, _) = OberligaGame(level);
+        Assert.Equal(expected, me.Money);
+    }
+
     [Fact]
     public void BaseExpenses_FollowLevelAndLeague_AsInEmExe()
     {
@@ -132,7 +147,7 @@ public class FinanceMonthlyTests
         Assert.Equal(-(expectedBase + 23_200), book.Current(FinanceCategory.Unterhalt) - unterhaltBefore);
         Assert.Equal(-23_200, book.Current(FinanceCategory.Gehaelter) - gehaelterBefore);
         Assert.Equal(expectedIncome + game.Ads(me).MonthlyIncome, book.Current(FinanceCategory.Sponsoren) - sponsorenBefore);
-        Assert.Equal(GameState.StartMoney + book.CurrentTotal, me.Money);
+        Assert.Equal(FinanceRules.StartMoney(me.Level) + book.CurrentTotal, me.Money);
     }
 
     [Fact]
@@ -160,7 +175,7 @@ public class FinanceMonthlyTests
         var perDay = 23_360L * 3 / (DateTime.DaysInMonth(previous.Year, previous.Month) + 1);
         var firstDay = 23_360L * 3 / (DateTime.DaysInMonth(first.Year, first.Month) + 1);
         Assert.Equal((perDay * elapsedDays + firstDay) / 3, booked);
-        Assert.Equal(GameState.StartMoney + book.CurrentTotal, me.Money);
+        Assert.Equal(FinanceRules.StartMoney(me.Level) + book.CurrentTotal, me.Money);
     }
 
     [Fact]

@@ -92,7 +92,7 @@ public class SeasonPaymentTests
                 var book = game.Finance(manager).Book;
                 Assert.Equal(result.Premium, book.Current(FinanceCategory.Praemien));
                 // passiver Manager: keine neutralen Umbuchungen, also Kontostand = Start + Finanzbuch
-                Assert.Equal(GameState.StartMoney + book.CurrentTotal, manager.Money);
+                Assert.Equal(FinanceRules.StartMoney(manager.Level) + book.CurrentTotal, manager.Money);
                 premiums += result.Premium;
             }
 

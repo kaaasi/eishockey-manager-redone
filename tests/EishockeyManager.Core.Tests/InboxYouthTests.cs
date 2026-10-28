@@ -28,10 +28,10 @@ public class InboxYouthTests
         var (anna, bernd) = (game.Managers[0], game.Managers[1]);
         var request = game.RequestLoan(borrower: 0, lender: 1, 50_000)!;
         Assert.Same(request, Assert.Single(game.Inbox(bernd)));
-        Assert.Equal(GameState.StartMoney, anna.Money);
+        Assert.Equal(FinanceRules.StartMoney(anna.Level), anna.Money);
 
         Assert.True(game.Answer(bernd, request, yes: true));
-        Assert.Equal(GameState.StartMoney + 50_000, anna.Money);
+        Assert.Equal(FinanceRules.StartMoney(anna.Level) + 50_000, anna.Money);
         Assert.Equal(50_000, game.LoanAmount(lender: 1, borrower: 0));
         Assert.False(game.Answer(bernd, request, yes: true)); // nur einmal
     }
@@ -143,6 +143,6 @@ public class InboxYouthTests
         while (club.Players.Count < TalentScout.MaxSquad)
             club.Players.Add(new Player { Name = "X", Role = Formats.PlayerRole.Forward });
         Assert.Equal(TalentSearchStart.SquadFull, game.StartTalentSearch(me));
-        Assert.Equal(GameState.StartMoney, me.Money);
+        Assert.Equal(FinanceRules.StartMoney(me.Level), me.Money);
     }
 }

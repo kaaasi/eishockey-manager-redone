@@ -43,7 +43,7 @@ public class FinanceScreenTests
         Assert.Equal(100, screen.LeftAmount);
         Press(d, FinanceScreen.LeftArrow);
         Assert.Equal(100, game.Finance(me).Holdings[1].Count);
-        Assert.Equal(GameState.StartMoney - 100L * price, me.Money);
+        Assert.Equal(FinanceRules.StartMoney(me.Level) - 100L * price, me.Money);
         Assert.Equal(0, screen.LeftAmount);
 
         Press(d, FinanceScreen.RightPlus, right: true);  // 100 verkaufen
@@ -51,7 +51,7 @@ public class FinanceScreenTests
         Assert.Equal(100, screen.RightAmount);
         Press(d, FinanceScreen.RightArrow);
         Assert.Equal(0, game.Finance(me).Holdings[1].Count);
-        Assert.Equal(GameState.StartMoney, me.Money);
+        Assert.Equal(FinanceRules.StartMoney(me.Level), me.Money);
     }
 
     [GameDataFact]
@@ -73,7 +73,7 @@ public class FinanceScreenTests
         Press(d, FinanceScreen.LeftArrow);
         Assert.Equal(0, bank.Savings);
         Assert.Equal(70_000, bank.Credit);
-        Assert.Equal(GameState.StartMoney + 70_000, me.Money);
+        Assert.Equal(FinanceRules.StartMoney(me.Level) + 70_000, me.Money);
     }
 
     [GameDataFact]
