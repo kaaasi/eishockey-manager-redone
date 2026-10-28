@@ -20,13 +20,15 @@ public class SeasonPaymentTests
     private static int HomeGames(GameState game, int club) =>
         game.Results.Count(r => r.Home == club)
         + game.PlayoffResults.Count(r => r.Home == club)
-        + game.RelegationGroups.Sum(g => g.Results.Count(r => r.Home == club));
+        + game.RelegationGroups.Sum(g => g.Results.Count(r => r.Home == club))
+        + game.CupMatches.Count(r => r.Home == club); // DEB-Pokal (Paket „wettbewerbe“)
 
     [Fact]
     public void EveryHomeGame_IncludingPlayoffsAndRelegation_IsSettledExactlyOnce()
     {
         var playoffs = 0;
         var relegation = 0;
+        var cup = 0;
         for (var seed = 1; seed <= 3; seed++)
         {
             var game = TwoBundesligaManagers(seed);
@@ -65,17 +67,22 @@ public class SeasonPaymentTests
                 var club = game.Managers[i].ClubIndex;
                 playoffs += game.PlayoffResults.Count(r => r.Home == club);
                 relegation += game.RelegationGroups.Sum(g => g.Results.Count(r => r.Home == club));
+                cup += game.CupMatches.Count(r => r.Home == club);
             }
         }
         Assert.True(playoffs > 0, "Kein Heimspiel in Play-Offs – Test prüft nichts");
         Assert.True(relegation > 0, "Kein Heimspiel in Aufstiegsrunde – Test prüft nichts");
+        Assert.True(cup > 0, "Kein Heimspiel im DEB-Pokal – Test prüft nichts");
     }
 
     [Fact]
     public void SeasonPremium_IsBookedOnce_InOwnCategory()
     {
+        // Seit Runde 3 (Finanzen Teil 1) gibt es Prämien nur noch für Titel und Aufstieg, nicht für
+        // Tabellenplätze. Welche Seeds einen Titel für einen Manager-Verein ergeben, hängt von allen
+        // Wettbewerben ab; deshalb mindestens drei Seeds und weiter, bis eine Prämie geprüft wurde.
         var premiums = 0L;
-        for (var seed = 1; seed <= 3; seed++)
+        for (var seed = 1; seed <= 3 || (premiums == 0 && seed <= 12); seed++)
         {
             var game = TwoBundesligaManagers(seed);
             while (game.Phase == SeasonPhase.Running || game.Phase == SeasonPhase.ClubSeasonOver)

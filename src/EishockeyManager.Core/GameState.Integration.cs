@@ -7,7 +7,8 @@ namespace EishockeyManager.Core;
 public sealed partial class GameState
 {
     /// <summary>
-    /// Spielstart nach der Kaderanlage: Börse, Werbeangebote und Trainingspläne für alle Manager vorbereiten.
+    /// Spielstart nach der Kaderanlage: Börse, Werbeangebote und Trainingspläne für alle Manager vorbereiten,
+    /// Pokalwettbewerbe anmelden.
     /// Verarbeitet keinen Tag; die Bildschirme lesen danach ausschließlich den vorhandenen Zustand.
     /// </summary>
     internal void InitializeManagerSystems()
@@ -18,6 +19,9 @@ public sealed partial class GameState
             RenewOffers(manager);
             PrepareTraining(manager);
         }
+
+        // Paket „wettbewerbe“: DEB-Pokal (später Europapokal, WM) nach dem Spielmodus anmelden und auslosen.
+        InitializeCompetitions();
     }
 
     /// <summary>Jeder Tag der Zeitleiste, bevor dessen Spiele ausgetragen werden.</summary>
@@ -31,6 +35,18 @@ public sealed partial class GameState
 
         // Transfermarkt: je gespieltem Ligaspieltag neue Angebote und Gebote
         TransferMarket.CatchUp(this);
+
+        // Verträge: Spieler im letzten Vertragsjahr kündigen an, ob sie verlängern (Spur „kader“, R2-11)
+        AnnounceContractEnds(day);
+
+        // Paket „wettbewerbe“: Ewige Tabelle, Ewige Bilanz und „Früher“ am Saisonende fortschreiben
+        // (vor der Titelvergabe in FinishSeason; Liga, Pokale und Abschlusstabellen stehen dann fest).
+        if (day == SeasonCalendar.SeasonEnd)
+            RecordSeasonStatistics();
+
+        // Paket „wettbewerbe“: Werte Deutschlands ohne Bundestrainer an den Tagen mit Markierung 255 neu auswürfeln.
+        if (day is SeasonCalendar.ClubSeasonEnd or SeasonCalendar.SeasonEnd)
+            RerollNationalRatings();
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>

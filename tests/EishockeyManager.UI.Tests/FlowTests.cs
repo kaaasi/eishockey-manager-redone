@@ -17,10 +17,8 @@ public class MenuEntryTests(ITestOutputHelper output)
     public static readonly IReadOnlySet<string> DocumentedPlaceholders = new HashSet<string>
     {
         "Highscore",
-        "Totale", "Früher", "Verein", "Spieler", "Fairplay", "WM-Statistik",
-        "Tabelle WM",
-        "Paarungen 1. Liga", "Paarungen 2. Liga", "Paarungen Oberliga", "DEB-Pokal", "Europapokal", "WM",
-        "Stärken 1. Liga", "Stärken 2. Liga", "Stärken Oberliga", "Stärken Länderteams",
+        "Verein", "Spieler", "Fairplay", "WM-Statistik",
+        "Paarungen 1. Liga", "Paarungen 2. Liga", "Paarungen Oberliga",
         "Laden", "Sichern", "Einstellungen",
     };
 

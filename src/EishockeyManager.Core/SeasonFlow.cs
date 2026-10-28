@@ -322,7 +322,7 @@ public sealed partial class GameState
                     _ => SeasonEvent.EuropeanCupWinner,
                 });
             }
-            var premium = Premium(league, rank) + (events.Contains(SeasonEvent.GermanChampion) ? 1_000_000 : 0);
+            var premium = SeasonPremium(league, rank, events);
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
             record.Managers.Add(new ManagerSeasonResult(i, club.Index, league, rank, premium, events));
@@ -331,24 +331,6 @@ public sealed partial class GameState
         History.Add(record);
         Phase = SeasonLimit is { } limit && History.Count >= limit ? SeasonPhase.GameOver : SeasonPhase.SeasonOver;
     }
-
-    /// <summary>
-    /// Prämie für die Platzierung in der Hauptrunde. [APPROX] Belegt ist nur: 1. Platz der Oberliga = 400.000 DM,
-    /// 4. Platz der Oberliga = keine (Video). Übrige Werte geschätzt; Deutscher Meister zusätzlich 1 Mio. DM.
-    /// </summary>
-    public static long Premium(League league, int rank) => (league, rank) switch
-    {
-        (League.Bundesliga, 1) => 1_000_000,
-        (League.Bundesliga, 2) => 700_000,
-        (League.Bundesliga, 3) => 500_000,
-        (League.ZweiteLiga, 1) => 600_000,
-        (League.ZweiteLiga, 2) => 400_000,
-        (League.ZweiteLiga, 3) => 200_000,
-        (League.Oberliga, 1) => 400_000,
-        (League.Oberliga, 2) => 200_000,
-        (League.Oberliga, 3) => 100_000,
-        _ => 0,
-    };
 
     /// <summary>Nach dem Bildschirm „Saisonende“: Auf-/Abstieg anwenden, neue Spielpläne, Kalender auf den 10. September.</summary>
     public void StartNextSeason()
@@ -414,3 +396,4 @@ public sealed partial class GameState
             CurrentManager = (CurrentManager + 1) % Managers.Count;
     }
 }
+

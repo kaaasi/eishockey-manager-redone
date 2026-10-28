@@ -3,6 +3,24 @@ namespace EishockeyManager.Core;
 /// <summary>Eigentümer und unveränderter Stammvertrag während einer Leihe bis zum Saisonende.</summary>
 public sealed record PlayerLoan(Club Origin, int ContractYears, int MonthlySalary, bool Insured);
 
+/// <summary>
+/// Ankündigung eines Spielers im letzten Vertragsjahr (Posteingang, Texte aus em.exe). Gilt bis zum Saisonwechsel.
+/// </summary>
+public enum ContractNotice
+{
+    /// <summary>Noch nichts angekündigt.</summary>
+    None,
+
+    /// <summary>„… bietet Ihnen an, von 1 auf n Jahre zu verlängern.“</summary>
+    Offered,
+
+    /// <summary>„… kündigt an, daß er seinen Vertrag nicht mehr verlängern wird.“ – nicht verhandlungsbereit.</summary>
+    Refused,
+
+    /// <summary>Wie <see cref="Refused"/>, setzt sich aber mit Ablauf des Vertrages zur Ruhe.</summary>
+    Retiring,
+}
+
 /// <summary>Vertragsdaten eines Spielers (Bildschirm „Verträge“: V.DAUER und Gehalt).</summary>
 public sealed partial class Player
 {
@@ -25,6 +43,12 @@ public sealed partial class Player
     /// oder null.
     /// </summary>
     public int? RejectedOfferDay { get; set; }
+
+    /// <summary>Ankündigung im letzten Vertragsjahr (nur Spieler der Manager-Vereine), bis zum Saisonwechsel.</summary>
+    public ContractNotice Notice { get; set; }
+
+    /// <summary>Bei <see cref="ContractNotice.Offered"/>: angebotene Gesamtlaufzeit („von 1 auf n Jahre“).</summary>
+    public int NoticeYears { get; set; }
 
     /// <summary>„2 Jahre“, „1 Jahr“.</summary>
     public static string YearsText(int years) => years == 1 ? "1 Jahr" : $"{years} Jahre";
@@ -50,14 +74,18 @@ public sealed partial class GameState
         // Vorprüfung und Ausführung nicht auseinanderlaufen (Review PR35-01).
     }
 
-    /// <summary>Gemeinsamer Kaderübergang: alle Spieler einmal altern, Leihen zurückführen, Verträge beenden.</summary>
+    /// <summary>
+    /// Gemeinsamer Kaderübergang: alle Spieler einmal altern, Leihen zurückführen, Verträge beenden, Laufbahnenden,
+    /// Kader-KI der Computervereine (Verlängern, Neuzugänge aus Pool und Talenten), Pool begrenzen.
+    /// </summary>
     private void StartSquadSeason()
     {
-        foreach (var player in TransferMarket.FreeAgents)
-        {
-            player.Age++;
-            player.RejectedOfferDay = null;
-        }
+        var managed = Managers.Select(m => m.ClubIndex).ToHashSet();
+        // Kadergröße je Position vor dem Wechsel: Computervereine füllen höchstens bis dahin wieder auf.
+        var before = Clubs.Where(c => c.Players.Count > 0 && !managed.Contains(c.Index)).ToDictionary(c => c,
+            c => Enum.GetValues<Formats.PlayerRole>().ToDictionary(r => r, r => c.Players.Count(p => p.Role == r)));
+
+        AgeFreeAgents();
         // Snapshot vor Rückgaben: Vereinsreihenfolge darf keinen Spieler zweimal altern lassen.
         var players = Clubs.SelectMany(c => c.Players.Select(p => (Club: c, Player: p))).ToArray();
         var returns = new List<(Club Owner, Player Player)>();
@@ -65,6 +93,9 @@ public sealed partial class GameState
         {
             player.Age++;
             player.RejectedOfferDay = null;
+            var notice = player.Notice;
+            player.Notice = ContractNotice.None;
+            player.NoticeYears = 0;
             var owner = club;
             if (player.Loan is { } loan)
             {
@@ -79,11 +110,21 @@ public sealed partial class GameState
             }
 
             player.ContractYears = Math.Max(0, player.ContractYears - 1);
-            // [APPROX] Integration Welle B: Computervereine verlängern auslaufende Verträge selbst, bis die Kader-KI
-            // (Verlängerung, Neuzugänge, Ruhestand) rekonstruiert ist. Ohne das wären ab der dritten Saison alle
-            // Kader leer, weil jeder Startvertrag zwei Jahre läuft. Gehalt bleibt unverändert.
-            if (player.ContractYears == 0 && !Managers.Any(m => m.ClubIndex == owner.Index))
-                player.ContractYears = SquadSetup.StartContractYears;
+            if (!managed.Contains(owner.Index))
+            {
+                // Kader-KI (R2-12) statt der Überbrückung „Computervereine verlängern immer“ aus Welle B.
+                ComputerContractDecision(owner, club, player);
+                if (RetiredPlayers.Contains(player))
+                    continue;
+            }
+            else if (player.ContractYears == 0 && notice == ContractNotice.Retiring)
+            {
+                // „… wird sich mit Ablauf des Vertrages zur Ruhe setzen.“ – angekündigt im letzten Vertragsjahr.
+                club.Players.Remove(player);
+                club.Lineup.Remove(player);
+                Retire(owner, player);
+                continue;
+            }
             if (player.ContractYears == 0)
             {
                 owner.Players.Remove(player);
@@ -110,6 +151,8 @@ public sealed partial class GameState
             player.Number = PlayerFactory.FreeNumber(owner, player);
             owner.Players.Add(player); // Stammvertrag erhalten; Join würde ihn überschreiben.
         }
+        RefillComputerSquads(before);
+        LimitFreeAgents();
         CleanLineups();
         TransferMarket.StartSeason(this);
     }
@@ -129,6 +172,12 @@ public enum NegotiationResult
 
     /// <summary>„Dieser Betrag ist nicht erlaubt (unfair) !“</summary>
     Unfair,
+
+    /// <summary>„… ist im Moment nicht verhandlungsbereit.“ – Spieler hat angekündigt, nicht zu verlängern.</summary>
+    NotWilling,
+
+    /// <summary>„… wird sich mit Ablauf des Vertrages zur Ruhe setzen.“</summary>
+    Retiring,
 }
 
 /// <summary>
@@ -175,6 +224,11 @@ public static class Contracts
     /// </summary>
     public static NegotiationResult Offer(Player p, int years, int salary, bool insured, int matchDay, Random random)
     {
+        // Angekündigte Absage bzw. Ruhestand gilt bis zum Saisonwechsel (R2-11).
+        if (p.Notice == ContractNotice.Refused)
+            return NegotiationResult.NotWilling;
+        if (p.Notice == ContractNotice.Retiring)
+            return NegotiationResult.Retiring;
         if (salary < MinSalary || years < MinYears || years > MaxYears)
             return NegotiationResult.Unfair;
         if (p.RejectedOfferDay == matchDay)
@@ -196,6 +250,18 @@ public static class Contracts
         p.Insured = insured;
         return NegotiationResult.Accepted;
     }
+
+    /// <summary>
+    /// Meldung zum Ergebnis einer Verhandlung mit diesem Spieler. Die beiden Absagen nennen den Namen
+    /// (Originaltexte aus em.exe: „ist im Moment / nicht verhandlungs- / bereit.“, „wird sich mit /
+    /// Ablauf des Vertrages / zur Ruhe setzen.“; Name als eigene Zeile [APPROX]).
+    /// </summary>
+    public static string[] Message(NegotiationResult result, Player p) => result switch
+    {
+        NegotiationResult.NotWilling => [p.Name, "ist im Moment", "nicht verhandlungs-", "bereit."],
+        NegotiationResult.Retiring => [p.Name, "wird sich mit", "Ablauf des Vertrages", "zur Ruhe setzen."],
+        _ => Message(result),
+    };
 
     /// <summary>Text der Meldung zum Ergebnis (Originaltexte aus em.exe).</summary>
     public static string[] Message(NegotiationResult result) => result switch
