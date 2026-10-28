@@ -57,7 +57,7 @@ des Schemas.
 ```json
 {
   "kennung": "EISHOCKEY-MANAGER-REDONE-SPIELSTAND",
-  "schema": 1,
+  "schema": 2,
   "spiel":   { …Felder von GameState… },
   "vereine": [ { …Felder von Club… }, … ],     // Reihenfolge = GameState.Clubs
   "manager": [ { …Felder von Manager… }, … ],  // Reihenfolge = GameState.Managers
@@ -98,6 +98,16 @@ kennt den Hash zur aktuellen Version. Wer ein Zustandsfeld hinzufügt, umbenennt
 nach. `CheckSchemaCoverage()` meldet Felder, deren Typ das Format nicht kennt (z. B. Delegaten), und – über
 `SaveGame.CoverageProbe()` – jedes Feld, das der Writer nicht schreibt oder der Reader nicht zurückliest. Die Probe
 schreibt für **jeden** erreichbaren Typ ein leeres Objekt, auch für Typen, die in keinem Beispielspielstand vorkommen (#81).
+
+**Migrationen:**
+
+| Von → nach | Anlass | Änderung |
+|---|---|---|
+| 1 → 2 | Spur finanzen-2 (#67) | Neue Felder `GameState.NationalAccount` (0 – in Schema 1 lag der Etat schon auf dem Vereinskonto), `ManagerFinance.CostLeague` (aktuelle Liga des Vereins), `InterestAccrualThirds`/`ManagerLoanAccrualThirds` (0), `SponsorOffer`/`SponsorContract.OptionMonths` (0). Finanzbuch: Kategorie „Gastronomie“ (Index 1) entfällt, ihr Betrag geht in „Eintritt“, die Summe bleibt. Test: `FinanceSaveGameTests`. |
+
+Hinweis: Das Finanzbuch speichert je Kategorie nur ein Feld nach dem Index von `FinanceCategory`. Eine Änderung dieser
+Aufzählung ändert den Schemaabdruck **nicht** (die Aufzählung kommt in keinem Feldtyp vor) und braucht trotzdem
+eine Migration.
 
 **Haltepunkte:** Gesichert wird zwischen zwei Aufrufen von `GameState.Continue()`. Die WM läuft nach dem Ende der
 Vereinssaison in einem einzigen Schritt; der letzte Haltepunkt davor ist `SeasonPhase.ClubSeasonOver`.

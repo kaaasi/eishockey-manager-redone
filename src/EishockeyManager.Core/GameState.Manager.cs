@@ -49,7 +49,11 @@ public sealed partial class GameState
 
     /// <summary>Finanzdaten eines Managers (beim ersten Zugriff angelegt).</summary>
     public ManagerFinance Finance(Manager manager) =>
-        manager.FinanceData ??= new ManagerFinance { Stadium = Stadium.ForLeague(Clubs[manager.ClubIndex].League) };
+        manager.FinanceData ??= new ManagerFinance
+        {
+            Stadium = Stadium.ForLeague(Clubs[manager.ClubIndex].League),
+            CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga,
+        };
 
     /// <summary>Bucht einen Betrag auf das Konto und ins Finanzbuch.</summary>
     public void Book(Manager manager, FinanceCategory category, long amount)
@@ -58,18 +62,26 @@ public sealed partial class GameState
         Finance(manager).Book.Add(category, amount);
     }
 
-    /// <summary>[APPROX] Regelmäßige Einnahmen pro Monat (Sponsoren, Grundeinnahmen) – Anzeige „Einnahmen“.</summary>
+    /// <summary>
+    /// Anzeige „Einnahmen“ (Werbung, Statistik): Grundeinnahmen, Werbeverträge, Zinsertrag auf Forderungen.
+    /// [ORIGINAL] em.exe 0x3E657 mit Flag 1 (Spur finanzen-2).
+    /// </summary>
     public long MonthlyIncome(Manager manager) =>
-        FinanceRules.BaseIncome(Clubs[manager.ClubIndex].League) + SponsorIncome(manager);
+        MonthlyBaseIncome(manager) + SponsorIncome(manager) + MonthlyReceivableInterest(manager);
 
     /// <summary>
-    /// Regelmäßige Ausgaben pro Monat – Anzeige „Ausgaben“: Vertragsgehälter, Versicherungen, Unterhalt, Jugendförderung.
+    /// Anzeige „Ausgaben“: Grundausgaben, Gehälter, Versicherungen, Stadionunterhalt, Jugendförderung, 5/8 der
+    /// wöchentlichen Trainingskosten, Kreditzinsen und 10 % eines negativen Kontostands. [ORIGINAL] 0x3E811 mit Flags 1, 1.
     /// </summary>
     public long MonthlyExpenses(Manager manager)
     {
         var club = Clubs[manager.ClubIndex];
-        return FinanceRules.MonthlyWages(club) + FinanceRules.MonthlyInsurance(club)
-            + Finance(manager).Stadium.MonthlyUpkeep + RecurringExpenses(manager);
+        var training = manager.Training.WeeklyCost;
+        var expenses = MonthlyBaseExpenses(manager) + FinanceRules.MonthlyWages(club) + FinanceRules.MonthlyInsurance(club)
+            + Finance(manager).Stadium.MonthlyUpkeep + RecurringExpenses(manager)
+            + training / 8 + training / 2 + MonthlyDebtInterest(manager)
+            + (manager.Money < 0 ? -manager.Money / 10 : 0);
+        return Math.Max(0, expenses);
     }
 
     /// <summary>
@@ -84,33 +96,31 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Gemeinsame Spielabrechnung für alle Wettbewerbe (Liga, Play-Offs, Aufstiegsrunde; später Pokale über
-    /// <see cref="ISeasonCompetition"/>): Zuschauer, Eintritt und Gastronomie für jeden Manager des Heimvereins,
-    /// genau einmal je ausgetragenem Spiel. <paramref name="tableMatchDay"/> = Ligaspieltag, dessen Vortabelle
-    /// die Nachfrage bestimmt; nach der Hauptrunde die Abschlusstabelle.
-    /// [APPROX] Nachsaisonspiele nutzen dieselbe Zuschauerformel wie Ligaspiele (keine Neukalibrierung in Runde 2).
+    /// Gemeinsame Spielabrechnung für alle Wettbewerbe (Liga, Play-Offs, Aufstiegsrunde, Pokale über
+    /// <see cref="ISeasonCompetition"/>): Zuschauer und Eintritt für jeden Manager des Heimvereins, genau einmal je
+    /// ausgetragenem Spiel. <paramref name="tableMatchDay"/> = Ligaspieltag, dessen Vortabelle die Nachfrage
+    /// bestimmt; nach der Hauptrunde die Abschlusstabelle. <paramref name="importance"/> = Wettbewerbsbonus der
+    /// Zuschauerformel (0 Liga, 1 DEB-Pokal und Play-Off/Aufstieg, 2 Europapokal).
+    /// [ORIGINAL] em.exe 0x3F7DE: Konto += Zuschauer × Eintritt; eine Gastronomie-Einnahme gibt es im Original nicht.
     /// </summary>
-    public void SettleHomeMatch(int home, int away, int tableMatchDay)
+    public void SettleHomeMatch(int home, int away, int tableMatchDay, int importance = 0)
     {
         foreach (var manager in Managers.Where(m => m.ClubIndex == home))
         {
             var finance = Finance(manager);
             var stadium = finance.Stadium;
-            var spectators = Spectators(Clubs[home], Clubs[away], stadium, tableMatchDay, FinanceRandom);
+            var spectators = Spectators(Clubs[home], Clubs[away], stadium, tableMatchDay, FinanceRandom, importance, manager.Level);
             var tickets = (long)spectators * stadium.TicketPrice;
-            var gastronomy = (long)spectators * stadium.GastronomyPerSpectator;
             Book(manager, FinanceCategory.Eintritt, tickets);
-            if (gastronomy > 0)
-                Book(manager, FinanceCategory.Gastronomie, gastronomy);
-            finance.LastHomeGame = (spectators, tickets + gastronomy);
+            finance.LastHomeGame = (spectators, tickets);
         }
     }
 
-    /// <summary>Spiele der Play-Offs und Aufstiegsrunden eines Termins abrechnen (nach der Hauptrunde).</summary>
+    /// <summary>Spiele der Play-Offs und Aufstiegsrunden eines Termins abrechnen (nach der Hauptrunde, Bonus 1).</summary>
     public void SettlePostseasonMatches(IEnumerable<(int Home, int Away)> matches)
     {
         foreach (var (home, away) in matches)
-            SettleHomeMatch(home, away, PlayedMatchDays + 1);
+            SettleHomeMatch(home, away, PlayedMatchDays + 1, importance: 1);
     }
 
     /// <summary>Rechnet alle Tage bis einschließlich <paramref name="day"/> ab (Monats-, Wochen- und Tageswechsel).</summary>
@@ -122,6 +132,11 @@ public sealed partial class GameState
             var date = SeasonCalendar.LayoutDate(FinanceDay);
             Stocks.Advance(FinanceRandom);
             ExpireMessages();
+            if (FinanceDay > 0)
+            {
+                AccrueDailyInterest(date);
+                DailySponsorOffers(date);
+            }
             if (FinanceDay > 0 && date.DayOfWeek == DayOfWeek.Monday)
                 WeeklyFinances();
             if (FinanceDay > 0 && date.Day == 1)
@@ -133,7 +148,11 @@ public sealed partial class GameState
     public void StartFinanceSeason()
     {
         foreach (var manager in Managers)
+        {
             Finance(manager).Book.NewSeason();
+            // [ORIGINAL] 0x563C0: Kostenstufe = Liga der neuen Saison (Spur finanzen-2).
+            Finance(manager).CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga;
+        }
         FinanceDay = -1;
     }
 
@@ -152,11 +171,13 @@ public sealed partial class GameState
             var insurance = FinanceRules.MonthlyInsurance(club);
             if (insurance > 0)
                 Book(manager, FinanceCategory.Versicherung, -insurance);
-            Book(manager, FinanceCategory.Unterhalt, -Finance(manager).Stadium.MonthlyUpkeep);
-            Book(manager, FinanceCategory.Sponsoren, FinanceRules.BaseIncome(club.League));
+            // [ORIGINAL] Monatsabschluss 0x3F02C: Grundausgaben und Stadionunterhalt (Finanzbuch „Unterhalt“),
+            // Grundeinnahmen („Sponsoren“), danach das Zinskonto des Tagesabschlusses.
+            Book(manager, FinanceCategory.Unterhalt, -(MonthlyBaseExpenses(manager) + Finance(manager).Stadium.MonthlyUpkeep));
+            Book(manager, FinanceCategory.Sponsoren, MonthlyBaseIncome(manager));
             MonthlyManagerFinances(manager);
+            BookAccruedInterest(manager);
         }
-        PayInterest();
     }
 
     // Erweiterungspunkte für weitere Teile des Pakets (Werbung, Stadionbau, Jugend …).

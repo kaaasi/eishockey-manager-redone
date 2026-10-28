@@ -100,7 +100,7 @@ public sealed partial class GameState
                     ads.Contracts.Add(new SponsorContract
                     {
                         Kind = old.Kind, Sponsor = old.Sponsor, Boards = old.Boards,
-                        MonthlyAmount = old.MonthlyAmount, MonthsLeft = 12, // [APPROX] Laufzeit der Verlängerung
+                        MonthlyAmount = old.MonthlyAmount, MonthsLeft = old.OptionMonths > 0 ? old.OptionMonths : 12, // Verlängerungsoption des Vertrags (Spur finanzen-2)
                     });
                 break;
             case MessageKind.LoanRequest:
@@ -126,8 +126,9 @@ public sealed partial class GameState
     private void ContractExpired(Manager manager, SponsorContract contract)
     {
         var name = contract.Partner.Name;
-        // [APPROX] Wie oft eine Firma verlängern will, ist unbekannt.
-        if (FinanceRandom.NextDouble() < 0.6)
+        // [ORIGINAL] 0x3EFB2: Nur Verträge mit Verlängerungsoption führen zur Frage; sonst endet der Vertrag still
+        // (die Absage-Meldung ist eine Ergänzung des Remakes, Spur finanzen-2).
+        if (contract.OptionMonths > 0)
             Post(manager, new Message
             {
                 Kind = MessageKind.SponsorRenewal,

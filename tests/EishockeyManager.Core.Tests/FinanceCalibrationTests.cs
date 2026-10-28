@@ -24,7 +24,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
     }
 
     [Theory]
-    [InlineData(League.Bundesliga, 1, false, false, 0)]
+    [InlineData(League.Bundesliga, 1, false, false, 100000)] // Hauptrunden-Erster auch in der Bundesliga (0xE0:0x20, Spur finanzen-2)
     [InlineData(League.Bundesliga, 3, false, true, 500000)]
     [InlineData(League.Oberliga, 1, false, false, 100000)]
     [InlineData(League.Oberliga, 1, true, false, 400000)]
@@ -57,25 +57,120 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
         Assert.Equal(expected, game.Finance(game.ActiveManager).Book.Current(FinanceCategory.Praemien));
     }
 
+    private static int HomeGames(GameState game, int club) =>
+        game.Results.Count(r => r.Home == club)
+        + game.PlayoffResults.Count(r => r.Home == club)
+        + game.RelegationGroups.Sum(g => g.Results.Count(r => r.Home == club))
+        + game.CupMatches.Count(r => r.Home == club);
+
+    /// <summary>
+    /// Mehrsaisonprobe (Spur finanzen-2): vier Saisonwechsel, passiv und aktiv, Oberliga und Bundesliga, drei Seeds,
+    /// mit Originaldaten. Sollspanne je Kategorie und daraus der Kontokorridor, siehe <see cref="AssertEnvelope"/>.
+    /// </summary>
     [GameDataTheory]
     [InlineData(League.Oberliga, false)]
     [InlineData(League.Oberliga, true)]
     [InlineData(League.Bundesliga, false)]
     [InlineData(League.Bundesliga, true)]
-    public void FourSeasonChanges_AccountAndLedgerStayWithinDocumentedEnvelope(League league, bool active)
+    public void FourSeasonChanges_AccountAndLedgerStayWithinOriginalEnvelope(League league, bool active) =>
+        AssertEnvelope(() => ClubDatabase.Load(TestGameData.Load()), league, active);
+
+    /// <summary>Dieselbe Probe mit der synthetischen Datenbank, damit auch die CI den Kontokorridor prüft (#76).</summary>
+    [Theory]
+    [InlineData(League.Oberliga, false)]
+    [InlineData(League.Oberliga, true)]
+    [InlineData(League.Bundesliga, false)]
+    [InlineData(League.Bundesliga, true)]
+    public void FourSeasonChanges_Synthetic_AccountAndLedgerStayWithinOriginalEnvelope(League league, bool active) =>
+        AssertEnvelope(TestGames.CreateDatabase, league, active);
+
+    /// <summary>Teamwert-Höchstwert: Kondition und Technik je Abwehr und Sturm sind Spielerwerte 0–99 (0x3E657).</summary>
+    private const int MaxTeamValueSum = 4 * Player.MaxValue;
+
+    /// <summary>
+    /// Grundausgaben in Drittel-DM, unabhängig von der Produktionsformel aus den Konstanten in em.exe 0x3E811 notiert:
+    /// 130.000 − 10.000 · (5 − Level) − 20 · T[Liga] (T = 2400/1800/990) + 175.000 · (100 − 25) / 100 · (2 − Liga)
+    /// − 60.000 in der 2. Liga (Preisindex DGROUP 0x2BC = 100).
+    /// </summary>
+    private static long ExpectedBaseExpenseThirds(int level, League league)
     {
+        var tier = (int)league;
+        long[] t = [2400, 1800, 990];
+        return 130_000 - 10_000L * (5 - level) - 20 * t[tier] + 175_000L * 75 / 100 * (2 - tier) - (tier == 1 ? 60_000 : 0);
+    }
+
+    /// <summary>Stadionunterhalt in Drittel-DM (0x3E811): Σ Stufe · U + 15 · Sitzplätze + 12 · Stehplätze.</summary>
+    private static long ExpectedUpkeepThirds(Stadium stadium)
+    {
+        long[] u = [24_000, 7_500, 33_000, 3_000, 4_800, 9_000, 15_000, 15_000, 7_500];
+        return Enumerable.Range(0, Stadium.FeatureCount).Sum(i => stadium.Level((StadiumFeature)i) * u[i])
+               + 15L * stadium.Seats + 12L * stadium.Standing;
+    }
+
+    /// <summary>
+    /// Alle möglichen Saisonprämien als Summe der Einzelbeträge aus em.exe (Hauptrunden-Erster 100.000, Aufstieg
+    /// 300.000/500.000, Meister 500.000, zwei weitere Titel je 100.000; Bytes in
+    /// <see cref="OriginalPremiumAmounts_MatchExecutableInstructions"/>).
+    /// </summary>
+    private static readonly HashSet<long> PossiblePremiums = BuildPossiblePremiums();
+
+    private static HashSet<long> BuildPossiblePremiums()
+    {
+        long[] parts = [100_000, 500_000, 100_000, 100_000];
+        var sums = new HashSet<long>();
+        foreach (var promotion in new long[] { 0, 300_000, 500_000 })
+            for (var mask = 0; mask < 1 << parts.Length; mask++)
+                sums.Add(promotion + Enumerable.Range(0, parts.Length).Where(i => (mask & 1 << i) != 0).Sum(i => parts[i]));
+        return sums;
+    }
+
+    /// <summary>
+    /// Sollspanne aus den Formeln des Originals statt technischer Alarmgrenzen, je Saison:
+    /// <list type="bullet">
+    /// <item>Eintritt je Heimspiel zwischen 50 Zuschauern (Untergrenze der Zuschauerformel, 0x3F7A4) und der Kapazität.</item>
+    /// <item>Sponsoren höchstens sieben Monatsabschlüsse (1. Oktober bis 1. April) zu je 5 · Spieler · 396 / 3
+    ///   (Grundeinnahmen mit höchstmöglichen Teamwerten) plus der größten beobachteten Summe laufender Werbeverträge.
+    ///   Passiv: keine Verträge, und mit Kader mindestens 5 · Spieler · 4 / 3 je Monat.</item>
+    /// <item>Prämien = eine Summe der Einzelprämien aus em.exe.</item>
+    /// <item>Passiv: Unterhalt und Gehälter genau sieben Monatsabschlüsse (Konstanten aus em.exe bzw. Vertragsgehälter),
+    ///   alle übrigen Kategorien 0. Damit liegt der Saisonsaldo in einem geschlossenen Korridor.</item>
+    /// <item>Aktiv: alle übrigen Kategorien höchstens 0, also Saisonsaldo höchstens Eintritt + Sponsoren + Prämien (Obergrenzen).</item>
+    /// <item>Konto = Startkonto + Summe des Finanzbuchs nach jedem Schritt; Entlassungsgrenze nie erreicht.</item>
+    /// </list>
+    /// Gegenprobe (#76): hundertfache Grundeinnahmen in <c>MonthlyFinances</c> verletzen die Sponsoren-Obergrenze.
+    /// </summary>
+    private void AssertEnvelope(Func<ClubDatabase> database, League league, bool active)
+    {
+        const int MonthEnds = 7;
+        FinanceCategory[] bounded =
+        [
+            FinanceCategory.Eintritt, FinanceCategory.Sponsoren, FinanceCategory.Praemien,
+            FinanceCategory.Unterhalt, FinanceCategory.Gehaelter,
+        ];
         foreach (var seed in new[] { 3, 17, 41 })
         {
             var setup = new GameSetup();
             setup.Managers.Add(new ManagerSetup { Name = "Finanzprobe", ClubIndex = league == League.Oberliga ? 24 : 4 });
-            var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, seed);
+            var game = NewGame.Create(database(), setup, seed);
             var manager = game.ActiveManager;
+            Assert.Equal(FinanceRules.StartMoney(manager.Level), manager.Money);
             long cumulative = 0;
+            long lowest = long.MaxValue, highest = long.MinValue;
             for (var year = 0; year < 4; year++)
             {
                 var club = game.Clubs[manager.ClubIndex];
                 var roster = club.Players.Count;
                 var moneyAtStart = manager.Money;
+                var stadium = game.Finance(manager).Stadium;
+                var costLeague = game.Finance(manager).CostLeague;
+                var fixedPerMonth = FinanceRules.ToMarks(ExpectedBaseExpenseThirds(manager.Level, costLeague))
+                                    + FinanceRules.ToMarks(ExpectedUpkeepThirds(stadium));
+                var wagesPerMonth = club.Players.Sum(p => (long)p.MonthlySalary);
+                long minTickets = 0, maxTickets = 0;
+                var settledHomeGames = 0;
+                var maxRoster = roster;
+                var minRoster = roster;
+                long maxContracts = game.Ads(manager).MonthlyIncome;
                 for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
                 {
                     Assert.True(guard < 1000, "Saisonende nicht erreicht");
@@ -96,26 +191,67 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                             if (offer is not null) game.AcceptOffer(manager, slot, offer.Sponsor);
                         }
                     }
+                    maxContracts = Math.Max(maxContracts, game.Ads(manager).Contracts.Sum(c => c.MonthlyAmount));
+                    maxRoster = Math.Max(maxRoster, club.Players.Count);
+                    var price = stadium.TicketPrice;
+                    var capacity = stadium.Capacity;
                     game.Continue();
+                    maxRoster = Math.Max(maxRoster, club.Players.Count);
+                    minRoster = Math.Min(minRoster, club.Players.Count);
                     var book = game.Finance(manager).Book;
-                    Assert.Equal(GameState.StartMoney + cumulative + book.CurrentTotal, manager.Money);
+                    Assert.Equal(FinanceRules.StartMoney(manager.Level) + cumulative + book.CurrentTotal, manager.Money);
+                    var homeGames = HomeGames(game, manager.ClubIndex);
+                    minTickets += (homeGames - settledHomeGames) * 50L * price;
+                    maxTickets += (homeGames - settledHomeGames) * (long)capacity * price;
+                    settledHomeGames = homeGames;
+                    lowest = Math.Min(lowest, manager.Money);
+                    highest = Math.Max(highest, manager.Money);
                 }
                 Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
                 var finance = game.Finance(manager).Book;
-                output.WriteLine($"seed={seed}; club={club.Name}; start={league}; active={active}; year={year + 1}; league={club.League}; roster={roster}; begin={moneyAtStart}; end={manager.Money}; "
+                output.WriteLine($"seed={seed}; club={club.Name}; start={league}; active={active}; year={year + 1}; league={club.League}; roster={roster}; begin={moneyAtStart}; end={manager.Money}; homeGames={settledHomeGames}; "
                     + string.Join("; ", Enum.GetValues<FinanceCategory>().Select(c => $"{c}={finance.Current(c)}")));
-                // Vorläufige technische Schranken, keine nachgewiesene DOS-Balance:
-                // passiv höchstens 3 Mio. Oberliga bzw. 7 Mio. Bundesliga nach vier Jahren;
-                // aktiv zusätzlich bewusst angenommene Werbung und Gastronomie.
-                Assert.InRange(manager.Money, -1500000L, active ? 15000000L : league == League.Oberliga ? 3000000L : 7000000L);
+
+                // Sollspanne je Kategorie aus den Originalformeln:
+                var tickets = finance.Current(FinanceCategory.Eintritt);
+                Assert.InRange(tickets, minTickets, maxTickets);
+                var maxSponsors = MonthEnds * (FinanceRules.ToMarks(5L * maxRoster * MaxTeamValueSum) + maxContracts);
+                var sponsors = finance.Current(FinanceCategory.Sponsoren);
+                Assert.True(sponsors <= maxSponsors, $"Sponsoren {sponsors} über der Obergrenze {maxSponsors} (Saison {year + 1})");
+                var premiums = finance.Current(FinanceCategory.Praemien);
+                Assert.Contains(premiums, PossiblePremiums);
+
                 var total = finance.CurrentTotal;
-                cumulative += finance.CurrentTotal;
+                if (!active)
+                {
+                    Assert.Equal(0, maxContracts);
+                    var minSponsors = MonthEnds * FinanceRules.ToMarks(5L * minRoster * 4);
+                    Assert.True(sponsors >= minSponsors, $"Sponsoren {sponsors} unter {minSponsors}");
+                    Assert.Equal(-MonthEnds * fixedPerMonth, finance.Current(FinanceCategory.Unterhalt));
+                    Assert.Equal(-MonthEnds * wagesPerMonth, finance.Current(FinanceCategory.Gehaelter));
+                    foreach (var category in Enum.GetValues<FinanceCategory>().Except(bounded))
+                        Assert.True(finance.Current(category) == 0, $"{category} = {finance.Current(category)} beim passiven Manager");
+                    // Kontokorridor der Saison aus den Spannen oben.
+                    var fixedCosts = MonthEnds * (fixedPerMonth + wagesPerMonth);
+                    Assert.InRange(total, minTickets + minSponsors - fixedCosts, maxTickets + maxSponsors + PossiblePremiums.Max() - fixedCosts);
+                }
+                else
+                {
+                    Assert.True(finance.Current(FinanceCategory.Unterhalt) <= -MonthEnds * fixedPerMonth, "Unterhalt nach Ausbau nicht kleiner");
+                    foreach (var category in Enum.GetValues<FinanceCategory>().Except([FinanceCategory.Eintritt, FinanceCategory.Sponsoren, FinanceCategory.Praemien]))
+                        Assert.True(finance.Current(category) <= 0, $"{category} = {finance.Current(category)} beim aktiven Manager");
+                    Assert.True(total <= maxTickets + maxSponsors + premiums, $"Saisonsaldo {total} über dem Korridor");
+                }
+
+                cumulative += total;
                 game.StartNextSeason();
                 Assert.Equal(1994 + year, game.Season);
                 Assert.Equal(0, finance.CurrentTotal);
                 Assert.Equal(total, finance.PreviousTotal);
                 if (active) Assert.Equal(roster, club.Players.Count);
             }
+            output.WriteLine($"seed={seed}; start={league}; active={active}; lowest={lowest}; highest={highest}; end={manager.Money}");
+            Assert.True(lowest > Manager.DebtLimit, $"Konto unter der Entlassungsgrenze: {lowest}");
         }
     }
 }

@@ -11,9 +11,9 @@ public sealed partial class GameState
 
     /// <summary>
     /// [ORIGINAL] Weitere Einzelprämie: Datei 0x271A9/0x271EF/0x2723C bucht jeweils
-    /// 0x000493E0 = 300.000 Drittel-DM = 100.000 DM.
-    /// [APPROX] Zuordnung zu Unterliga-Meister, Pokal und Europapokal; die beiden übergebenen
-    /// Kennungen und der Aufruf 0xE0:0x20 sind noch nicht vollständig bis zum Erzeuger rekonstruiert.
+    /// 0x000493E0 = 300.000 Drittel-DM = 100.000 DM. 0x2723C ist der Hauptrunden-Erste (<see cref="Premium"/>).
+    /// [APPROX] 0x271A9 (Symbol 12) und 0x271EF (Symbol 3) hängen an zwei Kennungen aus dem Saisonwechsel
+    /// (0xC8:0x20, High-/Low-Byte je Manager), hier Pokal- und Europapokalsieg zugeordnet.
     /// </summary>
     public const long OtherTitlePremium = 100_000;
 
@@ -29,13 +29,11 @@ public sealed partial class GameState
     };
 
     /// <summary>
-    /// Tabellenprämie ohne Aufstieg/Titel. [APPROX] Nur Platz 1 einer Unterliga bekommt die noch nicht
-    /// vollständig zugeordnete 100.000-DM-Einzelprämie. Für Platz 2/3 oder Bundesliga-Hauptrundenplatz 1
-    /// gibt es im untersuchten Saisonendepfad keinen belegten pauschalen Betrag.
-    /// Oberliga 1 + Aufstieg ergibt damit die im Oberflächenvideo beobachteten 400.000 DM.
+    /// Tabellenprämie: Erster der Hauptrunde in jeder Liga. [ORIGINAL] Datei 0x27210: <c>0xE0:0x20(0)</c> sortiert die
+    /// zwölf Vereine der eigenen Liga nach Punkten und liefert 1, wenn der Verein des Managers vorn liegt (0x2A29D);
+    /// dann Symbol 13 und 300.000 Drittel-DM = 100.000 DM (0x2723C). Gilt auch in der Bundesliga (Spur finanzen-2).
     /// </summary>
-    public static long Premium(League league, int rank) =>
-        league != League.Bundesliga && rank == 1 ? OtherTitlePremium : 0;
+    public static long Premium(League league, int rank) => rank == 1 ? OtherTitlePremium : 0;
 
     /// <summary>Prämien nach tatsächlichen Ereignissen, gemeinsam genau einmal über Book gebucht.</summary>
     public static long SeasonPremium(League league, int rank, IReadOnlyCollection<SeasonEvent> events)

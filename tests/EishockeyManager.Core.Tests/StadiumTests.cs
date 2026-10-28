@@ -40,15 +40,18 @@ public class StadiumTests
         var me = game.ActiveManager;
         var stadium = game.Finance(me).Stadium;
 
-        Assert.True(game.StartConstruction(me, StadiumProject.Feature, StadiumFeature.Gastronomie, 1));
-        Assert.Equal(GameState.StartMoney - 580_000, me.Money);
-        Assert.Equal(-580_000, game.Finance(me).Book.Current(FinanceCategory.Bau));
+        // Bundesliga-Startstadion hat bereits eine Imbißbude (Spur finanzen-2); Ausbau auf die nächste Stufe.
+        var target = stadium.Level(StadiumFeature.Gastronomie) + 1;
+        var cost = stadium.Offer(StadiumFeature.Gastronomie, target)!.Value.Cost;
+        Assert.True(game.StartConstruction(me, StadiumProject.Feature, StadiumFeature.Gastronomie, target));
+        Assert.Equal(FinanceRules.StartMoney(me.Level) - cost, me.Money);
+        Assert.Equal(-cost, game.Finance(me).Book.Current(FinanceCategory.Bau));
         Assert.False(game.StartConstruction(me, StadiumProject.Sitzplaetze, default, 1)); // nur eine Baustelle
 
         for (var i = 0; i < 20 && stadium.Construction is not null; i++)
             TestSeason.PlayMatchDay(game);
         Assert.Null(stadium.Construction);
-        Assert.Equal(1, stadium.Level(StadiumFeature.Gastronomie));
+        Assert.Equal(target, stadium.Level(StadiumFeature.Gastronomie));
 
         var seats = stadium.Seats;
         Assert.True(game.StartConstruction(me, StadiumProject.Sitzplaetze, default, 2));

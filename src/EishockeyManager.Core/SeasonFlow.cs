@@ -315,12 +315,15 @@ public sealed partial class GameState
             {
                 if (winner != club.Index)
                     continue;
-                events.Add(title switch
+                // Ausdrückliche Zuordnung (Spur finanzen-2): Der WM-Titel geht an ein Nationalteam, nie an einen
+                // Managerverein, und bringt dem Verein keine Prämie.
+                switch (title)
                 {
-                    Title.GermanChampion => SeasonEvent.GermanChampion,
-                    Title.CupWinner => SeasonEvent.CupWinner,
-                    _ => SeasonEvent.EuropeanCupWinner,
-                });
+                    case Title.GermanChampion: events.Add(SeasonEvent.GermanChampion); break;
+                    case Title.CupWinner: events.Add(SeasonEvent.CupWinner); break;
+                    case Title.EuropeanCupWinner: events.Add(SeasonEvent.EuropeanCupWinner); break;
+                    case Title.WorldChampion: break;
+                }
             }
             var premium = SeasonPremium(league, rank, events);
             if (premium > 0)

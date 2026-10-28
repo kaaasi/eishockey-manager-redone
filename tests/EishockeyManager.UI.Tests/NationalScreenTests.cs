@@ -88,7 +88,7 @@ public class NationalScreenTests
         d.Frame();
         Assert.Equal(before, StateFingerprint.Of(game));
 
-        game.Managers[0].Money = 10_000_000;
+        game.NationalAccount = 10_000_000; // Konto des Bundestrainers (Spur finanzen-2)
         for (var i = 0; i < NationalCoach.MaxFriendlies; i++)
         {
             d.Move(5, 120);
@@ -96,7 +96,7 @@ public class NationalScreenTests
             d.Click(tile.X + 5, tile.Y + 5);
             Assert.Equal(i + 1, game.NationalCoach!.Friendlies.Count);
         }
-        Assert.Equal(10_000_000 - 8 * NationalCoach.FriendlyCost(screen.Nations[other], true), game.Managers[0].Money);
+        Assert.Equal(10_000_000 - 8 * NationalCoach.FriendlyCost(screen.Nations[other], true), game.NationalAccount);
         d.Click(tile.X + 5, tile.Y + 5);
         d.Click(tile.X + 5, tile.Y + 5);
         Assert.Equal(["Nicht mehr als", "8 Freundschaftsspiele"], screen.Message.Lines);
@@ -109,13 +109,13 @@ public class NationalScreenTests
         var (d, game) = Start();
         var screen = new FriendliesScreen(d.Host, new MainMenuScreen(d.Host));
         d.Host.Show(screen);
-        game.Managers[0].Money = 1_000;
+        game.NationalAccount = 1_000;
         var i = Enumerable.Range(0, WorldCup.Teams).First(i => screen.Nations[i] != NationalTeams.Germany);
         var t = FriendliesScreen.Tile(i);
         d.Click(t.X + 5, t.Y + 5);
         d.Click(t.X + 5, t.Y + 5);
         Assert.Equal(["Sie haben nicht", "genug Geld !"], screen.Message.Lines);
         Assert.Empty(game.NationalCoach!.Friendlies);
-        Assert.Equal(1_000, game.Managers[0].Money);
+        Assert.Equal(1_000, game.NationalAccount);
     }
 }

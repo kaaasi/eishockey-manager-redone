@@ -212,7 +212,7 @@ public class SeasonFlowTests
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 1);
         while (!game.Managers[0].Dismissed)
         {
-            game.Managers[0].Money = -1_600_000; // Einnahmen (Paket „manager“) dürfen die Schulden nicht abbauen
+            game.Managers[0].Money = -1_700_000; // Einnahmen eines Heimspiels (Bundesliga: 13 DM Eintritt, Spur finanzen-2) dürfen die Schulden nicht abbauen
             game.Continue();
         }
         Assert.False(game.IsGameOver);

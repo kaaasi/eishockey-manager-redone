@@ -59,8 +59,11 @@ public sealed record Sponsor(string Name, bool IsTelevision, string InfoTitle, s
     public static Sponsor[] For(AdSlotKind kind) => kind == AdSlotKind.Fernsehen ? Stations : Companies;
 }
 
-/// <summary>Angebot eines Partners für eine Art von Werbefläche.</summary>
-public sealed record SponsorOffer(AdSlotKind Kind, int Sponsor, int Months, int Boards, long MonthlyAmount);
+/// <summary>
+/// Angebot eines Partners für eine Art von Werbefläche. <paramref name="OptionMonths"/> = Verlängerungsoption
+/// (0 = keine): nach Ablauf fragt der Partner, ob um diese Monate verlängert wird.
+/// </summary>
+public sealed record SponsorOffer(AdSlotKind Kind, int Sponsor, int Months, int Boards, long MonthlyAmount, int OptionMonths = 0);
 
 /// <summary>Laufender Werbevertrag.</summary>
 public sealed class SponsorContract
@@ -73,6 +76,9 @@ public sealed class SponsorContract
 
     public required long MonthlyAmount { get; init; }
     public int MonthsLeft { get; set; }
+
+    /// <summary>Verlängerungsoption in Monaten (0 = keine). [ORIGINAL] Vertragsfeld +6 (0x3FD52).</summary>
+    public int OptionMonths { get; init; }
 
     public Sponsor Partner => Core.Sponsor.For(Kind)[Sponsor];
 
@@ -101,32 +107,52 @@ public sealed class Sponsoring
 }
 
 /// <summary>
-/// Größenordnungen der Werbung. [APPROX] Formeln des Originals unbekannt; kalibriert auf das UI-Video (Oberliga,
-/// Spielbeginn): Bande 3.454 und 5.464 DM für 12 Monate, Fernsehen 16.503 DM für 24 Monate, drei Verträge
-/// (zwei Banden, Trikot) zusammen 18.098 DM, Fernsehvertrag ARB 19.147 DM pro Monat.
+/// Werbeangebote nach dem Original (Spur finanzen-2). [ORIGINAL] em.exe 0x3FB47 (Einsprung 0x100:0x5C): je Art und
+/// Partner ein Angebot aus der Bewertung des Vereins (<see cref="SponsorRating"/>), am Spielstart, am Monatsersten
+/// und zur Monatsmitte. Belege: docs/finanzen-rekonstruktion.md.
 /// </summary>
 public static class SponsorRules
 {
-    public static double LeagueFactor(League? league) => league switch
+    /// <summary>Faktor je Art (DGROUP 0x4F05, /10): Bande 8, Eis 20, Trikot 32, Fernsehen 15.</summary>
+    public static int KindFactor(AdSlotKind kind) => kind switch
     {
-        League.Bundesliga => 4.0,
-        League.ZweiteLiga => 2.0,
-        _ => 1.0,
+        AdSlotKind.Bande => 8,
+        AdSlotKind.Eisflaeche => 20,
+        AdSlotKind.Trikot => 32,
+        _ => 15,
     };
 
-    /// <summary>Spanne des Monatsbetrags je Fläche in der Oberliga.</summary>
-    public static (int Min, int Max) Range(AdSlotKind kind) => kind switch
+    /// <summary>Konjunktur-Faktor (DGROUP 0x2C0 = 110): Beträge × (110 − 20) / 100.</summary>
+    public const int Economy = 110;
+
+    /// <summary>Trikotwerbung nur von den Partnern 0–4 (0x3FBDA).</summary>
+    public const int ShirtPartners = 5;
+
+    /// <summary>
+    /// Monatsbetrag eines Angebots in Drittel-DM (0x3FC1A ff.): random(W·m, 13·(W·m/10)) × Faktor/10
+    /// × (65 + 8·(p + 3·[Trikot])) × 6 / 100 × (110 − 20) / 100 mit W = 10 × Bewertung und m = random(20, 22).
+    /// </summary>
+    public static long OfferAmountThirds(int rating, AdSlotKind kind, int partner, int m, Random random)
     {
-        AdSlotKind.Bande => (3_000, 6_000),
-        AdSlotKind.Eisflaeche => (6_000, 10_000),
-        AdSlotKind.Trikot => (7_000, 11_000),
-        _ => (14_000, 20_000),
-    };
+        var wm = 10L * rating * m;
+        long amount = SquadSetup.Between(random, (int)wm, (int)(13 * (wm / 10)));
+        amount = amount * KindFactor(kind) / 10;
+        var p = partner + (kind == AdSlotKind.Trikot ? 3 : 0);
+        amount = amount * (65 + 8 * p) * 6 / 100;
+        return amount * (Economy - 20) / 100;
+    }
 
-    /// <summary>Wahrscheinlichkeit, dass ein freier Partner in einem Monat ein Angebot macht.</summary>
-    public const double OfferChance = 0.4;
+    /// <summary>Laufzeit 12 oder 24 Monate (0x3FD3C), Option mit 1/8: 12 × random(1, 3 − Laufzeit/12) Monate (0x3FD52).</summary>
+    public static (int Months, int OptionMonths) Duration(Random random)
+    {
+        var years = SquadSetup.Between(random, 1, 2);
+        var option = SquadSetup.Between(random, 0, 7) == 0 ? 12 * SquadSetup.Between(random, 1, 3 - years) : 0;
+        return (12 * years, option);
+    }
 
-    public static readonly int[] Durations = [6, 12, 12, 24];
+    /// <summary>Bandenfelder: random(2, 3) mit Wahrscheinlichkeit 1/(m − 14), sonst 1 (0x3FD07).</summary>
+    public static int Boards(int m, Random random) =>
+        SquadSetup.Between(random, 0, m - 15) == 0 ? SquadSetup.Between(random, 2, 3) : 1;
 }
 
 public sealed partial class ManagerFinance
@@ -139,29 +165,65 @@ public sealed partial class GameState
     /// <summary>Werbung eines Managers; Angebote entstehen beim Spielstart und Monatswechsel.</summary>
     public Sponsoring Ads(Manager manager) => Finance(manager).Sponsoring;
 
-    /// <summary>Würfelt die Angebote neu aus (monatlich). Partner mit laufendem Vertrag dieser Art bieten nichts an.</summary>
-    public void RenewOffers(Manager manager)
+    /// <summary>
+    /// Angebote beim Spielstart: jede Art und jeder Partner bekommt eines ([ORIGINAL] 0x3FBA0, Flag „Spielstart“).
+    /// </summary>
+    public void RenewOffers(Manager manager) => RefreshSponsorOffers(manager, atStart: true);
+
+    /// <summary>
+    /// Angebote erneuern ([ORIGINAL] 0x3FB47): Partner p wird nur mit Wahrscheinlichkeit 1/(⌊2p/3⌋ + 1) neu bedient
+    /// (sonst bleibt sein Angebot); Trikot nur Partner 0–4; danach fällt das Angebot aus, wenn random(0, 5 − W/200) ≠ 0
+    /// und random(0, 4) ≤ p. Partner mit laufendem Vertrag dieser Art bieten nichts an ([APPROX] wie bisher).
+    /// </summary>
+    public void RefreshSponsorOffers(Manager manager, bool atStart)
     {
         var sponsoring = Finance(manager).Sponsoring;
-        var factor = SponsorRules.LeagueFactor(Clubs[manager.ClubIndex].League);
+        var rating = SponsorRating.Compute(this, manager);
+        var w = 10 * rating;
         foreach (var kind in Enum.GetValues<AdSlotKind>())
         {
-            var offers = new Dictionary<int, SponsorOffer>();
+            var offers = sponsoring.Offers.TryGetValue(kind, out var existing) ? existing : sponsoring.Offers[kind] = [];
             var partners = Sponsor.For(kind);
             for (var p = 0; p < partners.Length; p++)
             {
-                if (FinanceRandom.NextDouble() >= SponsorRules.OfferChance)
-                    continue;
+                if (!atStart)
+                {
+                    if (SquadSetup.Between(FinanceRandom, 0, 2 * p / 3) != 0)
+                        continue;
+                    if (kind == AdSlotKind.Trikot && p >= SponsorRules.ShirtPartners
+                        || SquadSetup.Between(FinanceRandom, 0, 5 - w / 200) != 0 && SquadSetup.Between(FinanceRandom, 0, 4) <= p)
+                    {
+                        offers.Remove(p);
+                        continue;
+                    }
+                }
                 if (sponsoring.Contracts.Any(c => c.Kind == kind && c.Sponsor == p))
+                {
+                    offers.Remove(p);
                     continue;
-                var (min, max) = SponsorRules.Range(kind);
-                var boards = kind == AdSlotKind.Bande && FinanceRandom.NextDouble() < 0.25 ? 2 : 1;
-                var months = SponsorRules.Durations[FinanceRandom.Next(SponsorRules.Durations.Length)];
-                var perBoard = min + FinanceRandom.NextDouble() * (max - min);
-                offers[p] = new SponsorOffer(kind, p, months, boards, (long)Math.Round(perBoard * boards * factor));
+                }
+                var m = SquadSetup.Between(FinanceRandom, 20, 22);
+                var amount = SponsorRules.OfferAmountThirds(rating, kind, p, m, FinanceRandom);
+                var boards = kind == AdSlotKind.Bande ? SponsorRules.Boards(m, FinanceRandom) : 1;
+                var (months, option) = SponsorRules.Duration(FinanceRandom);
+                offers[p] = new SponsorOffer(kind, p, months, boards, FinanceRules.ToMarks(amount), option);
             }
-            sponsoring.Offers[kind] = offers;
+            // Nach Partner geordnet neu aufbauen: Die Reihenfolge eines Dictionary hängt sonst von früheren
+            // Entnahmen ab (wiederverwendete Plätze) und wäre nach Sichern und Laden eine andere.
+            sponsoring.Offers[kind] = offers.OrderBy(o => o.Key).ToDictionary();
         }
+    }
+
+    /// <summary>
+    /// Tagesabschluss der Werbung ([ORIGINAL] 0x3EE6B): am Monatsersten und zur Monatsmitte neue Angebote.
+    /// </summary>
+    private void DailySponsorOffers(DateOnly date)
+    {
+        var days = DateTime.DaysInMonth(date.Year, date.Month);
+        if (date.Day != 1 && date.Day != days / 2)
+            return;
+        foreach (var manager in Managers)
+            RefreshSponsorOffers(manager, atStart: false);
     }
 
     /// <summary>
@@ -192,13 +254,17 @@ public sealed partial class GameState
             Boards = boards,
             MonthlyAmount = offer.MonthlyAmount,
             MonthsLeft = offer.Months,
+            OptionMonths = offer.OptionMonths,
         };
         sponsoring.Contracts.Add(contract);
         sponsoring.Offers[slot.Kind].Remove(sponsor);
         return contract;
     }
 
-    /// <summary>Monatlich: Werbeeinnahmen buchen, Laufzeiten herunterzählen, neue Angebote.</summary>
+    /// <summary>
+    /// Monatlich: Werbeeinnahmen buchen, Laufzeiten herunterzählen ([ORIGINAL] 0x3EF73). Neue Angebote kommen
+    /// über den Tagesabschluss (<see cref="DailySponsorOffers"/>).
+    /// </summary>
     private void SettleSponsoring(Manager manager)
     {
         var sponsoring = Finance(manager).Sponsoring;
@@ -212,6 +278,5 @@ public sealed partial class GameState
                 ContractExpired(manager, contract);
             }
         }
-        RenewOffers(manager);
     }
 }

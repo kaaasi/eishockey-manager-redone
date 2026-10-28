@@ -42,7 +42,7 @@ public class StadiumScreenTests
         Assert.True(screen.AsksConfirmation);
         Click(d, StadiumScreen.YesButton);
         Assert.NotNull(stadium.Construction);
-        Assert.Equal(GameState.StartMoney - 640_000, me.Money);
+        Assert.Equal(FinanceRules.StartMoney(me.Level) - 640_000, me.Money);
 
         var price = stadium.TicketPrice;
         Click(d, StadiumScreen.TicketUp);

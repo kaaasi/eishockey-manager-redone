@@ -32,7 +32,10 @@ public sealed partial class Manager
     public required int ClubIndex { get; set; }
     public required int Level { get; init; }
 
-    /// <summary>Kontostand in DM. Startwert im Original: 400.000 DM.</summary>
+    /// <summary>
+    /// Kontostand in DM. Ein neues Spiel setzt das Startkonto je Level (<see cref="FinanceRules.StartMoney"/>);
+    /// der Vorgabewert gilt nur für von Hand angelegte Manager.
+    /// </summary>
     public long Money { get; set; } = GameState.StartMoney;
 }
 
@@ -42,6 +45,7 @@ public sealed record MatchDay(int Number, IReadOnlyList<(int Home, int Away)> Ma
 /// <summary>Gesamter Spielstand.</summary>
 public sealed partial class GameState
 {
+    /// <summary>Startkonto bei Level 5 und Vorgabe für von Hand angelegte Manager; neue Spiele: <see cref="FinanceRules.StartMoney"/>.</summary>
     public const long StartMoney = 400_000;
     public const int FirstSeason = 1993;
     public const int ClubsPerLeague = 12;
