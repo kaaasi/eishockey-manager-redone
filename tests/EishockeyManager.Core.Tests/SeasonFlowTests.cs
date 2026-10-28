@@ -180,7 +180,8 @@ public class SeasonFlowTests
     [Fact]
     public void PremiumForFirstPlaceInOberliga_AsInVideo()
     {
-        Assert.Equal(400_000, GameState.Premium(League.Oberliga, 1));
+        // Die im Video gezeigten 400.000 DM enthalten den Aufstieg, nicht nur den Tabellenplatz.
+        Assert.Equal(400_000, GameState.SeasonPremium(League.Oberliga, 1, [SeasonEvent.Promotion]));
         Assert.Equal(0, GameState.Premium(League.Oberliga, 4));
     }
 
@@ -219,3 +220,4 @@ public class SeasonFlowTests
         Assert.Single(game.ActiveManagers);
     }
 }
+
