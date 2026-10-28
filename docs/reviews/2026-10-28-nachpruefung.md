@@ -88,11 +88,15 @@ Löschprobe: lokales Bare-Remote, zwei Klone, A auf main und feature, nach Check
 
 Gemeinsame Merge-Probe gegen `main=ee7ea0ed58570312e564a3568cb1fff5bcb9d712`: von #50 (enthält #45) aus #46/#52/main gemergt, danach #54; alle ohne Konflikte. Gemeinsamer temporärer Commit `175b27753058562de8eae09fac68bc8e811ede7f`; kein veröffentlichter Implementierungshead. Das ersetzt keinen Test auf einem künftigen Rebase-Head. CI von #54: Check `build` auf exakt `c622b0f` erfolgreich, `publish` übersprungen, [Run 40668103674](https://github.com/kaaasi/eishockey-manager-redone/actions/runs/40668103674).
 
-**Eigene Anwendungsläufe dieser Nachprüfung:** SDK 10.0.402 bereitgestellt. Der erste Aufruf `bash tools/pruefen.sh` scheiterte vor den Tests an `NuGet-Migrations` (Umgebung: schreibgeschütztes Benutzerverzeichnis). Wiederholung mit separaten CLI-/Paket-/XDG-Verzeichnissen wird geprüft. Originaldaten sind nicht vorhanden. Vorherige Review-Zahlen und Leitstellenzahlen werden nicht als eigene neue Läufe ausgegeben.
+**Eigene Anwendungsläufe dieser Nachprüfung:** SDK 10.0.402. Der erste Aufruf scheiterte vor den Tests an `NuGet-Migrations` (schreibgeschütztes Benutzerverzeichnis); mit separaten CLI-/Paket-/XDG-Verzeichnissen und vorbereitetem NuGet-Migrationsmarker liefen die Prüfungen. Befehlspräfix: `XDG_DATA_HOME=/workspace/xdg PATH=/workspace/sdk:$PATH DOTNET_CLI_HOME=/workspace/dotnet-home NUGET_PACKAGES=/workspace/nuget DOTNET_CLI_TELEMETRY_OPTOUT=1 bash tools/pruefen.sh`. Keine zusätzlichen Build-/Testfilter, kein dotnet-Double in diesen Anwendungsläufen. Release-Builds mit Warnungen als Fehler erfolgreich. Originaldaten sind nicht vorhanden. Vorherige Review-Zahlen und Leitstellenzahlen werden nicht als eigene neue Läufe ausgegeben.
 
 | Stand | mit Daten | ohne Daten | Pflichtlauf ohne Daten |
 |---|---|---|---|
-| Eigene neue Anwendungsläufe | nicht ausgeführt, Daten fehlen | noch kein abgeschlossener Nachweis | noch kein abgeschlossener Nachweis |
+| #45/#50, exakt `73b299c` | nicht ausgeführt, Daten fehlen | 297/0/47 | 297/54/0 |
+| gemeinsame Prüfkopie einschließlich #54, `175b277` | nicht ausgeführt, Daten fehlen | 392/0/66 | 392/78/0 |
+| #54, exakt `c622b0f` | nicht ausgeführt, Daten fehlen | 392/0/66 | 392/78/0 |
 | #54, externer Nachweis Leitstelle zum Head | 470/0/0 | im Kommentar angekündigt | im Kommentar angekündigt |
+
+Zahlenfolge: bestanden/fehlgeschlagen/übersprungen; alle drei Prüfsystem-Aufrufe Exit 0. Pflichtfehler wurden durch die TRX-Auswertung als fehlende Originaldaten bestätigt. Das Skript aus #50 wurde auf #54 ausschließlich als ungetracktes Prüfwerkzeug bereitgestellt; Produktionscode und Datenhelfer blieben unverändert. Ohne tatsächlich vorhandene Originaldaten kann dieser Lauf R3A-01 weder auslösen noch schließen.
 
 **Akzeptierte [APPROX]:** keine neuen Näherungen im Prozessdelta. Die in #60 ausdrücklich akzeptierten Näherungen und fachlichen Grenzen bleiben unverändert, einschließlich fehlender Endabnahme der Finanzbalance. Keine neue Originaltreue- oder Pixelabnahme. **Annahmen/Grenzen:** Externer Originaldatenlauf wird als Aussage der benannten Leitstelle gewertet; keine Rohdaten/Nachzählung verfügbar. Die isolierten TRX-Fixtures prüfen die Auswertung, nicht das Verhalten von xUnit bei einem hier tatsächlich aufgetretenen Absturz.
