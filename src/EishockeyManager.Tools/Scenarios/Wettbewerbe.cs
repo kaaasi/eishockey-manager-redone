@@ -2,6 +2,7 @@ using EishockeyManager.Core;
 using EishockeyManager.UI;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.Competitions;
+using EishockeyManager.UI.Screens.Statistics;
 using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.Tools.Scenarios;
@@ -120,5 +121,25 @@ internal static class Wettbewerbe
         d.Frame(); d.Save("03_gruppe1_gespielt");
         d.Click(WorldCupScreen.KnockoutButton.X + 5, WorldCupScreen.KnockoutButton.Y + 5);
         d.Frame(); d.Save("04_endrunde");
+    }
+
+    /// <summary>Stärken: Länderteams und Oberliga wie im Video (13:18, 13:36), Ansichten Abwehr und Sturm.</summary>
+    [Scenario("staerken")]
+    private static void Strengths(ScreenDriver d)
+    {
+        d.StartNewGame(); // Berliner SC (Oberliga) wie im Video
+        d.OpenTile("Stärken Länderteams");
+        d.Move(5, 120); d.Save("01_laenderteams_gesamt");
+        d.Press(Key.Escape);
+        d.OpenTile("Stärken Oberliga");
+        d.Move(5, 120); d.Save("02_oberliga_gesamt");
+        d.Click(StrengthScreen.ButtonRect(1).X + 5, StrengthScreen.ButtonRect(1).Y + 5);
+        d.Move(5, 120); d.Save("03_oberliga_abwehr");
+        d.Click(StrengthScreen.ButtonRect(2).X + 5, StrengthScreen.ButtonRect(2).Y + 5);
+        d.Move(5, 120); d.Save("04_oberliga_sturm");
+        d.Press(Key.Escape);
+        d.OpenTile("Stärken 1. Liga");
+        d.Move(5, 120); d.Save("05_bundesliga_gesamt");
+        d.Press(Key.Escape);
     }
 }
