@@ -117,8 +117,9 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
 - **Kleine PRs gegen `main`**, Beschreibung nach `.github/pull_request_template.md` (Pflichtangaben: Base-/Head-SHA,
   Fehler vorher, Regressionstest rot→grün, Testtabelle, Restlücken, `[APPROX]`). PR per Weboberfläche oder REST
   (`POST /repos/kaaasi/eishockey-manager-redone/pulls`); GraphQL ist nicht in jeder Umgebung erreichbar.
-- **Status** einer Spur nur im eigenen Abschnitt von `docs/arbeitspakete.md`; Übergaben als PR-Kommentar
-  (Vorlage `docs/handoffs/VORLAGE.md`).
+- **Status** einer Spur nur im eigenen Abschnitt von `docs/arbeitspakete.md`.
+- **Übergabe immer:** Jede Arbeitssitzung endet – nach erledigter Abarbeitung wie bei Abbruch – mit einem
+  Übergabekommentar im PR (Vorlage `docs/handoffs/VORLAGE.md`, Regeln `docs/prozess/zusammenarbeit.md` §3).
 - **Gemergt wird nur von der Leitstelle oder dem Nutzer** nach der Merge-Prüfung in `docs/prozess/zusammenarbeit.md`.
 
 ## 7. Sparsam arbeiten
