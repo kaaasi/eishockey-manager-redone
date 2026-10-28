@@ -39,14 +39,19 @@ Ablauf für den übernehmenden Agenten:
 
 ## 3. Übergabe zwischen Agenten
 
-Muss ein Agent aufhören (Kontingent erschöpft, Sitzung endet, Paket wird umverteilt), schreibt er **vorher**
-einen Übergabekommentar in den PR nach [docs/handoffs/VORLAGE.md](../handoffs/VORLAGE.md):
+**Jede Arbeitssitzung endet mit einem Übergabekommentar** im PR nach [docs/handoffs/VORLAGE.md](../handoffs/VORLAGE.md) –
+nach erledigter Abarbeitung (Teil fertig, Befunde abgearbeitet, Warten auf Review) genauso wie bei einem Abbruch
+(Kontingent erschöpft, Sitzung endet, Paket wird umverteilt). Bei einem absehbaren Abbruch wird er **vorher**
+geschrieben. So kann jede neue Sitzung ohne Chatverlauf weitermachen. Inhalt:
 
 - alles committet und gepusht; der Kommentar nennt den **Head-SHA** – lokale, nicht gepushte Änderungen gibt es nicht
 - erledigt / offen / nächster konkreter Schritt
 - Testtabelle aus `tools/pruefen.sh` zum genannten SHA
 - bekannte Risiken, Annahmen, neue `[APPROX]`-Stellen
 - `Bearbeiter: frei` (oder der vom Nutzer genannte Nachfolger)
+
+Gestapelte oder zusammengehörige PRs einer Spur dürfen eine gemeinsame Übergabe im obersten PR haben; die übrigen PRs
+verweisen mit einem kurzen Kommentar (Head-SHA, `Bearbeiter: frei`) darauf.
 
 Kommentare statt Dateien, weil sie nicht mit anderen Branches kollidieren und am PR hängen bleiben. Ohne PR (z. B. reine
 Analyse) wird die Übergabe als `docs/handoffs/<datum>-<thema>.md` auf einem eigenen Branch abgelegt.

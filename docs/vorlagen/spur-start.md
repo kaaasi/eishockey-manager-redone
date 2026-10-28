@@ -18,5 +18,7 @@
 5. Vor jedem Push: `git fetch origin && git rebase origin/main`, `tools/pruefen.sh --schnell` (siehe `AGENTS.md` §5).
 6. Fertig: PR-Beschreibung nach `.github/pull_request_template.md`, Draft aufheben, Status im eigenen Abschnitt von
    `docs/arbeitspakete.md`. Mehrere kleine PRs sind besser als ein großer.
-7. Muss die Arbeit unterbrochen werden: Übergabekommentar nach `docs/handoffs/VORLAGE.md`.
+7. **Immer zum Schluss – nach erledigter Abarbeitung wie bei Unterbrechung:** Übergabekommentar im PR nach
+   `docs/handoffs/VORLAGE.md` (Head-SHA, erledigt/offen/nächster Schritt, Testtabelle, Risiken, `Bearbeiter: frei`),
+   damit ein neuer Chat ohne Verlauf übernehmen kann.
 8. Antwort an den Nutzer **knapp** (`AGENTS.md` §7): PR-Links, Ergebnis in einem Satz je PR, offene Fragen.
