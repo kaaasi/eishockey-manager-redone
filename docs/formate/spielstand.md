@@ -23,7 +23,7 @@ Alle sind vom Typ `GameRandom` (`src/EishockeyManager.Core/Rng.cs`).
 - Ein `GameRandom()` ohne Seed nimmt einen zufälligen Seed (`[APPROX]`: `System.Random()` ohne Seed nutzt in .NET
   einen anderen Algorithmus; dessen Folge ist ohnehin nicht wiederholbar).
 
-Die Ablage in der Datei (Kennung, Schemaversion, Feldreihenfolge) legt Teil `-format` fest.
+Die Ablage in der Datei steht unten im Abschnitt „Datei“ (Feld `Random` usw. als `{"$id", "next", "nextP", "seed"}`).
 
 ## Spieler-IDs (Teil `-ids`)
 
@@ -42,3 +42,62 @@ das Original kennt keine IDs). 0 heißt „noch nicht im Spiel“.
 - **Für Teil `-format`** als ID zu sichern: Kader, Aufstellung/Blöcke, Transfermarkt (Angebote, Gebote), vertragsloser
   Pool, Leihe (Stammverein über Vereinsindex), Nationalkader und `RetiredPlayers`. Vereine über ihren Index, Manager
   über ihre Position in `Managers`. Der Posteingang hält keine Objektverweise auf Spieler, nur Text.
+
+## Datei (Teil `-format`)
+
+Umsetzung: `src/EishockeyManager.Core/SaveGame*.cs`. Endung `.ems`, Inhalt UTF-8-JSON mit Einrückung.
+
+**Warum Text (JSON):** lesbar und vergleichbar (Fehlersuche, Diff zweier Spielstände), ohne zusätzliches Paket
+(`System.Text.Json` gehört zu .NET). Größe ca. 1 MB je Spielstand, unkritisch.
+**Warum feldweise statt eigener Datenklassen:** Der Zustand ist über viele `private`-Felder in den Dateien anderer
+Spuren verteilt. Gesichert wird deshalb jedes Instanzfeld per Reflexion – neue Felder sind automatisch dabei, und der
+Schemawächter (unten) erzwingt bei jeder Änderung eine neue Schemaversion. Die Dateinamen der Felder sind damit Teil
+des Schemas.
+
+```json
+{
+  "kennung": "EISHOCKEY-MANAGER-REDONE-SPIELSTAND",
+  "schema": 1,
+  "spiel":   { …Felder von GameState… },
+  "vereine": [ { …Felder von Club… }, … ],     // Reihenfolge = GameState.Clubs
+  "manager": [ { …Felder von Manager… }, … ],  // Reihenfolge = GameState.Managers
+  "spieler": [ { …Felder von Player… }, … ]    // nach Player.Id sortiert
+}
+```
+
+- **Prüfung vor dem Lesen:** zuerst `kennung`, dann `schema`. Fremde Datei → „Die Datei ist kein Spielstand dieses
+  Spiels.“; höhere Version → „Der Spielstand stammt aus einer neueren Version …“. Ältere Versionen laufen durch die
+  Migrationen (`SaveGame.Migrations`, je Version eine Funktion auf dem JSON-Baum; zunächst leer).
+- **Felder:** alle Instanzfelder (auch `private`, auch geerbte aus Core/Formats), nach Name sortiert. Rückfelder
+  automatischer Eigenschaften heißen wie die Eigenschaft (`Age`), andere Felder wie im Code (`_eternal`).
+  Beim Laden muss jedes Feld vorhanden und keines unbekannt sein – sonst Meldung „beschädigt“.
+- **Werte:** Zahlen als JSON-Zahl; `double`/`float`/`decimal` als Zeichenkette (`"R"`, invariant, verlustfrei);
+  Aufzählungen als Name; `null` für leere Verweise. Beim Laden ist `null` nur erlaubt, wo Feld bzw. Sammlungselement
+  laut Nullable-Annotation leer sein darf (`Club?`, `List<Player?>`); sonst Meldung „… darf nicht leer sein“ (#79).
+- **Verweise:**
+  - Spieler `{"$spieler": id}` (`Player.Id`), Vereine `{"$verein": index}`, Manager `{"$manager": index}`,
+    der Spielstand selbst `{"$spiel": 0}`.
+  - Jedes andere Objekt (auch Listen, Felder, Wörterbücher) bekommt beim ersten Auftreten `"$id"` (fortlaufend in
+    Schreibreihenfolge) und wird danach als `{"$ref": n}` verwiesen – gemeinsam genutzte Objekte (z. B. ein
+    Werbevertrag in Posteingang und Werbung, ein Marktangebot in Markt und Pool) bleiben gemeinsam.
+  - Feldtyp abstrakt oder Schnittstelle (z. B. `ISeasonCompetition`): zusätzlich `"$type"` mit dem Klassennamen. Es
+    werden nur Klassen aus Core und Formats angenommen, nie fremde Typen.
+- **Sammlungen:** `{"$id", "items": [...]}`; zweidimensionale Felder zusätzlich `"dims"`; Wörterbücher
+  `{"$id", "entries": [[schlüssel, wert], …]}` in Aufzählungsreihenfolge. Felder vom Typ `IReadOnlyList<T>` werden
+  als Feld (`T[]`) wiederhergestellt.
+- **Zufall:** `GameRandom` als `{"$id", "next", "nextP", "seed": [56 Zahlen]}`; eine noch nicht erzeugte Quelle ist
+  `null`.
+- **Gleiche Bytes:** gleicher Zustand ergibt dieselbe Datei; Sichern → Laden → Sichern ist bytegleich.
+- **Sichern** prüft vorher `ValidatePlayerIdentity()` und verweigert fehlerhafte Spielstände; **Laden** erzeugt immer
+  einen neuen Spielstand und prüft ihn ebenso – der laufende bleibt bei einem Fehler unverändert.
+
+**Schemawächter:** `SaveGame.SchemaDescription()` listet alle erreichbaren Typen, Felder, Feldtypen und
+Aufzählungsnamen; `SaveGame.SchemaFingerprint()` ist deren Hash. Der Test `SchemaFingerprint_MatchesSchemaVersion`
+kennt den Hash zur aktuellen Version. Wer ein Zustandsfeld hinzufügt, umbenennt oder dessen Typ ändert, erhöht
+`SchemaVersion`, trägt eine Migration ein (neues Feld mit Startwert, umbenanntes Feld verschieben) und führt den Hash
+nach. `CheckSchemaCoverage()` meldet Felder, deren Typ das Format nicht kennt (z. B. Delegaten), und – über
+`SaveGame.CoverageProbe()` – jedes Feld, das der Writer nicht schreibt oder der Reader nicht zurückliest. Die Probe
+schreibt für **jeden** erreichbaren Typ ein leeres Objekt, auch für Typen, die in keinem Beispielspielstand vorkommen (#81).
+
+**Haltepunkte:** Gesichert wird zwischen zwei Aufrufen von `GameState.Continue()`. Die WM läuft nach dem Ende der
+Vereinssaison in einem einzigen Schritt; der letzte Haltepunkt davor ist `SeasonPhase.ClubSeasonOver`.
