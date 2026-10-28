@@ -226,32 +226,39 @@ verschieben sich die Referenzwerte aus `finanzen-2`.
 
 ### Status Spur `finanzen-2`
 
-Stand 28.10.2026: umgesetzt auf `paket/finanzen-2` (Draft-PR #67, Base `5f8e02a`), Bearbeiter Claude Code. Belege in
+Stand 28.10.2026: umgesetzt auf `paket/finanzen-2` (PR #67, nach Rebase Base `6b8dc00`), Bearbeiter Claude Code. Review
+[finanzen-2-67](reviews/2026-10-28-finanzen-2-67.md): F67-01…04 (#75–#78) behoben, Nachprüfung offen. Belege in
 [finanzen-rekonstruktion.md](finanzen-rekonstruktion.md) (Disassembly em.exe + Karriere-/UI-Video).
 
 - [x] **Monatsabschluss** `[ORIGINAL]` (0x3E657/0x3E811/0x3F02C): Grundeinnahmen 5 × Spieler × Teamwerte; Grundausgaben
   130.000 − 10.000 × (5 − Level) − 20 × Ligawert (+ Bundesliga-/2.-Liga-Terme); Unterhalt je Ausbaustufe und Platz;
   Zinsen täglich aufs Zinskonto (Sparbuch 1 %, Kredit 4 %, Manager 2,5 %/2 %, Überziehung 10 %); Kostenstufe = Liga der
-  Saison. Keine Gehaltspauschale mehr bei leerem Kader. Startstadion und Eintritt je Liga (0x29F2E), Startkonto-Formel belegt.
+  Saison. Keine Gehaltspauschale mehr bei leerem Kader. Startstadion und Eintritt je Liga (0x29F2E); Startkonto
+  400.000 + 50.000 × (5 − Level) DM wird angewendet (0x29BD5, #78).
 - [x] **Zuschauer** `[ORIGINAL]` (0x3F185): Stärken, Tabellenplätze, Ligen, Ausbaustufen, Level, Preisfaktor,
   Wettbewerbsbonus (DEB-Pokal 1, Play-Off 1, Europapokal 2). Eintritt = Zuschauer × Preis; **keine Gastronomie-Einnahme**
   (Kategorie entfernt). `[APPROX]`: Tabellenplatz vor dem 1. Spieltag, random(a, b) mit a > b, Vereine ohne Liga.
 - [x] **Werbung** `[ORIGINAL]` (0x3FB47): Beträge aus Bewertung × Art × Partner, Laufzeit 12/24 Monate, Option 1/8,
-  Angebote am 1. und zur Monatsmitte, Partnerwahrscheinlichkeiten; Verlängerungsfrage nur mit Option. Bewertung
-  (0x3F833) mit `[APPROX]` für drei Titelzähler und Spielerwerte.
+  Angebote am 1. und zur Monatsmitte (Test erzwingt den Zusatztermin, #77), Partnerwahrscheinlichkeiten; Verlängerungsfrage
+  nur mit Option. Bewertung (0x3F833): Pokalterm 32 · (Titel · (n + 1) − 2) nur bei ausgelostem DEB-Pokal, n = Runde
+  ([0x5CF3], #75); `[APPROX]` für drei Titelzähler, `[0x7AF]` und Spielerwerte.
 - [x] **Nebenpunkte:** Bundestrainer-Etat und Freundschaftsspiele über das eigene Konto des Nationalteams
   (0x554A6/0x3BFC4, `GameState.NationalAccount`), nicht übers Vereinskonto; Hauptrunden-Erster 100.000 DM in **jeder**
   Liga (0xE0:0x20); WM-Titel ausdrücklich ohne Vereinsprämie; die zwei weiteren 100.000-DM-Kennungen bleiben `[APPROX]`.
-- [x] Mehrsaisonprobe `FinanceCalibrationTests.FourSeasonChanges_AccountAndLedgerStayWithinOriginalEnvelope` (Oberliga
-  und Bundesliga, passiv und aktiv, Seeds 3/17/41, Originaldaten): Eintritt je Heimspiel innerhalb [50 × Preis,
-  Kapazität × Preis], Unterhalt und Gehälter genau sieben Monatsabschlüsse, Konto = Finanzbuch; Alarmgrenzen ersetzt.
-  Endkonten nach vier Wechseln: passiv Oberliga 668.098–1.044.972 DM (Tiefstand 68.222), passiv Bundesliga
-  4.745.672–4.899.230 DM, aktiv Oberliga 2.980.679–3.373.183 DM, aktiv Bundesliga 14.052.698–14.234.182 DM.
+- [x] Mehrsaisonprobe `FinanceCalibrationTests.FourSeasonChanges_*` (Oberliga und Bundesliga, passiv und aktiv, Seeds
+  3/17/41, Originaldaten und synthetisch): Eintritt je Heimspiel innerhalb [50 × Preis, Kapazität × Preis]; Sponsoren
+  höchstens 7 × (5 · Spieler · 396 / 3 + Vertragssumme); Prämien nur als Summe der em.exe-Einzelprämien; passiv
+  Unterhalt/Gehälter exakt aus den em.exe-Konstanten, übrige Kategorien 0, Saisonsaldo im geschlossenen Korridor;
+  Konto = Startkonto + Finanzbuch (#76). Endkonten nach vier Wechseln (Originaldaten): passiv Oberliga
+  774.708–1.137.872 DM (Tiefstand 171.112), passiv Bundesliga 4.845.672–4.999.230 DM, aktiv Oberliga
+  2.784.332–3.008.131 DM, aktiv Bundesliga 14.037.273–14.194.070 DM.
+- [x] Spielstand: Schema 2 mit Migration 1 → 2 für `NationalAccount`, `CostLeague`, Zins-Akkumulatoren, `OptionMonths`
+  und das Finanzbuch ohne „Gastronomie“ (`SaveGame.Migration1.cs`, `FinanceSaveGameTests`).
 - Restlücken: Karriere-Video ESC Wolfsburg zeigt zu Spielbeginn 87.370 DM Monatsausgaben, die Formel 73.977 DM
   (UI-Video Berliner SC passt auf 100 DM); passive Manager mit leerem Kader ab Saison 3 (Spur `kader`) verzerren
-  Eintritt und Gehälter weiter; Werbepartner-Bewertung ohne die unbekannten Titelzähler; Speichern muss
-  `CostLeague`, `InterestAccrualThirds`, `ManagerLoanAccrualThirds`, `SponsorContract.OptionMonths`,
-  `SponsorOffer.OptionMonths` und `NationalAccount` sichern.
+  Eintritt und Gehälter weiter; Werbepartner-Bewertung ohne die unbekannten Titelzähler; Zeitpunkt der
+  DEB-Pokal-Auslosung im Original nicht geprüft (Remake: Saisonbeginn); Originaltreue der übrigen `[ORIGINAL]`-Fundstellen
+  noch nicht unabhängig nachdisassembliert (Review §3).
 
 ### Spur `markerbericht` – Pilot Übergabe (ChatGPT)
 
