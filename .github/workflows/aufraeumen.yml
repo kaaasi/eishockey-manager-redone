@@ -1,0 +1,46 @@
+name: Branches aufräumen
+
+# Nur von Hand (Actions → „Branches aufräumen“ → Run workflow). Löscht Branches, die vollständig in main enthalten
+# sind und zu denen kein offener Pull Request gehört. Mit „nur_anzeigen“ wird nur aufgelistet.
+on:
+  workflow_dispatch:
+    inputs:
+      nur_anzeigen:
+        description: "Nur auflisten, nichts löschen"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  aufraeumen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gemergte Branches ohne offenen PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUR_ANZEIGEN: ${{ inputs.nur_anzeigen }}
+        run: |
+          offen=$(gh api "repos/${{ github.repository }}/pulls?state=open&per_page=100" --paginate -q '.[].head.ref')
+          anzahl=0
+          echo "| Branch | Aktion |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          for b in $(git for-each-ref --format='%(refname:lstrip=3)' refs/remotes/origin); do
+            case "$b" in HEAD|main) continue ;; esac
+            if echo "$offen" | grep -qxF "$b"; then continue; fi
+            git merge-base --is-ancestor "origin/$b" origin/main || continue
+            anzahl=$((anzahl+1))
+            if [ "$NUR_ANZEIGEN" = "true" ]; then
+              echo "| \`$b\` | würde gelöscht |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              git push origin --delete "$b" && echo "| \`$b\` | gelöscht |" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "$anzahl Branches (vollständig in main, ohne offenen PR)." >> "$GITHUB_STEP_SUMMARY"
