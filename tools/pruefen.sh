@@ -18,10 +18,13 @@ QUICK=0; [ "${1:-}" = "--schnell" ] && QUICK=1
 LOG="$(mktemp -d)"
 STATUS=0
 
-# Bricht ab, wenn ein Lauf gar keine Testergebnisse geliefert hat (Absturz, Ladefehler).
+# Jedes Testprojekt muss eine Ergebniszeile liefern; fehlt eine, ist ein Projekt abgestürzt oder nicht geladen.
+PROJEKTE=$(ls tests/*/*.csproj 2>/dev/null | wc -l)
 ergebnisse_da() {
-  if ! grep -qE "^(Passed|Failed)! " "$1"; then
-    echo "FEHLER: $2 lieferte keine Testergebnisse (Absturz oder Ladefehler) – Protokoll: $1"; tail -15 "$1"; STATUS=1; return 1
+  local n; n=$(grep -cE "^(Passed|Failed)! " "$1")
+  if [ "$n" -ne "$PROJEKTE" ]; then
+    echo "FEHLER: $2 lieferte Ergebnisse für $n von $PROJEKTE Testprojekten (Absturz oder Ladefehler) – Protokoll: $1"
+    tail -15 "$1"; STATUS=1; return 1
   fi
 }
 
@@ -65,14 +68,26 @@ if [ $QUICK = 0 ]; then
   EM_SKIP_GAMEDATA=1 EM_REQUIRE_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q \
     --logger "trx;LogFilePrefix=pflicht" --results-directory "$LOG/pflicht" > "$LOG/pflicht.txt" 2>&1
   rc=$?; read -r p f s <<< "$(summe "$LOG/pflicht.txt")"
+  ergebnisse_da "$LOG/pflicht.txt" "Pflichtlauf ohne Daten"; vollstaendig=$?
   # Gewollt ist nur ein Scheitern WEGEN fehlender Originaldaten: Testergebnisse vorhanden, mindestens ein Fehlschlag,
   # und jeder Fehlschlag meldet die fehlenden Originaldaten. Absturz oder andere Fehler gelten als NICHT bestanden.
-  grund=$(python3 - "$LOG/pflicht" <<'PY'
+  grund=$(python3 - "$LOG/pflicht" "$PROJEKTE" <<'PY'
 import pathlib, sys, xml.etree.ElementTree as ET
 ns = {"t": "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
 failed = other = 0
-for trx in pathlib.Path(sys.argv[1]).glob("*.trx"):
-    for r in ET.parse(trx).getroot().iterfind(".//t:UnitTestResult", ns):
+files = sorted(pathlib.Path(sys.argv[1]).glob("*.trx"))
+if len(files) != int(sys.argv[2]):
+    print(f"trx-dateien:{len(files)}-von-{sys.argv[2]}"); sys.exit()
+for trx in files:
+    root = ET.parse(trx).getroot()
+    # Abgebrochener Lauf eines Projekts (Testhost-Absturz): ResultSummary „Aborted“/„Error“ oder eine RunInfo, die
+    # einen Abbruch meldet. (RunInfo „Error“ allein ist normal: xUnit schreibt jede [FAIL]-Zeile dorthin.)
+    summary = root.find(".//t:ResultSummary", ns)
+    texts = " ".join((i.findtext("t:Text", default="", namespaces=ns) or "").lower() for i in root.iterfind(".//t:RunInfo", ns))
+    if summary is not None and summary.get("outcome") in ("Aborted", "Error") \
+            or "aborted" in texts or "crash" in texts:
+        print(f"abgebrochen:{trx.name}"); sys.exit()
+    for r in root.iterfind(".//t:UnitTestResult", ns):
         if r.get("outcome") == "Failed":
             failed += 1
             msg = " ".join(m.text or "" for m in r.iterfind("t:Output/t:ErrorInfo/t:Message", ns))
@@ -81,7 +96,7 @@ for trx in pathlib.Path(sys.argv[1]).glob("*.trx"):
 print("keine-ergebnisse" if failed == 0 else f"andere-fehler:{other}" if other else "ok")
 PY
 )
-  if [ $rc -ne 0 ] && grep -qE "^(Passed|Failed)! " "$LOG/pflicht.txt" && [ "$grund" = "ok" ]; then
+  if [ $rc -ne 0 ] && [ $vollstaendig -eq 0 ] && [ "$grund" = "ok" ]; then
     ROWS+=("| Pflichtlauf ohne Daten (scheitert wie gewollt) | $p | $f | $s |")
   else
     ROWS+=("| Pflichtlauf ohne Daten | $p | $f | $s – **FEHLER: kein Scheitern wegen fehlender Originaldaten ($grund, Exit $rc)** |"); STATUS=1
