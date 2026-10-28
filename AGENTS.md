@@ -37,7 +37,7 @@ Code-Bezeichner englisch.
 |---|---|
 | .NET-SDK | Version aus `global.json` (10.0.402, `latestPatch`). Jede Quelle ist recht (Microsoft, Paketverwaltung). Ohne Zugang zu Microsoft-Servern: Release `claude-werkzeuge` dieses Repos (siehe `tools/claude/setup-workspace.sh`, braucht `gh`). |
 | NuGet-Pakete | `dotnet restore EishockeyManager.slnx` über nuget.org. Ohne Zugang: Offline-Spiegel im selben Release (`nuget-packages.tar.gz`). Paketversionen sind fest (`.github/scripts/versionen_pruefen.py`). |
-| Originaldateien | Eigene Kopie der DOS-Version (ZIP in den Projektdateien des Nutzers; sonst beim Nutzer anfragen). Inhalt nach `gamedata/` im Repo-Stamm, sodass `gamedata/em.exe` und `gamedata/kb/` existieren. |
+| Originaldateien | Privates Repo [`kaaasi/eishockey-manager-referenz`](https://github.com/kaaasi/eishockey-manager-referenz): unveränderte DOS-ZIP unter `original/Eishockey-Manager_DOS_DE.zip`, entpackt unter `original/gamedata/`. Ablagestand, Zugriff und Verknüpfung nach `gamedata/` im Repo-Stamm: [docs/originaldateien.md](docs/originaldateien.md). Bei fehlenden Daten zuerst dort nachsehen; Leserechte auf das private Repo sind nötig. |
 | Referenzbilder | Privates Repo `kaaasi/eishockey-manager-referenz` (nur lesen), Laden mit `tools/claude/fetch-reference.sh`; Kapitelindex `docs/referenz-videos.md`. |
 
 Prüfen, ob alles da ist: `tools/pruefen.sh --schnell` (Build + Tests).

@@ -13,13 +13,15 @@ git clone https://github.com/kaaasi/eishockey-manager-redone   # bzw. vorhandene
 cd eishockey-manager-redone
 ```
 
-- **Originaldateien:** Die DOS-Version liegt als ZIP in den Dateien des claude.ai-Projekts „Eishockey Manager Redone“.
-  Mit dem Projects-Werkzeug laden (`project_info` → Dateiname, dann `project_read`), in einen eigenen Ordner
-  entpacken, z. B. `~/orig/dos`. Fehlt die Datei, den Nutzer bitten, sie im Chat anzuhängen.
+- **Originaldateien:** Zuerst das private Repo `kaaasi/eishockey-manager-referenz` lesend einbinden.
+  Dort liegen `original/Eishockey-Manager_DOS_DE.zip` und die entpackten Dateien unter `original/gamedata/`.
+  Ablagestand und Abruf: [docs/originaldateien.md](docs/originaldateien.md). Den geladenen `gamedata`-Ordner
+  direkt verwenden; ein erneutes Hochladen im Chat ist bei vorhandenem Repo-Zugriff nicht nötig.
 - **SDK und NuGet-Pakete:** Microsoft- und NuGet-Server sind aus der Arbeitsumgebung gesperrt, GitHub nicht.
 
   ```bash
-  tools/claude/setup-workspace.sh ~/orig/dos   # SDK + Pakete aus dem Release "claude-werkzeuge", verlinkt gamedata/
+  tools/claude/setup-workspace.sh /workspace/shared/eishockey-manager-referenz/original/gamedata
+  # SDK + Pakete aus dem Release "claude-werkzeuge", verlinkt gamedata/
   source ~/claude-tools/env.sh
   tools/pruefen.sh
   ```
