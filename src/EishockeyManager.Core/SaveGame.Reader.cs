@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -66,8 +67,15 @@ public static partial class SaveGame
 
     private static SaveLoadResult Fail(string message) => new(null, message);
 
-    private sealed class Reader(JsonElement root)
+    private sealed class Reader(JsonElement root, bool checkNullability = true)
     {
+        /// <summary>
+        /// #79: Ein <c>null</c> in einem Feld oder Element, das laut Nullable-Annotation nie leer ist, wird abgelehnt.
+        /// Sonst entstünde ein Spielstand, den erst ein späterer Zugriff (z. B. <c>ValidatePlayerIdentity()</c>)
+        /// mit einer Ausnahme statt einer Meldung bemerkt. Der Writer schreibt <c>null</c> nur, wo es der Zustand hat.
+        /// </summary>
+        private readonly NullabilityInfoContext _nullability = new();
+        private readonly Dictionary<FieldInfo, NullabilityInfo> _fieldNullability = [];
         private readonly List<object> _objects = [];
         private readonly Dictionary<int, Player> _players = [];
         private readonly Stack<string> _path = new();
@@ -142,7 +150,7 @@ public static partial class SaveGame
                 if (!expected.TryGetValue(property.Name, out var field))
                     throw Error($"Unbekanntes Feld {property.Name} in {TypeName(type)}.");
                 _path.Push(property.Name);
-                field.SetValue(target, ReadValue(property.Value, field.FieldType));
+                field.SetValue(target, ReadValue(property.Value, field.FieldType, Nullability(field)));
                 _path.Pop();
                 count++;
             }
@@ -156,12 +164,28 @@ public static partial class SaveGame
 
         private static readonly HashSet<string> ObjectHeader = ["$id", "$type"];
 
-        private object? ReadValue(JsonElement element, Type declared)
+        private NullabilityInfo Nullability(FieldInfo field)
+        {
+            if (!_fieldNullability.TryGetValue(field, out var info))
+                _fieldNullability[field] = info = _nullability.Create(field);
+            return info;
+        }
+
+        /// <summary>Nullbarkeit eines Elements (Index 0) bzw. von Schlüssel (0) und Wert (1) einer Sammlung.</summary>
+        private static NullabilityInfo? Argument(NullabilityInfo? info, Type declared, int index) =>
+            info is null ? null
+            : declared.IsArray ? info.ElementType
+            : index < info.GenericTypeArguments.Length ? info.GenericTypeArguments[index]
+            : null;
+
+        private object? ReadValue(JsonElement element, Type declared, NullabilityInfo? nullability)
         {
             if (element.ValueKind == JsonValueKind.Null)
             {
                 if (declared.IsValueType && Nullable.GetUnderlyingType(declared) is null)
                     throw Error($"Wert für {TypeName(declared)} fehlt.");
+                if (checkNullability && nullability?.ReadState == NullabilityState.NotNull)
+                    throw Error($"{TypeName(declared)} darf nicht leer sein.");
                 return null;
             }
 
@@ -169,7 +193,7 @@ public static partial class SaveGame
             switch (kind)
             {
                 case Kind.Nullable:
-                    return ReadValue(element, Nullable.GetUnderlyingType(declared)!);
+                    return ReadValue(element, Nullable.GetUnderlyingType(declared)!, null);
                 case Kind.String:
                     return element.GetString();
                 case Kind.Bool:
@@ -228,7 +252,7 @@ public static partial class SaveGame
                     Register(array);
                     var i = 0;
                     foreach (var item in items.EnumerateArray())
-                        array.SetValue(Item(item, elementType, i), i++);
+                        array.SetValue(Item(item, elementType, Argument(nullability, declared, 0), i), i++);
                     return array;
                 }
                 case Kind.Array2:
@@ -243,7 +267,7 @@ public static partial class SaveGame
                     var i = 0;
                     foreach (var item in items.EnumerateArray())
                     {
-                        array.SetValue(Item(item, elementType, i), i / dims[1], i % dims[1]);
+                        array.SetValue(Item(item, elementType, Argument(nullability, declared, 0), i), i / dims[1], i % dims[1]);
                         i++;
                     }
                     return array;
@@ -258,7 +282,7 @@ public static partial class SaveGame
                     var add = concrete.GetMethod("Add")!;
                     var i = 0;
                     foreach (var item in Property(element, "items").EnumerateArray())
-                        if (add.Invoke(collection, [Item(item, elementType, i++)]) is false)
+                        if (add.Invoke(collection, [Item(item, elementType, Argument(nullability, declared, 0), i++)]) is false)
                             throw Error("Doppelter Eintrag in einer Menge.");
                     return collection;
                 }
@@ -273,8 +297,8 @@ public static partial class SaveGame
                         _path.Push($"[{i++}]");
                         if (entry.GetArrayLength() != 2)
                             throw Error("Eintrag braucht Schlüssel und Wert.");
-                        var key = ReadValue(entry[0], arguments[0]) ?? throw Error("Schlüssel fehlt.");
-                        dictionary.Add(key, ReadValue(entry[1], arguments[1]));
+                        var key = ReadValue(entry[0], arguments[0], null) ?? throw Error("Schlüssel fehlt.");
+                        dictionary.Add(key, ReadValue(entry[1], arguments[1], Argument(nullability, declared, 1)));
                         _path.Pop();
                     }
                     return dictionary;
@@ -308,10 +332,10 @@ public static partial class SaveGame
             return definition == typeof(IReadOnlyList<>) || definition == typeof(IReadOnlyCollection<>) || definition == typeof(IEnumerable<>);
         }
 
-        private object? Item(JsonElement item, Type type, int index)
+        private object? Item(JsonElement item, Type type, NullabilityInfo? nullability, int index)
         {
             _path.Push($"[{index}]");
-            var value = ReadValue(item, type);
+            var value = ReadValue(item, type, nullability);
             _path.Pop();
             return value;
         }

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
@@ -259,6 +260,93 @@ public class SaveGameTests
         var result = SaveGame.Load(Encoding.UTF8.GetBytes(text));
         Assert.False(result.Success);
         Assert.Contains("Unbekannter Typ", result.Error);
+    }
+
+    /// <summary>
+    /// #79 (S71-01): Ein Verein, der in der Datei fehlt (<c>null</c>), wird mit Meldung abgelehnt – vorher lief das
+    /// Laden in eine <see cref="NullReferenceException"/> in <c>ValidatePlayerIdentity()</c>.
+    /// </summary>
+    [Fact]
+    public void NullClub_IsRejectedWithMessage()
+    {
+        var root = JsonNode.Parse(SaveGame.Save(TestGames.Create()))!;
+        root["spiel"]!["Clubs"]!["items"]![0] = null;
+
+        var result = SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString()));
+
+        Assert.False(result.Success);
+        Assert.Contains("darf nicht leer sein", result.Error);
+    }
+
+    /// <summary>
+    /// #79: <c>null</c> an beliebiger Stelle eines Objekts oder einer Sammlung führt nie zu einer Ausnahme, sondern
+    /// zu einer Meldung (oder ist an dieser Stelle zulässig und wird geladen). Feste Stichprobe über die ganze Datei.
+    /// </summary>
+    [Fact]
+    public void NullAnywhere_NeverThrows()
+    {
+        var game = TestGames.Create();
+        TestSeason.PlayMatchDay(game);
+        var text = Encoding.UTF8.GetString(SaveGame.Save(game));
+        var count = Positions(JsonNode.Parse(text)!).Count;
+        Assert.True(count > 1000, $"nur {count} Stellen");
+
+        var random = new Random(79);
+        var rejected = 0;
+        foreach (var index in Enumerable.Range(0, 150).Select(_ => random.Next(count)).Distinct())
+        {
+            var root = JsonNode.Parse(text)!;
+            var (parent, key) = Positions(root)[index];
+            if (parent is JsonObject obj)
+                obj[(string)key] = null;
+            else
+                parent.AsArray()[(int)key] = null;
+
+            SaveLoadResult result;
+            try
+            {
+                result = SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString()));
+            }
+            catch (Exception e)
+            {
+                Assert.Fail($"Stelle {parent.GetPath()}/{key}: {e.GetType().Name}: {e.Message}");
+                return;
+            }
+            if (!result.Success)
+                rejected++;
+            else
+                SaveGame.Save(result.Game!); // was geladen wurde, muss auch wieder speicherbar sein
+        }
+        Assert.True(rejected > 0);
+
+        // Alle Objekte und Sammlungen unterhalb der vier Abschnitte, als (Elternknoten, Schlüssel).
+        static List<(JsonNode Parent, object Key)> Positions(JsonNode root)
+        {
+            var result = new List<(JsonNode, object)>();
+            Walk(root);
+            return result;
+
+            void Walk(JsonNode node)
+            {
+                if (node is JsonObject obj)
+                    foreach (var (name, child) in obj)
+                    {
+                        if (child is JsonObject or JsonArray)
+                        {
+                            if (node != root)
+                                result.Add((node, name));
+                            Walk(child);
+                        }
+                    }
+                else if (node is JsonArray array)
+                    for (var i = 0; i < array.Count; i++)
+                        if (array[i] is JsonObject or JsonArray)
+                        {
+                            result.Add((node, i));
+                            Walk(array[i]!);
+                        }
+            }
+        }
     }
 
     [Fact]
