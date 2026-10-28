@@ -19,7 +19,7 @@ public class MenuEntryTests(ITestOutputHelper output)
         "Highscore",
         "Totale", "Früher", "Verein", "Spieler", "Fairplay", "WM-Statistik",
         "Tabelle WM",
-        "Paarungen 1. Liga", "Paarungen 2. Liga", "Paarungen Oberliga", "DEB-Pokal", "Europapokal", "WM",
+        "Paarungen 1. Liga", "Paarungen 2. Liga", "Paarungen Oberliga", "Europapokal", "WM",
         "Stärken 1. Liga", "Stärken 2. Liga", "Stärken Oberliga", "Stärken Länderteams",
         "Laden", "Sichern", "Einstellungen",
     };

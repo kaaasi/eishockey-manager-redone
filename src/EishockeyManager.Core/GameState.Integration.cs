@@ -7,7 +7,8 @@ namespace EishockeyManager.Core;
 public sealed partial class GameState
 {
     /// <summary>
-    /// Spielstart nach der Kaderanlage: Börse, Werbeangebote und Trainingspläne für alle Manager vorbereiten.
+    /// Spielstart nach der Kaderanlage: Börse, Werbeangebote und Trainingspläne für alle Manager vorbereiten,
+    /// Pokalwettbewerbe anmelden.
     /// Verarbeitet keinen Tag; die Bildschirme lesen danach ausschließlich den vorhandenen Zustand.
     /// </summary>
     internal void InitializeManagerSystems()
@@ -18,6 +19,9 @@ public sealed partial class GameState
             RenewOffers(manager);
             PrepareTraining(manager);
         }
+
+        // Paket „wettbewerbe“: DEB-Pokal (später Europapokal, WM) nach dem Spielmodus anmelden und auslosen.
+        InitializeCompetitions();
     }
 
     /// <summary>Jeder Tag der Zeitleiste, bevor dessen Spiele ausgetragen werden.</summary>

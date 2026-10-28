@@ -366,7 +366,14 @@ Branch: `paket/mannschaft` · Status: **Runde 1 gemergt** (PRs #1, #2, #4, #7, #
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
-Branch: `paket/wettbewerbe` · Status: **Runde 3** – startet nach der Stabilisierung (gemeinsame Spiel-/Finanzabrechnung und Stärketripel nötig); Anschluss über `ISeasonCompetition`
+Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1 DEB-Pokal fertig (Review ausstehend); als Nächstes Europapokal, WM, Statistiken. Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
+
+| PR | Inhalt | Stand |
+|---|---|---|
+| 1 | DEB-Pokal: Auslosung, Heimrecht, „best of three“, Abrechnung, Bildschirm „DEB-Pokal Auslosung“ | eingereicht |
+| 2 | Europapokal (Gruppe + Endrunde) | offen |
+| 3 | WM (2 Gruppen + K.-o.), Tabelle WM | offen |
+| 4 | Stärken, Statistiken, Freundschaftsspiele, Paarungen Liga | offen |
 
 - Paarungen (Liga, Playoffs, DEB-Pokal, Europapokal, WM), Freundschaftsspiele.
 - Stärken (Ligen, Länderteams: Gesamt/Abwehr/Sturm, Smileys), Statistiken (Totale, Früher, Verein, Spieler, Fairplay, WM).
