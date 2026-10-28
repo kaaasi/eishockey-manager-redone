@@ -38,6 +38,11 @@ public sealed partial class GameState
 
         // Verträge: Spieler im letzten Vertragsjahr kündigen an, ob sie verlängern (Spur „kader“, R2-11)
         AnnounceContractEnds(day);
+
+        // Paket „wettbewerbe“: Ewige Tabelle, Ewige Bilanz und „Früher“ am Saisonende fortschreiben
+        // (vor der Titelvergabe in FinishSeason; Liga, Pokale und Abschlusstabellen stehen dann fest).
+        if (day == SeasonCalendar.SeasonEnd)
+            RecordSeasonStatistics();
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>

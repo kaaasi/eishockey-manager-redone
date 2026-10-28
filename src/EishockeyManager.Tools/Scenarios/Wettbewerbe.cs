@@ -142,4 +142,28 @@ internal static class Wettbewerbe
         d.Move(5, 120); d.Save("05_bundesliga_gesamt");
         d.Press(Key.Escape);
     }
+
+    /// <summary>Statistiken nach der ersten Saison wie im Video (16:38–16:52): Ewige Tabelle oben und gescrollt, Früher.</summary>
+    [Scenario("statistik")]
+    private static void Statistics(ScreenDriver d)
+    {
+        d.StartNewGame(); // Berliner SC wie im Video
+        var game = d.Host.Game!;
+        d.OpenTile("Früher");
+        d.Move(5, 120); d.Save("00_frueher_erste_saison");
+        d.Press(Key.Escape);
+        for (var guard = 0; game.History.Count == 0 && guard < 5000; guard++)
+            d.Press(Key.Space);
+        for (var guard = 0; d.Host.Current is not MainMenuScreen && guard < 50; guard++)
+            d.Press(Key.Space);
+        d.OpenTile("Totale");
+        d.Move(5, 120); d.Save("01_ewige_tabelle");
+        for (var i = 0; i < 30; i++)
+            d.Press(Key.Down);
+        d.Move(5, 120); d.Save("02_ewige_tabelle_unten");
+        d.Press(Key.Escape);
+        d.OpenTile("Früher");
+        d.Move(5, 120); d.Save("03_frueher");
+        d.Press(Key.Escape);
+    }
 }

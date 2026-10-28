@@ -16,9 +16,10 @@ public static class CompetitionWidgets
     /// Schatten (1 Pixel rechts unten) in der Farbe <paramref name="shadow"/> – Aufruf 0x902:0x885
     /// (Ziel, Text, x1, x2, Grundlinie, Farbe, Schattenfarbe). Vermessen an „DEB-Pokal Auslosung“ (Video 3:55).
     /// </summary>
-    public static void Centered(Surface s, BitmapFont font, int x1, int x2, int baseline, string text, byte color, byte? shadow)
+    public static void Centered(Surface s, BitmapFont font, int x1, int x2, int baseline, string text, byte color, byte? shadow, bool left = false)
     {
-        var x = x1 + (x2 - x1 - Width(font, text)) / 2;
+        // x2 = 0xFFFF im Original: linksbündig ab x1
+        var x = left ? x1 : x1 + (x2 - x1 - Width(font, text)) / 2;
         var y = Top(font, baseline);
         if (shadow is { } dark) // Schattenfarbe 0xFF im Original = ohne Schatten
             Draw(s, font, x + 1, y + 1, text, dark);

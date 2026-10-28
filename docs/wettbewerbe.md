@@ -113,3 +113,63 @@ Funktion 0x51206 (Hauptmenü → Stärken → 1. Liga, 2. Liga, Oberliga, Lände
 Pixelvergleich `emtool screens gamedata ~/work/screens staerken` (Smiley/Balken und Werte der Ligavereine maskiert, weil
 zufallsabhängig): Länderteams gegen `oberflaeche_1318` mittlere Abweichung 8,8, 3,8 % > 40; Oberliga gegen `oberflaeche_1336`
 9,5, 4,8 % > 40. Kondition und Technik der Länderteams stimmen mit dem Video überein.
+
+## Statistiken über Saisons (`Core/StatisticsHistory.cs`)
+
+Fortgeschrieben genau einmal je Saison am 29. April (Anschluss in `GameState.Integration.cs`, vor der Titelvergabe).
+
+| Regel | Beleg |
+|---|---|
+| Ewige Tabelle je Saison: Ligaplatz p (0-basiert) → 12 − p, dazu 40 (Bundesliga) bzw. 20 (2. Liga); ohne Liga 0; Meister +15, als Bundesligist +10; Erster einer unteren Liga +3; DEB-Pokalsieger +25; Europacupsieger +40 | 0x5667A; Video 16:38 (Berliner SC 5, Mannheim 52, Düsseldorf 116 nach einer Saison) |
+| Titelzähler Meister, DEB-Pokal, Europapokal je Verein | 0x2E730 (Vereinsstruktur 0x82A3 + 80 · Verein) |
+| Ewige Bilanz des Managers: Punkte, Tore, Siege, Niederlagen, Unentschieden aus den Ligaspielen, zu Hause/auswärts | Managerstruktur 0x9796 ff.; Video 16:38 (44 Spiele nach einer Saison) |
+| „Früher“: je Saison Liga (Platz bzw. Play-Off-Aus 0x33–0x35 bzw. Meister 0x80), DEB-Pokal-Runde/SIEGER, Europacup Gruppe/Endrunde/SIEGER/Nicht im Wettbewerb | 0x2C099, 0x2C9D6 |
+| `[APPROX]` 48 statt 42 Vereine in der Ewigen Tabelle | – |
+
+### Bildschirme
+
+- **„Ewige Tabelle“** (Statistiken → Totale, `UI/Screens/Statistics/EternalTableScreen.cs`): Funktion 0x2E356.
+  Fenster (50 \| 23) 9 × 6 und (50 \| 154) 9 × 4, Pokale kb\36, Pfeile kb\4 (20 \| 0) bei (165 \| 30), Liste über Zwischenbild
+  (Zeile 6 + 6 n) mit Ausschnitt nach (57 \| 58), unten Bilanz des Managers am Zug. Pixelvergleich gegen `oberflaeche_1638`
+  (Listen- und Wertebereiche maskiert): mittlere Abweichung 7,2, 1,2 % > 40.
+- **„Früher“** (`HistoryScreen.cs`): Funktion 0x2C1EE. Drei Diagrammfenster mit Achsen (Farbe 6) und Textfeld; rote
+  Markierung der angezeigten Saison (Farbe 16). Pixelvergleich gegen `oberflaeche_1652` (Text maskiert): 5,9, 1,1 % > 40.
+  `[APPROX]` Balkenhöhen und -farbe.
+
+**Nicht umgesetzt (abhängig vom Live-Spiel):** „Spieler“ (Torschützen, Vorleger, Scorer, Keeper), „Verein“
+(Über-/Unterzahl, Serien), „Fairplay“ (Strafen) und „WM-Statistik“ (Spieler im WM-Kader) brauchen Tore, Vorlagen und
+Strafen je Spieler. Die heutige Spielberechnung liefert nur das Endergebnis; diese Daten entstehen erst mit dem Paket
+`livespiel`.
+
+## Freundschaftsspiele – Befund (noch nicht umgesetzt)
+
+Freundschaftsspiele gibt es im Original nur für den **Bundestrainer** im Spielmodus „nur Weltkugel“ (WM-Modus).
+
+**Spielmodus** (Spielvorbereitung, Datei 0x28506/0x2985C): zwei Knöpfe aus kb\1 (57 × 13, Quelle x = 113), links die
+deutsche Fahne (Bit 0, y = 76/89), rechts die Weltkugel (Bit 1, y = 102/115), Vorgabe beide an. Daraus DGROUP 0xD0B9:
+nur Fahne → 2 (Liga und DEB-Pokal, kein Europapokal/WM), beide → 4, **nur Weltkugel → 1**. Im Modus 1 wird keine Liga
+gespielt (z. B. Datei 0x4C759, 0x5D4F6): Der Tageszähler springt bis zum Ereignis 0x10, Manager 0 wird Bundestrainer
+(DGROUP 0xD0BA, Datei 0x54D19/0x55809) und bekommt am Saisonende-Abschnitt die Nation DGROUP 0x6AC samt Etat
+(DGROUP 0xA055 += 0x29C, Datei 0x554A6). Das Remake deutet den linken Knopf bisher als „DEB-Pokal an/aus“ – das ist
+nicht belegt (Paket Spielvorbereitung).
+
+**Ablauf als Bundestrainer:** Der Nationalteam-Zug läuft als „Manager 5“ (DGROUP 0xA70E = 5) mit eigenem Kader und
+eigener Kachelbelegung des Hauptmenüs (Tabelle DGROUP 0x5159 + 42, Datei 0x44FBD). Dort sitzen „Spieler in WM-Kader“
+(Stub 0xF8:0x5C) und **„WM Vorbereitung“** (Stub 0xF8:0x57 → Datei 0x3B8F7, Aufruf Datei 0x457D9).
+
+**WM Vorbereitung** (Datei 0x3B8F7):
+- Fenster (16 | 2), 12 × 12 Teile; Titel Bold zentriert 0 … 319, Grundlinie 21, Farbe 7; Linie (27 … 292 | 23).
+- Zwölf Gegnerfelder 42 × 42 (4 × 3) ab (21 | 28), Schritt 43: Nationen DGROUP 0x6AD + i; die eigene Nation ist gesperrt.
+- Acht Zeilen für vereinbarte Spiele ab (193 | 28), 105 × 18, Schritt 20; Infofeld (27 | 160)–(188 | 184) mit
+  „Gegner“, „Kosten“, „Kontostand“ (Mini) und Umschalter „Heim“/„Auswärts“ (Feld 20).
+- Kosten je Gegner aus DGROUP 0x26C (12 Langwörter, im Spielstand gesichert), Heimspiel doppelt.
+- Erster Klick wählt, zweiter bestätigt. Mehr als 8 Spiele → „Nicht mehr als / 8 Freundschaftsspiele“, zu wenig Etat →
+  „Sie haben nicht / genug Geld !“. Sonst Etat − Kosten, Spiel sofort (Datei 0x3C05E), Ergebnis in DGROUP 0xD0C3 ff.
+- Wirkung: x = (Kosten / 2000 + random(0, 50)) / 50; aus Tordifferenz, x und Heim/Auswärts ergibt sich ein Bonus,
+  der auf drei Werte (Spielerfeld 0x10–0x12, höchstens 99) jedes Spielers im Nationalkader addiert wird.
+- Zähler DGROUP 0xD0C1 wird zum Saisonbeginn auf 0 gesetzt (Datei 0x30EBE).
+
+Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien
+Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Ein Bildschirm „Paarungen Liga“ ist in
+den Referenzvideos nicht zu sehen. Handbuchkorrektur im `infofile`: WM-Platzierungsspiele 9–12 (Verlierer/Sieger der
+Spiele 5–8).
