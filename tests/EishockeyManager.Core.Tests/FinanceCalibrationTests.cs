@@ -57,13 +57,26 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
         Assert.Equal(expected, game.Finance(game.ActiveManager).Book.Current(FinanceCategory.Praemien));
     }
 
+    private static int HomeGames(GameState game, int club) =>
+        game.Results.Count(r => r.Home == club)
+        + game.PlayoffResults.Count(r => r.Home == club)
+        + game.RelegationGroups.Sum(g => g.Results.Count(r => r.Home == club))
+        + game.CupMatches.Count(r => r.Home == club);
+
+    /// <summary>
+    /// Mehrsaisonprobe (Spur finanzen-2): vier Saisonwechsel, passiv und aktiv, Oberliga und Bundesliga, drei Seeds.
+    /// Sollspanne aus den Formeln des Originals statt technischer Alarmgrenzen: Eintritt je Heimspiel zwischen
+    /// 50 Zuschauern (Untergrenze der Zuschauerformel, 0x3F7A4) und der Kapazität; Grundausgaben, Unterhalt und
+    /// Gehälter genau sieben Monatsabschlüsse (1. Oktober bis 1. April); Konto = Summe des Finanzbuchs nach jedem Schritt.
+    /// </summary>
     [GameDataTheory]
     [InlineData(League.Oberliga, false)]
     [InlineData(League.Oberliga, true)]
     [InlineData(League.Bundesliga, false)]
     [InlineData(League.Bundesliga, true)]
-    public void FourSeasonChanges_AccountAndLedgerStayWithinDocumentedEnvelope(League league, bool active)
+    public void FourSeasonChanges_AccountAndLedgerStayWithinOriginalEnvelope(League league, bool active)
     {
+        const int MonthEnds = 7;
         foreach (var seed in new[] { 3, 17, 41 })
         {
             var setup = new GameSetup();
@@ -71,11 +84,17 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, seed);
             var manager = game.ActiveManager;
             long cumulative = 0;
+            long lowest = long.MaxValue, highest = long.MinValue;
             for (var year = 0; year < 4; year++)
             {
                 var club = game.Clubs[manager.ClubIndex];
                 var roster = club.Players.Count;
                 var moneyAtStart = manager.Money;
+                var stadium = game.Finance(manager).Stadium;
+                var fixedPerMonth = game.MonthlyBaseExpenses(manager) + stadium.MonthlyUpkeep;
+                var wagesPerMonth = FinanceRules.MonthlyWages(club);
+                long minTickets = 0, maxTickets = 0;
+                var settledHomeGames = 0;
                 for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
                 {
                     Assert.True(guard < 1000, "Saisonende nicht erreicht");
@@ -96,18 +115,37 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                             if (offer is not null) game.AcceptOffer(manager, slot, offer.Sponsor);
                         }
                     }
+                    var price = stadium.TicketPrice;
+                    var capacity = stadium.Capacity;
                     game.Continue();
                     var book = game.Finance(manager).Book;
                     Assert.Equal(GameState.StartMoney + cumulative + book.CurrentTotal, manager.Money);
+                    var homeGames = HomeGames(game, manager.ClubIndex);
+                    minTickets += (homeGames - settledHomeGames) * 50L * price;
+                    maxTickets += (homeGames - settledHomeGames) * (long)capacity * price;
+                    settledHomeGames = homeGames;
+                    lowest = Math.Min(lowest, manager.Money);
+                    highest = Math.Max(highest, manager.Money);
                 }
                 Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
                 var finance = game.Finance(manager).Book;
-                output.WriteLine($"seed={seed}; club={club.Name}; start={league}; active={active}; year={year + 1}; league={club.League}; roster={roster}; begin={moneyAtStart}; end={manager.Money}; "
+                output.WriteLine($"seed={seed}; club={club.Name}; start={league}; active={active}; year={year + 1}; league={club.League}; roster={roster}; begin={moneyAtStart}; end={manager.Money}; homeGames={settledHomeGames}; "
                     + string.Join("; ", Enum.GetValues<FinanceCategory>().Select(c => $"{c}={finance.Current(c)}")));
-                // Vorläufige technische Schranken, keine nachgewiesene DOS-Balance:
-                // passiv höchstens 3 Mio. Oberliga bzw. 7 Mio. Bundesliga nach vier Jahren;
-                // aktiv zusätzlich bewusst angenommene Werbung und Gastronomie.
-                Assert.InRange(manager.Money, -1500000L, active ? 15000000L : league == League.Oberliga ? 3000000L : 7000000L);
+
+                // Sollspanne aus den Originalformeln:
+                Assert.InRange(finance.Current(FinanceCategory.Eintritt), minTickets, maxTickets);
+                if (!active)
+                {
+                    Assert.Equal(-MonthEnds * fixedPerMonth, finance.Current(FinanceCategory.Unterhalt));
+                    Assert.Equal(-MonthEnds * wagesPerMonth, finance.Current(FinanceCategory.Gehaelter));
+                    Assert.Equal(0, finance.Current(FinanceCategory.Zinsen));
+                    Assert.Equal(0, finance.Current(FinanceCategory.Bau));
+                }
+                else
+                    Assert.True(finance.Current(FinanceCategory.Unterhalt) <= -MonthEnds * fixedPerMonth, "Unterhalt nach Ausbau nicht kleiner");
+                Assert.True(finance.Current(FinanceCategory.Sponsoren) >= 0);
+                Assert.True(finance.Current(FinanceCategory.Praemien) >= 0);
+
                 var total = finance.CurrentTotal;
                 cumulative += finance.CurrentTotal;
                 game.StartNextSeason();
@@ -116,6 +154,10 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 Assert.Equal(total, finance.PreviousTotal);
                 if (active) Assert.Equal(roster, club.Players.Count);
             }
+            output.WriteLine($"seed={seed}; start={league}; active={active}; lowest={lowest}; highest={highest}; end={manager.Money}");
+            // Kein passiver Manager rutscht in die Entlassungsgrenze (−1,5 Mio. DM); Belege der Größenordnung in
+            // docs/finanzen-rekonstruktion.md (Karriere-Video: Oberliga-Saisons mit Werbung zwischen 100.000 und 750.000 DM).
+            Assert.True(lowest > Manager.DebtLimit, $"Konto unter der Entlassungsgrenze: {lowest}");
         }
     }
 }

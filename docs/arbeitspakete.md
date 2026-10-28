@@ -224,6 +224,35 @@ muss gesichert werden. Wer zuerst gemergt wird, ist egal: Der Vollständigkeitst
 Felder, der zweite PR ergänzt sie. Ändert `speichern` den Generator, müssen die Zahlenfolgen gleich bleiben – sonst
 verschieben sich die Referenzwerte aus `finanzen-2`.
 
+### Status Spur `finanzen-2`
+
+Stand 28.10.2026: umgesetzt auf `paket/finanzen-2` (Draft-PR #67, Base `5f8e02a`), Bearbeiter Claude Code. Belege in
+[finanzen-rekonstruktion.md](finanzen-rekonstruktion.md) (Disassembly em.exe + Karriere-/UI-Video).
+
+- [x] **Monatsabschluss** `[ORIGINAL]` (0x3E657/0x3E811/0x3F02C): Grundeinnahmen 5 × Spieler × Teamwerte; Grundausgaben
+  130.000 − 10.000 × (5 − Level) − 20 × Ligawert (+ Bundesliga-/2.-Liga-Terme); Unterhalt je Ausbaustufe und Platz;
+  Zinsen täglich aufs Zinskonto (Sparbuch 1 %, Kredit 4 %, Manager 2,5 %/2 %, Überziehung 10 %); Kostenstufe = Liga der
+  Saison. Keine Gehaltspauschale mehr bei leerem Kader. Startstadion und Eintritt je Liga (0x29F2E), Startkonto-Formel belegt.
+- [x] **Zuschauer** `[ORIGINAL]` (0x3F185): Stärken, Tabellenplätze, Ligen, Ausbaustufen, Level, Preisfaktor,
+  Wettbewerbsbonus (DEB-Pokal 1, Play-Off 1, Europapokal 2). Eintritt = Zuschauer × Preis; **keine Gastronomie-Einnahme**
+  (Kategorie entfernt). `[APPROX]`: Tabellenplatz vor dem 1. Spieltag, random(a, b) mit a > b, Vereine ohne Liga.
+- [x] **Werbung** `[ORIGINAL]` (0x3FB47): Beträge aus Bewertung × Art × Partner, Laufzeit 12/24 Monate, Option 1/8,
+  Angebote am 1. und zur Monatsmitte, Partnerwahrscheinlichkeiten; Verlängerungsfrage nur mit Option. Bewertung
+  (0x3F833) mit `[APPROX]` für drei Titelzähler und Spielerwerte.
+- [x] **Nebenpunkte:** Bundestrainer-Etat und Freundschaftsspiele über das eigene Konto des Nationalteams
+  (0x554A6/0x3BFC4, `GameState.NationalAccount`), nicht übers Vereinskonto; Hauptrunden-Erster 100.000 DM in **jeder**
+  Liga (0xE0:0x20); WM-Titel ausdrücklich ohne Vereinsprämie; die zwei weiteren 100.000-DM-Kennungen bleiben `[APPROX]`.
+- [x] Mehrsaisonprobe `FinanceCalibrationTests.FourSeasonChanges_AccountAndLedgerStayWithinOriginalEnvelope` (Oberliga
+  und Bundesliga, passiv und aktiv, Seeds 3/17/41, Originaldaten): Eintritt je Heimspiel innerhalb [50 × Preis,
+  Kapazität × Preis], Unterhalt und Gehälter genau sieben Monatsabschlüsse, Konto = Finanzbuch; Alarmgrenzen ersetzt.
+  Endkonten nach vier Wechseln: passiv Oberliga 668.098–1.044.972 DM (Tiefstand 68.222), passiv Bundesliga
+  4.745.672–4.899.230 DM, aktiv Oberliga 2.980.679–3.373.183 DM, aktiv Bundesliga 14.052.698–14.234.182 DM.
+- Restlücken: Karriere-Video ESC Wolfsburg zeigt zu Spielbeginn 87.370 DM Monatsausgaben, die Formel 73.977 DM
+  (UI-Video Berliner SC passt auf 100 DM); passive Manager mit leerem Kader ab Saison 3 (Spur `kader`) verzerren
+  Eintritt und Gehälter weiter; Werbepartner-Bewertung ohne die unbekannten Titelzähler; Speichern muss
+  `CostLeague`, `InterestAccrualThirds`, `ManagerLoanAccrualThirds`, `SponsorContract.OptionMonths`,
+  `SponsorOffer.OptionMonths` und `NationalAccount` sichern.
+
 ### Spur `markerbericht` – Pilot Übergabe (ChatGPT)
 
 Ziel und Bewertung: [audit-validierung](prozess/2026-10-27-audit-validierung.md) §5. Voraussetzungen (#45, #46, #50)
