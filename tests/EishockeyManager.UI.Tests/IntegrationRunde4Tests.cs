@@ -59,7 +59,7 @@ public class IntegrationRunde4Tests : IDisposable
         var slot = new LineupSlot(0, keeper.Role, 0);
         if (coach.Formation[slot] is not null)
             coach.ClearSlot(slot);
-        Assert.Equal(NationalLineupResult.Assigned, coach.Assign(slot, keeper));
+        Assert.Equal(LineupResult.Assigned, coach.Assign(slot, keeper));
         coach.Tactics.AttackMode = TacticMode.Semi;
         var strength = game.NationalMatchStrength(NationalTeams.Germany);
         var saved = Convert.ToBase64String(SaveGame.Save(game));

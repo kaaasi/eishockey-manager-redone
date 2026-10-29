@@ -129,20 +129,20 @@ public sealed class NationalLineupScreen : Screen
     }
 
     /// <summary>Meldungen wie beim Verein; „Schon 22 Mann / im Team !“ aus DGROUP 0x11D5.</summary>
-    private void Report(NationalLineupResult result, Player player)
+    private void Report(LineupResult result, Player player)
     {
         switch (result)
         {
-            case NationalLineupResult.Injured:
+            case LineupResult.Injured:
                 _message.Show(player.Name, "ist verletzt.");
                 break;
-            case NationalLineupResult.Suspended:
+            case LineupResult.Suspended:
                 _message.Show(player.Name, "noch gesperrt !");
                 break;
-            case NationalLineupResult.WrongRole:
+            case LineupResult.WrongRole:
                 _message.Show("Der darf da", "nicht rein !");
                 break;
-            case NationalLineupResult.RosterFull:
+            case LineupResult.RosterFull:
                 _message.Show("Schon 22 Mann", "im Team !");
                 break;
         }

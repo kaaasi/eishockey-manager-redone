@@ -232,14 +232,37 @@ Bildschirmfotos: `emtool screens gamedata ~/work/screens nationalteam-2` (Belegu
 | – ohne Wertefelder Einsatz/Angriff (00058 / 00059) | 14,1 / 4,3 % / 4,2 % | 9,5 / 3,9 % · 9,4 / 4,1 % |
 
 Lage aller Teile stimmt (bester Versatz 0 | 0); Rest sind Schriftkanten, die anderen Spielerdaten und die Wertefelder.
-Behoben: Farbe von „Eingesetzt“ (17 → 16). Offen und nicht in dieser Spur (Vereinsbildschirme, `Squad.Tactics.cs`):
+Behoben: Farbe von „Eingesetzt“ (17 → 16).
 
-- Das Video zeigt in der Taktik des Nationalteams Block 1 Einsatz 60/0/25/20/30/0 und Angriff 0/4/5/6/7/4 (gedimmt,
-  Modus AUTOM.). Die Teilfolgen 0, 0, 25, 20, 30, 0 und 0, 4, 5, 6, 7, 4 stehen in DGROUP 0x4911–0x4925. Das widerspricht
-  dem angenommenen Wertebereich −3…+3 der Vereinstaktik; Bedeutung und Vorbelegung sind für Verein und Nationalteam
-  gemeinsam zu klären. Das Remake zeigt beim Nationalteam die Grundtaktik (alles 0).
-- Die Vereinsaufstellung zeichnet „Eingesetzt“ in Farbe 17 statt 16 und kennt die Grenze von 22 Eingesetzten nicht
-  (gleicher Code im Original, Kennwert 0).
+### Taktikwerte, Vereinsaufstellung (Spur `taktik-verein`, Befunde aus #103)
+
+Taktik von Verein und Nationalteam (`Core/Squad.Tactics.cs`, Belege dort im Klassenkommentar):
+
+| Regel | Beleg |
+|---|---|
+| Je Block und Spielstand ein Byte: Zeile „Grundwert“ = Grundwert, die fünf übrigen Zeilen = Zuschläge darauf. Je Manager 4 Blöcke × 6 Werte (Einsatz DGROUP 0xCAE9 + 0x30 · Manager, Angriff 0xCB01); der Verein (61-Byte-Struktur) hält eine Arbeitskopie in den Feldern 0x26–0x2B (Einsatz, 0x2D = Grundwert) und 0x35–0x3A (Angriff) | Datei 0x485DD–0x48645, 0x48A9E–0x48B0A |
+| Einsatz ist ein Prozentwert bis 100, Angriff eine Stufe bis 7; Zuschlag ≤ Obergrenze − Grundwert, Grundwert ≤ Obergrenze − größter Zuschlag der Zeilen „hohe Führung“ bis „knapper Rückstand“ („hoher Rückstand“ wird nicht geprüft); Schritt 1, untere Grenze 0 | 0x488E9–0x48925, 0x48971–0x48A4F |
+| Modi 0 „AUTOM.“, 1 „SEMI“, 2 „MANUELL“ (Einsatz DGROUP 0xA6FB, Angriff 0xA707 je Manager); nur „SEMI“ zeigt die Werte hell und lässt sie ändern | Texte DGROUP 0x5A4; 0x47D9B, 0x488F6, 0x48930 |
+| Automatik vor jedem Spiel (je Paarung, auch für Vereine ohne Manager): doppelte Stärken weniger als 25 auseinander → Einsatz 60 mit 0/25/20/30/0, sonst 40 mit 20/20/15/20/0; Angriff 0 mit 5/6/4/4/0 für den Schwächeren, sonst 4/5/6/7/4 | 0x8365–0x84D6, Tabellen DGROUP 0x4912/0x491C; Aufruf 0x36D12 |
+| Im Spiel: Grundwert + Zuschlag des Spielstands, „hoch“ ab 3 Toren; Einsatz auf 0…100 begrenzt, Angriff in drei Bit; bei „MANUELL“ setzt das Spiel die Werte nicht | 0x939A–0x9527 |
+| `[APPROX]` Ohne Spielvorbereitung je Paarung zeigt „AUTOM.“ die Zeile für ein ausgeglichenes Spiel (wie Video 00058/00059); eigene Werte starten mit derselben Zeile; „MANUELL“ spielt bis zum Live-Spiel mit den eigenen Werten; Energieabzug (Einsatz − (50 − Energie) unter 50 Energie, 0x9463) nicht übernommen | – |
+| `[APPROX]` Stärkezuschlag: „AUTOM.“ 0, sonst je Block (Einsatz bei Gleichstand − 80) / 10, begrenzt auf ±3, gewichtet wie die Blöcke (bisheriger Wertebereich) | – |
+
+Vereinsaufstellung (`Core/Squad.Lineup.cs`, `UI/Screens/Team/LineupScreen.cs`): derselbe Code wie beim Nationalteam
+(Kennwert 0) – „Eingesetzt: n“ in Farbe 16, höchstens 22 Eingesetzte („Schon 22 Mann / im Team !“), Aufstellen setzt
+ein, Platz leeren nimmt heraus, Linksklick nimmt einen Reservisten heraus, Rechtsklick setzt ein (Belege in der Tabelle
+oben). `[APPROX]` Ohne Änderung von Hand gelten die Aufgestellten und die stärksten übrigen einsatzfähigen Spieler bis 22
+als eingesetzt (Video Aufstellung ~9:00: „Eingesetzt: 20“ bei 20 Spielern); STATUS bleibt bei nicht Eingesetzten leer,
+NR zeigt weiter die Rückennummer; „Eingesetzt“ wirkt noch nicht auf die Spielstärke.
+
+Spielstand Schema 5 (Migration 4 → 5, `SaveGame.Migration4.cs`): eigene Taktikwerte aller Vereine und des Bundestrainers
+werden auf die Startwerte gesetzt (alte Werte −3…+3 sind nicht umrechenbar), Modi bleiben; Vereine bekommen „Eingesetzt“
+mit automatischer Auswahl.
+
+**Pixelvergleich Taktik Nationalteam** (Bildschirmfoto `03_taktik_wie_video_00058` aus `emtool screens gamedata … nationalteam-2`,
+Maße wie oben; „Wertefelder“ = die 12 Felder Einsatz/Angriff): ganz 00058 roh 14,1 / 4,1 %, pegelbereinigt 9,4 / 3,9 %
+(00059 gleich); Wertefelder roh 13,8 / 1,2 %, pegelbereinigt 6,9 / 2,7 % (vorher mit lauter Nullen 14,0 / 1,2 % bzw.
+7,2 / 2,7 %). Sichtprüfung: alle zwölf Werte stimmen mit dem Video überein; der Rest sind Schriftkanten.
 
 ## Spielmodus „nur Weltkugel“ (Spur `wettbewerbe-weltkugel`, `Core/CupsNationalMode.cs`)
 

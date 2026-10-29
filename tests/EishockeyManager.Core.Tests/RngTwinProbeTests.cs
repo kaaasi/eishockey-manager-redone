@@ -125,9 +125,11 @@ public class RngTwinProbeTests
 
     /// <summary>
     /// Nicht im Abdruck: <c>Player.Id</c> (Teil „ids“) gehört nur zum Spielstandformat und verändert den Spielverlauf
-    /// nicht; so bleiben die auf <c>5f8e02a</c> ermittelten Abdrücke vergleichbar.
+    /// nicht; so bleiben die auf <c>5f8e02a</c> ermittelten Abdrücke vergleichbar. Ebenso <c>Club.DressedCount</c>
+    /// (Spur taktik-verein): abgeleitete Anzeige „Eingesetzt: n“, wirkt nicht auf den Spielverlauf – mit dieser Ausnahme
+    /// stimmen alle sechs Abdrücke unverändert.
     /// </summary>
-    private static readonly HashSet<string> Excluded = ["Id"];
+    private static readonly HashSet<string> Excluded = ["Id", "DressedCount"];
 
     private static void Dump(StringBuilder sb, object value)
     {
