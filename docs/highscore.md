@@ -12,7 +12,7 @@ Belege aus `em.exe` (Datei-Offsets; Overlay-Stub Highscore = 0x140:0x7A).
 - **Schlüssel** (0x28A2C): Level + 4 · Dauer + 32 · Startliga + 128 · Startstärke − 2; keine Liste bei Level ≤ 2 (Kachel
   gesperrt, 0x44FCE). Nur Weltkugel: Schlüssel 30000.
 - **Eintragen:** beim Öffnen der Kachel und bei jedem Saisonwechsel; am Spielende erscheint die Liste vor dem Titel (0x5642E).
-- **Layout:** Hintergrund kb\195, Titel Grundlinie 15, Zeilen ab 154 im Abstand 10, x = 56 / 115 / 207 / 240; am Bbild
+- **Layout:** Hintergrund kb\195, Titel Grundlinie 15, Zeilen ab 154 im Abstand 10, x = 56 / 115 / 207 / 240; am Bild
   oberflaeche_0848 pixelgenau geprüft.
 - **Punkte:** Stadionstufen × Originalpreise/1000, Plätze, Vermögen/2000 (≤ 50 Mio), Tabellenplatz 25·(36−Platz−12·Liga),
   Saisonhistorie, Titel 8/6/10.
