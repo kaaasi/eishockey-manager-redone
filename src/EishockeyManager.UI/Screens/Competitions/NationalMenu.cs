@@ -20,6 +20,10 @@ public static class NationalMenu
     /// Freie Kacheln des Bundestrainers. [ORIGINAL] Zweiter Teil der Tabelle DGROUP 0x5159 (+42):
     /// Manager alles gesperrt; Mannschaft frei außer „Verträge“; Statistiken nur „WM-Statistik“; Tabellen nur WM;
     /// Paarungen nur WM; Stärken nur Länderteams; Gemischtes alles frei.
+    /// „Highscore“ (Platz 6 der Reihe Manager) überschreibt das Original beim Aufbau (Datei 0x45020–0x4504A) mit
+    /// „DGROUP 0x256 = 0 oder (Bundestrainer und Modus 4)“: im Modus 4 ausdrücklich gesperrt (0x4502C), im Modus 1 über
+    /// 0x256 = 0 – ohne Fahne gibt es keine Bestenliste (Datei 0x289A3). In beiden Modi also gesperrt (Video
+    /// `bundestrainer_00042`, Spur bundestrainer-modus4).
     /// </summary>
     public static readonly IReadOnlySet<string> CoachTiles = new HashSet<string>(StringComparer.Ordinal)
     {

@@ -77,7 +77,8 @@ public sealed partial class GameState
     /// </summary>
     public (Club Opponent, bool Home, Competition Competition)? UpcomingMatch(int club)
     {
-        if (Phase != SeasonPhase.Running)
+        // Spur bundestrainer-modus4: Das Nationalteam des Bundestrainers spielt die WM nach der Vereinssaison.
+        if (Phase != SeasonPhase.Running && !(Phase == SeasonPhase.ClubSeasonOver && NationalCoach?.Nation == club))
             return null;
         if (MatchOn(CurrentDay, club) is { } today)
             return (Clubs[today.Opponent], today.Home, today.Competition);
@@ -129,7 +130,7 @@ public sealed partial class GameState
     {
         if (Phase is SeasonPhase.SeasonOver or SeasonPhase.GameOver)
             throw new InvalidOperationException("Die Saison ist zu Ende – zuerst StartNextSeason() aufrufen.");
-        if (PassTurn())
+        if (PassTurn() || PassNationalTurn()) // Zug des Bundestrainers im Modus 4: Spur bundestrainer-modus4
             return [];
 
         var steps = RunDays();

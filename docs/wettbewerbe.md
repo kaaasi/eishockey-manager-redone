@@ -157,7 +157,8 @@ Strafen je Spieler. Die heutige Spielberechnung liefert nur das Endergebnis; die
 
 ## Bundestrainer: WM-Kader und „WM Vorbereitung“ (`Core/CupsNational*.cs`)
 
-Freundschaftsspiele gibt es im Original nur für den **Bundestrainer** im Spielmodus „nur Weltkugel“ (WM-Modus).
+Freundschaftsspiele gibt es im Original nur für den **Bundestrainer** – im Spielmodus „nur Weltkugel“ und im Modus 4,
+wenn ein Manager ernannt wurde (Abschnitt „Bundestrainer im Modus 4“ unten).
 
 **Spielmodus** (Spielvorbereitung, Datei 0x28506/0x2985C): zwei Knöpfe aus kb\1 (57 × 13, Quelle x = 113), links die
 deutsche Fahne (Bit 0, y = 76/89), rechts die Weltkugel (Bit 1, y = 102/115), Vorgabe beide an. Daraus DGROUP 0xD0B9:
@@ -293,6 +294,36 @@ mittlere Abweichung / Anteil > 40: Fahne aus 10,4 / 4,5 % (`oberflaeche_0214`), 
 Vergleich beide an 9,0 / 2,0 % und 11,9 / 6,3 % (`0230`). Das Menü des Bundestrainers zeigt die Reihe `bundestrainer`
 (unten); ein Pixelvergleich steht noch aus
 (Bildschirmfotos: `emtool screens gamedata ~/work/screens weltkugel`).
+
+### Bundestrainer im Modus 4 (Spur `bundestrainer-modus4`, `Core/CupsNationalMode.cs`)
+
+DGROUP 0xD0BA[Manager] („wird Bundestrainer“) setzt das Original an genau drei Stellen: Modus 1 am Sprungtag (0x54D19)
+und zum Saisonende (0x55809) sowie in jedem Modus über die Tabellensuche 0xE8:0x93(0x7F) (Datei 0x34769, Schreibzugriff
+`[bx+0xD0B9]` mit bx = Manager + 1). Gespeichert wird es mit 4 Bytes (0x5BED8, 0x5C8BC).
+
+| Regel | Beleg |
+|---|---|
+| An Tagen mit Markierung 255 (13. und 29. April), solange Deutschland keinen Bundestrainer hat: nach dem Tageswechsel die ersten fünf Plätze der 1. Liga von oben durchsuchen (DGROUP 0x5CCB = Liga · 12 + Platz, Vereinsfeld 0x16 = Manager + 1); der erste Verein mit Manager bestimmt den Bundestrainer | Datei 0x55364–0x553AE, 0x34769–0x347EE |
+| Ernennung wie im Modus 1 (Etat aufs Nationalkonto, Name des Managers für „Manager 5“), Modus 2 ernennt nie | 0x55436–0x554BA |
+| Gibt es danach weiter keinen Bundestrainer, werden die Werte Deutschlands ausgewürfelt | 0x554CF ff. |
+| An WM-Tagen (Ereignis 0x10) folgt nach den Vereinsmanagern der Zug „Manager 5“ (DGROUP 0xA70D = 0xA70E = 5) mit dem Menü des Bundestrainers | 0x55587–0x555D6 |
+| Sperrtabelle im Zug „Manager 5“ wie im Modus 1 (DGROUP 0x5159 + 42); „Highscore“ im Modus 4 ausdrücklich gesperrt (Wert = 0x256 = 0 oder Bundestrainer und Modus 4); im Modus 1 über 0x256 = 0 ebenfalls gesperrt | 0x45020–0x4504A, 0x289A3 |
+| Am Saisonende kehren die Kaderspieler zurück, das Amt endet (in allen Modi); nur Modus 1 setzt 0xD0BA[0] neu | 0x557A5–0x5580E |
+| Infoleiste im Zug des Bundestrainers: WM-Gegner Deutschlands und Nationalkonto (wie Modus 1, Video `bundestrainer_00026`) | – |
+| `[APPROX]` Platzierung aus der Abschlusstabelle der Hauptrunde (Gesamt); das Original liest die zuletzt in place sortierte Reihenfolge von 0x5CCB (Sortierung 0x50E60 ff. auch nach Heim/Auswärts) | – |
+| `[APPROX]` Zug des Bundestrainers nur an WM-Tagen, an denen Deutschland spielt (wie der Halt im Modus 1); das Original gibt ihn an jedem WM-Tag – Deutschland spielt an allen acht Terminen | 0x555AD |
+| `[APPROX]` Reihenfolge: Zug des Bundestrainers vor dem Austragen des Tages, damit Kader und Aufstellung für das WM-Spiel gelten | – |
+
+Unterschiede zu Modus 1: keine Ernennung zu Saisonbeginn und kein Sprung – die Vereinssaison läuft normal; Ernennung
+erst am 13. April und nur für einen Manager unter den ersten fünf der 1. Liga; das Vereinsmenü bleibt, der Bundestrainer
+bekommt an WM-Tagen einen zusätzlichen Zug; ohne Ernennung spielt Deutschland mit ausgewürfelten Werten. Spielstand
+Schema 5 (`_nationalTurn`, Migration `SaveGame.Migration4.cs`). Bildschirmfotos: `emtool screens gamedata ~/work/screens
+bundestrainer-modus4` (kein Videobeleg für Modus 4).
+
+Offen (außerhalb dieser Spur): Die Tabellensuche setzt bei jedem Manager unter den ersten fünf zusätzlich Statusbit 0x40
+(Manager-Feld 0x974E, außer Modus 2, 0x553BD–0x553F2) → Saisonende-Symbol 8 (`docs/finanzen-rekonstruktion.md`), im
+Remake nicht geführt. Der Highscore-Schlüssel 0x7530 („nur Weltkugel“) ist im Original nicht erreichbar (0x28A34 liegt
+hinter der Bedingung „Fahne gedrückt“, 0x289A3) – Modus 1 hat dort keine Bestenliste.
 
 **Vorlagebilder (Modus „nur Weltkugel“):** Seit der Reihe `bundestrainer` (WM-Video, `docs/referenz-videos.md`;
 Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**

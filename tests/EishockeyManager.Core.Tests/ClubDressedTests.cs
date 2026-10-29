@@ -125,6 +125,8 @@ public class ClubDressedTests
             Assert.True(c.Remove("_dressed"));
             Assert.True(c.Remove("_dressedByHand"));
         }
+        // Integration Runde 5: Schema 4 kennt auch den Zug des Bundestrainers (Migration 5 → 6) noch nicht – Kette 4 → 5 → 6.
+        Assert.True(root["spiel"]!.AsObject().Remove("_nationalTurn"));
         var old = root["vereine"]![2]!["Tactics"]!.AsObject();
         old["EffortMode"] = nameof(TacticMode.Manual);
         old["_effort"]!["items"]![0] = -3;
@@ -133,6 +135,7 @@ public class ClubDressedTests
         var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
         Assert.True(result.Success, result.Error);
         var loaded = result.Game!;
+        Assert.False(loaded.NationalTurn);
         var fresh = new Tactics();
         var tactics = loaded.Clubs[2].Tactics;
         Assert.Equal(TacticMode.Manual, tactics.EffortMode);

@@ -7,7 +7,7 @@ public sealed partial class GameState
 {
     private (int ConditionDefense, int TechniqueDefense, int ConditionAttack, int TechniqueAttack)? _germanyRatings;
 
-    /// <summary>Bundestrainer dieser Saison oder null (im Original nur im Spielmodus „nur Weltkugel“).</summary>
+    /// <summary>Bundestrainer dieser Saison oder null (Modus 1 ab dem Sprung zur WM, Modus 4 ab dem 13. April, Modus 2 nie).</summary>
     public NationalCoach? NationalCoach { get; private set; }
 
     /// <summary>Etat, den der Bundestrainer beim nächsten Amtsantritt bekommt (DM, im Original DGROUP 0x29C).</summary>
@@ -196,6 +196,7 @@ public sealed partial class GameState
     internal void StartNationalSeason()
     {
         NationalCoach = null;
+        _nationalTurn = false;
     }
 
     /// <summary>Nach der WM: Etat für die nächste Saison aus dem Platz des eigenen Landes (Datei 0x31293 ff.).</summary>
