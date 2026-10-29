@@ -22,17 +22,19 @@ public class TeamScreenTests
         var rows = club.SortedPlayers.ToList();
         var reserveGoalie = rows.Take(2).Single(p => club.Lineup.Goalkeeper != p);
         var row = rows.IndexOf(reserveGoalie);
-        d.Click(60, LineupScreen.FirstRowY + row * LineupScreen.RowPitch + 2);
+        // Erst den Platz, dann den Spieler: Linksklick auf einen eingesetzten Reservisten allein nimmt ihn heraus
+        // (Datei 0x40F45, Spur taktik-verein).
         var gk = LineupScreen.SlotButton(LineupSlot.Goalkeeper);
         d.Click(gk.X + 5, gk.Y + 5);
+        d.Click(60, LineupScreen.FirstRowY + row * LineupScreen.RowPitch + 2);
         Assert.Same(reserveGoalie, club.Lineup.Goalkeeper);
 
         // Stürmer auf einen Verteidigerplatz: Meldung, Aufstellung unverändert
         var forward = rows.First(p => p.Role == PlayerRole.Forward);
         var defenderSlot = LineupScreen.SlotButton(LineupSlot.Defender(0, 0));
         var before = club.Lineup[LineupSlot.Defender(0, 0)];
-        d.Click(60, LineupScreen.FirstRowY + rows.IndexOf(forward) * LineupScreen.RowPitch + 2);
         d.Click(defenderSlot.X + 5, defenderSlot.Y + 5);
+        d.Click(60, LineupScreen.FirstRowY + rows.IndexOf(forward) * LineupScreen.RowPitch + 2);
         Assert.Same(before, club.Lineup[LineupSlot.Defender(0, 0)]);
         d.Click(10, 10); // Meldung schließen
 
@@ -82,10 +84,10 @@ public class TeamScreenTests
         var screen = Assert.IsType<TacticsScreen>(d.Host.Current);
         var t = d.Host.Game!.Clubs[d.Host.Game.ActiveManager.ClubIndex].Tactics;
 
-        // Feld bei AUTOM. gesperrt
+        // Feld bei AUTOM. gesperrt (Startwert 60, Datei 0x8413)
         var grund = TacticsScreen.SituationArrows(ScoreSituation.Base, attack: false);
         d.Click(grund.X + 4, grund.Y + 2);
-        Assert.Equal(0, t.Effort(0, ScoreSituation.Base));
+        Assert.Equal(60, t.Effort(0, ScoreSituation.Base));
 
         var mode = TacticsScreen.EffortArrows;
         d.Click(mode.X + 4, mode.Y + 2);
@@ -96,10 +98,10 @@ public class TeamScreenTests
         Assert.Equal(1, screen.Block);
         d.Click(grund.X + 4, grund.Y + 2);
         d.Click(grund.X + 4, grund.Y + 2);
-        Assert.Equal(2, t.Effort(1, ScoreSituation.Base));
+        Assert.Equal(62, t.Effort(1, ScoreSituation.Base));
         d.Click(grund.X + 4, grund.Y + grund.H - 2);
-        Assert.Equal(1, t.Effort(1, ScoreSituation.Base));
-        Assert.Equal(0, t.Effort(0, ScoreSituation.Base));
+        Assert.Equal(61, t.Effort(1, ScoreSituation.Base));
+        Assert.Equal(60, t.Effort(0, ScoreSituation.Base));
 
         // Minuten nur bei „Minuten-Vorgabe (s.u.)“
         var line = TacticsScreen.LineChangeArrows;

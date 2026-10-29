@@ -2,8 +2,8 @@ using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core;
 
-/// <summary>Ergebnis einer Änderung an der Aufstellung des Nationalteams (Meldungstexte aus em.exe).</summary>
-public enum NationalLineupResult
+/// <summary>Ergebnis einer Änderung an der Aufstellung eines Vereins oder des Nationalteams (Meldungstexte aus em.exe).</summary>
+public enum LineupResult
 {
     /// <summary>Spieler steht auf dem Platz.</summary>
     Assigned,
@@ -29,7 +29,7 @@ public enum NationalLineupResult
     /// <summary>„Der darf da / nicht rein !“ – falsche Art für den Platz.</summary>
     WrongRole,
 
-    /// <summary>„Schon 22 Mann / im Team !“ – <see cref="NationalCoach.MaxDressed"/> erreicht.</summary>
+    /// <summary>„Schon 22 Mann / im Team !“ – <see cref="NationalCoach.MaxDressed"/> bzw. <see cref="Club.MaxDressed"/> erreicht.</summary>
     RosterFull,
 }
 
@@ -63,8 +63,8 @@ public enum NationalLineupResult
 /// </remarks>
 public sealed partial class NationalCoach
 {
-    /// <summary>[ORIGINAL] Höchstens 22 eingesetzte Spieler (Datei 0x40E4D: Vergleich mit 0x16).</summary>
-    public const int MaxDressed = 22;
+    /// <summary>[ORIGINAL] Höchstens 22 eingesetzte Spieler (Datei 0x40E4D: Vergleich mit 0x16), wie beim Verein.</summary>
+    public const int MaxDressed = Club.MaxDressed;
 
     private readonly HashSet<Player> _dressed = [];
 
@@ -104,22 +104,22 @@ public sealed partial class NationalCoach
         : PlayerStatus.Reserve;
 
     /// <summary>Spieler auf einen Platz setzen; er wird dabei eingesetzt (Datei 0x415B2).</summary>
-    public NationalLineupResult Assign(LineupSlot slot, Player player)
+    public LineupResult Assign(LineupSlot slot, Player player)
     {
         if (!Contains(player))
-            return NationalLineupResult.NotInSquad;
+            return LineupResult.NotInSquad;
         if (player.InjuredGames > 0)
-            return NationalLineupResult.Injured;
+            return LineupResult.Injured;
         if (player.SuspendedGames > 0)
-            return NationalLineupResult.Suspended;
+            return LineupResult.Suspended;
         if (player.Role != slot.Role)
-            return NationalLineupResult.WrongRole;
+            return LineupResult.WrongRole;
         if (!IsDressed(player) && DressedCount >= MaxDressed)
-            return NationalLineupResult.RosterFull;
+            return LineupResult.RosterFull;
         if (!Formation.Assign(slot, player))
-            return NationalLineupResult.WrongRole;
+            return LineupResult.WrongRole;
         _dressed.Add(player);
-        return NationalLineupResult.Assigned;
+        return LineupResult.Assigned;
     }
 
     /// <summary>Platz leeren; der Spieler ist danach nicht mehr eingesetzt (Datei 0x40CF8–0x40D0D).</summary>
@@ -132,22 +132,22 @@ public sealed partial class NationalCoach
     }
 
     /// <summary>Linksklick in der Kaderliste: eingesetzten, nicht aufgestellten Spieler herausnehmen (Datei 0x40F59).</summary>
-    public NationalLineupResult Undress(Player player)
+    public LineupResult Undress(Player player)
     {
         if (!Contains(player) || Formation.Contains(player) || !_dressed.Remove(player))
-            return NationalLineupResult.Unchanged;
-        return NationalLineupResult.Undressed;
+            return LineupResult.Unchanged;
+        return LineupResult.Undressed;
     }
 
     /// <summary>Rechtsklick in der Kaderliste: nicht eingesetzten Spieler einsetzen (Datei 0x40E2A, 0x41208).</summary>
-    public NationalLineupResult Dress(Player player)
+    public LineupResult Dress(Player player)
     {
         if (!Contains(player) || IsDressed(player))
-            return NationalLineupResult.Unchanged;
+            return LineupResult.Unchanged;
         if (DressedCount >= MaxDressed)
-            return NationalLineupResult.RosterFull;
+            return LineupResult.RosterFull;
         _dressed.Add(player);
-        return NationalLineupResult.Dressed;
+        return LineupResult.Dressed;
     }
 
     /// <summary>
