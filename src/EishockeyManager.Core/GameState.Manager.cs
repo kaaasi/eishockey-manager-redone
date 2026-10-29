@@ -51,7 +51,7 @@ public sealed partial class GameState
     public ManagerFinance Finance(Manager manager) =>
         manager.FinanceData ??= new ManagerFinance
         {
-            Stadium = Stadium.ForLeague(Clubs[manager.ClubIndex].League),
+            Stadium = Stadium.ForLeague(Clubs[manager.ClubIndex].League, Setup.Duration == GameDuration.EineSaison),
             CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga,
         };
 
@@ -70,16 +70,17 @@ public sealed partial class GameState
         MonthlyBaseIncome(manager) + SponsorIncome(manager) + MonthlyReceivableInterest(manager);
 
     /// <summary>
-    /// Anzeige „Ausgaben“: Grundausgaben, Gehälter, Versicherungen, Stadionunterhalt, Jugendförderung, 5/8 der
-    /// wöchentlichen Trainingskosten, Kreditzinsen und 10 % eines negativen Kontostands. [ORIGINAL] 0x3E811 mit Flags 1, 1.
+    /// Anzeige „Ausgaben“: Grundausgaben, Gehälter, Versicherungen, Stadionunterhalt, Jugendförderung, 8,5 Trainingstage
+    /// (<see cref="FinanceRules.MonthlyTrainingExpenseThirds"/>), Kreditzinsen und 10 % eines negativen Kontostands.
+    /// [ORIGINAL] 0x3E811 mit Flags 1, 1.
     /// </summary>
     public long MonthlyExpenses(Manager manager)
     {
         var club = Clubs[manager.ClubIndex];
-        var training = manager.Training.WeeklyCost;
+        var training = FinanceRules.ToMarks(FinanceRules.MonthlyTrainingExpenseThirds(manager.Training.RawCostPerTrainingDay));
         var expenses = MonthlyBaseExpenses(manager) + FinanceRules.MonthlyWages(club) + FinanceRules.MonthlyInsurance(club)
             + Finance(manager).Stadium.MonthlyUpkeep + RecurringExpenses(manager)
-            + training / 8 + training / 2 + MonthlyDebtInterest(manager)
+            + training + MonthlyDebtInterest(manager)
             + (manager.Money < 0 ? -manager.Money / 10 : 0);
         return Math.Max(0, expenses);
     }

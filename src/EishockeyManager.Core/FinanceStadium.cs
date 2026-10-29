@@ -96,11 +96,18 @@ public sealed class Stadium
     /// Startstadion je Liga. [ORIGINAL] Spielstart em.exe 0x29F77 ff.: 3.000 − 500 × Liga Sitzplätze, 4.500 − 1.000 × Liga
     /// Stehplätze (Liga 0 = Bundesliga); Überdachung 2 − Liga, Anzeigetafel/Kühlanlage/Verkehrsanbindung nur in der
     /// Bundesliga, Gastronomie (Imbißbude) in Bundesliga und 2. Liga, Zustand MITTEL. Video (Oberliga): 2.000/2.500.
+    /// [ORIGINAL] 0x29FB3–0x29FCD: Bei einem Spiel über eine Saison (Spielende 1994) +1.200 Sitz- und +2.500 Stehplätze
+    /// (unabhängige Nachprüfung, Runde 5).
     /// </summary>
-    public static Stadium ForLeague(League? league)
+    public static Stadium ForLeague(League? league, bool oneSeasonGame = false)
     {
         var tier = league is { } l ? (int)l : 2;
         var stadium = new Stadium { Seats = 3_000 - 500 * tier, Standing = 4_500 - 1_000 * tier, TicketPrice = (40 - 4 * tier) / 3 };
+        if (oneSeasonGame)
+        {
+            stadium.Seats += 1_200;
+            stadium.Standing += 2_500;
+        }
         stadium.SetLevel(StadiumFeature.Ueberdachung, 2 - tier);
         if (tier == 0)
         {
