@@ -92,7 +92,9 @@ public sealed partial class GameState
     {
         if (RegularSeasonOver)
             return false;
-        foreach (var (league, days) in Schedules)
+        // Stabil nach Liga sortiert: Die Aufzählungsreihenfolge eines Wörterbuchs hängt von früheren Entnahmen ab und
+        // wäre nach Sichern und Laden eine andere, hier bestimmt sie aber den Zufallsverbrauch (Befund S71-02, #80).
+        foreach (var (league, days) in Schedules.OrderBy(s => s.Key))
         {
             if (PlayedMatchDays >= days.Count)
                 continue;

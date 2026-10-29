@@ -68,6 +68,7 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
   echter Formatänderung (dann mit Migration).
 - **Dateigrenzen:** `Core/SaveGame*.cs`, betroffene Aufrufer minimal, `docs/formate/spielstand.md`.
 - **Modell:** Claude Sonnet 5.5 (klein).
+- **Status (29.10.2026):** erledigt, PR offen (Lösung: stabil sortieren in `GameState.PlayNextMatchDay`; Format und Schema unverändert).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
