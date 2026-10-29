@@ -14,11 +14,18 @@ Belege aus `em.exe` (Datei-Offsets; Overlay-Stub Highscore = 0x140:0x7A).
 - **Eintragen:** beim Öffnen der Kachel und bei jedem Saisonwechsel; am Spielende erscheint die Liste vor dem Titel (0x5642E).
 - **Layout:** Hintergrund kb\195, Titel Grundlinie 15, Zeilen ab 154 im Abstand 10, x = 56 / 115 / 207 / 240; am Bild
   oberflaeche_0848 pixelgenau geprüft.
-- **Punkte:** Stadionstufen × Originalpreise/1000, Plätze, Vermögen/2000 (≤ 50 Mio), Tabellenplatz 25·(36−Platz−12·Liga),
-  Saisonhistorie, Titel 8/6/10.
+- **Punkte** (Funktion 0x5D04F, `HighscoreRules.Points`), durch 20 geteilt, mindestens 1:
+  Σ Bewertung·100 (Werbebewertung 0x100:0x57, `SponsorRating`); Stadion (Stufe·Preis/1000, Plätze·540000 und
+  Stehplätze·405000 als **vorzeichenlose 32-Bit-Zahl**/10⁶ – das Produkt läuft über, 0x483 ist unsigned LDIV);
+  Vermögen (Drittel) min(·, 50 Mio)/2000; 25·max(0, 36−Platz−Versatz); 150·v je Pokalbyte 1–6; Mittel der Saisoncodes
+  ((36−Ligacode)·7, DEB-Code: Sieger 80 sonst 10·(Code&7); Europa nur bei DEB-Sieger bzw. ≥ 8: Sieger 130 sonst 20·(Code&7)),
+  dazu 8·Meister + 6·Pokal + 10·Europa.
+- **Beleg:** eigener 8086-Emulator lief die Originalfunktion gegen das Modell, 14 Fälle als Goldtest
+  (`HighscoreTests.Points_MatchOriginalFunction`), 500 Zufallsfälle zusätzlich gleich. Die Emulator-Skripte liegen nicht im Repo.
 
 ## [APPROX]
-- Nicht zugeordnete Formelterme (0x100:0x57, 9741-Bytes-Feld, 0x138:0x2A, Kaderwerte) fehlen – Punkte weichen ab.
+- Spielerwerte (Funktion 0x49D36) als Kaufpreis × 3/2 nachgebildet.
+- Europapokal-Stufe auf Pokalbyte 1 abgebildet, Pokalbytes 2–3 und Meisterschafts-Bracketcode 0x35 nicht belegt.
 - Stempel = Sitzungsstempel; Level/Liga/Stärke des Schlüssels vom ersten Manager.
-- Der Strafterm (36−0x80)·7 beim Meistercode ist wörtlich übernommen; Sinn ungeprüft.
+- Nur Weltkugel (Schlüssel 30000) wird mit den vereinfachten Werten gewertet.
 - Speicherort: Ordner „Bestenliste“ neben dem Benutzerordner der Speicherstände.

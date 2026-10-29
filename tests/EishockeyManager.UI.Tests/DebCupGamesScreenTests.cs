@@ -77,9 +77,10 @@ public class DebCupGamesScreenTests
         Assert.Equal(DebCup.Teams / 2, rows.Count);
         Assert.All(rows, r => Assert.NotNull(Assert.Single(r.Results)));
         var tie = game.DebCup!.Rounds[0][0];
-        var row = rows.Single(r => r.LeftClub == tie.First && r.RightClub == tie.Second);
+        // [ORIGINAL] Nach dem ersten Termin sind die Seiten vertauscht (0x34B76): links steht tie.Second.
+        var row = rows.Single(r => r.LeftClub == tie.Second && r.RightClub == tie.First);
         var match = tie.Games[0];
-        Assert.Equal(match.Home == tie.First ? match.HomeGoals : match.AwayGoals, row.Results[0]!.Value.Left);
+        Assert.Equal(match.Home == tie.Second ? match.HomeGoals : match.AwayGoals, row.Results[0]!.Value.Left);
 
         // Auf dem Bildschirm steht je Paarung Tinte in der Ergebnisspalte (x = 207, Schriftfarbe der Spalte)
         var (parts, y) = DebCupGamesScreen.FrameFor(rows.Count, overview.Groups.Count(g => g.Rows.Count == 0));
@@ -112,5 +113,56 @@ public class DebCupGamesScreenTests
         Assert.Equal(0, overview.DatesPlayed);
         Assert.Equal(DebCup.Teams / 4, overview.Groups.Sum(g => g.Rows.Count));
         Assert.All(overview.Groups.SelectMany(g => g.Rows), r => Assert.Empty(r.Results));
+    }
+
+    private static readonly int[] Dates = [10, 20, 30];
+
+    private static KnockoutMatch Game(int day, int home, int away, int homeGoals, int awayGoals, int? penalty = null) =>
+        new(day, home, away, homeGoals, awayGoals, penalty);
+
+    /// <summary>
+    /// [ORIGINAL] Rundenverarbeitung 0x34B76 im Emulator: Nach dem ersten Termin ist die Paarung samt Ergebnis getauscht (links der
+    /// Verein mit Heimrecht im zweiten Spiel), nach dem zweiten wieder wie zu Beginn; die Ergebnisse folgen den Namen.
+    /// </summary>
+    [Fact]
+    public void Row_SwapsSidesAfterFirstDate_AndBackAfterSecond()
+    {
+        var tie = new CupTie(3, 20);
+        tie.Games.Add(Game(10, 3, 20, 3, 1));   // 3 gewinnt zu Hause
+        tie.Games.Add(Game(20, 20, 3, 1, 4));   // 3 gewinnt auswärts
+
+        var before = DebCupOverview.Row(tie, Dates, 0);
+        Assert.Equal((3, 20), (before.LeftClub, before.RightClub));
+        Assert.Empty(before.Results);
+
+        var one = DebCupOverview.Row(tie, Dates, 1);
+        Assert.Equal((20, 3), (one.LeftClub, one.RightClub));
+        Assert.Equal([new DebCupResult(1, 3, 0)], one.Results);
+
+        var two = DebCupOverview.Row(tie, Dates, 2);
+        Assert.Equal((3, 20), (two.LeftClub, two.RightClub));
+        Assert.Equal([new DebCupResult(3, 1, 0), new DebCupResult(4, 1, 0)], two.Results);
+    }
+
+    /// <summary>Nach der Serie bleibt die Paarung wie zu Beginn; ein nicht mehr nötiges drittes Spiel bleibt leer.</summary>
+    [Fact]
+    public void Row_AfterSeries_KeepsOrientation_ThirdGameEmptyIfNotNeeded()
+    {
+        var tie = new CupTie(3, 20);
+        tie.Games.Add(Game(10, 3, 20, 3, 1));
+        tie.Games.Add(Game(20, 20, 3, 1, 4));
+        var three = DebCupOverview.Row(tie, Dates, 3);
+        Assert.Equal((3, 20), (three.LeftClub, three.RightClub));
+        Assert.Equal(3, three.Results.Count);
+        Assert.Null(three.Results[2]);
+    }
+
+    /// <summary>[ORIGINAL] Verlängerung (+30) ergibt einen Punkt hinter dem Ergebnis; zwei Punkte schreibt das Original nirgends.</summary>
+    [Fact]
+    public void Row_Penalty_ShowsOneDot()
+    {
+        var tie = new CupTie(3, 20);
+        tie.Games.Add(Game(10, 3, 20, 2, 2, penalty: 20));
+        Assert.Equal(new DebCupResult(2, 2, 1), DebCupOverview.Row(tie, Dates, 1).Results[0]);
     }
 }

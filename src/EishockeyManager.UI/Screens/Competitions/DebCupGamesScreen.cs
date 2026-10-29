@@ -3,7 +3,9 @@ using EishockeyManager.Core;
 namespace EishockeyManager.UI.Screens.Competitions;
 
 /// <summary>Ergebnis eines Pokalspiels in der Übersicht: Tore von links und rechts, dazu 0–2 Punkte dahinter.</summary>
-/// <param name="Dots">0 = in regulärer Spielzeit, 2 = Penaltyschießen. [APPROX] Das Original kennt auch einen Punkt (Wert +30).</param>
+/// <param name="Dots">0 = in regulärer Spielzeit, 1 = nach Verlängerung. [ORIGINAL] Der Wert +30 im Ergebnis (Datei 0x37761, 0x38402,
+/// 0x39789: Verlängerung bei Gleichstand) ergibt einen Punkt; ein zweiter (+60) wird nirgends geschrieben. [APPROX] Das Remake entscheidet
+/// Gleichstände im Penaltyschießen und zeigt dafür ebenfalls einen Punkt.</param>
 public readonly record struct DebCupResult(int Left, int Right, int Dots);
 
 /// <summary>Eine Paarung der laufenden Pokalrunde; <see cref="Results"/> hat einen Eintrag je gespieltem Termin (null = nicht ausgetragen).</summary>
@@ -48,9 +50,17 @@ public sealed record DebCupOverview(int Round, int DatesPlayed, int? NextDay, IR
         return a <= b ? (a, b) : (b, a);
     }
 
-    /// <summary>[APPROX] Links steht der Verein mit Heimrecht im ersten Spiel, jedes Ergebnis zählt Tore links:rechts.</summary>
-    private static DebCupRow Row(CupTie tie, IReadOnlyList<int> dates, int played)
+    /// <summary>
+    /// Eine Paarung nach <paramref name="played"/> vergangenen Terminen. [ORIGINAL] Nach jedem der beiden ersten Termine tauscht
+    /// em.exe die Paarung samt den bisherigen Ergebnissen (Datei 0x34DCD–0x34E7C), damit links der Verein mit Heimrecht im nächsten
+    /// Spiel steht: vor dem ersten Termin links der Verein mit Heimrecht im ersten Spiel, nach dem ersten Termin der andere (die
+    /// Ergebnisse links:rechts folgen den Namen), nach dem zweiten wieder wie zuerst. Nach dem dritten Termin stellt die Funktion
+    /// 0x34ED6 die Paarung für das Endspiel wieder her, die Zwischenrunden werden sofort neu ausgelost.
+    /// </summary>
+    public static DebCupRow Row(CupTie tie, IReadOnlyList<int> dates, int played)
     {
+        var swapped = played == 1;
+        var (left, right) = swapped ? (tie.Second, tie.First) : (tie.First, tie.Second);
         var results = new List<DebCupResult?>();
         for (var g = 0; g < played; g++)
         {
@@ -59,14 +69,14 @@ public sealed record DebCupOverview(int Round, int DatesPlayed, int? NextDay, IR
                 results.Add(null);
             else
             {
-                var firstIsHome = match.Home == tie.First;
+                var leftIsHome = match.Home == left;
                 results.Add(new DebCupResult(
-                    firstIsHome ? match.HomeGoals : match.AwayGoals,
-                    firstIsHome ? match.AwayGoals : match.HomeGoals,
-                    match.PenaltyWinner is null ? 0 : 2));
+                    leftIsHome ? match.HomeGoals : match.AwayGoals,
+                    leftIsHome ? match.AwayGoals : match.HomeGoals,
+                    match.PenaltyWinner is null ? 0 : 1));
             }
         }
-        return new DebCupRow(tie.First, tie.Second, results);
+        return new DebCupRow(left, right, results);
     }
 }
 
@@ -87,17 +97,18 @@ public sealed record DebCupOverview(int Round, int DatesPlayed, int? NextDay, IR
 ///   (Mini, weiß, Schatten 0, x 15 … 183), darunter je Paarung eine Zeile im Abstand 7 (erste Zeile Überschrift + 8, die nächste
 ///   Überschrift 7 unter der letzten Zeile); ohne Paarung eine Zeile aus neun Strichen. Name links (x 15 … 94, Farbe 30), „-“ (98 … 100,
 ///   weiß), Name rechts (104 … 183, Farbe 1), Vereine der Manager gelb (24), alle ohne Schatten.</item>
+/// <item>[ORIGINAL] Namen und Ergebnisse: Die Paarung wird nach dem ersten Termin getauscht (links der Verein mit Heimrecht im nächsten
+///   Spiel), die Ergebnisse folgen den Namen – im Emulator an der Rundenverarbeitung (Datei 0x34B76) nachgespielt, siehe <see cref="Row"/>.
+///   Nach dem letzten Pokaltag entfällt die Datumszeile (Datei 0x332B6: Vergleich mit dem letzten Termin, Tag 211), der Rundenname bleibt.</item>
 /// <item>[ORIGINAL] Ergebnisse „ 3: 2“ (zweistellig aufgefüllt, Mini) ab x = 207 − 10 · (Termine − 1) im Abstand 36, Farbe 1, 30, 1
 ///   nach Terminnummer. Spiele, die nicht mehr nötig waren (Serie entschieden), bleiben leer. Der Wert „+ 30“ bzw. „+ 60“ im
 ///   Ergebnis setzt einen bzw. zwei Punkte hinter das Ergebnis (x + 22 und x + 24).</item>
 /// </list>
 /// [APPROX]
 /// <list type="bullet">
-/// <item>Welche Seite Heimrecht hat und wie das Original die Ergebnisse nach den Platztauschen den Namen zuordnet, ist nicht
-///   geklärt: das Remake setzt den Verein mit Heimrecht im ersten Spiel nach links und zählt alle Ergebnisse links:rechts.</item>
-/// <item>Das Original kennt einen Punkt (+30) und zwei Punkte (+60); das Remake kennt nur das Penaltyschießen und setzt dafür zwei
-///   Punkte. Der Punkt ist ein einzelnes Pixel in der Ergebnisfarbe (Form und Farbe der Original-Marke nicht geprüft).</item>
-/// <item>Nach dem letzten Pokaltag entfällt die Datumszeile (das Original liest dort ins Leere); der Rundenname bleibt.</item>
+/// <item>Das Remake entscheidet Gleichstände im Penaltyschießen, das Original durch Verlängerung mit Zusatztoren (das Ergebnis
+///   zeigt dann den Endstand); beide erhalten einen Punkt. Der Punkt ist ein einzelnes Pixel in der Ergebnisfarbe (Form und Farbe der
+///   Original-Marke nicht geprüft).</item>
 /// <item>Ein Klick auf einen Verein im Original wird nicht nachgebildet; jede Taste und jeder Klick führt zurück.</item>
 /// </list>
 /// </remarks>
