@@ -20,15 +20,34 @@ public class DebCupScreenTests
         Assert.Equal((164, 123), DebCupDrawScreen.SlotPosition(1, 2)); // Endspiel: 128 − (1 · 11)/2
     }
 
+    /// <summary>
+    /// R4-01: Paarungen → „DEB-Pokal“ ruft im Original denselben Stub wie „Tabelle DEB-Pokal“ (Datei 0x4584A/0x45897 → 0x32E23)
+    /// und zeigt „DEB-Pokalspiele“, nicht die Auslosung.
+    /// </summary>
     [GameDataFact]
-    public void Tile_OpensDrawOfCurrentRound_WithoutChangingState()
+    public void PairingsTile_OpensOverview_LikeTableTile()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var before = StateFingerprint.Of(d.Host.Game!);
+
+        d.OpenTile("DEB-Pokal");
+        d.Frame();
+        Assert.IsType<EishockeyManager.UI.Screens.Competitions.DebCupGamesScreen>(d.Host.Current);
+        FlowTests.ReturnToMainMenu(d);
+        Assert.Equal(before, StateFingerprint.Of(d.Host.Game!));
+    }
+
+    [GameDataFact]
+    public void DrawScreen_ShowsEveryNameInItsStrip_WithoutChangingState()
     {
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
         var game = d.Host.Game!;
         var before = StateFingerprint.Of(game);
 
-        d.OpenTile("DEB-Pokal");
+        // Die Auslosung hat keine eigene Kachel mehr; sie wird direkt gezeigt (Ablauf „CupDrawStep“ folgt im Spieltagsablauf)
+        d.Host.Show(new DebCupDrawScreen(d.Host, new MainMenuScreen(d.Host)));
         d.Frame();
         var screen = Assert.IsType<DebCupDrawScreen>(d.Host.Current);
         Assert.Equal(game.DebCup!.Draw.Select(c => (int?)c), screen.Slots);

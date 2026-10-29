@@ -15,7 +15,8 @@ namespace EishockeyManager.UI.Screens;
 /// <item>„Werbung“ (0x515A): gesperrt, wenn das Spielende DGROUP 0x5A14 = 1994 ist (Datei 0x45079). Das Spielende ist
 ///   1994 + 2 · Dauer (Datei 0x2987C), bei „unbegrenzt“ 22222 – also nur bei der Dauer „eine Saison“.</item>
 /// </list>
-/// Die Sperre von „Highscore“ (0x515E) steht bei der Bestenliste (Datei 0x44FCE, abhängig von der Spielvorbereitung).
+/// „Highscore“ (0x515E): gesperrt, wenn es für die Spielvorbereitung keine Bestenliste gibt (DGROUP 0x256 = 0, Datei 0x44FCE;
+/// <see cref="HighscoreRules.Key"/>).
 /// </remarks>
 public static class TileLocks
 {
@@ -24,6 +25,7 @@ public static class TileLocks
     {
         "Neuer" => game.Managers.Count >= GameSetup.MaxManagers,
         "Werbung" => game.Setup.Duration == GameDuration.EineSaison,
+        "Highscore" => HighscoreRules.Key(game.Setup) is null,
         _ => false,
     };
 }

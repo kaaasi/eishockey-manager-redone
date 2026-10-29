@@ -43,12 +43,14 @@ public static class SponsorRating
         return (int)(worth / 700);
     }
 
-    public static int Compute(GameState game, Manager manager)
+    /// <param name="randomSource">Zufallsstrom; ohne Angabe der des Spielstands. Anzeigen (Highscore) übergeben einen eigenen Strom,
+    /// damit das Öffnen eines Bildschirms den Spielzustand nicht verändert.</param>
+    public static int Compute(GameState game, Manager manager, Random? randomSource = null)
     {
         var club = game.Clubs[manager.ClubIndex];
         var finance = game.Finance(manager);
         var tier = (int)finance.CostLeague;
-        var random = game.FinanceRandom;
+        var random = randomSource ?? game.FinanceRandom;
         var eternal = game.Eternal(club.Index);
 
         long s = (2 - tier) * (80 * eternal.Championships + 170);
