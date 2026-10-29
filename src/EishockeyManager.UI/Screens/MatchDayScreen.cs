@@ -7,7 +7,8 @@ namespace EishockeyManager.UI.Screens;
 /// eigenen Spiel; angezeigt werden der Reihe nach
 /// 1. Banner („Ligaspiel“, „Play-Off / Aufstiegsrunden“ …), wenn ein Manager-Verein spielt,
 /// 2. „Spiele laufen“ mit Spielminute und drei Balken (je Drittel: gelb = gespielt, rot = offen),
-/// 3. Banner und Meisterfotos der übrigen Tage (z. B. „Deutscher Meister“),
+/// 3. Banner und Meisterfotos der übrigen Tage (z. B. „Deutscher Meister“), die DEB-Pokal-Auslosung nach dem dritten
+///    Termin einer Runde (<see cref="Competitions.DebCupDrawFlow"/>),
 /// 4. zurück ins Hauptmenü – oder am 29. April der Bildschirm „Saisonende“.
 /// Klick, Leertaste oder die Vorspultaste oben rechts überspringen.
 /// </summary>
@@ -61,6 +62,9 @@ public sealed class MatchDayScreen : Screen
                     break;
                 case TrophyStep t:
                     _items.Enqueue(new ScreenItem(() => new SeasonEndTrophyScreen(Host, t, this)));
+                    break;
+                case CupDrawStep { Competition: Competition.DebCup } c: // Spur debpokal-auslosung (0x34F64 → 0x3489D)
+                    _items.Enqueue(new ScreenItem(() => Competitions.DebCupDrawFlow.Create(Host, c.Round, c.Slots, this)));
                     break;
                 case DismissalStep d:
                     _items.Enqueue(new ScreenItem(() => new SeasonEndGameOverScreen(Host, d.Manager, this)));

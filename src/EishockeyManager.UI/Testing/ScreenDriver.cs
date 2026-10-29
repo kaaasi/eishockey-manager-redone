@@ -89,9 +89,21 @@ public sealed class ScreenDriver
             Click(c.X + 5, c.Y + 5);
         }
         Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
+        // Spur debpokal-auslosung: nach „Los jetzt!“ fragt das Spiel, ob die DEB-Pokal-Auslosung live gezeigt werden soll
+        if (Host.Current is Screens.Competitions.DebCupDrawLiveScreen)
+        {
+            if (StopAtDebCupDraw)
+                return;
+            Press(Key.Escape); // „Kein Gedanke“
+        }
         if (Host.Current is not MainMenuScreen)
             throw new InvalidOperationException("Spielstart fehlgeschlagen.");
     }
+
+    /// <summary>
+    /// <see cref="StartNewGame"/> hält an der Frage zur DEB-Pokal-Auslosung an, statt sie mit „Kein Gedanke“ zu beantworten.
+    /// </summary>
+    public bool StopAtDebCupDraw { get; set; }
 
     /// <summary>Höchstzahl der Tastendrücke, bis <see cref="PlayMatchDay"/> wieder im Hauptmenü sein muss.</summary>
     public int MatchDayFrameLimit { get; set; } = 1000;

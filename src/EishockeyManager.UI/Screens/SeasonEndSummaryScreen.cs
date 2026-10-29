@@ -56,7 +56,8 @@ public sealed class SeasonEndSummaryScreen : Screen
         Statistics.HighscoreStore.For(Host).Record(); // [ORIGINAL] Saisonwechsel: Manager in die Bestenliste eintragen (Datei 0x56647)
         Game.StartNextSeason();
         Game.CurrentManager = Game.ActiveManagers.Select(m => Game.Managers.ToList().IndexOf(m)).First();
-        Host.Show(_menu);
+        // [ORIGINAL] Datei 0x56609: Auslosung der ersten DEB-Pokal-Runde beim Saisonwechsel (Spur debpokal-auslosung)
+        Host.Show(Competitions.DebCupDrawFlow.AtSeasonStart(Host, _menu));
     }
 
     public override void Enter()

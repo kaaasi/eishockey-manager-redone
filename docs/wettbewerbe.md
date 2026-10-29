@@ -43,9 +43,23 @@ aus dem Video gegen `oberflaeche_0355`, eigenes Bild um (−0,25 | +0,5) verscho
 Mauszeiger ausgeblendet): mittlere Abweichung 8,5 Grauwerte, 3,7 % der Pixel über 40 – nur Kanten der Schrift.
 Leere Ziehung (`03_debpokal_leer`) gegen `oberflaeche_0345` ohne Dialog: 9,4 / 2,2 %.
 
-**Offen:** Live-Auslosung mit Dialog „Sind Ihre Nerven stark genug …“ nach dem dritten Termin jeder Runde
-(Ablauf `CupDrawStep` liegt vor, die Anzeige im Spieltagsablauf fehlt); Bildschirm „DEB-Pokalspiele“ mit Ergebnissen
-(Text in em.exe, Aufbau nicht im Video).
+### Live-Auslosung im Spielablauf (`UI/Screens/Competitions/DebCupDrawLive.cs`, Spur `debpokal-auslosung`)
+
+| Regel | Beleg |
+|---|---|
+| Die Anzeige 0x33B83 gehört zur Auslosung selbst und läuft vor dem Ziehen: erste Runde 0x341AB beim Spielstart (Aufruf 0x43A8C; Video 3:40 direkt nach „Los jetzt!“) und beim Saisonwechsel (0x56609, zwischen WM-Gruppen 0x5644E und Bestenliste 0x56647); Runden 2–5 in 0x3489D nach dem dritten Termin der vorigen Runde (Aufruf 0x34F64) | Datei 0x341AB/0x3420A, 0x3489D/0x348D1 |
+| Keine Anzeige ohne DEB-Pokal (Modus „nur Weltkugel“ DGROUP 0xD0B9 = 1, DEB-Pokal aus DGROUP 0x227 = 0) | 0x33BAB |
+| Fenster mit leeren Streifen für alle Plätze, dann Frage „An Alle:“ – „Sind Ihre Nerven stark genug, / um die DEB-Pokal-Auslosung / live zu verfolgen ?“, Knöpfe „Aber klar“ / „Kein Gedanke“ | 0x33D67 (Texte DGROUP 0x12F1, 0x12F5, 0x1329, 0x132D, 0x1331); Video 3:40–3:46 |
+| „Kein Gedanke“: Fenster zu, keine Übersicht; „Aber klar“: Plätze in zufälliger Reihenfolge einzeln aufdecken, „TASTE DRÜCKEN“, danach „DEB-Pokalspiele“ | 0x33DB1, 0x340C7 (0x34141, 0x34188 → 0x32E23); 0x34521, 0x349E3; Video 3:50–4:00 |
+| Weniger als vier Plätze (Endspiel): kein Fenster, keine Frage, nur die Übersicht | 0x33BC3 → 0x33E54 |
+| Im Durchlauf ohne Halt (DGROUP 0x1DB) entfällt die Frage – gibt es im Remake nicht | 0x33D60 |
+| `[APPROX]` Aufdeckreihenfolge aus eigener Quelle (Original: random(0, n − 1) aus dem gemeinsamen Generator, also andere Folgeergebnisse mit Anzeige); Paarungen und alle Ergebnisse sind hier mit und ohne Anzeige gleich | – |
+| `[APPROX]` Ein Platz je 60 Bilder (Video etwa einer je Sekunde), Klick oder Taste deckt alle auf; rollende Kugel fehlt; Enter/Leertaste = „Aber klar“, Escape/rechte Maustaste = „Kein Gedanke“ | – |
+| `[APPROX]` Im Endspiel deckt das Original zwei Plätze ohne Fenster auf (0x349E3 mit DGROUP 0xE068 = 1); hier nur die Übersicht | – |
+
+Fragefenster vermessen am Video (`emtool screens gamedata <ziel> debpokal-auslosung`, Bild `01_frage_spielstart` gegen
+`oberflaeche_0346`): Rahmen orange x 77–240, y 109–181 wie im Video; „?“-Felder, Überschrift, Zeilen und Knöpfe beste
+Verschiebung (0 | 0); mittlere Abweichung im Kasten 12,7 Grauwerte, 8,4 % der Pixel über 40 (Schriftkanten der Zeilen).
 
 ## Europapokal (`Core/CupsEurope.cs`, `Core/CupsGroup.cs`)
 
@@ -247,7 +261,7 @@ Behoben: Farbe von „Eingesetzt“ (17 → 16). Offen und nicht in dieser Spur 
 | `[APPROX]` Modus 1 nur mit genau einem Manager („Los jetzt!“ mit Meldung gesperrt) | – |
 | `[APPROX]` Modus 1 ohne Europapokal, Auf-/Abstieg, Oberliga-Wechsel, Prämien, Ligastatistik, Finanzen, Training, Markt und Vertragsmeldungen (kein Tageslauf vor der WM) | – |
 | `[APPROX]` Menü des Bundestrainers schon vor der Ernennung, Mannschaftskacheln bis dahin gesperrt | – |
-| Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. „Tabelle DEB-Pokal“ und „Tabelle Europapokal“ rufen dieselben Bildschirme auf wie „DEB-Pokal“ und „Europapokal“ bei den Paarungen (0xE8:0x75 bzw. 0xF8:0x3E mit Seitenwert 3, Datei 0x4584A/0x4584C; Spur `tabellen-highscore`, `CupTableMenuEntries`). 0xE8:0x75 ist die Übersicht „DEB-Pokalspiele“ (Datei 0x32E23, Gegner und Ergebnisse), nicht die Auslosung – seit R4-01 (#108) als `DebCupGamesScreen` unter „Tabelle DEB-Pokal“ gebaut (Aufbau, Rahmenformel, Spalten, Farben im Klassenkommentar; [ORIGINAL] Seitentausch nach Termin 1 und 2, Überlauf-Punkt nur bei Verlängerung, Datumszeile ab Tag 212 weg; offen nur Penalty-gegen-Verlängerung und Punktform); die Paarungs-Kachel „DEB-Pokal“ öffnet seit demselben PR ebenfalls die Übersicht (im Original derselbe Stub); die Auslosung ist ohne Kachel und wird nur vom Spieltagsablauf gezeigt (offen) | DGROUP 0x5149/0x5151, Datei 0x45B95, 0x45829 ff. |
+| Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. „Tabelle DEB-Pokal“ und „Tabelle Europapokal“ rufen dieselben Bildschirme auf wie „DEB-Pokal“ und „Europapokal“ bei den Paarungen (0xE8:0x75 bzw. 0xF8:0x3E mit Seitenwert 3, Datei 0x4584A/0x4584C; Spur `tabellen-highscore`, `CupTableMenuEntries`). 0xE8:0x75 ist die Übersicht „DEB-Pokalspiele“ (Datei 0x32E23, Gegner und Ergebnisse), nicht die Auslosung – seit R4-01 (#108) als `DebCupGamesScreen` unter „Tabelle DEB-Pokal“ gebaut (Aufbau, Rahmenformel, Spalten, Farben im Klassenkommentar; [ORIGINAL] Seitentausch nach Termin 1 und 2, Überlauf-Punkt nur bei Verlängerung, Datumszeile ab Tag 212 weg; offen nur Penalty-gegen-Verlängerung und Punktform); die Paarungs-Kachel „DEB-Pokal“ öffnet seit demselben PR ebenfalls die Übersicht (im Original derselbe Stub); die Auslosung ist ohne Kachel und wird nur im Spielablauf gezeigt (Abschnitt „Live-Auslosung im Spielablauf“) | DGROUP 0x5149/0x5151, Datei 0x45B95, 0x45829 ff. |
 | Kachelsperren der Spielvorbereitung (Reihe Manager): „Neuer“ gesperrt bei vier Managern (DGROUP 0x386), „Werbung“ gesperrt bei der Spieldauer „eine Saison“ (Spielende DGROUP 0x5A14 = 1994) | Datei 0x45057, 0x45079, 0x2987C; `UI/Screens/TileLocks.cs` |
 
 Das Nationalkonto führt eine Buchungsliste (`GameState.NationalBookings`: Etat, Freundschaftsspiele); Spielstand
