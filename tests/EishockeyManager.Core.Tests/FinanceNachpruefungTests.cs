@@ -97,4 +97,31 @@ public class FinanceNachpruefungTests
         Assert.NotEqual(0, book.Current(FinanceCategory.Unterhalt));
         Assert.Equal(expected, me.Money);
     }
+
+    /// <summary>
+    /// em.exe 0x3F63C–0x3F65B: Fällt die Zuschauerzahl unter random(150, 200), wird sie nur bei TEUREN Karten
+    /// (16 + 3·(2 − Heimliga) &lt; Preis·3/2) durch random(2, 5) geteilt, sonst bis random(200, 300) aufgefüllt.
+    /// Oberliga-Startstadion, Level-Abstand 2; Spannen aus der Nachbildung der Routine.
+    /// </summary>
+    [Theory]
+    [InlineData(30, 40, 5, 50, 100)]
+    [InlineData(10, 0, 11, 188, 330)]
+    public void Spectators_SmallCrowd_DividedOnlyForExpensiveTickets(int price, int strength, int rank, int min, int max)
+    {
+        var stadium = Stadium.ForLeague(League.Oberliga);
+        stadium.TicketPrice = price;
+        var random = new Random(7);
+        for (var i = 0; i < 300; i++)
+        {
+            var z = SpectatorRules.Compute(stadium, strength, strength, rank, rank, 2, 2, 0, 2, random);
+            Assert.InRange(z, min, max);
+        }
+    }
+
+    /// <summary>em.exe 0x3DDB8–0x3DDC5: Ein neuer Eintrittspreis wird nur bei 9 &lt; Preis &lt; 31 übernommen.</summary>
+    [Fact]
+    public void TicketPrice_RangeIsTenToThirty()
+    {
+        Assert.Equal((10, 30), (Stadium.MinTicketPrice, Stadium.MaxTicketPrice));
+    }
 }
