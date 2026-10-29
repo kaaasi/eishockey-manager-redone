@@ -178,3 +178,16 @@ also > 500.000 DM).
   strcpy vom Manager), nicht das Vereinskonto. Freundschaftsspiele der WM-Vorbereitung werden von dort bezahlt
   (`0x3BFC4`). Der Rest bleibt für den nächsten Amtsantritt stehen.
 - WM-Titel: geht nur an Nationalteams; im Remake jetzt ausdrücklich ohne Vereinsprämie.
+
+## Unabhängige Nachprüfung (ChatGPT, begonnen 29.10.2026)
+
+Prüfstand: `em.exe` aus dem privaten Referenz-Repository, SHA-256
+`f41eb08aa3bc3119bd83c44856ccc550d7a450d6ee55e0447378700fefb2294b`;
+16-Bit-Disassembly mit `objdump -D -b binary -m i8086 -M intel`. Diese Tabelle ist **unvollständig**;
+alle nicht genannten `[ORIGINAL]`-Stellen und die Wolfsburg-Differenz sind noch offen.
+
+| Fundstelle | Ergebnis der Teilprüfung | Beleg |
+|---|---|---|
+| `FinanceMonthly.cs`, Sockel `0x3E819` | Konstanten und Rechenoperationen bestätigt; Tabellenwerte selbst noch nicht unabhängig geprüft | `0x3E820` lädt 10.000; `0x3E82C–0x3E835` subtrahiert das Produkt von 130.000; `0x3E853–0x3E868` zieht 20 × Tabellenwert ab. |
+| `FinanceMonthly.cs`, Preisterm `0x3E9A1` | Rechenoperationen bestätigt; Vorbelegung des Preisindex noch nicht unabhängig geprüft | `0x3E9A8–0x3E9EA`: Index minus 25, mal 175.000, geteilt durch 100, mal 2 minus Liga; `0x3E9FB–0x3EA07` zieht für Liga 1 weitere 60.000 ab. |
+| `Finance.cs`, Gehaltsanteil `0x3E8DC` | Schleifen über eigene Spieler und zugeordnete Transfermarktspieler bestätigt; Feldbedeutungen noch nicht unabhängig nachverfolgt | `0x3E8DC–0x3E92D` summiert zwei Felder je eigenem Spieler; `0x3E92F–0x3E99F` summiert dieselben Felder zugeordneter Marktspieler. |
