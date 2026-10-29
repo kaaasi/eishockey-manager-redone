@@ -280,10 +280,12 @@ public static class HighscoreRules
         }
 
         var history = game.ManagerHistory(manager);
+        // [APPROX] Titelzähler aus dem Saisonverlauf; das Original liest die Bytes Manager + 0x15–0x17 (0x5D545–0x5D56D).
         var a = (byte)Math.Min(255, history.Count(h => h.LeagueOutcome == LeagueOutcome.GermanChampion));
         var b = (byte)Math.Min(255, history.Count(h => h.Deb == CupOutcome.Winner));
         var c = (byte)Math.Min(255, history.Count(h => h.Europe == CupOutcome.Winner));
         var score = Score(game, manager) + 8 * a + 6 * b + 10 * c;
+        // [APPROX] Begrenzung auf 1 … 32767; das Original rechnet die Gesamtpunkte als 16-Bit-Wert und läuft über.
         return new HighscoreEntry(m.Name, game.Clubs[m.ClubIndex].Name, a, b, c, (short)Math.Clamp(score, 1, short.MaxValue), stamp);
     }
 
@@ -304,6 +306,8 @@ public static class HighscoreRules
             if (v is > 0 and < 7)
                 sum += 150L * v;
 
+        // [APPROX] Saisonzahl = Länge des Verlaufs dieses Managers. Das Original zählt den globalen Saisonzähler
+        // (DGROUP 0x3BD, höchstens 50, Teiler + 1, 0x5D3A3); der Unterschied wirkt nur bei entlassenen Managern.
         var seasons = Math.Min(50, input.History.Count);
         long past = 0;
         for (var i = 0; i < seasons; i++)
@@ -343,7 +347,8 @@ public static class HighscoreRules
         var wealth = marks * FinanceRules.ThirdsPerMark
             + club.Players.Sum(p => TransferMarket.Price(p) * FinanceRules.ThirdsPerMark / 2);
 
-        // [APPROX] Ohne gespielte Tabelle (Saisonbeginn, Weltmodus) bleibt der Platzierungsterm 0.
+        // [APPROX] Ohne gespielte Tabelle (vor dem ersten Spieltag, Weltmodus) bleibt der Platzierungsterm 0; das Original
+        // verwendet dort das Platzbyte des Vereins.
         var rank0 = 35;
         var offset = 0;
         if (club.League is { } league && game.PlayedMatchDays > 0)
