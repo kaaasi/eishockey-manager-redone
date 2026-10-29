@@ -125,6 +125,26 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
 - **Modell:** Claude Sonnet 5.5.
 - **Status:** umgesetzt, wartet auf Review (PR #122, Branch `paket/paarungen-liga`, Base `a09c81e`). Restlücken: Play-Off/Aufstieg-Seiten, Vereinsinfo beim Klick, gemerkte Seite; Spielplan und Stärken [APPROX].
 
+### Integration Runde 5 (29.10.2026)
+
+Branch `integration/runde-5` von `main` `a09c81e`, Leitstelle Claude Code. Zusammengeführt: #120 (`highscore-nacharbeit`,
+Head `4432bcc`), #122 (`paarungen-liga`, `9b3b13b`), #119 (`debpokal-auslosung`, `7246952`), #121 (`taktik-verein`,
+`9cf2c79`), #123 (`bundestrainer-modus4`, `853a077`). **Nicht enthalten:** #124 (`finanzen-nachpruefung`, Draft, laut
+Übergabe unvollständig).
+
+- Konflikt #121 × #123: beide reichten Migration 4 → 5 als `SaveGame.Migration4.cs` ein. Gelöst: `taktik-verein` bleibt
+  4 → 5, `bundestrainer-modus4` wird 5 → 6 (`SaveGame.Migration5.cs`), `SchemaVersion` = 6, Schemaabdruck nachgeführt;
+  `NationalCoachMode4Tests.SchemaFourSave_IsMigrated` prüft nun Schema 5 → 6, `ClubDressedTests.SchemaFourSave_IsMigrated`
+  die Kette 4 → 5 → 6 (ohne `_nationalTurn`). Tabelle in `docs/formate/spielstand.md` ergänzt.
+- Übrige Berührungen (`docs/arbeitspakete.md`, `docs/wettbewerbe.md`, `RngTwinProbeTests.cs`) ohne Konflikt.
+- Zusammenspiel neu getestet (`IntegrationRunde5Tests`, Originaldaten): eine Saison im Modus 4 über die Oberfläche mit
+  Live-Auslosung (12 Anzeigen), Zug des Bundestrainers mit Startwerten der Taktik nach em.exe, zustandsreinem Öffnen der
+  Taktik und bytegleichem Sichern/Laden im Zug und nach dem Saisonwechsel. Grün, kein weiterer Integrationsfehler.
+- Bildschirmfotos `debpokal-auslosung paarungen-liga bundestrainer-modus4 highscore nationalteam-2 tabellen-pokale
+  wettbewerbe weltkugel`: ohne Fehler; alle 36 Bilder der Spurabläufe bytegleich mit dem Stand der jeweiligen Spur.
+- Neue Befunde aus #123: #125 (Statusbit 0x40 am Saisonende), #126 (Highscore-Schlüssel 0x7530 im Original unerreichbar),
+  beide P3.
+
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - Statistiken Spieler, Verein, Fairplay, WM-Statistik: warten auf `livespiel` (Tore, Vorlagen, Strafen je Spieler).
