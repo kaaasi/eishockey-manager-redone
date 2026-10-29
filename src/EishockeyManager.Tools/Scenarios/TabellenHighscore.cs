@@ -44,4 +44,23 @@ internal static class TabellenHighscore
         d.Move(240, 230); d.Save("03_tabelle_europapokal_gespielt");
         d.Press(Key.Escape);
     }
+
+    /// <summary>
+    /// „Highscore“ wie im Video „Die Oberfläche von EM“ (8:40–8:55, <c>oberflaeche_0848</c>): zwei Einträge mit festen Werten,
+    /// dazu die Liste nach einer Saison im laufenden Spiel.
+    /// </summary>
+    [Scenario("highscore")]
+    private static void Highscore(ScreenDriver d)
+    {
+        var table = new HighscoreTable();
+        table.Insert(new HighscoreEntry("LetsShow", "BERLINER SC", 0, 0, 0, 446, 1));
+        table.Insert(new HighscoreEntry("UltraSchwer", "SC PREUSSEN BERLIN", 0, 0, 0, 384, 1));
+        d.Host.Show(new EishockeyManager.UI.Screens.Statistics.HighscoreScreen(d.Host, new TitleScreen(d.Host), table));
+        d.Move(240, 230); d.Save("01_highscore_video");
+
+        d.StartNewGame();
+        d.OpenTile("Highscore");
+        d.Move(240, 230); d.Save("02_highscore_spielbeginn");
+        d.Press(Key.Escape);
+    }
 }

@@ -53,6 +53,7 @@ public sealed class SeasonEndSummaryScreen : Screen
             Host.Show(new SeasonEndGameOverScreen(Host, null, null));
             return;
         }
+        Statistics.HighscoreStore.For(Host).Record(); // [ORIGINAL] Saisonwechsel: Manager in die Bestenliste eintragen (Datei 0x56647)
         Game.StartNextSeason();
         Game.CurrentManager = Game.ActiveManagers.Select(m => Game.Managers.ToList().IndexOf(m)).First();
         Host.Show(_menu);

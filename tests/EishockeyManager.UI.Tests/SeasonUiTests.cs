@@ -70,6 +70,10 @@ public class SeasonUiTests
             d.Press(Key.Space);
         Assert.True(game.IsGameOver);
         d.Press(Key.Space);
+        // Spielende: erst die Bestenliste (Spur tabellen-highscore, em.exe 0x5642E), dann der Titel
+        var highscore = Assert.IsType<EishockeyManager.UI.Screens.Statistics.HighscoreScreen>(d.Host.Current);
+        Assert.Contains(highscore.Table.Entries, e => e.Name == "LetsShow" && !e.IsEmpty);
+        d.Press(Key.Space);
         Assert.IsType<TitleScreen>(d.Host.Current);
         Assert.Null(d.Host.Game);
     }
