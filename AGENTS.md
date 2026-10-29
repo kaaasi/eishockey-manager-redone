@@ -46,6 +46,13 @@ Prüfen, ob alles da ist: `tools/pruefen.sh --schnell` (Build + Tests).
 
 Diese Hinweise stammen aus dem Review von PR #89 (29.10.2026); sie ändern keine Abnahme- oder Sicherheitsregeln.
 
+- **SDK vor Build und Review nutzbar machen:** Benötigt wird das .NET SDK gemäß `global.json`, nicht das ältere
+  .NET Framework. Im Repo-Verzeichnis `dotnet --version` ausführen und die aufgelöste Version gegen `global.json`
+  prüfen. Bei `dotnet: command not found` zuerst vorhandene lokale SDKs suchen und deren Verzeichnis zu `PATH`
+  hinzufügen; fehlt das SDK, es nach der Tabelle oben im Arbeitsbereich installieren. Danach erneut
+  `dotnet --version` prüfen und die verlangten Build-/Testläufe ausführen. Ist die Einrichtung blockiert, Ursache
+  dokumentieren; fehlendes SDK und gesperrter VSTest-Testhost sind unterschiedliche Fehler. Ein ausdrücklich vom
+  Nutzer auf Codelesen beschränkter Review bleibt auf diesen Umfang beschränkt.
 - **Vorhandenes nutzen:** zuerst SDK aus `global.json`, lokalen SDK-Pfad und NuGet-Paketcache prüfen
   (`dotnet --info`, `dotnet nuget locals global-packages --list`, vorhandene
   `obj/project.assets.json`: `packageFolders`). Ein frischer Worktree braucht eigene Restore-Dateien,
@@ -61,6 +68,12 @@ Diese Hinweise stammen aus dem Review von PR #89 (29.10.2026); sie ändern keine
   zeigen. Base64, vollständige API-Antworten und Download-URLs mit Zugriffstoken nicht protokollieren.
   Binärdaten lokal in kleinen Blöcken schreiben (sonst droht „Argument list too long“), Prüfsummen kontrollieren;
   Originaldateien/Referenzbilder nach Abschnitt 2.1 außerhalb versionierter Dateien halten.
+- **GitHub-Schreibaktionen eindeutig beauftragen:** Im Nutzer-Kurzaufruf Remote-Branch, Commit der vorgesehenen
+  Dateien und PR-Erstellung ausdrücklich nennen (Beispiel in `docs/vorlagen/review-anfrage.md`). Eine Ablehnung der
+  automatischen Freigabeprüfung wegen unklarer Autorisierung ist kein Nachweis fehlender GitHub-Schreibrechte.
+  Bei einer solchen Ablehnung Aktion und Begründung nennen; dieselbe Remote-Änderung nicht über ein anderes
+  Werkzeug umgehen. Ohne zulässigen Schreibweg die fertige Datei bereitstellen. Repo-Anweisungen ersetzen keine
+  Werkzeugfreigabe; bei tatsächlich fehlenden GitHub-Rechten ist dagegen die App-/Repository-Berechtigung zu klären.
 - **Prüfstand erhalten:** Ein Connector-Abruf ersetzt nicht automatisch einen Checkout. Bei einer Rekonstruktion
   alle geänderten/gelöschten Pfade und Dateimodi berücksichtigen und den vollständigen Git-Tree gegen den Zielcommit
   prüfen. Ohne diesen Nachweis keine Prüfung des exakten Heads behaupten. Einen Review-Branch weiterhin von
