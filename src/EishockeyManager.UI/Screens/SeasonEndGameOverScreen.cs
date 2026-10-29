@@ -4,8 +4,8 @@ namespace EishockeyManager.UI.Screens;
 
 /// <summary>
 /// Entlassung eines Managers (zu lange zu hohe Schulden) oder Spielende nach der gewählten Spieldauer.
-/// [APPROX] Wortlaut und Gestaltung sind nicht aus dem Original belegt; die Bestenliste („Highscore“) folgt
-/// mit der zugehörigen Kachel.
+/// [APPROX] Wortlaut und Gestaltung sind nicht aus dem Original belegt. Nach dem Spielende folgt die Bestenliste
+/// (<see cref="Statistics.HighscoreScreen"/>), wenn es für die Spielvorbereitung eine gibt.
 /// </summary>
 public sealed class SeasonEndGameOverScreen : Screen
 {
@@ -34,8 +34,13 @@ public sealed class SeasonEndGameOverScreen : Screen
             Host.Show(new SeasonEndGameOverScreen(Host, null, null));
         else
         {
+            // [ORIGINAL] Spielende (Datei 0x5642E): Bestenliste eintragen und zeigen, dann zurück zum Titel. Ohne Bestenliste
+            // (gesperrte Kachel, Schlüssel 0) entfällt sie.
+            Screen next = HighscoreRules.Key(Game.Setup) is null
+                ? new TitleScreen(Host)
+                : new Statistics.HighscoreScreen(Host, new TitleScreen(Host));
             Host.Game = null;
-            Host.Show(new TitleScreen(Host));
+            Host.Show(next);
         }
     }
 

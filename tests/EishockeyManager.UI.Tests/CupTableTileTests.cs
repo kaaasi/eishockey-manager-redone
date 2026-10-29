@@ -10,7 +10,7 @@ namespace EishockeyManager.UI.Tests;
 /// Spur tabellen-highscore: die Kacheln „Tabelle DEB-Pokal“ und „Tabelle Europapokal“.
 /// [ORIGINAL] Beide rufen in em.exe (Hauptmenü Datei 0x45829 ff.) dieselben Bildschirmfunktionen auf wie die
 /// Kacheln „DEB-Pokal“ und „Europapokal“ der Reihe Paarungen: „Tabelle DEB-Pokal“ → Stub 0xE8:0x75 (0, 0)
-/// (Datei 0x32E23, „DEB-Pokalspiele“ – im Remake noch Platzhalter, R4-01/#108), „Tabelle Europapokal“ → Stub 0xF8:0x3E
+/// (Datei 0x32E23, „DEB-Pokalspiele“, R4-01/#108: <see cref="DebCupGamesScreen"/>), „Tabelle Europapokal“ → Stub 0xF8:0x3E
 /// mit dem Seitenwert DGROUP 0x5123 = 3 (gleicher Wert wie DGROUP 0x5126 der Paarungen: Europacup Gruppe 1).
 /// </summary>
 public class CupTableTileTests
@@ -20,9 +20,9 @@ public class CupTableTileTests
     {
         Assert.True(MenuEntries.All.ContainsKey("Tabelle Europapokal"));
         // R4-01 (#108): „Tabelle DEB-Pokal“ führt im Original zur Übersicht „DEB-Pokalspiele“ (Datei 0x32E23), nicht zur
-        // Auslosung. Bis diese gebaut ist, bleibt die Kachel ein dokumentierter Platzhalter.
-        Assert.False(MenuEntries.All.ContainsKey("Tabelle DEB-Pokal"));
-        Assert.Contains("Tabelle DEB-Pokal", MenuEntryTests.DocumentedPlaceholders);
+        // Auslosung (Tests: DebCupGamesScreenTests).
+        Assert.True(MenuEntries.All.ContainsKey("Tabelle DEB-Pokal"));
+        Assert.DoesNotContain("Tabelle DEB-Pokal", MenuEntryTests.DocumentedPlaceholders);
     }
 
     [GameDataFact]

@@ -16,6 +16,14 @@ public static class NewsBar
     private static readonly Rect Text = new(3, 201, 296, 36);
     private const byte TextColor = 0;
 
+    /// <summary>
+    /// Hinweis bei einer Frage rechts unten. [APPROX] „(Neuer)“ verweist auf die Kachel „Neuer“, die den Posteingang
+    /// öffnet (<see cref="InboxScreen"/>); ist sie gesperrt (vier Manager, <see cref="TileLocks"/>), bleibt als Zugang
+    /// nur der Klick auf die Nachricht – dann steht dort „(Klicken)“ (R4-02, #109).
+    /// </summary>
+    public static string QuestionHint(GameState game) =>
+        game.Managers.Count >= GameSetup.MaxManagers ? "(Klicken)" : "(Neuer)";
+
     /// <summary>Gezeigte Nachricht (Index im Posteingang) je Manager.</summary>
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ManagerFinance, StrongBox> Cursor = new();
 
@@ -79,7 +87,7 @@ public static class NewsBar
         for (var i = 1; i < Math.Min(3, message.Lines.Length); i++)
             s.TextCentered(mini, center, 214 + 7 * i, ManagerText.ForFont(message.Lines[i]), TextColor);
         if (message.IsQuestion)
-            s.TextRight(mini, Text.Right - 4, 228, "(Neuer)", Colors.Red);
+            s.TextRight(mini, Text.Right - 4, 228, QuestionHint(game), Colors.Red);
         s.TextRight(mini, Text.Right - 4, 221, $"{index + 1}/{inbox.Count}", TextColor);
     }
 }

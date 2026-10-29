@@ -16,8 +16,6 @@ public class MenuEntryTests(ITestOutputHelper output)
     /// </summary>
     public static readonly IReadOnlySet<string> DocumentedPlaceholders = new HashSet<string>
     {
-        "Highscore",
-        "Tabelle DEB-Pokal", // R4-01 (#108): Übersicht „DEB-Pokalspiele“ fehlt noch
         "Verein", "Spieler", "Fairplay", "WM-Statistik",
         "Paarungen 1. Liga", "Paarungen 2. Liga", "Paarungen Oberliga",
         "Laden", "Sichern", "Einstellungen",

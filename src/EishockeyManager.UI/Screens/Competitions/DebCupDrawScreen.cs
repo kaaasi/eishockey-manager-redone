@@ -92,9 +92,14 @@ public sealed class DebCupDrawScreen : Screen
     }
 }
 
-/// <summary>Anmeldung im Hauptmenü: Paarungen → DEB-Pokal.</summary>
+/// <summary>
+/// Anmeldung im Hauptmenü: Paarungen → DEB-Pokal.
+/// [ORIGINAL] Die Kachel ruft denselben Stub wie „Tabelle DEB-Pokal“ (Datei 0x4584A/0x45897, Stub 0xE8:0x75 → 0x32E23): die
+/// Übersicht „DEB-Pokalspiele“ (<see cref="DebCupGamesScreen"/>), nicht die Auslosung (Review R4-01; Entscheidung des Nutzers
+/// 29.10.2026). Minimale Änderung an der Spur „wettbewerbe“. <see cref="DebCupDrawScreen"/> bleibt für die Live-Auslosung.
+/// </summary>
 internal static class CompetitionMenuEntries
 {
     [MenuEntry("DEB-Pokal")]
-    private static Screen DebCup(ScreenHost host, Screen back) => new DebCupDrawScreen(host, back);
+    private static Screen DebCup(ScreenHost host, Screen back) => new DebCupGamesScreen(host, back);
 }

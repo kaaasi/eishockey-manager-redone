@@ -63,6 +63,9 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
 - **Status (Claude Code, 29.10.2026):** PR #104 `paket/tabellen-highscore`: Pokaltabellen + Sperren „Werbung“/„Neuer“
   (em.exe: beide Tabellen-Kacheln öffnen dieselben Bildschirme wie die Paarungen). Highscore folgt in eigenem PR
   (`paket/tabellen-highscore-bestenliste`).
+- **Status Teil 2 (Claude Code, 29.10.2026):** PR #111 `paket/tabellen-highscore-bestenliste`, Base `caf9700`, fertig zur
+  Prüfung: Highscore ([highscore.md](highscore.md)), Übersicht „DEB-Pokalspiele“ (#108), Hinweis „(Neuer)“ (#109).
+  Offen: [APPROX] Spielerwerte (0x49D36), Europa-Stufe/Pokalbytes 2–3, Penalty-vs-Verlängerung in der DEB-Übersicht (siehe PR).
 
 ### Spur `speichern-reihenfolge` – Aufzählungsreihenfolge nach Remove/Add (#80)
 
@@ -100,6 +103,19 @@ Head `38f0e70`), #104 (`tabellen-highscore` **Teil 1**: Pokaltabellen, Sperren W
 - **Offen:** `tabellen-highscore` Teil 2 (Highscore: Bestenliste, Sperre, Speicherung, Pixelvergleich) – noch nicht
   begonnen; eigener PR nach dieser Integration. Befunde aus #103 für andere Spuren (Taktik-Vorbelegung DGROUP
   0x4911–0x4925, Vereinsaufstellung ohne 22er-Grenze, Farbe 17) stehen in `docs/wettbewerbe.md`.
+
+### Integration Runde 4, Teil 2 (29.10.2026)
+
+Branch `integration/runde-4-teil-2` von `main` `caf9700`, Leitstelle Claude Code. Zusammengeführt: #111
+(`tabellen-highscore` **Teil 2**: Highscore, Übersicht „DEB-Pokalspiele“ für #108, Hinweis „(Neuer)“ für #109, Head `25ed38f`).
+
+- #111 ist direkt von `caf9700` abgezweigt: kein Konflikt, Baum des Merge-Commits gleich dem Spur-Head.
+- `tools/pruefen.sh` (alle drei Läufe) auf dem Integrationsstand grün; Bildschirmfotos `tabellen-pokale highscore
+  wettbewerbe nationalteam-2 weltkugel statistik` ohne Fehler.
+- Dateigrenzen-Ausnahmen der Spur (im Review prüfen): `DebCupDrawScreen.cs` (MenuEntry „DEB-Pokal“ → Übersicht),
+  `FinanceSponsorRating.cs` (optionaler Zufallsstrom, damit die Highscore-Anzeige `FinanceRandom` nicht verbraucht).
+- Offen aus der Spur (`[APPROX]`, `docs/highscore.md`): Spielerwerte 0x49D36, Europa-Stufe/Pokalbytes 2–3, Penalty vs.
+  Verlängerung in der DEB-Übersicht; Pixelvergleich Highscore nur gegen `oberflaeche_0848` (Abnahme nannte 0840 bzw. 0844–0855).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
