@@ -5,7 +5,7 @@ namespace EishockeyManager.UI.Screens;
 /// <summary>
 /// Einstellungen des Ports (das Original hat keinen solchen Bildschirm). Gelten für alle Spielstände und werden
 /// – sobald <see cref="StorePath"/> gesetzt ist – als JSON gespeichert. Das Fenster (Desktop) setzt den Pfad und
-/// wendet Lautstärken, Musik und Vollbild an; Torszenen liest das Live-Spiel.
+/// wendet Lautstärken, Musik und Vollbild an; Torszenen liest das Live-Spiel, das automatische Speichern der Hauptmenü-Aufruf.
 /// </summary>
 public sealed class GameSettings
 {
@@ -35,6 +35,12 @@ public sealed class GameSettings
     public bool GoalScenes { get; set; } = true;
 
     public bool Fullscreen { get; set; }
+
+    /// <summary>
+    /// Automatisch speichern (Standard: an). [ORIGINAL] Das Original speichert immer selbst (em.exe, „autosave.hok“);
+    /// die Möglichkeit, es abzuschalten, ist neu. Zeitpunkt und Datei: <see cref="SaveLoad.AutoSave"/>.
+    /// </summary>
+    public bool AutoSave { get; set; } = true;
 
     /// <summary>Die geltenden Einstellungen.</summary>
     public static GameSettings Current { get; set; } = new();

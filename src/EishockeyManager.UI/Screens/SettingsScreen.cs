@@ -4,7 +4,7 @@ namespace EishockeyManager.UI.Screens;
 
 /// <summary>
 /// Bildschirm „Einstellungen“ (Kachel unter „Gemischtes“): Lautstärke Effekte und Musik, Musik auch im Spiel,
-/// Torszenen, Vollbild. Jede Änderung gilt sofort und wird gespeichert.
+/// Torszenen, Vollbild, automatisch speichern. Jede Änderung gilt sofort und wird gespeichert.
 /// </summary>
 /// <remarks>
 /// [APPROX] Das Original hat keinen Einstellungen-Bildschirm (im Video der Oberfläche nicht vorhanden, der Ton
@@ -17,8 +17,8 @@ public sealed class SettingsScreen : Screen
     public static readonly Rect Window = new(24, 36, 272, 172);
 
     private const int LabelX = 44;
-    private const int FirstRowY = 78;
-    private const int RowPitch = 20;
+    private const int FirstRowY = 73;
+    private const int RowPitch = 17;
     private const int BarX = 168;
     private const int CellWidth = 7;
     private const int CellPitch = 8;
@@ -34,13 +34,14 @@ public sealed class SettingsScreen : Screen
         MusicInMatch,
         GoalScenes,
         Fullscreen,
+        AutoSave,
     }
 
     private static readonly string[] Labels =
-        ["Lautstärke Effekte", "Lautstärke Musik", "Musik auch im Spiel", "Torszenen zeigen", "Vollbild"];
+        ["Lautstärke Effekte", "Lautstärke Musik", "Musik auch im Spiel", "Torszenen zeigen", "Vollbild", "Automatisch speichern"];
 
     /// <summary>Zeile i (ganze Breite, zum Umschalten der Lampen).</summary>
-    public static Rect RowRect(Row row) => new(LabelX - 4, FirstRowY + RowPitch * (int)row - 5, 236, 16);
+    public static Rect RowRect(Row row) => new(LabelX - 4, FirstRowY + RowPitch * (int)row - 5, 236, 15);
 
     /// <summary>Pfeile ▲▼ einer Lautstärkezeile; obere Hälfte lauter, untere leiser.</summary>
     public static Rect ArrowRect(Row row) =>
@@ -50,7 +51,7 @@ public sealed class SettingsScreen : Screen
     public static Rect CellRect(Row row, int level) =>
         new(BarX + (level - 1) * CellPitch, FirstRowY + RowPitch * (int)row - 1, CellWidth, CellHeight);
 
-    public static readonly Rect BackButton = Widgets.ButtonRect(160 - Widgets.ButtonWidth / 2, 182);
+    public static readonly Rect BackButton = Widgets.ButtonRect(160 - Widgets.ButtonWidth / 2, 188);
 
     private readonly Screen _back;
 
@@ -88,7 +89,7 @@ public sealed class SettingsScreen : Screen
             }
         }
 
-        foreach (var row in new[] { Row.MusicInMatch, Row.GoalScenes, Row.Fullscreen })
+        foreach (var row in new[] { Row.MusicInMatch, Row.GoalScenes, Row.Fullscreen, Row.AutoSave })
         {
             if (!input.Clicked(RowRect(row)))
                 continue;
@@ -99,6 +100,9 @@ public sealed class SettingsScreen : Screen
                     break;
                 case Row.GoalScenes:
                     Settings.GoalScenes = !Settings.GoalScenes;
+                    break;
+                case Row.AutoSave:
+                    Settings.AutoSave = !Settings.AutoSave;
                     break;
                 default:
                     Settings.Fullscreen = !Settings.Fullscreen;
@@ -125,6 +129,7 @@ public sealed class SettingsScreen : Screen
     {
         Row.MusicInMatch => Settings.MusicInMatch,
         Row.GoalScenes => Settings.GoalScenes,
+        Row.AutoSave => Settings.AutoSave,
         _ => Settings.Fullscreen,
     };
 
@@ -162,7 +167,7 @@ public sealed class SettingsScreen : Screen
             }
         }
 
-        s.TextCentered(Assets.Mini, 160, 172, "F8 = Ton aus/an    F11 = Vollbild", Colors.White);
+        s.TextCentered(Assets.Mini, 160, 177, "F8 = Ton aus/an    F11 = Vollbild", Colors.White);
         Widgets.Button(s, Assets, BackButton.X, BackButton.Y, "Zurück");
     }
 }

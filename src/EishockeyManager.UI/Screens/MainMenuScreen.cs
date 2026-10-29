@@ -30,6 +30,12 @@ public sealed class MainMenuScreen : Screen
 
     public MainMenuScreen(ScreenHost host) : base(host) { }
 
+    /// <summary>
+    /// Das Hauptmenü eines Zuges ist da: Zähler des automatischen Speicherns fortschreiben (Spur „speichern-dialog“,
+    /// <see cref="SaveLoad.AutoSave"/>). Schreibt nur eine Datei, ändert den Spielzustand nicht.
+    /// </summary>
+    public override void Enter() => SaveLoad.AutoSave.OnMainMenu(Host);
+
     private GameState Game => Host.Game ?? throw new InvalidOperationException("Kein Spiel geladen.");
 
     public int SelectedBigTile

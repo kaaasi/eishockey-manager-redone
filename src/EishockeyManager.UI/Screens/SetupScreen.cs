@@ -130,7 +130,10 @@ public sealed class SetupScreen : Screen
         }
 
         if (input.Clicked(LoadButton))
-            _message = "Laden ist noch nicht portiert.";
+        {
+            Host.Show(new SaveLoad.SaveLoadScreen(Host, this, SaveLoad.SaveLoadMode.Load));
+            return;
+        }
 
         if (input.Clicked(StartButton) || input.Pressed(Key.Enter))
             TryStart();
