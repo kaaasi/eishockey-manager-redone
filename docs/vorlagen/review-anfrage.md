@@ -7,6 +7,9 @@
 > Gegenbeispiele erneut ausführen: `<IDs mit einer Zeile Ablauf>`
 > Erwartet offen (nur bestätigen): `<IDs | –>`
 > Besonders prüfen: `<1–3 Punkte | –>`
+> Erstelle im Repo einen neuen Remote-Branch `review/<thema>` auf Basis von `main`, committe dort ausschließlich
+> die Review-Datei mit Agenten-Trailer und öffne einen Review-PR gegen `main`. Diese GitHub-Schreibaktionen sind
+> ausdrücklich autorisiert. Nicht mergen. Falls Schreiben nicht möglich ist, stelle die fertige Datei bereit.
 
 Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, bisher geprüfter Head `<sha>`, nur Delta
 `<alt>..<neu>` und die genannten Befunde.“ Ablage dann `…-nachpruefung.md`.
@@ -15,7 +18,11 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
 
 1. Lies `AGENTS.md` und `docs/prozess/zusammenarbeit.md` (Abschnitte 5 und 6). Hast du an diesem PR selbst
    mitgearbeitet, brich ab und sag es – das Review muss aus einer anderen Sitzung kommen.
-2. Prüfe genau den genannten Head (Blob-Hashes oder `git rev-parse`), baue ihn selbst, führe `tools/pruefen.sh`
+2. Richte das SDK gemäß `AGENTS.md` §3 ein und prüfe im Repo-Verzeichnis `dotnet --version`.
+   Fehlen Commit oder Bericht im lokalen Checkout und scheitert der Fetch, nutze einen verfügbaren GitHub-Connector
+   für Compare, Dateien mit festem Head-Ref, früheren Bericht und PR-Kommentare. Dokumentiere, ob nur Codelesen oder
+   auch eine Ausführung am nachgewiesenen Checkout erfolgte.
+   Prüfe genau den genannten Head (Blob-Hashes oder `git rev-parse`), baue ihn selbst, führe `tools/pruefen.sh`
    (alle drei Läufe) aus. Aussagen aus der PR-Beschreibung nicht ungeprüft übernehmen.
 3. Führe zuerst die genannten Gegenbeispiele erneut aus, dann: Diff lesen, betroffene Aufrufer, neue Tests. Eine
    Gegenprobe pro neuem Test, wo es geht (gezielte Mutation in einer temporären Kopie → Test muss rot werden).
