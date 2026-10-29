@@ -32,7 +32,7 @@ internal static class Wettbewerbe
         var game = d.Host.Game!;
 
         // Paarungen → DEB-Pokal: erste Runde der laufenden Saison
-        d.OpenTile("DEB-Pokal");
+        d.Host.Show(new DebCupDrawScreen(d.Host, new MainMenuScreen(d.Host))); // Kachel zeigt seit R4-01 die Übersicht
         d.Frame(); d.Save("01_debpokal_auslosung");
         d.Press(Key.Space);
 
@@ -57,7 +57,7 @@ internal static class Wettbewerbe
             d.PlayMatchDay();
         if (d.Host.Current is not MainMenuScreen)
             d.Host.Show(new MainMenuScreen(d.Host));
-        d.OpenTile("DEB-Pokal");
+        d.Host.Show(new DebCupDrawScreen(d.Host, new MainMenuScreen(d.Host)));
         d.Frame(); d.Save("04_debpokal_runde2");
         d.Press(Key.Space);
     }
