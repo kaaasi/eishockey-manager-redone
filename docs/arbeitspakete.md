@@ -40,7 +40,7 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
 - **Dateigrenzen:** `Core/Highscore.cs`, `UI/Screens/Statistics/HighscoreScreen.cs`, `docs/highscore.md`, Tests
   `Highscore*`; `CompetitionWidgets.cs` nur minimal und begründet.
 - **Modell:** Claude Sonnet 5.5 (klein).
-- **Status:** offen.
+- **Status:** umgesetzt, wartet auf Review (PR #120, Base `a09c81e`); H2-01 behoben, H2-02 getestet, H2-04 als `[APPROX]` geführt.
 
 ### Spur `debpokal-auslosung` – Live-Auslosung im Spieltagsablauf (#116)
 
@@ -58,7 +58,8 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
   der Tagesablauf (minimal, begründet), `Core/GameState.Integration.cs` nur falls nötig, `Tools/Scenarios/` (eigene Datei),
   `docs/wettbewerbe.md` (Abschnitt DEB-Pokal).
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** PR #119 zum Review (Claude Code, 29.10.2026): Auslosung beim Spielstart, Saisonwechsel und nach dem dritten
+  Termin mit Frage; Endspiel nur Übersicht. Restlücken im PR (Kugel-Animation, Tastenbelegung der Frage, Endspiel-Aufdecken).
 
 ### Spur `taktik-verein` – Taktik-Vorbelegung, 22er-Grenze, Farbe „Eingesetzt“ (Befunde aus #103)
 
@@ -77,7 +78,7 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
   `UI/Screens/Team/TacticsScreen.cs`, `UI/Screens/Team/LineupScreen.cs`, `UI/Screens/Competitions/NationalLineupScreen.cs`,
   `Core/SaveGame.Migration*.cs` (neue Datei), `docs/wettbewerbe.md` (Abschnitt Aufstellung/Taktik).
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** PR #121 (zur Prüfung): Taktikwerte nach em.exe (Einsatz 0–100 %, Angriff 0–7, Vorbelegung der Automatik), Vereinsaufstellung mit 22 Eingesetzten und Farbe 16, Schema 5. Offen: Spielvorbereitung je Paarung (Automatik gegen den echten Gegner) erst mit `livespiel`.
 
 ### Spur `finanzen-nachpruefung` – Monatsausgaben Wolfsburg, unabhängige Nachdisassembly
 
@@ -109,7 +110,7 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
   (`Open`/`IsLocked`), `UI/Screens/Competitions/NationalSquadScreen.cs`, `Core/SaveGame.Migration*.cs` (neue Datei),
   `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (Abschnitt Weltkugel/Bundestrainer).
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** zum Review (#123): Ernennung am 13. April aus den ersten fünf der 1. Liga, Zug „Manager 5“ an WM-Tagen, Schema 5; Referenzwerte Modus 4 begründet neu aufgenommen.
 
 ### Spur `paarungen-liga` – Kacheln „Paarungen 1. Liga/2. Liga/Oberliga“ (Paket `wettbewerbe` PR 8)
 
@@ -122,7 +123,30 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
 - **Dateigrenzen:** neue Datei(en) `UI/Screens/Competitions/LeaguePairings*.cs` mit `[MenuEntry]`, `Tools/Scenarios/`
   (eigene Datei), `docs/wettbewerbe.md` (Abschnitt Paarungen), Tests `LeaguePairings*`; `Core/Season*.cs` nur lesen.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen.
+- **Status:** umgesetzt, wartet auf Review (PR #122, Branch `paket/paarungen-liga`, Base `a09c81e`). Restlücken: Play-Off/Aufstieg-Seiten, Vereinsinfo beim Klick, gemerkte Seite; Spielplan und Stärken [APPROX].
+
+### Integration Runde 5 (29.10.2026)
+
+Branch `integration/runde-5` von `main` `a09c81e`, Leitstelle Claude Code. Zusammengeführt: #120 (`highscore-nacharbeit`,
+Head `4432bcc`), #122 (`paarungen-liga`, `9b3b13b`), #119 (`debpokal-auslosung`, `7246952`), #121 (`taktik-verein`,
+`9cf2c79`), #123 (`bundestrainer-modus4`, `853a077`). **Nicht enthalten:** #124 (`finanzen-nachpruefung`, Draft, laut
+Übergabe unvollständig).
+
+- Konflikt #121 × #123: beide reichten Migration 4 → 5 als `SaveGame.Migration4.cs` ein. Gelöst: `taktik-verein` bleibt
+  4 → 5, `bundestrainer-modus4` wird 5 → 6 (`SaveGame.Migration5.cs`), `SchemaVersion` = 6, Schemaabdruck nachgeführt;
+  `NationalCoachMode4Tests.SchemaFourSave_IsMigrated` prüft nun Schema 5 → 6, `ClubDressedTests.SchemaFourSave_IsMigrated`
+  die Kette 4 → 5 → 6 (ohne `_nationalTurn`). Tabelle in `docs/formate/spielstand.md` ergänzt.
+- Übrige Berührungen (`docs/arbeitspakete.md`, `docs/wettbewerbe.md`, `RngTwinProbeTests.cs`) ohne Konflikt.
+- Zusammenspiel neu getestet (`IntegrationRunde5Tests`, Originaldaten): eine Saison im Modus 4 über die Oberfläche mit
+  Live-Auslosung (12 Anzeigen), Zug des Bundestrainers mit Startwerten der Taktik nach em.exe, zustandsreinem Öffnen der
+  Taktik und bytegleichem Sichern/Laden im Zug und nach dem Saisonwechsel. Grün, kein weiterer Integrationsfehler.
+- Bildschirmfotos `debpokal-auslosung paarungen-liga bundestrainer-modus4 highscore nationalteam-2 tabellen-pokale
+  wettbewerbe weltkugel`: ohne Fehler; alle 36 Bilder der Spurabläufe bytegleich mit dem Stand der jeweiligen Spur.
+- Review [integration-runde-5](reviews/2026-10-29-integration-runde-5.md): **R5-01 (P2, #130)** – Schema 5 aus der Spur
+  `bundestrainer-modus4` (mit `_nationalTurn`, ohne `_dressed`) ließ sich nicht laden. Behoben: Migration 5 → 6 holt
+  für diese Form den Schritt 4 → 5 nach, offener Zug bleibt; Regressionstest `IntegrationRunde5MigrationTests` (rot → grün).
+- Neue Befunde aus #123: #125 (Statusbit 0x40 am Saisonende), #126 (Highscore-Schlüssel 0x7530 im Original unerreichbar),
+  beide P3.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 

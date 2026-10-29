@@ -43,9 +43,23 @@ aus dem Video gegen `oberflaeche_0355`, eigenes Bild um (−0,25 | +0,5) verscho
 Mauszeiger ausgeblendet): mittlere Abweichung 8,5 Grauwerte, 3,7 % der Pixel über 40 – nur Kanten der Schrift.
 Leere Ziehung (`03_debpokal_leer`) gegen `oberflaeche_0345` ohne Dialog: 9,4 / 2,2 %.
 
-**Offen:** Live-Auslosung mit Dialog „Sind Ihre Nerven stark genug …“ nach dem dritten Termin jeder Runde
-(Ablauf `CupDrawStep` liegt vor, die Anzeige im Spieltagsablauf fehlt); Bildschirm „DEB-Pokalspiele“ mit Ergebnissen
-(Text in em.exe, Aufbau nicht im Video).
+### Live-Auslosung im Spielablauf (`UI/Screens/Competitions/DebCupDrawLive.cs`, Spur `debpokal-auslosung`)
+
+| Regel | Beleg |
+|---|---|
+| Die Anzeige 0x33B83 gehört zur Auslosung selbst und läuft vor dem Ziehen: erste Runde 0x341AB beim Spielstart (Aufruf 0x43A8C; Video 3:40 direkt nach „Los jetzt!“) und beim Saisonwechsel (0x56609, zwischen WM-Gruppen 0x5644E und Bestenliste 0x56647); Runden 2–5 in 0x3489D nach dem dritten Termin der vorigen Runde (Aufruf 0x34F64) | Datei 0x341AB/0x3420A, 0x3489D/0x348D1 |
+| Keine Anzeige ohne DEB-Pokal (Modus „nur Weltkugel“ DGROUP 0xD0B9 = 1, DEB-Pokal aus DGROUP 0x227 = 0) | 0x33BAB |
+| Fenster mit leeren Streifen für alle Plätze, dann Frage „An Alle:“ – „Sind Ihre Nerven stark genug, / um die DEB-Pokal-Auslosung / live zu verfolgen ?“, Knöpfe „Aber klar“ / „Kein Gedanke“ | 0x33D67 (Texte DGROUP 0x12F1, 0x12F5, 0x1329, 0x132D, 0x1331); Video 3:40–3:46 |
+| „Kein Gedanke“: Fenster zu, keine Übersicht; „Aber klar“: Plätze in zufälliger Reihenfolge einzeln aufdecken, „TASTE DRÜCKEN“, danach „DEB-Pokalspiele“ | 0x33DB1, 0x340C7 (0x34141, 0x34188 → 0x32E23); 0x34521, 0x349E3; Video 3:50–4:00 |
+| Weniger als vier Plätze (Endspiel): kein Fenster, keine Frage, nur die Übersicht | 0x33BC3 → 0x33E54 |
+| Im Durchlauf ohne Halt (DGROUP 0x1DB) entfällt die Frage – gibt es im Remake nicht | 0x33D60 |
+| `[APPROX]` Aufdeckreihenfolge aus eigener Quelle (Original: random(0, n − 1) aus dem gemeinsamen Generator, also andere Folgeergebnisse mit Anzeige); Paarungen und alle Ergebnisse sind hier mit und ohne Anzeige gleich | – |
+| `[APPROX]` Ein Platz je 60 Bilder (Video etwa einer je Sekunde), Klick oder Taste deckt alle auf; rollende Kugel fehlt; Enter/Leertaste = „Aber klar“, Escape/rechte Maustaste = „Kein Gedanke“ | – |
+| `[APPROX]` Im Endspiel deckt das Original zwei Plätze ohne Fenster auf (0x349E3 mit DGROUP 0xE068 = 1); hier nur die Übersicht | – |
+
+Fragefenster vermessen am Video (`emtool screens gamedata <ziel> debpokal-auslosung`, Bild `01_frage_spielstart` gegen
+`oberflaeche_0346`): Rahmen orange x 77–240, y 109–181 wie im Video; „?“-Felder, Überschrift, Zeilen und Knöpfe beste
+Verschiebung (0 | 0); mittlere Abweichung im Kasten 12,7 Grauwerte, 8,4 % der Pixel über 40 (Schriftkanten der Zeilen).
 
 ## Europapokal (`Core/CupsEurope.cs`, `Core/CupsGroup.cs`)
 
@@ -143,7 +157,8 @@ Strafen je Spieler. Die heutige Spielberechnung liefert nur das Endergebnis; die
 
 ## Bundestrainer: WM-Kader und „WM Vorbereitung“ (`Core/CupsNational*.cs`)
 
-Freundschaftsspiele gibt es im Original nur für den **Bundestrainer** im Spielmodus „nur Weltkugel“ (WM-Modus).
+Freundschaftsspiele gibt es im Original nur für den **Bundestrainer** – im Spielmodus „nur Weltkugel“ und im Modus 4,
+wenn ein Manager ernannt wurde (Abschnitt „Bundestrainer im Modus 4“ unten).
 
 **Spielmodus** (Spielvorbereitung, Datei 0x28506/0x2985C): zwei Knöpfe aus kb\1 (57 × 13, Quelle x = 113), links die
 deutsche Fahne (Bit 0, y = 76/89), rechts die Weltkugel (Bit 1, y = 102/115), Vorgabe beide an. Daraus DGROUP 0xD0B9:
@@ -218,14 +233,37 @@ Bildschirmfotos: `emtool screens gamedata ~/work/screens nationalteam-2` (Belegu
 | – ohne Wertefelder Einsatz/Angriff (00058 / 00059) | 14,1 / 4,3 % / 4,2 % | 9,5 / 3,9 % · 9,4 / 4,1 % |
 
 Lage aller Teile stimmt (bester Versatz 0 | 0); Rest sind Schriftkanten, die anderen Spielerdaten und die Wertefelder.
-Behoben: Farbe von „Eingesetzt“ (17 → 16). Offen und nicht in dieser Spur (Vereinsbildschirme, `Squad.Tactics.cs`):
+Behoben: Farbe von „Eingesetzt“ (17 → 16).
 
-- Das Video zeigt in der Taktik des Nationalteams Block 1 Einsatz 60/0/25/20/30/0 und Angriff 0/4/5/6/7/4 (gedimmt,
-  Modus AUTOM.). Die Teilfolgen 0, 0, 25, 20, 30, 0 und 0, 4, 5, 6, 7, 4 stehen in DGROUP 0x4911–0x4925. Das widerspricht
-  dem angenommenen Wertebereich −3…+3 der Vereinstaktik; Bedeutung und Vorbelegung sind für Verein und Nationalteam
-  gemeinsam zu klären. Das Remake zeigt beim Nationalteam die Grundtaktik (alles 0).
-- Die Vereinsaufstellung zeichnet „Eingesetzt“ in Farbe 17 statt 16 und kennt die Grenze von 22 Eingesetzten nicht
-  (gleicher Code im Original, Kennwert 0).
+### Taktikwerte, Vereinsaufstellung (Spur `taktik-verein`, Befunde aus #103)
+
+Taktik von Verein und Nationalteam (`Core/Squad.Tactics.cs`, Belege dort im Klassenkommentar):
+
+| Regel | Beleg |
+|---|---|
+| Je Block und Spielstand ein Byte: Zeile „Grundwert“ = Grundwert, die fünf übrigen Zeilen = Zuschläge darauf. Je Manager 4 Blöcke × 6 Werte (Einsatz DGROUP 0xCAE9 + 0x30 · Manager, Angriff 0xCB01); der Verein (61-Byte-Struktur) hält eine Arbeitskopie in den Feldern 0x26–0x2B (Einsatz, 0x2D = Grundwert) und 0x35–0x3A (Angriff) | Datei 0x485DD–0x48645, 0x48A9E–0x48B0A |
+| Einsatz ist ein Prozentwert bis 100, Angriff eine Stufe bis 7; Zuschlag ≤ Obergrenze − Grundwert, Grundwert ≤ Obergrenze − größter Zuschlag der Zeilen „hohe Führung“ bis „knapper Rückstand“ („hoher Rückstand“ wird nicht geprüft); Schritt 1, untere Grenze 0 | 0x488E9–0x48925, 0x48971–0x48A4F |
+| Modi 0 „AUTOM.“, 1 „SEMI“, 2 „MANUELL“ (Einsatz DGROUP 0xA6FB, Angriff 0xA707 je Manager); nur „SEMI“ zeigt die Werte hell und lässt sie ändern | Texte DGROUP 0x5A4; 0x47D9B, 0x488F6, 0x48930 |
+| Automatik vor jedem Spiel (je Paarung, auch für Vereine ohne Manager): doppelte Stärken weniger als 25 auseinander → Einsatz 60 mit 0/25/20/30/0, sonst 40 mit 20/20/15/20/0; Angriff 0 mit 5/6/4/4/0 für den Schwächeren, sonst 4/5/6/7/4 | 0x8365–0x84D6, Tabellen DGROUP 0x4912/0x491C; Aufruf 0x36D12 |
+| Im Spiel: Grundwert + Zuschlag des Spielstands, „hoch“ ab 3 Toren; Einsatz auf 0…100 begrenzt, Angriff in drei Bit; bei „MANUELL“ setzt das Spiel die Werte nicht | 0x939A–0x9527 |
+| `[APPROX]` Ohne Spielvorbereitung je Paarung zeigt „AUTOM.“ die Zeile für ein ausgeglichenes Spiel (wie Video 00058/00059); eigene Werte starten mit derselben Zeile; „MANUELL“ spielt bis zum Live-Spiel mit den eigenen Werten; Energieabzug (Einsatz − (50 − Energie) unter 50 Energie, 0x9463) nicht übernommen | – |
+| `[APPROX]` Stärkezuschlag: „AUTOM.“ 0, sonst je Block (Einsatz bei Gleichstand − 80) / 10, begrenzt auf ±3, gewichtet wie die Blöcke (bisheriger Wertebereich) | – |
+
+Vereinsaufstellung (`Core/Squad.Lineup.cs`, `UI/Screens/Team/LineupScreen.cs`): derselbe Code wie beim Nationalteam
+(Kennwert 0) – „Eingesetzt: n“ in Farbe 16, höchstens 22 Eingesetzte („Schon 22 Mann / im Team !“), Aufstellen setzt
+ein, Platz leeren nimmt heraus, Linksklick nimmt einen Reservisten heraus, Rechtsklick setzt ein (Belege in der Tabelle
+oben). `[APPROX]` Ohne Änderung von Hand gelten die Aufgestellten und die stärksten übrigen einsatzfähigen Spieler bis 22
+als eingesetzt (Video Aufstellung ~9:00: „Eingesetzt: 20“ bei 20 Spielern); STATUS bleibt bei nicht Eingesetzten leer,
+NR zeigt weiter die Rückennummer; „Eingesetzt“ wirkt noch nicht auf die Spielstärke.
+
+Spielstand Schema 5 (Migration 4 → 5, `SaveGame.Migration4.cs`): eigene Taktikwerte aller Vereine und des Bundestrainers
+werden auf die Startwerte gesetzt (alte Werte −3…+3 sind nicht umrechenbar), Modi bleiben; Vereine bekommen „Eingesetzt“
+mit automatischer Auswahl.
+
+**Pixelvergleich Taktik Nationalteam** (Bildschirmfoto `03_taktik_wie_video_00058` aus `emtool screens gamedata … nationalteam-2`,
+Maße wie oben; „Wertefelder“ = die 12 Felder Einsatz/Angriff): ganz 00058 roh 14,1 / 4,1 %, pegelbereinigt 9,4 / 3,9 %
+(00059 gleich); Wertefelder roh 13,8 / 1,2 %, pegelbereinigt 6,9 / 2,7 % (vorher mit lauter Nullen 14,0 / 1,2 % bzw.
+7,2 / 2,7 %). Sichtprüfung: alle zwölf Werte stimmen mit dem Video überein; der Rest sind Schriftkanten.
 
 ## Spielmodus „nur Weltkugel“ (Spur `wettbewerbe-weltkugel`, `Core/CupsNationalMode.cs`)
 
@@ -247,7 +285,7 @@ Behoben: Farbe von „Eingesetzt“ (17 → 16). Offen und nicht in dieser Spur 
 | `[APPROX]` Modus 1 nur mit genau einem Manager („Los jetzt!“ mit Meldung gesperrt) | – |
 | `[APPROX]` Modus 1 ohne Europapokal, Auf-/Abstieg, Oberliga-Wechsel, Prämien, Ligastatistik, Finanzen, Training, Markt und Vertragsmeldungen (kein Tageslauf vor der WM) | – |
 | `[APPROX]` Menü des Bundestrainers schon vor der Ernennung, Mannschaftskacheln bis dahin gesperrt | – |
-| Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. „Tabelle DEB-Pokal“ und „Tabelle Europapokal“ rufen dieselben Bildschirme auf wie „DEB-Pokal“ und „Europapokal“ bei den Paarungen (0xE8:0x75 bzw. 0xF8:0x3E mit Seitenwert 3, Datei 0x4584A/0x4584C; Spur `tabellen-highscore`, `CupTableMenuEntries`). 0xE8:0x75 ist die Übersicht „DEB-Pokalspiele“ (Datei 0x32E23, Gegner und Ergebnisse), nicht die Auslosung – seit R4-01 (#108) als `DebCupGamesScreen` unter „Tabelle DEB-Pokal“ gebaut (Aufbau, Rahmenformel, Spalten, Farben im Klassenkommentar; [ORIGINAL] Seitentausch nach Termin 1 und 2, Überlauf-Punkt nur bei Verlängerung, Datumszeile ab Tag 212 weg; offen nur Penalty-gegen-Verlängerung und Punktform); die Paarungs-Kachel „DEB-Pokal“ öffnet seit demselben PR ebenfalls die Übersicht (im Original derselbe Stub); die Auslosung ist ohne Kachel und wird nur vom Spieltagsablauf gezeigt (offen) | DGROUP 0x5149/0x5151, Datei 0x45B95, 0x45829 ff. |
+| Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. „Tabelle DEB-Pokal“ und „Tabelle Europapokal“ rufen dieselben Bildschirme auf wie „DEB-Pokal“ und „Europapokal“ bei den Paarungen (0xE8:0x75 bzw. 0xF8:0x3E mit Seitenwert 3, Datei 0x4584A/0x4584C; Spur `tabellen-highscore`, `CupTableMenuEntries`). 0xE8:0x75 ist die Übersicht „DEB-Pokalspiele“ (Datei 0x32E23, Gegner und Ergebnisse), nicht die Auslosung – seit R4-01 (#108) als `DebCupGamesScreen` unter „Tabelle DEB-Pokal“ gebaut (Aufbau, Rahmenformel, Spalten, Farben im Klassenkommentar; [ORIGINAL] Seitentausch nach Termin 1 und 2, Überlauf-Punkt nur bei Verlängerung, Datumszeile ab Tag 212 weg; offen nur Penalty-gegen-Verlängerung und Punktform); die Paarungs-Kachel „DEB-Pokal“ öffnet seit demselben PR ebenfalls die Übersicht (im Original derselbe Stub); die Auslosung ist ohne Kachel und wird nur im Spielablauf gezeigt (Abschnitt „Live-Auslosung im Spielablauf“) | DGROUP 0x5149/0x5151, Datei 0x45B95, 0x45829 ff. |
 | Kachelsperren der Spielvorbereitung (Reihe Manager): „Neuer“ gesperrt bei vier Managern (DGROUP 0x386), „Werbung“ gesperrt bei der Spieldauer „eine Saison“ (Spielende DGROUP 0x5A14 = 1994) | Datei 0x45057, 0x45079, 0x2987C; `UI/Screens/TileLocks.cs` |
 
 Das Nationalkonto führt eine Buchungsliste (`GameState.NationalBookings`: Etat, Freundschaftsspiele); Spielstand
@@ -256,6 +294,36 @@ mittlere Abweichung / Anteil > 40: Fahne aus 10,4 / 4,5 % (`oberflaeche_0214`), 
 Vergleich beide an 9,0 / 2,0 % und 11,9 / 6,3 % (`0230`). Das Menü des Bundestrainers zeigt die Reihe `bundestrainer`
 (unten); ein Pixelvergleich steht noch aus
 (Bildschirmfotos: `emtool screens gamedata ~/work/screens weltkugel`).
+
+### Bundestrainer im Modus 4 (Spur `bundestrainer-modus4`, `Core/CupsNationalMode.cs`)
+
+DGROUP 0xD0BA[Manager] („wird Bundestrainer“) setzt das Original an genau drei Stellen: Modus 1 am Sprungtag (0x54D19)
+und zum Saisonende (0x55809) sowie in jedem Modus über die Tabellensuche 0xE8:0x93(0x7F) (Datei 0x34769, Schreibzugriff
+`[bx+0xD0B9]` mit bx = Manager + 1). Gespeichert wird es mit 4 Bytes (0x5BED8, 0x5C8BC).
+
+| Regel | Beleg |
+|---|---|
+| An Tagen mit Markierung 255 (13. und 29. April), solange Deutschland keinen Bundestrainer hat: nach dem Tageswechsel die ersten fünf Plätze der 1. Liga von oben durchsuchen (DGROUP 0x5CCB = Liga · 12 + Platz, Vereinsfeld 0x16 = Manager + 1); der erste Verein mit Manager bestimmt den Bundestrainer | Datei 0x55364–0x553AE, 0x34769–0x347EE |
+| Ernennung wie im Modus 1 (Etat aufs Nationalkonto, Name des Managers für „Manager 5“), Modus 2 ernennt nie | 0x55436–0x554BA |
+| Gibt es danach weiter keinen Bundestrainer, werden die Werte Deutschlands ausgewürfelt | 0x554CF ff. |
+| An WM-Tagen (Ereignis 0x10) folgt nach den Vereinsmanagern der Zug „Manager 5“ (DGROUP 0xA70D = 0xA70E = 5) mit dem Menü des Bundestrainers | 0x55587–0x555D6 |
+| Sperrtabelle im Zug „Manager 5“ wie im Modus 1 (DGROUP 0x5159 + 42); „Highscore“ im Modus 4 ausdrücklich gesperrt (Wert = 0x256 = 0 oder Bundestrainer und Modus 4); im Modus 1 über 0x256 = 0 ebenfalls gesperrt | 0x45020–0x4504A, 0x289A3 |
+| Am Saisonende kehren die Kaderspieler zurück, das Amt endet (in allen Modi); nur Modus 1 setzt 0xD0BA[0] neu | 0x557A5–0x5580E |
+| Infoleiste im Zug des Bundestrainers: WM-Gegner Deutschlands und Nationalkonto (wie Modus 1, Video `bundestrainer_00026`) | – |
+| `[APPROX]` Platzierung aus der Abschlusstabelle der Hauptrunde (Gesamt); das Original liest die zuletzt in place sortierte Reihenfolge von 0x5CCB (Sortierung 0x50E60 ff. auch nach Heim/Auswärts) | – |
+| `[APPROX]` Zug des Bundestrainers nur an WM-Tagen, an denen Deutschland spielt (wie der Halt im Modus 1); das Original gibt ihn an jedem WM-Tag – Deutschland spielt an allen acht Terminen | 0x555AD |
+| `[APPROX]` Reihenfolge: Zug des Bundestrainers vor dem Austragen des Tages, damit Kader und Aufstellung für das WM-Spiel gelten | – |
+
+Unterschiede zu Modus 1: keine Ernennung zu Saisonbeginn und kein Sprung – die Vereinssaison läuft normal; Ernennung
+erst am 13. April und nur für einen Manager unter den ersten fünf der 1. Liga; das Vereinsmenü bleibt, der Bundestrainer
+bekommt an WM-Tagen einen zusätzlichen Zug; ohne Ernennung spielt Deutschland mit ausgewürfelten Werten. Spielstand
+Schema 5 (`_nationalTurn`, Migration `SaveGame.Migration4.cs`). Bildschirmfotos: `emtool screens gamedata ~/work/screens
+bundestrainer-modus4` (kein Videobeleg für Modus 4).
+
+Offen (außerhalb dieser Spur): Die Tabellensuche setzt bei jedem Manager unter den ersten fünf zusätzlich Statusbit 0x40
+(Manager-Feld 0x974E, außer Modus 2, 0x553BD–0x553F2) → Saisonende-Symbol 8 (`docs/finanzen-rekonstruktion.md`), im
+Remake nicht geführt. Der Highscore-Schlüssel 0x7530 („nur Weltkugel“) ist im Original nicht erreichbar (0x28A34 liegt
+hinter der Bedingung „Fahne gedrückt“, 0x289A3) – Modus 1 hat dort keine Bestenliste.
 
 **Vorlagebilder (Modus „nur Weltkugel“):** Seit der Reihe `bundestrainer` (WM-Video, `docs/referenz-videos.md`;
 Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**
@@ -283,5 +351,24 @@ Torszenen.
 
 Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien
 Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Ein Bildschirm „Paarungen Liga“ ist in
-den Referenzvideos nicht zu sehen. Handbuchkorrektur im `infofile`: WM-Platzierungsspiele 9–12 (Verlierer/Sieger der
+den Referenzvideos nicht zu sehen (seit Spur `paarungen-liga` allein aus em.exe gebaut, Abschnitt „Paarungen Liga“ unten). Handbuchkorrektur im `infofile`: WM-Platzierungsspiele 9–12 (Verlierer/Sieger der
 Spiele 5–8).
+
+## Paarungen Liga (Spur `paarungen-liga`, Runde 5)
+
+Kacheln „Paarungen 1. Liga“, „Paarungen 2. Liga“, „Paarungen Oberliga“ → `LeaguePairingsScreen`. **Kein Videobild:**
+Der Aufbau stammt allein aus der statischen Disassemblierung von em.exe (kein Emulator verfügbar); ein Pixelvergleich ist
+nicht möglich. Aufbau und Farben stehen im Klassenkommentar.
+
+| Befund | Fundstelle |
+|---|---|
+| Kachel → Seitenwähler 0xF8:0x3E (Seite, Liga, 0) → Seite 7 → Bildschirmfunktion 0x128:0x39 | Datei 0x43150 (Sprungtabelle), 0x4E8A3 |
+| Fenster (4 | 15) 312 × 152, drei Knöpfe (48 × 38) bei x = 30 / 140 / 250, y = 180; Pfeile aus kb\4 | 0x4E8A3 ff. |
+| Kopfzeile „Liga   n.Spieltag  t.m.“ (Flow, Farbe 10, Schatten 28); n hat Mindestbreite 2, wenn der zuvor gezeichnete Tag gespielt war | 0x4E8A3 ff. |
+| sechs Zeilen y = 48 + 20 k: Namen, „n. Platz, Stärke m“ (Mini), Ergebnis „g:g“ bzw. „--:--“ | 0x4E8A3 ff. |
+| Start: gespielte Tage + 1 (nach dem Ende: 1); Pfeile blättern mit Umlauf; Rechtsklick/Esc zurück | 0x4E8A3 ff. |
+
+**[APPROX]:** Mittlerer Knopf („Play-Off“ bei der Bundesliga, sonst „Aufstieg“) ohne Wirkung, da die Zielseiten fehlen;
+Klick auf eine Zeile (Original: Vereinsinfo) ohne Wirkung; die zuletzt gewählte Seite (DGROUP 0x5125) wird nicht gemerkt;
+Spielplan (`Schedule.DoubleRoundRobin`) und Stärkewerte (`StrengthTable`) sind Näherungen des Remakes. Die Trefferfläche der
+Pfeilknöpfe ist der Rahmen (48 × 38).

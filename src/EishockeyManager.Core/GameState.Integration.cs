@@ -32,9 +32,10 @@ public sealed partial class GameState
         if (!WorldOnly)
             OnDayClubSeason(day);
 
-        // Paket „wettbewerbe“: Werte Deutschlands ohne Bundestrainer an den Tagen mit Markierung 255 neu auswürfeln.
+        // Paket „wettbewerbe“: an den Tagen mit Markierung 255 im Modus 4 den Bundestrainer ernennen (Spur
+        // bundestrainer-modus4), dann die Werte Deutschlands ohne Bundestrainer neu auswürfeln.
         if (day is SeasonCalendar.ClubSeasonEnd or SeasonCalendar.SeasonEnd)
-            RerollNationalRatings();
+            OnNationalMarkerDay();
     }
 
     /// <summary>Tagesablauf der Vereinssaison (Finanzen, Training, Markt, Verträge, Statistik).</summary>

@@ -33,7 +33,7 @@ public class NationalLineupTests
         if (coach.DressedCount < NationalCoach.MaxDressed)
             return;
         var reserve = coach.Rows.First(p => coach.StatusOf(p) == PlayerStatus.Reserve);
-        Assert.Equal(NationalLineupResult.Undressed, coach.Undress(reserve));
+        Assert.Equal(LineupResult.Undressed, coach.Undress(reserve));
     }
 
     /// <summary>Abnahme (1): andere Aufstellung → andere Stärke im nächsten WM-Spiel (WM-Partner aus der Stärke).</summary>
@@ -51,10 +51,10 @@ public class NationalLineupTests
         // Den schwächsten Torhüter ins Tor, den schwächsten Stürmer in Reihe 1.
         var keeper = Weakest(coach, PlayerRole.Goalkeeper);
         MakeRoom(coach);
-        Assert.Equal(NationalLineupResult.Assigned, coach.Assign(LineupSlot.Goalkeeper, keeper));
+        Assert.Equal(LineupResult.Assigned, coach.Assign(LineupSlot.Goalkeeper, keeper));
         var forward = Weakest(coach, PlayerRole.Forward);
         MakeRoom(coach);
-        Assert.Equal(NationalLineupResult.Assigned, coach.Assign(LineupSlot.Forward(0, 0), forward));
+        Assert.Equal(LineupResult.Assigned, coach.Assign(LineupSlot.Forward(0, 0), forward));
         Assert.Same(keeper, coach.Lineup().Goalkeeper);
         Assert.Same(forward, coach.Lineup().Forwards[0]);
         var swapped = coach.Lineup().Players.Sum(NationalCoach.Value);
@@ -72,7 +72,7 @@ public class NationalLineupTests
         Assert.All(outside, p => Assert.DoesNotContain(p, coach.Lineup().Players));
     }
 
-    /// <summary>Taktik wirkt wie beim Verein: Einsatz „MANUELL“ +3 in allen Blöcken = +3 Stärke.</summary>
+    /// <summary>Taktik wirkt wie beim Verein: Einsatz „SEMI“ 100 % in allen Blöcken = +2 Stärke (Bezug 80 %).</summary>
     [Fact]
     public void Tactics_ChangeStrength()
     {
@@ -80,10 +80,14 @@ public class NationalLineupTests
         var coach = Nominated(game);
         coach.AutoFormation();
         var before = game.NationalMatchStrength(NationalTeams.Germany);
-        coach.Tactics.EffortMode = TacticMode.Manual;
+        coach.Tactics.EffortMode = TacticMode.Semi;
         for (var b = 0; b < Tactics.Blocks; b++)
-            coach.Tactics.SetEffort(b, ScoreSituation.Base, 3);
-        Assert.Equal(before + 3, game.NationalMatchStrength(NationalTeams.Germany));
+        {
+            foreach (var r in Enum.GetValues<ScoreSituation>().Skip(1))
+                coach.Tactics.SetEffort(b, r, 0);
+            coach.Tactics.SetEffort(b, ScoreSituation.Base, Tactics.MaxEffort);
+        }
+        Assert.Equal(before + 2, game.NationalMatchStrength(NationalTeams.Germany));
     }
 
     /// <summary>Kaderfeld 0x0A „eingesetzt“: neue Kaderspieler nicht eingesetzt; Platz setzen/leeren; Grenze 22.</summary>
@@ -99,8 +103,8 @@ public class NationalLineupTests
 
         var keeper = coach.Rows[0];
         Assert.Equal(PlayerRole.Goalkeeper, keeper.Role);
-        Assert.Equal(NationalLineupResult.WrongRole, coach.Assign(LineupSlot.Forward(0, 0), keeper));
-        Assert.Equal(NationalLineupResult.Assigned, coach.Assign(LineupSlot.Goalkeeper, keeper));
+        Assert.Equal(LineupResult.WrongRole, coach.Assign(LineupSlot.Forward(0, 0), keeper));
+        Assert.Equal(LineupResult.Assigned, coach.Assign(LineupSlot.Goalkeeper, keeper));
         Assert.True(coach.IsDressed(keeper));
         Assert.Equal(1, coach.NumberOf(keeper));
         Assert.Equal(PlayerStatus.InTeam, coach.StatusOf(keeper));
@@ -111,18 +115,18 @@ public class NationalLineupTests
         Assert.Equal(0, coach.Formation.Count);
 
         // Rechtsklick setzt ein (RESERVE), Linksklick nimmt heraus; Aufgestellte bleiben unberührt.
-        Assert.Equal(NationalLineupResult.Dressed, coach.Dress(keeper));
+        Assert.Equal(LineupResult.Dressed, coach.Dress(keeper));
         Assert.Equal(PlayerStatus.Reserve, coach.StatusOf(keeper));
-        Assert.Equal(NationalLineupResult.Undressed, coach.Undress(keeper));
+        Assert.Equal(LineupResult.Undressed, coach.Undress(keeper));
         Assert.Null(coach.StatusOf(keeper));
 
         foreach (var p in coach.Rows.Take(NationalCoach.MaxDressed))
-            Assert.Equal(NationalLineupResult.Dressed, coach.Dress(p));
+            Assert.Equal(LineupResult.Dressed, coach.Dress(p));
         Assert.Equal(NationalCoach.MaxDressed, coach.DressedCount);
         var extra = coach.Rows[NationalCoach.MaxDressed];
-        Assert.Equal(NationalLineupResult.RosterFull, coach.Dress(extra));
+        Assert.Equal(LineupResult.RosterFull, coach.Dress(extra));
         var slot = extra.Role == PlayerRole.Forward ? LineupSlot.Forward(0, 0) : LineupSlot.Defender(0, 0);
-        Assert.Equal(NationalLineupResult.RosterFull, coach.Assign(slot, extra));
+        Assert.Equal(LineupResult.RosterFull, coach.Assign(slot, extra));
         Assert.Null(coach.NumberOf(extra));
 
         // Nummer = Zeile (nach Art sortiert), wie im Video (1–11, 14–22, 25, 26).
@@ -142,7 +146,7 @@ public class NationalLineupTests
         forward.InjuredGames = 2;
         Assert.DoesNotContain(forward, coach.Lineup().Players);
         coach.ClearSlot(LineupSlot.Forward(0, 0));
-        Assert.Equal(NationalLineupResult.Injured, coach.Assign(LineupSlot.Forward(0, 0), forward));
+        Assert.Equal(LineupResult.Injured, coach.Assign(LineupSlot.Forward(0, 0), forward));
     }
 
     /// <summary>Entlassen aus dem WM-Kader und „auto“ räumen die Aufstellung.</summary>
@@ -169,7 +173,7 @@ public class NationalLineupTests
         var coach = Nominated(game);
         coach.AutoFormation();
         MakeRoom(coach);
-        Assert.Equal(NationalLineupResult.Assigned, coach.Assign(LineupSlot.Goalkeeper, Weakest(coach, PlayerRole.Goalkeeper)));
+        Assert.Equal(LineupResult.Assigned, coach.Assign(LineupSlot.Goalkeeper, Weakest(coach, PlayerRole.Goalkeeper)));
         coach.Tactics.AttackMode = TacticMode.Semi;
         coach.Tactics.SetAttack(2, ScoreSituation.HighDeficit, 2);
         var bytes = SaveGame.Save(game);
@@ -250,16 +254,16 @@ public class NationalLineupTests
                 coach.AutoFormation();
                 var auto = game.NationalMatchStrength(NationalTeams.Germany);
                 MakeRoom(coach);
-                Assert.Equal(NationalLineupResult.Assigned,
+                Assert.Equal(LineupResult.Assigned,
                     coach.Assign(LineupSlot.Goalkeeper, Weakest(coach, PlayerRole.Goalkeeper)));
                 foreach (var p in coach.Rows.Where(p => p.Role == PlayerRole.Forward && !coach.Formation.Contains(p)).Take(1))
                 {
                     if (!coach.IsDressed(p))
                         MakeRoom(coach);
-                    Assert.Equal(NationalLineupResult.Assigned, coach.Assign(LineupSlot.Forward(3, 0), p));
+                    Assert.Equal(LineupResult.Assigned, coach.Assign(LineupSlot.Forward(3, 0), p));
                 }
                 coach.Tactics.EffortMode = TacticMode.Manual;
-                coach.Tactics.SetEffort(0, ScoreSituation.Base, -3);
+                coach.Tactics.SetEffort(0, ScoreSituation.Base, 0);
                 Assert.NotEqual(auto, game.NationalMatchStrength(NationalTeams.Germany));
                 caps = coach.Rows.ToDictionary(p => p, p => p.Caps);
             }

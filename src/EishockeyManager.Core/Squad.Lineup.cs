@@ -207,3 +207,145 @@ public sealed class Lineup
                 this[slot] = null;
     }
 }
+
+/// <summary>
+/// „Eingesetzt“ im Vereinskader (Aufstellung unten rechts „Eingesetzt: n“).
+/// </summary>
+/// <remarks>
+/// Das Original benutzt für Verein und Nationalteam denselben Aufstellungsbildschirm mit Kennwert 0 (Datei 0x40364,
+/// Belege bei <see cref="NationalCoach"/>):
+/// <list type="bullet">
+/// <item>[ORIGINAL] „Eingesetzt: n“ zählt die Kaderplätze mit Feld 0x0A ≠ 0 des aktiven Managers (0x120:0x66 Modus 3,
+///   Aufruf Datei 0x41D3F), Farbe 16 (Datei 0x41D84).</item>
+/// <item>[ORIGINAL] Höchstens 22 eingesetzt; ein weiterer wird beim Aufstellen oder Einsetzen abgewiesen
+///   („Schon 22 Mann / im Team !“, Datei 0x40E2A–0x40E61). Aufstellen setzt ein (Datei 0x415B2), Platz leeren nimmt
+///   heraus (Datei 0x40CF8–0x40D0D); Linksklick nimmt einen eingesetzten, nicht aufgestellten Spieler heraus,
+///   Rechtsklick setzt einen nicht eingesetzten ein (Datei 0x40F45–0x40F59, 0x411FE).</item>
+/// <item>[APPROX] Solange niemand von Hand ein- oder aussetzt, gelten die Aufgestellten und die stärksten übrigen
+///   einsatzfähigen Spieler bis 22 als eingesetzt (Video Aufstellung ~9:00: 20 Spieler, „Eingesetzt: 20“). Wie das
+///   Original das Feld beim Spielstart, bei Transfers und für Computervereine setzt, ist nicht rekonstruiert.</item>
+/// <item>[APPROX] Aufgestellte zählen immer als eingesetzt; neue Kaderspieler sind nach der ersten Änderung von Hand
+///   nicht eingesetzt (wie die Aufnahme in den WM-Kader, Datei 0x42E2A).</item>
+/// <item>[APPROX] Eingesetzt wirkt bisher nur auf die Anzeige; die Spielstärke kommt weiter aus der Aufstellung.</item>
+/// </list>
+/// </remarks>
+public sealed partial class Club
+{
+    /// <summary>[ORIGINAL] Höchstens 22 eingesetzte Spieler (Datei 0x40E4D: Vergleich mit 0x16).</summary>
+    public const int MaxDressed = 22;
+
+    /// <summary>Spieler-IDs der von Hand Eingesetzten (IDs statt Verweise: Abgänge brauchen keine Bereinigung).</summary>
+    private readonly HashSet<int> _dressed = [];
+    private bool _dressedByHand;
+
+    /// <summary>Eingesetzte Spieler des Kaders (siehe Klassenbemerkung).</summary>
+    public IReadOnlyList<Player> Dressed
+    {
+        get
+        {
+            var squad = Players.ToList();
+            if (!_dressedByHand)
+                return AutoDressed(squad);
+            return squad.Where(p => Lineup.Contains(p) || _dressed.Contains(p.Id)).ToList();
+        }
+    }
+
+    /// <summary>Anzahl der Eingesetzten („Eingesetzt: n“).</summary>
+    public int DressedCount => Dressed.Count;
+
+    public bool IsDressed(Player player) => Dressed.Contains(player);
+
+    private List<Player> AutoDressed(List<Player> squad)
+    {
+        var dressed = squad.Where(Lineup.Contains).ToList();
+        foreach (var p in squad.Where(p => p.Available && !dressed.Contains(p))
+                     .OrderByDescending(p => p.Condition + p.Technique + p.Form).ThenBy(p => p.Role).ThenBy(p => p.Number))
+        {
+            if (dressed.Count >= MaxDressed)
+                break;
+            dressed.Add(p);
+        }
+        return squad.Where(dressed.Contains).ToList();
+    }
+
+    /// <summary>Erste Änderung von Hand: die bisher automatisch Eingesetzten festhalten.</summary>
+    private void TakeOverDressed()
+    {
+        if (_dressedByHand)
+            return;
+        var current = Dressed;
+        _dressed.Clear();
+        _dressed.UnionWith(current.Select(p => p.Id));
+        _dressedByHand = true;
+    }
+
+    /// <summary>Spieler auf einen Platz setzen; er wird dabei eingesetzt (Datei 0x415B2).</summary>
+    public LineupResult AssignToLineup(LineupSlot slot, Player player)
+    {
+        if (!Players.Contains(player))
+            return LineupResult.NotInSquad;
+        if (player.InjuredGames > 0)
+            return LineupResult.Injured;
+        if (player.SuspendedGames > 0)
+            return LineupResult.Suspended;
+        if (player.Role != slot.Role)
+            return LineupResult.WrongRole;
+        if (!IsDressed(player) && DressedCount >= MaxDressed)
+            return LineupResult.RosterFull;
+        TakeOverDressed();
+        if (!Lineup.Assign(slot, player))
+            return LineupResult.WrongRole;
+        _dressed.Add(player.Id);
+        return LineupResult.Assigned;
+    }
+
+    /// <summary>Platz leeren; der Spieler ist danach nicht mehr eingesetzt (Datei 0x40CF8–0x40D0D).</summary>
+    public void ClearLineupSlot(LineupSlot slot)
+    {
+        if (Lineup[slot] is not { } player)
+            return;
+        TakeOverDressed();
+        Lineup.Clear(slot);
+        _dressed.Remove(player.Id);
+    }
+
+    /// <summary>Alle Plätze leeren („C“); die Aufgestellten sind danach nicht eingesetzt.</summary>
+    public void ClearLineup()
+    {
+        foreach (var slot in LineupSlot.All)
+            ClearLineupSlot(slot);
+    }
+
+    /// <summary>
+    /// Auto-Aufstellung („A“): Aufstellung wie bisher (<see cref="Core.Lineup.AutoFill"/>), danach gilt wieder die
+    /// automatische Auswahl der Eingesetzten. [APPROX] wie beim Nationalteam.
+    /// </summary>
+    public void AutoLineup()
+    {
+        Lineup.AutoFill(Players);
+        _dressed.Clear();
+        _dressedByHand = false;
+    }
+
+    /// <summary>Linksklick in der Kaderliste: eingesetzten, nicht aufgestellten Spieler herausnehmen (Datei 0x40F59).</summary>
+    public LineupResult Undress(Player player)
+    {
+        if (!Players.Contains(player) || Lineup.Contains(player) || !IsDressed(player))
+            return LineupResult.Unchanged;
+        TakeOverDressed();
+        _dressed.Remove(player.Id);
+        return LineupResult.Undressed;
+    }
+
+    /// <summary>Rechtsklick in der Kaderliste: nicht eingesetzten Spieler einsetzen (Datei 0x40E2A, 0x41208).</summary>
+    public LineupResult Dress(Player player)
+    {
+        if (!Players.Contains(player) || IsDressed(player))
+            return LineupResult.Unchanged;
+        if (DressedCount >= MaxDressed)
+            return LineupResult.RosterFull;
+        TakeOverDressed();
+        _dressed.Add(player.Id);
+        return LineupResult.Dressed;
+    }
+}

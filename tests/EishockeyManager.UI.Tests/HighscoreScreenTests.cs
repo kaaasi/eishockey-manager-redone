@@ -124,4 +124,33 @@ public class HighscoreScreenTests
             d.Press(Key.Space);
         Assert.Contains(store.Load(key).Entries, e => e.Name == "LetsShow" && !e.IsEmpty);
     }
+    /// <summary>
+    /// [ORIGINAL] Titel „Highscore“ pixelgleich mit oberflaeche_0844–0855 (Review Runde 4 Teil 2, H2-01): Ausdehnung der
+    /// Titelpixel (Helligkeit R+G+B &gt; 600, y 3–17, Fenster x 100–219) im Video x = 117 … 202. Das Remake lag vorher bei 116 … 201.
+    /// </summary>
+    [GameDataFact]
+    public void Title_PixelExtent_MatchesVideo()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        d.OpenTile("Highscore");
+        d.Frame();
+        Assert.IsType<HighscoreScreen>(d.Host.Current);
+
+        var rgb = d.Surface.Palette.Rgb;
+        int min = int.MaxValue, max = int.MinValue;
+        for (var y = 3; y <= 17; y++)
+            for (var x = 100; x < 220; x++) // Fenster um den Titel: der Hintergrund hat links und rechts eigene helle Streifen
+            {
+                var p = d.Surface.Pixels[y * Surface.Width + x] * 3;
+                // Palette liegt in 8-Bit-RGB vor (Palette.Rgb), Helligkeit wie bei der Vermessung der Videobilder.
+                if (rgb[p] + rgb[p + 1] + rgb[p + 2] > 600)
+                {
+                    min = Math.Min(min, x);
+                    max = Math.Max(max, x);
+                }
+            }
+
+        Assert.Equal((117, 202), (min, max));
+    }
 }

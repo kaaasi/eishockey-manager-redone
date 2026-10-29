@@ -10,6 +10,11 @@ namespace EishockeyManager.UI.Screens.Team;
 /// </summary>
 /// <remarks>
 /// Bedienung: Spieler anklicken, dann Platz (oder umgekehrt); Rechtsklick auf einen Platz leert ihn.
+/// [ORIGINAL] Wie beim Nationalteam (derselbe Code, Datei 0x40364): Linksklick auf einen eingesetzten, nicht aufgestellten
+/// Spieler nimmt ihn heraus, Rechtsklick auf einen nicht eingesetzten setzt ihn ein, höchstens 22 Eingesetzte
+/// („Schon 22 Mann / im Team !“), „Eingesetzt: n“ in Farbe 16 (Datei 0x41D84). Regeln: <see cref="Club.MaxDressed"/>.
+/// [APPROX] Linksklick auf nicht eingesetzte oder aufgestellte Spieler wählt sie aus; STATUS bleibt bei nicht
+/// Eingesetzten leer (wie beim Nationalteam), NR zeigt weiter die Rückennummer.
 /// [APPROX] Tasten A (Auto-Aufstellung) und C (leeren) – im Video nicht zu sehen. Unten rechts geht es zur Taktik.
 /// </remarks>
 public sealed class LineupScreen : Screen
@@ -21,6 +26,9 @@ public sealed class LineupScreen : Screen
     public const int ListLeft = 3;
     public const int ListWidth = 235;
     public const int StatusY = 213;
+
+    /// <summary>[ORIGINAL] Farbe von „Eingesetzt: n“ (Datei 0x41D84: 0x10), wie beim Nationalteam.</summary>
+    public const byte DressedColor = 16;
 
     public static Rect BlockBox(int block) => new(246, 15 + 42 * block, 72, 38);
     public static readonly Rect GoalieBox = new(246, 183, 72, 38);
@@ -56,7 +64,7 @@ public sealed class LineupScreen : Screen
             return;
 
         var rows = TeamUi.Rows(Club);
-        if (input.Pressed(Key.Escape) || (input.RightClick && !OnSlot(input.MouseX, input.MouseY, out _)))
+        if (input.Pressed(Key.Escape))
         {
             Leave(_back);
             return;
@@ -65,11 +73,11 @@ public sealed class LineupScreen : Screen
         switch (input.Text.ToUpperInvariant())
         {
             case "A":
-                Club.Lineup.AutoFill(Club.Players);
+                Club.AutoLineup();
                 ClearSelection();
                 return;
             case "C":
-                Club.Lineup.ClearAll();
+                Club.ClearLineup();
                 ClearSelection();
                 return;
         }
@@ -85,7 +93,7 @@ public sealed class LineupScreen : Screen
         {
             if (input.RightClick)
             {
-                Club.Lineup.Clear(slot);
+                Club.ClearLineupSlot(slot);
                 ClearSelection();
             }
             else if (input.LeftClick)
@@ -98,17 +106,28 @@ public sealed class LineupScreen : Screen
             return;
         }
 
-        if (input.LeftClick && Window.Contains(input.MouseX, input.MouseY))
+        var inList = Window.Contains(input.MouseX, input.MouseY);
+        var listRow = inList ? RowAt(input.MouseY) : -1;
+        var player = listRow >= 0 && listRow < rows.Count ? rows[listRow] : null;
+        if (input.RightClick)
         {
-            var row = RowAt(input.MouseY);
-            if (row < 0 || row >= rows.Count)
-                return;
-            var player = rows[row];
-            if (_selectedSlot is { } target)
-                TryAssign(target, player);
-            else
-                _selectedPlayer = _selectedPlayer == player ? null : player;
+            if (player is null)
+                Leave(_back);
+            else if (!Club.IsDressed(player))
+                Report(Club.Dress(player), player);
+            return;
         }
+        if (!input.LeftClick || player is null)
+            return;
+        if (_selectedSlot is { } target)
+            TryAssign(target, player);
+        else if (Club.IsDressed(player) && !Club.Lineup.Contains(player))
+        {
+            Club.Undress(player);
+            ClearSelection();
+        }
+        else
+            _selectedPlayer = _selectedPlayer == player ? null : player;
     }
 
     private void Leave(Screen next)
@@ -125,12 +144,27 @@ public sealed class LineupScreen : Screen
     private void TryAssign(LineupSlot slot, Player player)
     {
         ClearSelection();
-        if (player.InjuredGames > 0)
-            _message.Show(player.Name, "ist verletzt.");
-        else if (player.SuspendedGames > 0)
-            _message.Show(player.Name, "noch gesperrt !");
-        else if (!Club.Lineup.Assign(slot, player))
-            _message.Show("Der darf da", "nicht rein !");
+        Report(Club.AssignToLineup(slot, player), player);
+    }
+
+    /// <summary>Meldungen (Texte aus em.exe); „Schon 22 Mann / im Team !“ aus DGROUP 0x11D5.</summary>
+    private void Report(LineupResult result, Player player)
+    {
+        switch (result)
+        {
+            case LineupResult.Injured:
+                _message.Show(player.Name, "ist verletzt.");
+                break;
+            case LineupResult.Suspended:
+                _message.Show(player.Name, "noch gesperrt !");
+                break;
+            case LineupResult.WrongRole:
+                _message.Show("Der darf da", "nicht rein !");
+                break;
+            case LineupResult.RosterFull:
+                _message.Show("Schon 22 Mann", "im Team !");
+                break;
+        }
     }
 
     private static bool OnSlot(int x, int y, out LineupSlot slot)
@@ -170,6 +204,7 @@ public sealed class LineupScreen : Screen
         s.HLine(6, 210, 227, TeamUi.LineColor);
 
         var rows = TeamUi.Rows(club);
+        var dressed = club.Dressed.ToHashSet();
         var hoverRow = Window.Contains(_mouseX, _mouseY) ? RowAt(_mouseY) : -1;
         for (var i = 0; i < rows.Count; i++)
         {
@@ -188,7 +223,8 @@ public sealed class LineupScreen : Screen
             s.TextRight(mini, 152, y, p.Role == PlayerRole.Goalkeeper ? "-" : p.Goals.ToString(), c);
             s.TextRight(mini, 165, y, p.Penalties2.ToString(), c);
             s.TextRight(mini, 178, y, p.Penalties5.ToString(), c);
-            s.Text(mini, 185, y, TeamUi.StatusText(club.StatusOf(p)), c);
+            if (dressed.Contains(p) || p.InjuredGames > 0 || p.SuspendedGames > 0)
+                s.Text(mini, 185, y, TeamUi.StatusText(club.StatusOf(p)), c);
             s.TextRight(mini, 231, y, p.Energy.ToString(), c);
         }
         TeamUi.StatusLine(s, Assets, 131, StatusY, HoverText(rows));
@@ -199,9 +235,7 @@ public sealed class LineupScreen : Screen
             s.Text(mini, 251, 33 + 42 * b, $"{b + 1}.", TeamUi.DimColor);
         }
         Widgets.Frame(s, Assets, GoalieBox, FrameStyle.Orange);
-        // [APPROX] „Eingesetzt“ zeigt im Video die Kadergröße (20) bei 16 aufgestellten Spielern:
-        // gezählt werden die einsatzfähigen Spieler.
-        s.TextCentered(mini, 282, 189, $"Eingesetzt: {club.Players.Count(p => p.Available)}", TeamUi.HoverColor);
+        s.TextCentered(mini, 282, 189, $"Eingesetzt: {dressed.Count}", DressedColor);
         s.Text(mini, 250, 202, "TW", TeamUi.DimColor);
 
         foreach (var slot in LineupSlot.All)

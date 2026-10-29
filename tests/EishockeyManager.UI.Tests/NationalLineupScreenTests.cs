@@ -91,12 +91,12 @@ public class NationalLineupScreenTests
         for (var b = 0; b < 3; b++)
         {
             for (var i = 0; i < 3; i++)
-                Assert.Equal(NationalLineupResult.Assigned, coach.Assign(LineupSlot.Forward(b, i), Row(forwards[b][i])));
+                Assert.Equal(LineupResult.Assigned, coach.Assign(LineupSlot.Forward(b, i), Row(forwards[b][i])));
             for (var i = 0; i < 2; i++)
-                Assert.Equal(NationalLineupResult.Assigned, coach.Assign(LineupSlot.Defender(b, i), Row(defenders[b][i])));
+                Assert.Equal(LineupResult.Assigned, coach.Assign(LineupSlot.Defender(b, i), Row(defenders[b][i])));
         }
         foreach (var reserve in new[] { 1, 3, 9, 10, 25, 26 })
-            Assert.Equal(NationalLineupResult.Dressed, coach.Dress(Row(reserve)));
+            Assert.Equal(LineupResult.Dressed, coach.Dress(Row(reserve)));
         Assert.Equal(NationalCoach.MaxDressed, coach.DressedCount);
 
         d.Host.Show(new NationalLineupScreen(d.Host, new MainMenuScreen(d.Host)));

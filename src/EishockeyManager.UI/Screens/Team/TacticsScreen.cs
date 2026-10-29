@@ -10,8 +10,10 @@ namespace EishockeyManager.UI.Screens.Team;
 /// </summary>
 /// <remarks>
 /// Bedienung: Pfeil oben = nächster Wert bzw. Modus, unten = voriger; Reiter 1–4 wählen den Block.
-/// Felder sind nur aktiv, wenn der zugehörige Modus es erlaubt (Minuten nur bei „Minuten-Vorgabe“,
-/// Einsatz/Angriff nicht bei „AUTOM.“). [APPROX] Richtung der Pfeile bei den Modi.
+/// Felder sind nur aktiv, wenn der zugehörige Modus es erlaubt (Minuten nur bei „Minuten-Vorgabe“).
+/// [ORIGINAL] Einsatz und Angriff sind nur bei „SEMI“ hell und änderbar (Datei 0x47D9B, 0x488F6); bei „AUTOM.“ stehen
+/// gedimmt die Werte der Automatik, bei „MANUELL“ gedimmt die eigenen Werte (Grenzen siehe <see cref="Tactics"/>).
+/// [APPROX] Richtung der Pfeile bei den Modi.
 /// </remarks>
 public sealed class TacticsScreen : Screen
 {
@@ -117,9 +119,9 @@ public sealed class TacticsScreen : Screen
 
         foreach (var situation in Enum.GetValues<ScoreSituation>())
         {
-            if (t.EffortMode != TacticMode.Auto && Step(SituationArrows(situation, false), x, y) is { } de)
+            if (Tactics.Editable(t.EffortMode) && Step(SituationArrows(situation, false), x, y) is { } de)
                 t.SetEffort(_block, situation, t.Effort(_block, situation) + de);
-            if (t.AttackMode != TacticMode.Auto && Step(SituationArrows(situation, true), x, y) is { } da)
+            if (Tactics.Editable(t.AttackMode) && Step(SituationArrows(situation, true), x, y) is { } da)
                 t.SetAttack(_block, situation, t.Attack(_block, situation) + da);
         }
     }
@@ -187,8 +189,8 @@ public sealed class TacticsScreen : Screen
         {
             var row = (int)situation;
             TeamUi.LabelCentered(s, Assets, 228, 107 + RowPitch * row, Tactics.SituationText(situation));
-            ValueField(s, SituationField(situation, false), t.Effort(_block, situation), t.EffortMode != TacticMode.Auto);
-            ValueField(s, SituationField(situation, true), t.Attack(_block, situation), t.AttackMode != TacticMode.Auto);
+            ValueField(s, SituationField(situation, false), t.ShownEffort(_block, situation), Tactics.Editable(t.EffortMode));
+            ValueField(s, SituationField(situation, true), t.ShownAttack(_block, situation), Tactics.Editable(t.AttackMode));
             var e = SituationArrows(situation, false);
             var a = SituationArrows(situation, true);
             TeamUi.CompactArrows(s, Assets, e.X, e.Y);

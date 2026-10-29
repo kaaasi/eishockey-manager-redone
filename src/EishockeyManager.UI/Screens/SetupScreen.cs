@@ -195,7 +195,8 @@ public sealed class SetupScreen : Screen
 
         var seed = Host.Seed ?? Environment.TickCount;
         Host.Game = NewGame.Create(Assets.Database, _setup, seed);
-        Host.Show(new MainMenuScreen(Host));
+        // [ORIGINAL] Datei 0x43A8C: die Auslosung der ersten DEB-Pokal-Runde läuft mit Anzeige vor dem Hauptmenü (Spur debpokal-auslosung)
+        Host.Show(Competitions.DebCupDrawFlow.AtSeasonStart(Host, new MainMenuScreen(Host)));
     }
 
     private void UpdateHeadPicker(InputState input)
