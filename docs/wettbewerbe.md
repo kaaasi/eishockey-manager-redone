@@ -283,5 +283,24 @@ Torszenen.
 
 Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien
 Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Ein Bildschirm „Paarungen Liga“ ist in
-den Referenzvideos nicht zu sehen. Handbuchkorrektur im `infofile`: WM-Platzierungsspiele 9–12 (Verlierer/Sieger der
+den Referenzvideos nicht zu sehen (seit Spur `paarungen-liga` allein aus em.exe gebaut, Abschnitt „Paarungen Liga“ unten). Handbuchkorrektur im `infofile`: WM-Platzierungsspiele 9–12 (Verlierer/Sieger der
 Spiele 5–8).
+
+## Paarungen Liga (Spur `paarungen-liga`, Runde 5)
+
+Kacheln „Paarungen 1. Liga“, „Paarungen 2. Liga“, „Paarungen Oberliga“ → `LeaguePairingsScreen`. **Kein Videobild:**
+Der Aufbau stammt allein aus der statischen Disassemblierung von em.exe (kein Emulator verfügbar); ein Pixelvergleich ist
+nicht möglich. Aufbau und Farben stehen im Klassenkommentar.
+
+| Befund | Fundstelle |
+|---|---|
+| Kachel → Seitenwähler 0xF8:0x3E (Seite, Liga, 0) → Seite 7 → Bildschirmfunktion 0x128:0x39 | Datei 0x43150 (Sprungtabelle), 0x4E8A3 |
+| Fenster (4 | 15) 312 × 152, drei Knöpfe (48 × 38) bei x = 30 / 140 / 250, y = 180; Pfeile aus kb\4 | 0x4E8A3 ff. |
+| Kopfzeile „Liga   n.Spieltag  t.m.“ (Flow, Farbe 10, Schatten 28); n hat Mindestbreite 2, wenn der zuvor gezeichnete Tag gespielt war | 0x4E8A3 ff. |
+| sechs Zeilen y = 48 + 20 k: Namen, „n. Platz, Stärke m“ (Mini), Ergebnis „g:g“ bzw. „--:--“ | 0x4E8A3 ff. |
+| Start: gespielte Tage + 1 (nach dem Ende: 1); Pfeile blättern mit Umlauf; Rechtsklick/Esc zurück | 0x4E8A3 ff. |
+
+**[APPROX]:** Mittlerer Knopf („Play-Off“ bei der Bundesliga, sonst „Aufstieg“) ohne Wirkung, da die Zielseiten fehlen;
+Klick auf eine Zeile (Original: Vereinsinfo) ohne Wirkung; die zuletzt gewählte Seite (DGROUP 0x5125) wird nicht gemerkt;
+Spielplan (`Schedule.DoubleRoundRobin`) und Stärkewerte (`StrengthTable`) sind Näherungen des Remakes. Die Trefferfläche der
+Pfeilknöpfe ist der Rahmen (48 × 38).
