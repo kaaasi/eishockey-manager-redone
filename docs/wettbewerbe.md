@@ -176,7 +176,8 @@ Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader a
 | `[APPROX]` Felder 0x10–0x12 des Kaderplatzes als Kondition, Technik, Form gedeutet (Spaltenfolge „KO TE FO“) | – |
 | `[APPROX]` Energie 70 beim Öffnen von „WM Vorbereitung“ (Kaderfeld 0x13) nicht übernommen: Bildschirme ändern beim Öffnen nichts | 0x3BB51 |
 
-Bildschirme (kein Videobeleg, Aufbau aus em.exe, Bildschirmfotos `emtool screens gamedata ~/work/screens nationalteam`):
+Bildschirme (Aufbau aus em.exe; Videobilder seit der Reihe `bundestrainer`, Pixelvergleich steht aus;
+Bildschirmfotos `emtool screens gamedata ~/work/screens nationalteam`):
 `UI/Screens/Competitions/NationalSquadScreen.cs` („Spieler in WM-Kader“, 0x3C37C) und `FriendliesScreen.cs`
 („WM Vorbereitung“, 0x3B8F7), Bausteine in `NationalWidgets.cs` (Kasten 0x3B700, Mannschaftsfeld 0x3B4C6). Im Spielmodus
 „nur Weltkugel“ sind beide über das Menü des Bundestrainers erreichbar (Abschnitt unten).
@@ -206,10 +207,11 @@ Bildschirme (kein Videobeleg, Aufbau aus em.exe, Bildschirmfotos `emtool screens
 Das Nationalkonto führt eine Buchungsliste (`GameState.NationalBookings`: Etat, Freundschaftsspiele); Spielstand
 Schema 3. Pixelvergleich der Modusknöpfe mit dem Video „Die Oberfläche von EM“ (2:13–2:19 nur Weltkugel, 2:30 beide),
 mittlere Abweichung / Anteil > 40: Fahne aus 10,4 / 4,5 % (`oberflaeche_0214`), Weltkugel 12,1 / 6,5 % (`0219`); zum
-Vergleich beide an 9,0 / 2,0 % und 11,9 / 6,3 % (`0230`). Für das Menü des Bundestrainers gibt es kein Videobild
+Vergleich beide an 9,0 / 2,0 % und 11,9 / 6,3 % (`0230`). Das Menü des Bundestrainers zeigt die Reihe `bundestrainer`
+(unten); ein Pixelvergleich steht noch aus
 (Bildschirmfotos: `emtool screens gamedata ~/work/screens weltkugel`).
 
-**Fehlende Vorlagebilder (Modus „nur Weltkugel“):** Seit der Reihe `bundestrainer` (WM-Video, `docs/referenz-videos.md`;
+**Vorlagebilder (Modus „nur Weltkugel“):** Seit der Reihe `bundestrainer` (WM-Video, `docs/referenz-videos.md`;
 Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**
 
 - Hauptmenü des Bundestrainers, Infoleiste nach dem Sprung zum 14. April (00026–00041: Gegner Schweiz, Nationalkonto
@@ -230,7 +232,7 @@ Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**
 **Weiterhin fehlen:** Spielvorbereitung mit den Modusknöpfen (nur „Die Oberfläche von EM“ 2:13–2:30), Infoleiste am
 Saisonbeginn, die Kachelreihen Statistiken, Tabellen und Paarungen (im Video nicht geöffnet), „Tabelle WM“ über die
 Tabellen-Kachel (nur die Gruppentabellen nach dem Spieltag), die geöffneten Kacheln „Tabelle DEB-Pokal“ und
-„Tabelle EuroCup“, WM-Statistik, Saisonende im Modus „nur Weltkugel“ (das Video endet mit dem Weltmeister-Bild) und
+„Tabelle Europapokal“, WM-Statistik, Saisonende im Modus „nur Weltkugel“ (das Video endet mit dem Weltmeister-Bild) und
 Torszenen.
 
 Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien

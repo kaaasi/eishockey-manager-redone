@@ -18,7 +18,8 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
 
 1. Lies `AGENTS.md` und `docs/prozess/zusammenarbeit.md` (Abschnitte 5 und 6). Hast du an diesem PR selbst
    mitgearbeitet, brich ab und sag es – das Review muss aus einer anderen Sitzung kommen.
-2. Richte das SDK gemäß `AGENTS.md` §3 ein und prüfe im Repo-Verzeichnis `dotnet --version`.
+2. Richte das SDK gemäß `AGENTS.md` §3 ein und prüfe im Repo-Verzeichnis `dotnet --version` (bei Problemen
+   `docs/prozess/umgebung.md`).
    Fehlen Commit oder Bericht im lokalen Checkout und scheitert der Fetch, nutze einen verfügbaren GitHub-Connector
    für Compare, Dateien mit festem Head-Ref, früheren Bericht und PR-Kommentare. Dokumentiere, ob nur Codelesen oder
    auch eine Ausführung am nachgewiesenen Checkout erfolgte.
