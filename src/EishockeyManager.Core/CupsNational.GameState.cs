@@ -43,13 +43,13 @@ public sealed partial class GameState
         club == NationalTeams.Germany && _germanyRatings is { } r ? r : NationalTeamRatings.Of(club);
 
     /// <summary>
-    /// Spielstärke eines Nationalteams in WM und Freundschaftsspiel: mit Bundestrainer aus dessen Aufstellung,
-    /// sonst wie <see cref="NationalTeamRatings.MatchStrength"/> aus den Länderwerten.
+    /// Spielstärke eines Nationalteams in WM und Freundschaftsspiel: mit Bundestrainer aus dessen Aufstellung und
+    /// Taktik (Spur nationalteam-2), sonst wie <see cref="NationalTeamRatings.MatchStrength"/> aus den Länderwerten.
     /// </summary>
     public int NationalMatchStrength(int club)
     {
         if (NationalCoach is { } coach && coach.Nation == club)
-            return coach.Lineup().Strength;
+            return Math.Max(0, coach.Lineup().Strength + coach.TacticsBonus);
         var (cd, td, ca, ta) = NationalRatings(club);
         return (cd + ca + td + ta) / 4;
     }
