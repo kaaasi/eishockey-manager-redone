@@ -105,6 +105,11 @@ public class HighscoreTests
     [InlineData(3, GameDuration.DreiSaisons, League.Bundesliga, StartStrength.OberesDrittel, null)]
     [InlineData(2, GameDuration.Unbegrenzt, League.Bundesliga, StartStrength.Mittelfeld, null)] // Level zu klein
     [InlineData(0, GameDuration.EineSaison, League.Bundesliga, StartStrength.OberesDrittel, null)]
+    // Bedingung „Dauer = eine Saison UND Startliga = Bundesliga“ (0x289A3–0x289C5), jede Hälfte einzeln (Review H2-02):
+    [InlineData(4, GameDuration.EineSaison, League.ZweiteLiga, StartStrength.OberesDrittel, null)] // nur Dauer passt
+    [InlineData(4, GameDuration.EineSaison, League.Oberliga, StartStrength.Abstiegskampf, null)] // nur Dauer passt
+    [InlineData(4, GameDuration.DreiSaisons, League.Bundesliga, StartStrength.Abstiegskampf, null)] // nur Liga passt
+    [InlineData(5, GameDuration.EineSaison, League.Bundesliga, StartStrength.Abstiegskampf, 5 + 0 + 0 + 256 - 2)] // beides passt
     public void Key_FromSetup(int level, GameDuration duration, League league, StartStrength strength, int? key)
     {
         var setup = new GameSetup { Duration = duration };

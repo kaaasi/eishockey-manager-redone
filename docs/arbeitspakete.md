@@ -40,7 +40,7 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
 - **Dateigrenzen:** `Core/Highscore.cs`, `UI/Screens/Statistics/HighscoreScreen.cs`, `docs/highscore.md`, Tests
   `Highscore*`; `CompetitionWidgets.cs` nur minimal und begründet.
 - **Modell:** Claude Sonnet 5.5 (klein).
-- **Status:** offen.
+- **Status:** in Arbeit (Draft-PR #120, Bearbeiter Claude Code, Base `a09c81e`); H2-01, H2-02, H2-04 umgesetzt, Prüfung läuft.
 
 ### Spur `debpokal-auslosung` – Live-Auslosung im Spieltagsablauf (#116)
 

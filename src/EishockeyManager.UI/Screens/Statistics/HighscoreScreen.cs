@@ -124,6 +124,15 @@ public sealed class HighscoreScreen : Screen
     public const int TitleBaseline = 15;
     public const byte TitleColor = 14;
     public const byte TitleShadow = 1;
+
+    /// <summary>
+    /// Rechte Grenze der Titelzentrierung. [ORIGINAL] Der Aufruf (0x5D9B8–0x5D9D6) übergibt 0x140 = 320. [APPROX] Mit 320
+    /// liefert <see cref="CompetitionWidgets.Centered"/> den Titel 1 Pixel zu weit links (x = 116 … 201 statt Video
+    /// 117 … 202, oberflaeche_0844–0855): bei ungerader Textbreite rundet das Original offenbar anders. 321 trifft das
+    /// Video wie bei <c>DebCupDrawScreen</c>; die Rundungsregel selbst ist nicht belegt, deshalb Korrektur nur für diesen
+    /// Aufruf (alle übrigen Aufrufer von <c>Centered</c> bleiben unberührt).
+    /// </summary>
+    public const int TitleRight = 321;
     public const int FirstBaseline = 154;
     public const int RowPitch = 10;
     public const int NameX = 56;
@@ -160,7 +169,7 @@ public sealed class HighscoreScreen : Screen
         var background = Assets.Image(Background);
         s.Palette = background.Palette ?? Assets.Palette; // kb\195 bringt eine eigene Palette mit
         s.Blit(background, 0, 0);
-        CompetitionWidgets.Centered(s, Assets.Bold, 0, 320, TitleBaseline, Title, TitleColor, TitleShadow);
+        CompetitionWidgets.Centered(s, Assets.Bold, 0, TitleRight, TitleBaseline, Title, TitleColor, TitleShadow);
 
         var mini = Assets.Mini;
         for (var i = 0; i < Table.Entries.Count; i++)
