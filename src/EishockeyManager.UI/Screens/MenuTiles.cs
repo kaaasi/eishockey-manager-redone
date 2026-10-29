@@ -28,7 +28,8 @@ public static class MenuTiles
         [new("Aufstellung", 0, 1), new("Taktik", 1, 1), new("Verträge", 2, 1), new("Transfer", 3, 1), new("Training", 4, 1), MenuTile.Empty],
         [new("Totale", 5, 1), new("Früher", 0, 2), new("Verein", 1, 2), new("Spieler", 2, 2), new("Fairplay", 3, 2), new("WM-Statistik", 4, 2)],
         // [ORIGINAL] Sechs Tabellen-Kacheln, Symbolstart DGROUP 0x5149 = 17, ab Platz 4 um eine Spalte versetzt (Datei 0x45B95):
-        // 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM. Bildschirme für DEB-Pokal und Europapokal fehlen noch.
+        // 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM. DEB-Pokal und Europapokal öffnen dieselben Bildschirme wie bei den Paarungen
+        // (CupTableMenuEntries).
         [new("Tabelle 1. Liga", 5, 2), new("Tabelle 2. Liga", 0, 3), new("Tabelle Oberliga", 1, 3), new("Tabelle DEB-Pokal", 3, 3), new("Tabelle Europapokal", 4, 3), new("Tabelle WM", 5, 3)],
         [new("Paarungen 1. Liga", 5, 2), new("Paarungen 2. Liga", 0, 3), new("Paarungen Oberliga", 1, 3), new("DEB-Pokal", 3, 3), new("Europapokal", 4, 3), new("WM", 5, 3)],
         // [APPROX] Belegung der Stärken nicht im Video zu sehen; Länderteams laut Bildschirmtitel vorhanden.

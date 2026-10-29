@@ -19,7 +19,6 @@ public class MenuEntryTests(ITestOutputHelper output)
         "Highscore",
         "Verein", "Spieler", "Fairplay", "WM-Statistik",
         "Paarungen 1. Liga", "Paarungen 2. Liga", "Paarungen Oberliga",
-        "Tabelle DEB-Pokal", "Tabelle Europapokal", // Spur wettbewerbe-weltkugel: Plätze laut em.exe, Bildschirme offen
         "Laden", "Sichern", "Einstellungen",
     };
 

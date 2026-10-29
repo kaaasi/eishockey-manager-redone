@@ -247,7 +247,8 @@ Behoben: Farbe von „Eingesetzt“ (17 → 16). Offen und nicht in dieser Spur 
 | `[APPROX]` Modus 1 nur mit genau einem Manager („Los jetzt!“ mit Meldung gesperrt) | – |
 | `[APPROX]` Modus 1 ohne Europapokal, Auf-/Abstieg, Oberliga-Wechsel, Prämien, Ligastatistik, Finanzen, Training, Markt und Vertragsmeldungen (kein Tageslauf vor der WM) | – |
 | `[APPROX]` Menü des Bundestrainers schon vor der Ernennung, Mannschaftskacheln bis dahin gesperrt | – |
-| Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. Bildschirme für DEB-Pokal und Europapokal noch offen (Platzhalter) | DGROUP 0x5149/0x5151, Datei 0x45B95 |
+| Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. „Tabelle DEB-Pokal“ und „Tabelle Europapokal“ rufen dieselben Bildschirme auf wie „DEB-Pokal“ und „Europapokal“ bei den Paarungen (0xE8:0x75 bzw. 0xF8:0x3E mit Seitenwert 3, Datei 0x4584A/0x4584C; Spur `tabellen-highscore`, `CupTableMenuEntries`) | DGROUP 0x5149/0x5151, Datei 0x45B95, 0x45829 ff. |
+| Kachelsperren der Spielvorbereitung (Reihe Manager): „Neuer“ gesperrt bei vier Managern (DGROUP 0x386), „Werbung“ gesperrt bei der Spieldauer „eine Saison“ (Spielende DGROUP 0x5A14 = 1994) | Datei 0x45057, 0x45079, 0x2987C; `UI/Screens/TileLocks.cs` |
 
 Das Nationalkonto führt eine Buchungsliste (`GameState.NationalBookings`: Etat, Freundschaftsspiele); Spielstand
 Schema 3. Pixelvergleich der Modusknöpfe mit dem Video „Die Oberfläche von EM“ (2:13–2:19 nur Weltkugel, 2:30 beide),
