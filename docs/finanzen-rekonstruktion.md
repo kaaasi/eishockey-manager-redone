@@ -60,14 +60,14 @@ stadion  = Σ Stufe_i · U_i, U = [24000, 7500, 33000, 3000, 4800, 9000, 15000, 
          + 15 · Sitzplätze + 12 · Stehplätze
 jugend   = Σ Förderung der 3 Jugendteams
 ```
-Anzeige zusätzlich (Flags 1,1): 5/8 der Trainingskosten/Woche, Kreditzinsen (Bank 4 %, Manager 2,5 %) und 10 % des
+Anzeige zusätzlich (Flags 1,1): 8,5 × Kosten je Trainingstag (= 4,25 Wochen; korrigiert in der Nachprüfung, vorher 5/8), Kreditzinsen (Bank 4 %, Manager 2,5 %) und 10 % des
 Kontostands, falls negativ (Überziehung). Negative Summe → 0.
 
 Beleg UI-Video Berliner SC (Level 5, Oberliga, 2.000/2.500 Plätze, Zustand 2, Gehälter 23.200 DM aus dem
 Verträge-Bildschirm 10:20): Formel 83.133 DM, Anzeige 83.233 DM (Differenz 100 DM = ein abgelesenes Gehalt).
-**Restlücke:** Karriere-Video ESC Wolfsburg (Level 3, Gehälter 20.710 DM, gleiches Stadion) zeigt 87.370 DM, die
-Formel ergibt 73.977 DM; die Differenz von 13.393 DM (40.180 Drittel) ist nicht erklärt (Trainingskosten 0,
-keine Versicherung, Konto positiv, keine Kredite). Möglich: andere Programmversion oder nicht sichtbarer Zustand.
+**Wolfsburg (geklärt in der Nachprüfung):** Das Karriere-Video zeigt 87.370 DM, weil vor der Werbeseite alle 20 Verträge
+auf 4 Jahre neu verhandelt werden (0:02:24–0:03:52); die Gehälter steigen von 20.710 auf 34.104 DM. Mit den neuen Gehältern
+ergibt die Formel exakt 87.370 DM (Abschnitt „Unabhängige Nachprüfung“).
 
 ### Tagesabschluss (`0x3ED01`, täglich)
 
