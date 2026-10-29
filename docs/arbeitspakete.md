@@ -16,7 +16,8 @@ liefert eine **Mehrsaisonprobe** (mindestens 4 Saisonwechsel, passiver und aktiv
 
 ```
 Welle A (parallel):  kader   wettbewerbe   finanzen          → integriert mit #54 (main 5f8e02a)
-Welle B (parallel):  speichern   finanzen-2   markerbericht
+Welle B (parallel):  speichern   finanzen-2   markerbericht   → abgeschlossen 29.10.2026 (main 51c110a)
+Welle C (parallel):  speichern-dialog   wettbewerbe-weltkugel
 ```
 
 | Spur | Branch | Befunde | Inhalt | Verbindliche Abnahme (Regressionstest) |
@@ -187,6 +188,15 @@ Mehrsaisonprobe Pflicht. Kleine PRs je Teil (`paket/<spur>-<teil>`), jeder Teil 
   `Transfer.Squads.cs`; ID-Vergabe in `NewGame.cs`/`Player.Factory.cs`; „Automatisch speichern“ in
   `UI/Screens/Settings.cs`/`SettingsScreen.cs`.
 
+### Status Spur `speichern`
+
+Stand 29.10.2026: Teile `-rng` (#68), `-ids` (#70) und `-format` (#71, Schema mit Version, Roundtrip, Zwillingsprobe)
+**gemergt**; Abnahme 1–5 erfüllt. Reviews [speichern-68-70-71](reviews/2026-10-28-speichern-68-70-71.md) und
+[speichern-71-nachpruefung](reviews/2026-10-28-speichern-71-nachpruefung.md). Schema 2 kam mit `finanzen-2` (#67).
+
+- Offen: Teil `-dialog` (Abnahme 6, Welle C); #80 (Reihenfolge von Wörterbüchern nach Remove/Add, P3) vom Nutzer
+  zurückgestellt.
+
 ### Spur `finanzen-2` – Restkalibrierung (Restlücken aus #41)
 
 - **Ziel:** die in #41 als `[APPROX]` offen gelassenen Buchungspfade aus em.exe und Video rekonstruieren, sodass der
@@ -226,8 +236,10 @@ verschieben sich die Referenzwerte aus `finanzen-2`.
 
 ### Status Spur `finanzen-2`
 
-Stand 28.10.2026: umgesetzt auf `paket/finanzen-2` (PR #67, nach Rebase Base `6b8dc00`), Bearbeiter Claude Code. Review
-[finanzen-2-67](reviews/2026-10-28-finanzen-2-67.md): F67-01…04 (#75–#78) behoben, Nachprüfung offen. Belege in
+Stand 29.10.2026: **gemergt** (PR #67, Head `9f51e14` → `main` `32101ab`). Review
+[finanzen-2-67](reviews/2026-10-28-finanzen-2-67.md): F67-01…04 (#75–#78) behoben; Nachprüfung
+[finanzen-2-67-nachpruefung](reviews/2026-10-28-finanzen-2-67-nachpruefung.md) ohne Codebefunde, die dort blockierten
+drei Testläufe hat die Leitstelle auf dem Head nachgeholt (614/0/0 · 530/0/69 · Pflichtlauf wie gewollt). Belege in
 [finanzen-rekonstruktion.md](finanzen-rekonstruktion.md) (Disassembly em.exe + Karriere-/UI-Video).
 
 - [x] **Monatsabschluss** `[ORIGINAL]` (0x3E657/0x3E811/0x3F02C): Grundeinnahmen 5 × Spieler × Teamwerte; Grundausgaben
@@ -273,7 +285,51 @@ sind auf `main`.
 | Dateigrenzen | `tools/markerbericht.py` (neu), ein Schritt am Ende des Jobs `build` in `.github/workflows/build.yml` |
 | Abnahme | Zahlen gleich `grep -rho "\[APPROX\]\|\[ORIGINAL\]" src \| sort \| uniq -c`; Ausgabe sortiert und deterministisch; keine neuen Abhängigkeiten; CI grün; PR nach Vorlage mit `tools/pruefen.sh`-Tabelle und Trailer |
 | Review | Claude Code (Leitstelle, andere Sitzung als jede Umsetzung) |
-| Status | bereit |
+| Status | **abgeschlossen** 28.10.2026: PR #69 gemergt (Übergabe ChatGPT → Claude Code vollständig), Review [markerbericht-69](reviews/2026-10-28-markerbericht-69.md) ohne Befunde |
+
+## Runde 3, Welle C (ab 29.10.2026)
+
+**Base:** `main` `51c110a` (Welle B abgeschlossen). Zwei unabhängige Spuren, je ein Branch und Draft-PR, kleine PRs.
+Danach Abschluss von Runde 3 (Archiv, offene Restlücken nach Runde 4).
+
+### Spur `speichern-dialog` – Laden und Sichern im Spiel (Abnahme 6 aus `speichern`)
+
+- **Ziel:** Laden/Sichern-Dialog wie im Original (Dateiliste, Verzeichnis, Dateiname) auf dem gemergten Format;
+  Einstellung „Automatisch speichern“.
+- **Belege:** Grafiken und Texte aus em.exe, Referenzbilder des Dialogs, soweit im Video vorhanden (im Kapitelindex
+  `docs/referenz-videos.md` bisher nicht verzeichnet – zuerst suchen); Zeitpunkt und Dateiname des automatischen
+  Speicherns belegen oder `[APPROX]`. Ohne Videobild: Pixelvergleich entfällt, im PR begründen.
+- **Abnahme:** (1) Öffnen und Abbrechen ändert keinen Zustand (Zustandsabdruck vorher = nachher); (2) Sichern → Laden
+  über den Dialog ergibt denselben Zustandsabdruck; fremde Datei und höhere Version zeigen die Meldung, laufender
+  Zustand unverändert; (3) „Automatisch speichern“ schreibt zum belegten Zeitpunkt genau eine Datei, nie während
+  `Continue()` mitten im Tag; (4) Bildschirmfoto-Ablauf `speichern`, Pixelvergleich zum Referenzbild, falls vorhanden.
+- **Dateigrenzen:** `UI/Screens/SaveLoad/**`, `Tools/Scenarios/Speichern.cs`, `docs/formate/spielstand.md`;
+  minimal und begründet: Anmeldung über `[MenuEntry]` (kein Eingriff in `MainMenuScreen.cs`), „Laden“ im
+  Titel-/Startbildschirm, `UI/Screens/Settings.cs`/`SettingsScreen.cs`, Aufruf des automatischen Speicherns im
+  Tagesabschluss (`GameState.Integration.cs`). `Core/SaveGame*.cs` nur für eine nötige API, kein Formatwechsel.
+- Nicht enthalten: Import `*.HOK`, #80.
+
+### Spur `wettbewerbe-weltkugel` – Spielmodus „nur Weltkugel“ (Paket `wettbewerbe`, PR 7)
+
+- **Ziel:** wie in `docs/wettbewerbe.md` („Noch offen“): Auswahl des Spielmodus in der Spielvorbereitung (Fahne/Weltkugel,
+  DGROUP 0xD0B9), Überspringen der Vereinssaison bis zum ersten WM-Termin, Ernennung zum Bundestrainer zu jeder Saison,
+  Hauptmenü des Bundestrainers mit Kachelfreischaltung; macht „WM Vorbereitung“ und WM-Kader erreichbar.
+- **Abnahme:** (1) Modus 1/2/4 aus der Spielvorbereitung wie im Original, Test gegen die Bitwerte; (2) im Modus
+  „nur Weltkugel“ läuft eine Saison über `Continue()` ohne Liga- und Vereinsbuchungen bis zur WM und durch sie hindurch;
+  (3) Mehrsaisonprobe 4 Wechsel im Modus 1 (Ernennung jede Saison, Nationalkonto = Summe seiner Buchungen) und
+  unveränderte Referenzwerte im Modus 4; (4) Bildschirmfoto-Abläufe Spielvorbereitung und Bundestrainer-Menü mit
+  Pixelvergleich; Bildschirme zustandsrein.
+- **Dateigrenzen:** `Core/Cups*.cs` (inkl. `CupsNational*.cs`), `UI/Screens/Competitions/**`, `Tools/Scenarios/Wettbewerbe.cs`;
+  gemeinsame Dateien laut `wettbewerbe.md` minimal und begründet: `SetupScreen.cs`, `MenuTiles.cs`/`MainMenuScreen.cs`
+  (Freischaltung), `SeasonFlow.cs`, `GameState.Integration.cs`. Spielstand: neuer Zustand mit Schemaversion + Migration.
+- **Abhängigkeit:** berührt `GameState.Integration.cs` wie `speichern-dialog` – getrennte Aufrufe, Konflikt beim Zweiten
+  per Rebase lösen.
+
+### Zurückgestellt (Entscheidung Nutzer)
+
+- Paket `wettbewerbe` PR 8 „Paarungen Liga“: kein Bildschirm im Referenzvideo nachgewiesen.
+- `finanzen`: Monatsausgaben ESC Wolfsburg (87.370 statt 73.977 DM) und unabhängige Nachdisassembly der übrigen
+  `[ORIGINAL]`-Fundstellen.
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
