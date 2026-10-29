@@ -99,6 +99,9 @@ public sealed class MainMenuScreen : Screen
         if (!Game.IsLastTurnOfDay)
         {
             Game.Continue();
+            // Der nächste Manager ist am Zug, das Hauptmenü bleibt stehen: auch das ist ein neuer Hauptmenü-Aufruf
+            // für das automatische Speichern (R3C-01, em.exe 0x44E49–0x44E69).
+            SaveLoad.AutoSave.OnMainMenu(Host);
             return;
         }
         Host.Show(new MatchDayScreen(Host, this));

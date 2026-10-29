@@ -106,4 +106,52 @@ public class IntegrationRunde3cTests : IDisposable
         }
         Assert.Equal(Saved(game), Saved(twin));
     }
+
+    /// <summary>
+    /// R3C-01 (Review Integration Welle C, Issue siehe PR #89): Im Hot-Seat bleibt beim Weitergeben an den nächsten
+    /// Manager das Hauptmenü stehen. Auch dieser neue Zug ist ein Hauptmenü-Aufruf (em.exe 0x44E49–0x44E69: Prüfung auf 10
+    /// vor der Erhöhung, für jeden Manager). Zwei sonst gleiche Abläufe – einmal mit Kachelbesuch nach jedem Zug, einmal
+    /// ohne – müssen zur selben Zeit dieselben automatischen Spielstände schreiben.
+    /// </summary>
+    [GameDataFact]
+    public void HotSeat_AutoSave_DoesNotDependOnTileVisits()
+    {
+        var plain = HotSeatAutoSaves(visitTile: false);
+        var visited = HotSeatAutoSaves(visitTile: true);
+        Assert.True(plain.Count(w => w.Bytes is not null) >= 2, "Zu wenige automatische Spielstände.");
+        Assert.Equal(plain.Select(w => (w.Day, w.Manager, w.Bytes)), visited.Select(w => (w.Day, w.Manager, w.Bytes)));
+    }
+
+    private List<(int Day, int Manager, string? Bytes)> HotSeatAutoSaves(bool visitTile)
+    {
+        var directory = Path.Combine(_directory, visitTile ? "mit" : "ohne");
+        var d = FlowTests.CreateDriver();
+        var context = SaveContext.For(d.Host);
+        context.Directory = directory;
+        context.AutoSaveOverride = true;
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2 });
+        setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 30 });
+        var game = NewGame.Create(d.Host.Assets.Database, setup, 3);
+        d.Host.Game = game;
+        d.Host.Show(new MainMenuScreen(d.Host));
+        d.Frame();
+
+        var steps = new List<(int, int, string?)>();
+        for (var step = 0; step < 50; step++)
+        {
+            var writes = context.AutoSaveWrites;
+            d.PlayMatchDay();
+            if (visitTile)
+            {
+                d.OpenTile("Laden");
+                d.Press(Key.Escape);
+                Assert.IsType<MainMenuScreen>(d.Host.Current);
+            }
+            var file = SaveFiles.PathOf(directory, SaveFiles.AutoSaveBaseName);
+            var bytes = context.AutoSaveWrites != writes ? Convert.ToBase64String(File.ReadAllBytes(file)) : null;
+            steps.Add((game.Day, game.CurrentManager, bytes));
+        }
+        return steps;
+    }
 }

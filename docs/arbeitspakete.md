@@ -365,8 +365,13 @@ Head `ceb3afc`), dann #88 (`speichern-dialog`, Head `88a149c`).
   dem Stand der jeweiligen Spur. Die 7 Bilder von `speichern` weichen nur ab in der Meldung „Schema 4, unterstützt bis 3“
   (vorher 3/2, erwartet) und im angezeigten Verzeichnis: Der Ablauf nutzt ein zufälliges Temp-Verzeichnis, seine Bilder
   sind deshalb zwischen Läufen nie bytegleich (Restlücke, Spur `speichern-dialog`).
-- Restlücken laut den beiden Übergaben: Laufwerksknöpfe ohne Wirkung, „.“/„..“ fehlen, Hot-Seat-Zählung des
-  automatischen Speicherns ohne Test; Aufstellung/Taktik des Nationalteams und „Tabelle DEB-Pokal/Europapokal“ als
+- Review [integration-runde-3c](reviews/2026-10-29-integration-runde-3c.md): **R3C-01 (P2, #93)** – im Hot-Seat
+  fehlte beim direkten Weitergeben an den nächsten Manager der Autosave-Aufruf; der Spielstand hing vom Kachelbesuch ab.
+  Behoben im Integrations-Branch (`MainMenuScreen.Continue_`), Regressionstest
+  `IntegrationRunde3cTests.HotSeat_AutoSave_DoesNotDependOnTileVisits` (vorher rot: ohne Kachelbesuch geschrieben bei
+  Tag 24/Manager 0, mit Kachelbesuch bei Tag 21/Manager 1). Die im Review blockierten drei Läufe hat die Leitstelle nachgeholt.
+- Restlücken laut den beiden Übergaben: Laufwerksknöpfe ohne Wirkung, „.“/„..“ fehlen;
+  Aufstellung/Taktik des Nationalteams und „Tabelle DEB-Pokal/Europapokal“ als
   Platzhalter, Bundestrainer im Modus 4.
 
 ### Zurückgestellt (Entscheidung Nutzer)
