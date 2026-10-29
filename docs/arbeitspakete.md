@@ -58,7 +58,8 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
   der Tagesablauf (minimal, begründet), `Core/GameState.Integration.cs` nur falls nötig, `Tools/Scenarios/` (eigene Datei),
   `docs/wettbewerbe.md` (Abschnitt DEB-Pokal).
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** PR #119 zum Review (Claude Code, 29.10.2026): Auslosung beim Spielstart, Saisonwechsel und nach dem dritten
+  Termin mit Frage; Endspiel nur Übersicht. Restlücken im PR (Kugel-Animation, Tastenbelegung der Frage, Endspiel-Aufdecken).
 
 ### Spur `taktik-verein` – Taktik-Vorbelegung, 22er-Grenze, Farbe „Eingesetzt“ (Befunde aus #103)
 

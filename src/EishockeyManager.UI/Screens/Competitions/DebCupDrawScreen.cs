@@ -16,9 +16,9 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// <item>[ORIGINAL] Farbe nach Spielklasse (DGROUP 0x4E17: 9, 10, 11), Vereine der Manager 24 (gelb), Kennziffer „(n)“.</item>
 /// <item>[ORIGINAL] „TASTE DRÜCKEN“ zentriert zwischen x = 90 und 237, Grundlinie 221.</item>
 /// </list>
-/// [APPROX] Das Original zeigt die Auslosung nach dem dritten Termin einer Runde (auf Wunsch „live“, Platz für Platz);
-/// hier ist sie über Paarungen → DEB-Pokal jederzeit fertig sichtbar. Noch nicht gezogene Plätze (vor der ersten
-/// Runde nie der Fall) erscheinen als grüne Streifen.
+/// Im Spiel erscheint die Auslosung nur im Ablauf <see cref="DebCupDrawLiveScreen"/> (Spielstart, Saisonwechsel, nach dem
+/// dritten Termin einer Runde); diese Klasse zeigt eine fertige Ziehung und liefert das gemeinsame Zeichnen
+/// (<see cref="DrawBoard"/>). Noch nicht gezogene Plätze erscheinen als grüne Streifen.
 /// </remarks>
 public sealed class DebCupDrawScreen : Screen
 {
@@ -62,23 +62,28 @@ public sealed class DebCupDrawScreen : Screen
             Host.Show(_back);
     }
 
-    public override void Draw(Surface s)
+    public override void Draw(Surface s) => DrawBoard(s, Assets, Host.Game, Slots);
+
+    /// <summary>
+    /// Fenster, Titel und Plätze der Auslosung; „TASTE DRÜCKEN“ erst, wenn kein Platz mehr leer ist.
+    /// Gemeinsam mit <see cref="DebCupDrawLiveScreen"/> (dort sind noch nicht aufgedeckte Plätze null).
+    /// </summary>
+    public static void DrawBoard(Surface s, Assets assets, GameState? game, IReadOnlyList<int?> slots)
     {
-        s.Palette = Assets.Palette;
-        s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
-        Widgets.Frame(s, Assets, Window, FrameStyle.Orange);
+        s.Palette = assets.Palette;
+        s.Blit(assets.Image(MainMenuScreen.Background), 0, 0);
+        Widgets.Frame(s, assets, Window, FrameStyle.Orange);
 
-        CompetitionWidgets.Centered(s, Assets.Bold, 0, 321, TitleBaseline, Title, Colors.White, TitleShadow);
+        CompetitionWidgets.Centered(s, assets.Bold, 0, 321, TitleBaseline, Title, Colors.White, TitleShadow);
 
-        var slots = Slots;
-        var managers = Host.Game?.Managers.Select(m => m.ClubIndex).ToHashSet() ?? [];
-        var mini = Assets.Mini;
+        var managers = game?.Managers.Select(m => m.ClubIndex).ToHashSet() ?? [];
+        var mini = assets.Mini;
         for (var i = 0; i < slots.Count; i++)
         {
             var (x, y) = SlotPosition(i, slots.Count);
-            if (slots[i] is not { } index || Host.Game is not { } game)
+            if (slots[i] is not { } index || game is null)
             {
-                s.Blit(Assets.Image(StripGraphic), x, y);
+                s.Blit(assets.Image(StripGraphic), x, y);
                 continue;
             }
             var club = game.Clubs[index];

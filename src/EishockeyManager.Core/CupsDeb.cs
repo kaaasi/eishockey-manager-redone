@@ -178,7 +178,7 @@ public sealed class DebCup : ISeasonCompetition
         if (round < RoundCount - 1)
         {
             DrawNextRound(game);
-            steps.Add(new CupDrawStep(day, Competition.DebCup, round + 1));
+            steps.Add(new CupDrawStep(day, Competition.DebCup, round + 1, _draw.ToList()));
         }
         else
         {
@@ -188,5 +188,14 @@ public sealed class DebCup : ISeasonCompetition
     }
 }
 
-/// <summary>Eine neue Pokalrunde wurde ausgelost (Bildschirm „DEB-Pokal Auslosung“).</summary>
-public sealed record CupDrawStep(int Day, Competition Competition, int Round) : SeasonStep(Day);
+/// <summary>
+/// Eine neue Pokalrunde wurde ausgelost (Bildschirm „DEB-Pokal Auslosung“ im Spieltagsablauf).
+/// <paramref name="Slots"/> = Plätze in Ziehungsreihenfolge (<see cref="DebCup.Draw"/>) zum Zeitpunkt der Auslosung: Ein
+/// „und tschüß…“ kann nach dem dritten Termin weitere Tage spielen, die Anzeige darf dann nicht die spätere Runde zeigen.
+/// </summary>
+/// <remarks>
+/// [ORIGINAL] Die Anzeige gehört im Original zur Auslosung selbst: Erste Runde 0x341AB (Aufrufe beim Spielstart Datei
+/// 0x43A8C und beim Saisonwechsel 0x56609), weitere Runden 0x3489D (Aufruf nach dem dritten Termin 0x34F64); beide rufen
+/// die Anzeige 0x33B83 vor dem Ziehen auf.
+/// </remarks>
+public sealed record CupDrawStep(int Day, Competition Competition, int Round, IReadOnlyList<int> Slots) : SeasonStep(Day);
