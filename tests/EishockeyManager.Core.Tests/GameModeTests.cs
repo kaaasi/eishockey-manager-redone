@@ -221,6 +221,11 @@ public class GameModeTests
     /// <summary>
     /// Referenzwerte im Modus 4, aufgenommen auf main vor dieser Spur (Base f642ef8): Titel, Kontostände und
     /// Zufallsquellen nach 4 Saisonwechseln, passiver Manager (Verein 2) und aktiver Manager (Verein 30, nimmt Angebote an).
+    /// Spur bundestrainer-modus4 (#123) hat sie neu aufgenommen: Verein 2 steht jede Saison unter den ersten fünf, sein
+    /// Manager wird am 13. April Bundestrainer (Datei 0x553A6); Deutschland spielt die WM dann mit dessen (leerem) Kader
+    /// statt mit ausgewürfelten Werten. Damit ändern sich WM-Ergebnisse und die Pokal-Zufallsquelle (Auslosungen der
+    /// Folgesaison, dadurch Pokaltitel und Kontostände ab Saison 2); die Hauptzufallsquelle (R…) bleibt gleich.
+    /// Gegenprobe ohne Ernennung ergab die alten Werte unverändert.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -231,7 +236,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|2542603,722219|WorldChampion=63,CupWinner=0,GermanChampion=14,EuropeanCupWinner=0|4130628,768638|WorldChampion=53,CupWinner=37,GermanChampion=24,EuropeanCupWinner=0|5351304,620696|WorldChampion=52,CupWinner=26,GermanChampion=24,EuropeanCupWinner=0|6600801,407158|WorldChampion=54,CupWinner=24,GermanChampion=24,EuropeanCupWinner=0|7535191,244005|R849981791 C1742102676";
+        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|2542603,722219|WorldChampion=63,CupWinner=25,GermanChampion=14,EuropeanCupWinner=0|4325459,775518|WorldChampion=54,CupWinner=13,GermanChampion=24,EuropeanCupWinner=0|5548748,663296|WorldChampion=52,CupWinner=12,GermanChampion=24,EuropeanCupWinner=24|6892443,474908|WorldChampion=52,CupWinner=12,GermanChampion=24,EuropeanCupWinner=24|7924333,313805|R849981791 C2010256379";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

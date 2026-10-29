@@ -14,16 +14,19 @@ namespace EishockeyManager.Core.Tests;
 /// Spur finanzen-2 (#67) ändert die Spielregeln (Monatsabschluss, Zuschauer, Werbung, Startkonto) und damit den
 /// Verlauf; die Abdrücke sind dort mit dem unveränderten Generator neu ermittelt. Sie bleiben Referenz dafür, dass
 /// spätere Generator- oder Formatänderungen den Verlauf nicht verschieben.
+/// Spur bundestrainer-modus4 (#123) ändert die Spielregeln im Modus 4: Der Verein des Probe-Managers steht unter den
+/// ersten fünf der 1. Liga, er wird am 13. April Bundestrainer; WM-Ergebnisse und Pokal-Zufallsquelle verschieben sich.
+/// Die synthetischen Abdrücke sind dort neu ermittelt (Gegenprobe ohne Ernennung: alte Werte unverändert).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "7B6DA2488796ECC6")]
-    [InlineData(true, 3, "8880D4D8E0351481")]
-    [InlineData(false, 11, "06103A7927056450")]
-    [InlineData(true, 11, "4A241C9CF4D36C10")]
+    [InlineData(false, 3, "C81835C179C45656")]
+    [InlineData(true, 3, "7B5A36F4BD0DCFF9")]
+    [InlineData(false, 11, "8DC2D4C7015C5C1C")]
+    [InlineData(true, 11, "1F1A2252D757F131")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);

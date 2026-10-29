@@ -61,9 +61,21 @@ public sealed partial class GameState
     /// <summary>
     /// Hauptmenü des Bundestrainers: im Modus „nur Weltkugel“ führt Manager 0 das Nationalteam (im Original der Zug
     /// „Manager 5“, DGROUP 0xA70E = 5). [APPROX] Schon vor der Ernennung am ersten WM-Termin, damit das Menü des
-    /// Vereins im Modus 1 nie erscheint.
+    /// Vereins im Modus 1 nie erscheint. Im Modus 4 nur während des Zugs des Bundestrainers (<see cref="NationalTurn"/>).
     /// </summary>
-    public bool NationalCoachMenu => WorldOnly;
+    public bool NationalCoachMenu => WorldOnly || _nationalTurn;
+
+    /// <summary>Zug „Manager 5“ im Modus 4 (Spur bundestrainer-modus4), siehe <see cref="PassNationalTurn"/>.</summary>
+    private bool _nationalTurn;
+
+    /// <summary>
+    /// Modus 4: Ist gerade der Bundestrainer am Zug? [ORIGINAL] Datei 0x55587–0x555D6: Hat das Nationalteam einen
+    /// menschlichen Bundestrainer, folgt an WM-Tagen (Ereignis 0x10) nach den Vereinsmanagern ein eigener Zug
+    /// „Manager 5“ (DGROUP 0xA70D = 0xA70E = 5) mit dem Menü des Bundestrainers (Hauptmenü 0x28:0x146C).
+    /// Manager 5 trägt den Namen des ernannten Managers (Datei 0x55475, strcpy nach DGROUP 0x9EC6);
+    /// <see cref="CurrentManager"/> zeigt deshalb auf ihn.
+    /// </summary>
+    public bool NationalTurn => _nationalTurn;
 
     /// <summary>
     /// Modus „nur Weltkugel“, erster Tag der Saison: [ORIGINAL] Datei 0x54CEE–0x54D38 – der Tageszähler springt ohne
@@ -82,16 +94,70 @@ public sealed partial class GameState
         return true;
     }
 
-    /// <summary>Spielt das Nationalteam des Bundestrainers an diesem Tag (Halt der Zeitleiste im Modus „nur Weltkugel“)?</summary>
+    /// <summary>
+    /// Spielt das Nationalteam des Bundestrainers an diesem Tag? Hält die Zeitleiste an – im Modus „nur Weltkugel“ und
+    /// im Modus 4 (Zug des Bundestrainers). [APPROX] Das Original gibt den Zug an jedem WM-Tag (0x555AD); alle
+    /// WM-Termine sind Spieltage Deutschlands, solange es im Turnier steht.
+    /// </summary>
     internal bool NationalCoachPlaysOn(int day) =>
-        WorldOnly && NationalCoach is { } coach && MatchOn(day, coach.Nation) is not null;
+        NationalCoach is { } coach && MatchOn(day, coach.Nation) is not null;
 
-    /// <summary>Vereine und – im Modus „nur Weltkugel“ – das Nationalteam, deren Spiele „eigene“ Spiele sind.</summary>
+    /// <summary>Vereine (außer im Modus „nur Weltkugel“) und das Nationalteam des Bundestrainers: „eigene“ Spiele.</summary>
     internal HashSet<int> ManagerTeams()
     {
         var teams = ActiveManagers.Where(_ => !WorldOnly).Select(m => m.ClubIndex).ToHashSet();
-        if (WorldOnly && NationalCoach is { } coach)
+        if (NationalCoach is { } coach)
             teams.Add(coach.Nation);
         return teams;
+    }
+
+    /// <summary>
+    /// Tage mit Markierung 255 (13. und 29. April): erst Ernennung im Modus 4, dann – ohne Bundestrainer – die Werte
+    /// Deutschlands neu auswürfeln (<see cref="RerollNationalRatings"/>).
+    /// </summary>
+    /// <remarks>
+    /// [ORIGINAL] Datei 0x553A2–0x554D9: Nach dem Tag ruft das Original 0xE8:0x93(0x7F) (Datei 0x34769): Die ersten fünf
+    /// Plätze der 1. Liga (DGROUP 0x5CCB, Liga · 12 + Platz) werden von oben durchsucht; der erste Verein mit Manager
+    /// (Vereinsfeld 0x16 = Manager + 1) setzt DGROUP 0xD0BA[Manager] = 1. Die Ernennungsschleife 0x55436 ernennt dann jeden
+    /// Manager mit gesetztem Wert – außer im Modus 2 – samt Etat (siehe <see cref="AppointNationalCoach"/>). Die Suche
+    /// läuft nur, solange Deutschland keinen Bundestrainer hat (0x55374); im Modus 1 ist er seit dem Sprung ernannt.
+    /// Ausgewürfelt wird danach nur, wenn es weiter keinen Bundestrainer gibt (0x554CF).
+    /// [APPROX] Platzierung aus der Abschlusstabelle der Hauptrunde (Gesamt). Das Original sortiert DGROUP 0x5CCB in
+    /// place (0x50E60 ff., je nach Ansicht Gesamt/Heim/Auswärts) und liest die zuletzt sortierte Reihenfolge.
+    /// </remarks>
+    internal void OnNationalMarkerDay()
+    {
+        if (Mode == GameMode.Full && NationalCoach is null && TopFiveManager() is { } manager)
+            AppointNationalCoach(manager);
+        RerollNationalRatings();
+    }
+
+    /// <summary>Manager des am höchsten platzierten Vereins unter den ersten fünf der 1. Liga oder null.</summary>
+    private Manager? TopFiveManager()
+    {
+        foreach (var club in FinalTables()[League.Bundesliga].Take(5))
+            if (ActiveManagers.FirstOrDefault(m => m.ClubIndex == club) is { } manager)
+                return manager;
+        return null;
+    }
+
+    /// <summary>
+    /// Modus 4: Zug des Bundestrainers nach den Vereinsmanagern (aus <see cref="Continue"/>, nachdem der letzte
+    /// Vereinsmanager bestätigt hat). Liefert true, wenn der Zug an den Bundestrainer geht (Tag noch nicht spielen),
+    /// false, wenn der Tag gespielt werden soll – auch nach dem Zug des Bundestrainers.
+    /// </summary>
+    internal bool PassNationalTurn()
+    {
+        if (_nationalTurn)
+        {
+            _nationalTurn = false;
+            return false;
+        }
+        if (WorldOnly || NationalCoach is not { } coach || Managers[coach.Manager].Dismissed || !NationalCoachPlaysOn(CurrentDay))
+            return false;
+        _readyManagers.Add(ActiveManager);
+        _nationalTurn = true;
+        CurrentManager = coach.Manager;
+        return true;
     }
 }
