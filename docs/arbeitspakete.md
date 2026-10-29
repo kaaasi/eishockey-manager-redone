@@ -109,7 +109,7 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
   (`Open`/`IsLocked`), `UI/Screens/Competitions/NationalSquadScreen.cs`, `Core/SaveGame.Migration*.cs` (neue Datei),
   `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (Abschnitt Weltkugel/Bundestrainer).
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** in Arbeit (Claude Code, Branch `paket/bundestrainer-modus4`, Base `a09c81e`).
 
 ### Spur `paarungen-liga` – Kacheln „Paarungen 1. Liga/2. Liga/Oberliga“ (Paket `wettbewerbe` PR 8)
 
