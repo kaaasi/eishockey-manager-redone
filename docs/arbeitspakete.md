@@ -63,6 +63,8 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
 - **Status (Claude Code, 29.10.2026):** PR #104 `paket/tabellen-highscore`: Pokaltabellen + Sperren „Werbung“/„Neuer“
   (em.exe: beide Tabellen-Kacheln öffnen dieselben Bildschirme wie die Paarungen). Highscore folgt in eigenem PR
   (`paket/tabellen-highscore-bestenliste`).
+- **Status Teil 2 (Claude Code, 29.10.2026):** Branch `paket/tabellen-highscore-bestenliste`, Base `caf9700`, in Arbeit:
+  Highscore, Übersicht „DEB-Pokalspiele“ (#108), Hinweis „(Neuer)“ (#109).
 
 ### Spur `speichern-reihenfolge` – Aufzählungsreihenfolge nach Remove/Add (#80)
 
