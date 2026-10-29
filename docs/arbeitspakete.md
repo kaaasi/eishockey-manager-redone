@@ -122,7 +122,7 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
 - **Dateigrenzen:** neue Datei(en) `UI/Screens/Competitions/LeaguePairings*.cs` mit `[MenuEntry]`, `Tools/Scenarios/`
   (eigene Datei), `docs/wettbewerbe.md` (Abschnitt Paarungen), Tests `LeaguePairings*`; `Core/Season*.cs` nur lesen.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen.
+- **Status:** in Arbeit (Bearbeiter: Claude Code, Branch `paket/paarungen-liga`, Base `a09c81e`).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
