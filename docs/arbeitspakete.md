@@ -8,127 +8,131 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 4 – Lücken bis v0.9 ohne Live-Spiel (ab 29.10.2026)
+## Aktuelle Runde: Runde 5 – Restbefunde und Zurückgestelltes vor dem Live-Spiel (ab 29.10.2026)
 
-Runde 3 (Kader, Wettbewerbe, Finanzen, Speichern, Spielmodus „nur Weltkugel“):
-[archiv/runde-3.md](archiv/runde-3.md); Runden 1–2: [archiv/runden-1-2.md](archiv/runden-1-2.md).
+Runde 4 (Nationalteam-Aufstellung/-Taktik, Pokaltabellen, Highscore, Kachelsperren, #80): [archiv/runde-4.md](archiv/runde-4.md);
+Runde 3: [archiv/runde-3.md](archiv/runde-3.md); Runden 1–2: [archiv/runden-1-2.md](archiv/runden-1-2.md).
+**Ziel der Runde (Entscheidung Nutzer, 29.10.2026):** offene Befunde schließen und die zurückgestellten Punkte klären,
+soweit sie ohne Live-Spiel belegbar sind. Danach bleiben bis v1.0 nur `livespiel` und die davon abhängigen Statistiken.
 **Base für alle Spuren:** aktueller `main` (≥ diesem Plan); den tatsächlichen Base-SHA trägt die Spur in ihren Draft-PR ein.
-Weiterhin verbindlich: Mehrsaisonprobe für jede Spur, die Saisonwechsel, Kader oder Geld berührt; Spielstand-Schema
-mit Version und Migration für jeden neuen Zustand. Die Spuren sind unabhängig und laufen parallel; danach eine
-Integration wie in Runde 3, Welle C.
+Weiterhin verbindlich: Mehrsaisonprobe für jede Spur, die Saisonwechsel, Kader oder Geld berührt; Spielstand-Schema mit
+Version und Migration für jeden neuen Zustand; Befund-Issues mit `Fixes #<nr>` schließen.
 
 ```
-Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
+Runde 5 (parallel):  highscore-nacharbeit   debpokal-auslosung   taktik-verein
+                     finanzen-nachpruefung  bundestrainer-modus4  paarungen-liga
 ```
 
-### Spur `nationalteam-2` – Aufstellung und Taktik des Nationalteams, Vergleich mit dem WM-Video
+Gemeinsame Berührungen: `debpokal-auslosung` und `paarungen-liga` arbeiten beide in `UI/Screens/Competitions/`, aber in
+getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur in `Core/CupsNational*.cs` treffen
+(getrennte Dateien vorgeben, der Zweite rebased). Konflikte löst die Leitstelle in der Integration.
 
-- **Ziel:** Die Platzhalter „Aufstellung“ und „Taktik“ im Menü des Bundestrainers durch die Bildschirme des Originals
-  ersetzen; die Bundestrainer-Bildschirme aus Runde 3 erstmals gegen Videobilder vermessen.
-- **Belege:** Reihe `bundestrainer` (`docs/referenz-videos.md`): Aufstellung Nationalteam 00056, Taktik 00058–00059,
-  Hauptmenü des Bundestrainers 00026–00041 und Kachelreihen 00053/00100/00108/00042, „Spieler in WM-Kader“ 00044–00052,
-  „WM Vorbereitung“ 00104–00106 u. a., „Stärken Länderteams“ 00109–00111; em.exe (Aufstellung/Taktik des Vereins als
-  Ausgangspunkt, Unterschiede beim Nationalteam suchen). Verdeckung unten links beachten.
-- **Abnahme:** (1) Aufstellung und Taktik des Nationalteams über die Kacheln erreichbar, Änderungen wirken auf die
-  WM-Spiele (Test: andere Aufstellung → andere Stärke im nächsten WM-Spiel), Öffnen ohne Änderung ist zustandsrein;
-  (2) Spielstand: neuer Zustand mit Schemaversion und Migration, Roundtrip; (3) Pixelvergleich je Bildschirm mit den
-  genannten Videobildern (Kennzahl wie bei den Modusknöpfen in `wettbewerbe.md`, verdeckte Fläche ausgenommen),
-  Abweichungen begründet oder behoben; (4) Mehrsaisonprobe Modus 1 (4 Wechsel) mit geänderter Aufstellung.
-- **Dateigrenzen:** `UI/Screens/Competitions/**` (inkl. `NationalMenu.cs` – nur die Weiterleitung `Open`), `Core/CupsNational*.cs`,
-  `Core/SaveGame.Migration*.cs` (neue Datei) und Eintrag in `SaveGame.cs`, `Tools/Scenarios/Wettbewerbe.cs`,
-  `docs/wettbewerbe.md`. Vereinsbildschirme Aufstellung/Taktik nur lesen bzw. Bausteine in eine eigene Datei auslagern
-  (im PR begründen).
-- **Modell:** Claude Opus 5.5.
-- **Status:** PR #103 bereit zum Review (Base `cbc650c`). Abnahme 1–4 umgesetzt; Regeln, Kennzahlen und offene Befunde
-  (Taktik-Vorbelegung DGROUP 0x4911 ff., 22er-Grenze und Farbe beim Verein) in `docs/wettbewerbe.md`, Abschnitt
-  „Aufstellung und Taktik des Nationalteams“.
+### Spur `highscore-nacharbeit` – P3-Befunde der Bestenliste (#114, #115, #117)
 
-### Spur `tabellen-highscore` – „Tabelle DEB-Pokal“, „Tabelle Europapokal“, Highscore, Kachelsperren
-
-- **Ziel:** die drei verbliebenen Platzhalter ohne Abhängigkeit vom Live-Spiel schließen und die dynamischen
-  Kachelsperren des Originals (Werbung, Neuer, Highscore) umsetzen.
-- **Belege:** em.exe (Tabellen-Kacheln Symbolstart DGROUP 0x5149/0x5151, Datei 0x45B95; Sperren ab Datei 0x44FBD,
-  siehe `NationalMenu.cs`); Highscore im Video „Die Oberfläche von EM“ 8:40 (`oberflaeche_0840`, `kb\195`);
-  Spielende-Bildschirm verweist auf die Bestenliste (`SeasonEndGameOverScreen.cs`). Für die beiden Pokaltabellen gibt es
-  kein Videobild (`wettbewerbe.md`, „Weiterhin fehlen“) → Aufbau aus em.exe, Pixelvergleich entfällt, `[APPROX]` wo nötig.
-- **Abnahme:** (1) beide Pokaltabellen zeigen den aktuellen Stand aus `Cups*` (Test gegen einen nachgestellten
-  Pokalverlauf), zustandsrein; (2) Highscore: Eintrag zum belegten Zeitpunkt, Sortierung und Länge wie im Original,
-  dauerhaft gespeichert wie im Original (Datei oder Spielstand – belegen) und Pixelvergleich mit `oberflaeche_0840`;
-  (3) dynamische Sperren je Kachel mit Test gegen die em.exe-Bedingung; (4) Bildschirmfoto-Ablauf.
-- **Dateigrenzen:** neue Bildschirme in `UI/Screens/Competitions/` bzw. `UI/Screens/Statistics/` (eigene Dateien,
-  Anmeldung per `[MenuEntry]`), `Core/Statistics*.cs` bzw. neue `Core/Highscore*.cs`, `Tools/Scenarios/` (eigene Datei);
-  minimal und begründet: `NationalMenu.IsLocked` (Sperren) bzw. eine eigene Sperrdatei, `SeasonEndGameOverScreen.cs`.
-  **Konflikt mit `nationalteam-2`** nur in `NationalMenu.cs` möglich (getrennte Methoden) – der Zweite rebased.
-- **Modell:** Claude Sonnet 5.5.
-- **Status (Claude Code, 29.10.2026):** PR #104 `paket/tabellen-highscore`: Pokaltabellen + Sperren „Werbung“/„Neuer“
-  (em.exe: beide Tabellen-Kacheln öffnen dieselben Bildschirme wie die Paarungen). Highscore folgt in eigenem PR
-  (`paket/tabellen-highscore-bestenliste`).
-- **Status Teil 2 (Claude Code, 29.10.2026):** PR #111 `paket/tabellen-highscore-bestenliste`, Base `caf9700`, fertig zur
-  Prüfung: Highscore ([highscore.md](highscore.md)), Übersicht „DEB-Pokalspiele“ (#108), Hinweis „(Neuer)“ (#109).
-  Offen: [APPROX] Spielerwerte (0x49D36), Europa-Stufe/Pokalbytes 2–3, Penalty-vs-Verlängerung in der DEB-Übersicht (siehe PR).
-
-### Spur `speichern-reihenfolge` – Aufzählungsreihenfolge nach Remove/Add (#80)
-
-- **Ziel:** Befund S71-02 (#80, P3, in Runde 3 zurückgestellt): Nach Entfernen und Wiedereinfügen hängt die
-  Reihenfolge von Wörterbüchern/Mengen vom Verlauf ab; nach dem Laden ist sie anders.
-- **Abnahme:** (1) Gegenbeispiel aus dem Review (`docs/reviews/2026-10-28-speichern-68-70-71.md`, S71-02) als roter
-  Test; (2) Lösung nach Wahl, im PR begründet: reihenfolgerelevante Aufrufer stabil sortieren **oder** Sammlungen beim
-  Laden/Speichern in definierter Ordnung führen; (3) alle Zwillings- und Roundtrip-Proben grün, Schemaabdruck nur bei
-  echter Formatänderung (dann mit Migration).
-- **Dateigrenzen:** `Core/SaveGame*.cs`, betroffene Aufrufer minimal, `docs/formate/spielstand.md`.
+- **Ziel:** die Befunde H2-01, H2-02, H2-04 aus [Review Runde 4 Teil 2](reviews/2026-10-29-integration-runde-4-teil-2.md) schließen.
+- **Abnahme:** (1) H2-01: Titel „Highscore“ pixelgleich mit `oberflaeche_0844–0855` (Titelpixel x 117 … 202) – Korrektur nur
+  für diesen Aufruf oder in `CompetitionWidgets.Centered` mit Nachweis, dass alle übrigen Bildschirmfotos bytegleich
+  bleiben – oder `[APPROX]` mit Begründung; automatischer Pixeltest des Titels; Aussage „pixelgenau“ in
+  `docs/highscore.md` berichtigt. (2) H2-02: Test für die Bedingung „Dauer = eine Saison und Startliga = Bundesliga“
+  (Mutation `!(duration == 0)` muss rot werden). (3) H2-04: die drei Abweichungen der Punkteformel (Saisonzahl DGROUP
+  0x3BD, Platzierungsterm vor Spieltag 1, Titelzähler/16-Bit-Überlauf) umsetzen oder als `[APPROX]` in
+  `docs/highscore.md` führen; Wortlaut „Europa nur bei DEB-Sieger“.
+- **Dateigrenzen:** `Core/Highscore.cs`, `UI/Screens/Statistics/HighscoreScreen.cs`, `docs/highscore.md`, Tests
+  `Highscore*`; `CompetitionWidgets.cs` nur minimal und begründet.
 - **Modell:** Claude Sonnet 5.5 (klein).
-- **Status (29.10.2026):** erledigt, PR offen (Lösung: stabil sortieren in `GameState.PlayNextMatchDay`; Format und Schema unverändert).
+- **Status:** offen.
 
-### Integration Runde 4 (29.10.2026)
+### Spur `debpokal-auslosung` – Live-Auslosung im Spieltagsablauf (#116)
 
-Branch `integration/runde-4` von `main` `cbc650c`, Leitstelle Claude Code. Zusammengeführt: #103 (`nationalteam-2`,
-Head `38f0e70`), #104 (`tabellen-highscore` **Teil 1**: Pokaltabellen, Sperren Werbung/Neuer, Head `65446d5`; „Tabelle DEB-Pokal“ nach R4-01 zurückgestellt),
-#105 (`speichern-reihenfolge`, Head `f4ef3ab`).
+- **Ziel:** Die DEB-Pokal-Auslosung wie im Original im Tagesablauf zeigen; seit #111 ist `DebCupDrawScreen` im Spiel nicht
+  mehr erreichbar, `CupDrawStep` hat keinen UI-Verbraucher.
+- **Belege:** `docs/wettbewerbe.md` („Offen: Live-Auslosung mit Dialog ‚Sind Ihre Nerven stark genug …‘ nach dem dritten
+  Termin jeder Runde“); Zeitpunkt der Auslosung im Original nicht geprüft (Remake: Saisonbeginn, Restlücke Runde 3);
+  em.exe (Dialogtext, Aufrufer von 0xE8:0x75 und der Auslosung); Referenzvideos (`docs/referenz-videos.md`).
+- **Abnahme:** (1) Zeitpunkt und Ablauf der Auslosung aus em.exe belegt (`[ORIGINAL]` mit Fundstelle) und umgesetzt;
+  (2) Dialog und Auslosungsbildschirm im Spieltagsablauf, Antwort „nein“ überspringt die Anzeige ohne anderes Ergebnis;
+  (3) Regressionstest: Auslosung nach dem dritten Termin erscheint genau einmal je Runde, Paarungen gleich mit und ohne
+  Anzeige; (4) Mehrsaisonprobe (4 Wechsel) mit unveränderten Pokal-Referenzwerten bzw. begründeter Änderung;
+  (5) Bildschirmfoto-Ablauf.
+- **Dateigrenzen:** `Core/CupsDeb.cs`, `UI/Screens/Competitions/DebCupDraw*.cs`, `UI/Screens/MatchDayScreen.cs` bzw.
+  der Tagesablauf (minimal, begründet), `Core/GameState.Integration.cs` nur falls nötig, `Tools/Scenarios/` (eigene Datei),
+  `docs/wettbewerbe.md` (Abschnitt DEB-Pokal).
+- **Modell:** Claude Opus 5.5.
+- **Status:** offen.
 
-- Konflikt: `docs/wettbewerbe.md` (#103 × #104, Tabelle der Belege) – beide Zeilen übernommen. `NationalMenu.cs`
-  ohne Konflikt (#103 `Open`, #104 `IsLocked`).
-- Zusammenspiel neu getestet (`IntegrationRunde4Tests`, Originaldaten): eigene Aufstellung und Taktik des
-  Nationalteams überstehen Sichern/Laden über die Kacheln im Menü des Bundestrainers (Schema 4), Aufstellung/Taktik
-  öffnen danach zustandsrein; die neuen Sperren der Spielvorbereitung ändern das Menü des Bundestrainers nicht. Grün,
-  kein Integrationsfehler.
-- #105 lief in seiner Spur ohne Originaldaten; auf dem Integrationsstand mit Originaldaten grün (alle
-  Mehrsaison-Referenzwerte unverändert).
-- Doku `spielstand.md`: Migration 3 → 4 (aus #103) in der Tabelle ergänzt; Hinweis aus #105 auf Schema 4 angepasst.
-- Bildschirmfotos `wettbewerbe wm nationalteam weltkugel nationalteam-2 tabellen-pokale speichern`: ohne Fehler;
-  alle außer `speichern` (zufälliges Verzeichnis, bekannt) bytegleich mit dem Stand der jeweiligen Spur.
-- Review [integration-runde-4](reviews/2026-10-29-integration-runde-4.md): **R4-01 (P2, #108)** – „Tabelle DEB-Pokal“
-  führt im Original zur Übersicht „DEB-Pokalspiele“ (Datei 0x32E23), nicht zur Auslosung. Entscheidung des Nutzers
-  (29.10.2026): Kachel bis dahin wieder **Platzhalter** (Integrations-Branch), die Übersicht baut `tabellen-highscore`
-  Teil 2 mit. **R4-02 (P3, #109)** – Hinweis „(Neuer)“ bei vier Managern auf gesperrte Kachel → ebenfalls Teil 2.
-- **Offen:** `tabellen-highscore` Teil 2 (Highscore: Bestenliste, Sperre, Speicherung, Pixelvergleich) – noch nicht
-  begonnen; eigener PR nach dieser Integration. Befunde aus #103 für andere Spuren (Taktik-Vorbelegung DGROUP
-  0x4911–0x4925, Vereinsaufstellung ohne 22er-Grenze, Farbe 17) stehen in `docs/wettbewerbe.md`.
+### Spur `taktik-verein` – Taktik-Vorbelegung, 22er-Grenze, Farbe „Eingesetzt“ (Befunde aus #103)
 
-### Integration Runde 4, Teil 2 (29.10.2026)
+- **Ziel:** die in `docs/wettbewerbe.md` („Aufstellung und Taktik des Nationalteams“) festgehaltenen Befunde für Verein und
+  Nationalteam gemeinsam klären.
+- **Befunde:** (a) Taktik-Werte im Video (Block 1 Einsatz 60/0/25/20/30/0, Angriff 0/4/5/6/7/4) stehen in DGROUP
+  0x4911–0x4925 und widersprechen dem angenommenen Wertebereich −3 … +3 der Vereinstaktik; das Remake zeigt beim
+  Nationalteam alles 0. (b) Vereinsaufstellung zeichnet „Eingesetzt“ in Farbe 17 statt 16. (c) Vereinsaufstellung kennt
+  die Grenze von 22 Eingesetzten nicht.
+- **Abnahme:** (1) Bedeutung, Wertebereich und Vorbelegung der Taktikwerte aus em.exe belegt; Verein und Nationalteam
+  zeigen die Vorbelegung des Originals, Pixelvergleich Taktik Nationalteam mit Videobild 00058–00059 bzw. ein
+  Vereinsbild aus `oberflaeche`; (2) Farbe und 22er-Grenze mit Regressionstest (rot → grün) und Fundstelle, oder
+  begründet als Original-Verhalten belegt; (3) Auswirkung auf die Stärke (Test) und Spielstand (Schema/Migration nur bei
+  Formatänderung); (4) Mehrsaisonprobe, falls die Taktik die Spielstärke ändert.
+- **Dateigrenzen:** `Core/Squad.Tactics.cs`, `Core/Squad.Lineup.cs`, `Core/CupsNational.Lineup.cs`,
+  `UI/Screens/Team/TacticsScreen.cs`, `UI/Screens/Team/LineupScreen.cs`, `UI/Screens/Competitions/NationalLineupScreen.cs`,
+  `Core/SaveGame.Migration*.cs` (neue Datei), `docs/wettbewerbe.md` (Abschnitt Aufstellung/Taktik).
+- **Modell:** Claude Opus 5.5.
+- **Status:** offen.
 
-Branch `integration/runde-4-teil-2` von `main` `caf9700`, Leitstelle Claude Code. Zusammengeführt: #111
-(`tabellen-highscore` **Teil 2**: Highscore, Übersicht „DEB-Pokalspiele“ für #108, Hinweis „(Neuer)“ für #109, Head `25ed38f`).
+### Spur `finanzen-nachpruefung` – Monatsausgaben Wolfsburg, unabhängige Nachdisassembly
 
-- #111 ist direkt von `caf9700` abgezweigt: kein Konflikt, Baum des Merge-Commits gleich dem Spur-Head.
-- `tools/pruefen.sh` (alle drei Läufe) auf dem Integrationsstand grün; Bildschirmfotos `tabellen-pokale highscore
-  wettbewerbe nationalteam-2 weltkugel statistik` ohne Fehler.
-- Dateigrenzen-Ausnahmen der Spur (im Review prüfen): `DebCupDrawScreen.cs` (MenuEntry „DEB-Pokal“ → Übersicht),
-  `FinanceSponsorRating.cs` (optionaler Zufallsstrom, damit die Highscore-Anzeige `FinanceRandom` nicht verbraucht).
-- Offen aus der Spur (`[APPROX]`, `docs/highscore.md`): Spielerwerte 0x49D36, Europa-Stufe/Pokalbytes 2–3, Penalty vs.
-  Verlängerung in der DEB-Übersicht; Pixelvergleich Highscore nur gegen `oberflaeche_0848` (Abnahme nannte 0840 bzw. 0844–0855).
+- **Ziel:** die Restlücke aus Runde 3 klären und die `[ORIGINAL]`-Fundstellen der Finanzen von einem anderen Agenten als
+  dem ursprünglichen Bearbeiter (Claude) nachprüfen lassen.
+- **Befunde:** Karriere-Video ESC Wolfsburg (Level 3, Gehälter 20.710 DM) zeigt 87.370 DM Monatsausgaben, die Formel
+  (`0x3E811`) ergibt 73.977 DM; Differenz 13.393 DM (40.180 Drittel) ungeklärt (`docs/finanzen-rekonstruktion.md`).
+- **Abnahme:** (1) Differenz erklärt und behoben (roter Test aus dem Videowert) **oder** begründet als nicht belegbar
+  (z. B. andere Programmversion) dokumentiert; (2) jede `[ORIGINAL]`-Fundstelle in `Core/Finance*.cs` gegen em.exe
+  nachgeprüft, Ergebnis als Tabelle in `docs/finanzen-rekonstruktion.md` (bestätigt / abweichend / nicht prüfbar);
+  Abweichungen mit rotem Test behoben; (3) Mehrsaisonprobe (4 Wechsel, passiv und aktiv) – Referenzwerte unverändert
+  oder jede Änderung begründet.
+- **Dateigrenzen:** `Core/Finance*.cs` (außer `FinanceSponsorRating.cs` nur lesen), `docs/finanzen-rekonstruktion.md`,
+  Tests `Finance*`.
+- **Modell:** ChatGPT **GPT-6.1 Terra** (Codex) – Unabhängigkeit vom ursprünglichen Bearbeiter; ersatzweise Claude Opus 5.5
+  in einer frischen Sitzung.
+- **Status:** offen.
+
+### Spur `bundestrainer-modus4` – Bundestrainer im Modus 4 (Liga + Weltkugel)
+
+- **Ziel:** das Verhalten des Bundestrainers im Spielmodus 4 aus dem Original belegen und umsetzen (bisher
+  Referenzwerte Modus 4 nur „unverändert“ gesichert, `Mode4_ReferenceValues_Unchanged`).
+- **Belege:** em.exe (Ernennung, Menü des Bundestrainers, Kachelsperren in Modus 1 vs. 4), Reihe `bundestrainer`
+  (`docs/referenz-videos.md`), `docs/wettbewerbe.md` (Spielmodus „nur Weltkugel“).
+- **Abnahme:** (1) Ernennung, Menü und WM-Ablauf im Modus 4 aus em.exe belegt und umgesetzt, Unterschiede zu Modus 1
+  dokumentiert; (2) Regressionstest je belegtem Unterschied; (3) Mehrsaisonprobe Modus 4 (4 Wechsel, passiv/aktiv),
+  Änderungen der Referenzwerte begründet; (4) Spielstand: neuer Zustand mit Schema/Migration; (5) Bildschirmfoto-Ablauf.
+- **Dateigrenzen:** `Core/CupsNationalMode.cs`, `Core/CupsNational.GameState.cs`, `UI/Screens/Competitions/NationalMenu.cs`
+  (`Open`/`IsLocked`), `UI/Screens/Competitions/NationalSquadScreen.cs`, `Core/SaveGame.Migration*.cs` (neue Datei),
+  `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (Abschnitt Weltkugel/Bundestrainer).
+- **Modell:** Claude Opus 5.5.
+- **Status:** offen.
+
+### Spur `paarungen-liga` – Kacheln „Paarungen 1. Liga/2. Liga/Oberliga“ (Paket `wettbewerbe` PR 8)
+
+- **Ziel:** die drei Platzhalter-Kacheln schließen. Kein Videobild vorhanden → Aufbau aus em.exe, `[APPROX]` wo nötig.
+- **Belege:** em.exe (Aufrufer der drei Kacheln, Textbausteine); die Beschreibung in `docs/anforderungen/bildschirme.md`
+  stammt aus dem früheren Portierungsversuch und gilt nicht als Beleg (`docs/wettbewerbe.md`).
+- **Abnahme:** (1) Kachel → Bildschirm aus em.exe belegt (Stub, Layout, Inhalt); (2) Inhalt aus dem Spielplan
+  (`Season*`), Test gegen einen nachgestellten Spieltag; (3) Öffnen zustandsrein (Test); (4) Bildschirmfoto-Ablauf,
+  Pixelvergleich entfällt mangels Videobild.
+- **Dateigrenzen:** neue Datei(en) `UI/Screens/Competitions/LeaguePairings*.cs` mit `[MenuEntry]`, `Tools/Scenarios/`
+  (eigene Datei), `docs/wettbewerbe.md` (Abschnitt Paarungen), Tests `LeaguePairings*`; `Core/Season*.cs` nur lesen.
+- **Modell:** Claude Sonnet 5.5.
+- **Status:** offen.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - Statistiken Spieler, Verein, Fairplay, WM-Statistik: warten auf `livespiel` (Tore, Vorlagen, Strafen je Spieler).
-- Paarungen Liga (Paket `wettbewerbe` PR 8): kein Bildschirm im Referenzvideo nachgewiesen.
 - Import `*.HOK`: kein Original-Spielstand zum Nachprüfen des Formats vorhanden (`docs/formate/dateiformate.md`, „Offen“).
-- `finanzen`: Monatsausgaben ESC Wolfsburg (87.370 statt 73.977 DM), unabhängige Nachdisassembly der übrigen
-  `[ORIGINAL]`-Fundstellen.
-- Bundestrainer im Modus 4 (Liga + Weltkugel): Verhalten des Originals noch nicht belegt.
+- Inaktive Branches `paket/speichern-ids`, `paket/wettbewerbe-weltkugel-2` (ohne PR): Löschen nur nach Entscheidung des Nutzers.
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
-Branch: `paket/wettbewerbe` · Status: PR 1–7 gemergt (Runde 3); Restarbeiten in Runde 4 (`nationalteam-2`, `tabellen-highscore`), PR 8 zurückgestellt. Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
+Branch: `paket/wettbewerbe` · Status: PR 1–7 gemergt (Runde 3); Restarbeiten in Runde 4 gemergt; PR 8 in Runde 5 (`paarungen-liga`). Regeln und Belege: [wettbewerbe.md](wettbewerbe.md)
 
 | PR | Inhalt | Stand |
 |---|---|---|
@@ -139,7 +143,7 @@ Branch: `paket/wettbewerbe` · Status: PR 1–7 gemergt (Runde 3); Restarbeiten 
 | 5 | Statistiken: Ewige Tabelle (Totale), Früher | gemergt (Runde 3, #54) |
 | 6 | Bundestrainer: WM-Kader, „WM Vorbereitung“ (Freundschaftsspiele), Etat; WM: Werte Deutschlands neu ausgewürfelt, Länder 20-mal getauscht | gemergt (Runde 3, #54) |
 | 7 | Spielmodus „nur Weltkugel“: Spielvorbereitung, Vereinssaison überspringen, Menü des Bundestrainers | gemergt (#87 über #89) |
-| 8 | Paarungen Liga (kein Videobeleg) | offen |
+| 8 | Paarungen Liga (kein Videobeleg) | Runde 5, Spur `paarungen-liga` |
 | – | Statistiken Spieler, Verein, Fairplay, WM-Statistik | **wartet auf `livespiel`** (Tore, Vorlagen, Strafen je Spieler) |
 
 - Paarungen (Liga, Playoffs, DEB-Pokal, Europapokal, WM), Freundschaftsspiele.
@@ -149,7 +153,7 @@ Branch: `paket/wettbewerbe` · Status: PR 1–7 gemergt (Runde 3); Restarbeiten 
 
 ## Paket `speichern` – Laden und Sichern
 
-Branch: `paket/speichern` · Status: Format, Dialog und automatisches Speichern gemergt (Runde 3, [archiv/runde-3.md](archiv/runde-3.md)); #80 in Runde 4
+Branch: `paket/speichern` · Status: Format, Dialog und automatisches Speichern gemergt (Runde 3, [archiv/runde-3.md](archiv/runde-3.md)); #80 in Runde 4 behoben (#105)
 
 - Eigenes Spielstandformat, Laden/Sichern-Dialog wie im Original (Dateiliste, Verzeichnis, Dateiname).
 - Optional: Import von Original-Spielständen `*.HOK` (Verschlüsselung in `dateiformate.md`) – zurückgestellt, kein Original-Spielstand vorhanden.
