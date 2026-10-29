@@ -88,6 +88,15 @@ des Schemas.
 - **Zufall:** `GameRandom` als `{"$id", "next", "nextP", "seed": [56 Zahlen]}`; eine noch nicht erzeugte Quelle ist
   `null`.
 - **Gleiche Bytes:** gleicher Zustand ergibt dieselbe Datei; Sichern → Laden → Sichern ist bytegleich.
+- **Keine Sammlungshistorie (S71-02, #80):** Die Aufzählungsreihenfolge von `Dictionary` und `HashSet` hängt von früheren
+  Entnahmen ab (wiederverwendete Plätze). Der Reader baut die Sammlung neu auf und kennt diese Plätze nicht; Format
+  und Schema bleiben unverändert (Schemaabdruck, Version 3). Sichern → Laden → Sichern bleibt bytegleich, aber nach
+  einem späteren Entfernen und Einfügen kann die Reihenfolge von Original und geladenem Spiel abweichen. Deshalb gilt:
+  **Wo die Reihenfolge das Spiel beeinflusst (Zufallsverbrauch, Ergebnisreihenfolge), sortiert der Aufrufer stabil.**
+  Heute betrifft das `GameState.PlayNextMatchDay` (Ligen nach `League`); die Angebotslisten der Werbung bauen sich bei
+  jeder Erneuerung sortiert neu auf. Alle anderen Aufrufer nutzen Wörterbücher und Mengen nur für Zugriff,
+  Mitgliedschaft oder Maximum (z. B. `_readyManagers`). Wer eine neue Aufzählung einführt, die Ergebnisse oder
+  Zufall beeinflusst, sortiert sie und ergänzt einen Test in `SaveGameOrderTests`.
 - **Sichern** prüft vorher `ValidatePlayerIdentity()` und verweigert fehlerhafte Spielstände; **Laden** erzeugt immer
   einen neuen Spielstand und prüft ihn ebenso – der laufende bleibt bei einem Fehler unverändert.
 
