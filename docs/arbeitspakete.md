@@ -338,7 +338,7 @@ Stand: implementiert, lokale Abnahme grün; Review und Merge stehen aus (PR #87,
 - [x] (4) Bildschirmfoto-Ablauf `weltkugel`; Pixelvergleich der Modusknöpfe mit dem Video (2:13–2:30), Menü des
   Bundestrainers ohne Videobild; Bildschirme zustandsrein (`WorldOnly_CoachMenu_LocksAndRoutes_AndOpeningChangesNothing`).
 - Spielstand Schema 3 mit Migration (Fahne, Nationalbuch). Belege und `[APPROX]`: [wettbewerbe.md](wettbewerbe.md).
-- Offen: Aufstellung/Taktik des Nationalteams (Platzhalter), Lage von „Tabelle WM“ in `MenuTiles` (Original Platz 6),
+- Offen: Aufstellung/Taktik des Nationalteams (Platzhalter), Bildschirme „Tabelle DEB-Pokal“/„Tabelle Europapokal“ (Kacheln wie im Original, Platzhalter),
   weitere dynamische Sperren des Originals (Werbung, Neuer, Highscore), Bundestrainer im Modus 4.
 
 ### Zurückgestellt (Entscheidung Nutzer)

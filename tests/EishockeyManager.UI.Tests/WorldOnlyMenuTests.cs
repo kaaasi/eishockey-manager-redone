@@ -122,6 +122,9 @@ public class WorldOnlyMenuTests
         var game = Synthetic(globe: false);
         foreach (var tile in MenuTiles.Small.SelectMany(t => t).Where(t => !t.IsEmpty))
             Assert.Equal(NationalMenu.WorldTiles.Contains(tile.Name), NationalMenu.IsLocked(game, tile));
+        // [ORIGINAL] Datei 0x44FE8 ff.: Platz 6 der Reihen 2–4 und Platz 4 der Stärken.
+        Assert.Equal(["WM-Statistik", "Tabelle WM", "WM", "Stärken Länderteams"],
+            new[] { MenuTiles.Small[2][5], MenuTiles.Small[3][5], MenuTiles.Small[4][5], MenuTiles.Small[5][3] }.Select(t => t.Name));
         var full = Synthetic(globe: true);
         Assert.All(MenuTiles.Small.SelectMany(t => t), t => Assert.False(NationalMenu.IsLocked(full, t)));
     }
@@ -135,15 +138,13 @@ public class WorldOnlyMenuTests
             [1, 1, 1, 1, 1, 1], [0, 0, 1, 0, 0, 0], [1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 0],
             [1, 1, 1, 1, 1, 0], [1, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0],
         ];
-        // Remake-Platz → Original-Platz: nur „Tabelle WM“ weicht ab (Remake Platz 4, Original Platz 6).
         for (var row = 0; row < 7; row++)
             for (var slot = 0; slot < MenuTiles.Small[row].Length; slot++)
             {
                 var tile = MenuTiles.Small[row][slot];
                 if (tile.IsEmpty)
                     continue;
-                var original = tile.Name == "Tabelle WM" ? 5 : slot;
-                Assert.Equal(table[row][original] == 0, NationalMenu.CoachTiles.Contains(tile.Name));
+                Assert.Equal(table[row][slot] == 0, NationalMenu.CoachTiles.Contains(tile.Name));
             }
     }
 }

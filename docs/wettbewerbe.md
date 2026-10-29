@@ -201,7 +201,7 @@ Bildschirme (kein Videobeleg, Aufbau aus em.exe, Bildschirmfotos `emtool screens
 | `[APPROX]` Modus 1 nur mit genau einem Manager („Los jetzt!“ mit Meldung gesperrt) | – |
 | `[APPROX]` Modus 1 ohne Europapokal, Auf-/Abstieg, Oberliga-Wechsel, Prämien, Ligastatistik, Finanzen, Training, Markt und Vertragsmeldungen (kein Tageslauf vor der WM) | – |
 | `[APPROX]` Menü des Bundestrainers schon vor der Ernennung, Mannschaftskacheln bis dahin gesperrt; Aufstellung und Taktik des Nationalteams als Platzhalter | – |
-| `[APPROX]` Sperren je Kachelname: „Tabelle WM“ liegt im Remake auf Platz 4 der Tabellen, im Original auf Platz 6 (Symbolstart DGROUP 0x5149/0x5151: Plätze 4–6 = DEB-Pokal, Europapokal, WM) | – |
+| Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. Bildschirme für DEB-Pokal und Europapokal noch offen (Platzhalter) | DGROUP 0x5149/0x5151, Datei 0x45B95 |
 
 Das Nationalkonto führt eine Buchungsliste (`GameState.NationalBookings`: Etat, Freundschaftsspiele); Spielstand
 Schema 3. Pixelvergleich der Modusknöpfe mit dem Video „Die Oberfläche von EM“ (2:13–2:19 nur Weltkugel, 2:30 beide),

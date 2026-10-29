@@ -10,10 +10,6 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// (alle frei), 42 Bytes für den Zug des Nationalteams (Manager 5, Datei 0x44FBD). Im Spielmodus 2 sperrt das Original
 /// zusätzlich Platz 6 der Reihen Statistiken, Tabellen, Paarungen und Platz 4 der Stärken (Datei 0x44FE8–0x4501D).
 /// Gesperrte Kacheln zeigen das Symbol kb\3 (157 | 203) 38 × 28 und nehmen keinen Klick an (Datei 0x45B63).
-/// <para>
-/// Die Sperren gelten hier je Kachelname: Das Remake führt „Tabelle WM“ auf Platz 4 der Tabellen, das Original auf
-/// Platz 6 (Symbolstart DGROUP 0x5149/0x5151, dort Platz 4 und 5 = DEB-Pokal, Europapokal).
-/// </para>
 /// </remarks>
 public static class NationalMenu
 {
