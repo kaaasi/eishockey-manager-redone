@@ -51,11 +51,20 @@ public sealed class TacticsScreen : Screen
         new(attack ? 296 : 177, 102 + RowPitch * (int)situation, TeamUi.ArrowWidth, TeamUi.CompactArrowHeight);
 
     private readonly Screen _back;
+    private readonly Func<Tactics>? _tactics;
+    private readonly Func<Screen>? _lineup;
     private int _block;
 
     public TacticsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
-    private Tactics Tactics => TeamUi.OwnClub(Host).Tactics;
+    /// <summary>Taktik eines anderen Teams (Spur nationalteam-2: Nationalteam) mit eigenem Weg zur Aufstellung.</summary>
+    public TacticsScreen(ScreenHost host, Screen back, Func<Tactics> tactics, Func<Screen> lineup) : this(host, back)
+    {
+        _tactics = tactics;
+        _lineup = lineup;
+    }
+
+    private Tactics Tactics => _tactics?.Invoke() ?? TeamUi.OwnClub(Host).Tactics;
 
     /// <summary>Gewählter Block (0–3).</summary>
     public int Block => _block;
@@ -76,7 +85,9 @@ public sealed class TacticsScreen : Screen
 
         if (TeamUi.SwitchButton.Contains(x, y))
         {
-            if (MenuEntries.TryCreate("Aufstellung", Host, _back, out var lineup))
+            if (_lineup is not null)
+                Host.Show(_lineup());
+            else if (MenuEntries.TryCreate("Aufstellung", Host, _back, out var lineup))
                 Host.Show(lineup!);
             return;
         }

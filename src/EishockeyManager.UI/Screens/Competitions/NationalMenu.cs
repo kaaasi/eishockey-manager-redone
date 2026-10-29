@@ -45,7 +45,7 @@ public static class NationalMenu
         if (game.NationalCoachMenu)
             // [APPROX] Vor der Ernennung (Saisonbeginn bis zum ersten WM-Termin) bleibt auch die Mannschaft gesperrt.
             return !CoachTiles.Contains(tile.Name) || (game.NationalCoach is null && NeedsCoach.Contains(tile.Name));
-        return game.Mode == GameMode.ClubOnly && WorldTiles.Contains(tile.Name);
+        return (game.Mode == GameMode.ClubOnly && WorldTiles.Contains(tile.Name)) || TileLocks.IsLocked(game, tile); // Sperren der Spielvorbereitung (Spur tabellen-highscore)
     }
 
     /// <summary>
@@ -60,9 +60,9 @@ public static class NationalMenu
         {
             "Transfer" => new NationalSquadScreen(host, back),
             "Training" => new FriendliesScreen(host, back),
-            // [APPROX] Aufstellung und Taktik des Nationalteams sind noch nicht portiert (Aufstellung automatisch,
-            // siehe NationalCoach.Lineup); die Vereinsbildschirme dürfen hier nicht erscheinen.
-            "Aufstellung" or "Taktik" => new PlaceholderScreen(host, tile, back),
+            // [ORIGINAL] Gleiche Bildschirme wie beim Verein, aber mit dem WM-Kader (Datei 0x48E28, Spur nationalteam-2).
+            "Aufstellung" => new NationalLineupScreen(host, back),
+            "Taktik" => NationalLineupScreen.Tactics(host, back),
             _ => null,
         };
     }

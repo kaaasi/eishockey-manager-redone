@@ -39,6 +39,9 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
   `docs/wettbewerbe.md`. Vereinsbildschirme Aufstellung/Taktik nur lesen bzw. Bausteine in eine eigene Datei auslagern
   (im PR begründen).
 - **Modell:** Claude Opus 5.5.
+- **Status:** PR #103 bereit zum Review (Base `cbc650c`). Abnahme 1–4 umgesetzt; Regeln, Kennzahlen und offene Befunde
+  (Taktik-Vorbelegung DGROUP 0x4911 ff., 22er-Grenze und Farbe beim Verein) in `docs/wettbewerbe.md`, Abschnitt
+  „Aufstellung und Taktik des Nationalteams“.
 
 ### Spur `tabellen-highscore` – „Tabelle DEB-Pokal“, „Tabelle Europapokal“, Highscore, Kachelsperren
 
@@ -57,6 +60,9 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
   minimal und begründet: `NationalMenu.IsLocked` (Sperren) bzw. eine eigene Sperrdatei, `SeasonEndGameOverScreen.cs`.
   **Konflikt mit `nationalteam-2`** nur in `NationalMenu.cs` möglich (getrennte Methoden) – der Zweite rebased.
 - **Modell:** Claude Sonnet 5.5.
+- **Status (Claude Code, 29.10.2026):** PR #104 `paket/tabellen-highscore`: Pokaltabellen + Sperren „Werbung“/„Neuer“
+  (em.exe: beide Tabellen-Kacheln öffnen dieselben Bildschirme wie die Paarungen). Highscore folgt in eigenem PR
+  (`paket/tabellen-highscore-bestenliste`).
 
 ### Spur `speichern-reihenfolge` – Aufzählungsreihenfolge nach Remove/Add (#80)
 
@@ -68,6 +74,32 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
   echter Formatänderung (dann mit Migration).
 - **Dateigrenzen:** `Core/SaveGame*.cs`, betroffene Aufrufer minimal, `docs/formate/spielstand.md`.
 - **Modell:** Claude Sonnet 5.5 (klein).
+- **Status (29.10.2026):** erledigt, PR offen (Lösung: stabil sortieren in `GameState.PlayNextMatchDay`; Format und Schema unverändert).
+
+### Integration Runde 4 (29.10.2026)
+
+Branch `integration/runde-4` von `main` `cbc650c`, Leitstelle Claude Code. Zusammengeführt: #103 (`nationalteam-2`,
+Head `38f0e70`), #104 (`tabellen-highscore` **Teil 1**: Pokaltabellen, Sperren Werbung/Neuer, Head `65446d5`; „Tabelle DEB-Pokal“ nach R4-01 zurückgestellt),
+#105 (`speichern-reihenfolge`, Head `f4ef3ab`).
+
+- Konflikt: `docs/wettbewerbe.md` (#103 × #104, Tabelle der Belege) – beide Zeilen übernommen. `NationalMenu.cs`
+  ohne Konflikt (#103 `Open`, #104 `IsLocked`).
+- Zusammenspiel neu getestet (`IntegrationRunde4Tests`, Originaldaten): eigene Aufstellung und Taktik des
+  Nationalteams überstehen Sichern/Laden über die Kacheln im Menü des Bundestrainers (Schema 4), Aufstellung/Taktik
+  öffnen danach zustandsrein; die neuen Sperren der Spielvorbereitung ändern das Menü des Bundestrainers nicht. Grün,
+  kein Integrationsfehler.
+- #105 lief in seiner Spur ohne Originaldaten; auf dem Integrationsstand mit Originaldaten grün (alle
+  Mehrsaison-Referenzwerte unverändert).
+- Doku `spielstand.md`: Migration 3 → 4 (aus #103) in der Tabelle ergänzt; Hinweis aus #105 auf Schema 4 angepasst.
+- Bildschirmfotos `wettbewerbe wm nationalteam weltkugel nationalteam-2 tabellen-pokale speichern`: ohne Fehler;
+  alle außer `speichern` (zufälliges Verzeichnis, bekannt) bytegleich mit dem Stand der jeweiligen Spur.
+- Review [integration-runde-4](reviews/2026-10-29-integration-runde-4.md): **R4-01 (P2, #108)** – „Tabelle DEB-Pokal“
+  führt im Original zur Übersicht „DEB-Pokalspiele“ (Datei 0x32E23), nicht zur Auslosung. Entscheidung des Nutzers
+  (29.10.2026): Kachel bis dahin wieder **Platzhalter** (Integrations-Branch), die Übersicht baut `tabellen-highscore`
+  Teil 2 mit. **R4-02 (P3, #109)** – Hinweis „(Neuer)“ bei vier Managern auf gesperrte Kachel → ebenfalls Teil 2.
+- **Offen:** `tabellen-highscore` Teil 2 (Highscore: Bestenliste, Sperre, Speicherung, Pixelvergleich) – noch nicht
+  begonnen; eigener PR nach dieser Integration. Befunde aus #103 für andere Spuren (Taktik-Vorbelegung DGROUP
+  0x4911–0x4925, Vereinsaufstellung ohne 22er-Grenze, Farbe 17) stehen in `docs/wettbewerbe.md`.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 

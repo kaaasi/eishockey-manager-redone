@@ -88,6 +88,15 @@ des Schemas.
 - **Zufall:** `GameRandom` als `{"$id", "next", "nextP", "seed": [56 Zahlen]}`; eine noch nicht erzeugte Quelle ist
   `null`.
 - **Gleiche Bytes:** gleicher Zustand ergibt dieselbe Datei; Sichern → Laden → Sichern ist bytegleich.
+- **Keine Sammlungshistorie (S71-02, #80):** Die Aufzählungsreihenfolge von `Dictionary` und `HashSet` hängt von früheren
+  Entnahmen ab (wiederverwendete Plätze). Der Reader baut die Sammlung neu auf und kennt diese Plätze nicht; Format
+  und Schema bleiben unverändert (Schemaabdruck; bei Einreichung Version 3, nach Integration mit `nationalteam-2` Version 4). Sichern → Laden → Sichern bleibt bytegleich, aber nach
+  einem späteren Entfernen und Einfügen kann die Reihenfolge von Original und geladenem Spiel abweichen. Deshalb gilt:
+  **Wo die Reihenfolge das Spiel beeinflusst (Zufallsverbrauch, Ergebnisreihenfolge), sortiert der Aufrufer stabil.**
+  Heute betrifft das `GameState.PlayNextMatchDay` (Ligen nach `League`); die Angebotslisten der Werbung bauen sich bei
+  jeder Erneuerung sortiert neu auf. Alle anderen Aufrufer nutzen Wörterbücher und Mengen nur für Zugriff,
+  Mitgliedschaft oder Maximum (z. B. `_readyManagers`). Wer eine neue Aufzählung einführt, die Ergebnisse oder
+  Zufall beeinflusst, sortiert sie und ergänzt einen Test in `SaveGameOrderTests`.
 - **Sichern** prüft vorher `ValidatePlayerIdentity()` und verweigert fehlerhafte Spielstände; **Laden** erzeugt immer
   einen neuen Spielstand und prüft ihn ebenso – der laufende bleibt bei einem Fehler unverändert.
 
@@ -105,6 +114,7 @@ schreibt für **jeden** erreichbaren Typ ein leeres Objekt, auch für Typen, die
 |---|---|---|
 | 1 → 2 | Spur finanzen-2 (#67) | Neue Felder `GameState.NationalAccount` (0 – in Schema 1 lag der Etat schon auf dem Vereinskonto), `ManagerFinance.CostLeague` (aktuelle Liga des Vereins), `InterestAccrualThirds`/`ManagerLoanAccrualThirds` (0), `SponsorOffer`/`SponsorContract.OptionMonths` (0). Finanzbuch: Kategorie „Gastronomie“ (Index 1) entfällt, ihr Betrag geht in „Eintritt“, die Summe bleibt. Test: `FinanceSaveGameTests`. |
 | 2 → 3 | Spur wettbewerbe-weltkugel | `GameSetup.ClubCompetitions` (Fahne, Bit 0 des Spielmodus) = `true` – Schema 2 kannte nur Modi mit Vereinssaison, `DebCup` bleibt unverändert. Neue Liste `GameState.NationalBookings`; ein Nationalkonto ≠ 0 wird eine Buchung `Carryover`, damit Konto = Summe der Buchungen. Neue Objekte bekommen Objektnummern in Dateireihenfolge, alle `$ref` werden umnummeriert. Test: `GameModeSaveGameTests`. |
+| 3 → 4 | Spur nationalteam-2 (#103) | Bundestrainer: neue Felder `Formation` (leere Aufstellung), `Tactics` (Grundtaktik, alles `Auto`) und `_dressed` (niemand eingesetzt) – er spielt damit wie bisher mit der Automatik. Ohne Bundestrainer keine Änderung. Datei `SaveGame.Migration3.cs`, Test: `NationalLineupTests.SchemaThreeSave_*`. |
 
 Hinweis: Das Finanzbuch speichert je Kategorie nur ein Feld nach dem Index von `FinanceCategory`. Eine Änderung dieser
 Aufzählung ändert den Schemaabdruck **nicht** (die Aufzählung kommt in keinem Feldtyp vor) und braucht trotzdem

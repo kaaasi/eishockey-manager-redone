@@ -172,7 +172,7 @@ Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader a
 | Bonus auf drei Werte jedes Kaderspielers, einer eins weniger (x &gt; 2: der erste, sonst der zweite), höchstens 99 | 0x3C18C |
 | Länderspiele zählen für die Spieler der Aufstellung des Managers 5 | 0x872B |
 | `[APPROX]` Kandidaten: alle deutschen Spieler (keine Ausländer) der Ligavereine und des Transfermarkts, nach Summe absteigend – das Original listet seine 200 ausführlich geführten Spieler (Kader der Manager, Transfermarkt) | 0x3C5C9 |
-| `[APPROX]` Aufstellung des Nationalteams: bester Torhüter, drei Reihen à 2 Verteidiger + 3 Stürmer; Stärke = Mittel von (Kondition + Technik) / 2 über 16 Plätze (Lücken 0) | – |
+| `[APPROX]` Stärke des Nationalteams = Mittel von (Kondition + Technik) / 2 über Torhüter und Reihen 1–3 der Aufstellung (16 Plätze, Lücken 0) plus Taktikzuschlag; ohne Aufstellung die Automatik (bester Torhüter, je Reihe 2 Verteidiger + 3 Stürmer). Aufstellung und Taktik: Abschnitt „Aufstellung und Taktik des Nationalteams“ | – |
 | `[APPROX]` Felder 0x10–0x12 des Kaderplatzes als Kondition, Technik, Form gedeutet (Spaltenfolge „KO TE FO“) | – |
 | `[APPROX]` Energie 70 beim Öffnen von „WM Vorbereitung“ (Kaderfeld 0x13) nicht übernommen: Bildschirme ändern beim Öffnen nichts | 0x3BB51 |
 
@@ -181,6 +181,51 @@ Bildschirmfotos `emtool screens gamedata ~/work/screens nationalteam`):
 `UI/Screens/Competitions/NationalSquadScreen.cs` („Spieler in WM-Kader“, 0x3C37C) und `FriendliesScreen.cs`
 („WM Vorbereitung“, 0x3B8F7), Bausteine in `NationalWidgets.cs` (Kasten 0x3B700, Mannschaftsfeld 0x3B4C6). Im Spielmodus
 „nur Weltkugel“ sind beide über das Menü des Bundestrainers erreichbar (Abschnitt unten).
+
+## Aufstellung und Taktik des Nationalteams (Spur `nationalteam-2`, `Core/CupsNational.Lineup.cs`)
+
+Der Bundestrainer („Manager 5“) benutzt im Original dieselben Bildschirme wie ein Verein: Aufstellung 0x108:0x2a
+(Datei 0x40364) und Taktik, beide aus dem Menü über 0x118:0x43 (Datei 0x48E28) mit Kennwert 0. Overlay-Aufrufe
+aufgelöst mit Datei = 0x255C0 + Dword im Stub-Kopf (+4) + Funktionsoffset aus dem Stub-Eintrag (`CD 3F <offset>`).
+Kaderplatz 52 Byte: DGROUP 0x5DC3 + 0x618 · Manager + 0x34 · Platz, 29 Plätze.
+
+| Regel | Beleg |
+|---|---|
+| Feld 0x0A „eingesetzt“ (0/1), Feld 0x15 Platz in der Aufstellung; „Eingesetzt: n“ zählt Feld 0x0A ≠ 0 (0x120:0x66 Modus 3) | Datei 0x4BE17, 0x41D20 |
+| Aufnahme in den WM-Kader nullt den Platz: neue Kaderspieler sind weder eingesetzt noch aufgestellt; Kader nach Art sortiert | 0x42E2A, 0x42D46 |
+| Auf einen Platz setzen macht eingesetzt; bei 22 Eingesetzten wird ein weiterer abgewiesen: „Schon 22 Mann / im Team !“ (DGROUP 0x11D5) | 0x415B2, 0x40E2A–0x40E61 |
+| Platz leeren (aus dem Menü, Kennwert 0): auch nicht mehr eingesetzt | 0x40CF8–0x40D0D |
+| Linksklick (Mausereignis 1) auf einen eingesetzten, nicht aufgestellten Spieler nimmt ihn heraus; Rechtsklick (Ereignis 3) auf einen nicht eingesetzten setzt ihn ein | 0x40F45–0x40F59, 0x411FE; Ereignisse 0xBBF:0x24DF |
+| NR = Zeile im Kader (1–29), nur bei Eingesetzten; sonst NR und STATUS leer | Video 00056 |
+| „Eingesetzt: n“ in Farbe 16 (Füllung 4) | 0x41D61–0x41D9D |
+| `[APPROX]` Wer von einem besetzten Platz verdrängt wird, bleibt eingesetzt (RESERVE) | – |
+| `[APPROX]` Auto-Aufstellung „A“ wie beim Verein (drei Blöcke), dazu die stärksten Übrigen bis 22 eingesetzt; „C“ leert alle Plätze | – |
+| `[APPROX]` Linksklick auf nicht eingesetzte oder aufgestellte Spieler wählt sie aus (wie beim Verein); Spielerinfo auf Rechtsklick (0x40872) nicht übernommen | – |
+| `[APPROX]` Stärke aus Torhüter und Reihen 1–3 (Reihe 4 zählt nicht), Taktik wie beim Verein (`Tactics.EffortStrengthBonus`); ganz leere Aufstellung → bisherige Automatik | – |
+
+Spielstand Schema 4 (Migration 3 → 4: leere Aufstellung, Grundtaktik, niemand eingesetzt).
+Bildschirmfotos: `emtool screens gamedata ~/work/screens nationalteam-2` (Belegung wie im Video).
+
+**Pixelvergleich** (Grauwerte, mittlere Abweichung / Anteil > 40; Sprecher unten links und Mauszeiger maskiert; „pegelbereinigt“
+= nach linearer Anpassung Video ≈ 0,67…0,86 · Bild + 27…52, weil das Video Mitteltöne aufhellt und Weiß absenkt):
+
+| Bildschirm / Bereich | roh | pegelbereinigt |
+|---|---|---|
+| Aufstellung `bundestrainer_00056`, ganz | 18,9 / 11,2 % | 15,4 / 7,7 % |
+| – ohne Listeninhalt (andere Spieler und Werte als im Video) | 15,4 / 5,3 % | 11,3 / 4,2 % |
+| – Blöcke, TW, „Eingesetzt“, Umschalter (x ≥ 241) | 13,4 / 3,1 % | 8,2 / 2,2 % |
+| Taktik `bundestrainer_00058`, ganz | 14,2 / 4,0 % | 9,5 / 4,5 % |
+| – ohne Wertefelder Einsatz/Angriff (00058 / 00059) | 14,1 / 4,3 % / 4,2 % | 9,5 / 3,9 % · 9,4 / 4,1 % |
+
+Lage aller Teile stimmt (bester Versatz 0 | 0); Rest sind Schriftkanten, die anderen Spielerdaten und die Wertefelder.
+Behoben: Farbe von „Eingesetzt“ (17 → 16). Offen und nicht in dieser Spur (Vereinsbildschirme, `Squad.Tactics.cs`):
+
+- Das Video zeigt in der Taktik des Nationalteams Block 1 Einsatz 60/0/25/20/30/0 und Angriff 0/4/5/6/7/4 (gedimmt,
+  Modus AUTOM.). Die Teilfolgen 0, 0, 25, 20, 30, 0 und 0, 4, 5, 6, 7, 4 stehen in DGROUP 0x4911–0x4925. Das widerspricht
+  dem angenommenen Wertebereich −3…+3 der Vereinstaktik; Bedeutung und Vorbelegung sind für Verein und Nationalteam
+  gemeinsam zu klären. Das Remake zeigt beim Nationalteam die Grundtaktik (alles 0).
+- Die Vereinsaufstellung zeichnet „Eingesetzt“ in Farbe 17 statt 16 und kennt die Grenze von 22 Eingesetzten nicht
+  (gleicher Code im Original, Kennwert 0).
 
 ## Spielmodus „nur Weltkugel“ (Spur `wettbewerbe-weltkugel`, `Core/CupsNationalMode.cs`)
 
@@ -201,8 +246,9 @@ Bildschirmfotos `emtool screens gamedata ~/work/screens nationalteam`):
 | `[APPROX]` Halt nach dem Sprung vor dem ersten WM-Spiel, damit der Bundestrainer den Kader wählen kann | – |
 | `[APPROX]` Modus 1 nur mit genau einem Manager („Los jetzt!“ mit Meldung gesperrt) | – |
 | `[APPROX]` Modus 1 ohne Europapokal, Auf-/Abstieg, Oberliga-Wechsel, Prämien, Ligastatistik, Finanzen, Training, Markt und Vertragsmeldungen (kein Tageslauf vor der WM) | – |
-| `[APPROX]` Menü des Bundestrainers schon vor der Ernennung, Mannschaftskacheln bis dahin gesperrt; Aufstellung und Taktik des Nationalteams als Platzhalter | – |
-| Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. Bildschirme für DEB-Pokal und Europapokal noch offen (Platzhalter) | DGROUP 0x5149/0x5151, Datei 0x45B95 |
+| `[APPROX]` Menü des Bundestrainers schon vor der Ernennung, Mannschaftskacheln bis dahin gesperrt | – |
+| Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. „Tabelle DEB-Pokal“ und „Tabelle Europapokal“ rufen dieselben Bildschirme auf wie „DEB-Pokal“ und „Europapokal“ bei den Paarungen (0xE8:0x75 bzw. 0xF8:0x3E mit Seitenwert 3, Datei 0x4584A/0x4584C; Spur `tabellen-highscore`, `CupTableMenuEntries`). 0xE8:0x75 ist die Übersicht „DEB-Pokalspiele“ (Datei 0x32E23, Gegner und Ergebnisse), nicht die Auslosung – im Remake noch Platzhalter (R4-01, #108); die Paarungs-Kachel „DEB-Pokal“ zeigt bis dahin weiter die Auslosung (`[APPROX]`) | DGROUP 0x5149/0x5151, Datei 0x45B95, 0x45829 ff. |
+| Kachelsperren der Spielvorbereitung (Reihe Manager): „Neuer“ gesperrt bei vier Managern (DGROUP 0x386), „Werbung“ gesperrt bei der Spieldauer „eine Saison“ (Spielende DGROUP 0x5A14 = 1994) | Datei 0x45057, 0x45079, 0x2987C; `UI/Screens/TileLocks.cs` |
 
 Das Nationalkonto führt eine Buchungsliste (`GameState.NationalBookings`: Etat, Freundschaftsspiele); Spielstand
 Schema 3. Pixelvergleich der Modusknöpfe mit dem Video „Die Oberfläche von EM“ (2:13–2:19 nur Weltkugel, 2:30 beide),
