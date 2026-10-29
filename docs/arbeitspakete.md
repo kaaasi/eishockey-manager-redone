@@ -39,6 +39,9 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
   `docs/wettbewerbe.md`. Vereinsbildschirme Aufstellung/Taktik nur lesen bzw. Bausteine in eine eigene Datei auslagern
   (im PR begründen).
 - **Modell:** Claude Opus 5.5.
+- **Status:** PR #103 bereit zum Review (Base `cbc650c`). Abnahme 1–4 umgesetzt; Regeln, Kennzahlen und offene Befunde
+  (Taktik-Vorbelegung DGROUP 0x4911 ff., 22er-Grenze und Farbe beim Verein) in `docs/wettbewerbe.md`, Abschnitt
+  „Aufstellung und Taktik des Nationalteams“.
 
 ### Spur `tabellen-highscore` – „Tabelle DEB-Pokal“, „Tabelle Europapokal“, Highscore, Kachelsperren
 
