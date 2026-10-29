@@ -76,6 +76,27 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
 - **Modell:** Claude Sonnet 5.5 (klein).
 - **Status (29.10.2026):** erledigt, PR offen (Lösung: stabil sortieren in `GameState.PlayNextMatchDay`; Format und Schema unverändert).
 
+### Integration Runde 4 (29.10.2026)
+
+Branch `integration/runde-4` von `main` `cbc650c`, Leitstelle Claude Code. Zusammengeführt: #103 (`nationalteam-2`,
+Head `38f0e70`), #104 (`tabellen-highscore` **Teil 1**: Pokaltabellen, Sperren Werbung/Neuer, Head `65446d5`),
+#105 (`speichern-reihenfolge`, Head `f4ef3ab`).
+
+- Konflikt: `docs/wettbewerbe.md` (#103 × #104, Tabelle der Belege) – beide Zeilen übernommen. `NationalMenu.cs`
+  ohne Konflikt (#103 `Open`, #104 `IsLocked`).
+- Zusammenspiel neu getestet (`IntegrationRunde4Tests`, Originaldaten): eigene Aufstellung und Taktik des
+  Nationalteams überstehen Sichern/Laden über die Kacheln im Menü des Bundestrainers (Schema 4), Aufstellung/Taktik
+  öffnen danach zustandsrein; die neuen Sperren der Spielvorbereitung ändern das Menü des Bundestrainers nicht. Grün,
+  kein Integrationsfehler.
+- #105 lief in seiner Spur ohne Originaldaten; auf dem Integrationsstand mit Originaldaten grün (alle
+  Mehrsaison-Referenzwerte unverändert).
+- Doku `spielstand.md`: Migration 3 → 4 (aus #103) in der Tabelle ergänzt; Hinweis aus #105 auf Schema 4 angepasst.
+- Bildschirmfotos `wettbewerbe wm nationalteam weltkugel nationalteam-2 tabellen-pokale speichern`: ohne Fehler;
+  alle außer `speichern` (zufälliges Verzeichnis, bekannt) bytegleich mit dem Stand der jeweiligen Spur.
+- **Offen:** `tabellen-highscore` Teil 2 (Highscore: Bestenliste, Sperre, Speicherung, Pixelvergleich) – noch nicht
+  begonnen; eigener PR nach dieser Integration. Befunde aus #103 für andere Spuren (Taktik-Vorbelegung DGROUP
+  0x4911–0x4925, Vereinsaufstellung ohne 22er-Grenze, Farbe 17) stehen in `docs/wettbewerbe.md`.
+
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - Statistiken Spieler, Verein, Fairplay, WM-Statistik: warten auf `livespiel` (Tore, Vorlagen, Strafen je Spieler).
