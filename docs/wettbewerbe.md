@@ -186,6 +186,30 @@ noch nicht im Hauptmenü erreichbar: Das Menü des Bundestrainers (Manager 5) fo
 deutet das Remake den linken Knopf als „DEB-Pokal an/aus“), Überspringen der Vereinssaison bis zum ersten WM-Termin,
 Ernennung des Managers 0 zu jeder Saison, Hauptmenü des Bundestrainers mit der Kachelfreischaltung oben.
 
+**Fehlende Vorlagebilder (Modus „nur Weltkugel“):** Seit der Reihe `bundestrainer` (WM-Video, `docs/referenz-videos.md`;
+Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**
+
+- Hauptmenü des Bundestrainers, Infoleiste nach dem Sprung zum 14. April (00026–00041: Gegner Schweiz, Nationalkonto
+  500.000 DM; nach den Freundschaftsspielen 400.000 / 290.000 / 160.000 / 100.000 / 0 DM bei 00132, 00211, 00257, 00336,
+  00404) und an den WM-Tagen 16.–28. April (00450, 00515, 00545, 00603, 00630, 00700, 00726).
+- Kachelreihen und Sperren: Mannschaft = Aufstellung (vom Sprecher verdeckt), Taktik, gesperrt (Verträge), Transfer,
+  Training, leer (00053, 00057, 00100); Stärken = drei gesperrt, „WM“ (Länderteams) offen, zwei leer (00108, 00136, 00611);
+  Manager = alle sechs gesperrt (00042, 00220, 00418). Passt zur Sperrtabelle DGROUP 0x5159 (Pixelvergleich steht aus).
+- „Spieler in WM-Kader“ 00044–00052; Aufstellung 00056 und Taktik 00058–00059 des Nationalteams.
+- „WM Vorbereitung“ 00104–00106 (Knopf „Heim“ 00106), 00116–00119, 00141–00156, 00224–00245, 00307–00323,
+  00349–00352 („Auswärts“ 00350) u. a.; danach Banner „Freundschaftsspiel“ (00120) und Live-Spiel (00122–00129).
+- „Stärken Länderteams – Gesamt“ im Modus „nur Weltkugel“ 00109–00111, 00214–00218, 00605–00607.
+- WM-Spiele: Banner „Weltmeisterschaft“ (00422), Live-Spiel mit Anzeigetafel und Reporter (00424–00436), Ergebnisse
+  „Gruppe 1/2 60. Min.“ (00437–00445, 00529–00534), Tabelle WM „Gruppe 1/2“ nach jedem Spieltag (00446–00449,
+  00535–00544, 00559–00602), „WM-Endrundenspiele“ (00642–00645, 00647–00653, 00719–00725, 00744; dazwischen „Spiele laufen“ 00646), Weltmeister `kb\16` (00745–00809);
+  Gegner-Fenster aus der Infoleiste 00417, 00610, 00657–00659.
+
+**Weiterhin fehlen:** Spielvorbereitung mit den Modusknöpfen (nur „Die Oberfläche von EM“ 2:13–2:30), Infoleiste am
+Saisonbeginn, die Kachelreihen Statistiken, Tabellen und Paarungen (im Video nicht geöffnet), „Tabelle WM“ über die
+Tabellen-Kachel (nur die Gruppentabellen nach dem Spieltag), die geöffneten Kacheln „Tabelle DEB-Pokal“ und
+„Tabelle EuroCup“, WM-Statistik, Saisonende im Modus „nur Weltkugel“ (das Video endet mit dem Weltmeister-Bild) und
+Torszenen.
+
 Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien
 Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Ein Bildschirm „Paarungen Liga“ ist in
 den Referenzvideos nicht zu sehen. Handbuchkorrektur im `infofile`: WM-Platzierungsspiele 9–12 (Verlierer/Sieger der
