@@ -309,6 +309,11 @@ Danach Abschluss von Runde 3 (Archiv, offene Restlücken nach Runde 4).
   Tagesabschluss (`GameState.Integration.cs`). `Core/SaveGame*.cs` nur für eine nötige API, kein Formatwechsel.
 - Nicht enthalten: Import `*.HOK`, #80.
 
+### Status Spur `speichern-dialog`
+
+Stand 29.10.2026: begonnen (Branch `paket/speichern-dialog`, Base `f642ef8`, Bearbeiter Claude Code). Der Plan steht im
+Draft-PR; Belege aus Video und `em.exe` kommen mit der Umsetzung nach `docs/formate/spielstand.md`.
+
 ### Spur `wettbewerbe-weltkugel` – Spielmodus „nur Weltkugel“ (Paket `wettbewerbe`, PR 7)
 
 - **Ziel:** wie in `docs/wettbewerbe.md` („Noch offen“): Auswahl des Spielmodus in der Spielvorbereitung (Fahne/Weltkugel,
