@@ -79,7 +79,7 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
 ### Integration Runde 4 (29.10.2026)
 
 Branch `integration/runde-4` von `main` `cbc650c`, Leitstelle Claude Code. Zusammengeführt: #103 (`nationalteam-2`,
-Head `38f0e70`), #104 (`tabellen-highscore` **Teil 1**: Pokaltabellen, Sperren Werbung/Neuer, Head `65446d5`),
+Head `38f0e70`), #104 (`tabellen-highscore` **Teil 1**: Pokaltabellen, Sperren Werbung/Neuer, Head `65446d5`; „Tabelle DEB-Pokal“ nach R4-01 zurückgestellt),
 #105 (`speichern-reihenfolge`, Head `f4ef3ab`).
 
 - Konflikt: `docs/wettbewerbe.md` (#103 × #104, Tabelle der Belege) – beide Zeilen übernommen. `NationalMenu.cs`
@@ -93,6 +93,10 @@ Head `38f0e70`), #104 (`tabellen-highscore` **Teil 1**: Pokaltabellen, Sperren W
 - Doku `spielstand.md`: Migration 3 → 4 (aus #103) in der Tabelle ergänzt; Hinweis aus #105 auf Schema 4 angepasst.
 - Bildschirmfotos `wettbewerbe wm nationalteam weltkugel nationalteam-2 tabellen-pokale speichern`: ohne Fehler;
   alle außer `speichern` (zufälliges Verzeichnis, bekannt) bytegleich mit dem Stand der jeweiligen Spur.
+- Review [integration-runde-4](reviews/2026-10-29-integration-runde-4.md): **R4-01 (P2, #108)** – „Tabelle DEB-Pokal“
+  führt im Original zur Übersicht „DEB-Pokalspiele“ (Datei 0x32E23), nicht zur Auslosung. Entscheidung des Nutzers
+  (29.10.2026): Kachel bis dahin wieder **Platzhalter** (Integrations-Branch), die Übersicht baut `tabellen-highscore`
+  Teil 2 mit. **R4-02 (P3, #109)** – Hinweis „(Neuer)“ bei vier Managern auf gesperrte Kachel → ebenfalls Teil 2.
 - **Offen:** `tabellen-highscore` Teil 2 (Highscore: Bestenliste, Sperre, Speicherung, Pixelvergleich) – noch nicht
   begonnen; eigener PR nach dieser Integration. Befunde aus #103 für andere Spuren (Taktik-Vorbelegung DGROUP
   0x4911–0x4925, Vereinsaufstellung ohne 22er-Grenze, Farbe 17) stehen in `docs/wettbewerbe.md`.

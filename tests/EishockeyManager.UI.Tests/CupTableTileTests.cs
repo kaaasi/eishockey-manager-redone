@@ -10,7 +10,7 @@ namespace EishockeyManager.UI.Tests;
 /// Spur tabellen-highscore: die Kacheln „Tabelle DEB-Pokal“ und „Tabelle Europapokal“.
 /// [ORIGINAL] Beide rufen in em.exe (Hauptmenü Datei 0x45829 ff.) dieselben Bildschirmfunktionen auf wie die
 /// Kacheln „DEB-Pokal“ und „Europapokal“ der Reihe Paarungen: „Tabelle DEB-Pokal“ → Stub 0xE8:0x75 (0, 0)
-/// (Datei 0x4584A → 0x45897, Bildschirm „DEB-Pokal Auslosung“, Datei 0x33B83), „Tabelle Europapokal“ → Stub 0xF8:0x3E
+/// (Datei 0x32E23, „DEB-Pokalspiele“ – im Remake noch Platzhalter, R4-01/#108), „Tabelle Europapokal“ → Stub 0xF8:0x3E
 /// mit dem Seitenwert DGROUP 0x5123 = 3 (gleicher Wert wie DGROUP 0x5126 der Paarungen: Europacup Gruppe 1).
 /// </summary>
 public class CupTableTileTests
@@ -18,47 +18,11 @@ public class CupTableTileTests
     [Fact]
     public void Tiles_AreRegistered_WithoutPlaceholder()
     {
-        Assert.True(MenuEntries.All.ContainsKey("Tabelle DEB-Pokal"));
         Assert.True(MenuEntries.All.ContainsKey("Tabelle Europapokal"));
-    }
-
-    [GameDataFact]
-    public void TableDebCup_ShowsCurrentRoundDraw_WithoutChangingState()
-    {
-        var d = FlowTests.CreateDriver();
-        d.StartNewGame();
-        var game = d.Host.Game!;
-        var before = StateFingerprint.Of(game);
-
-        d.OpenTile("Tabelle DEB-Pokal");
-        d.Frame();
-        var screen = Assert.IsType<DebCupDrawScreen>(d.Host.Current);
-        Assert.Equal(game.DebCup!.Draw.Select(c => (int?)c), screen.Slots);
-
-        d.Press(Key.Space);
-        Assert.IsType<MainMenuScreen>(d.Host.Current);
-        Assert.Equal(before, StateFingerprint.Of(game));
-    }
-
-    /// <summary>Nach einem nachgestellten Pokalverlauf zeigt die Kachel den neuen Stand (zweite Runde, 16 Plätze).</summary>
-    [GameDataFact]
-    public void TableDebCup_FollowsCupProgress()
-    {
-        var d = FlowTests.CreateDriver();
-        d.StartNewGame();
-        var game = d.Host.Game!;
-        var cup = game.DebCup!;
-        var first = cup.Draw.ToList();
-        while (cup.Rounds.Count < 2 && !game.IsGameOver)
-            d.PlayMatchDay();
-        Assert.True(cup.Rounds.Count >= 2, "Pokalverlauf nicht bis zur zweiten Runde gespielt");
-
-        d.OpenTile("Tabelle DEB-Pokal");
-        d.Frame();
-        var screen = Assert.IsType<DebCupDrawScreen>(d.Host.Current);
-        Assert.Equal(DebCup.Teams / 2, screen.Slots.Count);
-        Assert.NotEqual(first.Count, screen.Slots.Count);
-        Assert.Equal(cup.Draw.Select(c => (int?)c), screen.Slots);
+        // R4-01 (#108): „Tabelle DEB-Pokal“ führt im Original zur Übersicht „DEB-Pokalspiele“ (Datei 0x32E23), nicht zur
+        // Auslosung. Bis diese gebaut ist, bleibt die Kachel ein dokumentierter Platzhalter.
+        Assert.False(MenuEntries.All.ContainsKey("Tabelle DEB-Pokal"));
+        Assert.Contains("Tabelle DEB-Pokal", MenuEntryTests.DocumentedPlaceholders);
     }
 
     [GameDataFact]
