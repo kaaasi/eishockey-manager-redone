@@ -77,7 +77,7 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
   `UI/Screens/Team/TacticsScreen.cs`, `UI/Screens/Team/LineupScreen.cs`, `UI/Screens/Competitions/NationalLineupScreen.cs`,
   `Core/SaveGame.Migration*.cs` (neue Datei), `docs/wettbewerbe.md` (Abschnitt Aufstellung/Taktik).
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** PR #121 (zur Prüfung): Taktikwerte nach em.exe (Einsatz 0–100 %, Angriff 0–7, Vorbelegung der Automatik), Vereinsaufstellung mit 22 Eingesetzten und Farbe 16, Schema 5. Offen: Spielvorbereitung je Paarung (Automatik gegen den echten Gegner) erst mit `livespiel`.
 
 ### Spur `finanzen-nachpruefung` – Monatsausgaben Wolfsburg, unabhängige Nachdisassembly
 
