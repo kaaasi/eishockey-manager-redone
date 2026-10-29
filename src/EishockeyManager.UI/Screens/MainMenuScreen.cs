@@ -1,4 +1,5 @@
 using EishockeyManager.Core;
+using EishockeyManager.UI.Screens.Competitions;
 
 namespace EishockeyManager.UI.Screens;
 
@@ -66,7 +67,7 @@ public sealed class MainMenuScreen : Screen
             var tiles = SmallTiles[_selectedBig];
             for (var i = 0; i < tiles.Length; i++)
             {
-                if (input.Clicked(SmallTile(i)) && !tiles[i].IsEmpty)
+                if (input.Clicked(SmallTile(i)) && !tiles[i].IsEmpty && !NationalMenu.IsLocked(Game, tiles[i]))
                 {
                     Host.Show(OpenTile(tiles[i]));
                     return;
@@ -99,7 +100,8 @@ public sealed class MainMenuScreen : Screen
 
     /// <summary>Bildschirm zu einer kleinen Kachel – angemeldet per <see cref="MenuEntryAttribute"/>, sonst Platzhalter.</summary>
     private Screen OpenTile(MenuTile tile) =>
-        MenuEntries.TryCreate(tile.Name, Host, this, out var screen) ? screen! : new PlaceholderScreen(Host, tile.Name, this);
+        NationalMenu.Open(Game, tile.Name, Host, this) // Menü des Bundestrainers (Spur wettbewerbe-weltkugel)
+        ?? (MenuEntries.TryCreate(tile.Name, Host, this, out var screen) ? screen! : new PlaceholderScreen(Host, tile.Name, this));
 
     public override void Draw(Surface s)
     {
@@ -125,8 +127,9 @@ public sealed class MainMenuScreen : Screen
             {
                 var r = SmallTile(i);
                 Widgets.Frame(s, Assets, r, FrameStyle.Orange, Colors.TileBackground);
-                s.Blit(sheet, tiles[i].Source, r.X + 5, r.Y + 5);
-                if (!tiles[i].IsEmpty && r.Contains(_mouseX, _mouseY))
+                var locked = NationalMenu.IsLocked(Game, tiles[i]); // Kachelsperren (Spur wettbewerbe-weltkugel)
+                s.Blit(sheet, locked ? NationalMenu.LockedIcon : tiles[i].Source, r.X + 5, r.Y + 5);
+                if (!tiles[i].IsEmpty && !locked && r.Contains(_mouseX, _mouseY))
                     s.HLine(r.X + 4, r.Bottom - 5, r.W - 8, Colors.Yellow);
             }
         }
@@ -138,7 +141,8 @@ public sealed class MainMenuScreen : Screen
     {
         var game = Game;
         var manager = game.ActiveManager;
-        var club = game.Clubs[manager.ClubIndex];
+        var team = NationalMenu.Team(game); // Bundestrainer: Nationalteam statt Verein (Spur wettbewerbe-weltkugel)
+        var club = game.Clubs[team];
         var mini = Assets.Mini;
         var sheet = Assets.Image(TileSheet);
 
@@ -151,8 +155,12 @@ public sealed class MainMenuScreen : Screen
         // Nachrichtenfeld
         Raised(s, new Rect(3, 32, 103, 41));
         // Datum und „n.Spieltag“ beziehen sich auf den nächsten Termin (siehe docs/saison.md)
-        var next = game.UpcomingMatch(manager.ClubIndex);
-        if (game.PlayedMatchDays == 0)
+        var next = game.UpcomingMatch(team);
+        if (game.NationalCoachMenu)
+        {
+            // [APPROX] Ohne Liga keine Tabellenkurve; der Bundestrainer sieht hier nichts (kein Videobeleg).
+        }
+        else if (game.PlayedMatchDays == 0)
             s.Text(mini, 5, 35, "Vor dem ersten Spieltag.", Colors.White);
         else if (game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver)
         {
@@ -160,7 +168,7 @@ public sealed class MainMenuScreen : Screen
                 s.TextCentered(mini, 55, 35, $"{md}.Spieltag", Colors.White);
             if (next?.Opponent.Index is { } o)
                 DrawRankCurve(s, game, o, Colors.White);
-            DrawRankCurve(s, game, manager.ClubIndex, Colors.Yellow);
+            DrawRankCurve(s, game, team, Colors.Yellow);
         }
 
         // Symbole: Wettbewerb, Heim/Auswärts, bisherige Begegnungen, Kontostand
@@ -171,8 +179,8 @@ public sealed class MainMenuScreen : Screen
         s.Blit(sheet, new Rect(27, 231, 27, 11), 111, 61);
 
         s.TextCentered(mini, 184, 38, next?.Opponent.Name ?? SeasonInfo.NoMatchText(game), Colors.White);
-        s.TextCentered(mini, 184, 51, MeetingsText(game, manager.ClubIndex, next?.Opponent.Index), Colors.White);
-        s.TextCentered(mini, 184, 64, GameState.FormatMoney(manager.Money), Colors.White);
+        s.TextCentered(mini, 184, 51, MeetingsText(game, team, next?.Opponent.Index), Colors.White);
+        s.TextCentered(mini, 184, 64, GameState.FormatMoney(NationalMenu.Money(game)), Colors.White);
 
         // Lampen je Manager: rot = noch nicht bereit (am Zug bzw. noch dran), grün = bereit (Hot-Seat, R2-06).
         // [APPROX] Unbelegte Lampen und entlassene Manager grün; sechs Lampen bei höchstens vier Managern nicht geklärt.

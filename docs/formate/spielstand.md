@@ -57,7 +57,7 @@ des Schemas.
 ```json
 {
   "kennung": "EISHOCKEY-MANAGER-REDONE-SPIELSTAND",
-  "schema": 2,
+  "schema": 3,
   "spiel":   { …Felder von GameState… },
   "vereine": [ { …Felder von Club… }, … ],     // Reihenfolge = GameState.Clubs
   "manager": [ { …Felder von Manager… }, … ],  // Reihenfolge = GameState.Managers
@@ -104,6 +104,7 @@ schreibt für **jeden** erreichbaren Typ ein leeres Objekt, auch für Typen, die
 | Von → nach | Anlass | Änderung |
 |---|---|---|
 | 1 → 2 | Spur finanzen-2 (#67) | Neue Felder `GameState.NationalAccount` (0 – in Schema 1 lag der Etat schon auf dem Vereinskonto), `ManagerFinance.CostLeague` (aktuelle Liga des Vereins), `InterestAccrualThirds`/`ManagerLoanAccrualThirds` (0), `SponsorOffer`/`SponsorContract.OptionMonths` (0). Finanzbuch: Kategorie „Gastronomie“ (Index 1) entfällt, ihr Betrag geht in „Eintritt“, die Summe bleibt. Test: `FinanceSaveGameTests`. |
+| 2 → 3 | Spur wettbewerbe-weltkugel | `GameSetup.ClubCompetitions` (Fahne, Bit 0 des Spielmodus) = `true` – Schema 2 kannte nur Modi mit Vereinssaison, `DebCup` bleibt unverändert. Neue Liste `GameState.NationalBookings`; ein Nationalkonto ≠ 0 wird eine Buchung `Carryover`, damit Konto = Summe der Buchungen. Neue Objekte bekommen Objektnummern in Dateireihenfolge, alle `$ref` werden umnummeriert. Test: `GameModeSaveGameTests`. |
 
 Hinweis: Das Finanzbuch speichert je Kategorie nur ein Feld nach dem Index von `FinanceCategory`. Eine Änderung dieser
 Aufzählung ändert den Schemaabdruck **nicht** (die Aufzählung kommt in keinem Feldtyp vor) und braucht trotzdem

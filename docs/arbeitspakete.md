@@ -325,6 +325,22 @@ Danach Abschluss von Runde 3 (Archiv, offene Restlücken nach Runde 4).
 - **Abhängigkeit:** berührt `GameState.Integration.cs` wie `speichern-dialog` – getrennte Aufrufe, Konflikt beim Zweiten
   per Rebase lösen.
 
+### Status Spur `wettbewerbe-weltkugel`
+
+Stand: implementiert, lokale Abnahme grün; Review und Merge stehen aus (PR #87, Branch `paket/wettbewerbe-weltkugel`).
+
+- [x] (1) Spielmodus aus Fahne/Weltkugel wie im Original (Bits → 1/2/4, Fahne nur mit einem Manager, ohne Modus kein
+  Start); Tests `GameModeTests.Mode_*`, `WorldOnlyMenuTests.Setup_Buttons_GiveOriginalModes`.
+- [x] (2) Modus 1: Sprung zum ersten WM-Termin über `Continue()`, Ernennung, WM vollständig, keine Liga, keine
+  Vereinsbuchungen (`WorldOnly_SeasonRunsThroughWorldCup_WithoutLeagueOrClubBookings`).
+- [x] (3) Mehrsaisonprobe Modus 1, 4 Wechsel, passiv/aktiv (Ernennung jede Saison, Nationalkonto = Summe der
+  Buchungen); Referenzwerte Modus 4 unverändert (`Mode4_ReferenceValues_Unchanged`, aufgenommen auf Base f642ef8).
+- [x] (4) Bildschirmfoto-Ablauf `weltkugel`; Pixelvergleich der Modusknöpfe mit dem Video (2:13–2:30), Menü des
+  Bundestrainers ohne Videobild; Bildschirme zustandsrein (`WorldOnly_CoachMenu_LocksAndRoutes_AndOpeningChangesNothing`).
+- Spielstand Schema 3 mit Migration (Fahne, Nationalbuch). Belege und `[APPROX]`: [wettbewerbe.md](wettbewerbe.md).
+- Offen: Aufstellung/Taktik des Nationalteams (Platzhalter), Lage von „Tabelle WM“ in `MenuTiles` (Original Platz 6),
+  weitere dynamische Sperren des Originals (Werbung, Neuer, Highscore), Bundestrainer im Modus 4.
+
 ### Zurückgestellt (Entscheidung Nutzer)
 
 - Paket `wettbewerbe` PR 8 „Paarungen Liga“: kein Bildschirm im Referenzvideo nachgewiesen.
@@ -343,7 +359,7 @@ Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–6 (DEB-Po
 | 4 | Stärken (Ligen, Länderteams) | eingereicht (baut auf PR 3 auf) |
 | 5 | Statistiken: Ewige Tabelle (Totale), Früher | eingereicht (baut auf PR 4 auf) |
 | 6 | Bundestrainer: WM-Kader, „WM Vorbereitung“ (Freundschaftsspiele), Etat; WM: Werte Deutschlands neu ausgewürfelt, Länder 20-mal getauscht | eingereicht (baut auf PR 5 auf) |
-| 7 | Spielmodus „nur Weltkugel“: Spielvorbereitung, Vereinssaison überspringen, Menü des Bundestrainers | offen, berührt gemeinsame Dateien (siehe `wettbewerbe.md`) |
+| 7 | Spielmodus „nur Weltkugel“: Spielvorbereitung, Vereinssaison überspringen, Menü des Bundestrainers | eingereicht (#87, Spur `wettbewerbe-weltkugel`) |
 | 8 | Paarungen Liga (kein Videobeleg) | offen |
 | – | Statistiken Spieler, Verein, Fairplay, WM-Statistik | **wartet auf `livespiel`** (Tore, Vorlagen, Strafen je Spieler) |
 

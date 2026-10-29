@@ -150,8 +150,7 @@ deutsche Fahne (Bit 0, y = 76/89), rechts die Weltkugel (Bit 1, y = 102/115), Vo
 nur Fahne → 2 (Liga und DEB-Pokal, kein Europapokal/WM), beide → 4, **nur Weltkugel → 1**. Im Modus 1 wird keine Liga
 gespielt (z. B. Datei 0x4C759, 0x5D4F6): Der Tageszähler springt bis zum Ereignis 0x10, Manager 0 wird Bundestrainer
 (DGROUP 0xD0BA, Datei 0x54D19/0x55809) und bekommt am Saisonende-Abschnitt die Nation DGROUP 0x6AC samt Etat
-(DGROUP 0xA055 += 0x29C, Datei 0x554A6). Das Remake deutet den linken Knopf bisher als „DEB-Pokal an/aus“ – das ist
-nicht belegt (Paket Spielvorbereitung).
+(DGROUP 0xA055 += 0x29C, Datei 0x554A6). Umgesetzt mit der Spur `wettbewerbe-weltkugel` (Abschnitt unten).
 
 **Ablauf als Bundestrainer:** Der Nationalteam-Zug läuft als „Manager 5“ (DGROUP 0xA70E = 5) mit eigenem Kader,
 eigenem Kontostand (DGROUP 0xA055, anfangs 0) und eigener Freischaltung der Kacheln (DGROUP 0x5159 + 42, Datei 0x44FBD):
@@ -179,12 +178,36 @@ Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader a
 
 Bildschirme (kein Videobeleg, Aufbau aus em.exe, Bildschirmfotos `emtool screens gamedata ~/work/screens nationalteam`):
 `UI/Screens/Competitions/NationalSquadScreen.cs` („Spieler in WM-Kader“, 0x3C37C) und `FriendliesScreen.cs`
-(„WM Vorbereitung“, 0x3B8F7), Bausteine in `NationalWidgets.cs` (Kasten 0x3B700, Mannschaftsfeld 0x3B4C6). Beide sind
-noch nicht im Hauptmenü erreichbar: Das Menü des Bundestrainers (Manager 5) folgt mit dem Spielmodus.
+(„WM Vorbereitung“, 0x3B8F7), Bausteine in `NationalWidgets.cs` (Kasten 0x3B700, Mannschaftsfeld 0x3B4C6). Im Spielmodus
+„nur Weltkugel“ sind beide über das Menü des Bundestrainers erreichbar (Abschnitt unten).
 
-**Noch offen (eigener PR, berührt gemeinsame Dateien):** Spielmodus „nur Weltkugel“ in der Spielvorbereitung (heute
-deutet das Remake den linken Knopf als „DEB-Pokal an/aus“), Überspringen der Vereinssaison bis zum ersten WM-Termin,
-Ernennung des Managers 0 zu jeder Saison, Hauptmenü des Bundestrainers mit der Kachelfreischaltung oben.
+## Spielmodus „nur Weltkugel“ (Spur `wettbewerbe-weltkugel`, `Core/CupsNationalMode.cs`)
+
+| Regel | Beleg |
+|---|---|
+| Knöpfe: Bit 0 Fahne, Bit 1 Weltkugel, Vorgabe 3; Modus = (Bits = 2) + 2 · (Bits = 1), Bits 3 → 4 | Datei 0x28191, 0x29838–0x29862 |
+| Klickflächen: x &gt; 190, 45 &lt; y &lt; 61; Fahne bis x &lt; 254, ab 254 Weltkugel; Bild kb\1 (113 \| 76 + 13 · Bit 0) bzw. (113 \| 102 + 13 · Bit 1) bei (193 \| 47) und (259 \| 47) | 0x286F6 ff., 0x28506 |
+| Fahne nur mit höchstens einem benannten Manager umschaltbar | 0x28717–0x2873E |
+| Ohne Knopf (Bits 0) nimmt „Los jetzt!“ keinen Klick an | 0x295DF |
+| Modus 1: Am ersten Tag springt der Tageszähler ohne Tagesverarbeitung bis zum ersten Termin mit Ereignis 0x10 (WM, 14. April) | 0x54CEE–0x54D0E |
+| Danach DGROUP 0xD0BA[0] = 1 und Ernennung samt Etat (Konto des Nationalteams) für jeden Manager mit gesetztem Wert; Modus 2 ernennt nie | 0x54D19, 0x55436–0x554BA |
+| Am Saisonende setzt Modus 1 DGROUP 0xD0BA[0] wieder: Ernennung in jeder Saison | 0x55802 |
+| Automatische Kaderwahl am Sprungtag nur im Durchlauf ohne Halt (DGROUP 0x1DB, versteckter Klick 0x4540E ff.) | 0x54D1E |
+| Sperrtabelle DGROUP 0x5159: 7 × 6 Bytes Verein (alle frei) + 7 × 6 Bytes Nationalteam (Manager alles, Mannschaft nur „Verträge“, Statistiken außer WM-Statistik, Tabellen und Paarungen außer WM, Stärken außer Länderteams gesperrt) | 0x44FBD |
+| Modus 2 sperrt Platz 6 der Statistiken, Tabellen, Paarungen und Platz 4 der Stärken (WM-Kacheln) | 0x44FE8–0x4501D |
+| Gesperrte Kachel: Symbol kb\3 (157 \| 203) 38 × 28, kein Klick | 0x45B63 |
+| Menü des Bundestrainers: „Transfer“ = „Spieler in WM-Kader“, „Training“ = „WM Vorbereitung“ | 0x457C0, 0x457D9 |
+| `[APPROX]` Halt nach dem Sprung vor dem ersten WM-Spiel, damit der Bundestrainer den Kader wählen kann | – |
+| `[APPROX]` Modus 1 nur mit genau einem Manager („Los jetzt!“ mit Meldung gesperrt) | – |
+| `[APPROX]` Modus 1 ohne Europapokal, Auf-/Abstieg, Oberliga-Wechsel, Prämien, Ligastatistik, Finanzen, Training, Markt und Vertragsmeldungen (kein Tageslauf vor der WM) | – |
+| `[APPROX]` Menü des Bundestrainers schon vor der Ernennung, Mannschaftskacheln bis dahin gesperrt; Aufstellung und Taktik des Nationalteams als Platzhalter | – |
+| `[APPROX]` Sperren je Kachelname: „Tabelle WM“ liegt im Remake auf Platz 4 der Tabellen, im Original auf Platz 6 (Symbolstart DGROUP 0x5149/0x5151: Plätze 4–6 = DEB-Pokal, Europapokal, WM) | – |
+
+Das Nationalkonto führt eine Buchungsliste (`GameState.NationalBookings`: Etat, Freundschaftsspiele); Spielstand
+Schema 3. Pixelvergleich der Modusknöpfe mit dem Video „Die Oberfläche von EM“ (2:13–2:19 nur Weltkugel, 2:30 beide),
+mittlere Abweichung / Anteil > 40: Fahne aus 10,4 / 4,5 % (`oberflaeche_0214`), Weltkugel 12,1 / 6,5 % (`0219`); zum
+Vergleich beide an 9,0 / 2,0 % und 11,9 / 6,3 % (`0230`). Für das Menü des Bundestrainers gibt es kein Videobild
+(Bildschirmfotos: `emtool screens gamedata ~/work/screens weltkugel`).
 
 Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien
 Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Ein Bildschirm „Paarungen Liga“ ist in

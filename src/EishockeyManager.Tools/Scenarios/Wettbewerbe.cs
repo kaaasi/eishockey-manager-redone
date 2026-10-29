@@ -208,4 +208,41 @@ internal static class Wettbewerbe
         d.Click(tile.X + 20, tile.Y + 20);
         d.Save("08_wm_vorbereitung_meldung");
     }
+
+    /// <summary>
+    /// Spur wettbewerbe-weltkugel: Spielvorbereitung mit Spielmodus „nur Weltkugel“ und Hauptmenü des Bundestrainers
+    /// (vor der Ernennung, nach dem Sprung zum ersten WM-Termin, Kachelsperren). Kein Videobeleg für Modus 1.
+    /// </summary>
+    [Scenario("weltkugel")]
+    private static void WorldOnly(ScreenDriver d)
+    {
+        d.Host.Show(new TitleScreen(d.Host));
+        d.Frame();
+        d.Click(160, 120);
+        d.Click(20, 60);
+        var cell = SetupScreen.HeadCell(3);
+        d.Click(cell.X + 5, cell.Y + 5);
+        d.Type("LetsShow");
+        d.Press(Key.Enter);
+        d.Move(100, 150); d.Save("01_spielvorbereitung_beide");
+        d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
+        d.Move(100, 150); d.Save("02_spielvorbereitung_nur_weltkugel");
+        d.Click(SetupScreen.ModeGlobe.X + 5, SetupScreen.ModeGlobe.Y + 5);
+        d.Move(100, 150); d.Save("03_spielvorbereitung_kein_modus");
+        d.Click(SetupScreen.ModeGlobe.X + 5, SetupScreen.ModeGlobe.Y + 5);
+        d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
+        d.Move(10, 230); d.Save("04_bundestrainer_saisonbeginn");
+        d.Click(MainMenuScreen.BigTile(1).X + 10, MainMenuScreen.BigTile(1).Y + 10);
+        d.Move(10, 230); d.Save("05_bundestrainer_mannschaft_gesperrt");
+        d.PlayMatchDay();
+        d.Move(10, 230); d.Save("06_bundestrainer_erster_wm_termin");
+        d.Click(MainMenuScreen.BigTile(1).X + 10, MainMenuScreen.BigTile(1).Y + 10);
+        d.Move(10, 230); d.Save("07_bundestrainer_mannschaft");
+        d.Click(MainMenuScreen.BigTile(3).X + 10, MainMenuScreen.BigTile(3).Y + 10);
+        d.Move(10, 230); d.Save("08_bundestrainer_tabellen");
+        d.Click(MainMenuScreen.BigTile(0).X + 10, MainMenuScreen.BigTile(0).Y + 10);
+        d.Move(10, 230); d.Save("09_bundestrainer_manager");
+        d.OpenTile("Transfer");
+        d.Move(5, 120); d.Save("10_bundestrainer_wm_kader");
+    }
 }
