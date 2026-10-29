@@ -116,7 +116,8 @@ public sealed partial class GameState
 
     private static int PlayoffDateIndex(int day) => SeasonCalendar.DaysOf(DayEvents.Playoffs).ToList().IndexOf(day);
 
-    private bool ManagerPlaysOn(int day) => ActiveManagers.Any(m => MatchOn(day, m.ClubIndex) is not null);
+    private bool ManagerPlaysOn(int day) =>
+        ActiveManagers.Any(m => MatchOn(day, m.ClubIndex) is not null) || NationalCoachPlaysOn(day); // Bundestrainer: Spur wettbewerbe-weltkugel
 
     /// <summary>
     /// „und tschüß…“ des Managers am Zug. Im Hot-Seat gibt es zunächst nur den Zug an den nächsten aktiven Manager
@@ -139,6 +140,9 @@ public sealed partial class GameState
     private List<SeasonStep> RunDays()
     {
         var steps = new List<SeasonStep>();
+        // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ springt der erste Tag der Saison zur WM.
+        if (SkipToWorldCup())
+            return steps;
         while (true)
         {
             ProcessDay(CurrentDay, steps);
@@ -273,8 +277,9 @@ public sealed partial class GameState
 
         // [APPROX] Die beiden Letzten der Oberliga verlassen die Liga (Vereine von Managern ausgenommen),
         // zwei zufällige Vereine ohne Liga (Datenbank 36–47) rücken nach – im Video grün unter „Oberliga“.
+        // [APPROX] Im Modus „nur Weltkugel“ wird keine Liga gespielt, also steigt auch niemand ab (Spur wettbewerbe-weltkugel).
         var managerClubs = Managers.Select(m => m.ClubIndex).ToHashSet();
-        var leaving = tables[League.Oberliga].Reverse().Where(c => !managerClubs.Contains(c)).Take(2).ToList();
+        var leaving = WorldOnly ? new List<int>() : tables[League.Oberliga].Reverse().Where(c => !managerClubs.Contains(c)).Take(2).ToList();
         record.LeftOberliga.AddRange(leaving);
         var pool = Clubs.Where(c => c.Index < NewGame.SelectableClubs && c.League is null).Select(c => c.Index).ToList();
         for (var i = 0; i < leaving.Count && pool.Count > 0; i++)
@@ -298,7 +303,9 @@ public sealed partial class GameState
             if (competition is { Title: { } title, Winner: { } winner })
                 record.Titles[title] = winner;
 
-        for (var i = 0; i < Managers.Count; i++)
+        // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –
+        // kein Platz, keine Prämie (Prämien gibt es nur aus der Vereinssaison).
+        for (var i = 0; i < Managers.Count && !WorldOnly; i++)
         {
             var manager = Managers[i];
             if (manager.Dismissed)

@@ -223,7 +223,8 @@ public sealed class WorldCup : ISeasonCompetition
         }
         game.CountCaps(played);
         game.SettleCupMatches(played); // gemeinsame Spielabrechnung (Nationalteams haben keinen Manager)
-        var managerClubs = game.ActiveManagers.Select(m => m.ClubIndex).ToHashSet();
-        steps.Add(new MatchesStep(day, Competition.WorldCup, played.Any(m => managerClubs.Contains(m.Home) || managerClubs.Contains(m.Away))));
+        // Eigene Spiele: Vereine der Manager, im Modus „nur Weltkugel“ das Nationalteam des Bundestrainers.
+        var managerTeams = game.ManagerTeams();
+        steps.Add(new MatchesStep(day, Competition.WorldCup, played.Any(m => managerTeams.Contains(m.Home) || managerTeams.Contains(m.Away))));
     }
 }

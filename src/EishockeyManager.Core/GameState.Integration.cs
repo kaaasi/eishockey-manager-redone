@@ -27,6 +27,19 @@ public sealed partial class GameState
     /// <summary>Jeder Tag der Zeitleiste, bevor dessen Spiele ausgetragen werden.</summary>
     partial void OnDayManager(int day)
     {
+        // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ gibt es keine Vereinssaison – keine Finanzen,
+        // kein Training, kein Markt, keine Vertragsmeldungen, keine Ligastatistik (Datei 0x54CEE: kein Tageslauf).
+        if (!WorldOnly)
+            OnDayClubSeason(day);
+
+        // Paket „wettbewerbe“: Werte Deutschlands ohne Bundestrainer an den Tagen mit Markierung 255 neu auswürfeln.
+        if (day is SeasonCalendar.ClubSeasonEnd or SeasonCalendar.SeasonEnd)
+            RerollNationalRatings();
+    }
+
+    /// <summary>Tagesablauf der Vereinssaison (Finanzen, Training, Markt, Verträge, Statistik).</summary>
+    private void OnDayClubSeason(int day)
+    {
         // Finanzen: Tages-, Wochen- und Monatswechsel bis einschließlich heute
         AdvanceFinanceTo(day);
 
@@ -43,10 +56,6 @@ public sealed partial class GameState
         // (vor der Titelvergabe in FinishSeason; Liga, Pokale und Abschlusstabellen stehen dann fest).
         if (day == SeasonCalendar.SeasonEnd)
             RecordSeasonStatistics();
-
-        // Paket „wettbewerbe“: Werte Deutschlands ohne Bundestrainer an den Tagen mit Markierung 255 neu auswürfeln.
-        if (day is SeasonCalendar.ClubSeasonEnd or SeasonCalendar.SeasonEnd)
-            RerollNationalRatings();
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>
