@@ -139,41 +139,111 @@ public sealed class HighscoreTable
     }
 }
 
+/// <summary>Kennzahlen einer abgeschlossenen Saison im Verlauf eines Managers (je 4 Byte im Original, Manager + 0x18 + 4 · Saison).</summary>
+/// <param name="League">Platz (1-basiert), 0x33–0x35 = Play-Off-Aus, +0x80 = Meister; 0xFF = leer.</param>
+/// <param name="Deb">DEB-Pokal: erreichte Runde 1–6, +0x80 = Sieger; 0x1E = nicht im Wettbewerb.</param>
+/// <param name="Europe">Europapokal: 8 + Stufe, 0x8D = Sieger; 0 = nicht im Wettbewerb.</param>
+public readonly record struct SeasonCodes(byte League, byte Deb, byte Europe)
+{
+    public const byte Empty = 0xFF;
+    public const byte DebNotParticipating = 0x1E;
+    public const byte EuropeWinner = 0x8D;
+
+    /// <summary>
+    /// Kennzahlen aus dem Saisonverlauf des Remakes. [ORIGINAL] Aufbau beim Saisonwechsel Datei 0x55B36–0x55DBD.
+    /// [APPROX] Die Play-Off-Stufe des Meisters (0x35) und die Europapokal-Stufen (Gruppe 1, Endrunde 2) sind aus dem Code erschlossen.
+    /// </summary>
+    public static SeasonCodes Of(ManagerSeasonHistory h)
+    {
+        var league = h.LeagueOutcome switch
+        {
+            LeagueOutcome.Rank => (byte)Math.Clamp(h.Rank, 0, 0x7F),
+            LeagueOutcome.PlayoffQuarterFinal => (byte)0x33,
+            LeagueOutcome.PlayoffSemiFinal => (byte)0x34,
+            LeagueOutcome.PlayoffFinal => (byte)0x35,
+            _ => (byte)(0x80 | 0x35),
+        };
+        var deb = h.Deb == CupOutcome.NotParticipating
+            ? DebNotParticipating
+            : (byte)((h.DebRound + 1) | (h.Deb == CupOutcome.Winner ? 0x80 : 0));
+        var europe = h.Europe switch
+        {
+            CupOutcome.NotParticipating => (byte)0,
+            CupOutcome.Winner => EuropeWinner,
+            _ => (byte)(8 + (h.EuropeFinalRound ? 2 : 1)),
+        };
+        return new SeasonCodes(league, deb, europe);
+    }
+}
+
+/// <summary>Rohwerte der Punkteformel (Datei 0x5D04F), alle Geldwerte in Drittel-DM wie im Original.</summary>
+public sealed class HighscoreInputs
+{
+    /// <summary>Bewertung des Vereins 0–100 (Aufruf 0x100:0x57).</summary>
+    public int Rating { get; init; }
+
+    /// <summary>Ausbaustufen der neun Stadionmerkmale.</summary>
+    public int[] StadiumLevels { get; init; } = new int[9];
+
+    public int Seats { get; init; }
+    public int Standing { get; init; }
+
+    /// <summary>Vermögen vor der Obergrenze: Konto + Aktien + Forderungen + halbe Spielerwerte − Schulden.</summary>
+    public long Wealth { get; init; }
+
+    /// <summary>Tabellenplatz des Vereins, 0-basiert, und Ligaversatz 0/12/24 (Tabelle DGROUP 0x7C0).</summary>
+    public int Rank0 { get; init; }
+
+    public int LeagueOffset { get; init; }
+
+    /// <summary>Laufender Pokalstand, vier Bytes ab Manager + 0xE6 (DEB-Pokal, Europapokal, 2 weitere); 1–6 zählt.</summary>
+    public int[] Cups { get; init; } = new int[4];
+
+    /// <summary>Verlauf der letzten Saisons (höchstens 50 werden gewertet).</summary>
+    public IReadOnlyList<SeasonCodes> History { get; init; } = [];
+}
+
 /// <summary>Schlüssel der Bestenliste und Punkte eines Managers.</summary>
 /// <remarks>
 /// [ORIGINAL] Schlüssel (Datei 0x28A2C ff. in der Spielvorbereitung, DGROUP 0x256): 0 = keine Bestenliste (die Kachel
 /// „Highscore“ ist gesperrt, Datei 0x44FCE); Spielmodus „nur Weltkugel“ (Knopfbits = 2) → 30000;
 /// sonst, wenn Level &gt; 2 und (Startstärke = Mittelfeld oder (Dauer = eine Saison und Startliga = Bundesliga)):
 /// <c>Level + 4 · Dauer + 32 · Startliga + 128 · Startstärke − 2</c>.
-/// Punkte (Datei 0x5D04F): Summe (Stadionwerte, Plätze, Vermögen, Platzierung, Saisonverlauf) / 20, mindestens 1; dazu
-/// <c>8 · Meisterschaften + 6 · Pokalsiege + 10 · Europapokalsiege</c> (Datei 0x5D579 ff.).
+/// Punkte (Datei 0x5D04F, im Emulator gegen <see cref="Points"/> geprüft, 500 Zufallsfälle): Summe / 20 (mindestens 1 bei der
+/// Eintragung); dazu <c>8 · Meisterschaften + 6 · Pokalsiege + 10 · Europapokalsiege</c> (Datei 0x5D579 ff.).
 /// <list type="bullet">
-/// <item>[ORIGINAL] Stadion: Σ Stufe · Preis / 1000 mit den neun Preisen DGROUP 0xC0 (3,60; 1,35; 1,92; 1,11; 0,99; 3,90; 1,74; 1,56;
-///   1,35 Mio.), dazu Sitzplätze · 0,54 + Stehplätze · 0,405 (DGROUP 0xE4, geteilt durch 10⁶).</item>
-/// <item>[ORIGINAL] Vermögen: Konto + Aktiendepot + Forderungen an andere Manager (+ Spielerwerte), höchstens 50 Mio.; Punkte = Vermögen / 2000.</item>
-/// <item>[ORIGINAL] Platzierung: 25 · (36 − Platz − Ligaversatz 0/12/24), nicht unter 0.</item>
-/// <item>[ORIGINAL] Saisonverlauf je Saison: 7 · (36 − Liga-Kennzahl), Pokal 80 (Sieger) bzw. 10 · Runde, Europapokal 130 bzw. 20 · Runde;
-///   die Summe wird durch (Saisons + 1) geteilt (höchstens 50 Saisons).</item>
+/// <item>Bewertung des Vereins (0x100:0x57, <see cref="SponsorRating"/>) · 100.</item>
+/// <item>Stadion: Σ Stufe · (Preis / 1000) mit den neun Preisen DGROUP 0xC0 (3,60; 1,35; 1,92; 1,11; 0,99; 3,90; 1,74; 1,56;
+///   1,35 Mio.), dazu Sitzplätze · 540000 und Stehplätze · 405000 (DGROUP 0xE4), je <b>32-Bit-Produkt ohne Vorzeichen</b> (läuft
+///   über ab 7.954 Sitz- bzw. 10.607 Stehplätzen, wie im Original) geteilt durch 10⁶.</item>
+/// <item>Vermögen (Drittel): Konto + Σ Aktienzahl · Kurs (4 Werte) + Forderungen an andere Manager und Bank (negative Einträge der
+///   anderen Strukturen) + Σ halbe Spielerwerte (0x118:0x70) − eigene Schulden bei Managern und Bank (0x138:0x2A, Aufruf mit
+///   0 / 0x63); höchstens 50.000.000; Punkte = Vermögen / 2000 (vorzeichenbehaftet).</item>
+/// <item>Platzierung: 25 · (36 − Platz − Ligaversatz), nicht unter 0 (Platz 1-basiert).</item>
+/// <item>Laufender Pokalstand: je Byte 1–6 ⇒ 150 · Wert (Manager + 0xE6 ff.; DEB-Pokal: erreichte Runde, Datei 0x34D8D).</item>
+/// <item>Saisonverlauf (je Saison, ≤ 50, durch Saisons + 1 geteilt): 7 · (36 − Ligakennzahl) (außer 0xFF); DEB-Kennzahl: Sieger 80, sonst
+///   10 · (Kennzahl &amp; 7) – auch „nicht im Wettbewerb“ (0x1E → 60); Europapokal nur, wenn die DEB-Kennzahl ein Sieger ist
+///   oder ≥ 8: Sieger 130, sonst 20 · (Kennzahl &amp; 7) (Eigenheit des Originals, Bit-Verschiebung nach der Maskierung).</item>
 /// </list>
 /// [APPROX]
 /// <list type="bullet">
-/// <item>Nicht abgebildet, weil die Felder im Remake fehlen oder nicht belegt sind: die Funktion 0x100:0x57 (Summand · 100),
-///   die vier Bytes DGROUP 0x9741 ff. (je 1–6 → 150 · Wert), der Aufruf 0x138:0x2A (Abzug beim Vermögen), die Spielerwerte
-///   (Summe halber Marktwerte); Bankguthaben und Kredit stehen stellvertretend für den Abzug.</item>
+/// <item>Spielerwerte: Kaufpreis des Remakes · 3 (Drittel) statt der Originalformel 0x49D36 (wie bei der Bewertung des Vereins);
+///   die Bewertung selbst rechnet mit einem festen Zufallsstrom, damit das Öffnen des Bildschirms nichts verändert.</item>
+/// <item>Der Europapokal-Stand (Gruppe 1, Endrunde 2) und die weiteren Pokalbytes (nur 0x9744 = 1 bei einem Manager im Spieljahr 1994
+///   ist belegt) sind nicht abgebildet; Meister-Kennzahl 0x80 | 0x35 statt der Play-Off-Stufe des Brackets.</item>
 /// <item>Das Remake führt Level, Startliga und Startstärke je Manager; für den Schlüssel gelten die des ersten Managers.</item>
-/// <item>Die Kennzahlen des Saisonverlaufs folgen der Kodierung von „Früher“ (Platz, 0x33–0x35 Play-Off-Aus, 0x80 Meister;
-///   DEB-Pokal: Runde 0–7, Sieger Bit 7; Europapokal ebenso) – im Original steht dort derselbe Datensatz, die Zuordnung der
-///   Bytes ist aber nur aus dem Code erschlossen.</item>
-/// <item>Titelzähler: Meister, Pokalsieger, Europapokalsieger aus den Saisonergebnissen; im Spielmodus „nur Weltkugel“
-///   zählt das Original die Platzierungen der Nationalmannschaft (Σ 9 − Platz) – hier die Weltmeistertitel + 1.</item>
+/// <item>Im Spielmodus „nur Weltkugel“ zählt das Original die Platzierungen der Nationalmannschaft (Σ 9 − Platz) – hier die
+///   Weltmeistertitel + 1.</item>
 /// </list>
+/// Die Formel enthält Eigenheiten, die wie im Original übernommen sind: Der Meister erhält durch die Kennzahl 0x80 + … einen
+/// <i>negativen</i> Ligaterm (36 − 181) · 7, und die Europapokal-Wertung entfällt für ausgeschiedene DEB-Teilnehmer.
 /// </remarks>
 public static class HighscoreRules
 {
     /// <summary>Schlüssel für „nur Weltkugel“ (Bundestrainer). [ORIGINAL] DGROUP 0x256 = 0x7530.</summary>
     public const int WorldOnlyKey = 30000;
 
-    public const int MaxWealth = 50_000_000;
+    public const long MaxWealth = 50_000_000;
 
     private static readonly long[] StadiumPrices = [3_600_000, 1_350_000, 1_920_000, 1_110_000, 990_000, 3_900_000, 1_740_000, 1_560_000, 1_350_000];
 
@@ -217,53 +287,93 @@ public static class HighscoreRules
         return new HighscoreEntry(m.Name, game.Clubs[m.ClubIndex].Name, a, b, c, (short)Math.Clamp(score, 1, short.MaxValue), stamp);
     }
 
-    /// <summary>Punkte ohne Titelzuschlag (<c>Summe / 20</c>, mindestens 1).</summary>
-    public static int Score(GameState game, int manager)
+    /// <summary>
+    /// Punkte aus den Rohwerten ([ORIGINAL] Datei 0x5D04F), ohne Titelzuschlag und ohne Untergrenze; Ergebnis wie im Original
+    /// ein 16-Bit-Wert.
+    /// </summary>
+    public static int Points(HighscoreInputs input)
     {
-        var m = game.Managers[manager];
-        var finance = game.Finance(m);
-        long sum = 0;
+        long sum = input.Rating * 100L;
+        for (var i = 0; i < StadiumPrices.Length; i++)
+            sum += (StadiumPrices[i] / 1000) * (input.StadiumLevels[i] & 0xFF);
+        sum += unchecked((uint)(input.Seats * 540_000)) / 1_000_000L;
+        sum += unchecked((uint)(input.Standing * 405_000)) / 1_000_000L;
+        sum += Math.Min(input.Wealth, MaxWealth) / 2000;
+        sum += 25L * Math.Max(0, 36 - (input.Rank0 + input.LeagueOffset + 1));
+        foreach (var v in input.Cups)
+            if (v is > 0 and < 7)
+                sum += 150L * v;
 
-        // Stadion
-        for (var i = 0; i < StadiumPrices.Length && i < Stadium.FeatureCount; i++)
-            sum += finance.Stadium.Level((StadiumFeature)i) * (StadiumPrices[i] / 1000);
-        sum += (finance.Stadium.Seats * 540_000L + finance.Stadium.Standing * 405_000L) / 1_000_000;
-
-        // Vermögen
-        var wealth = m.Money + game.DepotValue(m) + game.ManagerReceivables(m) + finance.Bank.Balance;
-        sum += Math.Min(wealth, MaxWealth) / 2000;
-
-        // Platzierung
-        var club = game.Clubs[m.ClubIndex];
-        if (club.League is { } league && game.PlayedMatchDays > 0)
-        {
-            var rank = LeagueTable.Compute(game, league, TableView.Gesamt, game.PlayedMatchDays).First(r => r.Club.Index == club.Index).Rank;
-            sum += 25L * Math.Max(0, 36 - rank - 12 * (int)league);
-        }
-
-        // Saisonverlauf
-        var seasons = Math.Min(50, game.ManagerHistory(manager).Count);
+        var seasons = Math.Min(50, input.History.Count);
         long past = 0;
-        foreach (var h in game.ManagerHistory(manager).Take(seasons))
+        for (var i = 0; i < seasons; i++)
         {
-            var code = h.LeagueOutcome switch
+            var h = input.History[i];
+            if (h.League != SeasonCodes.Empty)
+                past += (36 - h.League) * 7;
+            int gate;
+            if ((h.Deb & 0x80) != 0)
             {
-                LeagueOutcome.Rank => h.Rank - 1,
-                LeagueOutcome.PlayoffQuarterFinal => 0x33,
-                LeagueOutcome.PlayoffSemiFinal => 0x34,
-                LeagueOutcome.PlayoffFinal => 0x35,
-                _ => 0x80,
-            };
-            past += (36 - code) * 7;
-            past += h.Deb == CupOutcome.Winner ? 80 : 10 * h.DebRound;
-            past += h.Europe == CupOutcome.Winner ? 130 : h.Europe == CupOutcome.NotParticipating ? 0 : h.EuropeFinalRound ? 40 : 20;
+                past += 80;
+                gate = h.Deb;
+            }
+            else
+            {
+                past += (h.Deb & 7) * 10;
+                gate = h.Deb & 7;
+            }
+            if (gate >> 3 != 0)
+                past += (h.Europe & 0x80) != 0 ? 130 : (h.Europe & 7) * 20;
         }
         if (seasons > 0)
             past /= seasons + 1;
         sum += past;
-
-        return (int)Math.Max(1, sum / 20);
+        return unchecked((short)(sum / 20));
     }
+
+    /// <summary>Rohwerte des Managers im jetzigen Spielstand.</summary>
+    public static HighscoreInputs Inputs(GameState game, int manager)
+    {
+        var m = game.Managers[manager];
+        var finance = game.Finance(m);
+        var club = game.Clubs[m.ClubIndex];
+
+        // Vermögen in Drittel: Konto, Aktien, Forderungen, Bank (Sparbuch − Kredit), Darlehen an/von Managern, halbe Spielerwerte
+        var marks = m.Money + game.DepotValue(m) + game.ManagerReceivables(m) - game.ManagerDebts(m) + finance.Bank.Balance;
+        var wealth = marks * FinanceRules.ThirdsPerMark
+            + club.Players.Sum(p => TransferMarket.Price(p) * FinanceRules.ThirdsPerMark / 2);
+
+        // [APPROX] Ohne gespielte Tabelle (Saisonbeginn, Weltmodus) bleibt der Platzierungsterm 0.
+        var rank0 = 35;
+        var offset = 0;
+        if (club.League is { } league && game.PlayedMatchDays > 0)
+        {
+            rank0 = LeagueTable.Compute(game, league, TableView.Gesamt, game.PlayedMatchDays).First(r => r.Club.Index == club.Index).Rank - 1;
+            offset = 12 * (int)league;
+        }
+
+        var cups = new int[4];
+        if (game.DebCup is { } deb && deb.Participants.Contains(club.Index))
+            cups[0] = deb.Rounds.Select((r, i) => (r, i)).LastOrDefault(x => x.r.Any(t => t.Involves(club.Index))).i + 1;
+        if (game.EuropeanCup is { } europe && europe.Draw.Contains(club.Index))
+            cups[1] = europe.FinalRound?.Contains(club.Index) ?? false ? 2 : 1;
+
+        return new HighscoreInputs
+        {
+            Rating = SponsorRating.Compute(game, m, new Random(club.Index)),
+            StadiumLevels = Enumerable.Range(0, 9).Select(i => i < Stadium.FeatureCount ? finance.Stadium.Level((StadiumFeature)i) : 0).ToArray(),
+            Seats = finance.Stadium.Seats,
+            Standing = finance.Stadium.Standing,
+            Wealth = wealth,
+            Rank0 = rank0,
+            LeagueOffset = offset,
+            Cups = cups,
+            History = game.ManagerHistory(manager).Select(SeasonCodes.Of).ToList(),
+        };
+    }
+
+    /// <summary>Punkte ohne Titelzuschlag.</summary>
+    public static int Score(GameState game, int manager) => Points(Inputs(game, manager));
 
     /// <summary>
     /// Trägt die aktuellen Einträge aller Manager ein ([ORIGINAL] Datei 0x5D90D: für jeden Manager Eintrag bauen, einfügen).
