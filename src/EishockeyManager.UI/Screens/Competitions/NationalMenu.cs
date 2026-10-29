@@ -45,7 +45,7 @@ public static class NationalMenu
         if (game.NationalCoachMenu)
             // [APPROX] Vor der Ernennung (Saisonbeginn bis zum ersten WM-Termin) bleibt auch die Mannschaft gesperrt.
             return !CoachTiles.Contains(tile.Name) || (game.NationalCoach is null && NeedsCoach.Contains(tile.Name));
-        return game.Mode == GameMode.ClubOnly && WorldTiles.Contains(tile.Name);
+        return (game.Mode == GameMode.ClubOnly && WorldTiles.Contains(tile.Name)) || TileLocks.IsLocked(game, tile); // Sperren der Spielvorbereitung (Spur tabellen-highscore)
     }
 
     /// <summary>

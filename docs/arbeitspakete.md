@@ -57,6 +57,9 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
   minimal und begründet: `NationalMenu.IsLocked` (Sperren) bzw. eine eigene Sperrdatei, `SeasonEndGameOverScreen.cs`.
   **Konflikt mit `nationalteam-2`** nur in `NationalMenu.cs` möglich (getrennte Methoden) – der Zweite rebased.
 - **Modell:** Claude Sonnet 5.5.
+- **Status (Claude Code, 29.10.2026):** PR #104 `paket/tabellen-highscore`: Pokaltabellen + Sperren „Werbung“/„Neuer“
+  (em.exe: beide Tabellen-Kacheln öffnen dieselben Bildschirme wie die Paarungen). Highscore folgt in eigenem PR
+  (`paket/tabellen-highscore-bestenliste`).
 
 ### Spur `speichern-reihenfolge` – Aufzählungsreihenfolge nach Remove/Add (#80)
 
