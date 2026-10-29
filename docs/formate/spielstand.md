@@ -111,3 +111,35 @@ eine Migration.
 
 **Haltepunkte:** Gesichert wird zwischen zwei Aufrufen von `GameState.Continue()`. Die WM läuft nach dem Ende der
 Vereinssaison in einem einzigen Schritt; der letzte Haltepunkt davor ist `SeasonPhase.ClubSeasonOver`.
+
+## Dialog und automatisches Speichern (Teil `-dialog`)
+
+Code: `src/EishockeyManager.UI/Screens/SaveLoad/`, Bildschirmfotos: `emtool screens … speichern`, Tests: `SaveLoadScreenTests`.
+Das Dateiformat ist unverändert (Schema 2); der Zähler des automatischen Speicherns gehört nicht zum Spielstand.
+
+**Bild [ORIGINAL]** (Referenzbilder Video „Oberfläche“ 1:00–1:10): Titelfeld, Dateiliste in 3 Spalten × 16 Zeilen mit
+Trennbalken, Seitenpfeile, „VERZEICHNIS:“, „FILENAME :“, Laufwerksknöpfe „A:“–„G:“, „LÖSCHEN“. Spielstände gelb,
+sonstiges grau. Maße stehen als Konstanten in `SaveLoadScreen` (Rahmen, Balken, Knöpfe auf den Pixel gemessen).
+Texte aus `em.exe` (DGROUP): „Laden“ 0x3787, „Speichern“ 0x377D, „VERZEICHNIS: “ 0x26EE, „FILENAME      :“ 0x26FC,
+„SEITE: “ 0x270C, „LÖSCHEN“ 0x2714, „Die Datei … kann nicht geladen werden.“ 0x40CD, „Achtung ! Fehler beim
+Diskettenzugriff ! Vorgang abgebrochen.“ 0x3EB0.
+
+**Automatisches Speichern [ORIGINAL]** (`em.exe`, Overlay-Funktion bei Dateioffset 0x44E22, nach Deutung das Hauptmenü
+eines Spieltags): Byte-Zähler `DGROUP 0x5148`, Anfangswert 1. Steht er beim Aufruf auf 10, wird mit der Speicherfunktion
+(`0140:005C`, dieselbe wie für `ERROR.HOK`) „autosave.hok“ (`0x5231`) geschrieben und der Zähler auf 0 gesetzt; danach
+zählt er um 1 hoch, aber nur für den Manager `DGROUP 0xA70E == 0`. Folge: erster Spielstand beim 10. Hauptmenü, dann alle 10.
+
+**[APPROX]:**
+
+| Punkt | Entscheidung |
+|---|---|
+| Dateiendung, Ordner | `*.ems` (Format `SaveGame`) in einem Ordner (`%APPDATA%/EishockeyManagerRedone/Spielstaende`), statt `*.HOK` mit Laufwerk und Verzeichnis. Namen wie in DOS: höchstens 8 Zeichen, `A–Z 0–9 _ -`. |
+| Bedienung | Klick wählt, Enter oder zweiter Klick führt aus; Sichern auf vorhandenen Namen und Löschen fragen nach (Texte „Mach schon!“/„Lieber nicht.“). Das Video zeigt keine Bedienung. |
+| Speichern-Bild | gleicher Aufbau wie Laden, Titel „Speichern“. |
+| Pfeile ▲▼ | nach Pixeln des Referenzbilds gezeichnet, keine Grafik im Original gefunden. |
+| Laufwerksknöpfe, „.“/„..“ | gezeichnet bzw. nicht angezeigt, ohne Wirkung. |
+| „Hauptmenü-Aufruf“ | jeder neue Zug (Saison, Tag, Manager); Rückkehr aus einer Kachel zählt nicht. „Erster Manager“ = erster nicht entlassener. |
+| Kein Sichern | in `SeasonOver`/`GameOver` (kein Hauptmenü); Schreibfehler werden nicht gemeldet. |
+| Einstellung | „Automatisch speichern“ ist neu (Standard an); das Original sichert immer. |
+
+Geschrieben wird atomar (Zwischendatei `*.tmp`, dann umbenennen) und nie während `GameState.Continue()`.

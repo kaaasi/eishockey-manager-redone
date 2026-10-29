@@ -311,8 +311,11 @@ Danach Abschluss von Runde 3 (Archiv, offene Restlücken nach Runde 4).
 
 ### Status Spur `speichern-dialog`
 
-Stand 29.10.2026: begonnen (Branch `paket/speichern-dialog`, Base `f642ef8`, Bearbeiter Claude Code). Der Plan steht im
-Draft-PR; Belege aus Video und `em.exe` kommen mit der Umsetzung nach `docs/formate/spielstand.md`.
+Stand 29.10.2026: umgesetzt, im Review (Branch `paket/speichern-dialog`, Base `f642ef8`, Bearbeiter Claude Code).
+Dialog „Laden“/„Sichern“ (Kacheln, Notizbuch der Spielvorbereitung), Einstellung „Automatisch speichern“ (Standard an),
+automatisches Speichern nach dem Zähler aus `em.exe`. Tests: `SaveLoadScreenTests` (Abnahme 1–3, Mehrsaisonprobe),
+Bildschirmfoto-Ablauf `speichern` (Abnahme 4). Belege und `[APPROX]`: `docs/formate/spielstand.md`, Teil `-dialog`.
+Offen: Laufwerksknöpfe ohne Wirkung, „.“/„..“-Einträge fehlen, Hot-Seat-Zählung nur über Code belegt (kein Test).
 
 ### Spur `wettbewerbe-weltkugel` – Spielmodus „nur Weltkugel“ (Paket `wettbewerbe`, PR 7)
 

@@ -12,6 +12,7 @@ Zeigt jeden Bildschirm einmal. Zeitangaben ca.:
 |---|---|
 | 0:20 | Titelbild (`kb\197`) |
 | 1:00–2:40 | Spielvorbereitung (`kb\150`): Manager, Vereinsauswahl mit Logoliste, Spielmodus, Level, Dauer, Liga, Stärke |
+| 1:00–1:10 | Laden-Dialog (Notizbuch der Spielvorbereitung): Dateiliste in drei Spalten, „VERZEICHNIS:“, „FILENAME :“, Laufwerksknöpfe (`oberflaeche_0100`–`_0103`) |
 | 3:40 | DEB-Pokal-Auslosung |
 | 4:00–5:20 | Hauptmenü mit den acht großen Kacheln |
 | 5:40–6:00 | Finanzen / Bank und Börse (`kb\152`) |
