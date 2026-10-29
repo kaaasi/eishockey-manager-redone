@@ -29,13 +29,15 @@ public sealed partial class GameState
         if (Competitions.Count > 0)
             return;
         _ = CupRandom;
-        if (Setup.DebCup)
+        // Spielmodus (DGROUP 0xD0B9): Fahne = Liga und DEB-Pokal, Weltkugel = Europapokal und WM. Im Modus
+        // „nur Weltkugel“ gibt es keine Vereinssaison und damit auch keinen Europapokal (seine Termine liegen vor dem
+        // Sprung zur WM, Datei 0x54CEE).
+        if (Setup.ClubCompetitions && Setup.DebCup)
             Competitions.Add(new DebCup());
-        if (Setup.EuropeAndWorldCup)
-        {
+        if (Setup.EuropeAndWorldCup && Setup.ClubCompetitions)
             Competitions.Add(new EuropeanCup());
+        if (Setup.EuropeAndWorldCup)
             Competitions.Add(new WorldCup());
-        }
         foreach (var competition in Competitions)
             competition.StartSeason(this);
     }

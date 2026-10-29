@@ -38,7 +38,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 2;
+    public const int SchemaVersion = 3;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -46,11 +46,13 @@ public static partial class SaveGame
     /// <summary>
     /// Migrationen je Schemaversion: Eintrag <c>n</c> hebt eine Datei von Version <c>n</c> auf <c>n + 1</c>.
     /// 1 → 2: neue Finanzfelder der Spur finanzen-2 (<c>SaveGame.Migration1.cs</c>).
+    /// 2 → 3: Spielmodus (Fahne) und Buchungen des Nationalkontos, Spur wettbewerbe-weltkugel (<c>SaveGame.Migration2.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
         {
             [1] = MigrateFrom1,
+            [2] = MigrateFrom2,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

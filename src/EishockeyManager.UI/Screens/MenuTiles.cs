@@ -27,7 +27,9 @@ public static class MenuTiles
         [new("Finanzen", 0, 0), new("Werbung", 1, 0), new("Stadion", 2, 0), new("Jugend", 3, 0), new("Neuer", 4, 0), new("Highscore", 5, 0)],
         [new("Aufstellung", 0, 1), new("Taktik", 1, 1), new("Verträge", 2, 1), new("Transfer", 3, 1), new("Training", 4, 1), MenuTile.Empty],
         [new("Totale", 5, 1), new("Früher", 0, 2), new("Verein", 1, 2), new("Spieler", 2, 2), new("Fairplay", 3, 2), new("WM-Statistik", 4, 2)],
-        [new("Tabelle 1. Liga", 5, 2), new("Tabelle 2. Liga", 0, 3), new("Tabelle Oberliga", 1, 3), new("Tabelle WM", 2, 3), MenuTile.Empty, MenuTile.Empty],
+        // [ORIGINAL] Sechs Tabellen-Kacheln, Symbolstart DGROUP 0x5149 = 17, ab Platz 4 um eine Spalte versetzt (Datei 0x45B95):
+        // 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM. Bildschirme für DEB-Pokal und Europapokal fehlen noch.
+        [new("Tabelle 1. Liga", 5, 2), new("Tabelle 2. Liga", 0, 3), new("Tabelle Oberliga", 1, 3), new("Tabelle DEB-Pokal", 3, 3), new("Tabelle Europapokal", 4, 3), new("Tabelle WM", 5, 3)],
         [new("Paarungen 1. Liga", 5, 2), new("Paarungen 2. Liga", 0, 3), new("Paarungen Oberliga", 1, 3), new("DEB-Pokal", 3, 3), new("Europapokal", 4, 3), new("WM", 5, 3)],
         // [APPROX] Belegung der Stärken nicht im Video zu sehen; Länderteams laut Bildschirmtitel vorhanden.
         [new("Stärken 1. Liga", 5, 2), new("Stärken 2. Liga", 0, 3), new("Stärken Oberliga", 1, 3), new("Stärken Länderteams", 2, 3), MenuTile.Empty, MenuTile.Empty],
