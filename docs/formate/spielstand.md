@@ -116,7 +116,7 @@ Vereinssaison in einem einzigen Schritt; der letzte Haltepunkt davor ist `Season
 ## Dialog und automatisches Speichern (Teil `-dialog`)
 
 Code: `src/EishockeyManager.UI/Screens/SaveLoad/`, Bildschirmfotos: `emtool screens … speichern`, Tests: `SaveLoadScreenTests`.
-Das Dateiformat ist unverändert (Schema 2); der Zähler des automatischen Speicherns gehört nicht zum Spielstand.
+Das Dateiformat ändert der Dialog nicht (bei Einreichung Schema 2, nach Integration mit `wettbewerbe-weltkugel` Schema 3); der Zähler des automatischen Speicherns gehört nicht zum Spielstand.
 
 **Bild [ORIGINAL]** (Referenzbilder Video „Oberfläche“ 1:00–1:10): Titelfeld, Dateiliste in 3 Spalten × 16 Zeilen mit
 Trennbalken, Seitenpfeile, „VERZEICHNIS:“, „FILENAME :“, Laufwerksknöpfe „A:“–„G:“, „LÖSCHEN“. Spielstände gelb,

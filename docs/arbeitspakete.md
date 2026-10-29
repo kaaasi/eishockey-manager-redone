@@ -349,6 +349,26 @@ Stand: implementiert, lokale Abnahme grün; Review und Merge stehen aus (PR #87,
 - Offen: Aufstellung/Taktik des Nationalteams (Platzhalter), Bildschirme „Tabelle DEB-Pokal“/„Tabelle Europapokal“ (Kacheln wie im Original, Platzhalter),
   weitere dynamische Sperren des Originals (Werbung, Neuer, Highscore), Bundestrainer im Modus 4.
 
+### Integration Runde 3, Welle C (29.10.2026)
+
+Branch `integration/runde-3c` von `main` `f642ef8`, Leitstelle Claude Code. Zusammengeführt: #87 (`wettbewerbe-weltkugel`,
+Head `ceb3afc`), dann #88 (`speichern-dialog`, Head `88a149c`).
+
+- Konflikte: keine (beide berühren `MainMenuScreen.cs`, `SetupScreen.cs`, `docs/formate/spielstand.md`,
+  `docs/arbeitspakete.md` an getrennten Stellen).
+- Zusammenspiel neu getestet (`IntegrationRunde3cTests`, Originaldaten): Sichern/Laden über die Kacheln im Menü des
+  Bundestrainers stellt Modus, Ernennung und Konten her; das automatische Speichern zählt auch dessen Hauptmenüs, die
+  Datei lädt im Modus „nur Weltkugel“ und läuft mit dem ununterbrochenen Stand gleich weiter. Beide grün, kein
+  Integrationsfehler gefunden.
+- Doku: `spielstand.md` (Teil `-dialog`) nannte Schema 2; nach #87 gilt Schema 3.
+- Bildschirmfoto-Abläufe `speichern weltkugel wettbewerbe wm nationalteam`: 34 Bilder ohne Fehler; 27 bytegleich mit
+  dem Stand der jeweiligen Spur. Die 7 Bilder von `speichern` weichen nur ab in der Meldung „Schema 4, unterstützt bis 3“
+  (vorher 3/2, erwartet) und im angezeigten Verzeichnis: Der Ablauf nutzt ein zufälliges Temp-Verzeichnis, seine Bilder
+  sind deshalb zwischen Läufen nie bytegleich (Restlücke, Spur `speichern-dialog`).
+- Restlücken laut den beiden Übergaben: Laufwerksknöpfe ohne Wirkung, „.“/„..“ fehlen, Hot-Seat-Zählung des
+  automatischen Speicherns ohne Test; Aufstellung/Taktik des Nationalteams und „Tabelle DEB-Pokal/Europapokal“ als
+  Platzhalter, Bundestrainer im Modus 4.
+
 ### Zurückgestellt (Entscheidung Nutzer)
 
 - Paket `wettbewerbe` PR 8 „Paarungen Liga“: kein Bildschirm im Referenzvideo nachgewiesen.
