@@ -21,6 +21,19 @@ public sealed partial class GameState
     public long NationalAccount { get; set; }
 
     /// <summary>
+    /// Buchungen auf dem <see cref="NationalAccount"/> (Etat, Freundschaftsspiele), älteste zuerst. Die Summe ist der
+    /// Kontostand, solange niemand das Konto direkt setzt (nur Tests). Spur wettbewerbe-weltkugel.
+    /// </summary>
+    public List<NationalBooking> NationalBookings { get; } = [];
+
+    /// <summary>Bucht einen Betrag auf das Nationalkonto und in <see cref="NationalBookings"/>.</summary>
+    private void BookNational(NationalBookingKind kind, long amount)
+    {
+        NationalAccount += amount;
+        NationalBookings.Add(new NationalBooking(Season, kind, amount));
+    }
+
+    /// <summary>
     /// Spielwerte eines Nationalteams. [ORIGINAL] Ohne menschlichen Bundestrainer würfelt das Original die Werte
     /// des eigenen Landes an jedem Tag mit Markierung 255 (13. und 29. April) neu aus (Datei 0x554CF):
     /// Kondition random(84, 94), Technik random(79, 89), Form random(45, 55) – je Abwehr und Sturm. Bis dahin gelten
@@ -73,7 +86,7 @@ public sealed partial class GameState
                 ? current
                 : throw new InvalidOperationException("In dieser Saison ist bereits ein anderer Manager Bundestrainer.");
         NationalCoach = new NationalCoach(index, NationalTeams.Germany);
-        NationalAccount += NationalBudget;
+        BookNational(NationalBookingKind.Budget, NationalBudget);
         return NationalCoach;
     }
 
@@ -141,7 +154,7 @@ public sealed partial class GameState
         var cost = NationalCoach.FriendlyCost(opponent, home);
         if (NationalAccount < cost)
             return FriendlyResult.NotEnoughMoney;
-        NationalAccount -= cost;
+        BookNational(NationalBookingKind.Friendly, -cost);
 
         var random = CupRandom;
         // Reihenfolge der Zufallszahlen wie im Original: x vor dem Spiel, Bonus danach.

@@ -92,15 +92,58 @@ public sealed class GameSetup
 
     public List<ManagerSetup> Managers { get; } = [];
 
-    /// <summary>Spielmodus links: DEB-Pokal an/aus.</summary>
-    public bool DebCup { get; set; } = true;
+    /// <summary>
+    /// Spielmodus links, deutsche Fahne (Bit 0): Vereinssaison mit Liga und DEB-Pokal.
+    /// [ORIGINAL] Datei 0x28717 ff., Vorgabe an (Datei 0x28191). Umschalten über <see cref="ToggleClubCompetitions"/>.
+    /// </summary>
+    public bool ClubCompetitions { get; private set; } = true;
 
-    /// <summary>Spielmodus rechts: Europapokal und WM an/aus.</summary>
+    /// <summary>
+    /// Spielmodus rechts, Weltkugel (Bit 1): Europapokal und WM. [ORIGINAL] Datei 0x28741 ff., Vorgabe an.
+    /// Umschalten in der Spielvorbereitung über <see cref="ToggleEuropeAndWorldCup"/>.
+    /// </summary>
     public bool EuropeAndWorldCup { get; set; } = true;
+
+    /// <summary>
+    /// [APPROX] Kein Schalter des Originals (das Remake deutete den linken Knopf früher so): DEB-Pokal in einem
+    /// Modus mit Vereinssaison abschalten. Die Spielvorbereitung setzt ihn nicht; er dient Tests, die ohne Pokal rechnen.
+    /// </summary>
+    public bool DebCup { get; set; } = true;
 
     public GameDuration Duration { get; set; } = GameDuration.Unbegrenzt;
 
-    public bool CanStart => Managers.Count > 0 && Managers.All(m => m.Name.Length > 0);
+    /// <summary>Knopfbits wie im Original: Bit 0 Fahne, Bit 1 Weltkugel.</summary>
+    public int ModeBits => (ClubCompetitions ? 1 : 0) | (EuropeAndWorldCup ? 2 : 0);
+
+    /// <summary>Spielmodus (DGROUP 0xD0B9) oder null, wenn kein Knopf gedrückt ist.</summary>
+    public GameMode? Mode => GameModes.FromBits(ModeBits);
+
+    /// <summary>
+    /// Linker Knopf (Fahne). [ORIGINAL] Datei 0x28717 ff.: Bei mehr als einem Manager mit Namen bleibt der Klick
+    /// wirkungslos – nur ein einzelner Manager kann „nur Weltkugel“ wählen (Bundestrainer ist Manager 0).
+    /// </summary>
+    public bool ToggleClubCompetitions()
+    {
+        if (Managers.Count(m => m.Name.Length > 0) > 1)
+            return false;
+        ClubCompetitions = !ClubCompetitions;
+        return true;
+    }
+
+    /// <summary>Rechter Knopf (Weltkugel). [ORIGINAL] Datei 0x28741 ff.: ohne Bedingung.</summary>
+    public bool ToggleEuropeAndWorldCup()
+    {
+        EuropeAndWorldCup = !EuropeAndWorldCup;
+        return true;
+    }
+
+    /// <summary>
+    /// „Los jetzt!“ ist möglich: alle Manager benannt, ein Spielmodus gewählt ([ORIGINAL] Datei 0x295DF: ohne Knopf
+    /// kein Start). [APPROX] „nur Weltkugel“ nur mit genau einem Manager – das Original verhindert mehrere Manager
+    /// dort nur über die Sperre der Fahne, nicht beim späteren Hinzufügen.
+    /// </summary>
+    public bool CanStart => Managers.Count > 0 && Managers.All(m => m.Name.Length > 0) && Mode is { } mode
+        && (mode != GameMode.WorldOnly || Managers.Count == 1);
 
     /// <summary>Verein, der bereits von einem anderen Manager gewählt wurde?</summary>
     public bool IsClubTaken(int clubIndex, ManagerSetup? except = null) =>

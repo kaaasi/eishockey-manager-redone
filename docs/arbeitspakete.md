@@ -309,6 +309,14 @@ Danach Abschluss von Runde 3 (Archiv, offene Restlücken nach Runde 4).
   Tagesabschluss (`GameState.Integration.cs`). `Core/SaveGame*.cs` nur für eine nötige API, kein Formatwechsel.
 - Nicht enthalten: Import `*.HOK`, #80.
 
+### Status Spur `speichern-dialog`
+
+Stand 29.10.2026: umgesetzt, im Review (Branch `paket/speichern-dialog`, Base `f642ef8`, Bearbeiter Claude Code).
+Dialog „Laden“/„Sichern“ (Kacheln, Notizbuch der Spielvorbereitung), Einstellung „Automatisch speichern“ (Standard an),
+automatisches Speichern nach dem Zähler aus `em.exe`. Tests: `SaveLoadScreenTests` (Abnahme 1–3, Mehrsaisonprobe),
+Bildschirmfoto-Ablauf `speichern` (Abnahme 4). Belege und `[APPROX]`: `docs/formate/spielstand.md`, Teil `-dialog`.
+Offen: Laufwerksknöpfe ohne Wirkung, „.“/„..“-Einträge fehlen, Hot-Seat-Zählung nur über Code belegt (kein Test).
+
 ### Spur `wettbewerbe-weltkugel` – Spielmodus „nur Weltkugel“ (Paket `wettbewerbe`, PR 7)
 
 - **Ziel:** wie in `docs/wettbewerbe.md` („Noch offen“): Auswahl des Spielmodus in der Spielvorbereitung (Fahne/Weltkugel,
@@ -324,6 +332,47 @@ Danach Abschluss von Runde 3 (Archiv, offene Restlücken nach Runde 4).
   (Freischaltung), `SeasonFlow.cs`, `GameState.Integration.cs`. Spielstand: neuer Zustand mit Schemaversion + Migration.
 - **Abhängigkeit:** berührt `GameState.Integration.cs` wie `speichern-dialog` – getrennte Aufrufe, Konflikt beim Zweiten
   per Rebase lösen.
+
+### Status Spur `wettbewerbe-weltkugel`
+
+Stand: implementiert, lokale Abnahme grün; Review und Merge stehen aus (PR #87, Branch `paket/wettbewerbe-weltkugel`).
+
+- [x] (1) Spielmodus aus Fahne/Weltkugel wie im Original (Bits → 1/2/4, Fahne nur mit einem Manager, ohne Modus kein
+  Start); Tests `GameModeTests.Mode_*`, `WorldOnlyMenuTests.Setup_Buttons_GiveOriginalModes`.
+- [x] (2) Modus 1: Sprung zum ersten WM-Termin über `Continue()`, Ernennung, WM vollständig, keine Liga, keine
+  Vereinsbuchungen (`WorldOnly_SeasonRunsThroughWorldCup_WithoutLeagueOrClubBookings`).
+- [x] (3) Mehrsaisonprobe Modus 1, 4 Wechsel, passiv/aktiv (Ernennung jede Saison, Nationalkonto = Summe der
+  Buchungen); Referenzwerte Modus 4 unverändert (`Mode4_ReferenceValues_Unchanged`, aufgenommen auf Base f642ef8).
+- [x] (4) Bildschirmfoto-Ablauf `weltkugel`; Pixelvergleich der Modusknöpfe mit dem Video (2:13–2:30), Menü des
+  Bundestrainers ohne Videobild; Bildschirme zustandsrein (`WorldOnly_CoachMenu_LocksAndRoutes_AndOpeningChangesNothing`).
+- Spielstand Schema 3 mit Migration (Fahne, Nationalbuch). Belege und `[APPROX]`: [wettbewerbe.md](wettbewerbe.md).
+- Offen: Aufstellung/Taktik des Nationalteams (Platzhalter), Bildschirme „Tabelle DEB-Pokal“/„Tabelle Europapokal“ (Kacheln wie im Original, Platzhalter),
+  weitere dynamische Sperren des Originals (Werbung, Neuer, Highscore), Bundestrainer im Modus 4.
+
+### Integration Runde 3, Welle C (29.10.2026)
+
+Branch `integration/runde-3c` von `main` `f642ef8`, Leitstelle Claude Code. Zusammengeführt: #87 (`wettbewerbe-weltkugel`,
+Head `ceb3afc`), dann #88 (`speichern-dialog`, Head `88a149c`).
+
+- Konflikte: keine (beide berühren `MainMenuScreen.cs`, `SetupScreen.cs`, `docs/formate/spielstand.md`,
+  `docs/arbeitspakete.md` an getrennten Stellen).
+- Zusammenspiel neu getestet (`IntegrationRunde3cTests`, Originaldaten): Sichern/Laden über die Kacheln im Menü des
+  Bundestrainers stellt Modus, Ernennung und Konten her; das automatische Speichern zählt auch dessen Hauptmenüs, die
+  Datei lädt im Modus „nur Weltkugel“ und läuft mit dem ununterbrochenen Stand gleich weiter. Beide grün, kein
+  Integrationsfehler gefunden.
+- Doku: `spielstand.md` (Teil `-dialog`) nannte Schema 2; nach #87 gilt Schema 3.
+- Bildschirmfoto-Abläufe `speichern weltkugel wettbewerbe wm nationalteam`: 34 Bilder ohne Fehler; 27 bytegleich mit
+  dem Stand der jeweiligen Spur. Die 7 Bilder von `speichern` weichen nur ab in der Meldung „Schema 4, unterstützt bis 3“
+  (vorher 3/2, erwartet) und im angezeigten Verzeichnis: Der Ablauf nutzt ein zufälliges Temp-Verzeichnis, seine Bilder
+  sind deshalb zwischen Läufen nie bytegleich (Restlücke, Spur `speichern-dialog`).
+- Review [integration-runde-3c](reviews/2026-10-29-integration-runde-3c.md): **R3C-01 (P2, #93)** – im Hot-Seat
+  fehlte beim direkten Weitergeben an den nächsten Manager der Autosave-Aufruf; der Spielstand hing vom Kachelbesuch ab.
+  Behoben im Integrations-Branch (`MainMenuScreen.Continue_`), Regressionstest
+  `IntegrationRunde3cTests.HotSeat_AutoSave_DoesNotDependOnTileVisits` (vorher rot: ohne Kachelbesuch geschrieben bei
+  Tag 24/Manager 0, mit Kachelbesuch bei Tag 21/Manager 1). Die im Review blockierten drei Läufe hat die Leitstelle nachgeholt.
+- Restlücken laut den beiden Übergaben: Laufwerksknöpfe ohne Wirkung, „.“/„..“ fehlen;
+  Aufstellung/Taktik des Nationalteams und „Tabelle DEB-Pokal/Europapokal“ als
+  Platzhalter, Bundestrainer im Modus 4.
 
 ### Zurückgestellt (Entscheidung Nutzer)
 
@@ -343,7 +392,7 @@ Branch: `paket/wettbewerbe` · Status: **Runde 3, Welle A** – PR 1–6 (DEB-Po
 | 4 | Stärken (Ligen, Länderteams) | eingereicht (baut auf PR 3 auf) |
 | 5 | Statistiken: Ewige Tabelle (Totale), Früher | eingereicht (baut auf PR 4 auf) |
 | 6 | Bundestrainer: WM-Kader, „WM Vorbereitung“ (Freundschaftsspiele), Etat; WM: Werte Deutschlands neu ausgewürfelt, Länder 20-mal getauscht | eingereicht (baut auf PR 5 auf) |
-| 7 | Spielmodus „nur Weltkugel“: Spielvorbereitung, Vereinssaison überspringen, Menü des Bundestrainers | offen, berührt gemeinsame Dateien (siehe `wettbewerbe.md`) |
+| 7 | Spielmodus „nur Weltkugel“: Spielvorbereitung, Vereinssaison überspringen, Menü des Bundestrainers | eingereicht (#87, Spur `wettbewerbe-weltkugel`) |
 | 8 | Paarungen Liga (kein Videobeleg) | offen |
 | – | Statistiken Spieler, Verein, Fairplay, WM-Statistik | **wartet auf `livespiel`** (Tore, Vorlagen, Strafen je Spieler) |
 

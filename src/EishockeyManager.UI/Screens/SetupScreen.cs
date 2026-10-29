@@ -7,7 +7,7 @@ namespace EishockeyManager.UI.Screens;
 /// Spielvorbereitung (Hintergrund kb\150). Koordinaten aus Videoaufnahmen des Originals vermessen.
 ///
 /// Links bis zu vier Manager: Kopf → Kopfauswahl, Namensfeld → Name tippen, Logo → Vereinsauswahl.
-/// Rechts Spielmodus (DEB-Pokal, Europapokal + WM), Spiel-Level, Spiel-Dauer, Start-Liga, Start-Stärke,
+/// Rechts Spielmodus (Fahne = Liga und DEB-Pokal, Weltkugel = Europapokal und WM), Spiel-Level, Spiel-Dauer, Start-Liga, Start-Stärke,
 /// unten Notizbuch (Laden) und „Los jetzt!“.
 /// </summary>
 public sealed class SetupScreen : Screen
@@ -24,8 +24,16 @@ public sealed class SetupScreen : Screen
     public static Rect NameInput(int i) => new(47, 42 + i * SlotPitch, 86, 7);
 
     // Rechte Seite
-    public static readonly Rect ModeDebCup = new(193, 47, 57, 13);
-    public static readonly Rect ModeEurope = new(259, 47, 57, 13);
+    /// <summary>Knopf „Fahne“ (Bit 0) und „Weltkugel“ (Bit 1), gezeichnet aus kb\1 (Quelle x = 113).</summary>
+    public static readonly Rect ModeFlag = new(193, 47, 57, 13);
+    public static readonly Rect ModeGlobe = new(259, 47, 57, 13);
+
+    /// <summary>
+    /// Klickflächen der Modusknöpfe. [ORIGINAL] Datei 0x286F6 ff.: x &gt; 190, 45 &lt; y &lt; 61; links davon bis x &lt; 254
+    /// die Fahne, ab 254 die Weltkugel.
+    /// </summary>
+    public static readonly Rect ModeFlagHit = new(191, 46, 63, 15);
+    public static readonly Rect ModeGlobeHit = new(254, 46, 66, 15);
     public static Rect Field(int row) => new(195, 81 + row * 28, 110, 10);
     public static Rect ArrowUp(int row) => new(310, 78 + row * 28, 10, 7);
     public static Rect ArrowDown(int row) => new(310, 87 + row * 28, 10, 7);
@@ -107,10 +115,11 @@ public sealed class SetupScreen : Screen
             }
         }
 
-        if (input.Clicked(ModeDebCup))
-            _setup.DebCup = !_setup.DebCup;
-        if (input.Clicked(ModeEurope))
-            _setup.EuropeAndWorldCup = !_setup.EuropeAndWorldCup;
+        // Spielmodus (Spur wettbewerbe-weltkugel): Die Fahne bleibt bei mehreren Managern gesperrt (GameSetup).
+        if (input.Clicked(ModeFlagHit))
+            _setup.ToggleClubCompetitions();
+        else if (input.Clicked(ModeGlobeHit))
+            _setup.ToggleEuropeAndWorldCup();
 
         for (var row = 0; row < 4; row++)
         {
@@ -121,7 +130,10 @@ public sealed class SetupScreen : Screen
         }
 
         if (input.Clicked(LoadButton))
-            _message = "Laden ist noch nicht portiert.";
+        {
+            Host.Show(new SaveLoad.SaveLoadScreen(Host, this, SaveLoad.SaveLoadMode.Load));
+            return;
+        }
 
         if (input.Clicked(StartButton) || input.Pressed(Key.Enter))
             TryStart();
@@ -162,6 +174,15 @@ public sealed class SetupScreen : Screen
         if (_setup.Managers.Count == 0)
         {
             _message = "Bitte zuerst einen Manager anlegen.";
+            return;
+        }
+        // [ORIGINAL] Datei 0x295DF: Ohne Spielmodus nimmt „Los jetzt!“ keinen Klick an (keine Meldung).
+        if (_setup.Mode is not { } mode)
+            return;
+        // [APPROX] Meldung nicht aus dem Original: „nur Weltkugel“ gibt es nur für einen Manager (Bundestrainer).
+        if (mode == GameMode.WorldOnly && _setup.Managers.Count > 1)
+        {
+            _message = "Nur Weltkugel: nur ein Manager.";
             return;
         }
         for (var i = 0; i < _setup.Managers.Count; i++)
@@ -311,8 +332,9 @@ public sealed class SetupScreen : Screen
     private void DrawSettings(Surface s)
     {
         var elements = Assets.Image(Elements);
-        s.Blit(elements, new Rect(113, _setup.DebCup ? 89 : 76, 57, 13), ModeDebCup.X, ModeDebCup.Y);
-        s.Blit(elements, new Rect(113, _setup.EuropeAndWorldCup ? 115 : 102, 57, 13), ModeEurope.X, ModeEurope.Y);
+        // [ORIGINAL] Datei 0x28506/0x28543: Quelle y = 76 + 13 · Bit 0 bzw. 102 + 13 · Bit 1.
+        s.Blit(elements, new Rect(113, _setup.ClubCompetitions ? 89 : 76, 57, 13), ModeFlag.X, ModeFlag.Y);
+        s.Blit(elements, new Rect(113, _setup.EuropeAndWorldCup ? 115 : 102, 57, 13), ModeGlobe.X, ModeGlobe.Y);
 
         var m = Selected ?? new ManagerSetup();
         int[] values = [m.Level, (int)_setup.Duration, (int)m.StartLeague, (int)m.StartStrength];

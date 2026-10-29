@@ -1,6 +1,7 @@
 using EishockeyManager.Audio;
 using EishockeyManager.UI;
 using EishockeyManager.UI.Screens;
+using EishockeyManager.UI.Screens.SaveLoad;
 using Microsoft.Xna.Framework;
 
 namespace EishockeyManager.Desktop;
@@ -13,6 +14,7 @@ internal static class SettingsSync
     {
         GameSettings.StorePath = GameSettings.DefaultPath;
         GameSettings.Current = GameSettings.Load(GameSettings.DefaultPath);
+        SaveContext.DefaultDirectory = SaveContext.UserDirectory; // Spielstände und Autosave
     }
 
     /// <summary>F11: Vollbild umschalten und merken.</summary>
