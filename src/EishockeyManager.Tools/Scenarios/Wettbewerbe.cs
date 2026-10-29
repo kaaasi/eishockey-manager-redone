@@ -3,6 +3,7 @@ using EishockeyManager.UI;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.Competitions;
 using EishockeyManager.UI.Screens.Statistics;
+using EishockeyManager.UI.Screens.Team;
 using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.Tools.Scenarios;
@@ -244,5 +245,49 @@ internal static class Wettbewerbe
         d.Move(10, 230); d.Save("09_bundestrainer_manager");
         d.OpenTile("Transfer");
         d.Move(5, 120); d.Save("10_bundestrainer_wm_kader");
+    }
+
+    /// <summary>
+    /// Spur nationalteam-2: Aufstellung und Taktik des Nationalteams im Modus „nur Weltkugel“. Die Aufstellung wird
+    /// wie im Video `bundestrainer_00056` belegt (gleiche Zeilen: TW 2, Blöcke 14 15 16/4 5, 17 18 20/6 7,
+    /// 19 21 22/8 11, Reserve 1 3 9 10 25 26 – „Eingesetzt: 22“), damit Bild und Video Zeile für Zeile vergleichbar sind.
+    /// </summary>
+    [Scenario("nationalteam-2")]
+    private static void NationalLineup(ScreenDriver d)
+    {
+        d.Host.Show(new TitleScreen(d.Host));
+        d.Frame();
+        d.Click(160, 120);
+        d.Click(20, 60);
+        var cell = SetupScreen.HeadCell(3);
+        d.Click(cell.X + 5, cell.Y + 5);
+        d.Type("LetsShow");
+        d.Press(Key.Enter);
+        d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
+        d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
+        d.PlayMatchDay();
+        var game = d.Host.Game!;
+        game.AutoNominate();
+        d.OpenTile("Aufstellung");
+        d.Move(300, 235); d.Save("01_aufstellung_leer");
+
+        var coach = game.NationalCoach!;
+        Player Row(int number) => coach.Rows[number - 1];
+        coach.Assign(LineupSlot.Goalkeeper, Row(2));
+        int[][] forwards = [[14, 15, 16], [17, 18, 20], [19, 21, 22]];
+        int[][] defenders = [[4, 5], [6, 7], [8, 11]];
+        for (var b = 0; b < 3; b++)
+        {
+            for (var i = 0; i < 3; i++)
+                coach.Assign(LineupSlot.Forward(b, i), Row(forwards[b][i]));
+            for (var i = 0; i < 2; i++)
+                coach.Assign(LineupSlot.Defender(b, i), Row(defenders[b][i]));
+        }
+        foreach (var reserve in new[] { 1, 3, 9, 10, 25, 26 })
+            coach.Dress(Row(reserve));
+        d.Move(300, 235); d.Save("02_aufstellung_wie_video_00056");
+
+        d.Click(TeamUi.SwitchButton.X + 5, TeamUi.SwitchButton.Y + 5);
+        d.Move(300, 235); d.Save("03_taktik_wie_video_00058");
     }
 }
