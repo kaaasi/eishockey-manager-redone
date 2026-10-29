@@ -58,7 +58,7 @@ public enum FriendlyResult
 ///   Ligavereine und des Transfermarkts, nach Kondition + Technik + Form absteigend.</item>
 /// </list>
 /// </remarks>
-public sealed class NationalCoach
+public sealed partial class NationalCoach
 {
     public const int MaxSquad = 29;
     public const int MaxFriendlies = 8;
@@ -160,41 +160,58 @@ public sealed class NationalCoach
     public static int Value(Player p) => (p.Condition + p.Technique) / 2;
 
     /// <summary>
-    /// [APPROX] Aufstellung aus dem Kader: bester unverletzter Torhüter, je Reihe die zwei besten Verteidiger und drei
-    /// besten Stürmer (nach Kondition + Technik + Form). Das Original nutzt die Aufstellung des Managers 5.
+    /// Aufstellung, mit der das Nationalteam spielt (WM, Freundschaftsspiel, Länderspiele): die Torhüter- und
+    /// Reihenplätze 1–3 der <see cref="Formation"/> (Spur nationalteam-2); Verletzte und Gesperrte fallen heraus.
+    /// [APPROX] Ist die Formation ganz leer (Bundestrainer hat nichts aufgestellt, z. B. passiver Manager oder
+    /// automatische Kaderwahl ohne Halt), gilt die bisherige Automatik: bester unverletzter Torhüter, je Reihe die zwei
+    /// besten Verteidiger und drei besten Stürmer (nach Kondition + Technik + Form).
     /// </summary>
     public NationalLineup Lineup()
     {
-        List<Player> Best(PlayerRole role, int count) => _squad.Select(m => m.Player)
+        if (Formation.Count > 0)
+            return FormationLineup();
+        List<Player?> Best(PlayerRole role, int count) => _squad.Select(m => m.Player)
             .Where(p => p.Role == role && p.Available)
-            .OrderByDescending(p => p.Condition + p.Technique + p.Form).Take(count).ToList();
+            .OrderByDescending(p => p.Condition + p.Technique + p.Form).Take(count).Cast<Player?>().ToList();
         return new NationalLineup(Best(PlayerRole.Goalkeeper, 1).FirstOrDefault(),
             Best(PlayerRole.Defender, 2 * Lines), Best(PlayerRole.Forward, 3 * Lines));
     }
 
     internal void Add(Player player, int club) => _squad.Add(new NationalSquadMember(player, club));
 
-    internal void Remove(Player player) => _squad.RemoveAll(m => m.Player == player);
+    internal void Remove(Player player)
+    {
+        _squad.RemoveAll(m => m.Player == player);
+        ReleaseFromFormation(player);
+    }
 
-    internal void ClearSquad() => _squad.Clear();
+    internal void ClearSquad()
+    {
+        _squad.Clear();
+        ClearFormationState();
+    }
 
     internal void AddFriendly(FriendlyMatch match) => _friendlies.Add(match);
 
     internal void ClearFriendlies() => _friendlies.Clear();
 }
 
-/// <summary>Aufstellung des Nationalteams (Torhüter, Verteidiger und Stürmer, nach Reihen geordnet).</summary>
-public sealed record NationalLineup(Player? Goalkeeper, IReadOnlyList<Player> Defenders, IReadOnlyList<Player> Forwards)
+/// <summary>
+/// Aufstellung des Nationalteams (Torhüter, Verteidiger und Stürmer, nach Reihen geordnet). Leere Plätze einer
+/// Formation stehen als null in den Listen, damit die Reihen an ihrem Platz bleiben.
+/// </summary>
+public sealed record NationalLineup(Player? Goalkeeper, IReadOnlyList<Player?> Defenders, IReadOnlyList<Player?> Forwards)
 {
     public IEnumerable<Player> Players =>
-        (Goalkeeper is null ? Enumerable.Empty<Player>() : [Goalkeeper]).Concat(Defenders).Concat(Forwards);
+        (Goalkeeper is null ? Enumerable.Empty<Player>() : [Goalkeeper]).Concat(Defenders.OfType<Player>())
+        .Concat(Forwards.OfType<Player>());
 
     /// <summary>Wert einer Reihe 0–2 (Abwehr bzw. Sturm); fehlende Spieler zählen 0.</summary>
     public int LineValue(int line, bool attack)
     {
         var size = attack ? 3 : 2;
         var list = attack ? Forwards : Defenders;
-        return list.Skip(line * size).Take(size).Sum(NationalCoach.Value) / size;
+        return list.Skip(line * size).Take(size).Sum(p => p is null ? 0 : NationalCoach.Value(p)) / size;
     }
 
     /// <summary>[APPROX] Spielstärke: Mittel der 16 Plätze (Torhüter, 6 Verteidiger, 9 Stürmer), Lücken zählen 0.</summary>
