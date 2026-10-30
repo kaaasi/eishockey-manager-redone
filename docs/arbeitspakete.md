@@ -114,7 +114,10 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
   `Tools/Scenarios/Wettbewerbe.cs` (Ablauf `nurfahne`),
   `FriendliesScreen.cs`, `Core/CupsNational*.cs`, `docs/wettbewerbe.md`, `docs/dosbox-befunde.md` (Status), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen (#175 gemergt).
+- **Status:** Teil 1 in #189 (Review ausstehend): „Highscore“ im Modus 1 offen, Endrunden-Fenster, 71b27de übernommen,
+  Regressionstests Freundschaftsspiele, Energie 70 beim ersten Freundschaftsspiel (`[APPROX]` 0x3BB51). Ausgelagert:
+  Taktik-Startwerte #192, Länderwerte aus der Aufstellung #193, Paarungsansicht WM #194, Modus-1-Halt #195; Abzug je
+  Spiel bei `spielberechnung`.
 
 ### Spur `menue-befunde` – Nachrichtenleiste (#170) und Handbuchfrage des Originals
 

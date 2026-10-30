@@ -25,6 +25,10 @@ public sealed record WorldCupKnockoutSection(string Title, IReadOnlyList<WorldCu
 ///   (0x3307E–0x330E0); nicht im laufenden Spiel.</item>
 /// <item>[ORIGINAL] Ergebnis „g: g“ (zweistellig) bei x = 233, Farbe 1, Punkte bei x + 22 / + 24.</item>
 /// <item>[ORIGINAL] Noch nicht gespielte Begegnungen zeigen „0: 0“ (<c>eisbaeren_f35_00646</c>).</item>
+/// <item>[ORIGINAL] Vor der Endrunde (WM-Stufe DGROUP 0x7AE &lt; 5, Datei 0x3337B) ein Rahmen ohne Zeilen (5 Teile ab y = 70) mit
+///   „Die Paarungen stehen noch nicht fest...“ (Flow, Grundlinie y + 34, Farbe 30) und Knopf „Gruppe“; DOSBox
+///   <c>dosbox/nur-weltkugel/24</c>. Erreichbar ist das im Remake nur über „Endrunde“ der Gruppenansicht, die es erst nach der
+///   Gruppenphase gibt; die Paarungsansicht „Gruppe n  m.Spieltag“ mit diesem Knopf (DOSBox 20, 21) fehlt noch.</item>
 /// <item>[APPROX] Punkte hinter dem Ergebnis: Das Original setzt einen Punkt nach Verlängerung und zwei (eisbaeren_f44_01330:
 ///   „4: 3..“) vermutlich nach Penaltyschießen; das Remake kennt nur das Penaltyschießen bei Gleichstand und zeigt dann zwei
 ///   Punkte hinter dem Gleichstand.</item>
@@ -36,6 +40,9 @@ public sealed class WorldCupKnockoutScreen : Screen
 {
     public const string Title = "WM-Endrundenspiele";
     public const string ButtonText = "Gruppe";
+
+    /// <summary>Text vor der Endrunde (DGROUP 0x1E58, wie beim Europapokal).</summary>
+    public const string NotYetKnown = EuropeanCupScreen.NotYetKnown;
     public static readonly Rect Button = new(136, 201, 48, 38);
     public static readonly Rect TrophySource = new(0, 66, 22, 22);
 
@@ -130,6 +137,10 @@ public sealed class WorldCupKnockoutScreen : Screen
         CompetitionWidgets.Centered(s, Assets.Bold, 0, 319, y + 19, Title, Colors.White, DebCupDrawScreen.TitleShadow);
         if (_liveMinute is { } minute)
             CompetitionWidgets.Centered(s, Assets.Flow, 0, 319, y + 34, LiveLine(minute), Colors.TileBackground, Colors.Black);
+        else if (sections.Count == 0)
+            // [ORIGINAL] Datei 0x3337B–0x333C8: vor der Endrunde (DGROUP 0x7AE < 5) Text DGROUP 0x1E58, Flow, Grundlinie
+            // Oberkante + 0x10 + 0x12, Farbe 30, Schatten 0 (DOSBox dosbox/nur-weltkugel/24).
+            CompetitionWidgets.Centered(s, Assets.Flow, 0, 319, y + 34, NotYetKnown, Colors.TileBackground, Colors.Black);
 
         if (Host.Game is not { } game)
             return;

@@ -23,8 +23,9 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   179, Farbe 7, Schatten 0); über einem Land stattdessen „Gegner“, „Kosten“, „Kontostand“ (Mini, x = 27, Grundlinien
 ///   167/174/181, Farbe 0), „:“ bei x = 75, Werte bei x = 88.</item>
 /// <item>[ORIGINAL] Nach der Wahl eines Landes unten die Mannschaftsfelder von Heim (x = 31) und Gast (x = 165).</item>
-/// <item>[APPROX] Das Original setzt beim Öffnen die Energie (Kaderfeld 0x13) aller Kaderspieler auf 70; Bildschirme
-///   ändern im Remake beim Öffnen keinen Zustand, das Remake führt diese Energie nicht.</item>
+/// <item>[APPROX] Das Original setzt beim Öffnen die Energie (Kaderfeld 0x13) aller Kaderspieler auf 70 (Datei 0x3BB51);
+///   Bildschirme ändern im Remake beim Öffnen keinen Zustand, das Remake setzt sie beim ersten Freundschaftsspiel
+///   (<see cref="GameState.PlayFriendly"/>).</item>
 /// </list>
 /// </remarks>
 public sealed class FriendliesScreen : Screen
