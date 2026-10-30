@@ -76,7 +76,7 @@ fortlaufend (wie Runde 5, Migration 4 → 5 → 6).
 - **Dateigrenzen:** `Core/SeasonRecord.cs`, `Core/SeasonFlow.cs` (minimal), `Core/Highscore.cs`, `UI/Screens/Statistics/HighscoreScreen.cs`,
   `UI/Screens/TileLocks.cs`, `docs/highscore.md`, `docs/saison.md`, Tests.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen.
+- **Status:** in Arbeit (Bearbeiter: Claude Code, Branch `paket/saisonende-status`, Base `1e4731b`).
 
 ### Spur `pixel-wettbewerbe` – Wettbewerbsbildschirme gegen die neuen Referenzbilder
 
