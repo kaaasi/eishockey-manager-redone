@@ -60,17 +60,26 @@ public sealed class FinanceScreen : Screen
     private const int StockTextX = 47;
     private const int StockLinePitch = 7;
 
-    /// <summary>Schwarzes Feld des Kursverlaufs (110 × 133), eine Spalte je Tag.</summary>
-    public static readonly Rect Chart = new(132, 104, Stock.HistoryLength, 133);
+    /// <summary>Schwarzes Feld des Kursverlaufs im Hintergrund kb\152 (110 × 133).</summary>
+    public static readonly Rect Chart = new(132, 104, 110, 133);
 
-    /// <summary>Höhe der Zeile, auf der der Kurs der gewählten Aktie liegt (Video: 172/173).</summary>
-    private const double ChartCenterY = 172.5;
+    /// <summary>
+    /// [ORIGINAL] Zeichenfläche des Kursverlaufs (em.exe 0x588CA): Puffer 106 × 130, kopiert nach (134 | 107).
+    /// Tag k des Verlaufs liegt bei x = 3·k, also 36 Tage über die ganze Breite.
+    /// </summary>
+    public static readonly Rect ChartCanvas = new(134, 107, 106, 130);
 
-    /// <summary>Maßstab des Kursverlaufs: 1,5 Pixel je DM (Video, Abstand der Kurven).</summary>
-    public const double PixelsPerDm = 1.5;
+    /// <summary>[ORIGINAL] Waagrechter Abstand zweier Tage im Kursverlauf (0x5898E: Tag · 3).</summary>
+    public const int ChartDayWidth = 3;
 
-    /// <summary>[APPROX] Bildlauf des Kursverlaufs in DM je Frame.</summary>
-    private const double ScrollSpeed = 1.0;
+    /// <summary>
+    /// [ORIGINAL] Maßstab: Drittel-DM je Pixel (0x58CAF: 2, also 1,5 Pixel je DM). Der Regler rechts neben dem Verlauf
+    /// (0x58E38 ff.) kann ihn ändern; der ist im Remake nicht nachgebaut.
+    /// </summary>
+    public const int ChartScale = 2;
+
+    /// <summary>[APPROX] Bildlauf des Kursverlaufs in Drittel-DM je Frame (1 DM).</summary>
+    private const int ScrollSpeed = 3;
 
     public static readonly Rect AccountField = new(246, 103, 70, 17);
     private const int LabelX = 249;
@@ -78,8 +87,11 @@ public sealed class FinanceScreen : Screen
 
     // ---- Farben (Standardpalette) ----------------------------------------------------------
 
-    /// <summary>Farben der Aktien in Infofeld und Kursverlauf: grün, blau, rot, orange.</summary>
-    public static readonly byte[] StockColors = [15, 151, 105, 59];
+    /// <summary>
+    /// [ORIGINAL] Schriftfarben der Aktien im Infofeld (em.exe 0x58304: DGROUP 0x552A = 14, 22, 17, 9; grün, blau, rot,
+    /// orange), dieselben wie die Oberkante der Linien im Kursverlauf. Vorher aus dem Video geschätzt (15, 151, 105, 59).
+    /// </summary>
+    public static readonly byte[] StockColors = [14, 22, 17, 9];
     private const byte TextColor = 212;
     private const byte LabelTop = 212;
     private const byte LabelBottom = 50;
@@ -94,7 +106,8 @@ public sealed class FinanceScreen : Screen
     private Rect? _pressed;
     private int _mouseX = -1;
     private int _mouseY = -1;
-    private double _viewPrice = double.NaN;
+    /// <summary>Unterkante des Ausschnitts in Drittel-DM (em.exe: Versatz des Kursverlaufs, Zeile 130 der Zeichenfläche).</summary>
+    private int _offset = int.MinValue;
 
     public FinanceScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
@@ -107,8 +120,11 @@ public sealed class FinanceScreen : Screen
     public long LeftAmount => _leftAmount;
     public long RightAmount => _rightAmount;
 
-    /// <summary>Mittlerer Kurs des sichtbaren Ausschnitts.</summary>
-    public double ViewPrice => _viewPrice;
+    /// <summary>Kurs in DM auf der mittleren Zeile der Zeichenfläche (Zeile 65, Bildschirmzeile 172).</summary>
+    public double ViewPrice => (_offset + ChartCanvas.H) / 3.0;
+
+    /// <summary>Unterkante des sichtbaren Ausschnitts in Drittel-DM (<see cref="InitialChartOffset"/>).</summary>
+    public int ChartOffset => _offset;
 
     private GameState Game => Host.Game!;
     private Core.Manager Me => Game.ActiveManager;
@@ -118,9 +134,43 @@ public sealed class FinanceScreen : Screen
 
     public override void Enter()
     {
-        var prices = Game.Stocks.Stocks.Select(s => s.Price).ToList();
-        // Video 5:45: zu Beginn liegt die Mitte zwischen höchstem und niedrigstem Kurs.
-        _viewPrice = (prices.Max() + prices.Min()) / 2.0;
+        _offset = InitialChartOffset(Game.Stocks);
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Anfänglicher Ausschnitt (em.exe 0x58BD4–0x58CAC): Ausgehend vom mittleren Kurs (Summe der vier Kurse in
+    /// Drittel-DM / 4) werden Versätze von Mittel − 200 (mindestens 0) bis unter Mittel + 200 in Schritten von 10 geprüft;
+    /// je Versatz zählt, wie viele der 4 × 36 Verlaufspunkte echt innerhalb der Fläche liegen (0 &lt; Kurs/2 − Versatz/2
+    /// &lt; 130). Der erste Versatz mit den meisten Punkten gewinnt (ab mehr als 140 Punkten bricht die Suche ab).
+    /// Das Original merkt sich dabei den schon um 10 erhöhten Versatz – der Ausschnitt liegt also 10 Drittel (5 Pixel)
+    /// höher als der gezählte; das ist hier übernommen.
+    /// </summary>
+    public static int InitialChartOffset(StockMarket market)
+    {
+        var average = market.Stocks.Sum(s => s.Price * 3) / 4;
+        var offset = Math.Max(0, average - 200);
+        var best = 0;
+        var bestOffset = 0; // [APPROX] im Original nicht vorbelegt (Stapelwert), wenn kein Punkt sichtbar ist
+        while (average + 200 > offset)
+        {
+            var count = 0;
+            foreach (var stock in market.Stocks)
+                foreach (var price in stock.History)
+                {
+                    var dy = price * 3 / 2 - offset / 2;
+                    if (dy > 0 && dy < ChartCanvas.H)
+                        count++;
+                }
+            offset += 10;
+            if (count > best)
+            {
+                best = count;
+                bestOffset = offset;
+                if (count > 140)
+                    break;
+            }
+        }
+        return bestOffset;
     }
 
     public override void Update(InputState input)
@@ -179,14 +229,18 @@ public sealed class FinanceScreen : Screen
         _selection = selection;
     }
 
-    /// <summary>Der Kursverlauf läuft langsam zur gewählten Aktie (Video 5:58 und 6:15).</summary>
+    /// <summary>
+    /// Der Kursverlauf läuft langsam zur gewählten Aktie (Video 5:58 und 6:15). Ziel wie im Original (0x59C75): Versatz
+    /// = Kurs in Drittel-DM − 130, die Aktie liegt dann auf der mittleren Zeile. [APPROX] em.exe setzt den Versatz beim
+    /// Überfahren sofort; das langsame Laufen stammt aus dem Video.
+    /// </summary>
     private void ScrollChart()
     {
-        if (_selection.Kind != SelectionKind.Stock || double.IsNaN(_viewPrice))
+        if (_selection.Kind != SelectionKind.Stock || _offset == int.MinValue)
             return;
-        var target = Game.Stocks.Stocks[_selection.Index].Price;
-        var delta = target - _viewPrice;
-        _viewPrice = Math.Abs(delta) <= ScrollSpeed ? target : _viewPrice + Math.Sign(delta) * ScrollSpeed;
+        var target = Game.Stocks.Stocks[_selection.Index].Price * 3 - ChartCanvas.H;
+        var delta = target - _offset;
+        _offset = Math.Abs(delta) <= ScrollSpeed ? target : _offset + Math.Sign(delta) * ScrollSpeed;
     }
 
     /// <summary>[APPROX] Schrittweite: 10.000 DM bzw. 10 Aktien je Klick.</summary>
@@ -345,31 +399,94 @@ public sealed class FinanceScreen : Screen
         s.Text(mini, StockTextX, y + 3 * StockLinePitch, $"Wert:{ManagerText.Money((long)holding.Count * stock.Price)}", color);
     }
 
-    /// <summary>Bildschirmzeile eines Kurses beim aktuellen Bildausschnitt.</summary>
-    public int ChartY(double price) => (int)Math.Floor(ChartCenterY - (price - _viewPrice) * PixelsPerDm);
+    /// <summary>
+    /// [ORIGINAL] Zeile eines Kurses in der Zeichenfläche (0x58922): 130 − Kurs/Maßstab + Versatz/Maßstab, Kurs in
+    /// Drittel-DM, beide Divisionen ganzzahlig. Zeile 0 = Bildschirmzeile 107.
+    /// </summary>
+    public static int CanvasY(int price, int offset) => ChartCanvas.H - price * 3 / ChartScale + offset / ChartScale;
 
+    /// <summary>Bildschirmzeile eines Kurses beim aktuellen Bildausschnitt.</summary>
+    public int ChartY(int price) => ChartCanvas.Y + CanvasY(price, _offset);
+
+    /// <summary>
+    /// [ORIGINAL] Kursverlauf (0x588CA): je Aktie (0–3, spätere übermalen frühere) eine Linie von Tag zu Tag, drei Pixel
+    /// dick – zwei Zeilen in der Farbe DGROUP 0x5533 + Aktie, die dritte in 0x5537 + Aktie (Segment 0x585C2).
+    /// </summary>
     private void DrawChart(Surface s)
     {
         for (var i = 0; i < 4; i++)
         {
             var history = Game.Stocks.Stocks[i].History;
-            var x0 = Chart.Right - history.Count;
-            for (var k = 0; k < history.Count; k++)
-            {
-                var y = ChartY(history[k]);
-                var yPrev = k == 0 ? y : ChartY(history[k - 1]);
-                ChartColumn(s, x0 + k, Math.Min(y, yPrev), Math.Max(y, yPrev) + 1, StockColors[i]);
-            }
+            for (var k = 1; k < history.Count; k++)
+                ChartSegment(s, k * ChartDayWidth, CanvasY(history[k - 1], _offset), CanvasY(history[k], _offset), i);
         }
     }
 
-    /// <summary>Senkrechtes Stück (2 Pixel dick wie im Video), auf das schwarze Feld beschnitten.</summary>
-    private static void ChartColumn(Surface s, int x, int y0, int y1, byte color)
+    /// <summary>[ORIGINAL] Linienfarben je Aktie: oben DGROUP 0x5533 (14, 22, 17, 9), unten 0x5537 (12, 8, 16, 27).</summary>
+    public static readonly byte[] ChartTopColors = [14, 22, 17, 9];
+
+    /// <inheritdoc cref="ChartTopColors"/>
+    public static readonly byte[] ChartBottomColors = [12, 8, 16, 27];
+
+    /// <summary>
+    /// [ORIGINAL] Ein Abschnitt des Verlaufs (0x585C2): von (x1 − 3 | y0) nach (x1 | y1). Liegen beide Enden über bzw.
+    /// unter der Fläche, entfällt er; sonst werden die Enden auf die Zeilen 0 und 130 gekürzt (lineare Teilung,
+    /// ganzzahlig). Danach zwei Linien in der oberen Farbe (y, y + 1) und eine in der unteren (y + 2).
+    /// [APPROX] Pixelschritte der Linie nach Bresenham; die Linienroutine des Originals ist nicht nachgeprüft.
+    /// </summary>
+    private static void ChartSegment(Surface s, long x, long yPrevious, long yCurrent, int stock)
     {
-        if (x < Chart.X || x >= Chart.Right)
+        // a = Vortag, b = Tag; im Original (x0 | y0) und (x1 | y1), gekürzt wird zuerst b.
+        var xa = x - ChartDayWidth;
+        var ya = yPrevious;
+        var xb = x;
+        var yb = yCurrent;
+        const long bottom = 130;
+        if ((ya > bottom && yb > bottom) || (ya < 0 && yb < 0))
             return;
-        for (var y = Math.Max(y0, Chart.Y); y <= Math.Min(y1, Chart.Bottom - 1); y++)
-            s.Set(x, y, color);
+        if (yb > bottom)
+        {
+            xb += (xa - xb) * (bottom - yb) / (ya - yb);
+            yb = bottom;
+        }
+        if (yb < 0)
+        {
+            xb += (xa - xb) * (0 - yb) / (ya - yb);
+            yb = 0;
+        }
+        if (ya > bottom)
+        {
+            xa += (xb - xa) * (bottom - ya) / (yb - ya);
+            ya = bottom;
+        }
+        if (ya < 0)
+        {
+            xa += (xb - xa) * (0 - ya) / (yb - ya);
+            ya = 0;
+        }
+        if (xa < 0 || xa > 107 || ya < 0 || ya > bottom || xb < 0 || xb > 107 || yb < 0 || yb > bottom)
+            return;
+        Line(s, (int)xa, (int)ya, (int)xb, (int)yb, ChartTopColors[stock]);
+        Line(s, (int)xa, (int)ya + 1, (int)xb, (int)yb + 1, ChartTopColors[stock]);
+        Line(s, (int)xa, (int)ya + 2, (int)xb, (int)yb + 2, ChartBottomColors[stock]);
+    }
+
+    /// <summary>Linie in der Zeichenfläche, beschnitten auf 106 × 130 (das Original kopiert nur diesen Teil).</summary>
+    private static void Line(Surface s, int x0, int y0, int x1, int y1, byte color)
+    {
+        int dx = Math.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+        int dy = -Math.Abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+        var err = dx + dy;
+        while (true)
+        {
+            if (x0 >= 0 && x0 < ChartCanvas.W && y0 >= 0 && y0 < ChartCanvas.H)
+                s.Set(ChartCanvas.X + x0, ChartCanvas.Y + y0, color);
+            if (x0 == x1 && y0 == y1)
+                break;
+            var e2 = 2 * err;
+            if (e2 >= dy) { err += dy; x0 += sx; }
+            if (e2 <= dx) { err += dx; y0 += sy; }
+        }
     }
 
     private void DrawSummary(Surface s)

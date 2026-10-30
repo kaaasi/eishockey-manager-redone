@@ -38,16 +38,22 @@ namespace EishockeyManager.Core.Tests;
 /// Hauptquelle (Torzüge entfallen); danach Pokalquelle (Tag 14 bzw. 17, anderer Pokalverlauf), FinanceRandom und
 /// Vertragsquelle (Saisonwechsel). Titel ab 1995 andere. Die drei aktiven Abdrücke bleiben gleich (ihr Kader bleibt
 /// spielfähig, in keinem Schritt eine Differenz).
+/// Spur boerse-start (#169) rechnet die Kurse nach em.exe (0x5784A, 90 Börsentage vor Spielbeginn) und zieht dafür anders
+/// aus FinanceRandom. Alle sechs Abdrücke neu; Vergleichslauf gegen 15d0733 mit Zustand und allen vier Zufallsquellen
+/// nach jedem Schritt: Haupt-, Pokal- und Vertragsquelle, Ergebnisse und Kader in jedem Schritt gleich. Es ändern sich
+/// FinanceRandom ab dem ersten Schritt (1993, Tag 3) und daraus die Kontostände (Zuschauer, Werbung): synthetisch Seed 3
+/// ab 1994 Tag 12, Seed 11 ab 1994 Tag 7 (vorher verdeckt die Kontountergrenze der Probe die Differenz), Originaldaten ab
+/// 1993 Tag 3. Titel unverändert.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "33A4F52EC2360DE0")]
-    [InlineData(true, 3, "9541EF4978491142")]
-    [InlineData(false, 11, "FC797F99C7C8B35C")]
-    [InlineData(true, 11, "7CB3FC8E58DC44CC")]
+    [InlineData(false, 3, "CB92D3CF77C5923B")]
+    [InlineData(true, 3, "4FA851664EF08963")]
+    [InlineData(false, 11, "CEE0C8AABA15736E")]
+    [InlineData(true, 11, "0714C8FBEAAD3501")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -55,8 +61,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "74ED95088678F3B6")]
-    [InlineData(true, "9FAAA0D4276178C3")]
+    [InlineData(false, "CA0BE0120A9848A2")]
+    [InlineData(true, "5A6FDDDEB59EC94A")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

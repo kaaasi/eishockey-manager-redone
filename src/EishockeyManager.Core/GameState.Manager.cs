@@ -123,7 +123,7 @@ public sealed partial class GameState
         {
             FinanceDay++;
             var date = SeasonCalendar.LayoutDate(FinanceDay);
-            Stocks.Advance(FinanceRandom);
+            AdvanceStocks();
             ExpireMessages();
             if (FinanceDay > 0)
             {
