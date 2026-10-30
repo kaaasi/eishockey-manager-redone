@@ -160,8 +160,15 @@ Branch: `paket/hok-format` · PR #176 · Bearbeiter: Claude Code · Auftrag Leit
 - Dateien: `docs/formate/spielstand-original.md` (neu), `docs/formate/dateiformate.md` (Zeile *.HOK),
   `src/EishockeyManager.Formats/OriginalSaveGame.cs`, `src/EishockeyManager.Tools/HokDump.cs`, `Program.cs` (Befehl `hok`),
   `tests/EishockeyManager.Formats.Tests/OriginalSaveGameTests.cs` (nur synthetische Bytes).
-- Status: Verschlüsselung, Prüfsummen, Kopf, Blockfolge belegt an FILE01–03 des Nutzers (liegen nicht im Repo);
+- Status: Verschlüsselung, Prüfsummen, Kopf, Blockfolge belegt an FILE01–03 des Nutzers (Referenz-Repo
+  `original/spielstaende/`);
   offene Liste in `spielstand-original.md`. Entscheidung Nutzer: Sicher-/Ladesperre des Originals nicht übernehmen.
+- **Neue Anforderung (Nutzer, 30.10.2026), für die nächste Runde:** Spielstände für das Originalspiel erzeugen, um im
+  Original gezielt bestimmte Spielsituationen herzustellen (Analyse in DOSBox). Vorschlag: `emtool hok patch <vorlage>
+  <ziel> feld=wert …` – Vorlage lesen, nur belegte Felder ändern (zuerst Konto, Eintritt, Stadion, Datum/Zähler,
+  Regler), Prüfsummen neu, neue Spielstand-ID, Füllbyte/Kopf übernehmen; Abnahme: Stand lädt im Original und zeigt die
+  Werte (Bild des Nutzers). Grenzen: Situationen mit Spielplan, Kadern oder Pokalen erst, wenn diese Blöcke gedeutet
+  sind; bis dahin Vorlage aus dem Original bis kurz davor spielen und nur Werte anpassen.
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 

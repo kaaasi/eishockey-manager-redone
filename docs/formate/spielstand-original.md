@@ -2,7 +2,7 @@
 
 Spur `hok-format`, nur Analyse (Lesen). Leser: `src/EishockeyManager.Formats/OriginalSaveGame.cs`,
 Werkzeug `emtool hok dump <datei> [block …]`. Belegt an drei Spielständen des Nutzers (DOSBox, Version DOS/DE;
-nicht im Repo): **FILE01** Neustart (ein Manager, Kölner EC, Bundesliga, Level 3, Dauer 3, Stärke Mittelfeld,
+im Referenz-Repo unter `original/spielstaende/` mit Bildern und README, nie ins Code-Repo kopieren): **FILE01** Neustart (ein Manager, Kölner EC, Bundesliga, Level 3, Dauer 3, Stärke Mittelfeld,
 10.09.1993), **FILE02** wie FILE01, nur Eintritt 13 → 17 DM, **FILE03** = FILE02 nach drei Spieltagen (20.09.1993).
 Alle drei: 47.949 Byte, beide Prüfsummen gültig.
 
