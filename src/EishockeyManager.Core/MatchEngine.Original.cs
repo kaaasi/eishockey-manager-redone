@@ -15,8 +15,8 @@ public readonly record struct MatchSide(int Strength, int Skaters = OriginalMatc
 
 /// <summary>
 /// Rechenteil der Spielberechnung des Originals ohne Anzeige (Spur spielberechnung, Teil 1).
-/// Fundstellen und Ablauf: <c>docs/spielberechnung.md</c>. Noch nicht an die Spieltage angeschlossen; die Aufrufer
-/// verwenden weiter <see cref="MatchEngine.Play"/>.
+/// Fundstellen und Ablauf: <c>docs/spielberechnung.md</c>. Angeschlossen über <see cref="MatchEngine.PlayWithEvents"/>
+/// (Teil 3).
 /// </summary>
 /// <remarks>
 /// <list type="bullet">

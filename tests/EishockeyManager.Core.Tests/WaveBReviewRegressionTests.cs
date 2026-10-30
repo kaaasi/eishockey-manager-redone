@@ -40,7 +40,10 @@ public class WaveBReviewRegressionTests
         var squads = game.Clubs.SelectMany(c => c.Players).ToArray();
         var free = game.TransferMarket.FreeAgents.ToArray();
         Assert.Equal(1, squads.Count(p => p == player) + free.Count(p => p == player));
-        Assert.Equal(everyone.Count, squads.Concat(free).Distinct().Count());
+        // Kein Spieler verloren: Rücktritte werden 1:1 ersetzt; Computervereine füllen freigestellte Positionen wieder auf,
+        // die Freigestellten bleiben als vereinslose Spieler – es können also Spieler dazukommen (Spur spielberechnung:
+        // anderer Zufallsverbrauch, Verein 12 gibt hier auch einen Torhüter und einen Verteidiger frei).
+        Assert.True(squads.Concat(free).Distinct().Count() >= everyone.Count);
         Assert.True(origin.Players.Count <= PlayerFactory.MaxNumber);
         Assert.Equal(origin.Players.Count, origin.Players.Select(p => p.Number).Distinct().Count());
     }

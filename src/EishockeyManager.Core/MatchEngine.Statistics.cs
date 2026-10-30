@@ -7,7 +7,7 @@ namespace EishockeyManager.Core;
 /// [ORIGINAL] Nach jedem Spieltag ruft 0x52CF für jede Paarung beider Vereine 0x5028(Verein, Tore, Gegentore) auf;
 /// Vereine mit Manager (Vereinsfeld 0x16 ≠ 0) und Nationalteams (Index ≥ 0x40) überspringt es – deren Ereignisse
 /// entstehen im Spiel (0x541D9 Torschütze/Vorlage, 0x35818 Strafen). Pokale werten das gespeicherte Ergebnis, eine
-/// Penaltymarke (+30) vorher abgezogen (0x5422–0x545D). Noch nicht an die Spieltage angeschlossen.
+/// Penaltymarke (+30) vorher abgezogen (0x5422–0x545D). Aufruf aus <see cref="MatchEngine.CreditPlayers"/> nach jedem Spiel.
 /// </summary>
 public static class MatchStatistics
 {
@@ -52,14 +52,16 @@ public static class MatchStatistics
     /// [APPROX] Reihenfolge der Spieler: Kader des Remakes statt der Reihenfolge im Spielerpool des Originals (nur 200
     /// Spieler, Computervereine haben dort nur ihre Transferspieler). Tore ohne Obergrenze 255.
     /// </summary>
-    public static void CreditSkaters(IReadOnlyList<Player> players, int goals, Random random)
+    /// <param name="countGames">Spiele + 1 für alle (Computervereine); Managervereine zählen die Spiele selbst.</param>
+    public static void CreditSkaters(IReadOnlyList<Player> players, int goals, Random random, bool countGames = true)
     {
         if (goals <= 0)
             return;
         var candidates = new List<Player>();
         foreach (var p in players)
         {
-            p.Games++;
+            if (countGames)
+                p.Games++;
             if (p.Role == PlayerRole.Goalkeeper)
                 continue;
             if (RoleValue(p.Role) + OriginalMatch.Rnd(random, 5, 25) > OriginalMatch.Rnd(random, 10, 99))

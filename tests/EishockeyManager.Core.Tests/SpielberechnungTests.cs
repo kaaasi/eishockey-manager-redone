@@ -277,6 +277,9 @@ public class SpielberechnungTests
         setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = 12, StartLeague = League.Oberliga });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
         TestSeason.PlayMatchDay(game);
+        // Seit dem Anschluss (Teil 3) zählt der Spieltag die Torhüter; ein Spielstand aus Schema 9 kennt die Felder nicht.
+        foreach (var p in game.Clubs.SelectMany(c => c.Players))
+            p.GoalsAgainst = p.GoalieMinutes = 0;
         var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
         root["schema"] = 9;
         var removed = 0;

@@ -123,10 +123,29 @@ public sealed class LiveTeam
     public int ClubForm { get; init; } = 50;
 
     /// <summary>Einsatz 0–100 (Vereinsfeld 0x26).</summary>
-    public int Effort { get; init; } = 60;
+    public int Effort { get; set; } = 60;
 
     /// <summary>Angriff 0–7 (Vereinsfeld 0x2C, Bits 4–6).</summary>
-    public int AttackLevel { get; init; }
+    public int AttackLevel { get; set; }
+
+    /// <summary>
+    /// Taktik, nach der der Minutenablauf Einsatz und Angriff dem Spielstand anpasst, oder null (fest wie bei der
+    /// Spielvorbereitung). Nur in Managerpaarungen (siehe <see cref="TacticsParity"/>).
+    /// </summary>
+    public Tactics? Tactics { get; init; }
+
+    /// <summary>
+    /// Minuten, in denen die Taktik nachgeführt wird: 0 gerade (Managerverein, Spielstandtaktik 0x939A), 1 ungerade
+    /// (Computerverein, Taktik 0x80CB). [ORIGINAL] Takt aus 0x37DCF ff.; die Werte liefert [APPROX]
+    /// <see cref="Core.Tactics.EffectiveEffort"/>/<see cref="Core.Tactics.EffectiveAttack"/> des Blocks 0 (0x939A und
+    /// 0x80CB sind nicht gelesen).
+    /// </summary>
+    public int TacticsParity { get; init; }
+
+    /// <summary>Eigene und gegnerische Stärke für die Automatik der Taktik (Datei 0x8365, doppelte Differenz).</summary>
+    public int TacticsStrength { get; init; }
+
+    public int TacticsOpponentStrength { get; init; }
 
     /// <summary>Reihe auf dem Eis 0–2 je Teil (Vereinsfelder 0x2E/0x30). Computervereine wechseln nur in Managerpaarungen.</summary>
     public int DefenseLine { get; set; }
@@ -147,6 +166,9 @@ public sealed class LiveTeam
 
     public PenaltyBox Box { get; } = new();
 
+    /// <summary>Managerverein mit weniger als 8 fitten Spielern (0x120:0x66): Strafen werden gezogen, aber nicht verhängt.</summary>
+    public bool FewFitPlayers { get; init; }
+
     /// <summary>Strafminuten dieses Spiels (im Original nur in der Liga gezählt: DGROUP 0x82A1 + 0x50 · Verein).</summary>
     public int PenaltyMinutes { get; set; }
 }
@@ -166,6 +188,12 @@ public sealed class MatchReport
     public List<MatchEvent> Events { get; } = [];
     public int HomePenaltyMinutes { get; set; }
     public int AwayPenaltyMinutes { get; set; }
+
+    /// <summary>Spielwertung ohne Berechnung (0:2/2:0, nicht spielfähiger Managerverein).</summary>
+    public bool Forfeit { get; set; }
+
+    /// <summary>Penaltyschießen des schnellen Wegs: true Heim, false Gast, null keins (siehe <see cref="MatchEngine.PlayWithEvents"/>).</summary>
+    public bool? ShootoutHomeWins { get; set; }
 }
 
 /// <summary>Minutenrechnung des Originals (Spur spielberechnung, Teil 2): Abschluss, Strafbank, Strafen, Ablauf je Minute.</summary>
@@ -223,7 +251,9 @@ public static class OriginalMinutes
     /// <item>Mit 1/4 (lrandom(0, 3) = 0, nur auf Platz 0 und nicht im Folgeaufruf) gleich danach ein Wurf für den Gegner –
     ///   der zählt dessen Strafbank ein zweites Mal herunter (übernommen).</item>
     /// </list>
-    /// Managervereine (Einsatzzuschlag, Spielerwahl 0x378C5, weniger als 8 fitte Spieler) folgen mit Teil 3.
+    /// Managervereine: [ORIGINAL] mit weniger als 8 fitten Spielern (0x120:0x66) keine Strafe, der Zug findet trotzdem
+    /// statt (<see cref="LiveTeam.FewFitPlayers"/>). Einsatzzuschlag (DGROUP 0x974B) und Spielerwahl 0x378C5 sind nicht
+    /// gelesen; den bestraften Spieler wählt <see cref="MatchEngine.PlayWithEvents"/> ([APPROX]).
     /// </summary>
     /// <returns>Minuten der eigenen Strafe (0, 2 oder 5).</returns>
     public static int Penalty(LiveTeam club, LiveTeam opponent, int side, int minute, bool chained, List<MatchEvent> events, Random random)
@@ -232,7 +262,7 @@ public static class OriginalMinutes
         if (count >= 2)
             return 0;
         var minutes = OriginalMatch.PenaltyMinutes(club.Effort, count == 0, random);
-        if (minutes == 0)
+        if (minutes == 0 || club.FewFitPlayers)
             return 0;
         club.Box.Add(count, minutes == 5 ? 13 : 2);
         club.PenaltyMinutes += minutes;
@@ -288,11 +318,22 @@ public static class OriginalMinutes
             Score(home, away, 0, h, a, minute, rules, report, mark, random);
         if ((flags & 2) != 0)
             Score(home, away, 1, h, a, minute, rules, report, mark, random);
+        FollowTactics(home, report.HomeGoals - report.AwayGoals, minute);
+        FollowTactics(away, report.AwayGoals - report.HomeGoals, minute);
         if (minute != 60 && minute != 70)
         {
             Penalty(home, away, 0, minute, chained: false, report.Events, random);
             Penalty(away, home, 1, minute, chained: false, report.Events, random);
         }
+    }
+
+    /// <summary>Einsatz und Angriff nach dem Spielstand (nur mit <see cref="LiveTeam.Tactics"/>, siehe dort).</summary>
+    private static void FollowTactics(LiveTeam team, int goalDifference, int minute)
+    {
+        if (team.Tactics is not { } tactics || minute % 2 != team.TacticsParity)
+            return;
+        team.Effort = tactics.EffectiveEffort(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
+        team.AttackLevel = tactics.EffectiveAttack(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
     }
 
     private static void Score(LiveTeam home, LiveTeam away, int side, (int Normal, int Defensive, int Offensive) h,
@@ -328,6 +369,14 @@ public static class OriginalMinutes
     /// </summary>
     public static (int Home, int Away, bool Shootout) FastCupResult(MatchSide home, MatchSide away, bool homeIsClub,
         bool awayIsClub, bool worldCup, bool playoff, bool knockOut, Random random)
+    {
+        var (h, g, shootout, _) = FastCupResultWithTie(home, away, homeIsClub, awayIsClub, worldCup, playoff, knockOut, random);
+        return (h, g, shootout);
+    }
+
+    /// <summary>Wie <see cref="FastCupResult"/>, zusätzlich der Gleichstand vor dem Penaltyschießen.</summary>
+    public static (int Home, int Away, bool Shootout, int Tie) FastCupResultWithTie(MatchSide home, MatchSide away,
+        bool homeIsClub, bool awayIsClub, bool worldCup, bool playoff, bool knockOut, Random random)
     {
         var si = home.Strength + (homeIsClub ? 6 : 0);
         var di = away.Strength + (awayIsClub ? 6 : 0);
@@ -365,7 +414,7 @@ public static class OriginalMinutes
             break;
         }
         if (!knockOut || h != g)
-            return (h, g, false);
+            return (h, g, false, 0);
         int x, y;
         do
         {
@@ -373,7 +422,7 @@ public static class OriginalMinutes
             y = OriginalMatch.Rnd(random, 0, 2);
         }
         while (h + x == g + y);
-        return (h + x, g + y, true);
+        return (h + x, g + y, true, h);
     }
 
     /// <summary>

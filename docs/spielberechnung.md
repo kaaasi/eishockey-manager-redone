@@ -27,8 +27,9 @@ Ja. Belege:
 - **Video** (`docs/dosbox-befunde.md`): Freundschaftsspiele mit Torszenen aus, ohne Live-Spiel – danach Tore und
   Strafminuten im Kader gefüllt.
 
-Folge: Der Rechenteil wird ohne Darstellung nachgebaut (`OriginalMatch`, `MatchStatistics` in
-`src/EishockeyManager.Core/MatchEngine.*.cs`); die Anzeige folgt in `livespiel`.
+Folge: Der Rechenteil wird ohne Darstellung nachgebaut (`OriginalMatch`, `OriginalMinutes`, `MatchStatistics` in
+`src/EishockeyManager.Core/MatchEngine.*.cs`, Anschluss `MatchEngine.PlayWithEvents`, Abschnitt 11); die Anzeige folgt in
+`livespiel`.
 
 ## 2. Ablauf einer Spielminute (Liga, 0x37DCF–0x380A4)
 
@@ -192,13 +193,16 @@ Managerpaarung werden die Werte aus den eingesetzten Spielern der Reihe gebildet
 | Minutenablauf einer Paarung ohne Manager | `[ORIGINAL]`, Verlängerung ohne Marken `[APPROX]` | `OriginalMinutes.Play`, `PlayMinute` |
 | Statistik Computervereine 0x5028/0x4DB6 | `[ORIGINAL]`, Rollenwert und Spielerreihenfolge `[APPROX]` | `MatchStatistics` |
 | Zähler Torhüter (Gegentore, Minuten) | Schema 10 | `Player.GoalsAgainst`, `Player.GoalieMinutes` |
-| Managervereine: Torschütze 0x386D1, Strafspieler 0x378C5, Einsatzzuschlag, Energie 0x87F7, Reihenwechsel 0x8EF2, Taktik 0x939A/0x80CB, Torhüterminuten 0x874D, Gegentor 0xA3F7 | offen | Teil 3 |
+| Managervereine: Torhüterminuten 0x874D, Gegentor 0xA3F7, keine Strafen unter 8 fitten Spielern | `[ORIGINAL]` (Torhüter der Aufstellung) | `MatchEngine.CreditPlayers`, `LiveTeam.FewFitPlayers` |
+| Managervereine: Torschütze 0x386D1, Strafspieler 0x378C5, Reihenwerte aus Spielern 0x98F8, Einsatzzuschlag 0x974B, Energie 0x87F7, Reihenwechsel 0x8EF2 | `[APPROX]` (nicht bzw. nur teilweise gelesen, Abschnitt 11) | `MatchEngine.LiveTeamOf`, `CreditPlayers` |
+| Taktik im Spiel 0x939A (Manager, gerade Minuten) / 0x80CB (Computer, ungerade, nur Managerpaarungen) | Takt `[ORIGINAL]`, Werte `[APPROX]` über `Tactics.Effective*` | `LiveTeam.Tactics` |
 | Schneller Weg der Pokale mit Glättung 0x3731F | `[ORIGINAL]` | `OriginalMinutes.FastCupResult` |
-| Verletzungen im Spiel | offen | Teil 3 |
-| Anschluss an Spieltage, Sollwerte | offen | Teil 3 (auf integriertem Stand, `docs/arbeitspakete.md`) |
+| Verletzungen im Spiel | nicht gesucht (offen) | – |
+| Anschluss an Spieltage, Zähler je Saison, Mehrsaisonprobe | erledigt (Teil 3), Sollwerte auf dem Branch | `MatchEngine.PlayWithEvents`, Abschnitt 11 |
 
 Rollenwert (Spielerfeld 0x18) führt das Remake nicht: `[APPROX]` Verteidiger 33, Stürmer 83 (Mitte der Spannen).
-Verletzungen im Spiel sind noch nicht gesucht (Kandidat: Kaderplatz-Felder in 0x548A8 ff.).
+Verletzungen im Spiel sind noch nicht gesucht (Kandidat: Kaderplatz-Felder in 0x548A8 ff.); das Remake erzeugt im Spiel
+keine Verletzungen.
 
 `0x874D` ist nicht das Herunterzählen der Strafbank (so in Teil 1 vermutet), sondern zählt je Minute für die
 Managervereine die Minuten der Spieler auf dem Eis mit Spielerfeld 0x18 = 0 (Torhüter): Spielerfeld 0x1F + 1.
@@ -222,7 +226,7 @@ folgt in Teil 3, die Zahlen sind deshalb nur Größenordnungen):
 Auffällig: schwache Mannschaften treffen öfter (Schwäche w), der Heimvorteil ist groß. Vor dem Anschluss gegen die
 Videos prüfen (Tore je Spiel, Strafminuten).
 
-## 10. Felder für Folgearbeiten (erst nach dem Merge anschließen)
+## 10. Felder für Folgearbeiten
 
 - **Länderwerte nach Freundschaftsspielen (#193):** braucht nur das Endergebnis – `MatchReport.HomeGoals/AwayGoals`
   (und `Overtime`), wie bisher `MatchEngine.Play`.
@@ -231,3 +235,67 @@ Videos prüfen (Tore je Spiel, Strafminuten).
   Eiszeit. Das Original zieht die Energie in `0x87F7` je Minute nur in Managerpaarungen ab (noch nicht gelesen).
 - **Statistik je Spieler:** `MatchReport.Events` (Tor: Minute, Seite; Strafe: Minute, Seite, 2/5) und
   `LiveTeam.PenaltyMinutes`; Computervereine verteilen Tore weiter über `MatchStatistics` aus dem Endstand.
+
+## 11. Anschluss an die Spieltage (Teil 3, `MatchEngine.Live.cs`)
+
+`MatchEngine.PlayWithEvents(game, heim, gast, Wettbewerb, K.-o., Zufall)` ersetzt `MatchEngine.Play` in der Liga
+(`GameState.PlayNextMatchDay`), den Play-offs und der Aufstiegsrunde (`Playoffs.cs`), im DEB-Pokal (`CupsDeb.cs`), im
+Europapokal (`CupsGroup.cs`/`CupsEurope.cs`) und in der WM (`CupsWorld.cs`, Nationalteams über `RatedNation`).
+`MatchEngine.Play(Club, Club, Random)` bleibt unverändert für die Freundschaftsspiele in `CupsNational*.cs` (Spur
+weltkugel-dosbox; Umstellung durch die Leitstelle in der Integration).
+
+**Ablauf je Spiel**
+
+1. Spielwertung (#165, 0x36DC5): nicht spielfähiger Managerverein → 0:2 bzw. 2:0 ohne Rechnung (`MatchReport.Forfeit`).
+2. Pokale (DEB-Pokal, Europapokal, WM) ohne Managerverein: schneller Weg 0x3731F (Abschnitt 3). Das Original nimmt ihn nur
+   bei ausgeschalteter Anzeige des Wettbewerbs; das Remake hat keine Anzeige (`[APPROX]`: Schalter gelten als aus).
+   K.-o.-Gleichstand: der Sieger des Penaltyzugs (0x376F0) entscheidet, gespeichert bleibt der Gleichstand mit
+   `PenaltyWinner` (`[APPROX]` Darstellung; bisher „n.P.“ ebenso).
+3. Sonst Minutenablauf (Abschnitte 2, 4, 6, 9); K.-o. mit Verlängerung 61–70; danach weiter unentschieden → das bisherige
+   Penaltyschießen von `KnockoutMatch.Play` (`[APPROX]`).
+4. Zähler der Spieler (`CreditPlayers`).
+
+Wettbewerbscode 1 (Torbudget halbiert, Abschnitt 3) gilt für Play-offs und Aufstiegsrunde; WM-Regeln (`[0x12B]`) für die WM.
+K.-o.: Play-offs, DEB-Pokal, WM-Endrunde; Gruppenspiele (Europapokal, WM, Aufstiegsrunde) dürfen unentschieden enden.
+
+**Abbildung `Club` → `LiveTeam`** (`MatchEngine.LiveTeamOf`)
+
+| Vereinsfeld | Original | Remake |
+|---|---|---|
+| 0x18–0x1B Kondition/Technik Abwehr/Sturm | Lader 0x2EF1B: Datenbankbyte 0 (Abwehr) bzw. 1 (Sturm) ± random(0, Wert/10); Nationalteams aus DGROUP 0x4C4E | `TeamValue`: Datenbankstärke + Veränderung der Aufstellung gegenüber dem Spielbeginn (wie `MatchStrength`, ohne dessen Einsatzzuschlag), 0 … 100. `[APPROX]` ohne Streuung, Byte 1 nicht geführt; Nationalteams mit `NationalMatchStrength` |
+| 0x1C/0x1D Form | random(45, 55), Europapokal-Gegner (Index > 64) − 5 | `[APPROX]` 50 bzw. 45 |
+| 0x17 Tagesform | random(47, 53) | `[APPROX]` 50 |
+| 0x26 Einsatz, 0x2C Angriff | Automatik 0x8365 bei der Spielvorbereitung | `Tactics.EffectiveEffort/EffectiveAttack` (Block 0, Stand 0:0); in Managerpaarungen nach dem Spielstand nachgeführt (Manager gerade, Computer ungerade Minuten) |
+| 0x1E Energie | 0x5B (0x84D7) | `[ORIGINAL]` 91 |
+| 0x2E/0x30 Reihe | Wechsel 0x8EF2 nur in Managerpaarungen | Reihe 0 (`[ORIGINAL]` ohne Manager, `[APPROX]` mit) |
+
+Managervereine bilden im Original ihre Reihenwerte aus den eingesetzten Spielern (0x98F8–0x9C63, gelesen bis 0x9B99):
+Mittel über drei Kaderplätze (DGROUP 0x5DC3 + 0x618 · Manager + 0x34 · Platz; Felder +0x10/+0x11/+0x12), Technik ·
+(Energie +0x1B / 2 + 50) %, Abzüge −10/−15 je nach Schwierigkeit `[0xED8]` für Spieler auf fremder Position, Zuschlag
++0x19 >> 3 beim Torhüter. Der Maßstab der Spielerwerte im Remake (Basis 20 + Stärke/2, Spur `kader-start`) passt noch
+nicht zu den Teamwerten; deshalb `[APPROX]` Teamwerte auch für Managervereine.
+
+**Zähler** (`Player.Games/Goals/Assists/Penalties2/Penalties5/GoalsAgainst/GoalieMinutes`)
+
+- Vereine ohne Manager (Index < 0x40, mit Kader): `[ORIGINAL]` 0x5028 aus dem Endstand, Torhüter 0x4DB6 nur in der
+  Liga; auch nach einer Spielwertung (das Original wertet das gespeicherte Ergebnis). Keine Strafen je Spieler.
+- Managervereine: Spiele + 1 für die Aufstellung; Gegentore und Minuten (60/70) für den aufgestellten Torhüter
+  (`[ORIGINAL]` 0xA3F7/0x874D, ohne Torhüterwechsel im Spiel); Torschützen und Vorlagen nach 0x5028 unter den
+  Feldspielern der Aufstellung, jede Strafe für einen zufälligen Feldspieler der Aufstellung (`[APPROX]`, 0x386D1 und
+  0x378C5 nicht gelesen). Nach einer Spielwertung nichts.
+- Saisonwechsel: alle Zähler auf 0 (`GameState.ResetMatchCounters`, `[APPROX]`: das Zurücksetzen im Original ist nicht
+  gesucht); `Caps` bleiben.
+
+**Größenordnung gegen das Video** (`SpielberechnungAnschlussTests.OriginalDatabase_GoalsPerGame_InVideoRange`):
+Video „MEISTER werden in 75 Minuten“, Bild 01019 (Oberliga nach dem 36. Spieltag): 1732 Tore in 216 Spielen = 8,0 je
+Spiel, 7,9 % Unentschieden. Remake mit Originaldaten nach 36 Spieltagen (Seed 7): Oberliga 7,96 Tore je Spiel (13,4 %
+Unentschieden), 2. Liga 7,81, Bundesliga 6,17. Strafminuten im Video noch nicht vermessen (Fair-Play-Tabelle,
+Folgespur).
+
+**Mehrsaisonprobe** (`SpielberechnungAnschlussTests`): vier Saisonwechsel mit Originaldaten, passiv und aktiv (Modus 4),
+und Modus 1 („nur Weltkugel“); Zähler je Saison gefüllt und konsistent (Vorlagen ≤ Tore, Spielertore ≥ halbe Ligatore),
+nach jedem Wechsel 0. Alle bisherigen Referenzwerte neu (Begründung je Test im Kommentar): `RngTwinProbeTests` (6),
+`GameModeTests.Mode4_ReferenceValues_Unchanged`, `DebCupDrawFlowTests` (Referenz; mit/ohne Anzeige weiter gleich).
+Zufallsabhängige Testaufbauten angepasst: `EuropeanCupTests` (Gegnerstärke 95 statt 90), `SeasonPaymentTests` (bis 40
+Seeds), `LifecycleRegressionTests.R204` (Seed 2: Markt nicht voll), `WaveBReviewRegressionTests.PR3501` (Spielerzahl
+darf durch Nachbesetzung steigen).

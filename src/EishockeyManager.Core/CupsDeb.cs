@@ -163,7 +163,7 @@ public sealed class DebCup : ISeasonCompetition
             if (!tie.PlaysGame(number))
                 continue;
             var (home, away) = CupTie.Pairing(tie, number);
-            var match = KnockoutMatch.Play(day, game.Clubs[home], game.Clubs[away], game.CupRandom);
+            var match = KnockoutMatch.Play(game, day, game.Clubs[home], game.Clubs[away], MatchCompetition.DebCup, game.CupRandom);
             tie.Games.Add(match);
             played.Add(match);
         }

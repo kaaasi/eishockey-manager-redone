@@ -201,7 +201,11 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
         $"{r.Season}: DEB {r.Titles.GetValueOrDefault(Title.CupWinner, -1)}, DM {r.Titles.GetValueOrDefault(Title.GermanChampion, -1)}, " +
         $"Tab {r.FinalTables.Values.SelectMany(t => t).Select((c, i) => c * (i + 1)).Sum()}"));
 
-    /// <summary>Referenz: <see cref="Summary"/> auf <c>main</c> a09c81e (nur Leertaste, Seed 1993), siehe PR der Spur.</summary>
+    /// <summary>
+    /// Referenz: <see cref="Summary"/> auf <c>main</c> a09c81e (nur Leertaste, Seed 1993), siehe PR der Spur.
+    /// Spur spielberechnung (Teil 3, #186): neu, weil alle Vereinsspiele mit der Berechnung des Originals laufen (andere
+    /// Ergebnisse ab dem ersten Spieltag); mit und ohne Anzeige weiter gleich.
+    /// </summary>
     private const string Reference =
-        "1993: DEB 17, DM 2, Tab 15413 | 1994: DEB 1, DM 5, Tab 16258 | 1995: DEB 2, DM 4, Tab 17049 | 1996: DEB 4, DM 2, Tab 16932";
+        "1993: DEB 6, DM 5, Tab 15392 | 1994: DEB 2, DM 2, Tab 16304 | 1995: DEB 2, DM 6, Tab 16238 | 1996: DEB 2, DM 2, Tab 16723";
 }

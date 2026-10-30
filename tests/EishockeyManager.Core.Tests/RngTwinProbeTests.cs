@@ -41,16 +41,22 @@ namespace EishockeyManager.Core.Tests;
 /// Spur spielberechnung (Teil 1, #186): alle sechs Abdrücke neu, weil der Abdruck alle einfachen Eigenschaften enthält
 /// und <c>Player.GoalsAgainst</c>/<c>GoalieMinutes</c> neu sind (noch nicht gezählt, immer 0). Gegenprobe: mit beiden
 /// Feldern in <c>Excluded</c> stimmen alle sechs alten Abdrücke unverändert; kein Spielverlauf ändert sich.
+/// Spur spielberechnung (Teil 3, #186): alle sechs Abdrücke neu. Liga, Play-offs, Aufstiegsrunde, DEB-Pokal, Europapokal
+/// und WM rechnen mit der Berechnung des Originals (<c>MatchEngine.PlayWithEvents</c>) statt mit dem Poisson-Modell: andere
+/// Ergebnisse ab dem ersten Spieltag, anderer Verbrauch der Haupt- und Pokalquelle (Minutenzüge, Spielerzähler), damit
+/// auch Tabellen, Titel, Finanzen, Transfers und Verträge; dazu die Spielerzähler im Abdruck (je Saison, nach dem Wechsel
+/// 0). Keine Gegenprobe möglich, die den alten Verlauf erhält – die Spielberechnung ist der Zweck der Spur. Ermittelt auf
+/// dem Stand des Branches (Basis <c>15d0733</c>); die Leitstelle zieht die Werte in der Integration nach.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "A721E449C0F2C8A5")]
-    [InlineData(true, 3, "039CEC605F8B5FAF")]
-    [InlineData(false, 11, "5BF0F45311D89A9D")]
-    [InlineData(true, 11, "7206D49D2212A823")]
+    [InlineData(false, 3, "878D4BD6241FE7DE")]
+    [InlineData(true, 3, "C7A36A86CA000909")]
+    [InlineData(false, 11, "84177E2CD7427F7C")]
+    [InlineData(true, 11, "DF7D7246FE652B9F")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -58,8 +64,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "7686EA2A6E84AA03")]
-    [InlineData(true, "817F2652A8558D09")]
+    [InlineData(false, "5C5F95DC78061C4F")]
+    [InlineData(true, "C4431EF5E9A369EF")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
