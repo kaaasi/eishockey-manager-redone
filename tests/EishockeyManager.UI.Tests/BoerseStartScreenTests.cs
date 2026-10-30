@@ -129,4 +129,25 @@ public class BoerseStartScreenTests
         var after = StateFingerprint.Of(game);
         Assert.True(before == after, StateFingerprint.FirstDifference(before, after));
     }
+
+    /// <summary>
+    /// Entscheidung Nutzer (#188): Überfahren einer Aktie setzt den Ausschnitt sofort wie em.exe 0x59C75
+    /// (Versatz = Kurs · 3 − 130) – vorher lief er mit 1 DM je Bild dorthin.
+    /// </summary>
+    [GameDataFact]
+    public void Hover_SetsOffsetImmediately()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        game.Stocks = Market(Folge01History);
+        d.OpenTile("Finanzen");
+        var screen = Assert.IsType<FinanceScreen>(d.Host.Current);
+        d.Move(319, 239);
+        Assert.Equal(160, screen.ChartOffset);
+        var row = FinanceScreen.StockRow(2);
+        d.Move(row.X + 10, row.Y + 10);
+        Assert.Equal(134 * 3 - 130, screen.ChartOffset);
+        Assert.Equal(FinanceScreen.ChartCanvas.Y + 65, screen.ChartY(134));
+    }
 }

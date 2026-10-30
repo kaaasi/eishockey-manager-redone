@@ -435,8 +435,8 @@ Rest in der unteren Hälfte: Logos, Schriftkanten und die Übersicht rechts (nic
   bis `[0x386]`, Aufrufe `0x5522B`, `0x5569A`, `0x56512`): mit zwei Managern rechnet die Börse zwei Tage pro Tag.
   **Entscheidung Nutzer (30.10.2026, #188):** Das Remake rechnet den Börsentag einmal je Kalendertag, nach dem
   Tagesabschluss des letzten Managers (`GameState.AdvanceFinanceTo`), damit kein Manager einen Vorteil hat.
-- Überfahren einer Aktie setzt den Versatz sofort auf Kurs − 130 (`0x59C75`); das Remake lässt ihn wie im Video gesehen
-  langsam laufen (`[APPROX]`).
+- Überfahren einer Aktie setzt den Versatz sofort auf Kurs − 130 (`0x59C75`). **Entscheidung Nutzer (30.10.2026,
+  #188):** wie im Original; der bisherige langsame Bildlauf (nach dem Video) entfällt.
 - Rechts neben dem Verlauf (x 240/241, y 104–236, `0x58DF6`–`0x58EC5`) liegt ein Regler für Ausschnitt und Maßstab
   (Maßstab 2–64); im Remake nicht nachgebaut – eigenes Paket (Entscheidung Nutzer, 30.10.2026).
 - Die Basiswerte `0x1FD` sind vorbelegte Daten und werden bei „Neues Spiel“ ohne Programmneustart nicht zurückgesetzt.

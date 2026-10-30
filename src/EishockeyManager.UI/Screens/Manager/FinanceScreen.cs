@@ -78,9 +78,6 @@ public sealed class FinanceScreen : Screen
     /// </summary>
     public const int ChartScale = 2;
 
-    /// <summary>[APPROX] Bildlauf des Kursverlaufs in Drittel-DM je Frame (1 DM).</summary>
-    private const int ScrollSpeed = 3;
-
     public static readonly Rect AccountField = new(246, 103, 70, 17);
     private const int LabelX = 249;
     private const int ValueRight = 304;
@@ -230,17 +227,15 @@ public sealed class FinanceScreen : Screen
     }
 
     /// <summary>
-    /// Der Kursverlauf läuft langsam zur gewählten Aktie (Video 5:58 und 6:15). Ziel wie im Original (0x59C75): Versatz
-    /// = Kurs in Drittel-DM − 130, die Aktie liegt dann auf der mittleren Zeile. [APPROX] em.exe setzt den Versatz beim
-    /// Überfahren sofort; das langsame Laufen stammt aus dem Video.
+    /// [ORIGINAL] Überfahren einer Aktie setzt den Ausschnitt sofort (em.exe 0x59C75): Versatz = Kurs in Drittel-DM − 130,
+    /// die Aktie liegt dann auf der mittleren Zeile. Entscheidung Nutzer (30.10.2026, #188): wie im Original, nicht
+    /// langsam wie bisher nach dem Video.
     /// </summary>
     private void ScrollChart()
     {
         if (_selection.Kind != SelectionKind.Stock || _offset == int.MinValue)
             return;
-        var target = Game.Stocks.Stocks[_selection.Index].Price * 3 - ChartCanvas.H;
-        var delta = target - _offset;
-        _offset = Math.Abs(delta) <= ScrollSpeed ? target : _offset + Math.Sign(delta) * ScrollSpeed;
+        _offset = Game.Stocks.Stocks[_selection.Index].Price * 3 - ChartCanvas.H;
     }
 
     /// <summary>[APPROX] Schrittweite: 10.000 DM bzw. 10 Aktien je Klick.</summary>
