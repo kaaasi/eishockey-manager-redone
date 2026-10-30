@@ -175,6 +175,6 @@ Die Breite enthält den Zeichenabstand bereits – Text wird **ohne** zusätzlic
 
 - `kb\246`: vermutlich Animationstabelle.
 - `tore\*`: Kopf `TOR!`, Big-Endian-`u16`, Rahmen zu 28 Bytes – Bedeutung offen.
-- ○ Spielstände `*.HOK`: verschlüsselt mit `verschlüsselt = (klar XOR k) + k`, danach `k -= 0x29`;
-  Startschlüssel `0x6E + random(0..255)` im Spielstand, 8-Bit-Prüfsumme der Klartextbytes.
-  Nachprüfen, sobald ein Original-Spielstand vorliegt.
+- ✓ Spielstände `*.HOK`: Klartextkopf (0xBA Byte), dann 94 Blöcke mit `verschlüsselt = (klar XOR k) + k`, `k -= 0x29`;
+  Startschlüssel `random(0..255) + 0x6E` (8 Bit) bei 0xB9, 8-Bit-Prüfsumme (Start = Schlüssel) zweimal im Strom.
+  An drei Original-Spielständen belegt; Aufbau und Fundstellen: [spielstand-original.md](spielstand-original.md).
