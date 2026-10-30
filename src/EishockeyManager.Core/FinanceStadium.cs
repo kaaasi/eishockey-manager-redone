@@ -61,8 +61,9 @@ public sealed class Stadium
     public const int StandingStep = 1_000;
     public const int MaxSeats = 15_000;
     public const int MaxStanding = 15_000;
-    public const int MinTicketPrice = 5;
-    public const int MaxTicketPrice = 50;
+    /// <summary>[ORIGINAL] em.exe 0x3DDB8–0x3DDC5: neuer Preis nur bei 9 &lt; Preis &lt; 31 (unabhängige Nachprüfung, Runde 5).</summary>
+    public const int MinTicketPrice = 10;
+    public const int MaxTicketPrice = 30;
 
     private readonly int[] _levels = new int[FeatureCount];
 
@@ -96,11 +97,18 @@ public sealed class Stadium
     /// Startstadion je Liga. [ORIGINAL] Spielstart em.exe 0x29F77 ff.: 3.000 − 500 × Liga Sitzplätze, 4.500 − 1.000 × Liga
     /// Stehplätze (Liga 0 = Bundesliga); Überdachung 2 − Liga, Anzeigetafel/Kühlanlage/Verkehrsanbindung nur in der
     /// Bundesliga, Gastronomie (Imbißbude) in Bundesliga und 2. Liga, Zustand MITTEL. Video (Oberliga): 2.000/2.500.
+    /// [ORIGINAL] 0x29FB3–0x29FCD: Bei einem Spiel über eine Saison (Spielende 1994) +1.200 Sitz- und +2.500 Stehplätze
+    /// (unabhängige Nachprüfung, Runde 5).
     /// </summary>
-    public static Stadium ForLeague(League? league)
+    public static Stadium ForLeague(League? league, bool oneSeasonGame = false)
     {
         var tier = league is { } l ? (int)l : 2;
         var stadium = new Stadium { Seats = 3_000 - 500 * tier, Standing = 4_500 - 1_000 * tier, TicketPrice = (40 - 4 * tier) / 3 };
+        if (oneSeasonGame)
+        {
+            stadium.Seats += 1_200;
+            stadium.Standing += 2_500;
+        }
         stadium.SetLevel(StadiumFeature.Ueberdachung, 2 - tier);
         if (tier == 0)
         {
@@ -258,7 +266,8 @@ public static class SpectatorRules
         var tiny = false;
         if (z < Rnd(150, 200))
         {
-            if (16 + 3 * (2 - homeLeague) > halfPrice3)
+            // [ORIGINAL] 0x3F63C–0x3F65B: geteilt wird nur bei teuren Karten (unabhängige Nachprüfung, Runde 5).
+            if (16 + 3 * (2 - homeLeague) < halfPrice3)
             {
                 z /= Rnd(2, 5);
                 tiny = true;

@@ -17,16 +17,20 @@ namespace EishockeyManager.Core.Tests;
 /// Spur bundestrainer-modus4 (#123) ändert die Spielregeln im Modus 4: Der Verein des Probe-Managers steht unter den
 /// ersten fünf der 1. Liga, er wird am 13. April Bundestrainer; WM-Ergebnisse und Pokal-Zufallsquelle verschieben sich.
 /// Die synthetischen Abdrücke sind dort neu ermittelt (Gegenprobe ohne Ernennung: alte Werte unverändert).
+/// Spur finanzen-nachpruefung (Runde 5) ändert Zuschauerformel (em.exe 0x3F63C) und Saisonprämien (0x55CD3, 0x2723C);
+/// die Abdrücke sind mit dem unveränderten Generator neu ermittelt. Ursache je Fall (FN-01, #139, Tabelle in
+/// docs/finanzen-rekonstruktion.md): synthetisch alle vier Europapokalsieg 1993 ohne Prämie (−100.000 DM); Originaldaten
+/// aktiv ein Zug weniger aus FinanceRandom bei der Zuschauerteilung.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "C81835C179C45656")]
-    [InlineData(true, 3, "7B5A36F4BD0DCFF9")]
-    [InlineData(false, 11, "8DC2D4C7015C5C1C")]
-    [InlineData(true, 11, "1F1A2252D757F131")]
+    [InlineData(false, 3, "7307C658BC6557A6")]
+    [InlineData(true, 3, "41FC5C31C441147A")]
+    [InlineData(false, 11, "6246CF397993BE92")]
+    [InlineData(true, 11, "DCFDC4281AFDE4AD")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -35,7 +39,7 @@ public class RngTwinProbeTests
 
     [GameDataTheory]
     [InlineData(false, "0E4BEB48075C853B")]
-    [InlineData(true, "1FAD9125360B76A2")]
+    [InlineData(true, "5072C76DA99AEDE3")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

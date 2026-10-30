@@ -59,6 +59,20 @@ public static partial class FinanceRules
 
     /// <summary>Drittel-DM → DM wie die Anzeige des Originals (abgeschnitten, Vorzeichen bleibt).</summary>
     public static long ToMarks(long thirds) => thirds / ThirdsPerMark;
+
+    /// <summary>
+    /// Trainingsanteil der Anzeige „Ausgaben“ in Drittel-DM aus den Kosten je Trainingstag X (Managerfeld 0x97EE).
+    /// [ORIGINAL] em.exe 0x3E86B–0x3E8B5 (nur mit Flag 1): X um 3 nach links geschoben (0:0x52A) plus X/2, also
+    /// 8,5 Trainingstage = 4,25 Wochen à zwei Trainingstage (unabhängige Nachprüfung, Runde 5).
+    /// </summary>
+    public static long MonthlyTrainingExpenseThirds(long costPerTrainingDayThirds) =>
+        8 * costPerTrainingDayThirds + costPerTrainingDayThirds / 2;
+
+    /// <summary>
+    /// Grenze des Kontostands in DM. [ORIGINAL] em.exe 0x3F10E–0x3F165: am Monatsabschluss auf ±500.000.000 Drittel
+    /// begrenzt (unabhängige Nachprüfung, Runde 5).
+    /// </summary>
+    public const long BalanceLimit = 500_000_000L / ThirdsPerMark;
 }
 
 public sealed partial class ManagerFinance
@@ -151,5 +165,7 @@ public sealed partial class GameState
             Book(manager, FinanceCategory.Zinsen, total - managers);
         finance.InterestAccrualThirds = 0;
         finance.ManagerLoanAccrualThirds = 0;
+        // [ORIGINAL] 0x3F10E: Begrenzung nach Einnahmen, Ausgaben und Zinsen; keine Buchung (kein Aufwand/Ertrag).
+        manager.Money = Math.Clamp(manager.Money, -FinanceRules.BalanceLimit, FinanceRules.BalanceLimit);
     }
 }

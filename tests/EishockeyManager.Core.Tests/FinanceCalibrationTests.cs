@@ -18,16 +18,18 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             executable[0x2711e..0x27129]);
         Assert.Equal(new byte[] { 0x81, 0x87, 0xea, 0x97, 0xe0, 0x93, 0x83, 0x97, 0xec, 0x97, 0x04 },
             executable[0x271bf..0x271ca]);
-        Assert.Equal(0x16e360L / 3, GameState.ChampionPremium);
+        Assert.Equal(0x16e360L / 3, GameState.CupWinnerPremium);
         Assert.Equal(0xdbba0L / 3, GameState.PromotionPremium(League.Oberliga));
-        Assert.Equal(0x493e0L / 3, GameState.OtherTitlePremium);
+        Assert.Equal(0x493e0L / 3, GameState.SinglePremium);
     }
 
     [Theory]
-    [InlineData(League.Bundesliga, 1, false, false, 100000)] // Hauptrunden-Erster auch in der Bundesliga (0xE0:0x20, Spur finanzen-2)
-    [InlineData(League.Bundesliga, 3, false, true, 500000)]
-    [InlineData(League.Oberliga, 1, false, false, 100000)]
-    [InlineData(League.Oberliga, 1, true, false, 400000)]
+    // Unabhängige Nachprüfung (Runde 5): keine Tabellen- und keine Meisterprämie (em.exe 0x55CD3 = DEB-Pokalsieger,
+    // 0x2723C = Fair-Play-Wertung; Karriere-Video „1. Platz der Zweite Liga, Prämien: keine“).
+    [InlineData(League.Bundesliga, 1, false, false, 0)]
+    [InlineData(League.Bundesliga, 3, false, true, 0)]
+    [InlineData(League.Oberliga, 1, false, false, 0)]
+    [InlineData(League.Oberliga, 1, true, false, 300000)]
     [InlineData(League.Oberliga, 2, false, false, 0)]
     [InlineData(League.Oberliga, 2, true, false, 300000)]
     [InlineData(League.ZweiteLiga, 2, true, false, 500000)]
