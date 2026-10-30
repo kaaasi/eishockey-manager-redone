@@ -303,6 +303,15 @@ Vergleich beide an 9,0 / 2,0 % und 11,9 / 6,3 % (`0230`). Das Menü des Bundestr
 (unten); ein Pixelvergleich steht noch aus
 (Bildschirmfotos: `emtool screens gamedata ~/work/screens weltkugel`).
 
+**Kachelsperren im Modus 2 gegen das Karriere-Video** (die Karriere läuft im Modus „nur Fahne“; Ablauf `nurfahne`):
+Das Video zeigt dieselbe Belegung wie das Remake – Tabellen 1. Liga, 2. Liga, Oberliga, DEB-Pokal, EuroCup, WM gesperrt
+(`karriere_00443`); Stärken 1. Liga, 2. Liga, Oberliga, Länderteams gesperrt, zwei leere Plätze (`karriere_03730`);
+Statistiken mit gesperrter WM-Statistik auf Platz 6 (`karriere_03442`). Mittlere Abweichung je Kachel (38 × 28):
+Tabellen 20,3 / 19,3 / 21,3 / 23,0 / 31,4 / **19,2**, Stärken 20,1 / 18,9 / 21,4 / **17,6** / 18,1 / 18,9, Statistiken
+35,4 / 24,7 / 26,2 / 31,4 / 28,0 / **19,6** (fett = gesperrte Kachel). Die Werte liegen über denen aus „Die Oberfläche
+von EM“, auch für unveränderte Kacheln; eine Verschiebung um ±1 Pixel verbessert sie nicht – das Karriere-Video ist
+unschärfer. Die gesperrten Kacheln liegen nicht schlechter als die übrigen.
+
 ### Bundestrainer im Modus 4 (Spur `bundestrainer-modus4`, `Core/CupsNationalMode.cs`)
 
 DGROUP 0xD0BA[Manager] („wird Bundestrainer“) setzt das Original an genau drei Stellen: Modus 1 am Sprungtag (0x54D19)

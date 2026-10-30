@@ -290,4 +290,32 @@ internal static class Wettbewerbe
         d.Click(TeamUi.SwitchButton.X + 5, TeamUi.SwitchButton.Y + 5);
         d.Move(300, 235); d.Save("03_taktik_wie_video_00058");
     }
+
+    /// <summary>
+    /// Spur wettbewerbe-weltkugel: Hauptmenü im Spielmodus „nur Fahne“ mit gesperrten WM-Kacheln – für den
+    /// Pixelvergleich mit dem Karriere-Video (Tabellen: <c>karriere_00443</c>, Stärken: <c>karriere_03730</c>).
+    /// </summary>
+    [Scenario("nurfahne")]
+    private static void ClubOnly(ScreenDriver d)
+    {
+        d.Host.Show(new TitleScreen(d.Host));
+        d.Frame();
+        d.Click(160, 120);
+        d.Click(20, 60);
+        var cell = SetupScreen.HeadCell(3);
+        d.Click(cell.X + 5, cell.Y + 5);
+        d.Type("LetsShow");
+        d.Press(Key.Enter);
+        d.Click(SetupScreen.ModeGlobe.X + 5, SetupScreen.ModeGlobe.Y + 5);
+        d.Move(100, 150); d.Save("01_spielvorbereitung_nur_fahne");
+        d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
+        d.Click(MainMenuScreen.BigTile(3).X + 10, MainMenuScreen.BigTile(3).Y + 10);
+        d.Move(0, 0); d.Save("02_tabellen");
+        d.Click(MainMenuScreen.BigTile(4).X + 10, MainMenuScreen.BigTile(4).Y + 10);
+        d.Move(0, 0); d.Save("03_paarungen");
+        d.Click(MainMenuScreen.BigTile(5).X + 10, MainMenuScreen.BigTile(5).Y + 10);
+        d.Move(0, 0); d.Save("04_staerken");
+        d.Click(MainMenuScreen.BigTile(2).X + 10, MainMenuScreen.BigTile(2).Y + 10);
+        d.Move(0, 0); d.Save("05_statistiken");
+    }
 }
