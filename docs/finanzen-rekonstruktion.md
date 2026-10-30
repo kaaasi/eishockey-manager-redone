@@ -342,7 +342,14 @@ in `0x952C` auf 100 gesetzt, wenn weniger als neun Kaderplätze aufgestellt und 
 keine Zuschauer, kein Eintritt, keine Statistik; das Spiel wird 0:2 bzw. 2:0 gewertet (`0x36DC5–0x36DE9`). Gilt für
 Heim- und Gastmannschaft eines Managers in allen Wettbewerben. Umgesetzt in `StadiumStatistics.SettleMatchGate` (#167,
 Entscheidung Nutzer 30.10.2026: originalgetreu, Option a). `[APPROX]`: Meldung im Posteingang, Abzug unter „Strafen“,
-Verletzte/Gesperrte zählen nicht, entlassene Manager zahlen nicht; die Spielwertung 0:2/2:0 fehlt (#165).
+Verletzte/Gesperrte zählen nicht, entlassene Manager zahlen nicht.
+
+**Spielwertung** (#165, `0x36DC5–0x36DE9` Liga, `0x36F9C` ff. Spiele mit Teilnehmerzahl): Die Spielabrechnung liefert
+1 (Heimmanager nicht spielfähig) bzw. 2 (Gastmanager); der Spieltagsablauf trägt das Spiel über `0x36D2A` ohne
+Spielberechnung als 0:2 bzw. 2:0 ein (Argumente `push 2, push 0` bzw. `push 0, push 2`). Remake: `MarkShortHandedClubs`
+setzt vor den Spielen jedes Tages `Club.ForfeitsMatch`, `MatchEngine.Play` wertet dann ohne Zufallszug (Liga, Play-Off,
+Aufstiegsrunde, DEB-Pokal, Europapokal; kein Penaltyschießen). Schema 8 → 9 (`SaveGame.Migration8.cs`). `[APPROX]`: Sind
+beide Vereine nicht spielfähige Managervereine, wertet das Remake immer 0:2 (das Original prüft in Managerreihenfolge).
 
 **Wirkung auf bestehende Proben.** Ein passiver Manager verlängert keinen Vertrag; die Startverträge laufen nach 1994 aus,
 ab 1995 hat sein Verein keinen Spieler und zahlt je Spiel 200.000 DM (rund 9 Mio. DM je Saison) bis zur Entlassung.
@@ -360,6 +367,7 @@ die nur Generator- und Formatänderungen bewachen, sind neu ermittelt. Ursachen 
 | `FinanceCalibrationTests` (passiv, 4 Fälle) | Verlängerung erst nach dem letzten Monatsabschluss; Überziehungszinsen zugelassen | – | Gehälter der Saison bleiben fest; mit Kader rutscht der passive Oberligist in Saison 3–4 ins Minus, Zinsen nach 0x3ED4F (höchstens 12 · 10 % des tiefsten Kontostands) |
 | `DebCupDrawFlowTests.MultiSeason_CupResultsUnchanged…` | Kader halten, neue Referenz 1995/1996 | 1995 (Verein mit Kader statt leer) | 1993/1994 unverändert; ohne Kaderhalten Entlassung und Spielende |
 | `SaveLoadScreenTests.AutoSave_OverFiveSeasons…`, `SeasonUiTests.ThreeSeasons…` | Kader halten | – | sonst Entlassung des einzigen Managers 1995, Spielende vor dem Prüfpunkt |
+| `RngTwinProbeTests`, alle drei passiven Fälle (Spielwertung #165, Vergleich gegen `7833e2d`) | neuer Abdruck | 1995, Tag 3: erstes Spiel 0:2 bzw. 2:0 ohne Berechnung, Hauptquelle ohne die Torzüge | danach Pokalquelle (Tag 14 bzw. 17), `FinanceRandom`, Vertragsquelle (Saisonwechsel); Titel ab 1995 anders; die drei aktiven Fälle in keinem Schritt verändert |
 
 **Oberliga-Austausch** (Nebenbefund `0x562C6–0x562DE`): In der Saisonwende scheidet aus der dritten Gruppe (Oberliga)
 ein Verein aus; gehört er einem Manager (Vereinsfeld +0x16) ohne Statusbit 0x04, bekommt der Manager Statusbit 0x02

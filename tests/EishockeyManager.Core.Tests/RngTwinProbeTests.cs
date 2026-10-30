@@ -33,15 +33,20 @@ namespace EishockeyManager.Core.Tests;
 /// 200.000 DM (Strafen) statt Eintritt zu bekommen; die Zuschauerberechnung und damit ihr Zug aus FinanceRandom entfällt.
 /// Haupt-, Pokal- und Vertragsquelle, Titel und Kader bleiben in jedem Schritt gleich; die Kontountergrenze der Probe
 /// (10 Mio. DM) verhindert die Entlassung.
+/// Mit der Spielwertung (#165, em.exe 0x36DC5) werden die Spiele dieses Vereins ab 1995 ohne Berechnung 0:2 bzw. 2:0
+/// gewertet (Vergleich gegen 7833e2d): erste Differenz 1995, Tag 3 – das Ergebnis des ersten Spiels und der Stand der
+/// Hauptquelle (Torzüge entfallen); danach Pokalquelle (Tag 14 bzw. 17, anderer Pokalverlauf), FinanceRandom und
+/// Vertragsquelle (Saisonwechsel). Titel ab 1995 andere. Die drei aktiven Abdrücke bleiben gleich (ihr Kader bleibt
+/// spielfähig, in keinem Schritt eine Differenz).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "BB0787DCAFFD383E")]
+    [InlineData(false, 3, "33A4F52EC2360DE0")]
     [InlineData(true, 3, "9541EF4978491142")]
-    [InlineData(false, 11, "03E3D87346753B36")]
+    [InlineData(false, 11, "FC797F99C7C8B35C")]
     [InlineData(true, 11, "7CB3FC8E58DC44CC")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
@@ -50,7 +55,7 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "776ECB7263424E4B")]
+    [InlineData(false, "74ED95088678F3B6")]
     [InlineData(true, "9FAAA0D4276178C3")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {

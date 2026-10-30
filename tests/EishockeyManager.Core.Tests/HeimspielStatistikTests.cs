@@ -136,6 +136,49 @@ public class HeimspielStatistikTests
     }
 
     [Fact]
+    public void ShortHanded_LeagueMatches_ScoredZeroTwo()
+    {
+        // [ORIGINAL] #165, Spieltagsablauf 0x36DC5–0x36DE9: Spielabrechnung liefert 1 (Heimmanager nicht spielfähig) →
+        // Eintrag 0:2, 2 (Gastmanager) → 2:0, ohne Spielberechnung.
+        var (game, _, club) = Game();
+        KeepInLineup(club, 8);
+        while (game.Results.Count(r => r.Home == club.Index) < 2 || game.Results.Count(r => r.Away == club.Index) < 2)
+            TestSeason.PlayMatchDay(game);
+
+        Assert.All(game.Results.Where(r => r.Home == club.Index), r => Assert.Equal((0, 2), (r.HomeGoals, r.AwayGoals)));
+        Assert.All(game.Results.Where(r => r.Away == club.Index), r => Assert.Equal((2, 0), (r.HomeGoals, r.AwayGoals)));
+        Assert.Equal(8, club.Lineup.Count);
+    }
+
+    [Fact]
+    public void ShortHanded_CupMatch_LostZeroTwo_WithoutPenaltyShootout()
+    {
+        // [ORIGINAL] 0x36F9C ff.: dieselbe Wertung für die Spiele mit Teilnehmerzahl (Pokale, Play-Off/Aufstieg).
+        var (game, _, club) = Game();
+        KeepInLineup(club, 8);
+        for (var guard = 0; game.DebCup!.Matches.All(m => !m.Involves(club.Index)); guard++)
+        {
+            Assert.True(guard < 500, "kein Pokalspiel des Managervereins");
+            game.Continue();
+        }
+        var match = game.DebCup.Matches.First(m => m.Involves(club.Index));
+        Assert.Equal(match.Home == club.Index ? (0, 2) : (2, 0), (match.HomeGoals, match.AwayGoals));
+        Assert.Null(match.PenaltyWinner);
+        Assert.NotEqual(club.Index, match.Winner);
+    }
+
+    [Fact]
+    public void FullLineup_LeagueMatchesComputedNormally()
+    {
+        var (game, _, club) = Game();
+        KeepInLineup(club, 9);
+        while (game.Results.Count(r => r.Involves(club.Index)) < 6)
+            TestSeason.PlayMatchDay(game);
+        Assert.Contains(game.Results.Where(r => r.Involves(club.Index)),
+            r => (r.HomeGoals, r.AwayGoals) is not (0, 2) and not (2, 0));
+    }
+
+    [Fact]
     public void NinePlayers_AreEnough_InjuredDoNotCount()
     {
         var (game, me, club) = Game();
@@ -223,8 +266,13 @@ public class HeimspielStatistikTests
                 else
                     game.Continue();
                 foreach (var manager in game.Managers.Where(m => shortHanded[m]))
-                    penaltyHomeGames[manager] += game.Results.Count(r => r.MatchDay > played && r.MatchDay <= game.PlayedMatchDays
-                        && r.Home == manager.ClubIndex);
+                {
+                    var forfeited = game.Results.Where(r => r.MatchDay > played && r.MatchDay <= game.PlayedMatchDays
+                        && r.Involves(manager.ClubIndex)).ToList();
+                    penaltyHomeGames[manager] += forfeited.Count(r => r.Home == manager.ClubIndex);
+                    // #165: nicht spielfähig → 0:2 daheim, 2:0 auswärts
+                    Assert.All(forfeited, r => Assert.Equal(r.Home == manager.ClubIndex ? (0, 2) : (2, 0), (r.HomeGoals, r.AwayGoals)));
+                }
                 if (reduce)
                     activeClub.AutoLineup();
             }
@@ -292,6 +340,31 @@ public class HeimspielStatistikTests
         var stats = result.Game!.Finance(result.Game.ActiveManager).HomeStatistics;
         Assert.Equal(0, stats.Games);
         Assert.Equal(StadiumStatistics.InitialMinimum, stats.Minimum);
+    }
+
+    [Fact]
+    public void SchemaEightSave_IsMigrated_ForfeitFlagFalse()
+    {
+        // Schema 8 kennt den Merker ForfeitsMatch (#165) nicht; er wird false und vor dem nächsten Spiel neu gesetzt.
+        var (game, _, club) = Game();
+        TestSeason.PlayMatchDay(game);
+        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
+        root["schema"] = 8;
+        foreach (var node in root["vereine"]!.AsArray())
+            Assert.True(node!.AsObject().Remove("ForfeitsMatch"));
+
+        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
+        Assert.True(result.Success, result.Error);
+        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
+
+        // Nach dem Laden: weniger als neun Aufgestellte → das nächste Spiel wird gewertet.
+        var loaded = result.Game!;
+        KeepInLineup(loaded.Clubs[club.Index], 8);
+        var before = loaded.Results.Count(r => r.Involves(club.Index));
+        while (loaded.Results.Count(r => r.Involves(club.Index)) == before)
+            TestSeason.PlayMatchDay(loaded);
+        var next = loaded.Results.Last(r => r.Involves(club.Index));
+        Assert.Equal(next.Home == club.Index ? (0, 2) : (2, 0), (next.HomeGoals, next.AwayGoals));
     }
 
     /// <summary>

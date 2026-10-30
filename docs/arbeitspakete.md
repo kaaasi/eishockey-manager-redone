@@ -64,8 +64,9 @@ fortlaufend (wie Runde 5, Migration 4 → 5 → 6).
   `docs/finanzen-rekonstruktion.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
 - **Status:** Teil 1 über #171 gemergt (Schema 8). Teil 2 PR #167 („Weniger als neun Spieler“) auf `main` umgestellt,
-  Option (a) umgesetzt (14 Tests nachgeführt, Ursachen in `docs/finanzen-rekonstruktion.md`), zur Review.
-  Folge-Issues #165 (Spielwertung 0:2/2:0), #166 (Oberliga-Austausch 400.000 DM, nicht erreichbar).
+  Option (a) umgesetzt (14 Tests nachgeführt, Ursachen in `docs/finanzen-rekonstruktion.md`), dazu #165 (Spielwertung
+  0:2/2:0, Schema 8 → 9) im selben PR (Auftrag Nutzer), zur Review. Folge-Issue #166 (Oberliga-Austausch 400.000 DM,
+  nicht erreichbar).
 
 ### Spur `saisonende-status` – Statusbit 0x40 und Highscore-Schlüssel „nur Weltkugel“ (#125, #126)
 

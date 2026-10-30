@@ -25,11 +25,11 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(8, SaveGame.SchemaVersion);
+        Assert.Equal(9, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
-    private const string ExpectedSchemaFingerprint = "568FE266DC7FEC3E";
+    private const string ExpectedSchemaFingerprint = "E2F890E2E4BED7DC"; // Schema 9: Club.ForfeitsMatch (#165)
 
     // ---------- Abnahme 3: Roundtrip ----------
 

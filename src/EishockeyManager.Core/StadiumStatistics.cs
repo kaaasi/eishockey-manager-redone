@@ -111,6 +111,24 @@ public sealed partial class GameState
     public bool IsShortHanded(Club club) => club.Lineup.Players.Count(p => p.Available) < MinimumPlayers;
 
     /// <summary>
+    /// Spielwertung bei weniger als neun Spielern (#165), vor den Spielen eines Tages (Aufruf aus <c>ProcessDay</c>):
+    /// markiert die Vereine nicht entlassener Manager, die nicht spielfähig sind (<see cref="IsShortHanded"/>).
+    /// [ORIGINAL] Spieltagsablauf 0x36DC5–0x36DE9 (Liga) und 0x36F9C ff. (Spiele mit Teilnehmerzahl): Liefert die
+    /// Spielabrechnung 0x544C0 1 (Heimmanager) bzw. 2 (Gastmanager), trägt 0x36D2A das Spiel ohne Spielberechnung als
+    /// 0:2 bzw. 2:0 ein. Die Aufstellung ändert sich zwischen Markierung und Abrechnung nicht (das Remake kennt keine
+    /// Verletzungen im Spiel), Wertung und Strafe beruhen also auf demselben Stand.
+    /// [APPROX] Sind beide Vereine Managervereine und beide nicht spielfähig, prüft das Original die Manager in
+    /// Indexreihenfolge; das Remake wertet dann immer 0:2 (Heimverein zuerst).
+    /// </summary>
+    internal void MarkShortHandedClubs()
+    {
+        foreach (var club in Clubs)
+            club.ForfeitsMatch = false;
+        foreach (var manager in ActiveManagers)
+            Clubs[manager.ClubIndex].ForfeitsMatch = IsShortHanded(Clubs[manager.ClubIndex]);
+    }
+
+    /// <summary>
     /// Spielabrechnung eines Spiels für die Manager beider Vereine (Aufruf aus <see cref="SettleHomeMatch"/>).
     /// [ORIGINAL] 0x544C0 ff., Schleife über die Manager in Indexreihenfolge:
     /// <list type="bullet">
@@ -121,7 +139,7 @@ public sealed partial class GameState
     /// </list>
     /// [APPROX] Die Meldung kommt in den Posteingang statt als Fenster, der Abzug steht im Finanzbuch unter „Strafen“
     /// (das Original zieht ihn ohne Buchungsart vom Konto ab). Die Spielwertung 0:2 bzw. 2:0 des Originals (Datei
-    /// 0x36DC5–0x36DE9) gehört zur Spielberechnung und fehlt hier (Folge-Issue).
+    /// 0x36DC5–0x36DE9, #165) setzt <see cref="MarkShortHandedClubs"/> vor den Spielen des Tages.
     /// [APPROX] Entlassene Manager (<see cref="Manager.Dismissed"/>, Entlassung selbst ist [APPROX]) prüft die Abrechnung
     /// nicht mehr: Sie führen keinen Verein, zahlen also keine Strafe; Eintritt wie bisher.
     /// </summary>
@@ -165,4 +183,14 @@ public sealed partial class GameState
         foreach (var manager in Managers)
             manager.FinanceData?.HomeStatistics.NewSeason();
     }
+}
+
+public sealed partial class Club
+{
+    /// <summary>
+    /// Managerverein heute nicht spielfähig (weniger als neun Spieler, <see cref="GameState.MarkShortHandedClubs"/>):
+    /// <see cref="MatchEngine.Play"/> wertet sein Spiel ohne Berechnung 0:2 bzw. 2:0. Nicht im Spielstand, wird vor den
+    /// Spielen jedes Tages neu gesetzt.
+    /// </summary>
+    internal bool ForfeitsMatch { get; set; }
 }
