@@ -155,4 +155,63 @@ public class SeasonEndStatusTests
         if (globe)
             Assert.True(withBit > 0, "Probe ohne Saison mit Ereignis – Vorbedingung verfehlt");
     }
+
+    /// <summary>
+    /// Spielstand: Das Ereignis steht im Saisonverlauf (Aufzählungswerte werden als Name gespeichert) – kein neues Feld, deshalb keine
+    /// Schemaänderung (Version bleibt 6) und keine Migration. Alte Stände kennen das Ereignis schlicht nicht.
+    /// </summary>
+    [Fact]
+    public void SaveLoad_KeepsStatusBitEvent_WithoutSchemaChange()
+    {
+        var game = GameModeTests.Create(3, true, true, 8, 2);
+        PlayToSeasonEnd(game);
+        Assert.Contains(SeasonEvent.TopFive, ResultOf(game.History[^1], 2).Events);
+
+        var bytes = SaveGame.Save(game);
+        var root = System.Text.Json.Nodes.JsonNode.Parse(bytes)!.AsObject();
+        Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
+        Assert.Equal(6, SaveGame.SchemaVersion);
+
+        var loaded = SaveGame.Load(bytes);
+        Assert.True(loaded.Success, loaded.Error);
+        Assert.Contains(SeasonEvent.TopFive, ResultOf(loaded.Game!.History[^1], 2).Events);
+        Assert.Equal(bytes, SaveGame.Save(loaded.Game));
+    }
+
+    /// <summary>
+    /// Mehrsaisonprobe Modus 1 („nur Weltkugel“), vier Saisonwechsel, passiv und aktiv (Befund #126): Es gibt keine Vereinssaison, also
+    /// kein Ergebnis je Manager und kein Statusbit; die Bestenliste hat in jeder Saison den Schlüssel 0x7530 (im Original erreichbar,
+    /// Datei 0x28A3A) und einen gültigen Eintrag.
+    /// </summary>
+    [Theory]
+    [InlineData(false, 7)]
+    [InlineData(true, 7)]
+    [InlineData(true, 19)]
+    public void WorldOnly_MultiSeason_NoStatusBit_HighscoreKeyStays30000(bool active, int seed)
+    {
+        var game = GameModeTests.Create(seed, false, true, 5);
+        for (var change = 0; change <= 4; change++)
+        {
+            Assert.Equal(HighscoreRules.WorldOnlyKey, HighscoreRules.Key(game.Setup));
+            game.Continue(); // Sprung zum ersten WM-Termin, Ernennung
+            if (active)
+            {
+                game.AutoNominate();
+                for (var opponent = NationalTeams.First; opponent <= NationalTeams.Last; opponent++)
+                    if (opponent != NationalTeams.Germany)
+                        game.PlayFriendly(opponent, home: opponent % 2 == 0);
+            }
+            while (game.Phase == SeasonPhase.Running)
+                game.Continue();
+            Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+            Assert.Empty(game.History[^1].Managers);
+            var entry = HighscoreRules.Entry(game, 0, stamp: 1);
+            Assert.True(entry.Score >= 1);
+            Assert.Equal(game.Clubs[NationalTeams.Germany].Name, entry.Club);
+            if (change < 4)
+                game.StartNextSeason();
+        }
+        Assert.Equal(5, game.History.Count);
+        Assert.Equal(HighscoreRules.WorldOnlyKey, HighscoreRules.Key(game.Setup));
+    }
 }

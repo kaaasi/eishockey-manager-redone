@@ -76,7 +76,7 @@ fortlaufend (wie Runde 5, Migration 4 → 5 → 6).
 - **Dateigrenzen:** `Core/SeasonRecord.cs`, `Core/SeasonFlow.cs` (minimal), `Core/Highscore.cs`, `UI/Screens/Statistics/HighscoreScreen.cs`,
   `UI/Screens/TileLocks.cs`, `docs/highscore.md`, `docs/saison.md`, Tests.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** in Arbeit (Bearbeiter: Claude Code, Branch `paket/saisonende-status`, Base `1e4731b`).
+- **Status:** zur Prüfung, PR #160 (Claude Code, Base `1e4731b`). #125 umgesetzt (Symbol 8 im Fenster „Saisonende“, Bit 0x40 für jeden Manager unter den ersten fünf der 1. Liga, nicht im Modus 2). **#126 trifft nicht zu:** der Schlüssel 0x7530 ist im Original erreichbar (Vergleich bei 0x2899D, vom Issue übersehen); Remake war richtig, keine Codeänderung, nur Test und Doku (`docs/highscore.md`). Das Issue gehört nach Prüfung geschlossen, nicht über `Fixes`.
 
 ### Spur `pixel-wettbewerbe` – Wettbewerbsbildschirme gegen die neuen Referenzbilder
 
