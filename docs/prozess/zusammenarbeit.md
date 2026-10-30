@@ -93,6 +93,8 @@ ist deshalb verbindlich und wird im Merge-Kommentar abgehakt:
 3. [ ] **CI grün auf genau diesem Head** (Check-Runs des Head-SHA, nicht eines älteren Laufs).
 4. [ ] **Originaldaten-Nachweis:** Testtabelle aus `tools/pruefen.sh` mit Originaldaten zum Head (in PR oder Review);
    bei Integrations-PRs alle drei Läufe.
+   Ein Review „nur Codelesen“ bzw. an einem unverifizierten Stand (`docs/vorlagen/review-anfrage.md`, Schritt 2) zählt
+   dafür nicht.
 5. [ ] **Review-Freigabe** liegt als Datei in `docs/reviews/` vor; offene P0/P1/P2-Befunde behoben oder vom Nutzer
    ausdrücklich zurückgestellt.
 6. [ ] Kein Draft; Pflichtangaben vollständig; Restlücken in `docs/arbeitspakete.md` übertragen.
