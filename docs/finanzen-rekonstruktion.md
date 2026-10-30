@@ -200,7 +200,7 @@ Dateigrenzen dieser Spur oder zu groß für sie (Folgespur).
 | `FinanceMonthly.cs:32/94` Grundausgaben `0x3E811` | bestätigt | Aufrufe: Anzeige `0x2AE94`/`0x2DDF0` mit (1, 1), Monatsabschluss `0x3F0BE` mit (0, 0) |
 | `FinanceMonthly.cs:44/87` Grundeinnahmen | bestätigt | `0x3E657–0x3E706`: Σ Vereinsbytes +0x18/+0x19/+0x1A/+0x1B · 15 · Spielerzahl / 3; Werbeverträge `0x3E70C` |
 | `FinanceMonthly.cs:67` Kostenstufe | bestätigt | gesetzt `0x29F22` (Start-Liga), Saisonende `0x563C0`: Vereinsindex ≥ [0x7C1] (12) und ≥ [0x7C2] (24) |
-| `FinanceMonthly.cs:74/122` Zinskonto | Formel bestätigt, **Zeitpunkt abweichend (Issue)** | täglich `0x3ED4F–0x3EE67`: (Forderungen 2 %, Sparbuch 1 %, Kredite, 10 % Überziehung)/(Monatslänge+1) nach DGROUP `0x2A0`; gebucht wird bei `0x3F02C` am **Monatsletzten** ([0x5A20] = Monatslänge), im Remake am Ersten |
+| `FinanceMonthly.cs:74/122` Zinskonto | Formel bestätigt, **Zeitpunkt abweichend (#134)** | täglich `0x3ED4F–0x3EE67`: (Forderungen 2 %, Sparbuch 1 %, Kredite, 10 % Überziehung)/(Monatslänge+1) nach DGROUP `0x2A0`; gebucht wird bei `0x3F02C` am **Monatsletzten** ([0x5A20] = Monatslänge), im Remake am Ersten |
 | `FinanceMonthly.cs:100` Forderungszinsen | bestätigt | `0x3E73B–0x3E7C6` (Flag 1): Manager 25/1000, Bank (Sparbuch) 10/1000 |
 | `FinanceMonthly.cs:111` Kreditzinsen | bestätigt | `0x57768` (Modus 1) mit `0x57C64`: Manager 25/1000, Bank 4/100 |
 | `Finance.cs:86` Gehälter | bestätigt (auch Teilbefund ChatGPT) | `0x3E8DC–0x3E99F`: Gehalt (+0x28) und Versicherung (+0x30) über eigene Slots und eigene Spieler auf der Transferliste (Besitzer +0x1A) |
@@ -213,17 +213,17 @@ Dateigrenzen dieser Spur oder zu groß für sie (Folgespur).
 | `FinanceStadium.cs:281` Stärke | bestätigt | `0x4D316` (0x128:0x25): Σ der sechs Teamwerte / 6 |
 | Monatsabschluss, Kontogrenze (ohne Marker) | **fehlte, behoben** | `0x3F10E–0x3F165`: Kontostand auf ±500.000.000 Drittel begrenzt |
 | `FinancePremiums.cs:6` Meisterprämie | **abweichend, behoben** | `0x55CD7` vergleicht mit [0x387] = **DEB-Pokalsieger** (Titelbild `0x350B6`); Meister [0xD0E6] nur Statusbit (`0x55BE4`). Video: Pokalsieg 600.000 DM, Meister 200.000 DM |
-| `FinancePremiums.cs:13` Einzelprämien 100.000 DM | **abweichend**: Pokal/Europapokal behoben, **fehlende Ereignisse Issue** | `0x271A9` bester Torhüter, `0x271EF` Topscorer der eigenen Liga im Kader (Rangliste 0xC8:0x20), Europapokalsieg ohne Geld (`0x55D86`) |
+| `FinancePremiums.cs:13` Einzelprämien 100.000 DM | **abweichend**: Pokal/Europapokal behoben, **fehlende Ereignisse #135** | `0x271A9` bester Torhüter, `0x271EF` Topscorer der eigenen Liga im Kader (Rangliste 0xC8:0x20), Europapokalsieg ohne Geld (`0x55D86`) |
 | `FinancePremiums.cs:21` Aufstieg | bestätigt | `0x270A8–0x27124`: 500.000 / 300.000 DM; Video 0:18:40, 0:57:50 |
-| `FinancePremiums.cs:32` Tabellenprämie | **abweichend**: Tabellenprämie gestrichen, **Fair-Play Issue** | 0xE0:0x20 (`0x2A1E0`) ist die Fair-Play-Tabelle (Strafminuten); Video 0:35:54 „1. Platz der Zweite Liga, Prämien: keine“ |
+| `FinancePremiums.cs:32` Tabellenprämie | **abweichend**: Tabellenprämie gestrichen, **Fair-Play #135** | 0xE0:0x20 (`0x2A1E0`) ist die Fair-Play-Tabelle (Strafminuten); Video 0:35:54 „1. Platz der Zweite Liga, Prämien: keine“ |
 | `FinanceSponsorRating.cs:20` Stadionwert | bestätigt | `0x3EBEA–0x3ED00`, Tabelle DGROUP `0x4F9C` |
-| `FinanceSponsorRating.cs:4/57` Bewertung | **abweichend (Issue)** | `0x3F833–0x3FB46`: Wettbewerbsterme 0/1 für „aktuell im Wettbewerb“ (keine ewigen Titel), Europaterm ·(Runde+1), Star-Schwelle ·Kaderschnitt, Ende in 16 Bit ohne Untergrenze 0 |
+| `FinanceSponsorRating.cs:4/57` Bewertung | **abweichend (#132)** | `0x3F833–0x3FB46`: Wettbewerbsterme 0/1 für „aktuell im Wettbewerb“ (keine ewigen Titel), Europaterm ·(Runde+1), Star-Schwelle ·Kaderschnitt, Ende in 16 Bit ohne Untergrenze 0 |
 | `FinanceSponsors.cs:80` Option | bestätigt | `0x3FD52–0x3FD91`: Feld +6, 1/8, 12·rnd(1, 3 − Jahre) |
-| `FinanceSponsors.cs:110/174` Angebote | Betrag und Wahrscheinlichkeiten bestätigt, **Zuordnung der Arten abweichend (Issue)** | Faktortabelle DGROUP `0x4F05` = 8, 20, 32, 15, 15: Fernsehen 32 (p+3, nur 5 Sender), Trikot 20, Eisfläche 15 (zwei Felder, nur HALLE bzw. MEGAFROST) |
-| `FinanceSponsors.cs:169` Startangebote | **abweichend (Issue)** | Flag nur bei Spieldauer eine Saison (`0x2A051`); sonst auch beim Start gewürfelt; zusätzliche Erneuerung zu Saisonbeginn (`0x56650`) |
-| `FinanceSponsors.cs:218` Erneuerung | **abweichend (Issue)** | `0x3EE6B–0x3EEA2`: am Monatsletzten und am Tag ⌊Monatslänge/2⌋ |
-| `FinanceSponsors.cs:265` Monatsbuchung | **abweichend (Issue)** | Laufzeit −1 am 1. (`0x3EF52`), Buchung am Monatsletzten in Dritteln; Verträge mit Option zahlen bis zur Verhandlung weiter |
-| `FinanceInbox.cs:129` Vertragsende | **abweichend (Issue)** | `0x3EFB2`: mit Option nur Meldung, Frage erst im Werbebildschirm und nur bei rnd(90, 120)·Bewertung_alt/100 < Bewertung_neu; ohne Option still |
+| `FinanceSponsors.cs:110/174` Angebote | Betrag und Wahrscheinlichkeiten bestätigt, **Zuordnung der Arten abweichend (#133)** | Faktortabelle DGROUP `0x4F05` = 8, 20, 32, 15, 15: Fernsehen 32 (p+3, nur 5 Sender), Trikot 20, Eisfläche 15 (zwei Felder, nur HALLE bzw. MEGAFROST) |
+| `FinanceSponsors.cs:169` Startangebote | **abweichend (#133)** | Flag nur bei Spieldauer eine Saison (`0x2A051`); sonst auch beim Start gewürfelt; zusätzliche Erneuerung zu Saisonbeginn (`0x56650`) |
+| `FinanceSponsors.cs:218` Erneuerung | **abweichend (#133)** | `0x3EE6B–0x3EEA2`: am Monatsletzten und am Tag ⌊Monatslänge/2⌋ |
+| `FinanceSponsors.cs:265` Monatsbuchung | **abweichend (#133)** | Laufzeit −1 am 1. (`0x3EF52`), Buchung am Monatsletzten in Dritteln; Verträge mit Option zahlen bis zur Verhandlung weiter |
+| `FinanceInbox.cs:129` Vertragsende | **abweichend (#133)** | `0x3EFB2`: mit Option nur Meldung, Frage erst im Werbebildschirm und nur bei rnd(90, 120)·Bewertung_alt/100 < Bewertung_neu; ohne Option still |
 
 **Zufall** 0x38:0x847(a, b): beide Grenzen inklusiv, bei b < a getauscht (Borland-Generator, 15 Bit) – wie
 `SquadSetup.Between`.
@@ -232,7 +232,7 @@ Dateigrenzen dieser Spur oder zu groß für sie (Folgespur).
 Spielerwerts (0x118:0x70) gegenüber dem Transferpreis. Nebenbefund ohne Marker, nicht verfolgt: `0x562C6–0x562DE`
 setzt beim Oberliga-Austausch den Kontostand eines Managers auf 400.000 DM. Zuschauerstatistik (`0x54664` ff.),
 Strafe 200.000 DM bei weniger als neun Spielern (`0x54420`) und Spielbedeutung 0–2 (Wettbewerbscode [0xD0C2]) fehlen im
-Remake.
+Remake (#136).
 
 ### Wolfsburg-Differenz (Abnahme 1)
 

@@ -95,7 +95,9 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
   Tests `Finance*`.
 - **Modell:** ChatGPT **GPT-6.1 Terra** (Codex) – Unabhängigkeit vom ursprünglichen Bearbeiter; ersatzweise Claude Opus 5.5
   in einer frischen Sitzung.
-- **Status:** offen.
+- **Status:** PR #124 bereit zum Review (Claude Code, übernommen von ChatGPT). Abnahme (1) Wolfsburg erklärt
+  (Gehälter nach Vertragsverhandlung), (2) Tabelle vollständig, sechs Abweichungen mit roten Tests behoben,
+  Rest als #132–#136 für eine Folgespur, (3) Mehrsaisonprobe grün, geänderte Referenzwerte begründet.
 
 ### Spur `bundestrainer-modus4` – Bundestrainer im Modus 4 (Liga + Weltkugel)
 
