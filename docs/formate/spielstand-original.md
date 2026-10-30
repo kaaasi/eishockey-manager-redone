@@ -197,14 +197,44 @@ FILE01 → FILE02: im ganzen Klartext genau **ein** Byte verschieden (`0x973F`).
 `20D`, `D0F4`, `1FD`, `A891`, `A895`, `A075`, `A88D`, `A0CB`, `965B` (21 Byte), `far:9657` (Vereine), `8257`,
 `far:8253` (Spieler), `5DC3` (Kader), `5D7B`, `5A20`, `03B7`, `5CCB`, `07A9`, `AB7B`, `C313`, `A969`.
 
+## Kader, Spieler, Training, Taktik (an FILE05 belegt)
+
+**FILE05** = FILE03 unverändert neu gesichert (Klartext identisch). Abgleich mit den Bildern „Mannschaft“, „Aufstellung“,
+„Taktik“, „Verträge“, „Transfer“ und „Training“ des Nutzers; Ausgabe `emtool hok dump` (Abschnitt Kader/Transfermarkt).
+
+**Kaderplatz** (`0x5DC3` + 0x618 · Manager-Satz + 0x34 · Platz, 29 Plätze; Manager-Satz 4 = Transfermarkt):
+
+| Offset | Inhalt | Beleg |
+|---|---|---|
+| `+0x0A` | eingesetzt (1 = Status „IM TEAM“ oder „RESERVE“) | 22 Plätze = „Eingesetzt: 22“; J.SCHULZ, DOBRYZINSKI, SANDNER ohne Status = 0 |
+| `+0x0F` | Index im Spielerpool `far:8253` | Namen aller 25 Spieler und 7 Marktspieler |
+| `+0x10`–`+0x12` | Stärken (drei Werte wie in der Spalte STÄRKEN) | alle 32 Spieler |
+| `+0x15` | Reihe 1–3 (untere Bits), Bit 0x80 = Sturm; der eingesetzte Torhüter hat Reihe 1 | Aufstellung: Reihen 1–3, TW Nr. 2 |
+| `+0x1C` | Spiele (SP) | alle 25 |
+| `+0x22` | Tore (TO) | alle 25 |
+| `+0x28` | Gehalt (4 Byte, Drittel-DM) = Spalte WERT bei „Verträge“ | alle 25, z. B. HEISS 17.100 DM |
+| `+0x2C` | Kaufpreis (4 Byte, Drittel-DM) = Transferliste „(K)“; Leihe „(L)“ = ein Drittel davon | 7 Marktspieler |
+| `+0x00`–`+0x09`, `+0x0B`, `+0x0E`, `+0x13`, `+0x14`, `+0x16`–`+0x1B`, `+0x20`–`+0x27` | offen (Kandidaten: Strafminuten 2m/5m, Spalte E, Vertragsdauer; `+0x0B` = 2 bei allen, Vertragsdauer „2 Jahre“ **oder** Verein 2) | |
+
+**Spielerpool** `far:8253` (200 × 33, Struktur aus `reverse-engineering.md`): Name `+0x00`, Talent `+0x12`, Alter `+0x14`
+(Transferliste: KÜNAST 24, STARTSCHEW 31, KJELLBERG 32, D.HEGEN 33), Grundstärken `+0x15`–`+0x17` (beim Markt = Stärken
+im Kaderplatz, im eigenen Kader nach dem Training teils abweichend), Rollenwert `+0x18` (Torhüter 0, Abwehr 25–41,
+Sturm 76–89), Besitzer `+0x1A` (**4 = Transfermarkt**, nicht 6 wie in `reverse-engineering.md`), Verein `+0x1D`.
+
+**Training** `0xA8A1`: je Manager 28 Byte = 7 Tage (Mo–So) × 4 Felder (oberer Kasten 2, unterer Kasten 2), Wert = Art
+in der Reihenfolge der Leiste. FILE05 = Standardplan, alle 28 Felder stimmen mit dem Bild.
+
+**Taktik:** Modi `0xA6FB`/`0xA707` = 0 („AUTOM.“), Werte `0xCAE9` alle 0 – bei Automatik stehen die angezeigten Werte
+(40/20/20/15/20/0 und 0/5/6/4/4/0) nicht im Spielstand, sondern werden berechnet.
+
 ## Offene Punkte
 
 - Deutung der Blöcke ohne Eintrag in der Tabelle, besonders `8257` (0x1400), `AB7B` (0x1594), `D294` (0xA98),
   `C313` (0x7D0), `D0F4`, `5D7B` (Permutation der 36 Vereine, ändert sich mit dem Spieltag; nicht die Tabelle).
 - Vereinsdatensatz: in FILE03 ändern sich `+0x17`–`+0x3A` (Form, Teamwerte, weitere Statistik?). Punkte und Tore der
   Tabelle stehen dort nicht als einfache Zahl; vermutlich berechnet das Original die Tabelle aus `0xA0CB`.
-- Spielerpool `far:8253` (200 × 33) und Kaderplätze `5DC3` (6 × 0x618, Platz 0x34) gegen die Spielerstruktur in
-  `reverse-engineering.md` prüfen (braucht einen Stand mit bekanntem Kader, z. B. Bild „Mannschaft“).
+- Kaderplatz: offene Bytes (Liste oben), Spalte „E“ (zweistellig bei „Mannschaft“, dreistellig mit führender 0/1 bei
+  „Transfer“), Strafminuten 2m/5m, Vertragsdauer. Nächste Stände: FILE06 (zwei Spieler getauscht), FILE07 (Kauf).
 - Kopf im Modus „nur Weltkugel“, Stände mit mehreren Managern, Saisonwechsel, Bundestrainer: noch kein Stand.
 - Text und Ablauf der Meldung bei falscher Prüfsumme (Fehlercode 5).
 - `0xD0B9` = 4 bei „Fahne und Weltkugel“ (bisherige Notizen nennen 1 = nur Weltkugel, 2 = nur Fahne).

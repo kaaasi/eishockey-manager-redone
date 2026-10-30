@@ -70,6 +70,21 @@ internal static class HokDump
                           $"Sitzplätze {I16(r, stadium + 0x1D)}, Stehplätze {I16(r, stadium + 0x21)}");
         }
 
+        for (var record = 0; record <= 4; record++)
+        {
+            if (record < 4 && record >= count)
+                continue;
+            var squad = save.Squad(record);
+            sb.AppendLine(record == 4 ? $"Transfermarkt ({squad.Count}):" : $"Kader Manager {record} ({squad.Count}):");
+            foreach (var p in squad)
+            {
+                var line = p.Line == 0 ? "–" : $"{p.Line}{(p.Forward ? "S" : "A")}";
+                sb.AppendLine($"  {p.Slot + 1,2} {p.Name,-17} {p.Strength1,2} {p.Strength2,2} {p.Strength3,2}  Alter {p.Age,2} Talent {p.Talent} " +
+                              $"Rolle {p.RoleValue,2}  SP {p.Games} TO {p.Goals}  {(p.Dressed ? "eingesetzt" : "          ")} Reihe {line,-2} " +
+                              $"Gehalt {p.SalaryThirds / 3} DM, Preis {p.PriceThirds / 3} DM");
+            }
+        }
+
         sb.AppendLine();
         sb.AppendLine("Blöcke (Datei-Offset, DGROUP, Länge, Deutung):");
         foreach (var (block, offset, data) in save.Blocks)

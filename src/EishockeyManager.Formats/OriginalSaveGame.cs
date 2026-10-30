@@ -14,6 +14,19 @@ public sealed record OriginalSaveBlock(string Name, int Address, int Length, boo
 /// <summary>Eintrag im Klartextkopf: ein Manager mit Start-Liga, Name und Vereinsname.</summary>
 public sealed record OriginalSaveManagerHeader(int StartLeague, bool OnlyWorldMode, string Name, string Club);
 
+/// <summary>Ein belegter Kaderplatz (Platz 0x34 Byte) mit dem verknüpften Pool-Spieler.</summary>
+/// <param name="Slot">Platz 0–28.</param>
+/// <param name="PoolIndex">Platz +0x0F: Index im Spielerpool.</param>
+/// <param name="Line">Platz +0x15, untere Bits: Reihe 1–3 (0 = keine); Bit 0x80 = Sturm.</param>
+/// <param name="Dressed">Platz +0x0A: eingesetzt (Status „IM TEAM“ oder „RESERVE“).</param>
+/// <param name="Games">Platz +0x1C: Spiele (Spalte SP).</param>
+/// <param name="Goals">Platz +0x22: Tore (Spalte TO).</param>
+/// <param name="SalaryThirds">Platz +0x28: Gehalt in Drittel-DM (Spalte WERT bei „Verträge“).</param>
+/// <param name="PriceThirds">Platz +0x2C: Kaufpreis in Drittel-DM (Transferliste „(K)“).</param>
+public sealed record OriginalSquadSlot(
+    int Slot, int PoolIndex, string Name, int Strength1, int Strength2, int Strength3, int Age, int Talent, int RoleValue,
+    bool Dressed, int Line, bool Forward, int Games, int Goals, int SalaryThirds, int PriceThirds);
+
 /// <summary>Gelesenes Prüfsummenbyte und der aus dem Klartext berechnete Wert.</summary>
 public sealed record OriginalSaveChecksum(int FileOffset, byte Stored, byte Computed)
 {
@@ -63,6 +76,39 @@ public sealed class OriginalSaveGame
     public bool ChecksumsValid => Checksums.All(c => c.IsValid);
 
     public byte[] Block(string name) => Blocks.First(b => b.Block.Name == name).Data;
+
+    /// <summary>Größe eines Kaderplatzes. [ORIGINAL] DGROUP 0x5DC3 + 0x618 · Manager + 0x34 · Platz.</summary>
+    public const int SquadSlotLength = 0x34;
+
+    /// <summary>Kaderplätze je Manager-Satz (0x618 / 0x34).</summary>
+    public const int SquadSlotsPerManager = 0x618 / SquadSlotLength;
+
+    /// <summary>Größe eines Spielerdatensatzes im Pool. [ORIGINAL] reverse-engineering.md, Spielerstruktur.</summary>
+    public const int PoolRecordLength = 33;
+
+    /// <summary>
+    /// Belegte Kaderplätze eines Manager-Satzes (0–3 Manager, 4 = Transfermarkt). Feldbelegung an FILE05 gegen die
+    /// Bildschirme „Mannschaft“, „Aufstellung“, „Verträge“ und „Transfer“ geprüft (spielstand-original.md).
+    /// </summary>
+    public IReadOnlyList<OriginalSquadSlot> Squad(int managerRecord)
+    {
+        var squad = Block("5DC3");
+        var pool = Block("far:8253");
+        var list = new List<OriginalSquadSlot>();
+        for (var i = 0; i < SquadSlotsPerManager; i++)
+        {
+            var slot = squad.AsSpan(managerRecord * 0x618 + i * SquadSlotLength, SquadSlotLength);
+            if (!slot.ContainsAnyExcept((byte)0))
+                continue;
+            int index = slot[0x0F];
+            var player = pool.AsSpan(index * PoolRecordLength, PoolRecordLength);
+            list.Add(new OriginalSquadSlot(
+                i, index, GameText.Decode(player[..0x12]), slot[0x10], slot[0x11], slot[0x12],
+                player[0x14], player[0x12], player[0x18], slot[0x0A] != 0, slot[0x15] & 0x0F, (slot[0x15] & 0x80) != 0,
+                slot[0x1C], slot[0x22], BitConverter.ToInt32(slot.Slice(0x28, 4)), BitConverter.ToInt32(slot.Slice(0x2C, 4))));
+        }
+        return list;
+    }
 
     /// <summary>Gesamtlänge eines Spielstands (unabhängig vom Inhalt).</summary>
     public static int FileLength => PlainLength + Layout.Sum(b => b.IsChecksum ? 1 : b.Length);
@@ -165,9 +211,9 @@ public sealed class OriginalSaveGame
         B(0xA895, 4),
         B(0x0178, 4),
         B(0x017C, 1),
-        B(0xA707, 6, "Taktikmodus Angriff je Manager"),
+        B(0xA707, 6, "Taktikmodus Angriff je Manager (0 = AUTOM.)"),
         B(0xA701, 6),
-        B(0xA6FB, 6, "Taktikmodus Einsatz je Manager"),
+        B(0xA6FB, 6, "Taktikmodus Einsatz je Manager (0 = AUTOM.)"),
         B(0xCCB2, 0x46),
         B(0xCCA4, 0x0E),
         B(0xCCA3, 1, "Meisterrunde"),
@@ -197,7 +243,7 @@ public sealed class OriginalSaveGame
         B(0x02BC, 4, "Preisindex"),
         B(0x02C0, 4, "Konjunkturfaktor"),
         B(0xA075, 0x54),
-        B(0xA8A1, 0x70, "Trainingsplan (28 Byte je Manager)"),
+        B(0xA8A1, 0x70, "Trainingsplan: je Manager 28 Byte = 7 Tage × (oben 2, unten 2) Trainingsart"),
         B(0xD0E4, 2),
         B(0x022D, 6),
         B(0xA88D, 4),
@@ -215,8 +261,8 @@ public sealed class OriginalSaveGame
         B(0x965B, 6 * ManagerRecordLength, "Manager (6 × 0x1AF)"),
         Far(0x9657, 150 * ClubRecordLength, "Vereine und Nationalteams (150 × 0x3D)"),
         B(0x8257, 0x1400),
-        Far(0x8253, 200 * 33, "Spieler (200 × 33)"),
-        B(0x5DC3, 0x2490, "Kaderplätze (6 × 0x618, Platz 0x34)"),
+        Far(0x8253, 200 * 33, "Spielerpool (200 × 33): Name, Talent 0x12, Alter 0x14, Grundstärken 0x15–0x17, Besitzer 0x1A (4 = Markt), Verein 0x1D"),
+        B(0x5DC3, 0x2490, "Kaderplätze (6 × 0x618, Platz 0x34; Manager 4 = Transfermarkt)"),
         B(0x5D7B, 0x24),
         B(0x5A20, 4, "Tag"),
         B(0x5A1C, 4, "Monat (0 = Januar)"),
@@ -246,7 +292,7 @@ public sealed class OriginalSaveGame
         B(0x0246, 0x10),
         B(0xA8A0, 1),
         B(0x5A50, 5),
-        B(0xCAE9, 0x120, "Taktikwerte Einsatz/Angriff (0x30 je Manager)"),
+        B(0xCAE9, 0x120, "Taktikwerte Einsatz/Angriff (0x30 je Manager; bei AUTOM. 0)"),
         B(0xCAE3, 6),
         Checksum,
     ];

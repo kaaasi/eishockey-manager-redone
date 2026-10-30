@@ -55,7 +55,7 @@ Werkzeuge: siehe `tools/reverse-engineering/README.md`.
 | 0x16 | Kondition (aus Vereinsfeld 0x1B abgeleitet, 1/5 Chance auf +12..20) |
 | 0x17 | Form |
 | 0x18 | Rollenwert (Torhüter 0, Verteidiger 25–41, Stürmer 75–91) |
-| 0x1A | Besitzer: Manager 0–5, 6 = Transfermarkt |
+| 0x1A | Besitzer: Manager 0–3, **4 = Transfermarkt** (belegt an Original-Spielstand FILE05, `formate/spielstand-original.md`; früher „6“) |
 | 0x1D | Verein / Nationalteam (0xFF = keiner) |
  
 Nur 200 Spieler werden detailliert verwaltet (Kader der menschlichen Manager + Transfermarkt).
