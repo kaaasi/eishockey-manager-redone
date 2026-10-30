@@ -8,14 +8,18 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// </summary>
 /// <remarks>
 /// Aufbau aus em.exe (Gruppen-Bildschirm Datei 0x31CD5, Wettbewerb 2 = Gruppen, 3 = Endrunde), vermessen am Video
-/// „Die Oberfläche von EM“ (13:11):
+/// „Die Oberfläche von EM“ (13:11) und mit Ergebnissen an folge04_01241–01247, eisbaeren_f51_03346, eisbaeren_f58_01323
+/// (Spur pixel-wettbewerbe, Ablauf <c>pixel-europapokal</c>):
 /// <list type="bullet">
 /// <item>[ORIGINAL] Fenster 13 × 10 Rahmenteile ab (4 | 3); Pokalsymbole kb\36 (22 × 22, y = 44) bei (13 | 7) und (286 | 7).</item>
 /// <item>[ORIGINAL] Titel Bold zentriert 0 … 319, Grundlinie 23: „Europacup“ + zwei Leerzeichen + „Gruppe“ + Nummer (Mindestbreite 2)
 ///   bzw. „Europacup Endrunde“.</item>
 /// <item>[ORIGINAL] Paarungen (Mini): Zeile y = 54 + 26 · Runde + 6 · Paarung; Heimverein x = 25 (Farbe 30), „-“ x = 120
 ///   (7), Gast x = 137 (Farbe 1), Manager-Vereine 24; Termine in der ersten Zeile einer Runde bei x = 230 / 276 (Farbe
-///   30 / 1), gespielte Begegnungen stattdessen „Heim:Gast“ bei x = 226 / 272.</item>
+///   30 / 1), gespielte Begegnungen stattdessen das Ergebnis „links:rechts“ (zweistellig) bei x = 226 / 272.</item>
+/// <item>[ORIGINAL] Termine nur, solange in der Gruppe noch nicht gespielt wurde (eisbaeren_f51_03346, eisbaeren_f58_01323: nach den
+///   ersten Terminen auch für offene Rückspiele kein Datum). [APPROX] Die genaue Bedingung im Code (Datei 0x32294: zusätzlich
+///   Parameter [bp+0xA] = 0 und Termin noch nicht gespielt) ist nicht ganz aufgelöst; „keine Ergebnisse in der Gruppe“ deckt alle Videobilder.</item>
 /// <item>[ORIGINAL] Tabelle (Flow): y = 135 + 10 · Platz, „n.“ x = 39 (7), Name x = 57, Punkte und Tore x = 206.</item>
 /// <item>[ORIGINAL] Knöpfe: Rahmen 2 × 2 Teile bei (79 | 196) und (193 | 196), Beschriftung Mini Grundlinie 217.</item>
 /// <item>[ORIGINAL] Endrunde vor dem siebten Termin: „Die Paarungen stehen noch nicht fest...“ (Flow, Grundlinie 100, Farbe 30).</item>
@@ -133,8 +137,14 @@ public sealed class EuropeanCupScreen : Screen
                     var color = (byte)(30 - 29 * leg);
                     var (h, a) = leg == 0 ? (home, away) : (away, home);
                     if (group.Results.FirstOrDefault(m => m.Day == day && m.Home == h && m.Away == a) is { } match)
-                        CompetitionWidgets.Left(s, mini, 226 + 46 * leg, y, $"{match.HomeGoals}:{match.AwayGoals}", color);
-                    else if (p == 0)
+                    {
+                        // [ORIGINAL] Auch das Rückspiel steht „links:rechts“ wie die Paarung (folge04_01241: Chamonix – Dynamo „5: 6  2: 6“
+                        // bei 12:0 Punkten für Dynamo; eisbaeren_f58_01323), beide Zahlen zweistellig aufgefüllt wie in der Tabelle.
+                        var (goalsLeft, goalsRight) = leg == 0 ? (match.HomeGoals, match.AwayGoals) : (match.AwayGoals, match.HomeGoals);
+                        CompetitionWidgets.Left(s, mini, 226 + 46 * leg, y,
+                            CompetitionWidgets.Number(goalsLeft, 2) + ":" + CompetitionWidgets.Number(goalsRight, 2), color);
+                    }
+                    else if (p == 0 && group.Results.Count == 0)
                     {
                         var date = SeasonCalendar.LayoutDate(day);
                         CompetitionWidgets.Left(s, mini, 230 + 46 * leg, y,

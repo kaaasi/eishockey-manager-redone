@@ -95,7 +95,10 @@ fortlaufend (wie Runde 5, Migration 4 → 5 → 6).
   (3) Bildschirme bleiben zustandsrein; (4) `docs/wettbewerbe.md` aktualisiert.
 - **Dateigrenzen:** `UI/Screens/Competitions/**` außer `NationalMenu.cs`, `Tools/Scenarios/` (eigene Datei), Tests, `docs/wettbewerbe.md`.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** umgesetzt, Review ausstehend (PR #162). Alle Vorlagen vermessen (Abläufe `pixel-debpokal`, `pixel-auslosung`,
+  `pixel-paarungen`, `pixel-europapokal`, `pixel-wm`); Befunde PW-01 – PW-05 behoben (Rundenname erste Runde, Großschrift der
+  DEB-Gruppen, Europapokal-Ergebnisse und -Termine, „WM-Endrundenspiele“). Kennzahlen: `docs/wettbewerbe.md`, Abschnitt
+  „Pixelvergleich Runde 6“.
 
 ### Spur `pixel-verein` – Vereins- und Modus-4-Bildschirme gegen die neuen Referenzbilder
 
