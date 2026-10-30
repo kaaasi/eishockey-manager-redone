@@ -114,7 +114,9 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
   `Tools/Scenarios/Wettbewerbe.cs` (Ablauf `nurfahne`),
   `FriendliesScreen.cs`, `Core/CupsNational*.cs`, `docs/wettbewerbe.md`, `docs/dosbox-befunde.md` (Status), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen (#175 gemergt).
+- **Status:** Teil 1 in #189 (Review ausstehend): „Highscore“ im Modus 1 offen, Endrunden-Fenster, 71b27de übernommen,
+  Regressionstests Freundschaftsspiele. Offen mit em.exe-Befund (`docs/dosbox-befunde.md`, Status): Länderwerte
+  Deutschlands aus der Aufstellung, Energie 70/46, Taktik-Startwerte 0, Paarungsansicht „Gruppe n m.Spieltag“.
 
 ### Spur `menue-befunde` – Nachrichtenleiste (#170) und Handbuchfrage des Originals
 
