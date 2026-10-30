@@ -91,4 +91,51 @@ internal static class WettbewerbeVideo
         d.Host.Show(new DebCupGamesScreen(d.Host, back, final, Highlight("EISB")));
         d.Move(0, 239); d.Save("eisbaeren_f60_02758");
     }
+    /// <summary>
+    /// Plätze „Name(n)“ Zeile für Zeile, links vor rechts; setzt die Spielklasse jedes Vereins wie im Bild (1 Bundesliga,
+    /// 2 Zweite Liga, 3 Oberliga), damit Farbe und Ziffer stimmen.
+    /// </summary>
+    private static List<int?> Slots(GameState game, params string[] entries) =>
+        entries.Select(e =>
+        {
+            var club = game.Clubs[Club(game, e[..^3])];
+            club.League = e[^2] switch { '1' => League.Bundesliga, '2' => League.ZweiteLiga, _ => League.Oberliga };
+            return (int?)club.Index;
+        }).ToList();
+
+    [Scenario("pixel-auslosung")]
+    private static void DebCupDraw(ScreenDriver d)
+    {
+        // folge01_00217: Frage beim Spielstart über 32 leeren Plätzen
+        d.StopAtDebCupDraw = true;
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var back = new MainMenuScreen(d.Host);
+        d.Move(0, 239); d.Save("folge01_00217");
+
+        // duell_s2a_02651: Frage zur Auslosung des Achtelfinales (16 Plätze)
+        d.Host.Show(new DebCupDrawLiveScreen(d.Host, 1, game.DebCup!.Draw.Take(16).ToList(), back));
+        d.Move(0, 239); d.Save("duell_s2a_02651");
+
+        game.Managers[0].ClubIndex = Club(game, "EISB");
+
+        // eisbaeren_f30_01719: Achtelfinale aufgedeckt, „TASTE DRÜCKEN“
+        var f30 = Slots(game,
+            "EC KASSEL(1)", "SB ROSENHEIM(1)", "LNER EC(2)", "EISB(1)", "KREFELDER EV(2)", "EC HEDOS M(2)",
+            "EV LANDSBERG(2)", "TSV ERDING(1)", "ESV KAUFBEUREN(2)", "EV LANDSHUT(1)", "AUGSBURGER EV(1)", "GERETSRIED(3)",
+            "PREUSSEN BERLIN(1)", "SSELDORFER EG(1)", "MANNHEIMER ERC(2)", "ECD SAUERLAND(2)");
+        d.Host.Show(new DebCupDrawScreen(d.Host, back, f30));
+        d.Move(0, 239); d.Save("eisbaeren_f30_01719");
+
+        // eisbaeren_f52_03358: erste Runde aufgedeckt
+        var f52 = Slots(game,
+            "ESC WOLFSBURG(2)", "EC BAD T(3)", "ERC SCHWENNINGEN(2)", "EC BAD NAUHEIM(3)", "ESV KAUFBEUREN(1)", "ESC FRANKFURT(1)",
+            "TEV MIESBACH(1)", "TSV ERDING(2)", "PREUSSEN BERLIN(1)", "SB ROSENHEIM(1)", "EC RATINGEN(3)", "SC MEMMINGEN(3)",
+            "EA KEMPTEN(3)", "SSELDORFER EG(2)", "ESV K(2)", "ECD SAUERLAND(1)", "EC HEDOS M(1)", "EISB(1)",
+            "ETC TIMMENDORF(2)", "ES WEI(3)", "SV BAYREUTH(3)", "HEC HEILBRONN(3)", "BREMERHAVEN(3)", "KREFELDER EV(2)",
+            "EC KASSEL(1)", "MANNHEIMER ERC(2)", "EV LANDSBERG(2)", "AUGSBURGER EV(1)", "EC HANNOVER(3)", "SC RIESSERSEE(1)",
+            "SCHALKER HAIE(2)", "EV LANDSHUT(2)");
+        d.Host.Show(new DebCupDrawScreen(d.Host, back, f52));
+        d.Move(0, 239); d.Save("eisbaeren_f52_03358");
+    }
 }
