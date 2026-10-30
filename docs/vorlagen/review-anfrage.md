@@ -28,7 +28,8 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
    Grenze und die blockierten Prüfungen; Läufe an einem solchen Stand sind höchstens Diagnose, im Bericht als
    „unverifizierter Stand“ gekennzeichnet, und kein Test des exakten Heads. Dokumentiere, ob nur Codelesen oder auch
    eine Ausführung am nachgewiesenen Checkout erfolgte.
-   Prüfe genau den genannten Head: bei einem Klon `git rev-parse HEAD` gleich dem Head-SHA, bei einer Rekonstruktion
+   Prüfe genau den genannten Head: bei einem Klon `git rev-parse HEAD` gleich dem Head-SHA und `git status --porcelain`
+   leer (sonst unverifizierter Stand), bei einer Rekonstruktion
    Tree-SHA des Checkouts (z. B. `git add -A && git write-tree`) gleich dem Tree-SHA des Zielcommits; Blob-Hashes
    einzelner Dateien genügen nicht. Baue ihn selbst, führe `tools/pruefen.sh` (alle drei Läufe) aus. Aussagen aus der
    PR-Beschreibung nicht ungeprüft übernehmen.
@@ -40,8 +41,8 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
    3. **Ausgeführte Prüfungen** (Befehle, Tabelle aus `tools/pruefen.sh`) und **akzeptierte `[APPROX]`**, getrennt von Annahmen
    Keine Freigabe anhand der Testanzahl. Knapp: keine Wiederholung der PR-Beschreibung.
    Ohne nachgewiesenen Checkout (nur Codelesen oder unverifizierter Stand) liefert das Review keinen Testnachweis nach
-   `zusammenarbeit.md` §6 Nr. 4; die Merge-Empfehlung sagt dann ausdrücklich „nur Codelesen“, und den
-   Originaldaten-Nachweis muss dann aus dem PR oder von der Leitstelle kommen.
+   `zusammenarbeit.md` §6 Nr. 4; die Merge-Empfehlung sagt dann ausdrücklich „nur Codelesen“. Der
+   Originaldaten-Nachweis muss dann im PR stehen (auch als Kommentar der Leitstelle).
 5. Ablage: nichts am Code oder am geprüften PR ändern. Datei auf neuem Branch `review/<thema>` (Basis `main`), PR mit
    **nur dieser Datei**, Commit-Trailer mit deinem Agentennamen. Ohne Schreibzugriff: Datei an den Nutzer.
 6. Antwort an den Nutzer: Link zum Review-PR, Empfehlung in einem Satz.
