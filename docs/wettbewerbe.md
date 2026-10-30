@@ -197,7 +197,7 @@ Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader a
 | `[APPROX]` Kandidaten: alle deutschen Spieler (keine Ausländer) der Ligavereine und des Transfermarkts, nach Summe absteigend – das Original listet seine 200 ausführlich geführten Spieler (Kader der Manager, Transfermarkt) | 0x3C5C9 |
 | `[APPROX]` Stärke des Nationalteams = Mittel von (Kondition + Technik) / 2 über Torhüter und Reihen 1–3 der Aufstellung (16 Plätze, Lücken 0) plus Taktikzuschlag; ohne Aufstellung die Automatik (bester Torhüter, je Reihe 2 Verteidiger + 3 Stürmer). Aufstellung und Taktik: Abschnitt „Aufstellung und Taktik des Nationalteams“ | – |
 | `[APPROX]` Felder 0x10–0x12 des Kaderplatzes als Kondition, Technik, Form gedeutet (Spaltenfolge „KO TE FO“) | – |
-| `[APPROX]` Energie 70 beim Öffnen von „WM Vorbereitung“ (Kaderfeld 0x13) nicht übernommen: Bildschirme ändern beim Öffnen nichts | 0x3BB51 |
+| `[APPROX]` Energie 70 beim Öffnen von „WM Vorbereitung“ (Kaderfeld 0x13) nicht übernommen: Bildschirme ändern beim Öffnen nichts | 0x3BB51; DOSBox: nach drei Freundschaftsspielen Energie aller Eingesetzten 46, Datum unverändert, Deutschland +3/+3/+5 (`docs/dosbox-befunde.md`) |
 
 Bildschirme (Aufbau aus em.exe; Videobilder seit der Reihe `bundestrainer`, Pixelvergleich steht aus;
 Bildschirmfotos `emtool screens gamedata ~/work/screens nationalteam`):
@@ -289,10 +289,10 @@ Maße wie oben; „Wertefelder“ = die 12 Felder Einsatz/Angriff): ganz 00058 r
 | Modus 2 sperrt Platz 6 der Statistiken, Tabellen, Paarungen und Platz 4 der Stärken (WM-Kacheln) | 0x44FE8–0x4501D |
 | Gesperrte Kachel: Symbol kb\3 (157 \| 203) 38 × 28, kein Klick | 0x45B63 |
 | Menü des Bundestrainers: „Transfer“ = „Spieler in WM-Kader“, „Training“ = „WM Vorbereitung“ | 0x457C0, 0x457D9 |
-| `[APPROX]` Halt nach dem Sprung vor dem ersten WM-Spiel, damit der Bundestrainer den Kader wählen kann | – |
+| Halt nach dem Sprung vor dem ersten WM-Spiel (Hauptmenü am 14. April); im Original bestätigt | DOSBox `dosbox/nur-weltkugel/06` (`docs/dosbox-befunde.md`) |
 | `[APPROX]` Modus 1 nur mit genau einem Manager („Los jetzt!“ mit Meldung gesperrt) | – |
 | `[APPROX]` Modus 1 ohne Europapokal, Auf-/Abstieg, Oberliga-Wechsel, Prämien, Ligastatistik, Finanzen, Training, Markt und Vertragsmeldungen (kein Tageslauf vor der WM) | – |
-| `[APPROX]` Menü des Bundestrainers schon vor der Ernennung, Mannschaftskacheln bis dahin gesperrt | – |
+| Menü des Bundestrainers schon vor der Ernennung, Mannschaft und Stärken bis dahin gesperrt; im Original bestätigt. **Abweichung:** „Highscore“ ist vor der Ernennung offen (Remake/Sperrtabelle: gesperrt) – offen | DOSBox `dosbox/nur-weltkugel/07–11` (`docs/dosbox-befunde.md`) |
 | Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. „Tabelle DEB-Pokal“ und „Tabelle Europapokal“ rufen dieselben Bildschirme auf wie „DEB-Pokal“ und „Europapokal“ bei den Paarungen (0xE8:0x75 bzw. 0xF8:0x3E mit Seitenwert 3, Datei 0x4584A/0x4584C; Spur `tabellen-highscore`, `CupTableMenuEntries`). 0xE8:0x75 ist die Übersicht „DEB-Pokalspiele“ (Datei 0x32E23, Gegner und Ergebnisse), nicht die Auslosung – seit R4-01 (#108) als `DebCupGamesScreen` unter „Tabelle DEB-Pokal“ gebaut (Aufbau, Rahmenformel, Spalten, Farben im Klassenkommentar; [ORIGINAL] Seitentausch nach Termin 1 und 2, Überlauf-Punkt nur bei Verlängerung, Datumszeile ab Tag 212 weg; offen nur Penalty-gegen-Verlängerung und Punktform); die Paarungs-Kachel „DEB-Pokal“ öffnet seit demselben PR ebenfalls die Übersicht (im Original derselbe Stub); die Auslosung ist ohne Kachel und wird nur im Spielablauf gezeigt (Abschnitt „Live-Auslosung im Spielablauf“) | DGROUP 0x5149/0x5151, Datei 0x45B95, 0x45829 ff. |
 | Kachelsperren der Spielvorbereitung (Reihe Manager): „Neuer“ gesperrt bei vier Managern (DGROUP 0x386), „Werbung“ gesperrt bei der Spieldauer „eine Saison“ (Spielende DGROUP 0x5A14 = 1994) | Datei 0x45057, 0x45079, 0x2987C; `UI/Screens/TileLocks.cs` |
 
