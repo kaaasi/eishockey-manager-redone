@@ -181,8 +181,11 @@ public sealed class MainMenuScreen : Screen
         }
 
         // Symbole: Wettbewerb, Heim/Auswärts, bisherige Begegnungen, Kontostand
-        s.Blit(sheet, SeasonInfo.CompetitionIcon(game, next?.Competition), 111, 35);
-        if (next is { } n)
+        // WM-Spiel des Bundestrainers: Weltkugel auch nach der Vereinssaison (Modus 4) und kein Heim-/Auswärtssymbol
+        // (Spur pixel-verein, PV-04; Videos bundestrainer_00030, eisbaeren_f24_00039).
+        var worldCup = next?.Competition == Competition.WorldCup;
+        s.Blit(sheet, worldCup ? SeasonInfo.IconSource(Competition.WorldCup) : SeasonInfo.CompetitionIcon(game, next?.Competition), 111, 35);
+        if (next is { } n && !worldCup)
             s.Blit(sheet, n.Home ? new Rect(54, 231, 12, 11) : new Rect(66, 231, 12, 11), 126, 35);
         s.Blit(sheet, new Rect(0, 231, 27, 11), 111, 48);
         s.Blit(sheet, new Rect(27, 231, 27, 11), 111, 61);
@@ -191,13 +194,10 @@ public sealed class MainMenuScreen : Screen
         s.TextCentered(mini, 184, 51, MeetingsText(game, team, next?.Opponent.Index), Colors.White);
         s.TextCentered(mini, 184, 64, GameState.FormatMoney(NationalMenu.Money(game)), Colors.White);
 
-        // Lampen je Manager: rot = noch nicht bereit (am Zug bzw. noch dran), grün = bereit (Hot-Seat, R2-06).
-        // [APPROX] Unbelegte Lampen und entlassene Manager grün; sechs Lampen bei höchstens vier Managern nicht geklärt.
-        for (var i = 0; i < 6; i++)
-        {
-            var waiting = i < game.Managers.Count && !game.Managers[i].Dismissed && !game.IsReady(game.Managers[i]);
-            Widgets.Lamp(s, Assets, 226, 31 + i * 7, red: waiting);
-        }
+        // Warnlampen des Managers am Zug (Spur pixel-verein, PV-03; Regeln und Belege in MenuLamps).
+        var lamps = MenuLamps.Red(game);
+        for (var i = 0; i < MenuLamps.Count; i++)
+            Widgets.Lamp(s, Assets, MenuLamps.X, MenuLamps.Y(i), red: lamps[i]);
 
         Raised(s, new Rect(231, 32, 42, 42));
         Widgets.Head(s, Assets, manager.Head, 232, 33);
