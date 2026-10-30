@@ -27,6 +27,9 @@ Runde 7 (parallel):  spielberechnung   kader-start   boerse-start   weltkugel-do
 Integration:         kader-start und boerse-start zuerst, spielberechnung zuletzt (verschiebt alle Ergebnisse)
 ```
 
+**Start gestaffelt** (Entscheidung Nutzer, 30.10.2026): `menue-befunde` und `boerse-start` sofort; `kader-start` und
+`spielberechnung` nach Merge von #167; `weltkugel-dosbox` nach #175; `hok-patch` nach #176.
+
 Gemeinsame Berührungen: `spielberechnung` und `kader-start` ändern beide Spielergebnisse und damit alle
 Mehrsaison-Abdrücke; `spielberechnung` führt ihre Abdrücke in der Integration auf dem Stand nach `kader-start` nach.
 `menue-befunde` ändert `MainMenuScreen.cs` höchstens minimal (Leiste), `weltkugel-dosbox` nur `TileLocks.cs`/`NationalMenu.cs`.
@@ -39,7 +42,9 @@ Mehrsaison-Abdrücke; `spielberechnung` führt ihre Abdrücke in der Integration
   Reporter, keine Torszenen.
 - **Schritt 1 (vor dem Code, im PR belegen):** Klären, ob das Original die Ereignisse unabhängig von der Anzeige
   berechnet (Einstellungen „Torszenen aus“ und „WM-Spiele“/Ligen ohne Live-Spiel, `docs/dosbox-befunde.md`; Aufrufer im
-  Spieltagsablauf 0x36B5D). Ist die Berechnung an die Anzeige gekoppelt, Leitstelle fragen, bevor weitergebaut wird.
+  Spieltagsablauf 0x36B5D). Ist die Berechnung an die Anzeige gekoppelt, wird der Rechenteil trotzdem herausgelöst und
+  ohne Darstellung nachgebaut – gleiche Ergebnisse und Ereignisse; die Anzeige folgt in `livespiel` (Entscheidung Nutzer,
+  30.10.2026).
 - **Belege:** em.exe Overlay 5E73; Ranglisten 0xC8:0x20 (Torhüter, Datei 0x25E30) und 0xE0:0x20 (Fair-Play, 0x2A1E0)
   aus #135 zeigen, welche Felder je Spieler gezählt werden; Spielerfelder `Goals`, `Assists`, `Penalties2/5`
   (`Core/Player.Attributes.cs`) gibt es schon, sie werden nie hochgezählt.
@@ -85,11 +90,16 @@ Mehrsaison-Abdrücke; `spielberechnung` führt ihre Abdrücke in der Integration
   Ernennung offen (Sperrtabelle DGROUP 0x5159 vs. 0xD0BA klären); Fenster „WM-Endrundenspiele – Die Paarungen stehen
   noch nicht fest…“ mit Knopf „Gruppe“ statt `[APPROX]`; Wirkung der Freundschaftsspiele (kein Zeitfortschritt,
   Deutschland +3 Kondition/+3 Technik/+5 Form nach drei Spielen, Energie der Eingesetzten 46, Kosten 100–120 Tsd. DM);
-  Taktik des Nationalteams zu Beginn (DOSBox: alle Werte 0) gegen die Startwerte aus `taktik-verein` (Runde 5) prüfen.
-  Dazu den falschen Kommentar zu 0x289A3 in `NationalMenu.cs` berichtigen.
+  Taktik des Nationalteams zu Beginn (DOSBox: alle Werte 0) gegen die Startwerte aus `taktik-verein` (Runde 5): in em.exe
+  klären, wann das Original die Startwerte setzt (z. B. erst bei der Ernennung oder nur im Modus 4), und nur Belegtes
+  umsetzen, mit Test je Modus (Entscheidung Nutzer, 30.10.2026). Dazu den falschen Kommentar zu 0x289A3 in
+  `NationalMenu.cs` berichtigen und den nie gemergten Commit `71b27de` vom Branch `paket/wettbewerbe-weltkugel-2`
+  übernehmen (Ablauf `nurfahne`, Abschnitt „Kachelsperren im Modus 2 gegen das Karriere-Video“ in `docs/wettbewerbe.md`;
+  den Nachtrag in `arbeitspakete.md` nicht, die Bilderliste mit den DOSBox-Bildern abgleichen).
 - **Abnahme:** je Punkt roter Test mit dem DOSBox-Bild als Beleg (Bildname im Test), danach grün, oder begründet als
   Befund offen lassen; Mehrsaisonprobe Modus 2 und 4; `docs/wettbewerbe.md` nachgeführt.
 - **Dateigrenzen:** `UI/Screens/TileLocks.cs`, `UI/Screens/Competitions/NationalMenu.cs`, `WorldCupKnockoutScreen.cs`,
+  `Tools/Scenarios/Wettbewerbe.cs` (Ablauf `nurfahne`),
   `FriendliesScreen.cs`, `Core/CupsNational*.cs`, `docs/wettbewerbe.md`, `docs/dosbox-befunde.md` (Status), Tests.
 - **Modell:** Claude Opus 5.5.
 - **Status:** offen (wartet auf Merge von #175).
@@ -130,7 +140,9 @@ Mehrsaison-Abdrücke; `spielberechnung` führt ihre Abdrücke in der Integration
 - Import/Export von Original-Spielständen ins Remake: nach `hok-format` (Analyse, #176) und `hok-patch`.
 - Highscore am Spielende, Saisonende im Modus „nur Weltkugel“: in keinem Video – Kandidat für eine DOSBox-Aufnahme
   mit einem per `hok-patch` vorbereiteten Spielstand.
-- Inaktive Branches `paket/speichern-ids`, `paket/wettbewerbe-weltkugel-2` (ohne PR): Löschen nur nach Entscheidung des Nutzers.
+- Inaktive Branches (Entscheidung Nutzer, 30.10.2026: prüfen, dann löschen): `paket/speichern-ids` ist vollständig in
+  `main` → löschen; `paket/wettbewerbe-weltkugel-2` hat einen ungemergten Commit `71b27de` → erst nach Übernahme durch
+  `weltkugel-dosbox` löschen. Löschen nur in der Weboberfläche (aus den Sitzungen gesperrt).
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
