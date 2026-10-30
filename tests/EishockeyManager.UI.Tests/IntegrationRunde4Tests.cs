@@ -94,7 +94,8 @@ public class IntegrationRunde4Tests : IDisposable
 
     /// <summary>
     /// Die neuen Sperren der Spielvorbereitung („Werbung“, „Neuer“) ändern das Menü des Bundestrainers nicht:
-    /// dort ist die Reihe Manager ohnehin vollständig gesperrt (DGROUP 0x5159 + 42), Laden/Sichern bleiben frei.
+    /// dort ist die Reihe Manager ohnehin gesperrt (DGROUP 0x5159 + 42), Laden/Sichern bleiben frei. Ausnahme „Highscore“:
+    /// im Modus 1 offen (Datei 0x45020–0x4504A, DOSBox `dosbox/nur-weltkugel/07`; Sollwert geändert in Spur weltkugel-dosbox).
     /// </summary>
     [GameDataFact]
     public void CoachMenu_ManagerRowLocked_SaveLoadFree_WithSetupLocks()
@@ -102,7 +103,7 @@ public class IntegrationRunde4Tests : IDisposable
         var d = StartWorldOnly();
         var game = d.Host.Game!;
         foreach (var tile in MenuTiles.Small[0].Where(t => !t.IsEmpty))
-            Assert.True(NationalMenu.IsLocked(game, tile), tile.Name);
+            Assert.Equal(tile.Name != "Highscore", NationalMenu.IsLocked(game, tile));
         foreach (var name in new[] { "Laden", "Sichern", "Einstellungen", "Aufstellung", "Taktik" })
             Assert.False(NationalMenu.IsLocked(game, MenuTiles.Small.SelectMany(r => r).Single(t => t.Name == name)), name);
     }

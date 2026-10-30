@@ -20,10 +20,9 @@ public static class NationalMenu
     /// Freie Kacheln des Bundestrainers. [ORIGINAL] Zweiter Teil der Tabelle DGROUP 0x5159 (+42):
     /// Manager alles gesperrt; Mannschaft frei außer „Verträge“; Statistiken nur „WM-Statistik“; Tabellen nur WM;
     /// Paarungen nur WM; Stärken nur Länderteams; Gemischtes alles frei.
-    /// „Highscore“ (Platz 6 der Reihe Manager) überschreibt das Original beim Aufbau (Datei 0x45020–0x4504A) mit
-    /// „DGROUP 0x256 = 0 oder (Bundestrainer und Modus 4)“: im Modus 4 ausdrücklich gesperrt (0x4502C), im Modus 1 über
-    /// 0x256 = 0 – ohne Fahne gibt es keine Bestenliste (Datei 0x289A3). In beiden Modi also gesperrt (Video
-    /// `bundestrainer_00042`, Spur bundestrainer-modus4).
+    /// „Highscore“ (Platz 6 der Reihe Manager) steht nicht in dieser Liste: Das Original überschreibt den Platz beim
+    /// Aufbau (Datei 0x45020–0x4504A) mit „DGROUP 0x256 = 0 oder (Zug Manager 5 und Modus 4)“, siehe
+    /// <see cref="CoachHighscoreLocked"/>.
     /// Videobeleg Modus 4 (Spur pixel-verein, Pixelvergleich mit `pixel-verein-bundestrainer`): Reihen Manager
     /// `eisbaeren_f24_00049`, Mannschaft `_00051`, Statistiken `_00053`, Tabellen `_00057` – gleiche Sperren wie hier.
     /// </summary>
@@ -46,11 +45,26 @@ public static class NationalMenu
     /// <summary>Kacheln des Bundestrainers, die erst nach der Ernennung etwas zu zeigen haben.</summary>
     private static readonly HashSet<string> NeedsCoach = new(StringComparer.Ordinal) { "Aufstellung", "Taktik", "Transfer", "Training" };
 
+    /// <summary>
+    /// „Highscore“ im Menü des Bundestrainers. [ORIGINAL] Datei 0x45020–0x4504A: gesperrt, wenn es keine Bestenliste gibt
+    /// (DGROUP 0x256 = 0, Datei 0x44FCE) oder im Zug „Manager 5“ (DGROUP 0xA70E = 5) im Modus 4 (DGROUP 0xD0B9 = 4,
+    /// Datei 0x4502C). Die Ernennung (DGROUP 0xD0BA) fragt der Aufbau nicht ab. Im Modus 1 gibt es immer die Bestenliste
+    /// mit Schlüssel 30000 (Datei 0x2899D, `docs/highscore.md`) – die Kachel ist dort also offen, vor wie nach der
+    /// Ernennung. Beleg DOSBox `dosbox/nur-weltkugel/07_kachelreihe_manager_highscore_offen.png` (vor der Ernennung)
+    /// und `19_highscore.png` (Liste „Joerg – DEUTSCHLAND – 1“). Das WM-Video zeigt die Kachel gesperrt
+    /// (`bundestrainer_00042`, `00220`, `00418`, Saison 2008); mit em.exe ist das nur bei DGROUP 0x256 = 0 erklärbar –
+    /// offener Befund in `docs/dosbox-befunde.md`.
+    /// </summary>
+    public static bool CoachHighscoreLocked(GameState game) =>
+        HighscoreRules.Key(game.Setup) is null || game.Mode == GameMode.Full;
+
     /// <summary>Ist die kleine Kachel im aktuellen Menü gesperrt?</summary>
     public static bool IsLocked(GameState game, MenuTile tile)
     {
         if (tile.IsEmpty)
             return false;
+        if (game.NationalCoachMenu && tile.Name == "Highscore")
+            return CoachHighscoreLocked(game);
         if (game.NationalCoachMenu)
             // [APPROX] Vor der Ernennung (Saisonbeginn bis zum ersten WM-Termin) bleibt auch die Mannschaft gesperrt.
             return !CoachTiles.Contains(tile.Name) || (game.NationalCoach is null && NeedsCoach.Contains(tile.Name));

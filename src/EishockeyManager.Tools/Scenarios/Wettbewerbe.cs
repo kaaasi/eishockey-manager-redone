@@ -318,4 +318,28 @@ internal static class Wettbewerbe
         d.Click(MainMenuScreen.BigTile(2).X + 10, MainMenuScreen.BigTile(2).Y + 10);
         d.Move(0, 0); d.Save("05_statistiken");
     }
+
+    /// <summary>
+    /// Spur weltkugel-dosbox: Modus „nur Weltkugel“ nach dem Sprung – Reihe Manager mit offener „Highscore“
+    /// (DOSBox <c>dosbox/nur-weltkugel/07</c>) und „WM-Endrundenspiele“ vor den Spielen (<c>24</c>).
+    /// </summary>
+    [Scenario("weltkugel-dosbox")]
+    private static void WorldOnlyDosbox(ScreenDriver d)
+    {
+        d.Host.Show(new TitleScreen(d.Host));
+        d.Frame();
+        d.Click(160, 120);
+        d.Click(20, 60);
+        var cell = SetupScreen.HeadCell(3);
+        d.Click(cell.X + 5, cell.Y + 5);
+        d.Type("LetsShow");
+        d.Press(Key.Enter);
+        d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
+        d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
+        d.Click(MainMenuScreen.BigTile(0).X + 10, MainMenuScreen.BigTile(0).Y + 10);
+        d.Move(10, 230); d.Save("01_reihe_manager_wie_dosbox_07");
+        var menu = d.Host.Current!;
+        d.Host.Show(new WorldCupKnockoutScreen(d.Host, menu));
+        d.Move(100, 230); d.Save("02_wm_endrunde_wie_dosbox_24");
+    }
 }
