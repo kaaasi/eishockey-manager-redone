@@ -15,8 +15,8 @@ Runde 6 (Werbung, Heimspiel-Statistik, Saisonende-Status, Pixelvergleiche): [arc
 **Ziel der Runde (Entscheidung Nutzer, 30.10.2026):** die echte Spielberechnung des Originals mit Ereignissen je Spieler
 (Grundlage für Einzelprämien und Statistiken), die Startwerte aus den Runde-6-Funden, die DOSBox-Befunde und Werkzeuge
 für Original-Spielstände. **Torszenen, Anzeigetafel und Reporter bleiben bis zum Schluss ausgeklammert** (`livespiel`).
-**Vorher abschließen** (Leitstelle): #167 (`heimspiel-statistik` Teil 2 mit #165, Schema 9), #175 (DOSBox-Befunde, Doku),
-#176 (`hok-format` Analyse) – je Review und Merge; welche Spur wann startet, regelt „Start gestaffelt“ unten.
+**Vorlauf erledigt** (Sammelreview #178): #167 (`heimspiel-statistik` Teil 2 mit #165, Schema 9), #175 (DOSBox-Befunde),
+#176 (`hok-format` Analyse) gemergt; welche Spur wann startet, regelt „Start gestaffelt“ unten.
 **Base für alle Spuren:** aktueller `main`; tatsächlichen Base-SHA in den Draft-PR. Weiterhin verbindlich: Mehrsaisonprobe
 bei Saisonwechsel, Kader oder Geld; Schema mit Migration für jeden neuen Zustand (Leitstelle nummeriert in der
 Integration); geänderte Abdrücke je Fall begründen (FN-01, #139); Befund-Issues mit `Fixes #<nr>`. **Entwickler sind
@@ -114,7 +114,7 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
   `Tools/Scenarios/Wettbewerbe.cs` (Ablauf `nurfahne`),
   `FriendliesScreen.cs`, `Core/CupsNational*.cs`, `docs/wettbewerbe.md`, `docs/dosbox-befunde.md` (Status), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen (wartet auf Merge von #175).
+- **Status:** offen (#175 gemergt).
 
 ### Spur `menue-befunde` – Nachrichtenleiste (#170) und Handbuchfrage des Originals
 
@@ -142,7 +142,7 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
 - **Dateigrenzen:** `src/EishockeyManager.Formats/OriginalSaveGame*.cs`, `src/EishockeyManager.Tools/Hok*.cs`,
   `docs/formate/spielstand-original.md`, Tests. Keine Spielstände ins Code-Repo.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen (wartet auf Merge von #176).
+- **Status:** offen (#176 gemergt).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
@@ -155,6 +155,13 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
 - Inaktive Branches (Entscheidung Nutzer, 30.10.2026: prüfen, dann löschen): `paket/speichern-ids` ist vollständig in
   `main` → löschen; `paket/wettbewerbe-weltkugel-2` hat einen ungemergten Commit `71b27de` → erst nach Übernahme durch
   `weltkugel-dosbox` löschen. Löschen nur in der Weboberfläche (aus den Sitzungen gesperrt).
+
+## Paket `hok-format` – Original-Spielstände `*.HOK`
+
+Branch: `paket/hok-format` · Status: Analyse gemergt (#176, Review #178): Verschlüsselung, Prüfsummen, Kopf und Blockfolge
+belegt, `emtool hok dump`, Doku `docs/formate/spielstand-original.md` (offene Liste dort). Entscheidung Nutzer:
+Sicher-/Ladesperre des Originals nicht übernehmen. Weiter in Runde 7 mit `hok-patch` (Spielstände fürs Original);
+Import/Export ins Remake danach.
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
