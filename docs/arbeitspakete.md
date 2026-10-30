@@ -163,7 +163,7 @@ belegt, `emtool hok dump`, Doku `docs/formate/spielstand-original.md` (offene Li
 Sicher-/Ladesperre des Originals nicht übernehmen. Weiter in Runde 7 mit `hok-patch` (Spielstände fürs Original);
 Import/Export ins Remake danach.
 
-- Nachtrag (#hok-format-2, Branch `paket/hok-format-2`): Kaderplätze, Spielerpool, Training und Taktik an FILE05 belegt;
+- Nachtrag (#197, Branch `paket/hok-format-2`): Kaderplätze, Spielerpool, Training und Taktik an FILE05 belegt;
   Kaderausgabe in `emtool hok dump`. Spielstände FILE01–05 und `KAPUTT.HOK` im Referenz-Repo `original/spielstaende/`.
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
