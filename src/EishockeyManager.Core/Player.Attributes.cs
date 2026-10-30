@@ -68,6 +68,18 @@ public sealed partial class Player
     /// <summary>Anzahl 5-Minuten-Strafen.</summary>
     public int Penalties5 { get; set; }
 
+    /// <summary>
+    /// Gegentore als Torhüter. [ORIGINAL] Beim Torhüter zählt das Original im Spielerfeld 0x1B (bei Feldspielern die
+    /// Tore) die Gegentore, Torhüter-Rangliste Datei 0x25FC7 (Spur spielberechnung, docs/spielberechnung.md).
+    /// </summary>
+    public int GoalsAgainst { get; set; }
+
+    /// <summary>
+    /// Spielminuten als Torhüter. [ORIGINAL] Spielerfeld 0x1F (Wort; bei Feldspielern die Vorlagen), Rangliste nur ab
+    /// 400 Minuten (Datei 0x25FC7: Vergleich mit 0x18F).
+    /// </summary>
+    public int GoalieMinutes { get; set; }
+
     /// <summary>Verbleibende Spiele, die der Spieler verletzt fehlt (0 = gesund).</summary>
     public int InjuredGames { get; set; }
 

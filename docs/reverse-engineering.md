@@ -121,9 +121,10 @@ Höchstwerte 0x11C–0x11F = **5, 3, 2, 2**. Belegt im Overlay „Spielstart“ 
 
 ## Noch nicht rekonstruiert (`[APPROX]` im Code)
  
-* **Spielsimulation** (Overlay 5E73): Das Remake simuliert in 10-Sekunden-Schritten mit den im Original sichtbaren
-  Parametern (3 Reihen, Linienwechsel-Modi, Einsatz/Angriff je Spielstand, 2/5-Minuten-Strafen mit den 13 Strafarten,
-  Über-/Unterzahl, Verletzungen, Penaltyschießen). Kalibriert auf ~6,5 Tore/Spiel.
+* **Spielberechnung** (Overlay „Live-Spiel“ = Ghidra 5E73, Stub 0x130): Minutenschleife mit Torchancen, Abschluss,
+  Strafen und Statistik; Rekonstruktion, Fundstellen und Stand der Umsetzung in [spielberechnung.md](spielberechnung.md).
+  Die frühere Beschreibung einer 10-Sekunden-Schrittsimulation galt nicht für den Code: Das Remake rechnet bis zum
+  Anschluss der neuen Berechnung mit `MatchEngine.Play` (`[APPROX]`, Poisson aus der Stärkedifferenz).
 * **Finanzen** (Zuschauer, Eintritt, Gehälter, Sponsoren, Stadionkosten, Börse) – Größenordnungen nach den Texten des Originals.
 * **Saisonmodus**: Playoff-Format, Relegation, DEB-Pokal (32 Teams), Europapokal (Gruppe + Endrunde), WM (2 Gruppen + K.-o.).
 * **Torszenen** (`tore\`): Format teilweise erkannt (Kennung `TOR!`, Positionslisten), Darstellung fehlt noch.
