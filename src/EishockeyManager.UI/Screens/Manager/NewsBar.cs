@@ -3,7 +3,8 @@ using EishockeyManager.Core;
 namespace EishockeyManager.UI.Screens.ManagerArea;
 
 /// <summary>
-/// Nachrichtenleiste (kb\6) unten im Hauptmenü, solange keine große Kachel gewählt ist (UI-Video 15:10):
+/// Nachrichtenleiste (kb\6) unten im Hauptmenü, solange keine große Kachel gewählt ist und eine neue Nachricht da ist
+/// (Bedingung: <see cref="MainMenuScreen"/>, #170; Aussehen UI-Video 15:10):
 /// Kopfzeile mit „Keine Nachricht für Sie vorhanden.“ bzw. der Nachricht, darunter das weiße Textfeld,
 /// rechts ▲▼ zum Blättern. Klick auf die Nachricht öffnet den Posteingang („Neuer“).
 /// </summary>
@@ -43,6 +44,9 @@ public static class NewsBar
         }
         return box.Value;
     }
+
+    /// <summary>Hat der aktive Manager eine ungelesene Nachricht (Auslöser der Leiste im Hauptmenü, #170)?</summary>
+    public static bool HasUnread(GameState game) => game.Inbox(game.ActiveManager).Any(m => !m.Read);
 
     /// <summary>Verarbeitet Klicks auf die Leiste; true, wenn die Eingabe verbraucht wurde.</summary>
     public static bool Update(ScreenHost host, Screen menu, InputState input)

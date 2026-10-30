@@ -128,3 +128,53 @@ Höchstwerte 0x11C–0x11F = **5, 3, 2, 2**. Belegt im Overlay „Spielstart“ 
 * **Saisonmodus**: Playoff-Format, Relegation, DEB-Pokal (32 Teams), Europapokal (Gruppe + Endrunde), WM (2 Gruppen + K.-o.).
 * **Torszenen** (`tore\`): Format teilweise erkannt (Kennung `TOR!`, Positionslisten), Darstellung fehlt noch.
 * Spielfeld-Kacheln (`kb\231–236, 242–246`).
+
+## Kopierschutz (Handbuchfrage)
+
+Spur `menue-befunde`, #185. **Das Remake übernimmt die Abfrage nicht** (Entscheidung Nutzer, 30.10.2026; bewusste
+Abweichung in [portierung.md](portierung.md)). Hier steht nur, was das Original tut. Alle Dateioffsets in `em.exe`;
+DGROUP liegt bei Datei 0x16DD0 (Segmenttabelle 0x163C0, Eintrag 0x148).
+
+* **Bildschirm „PASSWORTABFRAGE“** (Bildfolge `folge23_02308`, `_02314`, `_02315`, Fundliste `docs/referenz-videos.md`):
+  Überschrift, „Bitte ziehen Sie nun Ihre Anleitung zu Rate:“, darunter „SEITE: 16 – ZEILE: 1 – WORT: 1“ und acht rote
+  Wortknöpfe (z. B. Regel, Legen, Bereiche, Rechts, Seine, Probieren, Kopie, Bild). Gesucht ist das Wort an der
+  genannten Stelle im gedruckten Handbuch (hier „Rechts“).
+* **Funktion** ab Datei **0x4CD46** (Overlay, Segmenttabelle 0x120, Stub-Offset 0x8E; Parameter: Zeiger auf ein Dword).
+  Ablauf: Position der richtigen Antwort = `random(0, 7)`, Eintrag = `random(0, 0x1B)` (28 Einträge); die übrigen sieben
+  Knöpfe bekommen verschiedene andere Wörter (Wiederholung wird ausgeschlossen). Ausgabe: Rückgabe 1 = richtig;
+  das Dword erhält 0 bei richtiger, 1 bei falscher Antwort.
+* **Tabellen** (DGROUP): Wortliste 0x14F5, 28 Wörter zu je 13 Byte; Seite 0x7D4, Zeile 0x7F0, Wort 0x80C (je 28 Byte, gleicher
+  Index). Wörter und Texte sind mit **XOR 0xD9** (Wörter) bzw. **0xC9** (Titel 0x1661, Frage 0x1671, „SEITE: “ 0x169E,
+  „ – ZEILE: “ 0x16A6, „ – WORT: “ 0x16B1) verschleiert; das Byte 0 bleibt 0. Deshalb findet die Textsuche nach
+  „Handbuch“ oder „Passwort“ nichts. Die Zeichenkodierung ist die übliche des Spiels (`}` = ü, `{` = ä).
+
+  | Nr | Seite | Zeile | Wort | Lösung | | Nr | Seite | Zeile | Wort | Lösung |
+  |---|---|---|---|---|---|---|---|---|---|---|
+  | 0 | 3 | 5 | 3 | Fan | | 14 | 8 | 3 | 8 | Legen |
+  | 1 | 7 | 14 | 2 | Kopie | | 15 | 10 | 12 | 7 | Bereiche |
+  | 2 | 10 | 9 | 4 | Regel | | 16 | 11 | 4 | 4 | Damen |
+  | 3 | 11 | 6 | 6 | Reihe | | 17 | 13 | 2 | 1 | Pingi |
+  | 4 | 13 | 21 | 7 | Stärke | | 18 | 13 | 4 | 7 | Baby |
+  | 5 | 15 | 16 | 12 | Saison | | 19 | 13 | 10 | 5 | Üben |
+  | 6 | 21 | 13 | 12 | Logo | | 20 | 13 | 16 | 12 | Verfügung |
+  | 7 | 27 | 22 | 6 | Bild | | 21 | 15 | 2 | 3 | Auslosung |
+  | 8 | 43 | 5 | 3 | Spiel | | 22 | 15 | 19 | 9 | Smiley |
+  | 9 | 44 | 12 | 10 | Knopf | | 23 | 14 | 2 | 5 | Probieren |
+  | 10 | 3 | 2 | 10 | Seine | | 24 | 14 | 9 | 7 | Exkursion |
+  | 11 | 3 | 14 | 8 | Herz | | 25 | 16 | 1 | 1 | Rechts |
+  | 12 | 7 | 7 | 1 | Spieler | | 26 | 16 | 6 | 7 | Kamera |
+  | 13 | 7 | 18 | 9 | Diskette | | 27 | 17 | 2 | 7 | Datum |
+
+  Das Bild zeigt `Seite 16 – Zeile 1 – Wort 1` = Eintrag 25, „Rechts“ ✔ (Wort im Bild hervorgehoben).
+* **Auslöser** – drei Aufrufstellen (Fernaufruf `9A 8E 00 20 01`):
+  1. **Spielstart** (Datei 0x4387B, in der Funktion, die Spielwerte vorbelegt und damit zum Spielstart gehört – [APPROX] Zuordnung): nur wenn `random(0, 2) == 0` (Wahrscheinlichkeit 1/3).
+     Höchstens zwei Versuche; wer beide verfehlt, bleibt in einer Endlosschleife hängen (`si` bleibt 2, Sprung
+     0x4389A ↔ 0x43871) – das ist der eigentliche Kopierschutz (aus dem Code gelesen, im Original nicht ausprobiert).
+  2. Schleife mit Zähler gegen DGROUP 0x386 (Datei 0x34DB7; Zweck der Schleife nicht geklärt): wenn Zähler DGROUP 0x5A14 < 2000, Byte 0x5CF3 == 4
+     und `random(0, 7) == 0`. Das Ergebnis wird an der Stelle nicht ausgewertet.
+  3. Funktion bei Datei 0x5667A (Datei 0x566AC): wenn Zähler DGROUP 0x3BD > 10 und `random(0, 5) == 0`, oder genau 9.
+     Das Ergebnis wird an der Stelle nicht ausgewertet.
+* **Nicht geklärt:** Bedeutung der Globalen 0x5A14, 0x5CF3, 0x3BD (Auslöser 2 und 3) und ob je ein falsches Ergebnis dort
+  Folgen hat. Für die Spur nicht nötig, da nichts davon portiert wird. Spielstart (1.) ist durch Bildfolge und Code belegt.
+* Test, dass das Remake nicht fragt: `MenueBefundeTests` (`NewGame_AndFirstMatchDays_RunWithoutManualQuestion`,
+  `NoScreenImplementsTheManualQuestion`).
