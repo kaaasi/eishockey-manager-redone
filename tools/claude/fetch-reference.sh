@@ -2,7 +2,8 @@
 # Lädt Referenzbilder aus dem privaten Repo kaaasi/eishockey-manager-referenz nach ~/referenz
 # (nur die genannten Ordner). Aufruf:
 #   tools/claude/fetch-reference.sh [oberflaeche] [karriere] [bundestrainer] [folge01 … | folgen]
-#     [eisbaeren_f01 … | eisbaeren] [duell_s2a … | duell] [speedrun_t1 speedrun_t2 | speedrun] [uebersicht] [original]
+#     [eisbaeren_f01 … | eisbaeren] [duell_s2a … | duell] [speedrun_t1 speedrun_t2 | speedrun] [dosbox] [uebersicht] [original]
+# `dosbox` = Bildschirmfotos aus dem Original unter DOSBox (docs/dosbox-befunde.md).
 # `bundestrainer` = WM-Video im Modus „nur Weltkugel“ (docs/referenz-videos.md).
 # `folge01` … `folge29` = Reihe „Eishockey Manager EM“ (entdoppelt, ausgedünnt); `folgen` = alle 29 (ca. 0,4 GB).
 # Release videos-roh-2: `eisbaeren_f01` … `eisbaeren_f65` (ohne f41), `duell_s2a` … `duell_s6d`, `speedrun_t1`/`_t2`;
