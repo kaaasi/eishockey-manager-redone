@@ -346,21 +346,29 @@ Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**
   00535–00544, 00559–00602), „WM-Endrundenspiele“ (00642–00645, 00647–00653, 00719–00725, 00744; dazwischen „Spiele laufen“ 00646), Weltmeister `kb\16` (00745–00809);
   Gegner-Fenster aus der Infoleiste 00417, 00610, 00657–00659.
 
-**Weiterhin fehlen** (Stand nach den Reihen `folge01` … `folge29`, Vereinsmodus ohne Weltkugel, `docs/referenz-videos.md`;
-✅ = erledigt, ◐ = nur im Vereinsmodus belegt):
+**Weiterhin fehlen** (Stand nach `folge01` … `folge29` und `videos-roh-2`, `docs/referenz-videos.md`; ✅ = erledigt,
+◐ = nur teilweise belegt). `videos-roh-2` zeigt den Modus **Liga mit Weltkugel** (Bundestrainer neben dem Verein), nicht
+„nur Weltkugel“:
 
-- ✅ Spielvorbereitung mit den Modusknöpfen – `folge01_00000`–`00151`, `folge08_00000`–`00052` (außerdem „Die Oberfläche
-  von EM“ 2:13–2:30).
-- ◐ Infoleiste am Saisonbeginn – „Vor dem ersten Spieltag“ im Vereinsmodus `folge01_00221`; beim Bundestrainer offen.
-- ◐ Kachelreihen Statistiken, Tabellen und Paarungen – im Vereinsmodus mit gesperrten WM-Kacheln: Statistiken
-  `folge01_00526`, Tabellen `folge03_00018`, Paarungen `folge06_01251`; die Sperren im Modus „nur Weltkugel“ offen.
-- „Tabelle WM“ über die Tabellen-Kachel (nur die Gruppentabellen nach dem Spieltag) – offen (WM-Kachel überall gesperrt).
-- ✅ Die geöffneten Kacheln „Tabelle DEB-Pokal“ (Übersicht „DEB-Pokalspiele“, mit Ergebnissen z. B. `folge13_02545`,
-  Runden bis zum Endspiel) und „Tabelle Europapokal“ (Gruppen mit Ergebnissen und Endrunde `folge04_01241`–`01247`,
-  `folge20_02316`) – Vereinsmodus.
-- WM-Statistik – offen.
+- ✅ Spielvorbereitung mit den Modusknöpfen – `folge01_00000`–`00151`, `folge08_00000`–`00052`, `speedrun_t1_00056`
+  (außerdem „Die Oberfläche von EM“ 2:13–2:30).
+- ◐ Infoleiste am Saisonbeginn – „Vor dem ersten Spieltag“ im Vereinsmodus `folge01_00221`; Hauptmenü des Bundestrainers
+  am 14. April in Liga mit Weltkugel `eisbaeren_f24_00115`; im Modus „nur Weltkugel“ offen.
+- ◐ Kachelreihen Statistiken, Tabellen und Paarungen – Vereinsmodus mit gesperrten WM-Kacheln (`folge01_00526`,
+  `folge03_00018`, `folge06_01251`, `duell_s2a_01203`); Liga mit Weltkugel mit **offenen** WM-Kacheln: Tabellen/Paarungen
+  `eisbaeren_f01_01431`, Stärken `eisbaeren_f01_01430`, Statistiken `eisbaeren_f01_01011`; Sperren im Modus
+  „nur Weltkugel“ weiter nur aus der Reihe `bundestrainer`.
+- ◐ „Tabelle WM“ – Gruppentabellen nach dem Spieltag vielfach (`eisbaeren_f35_00531`); ob über die Tabellen-Kachel
+  geöffnet, ist im Kapitelindex nicht unterschieden.
+- ✅ Die geöffneten Kacheln „Tabelle DEB-Pokal“ (Übersicht „DEB-Pokalspiele“, z. B. `folge13_02545`, `duell_s2a_01217`,
+  Endspiel `eisbaeren_f60_02758`) und „Tabelle Europapokal“ (`folge04_01241`–`01247`, `eisbaeren_f51_03346`,
+  Endrunde `eisbaeren_f58_01323`).
+- ✅ WM-Statistik – `eisbaeren_f07_03843`, `eisbaeren_f56_01126`.
+- ✅ WM-Endrunde (K.-o.-Ansicht „WM-Endrundenspiele“) – `eisbaeren_f35_00646`, `eisbaeren_f44_01330`.
 - Saisonende im Modus „nur Weltkugel“ – offen (Saisonende im Vereinsmodus vielfach, z. B. `folge03_01807`).
-- Torszenen – offen (auch in der Reihe nicht zu sehen).
+- ✅ Torszenen – `eisbaeren_f01_01149`–`01234`, `duell_s2b_00503`, `duell_s4c_02052`; Schalter in den Einstellungen
+  `speedrun_t2_04024`.
+- Highscore am Spielende – offen (in keinem Video).
 
 Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien
 Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Bildschirm „Paarungen Liga“: seit Spur
