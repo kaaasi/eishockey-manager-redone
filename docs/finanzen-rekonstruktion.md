@@ -309,3 +309,41 @@ Spielergebnisse, Auslosungen, Titel oder Vertragsentscheidungen verschieben sich
 | Originaldaten passiv/aktiv (Verein 42) | FinanceRandom und Konto im ersten Schritt (Tag 3) | wie oben; das Heimspiel an Tag 3 zieht für die Zuschauer aus dem verschobenen FinanceRandom (Einnahme −880 DM) |
 | Modus 4 (`GameModeTests`, Vereine 2 und 30) | nur Kontostände beider Manager | wie oben; Titel, `R…` und `C…` unverändert |
 
+## Heimspiel-Statistik (Runde 6, Spur `heimspiel-statistik`, #136)
+
+Geprüft an `em.exe` (`ndisasm`); Overlay der Spielabrechnung ab Datei `0x51E90` (Einsprung `0x93` = `0x544C0`,
+aufgerufen vom Spieltagsablauf `0x36B5D` über `0x36DBD`/`0x36F9C`).
+
+**Zuschauerstatistik** (`0x54664–0x54760`, Managerfelder als DGROUP-Offset bei Manager 0): Verlauf `[0x9759 + n]` =
+Zuschauer/1000 (Byte), Summe `[0x97DE]`, Rekord `[0x97E2]` mit Gegner `[0x976F]` (übernommen bei Rekord ≤ Zuschauer),
+Minuskulisse `[0x97E6]` mit Gegner `[0x9770]` (bei Minuskulisse ≥ Zuschauer), Zähler `[0x9748]`. Nur **Ligaspiele**:
+Pokale, Play-Off-/Aufstiegsrunden und WM übergeben dem Spieltagsablauf eine Teilnehmerzahl, dann springt `0x54658` an
+der Statistik vorbei; der Eintritt wird vorher (`0x5464A`) immer gebucht. Saisonwechsel `0x55A86–0x55ADB`: Rekord,
+Summe, Zähler 0, Minuskulisse 99.999 (`0x1869F`, auch Spielstart `0x29C2F`); die Gegner bleiben stehen. Anzeige
+„Schnitt“ `0x2DB79` = Summe / Zähler. Remake: `StadiumStatistics` (`ManagerFinance.HomeStatistics`), Schema 7 → 8
+(`SaveGame.Migration7.cs`; in der Integration Runde 6 umnummeriert, weil `finanzen-werbung` 6 → 7 belegt).
+
+**Spielbedeutung** (`0x545CD–0x54601`): x = [Code 6] + 2·[Code 3] + [Code 1] mit dem Wettbewerbscode DGROUP `0xD0C2`.
+Zuordnung der Schreibstellen: Code 7 Ligaspieltag (`0x35EC4`, Teilnehmerzahl 0), Code 6 DEB-Pokal (`0x35E7C`, Schalter
+DEB-Pokal `0x227`), Code 1 Play-Off-/Aufstiegsrunden (`0x31AB7`, Gruppen aus DGROUP `0xCF20`, Zähler `0x7B0`),
+Code 3 Europapokal-Gruppen und Code 5 Endrunde (`0x31490`/`0x3149B`: +2 bei Termin `[0x7AF]` > 5), Code 8/10 WM
+(`0x30F53`/`0x31017`). Ergebnis: DEB-Pokal 1, Play-Off/Aufstieg 1, Europapokal-Gruppen 2, **Europapokal-Endrunde 0**
+(vorher 2, behoben), Liga und WM 0.
+
+**Karriere-Video** (Abnahme 2, ESC Wolfsburg Saison 1: Schnitt 3.049, Minuskulisse 1.046, Rekord 4.500): Ein passiver
+Lauf mit Originaldaten (11 DM, Level 3, acht Seeds) ergibt 22 Ligaheimspiele, Rekord bis 4.500 (ausverkauft) und
+Minuskulissen 240–1.700, aber einen Schnitt von 1.400–2.800. Der Video-Manager spielt aktiv (Aufstiegssaison, stärkere
+Mannschaft); die Nachfrage hängt an Stärke und Tabellenplatz. Kein Hinweis auf einen Fehler der Statistik; die Höhe
+der Nachfrage bleibt eine Frage der Formel (`SpectatorRules`) und der Spielstärke, nicht dieser Spur.
+
+**Weniger als neun Spieler** (`0x54420`, Prüfungen `0x54589` Heim / `0x547AA` Gast): Der Managerwert `[0x974B]` wird
+in `0x952C` auf 100 gesetzt, wenn weniger als neun Kaderplätze aufgestellt und eingesetzt sind (`0x9698`, Zählung
+`0x388F6`). Dann: Meldung „Weniger als neun Spieler!“ (DGROUP `0x54E9`), Konto − 200.000 DM (`0x5448D`: 0x30D40 · 3),
+keine Zuschauer, kein Eintritt, keine Statistik; das Spiel wird 0:2 bzw. 2:0 gewertet (`0x36DC5–0x36DE9`). Gilt für
+Heim- und Gastmannschaft eines Managers in allen Wettbewerben. Umsetzung im eigenen PR (siehe dort: Wirkung auf passive
+Manager, deren Kader mit den Startverträgen ausläuft).
+
+**Oberliga-Austausch** (Nebenbefund `0x562C6–0x562DE`): In der Saisonwende scheidet aus der dritten Gruppe (Oberliga)
+ein Verein aus; gehört er einem Manager (Vereinsfeld +0x16) ohne Statusbit 0x04, bekommt der Manager Statusbit 0x02
+und das Konto wird auf 1.200.000 Drittel = **400.000 DM** gesetzt. Belegt, aber im Remake nicht erreichbar: Dort
+verlassen Managervereine die Oberliga nie (`SeasonFlow.FinishClubSeason`, `[APPROX]`). Nicht umgesetzt; Folge-Issue.

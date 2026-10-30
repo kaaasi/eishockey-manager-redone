@@ -93,7 +93,7 @@ public sealed partial class GameState
     {
         AdvanceFinanceTo(Day);
         foreach (var result in results)
-            SettleHomeMatch(result.Home, result.Away, result.MatchDay);
+            SettleHomeMatch(result.Home, result.Away, result.MatchDay, leagueMatch: true);
     }
 
     /// <summary>
@@ -103,19 +103,11 @@ public sealed partial class GameState
     /// bestimmt; nach der Hauptrunde die Abschlusstabelle. <paramref name="importance"/> = Wettbewerbsbonus der
     /// Zuschauerformel (0 Liga, 1 DEB-Pokal und Play-Off/Aufstieg, 2 Europapokal).
     /// [ORIGINAL] em.exe 0x3F7DE: Konto += Zuschauer × Eintritt; eine Gastronomie-Einnahme gibt es im Original nicht.
+    /// Spur heimspiel-statistik: „Weniger als neun Spieler“ für beide Vereine und die Zuschauerstatistik der
+    /// Ligaheimspiele (<paramref name="leagueMatch"/>) in <see cref="SettleMatchGate"/>.
     /// </summary>
-    public void SettleHomeMatch(int home, int away, int tableMatchDay, int importance = 0)
-    {
-        foreach (var manager in Managers.Where(m => m.ClubIndex == home))
-        {
-            var finance = Finance(manager);
-            var stadium = finance.Stadium;
-            var spectators = Spectators(Clubs[home], Clubs[away], stadium, tableMatchDay, FinanceRandom, importance, manager.Level);
-            var tickets = (long)spectators * stadium.TicketPrice;
-            Book(manager, FinanceCategory.Eintritt, tickets);
-            finance.LastHomeGame = (spectators, tickets);
-        }
-    }
+    public void SettleHomeMatch(int home, int away, int tableMatchDay, int importance = 0, bool leagueMatch = false) =>
+        SettleMatchGate(home, away, tableMatchDay, importance, leagueMatch);
 
     /// <summary>Spiele der Play-Offs und Aufstiegsrunden eines Termins abrechnen (nach der Hauptrunde, Bonus 1).</summary>
     public void SettlePostseasonMatches(IEnumerable<(int Home, int Away)> matches)
