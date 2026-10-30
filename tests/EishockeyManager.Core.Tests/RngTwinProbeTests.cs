@@ -18,7 +18,9 @@ namespace EishockeyManager.Core.Tests;
 /// ersten fünf der 1. Liga, er wird am 13. April Bundestrainer; WM-Ergebnisse und Pokal-Zufallsquelle verschieben sich.
 /// Die synthetischen Abdrücke sind dort neu ermittelt (Gegenprobe ohne Ernennung: alte Werte unverändert).
 /// Spur finanzen-nachpruefung (Runde 5) ändert Zuschauerformel (em.exe 0x3F63C) und Saisonprämien (0x55CD3, 0x2723C);
-/// die Abdrücke sind mit dem unveränderten Generator neu ermittelt.
+/// die Abdrücke sind mit dem unveränderten Generator neu ermittelt. Ursache je Fall (FN-01, #139, Tabelle in
+/// docs/finanzen-rekonstruktion.md): synthetisch alle vier Europapokalsieg 1993 ohne Prämie (−100.000 DM); Originaldaten
+/// aktiv ein Zug weniger aus FinanceRandom bei der Zuschauerteilung.
 /// </summary>
 public class RngTwinProbeTests
 {

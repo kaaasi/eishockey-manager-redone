@@ -247,3 +247,19 @@ Training 0 DM (Trainingsbildschirm 0:04:00). Test: `MonthlyExpenses_Wolfsburg_Af
 `RngTwinProbeTests` (vier Wechsel, passiv und aktiv): Trainingsanteil, Ein-Saison-Stadion und Kontogrenze lassen alle
 Abdrücke unverändert (geprüft je Commit). Zuschauerformel und Prämien verschieben den Verlauf; fünf Abdrücke sind mit
 unverändertem Generator neu ermittelt, der passive Lauf mit Originaldaten bleibt gleich.
+
+**Ursache je geändertem Abdruck (FN-01, #139).** Ermittelt mit einer Probe, die die Mehrsaisonprobe auf den Codeständen
+`27fa1c4` (Base), `bcf0b0b` (Training, Ein-Saison-Stadion, Kontogrenze), `af1d24e` (Zuschauer, Eintritt) und `e3abc90`
+(Prämien) laufen lässt und den Zustand nach jedem Saisonende sowie nach jedem Schritt (`Continue`) samt Zufallsquellen
+vergleicht. Jeder Abdruck ändert sich in genau einem Schritt; `bcf0b0b` ändert keinen.
+
+| Fall | ändert sich mit | erste Zustandsdifferenz | Ursache |
+|---|---|---|---|
+| synthetisch passiv, Seed 3 | `e3abc90` | Saisonende 1993: Konto Manager 0 −100.000 DM, danach unverändert −100.000 DM; sonst kein Feld | Verein 2 ist 1993 Europapokalsieger (Bundesliga Platz 4); die Europapokalprämie entfällt (0x55D86) |
+| synthetisch aktiv, Seed 3 | `e3abc90` | wie passiv, Seed 3 | wie oben |
+| synthetisch passiv, Seed 11 | `e3abc90` | Saisonende 1993: Konto −100.000 DM, danach gleichbleibend | Verein 2 Europapokalsieger 1993 (Platz 3); Europapokalprämie entfällt |
+| synthetisch aktiv, Seed 11 | `e3abc90` | wie passiv, Seed 11 | wie oben |
+| Originaldaten aktiv (Verein 42) | `af1d24e` | Saison 1994, Tag 28: Heimspiel-Einnahme +1.620 DM; zugleich anderer Stand von `FinanceRandom` (einzige betroffene Zufallsquelle) | Teilung der Zuschauer durch random(2, 5) nur noch bei teuren Karten (0x3F63C): ein Zug aus `FinanceRandom` entfällt. Die Kontoabweichungen liegen unter der Untergrenze der Probe (10 Mio. DM) und sind an den Saisonenden ausgeglichen; im Abdruck bleibt nur der Stand von `FinanceRandom`. |
+
+Tabellen-, Meister- und Pokalprämie wirken in keinem der fünf Fälle (kein Hauptrunden-Erster, kein Meister, kein
+Pokalsieg des Probe-Vereins). Der passive Originaldatenfall bleibt gleich, weil dort keine Karte über der Schwelle liegt.
