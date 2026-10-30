@@ -44,16 +44,19 @@ namespace EishockeyManager.Core.Tests;
 /// FinanceRandom ab dem ersten Schritt (1993, Tag 3) und daraus die Kontostände (Zuschauer, Werbung): synthetisch Seed 3
 /// ab 1994 Tag 12, Seed 11 ab 1994 Tag 7 (vorher verdeckt die Kontountergrenze der Probe die Differenz), Originaldaten ab
 /// 1993 Tag 3. Titel unverändert.
+/// Danach (Entscheidung Nutzer, #188) rechnet die Börse erst nach dem Tagesabschluss aller Manager: Vergleich gegen
+/// 801c732 wie oben – wieder nur FinanceRandom (ab 1993 Tag 3) und Konten (synthetisch ab 1994 Tag 12 bzw. 7,
+/// Originaldaten ab 1993 Tag 10) verschoben.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "CB92D3CF77C5923B")]
-    [InlineData(true, 3, "4FA851664EF08963")]
-    [InlineData(false, 11, "CEE0C8AABA15736E")]
-    [InlineData(true, 11, "0714C8FBEAAD3501")]
+    [InlineData(false, 3, "846D463B02423F4A")]
+    [InlineData(true, 3, "6D4B9A6331F462D3")]
+    [InlineData(false, 11, "A6F8CEB952894F5E")]
+    [InlineData(true, 11, "A0AF0802333A8B32")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -61,8 +64,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "CA0BE0120A9848A2")]
-    [InlineData(true, "5A6FDDDEB59EC94A")]
+    [InlineData(false, "53593E5794E25EB9")]
+    [InlineData(true, "DD33816D93BB9252")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

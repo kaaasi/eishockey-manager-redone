@@ -288,4 +288,28 @@ public class BoerseStartTests
         loaded.AdvanceStocks();
         Assert.All(loaded.Stocks.Stocks, s => Assert.Equal(Stock.HistoryLength, s.History.Count));
     }
+
+    /// <summary>
+    /// Entscheidung Nutzer (#188): Die Börse rechnet einmal je Kalendertag nach dem Tagesabschluss des letzten Managers –
+    /// auch mit mehreren menschlichen Managern (das Original rechnet je Manager einen Börsentag, em.exe 0x3ED4A).
+    /// </summary>
+    [Fact]
+    public void TwoManagers_OneStockDayPerCalendarDay()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Eins", Head = 0, ClubIndex = 2 });
+        setup.Managers.Add(new ManagerSetup { Name = "Zwei", Head = 1, ClubIndex = 30 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 5);
+        Assert.Equal(2, game.Managers.Count);
+        foreach (var stock in game.Stocks.Stocks)
+        {
+            stock.History.Clear();
+            stock.History.AddRange(Enumerable.Repeat(-1, Stock.HistoryLength));
+        }
+        for (var days = 1; days <= 5; days++)
+        {
+            game.AdvanceFinanceTo(game.FinanceDay + 1);
+            Assert.All(game.Stocks.Stocks, s => Assert.Equal(Stock.HistoryLength - days, s.History.Count(p => p == -1)));
+        }
+    }
 }

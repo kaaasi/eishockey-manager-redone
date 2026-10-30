@@ -243,7 +243,7 @@ public class GameModeTests
     /// Kontostände und Zufallsstände. Gegenprobe ohne Kaderhalten: 1993/1994 gleich, Manager 0 ab 1995 entlassen.
     /// Spur boerse-start (#169, Kursmodell nach em.exe 0x5784A, anderer Verbrauch von FinanceRandom): Titel, Haupt- (R…) und
     /// Pokalquelle (C…) unverändert; nur die Kontostände beider Manager in allen fünf Saisons (Zuschauer und Werbung ziehen
-    /// aus FinanceRandom).
+    /// aus FinanceRandom). Mit der Börse nach dem Tagesabschluss aller Manager (#188) erneut nur die Kontostände.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -258,7 +258,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|2440757,729126|WorldChampion=63,CupWinner=25,GermanChampion=14,EuropeanCupWinner=0|4237777,797532|WorldChampion=57,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|4866580,733870|WorldChampion=63,CupWinner=24,GermanChampion=1,EuropeanCupWinner=0|5428479,583511|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=0|5404890,457228|R434870706 C1751408638";
+        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|2442603,727776|WorldChampion=63,CupWinner=25,GermanChampion=14,EuropeanCupWinner=0|4232798,779712|WorldChampion=57,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|4834470,729280|WorldChampion=63,CupWinner=24,GermanChampion=1,EuropeanCupWinner=0|5393613,586661|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=0|5376342,454268|R434870706 C1751408638";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

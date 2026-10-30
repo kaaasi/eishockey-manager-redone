@@ -123,7 +123,6 @@ public sealed partial class GameState
         {
             FinanceDay++;
             var date = SeasonCalendar.LayoutDate(FinanceDay);
-            AdvanceStocks();
             ExpireMessages();
             if (FinanceDay > 0)
             {
@@ -142,6 +141,10 @@ public sealed partial class GameState
                 MonthlyFinances();
             if (FinanceDay > 0)
                 DailySponsorRatings();
+            // Börsentag (em.exe 0x3ED4A, Tagesrechnung 0x5784A). Das Original rechnet ihn im Tagesabschluss jedes
+            // menschlichen Managers, also n-mal je Kalendertag. Entscheidung Nutzer (30.10.2026, #188): einmal je
+            // Kalendertag, nach dem Tagesabschluss des letzten Managers – kein Manager hat einen Vorteil.
+            AdvanceStocks();
         }
     }
 

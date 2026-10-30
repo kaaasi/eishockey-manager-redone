@@ -429,13 +429,14 @@ Bild zurückgerechnet, ±1 DM) gegen `folge01_00510`, mittlere Abweichung in Gra
 
 Rest in der unteren Hälfte: Logos, Schriftkanten und die Übersicht rechts (nicht Teil der Spur).
 
-**Offene Befunde (nicht umgesetzt, Entscheidung offen):**
+**Abweichungen und offene Befunde:**
 
 - Der Tagesabschluss `0x3ED01` (mit der Börsenrechnung `0x3ED4A`) läuft im Original **je menschlichem Manager** (Schleife
-  bis `[0x386]`, Aufrufe `0x5522B`, `0x5569A`, `0x56512`): mit zwei Managern rechnet die Börse zwei Tage pro Tag. Das
-  Remake rechnet einmal pro Tag (`GameState.AdvanceFinanceTo`).
+  bis `[0x386]`, Aufrufe `0x5522B`, `0x5569A`, `0x56512`): mit zwei Managern rechnet die Börse zwei Tage pro Tag.
+  **Entscheidung Nutzer (30.10.2026, #188):** Das Remake rechnet den Börsentag einmal je Kalendertag, nach dem
+  Tagesabschluss des letzten Managers (`GameState.AdvanceFinanceTo`), damit kein Manager einen Vorteil hat.
 - Überfahren einer Aktie setzt den Versatz sofort auf Kurs − 130 (`0x59C75`); das Remake lässt ihn wie im Video gesehen
   langsam laufen (`[APPROX]`).
 - Rechts neben dem Verlauf (x 240/241, y 104–236, `0x58DF6`–`0x58EC5`) liegt ein Regler für Ausschnitt und Maßstab
-  (Maßstab 2–64); im Remake nicht nachgebaut.
+  (Maßstab 2–64); im Remake nicht nachgebaut – eigenes Paket (Entscheidung Nutzer, 30.10.2026).
 - Die Basiswerte `0x1FD` sind vorbelegte Daten und werden bei „Neues Spiel“ ohne Programmneustart nicht zurückgesetzt.
