@@ -8,7 +8,7 @@
 # Release videos-roh-2: `eisbaeren_f01` … `eisbaeren_f65` (ohne f41), `duell_s2a` … `duell_s6d`, `speedrun_t1`/`_t2`;
 # Gruppen `eisbaeren` (ca. 1,3 GB), `duell` (ca. 0,3 GB), `speedrun` (ca. 0,1 GB).
 # `original` = DOS-Originaldateien (docs/originaldateien.md).
-# Ohne Angabe: oberflaeche und uebersicht. Die Bilder niemals in dieses Repo kopieren.
+# Ohne Angabe: oberflaeche und uebersicht. Ein veralteter vorhandener Klon wird nicht verändert (Rückgabe 3, Hinweis). Die Bilder niemals in dieses Repo kopieren.
 set -euo pipefail
 TARGET="${REFERENZ:-$HOME/referenz}"
 FOLDERS=("$@")
@@ -28,11 +28,10 @@ FOLDERS=("${EXPANDED[@]}")
 if [ ! -d "$TARGET/.git" ]; then
   git clone -q --depth 1 --filter=blob:none --sparse https://github.com/kaaasi/eishockey-manager-referenz "$TARGET"
 else
-  # Vorhandenen Klon auf den aktuellen Stand von main bringen (RV2-01, #140). Sicherungen (RV2N-01 #144, RV2N2-01 #147,
-  # RV2N2-02 #148): Ziel muss die Wurzel eines Klons sein, dessen origin genau das Referenz-Repo auf GitHub ist; die
-  # Arbeitskopie muss ganz sauber sein (auch keine unversionierten oder ignorierten Dateien). Kein Reset und keine
-  # Branch-Verschiebung: Git checkt den geholten Stand losgelöst aus und bricht selbst ab, falls dabei etwas
-  # überschrieben würde. Die Historie des Referenz-Repos wurde neu geschrieben, deshalb kein Fast-forward.
+  # Vorhandener Klon (RV2-01 #140, RV2N-01 #144, RV2N2-01 #147, RV2N2-02 #148, RV2N3-01 #151): Das Skript verändert
+  # dessen Arbeitsverzeichnis nie durch Aktualisieren. Es prüft nur, ob das Ziel die Wurzel eines Klons ist, dessen
+  # origin genau das Referenz-Repo auf GitHub ist, holt main nach .git und bricht ab, wenn der Klon nicht auf diesem
+  # Stand ist. Dann den Ordner selbst löschen (eigene Dateien darin vorher sichern) und das Skript erneut aufrufen.
   top="$(git -C "$TARGET" rev-parse --show-toplevel 2>/dev/null || true)"
   url="$(git -C "$TARGET" remote get-url origin 2>/dev/null || true)"
   case "$url" in
@@ -44,12 +43,14 @@ else
     echo "Abbruch: $TARGET ist kein Klon von https://github.com/kaaasi/eishockey-manager-referenz." >&2
     exit 2
   fi
-  if [ -n "$(git -C "$TARGET" status --porcelain --ignored)" ]; then
-    echo "Abbruch: $TARGET enthält lokale, unversionierte oder ignorierte Dateien; bitte sichern oder entfernen." >&2
-    exit 2
-  fi
   git -C "$TARGET" fetch -q --depth 1 --filter=blob:none origin main
-  git -C "$TARGET" checkout -q --detach FETCH_HEAD
+  have="$(git -C "$TARGET" rev-parse HEAD)"
+  want="$(git -C "$TARGET" rev-parse FETCH_HEAD)"
+  if [ "$have" != "$want" ]; then
+    echo "Abbruch: $TARGET steht auf ${have:0:7}, das Referenz-Repo auf ${want:0:7}. Ordner löschen (eigene Dateien" \
+      "darin vorher sichern) und erneut aufrufen; das Skript klont dann neu." >&2
+    exit 3
+  fi
 fi
 git -C "$TARGET" sparse-checkout add "${FOLDERS[@]}"
 missing=0
