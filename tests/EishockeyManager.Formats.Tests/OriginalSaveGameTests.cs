@@ -68,6 +68,56 @@ public class OriginalSaveGameTests
             Assert.Equal((byte)(tail[i - 1] - 0x52), tail[i]);
     }
 
+    /// <summary>Kaderplatz und Pool-Spieler wie an FILE05 belegt (Werte von „MENDE“ bzw. „KÜNAST“ nachgebildet).</summary>
+    [Fact]
+    public void Squad_ReadsSlotAndPoolFields()
+    {
+        var file = Build(blocks =>
+        {
+            var pool = blocks["far:8253"];
+            "MENDE"u8.CopyTo(pool.AsSpan(27 * 33));
+            pool[27 * 33 + 0x12] = 1;
+            pool[27 * 33 + 0x14] = 27;
+            pool[27 * 33 + 0x18] = 40;
+            "K]NAST"u8.CopyTo(pool.AsSpan(1 * 33));
+
+            var squad = blocks["5DC3"];
+            var slot = squad.AsSpan(7 * 0x34, 0x34);
+            slot[0x0A] = 1;
+            slot[0x0B] = 2;
+            slot[0x0F] = 27;
+            slot[0x10] = 80; slot[0x11] = 82; slot[0x12] = 60;
+            slot[0x15] = 0x01;
+            slot[0x06] = 3;
+            slot[0x1C] = 3;
+            slot[0x22] = 1;
+            BitConverter.GetBytes(12_100 * 3).CopyTo(slot[0x28..]);
+            BitConverter.GetBytes(305_000 * 3).CopyTo(slot[0x2C..]);
+
+            var market = squad.AsSpan(4 * 0x618, 0x34);
+            market[0x0F] = 1;
+            market[0x15] = 0x83;
+            BitConverter.GetBytes(435_000 * 3).CopyTo(market[0x2C..]);
+        }, key: 0x42);
+
+        var save = OriginalSaveGame.Read(file);
+
+        var player = Assert.Single(save.Squad(0));
+        Assert.Equal((7, 27, "MENDE"), (player.Slot, player.PoolIndex, player.Name));
+        Assert.Equal((80, 82, 60), (player.Strength1, player.Strength2, player.Strength3));
+        Assert.Equal((27, 1, 40), (player.Age, player.Talent, player.RoleValue));
+        Assert.True(player.Dressed);
+        Assert.Equal(2, player.ContractYears);
+        Assert.Equal((1, false), (player.Line, player.Forward));
+        Assert.Equal((3, 3, 1), (player.Games, player.ClubGames, player.Goals));
+        Assert.Equal((12_100 * 3, 305_000 * 3), (player.SalaryThirds, player.PriceThirds));
+
+        var offer = Assert.Single(save.Squad(4));
+        Assert.Equal("KÜNAST", offer.Name);
+        Assert.Equal((3, true, false), (offer.Line, offer.Forward, offer.Dressed));
+        Assert.Equal(435_000 * 3, offer.PriceThirds);
+    }
+
     [Fact]
     public void Read_ReportsWrongChecksum()
     {
