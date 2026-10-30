@@ -69,8 +69,9 @@ public static class MenuLamps
     }
 
     /// <summary>
-    /// Freie Werbefläche: sieben Banden, Trikot, Fernsehen; die Eisfläche nur mit Halle oder Megafrost.
-    /// [APPROX] Das Remake führt die Eisfläche als eine Fläche (zwei Tafeln) statt zwei getrennter Flächen (#133).
+    /// Freie Werbefläche: sieben Banden, Trikot, Fernsehen und jede freigegebene Eistafel.
+    /// [ORIGINAL] em.exe Datei 0x42C09–0x42C1E (Fläche 9 nur mit Überdachung HALLE) und 0x42C20–0x42C35 (Fläche 10 nur
+    /// mit Kühlanlage MEGAFROST) – jede Tafel mit eigener Freigabe und eigenem Vertrag (Review-Befund R6-R01).
     /// </summary>
     private static bool FreeAdSpace(ManagerFinance finance)
     {
@@ -80,8 +81,9 @@ public static class MenuLamps
         if (ads.ContractAt(new AdSlot(AdSlotKind.Trikot)) is null || ads.ContractAt(new AdSlot(AdSlotKind.Fernsehen)) is null)
             return true;
         var stadium = finance.Stadium;
-        var iceOffered = stadium.Level(StadiumFeature.Ueberdachung) == 2 || stadium.Level(StadiumFeature.Kuehlanlage) == 2;
-        return iceOffered && ads.ContractAt(new AdSlot(AdSlotKind.Eisflaeche)) is null;
+        if (stadium.Level(StadiumFeature.Ueberdachung) == 2 && ads.ContractAt(new AdSlot(AdSlotKind.Eisflaeche)) is null)
+            return true;
+        return stadium.Level(StadiumFeature.Kuehlanlage) == 2 && ads.ContractAt(new AdSlot(AdSlotKind.Eisflaeche2)) is null;
     }
 
     /// <summary>Depotwert zum Kurs; ohne Aktien 0, ohne die Börse anzulegen (Bildschirme ändern keinen Zustand).</summary>

@@ -139,6 +139,10 @@ eigener PR mit Option (a).
 - Mehrsaison-Abdrücke: die von `finanzen-werbung` begründet geänderten Abdrücke bleiben nach dem Zusammenführen mit
   `heimspiel-statistik` unverändert grün; keine weitere Änderung.
 - Übrige Berührungen (`docs/arbeitspakete.md`, `docs/wettbewerbe.md`, `RngTwinProbeTests.cs`, `HotSeatUiTests.cs`) ohne Konflikt.
+- **Review** (`docs/reviews/2026-10-30-integration-runde-6.md`, Head `280ceff`): Befund **R6-R01** (#173, P2) – Lampe 4
+  (pixel-verein) kannte nur eine Eistafel, seit #133 (finanzen-werbung) gibt es zwei. Behoben: jede Tafel mit eigener
+  Freigabe und eigenem Vertrag (em.exe 0x42C09–0x42C35), Regressionstests `IntegrationRunde6AdLampTests` (zwei rot vorher).
+  Nachprüfung des Deltas ausstehend.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
