@@ -28,21 +28,28 @@ FOLDERS=("${EXPANDED[@]}")
 if [ ! -d "$TARGET/.git" ]; then
   git clone -q --depth 1 --filter=blob:none --sparse https://github.com/kaaasi/eishockey-manager-referenz "$TARGET"
 else
-  # Vorhandenen Klon auf den aktuellen Stand von main bringen (RV2-01, #140). Die Historie des Referenz-Repos wurde
-  # am 30.10.2026 neu geschrieben, daher kein Fast-forward, sondern hart auf den geholten Stand – aber nur, wenn das
-  # Ziel sicher der Referenz-Klon ist und keine lokalen Änderungen hat (RV2N-01, #144).
+  # Vorhandenen Klon auf den aktuellen Stand von main bringen (RV2-01, #140). Sicherungen (RV2N-01 #144, RV2N2-01 #147,
+  # RV2N2-02 #148): Ziel muss die Wurzel eines Klons sein, dessen origin genau das Referenz-Repo auf GitHub ist; die
+  # Arbeitskopie muss ganz sauber sein (auch keine unversionierten oder ignorierten Dateien). Kein Reset und keine
+  # Branch-Verschiebung: Git checkt den geholten Stand losgelöst aus und bricht selbst ab, falls dabei etwas
+  # überschrieben würde. Die Historie des Referenz-Repos wurde neu geschrieben, deshalb kein Fast-forward.
   top="$(git -C "$TARGET" rev-parse --show-toplevel 2>/dev/null || true)"
   url="$(git -C "$TARGET" remote get-url origin 2>/dev/null || true)"
-  if [ "$top" != "$(cd "$TARGET" && pwd -P)" ] || [[ ! "$url" =~ kaaasi/eishockey-manager-referenz(\.git)?/?$ ]]; then
-    echo "Abbruch: $TARGET ist kein Klon von kaaasi/eishockey-manager-referenz (origin: ${url:-keiner})." >&2
+  case "$url" in
+    https://github.com/kaaasi/eishockey-manager-referenz|https://github.com/kaaasi/eishockey-manager-referenz.git|\
+    git@github.com:kaaasi/eishockey-manager-referenz.git) ;;
+    *) url="" ;;
+  esac
+  if [ -z "$url" ] || [ "$top" != "$(cd "$TARGET" && pwd -P)" ]; then
+    echo "Abbruch: $TARGET ist kein Klon von https://github.com/kaaasi/eishockey-manager-referenz." >&2
     exit 2
   fi
-  if [ -n "$(git -C "$TARGET" status --porcelain --untracked-files=no)" ]; then
-    echo "Abbruch: $TARGET hat lokale Änderungen; bitte sichern oder verwerfen, dann erneut aufrufen." >&2
+  if [ -n "$(git -C "$TARGET" status --porcelain --ignored)" ]; then
+    echo "Abbruch: $TARGET enthält lokale, unversionierte oder ignorierte Dateien; bitte sichern oder entfernen." >&2
     exit 2
   fi
   git -C "$TARGET" fetch -q --depth 1 --filter=blob:none origin main
-  git -C "$TARGET" reset -q --hard FETCH_HEAD
+  git -C "$TARGET" checkout -q --detach FETCH_HEAD
 fi
 git -C "$TARGET" sparse-checkout add "${FOLDERS[@]}"
 missing=0
