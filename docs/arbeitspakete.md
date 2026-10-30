@@ -118,6 +118,28 @@ fortlaufend (wie Runde 5, Migration 4 → 5 → 6).
 - **Modell:** Claude Opus 5.5.
 - **Status:** PR #164 zum Review (Claude Code): PV-01 bis PV-04 behoben, Vermessung in `docs/anforderungen/bildschirme.md`; offen #168, #169, #170.
 
+### Integration Runde 6 (30.10.2026)
+
+Branch `integration/runde-6` von `main` `f0938fa`, Leitstelle Claude Code. Zusammengeführt: #160 (`saisonende-status`,
+Head `d30e5df`), #162 (`pixel-wettbewerbe`, `62c66e7`), #164 (`pixel-verein`, `d4e4cbf`), #163 (`finanzen-werbung`,
+`5c75108`), #161 (`heimspiel-statistik` Teil 1, `13766c0`). **Nicht enthalten** (Entscheidung Nutzer, 30.10.2026): #167
+(„Weniger als neun Spieler“, Draft; trifft passive Manager, 14 Tests anderer Spuren) – folgt nach der Runde als
+eigener PR mit Option (a).
+
+- Konflikt #163 × #161: beide reichten Migration 6 → 7 als `SaveGame.Migration6.cs` ein. Gelöst: `finanzen-werbung`
+  bleibt 6 → 7, `heimspiel-statistik` wird 7 → 8 (`SaveGame.Migration7.cs`), `SchemaVersion` = 8, Schemaabdruck
+  nachgeführt, Tabelle in `docs/formate/spielstand.md`.
+- **Integrationsbefund R6-01:** Schema 7 gibt es in zwei Formen. Ein Schema-7-Stand aus der Spur `heimspiel-statistik`
+  (Statistik, keine Werbebewertung) ließ sich nach der Umnummerierung nicht laden („Feld SignedRating in
+  SponsorContract fehlt“). Behoben wie R5-01: fehlt `SponsorRating`, holt 7 → 8 zuerst 6 → 7 nach.
+  Regressionstest `IntegrationRunde6MigrationTests` (rot ohne Nachholen, auch echte Kette 6 → 7 → 8).
+- Zusammenspiel (`IntegrationRunde6Tests`, Originaldaten): zwei Saisons Modus 4 über die Oberfläche – Zuschauerstatistik
+  füllt sich und beginnt nach dem Saisonwechsel neu, Werbebewertung in 0–100, Statusbit 0x40 = Bundesliga-Top-5,
+  Werbung/Finanzen zustandsrein, Sichern/Laden an jedem Saisonende bytegleich.
+- Mehrsaison-Abdrücke: die von `finanzen-werbung` begründet geänderten Abdrücke bleiben nach dem Zusammenführen mit
+  `heimspiel-statistik` unverändert grün; keine weitere Änderung.
+- Übrige Berührungen (`docs/arbeitspakete.md`, `docs/wettbewerbe.md`, `RngTwinProbeTests.cs`, `HotSeatUiTests.cs`) ohne Konflikt.
+
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - Einzelprämien Topscorer, bester Torhüter, Fair-Play (#135), Statistiken Spieler, Verein, Fairplay, WM-Statistik:
@@ -125,6 +147,7 @@ fortlaufend (wie Runde 5, Migration 4 → 5 → 6).
 - `hok-format` (Original-Spielstände `*.HOK`: Import, Export per Vorlage): wartet auf Original-Spielstände des Nutzers
   (`original/spielstaende/` im Referenz-Repo).
 - Highscore am Spielende, Saisonende im Modus „nur Weltkugel“: in keinem Video (Kandidat für `hok-format`).
+- #167 (`heimspiel-statistik` Teil 2, weniger als neun Spieler): nach Runde 6 mit Option (a), passive Proben nachführen.
 - Inaktive Branches `paket/speichern-ids`, `paket/wettbewerbe-weltkugel-2` (ohne PR): Löschen nur nach Entscheidung des Nutzers.
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
