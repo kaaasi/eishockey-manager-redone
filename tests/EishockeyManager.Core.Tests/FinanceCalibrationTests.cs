@@ -173,6 +173,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 var maxRoster = roster;
                 var minRoster = roster;
                 long maxContracts = game.Ads(manager).MonthlyIncome;
+                var seasonLowest = manager.Money;
                 for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
                 {
                     Assert.True(guard < 1000, "Saisonende nicht erreicht");
@@ -207,6 +208,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     maxTickets += (homeGames - settledHomeGames) * (long)capacity * price;
                     settledHomeGames = homeGames;
                     lowest = Math.Min(lowest, manager.Money);
+                    seasonLowest = Math.Min(seasonLowest, manager.Money);
                     highest = Math.Max(highest, manager.Money);
                 }
                 Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
@@ -231,11 +233,15 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     Assert.True(sponsors >= minSponsors, $"Sponsoren {sponsors} unter {minSponsors}");
                     Assert.Equal(-MonthEnds * fixedPerMonth, finance.Current(FinanceCategory.Unterhalt));
                     Assert.Equal(-MonthEnds * wagesPerMonth, finance.Current(FinanceCategory.Gehaelter));
-                    foreach (var category in Enum.GetValues<FinanceCategory>().Except(bounded))
+                    // Spur heimspiel-statistik (#136): Mit gehaltenem Kader rutscht der passive Oberligist ab Saison 3 ins Minus;
+                    // dann fallen Überziehungszinsen an (0x3ED4F: 10 % des negativen Kontos je Monat, höchstens zwölf Monate).
+                    var interest = finance.Current(FinanceCategory.Zinsen);
+                    Assert.InRange(interest, seasonLowest < 0 ? 12 * (seasonLowest / 10 - 1) : 0, 0);
+                    foreach (var category in Enum.GetValues<FinanceCategory>().Except(bounded).Except([FinanceCategory.Zinsen]))
                         Assert.True(finance.Current(category) == 0, $"{category} = {finance.Current(category)} beim passiven Manager");
                     // Kontokorridor der Saison aus den Spannen oben.
                     var fixedCosts = MonthEnds * (fixedPerMonth + wagesPerMonth);
-                    Assert.InRange(total, minTickets + minSponsors - fixedCosts, maxTickets + maxSponsors + PossiblePremiums.Max() - fixedCosts);
+                    Assert.InRange(total - interest, minTickets + minSponsors - fixedCosts, maxTickets + maxSponsors + PossiblePremiums.Max() - fixedCosts);
                 }
                 else
                 {
@@ -246,6 +252,11 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 }
 
                 cumulative += total;
+                // Spur heimspiel-statistik (#136): Der passive Manager verlängert die angebotenen Verträge erst nach dem
+                // letzten Monatsabschluss (Gehälter der Saison bleiben fest), sonst ist sein Kader ab Saison 3 leer und
+                // „Weniger als neun Spieler“ (200.000 DM je Spiel) führt zur Entlassung.
+                if (!active)
+                    TestSeason.KeepSquad(game, manager);
                 game.StartNextSeason();
                 Assert.Equal(1994 + year, game.Season);
                 Assert.Equal(0, finance.CurrentTotal);

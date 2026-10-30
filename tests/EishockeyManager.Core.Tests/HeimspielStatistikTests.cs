@@ -119,6 +119,23 @@ public class HeimspielStatistikTests
     }
 
     [Fact]
+    public void ShortHanded_DismissedManager_PaysNoPenalty()
+    {
+        // [APPROX] Ein entlassener Manager führt den Verein nicht mehr: keine Meldung, kein Abzug (sonst zahlt er nach der
+        // Entlassung je Spiel weiter, Mehrsaisonprobe Modus 4). Eintritt wie bisher.
+        var (game, me, club) = Game();
+        KeepInLineup(club, 8);
+        me.Dismissed = true;
+        var before = me.Money;
+        game.SettleHomeMatch(club.Index + 1, club.Index, 1);
+        game.SettleHomeMatch(club.Index, club.Index + 1, 1);
+
+        Assert.True(me.Money >= before);
+        Assert.Equal(0, game.Finance(me).Book.Current(FinanceCategory.Strafen));
+        Assert.DoesNotContain(game.Inbox(me), m => m.Lines.Contains("Weniger als neun Spieler!"));
+    }
+
+    [Fact]
     public void NinePlayers_AreEnough_InjuredDoNotCount()
     {
         var (game, me, club) = Game();

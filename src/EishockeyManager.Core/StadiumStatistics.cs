@@ -122,6 +122,8 @@ public sealed partial class GameState
     /// [APPROX] Die Meldung kommt in den Posteingang statt als Fenster, der Abzug steht im Finanzbuch unter „Strafen“
     /// (das Original zieht ihn ohne Buchungsart vom Konto ab). Die Spielwertung 0:2 bzw. 2:0 des Originals (Datei
     /// 0x36DC5–0x36DE9) gehört zur Spielberechnung und fehlt hier (Folge-Issue).
+    /// [APPROX] Entlassene Manager (<see cref="Manager.Dismissed"/>, Entlassung selbst ist [APPROX]) prüft die Abrechnung
+    /// nicht mehr: Sie führen keinen Verein, zahlen also keine Strafe; Eintritt wie bisher.
     /// </summary>
     internal void SettleMatchGate(int home, int away, int tableMatchDay, int importance, bool leagueMatch)
     {
@@ -129,7 +131,7 @@ public sealed partial class GameState
         {
             if (manager.ClubIndex == home)
             {
-                if (IsShortHanded(Clubs[home]))
+                if (!manager.Dismissed && IsShortHanded(Clubs[home]))
                 {
                     PenalizeShortHanded(manager);
                     return;
@@ -143,7 +145,7 @@ public sealed partial class GameState
                 if (leagueMatch)
                     finance.HomeStatistics.Add(spectators, away);
             }
-            if (manager.ClubIndex == away && IsShortHanded(Clubs[away]))
+            if (manager.ClubIndex == away && !manager.Dismissed && IsShortHanded(Clubs[away]))
             {
                 PenalizeShortHanded(manager);
                 return;
