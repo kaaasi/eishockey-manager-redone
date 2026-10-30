@@ -64,4 +64,58 @@ public class PixelWettbewerbeTests
         CompetitionWidgets.Centered(d.Surface, d.Host.Assets.Mini, 15, 183, y + 46, "BUNDESLIGA GEGEN BUNDESLIGA:", Colors.White, Colors.Black);
         Assert.Equal(before, d.Surface.Pixels);
     }
+
+    /// <summary>Gruppe a–d (Vereine 64–67) mit den angegebenen Spielen; Ergebnisse „links:rechts“ wie im Video.</summary>
+    private static (ScreenDriver Driver, CupGroup Group) EuropeanGroup(params (int Round, int Leg, int Left, int Right)[] games)
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var group = new CupGroup(1, [64, 65, 66, 67]);
+        var dates = SeasonCalendar.DaysOf(DayEvents.EuropeanCup);
+        foreach (var (round, leg, left, right) in games)
+        {
+            var (home, away) = group.Pairings(round)[0];
+            group.Results.Add(leg == 0
+                ? new KnockoutMatch(dates[round], home, away, left, right)
+                : new KnockoutMatch(dates[round + 3], away, home, right, left));
+        }
+        d.Host.Show(new EuropeanCupScreen(d.Host, new Screens.MainMenuScreen(d.Host), 0, group));
+        d.Frame();
+        return (d, group);
+    }
+
+    /// <summary>
+    /// Befund PW-03: Ergebnisse stehen im Original wie die Paarung „links:rechts“ – auch das Rückspiel, in dem der rechte Verein
+    /// Heimrecht hat (folge04_01241: Chamonix – Dynamo „5: 6  2: 6“, Dynamo mit 12:0 Punkten; ebenso eisbaeren_f58_01323) – und mit
+    /// zweistelligen Zahlen wie die Tabelle („5: 6“, Ziffer bei x = 230 bzw. 276). Vorher: Rückspiel „Heim:Gast“, ohne Auffüllen.
+    /// </summary>
+    private static string Result(int left, int right) => CompetitionWidgets.Number(left, 2) + ":" + CompetitionWidgets.Number(right, 2);
+
+    [GameDataFact]
+    public void EuropeanCup_ResultsLeftToRight_Padded()
+    {
+        var (d, _) = EuropeanGroup((0, 0, 5, 6), (0, 1, 2, 6));
+        var before = d.Surface.Pixels.ToArray();
+        var mini = d.Host.Assets.Mini;
+        CompetitionWidgets.Left(d.Surface, mini, 226, EuropeanCupScreen.PairingBaseline, Result(5, 6), Colors.TileBackground);
+        CompetitionWidgets.Left(d.Surface, mini, 272, EuropeanCupScreen.PairingBaseline, Result(2, 6), 1);
+        Assert.Equal(before, d.Surface.Pixels);
+    }
+
+    /// <summary>
+    /// Befund PW-04: Sobald in der Gruppe gespielt wurde, zeigt das Original keine Termine mehr, auch nicht für noch offene Rückspiele
+    /// (eisbaeren_f51_03346 nach den drei Hinspielen, eisbaeren_f58_01323 nach vier Terminen); vorher stand das Datum des Rückspiels.
+    /// </summary>
+    [GameDataFact]
+    public void EuropeanCup_NoDatesOnceGroupHasResults()
+    {
+        var (d, _) = EuropeanGroup((0, 0, 4, 3), (1, 0, 1, 1), (2, 0, 3, 3));
+        for (var round = 0; round < 3; round++)
+        {
+            var y = EuropeanCupScreen.PairingBaseline + 26 * round;
+            for (var x = 268; x < 310; x++)
+                for (var py = y - 6; py <= y; py++)
+                    Assert.NotEqual((byte)1, d.Surface.Pixels[py * Surface.Width + x]);
+        }
+    }
 }

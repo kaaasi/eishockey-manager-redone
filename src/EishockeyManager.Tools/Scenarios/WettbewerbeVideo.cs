@@ -184,4 +184,62 @@ internal static class WettbewerbeVideo
             "KREFELDER EV|2|77|AUGSBURGER EV|8|70|2:2", "ESC FRANKFURT|10|63|PREUSSEN BERLIN|7|70|5:4",
             "ECD SAUERLAND|11|65|TSV ERDING|9|68|5:3", "ETC TIMMENDORF|12|65|EISB|3|83|1:2"), "EISB");
     }
+    /// <summary>
+    /// Gruppe a–d mit Ergebnissen je Runde „a-b|c-d“ als „l:r/l:r“ (Hin-/Rückspiel aus Sicht der Paarung, leer = nicht gespielt);
+    /// die Reihenfolge der Vereine ergibt sich aus der ersten Runde („abcd“).
+    /// </summary>
+    private static CupGroup EuropeanGroup(GameState game, int number, int firstDate, string[] teams, params string[] results)
+    {
+        var group = new CupGroup(number, teams.Select(t => Club(game, t)).ToList());
+        var dates = SeasonCalendar.DaysOf(DayEvents.EuropeanCup);
+        for (var round = 0; round < 3; round++)
+        {
+            var pairs = group.Pairings(round);
+            var legs = results[round].Split('|');
+            for (var p = 0; p < 2; p++)
+            {
+                var (home, away) = pairs[p];
+                var scores = legs[p].Split('/');
+                for (var leg = 0; leg < scores.Length; leg++)
+                {
+                    var g = scores[leg].Split(':').Select(int.Parse).ToArray();
+                    group.Results.Add(leg == 0
+                        ? new KnockoutMatch(dates[firstDate + round], home, away, g[0], g[1])
+                        : new KnockoutMatch(dates[firstDate + round + 3], away, home, g[1], g[0]));
+                }
+            }
+        }
+        return group;
+    }
+
+    [Scenario("pixel-europapokal")]
+    private static void European(ScreenDriver d)
+    {
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var back = new MainMenuScreen(d.Host);
+        void Show(string name, int view, CupGroup group)
+        {
+            d.Host.Show(new EuropeanCupScreen(d.Host, back, view, group));
+            d.Move(0, 239); d.Save(name);
+        }
+        const int final = EuropeanCup.GroupDates;
+
+        // folge04: alle Spiele gespielt (Manager Berliner SC, kein Teilnehmer)
+        Show("folge04_01241", 0, EuropeanGroup(game, 1, 0, ["CHAMONIX", "DYNAMO MOSKAU", "AESSAT PORI", "ZSKA MOSKAU"],
+            "5:6/2:6|3:2/3:2", "5:3/5:4|4:3/6:3", "3:4/3:6|5:3/4:3"));
+        Show("folge04_01245", 1, EuropeanGroup(game, 2, 0, ["METALLURG PERMIK", "PREUSSEN BERLIN", "SPARTAK MOSKAU", "HC ROUEN"],
+            "1:3/1:8|4:2/5:4", "6:2/3:0|4:2/2:1", "0:6/1:5|5:3/4:1"));
+        var endrunde = EuropeanGroup(game, 3, final, ["DYNAMO MOSKAU", "AESSAT PORI", "PREUSSEN BERLIN", "SPARTAK MOSKAU"],
+            "5:2/3:0|4:7/6:4", "4:2/5:0|0:4/2:4", "1:2/2:5|0:5/3:4");
+        Show("folge04_01243", 2, endrunde);
+        Show("folge04_01247", 2, endrunde);
+
+        // Eisbären Berlin als Manager-Verein (gelb)
+        game.Managers[0].ClubIndex = Club(game, "EISB");
+        Show("eisbaeren_f51_03346", 1, EuropeanGroup(game, 2, 0, ["JOKERIT HELSINKI", "AMBRI-PIOTTA", "EISB", "IFK HELSINKI"],
+            "4:3|6:2", "1:1|1:3", "3:3|2:2"));
+        Show("eisbaeren_f58_01323", 2, EuropeanGroup(game, 3, final, ["EISB", "VITKOVICE", "KOSICE", "DUKLA TRENCIN"],
+            "3:2/2:0|3:4/0:5", "3:2|4:3", "3:0|6:3"));
+    }
 }
