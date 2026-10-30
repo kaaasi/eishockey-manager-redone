@@ -60,7 +60,11 @@ public sealed partial class GameState
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>
-    partial void OnNewSeasonManager() => StartFinanceSeason();
+    partial void OnNewSeasonManager()
+    {
+        StartFinanceSeason();
+        StartStadiumStatisticsSeason(); // Spur heimspiel-statistik (0x55A86)
+    }
 
     /// <summary>
     /// Neue Saison: Kader, Stammverträge, Leihende, Aufstellungen und Markt gemeinsam umstellen.
