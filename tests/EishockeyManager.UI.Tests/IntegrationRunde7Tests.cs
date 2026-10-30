@@ -42,7 +42,7 @@ public class IntegrationRunde7Tests : IDisposable
         for (var guard = 0; (game.History.Count < 1 || d.Host.Current is not MainMenuScreen) && guard < 40000; guard++)
         {
             d.Press(Key.Space);
-            Assert.DoesNotContain("Handbuch", d.Host.Current.GetType().Name, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("Handbuch", d.Host.Current?.GetType().Name ?? "", StringComparison.OrdinalIgnoreCase);
         }
         Assert.Single(game.History);
 
