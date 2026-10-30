@@ -138,4 +138,50 @@ internal static class WettbewerbeVideo
         d.Host.Show(new DebCupDrawScreen(d.Host, back, f52));
         d.Move(0, 239); d.Save("eisbaeren_f52_03358");
     }
+    /// <summary>Seite „Paarungen“ aus Zeilen „Heim|Platz|Stärke|Gast|Platz|Stärke|g:g“.</summary>
+    private static PairingsPage Page(GameState game, string header, params string[] rows) =>
+        new(header, rows.Select(r => r.Split('|')).Select(p => new PairingRow(
+            Club(game, p[0]), Club(game, p[3]), int.Parse(p[1]), int.Parse(p[2]), int.Parse(p[4]), int.Parse(p[5]),
+            (int.Parse(p[6].Split(':')[0]), int.Parse(p[6].Split(':')[1])))).ToList());
+
+    [Scenario("pixel-paarungen")]
+    private static void LeaguePairings(ScreenDriver d)
+    {
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var back = new MainMenuScreen(d.Host);
+        void Show(string name, League league, PairingsPage page, params string[] highlight)
+        {
+            d.Host.Show(new LeaguePairingsScreen(d.Host, back, league, page, highlight.Select(h => Club(game, h)).ToArray()));
+            d.Move(0, 239); d.Save(name);
+        }
+
+        // Seiten mit Knöpfen (Hauptmenü → Paarungen), jeweils nach dem ersten Spieltag (10.9.)
+        Show("folge06_01256", League.Oberliga, Page(game, "Oberliga   1.Spieltag  10.9.",
+            "SC RIESSERSEE|8|41|EC HARZ BRAUNLAGE|12|28|2:1", "EC BAD T|11|37|TSV ERDING|1|45|5:9",
+            "TEV MIESBACH|9|34|SCHALKER HAIE|4|36|10:7", "BERLINER SC|2|54|ESC WOLFSBURG|7|44|9:0",
+            "ECD SAUERLAND|5|44|EHC 80 N|6|32|3:6", "EV F|10|33|ESV K|3|50|1:6"), "BERLINER SC");
+        Show("folge17_02406", League.ZweiteLiga, Page(game, "Zweite Liga   1.Spieltag  10.9.",
+            "SV BAYREUTH|3|63|ESV KAUFBEUREN|5|60|6:2", "SB ROSENHEIM|6|61|MANNHEIMER ERC|2|63|6:2",
+            "ECD SAUERLAND|7|58|SC MEMMINGEN|11|59|2:6", "EA KEMPTEN|12|54|AUGSBURGER EV|8|52|5:4",
+            "BERLINER SC|1|77|EC HANNOVER|4|61|6:3", "HEC HEILBRONN|9|55|EC KASSEL|10|43|7:4"), "BERLINER SC");
+        Show("folge21_02149", League.Bundesliga, Page(game, "Bundesliga   1.Spieltag  10.9.",
+            "EC HEDOS M|8|60|HEC HEILBRONN|11|57|2:1", "PREUSSEN BERLIN|5|77|EV LANDSHUT|10|68|7:2",
+            "KREFELDER EV|9|64|EISB|4|64|2:4", "LNER EC|1|74|SSELDORFER EG|12|65|9:1",
+            "EHC 80 N|6|77|BERLINER SC|2|82|8:3", "ES WEI|7|74|EHC FREIBURG|3|75|5:0"), "BERLINER SC");
+
+        // Gleicher Fensteraufbau ohne Knöpfe im Spielablauf („60.MINUTE“, gibt es im Remake noch nicht): Vergleich nur im Fenster
+        Show("duell_s2a_01138", League.Oberliga, Page(game, "",
+            "SCHALKER HAIE|1|47|ETC TIMMENDORF|12|38|5:1", "EC BAD T|10|31|TSV ERDING|4|39|2:4",
+            "1.EV WEIDEN|2|29|EHC STRAUBING|11|29|5:2", "EC HARZ BRAUNLAGE|3|34|EV F|9|44|4:2",
+            "EA KEMPTEN|7|41|EC BAD NAUHEIM|6|38|3:3", "EISB|5|52|SC RIESSERSEE|8|46|3:2"), "SCHALKER HAIE", "EISB");
+        Show("eisbaeren_f14_01518", League.ZweiteLiga, Page(game, "",
+            "EISB|2|60|SC MEMMINGEN|8|53|5:4", "HEC HEILBRONN|10|58|SV BAYREUTH|7|56|3:3",
+            "SC RIESSERSEE|12|43|EHC FREIBURG|1|62|0:7", "EC HEDOS M|6|50|TSV ERDING|11|52|5:3",
+            "AUGSBURGER EV|3|59|SB ROSENHEIM|4|61|3:5", "EC KASSEL|9|51|ESV KAUFBEUREN|5|55|3:3"), "EISB");
+        Show("eisbaeren_f40_01833", League.Bundesliga, Page(game, "",
+            "EC KASSEL|5|73|SC RIESSERSEE|4|73|3:2", "SB ROSENHEIM|6|72|TEV MIESBACH|1|81|3:7",
+            "KREFELDER EV|2|77|AUGSBURGER EV|8|70|2:2", "ESC FRANKFURT|10|63|PREUSSEN BERLIN|7|70|5:4",
+            "ECD SAUERLAND|11|65|TSV ERDING|9|68|5:3", "ETC TIMMENDORF|12|65|EISB|3|83|1:2"), "EISB");
+    }
 }
