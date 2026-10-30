@@ -79,7 +79,9 @@ public class SeasonPaymentTests
         // Tabellenplätze. Welche Seeds einen Titel für einen Manager-Verein ergeben, hängt von allen
         // Wettbewerben ab; deshalb mindestens drei Seeds und weiter, bis eine Prämie geprüft wurde.
         var premiums = 0L;
-        for (var seed = 1; seed <= 3 || (premiums == 0 && seed <= 12); seed++)
+        // Spur spielberechnung: bis 40 Seeds – die Rechnung des Originals folgt der Stärke enger, Titel der beiden
+        // Managervereine (stärkster und schwächster der Liga) sind seltener.
+        for (var seed = 1; seed <= 3 || (premiums == 0 && seed <= 40); seed++)
         {
             var game = TwoBundesligaManagers(seed);
             while (game.Phase == SeasonPhase.Running || game.Phase == SeasonPhase.ClubSeasonOver)

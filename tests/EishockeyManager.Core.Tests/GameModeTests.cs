@@ -249,6 +249,9 @@ public class GameModeTests
     /// Spur boerse-start (#169, Kursmodell nach em.exe 0x5784A, anderer Verbrauch von FinanceRandom): Titel, Haupt- (R…) und
     /// Pokalquelle (C…) unverändert; nur die Kontostände beider Manager in allen fünf Saisons (Zuschauer und Werbung ziehen
     /// aus FinanceRandom). Mit der Börse nach dem Tagesabschluss aller Manager (#188) erneut nur die Kontostände.
+    /// Spur spielberechnung (Teil 3, #186): alle Werte neu – Liga, Pokale und WM rechnen mit der Berechnung des Originals
+    /// (<c>MatchEngine.PlayWithEvents</c>): andere Ergebnisse ab dem ersten Spieltag, damit Titel, Kontostände und beide
+    /// Zufallsquellen. Ermittelt auf dem Branch (Basis <c>15d0733</c>), Nachziehen in der Integration durch die Leitstelle.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()

@@ -56,6 +56,15 @@ namespace EishockeyManager.Core.Tests;
 /// Danach (Entscheidung Nutzer, #188) rechnet die Börse erst nach dem Tagesabschluss aller Manager: Vergleich gegen
 /// 801c732 wie oben – wieder nur FinanceRandom (ab 1993 Tag 3) und Konten (synthetisch ab 1994 Tag 12 bzw. 7,
 /// Originaldaten ab 1993 Tag 10) verschoben.
+/// Spur spielberechnung (Teil 1, #186): alle sechs Abdrücke neu, weil der Abdruck alle einfachen Eigenschaften enthält
+/// und <c>Player.GoalsAgainst</c>/<c>GoalieMinutes</c> neu sind (noch nicht gezählt, immer 0). Gegenprobe: mit beiden
+/// Feldern in <c>Excluded</c> stimmen alle sechs alten Abdrücke unverändert; kein Spielverlauf ändert sich.
+/// Spur spielberechnung (Teil 3, #186): alle sechs Abdrücke neu. Liga, Play-offs, Aufstiegsrunde, DEB-Pokal, Europapokal
+/// und WM rechnen mit der Berechnung des Originals (<c>MatchEngine.PlayWithEvents</c>) statt mit dem Poisson-Modell: andere
+/// Ergebnisse ab dem ersten Spieltag, anderer Verbrauch der Haupt- und Pokalquelle (Minutenzüge, Spielerzähler), damit
+/// auch Tabellen, Titel, Finanzen, Transfers und Verträge; dazu die Spielerzähler im Abdruck (je Saison, nach dem Wechsel
+/// 0). Keine Gegenprobe möglich, die den alten Verlauf erhält – die Spielberechnung ist der Zweck der Spur. Ermittelt auf
+/// dem Stand des Branches (Basis <c>15d0733</c>); die Leitstelle zieht die Werte in der Integration nach.
 /// </summary>
 public class RngTwinProbeTests
 {

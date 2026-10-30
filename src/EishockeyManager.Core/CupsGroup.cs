@@ -84,11 +84,13 @@ public sealed class CupGroup(int number, IReadOnlyList<int> teams)
     }
 
     /// <summary>Spielt Runde <paramref name="round"/>: Unentschieden sind möglich (Gruppenspiel, kein Penaltyschießen).</summary>
-    public IReadOnlyList<KnockoutMatch> Play(int round, int day, IReadOnlyList<Club> clubs, Random random)
+    public IReadOnlyList<KnockoutMatch> Play(int round, int day, GameState game, Random random)
     {
+        var clubs = game.Clubs;
         var played = Pairings(round).Select(p =>
         {
-            var (hg, ag) = MatchEngine.Play(clubs[p.Home], clubs[p.Away], random);
+            var report = MatchEngine.PlayWithEvents(game, clubs[p.Home], clubs[p.Away], MatchCompetition.EuropeanCup, knockOut: false, random);
+            var (hg, ag) = (report.HomeGoals, report.AwayGoals);
             return new KnockoutMatch(day, p.Home, p.Away, hg, ag);
         }).ToList();
         Results.AddRange(played);

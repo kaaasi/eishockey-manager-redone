@@ -136,7 +136,7 @@ public sealed class EuropeanCup : ISeasonCompetition
         var date = DateIndex(day);
         if (date < 0 || Winner is not null)
             return;
-        var played = GroupsOn(date).SelectMany(g => g.Play(date % GroupDates, day, game.Clubs, game.CupRandom)).ToList();
+        var played = GroupsOn(date).SelectMany(g => g.Play(date % GroupDates, day, game, game.CupRandom)).ToList();
         game.SettleCupMatches(played, importance: SpectatorRules.EuropeanCupImportance(date)); // Spur heimspiel-statistik
 
         var managerClubs = game.ActiveManagers.Select(m => m.ClubIndex).ToHashSet();

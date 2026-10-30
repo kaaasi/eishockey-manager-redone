@@ -22,6 +22,30 @@ public sealed record KnockoutMatch(int Day, int Home, int Away, int HomeGoals, i
         }
         return new KnockoutMatch(day, home.Index, away.Index, hg, ag, penalty);
     }
+
+    /// <summary>
+    /// Spiel mit Sieger nach der Berechnung des Originals (<see cref="MatchEngine.PlayWithEvents"/>, mit Verlängerung).
+    /// Bleibt es danach unentschieden, entscheidet das Penaltyschießen wie in <see cref="Play(int, Club, Club, Random)"/>
+    /// ([APPROX]); der schnelle Weg der Pokale bringt seinen Sieger mit ([ORIGINAL] 0x376F0).
+    /// </summary>
+    public static KnockoutMatch Play(GameState game, int day, Club home, Club away, MatchCompetition competition, Random random)
+    {
+        var report = MatchEngine.PlayWithEvents(game, home, away, competition, knockOut: true, random);
+        int? penalty = null;
+        if (report.HomeGoals == report.AwayGoals)
+        {
+            if (report.ShootoutHomeWins is { } homeWins)
+            {
+                penalty = homeWins ? home.Index : away.Index;
+            }
+            else
+            {
+                var pHome = Math.Clamp(0.5 + (home.Strength - away.Strength) / 200.0, 0.3, 0.7);
+                penalty = random.NextDouble() < pHome ? home.Index : away.Index;
+            }
+        }
+        return new KnockoutMatch(day, home.Index, away.Index, report.HomeGoals, report.AwayGoals, penalty);
+    }
 }
 
 /// <summary>Play-Off-Serie zweier Vereine: wer zuerst <see cref="WinsNeeded"/> Spiele gewinnt.</summary>
@@ -103,8 +127,9 @@ public sealed class Playoffs
     }
 
     /// <summary>Spielt alle offenen Serien der Runde dieses Termins je ein Spiel weiter.</summary>
-    public IReadOnlyList<KnockoutMatch> PlayDate(int dateIndex, int day, IReadOnlyList<Club> clubs, Random random)
+    public IReadOnlyList<KnockoutMatch> PlayDate(int dateIndex, int day, GameState game, Random random)
     {
+        var clubs = game.Clubs;
         var round = dateIndex / DatesPerRound;
         Prepare(round);
         var played = new List<KnockoutMatch>();
@@ -113,7 +138,7 @@ public sealed class Playoffs
         foreach (var series in _rounds[round].Where(s => !s.IsDecided))
         {
             var (home, away) = series.NextPairing;
-            var match = KnockoutMatch.Play(day, clubs[home], clubs[away], random);
+            var match = KnockoutMatch.Play(game, day, clubs[home], clubs[away], MatchCompetition.Playoff, random);
             series.Games.Add(match);
             played.Add(match);
         }
@@ -174,14 +199,16 @@ public sealed class RelegationGroup
         return null;
     }
 
-    public IReadOnlyList<MatchResult> PlayDate(int dateIndex, IReadOnlyList<Club> clubs, Random random)
+    public IReadOnlyList<MatchResult> PlayDate(int dateIndex, GameState game, Random random)
     {
+        var clubs = game.Clubs;
         var round = RoundOn(dateIndex);
         if (round < 0 || round != PlayedRounds)
             return [];
         var played = Rounds[round].Matches.Select(m =>
         {
-            var (hg, ag) = MatchEngine.Play(clubs[m.Home], clubs[m.Away], random);
+            var report = MatchEngine.PlayWithEvents(game, clubs[m.Home], clubs[m.Away], MatchCompetition.Relegation, knockOut: false, random);
+            var (hg, ag) = (report.HomeGoals, report.AwayGoals);
             return new MatchResult(Upper, round + 1, m.Home, m.Away, hg, ag);
         }).ToList();
         Results.AddRange(played);

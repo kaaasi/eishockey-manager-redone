@@ -72,7 +72,11 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
   `CupsGroup.cs`, `CupsWorld.cs` nur für den Wechsel auf die neue Methode – **nicht** `CupsNational*.cs` (siehe oben),
   `Core/SaveGame.Migration*.cs` (neue Datei), `docs/reverse-engineering.md`, neues `docs/spielberechnung.md`, Tests.
 - **Modell:** Claude Opus 5.5 (Review: GPT-6 Astra).
-- **Status:** offen.
+- **Status:** fertig zur Review, PR #186 (Claude Code). Teil 1–2: Rechnung des Originals (0x9F5C, 0x368B1/0x977F, 0xA484,
+  Strafbank/Strafen 0x35540/0x35818, Minutenablauf, schneller Weg der Pokale), Statistik 0x5028/0x4DB6, Schema 10. Teil 3:
+  `MatchEngine.PlayWithEvents` in Liga, Play-offs, Aufstiegsrunde, DEB-Pokal, Europapokal und WM; Zähler je Saison;
+  Mehrsaisonprobe und neue Sollwerte auf dem Branch (Nachziehen in der Integration). Offen (`[APPROX]`): Managerteil
+  0x386D1/0x378C5/0x98F8/0x87F7/0x8EF2, Verletzungen im Spiel. Stand: `docs/spielberechnung.md` §8, §11.
 
 ### Spur `kader-start` – Startwerte der Kaderspieler (#168)
 

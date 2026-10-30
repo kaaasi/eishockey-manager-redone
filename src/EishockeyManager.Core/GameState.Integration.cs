@@ -64,6 +64,7 @@ public sealed partial class GameState
     {
         StartFinanceSeason();
         StartStadiumStatisticsSeason(); // Spur heimspiel-statistik (0x55A86)
+        ResetMatchCounters(); // Spur spielberechnung: Spielerzähler je Saison (MatchEngine.Live.cs)
     }
 
     /// <summary>
