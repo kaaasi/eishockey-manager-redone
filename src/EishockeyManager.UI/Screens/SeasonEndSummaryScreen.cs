@@ -24,17 +24,25 @@ public sealed class SeasonEndSummaryScreen : Screen
 
     /// <summary>
     /// Ereignissymbol in kb\13 (Zellen 24 × 21 im Raster 24 × 21).
-    /// [APPROX] Zuordnung nach Bildinhalt: Pfeil hoch = Aufstieg, Pfeil runter = Abstieg, Puck = Meister,
-    /// Fahne = DEB-Pokal, Landkarte = Europapokal.
+    /// [ORIGINAL] Symbolnummer → Zelle (Datei 0x6CA6 + 0x39: <c>while (n &gt; 5) { n -= 6; y += 21; }</c>, x = n · 24): sechs Zellen je
+    /// Zeile, <see cref="Symbol"/> = Spalte <c>n % 6</c>, Zeile <c>n / 6</c>. Statusbits 0–6 zeigen die Symbole 2, 1, 0, 5, 4, 6, 8
+    /// (Tabelle DGROUP 0x4B2E, Datei 0x2714F): Bit 0 Aufstieg = 2 (Pfeil hoch), Bit 1 Abstieg = 1 (Pfeil runter),
+    /// Bit 4 (DEB-Pokal) = 4 (Fahne), Bit 5 (Europapokal) = 6 (Landkarte mit Pokal), Bit 6 (unter den ersten fünf der 1. Liga) = 8 (Weltkugel).
+    /// [APPROX] Meister: Das Original zeigt zu Bit 3 das Symbol 5 (Datei 0x4B2E); das Remake nimmt weiter den Puck (Zelle 3/0), bis ein Bild den
+    /// Meistertitel belegt.
     /// </summary>
     public static Rect EventIcon(SeasonEvent e) => e switch
     {
-        SeasonEvent.Promotion => Cell(2, 0),
-        SeasonEvent.Relegation => Cell(1, 0),
+        SeasonEvent.Promotion => Symbol(2),
+        SeasonEvent.Relegation => Symbol(1),
         SeasonEvent.GermanChampion => Cell(3, 0),
-        SeasonEvent.CupWinner => Cell(4, 0),
-        _ => Cell(0, 1),
+        SeasonEvent.CupWinner => Symbol(4),
+        SeasonEvent.TopFive => Symbol(8),
+        _ => Symbol(6),
     };
+
+    /// <summary>Zelle der Symbolnummer <paramref name="n"/> im Raster mit sechs Zellen je Zeile.</summary>
+    public static Rect Symbol(int n) => Cell(n % 6, n / 6);
 
     private static Rect Cell(int column, int row) => new(column * IconWidth, row * IconHeight, IconWidth, IconHeight);
 

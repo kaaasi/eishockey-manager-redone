@@ -32,6 +32,12 @@ public enum SeasonEvent
     GermanChampion,
     CupWinner,
     EuropeanCupWinner,
+
+    /// <summary>
+    /// Statusbit 0x40: Der Verein steht unter den ersten fünf der 1. Liga (Symbol 8, die Weltkugel).
+    /// [ORIGINAL] em.exe Datei 0x553D1–0x553F2 (Setzen), 0x2714F ff. (Anzeige, Tabelle DGROUP 0x4B2E). Ohne Prämie.
+    /// </summary>
+    TopFive,
 }
 
 /// <summary>Abschneiden eines Managers in einer Saison (Fenster „Saisonende“).</summary>

@@ -333,6 +333,14 @@ public sealed partial class GameState
                     case Title.WorldChampion: break;
                 }
             }
+            // [ORIGINAL] Statusbit 0x40 (Datei 0x553D1–0x553F2, Befund #125): An den Tagen mit Markierung 255 löscht das Original
+            // das Statusbyte jedes Managers und setzt Bit 0x40, wenn sein Verein unter den ersten fünf der 1. Liga steht
+            // (0xE8:0x93, Tabelle DGROUP 0x5CCB) – außer im Spielmodus 2. Das Byte wird an beiden Markertagen neu abgeleitet;
+            // hier zählt die Abschlusstabelle der Hauptrunde, die sich zwischen 13. und 29. April nicht mehr ändert.
+            // Bit 6 ist das letzte Bit der Anzeigeschleife (Datei 0x2714F, Symbol 8), deshalb steht das Ereignis zuletzt.
+            // [APPROX] Das Original sortiert 0x5CCB je nach Ansicht (Gesamt/Heim/Auswärts), das Remake nimmt „Gesamt“.
+            if (Mode != GameMode.ClubOnly && record.FinalTables[League.Bundesliga].Take(5).Contains(club.Index))
+                events.Add(SeasonEvent.TopFive);
             var premium = SeasonPremium(league, rank, events);
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
