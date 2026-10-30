@@ -53,8 +53,10 @@ public class ClubDressedTests
         var game = Create();
         var club = game.Clubs[2];
         GrowSquad(game, club, 27);
-        var outside = club.Players.First(p => !club.IsDressed(p) && p.Role == PlayerRole.Forward);
-        var slot = LineupSlot.Forward(3, 0);
+        // Spur kader-start: Der eigene Kader ist zu Spielbeginn stärker als die zugeholten Spieler; nicht eingesetzt
+        // bleibt dann ein zugeholter Verteidiger statt eines Stürmers. Daher Platz im vierten Block nach Spielerart.
+        var outside = club.Players.First(p => !club.IsDressed(p) && p.Role != PlayerRole.Goalkeeper);
+        var slot = outside.Role == PlayerRole.Forward ? LineupSlot.Forward(3, 0) : LineupSlot.Defender(3, 0);
         Assert.Null(club.Lineup[slot]);
 
         Assert.Equal(LineupResult.RosterFull, club.AssignToLineup(slot, outside));

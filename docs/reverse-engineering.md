@@ -128,3 +128,53 @@ Höchstwerte 0x11C–0x11F = **5, 3, 2, 2**. Belegt im Overlay „Spielstart“ 
 * **Saisonmodus**: Playoff-Format, Relegation, DEB-Pokal (32 Teams), Europapokal (Gruppe + Endrunde), WM (2 Gruppen + K.-o.).
 * **Torszenen** (`tore\`): Format teilweise erkannt (Kennung `TOR!`, Positionslisten), Darstellung fehlt noch.
 * Spielfeld-Kacheln (`kb\231–236, 242–246`).
+## Startwerte der Kaderspieler
+
+Spur `kader-start` (#168). Geprüft an `em.exe` (`ndisasm`), Overlay „Spielstart“; im Remake `SquadSetup.StartBase`
+(`Core/Squad.Setup.cs`), Tests `KaderStartTests`.
+
+* **Kaderauswahl** (Datei `0x2993A–0x29A5E`): je Art (Torhüter, Verteidiger, Stürmer) so viele Spieler wie die
+  Kadertabelle DGROUP `0x169` nach Start-Liga angibt, jeweils ein zufälliger Spieler des Pools (Besitzer `0x1A` = 6) aus
+  dem Indexbereich DGROUP `0x381` ff. (`1, 21, 97, 200`); Besitzer = Manager, Verein `0x1D` = Managerverein, Alter
+  `0x14` = random(19, 31).
+* **Startwerte** (Datei `0x29DA4–0x29EF7`): Basis = Byte DGROUP `0x4B42` [Start-Liga · 3 + Start-Stärke]
+  (Setup-Werte `0x11A`/`0x11B`). Für jeden Kaderplatz: Technik `0x15` = random(Basis − 2, Basis + 2), Kondition `0x16`
+  = random(Basis − 2, Basis + 2), Form `0x17` = random(40, 60) – für alle Arten gleich, Torhüter eingeschlossen.
+
+  | Start-Liga | Oberes Drittel | Mittelfeld | Abstiegskampf |
+  |---|---:|---:|---:|
+  | Bundesliga | 87 | 81 | 70 |
+  | 2. Liga | 68 | 55 | 42 |
+  | Oberliga | 39 | 31 | 21 |
+
+* **Nicht beteiligt:** Spiel-Level (`0x118` wird hier nicht gelesen; `0xED8` = 5 − Level wirkt nur auf das Startkonto
+  `0x29BD5`), Datenbankstärke des Vereins (sie bestimmt nur die Teamwerte der Computervereine, Lader `0x2EF1B`).
+* **Belege:** `folge01` (Berliner SC, Oberliga, Abstiegskampf – Spielvorbereitung `folge01_00150`): Aufstellung
+  `folge01_00528` alle Werte 19–23 = 21 ± 2. UI-Video (`oberflaeche_0900`/`_0910`): Werte 29–33 = 31 ± 2, also Oberliga,
+  Mittelfeld. Die Regler der Spielvorbereitung zeigen dort zwar „Bundesliga“ (`oberflaeche_0230`–`_0310`), der Verein
+  spielt aber Oberliga (DEB-Pokal `oberflaeche_0400`: „Oberliga gegen Oberliga: Berliner SC“). Der frühere
+  `[APPROX]`-Ansatz 20 + Stärke/2 traf das UI-Video nur zufällig (Stärke 22 → 31).
+* **Remake** (`[APPROX]`): Start-Liga und Start-Stärke sind je Manager eingestellt, ein fest gewählter Verein bleibt in
+  seiner Liga (das Original setzt ihn in die Start-Liga, Datei `0x29C3B` ff.). Daher zählt die Liga des Vereins bei
+  Spielbeginn (ligalose Vereine sind dann Oberliga) und die Start-Stärke des Managers. Die Teamwerte der
+  Manager-Vereine werden weiterhin gezogen und verworfen, damit Computervereine und Transfermarkt dieselbe Zufallsfolge
+  behalten. Computervereine und Talente bleiben bei `SquadSetup.BaseValue` (20 + Stärke/2, `[APPROX]`).
+* **Offen:** Das Original wählt den zufälligen Verein aus der ganzen Start-Liga (`random([0x7C0 + Liga], …)`, Datei
+  `0x29C78`), nicht aus dem Drittel der Start-Stärke wie `NewGame.PickRandomClub`; nicht Teil dieser Spur.
+
+**Mehrsaisonprobe, Ursache je geändertem Abdruck.** Vergleichslauf (Probe außerhalb des Repos) auf Base `15d0733` und
+auf dem Spur-Stand, Zustand (Manager, Manager-Vereine, Computervereine, Pool, Laufbahnende) und alle vier
+Zufallsquellen nach jedem Schritt. In allen Fällen unterscheiden sich nach dem Spielstart **nur die Spieler der
+Manager-Vereine** (Werte, Gehälter); Computervereine, Pool und alle vier Zufallsquellen sind gleich.
+
+| Fall | Basis alt → neu | erste Differenzen danach | Ursache |
+|---|---|---|---|
+| `RngTwinProbeTests` synthetisch passiv/aktiv, Seed 3 (Verein 2) | ≈ 65 → 81 (Bundesliga, Mittelfeld) | Konto Tag 21; Spielstärke ±1 ab Tag 35; Pokalquelle Tag 56; FinanceRandom Tag 84; Hauptquelle Tag 153 | Gehälter +5.800 DM/Monat und Grundeinnahmen aus Teamwerten (Monatsabschluss); Energie wirkt auf größere Spielerwerte stärker → andere Pokal- und Ligaergebnisse |
+| dito Seed 11 | ≈ 65 → 81 | Konto Tag 21; Spielstärke ±1 ab Tag 10; Pokalquelle Tag 45; FinanceRandom Tag 84; Hauptquelle Tag 163 | wie oben (+4.600 DM/Monat) |
+| `RngTwinProbeTests` Originaldaten passiv/aktiv (Verein 42) | 31 ± 3 je Art → 31 (Oberliga, Mittelfeld) | Konto Tag 21; FinanceRandom 1994 Tag 28; Spielstärke ±1 ab Tag 136; Kader/Pool ab Saisonwechsel 1995 (passiv: Pokalquelle 1996 Tag 21, Hauptquelle 1996 Tag 70, Titel 1996) | Gehälter +500 DM/Monat, Teamwerte leicht anders (Zuschauer, Grundeinnahmen) |
+| `GameModeTests.Mode4_ReferenceValues_Unchanged` (Vereine 2 und 30) | 65 → 81, 55 → 31 (Verein 30 Oberliga) | Konto Manager 1 Tag 3; Spielstärke Verein 2 ab Tag 40; Pokalquelle Tag 45; Hauptquelle Tag 91 | Zuschauer aus den Teamwerten (`0x4D316`) beim ersten Heimspiel; danach wie oben → 1993 andere Pokal- und WM-Sieger |
+| `DebCupDrawFlowTests.MultiSeason_…` (Verein 42, Seed 1993) | 31 ± 3 → 31 | Gehälter +200 DM; Konto Tag 7; Spielstärke ±1 ab Tag 17; Hauptquelle 1994 Tag 122 | 1993 unverändert, ab 1994 andere Meister und Tabellen |
+
+`FinanceCalibrationTests` (Originaldaten, Sollspannen) bleibt grün. `ClubDressedTests.TwentyThird_…` setzte voraus, dass
+nach dem Zukauf ein eigener Stürmer nicht eingesetzt ist; mit dem stärkeren Startkader bleibt ein zugekaufter
+Verteidiger draußen – der Test wählt den Platz im vierten Block jetzt nach der Spielerart (Prüfung unverändert).

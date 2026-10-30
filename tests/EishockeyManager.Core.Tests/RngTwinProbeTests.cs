@@ -38,16 +38,25 @@ namespace EishockeyManager.Core.Tests;
 /// Hauptquelle (Torzüge entfallen); danach Pokalquelle (Tag 14 bzw. 17, anderer Pokalverlauf), FinanceRandom und
 /// Vertragsquelle (Saisonwechsel). Titel ab 1995 andere. Die drei aktiven Abdrücke bleiben gleich (ihr Kader bleibt
 /// spielfähig, in keinem Schritt eine Differenz).
+/// Spur kader-start (#168, em.exe 0x29DA4): Die Kaderspieler der Manager-Vereine bekommen Kondition/Technik aus der
+/// Tabelle DGROUP 0x4B42 (Liga, Start-Stärke) statt aus der Vereinsstärke; alle sechs Abdrücke neu ermittelt. Ursache je
+/// Fall (Vergleichslauf gegen 15d0733 mit Zustand und allen vier Zufallsquellen nach jedem Schritt, Tabelle in
+/// docs/reverse-engineering.md, Abschnitt „Startwerte der Kaderspieler“): Nach dem Spielstart unterscheiden sich nur die
+/// Spieler des Manager-Vereins (Werte, Gehalt); Computervereine, Pool und alle vier Zufallsquellen sind gleich. Erste
+/// Folge ist in allen Fällen das Konto am Monatsende (Tag 21: Gehälter und Grundeinnahmen aus den Teamwerten);
+/// danach weicht die Spielstärke um einen Punkt ab (Energie wirkt auf größere Spielerwerte) – synthetisch (Verein 2,
+/// Basis 81 statt 65) Pokalquelle ab Tag 45 bzw. 56, Hauptquelle ab Tag 153 bzw. 163 der ersten Saison; Originaldaten
+/// (Verein 42, Basis 31 wie bisher im Mittel) FinanceRandom 1994 Tag 28, Kader und Pool ab dem Saisonwechsel 1995.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "33A4F52EC2360DE0")]
-    [InlineData(true, 3, "9541EF4978491142")]
-    [InlineData(false, 11, "FC797F99C7C8B35C")]
-    [InlineData(true, 11, "7CB3FC8E58DC44CC")]
+    [InlineData(false, 3, "7DF7CFD3D57A4BAF")]
+    [InlineData(true, 3, "778F0D29A3062629")]
+    [InlineData(false, 11, "501EF8DFF7264443")]
+    [InlineData(true, 11, "5D82D27676364413")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -55,8 +64,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "74ED95088678F3B6")]
-    [InlineData(true, "9FAAA0D4276178C3")]
+    [InlineData(false, "3194EFBF04D76B3A")]
+    [InlineData(true, "B95DEB25907BDACA")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
