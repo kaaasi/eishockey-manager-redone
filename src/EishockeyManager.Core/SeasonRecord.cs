@@ -60,6 +60,12 @@ public sealed class SeasonRecord
 
     public List<ManagerSeasonResult> Managers { get; } = [];
 
+    /// <summary>
+    /// Stand der Abschlusstabelle für Statusbit 0x40: Steht der Verein unter den ersten fünf der 1. Liga (Plätze 1–5 der Bundesliga)?
+    /// Abgeleitet, nicht gespeichert – die Abschlusstabelle liegt schon im Spielstand (siehe <see cref="GameState.HasTopFiveStatus"/>).
+    /// </summary>
+    public bool IsTopFive(int club) => FinalTables[League.Bundesliga].Take(5).Contains(club);
+
     /// <summary>Liga eines Vereins in der nächsten Saison nach Auf- und Abstieg.</summary>
     public League? NextLeague(int club, League? current)
     {
