@@ -170,6 +170,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Spur heimspiel-statistik (#136): Der Manager hält seinen Kader (<see cref="KeepSquadHelper"/>), sonst wird er nach
     /// „Weniger als neun Spieler“ (200.000 DM je Spiel) in Saison 1995 entlassen und das Spiel endet. 1993 und 1994 bleiben
     /// gleich; ab 1995 spielt sein Verein mit dem verlängerten statt mit leerem Kader, daher neue Werte für 1995 und 1996.
+    /// Spur kader-start (#168, em.exe 0x29DA4): Der Kader des Berliner SC bekommt Kondition/Technik random(29, 33)
+    /// (Oberliga, Mittelfeld) statt Teamwert ± 2. Vergleichslauf gegen 15d0733 nach jedem Schritt: Gehälter +200 DM,
+    /// Konto ab Tag 7, Spielstärke ab Tag 17 der ersten Saison um einen Punkt verschieden; Haupt-, Pokal- und
+    /// Vertragsquelle bleiben bis 1994 Tag 122 gleich, 1993 daher unverändert, ab 1994 neue Meister und Tabellen.
     /// </summary>
     [GameDataFact]
     public void MultiSeason_CupResultsUnchanged_WithAndWithoutDisplay()
@@ -201,7 +205,8 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
         $"{r.Season}: DEB {r.Titles.GetValueOrDefault(Title.CupWinner, -1)}, DM {r.Titles.GetValueOrDefault(Title.GermanChampion, -1)}, " +
         $"Tab {r.FinalTables.Values.SelectMany(t => t).Select((c, i) => c * (i + 1)).Sum()}"));
 
-    /// <summary>Referenz: <see cref="Summary"/> auf <c>main</c> a09c81e (nur Leertaste, Seed 1993), siehe PR der Spur.</summary>
+    /// <summary>Referenz: <see cref="Summary"/> auf <c>main</c> a09c81e (nur Leertaste, Seed 1993), siehe PR der Spur;
+    /// ab 1994 neu mit Spur kader-start (siehe oben).</summary>
     private const string Reference =
-        "1993: DEB 17, DM 2, Tab 15413 | 1994: DEB 1, DM 5, Tab 16258 | 1995: DEB 2, DM 4, Tab 17049 | 1996: DEB 4, DM 2, Tab 16932";
+        "1993: DEB 17, DM 2, Tab 15413 | 1994: DEB 1, DM 6, Tab 16263 | 1995: DEB 2, DM 8, Tab 16856 | 1996: DEB 5, DM 9, Tab 17368";
 }

@@ -31,10 +31,27 @@ public static class SquadSetup
     public const int StartContractYears = 2;
 
     /// <summary>
-    /// Basiswert für Kondition und Technik aus der Vereinsstärke.
-    /// [APPROX] Abgeleitet aus dem Video: BERLINER SC (Stärke 22) hat Werte um 29–33.
+    /// Basiswert für Kondition und Technik der Computervereine (und Talente) aus der Vereinsstärke.
+    /// [APPROX] Das Original führt Computervereine nur über Teamwerte = Datenbankwert (3810:4D3B); das Remake
+    /// staucht die Skala, weil die Spielstärke ohnehin aus der Datenbank kommt (<see cref="TeamStrength"/>).
+    /// Manager-Vereine nutzen stattdessen <see cref="StartBase"/>.
     /// </summary>
     public static int BaseValue(int clubStrength) => 20 + clubStrength / 2;
+
+    /// <summary>
+    /// Basis für Kondition und Technik der Kaderspieler eines Manager-Vereins zu Spielbeginn.
+    /// [ORIGINAL] Tabelle DGROUP 0x4B42 (gelesen in em.exe Datei 0x29DA4), Index Start-Liga · 3 + Start-Stärke
+    /// (Setup-Werte DGROUP 0x11A/0x11B). Der Spiel-Level und die Datenbankstärke des Vereins wirken nicht.
+    /// </summary>
+    private static readonly int[,] StartBaseTable =
+    {
+        { 87, 81, 70 }, // Bundesliga: Oberes Drittel, Mittelfeld, Abstiegskampf
+        { 68, 55, 42 }, // 2. Liga
+        { 39, 31, 21 }, // Oberliga
+    };
+
+    /// <summary>Basis der Startwerte nach Liga und Start-Stärke, siehe <see cref="StartBaseTable"/>.</summary>
+    public static int StartBase(League league, StartStrength strength) => StartBaseTable[(int)league, (int)strength];
 
     /// <summary>Erzeugt die Kader aller Vereine. Nutzt einen eigenen Zufallsgenerator, damit der Spielablauf unverändert bleibt.</summary>
     public static void Initialize(GameState game, int seed)
@@ -43,6 +60,7 @@ public static class SquadSetup
         var usedNames = new HashSet<string>(game.Clubs.SelectMany(c => c.Players).Select(p => p.Name));
         var namePool = usedNames.ToList();
         var managed = game.Managers.GroupBy(m => m.ClubIndex).ToDictionary(g => g.Key, g => g.First().Level);
+        var startBase = StartBases(game);
 
         foreach (var club in game.Clubs)
         {
@@ -58,7 +76,7 @@ public static class SquadSetup
                 p.Number = 0;
             foreach (var p in club.Players)
                 p.Number = PlayerFactory.FreeNumber(club, p); // 1, 2, 3 … in Kaderreihenfolge
-            RollValues(club, random);
+            RollValues(club, startBase.TryGetValue(club.Index, out var b) ? b : null, random);
             club.Lineup.AutoFill(club.Players);
             club.ReferenceRating = TeamStrength.Rating(club.Lineup);
         }
@@ -122,15 +140,38 @@ public static class SquadSetup
     }
 
     /// <summary>
-    /// Spielerwerte. [ORIGINAL] Teamwerte = Basis ± random(0, Basis/10) je Abwehr/Sturm (3810:4D3B),
-    /// Die Werte je Spieler legt <see cref="PlayerFactory.RollSquadValues"/> fest.
+    /// Basis der Startwerte je Manager-Verein: Liga des Vereins bei Spielbeginn und Start-Stärke des Managers
+    /// (<see cref="StartBase"/>). [APPROX] Das Original kennt nur eine Start-Liga und eine Start-Stärke für alle
+    /// Manager und setzt den Verein in die Start-Liga; das Remake führt beides je Manager und lässt einen fest
+    /// gewählten Verein in seiner Liga, daher zählt die Liga des Vereins (ligalose Vereine sind dann schon Oberliga).
     /// </summary>
-    private static void RollValues(Club club, Random random)
+    private static Dictionary<int, int> StartBases(GameState game)
+    {
+        var result = new Dictionary<int, int>();
+        for (var i = 0; i < game.Managers.Count; i++)
+        {
+            var club = game.Clubs[game.Managers[i].ClubIndex];
+            var setup = i < game.Setup.Managers.Count ? game.Setup.Managers[i] : new ManagerSetup();
+            result.TryAdd(club.Index, StartBase(club.League ?? setup.StartLeague, setup.StartStrength));
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Spielerwerte. Computervereine: [ORIGINAL] Teamwerte = Basis ± random(0, Basis/10) je Abwehr/Sturm
+    /// (3810:4D3B), Basis [APPROX] aus <see cref="BaseValue"/>. Manager-Vereine: [ORIGINAL] em.exe Datei 0x29DA4 ff.,
+    /// jeder Kaderspieler random(Basis − 2, Basis + 2) für Technik und Kondition (Torhüter eingeschlossen),
+    /// Form random(40, 60), Basis aus <see cref="StartBase"/>. Die Werte je Spieler legt
+    /// <see cref="PlayerFactory.RollSquadValues"/> fest (±2 um den übergebenen Teamwert, Form 40–60).
+    /// </summary>
+    private static void RollValues(Club club, int? managedBase, Random random)
     {
         var b = BaseValue(club.Strength);
         int Team() => b + Between(random, -b / 10, b / 10);
         var condition = new Dictionary<PlayerRole, int>();
         var technique = new Dictionary<PlayerRole, int>();
+        // Die Teamwerte werden auch für Manager-Vereine gezogen (und dort verworfen), damit die Zufallsfolge für
+        // alle übrigen Vereine und den Transfermarkt unverändert bleibt.
         foreach (var role in Enum.GetValues<PlayerRole>())
         {
             condition[role] = Team();
@@ -138,7 +179,12 @@ public static class SquadSetup
         }
 
         foreach (var p in club.Players)
-            PlayerFactory.RollSquadValues(p, condition[p.Role], technique[p.Role], random);
+        {
+            if (managedBase is { } start)
+                PlayerFactory.RollSquadValues(p, start, start, random);
+            else
+                PlayerFactory.RollSquadValues(p, condition[p.Role], technique[p.Role], random);
+        }
     }
 
     /// <summary>random(a, b) wie im Original: beide Grenzen inklusive. [ORIGINAL] 1058:0647</summary>
