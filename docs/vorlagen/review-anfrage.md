@@ -21,8 +21,11 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
 2. Richte das SDK gemäß `AGENTS.md` §3 ein und prüfe im Repo-Verzeichnis `dotnet --version` (bei Problemen
    `docs/prozess/umgebung.md`).
    Fehlen Commit oder Bericht im lokalen Checkout und scheitert der Fetch, nutze einen verfügbaren GitHub-Connector
-   für Compare, Dateien mit festem Head-Ref, früheren Bericht und PR-Kommentare. Dokumentiere, ob nur Codelesen oder
-   auch eine Ausführung am nachgewiesenen Checkout erfolgte.
+   für Compare, Dateien mit festem Head-Ref, früheren Bericht und PR-Kommentare. Rekonstruiere für Build und Tests
+   den Checkout über den Connector, soweit möglich, und verifiziere den vollständigen Git-Tree einschließlich
+   Dateimodi und gelöschter Pfade gegen den Zielcommit (siehe `docs/prozess/umgebung.md`). Ist die Rekonstruktion
+   oder Verifikation nicht möglich, dokumentiere die Grenze und die blockierten Prüfungen; behaupte keinen Test des
+   exakten Heads. Dokumentiere, ob nur Codelesen oder auch eine Ausführung am nachgewiesenen Checkout erfolgte.
    Prüfe genau den genannten Head (Blob-Hashes oder `git rev-parse`), baue ihn selbst, führe `tools/pruefen.sh`
    (alle drei Läufe) aus. Aussagen aus der PR-Beschreibung nicht ungeprüft übernehmen.
 3. Führe zuerst die genannten Gegenbeispiele erneut aus, dann: Diff lesen, betroffene Aufrufer, neue Tests. Eine
