@@ -8,7 +8,11 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// </summary>
 /// <remarks>
 /// Aufbau aus em.exe (Bildschirmfunktion 0x128:0x39, Datei 0x4E8A3; Aufruf über den Seitenwähler 0xF8:0x3E, Seite 7).
-/// Es gibt kein Video dazu: Der Aufbau stammt allein aus der Disassemblierung (<c>docs/wettbewerbe.md</c>, Paarungen).
+/// Der Aufbau stammt aus der Disassemblierung und ist seit Runde 6 an Videobildern bestätigt (Spur pixel-wettbewerbe, Ablauf
+/// <c>pixel-paarungen</c>; Kennzahlen in <c>docs/wettbewerbe.md</c>): [ORIGINAL] Fenster, Kopfzeile, Knöpfe und Zeilen wie unten
+/// gegen <c>folge06_01256</c> (Oberliga), <c>folge17_02406</c> (Zweite Liga), <c>folge21_02149</c> (Bundesliga); die Zeilen auch gegen
+/// das gleiche Fenster ohne Knöpfe im Spielablauf („60.MINUTE“, <c>duell_s2a_01138</c>, <c>eisbaeren_f14_01518</c>,
+/// <c>eisbaeren_f40_01833</c>) – diese Anzeige selbst gibt es im Remake noch nicht.
 /// <list type="bullet">
 /// <item>[ORIGINAL] Fenster (4 | 15) 312 × 152 orange; drei Knöpfe (Rahmen 48 × 38) bei x = 30 / 140 / 250, y = 180.</item>
 /// <item>[ORIGINAL] Pfeile aus kb\4 (29 × 9, Quelle (19 | 104) links, (19 | 125) rechts; gedrückt y + 10) bei (40 | 195) und
@@ -26,6 +30,12 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// <item>[APPROX] Spielplan und Stärkewerte stammen aus dem Remake (<see cref="Schedule.DoubleRoundRobin"/>, <see cref="StrengthTable"/>).</item>
 /// </list>
 /// </remarks>
+/// <summary>Eine Begegnung der Seite: Vereine, Platz und Stärke beider, Ergebnis (null = nicht gespielt).</summary>
+public sealed record PairingRow(int Home, int Away, int HomeRank, int HomeStrength, int AwayRank, int AwayStrength, (int Home, int Away)? Result);
+
+/// <summary>Inhalt einer Seite „Paarungen“: Kopfzeile und bis zu sechs Begegnungen.</summary>
+public sealed record PairingsPage(string Header, IReadOnlyList<PairingRow> Rows);
+
 public sealed class LeaguePairingsScreen : Screen
 {
     public static readonly Rect Window = new(4, 15, 312, 152);
@@ -39,6 +49,8 @@ public sealed class LeaguePairingsScreen : Screen
     private static readonly Rect RightArrow = new(19, 125, 29, 9);
 
     private readonly Screen _back;
+    private readonly PairingsPage? _fixed;
+    private readonly IReadOnlyCollection<int>? _highlighted;
 
     public League League { get; }
 
@@ -52,6 +64,11 @@ public sealed class LeaguePairingsScreen : Screen
         var played = host.Game?.PlayedMatchDays ?? 0;
         Day = played + 1 > Count ? 1 : played + 1;
     }
+
+    /// <summary>Feste Seite statt des Spielstands, z. B. für Bildschirmfotos wie im Video; <paramref name="highlighted"/> sind die
+    /// gelb gezeigten Vereine (sonst die Vereine der Manager).</summary>
+    public LeaguePairingsScreen(ScreenHost host, Screen back, League league, PairingsPage page, IReadOnlyCollection<int>? highlighted = null)
+        : this(host, back, league) => (_fixed, _highlighted) = (page, highlighted);
 
     private int Count => Host.Game is { } g && g.Schedules.TryGetValue(League, out var days) ? days.Count : 0;
 
@@ -111,37 +128,49 @@ public sealed class LeaguePairingsScreen : Screen
         s.HLine(13, 34, 303 - 13 + 1, 7);
         s.HLine(14, 35, 304 - 14 + 1, 1);
         s.Fill(new Rect(8, 23, 310 - 8 + 1, 33 - 23 + 1), 4);
-        CompetitionWidgets.Centered(s, Assets.Flow, 5, 313, 30, Header(IsPlayed), 10, 28);
+        CompetitionWidgets.Centered(s, Assets.Flow, 5, 313, 30, _fixed?.Header ?? Header(IsPlayed), 10, 28);
         s.Fill(new Rect(12, 35, 306 - 12 + 1, 157 - 35 + 1), 4);
 
-        if (Host.Game is not { } game)
+        if (Host.Game is not { } game || Page is not { } page)
             return;
-        var managers = game.Managers.Select(m => m.ClubIndex).ToHashSet();
+        var managers = (_highlighted ?? game.Managers.Select(m => m.ClubIndex)).ToHashSet();
         byte Color(int club, byte normal) => managers.Contains(club) ? Colors.Yellow : normal;
-        var played = Math.Max(game.PlayedMatchDays, 0);
-        var table = LeagueTable.Compute(game, League, TableView.Gesamt, played);
-        var strength = StrengthTable.Compute(game, game.LeagueClubs(League), StrengthView.Gesamt);
-        string Info(int club)
-        {
-            var rank = table.FirstOrDefault(r => r.Club.Index == club)?.Rank ?? 0;
-            var average = strength.FirstOrDefault(r => r.Club.Index == club)?.Average ?? 0;
-            return $"{CompetitionWidgets.Number(rank, 2)}. Platz, Stärke {CompetitionWidgets.Number(average, 2)}";
-        }
+        static string Info(int rank, int strength) =>
+            $"{CompetitionWidgets.Number(rank, 2)}. Platz, Stärke {CompetitionWidgets.Number(strength, 2)}";
 
-        var pairs = Pairings;
-        for (var k = 0; k < Math.Min(Rows, pairs.Count); k++)
+        for (var k = 0; k < Math.Min(Rows, page.Rows.Count); k++)
         {
             var y = FirstBaseline + RowPitch * k;
-            var (home, away) = pairs[k];
-            CompetitionWidgets.Centered(s, Assets.Flow, 0, 159, y, game.Clubs[home].Name, Color(home, Colors.TileBackground), null);
+            var row = page.Rows[k];
+            CompetitionWidgets.Centered(s, Assets.Flow, 0, 159, y, game.Clubs[row.Home].Name, Color(row.Home, Colors.TileBackground), null);
             CompetitionWidgets.Left(s, Assets.Flow, 156, y, "-", 7);
-            CompetitionWidgets.Centered(s, Assets.Flow, 160, 319, y, game.Clubs[away].Name, Color(away, 1), null);
-            CompetitionWidgets.Centered(s, Assets.Mini, 0, 159, y + 7, Info(home), 8, null);
-            CompetitionWidgets.Centered(s, Assets.Mini, 160, 319, y + 7, Info(away), 8, null);
-            var text = IsPlayed && ResultOf(home, away) is { } m
-                ? CompetitionWidgets.Number(m.HomeGoals, 2) + ":" + CompetitionWidgets.Number(m.AwayGoals, 2)
+            CompetitionWidgets.Centered(s, Assets.Flow, 160, 319, y, game.Clubs[row.Away].Name, Color(row.Away, 1), null);
+            CompetitionWidgets.Centered(s, Assets.Mini, 0, 159, y + 7, Info(row.HomeRank, row.HomeStrength), 8, null);
+            CompetitionWidgets.Centered(s, Assets.Mini, 160, 319, y + 7, Info(row.AwayRank, row.AwayStrength), 8, null);
+            var text = row.Result is { } r
+                ? CompetitionWidgets.Number(r.Home, 2) + ":" + CompetitionWidgets.Number(r.Away, 2)
                 : NoResult;
             CompetitionWidgets.Centered(s, Assets.Flow, 0, 319, y + 9, text, 7, null);
+        }
+    }
+
+    /// <summary>Inhalt der angezeigten Seite aus dem Spielstand (oder die feste Seite); ändert nichts.</summary>
+    public PairingsPage? Page
+    {
+        get
+        {
+            if (_fixed is not null)
+                return _fixed;
+            if (Host.Game is not { } game)
+                return null;
+            var played = Math.Max(game.PlayedMatchDays, 0);
+            var table = LeagueTable.Compute(game, League, TableView.Gesamt, played);
+            var strength = StrengthTable.Compute(game, game.LeagueClubs(League), StrengthView.Gesamt);
+            int Rank(int club) => table.FirstOrDefault(r => r.Club.Index == club)?.Rank ?? 0;
+            int Strength(int club) => strength.FirstOrDefault(r => r.Club.Index == club)?.Average ?? 0;
+            var rows = Pairings.Select(p => new PairingRow(p.Home, p.Away, Rank(p.Home), Strength(p.Home), Rank(p.Away), Strength(p.Away),
+                IsPlayed && ResultOf(p.Home, p.Away) is { } m ? (m.HomeGoals, m.AwayGoals) : null)).ToList();
+            return new PairingsPage(Header(IsPlayed), rows);
         }
     }
 }

@@ -65,7 +65,7 @@ public class SponsorTests
         game.AcceptOffer(me, new AdSlot(AdSlotKind.Fernsehen), 0);
         var sponsorsBefore = game.Finance(me).Book.Current(FinanceCategory.Sponsoren);
 
-        // bis zum nächsten Monatsersten abrechnen
+        // bis zum nächsten Monatsersten: Buchung am Monatsletzten, Ablauf am 1. (#133, #134)
         var day = game.FinanceDay + 1;
         while (SeasonCalendar.LayoutDate(day).Day != 1)
             day++;
@@ -79,20 +79,26 @@ public class SponsorTests
     [Fact]
     public void Offers_AtStartForEveryPartner_WithinTheOriginalEnvelope()
     {
-        // Spur finanzen-2: Beim Spielstart bekommt jede Art und jeder Partner ein Angebot (em.exe 0x3FBA0);
-        // Beträge liegen zwischen den Grenzen der Angebotsformel (0x3FC1A) für die Bewertung des Vereins.
-        var (game, me) = Create();
+        // Spur finanzen-2/finanzen-werbung: Bei einem Spiel über eine Saison bekommt beim Spielstart jede Art und jeder
+        // Partner ein Angebot ohne Würfeln (em.exe 0x2A051, #133); Beträge liegen zwischen den Grenzen der Angebotsformel
+        // (0x3FC1A) für die beim Start gespeicherte Bewertung (0x97CE).
+        var setup = new GameSetup { Duration = GameDuration.EineSaison };
+        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = 2 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
+        var me = game.ActiveManager;
         var ads = game.Ads(me);
-        var rating = SponsorRating.Compute(game, me);
-        Assert.Equal(4, ads.Offers.Count);
+        var rating = game.Finance(me).SponsorRating;
+        Assert.InRange(rating, 0, 100);
+        Assert.Equal(Enum.GetValues<AdSlotKind>().Length, ads.Offers.Count);
         foreach (var kind in Enum.GetValues<AdSlotKind>())
         {
             Assert.Equal(Sponsor.For(kind).Length, ads.Offers[kind].Count);
             foreach (var offer in ads.Offers[kind].Values)
             {
-                var low = FinanceRules.ToMarks(SponsorRules.OfferAmountThirds(rating - 6, kind, offer.Sponsor, 20, new MinRandom()));
-                var high = FinanceRules.ToMarks(SponsorRules.OfferAmountThirds(rating + 6, kind, offer.Sponsor, 22, new MaxRandom()));
+                var low = FinanceRules.ToMarks(SponsorRules.OfferAmountThirds(rating, kind, offer.Sponsor, 20, new MinRandom()));
+                var high = FinanceRules.ToMarks(SponsorRules.OfferAmountThirds(rating, kind, offer.Sponsor, 22, new MaxRandom()));
                 Assert.InRange(offer.MonthlyAmount, low, high);
+                Assert.Equal(rating, offer.Rating);
                 Assert.Contains(offer.Months, new[] { 12, 24 });
                 Assert.Contains(offer.OptionMonths, new[] { 0, 12, 24 });
                 Assert.InRange(offer.Boards, 1, kind == AdSlotKind.Bande ? 3 : 1);

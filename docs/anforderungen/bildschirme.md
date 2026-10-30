@@ -51,7 +51,8 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 ### Hauptmenü / Wochenübersicht
 * Titelleiste `kb\20`, darunter die Infoleiste (1,21)–(319,75): Datum, Manager, Verein; Kasten (5,33,102×40) mit der
   Tabellenkurve (gelb = eigener Verein, weiß = nächster Gegner) bzw. „Vor dem ersten Spieltag.“; Symbole für Wettbewerb und
-  Heim/Auswärts, bisherige Begegnungen („A 0:3,H 1:5“), Kontostand; sechs Lampen (Manager: rot = am Zug, grün = bereit);
+  Heim/Auswärts, bisherige Begegnungen („A 0:3,H 1:5“), Kontostand; sechs Warnlampen des Managers am Zug (Regeln in
+  `Screens/MenuLamps.cs`, em.exe 0x42996);
   Kopf (231,33) und Logo (273,33).
 * Große Kacheln 72 × 58 bei x = 9, 85, 161, 238 und y = 79, 137: Manager, Mannschaft, Statistiken, Tabellen,
   Paarungen, Stärken, Gemischtes, und tschüß…
@@ -127,3 +128,39 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 Aufsteiger (rot) und Absteiger (grün). Nach der gewählten Spieldauer folgt das Spielende mit Highscore.
 Wer zu lange zu hohe Schulden hat (unter −1,5 Mio. DM für 8 Wochen, nur lokale Spiele), wird entlassen – Spielende
 mit Entlassungstext; im Hot-Seat spielen die übrigen Manager weiter.
+
+## Pixelvergleich Runde 6 (Spur `pixel-verein`)
+
+Abläufe in `src/EishockeyManager.Tools/Scenarios/PixelVerein.cs`; die Bildnamen enden auf das Vorlagebild aus dem
+privaten Referenz-Repo (`docs/referenz-videos.md`). `pixel-verein` stellt den Spielbeginn aus Folge 1 nach (Manager
+„Kingsday d.2“, Kopf 4, Berliner SC, Spiel-Level 5, Modus „nur Fahne“), `pixel-verein-weltkugel` den Modus mit beiden
+Knöpfen, `pixel-verein-bundestrainer` den Zug des Bundestrainers im Modus 4. Kennzahl: mittlere Graudifferenz und Anteil der
+Pixel über 40, eigenes Bild je Vorlage um höchstens einen Pixel verschoben und weichgezeichnet (360p-Videos), Mauszeiger,
+Moderator und spielstandsabhängige Felder maskiert.
+
+| Bildschirm | Vorlage | Maskiert | Kennzahl |
+|---|---|---|---|
+| Taktik | `folge10_00300` (auch `_00302`–`_00328`, `duell_s2a_02108`, `eisbaeren_f16_03225` gesichtet) | – | 5,4 / 0,7 % |
+| Aufstellung | `folge01_00528` | Werte der Liste (#168), TW-Feld | 5,9 / 2,0 % |
+| Finanzen (Bank) | `folge01_00508` | – | 8,3 / 5,1 % – Kurse und Verlauf (#169) |
+| Hauptmenü, Reihe Gemischtes | `folge01_00600` | Gegner, Begegnungen, Konto, Zeiger | 7,4 / 1,9 % |
+| Reihe Statistiken („nur Fahne“) | `folge01_00526` | dto. | 7,6 / 2,0 % |
+| Reihe Tabellen / Gemischtes (Duell) | `duell_s2a_01203`, `_00135` | Infoleiste | 6,0 / 0,2 %; 5,9 / 0,1 % |
+| Reihen Stärken / Paarungen / Statistiken (beide Knöpfe) | `eisbaeren_f01_01430`, `_01431`, `_01011` | Infoleiste, Moderator | 7,9–8,1 / 0,6–0,7 % |
+| Bundestrainer Modus 4, vier Reihen | `eisbaeren_f24_00049`–`_00057` | dto. | 7,9–8,1 / 0,7 % |
+| Spielvorbereitung, Kopfwahl | `speedrun_t1_00056`, `eisbaeren_f01_00204` | Moderator | Text behoben (PV-01) |
+
+Belegt durch die Bilder (bisher `[APPROX]`): Belegung der Kachelreihe Stärken (1. Liga, 2. Liga, Oberliga, Länderteams,
+zwei leer); im Modus „nur Fahne“ sind die WM-Kacheln gesperrt, Europapokal bleibt frei; Kachelsperren des Bundestrainers.
+
+| Befund | Original | Stand |
+|---|---|---|
+| PV-01 Hinweis der Kopfwahl: x 188 … 319, Grundlinien 214 und 222 (bisher 2–3 Pixel tiefer, Abstand 7) | em.exe 0x28CF8; `speedrun_t1_00056` | behoben, `PixelVereinTests` |
+| PV-02 Kopfzeile der Aufstellung (auch Nationalteam): Grundlinie 23, Linie 25, eine Zeile Abstand (bisher eine Zeile tiefer, berührte die Linie) | em.exe 0x424DF; `folge01_00528` | behoben |
+| PV-03 Lampen: Warnlampen des Managers am Zug (0 Aufstellung unvollständig, 1 Spielerfeld 0x1E, 2 Konto im Minus trotz Sparbuch/Aktien, 3 Trainingskosten, 4 freie Werbefläche, 5 Depot im Minus), y = 33 + 7 · i; bisher Bereitschaft der Manager (R2-06), y = 31 + 7 · i | em.exe 0x42996–0x42CA6; `folge01_00600`, `duell_s2a_00135`/`_01203`, `eisbaeren_f01_01430` | behoben; `[APPROX]` Lampe 1 (Feld 0x1E ungeklärt) bleibt grün, Eisfläche als eine Fläche (#133) |
+| PV-04 Infoleiste des Bundestrainers vor WM-Spielen | siehe `docs/wettbewerbe.md` | behoben |
+| PV-06 Startwerte der Kaderspieler | `folge01_00528` | offen (#168, Core) |
+| PV-07 Börse zu Spielbeginn | `folge01_00508`–`_00510` | offen (#169) |
+| PV-08 Nachrichtenleiste nur mit Nachricht | `eisbaeren_f01_00348`, `speedrun_t1_00121` | offen (#170) |
+
+Nicht verglichen (kein Bildschirm im Remake): „Verein“-Statistik (`folge01_00522`, wartet auf `livespiel`).

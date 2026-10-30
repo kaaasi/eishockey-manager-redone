@@ -32,9 +32,10 @@ im Remake rechnet in DM (÷ 3 am Ende).
 - Jugendteams: 3 Teams, Förderung 0 (Spieler setzt sie im Bildschirm Jugend in 10.000-DM-Schritten, Deckel
   10.000 · 2^Team).
 
-## Monatsabschluss (`0x3F02C` ff., am Monatsersten)
+## Monatsabschluss (`0x3F02C` ff., am Monatsletzten)
 
-`Konto += Einnahmen(0) − Ausgaben(0,0) + Zinskonto[Manager]`, danach Konto auf ±500.000.000 Drittel begrenzt und
+Läuft, wenn `[0x5A20]` (Tag) = Monatslänge (DGROUP `0x393`) ist, also am **Monatsletzten** (#134; bis Runde 5 im Remake am
+Ersten des Folgemonats). `Konto += Einnahmen(0) − Ausgaben(0,0) + Zinskonto[Manager]`, danach Konto auf ±500.000.000 Drittel begrenzt und
 Zinskonto = 0. **Keine** Trainingskosten, keine Zinsen in den beiden Funktionen – die laufen über das Zinskonto
 (Tagesabschluss) bzw. je Trainingstag.
 
@@ -42,7 +43,7 @@ Zinskonto = 0. **Keine** Trainingskosten, keine Zinsen in den beiden Funktionen 
 
 ```
 grund   = 5 · Spielerzahl · (KondAbwehr + KondSturm + TechAbwehr + TechSturm)      [Vereinsfelder 0x18–0x1B]
-werbung = Σ Monatsbetrag der 11 Werbeverträge (7 Bande, 2 Eis, Trikot, Fernsehen)
+werbung = Σ Monatsbetrag der 11 Werbeverträge (7 Bande, Trikot, Fernsehen, 2 Eistafeln), auch abgelaufener mit Option
 ```
 Anzeige zusätzlich (Flag 1): Zinsertrag auf Forderungen (2,5 % Manager, 1 % Sparbuch). Gebucht wird davon nichts
 direkt (siehe Tagesabschluss). Belegt: ESC Wolfsburg (Oberliga, 20 Spieler) 4.066 DM = 12.200 Drittel → Summe
@@ -74,10 +75,12 @@ ergibt die Formel exakt 87.370 DM (Abschnitt „Unabhängige Nachprüfung“).
 - Je Werbefläche (11) mit Wahrscheinlichkeit 1/11 das Flag `0xCC09 + 11·Manager + Fläche` löschen.
 - Zinskonto += (Zinsertrag Forderungen [2 % Manager, 1 % Sparbuch] − Kreditzinsen − 10 % des negativen Kontostands)
   / (Tage im Monat + 1).
-- Am 1. und in der Monatsmitte: Werbeangebote neu (`0x100:0x5C`), dazu mit 50 % eine „Prämie“
-  60.000 + 10.000 · random(0,10), auf 3.000 gerundet (Feld `0x20D + 4·Manager`).
-- Am 1.: Werbeverträge: Restmonate −1; bei 0 ohne Option gelöscht, mit Option Nachricht „Werbepartner mit
-  Verlängerungsoption“.
+- Am Monatsletzten und am Tag ⌊Monatslänge/2⌋ (`0x3EE6B`): Werbeangebote neu (`0x100:0x5C`), dazu mit 50 % eine
+  „Prämie“ 60.000 + 10.000 · random(0,10), auf 3.000 gerundet (Feld `0x20D + 4·Manager`; im Remake nicht umgesetzt).
+- Am 1. (`0x3EF52`): Werbeverträge: Restmonate −1; bei 0 ohne Option still gelöscht, mit Option bleibt der Vertrag (und
+  zahlt) und es kommt einmal die Meldung „Ein Werbepartner mit Verlängerungsoption / bittet Sie an den Verhandlungstisch.“
+- Am Monatsletzten der Monatsabschluss (oben). Nach dem Tagesabschluss berechnet `0x5569F` die Werbebewertung neu und
+  speichert sie (`0x97CE`).
 
 ## Zuschauer und Eintritt (`0x3F185`, Aufruf `0x5464A` je Heimspiel eines Managervereins)
 
@@ -116,36 +119,57 @@ Saison 1 Schnitt 3.049, Minuskulisse 1.046, Rekord 4.500. Statistik „Benötigt
 
 ### Bewertung des Vereins (`0x3F833`, Feld `0x97CE`, 0–100)
 
+Korrigiert in der Spur `finanzen-werbung` (#132):
 ```
-S  = (2 − StartLiga) · (80 · Titel(0x40) + 170)
-   + [n ≠ 0] · 32 · (Titel(0x08) · (n+1) − 2)  + 47 · Titel(0x20) · ([0x7AF]+1),   n = [0x5CF3] (DEB-Pokal-Runde)
+S  = (2 − StartLiga) · (80 · M + 170)
+   + [n ≠ 0] · 32 · (P · (n+1) − 2)  + 47 · E · ([0x7AF]+1),   n = [0x5CF3] (DEB-Pokal-Runde)
    + 12 · (11 − Mittel der Ligaplätze der letzten ≤ 5 Saisons, ohne Historie 6)
-   + Mittel(Spielerwert / 5500)  + random(20,50) · min(4, #Spieler mit Wert/7000 > random(35,55)/10)
-R  = min(100, ((S + 3 · W) / 12 + 10 · (2 − StartLiga)) · 85 / 100)
+   + Ø(Spielerwert / 5500)  + random(20,50) · min(4, #Spieler mit Wert/7000 > Ø(Wert/5500) · random(35,55)/10)
+   + 3 · W
+R  = min(100, (((S mod 2^16) / 12 + 10 · (2 − StartLiga)) · 85 mod 2^16) / 100)
 Stadionwert W (0x3EBEA) = [min(50000, (1,5·Sitz + Steh)/2) + Σ adj_i · V_i] / 700,
    V = [4333, 2333, 1166, 2833, 2000, 3333, 2333, 3166, 2250], adj: Überdachung − 1 (falls > 0), Kühlanlage ≥ 1,
    Sitzkomfort fest 2, Zustand fest 3, sonst Stufe.
 ```
+M, P, E sind 0/1 aus `0x110:0x61` (Datei `0x44A48`, Aufruf mit Flag 1): 1, sobald der Verein in den Paarungen der
+laufenden Runde steht – Maske 0x40 Meisterrunde (`[0xCCA3]`, Liste `0x5D3B`), 0x08 DEB-Pokal (Runde `[0x5CF3]`, Paarungen
+`0x5CFA`), 0x20 Europapokal (Termin `[0x7AF]`, Gruppen bzw. Endrunde). Keine Titelzähler.
 Pokalterm (Nachprüfung #75): Der Hilfswert `[bp−0xC]` startet mit **2** (0x3F840) und wird nur bei `[0x5CF3] ≠ 0` zu
-`Titel(0x08) · ([0x5CF3] + 1)` (0x3F870–0x3F898); addiert wird `32 · (Hilfswert − 2)` (0x3F8EE, `random(32, 32)`).
-`[0x5CF3]` ist die Runde des DEB-Pokals (Wettbewerb 0, Feld `[Wettbewerb + 0x5CF3]`): 0 beim Programmstart (BSS) und
-zu Beginn der Auslosung (0x341CC), 1 nach der Auslosung (0x346B3), +1 je Runde (0x348DD, höchstens 5). Ohne
-ausgelosten Pokal ist der Term also 0, danach ohne Titel −64. `n` ist damit aufgelöst; offen bleiben die Titelzähler
-`0x110:0x61` (Masken 0x40/0x08/0x20) → im Remake `[APPROX]` über Meister/Pokal/Europapokal-Zähler, und `[0x7AF]`.
+`P · ([0x5CF3] + 1)` (0x3F870–0x3F898); addiert wird `32 · (Hilfswert − 2)` (0x3F8EE, `random(32, 32)`).
+`[0x5CF3]` ist die Runde des DEB-Pokals: 0 beim Programmstart (BSS) und zu Beginn der Auslosung (0x341CC), 1 nach der
+Auslosung (0x346B3), +1 je Runde (0x348DD, höchstens 5).
+Star-Spieler (0x3FA24–0x3FAC3): je Spieler ein eigener Zug random(35, 55); Vergleich 32 Bit ohne Vorzeichen.
+Ende (0x3FAC5–0x3FB2E): alles in 16 Bit, Division ohne Vorzeichen, nur nach oben gekappt (S = −12, Oberliga → 53).
+Gespeichert wird R beim Spielstart (`0x2A03B`), nach jedem Tagesabschluss (`0x5569F`) und beim Klick auf einen Vertrag
+mit Option (`0x2B7A6`); die Angebote rechnen mit dem gespeicherten Wert.
+[APPROX] im Remake: Abbildung von M/P/E auf die Wettbewerbe des Remakes (`GameState.CurrentParticipation`), Europatermin =
+Zahl der gespielten Europapokaltermine; Ø-Rang über die Saisons des Managers (Original: Index `[0x7A9 + Liga] − 5 … − 1`,
+Index 0 übersprungen, Herkunft offen); Spielerwert = Kaufpreis × 3.
 
-### Angebote (`0x3FB47`, am 1. und zur Monatsmitte, sowie beim Spielstart)
+### Angebote (`0x3FB47`, am Monatsletzten und zur Monatsmitte, beim Spielstart und zu Saisonbeginn)
 
-Je Art k (0 Bande, 1 Eis, 2 Trikot, 3 Fernsehen, 4 unbenutzt) und Partner p (0–9), W = 10·R:
+Je Art k (0 Bande, 1 Trikot, 2 Fernsehen, 3 Eistafel 1, 4 Eistafel 2; #133) und Partner p (0–9), W = 10 · gespeicherte
+Bewertung (`0x97CE`, nicht neu berechnet):
 ```
-nicht am Spielstart: Partner p wird nur mit Wahrscheinlichkeit 1/(⌊2p/3⌋ + 1) neu bedient (sonst bleibt das alte Angebot);
-   Trikot nur Partner 0–4 (sonst Angebot gelöscht);
+ohne Flag (Flag nur beim Spielstart eines Spiels über eine Saison, 0x2A051): Partner p wird nur mit Wahrscheinlichkeit
+   1/(⌊2p/3⌋ + 1) neu bedient (sonst bleibt das alte Angebot); Fernsehen nur Partner 0–4 (fünf Sender, sonst gelöscht);
    random(0, 5 − W/200) ≠ 0 und random(0,4) ≤ p → Angebot gelöscht, sonst neu:
 m      = random(20, 22)
-betrag = random(W·m, 13·(W·m/10)) · K[k] / 10 · (65 + 8·(p + 3·[k = Trikot])) · 6 / 100 · ([0x2C0] − 20) / 100   (Drittel)
-         K = [8, 20, 32, 15, 15]
+betrag = random(W·m, 13·(W·m/10)) · K[k] / 10 · (65 + 8·(p + 3·[k = Fernsehen])) · 6 / 100 · ([0x2C0] − 20) / 100   (Drittel)
+         K = [8, 20, 32, 15, 15]   (Bande, Trikot, Fernsehen, Eis 1, Eis 2)
 felder = random(0, m − 15) = 0 ? random(2, 3) : 1          (nur Bande relevant)
 laufzeit = 12 · random(1, 2) Monate; Option: random(0,7) = 0 → 12 · random(1, 3 − laufzeit/12) Monate, sonst 0
+feld +8 = W/10 (Bewertung beim Angebot, geht in den Vertrag)
 ```
+Aufrufe: Spielstart `0x2A061` (Flag = Spielende 1994), Tagesabschluss `0x3EEA7` (Flag 0), Saisonbeginn `0x56650` (Flag 0).
+Eistafel 1 ist im Werbebildschirm nur mit Überdachung HALLE (Stufe 2), Eistafel 2 nur mit Kühlanlage 'MEGAFROST' (Stufe 2)
+nutzbar (`0x2B56A–0x2B587`).
+
+**Vertragsende und Verhandlung (#133):** Am 1. Restmonate −1 (`0x3EF52`); bei 0 ohne Option gelöscht, mit Option bleibt
+der Vertrag mit Restlaufzeit 0 und zahlt weiter. Erst ein Klick auf die Fläche im Werbebildschirm (`0x2B75F`) verhandelt:
+x = random(90, 120) · Bewertung_beim_Angebot / 100, dann Bewertung neu (`0x2B7A6`); bei x < Bewertung_neu die Frage
+„Möchten Sie den Vertrag mit … verlängern ?“ (Ja: Restlaufzeit = Option, Nein: gelöscht), sonst „Die Firma … wird den
+Vertrag nicht verlängern.“ und gelöscht; die Option ist danach 0.
 Beleg UI-Video (Oberliga, Spielbeginn): Bande 3.454 und 5.464 DM/Monat (12 Monate), Fernsehen 16.503 DM (24 Monate)
 → R ≈ 20–25. Karriere-Video: Rushware 13.899 DM/Monat in Saison 2.
 
@@ -200,7 +224,7 @@ Dateigrenzen dieser Spur oder zu groß für sie (Folgespur).
 | `FinanceMonthly.cs:32/94` Grundausgaben `0x3E811` | bestätigt | Aufrufe: Anzeige `0x2AE94`/`0x2DDF0` mit (1, 1), Monatsabschluss `0x3F0BE` mit (0, 0) |
 | `FinanceMonthly.cs:44/87` Grundeinnahmen | bestätigt | `0x3E657–0x3E706`: Σ Vereinsbytes +0x18/+0x19/+0x1A/+0x1B · 15 · Spielerzahl / 3; Werbeverträge `0x3E70C` |
 | `FinanceMonthly.cs:67` Kostenstufe | bestätigt | gesetzt `0x29F22` (Start-Liga), Saisonende `0x563C0`: Vereinsindex ≥ [0x7C1] (12) und ≥ [0x7C2] (24) |
-| `FinanceMonthly.cs:74/122` Zinskonto | Formel bestätigt, **Zeitpunkt abweichend (#134)** | täglich `0x3ED4F–0x3EE67`: (Forderungen 2 %, Sparbuch 1 %, Kredite, 10 % Überziehung)/(Monatslänge+1) nach DGROUP `0x2A0`; gebucht wird bei `0x3F02C` am **Monatsletzten** ([0x5A20] = Monatslänge), im Remake am Ersten |
+| `FinanceMonthly.cs:74/122` Zinskonto | Formel bestätigt, **Zeitpunkt abweichend (#134), behoben in `finanzen-werbung`** | täglich `0x3ED4F–0x3EE67`: (Forderungen 2 %, Sparbuch 1 %, Kredite, 10 % Überziehung)/(Monatslänge+1) nach DGROUP `0x2A0`; gebucht wird bei `0x3F02C` am **Monatsletzten** ([0x5A20] = Monatslänge), im Remake am Ersten |
 | `FinanceMonthly.cs:100` Forderungszinsen | bestätigt | `0x3E73B–0x3E7C6` (Flag 1): Manager 25/1000, Bank (Sparbuch) 10/1000 |
 | `FinanceMonthly.cs:111` Kreditzinsen | bestätigt | `0x57768` (Modus 1) mit `0x57C64`: Manager 25/1000, Bank 4/100 |
 | `Finance.cs:86` Gehälter | bestätigt (auch Teilbefund ChatGPT) | `0x3E8DC–0x3E99F`: Gehalt (+0x28) und Versicherung (+0x30) über eigene Slots und eigene Spieler auf der Transferliste (Besitzer +0x1A) |
@@ -217,13 +241,13 @@ Dateigrenzen dieser Spur oder zu groß für sie (Folgespur).
 | `FinancePremiums.cs:21` Aufstieg | bestätigt | `0x270A8–0x27124`: 500.000 / 300.000 DM; Video 0:18:40, 0:57:50 |
 | `FinancePremiums.cs:32` Tabellenprämie | **abweichend**: Tabellenprämie gestrichen, **Fair-Play #135** | 0xE0:0x20 (`0x2A1E0`) ist die Fair-Play-Tabelle (Strafminuten); Video 0:35:54 „1. Platz der Zweite Liga, Prämien: keine“ |
 | `FinanceSponsorRating.cs:20` Stadionwert | bestätigt | `0x3EBEA–0x3ED00`, Tabelle DGROUP `0x4F9C` |
-| `FinanceSponsorRating.cs:4/57` Bewertung | **abweichend (#132)** | `0x3F833–0x3FB46`: Wettbewerbsterme 0/1 für „aktuell im Wettbewerb“ (keine ewigen Titel), Europaterm ·(Runde+1), Star-Schwelle ·Kaderschnitt, Ende in 16 Bit ohne Untergrenze 0 |
+| `FinanceSponsorRating.cs:4/57` Bewertung | **abweichend (#132), behoben in `finanzen-werbung`** | `0x3F833–0x3FB46`: Wettbewerbsterme 0/1 für „aktuell im Wettbewerb“ (keine ewigen Titel), Europaterm ·(Runde+1), Star-Schwelle ·Kaderschnitt, Ende in 16 Bit ohne Untergrenze 0 |
 | `FinanceSponsors.cs:80` Option | bestätigt | `0x3FD52–0x3FD91`: Feld +6, 1/8, 12·rnd(1, 3 − Jahre) |
-| `FinanceSponsors.cs:110/174` Angebote | Betrag und Wahrscheinlichkeiten bestätigt, **Zuordnung der Arten abweichend (#133)** | Faktortabelle DGROUP `0x4F05` = 8, 20, 32, 15, 15: Fernsehen 32 (p+3, nur 5 Sender), Trikot 20, Eisfläche 15 (zwei Felder, nur HALLE bzw. MEGAFROST) |
-| `FinanceSponsors.cs:169` Startangebote | **abweichend (#133)** | Flag nur bei Spieldauer eine Saison (`0x2A051`); sonst auch beim Start gewürfelt; zusätzliche Erneuerung zu Saisonbeginn (`0x56650`) |
-| `FinanceSponsors.cs:218` Erneuerung | **abweichend (#133)** | `0x3EE6B–0x3EEA2`: am Monatsletzten und am Tag ⌊Monatslänge/2⌋ |
-| `FinanceSponsors.cs:265` Monatsbuchung | **abweichend (#133)** | Laufzeit −1 am 1. (`0x3EF52`), Buchung am Monatsletzten in Dritteln; Verträge mit Option zahlen bis zur Verhandlung weiter |
-| `FinanceInbox.cs:129` Vertragsende | **abweichend (#133)** | `0x3EFB2`: mit Option nur Meldung, Frage erst im Werbebildschirm und nur bei rnd(90, 120)·Bewertung_alt/100 < Bewertung_neu; ohne Option still |
+| `FinanceSponsors.cs:110/174` Angebote | Betrag und Wahrscheinlichkeiten bestätigt, **Zuordnung der Arten abweichend (#133), behoben in `finanzen-werbung`** | Faktortabelle DGROUP `0x4F05` = 8, 20, 32, 15, 15: Fernsehen 32 (p+3, nur 5 Sender), Trikot 20, Eisfläche 15 (zwei Felder, nur HALLE bzw. MEGAFROST) |
+| `FinanceSponsors.cs:169` Startangebote | **abweichend (#133), behoben in `finanzen-werbung`** | Flag nur bei Spieldauer eine Saison (`0x2A051`); sonst auch beim Start gewürfelt; zusätzliche Erneuerung zu Saisonbeginn (`0x56650`) |
+| `FinanceSponsors.cs:218` Erneuerung | **abweichend (#133), behoben in `finanzen-werbung`** | `0x3EE6B–0x3EEA2`: am Monatsletzten und am Tag ⌊Monatslänge/2⌋ |
+| `FinanceSponsors.cs:265` Monatsbuchung | **abweichend (#133), behoben in `finanzen-werbung`** | Laufzeit −1 am 1. (`0x3EF52`), Buchung am Monatsletzten in Dritteln; Verträge mit Option zahlen bis zur Verhandlung weiter |
+| `FinanceInbox.cs:129` Vertragsende | **abweichend (#133), behoben in `finanzen-werbung`** | `0x3EFB2`: mit Option nur Meldung, Frage erst im Werbebildschirm und nur bei rnd(90, 120)·Bewertung_alt/100 < Bewertung_neu; ohne Option still |
 
 **Zufall** 0x38:0x847(a, b): beide Grenzen inklusiv, bei b < a getauscht (Borland-Generator, 15 Bit) – wie
 `SquadSetup.Between`.
@@ -264,3 +288,62 @@ vergleicht. Jeder Abdruck ändert sich in genau einem Schritt; `bcf0b0b` ändert
 Tabellen-, Meister- und Pokalprämie wirken in keinem der fünf Fälle (kein Hauptrunden-Erster, kein Meister, kein
 Pokalsieg des Probe-Vereins; Originaldatenfälle durch `e3abc90` unverändert). Der passive Originaldatenfall bleibt mit
 allen vier Codeständen gleich.
+
+## Spur `finanzen-werbung` (Runde 6): #132, #133, #134
+
+Umgesetzt nach den Abschnitten oben (Bewertung, Angebote, Vertragsende, Monatsabschluss am Monatsletzten); Regressionstests
+in `tests/EishockeyManager.Core.Tests/FinanceWerbungTests.cs` und `tests/EishockeyManager.UI.Tests/FinanceWerbungScreenTests.cs`.
+Neuer Zustand (Schema 7, `SaveGame.Migration6.cs`): gespeicherte Bewertung je Manager (−1 in alten Spielständen, beim
+nächsten Gebrauch berechnet), Bewertung in Angebot und Vertrag (alte Verträge 0 → Verhandlung endet immer mit der Frage),
+zweite Eistafel als eigene Art. Offene Verlängerungsfragen alter Spielstände bleiben im Posteingang beantwortbar.
+Nicht umgesetzt: die „Prämie“ der Angebotstage (Feld `0x20D`), Drittel-DM-Summe der Werbeverträge (Remake: DM je Vertrag).
+
+**Mehrsaisonprobe, Ursache je geändertem Referenzwert.** Ermittelt mit einer Probe, die `RngTwinProbeTests.Run` auf
+Base `1e4731b` und auf dem Spur-Stand laufen lässt und nach jedem Schritt Zustand, Konto und alle vier Zufallsquellen
+vergleicht. In allen Fällen bleiben Haupt-, Pokal- und Vertragszufallsquelle in jedem Schritt gleich – keine
+Spielergebnisse, Auslosungen, Titel oder Vertragsentscheidungen verschieben sich.
+
+| Fall | erste Differenz | Ursache |
+|---|---|---|
+| synthetisch passiv/aktiv, Seed 3 und 11 (4 Abdrücke) | FinanceRandom im ersten Schritt (Tag 3); Konto im Schritt bis Tag 21 (Monatsletzter 30.9.) | Bewertung nach jedem Tagesabschluss zieht aus FinanceRandom (`0x5569F`); Monatsabschluss am 30.9. statt 1.10. (#134), andere Werbeangebote (#132/#133) |
+| Originaldaten passiv/aktiv (Verein 42) | FinanceRandom und Konto im ersten Schritt (Tag 3) | wie oben; das Heimspiel an Tag 3 zieht für die Zuschauer aus dem verschobenen FinanceRandom (Einnahme −880 DM) |
+| Modus 4 (`GameModeTests`, Vereine 2 und 30) | nur Kontostände beider Manager | wie oben; Titel, `R…` und `C…` unverändert |
+
+## Heimspiel-Statistik (Runde 6, Spur `heimspiel-statistik`, #136)
+
+Geprüft an `em.exe` (`ndisasm`); Overlay der Spielabrechnung ab Datei `0x51E90` (Einsprung `0x93` = `0x544C0`,
+aufgerufen vom Spieltagsablauf `0x36B5D` über `0x36DBD`/`0x36F9C`).
+
+**Zuschauerstatistik** (`0x54664–0x54760`, Managerfelder als DGROUP-Offset bei Manager 0): Verlauf `[0x9759 + n]` =
+Zuschauer/1000 (Byte), Summe `[0x97DE]`, Rekord `[0x97E2]` mit Gegner `[0x976F]` (übernommen bei Rekord ≤ Zuschauer),
+Minuskulisse `[0x97E6]` mit Gegner `[0x9770]` (bei Minuskulisse ≥ Zuschauer), Zähler `[0x9748]`. Nur **Ligaspiele**:
+Pokale, Play-Off-/Aufstiegsrunden und WM übergeben dem Spieltagsablauf eine Teilnehmerzahl, dann springt `0x54658` an
+der Statistik vorbei; der Eintritt wird vorher (`0x5464A`) immer gebucht. Saisonwechsel `0x55A86–0x55ADB`: Rekord,
+Summe, Zähler 0, Minuskulisse 99.999 (`0x1869F`, auch Spielstart `0x29C2F`); die Gegner bleiben stehen. Anzeige
+„Schnitt“ `0x2DB79` = Summe / Zähler. Remake: `StadiumStatistics` (`ManagerFinance.HomeStatistics`), Schema 7 → 8
+(`SaveGame.Migration7.cs`; in der Integration Runde 6 umnummeriert, weil `finanzen-werbung` 6 → 7 belegt).
+
+**Spielbedeutung** (`0x545CD–0x54601`): x = [Code 6] + 2·[Code 3] + [Code 1] mit dem Wettbewerbscode DGROUP `0xD0C2`.
+Zuordnung der Schreibstellen: Code 7 Ligaspieltag (`0x35EC4`, Teilnehmerzahl 0), Code 6 DEB-Pokal (`0x35E7C`, Schalter
+DEB-Pokal `0x227`), Code 1 Play-Off-/Aufstiegsrunden (`0x31AB7`, Gruppen aus DGROUP `0xCF20`, Zähler `0x7B0`),
+Code 3 Europapokal-Gruppen und Code 5 Endrunde (`0x31490`/`0x3149B`: +2 bei Termin `[0x7AF]` > 5), Code 8/10 WM
+(`0x30F53`/`0x31017`). Ergebnis: DEB-Pokal 1, Play-Off/Aufstieg 1, Europapokal-Gruppen 2, **Europapokal-Endrunde 0**
+(vorher 2, behoben), Liga und WM 0.
+
+**Karriere-Video** (Abnahme 2, ESC Wolfsburg Saison 1: Schnitt 3.049, Minuskulisse 1.046, Rekord 4.500): Ein passiver
+Lauf mit Originaldaten (11 DM, Level 3, acht Seeds) ergibt 22 Ligaheimspiele, Rekord bis 4.500 (ausverkauft) und
+Minuskulissen 240–1.700, aber einen Schnitt von 1.400–2.800. Der Video-Manager spielt aktiv (Aufstiegssaison, stärkere
+Mannschaft); die Nachfrage hängt an Stärke und Tabellenplatz. Kein Hinweis auf einen Fehler der Statistik; die Höhe
+der Nachfrage bleibt eine Frage der Formel (`SpectatorRules`) und der Spielstärke, nicht dieser Spur.
+
+**Weniger als neun Spieler** (`0x54420`, Prüfungen `0x54589` Heim / `0x547AA` Gast): Der Managerwert `[0x974B]` wird
+in `0x952C` auf 100 gesetzt, wenn weniger als neun Kaderplätze aufgestellt und eingesetzt sind (`0x9698`, Zählung
+`0x388F6`). Dann: Meldung „Weniger als neun Spieler!“ (DGROUP `0x54E9`), Konto − 200.000 DM (`0x5448D`: 0x30D40 · 3),
+keine Zuschauer, kein Eintritt, keine Statistik; das Spiel wird 0:2 bzw. 2:0 gewertet (`0x36DC5–0x36DE9`). Gilt für
+Heim- und Gastmannschaft eines Managers in allen Wettbewerben. Umsetzung im eigenen PR (siehe dort: Wirkung auf passive
+Manager, deren Kader mit den Startverträgen ausläuft).
+
+**Oberliga-Austausch** (Nebenbefund `0x562C6–0x562DE`): In der Saisonwende scheidet aus der dritten Gruppe (Oberliga)
+ein Verein aus; gehört er einem Manager (Vereinsfeld +0x16) ohne Statusbit 0x04, bekommt der Manager Statusbit 0x02
+und das Konto wird auf 1.200.000 Drittel = **400.000 DM** gesetzt. Belegt, aber im Remake nicht erreichbar: Dort
+verlassen Managervereine die Oberliga nie (`SeasonFlow.FinishClubSeason`, `[APPROX]`). Nicht umgesetzt; Folge-Issue.

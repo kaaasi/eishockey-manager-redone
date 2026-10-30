@@ -60,10 +60,10 @@ Leere Ziehung (`03_debpokal_leer`) gegen `oberflaeche_0345` ohne Dialog: 9,4 / 2
 Fragefenster vermessen am Video (`emtool screens gamedata <ziel> debpokal-auslosung`, Bild `01_frage_spielstart` gegen
 `oberflaeche_0346`): Rahmen orange x 77–240, y 109–181 wie im Video; „?“-Felder, Überschrift, Zeilen und Knöpfe beste
 Verschiebung (0 | 0); mittlere Abweichung im Kasten 12,7 Grauwerte, 8,4 % der Pixel über 40 (Schriftkanten der Zeilen).
-Weitere Vorlagebilder seit den Reihen `folge01` … `folge29` und `videos-roh-2` (`docs/referenz-videos.md`): Frage
-`folge01_00217`, `folge08_00102`, `duell_s2a_02651`, `eisbaeren_f51_01451`; „DEB-Pokalspiele“ mit Ergebnissen
-`folge13_02545` (beide Termine); nur Paarungen ohne Ergebnisse `duell_s2a_01217` (erste Runde), `duell_s6a_03100`
-(Achtelfinale) und `eisbaeren_f60_02758` (Endspiel).
+Seit Runde 6 auch gegen die neuen Reihen vermessen (Frage `folge01_00217`, `duell_s2a_02651`; aufgedeckt
+`eisbaeren_f30_01719`, `eisbaeren_f52_03358`) und „DEB-Pokalspiele“ (`folge13_02545`, `duell_s2a_01217`, `duell_s6a_03100`,
+`eisbaeren_f60_02758`) – Kennzahlen und zwei Befunde (Rundenname, Großschrift) im Abschnitt
+[Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-pixel-wettbewerbe).
 
 ## Europapokal (`Core/CupsEurope.cs`, `Core/CupsGroup.cs`)
 
@@ -86,7 +86,9 @@ Zahlen mit Mindestbreite füllen fehlende Stellen mit der Breite der Ziffer 0 au
 Pixelvergleich `emtool screens gamedata ~/work/screens europapokal`, Bild `00_gruppe1_video_13_11` gegen
 `oberflaeche_1311` (Person und Mauszeiger maskiert): mittlere Abweichung 7,2, 1,9 % der Pixel über 40.
 
-**Offen:** Ergebnisse gespielter Begegnungen (Lage aus 0x3248 nicht im Video belegt). Vorlagebilder mit Ergebnissen seit der Reihe `folge04` (`folge04_01241`–`01247`) und `folge20` (`folge20_02316`, `02318`).
+Ergebnisse gespielter Begegnungen seit Runde 6 an `folge04_01241`–`01247`, `eisbaeren_f51_03346`, `eisbaeren_f58_01323`
+vermessen: „links:rechts“ wie die Paarung (auch das Rückspiel), zweistellig; Termine nur, solange in der Gruppe noch nicht
+gespielt wurde (Abschnitt [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-pixel-wettbewerbe)).
 
 ## Weltmeisterschaft (`Core/CupsWorld.cs`)
 
@@ -112,7 +114,9 @@ Pixelvergleich `emtool screens gamedata ~/work/screens wm`, Bild `00_gruppe1_vid
 mittlere Abweichung 13,1, 9,3 % der Pixel über 40 – an den kontrastreichen Flaggenkanten (Videounschärfe); Zahlen,
 Ränge und Linien liegen pixelgenau.
 
-**Offen:** K.-o.-Ansicht (Knopf „Endrunde“) nicht im Video – `[APPROX]`-Liste; WM-Statistik wartet auf `livespiel`.
+K.-o.-Ansicht seit Runde 6 nach dem Original: eigener Bildschirm „WM-Endrundenspiele“ (`WorldCupKnockoutScreen`, dieselbe
+Funktion wie „DEB-Pokalspiele“ mit Wettbewerb 3), vermessen an `eisbaeren_f35_00646` und `eisbaeren_f44_01330` (Abschnitt
+[Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-pixel-wettbewerbe)). **Offen:** WM-Statistik wartet auf `livespiel`.
 
 ## Stärken (`Core/StatisticsStrength.cs`, `UI/Screens/Statistics/StrengthScreen.cs`)
 
@@ -322,7 +326,20 @@ Unterschiede zu Modus 1: keine Ernennung zu Saisonbeginn und kein Sprung – die
 erst am 13. April und nur für einen Manager unter den ersten fünf der 1. Liga; das Vereinsmenü bleibt, der Bundestrainer
 bekommt an WM-Tagen einen zusätzlichen Zug; ohne Ernennung spielt Deutschland mit ausgewürfelten Werten. Spielstand
 Schema 5 (`_nationalTurn`, Migration `SaveGame.Migration4.cs`). Bildschirmfotos: `emtool screens gamedata ~/work/screens
-bundestrainer-modus4` (kein Videobeleg für Modus 4).
+bundestrainer-modus4`.
+
+**Videobeleg Modus 4 (Spur `pixel-verein`, Eisbären-Reihe Folge 24, 14. April 2005):** Ablauf
+`emtool screens gamedata ~/work/screens pixel-verein-bundestrainer` (Düsseldorfer EG, Saison bis zum ersten Zug des
+Bundestrainers). Kachelsperren im Zug „Manager 5“ stimmen mit dem Video überein: Reihe Manager alles gesperrt
+(`eisbaeren_f24_00049`), Mannschaft frei bis auf „Verträge“ (`_00051`), Statistiken nur „WM-Statistik“ (`_00053`),
+Tabellen nur „WM“ (`_00057`). Pixelvergleich der Kachelreihen (Infoleiste, Moderator unten links maskiert, Verschiebung
+und Unschärfe je Bild angepasst): mittlere Abweichung 7,9–8,1, 0,7 % der Pixel über 40.
+
+| Befund | Original | Stand |
+|---|---|---|
+| PV-04 Infoleiste vor einem WM-Spiel: Symbol „WM“ (Weltkugel) auch nach der Vereinssaison, **kein** Heim-/Auswärtssymbol – in beiden Modi des Bundestrainers | `eisbaeren_f24_00039`, `_00115`; `bundestrainer_00030`, `_00101` | behoben (`MainMenuScreen.cs`), Tests `PixelVereinTests.CoachInfoBar_*` |
+| PV-03 Lampen der Infoleiste sind Warnlampen des Managers am Zug; beim Bundestrainer Lampen 2–5 grün, Lampe 0 rot ohne vollständige WM-Aufstellung (im Video rot) | em.exe 0x42996–0x42CA6, `eisbaeren_f24_00115` | behoben (`Screens/MenuLamps.cs`) |
+| PV-08 Ohne Nachricht keine Nachrichtenleiste (Hintergrund sichtbar) | `eisbaeren_f24_00040`, `_00424` | offen (#170) |
 
 Offen (außerhalb dieser Spur): Die Tabellensuche setzt bei jedem Manager unter den ersten fünf zusätzlich Statusbit 0x40
 (Manager-Feld 0x974E, außer Modus 2, 0x553BD–0x553F2) → Saisonende-Symbol 8 (`docs/finanzen-rekonstruktion.md`), im
@@ -380,9 +397,9 @@ Spiele 5–8).
 
 ## Paarungen Liga (Spur `paarungen-liga`, Runde 5)
 
-Kacheln „Paarungen 1. Liga“, „Paarungen 2. Liga“, „Paarungen Oberliga“ → `LeaguePairingsScreen`. **Kein Videobild:**
-Der Aufbau stammt allein aus der statischen Disassemblierung von em.exe (kein Emulator verfügbar); ein Pixelvergleich ist
-nicht möglich. Aufbau und Farben stehen im Klassenkommentar.
+Kacheln „Paarungen 1. Liga“, „Paarungen 2. Liga“, „Paarungen Oberliga“ → `LeaguePairingsScreen`. Der Aufbau stammt aus der
+statischen Disassemblierung von em.exe und ist seit Runde 6 an Videobildern bestätigt (keine Abweichung, Kennzahlen im
+Abschnitt [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-pixel-wettbewerbe)). Aufbau und Farben stehen im Klassenkommentar.
 
 | Befund | Fundstelle |
 |---|---|
@@ -396,3 +413,73 @@ nicht möglich. Aufbau und Farben stehen im Klassenkommentar.
 Klick auf eine Zeile (Original: Vereinsinfo) ohne Wirkung; die zuletzt gewählte Seite (DGROUP 0x5125) wird nicht gemerkt;
 Spielplan (`Schedule.DoubleRoundRobin`) und Stärkewerte (`StrengthTable`) sind Näherungen des Remakes. Die Trefferfläche der
 Pfeilknöpfe ist der Rahmen (48 × 38).
+
+## Pixelvergleich Runde 6 (Spur `pixel-wettbewerbe`)
+
+Die Wettbewerbsbildschirme, die bisher nur aus em.exe gebaut waren, gegen die neuen Referenzreihen (`docs/referenz-videos.md`).
+Bildschirmfotos mit nachgestelltem Zustand (Vereine, Plätze, Stärken, Ergebnisse, Datum und gelb markierte Vereine wie im Bild):
+`emtool screens gamedata <ziel> pixel-debpokal | pixel-auslosung | pixel-paarungen | pixel-europapokal | pixel-wm`
+(`Tools/Scenarios/WettbewerbeVideo.cs`); jedes Bild heißt wie seine Vorlage.
+
+**Verfahren** (wie bei den Modusknöpfen): Grauwerte (0,299 R + 0,587 G + 0,114 B), eigenes Bild bilinear verschoben – beste
+Verschiebung im Raster ±1,5 Pixel zu 0,25 –, Gauß-Weichzeichnung σ = 0,6; Kennzahl = mittlere absolute Abweichung / Anteil der
+Pixel mit Abweichung > 40. Maskiert: Mauszeiger, Sprecher unten links (Eisbären-Reihen), bei den Anzeigen „60.MINUTE“ außerdem
+Kopfzeile und Knopfbereich. „Pegelbereinigt“ zieht den Median der Helligkeitsdifferenz ab (Reihen mit abweichendem Videopegel).
+
+| Bildschirm | Vorlage | Abweichung / > 40 | pegelbereinigt |
+|---|---|---|---|
+| DEB-Pokalspiele, erste Runde mit zwei Ergebnissen | `folge13_02545` | 6,3 / 2,6 % | 5,6 / 2,6 % |
+| DEB-Pokalspiele, erste Runde ohne Ergebnisse | `duell_s2a_01217` | 6,9 / 3,8 % | 6,1 / 3,8 % |
+| DEB-Pokalspiele, Achtelfinale | `duell_s6a_03100` | 6,4 / 3,6 % | 5,5 / 3,6 % |
+| DEB-Pokalspiele, Endspiel | `eisbaeren_f60_02758` | 5,9 / 3,0 % | 5,2 / 3,0 % |
+| Live-Auslosung, Frage (32 Plätze) | `folge01_00217` | 4,0 / 0,5 % | 3,4 / 0,5 % |
+| Live-Auslosung, Frage (16 Plätze) | `duell_s2a_02651` | 3,3 / 0,5 % | 2,5 / 0,5 % |
+| Live-Auslosung, aufgedeckt (16) | `eisbaeren_f30_01719` | 10,2 / 0,8 % | 2,9 / 0,4 % |
+| Live-Auslosung, aufgedeckt (32) | `eisbaeren_f52_03358` | 7,6 / 0,7 % | 4,7 / 0,9 % |
+| Paarungen Oberliga | `folge06_01256` | 5,2 / 1,9 % | 4,6 / 1,9 % |
+| Paarungen Zweite Liga | `folge17_02406` | 5,3 / 1,4 % | 4,7 / 1,4 % |
+| Paarungen Bundesliga | `folge21_02149` | 5,5 / 1,7 % | 4,9 / 1,7 % |
+| Paarungen-Fenster in der Anzeige „60.MINUTE“ | `duell_s2a_01138`, `eisbaeren_f14_01518`, `eisbaeren_f40_01833` | 6,7 / 3,5 %, 6,4 / 2,8 %, 6,3 / 2,8 % | 5,9 / 3,5 %, 5,7 / 2,8 %, 5,7 / 2,8 % |
+| Europacup Gruppe 1 / Endrunde / Gruppe 2 / Endrunde | `folge04_01241`, `01243`, `01245`, `01247` | 3,8–4,0 / 0,3 % | 3,0–3,2 / 0,3 % |
+| Europacup Gruppe 2 nach den Hinspielen | `eisbaeren_f51_03346` | 7,3 / 0,5 % | 4,3 / 0,8 % |
+| Europacup Endrunde nach vier Terminen | `eisbaeren_f58_01323` | 8,0 / 0,4 % | 4,4 / 0,7 % |
+| WM-Endrundenspiele, Viertelfinale | `eisbaeren_f35_00646` | 19,5 / 0,9 % | 3,6 / 0,3 % |
+| WM-Endrundenspiele, alle Abschnitte („60.Minute“) | `eisbaeren_f44_01330` | 7,1 / 1,7 % | 5,3 / 1,9 % |
+
+Die verbleibenden Abweichungen sind Schriftkanten (Videounschärfe). Die Tabellen von Europapokal und WM-Endrunde rechnet das
+Remake aus den eingetragenen Ergebnissen; Punkte, Tore und Reihenfolge stimmen mit allen Bildern überein.
+
+**Befunde** (Regressionstests in `tests/EishockeyManager.UI.Tests/PixelWettbewerbeTests.cs`, vor dem Fix rot):
+
+| Nr. | Befund | Beleg |
+|---|---|---|
+| PW-01 | „DEB-Pokalspiele“: In der ersten Runde ab der zweiten Saison steht kein Rundenname, nur das Datum. Index DGROUP 0x7AD in die Namenstabelle 0xB5C („“, „Erste Runde “ …) ist beim Programmstart 1, wird beim Saisonwechsel gelöscht (0x565D3–0x565EC) und nur beim Ziehen der Runden 2–5 gesetzt (0x348E2). `[APPROX]`: ein geladener Spielstand der ersten Saison zeigt „Erste Runde“. | `oberflaeche_0400` (erste Saison) gegen `duell_s2a_01217`, `folge13_02545`; Datei 0x3322E |
+| PW-02 | „DEB-Pokalspiele“: Gruppenüberschriften in Großbuchstaben („BUNDESLIGA GEGEN ZWEITE LIGA:“). | alle vier Vorlagen |
+| PW-03 | Europapokal: Ergebnisse „links:rechts“ wie die Paarung, auch im Rückspiel, beide Zahlen zweistellig (vorher Rückspiel „Heim:Gast“, ohne Auffüllen). | `folge04_01241` (Dynamo 12:0 Punkte), `eisbaeren_f58_01323` |
+| PW-04 | Europapokal: keine Termine mehr, sobald in der Gruppe gespielt wurde. `[APPROX]`: Bedingung im Code (Datei 0x32294, Parameter [bp+0xA]) nicht ganz aufgelöst. | `eisbaeren_f51_03346`, `eisbaeren_f58_01323` |
+| PW-05 | WM: K.-o.-Ansicht ist „WM-Endrundenspiele“ (Datei 0x32E23, Wettbewerb 3): Rahmen aus n = Begegnungen + 1 − 6 + Abschnitte (1/3/7, DGROUP 0x4DFD), ohne laufendes Spiel ab neun Teilen oben; Pokalbild (0 \| 66); Überschrift → Zeile 7; Ergebnis bei x = 233 (0x3394E); ungespielt „0: 0“; Knopf „Gruppe“ (136 \| 201); im Spielablauf sieben Leerzeichen vor „n.Minute“ (DGROUP 0x4E5F). `[APPROX]`: zwei Punkte für Penaltyschießen, Anzeige im Spielablauf noch ohne Aufrufer. | `eisbaeren_f35_00646`, `eisbaeren_f44_01330` |
+
+Ohne Abweichung: Live-Auslosung (Frage und Ziehung) und Paarungen Liga. Die Anzeige „60.MINUTE“ der Ligapaarungen im
+Spielablauf (gleiches Fenster ohne Knöpfe, Kopfzeile mit Minute) gibt es im Remake noch nicht.
+
+<details><summary>Vergleichsskript (Python, numpy/scipy/PIL)</summary>
+
+```python
+# python3 -I vergleich.py <eigen.png> <video.png> auto [x0,y0,x1,y1 ...]   (Masken: x0/y0 inklusive, x1/y1 exklusive)
+import sys, numpy as np
+from PIL import Image
+from scipy import ndimage
+own_path, ref_path, masks = sys.argv[1], sys.argv[2], [tuple(map(int, m.split(","))) for m in sys.argv[4:]]
+gray = lambda p: np.asarray(Image.open(p).convert("RGB"), dtype=float) @ [0.299, 0.587, 0.114]
+own0, ref = gray(own_path), gray(ref_path)
+valid = np.ones_like(ref, dtype=bool)
+for x0, y0, x1, y1 in masks:
+    valid[y0:y1, x0:x1] = False
+blur = lambda dx, dy: ndimage.gaussian_filter(ndimage.shift(own0, (dy, dx), order=1, mode="nearest"), 0.6)
+grid = [v / 4 for v in range(-6, 7)]
+dx, dy = min(((x, y) for x in grid for y in grid), key=lambda p: np.abs(blur(*p) - ref)[valid].mean())
+o = blur(dx, dy); d = np.abs(o - ref)[valid]
+level = np.median((ref - o)[valid]); lv = np.abs(o + level - ref)[valid]
+print(f"Versatz ({dx:+.2f} | {dy:+.2f}) {d.mean():.1f} / {100 * (d > 40).mean():.1f} %, pegelbereinigt {lv.mean():.1f} / {100 * (lv > 40).mean():.1f} %")
+```
+</details>

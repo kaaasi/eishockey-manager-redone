@@ -85,7 +85,7 @@ public sealed partial class ManagerFinance
 
     /// <summary>
     /// Zinskonto in Drittel-DM: täglich aufgelaufene Zinsen (Sparbuch, Kredite, Überziehung), gebucht am
-    /// Monatsersten. [ORIGINAL] DGROUP 0x2A0 + 4 × Manager, Tagesabschluss 0x3ED01, Monatsabschluss 0x3F0DA.
+    /// Monatsletzten (#134). [ORIGINAL] DGROUP 0x2A0 + 4 × Manager, Tagesabschluss 0x3ED01, Monatsabschluss 0x3F0DA.
     /// </summary>
     public long InterestAccrualThirds { get; set; }
 
@@ -153,7 +153,7 @@ public sealed partial class GameState
         }
     }
 
-    /// <summary>Monatsersten: Zinskonto buchen (Finanzbuch „Zinsen“ bzw. „Manager-Kredite“) und leeren.</summary>
+    /// <summary>Monatsletzter (#134, [ORIGINAL] 0x3F02C bei Tag = Monatslänge): Zinskonto buchen (Finanzbuch „Zinsen“ bzw. „Manager-Kredite“) und leeren.</summary>
     private void BookAccruedInterest(Manager manager)
     {
         var finance = Finance(manager);

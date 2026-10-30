@@ -93,7 +93,7 @@ public sealed partial class GameState
     {
         AdvanceFinanceTo(Day);
         foreach (var result in results)
-            SettleHomeMatch(result.Home, result.Away, result.MatchDay);
+            SettleHomeMatch(result.Home, result.Away, result.MatchDay, leagueMatch: true);
     }
 
     /// <summary>
@@ -103,19 +103,11 @@ public sealed partial class GameState
     /// bestimmt; nach der Hauptrunde die Abschlusstabelle. <paramref name="importance"/> = Wettbewerbsbonus der
     /// Zuschauerformel (0 Liga, 1 DEB-Pokal und Play-Off/Aufstieg, 2 Europapokal).
     /// [ORIGINAL] em.exe 0x3F7DE: Konto += Zuschauer × Eintritt; eine Gastronomie-Einnahme gibt es im Original nicht.
+    /// Spur heimspiel-statistik: „Weniger als neun Spieler“ für beide Vereine und die Zuschauerstatistik der
+    /// Ligaheimspiele (<paramref name="leagueMatch"/>) in <see cref="SettleMatchGate"/>.
     /// </summary>
-    public void SettleHomeMatch(int home, int away, int tableMatchDay, int importance = 0)
-    {
-        foreach (var manager in Managers.Where(m => m.ClubIndex == home))
-        {
-            var finance = Finance(manager);
-            var stadium = finance.Stadium;
-            var spectators = Spectators(Clubs[home], Clubs[away], stadium, tableMatchDay, FinanceRandom, importance, manager.Level);
-            var tickets = (long)spectators * stadium.TicketPrice;
-            Book(manager, FinanceCategory.Eintritt, tickets);
-            finance.LastHomeGame = (spectators, tickets);
-        }
-    }
+    public void SettleHomeMatch(int home, int away, int tableMatchDay, int importance = 0, bool leagueMatch = false) =>
+        SettleMatchGate(home, away, tableMatchDay, importance, leagueMatch);
 
     /// <summary>Spiele der Play-Offs und Aufstiegsrunden eines Termins abrechnen (nach der Hauptrunde, Bonus 1).</summary>
     public void SettlePostseasonMatches(IEnumerable<(int Home, int Away)> matches)
@@ -135,13 +127,21 @@ public sealed partial class GameState
             ExpireMessages();
             if (FinanceDay > 0)
             {
+                // [ORIGINAL] Tagesabschluss 0x3ED01: Zinskonto, Werbeangebote (Monatsletzter, Monatsmitte), am 1.
+                // Restlaufzeiten der Werbeverträge (0x3EF52), am Monatsletzten der Monatsabschluss (0x3F02C, #134);
+                // danach die Werbebewertung neu (0x5569F).
                 AccrueDailyInterest(date);
                 DailySponsorOffers(date);
+                if (date.Day == 1)
+                    foreach (var manager in Managers)
+                        CountDownSponsorContracts(manager);
             }
             if (FinanceDay > 0 && date.DayOfWeek == DayOfWeek.Monday)
                 WeeklyFinances();
-            if (FinanceDay > 0 && date.Day == 1)
+            if (FinanceDay > 0 && date.Day == DateTime.DaysInMonth(date.Year, date.Month))
                 MonthlyFinances();
+            if (FinanceDay > 0)
+                DailySponsorRatings();
         }
     }
 
@@ -153,6 +153,8 @@ public sealed partial class GameState
             Finance(manager).Book.NewSeason();
             // [ORIGINAL] 0x563C0: Kostenstufe = Liga der neuen Saison (Spur finanzen-2).
             Finance(manager).CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga;
+            // [ORIGINAL] 0x5664D: zu Saisonbeginn neue Werbeangebote (gewürfelt, gespeicherte Bewertung; #133).
+            RefreshSponsorOffers(manager, noDice: false);
         }
         FinanceDay = -1;
     }
@@ -193,7 +195,7 @@ public sealed partial class GameState
 
     private void MonthlyManagerFinances(Manager manager)
     {
-        SettleSponsoring(manager);
+        BookSponsoring(manager);
         SettleYouth(manager);
     }
 }

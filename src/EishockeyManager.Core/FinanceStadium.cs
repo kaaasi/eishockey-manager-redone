@@ -221,8 +221,12 @@ public static class SpectatorRules
 
     /// <summary>
     /// Zuschauer eines Heimspiels. Stärken = Mittel der sechs Teamwerte (0x128:0x25), Plätze 0–11 (Gast aus höherer
-    /// Liga 0, aus niedrigerer 11), Ligen 0 = Bundesliga, <paramref name="importance"/> 0 Liga/Freundschaft, 1 DEB-Pokal
-    /// und Play-Off/Aufstieg, 2 Europapokal (Wettbewerbscode 0xD0C2), <paramref name="levelSteps"/> = 5 − Level.
+    /// Liga 0, aus niedrigerer 11), Ligen 0 = Bundesliga, <paramref name="levelSteps"/> = 5 − Level.
+    /// <paramref name="importance"/> = Spielbedeutung 0–2. [ORIGINAL] 0x545CD–0x54601: [Code 6] + 2·[Code 3] + [Code 1]
+    /// mit dem Wettbewerbscode DGROUP 0xD0C2 (Spur heimspiel-statistik): Code 6 DEB-Pokal (0x35E7C, Schalter DEB-Pokal
+    /// 0x227) → 1; Code 1 Play-Off-/Aufstiegsrunden (0x31AB7, Gruppen aus DGROUP 0xCF20) → 1; Code 3 Europapokal-Gruppen
+    /// → 2, Code 5 Europapokal-Endrunde → 0 (<see cref="EuropeanCupImportance"/>); Code 7 Liga (0x35EC4), 8/10 WM
+    /// (0x30F53/0x31017) → 0.
     /// </summary>
     public static int Compute(Stadium stadium, int homeStrength, int awayStrength, int homeRank, int awayRank,
         int homeLeague, int awayLeague, int importance, int levelSteps, Random random)
@@ -286,6 +290,13 @@ public static class SpectatorRules
         if (z < 50) z = Rnd(50, 100);
         return (int)Math.Min(z, capacity);
     }
+
+    /// <summary>
+    /// Spielbedeutung eines Europapokaltermins (0–11) für <see cref="Compute"/>. [ORIGINAL] Europapokal 0x31490–0x314A1:
+    /// Wettbewerbscode 3 für die Gruppentermine 0–5, Code 5 für die Endrunde ([0x7AF] &gt; 5); Bonus nur für Code 3
+    /// (0x545DC). Vorher bekam auch die Endrunde den Bonus 2.
+    /// </summary>
+    public static int EuropeanCupImportance(int date) => date < EuropeanCup.GroupDates ? 2 : 0;
 
     /// <summary>Stärke eines Vereins für die Zuschauerformel: Mittel der sechs Teamwerte. [ORIGINAL] 0x4D316.</summary>
     public static int Strength(GameState game, Club club)

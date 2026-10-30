@@ -9,9 +9,23 @@ Belege aus `em.exe` (Datei-Offsets; Overlay-Stub Highscore = 0x140:0x7A).
 - **Einfügen** (0x5D73D): absteigend nach Punkten, bei Gleichstand hinter dem Vorhandenen; gleicher Name und Verein
   ersetzt den alten Eintrag; zu schwache Einträge fallen heraus. Eigenheit bei 0x5D7BB: Ein gleichnamiger Eintrag wird auch
   mit weniger Punkten überschrieben (Test `Insert_SameNameWithFewerPoints_OverwritesBetterEntry`).
-- **Schlüssel** (0x28A2C): Level + 4 · Dauer + 32 · Startliga + 128 · Startstärke − 2; keine Liste bei Level ≤ 2 (Kachel
-  gesperrt, 0x44FCE) und bei Startstärke ≠ Mittelfeld, außer Dauer = eine Saison **und** Startliga = Bundesliga
-  (0x289A3–0x289C5; Test `Key_FromSetup` prüft jede Hälfte der Bedingung einzeln). Nur Weltkugel: Schlüssel 30000.
+- **Schlüssel** (Datei 0x2899D–0x28A69, Variable `[bp-0x57]` = Knopfbits, Bit 0 Fahne, Bit 1 Weltkugel, dieselbe wie beim Modus
+  0x29838): Zuerst die Zulässigkeit `[bp-0x42]` (0x2899D–0x289CC):
+  1. Knopfbits = 2 („nur Weltkugel“) → **zulässig**, ohne Blick auf Level, Dauer, Liga oder Stärke (0x2899D `cmp [bp-0x57],2`,
+     0x289A1 `jz 0x289C5`);
+  2. sonst ohne Fahne (Bit 0) → nicht zulässig (0x289A3);
+  3. Level ≤ 2 → nicht zulässig (0x289A9);
+  4. Startstärke = Mittelfeld → zulässig (0x289B0), sonst nur bei Dauer = eine Saison **und** Startliga = Bundesliga (0x289B7).
+
+  Danach `[0x256]` (DGROUP): nicht zulässig → 0, keine Liste (0x28A2C; Kachel gesperrt, 0x44FCE); Knopfbits = 2 → **0x7530 = 30000**
+  (0x28A34/0x28A3A); sonst Level + 4 · Dauer + 32 · Startliga + 128 · Startstärke − 2 (0x28A42). Test `Key_FromSetup` prüft jede Hälfte der
+  Bedingung einzeln, `HighscoreKeyOriginalTests` alle Kombinationen gegen diesen Ablauf.
+- **Befund #126 trifft nicht zu.** Das Issue las die Bedingung ab 0x289A3 („verlangt Bit 0“) und übersah den Vergleich mit 2 bei 0x2899D
+  davor: Der Zweig `Knopfbits = 2 → 0x7530` ist erreichbar, im Modus „nur Weltkugel“ gibt es also eine Bestenliste (Datei `h.30000`).
+  Eintragen (0x5D4C2), Einfügen (0x5D618) und Anzeigen (0x5D90D) kehren nur bei `[0x256] = 0` sofort zurück (Vergleiche 0x5D4CE,
+  0x5D622, 0x5D915), bei 0x7530 arbeiten sie normal; der Aufruf am Spielende (0x5642E) prüft den Schlüssel nicht selbst. Dass die Kachel „Highscore“ im Video `bundestrainer_00042/00220/00418` gesperrt ist, erklärt
+  die Sperrtabelle des Bundestrainers (Reihe Manager komplett gesperrt, zweiter Teil der Tabelle DGROUP 0x5159, siehe `NationalMenu`),
+  nicht der Schlüssel 0. Das Remake war von Anfang an richtig (`HighscoreRules.Key`, `Key_WorldOnly_Is30000`), es wurde nichts geändert.
 - **Eintragen:** beim Öffnen der Kachel und bei jedem Saisonwechsel; am Spielende erscheint die Liste vor dem Titel (0x5642E).
 - **Layout:** Hintergrund kb\195, Titel Grundlinie 15, Zeilen ab 154 im Abstand 10, x = 56 / 115 / 207 / 240. Zeilen am Bild
   oberflaeche_0848 geprüft (Abweichung im Rahmen des Videoversatzes von etwa −0,25 px). Titel: Ausdehnung der Titelpixel

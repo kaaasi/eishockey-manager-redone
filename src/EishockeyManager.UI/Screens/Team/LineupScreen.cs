@@ -20,7 +20,14 @@ namespace EishockeyManager.UI.Screens.Team;
 public sealed class LineupScreen : Screen
 {
     public static readonly Rect Window = new(1, 14, 240, 209);
-    public const int HeaderY = 20;
+    /// <summary>
+    /// Grundlinie der Kopfzeile; die Linie liegt zwei Zeilen tiefer. [ORIGINAL] em.exe Datei 0x424DF–0x42525 (Text
+    /// 0x30:0x831 auf der Grundlinie, Linie 0x30:0x995 bei Grundlinie + 2); Vorlage folge01_00528 (Spur pixel-verein, PV-02).
+    /// </summary>
+    public const int HeaderBaseline = 23;
+
+    /// <summary>Oberkante der Kopfzeile in Mini (Großbuchstaben fünf Zeilen hoch, 19–23).</summary>
+    public const int HeaderY = HeaderBaseline - 4;
     public const int FirstRowY = 29;
     public const int RowPitch = 6;
     public const int ListLeft = 3;
@@ -200,7 +207,7 @@ public sealed class LineupScreen : Screen
         s.Text(mini, 172, HeaderY, "5m", h);
         s.Text(mini, 186, HeaderY, "STATUS", h);
         s.Text(mini, 227, HeaderY, "E", h);
-        s.HLine(6, 25, 227, TeamUi.LineColor);
+        s.HLine(6, HeaderBaseline + 2, 227, TeamUi.LineColor);
         s.HLine(6, 210, 227, TeamUi.LineColor);
 
         var rows = TeamUi.Rows(club);

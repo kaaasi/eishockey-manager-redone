@@ -54,6 +54,42 @@ spielfreie Tage –, bis wieder ein Verein eines Managers spielt. Belegt: 1995/9
 **Erweiterung**: DEB-Pokal, Europapokal und WM melden sich über `ISeasonCompetition` in `GameState.Competitions`
 an und werden an ihren Kalendertagen aufgerufen (Infoleiste, Anhalten von „und tschüß…“, Titel am Saisonende).
 
+## Statusbyte und Ereignissymbole (Befund #125)
+
+Das Original führt je Manager ein **Statusbyte** (DGROUP `0x974E` + `0x1AF` · Manager). Das Fenster „Ereignisse“ zeigt für jedes
+gesetzte Bit 0–6 ein Symbol aus `kb\13` (Schleife Datei `0x2714F`, Tabelle DGROUP `0x4B2E` = 2, 1, 0, 5, 4, 6, 8):
+
+| Bit | Symbol | Remake (`SeasonEvent`) | Beleg |
+|---|---:|---|---|
+| 0 (0x01) | 2 Pfeil hoch | `Promotion` | Tabelle 0x4B2E |
+| 1 (0x02) | 1 Pfeil runter | `Relegation` | Tabelle 0x4B2E |
+| 2 (0x04) | 0 | – (nicht abgebildet, Setzen bei 0x55F87) | Tabelle 0x4B2E |
+| 3 (0x08) | 5 | `GermanChampion` – `[APPROX]` Zelle 3 (Puck) statt 5 | Setzen bei 0x55C09 |
+| 4 (0x10) | 4 Fahne | `CupWinner` | Setzen bei 0x55D12 (Prämie 1.500.000 Drittel) |
+| 5 (0x20) | 6 Landkarte mit Pokal | `EuropeanCupWinner` | Setzen bei 0x55DAD |
+| 6 (0x40) | 8 Weltkugel | abgeleitet: `GameState.HasTopFiveStatus` (kein `SeasonEvent`, nicht gespeichert) | Setzen bei 0x553ED |
+
+**Symbolnummer → Zelle** (Zeichenroutine Datei `0x6CA6` + `0x39`, `while (n > 5) { n -= 6; y += 21; }`, `x = n · 24`): sechs Zellen
+je Zeile, `n % 6` Spalte, `n / 6` Zeile, 24 × 21 Pixel. Symbol 8 liegt damit in Spalte 2, Zeile 1 (die Weltkugel).
+
+**Bit 0x40 „unter den ersten fünf der 1. Liga“** (Datei `0x553A2`–`0x553F2`, Aufruf bei `0x553A9`): An Tagen mit Markierung 255
+(13. und 29. April) ruft das Original `0xE8:0x93(0x7F)` (Datei `0x34769`), löscht danach das Statusbyte jedes Managers und setzt Bit
+0x40, wenn `0xE8:0x93(Manager)` wahr ist. Die Funktion liest die Plätze 1–5 der Tabelle DGROUP `0x5CCB` (Liga · 12 + Platz, Liga 0 =
+Bundesliga) und prüft, ob der Verein den Manager hat (Vereinsfeld `0x16` = Manager + 1). Das gilt **für jeden Manager** in den
+ersten fünf, nicht nur für den höchstplatzierten (der wird Bundestrainer, siehe `wettbewerbe.md`). **Nicht im Spielmodus 2**
+(„nur Fahne“, `[0xD0B9] == 2`, Datei `0x553DB`): ohne WM kein Weltkugel-Symbol. Das Symbol bringt keine Prämie.
+
+**Löschen des Statusbytes** (Datei `0x553C8`): Es geschieht an beiden Markertagen unmittelbar vor dem Setzen von Bit 0x40; die Bits
+0x08/0x10/0x20 setzen andere Tagespfade (Titel). Das Remake hält kein Statusbyte: Auf-/Abstieg und Titel leitet es am 29. April aus dem Saisonergebnis
+ab (`SeasonFlow.FinishSeason`, gespeichert in `ManagerSeasonResult.Events`), Bit 0x40 leitet es erst bei der Anzeige aus der
+gespeicherten Abschlusstabelle, dem Verein und dem Modus ab (`GameState.HasTopFiveStatus`). Es ist deshalb **kein neuer Zustand**:
+ein neues `SeasonEvent` hätte den Schemaabdruck geändert (er enthält die Namen aller Enum-Mitglieder) und eine Schemaversion samt
+Migration erzwungen. Gleichwertig zum Original, solange sich die Tabellen zwischen 13. und 29. April nicht ändern (Ligaspiele ruhen). Der einzige Leser außer der Anzeige ist `0x55F53` (Maske 0x28, also nur Bit 3 und 5), Bit 0x40 wirkt
+dort nicht.
+
+`[APPROX]` Das Original sortiert die Tabelle 0x5CCB je nach Ansicht (Gesamt/Heim/Auswärts) an Ort und Stelle; das Remake nimmt die
+Abschlusstabelle „Gesamt“. Im Modus „nur Weltkugel“ gibt es keine Vereinssaison und keine Ergebnisse je Manager.
+
 ## Oberfläche
 
 | Bildschirm | Datei | Vorlage (Video) |
@@ -74,6 +110,7 @@ Die Pfeile vor den Vereinsnamen sind Zeichen des Mini-Fonts: `&` = Pfeil nach un
 
 - Pokal auf dem Meisterfoto: das Original setzt je Titel einen Pokal aus den Einzelteilen in kb\16 (rechts oben)
   zusammen; hier bleibt der Pokal des Fotos.
-- Zuordnung der Ereignissymbole (kb\13) außer „Aufstieg“; Prämien außer 1. Platz Oberliga.
+- Ereignissymbole: Bit 2 (Symbol 0) fehlt; Meister (Bit 3) zeigt im Original das Symbol 5, das Remake den Puck (siehe Tabelle oben).
+  Prämien außer 1. Platz Oberliga.
 - Play-Off-Format und Termine der Aufstiegsrunden genauer am Disassembly prüfen.
 - Bisherige Begegnungen in der Infoleiste reichen im Original über Saisongrenzen hinweg (nicht Teil dieses Pakets).

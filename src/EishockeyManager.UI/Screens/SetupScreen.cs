@@ -47,6 +47,9 @@ public sealed class SetupScreen : Screen
     public static Rect ClubCell(int k) => new(190 + k % 3 * 40, 41 + k / 3 * 40, 38, 38);
     public static readonly Rect ScrollBar = new(310, 39, 10, 163);
     public const int PickerTextCenter = 252;
+
+    /// <summary>Textbereich der Hinweise unter der Kopfwahl. [ORIGINAL] em.exe Datei 0x28D02/0x28D06.</summary>
+    private const int HintX1 = 188, HintX2 = 319;
     public const int ClubsPerPage = 12;
     public static int ClubPages => NewGame.SelectableClubs / ClubsPerPage;
 
@@ -370,8 +373,10 @@ public sealed class SetupScreen : Screen
             if (HeadCell(h).Contains(_mouseX, _mouseY))
                 s.Outline(HeadCell(h), Colors.Red);
         }
-        s.TextCentered(Assets.Mini, PickerTextCenter, 212, "Suchen Sie sich einen", Colors.Black);
-        s.TextCentered(Assets.Mini, PickerTextCenter, 219, "passenden Kopf aus.", Colors.Black);
+        // [ORIGINAL] em.exe Datei 0x28CF8–0x28D43: 0x30:0x885 mit x 188 … 319, Grundlinie 214 und 222, Farbe 0, ohne
+        // Schatten (Spur pixel-verein, Vorlage speedrun_t1_00056).
+        Competitions.CompetitionWidgets.Centered(s, Assets.Mini, HintX1, HintX2, 214, "Suchen Sie sich einen", Colors.Black, null);
+        Competitions.CompetitionWidgets.Centered(s, Assets.Mini, HintX1, HintX2, 222, "passenden Kopf aus.", Colors.Black, null);
     }
 
     private void DrawClubPicker(Surface s)
