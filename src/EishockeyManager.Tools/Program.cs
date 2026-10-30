@@ -7,6 +7,7 @@ using EishockeyManager.Formats;
 //   emtool export-sound [spielordner] [zielordner] Soundeffekte und Musik als WAV
 //   emtool vereine [spielordner] [nummer]     Vereine aus der Datenbank (mit Nummer: Kader)
 //   emtool screens [spielordner] [zielordner] [ablauf …]  Bildschirme ohne Fenster als PNG
+//   emtool hok dump <datei> [block …]           Original-Spielstand *.HOK entschlüsseln und prüfen
 
 var command = args.Length > 0 ? args[0].ToLowerInvariant() : "help";
 
@@ -30,6 +31,8 @@ try
             EishockeyManager.Tools.Scenarios.ScenarioRunner.Run(
                 GameData.Locate(args.ElementAtOrDefault(1)), args.ElementAtOrDefault(2) ?? "screens", args.Skip(3).ToList());
             return 0;
+        case "hok":
+            return EishockeyManager.Tools.HokDump.Run(args.Skip(1).ToList());
         default:
             Console.WriteLine("""
                 emtool – Werkzeug für die Originaldateien des Eishockey Managers
@@ -39,6 +42,7 @@ try
                   emtool export-sound [spielordner] [zielordner]
                   emtool vereine [spielordner] [vereinsnummer]
                   emtool screens [spielordner] [zielordner] [ablauf …]
+                  emtool hok dump <datei> [block …]
 
                 Ohne Spielordner wird nach einem Ordner "gamedata" gesucht.
                 """);

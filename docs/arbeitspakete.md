@@ -148,11 +148,20 @@ eigener PR mit Option (a).
 
 - Einzelprämien Topscorer, bester Torhüter, Fair-Play (#135), Statistiken Spieler, Verein, Fairplay, WM-Statistik:
   warten auf `livespiel` (Tore, Vorlagen, Strafen je Spieler).
-- `hok-format` (Original-Spielstände `*.HOK`: Import, Export per Vorlage): wartet auf Original-Spielstände des Nutzers
-  (`original/spielstaende/` im Referenz-Repo).
+- `hok-format` (Original-Spielstände `*.HOK`): Analyse läuft (Abschnitt „Spur `hok-format`“); Import/Export danach.
 - Highscore am Spielende, Saisonende im Modus „nur Weltkugel“: in keinem Video (Kandidat für `hok-format`).
 - #167 (`heimspiel-statistik` Teil 2, weniger als neun Spieler): nach Runde 6 mit Option (a), passive Proben nachführen.
 - Inaktive Branches `paket/speichern-ids`, `paket/wettbewerbe-weltkugel-2` (ohne PR): Löschen nur nach Entscheidung des Nutzers.
+
+## Spur `hok-format` – Original-Spielstände `*.HOK` (nur Analyse)
+
+Branch: `paket/hok-format` · PR #176 · Bearbeiter: Claude Code · Auftrag Leitstelle: nur Lesen, kein Import/Export.
+
+- Dateien: `docs/formate/spielstand-original.md` (neu), `docs/formate/dateiformate.md` (Zeile *.HOK),
+  `src/EishockeyManager.Formats/OriginalSaveGame.cs`, `src/EishockeyManager.Tools/HokDump.cs`, `Program.cs` (Befehl `hok`),
+  `tests/EishockeyManager.Formats.Tests/OriginalSaveGameTests.cs` (nur synthetische Bytes).
+- Status: Verschlüsselung, Prüfsummen, Kopf, Blockfolge belegt an FILE01–03 des Nutzers (liegen nicht im Repo);
+  offene Liste in `spielstand-original.md`. Entscheidung Nutzer: Sicher-/Ladesperre des Originals nicht übernehmen.
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 
