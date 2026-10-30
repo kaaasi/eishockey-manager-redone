@@ -1,6 +1,6 @@
 # Original-Spielstand `*.HOK` (DOS)
 
-Spur `hok-format`, nur Analyse (Lesen). Leser: `src/EishockeyManager.Formats/OriginalSaveGame.cs`,
+Spur `hok-format` (Lesen), `hok-patch` (Schreiben, Abschnitt unten). Leser: `src/EishockeyManager.Formats/OriginalSaveGame.cs`,
 Werkzeug `emtool hok dump <datei> [block …]`. Belegt an drei Spielständen des Nutzers (DOSBox, Version DOS/DE;
 im Referenz-Repo unter `original/spielstaende/` mit Bildern und README, nie ins Code-Repo kopieren): **FILE01** Neustart (ein Manager, Kölner EC, Bundesliga, Level 3, Dauer 3, Stärke Mittelfeld,
 10.09.1993), **FILE02** wie FILE01, nur Eintritt 13 → 17 DM, **FILE03** = FILE02 nach drei Spieltagen (20.09.1993).
@@ -196,6 +196,43 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 FILE01 → FILE02: im ganzen Klartext genau **ein** Byte verschieden (`0x973F`). FILE02 → FILE03: geändert sind
 `20D`, `D0F4`, `1FD`, `A891`, `A895`, `A075`, `A88D`, `A0CB`, `965B` (21 Byte), `far:9657` (Vereine), `8257`,
 `far:8253` (Spieler), `5DC3` (Kader), `5D7B`, `5A20`, `03B7`, `5CCB`, `07A9`, `AB7B`, `C313`, `A969`.
+
+## Spielstände für das Original erzeugen: `emtool hok patch`
+
+Spur `hok-patch`. Schreiber: `src/EishockeyManager.Formats/OriginalSaveGamePatcher.cs` (`Encode` ist das Gegenstück zu
+`OriginalSaveGame.Read`; Lesen und Wiederschreiben ergibt an FILE01–03 **byteidentische** Dateien – damit sind
+Verschlüsselung und beide Prüfsummen auch beim Schreiben belegt).
+
+```
+emtool hok patch <vorlage> <ziel> [--manager n] [--id n] [--force] feld=wert …
+```
+
+Gelesen wird die Vorlage (Prüfsummen müssen stimmen), geändert werden nur die genannten Felder, Klartextkopf mit
+Namen, Füllbyte und Startschlüssel bleiben, Prüfsummen werden neu berechnet, die Spielstand-ID wird neu gewürfelt
+(sonst weist das Original einen in derselben Sitzung gesicherten Stand ab, siehe oben). Das Ziel wird nie über die Vorlage
+oder eine vorhandene Datei geschrieben (außer `--force`).
+
+| Feld | Wirkung | Fundstelle |
+|---|---|---|
+| `konto=<DM>` | Konto, intern Drittel-DM (×3) | `0x97EA` |
+| `eintritt=<DM>` | Eintritt 1–99 `[APPROX]` Obergrenze | `0x973F` |
+| `stadion=a,…,i` | neun Stadionstufen je 0–9 `[APPROX]` Obergrenze | `0x9771` |
+| `sitz=`, `steh=` | Sitz-/Stehplätze | `0x9771+0x1D`/`+0x21` |
+| `datum=TT.MM.JJJJ` | Tag, Monat (im Stand 0-basiert), Jahr, Jahr im Kopf `0x0A` | `0x5A20/1C/18` |
+| `zaehler=<n>` | Tageszähler | `0x3B7` und `0xA969` |
+| `spieltag=<n>` | nächster Spieltag aller drei Ligen und Kopfbyte `0x0F` | `0x7A9`–`0x7AB` |
+| `level=<0-5>` | Regler `0x118` und `0xED8 = 5 − Level` | em.exe `0x2988D` |
+
+`manager` (Standard 0) wählt den Datensatz für Konto, Eintritt und Stadion. **Abgewiesen** mit Begründung: `dauer`
+(Zuordnung zum Spielende `0x5A14` nicht belegt), `liga` (würde Verein und Tabelle betreffen), `staerke` (wirkt nur bei
+der Erzeugung der Mannschaften); unbekannte, doppelte und außerhalb des Bereichs liegende Werte ebenfalls.
+
+Grenzen: `datum`, `zaehler` und `spieltag` ändern **nur** diese Zähler, nicht Tabelle, Ergebnisse (`0xA0CB`), Form oder
+Kader; Datum und Spieltag müssen vom Nutzer zusammenpassend gewählt werden (FILE03: 20.09.1993 ↔ Zähler 11 ↔ Spieltag 4).
+
+`[APPROX]` Spielstand-ID: Alle drei Stände haben eine vorzeichenerweiterte 16-Bit-ID im Bereich `0x8000`–`0xFFFF`
+(−26229, −20251, −27317), obwohl die Notiz zu `0x5BB51` `random(0..0x8FFF)+1` nennt – die Formel ist offen. Der Patcher
+würfelt daher im beobachteten Bereich; das Original vergleicht die ID nur mit seiner Liste (`0x5C572`).
 
 ## Offene Punkte
 
