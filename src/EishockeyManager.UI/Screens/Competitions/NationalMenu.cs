@@ -24,6 +24,8 @@ public static class NationalMenu
     /// „DGROUP 0x256 = 0 oder (Bundestrainer und Modus 4)“: im Modus 4 ausdrücklich gesperrt (0x4502C), im Modus 1 über
     /// 0x256 = 0 – ohne Fahne gibt es keine Bestenliste (Datei 0x289A3). In beiden Modi also gesperrt (Video
     /// `bundestrainer_00042`, Spur bundestrainer-modus4).
+    /// Videobeleg Modus 4 (Spur pixel-verein, Pixelvergleich mit `pixel-verein-bundestrainer`): Reihen Manager
+    /// `eisbaeren_f24_00049`, Mannschaft `_00051`, Statistiken `_00053`, Tabellen `_00057` – gleiche Sperren wie hier.
     /// </summary>
     public static readonly IReadOnlySet<string> CoachTiles = new HashSet<string>(StringComparer.Ordinal)
     {
@@ -32,7 +34,10 @@ public static class NationalMenu
         "Laden", "Sichern", "Einstellungen",
     };
 
-    /// <summary>Im Spielmodus 2 („nur Fahne“) gesperrte Kacheln. [ORIGINAL] Datei 0x44FE8–0x4501D.</summary>
+    /// <summary>
+    /// Im Spielmodus 2 („nur Fahne“) gesperrte Kacheln. [ORIGINAL] Datei 0x44FE8–0x4501D; Video: WM-Kacheln gesperrt,
+    /// Europapokal frei (`folge01_00526`, `duell_s2a_01203`), mit beiden Knöpfen offen (`eisbaeren_f01_01431`).
+    /// </summary>
     public static readonly IReadOnlySet<string> WorldTiles = new HashSet<string>(StringComparer.Ordinal)
     {
         "WM-Statistik", "Tabelle WM", "WM", "Stärken Länderteams",

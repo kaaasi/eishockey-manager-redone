@@ -32,7 +32,7 @@ public static class MenuTiles
         // (CupTableMenuEntries).
         [new("Tabelle 1. Liga", 5, 2), new("Tabelle 2. Liga", 0, 3), new("Tabelle Oberliga", 1, 3), new("Tabelle DEB-Pokal", 3, 3), new("Tabelle Europapokal", 4, 3), new("Tabelle WM", 5, 3)],
         [new("Paarungen 1. Liga", 5, 2), new("Paarungen 2. Liga", 0, 3), new("Paarungen Oberliga", 1, 3), new("DEB-Pokal", 3, 3), new("Europapokal", 4, 3), new("WM", 5, 3)],
-        // [APPROX] Belegung der Stärken nicht im Video zu sehen; Länderteams laut Bildschirmtitel vorhanden.
+        // Belegung der Stärken im Video: 1. Liga, 2. Liga, Oberliga, „WM“ (Länderteams), zwei leere Plätze (eisbaeren_f01_01430).
         [new("Stärken 1. Liga", 5, 2), new("Stärken 2. Liga", 0, 3), new("Stärken Oberliga", 1, 3), new("Stärken Länderteams", 2, 3), MenuTile.Empty, MenuTile.Empty],
         [new("Laden", 0, 4), new("Sichern", 1, 4), new("Einstellungen", 2, 4), MenuTile.Empty, MenuTile.Empty, MenuTile.Empty],
         [],

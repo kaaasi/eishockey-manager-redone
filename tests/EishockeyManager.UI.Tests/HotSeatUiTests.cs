@@ -8,7 +8,9 @@ namespace EishockeyManager.UI.Tests;
 
 /// <summary>
 /// Befund R2-06 über die Oberfläche (Originaldateien, übersprungen ohne „gamedata“): „und tschüß…“ gibt den Zug
-/// weiter, ohne den Tag zu spielen; die Lampen der Infoleiste zeigen rot = noch nicht bereit, grün = bereit.
+/// weiter, ohne den Tag zu spielen. Die Lampen der Infoleiste sind laut em.exe Warnlampen des Managers am Zug, keine
+/// Bereitschaftsanzeige (Spur pixel-verein, PV-03, <see cref="Screens.MenuLamps"/>): bei jedem Zug zeigen sie die
+/// Lage des Managers am Zug – zu Spielbeginn nur Lampe 4 (freie Werbeflächen) rot.
 /// </summary>
 public class HotSeatUiTests
 {
@@ -26,27 +28,6 @@ public class HotSeatUiTests
         return (d, game);
     }
 
-    /// <summary>Lampe i der Infoleiste rot?</summary>
-    private static bool LampRed(ScreenDriver d, int i)
-    {
-        var red = new Surface();
-        Widgets.Lamp(red, d.Host.Assets, 226, 31 + i * 7, red: true);
-        var green = new Surface();
-        Widgets.Lamp(green, d.Host.Assets, 226, 31 + i * 7, red: false);
-        int redHits = 0, greenHits = 0;
-        for (var y = 31 + i * 7; y < 37 + i * 7; y++)
-        for (var x = 226; x < 232; x++)
-        {
-            var p = y * Surface.Width + x;
-            if (red.Pixels[p] == green.Pixels[p])
-                continue;
-            if (d.Surface.Pixels[p] == red.Pixels[p]) redHits++;
-            if (d.Surface.Pixels[p] == green.Pixels[p]) greenHits++;
-        }
-        Assert.True(redHits != greenHits, $"Lampe {i} weder eindeutig rot noch grün");
-        return redHits > greenHits;
-    }
-
     [GameDataTheory]
     [InlineData(2)]
     [InlineData(4)]
@@ -57,8 +38,7 @@ public class HotSeatUiTests
         for (var turn = 0; turn < managers; turn++)
         {
             Assert.Equal(turn, game.CurrentManager);
-            for (var i = 0; i < managers; i++)
-                Assert.Equal(i >= turn, LampRed(d, i)); // bereits bestätigt = grün
+            AssertStartLamps(d);
             Assert.Equal(0, game.PlayedMatchDays);
             if (turn == managers - 1)
                 break;
@@ -70,7 +50,13 @@ public class HotSeatUiTests
         Assert.IsType<MainMenuScreen>(d.Host.Current);
         Assert.Equal(1, game.PlayedMatchDays);
         Assert.Equal(0, game.CurrentManager);
-        for (var i = 0; i < managers; i++)
-            Assert.True(LampRed(d, i));
+        AssertStartLamps(d);
+    }
+
+    /// <summary>Warnlampen des Managers am Zug: Aufstellung vollständig, nur Werbeflächen frei.</summary>
+    private static void AssertStartLamps(ScreenDriver d)
+    {
+        for (var i = 0; i < Screens.MenuLamps.Count; i++)
+            Assert.Equal(i == 4, PixelVereinTests.LampRed(d, i));
     }
 }
