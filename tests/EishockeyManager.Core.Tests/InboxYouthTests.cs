@@ -47,8 +47,12 @@ public class InboxYouthTests
         Assert.Equal(0, game.LoanAmount(1, 0));
     }
 
+    /// <summary>
+    /// Spur finanzen-werbung (#133): Ein abgelaufener Vertrag ohne Option endet still (em.exe 0x3EFB2); die frühere
+    /// Absage-Meldung des Remakes entfällt. Mit Option siehe <see cref="SponsorOfferTests"/>.
+    /// </summary>
     [Fact]
-    public void ExpiredContract_AsksOrDeclines_AndRenewalRestoresIncome()
+    public void ExpiredContract_WithoutOption_EndsSilently()
     {
         var game = TestGames.Create();
         var me = game.ActiveManager;
@@ -56,15 +60,8 @@ public class InboxYouthTests
         game.AcceptOffer(me, new AdSlot(AdSlotKind.Trikot), 3);
         AdvanceToNextMonth(game);
 
-        var message = Assert.Single(game.Inbox(me));
-        Assert.Contains("PC Games", string.Join(" ", message.Lines));
-        if (message.Kind == MessageKind.SponsorRenewal)
-        {
-            Assert.True(game.Answer(me, message, yes: true));
-            Assert.Equal(8_000, game.Ads(me).ContractAt(new AdSlot(AdSlotKind.Trikot))!.MonthlyAmount);
-        }
-        else
-            Assert.Equal(["Die Firma PC Games", "wird den Vertrag nicht verlängern."], message.Lines);
+        Assert.Empty(game.Inbox(me));
+        Assert.Null(game.Ads(me).ContractAt(new AdSlot(AdSlotKind.Trikot)));
     }
 
     [Fact]

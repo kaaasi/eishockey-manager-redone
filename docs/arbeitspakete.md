@@ -46,7 +46,7 @@ fortlaufend (wie Runde 5, Migration 4 → 5 → 6).
   `Core/GameState.Manager.cs` (Tag des Monatsabschlusses), `UI/Screens/Manager/AdvertisingScreen.cs`, `Core/SaveGame.Migration*.cs`
   (neue Datei), `docs/finanzen-rekonstruktion.md`, Tests `Finance*`.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** PR #163 zur Prüfung (Claude Code, Opus 5.5): #132, #133, #134 umgesetzt; Schema 7 (`SaveGame.Migration6.cs`), Leitstelle nummeriert in der Integration.
 
 ### Spur `heimspiel-statistik` – Zuschauerstatistik, „Weniger als neun Spieler“, Spielbedeutung (#136)
 

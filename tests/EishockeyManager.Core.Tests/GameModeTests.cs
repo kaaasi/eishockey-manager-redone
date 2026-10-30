@@ -229,6 +229,9 @@ public class GameModeTests
     /// Spur finanzen-nachpruefung (Runde 5): Titel und Zufallsquellen unverändert. Manager 0 hat ab Saison 1 100.000 DM
     /// weniger (Verein 2 ist Europapokalsieger; das Original zahlt dafür nichts, em.exe 0x55D86); Manager 1 hat in Saison 5
     /// 5.800 DM weniger (Zuschauerformel 0x3F63C, je Commit getrennt geprüft).
+    /// Spur finanzen-werbung (#132–#134): Titel, Hauptzufallsquelle (R…) und Pokal-Zufallsquelle (C…) unverändert; nur
+    /// die Kontostände beider Manager verschieben sich (Werbebewertung, Werbeangebote und Monatsabschluss am
+    /// Monatsletzten; die tägliche Neuberechnung der Bewertung zieht aus FinanceRandom).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -239,7 +242,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|2442603,722219|WorldChampion=63,CupWinner=25,GermanChampion=14,EuropeanCupWinner=0|4225459,775518|WorldChampion=54,CupWinner=13,GermanChampion=24,EuropeanCupWinner=0|5448748,663296|WorldChampion=52,CupWinner=12,GermanChampion=24,EuropeanCupWinner=24|6792443,474908|WorldChampion=52,CupWinner=12,GermanChampion=24,EuropeanCupWinner=24|7824333,308005|R849981791 C2010256379";
+        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|2442252,727916|WorldChampion=63,CupWinner=25,GermanChampion=14,EuropeanCupWinner=0|4225375,777242|WorldChampion=54,CupWinner=13,GermanChampion=24,EuropeanCupWinner=0|5446571,689780|WorldChampion=52,CupWinner=12,GermanChampion=24,EuropeanCupWinner=24|6788160,503639|WorldChampion=52,CupWinner=12,GermanChampion=24,EuropeanCupWinner=24|7820518,323317|R849981791 C2010256379";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

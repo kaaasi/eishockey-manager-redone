@@ -135,13 +135,21 @@ public sealed partial class GameState
             ExpireMessages();
             if (FinanceDay > 0)
             {
+                // [ORIGINAL] Tagesabschluss 0x3ED01: Zinskonto, Werbeangebote (Monatsletzter, Monatsmitte), am 1.
+                // Restlaufzeiten der Werbeverträge (0x3EF52), am Monatsletzten der Monatsabschluss (0x3F02C, #134);
+                // danach die Werbebewertung neu (0x5569F).
                 AccrueDailyInterest(date);
                 DailySponsorOffers(date);
+                if (date.Day == 1)
+                    foreach (var manager in Managers)
+                        CountDownSponsorContracts(manager);
             }
             if (FinanceDay > 0 && date.DayOfWeek == DayOfWeek.Monday)
                 WeeklyFinances();
-            if (FinanceDay > 0 && date.Day == 1)
+            if (FinanceDay > 0 && date.Day == DateTime.DaysInMonth(date.Year, date.Month))
                 MonthlyFinances();
+            if (FinanceDay > 0)
+                DailySponsorRatings();
         }
     }
 
@@ -153,6 +161,8 @@ public sealed partial class GameState
             Finance(manager).Book.NewSeason();
             // [ORIGINAL] 0x563C0: Kostenstufe = Liga der neuen Saison (Spur finanzen-2).
             Finance(manager).CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga;
+            // [ORIGINAL] 0x5664D: zu Saisonbeginn neue Werbeangebote (gewürfelt, gespeicherte Bewertung; #133).
+            RefreshSponsorOffers(manager, noDice: false);
         }
         FinanceDay = -1;
     }
@@ -193,7 +203,7 @@ public sealed partial class GameState
 
     private void MonthlyManagerFinances(Manager manager)
     {
-        SettleSponsoring(manager);
+        BookSponsoring(manager);
         SettleYouth(manager);
     }
 }

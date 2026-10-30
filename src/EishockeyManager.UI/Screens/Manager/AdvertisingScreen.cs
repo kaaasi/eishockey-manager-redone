@@ -5,8 +5,11 @@ namespace EishockeyManager.UI.Screens.ManagerArea;
 /// <summary>
 /// Bildschirm Werbung (kb\151 mit eigener Palette, Logos aus kb\11). Vermessen am UI-Video (6:20–7:40):
 /// <list type="bullet">
-/// <item>Oben sieben Bandenfelder, links der Spieler (Trikot), Mitte die Zuschauer mit zwei Tafeln (Eisfläche),
+/// <item>Oben sieben Bandenfelder, links der Spieler (Trikot), Mitte die Zuschauer mit zwei Tafeln (Eisfläche, je
+///   eine eigene Fläche: oben nur mit Überdachung HALLE, unten nur mit Kühlanlage 'MEGAFROST', em.exe 0x2B56A),
 ///   links unten der Fernseher. Klick wählt die Fläche (roter Rahmen).</item>
+/// <item>Klick auf einen abgelaufenen Vertrag mit Option startet die Verhandlung (0x2B75F): Frage
+///   „Möchten Sie den Vertrag mit … verlängern ?“ oder Absage „Die Firma … wird den Vertrag nicht verlängern.“</item>
 /// <item>Unten: Logo mit ▲▼ zum Blättern durch die Firmen bzw. Sender, Angebot (Dauer, Banden, Betrag pro Monat),
 ///   Knöpfe „Info“ (Firmen-Info) und „Annehmen“, darunter Einnahmen, Ausgaben und Saldo pro Monat.</item>
 /// </list>
@@ -26,6 +29,13 @@ public sealed class AdvertisingScreen : Screen
     public static readonly Rect TvPanel = new(2, 163, 79, 75);
 
     private static readonly (int X, int Y)[] IceBoards = [(268, 92), (268, 128)];
+
+    /// <summary>Eistafel 0/1 als Fläche 9/10. [ORIGINAL] 0x2B5DB: Rahmen bei x = 0x10B, y = 0x5B + 0x24 · i, 35 × 25.</summary>
+    public static Rect IceBoardRect(int i) => new(267, 91 + 36 * i, 35, 25);
+
+    /// <summary>Ja/Nein der Verlängerungsfrage. [APPROX] Lage nicht aus dem Video (Frage 0x120:0x7A).</summary>
+    public static readonly Rect YesButton = new(110, 136, Widgets.ButtonWidth, Widgets.ButtonHeight);
+    public static readonly Rect NoButton = new(170, 136, Widgets.ButtonWidth, Widgets.ButtonHeight);
     private static readonly (int X, int Y) JerseyLogo = (31, 116);
     private static readonly (int X, int Y) TvLogo = (11, 173);
 
@@ -63,6 +73,8 @@ public sealed class AdvertisingScreen : Screen
     private int _stationCursor = -1;
     private int? _infoFor;
     private Rect? _pressed;
+    private SponsorContract? _renewal;
+    private readonly EishockeyManager.UI.Screens.Team.MessageBox _message = new();
 
     public AdvertisingScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
@@ -73,6 +85,12 @@ public sealed class AdvertisingScreen : Screen
 
     public bool ShowsInfo => _infoFor is not null;
 
+    /// <summary>Vertrag, zu dem die Verlängerungsfrage offen ist.</summary>
+    public SponsorContract? RenewalQuestion => _renewal;
+
+    /// <summary>Offene Meldung (Absage), sonst leer.</summary>
+    public IReadOnlyList<string> MessageLines => _message.Lines;
+
     private GameState Game => Host.Game!;
     private Core.Manager Me => Game.ActiveManager;
     private Sponsoring Ads => Game.Ads(Me);
@@ -80,6 +98,19 @@ public sealed class AdvertisingScreen : Screen
     public override void Update(InputState input)
     {
         _pressed = null;
+        if (_message.Update(input))
+            return;
+        if (_renewal is { } pending)
+        {
+            if (!input.LeftClick)
+                return;
+            if (YesButton.Contains(input.MouseX, input.MouseY) || NoButton.Contains(input.MouseX, input.MouseY))
+            {
+                Game.AnswerRenewal(Me, pending, yes: YesButton.Contains(input.MouseX, input.MouseY));
+                _renewal = null;
+            }
+            return;
+        }
         if (_infoFor is not null)
         {
             if (input.LeftClick || input.RightClick || input.Keys.Count > 0)
@@ -95,15 +126,26 @@ public sealed class AdvertisingScreen : Screen
             return;
 
         var (x, y) = (input.MouseX, input.MouseY);
+        AdSlot? clicked = null;
         for (var i = 0; i < Sponsoring.BoardCount; i++)
             if (BoardRect(i).Contains(x, y))
-                _slot = new AdSlot(AdSlotKind.Bande, i);
+                clicked = new AdSlot(AdSlotKind.Bande, i);
         if (JerseyPanel.Contains(x, y))
-            _slot = new AdSlot(AdSlotKind.Trikot);
+            clicked = new AdSlot(AdSlotKind.Trikot);
         else if (IcePanel.Contains(x, y))
-            _slot = new AdSlot(AdSlotKind.Eisflaeche);
+            // [APPROX] Trefferfläche: obere Hälfte der Mitte = Tafel 1, untere = Tafel 2.
+            clicked = new AdSlot(y < IcePanel.Y + IcePanel.H / 2 ? AdSlotKind.Eisflaeche : AdSlotKind.Eisflaeche2);
         else if (TvPanel.Contains(x, y))
-            _slot = new AdSlot(AdSlotKind.Fernsehen);
+            clicked = new AdSlot(AdSlotKind.Fernsehen);
+        if (clicked is { } chosen)
+        {
+            _slot = chosen;
+            if (Ads.ContractAt(chosen) is { } contract && Game.AwaitsRenewal(contract))
+            {
+                Negotiate(contract);
+                return;
+            }
+        }
 
         if (ArrowUp.Contains(x, y))
             Browse(-1, ArrowUp);
@@ -118,6 +160,22 @@ public sealed class AdvertisingScreen : Screen
         {
             _pressed = AcceptButton;
             Game.AcceptOffer(Me, _slot!.Value, Cursor);
+        }
+    }
+
+    /// <summary>Verhandlung über einen abgelaufenen Vertrag mit Option (Texte em.exe DGROUP 0x3D3D–0x3D81).</summary>
+    private void Negotiate(SponsorContract contract)
+    {
+        var name = contract.Partner.Name;
+        switch (Game.OpenRenewal(Me, contract))
+        {
+            case RenewalOutcome.Question:
+                _renewal = contract;
+                break;
+            case RenewalOutcome.Declined:
+                // [APPROX] Zeilenaufteilung: die vier Texte der Meldung 0x120:0x4D je eine Zeile.
+                _message.Show("Die Firma", name, "wird den Vertrag", "nicht verlängern.");
+                break;
         }
     }
 
@@ -139,7 +197,7 @@ public sealed class AdvertisingScreen : Screen
     /// <summary>Angebot des gezeigten Partners für die gewählte (freie) Fläche.</summary>
     public SponsorOffer? CurrentOffer()
     {
-        if (_slot is not { } slot || Cursor < 0 || Ads.ContractAt(slot) is not null)
+        if (_slot is not { } slot || Cursor < 0 || Ads.ContractAt(slot) is not null || !Game.IsAdSlotAvailable(Me, slot))
             return null;
         var offer = Ads.OfferFrom(slot.Kind, Cursor);
         if (offer is null || (slot.Kind == AdSlotKind.Bande && Ads.FreeBoards().Count() < offer.Boards))
@@ -160,6 +218,22 @@ public sealed class AdvertisingScreen : Screen
         DrawTotals(s);
         if (_infoFor is { } company)
             DrawInfo(s, Sponsor.Companies[company]);
+        if (_renewal is { } pending)
+            DrawRenewalQuestion(s, pending);
+        _message.Draw(s, Assets);
+    }
+
+    /// <summary>[APPROX] Frage im Rahmen der Meldungen (0x120:0x7A), Lage und Knöpfe nicht aus dem Video.</summary>
+    private void DrawRenewalQuestion(Surface s, SponsorContract contract)
+    {
+        var mini = Assets.Mini;
+        var frame = new Rect(70, 92, 180, 66);
+        Widgets.Frame(s, Assets, frame, FrameStyle.Orange);
+        string[] lines = ["Möchten Sie den Vertrag mit", contract.Partner.Name, "verlängern ?"];
+        for (var i = 0; i < lines.Length; i++)
+            s.TextCentered(mini, 160, frame.Y + 10 + 8 * i, lines[i], Colors.White);
+        Button(s, YesButton, "Ja");
+        Button(s, NoButton, "Nein");
     }
 
     /// <summary>Kachel in kb\11: Spalte 0 Firmen, Spalte 1 Sender (oben) und Trikots 8–9, Spalte 2 Trikots 0–7.</summary>
@@ -184,10 +258,10 @@ public sealed class AdvertisingScreen : Screen
                     foreach (var b in contract.Boards)
                         DrawLogo(s, AdSlotKind.Bande, contract.Sponsor, BoardRect(b).X + 1, BoardRect(b).Y + 1);
                     break;
-                case AdSlotKind.Eisflaeche:
-                    // [APPROX] Im Video ist die Eisfläche nicht belegt; Logo auf beiden Tafeln angenommen.
-                    foreach (var (x, y) in IceBoards)
-                        DrawLogo(s, AdSlotKind.Bande, contract.Sponsor, x, y);
+                case AdSlotKind.Eisflaeche or AdSlotKind.Eisflaeche2:
+                    // [APPROX] Im Video ist die Eisfläche nicht belegt; Logo der Firma auf der eigenen Tafel angenommen.
+                    var (x, y) = IceBoards[contract.Kind == AdSlotKind.Eisflaeche ? 0 : 1];
+                    DrawLogo(s, AdSlotKind.Bande, contract.Sponsor, x, y);
                     break;
                 case AdSlotKind.Trikot:
                     DrawLogo(s, AdSlotKind.Trikot, contract.Sponsor, JerseyLogo.X, JerseyLogo.Y);
@@ -207,7 +281,8 @@ public sealed class AdvertisingScreen : Screen
         {
             AdSlotKind.Bande => BoardRect(slot.Index),
             AdSlotKind.Trikot => JerseyPanel,
-            AdSlotKind.Eisflaeche => IcePanel,
+            AdSlotKind.Eisflaeche => IceBoardRect(0),
+            AdSlotKind.Eisflaeche2 => IceBoardRect(1),
             _ => TvPanel,
         };
         s.Outline(frame, FrameRed);

@@ -140,7 +140,7 @@ public class FinanceMonthlyTests
         var expectedIncome = game.MonthlyBaseIncome(me);
 
         var day = game.FinanceDay + 1;
-        while (SeasonCalendar.LayoutDate(day).Day != 1)
+        while (!IsLastDayOfMonth(SeasonCalendar.LayoutDate(day)))
             day++;
         game.AdvanceFinanceTo(day);
 
@@ -154,7 +154,7 @@ public class FinanceMonthlyTests
     public void CreditInterest_AccruesDailyAndIsBookedAtMonthEnd()
     {
         // Karriere-Video (Bank): Kredit 584.000 DM → „−23.360 DM/M.“ = 4 %. [ORIGINAL] Tagesabschluss 0x3ED4F:
-        // je Tag (Zinsen)/(Tage + 1) aufs Zinskonto, am Monatsersten aufs Konto (0x3F0DA).
+        // je Tag (Zinsen)/(Tage + 1) aufs Zinskonto, am Monatsletzten aufs Konto (0x3F02C/0x3F0DA, #134).
         var (game, me, _) = OberligaGame(level: 3);
         game.Finance(me).Bank.Credit = 584_000;
         Assert.Equal(23_360, game.MonthlyDebtInterest(me));
@@ -162,19 +162,17 @@ public class FinanceMonthlyTests
         var zinsenBefore = book.Current(FinanceCategory.Zinsen);
 
         var day = game.FinanceDay + 1;
-        while (SeasonCalendar.LayoutDate(day).Day != 1)
+        while (!IsLastDayOfMonth(SeasonCalendar.LayoutDate(day)))
             day++;
-        var first = SeasonCalendar.LayoutDate(day);
-        var previous = first.AddMonths(-1);
-        // Tag 0 (Spielbeginn) rechnet nichts ab; ab Tag 1 täglich bis zum Monatsende, dann der Monatserste selbst.
-        var elapsedDays = DateTime.DaysInMonth(previous.Year, previous.Month) - SeasonCalendar.LayoutDate(game.FinanceDay + 2).Day + 1;
+        var last = SeasonCalendar.LayoutDate(day);
+        // Tag 0 (Spielbeginn) rechnet nichts ab; ab Tag 1 täglich bis einschließlich zum Monatsletzten (Tagesabschluss vor
+        // der Monatsbuchung).
+        var elapsedDays = last.Day - SeasonCalendar.LayoutDate(game.FinanceDay + 2).Day + 1;
         game.AdvanceFinanceTo(day);
 
-        // Wie im Original zählt auch der Monatserste selbst (Tagesabschluss vor der Monatsbuchung).
         var booked = zinsenBefore - book.Current(FinanceCategory.Zinsen);
-        var perDay = 23_360L * 3 / (DateTime.DaysInMonth(previous.Year, previous.Month) + 1);
-        var firstDay = 23_360L * 3 / (DateTime.DaysInMonth(first.Year, first.Month) + 1);
-        Assert.Equal((perDay * elapsedDays + firstDay) / 3, booked);
+        var perDay = 23_360L * 3 / (DateTime.DaysInMonth(last.Year, last.Month) + 1);
+        Assert.Equal(perDay * elapsedDays / 3, booked);
         Assert.Equal(FinanceRules.StartMoney(me.Level) + book.CurrentTotal, me.Money);
     }
 
@@ -188,4 +186,7 @@ public class FinanceMonthlyTests
         me.Money = -100_000;
         Assert.Equal(neutral + 10_000, game.MonthlyExpenses(me));
     }
+
+    /// <summary>Tag des Monatsabschlusses (#134, [ORIGINAL] 0x3F02C: Tag = Monatslänge).</summary>
+    private static bool IsLastDayOfMonth(DateOnly date) => date.Day == DateTime.DaysInMonth(date.Year, date.Month);
 }

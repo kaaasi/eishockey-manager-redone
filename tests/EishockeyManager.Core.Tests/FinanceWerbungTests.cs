@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -93,8 +94,8 @@ public class FinanceWerbungTests
         long[] values = [550_000, 550_000, 550_000];
         Assert.Equal(78, values[0] / 7000);
         Assert.Equal(0, SponsorRating.StarCount(values, new MinRandom()));
-        // Ein Ausreißer über dem 3,5-Fachen des Schnitts zählt: Ø(1.000.000/5500 + 2·1) / 3 = 61, Schwelle 213.
-        long[] mixed = [10_000, 10_000, 5_000_000];
+        // Ein Ausreißer zählt erst bei genug Spielern: Ø = (5 · 1 + 909) / 6 = 152, Schwelle 532 < 5.000.000/7000 = 714.
+        long[] mixed = [10_000, 10_000, 10_000, 10_000, 10_000, 5_000_000];
         Assert.Equal(1, SponsorRating.StarCount(mixed, new MinRandom()));
     }
 
@@ -274,5 +275,136 @@ public class FinanceWerbungTests
         ads.Contracts.Add(second);
         Assert.Equal(RenewalOutcome.Declined, game.OpenRenewal(me, second));
         Assert.DoesNotContain(second, ads.Contracts);
+    }
+
+    // ---- Spielstand ------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Schema 6 → 7: gespeicherte Bewertung −1 (beim nächsten Gebrauch berechnet), Bewertung in Angeboten und Verträgen 0;
+    /// danach lädt der Spielstand und rechnet weiter. Ein Schema-7-Spielstand übersteht Sichern und Laden unverändert.
+    /// </summary>
+    [Fact]
+    public void SchemaSix_IsMigrated()
+    {
+        var game = TestGames.Create(3);
+        var me = game.ActiveManager;
+        game.Finance(me).Stadium.SetLevel(StadiumFeature.Kuehlanlage, 2);
+        game.Ads(me).Offers[AdSlotKind.Eisflaeche2] = new() { [4] = new SponsorOffer(AdSlotKind.Eisflaeche2, 4, 12, 1, 3_000, 12, 30) };
+        var contract = game.AcceptOffer(me, new AdSlot(AdSlotKind.Eisflaeche2), 4)!;
+        Assert.Equal(30, contract.SignedRating);
+        var saved = SaveGame.Save(game);
+        var reloaded = SaveGame.Load(saved);
+        Assert.True(reloaded.Success, reloaded.Error);
+        Assert.Equal(saved, SaveGame.Save(reloaded.Game!));
+
+        var root = JsonNode.Parse(saved)!.AsObject();
+        root["schema"] = 6;
+        var removed = 0;
+        void Strip(JsonNode? node)
+        {
+            switch (node)
+            {
+                case JsonObject obj:
+                    foreach (var key in new[] { "SponsorRating", "Rating", "SignedRating" })
+                        if (obj.Remove(key))
+                            removed++;
+                    foreach (var (_, child) in obj.ToArray())
+                        Strip(child);
+                    break;
+                case JsonArray array:
+                    foreach (var child in array.ToArray())
+                        Strip(child);
+                    break;
+            }
+        }
+        Strip(root);
+        Assert.True(removed > 3);
+        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
+        Assert.True(result.Success, result.Error);
+        var loaded = result.Game!;
+        var lme = loaded.ActiveManager;
+        Assert.Equal(-1, loaded.Finance(lme).SponsorRating);
+        Assert.Equal(0, Assert.Single(loaded.Ads(lme).Contracts).SignedRating);
+        Assert.All(loaded.Ads(lme).Offers.Values.SelectMany(o => o.Values), o => Assert.Equal(0, o.Rating));
+        loaded.AdvanceFinanceTo(loaded.FinanceDay + 20);
+        Assert.InRange(loaded.Finance(lme).SponsorRating, 0, 100);
+    }
+
+    // ---- Mehrsaisonprobe -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Mehrsaisonprobe (4 Saisonwechsel, passiv und aktiv): Der aktive Manager baut HALLE und MEGAFROST, nimmt nach jedem
+    /// Schritt jedes mögliche Angebot an und verhandelt jeden abgelaufenen Vertrag mit Option (Ja). Geprüft wird: Bewertung
+    /// stets 0–100; „Sponsoren“ wird nur gebucht, wenn im Schritt ein Monatsletzter lag (#134); Verträge nur auf nutzbaren
+    /// Flächen, Restlaufzeit ≥ 0, auf Verhandlung wartend nur mit Option (#133).
+    /// </summary>
+    [Theory]
+    [InlineData(false, 3)]
+    [InlineData(true, 3)]
+    [InlineData(true, 11)]
+    public void FourSeasonChanges_SponsoringStaysConsistent(bool active, int seed)
+    {
+        var game = TestGames.Create(seed);
+        var me = game.ActiveManager;
+        if (active)
+        {
+            game.Finance(me).Stadium.SetLevel(StadiumFeature.Ueberdachung, 2);
+            game.Finance(me).Stadium.SetLevel(StadiumFeature.Kuehlanlage, 2);
+        }
+        var lastDay = game.FinanceDay;
+        var lastSeason = game.Season;
+        var lastSponsors = game.Finance(me).Book.Current(FinanceCategory.Sponsoren);
+        var bookings = 0;
+        var signed = 0;
+        var negotiated = 0;
+
+        RngTwinProbeTests.Run(game, active, g =>
+        {
+            var finance = g.Finance(me);
+            Assert.InRange(finance.SponsorRating, 0, 100);
+            var sponsors = finance.Book.Current(FinanceCategory.Sponsoren);
+            if (g.Season == lastSeason && sponsors != lastSponsors)
+            {
+                var monthEnd = Enumerable.Range(lastDay + 1, Math.Max(0, g.FinanceDay - lastDay))
+                    .Select(SeasonCalendar.LayoutDate).Any(d => d.Day == DateTime.DaysInMonth(d.Year, d.Month));
+                Assert.True(monthEnd, $"Sponsoren gebucht ohne Monatsletzten (Tage {lastDay + 1}–{g.FinanceDay}).");
+                bookings++;
+            }
+            (lastDay, lastSeason, lastSponsors) = (g.FinanceDay, g.Season, sponsors);
+
+            foreach (var contract in finance.Sponsoring.Contracts)
+            {
+                Assert.True(contract.MonthsLeft >= 0);
+                Assert.True(contract.MonthsLeft > 0 || contract.OptionMonths > 0, "abgelaufener Vertrag ohne Option");
+                Assert.True(g.IsAdSlotAvailable(me, new AdSlot(contract.Kind, contract.Boards.FirstOrDefault())));
+            }
+            if (!active)
+                return;
+            foreach (var contract in finance.Sponsoring.Contracts.Where(g.AwaitsRenewal).ToList())
+            {
+                negotiated++;
+                if (g.OpenRenewal(me, contract) == RenewalOutcome.Question)
+                    Assert.True(g.AnswerRenewal(me, contract, yes: true));
+                Assert.False(g.AwaitsRenewal(contract));
+            }
+            foreach (var kind in Enum.GetValues<AdSlotKind>())
+                foreach (var offer in finance.Sponsoring.Offers.GetValueOrDefault(kind)?.Values.ToList() ?? [])
+                {
+                    var slot = kind == AdSlotKind.Bande ? new AdSlot(kind, finance.Sponsoring.FreeBoards().FirstOrDefault(-1)) : new AdSlot(kind);
+                    if (slot.Index >= 0 && g.AcceptOffer(me, slot, offer.Sponsor) is not null)
+                        signed++;
+                }
+        });
+
+        Assert.True(bookings > 4, $"nur {bookings} Schritte mit Monatsbuchung");
+        if (active)
+        {
+            Assert.True(signed > 10, $"nur {signed} Verträge");
+            Assert.Contains(game.Ads(me).Contracts, c => c.Kind is AdSlotKind.Eisflaeche or AdSlotKind.Eisflaeche2);
+        }
+        else
+            Assert.Empty(game.Ads(me).Contracts);
+        if (active)
+            Assert.True(negotiated > 0, "keine Verhandlung über eine Option");
     }
 }

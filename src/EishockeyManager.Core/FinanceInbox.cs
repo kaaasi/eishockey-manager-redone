@@ -6,7 +6,10 @@ public enum MessageKind
     /// <summary>Reine Meldung.</summary>
     Info,
 
-    /// <summary>„Möchten Sie den Vertrag mit … verlängern ?“ – Ja/Nein.</summary>
+    /// <summary>
+    /// „Möchten Sie den Vertrag mit … verlängern ?“ – Ja/Nein. Nur noch in Spielständen vor Schema 7: Seit #133 kommt die
+    /// Frage im Werbebildschirm (<see cref="GameState.OpenRenewal"/>), der Posteingang meldet nur den Verhandlungstisch.
+    /// </summary>
     SponsorRenewal,
 
     /// <summary>Kreditangebot eines anderen Managers – Annehmen/Ablehnen, verfällt nach einer Woche.</summary>
@@ -26,7 +29,7 @@ public sealed class Message
     /// <summary>Erledigt (beantwortet oder verfallen); erledigte Fragen bleiben als Meldung stehen.</summary>
     public bool Done { get; set; }
 
-    /// <summary>Verlängerung: der abgelaufene Vertrag.</summary>
+    /// <summary>Verlängerung (nur Spielstände vor Schema 7): der abgelaufene Vertrag.</summary>
     public SponsorContract? Contract { get; init; }
 
     /// <summary>Kreditwunsch: wer leihen möchte und wie viel.</summary>
@@ -121,25 +124,6 @@ public sealed partial class GameState
 
     private bool MessageExpired(Message message, int day) => message.Kind == MessageKind.LoanRequest
         && (long)(Season - message.Season) * SeasonCalendar.Length + day - message.Day >= LoanRequestDays;
-
-    /// <summary>Abgelaufener Werbevertrag: Frage nach Verlängerung oder Absage der Firma (Texte aus em.exe).</summary>
-    private void ContractExpired(Manager manager, SponsorContract contract)
-    {
-        var name = contract.Partner.Name;
-        // [ORIGINAL] 0x3EFB2: Nur Verträge mit Verlängerungsoption führen zur Frage; sonst endet der Vertrag still
-        // (die Absage-Meldung ist eine Ergänzung des Remakes, Spur finanzen-2).
-        if (contract.OptionMonths > 0)
-            Post(manager, new Message
-            {
-                Kind = MessageKind.SponsorRenewal,
-                Day = Day,
-                Lines = ["Ein Werbepartner mit Verlängerungsoption", "bittet Sie an den Verhandlungstisch.",
-                         $"Möchten Sie den Vertrag mit {name} verlängern ?"],
-                Contract = contract,
-            });
-        else
-            Notify(manager, $"Die Firma {name}", "wird den Vertrag nicht verlängern.");
-    }
 
     private void ConstructionCompleted(Manager manager, StadiumConstruction construction) =>
         Notify(manager, $"Der Stadion-Ausbau ({construction.Label})", "ist abgeschlossen.");

@@ -25,11 +25,11 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(6, SaveGame.SchemaVersion);
+        Assert.Equal(7, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
-    private const string ExpectedSchemaFingerprint = "ACB8BBEEB609280D";
+    private const string ExpectedSchemaFingerprint = "819D0B8468D9384B";
 
     // ---------- Abnahme 3: Roundtrip ----------
 
