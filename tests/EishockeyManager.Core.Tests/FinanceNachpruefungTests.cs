@@ -129,7 +129,7 @@ public class FinanceNachpruefungTests
     /// Prämien am Saisonende. em.exe 0x55CD3–0x55D02 vergleicht mit DGROUP 0x387 = DEB-Pokalsieger (Titelbild 0x350B6)
     /// und bucht 1.500.000 Drittel = 500.000 DM; der Deutsche Meister und der Europapokalsieger bekommen kein Geld,
     /// 0xE0:0x20 (0x2723C) ist die Fair-Play-Wertung, nicht der Tabellenplatz. Karriere-Video: Play-Off-Halbfinale mit
-    /// Pokalsieg 600.000 DM (11:07:00), Deutscher Meister 200.000 DM (11:17:01, nur zwei 100.000er), 1. Platz 2. Liga
+    /// Pokalsieg 600.000 DM (1:07:00), Deutscher Meister 200.000 DM (1:17:01, nur zwei 100.000er), 1. Platz 2. Liga
     /// „keine“ (0:35:54). Die 100.000er (Topscorer, bester Torhüter, Fair-Play) fehlen im Remake noch (Restlücke).
     /// </summary>
     [Theory]
