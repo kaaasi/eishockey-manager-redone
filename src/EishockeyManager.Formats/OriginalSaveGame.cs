@@ -18,15 +18,16 @@ public sealed record OriginalSaveManagerHeader(int StartLeague, bool OnlyWorldMo
 /// <param name="Slot">Platz 0–28.</param>
 /// <param name="PoolIndex">Platz +0x0F: Index im Spielerpool.</param>
 /// <param name="Line">Platz +0x15, untere Bits: Reihe 1–3 (0 = keine); Bit 0x80 = Sturm.</param>
+/// <param name="ContractYears">Platz +0x0B: Vertragsdauer in Jahren (Spalte V.DAUER).</param>
 /// <param name="Dressed">Platz +0x0A: eingesetzt (Status „IM TEAM“ oder „RESERVE“).</param>
 /// <param name="Games">Platz +0x06: Spiele (Spalte SP; nach einem Kauf mit den Spielen beim alten Verein).</param>
 /// <param name="ClubGames">Platz +0x1C: Spiele für den jetzigen Verein (nach einem Kauf 0, sonst gleich <paramref name="Games"/>).</param>
 /// <param name="Goals">Platz +0x22: Tore (Spalte TO).</param>
 /// <param name="SalaryThirds">Platz +0x28: Gehalt in Drittel-DM (Spalte WERT bei „Verträge“).</param>
-/// <param name="PriceThirds">Platz +0x2C: Preis in Drittel-DM (Transferliste „(K)“; nach dem Kauf der bezahlte Betrag, siehe spielstand-original.md).</param>
+/// <param name="PriceThirds">Platz +0x2C: Preis in Drittel-DM (Transferliste „(K)“; nach dem Kauf das bezahlte Gebot).</param>
 public sealed record OriginalSquadSlot(
     int Slot, int PoolIndex, string Name, int Strength1, int Strength2, int Strength3, int Age, int Talent, int RoleValue,
-    bool Dressed, int Line, bool Forward, int Games, int ClubGames, int Goals, int SalaryThirds, int PriceThirds);
+    int ContractYears, bool Dressed, int Line, bool Forward, int Games, int ClubGames, int Goals, int SalaryThirds, int PriceThirds);
 
 /// <summary>Gelesenes Prüfsummenbyte und der aus dem Klartext berechnete Wert.</summary>
 public sealed record OriginalSaveChecksum(int FileOffset, byte Stored, byte Computed)
@@ -105,7 +106,7 @@ public sealed class OriginalSaveGame
             var player = pool.AsSpan(index * PoolRecordLength, PoolRecordLength);
             list.Add(new OriginalSquadSlot(
                 i, index, GameText.Decode(player[..0x12]), slot[0x10], slot[0x11], slot[0x12],
-                player[0x14], player[0x12], player[0x18], slot[0x0A] != 0, slot[0x15] & 0x0F, (slot[0x15] & 0x80) != 0,
+                player[0x14], player[0x12], player[0x18], slot[0x0B], slot[0x0A] != 0, slot[0x15] & 0x0F, (slot[0x15] & 0x80) != 0,
                 slot[0x06], slot[0x1C], slot[0x22], BitConverter.ToInt32(slot.Slice(0x28, 4)), BitConverter.ToInt32(slot.Slice(0x2C, 4))));
         }
         return list;

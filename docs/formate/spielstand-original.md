@@ -211,11 +211,11 @@ FILE01 → FILE02: im ganzen Klartext genau **ein** Byte verschieden (`0x973F`).
 | `+0x10`–`+0x12` | Stärken (drei Werte wie in der Spalte STÄRKEN) | alle 32 Spieler |
 | `+0x15` | Reihe 1–3 (untere Bits), Bit 0x80 = Sturm; der eingesetzte Torhüter hat Reihe 1 | Aufstellung: Reihen 1–3, TW Nr. 2 |
 | `+0x06` | Spiele (Spalte SP); nach einem Kauf mit den Spielen beim alten Verein | alle 25; DAFFNER nach Kauf 2 (FILE07) |
-| `+0x0B` | wahrscheinlich Vertragsdauer in Jahren (eigener Kader alle 2 = „2 Jahre“, DAFFNER nach Kauf 1; Bild „Verträge“ nach Kauf fehlt) | FILE05, FILE07 |
+| `+0x0B` | Vertragsdauer in Jahren (Spalte V.DAUER) | FILE05 alle 2 = „2 Jahre“; FILE07 DAFFNER 1 (Angabe Nutzer: 1 Jahr) |
 | `+0x1C` | Spiele für den jetzigen Verein (nach einem Kauf 0) | alle 25, FILE07 |
 | `+0x22` | Tore (TO) | alle 25 |
 | `+0x28` | Gehalt (4 Byte, Drittel-DM) = Spalte WERT bei „Verträge“ | alle 25, z. B. HEISS 17.100 DM |
-| `+0x2C` | Preis (4 Byte, Drittel-DM) = Transferliste „(K)“; Leihe „(L)“ = ein Drittel davon. Nach dem Kauf steht dort der bezahlte Betrag (siehe FILE07) | 7 Marktspieler, FILE07 |
+| `+0x2C` | Preis (4 Byte, Drittel-DM) = Transferliste „(K)“; Leihe „(L)“ = ein Drittel davon. Nach dem Kauf steht dort der vom Nutzer gebotene und bezahlte Kaufpreis (FILE07) | 7 Marktspieler, FILE07 |
 | `+0x00`–`+0x05`, `+0x07`–`+0x09`, `+0x0E`, `+0x13`, `+0x14`, `+0x16`–`+0x1B`, `+0x20`–`+0x27` | offen (Kandidaten: Strafminuten 2m/5m, Spalte E) | |
 
 **Spielerpool** `far:8253` (200 × 33, Struktur aus `reverse-engineering.md`): Name `+0x00`, Talent `+0x12`, Alter `+0x14`
@@ -234,7 +234,7 @@ in der Reihenfolge der Leiste. FILE05 = Standardplan, alle 28 Felder stimmen mit
 | Stand | Änderung (Nutzer) | Unterschied im Klartext |
 |---|---|---|
 | FILE06 | aus FILE05: BRANDL aus Reihe 3 genommen, DOBRYZINSKI hinein | Kaderplatz 12 `+0x0A` 1→0, `+0x15` 0x83→0; Platz 19 `+0x0A` 0→1, `+0x15` 0→0x83. Dazu `0xCC73` (6 Byte 0 → 2 3 3 2 3 3), `0x375` 1→0, Vereinssatz Köln `+0x26` 48→55 (Deutung offen) |
-| FILE07 | aus FILE05: DAFFNER vom Markt gekauft (Liste: 305.000 DM), Sponsorzuschuss 220.000 DM angenommen | Konto −180.000 DM (737.354 → 557.354). Pool-Satz 158 `+0x1A` 4→0 (Besitzer), `+0x1D` 3→2 (Verein Köln). Neuer Kaderplatz 25: Pool 158, Stärken 67 88 51, SP 2, Gehalt 9.900 DM, `+0x2C` **400.000 DM** (= 180.000 + 220.000, also bezahlter Preis höher als der Listenpreis; Grund offen), Reihe 3 Sturm. Automatisch: LALA aus Reihe 3, HANEMANN nicht mehr eingesetzt (weiter 22 eingesetzt). Markt rückt nach. Teamwerte Köln (`+0x19`, `+0x1B`, `+0x1D`) neu berechnet |
+| FILE07 | aus FILE05: DAFFNER vom Markt gekauft (Liste: 305.000 DM), Sponsorzuschuss 220.000 DM angenommen | Konto −180.000 DM (737.354 → 557.354). Pool-Satz 158 `+0x1A` 4→0 (Besitzer), `+0x1D` 3→2 (Verein Köln). Neuer Kaderplatz 25: Pool 158, Stärken 67 88 51, SP 2, Gehalt 9.900 DM, `+0x2C` **400.000 DM** = im Kaufdialog eingegebenes Gebot (Angabe Nutzer: höher als der Listenpreis, damit es nicht abgelehnt wird; 400.000 − 220.000 Zuschuss = 180.000), Vertragsdauer `+0x0B` = 1, Reihe 3 Sturm. Automatisch: LALA aus Reihe 3, HANEMANN nicht mehr eingesetzt (weiter 22 eingesetzt). Markt rückt nach. Teamwerte Köln (`+0x19`, `+0x1B`, `+0x1D`) neu berechnet |
 | FILE08 | aus FILE05: Bankkredit 701.000 DM, Training Mi oben/oben → Freizeit | Konto +701.000 DM; Manager 0 `0x9806` (= `0x97F6` + 4 · 4, Darlehen Bank) = −2.103.000 Drittel; Bank-Satz (Manager-Satz 4): Konto `+0x18F` = −2.103.000, Darlehen von Manager 0 `+0x19B` = +2.103.000. Training `0xA8A1` + 8 (Mittwoch, erstes Feld) 5 → 1: **Art 1 = Freizeit** (Leiste: 0 Pinguin, 1 Strand, …) |
 | FILE10 | neues Spiel, nur Fahne, „Tom“, MANNHEIMER ERC | `0xD0B9` = 2 (nur Fahne), Vereinsindex 1 = MANNHEIMER ERC: **die Vereinsindizes werden je Spiel neu verteilt** (FILE01: Index 1 = KREFELDER EV) |
 | FILE11 | neues Spiel, nur Weltkugel, nach dem Sprung | `0xD0B9` = 1, Datum 14.04.1994, `0xA70E` = 5 (Bundestrainer am Zug), `0x6AC` = 54 (Deutschland), `0x256` = 30.000 (Highscore-Schlüssel „nur Weltkugel“). Kopf: Liga-Byte 0, Weltkugel-Byte 1, Verein „DEUTSCHLAND“. Der Vereinssatz des Managers (Index 7) heißt im gesicherten Block ebenfalls **„DEUTSCHLAND“**: Die Kopfroutine überschreibt den Vereinsnamen vor dem Schreiben der Blöcke und stellt ihn nicht zurück |
@@ -255,8 +255,8 @@ Bild: Referenz-Repo `original/spielstaende/bilder/kaputt_mogelguru.png`. Für `h
 - Vereinsdatensatz: in FILE03 ändern sich `+0x17`–`+0x3A` (Form, Teamwerte, weitere Statistik?). Punkte und Tore der
   Tabelle stehen dort nicht als einfache Zahl; vermutlich berechnet das Original die Tabelle aus `0xA0CB`.
 - Kaderplatz: offene Bytes (Liste oben), Spalte „E“ (zweistellig bei „Mannschaft“, dreistellig mit führender 0/1 bei
-  „Transfer“), Strafminuten 2m/5m; Vertragsdauer `+0x0B` mit einem Bild „Verträge“ nach dem Kauf bestätigen.
-- Kauf: warum DAFFNER 400.000 statt 305.000 DM kostet (FILE07); Sponsorzuschuss-Feld.
+  „Transfer“), Strafminuten 2m/5m.
+- Kauf: Annahmeregel für Gebote unter/über Listenpreis (em.exe); wo der Sponsorzuschuss steht.
 - `0xCC73`, `0x375`, Vereinsfeld `+0x26` (ändern sich mit der Aufstellung, FILE06).
 - Stände mit mehreren Managern (FILE09 fehlt), Saisonwechsel, DEB-Pokal.
 - Ablauf nach dem Mogelguru-Bildschirm (Rückkehr, geladener Stand behalten?).

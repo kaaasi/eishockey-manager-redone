@@ -84,6 +84,7 @@ public class OriginalSaveGameTests
             var squad = blocks["5DC3"];
             var slot = squad.AsSpan(7 * 0x34, 0x34);
             slot[0x0A] = 1;
+            slot[0x0B] = 2;
             slot[0x0F] = 27;
             slot[0x10] = 80; slot[0x11] = 82; slot[0x12] = 60;
             slot[0x15] = 0x01;
@@ -106,6 +107,7 @@ public class OriginalSaveGameTests
         Assert.Equal((80, 82, 60), (player.Strength1, player.Strength2, player.Strength3));
         Assert.Equal((27, 1, 40), (player.Age, player.Talent, player.RoleValue));
         Assert.True(player.Dressed);
+        Assert.Equal(2, player.ContractYears);
         Assert.Equal((1, false), (player.Line, player.Forward));
         Assert.Equal((3, 3, 1), (player.Games, player.ClubGames, player.Goals));
         Assert.Equal((12_100 * 3, 305_000 * 3), (player.SalaryThirds, player.PriceThirds));

@@ -81,7 +81,7 @@ internal static class HokDump
                 var line = p.Line == 0 ? "–" : $"{p.Line}{(p.Forward ? "S" : "A")}";
                 sb.AppendLine($"  {p.Slot + 1,2} {p.Name,-17} {p.Strength1,2} {p.Strength2,2} {p.Strength3,2}  Alter {p.Age,2} Talent {p.Talent} " +
                               $"Rolle {p.RoleValue,2}  SP {p.Games} TO {p.Goals}  {(p.Dressed ? "eingesetzt" : "          ")} Reihe {line,-2} " +
-                              $"Gehalt {p.SalaryThirds / 3} DM, Preis {p.PriceThirds / 3} DM");
+                              $"Vertrag {p.ContractYears} J., Gehalt {p.SalaryThirds / 3} DM, Preis {p.PriceThirds / 3} DM");
             }
         }
 
