@@ -21,10 +21,17 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
 2. Richte das SDK gemäß `AGENTS.md` §3 ein und prüfe im Repo-Verzeichnis `dotnet --version` (bei Problemen
    `docs/prozess/umgebung.md`).
    Fehlen Commit oder Bericht im lokalen Checkout und scheitert der Fetch, nutze einen verfügbaren GitHub-Connector
-   für Compare, Dateien mit festem Head-Ref, früheren Bericht und PR-Kommentare. Dokumentiere, ob nur Codelesen oder
-   auch eine Ausführung am nachgewiesenen Checkout erfolgte.
-   Prüfe genau den genannten Head (Blob-Hashes oder `git rev-parse`), baue ihn selbst, führe `tools/pruefen.sh`
-   (alle drei Läufe) aus. Aussagen aus der PR-Beschreibung nicht ungeprüft übernehmen.
+   für Compare, Dateien mit festem Head-Ref, früheren Bericht und PR-Kommentare. Rekonstruiere für Build und Tests
+   den Checkout über den Connector, soweit möglich, und verifiziere den vollständigen Git-Tree einschließlich
+   Dateimodi und gelöschter Pfade gegen den Zielcommit (siehe `docs/prozess/umgebung.md`). Ist die Verifikation
+   nicht erbracht (nicht möglich, unterlassen, Tree-SHA weicht ab oder nur teilweise rekonstruiert), dokumentiere die
+   Grenze und die blockierten Prüfungen; Läufe an einem solchen Stand sind höchstens Diagnose, im Bericht als
+   „unverifizierter Stand“ gekennzeichnet, und kein Test des exakten Heads. Dokumentiere, ob nur Codelesen oder auch
+   eine Ausführung am nachgewiesenen Checkout erfolgte.
+   Prüfe genau den genannten Head: bei einem Klon `git rev-parse HEAD` gleich dem Head-SHA, bei einer Rekonstruktion
+   Tree-SHA des Checkouts (z. B. `git add -A && git write-tree`) gleich dem Tree-SHA des Zielcommits; Blob-Hashes
+   einzelner Dateien genügen nicht. Baue ihn selbst, führe `tools/pruefen.sh` (alle drei Läufe) aus. Aussagen aus der
+   PR-Beschreibung nicht ungeprüft übernehmen.
 3. Führe zuerst die genannten Gegenbeispiele erneut aus, dann: Diff lesen, betroffene Aufrufer, neue Tests. Eine
    Gegenprobe pro neuem Test, wo es geht (gezielte Mutation in einer temporären Kopie → Test muss rot werden).
 4. Bericht mit genau drei Teilen:
@@ -32,6 +39,9 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
    2. **Befunde** mit Priorität P0–P3, Datei/Zeile (Link auf den Head), reproduzierbarem Gegenbeispiel
    3. **Ausgeführte Prüfungen** (Befehle, Tabelle aus `tools/pruefen.sh`) und **akzeptierte `[APPROX]`**, getrennt von Annahmen
    Keine Freigabe anhand der Testanzahl. Knapp: keine Wiederholung der PR-Beschreibung.
+   Ohne nachgewiesenen Checkout (nur Codelesen oder unverifizierter Stand) liefert das Review keinen Testnachweis nach
+   `zusammenarbeit.md` §6 Nr. 4; die Merge-Empfehlung sagt dann ausdrücklich „nur Codelesen“, und den
+   Originaldaten-Nachweis muss dann aus dem PR oder von der Leitstelle kommen.
 5. Ablage: nichts am Code oder am geprüften PR ändern. Datei auf neuem Branch `review/<thema>` (Basis `main`), PR mit
    **nur dieser Datei**, Commit-Trailer mit deinem Agentennamen. Ohne Schreibzugriff: Datei an den Nutzer.
 6. Antwort an den Nutzer: Link zum Review-PR, Empfehlung in einem Satz.
