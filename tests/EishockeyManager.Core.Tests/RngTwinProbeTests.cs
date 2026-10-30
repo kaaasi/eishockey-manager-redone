@@ -21,16 +21,21 @@ namespace EishockeyManager.Core.Tests;
 /// die Abdrücke sind mit dem unveränderten Generator neu ermittelt. Ursache je Fall (FN-01, #139, Tabelle in
 /// docs/finanzen-rekonstruktion.md): synthetisch alle vier Europapokalsieg 1993 ohne Prämie (−100.000 DM); Originaldaten
 /// aktiv ein Zug weniger aus FinanceRandom bei der Zuschauerteilung.
+/// Spur finanzen-werbung (Runde 6, #132–#134) ändert Werbebewertung, Werbeangebote und den Tag des Monatsabschlusses;
+/// alle sechs Abdrücke sind mit unverändertem Generator neu ermittelt. In allen sechs Fällen bleiben Haupt-, Pokal- und
+/// Vertragszufallsquelle in jedem Schritt gleich (keine Spielergebnisse, Auslosungen oder Vertragsentscheidungen
+/// verschoben); es ändern sich nur FinanceRandom (ab Tag 1: Bewertung nach jedem Tagesabschluss, 0x5569F) und daraus das
+/// Konto (Tabelle in docs/finanzen-rekonstruktion.md).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "7307C658BC6557A6")]
-    [InlineData(true, 3, "41FC5C31C441147A")]
-    [InlineData(false, 11, "6246CF397993BE92")]
-    [InlineData(true, 11, "DCFDC4281AFDE4AD")]
+    [InlineData(false, 3, "29CDCDB29ABE8389")]
+    [InlineData(true, 3, "9541EF4978491142")]
+    [InlineData(false, 11, "8D792630DA011B2B")]
+    [InlineData(true, 11, "7CB3FC8E58DC44CC")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -38,8 +43,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "0E4BEB48075C853B")]
-    [InlineData(true, "5072C76DA99AEDE3")]
+    [InlineData(false, "4D65B4082DBAA198")]
+    [InlineData(true, "9FAAA0D4276178C3")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
