@@ -37,9 +37,14 @@ public sealed class SeasonEndSummaryScreen : Screen
         SeasonEvent.Relegation => Symbol(1),
         SeasonEvent.GermanChampion => Cell(3, 0),
         SeasonEvent.CupWinner => Symbol(4),
-        SeasonEvent.TopFive => Symbol(8),
         _ => Symbol(6),
     };
+
+    /// <summary>
+    /// Symbol 8 (Weltkugel) für Statusbit 0x40 „unter den ersten fünf der 1. Liga“ ([ORIGINAL] Datei 0x2714F, Tabelle 0x4B2E; Befund #125).
+    /// Das Bit ist abgeleitet, nicht gespeichert (<see cref="GameState.HasTopFiveStatus"/>) und kommt als letztes Symbol (Bit 6).
+    /// </summary>
+    public static Rect TopFiveIcon => Symbol(8);
 
     /// <summary>Zelle der Symbolnummer <paramref name="n"/> im Raster mit sechs Zellen je Zeile.</summary>
     public static Rect Symbol(int n) => Cell(n % 6, n / 6);
@@ -93,16 +98,19 @@ public sealed class SeasonEndSummaryScreen : Screen
         if (Record.Managers.Count == 0)
             return;
         var result = Record.Managers[Math.Min(_index, Record.Managers.Count - 1)];
-        if (result.Events.Count == 0)
+        var icons = result.Events.Select(EventIcon).ToList();
+        if (Game.HasTopFiveStatus(Record, result))
+            icons.Add(TopFiveIcon);
+        if (icons.Count == 0)
             Widgets.ShadowText(s, flow, 160, 97, "Keine besonderen Ereignisse...", Colors.White, 0);
         else
         {
-            var icons = Assets.Image(13);
-            var x = 160 - (result.Events.Count * IconPitch - (IconPitch - IconWidth)) / 2;
-            foreach (var e in result.Events)
+            var sheet = Assets.Image(13);
+            var x = 160 - (icons.Count * IconPitch - (IconPitch - IconWidth)) / 2;
+            foreach (var icon in icons)
             {
                 s.Outline(new Rect(x - 1, 102, IconWidth + 2, IconHeight + 2), 0);
-                s.Blit(icons, EventIcon(e), x, 103);
+                s.Blit(sheet, icon, x, 103);
                 x += IconPitch;
             }
         }

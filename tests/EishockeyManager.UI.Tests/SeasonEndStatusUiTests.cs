@@ -1,7 +1,9 @@
 using EishockeyManager.Tests.Support;
 using EishockeyManager.Core;
 using EishockeyManager.UI;
+using EishockeyManager.Formats;
 using EishockeyManager.UI.Screens;
+using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.UI.Tests;
 
@@ -28,7 +30,7 @@ public class SeasonEndStatusUiTests
     [Fact]
     public void EventIcon_TopFiveIsSymbolEight_OthersUnchanged()
     {
-        Assert.Equal(new Rect(48, 21, 24, 21), SeasonEndSummaryScreen.EventIcon(SeasonEvent.TopFive));
+        Assert.Equal(new Rect(48, 21, 24, 21), SeasonEndSummaryScreen.TopFiveIcon);
         Assert.Equal(new Rect(48, 0, 24, 21), SeasonEndSummaryScreen.EventIcon(SeasonEvent.Promotion));   // Bit 0 → 2
         Assert.Equal(new Rect(24, 0, 24, 21), SeasonEndSummaryScreen.EventIcon(SeasonEvent.Relegation));  // Bit 1 → 1
         Assert.Equal(new Rect(96, 0, 24, 21), SeasonEndSummaryScreen.EventIcon(SeasonEvent.CupWinner));   // Bit 4 → 4
@@ -36,9 +38,12 @@ public class SeasonEndStatusUiTests
         Assert.Equal(new Rect(72, 0, 24, 21), SeasonEndSummaryScreen.EventIcon(SeasonEvent.GermanChampion)); // [APPROX]
     }
 
-    /// <summary>Das Fenster zeichnet Symbol 8 aus kb\13 mit schwarzem Rahmen an der Stelle des ersten Symbols.</summary>
+    /// <summary>
+    /// Das Fenster zeichnet Symbol 8 aus kb\13 mit schwarzem Rahmen als letztes Symbol, wenn der Verein des Managers unter den ersten
+    /// fünf der 1. Liga steht (Verein auf Platz 1 gesetzt) – und kein Weltkugel-Symbol, wenn er außerhalb steht.
+    /// </summary>
     [GameDataFact]
-    public void SummaryWindow_DrawsGlobeForTopFive()
+    public void SummaryWindow_DrawsGlobeOnlyForTopFive()
     {
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
@@ -48,19 +53,42 @@ public class SeasonEndStatusUiTests
         Assert.IsType<SeasonEndSummaryScreen>(d.Host.Current);
 
         var record = game.History[^1];
-        record.Managers[0] = record.Managers[0] with { Events = [SeasonEvent.TopFive] };
-        d.Frame();
-
+        var result = record.Managers[0];
+        var tables = (IDictionary<League, IReadOnlyList<int>>)record.FinalTables;
+        var others = tables[League.Bundesliga].Where(c => c != result.Club).ToList();
         var icons = d.Host.Assets.Image(13);
-        const int x = 160 - (SeasonEndSummaryScreen.IconPitch - (SeasonEndSummaryScreen.IconPitch - SeasonEndSummaryScreen.IconWidth)) / 2;
+
+        // Auf Platz 1 der 1. Liga: Symbol 8 steht als letztes Symbol.
+        tables[League.Bundesliga] = [result.Club, .. others];
+        Assert.True(game.HasTopFiveStatus(record, result));
+        d.Frame();
+        var count = result.Events.Count + 1;
+        var x = 160 - (count * SeasonEndSummaryScreen.IconPitch - (SeasonEndSummaryScreen.IconPitch - SeasonEndSummaryScreen.IconWidth)) / 2
+            + (count - 1) * SeasonEndSummaryScreen.IconPitch;
+        Assert.Equal(0, Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, x));
+        Assert.Equal(0, d.Surface.Pixels[102 * Surface.Width + x - 1]); // Rahmen (Palettenindex 0)
+
+        // Außerhalb der ersten fünf: kein Weltkugel-Symbol an dieser Stelle (letztes Symbol ist ein anderes oder fehlt).
+        tables[League.Bundesliga] = [.. others, result.Club];
+        Assert.False(game.HasTopFiveStatus(record, result));
+        d.Frame();
+        var countWithout = result.Events.Count;
+        if (countWithout > 0)
+        {
+            var xLast = 160 - (countWithout * SeasonEndSummaryScreen.IconPitch - (SeasonEndSummaryScreen.IconPitch - SeasonEndSummaryScreen.IconWidth)) / 2
+                + (countWithout - 1) * SeasonEndSummaryScreen.IconPitch;
+            Assert.NotEqual(0, Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, xLast));
+        }
+    }
+
+    private static int Differing(ScreenDriver d, VgaImage icons, Rect source, int x)
+    {
         const int y = 103;
-        var source = SeasonEndSummaryScreen.Symbol(8);
         var differing = 0;
         for (var yy = 0; yy < source.H; yy++)
             for (var xx = 0; xx < source.W; xx++)
                 if (d.Surface.Pixels[(y + yy) * Surface.Width + x + xx] != icons.Pixels[(source.Y + yy) * icons.Width + source.X + xx])
                     differing++;
-        Assert.Equal(0, differing);
-        Assert.Equal(0, d.Surface.Pixels[(y - 1) * Surface.Width + x - 1]); // Rahmen (Palettenindex 0)
+        return differing;
     }
 }

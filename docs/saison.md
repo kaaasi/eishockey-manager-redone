@@ -67,7 +67,7 @@ gesetzte Bit 0–6 ein Symbol aus `kb\13` (Schleife Datei `0x2714F`, Tabelle DGR
 | 3 (0x08) | 5 | `GermanChampion` – `[APPROX]` Zelle 3 (Puck) statt 5 | Setzen bei 0x55C09 |
 | 4 (0x10) | 4 Fahne | `CupWinner` | Setzen bei 0x55D12 (Prämie 1.500.000 Drittel) |
 | 5 (0x20) | 6 Landkarte mit Pokal | `EuropeanCupWinner` | Setzen bei 0x55DAD |
-| 6 (0x40) | 8 Weltkugel | `TopFive` | Setzen bei 0x553ED |
+| 6 (0x40) | 8 Weltkugel | abgeleitet: `GameState.HasTopFiveStatus` (kein `SeasonEvent`, nicht gespeichert) | Setzen bei 0x553ED |
 
 **Symbolnummer → Zelle** (Zeichenroutine Datei `0x6CA6` + `0x39`, `while (n > 5) { n -= 6; y += 21; }`, `x = n · 24`): sechs Zellen
 je Zeile, `n % 6` Spalte, `n / 6` Zeile, 24 × 21 Pixel. Symbol 8 liegt damit in Spalte 2, Zeile 1 (die Weltkugel).
@@ -80,9 +80,11 @@ ersten fünf, nicht nur für den höchstplatzierten (der wird Bundestrainer, sie
 („nur Fahne“, `[0xD0B9] == 2`, Datei `0x553DB`): ohne WM kein Weltkugel-Symbol. Das Symbol bringt keine Prämie.
 
 **Löschen des Statusbytes** (Datei `0x553C8`): Es geschieht an beiden Markertagen unmittelbar vor dem Setzen von Bit 0x40; die Bits
-0x08/0x10/0x20 setzen andere Tagespfade (Titel). Das Remake hält kein Statusbyte, sondern leitet die Ereignisse am 29. April aus
-dem Saisonergebnis ab (`SeasonFlow.FinishSeason`). Das ist gleichwertig, solange sich die Tabellen zwischen 13. und 29. April nicht
-ändern (Ligaspiele ruhen). Der einzige Leser außer der Anzeige ist `0x55F53` (Maske 0x28, also nur Bit 3 und 5), Bit 0x40 wirkt
+0x08/0x10/0x20 setzen andere Tagespfade (Titel). Das Remake hält kein Statusbyte: Auf-/Abstieg und Titel leitet es am 29. April aus dem Saisonergebnis
+ab (`SeasonFlow.FinishSeason`, gespeichert in `ManagerSeasonResult.Events`), Bit 0x40 leitet es erst bei der Anzeige aus der
+gespeicherten Abschlusstabelle, dem Verein und dem Modus ab (`GameState.HasTopFiveStatus`). Es ist deshalb **kein neuer Zustand**:
+ein neues `SeasonEvent` hätte den Schemaabdruck geändert (er enthält die Namen aller Enum-Mitglieder) und eine Schemaversion samt
+Migration erzwungen. Gleichwertig zum Original, solange sich die Tabellen zwischen 13. und 29. April nicht ändern (Ligaspiele ruhen). Der einzige Leser außer der Anzeige ist `0x55F53` (Maske 0x28, also nur Bit 3 und 5), Bit 0x40 wirkt
 dort nicht.
 
 `[APPROX]` Das Original sortiert die Tabelle 0x5CCB je nach Ansicht (Gesamt/Heim/Auswärts) an Ort und Stelle; das Remake nimmt die

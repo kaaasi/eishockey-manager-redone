@@ -11,6 +11,8 @@ namespace EishockeyManager.Core.Tests;
 /// Tabelle der 1. Liga (DGROUP 0x5CCB, Liga · 12 + Platz) –, aber nicht im Spielmodus 2 (Datei 0x553DB: DGROUP 0xD0B9).
 /// Gelesen wird das Byte im Fenster „Saisonende“ (Datei 0x26FBE, Bits 0–6 → Symbole nach Tabelle 0x4B2E; Bit 6 → Symbol 8)
 /// und bei 0x55F53 (nur Maske 0x28, also nicht Bit 0x40).
+/// Das Remake leitet das Bit ab (<see cref="GameState.HasTopFiveStatus"/>), statt es zu speichern – kein neuer Zustand, keine
+/// Schemaänderung (der Schemawächter in <c>SaveGameTests</c> bleibt unverändert).
 /// </summary>
 public class SeasonEndStatusTests
 {
@@ -31,11 +33,13 @@ public class SeasonEndStatusTests
 
     private static ManagerSeasonResult ResultOf(SeasonRecord record, int club) => record.Managers.Single(r => r.Club == club);
 
+    private static bool HasBit(GameState game, SeasonRecord record, int club) => game.HasTopFiveStatus(record, ResultOf(record, club));
+
     private static List<int> TopFive(SeasonRecord record) => record.FinalTables[League.Bundesliga].Take(5).ToList();
 
     // ---- Befund und Regressionstest -----------------------------------------------------------------------------
 
-    /// <summary>Modus 4: Der Manager im Verein unter den ersten fünf bekommt das Ereignis, der andere nicht.</summary>
+    /// <summary>Modus 4: Der Manager im Verein unter den ersten fünf bekommt das Bit, der andere nicht.</summary>
     [Fact]
     public void Full_ManagerInTopFive_GetsStatusBit_OtherNot()
     {
@@ -45,8 +49,8 @@ public class SeasonEndStatusTests
         Assert.Contains(2, TopFive(record));      // Vorbedingung (wie NationalCoachMode4Tests)
         Assert.DoesNotContain(8, TopFive(record));
 
-        Assert.Contains(SeasonEvent.TopFive, ResultOf(record, 2).Events);
-        Assert.DoesNotContain(SeasonEvent.TopFive, ResultOf(record, 8).Events);
+        Assert.True(HasBit(game, record, 2));
+        Assert.False(HasBit(game, record, 8));
     }
 
     /// <summary>0xE8:0x93(Manager) gilt je Manager, nicht nur für den höchstplatzierten (der Bundestrainer wird).</summary>
@@ -60,8 +64,8 @@ public class SeasonEndStatusTests
         Assert.Contains(2, top);
         Assert.Contains(1, top);
 
-        Assert.Contains(SeasonEvent.TopFive, ResultOf(record, 2).Events);
-        Assert.Contains(SeasonEvent.TopFive, ResultOf(record, 1).Events);
+        Assert.True(HasBit(game, record, 2));
+        Assert.True(HasBit(game, record, 1));
         Assert.NotNull(game.NationalCoach); // nur einer wird Bundestrainer, das Symbol bekommen beide
     }
 
@@ -75,7 +79,7 @@ public class SeasonEndStatusTests
         Assert.Equal(GameMode.ClubOnly, game.Mode);
         Assert.Contains(2, TopFive(record));
 
-        Assert.DoesNotContain(SeasonEvent.TopFive, ResultOf(record, 2).Events);
+        Assert.False(HasBit(game, record, 2));
     }
 
     /// <summary>Außerhalb der Bundesliga zählt der Platz nicht: Tabelle 0x5CCB, Liga 0.</summary>
@@ -86,41 +90,26 @@ public class SeasonEndStatusTests
         PlayToSeasonEnd(game);
         var record = game.History[^1];
         foreach (var result in record.Managers)
-        {
-            var inBundesligaTop = TopFive(record).Contains(result.Club);
-            Assert.Equal(inBundesligaTop, result.Events.Contains(SeasonEvent.TopFive));
-        }
+            Assert.Equal(TopFive(record).Contains(result.Club), game.HasTopFiveStatus(record, result));
         Assert.Contains(record.Managers, r => r.League != League.Bundesliga); // Vorbedingung: Verein außerhalb der 1. Liga
     }
 
-    /// <summary>Bit 6 ist das letzte Bit der Schleife 0x2714F: Das Symbol steht hinter den übrigen Ereignissen.</summary>
+    /// <summary>Das Bit bringt keine Prämie und ändert die gespeicherten Ereignisse nicht (es steht nicht in <see cref="ManagerSeasonResult.Events"/>).</summary>
     [Fact]
-    public void StatusBit_IsLastEvent_AndBringsNoPremium()
+    public void StatusBit_DoesNotChangeStoredEventsOrPremium()
     {
         var game = GameModeTests.Create(3, true, true, 2, 1);
         PlayToSeasonEnd(game);
-        foreach (var result in game.History[^1].Managers.Where(r => r.Events.Contains(SeasonEvent.TopFive)))
-        {
-            Assert.Equal(SeasonEvent.TopFive, result.Events[^1]);
-            var without = result.Events.Where(e => e != SeasonEvent.TopFive).ToList();
-            Assert.Equal(GameState.SeasonPremium(result.League, result.Rank, without), result.Premium);
-        }
-    }
-
-    [Theory]
-    [InlineData(League.Bundesliga)]
-    [InlineData(League.ZweiteLiga)]
-    [InlineData(League.Oberliga)]
-    public void StatusBit_AloneBringsNoPremium(League league)
-    {
-        for (var rank = 1; rank <= 12; rank++)
-            Assert.Equal(GameState.SeasonPremium(league, rank, []), GameState.SeasonPremium(league, rank, [SeasonEvent.TopFive]));
+        var record = game.History[^1];
+        foreach (var result in record.Managers)
+            Assert.Equal(GameState.SeasonPremium(result.League, result.Rank, result.Events), result.Premium);
+        Assert.True(HasBit(game, record, 2) || HasBit(game, record, 1)); // Vorbedingung: Bit tritt auf
     }
 
     // ---- Mehrsaisonprobe ---------------------------------------------------------------------------------------
 
     /// <summary>
-    /// Fünf Saisons (vier Saisonwechsel), passiv und aktiv: In jeder Saison trägt genau der Manager das Ereignis, dessen
+    /// Fünf Saisons (vier Saisonwechsel), passiv und aktiv: In jeder Saison trägt genau der Manager das Bit, dessen
     /// Verein unter den ersten fünf der Abschlusstabelle der 1. Liga steht – in Modus 4 immer, in Modus 2 nie.
     /// </summary>
     [Theory]
@@ -142,39 +131,37 @@ public class SeasonEndStatusTests
             foreach (var result in record.Managers)
             {
                 var expected = globe && top.Contains(result.Club);
-                Assert.Equal(expected, result.Events.Contains(SeasonEvent.TopFive));
+                Assert.Equal(expected, game.HasTopFiveStatus(record, result));
                 if (expected) withBit++; else withoutBit++;
-                var without = result.Events.Where(e => e != SeasonEvent.TopFive).ToList();
-                Assert.Equal(GameState.SeasonPremium(result.League, result.Rank, without), result.Premium);
+                Assert.Equal(GameState.SeasonPremium(result.League, result.Rank, result.Events), result.Premium);
             }
             if (change < 4)
                 game.StartNextSeason();
         }
         Assert.Equal(5, game.History.Count);
-        Assert.True(withoutBit > 0, "Probe ohne Saison ohne Ereignis");
+        Assert.True(withoutBit > 0, "Probe ohne Saison ohne Bit");
         if (globe)
-            Assert.True(withBit > 0, "Probe ohne Saison mit Ereignis – Vorbedingung verfehlt");
+            Assert.True(withBit > 0, "Probe ohne Saison mit Bit – Vorbedingung verfehlt");
     }
 
     /// <summary>
-    /// Spielstand: Das Ereignis steht im Saisonverlauf (Aufzählungswerte werden als Name gespeichert) – kein neues Feld, deshalb keine
-    /// Schemaänderung (Version bleibt 6) und keine Migration. Alte Stände kennen das Ereignis schlicht nicht.
+    /// Spielstand: Das Bit ist abgeleitet und deshalb kein Zustand – nach Sichern und Laden liefert die Ableitung dasselbe,
+    /// und die Bytes bleiben gleich. Der Schemawächter (<c>SaveGameTests.SchemaFingerprint_MatchesSchemaVersion</c>) bleibt unverändert.
     /// </summary>
     [Fact]
-    public void SaveLoad_KeepsStatusBitEvent_WithoutSchemaChange()
+    public void SaveLoad_StatusBitIsDerivedFromSavedData()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
         PlayToSeasonEnd(game);
-        Assert.Contains(SeasonEvent.TopFive, ResultOf(game.History[^1], 2).Events);
+        Assert.True(HasBit(game, game.History[^1], 2));
+        Assert.False(HasBit(game, game.History[^1], 8));
 
         var bytes = SaveGame.Save(game);
-        var root = System.Text.Json.Nodes.JsonNode.Parse(bytes)!.AsObject();
-        Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
-        Assert.Equal(6, SaveGame.SchemaVersion);
-
         var loaded = SaveGame.Load(bytes);
         Assert.True(loaded.Success, loaded.Error);
-        Assert.Contains(SeasonEvent.TopFive, ResultOf(loaded.Game!.History[^1], 2).Events);
+        var record = loaded.Game!.History[^1];
+        Assert.True(HasBit(loaded.Game, record, 2));
+        Assert.False(HasBit(loaded.Game, record, 8));
         Assert.Equal(bytes, SaveGame.Save(loaded.Game));
     }
 

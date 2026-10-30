@@ -333,14 +333,6 @@ public sealed partial class GameState
                     case Title.WorldChampion: break;
                 }
             }
-            // [ORIGINAL] Statusbit 0x40 (Datei 0x553D1–0x553F2, Befund #125): An den Tagen mit Markierung 255 löscht das Original
-            // das Statusbyte jedes Managers und setzt Bit 0x40, wenn sein Verein unter den ersten fünf der 1. Liga steht
-            // (0xE8:0x93, Tabelle DGROUP 0x5CCB) – außer im Spielmodus 2. Das Byte wird an beiden Markertagen neu abgeleitet;
-            // hier zählt die Abschlusstabelle der Hauptrunde, die sich zwischen 13. und 29. April nicht mehr ändert.
-            // Bit 6 ist das letzte Bit der Anzeigeschleife (Datei 0x2714F, Symbol 8), deshalb steht das Ereignis zuletzt.
-            // [APPROX] Das Original sortiert 0x5CCB je nach Ansicht (Gesamt/Heim/Auswärts), das Remake nimmt „Gesamt“.
-            if (Mode != GameMode.ClubOnly && record.FinalTables[League.Bundesliga].Take(5).Contains(club.Index))
-                events.Add(SeasonEvent.TopFive);
             var premium = SeasonPremium(league, rank, events);
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
@@ -350,6 +342,22 @@ public sealed partial class GameState
         History.Add(record);
         Phase = SeasonLimit is { } limit && History.Count >= limit ? SeasonPhase.GameOver : SeasonPhase.SeasonOver;
     }
+
+    /// <summary>
+    /// Statusbit 0x40 „Verein unter den ersten fünf der 1. Liga“ eines Managers am Saisonende (Symbol 8, Fenster „Saisonende“).
+    /// </summary>
+    /// <remarks>
+    /// [ORIGINAL] Datei 0x553A2–0x553F2 (Befund #125): An den Tagen mit Markierung 255 (13. und 29. April) ruft das Original
+    /// <c>0xE8:0x93(0x7F)</c> (Datei 0x34769), löscht dann das Statusbyte jedes Managers (DGROUP 0x974E + 0x1AF · Manager) und setzt
+    /// Bit 0x40, wenn sein Verein auf den Plätzen 1–5 der Tabelle der 1. Liga steht (DGROUP 0x5CCB) – nicht im Spielmodus 2 (0x553DB).
+    /// Das gilt für jeden Manager, nicht nur für den höchstplatzierten (der wird Bundestrainer). Das Bit wirkt nur in der Anzeige
+    /// (Datei 0x2714F, Symbol 8, ohne Prämie). Das Remake hält kein Statusbyte: Das Bit leitet sich aus der Abschlusstabelle, dem Verein und
+    /// dem Modus ab, die schon im Spielstand liegen – es ist kein neuer Zustand und braucht keine Schemaänderung. Das Original leitet es an
+    /// beiden Markertagen neu ab; zwischen 13. und 29. April ändert sich die Tabelle nicht (Ligaspiele ruhen).
+    /// [APPROX] Das Original sortiert 0x5CCB je nach Ansicht (Gesamt/Heim/Auswärts), das Remake nimmt die Abschlusstabelle „Gesamt“.
+    /// </remarks>
+    public bool HasTopFiveStatus(SeasonRecord record, ManagerSeasonResult result) =>
+        Mode != GameMode.ClubOnly && record.IsTopFive(result.Club);
 
     /// <summary>Nach dem Bildschirm „Saisonende“: Auf-/Abstieg anwenden, neue Spielpläne, Kalender auf den 10. September.</summary>
     public void StartNextSeason()
