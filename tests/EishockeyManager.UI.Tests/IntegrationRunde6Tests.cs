@@ -37,11 +37,12 @@ public class IntegrationRunde6Tests : IDisposable
         d.StartNewGame(clubIndex: 2);
         var game = d.Host.Game!;
         var me = game.ActiveManager;
+        var meIndex = game.CurrentManager;
 
         var maxGames = 0;
         var screensChecked = false;
         var seasonsChecked = 0;
-        for (var guard = 0; game.History.Count < 2 && guard < 60000; guard++)
+        for (var guard = 0; seasonsChecked < 2 && guard < 60000; guard++)
         {
             d.Press(Key.Space);
             if (d.Host.Current is not MainMenuScreen || game.NationalTurn)
@@ -70,7 +71,7 @@ public class IntegrationRunde6Tests : IDisposable
             {
                 seasonsChecked = game.History.Count;
                 var record = game.History[^1];
-                var result = Assert.Single(record.Managers, r => r.Manager == me);
+                var result = Assert.Single(record.Managers, r => r.Manager == meIndex);
                 Assert.Equal(record.IsTopFive(result.Club), game.HasTopFiveStatus(record, result));
                 Assert.True(maxGames > 0, "Keine Ligaheimspiele in der Statistik.");
                 Assert.True(game.Finance(me).HomeStatistics.Games < maxGames, "Statistik nach dem Saisonwechsel nicht neu begonnen.");
