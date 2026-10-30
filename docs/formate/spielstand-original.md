@@ -167,7 +167,7 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 | `0x0A5E7` | `C313` | 2000 |  |
 | `0x0ADB7` | `C15B` | 440 | Werbeflächen (0x6E je Manager) |
 | `0x0AF6F` | `0ED8` | 1 | 5 − Spiel-Level |
-| `0x0AF70` | `5A14` | 2 | Spielende (Jahr) |
+| `0x0AF70` | `5A14` | 2 | Spielende (Jahr; Dauer 0 → 1994, Dauer 3 „∞“ → 22222) |
 | `0x0AF72` | `D294` | 2712 |  |
 | `0x0BA0A` | `0262` | 2 |  |
 | `0x0BA0C` | `03BD` | 2 | Saisonzähler |
@@ -239,6 +239,17 @@ in der Reihenfolge der Leiste. FILE05 = Standardplan, alle 28 Felder stimmen mit
 | FILE10 | neues Spiel, nur Fahne, „Tom“, MANNHEIMER ERC | `0xD0B9` = 2 (nur Fahne), Vereinsindex 1 = MANNHEIMER ERC: **die Vereinsindizes werden je Spiel neu verteilt** (FILE01: Index 1 = KREFELDER EV) |
 | FILE11 | neues Spiel, nur Weltkugel, nach dem Sprung | `0xD0B9` = 1, Datum 14.04.1994, `0xA70E` = 5 (Bundestrainer am Zug), `0x6AC` = 54 (Deutschland), `0x256` = 30.000 (Highscore-Schlüssel „nur Weltkugel“). Kopf: Liga-Byte 0, Weltkugel-Byte 1, Verein „DEUTSCHLAND“. Der Vereinssatz des Managers (Index 7) heißt im gesicherten Block ebenfalls **„DEUTSCHLAND“**: Die Kopfroutine überschreibt den Vereinsnamen vor dem Schreiben der Blöcke und stellt ihn nicht zurück |
 
+**FILE09** (neues Spiel): zwei Manager „Spieler 1“ (SC PREUSSEN BERLIN) und „Spieler 2“ (EC HEDOS MÜNCHEN), Level 5,
+Dauer 0 (eine Saison), Bundesliga, Start-Stärke 2 („Abstiegskampf“), beide Spielmodi; gesichert im Zug von Spieler 2.
+
+- Kopf: Managerzahl 2, zwei Einträge; `0x386` = 2, `0xA70E` = `0xA70D` = 1 (Manager am Zug).
+- Regler `0x118` = 5 0 0 2, `0xED8` = 0, **Spielende `0x5A14` = 1994** (Dauer 0); FILE01 (Dauer 3, „∞“) hat 22222.
+- Konto beider Manager 1.200.000 Drittel = **400.000 DM** (Level 5, wie `finanzen-rekonstruktion.md`), Eintritt 13 DM.
+- Stadion je Verein verschieden: Preussen und Hedos 4.200 Sitz-/7.000 Stehplätze, Köln (FILE01) 3.000/4.500; Stufen gleich.
+- Training `0xA8A1`: alle Felder beider Manager = 1 (Freizeit) – Standardplan bei Level 5 „immer frei“ bestätigt.
+- Zwei Kader (je Manager-Satz 0 und 1) plus Transfermarkt.
+- Start-Liga und Level sind **ein** Wert für alle Manager (Setup bietet nichts je Manager; Hinweis des Nutzers).
+
 Spielmodus `0xD0B9`: 1 = nur Weltkugel, 2 = nur Fahne, 4 = beide – bestätigt (wie `wettbewerbe.md`).
 
 ## Falsche Prüfsumme: „Der kleine Mogelguru“ `[ORIGINAL]`
@@ -258,6 +269,5 @@ Bild: Referenz-Repo `original/spielstaende/bilder/kaputt_mogelguru.png`. Für `h
   „Transfer“), Strafminuten 2m/5m.
 - Kauf: Annahmeregel für Gebote unter/über Listenpreis (em.exe); wo der Sponsorzuschuss steht.
 - `0xCC73`, `0x375`, Vereinsfeld `+0x26` (ändern sich mit der Aufstellung, FILE06).
-- Stände mit mehreren Managern (FILE09 fehlt), Saisonwechsel, DEB-Pokal.
+- Saisonwechsel, DEB-Pokal, Bundestrainer mit Vereinsmanagern.
 - Ablauf nach dem Mogelguru-Bildschirm (Rückkehr, geladener Stand behalten?).
-- Spielende `0x5A14` = 22222 bei Dauer 3 (unbegrenzt?).
