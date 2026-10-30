@@ -27,8 +27,21 @@ FOLDERS=("${EXPANDED[@]}")
 
 if [ ! -d "$TARGET/.git" ]; then
   git clone -q --depth 1 --filter=blob:none --sparse https://github.com/kaaasi/eishockey-manager-referenz "$TARGET"
+else
+  # Vorhandenen Klon auf den aktuellen Stand von main bringen (RV2-01, #140). Die Historie des Referenz-Repos wurde
+  # am 30.10.2026 neu geschrieben, daher kein Fast-forward, sondern hart auf den geholten Stand. Der Klon dient nur
+  # zum Lesen; lokale Änderungen darin gehen verloren.
+  git -C "$TARGET" fetch -q --depth 1 --filter=blob:none origin main
+  git -C "$TARGET" reset -q --hard FETCH_HEAD
 fi
 git -C "$TARGET" sparse-checkout add "${FOLDERS[@]}"
+missing=0
 for f in "${FOLDERS[@]}"; do
-  echo "$f: $(ls "$TARGET/$f" | wc -l) Dateien in $TARGET/$f"
+  if [ -d "$TARGET/$f" ]; then
+    echo "$f: $(find "$TARGET/$f" -type f | wc -l) Dateien in $TARGET/$f"
+  else
+    echo "$f: fehlt im Referenz-Repo (Name prüfen, docs/referenz-videos.md)" >&2
+    missing=1
+  fi
 done
+exit "$missing"

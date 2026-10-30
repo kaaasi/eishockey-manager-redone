@@ -62,7 +62,8 @@ Fragefenster vermessen am Video (`emtool screens gamedata <ziel> debpokal-auslos
 Verschiebung (0 | 0); mittlere Abweichung im Kasten 12,7 Grauwerte, 8,4 % der Pixel über 40 (Schriftkanten der Zeilen).
 Weitere Vorlagebilder seit den Reihen `folge01` … `folge29` und `videos-roh-2` (`docs/referenz-videos.md`): Frage
 `folge01_00217`, `folge08_00102`, `duell_s2a_02651`, `eisbaeren_f51_01451`; „DEB-Pokalspiele“ mit Ergebnissen
-`folge13_02545`, `duell_s2a_01217` und in allen Runden bis zum Endspiel (`eisbaeren_f60_02758`).
+`folge13_02545` (beide Termine); nur Paarungen ohne Ergebnisse `duell_s2a_01217` (erste Runde), `duell_s6a_03100`
+(Achtelfinale) und `eisbaeren_f60_02758` (Endspiel).
 
 ## Europapokal (`Core/CupsEurope.cs`, `Core/CupsGroup.cs`)
 
@@ -360,8 +361,8 @@ Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**
   „nur Weltkugel“ weiter nur aus der Reihe `bundestrainer`.
 - ◐ „Tabelle WM“ – Gruppentabellen nach dem Spieltag vielfach (`eisbaeren_f35_00531`); ob über die Tabellen-Kachel
   geöffnet, ist im Kapitelindex nicht unterschieden.
-- ✅ Die geöffneten Kacheln „Tabelle DEB-Pokal“ (Übersicht „DEB-Pokalspiele“, z. B. `folge13_02545`, `duell_s2a_01217`,
-  Endspiel `eisbaeren_f60_02758`) und „Tabelle Europapokal“ (`folge04_01241`–`01247`, `eisbaeren_f51_03346`,
+- ✅ Die geöffneten Kacheln „Tabelle DEB-Pokal“ (Übersicht „DEB-Pokalspiele“: mit Ergebnissen `folge13_02545`, ohne Ergebnisse
+  `duell_s2a_01217`, Endspiel `eisbaeren_f60_02758`) und „Tabelle Europapokal“ (`folge04_01241`–`01247`, `eisbaeren_f51_03346`,
   Endrunde `eisbaeren_f58_01323`).
 - ✅ WM-Statistik – `eisbaeren_f07_03843`, `eisbaeren_f56_01126`.
 - ✅ WM-Endrunde (K.-o.-Ansicht „WM-Endrundenspiele“) – `eisbaeren_f35_00646`, `eisbaeren_f44_01330`.

@@ -306,7 +306,7 @@ des Spielbilds sind im Video.
 | **WM-Statistik** – bei roh-1 offen | `eisbaeren_f07_03843`, `eisbaeren_f56_01126` (in 33 Reihen) |
 | Highscore am Spielende | **nicht gefunden** (Kachel „Highscore“ offen, z. B. Kachelreihe Manager `eisbaeren_f01_00421`, aber nie geöffnet; kein Spielende) |
 | DEB-Pokal-Auslosung mit Dialog „Sind Ihre Nerven stark genug …“ | `duell_s2a_02651`, `eisbaeren_f28_00706`, `eisbaeren_f51_01451`, `speedrun_t1_00110` (in 45 Reihen); Ziehung aufgedeckt `eisbaeren_f30_01719`, `eisbaeren_f52_03358` |
-| Übersicht „DEB-Pokalspiele“ | 22.9. mit Ergebnissen `duell_s2a_01217`, Achtelfinale `duell_s6a_03100`, Endspiel `eisbaeren_f60_02758` (in 54 Reihen) |
+| Übersicht „DEB-Pokalspiele“ | mit Ergebnissen beider Termine `folge13_02545` (29.9.); nur Paarungen ohne Ergebnisse: erste Runde `duell_s2a_01217` (22.9.), Achtelfinale `duell_s6a_03100`, Endspiel `eisbaeren_f60_02758` (in 54 Reihen; RV2-02, #141) |
 | Paarungen 1./2. Liga/Oberliga | Oberliga `duell_s2a_01138`, Zweite Liga `eisbaeren_f14_01518`, Bundesliga 60. Minute `eisbaeren_f40_01833` (in 66 Reihen) |
 | Vereinstaktik | `duell_s2a_02108`, `eisbaeren_f16_03225`, `eisbaeren_f45_03727` |
 | Monatsausgaben | Vereinsstatistik „Einnahmen/Ausgaben / Monat“ kurz nach Spielbeginn `speedrun_t1_00456`, sonst `duell_s2b_02107`, `eisbaeren_f10_01657`; „vor dem ersten Spieltag“ weiter nur `folge01_00522` |
