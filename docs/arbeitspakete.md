@@ -131,7 +131,7 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
 - **Dateigrenzen:** `UI/Screens/Manager/NewsBar.cs`, `MainMenuScreen.cs` (minimal, begründet), `docs/portierung.md`,
   `docs/reverse-engineering.md` (Abschnitt Kopierschutz), Tests.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen.
+- **Status:** umgesetzt, Draft-PR (Bearbeiter siehe PR): Leiste (#170) und Handbuchfrage (#185); wartet auf Review.
 
 ### Spur `hok-patch` – Spielstände für das Original erzeugen (Nutzeranforderung)
 

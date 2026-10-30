@@ -28,13 +28,27 @@ public sealed class MainMenuScreen : Screen
     private int _selectedBig = -1;
     private int _mouseX = -1, _mouseY = -1;
 
+    /// <summary>
+    /// Nachrichtenleiste sichtbar (PV-08, #170). [ORIGINAL] em.exe Datei 0x4527C–0x45291 (Hauptmenüschleife): Die Leiste
+    /// wird nur gezeichnet, wenn für den aktiven Manager das Kennzeichen „neue Nachricht“ (DGROUP 0x5A50 + Manager) gesetzt
+    /// ist; es wird dabei gelöscht (Leistenfunktion Datei 0x4B5F4, Aufruf mit 0xFF). Ohne Nachricht bleibt der Hintergrund.
+    /// [APPROX] Das Kennzeichen entspricht hier einer ungelesenen Nachricht; die Leiste bleibt, bis das Menü neu
+    /// aufgebaut wird (Rückkehr aus einem Bildschirm, Tageswechsel, Managerwechsel) – das Original zeichnet das Menü
+    /// dann ohne Leiste neu. Klick auf Kopf/Wappen als zweiter Auslöser (Datei 0x454AE) ist nicht übernommen.
+    /// </summary>
+    private bool _newsBar;
+
     public MainMenuScreen(ScreenHost host) : base(host) { }
 
     /// <summary>
     /// Das Hauptmenü eines Zuges ist da: Zähler des automatischen Speicherns fortschreiben (Spur „speichern-dialog“,
     /// <see cref="SaveLoad.AutoSave"/>). Schreibt nur eine Datei, ändert den Spielzustand nicht.
     /// </summary>
-    public override void Enter() => SaveLoad.AutoSave.OnMainMenu(Host);
+    public override void Enter()
+    {
+        _newsBar = false; // Menü wird neu aufgebaut: Leiste weg, bis eine neue Nachricht kommt
+        SaveLoad.AutoSave.OnMainMenu(Host);
+    }
 
     private GameState Game => Host.Game ?? throw new InvalidOperationException("Kein Spiel geladen.");
 
@@ -48,6 +62,8 @@ public sealed class MainMenuScreen : Screen
     {
         _mouseX = input.MouseX;
         _mouseY = input.MouseY;
+        if (_selectedBig < 0 && ManagerArea.NewsBar.HasUnread(Game))
+            _newsBar = true;
 
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
@@ -81,7 +97,7 @@ public sealed class MainMenuScreen : Screen
             }
         }
 
-        else if (ManagerArea.NewsBar.Update(Host, this, input))
+        else if (_newsBar && ManagerArea.NewsBar.Update(Host, this, input))
             return;
 
         if (input.Pressed(Key.Space))
@@ -96,6 +112,7 @@ public sealed class MainMenuScreen : Screen
     private void Continue_()
     {
         _selectedBig = -1;
+        _newsBar = false; // neuer Tag bzw. nächster Manager: Menü wird neu aufgebaut
         if (!Game.IsLastTurnOfDay)
         {
             Game.Continue();
@@ -142,8 +159,8 @@ public sealed class MainMenuScreen : Screen
                     s.HLine(r.X + 4, r.Bottom - 5, r.W - 8, Colors.Yellow);
             }
         }
-        else
-            ManagerArea.NewsBar.Draw(s, Assets, Game); // Nachrichtenleiste (Paket „manager“)
+        else if (_newsBar)
+            ManagerArea.NewsBar.Draw(s, Assets, Game); // Nachrichtenleiste (Paket „manager“), nur mit Nachricht (#170)
     }
 
     private void DrawInfoBar(Surface s)
