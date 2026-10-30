@@ -169,7 +169,12 @@ public sealed partial class GameState
         var xRoll = random.Next(0, 51);
         var (homeClub, awayClub) = home ? (coach.Nation, opponent) : (opponent, coach.Nation);
         var lineup = coach.Lineup();
-        var (hg, ag) = MatchEngine.Play(RatedNation(homeClub), RatedNation(awayClub), random);
+        // Integration Runde 7: Spielberechnung des Originals wie bei den WM-Spielen (ohne Anzeige, schneller Weg der
+        // Pokale). [APPROX] Freundschaftsspiele wie ein WM-Gruppenspiel (Unentschieden möglich, keine Verlängerung);
+        // die Zuordnung im Original (Wettbewerbscode des Freundschaftsspiels) ist nicht gelesen.
+        var report = MatchEngine.PlayWithEvents(this, RatedNation(homeClub), RatedNation(awayClub), MatchCompetition.WorldCup,
+            knockOut: false, random);
+        var (hg, ag) = (report.HomeGoals, report.AwayGoals);
         var (own, against) = home ? (hg, ag) : (ag, hg);
         var (x, bonus) = NationalCoach.FriendlyBonus(cost, xRoll, home, own, against, random);
         foreach (var member in coach.Squad)

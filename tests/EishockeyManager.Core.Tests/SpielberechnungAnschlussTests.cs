@@ -142,8 +142,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// zieht sie in der Integration nach.
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "CDAAB19ED461A215")]
-    [InlineData(true, "875DDCA1F93E48FF")]
+    [InlineData(false, "768EAC0713F6F1CA")]
+    [InlineData(true, "E726CCB50A13D758")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

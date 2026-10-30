@@ -29,7 +29,7 @@ public class SaveGameTests
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
-    private const string ExpectedSchemaFingerprint = "0DDDF116C8CF532E"; // Schema 10: Kursmodell der Börse (boerse-start, #169)
+    private const string ExpectedSchemaFingerprint = "6F8C2BA719E292F7"; // Schema 11: Börse (9 → 10) und Torhüterzähler (10 → 11), Integration Runde 7
 
     // ---------- Abnahme 3: Roundtrip ----------
 

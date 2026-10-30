@@ -174,6 +174,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// (Oberliga, Mittelfeld) statt Teamwert ± 2. Vergleichslauf gegen 15d0733 nach jedem Schritt: Gehälter +200 DM,
     /// Konto ab Tag 7, Spielstärke ab Tag 17 der ersten Saison um einen Punkt verschieden; Haupt-, Pokal- und
     /// Vertragsquelle bleiben bis 1994 Tag 122 gleich, 1993 daher unverändert, ab 1994 neue Meister und Tabellen.
+    /// Integration Runde 7: Sollwerte auf dem integrierten Stand neu ermittelt (kader-start, boerse-start, weltkugel-dosbox,
+    /// spielberechnung, Freundschaftsspiele über die neue Spielberechnung). Die Änderungen der einzelnen Spuren sind oben
+    /// begründet; der Integrationswert ist ihr Zusammenwirken (siehe docs/arbeitspakete.md, „Integration Runde 7“).
     /// </summary>
     [GameDataFact]
     public void MultiSeason_CupResultsUnchanged_WithAndWithoutDisplay()
@@ -208,5 +211,5 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// <summary>Referenz: <see cref="Summary"/> auf <c>main</c> a09c81e (nur Leertaste, Seed 1993), siehe PR der Spur;
     /// ab 1994 neu mit Spur kader-start (siehe oben).</summary>
     private const string Reference =
-        "1993: DEB 17, DM 2, Tab 15413 | 1994: DEB 1, DM 6, Tab 16263 | 1995: DEB 2, DM 8, Tab 16856 | 1996: DEB 5, DM 9, Tab 17368";
+        "1993: DEB 6, DM 2, Tab 15398 | 1994: DEB 2, DM 2, Tab 16347 | 1995: DEB 2, DM 2, Tab 16312 | 1996: DEB 8, DM 2, Tab 16462";
 }

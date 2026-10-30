@@ -65,16 +65,19 @@ namespace EishockeyManager.Core.Tests;
 /// auch Tabellen, Titel, Finanzen, Transfers und Verträge; dazu die Spielerzähler im Abdruck (je Saison, nach dem Wechsel
 /// 0). Keine Gegenprobe möglich, die den alten Verlauf erhält – die Spielberechnung ist der Zweck der Spur. Ermittelt auf
 /// dem Stand des Branches (Basis <c>15d0733</c>); die Leitstelle zieht die Werte in der Integration nach.
+/// Integration Runde 7: Sollwerte auf dem integrierten Stand neu ermittelt (kader-start, boerse-start, weltkugel-dosbox,
+/// spielberechnung, Freundschaftsspiele über die neue Spielberechnung). Die Änderungen der einzelnen Spuren sind oben
+/// begründet; der Integrationswert ist ihr Zusammenwirken (siehe docs/arbeitspakete.md, „Integration Runde 7“).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "7DF7CFD3D57A4BAF")]
-    [InlineData(true, 3, "778F0D29A3062629")]
-    [InlineData(false, 11, "501EF8DFF7264443")]
-    [InlineData(true, 11, "5D82D27676364413")]
+    [InlineData(false, 3, "FEA9AC8A1C49FB0B")]
+    [InlineData(true, 3, "971A0F0F745A90B9")]
+    [InlineData(false, 11, "EE01F8369242FC09")]
+    [InlineData(true, 11, "5F7F711E9E15E210")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -82,8 +85,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "3194EFBF04D76B3A")]
-    [InlineData(true, "B95DEB25907BDACA")]
+    [InlineData(false, "5890D3F7B4F9D10F")]
+    [InlineData(true, "6351FE83C88CB835")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

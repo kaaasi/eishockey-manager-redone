@@ -341,7 +341,10 @@ public class FinanceWerbungTests
     [Theory]
     [InlineData(false, 3)]
     [InlineData(true, 3)]
-    [InlineData(true, 11)]
+    // Integration Runde 7: Seed 12 statt 11. Mit allen Spuren der Runde (Börse zieht anders aus FinanceRandom, neue
+    // Spielberechnung, Startwerte) läuft bei Seed 11 im Probenzeitraum kein Vertrag mit Option aus (der einzige,
+    // ein Fernsehvertrag, endet erst danach); Seed 12 verhandelt an Tag 83. Prüfziel unverändert.
+    [InlineData(true, 12)]
     public void FourSeasonChanges_SponsoringStaysConsistent(bool active, int seed)
     {
         var game = TestGames.Create(seed);
