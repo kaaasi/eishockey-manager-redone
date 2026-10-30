@@ -246,6 +246,9 @@ public class GameModeTests
     /// Manager-Kader verschieden (Computervereine, Pool, Zufallsquellen gleich); zuerst das Konto von Manager 1 an Tag 3
     /// (Zuschauer aus den Teamwerten, 0x4D316), ab Tag 40 die Spielstärke von Verein 2 (±1), ab Tag 45 die Pokalquelle,
     /// ab Tag 91 die Hauptquelle – neue Titel ab 1993 (Pokalsieger, Weltmeister) und neue Kontostände.
+    /// Spur boerse-start (#169, Kursmodell nach em.exe 0x5784A, anderer Verbrauch von FinanceRandom): Titel, Haupt- (R…) und
+    /// Pokalquelle (C…) unverändert; nur die Kontostände beider Manager in allen fünf Saisons (Zuschauer und Werbung ziehen
+    /// aus FinanceRandom). Mit der Börse nach dem Tagesabschluss aller Manager (#188) erneut nur die Kontostände.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()

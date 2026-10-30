@@ -25,11 +25,11 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(9, SaveGame.SchemaVersion);
+        Assert.Equal(10, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
-    private const string ExpectedSchemaFingerprint = "E2F890E2E4BED7DC"; // Schema 9: Club.ForfeitsMatch (#165)
+    private const string ExpectedSchemaFingerprint = "0DDDF116C8CF532E"; // Schema 10: Kursmodell der Börse (boerse-start, #169)
 
     // ---------- Abnahme 3: Roundtrip ----------
 

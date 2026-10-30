@@ -47,6 +47,15 @@ namespace EishockeyManager.Core.Tests;
 /// danach weicht die Spielstärke um einen Punkt ab (Energie wirkt auf größere Spielerwerte) – synthetisch (Verein 2,
 /// Basis 81 statt 65) Pokalquelle ab Tag 45 bzw. 56, Hauptquelle ab Tag 153 bzw. 163 der ersten Saison; Originaldaten
 /// (Verein 42, Basis 31 wie bisher im Mittel) FinanceRandom 1994 Tag 28, Kader und Pool ab dem Saisonwechsel 1995.
+/// Spur boerse-start (#169) rechnet die Kurse nach em.exe (0x5784A, 90 Börsentage vor Spielbeginn) und zieht dafür anders
+/// aus FinanceRandom. Alle sechs Abdrücke neu; Vergleichslauf gegen 15d0733 mit Zustand und allen vier Zufallsquellen
+/// nach jedem Schritt: Haupt-, Pokal- und Vertragsquelle, Ergebnisse und Kader in jedem Schritt gleich. Es ändern sich
+/// FinanceRandom ab dem ersten Schritt (1993, Tag 3) und daraus die Kontostände (Zuschauer, Werbung): synthetisch Seed 3
+/// ab 1994 Tag 12, Seed 11 ab 1994 Tag 7 (vorher verdeckt die Kontountergrenze der Probe die Differenz), Originaldaten ab
+/// 1993 Tag 3. Titel unverändert.
+/// Danach (Entscheidung Nutzer, #188) rechnet die Börse erst nach dem Tagesabschluss aller Manager: Vergleich gegen
+/// 801c732 wie oben – wieder nur FinanceRandom (ab 1993 Tag 3) und Konten (synthetisch ab 1994 Tag 12 bzw. 7,
+/// Originaldaten ab 1993 Tag 10) verschoben.
 /// </summary>
 public class RngTwinProbeTests
 {

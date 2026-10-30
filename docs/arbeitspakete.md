@@ -94,7 +94,7 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
 - **Dateigrenzen:** `Core/FinanceStocks.cs`, `UI/Screens/Manager/FinanceScreen.cs`, `Tools/Scenarios/` (eigene Datei),
   `docs/finanzen-rekonstruktion.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** umgesetzt in PR #188 (Draft, Claude Code): Kursmodell und Startverlauf nach em.exe, Ausschnitt nach 0x58BD4; Schema 9 → 10. Offene Befunde in `docs/finanzen-rekonstruktion.md`, Abschnitt „Börse“.
 
 ### Spur `weltkugel-dosbox` – Befunde aus den DOSBox-Aufnahmen „nur Weltkugel“ (#175)
 

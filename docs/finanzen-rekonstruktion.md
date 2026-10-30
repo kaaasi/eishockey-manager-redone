@@ -373,3 +373,70 @@ die nur Generator- und Formatänderungen bewachen, sind neu ermittelt. Ursachen 
 ein Verein aus; gehört er einem Manager (Vereinsfeld +0x16) ohne Statusbit 0x04, bekommt der Manager Statusbit 0x02
 und das Konto wird auf 1.200.000 Drittel = **400.000 DM** gesetzt. Belegt, aber im Remake nicht erreichbar: Dort
 verlassen Managervereine die Oberliga nie (`SeasonFlow.FinishClubSeason`, `[APPROX]`). Nicht umgesetzt; Folge-Issue.
+
+## Börse (Spur `boerse-start`, #169)
+
+Belege aus `em.exe`, Overlay `0x138` (Code ab Datei `0x57480`, Einsprung `0x2F` = `0x5784A` Tagesrechnung, `0x52` =
+`0x588CA` Kursverlauf zeichnen, `0x4D` = `0x585C2` ein Abschnitt; Bildschirm Finanzen ab `0x58A57`). Umsetzung
+`Core/FinanceStocks.cs`, `UI/Screens/Manager/FinanceScreen.cs`; Tests `BoerseStartTests`, `BoerseStartScreenTests`.
+
+**Daten (DGROUP).** Je Aktie `0x48` Byte ab `0xD0F4`: 36 Wörter Kursverlauf in Drittel-DM, das letzte (`0xD13A`) ist
+der Kurs. Basiswert `0x1FD + 4·i` (32 Bit, Hundertstel-DM; Zielkurs = Basiswert / 100), Vorgabe 10.000 / 11.000 /
+13.500 / 17.000. Restdauer der Tendenz `0xA891 + i`, Tendenz `0xA895 + i` (0 fallend, 2 steigend). Bestand je Manager
+`0xD214 + 32·m + 8·i`: Kaufpreis (32 Bit), `+4` Stückzahl. Namen `0x1DC5` ff., Schriftfarben `0x552A`, Linienfarben
+`0x5533` (oben) und `0x5537` (unten). Alle Blöcke stehen im Original-Spielstand (`docs/formate/spielstand-original.md`:
+`D214`, `D0F4`, `01FD`, `A891`, `A895`).
+
+**Spielstart (`0x43AA4`–`0x43AE0`).** Kurs = Basiswert / 50 Drittel (66 / 73 / 90 / 113 DM), dann **90 Börsentage**.
+Danach ist der ganze Verlauf gefüllt, die Startkurse sind ausgewürfelt. FILE01 (Neustart 10.09.1993): Kurse 84 / 119 /
+135 / 147 DM, Basiswerte 10.273 / 11.283 / 13.864 / 17.443 (ohne Ereignis 10.270 / 11.270 / 13.860 / 17.450);
+FILE03 zehn Tage später: Verlauf um 10 Tage verschoben, Basiswerte je +30 / +30 / +40 / +50 (= 10 Börsentage).
+folge01: 98 / 96 / 134 / 126 DM. Die festen Remake-Startkurse 101 / 120 / 79 / 174 (UI-Video 5:45) entfallen.
+
+**Tagesrechnung (`0x5784A`)**, Zufallszahlen in dieser Reihenfolge, `random(a, b)` mit beiden Grenzen:
+
+1. Alle Basiswerte += Basiswert · 3 / 10.000 (ganzzahlig).
+2. Je Aktie i: v = Kurs in DM, Ziel = Basiswert / 100. v += Tendenz − 1; unter 10 → 10.
+3. Restdauer > 0 → −1; ist sie 0: Tendenz = random(0, 2) bis ≠ 1, Restdauer = random(2, 8) (fallend) bzw. random(2, 9).
+4. Mit random(0, 400 − 50·i) = 0: v ± random(v/5, v/2) (Vorzeichen random(0, 1)); mit random(0, 1) = 0 dazu
+   Basiswert = v · 100 ± 15.
+5. Mit random(0, 22 − 2·i) = 0: v ± random(2, 10); mit random(0, 3) = 0 dazu Basiswert ± random(2, 10).
+6. Mit random(0, 1) ≠ 0: v += random(0, 2) − 1.
+7. Ist v > Ziel oder random(0, 1) ≠ 0 (nur gezogen, wenn v ≤ Ziel): bei steigender Tendenz v − 1. Ist v < Ziel oder
+   random(0, 1) ≠ 0: bei fallender Tendenz v + 1 (Vergleiche vorzeichenlos).
+8. Verlauf um einen Tag schieben. v > 2.000 → **Aktienteilung**: v = 1.000, Stückzahlen aller Manager × 2 (Kaufpreise
+   bleiben).
+9. Kurs = v · 3 als 16-Bit-Wort (ein negatives v würde zu einem Kurs über 21.000 DM; im Remake nachgebildet).
+
+**Kursverlauf (`0x588CA`).** Zeichenfläche 106 × 130 bei (134 | 107), Tag k bei x = 3·k (36 Tage über die ganze
+Breite). Zeile = 130 − Kurs/2 + Versatz/2 (Drittel-DM, ganzzahlig; Maßstab 2 = 1,5 Pixel je DM). Je Aktie 0–3 eine
+Linie von Tag zu Tag: zwei Zeilen in der oberen, eine in der unteren Farbe; Abschnitte außerhalb werden auf die Zeilen
+0/130 gekürzt (`0x585C2`). `[APPROX]` Pixelschritte nach Bresenham (Linienroutine des Originals nicht nachgeprüft).
+
+**Anfänglicher Ausschnitt (`0x58BD4`–`0x58CAC`).** Mittel = Σ Kurse (Drittel) / 4; Versätze v von max(0, Mittel − 200)
+bis unter Mittel + 200 in Zehnerschritten; gezählt werden Verlaufspunkte mit 0 < Kurs/2 − v/2 < 130; der erste Versatz
+mit den meisten Punkten gewinnt, gemerkt wird v + 10 (Eigenheit des Originals), ab mehr als 140 Punkten Abbruch.
+folge01_00510: Versatz 160, Bildmitte (Zeile 172) bei 96,7 DM – wie gemessen. Vorher im Remake: Mitte zwischen höchstem
+und niedrigstem Kurs (115 DM).
+
+**Pixelvergleich** `emtool screens gamedata <ziel> boerse-start`, Bild `02_finanzen_folge01_00510` (Kursverläufe aus dem
+Bild zurückgerechnet, ±1 DM) gegen `folge01_00510`, mittlere Abweichung in Grauwerten / Anteil der Pixel über 40:
+
+| Bereich | vorher (`15d0733`) | nachher |
+|---|---|---|
+| Kursverlauf (x 134–239, y 107–236) | 11,5 / 11,0 % | 3,1 / 1,8 % |
+| untere Hälfte (y 98–239) | 16,4 / 12,9 % | 13,8 / 9,9 % |
+
+Rest in der unteren Hälfte: Logos, Schriftkanten und die Übersicht rechts (nicht Teil der Spur).
+
+**Abweichungen und offene Befunde:**
+
+- Der Tagesabschluss `0x3ED01` (mit der Börsenrechnung `0x3ED4A`) läuft im Original **je menschlichem Manager** (Schleife
+  bis `[0x386]`, Aufrufe `0x5522B`, `0x5569A`, `0x56512`): mit zwei Managern rechnet die Börse zwei Tage pro Tag.
+  **Entscheidung Nutzer (30.10.2026, #188):** Das Remake rechnet den Börsentag einmal je Kalendertag, nach dem
+  Tagesabschluss des letzten Managers (`GameState.AdvanceFinanceTo`), damit kein Manager einen Vorteil hat.
+- Überfahren einer Aktie setzt den Versatz sofort auf Kurs − 130 (`0x59C75`). **Entscheidung Nutzer (30.10.2026,
+  #188):** wie im Original; der bisherige langsame Bildlauf (nach dem Video) entfällt.
+- Rechts neben dem Verlauf (x 240/241, y 104–236, `0x58DF6`–`0x58EC5`) liegt ein Regler für Ausschnitt und Maßstab
+  (Maßstab 2–64); im Remake nicht nachgebaut – eigenes Paket (Entscheidung Nutzer, 30.10.2026).
+- Die Basiswerte `0x1FD` sind vorbelegte Daten und werden bei „Neues Spiel“ ohne Programmneustart nicht zurückgesetzt.
