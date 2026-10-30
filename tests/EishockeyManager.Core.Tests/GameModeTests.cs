@@ -232,17 +232,30 @@ public class GameModeTests
     /// Spur finanzen-werbung (#132–#134): Titel, Hauptzufallsquelle (R…) und Pokal-Zufallsquelle (C…) unverändert; nur
     /// die Kontostände beider Manager verschieben sich (Werbebewertung, Werbeangebote und Monatsabschluss am
     /// Monatsletzten; die tägliche Neuberechnung der Bewertung zieht aus FinanceRandom).
+    /// Spur heimspiel-statistik (#136, „Weniger als neun Spieler“, em.exe 0x54420): Ohne Eingriff laufen die Startverträge
+    /// von Manager 0 nach 1994 aus; mit leerem Kader zahlt er ab 1995 je Spiel 200.000 DM und wird im Frühjahr 1995
+    /// entlassen, die Probe verlöre den Manager (und damit die Ernennung zum Bundestrainer). Manager 0 hält deshalb seinen
+    /// Kader (<see cref="TestSeason.KeepSquad"/>: angebotene Verlängerungen zur Forderung, eigener Generator), greift sonst
+    /// nicht ein. Ursache je Stelle (Vergleichslauf mit Zustand und allen vier Zufallsquellen nach jedem Schritt): 1993
+    /// gleich; 1994 nur das Konto von Manager 0 (+6.500 DM: Gehalt der Verlängerung zur Forderung + 100 statt bisherigem
+    /// Gehalt); ab Saisonwechsel 1995 hat Verein 2 19 statt 0 Spieler, zuerst ändert sich die Vertragsquelle (Entscheidungen
+    /// zum Saisonwechsel), danach FinanceRandom (Tag 3), Hauptquelle (Tag 7) und Pokalquelle (Tag 21) – ab 1995 neue Titel,
+    /// Kontostände und Zufallsstände. Gegenprobe ohne Kaderhalten: 1993/1994 gleich, Manager 0 ab 1995 entlassen.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
     {
         var game = Create(11, true, true, 2, 30);
-        var print = Fingerprint(game, 5, ActiveSecondManager);
+        var print = Fingerprint(game, 5, g =>
+        {
+            TestSeason.KeepSquad(g, g.Managers[0]); // Spur heimspiel-statistik (#136), siehe oben
+            ActiveSecondManager(g);
+        });
         Assert.Equal(Mode4Reference, print);
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|2442252,727916|WorldChampion=63,CupWinner=25,GermanChampion=14,EuropeanCupWinner=0|4225375,777242|WorldChampion=54,CupWinner=13,GermanChampion=24,EuropeanCupWinner=0|5446571,689780|WorldChampion=52,CupWinner=12,GermanChampion=24,EuropeanCupWinner=24|6788160,503639|WorldChampion=52,CupWinner=12,GermanChampion=24,EuropeanCupWinner=24|7820518,323317|R849981791 C2010256379";
+        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|2442252,727916|WorldChampion=63,CupWinner=25,GermanChampion=14,EuropeanCupWinner=0|4231875,777242|WorldChampion=57,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|4845546,729660|WorldChampion=63,CupWinner=24,GermanChampion=1,EuropeanCupWinner=0|5405950,592291|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=0|5391812,444018|R434870706 C1751408638";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -159,6 +159,9 @@ public class WorldCupTests
                 foreach (var manager in game.Managers)
                     manager.Money = Math.Max(manager.Money, 10_000_000);
                 game.Finance(active).Stadium.TicketPrice = 5 + step++ % 7;
+                // Spur heimspiel-statistik (#136): beide Manager halten den Kader, sonst „Weniger als neun Spieler“ ohne Eintritt
+                foreach (var manager in game.Managers)
+                    TestSeason.KeepSquad(game, manager);
                 if (game.Phase == SeasonPhase.ClubSeasonOver) // WM: kein Manager-Geld durch Eintritt
                 {
                     var before = game.Managers.Select(m => game.Finance(m).Book.Current(FinanceCategory.Eintritt)).ToList();

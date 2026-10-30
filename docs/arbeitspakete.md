@@ -16,7 +16,7 @@ Runde 6 (Werbung, Heimspiel-Statistik, Saisonende-Status, Pixelvergleiche): [arc
 (Grundlage für Einzelprämien und Statistiken), die Startwerte aus den Runde-6-Funden, die DOSBox-Befunde und Werkzeuge
 für Original-Spielstände. **Torszenen, Anzeigetafel und Reporter bleiben bis zum Schluss ausgeklammert** (`livespiel`).
 **Vorher abschließen** (Leitstelle): #167 (`heimspiel-statistik` Teil 2 mit #165, Schema 9), #175 (DOSBox-Befunde, Doku),
-#176 (`hok-format` Analyse) – je Review und Merge; Runde-7-Spuren starten auf `main` nach diesen Merges.
+#176 (`hok-format` Analyse) – je Review und Merge; welche Spur wann startet, regelt „Start gestaffelt“ unten.
 **Base für alle Spuren:** aktueller `main`; tatsächlichen Base-SHA in den Draft-PR. Weiterhin verbindlich: Mehrsaisonprobe
 bei Saisonwechsel, Kader oder Geld; Schema mit Migration für jeden neuen Zustand (Leitstelle nummeriert in der
 Integration); geänderte Abdrücke je Fall begründen (FN-01, #139); Befund-Issues mit `Fixes #<nr>`. **Entwickler sind
@@ -24,15 +24,26 @@ Claude-Sitzungen; ChatGPT nur für Reviews.**
 
 ```
 Runde 7 (parallel):  spielberechnung   kader-start   boerse-start   weltkugel-dosbox   menue-befunde   hok-patch
-Integration:         kader-start und boerse-start zuerst, spielberechnung zuletzt (verschiebt alle Ergebnisse)
+Integration:         kader-start → boerse-start → weltkugel-dosbox → menue-befunde, hok-patch → spielberechnung zuletzt
 ```
 
 **Start gestaffelt** (Entscheidung Nutzer, 30.10.2026): `menue-befunde` und `boerse-start` sofort; `kader-start` und
 `spielberechnung` nach Merge von #167; `weltkugel-dosbox` nach #175; `hok-patch` nach #176.
 
-Gemeinsame Berührungen: `spielberechnung` und `kader-start` ändern beide Spielergebnisse und damit alle
-Mehrsaison-Abdrücke; `spielberechnung` führt ihre Abdrücke in der Integration auf dem Stand nach `kader-start` nach.
-`menue-befunde` ändert `MainMenuScreen.cs` höchstens minimal (Leiste), `weltkugel-dosbox` nur `TileLocks.cs`/`NationalMenu.cs`.
+**Zuständigkeit für gemeinsame Dateien (R7V-177-01, #180):**
+- `Core/CupsNational*.cs` (auch `PlayFriendly` in `CupsNational.GameState.cs`) gehört **allein** `weltkugel-dosbox`.
+  `spielberechnung` ändert dort nichts: `MatchEngine.Play(Club, Club, Random)` bleibt mit unveränderter Signatur als
+  Einstieg „nur Ergebnis“ erhalten; die neue Berechnung mit Ereignissen bekommt eine eigene Methode. Freundschafts- und
+  WM-Spiele des Nationalteams stellt die Leitstelle in der Integration auf die neue Methode um (nach beiden Spuren).
+- Bestehende Referenz- und Mehrsaisontests (`RngTwinProbeTests`, `GameModeTests.Mode4_ReferenceValues_Unchanged`,
+  `FinanceCalibrationTests`, `DebCupTests`/`EuropeanCupTests`/`WorldCupTests` Mehrsaisonproben,
+  `SaveLoadScreenTests`, `SeasonUiTests`, `DebCupDrawFlowTests`, Schemaabdruck in `SaveGameTests`): nur Sollwerte
+  ändern, und nur von Spuren, die Ergebnisse, Kader, Geld oder Zufallsverbrauch verändern (`kader-start`, `boerse-start`,
+  `weltkugel-dosbox`, `spielberechnung`), je Fall begründet. Konflikte löst die Leitstelle in der Integrationsfolge oben;
+  `spielberechnung` ermittelt ihre Sollwerte auf dem integrierten Stand neu.
+- Neue Tests jeder Spur in eigenen Dateien (`<Spurname>Tests.cs` bzw. nach Befund), keine fremden Testdateien sonst.
+- `menue-befunde` ändert `MainMenuScreen.cs` höchstens minimal (Leiste); `weltkugel-dosbox` besitzt `TileLocks.cs` und
+  `NationalMenu.cs`.
 
 ### Spur `spielberechnung` – Spielberechnung des Originals mit Ereignissen je Spieler (ohne Anzeige)
 
@@ -57,7 +68,8 @@ Mehrsaison-Abdrücke; `spielberechnung` führt ihre Abdrücke in der Integration
 - **Nicht in dieser Spur:** Einzelprämien (#135) und die Statistikbildschirme Spieler/Verein/Fairplay/WM – Folgespuren in
   Runde 8 auf den neuen Zählern.
 - **Dateigrenzen:** `Core/Season.cs` (nur `MatchEngine` herauslösen), neue Dateien `Core/MatchEngine*.cs`,
-  `Core/Player.Attributes.cs` (Zähler), Aufrufer in `GameState.cs`, `Playoffs.cs`, `Cups*.cs` nur für die neue Signatur,
+  `Core/Player.Attributes.cs` (Zähler), Aufrufer in `GameState.cs`, `Playoffs.cs`, `CupsDeb.cs`, `CupsEurope.cs`,
+  `CupsGroup.cs`, `CupsWorld.cs` nur für den Wechsel auf die neue Methode – **nicht** `CupsNational*.cs` (siehe oben),
   `Core/SaveGame.Migration*.cs` (neue Datei), `docs/reverse-engineering.md`, neues `docs/spielberechnung.md`, Tests.
 - **Modell:** Claude Opus 5.5 (Review: GPT-6 Astra).
 - **Status:** offen.

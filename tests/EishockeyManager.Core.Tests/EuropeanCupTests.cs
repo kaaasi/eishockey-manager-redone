@@ -257,7 +257,13 @@ public class EuropeanCupTests
                 Assert.Contains(game.History[^1].Titles[Title.GermanChampion], cup.Draw);
 
             var step = 0;
-            PlayToSeasonEnd(game, g => g.Finance(active).Stadium.TicketPrice = 5 + step++ % 7);
+            PlayToSeasonEnd(game, g =>
+            {
+                g.Finance(active).Stadium.TicketPrice = 5 + step++ % 7;
+                // Spur heimspiel-statistik (#136): beide Manager halten den Kader, sonst „Weniger als neun Spieler“ ohne Eintritt
+                foreach (var m in g.Managers)
+                    TestSeason.KeepSquad(g, m);
+            });
 
             Assert.Equal(24, cup.Groups.Sum(g => g.Results.Count));
             Assert.Equal(12, cup.FinalRound!.Results.Count);

@@ -316,3 +316,9 @@ des Spielbilds sind im Video.
 
 Außerdem neu: Spielvorbereitung mit Kopfwahl `speedrun_t1_00056`, `eisbaeren_f01_00204`; Speichern-Dialog
 `speedrun_t2_04033`; Statistik „Früher“ mit Europacup/DEB-Pokal-Verlauf `eisbaeren_f58_03424`; Jugendteams in vielen Reihen.
+
+## DOSBox-Aufnahmen (Ordner `dosbox/` im Referenz-Repo)
+
+Vom Nutzer im Original unter DOSBox aufgenommene Bildschirmfotos (Fensterfotos, skaliert), laden mit
+`tools/claude/fetch-reference.sh dosbox`. Inhalt und Befunde: [docs/dosbox-befunde.md](dosbox-befunde.md).
+`dosbox/nur-weltkugel/` – Spielvorbereitung bis vor das erste WM-Spiel im Modus „nur Weltkugel“ (51 Bilder).

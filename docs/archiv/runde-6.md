@@ -5,11 +5,12 @@ Inhalt unverändert bis auf die Überschrift. Ergebnisse und Reviews: `docs/revi
 
 **Ergebnis:** Integration #171 (`saisonende-status`, `pixel-wettbewerbe`, `pixel-verein`, `finanzen-werbung`,
 `heimspiel-statistik` Teil 1; Spielstand Schema 8; R6-01 in der Integration, R6-R01 #173 aus dem Review behoben),
-Reviews #172, #174. Geschlossen: #125, #126 (nicht zutreffend), #132, #133, #134, #173. Offen übernommen in Runde 7:
-#167 mit #165 (`heimspiel-statistik` Teil 2), #166, #168, #169, #170, #135, #136.
+Reviews #172, #174. Geschlossen: #125, #126 (nicht zutreffend), #132, #133, #134, #173. `heimspiel-statistik` Teil 2
+(#167 mit #165, Schema 9) im Vorlauf zu Runde 7 gemergt (Review #178), damit #136 und #165 geschlossen. Offen
+übernommen in Runde 7: #166, #168, #169, #170, #135.
 
-Runde 5 (Auslosung, Paarungen Liga, Taktik, Modus 4, Finanz-Nachprüfung, Referenzvideos): [archiv/runde-5.md](archiv/runde-5.md);
-ältere Runden in [archiv/](archiv/).
+Runde 5 (Auslosung, Paarungen Liga, Taktik, Modus 4, Finanz-Nachprüfung, Referenzvideos): [runde-5.md](runde-5.md);
+ältere Runden in [archiv/](./).
 **Ziel der Runde (Entscheidung Nutzer, 30.10.2026):** die offenen Befunde aus Runde 5 schließen und die Bildschirme, die
 bisher ohne Videobeleg gebaut wurden, gegen die neuen Referenzreihen vermessen (`docs/referenz-videos.md`, Fundlisten;
 laden mit `tools/claude/fetch-reference.sh <reihe>`).
@@ -61,9 +62,10 @@ fortlaufend (wie Runde 5, Migration 4 → 5 → 6).
   bzw. `Core/SeasonFlow.cs` (minimal, begründet), `Core/SaveGame.Migration*.cs` (neue Datei),
   `docs/finanzen-rekonstruktion.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** Teil 1 PR #161 (Zuschauerstatistik, Spielbedeutung, Schema 6 → 7) zur Review. Teil 2 PR #167
-  („Weniger als neun Spieler“, gestapelt auf #161) als Draft: wartet auf Entscheidung zur Wirkung auf passive Manager
-  (siehe PR). Folge-Issues #165 (Spielwertung 0:2/2:0), #166 (Oberliga-Austausch 400.000 DM, nicht erreichbar).
+- **Status:** Teil 1 über #171 gemergt (Schema 8). Teil 2 PR #167 („Weniger als neun Spieler“) auf `main` umgestellt,
+  Option (a) umgesetzt (14 Tests nachgeführt, Ursachen in `docs/finanzen-rekonstruktion.md`), dazu #165 (Spielwertung
+  0:2/2:0, Schema 8 → 9) im selben PR (Auftrag Nutzer), zur Review. Folge-Issue #166 (Oberliga-Austausch 400.000 DM,
+  nicht erreichbar).
 
 ### Spur `saisonende-status` – Statusbit 0x40 und Highscore-Schlüssel „nur Weltkugel“ (#125, #126)
 

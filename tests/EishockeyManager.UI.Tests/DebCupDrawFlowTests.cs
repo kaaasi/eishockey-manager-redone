@@ -167,6 +167,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Mehrsaisonprobe (Abnahme 4): vier Saisonwechsel über die Oberfläche, einmal mit Live-Auslosung, einmal ohne. Pokalsieger,
     /// Meister und Abschlusstabellen je Saison sind gleich und gleich den Referenzwerten von <c>main</c> vor dieser Spur
     /// (a09c81e, Auslosung im Spiel noch nicht sichtbar).
+    /// Spur heimspiel-statistik (#136): Der Manager hält seinen Kader (<see cref="KeepSquadHelper"/>), sonst wird er nach
+    /// „Weniger als neun Spieler“ (200.000 DM je Spiel) in Saison 1995 entlassen und das Spiel endet. 1993 und 1994 bleiben
+    /// gleich; ab 1995 spielt sein Verein mit dem verlängerten statt mit leerem Kader, daher neue Werte für 1995 und 1996.
     /// </summary>
     [GameDataFact]
     public void MultiSeason_CupResultsUnchanged_WithAndWithoutDisplay()
@@ -180,6 +183,7 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
             for (var guard = 0; game.History.Count < 4 || d.Host.Current is not MainMenuScreen; guard++)
             {
                 Assert.True(guard < 80000, "Vier Saisonwechsel nicht erreicht");
+                KeepSquadHelper.KeepSquads(game); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen
                 Step(d, live);
             }
             return Summary(game);
@@ -199,5 +203,5 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
 
     /// <summary>Referenz: <see cref="Summary"/> auf <c>main</c> a09c81e (nur Leertaste, Seed 1993), siehe PR der Spur.</summary>
     private const string Reference =
-        "1993: DEB 17, DM 2, Tab 15413 | 1994: DEB 1, DM 5, Tab 16258 | 1995: DEB 2, DM 5, Tab 17077 | 1996: DEB 9, DM 2, Tab 17326";
+        "1993: DEB 17, DM 2, Tab 15413 | 1994: DEB 1, DM 5, Tab 16258 | 1995: DEB 2, DM 4, Tab 17049 | 1996: DEB 4, DM 2, Tab 16932";
 }

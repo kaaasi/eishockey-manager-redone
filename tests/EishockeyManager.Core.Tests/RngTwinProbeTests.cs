@@ -26,15 +26,27 @@ namespace EishockeyManager.Core.Tests;
 /// Vertragszufallsquelle in jedem Schritt gleich (keine Spielergebnisse, Auslosungen oder Vertragsentscheidungen
 /// verschoben); es ändern sich nur FinanceRandom (ab Tag 1: Bewertung nach jedem Tagesabschluss, 0x5569F) und daraus das
 /// Konto (Tabelle in docs/finanzen-rekonstruktion.md).
+/// Spur heimspiel-statistik (#136, „Weniger als neun Spieler“, em.exe 0x54420) ändert die drei passiven Abdrücke; die
+/// aktiven verlängern Verträge und bleiben gleich. Ursache je Fall (Vergleichslauf mit Zustand und allen vier
+/// Zufallsquellen nach jedem Schritt, Tabelle in docs/finanzen-rekonstruktion.md): Die Startverträge des passiven Managers
+/// sind nach 1994 ausgelaufen, sein Verein hat 1995 keinen Spieler. Ab dem ersten Spiel 1995 zahlt er je Spiel
+/// 200.000 DM (Strafen) statt Eintritt zu bekommen; die Zuschauerberechnung und damit ihr Zug aus FinanceRandom entfällt.
+/// Haupt-, Pokal- und Vertragsquelle, Titel und Kader bleiben in jedem Schritt gleich; die Kontountergrenze der Probe
+/// (10 Mio. DM) verhindert die Entlassung.
+/// Mit der Spielwertung (#165, em.exe 0x36DC5) werden die Spiele dieses Vereins ab 1995 ohne Berechnung 0:2 bzw. 2:0
+/// gewertet (Vergleich gegen 7833e2d): erste Differenz 1995, Tag 3 – das Ergebnis des ersten Spiels und der Stand der
+/// Hauptquelle (Torzüge entfallen); danach Pokalquelle (Tag 14 bzw. 17, anderer Pokalverlauf), FinanceRandom und
+/// Vertragsquelle (Saisonwechsel). Titel ab 1995 andere. Die drei aktiven Abdrücke bleiben gleich (ihr Kader bleibt
+/// spielfähig, in keinem Schritt eine Differenz).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "29CDCDB29ABE8389")]
+    [InlineData(false, 3, "33A4F52EC2360DE0")]
     [InlineData(true, 3, "9541EF4978491142")]
-    [InlineData(false, 11, "8D792630DA011B2B")]
+    [InlineData(false, 11, "FC797F99C7C8B35C")]
     [InlineData(true, 11, "7CB3FC8E58DC44CC")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
@@ -43,7 +55,7 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "4D65B4082DBAA198")]
+    [InlineData(false, "74ED95088678F3B6")]
     [InlineData(true, "9FAAA0D4276178C3")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
