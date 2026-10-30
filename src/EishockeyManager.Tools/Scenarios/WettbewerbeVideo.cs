@@ -242,4 +242,38 @@ internal static class WettbewerbeVideo
         Show("eisbaeren_f58_01323", 2, EuropeanGroup(game, 3, final, ["EISB", "VITKOVICE", "KOSICE", "DUKLA TRENCIN"],
             "3:2/2:0|3:4/0:5", "3:2|4:3", "3:0|6:3"));
     }
+    /// <summary>Abschnitt aus Zeilen „Links|Rechts|l:r“ mit Punkten am Ende („4:3..“).</summary>
+    private static WorldCupKnockoutSection Section(GameState game, string title, params string[] rows) =>
+        new(title, rows.Select(r => r.Split('|')).Select(p =>
+        {
+            var g = p[2].TrimEnd('.').Split(':').Select(int.Parse).ToArray();
+            return new WorldCupKnockoutRow(Club(game, p[0]), Club(game, p[1]), g[0], g[1], p[2].Length - p[2].TrimEnd('.').Length);
+        }).ToList());
+
+    [Scenario("pixel-wm")]
+    private static void WorldCupKnockout(ScreenDriver d)
+    {
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var back = new MainMenuScreen(d.Host);
+        int[] germany = [NationalTeams.Germany];
+
+        // eisbaeren_f35_00646: Viertelfinale vor dem Spiel, Knopf „Gruppe“
+        d.Host.Show(new WorldCupKnockoutScreen(d.Host, back, [Section(game, "VIERTELFINALE",
+            "RUSSLAND|FRANKREICH|0:0", "SCHWEIZ|TSCHECHEI|0:0", "FINNLAND|DEUTSCHLAND|0:0", "SCHWEDEN|KANADA|0:0")], germany));
+        d.Move(0, 239); d.Save("eisbaeren_f35_00646");
+
+        // eisbaeren_f44_01330: alle Abschnitte im Spielablauf („60.Minute“, ohne Knopf)
+        d.Host.Show(new WorldCupKnockoutScreen(d.Host, back,
+        [
+            Section(game, "VIERTELFINALE", "FINNLAND|TSCHECHEI|4:3..", "DEUTSCHLAND|NORWEGEN|6:2", "ITALIEN|KANADA|4:3.", "RUSSLAND|USA|5:1"),
+            Section(game, "HALBFINALE", "FINNLAND|DEUTSCHLAND|4:2", "RUSSLAND|ITALIEN|4:3."),
+            Section(game, "SPIELE 5.-8.", "TSCHECHEI|NORWEGEN|3:2", "KANADA|USA|5:4"),
+            Section(game, "ENDSPIEL", "FINNLAND|RUSSLAND|1:2"),
+            Section(game, "SPIEL UM 3.PL.", "DEUTSCHLAND|ITALIEN|7:2"),
+            Section(game, "SPIEL UM 5.PL.", "TSCHECHEI|KANADA|2:5"),
+            Section(game, "SPIEL UM 7.PL.", "NORWEGEN|USA|4:1"),
+        ], germany, liveMinute: 60));
+        d.Move(0, 239); d.Save("eisbaeren_f44_01330");
+    }
 }

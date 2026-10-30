@@ -16,8 +16,9 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// <item>Flagge = Logo des Nationalteams (kb\(80 + Logo), 38 × 38). [ORIGINAL] Aufruf mit x = 46 bzw. 102 (Farbe 30), y − 20;
 ///   die Zeichenfunktion 0xF8:0x43 setzt das Bild um (2 | 2) versetzt (vermessen) → (48 | y − 18) bzw. (104 | y − 18).</item>
 /// <item>[ORIGINAL] „Plus:Minus Tore:Gegentore“ Bold bei x = 170, Zahlen mit Mindestbreite 2.</item>
-/// <item>[APPROX] Knopf „Gruppe 2“/„Gruppe 1“ unten rechts als Knopf aus kb\2 (vermessen); K.-o.-Ansicht (Knopf
-///   „Endrunde“ nach der Gruppenphase) nicht im Video – Liste mit den Spielnamen aus em.exe.</item>
+/// <item>[APPROX] Knopf „Gruppe 2“/„Gruppe 1“ unten rechts als Knopf aus kb\2 (vermessen); Knopf „Endrunde“ nach der
+///   Gruppenphase (Lage nicht im Video) öffnet „WM-Endrundenspiele“ (<see cref="WorldCupKnockoutScreen"/>, seit Runde 6 am Video
+///   vermessen), dessen Knopf „Gruppe“ hierher zurückführt.</item>
 /// </list>
 /// </remarks>
 public sealed class WorldCupScreen : Screen
@@ -36,7 +37,7 @@ public sealed class WorldCupScreen : Screen
     private readonly Screen _back;
     private readonly CupGroup? _fixed;
 
-    /// <summary>0 = Gruppe 1, 1 = Gruppe 2, 2 = K.-o.-Phase.</summary>
+    /// <summary>0 = Gruppe 1, 1 = Gruppe 2.</summary>
     public int View { get; private set; }
 
     /// <param name="group">Nur für Bildschirmfotos: feste Gruppe statt der laufenden Saison.</param>
@@ -47,7 +48,7 @@ public sealed class WorldCupScreen : Screen
         _fixed = group;
     }
 
-    public CupGroup? Group => _fixed ?? (View < 2 ? Host.Game?.WorldCup?.Groups.ElementAtOrDefault(View) : null);
+    public CupGroup? Group => _fixed ?? Host.Game?.WorldCup?.Groups.ElementAtOrDefault(View);
 
     private bool KnockoutKnown => Host.Game?.WorldCup?.KnockoutPairings(0).Count > 0;
 
@@ -61,7 +62,7 @@ public sealed class WorldCupScreen : Screen
         if (input.Clicked(GroupButton))
             View = View == 0 ? 1 : 0;
         else if (KnockoutKnown && input.Clicked(KnockoutButton))
-            View = 2;
+            Host.Show(new WorldCupKnockoutScreen(Host, _back));
         else if (input.LeftClick || input.Keys.Count > 0)
             Host.Show(_back);
     }
@@ -72,19 +73,14 @@ public sealed class WorldCupScreen : Screen
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
         Widgets.Frame(s, Assets, Window, FrameStyle.Orange);
 
-        var title = View == 2 ? "Endrunde" : "Gruppe" + CompetitionWidgets.Number(View + 1, 2);
+        var title = "Gruppe" + CompetitionWidgets.Number(View + 1, 2);
         CompetitionWidgets.Centered(s, Assets.Bold, 0, 319, 21, title, Colors.White, DebCupDrawScreen.TitleShadow);
         s.HLine(27, 24, 292 - 27 + 1, Colors.White);
 
         Widgets.Button(s, Assets, ButtonX, ButtonY, View == 0 ? "Gruppe 2" : "Gruppe 1");
         if (KnockoutKnown)
-            Widgets.Button(s, Assets, KnockoutButton.X, ButtonY, "Endrunde", pressed: View == 2);
+            Widgets.Button(s, Assets, KnockoutButton.X, ButtonY, "Endrunde");
 
-        if (View == 2)
-        {
-            DrawKnockout(s);
-            return;
-        }
         if (Group is not { } group || Host.Game is not { } game)
             return;
 
@@ -106,32 +102,6 @@ public sealed class WorldCupScreen : Screen
             static string N(int v) => CompetitionWidgets.Number(v, 2);
             var row = rows[n];
             CompetitionWidgets.Left(s, bold, ScoreX, y, $"{N(row.PointsPlus)}:{N(row.PointsMinus)} {N(row.GoalsFor)}:{N(row.GoalsAgainst)}", color);
-        }
-    }
-
-    private void DrawKnockout(Surface s)
-    {
-        if (Host.Game is not { WorldCup: { } wm } game)
-            return;
-        var mini = Assets.Mini;
-        var y = 40;
-        for (var stage = 0; stage < 3; stage++)
-        {
-            var pairs = wm.KnockoutPairings(stage);
-            for (var k = 0; k < pairs.Count; k++, y += 8)
-            {
-                if (k == 0 || WorldCup.KnockoutNames[stage][k] != WorldCup.KnockoutNames[stage][k - 1])
-                {
-                    CompetitionWidgets.Left(s, mini, 30, y, WorldCup.KnockoutNames[stage][k], Colors.Yellow);
-                    y += 8;
-                }
-                var (home, away) = pairs[k];
-                CompetitionWidgets.Left(s, mini, 40, y, game.Clubs[home].Name, Colors.TileBackground);
-                CompetitionWidgets.Left(s, mini, 130, y, "-", Colors.White);
-                CompetitionWidgets.Left(s, mini, 140, y, game.Clubs[away].Name, 1);
-                if (stage < wm.Knockout.Count && wm.Knockout[stage][k] is { } m)
-                    CompetitionWidgets.Left(s, mini, 240, y, $"{m.HomeGoals}:{m.AwayGoals}{(m.PenaltyWinner is null ? "" : " n.P.")}", Colors.White);
-            }
         }
     }
 }

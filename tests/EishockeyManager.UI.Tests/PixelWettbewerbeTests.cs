@@ -118,4 +118,48 @@ public class PixelWettbewerbeTests
                     Assert.NotEqual((byte)1, d.Surface.Pixels[py * Surface.Width + x]);
         }
     }
+    /// <summary>
+    /// Befund PW-05: Die K.-o.-Ansicht der WM ist im Original der Bildschirm „WM-Endrundenspiele“ – dieselbe Funktion wie
+    /// „DEB-Pokalspiele“ (Datei 0x32E23, Wettbewerb 3) mit eigenem Rahmen, Abschnitten, Ergebnissen bei x = 233 und Knopf „Gruppe“
+    /// (eisbaeren_f35_00646, eisbaeren_f44_01330). Das Remake zeigte eine eigene Liste „Endrunde“ im Gruppenfenster.
+    /// Rahmen: n = Begegnungen + 1 − 6 + Abschnitte (1 / 3 / 7), Teile min(11, (7 · (n + 4) + 60) / 19), Oberkante (217 − 19 · h) / 2,
+    /// ab neun Teilen oben (y = 2).
+    /// </summary>
+    [GameDataFact]
+    public void WorldCupKnockout_IsEndrundenspieleScreen()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        for (var guard = 0; game.WorldCup!.KnockoutPairings(0).Count == 0; guard++)
+        {
+            Assert.True(guard < 20000, "WM-Endrunde nicht erreicht");
+            d.Press(Key.Space);
+        }
+        var wm = game.WorldCup;
+        var stages = Enumerable.Range(0, 3).Count(st => wm.KnockoutPairings(st).Count > 0);
+        var n = Math.Max(4 * stages + 1 - 6 + new[] { 0, 1, 3, 7 }[stages], 0);
+        var h = Math.Min(11, (7 * (n + 4) + 60) / 19);
+        var y = h > 8 ? 2 : (217 - 19 * h) / 2;
+
+        d.Host.Show(new Screens.MainMenuScreen(d.Host));
+        var state = StateFingerprint.Of(game);
+        d.OpenTile("WM");
+        d.Click(WorldCupScreen.KnockoutButton.X + 5, WorldCupScreen.KnockoutButton.Y + 5);
+        d.Frame();
+        Assert.IsType<WorldCupKnockoutScreen>(d.Host.Current);
+        Assert.Equal(state, StateFingerprint.Of(game)); // zustandsrein
+
+        var before = d.Surface.Pixels.ToArray();
+        var first = wm.Knockout.Count > 0 ? wm.Knockout[0][0] : null;
+        CompetitionWidgets.Centered(d.Surface, d.Host.Assets.Bold, 0, 319, y + 19, "WM-Endrundenspiele", Colors.White, 1);
+        CompetitionWidgets.Centered(d.Surface, d.Host.Assets.Mini, 15, 183, y + 46, "VIERTELFINALE", Colors.White, Colors.Black);
+        CompetitionWidgets.Left(d.Surface, d.Host.Assets.Mini, 233, y + 46 + 7, Result(first?.HomeGoals ?? 0, first?.AwayGoals ?? 0), 1);
+        CompetitionWidgets.Centered(d.Surface, d.Host.Assets.Mini, 160, 160, 221, "Gruppe", Colors.White, null);
+        Assert.Equal(before, d.Surface.Pixels);
+
+        // Knopf „Gruppe“ führt zur Gruppenansicht zurück
+        d.Click(WorldCupKnockoutScreen.Button.X + 5, WorldCupKnockoutScreen.Button.Y + 5);
+        Assert.IsType<WorldCupScreen>(d.Host.Current);
+    }
 }
