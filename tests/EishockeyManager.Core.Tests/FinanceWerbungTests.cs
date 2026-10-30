@@ -75,7 +75,11 @@ public class FinanceWerbungTests
         Assert.Equal(League.ZweiteLiga, game.Clubs[me.ClubIndex].League);
         game.Clubs[me.ClubIndex].Players.Clear();
         var plain = SponsorRating.Compute(game, me, new Random(1));
-        game.Eternal(game.Clubs[me.ClubIndex].Index).Championships = 3;
+        // Ewige Tabelle hat keinen Setter: Eintrag wie nach drei Meisterschaften anlegen.
+        var eternal = (Dictionary<int, EternalEntry>)typeof(GameState)
+            .GetField("_eternal", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(game)!;
+        eternal[me.ClubIndex] = new EternalEntry { Club = me.ClubIndex, Championships = 3, CupWins = 2, EuropeanCupWins = 1 };
+        Assert.Equal(3, game.Eternal(me.ClubIndex).Championships);
         Assert.Equal(plain, SponsorRating.Compute(game, me, new Random(1)));
     }
 
