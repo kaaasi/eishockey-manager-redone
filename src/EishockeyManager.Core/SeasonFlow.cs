@@ -176,6 +176,7 @@ public sealed partial class GameState
         CheckDebts(day, steps);
         if (Phase == SeasonPhase.GameOver)
             return;
+        MarkShortHandedClubs(); // Spur heimspiel-statistik (#165): Wertung 0:2/2:0 vor den Spielen des Tages
 
         var events = SeasonCalendar.Events(day);
         if (day == SeasonCalendar.ClubSeasonEnd)

@@ -17,6 +17,20 @@ public static class TestSeason
             game.Continue();
     }
 
+    /// <summary>
+    /// Kader halten (Spur heimspiel-statistik, #136): nimmt jedes angebotene Verlängerungsangebot des Managervereins zur
+    /// Forderung an. Seit „Weniger als neun Spieler“ (em.exe 0x54420) zahlt ein Manager, dessen Startverträge nach zwei
+    /// Saisons auslaufen, je Spiel 200.000 DM und wird entlassen. Proben, die einen passiven Manager über mehrere Saisons
+    /// brauchen (Eintritt, Finanzkorridor, Pokale), halten damit seinen Kader; sonst greift er weiter nicht ein.
+    /// Zieht aus einem eigenen Generator, damit keine Zufallsquelle des Spiels verbraucht wird.
+    /// </summary>
+    public static void KeepSquad(GameState game, Manager manager)
+    {
+        var club = game.Clubs[manager.ClubIndex];
+        foreach (var p in club.Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1).ToArray())
+            Contracts.Offer(p, p.NoticeYears, Contracts.Demand(p) + 100, false, game.PlayedMatchDays, new Random(1));
+    }
+
     /// <summary>Die ganze Hauptrunde.</summary>
     public static void PlayRegularSeason(GameState game)
     {

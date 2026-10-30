@@ -135,6 +135,12 @@ public static class MatchEngine
 {
     public static (int Home, int Away) Play(Club home, Club away, Random random)
     {
+        // Spur heimspiel-statistik (#165): [ORIGINAL] 0x36DC5 – nicht spielfähiger Managerverein, Wertung ohne Spielberechnung
+        // (kein Zufallszug). Heimverein zuerst, siehe GameState.MarkShortHandedClubs.
+        if (home.ForfeitsMatch)
+            return (0, 2);
+        if (away.ForfeitsMatch)
+            return (2, 0);
         var diff = (home.MatchStrength - away.MatchStrength) / 30.0; // Stärke aus der Aufstellung (Paket „mannschaft“)
         var lambdaHome = 3.45 * Math.Exp(0.45 * diff);
         var lambdaAway = 3.05 * Math.Exp(-0.45 * diff);

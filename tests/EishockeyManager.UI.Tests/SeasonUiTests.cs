@@ -20,6 +20,7 @@ public class SeasonUiTests
         var guard = 0;
         while (game.History.Count < 3 && guard++ < 20000)
         {
+            KeepSquadHelper.KeepSquads(game); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen
             d.Press(Key.Space);
             if (d.Host.Current is SeasonEndScreen) seenSeasonEnd++;
             if (d.Host.Current is SeasonEndSummaryScreen) seenSummary++;
