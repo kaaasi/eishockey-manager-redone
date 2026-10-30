@@ -262,4 +262,5 @@ vergleicht. Jeder Abdruck ändert sich in genau einem Schritt; `bcf0b0b` ändert
 | Originaldaten aktiv (Verein 42) | `af1d24e` | Saison 1994, Tag 28: Heimspiel-Einnahme +1.620 DM; zugleich anderer Stand von `FinanceRandom` (einzige betroffene Zufallsquelle) | Teilung der Zuschauer durch random(2, 5) nur noch bei teuren Karten (0x3F63C): ein Zug aus `FinanceRandom` entfällt. Die Kontoabweichungen liegen unter der Untergrenze der Probe (10 Mio. DM) und sind an den Saisonenden ausgeglichen; im Abdruck bleibt nur der Stand von `FinanceRandom`. |
 
 Tabellen-, Meister- und Pokalprämie wirken in keinem der fünf Fälle (kein Hauptrunden-Erster, kein Meister, kein
-Pokalsieg des Probe-Vereins). Der passive Originaldatenfall bleibt gleich, weil dort keine Karte über der Schwelle liegt.
+Pokalsieg des Probe-Vereins; Originaldatenfälle durch `e3abc90` unverändert). Der passive Originaldatenfall bleibt mit
+allen vier Codeständen gleich.
