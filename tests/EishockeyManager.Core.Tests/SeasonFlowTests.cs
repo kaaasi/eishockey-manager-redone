@@ -180,8 +180,9 @@ public class SeasonFlowTests
     [Fact]
     public void PremiumForFirstPlaceInOberliga_AsInVideo()
     {
-        // Die im Video gezeigten 400.000 DM enthalten den Aufstieg, nicht nur den Tabellenplatz.
-        Assert.Equal(400_000, GameState.SeasonPremium(League.Oberliga, 1, [SeasonEvent.Promotion]));
+        // Die im Video gezeigten 400.000 DM sind 300.000 DM Aufstieg plus ein 100.000er-Ereignis (Topscorer, bester
+        // Torhüter oder Fair-Play, em.exe 0x271A9 ff.); diese Ereignisse fehlen im Remake noch (Spur finanzen-nachpruefung).
+        Assert.Equal(300_000, GameState.SeasonPremium(League.Oberliga, 1, [SeasonEvent.Promotion]));
         Assert.Equal(0, GameState.Premium(League.Oberliga, 4));
     }
 

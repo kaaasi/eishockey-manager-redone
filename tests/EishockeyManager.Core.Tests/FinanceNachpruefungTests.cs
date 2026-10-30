@@ -124,4 +124,23 @@ public class FinanceNachpruefungTests
     {
         Assert.Equal((10, 30), (Stadium.MinTicketPrice, Stadium.MaxTicketPrice));
     }
+
+    /// <summary>
+    /// Prämien am Saisonende. em.exe 0x55CD3–0x55D02 vergleicht mit DGROUP 0x387 = DEB-Pokalsieger (Titelbild 0x350B6)
+    /// und bucht 1.500.000 Drittel = 500.000 DM; der Deutsche Meister und der Europapokalsieger bekommen kein Geld,
+    /// 0xE0:0x20 (0x2723C) ist die Fair-Play-Wertung, nicht der Tabellenplatz. Karriere-Video: Play-Off-Halbfinale mit
+    /// Pokalsieg 600.000 DM (11:07:00), Deutscher Meister 200.000 DM (11:17:01, nur zwei 100.000er), 1. Platz 2. Liga
+    /// „keine“ (0:35:54). Die 100.000er (Topscorer, bester Torhüter, Fair-Play) fehlen im Remake noch (Restlücke).
+    /// </summary>
+    [Theory]
+    [InlineData(League.Bundesliga, 1, new[] { SeasonEvent.GermanChampion }, 0L)]
+    [InlineData(League.Bundesliga, 5, new[] { SeasonEvent.CupWinner }, 500_000L)]
+    [InlineData(League.Bundesliga, 3, new[] { SeasonEvent.EuropeanCupWinner }, 0L)]
+    [InlineData(League.ZweiteLiga, 1, new SeasonEvent[0], 0L)]
+    [InlineData(League.ZweiteLiga, 1, new[] { SeasonEvent.Promotion }, 500_000L)]
+    [InlineData(League.Oberliga, 1, new[] { SeasonEvent.Promotion }, 300_000L)]
+    public void SeasonPremium_CupWinnerAndPromotionOnly(League league, int rank, SeasonEvent[] events, long expected)
+    {
+        Assert.Equal(expected, GameState.SeasonPremium(league, rank, events));
+    }
 }

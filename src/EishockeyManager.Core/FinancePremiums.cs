@@ -3,19 +3,22 @@ namespace EishockeyManager.Core;
 public sealed partial class GameState
 {
     /// <summary>
-    /// [ORIGINAL] Meisterprämie 500.000 DM: em.exe Datei 0x55CD3–0x55D02 prüft den Verein gegen
-    /// den Playoff-Sieger DGROUP 0x387 und bucht 0x0016E360 = 1.500.000 Drittel-DM.
-    /// Der Sieger wird im Playoff-Endpfad Datei 0x34ED0–0x34ED9 gespeichert.
+    /// [ORIGINAL] Pokalprämie 500.000 DM: em.exe Datei 0x55CD3–0x55D02 prüft den Verein gegen DGROUP 0x387 und bucht
+    /// 0x0016E360 = 1.500.000 Drittel-DM. 0x387 ist der DEB-Pokalsieger (Titelbild 0x350B6: 0xD0E6 Deutscher Meister,
+    /// 0x387 DEB-Pokalsieger, 0x388 Europacupsieger). Der Deutsche Meister bekommt nur ein Statusbit (0x55BE4), kein Geld.
+    /// Karriere-Video: Pokalsieg 600.000 DM (500.000 + ein 100.000er), Deutscher Meister 200.000 DM (zwei 100.000er).
+    /// Unabhängige Nachprüfung, Runde 5 (vorher als Meisterprämie gedeutet).
     /// </summary>
-    public const long ChampionPremium = 500_000;
+    public const long CupWinnerPremium = 500_000;
 
     /// <summary>
-    /// [ORIGINAL] Weitere Einzelprämie: Datei 0x271A9/0x271EF/0x2723C bucht jeweils
-    /// 0x000493E0 = 300.000 Drittel-DM = 100.000 DM. 0x2723C ist der Hauptrunden-Erste (<see cref="Premium"/>).
-    /// [APPROX] 0x271A9 (Symbol 12) und 0x271EF (Symbol 3) hängen an zwei Kennungen aus dem Saisonwechsel
-    /// (0xC8:0x20, High-/Low-Byte je Manager), hier Pokal- und Europapokalsieg zugeordnet.
+    /// [ORIGINAL] Einzelprämie: Datei 0x271A9/0x271EF/0x2723C bucht jeweils 0x000493E0 = 300.000 Drittel-DM = 100.000 DM:
+    /// Symbol 12 bester Torhüter der eigenen Liga im Kader, Symbol 3 Topscorer der eigenen Liga im Kader (Rangliste
+    /// 0xC8:0x20), Symbol 13 Fair-Play-Erster (0xE0:0x20 sortiert die Liga nach Strafminuten).
+    /// [APPROX] Diese drei Ereignisse gibt es im Remake noch nicht; bis dahin wird keine Einzelprämie gezahlt
+    /// (Restlücke der Spur finanzen-nachpruefung, eigenes Issue).
     /// </summary>
-    public const long OtherTitlePremium = 100_000;
+    public const long SinglePremium = 100_000;
 
     /// <summary>
     /// [ORIGINAL] Aufstieg (Statusbit 1 gesetzt, Bit 2 nicht gesetzt): Datei 0x270A8–0x27124.
@@ -29,20 +32,20 @@ public sealed partial class GameState
     };
 
     /// <summary>
-    /// Tabellenprämie: Erster der Hauptrunde in jeder Liga. [ORIGINAL] Datei 0x27210: <c>0xE0:0x20(0)</c> sortiert die
-    /// zwölf Vereine der eigenen Liga nach Punkten und liefert 1, wenn der Verein des Managers vorn liegt (0x2A29D);
-    /// dann Symbol 13 und 300.000 Drittel-DM = 100.000 DM (0x2723C). Gilt auch in der Bundesliga (Spur finanzen-2).
+    /// Tabellenprämie: gibt es im Original nicht. [ORIGINAL] Karriere-Video 0:35:54 „1. Platz der Zweite Liga, Prämien:
+    /// keine“; die 100.000 DM bei 0x2723C sind die Fair-Play-Prämie (siehe <see cref="SinglePremium"/>).
     /// </summary>
-    public static long Premium(League league, int rank) => rank == 1 ? OtherTitlePremium : 0;
+    public static long Premium(League league, int rank) => 0;
 
-    /// <summary>Prämien nach tatsächlichen Ereignissen, gemeinsam genau einmal über Book gebucht.</summary>
+    /// <summary>
+    /// Prämien nach tatsächlichen Ereignissen, gemeinsam genau einmal über Book gebucht. Deutscher Meister und
+    /// Europapokalsieg bringen im Original kein Geld (unabhängige Nachprüfung, Runde 5).
+    /// </summary>
     public static long SeasonPremium(League league, int rank, IReadOnlyCollection<SeasonEvent> events)
     {
         var result = Premium(league, rank);
         if (events.Contains(SeasonEvent.Promotion)) result += PromotionPremium(league);
-        if (events.Contains(SeasonEvent.GermanChampion)) result += ChampionPremium;
-        if (events.Contains(SeasonEvent.CupWinner)) result += OtherTitlePremium;
-        if (events.Contains(SeasonEvent.EuropeanCupWinner)) result += OtherTitlePremium;
+        if (events.Contains(SeasonEvent.CupWinner)) result += CupWinnerPremium;
         return result;
     }
 }
