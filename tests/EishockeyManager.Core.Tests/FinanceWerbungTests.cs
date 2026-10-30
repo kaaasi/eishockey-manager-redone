@@ -61,12 +61,19 @@ public class FinanceWerbungTests
         Assert.Equal(170 + 47 * 4, SponsorRating.CompetitionScore(1, false, false, 0, inEurope: true, europeRound: 3));
     }
 
-    /// <summary>#132 behavioral: Ewige Meistertitel ändern die Bewertung nicht (gleicher Zufall).</summary>
+    /// <summary>
+    /// #132 am Spielstand: Ewige Meistertitel ändern die Bewertung nicht (gleicher Zufall). 2. Liga ohne Kader, damit
+    /// die Bewertung unter der Kappung 100 bleibt (vorher +3 · 80 / 12 · 85 / 100).
+    /// </summary>
     [Fact]
     public void Rating_IgnoresEternalChampionships()
     {
-        var game = TestGames.Create(3);
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Z", Head = 0, ClubIndex = 14 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
         var me = game.ActiveManager;
+        Assert.Equal(League.ZweiteLiga, game.Clubs[me.ClubIndex].League);
+        game.Clubs[me.ClubIndex].Players.Clear();
         var plain = SponsorRating.Compute(game, me, new Random(1));
         game.Eternal(game.Clubs[me.ClubIndex].Index).Championships = 3;
         Assert.Equal(plain, SponsorRating.Compute(game, me, new Random(1)));
