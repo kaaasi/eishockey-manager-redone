@@ -29,7 +29,10 @@ cd eishockey-manager-redone
   Fehlt das Release oder sind Pakete veraltet: `gh workflow run werkzeuge.yml -R kaaasi/eishockey-manager-redone`
   (läuft auch automatisch, wenn sich `*.csproj` auf `main` ändern).
 - **Referenzbilder:** Repo `kaaasi/eishockey-manager-referenz` per `add_repo` (access `read`) einbinden, dann
-  `tools/claude/fetch-reference.sh [oberflaeche] [karriere] [bundestrainer] [uebersicht]` → `~/referenz/` (ergänzt einen vorhandenen Klon).
+  `tools/claude/fetch-reference.sh [oberflaeche] [karriere] [bundestrainer] [folgen|folgeNN] [eisbaeren|eisbaeren_fNN]
+  [duell|duell_…] [speedrun] [uebersicht]` → `~/referenz/` (Reihen und Fundlisten: `docs/referenz-videos.md`). Ein
+  vorhandener Klon wird ergänzt; ist er veraltet, bricht das Skript mit Rückgabe 3 ab – dann `~/referenz` löschen und
+  neu laden.
 
 ## GitHub aus der Sitzung
 
