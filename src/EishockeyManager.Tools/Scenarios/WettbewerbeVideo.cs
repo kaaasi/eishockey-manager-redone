@@ -1,0 +1,94 @@
+using EishockeyManager.Core;
+using EishockeyManager.UI;
+using EishockeyManager.UI.Screens;
+using EishockeyManager.UI.Screens.Competitions;
+using EishockeyManager.UI.Testing;
+
+namespace EishockeyManager.Tools.Scenarios;
+
+/// <summary>
+/// Spur pixel-wettbewerbe (Runde 6): Wettbewerbsbildschirme mit dem Zustand der neuen Referenzbilder
+/// (<c>docs/referenz-videos.md</c>). Jedes Bild heißt wie seine Vorlage; Vergleichswerte in <c>docs/wettbewerbe.md</c>.
+/// </summary>
+internal static class WettbewerbeVideo
+{
+    /// <summary>Verein, dessen Name <paramref name="part"/> enthält (Großschrift wie in der Datenbank, Umlaute vermeiden).</summary>
+    internal static int Club(GameState game, string part) =>
+        game.Clubs.First(c => c.Name.Contains(part, StringComparison.Ordinal)).Index;
+
+    /// <summary>Spieltag mit dem Datum <paramref name="day"/>.<paramref name="month"/> unter den Tagen <paramref name="kind"/>.</summary>
+    internal static int DayOf(DayEvents kind, int day, int month) =>
+        SeasonCalendar.DaysOf(kind).First(d => SeasonCalendar.LayoutDate(d) is var date && date.Day == day && date.Month == month);
+
+    private static readonly string[] GroupOrder = ["BB", "BZ", "BO", "ZZ", "ZO", "OO"];
+
+    private static readonly Dictionary<string, (int, int)> GroupClasses = new()
+    {
+        ["BB"] = (1, 1), ["BZ"] = (1, 2), ["BO"] = (1, 4), ["ZZ"] = (2, 2), ["ZO"] = (2, 4), ["OO"] = (4, 4),
+    };
+
+    /// <summary>Ergebnis „l:r“, mit Punkt am Ende („2:3.“) nach Verlängerung.</summary>
+    private static DebCupResult? Result(string text) =>
+        text.Length == 0 ? null : new DebCupResult(
+            int.Parse(text.Split(':')[0]), int.Parse(text.Split(':')[1].TrimEnd('.')), text.EndsWith('.') ? 1 : 0);
+
+    /// <summary>Übersicht aus Zeilen „Gruppe|links|rechts|Ergebnis1|Ergebnis2“.</summary>
+    private static DebCupOverview Overview(GameState game, int round, int played, int nextDay, string roundName, params string[] rows)
+    {
+        var parsed = rows.Select(r => r.Split('|')).ToList();
+        var groups = GroupOrder.Select(g => new DebCupGroup(
+            DebCupOverview.GroupTitle(GroupClasses[g]),
+            parsed.Where(p => p[0] == g).Select(p => new DebCupRow(
+                Club(game, p[1]), Club(game, p[2]), p.Skip(3).Take(played).Select(Result).ToList())).ToList())).ToList();
+        return new DebCupOverview(round, played, nextDay, groups, roundName);
+    }
+
+    [Scenario("pixel-debpokal")]
+    private static void DebCupGames(ScreenDriver d)
+    {
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var back = new MainMenuScreen(d.Host);
+        int[] Highlight(params string[] parts) => parts.Select(p => Club(game, p)).ToArray();
+
+        // folge13_02545: erste Runde nach zwei Terminen (zweite Saison oder später: ohne Rundenname), nächster Tag 29.9.
+        var folge13 = Overview(game, 0, 2, DayOf(DayEvents.DebCup, 29, 9), DebCupOverview.RoundTitle(0, GameState.FirstSeason + 1),
+            "BB|PREUSSEN BERLIN|ECD SAUERLAND|6:2|2:3.", "BB|LNER EC|SB ROSENHEIM|4:3|7:3",
+            "BZ|EC HANNOVER|SSELDORFER EG|2:3.|2:10", "BZ|SC RIESSERSEE|EV LANDSHUT|2:1|1:6",
+            "BZ|SC MEMMINGEN|ESC WOLFSBURG|1:8|1:10", "BZ|MANNHEIMER ERC|EHC FREIBURG|4:5.|1:5",
+            "BO|EV F|EC RATINGEN|0:10|1:9", "BO|TEV MIESBACH|KREFELDER EV|0:4|1:11", "BO|ERC SCHWENNINGEN|ES WEI|2:5|0:9",
+            "ZZ|EC KASSEL|SV BAYREUTH|6:4|6:1",
+            "ZO|HEC HEILBRONN|BERLINER SC|3:1|1:6", "ZO|EC BAD NAUHEIM|EHC 80 N|5:3|4:8", "ZO|TSV ERDING|EISB|0:10|1:6",
+            "ZO|ESC WEDEMARK|AUGSBURGER EV|1:3|1:4",
+            "OO|ESC FRANKFURT|ESSEN-WEST|3:2|3:5", "OO|ESV K|EV LANDSBERG|6:7.|3:10");
+        d.Host.Show(new DebCupGamesScreen(d.Host, back, folge13, Highlight("BERLINER SC")));
+        d.Move(0, 239); d.Save("folge13_02545");
+
+        // duell_s2a_01217: erste Runde der zweiten Saison vor dem ersten Termin (22.9.), zwei Manager
+        var duell2 = Overview(game, 0, 0, DayOf(DayEvents.DebCup, 22, 9), DebCupOverview.RoundTitle(0, GameState.FirstSeason + 1),
+            "BB|ESV KAUFBEUREN|EV LANDSHUT", "BB|EC HEDOS M|ESC WOLFSBURG",
+            "BZ|EHC 80 N|MANNHEIMER ERC", "BZ|ES WEI|SB ROSENHEIM", "BZ|EC KASSEL|KREFELDER EV", "BZ|ESC FRANKFURT|EC RATINGEN",
+            "BZ|ESSEN-WEST|PREUSSEN BERLIN",
+            "BO|TSV ERDING|LNER EC", "BO|SC RIESSERSEE|SSELDORFER EG", "BO|SCHALKER HAIE|ERC SCHWENNINGEN",
+            "ZZ|AUGSBURGER EV|EV LANDSBERG",
+            "ZO|ETC TIMMENDORF|SV BAYREUTH", "ZO|EC HARZ BRAUNLAGE|EHC FREIBURG",
+            "OO|EISB|EC BAD NAUHEIM", "OO|EC BAD T|EHC STRAUBING", "OO|1.EV WEIDEN|EV F");
+        d.Host.Show(new DebCupGamesScreen(d.Host, back, duell2, Highlight("SCHALKER HAIE", "EISB")));
+        d.Move(0, 239); d.Save("duell_s2a_01217");
+
+        // duell_s6a_03100: Achtelfinale vor dem ersten Termin (20.10.), drei leere Gruppen
+        var duell6 = Overview(game, 1, 0, DayOf(DayEvents.DebCup, 20, 10), DebCupOverview.RoundTitle(1, GameState.FirstSeason + 5),
+            "BB|EISB|ESV KAUFBEUREN",
+            "BZ|SCHALKER HAIE|PREUSSEN BERLIN", "BZ|EHC 80 N|MANNHEIMER ERC", "BZ|ESC FRANKFURT|EC HEDOS M",
+            "BZ|SSELDORFER EG|SB ROSENHEIM", "BZ|EHC FREIBURG|SV BAYREUTH", "BZ|SC MEMMINGEN|EC HANNOVER",
+            "ZZ|ECD SAUERLAND|ESSEN-WEST");
+        d.Host.Show(new DebCupGamesScreen(d.Host, back, duell6, Highlight("SCHALKER HAIE", "EISB")));
+        d.Move(0, 239); d.Save("duell_s6a_03100");
+
+        // eisbaeren_f60_02758: Endspiel (27.3.), fünf leere Gruppen
+        var final = Overview(game, 4, 0, DayOf(DayEvents.DebCup, 27, 3), DebCupOverview.RoundTitle(4, GameState.FirstSeason + 3),
+            "BB|AUGSBURGER EV|EISB");
+        d.Host.Show(new DebCupGamesScreen(d.Host, back, final, Highlight("EISB")));
+        d.Move(0, 239); d.Save("eisbaeren_f60_02758");
+    }
+}

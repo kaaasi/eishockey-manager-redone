@@ -17,8 +17,21 @@ public sealed record DebCupGroup(string Title, IReadOnlyList<DebCupRow> Rows);
 /// <summary>Zustand der Übersicht „DEB-Pokalspiele“ (nur gelesen aus <see cref="DebCup"/>, ändert nichts).</summary>
 /// <param name="DatesPlayed">Termine der laufenden Runde, die schon vorbei sind (Spalten der Ergebnisse; 0–3).</param>
 /// <param name="NextDay">Nächster Pokaltag ab dem aktuellen Tag, null wenn keiner mehr kommt.</param>
-public sealed record DebCupOverview(int Round, int DatesPlayed, int? NextDay, IReadOnlyList<DebCupGroup> Groups)
+/// <param name="RoundName">Rundenname in der Datumszeile (<see cref="RoundTitle"/>), leer in der ersten Runde ab der zweiten Saison.</param>
+public sealed record DebCupOverview(int Round, int DatesPlayed, int? NextDay, IReadOnlyList<DebCupGroup> Groups, string RoundName)
 {
+    /// <summary>
+    /// Rundenname der Datumszeile. [ORIGINAL] Datei 0x3322E–0x3324A: Index in die Namenstabelle DGROUP 0xB5C („“, „Erste Runde “,
+    /// „Achtelfinale “ … „Endspiel “) ist das Byte DGROUP 0x7AD. Es steht beim Programmstart auf 1, wird erst beim Ziehen der
+    /// Runden 2–5 auf die neue Rundennummer 2–5 gesetzt (0x348E2) und beim Saisonwechsel auf 0 gelöscht (Schleife 0x565D3–0x565EC
+    /// über DGROUP 0x7AC–0x7B0). Die erste Runde heißt also nur in der ersten Saison „Erste Runde“, danach bleibt der Name leer
+    /// (Videobilder: „Erste Runde“ `oberflaeche_0400` im ersten Spieljahr; nur das Datum `duell_s2a_01217`, `folge13_02545`).
+    /// [APPROX] Ein geladener Spielstand der ersten Saison zeigt hier ebenfalls „Erste Runde“ (ob das Original das Byte mitsichert,
+    /// ist nicht geprüft).
+    /// </summary>
+    public static string RoundTitle(int round, int season) =>
+        round == 0 && season != GameState.FirstSeason ? "" : DebCup.RoundNames[round];
+
     /// <summary>Spielklassen der Gruppen in der Reihenfolge des Originals (Klasse 1, 2, 4 wie <see cref="CupClass.Of"/>).</summary>
     private static readonly (int Higher, int Lower)[] GroupClasses = [(1, 1), (1, 2), (1, 4), (2, 2), (2, 4), (4, 4)];
 
@@ -41,7 +54,7 @@ public sealed record DebCupOverview(int Round, int DatesPlayed, int? NextDay, IR
             rows.Where(r => r.Key == g).Select(r => Row(r.Tie, dates, played)).ToList())).ToList();
 
         int? next = SeasonCalendar.DaysOf(DayEvents.DebCup).Where(d => d >= game.CurrentDay).Select(d => (int?)d).FirstOrDefault();
-        return new DebCupOverview(round, played, next, groups);
+        return new DebCupOverview(round, played, next, groups, RoundTitle(round, game.Season));
     }
 
     private static (int, int) KeyOf(GameState game, CupTie tie)
@@ -127,10 +140,17 @@ public sealed class DebCupGamesScreen : Screen
     public static readonly byte[] ResultColors = [1, 30, 1];
 
     private readonly Screen _back;
+    private readonly DebCupOverview? _fixed;
+    private readonly IReadOnlyCollection<int>? _highlighted;
 
     public DebCupGamesScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
-    public DebCupOverview? Overview => Host.Game is { } game ? DebCupOverview.Of(game) : null;
+    /// <summary>Feste Übersicht statt des laufenden Pokals, z. B. für Bildschirmfotos wie im Video; <paramref name="highlighted"/>
+    /// sind die gelb gezeigten Vereine (sonst die Vereine der Manager).</summary>
+    public DebCupGamesScreen(ScreenHost host, Screen back, DebCupOverview overview, IReadOnlyCollection<int>? highlighted = null)
+        : base(host) => (_back, _fixed, _highlighted) = (back, overview, highlighted);
+
+    public DebCupOverview? Overview => _fixed ?? (Host.Game is { } game ? DebCupOverview.Of(game) : null);
 
     /// <summary>Teile des Rahmens (ohne Zusatzteil), Oberkante und Gesamtteile für <paramref name="pairs"/> Paarungen und <paramref name="emptyGroups"/> leere Gruppen.</summary>
     public static (int Parts, int Y) FrameFor(int pairs, int emptyGroups)
@@ -139,6 +159,9 @@ public sealed class DebCupGamesScreen : Screen
         var h = Math.Min(11, (7 * (n + 4) + 60) / 19);
         return (Math.Max(h, 2) + 1, (217 - 19 * h) / 2);
     }
+
+    /// <summary>Überschrift einer Gruppe, wie sie gezeichnet wird (Großbuchstaben).</summary>
+    public static string GroupHeading(DebCupGroup group) => group.Title.ToUpperInvariant();
 
     public static int ResultX(int dates, int index) => 207 - 10 * (dates - 1) + 36 * index;
 
@@ -168,7 +191,7 @@ public sealed class DebCupGamesScreen : Screen
         s.Blit(trophies, TrophySource, 286, y + 4);
 
         CompetitionWidgets.Centered(s, Assets.Bold, 0, 319, y + 19, Title, Colors.White, DebCupDrawScreen.TitleShadow);
-        var heading = DebCup.RoundNames[overview.Round];
+        var heading = overview.RoundName;
         if (overview.NextDay is { } day)
         {
             var date = SeasonCalendar.LayoutDate(day);
@@ -176,12 +199,15 @@ public sealed class DebCupGamesScreen : Screen
         }
         CompetitionWidgets.Centered(s, Assets.Flow, 0, 319, y + 34, heading, Colors.TileBackground, Colors.Black);
 
-        var managers = game.Managers.Select(m => m.ClubIndex).ToHashSet();
+        var managers = (_highlighted ?? game.Managers.Select(m => m.ClubIndex)).ToHashSet();
         var mini = Assets.Mini;
         var line = y + 46;
         foreach (var group in overview.Groups)
         {
-            CompetitionWidgets.Centered(s, mini, 15, 183, line, group.Title, Colors.White, Colors.Black);
+            // [ORIGINAL] Die Überschrift steht in Großbuchstaben („BUNDESLIGA GEGEN ZWEITE LIGA:“), obwohl die Namen in DGROUP
+            // gemischt geschrieben sind (0x2094 ff.); belegt in allen vier Videobildern (folge13_02545, duell_s2a_01217,
+            // duell_s6a_03100, eisbaeren_f60_02758) und oberflaeche_0400.
+            CompetitionWidgets.Centered(s, mini, 15, 183, line, GroupHeading(group), Colors.White, Colors.Black);
             line += 8;
             if (group.Rows.Count == 0)
                 CompetitionWidgets.Centered(s, mini, 98, 100, line, "---------", Colors.White, null);
