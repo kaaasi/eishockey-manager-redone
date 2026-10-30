@@ -91,24 +91,70 @@ public sealed partial class ManagerFinance
 
 public sealed partial class GameState
 {
+    /// <summary>[ORIGINAL] 0x9698: Mit weniger als neun Aufgestellten gilt eine Mannschaft als nicht spielfähig.</summary>
+    public const int MinimumPlayers = 9;
+
+    /// <summary>[ORIGINAL] 0x5447D–0x544B2: Abzug 200.000 DM (DGROUP 0x79D/0x7A1: · 3 / 1 = 600.000 Drittel).</summary>
+    public const long ShortHandedPenalty = 200_000;
+
+    /// <summary>[ORIGINAL] Meldung aus DGROUP 0x54E9 (Aufruf 0x54462).</summary>
+    public const string ShortHandedMessage = "Weniger als neun Spieler!";
+
     /// <summary>
-    /// Spielabrechnung eines Spiels (Aufruf aus <see cref="SettleHomeMatch"/>). [ORIGINAL] 0x544C0 ff.: für jeden Manager
-    /// des Heimvereins Zuschauer und Eintritt (0x5464A), bei Ligaspielen danach die Zuschauerstatistik (0x54664).
-    /// Die Prüfung „Weniger als neun Spieler“ (0x54589/0x547AA) folgt in einem eigenen PR (Spur heimspiel-statistik).
+    /// Nicht spielfähig: weniger als <see cref="MinimumPlayers"/> Spieler aufgestellt. [ORIGINAL] 0x952C/0x9690: gezählt
+    /// werden über 0x149D:0x89 (Datei 0x388F6) die Kaderplätze mit Aufstellungsposition (+0x15) und „eingesetzt“
+    /// (+0x0A); bei weniger als neun setzt das Original den Managerwert 0x974B auf 100, sonst auf 20–40.
+    /// [APPROX] Im Remake zählen Aufgestellte immer als eingesetzt (<see cref="Club.Dressed"/>); verletzte oder
+    /// gesperrte Aufgestellte zählen nicht mit, weil sie im Remake nicht spielen. Ob das Original sie vorher aus der
+    /// Aufstellung nimmt, ist nicht belegt.
+    /// </summary>
+    public bool IsShortHanded(Club club) => club.Lineup.Players.Count(p => p.Available) < MinimumPlayers;
+
+    /// <summary>
+    /// Spielabrechnung eines Spiels für die Manager beider Vereine (Aufruf aus <see cref="SettleHomeMatch"/>).
+    /// [ORIGINAL] 0x544C0 ff., Schleife über die Manager in Indexreihenfolge:
+    /// <list type="bullet">
+    /// <item>Manager des Heimvereins nicht spielfähig (<see cref="IsShortHanded"/>): Meldung „Weniger als neun Spieler!“,
+    ///   200.000 DM Abzug (0x54420), keine Zuschauer, kein Eintritt, keine Statistik; die Abrechnung endet (0x54595).</item>
+    /// <item>sonst Zuschauer und Eintritt (0x5464A); bei Ligaspielen die Zuschauerstatistik (0x54664).</item>
+    /// <item>Manager des Gastvereins nicht spielfähig: dieselbe Strafe (0x547B6); die Abrechnung endet.</item>
+    /// </list>
+    /// [APPROX] Die Meldung kommt in den Posteingang statt als Fenster, der Abzug steht im Finanzbuch unter „Strafen“
+    /// (das Original zieht ihn ohne Buchungsart vom Konto ab). Die Spielwertung 0:2 bzw. 2:0 des Originals (Datei
+    /// 0x36DC5–0x36DE9) gehört zur Spielberechnung und fehlt hier (Folge-Issue).
     /// </summary>
     internal void SettleMatchGate(int home, int away, int tableMatchDay, int importance, bool leagueMatch)
     {
-        foreach (var manager in Managers.Where(m => m.ClubIndex == home))
+        foreach (var manager in Managers)
         {
-            var finance = Finance(manager);
-            var stadium = finance.Stadium;
-            var spectators = Spectators(Clubs[home], Clubs[away], stadium, tableMatchDay, FinanceRandom, importance, manager.Level);
-            var tickets = (long)spectators * stadium.TicketPrice;
-            Book(manager, FinanceCategory.Eintritt, tickets);
-            finance.LastHomeGame = (spectators, tickets);
-            if (leagueMatch)
-                finance.HomeStatistics.Add(spectators, away);
+            if (manager.ClubIndex == home)
+            {
+                if (IsShortHanded(Clubs[home]))
+                {
+                    PenalizeShortHanded(manager);
+                    return;
+                }
+                var finance = Finance(manager);
+                var stadium = finance.Stadium;
+                var spectators = Spectators(Clubs[home], Clubs[away], stadium, tableMatchDay, FinanceRandom, importance, manager.Level);
+                var tickets = (long)spectators * stadium.TicketPrice;
+                Book(manager, FinanceCategory.Eintritt, tickets);
+                finance.LastHomeGame = (spectators, tickets);
+                if (leagueMatch)
+                    finance.HomeStatistics.Add(spectators, away);
+            }
+            if (manager.ClubIndex == away && IsShortHanded(Clubs[away]))
+            {
+                PenalizeShortHanded(manager);
+                return;
+            }
         }
+    }
+
+    private void PenalizeShortHanded(Manager manager)
+    {
+        Notify(manager, ShortHandedMessage);
+        Book(manager, FinanceCategory.Strafen, -ShortHandedPenalty);
     }
 
     /// <summary>Saisonwechsel der Zuschauerstatistik. [ORIGINAL] 0x55A86 (Saisonwechsel, vor der neuen Kostenstufe 0x563C0).</summary>
