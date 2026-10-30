@@ -83,7 +83,7 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
   UI-Video bzw. die Eisbären-Reihe; (3) Mehrsaisonprobe mit begründeten Abdruckänderungen; (4) Schema nur bei neuem Zustand.
 - **Dateigrenzen:** `Core/Squad.Setup.cs`, `Core/NewGame.cs` (minimal), `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** in Arbeit (#187, Claude Code): Basis aus Tabelle DGROUP 0x4B42 (Liga × Start-Stärke) rekonstruiert, Tests und Abdruckbegründung im PR.
+- **Status:** umgesetzt, Review offen (#187): Basis aus Tabelle DGROUP 0x4B42 (Liga × Start-Stärke); Folgepunkt Szenario `pixel-verein` (Start-Stärke wie folge01) siehe PR.
 
 ### Spur `boerse-start` – Börse zu Spielbeginn (#169)
 
