@@ -227,6 +227,10 @@ oder eine vorhandene Datei geschrieben (außer `--force`).
 (Zuordnung zum Spielende `0x5A14` nicht belegt), `liga` (würde Verein und Tabelle betreffen), `staerke` (wirkt nur bei
 der Erzeugung der Mannschaften); unbekannte, doppelte und außerhalb des Bereichs liegende Werte ebenfalls.
 
+Belegt im Original (Nutzer, 30.10.2026, DOSBox 0.74-3): `hok patch FILE01.HOK FILE04.HOK konto=2000000 eintritt=20
+datum=20.09.1993 zaehler=11 spieltag=4` lädt ohne Meldung; Hauptmenü zeigt „Mittwoch, 20. Sept. 1993“, „4.Spieltag“ und
+2.000.000 DM, der Stadion-Bildschirm Eintritt 20 DM und Konto 2.000.000 DM, übrige Stadionwerte wie FILE01.
+
 Grenzen: `datum`, `zaehler` und `spieltag` ändern **nur** diese Zähler, nicht Tabelle, Ergebnisse (`0xA0CB`), Form oder
 Kader; Datum und Spieltag müssen vom Nutzer zusammenpassend gewählt werden (FILE03: 20.09.1993 ↔ Zähler 11 ↔ Spieltag 4).
 
