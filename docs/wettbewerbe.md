@@ -322,7 +322,20 @@ Unterschiede zu Modus 1: keine Ernennung zu Saisonbeginn und kein Sprung – die
 erst am 13. April und nur für einen Manager unter den ersten fünf der 1. Liga; das Vereinsmenü bleibt, der Bundestrainer
 bekommt an WM-Tagen einen zusätzlichen Zug; ohne Ernennung spielt Deutschland mit ausgewürfelten Werten. Spielstand
 Schema 5 (`_nationalTurn`, Migration `SaveGame.Migration4.cs`). Bildschirmfotos: `emtool screens gamedata ~/work/screens
-bundestrainer-modus4` (kein Videobeleg für Modus 4).
+bundestrainer-modus4`.
+
+**Videobeleg Modus 4 (Spur `pixel-verein`, Eisbären-Reihe Folge 24, 14. April 2005):** Ablauf
+`emtool screens gamedata ~/work/screens pixel-verein-bundestrainer` (Düsseldorfer EG, Saison bis zum ersten Zug des
+Bundestrainers). Kachelsperren im Zug „Manager 5“ stimmen mit dem Video überein: Reihe Manager alles gesperrt
+(`eisbaeren_f24_00049`), Mannschaft frei bis auf „Verträge“ (`_00051`), Statistiken nur „WM-Statistik“ (`_00053`),
+Tabellen nur „WM“ (`_00057`). Pixelvergleich der Kachelreihen (Infoleiste, Moderator unten links maskiert, Verschiebung
+und Unschärfe je Bild angepasst): mittlere Abweichung 7,9–8,1, 0,7 % der Pixel über 40.
+
+| Befund | Original | Stand |
+|---|---|---|
+| PV-04 Infoleiste vor einem WM-Spiel: Symbol „WM“ (Weltkugel) auch nach der Vereinssaison, **kein** Heim-/Auswärtssymbol – in beiden Modi des Bundestrainers | `eisbaeren_f24_00039`, `_00115`; `bundestrainer_00030`, `_00101` | behoben (`MainMenuScreen.cs`), Tests `PixelVereinTests.CoachInfoBar_*` |
+| PV-03 Lampen der Infoleiste sind Warnlampen des Managers am Zug; beim Bundestrainer Lampen 2–5 grün, Lampe 0 rot ohne vollständige WM-Aufstellung (im Video rot) | em.exe 0x42996–0x42CA6, `eisbaeren_f24_00115` | behoben (`Screens/MenuLamps.cs`) |
+| PV-08 Ohne Nachricht keine Nachrichtenleiste (Hintergrund sichtbar) | `eisbaeren_f24_00040`, `_00424` | offen (#170) |
 
 Offen (außerhalb dieser Spur): Die Tabellensuche setzt bei jedem Manager unter den ersten fünf zusätzlich Statusbit 0x40
 (Manager-Feld 0x974E, außer Modus 2, 0x553BD–0x553F2) → Saisonende-Symbol 8 (`docs/finanzen-rekonstruktion.md`), im

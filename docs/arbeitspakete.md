@@ -111,7 +111,7 @@ fortlaufend (wie Runde 5, Migration 4 → 5 → 6).
   `HighscoreScreen.cs`, `UI/Screens/Competitions/NationalMenu.cs`, `UI/Screens/SetupScreen.cs`; `MenuTiles.cs`/`MainMenuScreen.cs`
   nur minimal und begründet; `Tools/Scenarios/` (eigene Datei), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** PR #164 zum Review (Claude Code): PV-01 bis PV-04 behoben, Vermessung in `docs/anforderungen/bildschirme.md`; offen #168, #169, #170.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
