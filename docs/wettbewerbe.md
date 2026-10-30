@@ -60,6 +60,10 @@ Leere Ziehung (`03_debpokal_leer`) gegen `oberflaeche_0345` ohne Dialog: 9,4 / 2
 Fragefenster vermessen am Video (`emtool screens gamedata <ziel> debpokal-auslosung`, Bild `01_frage_spielstart` gegen
 `oberflaeche_0346`): Rahmen orange x 77–240, y 109–181 wie im Video; „?“-Felder, Überschrift, Zeilen und Knöpfe beste
 Verschiebung (0 | 0); mittlere Abweichung im Kasten 12,7 Grauwerte, 8,4 % der Pixel über 40 (Schriftkanten der Zeilen).
+Weitere Vorlagebilder seit den Reihen `folge01` … `folge29` und `videos-roh-2` (`docs/referenz-videos.md`): Frage
+`folge01_00217`, `folge08_00102`, `duell_s2a_02651`, `eisbaeren_f51_01451`; „DEB-Pokalspiele“ mit Ergebnissen
+`folge13_02545` (beide Termine); nur Paarungen ohne Ergebnisse `duell_s2a_01217` (erste Runde), `duell_s6a_03100`
+(Achtelfinale) und `eisbaeren_f60_02758` (Endspiel).
 
 ## Europapokal (`Core/CupsEurope.cs`, `Core/CupsGroup.cs`)
 
@@ -82,7 +86,7 @@ Zahlen mit Mindestbreite füllen fehlende Stellen mit der Breite der Ziffer 0 au
 Pixelvergleich `emtool screens gamedata ~/work/screens europapokal`, Bild `00_gruppe1_video_13_11` gegen
 `oberflaeche_1311` (Person und Mauszeiger maskiert): mittlere Abweichung 7,2, 1,9 % der Pixel über 40.
 
-**Offen:** Ergebnisse gespielter Begegnungen (Lage aus 0x3248 nicht im Video belegt).
+**Offen:** Ergebnisse gespielter Begegnungen (Lage aus 0x3248 nicht im Video belegt). Vorlagebilder mit Ergebnissen seit der Reihe `folge04` (`folge04_01241`–`01247`) und `folge20` (`folge20_02316`, `02318`).
 
 ## Weltmeisterschaft (`Core/CupsWorld.cs`)
 
@@ -343,15 +347,35 @@ Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**
   00535–00544, 00559–00602), „WM-Endrundenspiele“ (00642–00645, 00647–00653, 00719–00725, 00744; dazwischen „Spiele laufen“ 00646), Weltmeister `kb\16` (00745–00809);
   Gegner-Fenster aus der Infoleiste 00417, 00610, 00657–00659.
 
-**Weiterhin fehlen:** Spielvorbereitung mit den Modusknöpfen (nur „Die Oberfläche von EM“ 2:13–2:30), Infoleiste am
-Saisonbeginn, die Kachelreihen Statistiken, Tabellen und Paarungen (im Video nicht geöffnet), „Tabelle WM“ über die
-Tabellen-Kachel (nur die Gruppentabellen nach dem Spieltag), die geöffneten Kacheln „Tabelle DEB-Pokal“ und
-„Tabelle Europapokal“, WM-Statistik, Saisonende im Modus „nur Weltkugel“ (das Video endet mit dem Weltmeister-Bild) und
-Torszenen.
+**Weiterhin fehlen** (Stand nach `folge01` … `folge29` und `videos-roh-2`, `docs/referenz-videos.md`; ✅ = erledigt,
+◐ = nur teilweise belegt). `videos-roh-2` zeigt den Modus **Liga mit Weltkugel** (Bundestrainer neben dem Verein), nicht
+„nur Weltkugel“:
+
+- ✅ Spielvorbereitung mit den Modusknöpfen – `folge01_00000`–`00151`, `folge08_00000`–`00052`, `speedrun_t1_00056`
+  (außerdem „Die Oberfläche von EM“ 2:13–2:30).
+- ◐ Infoleiste am Saisonbeginn – „Vor dem ersten Spieltag“ im Vereinsmodus `folge01_00221`; Hauptmenü des Bundestrainers
+  am 14. April in Liga mit Weltkugel `eisbaeren_f24_00115`; im Modus „nur Weltkugel“ offen.
+- ◐ Kachelreihen Statistiken, Tabellen und Paarungen – Vereinsmodus mit gesperrten WM-Kacheln (`folge01_00526`,
+  `folge03_00018`, `folge06_01251`, `duell_s2a_01203`); Liga mit Weltkugel mit **offenen** WM-Kacheln: Tabellen/Paarungen
+  `eisbaeren_f01_01431`, Stärken `eisbaeren_f01_01430`, Statistiken `eisbaeren_f01_01011`; Sperren im Modus
+  „nur Weltkugel“ weiter nur aus der Reihe `bundestrainer`.
+- ◐ „Tabelle WM“ – Gruppentabellen nach dem Spieltag vielfach (`eisbaeren_f35_00531`); ob über die Tabellen-Kachel
+  geöffnet, ist im Kapitelindex nicht unterschieden.
+- ✅ Die geöffneten Kacheln „Tabelle DEB-Pokal“ (Übersicht „DEB-Pokalspiele“: mit Ergebnissen `folge13_02545`, ohne Ergebnisse
+  `duell_s2a_01217`, Endspiel `eisbaeren_f60_02758`) und „Tabelle Europapokal“ (`folge04_01241`–`01247`, `eisbaeren_f51_03346`,
+  Endrunde `eisbaeren_f58_01323`).
+- ✅ WM-Statistik – `eisbaeren_f07_03843`, `eisbaeren_f56_01126`.
+- ✅ WM-Endrunde (K.-o.-Ansicht „WM-Endrundenspiele“) – `eisbaeren_f35_00646`, `eisbaeren_f44_01330`.
+- Saisonende im Modus „nur Weltkugel“ – offen (Saisonende im Vereinsmodus vielfach, z. B. `folge03_01807`).
+- ✅ Torszenen – `eisbaeren_f01_01149`–`01234`, `duell_s2b_00503`, `duell_s4c_02052`; Schalter in den Einstellungen
+  `speedrun_t2_04024`.
+- Highscore am Spielende – offen (in keinem Video).
 
 Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien
-Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Ein Bildschirm „Paarungen Liga“ ist in
-den Referenzvideos nicht zu sehen (seit Spur `paarungen-liga` allein aus em.exe gebaut, Abschnitt „Paarungen Liga“ unten). Handbuchkorrektur im `infofile`: WM-Platzierungsspiele 9–12 (Verlierer/Sieger der
+Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Bildschirm „Paarungen Liga“: seit Spur
+`paarungen-liga` allein aus em.exe gebaut (Abschnitt „Paarungen Liga“ unten); ✅ Videobilder für einen Pixelvergleich gibt
+es seit den neuen Reihen: Oberliga `folge06_01256`, `duell_s2a_01138`, Zweite Liga `folge17_02406`, `eisbaeren_f14_01518`,
+Bundesliga `folge21_02149`, `folge29_00152`, 60. Minute `eisbaeren_f40_01833`. Handbuchkorrektur im `infofile`: WM-Platzierungsspiele 9–12 (Verlierer/Sieger der
 Spiele 5–8).
 
 ## Paarungen Liga (Spur `paarungen-liga`, Runde 5)
