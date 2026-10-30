@@ -211,8 +211,8 @@ public static class OriginalMatch
 
     /// <summary>
     /// Strafe in dieser Minute? [ORIGINAL] Datei 0x358B7–0x3592D (Aufruf jede Minute für jede Mannschaft, 0x3808E):
-    /// Strafe, wenn random(0, 12) = 0 oder random(0, 110 − Einsatz) = 0 (der zweite Zug nur, wenn der erste nicht 0 ist).
-    /// Ist der erste Platz der Strafbank frei, wird es mit 1/16 (random(0, 15) = 0) eine 5-Minuten-Strafe.
+    /// Strafe, wenn lrandom(0, 12) = 0 oder lrandom(0, 110 − Einsatz) = 0 (der zweite Zug nur, wenn der erste nicht 0 ist).
+    /// Ist der erste Platz der Strafbank frei, wird es mit 1/16 (lrandom(0, 15) = 0) eine 5-Minuten-Strafe.
     /// Einsatz = Vereinsfeld 0x26, beim Managerverein + Managerwert 0x974B − 20, begrenzt auf 0 … 100.
     /// </summary>
     /// <returns>0 (keine Strafe), 2 oder 5 Minuten.</returns>

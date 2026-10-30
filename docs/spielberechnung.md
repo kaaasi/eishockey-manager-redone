@@ -40,7 +40,7 @@ Je Paarung (Heim h, Gast g), übersprungen bei gewerteten Spielen (Ergebnisbyte 
 3. Torchancen `0x9F5C(h, g, Minute, Drittelende)` (Abschnitt 3, Minutenform) → Bit 0 Heim, Bit 1 Gast; je gesetztem Bit
    Abschluss `0xA484(Liga, Paarung, h, g, Seite, Minute, …)` (Abschnitt 4). Steht im Ergebnisbyte schon 0x1E, wird nicht
    neu gezogen.
-4. Strafbank herunterzählen `0x874D` für beide.
+4. Torhüterminuten der Managervereine `0x874D` für beide (Abschnitt 8; die Strafbank zählt erst 0x35818 herunter).
 5. Nur Managerpaarungen: Energie `0x87F7`, Seiten zufällig tauschen (random(0, 1)), in ungeraden Minuten Taktik der
    Computervereine `0x80CB`, Reihenwechsel `0x8EF2` (je Seite), in geraden Minuten Spielstandtaktik `0x939A`.
 6. Außer in Minute 60 und 70: **Strafen** `0x35818(h, g, g)` und `0x35818(g, h, h)` – für jede Paarung (Abschnitt 6).
@@ -82,20 +82,42 @@ sonst:  (Code 1 oder Drittelende > 60): beide + 1
 T = 2, 2, 2, 2, 2, 2, 3 × 9, 4 × 5 (Index 0 … 19); besser(x, y) = (random(0, 1) ≠ 0 und x > y) ? x : y.
 Der Heimvorteil steckt im Zweig d ≤ 0: Bei gleicher Stärke 4,5 : 2,5 im schnellen Weg.
 
-**Schneller Weg (0x3731F–0x377A3, nur Pokale ohne Manager und ohne Anzeige):** S nach `0x368B1(…, 1, 0, 0, 1)`, +6 für
-Vereine (Index < 0x40); Differenz der Drittel |S_h/3 − S_g/3|, höchstens 4; Endstand aus `0x9F5C(h, g, 0, 60)`, dann
-Glättung mit lrandom (Datei 0x374EF–0x37696: Tore des Schwächeren verringern/erhöhen, bis Stärke- und Torreihenfolge
-passen) und bei K.-o.-Gleichstand Zusatztore random(0, 2) je Seite + 30 als Penaltymarke (0x376F0–0x377A3).
-Noch nicht übernommen.
+**Schneller Weg (0x3731F–0x377A3, nur Pokale ohne Manager und ohne Anzeige; `OriginalMinutes.FastCupResult`):**
+s = `0x368B1(…, 1, 0, 0, 1)` + 6 für Vereine (Index < 0x40), k = min(4, |s_H/3 − s_G/3|) (0x374AF, `0x120:0x61`).
+Endstand (h, g) aus `0x9F5C(h, g, 0, 60)`. Glättung (lrandom): ohne WM mit 1/4 – sonst bei stärkerem Gast mit 2/3 –
+h −= lrandom(0, h); dann mit 1/4 – sonst bei stärkerem Gast mit 1/2 – g += lrandom(0, 4). In der WM (`[0x12B]`) nur der
+Heimwert: h −= lrandom(0, h), h += lrandom(0, h) (gleiche Bedingung) bzw. h += lrandom(0, h), h −= lrandom(0, h) (mit 1/4,
+sonst bei stärkerem Heim mit 1/2). Dann lrandom(0, k) ≠ 0 und h ≤ g bei stärkerem Heim bzw. h ≥ g bei stärkerem Gast →
+alles neu ab 0x9F5C (0x37665–0x37696). K.-o.-Gleichstand (`0xE8:0x70`): random(0, 2) je Seite dazu, bis ungleich,
+Heim + 30 als Penaltymarke (0x376F0–0x377A3).
 
-## 4. Abschluss 0xA484 (Torhüter, Tor, Torschütze) – noch nicht übernommen
+## 4. Abschluss 0xA484 (`OriginalMinutes.Shot`)
 
-Teilweise gelesen: Stärke Angreifer `0x368B1(…, Modus 0/2)` gegen Verteidiger, Vergleich mit lrandom(550, 850),
-Spielstand-Abhängigkeit (0x1D … 0x3B), WM-Zuschlag `[0x12B]`; danach Ergebnisbyte + 1 (Liga 0xA0BF ff., Pokale 0x5B0B),
-Managerverein: Torschütze und Vorlage über `0x541D9` (je Tor genau ein Torschütze und eine Vorlage, Auswahl
-`0x386D1`: aufgestellter Feldspieler, in der Managerpaarung nur aus der Reihe auf dem Eis, Gewicht aus Spielerwerten,
-Saisontoren · 46, Sturm + 700, Annahme bei random(0, 3000) < Gewicht), Gegentor des Torhüters auf dem Eis `0xA3F7`
-(nur Liga). Rest offen (Teil 2).
+`0xA484(Wettbewerb, Paarung, h, g, Seite, Minute, Anzeige)`, je gesetztem Chancenbit einmal (Heim zuerst):
+
+1. Stärken aus dem Puffer der Minute (`0x368B1(…, Modus, Minute, 0, 0)`): H0/H2 Heim in Modus 0 (85/15) und 2 (25/75),
+   G0/G2 Gast. dH = (H2 − G0) / 3, dG = (G2 − H0) / 3 (C-Division).
+2. **Schwäche** w = 1, wenn lrandom(550, 850) > H0 + G2 + G0 + H2, sonst 0 (Zug immer, Datei 0xA57F–0xA5AB).
+3. Spielstand aus dem Ergebnisbyte (Liga DGROUP 0xA0BF + 0x210 · Wettbewerb + 0xC · Spieltag + Paarung, Pokale 0x5B0B).
+   Minute > 60 und Heimbyte < 10 → kein Tor (Datei 0xA642). Gedeutet als Marke der Spiele in der Verlängerung: die
+   Pokale tragen bei Gleichstand + 0x1E ein (0x32AA3); nur markierte Spiele treffen in der Verlängerung. Das Remake
+   rechnet die Verlängerung nur für unentschiedene Spiele und setzt die Marke intern (`[APPROX]` Deutung).
+4. Kein Tor, wenn die Schützenseite schon 29 oder ≥ 59 Tore im Byte hat (0xA6DA, 0xA78F).
+5. **Heim:** lrandom(0, 2w + 4) ≤ 1 → kein Tor. **Gast:** lrandom(0, 3 · WM + 2w + 1) ≤ WM → kein Tor.
+6. d = dH bzw. dG. d ≥ 0: Tor, wenn lrandom(0, d / 4 + w + 2) ≠ 0. d < 0: Tor, wenn lrandom(0, −d / 4 + 1) = 0, sonst
+   wenn lrandom(0, 6 − w) = 0.
+7. Hat die verteidigende Mannschaft einen Manager und ist DGROUP 0xDE15 + Manager = 0, ist **jeder** Abschluss ein Tor
+   (0xA83E–0xA883; Bedeutung des Bytes offen, vermutlich „kein Torhüter aufgestellt“; Remake `LiveTeam.OpenNet`).
+8. Tor (0xA88C ff.): bei Unterzahl der verteidigenden Mannschaft (`0x35540(…, 0)` > 0) `0x35691(…, 0, 0)` – eine Strafe
+   endet (Abschnitt 6). Danach Manager-Zähler (Über-/Unterzahltore +0x177 + 8/0xA, Tore nach Feldspielerlage +0x177 + 2·k,
+   ausgenommen 5 gegen 6), Gegentor des Torhüters auf dem Eis `0xA3F7` (nur Managervereine), Ergebnisbyte + 1.
+9. Torschütze: in der Managerpaarung über die Torszene `0x53C57` (Anzeige-Overlay), sonst für Managervereine
+   `0x541D9(Verein, 1, 0)`: Manager mit mehr als 3 fitten Spielern (`0x4BE17`); Torschütze `0x386D1(Manager, 0, 1)`,
+   Vorlage `0x386D1(Manager, 1, 1)` bis zu einem anderen Spieler (ohne Grenze); Vorlage: Spielerfeld 0x1F + 1 (jedes
+   Spiel); Tore nur bei `[0xD0BF]` = 0: Spielerfeld 0x1B + 1 (bis 255), Kaderplatz +0x22 + 2·`[0xD0BF]` (Wort) und
+   +0x3 + `[0xD0BF]` (Byte). Computervereine bekommen ihre Tore erst nach dem Spieltag (Abschnitt 5).
+
+Noch offen: Auswahl `0x386D1` im Einzelnen, Bedeutung von `[0xD0BF]` (vermutlich Wettbewerbsart 0 = Liga).
 
 ## 5. Statistik der Computervereine nach dem Spieltag 0x52CF (`MatchStatistics`)
 
@@ -111,23 +133,38 @@ Für jede Paarung `0x5028(Verein, Tore, Gegentore)` für Heim und Gast; nur Vere
   g ≠ 0 und n > random(0, 1) + 2. Erster Treffer Tore + 1 (Feld 0x1B), zweiter Vorlage + 1 (Feld 0x1F). Höchstens eine
   Vorlage je Tor.
 
-## 6. Strafen 0x35818 (`OriginalMatch.PenaltyMinutes`, Rest Teil 2)
+## 6. Strafen 0x35818 und Strafbank 0x35540/0x35691 (`OriginalMinutes.Penalty`, `PenaltyBox`)
+
+**Strafbank** (Vereinsfeld 0x33): Platz 0 in Bits 0–2 (Restminuten), Marke Bit 3; Platz 1 in Bits 4–6, Marke Bit 7.
+Markierte Strafen (5 Minuten, Code 13 = 8 + 5) beendet kein Gegentor. Feldspieler auf dem Eis: Vereinsfeld 0x32.
+
+- `0x35540(Verein, 1)` zählt herunter und liefert die belegten Plätze: Platz 0 − 1 (Marke bleibt); von 1 auf 0 →
+  `0x35691(Verein, 0, 1)`. Dann Platz 1 − 1; von 1 auf 0 → `0x35691(Verein, 1, 1)`; sonst rückt Platz 1 nach Platz 0
+  (Marke Bit 7 → Bit 3), wenn Platz 0 frei ist. Mit Schalter 0 nur zählen.
+- `0x35691(Verein, Platz, Zwang)`: Platz 0 ohne Zwang: ist Platz 0 markiert oder Platz 1 belegt, wird Platz 1 frei
+  (falls nicht markiert) – auch wenn Platz 0 eine gewöhnliche 2-Minuten-Strafe ist (übernommen); sonst Platz 0 frei
+  (Platz 1 rückt mit Marke nach). Feldspieler + 1; beim Managerverein Spieler zurück in die Reihe (DGROUP 0xD096 ff.)
+  und `0x38A36`.
+- Das Herunterzählen geschieht **nur** am Anfang von 0x35818, also je Minute (außer 60/70) und Mannschaft einmal und
+  bei einer Kettenstrafe (unten) für den Gegner ein zweites Mal. Nach dem Spiel räumt 0x377F7 die Strafbänke der
+  Managervereine (Herunterzählen bis leer, ≤ 2000 Runden).
 
 `0x35818(Verein, Gegner, Gegner)` jede Minute für beide Seiten (außer Minute 60/70):
 
-- Strafbankplatz `0x35540(Verein, 1)`: 0 oder 1 frei, sonst keine Strafe.
+- Herunterzählen (oben); sind danach 2 Plätze belegt: keine Strafe (kein Zug).
 - Einsatz E = Vereinsfeld 0x26 (Automatik 0x8365: 60 oder 40 + Zuschlag), beim Managerverein + Byte DGROUP
-  0x974B + 0x1AF · (Vereinsfeld 0x16) − 20 (Vereinsfeld 0x16 = Manager + 1; Bedeutung offen), begrenzt 0 … 100. **Strafe, wenn random(0, 12) = 0 oder random(0, 110 − E) = 0** (je Minute 1/13 + 12/13 · 1/(111 − E)).
-- Managerverein mit weniger als 8 fitten Spielern (`0x120:0x66`): keine Strafe.
-- Art: auf Platz 0 mit random(0, 15) = 0 fünf Minuten (Code 13), sonst zwei (Code 2).
-- Vereinsfeld 0x32 − 1 (Feldspieler), Strafuhr in 0x33 (4 Bit je Platz). Liga: Strafminuten des Vereins
+  0x974B + 0x1AF · (Vereinsfeld 0x16) − 20 (Vereinsfeld 0x16 = Manager + 1; Bedeutung offen), begrenzt 0 … 100. **Strafe, wenn lrandom(0, 12) = 0 oder lrandom(0, 110 − E) = 0** (je Minute 1/13 + 12/13 · 1/(111 − E)).
+- Managerverein mit weniger als 8 fitten Spielern (`0x120:0x66`): keine Strafe (nach dem Zug).
+- Art: auf Platz 0 (Strafbank leer) mit lrandom(0, 15) = 0 fünf Minuten (Code 13), sonst zwei (Code 2).
+- Feldspieler − 1, Code auf Platz „belegte Plätze“ (0x35941–0x35963). Liga: Strafminuten des Vereins
   DGROUP 0x82A1 + 0x50 · Verein (Wort). Managerpaarung: Spielstrafminuten DGROUP 0xA845 ff. für die Anzeige.
 - Managerverein: Spieler `0x378C5(Manager)` (100 = keiner); Feldspieler: Kaderplatz +0 (5 min) bzw. +1 (2 min) + 1,
   Platz auf der Strafbank DGROUP 0xD095 ff., Kaderplatz +0xA = 0 (vom Eis), +0xD = Art. Über-/Unterzahlzähler des
   Managers (+0x177 + 8 bzw. 0x97DC), Reporter `0x130:0x48`.
 - Computervereine: keine Strafen je Spieler (nur Vereinsminuten).
-- Mit 1/4 (random(0, 3) = 0, nur auf Platz 0, nicht gegen sich selbst) zusätzlich eine Strafe für den Gegner
-  (rekursiv; bleibt sie aus, wird der Überzahlzähler zurückgenommen).
+- Kette: lrandom(0, 3) (Zug nur, wenn Verein ≠ Gegner) = 0 und Strafbank vorher leer → `0x35818(Gegner, Gegner,
+  Verein)`; dort Verein = Gegner, also keine weitere Kette. Bleibt die Strafe aus, wird der Überzahlzähler des Managers
+  zurückgenommen.
 
 ## 7. Stärke im Spiel 0x368B1 / 0x977F (`OriginalMatch.TeamStrength`, `LineValues`)
 
@@ -149,11 +186,48 @@ Managerpaarung werden die Werte aus den eingesetzten Spielern der Reihe gebildet
 | Schritt 1 (Anzeige unabhängig) | belegt | – |
 | Torbudget/Chancen 0x9F5C | `[ORIGINAL]` | `OriginalMatch.FullResult`, `MinuteChances` |
 | Stärke 0x368B1, Reihenwerte 0x977F (Computerteil) | `[ORIGINAL]` | `OriginalMatch.TeamStrength`, `LineValues` |
-| Strafwurf 0x35818 | `[ORIGINAL]` (nur der Wurf) | `OriginalMatch.PenaltyMinutes` |
+| Abschluss 0xA484 (ohne Manager-Zähler, Torschütze) | `[ORIGINAL]`, Verlängerungsmarke gedeutet | `OriginalMinutes.Shot` |
+| Strafbank 0x35540/0x35691 | `[ORIGINAL]` | `PenaltyBox` |
+| Strafen 0x35818 (Vereine ohne Manager, mit Kette) | `[ORIGINAL]` | `OriginalMinutes.Penalty`, `OriginalMatch.PenaltyMinutes` |
+| Minutenablauf einer Paarung ohne Manager | `[ORIGINAL]`, Verlängerung ohne Marken `[APPROX]` | `OriginalMinutes.Play`, `PlayMinute` |
 | Statistik Computervereine 0x5028/0x4DB6 | `[ORIGINAL]`, Rollenwert und Spielerreihenfolge `[APPROX]` | `MatchStatistics` |
 | Zähler Torhüter (Gegentore, Minuten) | Schema 10 | `Player.GoalsAgainst`, `Player.GoalieMinutes` |
-| Abschluss 0xA484, Torschütze 0x541D9/0x386D1, Strafbank, Energie, Reihenwechsel, Verletzungen, schneller Weg der Pokale | offen | Teil 2 |
+| Managervereine: Torschütze 0x386D1, Strafspieler 0x378C5, Einsatzzuschlag, Energie 0x87F7, Reihenwechsel 0x8EF2, Taktik 0x939A/0x80CB, Torhüterminuten 0x874D, Gegentor 0xA3F7 | offen | Teil 3 |
+| Schneller Weg der Pokale mit Glättung 0x3731F | `[ORIGINAL]` | `OriginalMinutes.FastCupResult` |
+| Verletzungen im Spiel | offen | Teil 3 |
 | Anschluss an Spieltage, Sollwerte | offen | Teil 3 (auf integriertem Stand, `docs/arbeitspakete.md`) |
 
 Rollenwert (Spielerfeld 0x18) führt das Remake nicht: `[APPROX]` Verteidiger 33, Stürmer 83 (Mitte der Spannen).
 Verletzungen im Spiel sind noch nicht gesucht (Kandidat: Kaderplatz-Felder in 0x548A8 ff.).
+
+`0x874D` ist nicht das Herunterzählen der Strafbank (so in Teil 1 vermutet), sondern zählt je Minute für die
+Managervereine die Minuten der Spieler auf dem Eis mit Spielerfeld 0x18 = 0 (Torhüter): Spielerfeld 0x1F + 1.
+
+## 9. Minutenablauf ohne Manager (`OriginalMinutes.Play`) und Größenordnungen
+
+Je Minute: Stärken beider Mannschaften (Reihenwerte mit Feldspielerdifferenz, Modus 1/0/2) → `MinuteChances` →
+Abschluss Heim, dann Gast → `Penalty(Heim, Gast)`, `Penalty(Gast, Heim)` außer in Minute 60/70. Drittel 1–20, 21–40,
+41–60; K.-o. bei Gleichstand 61–65, 66–70 (danach Penaltyschießen beim Aufrufer).
+
+Probe mit gleichen Teamwerten (`LiveTeam`, je 5000 Spiele; die Abbildung der Vereine des Remakes auf die Teamwerte
+folgt in Teil 3, die Zahlen sind deshalb nur Größenordnungen):
+
+| Teamwerte / Einsatz | Stärke | Tore je Spiel (Heim) | Strafminuten je Spiel (beide) | 5-Minuten-Strafen | Unentschieden |
+|---|---:|---:|---:|---:|---:|
+| 60 / 60 | 175 | 8,1 (5,2) | 24,9 | 0,65 | 11 % |
+| 50 / 40 | 141 | 9,4 (5,9) | 23,6 | 0,63 | 10 % |
+| 70 / 80 | 211 | 6,7 (4,5) | 28,0 | 0,73 | 10 % |
+| 40 gegen 80 / 60 | 111 : … | 7,2 (0,4) | 24,9 | 0,66 | 0,3 % |
+
+Auffällig: schwache Mannschaften treffen öfter (Schwäche w), der Heimvorteil ist groß. Vor dem Anschluss gegen die
+Videos prüfen (Tore je Spiel, Strafminuten).
+
+## 10. Felder für Folgearbeiten (erst nach dem Merge anschließen)
+
+- **Länderwerte nach Freundschaftsspielen (#193):** braucht nur das Endergebnis – `MatchReport.HomeGoals/AwayGoals`
+  (und `Overtime`), wie bisher `MatchEngine.Play`.
+- **Energieabzug je Spiel:** die Rechnung liefert je Mannschaft `LiveTeam.Effort` (Einsatz), die Reihe auf dem Eis
+  (`DefenseLine`, `AttackLine`) und je Minute die Lage (`PenaltyBox.Skaters`); je Spieler gibt es im Remake noch keine
+  Eiszeit. Das Original zieht die Energie in `0x87F7` je Minute nur in Managerpaarungen ab (noch nicht gelesen).
+- **Statistik je Spieler:** `MatchReport.Events` (Tor: Minute, Seite; Strafe: Minute, Seite, 2/5) und
+  `LiveTeam.PenaltyMinutes`; Computervereine verteilen Tore weiter über `MatchStatistics` aus dem Endstand.
