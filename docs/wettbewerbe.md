@@ -197,7 +197,7 @@ Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader a
 | `[APPROX]` Kandidaten: alle deutschen Spieler (keine Ausländer) der Ligavereine und des Transfermarkts, nach Summe absteigend – das Original listet seine 200 ausführlich geführten Spieler (Kader der Manager, Transfermarkt) | 0x3C5C9 |
 | `[APPROX]` Stärke des Nationalteams = Mittel von (Kondition + Technik) / 2 über Torhüter und Reihen 1–3 der Aufstellung (16 Plätze, Lücken 0) plus Taktikzuschlag; ohne Aufstellung die Automatik (bester Torhüter, je Reihe 2 Verteidiger + 3 Stürmer). Aufstellung und Taktik: Abschnitt „Aufstellung und Taktik des Nationalteams“ | – |
 | `[APPROX]` Felder 0x10–0x12 des Kaderplatzes als Kondition, Technik, Form gedeutet (Spaltenfolge „KO TE FO“) | – |
-| `[APPROX]` Energie 70 beim Öffnen von „WM Vorbereitung“ (Kaderfeld 0x13) nicht übernommen: Bildschirme ändern beim Öffnen nichts | 0x3BB51; DOSBox: nach drei Freundschaftsspielen Energie aller Eingesetzten 46, Datum unverändert, Deutschland +3/+3/+5 (`docs/dosbox-befunde.md`) |
+| `[APPROX]` Energie 70 aller Kaderspieler (Kaderfeld 0x13) setzt das Original beim Öffnen von „WM Vorbereitung“, das Remake beim ersten Freundschaftsspiel der Saison vor dem Spiel (Bildschirme ändern beim Öffnen nichts; Nutzerentscheidung PR #189). Erneutes Öffnen setzt im Original wieder 70, im Remake nicht; Abzug je Spiel fehlt (Spur `spielberechnung`) | 0x3BB51; DOSBox: nach drei Freundschaftsspielen Energie aller Eingesetzten 46, Datum unverändert, Deutschland +3/+3/+5 (`docs/dosbox-befunde.md`) |
 
 Bildschirme (Aufbau aus em.exe; Videobilder seit der Reihe `bundestrainer`, Pixelvergleich steht aus;
 Bildschirmfotos `emtool screens gamedata ~/work/screens nationalteam`):

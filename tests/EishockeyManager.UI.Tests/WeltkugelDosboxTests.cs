@@ -183,6 +183,90 @@ public class WeltkugelDosboxTests
     }
 
     /// <summary>
+    /// DOSBox <c>25</c> → <c>45</c>: Vor den Freundschaftsspielen Energie 56–79, nach drei Spielen bei allen 46.
+    /// [ORIGINAL] Datei 0x3BB51 (<c>mov byte [bx+0x5DD6],0x46</c>, Schleife über 29 Plätze ab 0x3BB22): Das Öffnen von
+    /// „WM Vorbereitung“ setzt die Energie aller belegten Kaderplätze auf 70. [APPROX] Entscheidung des Nutzers
+    /// (30.10.2026, PR #189): Das Remake setzt sie beim ersten Freundschaftsspiel der Saison, weil Bildschirme beim
+    /// Öffnen nichts ändern; der Abzug je Spiel (70 − 3 · 8 = 46) gehört zu `spielberechnung`. Vorher blieb die Energie
+    /// unverändert.
+    /// </summary>
+    [Fact]
+    public void FirstFriendly_SetsSquadEnergyTo70()
+    {
+        var game = Synthetic(GameMode.WorldOnly);
+        game.Continue(); // Ernennung
+        var coach = game.NationalCoach!;
+        game.AutoNominate();
+        Assert.NotEmpty(coach.Squad);
+        var outsider = game.NationalCandidates().Select(c => c.Player).First(p => !coach.Contains(p));
+        var i = 0;
+        foreach (var m in coach.Squad)
+            m.Player.Energy = 50 + i++ % 30;
+        outsider.Energy = 55;
+        var opponent = NationalTeams.First == coach.Nation ? NationalTeams.First + 1 : NationalTeams.First;
+        game.NationalAccount = 10_000_000;
+
+        Assert.Equal(FriendlyResult.Played, game.PlayFriendly(opponent, home: false));
+        Assert.All(coach.Squad, m => Assert.Equal(NationalCoach.FriendlyEnergy, m.Player.Energy));
+        Assert.Equal(55, outsider.Energy);
+
+        // Nur beim ersten Spiel der Saison: ein zweites Spiel setzt nicht erneut.
+        coach.Squad[0].Player.Energy = 40;
+        Assert.Equal(FriendlyResult.Played, game.PlayFriendly(opponent, home: false));
+        Assert.Equal(40, coach.Squad[0].Player.Energy);
+    }
+
+    /// <summary>Abgelehntes erstes Freundschaftsspiel (kein Geld) setzt keine Energie.</summary>
+    [Fact]
+    public void RejectedFriendly_KeepsEnergy()
+    {
+        var game = Synthetic(GameMode.WorldOnly);
+        game.Continue();
+        var coach = game.NationalCoach!;
+        game.AutoNominate();
+        foreach (var m in coach.Squad)
+            m.Player.Energy = 51;
+        game.NationalAccount = 0;
+        var opponent = NationalTeams.First == coach.Nation ? NationalTeams.First + 1 : NationalTeams.First;
+        Assert.Equal(FriendlyResult.NotEnoughMoney, game.PlayFriendly(opponent, home: false));
+        Assert.All(coach.Squad, m => Assert.Equal(51, m.Player.Energy));
+    }
+
+    /// <summary>
+    /// Öffnen von „WM Vorbereitung“ bleibt zustandsrein (Architekturregel), obwohl das Original dabei die Energie setzt
+    /// (0x3BB51); erst das erste Spiel setzt sie.
+    /// </summary>
+    [GameDataFact]
+    public void OpeningFriendlies_KeepsState_FirstFriendlySetsEnergy()
+    {
+        var d = FlowTests.CreateDriver();
+        d.Host.Show(new TitleScreen(d.Host));
+        d.Frame();
+        d.Click(160, 120);
+        d.Click(20, 60);
+        var cell = SetupScreen.HeadCell(3);
+        d.Click(cell.X + 5, cell.Y + 5);
+        d.Type("LetsShow");
+        d.Press(Key.Enter);
+        d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
+        d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
+        d.PlayMatchDay();
+        var game = d.Host.Game!;
+        game.AutoNominate();
+        foreach (var m in game.NationalCoach!.Squad)
+            m.Player.Energy = 60;
+        var before = StateFingerprint.Of(game);
+        d.Host.Show(new FriendliesScreen(d.Host, d.Host.Current!));
+        d.Move(0, 0);
+        d.Frame();
+        Assert.Null(StateFingerprint.FirstDifference(before, StateFingerprint.Of(game)));
+
+        var opponent = NationalTeams.First == game.NationalCoach.Nation ? NationalTeams.First + 1 : NationalTeams.First;
+        Assert.Equal(FriendlyResult.Played, game.PlayFriendly(opponent, home: false));
+        Assert.All(game.NationalCoach.Squad, m => Assert.Equal(NationalCoach.FriendlyEnergy, m.Player.Energy));
+    }
+
+    /// <summary>
     /// Mehrsaisonprobe (Abnahme der Spur): vier Saisonwechsel im Modus 2 und 4 (passiver Manager) und im Modus 1; die
     /// Kachelsperren der Reihe Manager und der WM-Kacheln bleiben in jeder Saison wie im Original.
     /// </summary>
@@ -214,5 +298,46 @@ public class WeltkugelDosboxTests
         Assert.Equal(first + 4, game.Season);
         if (mode == GameMode.WorldOnly)
             Assert.True(game.NationalCoachMenu);
+    }
+
+    /// <summary>
+    /// Mehrsaisonprobe mit aktivem Bundestrainer: vier Saisonwechsel im Modus 1, 2 und 4; in jeder Saison mit
+    /// Bundestrainer setzt das erste Freundschaftsspiel die Energie des Kaders auf 70, Modus 2 hat nie einen.
+    /// </summary>
+    [Theory]
+    [InlineData(GameMode.WorldOnly)]
+    [InlineData(GameMode.ClubOnly)]
+    [InlineData(GameMode.Full)]
+    public void MultiSeason_ActiveCoach_FirstFriendlySetsEnergy(GameMode mode)
+    {
+        var game = Synthetic(mode);
+        var first = game.Season;
+        var seasonsWithFriendly = new HashSet<int>();
+        for (var guard = 0; game.Season < first + 4; guard++)
+        {
+            Assert.True(guard < 20000, "Saisonwechsel nicht erreicht");
+            foreach (var m in game.Managers)
+                m.Money = Math.Max(m.Money, 10_000_000);
+            if (game.NationalCoach is { } coach && coach.Friendlies.Count == 0 && !seasonsWithFriendly.Contains(game.Season))
+            {
+                game.AutoNominate();
+                Assert.NotEmpty(coach.Squad);
+                foreach (var m in coach.Squad)
+                    m.Player.Energy = 55;
+                var opponent = NationalTeams.First == coach.Nation ? NationalTeams.First + 1 : NationalTeams.First;
+                Assert.Equal(FriendlyResult.Played, game.PlayFriendly(opponent, home: false));
+                Assert.All(coach.Squad, m => Assert.Equal(NationalCoach.FriendlyEnergy, m.Player.Energy));
+                seasonsWithFriendly.Add(game.Season);
+            }
+            if (game.Phase == SeasonPhase.SeasonOver)
+                game.StartNextSeason();
+            else
+                game.Continue();
+        }
+        Assert.Equal(first + 4, game.Season);
+        // Modus 1: jede Saison Bundestrainer; Modus 4: nur in Saisons mit Ernennung am 13. April (Managerwert,
+        // CupsNationalMode.cs), hier zwei von vier; Modus 2: nie.
+        var expected = mode switch { GameMode.WorldOnly => 4, GameMode.Full => 2, _ => 0 };
+        Assert.Equal(expected, seasonsWithFriendly.Count);
     }
 }
