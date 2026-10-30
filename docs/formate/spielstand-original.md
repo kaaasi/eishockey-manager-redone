@@ -213,10 +213,22 @@ FILE01 → FILE02: im ganzen Klartext genau **ein** Byte verschieden (`0x973F`).
 | `+0x06` | Spiele (Spalte SP); nach einem Kauf mit den Spielen beim alten Verein | alle 25; DAFFNER nach Kauf 2 (FILE07) |
 | `+0x0B` | Vertragsdauer in Jahren (Spalte V.DAUER) | FILE05 alle 2 = „2 Jahre“; FILE07 DAFFNER 1 (Angabe Nutzer: 1 Jahr) |
 | `+0x1C` | Spiele für den jetzigen Verein (nach einem Kauf 0) | alle 25, FILE07 |
-| `+0x22` | Tore (TO) | alle 25 |
+| `+0x00` | 5-Minuten-Strafen (Spalte 5m) | alle 25 (FILE05), Anzeige em.exe `0x4221D` |
+| `+0x01` | 2-Minuten-Strafen (Spalte 2m) | alle 25, ebenda |
+| `+0x03`–`+0x05` | Tore je Wettbewerb; Spalte TO = Summe (em.exe `0x421D6`), beim Torhüter „-“. Beim Torhüter stehen dort vermutlich Gegentore (CISSEWSKI 13 = Kölns Gegentore nach 3 Spielen) | alle 25 |
+| `+0x07`, `+0x08` | Spiele in weiteren Wettbewerben (eigene Spalten neben `+0x06`; eine Spalte zeigt `+0x06 + +0x07 + +0x08`; Zuordnung Wettbewerb offen) | em.exe Spalten 3–6 |
+| `+0x13` | Spalte **E** = `+0x13 · 10 / 15` (ganzzahlig), hervorgehoben bei `+0x13 > 0x82` (em.exe `0x42335`) | alle 25 (z. B. HEISS 91 → 60, MENDE 50 → 33) |
+| `+0x22` | gleich der Ligator-Zahl `+0x03` in allen Ständen (Bedeutung offen, evtl. Saisontore gesamt) | alle 25 |
+| `+0x30` | ≠ 0: Zusatz „(v)“ hinter der Vertragsdauer (versichert); Vertragsdauer 0 = „kein V.“ (em.exe `0x4239A`) | – (kein Fall in den Ständen) |
 | `+0x28` | Gehalt (4 Byte, Drittel-DM) = Spalte WERT bei „Verträge“ | alle 25, z. B. HEISS 17.100 DM |
 | `+0x2C` | Preis (4 Byte, Drittel-DM) = Transferliste „(K)“; Leihe „(L)“ = ein Drittel davon. Nach dem Kauf steht dort der vom Nutzer gebotene und bezahlte Kaufpreis (FILE07) | 7 Marktspieler, FILE07 |
-| `+0x00`–`+0x05`, `+0x07`–`+0x09`, `+0x0E`, `+0x13`, `+0x14`, `+0x16`–`+0x1B`, `+0x20`–`+0x27` | offen (Kandidaten: Strafminuten 2m/5m, Spalte E) | |
+| `+0x02`, `+0x09`, `+0x0C`–`+0x0E`, `+0x14`, `+0x16`–`+0x1B`, `+0x20`, `+0x21`, `+0x23`–`+0x27` | offen (`+0x09` Bits 0x40/Wert 2: Hervorhebungen der Zeile; `+0x0C` ≠ 0: eigene Farbe der Spalte ART) | em.exe `0x41F6A`, `0x42057` |
+
+**Spalten des Bildschirms** (em.exe: Zeilenfunktion ab `0x41F13`, Spaltennummer → Sprungtabelle `cs:0x258E`, Segment ab
+Datei `0x3FFE0`; Kopftexte über Zeigertabelle DGROUP `0x1065`): 0 Nr. (nur bei `+0x0A` ≠ 0), 1 ART, 2 Name (Pool),
+3–5 Spiele `+0x06`/`+0x07`/`+0x08`, 6 deren Summe, 7 STÄRKEN, 8 ST = Mittel der drei Stärken (`0x41DA9`), 9–11 Tore
+`+0x03`/`+0x04`/`+0x05`, 12 TO (Summe), 13 „2m 5m“, 14 STATUS, 15 E, 16 V.DAUER, 17 GEHALT. Alle an FILE05 geprüft
+(E, TO, 2m, 5m: 25 von 25).
 
 **Spielerpool** `far:8253` (200 × 33, Struktur aus `reverse-engineering.md`): Name `+0x00`, Talent `+0x12`, Alter `+0x14`
 (Transferliste: KÜNAST 24, STARTSCHEW 31, KJELLBERG 32, D.HEGEN 33), Grundstärken `+0x15`–`+0x17` (beim Markt = Stärken
@@ -265,8 +277,7 @@ Bild: Referenz-Repo `original/spielstaende/bilder/kaputt_mogelguru.png`. Für `h
   `C313` (0x7D0), `D0F4`, `5D7B` (Permutation der 36 Vereine, ändert sich mit dem Spieltag; nicht die Tabelle).
 - Vereinsdatensatz: in FILE03 ändern sich `+0x17`–`+0x3A` (Form, Teamwerte, weitere Statistik?). Punkte und Tore der
   Tabelle stehen dort nicht als einfache Zahl; vermutlich berechnet das Original die Tabelle aus `0xA0CB`.
-- Kaderplatz: offene Bytes (Liste oben), Spalte „E“ (zweistellig bei „Mannschaft“, dreistellig mit führender 0/1 bei
-  „Transfer“), Strafminuten 2m/5m.
+- Kaderplatz: offene Bytes (Liste oben). Bei „Transfer“ steht E direkt hinter TO ("133" = TO 1, E 33), keine dreistellige Zahl.
 - Kauf: Annahmeregel für Gebote unter/über Listenpreis (em.exe); wo der Sponsorzuschuss steht.
 - `0xCC73`, `0x375`, Vereinsfeld `+0x26` (ändern sich mit der Aufstellung, FILE06).
 - Saisonwechsel, DEB-Pokal, Bundestrainer mit Vereinsmanagern.
