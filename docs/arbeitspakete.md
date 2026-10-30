@@ -145,7 +145,7 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
 - **Dateigrenzen:** `src/EishockeyManager.Formats/OriginalSaveGame*.cs`, `src/EishockeyManager.Tools/Hok*.cs`,
   `docs/formate/spielstand-original.md`, Tests. Keine Spielstände ins Code-Repo.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen (#176 gemergt).
+- **Status:** in Arbeit (Claude Code, `paket/hok-patch`); Abnahme (3) vom Nutzer am 30.10.2026 bestätigt (Bilder, siehe PR #191); wartet auf unabhängiges Review.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 

@@ -8,6 +8,7 @@ using EishockeyManager.Formats;
 //   emtool vereine [spielordner] [nummer]     Vereine aus der Datenbank (mit Nummer: Kader)
 //   emtool screens [spielordner] [zielordner] [ablauf …]  Bildschirme ohne Fenster als PNG
 //   emtool hok dump <datei> [block …]           Original-Spielstand *.HOK entschlüsseln und prüfen
+//   emtool hok patch <vorlage> <ziel> feld=wert …   veränderten Spielstand fürs Original erzeugen
 
 var command = args.Length > 0 ? args[0].ToLowerInvariant() : "help";
 
@@ -43,6 +44,7 @@ try
                   emtool vereine [spielordner] [vereinsnummer]
                   emtool screens [spielordner] [zielordner] [ablauf …]
                   emtool hok dump <datei> [block …]
+                  emtool hok patch <vorlage> <ziel> feld=wert …
 
                 Ohne Spielordner wird nach einem Ordner "gamedata" gesucht.
                 """);
