@@ -40,9 +40,11 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
 - `Core/MatchEngine*.cs` und `Core/Squad.Strength.cs` gehören **allein** `spielstaerke-manager`. Andere Spuren rufen die
   Spielberechnung nur auf und ändern keine Aufrufer-Signaturen. Dazu gehört auch die Abbildung Aufstellung → Team-/Reihenwerte
   für die Länderwerte Deutschlands (#193) samt Anzeige `UI/Screens/Statistics/StrengthScreen.cs`.
-- `Core/Squad.Tactics.cs`: nur `nationalteam`, und nur der Startwert der Nationalteam-Taktik (#192); Vereins-Startwerte und
-  Automatik bleiben unverändert.
-- Schema: jede Spur mit neuem Zustand legt ihre Migration als **neue Datei** `Core/SaveGame.Migration*.cs` an;
+- `Core/Squad.Tactics.cs` ist geteilt: `nationalteam` nur Startwert und Anzeige unter „AUTOM.“ (`Shown*`) samt Zustand
+  „Werte des letzten Spiels“ für das Nationalteam (#192); `spielstaerke-manager` nur `EffortStrengthBonus`, `Effective*`
+  und `Auto*` (0x974B, 0x939A). Vereins-Startwerte und Vereinsanzeige bleiben unverändert. Integration: `nationalteam`
+  vor `spielstaerke-manager`.
+- Schema: jede Spur mit neuem Zustand legt ihre Migration als **neue Datei** `Core/SaveGame.Migration.<Spur>.cs` an;
   `SchemaVersion` und den Eintrag in `Migrations` (`Core/SaveGame.cs`) trägt die Leitstelle in der Integration ein.
 - `Core/Season.cs`: nur `tabellen-original` (Tabelle und Sortierung); `Playoffs.cs`/`CupsGroup.cs` nur deren `Table`.
 - `Core/Transfer*.cs`, `Core/Player.Contract.cs`: nur `transfer-original`. `spielerwert` liefert den Wert in einer neuen
@@ -73,7 +75,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   grün; (2) `[ORIGINAL]` je Formelteil; (3) Mehrsaisonprobe (die Sponsorbewertung ändert Geld; Highscore nur Anzeige) mit begründeten
   Abdruckänderungen; (4) kein neuer Spielzustand ohne Schema.
 - **Dateigrenzen:** neue Datei `Core/Player.Value.cs`, `Core/Highscore.cs`, `Core/FinanceSponsorRating.cs`,
-  `Core/SaveGame.Migration*.cs` (neue Datei, nur bei neuem Zustand), `docs/reverse-engineering.md` (eigener Abschnitt),
+  `Core/SaveGame.Migration.<Spur>.cs` (neue Datei, nur bei neuem Zustand), `docs/reverse-engineering.md` (eigener Abschnitt),
   `docs/highscore.md`, Tests.
 - **Modell:** Claude Opus 5.5.
 - **Status:** offen.
@@ -89,7 +91,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
 - **Abnahme:** (1) rote Tests je Regel (Preis, Leihgebühr, Annahme eines Angebots, Gehaltsforderung, Laufzeit), danach
   grün; (2) Gegenprobe an den sechs Videopreisen; (3) Pixelvergleich Transferliste und Verhandlungsfenster mit Kennzahl;
   (4) Bildschirme zustandsrein; (5) Mehrsaisonprobe (Kader und Geld); (6) Schema nur bei neuem Zustand.
-- **Dateigrenzen:** `Core/Transfer*.cs`, `Core/Player.Contract.cs`, `Core/SaveGame.Migration*.cs` (neue Datei, nur bei
+- **Dateigrenzen:** `Core/Transfer*.cs`, `Core/Player.Contract.cs`, `Core/SaveGame.Migration.<Spur>.cs` (neue Datei, nur bei
   neuem Zustand), `UI/Screens/Team/TransferScreen.cs`,
   `TransferDialog.cs`, `ContractsScreen.cs`, `Tools/Scenarios/` (eigene Datei), neues `docs/transfer.md`,
   `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
@@ -120,7 +122,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   Tabellenansicht mit Kennzahl; (3) Mehrsaisonprobe – Platzierungen bestimmen Auf-/Abstieg und Prämien – mit begründeten
   Abdruckänderungen; (4) Bildschirme zustandsrein.
 - **Dateigrenzen:** `Core/Season.cs` (nur Tabelle/Sortierung), `Core/Playoffs.cs` und `Core/CupsGroup.cs` (nur `Table`),
-  `Core/SaveGame.Migration*.cs` (neue Datei, nur bei neuem Zustand),
+  `Core/SaveGame.Migration.<Spur>.cs` (neue Datei, nur bei neuem Zustand),
   `UI/Screens/TableScreen.cs`, `UI/Screens/Competitions/CupTableMenuEntries.cs`, `Tools/Scenarios/` (eigene Datei),
   `docs/saison.md` (eigener Abschnitt), `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
@@ -136,11 +138,12 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   Stärkevergleich. Den Aufruf nach Freundschaftsspielen in `Core/CupsNational*.cs` nennt die Spur im PR; die Leitstelle
   schließt ihn in der Integration an.
 - **Abnahme:** (1) roter Test je belegtem Teil, danach grün; (2) Saisonverteilung (Meister über ≥ 8 Saisons, Tore je
-  Spiel, Strafminuten) gegen die Videos bzw. DOSBox-Befunde, Ergebnis im PR; (3) Mehrsaisonprobe Modus 1 und 4, passiv und
+  Spiel, Strafminuten) gegen die Videos bzw. DOSBox-Befunde, Ergebnis im PR; (3) Mehrsaisonprobe Modus 1, 2 und 4, passiv und
   aktiv, jede Referenzwertänderung begründet; (4) Schema nur bei neuem Zustand.
 - **Dateigrenzen:** `Core/MatchEngine*.cs`, `Core/Squad.Strength.cs`, `Core/StadiumStatistics.cs` (nur #179),
-  `UI/Screens/Statistics/StrengthScreen.cs` (nur #193),
-  `Core/SaveGame.Migration*.cs` (neue Datei), `docs/spielberechnung.md`, Tests.
+  `UI/Screens/Statistics/StrengthScreen.cs` (nur #193), `Core/Squad.Tactics.cs` (nur `EffortStrengthBonus`,
+  `Effective*`, `Auto*`),
+  `Core/SaveGame.Migration.<Spur>.cs` (neue Datei), `docs/spielberechnung.md`, Tests.
 - **Modell:** Claude Opus 5.5.
 - **Status:** offen.
 
@@ -155,7 +158,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   Abdruckänderungen; (5) Schema nur bei neuem Zustand (z. B. Höchstwerte je Verein).
 - **Dateigrenzen:** neue Dateien `Core/StatisticsPlayers.cs`, `Core/StatisticsClub.cs`,
   `UI/Screens/Statistics/PlayerStatisticsScreen.cs`, `FairplayScreen.cs`, `ClubStatisticsScreen.cs`,
-  `Core/FinancePremiums.cs`, `UI/Screens/SeasonEnd*.cs`, `Core/SaveGame.Migration*.cs` (neue Datei),
+  `Core/FinancePremiums.cs`, `UI/Screens/SeasonEnd*.cs`, `Core/SaveGame.Migration.<Spur>.cs` (neue Datei),
   `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (eigener Abschnitt), `docs/reverse-engineering.md` (eigener
   Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
@@ -167,10 +170,10 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   „Endrunde“ 0x2FC2F (#194); Taktik des Nationalteams ohne Startwert (#192, mit Migration für laufende Spielstände);
   erster Halt im Modus 1 nach „Los jetzt!“ (#195, Halt-Bedingung in 0x44E22).
 - **Abnahme:** je Punkt roter Test mit DOSBox- bzw. Videobild als Beleg (Bildname im Test), danach grün, oder begründet
-  als Befund offen; Pixelvergleich WM-Statistik und Paarungsansicht; Bildschirme zustandsrein; Mehrsaisonprobe Modus 2
-  und 4; `docs/wettbewerbe.md`, `docs/dosbox-befunde.md` nachgeführt.
-- **Dateigrenzen:** `Core/CupsNational*.cs`, `Core/CupsWorld.cs`, `Core/Squad.Tactics.cs` (nur Startwert der
-  Nationalteam-Taktik), `Core/SaveGame.Migration*.cs` (neue Datei), `UI/Screens/Competitions/National*.cs`, `WorldCup*.cs`,
+  als Befund offen; Pixelvergleich WM-Statistik und Paarungsansicht; Bildschirme zustandsrein; Mehrsaisonprobe Modus 1
+  und 4 (Modus 2 als Gegenprobe); `docs/wettbewerbe.md`, `docs/dosbox-befunde.md` nachgeführt.
+- **Dateigrenzen:** `Core/CupsNational*.cs`, `Core/CupsWorld.cs`, `Core/Squad.Tactics.cs` (nur Startwert und
+  `Shown*` des Nationalteams, siehe Zuständigkeiten), `Core/SaveGame.Migration.<Spur>.cs` (neue Datei), `UI/Screens/Competitions/National*.cs`, `WorldCup*.cs`,
   `FriendliesScreen.cs`, neue Dateien `UI/Screens/Competitions/WorldCupStatisticsScreen.cs`,
   `CupPairingsScreen.cs`, `UI/Screens/TileLocks.cs`, `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (eigener
   Abschnitt), `docs/dosbox-befunde.md`, Tests. #193 gehört zu `spielstaerke-manager`.
