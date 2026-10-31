@@ -144,7 +144,8 @@ public class ClubDressedTests
         foreach (var r in Enum.GetValues<ScoreSituation>())
         {
             Assert.Equal(fresh.Effort(0, r), tactics.Effort(0, r));
-            Assert.Equal(fresh.Attack(0, r), loaded.NationalCoach!.Tactics.Attack(0, r));
+            // Kette bis Schema 12 (Spur nationalteam, #192): Der unveränderte alte Startwert wird zum Startwert des Nationalteams (0).
+            Assert.Equal(Tactics.National().Attack(0, r), loaded.NationalCoach!.Tactics.Attack(0, r));
         }
         Assert.Equal(club.Dressed.Select(p => p.Id), loaded.Clubs[2].Dressed.Select(p => p.Id));
         Assert.Equal(game.Clubs[2].MatchStrength, loaded.Clubs[2].MatchStrength);

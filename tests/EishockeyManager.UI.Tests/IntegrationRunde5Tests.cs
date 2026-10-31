@@ -78,10 +78,9 @@ public class IntegrationRunde5Tests : IDisposable
     {
         var game = d.Host.Game!;
         var coach = game.NationalCoach!;
-        var start = new Tactics();
+        // #192 (Spur nationalteam): Die Taktik des Nationalteams hat keinen Startwert – eigene Werte 0 (DOSBox nur-weltkugel/26).
         foreach (var s in Enum.GetValues<ScoreSituation>())
-            Assert.Equal(start.Effort(0, s), coach.Tactics.Effort(0, s));
-        Assert.Contains(Enum.GetValues<ScoreSituation>(), s => coach.Tactics.Effort(0, s) != 0);
+            Assert.Equal(0, coach.Tactics.Effort(0, s));
 
         var before = StateFingerprint.Of(game);
         d.OpenTile("Taktik");
