@@ -65,6 +65,9 @@ dotnet run --project src/EishockeyManager.Tools -- screens gamedata screens setu
 - [x] **v0.5 – Laden/Sichern, Einstellungen, Sound und Musik** (Import `*.HOK` zurückgestellt)
 - [ ] **v0.9 – Live-Spiel (optional abschaltbar):** Anzeigetafel, Reporter, Torszenen – bewusst als letzter Schritt vor v1.0
 - [ ] **v1.0 – Parität:** verhält sich wie das Original
+- [ ] **ab v1.0 – Unabhängig von Originaldateien zur Laufzeit:** eigene Grafiken, Fonts, Daten, Musik und Klänge, sodass
+  das Remake ohne DOS-Kopie spielbar ist; die Originaldateien bleiben Beleg und Testgrundlage
+  ([Anforderung](docs/anforderungen/zusatzfunktionen.md#6-unabhängigkeit-von-den-originaldateien-zur-laufzeit))
 - [ ] **danach:** neue Funktionen nach [docs/anforderungen/zusatzfunktionen.md](docs/anforderungen/zusatzfunktionen.md)
   (moderne Grafik, weitere Sprachen, Cheatmenü, Netzwerk mit Dedicated Server, Ex-/Import)
 

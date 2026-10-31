@@ -29,6 +29,16 @@ entschlüsselt sind, ist das im Code mit [APPROX] markiert.
 ### 5. Export und Import
 - **Anforderung:** Vereins- und Spielerdaten exportieren und importieren.
 
+### 6. Unabhängigkeit von den Originaldateien zur Laufzeit
+- **Anforderung:** das Remake läuft ohne Kopie der DOS-Version. Heute liest es Grafiken, Paletten, Fonts, Datenbank,
+  Halle, Figuren, Torszenen, Musik und Klänge zur Laufzeit aus `gamedata/`.
+- **Entscheidung vom 31.10.2026 (Nutzer):** Arbeit daran beginnt ab v1.0, nach Erreichen der Parität. Bis dahin
+  bleiben die Originaldateien Voraussetzung für Laufzeit und Tests.
+- **Rahmen:** Ersatzinhalte müssen eigene, rechtlich freie Werke sein (keine Kopien oder Ableitungen der
+  Originalgrafiken, -texte oder -musik). Die Originaldarstellung bleibt wählbar, wenn `gamedata/` vorhanden ist.
+  `em.exe`, Original-Spielstände und Referenzbilder bleiben Beleg- und Testgrundlage. Berührt sich mit Nr. 1 (moderne
+  Grafik).
+
 ## B. Zusätze
 
 - Geschwindigkeitstasten 1x / 4x / 16x im Live-Spiel; Torszene mit Leertaste oder Klick überspringen.
