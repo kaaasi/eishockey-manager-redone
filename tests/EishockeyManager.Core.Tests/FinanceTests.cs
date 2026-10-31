@@ -76,7 +76,7 @@ public class FinanceTests
             Assert.Equal(Stock.HistoryLength, s.History.Count);
             Assert.Equal(s.Price, s.History[^1]);
         });
-        Assert.Equal([101, 120, 79, 174], market.Stocks.Select(s => s.Price));
+        // Startkurse sind seit boerse-start (#169) wie im Original ausgewürfelt (BoerseStartTests), nicht mehr fest.
     }
 
     [Fact]

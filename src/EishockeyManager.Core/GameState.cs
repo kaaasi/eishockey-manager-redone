@@ -101,7 +101,8 @@ public sealed partial class GameState
             var day = days[PlayedMatchDays];
             foreach (var (home, away) in day.Matches)
             {
-                var (hg, ag) = MatchEngine.Play(Clubs[home], Clubs[away], Random);
+                var report = MatchEngine.PlayWithEvents(this, Clubs[home], Clubs[away], MatchCompetition.League, knockOut: false, Random);
+                var (hg, ag) = (report.HomeGoals, report.AwayGoals);
                 Results.Add(new MatchResult(league, day.Number, home, away, hg, ag));
             }
         }

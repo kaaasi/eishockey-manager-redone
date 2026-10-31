@@ -66,6 +66,13 @@ public sealed partial class NationalCoach
     /// <summary>[ORIGINAL] DGROUP 0x4EDE: Torhüter, Verteidiger, Stürmer bei „auto“.</summary>
     public static readonly int[] AutoSquad = [3, 10, 16];
 
+    /// <summary>
+    /// [ORIGINAL] Energie der Kaderspieler zu Beginn der Freundschaftsspiele: Datei 0x3BB51
+    /// (<c>mov byte [bx+0x5DD6],0x46</c>, Schleife über die 29 Plätze ab 0x3BB22). Zeitpunkt siehe
+    /// <see cref="GameState.PlayFriendly"/> ([APPROX]).
+    /// </summary>
+    public const int FriendlyEnergy = 70;
+
     /// <summary>[ORIGINAL] Etat beim ersten Amtsantritt (DGROUP 0x29C = 1.500.000 Drittel-DM).</summary>
     public const long FirstBudget = 500_000;
 

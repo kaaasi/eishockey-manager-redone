@@ -238,9 +238,9 @@ public sealed partial class GameState
         bool Involves(int home, int away) => managerClubs.Contains(home) || managerClubs.Contains(away);
 
         var hadChampion = Playoffs.Champion is not null;
-        var playoffGames = Playoffs.PlayDate(index, day, Clubs, Random);
+        var playoffGames = Playoffs.PlayDate(index, day, this, Random);
         PlayoffResults.AddRange(playoffGames);
-        var relegationGames = RelegationGroups.SelectMany(g => g.PlayDate(index, Clubs, Random)).ToList();
+        var relegationGames = RelegationGroups.SelectMany(g => g.PlayDate(index, this, Random)).ToList();
         SettlePostseasonMatches(playoffGames.Select(g => (g.Home, g.Away)) // gemeinsame Spielabrechnung (Paket „wirtschaft“)
             .Concat(relegationGames.Select(g => (g.Home, g.Away))));
 

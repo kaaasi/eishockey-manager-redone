@@ -37,6 +37,16 @@ Kachelsymbole und Lampen stammen aus `kb\3`, Pfeile und Rollbalken aus `kb\4`.
 | Tabellen 1. Liga / 2. Liga / Oberliga mit Heim / Gesamt / Auswärts | ✔ |
 | Alle übrigen Untermenüs | Platzhalter |
 
+## Bewusste Abweichungen vom Original
+
+* **Handbuchfrage (Kopierschutz) entfällt.** Das Original stellt beim Spielstart (Wahrscheinlichkeit 1/3) und später
+  sporadisch die „PASSWORTABFRAGE“ nach einem Wort im gedruckten Handbuch; zwei falsche Antworten hängen das Programm auf.
+  Das Remake übernimmt das **nicht** (Entscheidung Nutzer, 30.10.2026). **Keine Spur portiert sie mit.** Belege und
+  Fundstellen: [reverse-engineering.md](reverse-engineering.md), Abschnitt „Kopierschutz (Handbuchfrage)“. Test:
+  `MenueBefundeTests`.
+* **Nachrichtenleiste (#170):** im Hauptmenü nur mit neuer Nachricht (`[ORIGINAL]` Bedingung, `[APPROX]` Dauer der
+  Anzeige), siehe `MainMenuScreen`.
+
 ## Saisonablauf (Stand)
 
 - Kalender: Saisonstart „Sonntag, 10. Sept.“, Ligaspiele sonntags und mittwochs, Heiligabend spielfrei –

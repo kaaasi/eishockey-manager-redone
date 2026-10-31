@@ -23,9 +23,11 @@ Belege aus `em.exe` (Datei-Offsets; Overlay-Stub Highscore = 0x140:0x7A).
 - **Befund #126 trifft nicht zu.** Das Issue las die Bedingung ab 0x289A3 („verlangt Bit 0“) und übersah den Vergleich mit 2 bei 0x2899D
   davor: Der Zweig `Knopfbits = 2 → 0x7530` ist erreichbar, im Modus „nur Weltkugel“ gibt es also eine Bestenliste (Datei `h.30000`).
   Eintragen (0x5D4C2), Einfügen (0x5D618) und Anzeigen (0x5D90D) kehren nur bei `[0x256] = 0` sofort zurück (Vergleiche 0x5D4CE,
-  0x5D622, 0x5D915), bei 0x7530 arbeiten sie normal; der Aufruf am Spielende (0x5642E) prüft den Schlüssel nicht selbst. Dass die Kachel „Highscore“ im Video `bundestrainer_00042/00220/00418` gesperrt ist, erklärt
-  die Sperrtabelle des Bundestrainers (Reihe Manager komplett gesperrt, zweiter Teil der Tabelle DGROUP 0x5159, siehe `NationalMenu`),
-  nicht der Schlüssel 0. Das Remake war von Anfang an richtig (`HighscoreRules.Key`, `Key_WorldOnly_Is30000`), es wurde nichts geändert.
+  0x5D622, 0x5D915), bei 0x7530 arbeiten sie normal; der Aufruf am Spielende (0x5642E) prüft den Schlüssel nicht selbst. Das Remake war von Anfang an richtig (`HighscoreRules.Key`, `Key_WorldOnly_Is30000`).
+  **Berichtigt (Spur `weltkugel-dosbox`):** Die Sperrtabelle des Bundestrainers erklärt die gesperrte Kachel im Video
+  `bundestrainer_00042/00220/00418` nicht – der Aufbau überschreibt Platz 6 der Reihe Manager mit „0x256 = 0 oder (Manager 5 und
+  Modus 4)“ (Datei 0x45020–0x4504A). Im Modus 1 ist die Kachel also offen; so zeigt es DOSBox `dosbox/nur-weltkugel/07`, `19`
+  (`NationalMenu.CoachHighscoreLocked`). Das Video bleibt ein offener Befund (`docs/dosbox-befunde.md`).
 - **Eintragen:** beim Öffnen der Kachel und bei jedem Saisonwechsel; am Spielende erscheint die Liste vor dem Titel (0x5642E).
 - **Layout:** Hintergrund kb\195, Titel Grundlinie 15, Zeilen ab 154 im Abstand 10, x = 56 / 115 / 207 / 240. Zeilen am Bild
   oberflaeche_0848 geprüft (Abweichung im Rahmen des Videoversatzes von etwa −0,25 px). Titel: Ausdehnung der Titelpixel

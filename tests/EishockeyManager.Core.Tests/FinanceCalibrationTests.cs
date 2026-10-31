@@ -55,8 +55,12 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
         foreach (var list in record.PromotedInto.Values) list.Clear();
         if (promoted) record.PromotedInto[(League)((int)league - 1)].Add(index);
         while (game.Phase == SeasonPhase.ClubSeasonOver) game.Continue();
-        Assert.Equal(expected, record.Managers.Single().Premium);
-        Assert.Equal(expected, game.Finance(game.ActiveManager).Book.Current(FinanceCategory.Praemien));
+        // Das DEB-Pokalfinale liegt nach dem Ligaende und setzt seinen Titel erst in der Schleife oben. Seit der
+        // Spielberechnung des Originals (Runde 7, R7-02) gewinnt der Oberligaverein 24 mit diesem Seed den Pokal; dessen
+        // Prämie (eigener Test) wird hier ausdrücklich herausgerechnet, geprüft bleibt Tabelle/Titel/Aufstieg.
+        var cup = record.Titles.GetValueOrDefault(Title.CupWinner, -1) == index ? GameState.CupWinnerPremium : 0;
+        Assert.Equal(expected, record.Managers.Single().Premium - cup);
+        Assert.Equal(expected, game.Finance(game.ActiveManager).Book.Current(FinanceCategory.Praemien) - cup);
     }
 
     private static int HomeGames(GameState game, int club) =>

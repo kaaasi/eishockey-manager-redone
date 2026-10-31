@@ -180,7 +180,9 @@ public sealed class WorldCup : ISeasonCompetition
             foreach (var group in _groups)
                 foreach (var (home, away) in group.Pairings(date))
                 {
-                    var (hg, ag) = MatchEngine.Play(game.RatedNation(home), game.RatedNation(away), random);
+                    var report = MatchEngine.PlayWithEvents(game, game.RatedNation(home), game.RatedNation(away),
+                        MatchCompetition.WorldCup, knockOut: false, random);
+                    var (hg, ag) = (report.HomeGoals, report.AwayGoals);
                     var match = new KnockoutMatch(day, home, away, hg, ag);
                     group.Results.Add(match);
                     played.Add(match);
@@ -200,7 +202,7 @@ public sealed class WorldCup : ISeasonCompetition
         {
             var stage = date - GroupDates;
             played = KnockoutPairings(stage)
-                .Select(p => KnockoutMatch.Play(day, game.RatedNation(p.Home), game.RatedNation(p.Away), random)).ToList();
+                .Select(p => KnockoutMatch.Play(game, day, game.RatedNation(p.Home), game.RatedNation(p.Away), MatchCompetition.WorldCup, random)).ToList();
             _knockout.Add(played);
             for (var k = 0; k < 4; k++)
             {

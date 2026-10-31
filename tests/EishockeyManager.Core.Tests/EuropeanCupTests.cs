@@ -24,7 +24,9 @@ public class EuropeanCupTests
         for (var i = ClubDatabase.ClubsWithSquad; i < ClubDatabase.TotalClubs; i++)
         {
             Encoding.ASCII.GetBytes($"EUROPA {i}").CopyTo(data, ClubDatabase.EuropeanNamesOffset + (i - ClubDatabase.ClubsWithSquad) * ClubDatabase.NameLength);
-            data[ClubDatabase.StrengthOffset + i * 3] = (byte)(i % 2 == 0 ? 90 : 40);
+            // Spur spielberechnung: 95 statt 90 – in der Rechnung des Originals haben deutsche Vereine im schnellen Weg
+            // +6 und die Gegner 5 Formpunkte weniger; bei 90 gewinnt kein Gegner mehr, bei 100 kein deutscher Verein.
+            data[ClubDatabase.StrengthOffset + i * 3] = (byte)(i % 2 == 0 ? 95 : 40);
         }
         return ClubDatabase.Parse(data);
     }

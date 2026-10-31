@@ -143,6 +143,11 @@ public sealed partial class GameState
     /// <summary>
     /// Freundschaftsspiel vereinbaren und sofort austragen („WM Vorbereitung“, Datei 0x3BF9B ff.): Kosten vom
     /// <see cref="NationalAccount"/>, Ergebnis, Wertebonus für alle Kaderspieler, Länderspiele der Aufstellung.
+    /// [APPROX] Das Original setzt die Energie aller Kaderspieler beim Öffnen von „WM Vorbereitung“ auf
+    /// <see cref="NationalCoach.FriendlyEnergy"/> (Datei 0x3BB51). Bildschirme ändern beim Öffnen keinen Zustand,
+    /// deshalb setzt das Remake sie beim ersten Freundschaftsspiel der Saison, vor dem Spiel (Entscheidung des Nutzers,
+    /// PR #189). Abweichung: Im Original setzt jedes erneute Öffnen wieder auf 70, im Remake nur das erste Spiel. Den
+    /// Abzug je Spiel (DOSBox: 46 nach drei Spielen) führt erst die Spur `spielberechnung`.
     /// </summary>
     public FriendlyResult PlayFriendly(int opponent, bool home)
     {
@@ -155,13 +160,21 @@ public sealed partial class GameState
         if (NationalAccount < cost)
             return FriendlyResult.NotEnoughMoney;
         BookNational(NationalBookingKind.Friendly, -cost);
+        if (coach.Friendlies.Count == 0)
+            foreach (var member in coach.Squad)
+                member.Player.Energy = NationalCoach.FriendlyEnergy;
 
         var random = CupRandom;
         // Reihenfolge der Zufallszahlen wie im Original: x vor dem Spiel, Bonus danach.
         var xRoll = random.Next(0, 51);
         var (homeClub, awayClub) = home ? (coach.Nation, opponent) : (opponent, coach.Nation);
         var lineup = coach.Lineup();
-        var (hg, ag) = MatchEngine.Play(RatedNation(homeClub), RatedNation(awayClub), random);
+        // Integration Runde 7: Spielberechnung des Originals wie bei den WM-Spielen (ohne Anzeige, schneller Weg der
+        // Pokale). [APPROX] Freundschaftsspiele wie ein WM-Gruppenspiel (Unentschieden möglich, keine Verlängerung);
+        // die Zuordnung im Original (Wettbewerbscode des Freundschaftsspiels) ist nicht gelesen.
+        var report = MatchEngine.PlayWithEvents(this, RatedNation(homeClub), RatedNation(awayClub), MatchCompetition.WorldCup,
+            knockOut: false, random);
+        var (hg, ag) = (report.HomeGoals, report.AwayGoals);
         var (own, against) = home ? (hg, ag) : (ag, hg);
         var (x, bonus) = NationalCoach.FriendlyBonus(cost, xRoll, home, own, against, random);
         foreach (var member in coach.Squad)

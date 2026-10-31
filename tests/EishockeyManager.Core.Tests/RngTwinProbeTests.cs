@@ -38,16 +38,48 @@ namespace EishockeyManager.Core.Tests;
 /// Hauptquelle (Torzüge entfallen); danach Pokalquelle (Tag 14 bzw. 17, anderer Pokalverlauf), FinanceRandom und
 /// Vertragsquelle (Saisonwechsel). Titel ab 1995 andere. Die drei aktiven Abdrücke bleiben gleich (ihr Kader bleibt
 /// spielfähig, in keinem Schritt eine Differenz).
+/// Spur kader-start (#168, em.exe 0x29DA4): Die Kaderspieler der Manager-Vereine bekommen Kondition/Technik aus der
+/// Tabelle DGROUP 0x4B42 (Liga, Start-Stärke) statt aus der Vereinsstärke; alle sechs Abdrücke neu ermittelt. Ursache je
+/// Fall (Vergleichslauf gegen 15d0733 mit Zustand und allen vier Zufallsquellen nach jedem Schritt, Tabelle in
+/// docs/reverse-engineering.md, Abschnitt „Startwerte der Kaderspieler“): Nach dem Spielstart unterscheiden sich nur die
+/// Spieler des Manager-Vereins (Werte, Gehalt); Computervereine, Pool und alle vier Zufallsquellen sind gleich. Erste
+/// Folge ist in allen Fällen das Konto am Monatsende (Tag 21: Gehälter und Grundeinnahmen aus den Teamwerten);
+/// danach weicht die Spielstärke um einen Punkt ab (Energie wirkt auf größere Spielerwerte) – synthetisch (Verein 2,
+/// Basis 81 statt 65) Pokalquelle ab Tag 45 bzw. 56, Hauptquelle ab Tag 153 bzw. 163 der ersten Saison; Originaldaten
+/// (Verein 42, Basis 31 wie bisher im Mittel) FinanceRandom 1994 Tag 28, Kader und Pool ab dem Saisonwechsel 1995.
+/// Spur boerse-start (#169) rechnet die Kurse nach em.exe (0x5784A, 90 Börsentage vor Spielbeginn) und zieht dafür anders
+/// aus FinanceRandom. Alle sechs Abdrücke neu; Vergleichslauf gegen 15d0733 mit Zustand und allen vier Zufallsquellen
+/// nach jedem Schritt: Haupt-, Pokal- und Vertragsquelle, Ergebnisse und Kader in jedem Schritt gleich. Es ändern sich
+/// FinanceRandom ab dem ersten Schritt (1993, Tag 3) und daraus die Kontostände (Zuschauer, Werbung): synthetisch Seed 3
+/// ab 1994 Tag 12, Seed 11 ab 1994 Tag 7 (vorher verdeckt die Kontountergrenze der Probe die Differenz), Originaldaten ab
+/// 1993 Tag 3. Titel unverändert.
+/// Danach (Entscheidung Nutzer, #188) rechnet die Börse erst nach dem Tagesabschluss aller Manager: Vergleich gegen
+/// 801c732 wie oben – wieder nur FinanceRandom (ab 1993 Tag 3) und Konten (synthetisch ab 1994 Tag 12 bzw. 7,
+/// Originaldaten ab 1993 Tag 10) verschoben.
+/// Spur spielberechnung (Teil 1, #186): alle sechs Abdrücke neu, weil der Abdruck alle einfachen Eigenschaften enthält
+/// und <c>Player.GoalsAgainst</c>/<c>GoalieMinutes</c> neu sind (noch nicht gezählt, immer 0). Gegenprobe: mit beiden
+/// Feldern in <c>Excluded</c> stimmen alle sechs alten Abdrücke unverändert; kein Spielverlauf ändert sich.
+/// Spur spielberechnung (Teil 3, #186): alle sechs Abdrücke neu. Liga, Play-offs, Aufstiegsrunde, DEB-Pokal, Europapokal
+/// und WM rechnen mit der Berechnung des Originals (<c>MatchEngine.PlayWithEvents</c>) statt mit dem Poisson-Modell: andere
+/// Ergebnisse ab dem ersten Spieltag, anderer Verbrauch der Haupt- und Pokalquelle (Minutenzüge, Spielerzähler), damit
+/// auch Tabellen, Titel, Finanzen, Transfers und Verträge; dazu die Spielerzähler im Abdruck (je Saison, nach dem Wechsel
+/// 0). Keine Gegenprobe möglich, die den alten Verlauf erhält – die Spielberechnung ist der Zweck der Spur. Ermittelt auf
+/// dem Stand des Branches (Basis <c>15d0733</c>); die Leitstelle zieht die Werte in der Integration nach.
+/// Integration Runde 7: Sollwerte auf dem integrierten Stand neu ermittelt (kader-start, boerse-start, weltkugel-dosbox,
+/// spielberechnung, Freundschaftsspiele über die neue Spielberechnung). Die Änderungen der einzelnen Spuren sind oben
+/// begründet; der Integrationswert ist ihr Zusammenwirken (siehe docs/arbeitspakete.md, „Integration Runde 7“).
+/// Review-Befunde R7-02 (#200, Angriffszuschlag lrandom(Angriff, 7)) und R7-03 (#201, Zähler des Nationalteams): neu
+/// ermittelt; R7-02 ändert das Torbudget jedes Spiels und damit alle Ergebnisse und die Hauptquelle.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "33A4F52EC2360DE0")]
-    [InlineData(true, 3, "9541EF4978491142")]
-    [InlineData(false, 11, "FC797F99C7C8B35C")]
-    [InlineData(true, 11, "7CB3FC8E58DC44CC")]
+    [InlineData(false, 3, "AF89F741C1A6B335")]
+    [InlineData(true, 3, "46C998874089DDCE")]
+    [InlineData(false, 11, "C927531F951586DA")]
+    [InlineData(true, 11, "0E56D6AC9ADCF258")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -55,8 +87,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "74ED95088678F3B6")]
-    [InlineData(true, "9FAAA0D4276178C3")]
+    [InlineData(false, "79D50ABD868F0773")]
+    [InlineData(true, "53596ED8A406D969")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

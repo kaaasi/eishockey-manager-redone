@@ -241,6 +241,17 @@ public class GameModeTests
     /// Gehalt); ab Saisonwechsel 1995 hat Verein 2 19 statt 0 Spieler, zuerst ändert sich die Vertragsquelle (Entscheidungen
     /// zum Saisonwechsel), danach FinanceRandom (Tag 3), Hauptquelle (Tag 7) und Pokalquelle (Tag 21) – ab 1995 neue Titel,
     /// Kontostände und Zufallsstände. Gegenprobe ohne Kaderhalten: 1993/1994 gleich, Manager 0 ab 1995 entlassen.
+    /// Spur kader-start (#168, em.exe 0x29DA4): Startwerte der Manager-Kader aus Tabelle DGROUP 0x4B42 (Verein 2: Basis 81
+    /// statt 65, Verein 30: 31 statt 55). Vergleichslauf gegen 15d0733 nach jedem Tag: nach dem Start nur beide
+    /// Manager-Kader verschieden (Computervereine, Pool, Zufallsquellen gleich); zuerst das Konto von Manager 1 an Tag 3
+    /// (Zuschauer aus den Teamwerten, 0x4D316), ab Tag 40 die Spielstärke von Verein 2 (±1), ab Tag 45 die Pokalquelle,
+    /// ab Tag 91 die Hauptquelle – neue Titel ab 1993 (Pokalsieger, Weltmeister) und neue Kontostände.
+    /// Spur boerse-start (#169, Kursmodell nach em.exe 0x5784A, anderer Verbrauch von FinanceRandom): Titel, Haupt- (R…) und
+    /// Pokalquelle (C…) unverändert; nur die Kontostände beider Manager in allen fünf Saisons (Zuschauer und Werbung ziehen
+    /// aus FinanceRandom). Mit der Börse nach dem Tagesabschluss aller Manager (#188) erneut nur die Kontostände.
+    /// Spur spielberechnung (Teil 3, #186): alle Werte neu – Liga, Pokale und WM rechnen mit der Berechnung des Originals
+    /// (<c>MatchEngine.PlayWithEvents</c>): andere Ergebnisse ab dem ersten Spieltag, damit Titel, Kontostände und beide
+    /// Zufallsquellen. Ermittelt auf dem Branch (Basis <c>15d0733</c>), Nachziehen in der Integration durch die Leitstelle.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -255,7 +266,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|2442252,727916|WorldChampion=63,CupWinner=25,GermanChampion=14,EuropeanCupWinner=0|4231875,777242|WorldChampion=57,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|4845546,729660|WorldChampion=63,CupWinner=24,GermanChampion=1,EuropeanCupWinner=0|5405950,592291|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=0|5391812,444018|R434870706 C1751408638";
+        "WorldChampion=53,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2226402,692809|WorldChampion=52,CupWinner=12,GermanChampion=13,EuropeanCupWinner=1|3877693,918381|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=13|4783091,871349|WorldChampion=63,CupWinner=12,GermanChampion=24,EuropeanCupWinner=0|5371179,810547|WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|5250883,726298|R1912259729 C234131033";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

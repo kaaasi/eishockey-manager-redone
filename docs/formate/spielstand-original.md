@@ -1,10 +1,10 @@
 # Original-Spielstand `*.HOK` (DOS)
 
-Spur `hok-format`, nur Analyse (Lesen). Leser: `src/EishockeyManager.Formats/OriginalSaveGame.cs`,
+Spur `hok-format` (Lesen), `hok-patch` (Schreiben, Abschnitt unten). Leser: `src/EishockeyManager.Formats/OriginalSaveGame.cs`,
 Werkzeug `emtool hok dump <datei> [block …]`. Belegt an drei Spielständen des Nutzers (DOSBox, Version DOS/DE;
 im Referenz-Repo unter `original/spielstaende/` mit Bildern und README, nie ins Code-Repo kopieren): **FILE01** Neustart (ein Manager, Kölner EC, Bundesliga, Level 3, Dauer 3, Stärke Mittelfeld,
 10.09.1993), **FILE02** wie FILE01, nur Eintritt 13 → 17 DM, **FILE03** = FILE02 nach drei Spieltagen (20.09.1993).
-Alle drei: 47.949 Byte, beide Prüfsummen gültig.
+Alle drei: 47.949 Byte, beide Prüfsummen gültig. Weitere Stände FILE05–FILE08, FILE10, FILE11 (Abschnitte unten; FILE04 gehört zu PR #191).
 
 ## Fundstellen in `em.exe` `[ORIGINAL]`
 
@@ -34,7 +34,7 @@ Alle drei: 47.949 Byte, beide Prüfsummen gültig.
 | `0xB9` | 1 | Startschlüssel `random(0..255) + 0x6E` (8 Bit, `0x5BBF8`) |
 
 Im Modus „nur Weltkugel“ kopiert der Kopf vorher den Namen des Nationalteams (`[0x6AC]`) über den Vereinsnamen des
-Managers (`0x5B556`–`0x5B57F`); ob das Original ihn danach zurückschreibt, ist offen (kein Stand in diesem Modus).
+Managers (`0x5B556`–`0x5B57F`); er wird **nicht** zurückgeschrieben und landet so auch im Vereinsblock (FILE11).
 
 ## Verschlüsselung und Prüfsumme `[ORIGINAL]`
 
@@ -197,15 +197,108 @@ FILE01 → FILE02: im ganzen Klartext genau **ein** Byte verschieden (`0x973F`).
 `20D`, `D0F4`, `1FD`, `A891`, `A895`, `A075`, `A88D`, `A0CB`, `965B` (21 Byte), `far:9657` (Vereine), `8257`,
 `far:8253` (Spieler), `5DC3` (Kader), `5D7B`, `5A20`, `03B7`, `5CCB`, `07A9`, `AB7B`, `C313`, `A969`.
 
+## Spielstände für das Original erzeugen: `emtool hok patch`
+
+Spur `hok-patch`. Schreiber: `src/EishockeyManager.Formats/OriginalSaveGamePatcher.cs` (`Encode` ist das Gegenstück zu
+`OriginalSaveGame.Read`; Lesen und Wiederschreiben ergibt an FILE01–03 **byteidentische** Dateien – damit sind
+Verschlüsselung und beide Prüfsummen auch beim Schreiben belegt).
+
+```
+emtool hok patch <vorlage> <ziel> [--manager n] [--id n] [--force] feld=wert …
+```
+
+Gelesen wird die Vorlage (Prüfsummen müssen stimmen), geändert werden nur die genannten Felder, Klartextkopf mit
+Namen, Füllbyte und Startschlüssel bleiben, Prüfsummen werden neu berechnet, die Spielstand-ID wird neu gewürfelt
+(sonst weist das Original einen in derselben Sitzung gesicherten Stand ab, siehe oben). Das Ziel wird nie über die Vorlage
+oder eine vorhandene Datei geschrieben (außer `--force`).
+
+| Feld | Wirkung | Fundstelle |
+|---|---|---|
+| `konto=<DM>` | Konto, intern Drittel-DM (×3) | `0x97EA` |
+| `eintritt=<DM>` | Eintritt 1–99 `[APPROX]` Obergrenze | `0x973F` |
+| `stadion=a,…,i` | neun Stadionstufen je 0–9 `[APPROX]` Obergrenze | `0x9771` |
+| `sitz=`, `steh=` | Sitz-/Stehplätze | `0x9771+0x1D`/`+0x21` |
+| `datum=TT.MM.JJJJ` | Tag, Monat (im Stand 0-basiert), Jahr, Jahr im Kopf `0x0A` | `0x5A20/1C/18` |
+| `zaehler=<n>` | Tageszähler | `0x3B7` und `0xA969` |
+| `spieltag=<n>` | nächster Spieltag aller drei Ligen und Kopfbyte `0x0F` | `0x7A9`–`0x7AB` |
+| `level=<0-5>` | Regler `0x118` und `0xED8 = 5 − Level` | em.exe `0x2988D` |
+
+`manager` (Standard 0) wählt den Datensatz für Konto, Eintritt und Stadion. **Abgewiesen** mit Begründung: `dauer`
+(Zuordnung zum Spielende `0x5A14` nicht belegt), `liga` (würde Verein und Tabelle betreffen), `staerke` (wirkt nur bei
+der Erzeugung der Mannschaften); unbekannte, doppelte und außerhalb des Bereichs liegende Werte ebenfalls.
+
+Belegt im Original (Nutzer, 30.10.2026, DOSBox 0.74-3): `hok patch FILE01.HOK FILE04.HOK konto=2000000 eintritt=20
+datum=20.09.1993 zaehler=11 spieltag=4` lädt ohne Meldung; Hauptmenü zeigt „Mittwoch, 20. Sept. 1993“, „4.Spieltag“ und
+2.000.000 DM, der Stadion-Bildschirm Eintritt 20 DM und Konto 2.000.000 DM, übrige Stadionwerte wie FILE01.
+
+Grenzen: `datum`, `zaehler` und `spieltag` ändern **nur** diese Zähler, nicht Tabelle, Ergebnisse (`0xA0CB`), Form oder
+Kader; Datum und Spieltag müssen vom Nutzer zusammenpassend gewählt werden (FILE03: 20.09.1993 ↔ Zähler 11 ↔ Spieltag 4).
+
+`[APPROX]` Spielstand-ID: Alle drei Stände haben eine vorzeichenerweiterte 16-Bit-ID im Bereich `0x8000`–`0xFFFF`
+(−26229, −20251, −27317), obwohl die Notiz zu `0x5BB51` `random(0..0x8FFF)+1` nennt – die Formel ist offen. Der Patcher
+würfelt daher im beobachteten Bereich; das Original vergleicht die ID nur mit seiner Liste (`0x5C572`).
+
+## Kader, Spieler, Training, Taktik (an FILE05 belegt)
+
+**FILE05** = FILE03 unverändert neu gesichert (Klartext identisch). Abgleich mit den Bildern „Mannschaft“, „Aufstellung“,
+„Taktik“, „Verträge“, „Transfer“ und „Training“ des Nutzers; Ausgabe `emtool hok dump` (Abschnitt Kader/Transfermarkt).
+
+**Kaderplatz** (`0x5DC3` + 0x618 · Manager-Satz + 0x34 · Platz, 29 Plätze; Manager-Satz 4 = Transfermarkt):
+
+| Offset | Inhalt | Beleg |
+|---|---|---|
+| `+0x0A` | eingesetzt (1 = Status „IM TEAM“ oder „RESERVE“) | 22 Plätze = „Eingesetzt: 22“; J.SCHULZ, DOBRYZINSKI, SANDNER ohne Status = 0 |
+| `+0x0F` | Index im Spielerpool `far:8253` | Namen aller 25 Spieler und 7 Marktspieler |
+| `+0x10`–`+0x12` | Stärken (drei Werte wie in der Spalte STÄRKEN) | alle 32 Spieler |
+| `+0x15` | Reihe 1–3 (untere Bits), Bit 0x80 = Sturm; der eingesetzte Torhüter hat Reihe 1 | Aufstellung: Reihen 1–3, TW Nr. 2 |
+| `+0x06` | Spiele (Spalte SP); nach einem Kauf mit den Spielen beim alten Verein | alle 25; DAFFNER nach Kauf 2 (FILE07) |
+| `+0x0B` | Vertragsdauer in Jahren (Spalte V.DAUER) | FILE05 alle 2 = „2 Jahre“; FILE07 DAFFNER 1 (Angabe Nutzer: 1 Jahr) |
+| `+0x1C` | Spiele für den jetzigen Verein (nach einem Kauf 0) | alle 25, FILE07 |
+| `+0x22` | Tore (TO) | alle 25 |
+| `+0x28` | Gehalt (4 Byte, Drittel-DM) = Spalte WERT bei „Verträge“ | alle 25, z. B. HEISS 17.100 DM |
+| `+0x2C` | Preis (4 Byte, Drittel-DM) = Transferliste „(K)“; Leihe „(L)“ = ein Drittel davon. Nach dem Kauf steht dort der vom Nutzer gebotene und bezahlte Kaufpreis (FILE07) | 7 Marktspieler, FILE07 |
+| `+0x00`–`+0x05`, `+0x07`–`+0x09`, `+0x0E`, `+0x13`, `+0x14`, `+0x16`–`+0x1B`, `+0x20`–`+0x27` | offen (Kandidaten: Strafminuten 2m/5m, Spalte E) | |
+
+**Spielerpool** `far:8253` (200 × 33, Struktur aus `reverse-engineering.md`): Name `+0x00`, Talent `+0x12`, Alter `+0x14`
+(Transferliste: KÜNAST 24, STARTSCHEW 31, KJELLBERG 32, D.HEGEN 33), Grundstärken `+0x15`–`+0x17` (beim Markt = Stärken
+im Kaderplatz, im eigenen Kader nach dem Training teils abweichend), Rollenwert `+0x18` (Torhüter 0, Abwehr 25–41,
+Sturm 76–89), Besitzer `+0x1A` (**4 = Transfermarkt**, nicht 6 wie in `reverse-engineering.md`), Verein `+0x1D`.
+
+**Training** `0xA8A1`: je Manager 28 Byte = 7 Tage (Mo–So) × 4 Felder (oberer Kasten 2, unterer Kasten 2), Wert = Art
+in der Reihenfolge der Leiste. FILE05 = Standardplan, alle 28 Felder stimmen mit dem Bild.
+
+**Taktik:** Modi `0xA6FB`/`0xA707` = 0 („AUTOM.“), Werte `0xCAE9` alle 0 – bei Automatik stehen die angezeigten Werte
+(40/20/20/15/20/0 und 0/5/6/4/4/0) nicht im Spielstand, sondern werden berechnet.
+
+## Gezielte Änderungen FILE06–FILE08, neue Spiele FILE10/FILE11
+
+| Stand | Änderung (Nutzer) | Unterschied im Klartext |
+|---|---|---|
+| FILE06 | aus FILE05: BRANDL aus Reihe 3 genommen, DOBRYZINSKI hinein | Kaderplatz 12 `+0x0A` 1→0, `+0x15` 0x83→0; Platz 19 `+0x0A` 0→1, `+0x15` 0→0x83. Dazu `0xCC73` (6 Byte 0 → 2 3 3 2 3 3), `0x375` 1→0, Vereinssatz Köln `+0x26` 48→55 (Deutung offen) |
+| FILE07 | aus FILE05: DAFFNER vom Markt gekauft (Liste: 305.000 DM), Sponsorzuschuss 220.000 DM angenommen | Konto −180.000 DM (737.354 → 557.354). Pool-Satz 158 `+0x1A` 4→0 (Besitzer), `+0x1D` 3→2 (Verein Köln). Neuer Kaderplatz 25: Pool 158, Stärken 67 88 51, SP 2, Gehalt 9.900 DM, `+0x2C` **400.000 DM** = im Kaufdialog eingegebenes Gebot (Angabe Nutzer: höher als der Listenpreis, damit es nicht abgelehnt wird; 400.000 − 220.000 Zuschuss = 180.000), Vertragsdauer `+0x0B` = 1, Reihe 3 Sturm. Automatisch: LALA aus Reihe 3, HANEMANN nicht mehr eingesetzt (weiter 22 eingesetzt). Markt rückt nach. Teamwerte Köln (`+0x19`, `+0x1B`, `+0x1D`) neu berechnet |
+| FILE08 | aus FILE05: Bankkredit 701.000 DM, Training Mi oben/oben → Freizeit | Konto +701.000 DM; Manager 0 `0x9806` (= `0x97F6` + 4 · 4, Darlehen Bank) = −2.103.000 Drittel; Bank-Satz (Manager-Satz 4): Konto `+0x18F` = −2.103.000, Darlehen von Manager 0 `+0x19B` = +2.103.000. Training `0xA8A1` + 8 (Mittwoch, erstes Feld) 5 → 1: **Art 1 = Freizeit** (Leiste: 0 Pinguin, 1 Strand, …) |
+| FILE10 | neues Spiel, nur Fahne, „Tom“, MANNHEIMER ERC | `0xD0B9` = 2 (nur Fahne), Vereinsindex 1 = MANNHEIMER ERC: **die Vereinsindizes werden je Spiel neu verteilt** (FILE01: Index 1 = KREFELDER EV) |
+| FILE11 | neues Spiel, nur Weltkugel, nach dem Sprung | `0xD0B9` = 1, Datum 14.04.1994, `0xA70E` = 5 (Bundestrainer am Zug), `0x6AC` = 54 (Deutschland), `0x256` = 30.000 (Highscore-Schlüssel „nur Weltkugel“). Kopf: Liga-Byte 0, Weltkugel-Byte 1, Verein „DEUTSCHLAND“. Der Vereinssatz des Managers (Index 7) heißt im gesicherten Block ebenfalls **„DEUTSCHLAND“**: Die Kopfroutine überschreibt den Vereinsnamen vor dem Schreiben der Blöcke und stellt ihn nicht zurück |
+
+Spielmodus `0xD0B9`: 1 = nur Weltkugel, 2 = nur Fahne, 4 = beide – bestätigt (wie `wettbewerbe.md`).
+
+## Falsche Prüfsumme: „Der kleine Mogelguru“ `[ORIGINAL]`
+
+`KAPUTT.HOK` (FILE03 mit falscher letzter Prüfsumme) führt im Original zum Bildschirm „DER KLEINE MOGELGURU /
+VERABSCHEUT IHRE TATEN !“ mit „SOLLTE ES IHNEN ETWA PASSIERT SEIN, DAß SIE OHNE JEGLICHE BÖSE ABSICHT MIT EINEM
+MONITOR MANIPULIEREN WOLLTEN ?“ (Texte DGROUP `0x2664`, `0x269A`, `0x26AF`; Fehlercode 5, Anzeige ab `0x5CEFA`).
+Bild: Referenz-Repo `original/spielstaende/bilder/kaputt_mogelguru.png`. Für `hok-patch`: Prüfsummen müssen stimmen.
+
 ## Offene Punkte
 
 - Deutung der Blöcke ohne Eintrag in der Tabelle, besonders `8257` (0x1400), `AB7B` (0x1594), `D294` (0xA98),
   `C313` (0x7D0), `D0F4`, `5D7B` (Permutation der 36 Vereine, ändert sich mit dem Spieltag; nicht die Tabelle).
 - Vereinsdatensatz: in FILE03 ändern sich `+0x17`–`+0x3A` (Form, Teamwerte, weitere Statistik?). Punkte und Tore der
   Tabelle stehen dort nicht als einfache Zahl; vermutlich berechnet das Original die Tabelle aus `0xA0CB`.
-- Spielerpool `far:8253` (200 × 33) und Kaderplätze `5DC3` (6 × 0x618, Platz 0x34) gegen die Spielerstruktur in
-  `reverse-engineering.md` prüfen (braucht einen Stand mit bekanntem Kader, z. B. Bild „Mannschaft“).
-- Kopf im Modus „nur Weltkugel“, Stände mit mehreren Managern, Saisonwechsel, Bundestrainer: noch kein Stand.
-- Text und Ablauf der Meldung bei falscher Prüfsumme (Fehlercode 5).
-- `0xD0B9` = 4 bei „Fahne und Weltkugel“ (bisherige Notizen nennen 1 = nur Weltkugel, 2 = nur Fahne).
+- Kaderplatz: offene Bytes (Liste oben), Spalte „E“ (zweistellig bei „Mannschaft“, dreistellig mit führender 0/1 bei
+  „Transfer“), Strafminuten 2m/5m.
+- Kauf: Annahmeregel für Gebote unter/über Listenpreis (em.exe); wo der Sponsorzuschuss steht.
+- `0xCC73`, `0x375`, Vereinsfeld `+0x26` (ändern sich mit der Aufstellung, FILE06).
+- Stände mit mehreren Managern (FILE09 fehlt), Saisonwechsel, DEB-Pokal.
+- Ablauf nach dem Mogelguru-Bildschirm (Rückkehr, geladener Stand behalten?).
 - Spielende `0x5A14` = 22222 bei Dauer 3 (unbegrenzt?).

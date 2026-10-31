@@ -33,8 +33,9 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
 **Zuständigkeit für gemeinsame Dateien (R7V-177-01, #180):**
 - `Core/CupsNational*.cs` (auch `PlayFriendly` in `CupsNational.GameState.cs`) gehört **allein** `weltkugel-dosbox`.
   `spielberechnung` ändert dort nichts: `MatchEngine.Play(Club, Club, Random)` bleibt mit unveränderter Signatur als
-  Einstieg „nur Ergebnis“ erhalten; die neue Berechnung mit Ereignissen bekommt eine eigene Methode. Freundschafts- und
-  WM-Spiele des Nationalteams stellt die Leitstelle in der Integration auf die neue Methode um (nach beiden Spuren).
+  Einstieg „nur Ergebnis“ erhalten; die neue Berechnung mit Ereignissen bekommt eine eigene Methode. Die
+  Freundschaftsspiele (`PlayFriendly`) stellt die Leitstelle in der Integration auf die neue Methode um; die WM-Spiele
+  (`CupsWorld.cs`) stellt `spielberechnung` selbst um und ruft `RatedNation` dabei nur auf (#183).
 - Bestehende Referenz- und Mehrsaisontests (`RngTwinProbeTests`, `GameModeTests.Mode4_ReferenceValues_Unchanged`,
   `FinanceCalibrationTests`, `DebCupTests`/`EuropeanCupTests`/`WorldCupTests` Mehrsaisonproben,
   `SaveLoadScreenTests`, `SeasonUiTests`, `DebCupDrawFlowTests`, Schemaabdruck in `SaveGameTests`): nur Sollwerte
@@ -42,6 +43,9 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
   `weltkugel-dosbox`, `spielberechnung`), je Fall begründet. Konflikte löst die Leitstelle in der Integrationsfolge oben;
   `spielberechnung` ermittelt ihre Sollwerte auf dem integrierten Stand neu.
 - Neue Tests jeder Spur in eigenen Dateien (`<Spurname>Tests.cs` bzw. nach Befund), keine fremden Testdateien sonst.
+  Gemeinsame Testhelfer (`tests/EishockeyManager.Core.Tests/TestSeason.cs`, `tests/EishockeyManager.UI.Tests/KeepSquadHelper.cs`)
+  nur additiv ändern; die Leitstelle führt sie in der Integration zusammen (#184).
+- `docs/reverse-engineering.md`: jede Spur nur in einem eigenen Abschnitt (#185).
 - `menue-befunde` ändert `MainMenuScreen.cs` höchstens minimal (Leiste); `weltkugel-dosbox` besitzt `TileLocks.cs` und
   `NationalMenu.cs`.
 
@@ -72,7 +76,11 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
   `CupsGroup.cs`, `CupsWorld.cs` nur für den Wechsel auf die neue Methode – **nicht** `CupsNational*.cs` (siehe oben),
   `Core/SaveGame.Migration*.cs` (neue Datei), `docs/reverse-engineering.md`, neues `docs/spielberechnung.md`, Tests.
 - **Modell:** Claude Opus 5.5 (Review: GPT-6 Astra).
-- **Status:** offen.
+- **Status:** in Integration #198 (zuletzt, Schema 10 → 11); vorher: fertig zur Review, PR #186 (Claude Code). Teil 1–2: Rechnung des Originals (0x9F5C, 0x368B1/0x977F, 0xA484,
+  Strafbank/Strafen 0x35540/0x35818, Minutenablauf, schneller Weg der Pokale), Statistik 0x5028/0x4DB6, Schema 10. Teil 3:
+  `MatchEngine.PlayWithEvents` in Liga, Play-offs, Aufstiegsrunde, DEB-Pokal, Europapokal und WM; Zähler je Saison;
+  Mehrsaisonprobe und neue Sollwerte auf dem Branch (Nachziehen in der Integration). Offen (`[APPROX]`): Managerteil
+  0x386D1/0x378C5/0x98F8/0x87F7/0x8EF2, Verletzungen im Spiel. Stand: `docs/spielberechnung.md` §8, §11.
 
 ### Spur `kader-start` – Startwerte der Kaderspieler (#168)
 
@@ -83,7 +91,7 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
   UI-Video bzw. die Eisbären-Reihe; (3) Mehrsaisonprobe mit begründeten Abdruckänderungen; (4) Schema nur bei neuem Zustand.
 - **Dateigrenzen:** `Core/Squad.Setup.cs`, `Core/NewGame.cs` (minimal), `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** in Integration #198 (Integration Runde 7); vorher: umgesetzt, Review offen (#187): Basis aus Tabelle DGROUP 0x4B42 (Liga × Start-Stärke); Folgepunkt Szenario `pixel-verein` (Start-Stärke wie folge01) siehe PR.
 
 ### Spur `boerse-start` – Börse zu Spielbeginn (#169)
 
@@ -94,7 +102,7 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
 - **Dateigrenzen:** `Core/FinanceStocks.cs`, `UI/Screens/Manager/FinanceScreen.cs`, `Tools/Scenarios/` (eigene Datei),
   `docs/finanzen-rekonstruktion.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** in Integration #198; vorher: umgesetzt in PR #188 (Claude Code): Kursmodell und Startverlauf nach em.exe, Ausschnitt nach 0x58BD4; Schema 9 → 10. Offene Befunde in `docs/finanzen-rekonstruktion.md`, Abschnitt „Börse“.
 
 ### Spur `weltkugel-dosbox` – Befunde aus den DOSBox-Aufnahmen „nur Weltkugel“ (#175)
 
@@ -114,7 +122,10 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
   `Tools/Scenarios/Wettbewerbe.cs` (Ablauf `nurfahne`),
   `FriendliesScreen.cs`, `Core/CupsNational*.cs`, `docs/wettbewerbe.md`, `docs/dosbox-befunde.md` (Status), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen (#175 gemergt).
+- **Status:** in Integration #198; vorher: Teil 1 in #189: „Highscore“ im Modus 1 offen, Endrunden-Fenster, 71b27de übernommen,
+  Regressionstests Freundschaftsspiele, Energie 70 beim ersten Freundschaftsspiel (`[APPROX]` 0x3BB51). Ausgelagert:
+  Taktik-Startwerte #192, Länderwerte aus der Aufstellung #193, Paarungsansicht WM #194, Modus-1-Halt #195; Abzug je
+  Spiel bei `spielberechnung`.
 
 ### Spur `menue-befunde` – Nachrichtenleiste (#170) und Handbuchfrage des Originals
 
@@ -128,7 +139,7 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
 - **Dateigrenzen:** `UI/Screens/Manager/NewsBar.cs`, `MainMenuScreen.cs` (minimal, begründet), `docs/portierung.md`,
   `docs/reverse-engineering.md` (Abschnitt Kopierschutz), Tests.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen.
+- **Status:** in Integration #198; vorher: umgesetzt, PR #190: Leiste (#170) und Handbuchfrage (#185); wartet auf Review.
 
 ### Spur `hok-patch` – Spielstände für das Original erzeugen (Nutzeranforderung)
 
@@ -142,7 +153,46 @@ Integration:         kader-start → boerse-start → weltkugel-dosbox → menue
 - **Dateigrenzen:** `src/EishockeyManager.Formats/OriginalSaveGame*.cs`, `src/EishockeyManager.Tools/Hok*.cs`,
   `docs/formate/spielstand-original.md`, Tests. Keine Spielstände ins Code-Repo.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen (#176 gemergt).
+- **Status:** in Integration #198 (mit #197, Nachtrag `hok-format` an FILE05); vorher: Claude Code, `paket/hok-patch`; Abnahme (3) vom Nutzer am 30.10.2026 bestätigt (Bilder, siehe PR #191); wartet auf unabhängiges Review.
+
+### Integration Runde 7 (30.10.2026)
+
+Branch `integration/runde-7` von `main` `15d0733`, Leitstelle Claude Code. Entscheidung Nutzer: alle Spuren gemeinsam,
+sobald `spielberechnung` fertig ist. Zusammengeführt in Planfolge: #187 (`kader-start`, Head `97616de`), #188
+(`boerse-start`, `b0d793d`), #189 (`weltkugel-dosbox`, `fd707e7`), #190 (`menue-befunde`, `2c1ebbd`), #191 (`hok-patch`,
+`3031da2`), #197 (`hok-format` Nachtrag, `21c36a3`), zuletzt #186 (`spielberechnung`, `d4c2aa6`).
+
+- Konflikt #188 × #186: beide Migration 9 → 10. `boerse-start` bleibt 9 → 10 (`SaveGame.Migration9.cs`),
+  `spielberechnung` wird 10 → 11 (`SaveGame.Migration10.cs`), `SchemaVersion` = 11, Schemaabdruck `6F8C2BA719E292F7`.
+  **Integrationsbefund R7-01:** Schema 10 gibt es in zwei Formen (Börse neu ohne Torhüterzähler bzw. Torhüterzähler mit
+  altem Kursmodell); 10 → 11 holt deshalb immer zuerst den Börsenschritt nach (wirkt nur auf Aktien mit `BasePrice`).
+  Regressionstest `IntegrationRunde7MigrationTests` (Form `spielberechnung` und echte Kette 9 → 10 → 11).
+- Konflikte in Dokumenten: `docs/reverse-engineering.md` (`menue-befunde` hatte die Zeilenenden der ganzen Datei
+  umgestellt; übernommen ist nur der eigene Abschnitt „Kopierschutz“), `docs/formate/spielstand-original.md` (beide
+  Abschnitte übernommen).
+- **Freundschaftsspiele** (`PlayFriendly`, `CupsNational.GameState.cs`) laufen jetzt über `MatchEngine.PlayWithEvents`
+  wie ein WM-Gruppenspiel (`[APPROX]` Wettbewerbszuordnung); damit nutzt kein Spiel mehr die alte Näherung.
+- **Sollwerte** auf dem integrierten Stand neu: `RngTwinProbeTests` (6), `Mode4Reference`, `SpielberechnungAnschlussTests`
+  (2), `DebCupDrawFlowTests`, Schemaabdruck. Ursache je Spur in deren PR und in den Testkommentaren; der Integrationswert
+  ist ihr Zusammenwirken (Startwerte → Teamwerte und Gehälter, Börse → FinanceRandom, Spielberechnung → alle Ergebnisse
+  und Haupt-/Pokalquelle, Freundschaftsspiele → Pokalquelle im Modus 4). Ein schrittweiser Zwillingsvergleich der
+  Integration gegen den Stand von `spielberechnung` allein wurde **nicht** gemacht. Auffällig für das Review: im
+  Modus 4 und in der UI-Probe wird Verein 2 bzw. 12 mehrfach Meister (Spielstärke der neuen Berechnung prüfen).
+- `FinanceWerbungTests.FourSeasonChanges_SponsoringStaysConsistent`: Seed 12 statt 11 – bei Seed 11 läuft im
+  Probenzeitraum kein Vertrag mit Option mehr aus; Prüfziel unverändert.
+- Zusammenspiel: `IntegrationRunde7Tests` (Originaldaten): eine Saison Modus 4 über die Oberfläche (Börse mit vollem
+  Verlauf, keine Handbuchfrage, Sichern/Laden bytegleich) und ein Spieltag mit Ereignissen beim eigenen Verein (Spiele,
+  Tore = eigene Tore, Vorlagen ≤ 2 je Tor, Torhüterminuten).
+- Plan berichtigt: #183, #184, #185 (Zuständigkeiten oben).
+- **Review** (`docs/reviews/2026-10-30-integration-runde-7.md`, Head `eafbbae`, „Nein“): **R7-02** (#200, P2)
+  Angriffszuschlag zog `random(0, Angriff)` statt `lrandom(Angriff, 7)` (em.exe 0x9F92–0xA019) – behoben,
+  `IntegrationRunde7ReviewTests` (rot vorher); **R7-03** (#201, P2) Nationalteam zählte keine Spielerereignisse – behoben,
+  `IntegrationRunde7NationalCountersTests` (beide rot vorher); **R7-04** (#202, P3) Energie 70 unabhängig aus em.exe
+  0x3BB51 belegt (`IntegrationRunde7EnergyTests`). Danach alle Sollwerte neu; drei ergebnisabhängige Tests angepasst:
+  `FinanceCalibrationTests` (Pokalprämie des nun siegenden Oberligavereins herausgerechnet), `WeltkugelDosboxTests`
+  (Zahl der Ernennungen im Modus 4 hängt an den Ergebnissen: 1–3 statt genau 2), `IntegrationRunde7Tests` (Spielertore
+  ≤ Tore, im Original 1/5 der Tore ohne Torschützen, 0x5028). Meisterhäufung nach R7-02 in der Modus-4-Probe nicht mehr
+  (Meister 1, 13, –, 24, –); Tore je Spiel Originaldaten 6,9–7,4. Nachprüfung des Deltas ausstehend.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
@@ -162,6 +212,9 @@ Branch: `paket/hok-format` · Status: Analyse gemergt (#176, Review #178): Versc
 belegt, `emtool hok dump`, Doku `docs/formate/spielstand-original.md` (offene Liste dort). Entscheidung Nutzer:
 Sicher-/Ladesperre des Originals nicht übernehmen. Weiter in Runde 7 mit `hok-patch` (Spielstände fürs Original);
 Import/Export ins Remake danach.
+
+- Nachtrag (#197, Branch `paket/hok-format-2`): Kaderplätze, Spielerpool, Training und Taktik an FILE05 belegt;
+  Kaderausgabe in `emtool hok dump`. Spielstände FILE01–05 und `KAPUTT.HOK` im Referenz-Repo `original/spielstaende/`.
 
 ## Paket `wettbewerbe` – Paarungen, Stärken, Statistiken, Pokale
 

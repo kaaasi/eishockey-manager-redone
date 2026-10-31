@@ -12,9 +12,11 @@ internal static class HokDump
 {
     public static int Run(IReadOnlyList<string> args)
     {
+        if (args.Count >= 1 && args[0].Equals("patch", StringComparison.OrdinalIgnoreCase))
+            return HokPatch.Run(args.Skip(1).ToList());
         if (args.Count < 2 || !args[0].Equals("dump", StringComparison.OrdinalIgnoreCase))
         {
-            Console.Error.WriteLine("Aufruf: emtool hok dump <datei> [block …]");
+            Console.Error.WriteLine("Aufruf: emtool hok dump <datei> [block …] | emtool hok patch <vorlage> <ziel> feld=wert …");
             return 1;
         }
 
@@ -68,6 +70,21 @@ internal static class HokDump
             var stadium = 0x9771 - 0x965B;
             sb.AppendLine($"  Stadion-Stufen {string.Join(" ", Enumerable.Range(0, 9).Select(n => I16(r, stadium + 2 * n)))}, " +
                           $"Sitzplätze {I16(r, stadium + 0x1D)}, Stehplätze {I16(r, stadium + 0x21)}");
+        }
+
+        for (var record = 0; record <= 4; record++)
+        {
+            if (record < 4 && record >= count)
+                continue;
+            var squad = save.Squad(record);
+            sb.AppendLine(record == 4 ? $"Transfermarkt ({squad.Count}):" : $"Kader Manager {record} ({squad.Count}):");
+            foreach (var p in squad)
+            {
+                var line = p.Line == 0 ? "–" : $"{p.Line}{(p.Forward ? "S" : "A")}";
+                sb.AppendLine($"  {p.Slot + 1,2} {p.Name,-17} {p.Strength1,2} {p.Strength2,2} {p.Strength3,2}  Alter {p.Age,2} Talent {p.Talent} " +
+                              $"Rolle {p.RoleValue,2}  SP {p.Games} TO {p.Goals}  {(p.Dressed ? "eingesetzt" : "          ")} Reihe {line,-2} " +
+                              $"Vertrag {p.ContractYears} J., Gehalt {p.SalaryThirds / 3} DM, Preis {p.PriceThirds / 3} DM");
+            }
         }
 
         sb.AppendLine();

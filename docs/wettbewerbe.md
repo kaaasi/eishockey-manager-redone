@@ -197,7 +197,7 @@ Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader a
 | `[APPROX]` Kandidaten: alle deutschen Spieler (keine Ausländer) der Ligavereine und des Transfermarkts, nach Summe absteigend – das Original listet seine 200 ausführlich geführten Spieler (Kader der Manager, Transfermarkt) | 0x3C5C9 |
 | `[APPROX]` Stärke des Nationalteams = Mittel von (Kondition + Technik) / 2 über Torhüter und Reihen 1–3 der Aufstellung (16 Plätze, Lücken 0) plus Taktikzuschlag; ohne Aufstellung die Automatik (bester Torhüter, je Reihe 2 Verteidiger + 3 Stürmer). Aufstellung und Taktik: Abschnitt „Aufstellung und Taktik des Nationalteams“ | – |
 | `[APPROX]` Felder 0x10–0x12 des Kaderplatzes als Kondition, Technik, Form gedeutet (Spaltenfolge „KO TE FO“) | – |
-| `[APPROX]` Energie 70 beim Öffnen von „WM Vorbereitung“ (Kaderfeld 0x13) nicht übernommen: Bildschirme ändern beim Öffnen nichts | 0x3BB51; DOSBox: nach drei Freundschaftsspielen Energie aller Eingesetzten 46, Datum unverändert, Deutschland +3/+3/+5 (`docs/dosbox-befunde.md`) |
+| `[APPROX]` Energie 70 aller Kaderspieler (Kaderfeld 0x13) setzt das Original beim Öffnen von „WM Vorbereitung“, das Remake beim ersten Freundschaftsspiel der Saison vor dem Spiel (Bildschirme ändern beim Öffnen nichts; Nutzerentscheidung PR #189). Erneutes Öffnen setzt im Original wieder 70, im Remake nicht; Abzug je Spiel fehlt (Spur `spielberechnung`) | 0x3BB51; DOSBox: nach drei Freundschaftsspielen Energie aller Eingesetzten 46, Datum unverändert, Deutschland +3/+3/+5 (`docs/dosbox-befunde.md`) |
 
 Bildschirme (Aufbau aus em.exe; Videobilder seit der Reihe `bundestrainer`, Pixelvergleich steht aus;
 Bildschirmfotos `emtool screens gamedata ~/work/screens nationalteam`):
@@ -292,7 +292,8 @@ Maße wie oben; „Wertefelder“ = die 12 Felder Einsatz/Angriff): ganz 00058 r
 | Halt nach dem Sprung vor dem ersten WM-Spiel (Hauptmenü am 14. April); im Original bestätigt | DOSBox `dosbox/nur-weltkugel/06` (`docs/dosbox-befunde.md`) |
 | `[APPROX]` Modus 1 nur mit genau einem Manager („Los jetzt!“ mit Meldung gesperrt) | – |
 | `[APPROX]` Modus 1 ohne Europapokal, Auf-/Abstieg, Oberliga-Wechsel, Prämien, Ligastatistik, Finanzen, Training, Markt und Vertragsmeldungen (kein Tageslauf vor der WM) | – |
-| Menü des Bundestrainers schon vor der Ernennung, Mannschaft und Stärken bis dahin gesperrt; im Original bestätigt. **Abweichung:** „Highscore“ ist vor der Ernennung offen (Remake/Sperrtabelle: gesperrt) – offen | DOSBox `dosbox/nur-weltkugel/07–11` (`docs/dosbox-befunde.md`) |
+| Menü des Bundestrainers schon vor der Ernennung, Mannschaft und Stärken bis dahin gesperrt; im Original bestätigt | DOSBox `dosbox/nur-weltkugel/07–11` (`docs/dosbox-befunde.md`) |
+| „Highscore“ im Menü des Bundestrainers: Der Aufbau überschreibt Platz 6 der Reihe Manager mit „DGROUP 0x256 = 0 oder (Zug Manager 5 und Modus 4)“, ohne die Ernennung (0xD0BA) abzufragen. Modus 1 hat immer die Bestenliste 30000 → **offen**, vor wie nach der Ernennung (Spur `weltkugel-dosbox`, `NationalMenu.CoachHighscoreLocked`, Tests `WeltkugelDosboxTests`). Das WM-Video zeigt sie gesperrt (`bundestrainer_00042`, Saison 2008) – mit em.exe nur bei 0x256 = 0 erklärbar, offen | 0x44FBD–0x4504A; DOSBox `dosbox/nur-weltkugel/07`, `19` |
 | Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. „Tabelle DEB-Pokal“ und „Tabelle Europapokal“ rufen dieselben Bildschirme auf wie „DEB-Pokal“ und „Europapokal“ bei den Paarungen (0xE8:0x75 bzw. 0xF8:0x3E mit Seitenwert 3, Datei 0x4584A/0x4584C; Spur `tabellen-highscore`, `CupTableMenuEntries`). 0xE8:0x75 ist die Übersicht „DEB-Pokalspiele“ (Datei 0x32E23, Gegner und Ergebnisse), nicht die Auslosung – seit R4-01 (#108) als `DebCupGamesScreen` unter „Tabelle DEB-Pokal“ gebaut (Aufbau, Rahmenformel, Spalten, Farben im Klassenkommentar; [ORIGINAL] Seitentausch nach Termin 1 und 2, Überlauf-Punkt nur bei Verlängerung, Datumszeile ab Tag 212 weg; offen nur Penalty-gegen-Verlängerung und Punktform); die Paarungs-Kachel „DEB-Pokal“ öffnet seit demselben PR ebenfalls die Übersicht (im Original derselbe Stub); die Auslosung ist ohne Kachel und wird nur im Spielablauf gezeigt (Abschnitt „Live-Auslosung im Spielablauf“) | DGROUP 0x5149/0x5151, Datei 0x45B95, 0x45829 ff. |
 | Kachelsperren der Spielvorbereitung (Reihe Manager): „Neuer“ gesperrt bei vier Managern (DGROUP 0x386), „Werbung“ gesperrt bei der Spieldauer „eine Saison“ (Spielende DGROUP 0x5A14 = 1994) | Datei 0x45057, 0x45079, 0x2987C; `UI/Screens/TileLocks.cs` |
 
@@ -302,6 +303,15 @@ mittlere Abweichung / Anteil > 40: Fahne aus 10,4 / 4,5 % (`oberflaeche_0214`), 
 Vergleich beide an 9,0 / 2,0 % und 11,9 / 6,3 % (`0230`). Das Menü des Bundestrainers zeigt die Reihe `bundestrainer`
 (unten); ein Pixelvergleich steht noch aus
 (Bildschirmfotos: `emtool screens gamedata ~/work/screens weltkugel`).
+
+**Kachelsperren im Modus 2 gegen das Karriere-Video** (die Karriere läuft im Modus „nur Fahne“; Ablauf `nurfahne`):
+Das Video zeigt dieselbe Belegung wie das Remake – Tabellen 1. Liga, 2. Liga, Oberliga, DEB-Pokal, EuroCup, WM gesperrt
+(`karriere_00443`); Stärken 1. Liga, 2. Liga, Oberliga, Länderteams gesperrt, zwei leere Plätze (`karriere_03730`);
+Statistiken mit gesperrter WM-Statistik auf Platz 6 (`karriere_03442`). Mittlere Abweichung je Kachel (38 × 28):
+Tabellen 20,3 / 19,3 / 21,3 / 23,0 / 31,4 / **19,2**, Stärken 20,1 / 18,9 / 21,4 / **17,6** / 18,1 / 18,9, Statistiken
+35,4 / 24,7 / 26,2 / 31,4 / 28,0 / **19,6** (fett = gesperrte Kachel). Die Werte liegen über denen aus „Die Oberfläche
+von EM“, auch für unveränderte Kacheln; eine Verschiebung um ±1 Pixel verbessert sie nicht – das Karriere-Video ist
+unschärfer. Die gesperrten Kacheln liegen nicht schlechter als die übrigen.
 
 ### Bundestrainer im Modus 4 (Spur `bundestrainer-modus4`, `Core/CupsNationalMode.cs`)
 
@@ -315,7 +325,7 @@ und zum Saisonende (0x55809) sowie in jedem Modus über die Tabellensuche 0xE8:0
 | Ernennung wie im Modus 1 (Etat aufs Nationalkonto, Name des Managers für „Manager 5“), Modus 2 ernennt nie | 0x55436–0x554BA |
 | Gibt es danach weiter keinen Bundestrainer, werden die Werte Deutschlands ausgewürfelt | 0x554CF ff. |
 | An WM-Tagen (Ereignis 0x10) folgt nach den Vereinsmanagern der Zug „Manager 5“ (DGROUP 0xA70D = 0xA70E = 5) mit dem Menü des Bundestrainers | 0x55587–0x555D6 |
-| Sperrtabelle im Zug „Manager 5“ wie im Modus 1 (DGROUP 0x5159 + 42); „Highscore“ im Modus 4 ausdrücklich gesperrt (Wert = 0x256 = 0 oder Bundestrainer und Modus 4); im Modus 1 über 0x256 = 0 ebenfalls gesperrt | 0x45020–0x4504A, 0x289A3 |
+| Sperrtabelle im Zug „Manager 5“ wie im Modus 1 (DGROUP 0x5159 + 42); „Highscore“ im Modus 4 ausdrücklich gesperrt (Wert = 0x256 = 0 oder Bundestrainer und Modus 4); im Modus 1 offen (Schlüssel 30000, 0x2899D; DOSBox `dosbox/nur-weltkugel/07`) | 0x45020–0x4504A |
 | Am Saisonende kehren die Kaderspieler zurück, das Amt endet (in allen Modi); nur Modus 1 setzt 0xD0BA[0] neu | 0x557A5–0x5580E |
 | Infoleiste im Zug des Bundestrainers: WM-Gegner Deutschlands und Nationalkonto (wie Modus 1, Video `bundestrainer_00026`) | – |
 | `[APPROX]` Platzierung aus der Abschlusstabelle der Hauptrunde (Gesamt); das Original liest die zuletzt in place sortierte Reihenfolge von 0x5CCB (Sortierung 0x50E60 ff. auch nach Heim/Auswärts) | – |
@@ -343,8 +353,9 @@ und Unschärfe je Bild angepasst): mittlere Abweichung 7,9–8,1, 0,7 % der Pixe
 
 Offen (außerhalb dieser Spur): Die Tabellensuche setzt bei jedem Manager unter den ersten fünf zusätzlich Statusbit 0x40
 (Manager-Feld 0x974E, außer Modus 2, 0x553BD–0x553F2) → Saisonende-Symbol 8 (`docs/finanzen-rekonstruktion.md`), im
-Remake nicht geführt. Der Highscore-Schlüssel 0x7530 („nur Weltkugel“) ist im Original nicht erreichbar (0x28A34 liegt
-hinter der Bedingung „Fahne gedrückt“, 0x289A3) – Modus 1 hat dort keine Bestenliste.
+Remake nicht geführt. (Berichtigt in Spur `weltkugel-dosbox`: Der Highscore-Schlüssel 0x7530 „nur Weltkugel“ ist erreichbar
+– Vergleich mit 2 bei 0x2899D vor der Bedingung „Fahne gedrückt“ 0x289A3, `docs/highscore.md`; DOSBox
+`dosbox/nur-weltkugel/19` zeigt die Liste.)
 
 **Vorlagebilder (Modus „nur Weltkugel“):** Seit der Reihe `bundestrainer` (WM-Video, `docs/referenz-videos.md`;
 Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**
@@ -354,7 +365,8 @@ Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**
   00404) und an den WM-Tagen 16.–28. April (00450, 00515, 00545, 00603, 00630, 00700, 00726).
 - Kachelreihen und Sperren: Mannschaft = Aufstellung (vom Sprecher verdeckt), Taktik, gesperrt (Verträge), Transfer,
   Training, leer (00053, 00057, 00100); Stärken = drei gesperrt, „WM“ (Länderteams) offen, zwei leer (00108, 00136, 00611);
-  Manager = alle sechs gesperrt (00042, 00220, 00418). Passt zur Sperrtabelle DGROUP 0x5159 (Pixelvergleich steht aus).
+  Manager = alle sechs gesperrt (00042, 00220, 00418). Mannschaft, Stärken passen zur Sperrtabelle DGROUP 0x5159
+  (Pixelvergleich steht aus); „Highscore“ widerspricht DOSBox und em.exe (siehe oben).
 - „Spieler in WM-Kader“ 00044–00052; Aufstellung 00056 und Taktik 00058–00059 des Nationalteams.
 - „WM Vorbereitung“ 00104–00106 (Knopf „Heim“ 00106), 00116–00119, 00141–00156, 00224–00245, 00307–00323,
   00349–00352 („Auswärts“ 00350) u. a.; danach Banner „Freundschaftsspiel“ (00120) und Live-Spiel (00122–00129).
@@ -370,23 +382,28 @@ Bildnummer = `bundestrainer_<nummer>.png`) **liegen vor:**
 
 - ✅ Spielvorbereitung mit den Modusknöpfen – `folge01_00000`–`00151`, `folge08_00000`–`00052`, `speedrun_t1_00056`
   (außerdem „Die Oberfläche von EM“ 2:13–2:30).
-- ◐ Infoleiste am Saisonbeginn – „Vor dem ersten Spieltag“ im Vereinsmodus `folge01_00221`; Hauptmenü des Bundestrainers
-  am 14. April in Liga mit Weltkugel `eisbaeren_f24_00115`; im Modus „nur Weltkugel“ offen.
+- ✅ Infoleiste am Saisonbeginn – „Vor dem ersten Spieltag“ im Vereinsmodus `folge01_00221`; Hauptmenü des Bundestrainers
+  am 14. April in Liga mit Weltkugel `eisbaeren_f24_00115`; im Modus „nur Weltkugel“ (Saisonbeginn = Halt nach dem Sprung)
+  DOSBox `dosbox/nur-weltkugel/06`, nach „auto“ `30`.
 - ◐ Kachelreihen Statistiken, Tabellen und Paarungen – Vereinsmodus mit gesperrten WM-Kacheln (`folge01_00526`,
   `folge03_00018`, `folge06_01251`, `duell_s2a_01203`); Liga mit Weltkugel mit **offenen** WM-Kacheln: Tabellen/Paarungen
   `eisbaeren_f01_01431`, Stärken `eisbaeren_f01_01430`, Statistiken `eisbaeren_f01_01011`; Sperren im Modus
-  „nur Weltkugel“ weiter nur aus der Reihe `bundestrainer`.
-- ◐ „Tabelle WM“ – Gruppentabellen nach dem Spieltag vielfach (`eisbaeren_f35_00531`); ob über die Tabellen-Kachel
-  geöffnet, ist im Kapitelindex nicht unterschieden.
+  „nur Weltkugel“ aus der Reihe `bundestrainer` und DOSBox `dosbox/nur-weltkugel/07`–`11`, `30`, `40` (Fensterfotos).
+- ✅ „Tabelle WM“ – Gruppentabellen nach dem Spieltag vielfach (`eisbaeren_f35_00531`); über die Tabellen-Kachel vor dem
+  ersten Spiel DOSBox `dosbox/nur-weltkugel/12`, `13`. „Paarungen → WM“ ist im Original eine eigene Ansicht
+  „Gruppe n  m.Spieltag“ mit Knöpfen ←, „Endrunde“, „Gruppe 2“, → (DOSBox `20`, `21`) – im Remake noch die Tabelle, offen.
 - ✅ Die geöffneten Kacheln „Tabelle DEB-Pokal“ (Übersicht „DEB-Pokalspiele“: mit Ergebnissen `folge13_02545`, ohne Ergebnisse
   `duell_s2a_01217`, Endspiel `eisbaeren_f60_02758`) und „Tabelle Europapokal“ (`folge04_01241`–`01247`, `eisbaeren_f51_03346`,
   Endrunde `eisbaeren_f58_01323`).
 - ✅ WM-Statistik – `eisbaeren_f07_03843`, `eisbaeren_f56_01126`.
-- ✅ WM-Endrunde (K.-o.-Ansicht „WM-Endrundenspiele“) – `eisbaeren_f35_00646`, `eisbaeren_f44_01330`.
+- ✅ WM-Endrunde (K.-o.-Ansicht „WM-Endrundenspiele“) – `eisbaeren_f35_00646`, `eisbaeren_f44_01330`; vor den Spielen
+  „Die Paarungen stehen noch nicht fest...“ DOSBox `dosbox/nur-weltkugel/24` (seit Spur `weltkugel-dosbox` gebaut).
 - Saisonende im Modus „nur Weltkugel“ – offen (Saisonende im Vereinsmodus vielfach, z. B. `folge03_01807`).
 - ✅ Torszenen – `eisbaeren_f01_01149`–`01234`, `duell_s2b_00503`, `duell_s4c_02052`; Schalter in den Einstellungen
   `speedrun_t2_04024`.
-- Highscore am Spielende – offen (in keinem Video).
+- ◐ Highscore – über die Kachel DOSBox `dosbox/nur-weltkugel/19`; am Spielende offen (in keinem Video).
+- ◐ Spielvorbereitung ohne Modusknopf: Schläger mit Puck statt Notizbuch unten links (DOSBox `dosbox/nur-weltkugel/03`);
+  Bedeutung offen.
 
 Die Beschreibung in `docs/anforderungen/bildschirme.md` (Gegner aus Liga oder Europapokal, Heimspiel an einem freien
 Termin) stammt aus dem früheren Portierungsversuch und ist damit nicht belegt. Bildschirm „Paarungen Liga“: seit Spur
