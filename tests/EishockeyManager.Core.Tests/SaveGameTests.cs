@@ -25,13 +25,14 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(12, SaveGame.SchemaVersion);
+        Assert.Equal(14, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
-    // Schema 11: Börse (9 → 10) und Torhüterzähler (10 → 11), Integration Runde 7. Schema 12 (vorläufig, Spur statistiken):
-    // Club.LeaguePenaltyMinutes und SeasonEvent BestGoalie/TopScorer/FairPlay; die Leitstelle nummeriert in der Integration.
-    private const string ExpectedSchemaFingerprint = "B2B7851BFD67DB8F"; // Schema 12 (vorläufig): Taktik des Nationalteams, Spur nationalteam #192 – Leitstelle nummeriert in der Integration Runde 8
+    // Schema 11: Börse (9 → 10) und Torhüterzähler (10 → 11), Integration Runde 7. Integration Runde 8: Schema 12 Taktik des
+    // Nationalteams (Spur nationalteam #192), 13 Club.LeaguePenaltyMinutes und SeasonEvent BestGoalie/TopScorer/FairPlay
+    // (Spur statistiken), 14 Teamwerte des Laders (Spur spielstaerke-manager).
+    private const string ExpectedSchemaFingerprint = "E64F8C7CDC208BAC";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

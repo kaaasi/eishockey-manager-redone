@@ -161,14 +161,14 @@ public class StatistikenTests
         Assert.Equal(bytes, SaveGame.Save(loaded.Game));
     }
 
-    /// <summary>Migration der Spur (vorläufig 11 → 12): ältere Spielstände ohne Strafminuten laden mit 0.</summary>
+    /// <summary>Migration der Spur (12 → 13, Integration Runde 8): ältere Spielstände ohne Strafminuten laden mit 0.</summary>
     [Fact]
     public void OldSave_WithoutPenaltyMinutes_LoadsWithZero()
     {
         var game = NewGame1();
         TestSeason.PlayMatchDay(game);
         var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = SaveGame.SchemaVersion - 1;
+        root["schema"] = 12;
         var removed = 0;
         foreach (var club in root["vereine"]!.AsArray())
             if (club!.AsObject().Remove("LeaguePenaltyMinutes"))

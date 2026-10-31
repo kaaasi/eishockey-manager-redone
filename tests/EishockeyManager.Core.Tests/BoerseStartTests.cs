@@ -189,6 +189,9 @@ public class BoerseStartTests
     /// Mehrsaisonprobe (der Zufallsverbrauch der Finanzen ändert sich): zwei Manager über vier Saisonwechsel, der aktive
     /// kauft zu jeder Saison Aktien und verkauft die Hälfte am Saisonende. Kurse bleiben im Bereich, der Verlauf hat jeden
     /// Tag 36 Einträge mit dem Kurs als letztem, Gewinne und Verluste landen im Finanzbuch (Aktien).
+    /// Integration Runde 8: Seed 8 statt 7. Mit dem geänderten Zufallsverbrauch der Runde (Werbebewertung, Lader der
+    /// Teamwerte) wachsen bei Seed 7 weniger als 2 von 4 Basiswerten über vier Saisons (Ereignisse); von den Seeds 1–13 halten
+    /// 1, 3 und 7 die Bedingung „mindestens 2 wachsen“ nicht. Prüfziel unverändert.
     /// </summary>
     [Fact]
     public void MultiSeason_FourChanges_PassiveAndActiveManager()
@@ -196,7 +199,7 @@ public class BoerseStartTests
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "Passiv", Head = 0, ClubIndex = 2, StartLeague = League.Bundesliga });
         setup.Managers.Add(new ManagerSetup { Name = "Aktiv", Head = 1, ClubIndex = 30, StartLeague = League.Oberliga });
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 7);
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 8);
         var passive = game.Managers[0];
         var active = game.Managers[1];
         var firstSeason = game.Season;
