@@ -95,12 +95,12 @@ public class PlayerInfoWindowTests
         Assert.Equal("-( -)", PlayerDataWindow.CompetitionCell(f, 1, goals: true));
     }
 
-    /// <summary>[ORIGINAL] 0x041AC 0x7D6–0x82B: fremde Spielklasse blendet Gehalt aus, Marktwert ab „5 − Level“ &lt; 3.</summary>
+    /// <summary>[ORIGINAL] 0x041AC 0x7D6–0x82B: fremder Verein blendet Gehalt aus, Marktwert ab „5 − Level“ &lt; 3 (R8-D01, #253).</summary>
     [Theory]
     [InlineData(true, 2, "30.000 DM", "1.200 DM")]
     [InlineData(false, 2, "-", "-")]
     [InlineData(false, 3, "30.000 DM", "-")]
-    public void Data_MarketValueAndSalary_HiddenForForeignClass(bool same, int levelValue, string market, string salary)
+    public void Data_MarketValueAndSalary_HiddenForForeignClub(bool same, int levelValue, string market, string salary)
     {
         var p = Skater();
         p.MonthlySalary = 1200;

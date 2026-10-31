@@ -242,6 +242,14 @@ Nutzer 31.10.) `spielerinfo` (#249), `transfer-original` (#248), `optionen-kalen
   (Einstellungsbildschirm, Kalender, #228); `transfer-original` Teil 2 (Vertragsverhandlung 0x4A1DB, Gehalt 0x49A3B,
   Kaufablauf 0x494EF, Sperre nach Ablehnung, unaufgeforderte Angebote, Pixelvergleich).
 
+- **Review** `docs/reviews/2026-10-31-integration-runde-8.md`: R8-D01 (P2, #253) in der Integration behoben. P3 als
+  Restlücken: R8-A01 Spielstände aus den Spurbranches `statistiken`/`spielstaerke-manager` (vorläufige Schemanummer) laden
+  nicht; R8-A02 Seed-Proben hängen am Zufall (robustere Prüfung statt Seed-Wechsel); R8-C01 sieben ältere Core-Tests kaufen
+  zum Listenpreis und sind nur wegen des Seeds grün; R8-C02 Reihenfolge Geld/Unfair beim Gebot an einen anderen Manager;
+  R8-B01 Tabellentest ohne Regel „weniger Spiele“; R8-B02 Strafminuten im Ligaspiel nur indirekt getestet; R8-B03
+  Heimspiel-Zweig der Nationalteam-Taktik ungetestet; R8-B04 freie Nationalteam-Taktik behält Modus des Vorgängers; F46-01,
+  W51-01 (Doku-PRs #246, #251).
+
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): letzter Schritt vor v1.0 (Entscheidung Nutzer).

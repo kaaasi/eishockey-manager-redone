@@ -439,8 +439,8 @@ Aufstellung 0x3FFE0/0x40364 und Transferliste 0x465F1 gerufen; im Remake öffnet
   = Spielerwert 0x118:0x70 Art 0 (über 0x14C7:0x70); 2 Versicherung = +0x30 (0 → „keine“, sonst Betrag + „ DM“); 3 Sperren
   in Min. = +0x00 · 5 + +0x01 · 2; 4 Gehalt/M. = +0x28; 5 Vertrag = +0x0B Jahre („ Jahr“, bei > 1 „e“), bei +0x0C ≠ 0 „GELIEHEN“.
   Beträge der Felder 0, 1, 2, 4 werden aus Drittel-DM durch 3 geteilt (0x3CA/0x47C mit DGROUP 0x79D = 3) und mit „ DM“ angehängt,
-  0 wird zu „-“. **Ausblenden** (Versätze 0x7D6–0x82B): gehört der Spieler (Spielerpool +0x1D) nicht zur Spielklasse des Managers
-  (`[0xA70E · 0x1AF − 0x6991]`), ist das Gehalt immer 0 und der Marktwert 0, wenn „5 − Level“ (0xED8) < 3. Das erklärt „-“ bei
+  0 wird zu „-“. **Ausblenden** (Versätze 0x7D6–0x82B): gehört der Spieler (Spielerpool +0x1D = Verein) nicht zum Verein des Managers
+  (`[0xA70E · 0x1AF − 0x6991]` = Manager +0x14 = Verein; Vergleich der Vereinsindizes, Befund R8-D01 #253), ist das Gehalt immer 0 und der Marktwert 0, wenn „5 − Level“ (0xED8) < 3. Das erklärt „-“ bei
   Marktwert, Gehalt und Vertrag für fremde Spieler im Videobild.
 * **Balken** (Funktion 0xAC9 im Fenster, Wert 1–94 Pixel): Unterzahl = (+0x19 & 0xF) · 94 / 15, Überzahl = (+0x19 >> 4) · 94 / 15,
   Tendenz = (+0x0E − 30) · 100 / 38, Erschöpfung = (100 − +0x13) · 94 / 100. Rahmen: Rechteck Farbe 1, innen Farbe 0, Farbband mit acht

@@ -4,19 +4,20 @@ namespace EishockeyManager.UI.Screens.Team;
 
 /// <summary>
 /// Bei welchem Spieler und für wen das Spielerdaten-Fenster Marktwert und Gehalt zeigt. [ORIGINAL] em.exe Datei
-/// 0x041AC, Adressen 0x7D6–0x82B: Gehört der Spieler zu einer anderen Spielklasse als der Verein des Managers, ist das
-/// Gehalt immer ausgeblendet (Wert 0 → „-“) und der Marktwert ab „5 − Level“ &lt; 3 (Level 3–5).
+/// 0x041AC, Adressen 0x7D6–0x82B: Gehört der Spieler zu einem anderen Verein als dem des Managers (Vergleich Manager +0x14
+/// mit Spielerpool +0x1D, Adressen 0x7D6–0x801), ist das Gehalt immer ausgeblendet (Wert 0 → „-“) und der Marktwert ab
+/// „5 − Level“ &lt; 3 (Level 3–5). Transfermarkt-Spieler gehören nie zum Verein des Managers (Befund R8-D01, #253).
 /// </summary>
 /// <param name="MarketValue">Spielerwert in DM (Drittel-DM / 3) oder 0 für „unbekannt“.</param>
-/// <param name="SameClass">Spieler und Verein des Managers gehören zur selben Spielklasse.</param>
+/// <param name="SameClub">Der Spieler gehört zum Verein des Managers.</param>
 /// <param name="LevelValue">„5 − Level“ (DGROUP 0xED8, <see cref="TrainingRules.LevelValue"/>).</param>
-public readonly record struct PlayerDataContext(long MarketValue, bool SameClass, int LevelValue)
+public readonly record struct PlayerDataContext(long MarketValue, bool SameClub, int LevelValue)
 {
-    /// <summary>Marktwert sichtbar? (Ausblenden nur bei fremder Spielklasse und „5 − Level“ &lt; 3.)</summary>
-    public bool ShowMarketValue => SameClass || LevelValue >= 3;
+    /// <summary>Marktwert sichtbar? (Ausblenden nur bei fremdem Verein und „5 − Level“ &lt; 3.)</summary>
+    public bool ShowMarketValue => SameClub || LevelValue >= 3;
 
-    /// <summary>Gehalt sichtbar? (Bei fremder Spielklasse nie.)</summary>
-    public bool ShowSalary => SameClass;
+    /// <summary>Gehalt sichtbar? (Bei fremdem Verein nie.)</summary>
+    public bool ShowSalary => SameClub;
 
     /// <summary>Ohne Angaben des Aufrufers (Aufruf <c>Show(Player, long)</c>): Marktwert unbekannt, Gehalt sichtbar.</summary>
     public static PlayerDataContext Unknown => new(0, true, 0);
@@ -30,7 +31,7 @@ public readonly record struct PlayerDataContext(long MarketValue, bool SameClass
     public static PlayerDataContext Create(GameState game, Player player, Club? playerClub, Club ownClub, int level)
     {
         var thirds = game.PlayerValueOf(player, playerClub, PlayerValueKind.Price, new Random(player.Id), level);
-        var same = playerClub is null || CupClass.Of(playerClub) == CupClass.Of(ownClub);
+        var same = playerClub is not null && ReferenceEquals(playerClub, ownClub);
         return new PlayerDataContext(thirds / 3, same, TrainingRules.LevelValue(level));
     }
 }
