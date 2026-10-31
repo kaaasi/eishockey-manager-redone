@@ -274,3 +274,40 @@ Spurvorschlag und die Einordnung bekannter offener Punkte: **[re-abdeckung.md](r
 Fundstellen neu erzeugen. Neue Fundstellen bitte als Dateioffset mit Kennwort schreiben (`Datei 0x…`, `em.exe 0x…`),
 damit der Abgleich sie sicher erkennt.
 
+
+## Spielerwert 0x49D36 (Spur `spielerwert`)
+
+Spur `spielerwert`, Runde 8. Funktion Datei 0x49D36–0x4A1DA (Overlay 0x118 + 0x3D36, Einsprung `0x118:0x70`, 1189 Byte),
+umgesetzt in `Core/Player.Value.cs` (`PlayerValue.Compute`, Formel dort mit Fundstellen). Aufruf
+`f(Kaderplatz far*, Art)`; Ergebnis in Drittel-DM (32 Bit, vorzeichenbehaftet).
+
+* **Art** (Bit 0): 0 = Wert/Preis (Kaderplatz +0x2C), 1 = Gehalt (+0x28). Bit 1 (Preis / 3, Datei 0x4A0A7) setzt kein Aufrufer.
+* **Eingänge:** Kaderplatz +0x00/+0x01 (5-/2-Minuten-Strafen), +0x03–+0x05 (Tore je Wettbewerb, Gewichte 30/30/40),
+  +0x09 Bit 0x80 und +0x16 (Angebot und anbietender Verein, gesetzt im Tagesablauf Datei 0x7358/0x736E), **+0x0E Tendenz**
+  (30–68; Anzeige (Wert − 30) / 13 → „Fallend./Konstant./Steigend.“, DGROUP 0xB8C, Datei 0x41AE0; Start random(35, 65) Datei
+  0x4907A, täglich auf 30–68 begrenzt Datei 0x7BEA), +0x0F Poolindex, +0x10/+0x11 (Kondition, Technik – die Form +0x12 geht
+  nicht ein), +0x1C/+0x1E/+0x20 (Wörter, Gewichte 50/20/30); Spielerpool +0x14 Alter, +0x18 Rollenwert (0 = Torhüter ·1,6),
+  +0x1D Verein → Spielklasse 0x34FD5; DGROUP 0xED8 (5 − Level, nur Gehalt). Tabellen DGROUP 0x5312 (Gewichte 58, 4, 4, 5, 4, 25
+  bzw. 70, 8, 7, 5, 8, 2) und 0x52C2 (Grundgehalt 2400 / 1800 / 990 Drittel nach Spielklasse 1 / 2 / 4).
+* **Zufall:** nur Preis mit Angebot eines Vereins ≤ 63: random(95, 100) (Datei 0x4A0F9); Verein > 63 → · 1,6.
+* **Beleg:** eigener 8086-Emulator (nicht im Repo) lief die Originalfunktion samt LXMUL 0x21CA, LDIV 0x227C, LXLSH 0x232A,
+  clamp 0x4BD35 und 0x34FD5; 2.000 Zufallsfälle gleich, 30 davon als Goldtest (`SpielerwertTests.Compute_MatchesOriginalFunction`).
+* **Aufrufer (#225, RA-01):** 12 Funktionen mit 21 Aufrufstellen (die „13“ in `re-abdeckung.md` ist falsch):
+
+| Funktion | Aufrufstellen (Datei) | Art | Zweck |
+|---|---|---|---|
+| 0x041AC Spielerdaten-Fenster | 0x48F1 | 0 | Anzeige Wert/Kaufpreis |
+| 0x06D7F | 0x6F35, 0x6F65 | 1, 0 | Gehalt (· x / 100 nach +0x28) und Preis eines Kaderplatzes |
+| 0x07169 Tagesablauf | 0x72EB, 0x79EC | 0 | Wert / 10000 gegen random(0, 180): Angebot eines Vereins |
+| 0x26F20 Saisonende | 0x27D2D, 0x27DF3 | 1, 0 | Gehaltsrechnung mit 147 − Alter; Versicherung zahlt Wert / 2 („Sie zahlt Ihnen … DM“) |
+| 0x28165 Spielstart | 0x29EB4, 0x29EE4 | 0, 1 | Startpreis und Startgehalt der Kaderplätze |
+| 0x3F833 Werbebewertung | 0x3F9E7, 0x3FA56 | 0 | Ø Wert / 5500, Stars Wert / 7000 (umgesetzt) |
+| 0x42CB1 Aufstellung | 0x42F11 | 1 | Gehalt, nachdem die Form aus dem Pool (+0x17) in +0x12 kopiert ist |
+| 0x465F1 Transferliste | 0x46E17, 0x47347, 0x47558 | 0 | Preise (Bit 0x40 bzw. Angebot 0x80; Markt = Satz 4, DGROUP 0x7623) |
+| 0x494EF | 0x4975C, 0x497A1 | 0, 1 | Preis und Gehalt nach +0x2C/+0x28 eines neuen Kaderplatzes (Kauf) |
+| 0x49A3B | 0x49C0F | 1 | Gehalt (Angebot) |
+| 0x4A1DB Vertragsverhandlung | 0x4A82C, 0x4AAAB | 1 | Gehaltsforderung; bei +0x30 = 0 zusätzlich Gehalt / 2 (Bedeutung offen) |
+| 0x5D04F Highscore | 0x5D26C | 0 | Vermögen + Wert / 2 je Kaderplatz (umgesetzt) |
+
+Einsatz im Remake: Highscore und Werbebewertung (diese Spur); Transfers, Verträge, Saisonende und Aufstellung folgen in
+`transfer-original` bzw. `spielerinfo`.

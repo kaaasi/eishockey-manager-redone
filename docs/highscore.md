@@ -36,7 +36,8 @@ Belege aus `em.exe` (Datei-Offsets; Overlay-Stub Highscore = 0x140:0x7A).
 - **Punkte** (Funktion 0x5D04F, `HighscoreRules.Points`), durch 20 geteilt, mindestens 1:
   Σ Bewertung·100 (Werbebewertung 0x100:0x57, `SponsorRating`); Stadion (Stufe·Preis/1000, Plätze·540000 und
   Stehplätze·405000 als **vorzeichenlose 32-Bit-Zahl**/10⁶ – das Produkt läuft über, 0x483 ist unsigned LDIV);
-  Vermögen (Drittel) min(·, 50 Mio)/2000; 25·max(0, 36−Platz−Versatz); 150·v je Pokalbyte 1–6; Mittel der Saisoncodes
+  Vermögen (Drittel, mit halbem Spielerwert 0x118:0x70 je Kaderplatz, Datei 0x5D26C; Formel `PlayerValue`, Spur spielerwert)
+  min(·, 50 Mio)/2000; 25·max(0, 36−Platz−Versatz); 150·v je Pokalbyte 1–6; Mittel der Saisoncodes
   ((36−Ligacode)·7, DEB-Code: Sieger 80 sonst 10·(Code&7); Europa nur bei DEB-Sieger: Sieger 130 sonst 20·(Code&7); ein
   Zweig „≥ 8“ ist nach der Maskierung `& 7` bei 0x5D41D unerreichbar),
   dazu 8·Meister + 6·Pokal + 10·Europa.
@@ -44,7 +45,9 @@ Belege aus `em.exe` (Datei-Offsets; Overlay-Stub Highscore = 0x140:0x7A).
   (`HighscoreTests.Points_MatchOriginalFunction`), 500 Zufallsfälle zusätzlich gleich. Die Emulator-Skripte liegen nicht im Repo.
 
 ## [APPROX]
-- Spielerwerte (Funktion 0x49D36) als Kaufpreis × 3/2 nachgebildet.
+- Spielerwerte: Formel 0x49D36 belegt (`PlayerValue`, `docs/reverse-engineering.md`), aber mit den Eingängen des Remakes:
+  Tore und Spiele nur gesamt (alles im ersten Wettbewerb), Tendenz als Mitte der drei Stufen, Angebot = Gebot auf der
+  Transferliste; eigener fester Zufallsstrom für Spieler mit Angebot.
 - Europapokal-Stufe auf Pokalbyte 1 abgebildet, Pokalbytes 2–3 und Meisterschafts-Bracketcode 0x35 nicht belegt.
 - Stempel = Sitzungsstempel; Level/Liga/Stärke des Schlüssels vom ersten Manager.
 - Nur Weltkugel (Schlüssel 30000) wird mit den vereinfachten Werten gewertet.

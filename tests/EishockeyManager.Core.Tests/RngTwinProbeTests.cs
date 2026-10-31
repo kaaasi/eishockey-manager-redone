@@ -70,6 +70,9 @@ namespace EishockeyManager.Core.Tests;
 /// begründet; der Integrationswert ist ihr Zusammenwirken (siehe docs/arbeitspakete.md, „Integration Runde 7“).
 /// Review-Befunde R7-02 (#200, Angriffszuschlag lrandom(Angriff, 7)) und R7-03 (#201, Zähler des Nationalteams): neu
 /// ermittelt; R7-02 ändert das Torbudget jedes Spiels und damit alle Ergebnisse und die Hauptquelle.
+/// Spur spielerwert (Runde 8): Die Werbebewertung rechnet mit dem Spielerwert nach 0x49D36 statt „Kaufpreis · 3“; das ändert
+/// die Bewertung und damit Werbeeinnahmen und Kontostände – drei synthetische Abdrücke neu (passiv Seed 3 und beide
+/// Originaldaten-Abdrücke unverändert). Gegenprobe: mit „Kaufpreis · 3“ nur in der Werbebewertung stimmen alle alten Abdrücke.
 /// </summary>
 public class RngTwinProbeTests
 {
@@ -77,9 +80,9 @@ public class RngTwinProbeTests
 
     [Theory]
     [InlineData(false, 3, "AF89F741C1A6B335")]
-    [InlineData(true, 3, "46C998874089DDCE")]
-    [InlineData(false, 11, "C927531F951586DA")]
-    [InlineData(true, 11, "0E56D6AC9ADCF258")]
+    [InlineData(true, 3, "59766C36BF9C23F0")]
+    [InlineData(false, 11, "5BB77F1A5A8F50DD")]
+    [InlineData(true, 11, "2FB9A4CF5547B71E")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);

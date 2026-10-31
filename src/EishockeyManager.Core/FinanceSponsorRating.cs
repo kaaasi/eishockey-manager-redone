@@ -14,7 +14,8 @@ namespace EishockeyManager.Core;
 /// </code>
 /// M, P, E sind 0/1 für „Verein ist gerade im Wettbewerb“ (Funktion 0x110:0x61, Masken 0x40 Meisterrunde, 0x08
 /// DEB-Pokal, 0x20 Europapokal, Datei 0x44A48): kein Titelzähler. Belege: docs/finanzen-rekonstruktion.md.
-/// Spielerwerte: Kaufpreis des Remakes × 3 (Drittel) [APPROX], Einheit von 0x118:0x70 nicht geprüft.
+/// Spielerwerte: <see cref="PlayerValue"/> (0x118:0x70, Preis, Drittel-DM; Spur spielerwert). [ORIGINAL] Die Funktion wird in beiden
+/// Schleifen je Spieler neu gerufen (0x3F9E7, 0x3FA56); ein Spieler mit offenem Angebot zieht dabei jedes Mal random(95, 100).
 /// </summary>
 public static class SponsorRating
 {
@@ -62,14 +63,22 @@ public static class SponsorRating
     /// Anzahl der Star-Spieler, höchstens 4. [ORIGINAL] 0x3F9B8–0x3FAA9: Ø = Σ(Wert / 5500) / Spielerzahl; je Spieler
     /// (mit eigenem Zug random(35, 55)) Star, wenn Wert / 7000 > Ø · random(35, 55) / 10 (32 Bit ohne Vorzeichen).
     /// </summary>
-    public static int StarCount(IReadOnlyList<long> valuesThirds, Random random)
+    public static int StarCount(IReadOnlyList<long> valuesThirds, Random random) =>
+        StarCount(valuesThirds, i => valuesThirds[i], random);
+
+    /// <summary>
+    /// Wie <see cref="StarCount(IReadOnlyList{long}, Random)"/>, der Wert der zweiten Schleife wird aber je Spieler neu bestimmt
+    /// (<paramref name="secondPass"/>, vor random(35, 55) – Reihenfolge wie 0x3FA56/0x3FA76).
+    /// </summary>
+    public static int StarCount(IReadOnlyList<long> firstPass, Func<int, long> secondPass, Random random)
     {
-        if (valuesThirds.Count == 0)
+        if (firstPass.Count == 0)
             return 0;
-        var average = valuesThirds.Sum(v => v / 5500) / valuesThirds.Count;
+        var average = firstPass.Sum(v => v / 5500) / firstPass.Count;
         var stars = 0;
-        foreach (var value in valuesThirds)
+        for (var i = 0; i < firstPass.Count; i++)
         {
+            var value = secondPass(i);
             var threshold = average * SquadSetup.Between(random, 35, 55) / 10;
             if ((ulong)(value / 7000) > (ulong)threshold && stars < 4)
                 stars++;
@@ -113,11 +122,13 @@ public static class SponsorRating
         var averageRank = recent.Count == 0 ? 6 : recent.Sum(h => h.Rank) / recent.Count;
         s += 12L * (11 - averageRank);
 
-        var values = club.Players.Select(pl => (long)TransferMarket.Price(pl) * FinanceRules.ThirdsPerMark).ToList();
+        var players = club.Players.ToList();
+        long Value(Player pl) => game.PlayerValueOf(pl, club, PlayerValueKind.Price, random, manager.Level);
+        var values = players.Select(Value).ToList();
         if (values.Count > 0)
         {
             s += AverageValueScore(values);
-            var stars = StarCount(values, random);
+            var stars = StarCount(values, i => Value(players[i]), random);
             s += (long)SquadSetup.Between(random, 20, 50) * stars;
         }
 
