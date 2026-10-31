@@ -47,7 +47,7 @@ public class MainMenuBefundeP3Tests
     }
 
     /// <summary>Regressionstest #216: Vorher blieb der Klick auf den Managerkopf ohne Wirkung.</summary>
-    [Fact]
+    [GameDataFact]
     public void ClickOnManagerHead_ShowsNewsBar_EvenWithoutNewMessage_AndChangesNoState()
     {
         var game = Synthetic();
@@ -61,7 +61,7 @@ public class MainMenuBefundeP3Tests
     }
 
     /// <summary>[ORIGINAL] 232 &lt; x &lt; 272 und 33 &lt; y &lt; 72 (0x4549D, 0x4548D–0x45495).</summary>
-    [Theory]
+    [GameDataTheory]
     [InlineData(232, 50, false)]
     [InlineData(233, 34, true)]
     [InlineData(271, 71, true)]
@@ -76,7 +76,7 @@ public class MainMenuBefundeP3Tests
     }
 
     /// <summary>Regressionstest #217: Vorher lief der Tag trotz Kader unter 10 Spielern weiter.</summary>
-    [Fact]
+    [GameDataFact]
     public void Coach_WithFewerThan10Players_GetsWarning_AndDayDoesNotAdvance()
     {
         var game = Synthetic();
@@ -97,7 +97,7 @@ public class MainMenuBefundeP3Tests
         Assert.Same(menu, d.Host.Current);
     }
 
-    [Fact]
+    [GameDataFact]
     public void Coach_WithEnoughPlayers_ContinuesWithoutWarning()
     {
         var game = Synthetic();
@@ -111,7 +111,7 @@ public class MainMenuBefundeP3Tests
         Assert.NotSame(menu, d.Host.Current);
     }
 
-    [Fact]
+    [GameDataFact]
     public void ClubManager_WithoutCoachRole_NeverGetsWarning()
     {
         var game = Synthetic();
