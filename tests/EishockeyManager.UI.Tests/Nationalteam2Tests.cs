@@ -223,4 +223,79 @@ public class Nationalteam2Tests
         Assert.Equal("Gruppe 1   60. Min.", screen.Title);
         Assert.True(ShowsTrophy(d));
     }
+    /// <summary>
+    /// WM-Statistik 0x3ADE1, DOSBox <c>17_wm_statistik_leer.png</c>: Die Kachel öffnet die WM-Statistik (vorher kein
+    /// Bildschirm); vor der ersten WM acht Zeilen „  0 P.“, darunter alle zwölf Länder in der Reihenfolge der laufenden WM
+    /// (Gruppe 1 oben). Kleine Flaggen aus kb\12 pixelgenau, Knöpfe mit Flagge; Öffnen ändert nichts.
+    /// </summary>
+    [GameDataFact]
+    public void WorldCupStatisticsTile_BeforeFirstWorldCup_LikeDosbox()
+    {
+        var d = StartWorldOnlyThroughSetup();
+        var game = d.Host.Game!;
+        var before = StateFingerprint.Of(game);
+        d.OpenTile("WM-Statistik");
+        var screen = Assert.IsType<WorldCupStatisticsScreen>(d.Host.Current);
+        d.Frame();
+        Assert.Empty(screen.Rankings);
+        Assert.Equal(game.WorldCup!.Order, screen.Order);
+        Assert.All(screen.Order, n => Assert.Equal(0, screen.Points(n)));
+        Assert.Equal(game.WorldCup.Order.Take(8), screen.Standings().Take(8)); // Gleichstand: WM-Reihenfolge bleibt
+        for (var i = 0; i < 12; i++)
+        {
+            var x = 24 + 46 * (i % 6);
+            AssertSmallFlag(d, screen.Order[i], x + 16, (i < 6 ? 122 : 220) + 1);
+            var logo = d.Host.Assets.Image(game.Clubs[screen.Order[i]].LogoGraphic!.Value);
+            var y = i < 6 ? 131 : 177;
+            Assert.Equal(logo.Pixels[0], d.Surface.Pixels[(y + 2) * Surface.Width + x + 2]);
+            Assert.Equal(23, d.Surface.Pixels[y * Surface.Width + x + 20]);
+            Assert.Equal(29, d.Surface.Pixels[(y + 41) * Surface.Width + x + 20]);
+        }
+        for (var r = 0; r < 8; r++)
+            AssertSmallFlag(d, screen.Standings()[r], 33, 37 + 9 * r);
+        d.Press(Key.Escape);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
+        Assert.Equal(before, StateFingerprint.Of(game));
+    }
+
+    /// <summary>
+    /// Video <c>eisbaeren_f07_03843</c> (nach drei WMs): Punkte 22/21/18/14/13/8/7/4 für Tschechei, Russland, Finnland,
+    /// Kanada, Schweden, USA, Norwegen, Schweiz; je WM-Spalte k die Flagge des Landes auf Platz p bei (75 + 14 k | 28 + 9 p).
+    /// </summary>
+    [GameDataFact]
+    public void WorldCupStatistics_ThreeWorldCups_LikeVideo()
+    {
+        var d = StartWorldOnlyThroughSetup();
+        var game = d.Host.Game!;
+        int N(string name) => game.Clubs.Single(c => c.Index >= NationalTeams.First && c.Index <= NationalTeams.Last
+            && string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)).Index;
+        IReadOnlyList<int> Wm(params string[] names) => [.. names.Select(N)];
+        IReadOnlyList<IReadOnlyList<int>> rankings =
+        [
+            Wm("Tschechei", "Russland", "Finnland", "Norwegen", "Kanada", "Schweden", "USA", "Schweiz"),
+            Wm("Russland", "Tschechei", "Kanada", "Schweden", "Finnland", "USA", "Norwegen", "Schweiz"),
+            Wm("Finnland", "Tschechei", "Russland", "Schweden", "Kanada", "USA", "Schweiz", "Österreich"),
+        ];
+        var order = Wm("USA", "Tschechei", "Norwegen", "Schweiz", "Frankreich", "Schweden",
+            "Finnland", "Russland", "Österreich", "Kanada", "Deutschland", "Italien");
+        var screen = new WorldCupStatisticsScreen(d.Host, d.Host.Current!, rankings, order);
+        d.Host.Show(screen);
+        d.Frame();
+        var standings = screen.Standings();
+        Assert.Equal(Wm("Tschechei", "Russland", "Finnland", "Kanada", "Schweden", "USA", "Norwegen", "Schweiz"), standings.Take(8));
+        Assert.Equal([22, 21, 18, 14, 13, 8, 7, 4], standings.Take(8).Select(screen.Points));
+        Assert.Equal(1, screen.Points(N("Österreich")));
+        for (var k = 0; k < 3; k++)
+            for (var p = 0; p < 8; p++)
+                AssertSmallFlag(d, rankings[k][p], 75 + 14 * k, 28 + 9 * (p + 1));
+    }
+
+    private static void AssertSmallFlag(ScreenDriver d, int nation, int x, int y)
+    {
+        var sheet = d.Host.Assets.Image(WorldCupStatisticsScreen.SmallFlagGraphic);
+        var sx = (nation - NationalTeams.First) * WorldCupStatisticsScreen.SmallFlagWidth;
+        for (var py = 0; py < WorldCupStatisticsScreen.SmallFlagHeight; py++)
+            for (var px = 0; px < WorldCupStatisticsScreen.SmallFlagWidth; px++)
+                Assert.Equal(sheet.Pixels[py * sheet.Width + sx + px], d.Surface.Pixels[(y + py) * Surface.Width + x + px]);
+    }
 }

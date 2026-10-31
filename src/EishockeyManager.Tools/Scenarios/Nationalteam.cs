@@ -80,4 +80,40 @@ internal static class Nationalteam
         d.Host.Show(new CupPairingsScreen(d.Host, new MainMenuScreen(d.Host), 0, 0, video, liveMinute: 60, trophies: true));
         d.Move(319, 239); d.Save("05_live_wie_video_00437");
     }
+
+    /// <summary>
+    /// WM-Statistik (0x3ADE1): Modus 1 nach „Los jetzt!“ wie DOSBox `nur-weltkugel/17` (vor der ersten WM) und mit den drei
+    /// WMs und der Länderfolge aus Video `eisbaeren_f07_03843` (Spalten aus dem Bild abgelesen, Punkte 22/21/18/14/13/8/7/4).
+    /// </summary>
+    [Scenario("wm-statistik")]
+    private static void WorldCupStatistics(ScreenDriver d)
+    {
+        d.Host.Show(new TitleScreen(d.Host));
+        d.Frame();
+        d.Click(160, 120);
+        d.Click(20, 60);
+        var cell = SetupScreen.HeadCell(3);
+        d.Click(cell.X + 5, cell.Y + 5);
+        d.Type("Joerg");
+        d.Press(Key.Enter);
+        d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
+        d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
+        d.OpenTile("WM-Statistik");
+        d.Move(319, 239); d.Save("01_wm_statistik_wie_dosbox_17");
+
+        var game = d.Host.Game!;
+        int N(string name) => game.Clubs.Single(c => c.Index >= NationalTeams.First && c.Index <= NationalTeams.Last
+            && string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)).Index;
+        IReadOnlyList<int> Wm(params string[] names) => [.. names.Select(N)];
+        IReadOnlyList<IReadOnlyList<int>> rankings =
+        [
+            Wm("Tschechei", "Russland", "Finnland", "Norwegen", "Kanada", "Schweden", "USA", "Schweiz"),
+            Wm("Russland", "Tschechei", "Kanada", "Schweden", "Finnland", "USA", "Norwegen", "Schweiz"),
+            Wm("Finnland", "Tschechei", "Russland", "Schweden", "Kanada", "USA", "Schweiz", "Österreich"),
+        ];
+        var order = Wm("USA", "Tschechei", "Norwegen", "Schweiz", "Frankreich", "Schweden",
+            "Finnland", "Russland", "Österreich", "Kanada", "Deutschland", "Italien");
+        d.Host.Show(new WorldCupStatisticsScreen(d.Host, new MainMenuScreen(d.Host), rankings, order));
+        d.Move(319, 239); d.Save("02_wm_statistik_wie_video_f07_03843");
+    }
 }

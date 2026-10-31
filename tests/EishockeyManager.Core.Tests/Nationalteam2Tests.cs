@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -130,5 +131,91 @@ public class Nationalteam2Tests
         tactics.AttackMode = TacticMode.Auto;
         Assert.All(ShownEffort(tactics), v => Assert.Equal(0, v));
         Assert.All(ShownAttack(tactics), v => Assert.Equal(0, v));
+    }
+    // ---- WM-Statistik (0x3ADE1) ------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Mehrsaisonprobe Modus 1 und 4 (Modus 2 als Gegenprobe), vier Saisonwechsel, passiv und aktiv: Jede gespielte WM
+    /// hinterlässt genau eine Reihenfolge aller zwölf Länder, gleich der Abschlussreihenfolge der WM; die Punkte folgen
+    /// Σ (9 − Platz) über die Plätze 1 … 8 ([ORIGINAL] Datei 0x3B1BA–0x3B229). Modus 2 hat keine WM und keinen Eintrag.
+    /// Vorher führte das Remake keine WM-Geschichte, die Kachel „WM-Statistik“ hatte keinen Bildschirm.
+    /// </summary>
+    [Theory]
+    [InlineData(false, true, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, false)]
+    public void MultiSeason_WorldCupRankings_OnePerWorldCup(bool flag, bool globe, bool active)
+    {
+        var game = flag ? GameModeTests.Create(3, flag, globe, 2, 30) : GameModeTests.Create(7, flag, globe, 2);
+        for (var change = 0; change <= 4; change++)
+        {
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                Assert.True(guard < 3000, "Saisonende nicht erreicht");
+                foreach (var m in game.Managers)
+                    m.Money = Math.Max(m.Money, 10_000_000);
+                if (active && game.NationalCoach is { Squad.Count: 0 })
+                    game.AutoNominate();
+                if (active && flag)
+                    GameModeTests.ActiveSecondManager(game);
+                game.Continue();
+            }
+            if (game.Phase == SeasonPhase.GameOver)
+                break;
+            Assert.Equal(globe ? change + 1 : 0, game.WorldCupRankings.Count);
+            if (globe)
+            {
+                Assert.Equal(game.WorldCup!.Ranking, game.WorldCupRankings[^1]);
+                Assert.Equal(12, game.WorldCupRankings[^1].Distinct().Count());
+            }
+            var expected = Enumerable.Range(NationalTeams.First, 12).ToDictionary(n => n, n => game.WorldCupRankings
+                .Select(r => r.ToList().IndexOf(n) + 1).Where(p => p is >= 1 and <= 8).Sum(p => 9 - p));
+            Assert.All(expected, e => Assert.Equal(e.Value, game.WorldCupPoints(e.Key)));
+            if (globe)
+                Assert.Equal(36 * game.WorldCupRankings.Count, expected.Values.Sum()); // 8 + 7 + … + 1 je WM
+            if (change == 4)
+                break;
+            game.StartNextSeason();
+        }
+    }
+
+    /// <summary>Sichern und Laden behalten die WM-Reihenfolgen.</summary>
+    [Fact]
+    public void SaveLoad_KeepsWorldCupRankings()
+    {
+        var game = GameModeTests.Create(7, false, true, 2);
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 3000, "Saisonende nicht erreicht");
+            game.Continue();
+        }
+        Assert.Single(game.WorldCupRankings);
+        var loaded = SaveGame.Load(SaveGame.Save(game));
+        Assert.True(loaded.Success, loaded.Error);
+        Assert.Equal(game.WorldCupRankings, loaded.Game!.WorldCupRankings);
+        Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded.Game));
+    }
+
+    /// <summary>Schema 14 (vor dieser Spur): Die Liste der WM-Reihenfolgen beginnt leer ([APPROX], siehe Migration).</summary>
+    [Fact]
+    public void Schema14_IsMigrated_WithEmptyWorldCupHistory()
+    {
+        var game = GameModeTests.Create(7, false, true, 2);
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            game.Continue();
+        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
+        root["schema"] = 14;
+        Assert.True(root["spiel"]!.AsObject().Remove("_worldCupRankings"));
+        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
+        Assert.True(result.Success, result.Error);
+        Assert.Empty(result.Game!.WorldCupRankings);
+        Assert.Equal((game.Season, game.CurrentDay, game.Phase), (result.Game.Season, result.Game.CurrentDay, result.Game.Phase));
+        Assert.Equal(game.WorldCup!.Ranking, result.Game.WorldCup!.Ranking);
+        // Danach Gleichlauf mit dem frisch gesicherten Stand.
+        var again = SaveGame.Load(SaveGame.Save(result.Game));
+        Assert.True(again.Success, again.Error);
+        Assert.Equal(SaveGame.Save(result.Game), SaveGame.Save(again.Game!));
     }
 }
