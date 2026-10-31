@@ -50,7 +50,10 @@ public sealed class PenaltyBox
             return count - 1;
         }
         if (slot0Free)
+        {
             State = ((State & 0x80) != 0 ? 8 : 0) | (t1 - 1);
+            MoveOccupant();
+        }
         return count;
     }
 
@@ -73,8 +76,12 @@ public sealed class PenaltyBox
                 return;
             }
             State &= 0xF0;
+            Return(0);
             if ((State & 0x80) != 0)
+            {
                 State = ((State >> 4) & 7) | 8;
+                MoveOccupant();
+            }
             Skaters++;
             return;
         }
@@ -87,7 +94,27 @@ public sealed class PenaltyBox
         if ((State & 0x80) != 0 && !force)
             return false;
         State &= 0x0F;
+        Return(1);
         return true;
+    }
+
+    /// <summary>
+    /// Spieler eines Managervereins auf den Plätzen (DGROUP 0xD095 + 6 · Manager + 3 · Platz: Kaderplatz + 1, +0x0A,
+    /// Art). [ORIGINAL] 0x35691 setzt ihn beim Freiwerden wieder ein (+0x0A aus dem Satz).
+    /// </summary>
+    public LivePlayer?[] Occupants { get; } = new LivePlayer?[2];
+
+    private void Return(int slot)
+    {
+        if (Occupants[slot] is { } p)
+            p.Dressed = true;
+        Occupants[slot] = null;
+    }
+
+    private void MoveOccupant()
+    {
+        Occupants[0] = Occupants[1];
+        Occupants[1] = null;
     }
 
     /// <summary>[ORIGINAL] 0x35941–0x35963: Feldspieler − 1, Code auf Platz <paramref name="slot"/> (= belegte Plätze).</summary>
@@ -106,7 +133,7 @@ public enum MatchEventKind
 }
 
 /// <summary>Ein Ereignis: Minute (1 … 70), Seite (0 Heim, 1 Gast), bei Strafen die Minuten (2 oder 5).</summary>
-public readonly record struct MatchEvent(int Minute, int Side, MatchEventKind Kind, int PenaltyMinutes = 0);
+public readonly record struct MatchEvent(int Minute, int Side, MatchEventKind Kind, int PenaltyMinutes = 0, Player? Player = null);
 
 /// <summary>
 /// Eine Mannschaft während der Minutenrechnung (Vereinsfelder des Originals, die die Rechnung liest und schreibt).
@@ -135,10 +162,9 @@ public sealed class LiveTeam
     public Tactics? Tactics { get; init; }
 
     /// <summary>
-    /// Minuten, in denen die Taktik nachgeführt wird: 0 gerade (Managerverein, Spielstandtaktik 0x939A), 1 ungerade
-    /// (Computerverein, Taktik 0x80CB). [ORIGINAL] Takt aus 0x37DCF ff.; die Werte liefert [APPROX]
-    /// <see cref="Core.Tactics.EffectiveEffort"/>/<see cref="Core.Tactics.EffectiveAttack"/> des Blocks 0 (0x939A und
-    /// 0x80CB sind nicht gelesen).
+    /// Früher: Minuten, in denen die Taktik nachgeführt wurde. [ORIGINAL] 0x939A läuft in geraden Minuten der
+    /// Managerpaarung für beide Vereine (Datei 0x3803F ff.); 0x80CB in ungeraden setzt nur Linienwechsel-Modus und
+    /// Torhüter. Wird nicht mehr ausgewertet.
     /// </summary>
     public int TacticsParity { get; init; }
 
@@ -152,8 +178,56 @@ public sealed class LiveTeam
 
     public int AttackLine { get; set; }
 
-    /// <summary>Energie der Reihen (Vereinsfeld 0x1E + 4 · Teil + Reihe) 0–100.</summary>
+    /// <summary>Energie der Reihen beim Anpfiff (Vereinsfeld 0x1E + 4 · Teil + Reihe) 0–100; Startwert von <see cref="LineEnergy"/>.</summary>
     public int Energy { get; init; } = 100;
+
+    private int[,]? _lineEnergy;
+
+    /// <summary>Energie einer Reihe (Vereinsfeld 0x1E + 4 · Teil + Reihe); ändert sich nur in Managerpaarungen (0x87F7).</summary>
+    public int LineEnergy(int part, int line) => _lineEnergy?[part, line] ?? Energy;
+
+    public void SetLineEnergy(int part, int line, int value)
+    {
+        if (_lineEnergy is null)
+        {
+            _lineEnergy = new int[2, 4];
+            for (var p = 0; p < 2; p++)
+                for (var l = 0; l < 4; l++)
+                    _lineEnergy[p, l] = Energy;
+        }
+        _lineEnergy[part, line] = value;
+    }
+
+    /// <summary>Reihe auf dem Eis eines Teils (0 Abwehr, 1 Sturm).</summary>
+    public int Line(int part) => part == 0 ? DefenseLine : AttackLine;
+
+    public void SetLine(int part, int line)
+    {
+        if (part == 0)
+            DefenseLine = line;
+        else
+            AttackLine = line;
+    }
+
+    /// <summary>Minuten der Reihe auf dem Eis je Teil (Vereinsfelder 0x2F/0x31).</summary>
+    public int[] OnIceMinutes { get; } = new int[2];
+
+    /// <summary>Linienwechsel-Modus (Vereinsfeld 0x2C Bits 0–2): 0 kein Wechsel (Spielvorbereitung 0x84D7), sonst 1–4.</summary>
+    public int LineMode { get; set; }
+
+    /// <summary>Verein mit Manager (Vereinsfeld 0x16 ≠ 0), auch das Nationalteam des Bundestrainers.</summary>
+    public bool Managed { get; init; }
+
+    /// <summary>Linienwechsel-Einstellung des Managers (DGROUP 0xA700 + Manager); null bei Computervereinen.</summary>
+    public LineChangeMode? LineChange { get; init; }
+
+    /// <summary>Kader des Managervereins für die Reihenwerte aus den Spielern (0x98F8); null bei Computervereinen.</summary>
+    public LiveSquad? Squad { get; init; }
+
+    /// <summary>
+    /// Managerwert, der auf den Einsatz bei Strafen wirkt (DGROUP 0x974B + 0x1AF · Vereinsfeld 0x16, Wert − 20). Computer: 20.
+    /// </summary>
+    public int PenaltyManagerValue { get; init; } = 20;
 
     /// <summary>Torhüter draußen (Vereinsfeld 0x2C, Bit 3).</summary>
     public bool GoaliePulled { get; set; }
@@ -177,7 +251,8 @@ public sealed class LiveTeam
 /// <param name="WorldCup">WM-Spiel (<c>[0x12B]</c> = 1).</param>
 /// <param name="Playoff">Wettbewerbscode 1 (Play-off/Aufstieg): Torbudget halbiert, je Minute + 1.</param>
 /// <param name="KnockOut">Bei Gleichstand nach 60 Minuten Verlängerung 61–65 und 66–70 (Prüfung 0xE8:0x70).</param>
-public readonly record struct MatchRules(bool WorldCup = false, bool Playoff = false, bool KnockOut = false);
+/// <param name="ManagerMatch">Managerpaarung (0x130:0x4D): Energie, Reihenwechsel, Taktik je Minute (0x37F9B ff.).</param>
+public readonly record struct MatchRules(bool WorldCup = false, bool Playoff = false, bool KnockOut = false, bool ManagerMatch = false);
 
 /// <summary>Ergebnis der Minutenrechnung mit Ereignissen.</summary>
 public sealed class MatchReport
@@ -197,7 +272,7 @@ public sealed class MatchReport
 }
 
 /// <summary>Minutenrechnung des Originals (Spur spielberechnung, Teil 2): Abschluss, Strafbank, Strafen, Ablauf je Minute.</summary>
-public static class OriginalMinutes
+public static partial class OriginalMinutes
 {
     /// <summary>[ORIGINAL] Datei 0xA6DA/0xA78F: ab 29 bzw. 59 (mit Penaltymarke +30) Toren zählt kein Treffer mehr.</summary>
     private static bool GoalCap(int score) => score == 29 || score >= 59;
@@ -261,13 +336,33 @@ public static class OriginalMinutes
         var count = club.Box.Tick();
         if (count >= 2)
             return 0;
-        var minutes = OriginalMatch.PenaltyMinutes(club.Effort, count == 0, random);
+        var effort = club.Managed ? club.Effort + club.PenaltyManagerValue - 20 : club.Effort;
+        var minutes = OriginalMatch.PenaltyMinutes(effort, count == 0, random);
         if (minutes == 0 || club.FewFitPlayers)
             return 0;
         club.Box.Add(count, minutes == 5 ? 13 : 2);
         club.PenaltyMinutes += minutes;
-        events.Add(new MatchEvent(minute, side, MatchEventKind.Penalty, minutes));
-        if (!chained && OriginalMatch.Rnd(random, 0, 3) == 0 && count == 0)
+        var chain = !chained && OriginalMatch.Rnd(random, 0, 3) == 0 && count == 0;
+        LivePlayer? player = null;
+        if (club.Squad is not null)
+        {
+            // [ORIGINAL] 0x35B26–0x35C17: Spieler 0x378C5; keiner (100) → Ende ohne Kettenstrafe. Ein Torhüter bleibt auf
+            // dem Eis und bekommt keine Strafe angerechnet; ein Feldspieler geht vom Eis (+0x0A = 0) bis zum Freiwerden.
+            player = PenalizedPlayer(club, random);
+            if (player is null)
+            {
+                events.Add(new MatchEvent(minute, side, MatchEventKind.Penalty, minutes));
+                return 0;
+            }
+            if (!player.Goalie)
+            {
+                player.Dressed = false;
+                club.Box.Occupants[count] = player;
+            }
+        }
+        events.Add(new MatchEvent(minute, side, MatchEventKind.Penalty, minutes,
+            player is { Goalie: false } ? player.Player : null));
+        if (chain)
             Penalty(opponent, club, 1 - side, minute, chained: true, events, random);
         return minutes;
     }
@@ -299,6 +394,12 @@ public static class OriginalMinutes
 
     private static void PlayPeriod(LiveTeam home, LiveTeam away, MatchRules rules, int from, int to, MatchReport report, Random random)
     {
+        if (from != 1)
+        {
+            // [ORIGINAL] 0x37A86: in jeder Drittelpause (auch vor der Verlängerung) 0x84D7(1).
+            RecoverEnergy(home);
+            RecoverEnergy(away);
+        }
         for (var minute = from; minute <= to; minute++)
             PlayMinute(home, away, rules, minute, to, report, random);
     }
@@ -318,21 +419,49 @@ public static class OriginalMinutes
             Score(home, away, 0, h, a, minute, rules, report, mark, random);
         if ((flags & 2) != 0)
             Score(home, away, 1, h, a, minute, rules, report, mark, random);
-        FollowTactics(home, report.HomeGoals - report.AwayGoals, minute);
-        FollowTactics(away, report.AwayGoals - report.HomeGoals, minute);
+        var (x, y, sx, sy) = (home, away, 0, 1);
+        if (rules.ManagerMatch)
+        {
+            // [ORIGINAL] 0x37F9B–0x38073, nur Managerpaarungen: Energie (0x87F7), Seiten zufällig tauschen (random(0, 1)),
+            // ungerade Minute Modus/Torhüter der Computer (0x80CB), Reihenwechsel (0x8EF2), gerade Minute Taktik (0x939A).
+            DrainEnergy(home, random);
+            DrainEnergy(away, random);
+            if (OriginalMatch.Rnd(random, 0, 1) != 0)
+                (x, y, sx, sy) = (away, home, 1, 0);
+            var gx = sx == 0 ? report.HomeGoals : report.AwayGoals;
+            var gy = sx == 0 ? report.AwayGoals : report.HomeGoals;
+            if (minute % 2 != 0)
+                ComputerLineModes(x, y, gx, gy, minute, sx == 0 ? h.Normal : a.Normal, sx == 0 ? a.Normal : h.Normal);
+            ChangeLines(x, y);
+            ChangeLines(y, x);
+            if (minute % 2 == 0)
+            {
+                FollowTactics(x, gx - gy);
+                FollowTactics(y, gy - gx);
+            }
+        }
         if (minute != 60 && minute != 70)
         {
-            Penalty(home, away, 0, minute, chained: false, report.Events, random);
-            Penalty(away, home, 1, minute, chained: false, report.Events, random);
+            Penalty(x, y, sx, minute, chained: false, report.Events, random);
+            Penalty(y, x, sy, minute, chained: false, report.Events, random);
         }
     }
 
-    /// <summary>Einsatz und Angriff nach dem Spielstand (nur mit <see cref="LiveTeam.Tactics"/>, siehe dort).</summary>
-    private static void FollowTactics(LiveTeam team, int goalDifference, int minute)
+    /// <summary>
+    /// Einsatz und Angriff nach dem Spielstand (nur mit <see cref="LiveTeam.Tactics"/>, siehe dort). [ORIGINAL] 0x939A,
+    /// gerade Minuten der Managerpaarung für beide Vereine: Grundwert + Zuschlag des Spielstands, dazu bei einer
+    /// Energie der Reihen auf dem Eis ((Abwehr + Sturm) / 2) unter 50 deren Differenz zu 50; begrenzt auf 0 … 100. Bei
+    /// „MANUELL“ schreibt das Original keinen Einsatz ([APPROX] das Remake nimmt dann die eigenen Werte ohne Energieabzug).
+    /// </summary>
+    private static void FollowTactics(LiveTeam team, int goalDifference)
     {
-        if (team.Tactics is not { } tactics || minute % 2 != team.TacticsParity)
+        if (team.Tactics is not { } tactics)
             return;
-        team.Effort = tactics.EffectiveEffort(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
+        var effort = tactics.EffectiveEffort(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
+        var energy = (team.LineEnergy(0, team.DefenseLine) + team.LineEnergy(1, team.AttackLine)) >> 1;
+        if (energy < 50 && tactics.EffortMode != TacticMode.Manual)
+            effort += energy - 50;
+        team.Effort = Math.Clamp(effort, 0, 100);
         team.AttackLevel = tactics.EffectiveAttack(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
     }
 
@@ -432,10 +561,21 @@ public static class OriginalMinutes
     public static (int Normal, int Defensive, int Offensive) Strengths(LiveTeam team, LiveTeam opponent, int minute)
     {
         var advantage = team.Box.Skaters - opponent.Box.Skaters;
-        var defense = OriginalMatch.LineValues(team.Defense, team.DefenseLine, attack: false, advantage,
-            team.Energy, team.Effort, inMatch: true);
-        var attack = OriginalMatch.LineValues(team.Attack, team.AttackLine, attack: true, advantage,
-            team.Energy, team.Effort, inMatch: true);
+        PartValues defense, attack;
+        if (team.Squad is { } squad)
+        {
+            // [ORIGINAL] 0x98F8: Managervereine bilden die Werte aus den Spielern der Reihen auf dem Eis.
+            defense = MatchEngine.ManagedLineValues(squad, team.DefenseLine, 0, advantage, team.Effort, minute, inMatch: true);
+            attack = MatchEngine.ManagedLineValues(squad, team.AttackLine, 1, advantage, team.Effort, minute, inMatch: true);
+            team.OpenNet = !squad.HasGoalie;
+        }
+        else
+        {
+            defense = OriginalMatch.LineValues(team.Defense, team.DefenseLine, attack: false, advantage,
+                team.LineEnergy(0, team.DefenseLine), team.Effort, inMatch: true);
+            attack = OriginalMatch.LineValues(team.Attack, team.AttackLine, attack: true, advantage,
+                team.LineEnergy(1, team.AttackLine), team.Effort, inMatch: true);
+        }
         return (OriginalMatch.TeamStrength(defense, attack, 1, minute, team.ClubForm),
             OriginalMatch.TeamStrength(defense, attack, 0, minute, team.ClubForm),
             OriginalMatch.TeamStrength(defense, attack, 2, minute, team.ClubForm));

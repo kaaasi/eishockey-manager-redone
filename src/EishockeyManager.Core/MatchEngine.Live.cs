@@ -19,8 +19,12 @@ public enum MatchCompetition
 /// </summary>
 public static partial class MatchEngine
 {
-    /// <summary>[ORIGINAL] Energie der Reihen bei der Spielvorbereitung (Datei 0x84D7: Vereinsfeld 0x1E = 0x5B).</summary>
-    public const int PreparedEnergy = 0x5B;
+    /// <summary>
+    /// [ORIGINAL] Energie der Reihen bei der Spielvorbereitung: Datei 0x85B4 setzt Vereinsfeld 0x1E = 0x5B, die Schleife
+    /// 0x860B–0x8637 zählt danach einmal herunter (solange der alte Wert über 0x5B liegt) – also 0x5A. Auf die Technik
+    /// wirkt sie mit Energie / 4 + 75 % (für 90 und 91 gleich).
+    /// </summary>
+    public const int PreparedEnergy = 0x5A;
 
     /// <summary>[ORIGINAL] Statistik nach dem Spieltag nur für Vereine mit Index &lt; 0x40 (Datei 0x52CF).</summary>
     public const int FirstForeignClub = 0x40;
@@ -56,11 +60,12 @@ public static partial class MatchEngine
         }
         var homeManaged = IsManaged(game, home);
         var awayManaged = IsManaged(game, away);
+        var managerMatch = homeManaged || awayManaged;
         var rules = new MatchRules(
             WorldCup: competition == MatchCompetition.WorldCup,
             Playoff: competition is MatchCompetition.Playoff or MatchCompetition.Relegation,
-            KnockOut: knockOut);
-        var managerMatch = homeManaged || awayManaged;
+            KnockOut: knockOut,
+            ManagerMatch: managerMatch);
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
         MatchReport report;
@@ -131,14 +136,30 @@ public static partial class MatchEngine
         // Managervereine bilden ihre Reihenwerte im Original aus den Spielern (0x98F8); die Streuung und Form des Laders
         // wirken dort nicht ([APPROX] Teamwert ohne Streuung, Form 50). Die Tagesform 0x17 gilt für alle Vereine.
         var spread = !managed;
+        // [ORIGINAL] Der Lader begrenzt nicht (Byte bis v + v/10, also bis 101); begrenzt wird erst in 0x977F
+        // (OriginalMatch.LineValues). Untergrenze: Streuung ≥ −v/10, also nie negativ (Review R8-A03).
         var defense = new PartValues(
-            Math.Clamp(value + (spread ? loaded.DefenseCondition : 0), 0, 100),
-            Math.Clamp(value + (spread ? loaded.DefenseTechnique : 0), 0, 100),
+            value + (spread ? loaded.DefenseCondition : 0),
+            value + (spread ? loaded.DefenseTechnique : 0),
             spread ? loaded.DefenseForm : 50);
         var attack = new PartValues(
-            Math.Clamp(value + (spread ? loaded.AttackCondition : 0), 0, 100),
-            Math.Clamp(value + (spread ? loaded.AttackTechnique : 0), 0, 100),
+            value + (spread ? loaded.AttackCondition : 0),
+            value + (spread ? loaded.AttackTechnique : 0),
             spread ? loaded.AttackForm : 50);
+        var manager = game.ActiveManagers.FirstOrDefault(m => m.ClubIndex == club.Index);
+        LiveSquad? squad = null;
+        var penaltyValue = 20;
+        if (managed && manager is not null && club.Players.Count > 0)
+        {
+            squad = LiveSquad.Create(club, TrainingRules.LevelValue(manager.Level), club.Tactics);
+            // [ORIGINAL] Strafen lesen den Managerwert über Vereinsfeld 0x16 = Manager + 1 (Datei 0x35890), also den Satz
+            // des nächsten Managers (übernommen). [APPROX] Ohne nächsten Manager 0 (nicht belegter Satz, nicht geprüft).
+            var index = game.Managers.ToList().IndexOf(manager);
+            var next = index + 1 < game.Managers.Count ? game.Managers[index + 1] : null;
+            penaltyValue = next is not null && game.Clubs.FirstOrDefault(c => c.Index == next.ClubIndex) is { Players.Count: > 0 } nextClub
+                ? ManagedTeamValues(LiveSquad.Create(nextClub, 0, null)).ManagerValue
+                : 0;
+        }
         return new LiveTeam
         {
             Defense = defense,
@@ -148,7 +169,10 @@ public static partial class MatchEngine
             AttackLevel = club.Tactics.EffectiveAttack(0, 0, value, opponentValue),
             Energy = PreparedEnergy,
             Tactics = managerMatch ? club.Tactics : null,
-            TacticsParity = managed ? 0 : 1,
+            Managed = managed,
+            LineChange = managed ? club.Tactics.LineChange : null,
+            Squad = managerMatch ? squad : null,
+            PenaltyManagerValue = penaltyValue,
             TacticsStrength = value,
             TacticsOpponentStrength = opponentValue,
             FewFitPlayers = managed && club.Players.Count > 0
@@ -202,7 +226,7 @@ public static partial class MatchEngine
             if (report.Forfeit)
                 return;
             var national = coach.Lineup();
-            CreditLineup(national.Players.ToList(), national.Goalkeeper, goals, against, side, report, random);
+            CreditLineup(national.Players.ToList(), national.Goalkeeper, goals, against, side, report, random, squadEvents: false);
             return;
         }
         if (club.Index >= FirstForeignClub || club.Players.Count == 0)
@@ -216,12 +240,13 @@ public static partial class MatchEngine
         }
         if (report.Forfeit)
             return;
-        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, goals, against, side, report, random);
+        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, goals, against, side, report, random,
+            squadEvents: true);
     }
 
     /// <summary>Zähler einer gemanagten Mannschaft aus ihrer Aufstellung (Managerverein oder Nationalteam des Bundestrainers).</summary>
     private static void CreditLineup(List<Player> lineup, Player? keeper, int goals, int against, int side, MatchReport report,
-        Random random)
+        Random random, bool squadEvents)
     {
         foreach (var p in lineup)
             p.Games++;
@@ -238,6 +263,19 @@ public static partial class MatchEngine
         {
             if (e.Kind != MatchEventKind.Penalty || e.Side != side)
                 continue;
+            if (squadEvents)
+            {
+                // [ORIGINAL] 0x35B7D–0x35B8E: Kaderplatz +0 (5 Minuten) bzw. +1 (2 Minuten) des Spielers aus 0x378C5;
+                // ohne Spieler bzw. beim Torhüter zählt keiner.
+                if (e.Player is { } penalized)
+                {
+                    if (e.PenaltyMinutes == 5)
+                        penalized.Penalties5++;
+                    else
+                        penalized.Penalties2++;
+                }
+                continue;
+            }
             var p = skaters[OriginalMatch.Rnd(random, 0, skaters.Count - 1)];
             if (e.PenaltyMinutes == 5)
                 p.Penalties5++;
