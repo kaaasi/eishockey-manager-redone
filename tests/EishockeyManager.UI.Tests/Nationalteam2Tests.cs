@@ -1,6 +1,8 @@
 using EishockeyManager.Core;
 using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens;
+using EishockeyManager.UI.Screens.Competitions;
+using EishockeyManager.UI.Screens.Team;
 using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.UI.Tests;
@@ -48,4 +50,51 @@ public class Nationalteam2Tests
         Assert.True(game.NationalCoachMenu);
         Assert.Equal(500_000, game.Managers[0].Money);
     }
+    /// <summary>
+    /// R8W3-06: Die Hinweiszeile der Nationalaufstellung ist die Hinweiszeile 0x41683 der Vereinsaufstellung (gleicher
+    /// Bildschirm Datei 0x40364, Aufruf 0x40845). Vorher stand dort eine genäherte Liste („Spiele gesamt (Liga und Pokal)“
+    /// usw.) ohne Reihe, Erschöpfung und Stärke. Geprüft wird das Band der Statuszeile gegen <see cref="PlayerHintLine"/>
+    /// für die Spalten NR, Art, Stärke, Status und Tendenz; Überfahren ändert nichts.
+    /// </summary>
+    [GameDataFact]
+    public void NationalLineup_HintLine_IsPlayerHintLine()
+    {
+        var (d, game) = NationalLineupScreenTests.StartWorldOnly();
+        game.AutoNominate();
+        var coach = game.NationalCoach!;
+        coach.AutoFormation();
+        d.OpenTile("Aufstellung");
+        Assert.IsType<NationalLineupScreen>(d.Host.Current);
+        var before = StateFingerprint.Of(game);
+        var rows = coach.Rows;
+        var layout = PlayerListLayout.Lineup(rows.Count);
+        var row = rows.ToList().FindIndex(p => coach.Formation.Contains(p));
+        Assert.True(row >= 0);
+        var y = LineupScreen.FirstRowY + row * LineupScreen.RowPitch + 2;
+        var checkedColumns = 0;
+        foreach (var column in new[] { 0, 1, 7, 14, 15 })
+        {
+            var x = Enumerable.Range(0, 240).First(x => PlayerHintLine.Column(layout, x) == column);
+            Assert.Equal(row, PlayerHintLine.Row(layout, y));
+            var expected = PlayerHintLine.Text(rows[row], column, new PlayerHintInfo(coach.IsDressed(rows[row]), Line(coach, rows[row])), true);
+            Assert.NotNull(expected);
+            d.Move(x, y);
+            var actual = Band(d.Surface);
+            d.Move(0, 0);
+            var reference = new Surface();
+            Array.Copy(d.Surface.Pixels, reference.Pixels, reference.Pixels.Length);
+            TeamUi.StatusLine(reference, d.Host.Assets, 131, LineupScreen.StatusY, expected);
+            Assert.True(actual.SequenceEqual(Band(reference)), $"Spalte {column}: „{expected}“");
+            checkedColumns++;
+        }
+        Assert.Equal(5, checkedColumns);
+        Assert.Equal(before, StateFingerprint.Of(game));
+    }
+
+    private static int Line(NationalCoach coach, Core.Player p) =>
+        LineupSlot.All.Where(s => coach.Formation[s] == p).Select(s => s.Block + 1).FirstOrDefault();
+
+    /// <summary>Pixel der Statuszeile (y = StatusY − 8 … StatusY + 8, ganze Breite).</summary>
+    private static byte[] Band(Surface s) =>
+        s.Pixels.Skip((LineupScreen.StatusY - 8) * Surface.Width).Take(17 * Surface.Width).ToArray();
 }
