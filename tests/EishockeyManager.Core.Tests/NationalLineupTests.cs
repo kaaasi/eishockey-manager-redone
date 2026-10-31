@@ -252,6 +252,9 @@ public class NationalLineupTests
             {
                 game.AutoNominate();
                 coach.AutoFormation();
+                // #192: Die Taktik gehört zum Nationalteam und bleibt über den Saisonwechsel stehen (Spur nationalteam).
+                Assert.Equal(change == 0 ? TacticMode.Auto : TacticMode.Manual, coach.Tactics.EffortMode);
+                coach.Tactics.EffortMode = TacticMode.Auto;
                 var auto = game.NationalMatchStrength(NationalTeams.Germany);
                 MakeRoom(coach);
                 Assert.Equal(LineupResult.Assigned,

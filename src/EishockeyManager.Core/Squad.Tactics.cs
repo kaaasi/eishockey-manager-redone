@@ -79,9 +79,17 @@ public enum ScoreSituation
 /// <item>[ORIGINAL] Im Spiel gilt Grundwert + Zuschlag des Spielstands; „hoch“ ab 3 Toren Differenz. Einsatz wird auf
 ///   0…100 begrenzt, Angriff in drei Bit gespeichert (Datei 0x939A–0x9506). Bei „MANUELL“ überschreibt das Spiel
 ///   die Werte nicht (sie werden im Live-Spiel gesetzt, Datei 0x94E2, 0x9516).</item>
-/// <item>[APPROX] Bis zum ersten Spiel, und solange das Remake keine Spielvorbereitung je Paarung hat, zeigt „AUTOM.“
-///   die Zeile für ein ausgeglichenes Spiel gegen einen gleich starken Gegner (Video `bundestrainer_00058`:
-///   60/0/25/20/30/0 und 0/4/5/6/7/4). Eigene Werte eines neuen Teams starten mit derselben Zeile.</item>
+/// <item>[APPROX] Vereine: Bis zum ersten Spiel, und solange das Remake keine Spielvorbereitung je Paarung hat, zeigt
+///   „AUTOM.“ die Zeile für ein ausgeglichenes Spiel gegen einen gleich starken Gegner (Video `bundestrainer_00058`:
+///   60/0/25/20/30/0 und 0/4/5/6/7/4). Eigene Werte eines neuen Vereins starten mit derselben Zeile.</item>
+/// <item>[ORIGINAL] Nationalteam (#192, <see cref="National"/>): kein Startwert. Die Automatik 0x8365 schreibt
+///   Einsatz (Felder 0x26–0x2B) und Angriff (0x35–0x3A) in den Vereinssatz nur vor einem Spiel, und nur wenn der Verein
+///   keinen Manager hat oder dessen Modus „AUTOM.“ ist (Datei 0x8421–0x847D Einsatz, 0x8481–0x84BD Angriff); Aufrufe
+///   nur je Paarung des Spieltagsablaufs (Datei 0x36D12/0x36D49, 0x36F27/0x36F5A). Es gibt keinen Start- oder
+///   Ernennungswert und keine Unterscheidung nach Modus: bis zum ersten Spiel steht „AUTOM.“ auf 0 (DOSBox
+///   `nur-weltkugel/26`), danach auf den Werten des letzten Spiels (<see cref="RecordAutoLine"/>). Die eigenen Werte
+///   des Bundestrainers (DGROUP 0xCAE9/0xCB01 + 0x30 · 5) schreibt nur der Taktikbildschirm (Datei 0x48607 ff.) und
+///   das Laden (Datei 0x5C38C, 0x5CD7D) – sie beginnen ebenfalls bei 0.</item>
 /// <item>[APPROX] „MANUELL“ verwendet bis zum Live-Spiel die eigenen Werte wie „SEMI“. Der Energieabzug im Spiel
 ///   (Datei 0x9463–0x94A7, Einsatz − (50 − Energie) bei Energie unter 50) ist nicht übernommen.</item>
 /// </list>
@@ -121,15 +129,68 @@ public sealed class Tactics
     private readonly int[,] _attack = new int[Blocks, Situations];
     private readonly int[,] _minutes = new int[Blocks, 2];
 
+    /// <summary>
+    /// Angezeigte Werte unter „AUTOM.“ (Grundwert und fünf Zuschläge) = Werte, die die Automatik vor dem letzten Spiel
+    /// geschrieben hat (Vereinssatz 0x26–0x2B bzw. 0x35–0x3A). Nur beim Nationalteam geführt; null = Anzeige wie bisher
+    /// (Vereine, [APPROX] siehe Klasse).
+    /// </summary>
+    private readonly int[]? _shownAutoEffort;
+    private readonly int[]? _shownAutoAttack;
+
+    /// <summary>Taktik eines Vereins; eigene Werte starten mit der Zeile für ein ausgeglichenes Spiel ([APPROX], siehe Klasse).</summary>
     public Tactics()
+        : this(EvenEffort, FavouriteAttack)
+    {
+    }
+
+    private Tactics(int[] effort, int[] attack)
     {
         for (var b = 0; b < Blocks; b++)
         {
             for (var i = 0; i < Situations; i++)
             {
-                _effort[b, i] = EvenEffort[i];
-                _attack[b, i] = FavouriteAttack[i];
+                _effort[b, i] = effort[i];
+                _attack[b, i] = attack[i];
             }
+        }
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Taktik des Nationalteams ohne Startwert (#192, siehe Klasse): eigene Werte und Anzeige unter „AUTOM.“
+    /// stehen auf 0, bis die Automatik vor dem ersten Spiel schreibt.
+    /// </summary>
+    public static Tactics National()
+    {
+        var zero = new int[Situations];
+        return new Tactics(zero, zero, new int[Situations], new int[Situations]);
+    }
+
+    private Tactics(int[] effort, int[] attack, int[] shownAutoEffort, int[] shownAutoAttack)
+        : this(effort, attack)
+    {
+        _shownAutoEffort = shownAutoEffort;
+        _shownAutoAttack = shownAutoAttack;
+    }
+
+    /// <summary>Führt diese Taktik die Werte des letzten Spiels für die Anzeige unter „AUTOM.“ (Nationalteam)?</summary>
+    public bool KeepsLastAutoLine => _shownAutoEffort is not null;
+
+    /// <summary>
+    /// [ORIGINAL] Spielvorbereitung 0x8365 für die Anzeige: schreibt die Zeile der Automatik gegen einen Gegner, wenn
+    /// der jeweilige Modus „AUTOM.“ ist (Einsatz und Angriff getrennt, Datei 0x8421 bzw. 0x8481). Nur bei Taktiken
+    /// mit <see cref="KeepsLastAutoLine"/>; die Werte bleiben bis zum nächsten Spiel stehen, auch über den
+    /// Saisonwechsel. Die Werte im Spiel selbst bestimmt weiter <see cref="EffectiveEffort"/>/<see cref="EffectiveAttack"/>.
+    /// </summary>
+    public void RecordAutoLine(int ownStrength, int opponentStrength)
+    {
+        if (_shownAutoEffort is null || _shownAutoAttack is null)
+            return;
+        for (var i = 0; i < Situations; i++)
+        {
+            if (EffortMode == TacticMode.Auto)
+                _shownAutoEffort[i] = AutoEffort(ownStrength, opponentStrength, (ScoreSituation)i);
+            if (AttackMode == TacticMode.Auto)
+                _shownAutoAttack[i] = AutoAttack(ownStrength, opponentStrength, (ScoreSituation)i);
         }
     }
 
@@ -210,13 +271,20 @@ public sealed class Tactics
     public static int AutoAttack(int ownStrength, int opponentStrength, ScoreSituation situation) =>
         (ownStrength < opponentStrength ? UnderdogAttack : FavouriteAttack)[(int)situation];
 
-    /// <summary>Angezeigter Einsatz: bei „AUTOM.“ die Automatik für ein ausgeglichenes Spiel ([APPROX], siehe Klasse), sonst der eigene Wert.</summary>
+    /// <summary>
+    /// Angezeigter Einsatz: bei „AUTOM.“ beim Nationalteam die Werte des letzten Spiels (vorher 0, [ORIGINAL]), beim
+    /// Verein die Automatik für ein ausgeglichenes Spiel ([APPROX], siehe Klasse); sonst der eigene Wert.
+    /// </summary>
     public int ShownEffort(int block, ScoreSituation situation) =>
-        EffortMode == TacticMode.Auto ? AutoEffort(0, 0, situation) : Effort(block, situation);
+        EffortMode != TacticMode.Auto ? Effort(block, situation)
+        : _shownAutoEffort is { } shown ? shown[(int)situation]
+        : AutoEffort(0, 0, situation);
 
-    /// <summary>Angezeigter Angriff: bei „AUTOM.“ die Automatik, sonst der eigene Wert.</summary>
+    /// <summary>Angezeigter Angriff: wie <see cref="ShownEffort"/>.</summary>
     public int ShownAttack(int block, ScoreSituation situation) =>
-        AttackMode == TacticMode.Auto ? AutoAttack(0, 0, situation) : Attack(block, situation);
+        AttackMode != TacticMode.Auto ? Attack(block, situation)
+        : _shownAutoAttack is { } shown ? shown[(int)situation]
+        : AutoAttack(0, 0, situation);
 
     /// <summary>
     /// [ORIGINAL] Wirksamer Einsatz eines Blocks beim gegebenen Spielstand: Grundwert + Zuschlag, 0…100.

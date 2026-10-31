@@ -273,6 +273,28 @@ Maße wie oben; „Wertefelder“ = die 12 Felder Einsatz/Angriff): ganz 00058 r
 (00059 gleich); Wertefelder roh 13,8 / 1,2 %, pegelbereinigt 6,9 / 2,7 % (vorher mit lauter Nullen 14,0 / 1,2 % bzw.
 7,2 / 2,7 %). Sichtprüfung: alle zwölf Werte stimmen mit dem Video überein; der Rest sind Schriftkanten.
 
+### Taktik des Nationalteams ohne Startwert (Spur `nationalteam`, #192)
+
+Beleg: DOSBox `nur-weltkugel/26` (Modus 1 nach „auto“, vor dem ersten WM-Spiel: Einsatz/Angriff „AUTOM.“, alle Werte 0)
+und em.exe 0x8365 (`docs/dosbox-befunde.md`). Umsetzung `Core/Squad.Tactics.cs` (`Tactics.National`, `RecordAutoLine`,
+`Shown*`) und `Core/CupsNational.Tactics.cs`; Tests `NationalteamTests`.
+
+| Regel | Beleg |
+|---|---|
+| `[ORIGINAL]` Kein Start- oder Ernennungswert, keine Unterscheidung nach Modus: „AUTOM.“ zeigt 0 bis zum ersten Spiel des Landes, danach die Werte, die die Automatik vor dem letzten Spiel in den Vereinssatz geschrieben hat (Einsatz 0x26–0x2B, Angriff 0x35–0x3A; Einsatz und Angriff getrennt, nur bei „AUTOM.“ bzw. ohne Manager) | Datei 0x8421–0x847D, 0x8481–0x84BD; Aufrufe nur je Paarung 0x36D12/0x36D49, 0x36F27/0x36F5A |
+| `[ORIGINAL]` Eigene Werte des Bundestrainers beginnen bei 0 (DGROUP 0xCAE9/0xCB01 + 0x30 · 5 schreiben nur Taktikbildschirm und Laden) | Datei 0x48607 ff., 0x5C38C, 0x5CD7D |
+| `[ORIGINAL]` Die Taktik gehört dem Nationalteam: Werte und Modi bleiben über Saisonwechsel und neue Ernennung stehen (Video `bundestrainer_00058` zeigt 60/0/25/20/30/0 aus einer späteren Saison) | Suche nach `0xCAE9`/`0xCB01` in em.exe: nur 0x48607 ff. (Bildschirm) und 0x5C38C/0x5CD7D (Sichern/Laden). Für die Vereinsfelder 0x26–0x3A Deutschlands ist keine Rücksetzung beim Saisonwechsel gefunden; die Suche nach Schreibzugriffen über Zeiger ist nicht vollständig |
+| `[ORIGINAL]` Freundschaftsspiele schreiben keine Werte (0x3BFC4 ruft 0x8365 nicht) | Aufrufliste oben |
+| `[APPROX]` Stärken für die Automatik: `NationalMatchStrength` beider Länder statt 0x149D:0x61 (Formel nicht gelesen) | Datei 0x83AD/0x83CA |
+| `[APPROX]` Wirkung im Spiel unverändert (`Effective*`/`Auto*`, Spur `spielstaerke-manager`); nur Anzeige und eigene Werte sind betroffen | – |
+
+Spielstand: neues Feld `_vacantNationalTactics` (Taktik ohne Bundestrainer) und je Taktik die Anzeige unter „AUTOM.“
+(`SaveGame.Migration.Nationalteam.cs`, in diesem PR vorläufig 11 → 12). Alte Stände: Anzeige beginnt bei 0; eigene Werte
+eines Bundestrainers, die noch auf dem alten Startwert stehen, werden 0, von Hand geänderte bleiben (`[APPROX]`).
+Bildschirmfotos: Ablauf `nationalteam-taktik` (`Tools/Scenarios/Nationalteam.cs`). Hinweis: Der ältere Ablauf
+`nationalteam-2` (`03_taktik_wie_video_00058`) zeigt jetzt den Stand vor dem ersten Spiel (Nullen); für den Vergleich mit
+00058 braucht er ein gespieltes WM-Spiel gegen einen gleich starken Gegner.
+
 ## Spielmodus „nur Weltkugel“ (Spur `wettbewerbe-weltkugel`, `Core/CupsNationalMode.cs`)
 
 | Regel | Beleg |

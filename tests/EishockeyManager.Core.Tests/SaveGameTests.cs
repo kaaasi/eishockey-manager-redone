@@ -25,11 +25,11 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(11, SaveGame.SchemaVersion);
+        Assert.Equal(12, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
-    private const string ExpectedSchemaFingerprint = "6F8C2BA719E292F7"; // Schema 11: Börse (9 → 10) und Torhüterzähler (10 → 11), Integration Runde 7
+    private const string ExpectedSchemaFingerprint = "B2B7851BFD67DB8F"; // Schema 12 (vorläufig): Taktik des Nationalteams, Spur nationalteam #192 – Leitstelle nummeriert in der Integration Runde 8
 
     // ---------- Abnahme 3: Roundtrip ----------
 
