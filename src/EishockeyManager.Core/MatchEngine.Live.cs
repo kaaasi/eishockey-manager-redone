@@ -123,9 +123,11 @@ public static partial class MatchEngine
     /// <item>Einsatz 0x26 und Angriff 0x2C: Automatik bzw. eigene Taktik beim Stand 0:0 (Spielvorbereitung, Datei 0x8365;
     ///   <see cref="Tactics.EffectiveEffort"/>). In Managerpaarungen führt der Minutenablauf sie nach dem Spielstand nach.</item>
     /// <item>Energie 0x1E = <see cref="PreparedEnergy"/>. Reihe 0 bleibt auf dem Eis: [ORIGINAL] für Paarungen ohne
-    ///   Manager (Reihenwechsel 0x8EF2 nur in Managerpaarungen); [APPROX] auch in Managerpaarungen (0x8EF2 nicht gelesen).</item>
-    /// <item>Managervereine: [APPROX] Teamwerte statt der Werte der eingesetzten Spieler (0x98F8–0x9C63, nur teilweise
-    ///   gelesen: Mittel über drei Spieler, Energie wirkt mit Energie/2 + 50 % auf die Technik).</item>
+    ///   Manager; in Managerpaarungen Energie und Reihenwechsel je Minute (0x87F7, 0x8EF2, <c>docs/spielberechnung.md</c> §13).</item>
+    /// <item>Managervereine in der Managerpaarung: [ORIGINAL] Reihenwerte aus den eingesetzten Spielern
+    ///   (<see cref="LiveSquad"/>, <see cref="ManagedLineValues"/>, 0x98F8); Strafen mit dem Managerwert des nächsten
+    ///   Managersatzes (0x35890, <see cref="ManagedTeamValues"/>). Defense/Attack bleiben die Teamwerte (für die Automatik
+    ///   der Taktik). Nationalteam des Bundestrainers: [APPROX] ohne Kader wie ein Computerverein (Energie, Reihen).</item>
     /// </list>
     /// </summary>
     public static LiveTeam LiveTeamOf(GameState game, Club club, Club opponent, bool managed, bool managerMatch)

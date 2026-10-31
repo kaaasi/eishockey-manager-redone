@@ -37,7 +37,7 @@ Je Paarung (Heim h, Gast g), übersprungen bei gewerteten Spielen (Ergebnisbyte 
 
 1. Managerpaarung? (`0x130:0x4D`: Verein in der Liste DGROUP 0x233, gesetzt beim Spieltagsbeginn) – dann bei Mausklick
    das Eingriffsmenü `0x38D96` (Anzeige).
-2. Hat einer einen Manager (Vereinsfeld 0x16 ≠ 0): Aufstellung/Reihenfolge `0x38B8F`.
+2. Hat einer einen Manager (Vereinsfeld 0x16 ≠ 0): Verletzungen im Spiel `0x38B8F` (§13; früher als Aufstellung gedeutet).
 3. Torchancen `0x9F5C(h, g, Minute, Drittelende)` (Abschnitt 3, Minutenform) → Bit 0 Heim, Bit 1 Gast; je gesetztem Bit
    Abschluss `0xA484(Liga, Paarung, h, g, Seite, Minute, …)` (Abschnitt 4). Steht im Ergebnisbyte schon 0x1E, wird nicht
    neu gezogen.
@@ -194,11 +194,12 @@ Managerpaarung werden die Werte aus den eingesetzten Spielern der Reihe gebildet
 | Statistik Computervereine 0x5028/0x4DB6 | `[ORIGINAL]`, Rollenwert und Spielerreihenfolge `[APPROX]` | `MatchStatistics` |
 | Zähler Torhüter (Gegentore, Minuten) | Schema 10 | `Player.GoalsAgainst`, `Player.GoalieMinutes` |
 | Managervereine: Torhüterminuten 0x874D, Gegentor 0xA3F7, keine Strafen unter 8 fitten Spielern | `[ORIGINAL]` (Torhüter der Aufstellung) | `MatchEngine.CreditPlayers`, `LiveTeam.FewFitPlayers` |
-| Managervereine: Torschütze 0x386D1, Strafspieler 0x378C5, Reihenwerte aus Spielern 0x98F8, Einsatzzuschlag 0x974B, Energie 0x87F7, Reihenwechsel 0x8EF2 | `[APPROX]` (nicht bzw. nur teilweise gelesen, Abschnitt 11) | `MatchEngine.LiveTeamOf`, `CreditPlayers` |
+| Managervereine: Reihenwerte aus Spielern 0x98F8, Managerwert 0x952C/0x974B, Energie 0x84D7/0x87F7, Reihenwechsel 0x8EF2/0x91FF/0x80CB, Taktik 0x939A, Strafspieler 0x378C5 | `[ORIGINAL]` (§13), Kaderreihenfolge und Feldspieler je Teil `[APPROX]` | `MatchEngine.Managed.cs` |
+| Managervereine: Torschütze 0x386D1, Verletzungen 0x38B8F | offen (§13), Torschützen `[APPROX]` | `CreditPlayers` |
 | Taktik im Spiel 0x939A (Manager, gerade Minuten) / 0x80CB (Computer, ungerade, nur Managerpaarungen) | Takt `[ORIGINAL]`, Werte `[APPROX]` über `Tactics.Effective*` | `LiveTeam.Tactics` |
 | Schneller Weg der Pokale mit Glättung 0x3731F | `[ORIGINAL]` | `OriginalMinutes.FastCupResult` |
 | Lader der Teamwerte 0x2EF1B (Streuung, Form, Tagesform), Tagesform nach Ligaspielen 0x4F527 | `[ORIGINAL]`, Zeitpunkt des Ziehens `[APPROX]` (Abschnitt 12) | `MatchEngine.LoadTeamValues`, `UpdateDayForm`, `Club.TeamValues` |
-| Verletzungen im Spiel | nicht gesucht (offen) | – |
+| Verletzungen im Spiel | gefunden: 0x38B8F (§13), nicht umgesetzt | – |
 | Anschluss an Spieltage, Zähler je Saison, Mehrsaisonprobe | erledigt (Teil 3), Sollwerte auf dem Branch | `MatchEngine.PlayWithEvents`, Abschnitt 11 |
 
 Rollenwert (Spielerfeld 0x18) führt das Remake nicht: `[APPROX]` Verteidiger 33, Stürmer 83 (Mitte der Spannen).
@@ -278,7 +279,9 @@ Managervereine bilden im Original ihre Reihenwerte aus den eingesetzten Spielern
 Mittel über drei Kaderplätze (DGROUP 0x5DC3 + 0x618 · Manager + 0x34 · Platz; Felder +0x10/+0x11/+0x12), Technik ·
 (Energie +0x1B / 2 + 50) %, Abzüge −10/−15 je nach Schwierigkeit `[0xED8]` für Spieler auf fremder Position, Zuschlag
 +0x19 >> 3 beim Torhüter. Der Maßstab der Spielerwerte im Remake (Basis 20 + Stärke/2, Spur `kader-start`) passt noch
-nicht zu den Teamwerten; deshalb `[APPROX]` Teamwerte auch für Managervereine.
+nicht zu den Teamwerten; deshalb `[APPROX]` Teamwerte auch für Managervereine. **Überholt:** seit Spur
+spielstaerke-manager-2 vollständig gelesen und umgesetzt (§13); die Startwerte der Kaderspieler (Spur `kader-start`,
+DGROUP 0x4B42) haben den Maßstab der Teamwerte.
 
 **Zähler** (`Player.Games/Goals/Assists/Penalties2/Penalties5/GoalsAgainst/GoalieMinutes`)
 
@@ -350,4 +353,63 @@ Teamwerte nach dem Laden fest bleiben; die Streuung entscheidet je Spiel, welche
 Düsseldorf und Köln etwa gleich oft statt Düsseldorf allein). Kein weiterer Befund in der Abbildung der Computervereine.
 **Offen:** Vergleich mit den Saisonenden der Videos (Reihe `folgen`, „Saisonende“) – in diesem Lauf kein Zugriff auf
 das Referenz-Repo; Strafminuten je Spiel nicht vermessen (die Ligaergebnisse führen keine Strafen).
+
+## 13. Managerteil (Spur spielstaerke-manager-2)
+
+**Managerpaarung** (0x130:0x4D, im Remake jedes Spiel mit Managerverein): nach den Abschlüssen und den Torhüterminuten
+(0x874D) je Minute (Datei 0x37F9B–0x38073) Energie `0x87F7` für Heim und Gast, Seiten zufällig tauschen (random(0, 1); die
+Reihenfolge gilt auch für die Strafen dieser Minute), ungerade Minute `0x80CB(a, b, Tore a, Tore b, Minute)`, Reihenwechsel
+`0x8EF2(a, b)` und `0x8EF2(b, a)`, gerade Minute `0x939A` für beide. Außerhalb der Managerpaarungen ändert sich nichts.
+
+- **Spielvorbereitung 0x84D7(0)** (Datei 0x36C4F): Reihenenergie aller Vereine 0x5B und einmal herunterzählen = 90
+  (bisher 91, gleicher Technikfaktor); Kaderplätze der Manager 101 − Belastung/8, höchstens 91, minus 1. In jeder
+  Drittelpause (Datei 0x37A86, auch vor der Verlängerung) **0x84D7(1)**: + 20, ebenso begrenzt.
+- **Energie 0x87F7**: Computerverein je Teil und Reihe 0 … 3 – nicht auf dem Eis und < 90: + 1, mit 1/5 und
+  Kondition > lrandom(0, 100) + 2; auf dem Eis: Minuten m + 1, − ((lrandom(0, Einsatz) + 75)/40 + 1) − 4 (m ≥ lrandom(0, 5))
+  − 8 (m > lrandom(5, 15)), 1 … 99. Managerverein ebenso je eingesetztem Kaderplatz (Kondition des Spielers; vorher
+  lrandom(0, 4 + (Kondition > Technik)) = 0 → Belastung + 1), danach Reihenenergie = Summe der Feldspieler / 3 (Abwehr mit
+  90 für den fehlenden dritten Platz).
+- **0x80CB** (nur Computervereine bzw. „Automatisch“): Modi (2, 2); (2, 1) bei Führung von a nach Minute 40 oder weniger
+  Feldspielern; (1, 2) bei Rückstand nach Minute 40 oder mehr Feldspielern, sonst Stärkevergleich 2·S (8 Bit):
+  +20 → (3, 2), +15 → (2, 3). Computer ziehen in Minute 58/59/68/69 bei einem Tor Rückstand den Torhüter (wirksam 59/69).
+- **0x8EF2** mit 0x91FF (Reihen nach Energie, 3 bzw. mit vierter Reihe 4, Modus 1 nur 2): Modus 1/2 nach > 3 Minuten zur
+  energiestärksten Reihe (bzw. zur zweiten); Modus 3 Reihe des gegnerischen anderen Teils; Modus 4 Minuten-Vorgabe
+  (Zähler DGROUP 0x4926); „Voll manuell“ kein Wechsel. Die Energieprüfungen „+ 4“ / „+ 8“ vergleichen im Original die
+  Energie mit der Reihennummer und greifen nie (übernommen).
+- **0x98F8** (Reihenwerte aus Spielern): Abwehr = (2 Verteidiger · 80 % + Torhüter · 140 %) / 3, Sturm = 3 Stürmer / 3;
+  Technik · (Energie/2 + 50) %; Abzüge fremde Position (−15, Level < 5) und fremde Reihe (−10, Level 4/5; `[APPROX]`
+  entfällt, Kaderplatz +0x02 nicht geführt); Unterzahl Technik − (45 − Unterzahl-Halbbytes + 16·(−1 − Differenz)),
+  Überzahl + Überzahl-Halbbytes + 16·(Differenz − 1); ohne Torhüter (DGROUP 0xDE16) bricht die Abwehr zusammen und jeder
+  Abschluss ist ein Tor (0xA83E, `LiveTeam.OpenNet`). Bundestrainer + Länderspiele/8.
+- **0x952C**: Teamwerte des Managervereins aus Reihe 0–2 ohne Spiel und Managerwert M = clamp(d/5 + 20, 0, 40) mit
+  d = Σ laufende Summen (Kondition − Technik). Strafen (0x35890) lesen M über Vereinsfeld 0x16 = Manager + 1, also den
+  **Satz des nächsten Managers** (übernommen; `[APPROX]` ohne nächsten Manager 0). Für #193 liefert
+  `MatchEngine.LineupTeamValues` die Werte aus der Aufstellung des Bundestrainers; den Anschluss nach
+  Freundschaftsspielen (0x555D6) in `Core/CupsNational*.cs` setzt die Leitstelle.
+- **0x378C5** (Strafspieler): bis zu 151 Züge random(0, Kaderplätze − 1); nur Spieler der Reihe auf dem Eis; Technik <
+  Kondition → random(0, 10) > 3, sonst > 7; Torhüter mit 2/3 verschont. Feldspieler gehen vom Eis bis zum Freiwerden
+  (DGROUP 0xD095, `PenaltyBox.Occupants`); ohne Spieler (100) keine Kettenstrafe. Die Strafe zählt beim gewählten
+  Spieler (Kaderplatz +0/+1), beim Torhüter bei keinem.
+- **0x38B8F = Verletzungen im Spiel** (offen, Teil 3): je Minute je Managerverein mit ≥ 4 fitten Spielern (Schalter DGROUP
+  0x4E80 aus) random(0, 20·clamp(60 − M, 0, 40) + 200·(5 − Level) + 200) = 0 → Spieler 0x378C5, Ereignis 4
+  (0x130:0x7F, Dauer dort), Versicherung 0x20:0xBA9. Ebenfalls offen: Torschütze 0x386D1.
+
+**Wirkung** (Probe, Originaldaten, Seed 7, 400 Spiele je Paar, Liga): Managerverein Düsseldorf (Datenbank 92, Startkader
+Bundesliga/Mittelfeld 81 ± 2) gegen Köln (90): vorher 197 Siege/154 Niederlagen (3,21 : 2,63 Tore), jetzt 90/280
+(2,35 : 4,23) – der Managerverein spielt mit seinen Spielern statt mit der Datenbankstärke. Oberliga Verein 42 (31 ± 2)
+gegen Verein 40 (20): vorher 192/165, jetzt 276/83. Strafminuten je Spiel Managerverein 12,8 statt 14,4 (Managerwert
+des nicht belegten Satzes, oben).
+
+**Meisterverteilung** (`SpielstaerkeManagerTests.SeasonDistribution_OriginalDatabase`, Verein 42 aktiv, 48 Titel):
+Köln 21, Düsseldorf 12, Hedos München 7, Krefeld 5, Preussen Berlin 2, Mannheim 1; Bundesliga 6,28 Tore je Spiel,
+11,6 % Unentschieden (Managerverein 42 spielt in der Oberliga, die Bundesliga ändert sich nur über Pokal- und
+Europapokalspiele).
+
+**Videovergleich #204** (Reihe `folgen`, Meisterfotos „Deutscher Meister“, 18 Saisonenden einer Laufbahn): Düsseldorf
+(92) F2, F9; Preussen Berlin (82) F3, F12, F13; Freiburg (72) F4, F6; Schwenningen (72, 2. Liga) F7; Nürnberg (63,
+2. Liga) F10, F23, F25; Köln (90) F14, F17, F19, F21; Landshut (76) F16; Ratingen (78) F27, F29. **Befund:** im Original
+acht Meister in 18 Saisons, die beiden stärksten Vereine nur 6 von 18; im Remake die beiden stärksten 33 von 48 und nie
+ein Verein unter 82. Mit festen Teamwerten der Computervereine (§12) erklärt das weder der Lader noch der Managerteil.
+Offene Kandidaten: Play-off-Format (`[APPROX]`), weitere Schreibzugriffe auf Teamwerte (0x570E auf 0x1D, 0x49723 auf
+0x1A, nicht gelesen), Kaderwechsel durch den Video-Manager (Berliner SC). #204 bleibt offen.
 

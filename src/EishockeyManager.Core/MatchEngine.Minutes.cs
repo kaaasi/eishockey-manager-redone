@@ -327,8 +327,8 @@ public static partial class OriginalMinutes
     ///   der zählt dessen Strafbank ein zweites Mal herunter (übernommen).</item>
     /// </list>
     /// Managervereine: [ORIGINAL] mit weniger als 8 fitten Spielern (0x120:0x66) keine Strafe, der Zug findet trotzdem
-    /// statt (<see cref="LiveTeam.FewFitPlayers"/>). Einsatzzuschlag (DGROUP 0x974B) und Spielerwahl 0x378C5 sind nicht
-    /// gelesen; den bestraften Spieler wählt <see cref="MatchEngine.PlayWithEvents"/> ([APPROX]).
+    /// statt (<see cref="LiveTeam.FewFitPlayers"/>). Einsatz + Managerwert − 20 (<see cref="LiveTeam.PenaltyManagerValue"/>,
+    /// Datei 0x35873–0x358B4); Spieler aus 0x378C5 (<see cref="PenalizedPlayer"/>), Spielstrecke §13.
     /// </summary>
     /// <returns>Minuten der eigenen Strafe (0, 2 oder 5).</returns>
     public static int Penalty(LiveTeam club, LiveTeam opponent, int side, int minute, bool chained, List<MatchEvent> events, Random random)

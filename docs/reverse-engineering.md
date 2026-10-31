@@ -307,6 +307,23 @@ Einzelheiten und Messung: [spielberechnung.md](spielberechnung.md) §12.
 | `0x4BD35` (Ov 0x120, Stub 0x52) | Wert über Zeiger auf min … max begrenzen | – |
 | `0x55506`–`0x55560` (in `0x54C9F`) | Länderwerte Deutschlands neu: Kondition random(84, 94), Technik random(79, 89), Form random(45, 55) je Teil bei `[0x9EDA]` = 0xFD | – (#193) |
 
+## Managerteil der Spielberechnung (Spur `spielstaerke-manager-2`)
+
+Einzelheiten: [spielberechnung.md](spielberechnung.md) §13.
+
+| Fundstelle | Inhalt | Code |
+|---|---|---|
+| `0x98F8`–`0x9C63` (in `0x977F`) | Reihenwerte der Managervereine aus den eingesetzten Spielern | `MatchEngine.ManagedLineValues` |
+| `0x952C` | Teamwerte 0x18–0x1D eines Managervereins aus Reihe 0–2 ohne Spiel, Managerwert DGROUP 0x974B (100 bei < 9 Spielern) | `MatchEngine.ManagedTeamValues`, `LineupTeamValues` (#193) |
+| `0x84D7` | Spielvorbereitung (0) und Drittelpause (1): Energie der Reihen und Kaderplätze | `PreparedEnergy`, `PreparedPlayerEnergy`, `RecoveredEnergy` |
+| `0x87F7` | Energie je Minute (nur Managerpaarungen) | `OriginalMinutes.DrainEnergy` |
+| `0x8E5F` / `0x91FF` / `0x8EF2` | vierte Reihe besetzt? / Reihen nach Energie / Reihenwechsel | `LiveSquad.HasFourthLine`, `LinesByEnergy`, `ChangeLines` |
+| `0x80CB` | Linienwechsel-Modus und Torhüter der Computervereine (ungerade Minuten) | `ComputerLineModes` |
+| `0x939A` | Einsatz/Angriff nach Spielstand mit Energieabzug (gerade Minuten, beide Vereine) | `OriginalMinutes.FollowTactics` |
+| `0x378C5` | Spielerwahl für Strafe und Verletzung | `OriginalMinutes.PenalizedPlayer` |
+| `0x38B8F` | **Verletzung im Spiel** (bisher als „Aufstellung/Reihenfolge“ geführt): je Minute je Managerverein mit ≥ 4 fitten Spielern random(0, 20·clamp(60 − M, 0, 40) + 200·`[0xED8]` + 200) = 0 → Spieler 0x378C5, Ereignis 4 (0x130:0x7F), Versicherung 0x20:0xBA9 | – (offen, Teil 3) |
+| `0x386D1` | Torschütze/Vorlage der Managervereine | – (offen, Teil 3) |
+
 ## Funktionskarte und Abdeckung (Spur `re-abdeckung`)
 
 Spur `re-abdeckung`, #210. Karte aller 678 Funktionen (12 Basissegmente, 17 Overlays) mit Abdeckungsstatus
