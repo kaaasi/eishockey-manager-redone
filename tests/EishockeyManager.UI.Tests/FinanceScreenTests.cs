@@ -34,7 +34,7 @@ public class FinanceScreenTests
         var price = game.Stocks.Stocks[1].Price;
 
         var row = FinanceScreen.StockRow(1);
-        d.Move(row.X + 10, row.Y + 10);
+        d.Click(row.X + 10, row.Y + 10);
         Assert.Equal(new FinanceScreen.Selection(FinanceScreen.SelectionKind.Stock, 1), screen.Selected);
 
         Press(d, FinanceScreen.LeftPlus, right: true);   // +100
@@ -62,7 +62,7 @@ public class FinanceScreenTests
         var me = game.ActiveManager;
         var bank = game.Finance(me).Bank;
 
-        d.Move(50, 30);
+        d.Click(95, 30); // Bankkasten neben dem Bankbild (das Bankbild öffnet das Finanzbuch)
         Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
         for (var i = 0; i < 3; i++)
             Press(d, FinanceScreen.RightPlus);
@@ -77,15 +77,44 @@ public class FinanceScreenTests
     }
 
     [GameDataFact]
-    public void Chart_ScrollsToHoveredStock()
+    public void Chart_ScrollsToClickedStock()
     {
         var (d, screen) = Open();
         var stock = d.Host.Game!.Stocks.Stocks[3];
         var row = FinanceScreen.StockRow(3);
-        for (var i = 0; i < 200; i++)
-            d.Move(row.X + 10, row.Y + 10);
+        d.Click(row.X + 10, row.Y + 10);
         Assert.Equal(stock.Price, screen.ViewPrice);
         Assert.True(FinanceScreen.Chart.Contains(FinanceScreen.Chart.X, screen.ChartY(stock.Price)));
+    }
+
+    /// <summary>
+    /// Befund NB-02 (#206): Auch Bank und Mitmanager werden erst per Klick gewählt (em.exe 0x59B2D–0x59BF2, nur bei
+    /// gedrückter linker Maustaste), Überfahren ändert die Auswahl nicht.
+    /// </summary>
+    [GameDataFact]
+    public void BankAndPartner_SelectedOnlyByClick()
+    {
+        var d = FlowTests.CreateDriver();
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "M0", Head = 0, ClubIndex = 2 });
+        setup.Managers.Add(new ManagerSetup { Name = "M1", Head = 1, ClubIndex = 14 });
+        var game = NewGame.Create(d.Host.Assets.Database, setup, 5);
+        d.Host.Game = game;
+        d.Host.Show(new MainMenuScreen(d.Host));
+        d.Frame();
+        d.OpenTile("Finanzen");
+        var screen = Assert.IsType<FinanceScreen>(d.Host.Current);
+        var partner = FinanceScreen.PartnerBox(1);
+
+        d.Move(partner.X + 10, partner.Y + 10);
+        Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
+        d.Click(partner.X + 10, partner.Y + 10);
+        Assert.Equal(new FinanceScreen.Selection(FinanceScreen.SelectionKind.Manager, 1), screen.Selected);
+
+        d.Move(95, 30);
+        Assert.Equal(FinanceScreen.SelectionKind.Manager, screen.Selected.Kind);
+        d.Click(95, 30);
+        Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
     }
 
     [GameDataFact]

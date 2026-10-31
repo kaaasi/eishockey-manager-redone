@@ -22,7 +22,7 @@ public class IntegrationRunde6Tests : IDisposable
     }
 
     /// <summary>
-    /// Zwei Saisons mit der Leertaste (Modus 4, Düsseldorfer EG, Bundesliga): Die Zuschauerstatistik füllt sich mit
+    /// Zwei Saisons mit „weiter“ (Vereinslogo bzw. Leertaste; Modus 4, Düsseldorfer EG, Bundesliga): Die Zuschauerstatistik füllt sich mit
     /// Ligaheimspielen und beginnt nach dem Saisonwechsel neu, die Werbebewertung bleibt in 0–100, das Statusbit 0x40
     /// folgt der Bundesliga-Abschlusstabelle, das Öffnen von Werbung und Finanzen ist zustandsrein, und Sichern/Laden
     /// bleibt an jedem Saisonende bytegleich (Schema 8).
@@ -44,7 +44,7 @@ public class IntegrationRunde6Tests : IDisposable
         var seasonsChecked = 0;
         for (var guard = 0; seasonsChecked < 2 && guard < 60000; guard++)
         {
-            d.Press(Key.Space);
+            d.Advance();
             if (d.Host.Current is not MainMenuScreen || game.NationalTurn)
                 continue;
 

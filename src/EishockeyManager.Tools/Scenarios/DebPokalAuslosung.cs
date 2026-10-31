@@ -38,7 +38,7 @@ internal static class DebPokalAuslosung
 
         // Nach dem dritten Termin der ersten Runde: Frage zur Auslosung des Achtelfinales im Spieltagsablauf
         for (var guard = 0; d.Host.Current is not DebCupDrawLiveScreen && guard < 5000; guard++)
-            d.Press(Key.Space);
+            d.Advance();
         if (d.Host.Current is not DebCupDrawLiveScreen { Round: 1 })
             throw new InvalidOperationException("Auslosung des Achtelfinales nicht erreicht.");
         d.Save("05_frage_achtelfinale");

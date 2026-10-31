@@ -114,7 +114,7 @@ internal static class Wettbewerbe
 
         while (game.Phase != SeasonPhase.SeasonOver && game.Phase != SeasonPhase.GameOver)
         {
-            d.Press(Key.Space);
+            d.Advance();
             if (game.WorldCup!.Knockout.Count == 3)
                 break;
         }
@@ -154,9 +154,9 @@ internal static class Wettbewerbe
         d.Move(5, 120); d.Save("00_frueher_erste_saison");
         d.Press(Key.Escape);
         for (var guard = 0; game.History.Count == 0 && guard < 5000; guard++)
-            d.Press(Key.Space);
+            d.Advance();
         for (var guard = 0; d.Host.Current is not MainMenuScreen && guard < 50; guard++)
-            d.Press(Key.Space);
+            d.Advance();
         d.OpenTile("Totale");
         d.Move(5, 120); d.Save("01_ewige_tabelle");
         for (var i = 0; i < 30; i++)

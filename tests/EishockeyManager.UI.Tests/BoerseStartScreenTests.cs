@@ -131,11 +131,12 @@ public class BoerseStartScreenTests
     }
 
     /// <summary>
-    /// Entscheidung Nutzer (#188): Überfahren einer Aktie setzt den Ausschnitt sofort wie em.exe 0x59C75
-    /// (Versatz = Kurs · 3 − 130) – vorher lief er mit 1 DM je Bild dorthin.
+    /// Befund NB-02 (#206): Erst der Klick wählt die Aktie und setzt den Ausschnitt (em.exe 0x59B2D: Auswahl nur bei
+    /// Maustaste <c>DGROUP 0x5A16 == 1</c>, dann 0x59C75 Versatz = Kurs · 3 − 130). Überfahren ändert nichts.
+    /// Ersetzt <c>Hover_SetsOffsetImmediately</c> aus #188.
     /// </summary>
     [GameDataFact]
-    public void Hover_SetsOffsetImmediately()
+    public void Hover_KeepsOffset_ClickSetsItImmediately()
     {
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
@@ -146,8 +147,20 @@ public class BoerseStartScreenTests
         d.Move(319, 239);
         Assert.Equal(160, screen.ChartOffset);
         var row = FinanceScreen.StockRow(2);
-        d.Move(row.X + 10, row.Y + 10);
+        for (var i = 0; i < 5; i++)
+            d.Move(row.X + 10, row.Y + 10);
+        Assert.Equal(160, screen.ChartOffset);
+        Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
+
+        d.Click(row.X + 10, row.Y + 10);
+        Assert.Equal(new FinanceScreen.Selection(FinanceScreen.SelectionKind.Stock, 2), screen.Selected);
         Assert.Equal(134 * 3 - 130, screen.ChartOffset);
         Assert.Equal(FinanceScreen.ChartCanvas.Y + 65, screen.ChartY(134));
+
+        // Überfahren einer anderen Aktie lässt Auswahl und Ausschnitt stehen
+        var other = FinanceScreen.StockRow(0);
+        d.Move(other.X + 10, other.Y + 10);
+        Assert.Equal(2, screen.Selected.Index);
+        Assert.Equal(134 * 3 - 130, screen.ChartOffset);
     }
 }

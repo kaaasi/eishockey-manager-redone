@@ -1,7 +1,8 @@
 # Tagesablauf (verbindlich seit Runde 2, Spur `fundament`)
 
 Festgelegt mit Befund R2-02 aus dem [Folgereview](reviews/2026-10-26-folgereview.md). Zeit vergeht **nur** über
-`GameState.Continue()` („und tschüß…“); Bildschirme schreiben beim Öffnen nichts fort.
+`GameState.Continue()` („Tag weiter“ per Klick aufs Vereinslogo der Infoleiste; „und tschüß…“ beendet seit #205 wie
+im Original das Programm); Bildschirme schreiben beim Öffnen nichts fort.
 
 ## Zustand im Hauptmenü
 
@@ -12,7 +13,7 @@ Das Hauptmenü zeigt den Tag **T** des nächsten eigenen Spiels.
 - Jetzt bedienen die Manager ihre Bildschirme. Öffnen und Schließen ändert nichts; nur ausdrückliche Handlungen
   (Plan zeichnen, Kauf, Vertrag, Bank …) wirken – und zwar sofort.
 
-## „und tschüß…“ – Reihenfolge je Tag
+## „Tag weiter“ – Reihenfolge je Tag
 
 `Continue()` verarbeitet ab Tag T jeden Tag einzeln (`SeasonFlow.ProcessDay`) und hält am nächsten eigenen
 Spieltag wieder an:
