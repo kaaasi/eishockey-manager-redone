@@ -216,36 +216,16 @@ public sealed class RelegationGroup
         return played;
     }
 
-    /// <summary>Tabelle der Gruppe (2-Punkte-Regel, Reihenfolge wie in der Liga).</summary>
-    public IReadOnlyList<TableRow> Table(IReadOnlyList<Club> clubs)
-    {
-        var rows = Clubs.ToDictionary(c => c, c => new TableRow { Club = clubs[c] });
-        foreach (var r in Results)
-        {
-            Add(rows[r.Home], r.HomeGoals, r.AwayGoals);
-            Add(rows[r.Away], r.AwayGoals, r.HomeGoals);
-        }
-        var list = rows.Values
-            .OrderByDescending(r => r.PointsPlus)
-            .ThenBy(r => r.PointsMinus)
-            .ThenByDescending(r => r.GoalDifference)
-            .ThenByDescending(r => r.GoalsFor)
-            .ThenBy(r => Clubs.ToList().IndexOf(r.Club.Index)) // [APPROX] bei Gleichstand behält die obere Liga den Vorrang
-            .ToList();
-        for (var i = 0; i < list.Count; i++)
-            list[i].Rank = i + 1;
-        return list;
-    }
+    /// <summary>
+    /// Tabelle der Gruppe. [ORIGINAL] em.exe 0x30852 mit Wettbewerb 1 (Aufruf 0x38691 nach jedem Spieltag, Code
+    /// DGROUP 0xD0C2 = 1): Punkte, Tore und Sortierung wie die Pokalgruppen (<see cref="CupGroup.Standings"/>).
+    /// Ausgangsreihenfolge = Plätze 0x30427 (Datei 0x30511): die beiden Letzten der oberen Liga, dann die beiden Ersten
+    /// der unteren (DGROUP 0x5CCB + 10/11 bzw. + 12/13 je Liga) – wie <see cref="Clubs"/>.
+    /// </summary>
+    public IReadOnlyList<TableRow> Table(IReadOnlyList<Club> clubs) =>
+        CupGroup.Standings(clubs, Clubs, Results.GroupBy(r => r.MatchDay)
+            .Select(day => day.Select(r => (r.Home, r.Away, r.HomeGoals, r.AwayGoals))));
 
     /// <summary>Die beiden Vereine, die in der nächsten Saison in der oberen Liga spielen.</summary>
     public IReadOnlyList<int> Qualified(IReadOnlyList<Club> clubs) => Table(clubs).Take(2).Select(r => r.Club.Index).ToList();
-
-    private static void Add(TableRow row, int goalsFor, int goalsAgainst)
-    {
-        row.GoalsFor += goalsFor;
-        row.GoalsAgainst += goalsAgainst;
-        if (goalsFor > goalsAgainst) row.Wins++;
-        else if (goalsFor == goalsAgainst) row.Draws++;
-        else row.Losses++;
-    }
 }
