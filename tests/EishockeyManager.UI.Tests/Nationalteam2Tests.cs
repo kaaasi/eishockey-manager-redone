@@ -97,4 +97,130 @@ public class Nationalteam2Tests
     /// <summary>Pixel der Statuszeile (y = StatusY − 8 … StatusY + 8, ganze Breite).</summary>
     private static byte[] Band(Surface s) =>
         s.Pixels.Skip((LineupScreen.StatusY - 8) * Surface.Width).Take(17 * Surface.Width).ToArray();
+    /// <summary>
+    /// #194, DOSBox <c>20_paarungen_wm_gruppe1_spieltag1.png</c>, <c>21_…spieltag2.png</c>, <c>24_paarungen_wm_endrunde_vor_den_spielen.png</c>:
+    /// Paarungen → WM öffnet die Paarungsansicht „Gruppe 1   1.Spieltag“ (em.exe 0x2FC2F, Seite 8) mit den drei Begegnungen
+    /// in Auslosungsfolge „abcdef“ und 0:0; Pfeile blättern 1 … 5 mit Umlauf, „Gruppe 2“ wechselt, „Endrunde“ zeigt „Die
+    /// Paarungen stehen noch nicht fest...“, dessen „Gruppe“ zurück zur Paarungsansicht führt. Vorher öffnete die Kachel die
+    /// Gruppentabelle (wie Tabellen → WM), die Paarungsansicht fehlte. Alles zustandsrein.
+    /// </summary>
+    [GameDataFact]
+    public void PairingsTile_ShowsMatchDayView_LikeDosbox()
+    {
+        var d = StartWorldOnlyThroughSetup();
+        var game = d.Host.Game!;
+        var before = StateFingerprint.Of(game);
+        d.OpenTile("WM");
+        var screen = Assert.IsType<CupPairingsScreen>(d.Host.Current);
+        Assert.Equal("Gruppe 1   1.Spieltag", screen.Title);
+        Assert.Equal("Gruppe 2", screen.GroupButtonText);
+        var group = game.WorldCup!.Groups[0];
+        Assert.Equal([(group.Teams[0], group.Teams[1]), (group.Teams[2], group.Teams[3]), (group.Teams[4], group.Teams[5])],
+            screen.Rows.Select(r => (r.Home, r.Away)));
+        Assert.All(screen.Rows, r => Assert.Equal((0, 0), (r.HomeGoals, r.AwayGoals)));
+
+        // Flaggen pixelgenau bei (x + 2 | y + 2), Umriss Farbe 7 bzw. 18 für Deutschland mit Bundestrainer
+        d.Frame();
+        for (var k = 0; k < 3; k++)
+            for (var side = 0; side < 2; side++)
+            {
+                var club = side == 0 ? screen.Rows[k].Home : screen.Rows[k].Away;
+                var x = CupPairingsScreen.BoxX[side];
+                var y = CupPairingsScreen.FirstBoxY + CupPairingsScreen.BoxPitch * k;
+                var logo = d.Host.Assets.Image(game.Clubs[club].LogoGraphic!.Value);
+                for (var py = 0; py < logo.Height; py++)
+                    for (var px = 0; px < logo.Width; px++)
+                        Assert.Equal(logo.Pixels[py * logo.Width + px], d.Surface.Pixels[(y + 2 + py) * Surface.Width + x + 2 + px]);
+                Assert.Equal(club == NationalTeams.Germany ? Colors.Red : Colors.White, d.Surface.Pixels[y * Surface.Width + x + 20]);
+                Assert.Equal(4, d.Surface.Pixels[(y + 1) * Surface.Width + x + 20]);
+            }
+
+        Assert.False(ShowsTrophy(d)); // Bundestrainer am Zug: keine Pokale (DOSBox 20, Datei 0x2FE15)
+
+        Click(d, CupPairingsScreen.Buttons[3]);
+        Assert.Equal("Gruppe 1   2.Spieltag", screen.Title); // DOSBox 21
+        Assert.Equal(group.Pairings(1).Select(p => (p.Home, p.Away)), screen.Rows.Select(r => (r.Home, r.Away)));
+        Click(d, CupPairingsScreen.Buttons[0]);
+        Click(d, CupPairingsScreen.Buttons[0]);
+        Assert.Equal(4, screen.Day); // vor 1 → 5
+        Click(d, CupPairingsScreen.Buttons[3]);
+        Assert.Equal(0, screen.Day); // nach 5 → 1
+
+        Click(d, CupPairingsScreen.Buttons[2]);
+        var other = Assert.IsType<CupPairingsScreen>(d.Host.Current);
+        Assert.Equal("Gruppe 2   1.Spieltag", other.Title);
+        Assert.Equal("Gruppe 1", other.GroupButtonText);
+
+        Click(d, CupPairingsScreen.Buttons[1]);
+        var knockout = Assert.IsType<WorldCupKnockoutScreen>(d.Host.Current); // DOSBox 24
+        Assert.Empty(knockout.Sections);
+        Click(d, WorldCupKnockoutScreen.Button);
+        var back = Assert.IsType<CupPairingsScreen>(d.Host.Current);
+        Assert.Equal(1, back.Group); // zurück zur vorigen Seite (0x3AC75)
+        d.Press(Key.Escape);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
+        Assert.Equal(before, StateFingerprint.Of(game));
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Startspieltag = WM-Stufe DGROUP 0x7AE (gespielte WM-Termine), höchstens der fünfte; Ergebnisse stehen bei
+    /// ihren Begegnungen.
+    /// </summary>
+    [GameDataFact]
+    public void PairingsView_StartsAtNextMatchDay_ShowsResults()
+    {
+        var d = StartWorldOnlyThroughSetup();
+        var game = d.Host.Game!;
+        game.AutoNominate();
+        for (var guard = 0; game.WorldCup!.Groups[0].Results.Count < 6; guard++)
+        {
+            Assert.True(guard < 20, "keine zwei WM-Spieltage");
+            game.Continue();
+        }
+        var screen = new CupPairingsScreen(d.Host, d.Host.Current!);
+        Assert.Equal(2, screen.Day);
+        d.Host.Show(screen);
+        Click(d, CupPairingsScreen.Buttons[0]);
+        var group = game.WorldCup.Groups[0];
+        var played = group.Results.Skip(3).Take(3).ToList();
+        Assert.Equal(played.Select(m => (m.Home, m.Away, m.HomeGoals, m.AwayGoals)),
+            screen.Rows.Select(r => (r.Home, r.Away, r.HomeGoals, r.AwayGoals)));
+
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 50, "Saisonende nicht erreicht");
+            game.Continue();
+        }
+        Assert.Equal(CupPairingsScreen.Days - 1, CupPairingsScreen.StartDay(game));
+    }
+
+    private static void Click(ScreenDriver d, Rect r) => d.Click(r.X + 5, r.Y + 5);
+
+    private static bool ShowsTrophy(ScreenDriver d)
+    {
+        var sheet = d.Host.Assets.Image(EuropeanCupScreen.TrophyGraphic);
+        var src = CupPairingsScreen.TrophySource;
+        for (var y = 0; y < src.H; y++)
+            for (var x = 0; x < src.W; x++)
+                if (sheet.Pixels[(src.Y + y) * sheet.Width + src.X + x] != d.Surface.Pixels[(10 + y) * Surface.Width + 29 + x])
+                    return false;
+        return true;
+    }
+
+    /// <summary>
+    /// Anzeige im Spielablauf wie Video <c>bundestrainer_00437</c> („Gruppe 1   60. Min.“, Pokale, ohne Knöpfe) – nur für
+    /// Bildschirmfotos (der Spielablauf selbst gehört zu `livespiel`).
+    /// </summary>
+    [GameDataFact]
+    public void LiveView_LikeVideo_HasTrophiesNoButtons()
+    {
+        var d = StartWorldOnlyThroughSetup();
+        var group = d.Host.Game!.WorldCup!.Groups[0];
+        var screen = new CupPairingsScreen(d.Host, d.Host.Current!, 0, 0,
+            [new(group.Teams[0], group.Teams[1], 3, 3)], liveMinute: 60, trophies: true);
+        d.Host.Show(screen);
+        d.Frame();
+        Assert.Equal("Gruppe 1   60. Min.", screen.Title);
+        Assert.True(ShowsTrophy(d));
+    }
 }

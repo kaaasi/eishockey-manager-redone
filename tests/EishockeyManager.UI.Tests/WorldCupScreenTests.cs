@@ -16,7 +16,7 @@ public class WorldCupScreenTests
         var game = d.Host.Game!;
         var before = StateFingerprint.Of(game);
 
-        d.OpenTile("WM");
+        d.OpenTile("Tabelle WM"); // #194: „Paarungen → WM“ ist jetzt die Paarungsansicht
         d.Frame();
         var screen = Assert.IsType<WorldCupScreen>(d.Host.Current);
         Assert.Same(game.WorldCup!.Groups[0], screen.Group);

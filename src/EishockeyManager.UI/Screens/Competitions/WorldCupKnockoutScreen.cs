@@ -27,8 +27,8 @@ public sealed record WorldCupKnockoutSection(string Title, IReadOnlyList<WorldCu
 /// <item>[ORIGINAL] Noch nicht gespielte Begegnungen zeigen „0: 0“ (<c>eisbaeren_f35_00646</c>).</item>
 /// <item>[ORIGINAL] Vor der Endrunde (WM-Stufe DGROUP 0x7AE &lt; 5, Datei 0x3337B) ein Rahmen ohne Zeilen (5 Teile ab y = 70) mit
 ///   „Die Paarungen stehen noch nicht fest...“ (Flow, Grundlinie y + 34, Farbe 30) und Knopf „Gruppe“; DOSBox
-///   <c>dosbox/nur-weltkugel/24</c>. Erreichbar ist das im Remake nur über „Endrunde“ der Gruppenansicht, die es erst nach der
-///   Gruppenphase gibt; die Paarungsansicht „Gruppe n  m.Spieltag“ mit diesem Knopf (DOSBox 20, 21) fehlt noch.</item>
+///   <c>dosbox/nur-weltkugel/24</c>. Erreichbar über „Endrunde“ der Paarungsansicht „Gruppe n   m.Spieltag“ (<see cref="CupPairingsScreen"/>,
+///   DOSBox 20, 21; #194) und nach der Gruppenphase über die Gruppentabelle.</item>
 /// <item>[APPROX] Punkte hinter dem Ergebnis: Das Original setzt einen Punkt nach Verlängerung und zwei (eisbaeren_f44_01330:
 ///   „4: 3..“) vermutlich nach Penaltyschießen; das Remake kennt nur das Penaltyschießen bei Gleichstand und zeigt dann zwei
 ///   Punkte hinter dem Gleichstand.</item>
@@ -59,7 +59,16 @@ public sealed class WorldCupKnockoutScreen : Screen
     private readonly IReadOnlyCollection<int>? _highlighted;
     private readonly int? _liveMinute;
 
+    private readonly Func<Screen>? _groupPage;
+
     public WorldCupKnockoutScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+
+    /// <summary>
+    /// Aus einer Gruppenseite geöffnet: „Gruppe“ kehrt zu dieser Seite zurück. [ORIGINAL] Der Seitenwähler 0x3A88A setzt
+    /// nach Seite 10 mit Rückgabe ≠ 0 die vorige Seite (Datei 0x3AC75–0x3AC81) – Paarungen bzw. Tabelle der Gruppe.
+    /// </summary>
+    public WorldCupKnockoutScreen(ScreenHost host, Screen back, Func<Screen> groupPage) : base(host)
+        => (_back, _groupPage) = (back, groupPage);
 
     /// <summary>Feste Abschnitte statt des Spielstands (Bildschirmfotos); <paramref name="liveMinute"/> zeigt die Anzeige im
     /// Spielablauf („n.Minute“, ohne Knopf).</summary>
@@ -112,7 +121,7 @@ public sealed class WorldCupKnockoutScreen : Screen
         if (input.Pressed(Key.Escape) || input.RightClick)
             Host.Show(_back);
         else if (_liveMinute is null && input.Clicked(Button))
-            Host.Show(new WorldCupScreen(Host, _back));
+            Host.Show(_groupPage?.Invoke() ?? new WorldCupScreen(Host, _back));
         else if (input.LeftClick || input.Keys.Count > 0)
             Host.Show(_back);
     }

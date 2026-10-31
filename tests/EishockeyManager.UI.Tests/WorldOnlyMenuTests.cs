@@ -100,7 +100,7 @@ public class WorldOnlyMenuTests
             Assert.Same(current, d.Host.Current);
         }
         d.OpenTile("WM");
-        Assert.IsType<WorldCupScreen>(d.Host.Current);
+        Assert.IsType<CupPairingsScreen>(d.Host.Current); // #194: Paarungen → WM = Paarungsansicht
         Assert.Equal(before, StateFingerprint.Of(game));
         _ = setup;
     }

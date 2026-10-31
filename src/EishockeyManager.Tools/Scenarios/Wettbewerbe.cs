@@ -106,7 +106,7 @@ internal static class Wettbewerbe
         d.Move(300, 225); d.Save("00_gruppe1_video_13_13");
         d.Host.Show(new MainMenuScreen(d.Host));
 
-        d.OpenTile("WM");
+        d.OpenTile("Tabelle WM"); // #194: „Paarungen → WM“ ist die Paarungsansicht (Ablauf cup-paarungen)
         d.Frame(); d.Save("01_gruppe1");
         d.Click(WorldCupScreen.GroupButton.X + 5, WorldCupScreen.GroupButton.Y + 5);
         d.Frame(); d.Save("02_gruppe2");
