@@ -32,6 +32,16 @@ public enum SeasonEvent
     GermanChampion,
     CupWinner,
     EuropeanCupWinner,
+
+    // Spur statistiken (#135): Einzelprämien des Saisonendes (Datei 0x27184–0x2725D), siehe GameState.SinglePremiumEvents.
+    /// <summary>Bester Torhüter der eigenen Liga im Kader (Symbol 12).</summary>
+    BestGoalie,
+
+    /// <summary>Topscorer der eigenen Liga im Kader (Symbol 3).</summary>
+    TopScorer,
+
+    /// <summary>Erster der Fair-Play-Tabelle der eigenen Liga (Symbol 13).</summary>
+    FairPlay,
 }
 
 /// <summary>Abschneiden eines Managers in einer Saison (Fenster „Saisonende“).</summary>

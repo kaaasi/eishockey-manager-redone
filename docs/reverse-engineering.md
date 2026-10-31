@@ -265,6 +265,48 @@ für „Noeske“, „Testspieler“, „Kandemiroglu“), sondern fertig gezeic
   Farbe 7; Zeilen-Oberkanten 22, 30, 43, 51, 64, 76, 88, 100, 111, 119, 127, 138 (Ausnahme: der lange Strich in
   „Ogan – Celal Kandemiroglu“ ist kein Zeichen des Fonts).
 
+## Ligatabelle (Spur `tabellen-original`)
+
+Overlay 0x128 (Ghidra 59E3). Fundstellen als Dateioffset von em.exe.
+
+* **Vereinssatz der Tabelle** DGROUP 0x825A + 0x50 · Verein (im Spielstand Block 0x8257, 0x1400 Byte), je Feld erst Heim,
+  dann Auswärts: Punkte +0/+1, Bilanz +4 (8 Zeichen + 0), Tore +0x16/+0x17, Gegentore +0x1A/+0x1B, Spiele +0x1E/+0x1F,
+  Siege +0x26/+0x27, Niederlagen +0x2A/+0x2B; dahinter je eine Sicherung (+2/+3, Bilanz +0x0D, +0x18/+0x19, +0x1C/+0x1D,
+  +0x28/+0x29, +0x2C/+0x2D). Unentschieden zählt das Original nicht, die Anzeige rechnet Spiele − Siege − Niederlagen.
+* **Ergebnis eintragen** Datei 0x50283 (Heim, Gast, Heimtore, Gasttore): Tabellenfelder nur bei DGROUP 0xD0C2 = 7 oder 8;
+  Sieg DGROUP 0x7C5 (= 2) Punkte, Unentschieden 1; Bilanz über 0x4F4F4 (8 Zeichen nach links schieben, neues hinten) mit
+  den Zeichen DGROUP 0x7CE „sSnNuU“: **Heimverein klein** (s/u/n), **Gast groß** (S/U/N). Außerdem Serien
+  DGROUP 0xB57B + 0x15 · Verein und Zähler über 0x51133/0x4F5A8 (nicht Teil dieser Spur).
+* **Spieltag und Sortierung** Datei 0x50B45 (Liga, Modus, Ansicht 0 Heim / 1 Gesamt / 2 Auswärts): Modus 1 sichert die
+  Felder (0x4F325: aktuell → Sicherung), Modus 0 stellt sie aus der Sicherung her und trägt die Ergebnisse des Spieltags
+  (DGROUP 0xA0CB, Paarungen 0x5D7B) ein. Danach Tauschsortierung der Platzliste DGROUP 0x5CCB (Liga · 12 + Platz,
+  Datei 0x50D6D–0x51011): für jeden Platz i alle späteren j; j verdrängt i bei mehr Punkten, bei gleichen Punkten weniger
+  Spielen (abschaltbar mit DGROUP 0x6B0 – kein Code schreibt die Stelle), dann höherer Tordifferenz, dann mehr Toren; sonst
+  bleibt die Reihenfolge (keine weitere Regel, nicht stabil). Am letzten Spieltag der Oberliga folgt `0xE8:0x66`.
+* **Aufrufe:** Tagesbeginn 0x36CD3 (Liga, 1, Gesamt) nach dem Spielplan 0x4E7C7; Spielende 0x385C7 (Liga, 0, Gesamt) bei
+  Minute 60; Hauptmenü 0x44EFD (Liga, 1, Gesamt); Tabellenansicht 0x4FA8D (Liga, 1, gewählte Ansicht) und beim Verlassen
+  0x50256 (Liga, 1, Gesamt). Die Platzliste behält also nach dem Ansehen wieder die Gesamtordnung; nur die Reihenfolge
+  vollständig gleicher Vereine kann sich durch eine angesehene Heim-/Auswärtstabelle ändern.
+* **Startordnung** Datei 0x2F1A2: beim Spielstart Vereinsindex aufsteigend. Andere Schreiber von 0x5CCB: nur die
+  Sortierung und 0x35EDD (WM-Reihenfolge). Über den Saisonwechsel bleibt die Liste stehen.
+* **Tabellenansicht** Datei 0x4F78D: Titel aus DGROUP 0x1011 („   TABELLE “) + Ansicht (Zeiger 0x1001: „Heim“, „Gesamt“,
+  „Auswärts“) + Spieltag; Name x 0x21, Bilanz x 0x75 (immer die Gesamtbilanz +4, gleich in jeder Ansicht), Tendenz über
+  `0x110:0x4D`, Zahlenzeile ab x 0xA6 als ein Text: „*“, Siege, Unentschieden, Niederlagen (Mindestbreite 2,
+  DGROUP 0x374), Punkte „P:M“ mit M = 2 · Spiele − P (bei DGROUP 0x7C5 ≥ 3 statt M ein Leerzeichen), Tore „T:G“
+  (Breite 3), Vorzeichen („`“ bei 0, „+“, „−“) und Betrag der Tordifferenz (Breite 3). Trennzeichen DGROUP 0x53AA ff.
+
+## Teamwerte und Tagesform (Spur `spielstaerke-manager`)
+
+Einzelheiten und Messung: [spielberechnung.md](spielberechnung.md) §12.
+
+| Fundstelle | Inhalt | Code |
+|---|---|---|
+| `0x2EF1B` (Ov 0xE0) | Lader der Teamwerte, einmal beim Programmstart (Aufruf nur aus `0x437D5`) | `MatchEngine.LoadTeamValues` |
+| `0x4F527` (Ov 0x128, Stub 0x4D) | Tagesform 0x17 ± random(0, 2·\|Tordifferenz\|), 47 … 53; aus `0x50283` bei Code 7/8 | `MatchEngine.UpdateDayForm` |
+| `0x4BDE6` (Ov 0x120, Stub 0x61) | Betrag der Differenz zweier `long` (\|a − b\|) | – |
+| `0x4BD35` (Ov 0x120, Stub 0x52) | Wert über Zeiger auf min … max begrenzen | – |
+| `0x55506`–`0x55560` (in `0x54C9F`) | Länderwerte Deutschlands neu: Kondition random(84, 94), Technik random(79, 89), Form random(45, 55) je Teil bei `[0x9EDA]` = 0xFD | – (#193) |
+
 ## Funktionskarte und Abdeckung (Spur `re-abdeckung`)
 
 Spur `re-abdeckung`, #210. Karte aller 678 Funktionen (12 Basissegmente, 17 Overlays) mit Abdeckungsstatus
@@ -311,3 +353,169 @@ umgesetzt in `Core/Player.Value.cs` (`PlayerValue.Compute`, Formel dort mit Fund
 
 Einsatz im Remake: Highscore und Werbebewertung (diese Spur); Transfers, Verträge, Saisonende und Aufstellung folgen in
 `transfer-original` bzw. `spielerinfo`.
+
+## Statistiken: Ranglisten, Fair-Play, Einzelprämien (Spur `statistiken`, Runde 8)
+
+Bisher in der Funktionskarte „dokumentiert“ bzw. ohne Abdeckung; jetzt `[ORIGINAL]` in `Core/StatisticsPlayers.cs`,
+`Core/StatisticsClub.cs` und den Bildschirmen unter `UI/Screens/Statistics/`.
+
+* **Menüsprung** (Ov 0x110, Datei 0x457E1): Index 0–5 über cs:0x2927 → 0x2D5AE, 0x2E356, 0x2C1EE, `0xC8:0x20(0)`,
+  `0xE0:0x20(1)`, `0xF8:0x48`. 0x2E356 (Totale) und 0x2C1EE (Früher) sind am Video belegt; „Verein“ ist damit 0x2D5AE.
+* **0x25E30** (Ov 0xC8 + 0, Einsprung `0xC8:0x20`, Argument 0 Bildschirm / 1 Kennungen): kopiert zuerst die Tore der
+  Managerkader aus Kaderplatz +3 in Spielerfeld 0x1B (0x25E6E); Spielerpool DGROUP `[0x8253]` (33 Byte je Spieler,
+  Index 1–199). Schlüssel 0x25F64–0x260B6 (Torhüter: Minuten 0x1F > 399 → −LDIV(LXMUL(Gegentore 0x1B, 6000), Minuten),
+  sonst 0xFFFE7961; Feldspieler: 0x1B und/oder 0x1F nach Modus `[bp−0x14]` 0/1/2 = TORSCH./VORLEGER/SCORER),
+  Austauschsortierung mit Nebenschlüssel Spiele 0x1C aufsteigend. Ligagrenzen DGROUP 0x7C6/0x7C7 + 2 · Liga (Liga =
+  Managerfeld 0x9746). Zeilen: Grundlinie 0x36/0xA1 + 7 n, Farbe 0x18/0x1E nach Vereinsfeld 0x16, Spalten x = 0x26,
+  0x72, 0xC8, 0xFC − 15 · Art; Mindestbreite über DGROUP 0x374. Rückgabe `[bp−0x2A] | [bp−0x29] << 8` (Topscorer,
+  Torhüter des Managers am Zug) – Aufruf je Manager in 0x5576E, Auswertung in 0x26FE2–0x27007.
+* **0x2A1E0** (Ov 0xE0 + 0, `0xE0:0x20`): Vereine ab DGROUP 0x7C0 + Liga, Strafminuten DGROUP 0x82A1 + 0x50 · Verein
+  (Wort), Spiele = Bytes 0x8278 + 0x8279 (Heim/Auswärts, wie Tabelle 0x4FD58). Argument 0: 1, wenn Vereinsfeld 0x16 des
+  Ersten = Manager + 1 (0x2A29D); Argument 1: Bildschirm.
+* **0x26F20** (Ov 0xD0, Saisonende): je Einzelprämie Symbol über 0x20:0x7C6, `+0x493E0` auf DGROUP 0xE289 + 4 · Manager
+  (Prämienzähler) und auf das Konto 0x97EA + 0x1AF · Manager.
+* **Strafminuten** 0x35967–0x35986: `[0xD0C2] = 7` (Ligaspieltag) → Code & 7 auf 0x82A1 + 0x50 · Verein; 0x5647A löscht
+  die Werte der Vereine 0–63 nach `0xD0:0x20`.
+* **Knöpfe** 0x4C196 (`0x120:0x75`, x, y, Text, Farbe, 1): belegt einen von zehn Plätzen und zeichnet über 0x4BFF2 das
+  Knopfbild 57 × 12 (kb\2 ab (17 | 179 + 12 · Zustand), Zustand immer 0) mit Text Mini zentriert x … x + 59, Grundlinie
+  y + 7, Farbe 29, Schatten 1. Die übergebene Farbe wird nicht verwendet.
+* **Offen:** 0x2D5AE („Verein“, 3356 Byte), Spielerdaten-Fenster aus der Rangliste (0x26B13 → 0x041AC).
+
+
+## Spielerdaten-Fenster 0x041AC und Hinweiszeile 0x41683 (Spur `spielerinfo`)
+
+Spur `spielerinfo`, Runde 8. **Zuordnung (Abnahme 1):** Die Funktionskarte nennt beide „Fenster“; am Code und am Video ist es
+nur eines:
+
+| Funktion | Datei | Was es ist | Remake | Bildname |
+|---|---|---|---|---|
+| **0x041AC** (2761 Byte, Basissegment 0x238 + 0x2C) | `PlayerInfoPopup` / `PlayerDataWindow` | modales Fenster „Spielerdaten“ (Ursprung 89 \| 55, Knopf „Aha !“), Argument: Kaderplatz des aktiven Managers (bp+6) | zeichnet `PlayerInfoPopup`, Regeln in `PlayerDataWindow` | `oberflaeche_1115` („HANFT“, Transferliste; Bilder 1113–1119 gleich) |
+| **0x41683** (1693 Byte, Overlay 0x108 + 0x16A3, Stub 0x108:0x34) | `PlayerHintLine` | **kein Fenster**: Hinweiszeile unter den Spielerlisten, Zeile und Spalte aus der Mausstelle | `LineupScreen.HoverText` → `PlayerHintLine` | Aufstellung (Zeile unter der Liste, y 213) |
+
+Aufrufer von 0x41683: Aufstellung 0x40077 und 0x407ED (Löschaufruf mit Spalte −1), 0x400E0 (Rand 0xFF, Maske 0x3D146 – andere
+Spaltenauswahl, nicht untersucht) und 0x40845 (Ursprung 7 \| 29, Zeilen 0 … Zahl − 1, Rand 0xE9, Maske 0xF0C7); Transferliste 0x4688B
+(Löschaufruf) und 0x46A83 (Ursprung 7 \| 29, Rand 155, Maske 0x90C6). Alle Adressen in den folgenden Absätzen sind, wenn nicht anders
+bezeichnet, Versätze im Funktionsrumpf (Funktionsanfang = 0). 0x041AC wird nach der Zuordnung der Funktionskarte aus Ranglisten 0x25E30,
+Aufstellung 0x3FFE0/0x40364 und Transferliste 0x465F1 gerufen; im Remake öffnet bisher nur die Transferliste es.
+
+### Hinweiszeile 0x41683 (`Screens/Team/PlayerHintLine.cs`)
+
+* **Eingänge:** `(Ursprung x, Ursprung y, erste Zeile, letzte Zeile, Rand, Maske)`; Maus liegt in `[0xC147]` (+0 = y, +2 = x).
+  Zeile = `(y − Ursprung y) / 6` (idiv, zur Null hin); Spalte: Versatz `x − Ursprung x`, Summe der Breiten (DGROUP 0x39F: 11, 18,
+  57, 13, 12, 12, 14, 36, 12, 14, 12, 12, 13, 27, 40, 16, 35, 38) über die in der Maske gesetzten Bits, erste Spalte mit
+  Versatz < Summe. Außerhalb (x < 0 oder > Rand, Zeile außerhalb) wird die Hinweiszeile gelöscht (Versätze 0x8D–0x14B).
+  Der Spieler ist Kaderplatz `[0xA70E] · 0x618 + Zeile · 0x34 + 0x5DC3` (0xA70E = Satz des Managers, 0x34 Byte je Platz).
+* **Texte je Spalte** (Zeiger DGROUP 0x984 + 4 · Spalte): 0 „Rückennummer des Spielers“ (+ „ (Reihe: n)“, n = +0x15 & 0x7F, wenn
+  +0x15 ≠ 0); 1 Art (DGROUP 0x9CC: „Torwart“, „Abwehrspieler“, „Stürmer“, **ohne** Vorsatz; + „ (ausgeliehen)“ bei +0x0C ≠ 0);
+  2 „Name: n (a Jahre)“ (Spielerpool +0x00 / +0x14); 6 „Spiele gesamt (Liga und Pokal)“; 7 „Kondition, Technik, Form (Ø)“ mit
+  Ø = (+0x10 + +0x11 + +0x12) / 3; 8 „Durchschnittsstärke“; 12 „Tore gesamt (Liga und Pokal)“; 13 „2/5 Min.-Strafzeiten“;
+  14 „Status: …“; 15 „Tendenz des Spielers: Fallend./Konstant./Steigend.“ (Index (+0x0E − 30) / 13), nur mit Rand 0xE9
+  (Aufstellung) „ (Erschöpfung:n)“, n = +0x13 · 10 / 15; 16 „Dauer des Vertrages mit dem Spieler (in Saisons)“; 17 „Monatliches
+  Gehalt des Spielers“; Spalten 3–5 und 9–11 leer.
+* **Status (Spalte 14):** +0x0A ≠ 0 (eingesetzt) und +0x15 & 0x7F = 0 → „RESERVE“ (DGROUP 0x964); sonst Kaderplatz +0x09 & 3:
+  0 → eingesetzt „IM TEAM“ (0x960), sonst „Hängt halt so rum...“ (0xD40); 1 → „Noch n Minuten Gesperrt.“ (n = +0x0D, DGROUP
+  0xC48 / 0x11C1 / 0xB88); 2 → „Verletzt.“ (0xB84) + „(Art)“ (+0x17, DGROUP 0xA00: Schädelbruch, Kahnbeinbruch, Gehirnerschütterung,
+  Fingerbruch, Kieferbruch, Meniskuskorbhenkelriß).
+* **Zeichnen:** Text mit 0x30:0x885, Auswahllinien um Zeile und Spalte mit 0x30:0x995 (nur wenn die Maustaste nicht gedrückt ist,
+  `[0x5A16]` ≠ 1, 3); gemerkt in `[0x5094]` (Spalte) und `[0x5096]` (Zeile).
+* **Bisher falsch im Remake:** Spaltengrenzen um 1–4 Pixel verschoben (Aufstellung jetzt 18, 36, 93, 107, 143, 156, 183, 223, 233);
+  „Art des Spielers: “ vor der Rolle; „Verletzt. (Noch n Spiele)“; „Fallend./…“ ohne Erschöpfung; Spalte 7 ohne Durchschnitt;
+  Spalte 0 ohne Reihe.
+* **[APPROX]:** Verletzungsart (+0x17), Sperre in Minuten (+0x0D; das Remake zählt Spiele), Belastung +0x13 (aus der Energie) und die
+  Zeilenschritte der Aufstellung (`LineupScreen.RowAt` klickt bei y = 28 + 6 k, die Hinweiszeile wie das Original bei 29 + 6 k;
+  Klickfläche nicht Teil dieser Spur).
+
+### Spielerdaten-Fenster 0x041AC (`PlayerDataWindow.cs`, `PlayerInfoPopup.cs`)
+
+* **Kopf:** Name (Spielerpool), „Länderspiele:“ (+0x19), „Alter:“ (+0x14), „Stärke:“ ((+0x10 + +0x11 + +0x12) / 3), Gesicht aus kb\10.
+  **Gesicht:** Quelle Spalte `(3 − min((Alter − 18) / 5, 3)) · 17`, Zeile `Talent · 21` (Spielerpool +0x12), Größe 17 × 21, Ziel
+  (Ursprung + 0xA7 \| + 0x0F) = (256 \| 70). Beleg: Template-Matching des Gesichts in `oberflaeche_1115` ergibt Spalte 3 (Alter 18)
+  und Zeile 8 mit Fehler 12 (nächstbester 23); bisher stand ein Namens-Hash und die Blitzstelle eine Zeile zu hoch.
+* **Tore/Spiele:** Zeile „Tore:“ bei Torhütern „GTore:“ (Rollenwert 0, Versatz 0x45D), Spalten Liga/DEB-Pokal/Europacup (DGROUP 0xC0C);
+  Torhüter nur die Spalte Liga (Schleife `3 − 2 · [Torhüter]`). Je Zelle `Zahl( n)`: Byte +0x03 + i / +0x06 + i, in Klammern das
+  Wort +0x22 + 2 i bzw. +0x1C + 2 i; die Zahlenfunktion 0x1488:0x5C schreibt für 0 „-“. [APPROX] Zähler in Klammern fehlen im
+  Remake („( -)“).
+* **Daten (6 Felder, DGROUP 0xC18, Sprungtabelle im Funktionsrumpf, Versatz 0xABD):** 0 Kaufpreis = Kaderplatz +0x2C (Bit 15 der oberen Hälfte gelöscht); 1 Marktwert
+  = Spielerwert 0x118:0x70 Art 0 (über 0x14C7:0x70); 2 Versicherung = +0x30 (0 → „keine“, sonst Betrag + „ DM“); 3 Sperren
+  in Min. = +0x00 · 5 + +0x01 · 2; 4 Gehalt/M. = +0x28; 5 Vertrag = +0x0B Jahre („ Jahr“, bei > 1 „e“), bei +0x0C ≠ 0 „GELIEHEN“.
+  Beträge der Felder 0, 1, 2, 4 werden aus Drittel-DM durch 3 geteilt (0x3CA/0x47C mit DGROUP 0x79D = 3) und mit „ DM“ angehängt,
+  0 wird zu „-“. **Ausblenden** (Versätze 0x7D6–0x82B): gehört der Spieler (Spielerpool +0x1D = Verein) nicht zum Verein des Managers
+  (`[0xA70E · 0x1AF − 0x6991]` = Manager +0x14 = Verein; Vergleich der Vereinsindizes, Befund R8-D01 #253), ist das Gehalt immer 0 und der Marktwert 0, wenn „5 − Level“ (0xED8) < 3. Das erklärt „-“ bei
+  Marktwert, Gehalt und Vertrag für fremde Spieler im Videobild.
+* **Balken** (Funktion 0xAC9 im Fenster, Wert 1–94 Pixel): Unterzahl = (+0x19 & 0xF) · 94 / 15, Überzahl = (+0x19 >> 4) · 94 / 15,
+  Tendenz = (+0x0E − 30) · 100 / 38, Erschöpfung = (100 − +0x13) · 94 / 100. Rahmen: Rechteck Farbe 1, innen Farbe 0, Farbband mit acht
+  Abschnitten à 12 Pixel (Farben 16–19, 15–12, DGROUP 0x482A), **Zeiger** senkrecht über die ganze Innenhöhe (Oberkante + 4 bis
+  + 12) bei Balkenanfang + 1 + Länge in der Farbe des Abschnitts (Beleg: Zeilen 177 und 184 in `oberflaeche_1115`). Position links
+  Ursprung + 7, rechts **+ 0x6C** (bisher + 110), Zeilenabstand 0x13.
+* **[APPROX]:** Unterzahl/Überzahl (Kaderplatz-Halbbytes +0x19, im Remake nicht geführt), Belastung, Tendenz auf drei Stufen
+  (15 / 50 / 84 statt 30 … 68 → 0 … 100), Versicherung („ja“ statt der versicherten Summe, +0x30), Zähler in Klammern bei Tore/Spiele.
+  Das Remake zeigt den Marktwert nur mit Zusammenhang (`PlayerInfoPopup.Show(Player, long, PlayerDataContext)`); der alte Aufruf
+  `Show(Player, long)` bleibt (Marktwert „-“, Gehalt sichtbar).
+
+### Pixelvergleich (Abnahme 2)
+
+Ablauf `spielerinfo` (`Tools/Scenarios/Spielerinfo.cs`), Spieler wie im Videobild (HANFT, Alter 18, 16/20/53, Talent 8, 150.000 DM).
+Kennzahl wie bei `pixel-verein`: mittlere Graudifferenz / Anteil der Pixel über 40 (beide Bilder leicht weichgezeichnet), Zeiger
+im Videobild nicht maskiert; Vorlage `oberflaeche_1115`.
+
+| Bereich | Vorher | Nachher |
+|---|---|---|
+| ganzes Fenster (95 … 300 \| 60 … 222) | 9,2 / 5,3 % (Versatz 0 \| 0) | 8,6 / 4,8 % (0 \| 0) |
+| Gesicht (250 … 284 \| 66 … 98) | 16,3 / 10,8 % (Versatz 0 \| +1) | 8,3 / 4,5 % (0 \| 0) |
+| rechte Balken (198 … 304 \| 172 … 212) | 12,1 / 8,0 % (Versatz −2 \| 0) | 11,4 / 8,0 % und 9,9 / 6,6 % (0 \| 0) |
+
+Die Hinweiszeile hat kein Videobild mit lesbarem Text (Zeile in Mini, Aufstellung ohne Maus im Bild); sie ist nur über Disassembly und
+Tests belegt (Abnahme 2 für 0x41683: Pixelvergleich nicht möglich, siehe PR).
+
+## Transfermarkt Ov 0x118 (Spur `transfer-original`)
+
+Spur `transfer-original`, Runde 8, Teil 1. Belegt und umgesetzt in `Core/Transfer.Original.cs` (`TransferRules`); Übersicht,
+Formeln und offene Punkte in [transfer.md](transfer.md).
+
+* Listenpreis = Spielerwert (Kaderplatz +0x2C, Satz 4 = Markt), Anzeige „(K)“ = +0x2C / 3, „(L)“ = (+0x2C / 3) / 3 (Datei 0x46000).
+* Annahme vom Computermarkt **0x4991D** (bisher „unbekannt“): random(75, 85) / random(110, 130) / random(70, 120) um den Preis.
+* Unfair-Grenze 60–140 % des frischen Werts beim Gebot an einen anderen Manager (0x47546–0x475DB, in 0x465F1).
+* Angebote für eigene Spieler auf dem Markt: Tageswurf 0x072DD (in 0x07169), Höhe 0x47347 (in 0x465F1).
+* random(a, b) 0xC037: 16-Bit-Grenzen, Tausch bei b &lt; a. DGROUP 0x4860 wird nie beschrieben (0).
+
+## Spielmodus-Optionen 0x2CD1C (Spur `optionen-kalender`, Teil 1: Belege; #228)
+
+Nur Belege aus `em.exe` (Disassembly mit `ndisasm -b 16`); **keine Code-Änderung**. DGROUP beginnt in der Datei bei
+**0x16DD0** (Tabelle der Optionstexte: DGROUP 0xE9C liegt in der Datei bei 0x17C6C und zeigt auf „Drittelpause“,
+Datei 0x19EB1). Umsetzung in Core samt Migration bleibt Folgepaket `optionen-wirkung`.
+
+**Aufbau der Funktion** (Datei 0x2CD1C, 2142 Bytes, Overlay 0xE0, Hintergrund kb\33): zeichnet drei Rahmen, die
+Beschriftungen aus der Tabelle DGROUP 0xE98–0xED4 (Reihenfolge: `Nie.`, Drittelpause, Ergebnisse, Tabelle, Torszenen,
+Europapokal, WM-Spiele, Länderspiele:, Zeitung, Hintergrundgrafik, 1.Liga, 2.Liga, 3.Liga, Spielgeschwindigkeit,
+„V1.00 - Ende: “, „ (Level “) und 15 Schalter (Index 0–14). Schleife mit Mausereignis `DGROUP 0x5A16`: 1 = Klick
+auswerten, 3 = Verlassen (Rückkehr nach Freigabe des Puffers 0x38:0x70A).
+
+**Schalter** (Tabellen in DGROUP, je 15 Einträge): Breite in 8-Pixel-Schritten `0x4BCA` (alle 1 außer Index 9, 13, 14 = 0 bzw.
+9: 0), x `0x4BE8` = 130, 144, 158 (dreimal), 24, 188, 204, 218, 39, 54; y `0x4C06` = 222, 222, 222, 252, 252, 252, 282, 282, 282,
+200, 184, 214, 200, 244, 220 (Bildschirm-/Fensterkoordinaten, Trefferprüfung `y ≥ Tabelle`, `y < Tabelle + 0x13 − Breite·8`;
+`x < Tabelle + 0x17 − Breite·10`). Index 0–8 bilden eine 3 × 3-Matrix (Zeile · 3 + Spalte), Index 9 ist dreistufig,
+10–12 sind Schalter, 13–14 zählen über 0xE (`≥ 0xE` wirkt auf die Tabelle `DGROUP 0x120 + Manager` statt auf 0x21D).
+
+**Zustand** (Anfangswerte aus der Datei): `DGROUP 0x21D…0x22B` = 0,0,0,0,0,0,0,0,0, **1**, 0,0,0,0,0 (Index 9 = 1);
+`DGROUP 0x120…` = 1,1,1,1,1,69,94,39,73,15,43,0,9,13,10,14,11,15,12,16 (je Manager, vom Schalter ≥ 0xE per `xor 1` umgeschaltet);
+`DGROUP 0x262` = 70 (Regler „Spielgeschwindigkeit“: x-Klick 0xBE–0x11D, y 0x54–0x60: `(x − 0xBE) / 12 · 10`, also 0–80 in Zehnerschritten).
+
+**Klickverhalten** (Datei 0x2D32A–0x2D3D0 bzw. Kopie 0x5F7–0x6AE im Overlay):
+* Index 9 („Neuer Spielmodus:“, Wert 0/1/2): `inc`; bei 3 → 0; bei 2 → 0, falls `DGROUP 0x5A56 ≠ 0`. Bei Wert 2 außerdem Aufruf
+  `0x120:0x4D` (Spielmodus-Abfrage) und `DGROUP 0x226 = 0` (Datei 0x2D39F) – `0x226` ist der Spielmodus (== 2 zeigt die Zusatzzeile
+  mit fünf Schaltern, Datei 0x32C).
+* Index 0–8 und 10–12: `xor 1` (an/aus); Index 13/14 wie oben für den aktiven Manager (`DGROUP 0xA70E`).
+* Nach Index 12: Vergleich mit `DGROUP 0x6AC` (Manager-Statusbyte `0x974E + 0x1AF · Manager`), weitere Folgewirkung nicht verfolgt.
+
+**Leser der Matrix** `DGROUP 0x21D + 3 · Zeile + Spalte`: Datei 0x27AC0–0x27B2F (Spielstart: Summen je Zeile, Schalter ohne
+passende Zeilensumme werden auf 0 gesetzt – Konsistenzprüfung), **0x3A8EC** (Ereignisfilter: Zeile aus Parameter, Spalte 0/1 je nach
+`Minute == 60` bzw. `> 60 und Parameter 6 == 1`; Wert 0 → Ereignis wird übersprungen; dazu `DGROUP 0x229`, `0x21D`).
+Das ist die Auswertung für Meldungen im Live-Ablauf (Drittelpause/Ergebnisse/Tabelle/Torszenen), also Folgepaket `livespiel`.
+
+**Zeitung (DGROUP 0xEB8):** nur Text; kein Code liest den Eintrag (Befund `re-abdeckung`, bestätigt: die Hotspot-Tabellen haben
+keinen Schalter mit dem Text). Nicht benutzt.
+
+**Offen / [APPROX]:** Zuordnung der 9 Matrix-Felder zu den Beschriftungen (Zeilen vermutlich Drittelpause · Ergebnisse · Tabelle,
+Spalten 1./2./3. Liga) ist aus den Koordinaten geschlossen, **nicht** am Video bestätigt; Wirkung von WM-Spiele/Länderspiele/Europapokal
+(Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Die Bildschirm- und Kalender-Teile (0x43E21 mit 0x43B1F,
+0x43C38, 0x445E0, 0x36169; Pixelvergleich) sind **nicht begonnen**.

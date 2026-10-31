@@ -343,8 +343,11 @@ public class FinanceWerbungTests
     [InlineData(true, 3)]
     // Integration Runde 7: Seed 12 statt 11. Mit allen Spuren der Runde (Börse zieht anders aus FinanceRandom, neue
     // Spielberechnung, Startwerte) läuft bei Seed 11 im Probenzeitraum kein Vertrag mit Option aus (der einzige,
-    // ein Fernsehvertrag, endet erst danach); Seed 12 verhandelt an Tag 83. Prüfziel unverändert.
-    [InlineData(true, 12)]
+    // ein Fernsehvertrag, endet erst danach); Seed 12 verhandelt an Tag 83. Spur spielstaerke-manager: Seed 15 statt 12
+    // (mit dem Lader der Teamwerte verhandelt Seed 12 im Probenzeitraum keine Option mehr). Integration Runde 8: Seed 16
+    // statt 15 (mit Werbebewertung nach dem Spielerwert, Einzelprämien und Lader zusammen verhandelt Seed 15 keine Option
+    // mehr; Seeds 16, 18, 20–22, 25 verhandeln, 15, 17, 19, 23, 24 nicht). Prüfziel unverändert.
+    [InlineData(true, 16)]
     public void FourSeasonChanges_SponsoringStaysConsistent(bool active, int seed)
     {
         var game = TestGames.Create(seed);

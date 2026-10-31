@@ -247,22 +247,22 @@ würfelt daher im beobachteten Bereich; das Original vergleicht die ID nur mit s
 
 | Offset | Inhalt | Beleg |
 |---|---|---|
-| `+0x0A` | eingesetzt (1 = Status „IM TEAM“ oder „RESERVE“) | 22 Plätze = „Eingesetzt: 22“; J.SCHULZ, DOBRYZINSKI, SANDNER ohne Status = 0 |
-| `+0x0F` | Index im Spielerpool `far:8253` | Namen aller 25 Spieler und 7 Marktspieler |
-| `+0x10`–`+0x12` | Stärken (drei Werte wie in der Spalte STÄRKEN) | alle 32 Spieler |
-| `+0x15` | Reihe 1–3 (untere Bits), Bit 0x80 = Sturm; der eingesetzte Torhüter hat Reihe 1 | Aufstellung: Reihen 1–3, TW Nr. 2 |
-| `+0x06` | Spiele (Spalte SP); nach einem Kauf mit den Spielen beim alten Verein | alle 25; DAFFNER nach Kauf 2 (FILE07) |
-| `+0x0B` | Vertragsdauer in Jahren (Spalte V.DAUER) | FILE05 alle 2 = „2 Jahre“; FILE07 DAFFNER 1 (Angabe Nutzer: 1 Jahr) |
-| `+0x1C` | Spiele für den jetzigen Verein (nach einem Kauf 0) | alle 25, FILE07 |
 | `+0x00` | 5-Minuten-Strafen (Spalte 5m) | alle 25 (FILE05), Anzeige em.exe `0x4221D` |
 | `+0x01` | 2-Minuten-Strafen (Spalte 2m) | alle 25, ebenda |
 | `+0x03`–`+0x05` | Tore je Wettbewerb; Spalte TO = Summe (em.exe `0x421D6`), beim Torhüter „-“. Beim Torhüter stehen dort vermutlich Gegentore (CISSEWSKI 13 = Kölns Gegentore nach 3 Spielen) | alle 25 |
+| `+0x06` | Spiele (Spalte SP); nach einem Kauf mit den Spielen beim alten Verein | alle 25; DAFFNER nach Kauf 2 (FILE07) |
 | `+0x07`, `+0x08` | Spiele in weiteren Wettbewerben (eigene Spalten neben `+0x06`; eine Spalte zeigt `+0x06 + +0x07 + +0x08`; Zuordnung Wettbewerb offen) | em.exe Spalten 3–6 |
+| `+0x0A` | eingesetzt (1 = Status „IM TEAM“ oder „RESERVE“) | 22 Plätze = „Eingesetzt: 22“; J.SCHULZ, DOBRYZINSKI, SANDNER ohne Status = 0 |
+| `+0x0B` | Vertragsdauer in Jahren (Spalte V.DAUER); 0 = „kein V.“ (em.exe `0x4239A`) | FILE05 alle 2 = „2 Jahre“; FILE07 DAFFNER 1 (Angabe Nutzer: 1 Jahr) |
+| `+0x0F` | Index im Spielerpool `far:8253` | Namen aller 25 Spieler und 7 Marktspieler |
+| `+0x10`–`+0x12` | Stärken (drei Werte wie in der Spalte STÄRKEN) | alle 32 Spieler |
 | `+0x13` | Spalte **E** = `+0x13 · 10 / 15` (ganzzahlig), hervorgehoben bei `+0x13 > 0x82` (em.exe `0x42335`) | alle 25 (z. B. HEISS 91 → 60, MENDE 50 → 33) |
+| `+0x15` | Reihe 1–3 (untere Bits), Bit 0x80 = Sturm; der eingesetzte Torhüter hat Reihe 1 | Aufstellung: Reihen 1–3, TW Nr. 2 |
+| `+0x1C` | Spiele für den jetzigen Verein (nach einem Kauf 0) | alle 25, FILE07 |
 | `+0x22` | gleich der Ligator-Zahl `+0x03` in allen Ständen (Bedeutung offen, evtl. Saisontore gesamt) | alle 25 |
-| `+0x30` | ≠ 0: Zusatz „(v)“ hinter der Vertragsdauer (versichert); Vertragsdauer 0 = „kein V.“ (em.exe `0x4239A`) | – (kein Fall in den Ständen) |
 | `+0x28` | Gehalt (4 Byte, Drittel-DM) = Spalte WERT bei „Verträge“ | alle 25, z. B. HEISS 17.100 DM |
 | `+0x2C` | Preis (4 Byte, Drittel-DM) = Transferliste „(K)“; Leihe „(L)“ = ein Drittel davon. Nach dem Kauf steht dort der vom Nutzer gebotene und bezahlte Kaufpreis (FILE07) | 7 Marktspieler, FILE07 |
+| `+0x30`–`+0x33` | Versicherung (4 Byte, als zwei Wörter `+0x30`/`+0x32` mit `or` verknüpft): ≠ 0 → Zusatz „(v)“ hinter der Vertragsdauer (em.exe `0x42410`) | – (kein Fall in den Ständen) |
 | `+0x02`, `+0x09`, `+0x0C`–`+0x0E`, `+0x14`, `+0x16`–`+0x1B`, `+0x20`, `+0x21`, `+0x23`–`+0x27` | offen (`+0x09` Bits 0x40/Wert 2: Hervorhebungen der Zeile; `+0x0C` ≠ 0: eigene Farbe der Spalte ART) | em.exe `0x41F6A`, `0x42057` |
 
 **Spalten des Bildschirms** (em.exe: Zeilenfunktion ab `0x41F13`, Spaltennummer → Sprungtabelle `cs:0x258E`, Segment ab

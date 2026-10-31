@@ -138,15 +138,22 @@ public class TeamScreenTests
         d.Click(PlayerInfoPopup.AhaButton.X + 5, PlayerInfoPopup.AhaButton.Y + 5);
         Assert.False(screen.Info.Visible);
 
-        // Kaufen zum geforderten Preis
+        // Kaufen: Betrag eingeben. Über 130 % des Preises nimmt der Computermarkt immer an (em.exe 0x4991D, Spur
+        // transfer-original; zum geforderten Preis nur mit Wahrscheinlichkeit).
         manager.Money = 2_000_000;
         var buy = TransferScreen.EntryBuy(0);
         d.Click(buy.X + 5, buy.Y + 2);
         Assert.Equal(TransferDialog.DialogKind.Buy, screen.Dialog!.Kind);
+        Assert.Equal(listing.Price, screen.Dialog.Amount);
+        var offer = listing.Price * 135 / 100;
+        d.Click(TransferDialog.AmountField.X + 5, TransferDialog.AmountField.Y + 2);
+        d.Type(offer.ToString());
+        d.Press(Key.Enter);
+        Assert.Equal(offer, screen.Dialog.Amount);
         d.Press(Key.Enter);
         Assert.Null(screen.Dialog);
         Assert.Contains(listing.Player, club.Players);
-        Assert.Equal(2_000_000 - listing.Price, manager.Money);
+        Assert.Equal(2_000_000 - offer, manager.Money);
         d.Click(10, 10); // Meldung schließen
 
         // Eigenen Stürmer auf den Markt setzen

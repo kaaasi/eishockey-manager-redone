@@ -86,6 +86,7 @@ public sealed partial class GameState
                 ? current
                 : throw new InvalidOperationException("In dieser Saison ist bereits ein anderer Manager Bundestrainer.");
         NationalCoach = new NationalCoach(index, NationalTeams.Germany);
+        HandNationalTacticsToCoach(NationalCoach);
         BookNational(NationalBookingKind.Budget, NationalBudget);
         return NationalCoach;
     }
@@ -208,6 +209,7 @@ public sealed partial class GameState
     /// </summary>
     internal void StartNationalSeason()
     {
+        TakeNationalTacticsFromCoach();
         NationalCoach = null;
         _nationalTurn = false;
     }

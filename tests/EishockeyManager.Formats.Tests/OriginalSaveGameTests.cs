@@ -123,6 +123,40 @@ public class OriginalSaveGameTests
         Assert.Equal(435_000 * 3, offer.PriceThirds);
     }
 
+    /// <summary>
+    /// Regressionstest #230: Tore = Summe aus +0x03, +0x04 und +0x05 (em.exe 0x421F4–0x22A), Versicherung auch dann, wenn nur
+    /// das obere Wort +0x32 gesetzt ist (0x42413–0x4241B: <c>or</c> beider Wörter), Torhüter ohne Torsumme.
+    /// </summary>
+    [Fact]
+    public void Squad_GoalsSumAllThreeCompetitions_InsuredUsesBothWords_GoalkeeperRole()
+    {
+        var file = Build(blocks =>
+        {
+            var pool = blocks["far:8253"];
+            "TORWART"u8.CopyTo(pool.AsSpan(5 * 33));
+            pool[5 * 33 + 0x18] = 0;
+            "STUERMER"u8.CopyTo(pool.AsSpan(6 * 33));
+            pool[6 * 33 + 0x18] = 80;
+
+            var squad = blocks["5DC3"];
+            var a = squad.AsSpan(0, 0x34);
+            a[0x0F] = 6; a[0x03] = 1; a[0x04] = 2; a[0x05] = 4; a[0x32] = 1; // nur das obere Wort
+            var b = squad.AsSpan(0x34, 0x34);
+            b[0x0F] = 5; b[0x30] = 1; // nur das untere Wort
+            var c = squad.AsSpan(2 * 0x34, 0x34);
+            c[0x0F] = 6; c[0x04] = 3;
+        }, key: 0x42);
+
+        var list = OriginalSaveGame.Read(file).Squad(0);
+
+        Assert.Equal(3, list.Count);
+        Assert.Equal((7, true), (list[0].Goals, list[0].Insured));
+        Assert.True(list[1].IsGoalkeeper);
+        Assert.True(list[1].Insured);
+        Assert.Equal((3, false), (list[2].Goals, list[2].Insured));
+        Assert.False(list[2].IsGoalkeeper);
+    }
+
     [Fact]
     public void Read_ReportsWrongChecksum()
     {

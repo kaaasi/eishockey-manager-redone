@@ -71,8 +71,15 @@ public sealed partial class NationalCoach
     /// <summary>Aufstellung des Nationalteams: vier Blöcke und Torhüter wie beim Verein (Datei 0x40364).</summary>
     public Lineup Formation { get; } = new();
 
-    /// <summary>Taktik des Nationalteams (gleicher Bildschirm wie beim Verein).</summary>
-    public Tactics Tactics { get; } = new();
+    /// <summary>
+    /// Taktik des Nationalteams (gleicher Bildschirm wie beim Verein). [ORIGINAL] Sie gehört zum Nationalteam, nicht zum
+    /// Amt: Vereinssatz des Landes und eigene Werte des Bundestrainers (Manager 5) bleiben über den Saisonwechsel stehen
+    /// (#192, <see cref="Tactics.National"/>, <see cref="GameState.NationalTactics"/>).
+    /// </summary>
+    public Tactics Tactics { get; private set; } = Tactics.National();
+
+    /// <summary>Übernimmt beim Amtsantritt die Taktik des Nationalteams (siehe <see cref="GameState.NationalTactics"/>).</summary>
+    internal void TakeOverTactics(Tactics tactics) => Tactics = tactics;
 
     /// <summary>Anzahl der eingesetzten Spieler („Eingesetzt: n“).</summary>
     public int DressedCount => _dressed.Count;

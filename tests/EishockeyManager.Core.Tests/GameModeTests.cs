@@ -254,6 +254,16 @@ public class GameModeTests
     /// Zufallsquellen. Ermittelt auf dem Branch (Basis <c>15d0733</c>), Nachziehen in der Integration durch die Leitstelle.
     /// Spur spielerwert (Runde 8): Werbebewertung mit dem Spielerwert nach 0x49D36 – ab der dritten Saison andere Kontostände
     /// beider Manager; Titel, Haupt- und Pokalquelle unverändert. Gegenprobe wie in <c>RngTwinProbeTests</c>.
+    /// Spur statistiken (Runde 8, #135, Einzelprämien 0x27184): Titel, Haupt- (R…) und Pokalquelle (C…) unverändert; nur
+    /// Kontostände – Manager 0 bekommt 1993 und 1994 je eine Einzelprämie (+100.000 DM, kumuliert +100.000/+200.000 DM ab
+    /// Saison 1/2), Manager 1 eine in Saison 5 (+100.000 DM). Gegenprobe mit abgeschalteten Einzelprämien: alte Werte.
+    /// Ermittelt auf dem Branch (Basis <c>10eb6c5</c>), Nachziehen in der Integration durch die Leitstelle.
+    /// Spur spielstaerke-manager (#204, Lader der Teamwerte 0x2EF1B und Tagesform 0x4F527): alle Werte neu – gestreute
+    /// Teamwerte der Computervereine und Züge aus der Hauptquelle ab dem ersten Spiel ändern Ergebnisse, Titel, Konten und
+    /// beide Zufallsquellen. Ermittelt auf dem Branch (Basis <c>10eb6c5</c>).
+    /// Integration Runde 8 (Leitstelle, auf <c>421d96f</c> mit allen fünf Spuren): Titel, Haupt- und Pokalquelle gleich dem
+    /// Branch spielstaerke-manager; nur die Kontostände weichen ab, durch Einzelprämien (statistiken) und Werbebewertung
+    /// (spielerwert), die beide keinen Spielverlauf ändern.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -268,7 +278,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2226402,692809|WorldChampion=52,CupWinner=12,GermanChampion=13,EuropeanCupWinner=1|3877693,918381|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=13|4781648,887229|WorldChampion=63,CupWinner=12,GermanChampion=24,EuropeanCupWinner=0|5374585,795607|WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|5252313,705388|R1912259729 C234131033";
+        "WorldChampion=54,CupWinner=1,GermanChampion=0,EuropeanCupWinner=2|2617428,580253|WorldChampion=54,CupWinner=24,GermanChampion=0,EuropeanCupWinner=0|3975808,694049|WorldChampion=63,CupWinner=24,GermanChampion=24,EuropeanCupWinner=0|4869723,691647|WorldChampion=63,CupWinner=12,GermanChampion=1,EuropeanCupWinner=0|5382459,486946|WorldChampion=52,CupWinner=1,GermanChampion=25,EuropeanCupWinner=0|5250322,520190|R375033233 C996914971";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

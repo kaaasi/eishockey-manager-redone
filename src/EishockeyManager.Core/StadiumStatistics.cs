@@ -189,8 +189,9 @@ public sealed partial class Club
 {
     /// <summary>
     /// Managerverein heute nicht spielfähig (weniger als neun Spieler, <see cref="GameState.MarkShortHandedClubs"/>):
-    /// <see cref="MatchEngine.Play"/> wertet sein Spiel ohne Berechnung 0:2 bzw. 2:0. Nicht im Spielstand, wird vor den
-    /// Spielen jedes Tages neu gesetzt.
+    /// <see cref="MatchEngine.PlayWithEvents"/> (und <see cref="MatchEngine.Play"/>) wertet sein Spiel ohne Berechnung
+    /// 0:2 bzw. 2:0. Wird vor den Spielen jedes Tages neu gesetzt und im Spielstand mitgesichert (seit Schema 9,
+    /// <c>SaveGame.Migration8.cs</c>; Kommentar berichtigt, #179).
     /// </summary>
     internal bool ForfeitsMatch { get; set; }
 }

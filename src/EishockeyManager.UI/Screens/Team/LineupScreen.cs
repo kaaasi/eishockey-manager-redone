@@ -256,36 +256,31 @@ public sealed class LineupScreen : Screen
         _message.Draw(s, Assets, 120, 110);
     }
 
-    /// <summary>Text der Statuszeile für die Spalte bzw. den Platz unter der Maus (Texte aus em.exe).</summary>
+    /// <summary>
+    /// Text der Statuszeile für die Spalte bzw. den Platz unter der Maus. [ORIGINAL] Listenzeilen: Hinweiszeile
+    /// em.exe 0x41683, siehe <see cref="PlayerHintLine"/> (Aufruf 0x40845: Ursprung 7 | 29, Maske 0xF0C7, Rand 0xE9).
+    /// </summary>
     private string? HoverText(IReadOnlyList<Player> rows)
     {
         if (OnSlot(_mouseX, _mouseY, out var slot))
             return Club.Lineup[slot] is { } sp ? $"Name: {sp.Name} ({sp.Age} Jahre)" : null;
-        if (!Window.Contains(_mouseX, _mouseY))
-            return null;
-        var row = RowAt(_mouseY);
-        if (row < 0 || row >= rows.Count)
+        var layout = PlayerListLayout.Lineup(rows.Count);
+        var row = PlayerHintLine.Row(layout, _mouseY);
+        var column = PlayerHintLine.Column(layout, _mouseX);
+        if (row < 0 || column < 0)
             return null;
         var p = rows[row];
-        var x = _mouseX;
-        return x switch
-        {
-            < 18 => "Rückennummer des Spielers",
-            < 35 => "Art des Spielers: " + p.RoleName,
-            < 95 => $"Name: {p.Name} ({p.Age} Jahre)",
-            < 105 => "Spiele gesamt (Liga und Pokal)",
-            < 142 => "Kondition, Technik, Form",
-            < 156 => "Tore gesamt (Liga und Pokal)",
-            < 182 => "2/5 Min.-Strafzeiten",
-            < 219 => StatusHover(p),
-            _ => "Tendenz des Spielers: " + TeamUi.TrendText(p.Trend),
-        };
+        return PlayerHintLine.Text(p, column, new PlayerHintInfo(Club.IsDressed(p), LineOf(p)), showExhaustion: true);
     }
 
-    private string StatusHover(Player p) =>
-        p.InjuredGames > 0 ? $"Verletzt. (Noch {p.InjuredGames} Spiele)"
-        : p.SuspendedGames > 0 ? $"Gesperrt. (Noch {p.SuspendedGames} Spiele)"
-        : "Status: " + TeamUi.StatusText(Club.StatusOf(p));
+    /// <summary>Reihe (1–4), in der der Spieler aufgestellt ist, sonst 0 (Kaderplatz +0x15 &amp; 0x7F).</summary>
+    private int LineOf(Player p)
+    {
+        foreach (var slot in LineupSlot.All)
+            if (Club.Lineup[slot] == p)
+                return slot.Block + 1;
+        return 0;
+    }
 }
 
 /// <summary>Anmeldung im Hauptmenü.</summary>

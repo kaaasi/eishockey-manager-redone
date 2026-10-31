@@ -110,7 +110,8 @@ public class LeagueTableTests
 
         var home = LeagueTable.Compute(game, League.Bundesliga, TableView.Heim, 44);
         Assert.All(home, r => Assert.Equal(22, r.Games));
-        Assert.All(home, r => Assert.True(r.Balance.All(char.IsUpper)));
+        // Spur tabellen-original: Die Bilanz gilt für alle Ansichten (em.exe 0x4F78D), früher nur Heimspiele in „Heim“.
+        Assert.All(home, r => Assert.Equal(table.Single(t => t.Club.Index == r.Club.Index).Balance, r.Balance));
     }
 
     [Fact]

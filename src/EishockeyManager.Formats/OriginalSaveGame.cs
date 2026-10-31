@@ -26,7 +26,7 @@ public sealed record OriginalSaveManagerHeader(int StartLeague, bool OnlyWorldMo
 /// <param name="TwoMinutePenalties">Spalte 2m: Platz +0x01. [ORIGINAL] em.exe 0x4221D.</param>
 /// <param name="FiveMinutePenalties">Spalte 5m: Platz +0x00. [ORIGINAL] em.exe 0x4221D.</param>
 /// <param name="E">Spalte E = Platz +0x13 · 10 / 15 (ganzzahlig; hervorgehoben bei +0x13 &gt; 0x82). [ORIGINAL] em.exe 0x42335.</param>
-/// <param name="Insured">Platz +0x30/+0x32 ≠ 0: Zusatz „(v)“ bei der Vertragsdauer (versichert). [ORIGINAL] em.exe 0x42410.</param>
+/// <param name="Insured">Platz +0x30–+0x33 (4 Byte; Original: Wörter +0x30 und +0x32 mit <c>or</c>) ≠ 0: Zusatz „(v)“ bei der Vertragsdauer (versichert). [ORIGINAL] em.exe 0x42410.</param>
 /// <param name="SalaryThirds">Platz +0x28: Gehalt in Drittel-DM (Spalte WERT bei „Verträge“).</param>
 /// <param name="PriceThirds">Platz +0x2C: Preis in Drittel-DM (Transferliste „(K)“; nach dem Kauf das bezahlte Gebot).</param>
 public sealed record OriginalSquadSlot(
@@ -34,7 +34,11 @@ public sealed record OriginalSquadSlot(
     int ContractYears, bool Dressed, int Line, bool Forward, int Games, int ClubGames, int Goals, int TwoMinutePenalties, int FiveMinutePenalties, int E, bool Insured,
     int SalaryThirds, int PriceThirds)
 {
-    /// <summary>Torhüter: Rollenwert 0 (Pool +0x18).</summary>
+    /// <summary>
+    /// Torhüter: Rollenwert 0 (Pool +0x18). [APPROX] Das Original entscheidet „-“ in der Spalte TO über einen Far-Call
+    /// 0x18:0x0 mit dem Poolindex +0x0F (em.exe 0x421D6–0x421E4), nicht über den Rollenwert; in allen Ständen (FILE05)
+    /// fällt beides zusammen. Die Funktion 0x18:0x0 ist nicht gelesen.
+    /// </summary>
     public bool IsGoalkeeper => RoleValue == 0;
 }
 

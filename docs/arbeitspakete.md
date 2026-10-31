@@ -78,9 +78,12 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `Core/SaveGame.Migration.<Spur>.cs` (neue Datei, nur bei neuem Zustand), `docs/reverse-engineering.md` (eigener Abschnitt),
   `docs/highscore.md`, Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** fertig zur Review, PR #239 (Claude Code, 31.10.2026): Formel 0x49D36 im Emulator belegt (2.000 Fälle),
+- **Status:** gemergt (PR #239, Review #247, 31.10.2026): Formel 0x49D36 im Emulator belegt (2.000 Fälle),
   `PlayerValue` in `Core/Player.Value.cs`; Highscore und Werbebewertung umgestellt; Aufrufer (#225 RA-01): 12 Funktionen,
   21 Aufrufstellen (`docs/reverse-engineering.md`).
+  Restlücken aus Review #247 (P3): SW-01 Test für den Zufallsverbrauch der Werbebewertung bei Spielern mit Angebot;
+  SW-02 Benennung +0x1C/+0x1E/+0x20 (laut `spielstand-original.md` Spiele beim jetzigen Verein bzw. offen) → `statistiken`;
+  SW-03 Verweis `PlayerValueTests` → `SpielerwertTests`; Goldtest aus Original-Spielständen → `transfer-original`.
 
 ### Spur `transfer-original` – Transferliste, Ablöse und Vertragsverhandlung nach em.exe (Ov 0x118)
 
@@ -98,7 +101,8 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `TransferDialog.cs`, `ContractsScreen.cs`, `Tools/Scenarios/` (eigene Datei), neues `docs/transfer.md`,
   `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** wartet auf Merge von `spielerwert`.
+- **Status:** Teil 1 (Preis, Annahme, Unfair-Grenze, Angebote für eigene Spieler) in #248; Teil 2 Vertragsverhandlung
+  0x4A1DB, Sperre nach Ablehnung, Pixelvergleich offen (siehe `docs/transfer.md`).
 
 ### Spur `spielerinfo` – Spielerinfo- und Spielerdaten-Fenster (0x41683, 0x041AC)
 
@@ -113,7 +117,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `UI/Screens/Team/LineupScreen.cs` (nur Aufruf), `Tools/Scenarios/` (eigene Datei), `docs/reverse-engineering.md`
   (eigener Abschnitt), Tests.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** wartet auf Merge von `spielerwert`.
+- **Status:** Umsetzung fertig, Review offen (Claude Code, PR #249, Base `421d96f`); Beleg und Restlücken in `docs/reverse-engineering.md`, Abschnitt „Spur `spielerinfo`“. Offen: Aufruf des Fensters aus Transferliste (Marktwert über `PlayerDataContext`), Ranglisten und Aufstellung (Leitstelle, Integration).
 
 ### Spur `tabellen-original` – Tabellenberechnung und -ansicht (0x4F78D, 0x50283, 0x50B45)
 
@@ -128,7 +132,8 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `UI/Screens/TableScreen.cs`, `UI/Screens/Competitions/CupTableMenuEntries.cs`, `Tools/Scenarios/` (eigene Datei),
   `docs/saison.md` (eigener Abschnitt), `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** Teil 1 (Ligatabelle: Sortierung 0x50B45, Bilanz 0x50283, Ansicht Heim/Auswärts) in PR #240; offen: Pokal-/WM-Gruppen
+  und Play-off-Setzung, Pixelvergleich der Ansicht (Referenzbilder in diesem Lauf nicht erreichbar).
 
 ### Spur `spielstaerke-manager` – Spielstärke der Managervereine und Restteile der Spielberechnung (#204, #179, #193)
 
@@ -147,7 +152,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `Effective*`, `Auto*`),
   `Core/SaveGame.Migration.<Spur>.cs` (neue Datei), `docs/spielberechnung.md`, Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** Teil 1 in PR #241 (Claude Code): Lader 0x2EF1B, Tagesform 0x4F527, Meisterverteilung (#204), #179. Offen: Managerteil 0x386D1/0x378C5/0x98F8/0x87F7/0x8EF2, Verletzungen, #193, Videovergleich.
 
 ### Spur `statistiken` – Statistiken Spieler, Fairplay, Verein und Einzelprämien (#135, #222)
 
@@ -164,7 +169,9 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (eigener Abschnitt), `docs/reverse-engineering.md` (eigener
   Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** PR #242 (Claude Code, geplanter Lauf 31.10.2026): Spieler (0x25E30), Fairplay (0x2A1E0), Einzelprämien
+  (#135) und #222 umgesetzt, Schema vorläufig 11 → 12. Offen: „Verein“ = 0x2D5AE (Menüsprung belegt, nicht 0x4D385),
+  Pixelvergleich am Video (Referenzbilder nicht erreichbar).
 
 ### Spur `nationalteam` – WM-Statistik, WM-Paarungen und Befunde Bundestrainer (#192, #194, #195)
 
@@ -180,7 +187,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `CupPairingsScreen.cs`, `UI/Screens/TileLocks.cs`, `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (eigener
   Abschnitt), `docs/dosbox-befunde.md`, Tests. #193 gehört zu `spielstaerke-manager`.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** in Arbeit (Claude Code). Teil `taktik` (#192): fertig zur Review, PR #243. Offen: #195, #194, WM-Statistik (ohne Referenzbilder in dieser Sitzung nicht prüfbar, siehe Übergabe in #243).
 
 ### Spur `optionen-kalender` – Spielmodus-Optionen und Kalender (0x2CD1C, 0x43E21; #228)
 
@@ -211,7 +218,37 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
 - **Dateigrenzen:** `UI/Screens/MainMenuScreen.cs` (minimal, begründet), `Formats/OriginalSaveGame*.cs`, `Tools/Hok*.cs`,
   `docs/formate/spielstand-original.md`, `tools/reverse-engineering/funktionskarte.py`, `docs/re-abdeckung.md`, Tests.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen.
+- **Status:** umgesetzt im Draft-PR #244 (#216, #217, #225, #230); Review offen. #217: „Sie können nicht mehr weiterspielen.“ gehört zur Sicher-/Ladesperre und bleibt entfallen (Entscheidung Nutzer).
+
+### Integration Runde 8 (Leitstelle)
+
+Branch `integration/runde-8` von `main` 421d96f (mit `spielerwert`), zusammengeführt in Planfolge: `befunde-p3` (#244),
+`tabellen-original` (#240), `nationalteam` (#243), `statistiken` (#242), `spielstaerke-manager` (#241); danach (Auftrag
+Nutzer 31.10.) `spielerinfo` (#249), `transfer-original` (#248), `optionen-kalender` (#245, Teil 1: Belege). Diese drei
+änderten keine Referenzwerte.
+- **Schema:** 11 → 12 Taktik des Nationalteams, 12 → 13 Strafminuten je Verein, 13 → 14 Teamwerte des Laders.
+- **Referenzwerte** neu auf dem integrierten Stand (RngTwinProbe, Mode4, Zähler je Saison); Seeds Börse 7 → 8 und Werbung
+  aktiv 15 → 16 (Zufallsproben, Prüfziel gleich), Begründung in den Tests.
+- **Für die Leitstelle nach der Integration** (aus den PRs): Funktionskarte in `docs/re-abdeckung.md` neu erzeugen; Aufruf
+  des Spielerdaten-Fensters aus `PlayerStatisticsScreen` und Rangliste (nach `spielerinfo`); `docs/anforderungen/bildschirme.md`
+  Z. 103 (Bilanz: acht Spiele, Heim klein) und die Vermutungen zur Sortierung 0x5CCB nach Heim/Auswärts (`CupsNationalMode.cs`,
+  `SeasonFlow.cs`, `docs/saison.md`, `docs/wettbewerbe.md`) berichtigen; veralteter Hinweis „Nicht umgesetzt …“ in
+  `docs/wettbewerbe.md` („Statistiken über Saisons“); Lader der Teamwerte ggf. nach `NewGame.Create` verlegen (#241);
+  Aufrufstellen des Spielerdaten-Fensters umstellen (#249: `TransferScreen` auf `Show(player, price, PlayerDataContext…)`
+  und `PlayerHintLine`, `ContractsScreen`/`NationalLineupScreen`, Öffnen aus Aufstellung und Ranglisten).
+- **Offene Teile der Spuren** (Folgebranches): `tabellen-original` Teil 2 (Gruppen-, Play-off-Tabellen, Pixelvergleich);
+  `spielstaerke-manager` Teil 2 (Managerteil, Verletzungen, #193, Videovergleich #204); `statistiken` Bildschirm „Verein“
+  (0x2D5AE); `nationalteam` #194, #195 (Ursache gefunden, siehe #243), WM-Statistik; `optionen-kalender` Teil 2
+  (Einstellungsbildschirm, Kalender, #228); `transfer-original` Teil 2 (Vertragsverhandlung 0x4A1DB, Gehalt 0x49A3B,
+  Kaufablauf 0x494EF, Sperre nach Ablehnung, unaufgeforderte Angebote, Pixelvergleich).
+
+- **Review** `docs/reviews/2026-10-31-integration-runde-8.md`: R8-D01 (P2, #253) in der Integration behoben. P3 als
+  Restlücken: R8-A01 Spielstände aus den Spurbranches `statistiken`/`spielstaerke-manager` (vorläufige Schemanummer) laden
+  nicht; R8-A02 Seed-Proben hängen am Zufall (robustere Prüfung statt Seed-Wechsel); R8-C01 sieben ältere Core-Tests kaufen
+  zum Listenpreis und sind nur wegen des Seeds grün; R8-C02 Reihenfolge Geld/Unfair beim Gebot an einen anderen Manager;
+  R8-B01 Tabellentest ohne Regel „weniger Spiele“; R8-B02 Strafminuten im Ligaspiel nur indirekt getestet; R8-B03
+  Heimspiel-Zweig der Nationalteam-Taktik ungetestet; R8-B04 freie Nationalteam-Taktik behält Modus des Vorgängers; F46-01,
+  W51-01 (Doku-PRs #246, #251).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 

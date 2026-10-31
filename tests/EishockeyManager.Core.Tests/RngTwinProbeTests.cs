@@ -73,16 +73,28 @@ namespace EishockeyManager.Core.Tests;
 /// Spur spielerwert (Runde 8): Die Werbebewertung rechnet mit dem Spielerwert nach 0x49D36 statt „Kaufpreis · 3“; das ändert
 /// die Bewertung und damit Werbeeinnahmen und Kontostände – drei synthetische Abdrücke neu (passiv Seed 3 und beide
 /// Originaldaten-Abdrücke unverändert). Gegenprobe: mit „Kaufpreis · 3“ nur in der Werbebewertung stimmen alle alten Abdrücke.
+/// Spur statistiken (Runde 8, #135): fünf Abdrücke neu, weil die Einzelprämien (bester Torhüter, Topscorer, Fair-Play je
+/// 100.000 DM, em.exe 0x27184) die Kontostände ändern; der aktive Lauf mit Originaldaten bekommt keine und bleibt gleich.
+/// Gegenprobe auf dem Branch: mit abgeschalteten Einzelprämien (und <c>LeaguePenaltyMinutes</c> in <c>Excluded</c>) alle
+/// sechs alten Abdrücke unverändert – kein Spielverlauf und kein Zufallsverbrauch ändert sich. Basis <c>10eb6c5</c>.
+/// Spur spielstaerke-manager (#204): alle sechs Abdrücke neu. Beim ersten Spiel zieht der Lader der Teamwerte (em.exe
+/// 0x2EF1B) für alle 150 Vereine 11 Zahlen aus der Hauptquelle, die Computervereine spielen mit gestreuten Teamwerten,
+/// eigener Form und Tagesform (0x4F527 nach jedem Ligaspiel, weitere Züge): andere Ergebnisse ab dem ersten Spieltag,
+/// damit Tabellen, Titel, Finanzen und alle Zufallsquellen; dazu das neue Feld <c>Club.TeamValues</c> im Abdruck. Keine
+/// Gegenprobe, die den alten Verlauf erhält (die Streuung ist der Zweck). Ermittelt auf dem Branch (Basis <c>10eb6c5</c>).
+/// Integration Runde 8 (Leitstelle): alle sechs neu ermittelt auf dem Stand mit spielerwert, befunde-p3, tabellen-original,
+/// nationalteam, statistiken und spielstaerke-manager. Die Spielverläufe folgen dem Lader (spielstaerke-manager); hinzu
+/// kommen Werbebewertung, Einzelprämien und neue Felder (<c>LeaguePenaltyMinutes</c>, Taktik des Nationalteams) im Abdruck.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "AF89F741C1A6B335")]
-    [InlineData(true, 3, "59766C36BF9C23F0")]
-    [InlineData(false, 11, "5BB77F1A5A8F50DD")]
-    [InlineData(true, 11, "2FB9A4CF5547B71E")]
+    [InlineData(false, 3, "8CE8C63B6DFE63F2")]
+    [InlineData(true, 3, "CE2CD7AD336D1CC4")]
+    [InlineData(false, 11, "1BD3021354D29088")]
+    [InlineData(true, 11, "80DA1E9A65C65DDA")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -90,8 +102,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "79D50ABD868F0773")]
-    [InlineData(true, "53596ED8A406D969")]
+    [InlineData(false, "FF8BDA50DBD8749A")]
+    [InlineData(true, "9AFFC7CD443437AB")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -186,9 +198,11 @@ public class RngTwinProbeTests
     /// Nicht im Abdruck: <c>Player.Id</c> (Teil „ids“) gehört nur zum Spielstandformat und verändert den Spielverlauf
     /// nicht; so bleiben die auf <c>5f8e02a</c> ermittelten Abdrücke vergleichbar. Ebenso <c>Club.DressedCount</c>
     /// (Spur taktik-verein): abgeleitete Anzeige „Eingesetzt: n“, wirkt nicht auf den Spielverlauf – mit dieser Ausnahme
-    /// stimmen alle sechs Abdrücke unverändert.
+    /// stimmen alle sechs Abdrücke unverändert. Ebenso <c>Club.LeaguePenaltyMinutes</c> (Spur statistiken): Zähler für die
+    /// Fair-Play-Tabelle aus den Spielberichten, ohne Zufall und ohne Rückwirkung auf die Spiele; seine Wirkung (die
+    /// Fair-Play-Prämie) steht im Kontostand.
     /// </summary>
-    private static readonly HashSet<string> Excluded = ["Id", "DressedCount"];
+    private static readonly HashSet<string> Excluded = ["Id", "DressedCount", "LeaguePenaltyMinutes"];
 
     private static void Dump(StringBuilder sb, object value)
     {

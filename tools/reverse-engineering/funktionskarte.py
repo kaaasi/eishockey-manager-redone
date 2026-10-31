@@ -45,6 +45,11 @@ SEG_TABLE = 0x163C0
 OVERLAY_BASE = 0x255C0
 HEADER = 0x1E00
 DGROUP_SEG = 0x14FD
+
+# Entry points that are reached by jumps or fall-through only and therefore never show up as call targets.
+# 0x02327: `pop bx; push cs; push bx` – near-to-far entry of the runtime library right before 0x0232A (#225, RA-02).
+# Without it the 3 bytes are counted as the tail of the function at 0x02293.
+EXTRA_ENTRIES = (0x02327,)
 DGROUP_FILE = HEADER + DGROUP_SEG * 16
 DGROUP_SIZE = 0xE75A
 MIN_LIST_SIZE = 64
@@ -246,6 +251,9 @@ class Analyzer:
             starts[first].add("Segmentanfang")
             for off in r.entries:
                 starts[r.start + off].add("Stub")
+            for addr in EXTRA_ENTRIES:
+                if r.start <= addr < r.end:
+                    starts[addr].add("Einsprung")
             # prologs found in the raw bytes (a linear sweep loses sync after jump tables between functions)
             blob = self.exe[r.start:r.end]
             for m in re.finditer(rb"\x55\x8b\xec", blob):  # push bp; mov bp,sp (no ENTER in em.exe)
@@ -415,9 +423,7 @@ OTHER_FILE_DOCS = {"docs/formate/spielstand-original.md"}
 DGROUP_WORDS = re.compile(r"(Liste|Tabellen?|Paarungen|Runde|Termin|Struktur|[Mm]anagerstruktur|Vereinsstruktur|"
                           r"Managerwert|Flag|Variable|Zustand)\s*`?$")
 # DGROUP values that a comment calls "Datei" by mistake (checked against the bytes of em.exe)
-DGROUP_MISLABELLED = {
-    0x4B2E: "symbol table of the season end (DGROUP bytes 2, 1, 0, 5, 4, 6, 8; file 0x4B2E is code)",
-}
+DGROUP_MISLABELLED: dict[int, str] = {}
 SENTENCE_CUT = re.compile(r"\.\s|;|\n\s*(?:///?|\*)?\s*\n|\[(?:ORIGINAL|APPROX)\]|\|")
 DGROUP_CTX = re.compile(r"(DGROUP|Feld|Spielerfeld|Vereinsfeld|Manager-Feld|Index|Globale|Zähler|Byte|Wort)\s*$")
 

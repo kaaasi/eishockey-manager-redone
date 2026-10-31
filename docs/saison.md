@@ -90,6 +90,15 @@ dort nicht.
 `[APPROX]` Das Original sortiert die Tabelle 0x5CCB je nach Ansicht (Gesamt/Heim/Auswärts) an Ort und Stelle; das Remake nimmt die
 Abschlusstabelle „Gesamt“. Im Modus „nur Weltkugel“ gibt es keine Vereinssaison und keine Ergebnisse je Manager.
 
+## Tabelle (Spur `tabellen-original`)
+
+`LeagueTable.Compute` sortiert wie em.exe 0x50B45 (Belege in [reverse-engineering.md](reverse-engineering.md#ligatabelle-spur-tabellen-original)):
+nach jedem Spieltag Tauschsortierung der Vortagsreihenfolge nach Punkten, weniger Spielen, Tordifferenz und Toren; voller
+Gleichstand behält die Reihenfolge des Vortags (nicht den Vereinsindex). Heim- und Auswärtsansicht sortieren die
+Gesamtordnung mit den Heim- bzw. Auswärtsfeldern. Die Bilanz zeigt in jeder Ansicht alle Spiele, Heimspiele klein.
+`[APPROX]` Saisonbeginn mit der Vereinsreihenfolge (das Original behält die Liste der Vorsaison); angesehene
+Heim-/Auswärtstabellen ändern die Ausgangsreihenfolge nicht (Bildschirme sind zustandsrein).
+
 ## Oberfläche
 
 | Bildschirm | Datei | Vorlage (Video) |

@@ -163,6 +163,26 @@ Fortgeschrieben genau einmal je Saison am 29. April (Anschluss in `GameState.Int
 Strafen je Spieler. Die heutige Spielberechnung liefert nur das Endergebnis; diese Daten entstehen erst mit dem Paket
 `livespiel`.
 
+## Statistiken Spieler und Fairplay, Einzelprämien (Spur `statistiken`, Runde 8)
+
+Umsetzung: `Core/StatisticsPlayers.cs` (Ranglisten), `Core/StatisticsClub.cs` (Strafminuten, Fair-Play-Tabelle,
+Einzelprämien), `UI/Screens/Statistics/PlayerStatisticsScreen.cs`, `FairplayScreen.cs`; Ablauf `statistiken` in
+`Tools/Scenarios/Statistiken.cs`. Belege im Einzelnen in `docs/reverse-engineering.md`, Abschnitt „Statistiken“.
+
+| Regel | Fundstelle |
+|---|---|
+| Menü Statistiken: Sprungtabelle cs:0x2927 der Hauptmenüschleife – 0x2D5AE, 0x2E356 (Totale), 0x2C1EE (Früher), 0x25E30(0) **Spieler**, 0x2A1E0(1) **Fairplay**, 0x3ADE1 (WM-Statistik). Für „Verein“ bleibt damit **0x2D5AE** („!Serien“, „(noch keine...)“, Zuschauerschnitt 0x2DB79) – nicht 0x4D385 | Datei 0x457E1–0x45821 |
+| Rangliste: Torhüter ab 400 Minuten nach −(Gegentore · 6000 / Minuten), Feldspieler nach Toren, Vorlagen oder beiden; Austauschsortierung, bei Gleichstand weniger Spiele vorn | 0x25F4E–0x26145 |
+| Aufnahme: nur Vereine der Liga des Managers; Feldspieler ab 2 Scorerpunkten, Torhüter ab 399 Minuten; höchstens 12 Feldspieler und 3 Torhüter; Ansicht „Manager“ blendet andere Vereine aus, der Platz bleibt | 0x26365–0x26994 |
+| Strafminuten je Verein nur am Ligaspieltag (Code 7), Rücksetzen nach den Prämien | 0x35967, 0x5647A |
+| Fair-Play-Tabelle: zwölf Vereine der Liga aufsteigend nach Strafminuten, „PRO SPIEL“ = Minuten · 100 / Spiele | 0x2A1E0–0x2A5BD |
+| Einzelprämien je 100.000 DM (300.000 Drittel): bester Torhüter (Symbol 12), Topscorer (3), Fair-Play-Erster (13) der eigenen Liga; Kennungen am 29. April je Manager | 0x5576E, 0x27184–0x2725D |
+| `[APPROX]` Spielerpool: alle Kaderspieler der Liga statt der 199 Poolspieler des Originals (Reihenfolge nur bei völligem Gleichstand wirksam) | – |
+| `[APPROX]` Gewählter Knopf gedrückt (das Original übergibt eine Farbe, die die Knopfzeichnung 0x4BFF2 nicht nutzt) | – |
+
+Offen: Pixelvergleich am Video (Referenzbilder in dieser Sitzung nicht erreichbar), Bildschirm „Verein“ (0x2D5AE),
+Spielerdaten-Fenster bei Klick auf einen eigenen Spieler (0x26B13 → 0x041AC, Spur `spielerinfo`/Leitstelle).
+
 ## Bundestrainer: WM-Kader und „WM Vorbereitung“ (`Core/CupsNational*.cs`)
 
 Freundschaftsspiele gibt es im Original nur für den **Bundestrainer** – im Spielmodus „nur Weltkugel“ und im Modus 4,
@@ -272,6 +292,28 @@ mit automatischer Auswahl.
 Maße wie oben; „Wertefelder“ = die 12 Felder Einsatz/Angriff): ganz 00058 roh 14,1 / 4,1 %, pegelbereinigt 9,4 / 3,9 %
 (00059 gleich); Wertefelder roh 13,8 / 1,2 %, pegelbereinigt 6,9 / 2,7 % (vorher mit lauter Nullen 14,0 / 1,2 % bzw.
 7,2 / 2,7 %). Sichtprüfung: alle zwölf Werte stimmen mit dem Video überein; der Rest sind Schriftkanten.
+
+### Taktik des Nationalteams ohne Startwert (Spur `nationalteam`, #192)
+
+Beleg: DOSBox `nur-weltkugel/26` (Modus 1 nach „auto“, vor dem ersten WM-Spiel: Einsatz/Angriff „AUTOM.“, alle Werte 0)
+und em.exe 0x8365 (`docs/dosbox-befunde.md`). Umsetzung `Core/Squad.Tactics.cs` (`Tactics.National`, `RecordAutoLine`,
+`Shown*`) und `Core/CupsNational.Tactics.cs`; Tests `NationalteamTests`.
+
+| Regel | Beleg |
+|---|---|
+| `[ORIGINAL]` Kein Start- oder Ernennungswert, keine Unterscheidung nach Modus: „AUTOM.“ zeigt 0 bis zum ersten Spiel des Landes, danach die Werte, die die Automatik vor dem letzten Spiel in den Vereinssatz geschrieben hat (Einsatz 0x26–0x2B, Angriff 0x35–0x3A; Einsatz und Angriff getrennt, nur bei „AUTOM.“ bzw. ohne Manager) | Datei 0x8421–0x847D, 0x8481–0x84BD; Aufrufe nur je Paarung 0x36D12/0x36D49, 0x36F27/0x36F5A |
+| `[ORIGINAL]` Eigene Werte des Bundestrainers beginnen bei 0 (DGROUP 0xCAE9/0xCB01 + 0x30 · 5 schreiben nur Taktikbildschirm und Laden) | Datei 0x48607 ff., 0x5C38C, 0x5CD7D |
+| `[ORIGINAL]` Die Taktik gehört dem Nationalteam: Werte und Modi bleiben über Saisonwechsel und neue Ernennung stehen (Video `bundestrainer_00058` zeigt 60/0/25/20/30/0 aus einer späteren Saison) | Suche nach `0xCAE9`/`0xCB01` in em.exe: nur 0x48607 ff. (Bildschirm) und 0x5C38C/0x5CD7D (Sichern/Laden). Für die Vereinsfelder 0x26–0x3A Deutschlands ist keine Rücksetzung beim Saisonwechsel gefunden; die Suche nach Schreibzugriffen über Zeiger ist nicht vollständig |
+| `[ORIGINAL]` Freundschaftsspiele schreiben keine Werte (0x3BFC4 ruft 0x8365 nicht) | Aufrufliste oben |
+| `[APPROX]` Stärken für die Automatik: `NationalMatchStrength` beider Länder statt 0x149D:0x61 (Formel nicht gelesen) | Datei 0x83AD/0x83CA |
+| `[APPROX]` Wirkung im Spiel unverändert (`Effective*`/`Auto*`, Spur `spielstaerke-manager`); nur Anzeige und eigene Werte sind betroffen | – |
+
+Spielstand: neues Feld `_vacantNationalTactics` (Taktik ohne Bundestrainer) und je Taktik die Anzeige unter „AUTOM.“
+(`SaveGame.Migration.Nationalteam.cs`, in diesem PR vorläufig 11 → 12). Alte Stände: Anzeige beginnt bei 0; eigene Werte
+eines Bundestrainers, die noch auf dem alten Startwert stehen, werden 0, von Hand geänderte bleiben (`[APPROX]`).
+Bildschirmfotos: Ablauf `nationalteam-taktik` (`Tools/Scenarios/Nationalteam.cs`). Hinweis: Der ältere Ablauf
+`nationalteam-2` (`03_taktik_wie_video_00058`) zeigt jetzt den Stand vor dem ersten Spiel (Nullen); für den Vergleich mit
+00058 braucht er ein gespieltes WM-Spiel gegen einen gleich starken Gegner.
 
 ## Spielmodus „nur Weltkugel“ (Spur `wettbewerbe-weltkugel`, `Core/CupsNationalMode.cs`)
 
