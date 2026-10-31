@@ -21,11 +21,37 @@ public sealed class MainMenuScreen : Screen
     /// <summary>
     /// Klickfeld „Tag weiter“ auf dem Vereinslogo der Infoleiste (#205). [ORIGINAL] em.exe Datei 0x45483–0x4551E
     /// (Hauptmenüschleife): bei Maustaste DGROUP 0x5A16 = 1 oder 3 und 33 &lt; y &lt; 72, 274 &lt; x &lt; 313 endet die
-    /// Schleife mit „weiter“ (0x4551B). Vorher prüft sie den Bundestrainer („WM mit SO wenigen Spielern“, 0x454C2) und
-    /// „Sie können nicht mehr weiterspielen.“ (DGROUP 0x176, 0x454F5) – beides hier nicht nachgebaut.
+    /// Schleife mit „weiter“ (0x4551B). Vorher prüft sie den Bundestrainer (<see cref="CoachWarning"/>, #217, 0x454C2) und
+    /// „Sie können nicht mehr weiterspielen.“ (DGROUP 0x176, 0x454F5) – letzteres gehört zur Sicher-/Ladesperre
+    /// des Originals, die nach Entscheidung des Nutzers nicht übernommen wird (<c>docs/formate/spielstand-original.md</c>).
     /// [APPROX] Nur die linke Maustaste; was die rechte (0x5A16 = 3) im Original anders macht, ist nicht geprüft.
     /// </summary>
     public static readonly Rect ContinueLogo = new(275, 34, 38, 38);
+
+    /// <summary>
+    /// Klickfeld des Managerkopfs in der Infoleiste (#216). [ORIGINAL] em.exe Datei 0x4549D–0x454B3: im selben y-Bereich wie
+    /// das Logo (33 &lt; y &lt; 72) ruft 232 &lt; x &lt; 272 die Leistenfunktion 0x120:0x48 (Datei 0x4B5F4) mit 0xFF
+    /// („Manager am Zug“, Datei 0x4B68C) auf – dieselbe Nachrichtenleiste wie beim Kennzeichen „neue Nachricht“
+    /// (0x4527C), danach geht die Schleife mit der Logo-Prüfung weiter.
+    /// [APPROX] Das Remake wählt dabei die Kachel ab, weil Leiste und kleine Kacheln dieselbe Fläche belegen.
+    /// </summary>
+    public static readonly Rect ManagerHead = new(233, 34, 39, 38);
+
+    /// <summary>
+    /// Warnung des Bundestrainers beim Klick aufs Logo (#217). [ORIGINAL] Datei 0x454C2–0x454F2: Ist der Manager am Zug der
+    /// Bundestrainer (DGROUP 0xA70E = 5) und zählt 0x120:0x66 (Modus 0, Datei 0x4BE17: Kaderplätze mit Feld 0x0F ≠ 0)
+    /// weniger als 10 Spieler, erscheint die Meldung „Wollen Sie die WM wirklich / mit SO wenigen Spielern bestreiten ?“
+    /// (DGROUP 0x403B/0x4056, über 0x38:0x8C8 = Datei 0xC0B8) und die Schleife beginnt von vorn – der Tag läuft nicht weiter.
+    /// [APPROX] Aussehen und Lage der Meldung (Rahmen, Knopf „Na gut.“) sind nicht aus dem Video belegt; das Original
+    /// wertet die Antwort nicht aus (Rücksprung 0x535B in jedem Fall).
+    /// </summary>
+    public static readonly string[] CoachWarning = ["Wollen Sie die WM wirklich", "mit SO wenigen Spielern bestreiten ?"];
+
+    /// <summary>[ORIGINAL] Mindestzahl Kaderspieler, ab der die Warnung entfällt (Datei 0x454D6: <c>cmp al,0xA</c>).</summary>
+    public const int CoachMinPlayers = 10;
+
+    /// <summary>Meldung über dem Hauptmenü (Bundestrainer-Warnung, #217).</summary>
+    public Team.MessageBox Message { get; } = new();
 
     public static MenuTile[][] SmallTiles => MenuTiles.Small;
 
@@ -44,9 +70,12 @@ public sealed class MainMenuScreen : Screen
     /// ist; es wird dabei gelöscht (Leistenfunktion Datei 0x4B5F4, Aufruf mit 0xFF). Ohne Nachricht bleibt der Hintergrund.
     /// [APPROX] Das Kennzeichen entspricht hier einer ungelesenen Nachricht; die Leiste bleibt, bis das Menü neu
     /// aufgebaut wird (Rückkehr aus einem Bildschirm, Tageswechsel, Managerwechsel) – das Original zeichnet das Menü
-    /// dann ohne Leiste neu. Klick auf Kopf/Wappen als zweiter Auslöser (Datei 0x454AE) ist nicht übernommen.
+    /// dann ohne Leiste neu. Klick auf den Managerkopf als zweiter Auslöser: <see cref="ManagerHead"/> (#216).
     /// </summary>
     private bool _newsBar;
+
+    /// <summary>Nachrichtenleiste gerade sichtbar (für Tests).</summary>
+    public bool NewsBarVisible => _newsBar;
 
     public MainMenuScreen(ScreenHost host) : base(host) { }
 
@@ -89,6 +118,8 @@ public sealed class MainMenuScreen : Screen
             }
             return;
         }
+        if (Message.Update(input))
+            return;
         if (_selectedBig < 0 && ManagerArea.NewsBar.HasUnread(Game))
             _newsBar = true;
 
@@ -105,9 +136,24 @@ public sealed class MainMenuScreen : Screen
             return;
         }
 
+        // Managerkopf (#216): zeigt die Nachrichtenleiste des Managers am Zug, auch ohne neue Nachricht (0x4549D).
+        if (input.Clicked(ManagerHead))
+        {
+            _selectedBig = -1;
+            _newsBar = true;
+            return;
+        }
+
         // Tag weiter: Klick aufs Vereinslogo (#205); die Leertaste hat diese Funktion im Original nicht.
         if (input.Clicked(ContinueLogo))
         {
+            // Bundestrainer mit zu kleinem Kader: Warnung statt Tagesablauf (#217, 0x454C2).
+            // [APPROX] Ohne ernannten Bundestrainer (Modus 1 vor dem ersten WM-Termin) gibt es keinen Kader zu zählen.
+            if (Game.NationalCoachMenu && Game.NationalCoach is { } coach && coach.Squad.Count < CoachMinPlayers)
+            {
+                Message.Show(CoachWarning);
+                return;
+            }
             Continue_();
             return;
         }
@@ -202,6 +248,7 @@ public sealed class MainMenuScreen : Screen
             ManagerArea.NewsBar.Draw(s, Assets, Game); // Nachrichtenleiste (Paket „manager“), nur mit Nachricht (#170)
 
         QuitQuestion?.Draw(s, Assets);
+        Message.Draw(s, Assets);
     }
 
     private void DrawInfoBar(Surface s)
