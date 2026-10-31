@@ -78,7 +78,9 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `Core/SaveGame.Migration.<Spur>.cs` (neue Datei, nur bei neuem Zustand), `docs/reverse-engineering.md` (eigener Abschnitt),
   `docs/highscore.md`, Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** fertig zur Review, PR #239 (Claude Code, 31.10.2026): Formel 0x49D36 im Emulator belegt (2.000 Fälle),
+  `PlayerValue` in `Core/Player.Value.cs`; Highscore und Werbebewertung umgestellt; Aufrufer (#225 RA-01): 12 Funktionen,
+  21 Aufrufstellen (`docs/reverse-engineering.md`).
 
 ### Spur `transfer-original` – Transferliste, Ablöse und Vertragsverhandlung nach em.exe (Ov 0x118)
 
