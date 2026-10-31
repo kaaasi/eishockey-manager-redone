@@ -77,4 +77,22 @@ in `Club.Players` (`[APPROX]`).
   stammen im Remake aus der Spur „kader“ (`[APPROX]`, R2-11); umgesetzt ist nur, dass „Mach' ich!“ ohne Eingabe das Angebot
   annimmt.
 - **Wechsel der Liste 0x494EF** (Pool von 200 Spielern) – das Remake zieht aus den vollen Kadern der Computervereine.
-- **Pixelvergleich** Transferliste und Verhandlungsfenster mit Kennzahl.
+- **Knöpfe im Verhandlungsfenster:** im Video ist „Mach' ich!“ heller beschriftet als „Abbruch“ (Aufruf 0x120:0x75 mit 0x12
+  statt 1) und beide stehen 1 Pixel weiter links; Bedeutung des Arguments offen (gemeinsamer Baustein, nicht geändert).
+
+## Pixelvergleich (Abnahme 3)
+
+Ablauf `transfer-vertrag` (`Tools/Scenarios/TransferVertrag.cs`): Verhandlung mit SCHMEISSER (19 Jahre, 2 Jahre, 1.500 DM)
+gegen `oberflaeche_1030`, Transferliste mit den sechs Spielern des Videos (Maus auf LAPORTE) gegen `oberflaeche_1102`. Kennzahl
+wie `pixel-verein`: mittlere Graudifferenz / Anteil der Pixel über 40, beide Bilder leicht weichgezeichnet, eigenes Bild um
+höchstens 1 Pixel verschoben, Mauszeiger maskiert.
+
+| Bereich | Vorher | Nachher |
+|---|---|---|
+| Verhandlungsfenster (2 … 167 \| 110 … 176) | 7,8 / 1,2 % | unverändert (Lage stimmt, Abweichung Knöpfe s. o.) |
+| Transferliste (176 … 318 \| 15 … 222) | 7,4 / 3,6 % | 4,2 / 0,9 % |
+| Einträge (178 … 316 \| 36 … 135) | 11,9 / 6,5 % | 6,1 / 2,0 % |
+| Titel „Transferliste“ | 8,5 / 5,5 % | 3,2 / 0,0 % |
+
+Behoben: rechtsbündige Spalten der Transferliste (Stärken, Alter, Leihgebühr) standen 3 Pixel zu weit links, der Titel 2 Pixel zu
+hoch und 1 Pixel zu weit rechts (Messung je Feld mit Verschiebungssuche ±5 Pixel, danach Versatz 0 | 0).

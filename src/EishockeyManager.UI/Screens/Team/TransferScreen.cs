@@ -237,7 +237,7 @@ public sealed class TransferScreen : Screen
 
         // Transferliste
         Widgets.Frame(s, Assets, ListWindow, FrameStyle.Orange);
-        TeamUi.DialogTitle(s, Assets, 247, 17, "Transferliste");
+        TeamUi.DialogTitle(s, Assets, 246, 19, "Transferliste"); // Pixelvergleich oberflaeche_1102: (−1 | +2)
         const byte lh = TeamUi.DimColor; // Video: Kopfzeile der Transferliste gedämpft
         s.Text(mini, ListLeft, ListHeaderY, "ART", lh);
         s.Text(mini, 201, ListHeaderY, "NAME", lh);
@@ -260,12 +260,13 @@ public sealed class TransferScreen : Screen
                 TeamUi.HoverRow(s, ListLeft - 1, y, ListRight - ListLeft + 3, 13);
             s.Text(mini, ListLeft, y, p.RoleLetter.ToString(), c);
             s.Text(mini, 189, y, p.Name, c);
-            s.TextRight(mini, 259, y, p.Condition.ToString(), c);
-            s.TextRight(mini, 271, y, p.Technique.ToString(), c);
-            s.TextRight(mini, 283, y, p.Form.ToString(), c);
-            s.TextRight(mini, 310, y, p.Age + " J.", c);
+            // Pixelvergleich oberflaeche_1102 (Spur transfer-original-vertrag): rechtsbündige Spalten 3 Pixel weiter rechts
+            s.TextRight(mini, 262, y, p.Condition.ToString(), c);
+            s.TextRight(mini, 274, y, p.Technique.ToString(), c);
+            s.TextRight(mini, 286, y, p.Form.ToString(), c);
+            s.TextRight(mini, 313, y, p.Age + " J.", c);
             s.Text(mini, ListLeft, y + 6, Money(l.Price) + " (K)", TeamUi.DimColor);
-            s.TextRight(mini, 312, y + 6, Money(l.LoanFee) + " (L)", TeamUi.DimColor);
+            s.TextRight(mini, 315, y + 6, Money(l.LoanFee) + " (L)", TeamUi.DimColor);
             EntryLine(s, y + 12);
         }
 
