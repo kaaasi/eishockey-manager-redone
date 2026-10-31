@@ -92,6 +92,13 @@ public sealed class MainMenuScreen : Screen
         if (_selectedBig < 0 && ManagerArea.NewsBar.HasUnread(Game))
             _newsBar = true;
 
+        // Credits (#207): linker oder rechter Klick in die Titelleiste, vor dem Abwählen per Rechtsklick (0x45483).
+        if ((input.LeftClick || input.RightClick) && CreditsScreen.TitleArea.Contains(input.MouseX, input.MouseY))
+        {
+            Host.Show(new CreditsScreen(Host, this));
+            return;
+        }
+
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
             _selectedBig = -1;
