@@ -210,7 +210,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
 
     /// <summary>Referenz: <see cref="Summary"/> auf <c>main</c> a09c81e (nur Leertaste, Seed 1993), siehe PR der Spur;
     /// ab 1994 neu mit Spur kader-start (siehe oben). Spur spielstaerke-manager (#204): ab 1993 neu – gestreute Teamwerte
-    /// des Laders 0x2EF1B und Tagesform 0x4F527 ändern alle Ergebnisse; mit und ohne Anzeige weiter gleich.</summary>
+    /// des Laders 0x2EF1B und Tagesform 0x4F527 ändern alle Ergebnisse; mit und ohne Anzeige weiter gleich.
+    /// Spur spielstaerke-manager-2: Managerpaarungen mit Spielerwerten, Energie und Reihenwechsel (0x98F8, 0x87F7, 0x8EF2)
+    /// – andere Ergebnisse ab dem ersten Spiel des Managers; mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15383 | 1994: DEB 6, DM 9, Tab 16425 | 1995: DEB 6, DM 2, Tab 15450 | 1996: DEB 9, DM 6, Tab 16138";
+        "1993: DEB 6, DM 6, Tab 15338 | 1994: DEB 5, DM 1, Tab 16190 | 1995: DEB 9, DM 2, Tab 16181 | 1996: DEB 6, DM 6, Tab 15942";
 }

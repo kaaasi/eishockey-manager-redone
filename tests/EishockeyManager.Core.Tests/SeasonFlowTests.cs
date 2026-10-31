@@ -43,6 +43,7 @@ public class SeasonFlowTests
         // Verein 15 (2. Liga, Mittelfeld): weder Play-Offs noch Aufstiegsrunde → wie im Video vom 44. Spieltag
         // direkt zum „Samstag, 14. April“ mit „Saisonende“.
         var game = Create(clubIndex: 17);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         while (!game.RegularSeasonOver)
             game.Continue();
         var tables = game.FinalTables();
@@ -160,6 +161,7 @@ public class SeasonFlowTests
         // Stärkster Verein der Oberliga (Index 24) wird mit diesem Startwert Erster → Aufstiegsrunde.
         // Ohne DEB-Pokal: dessen Termine im März/April (Halbfinale, Endspiel) wären sonst weitere Haltepunkte.
         var game = Create(clubIndex: 24, seed: 5, debCup: false);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         while (!game.RegularSeasonOver)
             game.Continue();
         var group = game.RelegationGroups.Single(g => g.Upper == League.ZweiteLiga);
