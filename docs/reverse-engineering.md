@@ -626,3 +626,36 @@ Wirkung der Spielstand-Optionen in Core samt Migration: Folgepaket `optionen-wir
 
 Die Tiefe bei 0x43C38, 0x43E21 und 0x36169 ist bewusst gering (nur Funktionsrumpf und Aufrufe angesehen); die Zuordnung ist
 **[APPROX]**. Änderungen am Tagesablauf: keine vorgeschlagen.
+
+(Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Die Bildschirm- und Kalender-Teile (0x43E21 mit 0x43B1F,
+0x43C38, 0x445E0, 0x36169; Pixelvergleich) sind **nicht begonnen**.
+
+## Nationalteam, Welle 3 (Spur `nationalteam-2`, Runde 8)
+
+Dateioffsets in `em.exe`, DGROUP = Datei 0x16DD0. Umsetzung und Belege im Bild: `docs/wettbewerbe.md`, Abschnitt
+„Nationalteam, Welle 3“.
+
+* **Tagesfunktion 0x54C9F** (Ov 0x130, Aufrufer 0x437D5): Modus 1 (DGROUP 0xD0B9 = 1) springt am Anfang (0x54CEE–0x54D0E)
+  bis zum Termin mit Ereignis 0x10, setzt DGROUP 0xD0BA = 1 (0x54D19) und geht ans Tagesende 0x553FF. Dort setzt es
+  Vereinsfeld 0x16 Deutschlands (Satz 0x3D Byte ab far DGROUP 0x9657, Land DGROUP 0x6AC) auf 0 (0x5540E), ernennt
+  (0x55436 ff., Feld 0x16 = 6 bei 0x55494) und ruft für Manager 5 an einem WM-Tag das Hauptmenü 0x110:0x66 = 0x44E22
+  (0x555A3). Das Hauptmenü wird also aus der Tagesfunktion gerufen; nach „Los jetzt!“ gibt es kein Menü vor dem ersten Tag
+  (#195). 0x55752 setzt Feld 0x16 wieder auf 0.
+* **Spielvorbereitung 0x8365**: Vereinsfeld 0x16 = 0 → Einsatz- und Angriffszeile ohne Blick auf die Modi (0x842B–0x8443,
+  0x8481–0x8496); sonst Modus des Managers DGROUP 0xA6FA/0xA706 + Feld 0x16 (R8-B04).
+* **Seitenwähler 0x3A88A** (Stub 0xF8:0x3E, Argumente Seite, Wettbewerb, Minute): Sprungtabelle cs:0x12FB (Datei
+  0x3ACCB) für die Seiten 1–12 – 1 und 6 Übersicht 0x32E23 (0xE8:0x75 mit Wettbewerb 2 bzw. 0), 2–5 Europapokal (0xE8:0x6B; Zuordnung
+  im Einzelnen nicht geprüft), 7 Ligapaarungen (0x128:0x39), 8/9 WM-Paarungen Gruppe 1/2 (0xE8:0x34 = 0x2FC2F, Spieltag DGROUP 0x7AE), 10 WM-Endrunde
+  (0xE8:0x75 = 0x32E23, Wettbewerb 3; Rückgabe ≠ 0 → vorige Seite, 0x3AC75), 11/12 WM-Tabelle Gruppe 1/2 (0xE8:0x25 =
+  0x2F5B6). Startseiten je Kachel DGROUP 0x511F … 0x5127 (Paarungen → WM: 8, Tabellen → WM: 11); die Rückgabe wird dort
+  gemerkt (0x45862, 0x458BB).
+* **Paarungsansicht 0x2FC2F** (Argumente Gruppe, Minute, Spieltag): Aufbau im Klassenkommentar von `CupPairingsScreen`.
+  Teams DGROUP 0xCED8 + 0x24 · Gruppe + 6 · Spieltag + 2 · Begegnung + Seite, Tore DGROUP 0xCDB8 (gleicher Index). Knöpfe
+  über 0x30:0x2C6, Pfeile über 0x2FB31 (Hit-Test 46 × 38, gedrückt Quelle + 10). Klick auf eine Flagge: 0x128:0x2A.
+  Im Spielablauf (Minute ≠ 0) ruft 0x32E23 die Ansicht für beide Gruppen (0x32E52–0x32E70).
+* **WM-Statistik 0x3ADE1** (kb\12 kleine Flaggen 9 × 6, Index Satzfeld 0x4C; Flaggenleiste 0x2F530): Aufbau im
+  Klassenkommentar von `WorldCupStatisticsScreen`. Die Platzierungen stehen im Satz DGROUP 0x8257 + 0x50 · Verein ab Feld
+  0x34 (Bytefolge, 0 beendet sie; 0x8257 ist der Block „Vereinssatz der Tabelle“ im Spielstand). Bei der WM-Auslosung
+  0x35EDD werden die Sätze 0x8257, die Vereinssätze 0x9657 und die Serien DGROUP 0xB57B zweier Plätze getauscht
+  (0x36467–0x3653A) – darum führt jeder Satz die Flaggennummer selbst. Nicht gefunden: die Stelle, die die Platzierungen
+  nach einer WM schreibt.

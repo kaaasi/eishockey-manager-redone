@@ -226,6 +226,7 @@ public sealed class WorldCup : ISeasonCompetition
                     .Concat(new[] { a[4], b[4], a[5], b[5] }.Select(r => r.Club.Index)).ToList();
                 steps.Add(new TrophyStep(day, Core.Title.WorldChampion, Winner.Value));
                 game.SetNationalBudget(Ranking);
+                game.RecordWorldCupRanking(Ranking); // WM-Statistik 0x3ADE1 (Spur nationalteam-2)
             }
         }
         game.CountCaps(played);

@@ -3,7 +3,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.UI.Screens.Competitions;
 
 /// <summary>
-/// WM „Gruppe 1/2“ (Paarungen → WM, Tabellen → Tabelle WM): Tabelle einer Gruppe mit Flaggen; nach der Gruppenphase
+/// WM „Gruppe 1/2“ (Tabellen → Tabelle WM): Tabelle einer Gruppe mit Flaggen; nach der Gruppenphase
 /// zusätzlich die K.-o.-Spiele. Zeigt nur vorhandenen Zustand.
 /// </summary>
 /// <remarks>
@@ -62,7 +62,7 @@ public sealed class WorldCupScreen : Screen
         if (input.Clicked(GroupButton))
             View = View == 0 ? 1 : 0;
         else if (KnockoutKnown && input.Clicked(KnockoutButton))
-            Host.Show(new WorldCupKnockoutScreen(Host, _back));
+            Host.Show(new WorldCupKnockoutScreen(Host, _back, () => new WorldCupScreen(Host, _back, View)));
         else if (input.LeftClick || input.Keys.Count > 0)
             Host.Show(_back);
     }
@@ -106,11 +106,14 @@ public sealed class WorldCupScreen : Screen
     }
 }
 
-/// <summary>Anmeldung im Hauptmenü: Paarungen → WM und Tabellen → Tabelle WM.</summary>
+/// <summary>
+/// Anmeldung im Hauptmenü: Paarungen → WM (Paarungsansicht 0x2FC2F, Seite 8; #194) und Tabellen → Tabelle WM
+/// (Gruppentabelle 0x2F5B6).
+/// </summary>
 internal static class WorldCupMenuEntries
 {
     [MenuEntry("WM")]
-    private static Screen Pairings(ScreenHost host, Screen back) => new WorldCupScreen(host, back);
+    private static Screen Pairings(ScreenHost host, Screen back) => new CupPairingsScreen(host, back);
 
     [MenuEntry("Tabelle WM")]
     private static Screen Table(ScreenHost host, Screen back) => new WorldCupScreen(host, back);

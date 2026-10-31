@@ -30,7 +30,7 @@ public class NationalLineupScreenTests
         Assert.IsType<MainMenuScreen>(d.Host.Current);
         var game = d.Host.Game!;
         Assert.Equal(GameMode.WorldOnly, game.Mode);
-        d.PlayMatchDay();
+        // #195: „Los jetzt!“ springt schon zum ersten WM-Termin (Ernennung)
         Assert.NotNull(game.NationalCoach);
         return (d, game);
     }

@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Migration der Spur statistiken-verein (Runde 8, Welle 3; vorläufig Schema 14 → 15, nummeriert in der Integration):
+/// Migration der Spur statistiken-verein (Runde 8, Welle 3; Schema 14 → 15, bestätigt in der Integration):
 /// laufende Serien je Verein (<see cref="Club.SeriesCurrent"/>), Rekordserien und Über-/Unterzahl je Manager
 /// (<see cref="Manager.SeriesRecords"/>, <see cref="Manager.PowerPlayCounts"/>). [APPROX] Ältere Spielstände haben nichts
 /// gezählt und beginnen mit 0; ab dem nächsten Ligaspiel wird gezählt. Unerwartete Formen bleiben unverändert; der Reader

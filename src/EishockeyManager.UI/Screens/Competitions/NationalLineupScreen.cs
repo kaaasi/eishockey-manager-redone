@@ -234,30 +234,31 @@ public sealed class NationalLineupScreen : Screen
         _message.Draw(s, Assets, 120, 110);
     }
 
-    /// <summary>Text der Statuszeile wie beim Verein; NR ist hier die Platznummer im WM-Kader.</summary>
+    /// <summary>
+    /// Text der Statuszeile wie beim Verein; NR ist hier die Platznummer im WM-Kader. [ORIGINAL] Listenzeilen über die
+    /// Hinweiszeile em.exe 0x41683 (<see cref="PlayerHintLine"/>): Der Bildschirm ist derselbe wie beim Verein (Datei
+    /// 0x40364, siehe Klasse), also auch der Aufruf 0x40845 mit Ursprung 7 | 29, Maske 0xF0C7, Rand 0xE9 (R8W3-06). Ein
+    /// Spielerdaten-Fenster (0x041AC) ruft die Aufstellung auch beim Verein am Head nicht; hier daher ebenfalls nicht.
+    /// </summary>
     private string? HoverText(NationalCoach coach, IReadOnlyList<Player> rows)
     {
         if (OnSlot(_mouseX, _mouseY, out var slot))
             return coach.Formation[slot] is { } sp ? $"Name: {sp.Name} ({sp.Age} Jahre)" : null;
-        if (!LineupScreen.Window.Contains(_mouseX, _mouseY))
-            return null;
-        var row = LineupScreen.RowAt(_mouseY);
-        if (row < 0 || row >= rows.Count)
+        var layout = PlayerListLayout.Lineup(rows.Count);
+        var row = PlayerHintLine.Row(layout, _mouseY);
+        var column = PlayerHintLine.Column(layout, _mouseX);
+        if (row < 0 || column < 0)
             return null;
         var p = rows[row];
-        return _mouseX switch
-        {
-            < 18 => "Rückennummer des Spielers",
-            < 35 => "Art des Spielers: " + p.RoleName,
-            < 95 => $"Name: {p.Name} ({p.Age} Jahre)",
-            < 105 => "Spiele gesamt (Liga und Pokal)",
-            < 142 => "Kondition, Technik, Form",
-            < 156 => "Tore gesamt (Liga und Pokal)",
-            < 182 => "2/5 Min.-Strafzeiten",
-            < 219 => p.InjuredGames > 0 ? $"Verletzt. (Noch {p.InjuredGames} Spiele)"
-                : p.SuspendedGames > 0 ? $"Gesperrt. (Noch {p.SuspendedGames} Spiele)"
-                : coach.StatusOf(p) is { } status ? "Status: " + TeamUi.StatusText(status) : null,
-            _ => "Tendenz des Spielers: " + TeamUi.TrendText(p.Trend),
-        };
+        return PlayerHintLine.Text(p, column, new PlayerHintInfo(coach.IsDressed(p), LineOf(coach, p)), showExhaustion: true);
+    }
+
+    /// <summary>Reihe (1–4), in der der Spieler im Nationalteam aufgestellt ist, sonst 0 (Kaderplatz +0x15 &amp; 0x7F).</summary>
+    private static int LineOf(NationalCoach coach, Player p)
+    {
+        foreach (var slot in LineupSlot.All)
+            if (coach.Formation[slot] == p)
+                return slot.Block + 1;
+        return 0;
     }
 }

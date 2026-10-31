@@ -190,7 +190,7 @@ public class PixelVereinTests
         d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
         d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
         Assert.Equal(Core.GameMode.WorldOnly, d.Host.Game!.Mode);
-        d.PlayMatchDay();
+        // #195: „Los jetzt!“ springt schon zum ersten WM-Termin (Ernennung)
         d.Move(1, 239);
         Assert.True(Shows(d, SeasonInfo.IconSource(Core.Competition.WorldCup), 111, 35), "WM-Symbol fehlt");
         Assert.False(Shows(d, HomeIcon, 126, 35) || Shows(d, AwayIcon, 126, 35), "Heim-/Auswärtssymbol bei einem WM-Spiel");

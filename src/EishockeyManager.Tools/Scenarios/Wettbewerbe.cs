@@ -106,7 +106,7 @@ internal static class Wettbewerbe
         d.Move(300, 225); d.Save("00_gruppe1_video_13_13");
         d.Host.Show(new MainMenuScreen(d.Host));
 
-        d.OpenTile("WM");
+        d.OpenTile("Tabelle WM"); // #194: „Paarungen → WM“ ist die Paarungsansicht (Ablauf cup-paarungen)
         d.Frame(); d.Save("01_gruppe1");
         d.Click(WorldCupScreen.GroupButton.X + 5, WorldCupScreen.GroupButton.Y + 5);
         d.Frame(); d.Save("02_gruppe2");
@@ -212,7 +212,7 @@ internal static class Wettbewerbe
 
     /// <summary>
     /// Spur wettbewerbe-weltkugel: Spielvorbereitung mit Spielmodus „nur Weltkugel“ und Hauptmenü des Bundestrainers
-    /// (vor der Ernennung, nach dem Sprung zum ersten WM-Termin, Kachelsperren). Kein Videobeleg für Modus 1.
+    /// (nach dem Sprung zum ersten WM-Termin, Kachelsperren). Kein Videobeleg für Modus 1.
     /// </summary>
     [Scenario("weltkugel")]
     private static void WorldOnly(ScreenDriver d)
@@ -232,10 +232,7 @@ internal static class Wettbewerbe
         d.Move(100, 150); d.Save("03_spielvorbereitung_kein_modus");
         d.Click(SetupScreen.ModeGlobe.X + 5, SetupScreen.ModeGlobe.Y + 5);
         d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
-        d.Move(10, 230); d.Save("04_bundestrainer_saisonbeginn");
-        d.Click(MainMenuScreen.BigTile(1).X + 10, MainMenuScreen.BigTile(1).Y + 10);
-        d.Move(10, 230); d.Save("05_bundestrainer_mannschaft_gesperrt");
-        d.PlayMatchDay();
+        // #195 (Spur nationalteam-2): „Los jetzt!“ hält sofort am ersten WM-Termin; ein Menü vor der Ernennung gibt es nicht.
         d.Move(10, 230); d.Save("06_bundestrainer_erster_wm_termin");
         d.Click(MainMenuScreen.BigTile(1).X + 10, MainMenuScreen.BigTile(1).Y + 10);
         d.Move(10, 230); d.Save("07_bundestrainer_mannschaft");
@@ -264,8 +261,7 @@ internal static class Wettbewerbe
         d.Type("LetsShow");
         d.Press(Key.Enter);
         d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
-        d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
-        d.PlayMatchDay();
+        d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10); // #195: Halt am ersten WM-Termin
         var game = d.Host.Game!;
         game.AutoNominate();
         d.OpenTile("Aufstellung");
