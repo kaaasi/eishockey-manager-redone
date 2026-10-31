@@ -135,6 +135,32 @@ public class BoerseStartScreenTests
     /// Maustaste <c>DGROUP 0x5A16 == 1</c>, dann 0x59C75 Versatz = Kurs · 3 − 130). Überfahren ändert nichts.
     /// Ersetzt <c>Hover_SetsOffsetImmediately</c> aus #188.
     /// </summary>
+    /// <summary>
+    /// Review-Befund HB-01 (#214): Nur ein Linksklick in die Logospalte (x &lt; 47, em.exe 0x59BF2) wählt eine Aktie; ein
+    /// Klick ins Infofeld daneben und ein Rechtsklick auf die Logospalte (0x59B2D: nur Ereignis 1) ändern nichts.
+    /// </summary>
+    [GameDataFact]
+    public void OnlyLeftClickOnLogoColumn_SelectsStock()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        game.Stocks = Market(Folge01History);
+        d.OpenTile("Finanzen");
+        var screen = Assert.IsType<FinanceScreen>(d.Host.Current);
+        d.Move(319, 239);
+        var offset = screen.ChartOffset;
+        var logo = FinanceScreen.StockSelectArea(2);
+
+        d.Click(60, logo.Y + 10); // Infofeld rechts der Logospalte
+        Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
+        Assert.Equal(offset, screen.ChartOffset);
+
+        d.RightClick(logo.X + 10, logo.Y + 10);
+        Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
+        Assert.Equal(offset, screen.ChartOffset);
+    }
+
     [GameDataFact]
     public void Hover_KeepsOffset_ClickSetsItImmediately()
     {
