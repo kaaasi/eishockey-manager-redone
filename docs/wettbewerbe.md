@@ -315,6 +315,38 @@ Bildschirmfotos: Ablauf `nationalteam-taktik` (`Tools/Scenarios/Nationalteam.cs`
 `nationalteam-2` (`03_taktik_wie_video_00058`) zeigt jetzt den Stand vor dem ersten Spiel (Nullen); für den Vergleich mit
 00058 braucht er ein gespieltes WM-Spiel gegen einen gleich starken Gegner.
 
+## Nationalteam, Welle 3 (Spur `nationalteam-2`, Runde 8)
+
+Belege: DOSBox `nur-weltkugel/06`, `17`, `20`, `21`, `24`; Videos `bundestrainer_00437`, `eisbaeren_f07_03843`;
+Disassembly (Fundstellen im Code und in `docs/reverse-engineering.md`, Abschnitt „Nationalteam, Welle 3“). Tests
+`Nationalteam2Tests` (Core und UI), Bildschirmfotos `cup-paarungen`, `wm-statistik` (`Tools/Scenarios/Nationalteam.cs`).
+
+| Regel | Beleg |
+|---|---|
+| `[ORIGINAL]` #195: Im Modus 1 läuft nach „Los jetzt!“ zuerst die Tagesfunktion (Sprung zum WM-Termin, Ernennung), das Hauptmenü kommt erst am Tagesende – der erste Halt ist der 14. April, ein Menü am 10. Sept. gibt es nicht (`SetupScreen` ruft einmal `Continue()`) | Datei 0x54C9F (0x54CEE Sprung, 0x555A3 Hauptmenü 0x44E22 für Manager 5); DOSBox 06 |
+| `[ORIGINAL]` #194: Paarungen → WM = Seite 8 des Seitenwählers 0x3A88A, Paarungsansicht „Gruppe n   m.Spieltag“ 0x2FC2F (`CupPairingsScreen`); Startspieltag = gespielte WM-Termine (DGROUP 0x7AE, höchstens 5.); Pfeile blättern mit Umlauf; „Gruppe n“ = Seite 9 − Gruppe; „Endrunde“ = Seite 10 (0x32E23), deren „Gruppe“ zur vorigen Seite zurückkehrt; Pokale nur, wenn nicht der Bundestrainer am Zug ist; Rahmen Rot für das Land mit Manager | Datei 0x2FC2F–0x30364, 0x3AC29, 0x3AC67–0x3AC81, 0x458A2; DOSBox 20, 21, 24; Video `bundestrainer_00437` (Anzeige im Spielablauf) |
+| `[ORIGINAL]` Europapokal: 0x2FC2F liest nur die WM-Tabellen (DGROUP 0xCED8/0xCDB8, 2 × 6 × 6 Byte); „Paarungen → Europapokal“ bleibt 0x31CD5 (`EuropeanCupScreen`, unverändert) | Datei 0x3004B, 0x30115 |
+| `[ORIGINAL]` WM-Statistik 0x3ADE1 (`WorldCupStatisticsScreen`): Punkte je Land Σ (9 − Platz) über die Plätze 1 … 8 aller WMs, Rangfolge per Tauschsortierung der WM-Reihenfolge (Gleichstand: WM-Reihenfolge, DOSBox 17); je WM eine Spalte mit der Flagge auf dem Platz; unten alle zwölf Länder in WM-Reihenfolge; kleine Flaggen kb\12 in Datenbankreihenfolge | Datei 0x3AE7C–0x3B3FF; DOSBox 17; Video `eisbaeren_f07_03843` (22/21/18/14/13/8/7/4 P. nach drei WMs) |
+| `[APPROX]` WM-Geschichte: Das Original führt je Land die Platzierungen ab Feld 0x34 des Satzes DGROUP 0x8257 + 0x50 · Verein; das Remake hält je WM die Abschlussreihenfolge (`GameState.WorldCupRankings`, eingetragen nach dem Finale; Schreibstelle im Original nicht gelesen). Mehr als 16 WMs: nur die ersten 16 Spalten | Datei 0x3B22F–0x3B245 |
+| `[APPROX]` Klick auf eine Flagge (Paarungsansicht, WM-Statistik) ruft im Original das Gegner-Fenster 0x128:0x2A – im Remake noch nicht vorhanden | Datei 0x302AA, 0x3B4AE |
+| `[ORIGINAL]` R8-B04: Ohne Bundestrainer schreibt die Spielvorbereitung die Anzeige „AUTOM.“ unabhängig von den Modi (Vereinsfeld 0x16 Deutschlands = 0; Ernennung setzt 6) | Datei 0x842B, 0x5540E, 0x55494, 0x55752 |
+| `[ORIGINAL]` Hinweiszeile der Nationalaufstellung = Hinweiszeile 0x41683 der Vereinsaufstellung (Aufruf 0x40845; R8W3-06) | Datei 0x40364, 0x40845 |
+
+Pixelvergleich (Kennzahl wie `pixel-verein`: mittlere Graudifferenz / Anteil der Pixel über 40, beide Bilder leicht
+weichgezeichnet; DOSBox-Fensterfotos auf 320 × 240 verkleinert, Versatz über die Knopfreihe gesucht):
+
+| Bild | Bereich | Kennzahl |
+|---|---|---|
+| `cup-paarungen/01` ↔ DOSBox 20 | Titel (40 … 280 \| 12 … 34) / Knöpfe (36 … 286 \| 178 … 220) / Ergebnisse | 4,6 / 0,0 % · 2,7 / 0,0 % · 2,3 / 0,0 % |
+| `cup-paarungen/02` ↔ DOSBox 21 | Titel / Knöpfe | 4,7 / 0,0 % · 2,7 / 0,0 % |
+| `cup-paarungen/03` ↔ DOSBox 24 | ganzes Bild | 5,1 / 2,1 % |
+| `cup-paarungen/05` ↔ `bundestrainer_00437` | Fenster (16 … 304 \| 2 … 173) / Flaggenkästen / Ergebnisse (leere Fläche als Bezug: 9,0 / 0,0 %) | 10,5 / 0,7 % · 11,2 / 0,4 % · 10,0 / 1,1 % |
+| `wm-statistik/02` ↔ `eisbaeren_f07_03843` | oberes Fenster / Tabelle / unteres Fenster ohne Ecke | 5,0 / 0,0 % · 5,2 / 0,0 % · 6,3 / 0,1 % |
+| `wm-statistik/01` ↔ DOSBox 17 | oberes Fenster (unten andere WM-Auslosung) | 3,9 / 0,6 % |
+
+Die Flaggen der Paarungsansicht im Vergleich mit DOSBox 20/21 unterscheiden sich, weil die WM-Auslosung ein anderer Zufall
+ist; Aufbau und Lage stimmen (Begegnungen in Auslosungsfolge „abcdef“, „dafcbe“ wie im Bild).
+
 ## Spielmodus „nur Weltkugel“ (Spur `wettbewerbe-weltkugel`, `Core/CupsNationalMode.cs`)
 
 | Regel | Beleg |
@@ -331,10 +363,10 @@ Bildschirmfotos: Ablauf `nationalteam-taktik` (`Tools/Scenarios/Nationalteam.cs`
 | Modus 2 sperrt Platz 6 der Statistiken, Tabellen, Paarungen und Platz 4 der Stärken (WM-Kacheln) | 0x44FE8–0x4501D |
 | Gesperrte Kachel: Symbol kb\3 (157 \| 203) 38 × 28, kein Klick | 0x45B63 |
 | Menü des Bundestrainers: „Transfer“ = „Spieler in WM-Kader“, „Training“ = „WM Vorbereitung“ | 0x457C0, 0x457D9 |
-| Halt nach dem Sprung vor dem ersten WM-Spiel (Hauptmenü am 14. April); im Original bestätigt | DOSBox `dosbox/nur-weltkugel/06` (`docs/dosbox-befunde.md`) |
+| Halt nach dem Sprung vor dem ersten WM-Spiel (Hauptmenü am 14. April); im Original bestätigt. Seit #195 gleich nach „Los jetzt!“ (Spur `nationalteam-2`) | DOSBox `dosbox/nur-weltkugel/06` (`docs/dosbox-befunde.md`); Datei 0x54C9F |
 | `[APPROX]` Modus 1 nur mit genau einem Manager („Los jetzt!“ mit Meldung gesperrt) | – |
 | `[APPROX]` Modus 1 ohne Europapokal, Auf-/Abstieg, Oberliga-Wechsel, Prämien, Ligastatistik, Finanzen, Training, Markt und Vertragsmeldungen (kein Tageslauf vor der WM) | – |
-| Menü des Bundestrainers schon vor der Ernennung, Mannschaft und Stärken bis dahin gesperrt; im Original bestätigt | DOSBox `dosbox/nur-weltkugel/07–11` (`docs/dosbox-befunde.md`) |
+| Menü des Bundestrainers schon vor der Ernennung, Mannschaft und Stärken bis dahin gesperrt – im Modus 1 seit #195 nicht mehr erreichbar: Die Ernennung (0xD0BA, 0x54D19) liegt vor dem ersten Menü; die Bilder 07–11 zeigen schon den 14. April nach der Ernennung (Spur `nationalteam-2`) | DOSBox `dosbox/nur-weltkugel/06–11` (`docs/dosbox-befunde.md`) |
 | „Highscore“ im Menü des Bundestrainers: Der Aufbau überschreibt Platz 6 der Reihe Manager mit „DGROUP 0x256 = 0 oder (Zug Manager 5 und Modus 4)“, ohne die Ernennung (0xD0BA) abzufragen. Modus 1 hat immer die Bestenliste 30000 → **offen**, vor wie nach der Ernennung (Spur `weltkugel-dosbox`, `NationalMenu.CoachHighscoreLocked`, Tests `WeltkugelDosboxTests`). Das WM-Video zeigt sie gesperrt (`bundestrainer_00042`, Saison 2008) – mit em.exe nur bei 0x256 = 0 erklärbar, offen | 0x44FBD–0x4504A; DOSBox `dosbox/nur-weltkugel/07`, `19` |
 | Tabellen-Reihe mit sechs Kacheln: 1. Liga, 2. Liga, Oberliga, DEB-Pokal, Europapokal, WM (Symbolstart 17, ab Platz 4 eine Spalte versetzt); „Tabelle WM“ damit auf Platz 6. „Tabelle DEB-Pokal“ und „Tabelle Europapokal“ rufen dieselben Bildschirme auf wie „DEB-Pokal“ und „Europapokal“ bei den Paarungen (0xE8:0x75 bzw. 0xF8:0x3E mit Seitenwert 3, Datei 0x4584A/0x4584C; Spur `tabellen-highscore`, `CupTableMenuEntries`). 0xE8:0x75 ist die Übersicht „DEB-Pokalspiele“ (Datei 0x32E23, Gegner und Ergebnisse), nicht die Auslosung – seit R4-01 (#108) als `DebCupGamesScreen` unter „Tabelle DEB-Pokal“ gebaut (Aufbau, Rahmenformel, Spalten, Farben im Klassenkommentar; [ORIGINAL] Seitentausch nach Termin 1 und 2, Überlauf-Punkt nur bei Verlängerung, Datumszeile ab Tag 212 weg; offen nur Penalty-gegen-Verlängerung und Punktform); die Paarungs-Kachel „DEB-Pokal“ öffnet seit demselben PR ebenfalls die Übersicht (im Original derselbe Stub); die Auslosung ist ohne Kachel und wird nur im Spielablauf gezeigt (Abschnitt „Live-Auslosung im Spielablauf“) | DGROUP 0x5149/0x5151, Datei 0x45B95, 0x45829 ff. |
 | Kachelsperren der Spielvorbereitung (Reihe Manager): „Neuer“ gesperrt bei vier Managern (DGROUP 0x386), „Werbung“ gesperrt bei der Spieldauer „eine Saison“ (Spielende DGROUP 0x5A14 = 1994) | Datei 0x45057, 0x45079, 0x2987C; `UI/Screens/TileLocks.cs` |
