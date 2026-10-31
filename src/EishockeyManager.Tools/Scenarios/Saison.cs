@@ -33,9 +33,9 @@ internal static class Saison
         d.NextDay();
         Until<SeasonEndScreen>(d);
         d.Move(170, 110); d.Save("06_saisonende");
-        d.Press(Key.Space);
+        d.Advance();
         d.Move(170, 110); d.Save("07_saisonende_ereignisse");
-        d.Press(Key.Space);
+        d.Advance();
         d.Move(10, 230); d.Save("08_neue_saison");
     }
 
@@ -54,7 +54,7 @@ internal static class Saison
         d.Move(10, 230); d.Save("03_hauptmenue_aufstiegsrunde");
         Until<SeasonEndScreen>(d);
         d.Move(170, 110); d.Save("04_saisonende");
-        d.Press(Key.Space);
+        d.Advance();
         d.Move(170, 110); d.Save("05_saisonende_ereignisse");
     }
 

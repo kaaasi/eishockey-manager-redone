@@ -11,8 +11,8 @@ Bildschirmfotos aus einem Let's Play des Originals.
 * Die Glyphbreiten der Originalfonts enthalten den Zeichenabstand bereits (letzte Spalte leer) – daher wird
   **ohne** zusätzlichen Abstand gesetzt. Das war die Ursache für abgeschnittene Texte in Version 0.1.
 Bedienung überall: **linke Maustaste** wählt, **rechte Maustaste** oder **Esc** geht zurück ins Hauptmenü,
-**Klick aufs Vereinslogo** oben rechts = nächster Tag (im Hauptmenü; die Leertaste hat diese Funktion wie im
-Original nicht, #205), **F2** = Sichern, **F9** = Klassik/Modern, **F11** = Vollbild.
+**Klick aufs Vereinslogo** oben rechts = nächster Tag (im Hauptmenü; die Leertaste hat im Remake keine Weiter-Funktion,
+wie im Original, #205), **F2** = Sichern, **F9** = Klassik/Modern, **F11** = Vollbild.
 Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screenshots <spielordner> <ausgabe> [de|en]`.
  
 ## Grafiken des Originals
@@ -112,7 +112,7 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 * **Reporter:** der Mund (`kb\38`, 8 Bilder 12×21 ab x = 80) bewegt sich, solange eine Sprechblase (y = 172) zu sehen ist;
   Kommentare zu Tor, Strafe, Chance, Verletzung, Drittelende und Penalty in mehreren Varianten.
 * **Torszene** (abschaltbar unter *Einstellungen*): Ausschnitt (5,44, 310×128) der Halle aus `kb\231/232` + Karte,
-  Torschütze läuft an und schießt, Torhüter reagiert, „TOR!“; die Spieluhr hält 2,6 s an, Leertaste/Klick überspringt.
+  Torschütze läuft an und schießt, Torhüter reagiert, „TOR!“; die Spieluhr hält 2,6 s an, Enter/Klick überspringt (keine Leertaste, #205).
 * **Geräusche:** Publikum im Hintergrund, Pfiff bei Strafe/Drittel, Puck und Jubel beim Tor.
 ### Manager – Finanzen
 * Klick auf das Bankbild oder das Kontofeld öffnet das **Finanzbuch**: jede Kategorie (Eintritt, Gastronomie, Sponsoren,

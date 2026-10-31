@@ -13,7 +13,7 @@ namespace EishockeyManager.UI.Tests;
 /// </summary>
 public class DebCupDrawFlowTests(ITestOutputHelper output)
 {
-    private static ScreenDriver StartStoppingAtDraw(int seed = 1993)
+    internal static ScreenDriver StartStoppingAtDraw(int seed = 1993)
     {
         var d = FlowTests.CreateDriver(seed);
         d.StopAtDebCupDraw = true;
@@ -21,7 +21,7 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
         return d;
     }
 
-    /// <summary>Antwort im Fragefenster: Escape = „Kein Gedanke“, sonst weiter (Leertaste = „Aber klar“; im Hauptmenü Klick aufs Vereinslogo).</summary>
+    /// <summary>Antwort im Fragefenster: Escape = „Kein Gedanke“, sonst weiter (Enter = „Aber klar“; im Hauptmenü Klick aufs Vereinslogo).</summary>
     private static void Step(ScreenDriver d, bool live)
     {
         if (!live && d.Host.Current is DebCupDrawLiveScreen { Current: DebCupDrawLiveScreen.Phase.Ask })
@@ -61,13 +61,13 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
         Assert.Equal(1, screen.Revealed);
         Assert.Single(screen.Slots, s => s is not null);
 
-        d.Press(Key.Space); // deckt alle übrigen auf
+        d.Advance(); // deckt alle übrigen auf
         Assert.Equal(DebCupDrawLiveScreen.Phase.Done, screen.Current);
         Assert.Equal(game.DebCup!.Draw.Select(c => (int?)c), screen.Slots);
 
-        d.Press(Key.Space);
+        d.Advance();
         Assert.IsType<DebCupGamesScreen>(d.Host.Current);
-        d.Press(Key.Space);
+        d.Advance();
         Assert.IsType<MainMenuScreen>(d.Host.Current);
         Assert.Equal(before, StateFingerprint.Of(game));
     }

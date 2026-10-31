@@ -10,7 +10,7 @@ namespace EishockeyManager.UI.Screens;
 /// 3. Banner und Meisterfotos der übrigen Tage (z. B. „Deutscher Meister“), die DEB-Pokal-Auslosung nach dem dritten
 ///    Termin einer Runde (<see cref="Competitions.DebCupDrawFlow"/>),
 /// 4. zurück ins Hauptmenü – oder am 29. April der Bildschirm „Saisonende“.
-/// Klick, Leertaste oder die Vorspultaste oben rechts überspringen.
+/// Klick, Enter oder die Vorspultaste oben rechts überspringen (keine Leertaste, Entscheidung Nutzer 31.10.2026, #205).
 /// </summary>
 public sealed class MatchDayScreen : Screen
 {
@@ -109,7 +109,7 @@ public sealed class MatchDayScreen : Screen
                 return;
         }
 
-        var skip = input.LeftClick || input.Pressed(Key.Space) || input.Pressed(Key.Enter) || input.Pressed(Key.Escape);
+        var skip = input.LeftClick || input.Pressed(Key.Enter) || input.Pressed(Key.Escape);
         var done = _current switch
         {
             BannerItem => _frame >= BannerFrames,

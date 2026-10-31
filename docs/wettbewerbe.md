@@ -54,7 +54,7 @@ Leere Ziehung (`03_debpokal_leer`) gegen `oberflaeche_0345` ohne Dialog: 9,4 / 2
 | Weniger als vier Plätze (Endspiel): kein Fenster, keine Frage, nur die Übersicht | 0x33BC3 → 0x33E54 |
 | Im Durchlauf ohne Halt (DGROUP 0x1DB) entfällt die Frage – gibt es im Remake nicht | 0x33D60 |
 | `[APPROX]` Aufdeckreihenfolge aus eigener Quelle (Original: random(0, n − 1) aus dem gemeinsamen Generator, also andere Folgeergebnisse mit Anzeige); Paarungen und alle Ergebnisse sind hier mit und ohne Anzeige gleich | – |
-| `[APPROX]` Ein Platz je 60 Bilder (Video etwa einer je Sekunde), Klick oder Taste deckt alle auf; rollende Kugel fehlt; Enter/Leertaste = „Aber klar“, Escape/rechte Maustaste = „Kein Gedanke“ | – |
+| `[APPROX]` Ein Platz je 60 Bilder (Video etwa einer je Sekunde), Klick oder Taste deckt alle auf; rollende Kugel fehlt; Enter = „Aber klar“ (keine Leertaste, #205), Escape/rechte Maustaste = „Kein Gedanke“ | – |
 | `[APPROX]` Im Endspiel deckt das Original zwei Plätze ohne Fenster auf (0x349E3 mit DGROUP 0xE068 = 1); hier nur die Übersicht | – |
 
 Fragefenster vermessen am Video (`emtool screens gamedata <ziel> debpokal-auslosung`, Bild `01_frage_spielstart` gegen

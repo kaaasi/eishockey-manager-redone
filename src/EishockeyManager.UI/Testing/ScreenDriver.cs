@@ -109,7 +109,7 @@ public sealed class ScreenDriver
     public int MatchDayFrameLimit { get; set; } = 1000;
 
     /// <summary>
-    /// Spielt einen Spieltag im Schnelldurchlauf (im Hauptmenü <see cref="NextDay"/>, danach Leertaste) und kehrt ins Hauptmenü zurück.
+    /// Spielt einen Spieltag im Schnelldurchlauf (im Hauptmenü <see cref="NextDay"/>, danach Enter) und kehrt ins Hauptmenü zurück.
     /// Wirft <see cref="TimeoutException"/>, wenn das Hauptmenü nicht innerhalb von <see cref="MatchDayFrameLimit"/>
     /// Tastendrücken wieder erreicht wird (statt still abzubrechen).
     /// </summary>
@@ -121,7 +121,7 @@ public sealed class ScreenDriver
             if (presses >= MatchDayFrameLimit)
                 throw new TimeoutException(
                     $"Spieltag nach {presses} Tastendrücken nicht beendet – Bildschirm {Host.Current?.GetType().Name ?? "(keiner)"} statt Hauptmenü.");
-            Press(Key.Space);
+            Press(Key.Enter);
         }
     }
 
@@ -138,15 +138,16 @@ public sealed class ScreenDriver
     }
 
     /// <summary>
-    /// Einen Schritt weiter, wo immer man steht: im Hauptmenü <see cref="NextDay"/>, sonst die Leertaste (Spieltag,
-    /// Meldungen, Auslosung …). Für Schleifen, die viele Tage durchlaufen.
+    /// Einen Schritt weiter, wo immer man steht: im Hauptmenü <see cref="NextDay"/>, sonst Enter (Spieltag,
+    /// Meldungen, Auslosung …). Für Schleifen, die viele Tage durchlaufen. Die Leertaste hat im Remake keine
+    /// Weiter-Funktion mehr (Entscheidung Nutzer, 31.10.2026, #205).
     /// </summary>
     public void Advance()
     {
         if (Host.Current is MainMenuScreen)
             NextDay();
         else
-            Press(Key.Space);
+            Press(Key.Enter);
     }
 
     /// <summary>Öffnet im Hauptmenü eine kleine Kachel über ihren Namen (siehe <see cref="MenuTiles"/>).</summary>

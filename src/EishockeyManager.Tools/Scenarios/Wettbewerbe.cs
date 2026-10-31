@@ -34,7 +34,7 @@ internal static class Wettbewerbe
         // Paarungen → DEB-Pokal: erste Runde der laufenden Saison
         d.Host.Show(new DebCupDrawScreen(d.Host, new MainMenuScreen(d.Host))); // Kachel zeigt seit R4-01 die Übersicht
         d.Frame(); d.Save("01_debpokal_auslosung");
-        d.Press(Key.Space);
+        d.Advance();
 
         // Gleiche Ziehung wie im Video (3:55) für den Pixelvergleich
         var used = new HashSet<int>();
@@ -50,7 +50,7 @@ internal static class Wettbewerbe
         // Leere Ziehung: grüne Streifen wie vor der ersten Kugel
         d.Host.Show(new DebCupDrawScreen(d.Host, new MainMenuScreen(d.Host), Enumerable.Repeat<int?>(null, DebCup.Teams).ToList()));
         d.Frame(); d.Save("03_debpokal_leer");
-        d.Press(Key.Space);
+        d.Advance();
 
         // Nach dem dritten Termin der ersten Runde: Auslosung der zweiten Runde
         while (game.DebCup!.CurrentRound < 1 && game.Phase == SeasonPhase.Running)
@@ -59,7 +59,7 @@ internal static class Wettbewerbe
             d.Host.Show(new MainMenuScreen(d.Host));
         d.Host.Show(new DebCupDrawScreen(d.Host, new MainMenuScreen(d.Host)));
         d.Frame(); d.Save("04_debpokal_runde2");
-        d.Press(Key.Space);
+        d.Advance();
     }
 
     /// <summary>Europapokal: Gruppen vor dem ersten Termin (Video 13:11), nach der Gruppenphase, Endrunde.</summary>
