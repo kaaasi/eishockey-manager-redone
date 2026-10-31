@@ -232,12 +232,18 @@ DGROUP liegt bei Datei 0x16DD0 (Segmenttabelle 0x163C0, Eintrag 0x148).
   1. **Spielstart** (Datei 0x4387B, in der Funktion, die Spielwerte vorbelegt und damit zum Spielstart gehört – [APPROX] Zuordnung): nur wenn `random(0, 2) == 0` (Wahrscheinlichkeit 1/3).
      Höchstens zwei Versuche; wer beide verfehlt, bleibt in einer Endlosschleife hängen (`si` bleibt 2, Sprung
      0x4389A ↔ 0x43871) – das ist der eigentliche Kopierschutz (aus dem Code gelesen, im Original nicht ausprobiert).
-  2. Schleife mit Zähler gegen DGROUP 0x386 (Datei 0x34DB7; Zweck der Schleife nicht geklärt): wenn Zähler DGROUP 0x5A14 < 2000, Byte 0x5CF3 == 4
-     und `random(0, 7) == 0`. Das Ergebnis wird an der Stelle nicht ausgewertet.
-  3. Funktion bei Datei 0x5667A (Datei 0x566AC): wenn Zähler DGROUP 0x3BD > 10 und `random(0, 5) == 0`, oder genau 9.
-     Das Ergebnis wird an der Stelle nicht ausgewertet.
-* **Nicht geklärt:** Bedeutung der Globalen 0x5A14, 0x5CF3, 0x3BD (Auslöser 2 und 3) und ob je ein falsches Ergebnis dort
-  Folgen hat. Für die Spur nicht nötig, da nichts davon portiert wird. Spielstart (1.) ist durch Bildfolge und Code belegt.
+  2. Schleife mit Zähler gegen DGROUP 0x386 (Datei 0x34DB7; Zweck der Schleife nicht geklärt): wenn das Endjahr
+     (DGROUP 0x5A14, s. u.) < 2000 ist, also ein endliches Spiel, die DEB-Pokal-Runde (Byte DGROUP 0x5CF3) == 4 und
+     `random(0, 7) == 0`. Das Ergebnis wird an der Stelle nicht ausgewertet.
+  3. Funktion bei Datei 0x5667A (Datei 0x566AC): wenn der Saisonzähler (DGROUP 0x3BD) > 10 und `random(0, 5) == 0`, oder
+     genau 9. Das Ergebnis wird an der Stelle nicht ausgewertet.
+* **Globale der Auslöser** (inzwischen erklärt, Spur `re-abdeckung`, [re-abdeckung.md](re-abdeckung.md) „Einordnung“):
+  * DGROUP **0x5A14** = **Spielende (Jahr)**: der Spielstart setzt das gewählte Endjahr oder **22222** (Datei 0x2986E) für
+    ein endloses Spiel; Vergleiche mit 1994 (0x7CA) und 2000 (0x7D0). So auch in `OriginalSaveGame.cs` und `TileLocks.cs`.
+  * DGROUP **0x5CF3** = **DEB-Pokal-Runde** (`finanzen-rekonstruktion.md`, Sponsorbewertung).
+  * DGROUP **0x3BD** = **Saisonzähler** (erhöht in Datei 0x56476; `highscore.md`).
+* **Nicht geklärt:** ob ein falsches Ergebnis bei Auslöser 2 oder 3 je Folgen hat. Für die Spur nicht nötig, da nichts
+  davon portiert wird. Spielstart (1.) ist durch Bildfolge und Code belegt.
 * Test, dass das Remake nicht fragt: `MenueBefundeTests` (`NewGame_AndFirstMatchDays_RunWithoutManualQuestion`,
   `NoScreenImplementsTheManualQuestion`).
 

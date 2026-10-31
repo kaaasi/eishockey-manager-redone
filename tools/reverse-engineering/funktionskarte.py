@@ -18,6 +18,11 @@ Steps:
     A function ends where the next one starts (same segment/overlay).
  3. Coverage: addresses in src/**/*.cs comment blocks ([ORIGINAL]/[APPROX]) and docs/**/*.md (except
     docs/archiv/, docs/reviews/ and the generated docs/re-abdeckung.md) are mapped onto the functions.
+    Values up to the DGROUP size are ambiguous (file offset or DGROUP offset). They count as file offsets only
+    with a file keyword in the same sentence, in a doc that declares all addresses as file offsets, or as an
+    exact function start - never in brackets ("[0x5CF3]"), after "DGROUP" or on a line that names DGROUP values.
+    A stub-entry call ("0x118:0x70") under [ORIGINAL] only says that the call is original: if another hit
+    marks the same function [APPROX] and only calls back the "umgesetzt", the function counts as "genähert".
  4. Hints: DGROUP strings (plain and XOR 0xD9/0xC9), image numbers passed to the kb\\ loaders, globals,
     callers.
 """
@@ -107,6 +112,7 @@ class Function:
     globals_: set[int] = field(default_factory=set)
     callers: set[int] = field(default_factory=set)
     callees: set[int] = field(default_factory=set)
+    call_refs: set[str] = field(default_factory=set)  # "umgesetzt" hits that only name a call (stub entry)
     entry: int | None = None   # stub entry offset (0x20 + 5k) if exported
 
     @property
@@ -115,6 +121,9 @@ class Function:
 
     @property
     def status(self) -> str:
+        done = self.refs.get("umgesetzt")
+        if done and self.refs.get("genähert") and all(w in self.call_refs for w in done):
+            return "genähert"  # call named as original, the function itself only approximated
         for s in STATUS_ORDER[:3]:
             if self.refs.get(s):
                 return s
@@ -344,6 +353,7 @@ class Analyzer:
                     if v >= 0x100 and "bp" not in text.split("[", 1)[1].split("]")[0]:
                         f.globals_.add(v)
         self.loaders = loaders
+        self.all_globals = set().union(*(f.globals_ for f in self.functions))
         # strings reached through initialised far pointers in DGROUP (off, seg = 0x14FD), e.g. text tables
         for f in self.functions:
             for g in sorted(f.globals_):
@@ -398,6 +408,17 @@ CONSTANTS = {HEADER, SEG_TABLE, OVERLAY_BASE, DGROUP_FILE, 0x255B0}  # layout co
 BARE = re.compile(rf"(?<![\w:+]){HEX}(?![\w:])")
 FILE_KEYWORDS = re.compile(r"Datei\s*`?0x|em\.exe|[Ff]ile\s*`?0x|Dateioffset|Datei-?[Oo]ffset")
 STUBREF = re.compile(r"Stub(?:-Selektor)?\s+`?(0x[0-9A-Fa-f]+)`?[^\n]{0,40}?(Funktionsoffset|Stub-Offset|Einsprung|Offset)\s+`?(0x[0-9A-Fa-f]+)")
+EXE_KEYWORDS = re.compile(r"em\.exe")
+# docs about other binary files: "Datei 0x…" there is an offset in that file, not in em.exe
+OTHER_FILE_DOCS = {"docs/formate/spielstand-original.md"}
+# words that introduce a DGROUP variable when written right before a small value ("Liste `0x5D3B`")
+DGROUP_WORDS = re.compile(r"(Liste|Tabellen?|Paarungen|Runde|Termin|Struktur|[Mm]anagerstruktur|Vereinsstruktur|"
+                          r"Managerwert|Flag|Variable|Zustand)\s*`?$")
+# DGROUP values that a comment calls "Datei" by mistake (checked against the bytes of em.exe)
+DGROUP_MISLABELLED = {
+    0x4B2E: "symbol table of the season end (DGROUP bytes 2, 1, 0, 5, 4, 6, 8; file 0x4B2E is code)",
+}
+SENTENCE_CUT = re.compile(r"\.\s|;|\n\s*(?:///?|\*)?\s*\n|\[(?:ORIGINAL|APPROX)\]|\|")
 DGROUP_CTX = re.compile(r"(DGROUP|Feld|Spielerfeld|Vereinsfeld|Manager-Feld|Index|Globale|Zähler|Byte|Wort)\s*$")
 
 
@@ -405,6 +426,7 @@ class RefCollector:
     def __init__(self, an: Analyzer):
         self.an = an
         self.hits = 0
+        self.file_keywords = FILE_KEYWORDS
 
     def resolve_segoff(self, seg: int, off: int) -> int | None:
         an = self.an
@@ -434,14 +456,16 @@ class RefCollector:
             return an._stub_entry(r, off)
         return r.start + off if off < r.size else None
 
-    def addresses(self, text: str, file_level: bool) -> list[tuple[int, int, int]]:
-        """Return (position, first, last) file offsets mentioned in `text`."""
+    def addresses(self, text: str, file_level: bool) -> list[tuple[int, int, int, bool]]:
+        """Return (position, first, last, is_call) file offsets mentioned in `text`.
+
+        is_call: the address is written as a stub entry (call target), not as an offset into the function."""
         out = []
         used = []
         for m in STUBREF.finditer(text):
             a = self.resolve_stubref(int(m.group(1), 16), m.group(2), int(m.group(3), 16))
             if a is not None:
-                out.append((m.start(3), a, a))
+                out.append((m.start(3), a, a, m.group(2) in ("Stub-Offset", "Einsprung")))
                 used.append(m.span(1))
                 used.append(m.span(3))
         for m in SEGOFF.finditer(text):
@@ -450,23 +474,25 @@ class RefCollector:
             if not (m.group(1) or m.group(3)) and (len(off_txt) < 3 or (seg_txt + off_txt).isdigit() and len(off_txt) < 4):
                 used.append(m.span())
                 continue
-            a = self.resolve_segoff(int(seg_txt, 16), int(off_txt, 16))
+            seg, off = int(seg_txt, 16), int(off_txt, 16)
+            a = self.resolve_segoff(seg, off)
             if a is not None:
-                out.append((m.start(), a, a))
+                is_call = seg >= 0xC0 and seg in self.an.by_stub and self.an._stub_entry(self.an.by_stub[seg], off) is not None
+                out.append((m.start(), a, a, is_call))
             used.append(m.span())
         for m in RANGE.finditer(text):
             if any(s <= m.start() < e for s, e in used):
                 continue
             a, b = int(m.group(1), 16), int(m.group(2), 16)
             if b > a and b - a < 0x3000 and self._accept(text, m.start(), a, file_level, rng=True):
-                out.append((m.start(), a, b))
+                out.append((m.start(), a, b, False))
             used.append(m.span())
         for m in BARE.finditer(text):
             if any(s <= m.start() < e for s, e in used):
                 continue
             a = int(m.group(0), 16)
             if self._accept(text, m.start(), a, file_level):
-                out.append((m.start(), a, a))
+                out.append((m.start(), a, a, False))
         return out
 
     def _accept(self, text: str, pos: int, a: int, file_level: bool, rng: bool = False) -> bool:
@@ -482,14 +508,28 @@ class RefCollector:
             return False
         if a > DGROUP_SIZE:
             return True
-        # ambiguous range (could be a DGROUP offset): need a file keyword or an exact function start
-        kw = [m.end() for m in FILE_KEYWORDS.finditer(text, 0, pos)]
-        dg = text.rfind("DGROUP", 0, pos)
-        if file_level or (kw and kw[-1] > dg):
+        # ambiguous value (could be a DGROUP offset)
+        if text[max(0, pos - 2):pos].rstrip(" `").endswith("["):
+            return False  # "[0x5CF3]" = contents of a DGROUP variable
+        if a in DGROUP_MISLABELLED or DGROUP_WORDS.search(before):
+            return False  # a word like "Liste" introduces a DGROUP variable
+        line = text[max(text.rfind("\n", 0, pos), text.rfind("|", 0, pos)) + 1:pos]  # line or table cell
+        cuts = [m.end() for m in SENTENCE_CUT.finditer(text, 0, pos)]
+        sentence = text[cuts[-1] if cuts else 0:pos]
+        kws = [m.end() for m in self.file_keywords.finditer(sentence + text[pos:pos + 2])]  # "Datei 0x" ends in the number
+        if kws and kws[-1] > sentence.rfind("DGROUP"):
+            return True  # file keyword in the same sentence ("Datei 0x5B1A, 0x5CA0")
+        if "DGROUP" in line:
+            return False  # line names DGROUP values
+        start = an.func_at(a) is not None and an.func_at(a).start == a and not rng
+        if a in an.all_globals and not start:
+            return False  # a DGROUP variable the code uses ("Liste 0x5D3B", "Tabelle 0x5CCB")
+        if file_level:
             return True
-        return an.func_at(a) is not None and an.func_at(a).start == a and not rng
+        # otherwise only an exact function start (a keyword further up the comment does not count)
+        return start
 
-    def mark(self, first: int, last: int, status: str, where: str) -> None:
+    def mark(self, first: int, last: int, status: str, where: str, is_call: bool = False) -> None:
         an = self.an
         i = bisect.bisect_right(an.starts, first) - 1
         i = max(i, 0)
@@ -501,6 +541,10 @@ class RefCollector:
                 if where not in f.refs[status]:
                     f.refs[status].append(where)
                     self.hits += 1
+                    if is_call and f.start == first == last:
+                        f.call_refs.add(where)
+                elif not is_call:
+                    f.call_refs.discard(where)
             i += 1
 
     def scan_code(self, root: Path) -> None:
@@ -523,13 +567,13 @@ class RefCollector:
             for block in blocks:
                 text = "\n".join(l for _, l in block)
                 markers = [(m.start(), m.group(1)) for m in re.finditer(r"\[(ORIGINAL|APPROX)\]", text)]
-                for pos, a, b in self.addresses(text, False):
+                for pos, a, b, is_call in self.addresses(text, False):
                     prev = [k for p, k in markers if p <= pos]
                     nxt = [k for p, k in markers if p > pos]
                     kind = prev[-1] if prev else (nxt[0] if nxt else None)
                     status = {"ORIGINAL": "umgesetzt", "APPROX": "genähert", None: "dokumentiert"}[kind]
                     line_no = block[0][0] + text[:pos].count("\n")
-                    self.mark(a, b, status, f"{rel}:{line_no}")
+                    self.mark(a, b, status, f"{rel}:{line_no}", is_call)
 
     def scan_docs(self, root: Path) -> None:
         for path in sorted((root / "docs").rglob("*.md")):
@@ -540,6 +584,7 @@ class RefCollector:
             if rel.as_posix() == "docs/re-abdeckung.md":
                 continue
             content = path.read_text(encoding="utf-8", errors="replace")
+            self.file_keywords = EXE_KEYWORDS if rel.as_posix() in OTHER_FILE_DOCS else FILE_KEYWORDS
             file_level = bool(re.search(r"Dateioffset|alle Adressen sind \*\*Dateioffsets", "\n".join(content.splitlines()[:15])))
             # paragraphs (table rows count as their own paragraph)
             lines = content.splitlines()
@@ -549,7 +594,7 @@ class RefCollector:
                 if not para:
                     return
                 text = "\n".join(l for _, l in para)
-                for pos, a, b in self.addresses(text, file_level):
+                for pos, a, b, _ in self.addresses(text, file_level):
                     line_no = para[0][0] + text[:pos].count("\n")
                     self.mark(a, b, "dokumentiert", f"{rel}:{line_no}")
                 para.clear()

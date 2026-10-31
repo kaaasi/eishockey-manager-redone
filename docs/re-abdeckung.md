@@ -32,12 +32,21 @@ nichts aus dem Original; die CSV gehört nicht ins Repo. Nach jeder Spur mit neu
    `docs/**/*.md` (ohne `docs/archiv/`, `docs/reviews/` und diese Datei). Erkannt werden `Segment:Offset` (Basissegment,
    Basissegment + 0x1000 der alten Ghidra-Analyse, Ghidra-Overlayname wie `3810:4D3B`, Stub-Selektor mit Eintrag wie
    `0x120:0x52`), `Stub 0x… … Offset/Einsprung 0x…`, Bereiche `0xA–0xB` und einzelne Werte `0x…`. Werte ≤ 0xE75A können
-   auch DGROUP-Adressen sein; sie zählen nur mit Kennwort davor (`Datei 0x`, `em.exe`, `Dateioffset`, ohne `DGROUP`
-   dazwischen), in Dokumenten, die oben „Dateioffsets“ erklären, oder wenn sie genau auf einen Funktionsanfang fallen.
-   Nach `DGROUP`, `Feld`, `Index`, `Byte`, `+` und in DGROUP-Aufzählungen bis zum Satzende zählt kein Wert.
+   auch DGROUP-Adressen sein. Sie zählen **nie** in eckigen Klammern (`[0x5CF3]` = Inhalt einer Variablen), direkt nach
+   Wörtern wie `Liste`, `Tabelle`, `Runde`, `Termin`, `Struktur`, `Managerwert`, `Flag` oder in einer Zeile bzw.
+   Tabellenzelle, die `DGROUP` nennt (außer mit eigenem Kennwort). Sonst zählen sie mit Kennwort **im selben Satz**
+   (`Datei 0x`, `em.exe`, `Dateioffset`, ohne `DGROUP` dazwischen; ein Kennwort weiter oben im Kommentar reicht nicht),
+   genau auf einem Funktionsanfang, oder in Dokumenten, die oben „Dateioffsets“ erklären – dort aber nicht, wenn der Code
+   den Wert als DGROUP-Variable benutzt. Nach `DGROUP`, `Feld`, `Index`, `Byte`, `+` und in DGROUP-Aufzählungen bis zum
+   Satzende zählt kein Wert. In `formate/spielstand-original.md` meint „Datei“ den Spielstand; dort zählt nur `em.exe`.
+   Ausnahmeliste im Skript (`DGROUP_MISLABELLED`): 0x4B2E (Symboltabelle des Saisonendes, in einem Kommentar als „Datei“
+   bezeichnet, an den Bytes von em.exe geprüft).
 4. **Status je Funktion:** **umgesetzt** = Fundstelle in einem Codekommentar, dessen nächster `[ORIGINAL]`-Marker davor
    (sonst danach) steht; **genähert** = ebenso mit `[APPROX]`; **dokumentiert** = nur in Doku oder in Codekommentaren
-   ohne Marker; **unbekannt** = keine Fundstelle. Es gilt der stärkste Status.
+   ohne Marker; **unbekannt** = keine Fundstelle. Es gilt der stärkste Status – mit einer Ausnahme: **„Aufruf genannt,
+   Formel genähert“** zählt als genähert. Wird eine Funktion unter `[ORIGINAL]` nur als Aufruf genannt (Stub-Eintrag wie
+   `0x118:0x70`; belegt ist dann der Aufrufer, nicht die Funktion) und an anderer Stelle als `[APPROX]` geführt, ist
+   ihr Status „genähert“.
 5. **Hinweise (Vermutung):** benutzte DGROUP-Zeichenketten (Direktwerte und initialisierte Fernzeiger in DGROUP,
    z. B. Texttabellen; auch XOR 0xD9/0xC9 wie bei der Handbuchfrage; Umlaute nach DIN 66003: `{` ä, `|` ö, `}` ü, `~` ß),
    Bildnummern, die direkt vor dem Aufruf des kb\-Laders 0x0C17D (bzw. 0x25764, 0x567C8) geschoben werden, Aufrufer
@@ -56,15 +65,21 @@ nichts aus dem Original; die CSV gehört nicht ins Repo. Nach jeder Spur mit neu
   den Systemsegmenten ist das häufig, deshalb sind sie aus den Listen ausgenommen.
 * Fehlzuordnungen von Adressen sind möglich, wenn eine Doku einen DGROUP-Wert ohne Kennwort nennt, der genau auf einen
   Funktionsanfang fällt. Die Stichprobe im PR (#210) fand keinen solchen Fall, aber ein Bereichsende, das zwei Byte in
-  die nächste Funktion ragte (`0x5A9AE–0x5AA35`); Bereiche zählen deshalb erst ab 3 Byte Überlappung.
+  die nächste Funktion ragte (`0x5A9AE–0x5AA35`); Bereiche zählen deshalb erst ab 3 Byte Überlappung. Die Gegenprobe
+  (zweite Umsetzung) fand DGROUP-Werte, die als Dateioffset zählten (0x05CA0 über `[0x5CF3]`, `Liste 0x5D3B`,
+  `Tabelle 0x5CCB`); seitdem gelten die strengeren Regeln aus Schritt 3. Umgekehrt gehen dadurch wenige echte
+  Fundstellen ohne Kennwort verloren (z. B. `Tor (0xA88C ff.)` in `spielberechnung.md`, weil der Code 0xA88C auch als
+  DGROUP-Wert benutzt) – Fundstellen deshalb mit `Datei 0x…` schreiben.
 
 ## Ergebnis in Kürze
 
-* Spielcode (ohne Systemsegmente): rund **56 % der Bytes umgesetzt**, 1 % nur genähert, 10 % dokumentiert, **33 %
-  unbekannt** (Zahlen im erzeugten Teil). Wegen der Körnung ist „umgesetzt“ eine Obergrenze.
-* Am schwächsten belegt: Overlay **0x118** (Transfermarkt, 72 % unbekannt), **0x128** (Tabellen/Statistik, 68 %),
-  **0x110** (Hauptschleife, Kalender, Infofile, 51 %), **0xF8** (Nationalteam/WM, 42 %), **0x120** (Meldungen, 40 %),
-  **0xC0** (Fehlermeldungen, 100 %); im Basiscode 0x99F (Bildlader, Texte) und 0x902 (Fenster).
+* Spielcode (ohne Systemsegmente): rund **54 % der Bytes umgesetzt**, 2 % nur genähert, 9 % dokumentiert, **35 %
+  unbekannt** (Zahlen im erzeugten Teil; vor der Berichtigung der DGROUP-Regeln 56/1/11/33 %). Wegen der Körnung ist
+  „umgesetzt“ eine Obergrenze.
+* Am schwächsten belegt: Overlay **0x118** (Transfermarkt, 72 % unbekannt, weitere 6 % nur genähert), **0x128**
+  (Tabellen/Statistik, 68 %), **0x110** (Hauptschleife, Kalender, Infofile, 50 %), **0xF8** (Nationalteam/WM, 42 %),
+  **0x120** (Meldungen, 38 %), **0xC0** (Fehlermeldungen, 100 %); im Basiscode **0x238** (79 %, nach der Berichtigung:
+  0x041AC und 0x05CA0 waren nur über DGROUP-Werte „umgesetzt“), 0x99F (Bildlader, Texte) und 0x902 (Fenster).
 * Systemsegmente (C-Laufzeit 0x0, Speicher 0xA99, Grafik/Maus 0xBBF, Datei 0x1115, Timer 0x11FD, Sound 0x125B/0x12F7)
   ersetzt das Remake durch .NET/MonoGame; sie werden nicht portiert und zählen nicht als Lücke.
 
@@ -80,26 +95,38 @@ geprüft**.
 | 2 | 0x4D385 | 4688 | Vereins-/Gegnerinfo („Höchster H-Sieg“, „Stärke:“, „Noch keine Eintragung“), aus WM-, Europapokal- und Jugendansichten gerufen | unklar | `vereinsinfo` (klein): erst Bildschirm am Video zuordnen |
 | 3 | 0x5DBE5 | 3275 | Dateidialog Laden/Speichern („VERZEICHNIS:“, „.HOK“) | ja (`SaveLoadScreen`) | keine eigene Spur; Fundstellen beim nächsten Speichern-Paket nachtragen |
 | 4 | 0x4A1DB | 3079 | Vertragsverhandlung (Gehalt, Dauer, Versicherung) | ja (`TransferDialog`, `Player.Contract`) | zu `transfer-original` |
-| 5 | 0x4F78D | 2806 | Tabellenansicht („PL. TD VEREIN … BILANZ S-U-N“) | ja (`TableScreen`) | **`tabellen-original`**: 0x4F78D mit Sortierung 0x50283/0x50B45 (Nr. 6, 17) |
-| 6 | 0x50283 | 2242 | ohne Texte; von Nationalteam, Pokalen und 0x50B45 gerufen → Tabellenberechnung/Sortierung | teilweise (`CupsNationalMode` nennt 0x50E60) | zu `tabellen-original` |
-| 7 | 0x2CD1C | 2142 | Spielmodus-Optionen („Neuer Spielmodus:“, Drittelpause, Torszenen, WM-Spiele, Hintergrundgrafik, „RAM: … Bytes frei“) | unklar | **`spielmodus-optionen`**: Optionen und ihre Wirkung belegen (auch #195) |
-| 8 | 0x43E21 | 1983 | Kalender/Terminübersicht („Saisonende“, „Spielfrei“, Wochentage, kb\3, kb\20) | unklar | `kalender` mit 0x43B1F/0x43C38/0x445E0 (Nr. 19) |
-| 9 | 0x3901B | 1952 | Penaltyschießen („Penaltyschiessen“, „n.P.“), von 0x32AA3 (K.-o.-Spiel) | ja (`Playoffs`, `[APPROX]`) | **`penalty-original`** (klein): Ablauf nach Verlängerung belegen |
-| 10 | 0x2FC2F | 1846 | Paarungen WM/Europapokal „Gruppe … Spieltag“, „Endrunde“ (kb\36) | nein | **#194 (WD-03)** – passt genau |
-| 11 | 0x3ADE1 | 1765 | WM-Statistik (kb\12) | ja (Menüeintrag) | zu `nationalteam`-Spur (#192/#193) |
-| 12 | 0x5353C | 1725 | Live-Spiel-Anzeige („(ausw.)“, kb\19) | nein | ausgeklammert (`livespiel`, Torszenen/Anzeigetafel zuletzt) |
-| 13 | 0x41683 | 1693 | Spielerinfo-Fenster (Rückennummer, Tendenz, Verletzung, „IM TEAM/RESERVE“) | ja (`Player.Attributes`) | `spielerinfo` (klein) |
-| 14 | 0x52BD6 | 1630 | Live-Spiel, Minutenanzeige („ min.“) | nein | ausgeklammert (`livespiel`) |
-| 15 | 0x3A24B | 1599 | Jugendteams-Tabelle (kb\33) | ja (`YouthScreen`) | zu `jugend`-Paket, Fundstellen nachtragen |
-| 16 | 0x36169 | 1476 | ohne Texte; aus Spielstart, WM und Pokal gerufen → vermutlich Termin-/Paarungserzeugung | unklar | zuerst einordnen (zu `kalender`) |
-| 17 | 0x50B45 | 1284 | Tabellenreihenfolge (Gesamt/Heim/Auswärts), nur `[APPROX]` | genähert | zu `tabellen-original` |
-| 18 | 0x2A9AD | 1245 | Bandenwerbung-Angebot („JWE Service GmbH“, Option, kündbar) | ja (`FinanceSponsors`) | zu Werbung/Finanzen, Belege nachtragen |
-| 19 | 0x445E0 | 1128 | Spieltagszeile („Vor dem ersten Spieltag.“) | ja (`MainMenuScreen`) | zu `kalender` |
-| 20 | 0x0C17D | 1105 | kb\-Bildlader (Datei, Palette, Puffer) | ja (`Formats`, nach Dateiformat) | keine Spur; nur Fundstelle in `dateiformate.md` |
+| 5 | 0x4F78D | 2806 | Tabellenansicht („PL. TD VEREIN … BILANZ S-U-N“) | ja (`TableScreen`) | **`tabellen-original`**: 0x4F78D mit Sortierung 0x50283/0x50B45 (Nr. 7, 19) |
+| 6 | 0x041AC | 2761 | Spielerdaten-Fenster (kb\10; „GELIEHEN“, „Kaufpreis“, „Alter:“, „Unterzahl/Überzahl“), aus Ranglisten 0x25E30, Aufstellung 0x3FFE0/0x40364 und Transferliste 0x465F1 gerufen; ruft den Spielerwert 0x49D36 | unklar | zu `spielerinfo` (mit Nr. 15) oder `transfer-original`; vorher am Video zuordnen. Bisher fälschlich „umgesetzt“ (nur DGROUP-Tabelle 0x4B2E) |
+| 7 | 0x50283 | 2242 | ohne Texte; von Nationalteam, Pokalen und 0x50B45 gerufen → Tabellenberechnung/Sortierung | teilweise (`CupsNationalMode` nennt 0x50E60) | zu `tabellen-original` |
+| 8 | 0x2CD1C | 2142 | Spielmodus-Optionen („Neuer Spielmodus:“, Drittelpause, Torszenen, WM-Spiele, Hintergrundgrafik, „RAM: … Bytes frei“) | unklar | **`spielmodus-optionen`**: Optionen und ihre Wirkung belegen (auch #195) |
+| 9 | 0x43E21 | 1983 | Kalender/Terminübersicht („Saisonende“, „Spielfrei“, Wochentage, kb\3, kb\20) | unklar | `kalender` mit 0x43B1F/0x43C38/0x445E0  |
+| 10 | 0x3901B | 1952 | Penaltyschießen („Penaltyschiessen“, „n.P.“), von 0x32AA3 (K.-o.-Spiel) | ja (`Playoffs`, `[APPROX]`) | **`penalty-original`** (klein): Ablauf nach Verlängerung belegen |
+| 11 | 0x2FC2F | 1846 | Paarungen WM/Europapokal „Gruppe … Spieltag“, „Endrunde“ (kb\36) | nein | **#194 (WD-03)** – passt genau |
+| 12 | 0x05CA0 | 1822 | Spielplan des Gegners im Info-Fenster („GEGNER“, „DATUM/ERGEBNIS“, „PL.(ST)“, „Reicht mir“), nur von 0x4D385 gerufen | unklar | zu `vereinsinfo` (Nr. 2). Bisher fälschlich „umgesetzt“ (DGROUP `[0x5CF3]`, `0x5D3B`, `0x5CCB`) |
+| 13 | 0x3ADE1 | 1765 | WM-Statistik (kb\12) | ja (Menüeintrag) | zu `nationalteam`-Spur (#192/#193) |
+| 14 | 0x5353C | 1725 | Live-Spiel-Anzeige („(ausw.)“, kb\19) | nein | ausgeklammert (`livespiel`, Torszenen/Anzeigetafel zuletzt) |
+| 15 | 0x41683 | 1693 | Spielerinfo-Fenster (Rückennummer, Tendenz, Verletzung, „IM TEAM/RESERVE“) | ja (`Player.Attributes`) | `spielerinfo` (mit Nr. 6) |
+| 16 | 0x52BD6 | 1630 | Live-Spiel, Minutenanzeige („ min.“) | nein | ausgeklammert (`livespiel`) |
+| 17 | 0x3A24B | 1599 | Jugendteams-Tabelle (kb\33) | ja (`YouthScreen`) | zu `jugend`-Paket, Fundstellen nachtragen |
+| 18 | 0x36169 | 1476 | ohne Texte; aus Spielstart, WM und Pokal gerufen → vermutlich Termin-/Paarungserzeugung | unklar | zuerst einordnen (zu `kalender`) |
+| 19 | 0x50B45 | 1284 | Tabellenreihenfolge (Gesamt/Heim/Auswärts), nur `[APPROX]` | genähert | zu `tabellen-original` |
+| 20 | 0x2A9AD | 1245 | Bandenwerbung-Angebot („JWE Service GmbH“, Option, kündbar) | ja (`FinanceSponsors`) | zu Werbung/Finanzen, Belege nachtragen |
 
 **Empfehlung für Runde 8** (nach Nutzen fürs Spiel): `transfer-original` (Nr. 1, 4 und Kleinteile in Ov 0x118, zusammen
-≈ 12 KB), `tabellen-original` (Nr. 5, 6, 17, ≈ 6 KB, berührt Platzierungen und damit Prämien), #194 (Nr. 10),
-`spielmodus-optionen` (Nr. 7), `kalender` (Nr. 8, 16, 19). Nr. 12/14 bleiben ausgeklammert.
+≈ 12 KB), **`spielerwert`** (0x49D36, siehe unten), `tabellen-original` (Nr. 5, 7, 19, ≈ 6 KB, berührt Platzierungen
+und damit Prämien), #194 (Nr. 11), `spielmodus-optionen` (Nr. 8), `kalender` (Nr. 9, 18 und 0x445E0, „Vor dem ersten
+Spieltag.“, 1128 B), `vereinsinfo` (Nr. 2, 12). Nr. 14/16 bleiben ausgeklammert. Aus den 20 größten gefallen sind
+0x445E0 (zu `kalender`) und der kb\-Bildlader 0x0C17D (keine Spur).
+
+### Spielerwert 0x49D36 (Vorschlag: eigene Spur `spielerwert`)
+
+0x49D36 (Ov 0x118 + 0x3D36, Einsprung `0x118:0x70`, 1189 B, 13 Aufrufer) berechnet den Wert eines Spielers. Er
+fließt in Transfers (Transferliste 0x465F1, Vertragsverhandlung 0x4A1DB, Aufstellung 0x42CB1), Highscore (Vermögen
+0x5D04F), Sponsorbewertung 0x3F833 und Saisonende 0x26F20. Status **genähert**: Das Remake nennt den Aufruf
+(`Highscore.cs`, `[ORIGINAL]`), rechnet aber mit „Kaufpreis des Remakes · 3“ statt der Originalformel
+(`Highscore.cs`, `FinanceSponsorRating.cs`, beide `[APPROX]`). Vorschlag: eigene Spur **`spielerwert`** – Formel aus
+0x49D36 belegen (Emulatorprobe wie bei 0x5D04F), dann in Transfers, Highscore und Geld einsetzen (Mehrsaisonprobe,
+weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-original`.
 
 ## Einordnung bekannter offener Punkte
 
@@ -113,7 +140,7 @@ geprüft**.
 | #204 Meisterdominanz | Lader 0x2EF1B (Ov 0xE0), Managervereine 0x98F8–0x9C63 | umgesetzt | kein Codeloch, Abbildungsfrage |
 | #135 Einzelprämien | Saisonende 0x26F20 (Ov 0xD0), Ranglisten 0x25E30 (Ov 0xC8) | umgesetzt | Rangliste und Prämien belegt; offen ist die Umsetzung, nicht die Analyse |
 | Credits (#207, läuft in #209) | Auslöser in 0x44E22 (0x4544E–0x45488), Anzeige 0x399D0 (Ov 0xF8, lädt kb\15) | umgesetzt | deckt sich mit #209 (Credits sind das Bild kb\15). Der DGROUP-Text „Besteht aus: Werner Krahe und Jens Onnen.“ (Datei 0x1AA93, Teil einer Firmenvorstellung „Gegr. 1988 …“) gehört zu einem anderen Text, nicht zu den Credits |
-| Zeitung (Overlay 502F, `kb\195`) | – | – | **Berichtigung:** kb\195 lädt nur 0x5D90D (Ov 0x140) – das ist der **Highscore**-Hintergrund (belegt in `highscore.md`). „Zeitung“ steht nur als Eintrag 0xEB8 der Optionstabelle 0xE98–0xEC4 (zwischen „Länderspiele:“ und „Hintergrundgrafik“); kein Code liest 0xEB8 direkt (0x2CD1C überspringt 0xEB4–0xEBA) → vermutlich nicht benutzte Option. Die Zuordnung „kb\195 = Zeitungsfoto“ in `anforderungen/bildschirme.md` ist damit fraglich; Ov 0x110 enthält keine Zeitung |
+| Zeitung (Overlay 502F, `kb\195`) | – | – | **Berichtigung:** kb\195 lädt nur 0x5D90D (Ov 0x140) – das ist der **Highscore**-Hintergrund (belegt in `highscore.md`). „Zeitung“ steht nur als Eintrag 0xEB8 der Optionstabelle 0xE98–0xEC4 (zwischen „Länderspiele:“ und „Hintergrundgrafik“); kein Code liest 0xEB8 direkt (0x2CD1C überspringt 0xEB4–0xEBA) → vermutlich nicht benutzte Option. `anforderungen/bildschirme.md` ist berichtigt; Ov 0x110 enthält keine Zeitung |
 | Verletzungen im Spiel | „Verletzt:“ in 0x52520 (Ov 0x130, Live-Anzeige, dokumentiert); „Verletzt.“ (Zeiger 0xB84) in Spielerinfo 0x41683; außerhalb des Spiels 0x07169 (umgesetzt) und Versicherung 0x07089 (unbekannt) | gemischt | Die Ereignisse selbst liegen in der Spielberechnung (`spielberechnung.md`); 0x07089 (Versicherungszahlung, „Ein Fall für die Versicherung“) ist eine kleine Lücke |
 | Globale 0x5A14 | 0x28165, 0x2CD1C, 0x34B76, 0x44E22, 0x54C9F, 0x5AF50 | – | **Spielende (Jahr)**: Spielstart setzt 22222 (0x2986E, endlos) bzw. das Jahr, Vergleiche mit 1994 (0x7CA) und 2000 (0x7D0); so schon in `OriginalSaveGame.cs` und `TileLocks.cs` |
 | Globale 0x5CF3 | Pokalfunktionen in Ov 0xE8, Sponsorbewertung 0x3F833 | – | **DEB-Pokal-Runde** (`finanzen-rekonstruktion.md`). Damit Auslöser 2 der Handbuchfrage: endliches Spiel (Ende < 2000) und Pokalrunde 4 |
@@ -122,7 +149,7 @@ geprüft**.
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 678 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 1119 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 678 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 1111 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -130,10 +157,10 @@ Erzeugt aus `em.exe` (387968 Byte): 678 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 120 | 144928 | 47 % | 120 | 144928 | 56 % |
-| genähert | 3 | 1938 | 1 % | 3 | 1938 | 1 % |
-| dokumentiert | 51 | 30591 | 10 % | 41 | 26808 | 10 % |
-| unbekannt | 504 | 132068 | 43 % | 200 | 87227 | 33 % |
+| umgesetzt | 121 | 140648 | 45 % | 120 | 140580 | 54 % |
+| genähert | 5 | 4263 | 1 % | 5 | 4263 | 2 % |
+| dokumentiert | 48 | 27693 | 9 % | 41 | 24782 | 9 % |
+| unbekannt | 504 | 136921 | 44 % | 198 | 91276 | 35 % |
 | **Summe** | 678 | 309525 | 100 % | 364 | 260901 | 100 % |
 
 ### Übersicht je Bereich
@@ -143,14 +170,14 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Bereich | Datei | Größe | Funktionen | umgesetzt | genähert | dokumentiert | unbekannt | Rolle / Texte |
 |---|---|---:|---:|---:|---:|---:|---:|---|
 | Basis 0x0 | 0x01E00–0x0417F | 9088 | 92 | 0 % | 0 % | 1 % | 99 % | C-Laufzeit (Borland C++ 1991: Copyright, INT 21h, rand/LXMUL/LDIV) |
-| Basis 0x238 | 0x04180–0x064E9 | 9066 | 15 | 71 % | 0 % | 12 % | 17 % | Spiellogik Basis (Saisonende, Statistik) |
+| Basis 0x238 | 0x04180–0x064E9 | 9066 | 15 | 21 % | 0 % | 0 % | 79 % | Spiellogik Basis (Saisonende, Statistik) |
 | Basis 0x46e | 0x064E0–0x080CA | 7147 | 14 | 62 % | 0 % | 10 % | 28 % | Spiellogik Basis (Training, Spieler) |
-| Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 48 % | 0 % | 41 % | 11 % | Spiellogik Basis (Spielberechnung, Zufall) |
+| Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 68 % | 0 % | 21 % | 11 % | Spiellogik Basis (Spielberechnung, Zufall) |
 | Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 14 % | 0 % | 37 % | 49 % | Fensterverwaltung („Zu viele Fenster auf !“) |
-| Basis 0x99f | 0x0B7F0–0x0C79E | 4015 | 23 | 5 % | 0 % | 24 % | 71 % | Bilder laden (kb\…vga), Texte, Geldausgabe |
-| Basis 0xa99 | 0x0C790–0x0D9F1 | 4706 | 34 | 0 % | 0 % | 18 % | 82 % | Speicher (EMS INT 67h, XMS INT 2Fh), Datei |
-| Basis 0xbbf | 0x0D9F0–0x12F58 | 21865 | 78 | 0 % | 0 % | 2 % | 98 % | Grafik und Maus (VGA-Ports, INT 10h, INT 33h) |
-| Basis 0x1115 | 0x12F50–0x13DD0 | 3713 | 37 | 0 % | 0 % | 0 % | 100 % | Dateizugriff (Hüllen um die C-Laufzeit) |
+| Basis 0x99f | 0x0B7F0–0x0C79E | 4015 | 23 | 8 % | 0 % | 53 % | 40 % | Bilder laden (kb\…vga), Texte, Geldausgabe |
+| Basis 0xa99 | 0x0C790–0x0D9F1 | 4706 | 34 | 0 % | 0 % | 0 % | 100 % | Speicher (EMS INT 67h, XMS INT 2Fh), Datei |
+| Basis 0xbbf | 0x0D9F0–0x12F58 | 21865 | 78 | 0 % | 0 % | 1 % | 98 % | Grafik und Maus (VGA-Ports, INT 10h, INT 33h) |
+| Basis 0x1115 | 0x12F50–0x13DD0 | 3713 | 37 | 0 % | 0 % | 1 % | 99 % | Dateizugriff (Hüllen um die C-Laufzeit) |
 | Basis 0x11fd | 0x13DD0–0x143A5 | 1494 | 33 | 0 % | 0 % | 0 % | 100 % | Timer und Interrupts (PIC 0x20/0x21, PIT 0x40/0x43) |
 | Basis 0x125b | 0x143B0–0x14D6C | 2493 | 21 | 0 % | 0 % | 9 % | 91 % | Sound Blaster digital (DMA-Ports 0x02–0x0C) |
 | Basis 0x12f7 | 0x14D70–0x1621B | 5292 | 19 | 0 % | 0 % | 44 % | 56 % | FM-Treiber SBFMDRV (CmfPlayer.cs), Tastatur (Port 0x60, INT 16h) |
@@ -164,9 +191,9 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Ov 0xf8 (4711) | 0x399D0–0x3CD71 | 13218 | 18 | 58 % | 0 % | 1 % | 42 % | „WM Vorbereitung“, „WM-Statistik“, „Spieler in WM-Kader“ |
 | Ov 0x100 (4A4C) | 0x3CFA0–0x3FDDD | 11838 | 13 | 78 % | 0 % | 7 % | 15 % | „Überdachung“, „bittet Sie an den Verhan“, „Sitzplätze“ |
 | Ov 0x108 (4D30) | 0x3FFE0–0x42FC4 | 12261 | 13 | 70 % | 0 % | 0 % | 30 % | „Platz mehr !“, „Rückennummer des Spieler“, „Schon 11 Mann auf“ |
-| Ov 0x110 (502F) | 0x43150–0x45DC3 | 11380 | 20 | 48 % | 0 % | 1 % | 51 % | „autosave.hok“, „Saisonende“, „.Spieltag“ |
-| Ov 0x118 (52F7) | 0x46000–0x4ADE1 | 19938 | 18 | 28 % | 0 % | 0 % | 72 % | „ART   NAME              “, „Grundwert“, „Vertragsverhandlung“ |
-| Ov 0x120 (57D6) | 0x4B0F0–0x4D1B6 | 8391 | 23 | 28 % | 1 % | 31 % | 40 % | „Wer weiß...“, „An Alle:“, „Keine Nachricht für Sie “ |
+| Ov 0x110 (502F) | 0x43150–0x45DC3 | 11380 | 20 | 49 % | 0 % | 1 % | 50 % | „autosave.hok“, „Saisonende“, „.Spieltag“ |
+| Ov 0x118 (52F7) | 0x46000–0x4ADE1 | 19938 | 18 | 22 % | 6 % | 0 % | 72 % | „ART   NAME              “, „Grundwert“, „Vertragsverhandlung“ |
+| Ov 0x120 (57D6) | 0x4B0F0–0x4D1B6 | 8391 | 23 | 14 % | 15 % | 33 % | 38 % | „Wer weiß...“, „An Alle:“, „Keine Nachricht für Sie “ |
 | Ov 0x128 (59E3) | 0x4D2F0–0x51BED | 18686 | 18 | 25 % | 7 % | 0 % | 68 % | „Bundesliga“, „PL. TD      VEREIN      “, „Play-Off“ |
 | Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 53 % | 0 % | 16 % | 31 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
 | Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 58 % | 0 % | 20 % | 21 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |
@@ -191,21 +218,21 @@ Der Status gilt je Funktion: schon eine Fundstelle zählt die ganze Funktion. Di
 | 3 | 0x5DBE5 | Ov 0x140 (66C3)+0x33C5 | 3275 | unbekannt | 0x5B9DD, 0x5C3E3 | „.HOK“, „FILE“, „VERZEICHNIS: “, „FILENAME      :“ |
 | 4 | 0x4A1DB | Ov 0x118 (52F7)+0x41DB | 3079 | unbekannt | 0x26F20, 0x3FFE0, 0x465F1 | „Vertragsverhandlung“, „keine“, „Versicherung“, „ Jahr“ |
 | 5 | 0x4F78D | Ov 0x128 (59E3)+0x249D | 2806 | unbekannt | 0x36B5D, 0x44E22 | kb\33; „.Liga“, „Heim“, „PL. TD      VEREIN          “, „   TABELLE “ |
-| 6 | 0x50283 | Ov 0x128 (59E3)+0x2F93 | 2242 | unbekannt | 0x30365, 0x30852, 0x30E7B … | gerufen von 0x30365 (Freundschaftsspiel) |
-| 7 | 0x2CD1C | Ov 0xe0 (3810)+0x2B3C | 2142 | unbekannt | 0x37A62, 0x44E22 | kb\33; „RAM: “, „ Bytes frei.“, „Teamveränderungen möglich.“, „gesamten Spieles an. Keine“ |
-| 8 | 0x43E21 | Ov 0x110 (502F)+0xCD1 | 1983 | unbekannt | 0x26D9A, 0x44E22 | kb\3,20; „Saisonende“, „Spielfrei“, „ Noch keine“, „ DM“ |
-| 9 | 0x3901B | Ov 0xf0 (42E9)+0x3ADB | 1952 | unbekannt | 0x32AA3 | „!    Penaltyschiessen    !“, „gegen“, „Endergebnis:“, „   n.P.“ |
-| 10 | 0x2FC2F | Ov 0xe8 (3D11)+0x6FF | 1846 | unbekannt | 0x32E23, 0x3A88A | kb\36; „Gruppe“, „Endrunde“, „.Spieltag“, „. Min.“ |
-| 11 | 0x3ADE1 | Ov 0xf8 (4711)+0x1411 | 1765 | unbekannt | 0x44E22 | kb\12; „WM-Statistik“ |
-| 12 | 0x5353C | Ov 0x130 (5E73)+0x16AC | 1725 | unbekannt | 0x37A62, 0x3901B, 0x5434C … | kb\19; „(ausw.)“ |
-| 13 | 0x41683 | Ov 0x108 (4D30)+0x16A3 | 1693 | unbekannt | 0x3FFE0, 0x40364, 0x465F1 | „IM TEAM“, „RESERVE“, „Rückennummer des Spielers“, „Name: “ |
-| 14 | 0x52BD6 | Ov 0x130 (5E73)+0xD46 | 1630 | unbekannt | 0x37A62, 0x5353C, 0x53C57 | „ min.“ |
-| 15 | 0x3A24B | Ov 0xf8 (4711)+0x87B | 1599 | unbekannt | 0x44E22 | kb\33; „Jugendteams“, „.Liga“, „.Platz“ |
-| 16 | 0x36169 | Ov 0xf0 (42E9)+0xC29 | 1476 | unbekannt | 0x28165, 0x35EDD, 0x54C9F | gerufen von 0x28165 (Suchen Sie sich einen) |
-| 17 | 0x50B45 | Ov 0x128 (59E3)+0x3855 | 1284 | genähert | 0x36B5D, 0x37A62, 0x44E22 … | gerufen von 0x36B5D (umgesetzt) |
-| 18 | 0x2A9AD | Ov 0xe0 (3810)+0x7CD | 1245 | unbekannt | 0x2B0C0 | „JWE Service GmbH“, „Möchten Sie den Vertrag mit“, „Dauer“, „ Monat“ |
-| 19 | 0x445E0 | Ov 0x110 (502F)+0x1490 | 1128 | unbekannt | 0x43E21, 0x4D385 | „.Spieltag“, „Vor dem ersten Spieltag.“ |
-| 20 | 0x0C17D | Basis 0x99f+0x98D | 1105 | unbekannt | 0x041AC, 0x0B155, 0x0C5CE … | lädt kb\-Bilder |
+| 6 | 0x041AC | Basis 0x238+0x2C | 2761 | unbekannt | 0x25E30, 0x3FFE0, 0x40364 … | kb\10; „GELIEHEN“, „keine“, „Unterzahl“, „Überzahl“ |
+| 7 | 0x50283 | Ov 0x128 (59E3)+0x2F93 | 2242 | unbekannt | 0x30365, 0x30852, 0x30E7B … | gerufen von 0x30365 (Freundschaftsspiel) |
+| 8 | 0x2CD1C | Ov 0xe0 (3810)+0x2B3C | 2142 | unbekannt | 0x37A62, 0x44E22 | kb\33; „RAM: “, „ Bytes frei.“, „Teamveränderungen möglich.“, „gesamten Spieles an. Keine“ |
+| 9 | 0x43E21 | Ov 0x110 (502F)+0xCD1 | 1983 | unbekannt | 0x26D9A, 0x44E22 | kb\3,20; „Saisonende“, „Spielfrei“, „ Noch keine“, „ DM“ |
+| 10 | 0x3901B | Ov 0xf0 (42E9)+0x3ADB | 1952 | unbekannt | 0x32AA3 | „!    Penaltyschiessen    !“, „gegen“, „Endergebnis:“, „   n.P.“ |
+| 11 | 0x2FC2F | Ov 0xe8 (3D11)+0x6FF | 1846 | unbekannt | 0x32E23, 0x3A88A | kb\36; „Gruppe“, „Endrunde“, „.Spieltag“, „. Min.“ |
+| 12 | 0x05CA0 | Basis 0x238+0x1B20 | 1822 | unbekannt | 0x4D385 | „2.Runde “, „Reicht mir“, „Info“, „GEGNER“ |
+| 13 | 0x3ADE1 | Ov 0xf8 (4711)+0x1411 | 1765 | unbekannt | 0x44E22 | kb\12; „WM-Statistik“ |
+| 14 | 0x5353C | Ov 0x130 (5E73)+0x16AC | 1725 | unbekannt | 0x37A62, 0x3901B, 0x5434C … | kb\19; „(ausw.)“ |
+| 15 | 0x41683 | Ov 0x108 (4D30)+0x16A3 | 1693 | unbekannt | 0x3FFE0, 0x40364, 0x465F1 | „IM TEAM“, „RESERVE“, „Rückennummer des Spielers“, „Name: “ |
+| 16 | 0x52BD6 | Ov 0x130 (5E73)+0xD46 | 1630 | unbekannt | 0x37A62, 0x5353C, 0x53C57 | „ min.“ |
+| 17 | 0x3A24B | Ov 0xf8 (4711)+0x87B | 1599 | unbekannt | 0x44E22 | kb\33; „Jugendteams“, „.Liga“, „.Platz“ |
+| 18 | 0x36169 | Ov 0xf0 (42E9)+0xC29 | 1476 | unbekannt | 0x28165, 0x35EDD, 0x54C9F | gerufen von 0x28165 (Suchen Sie sich einen) |
+| 19 | 0x50B45 | Ov 0x128 (59E3)+0x3855 | 1284 | genähert | 0x36B5D, 0x37A62, 0x44E22 … | gerufen von 0x36B5D (umgesetzt) |
+| 20 | 0x2A9AD | Ov 0xe0 (3810)+0x7CD | 1245 | unbekannt | 0x2B0C0 | „JWE Service GmbH“, „Möchten Sie den Vertrag mit“, „Dauer“, „ Monat“ |
 
 ### Funktionen mit Zugriff auf offene Globale
 
@@ -216,7 +243,7 @@ Direkte Zugriffe `[g]`, `[g+1]` oder `[reg±g]` im disassemblierten Code.
 | 0x5A14 | 0x28165 (umgesetzt), 0x2CD1C (unbekannt), 0x34B76 (umgesetzt), 0x44E22 (umgesetzt), 0x54C9F (umgesetzt), 0x5AF50 (umgesetzt) |
 | 0x5CF3 | 0x33B83 (umgesetzt), 0x33E5E (umgesetzt), 0x341AB (umgesetzt), 0x3489D (umgesetzt), 0x34B76 (umgesetzt), 0x3F833 (umgesetzt), 0x44A48 (umgesetzt), 0x45CD0 (unbekannt) |
 | 0x3BD | 0x26F20 (umgesetzt), 0x2C1EE (umgesetzt), 0x54C9F (umgesetzt), 0x5667A (umgesetzt), 0x5D04F (umgesetzt) |
-| 0xDE15 | 0x0977F (umgesetzt), 0x0A484 (dokumentiert) |
+| 0xDE15 | 0x0977F (umgesetzt), 0x0A484 (umgesetzt) |
 
 ### Alle unbekannten und nur genäherten Funktionen > 64 Byte (Spielcode)
 
@@ -224,11 +251,15 @@ Vermutung = automatisch abgeleitete Hinweise (benutzte Texte, auch über Zeigert
 
 | Datei | Bereich | Größe | Status | Aufrufer | Vermutung |
 |---|---|---:|---|---:|---|
+| 0x041AC | Basis 0x238+0x2C | 2761 | unbekannt | 4 | kb\10; „GELIEHEN“, „keine“, „Unterzahl“ |
 | 0x04C75 | Basis 0x238+0xAF5 | 321 | unbekannt | 1 | gerufen von 0x041AC (GELIEHEN) |
-| 0x054D9 | Basis 0x238+0x1359 | 72 | unbekannt | 1 | gerufen von 0x05521 (dokumentiert) |
+| 0x054D9 | Basis 0x238+0x1359 | 72 | unbekannt | 1 | – |
+| 0x05521 | Basis 0x238+0x13A1 | 706 | unbekannt | 2 | Globale 0x386, 0x8253, 0x8255, 0x9657 |
 | 0x057E3 | Basis 0x238+0x1663 | 249 | unbekannt | 1 | gerufen von 0x437D5 (umgesetzt) |
 | 0x058DC | Basis 0x238+0x175C | 220 | unbekannt | 1 | gerufen von 0x465F1 (ART   NAME              ) |
+| 0x059B8 | Basis 0x238+0x1838 | 354 | unbekannt | 2 | gerufen von 0x07169 (Verletzung außerhalb des) |
 | 0x05B1A | Basis 0x238+0x199A | 390 | unbekannt | 2 | „Schädelbruch“ |
+| 0x05CA0 | Basis 0x238+0x1B20 | 1822 | unbekannt | 1 | „2.Runde “, „Reicht mir“, „Info“ |
 | 0x063BE | Basis 0x238+0x223E | 267 | unbekannt | 1 | „Nehmen Sie einen Sponsor-“, „zuschuß von“, „Aber immer!“ |
 | 0x06CDF | Basis 0x46e+0x7FF | 160 | unbekannt | 2 | gerufen von 0x06CA6 (umgesetzt) |
 | 0x06D7F | Basis 0x46e+0x89F | 550 | unbekannt | 2 | gerufen von 0x06FA5 (Ihre Talentsuche war ein) |
@@ -248,13 +279,11 @@ Vermutung = automatisch abgeleitete Hinweise (benutzte Texte, auch über Zeigert
 | 0x0B447 | Basis 0x902+0x627 | 352 | unbekannt | 24 | „Fenster_Zu: Fehler !“ |
 | 0x0B7B5 | Basis 0x902+0x995 | 69 | unbekannt | 40 | gerufen von 0x25E30 (TORSCH.) |
 | 0x0B830 | Basis 0x99f+0x40 | 146 | unbekannt | 17 | gerufen von 0x25B4A (Alles klar!) |
-| 0x0B908 | Basis 0x99f+0x118 | 76 | unbekannt | 15 | gerufen von 0x25B4A (Alles klar!) |
 | 0x0B954 | Basis 0x99f+0x164 | 350 | unbekannt | 2 | gerufen von 0x0BAB2 (dokumentiert) |
 | 0x0BE71 | Basis 0x99f+0x681 | 92 | unbekannt | 1 | gerufen von 0x0BAFB (dokumentiert) |
 | 0x0BEFA | Basis 0x99f+0x70A | 106 | unbekannt | 44 | gerufen von 0x041AC (GELIEHEN) |
 | 0x0BF64 | Basis 0x99f+0x774 | 113 | unbekannt | 3 | gerufen von 0x0C17D (kb\) |
 | 0x0C0B8 | Basis 0x99f+0x8C8 | 197 | unbekannt | 7 | „Na gut.“, „einlegen.“, „Auto-“ |
-| 0x0C17D | Basis 0x99f+0x98D | 1105 | unbekannt | 41 | lädt kb\-Bilder |
 | 0x0C5CE | Basis 0x99f+0xDDE | 347 | unbekannt | 56 | kb\22 |
 | 0x0C729 | Basis 0x99f+0xF39 | 96 | unbekannt | 13 | gerufen von 0x0C17D (kb\) |
 | 0x25644 | Ov 0xc0 (337B)+0x84 | 288 | unbekannt | 2 | gerufen von 0x0C17D (kb\) |
@@ -322,7 +351,6 @@ Vermutung = automatisch abgeleitete Hinweise (benutzte Texte, auch über Zeigert
 | 0x43C38 | Ov 0x110 (502F)+0xAE8 | 489 | unbekannt | 2 | gerufen von 0x0B155 (Zu viele Fenster auf !) |
 | 0x43E21 | Ov 0x110 (502F)+0xCD1 | 1983 | unbekannt | 2 | kb\3,20; „Saisonende“, „Spielfrei“, „ Noch keine“ |
 | 0x445E0 | Ov 0x110 (502F)+0x1490 | 1128 | unbekannt | 2 | „.Spieltag“, „Vor dem ersten Spieltag.“ |
-| 0x45C33 | Ov 0x110 (502F)+0x2AE3 | 157 | unbekannt | 1 | „Sie haben also wirklich“, „etwas besseres zu tun ?“, „Sind Sie sicher ??“ |
 | 0x45CD0 | Ov 0x110 (502F)+0x2B80 | 118 | unbekannt | 1 | gerufen von 0x28165 (Suchen Sie sich einen) |
 | 0x45D46 | Ov 0x110 (502F)+0x2BF6 | 126 | unbekannt | 24 | kb\22 |
 | 0x46000 | Ov 0x118 (52F7)+0x0 | 972 | unbekannt | 1 | „ DM (K)“, „ DM (L)“, „Torwart“ |
@@ -338,6 +366,7 @@ Vermutung = automatisch abgeleitete Hinweise (benutzte Texte, auch über Zeigert
 | 0x4981E | Ov 0x118 (52F7)+0x381E | 255 | unbekannt | 1 | Globale 0x8253, 0x9657 |
 | 0x4991D | Ov 0x118 (52F7)+0x391D | 286 | unbekannt | 1 | gerufen von 0x465F1 (ART   NAME              ) |
 | 0x49A3B | Ov 0x118 (52F7)+0x3A3B | 763 | unbekannt | 1 | gerufen von 0x4A1DB (Vertragsverhandlung) |
+| 0x49D36 | Ov 0x118 (52F7)+0x3D36 | 1189 | genähert | 12 | gerufen von 0x041AC (GELIEHEN) |
 | 0x4A1DB | Ov 0x118 (52F7)+0x41DB | 3079 | unbekannt | 3 | „Vertragsverhandlung“, „keine“, „Versicherung“ |
 | 0x4B127 | Ov 0x120 (57D6)+0x37 | 329 | unbekannt | 1 | gerufen von 0x54C9F (umgesetzt) |
 | 0x4B270 | Ov 0x120 (57D6)+0x180 | 74 | unbekannt | 5 | gerufen von 0x07169 (Verletzung außerhalb des) |
@@ -347,8 +376,8 @@ Vermutung = automatisch abgeleitete Hinweise (benutzte Texte, auch über Zeigert
 | 0x4BCCC | Ov 0x120 (57D6)+0xBDC | 105 | genähert | 11 | „Na gut.“ |
 | 0x4BD7E | Ov 0x120 (57D6)+0xC8E | 104 | unbekannt | 6 | gerufen von 0x34FF9 (Oberliga) |
 | 0x4BEBD | Ov 0x120 (57D6)+0xDCD | 309 | unbekannt | 13 | gerufen von 0x041AC (GELIEHEN) |
-| 0x4BFF2 | Ov 0x120 (57D6)+0xF02 | 420 | unbekannt | 2 | Globale 0xC117, 0xC119, 0xC12F, 0xC143 |
-| 0x4C196 | Ov 0x120 (57D6)+0x10A6 | 176 | unbekannt | 15 | gerufen von 0x041AC (GELIEHEN) |
+| 0x4BFF2 | Ov 0x120 (57D6)+0xF02 | 420 | unbekannt | 2 | gerufen von 0x4C196 (dokumentiert) |
+| 0x4C246 | Ov 0x120 (57D6)+0x1156 | 1136 | genähert | 11 | „An Alle:“ |
 | 0x4C6B6 | Ov 0x120 (57D6)+0x15C6 | 145 | unbekannt | 1 | gerufen von 0x26F20 (Erhaltene Prämien: ) |
 | 0x4CCB4 | Ov 0x120 (57D6)+0x1BC4 | 146 | unbekannt | 1 | gerufen von 0x4C747 (Wer weiß...) |
 | 0x4D385 | Ov 0x128 (59E3)+0x95 | 4688 | unbekannt | 9 | kb\33; „ Punkte“, „Bundesliga“, „Höchster H-Sieg“ |
@@ -365,8 +394,8 @@ Vermutung = automatisch abgeleitete Hinweise (benutzte Texte, auch über Zeigert
 | 0x51133 | Ov 0x128 (59E3)+0x3E43 | 211 | unbekannt | 1 | Globale 0xBB0F, 0xBD0F |
 | 0x51AAF | Ov 0x128 (59E3)+0x47BF | 319 | unbekannt | 3 | gerufen von 0x4D385 ( Punkte) |
 | 0x51F3D | Ov 0x130 (5E73)+0xAD | 173 | unbekannt | 1 | „Carpe diem !“ |
-| 0x51FEA | Ov 0x130 (5E73)+0x15A | 422 | unbekannt | 3 | gerufen von 0x0A484 (dokumentiert) |
-| 0x52190 | Ov 0x130 (5E73)+0x300 | 190 | unbekannt | 2 | gerufen von 0x0A484 (dokumentiert) |
+| 0x51FEA | Ov 0x130 (5E73)+0x15A | 422 | unbekannt | 3 | gerufen von 0x0A484 (umgesetzt) |
+| 0x52190 | Ov 0x130 (5E73)+0x300 | 190 | unbekannt | 2 | gerufen von 0x0A484 (umgesetzt) |
 | 0x5224E | Ov 0x130 (5E73)+0x3BE | 158 | unbekannt | 2 | gerufen von 0x52520 (Chance:) |
 | 0x522EC | Ov 0x130 (5E73)+0x45C | 150 | unbekannt | 3 | gerufen von 0x37A62 (Spiele laufen) |
 | 0x52382 | Ov 0x130 (5E73)+0x4F2 | 174 | unbekannt | 2 | gerufen von 0x52520 (Chance:) |
