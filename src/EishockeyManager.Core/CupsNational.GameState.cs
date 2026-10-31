@@ -183,6 +183,14 @@ public sealed partial class GameState
         foreach (var p in lineup.Players)
             p.Caps++;
         coach.AddFriendly(new FriendlyMatch(homeClub, awayClub, hg, ag, bonus));
+        // #193 (Integration Runde 8, Welle 3, Leitstelle): [ORIGINAL] Nach dem Freundschaftsspiel schreibt 0x952C mit
+        // Manager 5 (Bundestrainer) die Teamwerte des Landes aus dessen Aufstellung (Aufruf 0x555D6, Spur
+        // spielstaerke-manager-2). [APPROX] Ohne eigene Aufstellung (Automatik) bleiben die Länderwerte stehen.
+        if (coach.Nation == NationalTeams.Germany && coach.Formation.Count > 0)
+        {
+            var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
+            _germanyRatings = (defense.Condition, defense.Technique, attack.Condition, attack.Technique);
+        }
         return FriendlyResult.Played;
     }
 

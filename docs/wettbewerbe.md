@@ -74,7 +74,7 @@ Seit Runde 6 auch gegen die neuen Reihen vermessen (Frage `folge01_00217`, `duel
 | Gruppe 1 = Plätze 0–3, Gruppe 2 = 4–7; Endrunde = Erster und Zweiter von Gruppe 1, dann von Gruppe 2 | 0x30427 |
 | Spielplan Vierergruppe „abcd / dabc / acbd“ (Sechsergruppe „abcdef / dafcbe / afcebd / cafbed / eabcdf“) | DGROUP 0x474 ff., 0x450 ff.; Video 13:11 |
 | Termine 0–5 Gruppen, 6–11 Endrunde; Sieger nach Termin 11, Meisterfoto nur für einen deutschen Sieger | 0x3139F; Karriere 29:41 |
-| `[APPROX]` Rückrunde mit getauschtem Heimrecht; Tabelle wie in der Liga; Gruppenspiele mit Unentschieden | – |
+| `[APPROX]` Rückrunde mit getauschtem Heimrecht; Tabelle nach 0x30852 (`CupGroup.Standings`, Spur tabellen-original-2); Gruppenspiele mit Unentschieden | – |
 
 ### Bildschirm „Europacup Gruppe 1/2 / Endrunde“ (`UI/Screens/Competitions/EuropeanCupScreen.cs`)
 

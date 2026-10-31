@@ -77,6 +77,10 @@ public sealed class SeasonEndSummaryScreen : Screen
         Statistics.HighscoreStore.For(Host).Record(); // [ORIGINAL] Saisonwechsel: Manager in die Bestenliste eintragen (Datei 0x56647)
         Game.StartNextSeason();
         Game.CurrentManager = Game.ActiveManagers.Select(m => Game.Managers.ToList().IndexOf(m)).First();
+        // [ORIGINAL] #195 (Integration Runde 8, Welle 3, Vorschlag aus PR #265): Im Modus „nur Weltkugel“ läuft auch nach dem
+        // Saisonwechsel zuerst die Tagesfunktion Datei 0x54C9F (Sprung zum WM-Termin); das Menü kommt erst am Tagesende.
+        if (Game.WorldOnly)
+            Game.Continue();
         // [ORIGINAL] Datei 0x56609: Auslosung der ersten DEB-Pokal-Runde beim Saisonwechsel (Spur debpokal-auslosung)
         Host.Show(Competitions.DebCupDrawFlow.AtSeasonStart(Host, _menu));
     }
