@@ -220,11 +220,12 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
 - **Modell:** Claude Sonnet 5.5.
 - **Status:** umgesetzt im Draft-PR #244 (#216, #217, #225, #230); Review offen. #217: „Sie können nicht mehr weiterspielen.“ gehört zur Sicher-/Ladesperre und bleibt entfallen (Entscheidung Nutzer).
 
-### Integration Runde 8 (Leitstelle, Welle 1)
+### Integration Runde 8 (Leitstelle)
 
 Branch `integration/runde-8` von `main` 421d96f (mit `spielerwert`), zusammengeführt in Planfolge: `befunde-p3` (#244),
-`tabellen-original` (#240), `nationalteam` (#243), `statistiken` (#242), `spielstaerke-manager` (#241). Nicht enthalten:
-`optionen-kalender` (#245, Draft), `transfer-original` und `spielerinfo` (laufen).
+`tabellen-original` (#240), `nationalteam` (#243), `statistiken` (#242), `spielstaerke-manager` (#241); danach (Auftrag
+Nutzer 31.10.) `spielerinfo` (#249), `transfer-original` (#248), `optionen-kalender` (#245, Teil 1: Belege). Diese drei
+änderten keine Referenzwerte.
 - **Schema:** 11 → 12 Taktik des Nationalteams, 12 → 13 Strafminuten je Verein, 13 → 14 Teamwerte des Laders.
 - **Referenzwerte** neu auf dem integrierten Stand (RngTwinProbe, Mode4, Zähler je Saison); Seeds Börse 7 → 8 und Werbung
   aktiv 15 → 16 (Zufallsproben, Prüfziel gleich), Begründung in den Tests.
@@ -232,10 +233,14 @@ Branch `integration/runde-8` von `main` 421d96f (mit `spielerwert`), zusammengef
   des Spielerdaten-Fensters aus `PlayerStatisticsScreen` und Rangliste (nach `spielerinfo`); `docs/anforderungen/bildschirme.md`
   Z. 103 (Bilanz: acht Spiele, Heim klein) und die Vermutungen zur Sortierung 0x5CCB nach Heim/Auswärts (`CupsNationalMode.cs`,
   `SeasonFlow.cs`, `docs/saison.md`, `docs/wettbewerbe.md`) berichtigen; veralteter Hinweis „Nicht umgesetzt …“ in
-  `docs/wettbewerbe.md` („Statistiken über Saisons“); Lader der Teamwerte ggf. nach `NewGame.Create` verlegen (#241).
+  `docs/wettbewerbe.md` („Statistiken über Saisons“); Lader der Teamwerte ggf. nach `NewGame.Create` verlegen (#241);
+  Aufrufstellen des Spielerdaten-Fensters umstellen (#249: `TransferScreen` auf `Show(player, price, PlayerDataContext…)`
+  und `PlayerHintLine`, `ContractsScreen`/`NationalLineupScreen`, Öffnen aus Aufstellung und Ranglisten).
 - **Offene Teile der Spuren** (Folgebranches): `tabellen-original` Teil 2 (Gruppen-, Play-off-Tabellen, Pixelvergleich);
   `spielstaerke-manager` Teil 2 (Managerteil, Verletzungen, #193, Videovergleich #204); `statistiken` Bildschirm „Verein“
-  (0x2D5AE); `nationalteam` #194, #195 (Ursache gefunden, siehe #243), WM-Statistik; `optionen-kalender` Umsetzung.
+  (0x2D5AE); `nationalteam` #194, #195 (Ursache gefunden, siehe #243), WM-Statistik; `optionen-kalender` Teil 2
+  (Einstellungsbildschirm, Kalender, #228); `transfer-original` Teil 2 (Vertragsverhandlung 0x4A1DB, Gehalt 0x49A3B,
+  Kaufablauf 0x494EF, Sperre nach Ablehnung, unaufgeforderte Angebote, Pixelvergleich).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
