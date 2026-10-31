@@ -25,11 +25,11 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(11, SaveGame.SchemaVersion);
+        Assert.Equal(12, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
-    private const string ExpectedSchemaFingerprint = "6F8C2BA719E292F7"; // Schema 11: Börse (9 → 10) und Torhüterzähler (10 → 11), Integration Runde 7
+    private const string ExpectedSchemaFingerprint = "751F1B1A7244F3B7"; // Schema 12: Teamwerte des Laders (11 → 12), Spur spielstaerke-manager (Nummer vorläufig)
 
     // ---------- Abnahme 3: Roundtrip ----------
 

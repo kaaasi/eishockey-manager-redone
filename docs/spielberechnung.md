@@ -197,6 +197,7 @@ Managerpaarung werden die Werte aus den eingesetzten Spielern der Reihe gebildet
 | Managervereine: Torschütze 0x386D1, Strafspieler 0x378C5, Reihenwerte aus Spielern 0x98F8, Einsatzzuschlag 0x974B, Energie 0x87F7, Reihenwechsel 0x8EF2 | `[APPROX]` (nicht bzw. nur teilweise gelesen, Abschnitt 11) | `MatchEngine.LiveTeamOf`, `CreditPlayers` |
 | Taktik im Spiel 0x939A (Manager, gerade Minuten) / 0x80CB (Computer, ungerade, nur Managerpaarungen) | Takt `[ORIGINAL]`, Werte `[APPROX]` über `Tactics.Effective*` | `LiveTeam.Tactics` |
 | Schneller Weg der Pokale mit Glättung 0x3731F | `[ORIGINAL]` | `OriginalMinutes.FastCupResult` |
+| Lader der Teamwerte 0x2EF1B (Streuung, Form, Tagesform), Tagesform nach Ligaspielen 0x4F527 | `[ORIGINAL]`, Zeitpunkt des Ziehens `[APPROX]` (Abschnitt 12) | `MatchEngine.LoadTeamValues`, `UpdateDayForm`, `Club.TeamValues` |
 | Verletzungen im Spiel | nicht gesucht (offen) | – |
 | Anschluss an Spieltage, Zähler je Saison, Mehrsaisonprobe | erledigt (Teil 3), Sollwerte auf dem Branch | `MatchEngine.PlayWithEvents`, Abschnitt 11 |
 
@@ -266,9 +267,9 @@ K.-o.: Play-offs, DEB-Pokal, WM-Endrunde; Gruppenspiele (Europapokal, WM, Aufsti
 
 | Vereinsfeld | Original | Remake |
 |---|---|---|
-| 0x18–0x1B Kondition/Technik Abwehr/Sturm | Lader 0x2EF1B: Datenbankbyte 0 (Abwehr) bzw. 1 (Sturm) ± random(0, Wert/10); Nationalteams aus DGROUP 0x4C4E | `TeamValue`: Datenbankstärke + Veränderung der Aufstellung gegenüber dem Spielbeginn (wie `MatchStrength`, ohne dessen Einsatzzuschlag), 0 … 100. `[APPROX]` ohne Streuung, Byte 1 nicht geführt; Nationalteams mit `NationalMatchStrength` |
-| 0x1C/0x1D Form | random(45, 55), Europapokal-Gegner (Index > 64) − 5 | `[APPROX]` 50 bzw. 45 |
-| 0x17 Tagesform | random(47, 53) | `[APPROX]` 50 |
+| 0x18–0x1B Kondition/Technik Abwehr/Sturm | Lader 0x2EF1B: Datenbankbyte 0 (Abwehr) bzw. 1 (Sturm) ± random(0, Wert/10); Nationalteams aus DGROUP 0x4C4E | `TeamValue`: Datenbankstärke + Veränderung der Aufstellung gegenüber dem Spielbeginn (wie `MatchStrength`, ohne dessen Einsatzzuschlag) + Streuung des Laders (`Club.TeamValues`, Abschnitt 12), 0 … 100. `[APPROX]` Byte 1 nicht geführt; Managervereine ohne Streuung; Nationalteams mit `NationalMatchStrength` |
+| 0x1C/0x1D Form | random(45, 55), Europapokal-Gegner (Index > 64) − 5 | `[ORIGINAL]` aus dem Lader (Abschnitt 12); Managervereine `[APPROX]` 50 |
+| 0x17 Tagesform | random(47, 53), nach Ligaspielen 0x4F527 | `[ORIGINAL]` aus dem Lader, nachgeführt (Abschnitt 12) |
 | 0x26 Einsatz, 0x2C Angriff | Automatik 0x8365 bei der Spielvorbereitung | `Tactics.EffectiveEffort/EffectiveAttack` (Block 0, Stand 0:0); in Managerpaarungen nach dem Spielstand nachgeführt (Manager gerade, Computer ungerade Minuten) |
 | 0x1E Energie | 0x5B (0x84D7) | `[ORIGINAL]` 91 |
 | 0x2E/0x30 Reihe | Wechsel 0x8EF2 nur in Managerpaarungen | Reihe 0 (`[ORIGINAL]` ohne Manager, `[APPROX]` mit) |
@@ -303,3 +304,50 @@ nach jedem Wechsel 0. Alle bisherigen Referenzwerte neu (Begründung je Test im 
 Zufallsabhängige Testaufbauten angepasst: `EuropeanCupTests` (Gegnerstärke 95 statt 90), `SeasonPaymentTests` (bis 40
 Seeds), `LifecycleRegressionTests.R204` (Seed 2: Markt nicht voll), `WaveBReviewRegressionTests.PR3501` (Spielerzahl
 darf durch Nachbesetzung steigen).
+
+## 12. Teamwerte des Laders und Meisterverteilung (Spur spielstaerke-manager, #204)
+
+**Lader 0x2EF1B** (Ov 0xE0, Code 0x2EFDE–0x2F158, gerufen nur aus 0x437D5 beim Programmstart, vor der
+Spielvorbereitung 0xD8:0x2F): je Verein i = 0 … 149 in dieser Reihenfolge 0x17 = random(47, 53); je Teil k = 0, 1 mit
+v = Datenbankbyte k, t = v / 10: Kondition 0x18 + k = v − random(0, t) + random(0, t), Technik 0x1A + k ebenso, Form
+0x1C + k = random(45, 55) − 5 · (i > 64). Nationalteams 52 … 63: Kondition/Technik aus DGROUP 0x4C4E (ohne Streuung).
+
+**Schreibzugriffe auf die Vereinsfelder 0x17–0x1D** (Suche über die ganze `em.exe`: Schreibbefehle auf
+`[es:…+0x17…0x1D]` mit Vereinszeiger DGROUP 0x9657 und Faktor 0x3D in den 40 Befehlen davor): nur der Lader,
+0x4F527 (0x17), 0x55506–0x55560 (Länderwerte Deutschlands `[0x6AC]` neu gewürfelt bei `[0x9EDA]` = 0xFD), 0x9721–0x9771
+(0x952C, Länderwerte aus der Aufstellung, #193), 0x9E46–0x9F31 (0x98F8, Managervereine aus den Spielern), 0x570E (0x1D,
+nicht gelesen), 0x49723 (0x1A = 4, Ov 0x118, nicht gelesen). **Die Teamwerte der Computervereine bleiben also im Original
+das ganze Spiel über gleich** – nur die Tagesform wandert.
+
+**Tagesform 0x4F527** (Ov 0x128, aus der Tabellenrechnung 0x50283 mit d = eigene − gegnerische Tore, nur bei
+Wettbewerbscode `[0xD0C2]` = 7 Liga bzw. 8 WM-Gruppe): r = random(0, 2 · |d|) (`0x120:0x61` = |a − b|), 0x17 ± r je
+nach Vorzeichen, begrenzt auf 47 … 53 (`0x120:0x52`). Sie wirkt in 0x368B1 mit (0x17 − 44) / 2 = 1 … 4 auf die Stärke.
+
+**Remake** (`MatchEngine.TeamValues.cs`): `Club.TeamValues` (Abweichung von Kondition/Technik, Form, Tagesform; Schema
+12, Migration `SaveGame.Migration.SpielstaerkeManager.cs`). `[APPROX]` gezogen beim ersten Spiel eines Spielstands aus
+`GameState.Random` (Spielstart und Kaderaufbau bleiben unverändert; ältere Spielstände ebenso beim nächsten Spiel).
+Computervereine spielen mit Teamwert + Streuung und Form des Laders, alle Vereine mit der Tagesform; Managervereine
+ohne Streuung und mit Form 50 (im Original aus den Spielern, 0x98F8, noch `[APPROX]`). Tagesform nach jedem Ligaspiel,
+WM ohne Nachführung (`RatedNation` hat keine eigenen Werte).
+
+**Meisterverteilung** (`SpielstaerkeManagerTests.SeasonDistribution_OriginalDatabase`, Originaldaten, Managerverein 42
+aktiv, Seeds 1–12, je vier Saisonwechsel = 48 Titel; Datenbankstärken Düsseldorf 92, Köln 90, Krefeld 88, Hedos
+München 86, Mannheim 84):
+
+| Meister | vor der Spur (Base `10eb6c5`) | mit Lader und Tagesform |
+|---|---:|---:|
+| Düsseldorf (2) | 21 | 18 |
+| Köln (5) | 11 | 19 |
+| Krefeld (6) | 8 | 5 |
+| Hedos München (9) | 4 | 3 |
+| Mannheim (8) | 2 | 2 |
+| Kaufbeuren (4) | 1 | 1 |
+| Preussen Berlin (1) | 1 | 0 |
+| Bundesliga Tore je Spiel / Unentschieden | 6,27 / 11,6 % | 6,28 / 11,7 % |
+
+Einordnung #204: Mehrjährige Dominanz desselben Vereins **innerhalb eines Spiels** ist im Original angelegt, weil die
+Teamwerte nach dem Laden fest bleiben; die Streuung entscheidet je Spiel, welcher der starken Vereine vorn liegt (jetzt
+Düsseldorf und Köln etwa gleich oft statt Düsseldorf allein). Kein weiterer Befund in der Abbildung der Computervereine.
+**Offen:** Vergleich mit den Saisonenden der Videos (Reihe `folgen`, „Saisonende“) – in diesem Lauf kein Zugriff auf
+das Referenz-Repo; Strafminuten je Spiel nicht vermessen (die Ligaergebnisse führen keine Strafen).
+

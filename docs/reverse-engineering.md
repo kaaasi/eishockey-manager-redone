@@ -265,6 +265,18 @@ für „Noeske“, „Testspieler“, „Kandemiroglu“), sondern fertig gezeic
   Farbe 7; Zeilen-Oberkanten 22, 30, 43, 51, 64, 76, 88, 100, 111, 119, 127, 138 (Ausnahme: der lange Strich in
   „Ogan – Celal Kandemiroglu“ ist kein Zeichen des Fonts).
 
+## Teamwerte und Tagesform (Spur `spielstaerke-manager`)
+
+Einzelheiten und Messung: [spielberechnung.md](spielberechnung.md) §12.
+
+| Fundstelle | Inhalt | Code |
+|---|---|---|
+| `0x2EF1B` (Ov 0xE0) | Lader der Teamwerte, einmal beim Programmstart (Aufruf nur aus `0x437D5`) | `MatchEngine.LoadTeamValues` |
+| `0x4F527` (Ov 0x128, Stub 0x4D) | Tagesform 0x17 ± random(0, 2·\|Tordifferenz\|), 47 … 53; aus `0x50283` bei Code 7/8 | `MatchEngine.UpdateDayForm` |
+| `0x4BDE6` (Ov 0x120, Stub 0x61) | Betrag der Differenz zweier `long` (\|a − b\|) | – |
+| `0x4BD35` (Ov 0x120, Stub 0x52) | Wert über Zeiger auf min … max begrenzen | – |
+| `0x55506`–`0x55560` (in `0x54C9F`) | Länderwerte Deutschlands neu: Kondition random(84, 94), Technik random(79, 89), Form random(45, 55) je Teil bei `[0x9EDA]` = 0xFD | – (#193) |
+
 ## Funktionskarte und Abdeckung (Spur `re-abdeckung`)
 
 Spur `re-abdeckung`, #210. Karte aller 678 Funktionen (12 Basissegmente, 17 Overlays) mit Abdeckungsstatus

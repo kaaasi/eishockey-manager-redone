@@ -252,6 +252,9 @@ public class GameModeTests
     /// Spur spielberechnung (Teil 3, #186): alle Werte neu – Liga, Pokale und WM rechnen mit der Berechnung des Originals
     /// (<c>MatchEngine.PlayWithEvents</c>): andere Ergebnisse ab dem ersten Spieltag, damit Titel, Kontostände und beide
     /// Zufallsquellen. Ermittelt auf dem Branch (Basis <c>15d0733</c>), Nachziehen in der Integration durch die Leitstelle.
+    /// Spur spielstaerke-manager (#204, Lader der Teamwerte 0x2EF1B und Tagesform 0x4F527): alle Werte neu – gestreute
+    /// Teamwerte der Computervereine und Züge aus der Hauptquelle ab dem ersten Spiel ändern Ergebnisse, Titel, Konten und
+    /// beide Zufallsquellen. Ermittelt auf dem Branch (Basis <c>10eb6c5</c>).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -266,7 +269,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2226402,692809|WorldChampion=52,CupWinner=12,GermanChampion=13,EuropeanCupWinner=1|3877693,918381|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=13|4783091,871349|WorldChampion=63,CupWinner=12,GermanChampion=24,EuropeanCupWinner=0|5371179,810547|WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|5250883,726298|R1912259729 C234131033";
+        "WorldChampion=54,CupWinner=1,GermanChampion=0,EuropeanCupWinner=2|2517428,580253|WorldChampion=54,CupWinner=24,GermanChampion=0,EuropeanCupWinner=0|3875808,690409|WorldChampion=63,CupWinner=24,GermanChampion=24,EuropeanCupWinner=0|4770347,686307|WorldChampion=63,CupWinner=12,GermanChampion=1,EuropeanCupWinner=0|5311995,476436|WorldChampion=52,CupWinner=1,GermanChampion=25,EuropeanCupWinner=0|5172383,398340|R375033233 C996914971";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

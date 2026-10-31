@@ -70,16 +70,21 @@ namespace EishockeyManager.Core.Tests;
 /// begründet; der Integrationswert ist ihr Zusammenwirken (siehe docs/arbeitspakete.md, „Integration Runde 7“).
 /// Review-Befunde R7-02 (#200, Angriffszuschlag lrandom(Angriff, 7)) und R7-03 (#201, Zähler des Nationalteams): neu
 /// ermittelt; R7-02 ändert das Torbudget jedes Spiels und damit alle Ergebnisse und die Hauptquelle.
+/// Spur spielstaerke-manager (#204): alle sechs Abdrücke neu. Beim ersten Spiel zieht der Lader der Teamwerte (em.exe
+/// 0x2EF1B) für alle 150 Vereine 11 Zahlen aus der Hauptquelle, die Computervereine spielen mit gestreuten Teamwerten,
+/// eigener Form und Tagesform (0x4F527 nach jedem Ligaspiel, weitere Züge): andere Ergebnisse ab dem ersten Spieltag,
+/// damit Tabellen, Titel, Finanzen und alle Zufallsquellen; dazu das neue Feld <c>Club.TeamValues</c> im Abdruck. Keine
+/// Gegenprobe, die den alten Verlauf erhält (die Streuung ist der Zweck). Ermittelt auf dem Branch (Basis <c>10eb6c5</c>).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "AF89F741C1A6B335")]
-    [InlineData(true, 3, "46C998874089DDCE")]
-    [InlineData(false, 11, "C927531F951586DA")]
-    [InlineData(true, 11, "0E56D6AC9ADCF258")]
+    [InlineData(false, 3, "2070E77B9BD4D7D9")]
+    [InlineData(true, 3, "A0E6180879CA0ABA")]
+    [InlineData(false, 11, "6A244BDDF4AE008C")]
+    [InlineData(true, 11, "7ACE7D453F30466A")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -87,8 +92,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "79D50ABD868F0773")]
-    [InlineData(true, "53596ED8A406D969")]
+    [InlineData(false, "FFF630126B71414B")]
+    [InlineData(true, "9AFFC7CD443437AB")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

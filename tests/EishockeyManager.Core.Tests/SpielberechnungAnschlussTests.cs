@@ -138,12 +138,14 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Mehrsaisonprobe (4 Saisonwechsel, passiver und aktiver Manager, Modus 4 „Liga + Weltkugel“ mit Originaldaten):
     /// Zähler je Saison gefüllt und konsistent, nach jedem Wechsel 0; Abdruck wie <see cref="RngTwinProbeTests"/>.
     /// Modus 1 („nur Weltkugel“) siehe <see cref="FourSeasonChanges_WorldOnly"/>.
+    /// Spur spielstaerke-manager (#204): beide Sollwerte neu (Lader der Teamwerte 0x2EF1B beim ersten Spiel, Tagesform
+    /// 0x4F527; Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Sollwerte auf dem Stand dieses Branches (Spur spielberechnung, vor der Integration Runde 7) ermittelt; die Leitstelle
     /// zieht sie in der Integration nach.
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "956268E49BCF8550")]
-    [InlineData(true, "9C677990419F739B")]
+    [InlineData(false, "57EFEE5519319F78")]
+    [InlineData(true, "13229523BC1CEA6F")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -186,8 +188,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
         Assert.Equal(WorldOnlyReference, print);
     }
 
+    // Spur spielstaerke-manager: Titel und Konten gleich, nur die Hauptquelle (R…) verschoben – der Lader der Teamwerte zieht
+    // beim ersten (WM-)Spiel 1650 Zahlen; die WM-Nationalteams spielen ohne Streuung (RatedNation, Form aus dem Lader).
     private const string WorldOnlyReference =
-        "WorldChampion=63|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=54|500000|WorldChampion=54|500000|R2143933569 C637012470";
+        "WorldChampion=63|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=54|500000|WorldChampion=54|500000|R1348418928 C637012470";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem
