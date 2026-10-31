@@ -37,6 +37,7 @@ public class NationalCoachMode4Tests
     public void Mode4_ManagerInTopFive_BecomesNationalCoach_OnClubSeasonEnd()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
 
         Assert.Equal(1, ExpectedCoach(game)); // Vorbedingung: Verein 2 unter den ersten fünf, Verein 8 nicht
@@ -55,6 +56,7 @@ public class NationalCoachMode4Tests
     public void Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach()
     {
         var game = GameModeTests.Create(3, true, true, 2, 1);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         var top = game.FinalTables()[League.Bundesliga].Take(5).ToList();
         var expected = top.IndexOf(1) < top.IndexOf(2) ? 1 : 0;
@@ -65,6 +67,7 @@ public class NationalCoachMode4Tests
     public void Mode4_NoManagerInTopFive_NoCoach()
     {
         var game = GameModeTests.Create(3, true, true, 8, 20);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         Assert.Null(ExpectedCoach(game));
         Assert.Null(game.NationalCoach);
@@ -75,6 +78,7 @@ public class NationalCoachMode4Tests
     public void Mode2_ManagerInTopFive_NeverCoach()
     {
         var game = GameModeTests.Create(3, true, false, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         Assert.NotNull(ExpectedCoach(game));
         Assert.Null(game.NationalCoach);
@@ -85,11 +89,14 @@ public class NationalCoachMode4Tests
     {
         // [ORIGINAL] Datei 0x554CF: Ausgewürfelt wird nur, wenn nach der Ernennung kein Bundestrainer da ist.
         var game = GameModeTests.Create(3, true, true, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         Assert.NotNull(game.NationalCoach);
         Assert.Equal(NationalTeamRatings.Of(NationalTeams.Germany), game.NationalRatings(NationalTeams.Germany));
 
         var without = GameModeTests.Create(3, true, true, 20);
+
+        ManagedSquads.PlayAtDatabaseStrength(without); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(without);
         Assert.Null(without.NationalCoach);
         Assert.NotEqual(NationalTeamRatings.Of(NationalTeams.Germany), without.NationalRatings(NationalTeams.Germany));
@@ -103,6 +110,7 @@ public class NationalCoachMode4Tests
     public void Mode4_WorldCupDay_CoachTurnAfterClubManagers()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         var day = game.CurrentDay;
         Assert.True(SeasonCalendar.Events(day).HasFlag(DayEvents.WorldCup));
@@ -134,6 +142,7 @@ public class NationalCoachMode4Tests
     public void Mode4_NationalTurn_CanNominateAndPlayFriendly()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         game.Continue();
         game.Continue();
@@ -150,6 +159,7 @@ public class NationalCoachMode4Tests
     public void Mode4_NewSeason_CoachEnds_AndIsChosenAgain()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         while (game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver)
             game.Continue();
         Assert.NotNull(game.NationalCoach);
@@ -175,6 +185,7 @@ public class NationalCoachMode4Tests
     public void Mode4_MultiSeason_PassiveAndActive(bool active, int seed)
     {
         var game = GameModeTests.Create(seed, true, true, 2, 30);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         var expectedBudget = NationalCoach.FirstBudget;
         var coached = 0;
         for (var change = 0; change <= 4; change++)
@@ -252,6 +263,7 @@ public class NationalCoachMode4Tests
     public void SaveLoad_DuringNationalTurn_KeepsTurnAndCoach()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         game.Continue();
         game.Continue();
@@ -277,6 +289,7 @@ public class NationalCoachMode4Tests
     public void SchemaFourSave_IsMigrated()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
         root["schema"] = 5;

@@ -44,6 +44,7 @@ public class SeasonEndStatusTests
     public void Full_ManagerInTopFive_GetsStatusBit_OtherNot()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];
         Assert.Contains(2, TopFive(record));      // Vorbedingung (wie NationalCoachMode4Tests)
@@ -58,6 +59,7 @@ public class SeasonEndStatusTests
     public void Full_EveryManagerInTopFive_GetsStatusBit()
     {
         var game = GameModeTests.Create(3, true, true, 2, 1);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];
         var top = TopFive(record);
@@ -74,6 +76,7 @@ public class SeasonEndStatusTests
     public void ClubOnly_ManagerInTopFive_NoStatusBit()
     {
         var game = GameModeTests.Create(3, true, false, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];
         Assert.Equal(GameMode.ClubOnly, game.Mode);
@@ -87,6 +90,7 @@ public class SeasonEndStatusTests
     public void Full_TopFiveOfOtherLeague_NoStatusBit()
     {
         var game = GameModeTests.Create(3, true, true, 14, 30);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];
         foreach (var result in record.Managers)
@@ -99,6 +103,7 @@ public class SeasonEndStatusTests
     public void StatusBit_DoesNotChangeStoredEventsOrPremium()
     {
         var game = GameModeTests.Create(3, true, true, 2, 1);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];
         foreach (var result in record.Managers)
@@ -121,6 +126,7 @@ public class SeasonEndStatusTests
     public void MultiSeason_StatusBitFollowsTopFive(bool flag, bool globe, bool active, int seed)
     {
         var game = GameModeTests.Create(seed, flag, globe, 2, 30);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         var withBit = 0;
         var withoutBit = 0;
         for (var change = 0; change <= 4; change++)
@@ -152,6 +158,7 @@ public class SeasonEndStatusTests
     public void SaveLoad_StatusBitIsDerivedFromSavedData()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         Assert.True(HasBit(game, game.History[^1], 2));
         Assert.False(HasBit(game, game.History[^1], 8));
@@ -177,6 +184,7 @@ public class SeasonEndStatusTests
     public void WorldOnly_MultiSeason_NoStatusBit_HighscoreKeyStays30000(bool active, int seed)
     {
         var game = GameModeTests.Create(seed, false, true, 5);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         for (var change = 0; change <= 4; change++)
         {
             Assert.Equal(HighscoreRules.WorldOnlyKey, HighscoreRules.Key(game.Setup));

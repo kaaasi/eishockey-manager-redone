@@ -147,8 +147,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Integration Runde 8 (Leitstelle): beide neu auf dem integrierten Stand (Lader, Einzelprämien, Werbebewertung).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "E7398C08E66532D3")]
-    [InlineData(true, "037E6357E6B39AE3")]
+    [InlineData(false, "B09119996BA5924B")]
+    [InlineData(true, "EE1A658CA08AB669")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -193,8 +193,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
 
     // Spur spielstaerke-manager: Titel und Konten gleich, nur die Hauptquelle (R…) verschoben – der Lader der Teamwerte zieht
     // beim ersten (WM-)Spiel 1650 Zahlen; die WM-Nationalteams spielen ohne Streuung (RatedNation, Form aus dem Lader).
+    // spielstaerke-manager-2: Spiele des Bundestrainers sind Managerpaarungen (Energie, Reihenwechsel, Seitentausch je
+    // Minute, 0x87F7/0x8EF2/0x80CB) – andere WM-Ergebnisse und Pokalquelle (C…), Hauptquelle und Konten gleich.
     private const string WorldOnlyReference =
-        "WorldChampion=63|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=54|500000|WorldChampion=54|500000|R1348418928 C637012470";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=63|500000|R1348418928 C1451495659";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

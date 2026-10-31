@@ -63,8 +63,12 @@ public class SeasonEndStatusUiTests
         Assert.True(game.HasTopFiveStatus(record, result));
         d.Frame();
         var count = result.Events.Count + 1;
-        var x = 160 - (count * SeasonEndSummaryScreen.IconPitch - (SeasonEndSummaryScreen.IconPitch - SeasonEndSummaryScreen.IconWidth)) / 2
-            + (count - 1) * SeasonEndSummaryScreen.IconPitch;
+        // Einzelprämien (Torhüter, Topscorer, Fair-Play) stehen nach dem Weltkugel-Symbol ([ORIGINAL] 0x2717F) – das Symbol
+        // ist also das letzte vor ihnen, nicht unbedingt das letzte überhaupt (spielstaerke-manager-2: der Managerverein
+        // bekam in diesem Lauf die Fair-Play-Prämie).
+        var first = 160 - (count * SeasonEndSummaryScreen.IconPitch - (SeasonEndSummaryScreen.IconPitch - SeasonEndSummaryScreen.IconWidth)) / 2;
+        var x = Enumerable.Range(0, count).Select(i => first + i * SeasonEndSummaryScreen.IconPitch)
+            .FirstOrDefault(px => Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, px) == 0, first + (count - 1) * SeasonEndSummaryScreen.IconPitch);
         Assert.Equal(0, Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, x));
         Assert.Equal(0, d.Surface.Pixels[102 * Surface.Width + x - 1]); // Rahmen (Palettenindex 0)
 
@@ -75,9 +79,9 @@ public class SeasonEndStatusUiTests
         var countWithout = result.Events.Count;
         if (countWithout > 0)
         {
-            var xLast = 160 - (countWithout * SeasonEndSummaryScreen.IconPitch - (SeasonEndSummaryScreen.IconPitch - SeasonEndSummaryScreen.IconWidth)) / 2
-                + (countWithout - 1) * SeasonEndSummaryScreen.IconPitch;
-            Assert.NotEqual(0, Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, xLast));
+            var firstWithout = 160 - (countWithout * SeasonEndSummaryScreen.IconPitch - (SeasonEndSummaryScreen.IconPitch - SeasonEndSummaryScreen.IconWidth)) / 2;
+            for (var i = 0; i < countWithout; i++)
+                Assert.NotEqual(0, Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, firstWithout + i * SeasonEndSummaryScreen.IconPitch));
         }
     }
 

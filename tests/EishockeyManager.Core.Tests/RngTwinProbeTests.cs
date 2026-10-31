@@ -85,16 +85,23 @@ namespace EishockeyManager.Core.Tests;
 /// Integration Runde 8 (Leitstelle): alle sechs neu ermittelt auf dem Stand mit spielerwert, befunde-p3, tabellen-original,
 /// nationalteam, statistiken und spielstaerke-manager. Die Spielverläufe folgen dem Lader (spielstaerke-manager); hinzu
 /// kommen Werbebewertung, Einzelprämien und neue Felder (<c>LeaguePenaltyMinutes</c>, Taktik des Nationalteams) im Abdruck.
+/// Spur spielstaerke-manager-2 (Basis <c>99fa995</c>): alle sechs Abdrücke neu. In Managerpaarungen rechnet der Managerverein
+/// mit den Werten seiner Spieler (0x98F8 statt Teamwert aus der Datenbankstärke), beide Vereine verbrauchen je Minute
+/// Energie (0x87F7), wechseln Reihen (0x8EF2/0x80CB), tauschen die Seiten (random(0, 1)) und folgen der Taktik in geraden
+/// Minuten (0x939A, für beide Vereine); Strafen ziehen den Spieler 0x378C5 und zählen den Einsatz mit dem Managerwert
+/// 0x974B. Andere Ergebnisse und Zufallszüge ab dem ersten Spiel des Managers, damit Tabellen, Titel, Finanzen und alle
+/// Quellen. Paarungen ohne Manager sind unverändert (Gegenprobe: <c>SpielstaerkeManagerTests</c> und
+/// <c>SpielberechnungMinutenTests</c> unverändert grün). Keine Gegenprobe, die den alten Verlauf erhält.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "8CE8C63B6DFE63F2")]
-    [InlineData(true, 3, "CE2CD7AD336D1CC4")]
-    [InlineData(false, 11, "1BD3021354D29088")]
-    [InlineData(true, 11, "80DA1E9A65C65DDA")]
+    [InlineData(false, 3, "EE53368795D7F527")]
+    [InlineData(true, 3, "6CDB78C26B544B4D")]
+    [InlineData(false, 11, "47F12490319D3F26")]
+    [InlineData(true, 11, "9B07A21551A2C17E")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -102,8 +109,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "FF8BDA50DBD8749A")]
-    [InlineData(true, "9AFFC7CD443437AB")]
+    [InlineData(false, "7E4F7FAE03E07E21")]
+    [InlineData(true, "76D5CD4F3420E5E6")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
