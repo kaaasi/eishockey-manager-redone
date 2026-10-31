@@ -11,22 +11,32 @@ Werkzeuge: siehe `tools/reverse-engineering/README.md`.
 ## Programmaufbau
  
 * Borland C++ (1991), Large Model, Real Mode, DGROUP = Segment 0x14FD.
-* 12 Basissegmente (C-Laufzeit, Grafik/Fonts, Fenster, Datei-I/O, Sound) und 17 VROOMM-Overlays.
-* Overlay-Zuordnung (Stub → Funktion, grob nach verwendeten Texten):
-| Overlay (Ghidra) | Größe | Thema |
-|---|---|---|
-| 337B | 2 KB | Sponsoren-/Werbetexte |
-| 3810 | 20 KB | Spielstart, Vereinsinitialisierung, Spielmodus-Optionen |
-| 3D11 | 24 KB | Vereinslogos, Verletzungen außerhalb des Spiels |
-| 42E9 | 17 KB | Bildaufbau, Fonts, Fehlerbehandlung |
-| 4A4C | 12 KB | Sponsoren, Werbepartner |
-| 4D30 | 12 KB | Aufstellung, Reihen, Transfers |
-| 502F | 20 KB | Zeitung, Infofile, Einnahmen/Ausgaben |
-| 52F7 | 18 KB | Statistik, Ewige Tabelle, DEB-Pokal-Auslosung, Spielerwerte |
-| 5E73 | 21 KB | Live-Spiel, Torszenen, Stadion-Ausbau |
-| 63A2 | 13 KB | Transferangebote, Börse |
-| 66C3 | 16 KB | Datenbank, Spielergenerierung, Laden/Speichern |
- 
+* 12 Basissegmente (C-Laufzeit, Spiellogik, Fenster, Bildlader, Speicher, Grafik/Maus, Datei, Timer, Sound) und
+  17 VROOMM-Overlays; Rollen der Basissegmente in [re-abdeckung.md](re-abdeckung.md).
+* Overlay-Zuordnung (berichtigt durch Spur `re-abdeckung`, #210: alle 17 Overlays, Größe = Codegröße aus dem Stub-Kopf,
+  Thema nach benutzten Texten und belegten Funktionen; Dateibereiche und Anteile in [re-abdeckung.md](re-abdeckung.md)).
+  Der Ghidra-Name ist das Ladesegment der alten Analyse (Adressen wie `3810:4D3B` = Overlay 0xE0, Offset 0x4D3B):
+
+| Stub-Selektor | Ghidra | Größe | Thema |
+|---|---|---|---|
+| 0xC0 | 337B | 2,0 KB | Fehlermeldungen („LIB-Error“, „GRAFIK-Error“, „Alles klar!“) – früher „Sponsoren-/Werbetexte“ |
+| 0xC8 | 33FB | 4,1 KB | Saisonende: Ranglisten („Die besten“, bester Torhüter), „Ereignisse“ |
+| 0xD0 | 34FF | 4,1 KB | Saisonende: Prämien („Erhaltene Prämien“) |
+| 0xD8 | 3606 | 8,1 KB | Spielvorbereitung und Spielstart (Regler, Kopfwahl, Kader, Startkonto) |
+| 0xE0 | 3810 | 20,0 KB | Teamwerte (Lader), Ewige Tabelle/Historie, Bandenwerbung, Spielmodus-Optionen |
+| 0xE8 | 3D11 | 23,4 KB | Wettbewerbe: DEB-Pokal (Auslosung), Europapokal, WM, Jugendansichten, K.-o.-Spiel |
+| 0xF0 | 42E9 | 16,6 KB | Spieltagsablauf: Spielminuten, Strafen, „Spiele laufen“, Penaltyschießen |
+| 0xF8 | 4711 | 12,9 KB | Nationalteam und WM (Vorbereitung, WM-Kader, WM-Statistik), Jugendteams, Credits-Anzeige |
+| 0x100 | 4A4C | 11,6 KB | Stadion und Finanzen (Ausbau, Eintritt, Grund- und Werbeeinnahmen, Sponsor) |
+| 0x108 | 4D30 | 12,0 KB | Aufstellung, Reihen, Spielerinfo, Vertragsende |
+| 0x110 | 502F | 11,1 KB | Hauptmenü-/Spieltagsschleife (autosave.hok), Kalender, Infofile – **keine Zeitung** (früher „Zeitung, Einnahmen/Ausgaben“, 20 KB) |
+| 0x118 | 52F7 | 19,5 KB | Transfermarkt: Transferliste, Angebote, Vertragsverhandlung |
+| 0x120 | 57D6 | 8,2 KB | Meldungen/Posteingang, Handbuchfrage, kleine Rechenhilfen |
+| 0x128 | 59E3 | 18,2 KB | Tabellen und Statistikansichten (Tabelle, Sortierung, Vereinsinfo) |
+| 0x130 | 5E73 | 20,7 KB | Live-Spiel (Anzeige, Torszenen, Spielabrechnung), Saisonwechsel |
+| 0x138 | 63A2 | 12,5 KB | Finanzen-Bildschirm (Konto, Kursverlauf), Training |
+| 0x140 | 66C3 | 16,3 KB | Laden/Speichern, Datenbank und Spielergenerierung, Highscore |
+
 ## Verifizierte Regeln (im Code übernommen)
  
 | Regel | Quelle |
@@ -230,3 +240,13 @@ DGROUP liegt bei Datei 0x16DD0 (Segmenttabelle 0x163C0, Eintrag 0x148).
   Folgen hat. Für die Spur nicht nötig, da nichts davon portiert wird. Spielstart (1.) ist durch Bildfolge und Code belegt.
 * Test, dass das Remake nicht fragt: `MenueBefundeTests` (`NewGame_AndFirstMatchDays_RunWithoutManualQuestion`,
   `NoScreenImplementsTheManualQuestion`).
+
+## Funktionskarte und Abdeckung (Spur `re-abdeckung`)
+
+Spur `re-abdeckung`, #210. Karte aller 678 Funktionen (12 Basissegmente, 17 Overlays) mit Abdeckungsstatus
+(umgesetzt / genähert / dokumentiert / unbekannt) aus den Fundstellen in `src/` und `docs/`, die 20 größten Lücken mit
+Spurvorschlag und die Einordnung bekannter offener Punkte: **[re-abdeckung.md](re-abdeckung.md)**. Erzeugt mit
+`tools/reverse-engineering/funktionskarte.py` (Aufruf dort und in `tools/reverse-engineering/README.md`); nach neuen
+Fundstellen neu erzeugen. Neue Fundstellen bitte als Dateioffset mit Kennwort schreiben (`Datei 0x…`, `em.exe 0x…`),
+damit der Abgleich sie sicher erkennt.
+
