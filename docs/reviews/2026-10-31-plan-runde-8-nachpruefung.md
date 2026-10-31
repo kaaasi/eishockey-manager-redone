@@ -67,7 +67,7 @@ für `CupsNationalMode.cs`, auf den Belegen von `optionen-kalender`, Runde 9). G
 
 ### P3 (nicht blockierend)
 
-- **R8P-04 bis R8P-08 umgesetzt:** Vorab-Zeile und Aufruferzahl #225 bei `spielerwert` (A#L30, L37–L38); `docs/wettbewerbe.md`
+- **R8P-04 bis R8P-08 umgesetzt:** Vorab-Zeile und Aufruferzahl #225 bei `spielerwert` (A#L30, L36–L37); `docs/wettbewerbe.md`
   „eigener Abschnitt“ bei `nationalteam` (L175–L176); Ausnahme `LineupScreen.cs` (L55–L56) und stabiles
   `PlayerInfoPopup.Show(Player, long)` (L106–L107); Migrationsregel mit `SaveGame.cs` bei der Leitstelle (L45–L46) und
   `SaveGame.Migration*.cs` bei `spielerwert`, `transfer-original`, `tabellen-original`; 0x50283 „ob die Liga sie nutzt,
