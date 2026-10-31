@@ -78,9 +78,12 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `Core/SaveGame.Migration.<Spur>.cs` (neue Datei, nur bei neuem Zustand), `docs/reverse-engineering.md` (eigener Abschnitt),
   `docs/highscore.md`, Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** fertig zur Review, PR #239 (Claude Code, 31.10.2026): Formel 0x49D36 im Emulator belegt (2.000 Fälle),
+- **Status:** gemergt (PR #239, Review #247, 31.10.2026): Formel 0x49D36 im Emulator belegt (2.000 Fälle),
   `PlayerValue` in `Core/Player.Value.cs`; Highscore und Werbebewertung umgestellt; Aufrufer (#225 RA-01): 12 Funktionen,
   21 Aufrufstellen (`docs/reverse-engineering.md`).
+  Restlücken aus Review #247 (P3): SW-01 Test für den Zufallsverbrauch der Werbebewertung bei Spielern mit Angebot;
+  SW-02 Benennung +0x1C/+0x1E/+0x20 (laut `spielstand-original.md` Spiele beim jetzigen Verein bzw. offen) → `statistiken`;
+  SW-03 Verweis `PlayerValueTests` → `SpielerwertTests`; Goldtest aus Original-Spielständen → `transfer-original`.
 
 ### Spur `transfer-original` – Transferliste, Ablöse und Vertragsverhandlung nach em.exe (Ov 0x118)
 
@@ -215,6 +218,23 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `docs/formate/spielstand-original.md`, `tools/reverse-engineering/funktionskarte.py`, `docs/re-abdeckung.md`, Tests.
 - **Modell:** Claude Sonnet 5.5.
 - **Status:** umgesetzt im Draft-PR #244 (#216, #217, #225, #230); Review offen. #217: „Sie können nicht mehr weiterspielen.“ gehört zur Sicher-/Ladesperre und bleibt entfallen (Entscheidung Nutzer).
+
+### Integration Runde 8 (Leitstelle, Welle 1)
+
+Branch `integration/runde-8` von `main` 421d96f (mit `spielerwert`), zusammengeführt in Planfolge: `befunde-p3` (#244),
+`tabellen-original` (#240), `nationalteam` (#243), `statistiken` (#242), `spielstaerke-manager` (#241). Nicht enthalten:
+`optionen-kalender` (#245, Draft), `transfer-original` und `spielerinfo` (laufen).
+- **Schema:** 11 → 12 Taktik des Nationalteams, 12 → 13 Strafminuten je Verein, 13 → 14 Teamwerte des Laders.
+- **Referenzwerte** neu auf dem integrierten Stand (RngTwinProbe, Mode4, Zähler je Saison); Seeds Börse 7 → 8 und Werbung
+  aktiv 15 → 16 (Zufallsproben, Prüfziel gleich), Begründung in den Tests.
+- **Für die Leitstelle nach der Integration** (aus den PRs): Funktionskarte in `docs/re-abdeckung.md` neu erzeugen; Aufruf
+  des Spielerdaten-Fensters aus `PlayerStatisticsScreen` und Rangliste (nach `spielerinfo`); `docs/anforderungen/bildschirme.md`
+  Z. 103 (Bilanz: acht Spiele, Heim klein) und die Vermutungen zur Sortierung 0x5CCB nach Heim/Auswärts (`CupsNationalMode.cs`,
+  `SeasonFlow.cs`, `docs/saison.md`, `docs/wettbewerbe.md`) berichtigen; veralteter Hinweis „Nicht umgesetzt …“ in
+  `docs/wettbewerbe.md` („Statistiken über Saisons“); Lader der Teamwerte ggf. nach `NewGame.Create` verlegen (#241).
+- **Offene Teile der Spuren** (Folgebranches): `tabellen-original` Teil 2 (Gruppen-, Play-off-Tabellen, Pixelvergleich);
+  `spielstaerke-manager` Teil 2 (Managerteil, Verletzungen, #193, Videovergleich #204); `statistiken` Bildschirm „Verein“
+  (0x2D5AE); `nationalteam` #194, #195 (Ursache gefunden, siehe #243), WM-Statistik; `optionen-kalender` Umsetzung.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
