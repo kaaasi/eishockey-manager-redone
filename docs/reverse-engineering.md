@@ -380,3 +380,89 @@ Bisher in der Funktionskarte „dokumentiert“ bzw. ohne Abdeckung; jetzt `[ORI
   Knopfbild 57 × 12 (kb\2 ab (17 | 179 + 12 · Zustand), Zustand immer 0) mit Text Mini zentriert x … x + 59, Grundlinie
   y + 7, Farbe 29, Schatten 1. Die übergebene Farbe wird nicht verwendet.
 * **Offen:** 0x2D5AE („Verein“, 3356 Byte), Spielerdaten-Fenster aus der Rangliste (0x26B13 → 0x041AC).
+
+
+## Spielerdaten-Fenster 0x041AC und Hinweiszeile 0x41683 (Spur `spielerinfo`)
+
+Spur `spielerinfo`, Runde 8. **Zuordnung (Abnahme 1):** Die Funktionskarte nennt beide „Fenster“; am Code und am Video ist es
+nur eines:
+
+| Funktion | Datei | Was es ist | Remake | Bildname |
+|---|---|---|---|---|
+| **0x041AC** (2761 Byte, Basissegment 0x238 + 0x2C) | `PlayerInfoPopup` / `PlayerDataWindow` | modales Fenster „Spielerdaten“ (Ursprung 89 \| 55, Knopf „Aha !“), Argument: Kaderplatz des aktiven Managers (bp+6) | zeichnet `PlayerInfoPopup`, Regeln in `PlayerDataWindow` | `oberflaeche_1115` („HANFT“, Transferliste; Bilder 1113–1119 gleich) |
+| **0x41683** (1693 Byte, Overlay 0x108 + 0x16A3, Stub 0x108:0x34) | `PlayerHintLine` | **kein Fenster**: Hinweiszeile unter den Spielerlisten, Zeile und Spalte aus der Mausstelle | `LineupScreen.HoverText` → `PlayerHintLine` | Aufstellung (Zeile unter der Liste, y 213) |
+
+Aufrufer von 0x41683: Aufstellung 0x40077 und 0x407ED (Löschaufruf mit Spalte −1), 0x400E0 (Rand 0xFF, Maske 0x3D146 – andere
+Spaltenauswahl, nicht untersucht) und 0x40845 (Ursprung 7 \| 29, Zeilen 0 … Zahl − 1, Rand 0xE9, Maske 0xF0C7); Transferliste 0x4688B
+(Löschaufruf) und 0x46A83 (Ursprung 7 \| 29, Rand 155, Maske 0x90C6). Alle Adressen in den folgenden Absätzen sind, wenn nicht anders
+bezeichnet, Versätze im Funktionsrumpf (Funktionsanfang = 0). 0x041AC wird nach der Zuordnung der Funktionskarte aus Ranglisten 0x25E30,
+Aufstellung 0x3FFE0/0x40364 und Transferliste 0x465F1 gerufen; im Remake öffnet bisher nur die Transferliste es.
+
+### Hinweiszeile 0x41683 (`Screens/Team/PlayerHintLine.cs`)
+
+* **Eingänge:** `(Ursprung x, Ursprung y, erste Zeile, letzte Zeile, Rand, Maske)`; Maus liegt in `[0xC147]` (+0 = y, +2 = x).
+  Zeile = `(y − Ursprung y) / 6` (idiv, zur Null hin); Spalte: Versatz `x − Ursprung x`, Summe der Breiten (DGROUP 0x39F: 11, 18,
+  57, 13, 12, 12, 14, 36, 12, 14, 12, 12, 13, 27, 40, 16, 35, 38) über die in der Maske gesetzten Bits, erste Spalte mit
+  Versatz < Summe. Außerhalb (x < 0 oder > Rand, Zeile außerhalb) wird die Hinweiszeile gelöscht (Versätze 0x8D–0x14B).
+  Der Spieler ist Kaderplatz `[0xA70E] · 0x618 + Zeile · 0x34 + 0x5DC3` (0xA70E = Satz des Managers, 0x34 Byte je Platz).
+* **Texte je Spalte** (Zeiger DGROUP 0x984 + 4 · Spalte): 0 „Rückennummer des Spielers“ (+ „ (Reihe: n)“, n = +0x15 & 0x7F, wenn
+  +0x15 ≠ 0); 1 Art (DGROUP 0x9CC: „Torwart“, „Abwehrspieler“, „Stürmer“, **ohne** Vorsatz; + „ (ausgeliehen)“ bei +0x0C ≠ 0);
+  2 „Name: n (a Jahre)“ (Spielerpool +0x00 / +0x14); 6 „Spiele gesamt (Liga und Pokal)“; 7 „Kondition, Technik, Form (Ø)“ mit
+  Ø = (+0x10 + +0x11 + +0x12) / 3; 8 „Durchschnittsstärke“; 12 „Tore gesamt (Liga und Pokal)“; 13 „2/5 Min.-Strafzeiten“;
+  14 „Status: …“; 15 „Tendenz des Spielers: Fallend./Konstant./Steigend.“ (Index (+0x0E − 30) / 13), nur mit Rand 0xE9
+  (Aufstellung) „ (Erschöpfung:n)“, n = +0x13 · 10 / 15; 16 „Dauer des Vertrages mit dem Spieler (in Saisons)“; 17 „Monatliches
+  Gehalt des Spielers“; Spalten 3–5 und 9–11 leer.
+* **Status (Spalte 14):** +0x0A ≠ 0 (eingesetzt) und +0x15 & 0x7F = 0 → „RESERVE“ (DGROUP 0x964); sonst Kaderplatz +0x09 & 3:
+  0 → eingesetzt „IM TEAM“ (0x960), sonst „Hängt halt so rum...“ (0xD40); 1 → „Noch n Minuten Gesperrt.“ (n = +0x0D, DGROUP
+  0xC48 / 0x11C1 / 0xB88); 2 → „Verletzt.“ (0xB84) + „(Art)“ (+0x17, DGROUP 0xA00: Schädelbruch, Kahnbeinbruch, Gehirnerschütterung,
+  Fingerbruch, Kieferbruch, Meniskuskorbhenkelriß).
+* **Zeichnen:** Text mit 0x30:0x885, Auswahllinien um Zeile und Spalte mit 0x30:0x995 (nur wenn die Maustaste nicht gedrückt ist,
+  `[0x5A16]` ≠ 1, 3); gemerkt in `[0x5094]` (Spalte) und `[0x5096]` (Zeile).
+* **Bisher falsch im Remake:** Spaltengrenzen um 1–4 Pixel verschoben (Aufstellung jetzt 18, 36, 93, 107, 143, 156, 183, 223, 233);
+  „Art des Spielers: “ vor der Rolle; „Verletzt. (Noch n Spiele)“; „Fallend./…“ ohne Erschöpfung; Spalte 7 ohne Durchschnitt;
+  Spalte 0 ohne Reihe.
+* **[APPROX]:** Verletzungsart (+0x17), Sperre in Minuten (+0x0D; das Remake zählt Spiele), Belastung +0x13 (aus der Energie) und die
+  Zeilenschritte der Aufstellung (`LineupScreen.RowAt` klickt bei y = 28 + 6 k, die Hinweiszeile wie das Original bei 29 + 6 k;
+  Klickfläche nicht Teil dieser Spur).
+
+### Spielerdaten-Fenster 0x041AC (`PlayerDataWindow.cs`, `PlayerInfoPopup.cs`)
+
+* **Kopf:** Name (Spielerpool), „Länderspiele:“ (+0x19), „Alter:“ (+0x14), „Stärke:“ ((+0x10 + +0x11 + +0x12) / 3), Gesicht aus kb\10.
+  **Gesicht:** Quelle Spalte `(3 − min((Alter − 18) / 5, 3)) · 17`, Zeile `Talent · 21` (Spielerpool +0x12), Größe 17 × 21, Ziel
+  (Ursprung + 0xA7 \| + 0x0F) = (256 \| 70). Beleg: Template-Matching des Gesichts in `oberflaeche_1115` ergibt Spalte 3 (Alter 18)
+  und Zeile 8 mit Fehler 12 (nächstbester 23); bisher stand ein Namens-Hash und die Blitzstelle eine Zeile zu hoch.
+* **Tore/Spiele:** Zeile „Tore:“ bei Torhütern „GTore:“ (Rollenwert 0, Versatz 0x45D), Spalten Liga/DEB-Pokal/Europacup (DGROUP 0xC0C);
+  Torhüter nur die Spalte Liga (Schleife `3 − 2 · [Torhüter]`). Je Zelle `Zahl( n)`: Byte +0x03 + i / +0x06 + i, in Klammern das
+  Wort +0x22 + 2 i bzw. +0x1C + 2 i; die Zahlenfunktion 0x1488:0x5C schreibt für 0 „-“. [APPROX] Zähler in Klammern fehlen im
+  Remake („( -)“).
+* **Daten (6 Felder, DGROUP 0xC18, Sprungtabelle im Funktionsrumpf, Versatz 0xABD):** 0 Kaufpreis = Kaderplatz +0x2C (Bit 15 der oberen Hälfte gelöscht); 1 Marktwert
+  = Spielerwert 0x118:0x70 Art 0 (über 0x14C7:0x70); 2 Versicherung = +0x30 (0 → „keine“, sonst Betrag + „ DM“); 3 Sperren
+  in Min. = +0x00 · 5 + +0x01 · 2; 4 Gehalt/M. = +0x28; 5 Vertrag = +0x0B Jahre („ Jahr“, bei > 1 „e“), bei +0x0C ≠ 0 „GELIEHEN“.
+  Beträge der Felder 0, 1, 2, 4 werden aus Drittel-DM durch 3 geteilt (0x3CA/0x47C mit DGROUP 0x79D = 3) und mit „ DM“ angehängt,
+  0 wird zu „-“. **Ausblenden** (Versätze 0x7D6–0x82B): gehört der Spieler (Spielerpool +0x1D) nicht zur Spielklasse des Managers
+  (`[0xA70E · 0x1AF − 0x6991]`), ist das Gehalt immer 0 und der Marktwert 0, wenn „5 − Level“ (0xED8) < 3. Das erklärt „-“ bei
+  Marktwert, Gehalt und Vertrag für fremde Spieler im Videobild.
+* **Balken** (Funktion 0xAC9 im Fenster, Wert 1–94 Pixel): Unterzahl = (+0x19 & 0xF) · 94 / 15, Überzahl = (+0x19 >> 4) · 94 / 15,
+  Tendenz = (+0x0E − 30) · 100 / 38, Erschöpfung = (100 − +0x13) · 94 / 100. Rahmen: Rechteck Farbe 1, innen Farbe 0, Farbband mit acht
+  Abschnitten à 12 Pixel (Farben 16–19, 15–12, DGROUP 0x482A), **Zeiger** senkrecht über die ganze Innenhöhe (Oberkante + 4 bis
+  + 12) bei Balkenanfang + 1 + Länge in der Farbe des Abschnitts (Beleg: Zeilen 177 und 184 in `oberflaeche_1115`). Position links
+  Ursprung + 7, rechts **+ 0x6C** (bisher + 110), Zeilenabstand 0x13.
+* **[APPROX]:** Unterzahl/Überzahl (Kaderplatz-Halbbytes +0x19, im Remake nicht geführt), Belastung, Tendenz auf drei Stufen
+  (15 / 50 / 84 statt 30 … 68 → 0 … 100), Versicherung („ja“ statt der versicherten Summe, +0x30), Zähler in Klammern bei Tore/Spiele.
+  Das Remake zeigt den Marktwert nur mit Zusammenhang (`PlayerInfoPopup.Show(Player, long, PlayerDataContext)`); der alte Aufruf
+  `Show(Player, long)` bleibt (Marktwert „-“, Gehalt sichtbar).
+
+### Pixelvergleich (Abnahme 2)
+
+Ablauf `spielerinfo` (`Tools/Scenarios/Spielerinfo.cs`), Spieler wie im Videobild (HANFT, Alter 18, 16/20/53, Talent 8, 150.000 DM).
+Kennzahl wie bei `pixel-verein`: mittlere Graudifferenz / Anteil der Pixel über 40 (beide Bilder leicht weichgezeichnet), Zeiger
+im Videobild nicht maskiert; Vorlage `oberflaeche_1115`.
+
+| Bereich | Vorher | Nachher |
+|---|---|---|
+| ganzes Fenster (95 … 300 \| 60 … 222) | 9,2 / 5,3 % (Versatz 0 \| 0) | 8,6 / 4,8 % (0 \| 0) |
+| Gesicht (250 … 284 \| 66 … 98) | 16,3 / 10,8 % (Versatz 0 \| +1) | 8,3 / 4,5 % (0 \| 0) |
+| rechte Balken (198 … 304 \| 172 … 212) | 12,1 / 8,0 % (Versatz −2 \| 0) | 11,4 / 8,0 % und 9,9 / 6,6 % (0 \| 0) |
+
+Die Hinweiszeile hat kein Videobild mit lesbarem Text (Zeile in Mini, Aufstellung ohne Maus im Bild); sie ist nur über Disassembly und
+Tests belegt (Abnahme 2 für 0x41683: Pixelvergleich nicht möglich, siehe PR).
