@@ -8,203 +8,222 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 7 – Spielberechnung, Startwerte, DOSBox-Befunde (ab 30.10.2026)
+## Aktuelle Runde: Runde 8 – Funktionskarte: Spielerwert, Transfers, Tabellen, Statistiken (ab 31.10.2026)
 
-Runde 6 (Werbung, Heimspiel-Statistik, Saisonende-Status, Pixelvergleiche): [archiv/runde-6.md](archiv/runde-6.md);
-ältere Runden in [archiv/](archiv/).
-**Ziel der Runde (Entscheidung Nutzer, 30.10.2026):** die echte Spielberechnung des Originals mit Ereignissen je Spieler
-(Grundlage für Einzelprämien und Statistiken), die Startwerte aus den Runde-6-Funden, die DOSBox-Befunde und Werkzeuge
-für Original-Spielstände. **Torszenen, Anzeigetafel und Reporter bleiben bis zum Schluss ausgeklammert** (`livespiel`).
-**Vorlauf erledigt** (Sammelreview #178): #167 (`heimspiel-statistik` Teil 2 mit #165, Schema 9), #175 (DOSBox-Befunde),
-#176 (`hok-format` Analyse) gemergt; welche Spur wann startet, regelt „Start gestaffelt“ unten.
+Runde 7 (Spielberechnung, Startwerte, DOSBox-Befunde): [archiv/runde-7.md](archiv/runde-7.md); ältere Runden in
+[archiv/](archiv/).
+**Ziel der Runde (Leitstelle nach `docs/re-abdeckung.md`, Auftrag Nutzer 31.10.2026):** die größten unbekannten bzw.
+genäherten Teile von em.exe, die das Spiel bestimmen, aus dem Code belegen und umsetzen – Spielerwert, Transfers und
+Verträge, Tabellen, Spielstärke der Managervereine – sowie die Statistiken und Einzelprämien auf den Zählern aus
+`spielberechnung`. **Torszenen, Anzeigetafel und Reporter bleiben bis zum Schluss ausgeklammert** (`livespiel`,
+Funktionskarte Nr. 14/16).
 **Base für alle Spuren:** aktueller `main`; tatsächlichen Base-SHA in den Draft-PR. Weiterhin verbindlich: Mehrsaisonprobe
-bei Saisonwechsel, Kader oder Geld; Schema mit Migration für jeden neuen Zustand (Leitstelle nummeriert in der
-Integration); geänderte Abdrücke je Fall begründen (FN-01, #139); Befund-Issues mit `Fixes #<nr>`. **Entwickler sind
-Claude-Sitzungen; ChatGPT nur für Reviews.**
+(4 Wechsel, passiv und aktiv) bei Saisonwechsel, Kader oder Geld; Schema mit Migration in eigener Datei für jeden neuen
+Zustand (die Leitstelle nummeriert in der Integration); geänderte Abdrücke je Fall begründen (FN-01); Befund-Issues mit
+`Fixes #<nr>`; jede Fundstelle in `[ORIGINAL]`/`[APPROX]` und – wo die Funktionskarte sie als „unbekannt“ führt – im
+eigenen Abschnitt von `docs/reverse-engineering.md` nachgetragen (die Karte erzeugt die Leitstelle nach der Integration
+neu). **Entwickler und Reviews sind Claude-Sitzungen** (geplante Läufe, Entscheidung Nutzer 31.10.2026).
 
 ```
-Runde 7 (parallel):  spielberechnung   kader-start   boerse-start   weltkugel-dosbox   menue-befunde   hok-patch
-Integration:         kader-start → boerse-start → weltkugel-dosbox → menue-befunde, hok-patch → spielberechnung zuletzt
+Runde 8 (parallel):  spielerwert  tabellen-original  spielstaerke-manager  statistiken  nationalteam  optionen-kalender  befunde-p3
+nach spielerwert:    transfer-original  spielerinfo
+Vorab:               spielerwert (einzeln reviewt und gemergt)
+Integration:         befunde-p3 → optionen-kalender → spielerinfo → transfer-original → tabellen-original
+                     → nationalteam → statistiken → spielstaerke-manager zuletzt
 ```
 
-**Start gestaffelt** (Entscheidung Nutzer, 30.10.2026): `menue-befunde` und `boerse-start` sofort; `kader-start` und
-`spielberechnung` nach Merge von #167; `weltkugel-dosbox` nach #175; `hok-patch` nach #176.
+**Start gestaffelt:** alle Spuren sofort außer `transfer-original` und `spielerinfo`; diese beiden starten nach dem Merge
+von `spielerwert` (0x49D36 wird von 0x465F1, 0x4A1DB und 0x041AC gerufen). `spielerwert` wird deshalb einzeln vorab
+reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil `befunde-p3` erst später integriert wird.
 
-**Zuständigkeit für gemeinsame Dateien (R7V-177-01, #180):**
-- `Core/CupsNational*.cs` (auch `PlayFriendly` in `CupsNational.GameState.cs`) gehört **allein** `weltkugel-dosbox`.
-  `spielberechnung` ändert dort nichts: `MatchEngine.Play(Club, Club, Random)` bleibt mit unveränderter Signatur als
-  Einstieg „nur Ergebnis“ erhalten; die neue Berechnung mit Ereignissen bekommt eine eigene Methode. Die
-  Freundschaftsspiele (`PlayFriendly`) stellt die Leitstelle in der Integration auf die neue Methode um; die WM-Spiele
-  (`CupsWorld.cs`) stellt `spielberechnung` selbst um und ruft `RatedNation` dabei nur auf (#183).
-- Bestehende Referenz- und Mehrsaisontests (`RngTwinProbeTests`, `GameModeTests.Mode4_ReferenceValues_Unchanged`,
-  `FinanceCalibrationTests`, `DebCupTests`/`EuropeanCupTests`/`WorldCupTests` Mehrsaisonproben,
-  `SaveLoadScreenTests`, `SeasonUiTests`, `DebCupDrawFlowTests`, Schemaabdruck in `SaveGameTests`): nur Sollwerte
-  ändern, und nur von Spuren, die Ergebnisse, Kader, Geld oder Zufallsverbrauch verändern (`kader-start`, `boerse-start`,
-  `weltkugel-dosbox`, `spielberechnung`), je Fall begründet. Konflikte löst die Leitstelle in der Integrationsfolge oben;
-  `spielberechnung` ermittelt ihre Sollwerte auf dem integrierten Stand neu.
-- Neue Tests jeder Spur in eigenen Dateien (`<Spurname>Tests.cs` bzw. nach Befund), keine fremden Testdateien sonst.
-  Gemeinsame Testhelfer (`tests/EishockeyManager.Core.Tests/TestSeason.cs`, `tests/EishockeyManager.UI.Tests/KeepSquadHelper.cs`)
-  nur additiv ändern; die Leitstelle führt sie in der Integration zusammen (#184).
-- `docs/reverse-engineering.md`: jede Spur nur in einem eigenen Abschnitt (#185).
-- `menue-befunde` ändert `MainMenuScreen.cs` höchstens minimal (Leiste); `weltkugel-dosbox` besitzt `TileLocks.cs` und
-  `NationalMenu.cs`.
+**Zuständigkeit für gemeinsame Dateien:**
+- `Core/MatchEngine*.cs` und `Core/Squad.Strength.cs` gehören **allein** `spielstaerke-manager`. Andere Spuren rufen die
+  Spielberechnung nur auf und ändern keine Aufrufer-Signaturen. Dazu gehört auch die Abbildung Aufstellung → Team-/Reihenwerte
+  für die Länderwerte Deutschlands (#193) samt Anzeige `UI/Screens/Statistics/StrengthScreen.cs`.
+- `Core/Squad.Tactics.cs` ist geteilt: `nationalteam` nur Startwert und Anzeige unter „AUTOM.“ (`Shown*`) samt Zustand
+  „Werte des letzten Spiels“ für das Nationalteam (#192); `spielstaerke-manager` nur `EffortStrengthBonus`, `Effective*`
+  und `Auto*` (0x974B, 0x939A). Vereins-Startwerte und Vereinsanzeige bleiben unverändert. Integration: `nationalteam`
+  vor `spielstaerke-manager`.
+- Schema: jede Spur mit neuem Zustand legt ihre Migration als **neue Datei** `Core/SaveGame.Migration.<Spur>.cs` an;
+  `SchemaVersion` und den Eintrag in `Migrations` (`Core/SaveGame.cs`) trägt die Leitstelle in der Integration ein.
+- `Core/Season.cs`: nur `tabellen-original` (Tabelle und Sortierung); `Playoffs.cs`/`CupsGroup.cs` nur deren `Table`.
+- `Core/Transfer*.cs`, `Core/Player.Contract.cs`: nur `transfer-original`. `spielerwert` liefert den Wert in einer neuen
+  Datei und stellt nur Highscore und Sponsorbewertung um; den Einsatz in Transfers macht `transfer-original`.
+- `Core/FinancePremiums.cs` und `UI/Screens/SeasonEnd*.cs`: nur `statistiken`.
+- `Core/CupsNational*.cs`, `Core/CupsWorld.cs`, `UI/Screens/Competitions/National*.cs`, `WorldCup*.cs`,
+  `FriendliesScreen.cs`, `UI/Screens/TileLocks.cs`: nur `nationalteam`.
+- `MainMenuScreen.cs`: nur `befunde-p3`, minimal und begründet. Neue Bildschirme melden sich über `[MenuEntry]` an.
+- Aufrufe eines Fensters aus fremden Bildschirmen (z. B. Spielerdaten-Fenster aus Transferliste oder Ranglisten) baut die
+  Leitstelle in der Integration ein; die Spur nennt die Stelle im PR. Einzige Ausnahme: `spielerinfo` darf den Aufruf in
+  `LineupScreen.cs` selbst setzen.
+- Referenz- und Mehrsaisontests (`RngTwinProbeTests`, `GameModeTests.Mode4_ReferenceValues_Unchanged`,
+  `FinanceCalibrationTests`, Pokal-Mehrsaisonproben, `SaveLoadScreenTests`, `SeasonUiTests`, `DebCupDrawFlowTests`,
+  Schemaabdruck in `SaveGameTests`): Sollwerte nur von Spuren ändern, die Ergebnisse, Kader, Geld oder Zufallsverbrauch
+  verändern, je Fall begründet; die Leitstelle ermittelt sie auf dem integrierten Stand neu.
+- Neue Tests in eigenen Dateien (`<Spurname>Tests.cs`); gemeinsame Testhelfer nur additiv. `docs/reverse-engineering.md`:
+  jede Spur nur in einem eigenen Abschnitt.
 
-### Spur `spielberechnung` – Spielberechnung des Originals mit Ereignissen je Spieler (ohne Anzeige)
+### Spur `spielerwert` – Wert eines Spielers nach em.exe 0x49D36
 
-- **Ziel:** `MatchEngine` (`[APPROX]`, Poisson aus der Stärkedifferenz) durch die Berechnung des Originals ersetzen
-  (Overlay 5E73, `docs/reverse-engineering.md`): Ergebnis **und** Ereignisse je Spieler – Tore, Vorlagen, 2-/5-Minuten-Strafen,
-  Torhüterminuten und Gegentore, Verletzungen, soweit das Original sie im Spiel erzeugt. Keine Anzeigetafel, kein
-  Reporter, keine Torszenen.
-- **Schritt 1 (vor dem Code, im PR belegen):** Klären, ob das Original die Ereignisse unabhängig von der Anzeige
-  berechnet (Einstellungen „Torszenen aus“ und „WM-Spiele“/Ligen ohne Live-Spiel, `docs/dosbox-befunde.md`; Aufrufer im
-  Spieltagsablauf 0x36B5D). Ist die Berechnung an die Anzeige gekoppelt, wird der Rechenteil trotzdem herausgelöst und
-  ohne Darstellung nachgebaut – gleiche Ergebnisse und Ereignisse; die Anzeige folgt in `livespiel` (Entscheidung Nutzer,
-  30.10.2026).
-- **Belege:** em.exe Overlay 5E73; Ranglisten 0xC8:0x20 (Torhüter, Datei 0x25E30) und 0xE0:0x20 (Fair-Play, 0x2A1E0)
-  aus #135 zeigen, welche Felder je Spieler gezählt werden; Spielerfelder `Goals`, `Assists`, `Penalties2/5`
-  (`Core/Player.Attributes.cs`) gibt es schon, sie werden nie hochgezählt.
-- **Abnahme:** (1) Formel mit Fundstellen, `[ORIGINAL]` bzw. `[APPROX]` je Teil; (2) Tests: Ereignisse je Spiel konsistent
-  mit dem Ergebnis (Summe Tore = Tore der Spieler, Vorlagen ≤ 2 je Tor, Strafen nur Feldspieler …), Tor-/Strafverteilung
-  über eine Saison in den Größenordnungen der Videos (Tore je Spiel, Strafminuten); (3) Spielwertung 0:2 aus #167 und
-  Penaltyschießen bleiben erhalten; (4) Mehrsaisonprobe (4 Wechsel, passiv und aktiv, Modus 1 und 4) mit begründeter
-  Änderung **jedes** Referenzwerts; (5) Spielstand: Schema/Migration für neue Zähler; (6) `docs/reverse-engineering.md`
-  korrigieren (der Abschnitt „Spielsimulation“ beschreibt eine Schrittsimulation, die es im Code nicht gibt).
-- **Nicht in dieser Spur:** Einzelprämien (#135) und die Statistikbildschirme Spieler/Verein/Fairplay/WM – Folgespuren in
-  Runde 8 auf den neuen Zählern.
-- **Dateigrenzen:** `Core/Season.cs` (nur `MatchEngine` herauslösen), neue Dateien `Core/MatchEngine*.cs`,
-  `Core/Player.Attributes.cs` (Zähler), Aufrufer in `GameState.cs`, `Playoffs.cs`, `CupsDeb.cs`, `CupsEurope.cs`,
-  `CupsGroup.cs`, `CupsWorld.cs` nur für den Wechsel auf die neue Methode – **nicht** `CupsNational*.cs` (siehe oben),
-  `Core/SaveGame.Migration*.cs` (neue Datei), `docs/reverse-engineering.md`, neues `docs/spielberechnung.md`, Tests.
-- **Modell:** Claude Opus 5.5 (Review: GPT-6 Astra).
-- **Status:** in Integration #198 (zuletzt, Schema 10 → 11); vorher: fertig zur Review, PR #186 (Claude Code). Teil 1–2: Rechnung des Originals (0x9F5C, 0x368B1/0x977F, 0xA484,
-  Strafbank/Strafen 0x35540/0x35818, Minutenablauf, schneller Weg der Pokale), Statistik 0x5028/0x4DB6, Schema 10. Teil 3:
-  `MatchEngine.PlayWithEvents` in Liga, Play-offs, Aufstiegsrunde, DEB-Pokal, Europapokal und WM; Zähler je Saison;
-  Mehrsaisonprobe und neue Sollwerte auf dem Branch (Nachziehen in der Integration). Offen (`[APPROX]`): Managerteil
-  0x386D1/0x378C5/0x98F8/0x87F7/0x8EF2, Verletzungen im Spiel. Stand: `docs/spielberechnung.md` §8, §11.
-
-### Spur `kader-start` – Startwerte der Kaderspieler (#168)
-
-- **Ziel:** #168: Kondition/Technik zu Spielbeginn wie im Original (`folge01_00528`/`_00550`: 19–23, Remake 29–34).
-  Herkunft der Basis rekonstruieren (3810:4D3B Teamwerte, Datenbankwert, Zufall, Spiel-Level) und
-  `SquadSetup.BaseValue` (`[APPROX]` 20 + Stärke/2) ersetzen; den Widerspruch zum UI-Video (Werte um 29–33) erklären.
-- **Abnahme:** (1) roter Test mit den Werten aus `folge01` (Berliner SC, Level 5), danach grün; (2) Gegenprobe gegen das
-  UI-Video bzw. die Eisbären-Reihe; (3) Mehrsaisonprobe mit begründeten Abdruckänderungen; (4) Schema nur bei neuem Zustand.
-- **Dateigrenzen:** `Core/Squad.Setup.cs`, `Core/NewGame.cs` (minimal), `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
+- **Ziel:** die Formel aus 0x49D36 (Ov 0x118 + 0x3D36, Einsprung `0x118:0x70`, 1189 B) belegen – Eingänge (Stärke,
+  Alter, Position, Kondition/Technik/Form, Vertrag …), Rundung, Ausgabeeinheit – und als einzige Quelle des Spielerwerts
+  einführen. Highscore (Vermögen 0x5D04F, bisher „Kaufpreis · 3“) und Sponsorbewertung 0x3F833 darauf umstellen. Den
+  Einsatz im Saisonende 0x26F20 und in der Aufstellung 0x42CB1 nur einordnen und im PR nennen.
+- **Belege:** `docs/re-abdeckung.md` Abschnitt „Spielerwert 0x49D36“; Emulatorprobe wie bei 0x5D04F (`docs/highscore.md`);
+  Aufruferzahl nach #225 prüfen.
+- **Abnahme:** (1) roter Test mit Werten aus der Emulatorprobe bzw. einem Original-Spielstand (`emtool hok dump`), danach
+  grün; (2) `[ORIGINAL]` je Formelteil; (3) Mehrsaisonprobe (die Sponsorbewertung ändert Geld; Highscore nur Anzeige) mit begründeten
+  Abdruckänderungen; (4) kein neuer Spielzustand ohne Schema.
+- **Dateigrenzen:** neue Datei `Core/Player.Value.cs`, `Core/Highscore.cs`, `Core/FinanceSponsorRating.cs`,
+  `Core/SaveGame.Migration.<Spur>.cs` (neue Datei, nur bei neuem Zustand), `docs/reverse-engineering.md` (eigener Abschnitt),
+  `docs/highscore.md`, Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** in Integration #198 (Integration Runde 7); vorher: umgesetzt, Review offen (#187): Basis aus Tabelle DGROUP 0x4B42 (Liga × Start-Stärke); Folgepunkt Szenario `pixel-verein` (Start-Stärke wie folge01) siehe PR.
+- **Status:** offen.
 
-### Spur `boerse-start` – Börse zu Spielbeginn (#169)
+### Spur `transfer-original` – Transferliste, Ablöse und Vertragsverhandlung nach em.exe (Ov 0x118)
 
-- **Ziel:** #169: Startkurse und Startverlauf über die ganze Breite wie `folge01_00508`–`_00510` (98/96/134/126 DM), Regel
-  für den anfänglichen Bildausschnitt aus em.exe statt Mitte aus höchstem und niedrigstem Kurs.
-- **Abnahme:** (1) roter Test (Kurse, Verlauf, Ausschnitt), danach grün; (2) Pixelvergleich `folge01_00510` mit Kennzahl
-  wie in Runde 6; (3) Bildschirm zustandsrein; (4) Mehrsaisonprobe, falls der Zufallsverbrauch sich ändert.
-- **Dateigrenzen:** `Core/FinanceStocks.cs`, `UI/Screens/Manager/FinanceScreen.cs`, `Tools/Scenarios/` (eigene Datei),
-  `docs/finanzen-rekonstruktion.md` (eigener Abschnitt), Tests.
+- **Ziel:** die Transferregeln des Originals statt der Kalibrierung an sechs Videopreisen: Transferliste 0x465F1
+  (Anzeige, Kaufen, Leihen, Angebot; „DM (K)/(L)“ 0x46000), Ablöse/Angebot 0x491F9, 0x49A3B, Vertragsverhandlung 0x4A1DB
+  (Gehalt, Dauer, Versicherung) – auf dem Spielerwert aus `spielerwert`. Was an Computervereinen und Spielerpool
+  (`Transfer.Squads.cs`) nicht aus Ov 0x118 belegbar ist, bleibt `[APPROX]` und wird im PR aufgelistet.
+- **Belege:** `docs/re-abdeckung.md` Nr. 1 und 4; Videos der Reihen `karriere`/`eisbaeren` (Fundlisten
+  `docs/referenz-videos.md`); Kaderplätze und Spielerpool an FILE05 (`docs/formate/spielstand-original.md`).
+- **Abnahme:** (1) rote Tests je Regel (Preis, Leihgebühr, Annahme eines Angebots, Gehaltsforderung, Laufzeit), danach
+  grün; (2) Gegenprobe an den sechs Videopreisen; (3) Pixelvergleich Transferliste und Verhandlungsfenster mit Kennzahl;
+  (4) Bildschirme zustandsrein; (5) Mehrsaisonprobe (Kader und Geld); (6) Schema nur bei neuem Zustand.
+- **Dateigrenzen:** `Core/Transfer*.cs`, `Core/Player.Contract.cs`, `Core/SaveGame.Migration.<Spur>.cs` (neue Datei, nur bei
+  neuem Zustand), `UI/Screens/Team/TransferScreen.cs`,
+  `TransferDialog.cs`, `ContractsScreen.cs`, `Tools/Scenarios/` (eigene Datei), neues `docs/transfer.md`,
+  `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** in Integration #198; vorher: umgesetzt in PR #188 (Claude Code): Kursmodell und Startverlauf nach em.exe, Ausschnitt nach 0x58BD4; Schema 9 → 10. Offene Befunde in `docs/finanzen-rekonstruktion.md`, Abschnitt „Börse“.
+- **Status:** wartet auf Merge von `spielerwert`.
 
-### Spur `weltkugel-dosbox` – Befunde aus den DOSBox-Aufnahmen „nur Weltkugel“ (#175)
+### Spur `spielerinfo` – Spielerinfo- und Spielerdaten-Fenster (0x41683, 0x041AC)
 
-- **Ziel:** die Folgeaufgaben aus `docs/dosbox-befunde.md` (nach Merge von #175) umsetzen: Kachel „Highscore“ vor der
-  Ernennung offen (Sperrtabelle DGROUP 0x5159 vs. 0xD0BA klären); Fenster „WM-Endrundenspiele – Die Paarungen stehen
-  noch nicht fest…“ mit Knopf „Gruppe“ statt `[APPROX]`; Wirkung der Freundschaftsspiele (kein Zeitfortschritt,
-  Deutschland +3 Kondition/+3 Technik/+5 Form nach drei Spielen, Energie der Eingesetzten 46, Kosten 100–120 Tsd. DM);
-  Taktik des Nationalteams zu Beginn (DOSBox: alle Werte 0) gegen die Startwerte aus `taktik-verein` (Runde 5): in em.exe
-  klären, wann das Original die Startwerte setzt (z. B. erst bei der Ernennung oder nur im Modus 4), und nur Belegtes
-  umsetzen, mit Test je Modus (Entscheidung Nutzer, 30.10.2026). Dazu den falschen Kommentar zu 0x289A3 in
-  `NationalMenu.cs` berichtigen und den nie gemergten Commit `71b27de` vom Branch `paket/wettbewerbe-weltkugel-2`
-  übernehmen (Ablauf `nurfahne`, Abschnitt „Kachelsperren im Modus 2 gegen das Karriere-Video“ in `docs/wettbewerbe.md`;
-  den Nachtrag in `arbeitspakete.md` nicht, die Bilderliste mit den DOSBox-Bildern abgleichen).
-- **Abnahme:** je Punkt roter Test mit dem DOSBox-Bild als Beleg (Bildname im Test), danach grün, oder begründet als
-  Befund offen lassen; Mehrsaisonprobe Modus 2 und 4; `docs/wettbewerbe.md` nachgeführt.
-- **Dateigrenzen:** `UI/Screens/TileLocks.cs`, `UI/Screens/Competitions/NationalMenu.cs`, `WorldCupKnockoutScreen.cs`,
-  `Tools/Scenarios/Wettbewerbe.cs` (Ablauf `nurfahne`),
-  `FriendliesScreen.cs`, `Core/CupsNational*.cs`, `docs/wettbewerbe.md`, `docs/dosbox-befunde.md` (Status), Tests.
-- **Modell:** Claude Opus 5.5.
-- **Status:** in Integration #198; vorher: Teil 1 in #189: „Highscore“ im Modus 1 offen, Endrunden-Fenster, 71b27de übernommen,
-  Regressionstests Freundschaftsspiele, Energie 70 beim ersten Freundschaftsspiel (`[APPROX]` 0x3BB51). Ausgelagert:
-  Taktik-Startwerte #192, Länderwerte aus der Aufstellung #193, Paarungsansicht WM #194, Modus-1-Halt #195; Abzug je
-  Spiel bei `spielberechnung`.
-
-### Spur `menue-befunde` – Nachrichtenleiste (#170) und Handbuchfrage des Originals
-
-- **Ziel:** (1) #170: Nachrichtenleiste im Hauptmenü nur mit Nachricht (Bedingung des Originals aus em.exe; Widerspruch
-  zu `oberflaeche_1510` klären). (2) **Kopierschutz** (Entscheidung Nutzer, 30.10.2026): Das Original stellt sporadisch
-  eine Frage zum Handbuch; das Remake übernimmt sie **nicht**. Fundstelle in em.exe (Auslöser, Text, Ablauf) belegen,
-  in `docs/portierung.md` als bewusste Abweichung festhalten, damit keine Spur sie mitportiert, und einen Test, dass
-  Spielstart und die ersten Spieltage ohne Abfrage durchlaufen.
-- **Abnahme:** (1) roter Test für die Leiste, Pixelvergleich `eisbaeren_f24_00040` und `folge01_00708`; (2) Fundstelle und
-  Doku der Handbuchfrage, Test grün; Bildschirme zustandsrein.
-- **Dateigrenzen:** `UI/Screens/Manager/NewsBar.cs`, `MainMenuScreen.cs` (minimal, begründet), `docs/portierung.md`,
-  `docs/reverse-engineering.md` (Abschnitt Kopierschutz), Tests.
+- **Ziel:** die beiden Fenster nach em.exe: Spielerinfo 0x41683 (Rückennummer, Tendenz, Verletzung, „IM TEAM/RESERVE“) und
+  Spielerdaten 0x041AC (kb\10; „GELIEHEN“, „Kaufpreis“, „Alter:“, „Unterzahl/Überzahl“, Spielerwert). Zuerst am Video
+  zuordnen, welches Fenster wo erscheint (Aufstellung 0x3FFE0/0x40364, Ranglisten 0x25E30, Transferliste 0x465F1).
+- **Abnahme:** (1) Zuordnung mit Bildnamen im PR; (2) Pixelvergleich je Fenster mit Kennzahl; (3) roter Test je Feld
+  (Text und Wert), danach grün; (4) Fenster zustandsrein; (5) Aufrufstellen aus fremden Bildschirmen im PR für die
+  Integration benannt. `PlayerInfoPopup.Show(Player, long)` bleibt als Aufruf stabil (genutzt von `TransferScreen.cs`,
+  Spur `transfer-original`); eine Umbenennung oder Teilung stellt die Leitstelle in der Integration um.
+- **Dateigrenzen:** `UI/Screens/Team/PlayerInfoPopup.cs`, neue Datei `UI/Screens/Team/PlayerDataWindow.cs`,
+  `UI/Screens/Team/LineupScreen.cs` (nur Aufruf), `Tools/Scenarios/` (eigene Datei), `docs/reverse-engineering.md`
+  (eigener Abschnitt), Tests.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** in Integration #198; vorher: umgesetzt, PR #190: Leiste (#170) und Handbuchfrage (#185); wartet auf Review.
+- **Status:** wartet auf Merge von `spielerwert`.
 
-### Spur `hok-patch` – Spielstände für das Original erzeugen (Nutzeranforderung)
+### Spur `tabellen-original` – Tabellenberechnung und -ansicht (0x4F78D, 0x50283, 0x50B45)
 
-- **Ziel:** nach Merge von #176 `emtool hok patch <vorlage> <ziel> feld=wert …`: Vorlage lesen, nur belegte Felder ändern
-  (Konto, Eintritt, Stadion, Datum/Zähler, Regler), Prüfsummen neu, neue Spielstand-ID, Kopf und Füllbyte übernehmen –
-  damit der Nutzer im Original gezielt Situationen herstellen kann (Analyse in DOSBox). Import/Export ins Remake folgt
-  später.
-- **Abnahme:** (1) Tests mit synthetischen Bytes (Prüfsummen, ID, nur genannte Felder geändert, unbekannte Felder
-  abgewiesen); (2) mit Originaldaten: gepatchter FILE01 entschlüsselt mit gültigen Prüfsummen; (3) Abnahme durch den
-  Nutzer: Stand lädt im Original und zeigt die Werte (Bild).
-- **Dateigrenzen:** `src/EishockeyManager.Formats/OriginalSaveGame*.cs`, `src/EishockeyManager.Tools/Hok*.cs`,
-  `docs/formate/spielstand-original.md`, Tests. Keine Spielstände ins Code-Repo.
+- **Ziel:** Reihenfolge und Darstellung der Tabellen wie im Original: Berechnung/Sortierung 0x50283 (belegt von Pokalen und
+  Nationalteam sowie 0x50B45 gerufen; ob die Liga sie nutzt, zuerst klären), Tabellenreihenfolge Gesamt/Heim/Auswärts 0x50B45 (bisher `[APPROX]`), Ansicht 0x4F78D
+  („PL. TD VEREIN … BILANZ S-U-N“). Gleichstandsregeln für Liga, Play-off-Setzung, Europapokal- und WM-Gruppen.
+- **Abnahme:** (1) rote Tests für jede Gleichstandsregel (konstruierte Tabellen), danach grün; (2) Pixelvergleich der
+  Tabellenansicht mit Kennzahl; (3) Mehrsaisonprobe – Platzierungen bestimmen Auf-/Abstieg und Prämien – mit begründeten
+  Abdruckänderungen; (4) Bildschirme zustandsrein.
+- **Dateigrenzen:** `Core/Season.cs` (nur Tabelle/Sortierung), `Core/Playoffs.cs` und `Core/CupsGroup.cs` (nur `Table`),
+  `Core/SaveGame.Migration.<Spur>.cs` (neue Datei, nur bei neuem Zustand),
+  `UI/Screens/TableScreen.cs`, `UI/Screens/Competitions/CupTableMenuEntries.cs`, `Tools/Scenarios/` (eigene Datei),
+  `docs/saison.md` (eigener Abschnitt), `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
+- **Modell:** Claude Opus 5.5.
+- **Status:** offen.
+
+### Spur `spielstaerke-manager` – Spielstärke der Managervereine und Restteile der Spielberechnung (#204, #179, #193)
+
+- **Ziel:** die in `spielberechnung` offen gebliebenen Teile (`docs/spielberechnung.md` §8, §11): Managerteil 0x386D1,
+  0x378C5, Teamwertabbildung 0x98F8–0x9C63, 0x87F7, 0x8EF2; Verletzungen im Spiel. Damit #204 (mehrjährige
+  Meisterdominanz, R7N-01) klären: Abbildung, fehlende Streuung des Laders 0x2EF1B (`MatchEngine.Live.cs`) oder echter
+  Befund. Dazu #179 (Kommentar `ForfeitsMatch`) und #193: Länderwerte Deutschlands aus der Aufstellung nach
+  Freundschaftsspielen (0x30365; Kandidat Datei 0x952C/Reihenwert 0x977F, `docs/dosbox-befunde.md`), mit Anzeige im
+  Stärkevergleich. Den Aufruf nach Freundschaftsspielen in `Core/CupsNational*.cs` nennt die Spur im PR; die Leitstelle
+  schließt ihn in der Integration an.
+- **Abnahme:** (1) roter Test je belegtem Teil, danach grün; (2) Saisonverteilung (Meister über ≥ 8 Saisons, Tore je
+  Spiel, Strafminuten) gegen die Videos bzw. DOSBox-Befunde, Ergebnis im PR; (3) Mehrsaisonprobe Modus 1, 2 und 4, passiv und
+  aktiv, jede Referenzwertänderung begründet; (4) Schema nur bei neuem Zustand.
+- **Dateigrenzen:** `Core/MatchEngine*.cs`, `Core/Squad.Strength.cs`, `Core/StadiumStatistics.cs` (nur #179),
+  `UI/Screens/Statistics/StrengthScreen.cs` (nur #193), `Core/Squad.Tactics.cs` (nur `EffortStrengthBonus`,
+  `Effective*`, `Auto*`),
+  `Core/SaveGame.Migration.<Spur>.cs` (neue Datei), `docs/spielberechnung.md`, Tests.
+- **Modell:** Claude Opus 5.5.
+- **Status:** offen.
+
+### Spur `statistiken` – Statistiken Spieler, Fairplay, Verein und Einzelprämien (#135, #222)
+
+- **Ziel:** die Kacheln „Spieler“, „Fairplay“, „Verein“ unter Statistiken auf den Zählern aus `spielberechnung`:
+  Ranglisten 0x25E30 (Ov 0xC8, Topscorer/Torhüter) und Fair-Play 0x2A1E0 (Ov 0xE0); „Verein“ zuerst am Video zuordnen
+  (Kandidat Vereins-/Gegnerinfo 0x4D385 mit Spielplan 0x05CA0, „Höchster H-Sieg“, „Noch keine Eintragung“). Einzelprämien
+  Topscorer, bester Torhüter, Fair-Play im Saisonende 0x26F20 (#135) über `GameState.Book`. Dazu #222.
+- **Abnahme:** (1) roter Test je Rangliste (Reihenfolge, Gleichstand, Mindestspiele) und je Prämie, danach grün;
+  (2) Pixelvergleich je Bildschirm mit Kennzahl; (3) Bildschirme zustandsrein; (4) Mehrsaisonprobe (Geld) mit begründeten
+  Abdruckänderungen; (5) Schema nur bei neuem Zustand (z. B. Höchstwerte je Verein).
+- **Dateigrenzen:** neue Dateien `Core/StatisticsPlayers.cs`, `Core/StatisticsClub.cs`,
+  `UI/Screens/Statistics/PlayerStatisticsScreen.cs`, `FairplayScreen.cs`, `ClubStatisticsScreen.cs`,
+  `Core/FinancePremiums.cs`, `UI/Screens/SeasonEnd*.cs`, `Core/SaveGame.Migration.<Spur>.cs` (neue Datei),
+  `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (eigener Abschnitt), `docs/reverse-engineering.md` (eigener
+  Abschnitt), Tests.
+- **Modell:** Claude Opus 5.5.
+- **Status:** offen.
+
+### Spur `nationalteam` – WM-Statistik, WM-Paarungen und Befunde Bundestrainer (#192, #194, #195)
+
+- **Ziel:** WM-Statistik 0x3ADE1 (kb\12, Kachel „WM-Statistik“); Paarungsansicht WM/Europapokal „Gruppe … Spieltag“,
+  „Endrunde“ 0x2FC2F (#194); Taktik des Nationalteams ohne Startwert (#192, mit Migration für laufende Spielstände);
+  erster Halt im Modus 1 nach „Los jetzt!“ (#195, Halt-Bedingung in 0x44E22).
+- **Abnahme:** je Punkt roter Test mit DOSBox- bzw. Videobild als Beleg (Bildname im Test), danach grün, oder begründet
+  als Befund offen; Pixelvergleich WM-Statistik und Paarungsansicht; Bildschirme zustandsrein; Mehrsaisonprobe Modus 1
+  und 4 (Modus 2 als Gegenprobe); `docs/wettbewerbe.md`, `docs/dosbox-befunde.md` nachgeführt.
+- **Dateigrenzen:** `Core/CupsNational*.cs`, `Core/CupsWorld.cs`, `Core/Squad.Tactics.cs` (nur Startwert und
+  `Shown*` des Nationalteams, siehe Zuständigkeiten), `Core/SaveGame.Migration.<Spur>.cs` (neue Datei), `UI/Screens/Competitions/National*.cs`, `WorldCup*.cs`,
+  `FriendliesScreen.cs`, neue Dateien `UI/Screens/Competitions/WorldCupStatisticsScreen.cs`,
+  `CupPairingsScreen.cs`, `UI/Screens/TileLocks.cs`, `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (eigener
+  Abschnitt), `docs/dosbox-befunde.md`, Tests. #193 gehört zu `spielstaerke-manager`.
+- **Modell:** Claude Opus 5.5.
+- **Status:** offen.
+
+### Spur `optionen-kalender` – Spielmodus-Optionen und Kalender (0x2CD1C, 0x43E21; #228)
+
+- **Ziel:** (1) Optionen 0x2CD1C („Neuer Spielmodus:“, Drittelpause, Torszenen, WM-Spiele, Länderspiele,
+  Hintergrundgrafik) mit ihrer Wirkung belegen und dokumentieren; im Einstellungsbildschirm nur Darstellung und
+  Geräteeinstellungen (`GameSettings`) umsetzen. Optionen mit Wirkung auf den Spielstand (Spielmodus, WM-Spiele,
+  Länderspiele) zeigt der Bildschirm nur lesend an; ihre Umsetzung in Core samt Migration ist Folgepaket
+  `optionen-wirkung` (Runde 9). Unbenutzte Optionen (z. B. „Zeitung“ 0xEB8) dokumentieren. (2) Kalender: 0x43E21
+  mit 0x43B1F, 0x43C38, 0x445E0 („Vor dem ersten Spieltag.“) und 0x36169 einordnen; einen Bildschirm nur bauen, wenn er am
+  Video belegt ist. (3) #228.
+- **Abnahme:** (1) je Option Wirkung mit Fundstelle dokumentiert; roter Test je umgesetzter Geräteeinstellung und für die
+  lesende Anzeige der Spielstand-Optionen, danach grün; (2) Pixelvergleich Einstellungen und ggf. Kalender;
+  (3) Bildschirme zustandsrein; (4) `docs/tagesablauf.md` bzw. `docs/saison.md` (eigener Abschnitt) nachgeführt.
+- **Dateigrenzen:** `UI/Screens/SettingsScreen.cs`, `UI/Screens/Settings.cs` (Einstellungen und `SettingsSync`), neue Datei
+  `UI/Screens/CalendarScreen.cs`, `Tools/Scenarios/` (eigene Datei), `docs/tagesablauf.md`, `docs/saison.md` (eigener
+  Abschnitt), `docs/reverse-engineering.md` (eigener Abschnitt), Tests. Änderungen am Tagesablauf (`SeasonFlow.cs`) nur
+  als Vorschlag im PR.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** in Integration #198 (mit #197, Nachtrag `hok-format` an FILE05); vorher: Claude Code, `paket/hok-patch`; Abnahme (3) vom Nutzer am 30.10.2026 bestätigt (Bilder, siehe PR #191); wartet auf unabhängiges Review.
+- **Status:** offen.
 
-### Integration Runde 7 (30.10.2026)
+### Spur `befunde-p3` – Kleinbefunde Hauptmenü, hok-format, Funktionskarte (#216, #217, #225, #230)
 
-Branch `integration/runde-7` von `main` `15d0733`, Leitstelle Claude Code. Entscheidung Nutzer: alle Spuren gemeinsam,
-sobald `spielberechnung` fertig ist. Zusammengeführt in Planfolge: #187 (`kader-start`, Head `97616de`), #188
-(`boerse-start`, `b0d793d`), #189 (`weltkugel-dosbox`, `fd707e7`), #190 (`menue-befunde`, `2c1ebbd`), #191 (`hok-patch`,
-`3031da2`), #197 (`hok-format` Nachtrag, `21c36a3`), zuletzt #186 (`spielberechnung`, `d4c2aa6`).
-
-- Konflikt #188 × #186: beide Migration 9 → 10. `boerse-start` bleibt 9 → 10 (`SaveGame.Migration9.cs`),
-  `spielberechnung` wird 10 → 11 (`SaveGame.Migration10.cs`), `SchemaVersion` = 11, Schemaabdruck `6F8C2BA719E292F7`.
-  **Integrationsbefund R7-01:** Schema 10 gibt es in zwei Formen (Börse neu ohne Torhüterzähler bzw. Torhüterzähler mit
-  altem Kursmodell); 10 → 11 holt deshalb immer zuerst den Börsenschritt nach (wirkt nur auf Aktien mit `BasePrice`).
-  Regressionstest `IntegrationRunde7MigrationTests` (Form `spielberechnung` und echte Kette 9 → 10 → 11).
-- Konflikte in Dokumenten: `docs/reverse-engineering.md` (`menue-befunde` hatte die Zeilenenden der ganzen Datei
-  umgestellt; übernommen ist nur der eigene Abschnitt „Kopierschutz“), `docs/formate/spielstand-original.md` (beide
-  Abschnitte übernommen).
-- **Freundschaftsspiele** (`PlayFriendly`, `CupsNational.GameState.cs`) laufen jetzt über `MatchEngine.PlayWithEvents`
-  wie ein WM-Gruppenspiel (`[APPROX]` Wettbewerbszuordnung); damit nutzt kein Spiel mehr die alte Näherung.
-- **Sollwerte** auf dem integrierten Stand neu: `RngTwinProbeTests` (6), `Mode4Reference`, `SpielberechnungAnschlussTests`
-  (2), `DebCupDrawFlowTests`, Schemaabdruck. Ursache je Spur in deren PR und in den Testkommentaren; der Integrationswert
-  ist ihr Zusammenwirken (Startwerte → Teamwerte und Gehälter, Börse → FinanceRandom, Spielberechnung → alle Ergebnisse
-  und Haupt-/Pokalquelle, Freundschaftsspiele → Pokalquelle im Modus 4). Ein schrittweiser Zwillingsvergleich der
-  Integration gegen den Stand von `spielberechnung` allein wurde **nicht** gemacht. Auffällig für das Review: im
-  Modus 4 und in der UI-Probe wird Verein 2 bzw. 12 mehrfach Meister (Spielstärke der neuen Berechnung prüfen).
-- `FinanceWerbungTests.FourSeasonChanges_SponsoringStaysConsistent`: Seed 12 statt 11 – bei Seed 11 läuft im
-  Probenzeitraum kein Vertrag mit Option mehr aus; Prüfziel unverändert.
-- Zusammenspiel: `IntegrationRunde7Tests` (Originaldaten): eine Saison Modus 4 über die Oberfläche (Börse mit vollem
-  Verlauf, keine Handbuchfrage, Sichern/Laden bytegleich) und ein Spieltag mit Ereignissen beim eigenen Verein (Spiele,
-  Tore = eigene Tore, Vorlagen ≤ 2 je Tor, Torhüterminuten).
-- Plan berichtigt: #183, #184, #185 (Zuständigkeiten oben).
-- **Review** (`docs/reviews/2026-10-30-integration-runde-7.md`, Head `eafbbae`, „Nein“): **R7-02** (#200, P2)
-  Angriffszuschlag zog `random(0, Angriff)` statt `lrandom(Angriff, 7)` (em.exe 0x9F92–0xA019) – behoben,
-  `IntegrationRunde7ReviewTests` (rot vorher); **R7-03** (#201, P2) Nationalteam zählte keine Spielerereignisse – behoben,
-  `IntegrationRunde7NationalCountersTests` (beide rot vorher); **R7-04** (#202, P3) Energie 70 unabhängig aus em.exe
-  0x3BB51 belegt (`IntegrationRunde7EnergyTests`). Danach alle Sollwerte neu; drei ergebnisabhängige Tests angepasst:
-  `FinanceCalibrationTests` (Pokalprämie des nun siegenden Oberligavereins herausgerechnet), `WeltkugelDosboxTests`
-  (Zahl der Ernennungen im Modus 4 hängt an den Ergebnissen: 1–3 statt genau 2), `IntegrationRunde7Tests` (Spielertore
-  ≤ Tore, im Original 1/5 der Tore ohne Torschützen, 0x5028). Meisterhäufung nach R7-02 in der Modus-4-Probe nicht mehr
-  (Meister 1, 13, –, 24, –); Tore je Spiel Originaldaten 6,9–7,4. Nachprüfung des Deltas ausstehend.
+- **Ziel:** #216 Klickzone Managerkopf im Hauptmenü (0x4549D–0x454B3); #217 Bundestrainer-Warnung (< 10 Spieler) und „Sie
+  können nicht mehr weiterspielen.“ im Logo-Zweig; #225 Aufruferzahl 0x49D36 und Einsprung 0x02327 in der Funktionskarte;
+  #230 hok-format (Versicherungs-Fundstelle, Testlücken, `IsGoalkeeper` ohne Markierung). Dabei in `docs/re-abdeckung.md`
+  die Nummer der Lücke zu #194 berichtigen (Text „Nr. 10“, Tabelle Nr. 11).
+- **Abnahme:** je Issue roter Test (bzw. bei #225 Prüfung im Skript), danach grün; Bildschirme zustandsrein.
+- **Dateigrenzen:** `UI/Screens/MainMenuScreen.cs` (minimal, begründet), `Formats/OriginalSaveGame*.cs`, `Tools/Hok*.cs`,
+  `docs/formate/spielstand-original.md`, `tools/reverse-engineering/funktionskarte.py`, `docs/re-abdeckung.md`, Tests.
+- **Modell:** Claude Sonnet 5.5.
+- **Status:** offen.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
-- Einzelprämien Topscorer, bester Torhüter, Fair-Play (#135), Statistiken Spieler, Verein, Fairplay, WM-Statistik:
-  warten auf `spielberechnung` (Tore, Vorlagen, Strafen je Spieler; Korrektur Nutzer 30.10.2026: nicht auf die Torszenen).
+- `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): letzter Schritt vor v1.0 (Entscheidung Nutzer).
+- `penalty-original` (0x3901B, Penaltyschießen nach Verlängerung): Runde 9.
+- `optionen-wirkung` (Spielstand-Optionen aus 0x2CD1C in Core, Abgrenzung zu `nationalteam` für `CupsNationalMode.cs`):
+  Runde 9, auf den Belegen von `optionen-kalender`.
+- #196 Regler Ausschnitt/Maßstab des Kursverlaufs: eigenes Paket, Runde 9.
 - #166 Oberliga-Austausch (400.000 DM): erst, wenn der Austausch der Oberliga samt Managervereinen belegt ist.
-- Import/Export von Original-Spielständen ins Remake: nach `hok-format` (Analyse, #176) und `hok-patch`.
-- Highscore am Spielende, Saisonende im Modus „nur Weltkugel“: in keinem Video – Kandidat für eine DOSBox-Aufnahme
-  mit einem per `hok-patch` vorbereiteten Spielstand.
-- Inaktive Branches (Entscheidung Nutzer, 30.10.2026: prüfen, dann löschen): `paket/speichern-ids` ist vollständig in
-  `main` → löschen; `paket/wettbewerbe-weltkugel-2` hat einen ungemergten Commit `71b27de` → erst nach Übernahme durch
-  `weltkugel-dosbox` löschen. Löschen nur in der Weboberfläche (aus den Sitzungen gesperrt).
+- Kleinere Lücken der Funktionskarte (Jugendteams 0x3A24B, Bandenwerbung 0x2A9AD, Dateidialog 0x5DBE5, Versicherung
+  0x07089): Fundstellen beim nächsten Paket des jeweiligen Bereichs nachtragen.
+- Import/Export von Original-Spielständen ins Remake; Highscore am Spielende und Saisonende im Modus „nur Weltkugel“
+  (Kandidat für eine DOSBox-Aufnahme mit `hok-patch`).
+
 
 ## Paket `hok-format` – Original-Spielstände `*.HOK`
 
@@ -230,7 +249,7 @@ Branch: `paket/wettbewerbe` · Status: PR 1–7 gemergt (Runde 3); Restarbeiten 
 | 6 | Bundestrainer: WM-Kader, „WM Vorbereitung“ (Freundschaftsspiele), Etat; WM: Werte Deutschlands neu ausgewürfelt, Länder 20-mal getauscht | gemergt (Runde 3, #54) |
 | 7 | Spielmodus „nur Weltkugel“: Spielvorbereitung, Vereinssaison überspringen, Menü des Bundestrainers | gemergt (#87 über #89) |
 | 8 | Paarungen Liga | gemergt (Runde 5, #128); Pixelvergleich Runde 6 (`pixel-wettbewerbe`) |
-| – | Statistiken Spieler, Verein, Fairplay, WM-Statistik | **wartet auf `spielberechnung`** (Tore, Vorlagen, Strafen je Spieler) |
+| – | Statistiken Spieler, Verein, Fairplay, WM-Statistik | Runde 8 (`statistiken`, `nationalteam`) |
 
 - Paarungen (Liga, Playoffs, DEB-Pokal, Europapokal, WM), Freundschaftsspiele.
 - Stärken (Ligen, Länderteams: Gesamt/Abwehr/Sturm, Smileys), Statistiken (Totale, Früher, Verein, Spieler, Fairplay, WM).
