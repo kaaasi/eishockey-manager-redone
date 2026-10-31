@@ -35,4 +35,4 @@ entschlüsselt sind, ist das im Code mit [APPROX] markiert.
 - Wöchentlicher Autosave (`Autosave.ehm`), abschaltbar.
 - Fehlerschutz: interne Fehler werden abgefangen und in `crash.log` protokolliert, statt das Spiel zu beenden.
 - Finanzbuch (Klick auf Bank/Konto): Einnahmen und Ausgaben je Kategorie, laufende und vorige Saison.
-- Lautstärke für Effekte und Musik getrennt einstellbar, `F8` = Ton aus.
+- Lautstärke der Effekte einstellbar, `F8` = Ton aus. Musik nur im Titelbildschirm (#221), ohne Einstellung.

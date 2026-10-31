@@ -131,11 +131,6 @@ public class BoerseStartScreenTests
     }
 
     /// <summary>
-    /// Befund NB-02 (#206): Erst der Klick wählt die Aktie und setzt den Ausschnitt (em.exe 0x59B2D: Auswahl nur bei
-    /// Maustaste <c>DGROUP 0x5A16 == 1</c>, dann 0x59C75 Versatz = Kurs · 3 − 130). Überfahren ändert nichts.
-    /// Ersetzt <c>Hover_SetsOffsetImmediately</c> aus #188.
-    /// </summary>
-    /// <summary>
     /// Review-Befund HB-01 (#214): Nur ein Linksklick in die Logospalte (x &lt; 47, em.exe 0x59BF2) wählt eine Aktie; ein
     /// Klick ins Infofeld daneben und ein Rechtsklick auf die Logospalte (0x59B2D: nur Ereignis 1) ändern nichts.
     /// </summary>
@@ -161,6 +156,11 @@ public class BoerseStartScreenTests
         Assert.Equal(offset, screen.ChartOffset);
     }
 
+    /// <summary>
+    /// Befund NB-02 (#206): Erst der Klick wählt die Aktie und setzt den Ausschnitt (em.exe 0x59B2D: Auswahl nur bei
+    /// Maustaste <c>DGROUP 0x5A16 == 1</c>, dann 0x59C75 Versatz = Kurs · 3 − 130). Überfahren ändert nichts.
+    /// Ersetzt <c>Hover_SetsOffsetImmediately</c> aus #188.
+    /// </summary>
     [GameDataFact]
     public void Hover_KeepsOffset_ClickSetsItImmediately()
     {

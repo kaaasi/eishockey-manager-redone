@@ -36,13 +36,17 @@ internal static class SettingsSync
         if (mixer is null)
             return;
         mixer.EffectsVolume = settings.EffectsVolume;
-        mixer.MusicVolume = settings.MusicVolume;
 
-        // Titelmusik nur im Titelbildschirm; während der Spieltage nach „Musik auch im Spiel“ (MusicPolicy).
-        var wanted = MusicPolicy.Wanted(current, settings);
-        if (wanted && !mixer.IsMusicPlaying)
-            mixer.PlayMusic();
-        else if (!wanted && mixer.IsMusicPlaying)
-            mixer.StopMusic();
+        // Musikpegel bleibt beim Standard des Mixers (voll): Die Musik läuft nur im Titelbildschirm und hat keine
+        // eigene Einstellung mehr (#221); Ton aus bleibt über F8 (Muted) möglich. Ein fester Wert wäre willkürlich.
+        switch (MusicPolicy.Decide(current, mixer.IsMusicPlaying))
+        {
+            case MusicAction.Start:
+                mixer.PlayMusic();
+                break;
+            case MusicAction.Stop:
+                mixer.StopMusic();
+                break;
+        }
     }
 }
