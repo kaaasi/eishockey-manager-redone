@@ -51,7 +51,7 @@ public class PlayerFactoryTests
         var listing = game.TransferMarket.Listings[0];
         listing.Player.Number = club.Players[0].Number; // gleiche Nummer wie ein eigener Spieler
 
-        var offer = loan ? listing.LoanFee : listing.Price;
+        var offer = (loan ? listing.LoanFee : listing.Price) * 135 / 100; // 135 %: im Original immer angenommen (über random(110, 130) %, 0x4991D; R8-C01)
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, listing, offer, loan));
         AssertComplete(club, listing.Player);
         Assert.Equal(loan, listing.Player.OnLoan);

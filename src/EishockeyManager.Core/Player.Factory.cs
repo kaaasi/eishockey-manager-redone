@@ -121,7 +121,7 @@ public static class PlayerFactory
         p.OnLoan = loan;
         p.Loan = agreement;
         p.Insured = false;
-        p.RejectedOfferDay = null;
+        p.NegotiationLock = 0;
         p.ContractYears = contractYears;
         p.MonthlySalary = Contracts.Demand(p);
         if (!club.Players.Contains(p))

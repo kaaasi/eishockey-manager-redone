@@ -105,14 +105,14 @@ public class LifecycleRegressionTests
         staying.Age = leaving.Age = 27;
         staying.ContractYears = 3;
         leaving.ContractYears = 1;
-        staying.RejectedOfferDay = 0;
+        staying.NegotiationLock = 5;
         club.Lineup.Assign(LineupSlot.Forward(0, 0), leaving);
 
         game.StartNextSeason();
 
         Assert.Equal(28, staying.Age);
         Assert.Equal(2, staying.ContractYears);
-        Assert.Null(staying.RejectedOfferDay);
+        Assert.Equal(0, staying.NegotiationLock);
         Assert.Equal(28, leaving.Age);
         Assert.Equal(0, leaving.ContractYears);
         Assert.DoesNotContain(leaving, club.Players);
@@ -133,7 +133,7 @@ public class LifecycleRegressionTests
         player.Insured = true;
         var borrower = game.Clubs[game.ActiveManager.ClubIndex];
         Assert.Equal(TransferResult.Accepted,
-            game.TransferMarket.Buy(game, game.ActiveManager, listing, listing.LoanFee, true));
+            game.TransferMarket.Buy(game, game.ActiveManager, listing, listing.LoanFee * 135 / 100, true)); // 135 %: im Original immer angenommen (über random(110, 130) %, 0x4991D; R8-C01)
         borrower.Lineup.Assign(new LineupSlot(0, player.Role, 0), player);
 
         game.StartNextSeason();

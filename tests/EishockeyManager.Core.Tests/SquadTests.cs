@@ -95,36 +95,3 @@ public class SquadTests
         Assert.Equal(29, new Player { Name = "B", Role = PlayerRole.Defender, Condition = 16, Technique = 20, Form = 53 }.Strength);
     }
 }
-
-public class ContractTests
-{
-    private static Player NewPlayer() => new()
-    {
-        Name = "TEST", Role = PlayerRole.Defender, Condition = 35, Technique = 35, Form = 35, Talent = 4,
-    };
-
-    [Fact]
-    public void Extension_AtCurrentSalary_IsAccepted()
-    {
-        var p = NewPlayer();
-        p.MonthlySalary = Contracts.BaseSalary(p, new Random(1));
-        p.ContractYears = 2;
-        Assert.Equal(NegotiationResult.Accepted, Contracts.Offer(p, 4, p.MonthlySalary, insured: true, matchDay: 1, new Random(1)));
-        Assert.Equal(4, p.ContractYears);
-        Assert.Equal("4 Jahre(v)", p.ContractText);
-    }
-
-    [Fact]
-    public void LowOffer_IsRejected_AndBlockedForTheMatchDay()
-    {
-        var p = NewPlayer();
-        p.MonthlySalary = Contracts.Demand(p);
-        Assert.Equal(NegotiationResult.Rejected, Contracts.Offer(p, 2, p.MonthlySalary / 2, false, 3, new Random(1)));
-        Assert.Equal(NegotiationResult.AlreadyRejected, Contracts.Offer(p, 2, p.MonthlySalary * 2, false, 3, new Random(1)));
-        Assert.Equal(NegotiationResult.Accepted, Contracts.Offer(p, 2, p.MonthlySalary, false, 4, new Random(1)));
-    }
-
-    [Fact]
-    public void ZeroSalary_IsUnfair() =>
-        Assert.Equal(NegotiationResult.Unfair, Contracts.Offer(NewPlayer(), 2, 0, false, 1, new Random(1)));
-}

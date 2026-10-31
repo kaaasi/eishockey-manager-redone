@@ -8,6 +8,9 @@ namespace EishockeyManager.UI.Screens.Team;
 /// Verträge (Hauptmenü → Mannschaft → Verträge) mit Vertragsverhandlung. Vermessen aus dem UI-Video
 /// (ca. 10:20–10:55): Fenster (1,14,264,209), Spalten ART NAME SP ST TO STATUS E V.DAUER WERT,
 /// Klick auf einen Spieler öffnet die Verhandlung (grauer Rahmen 166 × 67, unter bzw. über der Zeile).
+/// [ORIGINAL] Bildschirm em.exe 0x3FFE0 (Ov 0x108), Verhandlung 0x4A1DB (Aufruf 0x40208, Lage nach Zeile &lt; 12): Regeln in
+/// <see cref="Contracts.Negotiate"/>; Prüfung beim Anklicken von Laufzeit und Gehalt (<see cref="Contracts.Availability"/>);
+/// Eingabe der Laufzeit füllt das Gehalt mit der Forderung (<see cref="Contracts.DemandAfterYears"/>).
 /// </summary>
 public sealed class ContractsScreen : Screen
 {
@@ -32,8 +35,8 @@ public sealed class ContractsScreen : Screen
     private readonly MessageBox _message = new();
     private Player? _player;
     private int _row;
-    private int _years, _salary;
-    private bool _insured;
+    private int _years, _salary; // eingegebene Werte, 0 = keine Eingabe (wie im Original)
+    private bool _insured, _demandFilled;
     private Field _edit;
     private string _editText = "";
     private int _mouseX = -1, _mouseY = -1;
@@ -45,6 +48,9 @@ public sealed class ContractsScreen : Screen
 
     /// <summary>Offene Meldung (z. B. „… ist im Moment nicht verhandlungsbereit.“).</summary>
     public MessageBox Message => _message;
+
+    /// <summary>Text der Statuszeile (Hinweiszeile 0x41683) nach dem letzten Bild.</summary>
+    public string? Status => _status;
 
     /// <summary>Spieler, mit dem gerade verhandelt wird (oder null).</summary>
     public Player? Negotiating => _player;
@@ -85,23 +91,20 @@ public sealed class ContractsScreen : Screen
         var row = RowAt(input.MouseY);
         if (row < 0 || row >= rows.Count)
             return;
+        // [ORIGINAL] Bildschirm 0x3FFE0 (Datei 0x4015D–0x401D3): ausgeliehen bzw. Ruhestand angekündigt → Meldung statt
+        // Verhandlung. [APPROX] Die Absage der Spur „kader“ (R2-11) ebenso. Die Sperre meldet erst der Dialog (0x4A704).
         var p = rows[row];
-        if (p.OnLoan)
+        if (p.OnLoan || p.Notice is ContractNotice.Refused or ContractNotice.Retiring)
         {
-            _message.Show("Dieser Spieler ist", "nur ausgeliehen.");
-            return;
-        }
-        if (p.Notice is ContractNotice.Refused or ContractNotice.Retiring)
-        {
-            // Angekündigte Absage bzw. Ruhestand (R2-11): keine Verhandlung, Meldung aus em.exe.
-            _message.Show(Contracts.Message(p.Notice == ContractNotice.Refused ? NegotiationResult.NotWilling : NegotiationResult.Retiring, p));
+            _message.Show(Contracts.Message(Contracts.Availability(Host.Game!, p)!.Value, p));
             return;
         }
         _player = p;
         _row = row;
-        _years = Math.Max(p.ContractYears, Contracts.MinYears);
-        _salary = p.MonthlySalary;
-        _insured = p.Insured;
+        _years = 0;
+        _salary = 0;
+        _insured = _player.Insured;
+        _demandFilled = false;
         _edit = Field.None;
     }
 
@@ -136,10 +139,15 @@ public sealed class ContractsScreen : Screen
             _player = null;
             return;
         }
-        if (input.Clicked(YearsField(dialog)))
-            StartEdit(Field.Years);
-        else if (input.Clicked(SalaryField(dialog)))
-            StartEdit(Field.Salary);
+        if (input.Clicked(YearsField(dialog)) || input.Clicked(SalaryField(dialog)))
+        {
+            if (Contracts.Availability(Host.Game!, _player!) is { } refusal)
+            {
+                _message.Show(Contracts.Message(refusal, _player!));
+                return;
+            }
+            StartEdit(input.Clicked(YearsField(dialog)) ? Field.Years : Field.Salary);
+        }
         else if (input.Clicked(InsuranceField(dialog)))
             _insured = !_insured;
         else if (input.Clicked(AcceptButton(dialog)) || input.Pressed(Key.Enter))
@@ -152,25 +160,46 @@ public sealed class ContractsScreen : Screen
         _editText = "";
     }
 
+    /// <summary>
+    /// Eingabe übernehmen. [ORIGINAL] Laufzeit (0x4A7C5): leere Eingabe = bisherige Laufzeit ohne Forderung, sonst Forderung ins Gehaltsfeld
+    /// (nicht im Level 5) und Merker „Forderung steht im Feld“; Gehalt (0x4A9F5): leere Eingabe = bisheriges Gehalt, Merker
+    /// gelöscht. Werte über 4 Jahre bleiben stehen und scheitern erst bei „Mach' ich!“.
+    /// </summary>
     private void CommitEdit()
     {
-        if (_editText.Length > 0 && int.TryParse(_editText, out var value))
+        var p = _player!;
+        var value = 0;
+        var empty = _editText.Length == 0 || !int.TryParse(_editText, out value);
+        if (_edit == Field.Years && empty)
         {
-            if (_edit == Field.Years)
-                _years = Math.Clamp(value, Contracts.MinYears, Contracts.MaxYears);
-            else
-                _salary = Math.Max(value, Contracts.MinSalary); // Video: 0 DM wird zu 1 DM
+            _years = Contracts.CurrentYears(p); // 0x4A808: leere Eingabe, keine Forderung, Merker gelöscht
+            _demandFilled = false;
+        }
+        else if (_edit == Field.Years)
+        {
+            _years = Math.Max(value, Contracts.MinYears);
+            var game = Host.Game!;
+            if (Contracts.DemandAfterYears(game, game.ActiveManager, p, _years) is { } demand)
+                _salary = demand;
+            _demandFilled = true;
+        }
+        else if (_edit == Field.Salary)
+        {
+            _salary = empty ? p.MonthlySalary : Math.Max(value, Contracts.MinSalary); // Video: 0 DM wird zu 1 DM
+            _demandFilled = false;
         }
         _edit = Field.None;
     }
 
+    /// <summary>„Mach' ich!“: Verhandlung nach 0x4AB66; der Dialog schließt in jedem Fall, Absagen mit Meldung.</summary>
     private void Offer()
     {
         var game = Host.Game!;
-        var result = Contracts.Offer(_player!, _years, _salary, _insured, game.PlayedMatchDays, game.Random);
-        _message.Show(Contracts.Message(result, _player!));
-        if (result == NegotiationResult.Accepted)
-            _player = null;
+        var p = _player!;
+        var result = Contracts.Negotiate(game, game.ActiveManager, p, _years, _salary, _insured, _demandFilled);
+        if (result != NegotiationResult.Accepted)
+            _message.Show(Contracts.Message(result, p));
+        _player = null;
     }
 
     public override void Draw(Surface s)
@@ -237,8 +266,8 @@ public sealed class ContractsScreen : Screen
         for (var i = 0; i < 3; i++)
             s.Text(mini, 77, d.Y + 27 + 8 * i, ":", Colors.White);
 
-        DrawValue(s, Field.Years, d.Y + 27, Player.YearsText(_years));
-        DrawValue(s, Field.Salary, d.Y + 35, FormatMoney(_salary));
+        DrawValue(s, Field.Years, d.Y + 27, Player.YearsText(_years != 0 ? _years : DisplayedYears(p)));
+        DrawValue(s, Field.Salary, d.Y + 35, FormatMoney(_salary != 0 ? _salary : p.MonthlySalary));
         s.Text(mini, 81, d.Y + 43, _insured ? "abgeschlossen" : "keine", Colors.White); // [APPROX] Text für „mit Versicherung“
 
         TeamUi.DialogButton(s, Assets, AcceptButton(d).X, AcceptButton(d).Y, "Mach' ich!");
@@ -255,6 +284,12 @@ public sealed class ContractsScreen : Screen
         var x = s.Text(Assets.Mini, 81, y, _editText, Colors.White);
         s.Fill(new Rect(x + 1, y, 3, 5), 1); // Eingabemarke wie im Video
     }
+
+    /// <summary>
+    /// Laufzeit im Dialog ohne Eingabe: die bisherige, bei einem Verlängerungsangebot des Spielers die angebotene
+    /// (Original: Kaderplatz +0x18 &gt; 99 → +0x0B = +0x18 − 100, Datei 0x4A3AF).
+    /// </summary>
+    private static int DisplayedYears(Player p) => Contracts.CurrentYears(p);
 
     /// <summary>„1.500 DM“ (im Dialog mit Tausenderpunkt, in der Liste ohne).</summary>
     public static string FormatMoney(int amount) =>
@@ -273,22 +308,28 @@ public sealed class ContractsScreen : Screen
         }
         if (!Window.Contains(_mouseX, _mouseY))
             return null;
-        var row = RowAt(_mouseY);
-        if (row < 0 || row >= rows.Count)
+        var layout = Layout(rows.Count);
+        var row = PlayerHintLine.Row(layout, _mouseY);
+        var column = PlayerHintLine.Column(layout, _mouseX);
+        if (row < 0 || row >= rows.Count || column < 0)
             return null;
         var p = rows[row];
-        return _mouseX switch
-        {
-            < 24 => "Art des Spielers: " + p.RoleName,
-            < 80 => $"Name: {p.Name} ({p.Age} Jahre)",
-            < 95 => "Spiele gesamt (Liga und Pokal)",
-            < 108 => "Durchschnittsstärke",
-            < 121 => "Tore gesamt (Liga und Pokal)",
-            < 158 => "Status: " + TeamUi.StatusText(Club.StatusOf(p)),
-            < 172 => "Tendenz des Spielers: " + TeamUi.TrendText(p.Trend),
-            < 210 => "Dauer des Vertrages mit dem Spieler (in Saisons)",
-            _ => "Monatliches Gehalt des Spielers",
-        };
+        return PlayerHintLine.Text(p, column, new PlayerHintInfo(Club.IsDressed(p), LineOf(p)), showExhaustion: false);
+    }
+
+    /// <summary>
+    /// Maße der Liste für die Hinweiszeile. [ORIGINAL] em.exe Datei 0x400B4–0x400E0 (in 0x3FFE0): Ursprung 7 | 29, Rand 0xFF,
+    /// Spaltenmaske 0x3D146 (Art, Name, Spiele, Durchschnittsstärke, Tore, Status, Tendenz, Vertragsdauer, Gehalt).
+    /// </summary>
+    public static PlayerListLayout Layout(int rows) => new(7, 29, rows - 1, 0xFF, 0x3D146);
+
+    /// <summary>Reihe (1–4), in der der Spieler aufgestellt ist, sonst 0 (Kaderplatz +0x15 &amp; 0x7F).</summary>
+    private int LineOf(Player p)
+    {
+        foreach (var slot in LineupSlot.All)
+            if (Club.Lineup[slot] == p)
+                return slot.Block + 1;
+        return 0;
     }
 }
 

@@ -102,7 +102,9 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
 - **Status:** Teil 1 (Preis, Annahme, Unfair-Grenze, Angebote für eigene Spieler) in #248; Teil 2 Vertragsverhandlung
-  0x4A1DB, Sperre nach Ablehnung, Pixelvergleich offen (siehe `docs/transfer.md`).
+  0x4A1DB/0x49A3B, Sperren (+0x18, +0x1A), R8-C01, R8-C02, SW-01, Pixelvergleich in #266 (Welle 3); offen: Kauf mit
+  Verhandlung, Verhandlung am Saisonende, Start-/Wechselgehalt nach Wert, unaufgeforderte Angebote, Wechsel der Liste 0x494EF
+  (siehe `docs/transfer.md`).
 
 ### Spur `spielerinfo` – Spielerinfo- und Spielerdaten-Fenster (0x41683, 0x041AC)
 

@@ -20,7 +20,7 @@ public class WaveBReviewRegressionTests
         var player = listing.Player;
         player.ContractYears = 1;
         Assert.Equal(TransferResult.Accepted,
-            game.TransferMarket.Buy(game, game.ActiveManager, listing, listing.LoanFee, true));
+            game.TransferMarket.Buy(game, game.ActiveManager, listing, listing.LoanFee * 135 / 100, true)); // 135 %: im Original immer angenommen (über random(110, 130) %, 0x4991D; R8-C01)
         var random = new Random(1);
         while (origin.Players.Count < PlayerFactory.MaxNumber)
         {

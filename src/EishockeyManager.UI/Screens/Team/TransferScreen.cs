@@ -60,6 +60,9 @@ public sealed class TransferScreen : Screen
 
     public PlayerInfoPopup Info => _info;
 
+    /// <summary>Text der Statuszeile unter der Maus (Herkunft eines Markt-Spielers bzw. Hinweiszeile 0x41683 des Kaders).</summary>
+    public string? Status => StatusText(TeamUi.Rows(Club), Market.Listings);
+
     /// <summary>Offene Meldung (z. B. „Der Transfer findet nicht statt.“).</summary>
     public MessageBox Message => _message;
 
@@ -118,19 +121,21 @@ public sealed class TransferScreen : Screen
             var l = listings[i];
             if (EntryNameRow(i).Contains(x, y))
             {
-                _info.Show(l.Player, l.Price);
+                // Spielerdaten-Fenster 0x041AC mit Sichtbarkeit nach Verein (#253): Marktspieler gehören nicht zum eigenen
+                // Verein, vertragslose zu keinem.
+                _info.Show(l.Player, l.Price,
+                    PlayerDataContext.Create(Game, l.Player, l.IsFreeAgent ? null : l.From, Club, Manager.Level));
                 return;
             }
             if (l.Seller == Manager)
                 continue;
-            if (EntryBuy(i).Contains(x, y))
+            if (EntryBuy(i).Contains(x, y) || EntryLoan(i).Contains(x, y))
             {
-                _dialog = TransferDialog.ForBuy(l, loan: false);
-                return;
-            }
-            if (EntryLoan(i).Contains(x, y))
-            {
-                _dialog = TransferDialog.ForBuy(l, loan: true);
+                // [ORIGINAL] Sperre nach abgelehntem Gebot wird beim Anklicken geprüft (Datei 0x47140, Meldung 0x47B01).
+                if (TransferMarket.IsLocked(Game, Manager, l))
+                    _message.Show(TransferMarket.Message(TransferResult.AlreadyRejected));
+                else
+                    _dialog = TransferDialog.ForBuy(l, loan: EntryLoan(i).Contains(x, y));
                 return;
             }
         }
@@ -232,7 +237,7 @@ public sealed class TransferScreen : Screen
 
         // Transferliste
         Widgets.Frame(s, Assets, ListWindow, FrameStyle.Orange);
-        TeamUi.DialogTitle(s, Assets, 247, 17, "Transferliste");
+        TeamUi.DialogTitle(s, Assets, 246, 19, "Transferliste"); // Pixelvergleich oberflaeche_1102: (−1 | +2)
         const byte lh = TeamUi.DimColor; // Video: Kopfzeile der Transferliste gedämpft
         s.Text(mini, ListLeft, ListHeaderY, "ART", lh);
         s.Text(mini, 201, ListHeaderY, "NAME", lh);
@@ -255,12 +260,13 @@ public sealed class TransferScreen : Screen
                 TeamUi.HoverRow(s, ListLeft - 1, y, ListRight - ListLeft + 3, 13);
             s.Text(mini, ListLeft, y, p.RoleLetter.ToString(), c);
             s.Text(mini, 189, y, p.Name, c);
-            s.TextRight(mini, 259, y, p.Condition.ToString(), c);
-            s.TextRight(mini, 271, y, p.Technique.ToString(), c);
-            s.TextRight(mini, 283, y, p.Form.ToString(), c);
-            s.TextRight(mini, 310, y, p.Age + " J.", c);
+            // Pixelvergleich oberflaeche_1102 (Spur transfer-original-vertrag): rechtsbündige Spalten 3 Pixel weiter rechts
+            s.TextRight(mini, 262, y, p.Condition.ToString(), c);
+            s.TextRight(mini, 274, y, p.Technique.ToString(), c);
+            s.TextRight(mini, 286, y, p.Form.ToString(), c);
+            s.TextRight(mini, 313, y, p.Age + " J.", c);
             s.Text(mini, ListLeft, y + 6, Money(l.Price) + " (K)", TeamUi.DimColor);
-            s.TextRight(mini, 312, y + 6, Money(l.LoanFee) + " (L)", TeamUi.DimColor);
+            s.TextRight(mini, 315, y + 6, Money(l.LoanFee) + " (L)", TeamUi.DimColor);
             EntryLine(s, y + 12);
         }
 
@@ -282,11 +288,24 @@ public sealed class TransferScreen : Screen
                 return listings[i].OriginText;
         if (SquadWindow.Contains(_mouseX, _mouseY))
         {
-            var row = SquadRowAt(_mouseY);
-            if (row >= 0 && row < rows.Count)
-                return $"Name: {rows[row].Name} ({rows[row].Age} Jahre)";
+            // [ORIGINAL] Hinweiszeile 0x41683, Aufruf 0x46A83: Ursprung 7 | 29, Maske 0x90C6, Rand 155.
+            var layout = PlayerListLayout.TransferList(rows.Count);
+            var row = PlayerHintLine.Row(layout, _mouseY);
+            var column = PlayerHintLine.Column(layout, _mouseX);
+            if (row >= 0 && row < rows.Count && column >= 0)
+                return PlayerHintLine.Text(rows[row], column, new PlayerHintInfo(Club.IsDressed(rows[row]), LineOf(rows[row])),
+                    showExhaustion: false);
         }
         return null;
+    }
+
+    /// <summary>Reihe (1–4), in der der Spieler aufgestellt ist, sonst 0 (Kaderplatz +0x15 &amp; 0x7F).</summary>
+    private int LineOf(Player p)
+    {
+        foreach (var slot in LineupSlot.All)
+            if (Club.Lineup[slot] == p)
+                return slot.Block + 1;
+        return 0;
     }
 
     /// <summary>

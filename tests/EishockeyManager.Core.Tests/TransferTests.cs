@@ -51,12 +51,13 @@ public class TransferTests
         var listing = game.TransferMarket.Listings[0];
         var from = listing.From;
         var money = manager.Money = 1_000_000;
+        var offer = listing.Price * 135 / 100; // 135 %: im Original immer angenommen (über random(110, 130) %, 0x4991D; R8-C01)
 
-        Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, listing, listing.Price, loan: false));
+        Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, listing, offer, loan: false));
         Assert.Contains(listing.Player, club.Players);
         Assert.DoesNotContain(listing.Player, from.Players);
         Assert.DoesNotContain(listing, game.TransferMarket.Listings);
-        Assert.Equal(money - listing.Price, manager.Money);
+        Assert.Equal(money - offer, manager.Money);
         Assert.False(listing.Player.OnLoan);
         Assert.Equal(2, listing.Player.ContractYears);
         Assert.DoesNotContain(club.Players, p => p != listing.Player && p.Number == listing.Player.Number);
@@ -69,9 +70,10 @@ public class TransferTests
         var manager = game.ActiveManager;
         var listing = game.TransferMarket.Listings[1];
         manager.Money = 1_000_000;
-        Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, listing, listing.LoanFee, loan: true));
+        var offer = listing.LoanFee * 135 / 100; // 135 %: im Original immer angenommen (über random(110, 130) %, 0x4991D; R8-C01)
+        Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, listing, offer, loan: true));
         Assert.True(listing.Player.OnLoan);
-        Assert.Equal(1_000_000 - listing.LoanFee, manager.Money);
+        Assert.Equal(1_000_000 - offer, manager.Money);
     }
 
     [Fact]
@@ -82,8 +84,9 @@ public class TransferTests
         var market = game.TransferMarket;
         var listing = market.Listings[0];
 
-        manager.Money = listing.Price - 1;
-        Assert.Equal(TransferResult.NotEnoughMoney, market.Buy(game, manager, listing, listing.Price, false));
+        var offer = listing.Price * 135 / 100; // 135 %: im Original immer angenommen (über random(110, 130) %, 0x4991D; R8-C01)
+        manager.Money = offer - 1;
+        Assert.Equal(TransferResult.NotEnoughMoney, market.Buy(game, manager, listing, offer, false));
         manager.Money = 10_000_000;
         Assert.Equal(TransferResult.Rejected, market.Buy(game, manager, listing, listing.Price / 2, false));
         Assert.Equal(TransferResult.Unfair, market.Buy(game, manager, listing, 0, false));

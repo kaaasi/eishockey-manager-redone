@@ -143,7 +143,7 @@ public class RngTwinProbeTests
     private static void ExtendOffers(GameState game)
     {
         foreach (var p in OwnClub(game).Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1).ToArray())
-            Contracts.Offer(p, p.NoticeYears, Contracts.Demand(p) + 100, false, game.PlayedMatchDays, game.Random);
+            Contracts.Negotiate(game, game.Managers[0], p, p.NoticeYears, Contracts.Demand(p) + 100, false, demandFilled: true);
     }
 
     private static void SignFreeAgents(GameState game)
@@ -204,12 +204,25 @@ public class RngTwinProbeTests
     /// </summary>
     private static readonly HashSet<string> Excluded = ["Id", "DressedCount", "LeaguePenaltyMinutes"];
 
+    /// <summary>
+    /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:
+    /// <c>Player.NegotiationLock</c> (Spur transfer-original-vertrag, Sperre in Tagen) ersetzt <c>RejectedOfferDay</c>
+    /// (Spieltag der letzten Ablehnung, sonst leer); 0 erscheint wie früher <c>null</c> als leerer Wert.
+    /// </summary>
+    private static readonly Dictionary<string, (string Name, Func<object?, object?> Value)> Renamed = new()
+    {
+        ["NegotiationLock"] = ("RejectedOfferDay", v => v is 0 ? null : v),
+    };
+
     private static void Dump(StringBuilder sb, object value)
     {
         foreach (var property in value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                      .Where(p => p.GetIndexParameters().Length == 0 && IsSimple(p.PropertyType) && !Excluded.Contains(p.Name))
-                     .OrderBy(p => p.Name, StringComparer.Ordinal))
-            sb.Append(property.Name).Append('=').Append(property.GetValue(value)).Append(';');
+                     .OrderBy(p => Renamed.TryGetValue(p.Name, out var r) ? r.Name : p.Name, StringComparer.Ordinal))
+        {
+            var (name, map) = Renamed.TryGetValue(property.Name, out var renamed) ? renamed : (property.Name, v => v);
+            sb.Append(name).Append('=').Append(map(property.GetValue(value))).Append(';');
+        }
         sb.Append('\n');
     }
 

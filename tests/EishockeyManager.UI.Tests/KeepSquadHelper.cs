@@ -16,6 +16,6 @@ internal static class KeepSquadHelper
         foreach (var manager in game.Managers)
             foreach (var p in game.Clubs[manager.ClubIndex].Players
                          .Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1).ToArray())
-                Contracts.Offer(p, p.NoticeYears, Contracts.Demand(p) + 100, false, game.PlayedMatchDays, new Random(1));
+                Contracts.Negotiate(game, manager, p, p.NoticeYears, Contracts.Demand(p) + 100, false, demandFilled: true);
     }
 }
