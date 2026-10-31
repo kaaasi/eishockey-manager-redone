@@ -65,8 +65,9 @@ public enum TransferResult
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Grenzen aus den Meldungen in em.exe: 22 Mann im Team, 3 eigene und 11 Spieler insgesamt auf dem Markt,
-/// Leihgebühr = Kaufpreis / 3 (Video). [APPROX] Preisformel (an den sechs Preisen im UI-Video kalibriert, ±8.000 DM),
-/// Annahme von Angeboten, Wechsel der Liste je Spieltag und Gebote für eigene Spieler.
+/// Leihgebühr = Kaufpreis / 3 (Datei 0x462EB). Preis, Annahme eines Gebots, Unfair-Grenze, Tageswurf und Höhe der Angebote
+/// für eigene Spieler nach Ov 0x118 (<see cref="TransferRules"/>, <c>docs/transfer.md</c>). [APPROX] Wechsel der Liste je
+/// Spieltag, Wahl des bietenden Vereins und die Antwort eines menschlichen Verkäufers.
 /// Der Markt aktualisiert sich selbst (<see cref="CatchUp"/>), bis das Paket „saison“ ihn je Spieltag aufruft.
 /// </remarks>
 public sealed class TransferMarket
@@ -105,16 +106,12 @@ public sealed class TransferMarket
     public static bool IsNationalTeam(Club club) => club.Index is >= 52 and < 64; // ClubCategory.NationalTeam
 
     /// <summary>
-    /// Kaufpreis. [APPROX] 5.200 DM je Stärkepunkt, 6.000 DM je Jahr unter 31, Torhüter +93.000 DM,
-    /// auf 1.000 DM gerundet, mindestens 20.000 DM. Video: LAPORTE 76/79/47, 19 J. → 338.000 DM (Formel: 339.000).
+    /// Kaufpreis in DM: Spielerwert 0x118:0x70 (Art 0, ohne Angebot) in Drittel-DM / 3, also ein Vielfaches von 1.000 DM.
+    /// [ORIGINAL] Listenpreis = Kaderplatz +0x2C des Markt-Satzes 4, gesetzt mit dem Wert (Spielstart Datei 0x29EB4), angezeigt
+    /// als „… DM (K)“ über 0x99F:0x2D8 (Betrag / 3, Datei 0x4628B); Gegenprobe an den Original-Spielständen und den sechs
+    /// Videopreisen in <c>TransferOriginalTests</c>.
     /// </summary>
-    public static long Price(Player p)
-    {
-        var value = 5200.0 * (p.Condition + p.Technique + p.Form) / 3 + 6000.0 * (31 - p.Age) - 83000;
-        if (p.Role == PlayerRole.Goalkeeper)
-            value += 93000;
-        return Math.Max(20_000, (long)Math.Round(value / 1000) * 1000);
-    }
+    public static long Price(Player p) => TransferRules.PriceThirds(p) / 3;
 
     /// <summary>Neue Saison: alte Listings und Gebote verwerfen, Markt aus den aktuellen Eigentümern neu bilden.</summary>
     public void StartSeason(GameState game)
@@ -167,7 +164,9 @@ public sealed class TransferMarket
 
     /// <summary>
     /// Ein Spieltag: [APPROX] mit 30 % verschwindet ein fremder Spieler (anderswo verpflichtet), mit 50 % kommt einer
-    /// dazu; für eigene Spieler bieten Computervereine mit 35 % je Spieltag 80–110 % des Preises.
+    /// dazu. Angebote für eigene Spieler auf dem Markt nach dem Original (<see cref="TransferRules.BidRoll"/>, Höhe
+    /// <see cref="TransferRules.BidAmountThirds"/>); [APPROX] bietender Verein zufällig unter den Computervereinen der Ligen
+    /// (Original 0x238:0x1838 nicht belegt), die Höhe wird schon beim Angebot statt beim Anklicken gewürfelt.
     /// </summary>
     public void AdvanceDay(GameState game, Random random)
     {
@@ -179,12 +178,14 @@ public sealed class TransferMarket
 
         foreach (var listing in _listings.Where(l => l.Seller is not null).ToList())
         {
-            if (_bids.Any(b => b.Listing == listing) || random.NextDouble() >= 0.35)
+            var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, random);
+            if (!TransferRules.BidRoll(value, random) || _bids.Any(b => b.Listing == listing))
                 continue;
             var buyers = game.Clubs.Where(c => c.League is not null && c != listing.From && !IsManaged(game, c)).ToList();
             var buyer = buyers[random.Next(buyers.Count)];
-            var amount = (long)Math.Round(listing.Price * (0.8 + 0.3 * random.NextDouble()) / 1000) * 1000;
-            _bids.Add(new TransferBid(listing, buyer, amount));
+            var withOffer = PlayerValue.Compute(PlayerValue.Inputs(listing.Player, listing.From, buyer), PlayerValueKind.Price,
+                (a, b) => TransferRules.Random16(random, a, b));
+            _bids.Add(new TransferBid(listing, buyer, TransferRules.BidAmountThirds(withOffer, random) / 3));
         }
     }
 
@@ -232,8 +233,12 @@ public sealed class TransferMarket
     }
 
     /// <summary>
-    /// Kauf (<paramref name="loan"/> = false) bzw. Leihe eines Spielers zum gebotenen Betrag.
-    /// [APPROX] Ab dem geforderten Betrag sicher, darunter bis 85 % mit sinkender Wahrscheinlichkeit.
+    /// Kauf (<paramref name="loan"/> = false) bzw. Leihe eines Spielers zum gebotenen Betrag. Vom Computermarkt nach
+    /// <see cref="TransferRules.Accepts"/> (Listenpreis, bei Leihe / 3); von einem anderen Manager erst die Unfair-Grenze
+    /// <see cref="TransferRules.IsFair"/> auf dem frischen Wert. Wie im Original fällt die Annahme vor der Geldprüfung
+    /// (0x472C8 vor 0x474F0). [APPROX] Antwort des verkaufenden Managers (Original fragt ihn, DGROUP 0xD98): ab dem
+    /// geforderten Betrag sicher, darunter bis 85 % mit sinkender Wahrscheinlichkeit. Vertragslose Spieler (Ablöse 0)
+    /// kommen immer.
     /// </summary>
     public TransferResult Buy(GameState game, Manager manager, TransferListing listing, long offer, bool loan)
     {
@@ -246,17 +251,26 @@ public sealed class TransferMarket
             return TransferResult.Unfair;
         if (club.Players.Count >= MaxSquad)
             return TransferResult.SquadFull;
-        if (offer > manager.Money)
-            return TransferResult.NotEnoughMoney;
         if (!_listings.Contains(listing) || listing.Seller == manager)
             return TransferResult.Impossible;
 
         var asked = loan ? listing.LoanFee : listing.Price;
         if (asked < 0)
             return TransferResult.Impossible;
-        var ratio = asked == 0 ? 1 : offer / (double)asked;
-        if (ratio < 1 && (ratio <= 0.85 || game.Random.NextDouble() >= (ratio - 0.85) / 0.15))
+        if (listing.Seller is not null)
+        {
+            var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, game.Random);
+            if (!TransferRules.IsFair(value, TransferRules.Thirds(offer), loan))
+                return TransferResult.Unfair;
+            var ratio = asked == 0 ? 1 : offer / (double)asked;
+            if (ratio < 1 && (ratio <= 0.85 || game.Random.NextDouble() >= (ratio - 0.85) / 0.15))
+                return TransferResult.Rejected;
+        }
+        else if (!listing.IsFreeAgent
+                 && !TransferRules.Accepts(TransferRules.Thirds(listing.Price), TransferRules.Thirds(offer), loan, game.Random))
             return TransferResult.Rejected;
+        if (offer > manager.Money)
+            return TransferResult.NotEnoughMoney;
 
         game.Book(manager, FinanceCategory.Transfers, -offer);
         if (listing.Seller is { } seller)
