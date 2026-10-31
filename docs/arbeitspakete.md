@@ -187,7 +187,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `CupPairingsScreen.cs`, `UI/Screens/TileLocks.cs`, `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (eigener
   Abschnitt), `docs/dosbox-befunde.md`, Tests. #193 gehört zu `spielstaerke-manager`.
 - **Modell:** Claude Opus 5.5.
-- **Status:** in Arbeit (Claude Code). Teil `taktik` (#192): fertig zur Review, PR #243. Offen: #195, #194, WM-Statistik (ohne Referenzbilder in dieser Sitzung nicht prüfbar, siehe Übergabe in #243).
+- **Status:** Teil `taktik` (#192) gemergt (PR #243). Welle 3 (`nationalteam-2`): in Arbeit (Claude Code), Branch `paket/nationalteam-2`.
 
 ### Spur `optionen-kalender` – Spielmodus-Optionen und Kalender (0x2CD1C, 0x43E21; #228)
 
