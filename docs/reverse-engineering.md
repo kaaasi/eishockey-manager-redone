@@ -413,7 +413,8 @@ Umsetzung: `Core/StatisticsClub.cs`, `UI/Screens/Statistics/ClubStatisticsScreen
   `spielstaerke-manager`); das Remake hat Regeln, Zustand und Anzeige, der Anschluss fehlt noch.
 * **Zuschauer** (0x2DB30–0x2DC87): Schnitt 0x97DE / 0x9748, Rekord 0x97E2 mit Gegner 0x976F, Minuskulisse 0x97E6 mit
   Gegner 0x9770 (99.999 bzw. 0 → „(noch keine...)“), Wert auf y + 6, „(Gegner)“ auf y + 12. **0x3EB30** Benötigter Schnitt:
-  (0x3E811(1, 1) − 0x3E657(1)) · 12 / 23 · [0x7A1] / [0x79D] / Eintritt 0x973F, negativ → 0. **0x2E2CA**: ganzzahlige
+  (0x3E811(1, 1) − 0x3E657(1)) · 12 / 23 · [0x7A1] / [0x79D] / Eintritt 0x973F, negativ → 0. Probe am Video `folge01_00522`:
+  (71.733 − 42.697) DM · 3 · 12 / 23 / 3 / 10 DM = 1.514 – wie angezeigt. **0x2E2CA**: ganzzahlige
   Wurzel (Schritte 100, 10, 1). Balken 0x2DFD2–0x2E162: k = Benötigter Schnitt / 1000, Streuung √(Σ |v − k|² / n) ≥ 10,
   Halbbreite aus Streuung, Min und Max, Höhe (v − k) · 19 / r + 19 auf 0 … 37, Linie Farbe 4 bei x = 227 + 3 i.
 * **Finanzen** (0x2DC8A–0x2DD13, 0x2E162–0x2E286): Kontostand 0x97EA; Schulden 0x57768(0, 0x63) = Summe der negativen
