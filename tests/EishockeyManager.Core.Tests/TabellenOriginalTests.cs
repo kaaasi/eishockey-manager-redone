@@ -112,4 +112,36 @@ public class TabellenOriginalTests
         LeagueTable.ExchangeSort(order, (b, a) => points[b] > points[a]);
         Assert.Equal([2, 1, 0], order);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MultiSeason_FourChanges_FinalTablesSortedLikeOriginal(bool active)
+    {
+        // Mehrsaisonprobe: Platzierungen bestimmen Auf-/Abstieg, Play-offs und Prämien. Am Ende jeder Hauptrunde muss jede
+        // Abschlusstabelle nach dem Vergleich von 0x50B45 geordnet sein (kein späterer Platz besser als ein früherer).
+        var game = TestGames.Create(3);
+        var checks = 0;
+        RngTwinProbeTests.Run(game, active, beforeChange: g =>
+        {
+            foreach (var league in Enum.GetValues<League>())
+            {
+                var table = LeagueTable.Compute(g, league, TableView.Gesamt, g.PlayedMatchDays);
+                Assert.Equal(12, table.Select(r => r.Club.Index).Distinct().Count());
+                Assert.Equal(g.FinalTables()[league], table.Select(r => r.Club.Index));
+                for (var i = 0; i + 1 < table.Count; i++)
+                {
+                    var (a, b) = (table[i], table[i + 1]);
+                    Assert.True(a.PointsPlus > b.PointsPlus
+                                || a.PointsPlus == b.PointsPlus && (a.Games < b.Games
+                                || a.Games == b.Games && (a.GoalDifference > b.GoalDifference
+                                || a.GoalDifference == b.GoalDifference && a.GoalsFor >= b.GoalsFor)),
+                        $"{g.Season} {league}: Platz {i + 2} vor Platz {i + 1}");
+                }
+                checks++;
+            }
+        });
+        Assert.Equal(12, checks);
+        Assert.Equal(1997, game.Season);
+    }
 }
