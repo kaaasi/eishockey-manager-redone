@@ -8,7 +8,7 @@ namespace EishockeyManager.UI.Screens;
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
-/// <item>[ORIGINAL] em.exe Datei 0x45C33: Frage 0x120:0x7A mit Überschrift = Name des Managers am Zug (DGROUP 0xA70E),
+/// <item>[ORIGINAL] em.exe Datei 0x45C33: Frage 0x120:0x7A mit dem Index des Managers am Zug (Byte DGROUP 0xA70E) als erstem Argument; Überschrift = dessen Name (Nutzerbild, Review HB-02),
 ///   Zeilen DGROUP 0x12E5 „Sie haben also wirklich“, 0x12E9 „etwas besseres zu tun ?“, 0x12ED „Sind Sie sicher ??“ und
 ///   Knöpfen 0x1319 „Leider ja“ / 0x131D „Kein Gedanke“. Antwort ≠ 0 → Speicher freigeben und Programmende
 ///   (0x45C91–0x45CCF), sonst zurück in die Hauptmenüschleife (0x4555C → 0x4535B). Aufruf aus dem Hauptmenü bei Klick
