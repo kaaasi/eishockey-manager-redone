@@ -227,8 +227,8 @@ public sealed class HighscoreInputs
 /// </list>
 /// [APPROX]
 /// <list type="bullet">
-/// <item>Spielerwerte: Kaufpreis des Remakes · 3 (Drittel) statt der Originalformel 0x49D36 (wie bei der Bewertung des Vereins);
-///   die Bewertung selbst rechnet mit einem festen Zufallsstrom, damit das Öffnen des Bildschirms nichts verändert.</item>
+/// <item>Spielerwerte nach 0x49D36 (<see cref="PlayerValue"/>, Spur spielerwert) mit den Eingängen des Remakes (dort [APPROX]); die
+///   Bewertung und die Spielerwerte rechnen mit festen Zufallsströmen, damit das Öffnen des Bildschirms nichts verändert.</item>
 /// <item>Der Europapokal-Stand (Gruppe 1, Endrunde 2) und die weiteren Pokalbytes (nur 0x9744 = 1 bei einem Manager im Spieljahr 1994
 ///   ist belegt) sind nicht abgebildet; Meister-Kennzahl 0x80 | 0x35 statt der Play-Off-Stufe des Brackets.</item>
 /// <item>Das Remake führt Level, Startliga und Startstärke je Manager; für den Schlüssel gelten die des ersten Managers.</item>
@@ -344,8 +344,11 @@ public static class HighscoreRules
 
         // Vermögen in Drittel: Konto, Aktien, Forderungen, Bank (Sparbuch − Kredit), Darlehen an/von Managern, halbe Spielerwerte
         var marks = m.Money + game.DepotValue(m) + game.ManagerReceivables(m) - game.ManagerDebts(m) + finance.Bank.Balance;
+        // [ORIGINAL] 0x5D242–0x5D28A: je Kaderplatz 0x118:0x70(Platz, 0) / 2 (vorzeichenbehaftet). Eigener fester Zufallsstrom
+        // (nur Spieler mit Angebot ziehen), damit die Anzeige den Spielzustand nicht verändert.
+        var valueRandom = new Random(club.Index);
         var wealth = marks * FinanceRules.ThirdsPerMark
-            + club.Players.Sum(p => TransferMarket.Price(p) * FinanceRules.ThirdsPerMark / 2);
+            + club.Players.Sum(p => (long)(game.PlayerValueOf(p, club, PlayerValueKind.Price, valueRandom, m.Level) / 2));
 
         // [APPROX] Ohne gespielte Tabelle (vor dem ersten Spieltag, Weltmodus) bleibt der Platzierungsterm 0; das Original
         // verwendet dort das Platzbyte des Vereins.
