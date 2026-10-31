@@ -100,7 +100,7 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 ### Statistiken, Tabellen, Paarungen, Stärken
 * **Tabelle:** Fenster (5,38,309×150), „TABELLE Gesamt 38.Spieltag“, Spalten PL. TD VEREIN BILANZ S-U-N PUNKTE TORE
   TORDIFF.; Knöpfe Heim / Gesamt / Auswärts bei y = 162. Punkte nach der 2-Punkte-Regel als Plus:Minus („65:11“),
-  Bilanz = letzte neun Spiele (groß = Heim, klein = Auswärts), TD = Tendenz.
+  Bilanz = letzte acht Spiele (klein = Heim, groß = Auswärts; em.exe 0x50283/0x4F4F4, Spur `tabellen-original`), TD = Tendenz.
 * **Verein:** Serien G/H/A (aktuell und Rekord), Über-/Unterzahl, Zuschauer (Schnitt, benötigter Schnitt, Rekord,
   Minuskulisse, Verlauf), Finanzen, Einnahmen/Ausgaben pro Monat.
 * **Spieler:** Scorer, Torschützen, Vorlagen, Torhüter, Strafen. **Fairplay**, **Früher** (Chronik und Karriere),

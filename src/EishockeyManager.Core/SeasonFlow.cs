@@ -356,7 +356,9 @@ public sealed partial class GameState
     /// (Datei 0x2714F, Symbol 8, ohne Prämie). Das Remake hält kein Statusbyte: Das Bit leitet sich aus der Abschlusstabelle, dem Verein und
     /// dem Modus ab, die schon im Spielstand liegen – es ist kein neuer Zustand und braucht keine Schemaänderung. Das Original leitet es an
     /// beiden Markertagen neu ab; zwischen 13. und 29. April ändert sich die Tabelle nicht (Ligaspiele ruhen).
-    /// [APPROX] Das Original sortiert 0x5CCB je nach Ansicht (Gesamt/Heim/Auswärts), das Remake nimmt die Abschlusstabelle „Gesamt“.
+    /// [ORIGINAL] 0x5CCB steht an den Markertagen nach „Gesamt“: Die Ansicht Heim/Auswärts sortiert beim Verlassen wieder nach Gesamt
+    /// (Datei 0x50256, Spur tabellen-original). [APPROX] Nur die Reihenfolge vollständig gleichstehender Vereine kann davon abhängen, wie
+    /// oft die Ansicht gewechselt wurde; das Remake nimmt die Abschlusstabelle „Gesamt“.
     /// </remarks>
     public bool HasTopFiveStatus(SeasonRecord record, ManagerSeasonResult result) =>
         Mode != GameMode.ClubOnly && record.IsTopFive(result.Club);
