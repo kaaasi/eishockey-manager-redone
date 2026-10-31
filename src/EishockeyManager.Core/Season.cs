@@ -210,6 +210,18 @@ public static class LeagueTable
         return list;
     }
 
+    /// <summary>
+    /// [ORIGINAL] Tauschsortierung von em.exe 0x50B45 (Datei 0x50D6D–0x51011): für jeden Platz i alle späteren Plätze j, Tausch,
+    /// wenn der Verein auf j <paramref name="better"/> ist als der auf i. Nicht stabil.
+    /// </summary>
+    public static void ExchangeSort(IList<int> order, Func<int, int, bool> better)
+    {
+        for (var i = 0; i < order.Count - 1; i++)
+            for (var j = i + 1; j < order.Count; j++)
+                if (better(order[j], order[i]))
+                    (order[i], order[j]) = (order[j], order[i]);
+    }
+
     private static void Add(TableRow row, int goalsFor, int goalsAgainst, bool home)
     {
         row.GoalsFor += goalsFor;
