@@ -206,7 +206,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   Abschnitt), `docs/reverse-engineering.md` (eigener Abschnitt), Tests. Änderungen am Tagesablauf (`SeasonFlow.cs`) nur
   als Vorschlag im PR.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen.
+- **Status:** Teil 1 (Belege) #245 gemergt; Teil 2 im Draft-PR der Spur `optionen-kalender-2` (Einstellungen mit lesender Seite „Spielstand“, Kalender eingeordnet, kein Terminbildschirm mangels Videobeleg, #228); Review offen.
 
 ### Spur `befunde-p3` – Kleinbefunde Hauptmenü, hok-format, Funktionskarte (#216, #217, #225, #230)
 

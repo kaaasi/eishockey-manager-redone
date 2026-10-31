@@ -517,5 +517,33 @@ keinen Schalter mit dem Text). Nicht benutzt.
 
 **Offen / [APPROX]:** Zuordnung der 9 Matrix-Felder zu den Beschriftungen (Zeilen vermutlich Drittelpause · Ergebnisse · Tabelle,
 Spalten 1./2./3. Liga) ist aus den Koordinaten geschlossen, **nicht** am Video bestätigt; Wirkung von WM-Spiele/Länderspiele/Europapokal
-(Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Die Bildschirm- und Kalender-Teile (0x43E21 mit 0x43B1F,
-0x43C38, 0x445E0, 0x36169; Pixelvergleich) sind **nicht begonnen**.
+(Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Die Kalender-Teile siehe unten (Teil 2).
+
+### Teil 2 (Spur `optionen-kalender-2`)
+
+**Bildschirm = Einstellungen des Originals.** DOSBox-Bilder 48/49 (`dosbox/nur-weltkugel`, `docs/dosbox-befunde.md`) zeigen genau den
+Bildschirm von 0x2CD1C: oben Fenster „Torszenen“, „Hintergrundgrafik“, „Scrolling“, „Spielgeschwindigkeit“ (acht Pinguine), Mitte
+3 × 3-Matrix **Zeilen Drittelpause · Ergebnisse · Tabelle, Spalten 1.Liga · 2.Liga · 3.Liga**, unten **DEB-Pokal · Europapokal · WM-Spiele**
+(je Pinguin = an, Loch = aus). Damit ist die in Teil 1 offene Matrix-Zuordnung **[ORIGINAL] am Bild bestätigt** (Bild 49: Ergebnisse
+1. Liga, Tabelle 1./2. Liga eingeschaltet). Index 10–12 = DEB-Pokal, Europapokal, WM-Spiele ist aus Beschriftung und Bild geschlossen
+(**[APPROX]**, Wirkung nicht belegt). Der im Remake bisher angenommene Satz „Original hat keinen Einstellungen-Bildschirm“ war falsch.
+
+**Remake:** `SettingsScreen` behält die Geräteeinstellungen (Lautstärke, Torszenen, Vollbild, automatisch speichern – [APPROX], im
+Original nicht vorhanden) und bekommt den Knopf „Spielstand“ mit einer **lesenden** Seite (`GameOptionsView`): Spielmodus aus dem
+Spielstand, Matrix immer aus (das Remake kennt die Meldungsfilter nicht; Live-Ablauf: `livespiel`), Pokale aus dem Modus abgeleitet.
+Pixelvergleich mit Bild 48 **nicht** gemacht: das Remake zeichnet in seinem Layout (Rahmen, Lampen statt Pinguine), die
+Pinguin-/Loch-Grafiken und die Fenster des Originals sind nicht nachgebaut; Bildschirmfoto `einstellungen/03_spielstand_optionen`.
+Wirkung der Spielstand-Optionen in Core samt Migration: Folgepaket `optionen-wirkung`.
+
+**Kalender (Einordnung, Disassembly `ndisasm -b 16`).**
+
+| Adresse | Befund |
+|---|---|
+| 0x43B1F (206 B) | **Datumstext**: Wochentag (Tabelle DGROUP 0xAA0, Index `(Tag + 5) mod 7`), Trenntext (DGROUP 0x521F), Tag als Zahl (0x38:0x2C2), Trenntext (0x5222), Monatsname (Tabelle 0xA70, Index DGROUP 0x5A1C), dann Jahr (DGROUP 0x5A18); Rückgabe Zeiger auf den Puffer. Kein Bildschirm. Das Remake formatiert Datumstexte in Core (`docs/saison.md`, „Kalender“). |
+| 0x43C38 (489 B) | Fensterzeichner (Aufrufe 0x30:0x800, 0x50:0x3B0/0x545, 0x30:0x995 je Zeile); gerufen von 0x0B155. Gehört zum Terminfenster 0x43E21; nicht im Video belegt. |
+| 0x43E21 (1983 B) | Terminübersicht („Saisonende“, „Spielfrei“, „ Noch keine“, „ DM“). **Kein Referenzbild** gefunden (`docs/referenz-videos.md` führt keinen Kalenderbildschirm; Suche nach „Kalender“/„Terminübersicht“ in der Doku ohne Treffer) → **kein Bildschirm gebaut**. |
+| 0x445E0 (1128 B) | Text „Vor dem ersten Spieltag.“ und „.Spieltag“: Infoleiste (Tabellenkurve), im Remake vorhanden (`docs/anforderungen/bildschirme.md`). |
+| 0x36169 (1476 B) | ohne Texte, Aufrufe aus Spielstart, WM und Pokal: Termin-/Paarungserzeugung vermutet; **nicht weiter verfolgt** (Folgepaket, falls gebraucht). |
+
+Die Tiefe bei 0x43C38, 0x43E21 und 0x36169 ist bewusst gering (nur Funktionsrumpf und Aufrufe angesehen); die Zuordnung ist
+**[APPROX]**. Änderungen am Tagesablauf: keine vorgeschlagen.

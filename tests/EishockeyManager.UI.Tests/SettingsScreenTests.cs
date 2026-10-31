@@ -1,3 +1,4 @@
+using EishockeyManager.Core;
 using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Testing;
@@ -119,6 +120,62 @@ public class SettingsScreenTests : IDisposable
         var back = SettingsScreen.BackButton;
         d.Click(back.X + 5, back.Y + 5);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
+    }
+
+    /// <summary>#228 MT-02: Zeilenlage (Beginn 90, Abstand 17) ist festgelegt, nicht nur per Bildschirmfoto belegt.</summary>
+    [Fact]
+    public void RowLayout_IsFixed()
+    {
+        Assert.Equal(new Rect(40, 85, 236, 15), SettingsScreen.RowRect(SettingsScreen.Row.EffectsVolume));
+        Assert.Equal(new Rect(40, 85 + 17 * 3, 236, 15), SettingsScreen.RowRect(SettingsScreen.Row.AutoSave));
+    }
+
+    /// <summary>#228 MT-03: Klick auf „Automatisch speichern“ schaltet um und speichert die Einstellung.</summary>
+    [GameDataFact]
+    public void AutoSaveRow_TogglesAndPersists()
+    {
+        GameSettings.StorePath = Path.Combine(_directory, "auto.json");
+        var d = Open();
+        var row = SettingsScreen.RowRect(SettingsScreen.Row.AutoSave);
+        d.Click(row.X + 10, row.Y + 5);
+        Assert.False(GameSettings.Current.AutoSave);
+        Assert.False(GameSettings.Load(GameSettings.StorePath).AutoSave);
+        d.Click(row.X + 10, row.Y + 5);
+        Assert.True(GameSettings.Current.AutoSave);
+    }
+
+    [Theory]
+    [InlineData(GameMode.WorldOnly, false, false, true)]
+    [InlineData(GameMode.ClubOnly, true, false, false)]
+    [InlineData(GameMode.Full, true, true, true)]
+    public void GameOptionsView_ShowsCompetitionsOfMode(GameMode mode, bool cup, bool europe, bool world)
+    {
+        var v = GameOptionsView.For(mode);
+        Assert.Equal((cup, europe, world), (v.GermanCup, v.EuropeanCup, v.WorldCup));
+        Assert.All(v.Matrix, on => Assert.False(on)); // [ORIGINAL] Anfangswerte DGROUP 0x21D..0x225 = 0
+        Assert.Equal(9, v.Matrix.Length);
+    }
+
+    /// <summary>Lesende Anzeige: Wechsel auf die Seite und Klicks darauf verändern weder Spielstand noch Einstellungen.</summary>
+    [GameDataFact]
+    public void GameOptionsPage_IsReadOnly()
+    {
+        var d = Open();
+        var screen = (SettingsScreen)d.Host.Current!;
+        var game = d.Host.Game!;
+        var money = game.ActiveManager.Money;
+        var settings = GameSettings.Current.Clone();
+        Assert.False(screen.ShowsGameOptions);
+        d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5);
+        Assert.True(screen.ShowsGameOptions);
+        d.Click(SettingsScreen.RowRect(SettingsScreen.Row.AutoSave).X + 10, SettingsScreen.RowRect(SettingsScreen.Row.AutoSave).Y + 5);
+        d.Click(170, 104);
+        Assert.Equal(money, game.ActiveManager.Money);
+        Assert.Equal((settings.EffectsVolume, settings.GoalScenes, settings.Fullscreen, settings.AutoSave),
+            (GameSettings.Current.EffectsVolume, GameSettings.Current.GoalScenes, GameSettings.Current.Fullscreen, GameSettings.Current.AutoSave));
+        Assert.Equal(GameOptionsView.For(game.Mode), screen.GameOptions);
+        d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5); // zurück zu den Geräteeinstellungen
+        Assert.False(screen.ShowsGameOptions);
     }
 
     [GameDataFact]
