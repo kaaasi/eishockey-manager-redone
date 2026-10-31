@@ -140,10 +140,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Modus 1 („nur Weltkugel“) siehe <see cref="FourSeasonChanges_WorldOnly"/>.
     /// Sollwerte auf dem Stand dieses Branches (Spur spielberechnung, vor der Integration Runde 7) ermittelt; die Leitstelle
     /// zieht sie in der Integration nach.
+    /// Spur statistiken (Runde 8, #135): beide neu, nur durch die Einzelprämien im Kontostand (Gegenprobe ohne
+    /// Einzelprämien: alte Werte); Basis <c>10eb6c5</c>.
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "956268E49BCF8550")]
-    [InlineData(true, "9C677990419F739B")]
+    [InlineData(false, "FE0B2029B11D2D7C")]
+    [InlineData(true, "867D99948F3EB347")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

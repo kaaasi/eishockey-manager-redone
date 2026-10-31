@@ -334,6 +334,7 @@ public sealed partial class GameState
                     case Title.WorldChampion: break;
                 }
             }
+            events.AddRange(SinglePremiumEvents(manager, league)); // Spur statistiken (#135): Einzelprämien (StatisticsClub.cs)
             var premium = SeasonPremium(league, rank, events);
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)

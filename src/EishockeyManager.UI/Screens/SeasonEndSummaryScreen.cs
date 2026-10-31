@@ -28,8 +28,10 @@ public sealed class SeasonEndSummaryScreen : Screen
     /// Zeile, <see cref="Symbol"/> = Spalte <c>n % 6</c>, Zeile <c>n / 6</c>. Statusbits 0–6 zeigen die Symbole 2, 1, 0, 5, 4, 6, 8
     /// (Tabelle DGROUP 0x4B2E, Datei 0x2714F): Bit 0 Aufstieg = 2 (Pfeil hoch), Bit 1 Abstieg = 1 (Pfeil runter),
     /// Bit 4 (DEB-Pokal) = 4 (Fahne), Bit 5 (Europapokal) = 6 (Landkarte mit Pokal), Bit 6 (unter den ersten fünf der 1. Liga) = 8 (Weltkugel).
-    /// [APPROX] Meister: Das Original zeigt zu Bit 3 das Symbol 5 (Datei 0x4B2E); das Remake nimmt weiter den Puck (Zelle 3/0), bis ein Bild den
+    /// [APPROX] Meister: Das Original zeigt zu Bit 3 das Symbol 5 (DGROUP 0x4B2E); das Remake nimmt weiter den Puck (Zelle 3/0), bis ein Bild den
     /// Meistertitel belegt.
+    /// [ORIGINAL] Einzelprämien nach den Statusbits (Datei 0x2718A, 0x271D0, 0x2721D, Spur statistiken #135): bester Torhüter
+    /// Symbol 12, Topscorer Symbol 3, Fair-Play Symbol 13.
     /// </summary>
     public static Rect EventIcon(SeasonEvent e) => e switch
     {
@@ -37,11 +39,17 @@ public sealed class SeasonEndSummaryScreen : Screen
         SeasonEvent.Relegation => Symbol(1),
         SeasonEvent.GermanChampion => Cell(3, 0),
         SeasonEvent.CupWinner => Symbol(4),
+        SeasonEvent.BestGoalie => Symbol(12),
+        SeasonEvent.TopScorer => Symbol(3),
+        SeasonEvent.FairPlay => Symbol(13),
         _ => Symbol(6),
     };
 
+    /// <summary>Einzelprämie (Symbol nach den Statusbits, also nach <see cref="TopFiveIcon"/>)?</summary>
+    public static bool IsSinglePremium(SeasonEvent e) => e is SeasonEvent.BestGoalie or SeasonEvent.TopScorer or SeasonEvent.FairPlay;
+
     /// <summary>
-    /// Symbol 8 (Weltkugel) für Statusbit 0x40 „unter den ersten fünf der 1. Liga“ ([ORIGINAL] Datei 0x2714F, Tabelle 0x4B2E; Befund #125).
+    /// Symbol 8 (Weltkugel) für Statusbit 0x40 „unter den ersten fünf der 1. Liga“ ([ORIGINAL] Datei 0x2714F, Tabelle DGROUP 0x4B2E; Befund #125).
     /// Das Bit ist abgeleitet, nicht gespeichert (<see cref="GameState.HasTopFiveStatus"/>) und kommt als letztes Symbol (Bit 6).
     /// </summary>
     public static Rect TopFiveIcon => Symbol(8);
@@ -98,9 +106,11 @@ public sealed class SeasonEndSummaryScreen : Screen
         if (Record.Managers.Count == 0)
             return;
         var result = Record.Managers[Math.Min(_index, Record.Managers.Count - 1)];
-        var icons = result.Events.Select(EventIcon).ToList();
+        var icons = result.Events.Where(e => !IsSinglePremium(e)).Select(EventIcon).ToList();
         if (Game.HasTopFiveStatus(Record, result))
             icons.Add(TopFiveIcon);
+        // [ORIGINAL] Datei 0x2717F–0x2725D: nach den Statusbits 0–6 die Einzelprämien in der Folge Torhüter, Topscorer, Fair-Play.
+        icons.AddRange(result.Events.Where(IsSinglePremium).Select(EventIcon));
         if (icons.Count == 0)
             Widgets.ShadowText(s, flow, 160, 97, "Keine besonderen Ereignisse...", Colors.White, 0);
         else

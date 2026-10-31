@@ -252,6 +252,10 @@ public class GameModeTests
     /// Spur spielberechnung (Teil 3, #186): alle Werte neu – Liga, Pokale und WM rechnen mit der Berechnung des Originals
     /// (<c>MatchEngine.PlayWithEvents</c>): andere Ergebnisse ab dem ersten Spieltag, damit Titel, Kontostände und beide
     /// Zufallsquellen. Ermittelt auf dem Branch (Basis <c>15d0733</c>), Nachziehen in der Integration durch die Leitstelle.
+    /// Spur statistiken (Runde 8, #135, Einzelprämien 0x27184): Titel, Haupt- (R…) und Pokalquelle (C…) unverändert; nur
+    /// Kontostände – Manager 0 bekommt 1993 und 1994 je eine Einzelprämie (+100.000 DM, kumuliert +100.000/+200.000 DM ab
+    /// Saison 1/2), Manager 1 eine in Saison 5 (+100.000 DM). Gegenprobe mit abgeschalteten Einzelprämien: alte Werte.
+    /// Ermittelt auf dem Branch (Basis <c>10eb6c5</c>), Nachziehen in der Integration durch die Leitstelle.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -266,7 +270,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2226402,692809|WorldChampion=52,CupWinner=12,GermanChampion=13,EuropeanCupWinner=1|3877693,918381|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=13|4783091,871349|WorldChampion=63,CupWinner=12,GermanChampion=24,EuropeanCupWinner=0|5371179,810547|WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|5250883,726298|R1912259729 C234131033";
+        "WorldChampion=53,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2326402,692809|WorldChampion=52,CupWinner=12,GermanChampion=13,EuropeanCupWinner=1|4077693,918381|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=13|4983091,871349|WorldChampion=63,CupWinner=12,GermanChampion=24,EuropeanCupWinner=0|5571179,810547|WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|5450883,826298|R1912259729 C234131033";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

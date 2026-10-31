@@ -102,6 +102,7 @@ public sealed partial class GameState
             foreach (var (home, away) in day.Matches)
             {
                 var report = MatchEngine.PlayWithEvents(this, Clubs[home], Clubs[away], MatchCompetition.League, knockOut: false, Random);
+                CountLeaguePenalties(Clubs[home], Clubs[away], report); // Spur statistiken: Fair-Play (StatisticsClub.cs)
                 var (hg, ag) = (report.HomeGoals, report.AwayGoals);
                 Results.Add(new MatchResult(league, day.Number, home, away, hg, ag));
             }

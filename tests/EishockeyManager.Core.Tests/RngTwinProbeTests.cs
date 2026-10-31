@@ -70,16 +70,20 @@ namespace EishockeyManager.Core.Tests;
 /// begründet; der Integrationswert ist ihr Zusammenwirken (siehe docs/arbeitspakete.md, „Integration Runde 7“).
 /// Review-Befunde R7-02 (#200, Angriffszuschlag lrandom(Angriff, 7)) und R7-03 (#201, Zähler des Nationalteams): neu
 /// ermittelt; R7-02 ändert das Torbudget jedes Spiels und damit alle Ergebnisse und die Hauptquelle.
+/// Spur statistiken (Runde 8, #135): fünf Abdrücke neu, weil die Einzelprämien (bester Torhüter, Topscorer, Fair-Play je
+/// 100.000 DM, em.exe 0x27184) die Kontostände ändern; der aktive Lauf mit Originaldaten bekommt keine und bleibt gleich.
+/// Gegenprobe auf dem Branch: mit abgeschalteten Einzelprämien (und <c>LeaguePenaltyMinutes</c> in <c>Excluded</c>) alle
+/// sechs alten Abdrücke unverändert – kein Spielverlauf und kein Zufallsverbrauch ändert sich. Basis <c>10eb6c5</c>.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "AF89F741C1A6B335")]
-    [InlineData(true, 3, "46C998874089DDCE")]
-    [InlineData(false, 11, "C927531F951586DA")]
-    [InlineData(true, 11, "0E56D6AC9ADCF258")]
+    [InlineData(false, 3, "79F3DFAF98FE4269")]
+    [InlineData(true, 3, "78A25239E8A07A73")]
+    [InlineData(false, 11, "03C6F70B2A19EA95")]
+    [InlineData(true, 11, "1358B52620DDB81D")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -87,7 +91,7 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "79D50ABD868F0773")]
+    [InlineData(false, "DC483138985202E3")]
     [InlineData(true, "53596ED8A406D969")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
@@ -183,9 +187,11 @@ public class RngTwinProbeTests
     /// Nicht im Abdruck: <c>Player.Id</c> (Teil „ids“) gehört nur zum Spielstandformat und verändert den Spielverlauf
     /// nicht; so bleiben die auf <c>5f8e02a</c> ermittelten Abdrücke vergleichbar. Ebenso <c>Club.DressedCount</c>
     /// (Spur taktik-verein): abgeleitete Anzeige „Eingesetzt: n“, wirkt nicht auf den Spielverlauf – mit dieser Ausnahme
-    /// stimmen alle sechs Abdrücke unverändert.
+    /// stimmen alle sechs Abdrücke unverändert. Ebenso <c>Club.LeaguePenaltyMinutes</c> (Spur statistiken): Zähler für die
+    /// Fair-Play-Tabelle aus den Spielberichten, ohne Zufall und ohne Rückwirkung auf die Spiele; seine Wirkung (die
+    /// Fair-Play-Prämie) steht im Kontostand.
     /// </summary>
-    private static readonly HashSet<string> Excluded = ["Id", "DressedCount"];
+    private static readonly HashSet<string> Excluded = ["Id", "DressedCount", "LeaguePenaltyMinutes"];
 
     private static void Dump(StringBuilder sb, object value)
     {

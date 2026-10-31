@@ -15,8 +15,10 @@ public sealed partial class GameState
     /// [ORIGINAL] Einzelprämie: Datei 0x271A9/0x271EF/0x2723C bucht jeweils 0x000493E0 = 300.000 Drittel-DM = 100.000 DM:
     /// Symbol 12 bester Torhüter der eigenen Liga im Kader, Symbol 3 Topscorer der eigenen Liga im Kader (Rangliste
     /// 0xC8:0x20), Symbol 13 Fair-Play-Erster (0xE0:0x20 sortiert die Liga nach Strafminuten).
-    /// [APPROX] Diese drei Ereignisse gibt es im Remake noch nicht; bis dahin wird keine Einzelprämie gezahlt
-    /// (Restlücke der Spur finanzen-nachpruefung, eigenes Issue).
+    /// Seit Spur statistiken (#135) als <see cref="SeasonEvent.BestGoalie"/>, <see cref="SeasonEvent.TopScorer"/> und
+    /// <see cref="SeasonEvent.FairPlay"/> (<see cref="SinglePremiumEvents"/>); gebucht mit den übrigen Prämien in
+    /// <see cref="SeasonPremium"/>. [ORIGINAL] Datei 0x271A9 ff. erhöht dazu den Prämienzähler des Managers (DGROUP
+    /// 0xE289 + 4 · Manager) – im Remake das Finanzbuch „Prämien“ über <see cref="Book"/>.
     /// </summary>
     public const long SinglePremium = 100_000;
 
@@ -39,13 +41,15 @@ public sealed partial class GameState
 
     /// <summary>
     /// Prämien nach tatsächlichen Ereignissen, gemeinsam genau einmal über Book gebucht. Deutscher Meister und
-    /// Europapokalsieg bringen im Original kein Geld (unabhängige Nachprüfung, Runde 5).
+    /// Europapokalsieg bringen im Original kein Geld (unabhängige Nachprüfung, Runde 5); je Einzelprämie (bester Torhüter,
+    /// Topscorer, Fair-Play) <see cref="SinglePremium"/>.
     /// </summary>
     public static long SeasonPremium(League league, int rank, IReadOnlyCollection<SeasonEvent> events)
     {
         var result = Premium(league, rank);
         if (events.Contains(SeasonEvent.Promotion)) result += PromotionPremium(league);
         if (events.Contains(SeasonEvent.CupWinner)) result += CupWinnerPremium;
+        result += SinglePremium * events.Count(e => e is SeasonEvent.BestGoalie or SeasonEvent.TopScorer or SeasonEvent.FairPlay);
         return result;
     }
 }
