@@ -101,7 +101,8 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `TransferDialog.cs`, `ContractsScreen.cs`, `Tools/Scenarios/` (eigene Datei), neues `docs/transfer.md`,
   `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** wartet auf Merge von `spielerwert`.
+- **Status:** Teil 1 (Preis, Annahme, Unfair-Grenze, Angebote für eigene Spieler) in #248; Teil 2 Vertragsverhandlung
+  0x4A1DB, Sperre nach Ablehnung, Pixelvergleich offen (siehe `docs/transfer.md`).
 
 ### Spur `spielerinfo` – Spielerinfo- und Spielerdaten-Fenster (0x41683, 0x041AC)
 

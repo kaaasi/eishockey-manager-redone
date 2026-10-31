@@ -466,3 +466,14 @@ im Videobild nicht maskiert; Vorlage `oberflaeche_1115`.
 
 Die Hinweiszeile hat kein Videobild mit lesbarem Text (Zeile in Mini, Aufstellung ohne Maus im Bild); sie ist nur über Disassembly und
 Tests belegt (Abnahme 2 für 0x41683: Pixelvergleich nicht möglich, siehe PR).
+
+## Transfermarkt Ov 0x118 (Spur `transfer-original`)
+
+Spur `transfer-original`, Runde 8, Teil 1. Belegt und umgesetzt in `Core/Transfer.Original.cs` (`TransferRules`); Übersicht,
+Formeln und offene Punkte in [transfer.md](transfer.md).
+
+* Listenpreis = Spielerwert (Kaderplatz +0x2C, Satz 4 = Markt), Anzeige „(K)“ = +0x2C / 3, „(L)“ = (+0x2C / 3) / 3 (Datei 0x46000).
+* Annahme vom Computermarkt **0x4991D** (bisher „unbekannt“): random(75, 85) / random(110, 130) / random(70, 120) um den Preis.
+* Unfair-Grenze 60–140 % des frischen Werts beim Gebot an einen anderen Manager (0x47546–0x475DB, in 0x465F1).
+* Angebote für eigene Spieler auf dem Markt: Tageswurf 0x072DD (in 0x07169), Höhe 0x47347 (in 0x465F1).
+* random(a, b) 0xC037: 16-Bit-Grenzen, Tausch bei b &lt; a. DGROUP 0x4860 wird nie beschrieben (0).
