@@ -477,3 +477,45 @@ Formeln und offene Punkte in [transfer.md](transfer.md).
 * Unfair-Grenze 60–140 % des frischen Werts beim Gebot an einen anderen Manager (0x47546–0x475DB, in 0x465F1).
 * Angebote für eigene Spieler auf dem Markt: Tageswurf 0x072DD (in 0x07169), Höhe 0x47347 (in 0x465F1).
 * random(a, b) 0xC037: 16-Bit-Grenzen, Tausch bei b &lt; a. DGROUP 0x4860 wird nie beschrieben (0).
+
+## Spielmodus-Optionen 0x2CD1C (Spur `optionen-kalender`, Teil 1: Belege; #228)
+
+Nur Belege aus `em.exe` (Disassembly mit `ndisasm -b 16`); **keine Code-Änderung**. DGROUP beginnt in der Datei bei
+**0x16DD0** (Tabelle der Optionstexte: DGROUP 0xE9C liegt in der Datei bei 0x17C6C und zeigt auf „Drittelpause“,
+Datei 0x19EB1). Umsetzung in Core samt Migration bleibt Folgepaket `optionen-wirkung`.
+
+**Aufbau der Funktion** (Datei 0x2CD1C, 2142 Bytes, Overlay 0xE0, Hintergrund kb\33): zeichnet drei Rahmen, die
+Beschriftungen aus der Tabelle DGROUP 0xE98–0xED4 (Reihenfolge: `Nie.`, Drittelpause, Ergebnisse, Tabelle, Torszenen,
+Europapokal, WM-Spiele, Länderspiele:, Zeitung, Hintergrundgrafik, 1.Liga, 2.Liga, 3.Liga, Spielgeschwindigkeit,
+„V1.00 - Ende: “, „ (Level “) und 15 Schalter (Index 0–14). Schleife mit Mausereignis `DGROUP 0x5A16`: 1 = Klick
+auswerten, 3 = Verlassen (Rückkehr nach Freigabe des Puffers 0x38:0x70A).
+
+**Schalter** (Tabellen in DGROUP, je 15 Einträge): Breite in 8-Pixel-Schritten `0x4BCA` (alle 1 außer Index 9, 13, 14 = 0 bzw.
+9: 0), x `0x4BE8` = 130, 144, 158 (dreimal), 24, 188, 204, 218, 39, 54; y `0x4C06` = 222, 222, 222, 252, 252, 252, 282, 282, 282,
+200, 184, 214, 200, 244, 220 (Bildschirm-/Fensterkoordinaten, Trefferprüfung `y ≥ Tabelle`, `y < Tabelle + 0x13 − Breite·8`;
+`x < Tabelle + 0x17 − Breite·10`). Index 0–8 bilden eine 3 × 3-Matrix (Zeile · 3 + Spalte), Index 9 ist dreistufig,
+10–12 sind Schalter, 13–14 zählen über 0xE (`≥ 0xE` wirkt auf die Tabelle `DGROUP 0x120 + Manager` statt auf 0x21D).
+
+**Zustand** (Anfangswerte aus der Datei): `DGROUP 0x21D…0x22B` = 0,0,0,0,0,0,0,0,0, **1**, 0,0,0,0,0 (Index 9 = 1);
+`DGROUP 0x120…` = 1,1,1,1,1,69,94,39,73,15,43,0,9,13,10,14,11,15,12,16 (je Manager, vom Schalter ≥ 0xE per `xor 1` umgeschaltet);
+`DGROUP 0x262` = 70 (Regler „Spielgeschwindigkeit“: x-Klick 0xBE–0x11D, y 0x54–0x60: `(x − 0xBE) / 12 · 10`, also 0–80 in Zehnerschritten).
+
+**Klickverhalten** (Datei 0x2D32A–0x2D3D0 bzw. Kopie 0x5F7–0x6AE im Overlay):
+* Index 9 („Neuer Spielmodus:“, Wert 0/1/2): `inc`; bei 3 → 0; bei 2 → 0, falls `DGROUP 0x5A56 ≠ 0`. Bei Wert 2 außerdem Aufruf
+  `0x120:0x4D` (Spielmodus-Abfrage) und `DGROUP 0x226 = 0` (Datei 0x2D39F) – `0x226` ist der Spielmodus (== 2 zeigt die Zusatzzeile
+  mit fünf Schaltern, Datei 0x32C).
+* Index 0–8 und 10–12: `xor 1` (an/aus); Index 13/14 wie oben für den aktiven Manager (`DGROUP 0xA70E`).
+* Nach Index 12: Vergleich mit `DGROUP 0x6AC` (Manager-Statusbyte `0x974E + 0x1AF · Manager`), weitere Folgewirkung nicht verfolgt.
+
+**Leser der Matrix** `DGROUP 0x21D + 3 · Zeile + Spalte`: Datei 0x27AC0–0x27B2F (Spielstart: Summen je Zeile, Schalter ohne
+passende Zeilensumme werden auf 0 gesetzt – Konsistenzprüfung), **0x3A8EC** (Ereignisfilter: Zeile aus Parameter, Spalte 0/1 je nach
+`Minute == 60` bzw. `> 60 und Parameter 6 == 1`; Wert 0 → Ereignis wird übersprungen; dazu `DGROUP 0x229`, `0x21D`).
+Das ist die Auswertung für Meldungen im Live-Ablauf (Drittelpause/Ergebnisse/Tabelle/Torszenen), also Folgepaket `livespiel`.
+
+**Zeitung (DGROUP 0xEB8):** nur Text; kein Code liest den Eintrag (Befund `re-abdeckung`, bestätigt: die Hotspot-Tabellen haben
+keinen Schalter mit dem Text). Nicht benutzt.
+
+**Offen / [APPROX]:** Zuordnung der 9 Matrix-Felder zu den Beschriftungen (Zeilen vermutlich Drittelpause · Ergebnisse · Tabelle,
+Spalten 1./2./3. Liga) ist aus den Koordinaten geschlossen, **nicht** am Video bestätigt; Wirkung von WM-Spiele/Länderspiele/Europapokal
+(Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Die Bildschirm- und Kalender-Teile (0x43E21 mit 0x43B1F,
+0x43C38, 0x445E0, 0x36169; Pixelvergleich) sind **nicht begonnen**.
