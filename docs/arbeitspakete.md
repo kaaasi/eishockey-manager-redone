@@ -113,7 +113,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `UI/Screens/Team/LineupScreen.cs` (nur Aufruf), `Tools/Scenarios/` (eigene Datei), `docs/reverse-engineering.md`
   (eigener Abschnitt), Tests.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** in Arbeit (Claude Code, Draft-PR), Base `421d96f`; `spielerwert` ist gemergt.
+- **Status:** Umsetzung fertig, Review offen (Claude Code, PR #249, Base `421d96f`); Beleg und Restlücken in `docs/reverse-engineering.md`, Abschnitt „Spur `spielerinfo`“. Offen: Aufruf des Fensters aus Transferliste (Marktwert über `PlayerDataContext`), Ranglisten und Aufstellung (Leitstelle, Integration).
 
 ### Spur `tabellen-original` – Tabellenberechnung und -ansicht (0x4F78D, 0x50283, 0x50B45)
 

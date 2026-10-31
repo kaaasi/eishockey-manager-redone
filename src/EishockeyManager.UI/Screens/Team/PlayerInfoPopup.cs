@@ -9,8 +9,9 @@ namespace EishockeyManager.UI.Screens.Team;
 /// (Unterzahl, Überzahl, Tendenz, Erschöpfung); Knopf „Aha !“ schließt.
 /// </summary>
 /// <remarks>
-/// [APPROX] Unterzahl/Überzahl gibt es in den Spielerdaten des Remakes nicht; sie werden aus Technik bzw.
-/// Kondition und Technik abgeleitet. Tore/Spiele nur Liga (Pokale folgen mit dem Paket „wettbewerbe“).
+/// Das Fenster ist die Funktion 0x041AC („Spielerdaten“, Spur spielerinfo); Felder und Regeln in
+/// <see cref="PlayerDataWindow"/>. [APPROX] Unterzahl/Überzahl gibt es in den Spielerdaten des Remakes nicht; sie werden
+/// aus Technik bzw. Kondition und Technik abgeleitet. Tore/Spiele nur Liga (Pokale folgen mit dem Paket „wettbewerbe“).
 /// </remarks>
 public sealed class PlayerInfoPopup
 {
@@ -26,8 +27,11 @@ public sealed class PlayerInfoPopup
     public const int BarWidth = 100;
     public const int BarHeight = 12;
 
-    /// <summary>Balken 0–3 (Unterzahl, Überzahl, Tendenz, Erschöpfung).</summary>
-    public static Rect Bar(int index) => new(X(7 + 103 * (index % 2)), Y(120 + 19 * (index / 2)), BarWidth, BarHeight);
+    /// <summary>
+    /// Balken 0–3 (Unterzahl, Überzahl, Tendenz, Erschöpfung). [ORIGINAL] em.exe 0x041AC, Aufrufe 0x985/0x9CA/0xA0D/0xA5B: links
+    /// Fensterursprung + 7, rechts + 0x6C (= 108), Zeilenabstand 0x13. Bisher rechts + 110.
+    /// </summary>
+    public static Rect Bar(int index) => new(X(7 + 101 * (index % 2)), Y(120 + 19 * (index / 2)), BarWidth, BarHeight);
 
     /// <summary>Farbstufen der Balken von schlecht (dunkelrot) nach gut (dunkelgrün), je 12 px.</summary>
     public static readonly byte[] BarColors = [16, 17, 18, 19, 15, 14, 13, 12];
@@ -36,14 +40,22 @@ public sealed class PlayerInfoPopup
 
     private Player? _player;
     private long _price;
+    private PlayerDataContext _context = PlayerDataContext.Unknown;
 
     public bool Visible => _player is not null;
     public Player? Player => _player;
 
-    public void Show(Player player, long price)
+    /// <summary>
+    /// Öffnet das Fenster. Aufruf stabil (<c>TransferScreen</c>); ohne Zusammenhang bleibt der Marktwert „-“.
+    /// </summary>
+    public void Show(Player player, long price) => Show(player, price, PlayerDataContext.Unknown);
+
+    /// <summary>Öffnet das Fenster mit Marktwert und Sichtbarkeitsregeln (<see cref="PlayerDataContext.Create"/>).</summary>
+    public void Show(Player player, long price, PlayerDataContext context)
     {
         _player = player;
         _price = price;
+        _context = context;
     }
 
     public void Close() => _player = null;
@@ -63,7 +75,7 @@ public sealed class PlayerInfoPopup
     [
         p.Technique,
         (p.Condition + p.Technique) / 2,
-        p.Trend switch { PlayerTrend.Rising => 80, PlayerTrend.Falling => 20, _ => 50 },
+        p.Trend switch { PlayerTrend.Rising => 84, PlayerTrend.Falling => 15, _ => 50 },
         100 - Math.Clamp(p.Energy, 0, 100),
     ];
 
@@ -87,39 +99,29 @@ public sealed class PlayerInfoPopup
         var face = new Rect(X(164), Y(11), 24, 28);
         s.Fill(face, 27);
         s.Outline(face, 10);
-        s.Blit(a.Image(10), Face(p), face.X + 3, face.Y + 3);
+        s.Blit(a.Image(10), Face(p), face.X + 3, face.Y + 4); // [ORIGINAL] 0x041AC 0x368–0x3C3: Ziel (Ursprung + 0xA7 | + 0x0F)
 
-        // Tore / Spiele
+        // Tore / Spiele: Torhüter nur Liga, Beschriftung „GTore:“ (0x041AC 0x45D–0x570)
         const byte head = Colors.White, headShadow = 5, label = TeamUi.DimColor, value = TeamUi.DimColor;
-        string[] columns = ["Liga", "DEB-Pokal", "Europacup"];
+        var columnCount = PlayerDataWindow.CompetitionColumns(p);
         int[] centers = [X(58), X(117), X(177)];
         for (var i = 0; i < 3; i++)
-            TeamUi.LabelCentered(s, a, centers[i], Y(52), columns[i], head, headShadow);
-        s.Text(mini, X(7), Y(60), "Tore:", label);
+            TeamUi.LabelCentered(s, a, centers[i], Y(52), PlayerDataWindow.CompetitionHeads[i], head, headShadow);
+        s.Text(mini, X(7), Y(60), PlayerDataWindow.GoalsLabel(p), label);
         s.Text(mini, X(7), Y(67), "Spiele:", label);
-        for (var i = 0; i < 3; i++)
+        for (var i = 0; i < columnCount; i++)
         {
-            var league = i == 0 && p.Games > 0;
-            s.TextRight(mini, centers[i] + 24, Y(60), league ? $"{p.Goals}( -)" : "-( -)", value);
-            s.TextRight(mini, centers[i] + 24, Y(67), league ? $"{p.Games}( -)" : "-( -)", value);
+            s.TextRight(mini, centers[i] + 24, Y(60), PlayerDataWindow.CompetitionCell(p, i, goals: true), value);
+            s.TextRight(mini, centers[i] + 24, Y(67), PlayerDataWindow.CompetitionCell(p, i, goals: false), value);
         }
 
         // Daten
         s.Text(mini, X(7), Y(79), "Daten:", label);
-        string[] dataHeads = ["Kaufpreis", "Marktwert", "Versicherung", "Sperren in Min.", "Gehalt/M.", "Vertrag"];
-        string[] dataValues =
-        [
-            _price > 0 ? TransferScreen.Money(_price) : "-",
-            "-",
-            p.Insured ? "ja" : "keine",
-            p.SuspendedGames > 0 ? p.SuspendedGames.ToString() : "-",
-            p.MonthlySalary > 0 ? TransferScreen.Money(p.MonthlySalary) : "-",
-            p.ContractYears > 0 ? Player.YearsText(p.ContractYears) : "-",
-        ];
+        var dataValues = PlayerDataWindow.DataValues(p, _price, _context);
         for (var i = 0; i < 6; i++)
         {
             var y = i < 3 ? Y(79) : Y(95);
-            TeamUi.LabelCentered(s, a, centers[i % 3], y, dataHeads[i], head, headShadow);
+            TeamUi.LabelCentered(s, a, centers[i % 3], y, PlayerDataWindow.DataHeads[i], head, headShadow);
             s.TextCentered(mini, centers[i % 3], y + 7, dataValues[i], value);
         }
 
@@ -136,8 +138,10 @@ public sealed class PlayerInfoPopup
     }
 
     /// <summary>
-    /// Balken wie im Video: heller Außenrand (2/3), schwarzer Innenrand, acht Farbstufen à 12 px über 6 Zeilen,
-    /// Markierung beim Wert (0–99). [APPROX] Farbe der Markierung.
+    /// Balken wie im Video: heller Außenrand (2/3), schwarzer Innenrand, acht Farbstufen à 12 px über 6 Zeilen. Der Zeiger
+    /// ist eine Linie über die ganze Innenhöhe (acht Zeilen) in der Farbe des Abschnitts, in dem er steht; Lage
+    /// Balkenanfang + 1 + Länge (1–94 px, Wert 0–99 → · 94 / 99). [ORIGINAL] em.exe Datei 0x041AC, Adressen 0xBBA–0xBFC;
+    /// Maße des Rahmens am Videobild oberflaeche_1115 gemessen ([APPROX]: Rahmenfarben 2/3 und 197).
     /// </summary>
     public static void DrawBar(Surface s, Rect r, int value)
     {
@@ -152,17 +156,10 @@ public sealed class PlayerInfoPopup
         var x0 = r.X + 2;
         for (var i = 0; i < BarColors.Length; i++)
             s.Fill(new Rect(x0 + step * i, r.Y + 3, step, 6), BarColors[i]);
-        var x = x0 + Math.Clamp(value, 0, 99) * (step * BarColors.Length - 1) / 99;
-        s.VLine(x, r.Y + 3, 6, 1);
+        var px = PlayerDataWindow.BarPixelsFromPercent(value);
+        s.VLine(r.X + 1 + px, r.Y + 2, 8, BarColors[px / step]);
     }
 
-    /// <summary>Gesicht aus kb\10 (4 × 10 Köpfe à 17 × 21). [APPROX] Zuordnung über den Namen.</summary>
-    public static Rect Face(Player p)
-    {
-        var hash = 0;
-        foreach (var ch in p.Name)
-            hash = unchecked(hash * 31 + ch);
-        var i = (int)((uint)hash % 40);
-        return new Rect(i % 4 * 17, i / 4 * 21, 17, 21);
-    }
+    /// <summary>Gesicht aus kb\10 (4 × 10 Köpfe à 17 × 21): Spalte nach Alter, Zeile nach Talent, siehe <see cref="PlayerDataWindow.Face"/>.</summary>
+    public static Rect Face(Player p) => PlayerDataWindow.Face(p);
 }
