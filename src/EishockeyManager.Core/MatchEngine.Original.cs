@@ -128,9 +128,10 @@ public static class OriginalMatch
     private static (int Home, int Away) Budget(MatchSide home, MatchSide away, int from, int to, bool worldCup, bool playoff, Random random)
     {
         var wm = worldCup ? 1 : 0;
-        // 0x9F92–0xA019: Angriffszuschlag 0–2 = max(0, random(0, Angriff) − 5)
-        var bonusHome = Math.Max(0, Rnd(random, 0, home.AttackLevel) - 5);
-        var bonusAway = Math.Max(0, Rnd(random, 0, away.AttackLevel) - 5);
+        // [ORIGINAL] 0x9F92–0xA019: Angriffszuschlag 0–2 = max(0, lrandom(Angriff, 7) − 5); lrandom (Datei 0xBFD5) bekommt
+        // das Angriffsbitfeld als untere und 7 als obere Grenze (Review-Befund R7-02, #200).
+        var bonusHome = Math.Max(0, Rnd(random, home.AttackLevel, 7) - 5);
+        var bonusAway = Math.Max(0, Rnd(random, away.AttackLevel, 7) - 5);
         var sh = home.Strength;
         var sa = away.Strength;
         var d = sh / 3 - sa / 3;

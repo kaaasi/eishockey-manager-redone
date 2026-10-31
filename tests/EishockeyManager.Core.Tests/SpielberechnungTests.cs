@@ -32,13 +32,13 @@ public class SpielberechnungTests
     [Fact]
     public void FullResult_EqualTeams_FollowsTheOriginalDrawOrder()
     {
-        // d = 0: Angriffszuschläge random(0,0) ×2, Heim random(1,2), Zweig d ≤ 0: Heim + random(1,3), x/y = random(1,2),
+        // d = 0: Angriffszuschläge lrandom(0,7) ×2 (Angriff 0 = untere Grenze, R7-02 #200; gezogen 0 → Zuschlag 0), Heim random(1,2), Zweig d ≤ 0: Heim + random(1,3), x/y = random(1,2),
         // Gast + x; dann zwei Münzwürfe (0 → Heim; 1 und random(0,0) = 0 → Gast).
         var random = new ScriptedRandom(0, 0, 1, 2, 1, 2, 0, 1, 0);
         var result = OriginalMatch.FullResult(new MatchSide(150), new MatchSide(150), worldCup: false, playoff: false, random);
         Assert.Equal((4, 2), result);
         Assert.True(random.Exhausted);
-        Assert.Equal([(0, 0), (0, 0), (1, 2), (1, 3), (1, 2), (1, 2), (0, 1), (0, 1), (0, 0)], random.Calls);
+        Assert.Equal([(0, 7), (0, 7), (1, 2), (1, 3), (1, 2), (1, 2), (0, 1), (0, 1), (0, 0)], random.Calls);
     }
 
     [Fact]

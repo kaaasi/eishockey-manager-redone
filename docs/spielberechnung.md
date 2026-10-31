@@ -55,7 +55,7 @@ Feldspieler auf dem Eis F (Vereinsfeld 0x32: 5; bei Strafe weniger, ohne Torhüt
 Bits 4–6), Torhüter draußen (Bit 3). WM = `[0x12B]` (nur während WM-Spielen 1, Datei 0x30F4E/0x31012).
 
 ```
-bH = max(0, random(0, A_h) − 5);  bG = max(0, random(0, A_g) − 5)          ; lrandom
+bH = max(0, lrandom(A_h, 7) − 5);  bG = max(0, lrandom(A_g, 7) − 5)        ; Angriff = untere Grenze (R7-02, #200)
 d  = S_h/3 − S_g/3
 tG = (WM und d < 19) ? lrandom(1, 2) : 0
 tH = (d > −19) ? lrandom(1, 2) : 0
