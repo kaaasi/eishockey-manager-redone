@@ -35,11 +35,16 @@ public enum PlayerStatisticsView
 ///   leerer Liste erscheint der Hinweis deshalb nicht – so im Code, am Video noch nicht geprüft.</item>
 /// <item>[ORIGINAL] Knöpfe (0x120:0x75): TORSCH., VORLEGER, SCORER bei (54 + 79 k | 182), „Liga“ bei (54 | 195), „Manager“
 ///   bei (212 | 195); Vorgabe SCORER und Liga. Verlassen nur mit der rechten Maustaste (Datei 0x26D4B: Ereignis 3).</item>
-/// <item>[APPROX] Gewählter Knopf gedrückt dargestellt wie bei der Tabelle (das Original übergibt Farbe 17 bzw. 10, die
-///   Knopfzeichnung 0x4BFF2 nutzt sie nicht); Knopfbild und -text nach <see cref="Widgets.Button"/>. Escape verlässt wie
-///   die rechte Maustaste.</item>
-/// <item>Klick auf einen Spieler des eigenen Kaders öffnet im Original das Spielerdaten-Fenster 0x041AC (Datei 0x26B13–
-///   0x26BF5; Spur spielerinfo, Aufruf baut die Leitstelle in der Integration ein).</item>
+/// <item>[ORIGINAL] Knöpfe nie gedrückt (0x4BFF2: Zustand immer 0, die übergebene Farbe 17 bzw. 10 bleibt ungenutzt):
+///   Bild kb\2 (17 | 179) 57 × 12, Text Mini zentriert x … x + 59, Grundlinie y + 7, Farbe 29, Schatten 1 (Datei
+///   0x4C154–0x4C188). Texte der Ansicht „LIGA“/„MANAGER“ aus DGROUP 0x974/0x978 (Großbuchstaben; der Titel nutzt
+///   „Liga“/„Manager“). Am Video bestätigt (<c>folge15_01007</c>, Spur statistiken-verein). Escape verlässt wie die
+///   rechte Maustaste ([APPROX]).</item>
+/// <item>[ORIGINAL] Linksklick auf eine Zeile öffnet das Spielerdaten-Fenster 0x041AC (Datei 0x26B13–0x26BF5), wenn der
+///   Spieler im Kader eines Managers steht: Zeile = (y − erste Grundlinie + 4) / 7 des Blocks, dessen erste Grundlinie − 5
+///   über y liegt (x wird nicht geprüft); das Fenster öffnet für diesen Manager (DGROUP 0xA70E vorübergehend gesetzt),
+///   Sichtbarkeit nach <see cref="Team.PlayerDataContext.Create"/>. [APPROX] „Kaufpreis“ (Kaderplatz +0x2C) gibt es im
+///   Remake nicht; gezeigt wird der Spielerwert.</item>
 /// </list>
 /// </remarks>
 public sealed class PlayerStatisticsScreen : Screen
@@ -55,12 +60,19 @@ public sealed class PlayerStatisticsScreen : Screen
     public static readonly int[] ViewButtonX = [54, 212];
     public static readonly string[] ModeText = ["TORSCH.", "VORLEGER", "SCORER"];
     public static readonly string[] ViewText = ["Liga", "Manager"];
+
+    /// <summary>[ORIGINAL] Beschriftung der Ansichtsknöpfe (DGROUP 0x974/0x978).</summary>
+    public static readonly string[] ViewButtonText = ["LIGA", "MANAGER"];
     public const string GoalieTitle = "KEEPER";
     public const string HeaderLeft = "PL. SPIELER                 VEREIN";
     public static readonly string[] HeaderRight = ["       SCORES    TORE/SPIEL", "GEGENTORE     MIN.(G/SP.)"];
     public const string NoEntries = "NOCH KEINE EINTRÄGE VORHANDEN...";
 
     private readonly Screen _back;
+    private readonly Team.PlayerInfoPopup _info = new();
+
+    /// <summary>Spielerdaten-Fenster (offen nach Klick auf einen Spieler eines Managerkaders).</summary>
+    public Team.PlayerInfoPopup Info => _info;
 
     public PlayerStatisticsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
@@ -126,8 +138,50 @@ public sealed class PlayerStatisticsScreen : Screen
                + (rest / 10) + (rest % 10) + ")";
     }
 
+    /// <summary>Zeile unter der Maus (Datei 0x26B13–0x26B84) oder null.</summary>
+    public Row? RowAt(GameState game, int mouseY)
+    {
+        var rows = Layout(game).Rows;
+        for (var block = 0; block < 2; block++)
+        {
+            var top = FirstRow[block];
+            if (top - 5 >= mouseY)
+                continue;
+            var inBlock = rows.Where(r => r.Block == block).ToList();
+            if (mouseY >= top - 4 + RowPitch * MaxRows[block])
+                continue;
+            var index = (mouseY - top + 4) / RowPitch;
+            if (index < inBlock.Count)
+                return inBlock[index];
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Öffnet das Spielerdaten-Fenster für einen Spieler aus dem Kader eines Managers (Datei 0x26BA3–0x26BF8: Suche über
+    /// alle Manager, Fenster als dieser Manager). Liefert false, wenn der Spieler in keinem Managerkader steht.
+    /// </summary>
+    public static bool OpenPlayerData(Team.PlayerInfoPopup info, GameState game, Player player)
+    {
+        foreach (var manager in game.Managers)
+        {
+            var club = game.Clubs[manager.ClubIndex];
+            if (!club.Players.Contains(player))
+                continue;
+            var context = Team.PlayerDataContext.Create(game, player, club, club, manager.Level);
+            info.Show(player, context.MarketValue, context);
+            return true;
+        }
+        return false;
+    }
+
     public override void Update(InputState input)
     {
+        if (_info.Update(input))
+            return;
+        if (input.LeftClick && Host.Game is { } game && RowAt(game, input.MouseY) is { } row
+            && OpenPlayerData(_info, game, row.Entry.Player))
+            return;
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
             Host.Show(_back);
@@ -170,9 +224,17 @@ public sealed class PlayerStatisticsScreen : Screen
                 CompetitionWidgets.Centered(s, mini, 35, 285, 60, NoEntries, Colors.White, 1);
         }
         for (var k = 0; k < ModeButtonX.Length; k++)
-            Widgets.Button(s, Assets, ModeButtonX[k], ModeButtonY, ModeText[k], pressed: (int)Mode == k);
+            DrawButton(s, ModeButtonX[k], ModeButtonY, ModeText[k]);
         for (var k = 0; k < ViewButtonX.Length; k++)
-            Widgets.Button(s, Assets, ViewButtonX[k], ViewButtonY, ViewText[k], pressed: (int)View == k);
+            DrawButton(s, ViewButtonX[k], ViewButtonY, ViewButtonText[k]);
+        _info.Draw(s, Assets);
+    }
+
+    /// <summary>[ORIGINAL] Knopf 0x4BFF2 mit Zustand 0 (Datei 0x4C154–0x4C188).</summary>
+    private void DrawButton(Surface s, int x, int y, string text)
+    {
+        s.Blit(Assets.Image(2), new Rect(17, 179, Widgets.ButtonWidth, Widgets.ButtonHeight), x, y);
+        CompetitionWidgets.Centered(s, Assets.Mini, x, x + 59, y + 7, text, 29, 1);
     }
 }
 

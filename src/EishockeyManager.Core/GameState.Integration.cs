@@ -66,6 +66,7 @@ public sealed partial class GameState
         StartStadiumStatisticsSeason(); // Spur heimspiel-statistik (0x55A86)
         ResetMatchCounters(); // Spur spielberechnung: Spielerzähler je Saison (MatchEngine.Live.cs)
         ResetLeaguePenalties(); // Spur statistiken: Strafminuten der Fair-Play-Tabelle (StatisticsClub.cs, 0x5647A)
+        ResetPowerPlayStatistics(); // Spur statistiken-verein: Über-/Unterzahl je Manager (StatisticsClub.cs, 0x5588E)
     }
 
     /// <summary>
