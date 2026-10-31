@@ -134,7 +134,9 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
 - **Modell:** Claude Opus 5.5.
 - **Status:** Teil 1 (Ligatabelle: Sortierung 0x50B45, Bilanz 0x50283, Ansicht Heim/Auswärts) in PR #240; offen: Pokal-/WM-Gruppen
   und Play-off-Setzung, Pixelvergleich der Ansicht (Referenzbilder in diesem Lauf nicht erreichbar).
-  Teil 2 (`tabellen-original-2`, Welle 3): in Arbeit (Claude Code, Branch `paket/tabellen-original-2`, Base `99fa995`).
+  Teil 2 (`tabellen-original-2`, Welle 3): umgesetzt in PR #261 (Claude Code, Base `99fa995`), Review offen – Gruppentabellen
+  nach 0x30852 (Europapokal, WM, Aufstiegsrunde), Startordnung 1. Liga (0x43A08), Ansicht nach 0x4F78D mit Pixelvergleich
+  (9,5 / 3,6 % gegen `oberflaeche_1307`), Bilanz Heim klein am Video, R8-B01.
 
 ### Spur `spielstaerke-manager` – Spielstärke der Managervereine und Restteile der Spielberechnung (#204, #179, #193)
 
