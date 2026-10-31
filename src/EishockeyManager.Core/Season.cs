@@ -155,7 +155,7 @@ public sealed class TableRow
     /// <summary>Minuspunkte nach der 2-Punkte-Regel.</summary>
     public int PointsMinus => 2 * Losses + Draws;
 
-    /// <summary>Letzte Spiele, älteste zuerst: S/U/N, groß = Heimspiel, klein = Auswärtsspiel.</summary>
+    /// <summary>Letzte Spiele, älteste zuerst: S/U/N, klein = Heimspiel, groß = Auswärtsspiel (Liga: em.exe 0x50283).</summary>
     public List<char> Form { get; } = [];
 
     /// <summary>Bilanz der letzten acht Spiele wie im Original.</summary>
@@ -179,35 +179,87 @@ public static class LeagueTable
         return sorted;
     }
 
+    /// <remarks>
+    /// [ORIGINAL] em.exe führt je Verein einen Satz von 0x50 Byte (DGROUP 0x825A + 0x50 · Verein; je Feld Heim/Auswärts):
+    /// Punkte +0/+1, Bilanz +4 (8 Zeichen), Tore +0x16/+0x17, Gegentore +0x1A/+0x1B, Spiele +0x1E/+0x1F, Siege +0x26/+0x27,
+    /// Niederlagen +0x2A/+0x2B. Eingetragen wird jedes Ligaspiel mit 0x50283 (Sieg DGROUP 0x7C5 = 2 Punkte, Unentschieden 1).
+    /// Nach dem Spieltag sortiert 0x50B45 (Liga, 0, Ansicht 1) die Platzliste DGROUP 0x5CCB (Liga · 12 + Platz) an Ort und
+    /// Stelle mit <see cref="ExchangeSort"/> und dem Vergleich <see cref="Better"/>. Die Ausgangsreihenfolge ist die Liste
+    /// des Vortags; beim Spielstart ist sie die Vereinsreihenfolge (0x2F1A2). Die Tabellenansicht 0x4F78D sortiert dieselbe
+    /// Liste für „Heim“/„Auswärts“ (Ansicht 0/2, nur das Heim- bzw. Auswärtsfeld) und beim Verlassen wieder nach „Gesamt“.
+    /// [APPROX] Ausgangsreihenfolge jeder Saison = Vereinsreihenfolge der Liga: Das Original behält 0x5CCB über den
+    /// Saisonwechsel, das Remake hat die Ergebnisse der Vorsaison nicht mehr (wirkt nur bei vollem Gleichstand).
+    /// [APPROX] Dass eine angesehene Heim-/Auswärtstabelle die Ausgangsreihenfolge des nächsten Sortierens ändert, bildet
+    /// das Remake nicht nach – Bildschirme verändern keinen Spielzustand (wirkt nur bei vollem Gleichstand).
+    /// [APPROX] DGROUP 0x6B0 (schaltet im Vergleich die Spiele ab) gilt als 0: kein Code schreibt die Stelle.
+    /// </remarks>
     private static List<TableRow> ComputeRanks(GameState game, League league, TableView view, int upToMatchDay)
     {
-        var rows = game.LeagueClubs(league).ToDictionary(c => c.Index, c => new TableRow { Club = c });
-        foreach (var r in game.Results)
+        var clubs = game.LeagueClubs(league).ToList();
+        var total = clubs.ToDictionary(c => c.Index, c => new TableRow { Club = c });
+        var shown = view == TableView.Gesamt ? total : clubs.ToDictionary(c => c.Index, c => new TableRow { Club = c });
+        var order = clubs.Select(c => c.Index).ToList();
+
+        var byDay = game.Results.Where(r => r.League == league && r.MatchDay <= upToMatchDay)
+            .GroupBy(r => r.MatchDay).OrderBy(g => g.Key);
+        foreach (var day in byDay)
         {
-            if (r.League != league || r.MatchDay > upToMatchDay)
-                continue;
-            if (view != TableView.Auswaerts && rows.TryGetValue(r.Home, out var home))
+            foreach (var r in day)
+            {
+                if (!total.TryGetValue(r.Home, out var home) || !total.TryGetValue(r.Away, out var away))
+                    continue;
                 Add(home, r.HomeGoals, r.AwayGoals, true);
-            if (view != TableView.Heim && rows.TryGetValue(r.Away, out var away))
                 Add(away, r.AwayGoals, r.HomeGoals, false);
+                if (view == TableView.Heim)
+                    Add(shown[r.Home], r.HomeGoals, r.AwayGoals, true);
+                else if (view == TableView.Auswaerts)
+                    Add(shown[r.Away], r.AwayGoals, r.HomeGoals, false);
+            }
+            ExchangeSort(order, (b, a) => Better(total[b], total[a]));
         }
 
-        return Sort(rows.Values);
-    }
+        if (view != TableView.Gesamt)
+        {
+            ExchangeSort(order, (b, a) => Better(shown[b], shown[a]));
+            foreach (var (index, row) in shown)
+            {
+                row.Form.Clear();
+                row.Form.AddRange(total[index].Form); // [ORIGINAL] Bilanz unabhängig von der Ansicht (0x4F78D, DGROUP 0x825E)
+            }
+        }
 
-    /// <summary>[APPROX] Reihenfolge: Pluspunkte, Minuspunkte, Tordifferenz, erzielte Tore.</summary>
-    private static List<TableRow> Sort(IEnumerable<TableRow> rows)
-    {
-        var list = rows
-            .OrderByDescending(r => r.PointsPlus)
-            .ThenBy(r => r.PointsMinus)
-            .ThenByDescending(r => r.GoalDifference)
-            .ThenByDescending(r => r.GoalsFor)
-            .ThenBy(r => r.Club.Index)
-            .ToList();
+        var list = order.Select(i => shown[i]).ToList();
         for (var i = 0; i < list.Count; i++)
             list[i].Rank = i + 1;
         return list;
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Vergleich von 0x50B45 (Datei 0x50D76–0x50F8A): <paramref name="b"/> (späterer Platz) verdrängt
+    /// <paramref name="a"/>, wenn er mehr Punkte hat; bei gleichen Punkten weniger Spiele; dann höhere Tordifferenz; dann mehr
+    /// Tore. Sonst bleibt die Reihenfolge. Bei der 2-Punkte-Regel entspricht „weniger Spiele“ den weniger Minuspunkten.
+    /// </summary>
+    private static bool Better(TableRow b, TableRow a)
+    {
+        if (b.PointsPlus != a.PointsPlus)
+            return b.PointsPlus > a.PointsPlus;
+        if (b.Games != a.Games)
+            return b.Games < a.Games;
+        if (b.GoalDifference != a.GoalDifference)
+            return b.GoalDifference > a.GoalDifference;
+        return b.GoalsFor > a.GoalsFor;
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Tauschsortierung von em.exe 0x50B45 (Datei 0x50D6D–0x51011): für jeden Platz i alle späteren Plätze j, Tausch,
+    /// wenn der Verein auf j <paramref name="better"/> ist als der auf i. Nicht stabil.
+    /// </summary>
+    public static void ExchangeSort(IList<int> order, Func<int, int, bool> better)
+    {
+        for (var i = 0; i < order.Count - 1; i++)
+            for (var j = i + 1; j < order.Count; j++)
+                if (better(order[j], order[i]))
+                    (order[i], order[j]) = (order[j], order[i]);
     }
 
     private static void Add(TableRow row, int goalsFor, int goalsAgainst, bool home)
@@ -218,6 +270,7 @@ public static class LeagueTable
         if (goalsFor > goalsAgainst) { row.Wins++; c = 'S'; }
         else if (goalsFor == goalsAgainst) { row.Draws++; c = 'U'; }
         else { row.Losses++; c = 'N'; }
-        row.Form.Add(home ? c : char.ToLowerInvariant(c));
+        // [ORIGINAL] 0x50283 mit DGROUP 0x7CE „sSnNuU“: Heimverein klein (s/u/n), Gast groß (S/U/N).
+        row.Form.Add(home ? char.ToLowerInvariant(c) : c);
     }
 }

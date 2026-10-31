@@ -265,6 +265,36 @@ für „Noeske“, „Testspieler“, „Kandemiroglu“), sondern fertig gezeic
   Farbe 7; Zeilen-Oberkanten 22, 30, 43, 51, 64, 76, 88, 100, 111, 119, 127, 138 (Ausnahme: der lange Strich in
   „Ogan – Celal Kandemiroglu“ ist kein Zeichen des Fonts).
 
+## Ligatabelle (Spur `tabellen-original`)
+
+Overlay 0x128 (Ghidra 59E3). Fundstellen als Dateioffset von em.exe.
+
+* **Vereinssatz der Tabelle** DGROUP 0x825A + 0x50 · Verein (im Spielstand Block 0x8257, 0x1400 Byte), je Feld erst Heim,
+  dann Auswärts: Punkte +0/+1, Bilanz +4 (8 Zeichen + 0), Tore +0x16/+0x17, Gegentore +0x1A/+0x1B, Spiele +0x1E/+0x1F,
+  Siege +0x26/+0x27, Niederlagen +0x2A/+0x2B; dahinter je eine Sicherung (+2/+3, Bilanz +0x0D, +0x18/+0x19, +0x1C/+0x1D,
+  +0x28/+0x29, +0x2C/+0x2D). Unentschieden zählt das Original nicht, die Anzeige rechnet Spiele − Siege − Niederlagen.
+* **Ergebnis eintragen** Datei 0x50283 (Heim, Gast, Heimtore, Gasttore): Tabellenfelder nur bei DGROUP 0xD0C2 = 7 oder 8;
+  Sieg DGROUP 0x7C5 (= 2) Punkte, Unentschieden 1; Bilanz über 0x4F4F4 (8 Zeichen nach links schieben, neues hinten) mit
+  den Zeichen DGROUP 0x7CE „sSnNuU“: **Heimverein klein** (s/u/n), **Gast groß** (S/U/N). Außerdem Serien
+  DGROUP 0xB57B + 0x15 · Verein und Zähler über 0x51133/0x4F5A8 (nicht Teil dieser Spur).
+* **Spieltag und Sortierung** Datei 0x50B45 (Liga, Modus, Ansicht 0 Heim / 1 Gesamt / 2 Auswärts): Modus 1 sichert die
+  Felder (0x4F325: aktuell → Sicherung), Modus 0 stellt sie aus der Sicherung her und trägt die Ergebnisse des Spieltags
+  (DGROUP 0xA0CB, Paarungen 0x5D7B) ein. Danach Tauschsortierung der Platzliste DGROUP 0x5CCB (Liga · 12 + Platz,
+  Datei 0x50D6D–0x51011): für jeden Platz i alle späteren j; j verdrängt i bei mehr Punkten, bei gleichen Punkten weniger
+  Spielen (abschaltbar mit DGROUP 0x6B0 – kein Code schreibt die Stelle), dann höherer Tordifferenz, dann mehr Toren; sonst
+  bleibt die Reihenfolge (keine weitere Regel, nicht stabil). Am letzten Spieltag der Oberliga folgt `0xE8:0x66`.
+* **Aufrufe:** Tagesbeginn 0x36CD3 (Liga, 1, Gesamt) nach dem Spielplan 0x4E7C7; Spielende 0x385C7 (Liga, 0, Gesamt) bei
+  Minute 60; Hauptmenü 0x44EFD (Liga, 1, Gesamt); Tabellenansicht 0x4FA8D (Liga, 1, gewählte Ansicht) und beim Verlassen
+  0x50256 (Liga, 1, Gesamt). Die Platzliste behält also nach dem Ansehen wieder die Gesamtordnung; nur die Reihenfolge
+  vollständig gleicher Vereine kann sich durch eine angesehene Heim-/Auswärtstabelle ändern.
+* **Startordnung** Datei 0x2F1A2: beim Spielstart Vereinsindex aufsteigend. Andere Schreiber von 0x5CCB: nur die
+  Sortierung und 0x35EDD (WM-Reihenfolge). Über den Saisonwechsel bleibt die Liste stehen.
+* **Tabellenansicht** Datei 0x4F78D: Titel aus DGROUP 0x1011 („   TABELLE “) + Ansicht (Zeiger 0x1001: „Heim“, „Gesamt“,
+  „Auswärts“) + Spieltag; Name x 0x21, Bilanz x 0x75 (immer die Gesamtbilanz +4, gleich in jeder Ansicht), Tendenz über
+  `0x110:0x4D`, Zahlenzeile ab x 0xA6 als ein Text: „*“, Siege, Unentschieden, Niederlagen (Mindestbreite 2,
+  DGROUP 0x374), Punkte „P:M“ mit M = 2 · Spiele − P (bei DGROUP 0x7C5 ≥ 3 statt M ein Leerzeichen), Tore „T:G“
+  (Breite 3), Vorzeichen („`“ bei 0, „+“, „−“) und Betrag der Tordifferenz (Breite 3). Trennzeichen DGROUP 0x53AA ff.
+
 ## Funktionskarte und Abdeckung (Spur `re-abdeckung`)
 
 Spur `re-abdeckung`, #210. Karte aller 678 Funktionen (12 Basissegmente, 17 Overlays) mit Abdeckungsstatus

@@ -128,7 +128,8 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `UI/Screens/TableScreen.cs`, `UI/Screens/Competitions/CupTableMenuEntries.cs`, `Tools/Scenarios/` (eigene Datei),
   `docs/saison.md` (eigener Abschnitt), `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** Teil 1 (Ligatabelle: Sortierung 0x50B45, Bilanz 0x50283, Ansicht Heim/Auswärts) in PR #240; offen: Pokal-/WM-Gruppen
+  und Play-off-Setzung, Pixelvergleich der Ansicht (Referenzbilder in diesem Lauf nicht erreichbar).
 
 ### Spur `spielstaerke-manager` – Spielstärke der Managervereine und Restteile der Spielberechnung (#204, #179, #193)
 

@@ -5,8 +5,9 @@ namespace EishockeyManager.UI.Screens;
 /// <summary>
 /// Ligatabelle (Hauptmenü → Tabellen → 1. Liga / 2. Liga / Oberliga). Layout vermessen aus Aufnahmen
 /// des Originals: Fenster 312 × 152 bei (4, 38), Knöpfe Heim / Gesamt / Auswärts.
-/// Punkte nach der 2-Punkte-Regel als Plus:Minus, Bilanz = letzte acht Spiele (groß = Heim, klein = auswärts),
-/// TD = Tendenz zum Vortag, Platz 1–2 grün und 11–12 rot hinterlegt.
+/// Punkte nach der 2-Punkte-Regel als Plus:Minus, Bilanz = letzte acht Spiele in jeder Ansicht (klein = Heim, groß =
+/// auswärts; em.exe 0x50283, 0x4F78D), TD = Tendenz zum Vortag, Platz 1–2 grün und 11–12 rot hinterlegt.
+/// Reihenfolge je Ansicht: <see cref="LeagueTable.Compute"/> (Tauschsortierung 0x50B45).
 /// </summary>
 public sealed class TableScreen : Screen
 {
