@@ -3,8 +3,8 @@ using EishockeyManager.Core;
 namespace EishockeyManager.UI.Screens;
 
 /// <summary>
-/// „und tschüß…“ ohne Live-Spiel, wie im Original: <see cref="GameState.Continue"/> spielt bis zum nächsten
-/// eigenen Spiel; angezeigt werden der Reihe nach
+/// „Tag weiter“ (Klick aufs Vereinslogo, früher „und tschüß…“) ohne Live-Spiel, wie im Original:
+/// <see cref="GameState.Continue"/> spielt bis zum nächsten eigenen Spiel; angezeigt werden der Reihe nach
 /// 1. Banner („Ligaspiel“, „Play-Off / Aufstiegsrunden“ …), wenn ein Manager-Verein spielt,
 /// 2. „Spiele laufen“ mit Spielminute und drei Balken (je Drittel: gelb = gespielt, rot = offen),
 /// 3. Banner und Meisterfotos der übrigen Tage (z. B. „Deutscher Meister“), die DEB-Pokal-Auslosung nach dem dritten
@@ -35,7 +35,7 @@ public sealed class MatchDayScreen : Screen
 
     public MatchDayScreen(ScreenHost host, MainMenuScreen menu) : base(host) => _menu = menu;
 
-    /// <summary>Die Schritte des letzten „und tschüß…“ (für Tests).</summary>
+    /// <summary>Die Schritte des letzten „Tag weiter“ (für Tests).</summary>
     public IReadOnlyList<SeasonStep> Steps { get; private set; } = [];
 
     /// <summary>Text des gerade gezeigten Banners oder null.</summary>

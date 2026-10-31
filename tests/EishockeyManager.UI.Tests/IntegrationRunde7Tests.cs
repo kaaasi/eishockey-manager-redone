@@ -22,7 +22,7 @@ public class IntegrationRunde7Tests : IDisposable
     }
 
     /// <summary>
-    /// Eine Saison mit der Leertaste (Modus 4, Düsseldorfer EG): Die Spieler des eigenen Vereins sammeln Spiele, Tore,
+    /// Eine Saison mit „weiter“ (Vereinslogo bzw. Leertaste; Modus 4, Düsseldorfer EG): Die Spieler des eigenen Vereins sammeln Spiele, Tore,
     /// Vorlagen und Torhüterminuten aus der Spielberechnung, die Börse zeigt einen vollen Verlauf, keine Handbuchfrage
     /// erscheint, und Sichern/Laden bleibt am Saisonende bytegleich (Schema 11).
     /// </summary>
@@ -41,7 +41,7 @@ public class IntegrationRunde7Tests : IDisposable
 
         for (var guard = 0; (game.History.Count < 1 || d.Host.Current is not MainMenuScreen) && guard < 40000; guard++)
         {
-            d.Press(Key.Space);
+            d.Advance();
             Assert.DoesNotContain("Handbuch", d.Host.Current?.GetType().Name ?? "", StringComparison.OrdinalIgnoreCase);
         }
         Assert.Single(game.History);
@@ -68,7 +68,7 @@ public class IntegrationRunde7Tests : IDisposable
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var before = game.Results.Count;
         for (var guard = 0; game.Results.Count == before && guard < 2000; guard++)
-            d.Press(Key.Space);
+            d.Advance();
         var own = game.Results.Skip(before).Single(r => r.Home == club.Index || r.Away == club.Index);
         var goals = own.Home == club.Index ? own.HomeGoals : own.AwayGoals;
 

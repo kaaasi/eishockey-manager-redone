@@ -121,7 +121,7 @@ public class HighscoreScreenTests
 
         var guard = 0;
         while (game.Season == GameState.FirstSeason && guard++ < 10000)
-            d.Press(Key.Space);
+            d.Advance();
         Assert.Contains(store.Load(key).Entries, e => e.Name == "LetsShow" && !e.IsEmpty);
     }
     /// <summary>

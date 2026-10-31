@@ -49,7 +49,7 @@ public class SeasonEndStatusUiTests
         d.StartNewGame();
         var game = d.Host.Game!;
         for (var guard = 0; d.Host.Current is not SeasonEndSummaryScreen && guard++ < 20000;)
-            d.Press(Key.Space);
+            d.Advance();
         Assert.IsType<SeasonEndSummaryScreen>(d.Host.Current);
 
         var record = game.History[^1];

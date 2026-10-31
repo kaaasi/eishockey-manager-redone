@@ -134,7 +134,7 @@ public class PixelWettbewerbeTests
         for (var guard = 0; game.WorldCup!.KnockoutPairings(0).Count == 0; guard++)
         {
             Assert.True(guard < 20000, "WM-Endrunde nicht erreicht");
-            d.Press(Key.Space);
+            d.Advance();
         }
         var wm = game.WorldCup;
         var stages = Enumerable.Range(0, 3).Count(st => wm.KnockoutPairings(st).Count > 0);

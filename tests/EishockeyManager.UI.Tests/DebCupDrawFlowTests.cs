@@ -21,13 +21,13 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
         return d;
     }
 
-    /// <summary>Antwort im Fragefenster: Escape = „Kein Gedanke“, sonst Leertaste (= „Aber klar“ bzw. weiter).</summary>
+    /// <summary>Antwort im Fragefenster: Escape = „Kein Gedanke“, sonst weiter (Leertaste = „Aber klar“; im Hauptmenü Klick aufs Vereinslogo).</summary>
     private static void Step(ScreenDriver d, bool live)
     {
         if (!live && d.Host.Current is DebCupDrawLiveScreen { Current: DebCupDrawLiveScreen.Phase.Ask })
             d.Press(Key.Escape);
         else
-            d.Press(Key.Space);
+            d.Advance();
     }
 
     /// <summary>[ORIGINAL] Datei 0x43A8C, Video 3:40: nach „Los jetzt!“ erst die Auslosung der ersten Runde mit Frage.</summary>
@@ -108,7 +108,7 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
             if (current is DebCupDrawLiveScreen { Current: DebCupDrawLiveScreen.Phase.Done } done)
                 Assert.Equal(cup.Rounds[done.Round].SelectMany(t => new[] { t.First, t.Second }).Order(),
                     done.Slots.Select(s => s!.Value).Order());
-            d.Press(Key.Space);
+            d.Advance();
         }
 
         Assert.Equal([1, 2, 3], seen.Select(s => s.Round));
@@ -155,7 +155,7 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
             Assert.True(guard < 20000, "Saisonwechsel nicht erreicht");
             if (game.History.Count == 1 && d.Host.Current is DebCupDrawLiveScreen live)
                 atChange ??= live;
-            d.Press(Key.Space);
+            d.Advance();
         }
         Assert.NotNull(atChange);
         Assert.Equal(0, atChange!.Round);

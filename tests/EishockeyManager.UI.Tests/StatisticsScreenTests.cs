@@ -57,12 +57,12 @@ public class StatisticsScreenTests
         for (var guard = 0; game.History.Count == 0; guard++)
         {
             Assert.True(guard < 5000);
-            d.Press(Key.Space);
+            d.Advance();
         }
         for (var guard = 0; d.Host.Current is not MainMenuScreen; guard++)
         {
             Assert.True(guard < 50);
-            d.Press(Key.Space);
+            d.Advance();
         }
         Assert.Single(game.ManagerHistory(0));
         Assert.True(game.EternalTable[0].Points > 0);

@@ -29,7 +29,7 @@ internal static class Grundablauf
     private static void MatchDay(ScreenDriver d)
     {
         d.StartNewGame();
-        d.Click(274, 170); d.Frame(); d.Save("01_banner");
+        d.NextDay(); d.Frame(); d.Save("01_banner"); // Tag weiter über das Vereinslogo (#205)
         d.Frames(MatchDayScreen.BannerFrames + 40 * MatchDayScreen.FramesPerMinute);
         d.Save("02_spiele_laufen");
         d.Press(Key.Space); d.Move(10, 230); d.Save("03_nach_spieltag");
