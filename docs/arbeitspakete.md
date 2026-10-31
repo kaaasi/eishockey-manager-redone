@@ -299,6 +299,23 @@ nicht); so steht es auch in den Startaufrufen.
 R8-A01 (Spielstände aus Spurbranches) wird nicht behoben: Spurbranches sind keine Ausgabestände. W51-01 ist mit #250
 erledigt; F46-01 entfällt (nachträglich nicht behebbar).
 
+### Integration Runde 8, Welle 3 (Leitstelle)
+
+Branch `integration/runde-8-welle-3` von `main` 99fa995, zusammengeführt in Planfolge: `leitstelle-r8` (#262),
+`optionen-kalender-2` (#267), `tabellen-original-2` (#261), `statistiken-verein` (#264), `nationalteam-2` (#265),
+`transfer-original-vertrag` (#266), `spielstaerke-manager-2` (#263).
+- **Schema:** 14 → 15 Serien und Über-/Unterzahl (statistiken-verein), 15 → 16 WM-Platzierungen (nationalteam-2),
+  16 → 17 Verhandlungs- und Gebotssperre (transfer-original-vertrag). Referenzwerte unverändert gegenüber dem Branch
+  `spielstaerke-manager-2`.
+- **Anschlüsse der Leitstelle:** #193 Länderwerte nach Freundschaftsspielen aus der Aufstellung des Bundestrainers
+  (`PlayFriendly`); #195 auch nach dem Saisonwechsel (`SeasonEndSummaryScreen`); `docs/wettbewerbe.md` Z. 77.
+- **Offen aus den Spuren** (Folgearbeit, Runde 9): `spielstaerke-manager` Teil 3 (Verletzungen 0x38B8F, Torschütze
+  0x386D1, Anzeige #193 im Stärkevergleich, #204 Ursache der Streuung im Original); `nationalteam` Gegner-Fenster
+  0x128:0x2A, Schreibstelle der WM-Platzierungen; `statistiken` Über-/Unterzahl-Zähler an die Minutenrechnung;
+  `transfer-original` Kauf mit Verhandlung 0x4786A, Verhandlung am Saisonende 0x27D05, Versicherungsprämie,
+  unaufgeforderte Angebote, Listenwechsel 0x494EF; `tabellen-original` Startordnung ab Saison 2, Abzug in der Titelzahl
+  0x4F986; `optionen-kalender` Pixelvergleich Einstellungen (Bild 48), Kalender-Tiefenanalyse; `optionen-wirkung`.
+
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): letzter Schritt vor v1.0 (Entscheidung Nutzer).
