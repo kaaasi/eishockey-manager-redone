@@ -38,9 +38,8 @@ internal static class SettingsSync
         mixer.EffectsVolume = settings.EffectsVolume;
         mixer.MusicVolume = settings.MusicVolume;
 
-        // „Musik auch im Spiel“: während der Spieltage (Bildschirm „Spiele laufen“) nur, wenn eingeschaltet
-        var inMatch = current is MatchDayScreen;
-        var wanted = !inMatch || settings.MusicInMatch;
+        // Titelmusik nur im Titelbildschirm; während der Spieltage nach „Musik auch im Spiel“ (MusicPolicy).
+        var wanted = MusicPolicy.Wanted(current, settings);
         if (wanted && !mixer.IsMusicPlaying)
             mixer.PlayMusic();
         else if (!wanted && mixer.IsMusicPlaying)
