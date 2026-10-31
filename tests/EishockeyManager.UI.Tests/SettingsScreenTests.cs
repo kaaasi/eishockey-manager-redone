@@ -33,8 +33,6 @@ public class SettingsScreenTests : IDisposable
     {
         var s = new GameSettings();
         Assert.Equal(10, s.EffectsVolume);
-        Assert.Equal(10, s.MusicVolume);
-        Assert.True(s.MusicInMatch);   // „Musik auch im Spiel (Standard: an)“
         Assert.True(s.GoalScenes);
         Assert.False(s.Fullscreen);
     }
@@ -43,31 +41,47 @@ public class SettingsScreenTests : IDisposable
     [InlineData(-3, 0)]
     [InlineData(4, 4)]
     [InlineData(11, 10)]
-    public void Volumes_AreClamped(int value, int expected)
-    {
-        var s = new GameSettings { EffectsVolume = value, MusicVolume = value };
-        Assert.Equal(expected, s.EffectsVolume);
-        Assert.Equal(expected, s.MusicVolume);
-    }
+    public void Volume_IsClamped(int value, int expected) =>
+        Assert.Equal(expected, new GameSettings { EffectsVolume = value }.EffectsVolume);
 
     [Fact]
     public void SaveAndLoad_RoundTrip()
     {
         var path = Path.Combine(_directory, "unter", "einstellungen.json");
-        new GameSettings { EffectsVolume = 3, MusicVolume = 7, MusicInMatch = false, GoalScenes = false, Fullscreen = true }.Save(path);
+        new GameSettings { EffectsVolume = 3, GoalScenes = false, Fullscreen = true }.Save(path);
         var loaded = GameSettings.Load(path);
-        Assert.Equal((3, 7, false, false, true),
-            (loaded.EffectsVolume, loaded.MusicVolume, loaded.MusicInMatch, loaded.GoalScenes, loaded.Fullscreen));
+        Assert.Equal((3, false, true), (loaded.EffectsVolume, loaded.GoalScenes, loaded.Fullscreen));
+    }
+
+    /// <summary>#221: Dateien aus früheren Ständen enthalten noch MusicVolume/MusicInMatch; sie müssen weiter laden.</summary>
+    [Fact]
+    public void Load_OldFileWithMusicFields_StillLoads()
+    {
+        Directory.CreateDirectory(_directory);
+        var path = Path.Combine(_directory, "alt.json");
+        File.WriteAllText(path,
+            "{ \"EffectsVolume\": 4, \"MusicVolume\": 2, \"MusicInMatch\": false, \"GoalScenes\": false, \"Fullscreen\": true, \"AutoSave\": false }");
+        var loaded = GameSettings.Load(path);
+        Assert.Equal((4, false, true, false), (loaded.EffectsVolume, loaded.GoalScenes, loaded.Fullscreen, loaded.AutoSave));
+    }
+
+    /// <summary>#221: Es gibt keine Musikeinstellungen mehr (Musik läuft nur im Titelbildschirm).</summary>
+    [Fact]
+    public void NoMusicSettings()
+    {
+        Assert.Null(typeof(GameSettings).GetProperty("MusicVolume"));
+        Assert.Null(typeof(GameSettings).GetProperty("MusicInMatch"));
+        Assert.DoesNotContain(Enum.GetNames<SettingsScreen.Row>(), n => n.StartsWith("Music"));
     }
 
     [Fact]
     public void Load_MissingOrBrokenFileGivesDefaults()
     {
-        Assert.Equal(10, GameSettings.Load(Path.Combine(_directory, "fehlt.json")).MusicVolume);
+        Assert.Equal(10, GameSettings.Load(Path.Combine(_directory, "fehlt.json")).EffectsVolume);
         Directory.CreateDirectory(_directory);
         var broken = Path.Combine(_directory, "kaputt.json");
         File.WriteAllText(broken, "{ kein json");
-        Assert.True(GameSettings.Load(broken).MusicInMatch);
+        Assert.True(GameSettings.Load(broken).GoalScenes);
     }
 
     [Fact]
@@ -78,9 +92,9 @@ public class SettingsScreenTests : IDisposable
         Assert.False(Directory.Exists(_directory));
 
         GameSettings.StorePath = Path.Combine(_directory, "e.json");
-        GameSettings.Current.MusicVolume = 2;
+        GameSettings.Current.EffectsVolume = 2;
         GameSettings.SaveCurrent();
-        Assert.Equal(2, GameSettings.Load(GameSettings.StorePath).MusicVolume);
+        Assert.Equal(2, GameSettings.Load(GameSettings.StorePath).EffectsVolume);
     }
 
     private static ScreenDriver Open()
@@ -117,21 +131,20 @@ public class SettingsScreenTests : IDisposable
         Assert.Equal(8, GameSettings.Current.EffectsVolume);
         d.Click(arrows.X + 4, arrows.Y + 3);        // lauter
         Assert.Equal(9, GameSettings.Current.EffectsVolume);
-        Assert.Equal(10, GameSettings.Current.MusicVolume);
     }
 
     [GameDataFact]
     public void Cells_SetVolumeDirectly()
     {
         var d = Open();
-        var cell = SettingsScreen.CellRect(SettingsScreen.Row.MusicVolume, 4);
+        var cell = SettingsScreen.CellRect(SettingsScreen.Row.EffectsVolume, 4);
         d.Click(cell.X + 2, cell.Y + 2);
-        Assert.Equal(4, GameSettings.Current.MusicVolume);
-        var first = SettingsScreen.CellRect(SettingsScreen.Row.MusicVolume, 1);
+        Assert.Equal(4, GameSettings.Current.EffectsVolume);
+        var first = SettingsScreen.CellRect(SettingsScreen.Row.EffectsVolume, 1);
         d.Click(first.X + 2, first.Y + 2);
-        Assert.Equal(1, GameSettings.Current.MusicVolume);
+        Assert.Equal(1, GameSettings.Current.EffectsVolume);
         d.Click(first.X + 2, first.Y + 2);            // nochmal auf die einzige volle Zelle = aus
-        Assert.Equal(0, GameSettings.Current.MusicVolume);
+        Assert.Equal(0, GameSettings.Current.EffectsVolume);
     }
 
     [GameDataFact]
@@ -139,14 +152,14 @@ public class SettingsScreenTests : IDisposable
     {
         var d = Open();
         GameSettings.StorePath = Path.Combine(_directory, "e.json");
-        foreach (var row in new[] { SettingsScreen.Row.MusicInMatch, SettingsScreen.Row.GoalScenes, SettingsScreen.Row.Fullscreen })
+        foreach (var row in new[] { SettingsScreen.Row.GoalScenes, SettingsScreen.Row.Fullscreen })
         {
             var r = SettingsScreen.RowRect(row);
             d.Click(r.X + 10, r.Y + 5);
         }
         var s = GameSettings.Current;
-        Assert.Equal((false, false, true), (s.MusicInMatch, s.GoalScenes, s.Fullscreen));
+        Assert.Equal((false, true), (s.GoalScenes, s.Fullscreen));
         var saved = GameSettings.Load(GameSettings.StorePath);
-        Assert.Equal((false, false, true), (saved.MusicInMatch, saved.GoalScenes, saved.Fullscreen));
+        Assert.Equal((false, true), (saved.GoalScenes, saved.Fullscreen));
     }
 }

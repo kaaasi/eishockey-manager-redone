@@ -3,7 +3,7 @@ using EishockeyManager.UI.Screens.Team;
 namespace EishockeyManager.UI.Screens;
 
 /// <summary>
-/// Bildschirm „Einstellungen“ (Kachel unter „Gemischtes“): Lautstärke Effekte und Musik, Musik auch im Spiel,
+/// Bildschirm „Einstellungen“ (Kachel unter „Gemischtes“): Lautstärke Effekte,
 /// Torszenen, Vollbild, automatisch speichern. Jede Änderung gilt sofort und wird gespeichert.
 /// </summary>
 /// <remarks>
@@ -14,10 +14,10 @@ namespace EishockeyManager.UI.Screens;
 /// </remarks>
 public sealed class SettingsScreen : Screen
 {
-    public static readonly Rect Window = new(24, 36, 272, 172);
+    public static readonly Rect Window = new(24, 53, 272, 138);
 
     private const int LabelX = 44;
-    private const int FirstRowY = 73;
+    private const int FirstRowY = 90;
     private const int RowPitch = 17;
     private const int BarX = 168;
     private const int CellWidth = 7;
@@ -30,15 +30,13 @@ public sealed class SettingsScreen : Screen
     public enum Row
     {
         EffectsVolume,
-        MusicVolume,
-        MusicInMatch,
         GoalScenes,
         Fullscreen,
         AutoSave,
     }
 
     private static readonly string[] Labels =
-        ["Lautstärke Effekte", "Lautstärke Musik", "Musik auch im Spiel", "Torszenen zeigen", "Vollbild", "Automatisch speichern"];
+        ["Lautstärke Effekte", "Torszenen zeigen", "Vollbild", "Automatisch speichern"];
 
     /// <summary>Zeile i (ganze Breite, zum Umschalten der Lampen).</summary>
     public static Rect RowRect(Row row) => new(LabelX - 4, FirstRowY + RowPitch * (int)row - 5, 236, 15);
@@ -51,7 +49,7 @@ public sealed class SettingsScreen : Screen
     public static Rect CellRect(Row row, int level) =>
         new(BarX + (level - 1) * CellPitch, FirstRowY + RowPitch * (int)row - 1, CellWidth, CellHeight);
 
-    public static readonly Rect BackButton = Widgets.ButtonRect(160 - Widgets.ButtonWidth / 2, 188);
+    public static readonly Rect BackButton = Widgets.ButtonRect(160 - Widgets.ButtonWidth / 2, 171);
 
     private readonly Screen _back;
 
@@ -70,8 +68,8 @@ public sealed class SettingsScreen : Screen
             return;
 
         var changed = false;
-        foreach (var row in new[] { Row.EffectsVolume, Row.MusicVolume })
         {
+            var row = Row.EffectsVolume;
             var arrows = ArrowRect(row);
             if (input.Clicked(arrows))
             {
@@ -89,15 +87,12 @@ public sealed class SettingsScreen : Screen
             }
         }
 
-        foreach (var row in new[] { Row.MusicInMatch, Row.GoalScenes, Row.Fullscreen, Row.AutoSave })
+        foreach (var row in new[] { Row.GoalScenes, Row.Fullscreen, Row.AutoSave })
         {
             if (!input.Clicked(RowRect(row)))
                 continue;
             switch (row)
             {
-                case Row.MusicInMatch:
-                    Settings.MusicInMatch = !Settings.MusicInMatch;
-                    break;
                 case Row.GoalScenes:
                     Settings.GoalScenes = !Settings.GoalScenes;
                     break;
@@ -115,19 +110,12 @@ public sealed class SettingsScreen : Screen
             GameSettings.SaveCurrent();
     }
 
-    private static int Volume(Row row) => row == Row.EffectsVolume ? Settings.EffectsVolume : Settings.MusicVolume;
+    private static int Volume(Row row) => Settings.EffectsVolume;
 
-    private static void SetVolume(Row row, int value)
-    {
-        if (row == Row.EffectsVolume)
-            Settings.EffectsVolume = value;
-        else
-            Settings.MusicVolume = value;
-    }
+    private static void SetVolume(Row row, int value) => Settings.EffectsVolume = value;
 
     private static bool Toggle(Row row) => row switch
     {
-        Row.MusicInMatch => Settings.MusicInMatch,
         Row.GoalScenes => Settings.GoalScenes,
         Row.AutoSave => Settings.AutoSave,
         _ => Settings.Fullscreen,
@@ -145,7 +133,7 @@ public sealed class SettingsScreen : Screen
             var y = FirstRowY + RowPitch * (int)row;
             s.Text(Assets.Mini, LabelX, y, Labels[(int)row], Colors.White);
 
-            if (row is Row.EffectsVolume or Row.MusicVolume)
+            if (row == Row.EffectsVolume)
             {
                 var volume = Volume(row);
                 for (var level = 1; level <= GameSettings.MaxVolume; level++)
@@ -167,7 +155,7 @@ public sealed class SettingsScreen : Screen
             }
         }
 
-        s.TextCentered(Assets.Mini, 160, 177, "F8 = Ton aus/an    F11 = Vollbild", Colors.White);
+        s.TextCentered(Assets.Mini, 160, 160, "F8 = Ton aus/an    F11 = Vollbild", Colors.White);
         Widgets.Button(s, Assets, BackButton.X, BackButton.Y, "Zurück");
     }
 }

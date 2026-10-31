@@ -125,8 +125,8 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 * In der Ligaansicht „Freundschaftsspiel“: Gegner aus Liga oder Europapokal wählen, Heimspiel an einem freien Termin
   der nächsten vier Wochen (höchstens zwei offen).
 ### Einstellungen
-* Vollbild, Torszenen zeigen, Cheats, Automatisch speichern; Lautstärke Soundeffekte und Musik (0–10),
-  Musik „auch im Spiel“ (Standard: an); `F8` schaltet den Ton stumm.
+* Vollbild, Torszenen zeigen, Cheats, Automatisch speichern; Lautstärke Soundeffekte (0–10); `F8` schaltet den Ton
+  stumm. Musik: nur im Titelbildschirm, sonst nirgends (Entscheidung Nutzer, #221) – keine Musikeinstellungen.
 ### Saisonende
 „Saisonende“ in großer Schrift, darunter Weltmeister, DEB-Pokal, Deutscher Meister, Europa-Pokal und je Liga
 Aufsteiger (rot) und Absteiger (grün). Nach der gewählten Spieldauer folgt das Spielende mit Highscore.
