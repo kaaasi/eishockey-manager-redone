@@ -315,6 +315,12 @@ Branch `integration/runde-8-welle-3` von `main` 99fa995, zusammengeführt in Pla
   `transfer-original` Kauf mit Verhandlung 0x4786A, Verhandlung am Saisonende 0x27D05, Versicherungsprämie,
   unaufgeforderte Angebote, Listenwechsel 0x494EF; `tabellen-original` Startordnung ab Saison 2, Abzug in der Titelzahl
   0x4F986; `optionen-kalender` Pixelvergleich Einstellungen (Bild 48), Kalender-Tiefenanalyse; `optionen-wirkung`.
+- **Review** `docs/reviews/2026-11-01-integration-runde-8-welle-3.md`: R8W3I-01 (#269, Spielstand vor den Toren der
+  Minute für 0x80CB/0x939A) und R8W3I-02 (#270, Forderung nach dem Saisonende ohne Untergrenze, Laufzeit und Forderung
+  zurückgeschrieben) in der Integration behoben. P3 als Restlücken (Runde 9): R8W3I-03 bis -05 Strafen in der
+  Managerpaarung (`PenalizedPlayer`, Rückgabe 100, Managerwert), -06 Nationalteam des Bundestrainers, -07 Versicherung im
+  Vertragsdialog, -08 Gehalt in ganzen DM, -09 Sperre beim Saisonwechsel, -10 Testlücken, -11 #195-Anschluss in einer
+  Spurdatei ohne Folgespur (`SeasonEndSummaryScreen.cs`) – im Plan als Ausnahme der Leitstelle nachgetragen.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 

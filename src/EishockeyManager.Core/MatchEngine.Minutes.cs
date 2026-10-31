@@ -415,6 +415,9 @@ public static partial class OriginalMinutes
             minute, periodEnd, rules.WorldCup, rules.Playoff, random);
         // Verlängerung: Heimergebnis mit Marke ≥ 10 (siehe Shot).
         var mark = minute > 60 ? 30 : 0;
+        // [ORIGINAL] 0x37E2D/0x37E62: Spielstand einmal je Minute in lokale Variablen ([bp-0xd]/[bp-0xe]); die Tore dieser
+        // Minute ändern sie nicht, 0x80CB und 0x939A bekommen den Stand davor (R8W3I-01, #269).
+        var (homeBefore, awayBefore) = (report.HomeGoals, report.AwayGoals);
         if ((flags & 1) != 0)
             Score(home, away, 0, h, a, minute, rules, report, mark, random);
         if ((flags & 2) != 0)
@@ -428,8 +431,8 @@ public static partial class OriginalMinutes
             DrainEnergy(away, random);
             if (OriginalMatch.Rnd(random, 0, 1) != 0)
                 (x, y, sx, sy) = (away, home, 1, 0);
-            var gx = sx == 0 ? report.HomeGoals : report.AwayGoals;
-            var gy = sx == 0 ? report.AwayGoals : report.HomeGoals;
+            var gx = sx == 0 ? homeBefore : awayBefore;
+            var gy = sx == 0 ? awayBefore : homeBefore;
             if (minute % 2 != 0)
                 ComputerLineModes(x, y, gx, gy, minute, sx == 0 ? h.Normal : a.Normal, sx == 0 ? a.Normal : h.Normal);
             ChangeLines(x, y);

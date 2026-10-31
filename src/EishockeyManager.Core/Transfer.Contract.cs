@@ -33,8 +33,9 @@ public static class ContractRules
     /// Gehaltsforderung, die der Dialog nach der Eingabe der Laufzeit ins Feld „Gehalt / Monat“ schreibt.
     /// [ORIGINAL] Datei 0x4A81B–0x4A9F2: S = Wert(Gehalt) · F / 100 mit F = DGROUP 0xE1A4 (random(85, 115) zu Beginn jedes
     /// Managerzugs, Datei 0x44E3F); U = (Jahre − 1) · 100 + Rest; W = (U / 6 + 122) · 8 / 10 (LXLSH 3, Datei 0x4A8F8);
-    /// S = S · (W + 4) / 100; nach dem Saisonende zusätzlich S = S · (152 − Alter) / 100 (Datei 0x4A974). Die Forderung ist
-    /// nie kleiner als das bisherige Gehalt (0x4A9B3).
+    /// S = S · (W + 4) / 100; nach dem Saisonende zusätzlich S = S · (152 − Alter) / 100 (Datei 0x4A974). Vor dem Saisonende
+    /// ist die Forderung nie kleiner als das bisherige Gehalt (0x4A9B3); nach dem Saisonende steht in +0x28 an dieser Stelle
+    /// schon die Forderung selbst (0x4A9A1), die Untergrenze wirkt nicht (R8W3I-02, #270).
     /// <para>Das Alter liest das Original aus Kaderplatz 3 des Managers statt aus dem verhandelten Spieler (Register DI
     /// steht nach der Zeichenschleife 0x4A3D3–0x4A407 auf 3, Datei 0x4A93F); der Aufrufer übergibt dieses Alter.</para>
     /// <para>Nach dem Saisonende schreibt das Original die Forderung und die Laufzeit sofort in den Kaderplatz (0x4A9A1);
@@ -56,7 +57,7 @@ public static class ContractRules
         s = unchecked(s * (w + 4)) / 100;
         if (afterSeason)
             s = unchecked(s * (27 - ageForFactor + 125)) / 100;
-        return Math.Max(s, currentSalaryThirds);
+        return afterSeason ? s : Math.Max(s, currentSalaryThirds);
     }
 
     /// <summary>

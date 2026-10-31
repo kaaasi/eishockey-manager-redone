@@ -285,11 +285,17 @@ public static class Contracts
         if ((years != 0 || salary != 0) && Availability(game, p) is { } refusal)
             return refusal;
         var current = CurrentYears(p);
-        var result = Decide(game, manager, p, current, years, salary, demandFilled);
+        var currentSalary = p.MonthlySalary;
+        // [ORIGINAL] 0x4A9A1 (R8W3I-02, #270): Nach dem Saisonende schreibt der Dialog Forderung und Laufzeit sofort in den
+        // Kaderplatz; „Mach' ich!“ vergleicht danach mit diesen Werten. [APPROX] Scheitert die Verhandlung, behält das Remake
+        // die alten Werte (das Original stellt sie nur beim Abbruch nachweislich zurück, 0x4AD54).
+        if (game.AfterSeasonEnd && years != 0 && DemandAfterYears(game, manager, p, years) is { } demand)
+            (current, currentSalary) = (years, demand);
+        var result = Decide(game, manager, p, current, currentSalary, years, salary, demandFilled);
         if (result == NegotiationResult.Accepted)
         {
             p.ContractYears = years == 0 ? current : years;
-            p.MonthlySalary = salary == 0 ? p.MonthlySalary : salary;
+            p.MonthlySalary = salary == 0 ? currentSalary : salary;
             p.Insured = insured;
         }
         else
@@ -307,23 +313,23 @@ public static class Contracts
     public static int CurrentYears(Player p) =>
         p.Notice == ContractNotice.Offered && p.ContractYears == 1 ? p.NoticeYears : p.ContractYears;
 
-    private static NegotiationResult Decide(GameState game, Manager manager, Player p, int current, int years, int salary,
-        bool demandFilled)
+    private static NegotiationResult Decide(GameState game, Manager manager, Player p, int current, int currentSalary, int years,
+        int salary, bool demandFilled)
     {
         if (years > ContractRules.MaxYears)
             return NegotiationResult.TooLong;
         var accept = demandFilled
                      || years == 0 && (salary == 0 || current == 0)
-                     || years == current && salary >= p.MonthlySalary;
+                     || years == current && salary >= currentSalary;
         var y = years == 0 ? current : years;
-        var s = salary == 0 ? p.MonthlySalary : salary;
+        var s = salary == 0 ? currentSalary : salary;
         if (y < current)
             return NegotiationResult.TooShort;
         if (accept)
             return NegotiationResult.Accepted;
         var club = game.Clubs[manager.ClubIndex];
         var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
-        return ContractRules.Accepts(current, p.MonthlySalary * 3, y, s * 3, value, game.ContractSeasonRemaining,
+        return ContractRules.Accepts(current, currentSalary * 3, y, s * 3, value, game.ContractSeasonRemaining,
             game.AfterSeasonEnd, p.Age, game.ContractRandom)
             ? NegotiationResult.Accepted
             : NegotiationResult.NotInterested;
