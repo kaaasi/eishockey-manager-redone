@@ -46,3 +46,14 @@ entschlüsselt sind, ist das im Code mit [APPROX] markiert.
 - Fehlerschutz: interne Fehler werden abgefangen und in `crash.log` protokolliert, statt das Spiel zu beenden.
 - Finanzbuch (Klick auf Bank/Konto): Einnahmen und Ausgaben je Kategorie, laufende und vorige Saison.
 - Lautstärke der Effekte einstellbar, `F8` = Ton aus. Musik nur im Titelbildschirm (#221), ohne Einstellung.
+## C. Ideen (ab v1.0)
+
+Vom Nutzer vorgemerkt, Umsetzung erst nach Erreichen der Parität (v1.0); als abschaltbare Zusatzanzeige, die
+Originaldarstellung bleibt unverändert.
+
+- **Annahmewahrscheinlichkeit beim Spielerkauf (31.10.2026):** Gibt man im Kauf- oder Leihdialog der Transferliste ein
+  Gebot ein, zeigt das Spiel die Wahrscheinlichkeit, dass es angenommen wird. Grundlage ist die Annahmeregel des
+  Originals (em.exe 0x4991D, `TransferRules.Accepts`, [docs/transfer.md](../transfer.md)): Sie hängt nur von Gebot und
+  Listenpreis ab und lässt sich aus den drei Zufallszügen (75–85 %, 110–130 %, 70–120) exakt ausrechnen, ohne Zufall zu
+  verbrauchen – die Anzeige verändert damit keinen Spielzustand. Offen: Gebote an andere Manager (Antwort des Verkäufers),
+  Darstellung (Prozentzahl oder Ampel) und ob die Anzeige im Netzwerkmodus erlaubt ist.
