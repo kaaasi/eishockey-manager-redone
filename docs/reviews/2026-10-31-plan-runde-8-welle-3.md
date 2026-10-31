@@ -18,7 +18,7 @@ danach genügt eine Nachprüfung der Zeilen A#L271–L277.
 
 ## 2. Befunde
 
-### R8W3-01 · P2 – Spielerdaten-Fenster aus der Aufstellung ist keiner Stelle zugeordnet
+### R8W3-01 · P2 – Spielerdaten-Fenster aus der Aufstellung ist keiner Stelle zugeordnet (#256)
 
 [A#L237-L238](https://github.com/kaaasi/eishockey-manager-redone/blob/c60d0ccc27f356c20c35e1f141931587d5835927/docs/arbeitspakete.md#L237-L238),
 [A#L269-L277](https://github.com/kaaasi/eishockey-manager-redone/blob/c60d0ccc27f356c20c35e1f141931587d5835927/docs/arbeitspakete.md#L269-L277).
@@ -34,7 +34,7 @@ danach genügt eine Nachprüfung der Zeilen A#L271–L277.
   für die Ranglisten baut, mit `UI/Screens/Team/LineupScreen.cs` „nur Aufruf“) oder ausdrücklich `leitstelle-r8` mit
   dieser Datei.
 
-### R8W3-02 · P2 – `nationalteam-2` kann die Europapokal-Paarungsansicht (#194) nicht anmelden
+### R8W3-02 · P2 – `nationalteam-2` kann die Europapokal-Paarungsansicht (#194) nicht anmelden (#257)
 
 [A#L274](https://github.com/kaaasi/eishockey-manager-redone/blob/c60d0ccc27f356c20c35e1f141931587d5835927/docs/arbeitspakete.md#L274),
 [EuropeanCupScreen.cs Z. 173](https://github.com/kaaasi/eishockey-manager-redone/blob/c60d0ccc27f356c20c35e1f141931587d5835927/src/EishockeyManager.UI/Screens/Competitions/EuropeanCupScreen.cs#L173),
