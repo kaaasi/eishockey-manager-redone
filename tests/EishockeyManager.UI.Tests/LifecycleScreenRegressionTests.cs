@@ -19,7 +19,8 @@ public class LifecycleScreenRegressionTests
         player.Age = 27;
         player.ContractYears = 3;
         Assert.Equal(TransferResult.Accepted,
-            game.TransferMarket.Buy(game, game.ActiveManager, listing, listing.LoanFee, true));
+            // Über 130 % der Leihgebühr nimmt der Computermarkt immer an (em.exe 0x4991D, Spur transfer-original).
+            game.TransferMarket.Buy(game, game.ActiveManager, listing, listing.LoanFee * 135 / 100, true));
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var expired = club.Players.First(p => !p.OnLoan);
         expired.ContractYears = 1;
