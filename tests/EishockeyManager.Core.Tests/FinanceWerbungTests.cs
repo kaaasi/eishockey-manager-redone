@@ -337,18 +337,28 @@ public class FinanceWerbungTests
     /// Schritt jedes mögliche Angebot an und verhandelt jeden abgelaufenen Vertrag mit Option (Ja). Geprüft wird: Bewertung
     /// stets 0–100; „Sponsoren“ wird nur gebucht, wenn im Schritt ein Monatsletzter lag (#134); Verträge nur auf nutzbaren
     /// Flächen, Restlaufzeit ≥ 0, auf Verhandlung wartend nur mit Option (#133).
+    /// Leitstelle Runde 8 (R8-A02): Ob in einem Lauf ein Vertrag mit Option ausläuft, hängt vom Zufall ab; früher wurde der
+    /// Seed bei jeder Änderung des Zufallsverbrauchs verschoben (11 → 12 → 15 → 16). Die Verhandlung prüft jetzt
+    /// <see cref="ActiveManager_NegotiatesOptions_AcrossSeeds"/> über mehrere Seeds; diese Probe prüft je Seed die Regeln.
     /// </summary>
     [Theory]
     [InlineData(false, 3)]
     [InlineData(true, 3)]
-    // Integration Runde 7: Seed 12 statt 11. Mit allen Spuren der Runde (Börse zieht anders aus FinanceRandom, neue
-    // Spielberechnung, Startwerte) läuft bei Seed 11 im Probenzeitraum kein Vertrag mit Option aus (der einzige,
-    // ein Fernsehvertrag, endet erst danach); Seed 12 verhandelt an Tag 83. Spur spielstaerke-manager: Seed 15 statt 12
-    // (mit dem Lader der Teamwerte verhandelt Seed 12 im Probenzeitraum keine Option mehr). Integration Runde 8: Seed 16
-    // statt 15 (mit Werbebewertung nach dem Spielerwert, Einzelprämien und Lader zusammen verhandelt Seed 15 keine Option
-    // mehr; Seeds 16, 18, 20–22, 25 verhandeln, 15, 17, 19, 23, 24 nicht). Prüfziel unverändert.
     [InlineData(true, 16)]
-    public void FourSeasonChanges_SponsoringStaysConsistent(bool active, int seed)
+    public void FourSeasonChanges_SponsoringStaysConsistent(bool active, int seed) => RunSponsoringProbe(active, seed);
+
+    /// <summary>
+    /// R8-A02: Der aktive Manager verhandelt über mehrere Seeds mindestens eine Option (#133). Robust gegen geänderten
+    /// Zufallsverbrauch: Es genügt ein Seed aus sechs (auf dem Stand Runde 8 verhandeln u. a. 16, 18, 20).
+    /// </summary>
+    [Fact]
+    public void ActiveManager_NegotiatesOptions_AcrossSeeds()
+    {
+        var negotiated = Enumerable.Range(15, 6).Sum(seed => RunSponsoringProbe(true, seed));
+        Assert.True(negotiated > 0, "in keinem der Seeds 15–20 eine Verhandlung über eine Option");
+    }
+
+    private static int RunSponsoringProbe(bool active, int seed)
     {
         var game = TestGames.Create(seed);
         var me = game.ActiveManager;
@@ -410,7 +420,6 @@ public class FinanceWerbungTests
         }
         else
             Assert.Empty(game.Ads(me).Contracts);
-        if (active)
-            Assert.True(negotiated > 0, "keine Verhandlung über eine Option");
+        return negotiated;
     }
 }

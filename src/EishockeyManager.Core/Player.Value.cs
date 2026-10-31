@@ -71,7 +71,7 @@ public readonly record struct PlayerValueInputs
 /// <summary>
 /// Wert und Gehalt eines Spielers – einzige Quelle im Remake. [ORIGINAL] em.exe Datei 0x49D36–0x4A1DA (Overlay 0x118 +
 /// 0x3D36, Einsprung 0x118:0x70, 1189 Byte), Ergebnis in <b>Drittel-DM</b> (vorzeichenbehaftete 32-Bit-Zahl). Im Emulator
-/// gegen die Originalfunktion geprüft (<c>PlayerValueTests</c>, 2.000 Zufallsfälle gleich).
+/// gegen die Originalfunktion geprüft (<c>SpielerwertTests</c>, 2.000 Zufallsfälle gleich).
 /// <para>Rechnung (alle Teilungen ganzzahlig, zur Null hin; „Zeile“ = Tabelle DGROUP 0x5312, 6 Byte je Art):</para>
 /// <code>
 /// Zeile Preis 58, 4, 4, 5, 4, 25 · Zeile Gehalt 70, 8, 7, 5, 8, 2

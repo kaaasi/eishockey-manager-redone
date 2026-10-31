@@ -281,6 +281,12 @@ Integration:         optionen-kalender-2 → tabellen-original-2 → statistiken
 
 **Abnahme je Spur** wie in Welle 1 (roter Test je Regel, Pixelvergleich mit Kennzahl, Bildschirme zustandsrein,
 Mehrsaisonprobe bei Kader/Geld/Saisonwechsel, `[ORIGINAL]`/`[APPROX]`, Abschnitt in `docs/reverse-engineering.md`).
+Stand `leitstelle-r8` (31.10.): Funktionskarte neu (Abdeckung umgesetzt 45 % → 55 %), `bildschirme.md`, SeasonFlow-Kommentar,
+SW-03, R8-A02 für `FinanceWerbungTests` (Verhandlung über sechs Seeds) und die Börse (Wachstum über zwölf Seeds). #260
+(Verdacht: Basiswerte wachsen seit Runde 8 nicht mehr) eingegrenzt: über 8 Seeds 24/32 → 15/32 ab dem Merge von
+`spielstaerke-manager`, über 40 Seeds 64 % → 56 % (Faktor 1,04 → 1,02) – Streuung, kein Fehler; Kursmodell unverändert.
+R8W3N-01: Werden `BoerseStartTests`/`FinanceWerbungTests` auf einem Spurbranch rot, nennt die Spur das im PR (blockiert
+nicht); so steht es auch in den Startaufrufen.
 R8-A01 (Spielstände aus Spurbranches) wird nicht behoben: Spurbranches sind keine Ausgabestände. W51-01 ist mit #250
 erledigt; F46-01 entfällt (nachträglich nicht behebbar).
 
