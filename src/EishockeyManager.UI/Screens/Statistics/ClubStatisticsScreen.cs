@@ -149,7 +149,7 @@ public sealed class ClubStatisticsScreen : Screen
     {
         var items = new List<Item>();
         var club = game.Clubs[manager.ClubIndex];
-        var stats = game.Finance(manager).HomeStatistics;
+        var stats = game.Finance(manager).HomeStatisticsReadOnly;
         int x = 19, y = 16;
         const byte label = 1, value = 30;
         for (var si = 0; si < Texts.Length; si++)
@@ -372,7 +372,7 @@ public sealed class ClubStatisticsScreen : Screen
         for (var i = 0; i < 13; i++)
             s.Fill(new Rect(218, 106 + 3 * i, 81, 3), GradientIndex[12 - i]);
 
-        var stats = game.Finance(manager).HomeStatistics;
+        var stats = game.Finance(manager).HomeStatisticsReadOnly;
         foreach (var (x, top) in AudienceBars(stats.Curve, stats.Games, game.RequiredAverage(manager)))
             s.VLine(x, top, 144 - top + 1, 4);
         foreach (var (x, color) in AccountBar(manager.Money * 3))

@@ -172,6 +172,10 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
 - **Status:** PR #242 (Claude Code, geplanter Lauf 31.10.2026): Spieler (0x25E30), Fairplay (0x2A1E0), Einzelprämien
   (#135) und #222 umgesetzt, Schema vorläufig 11 → 12. Offen: „Verein“ = 0x2D5AE (Menüsprung belegt, nicht 0x4D385),
   Pixelvergleich am Video (Referenzbilder nicht erreichbar).
+  Welle 3 `statistiken-verein`: PR #264 (Claude Code, geplanter Lauf 31.10.2026) – „Verein“ 0x2D5AE umgesetzt, Serien
+  und Rekorde, Über-/Unterzahl-Regeln und Zähler (Anschluss an die Minutenrechnung offen, `spielstaerke-manager`),
+  Pixelvergleich Verein/Spieler/Fairplay, Spielerdaten-Fenster aus Ranglisten und Aufstellung, SW-02, R8-B02; Schema
+  vorläufig 14 → 15.
 
 ### Spur `nationalteam` – WM-Statistik, WM-Paarungen und Befunde Bundestrainer (#192, #194, #195)
 

@@ -353,3 +353,12 @@ public sealed partial class GameState
         return debts;
     }
 }
+
+public sealed partial class ManagerFinance
+{
+    /// <summary>
+    /// Zuschauerstatistik nur lesen (Bildschirm „Verein“): ohne angelegte Statistik eine leere, ohne sie im Zustand
+    /// anzulegen (<see cref="HomeStatistics"/> legt sie beim ersten Zugriff an).
+    /// </summary>
+    public StadiumStatistics HomeStatisticsReadOnly => _homeStatistics ?? new StadiumStatistics();
+}

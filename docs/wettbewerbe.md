@@ -158,10 +158,9 @@ Fortgeschrieben genau einmal je Saison am 29. April (Anschluss in `GameState.Int
   Markierung der angezeigten Saison (Farbe 16). Pixelvergleich gegen `oberflaeche_1652` (Text maskiert): 5,9, 1,1 % > 40.
   `[APPROX]` Balkenhöhen und -farbe.
 
-**Nicht umgesetzt (abhängig vom Live-Spiel):** „Spieler“ (Torschützen, Vorleger, Scorer, Keeper), „Verein“
-(Über-/Unterzahl, Serien), „Fairplay“ (Strafen) und „WM-Statistik“ (Spieler im WM-Kader) brauchen Tore, Vorlagen und
-Strafen je Spieler. Die heutige Spielberechnung liefert nur das Endergebnis; diese Daten entstehen erst mit dem Paket
-`livespiel`.
+„Spieler“, „Fairplay“ und „Verein“ sind umgesetzt (Abschnitte der Spuren `statistiken` und `statistiken-verein` unten);
+„WM-Statistik“ gehört zur Spur `nationalteam`. Nur die Über-/Unterzahl-Zähler im Bildschirm „Verein“ warten noch auf den
+Anschluss in der Minutenrechnung (Spur `spielstaerke-manager`).
 
 ## Statistiken Spieler und Fairplay, Einzelprämien (Spur `statistiken`, Runde 8)
 
@@ -178,10 +177,45 @@ Einzelprämien), `UI/Screens/Statistics/PlayerStatisticsScreen.cs`, `FairplayScr
 | Fair-Play-Tabelle: zwölf Vereine der Liga aufsteigend nach Strafminuten, „PRO SPIEL“ = Minuten · 100 / Spiele | 0x2A1E0–0x2A5BD |
 | Einzelprämien je 100.000 DM (300.000 Drittel): bester Torhüter (Symbol 12), Topscorer (3), Fair-Play-Erster (13) der eigenen Liga; Kennungen am 29. April je Manager | 0x5576E, 0x27184–0x2725D |
 | `[APPROX]` Spielerpool: alle Kaderspieler der Liga statt der 199 Poolspieler des Originals (Reihenfolge nur bei völligem Gleichstand wirksam) | – |
-| `[APPROX]` Gewählter Knopf gedrückt (das Original übergibt eine Farbe, die die Knopfzeichnung 0x4BFF2 nicht nutzt) | – |
+| Knöpfe nie gedrückt (0x4BFF2: Zustand immer 0), Ansichtsknöpfe „LIGA“/„MANAGER“ (DGROUP 0x974/0x978), Text Mini Farbe 29, Schatten 1, Grundlinie y + 7 (Spur `statistiken-verein`, am Video bestätigt) | 0x4C154–0x4C188 |
+| Klick auf einen Spieler, der im Kader eines Managers steht, öffnet das Spielerdaten-Fenster für diesen Manager (Spur `statistiken-verein`) | 0x26B13–0x26BF5 |
 
-Offen: Pixelvergleich am Video (Referenzbilder in dieser Sitzung nicht erreichbar), Bildschirm „Verein“ (0x2D5AE),
-Spielerdaten-Fenster bei Klick auf einen eigenen Spieler (0x26B13 → 0x041AC, Spur `spielerinfo`/Leitstelle).
+Pixelvergleich und Bildschirm „Verein“: Abschnitt der Spur `statistiken-verein` unten.
+
+## Statistik „Verein“, Pixelvergleich der Statistik-Bildschirme (Spur `statistiken-verein`, Runde 8, Welle 3)
+
+Umsetzung: `Core/StatisticsClub.cs` (Serien, Rekorde, Über-/Unterzahl, Torquoten, Benötigter Schnitt, Schulden),
+`UI/Screens/Statistics/ClubStatisticsScreen.cs`; Ablauf `statistiken-verein` in `Tools/Scenarios/StatistikenVerein.cs`.
+Belege im Einzelnen in `docs/reverse-engineering.md`, Abschnitt „Statistik Verein“.
+
+| Regel | Fundstelle |
+|---|---|
+| Laufende Serien je Verein (GEWONNEN … OHNE TORERFOLG, Spalten G/H/A) aus jedem Ligaergebnis; sie laufen über das Saisonende weiter | 0x50443–0x50AB4 (in 0x50283) |
+| Rekordserien je Manager: nach jedem Ligaspieltag das Maximum aus Rekord und laufender Serie des eigenen Vereins | 0x50CDB–0x50D65 (in 0x50B45) |
+| TORE/SPIEL, GEGENTORE/SPIEL: Ligatabelle der Saison, Tore · 10 / Spiele, Anzeige „E.Z“ | 0x2ECA0 |
+| Über-/Unterzahl: Tore je Lage beim Treffer, Zahl der Über-/Unterzahlspiele beim Strafwurf, Erfolg in %; Saisonwechsel 0 | 0xAA2C–0xAAEF, 0x35A84–0x35B18, 0x2D9D9–0x2DB22, 0x5588E |
+| Zuschauer: Schnitt, BENÖTIGTER SCHNITT = (Ausgaben − Einnahmen) · 12 / 23 / Eintritt, Rekord/Minuskulisse mit Gegner; Balken der Heimspiele um k = Benötigter Schnitt / 1000 | 0x2DB30–0x2DDA1, 0x3EB30, 0x2DFD2–0x2E162 |
+| Finanzen: Kontostand, Schulden gesamt (0x57768 Modus 0), Balken je Pixel mit Schwellen 70.000 bzw. 25.000 Drittel-DM | 0x2E162–0x2E286 |
+| Einnahmen/Ausgaben je Monat (0x3E657(1), 0x3E811(1, 1)) mit Mindestbreite 8 | 0x2DDA9–0x2DE43 |
+| Farbverlauf: 13 Paletteneinträge Grün → Rot nur für diesen Bildschirm | 0x2D666–0x2D6C0 |
+| `[APPROX]` Über-/Unterzahl zählt die Minutenrechnung noch nicht (Spur `spielstaerke-manager`: `GameState.CountPowerPlayGoal` und die Zähler 4/5 anschließen) – bis dahin 0, „UNTERZAHL ERFOLG“ 100 % | – |
+| `[APPROX]` Benötigter Schnitt aus den Monatswerten in DM · 3 statt der Drittel-DM des Originals; Schulden je Partner im Remake verrechnet | – |
+| `[APPROX]` Klick oder Taste schließt (das Original kehrt nach dem Zeichnen ins Menü zurück) | – |
+
+**Pixelvergleich** (eigenes Bild um (−0,25 \| +0,5) verschoben und weichgezeichnet, Graustufen, Werte mit anderem
+Spielstand maskiert; Ablauf `statistiken-verein`):
+
+| Bildschirm | Vorlage | Maske | mittlere Abweichung | > 40 |
+|---|---|---|---:|---:|
+| Verein (Spielbeginn) | `folge01_00522` | 6,5 % (Werte rechts, Kontobalken, Monatswerte) | 8,5 | 4,1 % |
+| Verein (nach drei Spieltagen) | `folge01_01022` | 34,8 % (alle Werte und Balken) | 9,2 | 4,3 % |
+| Spieler | `folge17_01752` | 40,4 % (Listenzeilen) | 5,0 | 0,8 % |
+| Spieler | `folge15_01007` | 40,0 % (Listenzeilen, Mauszeiger) | 6,5 | 1,2 % |
+| Fairplay | `folge15_01001` | 32,4 % (Listenzeilen) | 5,4 | 0,8 % |
+
+Die Abweichungen liegen an Schriftkanten. Zeilenlagen der Fair-Play-Tabelle stimmen pixelgenau (Grundlinien 55 + 8 n).
+In `folge01_01022` zeigt das Video die Balken in der Standardpalette (ohne Farbverlauf), in `folge01_00522` mit
+Farbverlauf; das Remake setzt den Verlauf wie der Code (0x2D666) immer.
 
 ## Bundestrainer: WM-Kader und „WM Vorbereitung“ (`Core/CupsNational*.cs`)
 

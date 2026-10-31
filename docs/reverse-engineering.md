@@ -379,7 +379,50 @@ Bisher in der Funktionskarte „dokumentiert“ bzw. ohne Abdeckung; jetzt `[ORI
 * **Knöpfe** 0x4C196 (`0x120:0x75`, x, y, Text, Farbe, 1): belegt einen von zehn Plätzen und zeichnet über 0x4BFF2 das
   Knopfbild 57 × 12 (kb\2 ab (17 | 179 + 12 · Zustand), Zustand immer 0) mit Text Mini zentriert x … x + 59, Grundlinie
   y + 7, Farbe 29, Schatten 1. Die übergebene Farbe wird nicht verwendet.
-* **Offen:** 0x2D5AE („Verein“, 3356 Byte), Spielerdaten-Fenster aus der Rangliste (0x26B13 → 0x041AC).
+* **Erledigt in Welle 3:** 0x2D5AE („Verein“) und das Spielerdaten-Fenster aus der Rangliste – Abschnitt „Statistik Verein“.
+
+## Statistik Verein 0x2D5AE (Spur `statistiken-verein`, Runde 8, Welle 3)
+
+Umsetzung: `Core/StatisticsClub.cs`, `UI/Screens/Statistics/ClubStatisticsScreen.cs`. Zuordnung über den Menüsprung 0x457E1
+(Index 0) und am Video (`folge01_00522`, `folge01_01022`: Serien, Über-/Unterzahl, Zuschauer, Finanzen, Monat).
+
+* **Texte** DGROUP 0xADC: 30 Fernzeiger (Klartext, nicht verschlüsselt) „!Serien“ … „AUSGABEN(GEHÄLTER...)“; „!“ = Überschrift.
+  „(noch keiner...)“ / „(noch keine...)“ über die Zeiger 0xEDD / 0xED9 (0x319B / 0x318B), „G       H       A“ über 0xEE1.
+  Der Hinweis „XOR 0xD9/0xC9“ im Arbeitspaket trifft für diese Texte nicht zu.
+* **Aufbau** 0x2D5AE: drei Fenster (0x30:0x335, Stil 0, Merker 2): (12 \| 0) 8 × 10, (12 \| 201) 8 × 2, (210 \| 0) 4 × 12;
+  Farbverlauf in die Paletteneinträge 0x4C3E[12 − i] (16, 17, 18, 10, 11, 8, 22–28) mit RGB 0x4C24[i] (Grün 0x0C0 → Rot
+  0xD00, je 4 Bit · 4) über 0x50:0x63F; Schleife 0x2D6CC–0x2DE7C über die Texte mit x/y-Sprüngen bei 19, 23, 24, 26, 27;
+  Überschriften Schrift 2 (0x38:0x6DD) mit Doppellinie, Text Schrift 3 Farbe 1, Werte Farbe 30. Danach (0x2DE7F–0x2E2B5)
+  Spaltenköpfe, Rahmen Farbe 6, Streifen, Balken. Kein Warten: die Funktion kehrt nach 0x38:0xDDE / 0x38:0x878 zurück.
+* **Zahlenausgabe 0x0B954** (über 0x38:0x2C2 bzw. 0x2D8 mit Drittel → DM): Mindestbreite DGROUP 0x374, fehlende Stellen
+  „%“ (Ziffernabstand), bei 0 zuerst „0“; Tausenderpunkt nur bei DGROUP 0x38D = 0 (Komma, wenn [0x79D] = 4 und
+  [0x79F] = 0); negativ: „-“ ohne Auffüllen. Der Bildschirm setzt 0x374 = 2 (Serien), 3 (ab Über-/Unterzahl), 8 (Monat)
+  und 0x38D = 0 für Zuschauer, Finanzen und Monat. 0x2D57A: Wert 0 → „%-“ (DGROUP 0x4D9F).
+* **Serien** (laufend je Verein DGROUP 0xB57B + 0x15 · Verein, Rekord je Manager 0xBABB + 0x15 · Manager; Zeile · 3 +
+  Spalte G/H/A): geschrieben nur in 0x50283 (Datei 0x50443–0x50AB4, Wettbewerbscode 7/8), 0x50D4B (Rekord = Maximum nach
+  dem Spieltag, Schleife 0x50CDB über alle Manager mit Verein aus 0x966F) und beim Tausch der Vereinssätze 0x36554–0x36593
+  – kein Rücksetzen beim Saisonwechsel. Anzeige laufend „(“ Rekord „)“ (0x2D8A3, 0x2D95A).
+* **Torquoten 0x2ECA0** (Puffer, Verein, Spaltencode 0x4C4B = 2/0/1, Modus 0 Tore / 1 Gegentore): Tabelle 0x8270 +
+  0x50 · Verein (+0/+1 Tore, +4/+5 Gegentore, +8/+9 Spiele Heim/Auswärts), Wert = Tore · 10 / Spiele, „E.Z“.
+* **Über-/Unterzahl** (Managerfelder 0x97D2 + 2 k): k 0–3 Tore/Gegentore in Über- bzw. Unterzahl, gezählt nach jedem Treffer
+  in 0xA484 (Datei 0xAA2C–0xAAEF, Feldspieler [bp−0x11]/[bp−0x12], Schütze [bp+0xE], Manager [bp−0x13]/[bp−0x14]);
+  k 4/5 Zahl der Über-/Unterzahlspiele: Strafwurf 0x35818 (Datei 0x35A84–0x35B18, Differenz der Feldspieler = 1 über
+  0x120:0x61), Rücknahme 0x35C7B–0x35CB2, nach einem Tor in Überzahl 0xA939–0xA9A2. Rücksetzen 0x5588E–0x558B2.
+  Anzeige 0x2D9D9–0x2DB22: Werte auf 0 … 100 begrenzt, Erfolg k0 · 100 / k4 bzw. 100 − k3 · 100 / k5 (ohne Teiler 0 bzw.
+  100), „#“ (DGROUP 0x4DA9) als Prozentzeichen. Die Zählung liegt in der Minutenrechnung (`MatchEngine*.cs`, Spur
+  `spielstaerke-manager`); das Remake hat Regeln, Zustand und Anzeige, der Anschluss fehlt noch.
+* **Zuschauer** (0x2DB30–0x2DC87): Schnitt 0x97DE / 0x9748, Rekord 0x97E2 mit Gegner 0x976F, Minuskulisse 0x97E6 mit
+  Gegner 0x9770 (99.999 bzw. 0 → „(noch keine...)“), Wert auf y + 6, „(Gegner)“ auf y + 12. **0x3EB30** Benötigter Schnitt:
+  (0x3E811(1, 1) − 0x3E657(1)) · 12 / 23 · [0x7A1] / [0x79D] / Eintritt 0x973F, negativ → 0. **0x2E2CA**: ganzzahlige
+  Wurzel (Schritte 100, 10, 1). Balken 0x2DFD2–0x2E162: k = Benötigter Schnitt / 1000, Streuung √(Σ |v − k|² / n) ≥ 10,
+  Halbbreite aus Streuung, Min und Max, Höhe (v − k) · 19 / r + 19 auf 0 … 37, Linie Farbe 4 bei x = 227 + 3 i.
+* **Finanzen** (0x2DC8A–0x2DD13, 0x2E162–0x2E286): Kontostand 0x97EA; Schulden 0x57768(0, 0x63) = Summe der negativen
+  Salden gegen die Manager 0 … [0x386] − 1 und die Bank (4); Balken je Pixel 223 … 293: Konto > −2.449.488 + 70.000 · i
+  (Farbe 0x4C3E[i / 6]), Schulden + negatives Konto > 25.000 · i (Farbe 0x4C3E[12 − i / 6]).
+* **Spielerdaten-Fenster aus Rangliste und Aufstellung:** 0x26B13–0x26BF5 (Linksklick, Zeile (y − Oberkante + 4) / 7, Suche
+  der Poolnummer in den Kaderplätzen +0xF aller Manager 0 … [0x386] − 1 und 4, DGROUP 0xA70E vorübergehend auf diesen
+  Manager); Aufstellung 0x400E9–0x4010D und 0x4084E–0x40872 (Ereignis 3 = rechte Maustaste, 0x22 < x < 0x60, Zeile aus
+  0x41683).
 
 
 ## Spielerdaten-Fenster 0x041AC und Hinweiszeile 0x41683 (Spur `spielerinfo`)
