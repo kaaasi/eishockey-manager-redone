@@ -258,6 +258,9 @@ public class GameModeTests
     /// Kontostände – Manager 0 bekommt 1993 und 1994 je eine Einzelprämie (+100.000 DM, kumuliert +100.000/+200.000 DM ab
     /// Saison 1/2), Manager 1 eine in Saison 5 (+100.000 DM). Gegenprobe mit abgeschalteten Einzelprämien: alte Werte.
     /// Ermittelt auf dem Branch (Basis <c>10eb6c5</c>), Nachziehen in der Integration durch die Leitstelle.
+    /// Spur spielstaerke-manager (#204, Lader der Teamwerte 0x2EF1B und Tagesform 0x4F527): alle Werte neu – gestreute
+    /// Teamwerte der Computervereine und Züge aus der Hauptquelle ab dem ersten Spiel ändern Ergebnisse, Titel, Konten und
+    /// beide Zufallsquellen. Ermittelt auf dem Branch (Basis <c>10eb6c5</c>).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()

@@ -148,7 +148,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `Effective*`, `Auto*`),
   `Core/SaveGame.Migration.<Spur>.cs` (neue Datei), `docs/spielberechnung.md`, Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** Teil 1 in PR #241 (Claude Code): Lader 0x2EF1B, Tagesform 0x4F527, Meisterverteilung (#204), #179. Offen: Managerteil 0x386D1/0x378C5/0x98F8/0x87F7/0x8EF2, Verletzungen, #193, Videovergleich.
 
 ### Spur `statistiken` – Statistiken Spieler, Fairplay, Verein und Einzelprämien (#135, #222)
 

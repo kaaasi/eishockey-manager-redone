@@ -29,9 +29,10 @@ public class LifecycleRegressionTests
     [Fact]
     public void R204_NewSeasonCancelsListingsAndBids()
     {
-        // Seed 2: der Markt ist am Saisonende nicht voll, das eigene Angebot also möglich. Mit Seed 3 steht der Markt seit
-        // der Spielberechnung des Originals (Spur spielberechnung, anderer Zufallsverbrauch) am Saisonende auf 11 Angeboten.
-        var game = TestGames.Create(2);
+        // Seed 5: der Markt ist am Saisonende nicht voll, das eigene Angebot also möglich. Mit Seed 3 steht der Markt seit
+        // der Spielberechnung des Originals (Spur spielberechnung, anderer Zufallsverbrauch) am Saisonende auf 11 Angeboten,
+        // mit Seed 2 seit dem Lader der Teamwerte (Spur spielstaerke-manager, Zufallszüge beim ersten Spiel) ebenso.
+        var game = TestGames.Create(5);
         FinishSeason(game);
         var bid = TransferTransactionRegressionTests.CreateBid(game);
         game.StartNextSeason();

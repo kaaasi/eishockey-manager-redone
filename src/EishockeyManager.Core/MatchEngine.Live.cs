@@ -44,12 +44,14 @@ public static partial class MatchEngine
     public static MatchReport PlayWithEvents(GameState game, Club home, Club away, MatchCompetition competition,
         bool knockOut, Random random)
     {
+        EnsureTeamValues(game);
         if (home.ForfeitsMatch || away.ForfeitsMatch)
         {
             var forfeit = home.ForfeitsMatch
                 ? new MatchReport { HomeGoals = 0, AwayGoals = 2, Forfeit = true }
                 : new MatchReport { HomeGoals = 2, AwayGoals = 0, Forfeit = true };
             CreditPlayers(game, home, away, competition, forfeit, random);
+            AfterMatch(home, away, competition, forfeit, random);
             return forfeit;
         }
         var homeManaged = IsManaged(game, home);
@@ -85,7 +87,17 @@ public static partial class MatchEngine
             report = OriginalMinutes.Play(homeTeam, awayTeam, rules, random);
         }
         CreditPlayers(game, home, away, competition, report, random);
+        AfterMatch(home, away, competition, report, random);
         return report;
+    }
+
+    /// <summary>[ORIGINAL] Tabellenrechnung 0x50283 → 0x4F527: Tagesform beider Vereine nach einem Ligaspiel.</summary>
+    private static void AfterMatch(Club home, Club away, MatchCompetition competition, MatchReport report, Random random)
+    {
+        if (competition != MatchCompetition.League)
+            return;
+        UpdateDayForm(home, report.HomeGoals - report.AwayGoals, random);
+        UpdateDayForm(away, report.AwayGoals - report.HomeGoals, random);
     }
 
     /// <summary>Hat der Verein einen (nicht entlassenen) Manager oder ist er das Team des Bundestrainers?</summary>
@@ -96,13 +108,13 @@ public static partial class MatchEngine
     /// <summary>
     /// Mannschaft eines Vereins für die Minutenrechnung.
     /// <list type="bullet">
-    /// <item>Teamwerte: Kondition und Technik beider Teile = <see cref="TeamValue"/>. [ORIGINAL] Der Lader 0x2EF1B setzt
-    ///   die Vereinsfelder 0x18–0x1B aus den Stärkebytes der Datenbank (± random(0, Wert/10)). [APPROX] ohne Streuung und
-    ///   mit Byte 0 auch für den Sturm (Byte 1 weicht nur bei den Europapokal-Gegnern ab und wird im Remake nicht
-    ///   geführt); die Abweichung der Aufstellung von der Startaufstellung wirkt wie bisher über
-    ///   <see cref="TeamValue"/>.</item>
-    /// <item>Form 0x1C/0x1D: [ORIGINAL] random(45, 55), Europapokal-Gegner (Index &gt; 64) 5 weniger; [APPROX] Mitte 50
-    ///   bzw. 45. Tagesform 0x17: [ORIGINAL] random(47, 53), [APPROX] 50.</item>
+    /// <item>Teamwerte: Kondition und Technik je Teil = <see cref="TeamValue"/> + Streuung des Laders. [ORIGINAL] Der
+    ///   Lader 0x2EF1B setzt die Vereinsfelder 0x18–0x1B einmal je Spiel aus den Stärkebytes der Datenbank
+    ///   (v − random(0, v/10) + random(0, v/10), <see cref="LoadTeamValues"/>). [APPROX] Byte 0 auch für den Sturm (Byte 1
+    ///   weicht nur bei den Europapokal-Gegnern ab und wird im Remake nicht geführt); die Abweichung der Aufstellung von
+    ///   der Startaufstellung wirkt wie bisher über <see cref="TeamValue"/>.</item>
+    /// <item>Form 0x1C/0x1D: [ORIGINAL] random(45, 55), Europapokal-Gegner (Index &gt; 64) 5 weniger, aus dem Lader.
+    ///   Tagesform 0x17: [ORIGINAL] random(47, 53) aus dem Lader, nach Ligaspielen nachgeführt (<see cref="UpdateDayForm"/>).</item>
     /// <item>Einsatz 0x26 und Angriff 0x2C: Automatik bzw. eigene Taktik beim Stand 0:0 (Spielvorbereitung, Datei 0x8365;
     ///   <see cref="Tactics.EffectiveEffort"/>). In Managerpaarungen führt der Minutenablauf sie nach dem Spielstand nach.</item>
     /// <item>Energie 0x1E = <see cref="PreparedEnergy"/>. Reihe 0 bleibt auf dem Eis: [ORIGINAL] für Paarungen ohne
@@ -115,13 +127,23 @@ public static partial class MatchEngine
     {
         var value = TeamValue(club);
         var opponentValue = TeamValue(opponent);
-        var form = club.Index > 64 ? 45 : 50;
-        var part = new PartValues(value, value, form);
+        var loaded = TeamValuesOf(club);
+        // Managervereine bilden ihre Reihenwerte im Original aus den Spielern (0x98F8); die Streuung und Form des Laders
+        // wirken dort nicht ([APPROX] Teamwert ohne Streuung, Form 50). Die Tagesform 0x17 gilt für alle Vereine.
+        var spread = !managed;
+        var defense = new PartValues(
+            Math.Clamp(value + (spread ? loaded.DefenseCondition : 0), 0, 100),
+            Math.Clamp(value + (spread ? loaded.DefenseTechnique : 0), 0, 100),
+            spread ? loaded.DefenseForm : 50);
+        var attack = new PartValues(
+            Math.Clamp(value + (spread ? loaded.AttackCondition : 0), 0, 100),
+            Math.Clamp(value + (spread ? loaded.AttackTechnique : 0), 0, 100),
+            spread ? loaded.AttackForm : 50);
         return new LiveTeam
         {
-            Defense = part,
-            Attack = part,
-            ClubForm = 50,
+            Defense = defense,
+            Attack = attack,
+            ClubForm = loaded.DayForm,
             Effort = club.Tactics.EffectiveEffort(0, 0, value, opponentValue),
             AttackLevel = club.Tactics.EffectiveAttack(0, 0, value, opponentValue),
             Energy = PreparedEnergy,

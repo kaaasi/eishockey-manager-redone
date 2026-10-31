@@ -209,7 +209,8 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
         $"Tab {r.FinalTables.Values.SelectMany(t => t).Select((c, i) => c * (i + 1)).Sum()}"));
 
     /// <summary>Referenz: <see cref="Summary"/> auf <c>main</c> a09c81e (nur Leertaste, Seed 1993), siehe PR der Spur;
-    /// ab 1994 neu mit Spur kader-start (siehe oben).</summary>
+    /// ab 1994 neu mit Spur kader-start (siehe oben). Spur spielstaerke-manager (#204): ab 1993 neu – gestreute Teamwerte
+    /// des Laders 0x2EF1B und Tagesform 0x4F527 ändern alle Ergebnisse; mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 2, DM 6, Tab 15356 | 1994: DEB 6, DM 2, Tab 15940 | 1995: DEB 2, DM 2, Tab 15907 | 1996: DEB 6, DM 2, Tab 16319";
+        "1993: DEB 6, DM 5, Tab 15383 | 1994: DEB 6, DM 9, Tab 16425 | 1995: DEB 6, DM 2, Tab 15450 | 1996: DEB 9, DM 6, Tab 16138";
 }

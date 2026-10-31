@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Migration Schema 11 → 12 (Spur nationalteam, #192; die Leitstelle nummeriert in der Integration): Taktik des
+/// Migration Schema 11 → 12 (Spur nationalteam, #192; Nummer bestätigt in der Integration Runde 8): Taktik des
 /// Nationalteams ohne Startwert.
 /// <list type="bullet">
 /// <item>Jede Taktik bekommt die Felder der Anzeige unter „AUTOM.“ (<c>_shownAutoEffort</c>, <c>_shownAutoAttack</c>):

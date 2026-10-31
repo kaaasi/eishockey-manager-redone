@@ -77,6 +77,11 @@ namespace EishockeyManager.Core.Tests;
 /// 100.000 DM, em.exe 0x27184) die Kontostände ändern; der aktive Lauf mit Originaldaten bekommt keine und bleibt gleich.
 /// Gegenprobe auf dem Branch: mit abgeschalteten Einzelprämien (und <c>LeaguePenaltyMinutes</c> in <c>Excluded</c>) alle
 /// sechs alten Abdrücke unverändert – kein Spielverlauf und kein Zufallsverbrauch ändert sich. Basis <c>10eb6c5</c>.
+/// Spur spielstaerke-manager (#204): alle sechs Abdrücke neu. Beim ersten Spiel zieht der Lader der Teamwerte (em.exe
+/// 0x2EF1B) für alle 150 Vereine 11 Zahlen aus der Hauptquelle, die Computervereine spielen mit gestreuten Teamwerten,
+/// eigener Form und Tagesform (0x4F527 nach jedem Ligaspiel, weitere Züge): andere Ergebnisse ab dem ersten Spieltag,
+/// damit Tabellen, Titel, Finanzen und alle Zufallsquellen; dazu das neue Feld <c>Club.TeamValues</c> im Abdruck. Keine
+/// Gegenprobe, die den alten Verlauf erhält (die Streuung ist der Zweck). Ermittelt auf dem Branch (Basis <c>10eb6c5</c>).
 /// </summary>
 public class RngTwinProbeTests
 {
