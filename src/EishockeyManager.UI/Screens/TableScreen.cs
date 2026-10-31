@@ -1,4 +1,5 @@
 using EishockeyManager.Core;
+using EishockeyManager.UI.Screens.Competitions;
 
 namespace EishockeyManager.UI.Screens;
 
@@ -50,61 +51,77 @@ public sealed class TableScreen : Screen
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
         Widgets.Frame(s, Assets, Window, FrameStyle.Orange);
 
+        // [ORIGINAL] 0x4F78D: Titel „   TABELLE “ (DGROUP 0x1011, drei führende Leerzeichen) + Ansicht + „ “ + Spieltag
+        // DGROUP 0x7A9 + „.Spieltag“, zentriert zwischen x = 5 und 313 auf Grundlinie 54, Farbe 10, Schatten 28. 0x7A9 steht
+        // beim Spielstart auf 1 (Datei 0x43A7E): vor dem ersten Spieltag „1.Spieltag“ (Video 13:07), danach die Zahl der
+        // gespielten Spieltage (karriere_01021 „36.Spieltag“ bei 36 Spielen, folge21_02711 „3.Spieltag“ bei 3 Spielen).
         var matchDay = game.PlayedMatchDays;
-        var title = $"TABELLE {ViewName(_view)} {matchDay}.Spieltag";
-        Widgets.ShadowText(s, Assets.Flow, 165, 48, title, 11, 198);
+        CompetitionWidgets.Centered(s, Assets.Flow, 5, 313, 54, Title(_view, matchDay), 10, 28);
 
-        const byte header = 32;
-        s.Text(mini, 10, 60, "PL. TD", header);
-        s.Text(mini, 44, 60, "VEREIN", header);
-        s.Text(mini, 122, 60, "BILANZ", header);
-        s.Text(mini, 172, 60, "S-U-N", header);
-        s.Text(mini, 207, 60, "PUNKTE", header);
-        s.Text(mini, 245, 60, "TORE", header);
-        s.Text(mini, 277, 60, "TORDIFF.", header);
-        s.HLine(10, 66, 300, 1);
-        s.HLine(10, 153, 300, 1);
+        // [ORIGINAL] Kopfzeile DGROUP 0x100D als ein Text ab (10 | 64), Farbe 1; Linien (12 … 308 | 66) und (12 … 308 | 153).
+        CompetitionWidgets.Left(s, mini, 10, 64, Header, 1);
+        s.HLine(12, 66, 308 - 12 + 1, 1);
+        s.HLine(12, 153, 308 - 12 + 1, 1);
+
+        // [ORIGINAL] Markierung der Plätze (Datei 0x4FAA7 ff.): 1. Liga nur Platz 1, sonst die ersten DGROUP 0x7B8 + Liga = 2
+        // in Farbe 15; die letzten DGROUP 0x7B9 + Liga = 2 in Farbe 18; je Block ein Rechteck x 10 … 20.
+        var count = game.LeagueClubs(_league).Count();
+        var top = _league == League.Bundesliga ? 1 : 2;
+        s.Fill(new Rect(10, 68, 11, 7 * top), 15);
+        s.Fill(new Rect(10, 68 + 7 * (count - 2), 11, 7 * 2), 18);
 
         var own = game.Managers.Select(m => m.ClubIndex).ToHashSet();
         var rows = LeagueTable.Compute(game, _league, _view, matchDay);
         foreach (var row in rows)
         {
-            var y = FirstRowY + (row.Rank - 1) * RowPitch;
+            // [ORIGINAL] Zeile i auf Grundlinie 73 + 7 i; Farbe 30, Vereine der Manager 24; Platz „n.“ (Mindestbreite 2)
+            // ab x = 10 in Farbe 8, Name ab x = 0x21, Bilanz ab x = 0x75, Zahlen als ein Text ab x = 0xA6.
+            var baseline = FirstRowY + 4 + (row.Rank - 1) * RowPitch;
             var color = own.Contains(row.Club.Index) ? Colors.Yellow : Colors.White;
-
-            if (row.Rank <= 2)
-                s.Fill(new Rect(10, y - 1, 12, 7), 12);
-            else if (row.Rank > rows.Count - 2)
-                s.Fill(new Rect(10, y - 1, 12, 7), Colors.Red);
-            s.TextRight(mini, 22, y, $"{row.Rank}.", color);
+            CompetitionWidgets.Left(s, mini, 10, baseline, CompetitionWidgets.Number(row.Rank, 2) + ".", 8);
 
             var mood = row.PreviousRank == 0 || row.PreviousRank == row.Rank ? Widgets.Mood.Same
                 : row.Rank < row.PreviousRank ? Widgets.Mood.Up : Widgets.Mood.Down;
-            Widgets.Smiley(s, Assets, mood, 24, y);
+            Widgets.Smiley(s, Assets, mood, 24, baseline - 4);
 
-            s.Text(mini, 33, y, row.Club.Name, color);
-            s.Text(mini, 117, y, row.Balance, color);
-            s.TextRight(mini, 173, y, row.Wins.ToString(), color);
-            s.TextRight(mini, 187, y, row.Draws.ToString(), color);
-            s.TextRight(mini, 201, y, row.Losses.ToString(), color);
-            Pair(s, 207, y, row.PointsPlus, row.PointsMinus, digits: 2, color);
-            Pair(s, 236, y, row.GoalsFor, row.GoalsAgainst, digits: 3, color);
-            var diff = row.GoalDifference;
-            s.Text(mini, 277, y, diff < 0 ? "-" : "+", color);
-            s.TextRight(mini, 298, y, Math.Abs(diff).ToString(), color);
+            CompetitionWidgets.Left(s, mini, 0x21, baseline, row.Club.Name, color);
+            CompetitionWidgets.Left(s, mini, 0x75, baseline, Balance(row), color);
+            CompetitionWidgets.Left(s, mini, 0xA6, baseline, Numbers(row), color);
         }
 
         for (var i = 0; i < 3; i++)
             Widgets.Button(s, Assets, ButtonX[i], ButtonY, ButtonText[i], pressed: (int)_view == i);
     }
 
-    /// <summary>„22: 6“ – beide Zahlen rechtsbündig in Feldern fester Breite (Ziffern im Font: 5 Pixel).</summary>
-    private void Pair(Surface s, int x, int y, int left, int right, int digits, byte color)
+    /// <summary>Titel wie 0x4F78D (Belege in <see cref="Draw"/>).</summary>
+    public static string Title(TableView view, int playedMatchDays) =>
+        $"   TABELLE {ViewName(view)} {Math.Max(1, playedMatchDays)}.Spieltag";
+
+    /// <summary>[ORIGINAL] Kopfzeile DGROUP 0x100D.</summary>
+    public const string Header =
+        "PL. TD      VEREIN                          BILANZ            S-U-N     PUNKTE     TORE       TORDIFF.";
+
+    /// <summary>
+    /// [ORIGINAL] Bilanz DGROUP 0x825E + 0x50 · Verein: acht Zeichen, beim Spielstart „--------“, jedes Spiel schiebt nach
+    /// links und hängt hinten an (0x4F4F4). Video: „--------“ vor dem ersten Spieltag (13:07), „-----sSs“ nach drei
+    /// Spieltagen (folge21_02711).
+    /// </summary>
+    public static string Balance(TableRow row) => row.Balance.PadLeft(LeagueTable.BalanceLength, '-');
+
+    /// <summary>
+    /// [ORIGINAL] Zahlenzeile von 0x4F78D (Datei 0x4FDB1–0x50074) als ein Text: Siege, Unentschieden, Niederlagen
+    /// (Mindestbreite 2, „ “ dazwischen), „    “, Punkte „P:M“ (2), „   “, Tore „T:G“ (3), „      “, Vorzeichen der Tordifferenz („`“ bei 0,
+    /// „+“, „-“; DGROUP 0x53CC ff.) und Betrag (3). Fehlende Stellen so breit wie „0“ (<see cref="CompetitionWidgets.Number"/>).
+    /// Das vorher kopierte „*“ (DGROUP 0x53AA, Datei 0x4FCB7) überschreibt das Original mit dem Kopieren der Siege (0x4FDBF).
+    /// </summary>
+    public static string Numbers(TableRow row)
     {
-        var field = digits * 5;
-        s.TextRight(Assets.Mini, x + field, y, left.ToString(), color);
-        s.Text(Assets.Mini, x + field, y, ":", color);
-        s.TextRight(Assets.Mini, x + field + 2 + field, y, right.ToString(), color);
+        static string N(int v, int w) => CompetitionWidgets.Number(v, w);
+        var diff = row.GoalDifference;
+        var sign = diff == 0 ? "`" : diff > 0 ? "+" : "-";
+        return N(row.Wins, 2) + " " + N(row.Draws, 2) + " " + N(row.Losses, 2) + "    "
+               + N(row.PointsPlus, 2) + ":" + N(row.PointsMinus, 2) + "   "
+               + N(row.GoalsFor, 3) + ":" + N(row.GoalsAgainst, 3) + "      " + sign + N(Math.Abs(diff), 3);
     }
 
     private static string ViewName(TableView view) => view switch

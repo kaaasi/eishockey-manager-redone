@@ -87,8 +87,9 @@ ein neues `SeasonEvent` hätte den Schemaabdruck geändert (er enthält die Name
 Migration erzwungen. Gleichwertig zum Original, solange sich die Tabellen zwischen 13. und 29. April nicht ändern (Ligaspiele ruhen). Der einzige Leser außer der Anzeige ist `0x55F53` (Maske 0x28, also nur Bit 3 und 5), Bit 0x40 wirkt
 dort nicht.
 
-`[APPROX]` Das Original sortiert die Tabelle 0x5CCB je nach Ansicht (Gesamt/Heim/Auswärts) an Ort und Stelle; das Remake nimmt die
-Abschlusstabelle „Gesamt“. Im Modus „nur Weltkugel“ gibt es keine Vereinssaison und keine Ergebnisse je Manager.
+Das Original liest 0x5CCB, die an Ort und Stelle sortierte Platzliste; sie steht beim Lesen immer in der Gesamtordnung (die
+Tabellenansicht sortiert für „Heim“/„Auswärts“ nur vorübergehend und beim Verlassen wieder nach „Gesamt“, 0x50256). Das Remake nimmt
+die Abschlusstabelle „Gesamt“; `[APPROX]` nur die Reihenfolge vollständig gleicher Vereine kann abweichen. Im Modus „nur Weltkugel“ gibt es keine Vereinssaison und keine Ergebnisse je Manager.
 
 ## Tabelle (Spur `tabellen-original`)
 
@@ -98,6 +99,16 @@ Gleichstand behält die Reihenfolge des Vortags (nicht den Vereinsindex). Heim- 
 Gesamtordnung mit den Heim- bzw. Auswärtsfeldern. Die Bilanz zeigt in jeder Ansicht alle Spiele, Heimspiele klein.
 `[APPROX]` Saisonbeginn mit der Vereinsreihenfolge (das Original behält die Liste der Vorsaison); angesehene
 Heim-/Auswärtstabellen ändern die Ausgangsreihenfolge nicht (Bildschirme sind zustandsrein).
+
+**Teil 2 (Spur `tabellen-original-2`):**
+- Spielbeginn: In der 1. Liga stehen Düsseldorfer EG (Deutscher Meister) und Eisbären Berlin getauscht (0x43A08), so im Video
+  13:07; ab der zweiten Saison `[APPROX]` wieder die Vereinsreihenfolge.
+- Gruppentabellen (Europapokal-Gruppen und -Endrunde, WM-Gruppen, Aufstiegsrunden) nach 0x30852: je Spieltag Punkte (2/1/0) und
+  Tore eintragen, dann Tauschsortierung der Platzliste der Gruppe nach Punkten, Tordifferenz, Toren – **voller Gleichstand
+  tauscht** (anders als die Liga), Spiele zählen nicht; Ausgangsreihenfolge = Plätze der Auslosung bzw. 11., 12. der oberen und
+  1., 2. der unteren Liga (`CupGroup.Standings`).
+- Ansicht 0x4F78D: Titel „1.Spieltag“ vor dem ersten Spiel, Bilanz mit „-“ auf acht Zeichen aufgefüllt, Zahlen als ein Text,
+  „`“ (±) bei Tordifferenz 0, Markierung 1. Liga nur Platz 1. Belege: [reverse-engineering.md](reverse-engineering.md#ligatabelle-spur-tabellen-original).
 
 ## Oberfläche
 

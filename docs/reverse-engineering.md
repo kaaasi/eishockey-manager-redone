@@ -287,13 +287,48 @@ Overlay 0x128 (Ghidra 59E3). Fundstellen als Dateioffset von em.exe.
   Minute 60; Hauptmenü 0x44EFD (Liga, 1, Gesamt); Tabellenansicht 0x4FA8D (Liga, 1, gewählte Ansicht) und beim Verlassen
   0x50256 (Liga, 1, Gesamt). Die Platzliste behält also nach dem Ansehen wieder die Gesamtordnung; nur die Reihenfolge
   vollständig gleicher Vereine kann sich durch eine angesehene Heim-/Auswärtstabelle ändern.
-* **Startordnung** Datei 0x2F1A2: beim Spielstart Vereinsindex aufsteigend. Andere Schreiber von 0x5CCB: nur die
+* **Startordnung** Datei 0x2F1A2: beim Spielstart Vereinsindex aufsteigend; danach tauscht 0x437D5 (Datei 0x43A08/0x43A0D)
+  in der 1. Liga die Plätze 1 und 3 (DGROUP 0x5CCB = 2, 0x5CCD = 0; Deutscher Meister DGROUP 0xD0E6 = 2). Video 13:07. Andere Schreiber von 0x5CCB: nur die
   Sortierung und 0x35EDD (WM-Reihenfolge). Über den Saisonwechsel bleibt die Liste stehen.
 * **Tabellenansicht** Datei 0x4F78D: Titel aus DGROUP 0x1011 („   TABELLE “) + Ansicht (Zeiger 0x1001: „Heim“, „Gesamt“,
   „Auswärts“) + Spieltag; Name x 0x21, Bilanz x 0x75 (immer die Gesamtbilanz +4, gleich in jeder Ansicht), Tendenz über
   `0x110:0x4D`, Zahlenzeile ab x 0xA6 als ein Text: „*“, Siege, Unentschieden, Niederlagen (Mindestbreite 2,
   DGROUP 0x374), Punkte „P:M“ mit M = 2 · Spiele − P (bei DGROUP 0x7C5 ≥ 3 statt M ein Leerzeichen), Tore „T:G“
   (Breite 3), Vorzeichen („`“ bei 0, „+“, „−“) und Betrag der Tordifferenz (Breite 3). Trennzeichen DGROUP 0x53AA ff.
+  Berichtigt in Teil 2: Titel und „*“ werden vom nächsten Kopieren (0x390B) überschrieben – Titel = „   TABELLE “ + Ansicht +
+  „ “ + DGROUP 0x7A9 + „.Spieltag“ (zentriert x 5 … 313, Grundlinie 54, Farbe 10, Schatten 28; 0x7A9 = 1 beim Spielstart,
+  Datei 0x43A7E), die Zahlenzeile beginnt mit den Siegen. Kopfzeile DGROUP 0x100D ab (10 | 64), Farbe 1; Linien y 66 und 153
+  (x 12 … 308). Zeile i: Grundlinie 73 + 7 i, Platz „n.“ (Breite 2) ab x 10 in Farbe 8, Smiley (24 | Grundlinie − 4), Farbe
+  30 bzw. 24 für Managervereine. Markierung Datei 0x4FAA7 ff.: 1. Liga nur Platz 1, sonst die ersten DGROUP 0x7B8 + Liga (2)
+  in Farbe 15, die letzten DGROUP 0x7B9 + Liga (2) in Farbe 18, x 10 … 20. Bilanz beim Spielstart „--------“.
+  **Pixelvergleich** (`emtool screens gamedata <ziel> tabelle-original`, Bild `00_tabelle_1liga_video_13_07` gegen
+  `oberflaeche_1307`, Fenster (4 | 38) … (316 | 190), eigenes Bild um (−0,25 | +0,5) verschoben und weichgezeichnet):
+  mittlere Abweichung 9,5, 3,6 % der Pixel über 40 (vorher 12,3 / 7,9 %). Bilanz „Heim klein“ am Video: folge21_02638
+  (Hauptmenü vor dem 3. Spieltag, Heimsymbol, Gegner EV Landshut) und folge21_02711 (danach: Berliner SC „-----sSs“,
+  EV Landshut „-----UnN“).
+
+## Gruppentabellen (Spur `tabellen-original-2`)
+
+Overlay 0xE8 (Ghidra 3D11). Tabellen der Gruppen führt nicht 0x50283, sondern 0x30852 (Datei 0x30852–0x30E7A,
+`f(Wettbewerb, Paarungsbasis, Paarungen je Gruppe, Runde)`):
+
+* **Wettbewerb** 0 = WM (zwei Sechsergruppen, Platz = Land − DGROUP 0x6AD − 6 · Gruppe), 1 = Aufstiegsrunden (zwei Vierergruppen,
+  Aufruf 0x38691), 2 = Europapokal-Gruppen, 3 = Endrunde (eine Gruppe; Aufrufe 0x3A982 bei Minute 60, DGROUP 0xD0C2 = 3 bzw. 5).
+  Gruppengröße DGROUP 0x4DE0 (6/4/4/4), Runden 0x4DD8 (5/3/3/3, Vierergruppen doppelt). Plätze der Vierergruppen in
+  DGROUP 0xCFF4 + 8 · Wettbewerb + 4 · Gruppe (0x30427: Europapokal aus der Auslosung 0x5D1B, Aufstiegsrunde aus 0x5CCB + 10/11 und
+  + 12/13 je Liga, Endrunde aus Erstem und Zweitem jeder Gruppe 0x305D4).
+* **Je Runde:** für Wettbewerb 0 und 1 zuerst 0x50283 (Serien, Tagesform; die Tabellenfelder 0x825A nur bei Code 7/8), dann
+  0x303D9: Tore/Gegentore DGROUP 0xCD28/0xCCF8 und Punkte 0xCD58 (Sieg 2, Unentschieden je 1) je Platz (Index Wettbewerb · 12 +
+  Gruppe · 6 + Platz). Ergebnisse ≥ 30 (Sieger im Ergebnis kodiert) werden vorher um 30 vermindert.
+* **Sortierung** Datei 0x30C36–0x30E73 nach jeder Runde, an Ort und Stelle in der Platzliste DGROUP 0xCD88 (Anfang: Plätze
+  0, 1, 2, …, 0x30831): für jeden Platz i alle späteren j; j verdrängt i bei mehr Punkten, bei gleichen Punkten bei höherer
+  Tordifferenz (vorzeichenbehaftet), bei gleicher Differenz, wenn i nicht mehr Tore hat (`jna`, Datei 0x30D8F) – voller
+  Gleichstand tauscht also. Keine Regel „weniger Spiele“. Umgesetzt in `CupGroup.Standings` (auch `RelegationGroup.Table`).
+* **Leser:** WM-Gruppe 0x2F5B6 (Platzliste, Punkte, Tore), Europapokal 0x31CD5, Viertelfinale WM 0x30F8B, Endrunde 0x305D4,
+  Europapokalsieger 0x314D6 (Platz 1 der Endrunde).
+* **Weitere Aufrufer von 0x50283** ohne Tabelle: Freundschaftsspiel 0x30365 (Code 0xD), DEB-Pokal 0x34B76 (Code 6), Play-offs
+  0x315E9 (Code 1; Siege der Serie DGROUP 0xCCA4). Play-off-Setzung 0x31934 aus 0x5CCB (1–8, 2–7, 3–6, 4–5), gerufen von
+  0x50B45 nach dem letzten Spieltag – also aus der Gesamtordnung wie im Remake.
 
 ## Teamwerte und Tagesform (Spur `spielstaerke-manager`)
 
