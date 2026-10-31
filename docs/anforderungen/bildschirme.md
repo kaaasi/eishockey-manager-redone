@@ -32,7 +32,7 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 | `kb\151` | Werbung: Bande, Eisfläche, Trikot, Angebot | Werbung |
 | `kb\11` | Firmenlogos 34 × 25 (Spalte 0 Bande, 1 Fernsehen, 2 Trikot) | Werbung |
 | `kb\152` | Bank und Börse mit den vier Aktien | Finanzen |
-| `kb\195` | Zeitungsfoto mit acht Textzeilen | Posteingang („Neuer“) |
+| `kb\195` | Hintergrund des Highscores (eigene Palette); früher hier als „Zeitungsfoto“ geführt – em.exe lädt kb\195 nur in Datei 0x5D90D (Ov 0x140), siehe `highscore.md`, `re-abdeckung.md` | Highscore |
 | `kb\19` | Anzeigetafel und Reporter des Live-Spiels | Spiel |
 | `kb\38` | Ziffern 8 × 10 der Spieluhr, Mundbewegungen des Reporters | Spiel |
 | `kb\13` | Symbole (u. a. Babyflasche „Jugend“) | Jugend |
