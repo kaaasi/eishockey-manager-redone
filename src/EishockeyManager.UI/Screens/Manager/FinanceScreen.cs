@@ -14,8 +14,9 @@ namespace EishockeyManager.UI.Screens.ManagerArea;
 /// Klick auf das Bankbild oder den Kontostand öffnet das Finanzbuch.
 /// </summary>
 /// <remarks>
-/// [APPROX] Im Video wird nur mit der Maus über die Felder gefahren, aber nichts gebucht. Bedienung daher angenommen:
-/// Überfahren wählt Bank/Manager/Aktie, [+]/[−] stellen den Betrag der jeweiligen Seite ein (Rechtsklick = zehnfach),
+/// [ORIGINAL] Bank, Mitmanager und Aktie werden erst per Klick gewählt (em.exe 0x59B2D, Befund NB-02 #206; Klickfelder
+/// <see cref="BankSelectArea"/>, <see cref="PartnerSelectArea"/>, <see cref="StockSelectArea"/>), Überfahren ändert nichts.
+/// [APPROX] Im Video wird nichts gebucht. Bedienung daher angenommen: [+]/[−] stellen den Betrag der jeweiligen Seite ein (Rechtsklick = zehnfach),
 /// ◄ führt die linke, ► die rechte Buchung aus; der Betrag steht im schwarzen Balken. Leihen bei einem Mitmanager
 /// schickt ihm eine Anfrage in den Posteingang.
 /// </remarks>
@@ -53,6 +54,24 @@ public sealed class FinanceScreen : Screen
     private const int HintY1 = 75;
     private const int HintY2 = 81;
     private const int AmountY = 90;
+
+    /// <summary>
+    /// [ORIGINAL] Klickfeld der Bank (em.exe 0x59BB8–0x59BCB: x &lt; 106, y &lt; 54). Das Bankbild darin öffnet zusätzlich
+    /// das Finanzbuch (<see cref="BankPicture"/>).
+    /// </summary>
+    public static readonly Rect BankSelectArea = new(0, 0, 106, 54);
+
+    /// <summary>
+    /// [ORIGINAL] Klickfeld des Mitmanagers in Kasten 1–3 (em.exe 0x59B40–0x59B79: 117 + 71·k &lt; x &lt; 174 + 71·k,
+    /// y &lt; 54, nur wenn der Kasten besetzt ist).
+    /// </summary>
+    public static Rect PartnerSelectArea(int box) => new(118 + (box - 1) * 71, 0, 56, 54);
+
+    /// <summary>
+    /// [ORIGINAL] Klickfeld der Aktie i (em.exe 0x59BF2–0x59C35: x &lt; 47, y &gt; 101, i = (y − 102) / 34) – nur die
+    /// Logospalte, nicht das Infofeld.
+    /// </summary>
+    public static Rect StockSelectArea(int i) => new(0, 102 + i * 34, 47, 34);
 
     /// <summary>Zeile einer Aktie: Logo (35 × 25) und Infofeld (83 × 30).</summary>
     public static Rect StockRow(int i) => new(4, 103 + i * 69 / 2, 125, 30);
@@ -131,7 +150,9 @@ public sealed class FinanceScreen : Screen
 
     public override void Enter()
     {
-        _offset = InitialChartOffset(Game.Stocks);
+        // Rückkehr aus dem Finanzbuch mit gewählter Aktie: Ausschnitt der Aktie wie vorher (bis #206 setzte ihn das
+        // Überfahren in jedem Bild neu).
+        _offset = _selection.Kind == SelectionKind.Stock ? StockOffset(_selection.Index) : InitialChartOffset(Game.Stocks);
     }
 
     /// <summary>
@@ -184,8 +205,8 @@ public sealed class FinanceScreen : Screen
             return;
         }
 
-        UpdateHover();
-        ScrollChart();
+        if (input.LeftClick && SelectAt(input.MouseX, input.MouseY) && _selection.Kind == SelectionKind.Stock)
+            _offset = StockOffset(_selection.Index);
 
         var factor = input.RightClick ? 10 : 1;
         bool Hit(Rect r) => (input.LeftClick || input.RightClick) && r.Contains(input.MouseX, input.MouseY);
@@ -202,19 +223,31 @@ public sealed class FinanceScreen : Screen
             Host.Show(_back);
     }
 
-    private void UpdateHover()
+    /// <summary>
+    /// [ORIGINAL] Auswahl nur bei linker Maustaste (em.exe 0x59B2D: <c>DGROUP 0x5A16 == 1</c>, sonst weiter bei 0x59D42).
+    /// Gibt zurück, ob ein Klickfeld getroffen wurde.
+    /// </summary>
+    private bool SelectAt(int x, int y)
     {
-        if (_mouseX < 0)
-            return;
-        if (PartnerBox(0).Contains(_mouseX, _mouseY))
+        if (BankSelectArea.Contains(x, y))
+        {
             Select(new Selection(SelectionKind.Bank, 0));
+            return true;
+        }
         var partners = Partners;
         for (var i = 0; i < partners.Count; i++)
-            if (PartnerBox(i + 1).Contains(_mouseX, _mouseY))
+            if (PartnerSelectArea(i + 1).Contains(x, y))
+            {
                 Select(new Selection(SelectionKind.Manager, partners[i]));
+                return true;
+            }
         for (var i = 0; i < 4; i++)
-            if (StockRow(i).Contains(_mouseX, _mouseY))
+            if (StockSelectArea(i).Contains(x, y))
+            {
                 Select(new Selection(SelectionKind.Stock, i));
+                return true;
+            }
+        return false;
     }
 
     private void Select(Selection selection)
@@ -227,16 +260,12 @@ public sealed class FinanceScreen : Screen
     }
 
     /// <summary>
-    /// [ORIGINAL] Überfahren einer Aktie setzt den Ausschnitt sofort (em.exe 0x59C75): Versatz = Kurs in Drittel-DM − 130,
-    /// die Aktie liegt dann auf der mittleren Zeile. Entscheidung Nutzer (30.10.2026, #188): wie im Original, nicht
-    /// langsam wie bisher nach dem Video.
+    /// [ORIGINAL] Klick auf eine Aktie setzt den Ausschnitt sofort (em.exe 0x59C6B–0x59C8F, innerhalb der Klickauswahl ab
+    /// 0x59B2D): Versatz = Kurs in Drittel-DM − 130, die Aktie liegt dann auf der mittleren Zeile. Entscheidung Nutzer
+    /// (30.10.2026, #188): sofort wie im Original, nicht langsam nach dem Video; Befund NB-02 (#206): erst beim Klick,
+    /// nicht schon beim Überfahren (Deutung aus #188 berichtigt).
     /// </summary>
-    private void ScrollChart()
-    {
-        if (_selection.Kind != SelectionKind.Stock || _offset == int.MinValue)
-            return;
-        _offset = Game.Stocks.Stocks[_selection.Index].Price * 3 - ChartCanvas.H;
-    }
+    private int StockOffset(int stock) => Game.Stocks.Stocks[stock].Price * 3 - ChartCanvas.H;
 
     /// <summary>[APPROX] Schrittweite: 10.000 DM bzw. 10 Aktien je Klick.</summary>
     private long Step => _selection.Kind == SelectionKind.Stock ? 10 : 10_000;

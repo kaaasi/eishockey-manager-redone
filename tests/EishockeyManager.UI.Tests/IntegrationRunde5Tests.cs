@@ -33,7 +33,7 @@ public class IntegrationRunde5Tests : IDisposable
     }
 
     /// <summary>
-    /// Eine Saison im Modus 4 mit der Leertaste: Die Live-Auslosung („Aber klar“) erscheint, der Zug des
+    /// Eine Saison im Modus 4 mit „weiter“ (Hauptmenü: Vereinslogo, sonst Leertaste): Die Live-Auslosung („Aber klar“) erscheint, der Zug des
     /// Bundestrainers kommt, der Saisonwechsel läuft durch. Im Zug sind Vereins- und Nationaltaktik mit den Startwerten
     /// nach em.exe belegt, das Öffnen der Taktik ist zustandsrein und Sichern/Laden im Zug bytegleich.
     /// </summary>
@@ -46,7 +46,7 @@ public class IntegrationRunde5Tests : IDisposable
         var checkedTurn = false;
         for (var guard = 0; game.History.Count < 1 && guard < 30000; guard++)
         {
-            d.Press(Key.Space);
+            d.Advance();
             if (d.Host.Current is DebCupDrawLiveScreen)
                 draws++;
             if (game.NationalTurn && d.Host.Current is MainMenuScreen)
@@ -60,7 +60,7 @@ public class IntegrationRunde5Tests : IDisposable
         }
         for (var guard = 0; d.Host.Current is not MainMenuScreen && guard < 30000; guard++)
         {
-            d.Press(Key.Space);
+            d.Advance();
             if (d.Host.Current is DebCupDrawLiveScreen)
                 draws++;
         }

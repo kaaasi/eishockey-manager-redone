@@ -15,7 +15,17 @@ public sealed class MainMenuScreen : Screen
 
     public static string[] BigTiles => MenuTiles.Big;
 
-    public const int Continue = 7;
+    /// <summary>„und tschüß…“: Sicherheitsfrage und Programmende (<see cref="Screens.QuitQuestion"/>, #205).</summary>
+    public const int QuitTile = 7;
+
+    /// <summary>
+    /// Klickfeld „Tag weiter“ auf dem Vereinslogo der Infoleiste (#205). [ORIGINAL] em.exe Datei 0x45483–0x4551E
+    /// (Hauptmenüschleife): bei Maustaste DGROUP 0x5A16 = 1 oder 3 und 33 &lt; y &lt; 72, 274 &lt; x &lt; 313 endet die
+    /// Schleife mit „weiter“ (0x4551B). Vorher prüft sie den Bundestrainer („WM mit SO wenigen Spielern“, 0x454C2) und
+    /// „Sie können nicht mehr weiterspielen.“ (DGROUP 0x176, 0x454F5) – beides hier nicht nachgebaut.
+    /// [APPROX] Nur die linke Maustaste; was die rechte (0x5A16 = 3) im Original anders macht, ist nicht geprüft.
+    /// </summary>
+    public static readonly Rect ContinueLogo = new(275, 34, 38, 38);
 
     public static MenuTile[][] SmallTiles => MenuTiles.Small;
 
@@ -50,6 +60,9 @@ public sealed class MainMenuScreen : Screen
         SaveLoad.AutoSave.OnMainMenu(Host);
     }
 
+    /// <summary>Offene Sicherheitsfrage von „und tschüß…“ oder null.</summary>
+    public QuitQuestion? QuitQuestion { get; private set; }
+
     private GameState Game => Host.Game ?? throw new InvalidOperationException("Kein Spiel geladen.");
 
     public int SelectedBigTile
@@ -62,8 +75,29 @@ public sealed class MainMenuScreen : Screen
     {
         _mouseX = input.MouseX;
         _mouseY = input.MouseY;
+        if (QuitQuestion is not null)
+        {
+            switch (QuitQuestion.Evaluate(input))
+            {
+                case QuitQuestion.Outcome.Quit:
+                    QuitQuestion = null;
+                    Host.Exit();
+                    break;
+                case QuitQuestion.Outcome.Cancel:
+                    QuitQuestion = null;
+                    break;
+            }
+            return;
+        }
         if (_selectedBig < 0 && ManagerArea.NewsBar.HasUnread(Game))
             _newsBar = true;
+
+        // Credits (#207): linker oder rechter Klick in die Titelleiste, vor dem Abwählen per Rechtsklick (0x45483).
+        if ((input.LeftClick || input.RightClick) && CreditsScreen.TitleArea.Contains(input.MouseX, input.MouseY))
+        {
+            Host.Show(new CreditsScreen(Host, this));
+            return;
+        }
 
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
@@ -71,13 +105,21 @@ public sealed class MainMenuScreen : Screen
             return;
         }
 
+        // Tag weiter: Klick aufs Vereinslogo (#205); die Leertaste hat diese Funktion im Original nicht.
+        if (input.Clicked(ContinueLogo))
+        {
+            Continue_();
+            return;
+        }
+
         for (var i = 0; i < BigTiles.Length; i++)
         {
             if (!input.Clicked(BigTile(i)))
                 continue;
-            if (i == Continue)
+            if (i == QuitTile)
             {
-                Continue_();
+                _selectedBig = -1;
+                QuitQuestion = new QuitQuestion(Game.ActiveManager.Name);
                 return;
             }
             _selectedBig = i;
@@ -99,13 +141,10 @@ public sealed class MainMenuScreen : Screen
 
         else if (_newsBar && ManagerArea.NewsBar.Update(Host, this, input))
             return;
-
-        if (input.Pressed(Key.Space))
-            Continue_();
     }
 
     /// <summary>
-    /// „und tschüß…“: Im Hot-Seat gibt der Manager am Zug nur an den nächsten noch nicht bereiten Manager ab
+    /// Tag weiter (Klick aufs Vereinslogo): Im Hot-Seat gibt der Manager am Zug nur an den nächsten noch nicht bereiten Manager ab
     /// (Hauptmenü bleibt, Infoleiste zeigt den neuen Manager). Erst der letzte bestätigt den Tag, dann läuft er
     /// bis zum nächsten eigenen Spiel bzw. zum Saisonende (Paket saison).
     /// </summary>
@@ -161,6 +200,8 @@ public sealed class MainMenuScreen : Screen
         }
         else if (_newsBar)
             ManagerArea.NewsBar.Draw(s, Assets, Game); // Nachrichtenleiste (Paket „manager“), nur mit Nachricht (#170)
+
+        QuitQuestion?.Draw(s, Assets);
     }
 
     private void DrawInfoBar(Surface s)

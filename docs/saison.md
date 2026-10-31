@@ -30,7 +30,7 @@ Datum und „n.Spieltag“ beziehen sich auf den **nächsten** Termin (Beleg: am
 
 ## Ablauf einer Saison (`Core/SeasonFlow.cs`)
 
-„und tschüß…“ (`GameState.Continue()`) spielt den aktuellen Tag und läuft Tag für Tag weiter – auch über
+„Tag weiter“ (Klick aufs Vereinslogo der Infoleiste, `GameState.Continue()`) spielt den aktuellen Tag und läuft Tag für Tag weiter – auch über
 spielfreie Tage –, bis wieder ein Verein eines Managers spielt. Belegt: 1995/96 springt das Hauptmenü vom
 44. Spieltag (4.2.) direkt auf „Samstag, 14. April – Saisonende“, weil BK Oldenburg nicht mehr spielt.
 
@@ -52,7 +52,7 @@ spielfreie Tage –, bis wieder ein Verein eines Managers spielt. Belegt: 1995/9
 **Entlassung**: 8 Wochen am Stück unter −1,5 Mio. DM; im Hot-Seat spielen die übrigen Manager weiter.
 
 **Erweiterung**: DEB-Pokal, Europapokal und WM melden sich über `ISeasonCompetition` in `GameState.Competitions`
-an und werden an ihren Kalendertagen aufgerufen (Infoleiste, Anhalten von „und tschüß…“, Titel am Saisonende).
+an und werden an ihren Kalendertagen aufgerufen (Infoleiste, Anhalten von „Tag weiter“, Titel am Saisonende).
 
 ## Statusbyte und Ereignissymbole (Befund #125)
 
@@ -94,7 +94,7 @@ Abschlusstabelle „Gesamt“. Im Modus „nur Weltkugel“ gibt es keine Verein
 
 | Bildschirm | Datei | Vorlage (Video) |
 |---|---|---|
-| „und tschüß…“: Banner („Ligaspiel“, „Play-Off / Aufstiegsrunden“ …), „Spiele laufen“ | `MatchDayScreen.cs` | 10:43, 17:27 |
+| „Tag weiter“ (Vereinslogo): Banner („Ligaspiel“, „Play-Off / Aufstiegsrunden“ …), „Spiele laufen“ | `MatchDayScreen.cs` | 10:43, 17:27 |
 | Meisterfoto kb\16 („Deutscher Meister“, „DEB Pokalsieger“, „Europacupsieger“) | `SeasonEndTrophyScreen.cs` | 10:45, 17:35 |
 | Infoleiste nach der Vereinssaison: Zielflagge, „Saisonende“ | `MainMenuScreen.DrawInfoBar` (minimal) | 10:50, 24:50 |
 | Saisonende: Titelträger, neue Vereine je Liga (rot = Absteiger, grün = Aufsteiger, blau = Meister) | `SeasonEndScreen.cs` | 11:50, 18:36, 25:52 |

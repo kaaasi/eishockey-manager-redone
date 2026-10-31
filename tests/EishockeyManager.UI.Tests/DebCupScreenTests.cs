@@ -69,7 +69,7 @@ public class DebCupScreenTests
             Assert.True(ink > 20, $"Platz {i}: kein Name im Streifen");
         }
 
-        d.Press(Key.Space);
+        d.Advance();
         Assert.IsType<MainMenuScreen>(d.Host.Current);
         Assert.Equal(before, StateFingerprint.Of(game));
     }

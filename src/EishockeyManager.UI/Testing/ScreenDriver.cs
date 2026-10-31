@@ -109,20 +109,45 @@ public sealed class ScreenDriver
     public int MatchDayFrameLimit { get; set; } = 1000;
 
     /// <summary>
-    /// Spielt einen Spieltag im Schnelldurchlauf und kehrt ins Hauptmenü zurück.
+    /// Spielt einen Spieltag im Schnelldurchlauf (im Hauptmenü <see cref="NextDay"/>, danach Enter) und kehrt ins Hauptmenü zurück.
     /// Wirft <see cref="TimeoutException"/>, wenn das Hauptmenü nicht innerhalb von <see cref="MatchDayFrameLimit"/>
     /// Tastendrücken wieder erreicht wird (statt still abzubrechen).
     /// </summary>
     public void PlayMatchDay()
     {
-        Press(Key.Space);
+        Advance();
         for (var presses = 1; Host.Current is not MainMenuScreen; presses++)
         {
             if (presses >= MatchDayFrameLimit)
                 throw new TimeoutException(
                     $"Spieltag nach {presses} Tastendrücken nicht beendet – Bildschirm {Host.Current?.GetType().Name ?? "(keiner)"} statt Hauptmenü.");
-            Press(Key.Space);
+            Press(Key.Enter);
         }
+    }
+
+    /// <summary>
+    /// „Tag weiter“: Klick aufs Vereinslogo der Infoleiste (<see cref="MainMenuScreen.ContinueLogo"/>, #205). Im Hot-Seat
+    /// gibt das nur an den nächsten Manager ab. Nur im Hauptmenü.
+    /// </summary>
+    public void NextDay()
+    {
+        if (Host.Current is not MainMenuScreen)
+            throw new InvalidOperationException($"„Tag weiter“ nur im Hauptmenü, nicht in {Host.Current?.GetType().Name ?? "(keiner)"}.");
+        var logo = MainMenuScreen.ContinueLogo;
+        Click(logo.X + logo.W / 2, logo.Y + logo.H / 2);
+    }
+
+    /// <summary>
+    /// Einen Schritt weiter, wo immer man steht: im Hauptmenü <see cref="NextDay"/>, sonst Enter (Spieltag,
+    /// Meldungen, Auslosung …). Für Schleifen, die viele Tage durchlaufen. Die Leertaste hat im Remake keine
+    /// Weiter-Funktion mehr (Entscheidung Nutzer, 31.10.2026, #205).
+    /// </summary>
+    public void Advance()
+    {
+        if (Host.Current is MainMenuScreen)
+            NextDay();
+        else
+            Press(Key.Enter);
     }
 
     /// <summary>Öffnet im Hauptmenü eine kleine Kachel über ihren Namen (siehe <see cref="MenuTiles"/>).</summary>

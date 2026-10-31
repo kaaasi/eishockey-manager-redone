@@ -28,22 +28,22 @@ internal static class DebPokalAuslosung
         d.Save("02_erster_platz");
 
         // Taste: alle übrigen Plätze, „TASTE DRÜCKEN“ (Video 3:55)
-        d.Press(Key.Space);
+        d.Advance();
         d.Save("03_fertig");
 
         // Danach die Übersicht „DEB-Pokalspiele“ (Video 4:00)
-        d.Press(Key.Space);
+        d.Advance();
         d.Save("04_uebersicht");
-        d.Press(Key.Space);
+        d.Advance();
 
         // Nach dem dritten Termin der ersten Runde: Frage zur Auslosung des Achtelfinales im Spieltagsablauf
         for (var guard = 0; d.Host.Current is not DebCupDrawLiveScreen && guard < 5000; guard++)
-            d.Press(Key.Space);
+            d.Advance();
         if (d.Host.Current is not DebCupDrawLiveScreen { Round: 1 })
             throw new InvalidOperationException("Auslosung des Achtelfinales nicht erreicht.");
         d.Save("05_frage_achtelfinale");
-        d.Press(Key.Space);
-        d.Press(Key.Space);
+        d.Advance();
+        d.Advance();
         d.Save("06_achtelfinale");
     }
 }

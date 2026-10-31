@@ -66,7 +66,7 @@ public static class DebCupDrawFlow
 ///   abgeleiteten Quelle: Paarungen und alle späteren Ergebnisse sind mit und ohne Anzeige gleich.</item>
 /// <item>[APPROX] Tempo ein Platz je <see cref="RevealFrames"/> Bilder (Video 3:50–3:53 etwa ein Platz je Sekunde); Klick oder
 ///   Taste deckt alle übrigen auf (Original: DGROUP 0x5A16, 0x34A88). Die rollende Kugel des Originals fehlt.</item>
-/// <item>[APPROX] Tasten im Fragefenster: Enter und Leertaste wie „Aber klar“, Escape und rechte Maustaste wie „Kein
+/// <item>[APPROX] Tasten im Fragefenster: Enter wie „Aber klar“ (keine Leertaste, Entscheidung Nutzer 31.10.2026, #205), Escape und rechte Maustaste wie „Kein
 ///   Gedanke“ (Tastenbelegung von 0x120:0x7A nicht geprüft).</item>
 /// </list>
 /// </remarks>
@@ -141,7 +141,7 @@ public sealed class DebCupDrawLiveScreen : Screen
             case Phase.Ask:
                 if (input.Clicked(NoButton) || input.RightClick || input.Pressed(Key.Escape))
                     Host.Show(_next);
-                else if (input.Clicked(YesButton) || input.Pressed(Key.Enter) || input.Pressed(Key.Space))
+                else if (input.Clicked(YesButton) || input.Pressed(Key.Enter))
                     Current = Phase.Reveal;
                 return;
 
