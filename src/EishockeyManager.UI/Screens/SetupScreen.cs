@@ -198,6 +198,10 @@ public sealed class SetupScreen : Screen
 
         var seed = Host.Seed ?? Environment.TickCount;
         Host.Game = NewGame.Create(Assets.Database, _setup, seed);
+        // [ORIGINAL] #195: Im Modus „nur Weltkugel“ läuft nach „Los jetzt!“ zuerst die Tagesfunktion Datei 0x54C9F (Sprung
+        // 0x54CEE zum WM-Termin, Ernennung), das Hauptmenü 0x44E22 kommt erst am Tagesende (0x555A3) – DOSBox 06.
+        if (Host.Game.WorldOnly)
+            Host.Game.Continue();
         // [ORIGINAL] Datei 0x43A8C: die Auslosung der ersten DEB-Pokal-Runde läuft mit Anzeige vor dem Hauptmenü (Spur debpokal-auslosung)
         Host.Show(Competitions.DebCupDrawFlow.AtSeasonStart(Host, new MainMenuScreen(Host)));
     }

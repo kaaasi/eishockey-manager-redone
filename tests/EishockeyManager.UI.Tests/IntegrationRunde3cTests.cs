@@ -52,7 +52,7 @@ public class IntegrationRunde3cTests : IDisposable
     public void WorldOnly_SaveThenLoad_ThroughDialog_InCoachMenu()
     {
         var (d, _) = StartWorldOnly(autoSave: false);
-        d.PlayMatchDay(); // Sprung zum ersten WM-Termin, Ernennung
+        // #195: „Los jetzt!“ springt schon zum ersten WM-Termin (Ernennung)
         var game = d.Host.Game!;
         Assert.NotNull(game.NationalCoach);
         var saved = Saved(game);

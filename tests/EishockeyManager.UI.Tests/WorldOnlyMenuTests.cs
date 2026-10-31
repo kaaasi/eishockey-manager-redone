@@ -65,35 +65,25 @@ public class WorldOnlyMenuTests
         Assert.Equal(GameMode.Full, screen.Setup.Mode);
     }
 
-    /// <summary>Modus 1 starten: Hauptmenü des Bundestrainers, Sprung zur WM, WM-Kader und „WM Vorbereitung“ erreichbar.</summary>
+    /// <summary>Modus 1 starten: Sprung zur WM schon mit „Los jetzt!“ (#195), Hauptmenü des Bundestrainers, WM-Kader und „WM Vorbereitung“ erreichbar.</summary>
     [GameDataFact]
     public void WorldOnly_CoachMenu_LocksAndRoutes_AndOpeningChangesNothing()
     {
         var (d, setup) = OpenSetup();
         ClickRect(d, SetupScreen.ModeFlag);
         ClickRect(d, SetupScreen.StartButton);
-        var menu = Assert.IsType<MainMenuScreen>(d.Host.Current);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
         var game = d.Host.Game!;
         Assert.Equal(GameMode.WorldOnly, game.Mode);
         Assert.True(game.NationalCoachMenu);
 
-        // Vor der Ernennung: gesperrte Kacheln öffnen nichts, Überfahren und Öffnen ändern nichts.
-        var before = StateFingerprint.Of(game);
-        d.OpenTile("Transfer");
-        Assert.Same(menu, d.Host.Current);
-        d.OpenTile("Verträge");
-        Assert.Same(menu, d.Host.Current);
-        d.Move(30, 220);
-        d.Frame();
-        Assert.Equal(before, StateFingerprint.Of(game));
-
-        // „und tschüß…“: Sprung zum ersten WM-Termin, Ernennung.
-        d.PlayMatchDay();
+        // #195 (DOSBox 06): „Los jetzt!“ springt sofort zum ersten WM-Termin und ernennt den Bundestrainer; ein Menü
+        // vor der Ernennung gibt es im Modus 1 nicht mehr.
         Assert.Equal(GameState.FirstWorldCupDay, game.CurrentDay);
         Assert.NotNull(game.NationalCoach);
         Assert.Equal(0, game.PlayedMatchDays);
 
-        before = StateFingerprint.Of(game);
+        var before = StateFingerprint.Of(game);
         d.OpenTile("Transfer");
         Assert.IsType<NationalSquadScreen>(d.Host.Current);
         d.Frame();

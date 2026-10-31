@@ -159,7 +159,7 @@ public class WeltkugelDosboxTests
         d.Press(Key.Enter);
         d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
         d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
-        d.PlayMatchDay();
+        // #195: „Los jetzt!“ springt schon zum ersten WM-Termin (Ernennung)
         var game = d.Host.Game!;
         Assert.NotNull(game.NationalCoach);
         game.AutoNominate();
@@ -250,7 +250,7 @@ public class WeltkugelDosboxTests
         d.Press(Key.Enter);
         d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
         d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
-        d.PlayMatchDay();
+        // #195: „Los jetzt!“ springt schon zum ersten WM-Termin (Ernennung)
         var game = d.Host.Game!;
         game.AutoNominate();
         foreach (var m in game.NationalCoach!.Squad)

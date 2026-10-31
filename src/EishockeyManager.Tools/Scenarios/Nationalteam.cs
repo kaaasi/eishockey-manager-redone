@@ -24,8 +24,7 @@ internal static class Nationalteam
         d.Type("Joerg");
         d.Press(Key.Enter);
         d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
-        d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
-        d.PlayMatchDay();
+        d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10); // #195: Halt am ersten WM-Termin
         var game = d.Host.Game!;
         game.AutoNominate();
         game.NationalCoach!.AutoFormation();
