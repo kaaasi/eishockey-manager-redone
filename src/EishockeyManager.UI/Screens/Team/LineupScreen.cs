@@ -53,6 +53,10 @@ public sealed class LineupScreen : Screen
     private Player? _selectedPlayer;
     private LineupSlot? _selectedSlot;
     private int _mouseX = -1, _mouseY = -1;
+    private readonly PlayerInfoPopup _info = new();
+
+    /// <summary>Spielerdaten-Fenster (rechte Maustaste auf einen Namen).</summary>
+    public PlayerInfoPopup Info => _info;
 
     public LineupScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
@@ -69,8 +73,17 @@ public sealed class LineupScreen : Screen
         _mouseY = input.MouseY;
         if (_message.Update(input))
             return;
+        if (_info.Update(input))
+            return;
 
         var rows = TeamUi.Rows(Club);
+        // [ORIGINAL] em.exe 0x400E9–0x4010D bzw. 0x4084E–0x40872: rechte Maustaste (Ereignis 3) über der Namensspalte
+        // (34 < x < 96) einer Zeile der Hinweiszeilen-Rechnung 0x41683 öffnet das Spielerdaten-Fenster 0x041AC
+        // (Spur statistiken-verein; Sichtbarkeit über PlayerDataContext.Create).
+        if (input.RightClick && input.MouseX is > 0x22 and < 0x60 && Host.Game is { } game
+            && PlayerHintLine.Row(PlayerListLayout.Lineup(rows.Count), input.MouseY) is var hit and >= 0 && hit < rows.Count
+            && Statistics.PlayerStatisticsScreen.OpenPlayerData(_info, game, rows[hit]))
+            return;
         if (input.Pressed(Key.Escape))
         {
             Leave(_back);
@@ -254,6 +267,7 @@ public sealed class LineupScreen : Screen
 
         TeamUi.DrawSwitch(s, Assets, toTactics: true);
         _message.Draw(s, Assets, 120, 110);
+        _info.Draw(s, Assets);
     }
 
     /// <summary>
