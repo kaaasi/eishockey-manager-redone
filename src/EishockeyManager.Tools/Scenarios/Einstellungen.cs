@@ -18,5 +18,7 @@ internal static class Einstellungen
         var row = SettingsScreen.RowRect(SettingsScreen.Row.GoalScenes);
         d.Click(row.X + 10, row.Y + 5);
         d.Move(10, 230); d.Save("02_geaendert");
+        d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5);
+        d.Move(10, 230); d.Save("03_spielstand_optionen");
     }
 }

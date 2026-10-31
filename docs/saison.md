@@ -123,3 +123,11 @@ Die Pfeile vor den Vereinsnamen sind Zeichen des Mini-Fonts: `&` = Pfeil nach un
   Prämien außer 1. Platz Oberliga.
 - Play-Off-Format und Termine der Aufstiegsrunden genauer am Disassembly prüfen.
 - Bisherige Begegnungen in der Infoleiste reichen im Original über Saisongrenzen hinweg (nicht Teil dieses Pakets).
+
+## Spielstand-Optionen und Kalenderfunktionen (Spur `optionen-kalender-2`)
+
+Die Optionen aus em.exe 0x2CD1C (Matrix Drittelpause/Ergebnisse/Tabelle je Liga, DEB-Pokal, Europapokal, WM-Spiele) wirken auf Meldungen
+im Live-Ablauf und sind im Remake nur lesend angezeigt (Einstellungen → „Spielstand“); keine Zeit, kein Zufall. Der Datumstext
+(0x43B1F) und die Termin-Funktionen 0x43C38/0x43E21/0x36169 ändern den Saisonablauf nicht; Einordnung in `docs/reverse-engineering.md`
+(„Spielmodus-Optionen … Teil 2“). Ein Terminbildschirm ist ohne Videobeleg nicht gebaut.
+
