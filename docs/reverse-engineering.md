@@ -274,3 +274,29 @@ Spurvorschlag und die Einordnung bekannter offener Punkte: **[re-abdeckung.md](r
 Fundstellen neu erzeugen. Neue Fundstellen bitte als Dateioffset mit Kennwort schreiben (`Datei 0x…`, `em.exe 0x…`),
 damit der Abgleich sie sicher erkennt.
 
+## Statistiken: Ranglisten, Fair-Play, Einzelprämien (Spur `statistiken`, Runde 8)
+
+Bisher in der Funktionskarte „dokumentiert“ bzw. ohne Abdeckung; jetzt `[ORIGINAL]` in `Core/StatisticsPlayers.cs`,
+`Core/StatisticsClub.cs` und den Bildschirmen unter `UI/Screens/Statistics/`.
+
+* **Menüsprung** (Ov 0x110, Datei 0x457E1): Index 0–5 über cs:0x2927 → 0x2D5AE, 0x2E356, 0x2C1EE, `0xC8:0x20(0)`,
+  `0xE0:0x20(1)`, `0xF8:0x48`. 0x2E356 (Totale) und 0x2C1EE (Früher) sind am Video belegt; „Verein“ ist damit 0x2D5AE.
+* **0x25E30** (Ov 0xC8 + 0, Einsprung `0xC8:0x20`, Argument 0 Bildschirm / 1 Kennungen): kopiert zuerst die Tore der
+  Managerkader aus Kaderplatz +3 in Spielerfeld 0x1B (0x25E6E); Spielerpool DGROUP `[0x8253]` (33 Byte je Spieler,
+  Index 1–199). Schlüssel 0x25F64–0x260B6 (Torhüter: Minuten 0x1F > 399 → −LDIV(LXMUL(Gegentore 0x1B, 6000), Minuten),
+  sonst 0xFFFE7961; Feldspieler: 0x1B und/oder 0x1F nach Modus `[bp−0x14]` 0/1/2 = TORSCH./VORLEGER/SCORER),
+  Austauschsortierung mit Nebenschlüssel Spiele 0x1C aufsteigend. Ligagrenzen DGROUP 0x7C6/0x7C7 + 2 · Liga (Liga =
+  Managerfeld 0x9746). Zeilen: Grundlinie 0x36/0xA1 + 7 n, Farbe 0x18/0x1E nach Vereinsfeld 0x16, Spalten x = 0x26,
+  0x72, 0xC8, 0xFC − 15 · Art; Mindestbreite über DGROUP 0x374. Rückgabe `[bp−0x2A] | [bp−0x29] << 8` (Topscorer,
+  Torhüter des Managers am Zug) – Aufruf je Manager in 0x5576E, Auswertung in 0x26FE2–0x27007.
+* **0x2A1E0** (Ov 0xE0 + 0, `0xE0:0x20`): Vereine ab DGROUP 0x7C0 + Liga, Strafminuten DGROUP 0x82A1 + 0x50 · Verein
+  (Wort), Spiele = Bytes 0x8278 + 0x8279 (Heim/Auswärts, wie Tabelle 0x4FD58). Argument 0: 1, wenn Vereinsfeld 0x16 des
+  Ersten = Manager + 1 (0x2A29D); Argument 1: Bildschirm.
+* **0x26F20** (Ov 0xD0, Saisonende): je Einzelprämie Symbol über 0x20:0x7C6, `+0x493E0` auf DGROUP 0xE289 + 4 · Manager
+  (Prämienzähler) und auf das Konto 0x97EA + 0x1AF · Manager.
+* **Strafminuten** 0x35967–0x35986: `[0xD0C2] = 7` (Ligaspieltag) → Code & 7 auf 0x82A1 + 0x50 · Verein; 0x5647A löscht
+  die Werte der Vereine 0–63 nach `0xD0:0x20`.
+* **Knöpfe** 0x4C196 (`0x120:0x75`, x, y, Text, Farbe, 1): belegt einen von zehn Plätzen und zeichnet über 0x4BFF2 das
+  Knopfbild 57 × 12 (kb\2 ab (17 | 179 + 12 · Zustand), Zustand immer 0) mit Text Mini zentriert x … x + 59, Grundlinie
+  y + 7, Farbe 29, Schatten 1. Die übergebene Farbe wird nicht verwendet.
+* **Offen:** 0x2D5AE („Verein“, 3356 Byte), Spielerdaten-Fenster aus der Rangliste (0x26B13 → 0x041AC).
