@@ -423,9 +423,7 @@ OTHER_FILE_DOCS = {"docs/formate/spielstand-original.md"}
 DGROUP_WORDS = re.compile(r"(Liste|Tabellen?|Paarungen|Runde|Termin|Struktur|[Mm]anagerstruktur|Vereinsstruktur|"
                           r"Managerwert|Flag|Variable|Zustand)\s*`?$")
 # DGROUP values that a comment calls "Datei" by mistake (checked against the bytes of em.exe)
-DGROUP_MISLABELLED = {
-    0x4B2E: "symbol table of the season end (DGROUP bytes 2, 1, 0, 5, 4, 6, 8; file 0x4B2E is code)",
-}
+DGROUP_MISLABELLED: dict[int, str] = {}
 SENTENCE_CUT = re.compile(r"\.\s|;|\n\s*(?:///?|\*)?\s*\n|\[(?:ORIGINAL|APPROX)\]|\|")
 DGROUP_CTX = re.compile(r"(DGROUP|Feld|Spielerfeld|Vereinsfeld|Manager-Feld|Index|Globale|Zähler|Byte|Wort)\s*$")
 

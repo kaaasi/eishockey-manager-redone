@@ -21,6 +21,9 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
         Assert.Equal(0x16e360L / 3, GameState.CupWinnerPremium);
         Assert.Equal(0xdbba0L / 3, GameState.PromotionPremium(League.Oberliga));
         Assert.Equal(0x493e0L / 3, GameState.SinglePremium);
+        // Spur statistiken (#135): Torhüter (0x271A9), Topscorer (0x271EF) und Fair-Play (0x2723C) buchen je 0x493E0 Drittel.
+        foreach (var at in new[] { 0x271a9, 0x271ef, 0x2723c })
+            Assert.Equal(new byte[] { 0x81, 0x87, 0x89, 0xe2, 0xe0, 0x93 }, executable[at..(at + 6)]);
     }
 
     [Theory]
@@ -59,6 +62,11 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
         // Spielberechnung des Originals (Runde 7, R7-02) gewinnt der Oberligaverein 24 mit diesem Seed den Pokal; dessen
         // Prämie (eigener Test) wird hier ausdrücklich herausgerechnet, geprüft bleibt Tabelle/Titel/Aufstieg.
         var cup = record.Titles.GetValueOrDefault(Title.CupWinner, -1) == index ? GameState.CupWinnerPremium : 0;
+        // Spur statistiken (#135): Einzelprämien (bester Torhüter, Topscorer, Fair-Play der eigenen Liga) hängen an den
+        // Ranglisten des 29. April, nicht an Tabelle oder Titel; sie werden wie der Pokal herausgerechnet (eigene Tests in
+        // StatistikenPraemienTests).
+        cup += GameState.SinglePremium * record.Managers.Single().Events.Count(e =>
+            e is SeasonEvent.BestGoalie or SeasonEvent.TopScorer or SeasonEvent.FairPlay);
         Assert.Equal(expected, record.Managers.Single().Premium - cup);
         Assert.Equal(expected, game.Finance(game.ActiveManager).Book.Current(FinanceCategory.Praemien) - cup);
     }

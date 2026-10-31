@@ -29,6 +29,8 @@ public class SaveGameTests
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
+    // Schema 11: Börse (9 → 10) und Torhüterzähler (10 → 11), Integration Runde 7. Schema 12 (vorläufig, Spur statistiken):
+    // Club.LeaguePenaltyMinutes und SeasonEvent BestGoalie/TopScorer/FairPlay; die Leitstelle nummeriert in der Integration.
     private const string ExpectedSchemaFingerprint = "B2B7851BFD67DB8F"; // Schema 12 (vorläufig): Taktik des Nationalteams, Spur nationalteam #192 – Leitstelle nummeriert in der Integration Runde 8
 
     // ---------- Abnahme 3: Roundtrip ----------

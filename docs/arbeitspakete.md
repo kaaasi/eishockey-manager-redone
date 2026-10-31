@@ -165,7 +165,9 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (eigener Abschnitt), `docs/reverse-engineering.md` (eigener
   Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** offen.
+- **Status:** PR #242 (Claude Code, geplanter Lauf 31.10.2026): Spieler (0x25E30), Fairplay (0x2A1E0), Einzelprämien
+  (#135) und #222 umgesetzt, Schema vorläufig 11 → 12. Offen: „Verein“ = 0x2D5AE (Menüsprung belegt, nicht 0x4D385),
+  Pixelvergleich am Video (Referenzbilder nicht erreichbar).
 
 ### Spur `nationalteam` – WM-Statistik, WM-Paarungen und Befunde Bundestrainer (#192, #194, #195)
 

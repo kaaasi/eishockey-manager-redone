@@ -163,6 +163,26 @@ Fortgeschrieben genau einmal je Saison am 29. April (Anschluss in `GameState.Int
 Strafen je Spieler. Die heutige Spielberechnung liefert nur das Endergebnis; diese Daten entstehen erst mit dem Paket
 `livespiel`.
 
+## Statistiken Spieler und Fairplay, Einzelprämien (Spur `statistiken`, Runde 8)
+
+Umsetzung: `Core/StatisticsPlayers.cs` (Ranglisten), `Core/StatisticsClub.cs` (Strafminuten, Fair-Play-Tabelle,
+Einzelprämien), `UI/Screens/Statistics/PlayerStatisticsScreen.cs`, `FairplayScreen.cs`; Ablauf `statistiken` in
+`Tools/Scenarios/Statistiken.cs`. Belege im Einzelnen in `docs/reverse-engineering.md`, Abschnitt „Statistiken“.
+
+| Regel | Fundstelle |
+|---|---|
+| Menü Statistiken: Sprungtabelle cs:0x2927 der Hauptmenüschleife – 0x2D5AE, 0x2E356 (Totale), 0x2C1EE (Früher), 0x25E30(0) **Spieler**, 0x2A1E0(1) **Fairplay**, 0x3ADE1 (WM-Statistik). Für „Verein“ bleibt damit **0x2D5AE** („!Serien“, „(noch keine...)“, Zuschauerschnitt 0x2DB79) – nicht 0x4D385 | Datei 0x457E1–0x45821 |
+| Rangliste: Torhüter ab 400 Minuten nach −(Gegentore · 6000 / Minuten), Feldspieler nach Toren, Vorlagen oder beiden; Austauschsortierung, bei Gleichstand weniger Spiele vorn | 0x25F4E–0x26145 |
+| Aufnahme: nur Vereine der Liga des Managers; Feldspieler ab 2 Scorerpunkten, Torhüter ab 399 Minuten; höchstens 12 Feldspieler und 3 Torhüter; Ansicht „Manager“ blendet andere Vereine aus, der Platz bleibt | 0x26365–0x26994 |
+| Strafminuten je Verein nur am Ligaspieltag (Code 7), Rücksetzen nach den Prämien | 0x35967, 0x5647A |
+| Fair-Play-Tabelle: zwölf Vereine der Liga aufsteigend nach Strafminuten, „PRO SPIEL“ = Minuten · 100 / Spiele | 0x2A1E0–0x2A5BD |
+| Einzelprämien je 100.000 DM (300.000 Drittel): bester Torhüter (Symbol 12), Topscorer (3), Fair-Play-Erster (13) der eigenen Liga; Kennungen am 29. April je Manager | 0x5576E, 0x27184–0x2725D |
+| `[APPROX]` Spielerpool: alle Kaderspieler der Liga statt der 199 Poolspieler des Originals (Reihenfolge nur bei völligem Gleichstand wirksam) | – |
+| `[APPROX]` Gewählter Knopf gedrückt (das Original übergibt eine Farbe, die die Knopfzeichnung 0x4BFF2 nicht nutzt) | – |
+
+Offen: Pixelvergleich am Video (Referenzbilder in dieser Sitzung nicht erreichbar), Bildschirm „Verein“ (0x2D5AE),
+Spielerdaten-Fenster bei Klick auf einen eigenen Spieler (0x26B13 → 0x041AC, Spur `spielerinfo`/Leitstelle).
+
 ## Bundestrainer: WM-Kader und „WM Vorbereitung“ (`Core/CupsNational*.cs`)
 
 Freundschaftsspiele gibt es im Original nur für den **Bundestrainer** – im Spielmodus „nur Weltkugel“ und im Modus 4,

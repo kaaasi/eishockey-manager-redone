@@ -254,6 +254,10 @@ public class GameModeTests
     /// Zufallsquellen. Ermittelt auf dem Branch (Basis <c>15d0733</c>), Nachziehen in der Integration durch die Leitstelle.
     /// Spur spielerwert (Runde 8): Werbebewertung mit dem Spielerwert nach 0x49D36 – ab der dritten Saison andere Kontostände
     /// beider Manager; Titel, Haupt- und Pokalquelle unverändert. Gegenprobe wie in <c>RngTwinProbeTests</c>.
+    /// Spur statistiken (Runde 8, #135, Einzelprämien 0x27184): Titel, Haupt- (R…) und Pokalquelle (C…) unverändert; nur
+    /// Kontostände – Manager 0 bekommt 1993 und 1994 je eine Einzelprämie (+100.000 DM, kumuliert +100.000/+200.000 DM ab
+    /// Saison 1/2), Manager 1 eine in Saison 5 (+100.000 DM). Gegenprobe mit abgeschalteten Einzelprämien: alte Werte.
+    /// Ermittelt auf dem Branch (Basis <c>10eb6c5</c>), Nachziehen in der Integration durch die Leitstelle.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()

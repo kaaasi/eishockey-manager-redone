@@ -38,7 +38,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 12;
+    public const int SchemaVersion = 13;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -55,7 +55,9 @@ public static partial class SaveGame
     /// 8 → 9: Merker „nicht spielfähig“ je Verein, Spur heimspiel-statistik #165 (<c>SaveGame.Migration8.cs</c>).
     /// 9 → 10: Kursmodell der Börse nach em.exe, Spur boerse-start #169 (<c>SaveGame.Migration9.cs</c>).
     /// 10 → 11: Torhüterzähler je Spieler, Spur spielberechnung (<c>SaveGame.Migration10.cs</c>; Integration Runde 7, ursprünglich 9 → 10).
-    /// 11 → 12: Taktik des Nationalteams, Spur nationalteam #192 (<c>SaveGame.Migration.Nationalteam.cs</c>; vorläufig, Leitstelle nummeriert in Runde 8).
+    /// 11 → 12: Taktik des Nationalteams, Spur nationalteam #192 (<c>SaveGame.Migration.Nationalteam.cs</c>; Integration Runde 8).
+    /// 12 → 13: Strafminuten der Ligaspiele je Verein, Spur statistiken (<c>SaveGame.Migration.Statistiken.cs</c>; Integration
+    /// Runde 8, auf dem Branch 11 → 12).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
@@ -71,6 +73,7 @@ public static partial class SaveGame
             [9] = MigrateFrom9,
             [10] = MigrateFrom10,
             [11] = MigrateFromNationalteam,
+            [12] = MigrateStatistiken,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

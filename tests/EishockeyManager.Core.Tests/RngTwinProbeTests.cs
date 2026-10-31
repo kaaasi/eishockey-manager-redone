@@ -73,6 +73,10 @@ namespace EishockeyManager.Core.Tests;
 /// Spur spielerwert (Runde 8): Die Werbebewertung rechnet mit dem Spielerwert nach 0x49D36 statt „Kaufpreis · 3“; das ändert
 /// die Bewertung und damit Werbeeinnahmen und Kontostände – drei synthetische Abdrücke neu (passiv Seed 3 und beide
 /// Originaldaten-Abdrücke unverändert). Gegenprobe: mit „Kaufpreis · 3“ nur in der Werbebewertung stimmen alle alten Abdrücke.
+/// Spur statistiken (Runde 8, #135): fünf Abdrücke neu, weil die Einzelprämien (bester Torhüter, Topscorer, Fair-Play je
+/// 100.000 DM, em.exe 0x27184) die Kontostände ändern; der aktive Lauf mit Originaldaten bekommt keine und bleibt gleich.
+/// Gegenprobe auf dem Branch: mit abgeschalteten Einzelprämien (und <c>LeaguePenaltyMinutes</c> in <c>Excluded</c>) alle
+/// sechs alten Abdrücke unverändert – kein Spielverlauf und kein Zufallsverbrauch ändert sich. Basis <c>10eb6c5</c>.
 /// </summary>
 public class RngTwinProbeTests
 {
@@ -90,7 +94,7 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "79D50ABD868F0773")]
+    [InlineData(false, "DC483138985202E3")]
     [InlineData(true, "53596ED8A406D969")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
@@ -186,9 +190,11 @@ public class RngTwinProbeTests
     /// Nicht im Abdruck: <c>Player.Id</c> (Teil „ids“) gehört nur zum Spielstandformat und verändert den Spielverlauf
     /// nicht; so bleiben die auf <c>5f8e02a</c> ermittelten Abdrücke vergleichbar. Ebenso <c>Club.DressedCount</c>
     /// (Spur taktik-verein): abgeleitete Anzeige „Eingesetzt: n“, wirkt nicht auf den Spielverlauf – mit dieser Ausnahme
-    /// stimmen alle sechs Abdrücke unverändert.
+    /// stimmen alle sechs Abdrücke unverändert. Ebenso <c>Club.LeaguePenaltyMinutes</c> (Spur statistiken): Zähler für die
+    /// Fair-Play-Tabelle aus den Spielberichten, ohne Zufall und ohne Rückwirkung auf die Spiele; seine Wirkung (die
+    /// Fair-Play-Prämie) steht im Kontostand.
     /// </summary>
-    private static readonly HashSet<string> Excluded = ["Id", "DressedCount"];
+    private static readonly HashSet<string> Excluded = ["Id", "DressedCount", "LeaguePenaltyMinutes"];
 
     private static void Dump(StringBuilder sb, object value)
     {
