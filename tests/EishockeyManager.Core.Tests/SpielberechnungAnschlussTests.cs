@@ -142,8 +142,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// zieht sie in der Integration nach.
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "768EAC0713F6F1CA")]
-    [InlineData(true, "E726CCB50A13D758")]
+    [InlineData(false, "956268E49BCF8550")]
+    [InlineData(true, "9C677990419F739B")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -187,7 +187,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     }
 
     private const string WorldOnlyReference =
-        "WorldChampion=53|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=63|500000|R2143933569 C883699657";
+        "WorldChampion=63|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=54|500000|WorldChampion=54|500000|R2143933569 C637012470";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

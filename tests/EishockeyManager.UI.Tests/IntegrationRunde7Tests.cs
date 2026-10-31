@@ -73,7 +73,8 @@ public class IntegrationRunde7Tests : IDisposable
         var goals = own.Home == club.Index ? own.HomeGoals : own.AwayGoals;
 
         Assert.True(club.Players.Sum(p => p.Games) > 0, "keine Spiele gezählt");
-        Assert.Equal(goals, club.Players.Sum(p => p.Goals));
+        // [ORIGINAL] 0x5028: Je Tor mit 1/5 kein Torschütze – die Summe der Spielertore kann kleiner sein (Review R7-02).
+        Assert.InRange(club.Players.Sum(p => p.Goals), 0, goals);
         Assert.True(club.Players.Sum(p => p.Assists) <= 2 * goals);
         Assert.True(club.Players.Sum(p => p.GoalieMinutes) >= 60, "keine Torhüterminuten");
     }

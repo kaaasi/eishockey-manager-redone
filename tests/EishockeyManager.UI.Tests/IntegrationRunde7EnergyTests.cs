@@ -15,7 +15,7 @@ public class IntegrationRunde7EnergyTests
         var exe = File.ReadAllBytes(Path.Combine(TestGameData.Load().RootDirectory, "em.exe"));
         Assert.Equal(new byte[] { 0xC6, 0x87, 0xD6, 0x5D, 0x46 }, exe[0x3BB51..0x3BB56]);
         Assert.Equal(70, exe[0x3BB55]);
-        Assert.Equal(exe[0x3BB55], NationalCoach.FriendlyEnergy);
+        Assert.Equal(NationalCoach.FriendlyEnergy, exe[0x3BB55]);
     }
 
     [Fact]

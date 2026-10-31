@@ -172,6 +172,17 @@ public static partial class MatchEngine
     private static void Credit(GameState game, Club club, int goals, int against, int side, MatchCompetition competition,
         MatchReport report, Random random)
     {
+        // Review-Befund R7-03 (#201): Das Nationalteam des Bundestrainers (RatedNation ohne Kader) zählt über die
+        // Aufstellung des Bundestrainers wie ein Managerverein ([ORIGINAL] Ereignisse im Spiel 0x541D9/0x35818; die
+        // Statistik nach dem Spieltag 0x52CF überspringt Index ≥ 0x40 und Managervereine).
+        if (game.NationalCoach is { } coach && club.Index == coach.Nation)
+        {
+            if (report.Forfeit)
+                return;
+            var national = coach.Lineup();
+            CreditLineup(national.Players.ToList(), national.Goalkeeper, goals, against, side, report, random);
+            return;
+        }
         if (club.Index >= FirstForeignClub || club.Players.Count == 0)
             return;
         if (!IsManaged(game, club))
@@ -183,12 +194,18 @@ public static partial class MatchEngine
         }
         if (report.Forfeit)
             return;
-        var lineup = club.Lineup.Players.ToList();
+        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, goals, against, side, report, random);
+    }
+
+    /// <summary>Zähler einer gemanagten Mannschaft aus ihrer Aufstellung (Managerverein oder Nationalteam des Bundestrainers).</summary>
+    private static void CreditLineup(List<Player> lineup, Player? keeper, int goals, int against, int side, MatchReport report,
+        Random random)
+    {
         foreach (var p in lineup)
             p.Games++;
         var skaters = lineup.Where(p => p.Role != PlayerRole.Goalkeeper).ToList();
         MatchStatistics.CreditSkaters(skaters, goals, random, countGames: false);
-        if (club.Lineup.Goalkeeper is { } goalie)
+        if (keeper is { } goalie)
         {
             goalie.GoalsAgainst += against;
             goalie.GoalieMinutes += report.Overtime ? 70 : 60;

@@ -184,6 +184,15 @@ sobald `spielberechnung` fertig ist. Zusammengeführt in Planfolge: #187 (`kader
   Verlauf, keine Handbuchfrage, Sichern/Laden bytegleich) und ein Spieltag mit Ereignissen beim eigenen Verein (Spiele,
   Tore = eigene Tore, Vorlagen ≤ 2 je Tor, Torhüterminuten).
 - Plan berichtigt: #183, #184, #185 (Zuständigkeiten oben).
+- **Review** (`docs/reviews/2026-10-30-integration-runde-7.md`, Head `eafbbae`, „Nein“): **R7-02** (#200, P2)
+  Angriffszuschlag zog `random(0, Angriff)` statt `lrandom(Angriff, 7)` (em.exe 0x9F92–0xA019) – behoben,
+  `IntegrationRunde7ReviewTests` (rot vorher); **R7-03** (#201, P2) Nationalteam zählte keine Spielerereignisse – behoben,
+  `IntegrationRunde7NationalCountersTests` (beide rot vorher); **R7-04** (#202, P3) Energie 70 unabhängig aus em.exe
+  0x3BB51 belegt (`IntegrationRunde7EnergyTests`). Danach alle Sollwerte neu; drei ergebnisabhängige Tests angepasst:
+  `FinanceCalibrationTests` (Pokalprämie des nun siegenden Oberligavereins herausgerechnet), `WeltkugelDosboxTests`
+  (Zahl der Ernennungen im Modus 4 hängt an den Ergebnissen: 1–3 statt genau 2), `IntegrationRunde7Tests` (Spielertore
+  ≤ Tore, im Original 1/5 der Tore ohne Torschützen, 0x5028). Meisterhäufung nach R7-02 in der Modus-4-Probe nicht mehr
+  (Meister 1, 13, –, 24, –); Tore je Spiel Originaldaten 6,9–7,4. Nachprüfung des Deltas ausstehend.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 

@@ -266,7 +266,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|2320935,659542|WorldChampion=52,CupWinner=24,GermanChampion=12,EuropeanCupWinner=2|3671764,634818|WorldChampion=52,CupWinner=0,GermanChampion=12,EuropeanCupWinner=12|4872139,633196|WorldChampion=52,CupWinner=12,GermanChampion=12,EuropeanCupWinner=12|5437855,495496|WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=12|5285356,382800|R1704043154 C404321214";
+        "WorldChampion=53,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2226402,692809|WorldChampion=52,CupWinner=12,GermanChampion=13,EuropeanCupWinner=1|3877693,918381|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=13|4783091,871349|WorldChampion=63,CupWinner=12,GermanChampion=24,EuropeanCupWinner=0|5371179,810547|WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|5250883,726298|R1912259729 C234131033";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -244,6 +244,10 @@ Europapokal (`CupsGroup.cs`/`CupsEurope.cs`) und in der WM (`CupsWorld.cs`, Nati
 `MatchEngine.Play(Club, Club, Random)` bleibt unverändert für die Freundschaftsspiele in `CupsNational*.cs` (Spur
 weltkugel-dosbox; Umstellung durch die Leitstelle in der Integration).
 
+Das Nationalteam des Bundestrainers (`RatedNation`, ohne eigenen Kader) zählt in Freundschafts- und WM-Spielen über
+die Aufstellung des Bundestrainers (`NationalCoach.Lineup()`) wie ein Managerverein: Spiele, Tore/Vorlagen, Strafen,
+Gegentore und Minuten des Torhüters (Review-Befund R7-03, #201; Test `IntegrationRunde7NationalCountersTests`).
+
 **Ablauf je Spiel**
 
 1. Spielwertung (#165, 0x36DC5): nicht spielfähiger Managerverein → 0:2 bzw. 2:0 ohne Rechnung (`MatchReport.Forfeit`).

@@ -211,5 +211,5 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// <summary>Referenz: <see cref="Summary"/> auf <c>main</c> a09c81e (nur Leertaste, Seed 1993), siehe PR der Spur;
     /// ab 1994 neu mit Spur kader-start (siehe oben).</summary>
     private const string Reference =
-        "1993: DEB 6, DM 2, Tab 15398 | 1994: DEB 2, DM 2, Tab 16347 | 1995: DEB 2, DM 2, Tab 16312 | 1996: DEB 8, DM 2, Tab 16462";
+        "1993: DEB 2, DM 6, Tab 15356 | 1994: DEB 6, DM 2, Tab 15940 | 1995: DEB 2, DM 2, Tab 15907 | 1996: DEB 6, DM 2, Tab 16319";
 }

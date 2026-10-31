@@ -68,16 +68,18 @@ namespace EishockeyManager.Core.Tests;
 /// Integration Runde 7: Sollwerte auf dem integrierten Stand neu ermittelt (kader-start, boerse-start, weltkugel-dosbox,
 /// spielberechnung, Freundschaftsspiele über die neue Spielberechnung). Die Änderungen der einzelnen Spuren sind oben
 /// begründet; der Integrationswert ist ihr Zusammenwirken (siehe docs/arbeitspakete.md, „Integration Runde 7“).
+/// Review-Befunde R7-02 (#200, Angriffszuschlag lrandom(Angriff, 7)) und R7-03 (#201, Zähler des Nationalteams): neu
+/// ermittelt; R7-02 ändert das Torbudget jedes Spiels und damit alle Ergebnisse und die Hauptquelle.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "FEA9AC8A1C49FB0B")]
-    [InlineData(true, 3, "971A0F0F745A90B9")]
-    [InlineData(false, 11, "EE01F8369242FC09")]
-    [InlineData(true, 11, "5F7F711E9E15E210")]
+    [InlineData(false, 3, "AF89F741C1A6B335")]
+    [InlineData(true, 3, "46C998874089DDCE")]
+    [InlineData(false, 11, "C927531F951586DA")]
+    [InlineData(true, 11, "0E56D6AC9ADCF258")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -85,8 +87,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "5890D3F7B4F9D10F")]
-    [InlineData(true, "6351FE83C88CB835")]
+    [InlineData(false, "79D50ABD868F0773")]
+    [InlineData(true, "53596ED8A406D969")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
