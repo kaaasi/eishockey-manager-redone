@@ -113,7 +113,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `UI/Screens/Team/LineupScreen.cs` (nur Aufruf), `Tools/Scenarios/` (eigene Datei), `docs/reverse-engineering.md`
   (eigener Abschnitt), Tests.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** wartet auf Merge von `spielerwert`.
+- **Status:** in Arbeit (Claude Code, Draft-PR), Base `421d96f`; `spielerwert` ist gemergt.
 
 ### Spur `tabellen-original` – Tabellenberechnung und -ansicht (0x4F78D, 0x50283, 0x50B45)
 
