@@ -22,12 +22,21 @@ public sealed record OriginalSaveManagerHeader(int StartLeague, bool OnlyWorldMo
 /// <param name="Dressed">Platz +0x0A: eingesetzt (Status „IM TEAM“ oder „RESERVE“).</param>
 /// <param name="Games">Platz +0x06: Spiele (Spalte SP; nach einem Kauf mit den Spielen beim alten Verein).</param>
 /// <param name="ClubGames">Platz +0x1C: Spiele für den jetzigen Verein (nach einem Kauf 0, sonst gleich <paramref name="Games"/>).</param>
-/// <param name="Goals">Platz +0x22: Tore (Spalte TO).</param>
+/// <param name="Goals">Spalte TO = Platz +0x03 + +0x04 + +0x05 (Tore je Wettbewerb). Beim Torhüter zeigt das Original „-“; dort stehen vermutlich die Gegentore. [ORIGINAL] em.exe 0x421D6.</param>
+/// <param name="TwoMinutePenalties">Spalte 2m: Platz +0x01. [ORIGINAL] em.exe 0x4221D.</param>
+/// <param name="FiveMinutePenalties">Spalte 5m: Platz +0x00. [ORIGINAL] em.exe 0x4221D.</param>
+/// <param name="E">Spalte E = Platz +0x13 · 10 / 15 (ganzzahlig; hervorgehoben bei +0x13 &gt; 0x82). [ORIGINAL] em.exe 0x42335.</param>
+/// <param name="Insured">Platz +0x30/+0x32 ≠ 0: Zusatz „(v)“ bei der Vertragsdauer (versichert). [ORIGINAL] em.exe 0x42410.</param>
 /// <param name="SalaryThirds">Platz +0x28: Gehalt in Drittel-DM (Spalte WERT bei „Verträge“).</param>
 /// <param name="PriceThirds">Platz +0x2C: Preis in Drittel-DM (Transferliste „(K)“; nach dem Kauf das bezahlte Gebot).</param>
 public sealed record OriginalSquadSlot(
     int Slot, int PoolIndex, string Name, int Strength1, int Strength2, int Strength3, int Age, int Talent, int RoleValue,
-    int ContractYears, bool Dressed, int Line, bool Forward, int Games, int ClubGames, int Goals, int SalaryThirds, int PriceThirds);
+    int ContractYears, bool Dressed, int Line, bool Forward, int Games, int ClubGames, int Goals, int TwoMinutePenalties, int FiveMinutePenalties, int E, bool Insured,
+    int SalaryThirds, int PriceThirds)
+{
+    /// <summary>Torhüter: Rollenwert 0 (Pool +0x18).</summary>
+    public bool IsGoalkeeper => RoleValue == 0;
+}
 
 /// <summary>Gelesenes Prüfsummenbyte und der aus dem Klartext berechnete Wert.</summary>
 public sealed record OriginalSaveChecksum(int FileOffset, byte Stored, byte Computed)
@@ -107,7 +116,9 @@ public sealed class OriginalSaveGame
             list.Add(new OriginalSquadSlot(
                 i, index, GameText.Decode(player[..0x12]), slot[0x10], slot[0x11], slot[0x12],
                 player[0x14], player[0x12], player[0x18], slot[0x0B], slot[0x0A] != 0, slot[0x15] & 0x0F, (slot[0x15] & 0x80) != 0,
-                slot[0x06], slot[0x1C], slot[0x22], BitConverter.ToInt32(slot.Slice(0x28, 4)), BitConverter.ToInt32(slot.Slice(0x2C, 4))));
+                slot[0x06], slot[0x1C], slot[0x03] + slot[0x04] + slot[0x05], slot[0x01], slot[0x00], slot[0x13] * 10 / 15,
+                BitConverter.ToInt32(slot.Slice(0x30, 4)) != 0,
+                BitConverter.ToInt32(slot.Slice(0x28, 4)), BitConverter.ToInt32(slot.Slice(0x2C, 4))));
         }
         return list;
     }

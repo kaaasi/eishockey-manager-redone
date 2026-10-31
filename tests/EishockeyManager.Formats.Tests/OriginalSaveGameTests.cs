@@ -90,7 +90,10 @@ public class OriginalSaveGameTests
             slot[0x15] = 0x01;
             slot[0x06] = 3;
             slot[0x1C] = 3;
-            slot[0x22] = 1;
+            slot[0x03] = 1;
+            slot[0x00] = 1;
+            slot[0x01] = 2;
+            slot[0x13] = 50;
             BitConverter.GetBytes(12_100 * 3).CopyTo(slot[0x28..]);
             BitConverter.GetBytes(305_000 * 3).CopyTo(slot[0x2C..]);
 
@@ -110,6 +113,8 @@ public class OriginalSaveGameTests
         Assert.Equal(2, player.ContractYears);
         Assert.Equal((1, false), (player.Line, player.Forward));
         Assert.Equal((3, 3, 1), (player.Games, player.ClubGames, player.Goals));
+        Assert.Equal((2, 1, 33), (player.TwoMinutePenalties, player.FiveMinutePenalties, player.E));
+        Assert.False(player.Insured);
         Assert.Equal((12_100 * 3, 305_000 * 3), (player.SalaryThirds, player.PriceThirds));
 
         var offer = Assert.Single(save.Squad(4));
