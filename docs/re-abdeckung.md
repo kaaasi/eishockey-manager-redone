@@ -120,7 +120,7 @@ Spieltag.“, 1128 B), `vereinsinfo` (Nr. 2, 12). Nr. 14/16 bleiben ausgeklammer
 
 ### Spielerwert 0x49D36 (Vorschlag: eigene Spur `spielerwert`)
 
-0x49D36 (Ov 0x118 + 0x3D36, Einsprung `0x118:0x70`, 1189 B, 13 Aufrufer) berechnet den Wert eines Spielers. Er
+0x49D36 (Ov 0x118 + 0x3D36, Einsprung `0x118:0x70`, 1189 B, 12 aufrufende Funktionen an 21 Aufrufstellen; die frühere Angabe „13“ war ein Zählfehler, #225) berechnet den Wert eines Spielers. Er
 fließt in Transfers (Transferliste 0x465F1, Vertragsverhandlung 0x4A1DB, Aufstellung 0x42CB1), Highscore (Vermögen
 0x5D04F), Sponsorbewertung 0x3F833 und Saisonende 0x26F20. Status **genähert**: Das Remake nennt den Aufruf
 (`Highscore.cs`, `[ORIGINAL]`), rechnet aber mit „Kaufpreis des Remakes · 3“ statt der Originalformel
@@ -134,7 +134,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 |---|---|---|---|
 | #192 Taktik Nationalteam | 0x08365 (Basis 0x62C), Aufrufe aus 0x36B5D (Ov 0xF0) | umgesetzt | Funktion belegt; der fehlende Startwert ist ein Zustandsthema, keine Lücke im Code |
 | #193 Länderwerte nach Freundschaftsspielen | Herkunft 0x952C/0x977F (Basis 0x62C), Freundschaftsspiel 0x30365 | umgesetzt / dokumentiert | 0x30365 nur dokumentiert; Spur nach #186 |
-| #194 WM-Paarungsansicht | 0x2FC2F (Ov 0xE8) | unbekannt | Lücke Nr. 10 |
+| #194 WM-Paarungsansicht | 0x2FC2F (Ov 0xE8) | unbekannt | Lücke Nr. 11 |
 | #195 Modus 1, erster Halt | Hauptmenü-/Spieltagsschleife 0x44E22 (Ov 0x110) | umgesetzt (34 Fundstellen) | kein unbekannter Code; die Halt-Bedingung nach „Los jetzt!“ ist in 0x44E22 zu suchen |
 | #196 Regler Kursverlauf | 0x58A57 (Ov 0x138), Regler 0x58DF6–0x58EC5 | umgesetzt (Bildschirm) | Regler liegt in einer schon belegten Funktion → Körnung, im Issue vollständig beschrieben |
 | #204 Meisterdominanz | Lader 0x2EF1B (Ov 0xE0), Managervereine 0x98F8–0x9C63 | umgesetzt | kein Codeloch, Abbildungsfrage |

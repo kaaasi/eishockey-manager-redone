@@ -211,7 +211,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
 - **Dateigrenzen:** `UI/Screens/MainMenuScreen.cs` (minimal, begründet), `Formats/OriginalSaveGame*.cs`, `Tools/Hok*.cs`,
   `docs/formate/spielstand-original.md`, `tools/reverse-engineering/funktionskarte.py`, `docs/re-abdeckung.md`, Tests.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen.
+- **Status:** umgesetzt im Draft-PR #244 (#216, #217, #225, #230); Review offen. #217: „Sie können nicht mehr weiterspielen.“ gehört zur Sicher-/Ladesperre und bleibt entfallen (Entscheidung Nutzer).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
