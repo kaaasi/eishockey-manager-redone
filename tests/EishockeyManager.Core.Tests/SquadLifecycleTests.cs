@@ -71,8 +71,8 @@ public class SquadLifecycleTests
         {
             foreach (var p in OwnClub(game).Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1))
             {
-                Assert.Equal(NegotiationResult.Accepted, Contracts.Offer(p, p.NoticeYears, Contracts.Demand(p) + 100, false,
-                    game.PlayedMatchDays, game.Random));
+                Assert.Equal(NegotiationResult.Accepted, Contracts.Negotiate(game, game.Managers[0], p, p.NoticeYears,
+                    Contracts.Demand(p) + 100, false, demandFilled: true));
                 extended[p] = p.NoticeYears;
             }
         });
@@ -95,12 +95,14 @@ public class SquadLifecycleTests
     [Fact]
     public void R211_RefusingOrRetiringPlayer_CannotBeExtended()
     {
+        var game = TestGames.Create();
         var p = new Player { Name = "HUBER", Role = PlayerRole.Forward, Condition = 40, Technique = 40, Form = 40, ContractYears = 1, MonthlySalary = 900 };
+        game.Clubs[game.ActiveManager.ClubIndex].Players.Add(p);
         p.Notice = ContractNotice.Refused;
-        Assert.Equal(NegotiationResult.NotWilling, Contracts.Offer(p, 3, 99_999, false, 1, new Random(1)));
+        Assert.Equal(NegotiationResult.NotWilling, Contracts.Negotiate(game, game.ActiveManager, p, 3, 99_999, false, false));
         Assert.Equal(["HUBER", "ist im Moment", "nicht verhandlungs-", "bereit."], Contracts.Message(NegotiationResult.NotWilling, p));
         p.Notice = ContractNotice.Retiring;
-        Assert.Equal(NegotiationResult.Retiring, Contracts.Offer(p, 3, 99_999, false, 1, new Random(1)));
+        Assert.Equal(NegotiationResult.Retiring, Contracts.Negotiate(game, game.ActiveManager, p, 3, 99_999, false, false));
         Assert.Equal(["HUBER", "wird sich mit", "Ablauf des Vertrages", "zur Ruhe setzen."], Contracts.Message(NegotiationResult.Retiring, p));
         Assert.Equal(1, p.ContractYears);
         Assert.Equal(900, p.MonthlySalary);
@@ -203,7 +205,7 @@ public class SquadLifecycleTests
     {
         foreach (var p in OwnClub(game).Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1))
             Assert.Equal(NegotiationResult.Accepted,
-                Contracts.Offer(p, p.NoticeYears, Contracts.Demand(p) + 100, false, game.PlayedMatchDays, game.Random));
+                Contracts.Negotiate(game, game.Managers[0], p, p.NoticeYears, Contracts.Demand(p) + 100, false, demandFilled: true));
     }
 
     /// <summary>Aktiver Manager: füllt den Kader zu Saisonbeginn mit ablösefreien Spielern auf 20 auf.</summary>

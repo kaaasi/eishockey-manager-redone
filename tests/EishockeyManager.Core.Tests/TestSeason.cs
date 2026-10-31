@@ -19,7 +19,7 @@ public static class TestSeason
 
     /// <summary>
     /// Kader halten (Spur heimspiel-statistik, #136): nimmt jedes angebotene Verlängerungsangebot des Managervereins zur
-    /// Forderung an. Seit „Weniger als neun Spieler“ (em.exe 0x54420) zahlt ein Manager, dessen Startverträge nach zwei
+    /// Forderung an (Annahmeweg „Forderung steht im Feld“, 0x4ABF4: kein Zufallszug, keine Sperre). Seit „Weniger als neun Spieler“ (em.exe 0x54420) zahlt ein Manager, dessen Startverträge nach zwei
     /// Saisons auslaufen, je Spiel 200.000 DM und wird entlassen. Proben, die einen passiven Manager über mehrere Saisons
     /// brauchen (Eintritt, Finanzkorridor, Pokale), halten damit seinen Kader; sonst greift er weiter nicht ein.
     /// Zieht aus einem eigenen Generator, damit keine Zufallsquelle des Spiels verbraucht wird.
@@ -28,7 +28,7 @@ public static class TestSeason
     {
         var club = game.Clubs[manager.ClubIndex];
         foreach (var p in club.Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1).ToArray())
-            Contracts.Offer(p, p.NoticeYears, Contracts.Demand(p) + 100, false, game.PlayedMatchDays, new Random(1));
+            Contracts.Negotiate(game, manager, p, p.NoticeYears, Contracts.Demand(p) + 100, false, demandFilled: true);
     }
 
     /// <summary>Die ganze Hauptrunde.</summary>

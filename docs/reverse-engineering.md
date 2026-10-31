@@ -478,6 +478,17 @@ Formeln und offene Punkte in [transfer.md](transfer.md).
 * Angebote für eigene Spieler auf dem Markt: Tageswurf 0x072DD (in 0x07169), Höhe 0x47347 (in 0x465F1).
 * random(a, b) 0xC037: 16-Bit-Grenzen, Tausch bei b &lt; a. DGROUP 0x4860 wird nie beschrieben (0).
 
+**Teil 2 (Welle 3, Spur `transfer-original-vertrag`):** Fundstellen und Formeln in [transfer.md](transfer.md), „Teil 2“.
+
+* Stubeinträge Ov 0x118: 0x5C → **0x494EF** = Wechsel der Transferliste (nicht „Kaufablauf“), 0x75 → **0x4A1DB**
+  Vertragsverhandlung (Aufrufer 0x27D91 Saisonende, 0x40208 Bildschirm „Verträge“ **0x3FFE0**, 0x4786A Kauf).
+* **0x49A3B** Annahme eines Vertragsangebots (Laufzeit, Gehalt) – bisher „unbekannt“.
+* **0x3FFE0** (Ov 0x108) ist der Bildschirm „Verträge“ (Hinweiszeile 0x400E0 mit Maske 0x3D146), nicht die Aufstellung.
+* DGROUP 0xE1A4 = random(85, 115) je Managerzug (0x44E3F); 0x3B7 = 233 nach dem Saisonende (0x26F55); 0x7B6–0x7B8 = 44.
+* Kaderplatz +0x18: 1–99 Verhandlungssperre in Tagen, &gt; 99 Verlängerungsangebot (Jahre + 100), Bit 0x80 Ruhestand;
+  +0x1A: Gebotssperre (Bit 0x80 \| 1 &lt;&lt; Manager); +0x30 Versicherungsprämie (Wert(Gehalt) / 2); +0x2C Bit 31 Versicherung
+  im Dialog abgeschlossen.
+
 ## Spielmodus-Optionen 0x2CD1C (Spur `optionen-kalender`, Teil 1: Belege; #228)
 
 Nur Belege aus `em.exe` (Disassembly mit `ndisasm -b 16`); **keine Code-Änderung**. DGROUP beginnt in der Datei bei

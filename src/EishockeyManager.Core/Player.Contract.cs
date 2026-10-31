@@ -39,10 +39,10 @@ public sealed partial class Player
     public PlayerLoan? Loan { get; set; }
 
     /// <summary>
-    /// Spieltag, an dem der Spieler zuletzt ein Vertragsangebot abgelehnt hat („Angebot wurde bereits abgelehnt.“),
-    /// oder null.
+    /// Verhandlungssperre in Tagen (Kaderplatz +0x18, Werte 1–99): nach einer gescheiterten Verhandlung random(10, 18)
+    /// (<see cref="ContractRules.LockDays"/>), täglich um 1 herunter. 0 = keine Sperre.
     /// </summary>
-    public int? RejectedOfferDay { get; set; }
+    public int NegotiationLock { get; set; }
 
     /// <summary>Ankündigung im letzten Vertragsjahr (nur Spieler der Manager-Vereine), bis zum Saisonwechsel.</summary>
     public ContractNotice Notice { get; set; }
@@ -92,7 +92,7 @@ public sealed partial class GameState
         foreach (var (club, player) in players)
         {
             player.Age++;
-            player.RejectedOfferDay = null;
+            player.NegotiationLock = 0;
             var notice = player.Notice;
             player.Notice = ContractNotice.None;
             player.NoticeYears = 0;
@@ -158,43 +158,52 @@ public sealed partial class GameState
     }
 }
 
-/// <summary>Ergebnis einer Vertragsverhandlung.</summary>
+/// <summary>Ergebnis einer Vertragsverhandlung (Meldungen aus em.exe, Dialog 0x4A1DB).</summary>
 public enum NegotiationResult
 {
-    /// <summary>„Ihr Angebot wurde angenommen !“</summary>
+    /// <summary>Vertrag geändert; der Dialog schließt ohne Meldung.</summary>
     Accepted,
 
-    /// <summary>„Ihr Angebot wurde abgelehnt.“</summary>
-    Rejected,
+    /// <summary>„… ist nicht an Ihrem Angebot interessiert.“ (DGROUP 0x148D–0x1497, Datei 0x4ACFE).</summary>
+    NotInterested,
 
-    /// <summary>„Angebot wurde bereits abgelehnt.“ – an diesem Spieltag keine neue Verhandlung.</summary>
-    AlreadyRejected,
-
-    /// <summary>„Dieser Betrag ist nicht erlaubt (unfair) !“</summary>
-    Unfair,
-
-    /// <summary>„… ist im Moment nicht verhandlungsbereit.“ – Spieler hat angekündigt, nicht zu verlängern.</summary>
+    /// <summary>„… ist im Moment nicht verhandlungsbereit.“ – Sperre nach einer gescheiterten Verhandlung (0x4A704).</summary>
     NotWilling,
 
-    /// <summary>„… wird sich mit Ablauf des Vertrages zur Ruhe setzen.“</summary>
+    /// <summary>„… wird sich mit Ablauf des Vertrages zur Ruhe setzen.“ (Kaderplatz +0x18 Bit 0x80, 0x4A6C7).</summary>
     Retiring,
+
+    /// <summary>„… ist leider von … nur ausgeliehen.“ (Kaderplatz +0x0C, 0x4A692).</summary>
+    Loaned,
+
+    /// <summary>„SOOOO lange verpflichtet sich kein Eishockey-Spieler !“ – mehr als 4 Jahre (0x4AB93).</summary>
+    TooLong,
+
+    /// <summary>„So dumm ist … leider nicht...“ – kürzer als der laufende Vertrag (0x4AC75).</summary>
+    TooShort,
+
+    /// <summary>„Dieser Betrag ist nicht erlaubt (unfair) !“ – [APPROX] Gehalt unter 1 DM (Eingabe im Video).</summary>
+    Unfair,
 }
 
 /// <summary>
-/// Gehälter und Vertragsverhandlung.
-/// [APPROX] Die Regeln des Originals (Overlay 4D30) sind nicht rekonstruiert. Belegt im Video: Startgehälter
-/// der Feldspieler 900–1.400 DM ohne erkennbaren Zusammenhang mit der Stärke, Torhüter 1.500 DM; eine
-/// Verlängerung von 2 auf 4 Jahre zum bisherigen Gehalt wird angenommen.
+/// Gehälter und Vertragsverhandlung. Verhandlung nach em.exe 0x4A1DB/0x49A3B (<see cref="ContractRules"/>,
+/// <see cref="Negotiate"/>). [APPROX] Startgehalt und Gehalt nach einem Wechsel (<see cref="Demand"/>) sind noch nicht auf
+/// den Spielerwert 0x118:0x70 Art 1 umgestellt (Spielstart 0x29EE4, Kauf 0x4A1DB aus 0x4786A). Belegt im Video:
+/// Startgehälter der Feldspieler 900–1.400 DM, Torhüter 1.500 DM.
 /// </summary>
 public static class Contracts
 {
     public const int MinYears = 1;
-    public const int MaxYears = 5;
+
+    /// <summary>Längste Laufzeit (<see cref="ContractRules.MaxYears"/>).</summary>
+    public const int MaxYears = ContractRules.MaxYears;
 
     /// <summary>Kleinster erlaubter Betrag. Im Video springt eine Eingabe von 0 DM auf 1 DM.</summary>
     public const int MinSalary = 1;
 
-    /// <summary>Monatliche Versicherungsprämie in Prozent des Gehalts. [APPROX]</summary>
+    /// <summary>Monatliche Versicherungsprämie in Prozent des Gehalts. [APPROX] Original: Kaderplatz +0x30 = Wert(Gehalt) / 2
+    /// beim Abschluss (Datei 0x4AA9C), abgerechnet in 0x07089 (Funktionskarte: offen).</summary>
     public const int InsurancePercent = 10;
 
     /// <summary>
@@ -219,56 +228,132 @@ public static class Contracts
     public static long MonthlyCosts(Club club) => club.Players.Sum(p => (long)p.MonthlySalary + InsurancePremium(p));
 
     /// <summary>
-    /// Vertragsangebot. Ab der Forderung nimmt der Spieler sicher an, darunter mit sinkender Wahrscheinlichkeit
-    /// (bei 80 % der Forderung nie). Nach einer Ablehnung verhandelt er erst am nächsten Spieltag wieder.
+    /// Darf über Laufzeit oder Gehalt verhandelt werden? [ORIGINAL] Datei 0x4A692–0x4A770 (beim Anklicken der Felder
+    /// „Vertragsdauer“ und „Gehalt / Monat“): ausgeliehen → <see cref="NegotiationResult.Loaned"/>; Ruhestand angekündigt →
+    /// <see cref="NegotiationResult.Retiring"/>; Sperre +0x18 und Saisonende nicht erreicht →
+    /// <see cref="NegotiationResult.NotWilling"/>. [APPROX] Die Absage <see cref="ContractNotice.Refused"/> des Remakes
+    /// (Spur „kader“, R2-11) gilt wie eine Sperre bis zum Saisonwechsel. null = Verhandlung möglich.
     /// </summary>
-    public static NegotiationResult Offer(Player p, int years, int salary, bool insured, int matchDay, Random random)
+    public static NegotiationResult? Availability(GameState game, Player p)
     {
-        // Angekündigte Absage bzw. Ruhestand gilt bis zum Saisonwechsel (R2-11).
-        if (p.Notice == ContractNotice.Refused)
-            return NegotiationResult.NotWilling;
+        if (p.OnLoan)
+            return NegotiationResult.Loaned;
         if (p.Notice == ContractNotice.Retiring)
             return NegotiationResult.Retiring;
-        if (salary < MinSalary || years < MinYears || years > MaxYears)
-            return NegotiationResult.Unfair;
-        if (p.RejectedOfferDay == matchDay)
-            return NegotiationResult.AlreadyRejected;
-
-        // Startgehalt = Forderung, daher wird eine Verlängerung zum bisherigen Gehalt angenommen
-        // (Video: 2 → 4 Jahre), solange der Spieler nicht stärker geworden ist.
-        var demand = Demand(p);
-        var ratio = salary / (double)demand;
-        var accept = ratio >= 1 || (ratio > 0.8 && random.NextDouble() < (ratio - 0.8) / 0.2);
-        if (!accept)
-        {
-            p.RejectedOfferDay = matchDay;
-            return NegotiationResult.Rejected;
-        }
-
-        p.ContractYears = years;
-        p.MonthlySalary = salary;
-        p.Insured = insured;
-        return NegotiationResult.Accepted;
+        if (p.Notice == ContractNotice.Refused || p.NegotiationLock > 0 && !game.AfterSeasonEnd)
+            return NegotiationResult.NotWilling;
+        return null;
     }
 
     /// <summary>
-    /// Meldung zum Ergebnis einer Verhandlung mit diesem Spieler. Die beiden Absagen nennen den Namen
-    /// (Originaltexte aus em.exe: „ist im Moment / nicht verhandlungs- / bereit.“, „wird sich mit /
-    /// Ablauf des Vertrages / zur Ruhe setzen.“; Name als eigene Zeile [APPROX]).
+    /// Gehaltsforderung in DM, die nach Eingabe der Laufzeit im Feld „Gehalt / Monat“ steht (<see cref="ContractRules.DemandThirds"/>),
+    /// oder null, wenn das Original das Feld nicht füllt (Level 5: DGROUP 0xED8 = 5 − Level = 0, Datei 0x4A9DB). Rein.
     /// </summary>
+    public static int? DemandAfterYears(GameState game, Manager manager, Player p, int years)
+    {
+        if (manager.Level >= 5)
+            return null;
+        var club = game.Clubs[manager.ClubIndex];
+        var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
+        // [ORIGINAL] Alter aus Kaderplatz 3 des Managers (0x4A93F); [APPROX] Reihenfolge des Kaders wie im Remake.
+        var age = club.Players.Count > 3 ? club.Players[3].Age : p.Age;
+        return ContractRules.DemandThirds(value, game.ContractTurnFactor, game.ContractSeasonRemaining, years,
+            game.AfterSeasonEnd, age, p.MonthlySalary * 3) / 3;
+    }
+
+    private static readonly Random NoRandom = new NoDrawRandom();
+
+    /// <summary>
+    /// „Mach' ich!“ im Verhandlungsdialog. [ORIGINAL] Datei 0x4AB66–0x4AD7A: mehr als 4 Jahre → <see cref="NegotiationResult.TooLong"/>;
+    /// steht die vom Dialog gefüllte Forderung im Gehaltsfeld (<paramref name="demandFilled"/>, nur nach Eingabe der Laufzeit
+    /// und ohne spätere Gehaltseingabe) → angenommen; ebenso ohne Eingaben bzw. bei gleicher Laufzeit und mindestens gleichem
+    /// Gehalt; kürzere Laufzeit → <see cref="NegotiationResult.TooShort"/>; sonst entscheidet 0x49A3B
+    /// (<see cref="ContractRules.Accepts"/>), abgelehnt → <see cref="NegotiationResult.NotInterested"/>. Scheitert die
+    /// Verhandlung, ist der Spieler random(10, 18) Tage gesperrt (0x4AD3E). Zufall aus <see cref="GameState.ContractRandom"/>.
+    /// </summary>
+    /// <param name="years">eingegebene Laufzeit, 0 = nicht eingegeben.</param>
+    /// <param name="salary">Gehalt im Feld in DM, 0 = nicht eingegeben.</param>
+    public static NegotiationResult Negotiate(GameState game, Manager manager, Player p, int years, int salary, bool insured,
+        bool demandFilled)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(manager);
+        ArgumentNullException.ThrowIfNull(p);
+        if (salary < 0 || years < 0)
+            return NegotiationResult.Unfair;
+        // Eingaben setzen im Original das Anklicken der Felder voraus, das Leihe, Ruhestand und Sperre schon abweist.
+        if ((years != 0 || salary != 0) && Availability(game, p) is { } refusal)
+            return refusal;
+        var current = CurrentYears(p);
+        var result = Decide(game, manager, p, current, years, salary, demandFilled);
+        if (result == NegotiationResult.Accepted)
+        {
+            p.ContractYears = years == 0 ? current : years;
+            p.MonthlySalary = salary == 0 ? p.MonthlySalary : salary;
+            p.Insured = insured;
+        }
+        else
+            p.NegotiationLock = ContractRules.LockDays(game.ContractRandom);
+        return result;
+    }
+
+    /// <summary>
+    /// Laufzeit, mit der der Dialog rechnet: die bisherige, bei einem Verlängerungsangebot des Spielers die angebotene.
+    /// [ORIGINAL] Kaderplatz +0x18 &gt; 99 (Angebot, Tagesablauf) → beim Öffnen +0x0B = +0x18 − 100 (Datei 0x4A3AF); „Mach'
+    /// ich!“ ohne Eingaben nimmt das Angebot damit zum bisherigen Gehalt an.
+    /// </summary>
+    /// <remarks>[APPROX] Das Remake behält die Ankündigung bis zum Saisonwechsel (Spur „kader“); das Angebot gilt nur, solange
+    /// der Spieler im letzten Vertragsjahr ist.</remarks>
+    public static int CurrentYears(Player p) =>
+        p.Notice == ContractNotice.Offered && p.ContractYears == 1 ? p.NoticeYears : p.ContractYears;
+
+    private static NegotiationResult Decide(GameState game, Manager manager, Player p, int current, int years, int salary,
+        bool demandFilled)
+    {
+        if (years > ContractRules.MaxYears)
+            return NegotiationResult.TooLong;
+        var accept = demandFilled
+                     || years == 0 && (salary == 0 || current == 0)
+                     || years == current && salary >= p.MonthlySalary;
+        var y = years == 0 ? current : years;
+        var s = salary == 0 ? p.MonthlySalary : salary;
+        if (y < current)
+            return NegotiationResult.TooShort;
+        if (accept)
+            return NegotiationResult.Accepted;
+        var club = game.Clubs[manager.ClubIndex];
+        var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
+        return ContractRules.Accepts(current, p.MonthlySalary * 3, y, s * 3, value, game.ContractSeasonRemaining,
+            game.AfterSeasonEnd, p.Age, game.ContractRandom)
+            ? NegotiationResult.Accepted
+            : NegotiationResult.NotInterested;
+    }
+
+    /// <summary>Meldung zum Ergebnis einer Verhandlung mit diesem Spieler (Zeilen wie im Original, 0x120:0x4D).</summary>
     public static string[] Message(NegotiationResult result, Player p) => result switch
     {
         NegotiationResult.NotWilling => [p.Name, "ist im Moment", "nicht verhandlungs-", "bereit."],
         NegotiationResult.Retiring => [p.Name, "wird sich mit", "Ablauf des Vertrages", "zur Ruhe setzen."],
-        _ => Message(result),
-    };
-
-    /// <summary>Text der Meldung zum Ergebnis (Originaltexte aus em.exe).</summary>
-    public static string[] Message(NegotiationResult result) => result switch
-    {
-        NegotiationResult.Accepted => ["Ihr Angebot wurde", "angenommen !"],
-        NegotiationResult.Rejected => ["Ihr Angebot", "wurde abgelehnt."],
-        NegotiationResult.AlreadyRejected => ["Angebot wurde", "bereits abgelehnt."],
+        NegotiationResult.Loaned => [p.Name, "ist leider von", p.Loan?.Origin.Name ?? "", "nur ausgeliehen."],
+        NegotiationResult.NotInterested => [p.Name, "ist nicht an", "Ihrem Angebot", "interessiert."],
+        NegotiationResult.TooShort => ["So dumm", "ist", p.Name, "leider nicht..."],
+        NegotiationResult.TooLong => ["SOOOO lange", "verpflichtet", "sich kein", "Eishockey-Spieler !"],
+        NegotiationResult.Accepted => [],
         _ => ["Dieser Betrag ist", "nicht erlaubt (unfair) !"],
     };
+
+    /// <summary>Spielerwert Art 1 zieht keinen Zufall; jeder Zug wäre ein Fehler.</summary>
+    private sealed class NoDrawRandom : Random
+    {
+        public override int Next(int minValue, int maxValue) =>
+            throw new InvalidOperationException("Das Gehalt nach 0x118:0x70 zieht keinen Zufall.");
+
+        public override int Next() => throw new InvalidOperationException("Das Gehalt nach 0x118:0x70 zieht keinen Zufall.");
+
+        public override int Next(int maxValue) =>
+            throw new InvalidOperationException("Das Gehalt nach 0x118:0x70 zieht keinen Zufall.");
+
+        public override double NextDouble() =>
+            throw new InvalidOperationException("Das Gehalt nach 0x118:0x70 zieht keinen Zufall.");
+    }
 }

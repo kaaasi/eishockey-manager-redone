@@ -285,7 +285,7 @@ public class GameModeTests
     {
         var club = game.Clubs[game.Managers[1].ClubIndex];
         foreach (var p in club.Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1))
-            Contracts.Offer(p, p.NoticeYears, Contracts.Demand(p) + 100, false, game.PlayedMatchDays, game.Random);
+            Contracts.Negotiate(game, game.Managers[1], p, p.NoticeYears, Contracts.Demand(p) + 100, false, demandFilled: true);
     }
 }
 
