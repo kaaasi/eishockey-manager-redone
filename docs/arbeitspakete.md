@@ -250,6 +250,36 @@ Nutzer 31.10.) `spielerinfo` (#249), `transfer-original` (#248), `optionen-kalen
   Heimspiel-Zweig der Nationalteam-Taktik ungetestet; R8-B04 freie Nationalteam-Taktik behält Modus des Vorgängers; F46-01,
   W51-01 (Doku-PRs #246, #251).
 
+### Runde 8, Welle 3 – Folgeteile der Spuren (ab 31.10.2026, Auftrag Nutzer)
+
+**Base:** aktueller `main` (mit Integration #250); tatsächlichen Base-SHA in den Draft-PR. Alle Regeln der Runde gelten
+weiter (Mehrsaisonprobe, Schema mit Migration in neuer Datei `Core/SaveGame.Migration.<Spur>.cs`; ein **vorläufiger**
+Eintrag in `SchemaVersion`/`Migrations` in `Core/SaveGame.cs` ist erlaubt, damit der Branch grün ist – die Leitstelle
+nummeriert in der Integration). Das Referenz-Repo ist in geplanten Läufen erreichbar: Pixelvergleiche und
+`OriginalSavePatcherTests` gehören zur Abnahme. Die Folgearbeiten der Leitstelle, die Spurdateien berühren, gehen in die
+Spur, der die Datei gehört (Spalte „übernimmt“); die Leitstelle baut keine Aufrufe in diese Dateien ein.
+
+```
+Welle 3 (parallel):  tabellen-original-2  spielstaerke-manager-2  statistiken-verein  nationalteam-2
+                     transfer-original-vertrag  optionen-kalender-2   (+ Leitstelle: leitstelle-r8)
+Integration:         optionen-kalender-2 → tabellen-original-2 → statistiken-verein → nationalteam-2
+                     → transfer-original-vertrag → spielstaerke-manager-2 zuletzt
+```
+
+| Spur (Branch `paket/<spur>`) | Ziel | Dateigrenzen (zusätzlich zur Spur aus Welle 1) | übernimmt | Modell |
+|---|---|---|---|---|
+| `tabellen-original-2` | Gruppentabellen (`CupsGroup.Table`, Europapokal/WM) und `Playoffs.Table` nach 0x50283/0x50B45 (Aufrufer 0x30365, 0x30852, 0x30E7B, 0x315E9, 0x34B76), Pixelvergleich Tabellenansicht mit Kennzahl, Bilanz Heim klein am Video | wie `tabellen-original`; `docs/wettbewerbe.md` nur Z. ~331 (Sortierung 0x5CCB) | Doku-Berichtigung Sortierung nach Heim/Auswärts in `docs/saison.md`, `docs/wettbewerbe.md`; R8-B01 | Opus 5.5 |
+| `spielstaerke-manager-2` | Managerteil 0x386D1, 0x378C5, Reihenwerte 0x98F8–0x9C63, 0x974B, 0x87F7, 0x8EF2; Verletzungen im Spiel; #193 Länderwerte (Anschluss nach Freundschaftsspielen nennt die Spur, die Leitstelle schließt an); Videovergleich #204 | wie `spielstaerke-manager`; `Core/NewGame.cs` minimal (Lader beim Spielstart, optional) | Lader nach `NewGame.Create` | Opus 5.5 |
+| `statistiken-verein` | Bildschirm „Verein“ 0x2D5AE (Texte XOR 0xD9/0xC9) zuordnen, umsetzen, Pixelvergleich aller drei Statistik-Bildschirme | wie `statistiken`; `UI/Screens/Statistics/PlayerStatisticsScreen.cs` | Aufruf Spielerdaten-Fenster aus den Ranglisten (0x26B13 → 0x041AC, `PlayerDataContext.Create`); veralteter Hinweis „Nicht umgesetzt …“ in `docs/wettbewerbe.md`; SW-02 (Benennung +0x1C/+0x1E/+0x20); R8-B02 | Opus 5.5 |
+| `nationalteam-2` | #195 (Ursache in #243), #194 Paarungsansicht WM/Europapokal (`CupPairingsScreen.cs`), WM-Statistik 0x3ADE1 (`WorldCupStatisticsScreen.cs`), Pixelvergleich DOSBox/Video | wie `nationalteam`; `UI/Screens/SetupScreen.cs` minimal (#195) | Aufruf Spielerdaten-Fenster aus `NationalLineupScreen.cs`; Kommentar Sortierung in `CupsNationalMode.cs`; R8-B03, R8-B04 | Opus 5.5 |
+| `transfer-original-vertrag` | Vertragsverhandlung 0x4A1DB, Gehalt 0x49A3B, Kaufablauf 0x494EF, Sperre nach Ablehnung (Pool +0x1A), unaufgeforderte Angebote (+0x09 Bit 0x40), Pixelvergleich Transferliste und Verhandlungsfenster | wie `transfer-original` | Aufrufe Spielerdaten-Fenster und `PlayerHintLine` in `TransferScreen.cs`, `ContractsScreen.cs`; R8-C01 (Tests zum Listenpreis), R8-C02; SW-01 | Opus 5.5 |
+| `optionen-kalender-2` | Einstellungsbildschirm (Geräteeinstellungen, lesende Anzeige der Spielstand-Optionen), Kalender 0x43E21 mit 0x43B1F, 0x43C38, 0x445E0, 0x36169 (Bildschirm nur mit Videobeleg), #228 | wie `optionen-kalender` | – | Sonnet 5.5 |
+| `leitstelle-r8` (Leitstelle, Branch `prozess/leitstelle-r8`) | Funktionskarte `docs/re-abdeckung.md` neu erzeugen; `docs/anforderungen/bildschirme.md` Z. 103 (Bilanz acht Spiele, Heim klein); Kommentar zur Sortierung in `Core/SeasonFlow.cs`; R8-A02 (robustere Zufallsproben statt Seed-Wechsel in `BoerseStartTests`, `FinanceWerbungTests`); SW-03 | `docs/re-abdeckung.md`, `docs/anforderungen/bildschirme.md`, `Core/SeasonFlow.cs` (nur Kommentar), die genannten Tests, `tools/reverse-engineering/` | – | Leitstelle |
+
+**Abnahme je Spur** wie in Welle 1 (roter Test je Regel, Pixelvergleich mit Kennzahl, Bildschirme zustandsrein,
+Mehrsaisonprobe bei Kader/Geld/Saisonwechsel, `[ORIGINAL]`/`[APPROX]`, Abschnitt in `docs/reverse-engineering.md`).
+R8-A01 (Spielstände aus Spurbranches) wird nicht behoben: Spurbranches sind keine Ausgabestände.
+
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): letzter Schritt vor v1.0 (Entscheidung Nutzer).
