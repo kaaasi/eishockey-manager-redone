@@ -230,3 +230,22 @@ DGROUP liegt bei Datei 0x16DD0 (Segmenttabelle 0x163C0, Eintrag 0x148).
   Folgen hat. Für die Spur nicht nötig, da nichts davon portiert wird. Spielstart (1.) ist durch Bildfolge und Code belegt.
 * Test, dass das Remake nicht fragt: `MenueBefundeTests` (`NewGame_AndFirstMatchDays_RunWithoutManualQuestion`,
   `NoScreenImplementsTheManualQuestion`).
+
+## Credits (Titelleiste im Hauptmenü)
+
+Spur `credits`, #207. Die Texte stehen nicht in `em.exe` (auch nicht verschleiert – geprüft: alle XOR- und Additionsschlüssel
+für „Noeske“, „Testspieler“, „Kandemiroglu“), sondern fertig gezeichnet im Bild **`kb\15`** (216 × 151).
+
+* **Auslöser** (Hauptmenüschleife, Datei 0x4544E–0x45488): Mausereignis 1 oder 3 (DGROUP 0x5A16, linke/rechte Taste), dann
+  zehnmal `0x120:0x75` (Datei 0x4C196, gibt Schaltflächenplätze frei – Verwaltung, nicht portiert), dann bei Maus-y `si < 0x15`
+  Fernaufruf `0xF8:0x20`; die x-Lage wird nicht geprüft.
+* **Fenster** = Overlay 0xF8 (Segmenttabelle Eintrag 0xF8, Overlaybeginn Datei 0x399D0, Funktion am Anfang): Puffer
+  216 × 153 anlegen, `kb\15` laden (Bildladefunktion `0x38:0x98D`, Datei 0xC17D), Bildschirm ab (0x33 | 0x3D) sichern, Bild
+  nach (51 | 61) kopieren, warten, Hintergrund zurückschreiben, Puffer freigeben.
+* **Warten** `0x38:0x118` (Datei 0xB908): erst bis kein Mausereignis mehr ansteht (0xC097), dann bis Mausereignis 1 oder 3
+  (Abfrage 0xC068 → `0xBBF:0x24DF`) oder DGROUP 0x1DB (Durchlauf ohne Halt); dazwischen Pause `0x1115:0x19E` mit 30.
+  Tasten werden dort nicht ausgewertet.
+* **Bildtexte** sind pixelgenau der Mini-Font mit Schatten (Farbe 0, +1/+1): linke Spalte x 11, Farbe 30; rechte Spalte x 100,
+  Farbe 7; Zeilen-Oberkanten 22, 30, 43, 51, 64, 76, 88, 100, 111, 119, 127, 138 (Ausnahme: der lange Strich in
+  „Ogan – Celal Kandemiroglu“ ist kein Zeichen des Fonts).
+

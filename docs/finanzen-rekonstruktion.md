@@ -435,8 +435,15 @@ Rest in der unteren Hälfte: Logos, Schriftkanten und die Übersicht rechts (nic
   bis `[0x386]`, Aufrufe `0x5522B`, `0x5569A`, `0x56512`): mit zwei Managern rechnet die Börse zwei Tage pro Tag.
   **Entscheidung Nutzer (30.10.2026, #188):** Das Remake rechnet den Börsentag einmal je Kalendertag, nach dem
   Tagesabschluss des letzten Managers (`GameState.AdvanceFinanceTo`), damit kein Manager einen Vorteil hat.
-- Überfahren einer Aktie setzt den Versatz sofort auf Kurs − 130 (`0x59C75`). **Entscheidung Nutzer (30.10.2026,
-  #188):** wie im Original; der bisherige langsame Bildlauf (nach dem Video) entfällt.
+- **Klick** auf eine Aktie setzt den Versatz sofort auf Kurs − 130 (`0x59C6B`–`0x59C8F`). **Entscheidung Nutzer
+  (30.10.2026, #188):** sofort wie im Original; der bisherige langsame Bildlauf (nach dem Video) entfällt.
+  **Berichtigung (#206):** Die Deutung aus #188 als „Überfahren“ war falsch. Der ganze Auswahlblock `0x59B37`–`0x59D3F`
+  läuft nur, wenn die Maustaste `DGROUP 0x5A16 == 1` (links) ist (`0x59B2D`: sonst Sprung nach `0x59D42`, wo `== 3` den
+  Bildschirm verlässt). Erst der Klick wählt Bank, Mitmanager oder Aktie, zeichnet den Auswahlrahmen und setzt bei einer
+  Aktie den Ausschnitt; Überfahren ändert nichts. Klickfelder: Bank x < 106, y < 54 (`0x59BB8`); Mitmanager k = 0–2
+  117 + 71·k < x < 174 + 71·k, y < 54, nur besetzte Kästen (`0x59B40`, Tabelle `DGROUP 0x553B`); Aktie x < 47, y > 101,
+  Index (y − 102) / 34 (`0x59BF2`) – nur die Logospalte, nicht das Infofeld. Im Remake `FinanceScreen.BankSelectArea`,
+  `PartnerSelectArea`, `StockSelectArea`; das Bankbild öffnet dort zusätzlich das Finanzbuch (`[APPROX]`, Remake).
 - Rechts neben dem Verlauf (x 240/241, y 104–236, `0x58DF6`–`0x58EC5`) liegt ein Regler für Ausschnitt und Maßstab
   (Maßstab 2–64); im Remake nicht nachgebaut – eigenes Paket (Entscheidung Nutzer, 30.10.2026).
 - Die Basiswerte `0x1FD` sind vorbelegte Daten und werden bei „Neues Spiel“ ohne Programmneustart nicht zurückgesetzt.

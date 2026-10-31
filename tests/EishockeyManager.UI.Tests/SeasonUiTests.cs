@@ -21,7 +21,7 @@ public class SeasonUiTests
         while (game.History.Count < 3 && guard++ < 20000)
         {
             KeepSquadHelper.KeepSquads(game); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen
-            d.Press(Key.Space);
+            d.Advance();
             if (d.Host.Current is SeasonEndScreen) seenSeasonEnd++;
             if (d.Host.Current is SeasonEndSummaryScreen) seenSummary++;
         }
@@ -29,7 +29,7 @@ public class SeasonUiTests
         // Meisterfoto „Weltmeister“ (Paket „wettbewerbe“) – der dritte Saisonende-Bildschirm erscheint erst hier.
         while (d.Host.Current is not MainMenuScreen && guard++ < 20000)
         {
-            d.Press(Key.Space);
+            d.Advance();
             if (d.Host.Current is SeasonEndScreen) seenSeasonEnd++;
             if (d.Host.Current is SeasonEndSummaryScreen) seenSummary++;
         }
@@ -68,13 +68,13 @@ public class SeasonUiTests
         game.Setup.Duration = GameDuration.EineSaison;
         var guard = 0;
         while (d.Host.Current is not SeasonEndGameOverScreen && guard++ < 10000)
-            d.Press(Key.Space);
+            d.Advance();
         Assert.True(game.IsGameOver);
-        d.Press(Key.Space);
+        d.Advance();
         // Spielende: erst die Bestenliste (Spur tabellen-highscore, em.exe 0x5642E), dann der Titel
         var highscore = Assert.IsType<EishockeyManager.UI.Screens.Statistics.HighscoreScreen>(d.Host.Current);
         Assert.Contains(highscore.Table.Entries, e => e.Name == "LetsShow" && !e.IsEmpty);
-        d.Press(Key.Space);
+        d.Advance();
         Assert.IsType<TitleScreen>(d.Host.Current);
         Assert.Null(d.Host.Game);
     }

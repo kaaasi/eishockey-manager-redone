@@ -11,7 +11,8 @@ Bildschirmfotos aus einem Let's Play des Originals.
 * Die Glyphbreiten der Originalfonts enthalten den Zeichenabstand bereits (letzte Spalte leer) – daher wird
   **ohne** zusätzlichen Abstand gesetzt. Das war die Ursache für abgeschnittene Texte in Version 0.1.
 Bedienung überall: **linke Maustaste** wählt, **rechte Maustaste** oder **Esc** geht zurück ins Hauptmenü,
-**Leertaste** = Weiter (im Hauptmenü), **F2** = Sichern, **F9** = Klassik/Modern, **F11** = Vollbild.
+**Klick aufs Vereinslogo** oben rechts = nächster Tag (im Hauptmenü; die Leertaste hat im Remake keine Weiter-Funktion,
+wie im Original, #205), **F2** = Sichern, **F9** = Klassik/Modern, **F11** = Vollbild.
 Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screenshots <spielordner> <ausgabe> [de|en]`.
  
 ## Grafiken des Originals
@@ -53,9 +54,12 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
   Tabellenkurve (gelb = eigener Verein, weiß = nächster Gegner) bzw. „Vor dem ersten Spieltag.“; Symbole für Wettbewerb und
   Heim/Auswärts, bisherige Begegnungen („A 0:3,H 1:5“), Kontostand; sechs Warnlampen des Managers am Zug (Regeln in
   `Screens/MenuLamps.cs`, em.exe 0x42996);
-  Kopf (231,33) und Logo (273,33).
+  Kopf (231,33) und Logo (273,33). Klick aufs Logo (Klickfeld x 275–312, y 34–71, em.exe 0x45483) = nächster Tag
+  bzw. im Hot-Seat Abgabe an den nächsten Manager.
 * Große Kacheln 72 × 58 bei x = 9, 85, 161, 238 und y = 79, 137: Manager, Mannschaft, Statistiken, Tabellen,
-  Paarungen, Stärken, Gemischtes, und tschüß…
+  Paarungen, Stärken, Gemischtes, und tschüß… – „und tschüß…“ fragt „Sie haben also wirklich / etwas besseres zu tun ?
+  / Sind Sie sicher ??“ (Überschrift Managername, em.exe 0x45C33); „Leider ja“ beendet das Programm, „Kein Gedanke“
+  zurück (#205).
 * Kleine Kacheln 47 × 41 bei x = 5, 57, 110, 162, 215, 268 und y = 199 – je nach großer Kachel:
 | Große Kachel | Kleine Kacheln |
 |---|---|
@@ -108,7 +112,7 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 * **Reporter:** der Mund (`kb\38`, 8 Bilder 12×21 ab x = 80) bewegt sich, solange eine Sprechblase (y = 172) zu sehen ist;
   Kommentare zu Tor, Strafe, Chance, Verletzung, Drittelende und Penalty in mehreren Varianten.
 * **Torszene** (abschaltbar unter *Einstellungen*): Ausschnitt (5,44, 310×128) der Halle aus `kb\231/232` + Karte,
-  Torschütze läuft an und schießt, Torhüter reagiert, „TOR!“; die Spieluhr hält 2,6 s an, Leertaste/Klick überspringt.
+  Torschütze läuft an und schießt, Torhüter reagiert, „TOR!“; die Spieluhr hält 2,6 s an, Enter/Klick überspringt (keine Leertaste, #205).
 * **Geräusche:** Publikum im Hintergrund, Pfiff bei Strafe/Drittel, Puck und Jubel beim Tor.
 ### Manager – Finanzen
 * Klick auf das Bankbild oder das Kontofeld öffnet das **Finanzbuch**: jede Kategorie (Eintritt, Gastronomie, Sponsoren,

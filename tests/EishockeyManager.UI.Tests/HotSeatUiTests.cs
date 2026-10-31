@@ -7,8 +7,8 @@ using EishockeyManager.UI.Testing;
 namespace EishockeyManager.UI.Tests;
 
 /// <summary>
-/// Befund R2-06 über die Oberfläche (Originaldateien, übersprungen ohne „gamedata“): „und tschüß…“ gibt den Zug
-/// weiter, ohne den Tag zu spielen. Die Lampen der Infoleiste sind laut em.exe Warnlampen des Managers am Zug, keine
+/// Befund R2-06 über die Oberfläche (Originaldateien, übersprungen ohne „gamedata“): „Tag weiter“ (Klick aufs
+/// Vereinslogo, #205) gibt den Zug weiter, ohne den Tag zu spielen. Die Lampen der Infoleiste sind laut em.exe Warnlampen des Managers am Zug, keine
 /// Bereitschaftsanzeige (Spur pixel-verein, PV-03, <see cref="Screens.MenuLamps"/>): bei jedem Zug zeigen sie die
 /// Lage des Managers am Zug – zu Spielbeginn nur Lampe 4 (freie Werbeflächen) rot.
 /// </summary>
@@ -42,7 +42,7 @@ public class HotSeatUiTests
             Assert.Equal(0, game.PlayedMatchDays);
             if (turn == managers - 1)
                 break;
-            d.Press(Key.Space);
+            d.NextDay();
             Assert.IsType<MainMenuScreen>(d.Host.Current); // nur Zugwechsel, kein Spieltag
         }
 

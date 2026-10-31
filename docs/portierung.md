@@ -46,6 +46,11 @@ Kachelsymbole und Lampen stammen aus `kb\3`, Pfeile und Rollbalken aus `kb\4`.
   `MenueBefundeTests`.
 * **Nachrichtenleiste (#170):** im Hauptmenü nur mit neuer Nachricht (`[ORIGINAL]` Bedingung, `[APPROX]` Dauer der
   Anzeige), siehe `MainMenuScreen`.
+* **Credits mit Zeile „Remake“ (#207, Wunsch Nutzer):** Klick in die Titelleiste des Hauptmenüs zeigt wie im Original
+  das Bild `kb\15` bei (51 | 61) bis zum nächsten Mausklick (`[ORIGINAL]`, Fundstellen in `CreditsScreen`). Das Remake
+  verlängert das Bild um 11 Zeilen und setzt als letzten Eintrag „Remake“ / „Jörg Klinge“ darunter – Mini-Font mit
+  Schatten, Spalten x 11 / x 100, Farben 30 / 7 und Abstand wie der letzte Eintrag des Originals (`[REMAKE]`). Fenster
+  dadurch 216 × 162 statt 216 × 151 (y 61–222). Test: `CreditsScreenTests`.
 
 ## Saisonablauf (Stand)
 
