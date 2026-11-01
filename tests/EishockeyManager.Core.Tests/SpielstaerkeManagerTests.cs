@@ -57,16 +57,24 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
         }
     }
 
-    /// <summary>Das Original lädt einmal: die Werte bleiben über Spiele und Saisonwechsel gleich (außer der Tagesform).</summary>
+    /// <summary>
+    /// Das Original lädt einmal (Lader 0x2EF1B); danach wandern Kondition, Technik und Form (0x9D1B, Spur
+    /// spielberechnung-komplett, #204 – vorher hieß der Test „…KeptAcrossSeasons“ und prüfte feste Werte). Die Werte werden
+    /// beim ersten Spiel gezogen, nicht neu geladen: Der Lader läuft nur einmal.
+    /// </summary>
     [Fact]
-    public void TeamValues_DrawnOnceAndKeptAcrossSeasons()
+    public void TeamValues_DrawnOnceThenDrift()
     {
         var game = Game();
         Assert.All(game.Clubs, c => Assert.Null(c.TeamValues));
         TestSeason.PlayMatchDay(game);
+        Assert.All(game.Clubs, c => Assert.NotNull(c.TeamValues));
         var first = game.Clubs.ToDictionary(c => c.Index, c => c.TeamValues!.Value with { DayForm = 0 });
         RngTwinProbeTests.Run(game, active: false, changes: 1);
-        Assert.All(game.Clubs, c => Assert.Equal(first[c.Index], c.TeamValues!.Value with { DayForm = 0 }));
+        Assert.Contains(game.Clubs, c => c.Index < NationalTeams.First && first[c.Index] != (c.TeamValues!.Value with { DayForm = 0 }));
+        // Europapokal-Gegner (Index > 64) wandern nicht
+        Assert.All(game.Clubs.Where(c => c.Index > NationalTeams.Last),
+            c => Assert.Equal(first[c.Index], c.TeamValues!.Value with { DayForm = 0 }));
     }
 
     /// <summary>Regressionstest: LiveTeam übernimmt Streuung, Form und Tagesform des Laders (vorher 50/50 fest).</summary>
@@ -162,8 +170,10 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// Mehrsaisonprobe Modus 1, 2 und 4 (Abnahme 3), passiv und aktiv: vier Saisonwechsel, Teamwerte (ohne Tagesform)
-    /// bleiben vom ersten Spiel an gleich, die Tagesform bleibt in 47 … 53. Die Abdrücke stehen in
+    /// Mehrsaisonprobe Modus 1, 2 und 4 (Abnahme 3), passiv und aktiv: vier Saisonwechsel. Seit der Wanderung 0x9D1B
+    /// (#204) bleiben die Teamwerte nicht gleich: Kondition und Technik liegen stets in 1 … 99 (Lader bis 101 bis zur ersten
+    /// Wanderung), direkt nach jedem Saisonwechsel in den Grenzen der Liga, die Form in 45 … 55, die Tagesform in 47 … 53;
+    /// Europapokal-Gegner bleiben gleich. Die Abdrücke stehen in
     /// <see cref="RngTwinProbeTests"/>, <see cref="GameModeTests.Mode4_ReferenceValues_Unchanged"/> und
     /// <see cref="SpielberechnungAnschlussTests.FourSeasonChanges_WorldOnly"/>.
     /// </summary>
@@ -173,11 +183,12 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
     [InlineData(true, false, true)]
     [InlineData(true, true, false)]
     [InlineData(true, true, true)]
-    public void FourSeasonChanges_TeamValuesStable(bool flag, bool globe, bool active)
+    public void FourSeasonChanges_TeamValuesWithinBounds(bool flag, bool globe, bool active)
     {
         var game = GameModeTests.Create(7, flag, globe, 2);
         Dictionary<int, ClubTeamValues>? first = null;
         var changes = 0;
+        var seasonStart = false;
         void Check(GameState g)
         {
             if (first is null && g.Clubs.All(c => c.TeamValues is not null))
@@ -186,8 +197,25 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
                 return;
             foreach (var c in g.Clubs)
             {
-                Assert.Equal(first[c.Index], c.TeamValues!.Value with { DayForm = 0 });
-                Assert.InRange(c.TeamValues!.Value.DayForm, MatchEngine.DayFormMin, MatchEngine.DayFormMax);
+                var v = c.TeamValues!.Value;
+                Assert.InRange(v.DayForm, MatchEngine.DayFormMin, MatchEngine.DayFormMax);
+                if (c.Index > NationalTeams.Last)
+                {
+                    Assert.Equal(first[c.Index], v with { DayForm = 0 });
+                    continue;
+                }
+                Assert.InRange(v.DefenseForm, 45, 55);
+                Assert.InRange(v.AttackForm, 45, 55);
+                if (c.Index >= NationalTeams.First || c.Players.Count == 0)
+                    continue;
+                var (min, max) = seasonStart ? c.League switch
+                {
+                    League.Bundesliga => (69, 94),
+                    League.ZweiteLiga => (39, 73),
+                    _ => (15, 43),
+                } : (1, 99);
+                foreach (var x in new[] { v.DefenseCondition, v.AttackCondition, v.DefenseTechnique, v.AttackTechnique })
+                    Assert.InRange(c.Strength + x, min, max);
             }
         }
         for (; changes < 4 && game.Phase != SeasonPhase.GameOver; changes++)
@@ -203,7 +231,9 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
                 Check(game);
             }
             game.StartNextSeason();
+            seasonStart = true;
             Check(game);
+            seasonStart = false;
         }
         Assert.Equal(4, changes);
         Assert.NotNull(first);

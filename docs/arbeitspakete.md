@@ -77,7 +77,9 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 - **Abnahme:** je Teil roter Test mit Fundstelle, danach grün; Saisonverteilung (Meister ≥ 8 Saisons, Tore, Strafminuten)
   gegen Videos im PR; Mehrsaisonprobe Modus 1, 2, 4 passiv/aktiv; Referenzwerte begründet.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/spielberechnung.md`, `docs/dosbox-befunde.md` (eigener Abschnitt), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** Teil 1 in PR #295 (Claude Code): R8W3I-15 kein Fehler (Spielerwerte aus
+  Start-Stärke, §14); #204 behoben – Ursache ist die Wanderung der Teamwerte 0x9D1B (Spielstart, Saisonwechsel, zweimal je
+  Woche), belegt an Videos und `FILE01/09.HOK` (§15); Restlücke 0x58DC (Verkauf an Computerverein). Teil 2 in PR #302 (Claude Code, gestapelt auf #295): 0x378C5 höchstens 150 Züge, ohne Spieler kein Strafereignis, Managerwert 100 unter neun Spielern, Strafspieler des Nationalteams (R8W3I-03 bis -06); Verdacht 0x952C → 0x9567 widerlegt (0x38A36 zählt Spieler auf dem Eis, §16). Teil 3 in PR #309 (Claude Code, gestapelt auf #302): Verletzungen im Spiel 0x38B8F/0x05B1A mit Heilung 0x7C12, Torschütze 0x541D9/0x386D1 je Abschluss (§17); offen: Neuzählung 0x38A36, Versicherung 0x07089 (Spur transfer-vertraege-komplett). Teil 4 in PR #311 (Claude Code, gestapelt auf #309): Über-/Unterzahl-Zähler in der Minutenrechnung (0xA484, 0x35818, ohne Zufallszug), Länderwerte des Bundestrainerlandes aus der Aufstellung im Stärkevergleich (0x952C, #193; §18). Teil 5 in PR #312 (Claude Code, gestapelt auf #311): Penaltyschießen nach Verlängerung 0x3901B ohne Live-Anzeige (§19). Alle Teile umgesetzt – Integration.
 
 ### Spur `transfer-vertraege-komplett` – Transfers und Verträge abschließen
 

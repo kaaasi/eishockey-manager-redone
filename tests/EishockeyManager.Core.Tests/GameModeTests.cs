@@ -287,8 +287,22 @@ public class GameModeTests
     /// Verbrauch der Hauptquelle (random(0, Managerzahl + 2) je Ligaspieltag statt 30 %/50 %), damit andere Ergebnisse ab Saison 1;
     /// Markt-Angebote schreiben Angebot − Angebot / 7 · Restlaufzeit gut (0x49332). Die Datenbankspieler des Pools fehlen den
     /// Computerkadern, beim Saisonwechsel tauschen Pool und Computerkader (jeder Name nur einmal).
-    /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand (finanzen-rest, wettbewerbe-komplett,
-    /// optionen-wirkung, transfer-vertraege-komplett) neu ermittelt; beide Ursachen oben wirken zusammen.
+    /// Spur spielberechnung-komplett, Teil 1 (#204): alle Werte neu – Wanderung der Teamwerte 0x9D1B (Spielstart,
+    /// zweimal je Woche, Saisonwechsel) ändert die Ergebnisse der Computervereine ab dem ersten Spieltag.
+    /// Konten: Manager 0 in Saison 5 jetzt positiv, Manager 1 in Saison 4 und 5 leicht negativ (Ursache nicht untersucht;
+    /// kein Geldpfad geändert).
+    /// Spur spielberechnung-komplett, Teil 2 (R8W3I-03 bis -06): Titel und die ersten vier Saisons gleich; ab Saison 5 andere
+    /// Konten und beide Zufallsquellen – das Nationalteam des Bundestrainers zieht den Strafspieler 0x378C5 (statt eines
+    /// Zufallsspielers bei der Gutschrift), 0x378C5 zieht höchstens 150-mal, Strafen ohne Spieler erzeugen kein Ereignis.
+    /// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): alle Werte neu – Verletzungen im Spiel (Zug je Minute und Managerverein, verletzte Spieler fehlen
+    /// wochenlang) und die Schützenwahl je Abschluss der Managerpaarung ändern Ergebnisse und beide Zufallsquellen ab dem
+    /// ersten Spiel. Konto Manager 1 in Saison 5 −919.525 (vorher −83.211; Ursache nicht untersucht, kein Geldpfad geändert).
+    /// Spur spielberechnung-komplett, Teil 5 (0x3901B): alle Werte neu ab dem ersten K.-o.-Unentschieden nach Verlängerung (Penaltyschießen des
+    /// Originals statt NextDouble, anderer Zufallsverbrauch); Konto Manager 1 in Saison 5 jetzt +8.102. Teil 4 (Zähler) zieht
+    /// keinen Zufall und ändert nichts.
+    /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand aller fünf Spuren neu ermittelt; die Ursachen oben
+    /// wirken zusammen. Konto Manager 1 in Saison 5 −3.122.400 (Spur allein −919.525) – offen für das Review, kein Geldpfad
+    /// in der Integration geändert.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -306,7 +320,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=2|711150,446062|WorldChampion=52,CupWinner=24,GermanChampion=1,EuropeanCupWinner=0|1854793,346577|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2637435,342185|WorldChampion=52,CupWinner=1,GermanChampion=12,EuropeanCupWinner=1|3499725,296979|WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=1|3635692,264305|R1707857238 C1654703508";
+        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|660586,481819|WorldChampion=54,CupWinner=8,GermanChampion=3,EuropeanCupWinner=3|1517673,301059|WorldChampion=63,CupWinner=3,GermanChampion=8,EuropeanCupWinner=3|2188016,347867|WorldChampion=63,CupWinner=8,GermanChampion=8,EuropeanCupWinner=8|3114775,211795|WorldChampion=53,CupWinner=8,GermanChampion=8,EuropeanCupWinner=8|4032397,-3122400|R1662215585 C221851274";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

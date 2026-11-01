@@ -41,9 +41,10 @@ public static partial class MatchEngine
     ///   ([APPROX] Schalter DGROUP 0x227–0x229 gelten als aus). Sonst Minute für Minute (<see cref="OriginalMinutes.Play"/>).</item>
     /// <item>Zähler der Spieler (<see cref="CreditPlayers"/>).</item>
     /// </list>
-    /// Ein Unentschieden im K.-o.-Spiel nach Verlängerung bleibt im Bericht stehen; das Penaltyschießen entscheidet der
-    /// Aufrufer (<see cref="KnockoutMatch.Play(GameState, int, Club, Club, MatchCompetition, Random)"/>), der schnelle Weg
-    /// liefert seinen Sieger in <see cref="MatchReport.ShootoutHomeWins"/>.
+    /// Ein Unentschieden im K.-o.-Spiel nach Verlängerung bleibt im Bericht stehen; den Sieger des Penaltyschießens liefern
+    /// beide Wege in <see cref="MatchReport.ShootoutHomeWins"/> (schneller Weg 0x376F0, Minutenweg 0x3901B,
+    /// <see cref="OriginalMinutes.Shootout"/>); <see cref="KnockoutMatch.Play(GameState, int, Club, Club, MatchCompetition, Random)"/>
+    /// übernimmt ihn.
     /// </summary>
     public static MatchReport PlayWithEvents(GameState game, Club home, Club away, MatchCompetition competition,
         bool knockOut, Random random)
@@ -90,6 +91,15 @@ public static partial class MatchEngine
         else
         {
             report = OriginalMinutes.Play(homeTeam, awayTeam, rules, random);
+            if (knockOut && report.HomeGoals == report.AwayGoals)
+            {
+                // Teil 5: [ORIGINAL] nach der Verlängerung noch unentschieden → Penaltyschießen 0x3901B (aus 0x32AA3).
+                // [APPROX] Die Zuordnung der Wettbewerbszeilen DGROUP 0x5C4B ist nicht gelesen; das Remake schießt in jedem
+                // K.-o.-Spiel des Minutenwegs.
+                var goals = OriginalMinutes.Shootout(random);
+                report.ShootoutGoals = goals;
+                report.ShootoutHomeWins = goals.Home > goals.Away;
+            }
         }
         CreditPlayers(game, home, away, competition, report, random);
         AfterMatch(home, away, competition, report, random);
@@ -127,7 +137,8 @@ public static partial class MatchEngine
     /// <item>Managervereine in der Managerpaarung: [ORIGINAL] Reihenwerte aus den eingesetzten Spielern
     ///   (<see cref="LiveSquad"/>, <see cref="ManagedLineValues"/>, 0x98F8); Strafen mit dem Managerwert des nächsten
     ///   Managersatzes (0x35890, <see cref="ManagedTeamValues"/>). Defense/Attack bleiben die Teamwerte (für die Automatik
-    ///   der Taktik). Nationalteam des Bundestrainers: [APPROX] ohne Kader wie ein Computerverein (Energie, Reihen).</item>
+    ///   der Taktik). Nationalteam des Bundestrainers: [APPROX] ohne Kader wie ein Computerverein (Energie, Reihen);
+    ///   [ORIGINAL] Strafspieler 0x378C5 aus dem Kader des Bundestrainers (<see cref="NationalPenaltySquad"/>, R8W3I-06).</item>
     /// </list>
     /// </summary>
     public static LiveTeam LiveTeamOf(GameState game, Club club, Club opponent, bool managed, bool managerMatch)
@@ -151,16 +162,38 @@ public static partial class MatchEngine
         var manager = game.ActiveManagers.FirstOrDefault(m => m.ClubIndex == club.Index);
         LiveSquad? squad = null;
         var penaltyValue = 20;
+        var ownValue = 20;
+        int? injuryManager = null;
         if (managed && manager is not null && club.Players.Count > 0)
         {
             squad = LiveSquad.Create(club, TrainingRules.LevelValue(manager.Level), club.Tactics);
+            // Teil 3: eigener Managerwert und Managersatz für die Verletzungen 0x38B8F ([APPROX] aus demselben Stand wie
+            // der Wert der Strafen, R8W3I-05).
+            ownValue = ManagedTeamValues(squad, nineOrMore: !game.IsShortHanded(club)).ManagerValue;
+            injuryManager = game.Managers.ToList().IndexOf(manager);
             // [ORIGINAL] Strafen lesen den Managerwert über Vereinsfeld 0x16 = Manager + 1 (Datei 0x35890), also den Satz
             // des nächsten Managers (übernommen). [APPROX] Ohne nächsten Manager 0 (nicht belegter Satz, nicht geprüft).
+            // R8W3I-05: [ORIGINAL] gelesen wird der gespeicherte Wert DGROUP 0x974B, den nur 0x952C schreibt – mit Schalter 1
+            // im Tageslauf 0x54C9F für jeden Manager vor den Spielen des Tages (0x54F9C–0x54FBF), bei weniger als neun
+            // aufgestellten und eingesetzten Spielern 100 (0x9698–0x96A8). [APPROX] Das Remake rechnet ihn hier aus
+            // demselben Stand: zwischen Tageslauf und Spiel ändert sich die Aufstellung nicht (wie bei
+            // GameState.MarkShortHandedClubs); weniger als neun = GameState.IsShortHanded.
             var index = game.Managers.ToList().IndexOf(manager);
             var next = index + 1 < game.Managers.Count ? game.Managers[index + 1] : null;
             penaltyValue = next is not null && game.Clubs.FirstOrDefault(c => c.Index == next.ClubIndex) is { Players.Count: > 0 } nextClub
-                ? ManagedTeamValues(LiveSquad.Create(nextClub, 0, null)).ManagerValue
+                ? ManagedTeamValues(LiveSquad.Create(nextClub, 0, null), nineOrMore: !game.IsShortHanded(nextClub)).ManagerValue
                 : 0;
+        }
+        LiveSquad? penaltySquad = null;
+        var fewFit = managed && club.Players.Count > 0 && club.Players.Count(p => p.Available) < MinimumFitForPenalties;
+        if (managed && managerMatch && game.NationalCoach is { } coach && club.Index == coach.Nation)
+        {
+            // R8W3I-06: [ORIGINAL] Das Nationalteam (Vereinsfeld 0x16 = 6) zieht den Strafspieler aus dem Kader des
+            // Bundestrainers (0x378C5 mit Manager 5); unter 8 fitten Kaderspielern keine Strafe (0x358FF, 0x120:0x66(5, 1)).
+            // [APPROX] Reihenwerte und Energie bleiben wie beim Computerverein (kein Squad); der Managerwert der Strafen
+            // bleibt 20 (das Original liest DGROUP 0x974B + 6 · 0x1AF hinter den sechs Managersätzen, nicht geprüft).
+            penaltySquad = NationalPenaltySquad(coach);
+            fewFit = coach.Squad.Count(m => m.Player.Available) < MinimumFitForPenalties;
         }
         return new LiveTeam
         {
@@ -174,12 +207,49 @@ public static partial class MatchEngine
             Managed = managed,
             LineChange = managed ? club.Tactics.LineChange : null,
             Squad = managerMatch ? squad : null,
+            PenaltySquad = penaltySquad,
             PenaltyManagerValue = penaltyValue,
             TacticsStrength = value,
             TacticsOpponentStrength = opponentValue,
-            FewFitPlayers = managed && club.Players.Count > 0
-                && club.Players.Count(p => p.Available) < MinimumFitForPenalties,
+            FewFitPlayers = fewFit,
+            InjuryManager = managerMatch && squad is not null ? injuryManager : null,
+            ManagerValue = ownValue,
+            // Teil 4: [ORIGINAL] Zähler des Managers (Vereinsfeld 0x16 = Manager + 1 → DGROUP 0x97D2 + 0x1AF · Manager).
+            PowerPlayCounts = managed ? manager?.PowerPlayCounts : null,
         };
+    }
+
+    /// <summary>
+    /// Kader des Nationalteams für die Spielerwahl der Strafen (R8W3I-06): Kaderplätze in der Reihenfolge des Kaders des
+    /// Bundestrainers, Position aus dessen Aufstellung (<see cref="NationalCoach.Lineup"/>; Block b = Reihe b wie
+    /// <see cref="LiveSquad.PositionOf"/>), eingesetzt = verfügbar. [APPROX] Reihenfolge der Kaderplätze im Original
+    /// (DGROUP 0x5DC3 + 5 · 0x618) nicht gelesen.
+    /// </summary>
+    public static LiveSquad NationalPenaltySquad(NationalCoach coach)
+    {
+        var lineup = coach.Lineup();
+        var positions = new Dictionary<Player, int>();
+        if (lineup.Goalkeeper is { } g)
+            positions[g] = 1;
+        for (var i = 0; i < lineup.Defenders.Count; i++)
+            if (lineup.Defenders[i] is { } d)
+                positions[d] = i / Lineup.DefendersPerBlock + 1;
+        for (var i = 0; i < lineup.Forwards.Count; i++)
+            if (lineup.Forwards[i] is { } f)
+                positions[f] = 0x80 | (i / Lineup.ForwardsPerBlock + 1);
+        var squad = new LiveSquad();
+        foreach (var member in coach.Squad)
+        {
+            var p = member.Player;
+            squad.Players.Add(new LivePlayer
+            {
+                Player = p,
+                Position = positions.GetValueOrDefault(p),
+                Dressed = p.Available,
+                Energy = PreparedPlayerEnergy(p),
+            });
+        }
+        return squad;
     }
 
     /// <summary>
@@ -206,8 +276,8 @@ public static partial class MatchEngine
     ///   Original wertet das gespeicherte Ergebnis).</item>
     /// <item>Managervereine: Spiele + 1 für die Aufstellung; Torhüter der Aufstellung bekommt die Gegentore
     ///   ([ORIGINAL] 0xA3F7: Torhüter auf dem Eis) und die Spielminuten 60/70 ([ORIGINAL] 0x874D zählt je Minute).
-    ///   [APPROX] Torschützen und Vorlagen nach 0x5028 unter den Feldspielern der Aufstellung (Auswahl 0x386D1 nicht
-    ///   gelesen); jede Strafe bekommt ein zufälliger Feldspieler der Aufstellung (Spielerwahl 0x378C5 nicht gelesen).
+    ///   [ORIGINAL] Torschütze und Vorlage aus 0x541D9/0x386D1 im Spiel (<see cref="OriginalMinutes.ScoringPlayers"/>,
+    ///   Teil 3); die Strafe bekommt der Spieler aus 0x378C5 (Managerverein und Nationalteam des Bundestrainers).
     ///   Bei einer Spielwertung zählt nichts.</item>
     /// </list>
     /// </summary>
@@ -228,7 +298,8 @@ public static partial class MatchEngine
             if (report.Forfeit)
                 return;
             var national = coach.Lineup();
-            CreditLineup(national.Players.ToList(), national.Goalkeeper, goals, against, side, report, random, squadEvents: false);
+            // R8W3I-06: Die Strafe zählt beim Spieler aus 0x378C5 (wie beim Managerverein), kein eigener Zufallszug mehr.
+            CreditLineup(national.Players.ToList(), national.Goalkeeper, against, side, report);
             return;
         }
         if (club.Index >= FirstForeignClub || club.Players.Count == 0)
@@ -242,47 +313,40 @@ public static partial class MatchEngine
         }
         if (report.Forfeit)
             return;
-        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, goals, against, side, report, random,
-            squadEvents: true);
+        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report);
+        if (report.Events.Any(e => e.Kind == MatchEventKind.Injury && e.Side == side))
+            PlayerInjuries.RefillLineup(club);
     }
 
     /// <summary>Zähler einer gemanagten Mannschaft aus ihrer Aufstellung (Managerverein oder Nationalteam des Bundestrainers).</summary>
-    private static void CreditLineup(List<Player> lineup, Player? keeper, int goals, int against, int side, MatchReport report,
-        Random random, bool squadEvents)
+    private static void CreditLineup(List<Player> lineup, Player? keeper, int against, int side, MatchReport report)
     {
         foreach (var p in lineup)
             p.Games++;
-        var skaters = lineup.Where(p => p.Role != PlayerRole.Goalkeeper).ToList();
-        MatchStatistics.CreditSkaters(skaters, goals, random, countGames: false);
         if (keeper is { } goalie)
         {
             goalie.GoalsAgainst += against;
             goalie.GoalieMinutes += report.Overtime ? 70 : 60;
         }
-        if (skaters.Count == 0)
-            return;
         foreach (var e in report.Events)
         {
-            if (e.Kind != MatchEventKind.Penalty || e.Side != side)
-                continue;
-            if (squadEvents)
+            // [ORIGINAL] 0x54248–0x54337 (Teil 3): Vorlage Spielerfeld 0x1F + 1, Tor Kaderplatz +0x22 + 1 (Liga und Pokal).
+            // [APPROX] Spielerfeld 0x1B (nur Wettbewerb 0, DGROUP 0xD0BF) und die Grenze 255 führt das Remake nicht getrennt.
+            if (e.Kind == MatchEventKind.Goal && e.Side == side && e.Player is { } scorer)
             {
-                // [ORIGINAL] 0x35B7D–0x35B8E: Kaderplatz +0 (5 Minuten) bzw. +1 (2 Minuten) des Spielers aus 0x378C5;
-                // ohne Spieler bzw. beim Torhüter zählt keiner.
-                if (e.Player is { } penalized)
-                {
-                    if (e.PenaltyMinutes == 5)
-                        penalized.Penalties5++;
-                    else
-                        penalized.Penalties2++;
-                }
+                scorer.Goals++;
+                if (e.Assist is { } assist)
+                    assist.Assists++;
                 continue;
             }
-            var p = skaters[OriginalMatch.Rnd(random, 0, skaters.Count - 1)];
+            // [ORIGINAL] 0x35B7D–0x35B8E: Kaderplatz +0 (5 Minuten) bzw. +1 (2 Minuten) des Spielers aus 0x378C5;
+            // beim Torhüter zählt keiner (ohne Spieler gibt es seit R8W3I-04 kein Ereignis).
+            if (e.Kind != MatchEventKind.Penalty || e.Side != side || e.Player is not { } penalized)
+                continue;
             if (e.PenaltyMinutes == 5)
-                p.Penalties5++;
+                penalized.Penalties5++;
             else
-                p.Penalties2++;
+                penalized.Penalties2++;
         }
     }
 

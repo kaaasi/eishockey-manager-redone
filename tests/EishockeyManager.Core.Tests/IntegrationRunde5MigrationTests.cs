@@ -14,12 +14,13 @@ public class IntegrationRunde5MigrationTests
     [Fact]
     public void SchemaFive_FromMode4Track_IsMigrated_AndKeepsOpenTurn()
     {
-        // Erster Seed ab 3 mit offenem Zug des Bundestrainers (hängt am Zufallsverbrauch, zuletzt transfer-vertraege-komplett
-        // Teil 5, Listenwechsel 0x494EF).
+        // Erster Seed ab 3 mit offenem Zug des Bundestrainers. Vorbedingung über die Stärke der Managerkader (#204: Wanderung
+        // der Teamwerte) und den Seed (Zufallsverbrauch, zuletzt Listenwechsel 0x494EF); Integration Runde 9: beides.
         GameState game = null!;
         for (var seed = 3; seed < 40 && game?.NationalTurn != true; seed++)
         {
             game = GameModeTests.Create(seed, true, true, 8, 2);
+            ManagedSquads.PlayAtTopStrength(game);
             NationalCoachMode4Tests.PlayToClubSeasonEnd(game);
             game.Continue();
             game.Continue();

@@ -219,7 +219,12 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Spur transfer-vertraege-komplett (Teil 5): ab 1993 neu – Pool und Listenwechsel 0x494EF (random(0, Managerzahl + 2) je
     /// Ligaspieltag) verbrauchen die Hauptquelle anders als die bisherige Liste aus Computerkadern; die Datenbankspieler des
     /// Pools fehlen den Computerkadern (jeder Name nur einmal), damit andere Ergebnisse;
-    /// mit und ohne Anzeige weiter gleich.</summary>
+    /// mit und ohne Anzeige weiter gleich.
+    /// Spur spielberechnung-komplett, Teil 1 (#204): Wanderung der Teamwerte 0x9D1B – neue Werte ab 1993, mit und ohne
+    /// Anzeige weiter gleich. Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): neue Werte ab 1993 (Verletzungen und Schützenwahl in den Spielen des
+    /// Managers), mit und ohne Anzeige weiter gleich. Spur spielberechnung-komplett, Teil 5 (0x3901B): 1993 gleich, ab 1994 neuer Meister
+    /// (Penaltyschießen des Originals in den Play-offs mit Manager statt NextDouble), mit und ohne Anzeige weiter gleich.
+    /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand neu.</summary>
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15395 | 1994: DEB 2, DM 2, Tab 16341 | 1995: DEB 5, DM 1, Tab 15963 | 1996: DEB 2, DM 9, Tab 16488";
+        "1993: DEB 8, DM 2, Tab 15275 | 1994: DEB 4, DM 4, Tab 15606 | 1995: DEB 14, DM 14, Tab 16020 | 1996: DEB 21, DM 21, Tab 16144";
 }

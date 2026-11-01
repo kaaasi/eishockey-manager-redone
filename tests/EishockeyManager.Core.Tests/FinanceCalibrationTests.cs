@@ -228,6 +228,18 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     seasonLowest = Math.Min(seasonLowest, manager.Money);
                     highest = Math.Max(highest, manager.Money);
                 }
+                if (!active && game.Phase == SeasonPhase.GameOver)
+                {
+                    // Integration Runde 9 (Leitstelle): Der passive Manager schließt keine Werbeverträge und verlängert keine
+                    // Verträge. Auf dem integrierten Stand (Seed 3, Bundesliga, synthetische Datenbank) läuft der Kader
+                    // nach Saison 3 aus (Abgang ohne Verhandlung, transfer-vertraege-komplett Teil 1), der Verein ist nicht
+                    // spielfähig, die Strafen führen zur Entlassung – Spielregel, kein Buchungsfehler. Das Buch ist bis dahin
+                    // täglich geprüft (oben); die Probe dieses Seeds endet hier, mindestens zwei Saisons sind ganz geprüft.
+                    Assert.True(manager.Dismissed, "GameOver ohne Entlassung");
+                    Assert.True(year >= 2, $"Entlassung schon in Saison {year + 1}");
+                    output.WriteLine($"seed={seed}; start={league}; active=False; entlassen in Saison {year + 1}");
+                    break;
+                }
                 Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
                 previousSeasonEnd = manager.Money;
                 var finance = game.Finance(manager).Book;
@@ -286,7 +298,8 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 if (active) Assert.Equal(roster, club.Players.Count);
             }
             output.WriteLine($"seed={seed}; start={league}; active={active}; lowest={lowest}; highest={highest}; end={manager.Money}");
-            Assert.True(lowest > Manager.DebtLimit, $"Konto unter der Entlassungsgrenze: {lowest}");
+            if (!manager.Dismissed)
+                Assert.True(lowest > Manager.DebtLimit, $"Konto unter der Entlassungsgrenze: {lowest}");
         }
     }
 }
