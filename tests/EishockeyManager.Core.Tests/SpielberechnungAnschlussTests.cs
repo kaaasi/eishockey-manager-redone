@@ -145,10 +145,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur statistiken (Runde 8, #135): beide neu, nur durch die Einzelprämien im Kontostand (Gegenprobe ohne
     /// Einzelprämien: alte Werte); Basis <c>10eb6c5</c>.
     /// Integration Runde 8 (Leitstelle): beide neu auf dem integrierten Stand (Lader, Einzelprämien, Werbebewertung).
+    /// Spur transfer-vertraege-komplett (Teil 1): aktiv neu durch die Ablöse am Saisonende (0x27DF3); Gegenprobe ohne Ablöse:
+    /// alter Wert.
     /// </summary>
     [GameDataTheory]
     [InlineData(false, "29DA45742C8BD126")]
-    [InlineData(true, "1C56AB7B0380A2D5")]
+    [InlineData(true, "7A324F43E1B52E04")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -88,6 +88,9 @@ public sealed partial class GameState
         AgeFreeAgents();
         // Snapshot vor Rückgaben: Vereinsreihenfolge darf keinen Spieler zweimal altern lassen.
         var players = Clubs.SelectMany(c => c.Players.Select(p => (Club: c, Player: p))).ToArray();
+        // Spur transfer-vertraege-komplett: ausgelaufene Verträge im Kader eines Managers werden am Saisonende verhandelt
+        // (0x27D05). Im Modus „nur Weltkugel“ gibt es keine Vereinssaison und damit keine Verhandlung.
+        var renewers = WorldOnly ? new Dictionary<int, Manager>() : ActiveManagers.ToDictionary(m => m.ClubIndex);
         var returns = new List<(Club Owner, Player Player)>();
         foreach (var (club, player) in players)
         {
@@ -123,6 +126,13 @@ public sealed partial class GameState
                 club.Players.Remove(player);
                 club.Lineup.Remove(player);
                 Retire(owner, player);
+                continue;
+            }
+            if (player.ContractYears == 0 && owner == club && renewers.TryGetValue(owner.Index, out var renewer))
+            {
+                BeginRenewal(renewer, player);
+                if (!s_deferRenewals)
+                    CancelRenewal(renewer, player); // ohne Oberfläche: wie „Abbruch“ (Spieler geht gegen Ablöse)
                 continue;
             }
             if (player.ContractYears == 0)
@@ -250,20 +260,24 @@ public static class Contracts
     /// oder null, wenn das Original das Feld nicht füllt (Level 5: DGROUP 0xED8 = 5 − Level = 0, Datei 0x4A9DB). Rein.
     /// </summary>
     public static int? DemandAfterYears(GameState game, Manager manager, Player p, int years) =>
-        manager.Level >= 5 ? null : ComputedDemand(game, manager, p, years);
+        DemandAfterYears(game, manager, p, years, p.MonthlySalary);
+
+    /// <summary>Wie oben mit ausdrücklichem bisherigem Gehalt (Kauf: Vertrag des neuen Kaderplatzes, <see cref="TransferPurchase"/>).</summary>
+    public static int? DemandAfterYears(GameState game, Manager manager, Player p, int years, int currentSalary) =>
+        manager.Level >= 5 ? null : ComputedDemand(game, manager, p, years, currentSalary);
 
     /// <summary>
     /// Forderung in DM unabhängig vom Level. [ORIGINAL] 0x4A81B–0x4A9A1 rechnet ohne Levelabfrage (einzige Abfrage von
     /// DGROUP 0xED8 in 0x4A9DB, nur für das Füllen des Feldes; R8W3I-12, #272).
     /// </summary>
-    private static int ComputedDemand(GameState game, Manager manager, Player p, int years)
+    private static int ComputedDemand(GameState game, Manager manager, Player p, int years, int currentSalary)
     {
         var club = game.Clubs[manager.ClubIndex];
         var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
         // [ORIGINAL] Alter aus Kaderplatz 3 des Managers (0x4A93F); [APPROX] Reihenfolge des Kaders wie im Remake.
         var age = club.Players.Count > 3 ? club.Players[3].Age : p.Age;
         return ContractRules.DemandThirds(value, game.ContractTurnFactor, game.ContractSeasonRemaining, years,
-            game.AfterSeasonEnd, age, p.MonthlySalary * 3) / 3;
+            game.AfterSeasonEnd, age, currentSalary * 3) / 3;
     }
 
     private static readonly Random NoRandom = new NoDrawRandom();
@@ -289,19 +303,12 @@ public static class Contracts
         // Eingaben setzen im Original das Anklicken der Felder voraus, das Leihe, Ruhestand und Sperre schon abweist.
         if ((years != 0 || salary != 0) && Availability(game, p) is { } refusal)
             return refusal;
-        var current = CurrentYears(p);
-        var currentSalary = p.MonthlySalary;
-        // [ORIGINAL] 0x4A9A1 (R8W3I-02 #270, R8W3I-12 #272): Nach dem Saisonende schreibt der Dialog Forderung und Laufzeit
-        // auf jedem Level sofort in den Kaderplatz; „Mach' ich!“ vergleicht danach mit diesen Werten (0x4ABD1–0x4AC75).
-        // [ORIGINAL] 0x4AD3E→0x4AD54: Bei Ablehnung und Abbruch stellt das Original die beim Öffnen gesicherten Werte zurück
-        // (0x4A239–0x4A25F) – das Remake ändert den Spieler dann gar nicht.
-        if (game.AfterSeasonEnd && years != 0)
-            (current, currentSalary) = (years, ComputedDemand(game, manager, p, years));
-        var result = Decide(game, manager, p, current, currentSalary, years, salary, demandFilled);
+        var (result, newYears, newSalary) = NegotiateTerms(game, manager, p, CurrentYears(p), p.MonthlySalary, years, salary,
+            demandFilled);
         if (result == NegotiationResult.Accepted)
         {
-            p.ContractYears = years == 0 ? current : years;
-            p.MonthlySalary = salary == 0 ? currentSalary : salary;
+            p.ContractYears = newYears;
+            p.MonthlySalary = newSalary;
             p.Insured = insured;
         }
         else
@@ -310,14 +317,35 @@ public static class Contracts
     }
 
     /// <summary>
+    /// Verhandlung ohne Prüfung der Verfügbarkeit gegen einen gegebenen Vertrag (<paramref name="current"/> Jahre,
+    /// <paramref name="currentSalary"/> DM); ändert den Spieler nicht. Liefert den neuen Vertrag, wenn er steht. Gemeinsamer Kern
+    /// von <see cref="Negotiate"/> und dem Kauf (<see cref="TransferMarket.Sign"/>, Datei 0x4786A ruft denselben Dialog).
+    /// </summary>
+    internal static (NegotiationResult Result, int Years, int Salary) NegotiateTerms(GameState game, Manager manager, Player p,
+        int current, int currentSalary, int years, int salary, bool demandFilled)
+    {
+        if (salary < 0 || years < 0)
+            return (NegotiationResult.Unfair, 0, 0);
+        // [ORIGINAL] 0x4A9A1 (R8W3I-02 #270, R8W3I-12 #272): Nach dem Saisonende schreibt der Dialog Forderung und Laufzeit
+        // auf jedem Level sofort in den Kaderplatz; „Mach' ich!“ vergleicht danach mit diesen Werten (0x4ABD1–0x4AC75).
+        // [ORIGINAL] 0x4AD3E→0x4AD54: Bei Ablehnung und Abbruch stellt das Original die beim Öffnen gesicherten Werte zurück
+        // (0x4A239–0x4A25F) – das Remake ändert den Spieler dann gar nicht.
+        if (game.AfterSeasonEnd && years != 0)
+            (current, currentSalary) = (years, ComputedDemand(game, manager, p, years, currentSalary));
+        var result = Decide(game, manager, p, current, currentSalary, years, salary, demandFilled);
+        return (result, years == 0 ? current : years, salary == 0 ? currentSalary : salary);
+    }
+
+    /// <summary>
     /// Laufzeit, mit der der Dialog rechnet: die bisherige, bei einem Verlängerungsangebot des Spielers die angebotene.
     /// [ORIGINAL] Kaderplatz +0x18 &gt; 99 (Angebot, Tagesablauf) → beim Öffnen +0x0B = +0x18 − 100 (Datei 0x4A3AF); „Mach'
     /// ich!“ ohne Eingaben nimmt das Angebot damit zum bisherigen Gehalt an.
     /// </summary>
     /// <remarks>[APPROX] Das Remake behält die Ankündigung bis zum Saisonwechsel (Spur „kader“); das Angebot gilt nur, solange
-    /// der Spieler im letzten Vertragsjahr ist.</remarks>
+    /// der Spieler im letzten Vertragsjahr ist. Am Saisonende (Laufzeit 0, Angebot 1 Jahr) ist es das Angebot +0x18 = 101 des
+    /// Originals (Datei 0x27D15, <see cref="GameState.IsRenewalPending"/>).</remarks>
     public static int CurrentYears(Player p) =>
-        p.Notice == ContractNotice.Offered && p.ContractYears == 1 ? p.NoticeYears : p.ContractYears;
+        p.Notice == ContractNotice.Offered && p.ContractYears <= 1 ? p.NoticeYears : p.ContractYears;
 
     private static NegotiationResult Decide(GameState game, Manager manager, Player p, int current, int currentSalary, int years,
         int salary, bool demandFilled)

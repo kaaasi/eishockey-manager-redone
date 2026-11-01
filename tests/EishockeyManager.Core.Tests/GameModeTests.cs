@@ -270,6 +270,8 @@ public class GameModeTests
     /// Integration Runde 8, Welle 3 (Leitstelle, R8W3I-01 #269): alle Werte neu (Ergebnisse der Managerpaarungen). Der Kader
     /// von Manager 0 schrumpft in beiden Ständen gleich (20, 20, 19, 16, dann 13 bzw. 12 Spieler); mit 12 Spielern ist der
     /// Verein 1997 nicht spielfähig (Strafen 9,2 Mio. DM) – daher das negative Konto in Saison 5, kein neuer Geldfehler.
+    /// Spur transfer-vertraege-komplett (Teil 1): Konten ab Saison 3 neu – Spieler, deren Vertrag am Saisonende ohne Verhandlung
+    /// endet, bringen die Ablöse Wert(Preis) / 2 (0x27DF3); Gegenprobe ohne Ablöse: alte Werte.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -284,7 +286,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2225350,405129|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=1|3420342,294365|WorldChampion=52,CupWinner=24,GermanChampion=24,EuropeanCupWinner=1|4153466,83083|WorldChampion=52,CupWinner=25,GermanChampion=0,EuropeanCupWinner=1|4679840,-120071|WorldChampion=52,CupWinner=1,GermanChampion=13,EuropeanCupWinner=1|-6956210,-353316|R409663842 C1843401354";
+        "WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2225350,405129|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=1|3420342,294365|WorldChampion=52,CupWinner=24,GermanChampion=24,EuropeanCupWinner=1|4297466,171583|WorldChampion=52,CupWinner=25,GermanChampion=0,EuropeanCupWinner=1|5137340,5996|WorldChampion=52,CupWinner=1,GermanChampion=13,EuropeanCupWinner=1|-5821242,-62647|R409663842 C1843401354";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

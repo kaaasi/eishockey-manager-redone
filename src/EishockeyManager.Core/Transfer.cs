@@ -80,7 +80,7 @@ public enum TransferResult
 /// Spieltag, Wahl des bietenden Vereins und die Antwort eines menschlichen Verkäufers.
 /// Der Markt aktualisiert sich selbst (<see cref="CatchUp"/>), bis das Paket „saison“ ihn je Spieltag aufruft.
 /// </remarks>
-public sealed class TransferMarket
+public sealed partial class TransferMarket
 {
     public const int MaxSquad = 22;
     public const int MaxOwnListings = 3;
@@ -282,6 +282,24 @@ public sealed class TransferMarket
     /// </summary>
     public TransferResult Buy(GameState game, Manager manager, TransferListing listing, long offer, bool loan)
     {
+        var result = Bid(game, manager, listing, offer, loan, out var purchase);
+        // Ohne Oberfläche: „Mach' ich!“ ohne Eingaben – der Vertrag des neuen Kaderplatzes steht (Datei 0x4AB66).
+        if (purchase is not null && Sign(game, purchase, 0, 0, insured: false, demandFilled: false) != NegotiationResult.Accepted)
+            return TransferResult.Impossible;
+        return result;
+    }
+
+    /// <summary>
+    /// Gebot auf einen Eintrag: alle Prüfungen und die Annahme wie <see cref="Buy"/>. Eine Leihe ist damit abgeschlossen; beim
+    /// Kauf liefert die Annahme den noch offenen Vertrag (<paramref name="purchase"/>), der mit <see cref="Sign"/> verhandelt
+    /// wird. [ORIGINAL] Datei 0x4781B–0x47874: erst nach der Verhandlung 0x4A1DB fließt Geld und wechselt der Spieler; scheitert
+    /// sie (auch „Abbruch“), „Der Transfer findet nicht statt.“ (0x47A3E, DGROUP 0x1201). Die Leihe ruft keine Verhandlung
+    /// (Bedingung +0x11 = 0 und Leihe = 0, Datei 0x47851–0x4785B).
+    /// </summary>
+    public TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
+        out TransferPurchase? purchase)
+    {
+        purchase = null;
         if (!game.Managers.Contains(manager) || !IsCurrentListing(game, listing)
             || listing.From.Index == manager.ClubIndex && !listing.IsFreeAgent
             || loan && listing.IsFreeAgent)
@@ -319,11 +337,21 @@ public sealed class TransferMarket
         if (offer > manager.Money)
             return TransferResult.NotEnoughMoney;
 
+        if (!loan)
+        {
+            purchase = new TransferPurchase(listing, manager, offer, SquadSetup.StartContractYears, Contracts.Demand(listing.Player));
+            return TransferResult.Accepted;
+        }
+        Complete(game, listing, manager, offer, loan: true);
+        return TransferResult.Accepted;
+    }
+
+    private void Complete(GameState game, TransferListing listing, Manager manager, long offer, bool loan)
+    {
         game.Book(manager, FinanceCategory.Transfers, -offer);
         if (listing.Seller is { } seller)
             game.Book(seller, FinanceCategory.Transfers, offer);
-        Move(listing, club, loan);
-        return TransferResult.Accepted;
+        Move(listing, game.Clubs[manager.ClubIndex], loan);
     }
 
     /// <summary>Spieler wechselt vom bisherigen Verein in den Kader des Käufers.</summary>
