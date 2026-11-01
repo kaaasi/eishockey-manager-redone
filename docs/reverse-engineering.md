@@ -778,3 +778,28 @@ Teil 2 (Nationalteam):
   * **Dritter Knopf** (0x4D78A, 0x4E3F4): Symbol = Vereinsfeld 0x34 Bits 6–7 (+1 als Zeichen), Klick schaltet 0 → 1 → 2 → 0,
     schreibt über 0x30:0xB und setzt in DGROUP 0xE1B6 (10 Sätze à 15 Byte) Werte 1–3; Bild DGROUP 0xC12F nicht zugeordnet –
     im Remake nicht umgesetzt.
+
+Teil 4 (#166, Oberliga-Austausch samt Managervereinen), Disassembly `ndisasm -b 16`, Dateiadressen – **Beleglage, nicht umgesetzt**.
+
+* **Ablauf 0x56137–0x5636D** (Schleife über die drei Tauschgruppen [bp−1] = 0, 1, 2; Anzahl je Gruppe DGROUP 0x7B9 + Gruppe):
+  Gruppen 0/1 wie in Teil 1 (Paare aus 0xCF20/0xCD94). Gruppe 2 (0x56238): ausscheidend [bp−0x13] = Platzliste
+  0x5CCB + 24 + 11 − k (Letzter, dann Vorletzter der Oberliga), nachrückend [bp−0x14] = `0x38:0x847(a, a + 5)` mit
+  a = [0x7C2] + [0x7B3] (Vereine 36–41); 0x56266–0x56282 würfelt neu, solange der Zug dem vorigen gleicht. **Manager werden
+  nicht übersprungen** – anders als `SeasonFlow.FinishClubSeason` (`[APPROX]` „Vereine von Managern ausgenommen“).
+* **Managerverein scheidet aus (0x56287–0x562F7, alle drei Gruppen):** Vereinsfeld +0x16 (Satz 0x3D Byte ab `[0x9657]`) = Manager
+  + 1; ist im Statusbyte (DGROUP 0x959F + 0x1AF · Feld = 0x974E + 0x1AF · Manager) Bit 0x04 frei, setzt 0x562C1 Bit 0x02
+  (Symbol Abstieg). **Nur Gruppe 2** (0x562C6 `cmp [bp−1],2; jc`): Konto (DGROUP 0x97EA + 0x1AF · Manager, 32 Bit) =
+  0x00124F80 = 1.200.000 Drittel = **400.000 DM** (gesetzt, nicht gebucht). Danach Tausch `0xF0:0x4D(aus, ein, 1)` = 0x36169:
+  Vereinssätze, Spielernummern (+0x1D) und Verein des Managers (DGROUP 0x966F + 0x1AF · Manager) wechseln mit – der Manager
+  bleibt bei seinem Verein, der jetzt einen Index 36–41 ohne Liga hat.
+* **Managerverein rückt nach (0x562FA–0x56334):** Gehört der nachrückende Verein einem Manager (Bit 0x04 frei), Bit 0x01 (Aufstieg).
+  Ein Manager ohne Liga kann also über den Zufallszug 36–41 wieder in die Oberliga kommen.
+* **Bit 0x04** = Zwangsabstieg wegen Schulden (0x55F17–0x55F87): Konto ≤ −2.000.000 Drittel (0xFFE17B80), Liga &lt; 2, weder Meister
+  noch Europapokalsieger (Status & 0x28 = 0) und höchstens zwei je Liga ([bp−0x18 + Liga] &lt; 2); der Verein wird in die
+  Abstiegspaare eingesetzt (0x55F93–0x560C5). Damit erklärt sich die Ausnahme „Bit 0x04 nicht gesetzt“ in 0x56287 und 0x562FA.
+* **Liga-Stufe des Managers** danach 0x563C0–0x56409: (Verein ≥ [0x7C1]) + (Verein ≥ [0x7C2]) – höchstens 2, ein Verein 36–41 gilt
+  als Oberliga-Stufe (Kostenstufe, `finanzen-rekonstruktion.md`).
+* **Nicht belegt:** was eine Saison ohne Liga für den Manager bedeutet (Spieltage ohne Ligaspiel, DEB-Pokal-Meldung, Hauptmenü,
+  Tabellen, „Weniger als neun Spieler“, Entlassung). Weder Videostelle noch Spielstand mit einem Manager auf 36–41 ist bekannt;
+  das Remake kennt Managervereine ohne Liga nicht (`Club.League` = null nur für Computervereine). Umsetzung nur mit diesem Beleg
+  und Anschlüssen in fremden Dateien (Finanzen, Hauptmenü, Statistiken) – siehe PR.
