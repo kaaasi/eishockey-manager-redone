@@ -289,7 +289,7 @@ Overlay 0x128 (Ghidra 59E3). Fundstellen als Dateioffset von em.exe.
   vollständig gleicher Vereine kann sich durch eine angesehene Heim-/Auswärtstabelle ändern.
 * **Startordnung** Datei 0x2F1A2: beim Spielstart Vereinsindex aufsteigend; danach tauscht 0x437D5 (Datei 0x43A08/0x43A0D)
   in der 1. Liga die Plätze 1 und 3 (DGROUP 0x5CCB = 2, 0x5CCD = 0; Deutscher Meister DGROUP 0xD0E6 = 2). Video 13:07. Andere Schreiber von 0x5CCB: nur die
-  Sortierung und 0x35EDD (WM-Reihenfolge). Über den Saisonwechsel bleibt die Liste stehen.
+  Sortierung und 0x35EDD (WM-Reihenfolge). Über den Saisonwechsel bleibt die Liste stehen. Folgesaison siehe Abschnitt „Spur `wettbewerbe-komplett`“.
 * **Tabellenansicht** Datei 0x4F78D: Titel aus DGROUP 0x1011 („   TABELLE “) + Ansicht (Zeiger 0x1001: „Heim“, „Gesamt“,
   „Auswärts“) + Spieltag; Name x 0x21, Bilanz x 0x75 (immer die Gesamtbilanz +4, gleich in jeder Ansicht), Tendenz über
   `0x110:0x4D`, Zahlenzeile ab x 0xA6 als ein Text: „*“, Siege, Unentschieden, Niederlagen (Mindestbreite 2,
@@ -687,3 +687,33 @@ Dateioffsets in `em.exe`, DGROUP = Datei 0x16DD0. Umsetzung und Belege im Bild: 
   0x35EDD werden die Sätze 0x8257, die Vereinssätze 0x9657 und die Serien DGROUP 0xB57B zweier Plätze getauscht
   (0x36467–0x3653A) – darum führt jeder Satz die Flaggennummer selbst. Nicht gefunden: die Stelle, die die Platzierungen
   nach einer WM schreibt.
+
+## Spur `wettbewerbe-komplett`
+
+Teil 1 (Tabellen), Disassembly `ndisasm -b 16`, Dateiadressen.
+
+* **Startordnung ab Saison 2.** 0x5CCB ist eine Bytetabelle (Liga · 12 + Platz → Vereinsindex; 0x2F1A2 füllt sie beim
+  Spielstart mit aufsteigendem Vereinsindex). Der Saisonwechsel in der Tagesfunktion 0x54C9F setzt für alle 64 Vereine die
+  Tabellenfelder beider Hälften auf 0 (Datei 0x55E39–0x55EF8: DGROUP 0x825A, 0x8270, 0x8274, 0x8278, 0x8280, 0x8284 je
+  + 0x50 · Verein, Bilanz 0x825E aus DGROUP 0x5503) und zählt 0x7A9 je Liga auf 1 (0x5613E). Auf- und Abstieg laufen über
+  **0x36169** (Ov 0xF0, Stub +0x4D; `f(a, b, Schalter)`): tauscht die Vereinsnummer der 200 Spieler (+0x1D), den Verein der
+  Manager (DGROUP 0x966F + 0x1AF · Manager) und die Vereinssätze ab DGROUP 0x8257 – die Vereine wechseln also ihre Indizes,
+  0x5CCB bleibt stehen. Paare (0x56137–0x5636D, Ligen 0 und 1): Gruppenplätze DGROUP 0xCD94 + 6 · Liga, Verein über
+  0xCF20 + 0x24 · Liga + Platz; der nächste Verein mit Index ≥ 0x7C1[Liga] (untere Liga: 12 bzw. 24) unter den Plätzen 1–2
+  tauscht mit dem nächsten Verein der oberen Liga unter den Plätzen 3–4. Oberliga (0x56238 ff.): Platzliste 0x5CCB + 24 +
+  11 − k (Letzter, dann Vorletzter) mit einem Zufallsverein 0x847(36, 41) (DGROUP 0x7C2 + 0x7B3 … + 5) – Beleg für Teil 4
+  (#166), hier nur die Reihenfolge. Da am ersten Spieltag alle Felder gleich sind, behält die Tauschsortierung die Liste:
+  Die Folgesaison beginnt mit der Abschlussreihenfolge, der Partner auf dem Platz des Getauschten. Remake:
+  `LeagueTable.SuccessorOrder` aus `SeasonRecord` (Abschlusstabelle, `PromotedInto`/`RelegatedInto` jetzt in
+  Tabellenreihenfolge der Aufstiegsrunde, `LeftOberliga`); Tests `WettbewerbeStartordnungTests`.
+* **Abzug in der Titelzahl** Datei 0x4F986–0x4F9DE: Spieltag im Titel = 0x7A9[Liga] − 1, wenn Parameter 2 = 1 und
+  0x7A9 > 1, sonst 0x7A9. Aufrufer (Stub Ov 0x128 +0x57): Hauptmenü 0x45842 mit 1; automatische Tabelle nach dem Spieltag
+  0x37889 mit 0 (nur bei Schalter DGROUP 0x21F + 3 · Liga), danach erst `inc 0x7A9` (0x37897). Beide zeigen damit die Zahl
+  der gespielten Spieltage, vor dem ersten „1.“ – wie `TableScreen.Title` (`TableTitleNumberTests`). 0x4FA49/0x50215
+  begrenzen 0x7A9 für die Sortierung auf 0x7B6 − 1 = 43 (0x50B45 läuft nur bis 0x7A9 − 1 ≤ 43) und stellen den Wert danach
+  wieder her; ohne Wirkung auf die Anzeige.
+* **Tore modulo 30** 0x30906/0x30916: `while (x > 29) x −= 30` für beide Tore (DGROUP 0x5CAC ff.) vor 0x303D9. Die Marke +30
+  setzt nur das Penaltyschießen im K.-o.-Spiel; Gruppenspiele (WM, Europapokal, Aufstiegsrunde) spielen im Remake ohne
+  K.-o. (`knockOut: false`), ihre Ergebnisse bleiben unter 30 (Mehrsaisonprobe `WettbewerbeStartordnungTests`). Keine
+  Abweichung, keine Änderung nötig.
+
