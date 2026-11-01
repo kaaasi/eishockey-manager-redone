@@ -66,8 +66,8 @@ public static partial class SaveGame
     /// (<c>SaveGame.Migration.Nationalteam2.cs</c>; Integration Runde 8, Welle 3, auf dem Branch 14 → 15).
     /// 16 → 17: Verhandlungs- und Gebotssperre, Spur transfer-original-vertrag
     /// (<c>SaveGame.Migration.TransferOriginalVertrag.cs</c>; Integration Runde 8, Welle 3, auf dem Branch 14 → 15).
-    /// 17 → 18 (vorläufig, Nummer in der Integration): Rekorde, Kopf-an-Kopf-Liste und Bilanz der Länder für das
-    /// Gegner-Fenster, Spur wettbewerbe-komplett (<c>SaveGame.Migration.WettbewerbeKomplett.cs</c>).
+    /// 17 → 18: Rekorde, Kopf-an-Kopf-Liste und Bilanz der Länder für das
+    /// Gegner-Fenster, Spur wettbewerbe-komplett (<c>SaveGame.Migration.WettbewerbeKomplett.cs</c>; Integration Runde 9).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
