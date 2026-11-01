@@ -19,7 +19,7 @@ Ein Manager („Joerg“), Kopf und Verein Düsseldorfer EG gewählt, Start-Liga
 
 ### Nach „Los jetzt!“ (06–18)
 
-- **Halt am Samstag, 14. April 1994** vor dem ersten WM-Spiel, Hauptmenü des Bundestrainers mit Fahne statt Wappen,
+- **Halt am Samstag, 14. April 1994** (gleich nach „Los jetzt!“, #195) vor dem ersten WM-Spiel, Hauptmenü des Bundestrainers mit Fahne statt Wappen,
   Gegner Russland, „Noch keine“, Konto 500.000 DM (06). Bestätigt das bisherige `[APPROX]` „Halt nach dem Sprung“.
 - **Menü des Bundestrainers schon vor der Ernennung:** Statistiken, Tabellen, Paarungen je fünf gesperrt + „WM“ offen
   (08–10); Gemischtes Laden/Sichern/Einst. + drei leere Plätze (11). Mannschaft und Stärken sind vor der Ernennung
@@ -71,7 +71,7 @@ Ein Manager („Joerg“), Kopf und Verein Düsseldorfer EG gewählt, Start-Liga
   Hintergrundgrafik, Scrolling (Pinguin = an, Loch = aus), Spielgeschwindigkeit (acht Pinguine); je Liga (1./2./3. Liga)
   Drittelpause, Ergebnisse, Tabelle; DEB-Pokal, Europapokal, WM-Spiele. **Torszenen hat drei Stufen:** kein Pinguin,
   Pinguin, Pinguin mit rotem Punkt (50, 51; laut Nutzer keine Animation). Bedeutung der dritten Stufe offen (em.exe).
-  Das Remake hat einen eigenen Einstellungsbildschirm (`docs/anforderungen/bildschirme.md`), Torszenen nur an/aus.
+  Das ist der Bildschirm von em.exe 0x2CD1C (`docs/reverse-engineering.md`, Teil 2). Das Remake hat einen eigenen Einstellungsbildschirm (`docs/anforderungen/bildschirme.md`) mit lesender Seite „Spielstand“, Torszenen nur an/aus.
 
 ### Offen
 
@@ -95,3 +95,7 @@ Tests: `tests/EishockeyManager.UI.Tests/WeltkugelDosboxTests.cs` (Bildnamen im T
 | Energie aller Eingesetzten 46 nach drei Spielen (25 → 45) | Öffnen von „WM Vorbereitung“ setzt Kaderfeld 0x13 aller belegten Plätze auf 70 (Datei 0x3BB51, `mov byte [bx+0x5DD6],0x46`); 70 − 3 · 8 = 46 passt zu einem festen Abzug je Spiel in der Spielberechnung (0xE8:0x39, nicht gelesen). Setzen beim Öffnen verbietet die Architekturregel („Bildschirme ändern beim Öffnen nichts“) | 70 umgesetzt beim ersten Freundschaftsspiel (`[APPROX]`, Nutzerentscheidung PR #189, Test `FirstFriendly_SetsSquadEnergyTo70`); Abzug je Spiel offen bei `spielberechnung` |
 | Taktik des Nationalteams zu Beginn alle 0 (26) | Die Automatik (Datei 0x8365) schreibt Einsatz/Angriff nur **vor einem Spiel** in den Vereinssatz (Felder 0x26–0x2D), wenn der Verein keinen Manager hat oder dessen Modus „AUTOM.“ ist; Aufrufe nur aus dem Spieltagsablauf je Paarung (Datei 0x36D12/0x36D49 Liga, 0x36F27/0x36F5A Wettbewerbe, Tabelle DGROUP 0x5CFB). Es gibt keinen Start- oder Ernennungswert und keine Unterscheidung nach Modus: Bis zum ersten Spiel des Teams stehen 0 – im Modus 1 wie im Modus 4. Das Video `bundestrainer_00058` (60/0/25/20/30/0) stammt aus einer späteren Saison (Werte des letzten Spiels bleiben stehen). Umsetzung braucht eine Änderung in `Squad.Tactics.cs` (Anzeige „AUTOM.“, Spur `taktik-verein`) und Zustand über den Saisonwechsel (Schema) | umgesetzt in Runde 8, Spur `nationalteam` (#192): `Tactics.National`, Test `NationalteamTests` (`docs/wettbewerbe.md`) |
 | Torszenen-Stufe 3, Symbol ohne Modus (03, 50, 51) | nicht untersucht | offen |
+| Modus 1 hält zuerst am 10. Sept. (#195) | Die Tagesfunktion 0x54C9F springt am ersten Tag (0x54CEE) und ruft das Hauptmenü erst am Tagesende (0x555A3) – nach „Los jetzt!“ kommt kein Menü am Tag 0 (06) | behoben in Runde 8, Spur `nationalteam-2` (`SetupScreen`, Test `Nationalteam2Tests.Mode1_FirstHaltAfterStart_IsFirstWorldCupDay`). Offen: Saisonwechsel im Modus 1 (siehe PR) |
+| Paarungen → WM (20, 21, 24; #194) | Paarungsansicht 0x2FC2F, Seite 8 des Seitenwählers 0x3A88A | umgesetzt in Runde 8, Spur `nationalteam-2` (`CupPairingsScreen`, `docs/wettbewerbe.md`) |
+| WM-Statistik vor dem ersten Spiel (17) | 0x3ADE1: acht Zeilen „0 P.“ in WM-Reihenfolge, alle zwölf Länder darunter | umgesetzt in Runde 8, Spur `nationalteam-2` (`WorldCupStatisticsScreen`) |
+| „Mannschaft und Stärken vor der Ernennung gesperrt“ (Angabe ohne Bild) | Die Ernennung (DGROUP 0xD0BA, Datei 0x54D19) fällt in die Tagesfunktion vor dem ersten Menü; 18 („Spieler in WM-Kader“ vor „auto“) ist über die Reihe Mannschaft erreicht. Vermutlich waren Aufstellung/Taktik vor der Kaderwahl gemeint | Annahme, nicht im Bild geprüft |

@@ -144,7 +144,7 @@ public class PixelWettbewerbeTests
 
         d.Host.Show(new Screens.MainMenuScreen(d.Host));
         var state = StateFingerprint.Of(game);
-        d.OpenTile("WM");
+        d.OpenTile("Tabelle WM"); // #194: „Paarungen → WM“ ist jetzt die Paarungsansicht
         d.Click(WorldCupScreen.KnockoutButton.X + 5, WorldCupScreen.KnockoutButton.Y + 5);
         d.Frame();
         Assert.IsType<WorldCupKnockoutScreen>(d.Host.Current);

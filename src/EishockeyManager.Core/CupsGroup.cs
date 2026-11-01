@@ -48,28 +48,58 @@ public sealed class CupGroup(int number, IReadOnlyList<int> teams)
     public bool Contains(int club) => Teams.Contains(club);
 
     /// <summary>
-    /// Tabelle der Gruppe. [APPROX] Reihenfolge wie in der Liga (Pluspunkte, Minuspunkte, Tordifferenz, Tore),
-    /// bei Gleichstand die Auslosungsreihenfolge. Das Original zeigt Punkte und Tore („0: 0  0: 0“, Video 13:11).
+    /// Tabelle der Gruppe nach den bisher gespielten Runden (je Spieltag eine Runde).
     /// </summary>
-    public IReadOnlyList<TableRow> Table(IReadOnlyList<Club> clubs)
+    /// <remarks>
+    /// [ORIGINAL] em.exe 0x30852 (Wettbewerb 0 = WM, 2 = Europapokal-Gruppen, 3 = Endrunde): nach jedem Spieltag trägt
+    /// 0x303D9 Punkte (Sieg 2, Unentschieden 1), Tore und Gegentore je Gruppenplatz ein (DGROUP 0xCD58, 0xCD28, 0xCCF8) und
+    /// sortiert danach die Platzliste der Gruppe (DGROUP 0xCD88) an Ort und Stelle; siehe <see cref="Standings"/>.
+    /// Ausgangsreihenfolge = Plätze der Auslosung (0x30427, Datei 0x30831). Angezeigt wird diese Liste (WM 0x2F5B6,
+    /// Europapokal 0x31CD5); die Endrunde nimmt Erster und Zweiter je Gruppe daraus (0x305D4).
+    /// </remarks>
+    public IReadOnlyList<TableRow> Table(IReadOnlyList<Club> clubs) =>
+        Standings(clubs, Teams, Results.GroupBy(r => r.Day)
+            .Select(day => day.Select(r => (r.Home, r.Away, r.HomeGoals, r.AwayGoals))));
+
+    /// <summary>
+    /// [ORIGINAL] Gruppentabelle wie em.exe 0x30852 (Datei 0x30C36–0x30E73): je Runde Ergebnisse eintragen, dann
+    /// Tauschsortierung der Platzliste (für jeden Platz i alle späteren j). j verdrängt i bei mehr Punkten, bei gleichen
+    /// Punkten bei höherer Tordifferenz und bei gleicher Tordifferenz, wenn i <b>nicht mehr</b> Tore hat (Datei 0x30D89:
+    /// „jna“ – voller Gleichstand tauscht also, anders als in der Liga). Spiele zählen nicht (alle Vereine einer Gruppe
+    /// spielen je Runde einmal).
+    /// </summary>
+    /// <param name="slots">Vereine in der Ausgangsreihenfolge (Plätze der Auslosung).</param>
+    /// <param name="rounds">Ergebnisse je Runde, in Spielfolge.</param>
+    public static IReadOnlyList<TableRow> Standings(IReadOnlyList<Club> clubs, IReadOnlyList<int> slots,
+        IEnumerable<IEnumerable<(int Home, int Away, int HomeGoals, int AwayGoals)>> rounds)
     {
-        var rows = Teams.ToDictionary(c => c, c => new TableRow { Club = clubs[c] });
-        foreach (var r in Results)
+        var rows = slots.ToDictionary(c => c, c => new TableRow { Club = clubs[c] });
+        var order = slots.ToList();
+        foreach (var round in rounds)
         {
-            Add(rows[r.Home], r.HomeGoals, r.AwayGoals, true);
-            Add(rows[r.Away], r.AwayGoals, r.HomeGoals, false);
+            foreach (var (home, away, homeGoals, awayGoals) in round)
+            {
+                if (!rows.TryGetValue(home, out var h) || !rows.TryGetValue(away, out var a))
+                    continue;
+                Add(h, homeGoals, awayGoals, true);
+                Add(a, awayGoals, homeGoals, false);
+            }
+            LeagueTable.ExchangeSort(order, (b, a) => Displaces(rows[b], rows[a]));
         }
-        var order = Teams.ToList();
-        var list = rows.Values
-            .OrderByDescending(r => r.PointsPlus)
-            .ThenBy(r => r.PointsMinus)
-            .ThenByDescending(r => r.GoalDifference)
-            .ThenByDescending(r => r.GoalsFor)
-            .ThenBy(r => order.IndexOf(r.Club.Index))
-            .ToList();
+        var list = order.Select(c => rows[c]).ToList();
         for (var i = 0; i < list.Count; i++)
             list[i].Rank = i + 1;
         return list;
+    }
+
+    /// <summary>[ORIGINAL] Vergleich von 0x30852 (Datei 0x30CB6–0x30D91): verdrängt <paramref name="b"/> (späterer Platz) <paramref name="a"/>?</summary>
+    private static bool Displaces(TableRow b, TableRow a)
+    {
+        if (b.PointsPlus != a.PointsPlus)
+            return b.PointsPlus > a.PointsPlus;
+        if (b.GoalDifference != a.GoalDifference)
+            return b.GoalDifference > a.GoalDifference;
+        return a.GoalsFor <= b.GoalsFor;
     }
 
     private static void Add(TableRow row, int goalsFor, int goalsAgainst, bool home)
@@ -80,7 +110,9 @@ public sealed class CupGroup(int number, IReadOnlyList<int> teams)
         if (goalsFor > goalsAgainst) { row.Wins++; c = 'S'; }
         else if (goalsFor == goalsAgainst) { row.Draws++; c = 'U'; }
         else { row.Losses++; c = 'N'; }
-        row.Form.Add(home ? c : char.ToLowerInvariant(c));
+        // [ORIGINAL] wie 0x50283 (DGROUP 0x7CE „sSnNuU“): Heimverein klein, Gast groß. Eine Bilanz führt das Original nur
+        // für Liga und WM (Code 7/8); die Gruppenansichten zeigen sie nicht.
+        row.Form.Add(home ? char.ToLowerInvariant(c) : c);
     }
 
     /// <summary>Spielt Runde <paramref name="round"/>: Unentschieden sind möglich (Gruppenspiel, kein Penaltyschießen).</summary>

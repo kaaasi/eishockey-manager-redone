@@ -14,7 +14,9 @@ public class SeasonPaymentTests
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "Oben", Head = 0, ClubIndex = 0 });
         setup.Managers.Add(new ManagerSetup { Name = "Unten", Head = 1, ClubIndex = 11 });
-        return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, seed);
+        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung oben/unten (spielstaerke-manager-2, 0x98F8)
+        return game;
     }
 
     private static int HomeGames(GameState game, int club) =>

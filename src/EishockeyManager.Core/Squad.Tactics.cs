@@ -180,16 +180,18 @@ public sealed class Tactics
     /// der jeweilige Modus „AUTOM.“ ist (Einsatz und Angriff getrennt, Datei 0x8421 bzw. 0x8481). Nur bei Taktiken
     /// mit <see cref="KeepsLastAutoLine"/>; die Werte bleiben bis zum nächsten Spiel stehen, auch über den
     /// Saisonwechsel. Die Werte im Spiel selbst bestimmt weiter <see cref="EffectiveEffort"/>/<see cref="EffectiveAttack"/>.
+    /// [ORIGINAL] Ohne Manager (Vereinsfeld 0x16 = 0, Datei 0x842B) schreibt 0x8365 beide Zeilen ohne Blick auf die
+    /// Modi (<paramref name="unmanaged"/>, R8-B04).
     /// </summary>
-    public void RecordAutoLine(int ownStrength, int opponentStrength)
+    public void RecordAutoLine(int ownStrength, int opponentStrength, bool unmanaged = false)
     {
         if (_shownAutoEffort is null || _shownAutoAttack is null)
             return;
         for (var i = 0; i < Situations; i++)
         {
-            if (EffortMode == TacticMode.Auto)
+            if (unmanaged || EffortMode == TacticMode.Auto)
                 _shownAutoEffort[i] = AutoEffort(ownStrength, opponentStrength, (ScoreSituation)i);
-            if (AttackMode == TacticMode.Auto)
+            if (unmanaged || AttackMode == TacticMode.Auto)
                 _shownAutoAttack[i] = AutoAttack(ownStrength, opponentStrength, (ScoreSituation)i);
         }
     }

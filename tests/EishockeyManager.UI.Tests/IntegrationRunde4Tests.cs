@@ -38,7 +38,7 @@ public class IntegrationRunde4Tests : IDisposable
         d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5); // nur Weltkugel
         d.Click(SetupScreen.StartButton.X + 5, SetupScreen.StartButton.Y + 5);
         Assert.Equal(GameMode.WorldOnly, d.Host.Game!.Mode);
-        d.PlayMatchDay(); // Sprung zur WM, Ernennung
+        // #195: „Los jetzt!“ springt schon zum ersten WM-Termin (Ernennung)
         Assert.NotNull(d.Host.Game.NationalCoach);
         return d;
     }

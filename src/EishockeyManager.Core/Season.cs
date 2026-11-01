@@ -198,7 +198,7 @@ public static class LeagueTable
         var clubs = game.LeagueClubs(league).ToList();
         var total = clubs.ToDictionary(c => c.Index, c => new TableRow { Club = c });
         var shown = view == TableView.Gesamt ? total : clubs.ToDictionary(c => c.Index, c => new TableRow { Club = c });
-        var order = clubs.Select(c => c.Index).ToList();
+        var order = StartOrder(game, league, clubs.Select(c => c.Index).ToList());
 
         var byDay = game.Results.Where(r => r.League == league && r.MatchDay <= upToMatchDay)
             .GroupBy(r => r.MatchDay).OrderBy(g => g.Key);
@@ -232,6 +232,21 @@ public static class LeagueTable
         for (var i = 0; i < list.Count; i++)
             list[i].Rank = i + 1;
         return list;
+    }
+
+    /// <summary>
+    /// Ausgangsreihenfolge der Platzliste: Vereinsreihenfolge der Liga (0x2F1A2, Vereinsindex aufsteigend). [ORIGINAL] Beim
+    /// Spielstart tauscht em.exe in der 1. Liga die Plätze 1 und 3 (Datei 0x43A08/0x43A0D: DGROUP 0x5CCB = 2,
+    /// 0x5CCD = 0) – der Deutsche Meister Düsseldorfer EG (DGROUP 0xD0E6 = 2) steht vorn; so im Video „Die Oberfläche von
+    /// EM“ 13:07 (Tabelle 1. Liga vor dem ersten Spieltag: Düsseldorfer EG, SC Preussen Berlin, Eisbären Berlin, …).
+    /// [APPROX] Ab der zweiten Saison wieder die Vereinsreihenfolge (siehe <see cref="ComputeRanks"/>).
+    /// </summary>
+    private static List<int> StartOrder(GameState game, League league, List<int> order)
+    {
+        if (league == League.Bundesliga && game.Season == GameState.FirstSeason
+            && order.IndexOf(0) is var a and >= 0 && order.IndexOf(2) is var b and >= 0)
+            (order[a], order[b]) = (order[b], order[a]);
+        return order;
     }
 
     /// <summary>

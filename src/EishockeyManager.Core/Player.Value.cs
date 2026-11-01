@@ -41,13 +41,16 @@ public readonly record struct PlayerValueInputs
     /// <summary>Zweite Stärke (Technik), Kaderplatz +0x11 (Byte). Die Form (+0x12) geht nicht ein.</summary>
     public int Technique { get; init; }
 
-    /// <summary>Spiele im ersten Wettbewerb, Kaderplatz +0x1C (Wort), Gewicht 50.</summary>
+    /// <summary>
+    /// Kaderplatz +0x1C (Wort), Gewicht 50: laut <c>docs/formate/spielstand-original.md</c> (FILE07) die Spiele für den
+    /// jetzigen Verein (nach einem Kauf 0) – nicht „Spiele im ersten Wettbewerb“ (die stehen in +0x06–+0x08; SW-02).
+    /// </summary>
     public int Games0 { get; init; }
 
-    /// <summary>Spiele im zweiten Wettbewerb, Kaderplatz +0x1E (Wort), Gewicht 20.</summary>
+    /// <summary>Kaderplatz +0x1E (Wort), Gewicht 20; Bedeutung offen (<c>spielstand-original.md</c>, SW-02).</summary>
     public int Games1 { get; init; }
 
-    /// <summary>Spiele im dritten Wettbewerb, Kaderplatz +0x20 (Wort), Gewicht 30.</summary>
+    /// <summary>Kaderplatz +0x20 (Wort), Gewicht 30; Bedeutung offen (<c>spielstand-original.md</c>, SW-02).</summary>
     public int Games2 { get; init; }
 
     /// <summary>
@@ -71,7 +74,7 @@ public readonly record struct PlayerValueInputs
 /// <summary>
 /// Wert und Gehalt eines Spielers – einzige Quelle im Remake. [ORIGINAL] em.exe Datei 0x49D36–0x4A1DA (Overlay 0x118 +
 /// 0x3D36, Einsprung 0x118:0x70, 1189 Byte), Ergebnis in <b>Drittel-DM</b> (vorzeichenbehaftete 32-Bit-Zahl). Im Emulator
-/// gegen die Originalfunktion geprüft (<c>PlayerValueTests</c>, 2.000 Zufallsfälle gleich).
+/// gegen die Originalfunktion geprüft (<c>SpielerwertTests</c>, 2.000 Zufallsfälle gleich).
 /// <para>Rechnung (alle Teilungen ganzzahlig, zur Null hin; „Zeile“ = Tabelle DGROUP 0x5312, 6 Byte je Art):</para>
 /// <code>
 /// Zeile Preis 58, 4, 4, 5, 4, 25 · Zeile Gehalt 70, 8, 7, 5, 8, 2
@@ -181,7 +184,8 @@ public static class PlayerValue
     /// <summary>
     /// Eingänge eines Spielers des Remakes. <paramref name="club"/> ist der Verein, in dessen Kader er steht (null =
     /// vertragslos; Original 0xFF → Spielklasse 1); <paramref name="offer"/> der Verein mit einem offenen Angebot.
-    /// [APPROX] Das Remake zählt Spiele und Tore nicht je Wettbewerb: alles geht in den ersten Wettbewerb (+0x03, +0x1C);
+    /// [APPROX] Das Remake zählt Tore nicht je Wettbewerb (alle in +0x03) und Spiele nicht je Verein (alle Spiele in +0x1C,
+    /// +0x1E/+0x20 bleiben 0; SW-02);
     /// Tendenz siehe <see cref="TrendValue"/>; der Level ist im Remake je Manager.
     /// </summary>
     public static PlayerValueInputs Inputs(Player player, Club? club, Club? offer = null, int level = 3) => new()

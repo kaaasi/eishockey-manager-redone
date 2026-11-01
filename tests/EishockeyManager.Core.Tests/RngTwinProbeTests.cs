@@ -85,16 +85,25 @@ namespace EishockeyManager.Core.Tests;
 /// Integration Runde 8 (Leitstelle): alle sechs neu ermittelt auf dem Stand mit spielerwert, befunde-p3, tabellen-original,
 /// nationalteam, statistiken und spielstaerke-manager. Die Spielverläufe folgen dem Lader (spielstaerke-manager); hinzu
 /// kommen Werbebewertung, Einzelprämien und neue Felder (<c>LeaguePenaltyMinutes</c>, Taktik des Nationalteams) im Abdruck.
+/// Spur spielstaerke-manager-2 (Basis <c>99fa995</c>): alle sechs Abdrücke neu. In Managerpaarungen rechnet der Managerverein
+/// mit den Werten seiner Spieler (0x98F8 statt Teamwert aus der Datenbankstärke), beide Vereine verbrauchen je Minute
+/// Energie (0x87F7), wechseln Reihen (0x8EF2/0x80CB), tauschen die Seiten (random(0, 1)) und folgen der Taktik in geraden
+/// Minuten (0x939A, für beide Vereine); Strafen ziehen den Spieler 0x378C5 und zählen den Einsatz mit dem Managerwert
+/// 0x974B. Andere Ergebnisse und Zufallszüge ab dem ersten Spiel des Managers, damit Tabellen, Titel, Finanzen und alle
+/// Quellen. Paarungen ohne Manager sind unverändert (Gegenprobe: <c>SpielstaerkeManagerTests</c> und
+/// <c>SpielberechnungMinutenTests</c> unverändert grün). Keine Gegenprobe, die den alten Verlauf erhält.
+/// Integration Runde 8, Welle 3 (Leitstelle, R8W3I-01 #269): alle sechs neu – 0x80CB/0x939A lesen den Spielstand vor den
+/// Toren der Minute; das ändert Ergebnisse jeder Managerpaarung und damit alle Verläufe.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "8CE8C63B6DFE63F2")]
-    [InlineData(true, 3, "CE2CD7AD336D1CC4")]
-    [InlineData(false, 11, "1BD3021354D29088")]
-    [InlineData(true, 11, "80DA1E9A65C65DDA")]
+    [InlineData(false, 3, "B51E23E5AB35A362")]
+    [InlineData(true, 3, "1F918CF3F088B998")]
+    [InlineData(false, 11, "045D33151AFA705F")]
+    [InlineData(true, 11, "9638BC3D2695D427")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -102,8 +111,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "FF8BDA50DBD8749A")]
-    [InlineData(true, "9AFFC7CD443437AB")]
+    [InlineData(false, "2FAE1718E86EC1F6")]
+    [InlineData(true, "070AD5E8FBB6D9C3")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -143,7 +152,7 @@ public class RngTwinProbeTests
     private static void ExtendOffers(GameState game)
     {
         foreach (var p in OwnClub(game).Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1).ToArray())
-            Contracts.Offer(p, p.NoticeYears, Contracts.Demand(p) + 100, false, game.PlayedMatchDays, game.Random);
+            Contracts.Negotiate(game, game.Managers[0], p, p.NoticeYears, Contracts.Demand(p) + 100, false, demandFilled: true);
     }
 
     private static void SignFreeAgents(GameState game)
@@ -204,12 +213,25 @@ public class RngTwinProbeTests
     /// </summary>
     private static readonly HashSet<string> Excluded = ["Id", "DressedCount", "LeaguePenaltyMinutes"];
 
+    /// <summary>
+    /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:
+    /// <c>Player.NegotiationLock</c> (Spur transfer-original-vertrag, Sperre in Tagen) ersetzt <c>RejectedOfferDay</c>
+    /// (Spieltag der letzten Ablehnung, sonst leer); 0 erscheint wie früher <c>null</c> als leerer Wert.
+    /// </summary>
+    private static readonly Dictionary<string, (string Name, Func<object?, object?> Value)> Renamed = new()
+    {
+        ["NegotiationLock"] = ("RejectedOfferDay", v => v is 0 ? null : v),
+    };
+
     private static void Dump(StringBuilder sb, object value)
     {
         foreach (var property in value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                      .Where(p => p.GetIndexParameters().Length == 0 && IsSimple(p.PropertyType) && !Excluded.Contains(p.Name))
-                     .OrderBy(p => p.Name, StringComparer.Ordinal))
-            sb.Append(property.Name).Append('=').Append(property.GetValue(value)).Append(';');
+                     .OrderBy(p => Renamed.TryGetValue(p.Name, out var r) ? r.Name : p.Name, StringComparer.Ordinal))
+        {
+            var (name, map) = Renamed.TryGetValue(property.Name, out var renamed) ? renamed : (property.Name, v => v);
+            sb.Append(name).Append('=').Append(map(property.GetValue(value))).Append(';');
+        }
         sb.Append('\n');
     }
 

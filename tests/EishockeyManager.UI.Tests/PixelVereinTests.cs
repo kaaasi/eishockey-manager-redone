@@ -163,6 +163,10 @@ public class PixelVereinTests
         var d = FlowTests.CreateDriver();
         d.StartNewGame(clubIndex: 2);
         var game = d.Host.Game!;
+        // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „Bundestrainer nach der ersten Saison“ wie in NationalCoachMode4MenuTests –
+        // Managerverein mit Datenbankstärke (ManagedSquadsUi). Ohne sie erreichten vor R8W3I-01 2 von 8, danach 0 von 8 Seeds den Zug;
+        // mit ihr 7 von 8 (Messung im PR #268, kein systematischer Stärkeverlust der Managervereine durch den Fix).
+        ManagedSquadsUi.PlayAtDatabaseStrength(game);
         for (var guard = 0; !game.NationalTurn; guard++)
         {
             Assert.True(guard < 400, "Kein Zug des Bundestrainers erreicht.");
@@ -190,7 +194,7 @@ public class PixelVereinTests
         d.Click(SetupScreen.ModeFlag.X + 5, SetupScreen.ModeFlag.Y + 5);
         d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
         Assert.Equal(Core.GameMode.WorldOnly, d.Host.Game!.Mode);
-        d.PlayMatchDay();
+        // #195: „Los jetzt!“ springt schon zum ersten WM-Termin (Ernennung)
         d.Move(1, 239);
         Assert.True(Shows(d, SeasonInfo.IconSource(Core.Competition.WorldCup), 111, 35), "WM-Symbol fehlt");
         Assert.False(Shows(d, HomeIcon, 126, 35) || Shows(d, AwayIcon, 126, 35), "Heim-/Auswärtssymbol bei einem WM-Spiel");

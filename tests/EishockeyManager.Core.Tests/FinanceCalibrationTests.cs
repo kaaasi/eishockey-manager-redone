@@ -194,8 +194,8 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                         if (manager.Money > 800000 && game.Finance(manager).Stadium.Level(StadiumFeature.Gastronomie) == 0)
                             game.StartConstruction(manager, StadiumProject.Feature, StadiumFeature.Gastronomie, 1);
                         foreach (var player in club.Players.Where(p => p.ContractYears == 1))
-                            Assert.Equal(NegotiationResult.Accepted, Contracts.Offer(player, 4,
-                                Contracts.Demand(player), false, game.PlayedMatchDays, new Random(1)));
+                            Assert.Equal(NegotiationResult.Accepted, Contracts.Negotiate(game, manager, player, 4,
+                                Contracts.Demand(player), false, demandFilled: true));
                         club.Lineup.AutoFill(club.Players);
                         foreach (var kind in Enum.GetValues<AdSlotKind>())
                         {

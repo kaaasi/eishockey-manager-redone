@@ -25,6 +25,13 @@ public sealed class TransferListing
     /// <summary>Spieltag, an dem der Spieler auf den Markt kam.</summary>
     public int ListedDay { get; init; }
 
+    /// <summary>
+    /// Sperre nach einem abgelehnten Gebot (Kaderplatz +0x1A des Markt-Satzes): Bit 0x80 und Bit 1 &lt;&lt; Manager.
+    /// [ORIGINAL] gesetzt Datei 0x472F4, geprüft beim Anklicken 0x47140 („Angebot wurde bereits abgelehnt.“), gelöst im
+    /// Tagesablauf 0x071CC (<see cref="TransferMarket.ReleaseBidLocks"/>).
+    /// </summary>
+    public int RejectedBy { get; set; }
+
     /// <summary>Statuszeile: „vom TSV ERDING“ bzw. bei Nationalteams „aus FRANKREICH“.</summary>
     public string OriginText => (TransferMarket.IsNationalTeam(From) ? "aus " : "vom ") + From.Name;
 }
@@ -58,6 +65,9 @@ public enum TransferResult
 
     /// <summary>„Der Transfer findet nicht statt.“ – z. B. zu wenige Spieler einer Art im Kader.</summary>
     Impossible,
+
+    /// <summary>„Angebot wurde bereits abgelehnt.“ – Sperre nach abgelehntem Gebot (DGROUP 0x1219/0x121D, Datei 0x47B01).</summary>
+    AlreadyRejected,
 }
 
 /// <summary>
@@ -233,10 +243,40 @@ public sealed class TransferMarket
     }
 
     /// <summary>
+    /// Ist der Spieler für diesen Manager nach einem abgelehnten Gebot gesperrt? [ORIGINAL] Datei 0x47140–0x4715E: Bit 0x80
+    /// und das Bit des Managers in Kaderplatz +0x1A → „Angebot wurde bereits abgelehnt.“ (geprüft beim Anklicken).
+    /// </summary>
+    public static bool IsLocked(GameState game, Manager manager, TransferListing listing)
+    {
+        var bit = ManagerBit(game, manager);
+        return (listing.RejectedBy & 0x80) != 0 && (listing.RejectedBy & bit) != 0;
+    }
+
+    private static int ManagerBit(GameState game, Manager manager)
+    {
+        var index = game.Managers.ToList().IndexOf(manager);
+        return index is >= 0 and < 7 ? 1 << index : 0;
+    }
+
+    /// <summary>
+    /// Tagesablauf (nur im Zug von Manager 0, Datei 0x0718F): Ist auf einem Markt-Platz allein Manager 0 gesperrt
+    /// (+0x1A &amp; 0x7F = 1), hebt random(0, 2) = 0 seine Sperre auf; Bit 0x80 bleibt (0x071CC–0x07202). Sperren anderer
+    /// Manager löst das Original nie (der Vergleich nutzt die Managernummer 0 des Zugs). Der Test 0x07209 (<c>test +0x1A, 0</c>)
+    /// ist wirkungslos.
+    /// </summary>
+    public void ReleaseBidLocks(Random random)
+    {
+        foreach (var listing in _listings)
+            if ((listing.RejectedBy & 0x7F) == 1 && TransferRules.Random16(random, 0, 2) == 0)
+                listing.RejectedBy ^= 1;
+    }
+
+    /// <summary>
     /// Kauf (<paramref name="loan"/> = false) bzw. Leihe eines Spielers zum gebotenen Betrag. Vom Computermarkt nach
-    /// <see cref="TransferRules.Accepts"/> (Listenpreis, bei Leihe / 3); von einem anderen Manager erst die Unfair-Grenze
-    /// <see cref="TransferRules.IsFair"/> auf dem frischen Wert. Wie im Original fällt die Annahme vor der Geldprüfung
-    /// (0x472C8 vor 0x474F0). [APPROX] Antwort des verkaufenden Managers (Original fragt ihn, DGROUP 0xD98): ab dem
+    /// <see cref="TransferRules.Accepts"/> (Listenpreis, bei Leihe / 3), abgelehnt → Sperre <see cref="TransferListing.RejectedBy"/>
+    /// (0x472F4); wie im Original fällt die Annahme vor der Geldprüfung (0x472C8 vor 0x474F0). Von einem anderen Manager
+    /// erst die Geldprüfung, dann die Unfair-Grenze <see cref="TransferRules.IsFair"/> auf dem frischen Wert (0x474F0 vor
+    /// 0x47546, R8-C02). [APPROX] Antwort des verkaufenden Managers (Original fragt ihn, DGROUP 0xD98): ab dem
     /// geforderten Betrag sicher, darunter bis 85 % mit sinkender Wahrscheinlichkeit. Vertragslose Spieler (Ablöse 0)
     /// kommen immer.
     /// </summary>
@@ -253,12 +293,16 @@ public sealed class TransferMarket
             return TransferResult.SquadFull;
         if (!_listings.Contains(listing) || listing.Seller == manager)
             return TransferResult.Impossible;
+        if (IsLocked(game, manager, listing))
+            return TransferResult.AlreadyRejected;
 
         var asked = loan ? listing.LoanFee : listing.Price;
         if (asked < 0)
             return TransferResult.Impossible;
         if (listing.Seller is not null)
         {
+            if (offer > manager.Money)
+                return TransferResult.NotEnoughMoney;
             var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, game.Random);
             if (!TransferRules.IsFair(value, TransferRules.Thirds(offer), loan))
                 return TransferResult.Unfair;
@@ -268,7 +312,10 @@ public sealed class TransferMarket
         }
         else if (!listing.IsFreeAgent
                  && !TransferRules.Accepts(TransferRules.Thirds(listing.Price), TransferRules.Thirds(offer), loan, game.Random))
+        {
+            listing.RejectedBy |= 0x80 | ManagerBit(game, manager);
             return TransferResult.Rejected;
+        }
         if (offer > manager.Money)
             return TransferResult.NotEnoughMoney;
 
@@ -383,6 +430,7 @@ public sealed class TransferMarket
         TransferResult.TooManyOwnListings => ["Schon 3 Spieler auf", "dem Transfermarkt."],
         TransferResult.MarketFull => ["Schon 11 Mann auf", "dem Transfermarkt."],
         TransferResult.Unfair => ["Dieser Betrag ist", "nicht erlaubt (unfair) !"],
+        TransferResult.AlreadyRejected => ["Angebot wurde", "bereits abgelehnt."],
         _ => ["Der Transfer", "findet nicht statt."],
     };
 }

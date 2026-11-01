@@ -102,7 +102,9 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `docs/reverse-engineering.md` (eigener Abschnitt), Tests.
 - **Modell:** Claude Opus 5.5.
 - **Status:** Teil 1 (Preis, Annahme, Unfair-Grenze, Angebote für eigene Spieler) in #248; Teil 2 Vertragsverhandlung
-  0x4A1DB, Sperre nach Ablehnung, Pixelvergleich offen (siehe `docs/transfer.md`).
+  0x4A1DB/0x49A3B, Sperren (+0x18, +0x1A), R8-C01, R8-C02, SW-01, Pixelvergleich in #266 (Welle 3); offen: Kauf mit
+  Verhandlung, Verhandlung am Saisonende, Start-/Wechselgehalt nach Wert, unaufgeforderte Angebote, Wechsel der Liste 0x494EF
+  (siehe `docs/transfer.md`).
 
 ### Spur `spielerinfo` – Spielerinfo- und Spielerdaten-Fenster (0x41683, 0x041AC)
 
@@ -134,6 +136,9 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
 - **Modell:** Claude Opus 5.5.
 - **Status:** Teil 1 (Ligatabelle: Sortierung 0x50B45, Bilanz 0x50283, Ansicht Heim/Auswärts) in PR #240; offen: Pokal-/WM-Gruppen
   und Play-off-Setzung, Pixelvergleich der Ansicht (Referenzbilder in diesem Lauf nicht erreichbar).
+  Teil 2 (`tabellen-original-2`, Welle 3): umgesetzt in PR #261 (Claude Code, Base `99fa995`), Review offen – Gruppentabellen
+  nach 0x30852 (Europapokal, WM, Aufstiegsrunde), Startordnung 1. Liga (0x43A08), Ansicht nach 0x4F78D mit Pixelvergleich
+  (9,5 / 3,6 % gegen `oberflaeche_1307`), Bilanz Heim klein am Video, R8-B01.
 
 ### Spur `spielstaerke-manager` – Spielstärke der Managervereine und Restteile der Spielberechnung (#204, #179, #193)
 
@@ -152,7 +157,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `Effective*`, `Auto*`),
   `Core/SaveGame.Migration.<Spur>.cs` (neue Datei), `docs/spielberechnung.md`, Tests.
 - **Modell:** Claude Opus 5.5.
-- **Status:** Teil 1 in PR #241 (Claude Code): Lader 0x2EF1B, Tagesform 0x4F527, Meisterverteilung (#204), #179. Offen: Managerteil 0x386D1/0x378C5/0x98F8/0x87F7/0x8EF2, Verletzungen, #193, Videovergleich.
+- **Status:** Teil 1 in PR #241 (Claude Code, gemergt): Lader 0x2EF1B, Tagesform 0x4F527, Meisterverteilung (#204), #179. Teil 2 (`spielstaerke-manager-2`, Welle 3) in PR #263 (Claude Code): Managerteil 0x98F8/0x952C/0x84D7/0x87F7/0x8EF2/0x80CB/0x939A/0x378C5, R8-A03, Videovergleich #204 (Befund: Original streut die Meister stärker, offen). Offen (Teil 3): Verletzungen 0x38B8F, Torschütze 0x386D1, #193-Anzeige.
 
 ### Spur `statistiken` – Statistiken Spieler, Fairplay, Verein und Einzelprämien (#135, #222)
 
@@ -172,6 +177,10 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
 - **Status:** PR #242 (Claude Code, geplanter Lauf 31.10.2026): Spieler (0x25E30), Fairplay (0x2A1E0), Einzelprämien
   (#135) und #222 umgesetzt, Schema vorläufig 11 → 12. Offen: „Verein“ = 0x2D5AE (Menüsprung belegt, nicht 0x4D385),
   Pixelvergleich am Video (Referenzbilder nicht erreichbar).
+  Welle 3 `statistiken-verein`: PR #264 (Claude Code, geplanter Lauf 31.10.2026) – „Verein“ 0x2D5AE umgesetzt, Serien
+  und Rekorde, Über-/Unterzahl-Regeln und Zähler (Anschluss an die Minutenrechnung offen, `spielstaerke-manager`),
+  Pixelvergleich Verein/Spieler/Fairplay, Spielerdaten-Fenster aus Ranglisten und Aufstellung, SW-02, R8-B02; Schema
+  vorläufig 14 → 15.
 
 ### Spur `nationalteam` – WM-Statistik, WM-Paarungen und Befunde Bundestrainer (#192, #194, #195)
 
@@ -187,7 +196,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   `CupPairingsScreen.cs`, `UI/Screens/TileLocks.cs`, `Tools/Scenarios/` (eigene Datei), `docs/wettbewerbe.md` (eigener
   Abschnitt), `docs/dosbox-befunde.md`, Tests. #193 gehört zu `spielstaerke-manager`.
 - **Modell:** Claude Opus 5.5.
-- **Status:** in Arbeit (Claude Code). Teil `taktik` (#192): fertig zur Review, PR #243. Offen: #195, #194, WM-Statistik (ohne Referenzbilder in dieser Sitzung nicht prüfbar, siehe Übergabe in #243).
+- **Status:** Teil `taktik` (#192) gemergt (PR #243). Welle 3 (`nationalteam-2`): fertig zur Review, PR #265 (#195, #194, WM-Statistik, R8-B03, R8-B04, Hinweiszeile, Kommentar Sortierung). Offen: Halt beim Saisonwechsel im Modus 1 (Datei `SeasonEndSummaryScreen.cs` der Spur `statistiken`, siehe PR).
 
 ### Spur `optionen-kalender` – Spielmodus-Optionen und Kalender (0x2CD1C, 0x43E21; #228)
 
@@ -206,7 +215,7 @@ reviewt und gemergt und prüft die Aufruferzahl von 0x49D36 (#225) selbst, weil 
   Abschnitt), `docs/reverse-engineering.md` (eigener Abschnitt), Tests. Änderungen am Tagesablauf (`SeasonFlow.cs`) nur
   als Vorschlag im PR.
 - **Modell:** Claude Sonnet 5.5.
-- **Status:** offen.
+- **Status:** Teil 1 (Belege) #245 gemergt; Teil 2 im Draft-PR der Spur `optionen-kalender-2` (Einstellungen mit lesender Seite „Spielstand“, Kalender eingeordnet, kein Terminbildschirm mangels Videobeleg, #228); Review offen.
 
 ### Spur `befunde-p3` – Kleinbefunde Hauptmenü, hok-format, Funktionskarte (#216, #217, #225, #230)
 
@@ -281,8 +290,49 @@ Integration:         optionen-kalender-2 → tabellen-original-2 → statistiken
 
 **Abnahme je Spur** wie in Welle 1 (roter Test je Regel, Pixelvergleich mit Kennzahl, Bildschirme zustandsrein,
 Mehrsaisonprobe bei Kader/Geld/Saisonwechsel, `[ORIGINAL]`/`[APPROX]`, Abschnitt in `docs/reverse-engineering.md`).
+Stand `leitstelle-r8` (31.10.): Funktionskarte neu (Abdeckung umgesetzt 45 % → 55 %), `bildschirme.md`, SeasonFlow-Kommentar,
+SW-03, R8-A02 für `FinanceWerbungTests` (Verhandlung über sechs Seeds) und die Börse (Wachstum über zwölf Seeds). #260
+(Verdacht: Basiswerte wachsen seit Runde 8 nicht mehr) eingegrenzt: über 8 Seeds 24/32 → 15/32 ab dem Merge von
+`spielstaerke-manager`, über 40 Seeds 64 % → 56 % (Faktor 1,04 → 1,02) – Streuung, kein Fehler; Kursmodell unverändert.
+R8W3N-01: Werden `BoerseStartTests`/`FinanceWerbungTests` auf einem Spurbranch rot, nennt die Spur das im PR (blockiert
+nicht); so steht es auch in den Startaufrufen.
 R8-A01 (Spielstände aus Spurbranches) wird nicht behoben: Spurbranches sind keine Ausgabestände. W51-01 ist mit #250
 erledigt; F46-01 entfällt (nachträglich nicht behebbar).
+
+### Integration Runde 8, Welle 3 (Leitstelle)
+
+Branch `integration/runde-8-welle-3` von `main` 99fa995, zusammengeführt in Planfolge: `leitstelle-r8` (#262),
+`optionen-kalender-2` (#267), `tabellen-original-2` (#261), `statistiken-verein` (#264), `nationalteam-2` (#265),
+`transfer-original-vertrag` (#266), `spielstaerke-manager-2` (#263).
+- **Schema:** 14 → 15 Serien und Über-/Unterzahl (statistiken-verein), 15 → 16 WM-Platzierungen (nationalteam-2),
+  16 → 17 Verhandlungs- und Gebotssperre (transfer-original-vertrag). Referenzwerte unverändert gegenüber dem Branch
+  `spielstaerke-manager-2`.
+- **Anschlüsse der Leitstelle:** #193 Länderwerte nach Freundschaftsspielen aus der Aufstellung des Bundestrainers
+  (`PlayFriendly`); #195 auch nach dem Saisonwechsel (`SeasonEndSummaryScreen`); `docs/wettbewerbe.md` Z. 77.
+- **Offen aus den Spuren** (Folgearbeit, Runde 9): `spielstaerke-manager` Teil 3 (Verletzungen 0x38B8F, Torschütze
+  0x386D1, Anzeige #193 im Stärkevergleich, #204 Ursache der Streuung im Original); `nationalteam` Gegner-Fenster
+  0x128:0x2A, Schreibstelle der WM-Platzierungen; `statistiken` Über-/Unterzahl-Zähler an die Minutenrechnung;
+  `transfer-original` Kauf mit Verhandlung 0x4786A, Verhandlung am Saisonende 0x27D05, Versicherungsprämie,
+  unaufgeforderte Angebote, Listenwechsel 0x494EF; `tabellen-original` Startordnung ab Saison 2, Abzug in der Titelzahl
+  0x4F986; `optionen-kalender` Pixelvergleich Einstellungen (Bild 48), Kalender-Tiefenanalyse; `optionen-wirkung`.
+- **Review** `docs/reviews/2026-11-01-integration-runde-8-welle-3.md`: R8W3I-01 (#269, Spielstand vor den Toren der
+  Minute für 0x80CB/0x939A) und R8W3I-02 (#270, Forderung nach dem Saisonende ohne Untergrenze, Laufzeit und Forderung
+  zurückgeschrieben) in der Integration behoben. P3 als Restlücken (Runde 9): R8W3I-03 bis -05 Strafen in der
+  Managerpaarung (`PenalizedPlayer`, Rückgabe 100, Managerwert), -06 Nationalteam des Bundestrainers, -07 Versicherung im
+  Vertragsdialog, -08 Gehalt in ganzen DM, -09 Sperre beim Saisonwechsel, -10 Testlücken, -11 #195-Anschluss in einer
+  Spurdatei ohne Folgespur (`SeasonEndSummaryScreen.cs`) – im Plan als Ausnahme der Leitstelle nachgetragen.
+- **Folgen von R8W3I-01:** Ergebnisse jeder Managerpaarung ändern sich; Referenzwerte (RngTwinProbe, Mode4, Zähler,
+  WorldOnly, DEB-Pokal) neu. Kein systematischer Stärkeverlust der Managervereine (30 Seeds: mittlerer Platz 5,6 → 5,57,
+  Tordifferenz 42,6 → 43,4). Vier Ablauftests, deren Vorbedingung „Bundestrainer nach Saison 1“ am Zufall hing (Düsseldorf,
+  Originaldaten: vorher 2/8, danach 0/8 Seeds), spielen jetzt mit Datenbankstärke (`ManagedSquadsUi`, 7/8). Tore je Spiel:
+  Videobeleg nur Oberliga (6–10), übrige Ligen 5–11 (Bundesliga 5,97). Restlücke: Kader von Manager 0 in der Mode4-Probe
+  schrumpft auf 12 bis 13 Spieler (nicht spielfähig) – Probe robuster machen.
+- **Nachprüfung** `docs/reviews/2026-11-01-integration-runde-8-welle-3-nachpruefung.md`: R8W3I-12 (#272, Rückschreiben nach
+  dem Saisonende auch auf Level 5) behoben; R8W3I-13 (Zurückstellen bei Ablehnung ist `[ORIGINAL]` 0x4AD3E→0x4AD54) und
+  R8W3I-14 (Begründung Tore je Spiel) berichtigt. **R8W3I-15 (Verdacht, Runde 9, spielstaerke-manager Teil 3):**
+  Managervereine spielen mit Spielerwerten deutlich schwächer als mit Datenbankstärke (Originaldaten, 40 Seeds: Düsseldorf
+  Platz 8,95 statt 3,40, Oberliga-Verein 30 Platz 8,22 statt 2,73); gegen ein Video messen, ob das Original ebenso schwächt.
+  23 Core-Tests und vier Ablauftests umgehen den Abstand mit `PlayAtDatabaseStrength`.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 

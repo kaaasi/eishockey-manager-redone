@@ -29,11 +29,17 @@ public class LifecycleRegressionTests
     [Fact]
     public void R204_NewSeasonCancelsListingsAndBids()
     {
-        // Seed 5: der Markt ist am Saisonende nicht voll, das eigene Angebot also möglich. Mit Seed 3 steht der Markt seit
-        // der Spielberechnung des Originals (Spur spielberechnung, anderer Zufallsverbrauch) am Saisonende auf 11 Angeboten,
-        // mit Seed 2 seit dem Lader der Teamwerte (Spur spielstaerke-manager, Zufallszüge beim ersten Spiel) ebenso.
-        var game = TestGames.Create(5);
-        FinishSeason(game);
+        // Vorbedingung: der Markt ist am Saisonende nicht voll, das eigene Angebot also möglich. Ob er voll ist, hängt am
+        // Zufallsverbrauch der Spielberechnung (Seeds wurden dafür schon zweimal verschoben, R8-A02); deshalb der erste
+        // Seed, bei dem Platz ist (spielstaerke-manager-2: Managerpaarungen ziehen je Minute zusätzlich).
+        GameState game = null!;
+        for (var seed = 1; seed <= 20; seed++)
+        {
+            game = TestGames.Create(seed);
+            FinishSeason(game);
+            if (game.TransferMarket.Listings.Count < TransferMarket.MaxListings)
+                break;
+        }
         var bid = TransferTransactionRegressionTests.CreateBid(game);
         game.StartNextSeason();
         Assert.DoesNotContain(bid.Listing, game.TransferMarket.Listings);
@@ -105,14 +111,14 @@ public class LifecycleRegressionTests
         staying.Age = leaving.Age = 27;
         staying.ContractYears = 3;
         leaving.ContractYears = 1;
-        staying.RejectedOfferDay = 0;
+        staying.NegotiationLock = 5;
         club.Lineup.Assign(LineupSlot.Forward(0, 0), leaving);
 
         game.StartNextSeason();
 
         Assert.Equal(28, staying.Age);
         Assert.Equal(2, staying.ContractYears);
-        Assert.Null(staying.RejectedOfferDay);
+        Assert.Equal(0, staying.NegotiationLock);
         Assert.Equal(28, leaving.Age);
         Assert.Equal(0, leaving.ContractYears);
         Assert.DoesNotContain(leaving, club.Players);
@@ -133,7 +139,7 @@ public class LifecycleRegressionTests
         player.Insured = true;
         var borrower = game.Clubs[game.ActiveManager.ClubIndex];
         Assert.Equal(TransferResult.Accepted,
-            game.TransferMarket.Buy(game, game.ActiveManager, listing, listing.LoanFee, true));
+            game.TransferMarket.Buy(game, game.ActiveManager, listing, listing.LoanFee * 135 / 100, true)); // 135 %: im Original immer angenommen (über random(110, 130) %, 0x4991D; R8-C01)
         borrower.Lineup.Assign(new LineupSlot(0, player.Role, 0), player);
 
         game.StartNextSeason();

@@ -42,12 +42,18 @@ public sealed partial class GameState
             _vacantNationalTactics = coach.Tactics;
     }
 
-    /// <summary>Spielvorbereitung 0x8365 vor einem WM-Spiel: Automatik des eigenen Landes für die Anzeige festhalten.</summary>
+    /// <summary>
+    /// Spielvorbereitung 0x8365 vor einem WM-Spiel: Automatik des eigenen Landes für die Anzeige festhalten.
+    /// [ORIGINAL] Ohne Bundestrainer steht im Vereinsfeld 0x16 Deutschlands 0: die Tagesfunktion setzt es am Tagesende
+    /// auf 0 (Datei 0x5540E, Satz 0x3D Bytes ab DGROUP 0x9657, Land DGROUP 0x6AC) und nur bei der Ernennung auf 6
+    /// (Manager 5 + 1, Datei 0x55494), 0x55752 wieder auf 0. Dann schreibt 0x8365 ohne Blick auf die Modi (R8-B04).
+    /// </summary>
     internal void PrepareNationalTactics(int home, int away)
     {
+        var unmanaged = NationalCoach is null;
         if (home == NationalTeams.Germany)
-            NationalTactics.RecordAutoLine(NationalMatchStrength(home), NationalMatchStrength(away));
+            NationalTactics.RecordAutoLine(NationalMatchStrength(home), NationalMatchStrength(away), unmanaged);
         else if (away == NationalTeams.Germany)
-            NationalTactics.RecordAutoLine(NationalMatchStrength(away), NationalMatchStrength(home));
+            NationalTactics.RecordAutoLine(NationalMatchStrength(away), NationalMatchStrength(home), unmanaged);
     }
 }

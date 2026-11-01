@@ -122,8 +122,11 @@ public sealed partial class GameState
     /// Manager mit gesetztem Wert – außer im Modus 2 – samt Etat (siehe <see cref="AppointNationalCoach"/>). Die Suche
     /// läuft nur, solange Deutschland keinen Bundestrainer hat (0x55374); im Modus 1 ist er seit dem Sprung ernannt.
     /// Ausgewürfelt wird danach nur, wenn es weiter keinen Bundestrainer gibt (0x554CF).
-    /// [APPROX] Platzierung aus der Abschlusstabelle der Hauptrunde (Gesamt). Das Original sortiert DGROUP 0x5CCB in
-    /// place (0x50E60 ff., je nach Ansicht Gesamt/Heim/Auswärts) und liest die zuletzt sortierte Reihenfolge.
+    /// [ORIGINAL] Platzierung aus der Gesamttabelle: Die Platzliste DGROUP 0x5CCB sortiert 0x50B45 (Datei 0x50D6D–0x51011);
+    /// nach einer angesehenen Heim- oder Auswärtstabelle stellt 0x50256 (Liga, 1, Gesamt) die Gesamtordnung wieder her
+    /// (`docs/reverse-engineering.md`, Abschnitt Tabellen). Abweichen kann nur die Reihenfolge vollständig gleicher
+    /// Vereine (Sortierung nicht stabil); <see cref="FinalTables"/> nutzt dieselbe Sortierung (`LeagueTable.Compute`, Gesamt), den
+    /// Einfluss angesehener Heim-/Auswärtstabellen auf Gleichstände führt `Season.cs` als [APPROX].
     /// </remarks>
     internal void OnNationalMarkerDay()
     {
