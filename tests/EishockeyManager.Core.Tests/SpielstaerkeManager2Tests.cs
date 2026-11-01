@@ -410,6 +410,8 @@ public class SpielstaerkeManager2Tests
 /// <summary>
 /// Testaufbau: Managervereine spielen seit 0x98F8 mit den Werten ihrer Spieler. Tests, die einen Managerverein mit der
 /// Spielstärke seiner Datenbank voraussetzen (Tabellenplatz als Vorbedingung), setzen die Spielerwerte darauf.
+/// Nur als Vorbedingung erlaubt, nie als Aussage über die Spielstärke: Im Original hängen die Spielerwerte nur von
+/// Start-Liga und Start-Stärke ab (DGROUP 0x4B42), nicht von der Datenbank (R8W3I-15, docs/spielberechnung.md §14).
 /// </summary>
 internal static class ManagedSquads
 {

@@ -413,3 +413,54 @@ ein Verein unter 82. Mit festen Teamwerten der Computervereine (§12) erklärt d
 Offene Kandidaten: Play-off-Format (`[APPROX]`), weitere Schreibzugriffe auf Teamwerte (0x570E auf 0x1D, 0x49723 auf
 0x1A, nicht gelesen), Kaderwechsel durch den Video-Manager (Berliner SC). #204 bleibt offen.
 
+
+## 14. Spielstärke der Managervereine gegen das Original (Spur spielberechnung-komplett, Teil 1; R8W3I-15, #204)
+
+Geprüft an `em.exe` (`ndisasm`). Kein Zugriff auf das Referenz-Repo in diesem Lauf (Videos und DOSBox-Spielstände nicht
+nachgesehen); Originaldaten aus der ZIP des Projekts.
+
+**R8W3I-15 – kein Fehler.** Ein Managerverein spielt in der Managerpaarung mit seinen Spielern (0x98F8, §13). Deren
+Startwerte hängen nur von Start-Liga und Start-Stärke ab (DGROUP 0x4B42, Datei 0x29DA4; `reverse-engineering.md`
+„Startwerte der Kaderspieler“), nicht von der Datenbankstärke. Wer Düsseldorf (92) mit „Mittelfeld“ übernimmt, bekommt einen
+Bundesliga-Mittelfeldkader (81 ± 2) und landet im Mittelfeld – so ist es im Original angelegt. `PlayAtDatabaseStrength`
+setzt dagegen alle Spieler auf die Datenbankstärke; das gibt es im Original nicht und ist nur ein Testaufbau für Abläufe,
+die einen starken Managerverein als Vorbedingung brauchen. Probe (`SpielberechnungKomplett1Tests`, Originaldaten,
+Seeds 1–12, Hauptrunde, passiver Manager), mittlerer Platz / Tordifferenz:
+
+| Verein (Datenbank) | Oberes Drittel (87) | Mittelfeld (81) | Abstiegskampf (70) |
+|---|---|---|---|
+| Düsseldorf (92) | 6,42 / +4,8 | 8,67 / −31,9 | 11,83 / −115,2 |
+| Rosenheim (70) | 5,92 / +3,7 | 9,50 / −45,2 | 11,75 / −126,5 |
+
+Die Datenbankstärke spielt keine Rolle (Abstand je Spalte < 1), die Start-Stärke ordnet die Plätze.
+Im Original wählt die Spielvorbereitung außerdem bei einem Verein außerhalb der Start-Liga einen zufälligen Platz der
+Start-Liga (`random([0x7C0 + Liga], …)`, Datei 0x29C78) und tauscht nur die Kennung (0x36169 mit Schalter 0x80, Datei
+0x29CF2/0x29D9C, unten) – die Teamwerte bleiben am Platz. Das Remake lässt einen fest gewählten Verein in seiner Liga
+(`[APPROX]` in `NewGame`, Spur `optionen-wirkung`/`GameSetup.cs`); für die Spielstärke des Managervereins ist das gleich, weil
+sie aus den Spielern kommt.
+
+**Kandidaten für die Meisterstreuung (#204), geprüft:**
+
+- **0x570E und 0x49723 schreiben keine Teamwerte.** Beide adressieren mit Faktor 0x21 den Spielersatz (DGROUP 0x8253),
+  nicht den Vereinssatz (0x3D, 0x9657): 0x570E setzt Spielerfeld 0x1D (Verein) beim Verteilen des Transferpools
+  (Schleife 0x564C–0x571D über random(1, 0xB3)), 0x49723 setzt Spielerfeld 0x1A (Besitzer) = 4 beim Wechsel eines Spielers (Ov 0x118).
+  Damit bleibt §12: Die Teamwerte der Computervereine ändern sich nach dem Lader nicht.
+- **Vereinstausch 0x36169 (Ov 0xF0 + 0xC29, Stub 0xF0:0x4D)** `f(a, b, Schalter)`: tauscht alle Spieler (Feld 0x1D) und
+  Managerzuordnungen (DGROUP 0x966F + 0x1AF · m) von a und b, bei Schalter & 0x7F zusätzlich DGROUP 0x387, 0xD0E6
+  (Meister), 0x388. **Schalter 0x80:** nur Bytes 0x00–0x15, 0x16 (Manager), 0x34 und das Wort 0x3B des Vereinssatzes –
+  die Teamwerte 0x17–0x1D bleiben am Platz (nur Spielstart 0x29CF2/0x29D9C, Managerverein in die Start-Liga). **Sonst:**
+  ganzer Vereinssatz (0x3D Byte), bei Vereinen < 0x40 auch Tabellensatz 0x8257 (0x50 Byte) und Serien 0xB57B (0x15 Byte).
+  Aufrufe mit vollem Tausch: 0x35EDD (WM-Länder 20-mal, danach je Liga 55-mal zwei zufällige Plätze der Liga, Platzliste
+  0x5CCB mitgetauscht; beim Spielstart 0x43A17, nach dem Lader 0x439BB) und der Saisonwechsel 0x562F2/0x5636D (Auf-/Abstieg,
+  Oberliga ↔ ligalose Vereine). Die Teamwerte wandern also immer mit dem Verein – keine Quelle der Streuung.
+- **Play-off-Format 0x31934/0x315E9 (Ov 0xE8)** belegt das Remake-Format: Setzung 1–8, 2–7, 3–6, 4–5 aus 0x5CCB; „best of
+  five“ (Spiel `[0xCCA3]` 0 … 4, Siege DGROUP 0xCCA4 + Paarung, nach drei Siegen Ergebnis 100 = nicht ausgetragen);
+  nach jedem Spiel tauschen Heim und Gast (0x31505); drei Runden (8 → 4 → 2, Paarungszahl 8 − 4·(Runde > 0) − 2·(Runde > 1),
+  0x31BB0); Ergebnisse ≥ 30 = Penaltysieg; Meister DGROUP 0xD0E6 (0x31CBF). Damit ist auch das Format keine Erklärung;
+  die Marke `[APPROX]` in `Playoffs.cs` kann die Spur `wettbewerbe-komplett` auf `[ORIGINAL]` stellen.
+
+**Stand #204:** Mit Lader, festen Teamwerten, Vereinstausch und Play-off-Format stimmt die Abbildung der Computervereine
+mit dem Original überein; die stärkere Streuung der Meister im Video (§13) bleibt unerklärt. Vor weiteren Änderungen die
+Meisterfotos der Reihe `folgen` neu zuordnen: Die Fundliste „Meisterfoto“ (`referenz-videos.md`) mischt „Deutscher
+Meister“, „DEB Pokalsieger“ und „Europacupsieger“, und Folge 8 beginnt ein neues Spiel (zwei Laufbahnen statt einer).
+Erst wenn das Video nach der Neuzuordnung weiter streut, ist die Minutenrechnung (§3/§4) der nächste Kandidat.

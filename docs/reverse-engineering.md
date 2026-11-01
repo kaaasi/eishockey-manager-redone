@@ -687,3 +687,10 @@ Dateioffsets in `em.exe`, DGROUP = Datei 0x16DD0. Umsetzung und Belege im Bild: 
   0x35EDD werden die Sätze 0x8257, die Vereinssätze 0x9657 und die Serien DGROUP 0xB57B zweier Plätze getauscht
   (0x36467–0x3653A) – darum führt jeder Satz die Flaggennummer selbst. Nicht gefunden: die Stelle, die die Platzierungen
   nach einer WM schreibt.
+
+## Spielberechnung abschließen (Spur `spielberechnung-komplett`, Runde 9)
+
+Teil 1 (R8W3I-15, #204): Vereinstausch 0x36169 (Schalter 0x80 = nur Kennung, sonst ganzer Vereinssatz mit Tabellensatz
+und Serien), Ligamischung 0x35EDD (je Liga 55 Tausche), Auf-/Abstieg 0x562F2/0x5636D, Spielstart 0x29C78–0x29D9C
+(Managerverein auf einen Platz der Start-Liga), Play-offs 0x31934/0x315E9/0x31505 („best of five“, Heimtausch, drei
+Runden), Spielerschreiber 0x570E/0x49723 (keine Teamwerte). Einzelheiten: [spielberechnung.md](spielberechnung.md) §14.
