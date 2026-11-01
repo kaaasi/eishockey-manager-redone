@@ -1,4 +1,5 @@
 using EishockeyManager.Core;
+using EishockeyManager.UI;
 using EishockeyManager.UI.Screens.ManagerArea;
 using EishockeyManager.UI.Testing;
 
@@ -22,4 +23,27 @@ internal static class FinanzenRestScenarios
             team.MoveTo(YouthTeam.Leagues * YouthTeam.TeamsPerLeague - 1);
         d.Move(1, 239); d.Save("02_zwoelfter_platz");
     }
+
+    /// <summary>
+    /// Werbung wie UI-Video 6:20–7:00 (Pixelvergleich 0x2A9AD): Start ohne Auswahl (6:24), leere Bande 4 (6:20),
+    /// Angebot CCH 12 Monate, 1 Bande, 3.454 DM an Bande 1 (6:40), JWE ohne Angebot (7:00).
+    /// </summary>
+    [Scenario("werbung-original")]
+    private static void AdvertisingOriginal(ScreenDriver d)
+    {
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var ads = game.Ads(game.ActiveManager);
+        ads.Offers[AdSlotKind.Bande].Clear();
+        ads.Offers[AdSlotKind.Bande][1] = new SponsorOffer(AdSlotKind.Bande, 1, 12, 1, 3_454);
+        d.OpenTile("Werbung");
+        d.Move(1, 239); d.Save("01_start");
+        Click(d, AdvertisingScreen.BoardRect(3)); d.Move(1, 239); d.Save("02_unbefleckt");
+        Click(d, AdvertisingScreen.BoardRect(0));
+        Click(d, AdvertisingScreen.ArrowDown); Click(d, AdvertisingScreen.ArrowDown);
+        d.Move(1, 239); d.Save("03_angebot_cch");
+        Click(d, AdvertisingScreen.ArrowUp); d.Move(1, 239); d.Save("04_kein_angebot_jwe");
+    }
+
+    private static void Click(ScreenDriver d, Rect r) => d.Click(r.X + r.W / 2, r.Y + r.H / 2);
 }

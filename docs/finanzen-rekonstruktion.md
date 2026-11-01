@@ -489,3 +489,48 @@ Talentsuche weiter je volle 1.000 DM Förderung (`[APPROX]`, Bezug unverändert)
 
 Die Lage stimmt zeilengenau (Stangenspitze, Fahne, Schrift); der Rest der Abweichung sind Videounschärfe, die Stange in
 voller Teamfarbe (Video verwischt) und die unveränderte Achse links. Szenario `jugend-original` (`Tools/Scenarios/FinanzenRest.cs`).
+
+## Bandenwerbung – Angebots- und Vertragsfeld 0x2A9AD (Spur `finanzen-rest`, Teil 2)
+
+Overlay 0xE0, Datei 0x2A9AD (Feld unten), Aufrufer 0x2B0C0 (Bildschirm Werbung) mit Modus 0 = Vertrag der angeklickten
+Fläche (0x2B633, Satz DGROUP `0xC15B + 0x6E · Manager + 10 · Fläche`) und Modus 1 = Angebot beim Blättern (0x2BE95, Satz
+`0xC313 + 500 · Manager + 100 · Art + 10 · Partner`). Satz: `+0` Betrag (Drittel-DM), `+4` Banden (Angebot) bzw. Partner
+(Vertrag), `+5` Laufzeit bzw. Restmonate, `+6` Option (Bit 0x80 = kündbar), `+7` Logo. Text 0x30:0x885 (Farbe 0, ohne
+Schatten). Umgesetzt in `UI/Screens/Manager/AdvertisingScreen.cs` (`PanelTexts`, `[ORIGINAL]` mit Fundstelle).
+
+| Befund | Original | Remake vorher | Beleg |
+|---|---|---|---|
+| Schrift | Bezeichnung x 156, Wert „: …“ als ein Text bei x 191, Grundlinien 179/189/197/205, Farbe 0 | x 155, Doppelpunkt 190, Wert 194, Farbe 144 | Video 6:40: Schrift ab x 156 |
+| Dauer | „: n“, mit Option „ - n+Option“, „ Monat“ + „e“ bei n > 1 oder Option (0x2AB6F–0x2AC27) | „n Monat(e)“, Option fehlte | – |
+| Vertrag | „Prämie“ statt „Angebot“ (0x2AD91); „! Option !“ bei x 275, wenn Restlaufzeit 0 und Option (0x2AC51); Banden = Zahl der Banden desselben Partners (0x2AD15) | „Angebot“, kein Hinweis | – |
+| Klick auf eine Fläche | zeigt den Vertrag (Modus 0), Blättern beginnt neu | zeigte das zuletzt geblätterte Angebot | – |
+| Angebot ohne freie Banden bzw. auf belegter Fläche | Angebotssatz wird gezeigt, nur „Annehmen“ fehlt (0x2BF7A–0x2BFD6) | „Es liegt momentan kein Angebot vor...“ | – |
+| Gesperrte Eistafel | Feld bleibt leer (0x2B589) | „kein Angebot“ | – |
+| Logo | 0x30:0x16D: 35 × 25 aus kb\11 (Spalte 0 bzw. 35 für Sender, Zeile 25 · Logo) nach (100\|179) | 33 × 23 bei (101\|180) auf weißer Fläche | Video 6:40 |
+| Leere Fläche | schwarz (100\|179) 35 × 25 (0x30:0x800, rechts/unten ausschließlich) | ganzer Kasten schwarz, auch ohne Auswahl | Video 6:20 schwarz, 6:24 hohl |
+| Umrandung Logokasten | (99\|178)–(135\|204) Farbe 0x18, beim Blättern 7 (0x2B6AD/0x2B719) | Farbe 213 bzw. 7 als Fläche | Video 6:24 gelb, 6:40 hell |
+| Pfeile | kb\4 (20\|0) 10 × 17 bei (138\|183), Rahmen (137\|182)–(148\|200) Farbe 0x18 (0x2B2CE/0x2B300) | gezeichnet | – |
+| Trennlinie | 0x30:0x995 (90\|213)–(310\|213), Farbe 0x1C | (89\|212), 223 px, Farbe 144 | Video: dunkle Zeile 213, Rotanteil ≈ Farbe 28 |
+| Auswahlrahmen | Farbe 0x12 (0x2B63F) | 110 | – |
+
+**Restlücken (nicht umgesetzt, weil Spielzustand und Schema betroffen):**
+- **Kündbar:** Beim Aufstieg setzt 0x2713F (Saisonende, nach der Aufstiegsprämie 0x270A8) in allen elf Verträgen Bit 0x80
+  der Option. Solche Verträge zeigen im Vertragsfeld „Kündbar.“ (x 275, 0x2AC84), zählen als freie Fläche bzw. freie Bande
+  (0x2BAF3, 0x2BECD) und werden beim Annehmen eines neuen Angebots überschrieben (0x2BB3E). Braucht ein Vertragsfeld im
+  Spielstand (Schema) und einen Anschluss am Saisonende.
+- **Verfall offener Optionen:** Beim Verlassen des Hauptmenüs (Ende des Zuges, 0x45996–0x45A4F) löscht das Original jeden
+  Vertrag mit Restlaufzeit 0 und Option ≠ 0. Wer die Verlängerung nicht im selben Zug durch Klick verhandelt, verliert den
+  Vertrag; im Remake bleibt er bis zum Klick und zahlt weiter.
+- **Blättern:** ohne Umlauf (0x2BE10–0x2BE3C: Partner 0 bis 9 bzw. 4); Startpartner beim ersten Blättern (0x2B92E–0x2B999)
+  nicht sicher gedeutet. Remake blättert weiter im Kreis (`[APPROX]`). Gedrückte Pfeile (0x120:0x3E) nicht nachgebaut.
+- Summenzeilen (0x2AE8A) und Knöpfe „Info“/„Annehmen“ (0x120:0x75) nicht nachgemessen.
+
+**Pixelvergleich** (normierte Kreuzkorrelation der Graustufen, Remake weichgezeichnet gegen Videobild; vorher Base
+`da3b15c`; Szenario `werbung-original` in `Tools/Scenarios/FinanzenRest.cs`):
+
+| Stand | Videobild | Feld (97–315 × 170–209) | Logo und Pfeile (97–150 × 176–206) | Trennlinie (88–312 × 211–216) |
+|---|---|---|---|---|
+| Start, nichts gewählt | UI 6:24 | 0,16 → 0,95 | 0,48 → 0,94 | −0,20 → 0,89 |
+| Leere Bande | UI 6:20 | 0,89 → 0,98 | 0,90 → 0,98 | −0,19 → 0,90 |
+| Angebot CCH, 12 Monate, 1 Bande, 3.454 DM | UI 6:40 | 0,76 → 0,90 | 0,82 → 0,95 | −0,20 → 0,89 |
+| JWE ohne Angebot | UI 6:44 | 0,72 → 0,90 | 0,78 → 0,93 | −0,20 → 0,89 |
