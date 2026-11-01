@@ -29,20 +29,46 @@ public sealed class ContractsScreen : Screen
     public static Rect AcceptButton(Rect dialog) => Widgets.ButtonRect(11, dialog.Y + 51);
     public static Rect CancelButton(Rect dialog) => Widgets.ButtonRect(90, dialog.Y + 51);
 
-    private enum Field { None, Years, Salary }
-
-    private readonly Screen _back;
+    private readonly Screen? _back;
     private readonly MessageBox _message = new();
-    private Player? _player;
+    private readonly Queue<string[]> _messages = new();
+    private ContractDialog? _dialog;
     private int _row;
-    private int _years, _salary; // eingegebene Werte, 0 = keine Eingabe (wie im Original)
-    private bool _insured, _demandFilled;
-    private Field _edit;
-    private string _editText = "";
     private int _mouseX = -1, _mouseY = -1;
     private string? _status;
 
+    // Saisonende (0x26F20): offene Verhandlungen je Manager, danach der nächste Bildschirm.
+    private readonly Queue<(int Manager, Player Player)>? _renewals;
+    private readonly Func<Screen>? _next;
+    private (int Manager, Player Player)? _renewal;
+
     public ContractsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+
+    private ContractsScreen(ScreenHost host, Queue<(int, Player)> renewals, Func<Screen> next) : base(host)
+    {
+        _renewals = renewals;
+        _next = next;
+    }
+
+    /// <summary>
+    /// Verhandlungen am Saisonende (em.exe 0x26F20, Datei 0x27CE5–0x27F49): je Manager und Spieler mit ausgelaufenem Vertrag
+    /// das Verhandlungsfenster (Lage nach der Zeile wie im Bildschirm „Verträge“, 0x27D74), danach „… bleibt Ihnen auch die
+    /// nächste Saison erhalten“ bzw. „… kehrt Ihrem Verein den Rücken...“ mit der Ablöse. [APPROX] Die Liste dahinter ist die
+    /// des Bildschirms „Verträge“ (Original: Kaderliste 0x108:0x43, nicht vermessen). Ohne offene Verhandlung: <paramref name="next"/>.
+    /// </summary>
+    public static Screen ForSeasonEnd(ScreenHost host, Func<Screen> next)
+    {
+        var game = host.Game!;
+        var queue = new Queue<(int, Player)>();
+        for (var i = 0; i < game.Managers.Count; i++)
+            if (!game.Managers[i].Dismissed)
+                foreach (var p in game.PendingRenewals(game.Managers[i]))
+                    queue.Enqueue((i, p));
+        return queue.Count == 0 ? next() : new ContractsScreen(host, queue, next);
+    }
+
+    /// <summary>Am Saisonende: Verhandlung mit diesem Spieler läuft bzw. steht als Nächstes an.</summary>
+    public bool SeasonEnd => _renewals is not null;
 
     private Club Club => TeamUi.OwnClub(Host);
 
@@ -53,9 +79,18 @@ public sealed class ContractsScreen : Screen
     public string? Status => _status;
 
     /// <summary>Spieler, mit dem gerade verhandelt wird (oder null).</summary>
-    public Player? Negotiating => _player;
+    public Player? Negotiating => _dialog?.Player;
+
+    /// <summary>Offenes Verhandlungsfenster (oder null).</summary>
+    public ContractDialog? Dialog => _dialog;
 
     public static int RowAt(int y) => y < FirstRowY - 1 ? -1 : (y - FirstRowY + 1) / RowPitch;
+
+    public override void Enter()
+    {
+        if (_renewals is not null)
+            NextRenewal();
+    }
 
     public override void Update(InputState input)
     {
@@ -64,26 +99,37 @@ public sealed class ContractsScreen : Screen
         // Im Video bleibt der letzte Text stehen, solange die Maus im Dialog nichts Erklärbares trifft
         // („Status: RESERVE“ über „keine“).
         var status = HoverText(TeamUi.Rows(Club));
-        if (status is not null || _player is null)
+        if (status is not null || _dialog is null)
             _status = status;
         if (_message.Update(input))
+        {
+            if (!_message.Visible && _messages.TryDequeue(out var lines))
+                _message.Show(lines);
+            if (!_message.Visible && _renewals is not null)
+                NextRenewal();
             return;
-        if (_player is not null)
+        }
+        if (_dialog is not null)
         {
             UpdateDialog(input);
+            return;
+        }
+        if (_renewals is not null)
+        {
+            NextRenewal();
             return;
         }
 
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
-            Host.Show(_back);
+            Host.Show(_back!);
             return;
         }
         if (!input.LeftClick)
             return;
         if (!Window.Contains(input.MouseX, input.MouseY))
         {
-            Host.Show(_back);
+            Host.Show(_back!);
             return;
         }
 
@@ -99,107 +145,90 @@ public sealed class ContractsScreen : Screen
             _message.Show(Contracts.Message(Contracts.Availability(Host.Game!, p)!.Value, p));
             return;
         }
-        _player = p;
+        Open(p, row);
+    }
+
+    private void Open(Player p, int row)
+    {
+        var game = Host.Game!;
         _row = row;
-        _years = 0;
-        _salary = 0;
-        _insured = _player.Insured;
-        _demandFilled = false;
-        _edit = Field.None;
+        _dialog = new ContractDialog(p, DialogRect(row), Contracts.CurrentYears(p), p.MonthlySalary, p.Insured,
+            years => Contracts.DemandAfterYears(game, game.ActiveManager, p, years),
+            () => Contracts.Availability(game, p));
+    }
+
+    /// <summary>Nächste Verhandlung am Saisonende öffnen, sonst zum nächsten Bildschirm.</summary>
+    private void NextRenewal()
+    {
+        var game = Host.Game!;
+        while (_dialog is null && !_message.Visible && _renewals!.TryDequeue(out var next))
+        {
+            if (!GameState.IsRenewalPending(next.Player))
+                continue;
+            game.CurrentManager = next.Manager;
+            var row = TeamUi.Rows(Club).ToList().IndexOf(next.Player);
+            if (row < 0)
+                continue;
+            _renewal = next;
+            Open(next.Player, row);
+        }
+        if (_dialog is null && !_message.Visible && _renewals!.Count == 0)
+            Host.Show(_next!());
     }
 
     private void UpdateDialog(InputState input)
     {
-        var dialog = DialogRect(_row);
-        if (_edit != Field.None)
+        var d = _dialog!;
+        switch (d.Update(input))
         {
-            foreach (var ch in input.Text)
-                if (char.IsAsciiDigit(ch) && _editText.Length < (_edit == Field.Years ? 1 : 7))
-                    _editText += ch;
-            if (input.Pressed(Key.Backspace) && _editText.Length > 0)
-                _editText = _editText[..^1];
-            if (input.Pressed(Key.Enter))
-            {
-                CommitEdit();
-                return;
-            }
-            if (input.Pressed(Key.Escape))
-            {
-                _edit = Field.None;
-                return;
-            }
-            if (input.LeftClick)
-                CommitEdit(); // Klick daneben übernimmt die Eingabe und wirkt weiter
-            else
-                return;
+            case ContractDialog.Outcome.Offer:
+                Offer(d);
+                break;
+            case ContractDialog.Outcome.Cancel:
+                _dialog = null;
+                if (_renewal is { } r)
+                    Show(Host.Game!.CancelRenewal(Host.Game!.Managers[r.Manager], r.Player)?.Messages ?? []);
+                _renewal = null;
+                break;
+            default:
+                if (d.Refusal is { } refusal)
+                    _message.Show(Contracts.Message(refusal, d.Player));
+                break;
         }
-
-        if (input.Pressed(Key.Escape) || input.RightClick || input.Clicked(CancelButton(dialog)))
-        {
-            _player = null;
-            return;
-        }
-        if (input.Clicked(YearsField(dialog)) || input.Clicked(SalaryField(dialog)))
-        {
-            if (Contracts.Availability(Host.Game!, _player!) is { } refusal)
-            {
-                _message.Show(Contracts.Message(refusal, _player!));
-                return;
-            }
-            StartEdit(input.Clicked(YearsField(dialog)) ? Field.Years : Field.Salary);
-        }
-        else if (input.Clicked(InsuranceField(dialog)))
-            _insured = !_insured;
-        else if (input.Clicked(AcceptButton(dialog)) || input.Pressed(Key.Enter))
-            Offer();
-    }
-
-    private void StartEdit(Field field)
-    {
-        _edit = field;
-        _editText = "";
-    }
-
-    /// <summary>
-    /// Eingabe übernehmen. [ORIGINAL] Laufzeit (0x4A7C5): leere Eingabe = bisherige Laufzeit ohne Forderung, sonst Forderung ins Gehaltsfeld
-    /// (nicht im Level 5) und Merker „Forderung steht im Feld“; Gehalt (0x4A9F5): leere Eingabe = bisheriges Gehalt, Merker
-    /// gelöscht. Werte über 4 Jahre bleiben stehen und scheitern erst bei „Mach' ich!“.
-    /// </summary>
-    private void CommitEdit()
-    {
-        var p = _player!;
-        var value = 0;
-        var empty = _editText.Length == 0 || !int.TryParse(_editText, out value);
-        if (_edit == Field.Years && empty)
-        {
-            _years = Contracts.CurrentYears(p); // 0x4A808: leere Eingabe, keine Forderung, Merker gelöscht
-            _demandFilled = false;
-        }
-        else if (_edit == Field.Years)
-        {
-            _years = Math.Max(value, Contracts.MinYears);
-            var game = Host.Game!;
-            if (Contracts.DemandAfterYears(game, game.ActiveManager, p, _years) is { } demand)
-                _salary = demand;
-            _demandFilled = true;
-        }
-        else if (_edit == Field.Salary)
-        {
-            _salary = empty ? p.MonthlySalary : Math.Max(value, Contracts.MinSalary); // Video: 0 DM wird zu 1 DM
-            _demandFilled = false;
-        }
-        _edit = Field.None;
     }
 
     /// <summary>„Mach' ich!“: Verhandlung nach 0x4AB66; der Dialog schließt in jedem Fall, Absagen mit Meldung.</summary>
-    private void Offer()
+    private void Offer(ContractDialog d)
     {
         var game = Host.Game!;
-        var p = _player!;
-        var result = Contracts.Negotiate(game, game.ActiveManager, p, _years, _salary, _insured, _demandFilled);
-        if (result != NegotiationResult.Accepted)
-            _message.Show(Contracts.Message(result, p));
-        _player = null;
+        var p = d.Player;
+        _dialog = null;
+        if (_renewal is { } r)
+        {
+            _renewal = null;
+            if (game.NegotiateRenewal(game.Managers[r.Manager], p, d.Years, d.Salary, d.Insured, d.DemandFilled) is not
+                var (result, outcome))
+                return;
+            var lines = new List<string[]>();
+            if (result != NegotiationResult.Accepted)
+                lines.Add(Contracts.Message(result, p));
+            lines.AddRange(outcome.Messages);
+            Show(lines);
+            return;
+        }
+        var answer = Contracts.Negotiate(game, game.ActiveManager, p, d.Years, d.Salary, d.Insured, d.DemandFilled);
+        if (answer != NegotiationResult.Accepted)
+            _message.Show(Contracts.Message(answer, p));
+    }
+
+    private void Show(IReadOnlyList<string[]> messages)
+    {
+        foreach (var lines in messages)
+            _messages.Enqueue(lines);
+        if (!_message.Visible && _messages.TryDequeue(out var first))
+            _message.Show(first);
+        else if (_renewals is not null)
+            NextRenewal();
     }
 
     public override void Draw(Surface s)
@@ -224,7 +253,7 @@ public sealed class ContractsScreen : Screen
         s.HLine(6, 210, 246, TeamUi.LineColor);
 
         var rows = TeamUi.Rows(club);
-        var hoverRow = _player is null && Window.Contains(_mouseX, _mouseY) ? RowAt(_mouseY) : -1;
+        var hoverRow = _dialog is null && Window.Contains(_mouseX, _mouseY) ? RowAt(_mouseY) : -1;
         for (var i = 0; i < rows.Count; i++)
         {
             var p = rows[i];
@@ -243,53 +272,10 @@ public sealed class ContractsScreen : Screen
             s.TextRight(mini, 259, y, $"{p.MonthlySalary} DM", c);
         }
 
-        if (_player is not null)
-            DrawDialog(s);
+        _dialog?.Draw(s, Assets);
         TeamUi.StatusLine(s, Assets, 131, StatusY, _status);
         _message.Draw(s, Assets, 133, 118);
     }
-
-    private void DrawDialog(Surface s)
-    {
-        var mini = Assets.Mini;
-        var p = _player!;
-        var d = DialogRect(_row);
-        TeamUi.DialogFrame(s, d);
-        TeamUi.DialogTitle(s, Assets, 84, d.Y + 5, "Vertragsverhandlung");
-        s.HLine(5, d.Y + 14, 159, Colors.White);
-        s.TextCentered(mini, 80, d.Y + 18, $"{p.Name}, {p.Age} Jahre alt", Colors.White); // Video: Mitte bei x = 79–80
-
-        const byte label = Colors.White;
-        s.Text(mini, 7, d.Y + 27, "Vertragsdauer", label);
-        s.Text(mini, 7, d.Y + 35, "Gehalt / Monat", label);
-        s.Text(mini, 7, d.Y + 43, "Versicherung", label);
-        for (var i = 0; i < 3; i++)
-            s.Text(mini, 77, d.Y + 27 + 8 * i, ":", Colors.White);
-
-        DrawValue(s, Field.Years, d.Y + 27, Player.YearsText(_years != 0 ? _years : DisplayedYears(p)));
-        DrawValue(s, Field.Salary, d.Y + 35, FormatMoney(_salary != 0 ? _salary : p.MonthlySalary));
-        s.Text(mini, 81, d.Y + 43, _insured ? "abgeschlossen" : "keine", Colors.White); // [APPROX] Text für „mit Versicherung“
-
-        TeamUi.DialogButton(s, Assets, AcceptButton(d).X, AcceptButton(d).Y, "Mach' ich!");
-        TeamUi.DialogButton(s, Assets, CancelButton(d).X, CancelButton(d).Y, "Abbruch");
-    }
-
-    private void DrawValue(Surface s, Field field, int y, string text)
-    {
-        if (_edit != field)
-        {
-            s.Text(Assets.Mini, 81, y, text, Colors.White);
-            return;
-        }
-        var x = s.Text(Assets.Mini, 81, y, _editText, Colors.White);
-        s.Fill(new Rect(x + 1, y, 3, 5), 1); // Eingabemarke wie im Video
-    }
-
-    /// <summary>
-    /// Laufzeit im Dialog ohne Eingabe: die bisherige, bei einem Verlängerungsangebot des Spielers die angebotene
-    /// (Original: Kaderplatz +0x18 &gt; 99 → +0x0B = +0x18 − 100, Datei 0x4A3AF).
-    /// </summary>
-    private static int DisplayedYears(Player p) => Contracts.CurrentYears(p);
 
     /// <summary>„1.500 DM“ (im Dialog mit Tausenderpunkt, in der Liste ohne).</summary>
     public static string FormatMoney(int amount) =>
@@ -297,9 +283,9 @@ public sealed class ContractsScreen : Screen
 
     private string? HoverText(IReadOnlyList<Player> rows)
     {
-        if (_player is not null)
+        if (_dialog is not null)
         {
-            var d = DialogRect(_row);
+            var d = _dialog.Rect;
             if (YearsField(d).Inflate(0).Contains(_mouseX, _mouseY) || new Rect(6, d.Y + 26, 70, 7).Contains(_mouseX, _mouseY))
                 return "Dauer des Vertrages mit dem Spieler (in Saisons)";
             if (SalaryField(d).Contains(_mouseX, _mouseY) || new Rect(6, d.Y + 34, 70, 7).Contains(_mouseX, _mouseY))

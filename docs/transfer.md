@@ -52,6 +52,38 @@ Abbildung im Remake: Tageszähler &gt; 232 = Phase `SeasonOver`; [0xE1A4] je Sai
 (`GameState.ContractTurnFactor`, `[APPROX]`); Zufall der Verhandlung aus `ContractRandom`; Kaderplatz 3 = vierter Spieler
 in `Club.Players` (`[APPROX]`).
 
+## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 1: Kauf und Saisonende)
+
+Umsetzung: `Core/Transfer.Purchase.cs` (`TransferMarket.Bid`/`Sign`, `TransferPurchase`), `Core/Transfer.SeasonEnd.cs`
+(`StartNextSeasonWithRenewals`, `NegotiateRenewal`, `CancelRenewal`, `ResolveRenewals`), gemeinsamer Kern
+`Contracts.NegotiateTerms`; Dialog `UI/Screens/Team/ContractDialog.cs` (Verträge, Kauf, Saisonende); Tests
+`TransferVertraegeKomplettTests`, `TransferVertraegeKomplettScreenTests`.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Kauf: Verhandlung nach der Annahme | 0x4781B–0x4786A | neuer Kaderplatz (0x108:0x5C), +0x2C = Gebot (Bit 31 bleibt), dann `0x4A1DB(Platz, Zeile, y = 0)`; Geld und Wechsel erst danach (0x47945–0x47A3B) |
+| Kauf: Verhandlung scheitert | 0x47874 → 0x47A3E | Platz frei (0x108:0x48), „Der Transfer / findet nicht statt.“ (DGROUP 0x1201/0x1205); auch bei „Abbruch“ |
+| Leihe ohne Verhandlung | 0x47851–0x4785B | Verhandlung nur bei +0x11 = 0 (kein eigener Spieler) und ohne Leihe; Leihe: +0x0B = 1, +0x0C = Verein + 0x80, altes Gehalt (0x47918–0x47941) |
+| Saisonende: Herunterzählen | 0x274A7, 0x27500 | im Saisonende 0x26F20: Alter +1 (nur im Zug von Manager 0), Laufzeit +0x0B − 1 |
+| Saisonende: Angebot | 0x27D05–0x27D70 | +0x0B = 0 → +0x18 = 101 (Angebot 1 Jahr), +0x0B = 1, Gehalt = Wert(Gehalt) · (147 − Alter) / 100 |
+| Saisonende: Verhandlung | 0x27D74–0x27D91 | `0x118:0x75(Platz, Zeile, y)` mit y = 80 für Zeile &lt; 12, sonst 0 (wie „Verträge“ 0x401D6) |
+| Saisonende: bleibt | 0x27D99, 0x27EA7–0x27EDF | Ergebnis 1 und +0x0B ≠ 0 → „… bleibt Ihnen auch / die nächste Saison erhalten“ (DGROUP 0x139D/0x13A1) |
+| Saisonende: geht | 0x27DAD–0x27E9D | „… kehrt Ihrem Verein / den Rücken...“ (0x138D/0x1391); Ablöse = Wert(Preis) / 2 aufs Konto, „Sie erhalten eine / Ablösesumme von / … DM“ (0x1395/0x1399, „ DM“ 0x14C9); Platz frei |
+
+Abbildung im Remake: Der wartende Spieler bleibt mit Laufzeit 0 und dem Angebot „1 Jahr“ (`ContractNotice.Offered`,
+`NoticeYears` = 1) im Kader – der Zustand +0x0B = 0/+0x18 = 101, ohne neues Spielstandsfeld. Solange solche Spieler warten,
+gilt „nach dem Saisonende“ (`AfterSeasonEnd`). Der Bildschirm nach „Erhaltene Prämien“ (`ContractsScreen.ForSeasonEnd`) führt
+die Verhandlungen; was offen bleibt, endet am ersten Tag der neuen Saison wie „Abbruch“; ohne Oberfläche
+(`StartNextSeason`) sofort.
+
+`[APPROX]`: Reihenfolge (Original je Manager Prämien, dann Verträge; Remake erst alle Prämien); Saisonzähler (Tore, Spiele) sind
+beim Rechnen von Gehalt und Ablöse schon zurückgesetzt; Ablöse als Transfereinnahme gebucht (das Original schreibt sie ohne
+Buchungsaufruf aufs Konto); Laufzeit und Gehalt des neuen Kaderplatzes beim Kauf noch wie bisher (Teil 2: Wert(Gehalt));
+Liste hinter dem Fenster am Saisonende = Bildschirm „Verträge“ (Original 0x108:0x43, nicht vermessen).
+
+**Befund für `finanzen-rest`:** Nach einem Kauf vom Computermarkt ruft das Original 0x18:0x223E (Datei 0x063BE, Fenster „Nehmen
+Sie einen Sponsor- / zuschuß von … an ?“) mit dem Kaufpreis (Datei 0x47A18–0x47A34); im Remake fehlt das.
+
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
 - **Unaufgeforderte Angebote** für Spieler im eigenen Kader (Kaderplatz +0x09 Bit 0x40, Tagesablauf 0x079DE–0x07A8F: w wie oben,
@@ -65,10 +97,6 @@ in `Club.Players` (`[APPROX]`).
   das Remake rechnet den Wert beim Anbieten frisch.
 - **Spieler, der am Saisonende aufhört** (Kaderplatz +0x18 Bit 0x80, Meldung DGROUP 0x12BD): bekommt im Original keine
   Angebote und kann nicht gekauft werden – nicht abgebildet.
-- **Kauf übernimmt Gebot als +0x2C** und ruft die Vertragsverhandlung 0x4A1DB (Datei 0x4781B–0x4786A); scheitert sie, findet
-  der Transfer nicht statt (0x47874 → 0x47A3E). Im Remake kommt der Spieler noch mit Startlaufzeit und Gehalt aus
-  `Contracts.Demand` (`[APPROX]`).
-- **Verhandlung am Saisonende** (0x27D05–0x27DF3) für ausgelaufene Verträge fehlt; das Remake beendet sie ohne Rückfrage.
 - **Start- und Wechselgehalt** = Wert(Gehalt) (0x29EE4, 0x497A1) noch nicht umgestellt; das Remake nutzt die Forderung aus
   Stärke und Talent. Die Verhandlung rechnet schon mit dem Wert, bisheriges Gehalt bleibt Untergrenze.
 - **Versicherungsprämie** = Wert(Gehalt) / 2 beim Abschluss (+0x30) und Sperre des Kündigens (+0x2C Bit 31) – das Remake

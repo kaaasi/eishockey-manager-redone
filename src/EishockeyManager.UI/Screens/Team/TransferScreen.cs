@@ -46,6 +46,10 @@ public sealed class TransferScreen : Screen
     private readonly MessageBox _message = new();
     private readonly PlayerInfoPopup _info = new();
     private TransferDialog? _dialog;
+    private readonly Queue<string[]> _messages = new();
+    // Kauf nach der Annahme: Vertragsverhandlung 0x4A1DB (Aufruf 0x4786A), dann Abschluss oder „findet nicht statt“.
+    private TransferPurchase? _purchase;
+    private ContractDialog? _contract;
     private int _mouseX = -1, _mouseY = -1;
 
     public TransferScreen(ScreenHost host, Screen back) : base(host) => _back = back;
@@ -59,6 +63,9 @@ public sealed class TransferScreen : Screen
     public TransferDialog? Dialog => _dialog;
 
     public PlayerInfoPopup Info => _info;
+
+    /// <summary>Verhandlungsfenster nach einem angenommenen Kauf (oder null).</summary>
+    public ContractDialog? Contract => _contract;
 
     /// <summary>Text der Statuszeile unter der Maus (Herkunft eines Markt-Spielers bzw. Hinweiszeile 0x41683 des Kaders).</summary>
     public string? Status => StatusText(TeamUi.Rows(Club), Market.Listings);
@@ -79,9 +86,18 @@ public sealed class TransferScreen : Screen
         _mouseX = input.MouseX;
         _mouseY = input.MouseY;
         if (_message.Update(input))
+        {
+            if (!_message.Visible && _messages.TryDequeue(out var lines))
+                _message.Show(lines);
             return;
+        }
         if (_info.Update(input))
             return;
+        if (_contract is not null)
+        {
+            UpdateContract(input);
+            return;
+        }
         if (_dialog is not null)
         {
             switch (_dialog.Update(input, Assets))
@@ -164,7 +180,11 @@ public sealed class TransferScreen : Screen
         switch (d.Kind)
         {
             case TransferDialog.DialogKind.Buy or TransferDialog.DialogKind.Loan:
-                _message.Show(TransferMarket.Message(Market.Buy(Game, Manager, d.Listing!, d.Amount, d.Kind == TransferDialog.DialogKind.Loan)));
+                var bid = Market.Bid(Game, Manager, d.Listing!, d.Amount, d.Kind == TransferDialog.DialogKind.Loan, out var purchase);
+                if (purchase is not null)
+                    OpenContract(purchase);
+                else
+                    _message.Show(TransferMarket.Message(bid));
                 break;
             case TransferDialog.DialogKind.Sale when d.Listing is null:
                 var result = Market.Offer(Game, Manager, d.Player!);
@@ -183,6 +203,42 @@ public sealed class TransferScreen : Screen
                 _message.Show(TalentScout.Message(TalentScout.Search(Game, Manager)));
                 break;
         }
+    }
+
+    /// <summary>
+    /// Verhandlungsfenster nach der Annahme. [ORIGINAL] Datei 0x4785D: Aufruf mit y = 0 (oben); der neue Kaderplatz ist frisch,
+    /// Laufzeit und Gehalt sind die des Wechsels (<see cref="TransferPurchase"/>).
+    /// </summary>
+    private void OpenContract(TransferPurchase purchase)
+    {
+        var game = Game;
+        _purchase = purchase;
+        _contract = new ContractDialog(purchase.Player, ContractDialog.Top, purchase.Years, purchase.Salary, insured: false,
+            years => Contracts.DemandAfterYears(game, purchase.Buyer, purchase.Player, years, purchase.Salary), () => null);
+    }
+
+    private void UpdateContract(InputState input)
+    {
+        var d = _contract!;
+        var outcome = d.Update(input);
+        if (outcome == ContractDialog.Outcome.None)
+            return;
+        var purchase = _purchase!;
+        _contract = null;
+        _purchase = null;
+        if (outcome == ContractDialog.Outcome.Cancel)
+        {
+            _message.Show(TransferMarket.NotTakingPlace); // 0x47874 → 0x47A3E
+            return;
+        }
+        var result = Market.Sign(Game, purchase, d.Years, d.Salary, d.Insured, d.DemandFilled);
+        if (result == NegotiationResult.Accepted)
+        {
+            _message.Show(TransferMarket.Message(TransferResult.Accepted));
+            return;
+        }
+        _message.Show(Contracts.Message(result, purchase.Player));
+        _messages.Enqueue(TransferMarket.NotTakingPlace);
     }
 
     private void Cancel(TransferDialog d)
@@ -275,6 +331,7 @@ public sealed class TransferScreen : Screen
         DrawAccountBar(s);
 
         _dialog?.Draw(s, Assets);
+        _contract?.Draw(s, Assets);
         _info.Draw(s, Assets);
         _message.Draw(s, Assets, 160, 118);
     }
