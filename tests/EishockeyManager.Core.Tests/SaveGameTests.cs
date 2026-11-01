@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(18, SaveGame.SchemaVersion);
+        Assert.Equal(19, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -35,7 +35,8 @@ public class SaveGameTests
     // Manager.SeriesRecords und Manager.PowerPlayCounts (Spur statistiken-verein), 16 Platzierungen der Weltmeisterschaften
     // (Spur nationalteam-2), 17 Verhandlungs- und Gebotssperre (Spur transfer-original-vertrag). Runde 9: 18 Rekorde,
     // Kopf-an-Kopf-Liste und Bilanz der Länder (Spur wettbewerbe-komplett, Gegner-Fenster).
-    private const string ExpectedSchemaFingerprint = "58797A693555C366";
+    // 19 Spielstand-Optionen GameSetup.Options und Begegnungstabelle Manager.MeetingTable (Spur optionen-wirkung).
+    private const string ExpectedSchemaFingerprint = "9CAB1D6FA6D96A28";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

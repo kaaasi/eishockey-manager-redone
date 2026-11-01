@@ -597,19 +597,22 @@ Europapokal, WM-Spiele, Länderspiele:, Zeitung, Hintergrundgrafik, 1.Liga, 2.Li
 „V1.00 - Ende: “, „ (Level “) und 15 Schalter (Index 0–14). Schleife mit Mausereignis `DGROUP 0x5A16`: 1 = Klick
 auswerten, 3 = Verlassen (Rückkehr nach Freigabe des Puffers 0x38:0x70A).
 
-**Schalter** (Tabellen in DGROUP, je 15 Einträge): Breite in 8-Pixel-Schritten `0x4BCA` (alle 1 außer Index 9, 13, 14 = 0 bzw.
-9: 0), x `0x4BE8` = 130, 144, 158 (dreimal), 24, 188, 204, 218, 39, 54; y `0x4C06` = 222, 222, 222, 252, 252, 252, 282, 282, 282,
-200, 184, 214, 200, 244, 220 (Bildschirm-/Fensterkoordinaten, Trefferprüfung `y ≥ Tabelle`, `y < Tabelle + 0x13 − Breite·8`;
-`x < Tabelle + 0x17 − Breite·10`). Index 0–8 bilden eine 3 × 3-Matrix (Zeile · 3 + Spalte), Index 9 ist dreistufig,
-10–12 sind Schalter, 13–14 zählen über 0xE (`≥ 0xE` wirkt auf die Tabelle `DGROUP 0x120 + Manager` statt auf 0x21D).
+**Schalter** (Tabellen in DGROUP, je 15 Einträge): klein `0x4BCA` (Byte; 1 außer Index 9, 13, 14 = 0), **y** `0x4BE8` = 130, 144,
+158 (dreimal), 24, 188, 204, 218, 39, 54; **x** `0x4C06` = 222, 222, 222, 252, 252, 252, 282, 282, 282, 200, 184, 214, 200, 244, 220
+(Bildschirmkoordinaten; nachgeprüft in Spur `optionen-wirkung` Teil 2: der Zeichenaufruf 0x2CBC5 bekommt 0x4C06 vor 0x4BE8, x vor y
+wie bei 0x30:0x787 (0, 0, 319, 239); Trefferprüfung 0x2D2A6: `x ≥ 0x4C06`, `y ≥ 0x4BE8`, `x < 0x4C06 + 0x13 − klein·8`,
+`y < 0x4BE8 + 0x17 − klein·10` = Rechteck des Schalters). Index 0–8 bilden eine 3 × 3-Matrix **Liga · 3 + Zeile** (Index 0–2 =
+Spalte 1.Liga; die frühere Angabe „Zeile · 3 + Spalte“ war vertauscht), Index 9 ist dreistufig („Torszenen“), 10–12 sind
+Schalter, Index 13 (Hintergrundgrafik) liest DGROUP 0x22A, Index 14 (Scrolling) `DGROUP 0x120 + Manager` (`≥ 0xE`, Datei 0x2CFE6/0x2D3CA).
 
-**Zustand** (Anfangswerte aus der Datei): `DGROUP 0x21D…0x22B` = 0,0,0,0,0,0,0,0,0, **1**, 0,0,0,0,0 (Index 9 = 1);
+**Zustand** (Anfangswerte aus der Datei): `DGROUP 0x21D…0x22B` = 0,0,0,0,0,0,0,0,0,0, **1**, 0,0,0,0 (Index 10 = DEB-Pokal = 1, Index 9 = 0;
+korrigiert nach R8-D03, nachgeprüft Datei 0x16FED ff. in Spur `optionen-wirkung`);
 `DGROUP 0x120…` = 1,1,1,1,1,69,94,39,73,15,43,0,9,13,10,14,11,15,12,16 (je Manager, vom Schalter ≥ 0xE per `xor 1` umgeschaltet);
 `DGROUP 0x262` = 70 (Regler „Spielgeschwindigkeit“: x-Klick 0xBE–0x11D, y 0x54–0x60: `(x − 0xBE) / 12 · 10`, also 0–80 in Zehnerschritten).
 
 **Klickverhalten** (Datei 0x2D32A–0x2D3D0 bzw. Kopie 0x5F7–0x6AE im Overlay):
 * Index 9 („Neuer Spielmodus:“, Wert 0/1/2): `inc`; bei 3 → 0; bei 2 → 0, falls `DGROUP 0x5A56 ≠ 0`. Bei Wert 2 außerdem Aufruf
-  `0x120:0x4D` (Spielmodus-Abfrage) und `DGROUP 0x226 = 0` (Datei 0x2D39F) – `0x226` ist der Spielmodus (== 2 zeigt die Zusatzzeile
+  `0x120:0x4D` (Spielmodus-Abfrage) und `DGROUP 0x226 = 0` (Datei 0x2D39F) – `0x226` ist die Darstellung des Live-Spiels, nicht der Spielmodus 0xD0B9 – siehe „Wirkung der Spielstand-Optionen“ unten (== 2 zeigt die Zusatzzeile
   mit fünf Schaltern, Datei 0x32C).
 * Index 0–8 und 10–12: `xor 1` (an/aus); Index 13/14 wie oben für den aktiven Manager (`DGROUP 0xA70E`).
 * Nach Index 12: Vergleich mit `DGROUP 0x6AC` (Manager-Statusbyte `0x974E + 0x1AF · Manager`), weitere Folgewirkung nicht verfolgt.
@@ -626,6 +629,66 @@ keinen Schalter mit dem Text). Nicht benutzt.
 Spalten 1./2./3. Liga) ist aus den Koordinaten geschlossen, **nicht** am Video bestätigt; Wirkung von WM-Spiele/Länderspiele/Europapokal
 (Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Die Kalender-Teile siehe unten (Teil 2).
 
+### Wirkung der Spielstand-Optionen (Spur `optionen-wirkung`, Teil 1; #289)
+
+Nachgeprüft mit `ndisasm -b 16` (alle direkten Zugriffe `[0x226]`–`[0x229]` und `[0xD0B9]` in `em.exe`). Ergebnis: **keine der
+Optionen meldet einen Wettbewerb an oder ab, und keine wechselt den Spielmodus.**
+
+* **Index 9 (DGROUP 0x226) ist nicht der Spielmodus**, sondern die Darstellung des Live-Spiels (0 / 1 / 2). Beim Wechsel auf 2
+  zeigt 0x2CD1C einmalig (Merker DGROUP 0xE044) über `0x120:0x4D` die Meldung „Neuer Spielmodus:“ / „Das Eisfeld bleibt während
+  des gesamten Spieles an.“ / „Keine Teamveränderungen möglich.“ (DGROUP 0x4D38/0x4D4A/0x4D69/0x4D84, Datei 0x2D4EE–0x2D50A;
+  Texte Datei 0x1BB08 ff.). Leser: Spieltagsablauf 0x37112 (bei 2 Anzeige dauerhaft an, DGROUP 0x5A55 = 1), Eingriffsmenü
+  0x3783E/0x37D34/0x38E00 (schreibt den Wert zurück), weitere Anzeigepfade 0x5255D/0x527E5/0x53DDC. **[ORIGINAL]** Gehört zu
+  `livespiel` (ausgeklammert). Der **Spielmodus DGROUP 0xD0B9** wird nur in der Spielvorbereitung geschrieben (Datei 0x29858,
+  0x29862) – das Original kennt keinen Moduswechsel im laufenden Spiel.
+* **Index 10–12 (DGROUP 0x227 DEB-Pokal, 0x228 Europapokal, 0x229 WM-Spiele) sind Anzeigeschalter.** Leser:
+  * Spieltagsablauf 0x3702E–0x37085: Spieltag ohne Managerverein (`[bp−5] = 0`) geht in die Minutenschleife mit Anzeige
+    (0x37088), wenn der Schalter des Wettbewerbs an ist (Code `[0xD0C2]` 8 → 0x229, 3/5 → 0x228, 6 → 0x227, 1 → Matrix
+    0x21E/0x221/0x224, 7 immer); sonst **schneller Weg 0x3731F** (`docs/spielberechnung.md` §1 und §3).
+  * Ereignisfilter 0x3A8EC–0x3A9BE: Meldung überspringen bei ausgeschaltetem Schalter (Code > 7 → 0x229, 3–5 → 0x228, 6 → 0x227).
+  * 0x33BB2: Bildschirm nach der Pokalrunde nur, wenn 0x227 an (außer Modus „nur Weltkugel“).
+  * 0x30FF2: Vorbereitung der WM-Anzeige nur bei 0x229 an.
+  * Ernennung des Bundestrainers 0x5541F–0x5545F / 0x5575A: 0x229 wird nach 0x22C gesichert, während des Bundestrainer-Abschnitts
+    auf 1 gesetzt und danach zurückgeschrieben.
+* **Spielwirkung** haben Index 10–12 also nur mittelbar: Pokalspiele ohne Managerverein laufen bei eingeschaltetem Schalter durch
+  die Minutenschleife statt durch den schnellen Weg – andere Ergebnisverteilung und anderer Zufallsverbrauch. Das Remake nimmt
+  in `MatchEngine.Live.cs` (`PlayWithEvents`) alle drei Schalter als aus an ([APPROX]); mit den Anfangswerten des Originals
+  (DEB-Pokal an) wäre der DEB-Pokal der Computervereine im Minutenweg zu rechnen. Diese Datei gehört `spielberechnung-komplett`.
+* **Folge für den Plan:** Die in Runde 9 vorgesehene Wirkung „An-/Abmelden von DEB-Pokal, Europapokal, WM in `StartNextSeason`
+  und Moduswechsel“ ist im Original **nicht belegt** und widerspricht den Belegen oben. **Entscheidung Nutzer (01.11.2026):**
+  Teil 1 neu gefasst – Zustand in `Core/GameOptions.cs` (`GameSetup.Options`, Anfangswerte aus der Datei, Migration),
+  `GameOptions.CupMatchUsesMinuteLoop` als Abfrage für den Anschluss in `MatchEngine.PlayWithEvents` (Spur
+  `spielberechnung-komplett` bzw. Leitstelle; PR #292). `SeasonFlow.cs` bleibt unverändert.
+
+### Optionsbildschirm (Spur `optionen-wirkung`, Teil 2)
+
+`UI/Screens/GameOptionsScreen.cs`, schaltet `GameOptions` (Spielstand). Aufbau aus 0x2CD1C–0x2D292 und 0x2CBC5/0x2CC26:
+
+| Teil | Beleg |
+|---|---|
+| Hintergrund kb\22, drei Fenster aus Rahmenteilen 24 × 19: (56 \| 1) 10 × 6, (92 \| 119) 9 × 3, (46 \| 179) 10 × 3 | 0x30:0x335 bei 0x2CD6D/0x2CD93/0x2CDB9 |
+| Schalter aus kb\33 (0x2CBC5): Quelle (klein · 19 \| (Wert = 0) · 23), Größe (19 − 8 · klein) × (23 − 10 · klein), Farbe 0xC0 durchsichtig; an = Pinguin, aus = Loch | Tabellen 0x4C06/0x4BE8/0x4BCA |
+| Torszenen = 2: Rechteck (207 \| 36)–(210 \| 38) Farbe 18, Ecken Farbe 9, (208 \| 37) Farbe 24; beim ersten Mal Meldung „Neuer Spielmodus:“ (Merker 0xE044) | 0x2D048, 0x2D470, 0x2D4EE; Tabellen DGROUP 0x4BD9/0x4BDE/0x4BE3 |
+| Spielgeschwindigkeit: Puffer 100 × 13 Farbe 4, acht kleine Schalter im Abstand 12, Pinguine = Wert / 9 + 1, nach (190 \| 84); Klick x 191–285, y 84–96 → `(x − 190) / 12 · 10` (also 0–70) | 0x2CC26, 0x2D51B |
+| Texte: Schrift 2 (Flow) „Torszenen“ … zentriert um x = 120, Grundlinie 35/55/75/95; Schrift 3 (Mini) Matrixzeilen um x = 150, Grundlinie 140/152/164, Pokale um x = 100, Grundlinie 193/209/225 (Farbe 7, Schatten 0); „1.Liga“ … linksbündig x = 215/245/275, Grundlinie 128, Farbe 30 | 0x30:0x885, 0x30:0x831 |
+| Kopfzeile Mini Farbe 1, x = 62, Grundlinie 10: „V1.00 - Ende: “ + Endjahr bzw. „ Nie.“ (0x5A14 ≥ 2000) + „ (Level “ + (6 − 0xED8) + „)“; zweite Zeile „RAM: … Bytes frei.“ Farbe 2, Grundlinie 16 | 0x2D0D5–0x2D1FB |
+| Rechtsklick (Mausereignis 3) verlässt den Bildschirm | 0x2D55D |
+
+Zentrierung (0x30:0x885 mit x1, x2): linke Kante = (x1 + x2) / 2 − Breite / 2, am Bild vermessen (bei ungerader Breite ein Pixel
+rechts von `CompetitionWidgets.Centered`).
+
+**Pixelvergleich** (`emtool screens gamedata <ziel> optionen` gegen DOSBox-Bilder 48–51, verlustfrei auf 320 × 240 verkleinert:
+Fensterinhalt ab (1 \| 26), jedes zweite Pixel): außerhalb der Masken **0 abweichende Pixel** in 48, 50 und 51 (bis auf 3 Pixel der
+DOSBox-Fensterecke). Maskiert: Kopfzeilen (Level hängt vom Manager ab, RAM-Zeile fehlt), Mauszeiger. Bild 49 weicht nur bei
+„Hintergrundgrafik“ ab (dort aus; im Remake fest an).
+
+**[APPROX]:** RAM-Zeile weggelassen; Speicherprüfung vor Torszenen-Stufe 2 (0x2D362: unter 200.000 Bytes frei → Meldung über
+0x13E5 ff. und Stufe 0) und die Folge des WM-Schalters über das Manager-Statusbyte (0x2D3D5, 0x30:0xB) nicht nachgebaut;
+Hintergrundgrafik und Scrolling fest an und nicht schaltbar (im Remake ohne Bedeutung); Meldung „Neuer Spielmodus:“ einmal je
+geöffnetem Bildschirm; Level der Kopfzeile vom aktiven Manager. Offen: In Bild 48 (Modus „nur Weltkugel“) ist WM-Spiele an, der
+Anfangswert der Datei ist aus – passt zur Sicherung 0x229 → 0x22C im Bundestrainer-Abschnitt (0x5541F), im Remake nicht
+nachgebaut; Hintergrundgrafik ist in Bild 48 an, DGROUP 0x22A in der Datei 0 – wer es setzt, ist nicht verfolgt.
+
 ### Teil 2 (Spur `optionen-kalender-2`)
 
 **Bildschirm = Einstellungen des Originals.** DOSBox-Bilder 48/49 (`dosbox/nur-weltkugel`, `docs/dosbox-befunde.md`) zeigen genau den
@@ -636,27 +699,59 @@ Bildschirm von 0x2CD1C: oben Fenster „Torszenen“, „Hintergrundgrafik“, �
 (**[APPROX]**, Wirkung nicht belegt). Der im Remake bisher angenommene Satz „Original hat keinen Einstellungen-Bildschirm“ war falsch.
 
 **Remake:** `SettingsScreen` behält die Geräteeinstellungen (Lautstärke, Torszenen, Vollbild, automatisch speichern – [APPROX], im
-Original nicht vorhanden) und bekommt den Knopf „Spielstand“ mit einer **lesenden** Seite (`GameOptionsView`): Spielmodus aus dem
-Spielstand, Matrix immer aus (das Remake kennt die Meldungsfilter nicht; Live-Ablauf: `livespiel`), Pokale aus dem Modus abgeleitet.
-Pixelvergleich mit Bild 48 **nicht** gemacht: das Remake zeichnet in seinem Layout (Rahmen, Lampen statt Pinguine), die
-Pinguin-/Loch-Grafiken und die Fenster des Originals sind nicht nachgebaut; Bildschirmfoto `einstellungen/03_spielstand_optionen`.
-Wirkung der Spielstand-Optionen in Core samt Migration: Folgepaket `optionen-wirkung`.
+Original nicht vorhanden); der Knopf „Spielstand“ öffnet bei laufendem Spiel den nachgebauten Optionsbildschirm (Spur
+`optionen-wirkung` Teil 2, Abschnitt „Optionsbildschirm“ unten).
 
 **Kalender (Einordnung, Disassembly `ndisasm -b 16`).**
 
 | Adresse | Befund |
 |---|---|
 | 0x43B1F (206 B) | **Datumstext**: Wochentag (Tabelle DGROUP 0xAA0, Index `(Tag + 5) mod 7`), Trenntext (DGROUP 0x521F), Tag als Zahl (0x38:0x2C2), Trenntext (0x5222), Monatsname (Tabelle 0xA70, Index DGROUP 0x5A1C), dann Jahr (DGROUP 0x5A18); Rückgabe Zeiger auf den Puffer. Kein Bildschirm. Das Remake formatiert Datumstexte in Core (`docs/saison.md`, „Kalender“). |
-| 0x43C38 (489 B) | Fensterzeichner (Aufrufe 0x30:0x800, 0x50:0x3B0/0x545, 0x30:0x995 je Zeile); gerufen von 0x0B155. Gehört zum Terminfenster 0x43E21; nicht im Video belegt. |
-| 0x43E21 (1983 B) | Terminübersicht („Saisonende“, „Spielfrei“, „ Noch keine“, „ DM“). **Kein Referenzbild** gefunden (`docs/referenz-videos.md` führt keinen Kalenderbildschirm; Suche nach „Kalender“/„Terminübersicht“ in der Doku ohne Treffer) → **kein Bildschirm gebaut**. |
-| 0x445E0 (1128 B) | Text „Vor dem ersten Spieltag.“ und „.Spieltag“: Infoleiste (Tabellenkurve), im Remake vorhanden (`docs/anforderungen/bildschirme.md`). |
-| 0x36169 (1476 B) | ohne Texte, Aufrufe aus Spielstart, WM und Pokal: Termin-/Paarungserzeugung vermutet; **nicht weiter verfolgt** (Folgepaket, falls gebraucht). |
+| 0x43C38 (489 B) | Erhabener Kasten (hell oben/links, dunkel unten/rechts; Aufrufe 0x30:0x800, 0x50:0x3B0/0x545, 0x30:0x995); gerufen von 0x0B155 und aus 0x43E21 (Nachrichtenfeld, Argumente 6, 35, 107, 74, 1, 2). Im Remake `MainMenuScreen.Raised` (Teil 3, siehe „Infoleiste 0x43E21“). |
+| 0x43E21 (1983 B) | **Kein Kalender, sondern die Infoleiste des Hauptmenüs** (Rahmen 0x30:0x800 mit 2, 22, 317, 74; Datum, Wettbewerbs- und Heim-/Auswärtssymbol, Gegner, bisherige Begegnungen, Kontostand „ DM“). Spur `optionen-wirkung` Teil 3, Abschnitt „Infoleiste 0x43E21“. |
+| 0x445E0 (1128 B) | Tabellenkurve und „n.Spieltag“ / „Vor dem ersten Spieltag.“ im Nachrichtenfeld (aus 0x43E21 und 0x4D385); im Remake vorhanden, abgeglichen in „Infoleiste 0x43E21“. |
+| 0x36169 (1476 B) | Inzwischen umgesetzt (Spur `statistiken-verein`, `StatisticsClub.cs`); kein Kalenderteil. |
 
-Die Tiefe bei 0x43C38, 0x43E21 und 0x36169 ist bewusst gering (nur Funktionsrumpf und Aufrufe angesehen); die Zuordnung ist
-**[APPROX]**. Änderungen am Tagesablauf: keine vorgeschlagen.
+Die Einordnung von 0x43C38, 0x43E21 und 0x445E0 ist in Teil 3 der Spur `optionen-wirkung` nachgeholt (unten). Änderungen am
+Tagesablauf: keine.
 
-(Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Die Bildschirm- und Kalender-Teile (0x43E21 mit 0x43B1F,
-0x43C38, 0x445E0, 0x36169; Pixelvergleich) sind **nicht begonnen**.
+(Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Bildschirm: Teil 2 von `optionen-wirkung`
+(„Optionsbildschirm“); Kalender-Teile: Teil 3 („Infoleiste 0x43E21“).
+
+### Infoleiste 0x43E21 (Spur `optionen-wirkung`, Teil 3)
+
+Dateioffsets in `em.exe` (Overlay 0x110 ab Datei 0x43150), DGROUP = Datei 0x16DD0. **Ergebnis:** Der vermutete
+Kalender-/Terminbildschirm existiert nicht. 0x43E21 zeichnet die Infoleiste des Hauptmenüs; Aufrufer sind die
+Hauptmenüschleife 0x44E22 (Datei 0x450EC, Gegner DGROUP 0xE1A6, Heim DGROUP 0xE1A7) und das Saisonende 0x26D9A (Heim-Wert
+0xFE). Belege im Video: alle Hauptmenübilder, z. B. `folge06_00459` (41. Spieltag), `folge12_00800`.
+
+* **Gegnerfeld** (Datei 0x44033–0x440FB): Wettbewerb 4 (Heim-Wert 0xFE oder Wettbewerbsmaske 0xFF) → „Saisonende“ (Zeiger
+  0xBE0 → DGROUP 0x2754); Gegner 0xFF → „Spielfrei“ (Zeiger 0xC04 → 0x2791); sonst Vereinsname (Satz 0x3D ab far 0x9657).
+  Heim-/Auswärtssymbol nur, wenn 0x128:0x20 für den Gegner 0 liefert (Datei 0x440AE; Nationalteam: kein Symbol, wie
+  PV-04). Remake: „Spielfrei“ fehlte (leerer Text) – behoben (`UI/Screens/InfoBarTexts.cs`).
+* **Bisherige Begegnungen** (Datei 0x44168–0x4438B): Tabelle DGROUP 0xAB7B, Index Manager · 0x280 + Gegner · 10 + Platz · 2 +
+  Seite; Manager = DGROUP 0xA70E, im Bundestrainermenü (0xA70E = 5) Manager 0. Erst Seite 1 („A “, DGROUP 0x5227), dann
+  Seite 0 („H “, 0x522A), je Seite Platz 4 → 0, höchstens zwei Einträge je Seite; Byte = eigene Tore (Bit 0–3) „:“ (0x522D)
+  Gegentore (Bit 4–7); Trenner „,“ (0x5225). Gegen Nationalteams kein „A “/„H “ (0x128:0x20, Datei 0x441F2). Leer →
+  „ Noch keine“ (Zeiger 0xFD9 → 0x3574, mit Leerzeichen). Breiter als 85 Pixel (0x50:0x2B8, Datei 0x44340) → alles bis zum
+  ersten Komma entfällt (einmal). Gegner ≥ 0x40 oder Heim-Wert 0xFE: keine Zeile.
+* **Eintrag** 0x4F5A8 (Ov 0x128), gerufen nur von der Tabelleneintragung 0x50283 (Datei 0x502CC–0x5030B): Heimverein mit
+  Manager (Vereinsfeld +0x16 ≠ 0) → Tabelle dieses Managers, Gegner = Gast, Seite 0, Tore Heim + 16 · Gast; Gast mit Manager
+  → Seite 1, Tore Gast + 16 · Heim. Das Nationalteam des Bundestrainers (DGROUP 0x6AC) schreibt in die Tabelle von Manager 0.
+  Erster freier Platz der Seite; Gegner ab DGROUP 0x6AD (Nationalteams) immer erst Seite 0, dann Seite 1. Alles voll →
+  Plätze rücken vor, neues Ergebnis auf Platz 4 (bei Nationalteams über beide Seiten, Datei 0x4F650–0x4F6E5). Vier Bit je
+  Zahl ohne Begrenzung. Anfangswert 0xFF beim Programmstart (Datei 0x43760–0x437C4); **nie gelöscht**, gilt über alle Saisons
+  (Video: vier Begegnungen am 41. Spieltag 1997, `folge06_00459`).
+* **Remake vorher:** nur Ligaergebnisse der laufenden Saison (`GameState.Meetings`), chronologisch, Heim und Auswärts gemischt,
+  „Noch keine“ ohne Leerzeichen, keine Breitengrenze. **Jetzt:** `Core/MeetingHistory.cs` (Tabelle `Manager.MeetingTable`,
+  Schema 18), Anzeige `UI/Screens/InfoBarTexts.cs`. [APPROX] Angeschlossen sind die Ligaspiele (`GameState.PlayNextMatchDay`);
+  DEB-Pokal, Europapokal, Play-offs/Relegation und WM-Gruppen laufen im Original ebenfalls über 0x50283 (Aufrufer 0x30365,
+  0x30852, 0x30E7B, 0x315E9, 0x34B76, 0x50B45) und werden in der Integration angeschlossen (Dateien anderer Spuren).
+* **Tabellenkurve 0x445E0** (Abgleich, nicht umgebaut): x-Schritt `max(2, 8500 / (n − 1) / 100)` mit n = DGROUP 0x7A9,
+  Punkte ab x + 5, y = Grundlinie + 2 · Platz + 0x31; ohne Kurve (n ≤ 1) „Vor dem ersten Spieltag.“ (Zeiger 0x674); Platzzahl
+  mit „.“ (0x522F) rechts, bei Überschneidung der beiden Kurven verschoben (Datei 0x44801–0x44891). Das Remake skaliert auf
+  die volle Breite (`MainMenuScreen.DrawRankCurve`, [APPROX]) – Anpassung als Folgeschritt (gemeinsame Datei).
+* **Datumstext 0x43B1F**: wie oben; das Remake formatiert in Core, Bild und Text stimmen (Pixelvergleiche der Spur `pixel-verein`).
 
 ## Nationalteam, Welle 3 (Spur `nationalteam-2`, Runde 8)
 
