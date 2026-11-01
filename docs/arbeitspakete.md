@@ -119,6 +119,27 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
 - **Modell:** Claude Opus 5.5. **Status:** Analyse fertig (PR #381, `docs/analyse/re-rest.md`): 53 von 53 Funktionen
   zugeordnet, Kandidaten K1–K7 (K1 Talentsuche P2); Übergaben an `livespiel`: 3183Ch, 35CBEh, 40290h.
 
+### Spur `inventur` – Annahmen und Umsetzungslücken (Nachtrag, Go Nutzer 01.11.2026)
+
+- **Ziel:** Grundlage für die Planung von Runde 11. Statt einzelner Kandidaten eine vollständige, priorisierte Liste
+  aller Stellen, an denen das Remake nicht aus em.exe belegt ist. Stand `main` 2d0b081 (nach Integration #380).
+- **Umfang:**
+  1. **Alle `[APPROX]`-Stellen in `src/`** (Stand 2d0b081: 382 in 128 Dateien). Je Stelle eine Einordnung: (a) jetzt aus einer
+     Analyse bzw. `reverse-engineering.md` belegbar (Fundstelle nennen), (b) bewusste Erweiterung oder Entscheidung des
+     Nutzers (Quelle nennen), (c) nur mit DOSBox-Spielstand oder Video belegbar (Vorschlag für den Beleg), (d) unklar.
+     Gleichartige Stellen einer Datei dürfen in einer Zeile zusammengefasst werden.
+  2. **Funktionen mit Status „dokumentiert“** im Spielcode laut Funktionskarte (Stand 2d0b081: 159, etwa 43 KB) und die
+     **genäherten** (7): je Funktion „fehlt im Remake“, „vorhanden ohne `[ORIGINAL]`“ (Datei nennen) oder „nicht nötig“
+     (Begründung, z. B. durch .NET ersetzt).
+  3. **Kandidaten** aus `docs/analyse/*.md` (G1–G8, K1–K10, K1–K6, L1–L8, K1–K7) den Punkten aus 1 und 2 zuordnen.
+  4. **Systemsegmente:** kurz einschätzen, welche Teile für die Originaltreue zählen (Grafik, Timer, FM-Treiber).
+- **Ergebnis:** `docs/analyse/inventur.md` mit Übersicht (Zahlen je Gruppe), den Tabellen zu 1 und 2 und einer
+  **priorisierten Liste für Runde 11** (P1–P3, je Eintrag Ziel, betroffene Dateien, Beleg, Testidee, Vorschlag für die
+  Spur). Keine Code-Änderung; Auszählungen per Skript im Scratch.
+- **Abnahme:** jede `[APPROX]`-Stelle und jede Funktion aus 2 ist genau einer Gruppe zugeordnet (Gegenprobe mit
+  `grep -rc` bzw. `funktionskarte.py --csv`); Zahlen der Übersicht stimmen mit der Gegenprobe überein.
+- **Modell:** Claude Opus 5.5. **Status:** Go Nutzer 01.11.2026.
+
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): Umsetzung als letzter Schritt vor v1.0; Analyse in
