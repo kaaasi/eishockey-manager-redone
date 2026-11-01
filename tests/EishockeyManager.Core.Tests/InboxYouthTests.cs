@@ -83,13 +83,13 @@ public class InboxYouthTests
         var me = game.ActiveManager;
         var expenses = game.MonthlyExpenses(me);
         game.SetYouthFunding(me, YouthTeamKind.Jugend, 7_400);
-        game.SetYouthFunding(me, YouthTeamKind.Junioren, 25_000);
+        game.SetYouthFunding(me, YouthTeamKind.Junioren, 45_000);
         Assert.Equal(7_000, game.Finance(me).Youth[1].Funding);
-        Assert.Equal(10_000, game.Finance(me).Youth[2].Funding);
-        Assert.Equal(expenses + 17_000, game.MonthlyExpenses(me));
+        Assert.Equal(40_000, game.Finance(me).Youth[2].Funding); // Deckel 10.000 · 2^Team (Spur finanzen-rest, Teil 1)
+        Assert.Equal(expenses + 47_000, game.MonthlyExpenses(me));
 
         AdvanceToNextMonth(game);
-        Assert.Equal(-17_000, game.Finance(me).Book.Current(FinanceCategory.Jugend));
+        Assert.Equal(-47_000, game.Finance(me).Book.Current(FinanceCategory.Jugend));
     }
 
     [Fact]
@@ -98,10 +98,11 @@ public class InboxYouthTests
         var game = TestGames.Create();
         var me = game.ActiveManager;
         var team = game.Finance(me).Youth[0];
-        Assert.Equal((3, 6), (team.League, team.Rank));
-        game.SetYouthFunding(me, YouthTeamKind.Schueler, YouthTeam.MaxFunding);
+        Assert.Equal(YouthTeam.StartRank, team.Rank); // Liga = Liga des Vereins (Spur finanzen-rest, Teil 1)
+        var start = team.Position;
+        game.SetYouthFunding(me, YouthTeamKind.Schueler, YouthTeam.MaxFunding(YouthTeamKind.Schueler));
         TestSeason.PlayRegularSeason(game);
-        Assert.True(team.Position < 17, $"Platz {team.Rank}, Liga {team.League}");
+        Assert.True(team.Position < start, $"Platz {team.Rank}, Liga {team.League}");
     }
 
     [Fact]

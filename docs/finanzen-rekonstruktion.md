@@ -29,7 +29,7 @@ im Remake rechnet in DM (÷ 3 am Ende).
 - Stadion: Überdachung = 2 − Start-Liga (Oberliga OHNE DACH, 2. Liga HALBOFFEN, Bundesliga HALLE); Anzeigetafel,
   Kühlanlage und Verkehrsanbindung 1 nur in der Bundesliga; Gastronomie 1 (Imbißbude) in Bundesliga und 2. Liga;
   Zustand 2 (MITTEL); Sitzkomfort, Kino, Bowling 0. Plätze: Stehplätze += 2.500 (Sitzplätze je Liga aus Tabelle).
-- Jugendteams: 3 Teams, Förderung 0 (Spieler setzt sie im Bildschirm Jugend in 10.000-DM-Schritten, Deckel
+- Jugendteams: 3 Teams auf Platz 6 der Start-Liga, Förderung 0 (Schritt 500 · 2^Team, Deckel
   10.000 · 2^Team).
 
 ## Monatsabschluss (`0x3F02C` ff., am Monatsletzten)
@@ -448,21 +448,44 @@ Rest in der unteren Hälfte: Logos, Schriftkanten und die Übersicht rechts (nic
   (Maßstab 2–64); im Remake nicht nachgebaut – eigenes Paket (Entscheidung Nutzer, 30.10.2026).
 - Die Basiswerte `0x1FD` sind vorbelegte Daten und werden bei „Neues Spiel“ ohne Programmneustart nicht zurückgesetzt.
 
-## Jugendteams – Funktionskarte 0x3A24B (Spur `finanzen-rest`, Teil 1, unvollständig)
+## Jugendteams – Funktionskarte 0x3A24B (Spur `finanzen-rest`, Teil 1)
 
-Dateioffset 0x3A24B, 1599 Bytes, Overlay 0xF8 (`ndisasm -b16 -o0 -e 0x3A24B em.exe`). Zuordnung, soweit gelesen:
+Overlay 0xF8, Dateioffset 0x3A24B (Bildschirm), 0x39BBD (Förderbalken), 0x39AD6 (Kästchen). Managersatz DGROUP
+`0xA078 + 0x15 · Manager`: Platz je Team `+0..2`, Liga `+3..5` (0-basiert), Förderung `+6` (3 Langwörter, Umrechnung über
+DGROUP 0x79D/0x7A1). Umgesetzt in `Core/FinanceYouth.cs` und `UI/Screens/Manager/YouthScreen.cs` (`[ORIGINAL]` mit Fundstelle).
 
-- **Zeichnen** (0x00–0x2F6): Grafik kb\33 (`0x21`), Rahmen bei (31|21) und (104|156) – das Remake hat 157 für das Förderfenster
-  (Videoversatz ±0,5, Pixelvergleich offen). Ligalinien: erste Linie y = 0x35 = 53, Abstand 0x18 = 24 (= `FirstLineY`,
-  `LeaguePitch`). Fahnenhöhe je Mannschaft: y = 0x36 + 24 · Liga + 2 · Platz (Bytes aus dem Managersatz, Stride 0x15, Team
-  `+0..2` Platz, `+3..5` Liga, 0-basiert); danach +16, wenn y in keinem der Intervalle [0x43,0x47]/[0x5B,0x5F] und < 0x70 liegt
-  (Beschriftung ausweichen). **Abweichung:** das Remake nimmt 4 Pixel je Platz (`24 · Rang / 6`), das Original 2 Pixel je Platz –
-  `[APPROX]` in `YouthScreen.FlagBottom`, noch nicht geändert (Wertebereich der Platzbytes ohne Videobild nicht belegt).
-- **Förderung** (ab 0x414): Schritt `500 · 2^Team` (LXMUL 0x3CA), Deckel `10000 · 2^Team` (0x2710); Klick im Balken x 0x79–0xBE
-  (121–190) setzt, außerhalb/Pfeile ± Schritt. Das stimmt mit „Deckel 10.000 · 2^Team“ aus dem Spielstart überein, **nicht** mit
-  `FinanceYouth.cs` (Deckel 10.000, Schritt 1.000 für alle Teams, Video 8:35 nur für die erste Mannschaft belegt).
-  Noch nicht umgesetzt: Schrittweite 500 statt 1.000 (Widerspruch zum Video) und Balkenmaßstab je Team ungeklärt.
+| Befund | Original | Remake vorher | Beleg |
+|---|---|---|---|
+| Plätze je Jugendliga | 12, Fahne 2 px je Platz: Stangenspitze `y = 0x36 + 24 · Liga + 2 · Platz` (0x3A3B2) | 6, 4 px je Platz | Folge 4 0:28:25 „12.Platz 3.Liga“ an der Unterkante (Spitze 121 = 124 − 3) |
+| Startstand | Platz 5 (= 6.), Liga = Start-Liga (Spielstart 0x29BAA/0x29BC1, DGROUP 0x11A) | 6. Platz 3. Liga für alle | UI-Video 8:35 (Oberliga) |
+| Förderschritt | `500 · 2^Team` (0x3A6B7, LXMUL) | 1.000 für alle | UI-Video 8:36 Schüler 1.000 = 2 Schritte, 8:38 Jugend 2.000 |
+| Förderdeckel | `10000 · 2^Team` (0x3A72F) | 10.000 für alle | UI-Video 8:39 „Jugend : 19000“ |
+| Klick in den Balken | `⌊⌊(x − 120) · 2^Team · 10000 / 70⌋ / Schritt⌋ · Schritt` für x 121–190 (0x3A798) | gerundeter Anteil | Videowerte oben |
+| Pfeile | Zeile y 168–177 (+ 24 · Team) über die volle Breite: x > 190 + Schritt bis zum Deckel, x < 121 − Schritt bis 0 | fehlten | – |
+| Balken | Umriss (120\|167)–(190\|178) Farbe 0x1D, innen 5; Füllung Kästchen (121\|y+1)–(119+w\|y+10), `w = Förderung · 70 / Deckel`, ab w > 2 | Y 168, Farben 50/48, Füllung flach | UI-Video 8:37: dunkle Umrisslinien x 120/190, y 167/178 |
+| Kästchen | hell oben/links, Mitte, dunkel unten/rechts, Farben DGROUP 0x4EAE `{18,17,16}{15,13,12}{23,22,8}`; Farbkästchen (110\|y+2)–(117\|y+7) | flach 7 × 5 bei y+3 | Video: Kästchen y 169–174 |
+| Teamfarben (Stange, Schrift) | DGROUP 0x4ED5 = 18, 15, 23 | 18, 15, 151 | – |
+| Fahne | kb\33 (Grafik 0x21) ab x = 30 + 16 · Team, 16 × 10, an (x\|y − 3) | gezeichnet | Video 8:35 Spitze y 109 |
+| Beschriftung | Grundlinie y − 5, bei y < 0x70 außerhalb 0x43–0x47/0x5B–0x5F 16 px tiefer (0x3A435) | fest 21 px über der Stange | Video: Schrift y 103–107 |
+| Förderfenster | Rahmen bei (104\|156) | 157 | Video 8:37 Oberkante 156, Unterkante 1 px höher |
+| Innenfläche beider Fenster | Farbe 4 (81, 113, 130) | 2 | Video 8:37 (77, 111, 129) |
 
-**Offen / blockiert:** Referenzbilder (Repo `kaaasi/eishockey-manager-referenz`) waren im Lauf nicht erreichbar
-(`add_repo` fehlte, `fetch-reference.sh` ohne Zugriff). Ohne sie ist weder der Pixelvergleich noch ein roter Test für
-Schritt/Deckel/Fahnenhöhe belegbar; Originaldaten (`em.exe`) kamen aus dem Projekt-ZIP.
+**`[APPROX]`, offen:** Durchsichtige Farbe der Fahnen = Hintergrundfarbe 4 der Grafik (Blit-Parameter 0xC0 nicht
+entschlüsselt); Abstand „n.Platz“ – „m.Liga“ gemessen (im Original eine Zeichenkette mit Feldbreite DGROUP 0x374); die
+Startliga nimmt die Liga des Managervereins beim ersten Zugriff auf die Finanzdaten. **Wirkung der Förderung nicht
+übernommen:** Datei 0x39DEC (monatlich, Teamstärke je Jugendteam `+(−3)` = DGROUP 0xA075, Zufall über 0x120:0x57/0x61)
+und 0x3A13B (Saisonwechsel: Auf- und Abstieg) sind noch nicht zugeordnet; `SettleYouth` bleibt `[APPROX]`. Rabatt der
+Talentsuche weiter je volle 1.000 DM Förderung (`[APPROX]`, Bezug unverändert). Alte Spielstände behalten ihre Plätze 1–6
+(jetzt in einer Liga mit 12 Plätzen) und ihre Förderung; keine Migration nötig, weil sich kein Feld ändert.
+
+**Pixelvergleich** (normierte Kreuzkorrelation der Graustufen, Remake gegen Videobild; vorher `main` 48c027e):
+
+| Bereich | Videobild | vorher | nachher |
+|---|---|---|---|
+| Förderfenster (106–197 × 160–230), Jugend 19.000 | UI 8:39 | 0,52 (beste Verschiebung dy = 1) | 0,79 (dy = 0) |
+| Förderfenster, Ausgangsstand | UI 8:35 | 0,61 (dy = 1) | 0,74 (dy = 0) |
+| Fahnen und Schrift (58–249 × 104–126), 12. Platz 3. Liga | Folge 4 0:28:25 | 0,34 | 0,47 |
+| Fahnen und Schrift, 6. Platz 3. Liga | UI 8:34 | 0,58 | 0,55 |
+
+Die Lage stimmt zeilengenau (Stangenspitze, Fahne, Schrift); der Rest der Abweichung sind Videounschärfe, die Stange in
+voller Teamfarbe (Video verwischt) und die unveränderte Achse links. Szenario `jugend-original` (`Tools/Scenarios/FinanzenRest.cs`).
