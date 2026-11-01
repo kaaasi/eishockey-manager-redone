@@ -46,6 +46,10 @@ public class WettbewerbeNationalteamTests
     public void CoachWarning_Boundary(int players, bool warning)
     {
         var game = Synthetic();
+        // Integration Runde 9: Bundestrainer ausdrücklich ernennen. Vorher hing die Ernennung am Tabellenplatz (Top 5 am
+        // Markierungstag, CupsNationalMode.OnNationalMarkerDay) und damit am Zufallsverbrauch; mit dem Spielerpool
+        // (transfer-vertraege-komplett Teil 5) endete die Saison ohne Bundestrainer-Zug. Geprüft wird hier nur die Warnung.
+        game.AppointNationalCoach(game.Managers[0]);
         PlayToNationalTurn(game);
         game.AutoNominate();
         var coach = game.NationalCoach!;
