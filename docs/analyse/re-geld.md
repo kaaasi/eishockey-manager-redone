@@ -320,6 +320,20 @@ gibt keine Jugendstärke, keine Auf- und Absteiger und keinen Neustart auf Platz
 nicht zu diesen Funktionen (Ausgaben Datei 0x3E811, schon umgesetzt). Ob die Stärke weiter wirkt (Talentsuche,
 Jugendspieler), zeigen die Zugriffe auf `DGROUP 0xA075` außerhalb dieser Funktionen – nicht Teil der Spur, offen.
 
+## Entscheidungen Nutzer (01.11.2026)
+
+- **E1 Buchung Stadionausbau:** über `GameState.Book` in die Kategorie „Bau“ (Architekturregel), Betrag und Zeitpunkt wie
+  im Original: einmal bei „Ja“, nach Abzug des Rabatts. Die Zeile im Finanzbuch ist eine Erweiterung des Remakes
+  (`[APPROX]` mit Begründung); Kontostand und Saldo stimmen mit dem Original überein.
+- **E2 Leihen bei einem Mitmanager:** je nach Spielart.
+  - **Lokales Spiel** (alle an einem Rechner): wie im Original sofort, ohne Zustimmung, mit den Original-Grenzen (Konto des
+    Verleihers > 0, höchstens 1 Mio. DM Schuld je Richtung, höchstens sein Konto). Die heutige Anfrage im Posteingang
+    entfällt dort.
+  - **Netzwerkspiel** (Zusatzfunktion „Netzwerkmodus“, noch nicht umgesetzt): alle Spieler spielen den Spieltag
+    gleichzeitig, der Spieltag endet erst, wenn alle fertig sind; Leihen geht dort als Anfrage, der Verleiher muss
+    zustimmen. Die Anfrage-Logik des Remakes bleibt dafür erhalten. Übertrag in
+    `docs/anforderungen/zusatzfunktionen.md` (Abschnitt 4) durch die Leitstelle (fremde Datei).
+
 ## Offen
 
 - Kalenderbyte `DGROUP 0x828`: Bit 0–2 als Ligaspieltag ist Deutung aus 0x54E96/0x55008; zu belegen mit `docs/tagesablauf.md`
@@ -332,10 +346,10 @@ Jugendspieler), zeigen die Zugriffe auf `DGROUP 0xA075` außerhalb dieser Funkti
 
 | Nr. | Prio | Ziel | Dateien | Testidee |
 |---|---|---|---|---|
-| G1 | P1 | Stadionausbau wie Datei 0x3D7F8/0x3D316: Kostentabelle K, Bauzeit `random(lo, hi)` + `random(0, 4) − 2`, parallele Baustellen je Projekt, Platzgrenze 25.000 zusammen, Schritt 500, Rabatt und „beleidigt“-Sperre (Tageszufall 1/11), Konto direkt belasten (Entscheidung Nutzer: Finanzbuch „Bau“ behalten?) | `Core/FinanceStadium.cs`, `UI/Screens/Manager/StadiumScreen.cs`, Spielstand-Migration (Baustellenliste) | Kosten je Projekt/Stufenzahl gegen Tabelle; zwei Baustellen zugleich; Nein → Sperre bis Zufall; Restwochen in `[lo−2, hi+2]`; Mehrsaisonprobe mit Ausbau |
+| G1 | P1 | Stadionausbau wie Datei 0x3D7F8/0x3D316: Kostentabelle K, Bauzeit `random(lo, hi)` + `random(0, 4) − 2`, parallele Baustellen je Projekt, Platzgrenze 25.000 zusammen, Schritt 500, Rabatt und „beleidigt“-Sperre (Tageszufall 1/11); Buchung über `Book(…, Bau, …)` einmal bei „Ja“ nach Rabatt (Entscheidung E1) | `Core/FinanceStadium.cs`, `UI/Screens/Manager/StadiumScreen.cs`, Spielstand-Migration (Baustellenliste) | Kosten je Projekt/Stufenzahl gegen Tabelle; zwei Baustellen zugleich; Nein → Sperre bis Zufall; Restwochen in `[lo−2, hi+2]`; Mehrsaisonprobe mit Ausbau |
 | G2 | P1 | Jugend wie Datei 0x39DEC/0x3A13B: Stärke je Team, Platzlauf je Ligaspieltag, Auf-/Abstieg und Neustart im Saisonwechsel | `Core/FinanceYouth.cs`, `GameState.Integration.cs` (Anschluss Spieltag/Saisonwechsel), Migration (Stärke) | Mit festem Zufall: volle Förderung → Stärke steigt Richtung 90 (Deckel 85); Platz 1 → Aufstieg auf Platz 11; Platz 12 in Liga 2 bleibt; Mehrsaisonprobe 4 Saisonwechsel |
 | G3 | P1 | Börse/Bank: Gebühr 1,5 % beim Kauf und Verkauf, Kaufpreis beim Verkauf über ganze Prozent, Kreditrahmen Bank 2 Mio. DM, Grenze 1 Mio. DM zwischen Managern | `Core/FinanceStocks.cs`, `Core/FinanceBank.cs`, `Core/Finance.cs` | Kauf 10 Stück zu 100 DM kostet 1.015 DM; Verkauf mit Restanteil; Kredit bis 2 Mio. möglich, darüber nicht |
-| G4 | P2 | Betragsbalken Datei 0x58409 statt ±-Schritten (Pixel · `max/154+1`, 1.000-DM-Rundung, Vorgaben je Auswahl); Leihen bei Mitmanagern sofort (Entscheidung Nutzer, heute Anfrage) | `UI/Screens/Manager/FinanceScreen.cs` | Klick auf Pixel s ergibt `min(⌊s·q/3000⌋·3000, max)`; Vorgabe = Sparbuch bzw. Forderung |
+| G4 | P2 | Betragsbalken Datei 0x58409 statt ±-Schritten (Pixel · `max/154+1`, 1.000-DM-Rundung, Vorgaben je Auswahl); Leihen bei Mitmanagern im lokalen Spiel sofort mit Original-Grenzen statt Anfrage (Entscheidung E2) | `UI/Screens/Manager/FinanceScreen.cs` | Klick auf Pixel s ergibt `min(⌊s·q/3000⌋·3000, max)`; Vorgabe = Sparbuch bzw. Forderung |
 | G5 | P2 | Kontoleiste im Transfermarkt mit Schulden, Anlagen, Saldo (Regel Datei 0x463CC) | `UI/Screens/Team/TransferScreen.cs` (Werte aus vorhandenen Finanzdaten) | Mit Kredit und Aktien: Schulden/Anlagen/Saldo wie im Finanzen-Bildschirm |
 | G6 | P2 | Minuten-Vorgabe wie Datei 0x48E62/0x8EF2: Minuten je Teil ≤ 20, Werte `⌊Min/2⌋ \| (Min & 1)` auf Summe 8 gebracht, Spielberechnung zählt gegen diese Werte | `Core/Squad.Tactics.cs`, `Core/MatchEngine.Managed.cs`, Taktikbildschirm | 7/7/6/0 → 3/3/3/0 → 3/3/2/0; 5/5/5/5 → 3/3/3/2 → 3/2/2/1; Spiel: Wechsel nach so vielen Zählerschritten |
 | G7 | P3 | Stadiontabelle Datei 0x3D45F pixelgenau („(Noch n Wochen)“, „(kein Bau...)“, Farben 31/1, Lagen) | `UI/Screens/Manager/StadiumScreen.cs` | Bildschirmfoto gegen Video, sobald G1 die Daten liefert |
