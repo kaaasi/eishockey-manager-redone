@@ -4,7 +4,7 @@ namespace EishockeyManager.Core;
 
 /// <summary>
 /// Migration der Spur transfer-vertraege-komplett, Teil 5 (Schema 21 → 22, Integration Runde 9): Spielerpool
-/// des Transfermarkts (<see cref="TransferMarket.Pool"/>) und Herkunft eines Markt-Eintrags aus dem Pool
+/// des Transfermarkts (<see cref="TransferMarket.Pool"/>, mit den Datenbanknamen <c>_databaseNames</c>) und Herkunft eines Markt-Eintrags aus dem Pool
 /// (<see cref="TransferListing.FromPool"/>). Ältere Stände haben keinen Pool: leere Liste – der erste Listenwechsel baut ihn
 /// (<see cref="TransferMarket.ChangeList"/>); ihre Markt-Einträge stammen aus Kadern: false.
 /// </summary>
@@ -15,11 +15,19 @@ public static partial class SaveGame
         var added = false;
         foreach (var market in MarketObjects(root))
         {
-            if (market.ContainsKey("_pool"))
-                continue;
-            market["_pool"] = new JsonObject { ["$id"] = NewObjectId, ["items"] = new JsonArray() };
+            if (!market.ContainsKey("_pool"))
+            {
+                market["_pool"] = new JsonObject { ["$id"] = NewObjectId, ["items"] = new JsonArray() };
+                added = true;
+            }
+            // R9T-P1-01 (#345): Datenbanknamen des Pools (Teil 5, „jeder Name nur einmal“) fehlen älteren Ständen ebenso;
+            // leer – der erste Listenwechsel baut sie mit dem Pool.
+            if (!market.ContainsKey("_databaseNames"))
+            {
+                market["_databaseNames"] = new JsonObject { ["$id"] = NewObjectId, ["items"] = new JsonArray() };
+                added = true;
+            }
             SortFields(market);
-            added = true;
         }
         if (added)
             Renumber(root, new Dictionary<int, int>(), [0]);

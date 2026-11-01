@@ -337,12 +337,54 @@ public class TransferVertraegeKomplettTeil5Tests
             var outside = game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).Concat(game.RetiredPlayers)
                 .Where(p => p.Id < startIds).Select(p => p.Name).ToHashSet();
             Assert.DoesNotContain(game.TransferMarket.PoolPlayers, p => p.Id < startIds && outside.Contains(p.Name));
+            // R9T-P2-01 (#346): auch Poolspieler mit neuer ID prüfen (umbenannte Plätze). Ohne Tausch Pool ↔ Computerkader
+            // wären es über 100 Treffer je Saison; übrig bleiben nur Talente, die PlayerFactory.TalentName mit dem Namen eines
+            // vorhandenen Spielers anlegt (bekannte Lücke, nicht Teil dieser Spur) – auf dem integrierten Stand 0–1 je Saison.
+            var renamedClashes = game.TransferMarket.PoolPlayers.Count(p => p.Id >= startIds && outside.Contains(p.Name));
+            Assert.True(renamedClashes <= 5, $"{renamedClashes} Poolspieler mit neuer ID tragen den Namen eines Kaderspielers (Saison {change + 1})");
             Assert.True(game.TransferMarket.Pool.Count == game.TransferMarket.Pool.Select(s => s.Player.Name).Distinct().Count(),
                 string.Join("; ", game.TransferMarket.Pool.GroupBy(s => s.Player.Name).Where(g => g.Count() > 1).Select(g => string.Join(",", g.Select(s => $"{s.Index}:{s.Owner}:{s.Club}:{g.Key}")))));
             var ids = game.AllPlayers.Select(p => p.Id).ToList();
             Assert.Equal(ids.Count, ids.Distinct().Count());
             Assert.Empty(game.ValidatePlayerIdentity());
         }
+    }
+
+    /// <summary>
+    /// R9T-P1-01 (#345): Ein am Code von Schema 19 erzeugter Spielstand (Integration Runde 9 vor transfer-vertraege-komplett,
+    /// <c>integration/runde-9-optionen-wirkung</c> @ b1a8657; <c>TestGames.Create(8)</c>, zehn Spieltage, synthetische
+    /// Datenbank) lädt über die Migrationen 19 → 22, spielt einen Saisonwechsel weiter und sichert bytegleich. Vorher fehlte
+    /// <c>_databaseNames</c> in der Migration 21 → 22 („Feld _databaseNames in TransferMarket fehlt“).
+    /// </summary>
+    [Fact]
+    public void Migration_RealSchema19Save_LoadsAndPlaysOn()
+    {
+        using var stream = typeof(TransferVertraegeKomplettTeil5Tests).Assembly
+            .GetManifestResourceStream("Fixtures.schema19-synthetisch.ems.gz")!;
+        using var unzip = new System.IO.Compression.GZipStream(stream, System.IO.Compression.CompressionMode.Decompress);
+        using var bytes = new MemoryStream();
+        unzip.CopyTo(bytes);
+        Assert.Equal(19, JsonNode.Parse(bytes.ToArray())!["schema"]!.GetValue<int>());
+
+        var loaded = SaveGame.Load(bytes.ToArray());
+        Assert.True(loaded.Success, loaded.Error);
+        var game = loaded.Game!;
+        Assert.Empty(game.ValidatePlayerIdentity());
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 1000, "Saisonende nicht erreicht");
+            foreach (var m in game.Managers)
+                m.Money = Math.Max(m.Money, 10_000_000);
+            game.Continue();
+        }
+        game.StartNextSeason();
+        Assert.NotEmpty(game.TransferMarket.Pool);
+        Assert.Equal(game.TransferMarket.Pool.Count, game.TransferMarket.Pool.Select(s => s.Player.Name).Distinct().Count());
+        Assert.Empty(game.ValidatePlayerIdentity());
+        var saved = SaveGame.Save(game);
+        var again = SaveGame.Load(saved);
+        Assert.True(again.Success, again.Error);
+        Assert.Equal(saved, SaveGame.Save(again.Game!));
     }
 
     /// <summary>Migration 21 → 22: Ein Stand ohne Pool lädt; der nächste Listenwechsel baut den Pool mit neuen IDs.</summary>
@@ -354,6 +396,7 @@ public class TransferVertraegeKomplettTeil5Tests
         root["schema"] = 21;
         var market = Find(root, o => o.ContainsKey("_listings") && o.ContainsKey("_pool"));
         market.Remove("_pool");
+        market.Remove("_databaseNames");
         if (market["_listings"] is JsonObject listObject && listObject["items"] is JsonArray items)
             items.Clear();
         else
