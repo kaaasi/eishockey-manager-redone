@@ -107,7 +107,7 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   4. **#166 Oberliga-Austausch** nur, wenn der Austausch der Oberliga samt Managervereinen belegt wird; sonst Beleglage im PR.
 - **Abnahme:** je Teil roter Test bzw. Pixelvergleich mit Kennzahl; Mehrsaisonprobe Modus 1, 2, 4; Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/saison.md`, `docs/wettbewerbe.md` (eigene Abschnitte), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig (#293, Pixelvergleich Tabellen-/Gruppenansicht, `--schnell` grün); Teil 2 fertig (#299: R8-D02, WM-Platzierungen, Gegner-Fenster mit Pixelvergleich; Schema vorläufig 18); Teil 3 offen.
+- **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig (#293, Pixelvergleich Tabellen-/Gruppenansicht, `--schnell` grün); Teil 2 fertig (#299: R8-D02, WM-Platzierungen, Gegner-Fenster mit Pixelvergleich; Schema vorläufig 18); Teil 3 fertig (#PR3: Mode4-Probe hält Manager 0 spielfähig und prüft das täglich, Pokal-/WM-Proben ebenso, Vakanz-Probe ohne Seed-Suche, Menüweg Modus 1 von Tag 0); Teil 4 offen.
 
 ### Spur `optionen-wirkung` – Spielstand-Optionen, Einstellungen, Kalender
 

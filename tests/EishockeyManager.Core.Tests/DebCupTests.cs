@@ -208,7 +208,7 @@ public class DebCupTests
                 g.Finance(active).Stadium.TicketPrice = 5 + step++ % 7;
                 // Spur heimspiel-statistik (#136): beide Manager halten den Kader, sonst „Weniger als neun Spieler“ ohne Eintritt
                 foreach (var m in g.Managers)
-                    TestSeason.KeepSquad(g, m);
+                    TestSquadKeeper.KeepPlayable(g, m);
             });
 
             // Kontrolle nach der Saison über alle Heimspiele in Spielreihenfolge
