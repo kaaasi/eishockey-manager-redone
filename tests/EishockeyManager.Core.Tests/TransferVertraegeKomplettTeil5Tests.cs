@@ -345,6 +345,43 @@ public class TransferVertraegeKomplettTeil5Tests
         }
     }
 
+    /// <summary>
+    /// R9T-P1-01 (#345): Ein am Code von Schema 19 erzeugter Spielstand (Integration Runde 9 vor transfer-vertraege-komplett,
+    /// <c>integration/runde-9-optionen-wirkung</c> @ b1a8657; <c>TestGames.Create(8)</c>, zehn Spieltage, synthetische
+    /// Datenbank) lädt über die Migrationen 19 → 22, spielt einen Saisonwechsel weiter und sichert bytegleich. Vorher fehlte
+    /// <c>_databaseNames</c> in der Migration 21 → 22 („Feld _databaseNames in TransferMarket fehlt“).
+    /// </summary>
+    [Fact]
+    public void Migration_RealSchema19Save_LoadsAndPlaysOn()
+    {
+        using var stream = typeof(TransferVertraegeKomplettTeil5Tests).Assembly
+            .GetManifestResourceStream("Fixtures.schema19-synthetisch.ems.gz")!;
+        using var unzip = new System.IO.Compression.GZipStream(stream, System.IO.Compression.CompressionMode.Decompress);
+        using var bytes = new MemoryStream();
+        unzip.CopyTo(bytes);
+        Assert.Equal(19, JsonNode.Parse(bytes.ToArray())!["schema"]!.GetValue<int>());
+
+        var loaded = SaveGame.Load(bytes.ToArray());
+        Assert.True(loaded.Success, loaded.Error);
+        var game = loaded.Game!;
+        Assert.Empty(game.ValidatePlayerIdentity());
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 1000, "Saisonende nicht erreicht");
+            foreach (var m in game.Managers)
+                m.Money = Math.Max(m.Money, 10_000_000);
+            game.Continue();
+        }
+        game.StartNextSeason();
+        Assert.NotEmpty(game.TransferMarket.Pool);
+        Assert.Equal(game.TransferMarket.Pool.Count, game.TransferMarket.Pool.Select(s => s.Player.Name).Distinct().Count());
+        Assert.Empty(game.ValidatePlayerIdentity());
+        var saved = SaveGame.Save(game);
+        var again = SaveGame.Load(saved);
+        Assert.True(again.Success, again.Error);
+        Assert.Equal(saved, SaveGame.Save(again.Game!));
+    }
+
     /// <summary>Migration 21 → 22: Ein Stand ohne Pool lädt; der nächste Listenwechsel baut den Pool mit neuen IDs.</summary>
     [Fact]
     public void Migration_FromSchema21_BuildsPoolOnFirstChange()
@@ -354,6 +391,7 @@ public class TransferVertraegeKomplettTeil5Tests
         root["schema"] = 21;
         var market = Find(root, o => o.ContainsKey("_listings") && o.ContainsKey("_pool"));
         market.Remove("_pool");
+        market.Remove("_databaseNames");
         if (market["_listings"] is JsonObject listObject && listObject["items"] is JsonArray items)
             items.Clear();
         else
