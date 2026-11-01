@@ -26,8 +26,8 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   y = 131 bzw. 177: Fläche (x | y) … (x + 41 | y + 41) Farbe 1, Kante oben/links 23, rechts/unten 29, Flagge 38 × 38 bei
 ///   (x + 2 | y + 2); darüber (oben, y = 122) bzw. darunter (unten, y = 220) ein Kästchen bei x + 14 mit der kleinen Flagge
 ///   bei (x + 16 | + 1) (Datei 0x3ACE3, 0x3B0C2–0x3B19D).</item>
-/// <item>[APPROX] Mehr als 16 WMs: das Original zeichnet weiter nach rechts über das Fenster hinaus; das Remake zeigt nur
-///   die ersten 16 Spalten. Klick auf ein Land ruft im Original das Gegner-Fenster 0x128:0x2A (Datei 0x3B437–0x3B4AE) –
+/// <item>[ORIGINAL] Höchstens 16 WMs: ab der 17. entfällt im Spielstand die älteste (Schreibstelle 0x311CF,
+///   <see cref="GameState.MaxWorldCupRankings"/>), Spalte 0 ist also die älteste der letzten 16. Klick auf ein Land ruft im Original das Gegner-Fenster 0x128:0x2A (Datei 0x3B437–0x3B4AE) –
 ///   im Remake noch nicht vorhanden. Esc und Rechtsklick kehren zurück.</item>
 /// </list>
 /// </remarks>
