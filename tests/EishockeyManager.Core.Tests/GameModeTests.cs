@@ -280,6 +280,9 @@ public class GameModeTests
     /// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): alle Werte neu – Verletzungen im Spiel (Zug je Minute und Managerverein, verletzte Spieler fehlen
     /// wochenlang) und die Schützenwahl je Abschluss der Managerpaarung ändern Ergebnisse und beide Zufallsquellen ab dem
     /// ersten Spiel. Konto Manager 1 in Saison 5 −919.525 (vorher −83.211; Ursache nicht untersucht, kein Geldpfad geändert).
+    /// Spur spielberechnung-komplett, Teil 5 (0x3901B): alle Werte neu ab dem ersten K.-o.-Unentschieden nach Verlängerung (Penaltyschießen des
+    /// Originals statt NextDouble, anderer Zufallsverbrauch); Konto Manager 1 in Saison 5 jetzt +8.102. Teil 4 (Zähler) zieht
+    /// keinen Zufall und ändert nichts.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -294,7 +297,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|1984921,399746|WorldChampion=52,CupWinner=6,GermanChampion=6,EuropeanCupWinner=3|3521784,215832|WorldChampion=55,CupWinner=5,GermanChampion=5,EuropeanCupWinner=6|4194446,122400|WorldChampion=63,CupWinner=1,GermanChampion=3,EuropeanCupWinner=5|4861173,102372|WorldChampion=63,CupWinner=16,GermanChampion=16,EuropeanCupWinner=3|5292686,-919525|R1212067759 C260585243";
+        "WorldChampion=53,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|1984954,399845|WorldChampion=52,CupWinner=6,GermanChampion=6,EuropeanCupWinner=2|3446279,185587|WorldChampion=63,CupWinner=7,GermanChampion=0,EuropeanCupWinner=6|4717887,27955|WorldChampion=52,CupWinner=4,GermanChampion=0,EuropeanCupWinner=0|5611720,60724|WorldChampion=53,CupWinner=7,GermanChampion=5,EuropeanCupWinner=0|5582833,8102|R916939973 C2071991630";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

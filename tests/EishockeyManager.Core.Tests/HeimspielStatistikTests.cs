@@ -265,6 +265,11 @@ public class HeimspielStatistikTests
                     TestSeason.PlayMatchDay(game);
                 else
                     game.Continue();
+                // Spielberechnung Teil 5: Der Tageslauf heilt Verletzte (0x7C12, Teil 3) vor der Prüfung 0x36DC5 desselben
+                // Tages; ein vorher nicht spielfähiger Verein kann am Spieltag wieder spielen. Mit dem geänderten
+                // Zufallsverbrauch (Penaltyschießen 0x3901B) kommt das hier vor: nur zählen, was auch danach nicht spielfähig ist.
+                foreach (var manager in game.Managers)
+                    shortHanded[manager] &= game.IsShortHanded(game.Clubs[manager.ClubIndex]);
                 foreach (var manager in game.Managers)
                 {
                     var step = game.Results.Where(r => r.MatchDay > played && r.MatchDay <= game.PlayedMatchDays

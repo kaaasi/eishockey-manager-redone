@@ -649,3 +649,25 @@ Schalter 0). Der Stärkevergleich 0x51206 liest diese Felder. Beleg: DOSBox 27�
 drei Freundschaftsspielen (`docs/dosbox-befunde.md`). Remake: `StrengthTable` zeigt für das Land des Bundestrainers mit
 eigener Aufstellung `MatchEngine.LineupTeamValues(coach.Formation)` samt Form. `[APPROX]` aus der aktuellen Aufstellung
 statt dem Stand des letzten Tageslaufs; ohne eigene Aufstellung bleiben die Länderwerte (wie in `PlayFriendly`).
+
+## 19. Penaltyschießen nach der Verlängerung 0x3901B (Spur spielberechnung-komplett, Teil 5)
+
+Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Shootout.cs`, Tests `SpielberechnungKomplett5Tests`.
+
+- **Aufruf:** 0x3901B ist Stub 0xF0:0x9D (Stubsegment 0x149D, Overlay 0xF0 ab Datei 0x35540 + 0x3ADB). 0x32AA3 geht die
+  Paarungen der Zeilen DGROUP 0x5C4B (32 Byte je Zeile, Heim-/Gastbyte, Vereine 0x5CFB/0x5CFC) durch: Zeile 1 markiert
+  unentschiedene Spiele mit Heim + 0x1E für die Verlängerung, Zeilen 2/3 vergleichen Heim − 30 · Schalter mit Gast; mit
+  Schalter ≠ 0 folgt für ein noch unentschiedenes Spiel 0x3901B(Zeile, Paarung, …) (0x32DE3–0x32DF5). Ist einer der
+  Vereine zum Zusehen markiert (Vereinsfeld 0x34 Bit 7, gesetzt über 0xAE2B), gilt die Live-Anzeige ([0x5A56] = 1).
+- **0x3901B:** zuerst random(0, 1) (0x39028, nur die Anzeige wertet ihn aus). Ohne Bit 7 bei beiden Vereinen
+  (0x390CB/0x390FA): Heim random(2, 5), Gast random(2, 5), wiederholt bis ungleich (0x39105–0x39179). Mit Bit 7 die
+  Anzeige „Penaltyschiessen“ mit eigenen Zügen (0x3917E–0x3976F, nicht gelesen). Am Ende (0x39770–0x397B3) kommen die
+  Treffer auf den Spielstand: Heim = (Heimbyte − 30) + Treffer + 30, Gast + Treffer – der Endstand ist Gleichstand +
+  Penaltytore, die Marke + 30 bleibt („n.P.“).
+- **Remake:** `MatchEngine.PlayWithEvents` ruft `OriginalMinutes.Shootout` für jedes K.-o.-Spiel des Minutenwegs, das nach
+  der Verlängerung unentschieden ist, und setzt `MatchReport.ShootoutGoals`/`ShootoutHomeWins`; `KnockoutMatch.Play`
+  übernimmt den Sieger (vorher `[APPROX]` `NextDouble` nach Vereinsstärke). Der schnelle Weg der Pokale bleibt bei
+  0x376F0 (§3, random(0, 2) je Seite).
+- `[APPROX]` Keine Live-Anzeige (Zweig mit Bit 7 nicht umgesetzt); Zuordnung der Zeilen 0x5C4B zu den Wettbewerben nicht
+  gelesen – das Remake schießt in jedem K.-o.-Spiel des Minutenwegs (Pokale mit Manager, Play-offs); der Spielstand bleibt
+  der Gleichstand, die Penaltytore stehen getrennt im Bericht.

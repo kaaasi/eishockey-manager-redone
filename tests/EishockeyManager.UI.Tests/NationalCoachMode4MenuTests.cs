@@ -24,7 +24,8 @@ public class NationalCoachMode4MenuTests
         setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 8 });
         setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 2 });
         var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 3);
-        ManagedSquadsUi.PlayAtTopStrength(game); // Vorbedingung „Verein 2, stark“ (0x98F8; #204: Wanderung der Teamwerte)
+        // Vorbedingung „Verein 2, stark“ (0x98F8; #204: Wanderung der Teamwerte); Teil 5 (Penaltyschießen): nur Verein 2.
+        ManagedSquadsUi.PlayAtTopStrength(game, 1);
         return game;
     }
 

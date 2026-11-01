@@ -301,8 +301,11 @@ public sealed class MatchReport
     /// <summary>Spielwertung ohne Berechnung (0:2/2:0, nicht spielfähiger Managerverein).</summary>
     public bool Forfeit { get; set; }
 
-    /// <summary>Penaltyschießen des schnellen Wegs: true Heim, false Gast, null keins (siehe <see cref="MatchEngine.PlayWithEvents"/>).</summary>
+    /// <summary>Penaltyschießen: true Heim, false Gast, null keins (siehe <see cref="MatchEngine.PlayWithEvents"/>).</summary>
     public bool? ShootoutHomeWins { get; set; }
+
+    /// <summary>Tore des Penaltyschießens nach der Verlängerung (<see cref="OriginalMinutes.Shootout"/>), sonst null.</summary>
+    public (int Home, int Away)? ShootoutGoals { get; set; }
 }
 
 /// <summary>Minutenrechnung des Originals (Spur spielberechnung, Teil 2): Abschluss, Strafbank, Strafen, Ablauf je Minute.</summary>

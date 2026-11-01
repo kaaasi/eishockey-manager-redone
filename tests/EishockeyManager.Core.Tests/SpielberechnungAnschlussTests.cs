@@ -148,10 +148,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur spielberechnung-komplett, Teil 1 (#204): beide neu (Wanderung der Teamwerte 0x9D1B, Begründung bei
     /// <see cref="RngTwinProbeTests"/>).
     /// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): beide neu (Verletzungen und Schützenwahl im Spiel, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur spielberechnung-komplett, Teil 5 (0x3901B): beide neu (Penaltyschießen nach Verlängerung, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "CDBFC03FBA423D1D")]
-    [InlineData(true, "EBCBC458CFF0012B")]
+    [InlineData(false, "40768BC48706F79A")]
+    [InlineData(true, "483647D6620495FE")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

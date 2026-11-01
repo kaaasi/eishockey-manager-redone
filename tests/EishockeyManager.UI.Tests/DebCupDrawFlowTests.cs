@@ -216,7 +216,8 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// (R8W3I-01): Spielstand vor den Toren der Minute für 0x80CB/0x939A – neue Werte, mit und ohne Anzeige gleich.
     /// Spur spielberechnung-komplett, Teil 1 (#204): Wanderung der Teamwerte 0x9D1B – neue Werte ab 1993, mit und ohne
     /// Anzeige weiter gleich. Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): neue Werte ab 1993 (Verletzungen und Schützenwahl in den Spielen des
-    /// Managers), mit und ohne Anzeige weiter gleich.</summary>
+    /// Managers), mit und ohne Anzeige weiter gleich. Spur spielberechnung-komplett, Teil 5 (0x3901B): 1993 gleich, ab 1994 neuer Meister
+    /// (Penaltyschießen des Originals in den Play-offs mit Manager statt NextDouble), mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 8, DM 10, Tab 15309 | 1994: DEB 5, DM 5, Tab 16125 | 1995: DEB 2, DM 2, Tab 16308 | 1996: DEB 2, DM 0, Tab 16828";
+        "1993: DEB 8, DM 10, Tab 15309 | 1994: DEB 5, DM 2, Tab 16125 | 1995: DEB 4, DM 8, Tab 16617 | 1996: DEB 5, DM 4, Tab 16518";
 }

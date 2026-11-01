@@ -103,16 +103,19 @@ namespace EishockeyManager.Core.Tests;
 /// 0x378C5 zieht höchstens 150-mal, Strafen ohne Spieler erzeugen kein Ereignis, Managerwert 100 unter neun Spielern.
 /// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): alle sechs neu – je Minute der Managerpaarung ein Verletzungszug, je Abschluss die Schützenwahl
 /// statt der Torverteilung 0x5028 nach dem Spiel für Managervereine. Keine Gegenprobe (geänderter Zufallsverbrauch ist der Zweck).
+/// Spur spielberechnung-komplett, Teil 5 (0x3901B): alle sechs neu – K.-o.-Spiele des Minutenwegs, die nach der Verlängerung unentschieden
+/// sind, entscheidet das Penaltyschießen des Originals (random(0, 1), dann random(2, 5) je Seite bis ungleich) statt eines
+/// NextDouble-Zugs in KnockoutMatch.Play; danach andere Zufallsfolge. Teil 4 (Zähler) zieht keinen Zufall.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "4C6573AA5A7B2645")]
-    [InlineData(true, 3, "D44060CF9BC08D24")]
-    [InlineData(false, 11, "62CC775C6BCA1381")]
-    [InlineData(true, 11, "F2C97C8C5EE75752")]
+    [InlineData(false, 3, "F53935231D9F5AB0")]
+    [InlineData(true, 3, "EF07261DDA1710AE")]
+    [InlineData(false, 11, "9472B78D8895945B")]
+    [InlineData(true, 11, "A628A1AD424D2AF2")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -120,8 +123,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "622C488803CD4F9D")]
-    [InlineData(true, "C3196F964DD2C1DF")]
+    [InlineData(false, "BB2A34454970CBF0")]
+    [InlineData(true, "1A5926F1CB726BEC")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

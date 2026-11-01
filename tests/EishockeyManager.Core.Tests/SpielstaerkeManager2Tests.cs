@@ -435,9 +435,15 @@ internal static class ManagedSquads
     /// 69 und 94 (in der Saison bis 99); mit Datenbankstärke erreichte Verein 2 die ersten fünf in 10 von 12 Seeds, mit
     /// 99 in 12 von 12. Nur als Vorbedingung erlaubt.
     /// </summary>
-    public static void PlayAtTopStrength(GameState game)
+    public static void PlayAtTopStrength(GameState game) => PlayAtTopStrength(game, [.. Enumerable.Range(0, game.Managers.Count)]);
+
+    /// <summary>
+    /// Nur die Vereine der genannten Manager (Spielberechnung Teil 5: mit dem Penaltyschießen 0x3901B ändert sich der
+    /// Zufallsverbrauch, zwei gleich starke Managervereine tauschen dann die Tabellenplätze).
+    /// </summary>
+    public static void PlayAtTopStrength(GameState game, params int[] managers)
     {
-        foreach (var m in game.Managers)
+        foreach (var m in managers.Select(i => game.Managers[i]))
             foreach (var p in game.Clubs[m.ClubIndex].Players)
             {
                 p.Condition = p.Technique = Player.MaxValue;

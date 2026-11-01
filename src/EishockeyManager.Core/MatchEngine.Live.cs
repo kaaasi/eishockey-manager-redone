@@ -41,9 +41,10 @@ public static partial class MatchEngine
     ///   ([APPROX] Schalter DGROUP 0x227–0x229 gelten als aus). Sonst Minute für Minute (<see cref="OriginalMinutes.Play"/>).</item>
     /// <item>Zähler der Spieler (<see cref="CreditPlayers"/>).</item>
     /// </list>
-    /// Ein Unentschieden im K.-o.-Spiel nach Verlängerung bleibt im Bericht stehen; das Penaltyschießen entscheidet der
-    /// Aufrufer (<see cref="KnockoutMatch.Play(GameState, int, Club, Club, MatchCompetition, Random)"/>), der schnelle Weg
-    /// liefert seinen Sieger in <see cref="MatchReport.ShootoutHomeWins"/>.
+    /// Ein Unentschieden im K.-o.-Spiel nach Verlängerung bleibt im Bericht stehen; den Sieger des Penaltyschießens liefern
+    /// beide Wege in <see cref="MatchReport.ShootoutHomeWins"/> (schneller Weg 0x376F0, Minutenweg 0x3901B,
+    /// <see cref="OriginalMinutes.Shootout"/>); <see cref="KnockoutMatch.Play(GameState, int, Club, Club, MatchCompetition, Random)"/>
+    /// übernimmt ihn.
     /// </summary>
     public static MatchReport PlayWithEvents(GameState game, Club home, Club away, MatchCompetition competition,
         bool knockOut, Random random)
@@ -90,6 +91,15 @@ public static partial class MatchEngine
         else
         {
             report = OriginalMinutes.Play(homeTeam, awayTeam, rules, random);
+            if (knockOut && report.HomeGoals == report.AwayGoals)
+            {
+                // Teil 5: [ORIGINAL] nach der Verlängerung noch unentschieden → Penaltyschießen 0x3901B (aus 0x32AA3).
+                // [APPROX] Die Zuordnung der Wettbewerbszeilen DGROUP 0x5C4B ist nicht gelesen; das Remake schießt in jedem
+                // K.-o.-Spiel des Minutenwegs.
+                var goals = OriginalMinutes.Shootout(random);
+                report.ShootoutGoals = goals;
+                report.ShootoutHomeWins = goals.Home > goals.Away;
+            }
         }
         CreditPlayers(game, home, away, competition, report, random);
         AfterMatch(home, away, competition, report, random);
