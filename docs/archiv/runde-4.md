@@ -64,7 +64,7 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
   (em.exe: beide Tabellen-Kacheln öffnen dieselben Bildschirme wie die Paarungen). Highscore folgt in eigenem PR
   (`paket/tabellen-highscore-bestenliste`).
 - **Status Teil 2 (Claude Code, 29.10.2026):** PR #111 `paket/tabellen-highscore-bestenliste`, Base `caf9700`, fertig zur
-  Prüfung: Highscore ([highscore.md](highscore.md)), Übersicht „DEB-Pokalspiele“ (#108), Hinweis „(Neuer)“ (#109).
+  Prüfung: Highscore ([highscore.md](../highscore.md)), Übersicht „DEB-Pokalspiele“ (#108), Hinweis „(Neuer)“ (#109).
   Offen: [APPROX] Spielerwerte (0x49D36), Europa-Stufe/Pokalbytes 2–3, Penalty-vs-Verlängerung in der DEB-Übersicht (siehe PR).
 
 ### Spur `speichern-reihenfolge` – Aufzählungsreihenfolge nach Remove/Add (#80)
@@ -96,7 +96,7 @@ Head `38f0e70`), #104 (`tabellen-highscore` **Teil 1**: Pokaltabellen, Sperren W
 - Doku `spielstand.md`: Migration 3 → 4 (aus #103) in der Tabelle ergänzt; Hinweis aus #105 auf Schema 4 angepasst.
 - Bildschirmfotos `wettbewerbe wm nationalteam weltkugel nationalteam-2 tabellen-pokale speichern`: ohne Fehler;
   alle außer `speichern` (zufälliges Verzeichnis, bekannt) bytegleich mit dem Stand der jeweiligen Spur.
-- Review [integration-runde-4](reviews/2026-10-29-integration-runde-4.md): **R4-01 (P2, #108)** – „Tabelle DEB-Pokal“
+- Review [integration-runde-4](../reviews/2026-10-29-integration-runde-4.md): **R4-01 (P2, #108)** – „Tabelle DEB-Pokal“
   führt im Original zur Übersicht „DEB-Pokalspiele“ (Datei 0x32E23), nicht zur Auslosung. Entscheidung des Nutzers
   (29.10.2026): Kachel bis dahin wieder **Platzhalter** (Integrations-Branch), die Übersicht baut `tabellen-highscore`
   Teil 2 mit. **R4-02 (P3, #109)** – Hinweis „(Neuer)“ bei vier Managern auf gesperrte Kachel → ebenfalls Teil 2.
