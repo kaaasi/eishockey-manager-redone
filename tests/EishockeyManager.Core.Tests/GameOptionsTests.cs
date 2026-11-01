@@ -97,15 +97,20 @@ public class GameOptionsTests
         Assert.Equal(0, options.LiveMode);
     }
 
-    /// <summary>Matrix: Zeile · 3 + Liga (Bild 49: Ergebnisse 1. Liga = Index 3); Klick schaltet um.</summary>
+    /// <summary>
+    /// [ORIGINAL] Matrix: Liga · 3 + Zeile. Schaltertabellen DGROUP 0x4C06 (x) = 222, 222, 222, 252, … und 0x4BE8 (y) = 130,
+    /// 144, 158, 130, … (Zeichenaufruf 0x2CBC5, x vor y): Index 0–2 liegen in der Spalte „1.Liga“. Bild 49: Ergebnisse
+    /// 1. Liga = Index 1 (DGROUP 0x21E, vom Spieltagsablauf für Liga 1 gelesen), Tabelle 2. Liga = Index 5.
+    /// Vorher rot: Zeile · 3 + Liga (Index 3 und 7).
+    /// </summary>
     [Fact]
-    public void Reports_AreIndexedByRowAndLeague()
+    public void Reports_AreIndexedByLeagueAndRow()
     {
         var options = new GameOptions();
         options.ToggleReport(ReportKind.Results, League.Bundesliga);
         options.ToggleReport(ReportKind.Table, League.ZweiteLiga);
-        Assert.True(options.Reports[3]);
-        Assert.True(options.Reports[7]);
+        Assert.True(options.Reports[1]);
+        Assert.True(options.Reports[5]);
         Assert.Equal(2, options.Reports.Count(r => r));
         Assert.True(options.ShowsReport(ReportKind.Results, League.Bundesliga));
         options.ToggleReport(ReportKind.Results, League.Bundesliga);
