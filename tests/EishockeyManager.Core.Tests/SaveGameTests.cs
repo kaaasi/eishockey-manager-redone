@@ -34,8 +34,8 @@ public class SaveGameTests
     // (Spur statistiken), 14 Teamwerte des Laders (Spur spielstaerke-manager). Runde 8, Welle 3: 15 Club.SeriesCurrent,
     // Manager.SeriesRecords und Manager.PowerPlayCounts (Spur statistiken-verein), 16 Platzierungen der Weltmeisterschaften
     // (Spur nationalteam-2), 17 Verhandlungs- und Gebotssperre (Spur transfer-original-vertrag). Runde 9 (vorläufig): 18
-    // Spielstand-Optionen GameSetup.Options (Spur optionen-wirkung).
-    private const string ExpectedSchemaFingerprint = "3BC66C25D65F1254";
+    // Spielstand-Optionen GameSetup.Options und Begegnungstabelle Manager.MeetingTable (Spur optionen-wirkung).
+    private const string ExpectedSchemaFingerprint = "49CE6417DE98CFF6";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

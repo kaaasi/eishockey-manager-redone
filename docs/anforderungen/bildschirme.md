@@ -52,7 +52,8 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 ### Hauptmenü / Wochenübersicht
 * Titelleiste `kb\20`, darunter die Infoleiste (1,21)–(319,75): Datum, Manager, Verein; Kasten (5,33,102×40) mit der
   Tabellenkurve (gelb = eigener Verein, weiß = nächster Gegner) bzw. „Vor dem ersten Spieltag.“; Symbole für Wettbewerb und
-  Heim/Auswärts, bisherige Begegnungen („A 0:3,H 1:5“), Kontostand; sechs Warnlampen des Managers am Zug (Regeln in
+  Heim/Auswärts, bisherige Begegnungen („A 0:3,H 1:5“: erst auswärts, dann daheim, je zwei, neueste zuerst, über alle
+  Saisons; „ Noch keine“; ohne Gegner „Spielfrei“ – em.exe 0x43E21, `docs/reverse-engineering.md`), Kontostand; sechs Warnlampen des Managers am Zug (Regeln in
   `Screens/MenuLamps.cs`, em.exe 0x42996);
   Kopf (231,33) und Logo (273,33). Klick aufs Logo (Klickfeld x 275–312, y 34–71, em.exe 0x45483) = nächster Tag
   bzw. im Hot-Seat Abgabe an den nächsten Manager.

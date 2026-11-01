@@ -707,16 +707,51 @@ Original nicht vorhanden); der Knopf „Spielstand“ öffnet bei laufendem Spie
 | Adresse | Befund |
 |---|---|
 | 0x43B1F (206 B) | **Datumstext**: Wochentag (Tabelle DGROUP 0xAA0, Index `(Tag + 5) mod 7`), Trenntext (DGROUP 0x521F), Tag als Zahl (0x38:0x2C2), Trenntext (0x5222), Monatsname (Tabelle 0xA70, Index DGROUP 0x5A1C), dann Jahr (DGROUP 0x5A18); Rückgabe Zeiger auf den Puffer. Kein Bildschirm. Das Remake formatiert Datumstexte in Core (`docs/saison.md`, „Kalender“). |
-| 0x43C38 (489 B) | Fensterzeichner (Aufrufe 0x30:0x800, 0x50:0x3B0/0x545, 0x30:0x995 je Zeile); gerufen von 0x0B155. Gehört zum Terminfenster 0x43E21; nicht im Video belegt. |
-| 0x43E21 (1983 B) | Terminübersicht („Saisonende“, „Spielfrei“, „ Noch keine“, „ DM“). **Kein Referenzbild** gefunden (`docs/referenz-videos.md` führt keinen Kalenderbildschirm; Suche nach „Kalender“/„Terminübersicht“ in der Doku ohne Treffer) → **kein Bildschirm gebaut**. |
-| 0x445E0 (1128 B) | Text „Vor dem ersten Spieltag.“ und „.Spieltag“: Infoleiste (Tabellenkurve), im Remake vorhanden (`docs/anforderungen/bildschirme.md`). |
-| 0x36169 (1476 B) | ohne Texte, Aufrufe aus Spielstart, WM und Pokal: Termin-/Paarungserzeugung vermutet; **nicht weiter verfolgt** (Folgepaket, falls gebraucht). |
+| 0x43C38 (489 B) | Erhabener Kasten (hell oben/links, dunkel unten/rechts; Aufrufe 0x30:0x800, 0x50:0x3B0/0x545, 0x30:0x995); gerufen von 0x0B155 und aus 0x43E21 (Nachrichtenfeld, Argumente 6, 35, 107, 74, 1, 2). Im Remake `MainMenuScreen.Raised` (Teil 3, siehe „Infoleiste 0x43E21“). |
+| 0x43E21 (1983 B) | **Kein Kalender, sondern die Infoleiste des Hauptmenüs** (Rahmen 0x30:0x800 mit 2, 22, 317, 74; Datum, Wettbewerbs- und Heim-/Auswärtssymbol, Gegner, bisherige Begegnungen, Kontostand „ DM“). Spur `optionen-wirkung` Teil 3, Abschnitt „Infoleiste 0x43E21“. |
+| 0x445E0 (1128 B) | Tabellenkurve und „n.Spieltag“ / „Vor dem ersten Spieltag.“ im Nachrichtenfeld (aus 0x43E21 und 0x4D385); im Remake vorhanden, abgeglichen in „Infoleiste 0x43E21“. |
+| 0x36169 (1476 B) | Inzwischen umgesetzt (Spur `statistiken-verein`, `StatisticsClub.cs`); kein Kalenderteil. |
 
-Die Tiefe bei 0x43C38, 0x43E21 und 0x36169 ist bewusst gering (nur Funktionsrumpf und Aufrufe angesehen); die Zuordnung ist
-**[APPROX]**. Änderungen am Tagesablauf: keine vorgeschlagen.
+Die Einordnung von 0x43C38, 0x43E21 und 0x445E0 ist in Teil 3 der Spur `optionen-wirkung` nachgeholt (unten). Änderungen am
+Tagesablauf: keine.
 
-(Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Die Bildschirm- und Kalender-Teile (0x43E21 mit 0x43B1F,
-0x43C38, 0x445E0, 0x36169; Pixelvergleich) sind **nicht begonnen**.
+(Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Bildschirm: Teil 2 von `optionen-wirkung`
+(„Optionsbildschirm“); Kalender-Teile: Teil 3 („Infoleiste 0x43E21“).
+
+### Infoleiste 0x43E21 (Spur `optionen-wirkung`, Teil 3)
+
+Dateioffsets in `em.exe` (Overlay 0x110 ab Datei 0x43150), DGROUP = Datei 0x16DD0. **Ergebnis:** Der vermutete
+Kalender-/Terminbildschirm existiert nicht. 0x43E21 zeichnet die Infoleiste des Hauptmenüs; Aufrufer sind die
+Hauptmenüschleife 0x44E22 (Datei 0x450EC, Gegner DGROUP 0xE1A6, Heim DGROUP 0xE1A7) und das Saisonende 0x26D9A (Heim-Wert
+0xFE). Belege im Video: alle Hauptmenübilder, z. B. `folge06_00459` (41. Spieltag), `folge12_00800`.
+
+* **Gegnerfeld** (Datei 0x44033–0x440FB): Wettbewerb 4 (Heim-Wert 0xFE oder Wettbewerbsmaske 0xFF) → „Saisonende“ (Zeiger
+  0xBE0 → DGROUP 0x2754); Gegner 0xFF → „Spielfrei“ (Zeiger 0xC04 → 0x2791); sonst Vereinsname (Satz 0x3D ab far 0x9657).
+  Heim-/Auswärtssymbol nur, wenn 0x128:0x20 für den Gegner 0 liefert (Datei 0x440AE; Nationalteam: kein Symbol, wie
+  PV-04). Remake: „Spielfrei“ fehlte (leerer Text) – behoben (`UI/Screens/InfoBarTexts.cs`).
+* **Bisherige Begegnungen** (Datei 0x44168–0x4438B): Tabelle DGROUP 0xAB7B, Index Manager · 0x280 + Gegner · 10 + Platz · 2 +
+  Seite; Manager = DGROUP 0xA70E, im Bundestrainermenü (0xA70E = 5) Manager 0. Erst Seite 1 („A “, DGROUP 0x5227), dann
+  Seite 0 („H “, 0x522A), je Seite Platz 4 → 0, höchstens zwei Einträge je Seite; Byte = eigene Tore (Bit 0–3) „:“ (0x522D)
+  Gegentore (Bit 4–7); Trenner „,“ (0x5225). Gegen Nationalteams kein „A “/„H “ (0x128:0x20, Datei 0x441F2). Leer →
+  „ Noch keine“ (Zeiger 0xFD9 → 0x3574, mit Leerzeichen). Breiter als 85 Pixel (0x50:0x2B8, Datei 0x44340) → alles bis zum
+  ersten Komma entfällt (einmal). Gegner ≥ 0x40 oder Heim-Wert 0xFE: keine Zeile.
+* **Eintrag** 0x4F5A8 (Ov 0x128), gerufen nur von der Tabelleneintragung 0x50283 (Datei 0x502CC–0x5030B): Heimverein mit
+  Manager (Vereinsfeld +0x16 ≠ 0) → Tabelle dieses Managers, Gegner = Gast, Seite 0, Tore Heim + 16 · Gast; Gast mit Manager
+  → Seite 1, Tore Gast + 16 · Heim. Das Nationalteam des Bundestrainers (DGROUP 0x6AC) schreibt in die Tabelle von Manager 0.
+  Erster freier Platz der Seite; Gegner ab DGROUP 0x6AD (Nationalteams) immer erst Seite 0, dann Seite 1. Alles voll →
+  Plätze rücken vor, neues Ergebnis auf Platz 4 (bei Nationalteams über beide Seiten, Datei 0x4F650–0x4F6E5). Vier Bit je
+  Zahl ohne Begrenzung. Anfangswert 0xFF beim Programmstart (Datei 0x43760–0x437C4); **nie gelöscht**, gilt über alle Saisons
+  (Video: vier Begegnungen am 41. Spieltag 1997, `folge06_00459`).
+* **Remake vorher:** nur Ligaergebnisse der laufenden Saison (`GameState.Meetings`), chronologisch, Heim und Auswärts gemischt,
+  „Noch keine“ ohne Leerzeichen, keine Breitengrenze. **Jetzt:** `Core/MeetingHistory.cs` (Tabelle `Manager.MeetingTable`,
+  Schema 18), Anzeige `UI/Screens/InfoBarTexts.cs`. [APPROX] Angeschlossen sind die Ligaspiele (`GameState.PlayNextMatchDay`);
+  DEB-Pokal, Europapokal, Play-offs/Relegation und WM-Gruppen laufen im Original ebenfalls über 0x50283 (Aufrufer 0x30365,
+  0x30852, 0x30E7B, 0x315E9, 0x34B76, 0x50B45) und werden in der Integration angeschlossen (Dateien anderer Spuren).
+* **Tabellenkurve 0x445E0** (Abgleich, nicht umgebaut): x-Schritt `max(2, 8500 / (n − 1) / 100)` mit n = DGROUP 0x7A9,
+  Punkte ab x + 5, y = Grundlinie + 2 · Platz + 0x31; ohne Kurve (n ≤ 1) „Vor dem ersten Spieltag.“ (Zeiger 0x674); Platzzahl
+  mit „.“ (0x522F) rechts, bei Überschneidung der beiden Kurven verschoben (Datei 0x44801–0x44891). Das Remake skaliert auf
+  die volle Breite (`MainMenuScreen.DrawRankCurve`, [APPROX]) – Anpassung als Folgeschritt (gemeinsame Datei).
+* **Datumstext 0x43B1F**: wie oben; das Remake formatiert in Core, Bild und Text stimmen (Pixelvergleiche der Spur `pixel-verein`).
 
 ## Nationalteam, Welle 3 (Spur `nationalteam-2`, Runde 8)
 

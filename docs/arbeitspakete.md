@@ -127,7 +127,10 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   Anschluss „Minutenweg bei Schalter an“ in `MatchEngine.Live.cs` offen für `spielberechnung-komplett`/Leitstelle. Kein
   An-/Abmelden, kein Moduswechsel (`reverse-engineering.md`, „Wirkung der Spielstand-Optionen“). R8-D03 bestätigt
   (Index 10 = 1). Teil 2 (PR #298, gestapelt auf #292): Optionsbildschirm des Originals `GameOptionsScreen` (schaltbar, Pixelvergleich
-  mit DOSBox-Bildern 48–51 ohne Abweichung außerhalb Kopfzeile/Mauszeiger), Matrix-Index korrigiert (Liga · 3 + Zeile). Teil 3 offen.
+  mit DOSBox-Bildern 48–51 ohne Abweichung außerhalb Kopfzeile/Mauszeiger), Matrix-Index korrigiert (Liga · 3 + Zeile). Teil 3
+  (gestapelt auf #298): kein Kalenderbildschirm im Original – 0x43E21 ist die Infoleiste; bisherige Begegnungen nach dem Original
+  (`Core/MeetingHistory.cs`, Schema 18, über alle Saisons), „Spielfrei“/„ Noch keine“; Anschluss Pokal/Play-off/WM an 0x50283-Stellen
+  und Kurvenmaßstab 0x445E0 offen für die Integration.
 
 ### Spur `finanzen-rest` – Restliche Finanz- und Managerbildschirme
 
