@@ -17,7 +17,12 @@
 > PR der Spur, dort Kommentar und Label `spur-wartet`; sonst keinen PR anlegen.
 
 Der Zugriffsabsatz steht in **jedem** Startaufruf eines geplanten Spurlaufs (Spur, Fortsetzung) wörtlich; eine Fortsetzung
-übernimmt ihn unverändert. Reviews: nach `review-anfrage.md` (nur wenn Daten nötig; „keine Code-Arbeit“ gilt dort als „kein Review“). Voraussetzung auf Seiten der Leitstelle: [leitstelle-start.md](leitstelle-start.md), „Geplante Läufe“.
+übernimmt ihn unverändert. Reviews: nach `review-anfrage.md` (nur wenn Daten nötig; „keine Code-Arbeit“ gilt dort als
+„kein Review“). Voraussetzung auf Seiten der Leitstelle: [leitstelle-start.md](leitstelle-start.md), „Geplante Läufe“.
+
+**Einzelner Folgeteil ohne Fortsetzung:** Kurzaufruf „Geplanter Lauf mit Teilen“, aber statt „Teile und Selbstfortsetzung …
+(höchstens 3 je Spur).“ der Satz „Teile nach Abschnitt ‚Teile und Fortsetzung‘; nur Teil <n>, keine Fortsetzung anlegen.“
+Es gilt der Abschnitt „Teile und Fortsetzung“ ohne Schritt 5 (R9F-02).
 
 ## Ablauf für den Agenten
 
@@ -42,7 +47,8 @@ Der Zugriffsabsatz steht in **jedem** Startaufruf eines geplanten Spurlaufs (Spu
 
 ## Teile und Fortsetzung (geplante Läufe)
 
-Gilt, wenn die Spur in `docs/arbeitspakete.md` eine geordnete Liste von Teilen hat und der Startaufruf die Fortsetzung erlaubt.
+Gilt, wenn die Spur in `docs/arbeitspakete.md` eine geordnete Liste von Teilen hat und der Startaufruf die Fortsetzung erlaubt
+oder einen einzelnen Folgeteil mit Base nennt (dann ohne Schritt 5).
 
 1. **Stand ermitteln:** offene PRs der Spur (`paket/<spur>-<n>`) und den letzten Übergabekommentar lesen. Dort steht
    „Fortsetzungen verbraucht: n von 3“. Nennt der Startaufruf einen anderen Zähler, gilt der höhere. Steht in einem offenen
@@ -55,7 +61,8 @@ Gilt, wenn die Spur in `docs/arbeitspakete.md` eine geordnete Liste von Teilen h
    unterste offene Teil auf `origin/main`, jeder höhere auf seinen Base-Branch (`git rebase origin/paket/<spur>-<n-1>`);
    danach `git push --force-with-lease` nur auf eigene Branches.
 3. **Teil abschließen:** grünes `tools/pruefen.sh --schnell`, PR „Ready for review“ (lässt sich das aus dem Lauf nicht setzen –
-   REST kennt keinen Weg, GraphQL ist gesperrt –, im Übergabekommentar vermerken; Leitstelle bzw. Nutzer setzen es),
+   REST kennt keinen Weg, GraphQL ist gesperrt –, im Übergabekommentar vermerken; es setzt der Nutzer, die Leitstelle nur,
+   wenn ihr ein Werkzeug dafür zur Verfügung steht),
    Übergabekommentar mit „Fortsetzungen verbraucht: n von 3“. Dann den nächsten Teil im selben Lauf beginnen, solange Zeit bleibt.
 4. **Teil blockiert** (kein grünes `--schnell`, Beleg fehlt, Referenz-Repo unerreichbar, fremde Datei nötig): Teil als Draft-PR mit Übergabe lassen,
    Label `spur-wartet` setzen, im Übergabekommentar „blockiert – Entscheidung Nutzer“ und den Grund. **Keine Fortsetzung**
@@ -69,7 +76,7 @@ Gilt, wenn die Spur in `docs/arbeitspakete.md` eine geordnete Liste von Teilen h
    - die Aufgabe (Name, Zeitpunkt) im Übergabekommentar nennen;
    - lehnt die Freigabe `create_trigger` ab (beobachtet 01.11.2026, häufig): Label `spur-wartet` setzen und im Übergabekommentar
      „Fortsetzung anlegen – Leitstelle“ mit dem fertigen Prompt (Name, Startaufruf mit Zähler) vermerken; die Leitstelle legt
-     die Aufgabe an und setzt das Modell.
+     die Aufgabe an und setzt das Modell laut vom Nutzer bestätigtem Plan.
 6. **Kettenende:** Sind alle Teile fertig, oder ist n = 3 und Teile bleiben offen: keine Fortsetzung; Label `spur-wartet`
    auf den obersten PR und im Übergabekommentar „Spur fertig – Integration“ bzw. „Fortsetzungen erschöpft – Entscheidung
    Nutzer“. Die Leitstelle sieht offene PRs mit `spur-wartet` durch.

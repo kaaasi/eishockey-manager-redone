@@ -68,3 +68,8 @@ Originaldarstellung bleibt unverändert.
   nur für einen Versuch; Gebote an andere Manager folgen einer eigenen Regel (Grenze „unfair“ 60–140 % des frisch berechneten
   Werts 0x47546, danach Antwort des Verkäufers). Offen: Darstellung (Prozentzahl oder Ampel) und ob die Anzeige im
   Netzwerkmodus erlaubt ist.
+- **Spieltag mit Managerverein ganz in der Minutenrechnung (01.11.2026, #349):** Im Original entscheidet ein Merker je
+  Spieltag (em.exe Datei 0x36FEA): Spielt an einem Spieltag von Pokal, Play-offs oder Aufstiegsrunde ein Managerverein,
+  laufen alle Paarungen des Spieltags durch die Minutenschleife, sonst je nach Anzeigeschalter des Wettbewerbs
+  (0x3702E–0x37085). Das Remake entscheidet je Paarung und bleibt dabei (Entscheidung Nutzer). Nach v1.0 als Einstellung
+  „wie im Original“ anbieten; sie ändert Ergebnisse und Zufallsverbrauch der Spiele ohne Manager.
