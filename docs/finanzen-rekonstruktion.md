@@ -444,8 +444,7 @@ Rest in der unteren Hälfte: Logos, Schriftkanten und die Übersicht rechts (nic
   117 + 71·k < x < 174 + 71·k, y < 54, nur besetzte Kästen (`0x59B40`, Tabelle `DGROUP 0x553B`); Aktie x < 47, y > 101,
   Index (y − 102) / 34 (`0x59BF2`) – nur die Logospalte, nicht das Infofeld. Im Remake `FinanceScreen.BankSelectArea`,
   `PartnerSelectArea`, `StockSelectArea`; das Bankbild öffnet dort zusätzlich das Finanzbuch (`[APPROX]`, Remake).
-- Rechts neben dem Verlauf (x 240/241, y 104–236, `0x58DF6`–`0x58EC5`) liegt ein Regler für Ausschnitt und Maßstab
-  (Maßstab 2–64); im Remake nicht nachgebaut – eigenes Paket (Entscheidung Nutzer, 30.10.2026).
+- Regler für Ausschnitt und Maßstab: siehe Abschnitt „Kursverlauf-Regler“ (Spur `finanzen-rest`, Teil 3, #196).
 - Die Basiswerte `0x1FD` sind vorbelegte Daten und werden bei „Neues Spiel“ ohne Programmneustart nicht zurückgesetzt.
 
 ## Jugendteams – Funktionskarte 0x3A24B (Spur `finanzen-rest`, Teil 1)
@@ -534,3 +533,33 @@ Schatten). Umgesetzt in `UI/Screens/Manager/AdvertisingScreen.cs` (`PanelTexts`,
 | Leere Bande | UI 6:20 | 0,89 → 0,98 | 0,90 → 0,98 | −0,19 → 0,90 |
 | Angebot CCH, 12 Monate, 1 Bande, 3.454 DM | UI 6:40 | 0,76 → 0,90 | 0,82 → 0,95 | −0,20 → 0,89 |
 | JWE ohne Angebot | UI 6:44 | 0,72 → 0,90 | 0,78 → 0,93 | −0,20 → 0,89 |
+
+
+## Kursverlauf-Regler (Spur `finanzen-rest`, Teil 3, #196)
+
+Overlay 0x138, Bildschirmschleife ab Datei 0x58A57, Regler 0x58D1E–0x58F4D. Umsetzung: `FinanceScreen.UpdateRegulator`,
+Tests `ChartRegulatorTests`, Szenario `kursregler`.
+
+| Zuordnung | Fundstelle | Remake |
+|---|---|---|
+| Start: linke Taste (`[0x5A16] == 1`), Mausspalte 131–242 (`> 0x82`, `< 0xF3`), Mauszeile 107–235 (`> 0x6A`, `< 0xEC`) | 0x58D30–0x58D72 | `RegulatorArea` (das ganze Verlaufsfeld samt Rändern, nicht nur ein Streifen) |
+| Modus aus der Mausspalte beim Drücken: x < 180 (`0xB4`) = Ausschnitt, sonst Maßstab; später nicht neu gelesen | 0x58DA7 | `_dragOffset` |
+| Schleife bis `[0x5A16] == 2` (Taste losgelassen); je Runde neue Mauszeile, ab der zweiten auf 0x68–0xEA begrenzt; unverändert → kein Neuzeichnen | 0x58D88–0x58D98, 0x58F00–0x58F4D | `LeftDown`, `Math.Clamp` |
+| Höchster Wert aller 4 × 36 Verlaufswerte in Drittel-DM (`[bp-0x20]`) | 0x58BED–0x58C1A | `HighestHistory` |
+| Ausschnitt: Versatz = Maximum − (y − 106) · Maximum / 131 (vorzeichenbehaftete Langdivision, abgeschnitten) | 0x58DF6–0x58E35 | `_offset` |
+| Maßstab: (32 − (y − 106) · 32 / 131) · 2, mindestens 2 (Bereich 2–64) | 0x58E7E–0x58EC5 | `_scale` |
+| Streifen (Farbe 0, x 0x84–0x85 bzw. 0xF0–0xF1, Zeilen 0x68–0xEC) löschen, Marke 2 × 2 (Farbe 0x18) bei der Mauszeile | 0x58DB0–0x58DF3, 0x58E38–0x58E7B | `DrawRegulator` |
+| Neuzeichnen des Verlaufs über 0x88CA nur bei geändertem Versatz oder Maßstab; Maßstab beginnt bei jedem Betreten mit 2 | 0x58ECA–0x58EF5, 0x58CAF | `Enter`, `Draw` |
+
+Anders als im Befund von #196 liegen die Streifen an **beiden** Rändern des Verlaufs (x 132/133 für den Ausschnitt,
+x 240/241 für den Maßstab); die linke Taste im Verlaufsfeld löst den Regler aus, die rechte Maustaste hat hier keine
+Wirkung (`[0x5A16] == 1` ist Bedingung). Damit ist die offene Frage „welche Maustaste“ beantwortet.
+
+**Pixelvergleich:** Der Standardzustand (Maßstab 2, anfänglicher Ausschnitt) ist unverändert (`boerse-start`: 3,1 / 1,8 %).
+In den Referenzvideos (`oberflaeche`, 1 Bild/s; Bilder 540–620 zeigen die Börse) ist kein Zug am Regler zu sehen: keine
+Spalte x 131–133 oder 240–242 mit hellem 2 × 2-Block. Marke und Streifen sind daher aus dem Code, nicht aus dem Bild belegt.
+
+**`[APPROX]`:** Streifen und Marke bleiben nach dem Loslassen bis zum Verlassen des Bildschirms stehen (das Original löscht
+sie nicht; ob ein anderes Neuzeichnen sie später entfernt, ist nicht nachgeprüft). Der Klick auf eine Aktie setzt den
+Versatz wie bisher (0x59C6B), der Maßstab bleibt dabei erhalten. Die Anfangssuche des Ausschnitts (`InitialChartOffset`)
+rechnet weiter mit Maßstab 2.

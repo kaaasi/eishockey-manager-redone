@@ -92,8 +92,8 @@ public sealed class FinanceScreen : Screen
     public const int ChartDayWidth = 3;
 
     /// <summary>
-    /// [ORIGINAL] Maßstab: Drittel-DM je Pixel (0x58CAF: 2, also 1,5 Pixel je DM). Der Regler rechts neben dem Verlauf
-    /// (0x58E38 ff.) kann ihn ändern; der ist im Remake nicht nachgebaut.
+    /// [ORIGINAL] Standardmaßstab: Drittel-DM je Pixel (0x58CAF: 2, also 1,5 Pixel je DM). Der Regler (0x58E38 ff.)
+    /// ändert ihn auf 2–64 (<see cref="Scale"/>).
     /// </summary>
     public const int ChartScale = 2;
 
@@ -124,6 +124,8 @@ public sealed class FinanceScreen : Screen
     private int _mouseY = -1;
     /// <summary>Unterkante des Ausschnitts in Drittel-DM (em.exe: Versatz des Kursverlaufs, Zeile 130 der Zeichenfläche).</summary>
     private int _offset = int.MinValue;
+    /// <summary>Maßstab: Drittel-DM je Pixel (em.exe <c>[bp-0x1e]</c>), anfangs <see cref="ChartScale"/>.</summary>
+    private int _scale = ChartScale;
 
     public FinanceScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
@@ -142,6 +144,9 @@ public sealed class FinanceScreen : Screen
     /// <summary>Unterkante des sichtbaren Ausschnitts in Drittel-DM (<see cref="InitialChartOffset"/>).</summary>
     public int ChartOffset => _offset;
 
+    /// <summary>Maßstab des Kursverlaufs in Drittel-DM je Pixel (2 = Standard).</summary>
+    public int Scale => _scale;
+
     private GameState Game => Host.Game!;
     private Core.Manager Me => Game.ActiveManager;
 
@@ -153,6 +158,81 @@ public sealed class FinanceScreen : Screen
         // Rückkehr aus dem Finanzbuch mit gewählter Aktie: Ausschnitt der Aktie wie vorher (bis #206 setzte ihn das
         // Überfahren in jedem Bild neu).
         _offset = _selection.Kind == SelectionKind.Stock ? StockOffset(_selection.Index) : InitialChartOffset(Game.Stocks);
+        _scale = ChartScale;
+        _dragging = false;
+        _markerX = -1;
+    }
+
+    // ---- Regler für Ausschnitt und Maßstab (#196) -------------------------------------------
+
+    /// <summary>
+    /// [ORIGINAL] Klickfeld des Reglers (em.exe 0x58D3A–0x58D72): x 131–242, Mauszeile 107–235, nur linke Taste.
+    /// x &lt; 180 (0x58DA7) wählt den Ausschnitt (Streifen bei x 132), sonst den Maßstab (Streifen bei x 240).
+    /// </summary>
+    public static readonly Rect RegulatorArea = new(131, 107, 112, 129);
+
+    private const int RegulatorSplitX = 180;
+    private const int RegulatorMinY = 0x68;
+    private const int RegulatorMaxY = 0xEA;
+    private const int RegulatorStripTop = 0x68;
+    private const int RegulatorStripHeight = 0xEC - 0x68 + 1;
+    private const byte RegulatorMarkerColor = 0x18;
+    private const byte RegulatorStripColor = 0;
+
+    private bool _dragging;
+    private bool _dragOffset;
+    private bool _dragFirst;
+    private int _markerX = -1;
+    private int _markerY;
+
+    /// <summary>Höchster Wert aller Verläufe in Drittel-DM (em.exe 0x58BED–0x58C1A, <c>[bp-0x20]</c>).</summary>
+    private int HighestHistory() => Game.Stocks.Stocks.Max(st => st.History.Count == 0 ? 0 : st.History.Max()) * 3;
+
+    /// <summary>
+    /// [ORIGINAL] Ziehen mit der linken Taste (0x58D1E–0x58F4D): Beim Drücken im Feld wird der Modus aus x festgelegt;
+    /// solange die Taste gehalten wird, gilt die Mauszeile (ab der zweiten Runde auf 0x68–0xEA begrenzt).
+    /// Ausschnitt: Versatz = Maximum − (y − 106) · Maximum / 131 (0x58DF6–0x58E35);
+    /// Maßstab: (32 − (y − 106) · 32 / 131) · 2, mindestens 2 (0x58E7E–0x58EC5). Beide Rechnungen mit abgeschnittener
+    /// Ganzzahldivision. [APPROX] Streifen und Marke bleiben bis zum Verlassen des Bildschirms stehen (das Original
+    /// löscht sie nach dem Loslassen nicht; ein späteres Neuzeichnen des Bildschirms ist nicht nachgeprüft).
+    /// </summary>
+    private void UpdateRegulator(InputState input)
+    {
+        if (input.LeftClick && RegulatorArea.Contains(input.MouseX, input.MouseY))
+        {
+            _dragging = true;
+            _dragFirst = true;
+            _dragOffset = input.MouseX < RegulatorSplitX;
+        }
+        if (!_dragging)
+            return;
+        if (!input.LeftDown && !input.LeftClick)
+        {
+            _dragging = false;
+            return;
+        }
+
+        var y = _dragFirst ? input.MouseY : Math.Clamp(input.MouseY, RegulatorMinY, RegulatorMaxY);
+        _dragFirst = false;
+        _markerX = _dragOffset ? 0x84 : 0xF0;
+        _markerY = y;
+        if (_dragOffset)
+        {
+            var highest = HighestHistory();
+            _offset = highest - (int)((long)(y - 106) * highest / 131);
+        }
+        else
+        {
+            _scale = Math.Max(2, (32 - (y - 106) * 32 / 131) * 2);
+        }
+    }
+
+    private void DrawRegulator(Surface s)
+    {
+        if (_markerX < 0)
+            return;
+        s.Fill(new Rect(_markerX, RegulatorStripTop, 2, RegulatorStripHeight), RegulatorStripColor);
+        s.Fill(new Rect(_markerX, _markerY, 2, 2), RegulatorMarkerColor);
     }
 
     /// <summary>
@@ -204,6 +284,8 @@ public sealed class FinanceScreen : Screen
             Host.Show(_back);
             return;
         }
+
+        UpdateRegulator(input);
 
         if (input.LeftClick && SelectAt(input.MouseX, input.MouseY) && _selection.Kind == SelectionKind.Stock)
             _offset = StockOffset(_selection.Index);
@@ -354,6 +436,7 @@ public sealed class FinanceScreen : Screen
         for (var i = 0; i < 4; i++)
             DrawStock(s, i);
         DrawChart(s);
+        DrawRegulator(s);
         DrawSummary(s);
     }
 
@@ -427,10 +510,10 @@ public sealed class FinanceScreen : Screen
     /// [ORIGINAL] Zeile eines Kurses in der Zeichenfläche (0x58922): 130 − Kurs/Maßstab + Versatz/Maßstab, Kurs in
     /// Drittel-DM, beide Divisionen ganzzahlig. Zeile 0 = Bildschirmzeile 107.
     /// </summary>
-    public static int CanvasY(int price, int offset) => ChartCanvas.H - price * 3 / ChartScale + offset / ChartScale;
+    public static int CanvasY(int price, int offset, int scale = ChartScale) => ChartCanvas.H - price * 3 / scale + offset / scale;
 
     /// <summary>Bildschirmzeile eines Kurses beim aktuellen Bildausschnitt.</summary>
-    public int ChartY(int price) => ChartCanvas.Y + CanvasY(price, _offset);
+    public int ChartY(int price) => ChartCanvas.Y + CanvasY(price, _offset, _scale);
 
     /// <summary>
     /// [ORIGINAL] Kursverlauf (0x588CA): je Aktie (0–3, spätere übermalen frühere) eine Linie von Tag zu Tag, drei Pixel
@@ -442,7 +525,7 @@ public sealed class FinanceScreen : Screen
         {
             var history = Game.Stocks.Stocks[i].History;
             for (var k = 1; k < history.Count; k++)
-                ChartSegment(s, k * ChartDayWidth, CanvasY(history[k - 1], _offset), CanvasY(history[k], _offset), i);
+                ChartSegment(s, k * ChartDayWidth, CanvasY(history[k - 1], _offset, _scale), CanvasY(history[k], _offset, _scale), i);
         }
     }
 
