@@ -256,6 +256,11 @@ Gegentore und Minuten des Torhüters (Review-Befund R7-03, #201; Test `Integrati
 2. Pokale (DEB-Pokal, Europapokal, WM) ohne Managerverein: schneller Weg 0x3731F (Abschnitt 3). Das Original nimmt ihn nur
    bei ausgeschalteter Anzeige des Wettbewerbs (Spielstand-Optionen DGROUP 0x227–0x229, `GameOptions.CupMatchUsesMinuteLoop`,
    Datei 0x3702E–0x37085); sonst Minutenschleife (Integration Runde 9). Anfangswerte: DEB-Pokal an, Europapokal und WM aus.
+   Die WM-Endrunde (Code 10) prüft keinen Schalter und nimmt immer den schnellen Weg (#350). `[APPROX]` Das Original
+   entscheidet einmal je Spieltag (Merker 0x36FEA: spielt ein Managerverein, laufen alle Paarungen durch die
+   Minutenschleife), das Remake je Paarung (#349); Play-offs/Aufstiegsrunde (Code 1) nehmen im Original nur bei
+   eingeschaltetem Feld „Ergebnisse“ der Meldungsmatrix die Minutenschleife, sonst den schnellen Weg (voreingestellt), im
+   Remake immer die Minutenschleife (#351).
    `[APPROX]` Der WM-Schalter, den der Bundestrainer-Abschnitt setzt (0x5541F/0x5575A, Sicherung 0x22C), ist nicht nachgebaut.
    K.-o.-Gleichstand: der Sieger des Penaltyzugs (0x376F0) entscheidet, gespeichert bleibt der Gleichstand mit
    `PenaltyWinner` (`[APPROX]` Darstellung; bisher „n.P.“ ebenso).

@@ -70,12 +70,20 @@ public static partial class MatchEngine
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
         MatchReport report;
-        // [ORIGINAL] Datei 0x3702E–0x37085: Pokalspiel ohne Managerverein mit eingeschaltetem Anzeigeschalter (DGROUP 0x227–0x229,
-        // GameOptions.CupMatchUsesMinuteLoop) läuft durch die Minutenschleife 0x37088, sonst der schnelle Weg 0x3731F
-        // (Anschluss optionen-wirkung, Integration Runde 9). [APPROX] Das Setzen des WM-Schalters im Bundestrainer-Abschnitt
-        // (0x5541F/0x5575A, Sicherung 0x22C) ist nicht nachgebaut.
+        // [ORIGINAL] Datei 0x3702E–0x37085: Pokalspiel mit eingeschaltetem Anzeigeschalter (DGROUP 0x227 DEB-Pokal, Code 6;
+        // 0x228 Europapokal, Code 3/5; 0x229 WM-Gruppe, Code 8; GameOptions.CupMatchUsesMinuteLoop) läuft durch die
+        // Minutenschleife 0x37088, sonst der schnelle Weg 0x3731F. Die WM-Endrunde (Code 10, 0x31017) prüft keinen Schalter
+        // und nimmt immer den schnellen Weg (R9S-02, #350). Anschluss optionen-wirkung, Integration Runde 9.
+        // [APPROX] Das Original entscheidet je Spieltag (Merker 0x36FEA „ein Managerverein spielt“: dann laufen alle Paarungen
+        // des Spieltags durch die Minutenschleife), das Remake je Paarung (R9S-01, #349). Play-offs/Aufstiegsrunde (Code 1)
+        // nehmen im Original nur bei eingeschaltetem Feld „Ergebnisse“ der Meldungsmatrix die Minutenschleife (0x37058–0x37085),
+        // im Remake immer (R9S-03, #351). Das Setzen des WM-Schalters im Bundestrainer-Abschnitt (0x5541F/0x5575A, Sicherung
+        // 0x22C) ist nicht nachgebaut.
+        var minuteLoop = competition == MatchCompetition.WorldCup && knockOut
+            ? false
+            : game.Options.CupMatchUsesMinuteLoop(competition);
         if (!managerMatch && competition is MatchCompetition.DebCup or MatchCompetition.EuropeanCup or MatchCompetition.WorldCup
-            && !game.Options.CupMatchUsesMinuteLoop(competition))
+            && !minuteLoop)
         {
             var h = OriginalMinutes.Strengths(homeTeam, awayTeam, 0);
             var a = OriginalMinutes.Strengths(awayTeam, homeTeam, 0);
