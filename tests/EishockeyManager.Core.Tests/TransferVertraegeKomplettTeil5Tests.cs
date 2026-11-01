@@ -337,6 +337,11 @@ public class TransferVertraegeKomplettTeil5Tests
             var outside = game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).Concat(game.RetiredPlayers)
                 .Where(p => p.Id < startIds).Select(p => p.Name).ToHashSet();
             Assert.DoesNotContain(game.TransferMarket.PoolPlayers, p => p.Id < startIds && outside.Contains(p.Name));
+            // R9T-P2-01 (#346): auch Poolspieler mit neuer ID prüfen (umbenannte Plätze). Ohne Tausch Pool ↔ Computerkader
+            // wären es über 100 Treffer je Saison; übrig bleiben nur Talente, die PlayerFactory.TalentName mit dem Namen eines
+            // vorhandenen Spielers anlegt (bekannte Lücke, nicht Teil dieser Spur) – auf dem integrierten Stand 0–1 je Saison.
+            var renamedClashes = game.TransferMarket.PoolPlayers.Count(p => p.Id >= startIds && outside.Contains(p.Name));
+            Assert.True(renamedClashes <= 5, $"{renamedClashes} Poolspieler mit neuer ID tragen den Namen eines Kaderspielers (Saison {change + 1})");
             Assert.True(game.TransferMarket.Pool.Count == game.TransferMarket.Pool.Select(s => s.Player.Name).Distinct().Count(),
                 string.Join("; ", game.TransferMarket.Pool.GroupBy(s => s.Player.Name).Where(g => g.Count() > 1).Select(g => string.Join(",", g.Select(s => $"{s.Index}:{s.Owner}:{s.Club}:{g.Key}")))));
             var ids = game.AllPlayers.Select(p => p.Id).ToList();
