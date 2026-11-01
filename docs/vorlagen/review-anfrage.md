@@ -46,6 +46,6 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
    Ohne nachgewiesenen Checkout (nur Codelesen oder unverifizierter Stand) liefert das Review keinen Testnachweis nach
    `zusammenarbeit.md` §6 Nr. 4; die Merge-Empfehlung sagt dann ausdrücklich „nur Codelesen“. Der
    Originaldaten-Nachweis muss dann im PR stehen (auch als Kommentar der Leitstelle).
-5. Ablage: nichts am Code oder am geprüften PR ändern. Datei auf neuem Branch `review/<thema>` (Basis `main`), PR mit
+5. Ablage: nichts am Code oder am geprüften PR ändern, nichts ins Referenz-Repo schreiben. Datei auf neuem Branch `review/<thema>` (Basis `main`), PR mit
    **nur dieser Datei**, Commit-Trailer mit deinem Agentennamen. Ohne Schreibzugriff: Datei an den Nutzer.
 6. Antwort an den Nutzer: Link zum Review-PR, Empfehlung in einem Satz.
