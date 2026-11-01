@@ -319,8 +319,6 @@ public sealed class TransferScreen : Screen
             var p = l.Player;
             var y = FirstEntryY + EntryPitch * i;
             var c = TeamUi.RoleColor(p.Role);
-            if (i == hoverEntry || _dialog?.Listing == l)
-                TeamUi.HoverRow(s, ListLeft - 1, y, ListRight - ListLeft + 3, 13);
             s.Text(mini, ListLeft, y, p.RoleLetter.ToString(), c);
             s.Text(mini, 189, y, p.Name, c);
             // Pixelvergleich oberflaeche_1102 (Spur transfer-original-vertrag): rechtsbündige Spalten 3 Pixel weiter rechts
@@ -332,6 +330,9 @@ public sealed class TransferScreen : Screen
             s.TextRight(mini, 315, y + 6, Money(l.LoanFee) + " (L)", TeamUi.DimColor);
             EntryLine(s, y + 12);
         }
+        for (var i = 0; i < listings.Count; i++)
+            if (i == hoverEntry || _dialog?.Listing == listings[i])
+                HoverEntry(s, FirstEntryY + EntryPitch * i);
 
         if (StatusText(rows, listings) is { } status)
             TeamUi.LabelCentered(s, Assets, 86, StatusY, status, 196, 5); // Video: hell mit Schatten
@@ -410,6 +411,22 @@ public sealed class TransferScreen : Screen
     }
 
     /// <summary>Beige Trennlinie mit dunkler Linie darunter (Video: Index 93 / 198).</summary>
+    /// <summary>
+    /// Markierung des Eintrags unter der Maus: Die beiden Trennlinien über und unter dem Eintrag (obere Zeile der Linie) werden
+    /// dunkelrot, die untere Zeile (198) bleibt. [ORIGINAL] Pixelvergleich `oberflaeche_1100` (LANGE) und `oberflaeche_1102`
+    /// (LAPORTE): Zeilen y − 4 und y + 12 gemessen (68–75 | 38 | 40–47), Index 201 (65 | 0 | 0) mit Unschärfe; die Zeile
+    /// y − 1 bleibt Hintergrund. Vorher zeichnete das Remake hellrot (17) in Zeile y − 1, die untere Linie überschrieb
+    /// <see cref="EntryLine"/>. Index 201 statt 16/253 aus der Rotkomponente geschätzt: [APPROX] (Video unscharf).
+    /// </summary>
+    private static void HoverEntry(Surface s, int y)
+    {
+        s.HLine(ListLeft - 1, y - 4, ListRight - ListLeft + 3, HoverEntryColor);
+        s.HLine(ListLeft - 1, y + 12, ListRight - ListLeft + 3, HoverEntryColor);
+    }
+
+    /// <summary>Farbe der Trennlinien um den markierten Eintrag der Transferliste (siehe <see cref="HoverEntry"/>).</summary>
+    public const byte HoverEntryColor = 201;
+
     private static void EntryLine(Surface s, int y)
     {
         s.HLine(ListLeft - 1, y, ListRight - ListLeft + 3, TeamUi.EntryLineColor);

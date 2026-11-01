@@ -192,8 +192,14 @@ Eine treue Umsetzung braucht den Pool als eigenes Modell (Datenbank, Spielstand,
   stammen im Remake aus der Spur „kader“ (`[APPROX]`, R2-11); umgesetzt ist nur, dass „Mach' ich!“ ohne Eingabe das Angebot
   annimmt.
 - **Wechsel der Liste 0x494EF** (Pool von 200 Spielern) – das Remake zieht aus den vollen Kadern der Computervereine (Teil 3, oben).
-- **Knöpfe im Verhandlungsfenster:** geklärt in Teil 3 (gedrückter Knopf); die Lage 1 Pixel weiter links im Video ist nicht
-  nachgemessen.
+- **Knöpfe im Verhandlungsfenster 1 Pixel zu weit rechts** (nachgemessen in Teil 4, Tabelle unten): In allen drei Vorlagen
+  (`oberflaeche_1030`, `karriere_01924`, `karriere_03555`) passen beide Knöpfe mit Versatz −1 | 0 am besten, die Texte des
+  Fensters mit 0 | 0. Das Original übergibt aber x = 0x0B bzw. 0x5A (Datei 0x4A444, 0x4A41E) wie das Remake, und 0x4BFF2
+  blittet kb\\2 ab (17 | 179) ohne Korrektur an diese Stelle. Ursache offen (Verdacht: Spaltenlage von kb\\2 im Decoder oder
+  der Blit 0x50:0xA79 – beides fremde Dateien); nicht geändert, weil ein örtlicher Versatz andere Knöpfe aus kb\\2 nicht träfe.
+- **Positionsbuchstabe in der Transferliste:** Im Video ist das „S“ von LAPORTE dunkel (≈ 65 | 38 | 50) – in allen Bildern
+  `oberflaeche_1054` … `1104`, unabhängig von der Maus –, bei den übrigen Einträgen in der Rollenfarbe. Bedeutung nicht belegt
+  (LAPORTE ist der einzige Spieler „aus FRANKREICH“ in der Liste; Verdacht Ausländerkennung). Remake: Rollenfarbe.
 
 ## Pixelvergleich (Abnahme 3)
 
@@ -230,3 +236,29 @@ Lage und Inhalt beider Fenster stimmen. Abweichung nur hinter dem Fenster am Sai
 Originals (0x108:0x43, `karriere_03555`, `karriere_03648`) trägt den Vereinsnamen als Titel („BK OLDENBURG“), zeigt
 ausgelaufene Verträge rot als „kein V.“ und hat rechts unten ein Symbolfeld statt der Hinweiszeile; das Remake zeigt dort die
 Liste „Verträge“. Gehört zu Teil 3 (Knopfdarstellung/Listen) bzw. eigener Befund.
+
+### Teil 4 (Spur `transfer-vertraege-komplett`): Markierung in der Transferliste, Knöpfe
+
+Kennzahl wie oben, Mauszeiger (rot) maskiert, beide Bilder mit σ = 0,6 weichgezeichnet, eigenes Bild um höchstens 1 Pixel
+verschoben (Messung in der Arbeitsumgebung, nicht im Repo).
+
+| Bereich | Vorlage | Vorher | Nachher | Versatz |
+|---|---|---|---|---|
+| Transferliste (176 … 318 \| 15 … 222) | `oberflaeche_1102` | 4,4 / 0,9 % | 3,3 / 0,0 % | 0 \| 0 |
+| Einträge (178 … 316 \| 36 … 135) | | 6,0 / 2,0 % | 3,7 / 0,1 % | 0 \| 0 |
+| Eintrag LAPORTE mit Linien (178 … 316 \| 114 … 135) | | 15,9 / 9,1 % | 5,4 / 0,4 % | 0 \| 0 |
+| Titel „Transferliste“ (210 … 290 \| 15 … 30) | | 4,2 / 0,0 % | 4,2 / 0,0 % | 0 \| 0 |
+| Verhandlungsfenster (2 … 167 \| 110 … 176) | `oberflaeche_1030` | 7,4 / 0,9 % | unverändert | 0 \| 0 |
+| Knopf „Mach' ich!“ (10 … 66, 12 Zeilen) | `oberflaeche_1030` / `karriere_01924` / `karriere_03555` | 10,5 / 10,6 / 8,9 | unverändert | bei −1 \| 0: 7,3 / 7,1 / 5,4 |
+| Knopf „Abbruch“ (97 … 152) | dieselben | 9,5 / 8,0 / 7,9 | unverändert | bei −1 \| 0: 6,7 / 4,9 / 5,6 |
+
+Behoben: Der Eintrag unter der Maus (bzw. im offenen Dialog) wird im Original durch die **Trennlinien** über und unter dem
+Eintrag markiert – obere Zeile der Linie (y − 4 und y + 12) dunkelrot, gemessen 68–75 | 38 | 40–47 (`oberflaeche_1100` bei LANGE
+mit der Linie unter der Kopfzeile, `oberflaeche_1102` bei LAPORTE). Das Remake zeichnete hellrot (Index 17) eine Zeile über dem
+Namen, die untere Linie überschrieb die Trennlinie. Farbe Index 201 (65 | 0 | 0) `[APPROX]`: aus der Unschärfe geschätzt
+(Mischung mit dem Hintergrund passt besser als 16 oder 253). Die gemeinsame Zeilenmarkierung `TeamUi.HoverRow` (Kader- und
+Vertragslisten) ist nicht geändert. Test: `TransferVertraegeKomplettTeil4ScreenTests`.
+
+Testlücken aus Teil 4 (`TransferVertraegeKomplettTeil4Tests`): „unfair“ der Verhandlung bei negativen Eingaben ohne Sperre und
+ohne Zufallszug (R8W3I-10), Umkehrung des Gegenbeispiels nach dem Saisonende auf Level 3 und 5 (R8W3I-16), Zugfolge der
+Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die passende Mutation rot geprüft.
