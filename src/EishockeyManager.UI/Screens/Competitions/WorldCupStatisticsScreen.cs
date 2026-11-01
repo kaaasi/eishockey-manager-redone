@@ -27,8 +27,8 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   (x + 2 | y + 2); darüber (oben, y = 122) bzw. darunter (unten, y = 220) ein Kästchen bei x + 14 mit der kleinen Flagge
 ///   bei (x + 16 | + 1) (Datei 0x3ACE3, 0x3B0C2–0x3B19D).</item>
 /// <item>[ORIGINAL] Höchstens 16 WMs: ab der 17. entfällt im Spielstand die älteste (Schreibstelle 0x311CF,
-///   <see cref="GameState.MaxWorldCupRankings"/>), Spalte 0 ist also die älteste der letzten 16. Klick auf ein Land ruft im Original das Gegner-Fenster 0x128:0x2A (Datei 0x3B437–0x3B4AE) –
-///   im Remake noch nicht vorhanden. Esc und Rechtsklick kehren zurück.</item>
+///   <see cref="GameState.MaxWorldCupRankings"/>), Spalte 0 ist also die älteste der letzten 16. Klick auf ein Land ruft das Gegner-Fenster 0x128:0x2A (Datei 0x3B437–0x3B4AE, <see cref="FlagAt"/>,
+///   <see cref="TeamInfoWindow"/>). Esc und Rechtsklick kehren zurück.</item>
 /// </list>
 /// </remarks>
 public sealed class WorldCupStatisticsScreen : Screen
@@ -44,7 +44,19 @@ public sealed class WorldCupStatisticsScreen : Screen
     private static readonly int[] SeparatorY = [44, 53, 71];
 
     private readonly Screen _back;
+    private readonly TeamInfoWindow _info = new();
     private readonly IReadOnlyList<IReadOnlyList<int>>? _fixedRankings;
+
+    /// <summary>Gegner-Fenster (Klick auf ein Land unten).</summary>
+    public TeamInfoWindow Info => _info;
+
+    /// <summary>
+    /// [ORIGINAL] Platz der Länderleiste unter dem Mauszeiger (Datei 0x3B437–0x3B4AE): 23 &lt; x &lt; 299, 131 &lt; y &lt; 223,
+    /// i = (x − 23) / 46 + 6 bei y &gt; 177. Das Original ruft 0x128:0x2A für das Land DGROUP 0x6AD + i – dort stehen die Länder
+    /// nach den Tauschen der Auslosung in WM-Reihenfolge, im Remake ist das <see cref="Order"/>[i].
+    /// </summary>
+    public static int? FlagAt(int x, int y) =>
+        x > 23 && x < 299 && y > 131 && y < 223 ? (x - 23) / 46 + (y > 177 ? 6 : 0) : null;
     private readonly IReadOnlyList<int>? _fixedOrder;
 
     public WorldCupStatisticsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
@@ -74,11 +86,22 @@ public sealed class WorldCupStatisticsScreen : Screen
 
     public override void Update(InputState input)
     {
+        if (_info.Update(input))
+            return;
         if (input.Pressed(Key.Escape) || input.RightClick)
             Host.Show(_back);
+        else if (input.LeftClick && Host.Game is not null && FlagAt(input.MouseX, input.MouseY) is { } i && i < Order.Count)
+            _info.Show(Order[i]);
     }
 
     public override void Draw(Surface s)
+    {
+        DrawScreen(s);
+        if (Host.Game is { } game)
+            _info.Draw(s, Assets, game);
+    }
+
+    private void DrawScreen(Surface s)
     {
         s.Palette = Assets.Palette;
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);

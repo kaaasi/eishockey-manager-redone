@@ -759,5 +759,22 @@ Teil 2 (Nationalteam):
   „Keine bemerkenswerte Serie vorhanden.“ 0x351C, „Historische Ergebnisse gegen “ 0x354C, „Punkte in der Ewigen Tabelle: “
   0x3588, „Noch keine Eintragung.“ 0x35B5). Länder (Verein ≥ DGROUP 0x6AD) und Vereine haben eigene Zweige (0x4D3DD,
   0x4D75E, 0x4DA58, 0x4E0EB); Rahmenbild Datei 0x4D40F (`0x38:0x98D` Bild 0x21). Aufrufer: Infoleiste, Stärken (DOSBox 44),
-  WM-Tabelle (DOSBox 14–16), Paarungsansicht 0x302AA, WM-Statistik 0x3B4AE. **Im Remake fehlt das Fenster ganz**; Aufbau,
-  Datenquellen (Rekorde, historische Ergebnisse) und Knopf rechts unten (Symbol je Mausposition) sind noch auszuwerten.
+  WM-Tabelle 0x2FAB8 (DOSBox 14–16), Paarungsansicht 0x302AA, WM-Statistik 0x3B4AE (alle mit Seite 2 = Gesamt).
+  Umgesetzt als `TeamInfoWindow` (Länderzweig); Aufbau und Koordinaten im Klassenkommentar.
+  * **Hilfsfunktionen im Overlay:** cs:0x00 = „ist Land“ (DGROUP 0x6AD ≤ Verein &lt; 0x6AD + 12), cs:0x26 = Stärke
+    (Vereinsfelder 0x18/0x19, 0x1A/0x1B, 0x1C/0x1D summiert / 6), cs:0x47BF = Bilanzzeichen als Gesichter aus kb\33
+    (Quelle DGROUP 0x537A/0x537E: N (19 | 36), U (25 | 41), S (25 | 36); Rückgabe Spiele · 32 + Punkte), cs:0x12E5 = Rekordtext.
+  * **Rekorde** DGROUP 0xBD0F + 0x10 · Verein + 2 · Art (Wort), Gegner DGROUP 0xBB0F + 8 · Verein + Art; Arten 0–3 Heim (Sieg,
+    Niederlage, Tore, Gegentore), 4–7 Auswärts. Schreiber 0x51133 aus 0x50283 nur bei Code 7/8 (Datei 0x503A4–0x50438,
+    0x50680–0x506BA, 0x50AD0–0x50B07). Der Vergleich ist vorzeichenlos – H-Niederlage und A-Sieg (Modus 1) bleiben immer leer.
+  * **Kopf-an-Kopf** DGROUP 0xAB7B + 0x280 · Manager + 10 · Verein, Schreiber 0x4F5A8 aus 0x50283 für jedes Spiel (Platz =
+    Vereinsfeld 0x16 − 1 bzw. 0 für Deutschland DGROUP 0x6AC; Byte = Gegnertore · 16 + eigene Tore); Länder als Liste von
+    zehn (FIFO), Vereine je Seite fünf. Spielstart füllt 0xFF (0x43726). Leser auch in der Infoleiste (0x441D2–0x442B0).
+  * **Saisonwechsel 0x55E3D–0x55EF8:** Tabellenfelder (Punkte, Tore, Gegentore, Spiele, Siege, Niederlagen) aller 64 Teams auf 0,
+    nicht die Bilanzzeichen. Die WM-Auslosung tauscht Rekorde, Gegner und Kopf-an-Kopf mit (0x365B6–0x36799).
+  * **Wettbewerbscode DGROUP 0xD0C2** = 0 beim Eintritt ins Hauptmenü (0x44E32); Freundschaftsspiel 0xD (0x30390), WM-Gruppe 8
+    (0x30F53), WM-Endrunde 10 (0x31017, Ergebnis über 0x128:0x5C = 0x50283). Zeile „Historische Ergebnisse“ und dritter Knopf
+    nur bei Code 0.
+  * **Dritter Knopf** (0x4D78A, 0x4E3F4): Symbol = Vereinsfeld 0x34 Bits 6–7 (+1 als Zeichen), Klick schaltet 0 → 1 → 2 → 0,
+    schreibt über 0x30:0xB und setzt in DGROUP 0xE1B6 (10 Sätze à 15 Byte) Werte 1–3; Bild DGROUP 0xC12F nicht zugeordnet –
+    im Remake nicht umgesetzt.

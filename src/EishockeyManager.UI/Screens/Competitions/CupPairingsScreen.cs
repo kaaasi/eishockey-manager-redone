@@ -34,8 +34,9 @@ public sealed record CupPairingRow(int Home, int Away, int HomeGoals, int AwayGo
 ///   gibt Seite 10 zurück, „Gruppe n“ Seite 9 − Gruppe (0x30303–0x3031A); der Seitenwähler ruft die neue Seite wieder mit
 ///   Spieltag = WM-Stufe auf. Die Endrunde (Seite 10, Datei 0x32E23) kehrt mit „Gruppe“ zur vorigen Seite zurück
 ///   (Datei 0x3AC75–0x3AC81).</item>
-/// <item>[APPROX] Klick auf eine Flagge ruft im Original das Gegner-Fenster 0x128:0x2A (Datei 0x302AA); im Remake noch nicht
-///   angeschlossen. Rechtsklick und Esc kehren ins Menü zurück; gedrückte Pfeile (Quelle y + 10) werden nicht gezeigt; die
+/// <item>[ORIGINAL] Klick auf eine Flagge ruft das Gegner-Fenster 0x128:0x2A mit Seite 2 (Datei 0x302AA,
+///   <see cref="FlagAt"/>, <see cref="TeamInfoWindow"/>).</item>
+/// <item>[APPROX] Rechtsklick und Esc kehren ins Menü zurück; gedrückte Pfeile (Quelle y + 10) werden nicht gezeigt; die
 ///   zuletzt gewählte Seite (DGROUP 0x5127) wird nicht gemerkt.</item>
 /// </list>
 /// </remarks>
@@ -53,6 +54,17 @@ public sealed class CupPairingsScreen : Screen
 
     private readonly Screen _back;
     private readonly IReadOnlyList<CupPairingRow>? _fixed;
+    private readonly TeamInfoWindow _info = new();
+
+    /// <summary>Gegner-Fenster (Klick auf eine Flagge).</summary>
+    public TeamInfoWindow Info => _info;
+
+    /// <summary>
+    /// [ORIGINAL] Land unter dem Mauszeiger (Datei 0x30251–0x302C6): Begegnung k bei 39 &lt; y &lt; 82 + 43 k (k &lt; 3), Gast bei
+    /// x &gt; 125, sonst Heim; ruft das Gegner-Fenster 0x128:0x2A mit Seite 2.
+    /// </summary>
+    public static (int Match, bool Away)? FlagAt(int x, int y) =>
+        y > FirstBoxY && y < FirstBoxY + BoxPitch * 3 ? ((y - FirstBoxY) / BoxPitch, x > 125) : null;
     private readonly int? _liveMinute;
     private readonly bool? _trophies;
 
@@ -123,6 +135,8 @@ public sealed class CupPairingsScreen : Screen
                 Host.Show(_back);
             return;
         }
+        if (_info.Update(input))
+            return;
         if (input.Clicked(Buttons[0]))
             Day = Day == 0 ? Days - 1 : Day - 1;
         else if (input.Clicked(Buttons[3]))
@@ -131,9 +145,18 @@ public sealed class CupPairingsScreen : Screen
             Host.Show(new WorldCupKnockoutScreen(Host, _back, () => new CupPairingsScreen(Host, _back, Group)));
         else if (input.Clicked(Buttons[2]))
             Host.Show(new CupPairingsScreen(Host, _back, 1 - Group));
+        else if (input.LeftClick && FlagAt(input.MouseX, input.MouseY) is var (k, away) && Rows.ElementAtOrDefault(k) is { } row)
+            _info.Show(away ? row.Away : row.Home);
     }
 
     public override void Draw(Surface s)
+    {
+        DrawScreen(s);
+        if (Host.Game is { } game)
+            _info.Draw(s, Assets, game);
+    }
+
+    private void DrawScreen(Surface s)
     {
         s.Palette = Assets.Palette;
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);

@@ -19,6 +19,8 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// <item>[APPROX] Knopf „Gruppe 2“/„Gruppe 1“ unten rechts als Knopf aus kb\2 (vermessen); Knopf „Endrunde“ nach der
 ///   Gruppenphase (Lage nicht im Video) öffnet „WM-Endrundenspiele“ (<see cref="WorldCupKnockoutScreen"/>, seit Runde 6 am Video
 ///   vermessen), dessen Knopf „Gruppe“ hierher zurückführt.</item>
+/// <item>[ORIGINAL] Klick auf eine Zeile öffnet das Gegner-Fenster 0x128:0x2A (<see cref="RowAt"/>, <see cref="TeamInfoWindow"/>).
+///   [APPROX] Ein Linksklick außerhalb der Zeilen und Knöpfe kehrt wie bisher zurück (im Original wartet die Tabelle weiter).</item>
 /// </list>
 /// </remarks>
 public sealed class WorldCupScreen : Screen
@@ -36,6 +38,16 @@ public sealed class WorldCupScreen : Screen
 
     private readonly Screen _back;
     private readonly CupGroup? _fixed;
+    private readonly TeamInfoWindow _info = new();
+
+    /// <summary>Gegner-Fenster (Klick auf eine Zeile).</summary>
+    public TeamInfoWindow Info => _info;
+
+    /// <summary>
+    /// [ORIGINAL] Zeile unter dem Mauszeiger (Datei 0x2FA37–0x2FAD5): y &gt; 42, Zeile n bis y &lt; 70 + 28 n (n &lt; 6); x wird nicht
+    /// geprüft. Klick öffnet das Gegner-Fenster 0x128:0x2A (Seite 2) für das Land dieser Tabellenzeile.
+    /// </summary>
+    public static int? RowAt(int y) => y > 42 && y < 42 + RowPitch * WorldCup.GroupSize ? (y - 42) / RowPitch : null;
 
     /// <summary>0 = Gruppe 1, 1 = Gruppe 2.</summary>
     public int View { get; private set; }
@@ -54,6 +66,14 @@ public sealed class WorldCupScreen : Screen
 
     public override void Update(InputState input)
     {
+        if (_info.Update(input))
+            return;
+        if (input.LeftClick && RowAt(input.MouseY) is { } row && Host.Game is { } game && Group is { } g
+            && g.Table(game.Clubs).ElementAtOrDefault(row) is { } clicked)
+        {
+            _info.Show(clicked.Club.Index);
+            return;
+        }
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
             Host.Show(_back);
@@ -103,6 +123,7 @@ public sealed class WorldCupScreen : Screen
             var row = rows[n];
             CompetitionWidgets.Left(s, bold, ScoreX, y, $"{N(row.PointsPlus)}:{N(row.PointsMinus)} {N(row.GoalsFor)}:{N(row.GoalsAgainst)}", color);
         }
+        _info.Draw(s, Assets, game);
     }
 }
 
