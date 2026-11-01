@@ -1,0 +1,815 @@
+# Inventur: Annahmen und Umsetzungslücken (Runde 10, Spur `inventur`)
+
+Grundlage für die Planung von Runde 11: alle Stellen, an denen das Remake nicht aus em.exe belegt ist. Stand `main`
+2d0b081 (nach Integration #380). Adressen sind **Dateioffsets** in `em.exe` (Schreibweise wie in
+[re-abdeckung.md](../re-abdeckung.md)); DGROUP-Werte sind als solche bezeichnet. Kandidaten-Kürzel: G1–G8
+[re-geld.md](re-geld.md), M-K1…M-K10 [re-meldungen.md](re-meldungen.md), L1–L8 [re-livespiel.md](re-livespiel.md),
+R-K1…R-K7 [re-rest.md](re-rest.md), S-K1…S-K6 [re-saisonwechsel.md](re-saisonwechsel.md) (K6 und die Fassung von K4 aus
+dem offenen PR #389).
+
+## Vorgehen und Gegenprobe
+
+1. `[APPROX]`-Stellen: `grep -rn '\[APPROX\]' src/` → **382 Zeilen in 128 Dateien** (383 Marker; die Zeile
+   `Core/StadiumStatistics.cs:144` trägt zwei und zählt als eine Stelle). Jede Zeile hat in Tabelle 1 genau eine ID
+   (A001–A382, Reihenfolge Datei/Zeile) und genau eine Gruppe. Gegenprobe:
+   `grep -rc '\[APPROX\]' src/ | awk -F: '$2>0{n++;s+=$2}END{print n,s}'` → `128 382`.
+2. Funktionen: `python3 tools/reverse-engineering/funktionskarte.py <em.exe> --csv <scratch>/karte.csv`, Spielcode = ohne
+   die Basissegmente 0x0, 0xA99, 0xBBF, 0x1115, 0x11FD, 0x125B, 0x12F7. Status „dokumentiert“ **159** (42.667 Byte),
+   „genähert“ **7** (4.216 Byte) – wie im Plan. Jede dieser 166 Funktionen steht in Tabelle 2 (F001–F166, nach Adresse)
+   mit genau einer Einordnung.
+3. Einordnung je Stelle bzw. Funktion durch Lesen des Codes und Suche in `docs/` (Analysen Runde 10,
+   `reverse-engineering.md`, `spielberechnung.md`, `finanzen-rekonstruktion.md`, `transfer.md`, Anforderungen,
+   Archiv-Entscheidungen); Einzelstellen mit `ndisasm` nachgesehen. Auszählung per Skript im Scratch (nicht im Repo).
+   Die Prio je Zeile ist ein Vorschlag; maßgeblich für die Planung ist die Liste „Runde 11“ unten.
+
+Grenzen: Gruppe a heißt „die Regel steht in der Doku“, nicht „die Doku ist am Code geprüft“. Wo die Inventur selbst
+etwas Neues gefunden hat, steht es unter „Neue Befunde“; diese Stellen vor der Umsetzung erneut gegenlesen.
+
+## Übersicht
+
+### 1. `[APPROX]`-Stellen je Gruppe und Schicht
+
+| Gruppe | Audio | Core | Formats | Tools | UI | Summe | Dateien |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| a – aus Analyse/RE-Doku belegbar | 0 | 91 | 2 | 0 | 52 | **145** | 67 |
+| b – Erweiterung, Plattformersatz, Entscheidung | 1 | 89 | 2 | 1 | 18 | **111** | 63 |
+| c – nur mit DOSBox/Video belegbar | 1 | 25 | 0 | 0 | 22 | **48** | 36 |
+| d – unklar (RE nötig) | 0 | 52 | 2 | 0 | 24 | **78** | 43 |
+| **Summe** | 2 | 257 | 6 | 1 | 116 | **382** | 128 |
+
+Prio-Vorschlag je Gruppe (Stellen): a: P1 10, P2 61, P3 73, – 1; b: P2 1, – 110; c: P2 13, P3 35; d: P1 2, P2 31, P3 45.
+
+### 2. Funktionen „dokumentiert“/„genähert“ (Spielcode)
+
+| Einordnung | dokumentiert | genähert | Summe | Bytes |
+|---|---:|---:|---:|---:|
+| fehlt | 37 | 3 | **40** | 13925 |
+| vorhanden | 68 | 4 | **72** | 25303 |
+| nicht nötig | 54 | 0 | **54** | 7655 |
+| **Summe** | 159 | 7 | **166** | 46883 |
+
+Prio-Vorschlag je Einordnung (Funktionen): fehlt: P1 4, P2 24, P3 12; vorhanden: P1 1, P2 10, P3 60, – 1; nicht nötig: – 54.
+
+„vorhanden“ = im Remake umgesetzt, aber ohne `[ORIGINAL]` mit dieser Adresse (nach Video gebaut oder genähert); oft genügt
+ein Abgleich mit der Doku und das Setzen des Markers. „nicht nötig“ = durch .NET/MonoGame bzw. die Bildschirmarchitektur des
+Remakes ersetzt (Fensterstapel, Bildlader, Pufferkopien, Textausgabe) oder reine Hilfsroutine ohne eigenes Verhalten.
+
+### 3. Systemsegmente
+
+| Segment | Inhalt | Für die Originaltreue |
+|---|---|---|
+| 0x0 C-Laufzeit | Borland-Laufzeit, `rand`, Langzahl-Arithmetik | **Zählt nur in der Semantik:** `random(a, b)`-Grenzen (Hülle 0x38:0x847, beide Grenzen einschließlich) und ganzzahlige Division/Rundung (LDIV/LXMUL) müssen stimmen. Dieselbe Zahlenfolge wie das Original ist nicht nötig (`GameRandom` ist eigener, gesicherter Zufall). |
+| 0xA99 Speicher | EMS/XMS, Puffer | Nicht nötig. |
+| 0xBBF Grafik und Maus | VGA-Ausgabe, Blitter, Schrift, Maus | **Zählt:** Clipping, Transparenzfarbe, Schriftlauf und Palettenblenden bestimmen die Pixel (bereits 40 % umgesetzt über `Surface`/`BitmapFont`). Offene Einzelroutinen nur bei Pixelabweichungen nachziehen. |
+| 0x1115 Datei | Hüllen um die Laufzeit | Nicht nötig (Formate sind in `Formats/` belegt). |
+| 0x11FD Timer | PIC/PIT, Takt 18,2 Hz | **Zählt indirekt:** Dauer von Meldungen, Bannern, Livespiel-Pausen und Musik wird in Takten zu 18,2 Hz angegeben (M-K2, R-K3, L5). Eine zentrale Takt-Umrechnung im UI genügt; die Interruptlogik selbst nicht. |
+| 0x125B Sound Blaster digital | DMA, VOC-Ausgabe | Nicht nötig (ersetzt durch `AudioMixer`); belegt ist nur „ein Effektkanal“ (`AudioMixer.cs`). |
+| 0x12F7 FM-Treiber, Tastatur | SBFMDRV (CMF), Port 0x60 | **FM-Klang zählt** (Musik): `CmfPlayer`/`Opl2` bilden den Treiber nach, `Opl2` ist nicht bitgenau (A260/A261, Gruppe c: Vergleich mit DOSBox-Aufnahme). Tastatur nicht nötig. |
+
+## Runde 11: priorisierte Liste
+
+Je Eintrag: Ziel – Dateien – Beleg – Testidee – Vorschlag für die Spur. Stellen- und Funktions-IDs verweisen auf die
+Tabellen unten. Reihenfolge innerhalb einer Stufe = Vorschlag für die Reihenfolge der Umsetzung.
+
+### P1 – Spielregeln, Geld, Kader
+
+1. **Stadionausbau (G1).** Kosten, Bauzeit `random(lo, hi)` + Restwochen, parallele Baustellen, Platzgrenze, Fortschritt
+   wöchentlich wie Datei 0x3D7F8/0x3D316. – `Core/FinanceStadium.cs`, `Core/FinanceInbox.cs` – re-geld.md – A041–A043,
+   A047, F090 – Test: fester Zufall, Bauende-Woche, Kosten je Stufe; Mehrsaisonprobe (Geld). – Spur `geld`.
+2. **Jugendteams (G2).** Stärke und Platz je Ligaspieltag (Datei 0x39DEC), Auf-/Abstieg im Saisonwechsel (Datei
+   0x3A13B). – `Core/FinanceYouth.cs`, Anschluss `GameState.Integration.cs`, Migration – re-geld.md – A049, F085, F086 –
+   Test: Platzverlauf mit festem Zufall, 4 Saisonwechsel. – Spur `geld`.
+3. **Bank und Börse (G3).** Kreditrahmen 2 Mio. DM, 1 Mio. DM zwischen Managern, Gebühr 1,5 %. – `Core/Finance*.cs` –
+   re-geld.md – A033 – Test: Grenzen, Gebühr bei Kauf/Verkauf. – Spur `geld`.
+4. **Sponsorbewertung: Ø-Platz der letzten 5 Spieltage (neu).** Das Original mittelt die Tabellenplätze der letzten fünf
+   Spieltage der laufenden Saison (Datei 0x3F928–0x3F962 ruft `0x110:0x4D` = Datei 0x43BED „Platz am Spieltag“), das
+   Remake die letzten fünf Saisons. – `Core/FinanceSponsorRating.cs` – Disassembly (diese Inventur), re-meldungen.md
+   (0x43BED) – A036 – Test: Platzverlauf 1,1,1,1,10 → Ø 2,8. – Spur `geld`.
+5. **Teamwerte statt Spielerwerte.** Monatseinnahme, Stärketabelle und Listenwechsel lesen die Vereinsfelder
+   (`MatchEngine.TeamValuesOf`, spielberechnung.md §12/§15) statt Mittelwerte der Spieler. – `Core/FinanceMonthly.cs`,
+   `Core/StatisticsStrength.cs`, `Core/Transfer.Pool.cs` – A035, A200, A201, A209 – Test: Vereinsfeld ändern →
+   Einnahme/Tabelle folgen. – Spur `geld` (A035) bzw. `wettbewerbe`.
+6. **Transferfolgen beim Computerverein (neu als Kandidaten).** Verkauf an einen Computerverein stärkt dessen Teamwerte
+   (Datei 0x058DC); nach Kauf vom Computermarkt fragt das Original nach einem „Sponsorzuschuß“ (Datei 0x063BE). –
+   `Core/Transfer.Purchase.cs`, `Core/Transfer.cs`, Meldung über M-K1 – reverse-engineering.md/transfer.md – F005, F006
+   – Test: Teamwerte vor/nach Verkauf; Zuschuss gebucht über `Book`. Vorher Zuschussregel (Annahme, Betrag, Kategorie)
+   gegenlesen. – Spur `transfer`.
+7. **Kadergröße der Managervereine nach Start-Liga, nicht nach Level.** DGROUP 0x169 wird mit `[0x11A] · 4 + Gruppe`
+   gelesen (Datei 0x29A3F, reverse-engineering.md); `SquadSetup.ManagedSquadSize(level)` und sein `[ORIGINAL]`-Kommentar
+   sind falsch. – `Core/Squad.Setup.cs`, `Core/NewGame*.cs` – A170 – Test: Start in 2. Liga/Oberliga → Kader je Liga. –
+   Spur `kader`.
+8. **Oberliga-Austausch (S-K1, S-K2).** Erst nach Merge von #389 (DOSBox-Beleg). – `Core/SeasonFlow.cs` – A162 –
+   Mehrsaisonprobe 20 Saisons. – Spur `saisonwechsel`.
+9. **Ankündigungen der Kaderspieler (RE zuerst).** Verlängerungswunsch, Absage, Laufbahnende (Kaderplatz +0x18, Bit
+   0x80) und Angebote der Computervereine (Tagesablauf Datei 0x7358/0x736E) sind geraten; der Schreiber in Datei 0x07169
+   ist nicht gelesen. – Analyse-Nachtrag, danach `Core/Transfer.Squads.cs`, `Core/Player.Value.cs` – A136, A229–A232,
+   A238, A239 – Test nach Analyse. – Analyse-Spur (z. B. `re-tagesablauf`), Umsetzung `kader`.
+
+### P2 – sichtbare Abläufe und Spielberechnung
+
+1. **Taktik und Spielstärke nach spielberechnung.md §7/§13 und G6.** Minuten je Teil ≤ 20 statt 60, Einsatz-Zuschlag,
+   Belastung als eigenes Feld +0x13, „eingesetzt“ wirkt auf die Berechnung. – `Core/Squad.Tactics.cs`,
+   `Core/Squad.Strength.cs`, `Core/Squad.Training.cs`, `Core/MatchEngine.Managed.cs` – A168, A174, A176–A178, A182,
+   A184, A089, A070 – Test: Werte 7/7/6/0 → Summe 8; Feldspieler je Teil aus DGROUP 0xCC37. – Spur `spielberechnung`.
+2. **Nationalteam-Stärke.** Torhüter + Reihen, Taktikzuschlag, Automatik wie spielberechnung.md §7/§13 (Datei 0x368B1).
+   – `Core/CupsNational*.cs`, `Core/CupsWorld.cs`, `Core/MatchEngine.Live.cs` – A011, A014, A015, A019, A022, A024,
+   A025, A030, A031, A079, A084 – Test: Stärke einer festen Aufstellung. – Spur `wettbewerbe`.
+3. **Pokal- und WM-Gleichstand.** Schneller Weg: `random(0, 2)` je Seite bis ungleich, Sieger mit Marke Heim + 30
+   (spielberechnung.md §3, Datei 0x376F0); Minutenweg mit Penaltyschießen (§19, Datei 0x3901B). – `Core/CupsDeb.cs`, `Core/CupsWorld.cs`,
+   `UI/Screens/Competitions/DebCupGamesScreen.cs` – A003, A032, A275, A277 – Test: erzwungener Gleichstand. – Spur
+   `wettbewerbe`.
+4. **Transfermarkt-Takt (neu als Kandidat).** Listenwechsel täglich (Datei 0x54E71), bietender Verein nach Datei 0x059B8
+   (Regel liegt als `UnsolicitedOfferRules.Bidder` vor, am Markt nicht angeschlossen), Rückfrage an den verkaufenden
+   Manager (Datei 0x47608–0x47743), Start-Tendenz `random(35, 65)` neuer Marktspieler (Datei 0x4907A), Kontoleiste mit
+   Schulden/Anlagen (G5, Datei 0x463CC). – `Core/Transfer*.cs`, `UI/Screens/Team/TransferScreen.cs` – transfer.md,
+   re-geld.md – A251, A256–A258, A381, A196, F113 – Test: Listenwechsel über die Zeitleiste. – Spur `transfer`.
+5. **Vertrag am Saisonende vor dem Zählerreset.** Gehalt/Ablöse fallen im Remake zu niedrig aus. – `Core/Transfer.SeasonEnd.cs`,
+   Reihenfolge in `GameState.Integration.cs` – A226 – Mehrsaisonprobe. – Spur `transfer`.
+6. **Poolumverteilung (M-K7, M-K8).** Spielstart Datei 0x057E3, Saisonwechsel Datei 0x07C7E/0x07EF1/0x05521, Drift der
+   Poolwerte Datei 0x054D9 (`random(1, 7) − 4`, 30…99). – neue Datei unter `Core/`, Anschluss Saisonwechsel – F002–F004,
+   F013–F015 – Mehrsaisonprobe. – Spur `kader`.
+7. **Talentsuche (R-K1).** Start aus der Transferliste (Datei 0x465F1) statt Jugendfenster, Takt, Erfolg, Grenze 28 mit
+   Leihspielern (Datei 0x3CCEB), Talentwerte Datei 0x06D7F. – `Core/Transfer.Talent.cs`, `Core/Player.Factory.cs`,
+   `Core/FinanceYouth.cs`, `UI/Screens/Manager/YouthScreen.cs` – A127–A132, A242–A245, A328, A050, F089 – Test nach
+   re-rest.md. – Spur `kader`.
+8. **Spielerdaten im Modell.** Kaufpreis +0x2C, Versicherung +0x30, Verletzungsart +0x17, Sperre in Minuten +0x0D,
+   Belastung +0x13 (reverse-engineering.md, Spielerdatenfenster Datei 0x041AC); danach Hinweiszeile und Statistik. –
+   `Core/Player*.cs`, Migration, `UI/Screens/Team/PlayerHintLine.cs`, `UI/Screens/Statistics/PlayerStatisticsScreen.cs`
+   – A066, A092, A359, A360, A367–A372 – Test: Spielstand-Rundlauf, Hinweiszeile. – Spur `kader`.
+9. **Meldungsbausteine (M-K1, M-K2, M-K3).** Meldung/Frage Datei 0x4C246, Kurzmeldung Datei 0x0C0B8 (Bundestrainer-Warnung
+   ohne Knopf). – neue Datei in `UI/`, Aufrufer – A270, A273, A298, A304, A308 – Bildschirmfoto je Aufrufer. – Spur `ui`.
+10. **Finanzbedienung (G4)** Betragsbalken Datei 0x58409 – `UI/Screens/Manager/FinanceScreen.cs` – A034, A312, A315.
+    **Infofile (M-K5)**, **Tabellenkurve (M-K6)** – F099, A303. – Spur `ui`.
+11. **Begegnungstabellen für alle Wettbewerbe** (Datei 0x50283 auch für Pokal, Play-offs, WM). – `Core/MeetingHistory.cs`
+    – A111. – Spur `wettbewerbe`.
+12. **Livespiel L1–L6** – F018, F068, F084, F094, F136–F149, F151, A052, A101, A292 – bleibt zurückgestellt (`livespiel`,
+    vor v1.0).
+
+### P3 – Marker, Pixel, Kosmetik
+
+1. **Marker ohne Codeänderung auf `[ORIGINAL]` stellen** (Verhalten schon belegt und gleich): A026, A044, A139–A141,
+   A264, A265, A276 sowie die Funktionen „vorhanden“ mit P3 in Tabelle 2 (Abgleich mit der Doku, Fundstelle mit
+   `Datei 0x…` schreiben). Ein Sammel-PR je Schicht. – Spur `marker`.
+2. **Pixel nach Analyse:** G7, G8, M-K4, M-K9, R-K2…R-K5, L8 (Tabelle „Kandidaten“).
+3. **Monatsnamen:** Monatstabelle DGROUP 0xA70 schreibt „August“ aus, das Remake „Aug.“ – `Core/Season.cs` – A157 (vor
+   Umsetzung gegen das Video prüfen, ob die Anzeige kürzt).
+4. **Fehlerhalt (M-K10)** F056; **Nachrichtenspeicher (R-K6)** F115 – nur nach Entscheidung des Nutzers.
+
+### Analysebedarf (Gruppe d) und DOSBox-Belege (Gruppe c)
+
+- **RE-Nachträge, gebündelt** (Gruppe d, Auswahl nach Gewicht): Tagesablauf Datei 0x07169/0x7358 (P1 Nr. 9); automatische
+  Aufstellung Datei 0x426BC/0x42838 (A068, A165, A169, A190, A013); Liga-Spielplan Datei 0x4E7C7 (A113, A282); Schreiber
+  des Preisindex (A183); Europapokal-Gegner und Freundschaftsspiele (A004, A008, A110); Verein ohne Liga beim Start (A112,
+  R-K7); Penalty-Zeilen DGROUP 0x5C4B (A077). Vorschlag: eine Analyse-Spur wie in Runde 10 vor den betroffenen
+  Umsetzungen.
+- **Ein DOSBox-Spielstandpaar klärt vier Stellen:** Saisonwechsel vorher/nachher mit `emtool hok` (Reihenfolge der
+  Kaderplätze, Zurücksetzen der Spielerzähler; A085, A088, A091, A125).
+- Übrige Gruppe-c-Stellen sind Lage- und Pixelwerte; Belegvorschlag je Zeile in Tabelle 1.
+
+## Neue Befunde dieser Inventur (vor Umsetzung gegenlesen)
+
+- **Datei 0x3F928:** Sponsorbewertung mittelt die letzten fünf **Spieltage** (P1 Nr. 4).
+- **Datei 0x29A3F:** Kadergröße nach Start-Liga; `[ORIGINAL]`-Kommentar in `Core/Squad.Setup.cs` falsch (P1 Nr. 7).
+- **Datei 0x058DC, 0x063BE, 0x4907A, 0x54E71:** Regeln stehen in der Doku, haben aber noch keinen Kandidaten (P1 Nr. 6,
+  P2 Nr. 4).
+- **Datei 0x054D9:** ändert die Poolwerte um `random(1, 7) − 4` und begrenzt auf 30…99 – klärt M-K8 teilweise.
+- **Datei 0x57480:** liest beim Programmstart `tore\anzahl` (Zahl der Torszenen) → zu L7.
+- **Funktionskarte:** `Datei 0x3688F` steht unter `[ORIGINAL]` in `Core/MatchEngine.Original.cs:210`, wird aber nur als
+  „dokumentiert“ gezählt (Einzeiler `/// <summary>[ORIGINAL] …`); ebenso Datei 0x0A3F7, 0x346D5, 0x347EF (ohne `Datei`
+  bzw. führende Null geschrieben). Prüfen in der Integration; die Fundstelle von 0x04C75 in
+  `MatchEngine.TeamValues.cs` ist ein Fehltreffer (die Funktion zeichnet die Wertbalken des Spielerdatenfensters).
+- **Vermutlich veralteter Marker:** A349 (Über-/Unterzahl laut spielberechnung.md §18 umgesetzt; Anschluss prüfen).
+- **Texte nur in em.exe, noch nicht in der Doku:** Genitivformen Datei 0x18E64/0x18E6F/0x18E7C (A344).
+
+## Kandidaten → Stellen
+
+Zuordnung der Kandidaten aus `docs/analyse/re-*.md` zu den Zeilen aus Tabelle 1 und 2 (ein Kandidat ohne Eintrag hat
+keine `[APPROX]`-Stelle und keine Funktion aus Tabelle 2, z. B. weil er eine umgesetzte Funktion genauer macht).
+
+| Kandidat | `[APPROX]`-Stellen (Tabelle 1) | Funktionen (Tabelle 2) |
+|---|---|---|
+| G1 | A041, A042, A043, A047 | F090 (0x3D316) |
+| G2 | A049 | F085 (0x39DEC), F086 (0x3A13B) |
+| G3 | A033 | – |
+| G4 | A034, A312, A315, A316 | F158 (0x58409) |
+| G5 | A196, A381 | F109 (0x463CC) |
+| G6 | A090, A177 | F112 (0x48E62) |
+| G7 | A324, A326 | F091 (0x3D45F), F092 (0x3E52B) |
+| G8 | – | F155 (0x57CFB), F156 (0x57ECF), F157 (0x581C2) |
+| M-K1 | A192, A270, A273, A304, A308, A333, A334, A376, A378, A379 | F125 (0x4C246) |
+| M-K2 | A298 | F038 (0x0C0B8) |
+| M-K3 | A375 | F122 (0x4BCCC) |
+| M-K4 | A305, A310, A327 | F121 (0x4BA58) |
+| M-K5 | – | F099 (0x432EC), F100 (0x43596) |
+| M-K6 | A302, A303 | F106 (0x445E0) |
+| M-K7 | – | F003 (0x05521), F004 (0x057E3), F013 (0x07C7E), F014 (0x07EF1), F015 (0x07F6B) |
+| M-K8 | – | F002 (0x054D9), F003 (0x05521) |
+| M-K9 | – | F040 (0x0C5CE), F108 (0x45D46) |
+| M-K10 | – | F020 (0x0B019), F056 (0x25B4A) |
+| L1 | – | F018 (0x0AE2B), F068 (0x3183C) |
+| L2 | A052, A101, A292 | F076 (0x35CBE), F136 (0x51FEA), F142 (0x52BD6), F149 (0x5353C) |
+| L3 | – | F134 (0x51E90), F137 (0x52190), F143 (0x53234), F144 (0x53307), F145 (0x533D0), F146 (0x53453) |
+| L4 | – | F138 (0x5224E), F139 (0x522EC), F140 (0x52382), F141 (0x52430) |
+| L5 | A053 | – |
+| L6 | – | F084 (0x38D96), F094 (0x40290), F147 (0x534BC), F148 (0x53508), F151 (0x5434C) |
+| L7 | A073 | F150 (0x53BF9), F152 (0x56EDD), F153 (0x570E8), F154 (0x57480) |
+| L8 | A341 | F135 (0x51F3D) |
+| R-K1 | A050, A118, A120, A127, A128, A129, A131, A132, A242, A243, A244, A245, A246, A328 | F011 (0x06D7F), F012 (0x06FA5), F089 (0x3CCEB) |
+| R-K2 | – | F128 (0x4CCB4) |
+| R-K3 | – | F077 (0x35D5D) |
+| R-K4 | A309 | F062 (0x2A6A2) |
+| R-K5 | A347 | F058 (0x28030) |
+| R-K6 | – | F115 (0x4B101), F116 (0x4B127), F117 (0x4B270) |
+| R-K7 | A112 | F107 (0x45CD0) |
+| S-K1 | A162 | – |
+| S-K2 | A162, A197 | – |
+| S-K3 | – | – |
+| S-K4 | – | – |
+| S-K5 | – | – |
+| S-K6 | A194 | – |
+
+## Tabelle 1: `[APPROX]`-Stellen
+
+Pfade relativ zu `src/EishockeyManager.`; Zeilen Stand 2d0b081. Gruppen: a = aus Analyse bzw. RE-Doku belegbar
+(Fundstelle), b = bewusste Erweiterung, Plattformersatz oder Entscheidung des Nutzers (Quelle), c = nur mit
+DOSBox-Spielstand oder Video belegbar (Vorschlag), d = unklar (was fehlt).
+
+#### Audio
+
+| ID | Stelle | Gr. | Thema | Beleg, Quelle bzw. Belegvorschlag | Kand. | Prio |
+|---|---|---|---|---|---|---|
+| A001 | `Audio/AudioMixer.cs:13` | b | Lautstärke 0–10 linear (Original ohne Regler) | zusatzfunktionen.md Z.51 (Lautstärke Effekte einstellbar, F8) | – | – |
+| A002 | `Audio/AudioMixer.cs:39` | c | Titelmusik läuft in Endlosschleife | Video Reihe oberflaeche: Titelbild länger als das CMF-Stück? Musik nur im Titel laut #221 (zusatzfunktionen.md) | – | P3 |
+
+#### Core
+
+| ID | Stelle | Gr. | Thema | Beleg, Quelle bzw. Belegvorschlag | Kand. | Prio |
+|---|---|---|---|---|---|---|
+| A003 | `Core/CupsDeb.cs:19` | a | DEB-Pokal Unentschieden per Penaltyschießen statt Sieger-Marke +30 | spielberechnung.md §3 schneller Weg Datei 0x376F0–0x377A3 (random(0,2) je Seite bis ungleich, Heim+30) und §19 Penaltyschießen 0x3901B | – | P2 |
+| A004 | `Core/CupsEurope.cs:23` | d | Europapokal-Gegner: nur Abwehrwert als Stärke, Formabschlag −5 wirkungslos | Welchen Wert die Auslosung 0x341AB vergleicht und wo −5 wirkt, nicht dokumentiert; Abgleich mit Teamwerten (spielberechnung.md §7) nötig | – | P2 |
+| A005 | `Core/CupsGroup.cs:12` | c | Rückrunde der Vierergruppen mit getauschtem Heimrecht | Video Karriere Europacup Gruppe 1: Rückrundentermine und Heimrecht ablesen; alternativ DGROUP 0x4DD8-Verdopplung im Code lesen | – | P3 |
+| A006 | `Core/CupsNational.GameState.cs:94` | b | WM-Kandidatenliste (Verweis auf NationalCoach) | Datenmodell des Remakes (alle Kader voll geführt); akzeptiert in wettbewerbe.md Z.251 | – | – |
+| A007 | `Core/CupsNational.GameState.cs:149` | b | Energie 70 erst beim ersten Freundschaftsspiel statt beim Öffnen | Entscheidung Nutzer PR #189; wettbewerbe.md Z.254 (Bildschirme ändern keinen Zustand) | – | – |
+| A008 | `Core/CupsNational.GameState.cs:176` | d | Freundschaftsspiel wie WM-Gruppenspiel berechnet | Wettbewerbscode der Spielberechnung im Freundschaftsspiel (0x3C05E/0x30365) nicht gelesen; nur Code 0xD für 0x50283 bekannt | – | P2 |
+| A009 | `Core/CupsNational.GameState.cs:191` | c | Ohne Bundestrainer-Aufstellung bleiben Länderwerte stehen | DOSBox: Bundestrainer ohne Aufstellung, Freundschaftsspiel; Länderwerte Deutschland vorher/nachher mit emtool hok (0x952C bei leerer Aufstellung) | – | P2 |
+| A010 | `Core/CupsNational.Lineup.cs:58` | c | Vom Platz verdrängter Spieler bleibt eingesetzt (RESERVE) | DOSBox/Video bundestrainer: Spieler auf besetzten Platz ziehen, Status des verdrängten ablesen | – | P3 |
+| A011 | `Core/CupsNational.Lineup.cs:59` | a | Spielstärke Nationalteam aus Torhüter + Reihen 1–3, Taktikzuschlag | spielberechnung.md §13 Reihenwerte aus Spielern 0x98F8, Reihenwechsel 0x8EF2 (3 bzw. 4 Reihen), Taktik 0x939A; Länderwerte 0x952C (#193) | – | P2 |
+| A012 | `Core/CupsNational.Lineup.cs:103` | c | VERL./GESP. auch bei nicht eingesetzten Spielern | Video bundestrainer_00056 ff.: Liste mit verletztem, nicht eingesetztem Spieler prüfen | – | P3 |
+| A013 | `Core/CupsNational.Lineup.cs:161` | d | Auto-Aufstellung „A“ des Nationalteams | Auswahlregel der Aufstellung des Bundestrainers (Aufstellungs-Overlay) nicht gelesen; nur Kader-auto 0x3CC01 belegt | – | P2 |
+| A014 | `Core/CupsNational.Lineup.cs:204` | a | Taktikzuschlag Nationalteam wie Verein (EffortStrengthBonus) | spielberechnung.md §13: Taktik 0x939A und Einsatz in 0x977F/0x98F8 gelten auch für Manager 5 | – | P2 |
+| A015 | `Core/CupsNational.Tactics.cs:16` | a | Stärken der Taktik-Automatik aus NationalMatchStrength | Stub 0x149D:0x61 = 0x368B1 (karte.csv: 0x8365 ruft 0x368B1); Formel spielberechnung.md §7, Datei 0x83AD/0x83CA | – | P2 |
+| A016 | `Core/CupsNational.TeamInfo.cs:125` | a | Vereinsspiele nicht in Kopf-an-Kopf/Rekorde eingetragen | reverse-engineering.md Z.330/777: Aufrufer von 0x50283 (Liga Code 7, DEB 0x34B76 Code 6 …); fehlt nur Vereinsfenster | – | P3 |
+| A017 | `Core/CupsNational.TeamInfo.cs:127` | a | Bilanzzeichen nur Länder, eigene Kodierung 1/2/3 | Review 2026-11-01-integration-runde-9-wettbewerbe-komplett.md: DGROUP 0x825E Zeichenkette aller Teams, Schieben 0x4F4F4, Start 0x5503 | – | P3 |
+| A018 | `Core/CupsNational.TeamInfo.cs:181` | a | Länder ohne Manager, nur Deutschland zählt für Kopf-an-Kopf | wettbewerbe.md Z.367: Vereinsfeld 0x16 Deutschland 0, Ernennung 6; sonst kein Land mit Manager → gleichwertig, auf [ORIGINAL] prüfen | – | P3 |
+| A019 | `Core/CupsNational.TeamInfo.cs:238` | a | Stärke Deutschlands mit Bundestrainer aus Länderwerten statt Aufstellung | spielberechnung.md „Länderwerte (#193)“: 0x952C täglich im Tageslauf 0x54F9C–0x54FBF und nach Freundschaftsspiel 0x555D6 | – | P2 |
+| A020 | `Core/CupsNational.cs:56` | b | WM-Kandidaten aus allen deutschen Spielern statt 200 geführten | Datenmodell des Remakes (alle Kader vollständig); akzeptiert wettbewerbe.md Z.251 | – | – |
+| A021 | `Core/CupsNational.cs:72` | b | Zeitpunkt Energie 70 (Verweis auf PlayFriendly) | Entscheidung Nutzer PR #189 (wie A007) | – | – |
+| A022 | `Core/CupsNational.cs:83` | a | Nationalteam mit drei Reihen | spielberechnung.md §13: Reihenwechsel 0x8EF2/0x91FF mit 3 bzw. mit vierter Reihe 4 Reihen | – | P2 |
+| A023 | `Core/CupsNational.cs:153` | c | Spielerfelder 0x10–0x12 als Kondition/Technik/Form gedeutet | DOSBox: Freundschaftsspiel, Spielerfelder 0x10–0x12 mit emtool hok gegen Anzeige „KO TE FO“ vergleichen | – | P2 |
+| A024 | `Core/CupsNational.cs:172` | a | Automatik-Aufstellung bei leerer Formation, Spielerwert (K+T)/2 | spielberechnung.md §13 0x98F8 (Abwehr = (2 V · 80 % + TH · 140 %)/3, Sturm = 3 St/3) und §7 0x977F | – | P2 |
+| A025 | `Core/CupsNational.cs:224` | a | Spielstärke = Mittel der 16 Plätze | spielberechnung.md §13 0x98F8 Reihenwerte und §7 0x368B1 Gewichtung DGROUP 0x4E99 | – | P2 |
+| A026 | `Core/CupsNationalMode.cs:63` | a | Bundestrainer-Menü schon vor der Ernennung (Modus 1) | dosbox-befunde.md Z.98: 0x54CEE springt, Menü erst am Tagesende 0x555A3 – vor dem Sprung kein Menü, Näherung wirkungslos | – | P3 |
+| A027 | `Core/CupsNationalMode.cs:84` | c | Halt vor erstem WM-Spiel zur Kaderwahl | Video bundestrainer Spielbeginn: erscheint vor dem 1. WM-Spiel Kaderwahl oder auto-Kader (DGROUP 0x1DB)? | – | P2 |
+| A028 | `Core/CupsNationalMode.cs:99` | c | Zug des Bundestrainers nur an Spieltagen Deutschlands | DOSBox/Video bundestrainer nach Ausscheiden Deutschlands: hält das Original an jedem WM-Tag (0x555AD)? | – | P2 |
+| A029 | `Core/CupsNationalMode.cs:129` | b | Einfluss angesehener Heim-/Auswärtstabellen auf Gleichstände fehlt | Architekturregel AGENTS.md §4 (Bildschirme ändern keinen Zustand); saison.md Z.101 | – | – |
+| A030 | `Core/CupsWorld.cs:37` | a | WM-Spielstärke = Mittel aus Kondition und Technik | spielberechnung.md §7 0x368B1 (Technik, Kondition, Form der Vereinsfelder 0x18–0x1D, Gewichtung 0x4E99) | – | P2 |
+| A031 | `Core/CupsWorld.cs:66` | a | Stärkeformel Aufstellung des Bundestrainers (Verweis NationalLineup.Strength) | spielberechnung.md §13 0x98F8 und Länderwerte 0x952C (#193) | – | P2 |
+| A032 | `Core/CupsWorld.cs:69` | a | WM-K.-o.-Unentschieden per Penaltyschießen, Plätze 9–12 | spielberechnung.md §3 0x376F0 (schneller Weg) und §19 0x3901B; Plätze 9–12 weiter offen (WM-Tabelle) | – | P2 |
+| A033 | `Core/Finance.cs:81` | a | Bankkredit-Höchstbetrag 1 Mio. DM | re-geld.md „Datei 0x58409 – Betragsbalken“, Höchstwerte Datei 0x596C2–0x59A12: Bank 2 Mio. DM, Manager 1 Mio. je Richtung | G3 | P1 |
+| A034 | `Core/FinanceInbox.cs:72` | b | Wortlaut der Leihanfrage an Mitmanager | re-geld.md Entscheidung E2: Anfrage nur im Netzwerkmodus (Erweiterung), lokal sofort wie Original – lokaler Weg entfällt | G4 | P2 |
+| A035 | `Core/FinanceMonthly.cs:51` | a | Teamwert-Summe aus Spielerwerten statt Vereinsfeldern | Vereinsfelder 0x18–0x1B gibt es inzwischen (MatchEngine.TeamValuesOf, Wanderung 0x9D1B, spielberechnung.md §15); finanzen-rekonstruktion.md Z.49 | – | P1 |
+| A036 | `Core/FinanceSponsorRating.cs:118` | a | Ø-Rang über die letzten 5 Saisons | Datei 0x3F928–0x3F962 ruft 0x110:0x4D = 0x43BED „Platz am Spieltag“ (karte.csv, re-meldungen.md Z.252) für Spieltage [0x7A9+Liga]−5…−1: Ø der letzten 5 Spieltage | – | P1 |
+| A037 | `Core/FinanceSponsorRating.cs:149` | d | Abbildung Wettbewerbsteilnahme, Rücksetzen nach Ausscheiden | Schreiber der Teilnahmebits (Masken 0x40/0x08/0x20, Leser 0x44A48) nach Ausscheiden/Finale nicht gesucht | – | P2 |
+| A038 | `Core/FinanceSponsors.cs:39` | c | Titel/Zeilen-Aufteilung der Infotexte CCH und KRON | Video oberflaeche/karriere Werbebildschirm: Infofenster CCH und KRON öffnen | – | P3 |
+| A039 | `Core/FinanceSponsors.cs:237` | a | Partner mit laufendem Vertrag bieten nichts an | finanzen-rekonstruktion.md „Angebote (0x3FB47)“: Würfeln für alle Partner ohne Ausnahme laufender Verträge | – | P2 |
+| A040 | `Core/FinanceSponsors.cs:352` | a | Werbeeinnahmen in DM statt Drittel-DM summiert | finanzen-rekonstruktion.md Z.249/299: Buchung am Monatsletzten in Dritteln (0x3E70C/0x3F02C) | – | P3 |
+| A041 | `Core/FinanceStadium.cs:127` | a | Ausbaukosten erster Schritt, Vielfache je Stufe | re-geld.md „Ausbau im Stadionbildschirm (Datei 0x3D7F8)“: Kosten (Ziel−jetzt)·K, K = DGROUP 0xC0 je Projekt | G1 | P1 |
+| A042 | `Core/FinanceStadium.cs:142` | a | Bauzeit fester Wochen je Stufe | re-geld.md Datei 0x3D7F8 Schritt 5/6: random(lo,hi) aus DGROUP 0xEC einmal, Restwochen + random(0,4)−2 | G1 | P1 |
+| A043 | `Core/FinanceStadium.cs:167` | a | Sitz-/Stehplätze: Preise, Schritt, Bauzeit | re-geld.md Datei 0x3D7F8: je 500 Plätze Sitz 180.000/Steh 135.000 DM, zusammen ≤ 25.000, Bauzeit 12–17/10–14 | G1 | P1 |
+| A044 | `Core/FinanceStadium.cs:234` | a | random(a,b) mit a > b getauscht | finanzen-rekonstruktion.md „Angebote“: Zufall 0x38:0x847 tauscht bei b < a die Grenzen – auf [ORIGINAL] stellen | – | P3 |
+| A045 | `Core/FinanceStadium.cs:311` | d | Liga-Code ausländischer Vereine (Europapokal) wie Bundesliga | Ligabyte der Datenbankvereine 64–149 im Zuschauer-/Preisweg nicht geprüft | – | P2 |
+| A046 | `Core/FinanceStadium.cs:315` | d | Tabellenplatz vor dem ersten Spieltag | Startwert des Platzverlaufs (0x43BED, DGROUP 0x828B) vor Spieltag 1 nicht analysiert; alternativ DOSBox erstes Heimspiel | – | P2 |
+| A047 | `Core/FinanceStadium.cs:342` | a | Nur eine Baustelle, keine Raten | re-geld.md Datei 0x3D7F8 Schritt 3/6: je Projekt eine Baustelle, alle parallel; Konto sofort belastet | G1 | P1 |
+| A048 | `Core/FinanceYouth.cs:71` | b | Startliga Jugend = Liga des Managervereins | akzeptiert Review 2026-11-01-integration-runde-9-finanzen-rest.md Z.105 (gleichwertig zur Startliga 0x11A) | – | – |
+| A049 | `Core/FinanceYouth.cs:134` | a | Wirkung der Jugendförderung (Platzentwicklung) | re-geld.md „Jugendteams“: Datei 0x39DEC je Ligaspieltag (Stärke, Platz) und 0x3A13B Saisonwechsel (Auf-/Abstieg) | G2 | P1 |
+| A050 | `Core/FinanceYouth.cs:167` | d | Rabatt Talentsuche je 1.000 DM Förderung | Preisrechnung in 0x465F1 (Abzug Datei 0x469CA) nicht dokumentiert; re-rest.md liest nur Zähler | R-K1 | P2 |
+| A051 | `Core/GameOptions.cs:28` | b | Optionen Hintergrundgrafik/Scrolling nicht geführt | reverse-engineering.md Z.709–716: im Remake fest an, reine Darstellung | – | – |
+| A052 | `Core/GameOptions.cs:58` | a | Bedeutung LiveMode 0 und 1 | re-livespiel.md §1 und Z.273/322/334: DGROUP 0x226 steuert Kopftext „Chance:“ (0) und Torszenenanzeige (≠ 0) | L2 | P2 |
+| A053 | `Core/GameOptions.cs:87` | a | Bedeutung DGROUP 0x5A56 | re-livespiel.md §1: 0x5A56 = Live-Anzeige für diesen Spieltag (gesetzt 0x54C63, Vereinsfeld 0x34 Bit 7) | L5 | P3 |
+| A054 | `Core/GameSetup.cs:48` | b | Level je Manager statt global | anforderungen/bildschirme.md Z.50 (Level, Liga, Stärke je Manager); Original ein Wert (spielstand-original.md Z.304) | – | – |
+| A055 | `Core/GameSetup.cs:108` | b | Schalter DebCup ohne Original-Gegenstück | Testschalter des Remakes, Spielvorbereitung setzt ihn nicht | – | – |
+| A056 | `Core/GameSetup.cs:148` | c | „nur Weltkugel“ nur mit genau einem Manager | DOSBox: Weltkugel wählen, danach Manager hinzufügen – lässt das Original den Start zu? | – | P3 |
+| A057 | `Core/GameState.HotSeat.cs:10` | c | Reihenfolge der Manager im Hot-Seat | Video Reihe duell (zwei Manager): Zugfolge an mehreren Tagen ablesen | – | P2 |
+| A058 | `Core/GameState.Integration.cs:83` | c | Teamwert-Wanderung nicht im Modus „nur Weltkugel“ | DOSBox Modus 1: Saisonwechsel, Teamwerte vorher/nachher mit emtool hok (läuft 0x56448 dort?) | – | P2 |
+| A059 | `Core/Highscore.cs:154` | d | Play-Off-Stufe des Meisters (0x35), Europapokal-Stufen | Schreiber der Kennzahlen in 0x55861–0x55DC1 nicht feldgenau gelesen (highscore.md) | – | P3 |
+| A060 | `Core/Highscore.cs:228` | d | Sammelmarke Highscore-Abweichungen | Einzelpunkte siehe A061–A065 und highscore.md (Pokalbytes 2–3 nicht belegt) | – | P3 |
+| A061 | `Core/Highscore.cs:230` | b | Spielerwerte mit festen Zufallsströmen | Architekturregel AGENTS.md §4 (Öffnen ändert nichts); Eingänge Spur spielerwert | – | – |
+| A062 | `Core/Highscore.cs:283` | d | Titelzähler aus Saisonverlauf statt Bytes Manager+0x15–0x17 | Schreiber der Bytes Manager+0x15–0x17 nicht gefunden (highscore.md Punkt 3) | – | P3 |
+| A063 | `Core/Highscore.cs:288` | b | Gesamtpunkte auf 1…32767 begrenzt statt 16-Bit-Überlauf | bewusst ohne Überlauf; highscore.md Punkt 3 (Erreichbarkeit ungeprüft) | – | – |
+| A064 | `Core/Highscore.cs:309` | a | Saisonzahl = Verlaufslänge statt globaler Zähler | highscore.md Punkt 1: DGROUP 0x3BD (≤ 50, Teiler +1, 0x5D3A3); re-abdeckung.md Z.147 | – | P3 |
+| A065 | `Core/Highscore.cs:353` | d | Platzierungsterm vor erstem Spieltag 0 | Platzbyte vor Spieltag 1 unbekannt (wie A046, highscore.md Punkt 2) | – | P3 |
+| A066 | `Core/MatchEngine.Injuries.cs:40` | a | Verletzungsart nicht geführt, Wochen in InjuredGames, Form des Kaderplatzes statt Pool | spielberechnung.md §17 „Verletzung 0x05B1A“ (Tabellen DGROUP 0x181/0x1B9/0x483B, Namen 0xA00, Art +0x17) | – | P2 |
+| A067 | `Core/MatchEngine.Injuries.cs:64` | d | Heiltag: Versatz DGROUP 0x6AF als 0, alle Spieler statt Kader-/Marktplätze der Manager | Schreiber von DGROUP 0x6AF nicht gesucht (spielberechnung.md §17 nennt nur Lesestelle 0x7C12); RE nötig | – | P3 |
+| A068 | `Core/MatchEngine.Injuries.cs:82` | d | Neuaufstellung nach Verletzung/Heilung nur Lücken füllen, ohne Einstellung „automatisch aufstellen“ | Einstellung DGROUP 0x375 belegt (re-geld.md Taktik Schritt 5), Algorithmus 0x426BC/0x42838 nicht analysiert | – | P2 |
+| A069 | `Core/MatchEngine.Injuries.cs:103` | b | Grenze 1000 Züge für Vorlagenwahl (Original ohne Grenze) | Robustheitsschutz gegen Endlosschleife, in spielberechnung.md §17 als Abweichung genannt | – | – |
+| A070 | `Core/MatchEngine.Injuries.cs:113` | a | Feldspieler-Neuzählung 0x38A36 nach Verletzung nicht umgesetzt | spielberechnung.md §16 „Verdacht 0x952C widerlegt“: 0x38A36/0x388F6 zählt Spieler auf dem Eis, schreibt DGROUP 0xCC35, Vereinsfeld 0x32, 0x2C Bit 3 | – | P2 |
+| A071 | `Core/MatchEngine.Injuries.cs:118` | d | Managerwert des „Managers am Zug“ [0xA70E] durch jeweiligen Manager ersetzt | Belegung DGROUP 0xA70E während der Minutenschleife nicht verfolgt; RE nötig (ggf. Originalfehler) | – | P3 |
+| A072 | `Core/MatchEngine.Injuries.cs:121` | d | Schalter DGROUP 0x4E80 als aus angenommen (Verletzungswurf) | Schreiber/Startwert von DGROUP 0x4E80 nicht gesucht (spielberechnung.md §17 nur „ohne Schalter“) | – | P3 |
+| A073 | `Core/MatchEngine.Injuries.cs:154` | a | Torszenen aus (DGROUP 0x226 = 0) angenommen, Szene 0x53C57 übersprungen | re-livespiel.md Darstellung [0x226], Modus 0 Datei 0x56816, Torszenen §6; erst mit Torszenen umzustellen | L7 | P3 |
+| A074 | `Core/MatchEngine.Injuries.cs:185` | a | Gewicht Tore +0x03 (Wettbewerb 0) = Saisontore aller Wettbewerbe | spielberechnung.md §17 (Tor +0x22 + 2·[0xD0BF], +0x03 + [0xD0BF]; 0xD0BF gesetzt 0x30EA6/0x31A1E/0x313C5/0x35E72) | – | P3 |
+| A075 | `Core/MatchEngine.Live.cs:78` | b | Minutenweg je Paarung statt je Spieltag (Merker 0x36FEA); WM-Schalter im Bundestrainer-Abschnitt nicht nachgebaut | Entscheidung Nutzer 01.11.2026, #349 (Originalverhalten als Einstellung nach v1.0) | – | – |
+| A076 | `Core/MatchEngine.Live.cs:100` | b | Penaltyschießen des schnellen Wegs getrennt geführt, Ergebnis bleibt Gleichstand | Datenmodell des Remakes (Penaltytore getrennt im MatchReport), spielberechnung.md §19 Remake | – | – |
+| A077 | `Core/MatchEngine.Live.cs:111` | d | Penaltyschießen in jedem K.-o.-Spiel des Minutenwegs | Zuordnung Zeilen DGROUP 0x5C4B zu Wettbewerben und Schalter in 0x32AA3 nicht gelesen (spielberechnung.md §19) | – | P2 |
+| A078 | `Core/MatchEngine.Live.cs:142` | a | Datenbankbyte 0 auch für den Sturm (Byte 1 nur Europapokal-Gegner) | spielberechnung.md §12/Tabelle Vereinsfelder: Lader 0x2EF1B, Byte 0 Abwehr, Byte 1 Sturm | – | P3 |
+| A079 | `Core/MatchEngine.Live.cs:154` | a | Nationalteam des Bundestrainers ohne Kader wie Computerverein (Energie, Reihen) | spielberechnung.md §13 (0x98F8 mit Manager 5, + Länderspiele/8) und §16 (Feld 0x16 = 6, Kader DGROUP 0x5DC3 + 5·0x618) | – | P2 |
+| A080 | `Core/MatchEngine.Live.cs:164` | d | Managervereine: Teamwert ohne Streuung, Form 50 für Defense/Attack | Nicht geprüft, ob 0x80CB/0x939A bei Managervereinen Lader-Felder 0x18–0x1D lesen; RE nötig | – | P3 |
+| A081 | `Core/MatchEngine.Live.cs:184` | a | Eigener Managerwert für Verletzungen im Spiel berechnet statt gespeicherter Wert | spielberechnung.md §16, reverse-engineering.md Teil 2: 0x974B nur von 0x952C (Tageslauf 0x54F9C–0x54FBF), 100 unter neun Spielern 0x9698 | – | P3 |
+| A082 | `Core/MatchEngine.Live.cs:189` | c | Ohne nächsten Manager Strafen-Managerwert 0 | DOSBox-Spielstand mit einem Manager: DGROUP 0x974B + 0x1AF·1 per emtool hok auslesen (Wert des unbelegten Satzes) | – | P3 |
+| A083 | `Core/MatchEngine.Live.cs:192` | a | Managerwert im Spiel aus aktuellem Stand statt Tageslauf-Wert | wie A081: spielberechnung.md §16, 0x952C Schalter 1 im Tageslauf 0x54C9F (0x54F9C–0x54FBF) | – | P3 |
+| A084 | `Core/MatchEngine.Live.cs:207` | a | Nationalteam: Reihenwerte/Energie wie Computerverein, Strafen-Managerwert 20 | spielberechnung.md §13/§16 (Manager 5 in 0x98F8); Wert 0x974B + 6·0x1AF zusätzlich per DOSBox-Spielstand prüfen | – | P2 |
+| A085 | `Core/MatchEngine.Live.cs:239` | c | Reihenfolge der Kaderplätze des Bundestrainers | DOSBox-Spielstand mit Bundestrainer: Kaderplätze DGROUP 0x5DC3 + 5·0x618 per emtool hok gegen NationalCoach-Kader | – | P3 |
+| A086 | `Core/MatchEngine.Live.cs:274` | b | Teamwert aus Remake-Kadern der Computervereine (Original ohne Spieler) | Datenmodell des Remakes (Kader für alle Vereine), re-abdeckung.md #204 „Abbildungsfrage“ | – | – |
+| A087 | `Core/MatchEngine.Live.cs:348` | a | Spielerfeld 0x1B (nur Wettbewerb 0) und Grenze 255 nicht getrennt geführt | spielberechnung.md §17 (Tor +0x22/+0x03 je [0xD0BF], 0x1B bei [0xD0BF] = 0, < 0xFF) | – | P3 |
+| A088 | `Core/MatchEngine.Live.cs:382` | c | Zurücksetzen der Spielerzähler zum Saisonwechsel | DOSBox-Spielstand vor/nach Saisonwechsel (emtool hok): Pool 0x1B/0x1F, Kaderplatz +0x22/+0x03 vergleichen; alternativ RE 0x56137 ff. | – | P2 |
+| A089 | `Core/MatchEngine.Managed.cs:57` | a | Feldspieler je Teil fest 2/3 (DGROUP 0xCC37) | spielberechnung.md §16: 0x38A36 (via 0x388F6) schreibt DGROUP 0xCC35 + 2·Feld 0x16 (= 0xCC37 + 2·Manager) und Feld 0x32 | – | P2 |
+| A090 | `Core/MatchEngine.Managed.cs:65` | d | Minutenzähler DGROUP 0x4926 je Spiel auf 0 | Rücksetzstelle von 0x4926 nicht gesucht; re-geld.md Taktik nennt nur Vergleich 0x09140 gegen 0xCC73 | G6 | P3 |
+| A091 | `Core/MatchEngine.Managed.cs:71` | c | Kaderreihenfolge nach Rückennummer statt Kaderplätzen | DOSBox-Spielstände vor/nach Kauf und Verkauf: Platzreihenfolge DGROUP 0x5DC3 + 0x618·m per emtool hok | – | P2 |
+| A092 | `Core/MatchEngine.Managed.cs:111` | d | Belastung +0x13 aus Energie des Remakes abgeleitet | Training schreibt 0x13 (reverse-engineering.md Training 46E:00BC), Erholung/Spielanteil nicht belegt; Datenmodell offen | – | P2 |
+| A093 | `Core/MatchEngine.Managed.cs:126` | d | Abzug Technik −10 außerhalb der eigenen Reihe (+0x02) entfällt | Bedeutung/Schreiber von Kaderplatz +0x02 nicht analysiert; RE nötig | – | P2 |
+| A094 | `Core/MatchEngine.Managed.cs:259` | d | Belastung + 1 auf dem Eis über Energie geführt | wie A092: Feld +0x13 im Remake nicht geführt, Fortschreibung außerhalb Training unbelegt | – | P3 |
+| A095 | `Core/MatchEngine.Managed.cs:418` | d | Reihenzahl bei vierter Reihe und Modus ≠ 1 (Zähler im Original nicht gesetzt) | Wert des ungesetzten Zählers in 0x8EF2/0x91FF unklar (Stackrest?); RE nötig | – | P3 |
+| A096 | `Core/MatchEngine.Managed.cs:508` | d | Schalter DGROUP 0x4E80 beim Strafspieler als aus angenommen | wie A072: Schreiber/Startwert 0x4E80 nicht gesucht | – | P3 |
+| A097 | `Core/MatchEngine.Minutes.cs:278` | a | Über-/Unterzahl-Zähler des Nationalteams nicht gezählt | spielberechnung.md §18 (DGROUP 0x97D2, Satz 0x94AC + 0x1AF·Feld 0x16, Feld 0x16 = 6 → Bundestrainer) | – | P3 |
+| A098 | `Core/MatchEngine.Minutes.cs:414` | b | Ergebnismarken +10/+30 als MatchReport.Overtime abgebildet | Datenmodell des Remakes; spielberechnung.md §8 „Verlängerung ohne Marken“ | – | – |
+| A099 | `Core/MatchEngine.Minutes.cs:499` | a | MANUELL: eigene Werte ohne Energieabzug statt kein Schreiben | spielberechnung.md §13 (0x939A) und re-geld.md Taktik Schritt 4 (+0x26 = Grundwert + Zuschlag Unentschieden) | – | P3 |
+| A100 | `Core/MatchEngine.Original.cs:25` | b | Beide Zufallsfunktionen aus einem .NET-Random | Plattformersatz (portierung.md); Zugreihenfolge und Grenzen bleiben original | – | – |
+| A101 | `Core/MatchEngine.Shootout.cs:19` | d | Penaltyschießen ohne Live-Anzeige, Tore getrennt | Anzeigezweig 0x3917E–0x3976F nicht gelesen (spielberechnung.md §19); getrennte Tore sind Datenmodell | L2 | P2 |
+| A102 | `Core/MatchEngine.Statistics.cs:31` | d | Rollenwert 0x18 als Spannenmitte (33/83) | Erzeugung von Spielerfeld 0x18 im Pool nicht analysiert; alternativ Werte aus Originaldatenbank/Spielstand lesen | – | P3 |
+| A103 | `Core/MatchEngine.Statistics.cs:52` | b | Spielerreihenfolge aus Remake-Kader statt Pool, Tore ohne Grenze 255 | Datenmodell des Remakes (Kader für Computervereine), spielberechnung.md §8 | – | – |
+| A104 | `Core/MatchEngine.Statistics.cs:119` | b | Torhüterreihenfolge: aufgestellter zuerst statt Poolreihenfolge | Datenmodell des Remakes, spielberechnung.md §8 (Spielerreihenfolge [APPROX]) | – | – |
+| A105 | `Core/MatchEngine.TeamValues.cs:51` | a | Datenbankbyte 1 (Sturm) durch Byte 0 ersetzt | spielberechnung.md §12, Lader 0x2EF1B (Byte k je Teil) | – | P3 |
+| A106 | `Core/MatchEngine.TeamValues.cs:54` | b | Teamwerte beim ersten Spiel statt beim Programmstart gezogen | Bewusst, damit Zufallsfolge von Spielstart und Kaderaufbau gleich bleibt (spielberechnung.md §12) | – | – |
+| A107 | `Core/MatchEngine.TeamValues.cs:107` | a | Wanderung nach Vereinsindex statt Original-Reihenfolge, Abweichung gespeichert | spielberechnung.md §15 Fundstelle 0x9D1B (Reihenfolge der Vereinsplätze i = 0 … [0x6AD] + 11) | – | P3 |
+| A108 | `Core/MatchEngine.TeamValues.cs:153` | b | Spielstart-Wanderung beim ersten Spiel | wie A106: spielberechnung.md §12/§15, bewusster Zeitpunkt | – | – |
+| A109 | `Core/MatchEngine.TeamValues.cs:165` | b | WM-Spiele ohne Tagesform-Nachführung | Nationalteams als RatedNation ohne Teamwerte (Datenmodell, spielberechnung.md §12) | – | – |
+| A110 | `Core/MatchEngine.cs:12` | d | MatchEngine.Play (Poisson) für Länder-Freundschaftsspiele | Rechenweg der Freundschaftsspiele (Code 0xD, 0x30390/0x555D6) nicht als Ganzes belegt; Umstellung auf Minutenweg offen | – | P2 |
+| A111 | `Core/MeetingHistory.cs:120` | a | Begegnungstabellen nur aus Ligaspielen | 0x50283 auch für Pokal/Play-offs/WM (reverse-engineering.md: WM-Endrunde über 0x128:0x5C = 0x50283); Integrationslücke | – | P2 |
+| A112 | `Core/NewGame.cs:78` | d | Verein ohne Liga rückt in Oberliga und verdrängt zufälligen Verein | reverse-engineering.md „Startwerte“/Offen: Original setzt in Start-Liga (0x29C3B ff.), Verdrängung nicht gelesen | R-K7 | P2 |
+| A113 | `Core/NewGame.cs:154` | d | Liga-Spielplan nach Kreisverfahren | Spielplanfunktion 0x4E7C7 nur als Aufruf bekannt (reverse-engineering.md), nicht analysiert; RE nötig | – | P2 |
+| A114 | `Core/Player.Contract.cs:50` | b | Insured-Setter mit LegacyInsurancePercent | Kompatibilität/Migration älterer Spielstände (Aufrufer ohne Spielstand) | – | – |
+| A115 | `Core/Player.Contract.cs:141` | c | Versicherungsprämie bei Rückkehr aus Leihe | DOSBox-Spielstand vor/nach Leihende: Kaderplatz +0x30 per emtool hok vergleichen | – | P3 |
+| A116 | `Core/Player.Contract.cs:186` | b | Stammverein ohne freie Rückennummer: Spieler wird vertragslos | Robustheit des Remakes (Nummernvergabe), kein Originalfall | – | – |
+| A117 | `Core/Player.Contract.cs:228` | c | „unfair“ bei Gehalt unter 1 DM | Video der Vertragsverhandlung (Eingabe 0 DM); Prüfstelle in 0x4A1DB nicht belegt | – | P3 |
+| A118 | `Core/Player.Contract.cs:235` | d | Computervereine, Leihen, Talente nutzen Demand statt Wert(Gehalt) | Gehalt bei Leihe und Talent (0x06D7F) im Original nicht gelesen; Computervereine Datenmodell | R-K1 | P2 |
+| A119 | `Core/Player.Contract.cs:253` | b | Pauschalprämie 10 % ohne bekannten Betrag | Migration älterer Spielstände (Original kennt nur Betrag +0x30) | – | – |
+| A120 | `Core/Player.Contract.cs:265` | d | Gehaltsforderung Demand aus Stärke und Talent | wie A118: Original-Gehalt für Talente/Leihen unbelegt; für Computervereine Datenmodell | R-K1 | P2 |
+| A121 | `Core/Player.Contract.cs:285` | a | Tore/Spiele im Wert(Gehalt) aus Remake-Zählern | spielberechnung.md §17 (Zähler je Wettbewerb [0xD0BF]) und reviews/2026-10-31-spielerwert-239.md | – | P3 |
+| A122 | `Core/Player.Contract.cs:301` | b | Versicherungsangebot in ganzen DM statt Drittel-DM | Datenmodell ganze DM (R8W3I-08) | – | – |
+| A123 | `Core/Player.Contract.cs:347` | b | Absage Refused gilt wie Sperre bis Saisonwechsel | Remake-Ablauf Spur „kader“ (R2-11) | – | – |
+| A124 | `Core/Player.Contract.cs:374` | b | Forderung in ganzen DM abgerundet | Datenmodell ganze DM (R8W3I-08, #272) | – | – |
+| A125 | `Core/Player.Contract.cs:382` | c | Alter aus Kaderplatz 3 mit Remake-Reihenfolge | wie A091: Kaderplatzreihenfolge per DOSBox-Spielstand (emtool hok) belegen | – | P3 |
+| A126 | `Core/Player.Contract.cs:450` | b | Verlängerungsangebot bleibt bis Saisonwechsel | Remake-Ablauf Spur „kader“; Original-Verfall in transfer.md (0x767A–0x76E3) bewusst nicht übernommen | – | – |
+| A127 | `Core/Player.Factory.cs:18` | a | Talentalter 17–19 | re-rest.md A „Talent (0x06D7F)“: Alter random(18, 21) | R-K1 | P2 |
+| A128 | `Core/Player.Factory.cs:21` | a | Verstecktes Talent 6–9 | re-rest.md A 0x06D7F: zufälliger Poolspieler (Talent Pool +0x12 = random(0, 9), transfer.md) | R-K1 | P2 |
+| A129 | `Core/Player.Factory.cs:24` | a | Energie 80 eines neuen Talents | re-rest.md A 0x06FA5: Aufruf 0x06D7F(m, random(40, 90), 80, 0); Bedeutung Argument 80 prüfen | R-K1 | P2 |
+| A130 | `Core/Player.Factory.cs:35` | a | Startwerte ±2 um Teamwert, Form 40–60, Energie 50–80, Gehalt aus Stärke | reverse-engineering.md „Startwerte der Kaderspieler“ Datei 0x29DA4–0x29EF7 (±2, Form 40–60), Gehalt 0x29EE4; Energie offen | – | P2 |
+| A131 | `Core/Player.Factory.cs:70` | a | Talentwerte relativ zur Vereinsstärke | re-rest.md A 0x06D7F: Form random(45, 55), Technik/Kondition random(s − 5, s + 1), s = random(40, 90) | R-K1 | P2 |
+| A132 | `Core/Player.Factory.cs:89` | a | Talentname aus zwei zufälligen Spielern | re-rest.md A 0x06D7F: Talent ist ein zufälliger Poolspieler (Besitzer 6) mit dessen Namen | R-K1 | P2 |
+| A133 | `Core/Player.Identity.cs:10` | b | Dauerhafte Spieler-ID nur fürs eigene Spielstandformat | Eigenes Spielstandformat (formate/spielstand.md), Plattformersatz | – | – |
+| A134 | `Core/Player.Value.cs:174` | d | Tendenz nur drei Stufen statt Wert 30–68 | reverse-engineering.md Spielerwert: Start random(35,65) Datei 0x4907A, Grenze 30–68 Datei 0x7BEA; tägliche Änderungsregel nicht gelesen, RE nötig | – | P2 |
+| A135 | `Core/Player.Value.cs:187` | c | Tore nicht je Wettbewerb, Spiele nicht je Verein (+0x03–0x05, +0x1C/+0x1E/+0x20) | DOSBox-Spielstand vor/nach Pokal- und Ligaspiel sowie nach Transfer, emtool hok Kaderplatz +0x03–0x05/+0x1C–0x20 (Deutung SW-02 strittig) | – | P2 |
+| A136 | `Core/Player.Value.cs:212` | d | Angebote der Computervereine nur für Transferliste statt alle Managerspieler | reverse-engineering.md Spielerwert nennt nur Fundstelle Tagesablauf Datei 0x7358/0x736E (+0x09 Bit 0x80, +0x16); Vergaberegel nicht gelesen, RE nötig | – | P1 |
+| A137 | `Core/Playoffs.cs:11` | a | Penaltyschießen per Stärke-Zufall (alter Weg ohne GameState) | spielberechnung.md §19 Datei 0x3901B: Heim/Gast random(2,5) bis ungleich; OriginalMinutes.Shootout nutzen oder alten Weg entfernen | – | P3 |
+| A138 | `Core/Playoffs.cs:29` | a | Rückfall-Penaltyschießen nach Stärke, wenn kein Shootout-Ergebnis | spielberechnung.md §19 Datei 0x3901B (und §3 Datei 0x376F0 schneller Weg); Rückfallzweig prüfen/entfernen | – | P3 |
+| A139 | `Core/Playoffs.cs:54` | a | Best of five (3 Siege) | spielberechnung.md §14 Play-off-Format Datei 0x31934/0x315E9 (Siege DGROUP 0xCCA4, Ergebnis 100 nach drei Siegen) – auf [ORIGINAL] stellen | – | P3 |
+| A140 | `Core/Playoffs.cs:66` | a | Heimrecht Spiele 1/3/5 beim besser Platzierten | spielberechnung.md §14: Heimtausch nach jedem Spiel Datei 0x31505 – auf [ORIGINAL] stellen | – | P3 |
+| A141 | `Core/Playoffs.cs:72` | a | Play-off-Format 1–8, 2–7, 3–6, 4–5, drei Runden | spielberechnung.md §14 und reverse-engineering.md Tabellen: Setzung Datei 0x31934 aus 0x5CCB, Runden 0x31BB0, Meister 0x31CBF – [ORIGINAL] | – | P3 |
+| A142 | `Core/Playoffs.cs:159` | c | Termine (Play-Off-Index) der sechs Aufstiegsrunden-Spieltage | Video folgen (folge06_01257, folge07_03307) Infoleiste je Spieltag; alternativ Kalendermarken im Disassembly (saison.md „Offen“) | – | P2 |
+| A143 | `Core/Rng.cs:62` | b | Ungeseedeter Zufall nimmt zufälligen Seed | Plattformersatz (.NET Random statt Borland-Zufall, portierung.md) | – | – |
+| A144 | `Core/SaveGame.Migration.Nationalteam.cs:14` | b | Alter Spielstand: AUTOM.-Anzeige beginnt bei 0 | Migration eigener Spielstände (Remake-Format), kein Originalbezug | – | – |
+| A145 | `Core/SaveGame.Migration.Nationalteam.cs:16` | b | Alter Spielstand: unveränderte Bundestrainer-Taktik auf 0 | Migration eigener Spielstände (Remake-Format) | – | – |
+| A146 | `Core/SaveGame.Migration.Nationalteam2.cs:8` | b | WM-Platzierungen alter Stände leer | Migration eigener Spielstände (Remake-Format) | – | – |
+| A147 | `Core/SaveGame.Migration.OptionenWirkung.cs:10` | b | Kopf-an-Kopf der laufenden Saison nicht nachgetragen | Migration eigener Spielstände (Remake-Format) | – | – |
+| A148 | `Core/SaveGame.Migration.Statistiken.cs:8` | b | Strafminuten alter Stände 0 | Migration eigener Spielstände (Remake-Format) | – | – |
+| A149 | `Core/SaveGame.Migration.StatistikenVerein.cs:8` | b | Serien/Über-Unterzahl alter Stände 0 | Migration eigener Spielstände (Remake-Format) | – | – |
+| A150 | `Core/SaveGame.Migration.TransferOriginalVertrag.cs:9` | b | Alte Ablehnung/Marktsperren auf 0 | Migration eigener Spielstände (Remake-Format) | – | – |
+| A151 | `Core/SaveGame.Migration.TransferVertraegeKomplett.cs:8` | b | Versicherungsprämie alter Stände aus Prozentsatz | Migration eigener Spielstände (Remake-Format) | – | – |
+| A152 | `Core/SaveGame.Migration.WettbewerbeKomplett.cs:8` | b | Rekorde/Kopf-an-Kopf alter Stände leer | Migration eigener Spielstände (Remake-Format) | – | – |
+| A153 | `Core/SaveGame.Migration1.cs:17` | b | Nationalkonto alter Stände leer | Migration eigener Spielstände (Remake-Format) | – | – |
+| A154 | `Core/SaveGame.Migration4.cs:10` | b | SEMI/MANUELL-Taktik alter Stände auf Startwerte | Migration eigener Spielstände (Remake-Format) | – | – |
+| A155 | `Core/SaveGame.Migration6.cs:10` | b | Werbebewertung beim Abschluss alter Stände 0 | Migration eigener Spielstände (Remake-Format) | – | – |
+| A156 | `Core/SaveGame.Migration9.cs:9` | b | Börsenkurse alter Stände umgerechnet | Migration eigener Spielstände (Remake-Format) | – | – |
+| A157 | `Core/Season.cs:89` | a | Monatsnamen (Remake „Aug.“) | reverse-engineering.md Kalender 0x43B1F: Monatstabelle DGROUP 0xA70, Texte ab Datei 0x1907C – dort „August“ ausgeschrieben, Remake abweichend | – | P3 |
+| A158 | `Core/Season.cs:101` | d | Wochentag am 29. April um eins weiter (Montag) | Formel (Tag+5) mod 7 in reverse-engineering.md Kalender 0x43B1F bekannt; Tageszählerwert DGROUP 0x3B7 am Saisonende nicht belegt (Zähler 233 nach 0x26F55?) | – | P3 |
+| A159 | `Core/Season.cs:192` | b | Angesehene Heim-/Auswärtstabelle ändert Ausgangsreihenfolge nicht | AGENTS.md Architekturregel: Bildschirme verändern keinen Spielzustand | – | – |
+| A160 | `Core/Season.cs:194` | a | Schalter DGROUP 0x6B0 (Spiele im Vergleich) = 0 | reverse-engineering.md Tabellen (Zeile 285): „kein Code schreibt die Stelle“ – auf [ORIGINAL] stellen | – | – |
+| A161 | `Core/Season.cs:271` | b | Platzliste aus Abschlusstabelle statt eigener Liste | Folge der Architekturregel (Bildschirme ändern keinen Zustand), siehe A159 | – | – |
+| A162 | `Core/SeasonFlow.cs:283` | a | Oberliga: zwei Letzte raus (Manager ausgenommen), Nachrücker zufällig 36–47 | re-saisonwechsel.md §3 Datei 0x562F2/0x5636D: Managerverein bleibt ohne Nachbesetzung, Konto 400.000 DM; Nachrücker random(36,41), Folgezug ≠ Vorzug (DOSBox-Beleg) | S-K1, S-K2 | P1 |
+| A163 | `Core/SeasonFlow.cs:285` | c | Modus „nur Weltkugel“ ohne Oberliga-Austausch | DOSBox-Spielstand nur-Weltkugel vor/nach 29. April, emtool hok Ligazugehörigkeit Vereine 24–47 | – | P3 |
+| A164 | `Core/SeasonFlow.cs:363` | b | Top-5-Bit aus Abschlusstabelle Gesamt (Gleichstand nach angesehener Ansicht) | AGENTS.md Architekturregel: Bildschirme verändern keinen Spielzustand | – | – |
+| A165 | `Core/Squad.Lineup.cs:148` | d | Auto-Aufstellung nach Spielwert | Automatische Aufstellung Datei 0x426BC (re-livespiel.md, re-geld.md Taktik-Abschluss Punkt 5) nur benannt, Regel nicht gelesen, RE nötig | – | P2 |
+| A166 | `Core/Squad.Lineup.cs:224` | c | Eingesetzt-Vorgabe (Aufgestellte + Stärkste bis 22), Setzen bei Start/Transfer/Computervereinen | DOSBox-Spielstand nach Spielstart und nach Transfer, emtool hok Kaderplatz +0x0A | – | P2 |
+| A167 | `Core/Squad.Lineup.cs:227` | c | Aufgestellte immer eingesetzt, neue Kaderspieler nicht eingesetzt | DOSBox-Spielstand vor/nach Kauf eines Spielers, emtool hok +0x0A/+0x15 (vgl. FILE05/FILE06 in formate/spielstand-original.md) | – | P3 |
+| A168 | `Core/Squad.Lineup.cs:229` | a | Eingesetzt wirkt nur auf Anzeige | spielberechnung.md §13 und §16: Reihenwerte/Energie der Managervereine aus eingesetzten Kaderplätzen (0x98F8–0x9C63, 0x87F7), Zählung 0x388F6 | – | P2 |
+| A169 | `Core/Squad.Lineup.cs:321` | d | Auto-Aufstellung setzt Eingesetzte zurück | Datei 0x426BC (Neuaufstellung, Einstellung DGROUP 0x375) nicht gelesen, RE nötig | – | P3 |
+| A170 | `Core/Squad.Setup.cs:18` | a | Kadergröße nach Level (Level 0 wie 1) | reverse-engineering.md Spiel-Level/Kader-start: DGROUP 0x169 wird nach Start-Liga gelesen ([0x11A]·4+Gruppe, Datei 0x29A3F), nicht nach Level – Remake falsch | – | P1 |
+| A171 | `Core/Squad.Setup.cs:35` | d | Basiswert Kondition/Technik der Computervereine 20 + Stärke/2 | Original führt nur Teamwerte (spielberechnung.md §12); Spielerwerte der Computervereine (Poolsätze) nicht belegt | – | P3 |
+| A172 | `Core/Squad.Setup.cs:147` | b | Start-Liga und Start-Stärke je Manager, fester Verein bleibt in seiner Liga | anforderungen/bildschirme.md Einstellungen: „Level, Liga und Stärke gelten je Manager“; archiv/runden-1-2.md | – | – |
+| A173 | `Core/Squad.Setup.cs:165` | d | Basis der Computervereine aus BaseValue | wie A171: Teamwerte = Datenbank (3810:4D3B), Spielerwerte der Computervereine nicht belegt | – | P3 |
+| A174 | `Core/Squad.Strength.cs:33` | a | Spielstärke aus Aufstellung (Gewichte 25 %/35/30/25/10) | spielberechnung.md §7 (0x368B1/0x977F) und §13 (Reihenwerte 0x98F8–0x9C63); Restnutzung in MatchEngine.Live/ReferenceRating ablösen | – | P2 |
+| A175 | `Core/Squad.Tactics.cs:82` | a | AUTOM.-Anzeige der Vereine: ausgeglichene Zeile statt Werte vor dem Spiel | reverse-engineering.md Spielvorbereitung 0x8365, dosbox-befunde.md (Zeile 96), wettbewerbe.md: Automatik schreibt je Paarung vor dem Spiel; wie RecordAutoLine beim Nationalteam | – | P3 |
+| A176 | `Core/Squad.Tactics.cs:93` | a | MANUELL wie SEMI, Energieabzug im Spiel fehlt | reverse-engineering.md Rechenfunktionen 0x939A (Datei 0x9463–0x94A7: Einsatz − (50 − Energie)); spielberechnung.md §13 | – | P2 |
+| A177 | `Core/Squad.Tactics.cs:108` | a | Minutenfeld bis 60 | re-geld.md Taktik-Abschluss Datei 0x48E62/0x4889F: je Teil höchstens 20, Werte ⌊Min/2⌋\|(Min&1) auf Summe 8 | G6 | P2 |
+| A178 | `Core/Squad.Tactics.cs:125` | a | Bezugseinsatz 80 für Stärkezuschlag | spielberechnung.md §7: Einsatz E = Vereinsfeld 0x26 geht direkt in 0x368B1 ein; Zuschlagsmodell (nur noch Nationalteam) ablösen | – | P2 |
+| A179 | `Core/Squad.Tactics.cs:135` | a | Vereine ohne angezeigte AUTOM.-Werte | wie A175: Spielvorbereitung 0x8365 schreibt Vereinssatz 0x26–0x2B/0x35–0x3A vor jedem Spiel | – | P3 |
+| A180 | `Core/Squad.Tactics.cs:140` | c | Startwerte eigener Taktik eines Vereins (ausgeglichene Zeile) | DOSBox-Spielstand direkt nach Spielstart, emtool hok Vereinssatz +0x26–0x3A des Managervereins | – | P3 |
+| A181 | `Core/Squad.Tactics.cs:278` | a | Angezeigter Einsatz AUTOM. beim Verein | wie A175 (0x8365, Werte des letzten Spiels) | – | P3 |
+| A182 | `Core/Squad.Tactics.cs:349` | a | Einsatz-Zuschlag auf Spielstärke ±3 | spielberechnung.md §7 und §13 (Einsatz in 0x368B1, Energie 0x87F7); nur noch für Nationalteam (CupsNational.Lineup) genutzt | – | P2 |
+| A183 | `Core/Squad.Training.cs:81` | d | Preisindex bleibt 100 | DGROUP 0x2B8/0x2BC Startwert 100 (finanzen-rekonstruktion.md); Schreiber (Teuerung?) nicht gesucht, RE nötig | – | P2 |
+| A184 | `Core/Squad.Training.cs:218` | a | Belastung = 150 − Energie statt eigenem Feld +0x13 | spielberechnung.md §13 (0x84D7: 101 − Belastung/8; 0x87F7: Belastung + 1), reverse-engineering.md Training 46E:00BC | – | P2 |
+| A185 | `Core/Squad.Training.cs:368` | a | Versteckte Fähigkeit +0x19 (Bedeutung, Startwert 7) | reverse-engineering.md Spielerinfo (Unterzahl = +0x19 & 0xF, Überzahl = +0x19 >> 4), spielberechnung.md §13 (Torhüter +0x19>>3); Startwert noch offen | – | P2 |
+| A186 | `Core/Squad.Training.cs:372` | a | Versteckte Fähigkeit 2 (oberes Halbbyte) | wie A185 (Überzahl), Startwert offen | – | P2 |
+| A187 | `Core/Squad.Training.cs:387` | a | Trainingstage Mittwoch/Sonntag statt Tageszähler | reverse-engineering.md Training: Tag mod 7 = 0/4 (46E:0C89); re-rest.md A (DGROUP 0x3B7); Abgleich Zähler ↔ Wochentag prüfen | – | P3 |
+| A188 | `Core/Squad.Training.cs:418` | b | Nachholen überspringt Tage der alten Saison | Remake-Ablauf (Training über Continue, GameState.Integration.cs); Kommentar wohl veraltet | – | – |
+| A189 | `Core/StadiumStatistics.cs:107` | c | Verletzte/gesperrte Aufgestellte zählen nicht als spielfähig | DOSBox-Spielstand mit verletztem Spieler in der Aufstellung, Tag weiter, emtool hok +0x15/+0x0A | – | P2 |
+| A190 | `Core/StadiumStatistics.cs:119` | d | Abrechnung prüft Aufstellung nach dem Spiel | Neuaufstellung 0x426BC mit DGROUP 0x375 nicht gelesen, RE nötig | – | P3 |
+| A191 | `Core/StadiumStatistics.cs:121` | a | Beide Managervereine nicht spielfähig: immer 0:2 | finanzen-rekonstruktion.md Heimspiel-Statistik (Spielwertung 0x36DC5, Rückgabe 0x544C0 in Managerreihenfolge) | – | P3 |
+| A192 | `Core/StadiumStatistics.cs:141` | b | Meldung im Posteingang, Abzug unter „Strafen“ | AGENTS.md Architekturregel GameState.Book; Entscheidung Nutzer 30.10.2026 (finanzen-rekonstruktion.md, #167) | M-K1 | – |
+| A193 | `Core/StadiumStatistics.cs:144` | d | Entlassene Manager zahlen keine Strafe | Entlassung selbst [APPROX] (saison.md); Regel des Originals zur Entlassung nicht belegt | – | P3 |
+| A194 | `Core/StatisticsClub.cs:53` | a | Fair-Play-Reihenfolge nach Remake-Index statt Satzreihenfolge | spielberechnung.md §14 Vereinstausch 0x36169, Ligamischung 0x35EDD, Auf-/Abstieg 0x562F2/0x5636D; re-saisonwechsel.md Kandidat Umordnung | S-K6 | P3 |
+| A195 | `Core/StatisticsClub.cs:330` | a | Benötigter Schnitt aus DM-Werten statt Drittel | finanzen-rekonstruktion.md Einnahmen 0x3E657, Ausgaben 0x3E811 (in Drittel-DM) | – | P3 |
+| A196 | `Core/StatisticsClub.cs:344` | a | Schulden gesamt: Saldo je Partner verrechnet | re-geld.md Transfermarkt Kontoleiste Datei 0x463CC: 0x57768 Σ eigener negativer Darlehen (Manager und Bank), Sparbuch bei Anlagen | G5 | P2 |
+| A197 | `Core/StatisticsHistory.cs:74` | a | Ewige Tabelle mit 48 statt 42 Vereinen | re-saisonwechsel.md §3/§4 (Plätze 36–41, Datenbankvereine 42–47 nie in der Oberliga; Ewige Tabelle Datei 0x5667A nach Tausch 0x563AF); wettbewerbe.md Z. 149 | S-K2 | P3 |
+| A198 | `Core/StatisticsPlayers.cs:41` | b | Spielerstatistik sortiert alle Ligaspieler statt 199-Pool | Remake führt vollständige Kader aller Vereine (reverse-engineering.md, Pool far:8253); nur Gleichstandsreihenfolge betroffen | – | – |
+| A199 | `Core/StatisticsPlayers.cs:125` | b | Gegentorschnitt ohne Minuten = 0 | Absicherung für im Original unerreichbaren Fall (Anzeige erst ab 399 Minuten, Datei 0x26365) | – | – |
+| A200 | `Core/StatisticsStrength.cs:28` | a | Stärketabelle Ligavereine aus Spielerwerten statt Teamwerten | spielberechnung.md §12 und Tabelle Felder 0x18–0x1B (Lader Datei 0x2EF1B); Remake hat inzwischen Club.TeamValues | – | P2 |
+| A201 | `Core/StatisticsStrength.cs:30` | a | Form in Stärketabelle als Mittel der Spielerform | spielberechnung.md §12: Felder 0x1C/0x1D = random(45, 55), Europapokal −5 (Lader 0x2EF1B), in Club.TeamValues vorhanden | – | P2 |
+| A202 | `Core/StatisticsStrength.cs:31` | a | Trendbalken aus Form abgeleitet statt Vereinsfeld 0x17 | spielberechnung.md §12 Tabelle: 0x17 = Tagesform random(47, 53), nachgeführt nach Ligaspielen Datei 0x4F527 | – | P3 |
+| A203 | `Core/StatisticsStrength.cs:78` | a | Länderwerte Bundestrainer aus aktueller Aufstellung statt Tageslauf-Stand | Regel im Code und dosbox-befunde.md: 0x952C täglich 0x54F9C–0x54FBF und nach Freundschaftsspiel 0x555D6 (#193) | – | P3 |
+| A204 | `Core/Transfer.Contract.cs:123` | b | Gehaltsfaktor 0xE1A4 aus eigenem Startwert je Saison/Tag | Remake-Abbildung transfer.md Z. 51 (Original random(85, 115) je Managerzug 0x44E3F); Zufallsquellen bewusst getrennt | – | – |
+| A205 | `Core/Transfer.Contract.cs:132` | b | „Nach Saisonende“ als Phase statt Tageszähler > 232 | Remake-Ablauf ohne Spieltage zwischen Saisonende und neuer Saison (transfer.md Z. 51, 0x26F55) | – | – |
+| A206 | `Core/Transfer.Contract.cs:139` | b | Restanteil der Saison während Verhandlungen am Saisonende | Folge der Ablaufabbildung (transfer.md Z. 51, Verhandlung nach Saisonwechsel); nächster Spieltag 45 wie Phase SeasonOver | – | – |
+| A207 | `Core/Transfer.Insurance.cs:14` | b | Versicherungszahlung über Book statt direkt aufs Konto | Architekturregel „Einnahmen nur über GameState.Book“ (AGENTS.md §4) | – | – |
+| A208 | `Core/Transfer.Pool.cs:15` | b | Poolplatz „vergeben“ statt Managernummer, Freigabe erst beim Saisonwechsel | Remake-Abbildung transfer.md Teil 5 („Gekaufte Poolspieler bleiben vergeben“) | – | – |
+| A209 | `Core/Transfer.Pool.cs:171` | a | Grundstärken Listenwechsel: Vereinsfelder genähert, Nationalteams ohne Ländertabelle | spielberechnung.md §12 (Lader 0x2EF1B, Nationalteams DGROUP 0x4C4E); Ländertabelle als GameState.NationalRatings schon vorhanden | – | P2 |
+| A210 | `Core/Transfer.Pool.cs:188` | d | Energie des Markt-Platzes auf 99 begrenzt, Nachbearbeitung 0x4907A fehlt | 0x4907A nur „genähert“ (re-abdeckung.md, Verletzung außerhalb des Spiels); Wirkung am neuen Markt-Platz nicht gelesen, RE nötig | – | P3 |
+| A211 | `Core/Transfer.Pool.cs:226` | b | Ersatzverein, wenn alle Ligavereine Manager haben | Absicherung für synthetische Fälle, im Original nicht erreichbar | – | – |
+| A212 | `Core/Transfer.Pool.cs:253` | b | Eigene Zufallsquelle beim Poolreservieren | Entscheidung Nutzer 01.11.2026 (jeder Name einmal), Zufallsfolge des Kaderaufbaus bleibt; transfer.md Teil 5 | – | – |
+| A213 | `Core/Transfer.Pool.cs:277` | b | Datenbankplätze alter Spielstände aus Kadern rekonstruiert | Migration alter Spielstände (vor Teil 5), Remake-Datenmodell | – | – |
+| A214 | `Core/Transfer.Pool.cs:318` | b | Managerkader aus Datenbank statt aus Pool (DGROUP 0x381) | Remake-Abbildung transfer.md Teil 5 („Managerkader baut das Remake wie bisher aus der Datenbank“) | – | – |
+| A215 | `Core/Transfer.Pool.cs:352` | b | Ersatzname „POOLSPIELER n“ ohne freien Datenbanknamen | Absicherung synthetische Datenbank/alte Spielstände (transfer.md Teil 5) | – | – |
+| A216 | `Core/Transfer.Pool.cs:402` | b | Tausch Pool/Kader, damit jeder Name einmal im Spiel steht | Entscheidung Nutzer 01.11.2026 (Vorschlag 1), transfer.md Teil 5 | – | – |
+| A217 | `Core/Transfer.Pool.cs:469` | b | Spieler mit Laufbahn wird beim Umbenennen nicht verworfen | Folge der Entscheidung Nutzer 01.11.2026 (feste Namen, Spieler-IDs, spielstand.md) | – | – |
+| A218 | `Core/Transfer.Pool.cs:495` | b | Energie beim Tausch wie ein Talent | Remake-Datenmodell: Energie nur am Kaderplatz (+0x13), Spieler ohne Platz brauchen Startwert | – | – |
+| A219 | `Core/Transfer.Pool.cs:502` | b | Umbenennen erzeugt neuen Spieler statt Namen zu überschreiben | Remake-Datenmodell feste Namen/IDs (transfer.md Teil 5, formate/spielstand.md) | – | – |
+| A220 | `Core/Transfer.Pool.cs:523` | b | Vergebene Plätze erst beim Saisonwechsel neu besetzt | Remake-Abbildung transfer.md Teil 5 (Original gibt Platz bei Verkauf/Vertragsende frei) | – | – |
+| A221 | `Core/Transfer.Pool.cs:561` | b | Pool fehlt in alten Spielständen, wird beim Listenwechsel gebaut | Migration alter Spielstände (vor Teil 5) | – | – |
+| A222 | `Core/Transfer.Pool.cs:569` | b | Datenbanknamen alter Spielstände aus Kadern | Migration alter Spielstände (vor Teil 5) | – | – |
+| A223 | `Core/Transfer.Pool.cs:631` | b | Vertragslose aus Managervereinen bleiben beim Listenwechsel | Remake-Ergänzung R204 (transfer.md Teil 5, „Vertragslose aus Managervereinen“) | – | – |
+| A224 | `Core/Transfer.Purchase.cs:9` | b | Kaufzustand nur im Dialog, kein Spielstandsfeld | Remake-Datenmodell; Sign prüft vor Abschluss erneut, kein Regelunterschied | – | – |
+| A225 | `Core/Transfer.Purchase.cs:25` | b | Verfügbarkeitsprüfung am frisch angelegten Kaderplatz entfällt | Gleichwertige Abbildung: neuer Platz (0x108:0x5C) hat keine Leihe/Sperre/Ruhestand | – | – |
+| A226 | `Core/Transfer.SeasonEnd.cs:32` | a | Verhandlung am Saisonende nach Zählerreset und nach allen Prämien (Wert zu niedrig); Ablöse über Book | transfer.md Tabelle Saisonende 0x27D05–0x27DF3 (in 0x26F20 je Manager vor Saisonwechsel); Buchung über Book ist b (AGENTS.md §4) | – | P2 |
+| A227 | `Core/Transfer.SeasonEnd.cs:66` | b | Gehälter in ganzen DM statt Drittel-DM | Entscheidung R8W3I-08 (transfer.md „Gehalt in ganzen DM“) | – | – |
+| A228 | `Core/Transfer.Squads.cs:16` | b | Kader-KI der Computervereine samt Wahrscheinlichkeiten | Remake-Ergänzung Runde 3 Spur kader (archiv/runde-3.md, R2-12); Original hat nur Teamwerte | – | – |
+| A229 | `Core/Transfer.Squads.cs:21` | d | Tägliche Chance der Vertragsankündigung (1/60) | Schreiber von Kaderplatz +0x18 > 99 (Angebot) im Tagesablauf nicht gefunden (reverse-engineering.md Z. 586); RE von 0x07169 nötig | – | P1 |
+| A230 | `Core/Transfer.Squads.cs:24` | d | Anteil Absagen unter Ankündigungen (10 %) | Regel der Absage „nicht mehr verlängern“ in em.exe nicht verortet; RE Tagesablauf 0x07169 nötig, Video nur 1 von 16 | – | P2 |
+| A231 | `Core/Transfer.Squads.cs:27` | d | Mindestalter Laufbahnende 33 | Schreiber von +0x18 Bit 0x80 (Ruhestand) und Altersregel nicht gefunden; RE nötig | – | P2 |
+| A232 | `Core/Transfer.Squads.cs:30` | d | Höchstalter Laufbahnende 37 | wie A231: Altersregel Ruhestand (+0x18 Bit 0x80) nicht verortet; RE nötig | – | P2 |
+| A233 | `Core/Transfer.Squads.cs:33` | b | Verlängerungschance der Computervereine | Kader-KI Remake-Ergänzung (archiv/runde-3.md, R2-12) | – | – |
+| A234 | `Core/Transfer.Squads.cs:36` | b | Vertragslaufzeit der Computervereine | Kader-KI Remake-Ergänzung (archiv/runde-3.md, R2-12) | – | – |
+| A235 | `Core/Transfer.Squads.cs:39` | b | Altersgrenze Neuzugänge aus Vertragslosen | Kader-KI Remake-Ergänzung (archiv/runde-3.md, R2-12) | – | – |
+| A236 | `Core/Transfer.Squads.cs:42` | b | Anteil Neuzugänge aus Pool vs. Talente | Kader-KI Remake-Ergänzung (archiv/runde-3.md, R2-12) | – | – |
+| A237 | `Core/Transfer.Squads.cs:45` | b | Höchstgröße Computerkader 25 | Kader-KI Remake-Ergänzung (archiv/runde-3.md, R2-12) | – | – |
+| A238 | `Core/Transfer.Squads.cs:56` | d | Rücktrittswahrscheinlichkeit je Alter | wie A231: Ruhestandsregel im Original nicht verortet; RE Tagesablauf/Saisonende nötig | – | P2 |
+| A239 | `Core/Transfer.Squads.cs:60` | d | Verteilung „von 1 auf n Jahre“ (2/3/4) | Wahl von n (+0x18 = 100 + Jahre) nicht verortet; transfer.md Z. 235 offen (R2-11); RE nötig | – | P2 |
+| A240 | `Core/Transfer.Squads.cs:238` | b | Überzählige Vertragslose beenden Laufbahn | Remake-Ergänzung Pool der Vertragslosen (archiv/runde-3.md Z. 53) | – | – |
+| A241 | `Core/Transfer.StartSalary.cs:10` | b | Preisfeld +0x2C nicht gespeichert, bei Bedarf neu berechnet | Remake-Datenmodell; transfer.md „Listenpreis eigener Spieler“ als offene Abweichung vermerkt | – | – |
+| A242 | `Core/Transfer.Talent.cs:40` | d | Rabatt der Talentsuche nach Jugendförderung | re-rest.md §A: Preisabzug Datei 0x469CA gelesen, ein Rabatt ist nicht belegt; 0x465F1 beim Preis genau lesen | R-K1 | P2 |
+| A243 | `Core/Transfer.Talent.cs:54` | a | Erfolgschance der Talentsuche | re-rest.md Basis 0x46E, Datei 0x06FA5: Erfolg random(0, 5 − ⌊DGROUP 0xED8/2⌋) = 0, Dauer random(3, 10) (+6 mit 1/4) | R-K1 | P2 |
+| A244 | `Core/Transfer.Talent.cs:66` | a | Starttext der Talentsuche | em.exe hat Frage „Möchten Sie, daß Ihr 'Spion' für Sie auf Talentsuche geht?“ in Transferliste 0x465F1 (re-rest.md §A, Datei 0x46A10) | R-K1 | P2 |
+| A245 | `Core/Transfer.Talent.cs:67` | d | Meldung bei schon laufender Suche | Verhalten von 0x465F1 bei Zähler +0xEC ≠ 0 nicht gelesen; RE nötig | R-K1 | P3 |
+| A246 | `Core/Transfer.Talent.cs:69` | d | Meldung bei vollem Kader | Original prüft 28 Spieler erst beim Ergebnis (0x06D7F, keine Nachricht); Prüfung beim Start in 0x465F1 nicht gelesen | R-K1 | P3 |
+| A247 | `Core/Transfer.Unsolicited.cs:50` | b | Bieter misst Spielerstärke statt fremden Pooleintrag | Bewusste Abweichung vom Originalfehler 0x07A81 (transfer.md Teil 3, Z. 155) | – | – |
+| A248 | `Core/Transfer.Unsolicited.cs:94` | b | Zufall des Angebotswurfs aus eigener Quelle; Meldung/Rücktritt-Abbildung | Remake-Abbildung transfer.md Teil 3 (Z. 153), Zufallsquellen bewusst getrennt | – | – |
+| A249 | `Core/Transfer.Unsolicited.cs:151` | b | Voller Computerkader/Europapokal-Gegner gibt Spieler zu den Vertragslosen | Remake-Ergänzung vollständige Kader (transfer.md Z. 156) | – | – |
+| A250 | `Core/Transfer.cs:22` | b | Vertragslose Spieler auf der Liste | Remake-Ergänzung R204/Pool der Vertragslosen (transfer.md Teil 5) | – | – |
+| A251 | `Core/Transfer.cs:86` | a | Takt des Listenwechsels, bietender Verein, Antwort menschlicher Verkäufer | transfer.md Z. 49 (täglich random(0, Managerzahl + 2) = 0, 0x54E71), Z. 143 (0x059B8), Z. 16 (Rückfrage 0x47546/0x47608–0x47743) | – | P2 |
+| A252 | `Core/Transfer.cs:103` | b | Höchstzahl Vertragsloser 60 | Remake-Ergänzung Pool der Vertragslosen (archiv/runde-3.md) | – | – |
+| A253 | `Core/Transfer.cs:108` | d | Mindestbestand je Art für Verkauf (2/4/6) | Keine passende Meldung in em.exe gefunden; Verkaufszweig 0x46E04–0x46FCF auf Grenzen lesen | – | P2 |
+| A254 | `Core/Transfer.cs:138` | b | Markt-Plätze vor dem Saisonwechsel freigegeben | Remake-Datenmodell (Listing-Identitäten nicht saisonübergreifend) | – | – |
+| A255 | `Core/Transfer.cs:153` | b | Vertragslose aus Managervereinen bleiben verpflichtbar | Remake-Ergänzung R204 (transfer.md Teil 5) | – | – |
+| A256 | `Core/Transfer.cs:203` | a | Listenwechsel je Ligaspieltag statt täglich | transfer.md Z. 49: täglich mit random(0, Managerzahl + 2) = 0 (Datei 0x54E71) | – | P2 |
+| A257 | `Core/Transfer.cs:205` | a | Bietender Verein für Marktspieler zufällig; Angebotshöhe beim Angebot gewürfelt | transfer.md Z. 143 (Bieter 0x059B8, schon als UnsolicitedOfferRules.Bidder umgesetzt), Z. 145 (Höhe beim Anklicken 0x46E04) | – | P2 |
+| A258 | `Core/Transfer.cs:274` | a | Antwort des verkaufenden Managers simuliert | transfer.md Z. 16: Rückfrage an den Verkäufer „Nehmen Sie das Angebot … an ?“ (0x47546–0x475DB, Hot-Seat 0x47608–0x47743) | – | P2 |
+| A259 | `Core/Transfer.cs:437` | d | Verwerfen eines nicht mehr ausführbaren Gebots | Verhalten des Originals offen; Annahmezweig 0x46E04–0x46FCF auf Prüfungen lesen oder DOSBox-Probe | – | P3 |
+
+#### Formats
+
+| ID | Stelle | Gr. | Thema | Beleg, Quelle bzw. Belegvorschlag | Kand. | Prio |
+|---|---|---|---|---|---|---|
+| A260 | `Formats/Opl2.cs:9` | b | OPL2-Emulation nicht bitgenau | Plattformersatz (portierung.md): eigener YM3812-Emulator statt Sound-Blaster-Hardware | – | – |
+| A261 | `Formats/Opl2.cs:475` | b | Attack-Hüllkurve genähert | Plattformersatz (portierung.md): Chip-Emulation | – | – |
+| A262 | `Formats/OriginalSaveGame.cs:38` | d | Torhüter-Erkennung über Rollenwert statt Far-Call 0x18:0x0 | Funktion 0x18:0x0 (Aufruf em.exe 0x421D6–0x421E4) nicht gelesen, RE nötig | – | P3 |
+| A263 | `Formats/OriginalSaveGamePatcher.cs:18` | d | Formel der Spielstand-ID (0x8000–0xFFFF statt random(0..0x8FFF)+1) | spielstand-original.md Z.32/237: Formel offen; 0x5BB51 nachlesen, Widerspruch zu FILE01–03 klären | – | P3 |
+| A264 | `Formats/OriginalSaveGamePatcher.cs:28` | a | Obergrenze Eintritt im Patcher (1–99) | finanzen-rekonstruktion.md Z.233: Datei 0x3DDB8–0x3DDC5, neuer Preis nur bei 9 < Preis < 31 → 10–30 DM | – | P3 |
+| A265 | `Formats/OriginalSaveGamePatcher.cs:29` | a | Obergrenze Stadionstufen im Patcher (0–9) | re-geld.md §Stadion Datensatz: Stufenzahl DGROUP 0x102 (3,3,3,3,5,3,4,4,2), höchste = Zahl − 1 (Datei 0x3DEB4); Feldlage +2·i beachten | – | P3 |
+
+#### Tools
+
+| ID | Stelle | Gr. | Thema | Beleg, Quelle bzw. Belegvorschlag | Kand. | Prio |
+|---|---|---|---|---|---|---|
+| A266 | `Tools/SoundExport.cs:9` | b | Namen der Soundeffekte nach Gehör | Werkzeug-Komfort (emtool), Nummern fest; formate/dateiformate.md | – | – |
+
+#### UI
+
+| ID | Stelle | Gr. | Thema | Beleg, Quelle bzw. Belegvorschlag | Kand. | Prio |
+|---|---|---|---|---|---|---|
+| A267 | `UI/MusicPolicy.cs:19` | b | Musik nur im Titelbildschirm | Entscheidung Nutzer #221 (zusatzfunktionen.md Z.51) | – | – |
+| A268 | `UI/Screens/Competitions/CupPairingsScreen.cs:39` | a | Paarungsansicht: zuletzt gewählte Seite nicht gemerkt, Rechtsklick/Esc, gedrückte Pfeile | reverse-engineering.md Seitenwähler 0x3A88A: Startseiten DGROUP 0x511F–0x5127 gemerkt (0x45862, 0x458BB); Pfeile 0x2FB31 gedrückt Quelle + 10 | – | P3 |
+| A269 | `UI/Screens/Competitions/CupTableMenuEntries.cs:19` | a | Tabelle Europapokal: zuletzt gezeigte Seite je Kachel nicht gemerkt | reverse-engineering.md Seitenwähler: Rückgabe in DGROUP 0x511F–0x5127 gemerkt (0x45862, 0x458BB) | – | P3 |
+| A270 | `UI/Screens/Competitions/DebCupDrawLive.cs:58` | a | Lage Fragefenster DEB-Pokal-Auslosung (am Video vermessen) | re-meldungen.md §C Datei 0x4C246: Fenster (75\|107) 7×4, Symbolfelder 83/212 \| 112, Textgrundlinien, Knöpfe (95\|166)/(165\|166) | M-K1 | P2 |
+| A271 | `UI/Screens/Competitions/DebCupDrawLive.cs:64` | a | Aufdeckreihenfolge aus eigener Quelle statt gemeinsamem Zufall | wettbewerbe.md Z.56 und Kommentar: random(0, n − 1) im gemeinsamen Generator (0x34521, 0x349E3); Umstellung ändert Folgeergebnisse, Entscheidung nötig | – | P3 |
+| A272 | `UI/Screens/Competitions/DebCupDrawLive.cs:67` | c | Tempo des Aufdeckens, fehlende rollende Kugel | Video folge01_00217, eisbaeren_f28_00706 (referenz-videos.md Z.138/308): Bilder je Platz zählen, Kugel-Grafik suchen | – | P3 |
+| A273 | `UI/Screens/Competitions/DebCupDrawLive.cs:69` | a | Tasten im Fragefenster (Enter/Esc/rechte Taste) | re-meldungen.md §C 0x4C246: nur Linksklick, Tastatur und rechte Taste ohne Wirkung; Enter bleibt Entscheidung Nutzer #205 | M-K1 | P3 |
+| A274 | `UI/Screens/Competitions/DebCupDrawLive.cs:123` | a | Aufdeckreihenfolge: Mischung aus eigener Quelle | wie A271: random(0, n − 1) aus gemeinsamem Generator (0x34521 ff., 0x349E3 ff.), wettbewerbe.md Z.56 | – | P3 |
+| A275 | `UI/Screens/Competitions/DebCupGamesScreen.cs:7` | a | Pokal-Gleichstand per Penaltyschießen, ein Punkt dahinter | spielberechnung.md §3: Gleichstand random(0, 2) je Seite bis ungleich, Heim + 30 (0x376F0–0x377A3); Minutenweg Verlängerung 61–70, dann 0x3901B | – | P2 |
+| A276 | `UI/Screens/Competitions/DebCupGamesScreen.cs:29` | a | Rundenname „Erste Runde“ nach Laden eines Stands der ersten Saison | spielstand-original.md Z.164: Block Datei 0x0903B sichert DGROUP 0x7A9–0x7B0, also auch 0x7AD; Regel bleibt gleich → [ORIGINAL] | – | P3 |
+| A277 | `UI/Screens/Competitions/DebCupGamesScreen.cs:120` | a | Gleichstand durch Penaltyschießen statt Verlängerung; Punktmarke als Pixel | spielberechnung.md §3/§9 (0x376F0, 0x32AA3, 0x3901B); Form/Farbe der Marke zusätzlich am Video (eisbaeren_f44_01330) | – | P2 |
+| A278 | `UI/Screens/Competitions/EuropeanCupScreen.cs:21` | d | Bedingung für Termine im Europacup-Gruppenbild | Datei 0x32294 ([bp+0xA] = 0 und Termin offen) nicht aufgelöst, RE nötig | – | P3 |
+| A279 | `UI/Screens/Competitions/FriendliesScreen.cs:26` | b | Energie 70 erst beim ersten Freundschaftsspiel statt beim Öffnen | Architekturregel AGENTS.md §4: Bildschirme ändern beim Öffnen keinen Zustand | – | – |
+| A280 | `UI/Screens/Competitions/LeaguePairingsScreen.cs:28` | d | Mittlerer Knopf Ligapaarungen (Play-Off/Aufstieg) ohne Wirkung | Seiten Play-Off/Aufstieg der Ligapaarungen (0x128:0x39) nicht analysiert, RE nötig | – | P2 |
+| A281 | `UI/Screens/Competitions/LeaguePairingsScreen.cs:29` | a | Ligapaarungen: Zeilenklick ohne Vereinsinfo, Seite nicht gemerkt | reverse-engineering.md Seitenwähler (DGROUP 0x5125, 0x45862); Vereinszweig 0x4D385 noch offen (re-abdeckung.md Nr. 2) | – | P3 |
+| A282 | `UI/Screens/Competitions/LeaguePairingsScreen.cs:30` | d | Spielplan und Stärkewerte aus dem Remake | Stärke belegt (reverse-engineering.md cs:0x26, Felder 0x18–0x1D / 6); Spielplan 0x4E7C7 nicht analysiert, RE nötig | – | P2 |
+| A283 | `UI/Screens/Competitions/NationalLineupScreen.cs:19` | a | Nationalaufstellung: Spielerinfo auf Rechtsklick fehlt | reverse-engineering.md „Spielerdaten-Fenster“: Aufstellung 0x4084E–0x40872, Ereignis 3, 0x22 < x < 0x60 | – | P3 |
+| A284 | `UI/Screens/Competitions/NationalMenu.cs:69` | c | Mannschaft vor Ernennung des Bundestrainers gesperrt | DOSBox-Stand Bundestrainer vor erstem WM-Termin: Kachelsperren prüfen; Reihe bundestrainer | – | P2 |
+| A285 | `UI/Screens/Competitions/NationalWidgets.cs:45` | d | Reihenwerte im Mannschaftsfeld (Mittel statt Aufstellung) | Funktion 0x28:0x16BF nicht gelesen, RE nötig | – | P3 |
+| A286 | `UI/Screens/Competitions/TeamInfoWindow.cs:34` | a | Zeile „Historische Ergebnisse“ immer, dritter Knopf nie | reverse-engineering.md Gegnerfenster: nur bei DGROUP 0xD0C2 = 0; Knopf 0x4D78A/0x4E3F4, Bit 6–7 Feld 0x34; Bild DGROUP 0xC12F noch nicht zugeordnet | – | P3 |
+| A287 | `UI/Screens/Competitions/TeamInfoWindow.cs:38` | d | Gesicht neben der Flagge bleibt gelb | Funktion 0x110:0x5C nicht gelesen, RE nötig | – | P3 |
+| A288 | `UI/Screens/Competitions/TeamInfoWindow.cs:39` | d | „Tore / Spiel“ selbst berechnet | Funktion 0xE0:0x70 nicht gelesen, RE nötig | – | P3 |
+| A289 | `UI/Screens/Competitions/TeamInfoWindow.cs:56` | c | Lage des Gesichts neben der Flagge | Vermessung an DOSBox 14 / bundestrainer_00610 gegen weitere Bilder bestätigen, oder 0x110:0x5C lesen | – | P3 |
+| A290 | `UI/Screens/Competitions/TeamInfoWindow.cs:164` | d | Schnitt Tore/Spiel abgeschnitten, eine Stelle | hängt an 0xE0:0x70 (nicht gelesen), RE nötig | – | P3 |
+| A291 | `UI/Screens/Competitions/WorldCupKnockoutScreen.cs:32` | c | Zwei Punkte hinter WM-Endrundenergebnis | Video eisbaeren_f44_01330 und weitere Endrundenbilder; Zuordnung 1 Punkt Verlängerung / 2 Penalty prüfen (spielberechnung.md §3) | – | P3 |
+| A292 | `UI/Screens/Competitions/WorldCupKnockoutScreen.cs:35` | a | Anzeige „60.Minute“ in WM-Endrunde fehlt | re-rest.md §E 0x3183C (laufende Stände, an livespiel) und reverse-engineering.md 0x32E52–0x32E70 | L2 | P2 |
+| A293 | `UI/Screens/Competitions/WorldCupScreen.cs:19` | c | Lage Knöpfe „Gruppe 1/2“ und „Endrunde“ der WM-Tabelle | DOSBox Modus nur Weltkugel nach Gruppenphase, WM-Tabelle fotografieren | – | P3 |
+| A294 | `UI/Screens/Competitions/WorldCupScreen.cs:23` | c | Linksklick außerhalb der WM-Tabelle kehrt zurück | DOSBox: Klick neben Zeilen/Knöpfe in WM-Tabelle (0x2F5B6), Verhalten bestätigen | – | P3 |
+| A295 | `UI/Screens/GameOptionsScreen.cs:23` | b | Optionen: RAM-Zeile, Speicherprüfung, Hintergrund/Scrolling fest | Plattformersatz, reverse-engineering.md Optionen [APPROX] (0x2D362, 0x2D3D5); WM-Schalter-Folge offen | – | – |
+| A296 | `UI/Screens/MainMenuScreen.cs:27` | a | Tag weiter nur mit linker Maustaste | reverse-engineering.md Credits-Auslöser und Kommentar: Hauptmenüschleife wertet Ereignis 1 und 3 gleich (0x4544E–0x45488, 0x45483) | – | P3 |
+| A297 | `UI/Screens/MainMenuScreen.cs:36` | b | Klick auf Managerkopf wählt Kachel ab | Remake-Layout: Leiste und kleine Kacheln teilen die Fläche (#216) | – | – |
+| A298 | `UI/Screens/MainMenuScreen.cs:45` | a | Bundestrainer-Warnung mit Knopf „Na gut.“ | re-meldungen.md §B Datei 0x0C0B8: Kurzmeldung ohne Knopf, 75/3 Takte ≈ 1,4 s, keine Eingabe | M-K2 | P2 |
+| A299 | `UI/Screens/MainMenuScreen.cs:71` | d | Kennzeichen „neue Nachricht“ = ungelesene Nachricht | Setzer von DGROUP 0x5A50 + Manager nicht analysiert (Nachrichtenleiste 0x4B5F4) | – | P3 |
+| A300 | `UI/Screens/MainMenuScreen.cs:151` | c | Bundestrainer ohne Ernennung: keine Kaderwarnung | DOSBox Bundestrainer vor erstem WM-Termin: Klick aufs Logo | – | P3 |
+| A301 | `UI/Screens/MainMenuScreen.cs:231` | c | Markierung der gewählten großen Kachel | Video Hauptmenü mit gewählter Kachel (Reihe oberflaeche), Linie/Farbe vermessen | – | P3 |
+| A302 | `UI/Screens/MainMenuScreen.cs:275` | a | Bundestrainer: keine Tabellenkurve | re-meldungen.md §E 0x445E0: Nationalteam → nichts | M-K6 | P3 |
+| A303 | `UI/Screens/MainMenuScreen.cs:316` | a | Maßstab und Lage der Tabellenkurve | re-meldungen.md §E 0x445E0 (Achsen, ⌊85/(n−1)⌋, y 47 + 2p) und reverse-engineering.md 0x44801–0x44891 | M-K6 | P2 |
+| A304 | `UI/Screens/Manager/AdvertisingScreen.cs:36` | a | Lage Ja/Nein der Verlängerungsfrage Werbung | re-meldungen.md §C 0x4C246: Knöpfe (95\|166) und (165\|166), Fenster (75\|107) | M-K1 | P2 |
+| A305 | `UI/Screens/Manager/AdvertisingScreen.cs:48` | a | Trefferflächen der Pfeile Werbung | re-meldungen.md §C 0x4BA58: Flächen 8 × 9 ab (x1\|y1)/(x2\|y2) | M-K4 | P3 |
+| A306 | `UI/Screens/Manager/AdvertisingScreen.cs:158` | a | Klick Eisfläche: obere/untere Hälfte = Tafel 1/2 | Tafelrahmen 0x2B5DB (y = 91 + 36·i, 35 × 25) und re-rest.md §D 0x2A6A2 (268\|92 + 36·i) | – | P3 |
+| A307 | `UI/Screens/Manager/AdvertisingScreen.cs:200` | d | Zeilenaufteilung der Absage-Meldung 0x120:0x4D | Stub 0x120:0x4D nicht analysiert (re-meldungen.md behandelt nur 0x120:0x7A); RE nötig | – | P3 |
+| A308 | `UI/Screens/Manager/AdvertisingScreen.cs:250` | a | Verlängerungsfrage: Rahmen, Lage, Knöpfe | re-meldungen.md §C 0x4C246 (Aufrufer 0x2B0C0): vollständiger Aufbau | M-K1 | P2 |
+| A309 | `UI/Screens/Manager/AdvertisingScreen.cs:286` | a | Logo auf Eistafel | re-rest.md §D 0x2A6A2 Bit 3: 33 × 23 aus (1\|25·Bild+1) nach (268\|92 + 36·i) | R-K4 | P3 |
+| A310 | `UI/Screens/Manager/AdvertisingScreen.cs:416` | a | Gedrückte Pfeile Werbung fehlen | re-meldungen.md §C 0x4BA58: gedrückt kb\4 (22\|19 + 9j), los (22\|1 + 9j) | M-K4 | P3 |
+| A311 | `UI/Screens/Manager/FinanceBookScreen.cs:10` | b | Finanzbuch-Fenster (in keinem Video) | Erweiterung, zusatzfunktionen.md Z.50, bildschirme.md Z.119 | – | – |
+| A312 | `UI/Screens/Manager/FinanceScreen.cs:19` | a | Bedienung der Finanzbuchungen (±-Knöpfe, Anfrage an Mitmanager) | re-geld.md §0x58409 Betragsbalken, Buchung 0x5915F–0x5952D, Mitmanager ohne Anfrage | G4 | P2 |
+| A313 | `UI/Screens/Manager/FinanceScreen.cs:196` | c | Streifen und Marke bleiben nach Loslassen stehen | DOSBox: Finanzen, Regler ziehen, loslassen, Neuzeichnen beobachten | – | P3 |
+| A314 | `UI/Screens/Manager/FinanceScreen.cs:251` | b | Vorbelegung bestOffset (Original: Stapelwert) | nicht initialisierter Stapelwert nicht nachbildbar; Plattformersatz | – | – |
+| A315 | `UI/Screens/Manager/FinanceScreen.cs:352` | a | Schrittweite 10.000 DM / 10 Aktien | re-geld.md §0x58409: Pfeile ±1 Stück bzw. ±3.000 Drittel (0x58F80–0x59017), Balken q = max/154 + 1 | G4 | P2 |
+| A316 | `UI/Screens/Manager/FinanceScreen.cs:483` | d | Darstellung gedrückter Finanzknopf | Pfeil-/Knopfzeichnung in Ov 0x138 (0x58F80 ff.) nicht beschrieben; mit G4 neu prüfen | G4 | P3 |
+| A317 | `UI/Screens/Manager/FinanceScreen.cs:542` | d | Pixelschritte der Kurslinie (Bresenham) | Linienroutine 0x13243 (0x50:0x2F3) nicht analysiert, re-meldungen.md §A nur Schnittstelle | – | P3 |
+| A318 | `UI/Screens/Manager/InboxScreen.cs:7` | b | Posteingang-Layout ohne Videobeleg | Remake-Bildschirm „Neuer“ = Posteingang, anforderungen/bildschirme.md Z.67/100 | – | – |
+| A319 | `UI/Screens/Manager/InboxScreen.cs:11` | b | Kachel „Neuer“ öffnet Posteingang | anforderungen/bildschirme.md Z.67/100 (Vorgabe) | – | – |
+| A320 | `UI/Screens/Manager/NewsBar.cs:21` | b | Hinweis „(Neuer)“/„(Klicken)“ bei Fragen | Remake-Posteingang, R4-02 #109 | – | – |
+| A321 | `UI/Screens/Manager/NewsBar.cs:89` | c | Aufteilung einer Nachricht in der Nachrichtenleiste | Video/DOSBox mit offener Nachricht (Leiste 0x4B5F4), Zeilenlage vermessen | – | P3 |
+| A322 | `UI/Screens/Manager/StadiumScreen.cs:37` | c | Klickflächen Anzeigetafel und Sitzkomfort im Stadionbild | Video Stadion mit Mausbewegung oder Trefferprüfung in 0x3D7F8 lesen | – | P3 |
+| A323 | `UI/Screens/Manager/StadiumScreen.cs:50` | c | Lage der kb\8-Teile auf freien Flächen | Video/DOSBox mit ausgebautem Stadion (Gastronomie, Kino), Template-Matching | – | P3 |
+| A324 | `UI/Screens/Manager/StadiumScreen.cs:200` | a | Anzeige der Platzzahl nach dem Ausbau | re-geld.md §0x3D45F Modus 1 (Plätze nach dem Bau, „(n)“) und Kostenzeile 0x3E52B | G7 | P3 |
+| A325 | `UI/Screens/Manager/StadiumScreen.cs:237` | c | Lage Imbiß/Kneipe/Kino im Stadionbild | DOSBox-Stand mit Gastronomiestufe 1/2, Bild gegen kb\8-Teile matchen | – | P3 |
+| A326 | `UI/Screens/Manager/StadiumScreen.cs:283` | a | Anzeige laufender Baustelle | re-geld.md §0x3D45F („(Noch n Wochen)“) und §Ausbau Schritt 5 (0x3E1FE, „Bauzeit: ca. w Wochen“) | G7 | P3 |
+| A327 | `UI/Screens/Manager/StadiumScreen.cs:303` | a | Pfeile ▲▼ als gezeichnete Dreiecke | re-geld.md §Ausbau Schritt 4 (120h:3Eh) und re-meldungen.md §C 0x4BA58: Grafik aus kb\4 | M-K4 | P3 |
+| A328 | `UI/Screens/Manager/YouthScreen.cs:14` | a | Ort der Talentsuche (Spion im Jugendfenster) | re-rest.md „Basis 0x46E – Talentsuche“: Spion wird in der Transferliste 0x465F1 losgeschickt (Datei 0x46A10, Preis 0x469CA) | R-K1 | P2 |
+| A329 | `UI/Screens/Manager/YouthScreen.cs:39` | a | Durchsichtige Farbe der Fahnen (Blit-Modus 0xC0) | re-livespiel.md Tabelle Aufrufe `50h:A79h`: Modus 0xC0 = Farbe 0 durchsichtig; prüfen gegen Hintergrund 4 der Grafik kb\33 | – | P3 |
+| A330 | `UI/Screens/Manager/YouthScreen.cs:180` | a | Abstand „n.Platz“ – „m.Liga“ gemessen statt Feldbreite | reverse-engineering.md Zahlenausgabe 0x0B954 (Mindestbreite DGROUP 0x374), Zeichenkette Datei 0x3A488; finanzen-rekonstruktion.md Jugend | – | P3 |
+| A331 | `UI/Screens/MenuLamps.cs:42` | d | Lampe 0 beim Bundestrainer vor Ernennung | Lampenregel des Hauptmenüs (Ov 0x110) nicht analysiert; RE der Lampenabfrage nötig | – | P3 |
+| A332 | `UI/Screens/MenuLamps.cs:51` | d | Lampe 1: Bedeutung Spielerfeld 0x1E | Feld 0x1E und Lampenabfrage im Hauptmenü (Ov 0x110) nicht analysiert; RE nötig | – | P2 |
+| A333 | `UI/Screens/QuitQuestion.cs:17` | a | Lage, Rahmen und „?“-Felder der Beenden-Frage | re-meldungen.md „Datei 0x4C246 – Meldung und Frage“, Aufbau-Tabelle (Symbolfelder 83/212 \| 112, Farben 14/12) | M-K1 | P3 |
+| A334 | `UI/Screens/QuitQuestion.cs:20` | a | Escape/rechte Maustaste wie „Kein Gedanke“ | re-meldungen.md §0x4C246 Eingabe: Tastatur und rechte Maustaste werden nicht ausgewertet; ggf. als Remake-Komfort entscheiden | M-K1 | P3 |
+| A335 | `UI/Screens/SaveLoad/AutoSave.cs:20` | b | Autosave-Takt, erster Manager, Dateiname, kein Sichern am Ende | formate/spielstand.md „Dialog und automatisches Speichern“, Entscheidungstabelle | – | – |
+| A336 | `UI/Screens/SaveLoad/SaveFiles.cs:40` | b | Ein Spielstandordner statt Laufwerk/Verzeichnis, *.ems | Plattformersatz; formate/spielstand.md Entscheidungstabelle „Dateiendung, Ordner“ | – | – |
+| A337 | `UI/Screens/SaveLoad/SaveLoadScreen.cs:26` | b | Bedienung Laden/Speichern, Laufwerksknöpfe ohne Wirkung | formate/spielstand.md Entscheidungstabelle (Bedienung, Laufwerksknöpfe) | – | – |
+| A338 | `UI/Screens/SaveLoad/SaveLoadScreen.cs:28` | c | Bild des Speichern-Dialogs, Lage „SEITE:“, Infofeld | DOSBox-Bildschirmfoto Speichern-Dialog mit >48 Spielständen; Infofeld siehe A339 (#326) | – | P3 |
+| A339 | `UI/Screens/SaveLoad/SaveLoadScreen.cs:217` | d | Spielstand-Info 0x5B661 beim Rechtsklick fehlt | Funktion 0x5B661 in docs nicht analysiert (#326); RE plus DOSBox-Bild Rechtsklick nötig | – | P3 |
+| A340 | `UI/Screens/SaveLoad/SaveLoadScreen.cs:457` | b | Seitenpfeile nach Pixeln gezeichnet | formate/spielstand.md Entscheidungstabelle „Pfeile ▲▼“ (keine Grafik im Original gefunden) | – | – |
+| A341 | `UI/Screens/SeasonEndGameOverScreen.cs:7` | a | Wortlaut/Gestaltung Spielende und Entlassung | re-livespiel.md Spielende-Bildschirm Datei 0x51F3D („Das wars...“/„Carpe diem !“); Entlassungstext weiter offen | L8 | P3 |
+| A342 | `UI/Screens/SeasonEndSummaryScreen.cs:31` | a | Meistersymbol Puck statt Symbol 5 | Tabelle DGROUP 0x4B2E (Datei 0x2714F): Bit 3 → Symbol 5; saison.md „Offen“ | – | P3 |
+| A343 | `UI/Screens/SeasonEndTrophyScreen.cs:11` | d | Pokal aus Einzelteilen kb\16, Schriftlage geschätzt | saison.md „Offen“: Zusammensetzung nicht analysiert; RE der Meisterfoto-Funktion (Aufruf 0x34ED0) nötig | – | P3 |
+| A344 | `UI/Screens/SeasonEndWidgets.cs:62` | a | Liga im Genitiv („der Zweiten Liga“) | em.exe-Texte Datei 0x18E64 „Bundesliga“, 0x18E6F „Zweiten Liga“, 0x18E7C „Oberliga“ nach „Platz der“ 0x18806 (noch nicht in docs) | – | P3 |
+| A345 | `UI/Screens/SettingsScreen.cs:12` | b | Geräteeinstellungen (Lautstärke, Vollbild, Autosave) | anforderungen/zusatzfunktionen.md (Lautstärke einstellbar); spielstand.md „Automatisch speichern“ neu | – | – |
+| A346 | `UI/Screens/SetupScreen.cs:185` | d | Meldung „Nur Weltkugel: nur ein Manager“ | Prüfung des Spielmodus im Setup (Ov 0xD8 um Datei 0x295DF) nicht gelesen; RE nötig | – | P3 |
+| A347 | `UI/Screens/SetupScreen.cs:287` | a | Reihenfolge der Vereine in der Auswahl | re-rest.md Datei 0x28030: Seite p zeigt Sätze 12p … 12p+11 in Satzreihenfolge | R-K5 | P3 |
+| A348 | `UI/Screens/Statistics/ClubStatisticsScreen.cs:33` | b | Klick/Taste schließt statt Rückkehr ins Menü | reverse-engineering.md Vereinsstatistik (kein Warten, Rückkehr nach 0x38:0xDDE); Abweichung durch Bildschirmmodell | – | – |
+| A349 | `UI/Screens/Statistics/ClubStatisticsScreen.cs:35` | a | Über-/Unterzahl-Zähler aus gespeicherten Werten | spielberechnung.md §18 Zähler k = 4/5 (0xA939–0xA9A2, 0x35A84/0x35B18), PowerPlay umgesetzt; Anschluss prüfen, Kommentar evtl. veraltet | – | P2 |
+| A350 | `UI/Screens/Statistics/EternalTableScreen.cs:23` | d | Bildlauf-Schrittweite Ewige Tabelle | Funktion in Ov 0xE0 (Ewige Tabelle) nicht analysiert; RE nötig | – | P3 |
+| A351 | `UI/Screens/Statistics/FairplayScreen.cs:21` | a | Tasten schließen Fair-Play-Tabelle | reverse-engineering.md Warten 0x38:0x118 (Datei 0xB908): nur Mausereignis 1/3, keine Tasten; sonst als Komfort entscheiden | – | P3 |
+| A352 | `UI/Screens/Statistics/HighscoreScreen.cs:12` | b | Speicherort der Bestenliste | highscore.md [APPROX] „Speicherort“; Plattformersatz | – | – |
+| A353 | `UI/Screens/Statistics/HighscoreScreen.cs:21` | d | Sitzungskennung statt DGROUP 0x2C4 | Herkunft/Schreiber von DGROUP 0x2C4 nicht geprüft; RE nötig | – | P3 |
+| A354 | `UI/Screens/Statistics/HighscoreScreen.cs:118` | d | Jede Taste/Klick führt zurück | Warteschleife der Bestenliste 0x5D90D nicht dokumentiert; RE nötig | – | P3 |
+| A355 | `UI/Screens/Statistics/HighscoreScreen.cs:129` | d | Rundung der Titelzentrierung (321 statt 320) | highscore.md [APPROX]: Rundungsregel der Zentrierfunktion nicht gelesen; RE der Zentrierung nötig | – | P3 |
+| A356 | `UI/Screens/Statistics/HistoryScreen.cs:22` | d | Balkenhöhe der Historie (12er-Blöcke) | Kodierung in Ov 0xE0 (Historie) nicht analysiert; RE nötig | – | P3 |
+| A357 | `UI/Screens/Statistics/HistoryScreen.cs:162` | c | Balkenfarbe der Historie | DOSBox-Bildschirmfoto Historie (Palettenindex direkt) oder mit RE aus A356 | – | P3 |
+| A358 | `UI/Screens/Statistics/HistoryScreen.cs:165` | d | Balkenhöhe Liga/Pokale | wie A356: Kodierung nicht gelesen, RE Ov 0xE0 nötig | – | P3 |
+| A359 | `UI/Screens/Statistics/PlayerStatisticsScreen.cs:42` | a | Escape verlässt Spielerstatistik | reverse-engineering.md/Kommentar: Verlassen nur mit rechter Maustaste (Datei 0x26D4B, Ereignis 3); sonst Komfort entscheiden | – | P3 |
+| A360 | `UI/Screens/Statistics/PlayerStatisticsScreen.cs:46` | a | Spielerwert statt Kaufpreis | reverse-engineering.md §Spielerdaten-Fenster 0x041AC: Feld 0 Kaufpreis = Kaderplatz +0x2C; Datenfeld im Modell fehlt | – | P2 |
+| A361 | `UI/Screens/Statistics/StrengthScreen.cs:21` | d | Smiley immer gelb (Wertverlauf je Verein) | wettbewerbe.md Stärkevergleich [APPROX]; Verlauf je Verein (0x518AB ff.) nicht analysiert | – | P3 |
+| A362 | `UI/Screens/Team/ContractsScreen.cs:56` | c | Liste hinter den Saisonende-Verhandlungen | Kaderliste 0x108:0x43 nicht vermessen; Karriere-Video Saisonende-Verhandlung oder DOSBox-Bild am 29. April | – | P3 |
+| A363 | `UI/Screens/Team/ContractsScreen.cs:141` | d | Absage der Vertragsverhandlung (Spur kader R2-11) | transfer.md: Absage nur aus Spur kader [APPROX]; Originalregel in 0x4A1DB/0x3FFE0 nicht belegt | – | P2 |
+| A364 | `UI/Screens/Team/LineupScreen.cs:16` | c | Linksklick auf nicht eingesetzte/aufgestellte Spieler wählt aus | DOSBox: Aufstellung bedienen (Klickfolge, STATUS-Spalte) vor/nach | – | P3 |
+| A365 | `UI/Screens/Team/LineupScreen.cs:18` | b | Tasten A (Auto) und C (leeren) | Remake-Komfort ohne Originalbeleg; keine schriftliche Entscheidung gefunden | – | – |
+| A366 | `UI/Screens/Team/PlayerDataWindow.cs:28` | b | Fester Zufall beim Preis im Spielerdatenfenster | AGENTS.md §4 Architekturregel: Bildschirme verändern keinen Spielzustand durch Öffnen | – | – |
+| A367 | `UI/Screens/Team/PlayerDataWindow.cs:82` | a | Klammerzähler (Vorsaison) und Pokalspalten fehlen | reverse-engineering.md §0x041AC Tore/Spiele: Bytes +0x03/+0x06+i, Wörter +0x22/+0x1C+2i; Daten im Modell fehlen | – | P3 |
+| A368 | `UI/Screens/Team/PlayerDataWindow.cs:98` | a | Versicherung „ja“ statt Summe | reverse-engineering.md §0x041AC Feld 2 = +0x30, Prämie Wert(Gehalt)/2 (Z. 587), Zahlung 0x07089; Modellfeld fehlt | – | P3 |
+| A369 | `UI/Screens/Team/PlayerHintLine.cs:82` | a | Verletzungsart, Sperre in Minuten, Belastung | reverse-engineering.md Hinweiszeile: +0x17 Art (DGROUP 0xA00), +0x0D Minuten, +0x13; Modellfelder fehlen | – | P2 |
+| A370 | `UI/Screens/Team/PlayerHintLine.cs:128` | a | Belastung +0x13 aus Energie | reverse-engineering.md Hinweiszeile/0x041AC (Erschöpfung = +0x13·10/15); Fortschreibung von +0x13 im Modell fehlt | – | P2 |
+| A371 | `UI/Screens/Team/PlayerInfoPopup.cs:13` | a | Unterzahl/Überzahl aus Technik/Kondition abgeleitet | reverse-engineering.md §0x041AC Balken: Halbbytes Kaderplatz +0x19 (·94/15); Modellfeld fehlt | – | P3 |
+| A372 | `UI/Screens/Team/PlayerInfoPopup.cs:144` | a | Rahmenfarben der Balken 2/3 und 197 | reverse-engineering.md §0x041AC Balken: Rahmen Farbe 1, innen Farbe 0, Farbband DGROUP 0x482A | – | P3 |
+| A373 | `UI/Screens/Team/TacticsScreen.cs:16` | c | Pfeilrichtung bei den Modi | DOSBox: Taktik, Modus-Pfeile oben/unten klicken und Folge notieren (oder RE Datei 0x47D9B) | – | P3 |
+| A374 | `UI/Screens/Team/TeamUi.cs:74` | c | Schatten der Dialoge einfarbig | DOSBox-Bild Vertragsverhandlung über buntem Hintergrund (Abdunkeln prüfen) | – | P3 |
+| A375 | `UI/Screens/Team/TeamUi.cs:198` | a | Lage/Größe MessageBox | re-meldungen.md §0x4C246 (Modus 0 Meldung, Fenster 75\|107, Symbol „!“ 16/17) | M-K3 | P3 |
+| A376 | `UI/Screens/Team/TransferDialog.cs:7` | a | Lage/Aufbau der Kauf-/Leih-/Verkaufsdialoge | re-meldungen.md §0x4C246 (Aufrufer 0x465F1), reverse-engineering.md Z. 600 (Meldung über 0x120:0x7A); Angebot 0x491F9 | M-K1 | P3 |
+| A377 | `UI/Screens/Team/TransferDialog.cs:209` | c | Angebotsfenster ohne Videobeleg | DOSBox-Bild eines Angebots (Spieler auf dem Markt mit Gebot) gegen Lage aus Code 0x491F9 | – | P3 |
+| A378 | `UI/Screens/Team/TransferDialog.cs:228` | a | „?“-Felder gezeichnet | re-meldungen.md §0x4C246 Symbolfelder: Fläche 14, Umriss 12, „?“ Schrift 1, Grundlinie 129 | M-K1 | P3 |
+| A379 | `UI/Screens/Team/TransferScreen.cs:14` | a | Kauf-, Verkaufs-, Gebotsdialoge nicht im Video | re-meldungen.md §0x4C246 (Aufrufer 0x465F1), Angebotsfenster 0x491F9 (TransferDialog-Kommentar) | M-K1 | P3 |
+| A380 | `UI/Screens/Team/TransferScreen.cs:292` | c | „*“ für Spieler auf dem Markt | Video/DOSBox Transfermarkt mit eigenem Spieler auf der Liste; Kennzeichnung im Original prüfen | – | P3 |
+| A381 | `UI/Screens/Team/TransferScreen.cs:377` | a | Schulden und Anlagen 0 DM in der Kontoleiste | re-geld.md „Transfermarkt: Kontoleiste (Datei 0x463CC)“ | G5 | P2 |
+| A382 | `UI/Screens/Team/TransferScreen.cs:419` | c | Farbindex 201 der Markierung geschätzt | DOSBox-Bildschirmfoto Transfermarkt mit Maus über Eintrag (Index direkt ablesen) | – | P3 |
+
+## Tabelle 2: Funktionen „dokumentiert“ und „genähert“ (Spielcode)
+
+Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/EishockeyManager.`.
+
+| ID | Datei | Bereich | Byte | Karte | Einordnung | Thema | Remake-Datei bzw. Begründung | Kand. | Prio |
+|---|---|---|---:|---|---|---|---|---|---|
+| F001 | 0x04C75 | Basis 0x238 | 321 | dokumentiert | vorhanden | Wertbalken im Spielerdatenfenster (Rahmen, 8 Farbstufen aus DGROUP 0x482A, Beschriftung) | UI/Screens/Team/PlayerInfoPopup.cs (Bar, BarColors); Fundstelle TeamValues.cs ist Fehltreffer | – | P3 |
+| F002 | 0x054D9 | Basis 0x238 | 72 | dokumentiert | fehlt | Spielerwert des Pools um random(1,7)−4 ändern, begrenzt 30…99 (in 0x05521 auf +0x15/+0x16) | Keine Wanderung der Poolspielerwerte beim Saisonwechsel im Remake | M-K8 | P2 |
+| F003 | 0x05521 | Basis 0x238 | 706 | dokumentiert | fehlt | Soll-Spielerzahl je Liga aus Kadergrößen, Auslandsspieler umverteilen, Poolwerte driften (Saisonwechsel/Spielstart) | Keine Entsprechung; Transfer.Pool.cs erneuert nur Plätze mit Besitzer 6 | M-K7, M-K8 | P2 |
+| F004 | 0x057E3 | Basis 0x238 | 249 | dokumentiert | fehlt | Spielstart: freie Poolspieler auf die Ligen verteilen (Gegenstück zu 0x07C7E) | Keine Entsprechung in NewGame/Transfer.Pool | M-K7 | P2 |
+| F005 | 0x058DC | Basis 0x238 | 220 | dokumentiert | fehlt | Verkauf an Computerverein stärkt Teamwerte des Käufers (Kondition/Technik + random(d−1,d+1)) | Restlücke laut spielberechnung.md; Transferverkauf ändert keine Teamwerte | – | P1 |
+| F006 | 0x063BE | Basis 0x238 | 267 | dokumentiert | fehlt | Frage „Sponsorzuschuß“ in Höhe des Kaufpreises nach Kauf vom Computermarkt | Remake bietet nach Kauf keinen Zuschuss an (transfer.md Befund) | – | P1 |
+| F007 | 0x064C9 | Basis 0x238 | 33 | dokumentiert | vorhanden | n-ter Kalendertag mit Bitmaske (Kalendertabelle DGROUP 0x828) | Core/Season.cs (DaysOf, LeagueMatchDays) | – | P3 |
+| F008 | 0x06B33 | Basis 0x46e | 361 | dokumentiert | vorhanden | Standard-Trainingsplan (Arten 2–8 reihum, freie Einheiten, Level 5 frei) | Core/Squad.Training.cs (Prepare, Standardplan; Marker nur DGROUP 0x48EB) | – | P3 |
+| F009 | 0x06C9C | Basis 0x46e | 10 | dokumentiert | nicht nötig | setzt DGROUP 0x175 = 1, ohne Aufrufer | Toter Code | – | – |
+| F010 | 0x06CDF | Basis 0x46e | 160 | dokumentiert | vorhanden | Smiley mit Rahmen aus Bildstreifen zeichnen | UI/Widgets.cs (Smileys) | – | P3 |
+| F011 | 0x06D7F | Basis 0x46e | 550 | dokumentiert | vorhanden | Talent anlegen (Poolspieler, Alter 18–21, Werte um random(40,90)), Grenze 28 Spieler | Core/Transfer.Talent.cs, Player.Factory.cs; Werte/Grenze abweichend | R-K1 | P2 |
+| F012 | 0x06FA5 | Basis 0x46e | 228 | dokumentiert | vorhanden | Talentsuche: Takt 2×/Woche, Zähler, Erfolgschance nach Level, Meldungen | Core/FinanceYouth.cs AdvanceTalentSearch [APPROX], Regeln abweichend | R-K1 | P2 |
+| F013 | 0x07C7E | Basis 0x46e | 627 | dokumentiert | fehlt | Saisonwechsel: freie Poolspieler auf Ligen mit Fehlbedarf umhängen | Keine Entsprechung im Saisonwechsel | M-K7 | P2 |
+| F014 | 0x07EF1 | Basis 0x46e | 122 | dokumentiert | fehlt | Zielverein je Liga reihum (erste fünf Vereine doppelt), Ausland random(64,150) | Teil von 0x07C7E/0x057E3, fehlt im Remake | M-K7 | P2 |
+| F015 | 0x07F6B | Basis 0x46e | 352 | dokumentiert | fehlt | Vereinsliste einer Liga nach Stärke sortieren (Ergebnis ungenutzt) | Teil von 0x07C7E; wirkungslos, nur bei K7 mitbeachten | M-K7 | P3 |
+| F016 | 0x0A3F7 | Basis 0x62c | 141 | dokumentiert | vorhanden | Gegentor dem Torhüter auf dem Eis anrechnen (nur Managervereine) | Core/MatchEngine.Live.cs (CreditPlayers), Marker als 0xA3F7 ohne Datei-Präfix | – | P3 |
+| F017 | 0x0AD7A | Basis 0x62c | 177 | dokumentiert | nicht nötig | Summen der Aufstellung, ohne Aufrufer | Toter Code | – | – |
+| F018 | 0x0AE2B | Basis 0x902 | 354 | dokumentiert | fehlt | Verein zum Zusehen markieren (Vereinsfeld 0x34 Bit 7) für Live-Anzeige | Remake hat keine Markierung/Live-Anzeige (MatchEngine.Shootout [APPROX]) | L1 | P2 |
+| F019 | 0x0AF8D | Basis 0x902 | 140 | dokumentiert | nicht nötig | Bildstreifen kopieren, wahlweise zeilenweise einrollen | Pufferkopie; Aufrufer-Bildschirme zeichnen selbst | – | – |
+| F020 | 0x0B019 | Basis 0x902 | 205 | dokumentiert | nicht nötig | Fensterfehler anzeigen und Programm beenden | Fenstertabelle gibt es nicht; Fehler sind Ausnahmen | M-K10 | – |
+| F021 | 0x0B0E6 | Basis 0x902 | 111 | dokumentiert | nicht nötig | Maus in Fenster k (Grenzen einschließlich) | Treffertests je Bildschirm als Rect, gleiche Regel | – | – |
+| F022 | 0x0B155 | Basis 0x902 | 754 | dokumentiert | vorhanden | Fenster öffnen: Rahmen aus kb\2-Teilen, Hintergrund sichern, Fehlerprüfung | UI/Widgets.cs (Rahmen aus kb\2); Sicherung entfällt | – | P3 |
+| F023 | 0x0B447 | Basis 0x902 | 352 | dokumentiert | nicht nötig | Fenster schließen, Hintergrund zurückschreiben | Bildschirme zeichnen jedes Bild neu | – | – |
+| F024 | 0x0B5A7 | Basis 0x902 | 121 | dokumentiert | nicht nötig | Rechteck-Umriss zeichnen | Zeichenprimitive in Surface/Widgets | – | – |
+| F025 | 0x0B620 | Basis 0x902 | 49 | dokumentiert | nicht nötig | Rechteck füllen | Zeichenprimitive in Surface (Fill) | – | – |
+| F026 | 0x0B7B5 | Basis 0x902 | 69 | dokumentiert | nicht nötig | Linie in einer Farbe | Surface.HLine/VLine und eigene Linien | – | – |
+| F027 | 0x0B830 | Basis 0x99f | 146 | dokumentiert | nicht nötig | memmove (Speicher überlappend kopieren) | Sprachmittel .NET | – | – |
+| F028 | 0x0B8C2 | Basis 0x99f | 60 | dokumentiert | nicht nötig | memset (Speicher füllen) | Sprachmittel .NET | – | – |
+| F029 | 0x0B8FE | Basis 0x99f | 10 | dokumentiert | nicht nötig | auf Strahlrücklauf warten | MonoGame taktet selbst | – | – |
+| F030 | 0x0B954 | Basis 0x99f | 350 | dokumentiert | vorhanden | Zahlenausgabe mit Mindestbreite, Drittel-DM → DM | Core/GameState.cs FormatMoney und Zahlenformatierung der Bildschirme | – | P3 |
+| F031 | 0x0BAB2 | Basis 0x99f | 22 | dokumentiert | nicht nötig | Fernhülle Zahl → Text | String-Formatierung in .NET | – | – |
+| F032 | 0x0BAFB | Basis 0x99f | 886 | dokumentiert | vorhanden | Textausgabe mit Originalfont (Zeichen für Zeichen, Breiten) | Formats-Fontlader und UI-Textzeichnen (Surface.Text) | – | P3 |
+| F033 | 0x0BE71 | Basis 0x99f | 92 | dokumentiert | nicht nötig | Zeichen auf darstellbar prüfen (Ersatzliste) | Fonts zeichnen fehlende Zeichen nicht | – | – |
+| F034 | 0x0BECD | Basis 0x99f | 45 | dokumentiert | nicht nötig | Schrift wählen (Fontzeiger) | Font wird als Parameter übergeben (Assets) | – | – |
+| F035 | 0x0BEFA | Basis 0x99f | 106 | dokumentiert | nicht nötig | Bildpuffer freigeben | Speicherverwaltung .NET | – | – |
+| F036 | 0x0BF64 | Basis 0x99f | 113 | dokumentiert | nicht nötig | EMS-Bildcache: Seiten einblenden | Alle Bilder im Speicher | – | – |
+| F037 | 0x0C068 | Basis 0x99f | 47 | dokumentiert | nicht nötig | Mausereignis abfragen | MonoGame-Eingabe | – | – |
+| F038 | 0x0C0B8 | Basis 0x99f | 197 | dokumentiert | vorhanden | Kurzmeldung ohne Knopf, schließt nach 75 bzw. 45/3 Takten | UI MainMenuScreen.CoachWarning über TeamUi.MessageBox (Knopf, Klick) – abweichend | M-K2 | P2 |
+| F039 | 0x0C17D | Basis 0x99f | 1105 | dokumentiert | nicht nötig | Bildlader kb\n (.vga), wahlweise in EMS-Cache | Formats-Bildlader/Assets ersetzt | – | – |
+| F040 | 0x0C5CE | Basis 0x99f | 347 | dokumentiert | fehlt | Bildschirm aus/ein mit Palette, Seitenwechsel und Zwischenbild kb\22 | Bildwechsel im Remake sofort ohne Zwischenbild | M-K9 | P3 |
+| F041 | 0x0C729 | Basis 0x99f | 96 | dokumentiert | nicht nötig | Speicher anfordern, sonst SPEICHER-Error | Speicherverwaltung .NET | – | – |
+| F042 | 0x0C789 | Basis 0x99f | 22 | dokumentiert | nicht nötig | Speicher freigeben | Speicherverwaltung .NET | – | – |
+| F043 | 0x255C0 | Ov 0xc0 (337B) | 45 | dokumentiert | nicht nötig | Sound Blaster digital erkennen | Audio über MonoGame | – | – |
+| F044 | 0x255ED | Ov 0xc0 (337B) | 18 | dokumentiert | nicht nötig | Hilfe beim Räumen des EMS-Bildcaches (Fehlerhalt) | Kein EMS-Cache nötig | – | – |
+| F045 | 0x255FF | Ov 0xc0 (337B) | 20 | dokumentiert | nicht nötig | auf Ende der digitalen Tonausgabe warten, ohne Aufrufer | Toter Code/Audio über MonoGame | – | – |
+| F046 | 0x25613 | Ov 0xc0 (337B) | 49 | dokumentiert | nicht nötig | EMS-Cache-Hilfe beim Spielstart | Kein EMS-Cache nötig | – | – |
+| F047 | 0x25644 | Ov 0xc0 (337B) | 288 | dokumentiert | nicht nötig | Daten ins EMS kopieren | Kein EMS-Cache nötig | – | – |
+| F048 | 0x25764 | Ov 0xc0 (337B) | 459 | dokumentiert | nicht nötig | EMS-Bildcache beim Spielstart füllen | Alle Dateien im Speicher | – | – |
+| F049 | 0x2592F | Ov 0xc0 (337B) | 96 | dokumentiert | nicht nötig | EMS-Cacheeintrag freigeben | Kein EMS-Cache nötig | – | – |
+| F050 | 0x2598F | Ov 0xc0 (337B) | 127 | dokumentiert | nicht nötig | EMS-Bildcache räumen | Kein EMS-Cache nötig | – | – |
+| F051 | 0x25A0E | Ov 0xc0 (337B) | 97 | dokumentiert | nicht nötig | Schriften newbold/flow/mini laden | Assets-Fontlader ersetzt | – | – |
+| F052 | 0x25A6F | Ov 0xc0 (337B) | 70 | dokumentiert | nicht nötig | EMS-Cache-Hilfe im Fehlerhalt | Kein EMS-Cache nötig | – | – |
+| F053 | 0x25AB5 | Ov 0xc0 (337B) | 68 | dokumentiert | nicht nötig | EMS-Cacheeintrag anlegen | Kein EMS-Cache nötig | – | – |
+| F054 | 0x25AF9 | Ov 0xc0 (337B) | 56 | dokumentiert | nicht nötig | eigene Zufallsfolge random(100,300)-mal vorspulen | Eigene Zufallsquellen, keine Regelwirkung | – | – |
+| F055 | 0x25B31 | Ov 0xc0 (337B) | 25 | dokumentiert | nicht nötig | srand(time(0)) | .NET-Zufall | – | – |
+| F056 | 0x25B4A | Ov 0xc0 (337B) | 615 | dokumentiert | fehlt | Fehlerhalt: Fehlertext, Spielstand des Tagesbeginns als ERROR.HOK sichern, Ende | Ausnahmen beenden ohne Sicherung; nur AutoSave | M-K10 | P3 |
+| F057 | 0x26D9A | Ov 0xc8 (33FB) | 209 | dokumentiert | vorhanden | Saisonende-Fenster „Ereignisse“ mit Infoleiste | UI/Screens/SeasonEndSummaryScreen.cs | – | P3 |
+| F058 | 0x28030 | Ov 0xd8 (3606) | 170 | dokumentiert | vorhanden | Vereinsauswahl: 12 Logos je Seite in Satzreihenfolge | UI SetupScreen (DrawClubPicker, ClubAt [APPROX]) | R-K5 | P3 |
+| F059 | 0x280DA | Ov 0xd8 (3606) | 55 | dokumentiert | vorhanden | Markierung Managerfeld (Spalte, Zeile) | UI SetupScreen | – | P3 |
+| F060 | 0x28111 | Ov 0xd8 (3606) | 84 | dokumentiert | vorhanden | zwei Markierungsstriche 36 breit, 39 auseinander | UI SetupScreen | – | P3 |
+| F061 | 0x2A5F5 | Ov 0xe0 (3810) | 173 | dokumentiert | vorhanden | „:“ und rechtsbündiger DM-Betrag | UI Finanz-/Stadion-/Werbebildschirme | – | P3 |
+| F062 | 0x2A6A2 | Ov 0xe0 (3810) | 779 | dokumentiert | vorhanden | Werbeflächen zeichnen (Banden, Trikot, TV, Eistafeln) | UI/Screens/Manager/AdvertisingScreen.cs; Trikot abweichend | R-K4 | P3 |
+| F063 | 0x2AE8A | Ov 0xe0 (3810) | 382 | dokumentiert | vorhanden | Summenzeilen Einnahmen/Ausgaben/Saldo im Werbebildschirm | UI/Screens/Manager/AdvertisingScreen.cs (nicht nachgemessen) | – | P3 |
+| F064 | 0x2B008 | Ov 0xe0 (3810) | 184 | dokumentiert | nicht nötig | Kanten eines Auswahlrahmens aus Bild zurückkopieren | Remake zeichnet neu | – | – |
+| F065 | 0x2FB31 | Ov 0xe8 (3D11) | 254 | dokumentiert | vorhanden | Pfeile der WM-Paarungsansicht (Treffer 46×38, gedrückt Quelle+10) | UI/Screens/Competitions/CupPairingsScreen.cs; gedrückte Pfeile fehlen [APPROX] | – | P3 |
+| F066 | 0x31505 | Ov 0xe8 (3D11) | 228 | dokumentiert | vorhanden | Play-off: Heim und Gast nach jedem Spiel tauschen | Core/Playoffs.cs (Heimrecht [APPROX], Doku belegt) | – | P3 |
+| F067 | 0x315E9 | Ov 0xe8 (3D11) | 595 | dokumentiert | vorhanden | Play-off-Spieltag „best of five“, Siege zählen, drei Runden | Core/Playoffs.cs ([APPROX] → [ORIGINAL] laut Doku möglich) | – | P3 |
+| F068 | 0x3183C | Ov 0xe8 (3D11) | 248 | dokumentiert | fehlt | Live-Tore der Pokal-/WM-Paarungsseiten während der Spiele ablegen | Keine Live-Anzeige im Remake | L1 | P2 |
+| F069 | 0x346D5 | Ov 0xe8 (3D11) | 148 | dokumentiert | vorhanden | Deutsche Europacup-Teilnehmer (Meister, Titelverteidiger) setzen | Core/CupsEurope.cs ([ORIGINAL] 0x346D5 ohne Datei-Präfix) | – | P3 |
+| F070 | 0x347EF | Ov 0xe8 (3D11) | 131 | dokumentiert | vorhanden | DEB-Pokal-Heimrecht: Tausch bei niederklassigem Gastgeber rechts | Core/CupsDeb.cs ([ORIGINAL] 0x347EF ohne Datei-Präfix) | – | P3 |
+| F071 | 0x34872 | Ov 0xe8 (3D11) | 43 | dokumentiert | vorhanden | Verein in Liste der deutschen EC-Teilnehmer? | Core/CupsEurope.cs | – | P3 |
+| F072 | 0x34B3E | Ov 0xe8 (3D11) | 56 | dokumentiert | nicht nötig | Ergebniszeile einer DEB-Runde sichern | Ergebnisse liegen in Pokalobjekten (CupsDeb) | – | – |
+| F073 | 0x34F7D | Ov 0xe8 (3D11) | 88 | dokumentiert | nicht nötig | Ergebniszeilen und Pokalablage leeren | Pokalobjekte werden neu angelegt | – | – |
+| F074 | 0x34FF9 | Ov 0xe8 (3D11) | 189 | dokumentiert | vorhanden | Überschrift „<LIGA> GEGEN <LIGA>:“ der DEB-Pokalgruppen | UI DebCupGamesScreen.GroupTitle | – | P3 |
+| F075 | 0x350B6 | Ov 0xe8 (3D11) | 493 | dokumentiert | vorhanden | Titelbild kb\16 (Deutscher Meister, Pokalsieger, Europacupsieger) | UI/Screens/SeasonEndTrophyScreen.cs | – | P3 |
+| F076 | 0x35CBE | Ov 0xf0 (42E9) | 159 | dokumentiert | fehlt | Hintergrund in drei Farbstreifen der Penalty-Anzeige | Keine Live-/Penaltyanzeige im Remake | L2 | P3 |
+| F077 | 0x35D5D | Ov 0xf0 (42E9) | 239 | dokumentiert | vorhanden | Banner „Ligaspiel“ usw. (Farbe 11/0, 60 Takte) | UI SeasonInfo.DrawBanner, MatchDayScreen – Schatten und Dauer abweichend | R-K3 | P3 |
+| F078 | 0x36146 | Ov 0xf0 (42E9) | 35 | dokumentiert | nicht nötig | Wert a↔b in einem Byte tauschen | Hilfsroutine des Vereinstauschs, im Remake Objektverweise | – | – |
+| F079 | 0x367B1 | Ov 0xf0 (42E9) | 222 | dokumentiert | vorhanden | Tageszähler → Tag, Monat, Jahr (ohne 29. Februar) | Core/Season.cs (LayoutDate, Format) | – | P3 |
+| F080 | 0x3688F | Ov 0xf0 (42E9) | 34 | dokumentiert | vorhanden | mit 1/2 der größere Wert, sonst der zweite | Core/MatchEngine.Original.cs ([ORIGINAL] Datei 0x3688F bereits markiert) | – | – |
+| F081 | 0x369C7 | Ov 0xf0 (42E9) | 227 | dokumentiert | vorhanden | gewertete Spiele in Ligatabelle/Ergebniszeilen schreiben | Core/MatchEngine.Live.cs (#165) | – | P3 |
+| F082 | 0x36AAA | Ov 0xf0 (42E9) | 179 | dokumentiert | vorhanden | Spiel werten (Marke 0x5A, Wertung 0:2/2:0 merken) | Core/MatchEngine.Live.cs (#165) | – | P3 |
+| F083 | 0x37A4A | Ov 0xf0 (42E9) | 24 | dokumentiert | nicht nötig | „.“ an Platznummer anhängen (strcat) | String-Formatierung in .NET | – | – |
+| F084 | 0x38D96 | Ov 0xf0 (42E9) | 645 | dokumentiert | fehlt | Eingriffsmenü bei Klick in die Managerpaarung im Live-Spiel (Regler Einsatz/Angriff, Aufstellung/Taktik), nicht analysiert | Kein Live-Bildschirm und kein Eingriff im Remake (MatchDayScreen ohne Eingriff) | L6 | P2 |
+| F085 | 0x39DEC | Ov 0xf8 (4711) | 847 | genähert | fehlt | Jugend: monatliche Wirkung, Teamstärke und Tabellenplatz je Jugendteam | Core/FinanceYouth.cs nur Förderung/Kosten; Wirkung laut [APPROX] Zeile 134 nicht übernommen | G2 | P1 |
+| F086 | 0x3A13B | Ov 0xf8 (4711) | 272 | genähert | fehlt | Jugend im Saisonwechsel: Auf-/Abstieg und Stärke der Jugendteams | Core/FinanceYouth.cs: Saisonwechsel nicht abgebildet ([APPROX]) | G2 | P1 |
+| F087 | 0x3CA06 | Ov 0xf8 (4711) | 107 | dokumentiert | vorhanden | WM-Kader „auto“: Kader leeren, je Art die Besten nach Kondition+Technik+Form | Core/CupsNational.GameState.cs AutoNominate (nur Doku-Verweis, kein Marker) | – | P3 |
+| F088 | 0x3CA71 | Ov 0xf8 (4711) | 78 | dokumentiert | vorhanden | WM-Kader: Spieler entlassen (Platz im Verein zurück) | Core/CupsNational.GameState.cs, NationalCoach.Remove/ClearSquad | – | P3 |
+| F089 | 0x3CCEB | Ov 0xf8 (4711) | 135 | dokumentiert | fehlt | Zählt Spieler im Besitz eines Managers inkl. verliehener (Grenze 28 der Talentsuche) | Core/Transfer.Talent.cs prüft nur eigenen Kader gegen MaxSquad 30 | R-K1 | P2 |
+| F090 | 0x3D316 | Ov 0x100 (4A4C) | 329 | dokumentiert | vorhanden | Stadion: wöchentlicher Baufortschritt und Meldung „Der Stadion-Ausbau … ist abgeschlossen.“ | Core/FinanceStadium.cs (Baufortschritt, Bauzeiten [APPROX]), Core/FinanceInbox.cs; Regel weicht ab | G1 | P1 |
+| F091 | 0x3D45F | Ov 0x100 (4A4C) | 921 | dokumentiert | vorhanden | Stadiontabelle Ist/Bau (9 Ausbauteile, Platzarten, Konto, „(Noch n Wochen)“, „(kein Bau...)“) | UI/Screens/Manager/StadiumScreen.cs; Texte „(Noch n Wochen)“/„(kein Bau...)“ fehlen | G7 | P3 |
+| F092 | 0x3E52B | Ov 0x100 (4A4C) | 300 | dokumentiert | vorhanden | Stadion: Stufenbild mit Stufenname und „Kosten: … DM“ | UI/Screens/Manager/StadiumScreen.cs, Core/FinanceStadium.cs (Stufennamen) | G7 | P3 |
+| F093 | 0x3EB30 | Ov 0x100 (4A4C) | 186 | dokumentiert | vorhanden | Vereinsstatistik: benötigter Zuschauerschnitt (Ausgaben−Einnahmen)·12/23/Eintritt | Core/StatisticsClub.cs, UI/Screens/Statistics/ClubStatisticsScreen.cs | – | P3 |
+| F094 | 0x40290 | Ov 0x108 (4D30) | 212 | dokumentiert | fehlt | Kopfzeile Vereinsname links, Managername rechts in Aufstellung/Taktik beim Eingriff im Spiel | Nur im Eingriff 0x5434C nötig, den das Remake nicht hat | L6 | P3 |
+| F095 | 0x41DA9 | Ov 0x108 (4D30) | 36 | dokumentiert | vorhanden | Mittel der drei Stärken (Spalte ST) | UI/Screens/Statistics/StrengthScreen.cs (Average) | – | P3 |
+| F096 | 0x43150 | Ov 0x110 (502F) | 123 | dokumentiert | nicht nötig | Programmstart: Grafik kb\21 laden mit Fehlerbehandlung (Overlay-Anfang) | Bildlader und Fehlerpfad durch Formats/MonoGame ersetzt | – | – |
+| F097 | 0x431CB | Ov 0x110 (502F) | 249 | dokumentiert | vorhanden | Sound-Blaster-Ausgabe kb\248 starten (Text ist nur PIT-Takt, kein Text) | Audio/SoundBank.cs (Musik kb\248) | – | P3 |
+| F098 | 0x432C4 | Ov 0x110 (502F) | 40 | dokumentiert | nicht nötig | Tonausgabe beenden, Puffer freigeben | Speicher-/Gerätefreigabe durch .NET/Audio-Bibliothek ersetzt | – | – |
+| F099 | 0x432EC | Ov 0x110 (502F) | 682 | dokumentiert | fehlt | Infofile anzeigen (versteckter Klick 319 \| 0 im Hauptmenü), Seitenaufbau, „KEIN INFOFILE VORHANDEN !“ | Kein InfoFileScreen im Remake | M-K5 | P2 |
+| F100 | 0x43596 | Ov 0x110 (502F) | 55 | dokumentiert | nicht nötig | Umlautersatz Latin-1 → Spielzeichensatz für das Infofile | Zeichenumsetzung beim Textzeichnen des Remakes; ggf. mit K5 mitnehmen | M-K5 | – |
+| F101 | 0x435CD | Ov 0x110 (502F) | 272 | dokumentiert | nicht nötig | Programmstart: Speicher, Bildschirmpuffer, Palette, Maus, Schriften, Fenstertabelle einrichten | Durch Desktop/MonoGame und Surface ersetzt | – | – |
+| F102 | 0x436DD | Ov 0x110 (502F) | 55 | dokumentiert | nicht nötig | Platzierungsfolgen der WM-Statistik leeren (Tagesfunktion, Argument 0 = Neustart) | Neues Spiel legt leeren Zustand an (Core/CupsNational.WorldCupHistory.cs) | – | – |
+| F103 | 0x43B1F | Ov 0x110 (502F) | 206 | dokumentiert | vorhanden | Datumstext „Wochentag, Tag. Monat Jahr“ | Core-Datumsformatierung (Season.cs, MainMenuScreen); laut RE-Doku abgeglichen, Marker fehlt | – | P3 |
+| F104 | 0x43BED | Ov 0x110 (502F) | 75 | dokumentiert | vorhanden | Tabellenplatz eines Vereins an Spieltag n (Platzverlauf) | Core/GameState.cs RankHistory | – | P3 |
+| F105 | 0x43C38 | Ov 0x110 (502F) | 489 | dokumentiert | vorhanden | Erhabener Kasten (hell oben/links, dunkel unten/rechts) | UI/Screens/MainMenuScreen.cs Raised | – | P3 |
+| F106 | 0x445E0 | Ov 0x110 (502F) | 1128 | genähert | vorhanden | Tabellenkurve und „n.Spieltag“/„Vor dem ersten Spieltag.“ im Nachrichtenfeld | UI/Screens/MainMenuScreen.cs DrawRankCurve [APPROX], TeamInfoWindow | M-K6 | P2 |
+| F107 | 0x45CD0 | Ov 0x110 (502F) | 118 | dokumentiert | fehlt | Prüft, ob Verein in DEB-Paarungen der Runde steht (Filter bei Zufallsverein zum Spielstart) | Core/NewGame.cs PickRandomClub wählt nur nach Stärkedrittel, ohne diesen Filter | R-K7 | P3 |
+| F108 | 0x45D46 | Ov 0x110 (502F) | 126 | dokumentiert | fehlt | Hintergrund kb\22 bei Bildschirmwechsel herstellen (Zwischenbild) | Kein Zwischenbild in ScreenHost | M-K9 | P3 |
+| F109 | 0x463CC | Ov 0x118 (52F7) | 549 | dokumentiert | vorhanden | Transfermarkt: Leiste Kontostand/Schulden/Anlagen/Saldo | UI/Screens/Team/TransferScreen.cs zeigt nur Kontostand | G5 | P2 |
+| F110 | 0x47BCD | Ov 0x118 (52F7) | 211 | dokumentiert | vorhanden | Textspalte als Bildpuffer (zentrierte Texte, Grundlinienformel) für Taktik | UI/Screens/Team/TacticsScreen.cs zeichnet direkt | – | P3 |
+| F111 | 0x47CA0 | Ov 0x118 (52F7) | 78 | dokumentiert | nicht nötig | Zeiger auf Taktik-Einstellung k des Managers | Hilfsroutine; Remake nutzt Eigenschaften in Core/Squad.Tactics.cs | – | – |
+| F112 | 0x48E62 | Ov 0x118 (52F7) | 536 | dokumentiert | vorhanden | Taktik-Abschluss: Minuten-Vorgabe ≤ 20 je Teil, Umrechnung auf Summe 8 | Core/Squad.Tactics.cs (MaxMinutes 60 [APPROX]); Regel weicht ab | G6 | P2 |
+| F113 | 0x4907A | Ov 0x118 (52F7) | 100 | genähert | fehlt | Nachbearbeitung neuer Marktplatz: Start-Tendenz random(35, 65) | Core/Transfer.Pool.cs RollSlotFields: laut [APPROX] nicht abgebildet; Tendenz nur dreistufig | – | P2 |
+| F114 | 0x4B0F0 | Ov 0x120 (57D6) | 17 | dokumentiert | nicht nötig | Setzt DGROUP 0xE25E = 10.000, kein Leser | Ohne Wirkung im Original | – | – |
+| F115 | 0x4B101 | Ov 0x120 (57D6) | 38 | dokumentiert | fehlt | Erster freier Nachrichtenplatz (24 gemeinsame Plätze) | Remake-Posteingang unbegrenzt (Core/FinanceInbox.cs); Begrenzung nur nach Nutzerentscheidung | R-K6 | P3 |
+| F116 | 0x4B127 | Ov 0x120 (57D6) | 329 | dokumentiert | vorhanden | Nachrichten sortieren nach Schlüssel +1 absteigend (Tagesfunktion) | Core/FinanceInbox.cs, eigene Reihenfolge | R-K6 | P3 |
+| F117 | 0x4B270 | Ov 0x120 (57D6) | 74 | dokumentiert | vorhanden | Nachricht zu einem Spieler löschen (Verkauf, Vertrag, Saisonende) | Core/FinanceInbox.cs bzw. Transfer-Code (Objektverweise) | R-K6 | P3 |
+| F118 | 0x4B2BA | Ov 0x120 (57D6) | 60 | dokumentiert | vorhanden | Zweizeilige Nachricht an den Manager am Zug | Core GameState.Notify | – | P3 |
+| F119 | 0x4B2F6 | Ov 0x120 (57D6) | 766 | dokumentiert | vorhanden | Nachricht anlegen (u. a. „$ bietet Ihnen an, $ Jahre zu verlängern.“) | Core/FinanceInbox.cs, Core/Player.Contract.cs | – | P3 |
+| F120 | 0x4B9CD | Ov 0x120 (57D6) | 139 | dokumentiert | vorhanden | Nächste/vorige Nachricht des Managers in der Nachrichtenleiste | UI/Screens/Manager/NewsBar.cs, InboxScreen.cs | – | P3 |
+| F121 | 0x4BA58 | Ov 0x120 (57D6) | 628 | genähert | vorhanden | Pfeilpaar mit gedrückter Darstellung und Wiederholung | UI/Screens/Manager/AdvertisingScreen.cs (ohne gedrückte Darstellung, [APPROX]) | M-K4 | P3 |
+| F122 | 0x4BCCC | Ov 0x120 (57D6) | 105 | genähert | vorhanden | Meldung mit Knopf „Na gut.“ (Hülle um 0x4C246) | Core/Player.Contract.cs, AdvertisingScreen.cs, TeamUi.MessageBox | M-K3 | P3 |
+| F123 | 0x4BD56 | Ov 0x120 (57D6) | 40 | dokumentiert | nicht nötig | Zufallshilfe (0x120:0x57), u. a. für Jugendstärke | Durch Remake-Zufall (Rng/TransferRules.Random16) ersetzt | – | – |
+| F124 | 0x4BD7E | Ov 0x120 (57D6) | 104 | dokumentiert | nicht nötig | Großbuchstaben-Kopie mit Umlauten | ToUpperInvariant in .NET | – | – |
+| F125 | 0x4C246 | Ov 0x120 (57D6) | 1136 | genähert | vorhanden | Meldungs-/Fragefenster mit Symbolfeld, Ja/Nein, „An Alle:“ | UI QuitQuestion.cs, DebCupDrawLive.cs, TeamUi.MessageBox ([APPROX] Lagen) | M-K1 | P2 |
+| F126 | 0x4C6B6 | Ov 0x120 (57D6) | 145 | dokumentiert | nicht nötig | Kaderplatz eines Poolspielers suchen | Remake hält Objektverweise statt Poolindex | – | – |
+| F127 | 0x4C747 | Ov 0x120 (57D6) | 1389 | dokumentiert | vorhanden | Saisonende-Bildschirm (Titelträger, „Wer weiß...“, Auf-/Absteiger) | UI/Screens/SeasonEndScreen.cs | – | P3 |
+| F128 | 0x4CCB4 | Ov 0x120 (57D6) | 146 | dokumentiert | vorhanden | Zeile Auf-/Absteiger/Meister mit Zeichen &,@,* (Farben 18/12/22) | UI/Screens/SeasonEndScreen.cs DrawRows (Farben 238/13/151, Abstand 9) | R-K2 | P3 |
+| F129 | 0x4CD46 | Ov 0x120 (57D6) | 1137 | dokumentiert | nicht nötig | Kopierschutz „PASSWORTABFRAGE“ (Handbuchwort) | Entscheidung Nutzer 30.10.2026: Handbuchfrage entfällt (docs/portierung.md) | – | – |
+| F130 | 0x4E7C7 | Ov 0x128 (59E3) | 220 | dokumentiert | vorhanden | Spielplan: Paarungen des Spieltags bestimmen | Core/Season.cs, SeasonFlow.cs (Spielplan) | – | P3 |
+| F131 | 0x4F1F1 | Ov 0x128 (59E3) | 308 | dokumentiert | vorhanden | Paarungszeile „Platz, Stärke“ (Stärke = Mittel Felder 0x18–0x1D / 6) | UI/Screens/Competitions/LeaguePairingsScreen.cs | – | P3 |
+| F132 | 0x4F325 | Ov 0x128 (59E3) | 463 | dokumentiert | nicht nötig | Tabellenfelder sichern/herstellen | Remake berechnet Tabelle ohne Sicherungskopie | – | – |
+| F133 | 0x51049 | Ov 0x128 (59E3) | 234 | dokumentiert | vorhanden | Platzfeld der Tabellensätze aus sortierter Platzliste schreiben | Core-Tabellenberechnung (GameState RankHistory/TableScreen) | – | P3 |
+| F134 | 0x51E90 | Ov 0x130 (5E73) | 173 | dokumentiert | vorhanden | Spieluhr mit Drittelbalken und Ziffern | UI/Screens/MatchDayScreen.cs ([APPROX]: Balken einzeilig, Ziffernabstand 8, Grundlinie 65) | L3 | P2 |
+| F135 | 0x51F3D | Ov 0x130 (5E73) | 173 | dokumentiert | vorhanden | Spielende-Bildschirm „Das wars... / Carpe diem !“ | UI/Screens/SeasonEndGameOverScreen.cs (eigener Wortlaut, [APPROX]) | L8 | P3 |
+| F136 | 0x51FEA | Ov 0x130 (5E73) | 422 | dokumentiert | fehlt | Spielstand einer Anzeigereihe aus dem Ergebnisbyte | Kein Live-Bildschirm | L2 | P2 |
+| F137 | 0x52190 | Ov 0x130 (5E73) | 190 | dokumentiert | fehlt | Zwei zweistellige Zahlen aus kb\38-Ziffern („HH:GG“) | Kein Live-Bildschirm | L3 | P2 |
+| F138 | 0x5224E | Ov 0x130 (5E73) | 158 | dokumentiert | fehlt | Reporter: Mundfolge aus Text (Vokale) | Kein Reporter im Remake | L4 | P2 |
+| F139 | 0x522EC | Ov 0x130 (5E73) | 150 | dokumentiert | fehlt | Reporter: Augenzwinkern | Kein Reporter im Remake | L4 | P2 |
+| F140 | 0x52382 | Ov 0x130 (5E73) | 174 | dokumentiert | fehlt | Reporter: Mundbewegung (7 Bilder aus kb\38) | Kein Reporter im Remake | L4 | P2 |
+| F141 | 0x52430 | Ov 0x130 (5E73) | 240 | dokumentiert | fehlt | Reporter: Textzeile sprechen | Kein Reporter im Remake | L4 | P2 |
+| F142 | 0x52BD6 | Ov 0x130 (5E73) | 1630 | dokumentiert | fehlt | Anzeigetafel je Managerpaarung (Reihen, Energie, Einsatz, Angriff, Strafbank, Drittelwerte, Uhr) | Kein Live-Bildschirm | L2 | P2 |
+| F143 | 0x53234 | Ov 0x130 (5E73) | 211 | dokumentiert | vorhanden | Eine Ziffer 8 × 10 aus kb\38 (Stil 0/1) | UI/Screens/MatchDayScreen.cs (Spielminute aus kb\38) | L3 | P3 |
+| F144 | 0x53307 | Ov 0x130 (5E73) | 201 | dokumentiert | fehlt | Senkrechter Balken (zwei Spalten), Energie | Kein Live-Bildschirm | L3 | P2 |
+| F145 | 0x533D0 | Ov 0x130 (5E73) | 131 | dokumentiert | vorhanden | Waagerechter Balken (zwei Zeilen), Drittel/Einsatz/Angriff | UI/Screens/MatchDayScreen.cs (einzeilig, [APPROX]) | L3 | P2 |
+| F146 | 0x53453 | Ov 0x130 (5E73) | 105 | dokumentiert | fehlt | Lampe an/aus aus kb\38 | Nicht im Remake (MatchDayScreen ohne Lampe) | L3 | P2 |
+| F147 | 0x534BC | Ov 0x130 (5E73) | 76 | dokumentiert | fehlt | Treffer-Test Schieberegler → Wert 1…n | Nur für Eingriffsmenü, fehlt | L6 | P2 |
+| F148 | 0x53508 | Ov 0x130 (5E73) | 52 | dokumentiert | fehlt | Treffer-Test 6 × 6 (Lampenfeld) | Nur für Eingriffsmenü, fehlt | L6 | P2 |
+| F149 | 0x5353C | Ov 0x130 (5E73) | 1725 | dokumentiert | fehlt | Live-Bildschirm aufbauen (kb\19, Paarungsreihen, Logos/Köpfe, Zuschauer) | Kein LiveMatchScreen | L2 | P2 |
+| F150 | 0x53BF9 | Ov 0x130 (5E73) | 94 | dokumentiert | fehlt | Trikotfarben: zu ähnliche Gastfarbe invertieren (Torszene) | Keine Torszenen | L7 | P3 |
+| F151 | 0x5434C | Ov 0x130 (5E73) | 212 | dokumentiert | fehlt | Eingriff: Aufstellung/Taktik im Spiel, danach Live-Bildschirm neu | Kein Eingriff im Remake | L6 | P2 |
+| F152 | 0x56EDD | Ov 0x130 (5E73) | 523 | dokumentiert | fehlt | Torszene: Kopfzeile (Namen, Tore, Minute, Zuschauerzeile) | Keine Torszenen | L7 | P3 |
+| F153 | 0x570E8 | Ov 0x130 (5E73) | 137 | dokumentiert | fehlt | Minutenzeile „NN.MINUTE“ (Torszene, Dauer-Eisfeld) | Keine Torszenen/kein Dauer-Eisfeld | L7 | P3 |
+| F154 | 0x57480 | Ov 0x138 (63A2) | 323 | dokumentiert | fehlt | Programmstart: Datei tore\anzahl lesen (Zahl der Torszenen) | Keine Torszenen im Remake | L7 | P3 |
+| F155 | 0x57CFB | Ov 0x138 (63A2) | 468 | dokumentiert | vorhanden | Finanzen: Kästen Bank/Mitmanager (Saldo, Zins je Monat, Farben nach Vorzeichen) | UI/Screens/Manager/FinanceScreen.cs | G8 | P3 |
+| F156 | 0x57ECF | Ov 0x138 (63A2) | 755 | dokumentiert | vorhanden | Finanzen: Übersicht rechts (Kontostand, Untereinander, Bank, Aktien) | UI/Screens/Manager/FinanceScreen.cs | G8 | P3 |
+| F157 | 0x581C2 | Ov 0x138 (63A2) | 583 | dokumentiert | vorhanden | Finanzen: Infofeld je Aktie (Kurs, Stückzahl, Kauf, Wert) | UI/Screens/Manager/FinanceScreen.cs | G8 | P3 |
+| F158 | 0x58409 | Ov 0x138 (63A2) | 441 | dokumentiert | vorhanden | Finanzen: Betragsbalken (Schieberegler) für Bank, Mitmanager, Aktien | UI/Screens/Manager/FinanceScreen.cs mit ±-Schritten statt Balken; Regel weicht ab | G4 | P2 |
+| F159 | 0x59D71 | Ov 0x138 (63A2) | 78 | dokumentiert | vorhanden | Trainingsbildchen k (29 × 20) zeichnen | UI/Screens/Team/TrainingScreen.cs KindIcon | – | P3 |
+| F160 | 0x59DBF | Ov 0x138 (63A2) | 2252 | dokumentiert | vorhanden | Trainingsbildschirm (Einheiten, „Kosten pro Woche:“) | UI/Screens/Team/TrainingScreen.cs, Core/Squad.Training.cs | – | P3 |
+| F161 | 0x5A820 | Ov 0x140 (66C3) | 66 | dokumentiert | nicht nötig | Text mit XOR entschlüsseln (Passwortabfrage) | Kopierschutz entfällt (Entscheidung docs/portierung.md) | – | – |
+| F162 | 0x5A862 | Ov 0x140 (66C3) | 50 | dokumentiert | vorhanden | Meldung „Achtung ! Fehler beim Diskettenzugriff ! Vorgang abgebrochen.“ | UI/Screens/SaveLoad/SaveLoadScreen.cs (Warn) | – | P3 |
+| F163 | 0x5AA34 | Ov 0x140 (66C3) | 108 | dokumentiert | vorhanden | Spielername aus der Namensdatenbank je Verein | Core/Transfer.Pool.cs mit Datenbanknamen | – | P3 |
+| F164 | 0x5AC03 | Ov 0x140 (66C3) | 152 | dokumentiert | nicht nötig | kb\23 (Namensdatenbank) in Puffer laden | Laden durch Formats-Datenbankleser ersetzt | – | – |
+| F165 | 0x5AC9B | Ov 0x140 (66C3) | 5 | dokumentiert | nicht nötig | Leere Funktion | Ohne Wirkung | – | – |
+| F166 | 0x5E8B0 | Ov 0x140 (66C3) | 131 | dokumentiert | vorhanden | Text auf Höchstbreite kürzen und zeichnen (Spielstandnamen) | UI/Screens/SaveLoad/SaveLoadScreen.cs | – | P3 |
