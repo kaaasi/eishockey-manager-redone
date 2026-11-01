@@ -133,7 +133,7 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   4. **Dateidialog** 0x5DBE5 (`SaveLoadScreen.cs`) gegen das Original.
 - **Abnahme:** je Teil Zuordnung mit Fundstelle, roter Test, Pixelvergleich mit Kennzahl; Mehrsaisonprobe bei Geld.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/finanzen-rekonstruktion.md` (eigener Abschnitt), Tests.
-- **Modell:** Claude Sonnet 5.5. **Status:** offen.
+- **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 fertig (#291, Wirkung der Förderung 0x39DEC/0x3A13B offen); Teile 2–4 offen.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
