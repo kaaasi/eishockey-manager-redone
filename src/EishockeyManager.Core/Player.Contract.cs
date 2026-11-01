@@ -225,9 +225,8 @@ public enum NegotiationResult
 
 /// <summary>
 /// Gehälter und Vertragsverhandlung. Verhandlung nach em.exe 0x4A1DB/0x49A3B (<see cref="ContractRules"/>,
-/// <see cref="Negotiate"/>). [APPROX] Startgehalt und Gehalt nach einem Wechsel (<see cref="Demand"/>) sind noch nicht auf
-/// den Spielerwert 0x118:0x70 Art 1 umgestellt (Spielstart 0x29EE4, Kauf 0x4A1DB aus 0x4786A). Belegt im Video:
-/// Startgehälter der Feldspieler 900–1.400 DM, Torhüter 1.500 DM.
+/// <see cref="Negotiate"/>). Startgehalt der Manager-Kader und Gehalt nach einem Kauf = Wert(Gehalt) (<see cref="ValueSalary"/>).
+/// [APPROX] Computervereine, Leihen, Talente und Verlängerungen der Computervereine nutzen weiter <see cref="Demand"/>.
 /// </summary>
 public static class Contracts
 {
@@ -235,6 +234,12 @@ public static class Contracts
 
     /// <summary>Längste Laufzeit (<see cref="ContractRules.MaxYears"/>).</summary>
     public const int MaxYears = ContractRules.MaxYears;
+
+    /// <summary>
+    /// Laufzeit des neuen Kaderplatzes nach einem Kauf, mit der die Verhandlung beginnt. [ORIGINAL] Datei 0x477E0 übergibt 1 an
+    /// 0x42CB1, das +0x0B setzt (0x42E75–0x42E78); FILE07: gekaufter DAFFNER +0x0B = 1 nach „Mach' ich!“ ohne Eingabe.
+    /// </summary>
+    public const int PurchaseYears = 1;
 
     /// <summary>Kleinster erlaubter Betrag. Im Video springt eine Eingabe von 0 DM auf 1 DM.</summary>
     public const int MinSalary = 1;
@@ -261,8 +266,26 @@ public static class Contracts
         return Math.Max(100, (int)Math.Round(value / 100) * 100);
     }
 
-    /// <summary>Gehalt bei Spielbeginn: die Forderung des Spielers.</summary>
+    /// <summary>
+    /// Gehalt bei Spielbeginn für Kaderplätze der Computervereine: die Forderung des Spielers. Kaderplätze der Manager bekommen
+    /// danach <see cref="ValueSalary"/> (<see cref="GameState.ApplyStartSalaries"/>).
+    /// </summary>
     public static int BaseSalary(Player p, Random random) => Demand(p);
+
+    /// <summary>
+    /// Start- und Wechselgehalt eines Kaderplatzes des Managers in DM: Wert(Gehalt) (0x118:0x70 Art 1) im Verein des Managers.
+    /// [ORIGINAL] Spielstart Datei 0x29EE4–0x29EF3, Kauf Datei 0x42F11–0x42F65 (Kaderplatz aus 0x108:0x5C = 0x42CB1, ohne Leihe),
+    /// Listenwechsel Datei 0x497A1. Wert(Gehalt) ist ein Vielfaches von 300 Drittel-DM, also ganze 100 DM. Rein, ohne Zufall.
+    /// [APPROX] Tore und Spiele gehen mit den Zählern des Remakes ein (wie bei allen Aufrufen von <see cref="PlayerValue"/>).
+    /// </summary>
+    public static int ValueSalary(GameState game, Manager manager, Player p)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(manager);
+        var club = game.Clubs[manager.ClubIndex];
+        var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
+        return Math.Max(MinSalary, value / 3);
+    }
 
     /// <summary>Monatliche Versicherungsprämie eines Spielers (Kaderplatz +0x30, <see cref="Player.InsurancePremium"/>).</summary>
     public static int InsurancePremium(Player p) => p.InsurancePremium;

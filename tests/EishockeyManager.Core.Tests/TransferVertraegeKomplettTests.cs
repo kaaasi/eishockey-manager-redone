@@ -32,8 +32,8 @@ public class TransferVertraegeKomplettTests
         Assert.Contains(p, from.Players);
         Assert.DoesNotContain(p, club.Players);
         Assert.Contains(listing, game.TransferMarket.Listings);
-        Assert.Equal(SquadSetup.StartContractYears, purchase.Years);
-        Assert.Equal(Contracts.Demand(p), purchase.Salary);
+        Assert.Equal(Contracts.PurchaseYears, purchase.Years); // 0x42CB1: +0x0B = 1 (Teil 2)
+        Assert.Equal(Contracts.ValueSalary(game, manager, p), purchase.Salary); // 0x42F11 (Teil 2)
 
         // „Mach' ich!“ mit 3 Jahren zur Forderung im Feld (0x4ABF4: angenommen ohne Zufall)
         var salary = Contracts.DemandAfterYears(game, manager, p, 3, purchase.Salary)!.Value;
@@ -84,10 +84,10 @@ public class TransferVertraegeKomplettTests
     {
         var (game, manager, club, listing) = Market();
         var p = listing.Player;
-        var demand = Contracts.Demand(p);
+        var demand = Contracts.ValueSalary(game, manager, p); // Wechselgehalt Wert(Gehalt), 0x42F11 (Teil 2)
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, listing, listing.Price * 2, false));
         Assert.Contains(p, club.Players);
-        Assert.Equal(SquadSetup.StartContractYears, p.ContractYears);
+        Assert.Equal(Contracts.PurchaseYears, p.ContractYears); // 0x42CB1: +0x0B = 1 (Teil 2)
         Assert.Equal(demand, p.MonthlySalary);
     }
 

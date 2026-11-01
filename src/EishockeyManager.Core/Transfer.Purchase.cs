@@ -5,9 +5,9 @@ namespace EishockeyManager.Core;
 /// (+0x2C); Laufzeit und Gehalt, mit denen der Dialog beginnt, stehen in <see cref="Years"/> und <see cref="Salary"/>.
 /// </summary>
 /// <remarks>
-/// [APPROX] Laufzeit und Gehalt sind bis Teil 2 der Spur (Wechselgehalt = Wert(Gehalt), Datei 0x497A1) die des Remakes beim
-/// Wechsel: <see cref="SquadSetup.StartContractYears"/> und <see cref="Contracts.Demand"/>. Der Zustand lebt nur im Dialog
-/// (kein Spielstandsfeld); <see cref="TransferMarket.Sign"/> prüft vor dem Abschluss erneut.
+/// [ORIGINAL] Laufzeit und Gehalt des neuen Kaderplatzes aus 0x42CB1 (Aufruf Datei 0x477E7): <see cref="Contracts.PurchaseYears"/>
+/// und Wert(Gehalt) im Verein des Käufers (<see cref="Contracts.ValueSalary"/>, 0x42F11). [APPROX] Der Zustand lebt nur im
+/// Dialog (kein Spielstandsfeld); <see cref="TransferMarket.Sign"/> prüft vor dem Abschluss erneut.
 /// </remarks>
 public sealed record TransferPurchase(TransferListing Listing, Manager Buyer, long Offer, int Years, int Salary)
 {

@@ -78,7 +78,7 @@ die Verhandlungen; was offen bleibt, endet am ersten Tag der neuen Saison wie �
 
 `[APPROX]`: Reihenfolge (Original je Manager Prämien, dann Verträge; Remake erst alle Prämien); Saisonzähler (Tore, Spiele) sind
 beim Rechnen von Gehalt und Ablöse schon zurückgesetzt; Ablöse als Transfereinnahme gebucht (das Original schreibt sie ohne
-Buchungsaufruf aufs Konto); Laufzeit und Gehalt des neuen Kaderplatzes beim Kauf noch wie bisher (Teil 2: Wert(Gehalt));
+Buchungsaufruf aufs Konto);
 Liste hinter dem Fenster am Saisonende = Bildschirm „Verträge“ (Original 0x108:0x43; Abweichung im Pixelvergleich unten belegt).
 
 **Befund für `finanzen-rest`:** Nach einem Kauf vom Computermarkt ruft das Original 0x18:0x223E (Datei 0x063BE, Fenster „Nehmen
@@ -109,6 +109,27 @@ bisherige Prämie (10 % des Gehalts, `Contracts.LegacyInsurancePercent`), ebenso
 bekannte Prämie. Beim Kauf bleibt ein vorhandener Abschluss des Spielers stehen (+0x2C Bit 31 bleibt, 0x4781B); scheitert die
 Verhandlung nach dem Kauf, wird der neue Platz verworfen und mit ihm der Abschluss.
 
+## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Rest von Teil 2: Start- und Wechselgehalt)
+
+Umsetzung: `Contracts.ValueSalary` und `Contracts.PurchaseYears` (`Core/Player.Contract.cs`), `GameState.ApplyStartSalaries`
+(`Core/Transfer.StartSalary.cs`, Anschluss in `GameState.InitializeManagerSystems`), Kauf in `TransferMarket.Bid`; Tests
+`TransferVertraegeKomplettTeil2bTests` (Goldtest aus FILE01, FILE09, FILE10 und FILE07).
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Startgehalt | 0x29EB4–0x29EF3 (0x28165) | je Kaderplatz des Managers [0xA70E]: +0x2C = Wert(Preis), +0x28 = Wert(Gehalt); Computervereine haben kein Gehaltsfeld |
+| Kauf: neuer Kaderplatz | 0x477CD–0x477EC → 0x42CB1 | Aufruf `0x108:0x5C` (= Datei 0x42CB1) mit Laufzeit 1 (+0x0B, 0x42E75); +0x28 = Wert(Gehalt) (0x42F11), bei +0x0C = 99 zusätzlich · random(90, 115) / 100 (0x42F1F); danach +0x2C = Gebot (0x4781B) |
+| Listenwechsel | 0x4975C, 0x497A1 (0x494EF) | +0x2C = Wert(Preis), +0x28 = Wert(Gehalt) eines neuen Kaderplatzes (Teil 3) |
+| Beleg Spielstände | FILE01, FILE09 (2 Manager, Level 5), FILE10 | alle Kaderplätze der Manager: +0x28 = Wert(Gehalt) aus den gespeicherten Eingängen, Vertrag 2 Jahre |
+| Beleg Kauf | FILE07 | DAFFNER: +0x28 = Wert(Gehalt) = 9.900 DM, +0x0B = 1 |
+
+Wert(Gehalt) ist ein Vielfaches von 300 Drittel-DM; das Remake speichert es ohne Rundungsverlust als ganze DM. Bei den Stärken
+der Bundesliga liegen die Startgehälter damit bei 11.000–18.000 DM (FILE01: Kölner EC), in der Oberliga um 1.000 DM.
+
+`[APPROX]`: Tore und Spiele gehen mit den Zählern des Remakes ein (wie bei allen Aufrufen des Spielerwerts); den Startpreis
+(+0x2C) führt das Remake nicht als Feld. Computervereine, Leihen, Talente und Verlängerungen der Computervereine behalten die
+Forderung des Remakes (`Contracts.Demand`).
+
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
 - **Unaufgeforderte Angebote** für Spieler im eigenen Kader (Kaderplatz +0x09 Bit 0x40, Tagesablauf 0x079DE–0x07A8F: w wie oben,
@@ -122,8 +143,8 @@ Verhandlung nach dem Kauf, wird der neue Platz verworfen und mit ihm der Abschlu
   das Remake rechnet den Wert beim Anbieten frisch.
 - **Spieler, der am Saisonende aufhört** (Kaderplatz +0x18 Bit 0x80, Meldung DGROUP 0x12BD): bekommt im Original keine
   Angebote und kann nicht gekauft werden – nicht abgebildet.
-- **Start- und Wechselgehalt** = Wert(Gehalt) (0x29EE4, 0x497A1) noch nicht umgestellt; das Remake nutzt die Forderung aus
-  Stärke und Talent. Die Verhandlung rechnet schon mit dem Wert, bisheriges Gehalt bleibt Untergrenze.
+- **Leihe:** Gehalt des geliehenen Spielers (0x47918–0x47941 altes Gehalt; 0x42F1F · random(90, 115) / 100 bei +0x0C = 99)
+  nicht gegen das Remake geprüft; das Remake nutzt die Forderung aus Stärke und Talent.
 - **Versicherungsleistung** (`GameState.PayInsurance`, Teil 2) hat noch keinen Auslöser: Verletzungen im Spiel (0x38D6A) und im
   Tagesablauf (0x7542) sowie das Laufbahnende (+0x0D = 0xFF, 0x2772B) gibt es im Remake noch nicht (spielberechnung-komplett,
   Teil 3). Dort jeweils `PayInsurance(manager, spieler, careerEnd)` aufrufen.

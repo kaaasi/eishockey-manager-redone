@@ -272,6 +272,9 @@ public class GameModeTests
     /// Verein 1997 nicht spielfähig (Strafen 9,2 Mio. DM) – daher das negative Konto in Saison 5, kein neuer Geldfehler.
     /// Spur transfer-vertraege-komplett (Teil 1): Konten ab Saison 3 neu – Spieler, deren Vertrag am Saisonende ohne Verhandlung
     /// endet, bringen die Ablöse Wert(Preis) / 2 (0x27DF3); Gegenprobe ohne Ablöse: alte Werte.
+    /// Spur transfer-vertraege-komplett (Rest von Teil 2): Konten ab Saison 1 neu – Startgehalt der Managerkader = Wert(Gehalt)
+    /// (0x29EE4, ohne Zufall). Titel der Saisons 1–4 unverändert; ab Saison 5 andere Kader nach den Verlängerungen (Forderung
+    /// mindestens bisheriges Gehalt) und damit andere Ergebnisse und Zufallsstand. Gegenprobe mit altem Startgehalt: alte Werte.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -286,7 +289,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2225350,405129|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=1|3420342,294365|WorldChampion=52,CupWinner=24,GermanChampion=24,EuropeanCupWinner=1|4297466,171583|WorldChampion=52,CupWinner=25,GermanChampion=0,EuropeanCupWinner=1|5137340,5996|WorldChampion=52,CupWinner=1,GermanChampion=13,EuropeanCupWinner=1|-5821242,-62647|R409663842 C1843401354";
+        "WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|808550,437329|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=1|1537742,332665|WorldChampion=52,CupWinner=24,GermanChampion=24,EuropeanCupWinner=1|2414866,209883|WorldChampion=52,CupWinner=25,GermanChampion=0,EuropeanCupWinner=1|3254740,44296|WorldChampion=52,CupWinner=1,GermanChampion=0,EuropeanCupWinner=1|-7602741,-22445|R600158605 C1843401354";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -97,6 +97,10 @@ namespace EishockeyManager.Core.Tests;
 /// Spur transfer-vertraege-komplett (Teil 1): die drei aktiven Abdrücke neu – Spieler, deren Vertrag am Saisonende ohne
 /// Verhandlung endet, bringen die Ablöse Wert(Preis) / 2 (0x27DF3) aufs Konto; Gegenprobe ohne Ablöse: alte Werte, passive
 /// Abdrücke unverändert.
+/// Spur transfer-vertraege-komplett (Rest von Teil 2): die drei aktiven Abdrücke neu – Startgehalt der Managerkader und
+/// Gehalt beim Kauf = Wert(Gehalt) (0x29EE4, 0x42F11), zieht keinen Zufall; die Verlängerungen (Forderung mindestens bisheriges
+/// Gehalt) und die Konten ändern sich; vertragslose Spieler (<c>SignFreeAgents</c>) kommen mit 1 Jahr statt 2 (0x42CB1, +0x0B = 1).
+/// Gegenprobe mit altem Startgehalt und alter Laufzeit: alte Werte, passive Abdrücke unverändert.
 /// </summary>
 public class RngTwinProbeTests
 {
@@ -104,9 +108,9 @@ public class RngTwinProbeTests
 
     [Theory]
     [InlineData(false, 3, "B51E23E5AB35A362")]
-    [InlineData(true, 3, "BF52D5263608B062")]
+    [InlineData(true, 3, "BF6BFD339DCA67AE")]
     [InlineData(false, 11, "045D33151AFA705F")]
-    [InlineData(true, 11, "21CC0250D1AE103C")]
+    [InlineData(true, 11, "0FDCCE425DFFE7E3")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -115,7 +119,7 @@ public class RngTwinProbeTests
 
     [GameDataTheory]
     [InlineData(false, "2FAE1718E86EC1F6")]
-    [InlineData(true, "040F790E06D61632")]
+    [InlineData(true, "D171FF4B1A79F0A1")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

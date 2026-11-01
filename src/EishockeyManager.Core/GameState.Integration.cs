@@ -13,6 +13,8 @@ public sealed partial class GameState
     /// </summary>
     internal void InitializeManagerSystems()
     {
+        // Spur transfer-vertraege-komplett: Startgehalt der Kaderplätze der Manager = Wert(Gehalt) (0x29EE4), ohne Zufall.
+        ApplyStartSalaries();
         _ = Stocks;
         foreach (var manager in Managers)
         {

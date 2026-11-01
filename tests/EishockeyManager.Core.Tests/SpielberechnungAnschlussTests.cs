@@ -147,10 +147,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Integration Runde 8 (Leitstelle): beide neu auf dem integrierten Stand (Lader, Einzelprämien, Werbebewertung).
     /// Spur transfer-vertraege-komplett (Teil 1): aktiv neu durch die Ablöse am Saisonende (0x27DF3); Gegenprobe ohne Ablöse:
     /// alter Wert.
+    /// Spur transfer-vertraege-komplett (Rest von Teil 2): aktiv neu durch das Startgehalt Wert(Gehalt) (0x29EE4) und die Laufzeit
+    /// 1 Jahr beim Kauf (0x42CB1); Gegenprobe mit altem Startgehalt und alter Laufzeit: alter Wert.
     /// </summary>
     [GameDataTheory]
     [InlineData(false, "29DA45742C8BD126")]
-    [InlineData(true, "7A324F43E1B52E04")]
+    [InlineData(true, "C82DC1F35CEAC92A")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -339,7 +339,8 @@ public sealed partial class TransferMarket
 
         if (!loan)
         {
-            purchase = new TransferPurchase(listing, manager, offer, SquadSetup.StartContractYears, Contracts.Demand(listing.Player));
+            purchase = new TransferPurchase(listing, manager, offer, Contracts.PurchaseYears,
+                Contracts.ValueSalary(game, manager, listing.Player));
             return TransferResult.Accepted;
         }
         Complete(game, listing, manager, offer, loan: true);
