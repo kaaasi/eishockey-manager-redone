@@ -45,6 +45,9 @@ public class SeasonEndStatusTests
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
+        // Spielberechnung Teil 3 (Verletzungen 0x38B8F) schwächt die Kader: Verein 2 mit Spielerwerten 99 (wie PlayAtTopStrength).
+        foreach (var p in game.Clubs[2].Players)
+            (p.Condition, p.Technique, p.Form) = (Player.MaxValue, Player.MaxValue, 50);
         PlayToSeasonEnd(game);
         var record = game.History[^1];
         Assert.Contains(2, TopFive(record));      // Vorbedingung (wie NationalCoachMode4Tests)
@@ -159,6 +162,9 @@ public class SeasonEndStatusTests
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
+        // Spielberechnung Teil 3 (Verletzungen 0x38B8F) schwächt die Kader: Verein 2 mit Spielerwerten 99 (wie PlayAtTopStrength).
+        foreach (var p in game.Clubs[2].Players)
+            (p.Condition, p.Technique, p.Form) = (Player.MaxValue, Player.MaxValue, 50);
         PlayToSeasonEnd(game);
         Assert.True(HasBit(game, game.History[^1], 2));
         Assert.False(HasBit(game, game.History[^1], 8));

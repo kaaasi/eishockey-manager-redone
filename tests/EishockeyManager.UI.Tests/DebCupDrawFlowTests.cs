@@ -215,7 +215,8 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// – andere Ergebnisse ab dem ersten Spiel des Managers; mit und ohne Anzeige weiter gleich. Integration Runde 8, Welle 3
     /// (R8W3I-01): Spielstand vor den Toren der Minute für 0x80CB/0x939A – neue Werte, mit und ohne Anzeige gleich.
     /// Spur spielberechnung-komplett, Teil 1 (#204): Wanderung der Teamwerte 0x9D1B – neue Werte ab 1993, mit und ohne
-    /// Anzeige weiter gleich.</summary>
+    /// Anzeige weiter gleich. Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): neue Werte ab 1993 (Verletzungen und Schützenwahl in den Spielen des
+    /// Managers), mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 8, DM 8, Tab 15262 | 1994: DEB 6, DM 9, Tab 15441 | 1995: DEB 1, DM 1, Tab 16514 | 1996: DEB 1, DM 1, Tab 15802";
+        "1993: DEB 8, DM 10, Tab 15309 | 1994: DEB 5, DM 5, Tab 16125 | 1995: DEB 2, DM 2, Tab 16308 | 1996: DEB 2, DM 0, Tab 16828";
 }

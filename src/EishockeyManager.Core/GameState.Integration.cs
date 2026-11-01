@@ -61,6 +61,9 @@ public sealed partial class GameState
         // Spur spielberechnung-komplett (#204): kleine Wanderung der Teamwerte zweimal je Woche (0x5525A–0x55292)
         if (MatchEngine.IsDriftDay(day))
             MatchEngine.DriftTeamValues(this, TeamValueDrift.Weekly);
+
+        // Spur spielberechnung-komplett, Teil 3: Verletzungen heilen wochenweise (0x7C12 im Tageslauf 0x07169)
+        HealInjuries(day);
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>

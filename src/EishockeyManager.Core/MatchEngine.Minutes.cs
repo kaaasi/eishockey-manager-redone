@@ -130,10 +130,17 @@ public enum MatchEventKind
 {
     Goal,
     Penalty,
+
+    /// <summary>Verletzung im Spiel (0x38B8F, Ereignis 4 der Szene 0x53C57).</summary>
+    Injury,
 }
 
-/// <summary>Ein Ereignis: Minute (1 … 70), Seite (0 Heim, 1 Gast), bei Strafen die Minuten (2 oder 5).</summary>
-public readonly record struct MatchEvent(int Minute, int Side, MatchEventKind Kind, int PenaltyMinutes = 0, Player? Player = null);
+/// <summary>
+/// Ein Ereignis: Minute (1 … 70), Seite (0 Heim, 1 Gast), bei Strafen die Minuten (2 oder 5). Spieler: bestrafter bzw.
+/// verletzter Spieler, beim Tor einer gemanagten Mannschaft der Schütze (0x386D1) mit <paramref name="Assist"/>.
+/// </summary>
+public readonly record struct MatchEvent(int Minute, int Side, MatchEventKind Kind, int PenaltyMinutes = 0, Player? Player = null,
+    Player? Assist = null);
 
 /// <summary>
 /// Eine Mannschaft während der Minutenrechnung (Vereinsfelder des Originals, die die Rechnung liest und schreibt).
@@ -255,6 +262,15 @@ public sealed class LiveTeam
 
     /// <summary>Strafminuten dieses Spiels (im Original nur in der Liga gezählt: DGROUP 0x82A1 + 0x50 · Verein).</summary>
     public int PenaltyMinutes { get; set; }
+
+    /// <summary>
+    /// Managersatz (0 … Zahl der Manager − 1) für die Verletzungen im Spiel (0x38B8F), nur Managervereine mit Kader in der
+    /// Managerpaarung; null sonst (auch das Nationalteam des Bundestrainers, siehe <see cref="OriginalMinutes.Injuries"/>).
+    /// </summary>
+    public int? InjuryManager { get; init; }
+
+    /// <summary>Managerwert des eigenen Managers (DGROUP 0x974B + 0x1AF · Manager, 0x952C) für die Verletzungen.</summary>
+    public int ManagerValue { get; init; } = 20;
 }
 
 /// <summary>Rahmen eines Spiels für die Minutenrechnung.</summary>
@@ -416,6 +432,9 @@ public static partial class OriginalMinutes
     /// <summary>Eine Spielminute einer Paarung ohne Manager (Reihenfolge der Züge wie im Original).</summary>
     public static void PlayMinute(LiveTeam home, LiveTeam away, MatchRules rules, int minute, int periodEnd, MatchReport report, Random random)
     {
+        // [ORIGINAL] 0x37ECF–0x37F06: hat einer der Vereine einen Manager, vor den Torchancen Verletzungen 0x38B8F.
+        if (rules.ManagerMatch)
+            Injuries(home, away, minute, report, random);
         var h = Strengths(home, away, minute);
         var a = Strengths(away, home, minute);
         var flags = OriginalMatch.MinuteChances(
@@ -481,17 +500,29 @@ public static partial class OriginalMinutes
         (int Normal, int Defensive, int Offensive) a, int minute, MatchRules rules, MatchReport report, int mark, Random random)
     {
         var defender = side == 0 ? away : home;
-        if (!Shot(h.Defensive, h.Offensive, a.Defensive, a.Offensive, side == 1, report.HomeGoals + mark,
-                report.AwayGoals + mark, minute, rules.WorldCup, defender.OpenNet, random))
+        var shooter = side == 0 ? home : away;
+        // [ORIGINAL] 0xA642–0xA650: Abbruch in der Verlängerung vor jeder Wertung (ohne Szene, siehe Shot).
+        var aborted = minute > 60 && report.HomeGoals + mark < 10;
+        var goal = Shot(h.Defensive, h.Offensive, a.Defensive, a.Offensive, side == 1, report.HomeGoals + mark,
+            report.AwayGoals + mark, minute, rules.WorldCup, defender.OpenNet, random);
+        if (goal)
+        {
+            if (side == 0)
+                report.HomeGoals++;
+            else
+                report.AwayGoals++;
+            // [ORIGINAL] Datei 0xA8AC–0xA933: Gegentor in Unterzahl beendet eine Strafe (0x35540(…, 0), dann 0x35691(…, 0, 0)).
+            if (defender.Box.Count > 0)
+                defender.Box.Release(0, force: false);
+        }
+        // [ORIGINAL] 0xAB47–0xAB90: in der Managerpaarung nach jedem Abschluss Szene/Torschütze 0x541D9 (ScoringPlayers).
+        var players = rules.ManagerMatch && !aborted ? ScoringPlayers(shooter, goal, random) : null;
+        if (!goal)
             return;
-        if (side == 0)
-            report.HomeGoals++;
-        else
-            report.AwayGoals++;
-        report.Events.Add(new MatchEvent(minute, side, MatchEventKind.Goal));
-        // [ORIGINAL] Datei 0xA8AC–0xA933: Gegentor in Unterzahl beendet eine Strafe (0x35540(…, 0), dann 0x35691(…, 0, 0)).
-        if (defender.Box.Count > 0)
-            defender.Box.Release(0, force: false);
+        if (players is { } scoring)
+            scoring.Scorer.MatchGoals++;
+        report.Events.Add(new MatchEvent(minute, side, MatchEventKind.Goal, Player: players?.Scorer.Player,
+            Assist: players?.Assist.Player));
     }
 
     /// <summary>

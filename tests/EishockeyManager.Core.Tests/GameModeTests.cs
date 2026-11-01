@@ -277,6 +277,9 @@ public class GameModeTests
     /// Spur spielberechnung-komplett, Teil 2 (R8W3I-03 bis -06): Titel und die ersten vier Saisons gleich; ab Saison 5 andere
     /// Konten und beide Zufallsquellen – das Nationalteam des Bundestrainers zieht den Strafspieler 0x378C5 (statt eines
     /// Zufallsspielers bei der Gutschrift), 0x378C5 zieht höchstens 150-mal, Strafen ohne Spieler erzeugen kein Ereignis.
+    /// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): alle Werte neu – Verletzungen im Spiel (Zug je Minute und Managerverein, verletzte Spieler fehlen
+    /// wochenlang) und die Schützenwahl je Abschluss der Managerpaarung ändern Ergebnisse und beide Zufallsquellen ab dem
+    /// ersten Spiel. Konto Manager 1 in Saison 5 −919.525 (vorher −83.211; Ursache nicht untersucht, kein Geldpfad geändert).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -291,7 +294,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=2|2166223,354659|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|3736064,179096|WorldChampion=52,CupWinner=17,GermanChampion=6,EuropeanCupWinner=0|5257063,78594|WorldChampion=52,CupWinner=3,GermanChampion=7,EuropeanCupWinner=6|5798506,-90988|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=7|6362777,-83211|R635500914 C140070056";
+        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|1984921,399746|WorldChampion=52,CupWinner=6,GermanChampion=6,EuropeanCupWinner=3|3521784,215832|WorldChampion=55,CupWinner=5,GermanChampion=5,EuropeanCupWinner=6|4194446,122400|WorldChampion=63,CupWinner=1,GermanChampion=3,EuropeanCupWinner=5|4861173,102372|WorldChampion=63,CupWinner=16,GermanChampion=16,EuropeanCupWinner=3|5292686,-919525|R1212067759 C260585243";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -101,16 +101,18 @@ namespace EishockeyManager.Core.Tests;
 /// Spur spielberechnung-komplett, Teil 2 (R8W3I-03 bis -06): drei Abdrücke neu. Passiv Seed 3: das Nationalteam des
 /// Bundestrainers zieht den Strafspieler 0x378C5 (Gegenprobe ohne diesen Zug: alter Abdruck). Aktiv Seed 3 und 11:
 /// 0x378C5 zieht höchstens 150-mal, Strafen ohne Spieler erzeugen kein Ereignis, Managerwert 100 unter neun Spielern.
+/// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): alle sechs neu – je Minute der Managerpaarung ein Verletzungszug, je Abschluss die Schützenwahl
+/// statt der Torverteilung 0x5028 nach dem Spiel für Managervereine. Keine Gegenprobe (geänderter Zufallsverbrauch ist der Zweck).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "1A26EBD0E3B28619")]
-    [InlineData(true, 3, "91DBE8E7D206AF7E")]
-    [InlineData(false, 11, "5DEBD7CE1804F5BD")]
-    [InlineData(true, 11, "045637FF176C33D2")]
+    [InlineData(false, 3, "4C6573AA5A7B2645")]
+    [InlineData(true, 3, "D44060CF9BC08D24")]
+    [InlineData(false, 11, "62CC775C6BCA1381")]
+    [InlineData(true, 11, "F2C97C8C5EE75752")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -118,8 +120,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "5BC42F03B361EDC9")]
-    [InlineData(true, "3000EECC3A1C4596")]
+    [InlineData(false, "622C488803CD4F9D")]
+    [InlineData(true, "C3196F964DD2C1DF")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

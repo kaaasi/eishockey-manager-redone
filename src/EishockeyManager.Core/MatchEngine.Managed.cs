@@ -30,6 +30,9 @@ public sealed class LivePlayer
 
     /// <summary>Reihe laut Aufstellungsplatz (−1 = Reserve).</summary>
     public int Line => (Position & 0x7F) - 1;
+
+    /// <summary>Tore dieses Spiels (Gewicht der Schützenwahl 0x386D1, Kaderplatz +0x03 wächst im Original sofort).</summary>
+    public int MatchGoals { get; set; }
 }
 
 /// <summary>Kader eines Managervereins in der Minutenrechnung.</summary>

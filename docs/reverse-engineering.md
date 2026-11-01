@@ -704,3 +704,8 @@ Teil 2 (R8W3I-03 bis -06): 0x378C5 höchstens 150 Züge (Prüfung 0x37A30 vor de
 100 unter neun Spielern (0x9698); Nationalteam (Feld 0x16 = 6) zieht über 0x35AB8–0x35B2C ebenfalls 0x378C5. **0x38A36**
 (aus 0x952C an 0x9567, Stub 0x149D:0x8E): Spieler auf dem Eis je Teil (0x388F6), DGROUP 0xCC35, Vereinsfeld 0x32 und
 0x2C Bit 3 – keine automatische Aufstellung. Einzelheiten: [spielberechnung.md](spielberechnung.md) §16.
+Teil 3: **Verletzungen 0x38B8F** (je Minute der Managerpaarung vor den Torchancen, 0x37F06/0x38304) mit Szene 0x53C57
+Ereignis 4 → **Verletzung 0x05B1A** (Tabellen DGROUP 0x181 Wochen, 0x1B9 Häufigkeit, 0x483B schwere Arten; auch aus dem
+Tageslauf 0x07169 an 0x74A9), **Heilung 0x7C12** (wöchentlich), Versicherung 0x07089 (Zahlung +0x30 · 4, nicht umgesetzt);
+**Torschütze 0x541D9 → 0x386D1** je Abschluss der Managerpaarung; Zählung 0x4BE17 (Modus 0 belegt, 1 Aufstellung, 2
+Reserve); Gruppe 0x4180 (Rollenwert / 25 ≤ 2). Einzelheiten: [spielberechnung.md](spielberechnung.md) §17.

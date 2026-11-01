@@ -37,7 +37,7 @@ public class NationalCoachMode4Tests
     public void Mode4_ManagerInTopFive_BecomesNationalCoach_OnClubSeasonEnd()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
-        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
+        ManagedSquads.PlayAtTopStrength(game); // Vorbedingung Tabellenplatz; Teil 3 (Verletzungen 0x38B8F) schwächt den Kader
         PlayToClubSeasonEnd(game);
 
         Assert.Equal(1, ExpectedCoach(game)); // Vorbedingung: Verein 2 unter den ersten fünf, Verein 8 nicht
@@ -110,7 +110,7 @@ public class NationalCoachMode4Tests
     public void Mode4_WorldCupDay_CoachTurnAfterClubManagers()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
-        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
+        ManagedSquads.PlayAtTopStrength(game); // Vorbedingung Tabellenplatz; Teil 3 (Verletzungen 0x38B8F) schwächt den Kader
         PlayToClubSeasonEnd(game);
         var day = game.CurrentDay;
         Assert.True(SeasonCalendar.Events(day).HasFlag(DayEvents.WorldCup));
@@ -142,7 +142,7 @@ public class NationalCoachMode4Tests
     public void Mode4_NationalTurn_CanNominateAndPlayFriendly()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
-        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
+        ManagedSquads.PlayAtTopStrength(game); // Vorbedingung Tabellenplatz; Teil 3 (Verletzungen 0x38B8F) schwächt den Kader
         PlayToClubSeasonEnd(game);
         game.Continue();
         game.Continue();
@@ -159,7 +159,7 @@ public class NationalCoachMode4Tests
     public void Mode4_NewSeason_CoachEnds_AndIsChosenAgain()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
-        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
+        ManagedSquads.PlayAtTopStrength(game); // Vorbedingung Tabellenplatz; Teil 3 (Verletzungen 0x38B8F) schwächt den Kader
         while (game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver)
             game.Continue();
         Assert.NotNull(game.NationalCoach);
@@ -263,7 +263,7 @@ public class NationalCoachMode4Tests
     public void SaveLoad_DuringNationalTurn_KeepsTurnAndCoach()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
-        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
+        ManagedSquads.PlayAtTopStrength(game); // Vorbedingung Tabellenplatz; Teil 3 (Verletzungen 0x38B8F) schwächt den Kader
         PlayToClubSeasonEnd(game);
         game.Continue();
         game.Continue();
