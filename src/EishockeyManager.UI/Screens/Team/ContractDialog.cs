@@ -77,9 +77,13 @@ public sealed class ContractDialog
     public Rect AcceptButton => ContractsScreen.AcceptButton(Rect);
     public Rect CancelButton => ContractsScreen.CancelButton(Rect);
 
+    /// <summary>Knopf, über dem die linke Maustaste gerade gedrückt ist (Darstellung „gedrückt“), sonst null.</summary>
+    public Rect? PressedButton { get; private set; }
+
     public Outcome Update(InputState input)
     {
         Refusal = null;
+        PressedButton = PressedAt(input, AcceptButton, CancelButton);
         if (_edit != Field.None)
         {
             foreach (var ch in input.Text)
@@ -177,8 +181,30 @@ public sealed class ContractDialog
         // [ORIGINAL] 0x4AAD4–0x4AB1C: +0x30 = 0 → „keine“, sonst der Betrag mit „ DM“ (0x38:0x2D8).
         s.Text(mini, 81, d.Y + 43, Insured ? ContractsScreen.FormatMoney(Insurance) : "keine", Colors.White);
 
-        TeamUi.DialogButton(s, assets, AcceptButton.X, AcceptButton.Y, "Mach' ich!");
-        TeamUi.DialogButton(s, assets, CancelButton.X, CancelButton.Y, "Abbruch");
+        Button(s, assets, AcceptButton, "Mach' ich!", PressedButton == AcceptButton);
+        Button(s, assets, CancelButton, "Abbruch", PressedButton == CancelButton);
+    }
+
+    /// <summary>Knopf unter der gedrückten linken Maustaste (<see cref="Button"/>).</summary>
+    public static Rect? PressedAt(InputState input, params Rect[] buttons) =>
+        input.LeftDown ? buttons.Cast<Rect?>().FirstOrDefault(r => r!.Value.Contains(input.MouseX, input.MouseY)) : null;
+
+    /// <summary>
+    /// Knopf der Dialoge mit Zustand. [ORIGINAL] 0x120:0x75 (Datei 0x4C196) legt den Knopf an und zeichnet ihn mit Zustand 0;
+    /// das fünfte Argument (0x12 bei „Mach' ich!“ und „Verkaufen“, sonst 1) liest die Funktion nicht. Die Warteschleife
+    /// 0x120:0x6B (0x4BEBD) zeichnet den Knopf unter der gedrückten Maustaste mit Zustand 1 (kb\2 ab (17 | 179 + 12 · Zustand),
+    /// 0x4BFF2) und beim Loslassen wieder mit Zustand 0; die Beschriftung bleibt gleich. Der hellere „Mach' ich!“ im Video ist
+    /// also der gedrückte Knopf.
+    /// </summary>
+    internal static void Button(Surface s, Assets assets, Rect r, string text, bool pressed)
+    {
+        TeamUi.DialogButton(s, assets, r.X, r.Y, text);
+        if (!pressed)
+            return;
+        s.Blit(assets.Image(2), new Rect(17, 179 + 12, Widgets.ButtonWidth, Widgets.ButtonHeight), r.X, r.Y, transparent: 0);
+        var tx = r.X + Widgets.ButtonWidth / 2 + 2 - assets.Mini.Measure(text) / 2;
+        s.Text(assets.Mini, tx + 1, r.Y + 4, text, 1);
+        s.Text(assets.Mini, tx, r.Y + 3, text, TeamUi.DialogDark);
     }
 
     private void DrawValue(Surface s, BitmapFont mini, Field field, int y, string text)

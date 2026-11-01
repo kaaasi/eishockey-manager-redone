@@ -136,6 +136,7 @@ public sealed partial class TransferMarket
 
     internal void Release(Club from, Player player)
     {
+        player.UnsolicitedOffer = null; // Kaderplatz entfällt samt +0x09 Bit 0x40
         _freeAgents.Add(new TransferListing { Player = player, From = from, Price = 0, IsFreeAgent = true });
     }
 
@@ -370,6 +371,7 @@ public sealed partial class TransferMarket
                 from.Lineup.FillGaps(from.Players); // Computerverein stellt selbst um, Manager nicht
         }
 
+        p.UnsolicitedOffer = null; // Kaderplatz entfällt samt +0x09 Bit 0x40
         var agreement = loan ? new PlayerLoan(from, p.ContractYears, p.MonthlySalary, p.Insured) : null;
         _freeAgents.Remove(listing);
         PlayerFactory.Join(to, p, loan ? 1 : SquadSetup.StartContractYears, loan, agreement);

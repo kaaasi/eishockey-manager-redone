@@ -130,14 +130,51 @@ der Bundesliga liegen die Startgehälter damit bei 11.000–18.000 DM (FILE01: K
 (+0x2C) führt das Remake nicht als Feld. Computervereine, Leihen, Talente und Verlängerungen der Computervereine behalten die
 Forderung des Remakes (`Contracts.Demand`).
 
+## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 3: unaufgeforderte Angebote, Knöpfe)
+
+Umsetzung: `Core/Transfer.Unsolicited.cs` (`UnsolicitedOfferRules`, `GameState.RollUnsolicitedOffers`, `OpenUnsolicitedOffer`,
+`AcceptUnsolicitedOffer`), Feld `Player.UnsolicitedOffer` (Schema 19, vorläufig), Anschluss täglich in `AnnounceContractEnds`;
+Angebotsfenster `TransferDialog.ForUnsolicited` im Bildschirm „Transfer“; Tests `TransferVertraegeKomplettTeil3Tests`,
+`TransferVertraegeKomplettTeil3ScreenTests`.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Tageswurf | 0x07972–0x07AEF (Tagesablauf 0x07169, Zug des Managers [0xA70E]) | nur bis zum Saisonende (0x3B7 &lt; 233); je Kaderplatz ohne Leihe (+0x0C) und ohne Rücktritt (+0x18 Bit 0x80): w = Wert(Preis) / 10000; random(0, 200) &lt; w, random(0, 450) = 0, keine offene Meldung (Pool +0x1E) → +0x09 \|= 0x40 |
+| Bietender Verein | 0x07A61–0x07A8F → 0x059B8 (0x238:0x1838) | Europapokal-Gegner, wenn w &gt; 90 und random(0, 10) = 0; Verein c = random(0, 42) bzw. random(64, 149), Managerverein (+0x16 ≠ 0) verworfen; Vereinsstärke = (Felder 0x18–0x1B + 100) / 6; angenommen nach mehr als 300 Versuchen oder wenn \|Vereinsstärke − s\| &lt; random(2, 10 · t) (t = 1, ab Versuch 100 2, ab 200 3); s = Mittel der Grundstärken des Pooleintrags |
+| Meldung | 0x07A93–0x07AE3 (0x14CF:0x39 = 0x4B2F6) | „&lt;Verein&gt; ist an &lt;Spieler&gt; interessiert.“ (Vorlage DGROUP 0x29B7) |
+| Anklicken | 0x46E04–0x46ED2 (Transferliste, eigener Kader) | Spieler mit +0x18 Bit 0x80: „Dieser Spieler hört am Saisonende auf.“; mit Bit 0x40: V = Wert(Preis), Angebot = V · random(87, 125) bzw. bei Verein &gt; 0x3F random(112, 155) / 30000 · 300; Bit 0x40 und Meldung werden **vor** der Antwort gelöscht |
+| Angebotsfenster | 0x491F9 (Argument 4 = 1) | Rahmen 0x490DE (2 … 0xA8 \| 0x1C … 0x63), Titel „Manager“ + Name, „ANGEBOT von &lt;Verein&gt; :“, Betrag, „ABLÖSESUMME :“ „keine“, Knöpfe „Behalten“ (0x0B \| 0x53) und „Verkaufen“ (0x5A \| 0x53) |
+| Verkaufen | 0x46F3C–0x46FCF | Konto + Angebot (ohne Abzug), Kaderplatz entfernt (0x108:0x48), Pool +0x1D = Verein; Verein &lt; 0x40 nimmt ihn auf (0x18:0x175C), sonst Besitzer 6 |
+| Knöpfe | 0x4C196 (0x120:0x75), 0x4BEBD (0x120:0x6B), 0x4BFF2 | das fünfte Argument (0x12 bei „Mach' ich!“/„Verkaufen“, sonst 1) wird nicht gelesen; Zustand 1 (kb\\2 ab (17 \| 191)) nur, solange die linke Maustaste über dem Knopf gedrückt ist |
+
+Damit ist die offene Frage zum Verhandlungsfenster geklärt: Der hellere „Mach' ich!“ im Video ist der gedrückte Knopf (Zustand 1),
+kein anderes Argument. Das Remake zeichnet Knöpfe der Verhandlungs- und Angebotsfenster unter gedrückter Maustaste ebenso.
+
+`[APPROX]`: Zufall des Tageswurfs aus einer je Saison und Tag abgeleiteten Quelle (wie `ContractTurnFactor`), Höhe beim Anklicken aus
+`ContractRandom`; „offene Meldung“ = noch nicht angeklicktes Angebot; Rücktritt = Ankündigung `Retiring`. Das Original übergibt
+dem Bieter die **Nummer des Kaderplatzes** statt der Poolnummer (0x07A81), misst also die Grundstärken eines fremden
+Pooleintrags; das Remake nimmt die Stärke des Spielers. Vereinsstärke aus Stärke und Teamwerten des Laders (`ClubTeamValues`).
+Ein voller Computerkader, ein Nationalteam oder ein Europapokal-Gegner gibt den Spieler in den Pool der Vertragslosen. Das
+Angebotsfenster ist im Video nicht zu sehen; Lage nur aus dem Code (Grundlinien wie beim Verhandlungsfenster umgerechnet).
+
+**Neuer Befund (nicht umgesetzt):** Dasselbe Fenster zeigt bei einem Angebot für einen Spieler **auf dem Markt** (Bit 0x80,
+Aufruf 0x473FF mit Argument 0) unter „ABLÖSESUMME :“ Angebot − Angebot / 7 · Restlaufzeit (+0x0B) und schreibt diesen Rest gut
+(0x49332–0x49371, danach 0x4748A). Das Remake bucht den vollen Betrag und zeigt eine Rückfrage (`UnsolicitedOfferRules.MarketTransferFeeThirds`
+ist vorbereitet). Umstellung ändert Geld in fremden Tests (`TransferTests`, `TransferOriginalTests` …) → Teil 4 bzw. Entscheidung.
+
+**Listenwechsel 0x494EF (nicht umgesetzt, Entscheidung nötig):** Der Wechsel räumt alle Markt-Plätze (Satz 4, 10 Plätze) ohne
+Managerspieler, zieht aus dem **Pool von 200 Spielern** (Besitzer 6; Nummer random(1, 179), mit random(0, 5) = 0 random(180, 199),
+bis zu 1500 Versuche) neue Spieler, würfelt Form (+0x17 = random(45, 55)) und Grundstärken nach dem Verein (0x4981E), legt den
+Kaderplatz an (0x108:0x5C) und setzt +0x2C = Wert(Preis), +0x28 = Wert(Gehalt) (0x4975C/0x497A1), +0x19 = random(3, 12) · 16 +
+random(3, 12). Computervereine haben im Original keine Spieler; das Remake zieht Markt-Spieler aus den Kadern der Computervereine.
+Eine treue Umsetzung braucht den Pool als eigenes Modell (Datenbank, Spielstand, Kader der Computervereine) – Entscheidung Nutzer.
+
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
-- **Unaufgeforderte Angebote** für Spieler im eigenen Kader (Kaderplatz +0x09 Bit 0x40, Tagesablauf 0x079DE–0x07A8F: w wie oben,
-  random(0, 200) &lt; w und random(0, 450) = 0; Höhe 0x46E0E: Wert · random(87, 125) bzw. random(112, 155) / 30000 · 300) –
-  im Remake gibt es Angebote nur für Spieler auf dem Markt.
 - **Antwort des verkaufenden Managers** (Hot-Seat-Rückfrage 0x47608–0x47743) fehlt; das Remake nimmt ab dem geforderten
   Betrag an, darunter bis 85 % mit sinkender Wahrscheinlichkeit.
-- **Bietender Verein** 0x238:0x1838 und Wechsel der Liste je Spieltag (Abgänge, Zugänge, Pflege 0x7C12) nicht belegt.
+- **Bietender Verein** für Spieler auf dem Markt (Bit 0x80): 0x059B8 ist jetzt belegt (Teil 3), für den Markt aber noch nicht
+  angeschlossen; Pflege der Liste 0x7C12 nicht belegt.
 - **Zeitpunkt der Züge:** das Original würfelt die Angebotshöhe beim Anklicken, das Remake beim Angebot.
 - **Listenpreis eigener Spieler:** das Original kopiert den Kaderplatz (0x48:0x2BD4) samt altem +0x2C (Start- bzw. Kaufpreis);
   das Remake rechnet den Wert beim Anbieten frisch.
@@ -154,9 +191,9 @@ Forderung des Remakes (`Contracts.Demand`).
 - **Angebot des Spielers verfällt** (random(0, 5), dann Sperre random(9, 17)) und Angebot der Ankündigung „von 1 auf n Jahre“
   stammen im Remake aus der Spur „kader“ (`[APPROX]`, R2-11); umgesetzt ist nur, dass „Mach' ich!“ ohne Eingabe das Angebot
   annimmt.
-- **Wechsel der Liste 0x494EF** (Pool von 200 Spielern) – das Remake zieht aus den vollen Kadern der Computervereine.
-- **Knöpfe im Verhandlungsfenster:** im Video ist „Mach' ich!“ heller beschriftet als „Abbruch“ (Aufruf 0x120:0x75 mit 0x12
-  statt 1) und beide stehen 1 Pixel weiter links; Bedeutung des Arguments offen (gemeinsamer Baustein, nicht geändert).
+- **Wechsel der Liste 0x494EF** (Pool von 200 Spielern) – das Remake zieht aus den vollen Kadern der Computervereine (Teil 3, oben).
+- **Knöpfe im Verhandlungsfenster:** geklärt in Teil 3 (gedrückter Knopf); die Lage 1 Pixel weiter links im Video ist nicht
+  nachgemessen.
 
 ## Pixelvergleich (Abnahme 3)
 

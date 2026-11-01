@@ -163,7 +163,10 @@ public sealed class TransferScreen : Screen
             if (row >= 0 && row < rows.Count)
             {
                 var p = rows[row];
-                if (p.OnLoan)
+                // [ORIGINAL] Datei 0x46E04: Spieler mit unaufgefordertem Angebot (+0x09 Bit 0x40) öffnen das Angebotsfenster.
+                if (Game.OpenUnsolicitedOffer(Manager, p) is { } offer)
+                    _dialog = TransferDialog.ForUnsolicited(offer);
+                else if (p.OnLoan)
                     _message.Show("Dieser Spieler ist", "nur ausgeliehen.");
                 else
                     _dialog = TransferDialog.ForSale(p, Market.ListingOf(p), TransferMarket.Price(p));
@@ -201,6 +204,10 @@ public sealed class TransferScreen : Screen
                 break;
             case TransferDialog.DialogKind.Talent:
                 _message.Show(TalentScout.Message(TalentScout.Search(Game, Manager)));
+                break;
+            case TransferDialog.DialogKind.Offer:
+                if (Game.AcceptUnsolicitedOffer(d.Offer!) != TransferResult.Accepted)
+                    _message.Show(TransferMarket.Message(TransferResult.Impossible));
                 break;
         }
     }

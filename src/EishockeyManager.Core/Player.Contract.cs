@@ -68,6 +68,12 @@ public sealed partial class Player
     /// </summary>
     public int NegotiationLock { get; set; }
 
+    /// <summary>
+    /// Unaufgefordertes Angebot eines Vereins (Kaderplatz +0x09 Bit 0x40, Verein in +0x16), sonst null. Gesetzt im Tagesablauf
+    /// (<see cref="GameState.RollUnsolicitedOffers"/>), gelöscht beim Anklicken (<see cref="GameState.OpenUnsolicitedOffer"/>).
+    /// </summary>
+    public Club? UnsolicitedOffer { get; set; }
+
     /// <summary>Ankündigung im letzten Vertragsjahr (nur Spieler der Manager-Vereine), bis zum Saisonwechsel.</summary>
     public ContractNotice Notice { get; set; }
 

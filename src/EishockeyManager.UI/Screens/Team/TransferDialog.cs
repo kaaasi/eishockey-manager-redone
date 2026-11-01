@@ -9,7 +9,7 @@ namespace EishockeyManager.UI.Screens.Team;
 /// </summary>
 public sealed class TransferDialog
 {
-    public enum DialogKind { Buy, Loan, Sale, Bid, Talent }
+    public enum DialogKind { Buy, Loan, Sale, Bid, Talent, Offer }
 
     public enum Outcome { None, Confirm, Cancel }
 
@@ -23,8 +23,16 @@ public sealed class TransferDialog
     /// <summary>Fragefenster (Talentsuche, Gebote) statt Verhandlungsdialog?</summary>
     public bool IsQuestion => Kind is DialogKind.Talent or DialogKind.Bid;
 
-    public Rect ConfirmButton => IsQuestion ? Widgets.ButtonRect(95, 167) : Widgets.ButtonRect(Box.X + 12, Box.Y + 55);
-    public Rect CancelButton => IsQuestion ? Widgets.ButtonRect(165, 167) : Widgets.ButtonRect(Box.X + 99, Box.Y + 55);
+    public Rect ConfirmButton => Kind == DialogKind.Offer ? Widgets.ButtonRect(90, OfferBox.Y + 54)
+        : IsQuestion ? Widgets.ButtonRect(95, 167) : Widgets.ButtonRect(Box.X + 12, Box.Y + 55);
+    public Rect CancelButton => Kind == DialogKind.Offer ? Widgets.ButtonRect(11, OfferBox.Y + 54)
+        : IsQuestion ? Widgets.ButtonRect(165, 167) : Widgets.ButtonRect(Box.X + 99, Box.Y + 55);
+
+    /// <summary>
+    /// Angebotsfenster 0x491F9 (unaufgefordertes Angebot). [ORIGINAL] Rahmen über 0x490DE mit y = 0 und Höhe 0x47: x 2 … 0xA8,
+    /// y 0x1C … 0x63 (wie die Vertragsverhandlung beim Kauf, <see cref="ContractDialog.Top"/>, nur 4 Pixel höher).
+    /// </summary>
+    public static readonly Rect OfferBox = new(1, 29, 166, 71);
 
     private string _edit = "";
     private bool _editing;
@@ -67,12 +75,23 @@ public sealed class TransferDialog
         Price = bid.Amount,
     };
 
+    /// <summary>Unaufgefordertes Angebot (Bit 0x40) für einen Spieler des eigenen Kaders.</summary>
+    public static TransferDialog ForUnsolicited(UnsolicitedOffer offer) => new(DialogKind.Offer)
+    {
+        Offer = offer,
+        Player = offer.Player,
+        Price = offer.Amount,
+    };
+
+    /// <summary>Unaufgefordertes Angebot im Fenster (nur <see cref="DialogKind.Offer"/>).</summary>
+    public UnsolicitedOffer? Offer { get; private init; }
+
     /// <summary>Rückfrage zur Talentsuche mit dem Preis nach Rabatt (<see cref="GameState.TalentSearchPrice"/>).</summary>
     public static TransferDialog ForTalent(long price) => new(DialogKind.Talent) { Price = price };
 
     private string ConfirmText => Kind switch
     {
-        DialogKind.Sale => "Verkaufen",
+        DialogKind.Sale or DialogKind.Offer => "Verkaufen",
         DialogKind.Talent => "Aber immer!",
         _ => "Mach' ich!",
     };
@@ -80,12 +99,17 @@ public sealed class TransferDialog
     private string CancelText => Kind switch
     {
         DialogKind.Sale when Listing is not null => "Behalten",
+        DialogKind.Offer => "Behalten",
         DialogKind.Talent => "Lieber nicht.",
         _ => "Abbruch",
     };
 
+    /// <summary>Knopf unter der gedrückten linken Maustaste (Angebotsfenster), sonst null.</summary>
+    public Rect? PressedButton { get; private set; }
+
     public Outcome Update(InputState input, Assets assets)
     {
+        PressedButton = Kind == DialogKind.Offer ? ContractDialog.PressedAt(input, CancelButton, ConfirmButton) : null;
         if (_editing)
         {
             foreach (var ch in input.Text)
@@ -124,6 +148,11 @@ public sealed class TransferDialog
         if (IsQuestion)
         {
             DrawQuestion(s, a);
+            return;
+        }
+        if (Kind == DialogKind.Offer)
+        {
+            DrawOffer(s, a);
             return;
         }
         var mini = a.Mini;
@@ -165,6 +194,28 @@ public sealed class TransferDialog
 
         TeamUi.DialogButton(s, a, ConfirmButton.X, ConfirmButton.Y, ConfirmText);
         TeamUi.DialogButton(s, a, CancelButton.X, CancelButton.Y, CancelText);
+    }
+
+    /// <summary>
+    /// Angebotsfenster nach em.exe 0x491F9 (Argument 4 = 1, Aufruf 0x46EA5). [ORIGINAL] Titel 0x490DE: „Manager“ (DGROUP 0xC74)
+    /// + Name, zentriert 6 … 0xA3, Grundlinie y 0x28, Farbe 0x0A mit Schatten 0x1C, Linie y 0x2B; „ANGEBOT von &lt;Verein&gt; :“
+    /// bei (7 | 0x34), Betrag mit „ DM“ zentriert 4 … 0xA6 bei y 0x3C; „ABLÖSESUMME :“ bei (7 | 0x44), darunter „keine“ (y 0x4C);
+    /// Knöpfe „Behalten“ (0x0B | 0x53) und „Verkaufen“ (0x5A | 0x53), Textfarbe 7. Grundlinien wie beim Verhandlungsfenster
+    /// auf die Oberkante der Schrift umgerechnet (Mini 4, Titel 6 Pixel darüber). [APPROX] Kein Videobeleg; Lage nur aus dem Code.
+    /// </summary>
+    private void DrawOffer(Surface s, Assets a)
+    {
+        var mini = a.Mini;
+        var b = OfferBox;
+        TeamUi.DialogFrame(s, b);
+        TeamUi.DialogTitle(s, a, 84, 0x28 - 6, "Manager " + Player!.Name);
+        s.HLine(5, 0x2B, 159, Colors.White);
+        s.Text(mini, 7, 0x34 - 4, "ANGEBOT von " + Offer!.Buyer.Name + " :", Colors.White);
+        s.TextCentered(mini, (4 + 0xA6) / 2, 0x3C - 4, TransferScreen.Money(Price), Colors.White);
+        s.Text(mini, 7, 0x44 - 4, "ABLÖSESUMME :", Colors.White);
+        s.TextCentered(mini, (4 + 0xA6) / 2, 0x4C - 4, "keine", Colors.White);
+        ContractDialog.Button(s, a, CancelButton, CancelText, PressedButton == CancelButton);
+        ContractDialog.Button(s, a, ConfirmButton, ConfirmText, PressedButton == ConfirmButton);
     }
 
     /// <summary>Fragefenster wie „LetsShow“ im Video. [APPROX] Die „?“-Felder sind gezeichnet (keine Grafik gefunden).</summary>
