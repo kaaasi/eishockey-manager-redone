@@ -144,18 +144,22 @@ public class SaveLoadScreenTests : IDisposable
 
     // em.exe 0x5DBE5 (Datei 0x5E5ED..0x5E667): Rechtsklick auf einen Eintrag bricht nicht ab, er übernimmt den Namen.
     [GameDataFact]
-    public void RightClickOnEntry_TakesNameButDoesNotLeaveOrLoad()
+    public void RightClickOnEntry_KeepsNameAndDoesNotLeaveOrLoad()
     {
         var d = NewDriver();
         d.OpenTile("Sichern");
         d.Type("rechts");
         d.Press(Key.Enter);
         d.OpenTile("Laden");
+        var before = Assert.IsType<SaveLoadScreen>(d.Host.Current).FileName;
         var index = SaveFiles.List(_directory).ToList().FindIndex(e => e.FileName == "RECHTS.ems");
         var rect = SaveLoadScreen.EntryRect(index / SaveLoadScreen.RowsPerColumn, index % SaveLoadScreen.RowsPerColumn);
         d.RightClick(rect.X + 3, rect.Y + 3);
+        // em.exe Datei 0x5E5ED–0x5E667: Taste 3 auf einem Eintrag zeigt nur die Spielstand-Info (0x5B661),
+        // das Namensfeld [bp+6] bleibt unverändert, der Dialog bleibt offen (R9I-F1, #326).
         var screen = Assert.IsType<SaveLoadScreen>(d.Host.Current);
-        Assert.Equal("RECHTS", screen.FileName);
+        Assert.Equal(before, screen.FileName);
+        Assert.NotEqual("RECHTS", screen.FileName);
     }
 
     // em.exe 0x5DBE5 (Datei 0x5E66A..0x5E68C): Linksklick auf einen Eintrag führt aus, wenn der Name im Feld schon gleich ist.
