@@ -112,6 +112,12 @@ public sealed class GameSetup
 
     public GameDuration Duration { get; set; } = GameDuration.Unbegrenzt;
 
+    /// <summary>
+    /// Spielstand-Optionen des Originals (Optionsbildschirm 0x2CD1C, Spur optionen-wirkung). Gehören zum Spielstand; die
+    /// Anfangswerte stammen aus em.exe (<see cref="GameOptions"/>).
+    /// </summary>
+    public GameOptions Options { get; init; } = new();
+
     /// <summary>Knopfbits wie im Original: Bit 0 Fahne, Bit 1 Weltkugel.</summary>
     public int ModeBits => (ClubCompetitions ? 1 : 0) | (EuropeAndWorldCup ? 2 : 0);
 

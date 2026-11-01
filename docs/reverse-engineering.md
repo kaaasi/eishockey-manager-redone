@@ -653,8 +653,10 @@ Optionen meldet einen Wettbewerb an oder ab, und keine wechselt den Spielmodus.*
   in `MatchEngine.Live.cs` (`PlayWithEvents`) alle drei Schalter als aus an ([APPROX]); mit den Anfangswerten des Originals
   (DEB-Pokal an) wäre der DEB-Pokal der Computervereine im Minutenweg zu rechnen. Diese Datei gehört `spielberechnung-komplett`.
 * **Folge für den Plan:** Die in Runde 9 vorgesehene Wirkung „An-/Abmelden von DEB-Pokal, Europapokal, WM in `StartNextSeason`
-  und Moduswechsel“ ist im Original **nicht belegt** und widerspricht den Belegen oben. Teil 1 ist deshalb blockiert
-  (Entscheidung Nutzer, PR #292).
+  und Moduswechsel“ ist im Original **nicht belegt** und widerspricht den Belegen oben. **Entscheidung Nutzer (01.11.2026):**
+  Teil 1 neu gefasst – Zustand in `Core/GameOptions.cs` (`GameSetup.Options`, Anfangswerte aus der Datei, Migration),
+  `GameOptions.CupMatchUsesMinuteLoop` als Abfrage für den Anschluss in `MatchEngine.PlayWithEvents` (Spur
+  `spielberechnung-komplett` bzw. Leitstelle; PR #292). `SeasonFlow.cs` bleibt unverändert.
 
 ### Teil 2 (Spur `optionen-kalender-2`)
 

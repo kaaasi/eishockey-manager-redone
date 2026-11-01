@@ -122,10 +122,11 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
      Spieltag.“) ist im Remake vorhanden und wird nur abgeglichen.
 - **Abnahme:** roter Test je Option mit Wirkung; Mehrsaisonprobe mit Moduswechsel; Pixelvergleich; Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/tagesablauf.md`, Tests.
-- **Modell:** Claude Opus 5.5 (Core-Logik). **Status:** Teil 1 **blockiert – Entscheidung Nutzer** (PR #292): Index 9 ist die
-  Live-Darstellung, Index 10–12 sind Anzeigeschalter (Wirkung nur schneller Weg vs. Minutenschleife in `MatchEngine.Live.cs`);
-  An-/Abmelden der Pokale und Moduswechsel sind im Original nicht belegt (`reverse-engineering.md`, „Wirkung der
-  Spielstand-Optionen“). R8-D03 bestätigt (Index 10 = 1). Teile 2–3 nicht begonnen.
+- **Modell:** Claude Opus 5.5 (Core-Logik). **Status:** Teil 1 neu gefasst (Entscheidung Nutzer 01.11.2026, PR #292): Index 9 ist die
+  Live-Darstellung, Index 10–12 sind Anzeigeschalter; Zustand in `Core/GameOptions.cs` mit Migration (vorläufig 17 → 18),
+  Anschluss „Minutenweg bei Schalter an“ in `MatchEngine.Live.cs` offen für `spielberechnung-komplett`/Leitstelle. Kein
+  An-/Abmelden, kein Moduswechsel (`reverse-engineering.md`, „Wirkung der Spielstand-Optionen“). R8-D03 bestätigt
+  (Index 10 = 1). Teile 2–3 nicht begonnen.
 
 ### Spur `finanzen-rest` – Restliche Finanz- und Managerbildschirme
 
