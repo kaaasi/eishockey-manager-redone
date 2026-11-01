@@ -187,8 +187,8 @@ public static class LeagueTable
     /// Stelle mit <see cref="ExchangeSort"/> und dem Vergleich <see cref="Better"/>. Die Ausgangsreihenfolge ist die Liste
     /// des Vortags; beim Spielstart ist sie die Vereinsreihenfolge (0x2F1A2). Die Tabellenansicht 0x4F78D sortiert dieselbe
     /// Liste für „Heim“/„Auswärts“ (Ansicht 0/2, nur das Heim- bzw. Auswärtsfeld) und beim Verlassen wieder nach „Gesamt“.
-    /// [APPROX] Ausgangsreihenfolge jeder Saison = Vereinsreihenfolge der Liga: Das Original behält 0x5CCB über den
-    /// Saisonwechsel, das Remake hat die Ergebnisse der Vorsaison nicht mehr (wirkt nur bei vollem Gleichstand).
+    /// Ab der zweiten Saison ist die Ausgangsreihenfolge die Platzliste der Vorsaison nach Auf- und Abstieg
+    /// (<see cref="SuccessorOrder"/>).
     /// [APPROX] Dass eine angesehene Heim-/Auswärtstabelle die Ausgangsreihenfolge des nächsten Sortierens ändert, bildet
     /// das Remake nicht nach – Bildschirme verändern keinen Spielzustand (wirkt nur bei vollem Gleichstand).
     /// [APPROX] DGROUP 0x6B0 (schaltet im Vergleich die Spiele ab) gilt als 0: kein Code schreibt die Stelle.
@@ -235,17 +235,64 @@ public static class LeagueTable
     }
 
     /// <summary>
-    /// Ausgangsreihenfolge der Platzliste: Vereinsreihenfolge der Liga (0x2F1A2, Vereinsindex aufsteigend). [ORIGINAL] Beim
-    /// Spielstart tauscht em.exe in der 1. Liga die Plätze 1 und 3 (Datei 0x43A08/0x43A0D: DGROUP 0x5CCB = 2,
-    /// 0x5CCD = 0) – der Deutsche Meister Düsseldorfer EG (DGROUP 0xD0E6 = 2) steht vorn; so im Video „Die Oberfläche von
-    /// EM“ 13:07 (Tabelle 1. Liga vor dem ersten Spieltag: Düsseldorfer EG, SC Preussen Berlin, Eisbären Berlin, …).
-    /// [APPROX] Ab der zweiten Saison wieder die Vereinsreihenfolge (siehe <see cref="ComputeRanks"/>).
+    /// Ausgangsreihenfolge der Platzliste DGROUP 0x5CCB. [ORIGINAL] Beim Spielstart Vereinsreihenfolge der Liga (0x2F1A2,
+    /// Vereinsindex aufsteigend); danach tauscht em.exe in der 1. Liga die Plätze 1 und 3 (Datei 0x43A08/0x43A0D:
+    /// DGROUP 0x5CCB = 2, 0x5CCD = 0) – der Deutsche Meister Düsseldorfer EG (DGROUP 0xD0E6 = 2) steht vorn; so im Video
+    /// „Die Oberfläche von EM“ 13:07 (Tabelle 1. Liga vor dem ersten Spieltag: Düsseldorfer EG, SC Preussen Berlin, Eisbären
+    /// Berlin, …). Ab der zweiten Saison siehe <see cref="SuccessorOrder"/>.
     /// </summary>
     private static List<int> StartOrder(GameState game, League league, List<int> order)
     {
+        if (game.Season > GameState.FirstSeason
+            && game.History.LastOrDefault(r => r.Season == game.Season - 1) is { } previous)
+            return SuccessorOrder(previous, league, order);
         if (league == League.Bundesliga && game.Season == GameState.FirstSeason
             && order.IndexOf(0) is var a and >= 0 && order.IndexOf(2) is var b and >= 0)
             (order[a], order[b]) = (order[b], order[a]);
+        return order;
+    }
+
+    /// <summary>
+    /// Ausgangsreihenfolge einer Folgesaison aus dem Ergebnis der Vorsaison.
+    /// </summary>
+    /// <remarks>
+    /// [ORIGINAL] em.exe behält die Platzliste 0x5CCB über den Saisonwechsel: Außer der Sortierung (0x50B45) und der
+    /// WM-Reihenfolge (0x35EDD) schreibt kein Code die Liste, und der Saisonwechsel setzt nur die Tabellenfelder aller 64
+    /// Vereine auf 0 (Datei 0x55E39–0x55EF8: Punkte, Tore, Gegentore, Spiele, Siege, Niederlagen, Bilanz). Auf- und Abstieg
+    /// tauscht die Vereine selbst über ihre Indizes (Funktion 0x36169: Vereinssatz DGROUP 0x8257 + 0x50 · Verein,
+    /// Vereinsnummer der 200 Spieler +0x1D, Verein der Manager DGROUP 0x966F + 0x1AF · Manager). Damit nimmt der Aufsteiger
+    /// den Listenplatz seines Tauschpartners ein und umgekehrt. Paare (Datei 0x56137–0x5636D, Ligen 0 und 1): je
+    /// Aufstiegsrunde der nächste Verein der unteren Liga unter den ersten beiden der Gruppentabelle (DGROUP 0xCD94 + 6 · Liga)
+    /// mit dem nächsten Verein der oberen Liga unter den Plätzen 3 und 4 – also in Tabellenreihenfolge, wie
+    /// <see cref="SeasonRecord.PromotedInto"/> und <see cref="SeasonRecord.RelegatedInto"/> gefüllt werden. Oberliga
+    /// (Liga 2): der Letzte, dann der Vorletzte der Platzliste (0x5CCB + 24 + 11 − k) mit je einem Verein ohne Liga
+    /// (<see cref="SeasonRecord.LeftOberliga"/> mit <see cref="SeasonRecord.PromotedInto"/> der Oberliga). Am ersten Spieltag
+    /// der neuen Saison sind alle Tabellenfelder gleich; die Tauschsortierung behält dann die Reihenfolge.
+    /// [APPROX] Das Remake hält keine eigene Platzliste: Es setzt sie aus der Abschlusstabelle „Gesamt“ der Vorsaison
+    /// zusammen (gleich bis auf die Reihenfolge vollständig gleichstehender Vereine nach angesehenen Heim-/Auswärtstabellen,
+    /// siehe <see cref="ComputeRanks"/>). Vereine ohne Partner (z. B. nach einem Moduswechsel) entfallen, übrige
+    /// Ligamitglieder folgen in Vereinsreihenfolge.
+    /// </remarks>
+    public static List<int> SuccessorOrder(SeasonRecord previous, League league, IReadOnlyList<int> members)
+    {
+        if (!previous.FinalTables.TryGetValue(league, out var final))
+            return members.ToList();
+        var partner = new Dictionary<int, int>();
+        void Pair(IReadOnlyList<int> leaving, IReadOnlyList<int> arriving)
+        {
+            for (var i = 0; i < leaving.Count && i < arriving.Count; i++)
+                partner[leaving[i]] = arriving[i];
+        }
+        if (league > League.Bundesliga)
+            Pair(previous.PromotedInto[league - 1], previous.RelegatedInto[league]);
+        if (league < League.Oberliga)
+            Pair(previous.RelegatedInto[league + 1], previous.PromotedInto[league]);
+        else
+            Pair(previous.LeftOberliga, previous.PromotedInto[League.Oberliga]);
+
+        var inLeague = members.ToHashSet();
+        var order = final.Select(c => partner.TryGetValue(c, out var p) ? p : c).Where(inLeague.Contains).Distinct().ToList();
+        order.AddRange(members.Where(c => !order.Contains(c)));
         return order;
     }
 

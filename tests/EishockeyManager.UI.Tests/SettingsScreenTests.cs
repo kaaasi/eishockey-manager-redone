@@ -34,7 +34,6 @@ public class SettingsScreenTests : IDisposable
     {
         var s = new GameSettings();
         Assert.Equal(10, s.EffectsVolume);
-        Assert.True(s.GoalScenes);
         Assert.False(s.Fullscreen);
     }
 
@@ -49,9 +48,9 @@ public class SettingsScreenTests : IDisposable
     public void SaveAndLoad_RoundTrip()
     {
         var path = Path.Combine(_directory, "unter", "einstellungen.json");
-        new GameSettings { EffectsVolume = 3, GoalScenes = false, Fullscreen = true }.Save(path);
+        new GameSettings { EffectsVolume = 3, Fullscreen = true }.Save(path);
         var loaded = GameSettings.Load(path);
-        Assert.Equal((3, false, true), (loaded.EffectsVolume, loaded.GoalScenes, loaded.Fullscreen));
+        Assert.Equal((3, true), (loaded.EffectsVolume, loaded.Fullscreen));
     }
 
     /// <summary>#221: Dateien aus früheren Ständen enthalten noch MusicVolume/MusicInMatch; sie müssen weiter laden.</summary>
@@ -63,7 +62,26 @@ public class SettingsScreenTests : IDisposable
         File.WriteAllText(path,
             "{ \"EffectsVolume\": 4, \"MusicVolume\": 2, \"MusicInMatch\": false, \"GoalScenes\": false, \"Fullscreen\": true, \"AutoSave\": false }");
         var loaded = GameSettings.Load(path);
-        Assert.Equal((4, false, true, false), (loaded.EffectsVolume, loaded.GoalScenes, loaded.Fullscreen, loaded.AutoSave));
+        Assert.Equal((4, true, false), (loaded.EffectsVolume, loaded.Fullscreen, loaded.AutoSave));
+    }
+
+    /// <summary>
+    /// Teil 4 der Spur optionen-wirkung: Die Torszenen schaltet nur der Original-Schalter im Spielstand
+    /// (<c>GameOptions.LiveMode</c>); die Geräteeinstellung ist entfallen. Alte Dateien laden weiter, das Feld wird beim
+    /// nächsten Speichern nicht mehr geschrieben.
+    /// </summary>
+    [Fact]
+    public void GoalScenesDeviceSetting_IsGone_OldFieldIsDroppedOnSave()
+    {
+        Assert.Null(typeof(GameSettings).GetProperty("GoalScenes"));
+        Assert.DoesNotContain("GoalScenes", Enum.GetNames<SettingsScreen.Row>());
+        Directory.CreateDirectory(_directory);
+        var path = Path.Combine(_directory, "alt-torszenen.json");
+        File.WriteAllText(path, "{ \"EffectsVolume\": 4, \"GoalScenes\": false, \"Fullscreen\": true }");
+        var loaded = GameSettings.Load(path);
+        Assert.Equal((4, true), (loaded.EffectsVolume, loaded.Fullscreen));
+        loaded.Save(path);
+        Assert.DoesNotContain("GoalScenes", File.ReadAllText(path));
     }
 
     /// <summary>#221: Es gibt keine Musikeinstellungen mehr (Musik läuft nur im Titelbildschirm).</summary>
@@ -82,7 +100,7 @@ public class SettingsScreenTests : IDisposable
         Directory.CreateDirectory(_directory);
         var broken = Path.Combine(_directory, "kaputt.json");
         File.WriteAllText(broken, "{ kein json");
-        Assert.True(GameSettings.Load(broken).GoalScenes);
+        Assert.Equal(10, GameSettings.Load(broken).EffectsVolume);
     }
 
     [Fact]
@@ -122,12 +140,12 @@ public class SettingsScreenTests : IDisposable
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
 
-    /// <summary>#228 MT-02: Zeilenlage (Beginn 90, Abstand 17) ist festgelegt, nicht nur per Bildschirmfoto belegt.</summary>
+    /// <summary>#228 MT-02: Zeilenlage (Beginn 90, Abstand 17; drei Zeilen seit Teil 4 der Spur optionen-wirkung) ist festgelegt, nicht nur per Bildschirmfoto belegt.</summary>
     [Fact]
     public void RowLayout_IsFixed()
     {
         Assert.Equal(new Rect(40, 85, 236, 15), SettingsScreen.RowRect(SettingsScreen.Row.EffectsVolume));
-        Assert.Equal(new Rect(40, 85 + 17 * 3, 236, 15), SettingsScreen.RowRect(SettingsScreen.Row.AutoSave));
+        Assert.Equal(new Rect(40, 85 + 17 * 2, 236, 15), SettingsScreen.RowRect(SettingsScreen.Row.AutoSave));
     }
 
     /// <summary>#228 MT-03: Klick auf „Automatisch speichern“ schaltet um und speichert die Einstellung.</summary>
@@ -144,38 +162,20 @@ public class SettingsScreenTests : IDisposable
         Assert.True(GameSettings.Current.AutoSave);
     }
 
-    [Theory]
-    [InlineData(GameMode.WorldOnly, false, false, true)]
-    [InlineData(GameMode.ClubOnly, true, false, false)]
-    [InlineData(GameMode.Full, true, true, true)]
-    public void GameOptionsView_ShowsCompetitionsOfMode(GameMode mode, bool cup, bool europe, bool world)
-    {
-        var v = GameOptionsView.For(mode);
-        Assert.Equal((cup, europe, world), (v.GermanCup, v.EuropeanCup, v.WorldCup));
-        Assert.All(v.Matrix, on => Assert.False(on)); // [ORIGINAL] Anfangswerte DGROUP 0x21D..0x225 = 0
-        Assert.Equal(9, v.Matrix.Length);
-    }
-
-    /// <summary>Lesende Anzeige: Wechsel auf die Seite und Klicks darauf verändern weder Spielstand noch Einstellungen.</summary>
+    /// <summary>Knopf „Spielstand“ öffnet den Optionsbildschirm des Originals; das Öffnen ändert nichts.</summary>
     [GameDataFact]
-    public void GameOptionsPage_IsReadOnly()
+    public void OptionsButton_OpensGameOptionsScreen()
     {
         var d = Open();
         var screen = (SettingsScreen)d.Host.Current!;
         var game = d.Host.Game!;
         var money = game.ActiveManager.Money;
-        var settings = GameSettings.Current.Clone();
-        Assert.False(screen.ShowsGameOptions);
+        Assert.True(screen.ShowsOptionsButton);
         d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5);
-        Assert.True(screen.ShowsGameOptions);
-        d.Click(SettingsScreen.RowRect(SettingsScreen.Row.AutoSave).X + 10, SettingsScreen.RowRect(SettingsScreen.Row.AutoSave).Y + 5);
-        d.Click(170, 104);
+        Assert.IsType<GameOptionsScreen>(d.Host.Current);
         Assert.Equal(money, game.ActiveManager.Money);
-        Assert.Equal((settings.EffectsVolume, settings.GoalScenes, settings.Fullscreen, settings.AutoSave),
-            (GameSettings.Current.EffectsVolume, GameSettings.Current.GoalScenes, GameSettings.Current.Fullscreen, GameSettings.Current.AutoSave));
-        Assert.Equal(GameOptionsView.For(game.Mode), screen.GameOptions);
-        d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5); // zurück zu den Geräteeinstellungen
-        Assert.False(screen.ShowsGameOptions);
+        d.RightClick(10, 230);
+        Assert.Same(screen, d.Host.Current);
     }
 
     [GameDataFact]
@@ -209,14 +209,14 @@ public class SettingsScreenTests : IDisposable
     {
         var d = Open();
         GameSettings.StorePath = Path.Combine(_directory, "e.json");
-        foreach (var row in new[] { SettingsScreen.Row.GoalScenes, SettingsScreen.Row.Fullscreen })
+        foreach (var row in new[] { SettingsScreen.Row.Fullscreen, SettingsScreen.Row.AutoSave })
         {
             var r = SettingsScreen.RowRect(row);
             d.Click(r.X + 10, r.Y + 5);
         }
         var s = GameSettings.Current;
-        Assert.Equal((false, true), (s.GoalScenes, s.Fullscreen));
+        Assert.Equal((true, false), (s.Fullscreen, s.AutoSave));
         var saved = GameSettings.Load(GameSettings.StorePath);
-        Assert.Equal((false, true), (saved.GoalScenes, saved.Fullscreen));
+        Assert.Equal((true, false), (saved.Fullscreen, saved.AutoSave));
     }
 }

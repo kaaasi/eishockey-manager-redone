@@ -52,9 +52,19 @@ entschlüsselt sind, ist das im Code mit [APPROX] markiert.
 Vom Nutzer vorgemerkt, Umsetzung erst nach Erreichen der Parität (v1.0); als abschaltbare Zusatzanzeige, die
 Originaldarstellung bleibt unverändert.
 
+- **Verjüngung des Spielerpools (01.11.2026):** Im Original altern die 200 Poolspieler jede Saison um ein Jahr (em.exe 0x274A7)
+  und bekommen beim Saisonwechsel nur neue Namen (0x5ACA0); ein Laufbahnende gibt es nicht, die Transferliste wird über die
+  Jahre älter. Das Remake bleibt bis v1.0 originaltreu ([docs/transfer.md](../transfer.md), Teil 5). Erweiterung: Ein Platz, der
+  beim Saisonwechsel einen neuen Namen bekommt, erhält auch neue Startwerte nach 0x5AF50 (Alter 18–33, Grundwert 30–89,
+  Talent 0–9) – ein neuer Name steht dann für einen neuen Spieler. Abschaltbar; Ort im Code: `TransferMarket.StartPoolSeason`
+  (`Core/Transfer.Pool.cs`).
 - **Annahmewahrscheinlichkeit beim Spielerkauf (31.10.2026):** Gibt man im Kauf- oder Leihdialog der Transferliste ein
   Gebot ein, zeigt das Spiel die Wahrscheinlichkeit, dass es angenommen wird. Grundlage ist die Annahmeregel des
-  Originals (em.exe 0x4991D, `TransferRules.Accepts`, [docs/transfer.md](../transfer.md)): Sie hängt nur von Gebot und
-  Listenpreis ab und lässt sich aus den drei Zufallszügen (75–85 %, 110–130 %, 70–120) exakt ausrechnen, ohne Zufall zu
-  verbrauchen – die Anzeige verändert damit keinen Spielzustand. Offen: Gebote an andere Manager (Antwort des Verkäufers),
-  Darstellung (Prozentzahl oder Ampel) und ob die Anzeige im Netzwerkmodus erlaubt ist.
+  Originals (em.exe 0x4991D, `TransferRules.Accepts`, [docs/transfer.md](../transfer.md)): Für Spieler vom
+  **Computermarkt** hängt sie nur von Gebot und Listenpreis ab (bei Leihe vom Listenpreis / 3) und lässt sich aus den drei
+  Zufallszügen (75–85 %, 110–130 %, 70–120) exakt ausrechnen, ohne Zufall zu verbrauchen – die Anzeige verändert damit keinen
+  Spielzustand. Einschränkungen (W51-02): Vertragslose Spieler werden ohne diese Regel angenommen (Anzeige 100 %); nach einer
+  Ablehnung ist der Spieler für den Manager gesperrt (`TransferListing.RejectedBy`, „schon abgelehnt“), die Anzeige gilt also
+  nur für einen Versuch; Gebote an andere Manager folgen einer eigenen Regel (Grenze „unfair“ 60–140 % des frisch berechneten
+  Werts 0x47546, danach Antwort des Verkäufers). Offen: Darstellung (Prozentzahl oder Ampel) und ob die Anzeige im
+  Netzwerkmodus erlaubt ist.

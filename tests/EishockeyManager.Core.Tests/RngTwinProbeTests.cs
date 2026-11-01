@@ -94,16 +94,44 @@ namespace EishockeyManager.Core.Tests;
 /// <c>SpielberechnungMinutenTests</c> unverändert grün). Keine Gegenprobe, die den alten Verlauf erhält.
 /// Integration Runde 8, Welle 3 (Leitstelle, R8W3I-01 #269): alle sechs neu – 0x80CB/0x939A lesen den Spielstand vor den
 /// Toren der Minute; das ändert Ergebnisse jeder Managerpaarung und damit alle Verläufe.
+/// Spur transfer-vertraege-komplett (Teil 1): die drei aktiven Abdrücke neu – Spieler, deren Vertrag am Saisonende ohne
+/// Verhandlung endet, bringen die Ablöse Wert(Preis) / 2 (0x27DF3) aufs Konto; Gegenprobe ohne Ablöse: alte Werte, passive
+/// Abdrücke unverändert.
+/// Spur transfer-vertraege-komplett (Rest von Teil 2): die drei aktiven Abdrücke neu – Startgehalt der Managerkader und
+/// Gehalt beim Kauf = Wert(Gehalt) (0x29EE4, 0x42F11), zieht keinen Zufall; die Verlängerungen (Forderung mindestens bisheriges
+/// Gehalt) und die Konten ändern sich; vertragslose Spieler (<c>SignFreeAgents</c>) kommen mit 1 Jahr statt 2 (0x42CB1, +0x0B = 1).
+/// Gegenprobe mit altem Startgehalt und alter Laufzeit: alte Werte, passive Abdrücke unverändert.
+/// Spur transfer-vertraege-komplett (Teil 5): alle sechs Abdrücke neu – der Markt kommt aus dem Spielerpool (Listenwechsel
+/// 0x494EF mit random(0, Managerzahl + 2) je Ligaspieltag statt 30 %/50 % aus Computerkadern; Pool beim Spielstart und
+/// Saisonwechsel), damit anderer Verbrauch der Hauptquelle und andere Ergebnisse; Markt-Angebote schreiben Angebot − Angebot / 7
+/// · Restlaufzeit gut (0x49332); auf der Liste stehen nur noch Vertragslose aus Managervereinen (<c>SignFreeAgents</c> holt
+/// also nur eigene zurück). Die Datenbankspieler des Pools fehlen den Computerkadern; beim Saisonwechsel tauschen Pool und
+/// Computerkader (jeder Name nur einmal, Entscheidung Nutzer 01.11.2026).
+/// Spur spielberechnung-komplett, Teil 1 (#204): alle sechs neu – Wanderung der Teamwerte 0x9D1B beim ersten Spiel
+/// (Spielstart, großer Schritt), zweimal je Woche (kleiner Schritt) und nach jedem Saisonwechsel (großer Schritt); andere
+/// Teamwerte der Computervereine, damit andere Ergebnisse ab dem ersten Spieltag und mehr Züge aus der Hauptquelle. Keine
+/// Gegenprobe, die den alten Verlauf erhält (die Wanderung ist der Zweck).
+/// Spur spielberechnung-komplett, Teil 2 (R8W3I-03 bis -06): drei Abdrücke neu. Passiv Seed 3: das Nationalteam des
+/// Bundestrainers zieht den Strafspieler 0x378C5 (Gegenprobe ohne diesen Zug: alter Abdruck). Aktiv Seed 3 und 11:
+/// 0x378C5 zieht höchstens 150-mal, Strafen ohne Spieler erzeugen kein Ereignis, Managerwert 100 unter neun Spielern.
+/// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): alle sechs neu – je Minute der Managerpaarung ein Verletzungszug, je Abschluss die Schützenwahl
+/// statt der Torverteilung 0x5028 nach dem Spiel für Managervereine. Keine Gegenprobe (geänderter Zufallsverbrauch ist der Zweck).
+/// Spur spielberechnung-komplett, Teil 5 (0x3901B): alle sechs neu – K.-o.-Spiele des Minutenwegs, die nach der Verlängerung unentschieden
+/// sind, entscheidet das Penaltyschießen des Originals (random(0, 1), dann random(2, 5) je Seite bis ungleich) statt eines
+/// NextDouble-Zugs in KnockoutMatch.Play; danach andere Zufallsfolge. Teil 4 (Zähler) zieht keinen Zufall.
+/// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand aller fünf Spuren neu ermittelt; die Ursachen oben
+/// wirken zusammen, dazu der Minutenweg der Pokalspiele ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an,
+/// 0x3702E).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "B51E23E5AB35A362")]
-    [InlineData(true, 3, "1F918CF3F088B998")]
-    [InlineData(false, 11, "045D33151AFA705F")]
-    [InlineData(true, 11, "9638BC3D2695D427")]
+    [InlineData(false, 3, "3C53470D3638F3F4")]
+    [InlineData(true, 3, "5CEAC04EA3360124")]
+    [InlineData(false, 11, "C98E7C1980CFAA41")]
+    [InlineData(true, 11, "2BD9CE3FA0A3D417")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -111,8 +139,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "2FAE1718E86EC1F6")]
-    [InlineData(true, "070AD5E8FBB6D9C3")]
+    [InlineData(false, "E71C0242492FB148")]
+    [InlineData(true, "6605F8402FDD86A2")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -208,10 +236,12 @@ public class RngTwinProbeTests
     /// nicht; so bleiben die auf <c>5f8e02a</c> ermittelten Abdrücke vergleichbar. Ebenso <c>Club.DressedCount</c>
     /// (Spur taktik-verein): abgeleitete Anzeige „Eingesetzt: n“, wirkt nicht auf den Spielverlauf – mit dieser Ausnahme
     /// stimmen alle sechs Abdrücke unverändert. Ebenso <c>Club.LeaguePenaltyMinutes</c> (Spur statistiken): Zähler für die
-    /// Fair-Play-Tabelle aus den Spielberichten, ohne Zufall und ohne Rückwirkung auf die Spiele; seine Wirkung (die
-    /// Fair-Play-Prämie) steht im Kontostand.
+    /// Fair-Play-Prämie) steht im Kontostand. Ebenso <c>Player.InsurancePremium</c> und <c>Player.InsuranceLocked</c> (Spur
+    /// transfer-vertraege-komplett, Teil 2): „versichert“ steht weiter als <c>Insured</c> im Abdruck, die Prämie wirkt über den
+    /// Kontostand.
     /// </summary>
-    private static readonly HashSet<string> Excluded = ["Id", "DressedCount", "LeaguePenaltyMinutes"];
+    private static readonly HashSet<string> Excluded =
+        ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked"];
 
     /// <summary>
     /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:

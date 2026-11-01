@@ -40,6 +40,7 @@ public class FinanceWerbungScreenTests
 
         Click(d, AdvertisingScreen.IceBoardRect(1));
         Assert.Equal(new AdSlot(AdSlotKind.Eisflaeche2), screen.SelectedSlot);
+        Click(d, AdvertisingScreen.ArrowDown); // Flächenklick zeigt den Vertrag, erst Blättern das Angebot (0x2B633)
         Assert.NotNull(screen.CurrentOffer());
         Click(d, AdvertisingScreen.AcceptButton);
         Assert.NotNull(game.Ads(me).ContractAt(new AdSlot(AdSlotKind.Eisflaeche2)));

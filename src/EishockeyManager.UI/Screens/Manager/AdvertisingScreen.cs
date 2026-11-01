@@ -39,16 +39,28 @@ public sealed class AdvertisingScreen : Screen
     private static readonly (int X, int Y) JerseyLogo = (31, 116);
     private static readonly (int X, int Y) TvLogo = (11, 173);
 
+    /// <summary>[ORIGINAL] 0x2B268: Umrandung (99|178)–(135|204), Farbe 24 bzw. 7 beim Blättern.</summary>
     public static readonly Rect LogoBox = new(99, 178, 37, 27);
+
+    /// <summary>[ORIGINAL] 0x2A9AD: Logo bzw. schwarze leere Fläche (0x30:0x800) innerhalb der Umrandung, 35 × 25.</summary>
+    public static readonly Rect LogoArea = new(100, 179, 35, 25);
+
+    /// <summary>[APPROX] Trefferflächen der Pfeile; das Original prüft sie in 0x120:0x3E (138|183) bzw. (138|192).</summary>
     public static readonly Rect ArrowUp = new(137, 181, 13, 11);
     public static readonly Rect ArrowDown = new(137, 192, 13, 12);
+
+    /// <summary>[ORIGINAL] 0x2B2CE: Pfeilpaar kb\4 (20|0) 10 × 17 bei (138|183), Rahmen (137|182)–(148|200) Farbe 24 (0x2B300).</summary>
+    public static readonly Rect ArrowFrame = new(137, 182, 12, 19);
     public static readonly Rect InfoButton = new(257, 170, Widgets.ButtonWidth, Widgets.ButtonHeight);
     public static readonly Rect AcceptButton = new(257, 186, Widgets.ButtonWidth, Widgets.ButtonHeight);
 
-    private const int TextX = 155;
-    private const int ColonX = 190;
-    private const int ValueX = 194;
-    private static readonly int[] LineY = [175, 185, 193, 201];
+    /// <summary>[ORIGINAL] 0x2A9AD: Bezeichnung bei x = 0x9C, Wert („: …“) bei 0xBF, Hinweis bei 0x113.</summary>
+    public const int LabelX = 156;
+    public const int ValueX = 191;
+    public const int NoteX = 275;
+
+    /// <summary>[ORIGINAL] 0x2A9AD: Grundlinien Name 0xB3, Dauer 0xBD, Banden 0xC5, Angebot/Prämie 0xCD.</summary>
+    public const int NameLine = 179, DurationLine = 189, BoardsLine = 197, AmountLine = 205;
 
     /// <summary>Firmen-Info: schwarzes Fenster über der Mitte.</summary>
     public static readonly Rect InfoWindow = new(30, 91, 260, 58);
@@ -56,14 +68,24 @@ public sealed class AdvertisingScreen : Screen
     // ---- Farben (Palette von kb\151) -------------------------------------------------------
 
     private const byte TextColor = 144;
-    private const byte FrameRed = 110;
-    private const byte EmptyBoxBorder = 213;
-    private const byte LogoBoxBorder = 7;
+
+    /// <summary>[ORIGINAL] 0x30:0x885 in 0x2A9AD mit Farbe 0, ohne Schatten (0xFF).</summary>
+    private const byte PanelTextColor = 0;
+
+    /// <summary>[ORIGINAL] Auswahlrahmen 0x2B63F (Farbe 0x12).</summary>
+    private const byte FrameRed = 18;
+
+    /// <summary>[ORIGINAL] Umrandungen von Logo- und Pfeilkasten 0x2B268/0x2B300 (Farbe 0x18).</summary>
+    private const byte BoxBorder = 24;
+
+    /// <summary>[ORIGINAL] Umrandung des Logokastens beim Blättern durch die Angebote (0x2B719, Farbe 7).</summary>
+    private const byte BrowseBorder = 7;
+
+    /// <summary>[ORIGINAL] Trennlinie 0x2B28B: 0x30:0x995 (90|213)–(310|213), Farbe 0x1C.</summary>
+    private const byte LineColor = 28;
     private const byte InfoTitle = 254;
     private const byte InfoText = 208;
     private const byte ButtonText = 32;
-    private const byte ArrowFill = 200;
-    private const byte ArrowColor = 206;
 
     // ---- Zustand ---------------------------------------------------------------------------
 
@@ -139,7 +161,9 @@ public sealed class AdvertisingScreen : Screen
             clicked = new AdSlot(AdSlotKind.Fernsehen);
         if (clicked is { } chosen)
         {
+            // [ORIGINAL] 0x2B633: Klick auf eine Fläche zeigt deren Vertrag (Modus 0), nicht das zuletzt geblätterte Angebot.
             _slot = chosen;
+            _companyCursor = _stationCursor = -1;
             if (Ads.ContractAt(chosen) is { } contract && Game.AwaitsRenewal(contract))
             {
                 Negotiate(contract);
@@ -288,69 +312,96 @@ public sealed class AdvertisingScreen : Screen
         s.Outline(frame, FrameRed);
     }
 
+    /// <summary>Text im Angebots-/Vertragsfeld: x links, Grundlinie wie im Aufruf 0x30:0x885.</summary>
+    public readonly record struct PanelText(int X, int Baseline, string Text);
+
+    /// <summary>
+    /// Inhalt des Feldes unten nach em.exe 0x2A9AD. Modus 0 (Klick auf eine Fläche, 0x2B633): Vertrag der Fläche, sonst
+    /// „Diese Werbefläche ist noch unbefleckt.“ Modus 1 (Blättern, 0x2BE95): Angebotssatz des Partners – auch wenn die
+    /// Fläche belegt ist oder Banden fehlen (dann nur ohne „Annehmen“, 0x2BF86) –, sonst „Es liegt momentan kein
+    /// Angebot vor...“. Gesperrte Eistafeln (0x2B589) bleiben leer.
+    /// </summary>
+    public IEnumerable<PanelText> PanelTexts()
+    {
+        if (_slot is not { } slot || !Game.IsAdSlotAvailable(Me, slot))
+            yield break;
+        var offerMode = Cursor >= 0;
+        string name;
+        int months, option, boards;
+        long amount;
+        if (offerMode)
+        {
+            name = Sponsor.For(slot.Kind)[Cursor].Name;
+            if (Ads.OfferFrom(slot.Kind, Cursor) is not { } offer)
+            {
+                yield return new(LabelX, NameLine, name);
+                yield return new(LabelX, DurationLine, "Es liegt momentan kein Angebot vor...");
+                yield break;
+            }
+            (months, option, boards, amount) = (offer.Months, offer.OptionMonths, offer.Boards, offer.MonthlyAmount);
+        }
+        else
+        {
+            if (Ads.ContractAt(slot) is not { } contract)
+            {
+                yield return new(LabelX, DurationLine, "Diese Werbefläche ist noch unbefleckt.");
+                yield break;
+            }
+            name = contract.Partner.Name;
+            // [ORIGINAL] 0x2AD15: im Vertrag die Zahl der Banden desselben Partners.
+            (months, option, boards, amount) = (contract.MonthsLeft, contract.OptionMonths, contract.Boards.Length, contract.MonthlyAmount);
+        }
+
+        yield return new(LabelX, NameLine, name);
+        yield return new(LabelX, DurationLine, "Dauer");
+        // [ORIGINAL] 0x2AB6F–0x2AC27: „: n“, mit Option „ - n+Option“, „ Monat“ und „e“ bei n > 1 oder Option.
+        var duration = $": {months}" + (option > 0 ? $" - {months + option}" : "") + " Monat" + (months > 1 || option > 0 ? "e" : "");
+        yield return new(ValueX, DurationLine, duration);
+        // [ORIGINAL] 0x2AC51: im Vertrag „! Option !“, wenn die Laufzeit abgelaufen ist und eine Option besteht.
+        // „Kündbar.“ (Bit 0x80 der Option, gesetzt beim Aufstieg 0x2713F) kennt das Remake noch nicht (Restlücke).
+        if (!offerMode && option > 0 && months == 0)
+            yield return new(NoteX, DurationLine, "! Option !");
+        if (slot.Kind == AdSlotKind.Bande)
+        {
+            yield return new(LabelX, BoardsLine, "Banden");
+            yield return new(ValueX, BoardsLine, $": {boards}");
+        }
+        yield return new(LabelX, AmountLine, offerMode ? "Angebot" : "Prämie");
+        var money = GameState.FormatMoney(amount);
+        if (money.EndsWith(" DM", StringComparison.Ordinal))
+            money = money[..^3];
+        yield return new(ValueX, AmountLine, $": {money} DM  pro Monat");
+    }
+
+    /// <summary>Logo im Feld: Modus 1 immer der geblätterte Partner, Modus 0 der Vertragspartner (0x2AA03).</summary>
+    private (AdSlotKind Kind, int Sponsor)? PanelLogo()
+    {
+        if (_slot is not { } slot || !Game.IsAdSlotAvailable(Me, slot))
+            return null;
+        if (Cursor >= 0)
+            return (slot.Kind, Cursor);
+        return Ads.ContractAt(slot) is { } contract ? (contract.Kind, contract.Sponsor) : null;
+    }
+
     private void DrawOfferPanel(Surface s)
     {
-        var flow = Assets.Mini;
-        var cursor = Cursor;
-        var kind = _slot?.Kind ?? AdSlotKind.Bande;
-
-        if (_slot is not null && cursor >= 0)
-        {
-            s.Fill(LogoBox, LogoBoxBorder);
-            DrawLogo(s, kind == AdSlotKind.Fernsehen ? AdSlotKind.Fernsehen : AdSlotKind.Bande, cursor, LogoBox.X + 2, LogoBox.Y + 2);
-        }
-        else
-        {
-            s.Fill(LogoBox, Colors.Black);
-            s.Outline(LogoBox, EmptyBoxBorder);
-        }
+        // [ORIGINAL] 0x2B6AD setzt die Umrandung nach jedem Klick auf Farbe 0x18 zurück, 0x2B719 färbt sie beim Blättern
+        // durch die Angebote (Zustand [0x5A16] = 1) weiß (7). Video 6:40/6:44 hell, 6:20/6:24 gelb.
+        s.Outline(LogoBox, Cursor >= 0 && _slot is { } shown && Game.IsAdSlotAvailable(Me, shown) ? BrowseBorder : BoxBorder);
+        if (PanelLogo() is { } logo)
+            // [ORIGINAL] 0x2AA6B: 35 × 25 aus kb\11, Spalte 0 (Firmen) bzw. 35 (Sender), Zeile 25 · Logo, nach (100|179).
+            s.Blit(Assets.Image(Logos), new Rect(logo.Kind == AdSlotKind.Fernsehen ? 35 : 0, 25 * logo.Sponsor, 35, 25), LogoArea.X, LogoArea.Y);
+        else if (_slot is { } slot && Game.IsAdSlotAvailable(Me, slot) && Cursor < 0)
+            s.Fill(LogoArea, Colors.Black); // [ORIGINAL] 0x2AB1F: leere Fläche
         DrawArrows(s);
 
-        if (_slot is not { } slot)
-            return;
+        foreach (var text in PanelTexts())
+            Competitions.CompetitionWidgets.Centered(s, Assets.Mini, text.X, text.X, text.Baseline, text.Text, PanelTextColor, null, left: true);
 
-        var contract = Ads.ContractAt(slot);
-        if (cursor < 0)
-        {
-            if (contract is null)
-                s.Text(flow, TextX, LineY[1], "Diese Werbefläche ist noch unbefleckt.", TextColor);
-            else
-                DrawTerms(s, contract.Partner.Name, contract.MonthsLeft, contract.Kind == AdSlotKind.Bande ? contract.Boards.Length : 0,
-                    contract.MonthlyAmount);
-            return;
-        }
-
-        var partner = Sponsor.For(slot.Kind)[cursor];
-        var offer = CurrentOffer();
-        if (offer is null)
-        {
-            s.Text(flow, TextX, LineY[0], partner.Name, TextColor);
-            s.Text(flow, TextX, LineY[1], "Es liegt momentan kein Angebot vor...", TextColor);
-        }
-        else
-        {
-            DrawTerms(s, partner.Name, offer.Months, slot.Kind == AdSlotKind.Bande ? offer.Boards : 0, offer.MonthlyAmount);
+        if (CurrentOffer() is not null)
             Button(s, AcceptButton, "Annehmen");
-        }
         if (CanShowInfo())
             Button(s, InfoButton, "Info");
-    }
-
-    private void DrawTerms(Surface s, string name, int months, int boards, long amount)
-    {
-        var flow = Assets.Mini;
-        s.Text(flow, TextX, LineY[0], name, TextColor);
-        Term(s, LineY[1], "Dauer", $"{months} Monat{(months == 1 ? "" : "e")}");
-        if (boards > 0)
-            Term(s, LineY[2], "Banden", boards.ToString());
-        Term(s, LineY[3], "Angebot", GameState.FormatMoney(amount).Replace(" DM", " DM  pro Monat"));
-    }
-
-    private void Term(Surface s, int y, string label, string value)
-    {
-        s.Text(Assets.Mini, TextX, y, label, TextColor);
-        s.Text(Assets.Mini, ColonX, y, ":", TextColor);
-        s.Text(Assets.Mini, ValueX, y, value, TextColor);
     }
 
     /// <summary>Knopf aus kb\2 mit heller Schrift wie im Video.</summary>
@@ -361,26 +412,20 @@ public sealed class AdvertisingScreen : Screen
         s.TextCentered(Assets.Mini, r.X + r.W / 2 + (pressed ? 1 : 0), r.Y + 4 + (pressed ? 1 : 0), text, ButtonText);
     }
 
-    /// <summary>[APPROX] ▲▼-Kasten: im Original eine Grafik, die in keiner kb-Datei gefunden wurde – hier gezeichnet.</summary>
+    /// <summary>
+    /// Pfeilpaar aus kb\4 mit Rahmen (0x2B2CE/0x2B300). [APPROX] Eine gedrückte Darstellung (Rückmeldung in 0x120:0x3E)
+    /// ist nicht nachgebaut.
+    /// </summary>
     private void DrawArrows(Surface s)
     {
-        var box = new Rect(ArrowUp.X, ArrowUp.Y, ArrowUp.W, ArrowDown.Bottom - ArrowUp.Y);
-        s.Fill(box, ArrowFill);
-        s.Outline(box, EmptyBoxBorder);
-        s.HLine(box.X + 1, ArrowDown.Y, box.W - 2, EmptyBoxBorder);
-        for (var row = 0; row < 4; row++)
-        {
-            var up = _pressed == ArrowUp ? 1 : 0;
-            var down = _pressed == ArrowDown ? 1 : 0;
-            s.HLine(box.X + 6 - row, ArrowUp.Y + 3 + row + up, 1 + 2 * row, ArrowColor);
-            s.HLine(box.X + 6 - row, ArrowDown.Y + 7 - row + down, 1 + 2 * row, ArrowColor);
-        }
+        s.Blit(Assets.Image(4), new Rect(20, 0, 10, 17), ArrowFrame.X + 1, ArrowFrame.Y + 1);
+        s.Outline(ArrowFrame, BoxBorder);
     }
 
     private void DrawTotals(Surface s)
     {
         var mini = Assets.Mini;
-        s.HLine(89, 212, 223, TextColor);
+        s.HLine(90, 213, 221, LineColor);
         var income = Game.MonthlyIncome(Me);
         var expenses = Game.MonthlyExpenses(Me);
         s.Text(mini, 95, 219, "Einnahmen:", TextColor);

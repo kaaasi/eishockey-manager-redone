@@ -71,7 +71,7 @@ Ein Manager („Joerg“), Kopf und Verein Düsseldorfer EG gewählt, Start-Liga
   Hintergrundgrafik, Scrolling (Pinguin = an, Loch = aus), Spielgeschwindigkeit (acht Pinguine); je Liga (1./2./3. Liga)
   Drittelpause, Ergebnisse, Tabelle; DEB-Pokal, Europapokal, WM-Spiele. **Torszenen hat drei Stufen:** kein Pinguin,
   Pinguin, Pinguin mit rotem Punkt (50, 51; laut Nutzer keine Animation). Bedeutung der dritten Stufe offen (em.exe).
-  Das ist der Bildschirm von em.exe 0x2CD1C (`docs/reverse-engineering.md`, Teil 2). Das Remake hat einen eigenen Einstellungsbildschirm (`docs/anforderungen/bildschirme.md`) mit lesender Seite „Spielstand“, Torszenen nur an/aus.
+  Das ist der Bildschirm von em.exe 0x2CD1C (`docs/reverse-engineering.md`, Teil 2). Das Remake baut ihn als `GameOptionsScreen` nach (Knopf „Spielstand“ der Einstellungen; Pixelvergleich in `docs/reverse-engineering.md`, „Optionsbildschirm“); die dritte Torszenen-Stufe ist DGROUP 0x226 = 2 („Neuer Spielmodus: Das Eisfeld bleibt während des gesamten Spieles an.“).
 
 ### Offen
 

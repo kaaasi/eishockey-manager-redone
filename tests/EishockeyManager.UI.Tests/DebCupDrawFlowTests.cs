@@ -213,7 +213,19 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// des Laders 0x2EF1B und Tagesform 0x4F527 ändern alle Ergebnisse; mit und ohne Anzeige weiter gleich.
     /// Spur spielstaerke-manager-2: Managerpaarungen mit Spielerwerten, Energie und Reihenwechsel (0x98F8, 0x87F7, 0x8EF2)
     /// – andere Ergebnisse ab dem ersten Spiel des Managers; mit und ohne Anzeige weiter gleich. Integration Runde 8, Welle 3
-    /// (R8W3I-01): Spielstand vor den Toren der Minute für 0x80CB/0x939A – neue Werte, mit und ohne Anzeige gleich.</summary>
+    /// (R8W3I-01): Spielstand vor den Toren der Minute für 0x80CB/0x939A – neue Werte, mit und ohne Anzeige gleich.
+    /// Spur transfer-vertraege-komplett (Teil 1): ab 1995 neu – nach den Prämien kommt die Verhandlung ausgelaufener Verträge
+    /// (0x27D05); Enter ist „Mach' ich!“, die Spieler bleiben ein Jahr statt zu gehen. Mit und ohne Anzeige weiter gleich.
+    /// Spur transfer-vertraege-komplett (Teil 5): ab 1993 neu – Pool und Listenwechsel 0x494EF (random(0, Managerzahl + 2) je
+    /// Ligaspieltag) verbrauchen die Hauptquelle anders als die bisherige Liste aus Computerkadern; die Datenbankspieler des
+    /// Pools fehlen den Computerkadern (jeder Name nur einmal), damit andere Ergebnisse;
+    /// mit und ohne Anzeige weiter gleich.
+    /// Spur spielberechnung-komplett, Teil 1 (#204): Wanderung der Teamwerte 0x9D1B – neue Werte ab 1993, mit und ohne
+    /// Anzeige weiter gleich. Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): neue Werte ab 1993 (Verletzungen und Schützenwahl in den Spielen des
+    /// Managers), mit und ohne Anzeige weiter gleich. Spur spielberechnung-komplett, Teil 5 (0x3901B): 1993 gleich, ab 1994 neuer Meister
+    /// (Penaltyschießen des Originals in den Play-offs mit Manager statt NextDouble), mit und ohne Anzeige weiter gleich.
+    /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand neu, einschließlich Minutenweg der DEB-Pokalspiele
+    /// ohne Manager (Anzeigeschalter an, 0x3702E); mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15360 | 1994: DEB 6, DM 2, Tab 15963 | 1995: DEB 2, DM 6, Tab 16073 | 1996: DEB 2, DM 1, Tab 16664";
+        "1993: DEB 8, DM 5, Tab 15314 | 1994: DEB 6, DM 5, Tab 15917 | 1995: DEB 9, DM 9, Tab 15930 | 1996: DEB 10, DM 6, Tab 16140";
 }

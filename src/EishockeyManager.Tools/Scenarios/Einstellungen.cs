@@ -15,7 +15,7 @@ internal static class Einstellungen
         d.OpenTile("Einstellungen"); d.Move(10, 230); d.Save("01_einstellungen");
         var down = SettingsScreen.ArrowRect(SettingsScreen.Row.EffectsVolume);
         for (var i = 0; i < 4; i++) d.Click(down.X + 4, down.Bottom - 3);
-        var row = SettingsScreen.RowRect(SettingsScreen.Row.GoalScenes);
+        var row = SettingsScreen.RowRect(SettingsScreen.Row.Fullscreen);
         d.Click(row.X + 10, row.Y + 5);
         d.Move(10, 230); d.Save("02_geaendert");
         d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5);

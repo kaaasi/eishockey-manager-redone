@@ -33,11 +33,14 @@ public sealed partial class GameState
         foreach (var club in Clubs)
             foreach (var player in club.Players)
                 AssignPlayerId(player);
+        foreach (var slot in TransferMarket.Pool) // Spur transfer-vertraege-komplett, Teil 5: Spielerpool
+            AssignPlayerId(slot.Player);
     }
 
-    /// <summary>Alle Spieler des Spielstands: Kader, vertragsloser Pool und Laufbahnende.</summary>
+    /// <summary>Alle Spieler des Spielstands: Kader, Vertragslose, Laufbahnende und freie bzw. angebotene Poolspieler.</summary>
     public IEnumerable<Player> AllPlayers =>
-        Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents).Concat(RetiredPlayers);
+        Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents).Concat(RetiredPlayers)
+            .Concat(TransferMarket.PoolPlayers);
 
     /// <summary>Spieler zur ID oder null.</summary>
     public Player? FindPlayer(int id) => id <= 0 ? null : AllPlayers.FirstOrDefault(p => p.Id == id);

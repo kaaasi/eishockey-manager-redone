@@ -46,6 +46,10 @@ public sealed class TransferScreen : Screen
     private readonly MessageBox _message = new();
     private readonly PlayerInfoPopup _info = new();
     private TransferDialog? _dialog;
+    private readonly Queue<string[]> _messages = new();
+    // Kauf nach der Annahme: Vertragsverhandlung 0x4A1DB (Aufruf 0x4786A), dann Abschluss oder „findet nicht statt“.
+    private TransferPurchase? _purchase;
+    private ContractDialog? _contract;
     private int _mouseX = -1, _mouseY = -1;
 
     public TransferScreen(ScreenHost host, Screen back) : base(host) => _back = back;
@@ -59,6 +63,9 @@ public sealed class TransferScreen : Screen
     public TransferDialog? Dialog => _dialog;
 
     public PlayerInfoPopup Info => _info;
+
+    /// <summary>Verhandlungsfenster nach einem angenommenen Kauf (oder null).</summary>
+    public ContractDialog? Contract => _contract;
 
     /// <summary>Text der Statuszeile unter der Maus (Herkunft eines Markt-Spielers bzw. Hinweiszeile 0x41683 des Kaders).</summary>
     public string? Status => StatusText(TeamUi.Rows(Club), Market.Listings);
@@ -79,9 +86,18 @@ public sealed class TransferScreen : Screen
         _mouseX = input.MouseX;
         _mouseY = input.MouseY;
         if (_message.Update(input))
+        {
+            if (!_message.Visible && _messages.TryDequeue(out var lines))
+                _message.Show(lines);
             return;
+        }
         if (_info.Update(input))
             return;
+        if (_contract is not null)
+        {
+            UpdateContract(input);
+            return;
+        }
         if (_dialog is not null)
         {
             switch (_dialog.Update(input, Assets))
@@ -147,7 +163,10 @@ public sealed class TransferScreen : Screen
             if (row >= 0 && row < rows.Count)
             {
                 var p = rows[row];
-                if (p.OnLoan)
+                // [ORIGINAL] Datei 0x46E04: Spieler mit unaufgefordertem Angebot (+0x09 Bit 0x40) öffnen das Angebotsfenster.
+                if (Game.OpenUnsolicitedOffer(Manager, p) is { } offer)
+                    _dialog = TransferDialog.ForUnsolicited(offer);
+                else if (p.OnLoan)
                     _message.Show("Dieser Spieler ist", "nur ausgeliehen.");
                 else
                     _dialog = TransferDialog.ForSale(p, Market.ListingOf(p), TransferMarket.Price(p));
@@ -164,7 +183,11 @@ public sealed class TransferScreen : Screen
         switch (d.Kind)
         {
             case TransferDialog.DialogKind.Buy or TransferDialog.DialogKind.Loan:
-                _message.Show(TransferMarket.Message(Market.Buy(Game, Manager, d.Listing!, d.Amount, d.Kind == TransferDialog.DialogKind.Loan)));
+                var bid = Market.Bid(Game, Manager, d.Listing!, d.Amount, d.Kind == TransferDialog.DialogKind.Loan, out var purchase);
+                if (purchase is not null)
+                    OpenContract(purchase);
+                else
+                    _message.Show(TransferMarket.Message(bid));
                 break;
             case TransferDialog.DialogKind.Sale when d.Listing is null:
                 var result = Market.Offer(Game, Manager, d.Player!);
@@ -182,7 +205,47 @@ public sealed class TransferScreen : Screen
             case TransferDialog.DialogKind.Talent:
                 _message.Show(TalentScout.Message(TalentScout.Search(Game, Manager)));
                 break;
+            case TransferDialog.DialogKind.Offer:
+                if (Game.AcceptUnsolicitedOffer(d.Offer!) != TransferResult.Accepted)
+                    _message.Show(TransferMarket.Message(TransferResult.Impossible));
+                break;
         }
+    }
+
+    /// <summary>
+    /// Verhandlungsfenster nach der Annahme. [ORIGINAL] Datei 0x4785D: Aufruf mit y = 0 (oben); der neue Kaderplatz ist frisch,
+    /// Laufzeit und Gehalt sind die des Wechsels (<see cref="TransferPurchase"/>).
+    /// </summary>
+    private void OpenContract(TransferPurchase purchase)
+    {
+        var game = Game;
+        _purchase = purchase;
+        _contract = new ContractDialog(purchase.Player, ContractDialog.Top, purchase.Years, purchase.Salary, insurance: 0,
+            () => Contracts.InsuranceOffer(game, purchase.Buyer, purchase.Player), years => Contracts.DemandAfterYears(game, purchase.Buyer, purchase.Player, years, purchase.Salary), () => null);
+    }
+
+    private void UpdateContract(InputState input)
+    {
+        var d = _contract!;
+        var outcome = d.Update(input);
+        if (outcome == ContractDialog.Outcome.None)
+            return;
+        var purchase = _purchase!;
+        _contract = null;
+        _purchase = null;
+        if (outcome == ContractDialog.Outcome.Cancel)
+        {
+            _message.Show(TransferMarket.NotTakingPlace); // 0x47874 → 0x47A3E
+            return;
+        }
+        var result = Market.Sign(Game, purchase, d.Years, d.Salary, d.Insured, d.DemandFilled);
+        if (result == NegotiationResult.Accepted)
+        {
+            _message.Show(TransferMarket.Message(TransferResult.Accepted));
+            return;
+        }
+        _message.Show(Contracts.Message(result, purchase.Player));
+        _messages.Enqueue(TransferMarket.NotTakingPlace);
     }
 
     private void Cancel(TransferDialog d)
@@ -256,8 +319,6 @@ public sealed class TransferScreen : Screen
             var p = l.Player;
             var y = FirstEntryY + EntryPitch * i;
             var c = TeamUi.RoleColor(p.Role);
-            if (i == hoverEntry || _dialog?.Listing == l)
-                TeamUi.HoverRow(s, ListLeft - 1, y, ListRight - ListLeft + 3, 13);
             s.Text(mini, ListLeft, y, p.RoleLetter.ToString(), c);
             s.Text(mini, 189, y, p.Name, c);
             // Pixelvergleich oberflaeche_1102 (Spur transfer-original-vertrag): rechtsbündige Spalten 3 Pixel weiter rechts
@@ -269,12 +330,16 @@ public sealed class TransferScreen : Screen
             s.TextRight(mini, 315, y + 6, Money(l.LoanFee) + " (L)", TeamUi.DimColor);
             EntryLine(s, y + 12);
         }
+        for (var i = 0; i < listings.Count; i++)
+            if (i == hoverEntry || _dialog?.Listing == listings[i])
+                HoverEntry(s, FirstEntryY + EntryPitch * i);
 
         if (StatusText(rows, listings) is { } status)
             TeamUi.LabelCentered(s, Assets, 86, StatusY, status, 196, 5); // Video: hell mit Schatten
         DrawAccountBar(s);
 
         _dialog?.Draw(s, Assets);
+        _contract?.Draw(s, Assets);
         _info.Draw(s, Assets);
         _message.Draw(s, Assets, 160, 118);
     }
@@ -346,6 +411,22 @@ public sealed class TransferScreen : Screen
     }
 
     /// <summary>Beige Trennlinie mit dunkler Linie darunter (Video: Index 93 / 198).</summary>
+    /// <summary>
+    /// Markierung des Eintrags unter der Maus: Die beiden Trennlinien über und unter dem Eintrag (obere Zeile der Linie) werden
+    /// dunkelrot, die untere Zeile (198) bleibt. [ORIGINAL] Pixelvergleich `oberflaeche_1100` (LANGE) und `oberflaeche_1102`
+    /// (LAPORTE): Zeilen y − 4 und y + 12 gemessen (68–75 | 38 | 40–47), Index 201 (65 | 0 | 0) mit Unschärfe; die Zeile
+    /// y − 1 bleibt Hintergrund. Vorher zeichnete das Remake hellrot (17) in Zeile y − 1, die untere Linie überschrieb
+    /// <see cref="EntryLine"/>. Index 201 statt 16/253 aus der Rotkomponente geschätzt: [APPROX] (Video unscharf).
+    /// </summary>
+    private static void HoverEntry(Surface s, int y)
+    {
+        s.HLine(ListLeft - 1, y - 4, ListRight - ListLeft + 3, HoverEntryColor);
+        s.HLine(ListLeft - 1, y + 12, ListRight - ListLeft + 3, HoverEntryColor);
+    }
+
+    /// <summary>Farbe der Trennlinien um den markierten Eintrag der Transferliste (siehe <see cref="HoverEntry"/>).</summary>
+    public const byte HoverEntryColor = 201;
+
     private static void EntryLine(Surface s, int y)
     {
         s.HLine(ListLeft - 1, y, ListRight - ListLeft + 3, TeamUi.EntryLineColor);

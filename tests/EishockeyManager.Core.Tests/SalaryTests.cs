@@ -36,7 +36,7 @@ public class SalaryTests
 
         // Vertrag ändern wie im Bildschirm „Verträge“: höheres Gehalt, mit Versicherung
         var player = club.Players[0];
-        var raise = Contracts.Demand(player) * 3;
+        var raise = player.MonthlySalary * 3; // Startgehalt = Wert(Gehalt) (0x29EE4), höher als die Forderung
         // Gleiche Laufzeit, höheres Gehalt: im Original ohne Zufall angenommen (0x4AC1A).
         Assert.Equal(NegotiationResult.Accepted, Contracts.Negotiate(game, me, player, 0, raise, insured: true, demandFilled: false));
         club.Players[1].Insured = true;
@@ -46,7 +46,7 @@ public class SalaryTests
         {
             salaries += p.MonthlySalary;
             if (p.Insured)
-                insurance += p.MonthlySalary * Contracts.InsurancePercent / 100;
+                insurance += p.InsurancePremium; // Spur transfer-vertraege-komplett: Prämie +0x30 statt 10 % des Gehalts
         }
         Assert.True(insurance > 0);
 

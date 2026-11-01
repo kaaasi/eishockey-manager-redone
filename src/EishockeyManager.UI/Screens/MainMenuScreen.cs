@@ -295,8 +295,9 @@ public sealed class MainMenuScreen : Screen
         s.Blit(sheet, new Rect(0, 231, 27, 11), 111, 48);
         s.Blit(sheet, new Rect(27, 231, 27, 11), 111, 61);
 
-        s.TextCentered(mini, 184, 38, next?.Opponent.Name ?? SeasonInfo.NoMatchText(game), Colors.White);
-        s.TextCentered(mini, 184, 51, MeetingsText(game, team, next?.Opponent.Index), Colors.White);
+        // Gegner und bisherige Begegnungen: Spur optionen-wirkung, Teil 3 (InfoBarTexts.cs, em.exe 0x43E21).
+        s.TextCentered(mini, 184, 38, next?.Opponent.Name ?? InfoBarTexts.NoMatchText(game), Colors.White);
+        s.TextCentered(mini, 184, 51, InfoBarTexts.MeetingsText(game, next?.Opponent.Index, mini), Colors.White);
         s.TextCentered(mini, 184, 64, GameState.FormatMoney(NationalMenu.Money(game)), Colors.White);
 
         // Warnlampen des Managers am Zug (Spur pixel-verein, PV-03; Regeln und Belege in MenuLamps).
@@ -308,22 +309,6 @@ public sealed class MainMenuScreen : Screen
         Widgets.Head(s, Assets, manager.Head, 232, 33);
         Raised(s, new Rect(274, 32, 41, 42));
         Widgets.Logo(s, Assets, club.LogoGraphic, 275, 34);
-    }
-
-    /// <summary>
-    /// Bisherige Begegnungen aus Sicht des eigenen Vereins, z. B. „A 1:4,H 5:4“; „Noch keine“ ohne Begegnung.
-    /// [APPROX] Ob das Original eigene Tore zuerst nennt, ist noch offen.
-    /// </summary>
-    public static string MeetingsText(GameState game, int club, int? opponent)
-    {
-        if (opponent is not { } o)
-            return "";
-        var parts = game.Meetings(club, o).Select(r =>
-        {
-            var (f, a, home) = r.For(club);
-            return $"{(home ? 'H' : 'A')} {f}:{a}";
-        }).ToList();
-        return parts.Count == 0 ? "Noch keine" : string.Join(",", parts.TakeLast(4));
     }
 
     /// <summary>

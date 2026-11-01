@@ -46,39 +46,203 @@ Stubeinträge Ov 0x118 (Stub-Segment 0x14C7, Datei 0x16A70): 0x2A → 0x465F1 Tr
 | Saisonende | 0x27D05–0x27DF3 | +0x0B = 0: +0x18 = 101, +0x0B = 1, Gehalt = Wert(Gehalt) · (147 − Alter) / 100, dann Verhandlung; scheitert sie: „… kehrt Ihrem Verein den Rücken...“ |
 | Gebotssperre | 0x472F4, 0x47140, 0x47B01, Tagesablauf 0x071CC | abgelehntes Gebot vom Computermarkt: **Kaderplatz** +0x1A \|= 0x80 \| 1 &lt;&lt; Manager (nicht Pool +0x1A, das ist der Besitzer); Anklicken mit beiden Bits „Angebot wurde bereits abgelehnt.“; täglich (nur im Zug von Manager 0) hebt random(0, 2) = 0 die Sperre auf, wenn allein Manager 0 gesperrt ist |
 | Reihenfolge Gebot an einen Manager | 0x474F0 vor 0x47546 | erst Geld, dann Unfair-Grenze (R8-C02) |
-| Wechsel der Liste | 0x494EF (Stub 0x5C) | gerufen beim Saisonstart (0x43A9F) und täglich mit random(0, Managerzahl + 2) = 0 (0x54E71): Markt-Plätze leeren, aus dem Pool (Besitzer 6) Spieler 1–179 bzw. mit random(0, 5) = 0 180–199 ziehen, Form random(45, 55), Preis/Gehalt = Wert, +0x19 = random(3, 12) · 16 + random(3, 12) |
+| Wechsel der Liste | 0x494EF (Stub 0x5C) | gerufen beim Saisonstart (0x43A9F) und täglich mit random(0, Managerzahl + 2) = 0 (0x54E71); Ablauf und Umsetzung in Teil 5 (unten) |
 
 Abbildung im Remake: Tageszähler &gt; 232 = Phase `SeasonOver`; [0xE1A4] je Saison und Tag aus eigenem Startwert
 (`GameState.ContractTurnFactor`, `[APPROX]`); Zufall der Verhandlung aus `ContractRandom`; Kaderplatz 3 = vierter Spieler
 in `Club.Players` (`[APPROX]`).
 
+## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 1: Kauf und Saisonende)
+
+Umsetzung: `Core/Transfer.Purchase.cs` (`TransferMarket.Bid`/`Sign`, `TransferPurchase`), `Core/Transfer.SeasonEnd.cs`
+(`StartNextSeasonWithRenewals`, `NegotiateRenewal`, `CancelRenewal`, `ResolveRenewals`), gemeinsamer Kern
+`Contracts.NegotiateTerms`; Dialog `UI/Screens/Team/ContractDialog.cs` (Verträge, Kauf, Saisonende); Tests
+`TransferVertraegeKomplettTests`, `TransferVertraegeKomplettScreenTests`.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Kauf: Verhandlung nach der Annahme | 0x4781B–0x4786A | neuer Kaderplatz (0x108:0x5C), +0x2C = Gebot (Bit 31 bleibt), dann `0x4A1DB(Platz, Zeile, y = 0)`; Geld und Wechsel erst danach (0x47945–0x47A3B) |
+| Kauf: Verhandlung scheitert | 0x47874 → 0x47A3E | Platz frei (0x108:0x48), „Der Transfer / findet nicht statt.“ (DGROUP 0x1201/0x1205); auch bei „Abbruch“ |
+| Leihe ohne Verhandlung | 0x47851–0x4785B | Verhandlung nur bei +0x11 = 0 (kein eigener Spieler) und ohne Leihe; Leihe: +0x0B = 1, +0x0C = Verein + 0x80, altes Gehalt (0x47918–0x47941) |
+| Saisonende: Herunterzählen | 0x274A7, 0x27500 | im Saisonende 0x26F20: Alter +1 (nur im Zug von Manager 0), Laufzeit +0x0B − 1 |
+| Saisonende: Angebot | 0x27D05–0x27D70 | +0x0B = 0 → +0x18 = 101 (Angebot 1 Jahr), +0x0B = 1, Gehalt = Wert(Gehalt) · (147 − Alter) / 100 |
+| Saisonende: Verhandlung | 0x27D74–0x27D91 | `0x118:0x75(Platz, Zeile, y)` mit y = 80 für Zeile &lt; 12, sonst 0 (wie „Verträge“ 0x401D6) |
+| Saisonende: bleibt | 0x27D99, 0x27EA7–0x27EDF | Ergebnis 1 und +0x0B ≠ 0 → „… bleibt Ihnen auch / die nächste Saison erhalten“ (DGROUP 0x139D/0x13A1) |
+| Saisonende: geht | 0x27DAD–0x27E9D | „… kehrt Ihrem Verein / den Rücken...“ (0x138D/0x1391); Ablöse = Wert(Preis) / 2 aufs Konto, „Sie erhalten eine / Ablösesumme von / … DM“ (0x1395/0x1399, „ DM“ 0x14C9); Platz frei |
+
+Abbildung im Remake: Der wartende Spieler bleibt mit Laufzeit 0 und dem Angebot „1 Jahr“ (`ContractNotice.Offered`,
+`NoticeYears` = 1) im Kader – der Zustand +0x0B = 0/+0x18 = 101, ohne neues Spielstandsfeld. Solange solche Spieler warten,
+gilt „nach dem Saisonende“ (`AfterSeasonEnd`). Der Bildschirm nach „Erhaltene Prämien“ (`ContractsScreen.ForSeasonEnd`) führt
+die Verhandlungen; was offen bleibt, endet am ersten Tag der neuen Saison wie „Abbruch“; ohne Oberfläche
+(`StartNextSeason`) sofort.
+
+`[APPROX]`: Reihenfolge (Original je Manager Prämien, dann Verträge; Remake erst alle Prämien); Saisonzähler (Tore, Spiele) sind
+beim Rechnen von Gehalt und Ablöse schon zurückgesetzt; Ablöse als Transfereinnahme gebucht (das Original schreibt sie ohne
+Buchungsaufruf aufs Konto);
+Liste hinter dem Fenster am Saisonende = Bildschirm „Verträge“ (Original 0x108:0x43; Abweichung im Pixelvergleich unten belegt).
+
+**Befund für `finanzen-rest`:** Nach einem Kauf vom Computermarkt ruft das Original 0x18:0x223E (Datei 0x063BE, Fenster „Nehmen
+Sie einen Sponsor- / zuschuß von … an ?“) mit dem Kaufpreis (Datei 0x47A18–0x47A34); im Remake fehlt das.
+
+## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 2: Versicherung, Sperre)
+
+Umsetzung: `Core/Player.Contract.cs` (`Player.InsurancePremium`, `Player.InsuranceLocked`, `Contracts.InsuranceOffer`,
+`CanChangeInsurance`, `ApplyInsurance`), `Core/Transfer.Insurance.cs` (`GameState.PayInsurance`), Dialog
+`UI/Screens/Team/ContractDialog.cs`; Migration 17 → 18 (vorläufig); Tests `TransferVertraegeKomplettTeil2Tests`,
+`TransferVertraegeKomplettTeil2ScreenTests`.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Prämie | 0x4AA9C–0x4AABF | Einschalten im Fenster: +0x30 = Wert(Gehalt) (0x9D36 Art 1) / 2; Ausschalten: 0 (0x4AAC5) |
+| Umschalten gesperrt | 0x4AA74–0x4AA90 | nicht bei +0x2C Bit 31 (Abschluss) und nicht bei Verletzung (+0x09 &amp; 3 = 2) |
+| Anzeige | 0x4AAD4–0x4AB1C | +0x30 = 0 → „keine“, sonst Betrag mit „ DM“ |
+| Abschluss | 0x4AB73–0x4AB8D | „Mach' ich!“ mit neu eingeschalteter Versicherung → Bit 31, **vor** der Prüfung des Ergebnisses |
+| Gescheitert / Abbruch | 0x4AD39–0x4AD76 | +0x30, Laufzeit und Gehalt wie beim Öffnen; Bit 31 bleibt bei einer gescheiterten Verhandlung; „Abbruch“ springt an Bit 31 vorbei (0x4AB6E) |
+| Kosten | 0x3E8DC | monatlich +0x30 mit den Gehältern (schon bisher über `FinanceRules.MonthlyInsurance`) |
+| Leistung Verletzung | 0x7089–0x7168 | +0x30 · 4 aufs Konto, „NAME ist verletzt.“ / „Ein Fall für die Versicherung: Sie zahlt Ihnen … DM“ (DGROUP 0x134D–0x1359); Aufrufe 0x7542 (Tagesablauf), 0x38D6A (Spiel, 0x20:0xBA9) |
+| Leistung Laufbahnende | 0x2772B–0x277DE | im Saisonende bei +0x0D = 0xFF: +0x30 · 60, „NAME ist invalide.“ (0x135D) |
+| Sperre über den Saisonwechsel (R8W3I-09) | 0x274E8–0x27539 | +0x18 bleibt stehen; nur der Durchlauf ohne Halt (DGROUP 0x1DB) setzt 0 (0x27534) |
+
+`[APPROX]`: ganze DM statt Drittel-DM (Prämie abgerundet, mindestens 1 DM); Leistung als Einnahme der Kategorie Versicherung
+gebucht (Original ohne Buchungsaufruf, 0x7147); Stände vor Schema 18 und Aufrufer, die nur „versichert“ setzen, bekommen die
+bisherige Prämie (10 % des Gehalts, `Contracts.LegacyInsurancePercent`), ebenso die Rückkehr eines verliehenen Spielers ohne
+bekannte Prämie. Beim Kauf bleibt ein vorhandener Abschluss des Spielers stehen (+0x2C Bit 31 bleibt, 0x4781B); scheitert die
+Verhandlung nach dem Kauf, wird der neue Platz verworfen und mit ihm der Abschluss.
+
+## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Rest von Teil 2: Start- und Wechselgehalt)
+
+Umsetzung: `Contracts.ValueSalary` und `Contracts.PurchaseYears` (`Core/Player.Contract.cs`), `GameState.ApplyStartSalaries`
+(`Core/Transfer.StartSalary.cs`, Anschluss in `GameState.InitializeManagerSystems`), Kauf in `TransferMarket.Bid`; Tests
+`TransferVertraegeKomplettTeil2bTests` (Goldtest aus FILE01, FILE09, FILE10 und FILE07).
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Startgehalt | 0x29EB4–0x29EF3 (0x28165) | je Kaderplatz des Managers [0xA70E]: +0x2C = Wert(Preis), +0x28 = Wert(Gehalt); Computervereine haben kein Gehaltsfeld |
+| Kauf: neuer Kaderplatz | 0x477CD–0x477EC → 0x42CB1 | Aufruf `0x108:0x5C` (= Datei 0x42CB1) mit Laufzeit 1 (+0x0B, 0x42E75); +0x28 = Wert(Gehalt) (0x42F11), bei +0x0C = 99 zusätzlich · random(90, 115) / 100 (0x42F1F); danach +0x2C = Gebot (0x4781B) |
+| Listenwechsel | 0x4975C, 0x497A1 (0x494EF) | +0x2C = Wert(Preis), +0x28 = Wert(Gehalt) eines neuen Kaderplatzes (Teil 3) |
+| Beleg Spielstände | FILE01, FILE09 (2 Manager, Level 5), FILE10 | alle Kaderplätze der Manager: +0x28 = Wert(Gehalt) aus den gespeicherten Eingängen, Vertrag 2 Jahre |
+| Beleg Kauf | FILE07 | DAFFNER: +0x28 = Wert(Gehalt) = 9.900 DM, +0x0B = 1 |
+
+Wert(Gehalt) ist ein Vielfaches von 300 Drittel-DM; das Remake speichert es ohne Rundungsverlust als ganze DM. Bei den Stärken
+der Bundesliga liegen die Startgehälter damit bei 11.000–18.000 DM (FILE01: Kölner EC), in der Oberliga um 1.000 DM.
+
+`[APPROX]`: Tore und Spiele gehen mit den Zählern des Remakes ein (wie bei allen Aufrufen des Spielerwerts); den Startpreis
+(+0x2C) führt das Remake nicht als Feld. Computervereine, Leihen, Talente und Verlängerungen der Computervereine behalten die
+Forderung des Remakes (`Contracts.Demand`).
+
+## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 3: unaufgeforderte Angebote, Knöpfe)
+
+Umsetzung: `Core/Transfer.Unsolicited.cs` (`UnsolicitedOfferRules`, `GameState.RollUnsolicitedOffers`, `OpenUnsolicitedOffer`,
+`AcceptUnsolicitedOffer`), Feld `Player.UnsolicitedOffer` (Schema 19, vorläufig), Anschluss täglich in `AnnounceContractEnds`;
+Angebotsfenster `TransferDialog.ForUnsolicited` im Bildschirm „Transfer“; Tests `TransferVertraegeKomplettTeil3Tests`,
+`TransferVertraegeKomplettTeil3ScreenTests`.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Tageswurf | 0x07972–0x07AEF (Tagesablauf 0x07169, Zug des Managers [0xA70E]) | nur bis zum Saisonende (0x3B7 &lt; 233); je Kaderplatz ohne Leihe (+0x0C) und ohne Rücktritt (+0x18 Bit 0x80): w = Wert(Preis) / 10000; random(0, 200) &lt; w, random(0, 450) = 0, keine offene Meldung (Pool +0x1E) → +0x09 \|= 0x40 |
+| Bietender Verein | 0x07A61–0x07A8F → 0x059B8 (0x238:0x1838) | Europapokal-Gegner, wenn w &gt; 90 und random(0, 10) = 0; Verein c = random(0, 42) bzw. random(64, 149), Managerverein (+0x16 ≠ 0) verworfen; Vereinsstärke = (Felder 0x18–0x1B + 100) / 6; angenommen nach mehr als 300 Versuchen oder wenn \|Vereinsstärke − s\| &lt; random(2, 10 · t) (t = 1, ab Versuch 100 2, ab 200 3); s = Mittel der Grundstärken des Pooleintrags |
+| Meldung | 0x07A93–0x07AE3 (0x14CF:0x39 = 0x4B2F6) | „&lt;Verein&gt; ist an &lt;Spieler&gt; interessiert.“ (Vorlage DGROUP 0x29B7) |
+| Anklicken | 0x46E04–0x46ED2 (Transferliste, eigener Kader) | Spieler mit +0x18 Bit 0x80: „Dieser Spieler hört am Saisonende auf.“; mit Bit 0x40: V = Wert(Preis), Angebot = V · random(87, 125) bzw. bei Verein &gt; 0x3F random(112, 155) / 30000 · 300; Bit 0x40 und Meldung werden **vor** der Antwort gelöscht |
+| Angebotsfenster | 0x491F9 (Argument 4 = 1) | Rahmen 0x490DE (2 … 0xA8 \| 0x1C … 0x63), Titel „Manager“ + Name, „ANGEBOT von &lt;Verein&gt; :“, Betrag, „ABLÖSESUMME :“ „keine“, Knöpfe „Behalten“ (0x0B \| 0x53) und „Verkaufen“ (0x5A \| 0x53) |
+| Verkaufen | 0x46F3C–0x46FCF | Konto + Angebot (ohne Abzug), Kaderplatz entfernt (0x108:0x48), Pool +0x1D = Verein; Verein &lt; 0x40 nimmt ihn auf (0x18:0x175C), sonst Besitzer 6 |
+| Knöpfe | 0x4C196 (0x120:0x75), 0x4BEBD (0x120:0x6B), 0x4BFF2 | das fünfte Argument (0x12 bei „Mach' ich!“/„Verkaufen“, sonst 1) wird nicht gelesen; Zustand 1 (kb\\2 ab (17 \| 191)) nur, solange die linke Maustaste über dem Knopf gedrückt ist |
+
+Damit ist die offene Frage zum Verhandlungsfenster geklärt: Der hellere „Mach' ich!“ im Video ist der gedrückte Knopf (Zustand 1),
+kein anderes Argument. Das Remake zeichnet Knöpfe der Verhandlungs- und Angebotsfenster unter gedrückter Maustaste ebenso.
+
+`[APPROX]`: Zufall des Tageswurfs aus einer je Saison und Tag abgeleiteten Quelle (wie `ContractTurnFactor`), Höhe beim Anklicken aus
+`ContractRandom`; „offene Meldung“ = noch nicht angeklicktes Angebot; Rücktritt = Ankündigung `Retiring`. Das Original übergibt
+dem Bieter die **Nummer des Kaderplatzes** statt der Poolnummer (0x07A81), misst also die Grundstärken eines fremden
+Pooleintrags; das Remake nimmt die Stärke des Spielers. Vereinsstärke aus Stärke und Teamwerten des Laders (`ClubTeamValues`).
+Ein voller Computerkader, ein Nationalteam oder ein Europapokal-Gegner gibt den Spieler in den Pool der Vertragslosen. Das
+Angebotsfenster ist im Video nicht zu sehen; Lage nur aus dem Code (Grundlinien wie beim Verhandlungsfenster umgerechnet).
+
+**Befund aus Teil 3, umgesetzt in Teil 5:** Dasselbe Fenster zeigt bei einem Angebot für einen Spieler **auf dem Markt** (Bit
+0x80, Aufruf 0x473FF mit Argument 0) unter „ABLÖSESUMME :“ Angebot − Angebot / 7 · Restlaufzeit (+0x0B) und schreibt diesen
+Rest gut (0x49332–0x49371, danach 0x4748A). Der Listenwechsel 0x494EF zieht aus dem Pool von 200 Spielern (Teil 5, unten).
+
+## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 5: Spielerpool, Listenwechsel, Ablöse)
+
+Entscheidungen Nutzer 01.11.2026 (PR #308). Umsetzung: `Core/Transfer.Pool.cs` (`TransferPoolRules`, `PoolSlot`,
+`TransferMarket.BuildPool`, `StartPoolSeason`, `ChangeList`), `Core/Transfer.cs` (`TransferListing.FromPool`, `TransferFee`,
+`AdvanceDay`, `Initialize`, `StartSeason`), Angebotsfenster für Gebote `UI/Screens/Team/TransferDialog.cs`; Schema 20
+(vorläufig, `Core/SaveGame.Migration.TransferVertraegeKomplett5.cs`); Tests `TransferVertraegeKomplettTeil5Tests`,
+`TransferVertraegeKomplettTeil5ScreenTests`.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Pool zu Spielbeginn | 0x5AF50–0x5B0B1 (66C3:0730) | je Index 1–199: Alter +0x14 = random(18, 33); b = random(30, 89), unter 45 mit random(0, 1) ≠ 0 neu random(40, 89); +0x16 = b + 10 − random(0, 20); Form +0x17 = random(45, 55); +0x15 = b + 10 − random(0, 20); +0x19 = 0; Besitzer 6 |
+| Talent, Namen | 0x5B2CD–0x5B387, 0x5AAA0 (66C3:0280) | je Index Talent +0x12 = random(0, 9); namenlose Plätze: Kaderplatz s = random(DGROUP 0x164[k], 0x165[k] − 1) (0, 2, 12, 25 nach Art, Grenzen DGROUP 0x382: 21, 97), Verein c = random(0, 11), nach einem doppelten Namen einmal random(0, 35) (Merker DGROUP 0x55EE), Managerverein verworfen; +0x1D = c |
+| Art (Rollenwert +0x18) | 0x5B391–0x5B4A9 | 1–20 Torhüter, 21–96 Verteidiger 25 + random(0, 16), 97–179 Stürmer 75 + random(0, 16), 180–183 Torhüter, 184–190 Verteidiger, 191–199 Stürmer |
+| Nationalspieler | 0x2A0B5 → 0x5ACA0 (0x140:0x48, Art 0) | Satz DGROUP 0x55F4 + 6 · Art: Art 0 Indizes 179–199, Vereine 52–63 (DGROUP 0x6AD … + 11), Wechsel der Kaderart bei 184/191; Art 1 Indizes 1–179, Vereine 0–23, Wechsel bei 21/97. Nur Besitzer 6 mit Verein ohne Manager; Verein random, Kaderplatz random der Art, mit random(0, 15) = 0 random(0, 1); doppelter Name (vergeben oder kleinerer Index) → neuer Versuch |
+| Saisonwechsel | 0x274A7 (Saisonende, im Zug von Manager 0), 0x56467/0x56470 | Alter aller 200 Poolplätze + 1; neue Namen der freien Plätze (0x5ACA0 Art 0, dann Art 1); die Werte bleiben |
+| Listenwechsel, Räumen | 0x494EF–0x49549, 0x425B6 (0x108:0x48) | Markt-Satz 4, 10 Plätze: je k = 0 … 9 Platz k frei; ein Platz eines Managers (Besitzer ≠ 4) bleibt und zählt, ein Markt-Platz wird entfernt, die folgenden rücken auf, k zählt weiter – also bleibt etwa jeder zweite; Poolspieler wieder Besitzer 6 |
+| Listenwechsel, Füllen | 0x49566–0x4980F | n = 10 − Managerplätze; n-mal: cx = random(0, 9); Managerplatz → nichts; Markt-Platz → entfernen; Poolindex random(1, 179), mit random(0, 5) = 0 random(180, 199), bis Besitzer 6 (höchstens 1500 Versuche, sonst Ende); Form random(45, 55); Ersatzverein bei Managerverein: Liga nach DGROUP 0x7C0/0x7B1, random(0x7C6[2l], 0x7C7[2l]) bis ohne Manager (+0x1D bleibt); 0x4981E; neuer Platz am Ende (0x108:0x5C = 0x42CB1, Energie random(80, 120)), Besitzer 4, +0x1D, +0x2C = Wert(Preis), +0x28 = Wert(Gehalt), +0x19 = random(3, 12) · 16 + random(3, 12) |
+| Grundstärken | 0x4981E–0x4991C | t = 1 bei Nationalteam (0x128:0x20 = 0x4D2F0); +0x15 = Vereinsfeld 0x19 + random(10t, 14) − 10, +0x16 = Vereinsfeld 0x1B + random(10t, 14) − 10, mit random(0, 4) = 0 + random(12, 20); je auf 10 … 99 (0x120:0x52) |
+| Zeitpunkt | 0x43A9F, 0x54E65–0x54E7C | beim Saisonstart und im Tageslauf mit random(0, Managerzahl + 2) = 0 |
+| Ablöse bei Markt-Angeboten | 0x49332–0x49371 → 0x4748A | Gutschrift Angebot − Angebot / 7 · Restlaufzeit (Drittel-DM); das Angebotsfenster zeigt den Rest als „ABLÖSESUMME“ |
+
+Folgen: Die Startliste ist ein Listenwechsel ab leerem Markt – jeder der 10 Würfe trifft mit (10 − n) / 10 einen freien Platz,
+im Mittel 6,5 Spieler (Video 6, FILE05 7). Poolspieler altern ohne Laufbahnende (nur 0x274A7), die Liste wird über die Jahre
+älter – so bleibt es (Entscheidung Nutzer 01.11.2026: Originaltreue); eine Verjüngung beim Umbenennen ist als Erweiterung nach
+v1.0 vorgemerkt (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C). Gegenprobe FILE05: freie Plätze 1–178 auf Vereinen 0–23 ohne Köln (über 90 % 0–11), 179–199 auf Nationalteams.
+
+`[APPROX]`:
+- **Computerkader bleiben** (Statistik, Kader-KI des Remakes), aber **jeder Name nur einmal** (Entscheidung Nutzer
+  01.11.2026): Der Pool wird vor den Kadern gebaut (`TransferMarket.ReservePool`, aus `SquadSetup.Initialize`), seine
+  Datenbankspieler fehlen den Computervereinen; fehlende Plätze ergänzt der Kaderaufbau. Beim Saisonwechsel tauschen Pool und
+  Computerkader: Steht der neu gezogene Datenbankspieler in einem Computerkader, wird er Poolspieler (mit seinen Werten), der
+  bisherige Poolspieler übernimmt seinen Kaderplatz. Spieler in Managerkadern, bei den Vertragslosen, im Ruhestand, geliehene
+  und nominierte gelten als leere Plätze. Kaderplatz s = s-ter Datenbankspieler der Art (Platznummern leerer Plätze sind nach
+  dem Laden der Datenbank nicht mehr bekannt). Spieler werden über ihre ID unterschieden; gleiche Namen bleiben möglich, wenn
+  eine geänderte Datenbank sie enthält, und entstehen weiter durch Talentnamen (`PlayerFactory.TalentName`, unverändert).
+- **Poolgröße flexibel** (Wunsch Nutzer 01.11.2026): `TransferPoolLayout` mit dem Original (200) und Aufteilung anderer
+  Größen im Verhältnis des Originals (z. B. 400); Ziehung, Arten und Namensbereiche folgen der Aufteilung.
+- **Managerkader** baut das Remake wie bisher aus der Datenbank, nicht aus dem Pool (DGROUP 0x381); alle 199 Plätze werden
+  benannt (daher öfter der weite Vereinsbereich 0–35 als im Original). Gibt es keinen freien Datenbanknamen (synthetische
+  Datenbank, Spielstand vor Teil 5), heißt der Platz „POOLSPIELER n“.
+- **Gekaufte Poolspieler** bleiben „vergeben“; steht ihr Spieler beim Saisonwechsel nicht mehr in einem Managerkader, bekommt
+  der Platz einen neuen Spieler „POOLSPIELER n“ mit den Werten des alten (im Original wird der Platz bei Verkauf oder
+  Vertragsende wieder frei), der danach wie jeder freie Platz umbenannt wird. Ein Name ist im Remake fest: ein neuer Name ohne
+  Tausch erzeugt einen neuen Spieler mit neuer ID (nur für Poolspieler ohne Spiele).
+- **Takt:** Listenwechsel je Ligaspieltag statt je Tag (der Markt schreibt sich je Spieltag fort); Zufall aus der Hauptquelle.
+- **Vertragslose** aus Managervereinen (R204) stehen nach dem Saisonwechsel weiter auf der Liste (höchstens 6) und zählen wie
+  Managerplätze; im Original werden sie freie Poolspieler. Vertragslose anderer Vereine stehen nicht mehr auf der Liste.
+- Sonderprüfung DGROUP 0x6AC (Startwert 56 = Deutschland) in 0x5ACA0 nicht abgebildet (FILE05 zeigt einen Poolspieler
+  Deutschlands); Vereinsfelder aus Datenbankstärke und Abweichung des Laders, Nationalteams ohne Ländertabelle 0x4C4E;
+  Energie auf 99 begrenzt; 0x4907A (0x118:0x4D) nicht abgebildet.
+- Poolspieler sind für den WM-Kader nicht nominierbar (`NationalCandidates`, ihr Platz wird neu vergeben).
+
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
-- **Unaufgeforderte Angebote** für Spieler im eigenen Kader (Kaderplatz +0x09 Bit 0x40, Tagesablauf 0x079DE–0x07A8F: w wie oben,
-  random(0, 200) &lt; w und random(0, 450) = 0; Höhe 0x46E0E: Wert · random(87, 125) bzw. random(112, 155) / 30000 · 300) –
-  im Remake gibt es Angebote nur für Spieler auf dem Markt.
 - **Antwort des verkaufenden Managers** (Hot-Seat-Rückfrage 0x47608–0x47743) fehlt; das Remake nimmt ab dem geforderten
   Betrag an, darunter bis 85 % mit sinkender Wahrscheinlichkeit.
-- **Bietender Verein** 0x238:0x1838 und Wechsel der Liste je Spieltag (Abgänge, Zugänge, Pflege 0x7C12) nicht belegt.
+- **Bietender Verein** für Spieler auf dem Markt (Bit 0x80): 0x059B8 ist jetzt belegt (Teil 3), für den Markt aber noch nicht
+  angeschlossen; Pflege der Liste 0x7C12 nicht belegt.
 - **Zeitpunkt der Züge:** das Original würfelt die Angebotshöhe beim Anklicken, das Remake beim Angebot.
 - **Listenpreis eigener Spieler:** das Original kopiert den Kaderplatz (0x48:0x2BD4) samt altem +0x2C (Start- bzw. Kaufpreis);
   das Remake rechnet den Wert beim Anbieten frisch.
 - **Spieler, der am Saisonende aufhört** (Kaderplatz +0x18 Bit 0x80, Meldung DGROUP 0x12BD): bekommt im Original keine
   Angebote und kann nicht gekauft werden – nicht abgebildet.
-- **Kauf übernimmt Gebot als +0x2C** und ruft die Vertragsverhandlung 0x4A1DB (Datei 0x4781B–0x4786A); scheitert sie, findet
-  der Transfer nicht statt (0x47874 → 0x47A3E). Im Remake kommt der Spieler noch mit Startlaufzeit und Gehalt aus
-  `Contracts.Demand` (`[APPROX]`).
-- **Verhandlung am Saisonende** (0x27D05–0x27DF3) für ausgelaufene Verträge fehlt; das Remake beendet sie ohne Rückfrage.
-- **Start- und Wechselgehalt** = Wert(Gehalt) (0x29EE4, 0x497A1) noch nicht umgestellt; das Remake nutzt die Forderung aus
-  Stärke und Talent. Die Verhandlung rechnet schon mit dem Wert, bisheriges Gehalt bleibt Untergrenze.
-- **Versicherungsprämie** = Wert(Gehalt) / 2 beim Abschluss (+0x30) und Sperre des Kündigens (+0x2C Bit 31) – das Remake
-  rechnet 10 % des Gehalts; Abrechnung 0x07089 offen.
+- **Leihe:** Gehalt des geliehenen Spielers (0x47918–0x47941 altes Gehalt; 0x42F1F · random(90, 115) / 100 bei +0x0C = 99)
+  nicht gegen das Remake geprüft; das Remake nutzt die Forderung aus Stärke und Talent.
+- **Versicherungsleistung** (`GameState.PayInsurance`, Teil 2) hat noch keinen Auslöser: Verletzungen im Spiel (0x38D6A) und im
+  Tagesablauf (0x7542) sowie das Laufbahnende (+0x0D = 0xFF, 0x2772B) gibt es im Remake noch nicht (spielberechnung-komplett,
+  Teil 3). Dort jeweils `PayInsurance(manager, spieler, careerEnd)` aufrufen.
+- **Gehalt in ganzen DM** (R8W3I-08): Das Original rechnet in Drittel-DM; das Remake speichert ganze DM und rundet Forderung,
+  Prämie und Vergleichsforderung ab (bis 2/3 DM je Monat). `[APPROX]` am Datenmodell, im Code an `Contracts.InsuranceOffer`
+  und `ComputedDemand` vermerkt.
 - **Angebot des Spielers verfällt** (random(0, 5), dann Sperre random(9, 17)) und Angebot der Ankündigung „von 1 auf n Jahre“
   stammen im Remake aus der Spur „kader“ (`[APPROX]`, R2-11); umgesetzt ist nur, dass „Mach' ich!“ ohne Eingabe das Angebot
   annimmt.
-- **Wechsel der Liste 0x494EF** (Pool von 200 Spielern) – das Remake zieht aus den vollen Kadern der Computervereine.
-- **Knöpfe im Verhandlungsfenster:** im Video ist „Mach' ich!“ heller beschriftet als „Abbruch“ (Aufruf 0x120:0x75 mit 0x12
-  statt 1) und beide stehen 1 Pixel weiter links; Bedeutung des Arguments offen (gemeinsamer Baustein, nicht geändert).
+- **Knöpfe im Verhandlungsfenster 1 Pixel zu weit rechts** (nachgemessen in Teil 4, Tabelle unten): In allen drei Vorlagen
+  (`oberflaeche_1030`, `karriere_01924`, `karriere_03555`) passen beide Knöpfe mit Versatz −1 | 0 am besten, die Texte des
+  Fensters mit 0 | 0. Das Original übergibt aber x = 0x0B bzw. 0x5A (Datei 0x4A444, 0x4A41E) wie das Remake, und 0x4BFF2
+  blittet kb\\2 ab (17 | 179) ohne Korrektur an diese Stelle. Ursache offen (Verdacht: Spaltenlage von kb\\2 im Decoder oder
+  der Blit 0x50:0xA79 – beides fremde Dateien); nicht geändert, weil ein örtlicher Versatz andere Knöpfe aus kb\\2 nicht träfe.
+- **Positionsbuchstabe in der Transferliste:** Im Video ist das „S“ von LAPORTE dunkel (≈ 65 | 38 | 50) – in allen Bildern
+  `oberflaeche_1054` … `1104`, unabhängig von der Maus –, bei den übrigen Einträgen in der Rollenfarbe. Bedeutung nicht belegt
+  (LAPORTE ist der einzige Spieler „aus FRANKREICH“ in der Liste; Verdacht Ausländerkennung). Remake: Rollenfarbe.
 
 ## Pixelvergleich (Abnahme 3)
 
@@ -96,3 +260,48 @@ höchstens 1 Pixel verschoben, Mauszeiger maskiert.
 
 Behoben: rechtsbündige Spalten der Transferliste (Stärken, Alter, Leihgebühr) standen 3 Pixel zu weit links, der Titel 2 Pixel zu
 hoch und 1 Pixel zu weit rechts (Messung je Feld mit Verschiebungssuche ±5 Pixel, danach Versatz 0 | 0).
+
+### Neue Lagen aus Teil 1 (Spur `transfer-vertraege-komplett`)
+
+Ablauf `transfer-vertrag-kauf-saisonende` (`Tools/Scenarios/TransferVertragKaufSaisonende.cs`), Kennzahl wie oben. Die Vorlagen
+wurden in den Reihen `oberflaeche` und `karriere` per Vorlagensuche der Titelzeile „Vertragsverhandlung“ gefunden: Das Fenster
+steht im Original nur an zwei Stellen, y = 109 (Zeile &lt; 12) und y = 29 (sonst und beim Kauf).
+
+| Bereich | Vorlage | Kennzahl | Versatz |
+|---|---|---|---|
+| Kauf: Fenster (2 … 167 \| 30 … 96) | `karriere_01924` (RUSSLER, 25 Jahre, 4 Jahre, 5.125 DM) | 5,8 / 1,2 % | 0 \| 0 |
+| Kauf: Titel (4 … 165 \| 31 … 43) | | 5,3 / 0,0 % | 0 \| 0 |
+| Saisonende: Fenster (2 … 167 \| 110 … 176) | `karriere_03555` (A.ONNEN, 27 Jahre, 1 Jahr, 6.480 DM) | 5,9 / 0,8 % | 0 \| 0 |
+| Saisonende: Titel (4 … 165 \| 111 … 123) | | 4,9 / 0,0 % | 0 \| 0 |
+| Saisonende: Kopfzeile (0 … 319 \| 0 … 14) | | 7,7 / 5,0 % | – |
+
+Lage und Inhalt beider Fenster stimmen. Abweichung nur hinter dem Fenster am Saisonende (`[APPROX]` oben): Die Liste des
+Originals (0x108:0x43, `karriere_03555`, `karriere_03648`) trägt den Vereinsnamen als Titel („BK OLDENBURG“), zeigt
+ausgelaufene Verträge rot als „kein V.“ und hat rechts unten ein Symbolfeld statt der Hinweiszeile; das Remake zeigt dort die
+Liste „Verträge“. Gehört zu Teil 3 (Knopfdarstellung/Listen) bzw. eigener Befund.
+
+### Teil 4 (Spur `transfer-vertraege-komplett`): Markierung in der Transferliste, Knöpfe
+
+Kennzahl wie oben, Mauszeiger (rot) maskiert, beide Bilder mit σ = 0,6 weichgezeichnet, eigenes Bild um höchstens 1 Pixel
+verschoben (Messung in der Arbeitsumgebung, nicht im Repo).
+
+| Bereich | Vorlage | Vorher | Nachher | Versatz |
+|---|---|---|---|---|
+| Transferliste (176 … 318 \| 15 … 222) | `oberflaeche_1102` | 4,4 / 0,9 % | 3,3 / 0,0 % | 0 \| 0 |
+| Einträge (178 … 316 \| 36 … 135) | | 6,0 / 2,0 % | 3,7 / 0,1 % | 0 \| 0 |
+| Eintrag LAPORTE mit Linien (178 … 316 \| 114 … 135) | | 15,9 / 9,1 % | 5,4 / 0,4 % | 0 \| 0 |
+| Titel „Transferliste“ (210 … 290 \| 15 … 30) | | 4,2 / 0,0 % | 4,2 / 0,0 % | 0 \| 0 |
+| Verhandlungsfenster (2 … 167 \| 110 … 176) | `oberflaeche_1030` | 7,4 / 0,9 % | unverändert | 0 \| 0 |
+| Knopf „Mach' ich!“ (10 … 66, 12 Zeilen) | `oberflaeche_1030` / `karriere_01924` / `karriere_03555` | 10,5 / 10,6 / 8,9 | unverändert | bei −1 \| 0: 7,3 / 7,1 / 5,4 |
+| Knopf „Abbruch“ (97 … 152) | dieselben | 9,5 / 8,0 / 7,9 | unverändert | bei −1 \| 0: 6,7 / 4,9 / 5,6 |
+
+Behoben: Der Eintrag unter der Maus (bzw. im offenen Dialog) wird im Original durch die **Trennlinien** über und unter dem
+Eintrag markiert – obere Zeile der Linie (y − 4 und y + 12) dunkelrot, gemessen 68–75 | 38 | 40–47 (`oberflaeche_1100` bei LANGE
+mit der Linie unter der Kopfzeile, `oberflaeche_1102` bei LAPORTE). Das Remake zeichnete hellrot (Index 17) eine Zeile über dem
+Namen, die untere Linie überschrieb die Trennlinie. Farbe Index 201 (65 | 0 | 0) `[APPROX]`: aus der Unschärfe geschätzt
+(Mischung mit dem Hintergrund passt besser als 16 oder 253). Die gemeinsame Zeilenmarkierung `TeamUi.HoverRow` (Kader- und
+Vertragslisten) ist nicht geändert. Test: `TransferVertraegeKomplettTeil4ScreenTests`.
+
+Testlücken aus Teil 4 (`TransferVertraegeKomplettTeil4Tests`): „unfair“ der Verhandlung bei negativen Eingaben ohne Sperre und
+ohne Zufallszug (R8W3I-10), Umkehrung des Gegenbeispiels nach dem Saisonende auf Level 3 und 5 (R8W3I-16), Zugfolge der
+Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die passende Mutation rot geprüft.

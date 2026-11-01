@@ -30,8 +30,32 @@ public sealed partial class Player
     /// <summary>Monatliches Gehalt in DM (Spalte WERT, „Monatliches Gehalt des Spielers“).</summary>
     public int MonthlySalary { get; set; }
 
-    /// <summary>Versicherung gegen Verletzungen (Anzeige „(v)“ hinter der Vertragsdauer).</summary>
-    public bool Insured { get; set; }
+    /// <summary>
+    /// Versicherungsprämie in DM je Monat (Kaderplatz +0x30, im Original Drittel-DM); 0 = nicht versichert. [ORIGINAL] Im
+    /// Verhandlungsfenster Wert(Gehalt) / 2 (Datei 0x4AA9C, <see cref="Contracts.InsuranceOffer"/>); monatlich mit den Gehältern
+    /// abgerechnet (0x3E8DC); Leistung bei Verletzungen <see cref="GameState.PayInsurance"/>.
+    /// </summary>
+    public int InsurancePremium { get; set; }
+
+    /// <summary>
+    /// Kaderplatz +0x2C Bit 31: Versicherung im Verhandlungsfenster abgeschlossen. [ORIGINAL] Datei 0x4AB73–0x4AB8D setzt das Bit
+    /// bei „Mach' ich!“, wenn das Fenster die Versicherung neu eingeschaltet hat – vor der Prüfung des Ergebnisses, also auch
+    /// bei einer gescheiterten Verhandlung (die Prämie wird dann zurückgesetzt, 0x4AD54, das Bit nicht). Danach lässt sich die
+    /// Versicherung nicht mehr umschalten (0x4AA74).
+    /// </summary>
+    public bool InsuranceLocked { get; set; }
+
+    /// <summary>
+    /// Versichert (Anzeige „(v)“ hinter der Vertragsdauer, em.exe 0x42410: +0x30 ≠ 0). Setzen ohne bekannte Prämie:
+    /// [APPROX] <see cref="Contracts.LegacyInsurancePercent"/> % des Gehalts (bisheriges Modell; Aufrufer ohne Spielstand).
+    /// </summary>
+    public bool Insured
+    {
+        get => InsurancePremium > 0;
+        set => InsurancePremium = !value ? 0
+            : InsurancePremium > 0 ? InsurancePremium
+            : Math.Max(1, MonthlySalary * Contracts.LegacyInsurancePercent / 100);
+    }
 
     /// <summary>Ausgeliehener Spieler („ (ausgeliehen)“) – kehrt zum Saisonende zum Eigentümer zurück.</summary>
     public bool OnLoan { get; set; }
@@ -43,6 +67,12 @@ public sealed partial class Player
     /// (<see cref="ContractRules.LockDays"/>), täglich um 1 herunter. 0 = keine Sperre.
     /// </summary>
     public int NegotiationLock { get; set; }
+
+    /// <summary>
+    /// Unaufgefordertes Angebot eines Vereins (Kaderplatz +0x09 Bit 0x40, Verein in +0x16), sonst null. Gesetzt im Tagesablauf
+    /// (<see cref="GameState.RollUnsolicitedOffers"/>), gelöscht beim Anklicken (<see cref="GameState.OpenUnsolicitedOffer"/>).
+    /// </summary>
+    public Club? UnsolicitedOffer { get; set; }
 
     /// <summary>Ankündigung im letzten Vertragsjahr (nur Spieler der Manager-Vereine), bis zum Saisonwechsel.</summary>
     public ContractNotice Notice { get; set; }
@@ -88,11 +118,15 @@ public sealed partial class GameState
         AgeFreeAgents();
         // Snapshot vor Rückgaben: Vereinsreihenfolge darf keinen Spieler zweimal altern lassen.
         var players = Clubs.SelectMany(c => c.Players.Select(p => (Club: c, Player: p))).ToArray();
+        // Spur transfer-vertraege-komplett: ausgelaufene Verträge im Kader eines Managers werden am Saisonende verhandelt
+        // (0x27D05). Im Modus „nur Weltkugel“ gibt es keine Vereinssaison und damit keine Verhandlung.
+        var renewers = WorldOnly ? new Dictionary<int, Manager>() : ActiveManagers.ToDictionary(m => m.ClubIndex);
         var returns = new List<(Club Owner, Player Player)>();
         foreach (var (club, player) in players)
         {
             player.Age++;
-            player.NegotiationLock = 0;
+            // [ORIGINAL] R8W3I-09: Das Saisonende 0x26F20 lässt die Sperre +0x18 stehen (0x274E8–0x27539); nur der Durchlauf ohne
+            // Halt (DGROUP 0x1DB, gibt es im Remake nicht) setzt sie bei 0x27534 auf 0. Sie zählt im Tagesablauf weiter herunter.
             var notice = player.Notice;
             player.Notice = ContractNotice.None;
             player.NoticeYears = 0;
@@ -104,7 +138,7 @@ public sealed partial class GameState
                 owner = loan.Origin;
                 player.ContractYears = loan.ContractYears;
                 player.MonthlySalary = loan.MonthlySalary;
-                player.Insured = loan.Insured;
+                player.Insured = loan.Insured; // [APPROX] Prämie der Rückkehr: bisherige, sonst LegacyInsurancePercent
                 player.OnLoan = false;
                 player.Loan = null;
             }
@@ -125,12 +159,20 @@ public sealed partial class GameState
                 Retire(owner, player);
                 continue;
             }
+            if (player.ContractYears == 0 && owner == club && renewers.TryGetValue(owner.Index, out var renewer))
+            {
+                BeginRenewal(renewer, player);
+                if (!s_deferRenewals)
+                    CancelRenewal(renewer, player); // ohne Oberfläche: wie „Abbruch“ (Spieler geht gegen Ablöse)
+                continue;
+            }
             if (player.ContractYears == 0)
             {
                 owner.Players.Remove(player);
                 owner.Lineup.Remove(player);
                 player.MonthlySalary = 0;
                 player.Insured = false;
+                player.InsuranceLocked = false;
                 TransferMarket.Release(owner, player);
             }
             else if (owner != club)
@@ -145,6 +187,7 @@ public sealed partial class GameState
                 player.ContractYears = 0;
                 player.MonthlySalary = 0;
                 player.Insured = false;
+                player.InsuranceLocked = false;
                 TransferMarket.Release(owner, player);
                 continue;
             }
@@ -188,9 +231,8 @@ public enum NegotiationResult
 
 /// <summary>
 /// Gehälter und Vertragsverhandlung. Verhandlung nach em.exe 0x4A1DB/0x49A3B (<see cref="ContractRules"/>,
-/// <see cref="Negotiate"/>). [APPROX] Startgehalt und Gehalt nach einem Wechsel (<see cref="Demand"/>) sind noch nicht auf
-/// den Spielerwert 0x118:0x70 Art 1 umgestellt (Spielstart 0x29EE4, Kauf 0x4A1DB aus 0x4786A). Belegt im Video:
-/// Startgehälter der Feldspieler 900–1.400 DM, Torhüter 1.500 DM.
+/// <see cref="Negotiate"/>). Startgehalt der Manager-Kader und Gehalt nach einem Kauf = Wert(Gehalt) (<see cref="ValueSalary"/>).
+/// [APPROX] Computervereine, Leihen, Talente und Verlängerungen der Computervereine nutzen weiter <see cref="Demand"/>.
 /// </summary>
 public static class Contracts
 {
@@ -199,12 +241,24 @@ public static class Contracts
     /// <summary>Längste Laufzeit (<see cref="ContractRules.MaxYears"/>).</summary>
     public const int MaxYears = ContractRules.MaxYears;
 
+    /// <summary>
+    /// Laufzeit des neuen Kaderplatzes nach einem Kauf, mit der die Verhandlung beginnt. [ORIGINAL] Datei 0x477E0 übergibt 1 an
+    /// 0x42CB1, das +0x0B setzt (0x42E75–0x42E78); FILE07: gekaufter DAFFNER +0x0B = 1 nach „Mach' ich!“ ohne Eingabe.
+    /// </summary>
+    public const int PurchaseYears = 1;
+
     /// <summary>Kleinster erlaubter Betrag. Im Video springt eine Eingabe von 0 DM auf 1 DM.</summary>
     public const int MinSalary = 1;
 
-    /// <summary>Monatliche Versicherungsprämie in Prozent des Gehalts. [APPROX] Original: Kaderplatz +0x30 = Wert(Gehalt) / 2
-    /// beim Abschluss (Datei 0x4AA9C), abgerechnet in 0x07089 (Funktionskarte: offen).</summary>
-    public const int InsurancePercent = 10;
+    /// <summary>[APPROX] Prämie in Prozent des Gehalts, wenn eine Versicherung ohne bekannten Betrag gesetzt wird
+    /// (<see cref="Player.Insured"/>, Migration älterer Spielstände). Das Original kennt nur den Betrag +0x30.</summary>
+    public const int LegacyInsurancePercent = 10;
+
+    /// <summary>Vielfaches der Prämie bei einer Verletzung (Datei 0x7089: +0x30 · 4, Aufrufe 0x7542 Tagesablauf, 0x38D6A Spiel).</summary>
+    public const int InjuryPayoutFactor = 4;
+
+    /// <summary>Vielfaches der Prämie, wenn die Verletzung die Laufbahn beendet (+0x0D = 0xFF, Saisonende 0x2772B–0x277DE: · 60).</summary>
+    public const int CareerEndPayoutFactor = 60;
 
     /// <summary>
     /// Gehaltsforderung aus Stärke und Talent, auf 100 DM gerundet. Torhüter verdienen ein Viertel mehr.
@@ -218,11 +272,70 @@ public static class Contracts
         return Math.Max(100, (int)Math.Round(value / 100) * 100);
     }
 
-    /// <summary>Gehalt bei Spielbeginn: die Forderung des Spielers.</summary>
+    /// <summary>
+    /// Gehalt bei Spielbeginn für Kaderplätze der Computervereine: die Forderung des Spielers. Kaderplätze der Manager bekommen
+    /// danach <see cref="ValueSalary"/> (<see cref="GameState.ApplyStartSalaries"/>).
+    /// </summary>
     public static int BaseSalary(Player p, Random random) => Demand(p);
 
-    /// <summary>Monatliche Versicherungsprämie eines Spielers.</summary>
-    public static int InsurancePremium(Player p) => p.Insured ? p.MonthlySalary * InsurancePercent / 100 : 0;
+    /// <summary>
+    /// Start- und Wechselgehalt eines Kaderplatzes des Managers in DM: Wert(Gehalt) (0x118:0x70 Art 1) im Verein des Managers.
+    /// [ORIGINAL] Spielstart Datei 0x29EE4–0x29EF3, Kauf Datei 0x42F11–0x42F65 (Kaderplatz aus 0x108:0x5C = 0x42CB1, ohne Leihe),
+    /// Listenwechsel Datei 0x497A1. Wert(Gehalt) ist ein Vielfaches von 300 Drittel-DM, also ganze 100 DM. Rein, ohne Zufall.
+    /// [APPROX] Tore und Spiele gehen mit den Zählern des Remakes ein (wie bei allen Aufrufen von <see cref="PlayerValue"/>).
+    /// </summary>
+    public static int ValueSalary(GameState game, Manager manager, Player p)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(manager);
+        var club = game.Clubs[manager.ClubIndex];
+        var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
+        return Math.Max(MinSalary, value / 3);
+    }
+
+    /// <summary>Monatliche Versicherungsprämie eines Spielers (Kaderplatz +0x30, <see cref="Player.InsurancePremium"/>).</summary>
+    public static int InsurancePremium(Player p) => p.InsurancePremium;
+
+    /// <summary>
+    /// Prämie, die das Verhandlungsfenster beim Einschalten einträgt. [ORIGINAL] Datei 0x4AA9C–0x4AABF: Wert(Gehalt) (0x9D36 Art 1)
+    /// / 2, in Drittel-DM. [APPROX] Ganze DM (Datenmodell des Remakes, abgerundet; mindestens 1 DM, damit „versichert“ erhalten
+    /// bleibt). Rein, ohne Zufall.
+    /// </summary>
+    public static int InsuranceOffer(GameState game, Manager manager, Player p)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(manager);
+        var club = game.Clubs[manager.ClubIndex];
+        var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
+        return (int)Math.Max(1, value / 2 / 3);
+    }
+
+    /// <summary>
+    /// Lässt sich die Versicherung im Verhandlungsfenster umschalten? [ORIGINAL] Datei 0x4AA74–0x4AA90: nicht nach einem Abschluss
+    /// im Fenster (+0x2C Bit 31, <see cref="Player.InsuranceLocked"/>) und nicht bei einem verletzten Spieler (+0x09 &amp; 3 = 2).
+    /// </summary>
+    public static bool CanChangeInsurance(Player p) => !p.InsuranceLocked && p.InjuredGames == 0;
+
+    /// <summary>
+    /// Versicherung nach „Mach' ich!“ (nicht nach „Abbruch“: 0x4AB6E springt vorbei). <paramref name="insured"/> ist der Stand
+    /// im Fenster; ohne <see cref="CanChangeInsurance"/> bleibt er wie beim Öffnen. [ORIGINAL] 0x4AB73–0x4AB8D: neu eingeschaltet →
+    /// Bit 31 (<see cref="Player.InsuranceLocked"/>), auch wenn die Verhandlung scheitert; gescheitert → Prämie wie beim Öffnen
+    /// (0x4AD54); angenommen → Prämie aus dem Fenster (eingeschaltet: <see cref="InsuranceOffer"/>, ausgeschaltet: 0).
+    /// </summary>
+    internal static void ApplyInsurance(GameState game, Manager manager, Player p, bool insured, bool accepted, bool lockOnFailure)
+    {
+        if (!CanChangeInsurance(p))
+            insured = p.Insured;
+        var added = insured && !p.Insured;
+        if (added && (accepted || lockOnFailure))
+            p.InsuranceLocked = true;
+        if (!accepted)
+            return;
+        if (added)
+            p.InsurancePremium = InsuranceOffer(game, manager, p);
+        else if (!insured)
+            p.InsurancePremium = 0;
+    }
 
     /// <summary>Monatliche Gehalts- und Versicherungskosten eines Kaders (für das Paket „manager“).</summary>
     public static long MonthlyCosts(Club club) => club.Players.Sum(p => (long)p.MonthlySalary + InsurancePremium(p));
@@ -250,20 +363,26 @@ public static class Contracts
     /// oder null, wenn das Original das Feld nicht füllt (Level 5: DGROUP 0xED8 = 5 − Level = 0, Datei 0x4A9DB). Rein.
     /// </summary>
     public static int? DemandAfterYears(GameState game, Manager manager, Player p, int years) =>
-        manager.Level >= 5 ? null : ComputedDemand(game, manager, p, years);
+        DemandAfterYears(game, manager, p, years, p.MonthlySalary);
+
+    /// <summary>Wie oben mit ausdrücklichem bisherigem Gehalt (Kauf: Vertrag des neuen Kaderplatzes, <see cref="TransferPurchase"/>).</summary>
+    public static int? DemandAfterYears(GameState game, Manager manager, Player p, int years, int currentSalary) =>
+        manager.Level >= 5 ? null : ComputedDemand(game, manager, p, years, currentSalary);
 
     /// <summary>
     /// Forderung in DM unabhängig vom Level. [ORIGINAL] 0x4A81B–0x4A9A1 rechnet ohne Levelabfrage (einzige Abfrage von
-    /// DGROUP 0xED8 in 0x4A9DB, nur für das Füllen des Feldes; R8W3I-12, #272).
+    /// DGROUP 0xED8 in 0x4A9DB, nur für das Füllen des Feldes; R8W3I-12, #272). [APPROX] R8W3I-08: Das Original rechnet und
+    /// speichert Drittel-DM; das Remake speichert ganze DM und rundet die Forderung (und die Vergleichsforderung aus dem
+    /// bisherigen Gehalt) ab – bis 2/3 DM je Monat.
     /// </summary>
-    private static int ComputedDemand(GameState game, Manager manager, Player p, int years)
+    private static int ComputedDemand(GameState game, Manager manager, Player p, int years, int currentSalary)
     {
         var club = game.Clubs[manager.ClubIndex];
         var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
         // [ORIGINAL] Alter aus Kaderplatz 3 des Managers (0x4A93F); [APPROX] Reihenfolge des Kaders wie im Remake.
         var age = club.Players.Count > 3 ? club.Players[3].Age : p.Age;
         return ContractRules.DemandThirds(value, game.ContractTurnFactor, game.ContractSeasonRemaining, years,
-            game.AfterSeasonEnd, age, p.MonthlySalary * 3) / 3;
+            game.AfterSeasonEnd, age, currentSalary * 3) / 3;
     }
 
     private static readonly Random NoRandom = new NoDrawRandom();
@@ -289,24 +408,38 @@ public static class Contracts
         // Eingaben setzen im Original das Anklicken der Felder voraus, das Leihe, Ruhestand und Sperre schon abweist.
         if ((years != 0 || salary != 0) && Availability(game, p) is { } refusal)
             return refusal;
-        var current = CurrentYears(p);
-        var currentSalary = p.MonthlySalary;
+        var (result, newYears, newSalary) = NegotiateTerms(game, manager, p, CurrentYears(p), p.MonthlySalary, years, salary,
+            demandFilled);
+        // Prämie vor dem neuen Gehalt: das Original rechnet sie beim Umschalten im Fenster (0x4AA9C), vor „Mach' ich!“.
+        ApplyInsurance(game, manager, p, insured, result == NegotiationResult.Accepted, lockOnFailure: true);
+        if (result == NegotiationResult.Accepted)
+        {
+            p.ContractYears = newYears;
+            p.MonthlySalary = newSalary;
+        }
+        else
+            p.NegotiationLock = ContractRules.LockDays(game.ContractRandom);
+        return result;
+    }
+
+    /// <summary>
+    /// Verhandlung ohne Prüfung der Verfügbarkeit gegen einen gegebenen Vertrag (<paramref name="current"/> Jahre,
+    /// <paramref name="currentSalary"/> DM); ändert den Spieler nicht. Liefert den neuen Vertrag, wenn er steht. Gemeinsamer Kern
+    /// von <see cref="Negotiate"/> und dem Kauf (<see cref="TransferMarket.Sign"/>, Datei 0x4786A ruft denselben Dialog).
+    /// </summary>
+    internal static (NegotiationResult Result, int Years, int Salary) NegotiateTerms(GameState game, Manager manager, Player p,
+        int current, int currentSalary, int years, int salary, bool demandFilled)
+    {
+        if (salary < 0 || years < 0)
+            return (NegotiationResult.Unfair, 0, 0);
         // [ORIGINAL] 0x4A9A1 (R8W3I-02 #270, R8W3I-12 #272): Nach dem Saisonende schreibt der Dialog Forderung und Laufzeit
         // auf jedem Level sofort in den Kaderplatz; „Mach' ich!“ vergleicht danach mit diesen Werten (0x4ABD1–0x4AC75).
         // [ORIGINAL] 0x4AD3E→0x4AD54: Bei Ablehnung und Abbruch stellt das Original die beim Öffnen gesicherten Werte zurück
         // (0x4A239–0x4A25F) – das Remake ändert den Spieler dann gar nicht.
         if (game.AfterSeasonEnd && years != 0)
-            (current, currentSalary) = (years, ComputedDemand(game, manager, p, years));
+            (current, currentSalary) = (years, ComputedDemand(game, manager, p, years, currentSalary));
         var result = Decide(game, manager, p, current, currentSalary, years, salary, demandFilled);
-        if (result == NegotiationResult.Accepted)
-        {
-            p.ContractYears = years == 0 ? current : years;
-            p.MonthlySalary = salary == 0 ? currentSalary : salary;
-            p.Insured = insured;
-        }
-        else
-            p.NegotiationLock = ContractRules.LockDays(game.ContractRandom);
-        return result;
+        return (result, years == 0 ? current : years, salary == 0 ? currentSalary : salary);
     }
 
     /// <summary>
@@ -315,9 +448,10 @@ public static class Contracts
     /// ich!“ ohne Eingaben nimmt das Angebot damit zum bisherigen Gehalt an.
     /// </summary>
     /// <remarks>[APPROX] Das Remake behält die Ankündigung bis zum Saisonwechsel (Spur „kader“); das Angebot gilt nur, solange
-    /// der Spieler im letzten Vertragsjahr ist.</remarks>
+    /// der Spieler im letzten Vertragsjahr ist. Am Saisonende (Laufzeit 0, Angebot 1 Jahr) ist es das Angebot +0x18 = 101 des
+    /// Originals (Datei 0x27D15, <see cref="GameState.IsRenewalPending"/>).</remarks>
     public static int CurrentYears(Player p) =>
-        p.Notice == ContractNotice.Offered && p.ContractYears == 1 ? p.NoticeYears : p.ContractYears;
+        p.Notice == ContractNotice.Offered && p.ContractYears <= 1 ? p.NoticeYears : p.ContractYears;
 
     private static NegotiationResult Decide(GameState game, Manager manager, Player p, int current, int currentSalary, int years,
         int salary, bool demandFilled)

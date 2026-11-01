@@ -22,6 +22,12 @@ public sealed class TransferListing
     /// <summary>[APPROX] Vertragsloser Spieler; From ist nur noch der letzte Verein, die Ablöse ist 0.</summary>
     public bool IsFreeAgent { get; init; }
 
+    /// <summary>
+    /// Spieler aus dem Spielerpool (<see cref="TransferMarket.Pool"/>), nicht aus einem Kader; <see cref="From"/> ist der
+    /// Poolverein (+0x1D). [ORIGINAL] Listenwechsel 0x494EF (Spur transfer-vertraege-komplett, Teil 5).
+    /// </summary>
+    public bool FromPool { get; init; }
+
     /// <summary>Spieltag, an dem der Spieler auf den Markt kam.</summary>
     public int ListedDay { get; init; }
 
@@ -76,17 +82,21 @@ public enum TransferResult
 /// <remarks>
 /// [ORIGINAL] Grenzen aus den Meldungen in em.exe: 22 Mann im Team, 3 eigene und 11 Spieler insgesamt auf dem Markt,
 /// Leihgebühr = Kaufpreis / 3 (Datei 0x462EB). Preis, Annahme eines Gebots, Unfair-Grenze, Tageswurf und Höhe der Angebote
-/// für eigene Spieler nach Ov 0x118 (<see cref="TransferRules"/>, <c>docs/transfer.md</c>). [APPROX] Wechsel der Liste je
-/// Spieltag, Wahl des bietenden Vereins und die Antwort eines menschlichen Verkäufers.
+/// für eigene Spieler nach Ov 0x118 (<see cref="TransferRules"/>, <c>docs/transfer.md</c>); Wechsel der Liste aus dem
+/// Spielerpool nach 0x494EF (<see cref="ChangeList"/>). [APPROX] Zeitpunkt des Listenwechsels (je Ligaspieltag statt täglich),
+/// Wahl des bietenden Vereins und die Antwort eines menschlichen Verkäufers.
 /// Der Markt aktualisiert sich selbst (<see cref="CatchUp"/>), bis das Paket „saison“ ihn je Spieltag aufruft.
 /// </remarks>
-public sealed class TransferMarket
+public sealed partial class TransferMarket
 {
     public const int MaxSquad = 22;
     public const int MaxOwnListings = 3;
     public const int MaxListings = 11;
 
-    /// <summary>Anzahl Spieler auf dem Markt zu Spielbeginn (Video: 6).</summary>
+    /// <summary>
+    /// Anzahl Spieler auf dem Markt zu Spielbeginn im Video (6). Seit Teil 5 ergibt sie sich aus dem Listenwechsel
+    /// (<see cref="ChangeList"/>, im Mittel 6,5); die Konstante bleibt als Bezugswert.
+    /// </summary>
     public const int StartListings = 6;
 
     /// <summary>
@@ -123,7 +133,11 @@ public sealed class TransferMarket
     /// </summary>
     public static long Price(Player p) => TransferRules.PriceThirds(p) / 3;
 
-    /// <summary>Neue Saison: alte Listings und Gebote verwerfen, Markt aus den aktuellen Eigentümern neu bilden.</summary>
+    /// <summary>
+    /// Neue Saison: alte Listings und Gebote verwerfen, Pool fortschreiben (<see cref="StartPoolSeason"/>) und die Liste
+    /// wechseln (<see cref="ChangeList"/>, [ORIGINAL] Saisonstart 0x43A9F). [APPROX] Das Original behält die Markt-Plätze bis
+    /// zum Wechsel; das Remake gibt sie vorher frei, weil Listing-Identitäten nicht in die neue Saison reichen.
+    /// </summary>
     public void StartSeason(GameState game)
     {
         // Neue Listing-Identitäten: Auch eine noch gehaltene Referenz aus der Vorsaison ist ungültig.
@@ -131,11 +145,22 @@ public sealed class TransferMarket
         _freeAgents.Clear();
         foreach (var old in released)
             Release(old.From, old.Player);
-        Initialize(game, game.Random);
+        _listings.Clear();
+        _bids.Clear();
+        foreach (var slot in _pool.Where(s => s.Owner == PoolOwner.Market))
+            slot.Owner = PoolOwner.Free;
+        UpdatedDay = game.PlayedMatchDays;
+        // [APPROX] R204: Spieler, deren Vertrag in einem Managerverein endete, bleiben die Saison über verpflichtbar (höchstens
+        // StartListings). Im Original werden sie freie Poolspieler (Besitzer 6) und kommen nur über den Listenwechsel zurück.
+        foreach (var free in _freeAgents.Where(l => IsManaged(game, l.From)).Take(StartListings))
+            _listings.Add(free);
+        StartPoolSeason(game, game.Random);
+        ChangeList(game, game.Random);
     }
 
     internal void Release(Club from, Player player)
     {
+        player.UnsolicitedOffer = null; // Kaderplatz entfällt samt +0x09 Bit 0x40
         _freeAgents.Add(new TransferListing { Player = player, From = from, Price = 0, IsFreeAgent = true });
     }
 
@@ -150,16 +175,18 @@ public sealed class TransferMarket
         }
     }
 
-    /// <summary>Füllt den Markt zu Spielbeginn.</summary>
+    /// <summary>
+    /// Füllt den Markt zu Spielbeginn: Pool (schon vor den Kadern gebaut, <see cref="ReservePool"/>), dann der Listenwechsel des ersten Saisonstarts
+    /// (<see cref="ChangeList"/>; im Mittel 6–7 Spieler, Video 6, FILE05 7).
+    /// </summary>
     public void Initialize(GameState game, Random random)
     {
         _listings.Clear();
         _bids.Clear();
         UpdatedDay = game.PlayedMatchDays;
-        foreach (var listing in _freeAgents.Take(StartListings))
-            _listings.Add(listing);
-        for (var i = _listings.Count; i < StartListings; i++)
-            AddRandomListing(game, random);
+        if (_pool.Count == 0)
+            BuildPool(game, random, TransferPoolLayout.Original, new HashSet<string>());
+        ChangeList(game, random);
     }
 
     /// <summary>Schreibt den Markt bis zum aktuellen Spieltag fort (je Spieltag <see cref="AdvanceDay"/>).</summary>
@@ -173,18 +200,15 @@ public sealed class TransferMarket
     }
 
     /// <summary>
-    /// Ein Spieltag: [APPROX] mit 30 % verschwindet ein fremder Spieler (anderswo verpflichtet), mit 50 % kommt einer
-    /// dazu. Angebote für eigene Spieler auf dem Markt nach dem Original (<see cref="TransferRules.BidRoll"/>, Höhe
+    /// Ein Spieltag: Listenwechsel mit <see cref="ListChangeRoll"/> ([ORIGINAL] 0x54E71; [APPROX] je Ligaspieltag statt je
+    /// Tag). Angebote für eigene Spieler auf dem Markt nach dem Original (<see cref="TransferRules.BidRoll"/>, Höhe
     /// <see cref="TransferRules.BidAmountThirds"/>); [APPROX] bietender Verein zufällig unter den Computervereinen der Ligen
     /// (Original 0x238:0x1838 nicht belegt), die Höhe wird schon beim Angebot statt beim Anklicken gewürfelt.
     /// </summary>
     public void AdvanceDay(GameState game, Random random)
     {
-        var foreign = _listings.Where(l => l.Seller is null).ToList();
-        if (foreign.Count > 2 && random.NextDouble() < 0.3)
-            _listings.Remove(foreign[random.Next(foreign.Count)]);
-        if (_listings.Count < MaxListings && random.NextDouble() < 0.5)
-            AddRandomListing(game, random);
+        if (ListChangeRoll(game.Managers.Count, random))
+            ChangeList(game, random);
 
         foreach (var listing in _listings.Where(l => l.Seller is not null).ToList())
         {
@@ -200,35 +224,6 @@ public sealed class TransferMarket
     }
 
     private static bool IsManaged(GameState game, Club club) => game.Managers.Any(m => m.ClubIndex == club.Index);
-
-    /// <summary>Setzt einen Spieler eines Computervereins oder Nationalteams auf den Markt.</summary>
-    private void AddRandomListing(GameState game, Random random)
-    {
-        var free = _freeAgents.FirstOrDefault(l => !_listings.Contains(l));
-        if (free is not null)
-        {
-            _listings.Add(free);
-            return;
-        }
-        var sources = game.Clubs.Where(c => c.Players.Count > 18 && !IsManaged(game, c)).ToList();
-        if (sources.Count == 0)
-            return;
-        for (var attempt = 0; attempt < 20; attempt++)
-        {
-            var club = sources[random.Next(sources.Count)];
-            var player = club.Players[random.Next(club.Players.Count)];
-            if (_listings.Any(l => l.Player == player) || !CanLeave(club, player))
-                continue;
-            _listings.Add(new TransferListing
-            {
-                Player = player,
-                From = club,
-                Price = Price(player),
-                ListedDay = game.PlayedMatchDays,
-            });
-            return;
-        }
-    }
 
     /// <summary>Bleiben nach dem Abgang genug Spieler der Art?</summary>
     public static bool CanLeave(Club club, Player player)
@@ -282,9 +277,28 @@ public sealed class TransferMarket
     /// </summary>
     public TransferResult Buy(GameState game, Manager manager, TransferListing listing, long offer, bool loan)
     {
+        var result = Bid(game, manager, listing, offer, loan, out var purchase);
+        // Ohne Oberfläche: „Mach' ich!“ ohne Eingaben – der Vertrag des neuen Kaderplatzes steht (Datei 0x4AB66).
+        if (purchase is not null && Sign(game, purchase, 0, 0, insured: false, demandFilled: false) != NegotiationResult.Accepted)
+            return TransferResult.Impossible;
+        return result;
+    }
+
+    /// <summary>
+    /// Gebot auf einen Eintrag: alle Prüfungen und die Annahme wie <see cref="Buy"/>. Eine Leihe ist damit abgeschlossen; beim
+    /// Kauf liefert die Annahme den noch offenen Vertrag (<paramref name="purchase"/>), der mit <see cref="Sign"/> verhandelt
+    /// wird. [ORIGINAL] Datei 0x4781B–0x47874: erst nach der Verhandlung 0x4A1DB fließt Geld und wechselt der Spieler; scheitert
+    /// sie (auch „Abbruch“), „Der Transfer findet nicht statt.“ (0x47A3E, DGROUP 0x1201). Die Leihe ruft keine Verhandlung
+    /// (Bedingung +0x11 = 0 und Leihe = 0, Datei 0x47851–0x4785B).
+    /// </summary>
+    public TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
+        out TransferPurchase? purchase)
+    {
+        purchase = null;
         if (!game.Managers.Contains(manager) || !IsCurrentListing(game, listing)
-            || listing.From.Index == manager.ClubIndex && !listing.IsFreeAgent
-            || loan && listing.IsFreeAgent)
+            || listing.From.Index == manager.ClubIndex && !listing.IsFreeAgent && !listing.FromPool
+            || loan && listing.IsFreeAgent
+            || loan && listing.FromPool && listing.From.Index == manager.ClubIndex)
             return TransferResult.Impossible;
         var club = game.Clubs[manager.ClubIndex];
         if (offer < 0 || offer == 0 && !listing.IsFreeAgent)
@@ -319,11 +333,22 @@ public sealed class TransferMarket
         if (offer > manager.Money)
             return TransferResult.NotEnoughMoney;
 
+        if (!loan)
+        {
+            purchase = new TransferPurchase(listing, manager, offer, Contracts.PurchaseYears,
+                Contracts.ValueSalary(game, manager, listing.Player));
+            return TransferResult.Accepted;
+        }
+        Complete(game, listing, manager, offer, loan: true);
+        return TransferResult.Accepted;
+    }
+
+    private void Complete(GameState game, TransferListing listing, Manager manager, long offer, bool loan)
+    {
         game.Book(manager, FinanceCategory.Transfers, -offer);
         if (listing.Seller is { } seller)
             game.Book(seller, FinanceCategory.Transfers, offer);
-        Move(listing, club, loan);
-        return TransferResult.Accepted;
+        Move(listing, game.Clubs[manager.ClubIndex], loan);
     }
 
     /// <summary>Spieler wechselt vom bisherigen Verein in den Kader des Käufers.</summary>
@@ -333,7 +358,12 @@ public sealed class TransferMarket
         var from = listing.From;
         _listings.Remove(listing);
         _bids.RemoveAll(b => b.Listing == listing);
-        if (!listing.IsFreeAgent)
+        if (listing.FromPool)
+        {
+            if (SlotOf(p) is { } slot)
+                slot.Owner = PoolOwner.Taken;
+        }
+        else if (!listing.IsFreeAgent)
         {
             from.Players.Remove(p);
             from.Lineup.Remove(p);
@@ -341,6 +371,7 @@ public sealed class TransferMarket
                 from.Lineup.FillGaps(from.Players); // Computerverein stellt selbst um, Manager nicht
         }
 
+        p.UnsolicitedOffer = null; // Kaderplatz entfällt samt +0x09 Bit 0x40
         var agreement = loan ? new PlayerLoan(from, p.ContractYears, p.MonthlySalary, p.Insured) : null;
         _freeAgents.Remove(listing);
         PlayerFactory.Join(to, p, loan ? 1 : SquadSetup.StartContractYears, loan, agreement);
@@ -380,7 +411,16 @@ public sealed class TransferMarket
     public TransferListing? ListingOf(Player player) => _listings.FirstOrDefault(l => l.Player == player);
 
     /// <summary>
-    /// Gebot annehmen: Spieler wechselt, der Manager erhält die Ablöse. Liefert <see cref="TransferResult.Impossible"/>,
+    /// Gutschrift beim Annehmen eines Gebots für einen eigenen Spieler auf dem Markt (Kaderplatz +0x09 Bit 0x80).
+    /// [ORIGINAL] Datei 0x49332–0x49371 (Angebotsfenster 0x491F9 mit Argument 0, Aufruf 0x473FF), danach 0x4748A: Angebot −
+    /// Angebot / 7 · Restlaufzeit (+0x0B) in Drittel-DM (<see cref="UnsolicitedOfferRules.MarketTransferFeeThirds"/>); das
+    /// Fenster zeigt diesen Rest als „ABLÖSESUMME“. Entscheidung Nutzer 01.11.2026.
+    /// </summary>
+    public static long TransferFee(TransferBid bid) =>
+        UnsolicitedOfferRules.MarketTransferFeeThirds(TransferRules.Thirds(bid.Amount), bid.Listing.Player.ContractYears) / 3;
+
+    /// <summary>
+    /// Gebot annehmen: Spieler wechselt, der Manager erhält die Ablöse (<see cref="TransferFee"/>). Liefert <see cref="TransferResult.Impossible"/>,
     /// wenn das Gebot nicht (mehr) offen oder nicht ausführbar ist; dann ändert sich weder Geld noch Kader.
     /// </summary>
     public TransferResult Accept(GameState game, TransferBid bid)
@@ -398,7 +438,7 @@ public sealed class TransferMarket
             _bids.RemoveAll(open => ReferenceEquals(open, bid));
             return TransferResult.Impossible;
         }
-        game.Book(seller, FinanceCategory.Transfers, bid.Amount);
+        game.Book(seller, FinanceCategory.Transfers, TransferFee(bid));
         Move(bid.Listing, bid.Buyer, loan: false);
         return TransferResult.Accepted;
     }
@@ -410,6 +450,8 @@ public sealed class TransferMarket
             return false;
         if (listing.IsFreeAgent)
             return _freeAgents.Contains(listing) && !game.Clubs.Any(c => c.Players.Contains(listing.Player));
+        if (listing.FromPool)
+            return SlotOf(listing.Player) is { Owner: PoolOwner.Market } && !game.Clubs.Any(c => c.Players.Contains(listing.Player));
         return listing.From.Players.Contains(listing.Player) && CanLeave(listing.From, listing.Player)
             && game.Clubs.Where(c => c != listing.From).All(c => !c.Players.Contains(listing.Player))
             && (listing.Seller is null
