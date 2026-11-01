@@ -149,7 +149,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 1558 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 3568 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -157,10 +157,10 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 136 | 169395 | 55 % | 132 | 159765 | 61 % |
-| genähert | 5 | 2564 | 1 % | 5 | 2564 | 1 % |
-| dokumentiert | 82 | 63147 | 20 % | 70 | 59837 | 23 % |
-| unbekannt | 456 | 74419 | 24 % | 157 | 38735 | 15 % |
+| umgesetzt | 202 | 223261 | 72 % | 197 | 213597 | 82 % |
+| genähert | 7 | 4216 | 1 % | 7 | 4216 | 2 % |
+| dokumentiert | 212 | 49254 | 16 % | 159 | 42667 | 16 % |
+| unbekannt | 258 | 32794 | 11 % | 1 | 421 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
 ### Übersicht je Bereich
@@ -169,35 +169,35 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 
 | Bereich | Datei | Größe | Funktionen | umgesetzt | genähert | dokumentiert | unbekannt | Rolle / Texte |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| Basis 0x0 | 0x01E00–0x0417F | 9088 | 93 | 5 % | 0 % | 1 % | 93 % | C-Laufzeit (Borland C++ 1991: Copyright, INT 21h, rand/LXMUL/LDIV) |
-| Basis 0x238 | 0x04180–0x064E9 | 9066 | 15 | 51 % | 4 % | 31 % | 14 % | Spiellogik Basis (Saisonende, Statistik) |
-| Basis 0x46e | 0x064E0–0x080CA | 7147 | 14 | 62 % | 0 % | 22 % | 16 % | Spiellogik Basis (Training, Spieler) |
-| Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 68 % | 0 % | 26 % | 6 % | Spiellogik Basis (Spielberechnung, Zufall) |
-| Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 14 % | 0 % | 37 % | 49 % | Fensterverwaltung („Zu viele Fenster auf !“) |
-| Basis 0x99f | 0x0B7F0–0x0C79E | 4015 | 23 | 9 % | 0 % | 51 % | 40 % | Bilder laden (kb\…vga), Texte, Geldausgabe |
-| Basis 0xa99 | 0x0C790–0x0D9F1 | 4706 | 34 | 0 % | 0 % | 7 % | 93 % | Speicher (EMS INT 67h, XMS INT 2Fh), Datei |
-| Basis 0xbbf | 0x0D9F0–0x12F58 | 21865 | 78 | 40 % | 0 % | 1 % | 59 % | Grafik und Maus (VGA-Ports, INT 10h, INT 33h) |
-| Basis 0x1115 | 0x12F50–0x13DD0 | 3713 | 37 | 9 % | 0 % | 1 % | 90 % | Dateizugriff (Hüllen um die C-Laufzeit) |
-| Basis 0x11fd | 0x13DD0–0x143A5 | 1494 | 33 | 0 % | 0 % | 0 % | 100 % | Timer und Interrupts (PIC 0x20/0x21, PIT 0x40/0x43) |
+| Basis 0x0 | 0x01E00–0x0417F | 9088 | 93 | 5 % | 0 % | 5 % | 90 % | C-Laufzeit (Borland C++ 1991: Copyright, INT 21h, rand/LXMUL/LDIV) |
+| Basis 0x238 | 0x04180–0x064E9 | 9066 | 15 | 79 % | 0 % | 21 % | 0 % | Spiellogik Basis (Saisonende, Statistik) |
+| Basis 0x46e | 0x064E0–0x080CA | 7147 | 14 | 66 % | 0 % | 34 % | 0 % | Spiellogik Basis (Training, Spieler) |
+| Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 97 % | 0 % | 3 % | 0 % | Spiellogik Basis (Spielberechnung, Zufall) |
+| Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 14 % | 0 % | 86 % | 0 % | Fensterverwaltung („Zu viele Fenster auf !“) |
+| Basis 0x99f | 0x0B7F0–0x0C79E | 4015 | 23 | 9 % | 0 % | 91 % | 0 % | Bilder laden (kb\…vga), Texte, Geldausgabe |
+| Basis 0xa99 | 0x0C790–0x0D9F1 | 4706 | 34 | 0 % | 0 % | 25 % | 75 % | Speicher (EMS INT 67h, XMS INT 2Fh), Datei |
+| Basis 0xbbf | 0x0D9F0–0x12F58 | 21865 | 78 | 40 % | 0 % | 5 % | 55 % | Grafik und Maus (VGA-Ports, INT 10h, INT 33h) |
+| Basis 0x1115 | 0x12F50–0x13DD0 | 3713 | 37 | 10 % | 0 % | 21 % | 69 % | Dateizugriff (Hüllen um die C-Laufzeit) |
+| Basis 0x11fd | 0x13DD0–0x143A5 | 1494 | 33 | 0 % | 0 % | 44 % | 56 % | Timer und Interrupts (PIC 0x20/0x21, PIT 0x40/0x43) |
 | Basis 0x125b | 0x143B0–0x14D6C | 2493 | 21 | 0 % | 0 % | 9 % | 91 % | Sound Blaster digital (DMA-Ports 0x02–0x0C) |
 | Basis 0x12f7 | 0x14D70–0x1621B | 5292 | 19 | 0 % | 0 % | 44 % | 56 % | FM-Treiber SBFMDRV (CmfPlayer.cs), Tastatur (Port 0x60, INT 16h) |
-| Ov 0xc0 (337B) | 0x255C0–0x25DB0 | 2033 | 14 | 0 % | 0 % | 0 % | 100 % | „Alles klar!“ |
-| Ov 0xc8 (33FB) | 0x25E30–0x26E6A | 4155 | 2 | 95 % | 0 % | 0 % | 5 % | „Die besten“, „Ereignisse“ |
+| Ov 0xc0 (337B) | 0x255C0–0x25DB0 | 2033 | 14 | 0 % | 0 % | 100 % | 0 % | „Alles klar!“ |
+| Ov 0xc8 (33FB) | 0x25E30–0x26E6A | 4155 | 2 | 95 % | 0 % | 5 % | 0 % | „Die besten“, „Ereignisse“ |
 | Ov 0xd0 (34FF) | 0x26F20–0x27F8A | 4203 | 1 | 100 % | 0 % | 0 % | 0 % | „Erhaltene Prämien:“ |
-| Ov 0xd8 (3606) | 0x28030–0x2A0C2 | 8339 | 4 | 96 % | 0 % | 0 % | 4 % | „Suchen Sie sich einen“ |
-| Ov 0xe0 (3810) | 0x2A1E0–0x2F1EE | 20495 | 18 | 54 % | 0 % | 35 % | 11 % | „JWE Service GmbH“, „(noch keine...)“, „Im ersten Jahr gibt's hi“ |
-| Ov 0xe8 (3D11) | 0x2F530–0x352A2 | 23923 | 33 | 70 % | 0 % | 24 % | 6 % | „Endrunde“, „Jugendteams“, „.Spieltag“ |
-| Ov 0xf0 (42E9) | 0x35540–0x397BA | 17019 | 26 | 60 % | 3 % | 29 % | 7 % | „Spiele laufen“, „!    Penaltyschiessen   “, „DEB-Pokal“ |
-| Ov 0xf8 (4711) | 0x399D0–0x3CD71 | 13218 | 18 | 58 % | 0 % | 26 % | 16 % | „WM Vorbereitung“, „WM-Statistik“, „Spieler in WM-Kader“ |
-| Ov 0x100 (4A4C) | 0x3CFA0–0x3FDDD | 11838 | 13 | 78 % | 0 % | 7 % | 15 % | „Überdachung“, „bittet Sie an den Verhan“, „Sitzplätze“ |
-| Ov 0x108 (4D30) | 0x3FFE0–0x42FC4 | 12261 | 13 | 84 % | 0 % | 6 % | 10 % | „Platz mehr !“, „Rückennummer des Spieler“, „Schon 11 Mann auf“ |
-| Ov 0x110 (502F) | 0x43150–0x45DC3 | 11380 | 20 | 49 % | 0 % | 35 % | 16 % | „autosave.hok“, „Saisonende“, „.Spieltag“ |
-| Ov 0x118 (52F7) | 0x46000–0x4ADE1 | 19938 | 18 | 63 % | 0 % | 28 % | 10 % | „ART   NAME              “, „Grundwert“, „Vertragsverhandlung“ |
-| Ov 0x120 (57D6) | 0x4B0F0–0x4D1B6 | 8391 | 23 | 16 % | 20 % | 31 % | 33 % | „Wer weiß...“, „An Alle:“, „Keine Nachricht für Sie “ |
-| Ov 0x128 (59E3) | 0x4D2F0–0x51BED | 18686 | 18 | 60 % | 0 % | 27 % | 14 % | „Bundesliga“, „PL. TD      VEREIN      “, „Play-Off“ |
-| Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 53 % | 0 % | 16 % | 31 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
-| Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 58 % | 0 % | 20 % | 21 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |
-| Ov 0x140 (66C3) | 0x5A820–0x5E932 | 16659 | 21 | 68 % | 0 % | 21 % | 11 % | „VERZEICHNIS:“, „Spielstand aus“, „Speichern“ |
+| Ov 0xd8 (3606) | 0x28030–0x2A0C2 | 8339 | 4 | 96 % | 0 % | 4 % | 0 % | „Suchen Sie sich einen“ |
+| Ov 0xe0 (3810) | 0x2A1E0–0x2F1EE | 20495 | 18 | 93 % | 0 % | 7 % | 0 % | „JWE Service GmbH“, „(noch keine...)“, „Im ersten Jahr gibt's hi“ |
+| Ov 0xe8 (3D11) | 0x2F530–0x352A2 | 23923 | 33 | 90 % | 0 % | 10 % | 0 % | „Endrunde“, „Jugendteams“, „.Spieltag“ |
+| Ov 0xf0 (42E9) | 0x35540–0x397BA | 17019 | 26 | 90 % | 0 % | 10 % | 0 % | „Spiele laufen“, „!    Penaltyschiessen   “, „DEB-Pokal“ |
+| Ov 0xf8 (4711) | 0x399D0–0x3CD71 | 13218 | 18 | 89 % | 8 % | 2 % | 0 % | „WM Vorbereitung“, „WM-Statistik“, „Spieler in WM-Kader“ |
+| Ov 0x100 (4A4C) | 0x3CFA0–0x3FDDD | 11838 | 13 | 85 % | 0 % | 15 % | 0 % | „Überdachung“, „bittet Sie an den Verhan“, „Sitzplätze“ |
+| Ov 0x108 (4D30) | 0x3FFE0–0x42FC4 | 12261 | 13 | 98 % | 0 % | 2 % | 0 % | „Platz mehr !“, „Rückennummer des Spieler“, „Schon 11 Mann auf“ |
+| Ov 0x110 (502F) | 0x43150–0x45DC3 | 11380 | 20 | 68 % | 10 % | 22 % | 0 % | „autosave.hok“, „Saisonende“, „.Spieltag“ |
+| Ov 0x118 (52F7) | 0x46000–0x4ADE1 | 19938 | 18 | 93 % | 1 % | 7 % | 0 % | „ART   NAME              “, „Grundwert“, „Vertragsverhandlung“ |
+| Ov 0x120 (57D6) | 0x4B0F0–0x4D1B6 | 8391 | 23 | 25 % | 22 % | 52 % | 0 % | „Wer weiß...“, „An Alle:“, „Keine Nachricht für Sie “ |
+| Ov 0x128 (59E3) | 0x4D2F0–0x51BED | 18686 | 18 | 93 % | 0 % | 7 % | 0 % | „Bundesliga“, „PL. TD      VEREIN      “, „Play-Off“ |
+| Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 68 % | 0 % | 32 % | 0 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
+| Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 58 % | 0 % | 38 % | 3 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |
+| Ov 0x140 (66C3) | 0x5A820–0x5E932 | 16659 | 21 | 97 % | 0 % | 3 % | 0 % | „VERZEICHNIS:“, „Spielstand aus“, „Speichern“ |
 
 ### Dünn belegte große Funktionen (> 2048 Byte, höchstens zwei Fundstellen)
 
@@ -205,34 +205,19 @@ Der Status gilt je Funktion: schon eine Fundstelle zählt die ganze Funktion. Di
 
 | Datei | Bereich | Größe | Status | Fundstellen | Vermutung |
 |---|---|---:|---|---|---|
-| 0x3D7F8 | Ov 0x100 (4A4C)+0x858 | 3379 | umgesetzt | `docs/finanzen-rekonstruktion.md:233`, `src/EishockeyManager.Core/FinanceStadium.cs:64` | kb\8,14; „Überdachung“, „Eintritt“, „Ja.“ |
-| 0x5DBE5 | Ov 0x140 (66C3)+0x33C5 | 3275 | dokumentiert | `docs/arbeitspakete.md:295` | „.HOK“, „FILE“, „VERZEICHNIS: “ |
-| 0x59DBF | Ov 0x138 (63A2)+0x293F | 2252 | dokumentiert | `docs/reverse-engineering.md:120`, `src/EishockeyManager.UI/Screens/Team/TrainingScreen.cs:7` | kb\5; „Kosten pro Woche:“, „ DM“ |
 
 ### Die 20 größten Lücken (Spielcode, unbekannt oder nur genähert)
 
 | # | Datei | Bereich | Größe | Status | Aufrufer | Vermutung (automatisch) |
 |---:|---|---|---:|---|---|---|
-| 1 | 0x5353C | Ov 0x130 (5E73)+0x16AC | 1725 | unbekannt | 0x37A62, 0x3901B, 0x5434C … | kb\19; „(ausw.)“ |
-| 2 | 0x52BD6 | Ov 0x130 (5E73)+0xD46 | 1630 | unbekannt | 0x37A62, 0x5353C, 0x53C57 | „ min.“ |
-| 3 | 0x4C246 | Ov 0x120 (57D6)+0x1156 | 1136 | genähert | 0x063BE, 0x0C0B8, 0x26F20 … | „An Alle:“ |
-| 4 | 0x3D45F | Ov 0x100 (4A4C)+0x4BF | 921 | unbekannt | 0x3D7F8 | „Überdachung“, „Sitzplätze“, „OHNE DACH“, „Konto“ |
-| 5 | 0x5B661 | Ov 0x140 (66C3)+0xE41 | 892 | unbekannt | 0x5DBE5 | „.Spieltag“, „Bundesliga“, „spielstand“, „ Jahr“ |
-| 6 | 0x39DEC | Ov 0xf8 (4711)+0x41C | 847 | unbekannt | 0x54C9F | gerufen von 0x54C9F (umgesetzt) |
-| 7 | 0x2A6A2 | Ov 0xe0 (3810)+0x4C2 | 779 | unbekannt | 0x2B0C0 | gerufen von 0x2B0C0 (JWE Service GmbH) |
-| 8 | 0x4B2F6 | Ov 0x120 (57D6)+0x206 | 766 | unbekannt | 0x07169, 0x26F20, 0x4B2BA | „Januar“, „$ bietet Ihnen an, $^Jahre z“ |
-| 9 | 0x57ECF | Ov 0x138 (63A2)+0xA4F | 755 | unbekannt | 0x58A57 | „Kontostand:“, „ DM“ |
-| 10 | 0x5ACA0 | Ov 0x140 (66C3)+0x480 | 688 | unbekannt | 0x28165, 0x54C9F | gerufen von 0x28165 (Suchen Sie sich einen) |
-| 11 | 0x432EC | Ov 0x110 (502F)+0x19C | 682 | unbekannt | 0x44E22 | „infofile“, „KEIN INFOFILE VORHANDEN !“, „TASTE!“, „Neueste Informationen zum Ei“ |
-| 12 | 0x2ECA0 | Ov 0xe0 (3810)+0x4AC0 | 635 | unbekannt | 0x2D5AE, 0x4D385 | gerufen von 0x2D5AE (!Serien) |
-| 13 | 0x4BA58 | Ov 0x120 (57D6)+0x968 | 628 | unbekannt | 0x2B0C0, 0x2C1EE, 0x2E356 … | gerufen von 0x2B0C0 (JWE Service GmbH) |
-| 14 | 0x07C7E | Basis 0x46e+0x179E | 627 | unbekannt | 0x54C9F | gerufen von 0x54C9F (umgesetzt) |
-| 15 | 0x25B4A | Ov 0xc0 (337B)+0x58A | 615 | unbekannt | 0x0B019, 0x0C17D, 0x0C729 … | „Alles klar!“, „LIB-Error“, „GRAFIK-Error“, „DISK-Error“ |
-| 16 | 0x581C2 | Ov 0x138 (63A2)+0xD42 | 583 | unbekannt | 0x58A57 | „Kurs:“, „ St.“, „ DM“ |
-| 17 | 0x39BBD | Ov 0xf8 (4711)+0x1ED | 559 | unbekannt | 0x3A24B | „Schüler“ |
-| 18 | 0x386D1 | Ov 0xf0 (42E9)+0x3191 | 549 | genähert | 0x541D9 | gerufen von 0x541D9 (umgesetzt) |
-| 19 | 0x463CC | Ov 0x118 (52F7)+0x3CC | 549 | unbekannt | 0x465F1 | „Kontostand:“, „ DM“ |
-| 20 | 0x48E62 | Ov 0x118 (52F7)+0x2E62 | 536 | unbekannt | 0x47F2B | gerufen von 0x47F2B (Grundwert) |
+| 1 | 0x4C246 | Ov 0x120 (57D6)+0x1156 | 1136 | genähert | 0x063BE, 0x0C0B8, 0x26F20 … | „An Alle:“ |
+| 2 | 0x445E0 | Ov 0x110 (502F)+0x1490 | 1128 | genähert | 0x43E21, 0x4D385 | „.Spieltag“, „Vor dem ersten Spieltag.“ |
+| 3 | 0x39DEC | Ov 0xf8 (4711)+0x41C | 847 | genähert | 0x54C9F | gerufen von 0x54C9F (umgesetzt) |
+| 4 | 0x4BA58 | Ov 0x120 (57D6)+0x968 | 628 | genähert | 0x2B0C0, 0x2C1EE, 0x2E356 … | gerufen von 0x2B0C0 (JWE Service GmbH) |
+| 5 | 0x575C3 | Ov 0x138 (63A2)+0x143 | 421 | unbekannt | 0x567C8 | „toreÖ“ |
+| 6 | 0x3A13B | Ov 0xf8 (4711)+0x76B | 272 | genähert | 0x54C9F | gerufen von 0x54C9F (umgesetzt) |
+| 7 | 0x4BCCC | Ov 0x120 (57D6)+0xBDC | 105 | genähert | 0x26F20, 0x2B0C0, 0x2CD1C … | „Na gut.“ |
+| 8 | 0x4907A | Ov 0x118 (52F7)+0x307A | 100 | genähert | 0x07169, 0x42CB1 | gerufen von 0x07169 (Verletzung außerhalb des) |
 
 ### Funktionen mit Zugriff auf offene Globale
 
@@ -240,8 +225,8 @@ Direkte Zugriffe `[g]`, `[g+1]` oder `[reg±g]` im disassemblierten Code.
 
 | Globale (DGROUP) | Funktionen (Status) |
 |---|---|
-| 0x5A14 | 0x28165 (umgesetzt), 0x2CD1C (dokumentiert), 0x34B76 (umgesetzt), 0x44E22 (umgesetzt), 0x54C9F (umgesetzt), 0x5AF50 (umgesetzt) |
-| 0x5CF3 | 0x33B83 (umgesetzt), 0x33E5E (umgesetzt), 0x341AB (umgesetzt), 0x3489D (umgesetzt), 0x34B76 (umgesetzt), 0x3F833 (umgesetzt), 0x44A48 (umgesetzt), 0x45CD0 (unbekannt) |
+| 0x5A14 | 0x28165 (umgesetzt), 0x2CD1C (umgesetzt), 0x34B76 (umgesetzt), 0x44E22 (umgesetzt), 0x54C9F (umgesetzt), 0x5AF50 (umgesetzt) |
+| 0x5CF3 | 0x33B83 (umgesetzt), 0x33E5E (umgesetzt), 0x341AB (umgesetzt), 0x3489D (umgesetzt), 0x34B76 (umgesetzt), 0x3F833 (umgesetzt), 0x44A48 (umgesetzt), 0x45CD0 (dokumentiert) |
 | 0x3BD | 0x26F20 (umgesetzt), 0x2C1EE (umgesetzt), 0x54C9F (umgesetzt), 0x5667A (umgesetzt), 0x5D04F (umgesetzt) |
 | 0xDE15 | 0x0977F (umgesetzt), 0x0A484 (umgesetzt) |
 
@@ -251,138 +236,13 @@ Vermutung = automatisch abgeleitete Hinweise (benutzte Texte, auch über Zeigert
 
 | Datei | Bereich | Größe | Status | Aufrufer | Vermutung |
 |---|---|---:|---|---:|---|
-| 0x054D9 | Basis 0x238+0x1359 | 72 | unbekannt | 1 | gerufen von 0x05521 (dokumentiert) |
-| 0x057E3 | Basis 0x238+0x1663 | 249 | unbekannt | 1 | gerufen von 0x437D5 (umgesetzt) |
-| 0x058DC | Basis 0x238+0x175C | 220 | unbekannt | 1 | gerufen von 0x465F1 (ART   NAME              ) |
-| 0x059B8 | Basis 0x238+0x1838 | 354 | genähert | 2 | gerufen von 0x05521 (dokumentiert) |
-| 0x05B1A | Basis 0x238+0x199A | 390 | unbekannt | 2 | „Schädelbruch“ |
-| 0x063BE | Basis 0x238+0x223E | 267 | unbekannt | 1 | „Nehmen Sie einen Sponsor-“, „zuschuß von“, „Aber immer!“ |
-| 0x06CDF | Basis 0x46e+0x7FF | 160 | unbekannt | 2 | gerufen von 0x06CA6 (umgesetzt) |
-| 0x06FA5 | Basis 0x46e+0xAC5 | 228 | unbekannt | 1 | „Ihre Talentsuche war ein Erf“, „Ein junger Spieler stößt zu “, „Ihr Talentspäher gibt die“ |
-| 0x07C7E | Basis 0x46e+0x179E | 627 | unbekannt | 1 | gerufen von 0x54C9F (umgesetzt) |
-| 0x07EF1 | Basis 0x46e+0x1A11 | 122 | unbekannt | 2 | Globale 0x7C0, 0x48FB, 0x48FE, 0x9657 |
-| 0x08E5F | Basis 0x62c+0xD9F | 147 | unbekannt | 2 | gerufen von 0x08EF2 (umgesetzt) |
-| 0x091FF | Basis 0x62c+0x113F | 411 | unbekannt | 1 | gerufen von 0x08EF2 (umgesetzt) |
-| 0x0AD7A | Basis 0x62c+0x2CBA | 177 | unbekannt | 0 | „Pokal“ |
-| 0x0AE2B | Basis 0x902+0xB | 354 | unbekannt | 4 | gerufen von 0x28165 (Suchen Sie sich einen) |
-| 0x0AF8D | Basis 0x902+0x16D | 140 | unbekannt | 3 | gerufen von 0x28165 (Suchen Sie sich einen) |
-| 0x0B019 | Basis 0x902+0x1F9 | 205 | unbekannt | 2 | gerufen von 0x0B155 (Zu viele Fenster auf !) |
-| 0x0B0E6 | Basis 0x902+0x2C6 | 111 | unbekannt | 9 | gerufen von 0x25E30 (TORSCH.) |
-| 0x0B447 | Basis 0x902+0x627 | 352 | unbekannt | 24 | „Fenster_Zu: Fehler !“ |
-| 0x0B7B5 | Basis 0x902+0x995 | 69 | unbekannt | 40 | gerufen von 0x04C75 (dokumentiert) |
-| 0x0B830 | Basis 0x99f+0x40 | 146 | unbekannt | 17 | gerufen von 0x25B4A (Alles klar!) |
-| 0x0B954 | Basis 0x99f+0x164 | 350 | unbekannt | 2 | gerufen von 0x0BAB2 (dokumentiert) |
-| 0x0BE71 | Basis 0x99f+0x681 | 92 | unbekannt | 1 | gerufen von 0x0BAFB (dokumentiert) |
-| 0x0BEFA | Basis 0x99f+0x70A | 106 | unbekannt | 44 | gerufen von 0x041AC (GELIEHEN) |
-| 0x0BF64 | Basis 0x99f+0x774 | 113 | unbekannt | 3 | gerufen von 0x0C17D (kb\) |
-| 0x0C0B8 | Basis 0x99f+0x8C8 | 197 | unbekannt | 7 | „Na gut.“, „einlegen.“, „Auto-“ |
-| 0x0C5CE | Basis 0x99f+0xDDE | 347 | unbekannt | 56 | kb\22 |
-| 0x0C729 | Basis 0x99f+0xF39 | 96 | unbekannt | 13 | gerufen von 0x0C17D (kb\) |
-| 0x25644 | Ov 0xc0 (337B)+0x84 | 288 | unbekannt | 2 | gerufen von 0x0C17D (kb\) |
-| 0x25764 | Ov 0xc0 (337B)+0x1A4 | 459 | unbekannt | 1 | lädt kb\-Bilder |
-| 0x2592F | Ov 0xc0 (337B)+0x36F | 96 | unbekannt | 1 | Globale 0xDE2B, 0xDE31, 0xDE33 |
-| 0x2598F | Ov 0xc0 (337B)+0x3CF | 127 | unbekannt | 4 | gerufen von 0x0C17D (kb\) |
-| 0x25A0E | Ov 0xc0 (337B)+0x44E | 97 | unbekannt | 1 | Globale 0x49BA, 0x49BC, 0xDE65, 0xDE67 |
-| 0x25A6F | Ov 0xc0 (337B)+0x4AF | 70 | unbekannt | 1 | gerufen von 0x25B4A (Alles klar!) |
-| 0x25AB5 | Ov 0xc0 (337B)+0x4F5 | 68 | unbekannt | 2 | gerufen von 0x0C17D (kb\) |
-| 0x25B4A | Ov 0xc0 (337B)+0x58A | 615 | unbekannt | 15 | „Alles klar!“, „LIB-Error“, „GRAFIK-Error“ |
-| 0x26D9A | Ov 0xc8 (33FB)+0xF6A | 209 | unbekannt | 1 | „Ereignisse“, „Saisonende“ |
-| 0x28030 | Ov 0xd8 (3606)+0x0 | 170 | unbekannt | 1 | gerufen von 0x28165 (Suchen Sie sich einen) |
-| 0x28111 | Ov 0xd8 (3606)+0xE1 | 84 | unbekannt | 2 | gerufen von 0x28165 (Suchen Sie sich einen) |
-| 0x2A5F5 | Ov 0xe0 (3810)+0x415 | 173 | unbekannt | 2 | „ DM“ |
-| 0x2A6A2 | Ov 0xe0 (3810)+0x4C2 | 779 | unbekannt | 1 | gerufen von 0x2B0C0 (JWE Service GmbH) |
-| 0x2B008 | Ov 0xe0 (3810)+0xE28 | 184 | unbekannt | 1 | gerufen von 0x2B0C0 (JWE Service GmbH) |
-| 0x2CBC5 | Ov 0xe0 (3810)+0x29E5 | 97 | unbekannt | 1 | gerufen von 0x2CD1C (RAM: ) |
-| 0x2CC26 | Ov 0xe0 (3810)+0x2A46 | 246 | unbekannt | 1 | gerufen von 0x2CD1C (RAM: ) |
-| 0x2E2CA | Ov 0xe0 (3810)+0x40EA | 140 | unbekannt | 1 | gerufen von 0x2D5AE (!Serien) |
-| 0x2ECA0 | Ov 0xe0 (3810)+0x4AC0 | 635 | unbekannt | 2 | gerufen von 0x2D5AE (!Serien) |
-| 0x2F530 | Ov 0xe8 (3D11)+0x0 | 134 | unbekannt | 4 | gerufen von 0x2F5B6 (Gruppe) |
-| 0x2FB31 | Ov 0xe8 (3D11)+0x601 | 254 | unbekannt | 2 | gerufen von 0x2FC2F (Gruppe) |
-| 0x303D9 | Ov 0xe8 (3D11)+0xEA9 | 78 | unbekannt | 1 | gerufen von 0x30852 (dokumentiert) |
-| 0x31505 | Ov 0xe8 (3D11)+0x1FD5 | 228 | unbekannt | 2 | gerufen von 0x315E9 (dokumentiert) |
-| 0x3183C | Ov 0xe8 (3D11)+0x230C | 248 | unbekannt | 1 | gerufen von 0x3A88A (umgesetzt) |
-| 0x34F7D | Ov 0xe8 (3D11)+0x5A4D | 88 | unbekannt | 3 | gerufen von 0x34B76 (umgesetzt) |
-| 0x34FF9 | Ov 0xe8 (3D11)+0x5AC9 | 189 | unbekannt | 1 | „Oberliga“, „ GEGEN “ |
-| 0x35CBE | Ov 0xf0 (42E9)+0x77E | 159 | unbekannt | 1 | gerufen von 0x3901B (!    Penaltyschiessen   ) |
-| 0x35D5D | Ov 0xf0 (42E9)+0x81D | 239 | unbekannt | 7 | gerufen von 0x30365 (Freundschaftsspiel) |
-| 0x3672D | Ov 0xf0 (42E9)+0x11ED | 132 | unbekannt | 1 | gerufen von 0x36169 (dokumentiert) |
-| 0x367B1 | Ov 0xf0 (42E9)+0x1271 | 222 | unbekannt | 6 | gerufen von 0x05CA0 (2.Runde ) |
-| 0x369C7 | Ov 0xf0 (42E9)+0x1487 | 227 | unbekannt | 1 | gerufen von 0x37A62 (Spiele laufen) |
-| 0x36AAA | Ov 0xf0 (42E9)+0x156A | 179 | unbekannt | 2 | gerufen von 0x36B5D (umgesetzt) |
-| 0x386D1 | Ov 0xf0 (42E9)+0x3191 | 549 | genähert | 1 | gerufen von 0x541D9 (umgesetzt) |
-| 0x39AD6 | Ov 0xf8 (4711)+0x106 | 231 | unbekannt | 2 | gerufen von 0x39BBD (Schüler) |
-| 0x39BBD | Ov 0xf8 (4711)+0x1ED | 559 | unbekannt | 1 | „Schüler“ |
-| 0x39DEC | Ov 0xf8 (4711)+0x41C | 847 | unbekannt | 1 | gerufen von 0x54C9F (umgesetzt) |
-| 0x3A13B | Ov 0xf8 (4711)+0x76B | 272 | unbekannt | 1 | gerufen von 0x54C9F (umgesetzt) |
-| 0x3CA71 | Ov 0xf8 (4711)+0x30A1 | 78 | unbekannt | 2 | gerufen von 0x3C37C (Spieler in WM-Kader) |
-| 0x3CCEB | Ov 0xf8 (4711)+0x331B | 135 | unbekannt | 2 | gerufen von 0x06D7F (dokumentiert) |
-| 0x3D316 | Ov 0x100 (4A4C)+0x376 | 329 | unbekannt | 1 | „Überdachung“, „Der Stadion-Ausbau (“, „ist abgeschlossen.“ |
-| 0x3D45F | Ov 0x100 (4A4C)+0x4BF | 921 | unbekannt | 1 | „Überdachung“, „Sitzplätze“, „OHNE DACH“ |
-| 0x3E52B | Ov 0x100 (4A4C)+0x158B | 300 | unbekannt | 1 | „OHNE DACH“, „ Kosten: “, „ DM“ |
-| 0x3EB30 | Ov 0x100 (4A4C)+0x1B90 | 186 | unbekannt | 1 | gerufen von 0x2D5AE (!Serien) |
-| 0x40290 | Ov 0x108 (4D30)+0x2B0 | 212 | unbekannt | 2 | gerufen von 0x40364 (Platz mehr !) |
-| 0x425B6 | Ov 0x108 (4D30)+0x25D6 | 262 | unbekannt | 6 | gerufen von 0x26F20 (Erhaltene Prämien: ) |
-| 0x426BC | Ov 0x108 (4D30)+0x26DC | 380 | unbekannt | 9 | gerufen von 0x07169 (Verletzung außerhalb des) |
-| 0x42838 | Ov 0x108 (4D30)+0x2858 | 350 | unbekannt | 1 | Globale 0x375, 0xA70E |
-| 0x431CB | Ov 0x110 (502F)+0x7B | 249 | unbekannt | 1 | „Aus d. letzten Spielen:“ |
-| 0x432EC | Ov 0x110 (502F)+0x19C | 682 | unbekannt | 1 | „infofile“, „KEIN INFOFILE VORHANDEN !“, „TASTE!“ |
-| 0x435CD | Ov 0x110 (502F)+0x47D | 272 | unbekannt | 1 | gerufen von 0x437D5 (umgesetzt) |
-| 0x43714 | Ov 0x110 (502F)+0x5C4 | 193 | unbekannt | 1 | gerufen von 0x437D5 (umgesetzt) |
-| 0x45CD0 | Ov 0x110 (502F)+0x2B80 | 118 | unbekannt | 1 | gerufen von 0x28165 (Suchen Sie sich einen) |
-| 0x45D46 | Ov 0x110 (502F)+0x2BF6 | 126 | unbekannt | 24 | kb\22 |
-| 0x463CC | Ov 0x118 (52F7)+0x3CC | 549 | unbekannt | 1 | „Kontostand:“, „ DM“ |
-| 0x47BCD | Ov 0x118 (52F7)+0x1BCD | 211 | unbekannt | 1 | gerufen von 0x47F2B (Grundwert) |
-| 0x47CA0 | Ov 0x118 (52F7)+0x1CA0 | 78 | unbekannt | 1 | gerufen von 0x47F2B (Grundwert) |
-| 0x48E62 | Ov 0x118 (52F7)+0x2E62 | 536 | unbekannt | 1 | gerufen von 0x47F2B (Grundwert) |
-| 0x490DE | Ov 0x118 (52F7)+0x30DE | 283 | unbekannt | 3 | „Manager“ |
-| 0x4981E | Ov 0x118 (52F7)+0x381E | 255 | unbekannt | 1 | gerufen von 0x494EF (dokumentiert) |
-| 0x4B127 | Ov 0x120 (57D6)+0x37 | 329 | unbekannt | 1 | gerufen von 0x54C9F (umgesetzt) |
-| 0x4B270 | Ov 0x120 (57D6)+0x180 | 74 | unbekannt | 5 | gerufen von 0x07169 (Verletzung außerhalb des) |
-| 0x4B2F6 | Ov 0x120 (57D6)+0x206 | 766 | unbekannt | 3 | „Januar“, „$ bietet Ihnen an, $^Jahre z“ |
-| 0x4B9CD | Ov 0x120 (57D6)+0x8DD | 139 | unbekannt | 1 | gerufen von 0x4B5F4 (Keine Nachricht für Sie ) |
-| 0x4BA58 | Ov 0x120 (57D6)+0x968 | 628 | unbekannt | 5 | gerufen von 0x2B0C0 (JWE Service GmbH) |
+| 0x39DEC | Ov 0xf8 (4711)+0x41C | 847 | genähert | 1 | gerufen von 0x54C9F (umgesetzt) |
+| 0x3A13B | Ov 0xf8 (4711)+0x76B | 272 | genähert | 1 | gerufen von 0x54C9F (umgesetzt) |
+| 0x445E0 | Ov 0x110 (502F)+0x1490 | 1128 | genähert | 2 | „.Spieltag“, „Vor dem ersten Spieltag.“ |
+| 0x4907A | Ov 0x118 (52F7)+0x307A | 100 | genähert | 2 | gerufen von 0x07169 (Verletzung außerhalb des) |
+| 0x4BA58 | Ov 0x120 (57D6)+0x968 | 628 | genähert | 5 | gerufen von 0x2B0C0 (JWE Service GmbH) |
 | 0x4BCCC | Ov 0x120 (57D6)+0xBDC | 105 | genähert | 11 | „Na gut.“ |
-| 0x4BD7E | Ov 0x120 (57D6)+0xC8E | 104 | unbekannt | 6 | gerufen von 0x34FF9 (Oberliga) |
-| 0x4BEBD | Ov 0x120 (57D6)+0xDCD | 309 | unbekannt | 13 | gerufen von 0x041AC (GELIEHEN) |
-| 0x4BFF2 | Ov 0x120 (57D6)+0xF02 | 420 | genähert | 2 | gerufen von 0x4C196 (umgesetzt) |
 | 0x4C246 | Ov 0x120 (57D6)+0x1156 | 1136 | genähert | 11 | „An Alle:“ |
-| 0x4C6B6 | Ov 0x120 (57D6)+0x15C6 | 145 | unbekannt | 1 | gerufen von 0x26F20 (Erhaltene Prämien: ) |
-| 0x4CCB4 | Ov 0x120 (57D6)+0x1BC4 | 146 | unbekannt | 1 | gerufen von 0x4C747 (Wer weiß...) |
-| 0x4E5D5 | Ov 0x128 (59E3)+0x12E5 | 498 | unbekannt | 1 | „Noch keine Eintragung.“ |
-| 0x4F1F1 | Ov 0x128 (59E3)+0x1F01 | 308 | unbekannt | 2 | „Platz, Stärke “ |
-| 0x4F325 | Ov 0x128 (59E3)+0x2035 | 463 | unbekannt | 1 | gerufen von 0x50B45 (umgesetzt) |
-| 0x4F5A8 | Ov 0x128 (59E3)+0x22B8 | 485 | unbekannt | 1 | gerufen von 0x50283 (umgesetzt) |
-| 0x51049 | Ov 0x128 (59E3)+0x3D59 | 234 | unbekannt | 1 | gerufen von 0x37A62 (Spiele laufen) |
-| 0x51133 | Ov 0x128 (59E3)+0x3E43 | 211 | unbekannt | 1 | gerufen von 0x50283 (umgesetzt) |
-| 0x51AAF | Ov 0x128 (59E3)+0x47BF | 319 | unbekannt | 3 | gerufen von 0x4D385 ( Punkte) |
-| 0x51F3D | Ov 0x130 (5E73)+0xAD | 173 | unbekannt | 1 | „Carpe diem !“ |
-| 0x51FEA | Ov 0x130 (5E73)+0x15A | 422 | unbekannt | 3 | gerufen von 0x0A484 (umgesetzt) |
-| 0x52190 | Ov 0x130 (5E73)+0x300 | 190 | unbekannt | 2 | gerufen von 0x0A484 (umgesetzt) |
-| 0x5224E | Ov 0x130 (5E73)+0x3BE | 158 | unbekannt | 2 | gerufen von 0x52520 (Chance:) |
-| 0x522EC | Ov 0x130 (5E73)+0x45C | 150 | unbekannt | 3 | gerufen von 0x37A62 (Spiele laufen) |
-| 0x52382 | Ov 0x130 (5E73)+0x4F2 | 174 | unbekannt | 2 | gerufen von 0x52520 (Chance:) |
-| 0x52430 | Ov 0x130 (5E73)+0x5A0 | 240 | unbekannt | 1 | gerufen von 0x52520 (Chance:) |
-| 0x52BD6 | Ov 0x130 (5E73)+0xD46 | 1630 | unbekannt | 3 | „ min.“ |
-| 0x53234 | Ov 0x130 (5E73)+0x13A4 | 211 | unbekannt | 2 | gerufen von 0x51E90 (dokumentiert) |
-| 0x53307 | Ov 0x130 (5E73)+0x1477 | 201 | unbekannt | 1 | gerufen von 0x52BD6 ( min.) |
-| 0x533D0 | Ov 0x130 (5E73)+0x1540 | 131 | unbekannt | 2 | gerufen von 0x51E90 (dokumentiert) |
-| 0x53453 | Ov 0x130 (5E73)+0x15C3 | 105 | unbekannt | 4 | gerufen von 0x37A62 (Spiele laufen) |
-| 0x534BC | Ov 0x130 (5E73)+0x162C | 76 | unbekannt | 1 | gerufen von 0x38D96 (dokumentiert) |
-| 0x5353C | Ov 0x130 (5E73)+0x16AC | 1725 | unbekannt | 4 | kb\19; „(ausw.)“ |
-| 0x53BF9 | Ov 0x130 (5E73)+0x1D69 | 94 | unbekannt | 1 | gerufen von 0x53C57 ( ZUSCHAUER) |
-| 0x5434C | Ov 0x130 (5E73)+0x24BC | 212 | unbekannt | 2 | gerufen von 0x38D96 (dokumentiert) |
-| 0x56EDD | Ov 0x130 (5E73)+0x504D | 523 | unbekannt | 1 | gerufen von 0x567C8 (kb\) |
-| 0x570E8 | Ov 0x130 (5E73)+0x5258 | 137 | unbekannt | 2 | „.MINUTE“ |
 | 0x575C3 | Ov 0x138 (63A2)+0x143 | 421 | unbekannt | 1 | „toreÖ“ |
-| 0x57CFB | Ov 0x138 (63A2)+0x87B | 468 | unbekannt | 1 | „ DM“ |
-| 0x57ECF | Ov 0x138 (63A2)+0xA4F | 755 | unbekannt | 1 | „Kontostand:“, „ DM“ |
-| 0x581C2 | Ov 0x138 (63A2)+0xD42 | 583 | unbekannt | 1 | „Kurs:“, „ St.“, „ DM“ |
-| 0x58409 | Ov 0x138 (63A2)+0xF89 | 441 | unbekannt | 1 | „ St.“, „ DM“ |
-| 0x59D71 | Ov 0x138 (63A2)+0x28F1 | 78 | unbekannt | 1 | gerufen von 0x59DBF (Kosten pro Woche:) |
-| 0x5A820 | Ov 0x140 (66C3)+0x0 | 66 | unbekannt | 1 | gerufen von 0x4CD46 (@QCCG_BDQRVBQWU (XOR 0xd) |
-| 0x5AA34 | Ov 0x140 (66C3)+0x214 | 108 | unbekannt | 3 | gerufen von 0x5AAA0 (umgesetzt) |
-| 0x5ACA0 | Ov 0x140 (66C3)+0x480 | 688 | unbekannt | 2 | gerufen von 0x28165 (Suchen Sie sich einen) |
-| 0x5B661 | Ov 0x140 (66C3)+0xE41 | 892 | unbekannt | 1 | „.Spieltag“, „Bundesliga“, „spielstand“ |
-| 0x5E8B0 | Ov 0x140 (66C3)+0x4090 | 131 | unbekannt | 1 | gerufen von 0x5DBE5 (.HOK) |
 
 <!-- END generiert -->

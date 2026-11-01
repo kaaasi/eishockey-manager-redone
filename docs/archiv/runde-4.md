@@ -11,7 +11,7 @@ R4-02 (#109) behoben; P3-Befunde H2-01–H2-04 (#114–#117) und das Zurückgest
 ## Runde 4 – Lücken bis v0.9 ohne Live-Spiel (ab 29.10.2026)
 
 Runde 3 (Kader, Wettbewerbe, Finanzen, Speichern, Spielmodus „nur Weltkugel“):
-[archiv/runde-3.md](archiv/runde-3.md); Runden 1–2: [archiv/runden-1-2.md](archiv/runden-1-2.md).
+[archiv/runde-3.md](runde-3.md); Runden 1–2: [archiv/runden-1-2.md](runden-1-2.md).
 **Base für alle Spuren:** aktueller `main` (≥ diesem Plan); den tatsächlichen Base-SHA trägt die Spur in ihren Draft-PR ein.
 Weiterhin verbindlich: Mehrsaisonprobe für jede Spur, die Saisonwechsel, Kader oder Geld berührt; Spielstand-Schema
 mit Version und Migration für jeden neuen Zustand. Die Spuren sind unabhängig und laufen parallel; danach eine
@@ -64,7 +64,7 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
   (em.exe: beide Tabellen-Kacheln öffnen dieselben Bildschirme wie die Paarungen). Highscore folgt in eigenem PR
   (`paket/tabellen-highscore-bestenliste`).
 - **Status Teil 2 (Claude Code, 29.10.2026):** PR #111 `paket/tabellen-highscore-bestenliste`, Base `caf9700`, fertig zur
-  Prüfung: Highscore ([highscore.md](highscore.md)), Übersicht „DEB-Pokalspiele“ (#108), Hinweis „(Neuer)“ (#109).
+  Prüfung: Highscore ([highscore.md](../highscore.md)), Übersicht „DEB-Pokalspiele“ (#108), Hinweis „(Neuer)“ (#109).
   Offen: [APPROX] Spielerwerte (0x49D36), Europa-Stufe/Pokalbytes 2–3, Penalty-vs-Verlängerung in der DEB-Übersicht (siehe PR).
 
 ### Spur `speichern-reihenfolge` – Aufzählungsreihenfolge nach Remove/Add (#80)
@@ -96,7 +96,7 @@ Head `38f0e70`), #104 (`tabellen-highscore` **Teil 1**: Pokaltabellen, Sperren W
 - Doku `spielstand.md`: Migration 3 → 4 (aus #103) in der Tabelle ergänzt; Hinweis aus #105 auf Schema 4 angepasst.
 - Bildschirmfotos `wettbewerbe wm nationalteam weltkugel nationalteam-2 tabellen-pokale speichern`: ohne Fehler;
   alle außer `speichern` (zufälliges Verzeichnis, bekannt) bytegleich mit dem Stand der jeweiligen Spur.
-- Review [integration-runde-4](reviews/2026-10-29-integration-runde-4.md): **R4-01 (P2, #108)** – „Tabelle DEB-Pokal“
+- Review [integration-runde-4](../reviews/2026-10-29-integration-runde-4.md): **R4-01 (P2, #108)** – „Tabelle DEB-Pokal“
   führt im Original zur Übersicht „DEB-Pokalspiele“ (Datei 0x32E23), nicht zur Auslosung. Entscheidung des Nutzers
   (29.10.2026): Kachel bis dahin wieder **Platzhalter** (Integrations-Branch), die Übersicht baut `tabellen-highscore`
   Teil 2 mit. **R4-02 (P3, #109)** – Hinweis „(Neuer)“ bei vier Managern auf gesperrte Kachel → ebenfalls Teil 2.

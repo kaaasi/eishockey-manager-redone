@@ -912,6 +912,9 @@ Teil 2 (Nationalteam):
     im Remake nicht umgesetzt.
 
 Teil 4 (#166, Oberliga-Austausch samt Managervereinen), Disassembly `ndisasm -b 16`, Dateiadressen – **Beleglage, nicht umgesetzt**.
+**Berichtigt in Runde 10** ([analyse/re-saisonwechsel.md](analyse/re-saisonwechsel.md)): Der Saisonwechsel tauscht einen
+ausscheidenden Managerverein zweimal (Datei 0x562F2 und Datei 0x5636D); der Verein bleibt in der Oberliga, der Manager
+bekommt beide Pfeile und das Konto 400.000 DM. Einen Manager ohne Liga gibt es im Original nicht.
 
 * **Ablauf 0x56137–0x5636D** (Schleife über die drei Tauschgruppen [bp−1] = 0, 1, 2; Anzahl je Gruppe DGROUP 0x7B9 + Gruppe):
   Gruppen 0/1 wie in Teil 1 (Paare aus 0xCF20/0xCD94). Gruppe 2 (0x56238): ausscheidend [bp−0x13] = Platzliste
@@ -923,18 +926,15 @@ Teil 4 (#166, Oberliga-Austausch samt Managervereinen), Disassembly `ndisasm -b 
   (Symbol Abstieg). **Nur Gruppe 2** (0x562C6 `cmp [bp−1],2; jc`): Konto (DGROUP 0x97EA + 0x1AF · Manager, 32 Bit) =
   0x00124F80 = 1.200.000 Drittel = **400.000 DM** (gesetzt, nicht gebucht). Danach Tausch `0xF0:0x4D(aus, ein, 1)` = 0x36169:
   Vereinssätze, Spielernummern (+0x1D) und Verein des Managers (DGROUP 0x966F + 0x1AF · Manager) wechseln mit – der Manager
-  bleibt bei seinem Verein, der jetzt einen Index 36–41 ohne Liga hat.
+  bleibt bei seinem Verein; der zweite Tausch (Datei 0x5636D) hebt den ersten auf, der Verein bleibt in der Oberliga.
 * **Managerverein rückt nach (0x562FA–0x56334):** Gehört der nachrückende Verein einem Manager (Bit 0x04 frei), Bit 0x01 (Aufstieg).
-  Ein Manager ohne Liga kann also über den Zufallszug 36–41 wieder in die Oberliga kommen.
-* **Bit 0x04** = Zwangsabstieg wegen Schulden (0x55F17–0x55F87): Konto ≤ −2.000.000 Drittel (0xFFE17B80), Liga &lt; 2, weder Meister
+  Wegen des zweiten Tauschs bekommt der ausscheidende Manager damit beide Pfeile (Bit 0x02 und 0x01).
+* **Bit 0x04** = Zwangsabstieg wegen Schulden (0x55F17–0x55F87): Konto &lt; −2.000.000 Drittel (0xFFE17B80), Liga &lt; 2, weder Meister
   noch Europapokalsieger (Status & 0x28 = 0) und höchstens zwei je Liga ([bp−0x18 + Liga] &lt; 2); der Verein wird in die
   Abstiegspaare eingesetzt (0x55F93–0x560C5). Damit erklärt sich die Ausnahme „Bit 0x04 nicht gesetzt“ in 0x56287 und 0x562FA.
 * **Liga-Stufe des Managers** danach 0x563C0–0x56409: (Verein ≥ [0x7C1]) + (Verein ≥ [0x7C2]) – höchstens 2, ein Verein 36–41 gilt
   als Oberliga-Stufe (Kostenstufe, `finanzen-rekonstruktion.md`).
-* **Nicht belegt:** was eine Saison ohne Liga für den Manager bedeutet (Spieltage ohne Ligaspiel, DEB-Pokal-Meldung, Hauptmenü,
-  Tabellen, „Weniger als neun Spieler“, Entlassung). Weder Videostelle noch Spielstand mit einem Manager auf 36–41 ist bekannt;
-  das Remake kennt Managervereine ohne Liga nicht (`Club.League` = null nur für Computervereine). Umsetzung nur mit diesem Beleg
-  und Anschlüssen in fremden Dateien (Finanzen, Hauptmenü, Statistiken) – siehe PR.
+* **Entfallen:** die frühere Frage „Saison ohne Liga“ (Runde 10, siehe oben); DOSBox-Beleg mit `FILE13.HOK` steht aus.
 
 ## Spielberechnung abschließen (Spur `spielberechnung-komplett`, Runde 9)
 
@@ -957,3 +957,16 @@ Ereignis 4 → **Verletzung 0x05B1A** (Tabellen DGROUP 0x181 Wochen, 0x1B9 Häuf
 Tageslauf 0x07169 an 0x74A9), **Heilung 0x7C12** (wöchentlich), Versicherung 0x07089 (Zahlung +0x30 · 4, nicht umgesetzt);
 **Torschütze 0x541D9 → 0x386D1** je Abschluss der Managerpaarung; Zählung 0x4BE17 (Modus 0 belegt, 1 Aufstellung, 2
 Reserve); Gruppe 0x4180 (Rollenwert / 25 ≤ 2). Einzelheiten: [spielberechnung.md](spielberechnung.md) §17.
+
+## Runde 10: Analysen der unbekannten Teile (Sonderrunde)
+
+Die Analysen der Runde 10 stehen je Spur in `docs/analyse/` (Fundstellen, Regeln, Abgleich mit dem Remake und Kandidaten
+für Runde 11); die Funktionskarte zählt sie mit ([re-abdeckung.md](re-abdeckung.md)).
+
+| Spur | Datei | Inhalt |
+|---|---|---|
+| `re-geld` | [analyse/re-geld.md](analyse/re-geld.md) | Stadionbau, Börse und Konto, Transfermarkt-Konto, Grundwert, Jugendförderung; Entscheidungen Nutzer E1/E2 |
+| `re-meldungen` | [analyse/re-meldungen.md](analyse/re-meldungen.md) | Meldungen und Fragen, Infofile, Tabellenkurve, Tagesablauf, Bildlader, Fensterverwaltung |
+| `re-saisonwechsel` | [analyse/re-saisonwechsel.md](analyse/re-saisonwechsel.md) | Saisonende, Oberliga-Austausch mit Managervereinen (#166, berichtigt Teil 4 oben), DOSBox-Beleg |
+| `re-livespiel` | [analyse/re-livespiel.md](analyse/re-livespiel.md) | Livespiel: Spieluhr, Anzeigetafel, Reporter, Torszenen, Spielende (Grundlage für `livespiel`) |
+| `re-rest` | [analyse/re-rest.md](analyse/re-rest.md) | übrige Funktionen des Spielcodes (u. a. Talentsuche, Hilfen der Spieltage, Nachrichten) |

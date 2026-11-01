@@ -10,8 +10,8 @@ Inhalt unverändert bis auf die Überschrift. Ergebnisse und Reviews: `docs/revi
 
 ## Runde 5 – Restbefunde und Zurückgestelltes vor dem Live-Spiel (ab 29.10.2026)
 
-Runde 4 (Nationalteam-Aufstellung/-Taktik, Pokaltabellen, Highscore, Kachelsperren, #80): [archiv/runde-4.md](archiv/runde-4.md);
-Runde 3: [archiv/runde-3.md](archiv/runde-3.md); Runden 1–2: [archiv/runden-1-2.md](archiv/runden-1-2.md).
+Runde 4 (Nationalteam-Aufstellung/-Taktik, Pokaltabellen, Highscore, Kachelsperren, #80): [archiv/runde-4.md](runde-4.md);
+Runde 3: [archiv/runde-3.md](runde-3.md); Runden 1–2: [archiv/runden-1-2.md](runden-1-2.md).
 **Ziel der Runde (Entscheidung Nutzer, 29.10.2026):** offene Befunde schließen und die zurückgestellten Punkte klären,
 soweit sie ohne Live-Spiel belegbar sind. Danach bleiben bis v1.0 nur `livespiel` und die davon abhängigen Statistiken.
 **Base für alle Spuren:** aktueller `main` (≥ diesem Plan); den tatsächlichen Base-SHA trägt die Spur in ihren Draft-PR ein.
@@ -29,7 +29,7 @@ getrennten Dateien; `taktik-verein` und `bundestrainer-modus4` können sich nur 
 
 ### Spur `highscore-nacharbeit` – P3-Befunde der Bestenliste (#114, #115, #117)
 
-- **Ziel:** die Befunde H2-01, H2-02, H2-04 aus [Review Runde 4 Teil 2](reviews/2026-10-29-integration-runde-4-teil-2.md) schließen.
+- **Ziel:** die Befunde H2-01, H2-02, H2-04 aus [Review Runde 4 Teil 2](../reviews/2026-10-29-integration-runde-4-teil-2.md) schließen.
 - **Abnahme:** (1) H2-01: Titel „Highscore“ pixelgleich mit `oberflaeche_0844–0855` (Titelpixel x 117 … 202) – Korrektur nur
   für diesen Aufruf oder in `CompetitionWidgets.Centered` mit Nachweis, dass alle übrigen Bildschirmfotos bytegleich
   bleiben – oder `[APPROX]` mit Begründung; automatischer Pixeltest des Titels; Aussage „pixelgenau“ in
@@ -144,7 +144,7 @@ Head `4432bcc`), #122 (`paarungen-liga`, `9b3b13b`), #119 (`debpokal-auslosung`,
   Taktik und bytegleichem Sichern/Laden im Zug und nach dem Saisonwechsel. Grün, kein weiterer Integrationsfehler.
 - Bildschirmfotos `debpokal-auslosung paarungen-liga bundestrainer-modus4 highscore nationalteam-2 tabellen-pokale
   wettbewerbe weltkugel`: ohne Fehler; alle 36 Bilder der Spurabläufe bytegleich mit dem Stand der jeweiligen Spur.
-- Review [integration-runde-5](reviews/2026-10-29-integration-runde-5.md): **R5-01 (P2, #130)** – Schema 5 aus der Spur
+- Review [integration-runde-5](../reviews/2026-10-29-integration-runde-5.md): **R5-01 (P2, #130)** – Schema 5 aus der Spur
   `bundestrainer-modus4` (mit `_nationalTurn`, ohne `_dressed`) ließ sich nicht laden. Behoben: Migration 5 → 6 holt
   für diese Form den Schritt 4 → 5 nach, offener Zug bleibt; Regressionstest `IntegrationRunde5MigrationTests` (rot → grün).
 - Neue Befunde aus #123: #125 (Statusbit 0x40 am Saisonende), #126 (Highscore-Schlüssel 0x7530 im Original unerreichbar),
