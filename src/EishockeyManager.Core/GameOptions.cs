@@ -104,17 +104,22 @@ public sealed class GameOptions
     };
 
     /// <summary>
-    /// Weg eines Pokalspiels <b>ohne</b> Managerverein: [ORIGINAL] Spieltagsablauf Datei 0x3702E–0x37085 – bei
-    /// eingeschaltetem Anzeigeschalter (Wettbewerbscode DGROUP 0xD0C2 6 → 0x227, 3/5 → 0x228, 8 → 0x229) die Minutenschleife
-    /// mit Anzeige (0x37088), sonst der schnelle Weg 0x3731F. Die WM-Endrunde (Code 10) prüft keinen Schalter (immer schnell,
-    /// Aufrufer). [APPROX] Play-offs/Aufstiegsrunde (Code 1) hängen im Original am Feld „Ergebnisse“ der Meldungsmatrix
-    /// (0x37058–0x37085, voreingestellt aus → schneller Weg); im Remake liefert die Methode für sie <c>false</c> und der
-    /// Aufrufer rechnet sie Minute für Minute (R9S-03, #351).
+    /// Weg eines Spiels <b>ohne</b> Managerverein im Spieltagsablauf: [ORIGINAL] Datei 0x3702E–0x37085 – Pokale bei
+    /// eingeschaltetem Anzeigeschalter (Wettbewerbscode DGROUP 0xD0C2 6 → 0x227, 3/5 → 0x228, 8 → 0x229), Play-offs und
+    /// Aufstiegsrunde (Code 1, 0x37058) bei eingeschaltetem Feld „Ergebnisse“ einer Liga der Meldungsmatrix (0x21E/0x221/0x224)
+    /// die Minutenschleife mit Anzeige (0x37088), sonst der schnelle Weg 0x3731F. Die WM-Endrunde (Code 10) prüft keinen
+    /// Schalter (immer schnell, Aufrufer). Liga: ohne Bedeutung (<c>false</c>; die Liga rechnet immer Minute für Minute).
     /// <para>
-    /// Aufrufer: <c>MatchEngine.PlayWithEvents</c> (<c>MatchEngine.Live.cs</c>), angeschlossen in der Integration Runde 9.
+    /// Aufrufer: <c>MatchEngine.PlayWithEvents</c> (<c>MatchEngine.Live.cs</c>), angeschlossen in der Integration Runde 9;
+    /// Play-offs nach Entscheidung Nutzer 01.11.2026 (#351).
     /// </para>
     /// </summary>
-    public bool CupMatchUsesMinuteLoop(MatchCompetition competition) => ShowsCup(competition) ?? false;
+    public bool CupMatchUsesMinuteLoop(MatchCompetition competition) => competition switch
+    {
+        MatchCompetition.Playoff or MatchCompetition.Relegation =>
+            Enum.GetValues<League>().Any(league => ShowsReport(ReportKind.Results, league)),
+        _ => ShowsCup(competition) ?? false,
+    };
 
     /// <summary>Spielgeschwindigkeit setzen, auf 0–80 in Zehnerschritten gerundet.</summary>
     public void SetMatchSpeed(int speed) => MatchSpeed = Math.Clamp(speed / 10 * 10, 0, MaxMatchSpeed);

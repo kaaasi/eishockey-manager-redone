@@ -175,6 +175,10 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             // Teil 5 (transfer-vertraege-komplett): Zinsen für ein negatives Konto am Ende der Vorsaison stehen im Buch der neuen
             // Saison, auch wenn die Ablöse beim Saisonwechsel das Konto wieder ins Plus bringt (Seed 17, Saison 4).
             long previousSeasonEnd = manager.Money;
+            // #351 (Leitstelle): Der Zinslauf des letzten Monats der Vorsaison wird erst am Monatsletzten gebucht, also im Buch
+            // der neuen Saison (0x3F02C). Deshalb zählen die Tagesstände der letzten 31 Tage der Vorsaison mit (vorher nur der
+            // Endstand; Seed 3, Originaldaten, Bundesliga passiv: im April negativ, am Saisonende positiv).
+            var recentBalances = new Queue<long>();
             for (var year = 0; year < 4; year++)
             {
                 var club = game.Clubs[manager.ClubIndex];
@@ -190,7 +194,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 var maxRoster = roster;
                 var minRoster = roster;
                 long maxContracts = game.Ads(manager).MonthlyIncome;
-                var seasonLowest = Math.Min(manager.Money, previousSeasonEnd);
+                var seasonLowest = Math.Min(Math.Min(manager.Money, previousSeasonEnd), recentBalances.DefaultIfEmpty(0).Min());
                 for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
                 {
                     Assert.True(guard < 1000, "Saisonende nicht erreicht");
@@ -226,6 +230,9 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     settledHomeGames = homeGames;
                     lowest = Math.Min(lowest, manager.Money);
                     seasonLowest = Math.Min(seasonLowest, manager.Money);
+                    recentBalances.Enqueue(manager.Money);
+                    if (recentBalances.Count > 31)
+                        recentBalances.Dequeue();
                     highest = Math.Max(highest, manager.Money);
                 }
                 if (!active && game.Phase == SeasonPhase.GameOver)

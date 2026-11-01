@@ -227,5 +227,15 @@ public class SquadLifecycleTests
             Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, pool, pool.Price * 135 / 100, loan: false));
             pool.Player.ContractYears = 2; // wie die Startverträge; die Ankündigungsprobe bleibt bei den übrigen Spielern
         }
+        // #351 (Leitstelle): Ob genug Poolspieler bis 30 auf der Liste stehen, hängt am Zufall des Listenwechsels; mit dem
+        // geänderten Verlauf (Play-offs ohne Manager über den schnellen Weg) fehlten nach sechs Wechseln (Seed 3) Spieler.
+        // Dann auch Poolspieler bis 32 kaufen (Altersgrenze 36 der Probe) – Vorbedingung ist ein voller Kader des aktiven Managers.
+        while (OwnClub(game).Players.Count < 20
+               && game.TransferMarket.Listings.FirstOrDefault(l => l.FromPool && l.Player.Age <= 32) is { } older)
+        {
+            manager.Money = Math.Max(manager.Money, older.Price * 2);
+            Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, older, older.Price * 135 / 100, loan: false));
+            older.Player.ContractYears = 2;
+        }
     }
 }

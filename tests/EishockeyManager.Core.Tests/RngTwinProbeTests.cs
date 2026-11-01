@@ -122,16 +122,17 @@ namespace EishockeyManager.Core.Tests;
 /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand aller fünf Spuren neu ermittelt; die Ursachen oben
 /// wirken zusammen, dazu der Minutenweg der Pokalspiele ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an,
 /// 0x3702E).
+/// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "3C53470D3638F3F4")]
-    [InlineData(true, 3, "5CEAC04EA3360124")]
-    [InlineData(false, 11, "C98E7C1980CFAA41")]
-    [InlineData(true, 11, "2BD9CE3FA0A3D417")]
+    [InlineData(false, 3, "0B378A46286A43C1")]
+    [InlineData(true, 3, "67C82ECC92477F1D")]
+    [InlineData(false, 11, "33106723CBD0B865")]
+    [InlineData(true, 11, "C54F0CCBFD36465B")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -139,8 +140,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "E71C0242492FB148")]
-    [InlineData(true, "6605F8402FDD86A2")]
+    [InlineData(false, "161AEB7D0C3C6BAC")]
+    [InlineData(true, "7C6194C31A773289")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
