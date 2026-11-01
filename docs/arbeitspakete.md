@@ -59,7 +59,8 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
   48E62h; Jugendförderung 39DECh und 3A13Bh (genähert, Restlücke `finanzen-rest`).
 - **Abgleich:** `FinanceStocks.cs`, `FinanceYouth.cs`, Stadion- und Kontobuchungen über `GameState.Book`,
   `docs/finanzen-rekonstruktion.md`.
-- **Modell:** Claude Opus 5.5. **Status:** wartet auf Go.
+- **Modell:** Claude Opus 5.5. **Status:** Analyse fertig, PR #375 (`docs/analyse/re-geld.md`, Kandidaten G1–G8;
+  48E62h ist Taktik, nicht Geld).
 
 ### Spur `re-meldungen` – Meldungen, Tagesablauf, Fenster
 
