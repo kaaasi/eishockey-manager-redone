@@ -26,25 +26,31 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 ### Ablauf: Teile und Selbstfortsetzung (Entscheidung Nutzer 01.11.2026)
 
 - Jede Spur hat eine **geordnete Liste von Teilen**. Ein Lauf arbeitet die Teile der Reihe nach ab; jeder fertige Teil ist
-  ein eigener PR (Branch `paket/<spur>-<n>`, gestapelt auf dem vorigen Teil der Spur oder auf `main`) mit Übergabe.
-- **Selbstfortsetzung:** Bleiben Teile offen, legt der Lauf vor dem Ende eine geplante Aufgabe an (`create_trigger`,
-  `run_once_at` etwa 10 Minuten später, gleiches Modell, Prompt = Startaufruf der Spur mit „Fortsetzung n von 3, Übergabe in
-  PR #…“). **Höchstens drei Fortsetzungen je Spur**; danach entscheidet der Nutzer. Kein Lauf startet eine fremde Spur.
+  ein eigener PR (Branch `paket/<spur>-<n>`) mit Übergabe. Stapelregel, PR-Base, Rebase und Fortsetzung regelt verbindlich
+  [vorlagen/spur-start.md](vorlagen/spur-start.md), Abschnitt „Teile und Fortsetzung“.
+- **Selbstfortsetzung:** Bleiben Teile offen, legt der Lauf vor dem Ende eine einmalige geplante Aufgabe an (Ablauf und
+  Prompt-Format in `spur-start.md`). **Höchstens drei Fortsetzungen je Spur**; danach oder bei einem blockierten Teil
+  entscheidet der Nutzer (PR-Label `spur-wartet`). Kein Lauf startet eine fremde Spur. Die Erlaubnis steht im Startaufruf
+  der Leitstelle.
 - Ein Teil darf nur mit grünem `tools/pruefen.sh --schnell` übergeben werden. Werden `BoerseStartTests`/`FinanceWerbungTests`
   durch geänderten Zufallsverbrauch rot, nennt die Spur das im PR (blockiert nicht); diese Dateien ändert nur die Leitstelle.
 - Die Leitstelle integriert **je Spur am Ende** (alle Teile), nicht nach jedem Teil. Integrationsfolge: `finanzen-rest` →
-  `optionen-wirkung` → `wettbewerbe-komplett` → `transfer-vertraege-komplett` → `spielberechnung-komplett` zuletzt.
+  `wettbewerbe-komplett` → `optionen-wirkung` (kleine Abfragen in `Season.cs`/`SeasonFlow.cs` nach den großen Änderungen)
+  → `transfer-vertraege-komplett` → `spielberechnung-komplett` zuletzt.
 
 ### Zuständigkeit für gemeinsame Dateien
 
 - `Core/MatchEngine*.cs`, `Core/Squad.Strength.cs`, `Core/Squad.Tactics.cs`, `Core/StadiumStatistics.cs`,
-  `Core/StatisticsStrength.cs`, `UI/Screens/Statistics/StrengthScreen.cs`: allein `spielberechnung-komplett`.
+  `Core/StatisticsStrength.cs`, `Core/StatisticsClub.cs`, `Core/StatisticsPlayers.cs`, `UI/Screens/Statistics/*` außer
+  `HighscoreScreen.cs`: allein `spielberechnung-komplett`.
 - `Core/Transfer*.cs`, `Core/Player.Contract.cs`, `Core/Player.Value.cs`, `UI/Screens/Team/TransferScreen.cs`,
-  `TransferDialog.cs`, `ContractsScreen.cs`: allein `transfer-vertraege-komplett`.
+  `TransferDialog.cs`, `ContractsScreen.cs`, `UI/Screens/SeasonEnd*.cs`: allein `transfer-vertraege-komplett`.
 - `Core/Season.cs`, `Core/Playoffs.cs`, `Core/CupsGroup.cs`, `Core/Cups*.cs` außer `CupsNationalMode.cs`, `Core/SeasonFlow.cs`,
-  `Core/SeasonRecord.cs`, `UI/Screens/TableScreen.cs`, `UI/Screens/Competitions/*`: allein `wettbewerbe-komplett`.
-- `Core/CupsNationalMode.cs`, `Core/GameSetup.cs`, `UI/Screens/SettingsScreen.cs`, `Settings.cs`, `CalendarScreen.cs`,
-  `SetupScreen.cs`: allein `optionen-wirkung`.
+  `Core/SeasonRecord.cs`, `Core/StatisticsHistory.cs`, `UI/Screens/TableScreen.cs`, `UI/Screens/Competitions/*`: allein
+  `wettbewerbe-komplett`. **Ausnahme:** `optionen-wirkung` darf in `Season.cs` (Tagestabelle) und `SeasonFlow.cs` nur die
+  Abfrage der Spielstand-Schalter und den Moduswechsel einfügen (kleine, im PR benannte Stellen); `Cups*.cs` ändert sie nicht.
+- `Core/CupsNationalMode.cs`, `Core/GameSetup.cs`, neue Datei `Core/GameOptions.cs`, `UI/Screens/SettingsScreen.cs`,
+  `Settings.cs`, `CalendarScreen.cs`, `SetupScreen.cs`: allein `optionen-wirkung`.
 - `Core/FinanceYouth.cs`, `Core/FinanceSponsors.cs`, `Core/FinanceStocks.cs`, `UI/Screens/Manager/*`,
   `UI/Screens/SaveLoad/*`: allein `finanzen-rest`.
 - `Core/GameState.Integration.cs`, `MainMenuScreen.cs`, `MenuTiles.cs`, `SaveGame.cs` (außer vorläufiger Schemaeintrag):
@@ -59,7 +65,10 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
      Videos (Reihen `folgen`/`karriere`, Saisonenden) und DOSBox-Befunde; Ursache der Meisterdominanz bzw. -streuung im
      Original (Play-off-Format, Schreibzugriffe 0x570E/0x49723). Ergebnis: belegte Abbildung oder Befund; danach
      `PlayAtDatabaseStrength` in Tests nur noch, wo begründet.
-  2. **Strafen in der Managerpaarung** (R8W3I-03 bis -05): `PenalizedPlayer`, Rückgabe 100, Managerwert für Strafen.
+  2. **Strafen in der Managerpaarung** (R8W3I-03 bis -05): `PenalizedPlayer`, Rückgabe 100, Managerwert für Strafen;
+     **Strafzüge 0x378C5 für das Nationalteam** in `LiveTeamOf` (R8W3I-06, ändert den Zufallsverbrauch der Länderspiele);
+     Verdacht 0x952C → 0x9567 (automatische Aufstellung vor den Reihenwerten, `[APPROX]` in `PlayFriendly`) klären;
+     Test `Forfeit_LeagueMatch_UpdatesDayForm` (Teil von R8W3I-10).
   3. **Verletzungen im Spiel** (0x38B8F, Ereignis 4 in 0x130:0x7F) und **Torschütze** 0x386D1.
   4. **Über-/Unterzahl-Zähler** an die Minutenrechnung (aus `statistiken-verein`), **Länderwerte (#193) im Stärkevergleich**.
   5. **Penaltyschießen** nach Verlängerung 0x3901B (`penalty-original`).
@@ -75,8 +84,9 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   2. **Start-/Wechselgehalt** = Wert(Gehalt), **Versicherung** (Prämie, Dialog R8W3I-07, Fundstelle 0x07089),
      **Gehalt in ganzen DM** (R8W3I-08), **Sperre beim Saisonwechsel** (R8W3I-09).
   3. **Unaufgeforderte Angebote** (+0x09 Bit 0x40), **Listenwechsel** 0x494EF, Knopfdarstellung.
-  4. **Testlücken** R8W3I-10, R8W3I-16 (Level 5, gleiche Laufzeit, altes Gehalt), SW-01; Pixelvergleich Transferliste und
-     Verhandlungsfenster mit Kennzahl.
+  4. **Testlücken** R8W3I-10 (ohne `Forfeit_LeagueMatch_UpdatesDayForm` → spielberechnung Teil 2 und Menüweg Modus 1 →
+     wettbewerbe Teil 3), R8W3I-16 (Level 5, gleiche Laufzeit, altes Gehalt), SW-01; W51-02 (Aussage „hängt nur von Gebot und
+     Listenpreis ab“ in der Doku präzisieren); Pixelvergleich Transferliste und Verhandlungsfenster mit Kennzahl.
 - **Abnahme:** je Regel roter Test, danach grün; Goldtest aus FILE03/05/07 erweitert; Mehrsaisonprobe (Kader, Geld);
   Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/transfer.md`, Tests.
@@ -85,11 +95,13 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 ### Spur `wettbewerbe-komplett` – Tabellen, Pokale, Nationalteam abschließen
 
 - **Teile:**
-  1. **Tabellen:** Startordnung ab Saison 2, Abzug in der Titelzahl 0x4F986, Pixelvergleich Tabellen- und Gruppenansicht.
+  1. **Tabellen:** Startordnung ab Saison 2, Abzug in der Titelzahl 0x4F986, Pixelvergleich Tabellen- und Gruppenansicht;
+     Verdacht Tore modulo 30 in 0x30852 (0x30906/0x30916) gegen die Gruppentabellen des Remakes prüfen.
   2. **Nationalteam:** Gegner-Fenster 0x128:0x2A (Klick auf Flaggen), Schreibstelle der WM-Platzierungen (DGROUP 0x8257 +
-     0x34), Nationalteam des Bundestrainers (R8W3I-06).
+     0x34); Test für den Grenzwert 10 der Bundestrainer-Warnung (R8-D02; `MainMenuScreen.cs` nur bei rotem Test, minimal).
   3. **Mehrsaisonproben robust:** Mode4-Probe mit schrumpfendem Kader (Manager 0 nicht spielfähig) und weitere Proben, deren
-     Vorbedingung am Zufall hängt – ohne Seed-Wechsel (wie R8-A02).
+     Vorbedingung am Zufall hängt – ohne Seed-Wechsel (wie R8-A02); Menüweg Modus 1 in `WorldOnlyMenuTests` (Teil von
+     R8W3I-10).
   4. **#166 Oberliga-Austausch** nur, wenn der Austausch der Oberliga samt Managervereinen belegt wird; sonst Beleglage im PR.
 - **Abnahme:** je Teil roter Test bzw. Pixelvergleich mit Kennzahl; Mehrsaisonprobe Modus 1, 2, 4; Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/saison.md`, `docs/wettbewerbe.md` (eigene Abschnitte), Tests.
@@ -98,10 +110,13 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 ### Spur `optionen-wirkung` – Spielstand-Optionen, Einstellungen, Kalender
 
 - **Teile:**
-  1. **Optionen mit Spielwirkung** aus 0x2CD1C in Core (Spielmodus wechseln, WM-Spiele, Länderspiele) samt Migration – auf
-     den Belegen von `optionen-kalender` (`docs/reverse-engineering.md`).
+  1. **Optionen mit Spielwirkung** aus 0x2CD1C in Core (Zustand in `Core/GameOptions.cs` samt Migration; Index 9
+     Moduswechsel, Index 10–12 DEB-Pokal, Europapokal, WM-Spiele) – auf den Belegen von `optionen-kalender`
+     (`docs/reverse-engineering.md`). Die Wirkung wird als Abfrage in `Season.cs`/`SeasonFlow.cs` angeschlossen (Ausnahme
+     unter „Zuständigkeit“). Zuerst R8-D03 klären (Anfangswert Index 9 vs. 10, `reverse-engineering.md` „Index 9 = 1“).
   2. **Einstellungsbildschirm** nach Original-Layout (Bild 48) mit Pixelvergleich, Optionen schaltbar statt nur lesend.
-  3. **Kalender** 0x43E21/0x43B1F/0x43C38/0x36169 – Bildschirm nur mit Videobeleg.
+  3. **Kalender** 0x43E21/0x43B1F/0x43C38/0x36169 – Bildschirm nur mit Videobeleg; 0x445E0 (Infoleiste „Vor dem ersten
+     Spieltag.“) ist im Remake vorhanden und wird nur abgeglichen.
 - **Abnahme:** roter Test je Option mit Wirkung; Mehrsaisonprobe mit Moduswechsel; Pixelvergleich; Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/tagesablauf.md`, Tests.
 - **Modell:** Claude Opus 5.5 (Core-Logik). **Status:** offen.
@@ -124,6 +139,8 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 - Import/Export von Original-Spielständen ins Remake; Highscore am Spielende und Saisonende im Modus „nur Weltkugel“
   (Kandidat für eine DOSBox-Aufnahme mit `hok-patch`).
 - R8-A01 (Spielstände aus Spurbranches laden nicht): Spurbranches sind keine Ausgabestände.
+- Entfallen bzw. erledigt (R9P-03): R8-D04 (Sperre in „Minuten“, akzeptiertes `[APPROX]`), R8-D05 (Dateigrenzen ohne
+  Begründung in Runde 8 – Regel 2.5 gilt weiter, keine Nacharbeit), R8-A03 (in #263), W51-03 (Leerzeile, im Plan-PR #275 behoben).
 
 ## Paket `hok-format` – Original-Spielstände `*.HOK`
 
