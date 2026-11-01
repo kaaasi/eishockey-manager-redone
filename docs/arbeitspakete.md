@@ -90,7 +90,9 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
 - **Ziel:** Grundlage für `livespiel` (Torszenen, Anzeigetafel, Reporter; Funktionskarte Nr. 14/16; letzter Schritt vor
   v1.0): Ablauf, Ereignisse aus der Spielberechnung, Grafik- und Textquellen, Zeitsteuerung. Keine Umsetzung.
 - **Modell:** Claude Fable 5.1; blockieren die Schutzmaßnahmen die Analyse, meldet der Lauf das im PR (`spur-wartet`)
-  und die Leitstelle startet die Spur nach Freigabe des Nutzers mit Claude Opus 5.5 neu. **Status:** wartet auf Go.
+  und die Leitstelle startet die Spur nach Freigabe des Nutzers mit Claude Opus 5.5 neu. **Status:** Analyse fertig
+  (PR #378, `docs/analyse/re-livespiel.md`): alle 19 Adressen zugeordnet, Kandidaten L1–L8 für Runde 11; keine
+  Schutzmaßnahme hat blockiert. Offen: Eingriffsmenü 38D96h (Ov F0h) und `tore\`-Format (Kandidat L7).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
