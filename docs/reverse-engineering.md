@@ -743,10 +743,13 @@ Hauptmenüschleife 0x44E22 (Datei 0x450EC, Gegner DGROUP 0xE1A6, Heim DGROUP 0xE
   Zahl ohne Begrenzung. Anfangswert 0xFF beim Programmstart (Datei 0x43760–0x437C4); **nie gelöscht**, gilt über alle Saisons
   (Video: vier Begegnungen am 41. Spieltag 1997, `folge06_00459`).
 * **Remake vorher:** nur Ligaergebnisse der laufenden Saison (`GameState.Meetings`), chronologisch, Heim und Auswärts gemischt,
-  „Noch keine“ ohne Leerzeichen, keine Breitengrenze. **Jetzt:** `Core/MeetingHistory.cs` (Tabelle `Manager.MeetingTable`,
-  Schema 18), Anzeige `UI/Screens/InfoBarTexts.cs`. [APPROX] Angeschlossen sind die Ligaspiele (`GameState.PlayNextMatchDay`);
-  DEB-Pokal, Europapokal, Play-offs/Relegation und WM-Gruppen laufen im Original ebenfalls über 0x50283 (Aufrufer 0x30365,
-  0x30852, 0x30E7B, 0x315E9, 0x34B76, 0x50B45) und werden in der Integration angeschlossen (Dateien anderer Spuren).
+  „Noch keine“ ohne Leerzeichen, keine Breitengrenze. **Jetzt:** `Core/MeetingHistory.cs`, Anzeige `UI/Screens/InfoBarTexts.cs`.
+  Integration Runde 9: Die Tabelle ist dieselbe wie die Kopf-an-Kopf-Liste des Gegner-Fensters (Spur `wettbewerbe-komplett`) –
+  ein Speicher `GameState._headToHead` (`GameState.MeetingTable(manager)`, Schema 18) und ein Schreiber
+  `MeetingHistory.RecordAt` (0x4F5A8). Angeschlossen sind die Ligaspiele (`GameState.PlayNextMatchDay`) und die Länderspiele
+  Deutschlands (`EnterNationalResult`). [APPROX] DEB-Pokal, Europapokal und Play-offs/Relegation laufen im Original ebenfalls
+  über 0x50283 (Aufrufer 0x30365, 0x30852, 0x30E7B, 0x315E9, 0x34B76, 0x50B45); im Remake noch nicht angeschlossen, ebenso
+  wenig die Serien (`CountSeries`) dieser Spiele.
 * **Tabellenkurve 0x445E0** (Abgleich, nicht umgebaut): x-Schritt `max(2, 8500 / (n − 1) / 100)` mit n = DGROUP 0x7A9,
   Punkte ab x + 5, y = Grundlinie + 2 · Platz + 0x31; ohne Kurve (n ≤ 1) „Vor dem ersten Spieltag.“ (Zeiger 0x674); Platzzahl
   mit „.“ (0x522F) rechts, bei Überschneidung der beiden Kurven verschoben (Datei 0x44801–0x44891). Das Remake skaliert auf

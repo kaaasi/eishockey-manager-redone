@@ -106,47 +106,8 @@ public static class TeamRecords
     /// ungeraden 1 … 9; ist alles voll, rückt die Folge 0, 2, 4, 6, 8, 1, 3, 5, 7, 9 um eins nach vorn und der neue Wert
     /// steht auf Platz 9. Vereine haben je Seite fünf Plätze (gerade = Seite 0, ungerade = Seite 1), voll → nach vorn.
     /// </summary>
-    public static void EnterHeadToHead(int[] list, int offset, bool nation, int side, int lo, int hi)
-    {
-        var value = (hi << 4) + lo & 0xFF;
-        int Free(int s)
-        {
-            for (var c = 0; c < 5; c++)
-                if (list[offset + 2 * c + s] == GameState.HeadToHeadEmpty)
-                    return c;
-            return 5;
-        }
-        if (nation)
-        {
-            side = 0;
-            var c = Free(0);
-            if (c == 5)
-            {
-                side = 1;
-                c = Free(1);
-            }
-            if (c < 5)
-            {
-                list[offset + 2 * c + side] = value;
-                return;
-            }
-            for (var k = 0; k < 4; k++)
-                list[offset + 2 * k] = list[offset + 2 * k + 2];
-            list[offset + 8] = list[offset + 1];
-            for (var k = 0; k < 4; k++)
-                list[offset + 2 * k + 1] = list[offset + 2 * k + 3];
-            list[offset + 9] = value;
-            return;
-        }
-        var free = Free(side);
-        if (free == 5)
-        {
-            for (var k = 0; k < 4; k++)
-                list[offset + 2 * k + side] = list[offset + 2 * k + 2 + side];
-            free = 4;
-        }
-        list[offset + 2 * free + side] = value;
-    }
+    public static void EnterHeadToHead(int[] list, int offset, bool nation, int side, int lo, int hi) =>
+        MeetingHistory.RecordAt(list, offset, nation, side, lo, hi); // ein Schreiber für Liga und Länder (Integration Runde 9)
 }
 
 /// <summary>

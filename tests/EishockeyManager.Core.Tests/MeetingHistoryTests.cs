@@ -9,7 +9,7 @@ namespace EishockeyManager.Core.Tests;
 /// </summary>
 public class MeetingHistoryTests
 {
-    private static int[] Table() => MeetingHistory.NewTable();
+    private static int[] Table() => Enumerable.Repeat(MeetingHistory.Empty, MeetingHistory.TableSize).ToArray();
 
     [Fact]
     public void Entries_ShowAwayGamesFirst_NewestFirst_TwoPerSide()
@@ -73,10 +73,10 @@ public class MeetingHistoryTests
         game.RecordMeeting(2, 5, 3, 1);
         game.RecordMeeting(9, 10, 3, 1); // ohne Manager: nichts
 
-        Assert.Equal(["H 3:1"], MeetingHistory.Entries(game.Managers[0].MeetingTable, 5));
-        Assert.Equal(["A 1:3"], MeetingHistory.Entries(game.Managers[1].MeetingTable, 2));
-        Assert.All(game.Managers, m => Assert.Empty(MeetingHistory.Entries(m.MeetingTable, 9)));
-        Assert.All(game.Managers, m => Assert.Empty(MeetingHistory.Entries(m.MeetingTable, 10)));
+        Assert.Equal(["H 3:1"], MeetingHistory.Entries(game.MeetingTable(0), 5));
+        Assert.Equal(["A 1:3"], MeetingHistory.Entries(game.MeetingTable(1), 2));
+        Assert.All(game.Managers, m => Assert.Empty(MeetingHistory.Entries(game.MeetingTable(m), 9)));
+        Assert.All(game.Managers, m => Assert.Empty(MeetingHistory.Entries(game.MeetingTable(m), 10)));
     }
 
     /// <summary>
@@ -93,33 +93,40 @@ public class MeetingHistoryTests
         for (var change = 0; change < 4; change++)
         {
             PlayToSeasonEnd(game);
-            counts.Add(manager.MeetingTable.Count(v => v != MeetingHistory.Empty));
+            counts.Add(game.MeetingTable(manager).Count(v => v != MeetingHistory.Empty));
             game.StartNextSeason();
-            Assert.Equal(counts[^1], manager.MeetingTable.Count(v => v != MeetingHistory.Empty));
+            Assert.Equal(counts[^1], game.MeetingTable(manager).Count(v => v != MeetingHistory.Empty));
         }
 
         Assert.True(counts[0] > 0);
         Assert.True(counts[1] > counts[0], string.Join(",", counts)); // 2. Saison kommt dazu, nichts wird gelöscht
-        Assert.All(Enumerable.Range(0, MeetingHistory.Opponents), o => Assert.InRange(MeetingHistory.Entries(manager.MeetingTable, o).Count, 0, 4));
-        Assert.Empty(MeetingHistory.Entries(manager.MeetingTable, manager.ClubIndex));
+        Assert.All(Enumerable.Range(0, MeetingHistory.Opponents), o => Assert.InRange(MeetingHistory.Entries(game.MeetingTable(manager), o).Count, 0, 4));
+        Assert.Empty(MeetingHistory.Entries(game.MeetingTable(manager), manager.ClubIndex));
 
         var loaded = SaveGame.Load(SaveGame.Save(game));
         Assert.True(loaded.Success, loaded.Error);
-        Assert.Equal(manager.MeetingTable, loaded.Game!.ActiveManager.MeetingTable);
+        Assert.Equal(game.MeetingTable(manager), loaded.Game!.MeetingTable(loaded.Game.ActiveManager));
     }
 
+    /// <summary>
+    /// Integration Runde 9: Begegnungstabelle (Infoleiste, optionen-wirkung) und Kopf-an-Kopf-Liste (Gegner-Fenster,
+    /// wettbewerbe-komplett) sind im Original dieselbe Tabelle DGROUP 0xAB7B mit einem Schreiber 0x4F5A8. Ligaspiele und
+    /// Länderspiele landen deshalb im selben Speicher und sind in beiden Ansichten sichtbar.
+    /// </summary>
     [Fact]
-    public void Migration_FromSchema18_StartsWithEmptyTables()
+    public void MeetingTable_And_HeadToHead_AreOneTable()
     {
         var game = TestGames.Create();
-        var json = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        json["schema"] = 18;
-        foreach (var m in json["manager"]!.AsArray())
-            Assert.True(m!.AsObject().Remove("MeetingTable"));
+        var own = game.Managers[0].ClubIndex;
+        var other = own == 3 ? 4 : 3;
 
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
+        game.RecordMeeting(own, other, 3, 1);
+        game.EnterNationalResult(NationalTeams.Germany, NationalTeams.Germany + 1, 2, 0, NationalMatchKind.Friendly);
+
+        Assert.Equal(game.MeetingTable(0).Skip(other * 10).Take(10), game.HeadToHead(0, other));
+        Assert.Equal(0x13, game.HeadToHead(0, other)[0]);
+        Assert.Equal(["H 3:1"], game.MeetingEntries(other));
+        Assert.Equal(0x02, game.MeetingTable(0)[(NationalTeams.Germany + 1) * 10]);
     }
 
     private static void PlayToSeasonEnd(GameState game)

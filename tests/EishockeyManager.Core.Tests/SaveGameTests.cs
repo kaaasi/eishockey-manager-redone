@@ -35,8 +35,8 @@ public class SaveGameTests
     // Manager.SeriesRecords und Manager.PowerPlayCounts (Spur statistiken-verein), 16 Platzierungen der Weltmeisterschaften
     // (Spur nationalteam-2), 17 Verhandlungs- und Gebotssperre (Spur transfer-original-vertrag). Runde 9: 18 Rekorde,
     // Kopf-an-Kopf-Liste und Bilanz der Länder (Spur wettbewerbe-komplett, Gegner-Fenster).
-    // 19 Spielstand-Optionen GameSetup.Options und Begegnungstabelle Manager.MeetingTable (Spur optionen-wirkung).
-    private const string ExpectedSchemaFingerprint = "9CAB1D6FA6D96A28";
+    // 19 Spielstand-Optionen GameSetup.Options (Spur optionen-wirkung).
+    private const string ExpectedSchemaFingerprint = "5F82E8AF4D0C593A";
 
     // ---------- Abnahme 3: Roundtrip ----------
 
