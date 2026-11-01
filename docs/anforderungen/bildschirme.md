@@ -52,7 +52,8 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 ### Hauptmenü / Wochenübersicht
 * Titelleiste `kb\20`, darunter die Infoleiste (1,21)–(319,75): Datum, Manager, Verein; Kasten (5,33,102×40) mit der
   Tabellenkurve (gelb = eigener Verein, weiß = nächster Gegner) bzw. „Vor dem ersten Spieltag.“; Symbole für Wettbewerb und
-  Heim/Auswärts, bisherige Begegnungen („A 0:3,H 1:5“), Kontostand; sechs Warnlampen des Managers am Zug (Regeln in
+  Heim/Auswärts, bisherige Begegnungen („A 0:3,H 1:5“: erst auswärts, dann daheim, je zwei, neueste zuerst, über alle
+  Saisons; „ Noch keine“; ohne Gegner „Spielfrei“ – em.exe 0x43E21, `docs/reverse-engineering.md`), Kontostand; sechs Warnlampen des Managers am Zug (Regeln in
   `Screens/MenuLamps.cs`, em.exe 0x42996);
   Kopf (231,33) und Logo (273,33). Klick aufs Logo (Klickfeld x 275–312, y 34–71, em.exe 0x45483) = nächster Tag
   bzw. im Hot-Seat Abgabe an den nächsten Manager.
@@ -125,9 +126,10 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 * In der Ligaansicht „Freundschaftsspiel“: Gegner aus Liga oder Europapokal wählen, Heimspiel an einem freien Termin
   der nächsten vier Wochen (höchstens zwei offen).
 ### Einstellungen
-* Vollbild, Torszenen zeigen, Automatisch speichern; Lautstärke Soundeffekte (0–10); `F8` schaltet den Ton
-  stumm. Musik: nur im Titelbildschirm, sonst nirgends (Entscheidung Nutzer, #221) – keine Musikeinstellungen. Knopf „Spielstand“: lesende Anzeige der Spielstand-Optionen des Originals (Spielmodus, Drittelpause/
-  Ergebnisse/Tabelle je Liga, DEB-Pokal, Europapokal, WM-Spiele; `docs/reverse-engineering.md`), Umsetzung in `optionen-wirkung`.
+* Vollbild, Automatisch speichern (Torszenen: nur im Optionsbildschirm des Originals, Index 9); Lautstärke Soundeffekte (0–10); `F8` schaltet den Ton
+  stumm. Musik: nur im Titelbildschirm, sonst nirgends (Entscheidung Nutzer, #221) – keine Musikeinstellungen. Knopf „Spielstand“ (nur mit laufendem Spiel): Optionsbildschirm des Originals (em.exe 0x2CD1C, DOSBox-Bild 48) mit
+  Torszenen (drei Stufen), Spielgeschwindigkeit, Drittelpause/Ergebnisse/Tabelle je Liga, DEB-Pokal, Europapokal, WM-Spiele –
+  schaltbar, gespeichert im Spielstand (`docs/reverse-engineering.md`, „Optionsbildschirm“).
 ### Saisonende
 „Saisonende“ in großer Schrift, darunter Weltmeister, DEB-Pokal, Deutscher Meister, Europa-Pokal und je Liga
 Aufsteiger (rot) und Absteiger (grün). Nach der gewählten Spieldauer folgt das Spielende mit Highscore.

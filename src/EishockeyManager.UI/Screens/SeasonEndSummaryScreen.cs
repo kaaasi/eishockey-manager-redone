@@ -75,14 +75,21 @@ public sealed class SeasonEndSummaryScreen : Screen
             return;
         }
         Statistics.HighscoreStore.For(Host).Record(); // [ORIGINAL] Saisonwechsel: Manager in die Bestenliste eintragen (Datei 0x56647)
-        Game.StartNextSeason();
+        // Spur transfer-vertraege-komplett: ausgelaufene Verträge bleiben zur Verhandlung im Kader (0x27D05) und werden vor
+        // dem ersten Tag der neuen Saison verhandelt.
+        Game.StartNextSeasonWithRenewals();
+        Host.Show(Team.ContractsScreen.ForSeasonEnd(Host, AfterRenewals));
+    }
+
+    private Screen AfterRenewals()
+    {
         Game.CurrentManager = Game.ActiveManagers.Select(m => Game.Managers.ToList().IndexOf(m)).First();
         // [ORIGINAL] #195 (Integration Runde 8, Welle 3, Vorschlag aus PR #265): Im Modus „nur Weltkugel“ läuft auch nach dem
         // Saisonwechsel zuerst die Tagesfunktion Datei 0x54C9F (Sprung zum WM-Termin); das Menü kommt erst am Tagesende.
         if (Game.WorldOnly)
             Game.Continue();
         // [ORIGINAL] Datei 0x56609: Auslosung der ersten DEB-Pokal-Runde beim Saisonwechsel (Spur debpokal-auslosung)
-        Host.Show(Competitions.DebCupDrawFlow.AtSeasonStart(Host, _menu));
+        return Competitions.DebCupDrawFlow.AtSeasonStart(Host, _menu);
     }
 
     public override void Enter()

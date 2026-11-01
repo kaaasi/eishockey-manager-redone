@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(17, SaveGame.SchemaVersion);
+        Assert.Equal(22, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -33,8 +33,12 @@ public class SaveGameTests
     // Nationalteams (Spur nationalteam #192), 13 Club.LeaguePenaltyMinutes und SeasonEvent BestGoalie/TopScorer/FairPlay
     // (Spur statistiken), 14 Teamwerte des Laders (Spur spielstaerke-manager). Runde 8, Welle 3: 15 Club.SeriesCurrent,
     // Manager.SeriesRecords und Manager.PowerPlayCounts (Spur statistiken-verein), 16 Platzierungen der Weltmeisterschaften
-    // (Spur nationalteam-2), 17 Verhandlungs- und Gebotssperre (Spur transfer-original-vertrag).
-    private const string ExpectedSchemaFingerprint = "5FC80507D6AC2F8B";
+    // (Spur nationalteam-2), 17 Verhandlungs- und Gebotssperre (Spur transfer-original-vertrag). Runde 9: 18 Rekorde,
+    // Kopf-an-Kopf-Liste und Bilanz der Länder (Spur wettbewerbe-komplett, Gegner-Fenster).
+    // 19 Spielstand-Optionen GameSetup.Options (Spur optionen-wirkung).
+    // 20 Versicherungsprämie und Abschluss je Spieler (Spur transfer-vertraege-komplett, Teil 2), 21 unaufgefordertes Angebot
+    // je Spieler (Teil 3), 22 Spielerpool des Transfermarkts (Teil 5).
+    private const string ExpectedSchemaFingerprint = "5DEB24A5736D8951";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

@@ -32,8 +32,21 @@ public class LifecycleScreenRegressionTests
         game.StartNextSeason();
         Assert.Equal(28, player.Age);
         Assert.False(player.OnLoan);
-        Assert.Equal(2, player.ContractYears);
-        Assert.Contains(player, origin.Players);
+        // Integration Runde 9 (Leitstelle): Der Markt kommt jetzt aus dem Spielerpool (transfer-vertraege-komplett Teil 5,
+        // 0x494EF). Ein geliehener Poolspieler kehrt in seinen Poolplatz zurück; ob dieser Platz beim Saisonwechsel in den
+        // Kader seines Vereins wechselt, hängt am Tausch Pool ↔ Computerkader. Beide Ausgänge sind stimmig: im Verein mit um
+        // ein Jahr verkürztem Vertrag oder im Pool ohne Vertrag – nie in beiden, nie beim Manager.
+        if (origin.Players.Contains(player))
+        {
+            Assert.Equal(2, player.ContractYears);
+            Assert.DoesNotContain(player, game.TransferMarket.PoolPlayers);
+        }
+        else
+        {
+            Assert.Contains(player, game.TransferMarket.PoolPlayers);
+            Assert.Equal(0, player.ContractYears);
+            Assert.All(game.Clubs, c => Assert.DoesNotContain(player, c.Players));
+        }
         Assert.DoesNotContain(player, club.Players);
         Assert.DoesNotContain(expired, club.Players);
         Assert.All(game.Clubs, c => Assert.All(c.Lineup.Players, p => Assert.Contains(p, c.Players)));

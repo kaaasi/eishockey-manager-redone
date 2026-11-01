@@ -20,8 +20,9 @@ Der Zugriffsabsatz steht in **jedem** Startaufruf eines geplanten Spurlaufs (Spu
 übernimmt ihn unverändert. Reviews: nach `review-anfrage.md` (nur wenn Daten nötig; „keine Code-Arbeit“ gilt dort als
 „kein Review“). Voraussetzung auf Seiten der Leitstelle: [leitstelle-start.md](leitstelle-start.md), „Geplante Läufe“.
 
-**Einzelner Folgeteil ohne Fortsetzung:** Kurzaufruf „Geplanter Lauf mit Teilen“, aber statt des Satzes zur Fortsetzung
-„Nur Teil <n>; keine Fortsetzung anlegen.“ Es gilt der Abschnitt „Teile und Fortsetzung“ ohne Schritt 5 (R9F-02).
+**Einzelner Folgeteil ohne Fortsetzung:** Kurzaufruf „Geplanter Lauf mit Teilen“, aber statt „Teile und Selbstfortsetzung …
+(höchstens 3 je Spur).“ der Satz „Teile nach Abschnitt ‚Teile und Fortsetzung‘; nur Teil <n>, keine Fortsetzung anlegen.“
+Es gilt der Abschnitt „Teile und Fortsetzung“ ohne Schritt 5 (R9F-02).
 
 ## Ablauf für den Agenten
 

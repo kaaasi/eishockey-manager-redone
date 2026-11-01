@@ -105,8 +105,15 @@ public class NationalteamTests
     [Fact]
     public void Mode4_AfterAppointment_AutoShowsZero()
     {
-        var game = GameModeTests.Create(3, true, true, 8, 2);
-        NationalCoachMode4Tests.PlayToClubSeasonEnd(game);
+        // Ob ein Manager Bundestrainer wird, hängt an der Stärke der Managerkader (#204) und am Zufallsverbrauch (zuletzt
+        // Listenwechsel 0x494EF); Integration Runde 9: erster Seed ab 3 mit Ernennung, Kader in Bestbesetzung.
+        GameState game = null!;
+        for (var seed = 3; seed < 40 && game?.NationalCoach is null; seed++)
+        {
+            game = GameModeTests.Create(seed, true, true, 8, 2);
+            ManagedSquads.PlayAtTopStrength(game);
+            NationalCoachMode4Tests.PlayToClubSeasonEnd(game);
+        }
         var coach = game.NationalCoach ?? throw new InvalidOperationException("kein Bundestrainer");
         AssertZero(coach.Tactics);
     }

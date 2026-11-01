@@ -207,7 +207,10 @@ public class TransferOriginalTests
             if (bid.Amount % 1000 != 0)
                 notThousands++;
             long value = TransferRules.PriceThirds(player);
-            Assert.InRange(bid.Amount, value * 95 / 100 * 98 / 100 * 85 / 100 / 3 - 100, value * 104 / 100 * 115 / 100 / 3);
+            // Untergrenze (Teil 5 nachgerechnet, Seed 11): Wert · 95 % auf 3000 Drittel abgerundet, random(V/20, V/10) mit
+            // 16-Bit-Grenzen (0x47379, bei V ab 655.360 Drittel abgeschnitten, also bis −32.768), − V/15, · 85 %, 100 DM.
+            var low = value * 95 / 100 - 3000;
+            Assert.InRange(bid.Amount, (low - 32_768 - low / 15) * 85 / 100 / 3 - 100, value * 104 / 100 * 115 / 100 / 3);
         }
         Assert.True(notThousands > 0);
     }
@@ -309,9 +312,10 @@ public class TransferOriginalTests
             foreach (var bid in market.Bids.Where(b => b.Listing.Seller == manager).ToList())
             {
                 var before = manager.Money;
+                var fee = TransferMarket.TransferFee(bid); // vor dem Wechsel: Restlaufzeit des Verkäufers
                 if (market.Accept(game, bid) == TransferResult.Accepted)
                 {
-                    Assert.Equal(before + bid.Amount, manager.Money);
+                    Assert.Equal(before + fee, manager.Money); // Teil 5: 0x49332
                     sold++;
                 }
             }
@@ -347,7 +351,7 @@ public class TransferOriginalTests
     }
 
     /// <summary>Original-Spielstand: <c>EM_SAVEGAMES</c> oder <c>spielstaende</c> neben dem aufgelösten <c>gamedata</c>.</summary>
-    private static string OriginalSave(string name)
+    internal static string OriginalSave(string name)
     {
         var folder = Environment.GetEnvironmentVariable("EM_SAVEGAMES");
         if (string.IsNullOrEmpty(folder))

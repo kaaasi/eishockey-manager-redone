@@ -265,13 +265,30 @@ public class HeimspielStatistikTests
                     TestSeason.PlayMatchDay(game);
                 else
                     game.Continue();
-                foreach (var manager in game.Managers.Where(m => shortHanded[m]))
+                // Spielberechnung Teil 5: Der Tageslauf heilt Verletzte (0x7C12, Teil 3) vor der Prüfung 0x36DC5 desselben
+                // Tages; ein vorher nicht spielfähiger Verein kann am Spieltag wieder spielen. Mit dem geänderten
+                // Zufallsverbrauch (Penaltyschießen 0x3901B) kommt das hier vor: nur zählen, was auch danach nicht spielfähig ist.
+                foreach (var manager in game.Managers)
+                    shortHanded[manager] &= game.IsShortHanded(game.Clubs[manager.ClubIndex]);
+                foreach (var manager in game.Managers)
                 {
-                    var forfeited = game.Results.Where(r => r.MatchDay > played && r.MatchDay <= game.PlayedMatchDays
+                    var step = game.Results.Where(r => r.MatchDay > played && r.MatchDay <= game.PlayedMatchDays
                         && r.Involves(manager.ClubIndex)).ToList();
-                    penaltyHomeGames[manager] += forfeited.Count(r => r.Home == manager.ClubIndex);
-                    // #165: nicht spielfähig → 0:2 daheim, 2:0 auswärts
-                    Assert.All(forfeited, r => Assert.Equal(r.Home == manager.ClubIndex ? (0, 2) : (2, 0), (r.HomeGoals, r.AwayGoals)));
+                    if (shortHanded[manager])
+                    {
+                        // #165: vor dem Spieltag nicht spielfähig → 0:2 daheim, 2:0 auswärts
+                        Assert.All(step, r => Assert.Equal(r.Home == manager.ClubIndex ? (0, 2) : (2, 0), (r.HomeGoals, r.AwayGoals)));
+                    }
+                    if (shortHanded[manager])
+                        penaltyHomeGames[manager] += step.Count(r => r.Home == manager.ClubIndex);
+                    // [ORIGINAL] 0x544C0: Die Abrechnung läuft über die Manager in Indexreihenfolge und endet bei der ersten
+                    // Strafe – ist der Gast ein nicht spielfähiger Managerverein mit kleinerem Index, bekommt der Heimverein
+                    // weder Eintritt noch Statistik. Begründete Änderung (#204, Wanderung der Teamwerte): Mit dem geänderten
+                    // Zufallsverlauf steigt der aktive Verein in Saison 4 in die Bundesliga auf und trifft auf den Verein
+                    // des passiven Managers, der ohne Kader 2:0 verliert; vorher kam diese Paarung nicht vor.
+                    else
+                        penaltyHomeGames[manager] += step.Count(r => r.Home == manager.ClubIndex && game.Managers
+                            .TakeWhile(o => o != manager).Any(o => o.ClubIndex == r.Away && shortHanded[o]));
                 }
                 if (reduce)
                     activeClub.AutoLineup();

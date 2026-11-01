@@ -187,6 +187,7 @@ public sealed class WorldCup : ISeasonCompetition
                     var match = new KnockoutMatch(day, home, away, hg, ag);
                     group.Results.Add(match);
                     played.Add(match);
+                    game.EnterNationalResult(home, away, hg, ag, NationalMatchKind.WorldCupGroup); // 0x50283, Code 8
                 }
             if (date == GroupDates - 1)
             {
@@ -209,6 +210,8 @@ public sealed class WorldCup : ISeasonCompetition
                     return KnockoutMatch.Play(game, day, game.RatedNation(p.Home), game.RatedNation(p.Away), MatchCompetition.WorldCup, random);
                 }).ToList();
             _knockout.Add(played);
+            foreach (var m in played)
+                game.EnterNationalResult(m.Home, m.Away, m.HomeGoals, m.AwayGoals, NationalMatchKind.WorldCupKnockout); // Code 10
             for (var k = 0; k < 4; k++)
             {
                 _slots[8 * stage + 2 * k] = played[k].Winner;

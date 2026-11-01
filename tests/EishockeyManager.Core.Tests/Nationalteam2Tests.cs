@@ -84,9 +84,12 @@ public class Nationalteam2Tests
     [Fact]
     public void VacantNationalTeam_RecordsAutoLine_RegardlessOfModes()
     {
-        foreach (var (seed, club) in new[] { (3, 11), (7, 11), (11, 10), (19, 9), (23, 11), (29, 10) })
+        // wettbewerbe-komplett Teil 3 (Mehrsaisonproben robust): vorher wurde über sechs Seeds ein Lauf gesucht, in dem der
+        // Bundesligist des Managers nicht unter die ersten fünf kam. Ein Oberligist (Verein 30) kann in der ersten Saison nie
+        // ernannt werden (0x34769 durchsucht nur die ersten fünf der 1. Liga) – die Vorbedingung hängt nicht mehr am Zufall.
+        foreach (var (seed, club) in new[] { (3, 30), (7, 30) })
         {
-            var game = GameModeTests.Create(seed, true, true, club); // Modus 4, passiver Manager eines schwachen Vereins
+            var game = GameModeTests.Create(seed, true, true, club); // Modus 4, passiver Manager eines Oberligisten
             var tactics = game.NationalTactics;
             tactics.EffortMode = TacticMode.Semi; // z. B. vom Vorgänger stehen geblieben
             tactics.AttackMode = TacticMode.Semi;
@@ -97,8 +100,8 @@ public class Nationalteam2Tests
                     m.Money = Math.Max(m.Money, 10_000_000);
                 game.Continue();
             }
-            if (game.NationalCoach is not null || GermanGroupMatches(game).Count == 0)
-                continue; // Ernennung am 13. April – Spielstand ohne freies Nationalteam suchen
+            Assert.Null(game.NationalCoach);
+            Assert.NotEmpty(GermanGroupMatches(game));
             Assert.Same(tactics, game.NationalTactics);
             tactics.EffortMode = TacticMode.Auto;
             tactics.AttackMode = TacticMode.Auto;
@@ -106,9 +109,7 @@ public class Nationalteam2Tests
             var attack = ShownAttack(tactics);
             Assert.True(new[] { EffortLine(0, 0), EffortLine(0, 50) }.Any(l => l.SequenceEqual(effort)), "Einsatz: " + string.Join("/", effort));
             Assert.True(new[] { AttackLine(0, 1), AttackLine(1, 0) }.Any(l => l.SequenceEqual(attack)), "Angriff: " + string.Join("/", attack));
-            return;
         }
-        Assert.Fail("kein Spielstand ohne Bundestrainer zur WM gefunden");
     }
 
     /// <summary>Gegenprobe zu R8-B04: Mit Bundestrainer bleibt „SEMI“ unberührt (0x8437–0x8441, Modus des Managers).</summary>

@@ -1,5 +1,15 @@
 namespace EishockeyManager.Core;
 
+/// <summary>Modus der Wanderung <see cref="MatchEngine.DriftTeamValues"/> (em.exe 0x9D1B; jedes Argument ≠ 1 wirkt als 3).</summary>
+public enum TeamValueDrift
+{
+    /// <summary>Tageslauf, zweimal je Woche: kleiner Schritt, begrenzt auf 1 … 99.</summary>
+    Weekly = 1,
+
+    /// <summary>Spielstart und Saisonwechsel (Argument 10): großer Schritt, begrenzt auf die Grenzen der Liga.</summary>
+    Season = 3,
+}
+
 /// <summary>
 /// Teamwerte eines Vereins aus dem Lader der Datenbank (em.exe Datei 0x2EF1B, Ov 0xE0 Offset 0x4D3B), gespeichert als
 /// Abweichung vom Datenbankwert (Kondition, Technik) bzw. als Wert (Form, Tagesform). Spur spielstaerke-manager (#204).
@@ -40,10 +50,10 @@ public static partial class MatchEngine
     /// </list>
     /// [APPROX] Für Byte 1 (Sturm) nimmt das Remake wie bisher die Vereinsstärke (Byte 0; bei den Vereinen 0 … 63 sind
     /// beide gleich). Zeitpunkt: das Original lädt einmal beim Programmstart (0x437D5 → 0x2EF1B vor der
-    /// Spielvorbereitung) und ändert die Werte danach nicht mehr (außer 0x17 und den Länderwerten Deutschlands; Suche nach
-    /// Schreibzugriffen auf die Vereinsfelder 0x17–0x1D, <c>docs/spielberechnung.md</c> §12). [APPROX] Das Remake zieht
-    /// sie beim ersten Spiel eines Spielstands aus <see cref="GameState.Random"/>, damit Spielstart und Kaderaufbau
-    /// unverändert bleiben; ältere Spielstände bekommen sie ebenso beim nächsten Spiel.
+    /// Spielvorbereitung); danach wandern Kondition, Technik und Form mit <see cref="DriftTeamValues"/> (Spielstart,
+    /// Saisonwechsel, zweimal je Woche; <c>docs/spielberechnung.md</c> §15). [APPROX] Das Remake zieht sie beim ersten
+    /// Spiel eines Spielstands aus <see cref="GameState.Random"/>, damit Spielstart und Kaderaufbau unverändert bleiben,
+    /// und wendet dort gleich die Wanderung des Spielstarts an (0x43A73); ältere Spielstände ebenso beim nächsten Spiel.
     /// </summary>
     public static void LoadTeamValues(GameState game)
     {
@@ -67,11 +77,81 @@ public static partial class MatchEngine
         }
     }
 
-    /// <summary>Zieht die Teamwerte, falls ein Verein des Spielstands noch keine hat (siehe <see cref="LoadTeamValues"/>).</summary>
+    /// <summary>
+    /// [ORIGINAL] Grenzen der großen Wanderung je Liga: DGROUP 0x125 (Paare Minimum, Maximum), Index 0x34FD5 / 2. Bestätigt
+    /// an <c>FILE01.HOK</c> (neues Spiel, nach der Wanderung des Spielstarts gesichert): alle Computervereine darin, mehrere
+    /// genau auf den Grenzen (Rosenheim 69, Düsseldorf 94, Memmingen 39, Bonn 15).
+    /// </summary>
+    public static (int Min, int Max) DriftBounds(League? league) => league switch
+    {
+        League.Bundesliga => (69, 94),
+        League.ZweiteLiga => (39, 73),
+        _ => (15, 43),
+    };
+
+    /// <summary>
+    /// Wanderung der Teamwerte. [ORIGINAL] em.exe Datei 0x9D1B (Basis 0x62C:0x1C5B), Argument Modus (≠ 1 gilt als 3):
+    /// je Vereinsplatz i = 0 … [0x6AD] + 11 in dieser Reihenfolge –
+    /// <list type="number">
+    /// <item>Vereine (i &lt; [0x6AD] = 52): Liga L = 0x34FD5(i) / 2 (Bundesliga 0, Zweite Liga 1, sonst 2). r = lrandom(0, 2·Modus),
+    ///   b = 3 (Modus 3) bzw. 1, Schritt s = lrandom(0, 2r + 2b) − (Modus + b), also −6 … 2r bzw. −2 … 2r, Mittel 0.
+    ///   Kondition 0x18 + k (k = 0, 1): + lrandom(s − 1, s + 1). Technik 0x1A + k: lrandom(0, 2) ziehen; bei 0 oder Modus 3
+    ///   + lrandom(s − 1, s + 1). Begrenzt mit 0x120:0x52 auf die Liga-Grenzen DGROUP 0x125 (69 … 94, 39 … 73, 15 … 43)
+    ///   bzw. bei Modus 1 auf 1 … 99.</item>
+    /// <item>Alle Plätze einschließlich der Nationalteams: Form 0x1C + k = lrandom(45, 55) für k = 0, 1, 2 (die Schleife
+    ///   läuft bis k &lt; 3 und überschreibt auch Feld 0x1E; im Remake nur gezogen).</item>
+    /// </list>
+    /// Aufrufe: Spielstart Modus 10 (0x43A73, nach der Ligamischung und der Spielvorbereitung), Saisonwechsel Modus 10
+    /// (0x56448, nach Auf- und Abstieg), Tageslauf 0x54C9F Modus 1 an Tagen mit Tageszähler 0x3B7 ≡ 0 oder 4 (mod 7)
+    /// (0x5525A–0x55292). Die Europapokal-Gegner (Index &gt; 64) wandern nicht.
+    /// [APPROX] Reihenfolge nach Vereinsindex statt nach Tabellenplatz des Originals; Kondition und Technik als Abweichung
+    /// vom Datenbankwert (<see cref="Club.Strength"/>) gespeichert, die Liga-Grenzen gelten für Datenbankwert + Abweichung.
+    /// Nationalteams spielen als <c>RatedNation</c> mit eigenen Werten; ihre Form wird nur gezogen und gesetzt.
+    /// </summary>
+    public static void DriftTeamValues(GameState game, TeamValueDrift drift)
+    {
+        var random = game.Random;
+        var mode = (int)drift;
+        var b = drift == TeamValueDrift.Season ? 3 : 1;
+        foreach (var club in game.Clubs.Where(c => c.Index <= NationalTeams.Last).OrderBy(c => c.Index))
+        {
+            if (club.TeamValues is not { } v)
+                continue;
+            if (club.Index < NationalTeams.First)
+            {
+                var (min, max) = drift == TeamValueDrift.Season ? DriftBounds(club.League) : (1, 99);
+                var r = OriginalMatch.Rnd(random, 0, 2 * mode);
+                var step = OriginalMatch.Rnd(random, 0, 2 * r + 2 * b) - (mode + b);
+                int Move(int deviation) =>
+                    Math.Clamp(club.Strength + deviation + OriginalMatch.Rnd(random, step - 1, step + 1), min, max) - club.Strength;
+                int Clamp(int deviation) => Math.Clamp(club.Strength + deviation, min, max) - club.Strength;
+                var dc = Move(v.DefenseCondition);
+                var ac = Move(v.AttackCondition);
+                var dt = OriginalMatch.Rnd(random, 0, 2) == 0 || drift == TeamValueDrift.Season ? Move(v.DefenseTechnique) : Clamp(v.DefenseTechnique);
+                var at = OriginalMatch.Rnd(random, 0, 2) == 0 || drift == TeamValueDrift.Season ? Move(v.AttackTechnique) : Clamp(v.AttackTechnique);
+                v = v with { DefenseCondition = dc, AttackCondition = ac, DefenseTechnique = dt, AttackTechnique = at };
+            }
+            var df = OriginalMatch.Rnd(random, 45, 55);
+            var af = OriginalMatch.Rnd(random, 45, 55);
+            _ = OriginalMatch.Rnd(random, 45, 55); // Feld 0x1E (siehe oben)
+            club.TeamValues = v with { DefenseForm = df, AttackForm = af };
+        }
+    }
+
+    /// <summary>[ORIGINAL] Tage der kleinen Wanderung im Tageslauf 0x54C9F: Tageszähler ≡ 0 oder 4 (mod 7).</summary>
+    public static bool IsDriftDay(int day) => day % 7 is 0 or 4;
+
+    /// <summary>
+    /// Zieht die Teamwerte, falls ein Verein des Spielstands noch keine hat (siehe <see cref="LoadTeamValues"/>), und
+    /// wendet die Wanderung des Spielstarts an (<see cref="DriftTeamValues"/>).
+    /// </summary>
     public static void EnsureTeamValues(GameState game)
     {
-        if (game.Clubs.Any(c => c.TeamValues is null))
-            LoadTeamValues(game);
+        if (!game.Clubs.Any(c => c.TeamValues is null))
+            return;
+        LoadTeamValues(game);
+        // [ORIGINAL] Wanderung des Spielstarts (0x43A73, Modus 10); [APPROX] beim ersten Spiel (siehe LoadTeamValues).
+        DriftTeamValues(game, TeamValueDrift.Season);
     }
 
     /// <summary>Teamwerte eines Vereins; ohne gezogene Werte (z. B. Nationalteam als <c>RatedNation</c>) neutral.</summary>

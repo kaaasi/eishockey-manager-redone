@@ -23,8 +23,9 @@ public enum SaveLoadMode
 /// Diskettenzugriff ! Vorgang abgebrochen.“ (0x3EB0), „löschen ?“, „Mach schon!“, „Lieber nicht.“.
 /// </para>
 /// <para>
-/// <b>Abweichungen [APPROX]:</b> Das Video zeigt nur das Laden-Bild und keine Bedienung. Aus dem Original ist weder
-/// belegt, was ein Klick auf einen Eintrag tut, noch das Bild des Speichern-Dialogs (hier derselbe Aufbau mit Titel
+/// <b>Abweichungen [APPROX]:</b> Das Video zeigt nur das Laden-Bild und keine Bedienung. Belegt ist das Klickverhalten (em.exe 0x5DBE5: Linksklick auf eine Datei übernimmt den Namen, bei gleichem Namen führt
+/// er aus; Rechtsklick auf eine Datei zeigt die Spielstand-Info 0x5B661 und lässt Namensfeld und Dialog unverändert; Rechtsklick
+/// sonst bricht ab). Das Infofeld des Rechtsklicks fehlt hier [APPROX] (#326). Nicht belegt ist das Bild des Speichern-Dialogs (hier derselbe Aufbau mit Titel
 /// „Speichern“). Hier: Klick wählt den Spielstand und trägt seinen Namen ein, Enter oder ein zweiter Klick führt aus
 /// (Laden; Sichern überschreibt erst nach Rückfrage). Es gibt einen Ordner statt Laufwerken: die Laufwerksknöpfe sind
 /// gezeichnet, haben aber keine Wirkung. Seitenpfeile und „SEITE:“ blättern, wenn mehr als 48 Einträge da sind (Lage von
@@ -156,7 +157,7 @@ public sealed class SaveLoadScreen : Screen
             return;
         }
 
-        if (input.Pressed(Key.Escape) || input.RightClick)
+        if (input.Pressed(Key.Escape) || (input.RightClick && !TryRightClickEntry(input)))
         {
             Host.Show(_back);
             return;
@@ -209,12 +210,33 @@ public sealed class SaveLoadScreen : Screen
         }
     }
 
+    /// <summary>
+    /// Rechtsklick auf einen Spielstand bricht nicht ab und ändert weder Namensfeld noch Auswahl; woanders bricht er ab.
+    /// [ORIGINAL] em.exe 0x5DBE5 (Datei 0x5E5ED–0x5E667: Taste 3 auf einem Dateieintrag baut Verzeichnis + Name in einem
+    /// lokalen Puffer, ruft die Spielstand-Info 0x5B661 und bleibt im Dialog; das Namensfeld [bp+6] bleibt unberührt.
+    /// Taste 3 sonst bricht ab: 0x5E79F). [APPROX] Das Infofeld von 0x5B661 (Kopf des Spielstands) ist nicht nachgebaut (#326).
+    /// </summary>
+    private bool TryRightClickEntry(InputState input)
+    {
+        for (var column = 0; column < Columns; column++)
+        {
+            for (var row = 0; row < RowsPerColumn; row++)
+            {
+                if (input.MouseX < 0 || !EntryRect(column, row).Contains(input.MouseX, input.MouseY))
+                    continue;
+                return EntryAt(column, row) is { Kind: SaveEntryKind.Save };
+            }
+        }
+        return false;
+    }
+
     private void ChangePage(int delta) => _page = Math.Clamp(_page + delta, 0, PageCount - 1);
 
-    /// <summary>Erster Klick wählt den Spielstand (Name erscheint), ein weiterer auf denselben führt aus.</summary>
+    /// <summary>Erster Klick wählt den Spielstand (Name erscheint), ein weiterer auf denselben (oder bei gleichem Namen im Feld) führt aus.</summary>
     private void ClickEntry(int index, SaveEntry entry)
     {
-        if (_selected == index)
+        // [ORIGINAL] em.exe 0x5E66A–0x5E68C: gleicher Name wie im Feld → ausführen, sonst Name übernehmen.
+        if (_selected == index || string.Equals(_name, entry.BaseName, StringComparison.OrdinalIgnoreCase))
         {
             Execute();
             return;

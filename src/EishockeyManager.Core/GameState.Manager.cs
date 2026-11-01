@@ -53,6 +53,7 @@ public sealed partial class GameState
         {
             Stadium = Stadium.ForLeague(Clubs[manager.ClubIndex].League, Setup.Duration == GameDuration.EineSaison),
             CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga,
+            Youth = YouthTeam.StartTeams(Clubs[manager.ClubIndex].League), // Spur finanzen-rest (FinanceYouth.cs)
         };
 
     /// <summary>Bucht einen Betrag auf das Konto und ins Finanzbuch.</summary>

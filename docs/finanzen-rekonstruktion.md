@@ -29,7 +29,7 @@ im Remake rechnet in DM (÷ 3 am Ende).
 - Stadion: Überdachung = 2 − Start-Liga (Oberliga OHNE DACH, 2. Liga HALBOFFEN, Bundesliga HALLE); Anzeigetafel,
   Kühlanlage und Verkehrsanbindung 1 nur in der Bundesliga; Gastronomie 1 (Imbißbude) in Bundesliga und 2. Liga;
   Zustand 2 (MITTEL); Sitzkomfort, Kino, Bowling 0. Plätze: Stehplätze += 2.500 (Sitzplätze je Liga aus Tabelle).
-- Jugendteams: 3 Teams, Förderung 0 (Spieler setzt sie im Bildschirm Jugend in 10.000-DM-Schritten, Deckel
+- Jugendteams: 3 Teams auf Platz 6 der Start-Liga, Förderung 0 (Schritt 500 · 2^Team, Deckel
   10.000 · 2^Team).
 
 ## Monatsabschluss (`0x3F02C` ff., am Monatsletzten)
@@ -444,6 +444,139 @@ Rest in der unteren Hälfte: Logos, Schriftkanten und die Übersicht rechts (nic
   117 + 71·k < x < 174 + 71·k, y < 54, nur besetzte Kästen (`0x59B40`, Tabelle `DGROUP 0x553B`); Aktie x < 47, y > 101,
   Index (y − 102) / 34 (`0x59BF2`) – nur die Logospalte, nicht das Infofeld. Im Remake `FinanceScreen.BankSelectArea`,
   `PartnerSelectArea`, `StockSelectArea`; das Bankbild öffnet dort zusätzlich das Finanzbuch (`[APPROX]`, Remake).
-- Rechts neben dem Verlauf (x 240/241, y 104–236, `0x58DF6`–`0x58EC5`) liegt ein Regler für Ausschnitt und Maßstab
-  (Maßstab 2–64); im Remake nicht nachgebaut – eigenes Paket (Entscheidung Nutzer, 30.10.2026).
+- Regler für Ausschnitt und Maßstab: siehe Abschnitt „Kursverlauf-Regler“ (Spur `finanzen-rest`, Teil 3, #196).
 - Die Basiswerte `0x1FD` sind vorbelegte Daten und werden bei „Neues Spiel“ ohne Programmneustart nicht zurückgesetzt.
+
+## Jugendteams – Funktionskarte 0x3A24B (Spur `finanzen-rest`, Teil 1)
+
+Overlay 0xF8, Dateioffset 0x3A24B (Bildschirm), 0x39BBD (Förderbalken), 0x39AD6 (Kästchen). Managersatz DGROUP
+`0xA078 + 0x15 · Manager`: Platz je Team `+0..2`, Liga `+3..5` (0-basiert), Förderung `+6` (3 Langwörter, Umrechnung über
+DGROUP 0x79D/0x7A1). Umgesetzt in `Core/FinanceYouth.cs` und `UI/Screens/Manager/YouthScreen.cs` (`[ORIGINAL]` mit Fundstelle).
+
+| Befund | Original | Remake vorher | Beleg |
+|---|---|---|---|
+| Plätze je Jugendliga | 12, Fahne 2 px je Platz: Stangenspitze `y = 0x36 + 24 · Liga + 2 · Platz` (0x3A3B2) | 6, 4 px je Platz | Folge 4 0:28:25 „12.Platz 3.Liga“ an der Unterkante (Spitze 121 = 124 − 3) |
+| Startstand | Platz 5 (= 6.), Liga = Start-Liga (Spielstart 0x29BAA/0x29BC1, DGROUP 0x11A) | 6. Platz 3. Liga für alle | UI-Video 8:35 (Oberliga) |
+| Förderschritt | `500 · 2^Team` (0x3A6B7, LXMUL) | 1.000 für alle | UI-Video 8:36 Schüler 1.000 = 2 Schritte, 8:38 Jugend 2.000 |
+| Förderdeckel | `10000 · 2^Team` (0x3A72F) | 10.000 für alle | UI-Video 8:39 „Jugend : 19000“ |
+| Klick in den Balken | `⌊⌊(x − 120) · 2^Team · 10000 / 70⌋ / Schritt⌋ · Schritt` für x 121–190 (0x3A798) | gerundeter Anteil | Videowerte oben |
+| Pfeile | Zeile y 168–177 (+ 24 · Team) über die volle Breite: x > 190 + Schritt bis zum Deckel, x < 121 − Schritt bis 0 | fehlten | – |
+| Balken | Umriss (120\|167)–(190\|178) Farbe 0x1D, innen 5; Füllung Kästchen (121\|y+1)–(119+w\|y+10), `w = Förderung · 70 / Deckel`, ab w > 2 | Y 168, Farben 50/48, Füllung flach | UI-Video 8:37: dunkle Umrisslinien x 120/190, y 167/178 |
+| Kästchen | hell oben/links, Mitte, dunkel unten/rechts, Farben DGROUP 0x4EAE `{18,17,16}{15,13,12}{23,22,8}`; Farbkästchen (110\|y+2)–(117\|y+7) | flach 7 × 5 bei y+3 | Video: Kästchen y 169–174 |
+| Teamfarben (Stange, Schrift) | DGROUP 0x4ED5 = 18, 15, 23 | 18, 15, 151 | – |
+| Fahne | kb\33 (Grafik 0x21) ab x = 30 + 16 · Team, 16 × 10, an (x\|y − 3) | gezeichnet | Video 8:35 Spitze y 109 |
+| Beschriftung | Grundlinie y − 5, bei y < 0x70 außerhalb 0x43–0x47/0x5B–0x5F 16 px tiefer (0x3A435) | fest 21 px über der Stange | Video: Schrift y 103–107 |
+| Förderfenster | Rahmen bei (104\|156) | 157 | Video 8:37 Oberkante 156, Unterkante 1 px höher |
+| Innenfläche beider Fenster | Farbe 4 (81, 113, 130) | 2 | Video 8:37 (77, 111, 129) |
+
+**`[APPROX]`, offen:** Durchsichtige Farbe der Fahnen = Hintergrundfarbe 4 der Grafik (Blit-Parameter 0xC0 nicht
+entschlüsselt); Abstand „n.Platz“ – „m.Liga“ gemessen (im Original eine Zeichenkette mit Feldbreite DGROUP 0x374); die
+Startliga nimmt die Liga des Managervereins beim ersten Zugriff auf die Finanzdaten. **Wirkung der Förderung nicht
+übernommen:** Datei 0x39DEC (monatlich, Teamstärke je Jugendteam `+(−3)` = DGROUP 0xA075, Zufall über 0x120:0x57/0x61)
+und 0x3A13B (Saisonwechsel: Auf- und Abstieg) sind noch nicht zugeordnet; `SettleYouth` bleibt `[APPROX]`. Rabatt der
+Talentsuche weiter je volle 1.000 DM Förderung (`[APPROX]`, Bezug unverändert). Alte Spielstände behalten ihre Plätze 1–6
+(jetzt in einer Liga mit 12 Plätzen) und ihre Förderung; keine Migration nötig, weil sich kein Feld ändert.
+
+**Pixelvergleich** (normierte Kreuzkorrelation der Graustufen, Remake gegen Videobild; vorher `main` 48c027e):
+
+| Bereich | Videobild | vorher | nachher |
+|---|---|---|---|
+| Förderfenster (106–197 × 160–230), Jugend 19.000 | UI 8:39 | 0,52 (beste Verschiebung dy = 1) | 0,79 (dy = 0) |
+| Förderfenster, Ausgangsstand | UI 8:35 | 0,61 (dy = 1) | 0,74 (dy = 0) |
+| Fahnen und Schrift (58–249 × 104–126), 12. Platz 3. Liga | Folge 4 0:28:25 | 0,34 | 0,47 |
+| Fahnen und Schrift, 6. Platz 3. Liga | UI 8:34 | 0,58 | 0,55 |
+
+Die Lage stimmt zeilengenau (Stangenspitze, Fahne, Schrift); der Rest der Abweichung sind Videounschärfe, die Stange in
+voller Teamfarbe (Video verwischt) und die unveränderte Achse links. Szenario `jugend-original` (`Tools/Scenarios/FinanzenRest.cs`).
+
+## Bandenwerbung – Angebots- und Vertragsfeld 0x2A9AD (Spur `finanzen-rest`, Teil 2)
+
+Overlay 0xE0, Datei 0x2A9AD (Feld unten), Aufrufer 0x2B0C0 (Bildschirm Werbung) mit Modus 0 = Vertrag der angeklickten
+Fläche (0x2B633, Satz DGROUP `0xC15B + 0x6E · Manager + 10 · Fläche`) und Modus 1 = Angebot beim Blättern (0x2BE95, Satz
+`0xC313 + 500 · Manager + 100 · Art + 10 · Partner`). Satz: `+0` Betrag (Drittel-DM), `+4` Banden (Angebot) bzw. Partner
+(Vertrag), `+5` Laufzeit bzw. Restmonate, `+6` Option (Bit 0x80 = kündbar), `+7` Logo. Text 0x30:0x885 (Farbe 0, ohne
+Schatten). Umgesetzt in `UI/Screens/Manager/AdvertisingScreen.cs` (`PanelTexts`, `[ORIGINAL]` mit Fundstelle).
+
+| Befund | Original | Remake vorher | Beleg |
+|---|---|---|---|
+| Schrift | Bezeichnung x 156, Wert „: …“ als ein Text bei x 191, Grundlinien 179/189/197/205, Farbe 0 | x 155, Doppelpunkt 190, Wert 194, Farbe 144 | Video 6:40: Schrift ab x 156 |
+| Dauer | „: n“, mit Option „ - n+Option“, „ Monat“ + „e“ bei n > 1 oder Option (0x2AB6F–0x2AC27) | „n Monat(e)“, Option fehlte | – |
+| Vertrag | „Prämie“ statt „Angebot“ (0x2AD91); „! Option !“ bei x 275, wenn Restlaufzeit 0 und Option (0x2AC51); Banden = Zahl der Banden desselben Partners (0x2AD15) | „Angebot“, kein Hinweis | – |
+| Klick auf eine Fläche | zeigt den Vertrag (Modus 0), Blättern beginnt neu | zeigte das zuletzt geblätterte Angebot | – |
+| Angebot ohne freie Banden bzw. auf belegter Fläche | Angebotssatz wird gezeigt, nur „Annehmen“ fehlt (0x2BF7A–0x2BFD6) | „Es liegt momentan kein Angebot vor...“ | – |
+| Gesperrte Eistafel | Feld bleibt leer (0x2B589) | „kein Angebot“ | – |
+| Logo | 0x30:0x16D: 35 × 25 aus kb\11 (Spalte 0 bzw. 35 für Sender, Zeile 25 · Logo) nach (100\|179) | 33 × 23 bei (101\|180) auf weißer Fläche | Video 6:40 |
+| Leere Fläche | schwarz (100\|179) 35 × 25 (0x30:0x800, rechts/unten ausschließlich) | ganzer Kasten schwarz, auch ohne Auswahl | Video 6:20 schwarz, 6:24 hohl |
+| Umrandung Logokasten | (99\|178)–(135\|204) Farbe 0x18, beim Blättern 7 (0x2B6AD/0x2B719) | Farbe 213 bzw. 7 als Fläche | Video 6:24 gelb, 6:40 hell |
+| Pfeile | kb\4 (20\|0) 10 × 17 bei (138\|183), Rahmen (137\|182)–(148\|200) Farbe 0x18 (0x2B2CE/0x2B300) | gezeichnet | – |
+| Trennlinie | 0x30:0x995 (90\|213)–(310\|213), Farbe 0x1C | (89\|212), 223 px, Farbe 144 | Video: dunkle Zeile 213, Rotanteil ≈ Farbe 28 |
+| Auswahlrahmen | Farbe 0x12 (0x2B63F) | 110 | – |
+
+**Restlücken (nicht umgesetzt, weil Spielzustand und Schema betroffen):**
+- **Kündbar:** Beim Aufstieg setzt 0x2713F (Saisonende, nach der Aufstiegsprämie 0x270A8) in allen elf Verträgen Bit 0x80
+  der Option. Solche Verträge zeigen im Vertragsfeld „Kündbar.“ (x 275, 0x2AC84), zählen als freie Fläche bzw. freie Bande
+  (0x2BAF3, 0x2BECD) und werden beim Annehmen eines neuen Angebots überschrieben (0x2BB3E). Braucht ein Vertragsfeld im
+  Spielstand (Schema) und einen Anschluss am Saisonende.
+- **Verfall offener Optionen:** Beim Verlassen des Hauptmenüs (Ende des Zuges, 0x45996–0x45A4F) löscht das Original jeden
+  Vertrag mit Restlaufzeit 0 und Option ≠ 0. Wer die Verlängerung nicht im selben Zug durch Klick verhandelt, verliert den
+  Vertrag; im Remake bleibt er bis zum Klick und zahlt weiter.
+- **Blättern:** ohne Umlauf (0x2BE10–0x2BE3C: Partner 0 bis 9 bzw. 4); Startpartner beim ersten Blättern (0x2B92E–0x2B999)
+  nicht sicher gedeutet. Remake blättert weiter im Kreis (`[APPROX]`). Gedrückte Pfeile (0x120:0x3E) nicht nachgebaut.
+- Summenzeilen (0x2AE8A) und Knöpfe „Info“/„Annehmen“ (0x120:0x75) nicht nachgemessen.
+
+**Pixelvergleich** (normierte Kreuzkorrelation der Graustufen, Remake weichgezeichnet gegen Videobild; vorher Base
+`da3b15c`; Szenario `werbung-original` in `Tools/Scenarios/FinanzenRest.cs`):
+
+| Stand | Videobild | Feld (97–315 × 170–209) | Logo und Pfeile (97–150 × 176–206) | Trennlinie (88–312 × 211–216) |
+|---|---|---|---|---|
+| Start, nichts gewählt | UI 6:24 | 0,16 → 0,95 | 0,48 → 0,94 | −0,20 → 0,89 |
+| Leere Bande | UI 6:20 | 0,89 → 0,98 | 0,90 → 0,98 | −0,19 → 0,90 |
+| Angebot CCH, 12 Monate, 1 Bande, 3.454 DM | UI 6:40 | 0,76 → 0,90 | 0,82 → 0,95 | −0,20 → 0,89 |
+| JWE ohne Angebot | UI 6:44 | 0,72 → 0,90 | 0,78 → 0,93 | −0,20 → 0,89 |
+
+
+## Kursverlauf-Regler (Spur `finanzen-rest`, Teil 3, #196)
+
+Overlay 0x138, Bildschirmschleife ab Datei 0x58A57, Regler 0x58D1E–0x58F4D. Umsetzung: `FinanceScreen.UpdateRegulator`,
+Tests `ChartRegulatorTests`, Szenario `kursregler`.
+
+| Zuordnung | Fundstelle | Remake |
+|---|---|---|
+| Start: linke Taste (`[0x5A16] == 1`), Mausspalte 131–242 (`> 0x82`, `< 0xF3`), Mauszeile 107–235 (`> 0x6A`, `< 0xEC`) | 0x58D30–0x58D72 | `RegulatorArea` (das ganze Verlaufsfeld samt Rändern, nicht nur ein Streifen) |
+| Modus aus der Mausspalte beim Drücken: x < 180 (`0xB4`) = Ausschnitt, sonst Maßstab; später nicht neu gelesen | 0x58DA7 | `_dragOffset` |
+| Schleife bis `[0x5A16] == 2` (Taste losgelassen); je Runde neue Mauszeile, ab der zweiten auf 0x68–0xEA begrenzt; unverändert → kein Neuzeichnen | 0x58D88–0x58D98, 0x58F00–0x58F4D | `LeftDown`, `Math.Clamp` |
+| Höchster Wert aller 4 × 36 Verlaufswerte in Drittel-DM (`[bp-0x20]`) | 0x58BED–0x58C1A | `HighestHistory` |
+| Ausschnitt: Versatz = Maximum − (y − 106) · Maximum / 131 (vorzeichenbehaftete Langdivision, abgeschnitten) | 0x58DF6–0x58E35 | `_offset` |
+| Maßstab: (32 − (y − 106) · 32 / 131) · 2, mindestens 2 (Bereich 2–64) | 0x58E7E–0x58EC5 | `_scale` |
+| Streifen (Farbe 0, x 0x84–0x85 bzw. 0xF0–0xF1, Zeilen 0x68–0xEC) löschen, Marke 2 × 2 (Farbe 0x18) bei der Mauszeile | 0x58DB0–0x58DF3, 0x58E38–0x58E7B | `DrawRegulator` |
+| Neuzeichnen des Verlaufs über 0x88CA nur bei geändertem Versatz oder Maßstab; Maßstab beginnt bei jedem Betreten mit 2 | 0x58ECA–0x58EF5, 0x58CAF | `Enter`, `Draw` |
+
+Anders als im Befund von #196 liegen die Streifen an **beiden** Rändern des Verlaufs (x 132/133 für den Ausschnitt,
+x 240/241 für den Maßstab); die linke Taste im Verlaufsfeld löst den Regler aus, die rechte Maustaste hat hier keine
+Wirkung (`[0x5A16] == 1` ist Bedingung). Damit ist die offene Frage „welche Maustaste“ beantwortet.
+
+**Pixelvergleich:** Der Standardzustand (Maßstab 2, anfänglicher Ausschnitt) ist unverändert (`boerse-start`: 3,1 / 1,8 %).
+In den Referenzvideos (`oberflaeche`, 1 Bild/s; Bilder 540–620 zeigen die Börse) ist kein Zug am Regler zu sehen: keine
+Spalte x 131–133 oder 240–242 mit hellem 2 × 2-Block. Marke und Streifen sind daher aus dem Code, nicht aus dem Bild belegt.
+
+**`[APPROX]`:** Streifen und Marke bleiben nach dem Loslassen bis zum Verlassen des Bildschirms stehen (das Original löscht
+sie nicht; ob ein anderes Neuzeichnen sie später entfernt, ist nicht nachgeprüft). Der Klick auf eine Aktie setzt den
+Versatz wie bisher (0x59C6B), der Maßstab bleibt dabei erhalten. Die Anfangssuche des Ausschnitts (`InitialChartOffset`)
+rechnet weiter mit Maßstab 2.
+
+## Dateidialog (em.exe 0x5DBE5, Teil 4 der Spur `finanzen-rest`)
+
+Funktion Datei 0x5DBE5–0x5E88F (Ov 0x140), `SaveLoadScreen.cs`. Maustaste in `[0x5A16]`: 1 = links, 3 = rechts. Lokale Offsets +0x5DBE5.
+
+| Befund | Fundstelle | Remake |
+|---|---|---|
+| Liste: DOS-Suche, Verzeichnisse (Attribut 0x10) zuerst (höchstens 19), Dateien danach (höchstens 199); 3 Spalten × 16 Zeilen = 48 je Seite, Zeilenabstand 7, Spaltenabstand 80 | 0x5DD7D–0x5DFD5, 0x5E0C5 | stimmt (`EntryRect`) |
+| Laufwerksknöpfe: Anzahl aus `[0xE349]` (nur vorhandene), Lage x 53 + 59·i, y 207/220; LÖSCHEN = Knopf 7 mit Rückfrage | 0x5DD62, 0x5E705–0x5E77B | Lage stimmt; Laufwerke ohne Wirkung `[APPROX]` |
+| Linksklick auf Datei: Name im Feld gleich Eintrag → übernehmen und beenden, sonst Name ins Feld | 0x5E66A–0x5E6AF | umgesetzt (vorher nur „zweiter Klick auf denselben“) |
+| Rechtsklick auf Datei: Spielstand-Info 0x5B661 (Kopf bzw. „Kein Eishockey Manager Spielstand.“), Namensfeld unverändert, Dialog bleibt | 0x5E5ED–0x5E667 | Feld und Dialog unverändert; Infofeld fehlt `[APPROX]` (R9I-F1, #326) |
+| Rechtsklick sonst: Name leeren, beenden (Abbruch) | 0x5E79F | stimmt |
+| Klick auf Verzeichnis: wechseln und Liste neu lesen | 0x5E5CA–0x5E5DC | nicht umgesetzt (ein fester Ordner) |
+| Hover: Eintrag unter der Maus wird hervorgehoben (Farbe 0 / 3), ohne Taste | 0x5DE45–0x5DF2C | nicht umgesetzt, offen |
+| Beenden: Name ohne „.HOK“ wird um „.HOK“ ergänzt | 0x5DB4B–0x5DB7F | Remake nutzt „.ems“ |
+
+Tests: `SaveLoadScreenTests.RightClickOnEntry_TakesNameButDoesNotLeaveOrLoad`, `LeftClickOnEntry_WithSameNameTyped_LoadsAtOnce` (beide vor dem Fix rot). Zeichnung unverändert; Pixelvergleich nicht neu erhoben (Referenzbilder `oberflaeche_0100`–`_0103` wie in der Klassenbeschreibung).

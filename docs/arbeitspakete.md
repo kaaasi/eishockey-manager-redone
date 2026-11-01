@@ -77,7 +77,10 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 - **Abnahme:** je Teil roter Test mit Fundstelle, danach grün; Saisonverteilung (Meister ≥ 8 Saisons, Tore, Strafminuten)
   gegen Videos im PR; Mehrsaisonprobe Modus 1, 2, 4 passiv/aktiv; Referenzwerte begründet.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/spielberechnung.md`, `docs/dosbox-befunde.md` (eigener Abschnitt), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** Teile 1–5 fertig (#295 → #302 → #309 → #311 → #312); Integration zuletzt.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–5 fertig (#295 → #302 → #309 → #311 → #312), Integration
+  `integration/runde-9-spielberechnung-komplett` (zuletzt): #204 behoben (Wanderung der Teamwerte 0x9D1B); Anschluss
+  optionen-wirkung: Pokalspiele ohne Manager folgen dem Anzeigeschalter (0x3702E); Referenzwerte auf dem integrierten Stand
+  neu. Restlücken: 0x58DC (Verkauf an Computerverein), WM-Schalter im Bundestrainer-Abschnitt (0x5541F/0x5575A).
 
 ### Spur `transfer-vertraege-komplett` – Transfers und Verträge abschließen
 
@@ -98,7 +101,11 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
      gutgeschrieben wird Angebot − Angebot / 7 · Restlaufzeit statt des vollen Angebots. Geänderte Referenzwerte je Fall
      begründen; Mehrsaisonprobe (Kader, Geld). Branch `paket/transfer-vertraege-komplett-5`, Base `paket/transfer-vertraege-komplett-4`
      (#310), solange #310 offen ist.
-- **Modell:** Claude Opus 5.5. **Status:** Teile 1–4 fertig (#294 → #301 → #305 → #308 → #310); Teil 5 läuft.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–5 fertig (#294 → #301 → #305 → #308 → #310 → #319), Integration
+  `integration/runde-9-transfer-vertraege-komplett`: Schema 19 → 20 → 21 → 22 (Versicherung, Angebote, Spielerpool);
+  Entscheidungen Nutzer 01.11.2026 umgesetzt (Pool von 200 Spielern, Listenwechsel 0x494EF, Ablöse 0x49332). Restlücken:
+  Knöpfe der Transferliste 1 Pixel (Ursache offen); „hört am Saisonende auf“ beim Anklicken (0x46DD8); Verjüngung des Pools
+  nach v1.0 vorgemerkt.
 
 ### Spur `wettbewerbe-komplett` – Tabellen, Pokale, Nationalteam abschließen
 
@@ -113,7 +120,9 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   4. **#166 Oberliga-Austausch** nur, wenn der Austausch der Oberliga samt Managervereinen belegt wird; sonst Beleglage im PR.
 - **Abnahme:** je Teil roter Test bzw. Pixelvergleich mit Kennzahl; Mehrsaisonprobe Modus 1, 2, 4; Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/saison.md`, `docs/wettbewerbe.md` (eigene Abschnitte), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** Teile 1–4 fertig (#293 → #299 → #306 → #307; Teil 4 nur Beleglage, #166 → Runde 10).
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–4 fertig (#293 → #299 → #306 → #307), Integration
+  `integration/runde-9-wettbewerbe-komplett`; Schema 17 → 18 endgültig. Teil 4 nur Beleglage: Austausch samt Managervereinen
+  belegt, Folgesaison ohne Liga nicht → #166 in Runde 10 (Entscheidung Nutzer 01.11.2026).
 
 ### Spur `optionen-wirkung` – Spielstand-Optionen, Einstellungen, Kalender
 
@@ -133,8 +142,12 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
      (`GameOptions.LiveMode`, #298) werden ein Schalter; Optionsbildschirm des Originals bleibt die Bedienstelle, die
      Geräteeinstellung entfällt bzw. wird daraus abgeleitet; Migration alter Spielstände/Einstellungen; Pixelvergleich Bild
      48–51 unverändert. Branch `paket/optionen-wirkung-4`, Base `paket/optionen-wirkung-3` (#303), solange #303 offen ist.
-- **Modell:** Claude Opus 5.5 (Core-Logik), Teil 4 Claude Sonnet 5.5. **Status:** Teile 1–3 fertig (#292 → #298 → #303);
-  Teil 4 läuft.
+- **Modell:** Claude Opus 5.5 (Core-Logik), Teil 4 Claude Sonnet 5.5. **Status:** Teile 1–4 fertig (#292 → #298 → #303 → #321),
+  Integration `integration/runde-9-optionen-wirkung`: Schema 18 → 19 (Optionen); Begegnungstabelle mit der Kopf-an-Kopf-Liste
+  von `wettbewerbe-komplett` zusammengeführt (ein Speicher, DGROUP 0xAB7B). Teil 1: Index 9 = Live-Darstellung, Index 10–12
+  Anzeigeschalter (kein An-/Abmelden, Entscheidung Nutzer); Anschluss „Minutenweg bei Schalter an“ in `MatchEngine.Live.cs`
+  in der Integration von `spielberechnung-komplett`. Restlücken: Begegnungen/Serien aus DEB-Pokal, Europapokal, Play-offs
+  (0x50283) und Kurvenmaßstab 0x445E0 `[APPROX]`.
 
 ### Spur `finanzen-rest` – Restliche Finanz- und Managerbildschirme
 
@@ -145,14 +158,16 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   4. **Dateidialog** 0x5DBE5 (`SaveLoadScreen.cs`) gegen das Original.
 - **Abnahme:** je Teil Zuordnung mit Fundstelle, roter Test, Pixelvergleich mit Kennzahl; Mehrsaisonprobe bei Geld.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/finanzen-rekonstruktion.md` (eigener Abschnitt), Tests.
-- **Modell:** Claude Sonnet 5.5. **Status:** Teile 1–4 fertig (#291 → #300 → #304 → #313); Integration läuft.
+- **Modell:** Claude Sonnet 5.5. **Status:** Teile 1–4 fertig (#291 → #300 → #304 → #313), Integration `integration/runde-9-finanzen-rest`.
+  Restlücken: Wirkung der Förderung 0x39DEC/0x3A13B; „Kündbar“ beim Aufstieg und Verfall offener Werbe-Optionen; Marke des
+  Kursreglers ohne Referenzbild; Dateidialog: Verzeichniswechsel, Hover, Laufwerke, „.HOK“, Pfadzusatz (`[APPROX]`).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): letzter Schritt vor v1.0 (Entscheidung Nutzer).
 - Runde 10: Sonderrunde Analyse der unbekannten Teile von em.exe (Wunsch Nutzer 01.11.2026).
 - Nach Runde 10 (Runde 11, Entscheidung Nutzer 01.11.2026): P3-Befunde der Integration Runde 9 – #327, #329, #342, #344,
-  #347, #348, #354; Robustheit der Mehrsaisonproben (#352, #353).
+  #347, #348, #354, #358, #362, #363, #364; Robustheit der Mehrsaisonproben (#352, #353, #357).
 - #349 Spieltag mit Managerverein ganz in der Minutenrechnung: Remake-Verhalten bleibt; Original als Einstellung nach v1.0
   (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C).
 - #166 Saison eines Managers ohne Liga bzw. Oberliga-Austausch samt Managervereinen (Entscheidung Nutzer 01.11.2026, #307):

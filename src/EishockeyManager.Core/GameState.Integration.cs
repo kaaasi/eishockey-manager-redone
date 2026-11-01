@@ -13,6 +13,8 @@ public sealed partial class GameState
     /// </summary>
     internal void InitializeManagerSystems()
     {
+        // Spur transfer-vertraege-komplett: Startgehalt der Kaderplätze der Manager = Wert(Gehalt) (0x29EE4), ohne Zufall.
+        ApplyStartSalaries();
         _ = Stocks;
         foreach (var manager in Managers)
         {
@@ -41,6 +43,9 @@ public sealed partial class GameState
     /// <summary>Tagesablauf der Vereinssaison (Finanzen, Training, Markt, Verträge, Statistik).</summary>
     private void OnDayClubSeason(int day)
     {
+        // Spur transfer-vertraege-komplett: offene Verhandlungen am Saisonende enden vor dem ersten Tag wie „Abbruch“ (0x27D91).
+        ResolveRenewals();
+
         // Finanzen: Tages-, Wochen- und Monatswechsel bis einschließlich heute
         AdvanceFinanceTo(day);
 
@@ -57,6 +62,13 @@ public sealed partial class GameState
         // (vor der Titelvergabe in FinishSeason; Liga, Pokale und Abschlusstabellen stehen dann fest).
         if (day == SeasonCalendar.SeasonEnd)
             RecordSeasonStatistics();
+
+        // Spur spielberechnung-komplett (#204): kleine Wanderung der Teamwerte zweimal je Woche (0x5525A–0x55292)
+        if (MatchEngine.IsDriftDay(day))
+            MatchEngine.DriftTeamValues(this, TeamValueDrift.Weekly);
+
+        // Spur spielberechnung-komplett, Teil 3: Verletzungen heilen wochenweise (0x7C12 im Tageslauf 0x07169)
+        HealInjuries(day);
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>
@@ -67,6 +79,10 @@ public sealed partial class GameState
         ResetMatchCounters(); // Spur spielberechnung: Spielerzähler je Saison (MatchEngine.Live.cs)
         ResetLeaguePenalties(); // Spur statistiken: Strafminuten der Fair-Play-Tabelle (StatisticsClub.cs, 0x5647A)
         ResetPowerPlayStatistics(); // Spur statistiken-verein: Über-/Unterzahl je Manager (StatisticsClub.cs, 0x5588E)
+        // Spur spielberechnung-komplett (#204): große Wanderung der Teamwerte nach Auf- und Abstieg (0x56448).
+        // [APPROX] nicht im Modus „nur Weltkugel“ (dort kein Tageslauf, 0x54CEE; Saisonwechsel nicht geprüft).
+        if (!WorldOnly)
+            MatchEngine.DriftTeamValues(this, TeamValueDrift.Season);
     }
 
     /// <summary>

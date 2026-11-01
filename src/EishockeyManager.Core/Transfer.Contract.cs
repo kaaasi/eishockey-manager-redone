@@ -130,12 +130,17 @@ public sealed partial class GameState
 
     /// <summary>
     /// Nach dem Saisonende (Tageszähler 0x3B7 &gt; 232)? [APPROX] Das Remake hat zwischen dem Bildschirm „Saisonende“ und
-    /// der neuen Saison keine Spieltage; als „nach dem Saisonende“ gilt die Phase <see cref="SeasonPhase.SeasonOver"/>.
+    /// der neuen Saison keine Spieltage; als „nach dem Saisonende“ gilt die Phase <see cref="SeasonPhase.SeasonOver"/> und die Zeit
+    /// der Verhandlungen am Saisonende (<see cref="HasPendingRenewals"/>: Original 0x26F20 mit 0x3B7 = 233, Datei 0x26F55).
     /// </summary>
-    public bool AfterSeasonEnd => Phase == SeasonPhase.SeasonOver;
+    public bool AfterSeasonEnd => Phase == SeasonPhase.SeasonOver || HasPendingRenewals;
 
-    /// <summary>Restanteil der Saison für die Gehaltsrechnung (nächster Spieltag = gespielte + 1).</summary>
-    public int ContractSeasonRemaining => ContractRules.SeasonRemaining(PlayedMatchDays + 1);
+    /// <summary>
+    /// Restanteil der Saison für die Gehaltsrechnung (nächster Spieltag = gespielte + 1). [APPROX] Während der Verhandlungen am
+    /// Saisonende (Spieltage schon zurückgesetzt) wie in der Phase <see cref="SeasonPhase.SeasonOver"/>: nächster Spieltag 45.
+    /// </summary>
+    public int ContractSeasonRemaining => ContractRules.SeasonRemaining(
+        (Phase != SeasonPhase.SeasonOver && HasPendingRenewals ? ContractRules.SeasonMatchDays : PlayedMatchDays) + 1);
 
     /// <summary>
     /// Täglich (Tagesablauf 0x07169, Datei 0x76E5–0x76F6): Verhandlungssperren der Spieler aller Manager zählen um einen Tag
