@@ -48,8 +48,8 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 - `Core/Season.cs`, `Core/Playoffs.cs`, `Core/CupsGroup.cs`, `Core/Cups*.cs` außer `CupsNationalMode.cs`, `Core/SeasonFlow.cs`,
   `Core/SeasonRecord.cs`, `Core/StatisticsHistory.cs`, `UI/Screens/TableScreen.cs`, `UI/Screens/Competitions/*`: allein
   `wettbewerbe-komplett`. **Ausnahme:** `optionen-wirkung` darf in `SeasonFlow.cs` nur einfügen (ohne Signaturänderung, im PR
-  benannt): Filter der Wettbewerbe nach den Spielstand-Schaltern in `MatchOn` und `ProcessDay`, An-/Abmelden der Pokale in
-  `StartNextSeason` und den Moduswechsel. `Season.cs` (statische Tagestabelle) und `Cups*.cs` ändert sie nicht; wäre das
+  benannt): An-/Abmelden der Pokale nach den Spielstand-Schaltern in `StartNextSeason` (vor `StartSeason`, Reihenfolge
+  DEB-Pokal → Europapokal → WM) und den Moduswechsel; **keine** Filter in `MatchOn`/`ProcessDay` (#289). `Season.cs` (statische Tagestabelle) und `Cups*.cs` ändert sie nicht; wäre das
   nötig, gilt der Teil als blockiert (`spur-start.md`, Teile und Fortsetzung, Schritt 4).
 - `Core/CupsNationalMode.cs`, `Core/GameSetup.cs`, neue Datei `Core/GameOptions.cs`, `UI/Screens/SettingsScreen.cs`,
   `Settings.cs`, `CalendarScreen.cs`, `SetupScreen.cs`: allein `optionen-wirkung`.

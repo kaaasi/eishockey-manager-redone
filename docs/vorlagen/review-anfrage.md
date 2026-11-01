@@ -11,6 +11,9 @@
 > die Review-Datei mit Agenten-Trailer und öffne einen Review-PR gegen `main`. Diese GitHub-Schreibaktionen sind
 > ausdrücklich autorisiert. Nicht mergen. Falls Schreiben nicht möglich ist, stelle die fertige Datei bereit.
 
+Als **geplanter Lauf** zusätzlich „Unbeaufsichtigt, keine Rückfragen.“ und – wenn Originaldaten, Spielstände oder Bilder nötig
+sind – der Zugriffsabsatz aus `spur-start.md` (Kurzaufruf „Geplanter Lauf“).
+
 Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, bisher geprüfter Head `<sha>`, nur Delta
 `<alt>..<neu>` und die genannten Befunde.“ Ablage dann `…-nachpruefung.md`.
 

@@ -21,4 +21,10 @@
    Startaufrufe nur als Kurzaufruf aus `docs/vorlagen/spur-start.md`. Abgeschlossene Runden nach `docs/archiv/` verschieben.
 6. **Immer zum Schluss:** Übergabekommentar nach `docs/handoffs/VORLAGE.md` in jedem PR, an dem die Sitzung gearbeitet hat
    (Integration, Plan); ohne PR als `docs/handoffs/<datum>-<thema>.md` auf eigenem Branch.
-7. Antwort an den Nutzer **knapp** (`AGENTS.md` §7): Ergebnis, Entscheidungsbedarf, nächster Schritt, Kurzaufrufe.
+7. **Geplante Läufe** (Spuren, Fortsetzungen, Reviews): Geplante Läufe erhalten nur die Repos, die die **anlegende Sitzung**
+   eingebunden hat (beobachtet 01.11.2026: zwei Spurläufe ohne Referenz-Repo blockiert, #291, #295); `add_repo` steht im Lauf nicht verlässlich bereit. Deshalb vor dem ersten `create_trigger` der Sitzung
+   beide Repos per `add_repo` einbinden (`eishockey-manager-redone` push, `eishockey-manager-referenz` read) und mit
+   `git ls-remote https://github.com/kaaasi/eishockey-manager-referenz HEAD` prüfen. Jeder Startaufruf enthält den
+   Zugriffsabsatz aus `spur-start.md` (Kurzaufruf „Geplanter Lauf“). Modell nach dem Anlegen mit `update_trigger` setzen,
+   wenn es von Opus abweicht (nur auf Wunsch des Nutzers bzw. laut Plan).
+8. Antwort an den Nutzer **knapp** (`AGENTS.md` §7): Ergebnis, Entscheidungsbedarf, nächster Schritt, Kurzaufrufe.
