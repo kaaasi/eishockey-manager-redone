@@ -93,9 +93,9 @@ public class MeetingHistoryTests
         for (var change = 0; change < 4; change++)
         {
             PlayToSeasonEnd(game);
-            counts.Add(game.MeetingTable(manager).Count(v => v != MeetingHistory.Empty));
+            counts.Add(ClubEntries(game, manager));
             game.StartNextSeason();
-            Assert.Equal(counts[^1], game.MeetingTable(manager).Count(v => v != MeetingHistory.Empty));
+            Assert.Equal(counts[^1], ClubEntries(game, manager));
         }
 
         Assert.True(counts[0] > 0);
@@ -128,6 +128,30 @@ public class MeetingHistoryTests
         Assert.Equal(["H 3:1"], game.MeetingEntries(other));
         Assert.Equal(0x02, game.MeetingTable(0)[(NationalTeams.Germany + 1) * 10]);
     }
+
+    /// <summary>
+    /// R9O-01 (#343): Der Ligaspieltag schreibt die Begegnung (em.exe 0x50283 → 0x4F5A8) – in Infoleiste und Gegner-Fenster
+    /// dieselbe. Über den echten Spieltag, nicht über <see cref="GameState.RecordMeeting"/> direkt.
+    /// </summary>
+    [Fact]
+    public void LeagueMatchDay_WritesMeeting_SeenByInfoBarAndOpponentWindow()
+    {
+        var game = TestGames.Create();
+        var manager = game.ActiveManager;
+        var played = game.PlayedMatchDays;
+        TestSeason.PlayMatchDay(game);
+
+        var result = game.Results.Single(r => r.MatchDay > played && r.Involves(manager.ClubIndex));
+        var home = result.Home == manager.ClubIndex;
+        var opponent = home ? result.Away : result.Home;
+        var (own, against) = home ? (result.HomeGoals, result.AwayGoals) : (result.AwayGoals, result.HomeGoals);
+        Assert.Equal([$"{(home ? "H" : "A")} {own}:{against}"], game.MeetingEntries(opponent));
+        Assert.Contains(own + (against << 4), game.HeadToHead(0, opponent));
+    }
+
+    /// <summary>Belegte Plätze gegen Vereine (ohne Länder, die über <see cref="GameState.EnterNationalResult"/> kommen).</summary>
+    private static int ClubEntries(GameState game, Manager manager) =>
+        game.MeetingTable(manager).Take(MeetingHistory.FirstNation * MeetingHistory.Slots * 2).Count(v => v != MeetingHistory.Empty);
 
     private static void PlayToSeasonEnd(GameState game)
     {
