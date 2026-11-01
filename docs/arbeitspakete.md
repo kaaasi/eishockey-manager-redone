@@ -94,7 +94,8 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/transfer.md`, Tests.
 - **Modell:** Claude Opus 5.5. **Status:** Teil 1 in PR #294 fertig (`--schnell` mit Original-Spielständen grün,
   Pixelvergleich Kauf/Saisonende in `docs/transfer.md`); Teil 2 in PR #301 ohne Start-/Wechselgehalt (Versicherung,
-  ganze DM als `[APPROX]`, Sperre); Rest von Teil 2 (Start-/Wechselgehalt = Wert(Gehalt)) und Teile 3–4 offen.
+  ganze DM als `[APPROX]`, Sperre); Rest von Teil 2 (Start-/Wechselgehalt = Wert(Gehalt), Laufzeit 1 nach Kauf) in PR #305;
+  Teile 3–4 offen.
 
 ### Spur `wettbewerbe-komplett` – Tabellen, Pokale, Nationalteam abschließen
 

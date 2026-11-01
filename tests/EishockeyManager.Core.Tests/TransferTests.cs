@@ -59,7 +59,7 @@ public class TransferTests
         Assert.DoesNotContain(listing, game.TransferMarket.Listings);
         Assert.Equal(money - offer, manager.Money);
         Assert.False(listing.Player.OnLoan);
-        Assert.Equal(2, listing.Player.ContractYears);
+        Assert.Equal(Contracts.PurchaseYears, listing.Player.ContractYears); // 1 Jahr (0x42CB1, transfer-vertraege-komplett Teil 2)
         Assert.DoesNotContain(club.Players, p => p != listing.Player && p.Number == listing.Player.Number);
     }
 
