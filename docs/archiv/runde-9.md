@@ -28,7 +28,7 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 
 - Jede Spur hat eine **geordnete Liste von Teilen**. Ein Lauf arbeitet die Teile der Reihe nach ab; jeder fertige Teil ist
   ein eigener PR (Branch `paket/<spur>-<n>`) mit Übergabe. Stapelregel, PR-Base, Rebase und Fortsetzung regelt verbindlich
-  [vorlagen/spur-start.md](vorlagen/spur-start.md), Abschnitt „Teile und Fortsetzung“.
+  [vorlagen/spur-start.md](../vorlagen/spur-start.md), Abschnitt „Teile und Fortsetzung“.
 - **Selbstfortsetzung:** Bleiben Teile offen, legt der Lauf vor dem Ende eine einmalige geplante Aufgabe an (Ablauf und
   Prompt-Format in `spur-start.md`). **Höchstens drei Fortsetzungen je Spur**; danach oder bei einem blockierten Teil
   entscheidet der Nutzer (PR-Label `spur-wartet`). Kein Lauf startet eine fremde Spur. Die Erlaubnis steht im Startaufruf

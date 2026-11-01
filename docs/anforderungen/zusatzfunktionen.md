@@ -25,6 +25,9 @@ entschlüsselt sind, ist das im Code mit [APPROX] markiert.
 
 ### 4. Netzwerkmodus mit Dedicated Server
 - **Anforderung:** Mehrspieler über das Netzwerk, auch mit eigenständigem Server.
+- **Leihen bei einem Mitmanager** (Entscheidung Nutzer 01.11.2026, E2 in `docs/analyse/re-geld.md`): Im Netzwerkspiel
+  (alle spielen den Spieltag gleichzeitig, er endet erst, wenn alle fertig sind) als Anfrage mit Zustimmung des Verleihers;
+  im lokalen Spiel wie im Original sofort.
 
 ### 5. Export und Import
 - **Anforderung:** Vereins- und Spielerdaten exportieren und importieren.

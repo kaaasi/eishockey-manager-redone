@@ -10,8 +10,8 @@ Inhalt unverändert bis auf die Überschrift. Ergebnisse und Reviews: `docs/revi
 
 ## Runde 5 – Restbefunde und Zurückgestelltes vor dem Live-Spiel (ab 29.10.2026)
 
-Runde 4 (Nationalteam-Aufstellung/-Taktik, Pokaltabellen, Highscore, Kachelsperren, #80): [archiv/runde-4.md](archiv/runde-4.md);
-Runde 3: [archiv/runde-3.md](archiv/runde-3.md); Runden 1–2: [archiv/runden-1-2.md](archiv/runden-1-2.md).
+Runde 4 (Nationalteam-Aufstellung/-Taktik, Pokaltabellen, Highscore, Kachelsperren, #80): [archiv/runde-4.md](runde-4.md);
+Runde 3: [archiv/runde-3.md](runde-3.md); Runden 1–2: [archiv/runden-1-2.md](runden-1-2.md).
 **Ziel der Runde (Entscheidung Nutzer, 29.10.2026):** offene Befunde schließen und die zurückgestellten Punkte klären,
 soweit sie ohne Live-Spiel belegbar sind. Danach bleiben bis v1.0 nur `livespiel` und die davon abhängigen Statistiken.
 **Base für alle Spuren:** aktueller `main` (≥ diesem Plan); den tatsächlichen Base-SHA trägt die Spur in ihren Draft-PR ein.

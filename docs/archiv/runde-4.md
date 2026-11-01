@@ -11,7 +11,7 @@ R4-02 (#109) behoben; P3-Befunde H2-01–H2-04 (#114–#117) und das Zurückgest
 ## Runde 4 – Lücken bis v0.9 ohne Live-Spiel (ab 29.10.2026)
 
 Runde 3 (Kader, Wettbewerbe, Finanzen, Speichern, Spielmodus „nur Weltkugel“):
-[archiv/runde-3.md](archiv/runde-3.md); Runden 1–2: [archiv/runden-1-2.md](archiv/runden-1-2.md).
+[archiv/runde-3.md](runde-3.md); Runden 1–2: [archiv/runden-1-2.md](runden-1-2.md).
 **Base für alle Spuren:** aktueller `main` (≥ diesem Plan); den tatsächlichen Base-SHA trägt die Spur in ihren Draft-PR ein.
 Weiterhin verbindlich: Mehrsaisonprobe für jede Spur, die Saisonwechsel, Kader oder Geld berührt; Spielstand-Schema
 mit Version und Migration für jeden neuen Zustand. Die Spuren sind unabhängig und laufen parallel; danach eine
