@@ -126,8 +126,9 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
   der nächsten vier Wochen (höchstens zwei offen).
 ### Einstellungen
 * Vollbild, Torszenen zeigen, Automatisch speichern; Lautstärke Soundeffekte (0–10); `F8` schaltet den Ton
-  stumm. Musik: nur im Titelbildschirm, sonst nirgends (Entscheidung Nutzer, #221) – keine Musikeinstellungen. Knopf „Spielstand“: lesende Anzeige der Spielstand-Optionen des Originals (Spielmodus, Drittelpause/
-  Ergebnisse/Tabelle je Liga, DEB-Pokal, Europapokal, WM-Spiele; `docs/reverse-engineering.md`), Umsetzung in `optionen-wirkung`.
+  stumm. Musik: nur im Titelbildschirm, sonst nirgends (Entscheidung Nutzer, #221) – keine Musikeinstellungen. Knopf „Spielstand“ (nur mit laufendem Spiel): Optionsbildschirm des Originals (em.exe 0x2CD1C, DOSBox-Bild 48) mit
+  Torszenen (drei Stufen), Spielgeschwindigkeit, Drittelpause/Ergebnisse/Tabelle je Liga, DEB-Pokal, Europapokal, WM-Spiele –
+  schaltbar, gespeichert im Spielstand (`docs/reverse-engineering.md`, „Optionsbildschirm“).
 ### Saisonende
 „Saisonende“ in großer Schrift, darunter Weltmeister, DEB-Pokal, Deutscher Meister, Europa-Pokal und je Liga
 Aufsteiger (rot) und Absteiger (grün). Nach der gewählten Spieldauer folgt das Spielende mit Highscore.

@@ -144,38 +144,20 @@ public class SettingsScreenTests : IDisposable
         Assert.True(GameSettings.Current.AutoSave);
     }
 
-    [Theory]
-    [InlineData(GameMode.WorldOnly, false, false, true)]
-    [InlineData(GameMode.ClubOnly, true, false, false)]
-    [InlineData(GameMode.Full, true, true, true)]
-    public void GameOptionsView_ShowsCompetitionsOfMode(GameMode mode, bool cup, bool europe, bool world)
-    {
-        var v = GameOptionsView.For(mode);
-        Assert.Equal((cup, europe, world), (v.GermanCup, v.EuropeanCup, v.WorldCup));
-        Assert.All(v.Matrix, on => Assert.False(on)); // [ORIGINAL] Anfangswerte DGROUP 0x21D..0x225 = 0
-        Assert.Equal(9, v.Matrix.Length);
-    }
-
-    /// <summary>Lesende Anzeige: Wechsel auf die Seite und Klicks darauf verändern weder Spielstand noch Einstellungen.</summary>
+    /// <summary>Knopf „Spielstand“ öffnet den Optionsbildschirm des Originals; das Öffnen ändert nichts.</summary>
     [GameDataFact]
-    public void GameOptionsPage_IsReadOnly()
+    public void OptionsButton_OpensGameOptionsScreen()
     {
         var d = Open();
         var screen = (SettingsScreen)d.Host.Current!;
         var game = d.Host.Game!;
         var money = game.ActiveManager.Money;
-        var settings = GameSettings.Current.Clone();
-        Assert.False(screen.ShowsGameOptions);
+        Assert.True(screen.ShowsOptionsButton);
         d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5);
-        Assert.True(screen.ShowsGameOptions);
-        d.Click(SettingsScreen.RowRect(SettingsScreen.Row.AutoSave).X + 10, SettingsScreen.RowRect(SettingsScreen.Row.AutoSave).Y + 5);
-        d.Click(170, 104);
+        Assert.IsType<GameOptionsScreen>(d.Host.Current);
         Assert.Equal(money, game.ActiveManager.Money);
-        Assert.Equal((settings.EffectsVolume, settings.GoalScenes, settings.Fullscreen, settings.AutoSave),
-            (GameSettings.Current.EffectsVolume, GameSettings.Current.GoalScenes, GameSettings.Current.Fullscreen, GameSettings.Current.AutoSave));
-        Assert.Equal(GameOptionsView.For(game.Mode), screen.GameOptions);
-        d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5); // zurück zu den Geräteeinstellungen
-        Assert.False(screen.ShowsGameOptions);
+        d.RightClick(10, 230);
+        Assert.Same(screen, d.Host.Current);
     }
 
     [GameDataFact]

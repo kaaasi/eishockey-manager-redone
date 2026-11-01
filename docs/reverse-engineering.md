@@ -597,11 +597,13 @@ Europapokal, WM-Spiele, Länderspiele:, Zeitung, Hintergrundgrafik, 1.Liga, 2.Li
 „V1.00 - Ende: “, „ (Level “) und 15 Schalter (Index 0–14). Schleife mit Mausereignis `DGROUP 0x5A16`: 1 = Klick
 auswerten, 3 = Verlassen (Rückkehr nach Freigabe des Puffers 0x38:0x70A).
 
-**Schalter** (Tabellen in DGROUP, je 15 Einträge): Breite in 8-Pixel-Schritten `0x4BCA` (alle 1 außer Index 9, 13, 14 = 0 bzw.
-9: 0), x `0x4BE8` = 130, 144, 158 (dreimal), 24, 188, 204, 218, 39, 54; y `0x4C06` = 222, 222, 222, 252, 252, 252, 282, 282, 282,
-200, 184, 214, 200, 244, 220 (Bildschirm-/Fensterkoordinaten, Trefferprüfung `y ≥ Tabelle`, `y < Tabelle + 0x13 − Breite·8`;
-`x < Tabelle + 0x17 − Breite·10`). Index 0–8 bilden eine 3 × 3-Matrix (Zeile · 3 + Spalte), Index 9 ist dreistufig,
-10–12 sind Schalter, 13–14 zählen über 0xE (`≥ 0xE` wirkt auf die Tabelle `DGROUP 0x120 + Manager` statt auf 0x21D).
+**Schalter** (Tabellen in DGROUP, je 15 Einträge): klein `0x4BCA` (Byte; 1 außer Index 9, 13, 14 = 0), **y** `0x4BE8` = 130, 144,
+158 (dreimal), 24, 188, 204, 218, 39, 54; **x** `0x4C06` = 222, 222, 222, 252, 252, 252, 282, 282, 282, 200, 184, 214, 200, 244, 220
+(Bildschirmkoordinaten; nachgeprüft in Spur `optionen-wirkung` Teil 2: der Zeichenaufruf 0x2CBC5 bekommt 0x4C06 vor 0x4BE8, x vor y
+wie bei 0x30:0x787 (0, 0, 319, 239); Trefferprüfung 0x2D2A6: `x ≥ 0x4C06`, `y ≥ 0x4BE8`, `x < 0x4C06 + 0x13 − klein·8`,
+`y < 0x4BE8 + 0x17 − klein·10` = Rechteck des Schalters). Index 0–8 bilden eine 3 × 3-Matrix **Liga · 3 + Zeile** (Index 0–2 =
+Spalte 1.Liga; die frühere Angabe „Zeile · 3 + Spalte“ war vertauscht), Index 9 ist dreistufig („Torszenen“), 10–12 sind
+Schalter, Index 13 (Hintergrundgrafik) liest DGROUP 0x22A, Index 14 (Scrolling) `DGROUP 0x120 + Manager` (`≥ 0xE`, Datei 0x2CFE6/0x2D3CA).
 
 **Zustand** (Anfangswerte aus der Datei): `DGROUP 0x21D…0x22B` = 0,0,0,0,0,0,0,0,0,0, **1**, 0,0,0,0 (Index 10 = DEB-Pokal = 1, Index 9 = 0;
 korrigiert nach R8-D03, nachgeprüft Datei 0x16FED ff. in Spur `optionen-wirkung`);
@@ -658,6 +660,35 @@ Optionen meldet einen Wettbewerb an oder ab, und keine wechselt den Spielmodus.*
   `GameOptions.CupMatchUsesMinuteLoop` als Abfrage für den Anschluss in `MatchEngine.PlayWithEvents` (Spur
   `spielberechnung-komplett` bzw. Leitstelle; PR #292). `SeasonFlow.cs` bleibt unverändert.
 
+### Optionsbildschirm (Spur `optionen-wirkung`, Teil 2)
+
+`UI/Screens/GameOptionsScreen.cs`, schaltet `GameOptions` (Spielstand). Aufbau aus 0x2CD1C–0x2D292 und 0x2CBC5/0x2CC26:
+
+| Teil | Beleg |
+|---|---|
+| Hintergrund kb\22, drei Fenster aus Rahmenteilen 24 × 19: (56 \| 1) 10 × 6, (92 \| 119) 9 × 3, (46 \| 179) 10 × 3 | 0x30:0x335 bei 0x2CD6D/0x2CD93/0x2CDB9 |
+| Schalter aus kb\33 (0x2CBC5): Quelle (klein · 19 \| (Wert = 0) · 23), Größe (19 − 8 · klein) × (23 − 10 · klein), Farbe 0xC0 durchsichtig; an = Pinguin, aus = Loch | Tabellen 0x4C06/0x4BE8/0x4BCA |
+| Torszenen = 2: Rechteck (207 \| 36)–(210 \| 38) Farbe 18, Ecken Farbe 9, (208 \| 37) Farbe 24; beim ersten Mal Meldung „Neuer Spielmodus:“ (Merker 0xE044) | 0x2D048, 0x2D470, 0x2D4EE; Tabellen DGROUP 0x4BD9/0x4BDE/0x4BE3 |
+| Spielgeschwindigkeit: Puffer 100 × 13 Farbe 4, acht kleine Schalter im Abstand 12, Pinguine = Wert / 9 + 1, nach (190 \| 84); Klick x 191–285, y 84–96 → `(x − 190) / 12 · 10` (also 0–70) | 0x2CC26, 0x2D51B |
+| Texte: Schrift 2 (Flow) „Torszenen“ … zentriert um x = 120, Grundlinie 35/55/75/95; Schrift 3 (Mini) Matrixzeilen um x = 150, Grundlinie 140/152/164, Pokale um x = 100, Grundlinie 193/209/225 (Farbe 7, Schatten 0); „1.Liga“ … linksbündig x = 215/245/275, Grundlinie 128, Farbe 30 | 0x30:0x885, 0x30:0x831 |
+| Kopfzeile Mini Farbe 1, x = 62, Grundlinie 10: „V1.00 - Ende: “ + Endjahr bzw. „ Nie.“ (0x5A14 ≥ 2000) + „ (Level “ + (6 − 0xED8) + „)“; zweite Zeile „RAM: … Bytes frei.“ Farbe 2, Grundlinie 16 | 0x2D0D5–0x2D1FB |
+| Rechtsklick (Mausereignis 3) verlässt den Bildschirm | 0x2D55D |
+
+Zentrierung (0x30:0x885 mit x1, x2): linke Kante = (x1 + x2) / 2 − Breite / 2, am Bild vermessen (bei ungerader Breite ein Pixel
+rechts von `CompetitionWidgets.Centered`).
+
+**Pixelvergleich** (`emtool screens gamedata <ziel> optionen` gegen DOSBox-Bilder 48–51, verlustfrei auf 320 × 240 verkleinert:
+Fensterinhalt ab (1 \| 26), jedes zweite Pixel): außerhalb der Masken **0 abweichende Pixel** in 48, 50 und 51 (bis auf 3 Pixel der
+DOSBox-Fensterecke). Maskiert: Kopfzeilen (Level hängt vom Manager ab, RAM-Zeile fehlt), Mauszeiger. Bild 49 weicht nur bei
+„Hintergrundgrafik“ ab (dort aus; im Remake fest an).
+
+**[APPROX]:** RAM-Zeile weggelassen; Speicherprüfung vor Torszenen-Stufe 2 (0x2D362: unter 200.000 Bytes frei → Meldung über
+0x13E5 ff. und Stufe 0) und die Folge des WM-Schalters über das Manager-Statusbyte (0x2D3D5, 0x30:0xB) nicht nachgebaut;
+Hintergrundgrafik und Scrolling fest an und nicht schaltbar (im Remake ohne Bedeutung); Meldung „Neuer Spielmodus:“ einmal je
+geöffnetem Bildschirm; Level der Kopfzeile vom aktiven Manager. Offen: In Bild 48 (Modus „nur Weltkugel“) ist WM-Spiele an, der
+Anfangswert der Datei ist aus – passt zur Sicherung 0x229 → 0x22C im Bundestrainer-Abschnitt (0x5541F), im Remake nicht
+nachgebaut; Hintergrundgrafik ist in Bild 48 an, DGROUP 0x22A in der Datei 0 – wer es setzt, ist nicht verfolgt.
+
 ### Teil 2 (Spur `optionen-kalender-2`)
 
 **Bildschirm = Einstellungen des Originals.** DOSBox-Bilder 48/49 (`dosbox/nur-weltkugel`, `docs/dosbox-befunde.md`) zeigen genau den
@@ -668,11 +699,8 @@ Bildschirm von 0x2CD1C: oben Fenster „Torszenen“, „Hintergrundgrafik“, �
 (**[APPROX]**, Wirkung nicht belegt). Der im Remake bisher angenommene Satz „Original hat keinen Einstellungen-Bildschirm“ war falsch.
 
 **Remake:** `SettingsScreen` behält die Geräteeinstellungen (Lautstärke, Torszenen, Vollbild, automatisch speichern – [APPROX], im
-Original nicht vorhanden) und bekommt den Knopf „Spielstand“ mit einer **lesenden** Seite (`GameOptionsView`): Spielmodus aus dem
-Spielstand, Matrix immer aus (das Remake kennt die Meldungsfilter nicht; Live-Ablauf: `livespiel`), Pokale aus dem Modus abgeleitet.
-Pixelvergleich mit Bild 48 **nicht** gemacht: das Remake zeichnet in seinem Layout (Rahmen, Lampen statt Pinguine), die
-Pinguin-/Loch-Grafiken und die Fenster des Originals sind nicht nachgebaut; Bildschirmfoto `einstellungen/03_spielstand_optionen`.
-Wirkung der Spielstand-Optionen in Core samt Migration: Folgepaket `optionen-wirkung`.
+Original nicht vorhanden); der Knopf „Spielstand“ öffnet bei laufendem Spiel den nachgebauten Optionsbildschirm (Spur
+`optionen-wirkung` Teil 2, Abschnitt „Optionsbildschirm“ unten).
 
 **Kalender (Einordnung, Disassembly `ndisasm -b 16`).**
 
