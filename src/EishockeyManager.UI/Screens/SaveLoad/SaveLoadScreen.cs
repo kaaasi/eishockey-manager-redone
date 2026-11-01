@@ -24,7 +24,8 @@ public enum SaveLoadMode
 /// </para>
 /// <para>
 /// <b>Abweichungen [APPROX]:</b> Das Video zeigt nur das Laden-Bild und keine Bedienung. Belegt ist das Klickverhalten (em.exe 0x5DBE5: Linksklick auf eine Datei übernimmt den Namen, bei gleichem Namen führt
-/// er aus; Rechtsklick auf eine Datei übernimmt den Namen ohne Abbruch; Rechtsklick sonst bricht ab). Nicht belegt ist das Bild des Speichern-Dialogs (hier derselbe Aufbau mit Titel
+/// er aus; Rechtsklick auf eine Datei zeigt die Spielstand-Info 0x5B661 und lässt Namensfeld und Dialog unverändert; Rechtsklick
+/// sonst bricht ab). Das Infofeld des Rechtsklicks fehlt hier [APPROX] (#326). Nicht belegt ist das Bild des Speichern-Dialogs (hier derselbe Aufbau mit Titel
 /// „Speichern“). Hier: Klick wählt den Spielstand und trägt seinen Namen ein, Enter oder ein zweiter Klick führt aus
 /// (Laden; Sichern überschreibt erst nach Rückfrage). Es gibt einen Ordner statt Laufwerken: die Laufwerksknöpfe sind
 /// gezeichnet, haben aber keine Wirkung. Seitenpfeile und „SEITE:“ blättern, wenn mehr als 48 Einträge da sind (Lage von
@@ -210,9 +211,10 @@ public sealed class SaveLoadScreen : Screen
     }
 
     /// <summary>
-    /// Rechtsklick auf einen Spielstand übernimmt nur den Namen und bricht nicht ab; woanders bricht er ab.
-    /// [ORIGINAL] em.exe 0x5DBE5 (Datei 0x5E5ED–0x5E667, Taste 3 auf einem Dateieintrag setzt den Namen und bleibt im Dialog,
-    /// Taste 3 sonst bricht ab: 0x5E79F). Der Pfadzusatz des Originals (Verzeichnis + Name) entfällt [APPROX], es gibt nur einen Ordner.
+    /// Rechtsklick auf einen Spielstand bricht nicht ab und ändert weder Namensfeld noch Auswahl; woanders bricht er ab.
+    /// [ORIGINAL] em.exe 0x5DBE5 (Datei 0x5E5ED–0x5E667: Taste 3 auf einem Dateieintrag baut Verzeichnis + Name in einem
+    /// lokalen Puffer, ruft die Spielstand-Info 0x5B661 und bleibt im Dialog; das Namensfeld [bp+6] bleibt unberührt.
+    /// Taste 3 sonst bricht ab: 0x5E79F). [APPROX] Das Infofeld von 0x5B661 (Kopf des Spielstands) ist nicht nachgebaut (#326).
     /// </summary>
     private bool TryRightClickEntry(InputState input)
     {
@@ -222,11 +224,7 @@ public sealed class SaveLoadScreen : Screen
             {
                 if (input.MouseX < 0 || !EntryRect(column, row).Contains(input.MouseX, input.MouseY))
                     continue;
-                if (EntryAt(column, row) is not { Kind: SaveEntryKind.Save } entry)
-                    return false;
-                _selected = IndexAt(column, row);
-                _name = entry.BaseName;
-                return true;
+                return EntryAt(column, row) is { Kind: SaveEntryKind.Save };
             }
         }
         return false;
