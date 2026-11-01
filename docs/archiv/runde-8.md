@@ -1,7 +1,7 @@
 # Archiv: Runde 8 – Funktionskarte: Spielerwert, Transfers, Tabellen, Statistiken (31.10.–01.11.2026)
 
 Aus `docs/arbeitspakete.md` ausgelagert am 01.11.2026, damit Agenten beim Einstieg nur die aktuelle Runde lesen.
-Inhalt unverändert bis auf die Überschrift und ohne den Abschnitt „Zurückgestellt“ (jeder Punkt in Runde 9 übernommen). Ergebnisse und Reviews: `docs/reviews/`. Nur bei Bedarf lesen.
+Inhalt unverändert bis auf die Überschrift, den ergänzten Absatz „Ergebnis“ und ohne den Abschnitt „Zurückgestellt“ (jeder Punkt in Runde 9 übernommen). Ergebnisse und Reviews: `docs/reviews/`. Nur bei Bedarf lesen.
 
 **Ergebnis:** Vorab `spielerwert` (#239, Review #247). Welle 1/2: Integration #250 (`befunde-p3`, `tabellen-original`,
 `nationalteam`, `statistiken`, `spielstaerke-manager`, `spielerinfo`, `transfer-original`, `optionen-kalender` Teil 1;

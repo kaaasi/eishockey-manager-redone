@@ -47,8 +47,10 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   `TransferDialog.cs`, `ContractsScreen.cs`, `UI/Screens/SeasonEnd*.cs`: allein `transfer-vertraege-komplett`.
 - `Core/Season.cs`, `Core/Playoffs.cs`, `Core/CupsGroup.cs`, `Core/Cups*.cs` außer `CupsNationalMode.cs`, `Core/SeasonFlow.cs`,
   `Core/SeasonRecord.cs`, `Core/StatisticsHistory.cs`, `UI/Screens/TableScreen.cs`, `UI/Screens/Competitions/*`: allein
-  `wettbewerbe-komplett`. **Ausnahme:** `optionen-wirkung` darf in `Season.cs` (Tagestabelle) und `SeasonFlow.cs` nur die
-  Abfrage der Spielstand-Schalter und den Moduswechsel einfügen (kleine, im PR benannte Stellen); `Cups*.cs` ändert sie nicht.
+  `wettbewerbe-komplett`. **Ausnahme:** `optionen-wirkung` darf in `SeasonFlow.cs` nur einfügen (ohne Signaturänderung, im PR
+  benannt): Filter der Wettbewerbe nach den Spielstand-Schaltern in `MatchOn` und `ProcessDay`, An-/Abmelden der Pokale in
+  `StartNextSeason` und den Moduswechsel. `Season.cs` (statische Tagestabelle) und `Cups*.cs` ändert sie nicht; wäre das
+  nötig, gilt der Teil als blockiert (`spur-start.md`, Teile und Fortsetzung, Schritt 4).
 - `Core/CupsNationalMode.cs`, `Core/GameSetup.cs`, neue Datei `Core/GameOptions.cs`, `UI/Screens/SettingsScreen.cs`,
   `Settings.cs`, `CalendarScreen.cs`, `SetupScreen.cs`: allein `optionen-wirkung`.
 - `Core/FinanceYouth.cs`, `Core/FinanceSponsors.cs`, `Core/FinanceStocks.cs`, `UI/Screens/Manager/*`,
@@ -112,8 +114,9 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 - **Teile:**
   1. **Optionen mit Spielwirkung** aus 0x2CD1C in Core (Zustand in `Core/GameOptions.cs` samt Migration; Index 9
      Moduswechsel, Index 10–12 DEB-Pokal, Europapokal, WM-Spiele) – auf den Belegen von `optionen-kalender`
-     (`docs/reverse-engineering.md`). Die Wirkung wird als Abfrage in `Season.cs`/`SeasonFlow.cs` angeschlossen (Ausnahme
-     unter „Zuständigkeit“). Zuerst R8-D03 klären (Anfangswert Index 9 vs. 10, `reverse-engineering.md` „Index 9 = 1“).
+     (`docs/reverse-engineering.md`). Die Wirkung wird in `SeasonFlow.cs` angeschlossen (Ausnahme unter „Zuständigkeit“) und
+     gilt **ab dem nächsten Saisonstart** (`[APPROX]`, solange 0x2CD1C nichts anderes belegt; kein halber Pokal mitten in
+     der Saison). Zuerst R8-D03 klären (Anfangswert Index 9 vs. 10, `reverse-engineering.md` „Index 9 = 1“).
   2. **Einstellungsbildschirm** nach Original-Layout (Bild 48) mit Pixelvergleich, Optionen schaltbar statt nur lesend.
   3. **Kalender** 0x43E21/0x43B1F/0x43C38/0x36169 – Bildschirm nur mit Videobeleg; 0x445E0 (Infoleiste „Vor dem ersten
      Spieltag.“) ist im Remake vorhanden und wird nur abgeglichen.

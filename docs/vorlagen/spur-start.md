@@ -18,7 +18,8 @@
 2. Einrichten nach `AGENTS.md` Abschnitt 3 (Claude Code: zusätzlich `CLAUDE.md`). Originaldaten nach `gamedata/`.
 3. Gibt es für die Spur schon einen offenen PR mit Bearbeiter? Dann nur nach Übergabekommentar weiterarbeiten,
    sonst den Nutzer fragen. Neu: Branch `paket/<spur>[-<teil>]` von aktuellem `main`, sofort Draft-PR mit
-   `Bearbeiter: <Agent>` und Base-SHA.
+   `Bearbeiter: <Agent>` und Base-SHA. **Geplante Läufe mit Teilen:** statt dieses Schritts und Schritt 5 gilt der Abschnitt
+   „Teile und Fortsetzung“ unten.
 4. Arbeiten nach den harten Regeln: reproduzieren → roter Regressionstest → Fix; Dateigrenzen; `[APPROX]`/`[ORIGINAL]`;
    Mehrsaisonprobe, wenn Kader, Geld oder Saisonwechsel berührt sind.
 5. Vor jedem Push: `git fetch origin && git rebase origin/main`, `tools/pruefen.sh --schnell` (siehe `AGENTS.md` §5).
@@ -34,7 +35,9 @@
 Gilt, wenn die Spur in `docs/arbeitspakete.md` eine geordnete Liste von Teilen hat und der Startaufruf die Fortsetzung erlaubt.
 
 1. **Stand ermitteln:** offene PRs der Spur (`paket/<spur>-<n>`) und den letzten Übergabekommentar lesen. Dort steht
-   „Fortsetzungen verbraucht: n von 3“. Nennt der Startaufruf einen anderen Zähler, gilt der höhere.
+   „Fortsetzungen verbraucht: n von 3“. Nennt der Startaufruf einen anderen Zähler, gilt der höhere. Steht in einem offenen
+   PR der Spur ein Bearbeiter ≠ `frei` ohne Übergabekommentar (abgebrochener oder noch laufender Lauf), nichts ändern und
+   wie blockiert verfahren (Schritt 4, ohne Code-Änderung).
 2. **Stapelregel:** Teil 1 von aktuellem `main`, PR-Base `main`. Teil n > 1: Ist der PR des vorigen Teils noch offen, Branch
    von `paket/<spur>-<n-1>` und PR-Base = dieser Branch; ist er gemergt, von `main`. Rebase vor dem Push (Schritt 5): nur der
    unterste offene Teil auf `origin/main`, jeder höhere auf seinen Base-Branch (`git rebase origin/paket/<spur>-<n-1>`);
@@ -48,8 +51,8 @@ Gilt, wenn die Spur in `docs/arbeitspakete.md` eine geordnete Liste von Teilen h
    - vorher mit `list_triggers` prüfen, ob für diese Spur schon eine geplante Aufgabe aussteht; dann keine weitere anlegen;
    - `create_trigger` mit `run_once_at` etwa 10 Minuten später, Name `Spur <name> – Fortsetzung <n+1>`, Prompt = Startaufruf
      oben mit `Fortsetzung <n+1> von 3, Übergabe in PR #<oberster PR>.`;
-   - das Modell lässt sich beim Anlegen nicht wählen: bietet `update_trigger` ein Modellfeld, auf das Modell der Spur setzen,
-     sonst im Übergabekommentar „Modell der Fortsetzung prüfen“ vermerken;
+   - das Modell lässt sich beim Anlegen nicht wählen und darf vom Lauf nicht umgestellt werden: im Übergabekommentar
+     „Modell der Fortsetzung prüfen (Soll: <modell>)“ vermerken – Leitstelle bzw. Nutzer stellen es um;
    - die Aufgabe (Name, Zeitpunkt) im Übergabekommentar nennen.
 6. **Kettenende:** Sind alle Teile fertig, oder ist n = 3 und Teile bleiben offen: keine Fortsetzung; Label `spur-wartet`
    auf den obersten PR und im Übergabekommentar „Spur fertig – Integration“ bzw. „Fortsetzungen erschöpft – Entscheidung
