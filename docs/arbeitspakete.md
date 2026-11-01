@@ -124,15 +124,12 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
      Spieltag.“) ist im Remake vorhanden und wird nur abgeglichen.
 - **Abnahme:** roter Test je Option mit Wirkung; Mehrsaisonprobe mit Moduswechsel; Pixelvergleich; Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/tagesablauf.md`, Tests.
-- **Modell:** Claude Opus 5.5 (Core-Logik). **Status:** Teil 1 neu gefasst (Entscheidung Nutzer 01.11.2026, PR #292): Index 9 ist die
-  Live-Darstellung, Index 10–12 sind Anzeigeschalter; Zustand in `Core/GameOptions.cs` mit Migration (vorläufig 17 → 18),
-  Anschluss „Minutenweg bei Schalter an“ in `MatchEngine.Live.cs` offen für `spielberechnung-komplett`/Leitstelle. Kein
-  An-/Abmelden, kein Moduswechsel (`reverse-engineering.md`, „Wirkung der Spielstand-Optionen“). R8-D03 bestätigt
-  (Index 10 = 1). Teil 2 (PR #298, gestapelt auf #292): Optionsbildschirm des Originals `GameOptionsScreen` (schaltbar, Pixelvergleich
-  mit DOSBox-Bildern 48–51 ohne Abweichung außerhalb Kopfzeile/Mauszeiger), Matrix-Index korrigiert (Liga · 3 + Zeile). Teil 3
-  (gestapelt auf #298): kein Kalenderbildschirm im Original – 0x43E21 ist die Infoleiste; bisherige Begegnungen nach dem Original
-  (`Core/MeetingHistory.cs`, Schema 18, über alle Saisons), „Spielfrei“/„ Noch keine“; Anschluss Pokal/Play-off/WM an 0x50283-Stellen
-  und Kurvenmaßstab 0x445E0 offen für die Integration.
+- **Modell:** Claude Opus 5.5 (Core-Logik), Teil 4 Claude Sonnet 5.5. **Status:** Teile 1–4 fertig (#292 → #298 → #303 → #321),
+  Integration `integration/runde-9-optionen-wirkung`: Schema 18 → 19 (Optionen); Begegnungstabelle mit der Kopf-an-Kopf-Liste
+  von `wettbewerbe-komplett` zusammengeführt (ein Speicher, DGROUP 0xAB7B). Teil 1: Index 9 = Live-Darstellung, Index 10–12
+  Anzeigeschalter (kein An-/Abmelden, Entscheidung Nutzer); Anschluss „Minutenweg bei Schalter an“ in `MatchEngine.Live.cs`
+  in der Integration von `spielberechnung-komplett`. Restlücken: Begegnungen/Serien aus DEB-Pokal, Europapokal, Play-offs
+  (0x50283) und Kurvenmaßstab 0x445E0 `[APPROX]`.
 
 ### Spur `finanzen-rest` – Restliche Finanz- und Managerbildschirme
 
