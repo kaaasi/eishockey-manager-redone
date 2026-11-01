@@ -73,13 +73,13 @@ nichts aus dem Original; die CSV gehört nicht ins Repo. Nach jeder Spur mit neu
 
 ## Ergebnis in Kürze
 
-* Spielcode (ohne Systemsegmente): rund **54 % der Bytes umgesetzt**, 2 % nur genähert, 9 % dokumentiert, **35 %
-  unbekannt** (Zahlen im erzeugten Teil; vor der Berichtigung der DGROUP-Regeln 56/1/11/33 %). Wegen der Körnung ist
-  „umgesetzt“ eine Obergrenze.
-* Am schwächsten belegt: Overlay **0x118** (Transfermarkt, 72 % unbekannt, weitere 6 % nur genähert), **0x128**
-  (Tabellen/Statistik, 68 %), **0x110** (Hauptschleife, Kalender, Infofile, 50 %), **0xF8** (Nationalteam/WM, 42 %),
-  **0x120** (Meldungen, 38 %), **0xC0** (Fehlermeldungen, 100 %); im Basiscode **0x238** (79 %, nach der Berichtigung:
-  0x041AC und 0x05CA0 waren nur über DGROUP-Werte „umgesetzt“), 0x99F (Bildlader, Texte) und 0x902 (Fenster).
+* Spielcode (ohne Systemsegmente), Stand nach Runde 10: **82 % der Bytes umgesetzt**, 2 % genähert, 16 % dokumentiert,
+  unbekannt nur noch eine Funktion (0x575C3, 421 Byte, bei `livespiel` zurückgestellt). Maßgeblich sind die Zahlen im
+  erzeugten Teil. Wegen der Körnung ist „umgesetzt“ eine Obergrenze; was die Funktionskarte als „dokumentiert“ führt, ordnet
+  `docs/analyse/inventur.md` ein (fehlt im Remake, vorhanden ohne `[ORIGINAL]`, nicht nötig).
+* Am schwächsten belegt war vor Runde 10 der Spielcode in Overlay 0x118 (Transfermarkt), 0x128 (Tabellen/Statistik), 0x110
+  (Hauptschleife), 0xF8 (Nationalteam/WM), 0x120 (Meldungen), 0xC0 (Fehlermeldungen) und Basis 0x238, 0x99F, 0x902. Nach
+  Runde 10 ist dort nichts mehr unbekannt; den Anteil „dokumentiert“ je Bereich zeigt die Übersicht im erzeugten Teil.
 * Systemsegmente (C-Laufzeit 0x0, Speicher 0xA99, Grafik/Maus 0xBBF, Datei 0x1115, Timer 0x11FD, Sound 0x125B/0x12F7)
   ersetzt das Remake durch .NET/MonoGame; sie werden nicht portiert und zählen nicht als Lücke.
 
@@ -149,7 +149,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 3568 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 4112 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 

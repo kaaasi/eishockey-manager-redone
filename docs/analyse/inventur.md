@@ -5,7 +5,7 @@ Grundlage für die Planung von Runde 11: alle Stellen, an denen das Remake nicht
 [re-abdeckung.md](../re-abdeckung.md)); DGROUP-Werte sind als solche bezeichnet. Kandidaten-Kürzel: G1–G8
 [re-geld.md](re-geld.md), M-K1…M-K10 [re-meldungen.md](re-meldungen.md), L1–L8 [re-livespiel.md](re-livespiel.md),
 R-K1…R-K7 [re-rest.md](re-rest.md), S-K1…S-K6 [re-saisonwechsel.md](re-saisonwechsel.md) (K6 und die Fassung von K4 aus
-dem offenen PR #389).
+#389, gemergt).
 
 ## Vorgehen und Gegenprobe
 
@@ -84,7 +84,9 @@ Tabellen unten. Reihenfolge innerhalb einer Stufe = Vorschlag für die Reihenfol
 4. **Sponsorbewertung: Ø-Platz der letzten 5 Spieltage (neu).** Das Original mittelt die Tabellenplätze der letzten fünf
    Spieltage der laufenden Saison (Datei 0x3F928–0x3F962 ruft `0x110:0x4D` = Datei 0x43BED „Platz am Spieltag“), das
    Remake die letzten fünf Saisons. – `Core/FinanceSponsorRating.cs` – Disassembly (diese Inventur), re-meldungen.md
-   (0x43BED) – A036 – Test: Platzverlauf 1,1,1,1,10 → Ø 2,8. – Spur `geld`.
+   (0x43BED) – A036 – Test: Platzverlauf 1,1,1,1,10 → Ø **2** (Summe der Plätze ganzzahlig durch die Zahl der Spieltage, `div bx`; Summe 0 →
+   Ø 6, Datei 0x3F98E); Randfall n ≤ 5: Spieltag 0 wird übersprungen, der Teiler zählt ihn mit (n = 3: zwei Plätze durch 3). –
+   Spur `geld`.
 5. **Teamwerte statt Spielerwerte.** Monatseinnahme, Stärketabelle und Listenwechsel lesen die Vereinsfelder
    (`MatchEngine.TeamValuesOf`, spielberechnung.md §12/§15) statt Mittelwerte der Spieler. – `Core/FinanceMonthly.cs`,
    `Core/StatisticsStrength.cs`, `Core/Transfer.Pool.cs` – A035, A200, A201, A209 – Test: Vereinsfeld ändern →
@@ -98,8 +100,9 @@ Tabellen unten. Reihenfolge innerhalb einer Stufe = Vorschlag für die Reihenfol
    gelesen (Datei 0x29A3F, reverse-engineering.md); `SquadSetup.ManagedSquadSize(level)` und sein `[ORIGINAL]`-Kommentar
    sind falsch. – `Core/Squad.Setup.cs`, `Core/NewGame*.cs` – A170 – Test: Start in 2. Liga/Oberliga → Kader je Liga. –
    Spur `kader`.
-8. **Oberliga-Austausch (S-K1, S-K2).** Erst nach Merge von #389 (DOSBox-Beleg). – `Core/SeasonFlow.cs` – A162 –
-   Mehrsaisonprobe 20 Saisons. – Spur `saisonwechsel`.
+8. **Oberliga-Austausch und Zwangsabstieg (S-K1, S-K2, S-K3).** DOSBox-Beleg in #389 (gemergt); S-K3 (Bit 0x04, Konto
+   < −666.666,67 DM, Einschub in die Aufstiegsrunde) braucht ein Schemafeld. – `Core/SeasonFlow.cs`, `Core/SeasonRecord.cs`
+   – A162 – Mehrsaisonprobe 20 Saisons, Test −700.000/−600.000 DM. – Spur `saisonwechsel`.
 9. **Ankündigungen der Kaderspieler (RE zuerst).** Verlängerungswunsch, Absage, Laufbahnende (Kaderplatz +0x18, Bit
    0x80) und Angebote der Computervereine (Tagesablauf Datei 0x7358/0x736E) sind geraten; der Schreiber in Datei 0x07169
    ist nicht gelesen. – Analyse-Nachtrag, danach `Core/Transfer.Squads.cs`, `Core/Player.Value.cs` – A136, A229–A232,
@@ -142,8 +145,16 @@ Tabellen unten. Reihenfolge innerhalb einer Stufe = Vorschlag für die Reihenfol
     **Infofile (M-K5)**, **Tabellenkurve (M-K6)** – F099, A303. – Spur `ui`.
 11. **Begegnungstabellen für alle Wettbewerbe** (Datei 0x50283 auch für Pokal, Play-offs, WM). – `Core/MeetingHistory.cs`
     – A111. – Spur `wettbewerbe`.
-12. **Livespiel L1–L6** – F018, F068, F084, F094, F136–F149, F151, A052, A101, A292 – bleibt zurückgestellt (`livespiel`,
-    vor v1.0).
+12. **Livespiel L1–L8** – F018, F068, F084, F094, F136–F154, A052, A073, A101, A292 – bleibt zurückgestellt (`livespiel`,
+    vor v1.0); L7 (Torszenen, `tore\`-Format, Datei 0x57480) zusammen mit der unbekannten Funktion 575C3h.
+13. **Ewige Tabelle mit den Punkten der neuen Liga (S-K4).** DOSBox-Beleg #389 (Weißwasser 51). – `Core/StatisticsHistory.cs`
+    – Test: Aufsteiger Platzfeld 1 → 51, Absteiger Platzfeld 10 → 22. – Spur `saisonwechsel`.
+14. **Sponsorangebote auch bei laufendem Vertrag würfeln** (A039, finanzen-rekonstruktion.md „Angebote“). –
+    `Core/FinanceSponsors.cs` – Spur `geld`.
+15. **Versteckte Fähigkeiten +0x19** (A185, A186): Bedeutung belegt (Unter-/Überzahl, Torhüter), Startwert offen – erst den
+    Startwert analysieren. – `Core/Squad.Training.cs` – Spur `kader`.
+16. **Über-/Unterzahl-Zähler in der Vereinsstatistik** (A349): Anschluss an spielberechnung.md §18 prüfen, Marker
+    vermutlich veraltet. – `UI/Screens/Statistics/ClubStatisticsScreen.cs` – Spur `marker`.
 
 ### P3 – Marker, Pixel, Kosmetik
 
@@ -154,6 +165,8 @@ Tabellen unten. Reihenfolge innerhalb einer Stufe = Vorschlag für die Reihenfol
 3. **Monatsnamen:** Monatstabelle DGROUP 0xA70 schreibt „August“ aus, das Remake „Aug.“ – `Core/Season.cs` – A157 (vor
    Umsetzung gegen das Video prüfen, ob die Anzeige kürzt).
 4. **Fehlerhalt (M-K10)** F056; **Nachrichtenspeicher (R-K6)** F115 – nur nach Entscheidung des Nutzers.
+5. **Letzte Saison ohne Saisonende-Fenster (S-K5)** – nach Video prüfen. – `UI/Screens/SeasonEndSummaryScreen.cs`.
+6. **Umordnung der Vereinssätze zwischen 29.04. und 10.09. (S-K6, A194)** – nur Analyse (FILE13/FILE14 vergleichen).
 
 ### Analysebedarf (Gruppe d) und DOSBox-Belege (Gruppe c)
 
@@ -174,12 +187,15 @@ Tabellen unten. Reihenfolge innerhalb einer Stufe = Vorschlag für die Reihenfol
   P2 Nr. 4).
 - **Datei 0x054D9:** ändert die Poolwerte um `random(1, 7) − 4` und begrenzt auf 30…99 – klärt M-K8 teilweise.
 - **Datei 0x57480:** liest beim Programmstart `tore\anzahl` (Zahl der Torszenen) → zu L7.
-- **Funktionskarte:** `Datei 0x3688F` steht unter `[ORIGINAL]` in `Core/MatchEngine.Original.cs:210`, wird aber nur als
-  „dokumentiert“ gezählt (Einzeiler `/// <summary>[ORIGINAL] …`); ebenso Datei 0x0A3F7, 0x346D5, 0x347EF (ohne `Datei`
-  bzw. führende Null geschrieben). Prüfen in der Integration; die Fundstelle von 0x04C75 in
-  `MatchEngine.TeamValues.cs` ist ein Fehltreffer (die Funktion zeichnet die Wertbalken des Spielerdatenfensters).
+- **Funktionskarte (berichtigt nach Review #400, R10N-01 #401):** `funktionskarte.py` verwirft jede Adresse, auf die direkt
+  ein Doppelpunkt folgt (Muster gegen `Segment:Offset`). Dadurch gelten acht Funktionen mit vorhandenem `[ORIGINAL]` nur als
+  „dokumentiert“: 0x0A3F7 (F016), 0x0B954 (F030), 0x346D5 (F069), 0x347EF (F070), 0x350B6 (F075, dort nur Querverweis),
+  0x3688F (F080), 0x3EB30 (F093), 0x581C2 (F157). Die Korrektur gehört in `funktionskarte.py` (Doppelpunkt zulassen, wenn
+  kein Offset folgt; Runde 11), nicht in die Kommentare. Die Fundstelle von 0x04C75 in `MatchEngine.TeamValues.cs` ist ein
+  Fehltreffer (die Funktion zeichnet die Wertbalken des Spielerdatenfensters).
 - **Vermutlich veralteter Marker:** A349 (Über-/Unterzahl laut spielberechnung.md §18 umgesetzt; Anschluss prüfen).
-- **Texte nur in em.exe, noch nicht in der Doku:** Genitivformen Datei 0x18E64/0x18E6F/0x18E7C (A344).
+- **Texte nur in em.exe, noch nicht in der Doku:** Genitivformen Datei 0x18E64/0x18E6F/0x18E7C (A344); Frage der
+  Talentsuche Datei 0x1B121/0x1B13E (A244).
 
 ## Kandidaten → Stellen
 
@@ -486,7 +502,7 @@ DOSBox-Spielstand oder Video belegbar (Vorschlag), d = unklar (was fehlt).
 | A241 | `Core/Transfer.StartSalary.cs:10` | b | Preisfeld +0x2C nicht gespeichert, bei Bedarf neu berechnet | Remake-Datenmodell; transfer.md „Listenpreis eigener Spieler“ als offene Abweichung vermerkt | – | – |
 | A242 | `Core/Transfer.Talent.cs:40` | d | Rabatt der Talentsuche nach Jugendförderung | re-rest.md §A: Preisabzug Datei 0x469CA gelesen, ein Rabatt ist nicht belegt; 0x465F1 beim Preis genau lesen | R-K1 | P2 |
 | A243 | `Core/Transfer.Talent.cs:54` | a | Erfolgschance der Talentsuche | re-rest.md Basis 0x46E, Datei 0x06FA5: Erfolg random(0, 5 − ⌊DGROUP 0xED8/2⌋) = 0, Dauer random(3, 10) (+6 mit 1/4) | R-K1 | P2 |
-| A244 | `Core/Transfer.Talent.cs:66` | a | Starttext der Talentsuche | em.exe hat Frage „Möchten Sie, daß Ihr 'Spion' für Sie auf Talentsuche geht?“ in Transferliste 0x465F1 (re-rest.md §A, Datei 0x46A10) | R-K1 | P2 |
+| A244 | `Core/Transfer.Talent.cs:66` | a | Starttext der Talentsuche | Text der Frage in em.exe Datei 0x1B121/0x1B13E (noch nicht in der Doku); Zähler Datei 0x46A10 (re-rest.md §A) | R-K1 | P2 |
 | A245 | `Core/Transfer.Talent.cs:67` | d | Meldung bei schon laufender Suche | Verhalten von 0x465F1 bei Zähler +0xEC ≠ 0 nicht gelesen; RE nötig | R-K1 | P3 |
 | A246 | `Core/Transfer.Talent.cs:69` | d | Meldung bei vollem Kader | Original prüft 28 Spieler erst beim Ergebnis (0x06D7F, keine Nachricht); Prüfung beim Start in 0x465F1 nicht gelesen | R-K1 | P3 |
 | A247 | `Core/Transfer.Unsolicited.cs:50` | b | Bieter misst Spielerstärke statt fremden Pooleintrag | Bewusste Abweichung vom Originalfehler 0x07A81 (transfer.md Teil 3, Z. 155) | – | – |
@@ -676,7 +692,7 @@ Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/Eish
 | F027 | 0x0B830 | Basis 0x99f | 146 | dokumentiert | nicht nötig | memmove (Speicher überlappend kopieren) | Sprachmittel .NET | – | – |
 | F028 | 0x0B8C2 | Basis 0x99f | 60 | dokumentiert | nicht nötig | memset (Speicher füllen) | Sprachmittel .NET | – | – |
 | F029 | 0x0B8FE | Basis 0x99f | 10 | dokumentiert | nicht nötig | auf Strahlrücklauf warten | MonoGame taktet selbst | – | – |
-| F030 | 0x0B954 | Basis 0x99f | 350 | dokumentiert | vorhanden | Zahlenausgabe mit Mindestbreite, Drittel-DM → DM | Core/GameState.cs FormatMoney und Zahlenformatierung der Bildschirme | – | P3 |
+| F030 | 0x0B954 | Basis 0x99f | 350 | dokumentiert | vorhanden mit `[ORIGINAL]` (Karte erkennt ihn nicht, R10N-01) | Zahlenausgabe mit Mindestbreite, Drittel-DM → DM | Core/GameState.cs FormatMoney und Zahlenformatierung der Bildschirme | – | P3 |
 | F031 | 0x0BAB2 | Basis 0x99f | 22 | dokumentiert | nicht nötig | Fernhülle Zahl → Text | String-Formatierung in .NET | – | – |
 | F032 | 0x0BAFB | Basis 0x99f | 886 | dokumentiert | vorhanden | Textausgabe mit Originalfont (Zeichen für Zeichen, Breiten) | Formats-Fontlader und UI-Textzeichnen (Surface.Text) | – | P3 |
 | F033 | 0x0BE71 | Basis 0x99f | 92 | dokumentiert | nicht nötig | Zeichen auf darstellbar prüfen (Ersatzliste) | Fonts zeichnen fehlende Zeichen nicht | – | – |
@@ -739,7 +755,7 @@ Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/Eish
 | F090 | 0x3D316 | Ov 0x100 (4A4C) | 329 | dokumentiert | vorhanden | Stadion: wöchentlicher Baufortschritt und Meldung „Der Stadion-Ausbau … ist abgeschlossen.“ | Core/FinanceStadium.cs (Baufortschritt, Bauzeiten [APPROX]), Core/FinanceInbox.cs; Regel weicht ab | G1 | P1 |
 | F091 | 0x3D45F | Ov 0x100 (4A4C) | 921 | dokumentiert | vorhanden | Stadiontabelle Ist/Bau (9 Ausbauteile, Platzarten, Konto, „(Noch n Wochen)“, „(kein Bau...)“) | UI/Screens/Manager/StadiumScreen.cs; Texte „(Noch n Wochen)“/„(kein Bau...)“ fehlen | G7 | P3 |
 | F092 | 0x3E52B | Ov 0x100 (4A4C) | 300 | dokumentiert | vorhanden | Stadion: Stufenbild mit Stufenname und „Kosten: … DM“ | UI/Screens/Manager/StadiumScreen.cs, Core/FinanceStadium.cs (Stufennamen) | G7 | P3 |
-| F093 | 0x3EB30 | Ov 0x100 (4A4C) | 186 | dokumentiert | vorhanden | Vereinsstatistik: benötigter Zuschauerschnitt (Ausgaben−Einnahmen)·12/23/Eintritt | Core/StatisticsClub.cs, UI/Screens/Statistics/ClubStatisticsScreen.cs | – | P3 |
+| F093 | 0x3EB30 | Ov 0x100 (4A4C) | 186 | dokumentiert | vorhanden mit `[ORIGINAL]` (Karte erkennt ihn nicht, R10N-01) | Vereinsstatistik: benötigter Zuschauerschnitt (Ausgaben−Einnahmen)·12/23/Eintritt | Core/StatisticsClub.cs, UI/Screens/Statistics/ClubStatisticsScreen.cs | – | P3 |
 | F094 | 0x40290 | Ov 0x108 (4D30) | 212 | dokumentiert | fehlt | Kopfzeile Vereinsname links, Managername rechts in Aufstellung/Taktik beim Eingriff im Spiel | Nur im Eingriff 0x5434C nötig, den das Remake nicht hat | L6 | P3 |
 | F095 | 0x41DA9 | Ov 0x108 (4D30) | 36 | dokumentiert | vorhanden | Mittel der drei Stärken (Spalte ST) | UI/Screens/Statistics/StrengthScreen.cs (Average) | – | P3 |
 | F096 | 0x43150 | Ov 0x110 (502F) | 123 | dokumentiert | nicht nötig | Programmstart: Grafik kb\21 laden mit Fehlerbehandlung (Overlay-Anfang) | Bildlader und Fehlerpfad durch Formats/MonoGame ersetzt | – | – |
@@ -803,7 +819,7 @@ Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/Eish
 | F154 | 0x57480 | Ov 0x138 (63A2) | 323 | dokumentiert | fehlt | Programmstart: Datei tore\anzahl lesen (Zahl der Torszenen) | Keine Torszenen im Remake | L7 | P3 |
 | F155 | 0x57CFB | Ov 0x138 (63A2) | 468 | dokumentiert | vorhanden | Finanzen: Kästen Bank/Mitmanager (Saldo, Zins je Monat, Farben nach Vorzeichen) | UI/Screens/Manager/FinanceScreen.cs | G8 | P3 |
 | F156 | 0x57ECF | Ov 0x138 (63A2) | 755 | dokumentiert | vorhanden | Finanzen: Übersicht rechts (Kontostand, Untereinander, Bank, Aktien) | UI/Screens/Manager/FinanceScreen.cs | G8 | P3 |
-| F157 | 0x581C2 | Ov 0x138 (63A2) | 583 | dokumentiert | vorhanden | Finanzen: Infofeld je Aktie (Kurs, Stückzahl, Kauf, Wert) | UI/Screens/Manager/FinanceScreen.cs | G8 | P3 |
+| F157 | 0x581C2 | Ov 0x138 (63A2) | 583 | dokumentiert | vorhanden mit `[ORIGINAL]` (Karte erkennt ihn nicht, R10N-01) | Finanzen: Infofeld je Aktie (Kurs, Stückzahl, Kauf, Wert) | UI/Screens/Manager/FinanceScreen.cs | G8 | P3 |
 | F158 | 0x58409 | Ov 0x138 (63A2) | 441 | dokumentiert | vorhanden | Finanzen: Betragsbalken (Schieberegler) für Bank, Mitmanager, Aktien | UI/Screens/Manager/FinanceScreen.cs mit ±-Schritten statt Balken; Regel weicht ab | G4 | P2 |
 | F159 | 0x59D71 | Ov 0x138 (63A2) | 78 | dokumentiert | vorhanden | Trainingsbildchen k (29 × 20) zeichnen | UI/Screens/Team/TrainingScreen.cs KindIcon | – | P3 |
 | F160 | 0x59DBF | Ov 0x138 (63A2) | 2252 | dokumentiert | vorhanden | Trainingsbildschirm (Einheiten, „Kosten pro Woche:“) | UI/Screens/Team/TrainingScreen.cs, Core/Squad.Training.cs | – | P3 |

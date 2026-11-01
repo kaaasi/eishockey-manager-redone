@@ -26,8 +26,9 @@
    (Integration, Plan); ohne PR als `docs/handoffs/<datum>-<thema>.md` auf eigenem Branch.
 7. **Geplante Läufe** (Spuren, Fortsetzungen, Reviews): Geplante Läufe erhalten nur die Repos, die die **anlegende Sitzung**
    eingebunden hat (beobachtet 01.11.2026: zwei Spurläufe ohne Referenz-Repo blockiert, #291, #295); `add_repo` steht im Lauf nicht verlässlich bereit. Deshalb vor dem ersten `create_trigger` der Sitzung:
-   Schritt 0 erledigt (beide Repos `push`) und
-   `git ls-remote https://github.com/kaaasi/eishockey-manager-referenz HEAD` erfolgreich – sonst keinen Lauf anlegen. Jeder Startaufruf enthält den
+   Schritt 0 erledigt (beide Repos `push`, belegt durch das `add_repo`-Ergebnis) und
+   `git ls-remote https://github.com/kaaasi/eishockey-manager-referenz HEAD` erfolgreich – sonst keinen Lauf anlegen und dem
+   Nutzer melden (Fehlermeldung von `add_repo` bzw. `ls-remote`). Jeder Startaufruf enthält den
    Zugriffsabsatz aus `spur-start.md` (Kurzaufruf „Geplanter Lauf“). Modell nach dem Anlegen mit `update_trigger` setzen,
    wenn es von Opus abweicht – nur auf ausdrücklichen Wunsch des Nutzers (z. B. vom Nutzer bestätigter Plan bzw. Go mit
    Modell). Offene PRs mit `spur-wartet` durchsehen: „Fortsetzung anlegen – Leitstelle“ heißt, die Aufgabe mit dem Prompt aus
