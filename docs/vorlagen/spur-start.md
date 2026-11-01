@@ -11,11 +11,13 @@
 > Unbeaufsichtigt, keine Rückfragen. Teile und Selbstfortsetzung nach Abschnitt „Teile und Fortsetzung“; das Anlegen
 > einer Fortsetzung per `create_trigger` ist autorisiert (höchstens 3 je Spur). Modell der Spur: `<modell>`.
 > Zugriff zuerst prüfen: `git ls-remote https://github.com/kaaasi/eishockey-manager-referenz HEAD`. Scheitert das,
-> `add_repo` (ggf. erst per `ToolSearch` mit `select:mcp__claude-code-remote__add_repo` laden) für `kaaasi/eishockey-manager-referenz`
-> (access read) und erneut prüfen; bleibt es unerreichbar, sofort blockiert melden (genaue Fehlermeldung), keine Code-Arbeit.
+> `add_repo` (ggf. erst per `ToolSearch` mit `select:mcp__claude-code-remote__add_repo` laden; meist nicht vorhanden) für
+> `kaaasi/eishockey-manager-referenz` (access read) und erneut prüfen; bleibt es unerreichbar, sofort blockiert melden (genaue
+> Fehlermeldungen von `ls-remote` und `ToolSearch`), keine Code-Arbeit. Meldung: Benachrichtigung an den Nutzer; gibt es einen
+> PR der Spur, dort Kommentar und Label `spur-wartet`; sonst keinen PR anlegen.
 
-Der Zugriffsabsatz steht in **jedem** Startaufruf eines geplanten Laufs (Spur, Fortsetzung, Review) wörtlich; eine Fortsetzung
-übernimmt ihn unverändert. Voraussetzung auf Seiten der Leitstelle: [leitstelle-start.md](leitstelle-start.md), „Geplante Läufe“.
+Der Zugriffsabsatz steht in **jedem** Startaufruf eines geplanten Spurlaufs (Spur, Fortsetzung) wörtlich; eine Fortsetzung
+übernimmt ihn unverändert. Reviews: nach `review-anfrage.md` (nur wenn Daten nötig; „keine Code-Arbeit“ gilt dort als „kein Review“). Voraussetzung auf Seiten der Leitstelle: [leitstelle-start.md](leitstelle-start.md), „Geplante Läufe“.
 
 ## Ablauf für den Agenten
 
@@ -46,13 +48,15 @@ Gilt, wenn die Spur in `docs/arbeitspakete.md` eine geordnete Liste von Teilen h
    „Fortsetzungen verbraucht: n von 3“. Nennt der Startaufruf einen anderen Zähler, gilt der höhere. Steht in einem offenen
    PR der Spur ein Bearbeiter ≠ `frei` ohne Übergabekommentar **nach** dessen letztem Bearbeiter- oder Übernahme-Eintrag
    (abgebrochener oder noch laufender Lauf): nichts am Branch ändern, nur Label `spur-wartet` und einen Hinweiskommentar setzen –
-   **ohne** Übergabe und **ohne** `Bearbeiter: frei` – und keine Fortsetzung anlegen.
+   **ohne** Übergabe und **ohne** `Bearbeiter: frei` – keine Fortsetzung anlegen und den Lauf beenden; der Hinweiskommentar
+   ersetzt die Übergabe (Hauptablauf Schritt 7 entfällt).
 2. **Stapelregel:** Teil 1 von aktuellem `main`, PR-Base `main`. Teil n > 1: Ist der PR des vorigen Teils noch offen, Branch
    von `paket/<spur>-<n-1>` und PR-Base = dieser Branch; ist er gemergt, von `main`. Rebase vor dem Push (Hauptablauf Schritt 5): nur der
    unterste offene Teil auf `origin/main`, jeder höhere auf seinen Base-Branch (`git rebase origin/paket/<spur>-<n-1>`);
    danach `git push --force-with-lease` nur auf eigene Branches.
-3. **Teil abschließen:** grünes `tools/pruefen.sh --schnell`, PR „Ready for review“, Übergabekommentar mit „Fortsetzungen
-   verbraucht: n von 3“. Dann den nächsten Teil im selben Lauf beginnen, solange Zeit bleibt.
+3. **Teil abschließen:** grünes `tools/pruefen.sh --schnell`, PR „Ready for review“ (lässt sich das aus dem Lauf nicht setzen –
+   REST kennt keinen Weg, GraphQL ist gesperrt –, im Übergabekommentar vermerken; Leitstelle bzw. Nutzer setzen es),
+   Übergabekommentar mit „Fortsetzungen verbraucht: n von 3“. Dann den nächsten Teil im selben Lauf beginnen, solange Zeit bleibt.
 4. **Teil blockiert** (kein grünes `--schnell`, Beleg fehlt, Referenz-Repo unerreichbar, fremde Datei nötig): Teil als Draft-PR mit Übergabe lassen,
    Label `spur-wartet` setzen, im Übergabekommentar „blockiert – Entscheidung Nutzer“ und den Grund. **Keine Fortsetzung**
    anlegen und den Teil nicht erneut versuchen.
@@ -62,7 +66,10 @@ Gilt, wenn die Spur in `docs/arbeitspakete.md` eine geordnete Liste von Teilen h
      oben mit `Fortsetzung <n+1> von 3, Übergabe in PR #<oberster PR>.`;
    - das Modell lässt sich beim Anlegen nicht wählen und darf vom Lauf nicht umgestellt werden: im Übergabekommentar
      „Modell der Fortsetzung prüfen (Soll: <modell>)“ vermerken – Leitstelle bzw. Nutzer stellen es um;
-   - die Aufgabe (Name, Zeitpunkt) im Übergabekommentar nennen.
+   - die Aufgabe (Name, Zeitpunkt) im Übergabekommentar nennen;
+   - lehnt die Freigabe `create_trigger` ab (beobachtet 01.11.2026, häufig): Label `spur-wartet` setzen und im Übergabekommentar
+     „Fortsetzung anlegen – Leitstelle“ mit dem fertigen Prompt (Name, Startaufruf mit Zähler) vermerken; die Leitstelle legt
+     die Aufgabe an und setzt das Modell.
 6. **Kettenende:** Sind alle Teile fertig, oder ist n = 3 und Teile bleiben offen: keine Fortsetzung; Label `spur-wartet`
    auf den obersten PR und im Übergabekommentar „Spur fertig – Integration“ bzw. „Fortsetzungen erschöpft – Entscheidung
    Nutzer“. Die Leitstelle sieht offene PRs mit `spur-wartet` durch.
