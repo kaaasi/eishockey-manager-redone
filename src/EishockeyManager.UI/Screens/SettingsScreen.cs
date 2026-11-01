@@ -5,11 +5,11 @@ namespace EishockeyManager.UI.Screens;
 
 /// <summary>
 /// Bildschirm „Einstellungen“ (Kachel unter „Gemischtes“): Lautstärke Effekte,
-/// Torszenen, Vollbild, automatisch speichern. Jede Änderung gilt sofort und wird gespeichert.
+/// Vollbild, automatisch speichern. Jede Änderung gilt sofort und wird gespeichert.
 /// </summary>
 /// <remarks>
 /// Der Einstellungsbildschirm des Originals (em.exe 0x2CD1C, DOSBox-Bilder 48–51) ist <see cref="GameOptionsScreen"/>; der
-/// Knopf „Spielstand“ öffnet ihn, solange ein Spiel läuft. [APPROX] Die Geräteeinstellungen (Lautstärke, Vollbild,
+/// Knopf „Spielstand“ öffnet ihn, solange ein Spiel läuft. Die Torszenen (Index 9) schaltet nur dieser Bildschirm. [APPROX] Die Geräteeinstellungen (Lautstärke, Vollbild,
 /// automatisch speichern) gibt es im Original nicht; ihr Layout ist neu, aber aus den Bausteinen des Originals gebaut:
 /// Fenster wie die Hinweise (Rahmen kb\2 orange auf Hintergrund kb\22), Pfeile ▲▼ aus kb\4 wie bei der Taktik,
 /// Lampen aus kb\3 (grün = an, rot = aus), Knopf aus kb\2.
@@ -32,13 +32,12 @@ public sealed class SettingsScreen : Screen
     public enum Row
     {
         EffectsVolume,
-        GoalScenes,
         Fullscreen,
         AutoSave,
     }
 
     private static readonly string[] Labels =
-        ["Lautstärke Effekte", "Torszenen zeigen", "Vollbild", "Automatisch speichern"];
+        ["Lautstärke Effekte", "Vollbild", "Automatisch speichern"];
 
     /// <summary>Zeile i (ganze Breite, zum Umschalten der Lampen).</summary>
     public static Rect RowRect(Row row) => new(LabelX - 4, FirstRowY + RowPitch * (int)row - 5, 236, 15);
@@ -97,15 +96,12 @@ public sealed class SettingsScreen : Screen
             changed = true;
         }
 
-        foreach (var row in new[] { Row.GoalScenes, Row.Fullscreen, Row.AutoSave })
+        foreach (var row in new[] { Row.Fullscreen, Row.AutoSave })
         {
             if (!input.Clicked(RowRect(row)))
                 continue;
             switch (row)
             {
-                case Row.GoalScenes:
-                    Settings.GoalScenes = !Settings.GoalScenes;
-                    break;
                 case Row.AutoSave:
                     Settings.AutoSave = !Settings.AutoSave;
                     break;
@@ -122,7 +118,6 @@ public sealed class SettingsScreen : Screen
 
     private static bool Toggle(Row row) => row switch
     {
-        Row.GoalScenes => Settings.GoalScenes,
         Row.AutoSave => Settings.AutoSave,
         _ => Settings.Fullscreen,
     };

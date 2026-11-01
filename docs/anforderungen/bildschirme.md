@@ -126,7 +126,7 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 * In der Ligaansicht „Freundschaftsspiel“: Gegner aus Liga oder Europapokal wählen, Heimspiel an einem freien Termin
   der nächsten vier Wochen (höchstens zwei offen).
 ### Einstellungen
-* Vollbild, Torszenen zeigen, Automatisch speichern; Lautstärke Soundeffekte (0–10); `F8` schaltet den Ton
+* Vollbild, Automatisch speichern (Torszenen: nur im Optionsbildschirm des Originals, Index 9); Lautstärke Soundeffekte (0–10); `F8` schaltet den Ton
   stumm. Musik: nur im Titelbildschirm, sonst nirgends (Entscheidung Nutzer, #221) – keine Musikeinstellungen. Knopf „Spielstand“ (nur mit laufendem Spiel): Optionsbildschirm des Originals (em.exe 0x2CD1C, DOSBox-Bild 48) mit
   Torszenen (drei Stufen), Spielgeschwindigkeit, Drittelpause/Ergebnisse/Tabelle je Liga, DEB-Pokal, Europapokal, WM-Spiele –
   schaltbar, gespeichert im Spielstand (`docs/reverse-engineering.md`, „Optionsbildschirm“).

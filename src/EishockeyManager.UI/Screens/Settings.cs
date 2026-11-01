@@ -7,7 +7,7 @@ namespace EishockeyManager.UI.Screens;
 /// Einstellungen des Ports (das Original hat keinen solchen Bildschirm). Gelten für alle Spielstände und werden
 /// – sobald <see cref="StorePath"/> gesetzt ist – als JSON gespeichert. Das Fenster (Desktop) setzt den Pfad und
 /// wendet Effektlautstärke und Vollbild an (Musik: nur Titelbildschirm, ohne Einstellung, siehe <c>MusicPolicy</c>;
-/// alte Dateien mit MusicVolume/MusicInMatch laden weiter, die Felder werden ignoriert); Torszenen liest das Live-Spiel, das automatische Speichern der Hauptmenü-Aufruf.
+/// alte Dateien mit MusicVolume/MusicInMatch oder GoalScenes laden weiter, die Felder werden ignoriert und beim nächsten Speichern nicht mehr geschrieben). Die Torszenen schaltet allein der Original-Schalter im Spielstand (<see cref="GameOptions.LiveMode"/>, Optionsbildschirm <see cref="GameOptionsScreen"/>); eine Geräteeinstellung dafür gibt es nicht mehr (Teil 4 der Spur optionen-wirkung). Das automatische Speichern liest der Hauptmenü-Aufruf.
 /// </summary>
 public sealed class GameSettings
 {
@@ -21,9 +21,6 @@ public sealed class GameSettings
         get => _effectsVolume;
         set => _effectsVolume = Math.Clamp(value, 0, MaxVolume);
     }
-
-    /// <summary>Torszenen im Live-Spiel zeigen.</summary>
-    public bool GoalScenes { get; set; } = true;
 
     public bool Fullscreen { get; set; }
 
