@@ -96,7 +96,7 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   Pixelvergleich Kauf/Saisonende in `docs/transfer.md`); Teil 2 in PR #301 ohne Start-/Wechselgehalt (Versicherung,
   ganze DM als `[APPROX]`, Sperre); Rest von Teil 2 (Start-/Wechselgehalt = Wert(Gehalt), Laufzeit 1 nach Kauf) in PR #305;
   Teil 3 in PR #308 (unaufgeforderte Angebote, Knopfdarstellung geklärt; Listenwechsel 0x494EF braucht den Pool von
-  200 Spielern – Entscheidung Nutzer, Befund Ablöse − Angebot / 7 · Laufzeit bei Markt-Angeboten); Teil 4 in PR #<teil4>
+  200 Spielern – Entscheidung Nutzer, Befund Ablöse − Angebot / 7 · Laufzeit bei Markt-Angeboten); Teil 4 in PR #310
   (Testlücken R8W3I-10 transfer-Anteil, R8W3I-16, SW-01, W51-02 in `zusatzfunktionen.md`; Pixelvergleich: Markierung der
   Transferliste behoben, Knöpfe 1 Pixel – Ursache offen).
 
