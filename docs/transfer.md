@@ -79,7 +79,7 @@ die Verhandlungen; was offen bleibt, endet am ersten Tag der neuen Saison wie �
 `[APPROX]`: Reihenfolge (Original je Manager Prämien, dann Verträge; Remake erst alle Prämien); Saisonzähler (Tore, Spiele) sind
 beim Rechnen von Gehalt und Ablöse schon zurückgesetzt; Ablöse als Transfereinnahme gebucht (das Original schreibt sie ohne
 Buchungsaufruf aufs Konto); Laufzeit und Gehalt des neuen Kaderplatzes beim Kauf noch wie bisher (Teil 2: Wert(Gehalt));
-Liste hinter dem Fenster am Saisonende = Bildschirm „Verträge“ (Original 0x108:0x43, nicht vermessen).
+Liste hinter dem Fenster am Saisonende = Bildschirm „Verträge“ (Original 0x108:0x43; Abweichung im Pixelvergleich unten belegt).
 
 **Befund für `finanzen-rest`:** Nach einem Kauf vom Computermarkt ruft das Original 0x18:0x223E (Datei 0x063BE, Fenster „Nehmen
 Sie einen Sponsor- / zuschuß von … an ?“) mit dem Kaufpreis (Datei 0x47A18–0x47A34); im Remake fehlt das.
@@ -124,3 +124,22 @@ höchstens 1 Pixel verschoben, Mauszeiger maskiert.
 
 Behoben: rechtsbündige Spalten der Transferliste (Stärken, Alter, Leihgebühr) standen 3 Pixel zu weit links, der Titel 2 Pixel zu
 hoch und 1 Pixel zu weit rechts (Messung je Feld mit Verschiebungssuche ±5 Pixel, danach Versatz 0 | 0).
+
+### Neue Lagen aus Teil 1 (Spur `transfer-vertraege-komplett`)
+
+Ablauf `transfer-vertrag-kauf-saisonende` (`Tools/Scenarios/TransferVertragKaufSaisonende.cs`), Kennzahl wie oben. Die Vorlagen
+wurden in den Reihen `oberflaeche` und `karriere` per Vorlagensuche der Titelzeile „Vertragsverhandlung“ gefunden: Das Fenster
+steht im Original nur an zwei Stellen, y = 109 (Zeile &lt; 12) und y = 29 (sonst und beim Kauf).
+
+| Bereich | Vorlage | Kennzahl | Versatz |
+|---|---|---|---|
+| Kauf: Fenster (2 … 167 \| 30 … 96) | `karriere_01924` (RUSSLER, 25 Jahre, 4 Jahre, 5.125 DM) | 5,8 / 1,2 % | 0 \| 0 |
+| Kauf: Titel (4 … 165 \| 31 … 43) | | 5,3 / 0,0 % | 0 \| 0 |
+| Saisonende: Fenster (2 … 167 \| 110 … 176) | `karriere_03555` (A.ONNEN, 27 Jahre, 1 Jahr, 6.480 DM) | 5,9 / 0,8 % | 0 \| 0 |
+| Saisonende: Titel (4 … 165 \| 111 … 123) | | 4,9 / 0,0 % | 0 \| 0 |
+| Saisonende: Kopfzeile (0 … 319 \| 0 … 14) | | 7,7 / 5,0 % | – |
+
+Lage und Inhalt beider Fenster stimmen. Abweichung nur hinter dem Fenster am Saisonende (`[APPROX]` oben): Die Liste des
+Originals (0x108:0x43, `karriere_03555`, `karriere_03648`) trägt den Vereinsnamen als Titel („BK OLDENBURG“), zeigt
+ausgelaufene Verträge rot als „kein V.“ und hat rechts unten ein Symbolfeld statt der Hinweiszeile; das Remake zeigt dort die
+Liste „Verträge“. Gehört zu Teil 3 (Knopfdarstellung/Listen) bzw. eigener Befund.

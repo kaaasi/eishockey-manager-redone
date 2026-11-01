@@ -92,8 +92,8 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 - **Abnahme:** je Regel roter Test, danach grün; Goldtest aus FILE03/05/07 erweitert; Mehrsaisonprobe (Kader, Geld);
   Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/transfer.md`, Tests.
-- **Modell:** Claude Opus 5.5. **Status:** Teil 1 in PR #294 (blockiert: Referenz-Repo in der Sitzung nicht erreichbar,
-  Original-Spielstände und Pixelvergleich fehlen); Teile 2–4 offen.
+- **Modell:** Claude Opus 5.5. **Status:** Teil 1 in PR #294 fertig (`--schnell` mit Original-Spielständen grün,
+  Pixelvergleich Kauf/Saisonende in `docs/transfer.md`); Teile 2–4 offen.
 
 ### Spur `wettbewerbe-komplett` – Tabellen, Pokale, Nationalteam abschließen
 
