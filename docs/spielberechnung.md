@@ -617,3 +617,35 @@ Feldspieler der Plätze 0 … n − 1.
 Managerpaarung); Schütze und Vorlage stehen im Torereignis, `CreditLineup` zählt sie (statt 0x5028 nach dem Spiel).
 `[APPROX]`: Tore aller Wettbewerbe in `Player.Goals` (Gewicht +0x03 = Saisontore samt Spiel), Vorlagenschleife mit Grenze
 1000, Nationalteam zieht aus dem Kader des Bundestrainers (`LiveTeam.PenaltySquad`, §16).
+
+## 18. Über-/Unterzahl-Zähler und Länderwerte im Stärkevergleich (Spur spielberechnung-komplett, Teil 4)
+
+Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.PowerPlay.cs` und `Core/StatisticsStrength.cs`,
+Tests `SpielberechnungKomplett4Tests`. Regeln, Zustand, Saisonwechsel und Anzeige der Zähler: Spur statistiken-verein
+(`Core/StatisticsClub.cs`, `PowerPlay`).
+
+**Zähler** (Managerfelder DGROUP 0x97D2 + 2 · k, Satz 0x94AC + 0x1AF · Vereinsfeld 0x16 = Manager + 1):
+
+- **Tor** (Abschluss 0xA484): Feldspieler beider Vereine zu Beginn des Abschlusses ([bp−0x11]/[bp−0x12], 0xA491–0xA4BC).
+  Nach dem Treffer (0xA8AC): hat die verteidigende Mannschaft Spieler auf der Strafbank, merkt sich 0xA8F9–0xA91D, ob
+  einer der Vereine einen Manager hat und beide gleich viele Feldspieler haben; dann endet eine Strafe (0x35691(…, 0, 0)).
+  Steht die verteidigende Mannschaft danach in Überzahl, zählt der Manager des Schützen k = 5 und der der verteidigenden
+  Mannschaft k = 4 (0xA939–0xA9A2). Danach die Torzähler k = 0 … 3 für Heim- und Gastmanager (0xAA2C–0xAAEF,
+  `PowerPlay.Goal`), außer bei zusammen 11 Feldspielern (5 gegen 6, 0xAA18–0xAA29).
+- **Strafe** (0x35818, nach Strafbank, Vereinsminuten und Kettenzug, vor der Spielerwahl 0x378C5): ist
+  |eigene − gegnerische Feldspieler| = 1 (`0x120:0x61`), zählt der Gegnermanager k = 4 (0x35A84) und der eigene k = 5
+  (0x35B18). Übernommen: auch 4 gegen 3 nach einer Strafe der Mannschaft in Überzahl zählt. Liefert die Kettenstrafe 0
+  (keine Strafe), wird nur der zuletzt gezählte Wert ([bp−0xa]/[bp−0xb]) zurückgenommen (0x35C7B–0x35CB2).
+- Kein Zufallszug: Ergebnisse, Zufallsverbrauch und Abdrücke ändern sich nicht. Gezählt wird in jedem Spiel der
+  Minutenrechnung mit Manager (Liga, Play-offs, Pokale; 0xA484 prüft keinen Wettbewerb).
+- `[APPROX]` Nationalteam: das Original zählt für Vereinsfeld 0x16 = 6 in den Satz des Bundestrainers (Manager 5); das
+  Remake führt ihn nicht (`LiveTeam.PowerPlayCounts` = null), die Rücknahme trifft wie im Original den zuletzt gezählten
+  Verein.
+
+**Länderwerte (#193) im Stärkevergleich.** 0x952C mit Manager 5 schreibt die Teamwerte des Landes (Vereinsfelder
+0x18–0x1D, Kondition, Technik, Form) aus der Aufstellung des Bundestrainers: im Tageslauf 0x54F9C–0x54FBF (Schalter 1)
+jeden Tag, solange es einen Bundestrainer gibt (`[0x9EDA]` < 0x3F), und nach jedem Freundschaftsspiel (0x555D6,
+Schalter 0). Der Stärkevergleich 0x51206 liest diese Felder. Beleg: DOSBox 27–29 → 41–43, Deutschland +3/+3/+5 nach
+drei Freundschaftsspielen (`docs/dosbox-befunde.md`). Remake: `StrengthTable` zeigt für das Land des Bundestrainers mit
+eigener Aufstellung `MatchEngine.LineupTeamValues(coach.Formation)` samt Form. `[APPROX]` aus der aktuellen Aufstellung
+statt dem Stand des letzten Tageslaufs; ohne eigene Aufstellung bleiben die Länderwerte (wie in `PlayFriendly`).

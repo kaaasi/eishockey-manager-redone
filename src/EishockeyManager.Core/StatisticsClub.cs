@@ -207,18 +207,19 @@ public enum PowerPlayCounter
 }
 
 /// <summary>
-/// Über- und Unterzahl der Managervereine (Spur statistiken-verein). Die Zählung gehört zur Minutenrechnung
-/// (<c>MatchEngine*.cs</c>, Spur <c>spielstaerke-manager</c>); hier stehen die Regeln, der Zustand, der Saisonwechsel und
-/// die Anzeige.
+/// Über- und Unterzahl der Managervereine (Spur statistiken-verein). Gezählt wird in der Minutenrechnung
+/// (<see cref="OriginalMinutes.GoalScored"/>, <see cref="OriginalMinutes.Penalty"/>, Spur spielberechnung-komplett Teil 4);
+/// hier stehen die Regeln, der Zustand, der Saisonwechsel und die Anzeige.
 /// <list type="bullet">
 /// <item>[ORIGINAL] Tore (Datei 0xAA2C–0xAAEF in der Abschlussfunktion 0xA484, nach einem Treffer): Feldspieler Heim
 ///   [bp−0x11] gegen Gast [bp−0x12]; für den Heimmanager bei Heim &gt; Gast Zähler k = Seite des Schützen (0 Heim,
 ///   1 Gast), bei Heim &lt; Gast k = 2 + Seite; für den Gastmanager bei Heim &lt; Gast k = 1 − Seite, bei Heim &gt; Gast
 ///   k = 3 − Seite (<see cref="Goal"/>).</item>
-/// <item>[ORIGINAL] Beginn einer Überzahl (Strafwurf 0x35818, Datei 0x35A84–0x35B18): Steht es nach der Strafe
-///   gegnerische minus eigene Feldspieler = 1, zählt der Gegnermanager k = 4 und der eigene Manager k = 5; fällt die
-///   Strafe im 1/4-Folgewurf für den Gegner nicht an, wird der zuletzt gezählte Wert zurückgenommen (0x35C7B–0x35CB2).
-///   Nach einem Tor in Überzahl (0xA939–0xA9A2) zählt eine danach noch bestehende Überzahl erneut (k = 5 bzw. 4).</item>
+/// <item>[ORIGINAL] Beginn einer Überzahl (Strafwurf 0x35818, Datei 0x35A84–0x35B18): Ist nach der Strafe der Abstand
+///   der Feldspieler |eigene − gegnerische| = 1 (0x120:0x61), zählt der Gegnermanager k = 4 und der eigene Manager k = 5;
+///   fällt die Strafe im 1/4-Folgewurf für den Gegner nicht an, wird der zuletzt gezählte Wert zurückgenommen
+///   (0x35C7B–0x35CB2). Beendet ein Tor bei gleicher Zahl Feldspieler eine Strafe der verteidigenden Mannschaft und steht
+///   diese danach in Überzahl (0xA8F9–0xA9A2), zählt ihr Manager k = 4 und der des Schützen k = 5.</item>
 /// <item>[ORIGINAL] Saisonwechsel 0x5588E–0x558B2: alle sechs Zähler je Manager auf 0.</item>
 /// <item>[ORIGINAL] Anzeige 0x2D9D9–0x2DB22: Werte k = 0 … 3; „ÜBERZAHL ERFOLG“ = k0 · 100 / k4 (ohne Überzahl 0 %),
 ///   „UNTERZAHL ERFOLG“ = 100 − k3 · 100 / k5 (ohne Unterzahl 100 %), beide auf 0 … 100 begrenzt.</item>
@@ -283,8 +284,9 @@ public sealed partial class GameState
 
     /// <summary>
     /// Ein Tor eines Ligaspiels, Pokal- oder Play-off-Spiels in den Über-/Unterzahl-Zählern der beteiligten Manager
-    /// eintragen (<see cref="PowerPlay.Goal"/>). Für die Minutenrechnung (Spur <c>spielstaerke-manager</c>); das Original
-    /// zählt in jedem Spiel mit Managerbeteiligung (0xA484 prüft keinen Wettbewerb).
+    /// eintragen (<see cref="PowerPlay.Goal"/>); das Original zählt in jedem Spiel mit Managerbeteiligung (0xA484 prüft
+    /// keinen Wettbewerb). Die Minutenrechnung zählt selbst über <see cref="LiveTeam.PowerPlayCounts"/>
+    /// (<see cref="OriginalMinutes.GoalScored"/>, samt Ausnahme 5 gegen 6); diese Methode bleibt für Tests und Werkzeuge.
     /// </summary>
     public void CountPowerPlayGoal(Club home, Club away, int homeSkaters, int awaySkaters, bool homeScored)
     {

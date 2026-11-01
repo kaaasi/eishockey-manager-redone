@@ -23,7 +23,8 @@ public sealed record StrengthRow(Club Club, int Condition, int Technique, int Fo
 /// ungerundeten Summen. Sortiert absteigend nach dieser Summe (stabil in Datenbankreihenfolge).
 /// Belegt am Video (13:18): Russland Gesamt 99 99 51 → Mittel 85, Kanada 98 93 53 → 81.
 /// <list type="bullet">
-/// <item>Länderteams: Kondition und Technik aus <see cref="GameState.NationalRatings"/> (Tabelle in em.exe, Deutschland vor der WM neu ausgewürfelt).</item>
+/// <item>Länderteams: Kondition und Technik aus <see cref="GameState.NationalRatings"/> (Tabelle in em.exe, Deutschland vor der WM neu ausgewürfelt).
+///   Land des Bundestrainers mit eigener Aufstellung: Kondition, Technik und Form aus der Aufstellung (0x952C, #193).</item>
 /// <item>[APPROX] Ligavereine: Das Original führt Teamwerte je Verein (aus der Datenbankstärke ± 10 %); das Remake
 ///   hat stattdessen Spielerwerte. Abwehr = Mittel der Verteidiger der Aufstellung, Sturm = Mittel der Stürmer.</item>
 /// <item>[APPROX] Form der Länderteams und aller Vereine: Mittel der Spielerform (Original: random(45, 55) je Feld).</item>
@@ -70,6 +71,17 @@ public static class StrengthTable
         var form = Average(club.Players, p => p.Form, 50);
         if (club.Index is >= NationalTeams.First and <= NationalTeams.Last)
         {
+            // #193 (Spur spielberechnung-komplett, Teil 4): [ORIGINAL] Das Land des Bundestrainers zeigt die Teamwerte, die
+            // 0x952C mit Manager 5 aus dessen Aufstellung schreibt (Vereinsfelder 0x18–0x1D samt Form): im Tageslauf
+            // 0x54F9C–0x54FBF jeden Tag, solange es einen Bundestrainer gibt ([0x9EDA] < 0x3F), und nach jedem
+            // Freundschaftsspiel (0x555D6). Beleg DOSBox 27–29 → 41–43: Deutschland +3/+3/+5 nach drei Spielen
+            // (docs/dosbox-befunde.md). [APPROX] Das Remake rechnet aus der aktuellen Aufstellung (nicht dem Stand des
+            // letzten Tageslaufs); ohne eigene Aufstellung bleiben die Länderwerte wie in GameState.PlayFriendly.
+            if (game.NationalCoach is { } coach && coach.Nation == club.Index && coach.Formation.Count > 0)
+            {
+                var (cd, ca, _) = MatchEngine.LineupTeamValues(coach.Formation);
+                return ((cd.Condition, cd.Technique, cd.Form), (ca.Condition, ca.Technique, ca.Form));
+            }
             var (kd, td, ks, ts) = game.NationalRatings(club.Index);
             var defenders = club.Players.Where(p => p.Role == PlayerRole.Defender);
             var forwards = club.Players.Where(p => p.Role == PlayerRole.Forward);

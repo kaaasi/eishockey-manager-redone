@@ -458,11 +458,12 @@ Umsetzung: `Core/StatisticsClub.cs`, `UI/Screens/Statistics/ClubStatisticsScreen
   0x50 · Verein (+0/+1 Tore, +4/+5 Gegentore, +8/+9 Spiele Heim/Auswärts), Wert = Tore · 10 / Spiele, „E.Z“.
 * **Über-/Unterzahl** (Managerfelder 0x97D2 + 2 k): k 0–3 Tore/Gegentore in Über- bzw. Unterzahl, gezählt nach jedem Treffer
   in 0xA484 (Datei 0xAA2C–0xAAEF, Feldspieler [bp−0x11]/[bp−0x12], Schütze [bp+0xE], Manager [bp−0x13]/[bp−0x14]);
-  k 4/5 Zahl der Über-/Unterzahlspiele: Strafwurf 0x35818 (Datei 0x35A84–0x35B18, Differenz der Feldspieler = 1 über
-  0x120:0x61), Rücknahme 0x35C7B–0x35CB2, nach einem Tor in Überzahl 0xA939–0xA9A2. Rücksetzen 0x5588E–0x558B2.
+  k 4/5 Zahl der Über-/Unterzahlspiele: Strafwurf 0x35818 (Datei 0x35A84–0x35B18, |Differenz der Feldspieler| = 1 über
+  0x120:0x61), Rücknahme 0x35C7B–0x35CB2, nach einem Tor bei gleicher Zahl, das eine Strafe beendet, 0xA8F9–0xA9A2;
+  bei zusammen 11 Feldspielern kein Torzähler (0xAA18). Rücksetzen 0x5588E–0x558B2.
   Anzeige 0x2D9D9–0x2DB22: Werte auf 0 … 100 begrenzt, Erfolg k0 · 100 / k4 bzw. 100 − k3 · 100 / k5 (ohne Teiler 0 bzw.
-  100), „#“ (DGROUP 0x4DA9) als Prozentzeichen. Die Zählung liegt in der Minutenrechnung (`MatchEngine*.cs`, Spur
-  `spielstaerke-manager`); das Remake hat Regeln, Zustand und Anzeige, der Anschluss fehlt noch.
+  100), „#“ (DGROUP 0x4DA9) als Prozentzeichen. Angeschlossen an die Minutenrechnung in Spur spielberechnung-komplett,
+  Teil 4 (`MatchEngine.PowerPlay.cs`, `docs/spielberechnung.md` §18).
 * **Zuschauer** (0x2DB30–0x2DC87): Schnitt 0x97DE / 0x9748, Rekord 0x97E2 mit Gegner 0x976F, Minuskulisse 0x97E6 mit
   Gegner 0x9770 (99.999 bzw. 0 → „(noch keine...)“), Wert auf y + 6, „(Gegner)“ auf y + 12. **0x3EB30** Benötigter Schnitt:
   (0x3E811(1, 1) − 0x3E657(1)) · 12 / 23 · [0x7A1] / [0x79D] / Eintritt 0x973F, negativ → 0. Probe am Video `folge01_00522`:

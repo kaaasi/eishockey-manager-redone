@@ -271,6 +271,14 @@ public sealed class LiveTeam
 
     /// <summary>Managerwert des eigenen Managers (DGROUP 0x974B + 0x1AF · Manager, 0x952C) für die Verletzungen.</summary>
     public int ManagerValue { get; init; } = 20;
+
+    /// <summary>
+    /// Über-/Unterzahl-Zähler des Managers (DGROUP 0x97D2 + 0x1AF · Manager, <see cref="Manager.PowerPlayCounts"/>), die
+    /// die Minutenrechnung fortschreibt (<see cref="OriginalMinutes.GoalScored"/>, <see cref="OriginalMinutes.Penalty"/>);
+    /// null bei Computervereinen. [APPROX] Auch beim Nationalteam null: das Original zählt dort (Vereinsfeld 0x16 = 6) in
+    /// den Satz des Bundestrainers (Manager 5), den das Remake nicht führt.
+    /// </summary>
+    public int[]? PowerPlayCounts { get; init; }
 }
 
 /// <summary>Rahmen eines Spiels für die Minutenrechnung.</summary>
@@ -369,6 +377,8 @@ public static partial class OriginalMinutes
         club.Box.Add(count, minutes == 5 ? 13 : 2);
         club.PenaltyMinutes += minutes;
         var chain = !chained && OriginalMatch.Rnd(random, 0, 3) == 0 && count == 0;
+        // [ORIGINAL] 0x35A26–0x35B22: Über-/Unterzahl zählen, vor der Spielerwahl (Teil 4, docs/spielberechnung.md §18).
+        var counted = CountPowerPlayStart(club, opponent);
         LivePlayer? player = null;
         if (club.PenaltyPlayers is not null)
         {
@@ -387,8 +397,9 @@ public static partial class OriginalMinutes
         }
         events.Add(new MatchEvent(minute, side, MatchEventKind.Penalty, minutes,
             player is { Goalie: false } ? player.Player : null));
-        if (chain)
-            Penalty(opponent, club, 1 - side, minute, chained: true, events, random);
+        // [ORIGINAL] 0x35C7B–0x35CB2: bleibt die Kettenstrafe aus (Rückgabe 0), wird der zuletzt gezählte Wert zurückgenommen.
+        if (chain && Penalty(opponent, club, 1 - side, minute, chained: true, events, random) == 0 && counted is { } last)
+            CountPowerPlay(last.Team, last.Counter, -1);
         return minutes;
     }
 
@@ -503,6 +514,8 @@ public static partial class OriginalMinutes
         var shooter = side == 0 ? home : away;
         // [ORIGINAL] 0xA642–0xA650: Abbruch in der Verlängerung vor jeder Wertung (ohne Szene, siehe Shot).
         var aborted = minute > 60 && report.HomeGoals + mark < 10;
+        // [ORIGINAL] 0xA491–0xA4BC: Feldspieler beider Vereine (Vereinsfeld 0x32) zu Beginn des Abschlusses.
+        var (homeSkaters, awaySkaters) = (home.Box.Skaters, away.Box.Skaters);
         var goal = Shot(h.Defensive, h.Offensive, a.Defensive, a.Offensive, side == 1, report.HomeGoals + mark,
             report.AwayGoals + mark, minute, rules.WorldCup, defender.OpenNet, random);
         if (goal)
@@ -511,9 +524,7 @@ public static partial class OriginalMinutes
                 report.HomeGoals++;
             else
                 report.AwayGoals++;
-            // [ORIGINAL] Datei 0xA8AC–0xA933: Gegentor in Unterzahl beendet eine Strafe (0x35540(…, 0), dann 0x35691(…, 0, 0)).
-            if (defender.Box.Count > 0)
-                defender.Box.Release(0, force: false);
+            GoalScored(home, away, side, homeSkaters, awaySkaters);
         }
         // [ORIGINAL] 0xAB47–0xAB90: in der Managerpaarung nach jedem Abschluss Szene/Torschütze 0x541D9 (ScoringPlayers).
         var players = rules.ManagerMatch && !aborted ? ScoringPlayers(shooter, goal, random) : null;

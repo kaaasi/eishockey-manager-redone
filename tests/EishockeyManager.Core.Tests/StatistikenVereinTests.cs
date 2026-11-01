@@ -289,7 +289,10 @@ public class StatistikenVereinTests
                     Assert.True(manager.SeriesRecords[i] >= lastRecords[i]);
                 manager.SeriesRecords.CopyTo(lastRecords, 0);
             }
-            Assert.Equal(active, manager.PowerPlayCounts[0] > 0);
+            // Spielberechnung Teil 4: die Minutenrechnung zählt jetzt selbst (vorher blieb der passive Manager bei 0).
+            Assert.True(manager.PowerPlayCounts.Sum() > 0);
+            if (active)
+                Assert.True(manager.PowerPlayCounts[0] > 0);
             game.StartNextSeason();
             Assert.All(manager.PowerPlayCounts, v => Assert.Equal(0, v));
             foreach (var club in game.Clubs)

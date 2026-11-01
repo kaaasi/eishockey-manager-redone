@@ -204,6 +204,8 @@ public static partial class MatchEngine
             FewFitPlayers = fewFit,
             InjuryManager = managerMatch && squad is not null ? injuryManager : null,
             ManagerValue = ownValue,
+            // Teil 4: [ORIGINAL] Zähler des Managers (Vereinsfeld 0x16 = Manager + 1 → DGROUP 0x97D2 + 0x1AF · Manager).
+            PowerPlayCounts = managed ? manager?.PowerPlayCounts : null,
         };
     }
 
