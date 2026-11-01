@@ -225,6 +225,16 @@ public sealed class LiveTeam
     public LiveSquad? Squad { get; init; }
 
     /// <summary>
+    /// Kader nur für die Spielerwahl der Strafen (0x378C5), wenn <see cref="Squad"/> fehlt: Nationalteam des Bundestrainers
+    /// (R8W3I-06). [ORIGINAL] 0x35AB8–0x35B2C ruft 0x378C5 für jeden Verein mit Vereinsfeld 0x16 ≠ 0, also auch für das
+    /// Nationalteam (Manager 5, Kaderplätze DGROUP 0x5DC3 + 5 · 0x618).
+    /// </summary>
+    public LiveSquad? PenaltySquad { get; init; }
+
+    /// <summary>Kader der Strafen: <see cref="Squad"/>, sonst <see cref="PenaltySquad"/>.</summary>
+    public LiveSquad? PenaltyPlayers => Squad ?? PenaltySquad;
+
+    /// <summary>
     /// Managerwert, der auf den Einsatz bei Strafen wirkt (DGROUP 0x974B + 0x1AF · Vereinsfeld 0x16, Wert − 20). Computer: 20.
     /// </summary>
     public int PenaltyManagerValue { get; init; } = 20;
@@ -344,16 +354,15 @@ public static partial class OriginalMinutes
         club.PenaltyMinutes += minutes;
         var chain = !chained && OriginalMatch.Rnd(random, 0, 3) == 0 && count == 0;
         LivePlayer? player = null;
-        if (club.Squad is not null)
+        if (club.PenaltyPlayers is not null)
         {
-            // [ORIGINAL] 0x35B26–0x35C17: Spieler 0x378C5; keiner (100) → Ende ohne Kettenstrafe. Ein Torhüter bleibt auf
-            // dem Eis und bekommt keine Strafe angerechnet; ein Feldspieler geht vom Eis (+0x0A = 0) bis zum Freiwerden.
+            // [ORIGINAL] 0x35B26–0x35C17: Spieler 0x378C5; keiner (100) → 0x35B33 `cmp [bp-0x1],0x64` → 0x3583B: Rückgabe 0
+            // ohne Anzeige (0x130:0x48 an 0x35C73) und ohne Kettenstrafe (R8W3I-04). Strafbank, Feldspieler und
+            // Strafminuten des Vereins sind da schon gesetzt (0x35941–0x35986). Ein Torhüter bleibt auf dem Eis und bekommt
+            // keine Strafe angerechnet; ein Feldspieler geht vom Eis (+0x0A = 0) bis zum Freiwerden.
             player = PenalizedPlayer(club, random);
             if (player is null)
-            {
-                events.Add(new MatchEvent(minute, side, MatchEventKind.Penalty, minutes));
                 return 0;
-            }
             if (!player.Goalie)
             {
                 player.Dressed = false;

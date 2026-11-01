@@ -289,8 +289,8 @@ DGROUP 0x4B42) haben den Maßstab der Teamwerte.
   Liga; auch nach einer Spielwertung (das Original wertet das gespeicherte Ergebnis). Keine Strafen je Spieler.
 - Managervereine: Spiele + 1 für die Aufstellung; Gegentore und Minuten (60/70) für den aufgestellten Torhüter
   (`[ORIGINAL]` 0xA3F7/0x874D, ohne Torhüterwechsel im Spiel); Torschützen und Vorlagen nach 0x5028 unter den
-  Feldspielern der Aufstellung, jede Strafe für einen zufälligen Feldspieler der Aufstellung (`[APPROX]`, 0x386D1 und
-  0x378C5 nicht gelesen). Nach einer Spielwertung nichts.
+  Feldspielern der Aufstellung (`[APPROX]`, 0x386D1 nicht gelesen); die Strafe zählt beim Spieler aus 0x378C5 (§13, §16).
+  Nach einer Spielwertung nichts.
 - Saisonwechsel: alle Zähler auf 0 (`GameState.ResetMatchCounters`, `[APPROX]`: das Zurücksetzen im Original ist nicht
   gesucht); `Caps` bleiben.
 
@@ -388,7 +388,7 @@ Reihenfolge gilt auch für die Strafen dieser Minute), ungerade Minute `0x80CB(a
   **Satz des nächsten Managers** (übernommen; `[APPROX]` ohne nächsten Manager 0). Für #193 liefert
   `MatchEngine.LineupTeamValues` die Werte aus der Aufstellung des Bundestrainers; den Anschluss nach
   Freundschaftsspielen (0x555D6) in `Core/CupsNational*.cs` setzt die Leitstelle.
-- **0x378C5** (Strafspieler): bis zu 151 Züge random(0, Kaderplätze − 1); nur Spieler der Reihe auf dem Eis; Technik <
+- **0x378C5** (Strafspieler): höchstens 150 Züge (§16) random(0, Kaderplätze − 1); nur Spieler der Reihe auf dem Eis; Technik <
   Kondition → random(0, 10) > 3, sonst > 7; Torhüter mit 2/3 verschont. Feldspieler gehen vom Eis bis zum Freiwerden
   (DGROUP 0xD095, `PenaltyBox.Occupants`); ohne Spieler (100) keine Kettenstrafe. Die Strafe zählt beim gewählten
   Spieler (Kaderplatz +0/+1), beim Torhüter bei keinem.
@@ -524,3 +524,37 @@ Datenbankwert + Abweichung (die Kaderkorrektur `TeamValue` kommt im Spiel hinzu)
 | Meister mit Datenbank < 80 | 0 | 19 von 48 | 8 von 18 (≤ 72) |
 | Bundesliga Tore je Spiel / Unentschieden | 6,28 / 11,6 % | 6,35 / 10,7 % | – / 11,4 % (F21, 44. Spieltag) |
 
+## 16. Strafen in der Managerpaarung (Spur spielberechnung-komplett, Teil 2; R8W3I-03 bis -06)
+
+Geprüft an `em.exe` (`ndisasm -b 16`), Tests `SpielberechnungKomplett2Tests`.
+
+- **R8W3I-03, Zahl der Züge 0x378C5.** Der Zähler [bp-0xb] beginnt bei 0; 0x378ED springt vor dem ersten Zug zur Prüfung
+  0x37A2A (`mov al,[bp-0xb]; inc byte [bp-0xb]; cmp al,0x96; jnc`), erst dann folgt der Zug 0x378FC. Also höchstens
+  **150** Züge random(0, n); das Remake zog 151-mal (`MaxPenaltyDraws`).
+- **R8W3I-04, kein Spieler (100).** 0x35B33 `cmp [bp-0x1],0x64` → 0x3583B: Rückgabe 0 ohne Anzeige (0x130:0x48 an
+  0x35C73) und ohne Kettenstrafe. Strafbank, Feldspieler (0x35941/0x35963) und Strafminuten des Vereins (0x35986) sind da
+  schon gesetzt. Remake: kein `MatchEvent(Penalty)` mehr, Vereinsminuten und Strafbank bleiben.
+- **R8W3I-05, Managerwert.** 0x35897 liest das Byte DGROUP 0x974B + 0x1AF · (Vereinsfeld 0x16), geschrieben nur von 0x952C
+  mit Schalter ≠ 0 (0x9672): clamp(d/5 + 20, 0, 40) bzw. **100 bei weniger als neun** aufgestellten und eingesetzten
+  Spielern (Zählung 0x388F6 über Stub 0x149D:0x89, 0x9698–0x96A8). Schalter 1 nur im Tageslauf 0x54C9F, Schleife über die
+  Manager 0 … [0x386] − 1 und den Bundestrainer (5) bis Tag 0x3F (0x54F9C–0x54FBF), also vor den Spielen des Tages; die
+  Aufrufe 0x54DAA und 0x555D6 haben Schalter 0 (nur Teamwerte). `[APPROX]` Das Remake rechnet den Wert beim Spiel aus
+  demselben Stand (`LiveTeamOf`, „weniger als neun“ = `GameState.IsShortHanded`); der Zweig 100 war vorher toter Code.
+- **R8W3I-06, Nationalteam des Bundestrainers.** 0x35AB8–0x35B2C ruft 0x378C5 für jeden Verein mit Vereinsfeld 0x16 ≠ 0;
+  das Nationalteam hat 0x16 = 6 und zieht aus den Kaderplätzen von Manager 5 (DGROUP 0x5DC3 + 5 · 0x618). Unter 8 fitten
+  Kaderspielern keine Strafe (0x358FF). Remake: `LiveTeam.PenaltySquad` aus dem Kader des Bundestrainers
+  (`MatchEngine.NationalPenaltySquad`, Position aus `NationalCoach.Lineup`), die Strafe zählt beim gezogenen Spieler (die
+  Gutschrift zog vorher einen Zufallsspieler). `[APPROX]` Kaderreihenfolge; Reihenwerte und Energie bleiben wie beim
+  Computerverein; Managerwert 20 (das Original liest 0x974B + 6 · 0x1AF hinter den sechs Managersätzen, nicht geprüft).
+- **Verdacht 0x952C → 0x9567 widerlegt.** 0x9567 ruft über Stub 0x149D:0x8E die Funktion **0x38A36** (Verein), keine
+  automatische Aufstellung: sie zählt mit 0x388F6 die Spieler der Reihen auf dem Eis (Torhüter, Abwehr, Sturm), zieht die
+  Strafbank ab (0x35540 mit Schalter 0), schreibt DGROUP 0xCC35 + 2 · (Feld 0x16) und +1 sowie Vereinsfeld 0x32
+  (Feldspieler) und setzt Bit 3 von Feld 0x2C (Torhüter draußen), wenn sechs Feldspieler auf dem Eis sind. Das `[APPROX]`
+  in `PlayFriendly` (Automatik ohne Länderwerte) bleibt: 0x952C bildet keine Aufstellung (Datei der Spur
+  wettbewerbe-komplett, nicht geändert).
+- **Testlücke R8W3I-10** (`Forfeit_LeagueMatch_UpdatesDayForm`): `Forfeit_LeagueMatch_LoserDayFormDrops` prüft die
+  Tagesform des Verlierers (0x4F527).
+
+**Wirkung:** Paarungen ohne Manager unverändert. Neue Abdrücke (Länderspiele, ein Zug weniger ohne passenden Spieler):
+`RngTwinProbeTests` (3 von 6), `GameModeTests.Mode4_ReferenceValues_Unchanged` (ab Saison 5),
+`SpielberechnungAnschlussTests.FourSeasonChanges_WorldOnly` (WM-Ergebnisse, Pokalquelle).

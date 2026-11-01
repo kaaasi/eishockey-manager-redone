@@ -98,16 +98,19 @@ namespace EishockeyManager.Core.Tests;
 /// (Spielstart, großer Schritt), zweimal je Woche (kleiner Schritt) und nach jedem Saisonwechsel (großer Schritt); andere
 /// Teamwerte der Computervereine, damit andere Ergebnisse ab dem ersten Spieltag und mehr Züge aus der Hauptquelle. Keine
 /// Gegenprobe, die den alten Verlauf erhält (die Wanderung ist der Zweck).
+/// Spur spielberechnung-komplett, Teil 2 (R8W3I-03 bis -06): drei Abdrücke neu. Passiv Seed 3: das Nationalteam des
+/// Bundestrainers zieht den Strafspieler 0x378C5 (Gegenprobe ohne diesen Zug: alter Abdruck). Aktiv Seed 3 und 11:
+/// 0x378C5 zieht höchstens 150-mal, Strafen ohne Spieler erzeugen kein Ereignis, Managerwert 100 unter neun Spielern.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "99D0F267CA03E779")]
-    [InlineData(true, 3, "3B96FD1F299032BF")]
+    [InlineData(false, 3, "1A26EBD0E3B28619")]
+    [InlineData(true, 3, "91DBE8E7D206AF7E")]
     [InlineData(false, 11, "5DEBD7CE1804F5BD")]
-    [InlineData(true, 11, "0301F583DD6AEF2E")]
+    [InlineData(true, 11, "045637FF176C33D2")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
