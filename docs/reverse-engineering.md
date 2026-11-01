@@ -603,13 +603,14 @@ auswerten, 3 = Verlassen (Rückkehr nach Freigabe des Puffers 0x38:0x70A).
 `x < Tabelle + 0x17 − Breite·10`). Index 0–8 bilden eine 3 × 3-Matrix (Zeile · 3 + Spalte), Index 9 ist dreistufig,
 10–12 sind Schalter, 13–14 zählen über 0xE (`≥ 0xE` wirkt auf die Tabelle `DGROUP 0x120 + Manager` statt auf 0x21D).
 
-**Zustand** (Anfangswerte aus der Datei): `DGROUP 0x21D…0x22B` = 0,0,0,0,0,0,0,0,0, **1**, 0,0,0,0,0 (Index 9 = 1);
+**Zustand** (Anfangswerte aus der Datei): `DGROUP 0x21D…0x22B` = 0,0,0,0,0,0,0,0,0,0, **1**, 0,0,0,0 (Index 10 = DEB-Pokal = 1, Index 9 = 0;
+korrigiert nach R8-D03, nachgeprüft Datei 0x16FED ff. in Spur `optionen-wirkung`);
 `DGROUP 0x120…` = 1,1,1,1,1,69,94,39,73,15,43,0,9,13,10,14,11,15,12,16 (je Manager, vom Schalter ≥ 0xE per `xor 1` umgeschaltet);
 `DGROUP 0x262` = 70 (Regler „Spielgeschwindigkeit“: x-Klick 0xBE–0x11D, y 0x54–0x60: `(x − 0xBE) / 12 · 10`, also 0–80 in Zehnerschritten).
 
 **Klickverhalten** (Datei 0x2D32A–0x2D3D0 bzw. Kopie 0x5F7–0x6AE im Overlay):
 * Index 9 („Neuer Spielmodus:“, Wert 0/1/2): `inc`; bei 3 → 0; bei 2 → 0, falls `DGROUP 0x5A56 ≠ 0`. Bei Wert 2 außerdem Aufruf
-  `0x120:0x4D` (Spielmodus-Abfrage) und `DGROUP 0x226 = 0` (Datei 0x2D39F) – `0x226` ist der Spielmodus (== 2 zeigt die Zusatzzeile
+  `0x120:0x4D` (Spielmodus-Abfrage) und `DGROUP 0x226 = 0` (Datei 0x2D39F) – `0x226` ist die Darstellung des Live-Spiels, nicht der Spielmodus 0xD0B9 – siehe „Wirkung der Spielstand-Optionen“ unten (== 2 zeigt die Zusatzzeile
   mit fünf Schaltern, Datei 0x32C).
 * Index 0–8 und 10–12: `xor 1` (an/aus); Index 13/14 wie oben für den aktiven Manager (`DGROUP 0xA70E`).
 * Nach Index 12: Vergleich mit `DGROUP 0x6AC` (Manager-Statusbyte `0x974E + 0x1AF · Manager`), weitere Folgewirkung nicht verfolgt.
@@ -625,6 +626,35 @@ keinen Schalter mit dem Text). Nicht benutzt.
 **Offen / [APPROX]:** Zuordnung der 9 Matrix-Felder zu den Beschriftungen (Zeilen vermutlich Drittelpause · Ergebnisse · Tabelle,
 Spalten 1./2./3. Liga) ist aus den Koordinaten geschlossen, **nicht** am Video bestätigt; Wirkung von WM-Spiele/Länderspiele/Europapokal
 (Index 10–12 oder Zeile 4–6) und die Folge nach Index 12 nicht belegt. Die Kalender-Teile siehe unten (Teil 2).
+
+### Wirkung der Spielstand-Optionen (Spur `optionen-wirkung`, Teil 1; #289)
+
+Nachgeprüft mit `ndisasm -b 16` (alle direkten Zugriffe `[0x226]`–`[0x229]` und `[0xD0B9]` in `em.exe`). Ergebnis: **keine der
+Optionen meldet einen Wettbewerb an oder ab, und keine wechselt den Spielmodus.**
+
+* **Index 9 (DGROUP 0x226) ist nicht der Spielmodus**, sondern die Darstellung des Live-Spiels (0 / 1 / 2). Beim Wechsel auf 2
+  zeigt 0x2CD1C einmalig (Merker DGROUP 0xE044) über `0x120:0x4D` die Meldung „Neuer Spielmodus:“ / „Das Eisfeld bleibt während
+  des gesamten Spieles an.“ / „Keine Teamveränderungen möglich.“ (DGROUP 0x4D38/0x4D4A/0x4D69/0x4D84, Datei 0x2D4EE–0x2D50A;
+  Texte Datei 0x1BB08 ff.). Leser: Spieltagsablauf 0x37112 (bei 2 Anzeige dauerhaft an, DGROUP 0x5A55 = 1), Eingriffsmenü
+  0x3783E/0x37D34/0x38E00 (schreibt den Wert zurück), weitere Anzeigepfade 0x5255D/0x527E5/0x53DDC. **[ORIGINAL]** Gehört zu
+  `livespiel` (ausgeklammert). Der **Spielmodus DGROUP 0xD0B9** wird nur in der Spielvorbereitung geschrieben (Datei 0x29858,
+  0x29862) – das Original kennt keinen Moduswechsel im laufenden Spiel.
+* **Index 10–12 (DGROUP 0x227 DEB-Pokal, 0x228 Europapokal, 0x229 WM-Spiele) sind Anzeigeschalter.** Leser:
+  * Spieltagsablauf 0x3702E–0x37085: Spieltag ohne Managerverein (`[bp−5] = 0`) geht in die Minutenschleife mit Anzeige
+    (0x37088), wenn der Schalter des Wettbewerbs an ist (Code `[0xD0C2]` 8 → 0x229, 3/5 → 0x228, 6 → 0x227, 1 → Matrix
+    0x21E/0x221/0x224, 7 immer); sonst **schneller Weg 0x3731F** (`docs/spielberechnung.md` §1 und §3).
+  * Ereignisfilter 0x3A8EC–0x3A9BE: Meldung überspringen bei ausgeschaltetem Schalter (Code > 7 → 0x229, 3–5 → 0x228, 6 → 0x227).
+  * 0x33BB2: Bildschirm nach der Pokalrunde nur, wenn 0x227 an (außer Modus „nur Weltkugel“).
+  * 0x30FF2: Vorbereitung der WM-Anzeige nur bei 0x229 an.
+  * Ernennung des Bundestrainers 0x5541F–0x5545F / 0x5575A: 0x229 wird nach 0x22C gesichert, während des Bundestrainer-Abschnitts
+    auf 1 gesetzt und danach zurückgeschrieben.
+* **Spielwirkung** haben Index 10–12 also nur mittelbar: Pokalspiele ohne Managerverein laufen bei eingeschaltetem Schalter durch
+  die Minutenschleife statt durch den schnellen Weg – andere Ergebnisverteilung und anderer Zufallsverbrauch. Das Remake nimmt
+  in `MatchEngine.Live.cs` (`PlayWithEvents`) alle drei Schalter als aus an ([APPROX]); mit den Anfangswerten des Originals
+  (DEB-Pokal an) wäre der DEB-Pokal der Computervereine im Minutenweg zu rechnen. Diese Datei gehört `spielberechnung-komplett`.
+* **Folge für den Plan:** Die in Runde 9 vorgesehene Wirkung „An-/Abmelden von DEB-Pokal, Europapokal, WM in `StartNextSeason`
+  und Moduswechsel“ ist im Original **nicht belegt** und widerspricht den Belegen oben. Teil 1 ist deshalb blockiert
+  (Entscheidung Nutzer, PR #292).
 
 ### Teil 2 (Spur `optionen-kalender-2`)
 
