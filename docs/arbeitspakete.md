@@ -80,8 +80,9 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
   Referenz-Repo `original/spielstaende/`; im PR stehen Befehlszeile, Vorlage und eine DOSBox-Anleitung (was spielen, was
   festhalten). Den Spielstand selbst erzeugt die Leitstelle und gibt ihn dem Nutzer; der Nutzer spielt und liefert
   Bilder ins Referenz-Repo. Die Auswertung der Bilder ist ein weiterer Lauf nach Entscheidung des Nutzers.
-- **Abgleich:** `SeasonFlow.cs`, `docs/saison.md`, `[APPROX]` aus #307. **Modell:** Claude Opus 5.5. **Status:** wartet
-  auf Go.
+- **Abgleich:** `SeasonFlow.cs`, `docs/saison.md`, `[APPROX]` aus #307. **Modell:** Claude Opus 5.5. **Status:** Analyse
+  fertig (#377, `docs/analyse/re-saisonwechsel.md`): Managervereine verlassen die Oberliga nie (zweiter Tausch hebt den ersten
+  auf), Konto 400.000 DM, beide Pfeile; DOSBox-Beleg offen (Vorlage `FILE12.HOK` vom Nutzer nötig).
 
 ### Spur `re-livespiel` – Livespiel Ov 130h (nur Analyse)
 
