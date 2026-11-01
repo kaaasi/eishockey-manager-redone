@@ -29,16 +29,18 @@ public class TransferTests
     }
 
     [Fact]
-    public void NewGame_HasSixListingsFromComputerClubs()
+    public void NewGame_ListingsComeFromThePool()
     {
+        // Teil 5 (0x494EF): Die Liste kommt aus dem Spielerpool, nicht aus Kadern; im Mittel 6–7 Plätze (Video 6).
         var game = TestGames.Create();
         var market = game.TransferMarket;
-        Assert.Equal(TransferMarket.StartListings, market.Listings.Count);
+        Assert.InRange(market.Listings.Count, 1, TransferPoolRules.MarketSlots);
         Assert.All(market.Listings, l =>
         {
-            Assert.Contains(l.Player, l.From.Players);
+            Assert.True(l.FromPool);
+            Assert.DoesNotContain(l.Player, game.Clubs.SelectMany(c => c.Players));
             Assert.NotEqual(game.ActiveManager.ClubIndex, l.From.Index);
-            Assert.StartsWith("vom ", l.OriginText);
+            Assert.StartsWith(TransferMarket.IsNationalTeam(l.From) ? "aus " : "vom ", l.OriginText);
         });
     }
 
@@ -132,10 +134,11 @@ public class TransferTests
             market.AdvanceDay(game, game.Random);
         var bid = Assert.Single(market.Bids);
         var money = manager.Money;
+        var fee = TransferMarket.TransferFee(bid); // Teil 5: 0x49332, Restlaufzeit vor dem Wechsel
         market.Accept(game, bid);
         Assert.DoesNotContain(player, club.Players);
         Assert.Contains(player, bid.Buyer.Players);
-        Assert.Equal(money + bid.Amount, manager.Money);
+        Assert.Equal(money + fee, manager.Money);
         Assert.Empty(market.Bids);
     }
 

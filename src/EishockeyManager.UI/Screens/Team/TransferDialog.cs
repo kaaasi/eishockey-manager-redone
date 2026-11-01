@@ -21,11 +21,14 @@ public sealed class TransferDialog
     public static Rect AmountField => new(Box.X + 84, Box.Y + 36, 76, 7);
 
     /// <summary>Fragefenster (Talentsuche, Gebote) statt Verhandlungsdialog?</summary>
-    public bool IsQuestion => Kind is DialogKind.Talent or DialogKind.Bid;
+    public bool IsQuestion => Kind is DialogKind.Talent;
 
-    public Rect ConfirmButton => Kind == DialogKind.Offer ? Widgets.ButtonRect(90, OfferBox.Y + 54)
+    /// <summary>Angebotsfenster 0x491F9 (unaufgefordertes Angebot, Argument 1, bzw. Angebot für einen Spieler auf dem Markt, Argument 0)?</summary>
+    public bool IsOfferWindow => Kind is DialogKind.Offer or DialogKind.Bid;
+
+    public Rect ConfirmButton => IsOfferWindow ? Widgets.ButtonRect(90, OfferBox.Y + 54)
         : IsQuestion ? Widgets.ButtonRect(95, 167) : Widgets.ButtonRect(Box.X + 12, Box.Y + 55);
-    public Rect CancelButton => Kind == DialogKind.Offer ? Widgets.ButtonRect(11, OfferBox.Y + 54)
+    public Rect CancelButton => IsOfferWindow ? Widgets.ButtonRect(11, OfferBox.Y + 54)
         : IsQuestion ? Widgets.ButtonRect(165, 167) : Widgets.ButtonRect(Box.X + 99, Box.Y + 55);
 
     /// <summary>
@@ -91,7 +94,7 @@ public sealed class TransferDialog
 
     private string ConfirmText => Kind switch
     {
-        DialogKind.Sale or DialogKind.Offer => "Verkaufen",
+        DialogKind.Sale or DialogKind.Offer or DialogKind.Bid => "Verkaufen",
         DialogKind.Talent => "Aber immer!",
         _ => "Mach' ich!",
     };
@@ -99,7 +102,7 @@ public sealed class TransferDialog
     private string CancelText => Kind switch
     {
         DialogKind.Sale when Listing is not null => "Behalten",
-        DialogKind.Offer => "Behalten",
+        DialogKind.Offer or DialogKind.Bid => "Behalten",
         DialogKind.Talent => "Lieber nicht.",
         _ => "Abbruch",
     };
@@ -109,7 +112,7 @@ public sealed class TransferDialog
 
     public Outcome Update(InputState input, Assets assets)
     {
-        PressedButton = Kind == DialogKind.Offer ? ContractDialog.PressedAt(input, CancelButton, ConfirmButton) : null;
+        PressedButton = IsOfferWindow ? ContractDialog.PressedAt(input, CancelButton, ConfirmButton) : null;
         if (_editing)
         {
             foreach (var ch in input.Text)
@@ -150,7 +153,7 @@ public sealed class TransferDialog
             DrawQuestion(s, a);
             return;
         }
-        if (Kind == DialogKind.Offer)
+        if (IsOfferWindow)
         {
             DrawOffer(s, a);
             return;
@@ -200,7 +203,9 @@ public sealed class TransferDialog
     /// Angebotsfenster nach em.exe 0x491F9 (Argument 4 = 1, Aufruf 0x46EA5). [ORIGINAL] Titel 0x490DE: „Manager“ (DGROUP 0xC74)
     /// + Name, zentriert 6 … 0xA3, Grundlinie y 0x28, Farbe 0x0A mit Schatten 0x1C, Linie y 0x2B; „ANGEBOT von &lt;Verein&gt; :“
     /// bei (7 | 0x34), Betrag mit „ DM“ zentriert 4 … 0xA6 bei y 0x3C; „ABLÖSESUMME :“ bei (7 | 0x44), darunter „keine“ (y 0x4C);
-    /// Knöpfe „Behalten“ (0x0B | 0x53) und „Verkaufen“ (0x5A | 0x53), Textfarbe 7. Grundlinien wie beim Verhandlungsfenster
+    /// Knöpfe „Behalten“ (0x0B | 0x53) und „Verkaufen“ (0x5A | 0x53), Textfarbe 7. Bei einem Angebot für einen Spieler auf dem
+    /// Markt (Argument 0, Aufruf 0x473FF) steht unter „ABLÖSESUMME :“ statt „keine“ der Rest Angebot − Angebot / 7 · Restlaufzeit
+    /// (0x49332–0x49371, <see cref="TransferMarket.TransferFee"/>), der beim Verkauf gutgeschrieben wird. Grundlinien wie beim Verhandlungsfenster
     /// auf die Oberkante der Schrift umgerechnet (Mini 4, Titel 6 Pixel darüber). [APPROX] Kein Videobeleg; Lage nur aus dem Code.
     /// </summary>
     private void DrawOffer(Surface s, Assets a)
@@ -210,10 +215,12 @@ public sealed class TransferDialog
         TeamUi.DialogFrame(s, b);
         TeamUi.DialogTitle(s, a, 84, 0x28 - 6, "Manager " + Player!.Name);
         s.HLine(5, 0x2B, 159, Colors.White);
-        s.Text(mini, 7, 0x34 - 4, "ANGEBOT von " + Offer!.Buyer.Name + " :", Colors.White);
+        var buyer = Kind == DialogKind.Bid ? Bid!.Buyer : Offer!.Buyer;
+        s.Text(mini, 7, 0x34 - 4, "ANGEBOT von " + buyer.Name + " :", Colors.White);
         s.TextCentered(mini, (4 + 0xA6) / 2, 0x3C - 4, TransferScreen.Money(Price), Colors.White);
         s.Text(mini, 7, 0x44 - 4, "ABLÖSESUMME :", Colors.White);
-        s.TextCentered(mini, (4 + 0xA6) / 2, 0x4C - 4, "keine", Colors.White);
+        var fee = Kind == DialogKind.Bid ? TransferScreen.Money(TransferMarket.TransferFee(Bid!)) : "keine";
+        s.TextCentered(mini, (4 + 0xA6) / 2, 0x4C - 4, fee, Colors.White);
         ContractDialog.Button(s, a, CancelButton, CancelText, PressedButton == CancelButton);
         ContractDialog.Button(s, a, ConfirmButton, ConfirmText, PressedButton == ConfirmButton);
     }

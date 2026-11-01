@@ -68,7 +68,8 @@ Werkzeuge: siehe `tools/reverse-engineering/README.md`.
 | 0x1A | Besitzer: Manager 0–3, **4 = Transfermarkt** (belegt an Original-Spielstand FILE05, `formate/spielstand-original.md`; früher „6“) |
 | 0x1D | Verein / Nationalteam (0xFF = keiner) |
  
-Nur 200 Spieler werden detailliert verwaltet (Kader der menschlichen Manager + Transfermarkt).
+Nur 200 Spieler werden detailliert verwaltet (Kader der menschlichen Manager + Transfermarkt); der Transfermarkt zieht aus
+diesem Pool (Listenwechsel 0x494EF, im Remake seit `transfer-vertraege-komplett` Teil 5, `docs/transfer.md`).
 Computervereine spielen ausschließlich über ihre Teamwerte. Das Remake erzeugt dagegen für alle Vereine
 vollständige Kader (aus den Datenbanknamen) und leitet deren Werte aus den Teamwerten ab – damit funktionieren
 Transfers zwischen allen Vereinen, Statistiken und Ex-/Import einheitlich.
@@ -597,6 +598,17 @@ Formeln und offene Punkte in [transfer.md](transfer.md).
   oder ist +0x0B = 0: Meldung 0x138D, Ablöse Wert(Preis) / 2 (0x27DF3, ebenso mit Teiler 2 auf dem Stapel) direkt aufs Konto
   (DGROUP 0x97EA + 0x1AF · Manager), Platz frei (0x108:0x48); sonst Meldung 0x139D über 0x120:0x7A.
 * Umsetzung und Abbildung: `docs/transfer.md` (Teil 1 der Spur).
+
+### Spielerpool und Listenwechsel (Teil 5)
+
+* **Pool** far:8253 (200 × 33, Index 1–199): Startwerte 0x5AF50 (66C3:0730), Namen 0x5AAA0 (66C3:0280, Vereine 0–11 bzw. 0–35)
+  und 0x5ACA0 (0x140:0x48, Satz DGROUP 0x55F4 + 6 · Art: Art 0 = 179–199/Vereine 52–63, Art 1 = 1–179/Vereine 0–23), Art nach
+  Index (0x5B391); Saisonwechsel: Alter + 1 aller Plätze (0x274A7, Schleife 1–199 im Zug von Manager 0), neue Namen 0x56467.
+* **Listenwechsel** 0x494EF (0x118:0x5C): Räumen über 0x425B6 (0x108:0x48, rückt auf; Managerplatz bleibt), Füllen mit
+  random(0, 9), Pool random(1, 179) / random(180, 199), Grundstärken 0x4981E, Platz 0x42CB1 (0x108:0x5C, Energie
+  random(80, 120)). Aufrufer 0x43A9F (Saisonstart), 0x54E7C (random(0, Managerzahl + 2) = 0).
+* **Ablöse bei Markt-Angeboten** 0x49332–0x49371: Angebot − Angebot / 7 · Restlaufzeit.
+* Umsetzung, Tabelle und `[APPROX]`: `docs/transfer.md` (Teil 5).
 
 ## Spielmodus-Optionen 0x2CD1C (Spur `optionen-kalender`, Teil 1: Belege; #228)
 

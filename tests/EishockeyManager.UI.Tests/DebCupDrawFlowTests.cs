@@ -215,7 +215,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// – andere Ergebnisse ab dem ersten Spiel des Managers; mit und ohne Anzeige weiter gleich. Integration Runde 8, Welle 3
     /// (R8W3I-01): Spielstand vor den Toren der Minute für 0x80CB/0x939A – neue Werte, mit und ohne Anzeige gleich.
     /// Spur transfer-vertraege-komplett (Teil 1): ab 1995 neu – nach den Prämien kommt die Verhandlung ausgelaufener Verträge
-    /// (0x27D05); Enter ist „Mach' ich!“, die Spieler bleiben ein Jahr statt zu gehen. Mit und ohne Anzeige weiter gleich.</summary>
+    /// (0x27D05); Enter ist „Mach' ich!“, die Spieler bleiben ein Jahr statt zu gehen. Mit und ohne Anzeige weiter gleich.
+    /// Spur transfer-vertraege-komplett (Teil 5): ab 1993 neu – Pool und Listenwechsel 0x494EF (random(0, Managerzahl + 2) je
+    /// Ligaspieltag) verbrauchen die Hauptquelle anders als die bisherige Liste aus Computerkadern, damit andere Ergebnisse;
+    /// mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15360 | 1994: DEB 6, DM 2, Tab 15963 | 1995: DEB 6, DM 2, Tab 16075 | 1996: DEB 9, DM 6, Tab 15852";
+        "1993: DEB 6, DM 2, Tab 15300 | 1994: DEB 6, DM 6, Tab 16314 | 1995: DEB 6, DM 2, Tab 15631 | 1996: DEB 2, DM 2, Tab 15664";
 }

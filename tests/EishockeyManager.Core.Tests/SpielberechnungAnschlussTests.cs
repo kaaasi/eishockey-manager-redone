@@ -149,10 +149,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// alter Wert.
     /// Spur transfer-vertraege-komplett (Rest von Teil 2): aktiv neu durch das Startgehalt Wert(Gehalt) (0x29EE4) und die Laufzeit
     /// 1 Jahr beim Kauf (0x42CB1); Gegenprobe mit altem Startgehalt und alter Laufzeit: alter Wert.
+    /// Spur transfer-vertraege-komplett (Teil 5): beide neu durch den Listenwechsel aus dem Spielerpool (0x494EF, anderer Verbrauch
+    /// der Hauptquelle; Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "29DA45742C8BD126")]
-    [InlineData(true, "C82DC1F35CEAC92A")]
+    [InlineData(false, "8CD15FA20CA2D84F")]
+    [InlineData(true, "48EC5D55C3D829BB")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -195,6 +197,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
         Assert.Equal(WorldOnlyReference, print);
     }
 
+    // Spur transfer-vertraege-komplett (Teil 5): Titel und Konten gleich, nur die Hauptquelle (R…) verschoben – Pool und
+    // Listenwechsel (0x494EF) beim Saisonwechsel ziehen andere Zahlen als die bisherige Startliste.
     // Spur spielstaerke-manager: Titel und Konten gleich, nur die Hauptquelle (R…) verschoben – der Lader der Teamwerte zieht
     // beim ersten (WM-)Spiel 1650 Zahlen; die WM-Nationalteams spielen ohne Streuung (RatedNation, Form aus dem Lader).
     // spielstaerke-manager-2: Spiele des Bundestrainers sind Managerpaarungen (Energie, Reihenwechsel, Seitentausch je
@@ -202,7 +206,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Integration Runde 8, Welle 3 (R8W3I-01): Managerpaarungen des Bundestrainers mit dem Spielstand vor den Toren der
     // Minute – andere WM-Ergebnisse ab Saison 5 und Pokalquelle (C…); Hauptquelle und Konten gleich.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|R1348418928 C885920316";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|R266397534 C885920316";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

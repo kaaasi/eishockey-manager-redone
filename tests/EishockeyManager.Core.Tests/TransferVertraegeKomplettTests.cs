@@ -29,7 +29,7 @@ public class TransferVertraegeKomplettTests
             game.TransferMarket.Bid(game, manager, listing, listing.Price * 2, loan: false, out var purchase));
         Assert.NotNull(purchase);
         Assert.Equal(10_000_000, manager.Money);
-        Assert.Contains(p, from.Players);
+        Assert.DoesNotContain(p, game.Clubs.SelectMany(c => c.Players)); // Poolspieler (Teil 5, 0x494EF)
         Assert.DoesNotContain(p, club.Players);
         Assert.Contains(listing, game.TransferMarket.Listings);
         Assert.Equal(Contracts.PurchaseYears, purchase.Years); // 0x42CB1: +0x0B = 1 (Teil 2)

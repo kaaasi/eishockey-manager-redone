@@ -270,6 +270,10 @@ public class HeimspielStatistikTests
                     var forfeited = game.Results.Where(r => r.MatchDay > played && r.MatchDay <= game.PlayedMatchDays
                         && r.Involves(manager.ClubIndex)).ToList();
                     penaltyHomeGames[manager] += forfeited.Count(r => r.Home == manager.ClubIndex);
+                    // Teil 5 (transfer-vertraege-komplett): Treffen beide Manager in derselben Liga aufeinander (hier nach dem
+                    // Aufstieg des aktiven in Saison 4), ist auch das Heimspiel des Gegners gewertet und ohne Statistik.
+                    foreach (var other in game.Managers.Where(o => o != manager))
+                        penaltyHomeGames[other] += forfeited.Count(r => r.Home == other.ClubIndex && r.Away == manager.ClubIndex);
                     // #165: nicht spielfähig → 0:2 daheim, 2:0 auswärts
                     Assert.All(forfeited, r => Assert.Equal(r.Home == manager.ClubIndex ? (0, 2) : (2, 0), (r.HomeGoals, r.AwayGoals)));
                 }

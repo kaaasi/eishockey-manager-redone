@@ -46,7 +46,7 @@ Stubeinträge Ov 0x118 (Stub-Segment 0x14C7, Datei 0x16A70): 0x2A → 0x465F1 Tr
 | Saisonende | 0x27D05–0x27DF3 | +0x0B = 0: +0x18 = 101, +0x0B = 1, Gehalt = Wert(Gehalt) · (147 − Alter) / 100, dann Verhandlung; scheitert sie: „… kehrt Ihrem Verein den Rücken...“ |
 | Gebotssperre | 0x472F4, 0x47140, 0x47B01, Tagesablauf 0x071CC | abgelehntes Gebot vom Computermarkt: **Kaderplatz** +0x1A \|= 0x80 \| 1 &lt;&lt; Manager (nicht Pool +0x1A, das ist der Besitzer); Anklicken mit beiden Bits „Angebot wurde bereits abgelehnt.“; täglich (nur im Zug von Manager 0) hebt random(0, 2) = 0 die Sperre auf, wenn allein Manager 0 gesperrt ist |
 | Reihenfolge Gebot an einen Manager | 0x474F0 vor 0x47546 | erst Geld, dann Unfair-Grenze (R8-C02) |
-| Wechsel der Liste | 0x494EF (Stub 0x5C) | gerufen beim Saisonstart (0x43A9F) und täglich mit random(0, Managerzahl + 2) = 0 (0x54E71): Markt-Plätze leeren, aus dem Pool (Besitzer 6) Spieler 1–179 bzw. mit random(0, 5) = 0 180–199 ziehen, Form random(45, 55), Preis/Gehalt = Wert, +0x19 = random(3, 12) · 16 + random(3, 12) |
+| Wechsel der Liste | 0x494EF (Stub 0x5C) | gerufen beim Saisonstart (0x43A9F) und täglich mit random(0, Managerzahl + 2) = 0 (0x54E71); Ablauf und Umsetzung in Teil 5 (unten) |
 
 Abbildung im Remake: Tageszähler &gt; 232 = Phase `SeasonOver`; [0xE1A4] je Saison und Tag aus eigenem Startwert
 (`GameState.ContractTurnFactor`, `[APPROX]`); Zufall der Verhandlung aus `ContractRandom`; Kaderplatz 3 = vierter Spieler
@@ -157,17 +157,51 @@ Pooleintrags; das Remake nimmt die Stärke des Spielers. Vereinsstärke aus Stä
 Ein voller Computerkader, ein Nationalteam oder ein Europapokal-Gegner gibt den Spieler in den Pool der Vertragslosen. Das
 Angebotsfenster ist im Video nicht zu sehen; Lage nur aus dem Code (Grundlinien wie beim Verhandlungsfenster umgerechnet).
 
-**Neuer Befund (nicht umgesetzt):** Dasselbe Fenster zeigt bei einem Angebot für einen Spieler **auf dem Markt** (Bit 0x80,
-Aufruf 0x473FF mit Argument 0) unter „ABLÖSESUMME :“ Angebot − Angebot / 7 · Restlaufzeit (+0x0B) und schreibt diesen Rest gut
-(0x49332–0x49371, danach 0x4748A). Das Remake bucht den vollen Betrag und zeigt eine Rückfrage (`UnsolicitedOfferRules.MarketTransferFeeThirds`
-ist vorbereitet). Umstellung ändert Geld in fremden Tests (`TransferTests`, `TransferOriginalTests` …) → Teil 4 bzw. Entscheidung.
+**Befund aus Teil 3, umgesetzt in Teil 5:** Dasselbe Fenster zeigt bei einem Angebot für einen Spieler **auf dem Markt** (Bit
+0x80, Aufruf 0x473FF mit Argument 0) unter „ABLÖSESUMME :“ Angebot − Angebot / 7 · Restlaufzeit (+0x0B) und schreibt diesen
+Rest gut (0x49332–0x49371, danach 0x4748A). Der Listenwechsel 0x494EF zieht aus dem Pool von 200 Spielern (Teil 5, unten).
 
-**Listenwechsel 0x494EF (nicht umgesetzt, Entscheidung nötig):** Der Wechsel räumt alle Markt-Plätze (Satz 4, 10 Plätze) ohne
-Managerspieler, zieht aus dem **Pool von 200 Spielern** (Besitzer 6; Nummer random(1, 179), mit random(0, 5) = 0 random(180, 199),
-bis zu 1500 Versuche) neue Spieler, würfelt Form (+0x17 = random(45, 55)) und Grundstärken nach dem Verein (0x4981E), legt den
-Kaderplatz an (0x108:0x5C) und setzt +0x2C = Wert(Preis), +0x28 = Wert(Gehalt) (0x4975C/0x497A1), +0x19 = random(3, 12) · 16 +
-random(3, 12). Computervereine haben im Original keine Spieler; das Remake zieht Markt-Spieler aus den Kadern der Computervereine.
-Eine treue Umsetzung braucht den Pool als eigenes Modell (Datenbank, Spielstand, Kader der Computervereine) – Entscheidung Nutzer.
+## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 5: Spielerpool, Listenwechsel, Ablöse)
+
+Entscheidungen Nutzer 01.11.2026 (PR #308). Umsetzung: `Core/Transfer.Pool.cs` (`TransferPoolRules`, `PoolSlot`,
+`TransferMarket.BuildPool`, `StartPoolSeason`, `ChangeList`), `Core/Transfer.cs` (`TransferListing.FromPool`, `TransferFee`,
+`AdvanceDay`, `Initialize`, `StartSeason`), Angebotsfenster für Gebote `UI/Screens/Team/TransferDialog.cs`; Schema 20
+(vorläufig, `Core/SaveGame.Migration.TransferVertraegeKomplett5.cs`); Tests `TransferVertraegeKomplettTeil5Tests`,
+`TransferVertraegeKomplettTeil5ScreenTests`.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Pool zu Spielbeginn | 0x5AF50–0x5B0B1 (66C3:0730) | je Index 1–199: Alter +0x14 = random(18, 33); b = random(30, 89), unter 45 mit random(0, 1) ≠ 0 neu random(40, 89); +0x16 = b + 10 − random(0, 20); Form +0x17 = random(45, 55); +0x15 = b + 10 − random(0, 20); +0x19 = 0; Besitzer 6 |
+| Talent, Namen | 0x5B2CD–0x5B387, 0x5AAA0 (66C3:0280) | je Index Talent +0x12 = random(0, 9); namenlose Plätze: Kaderplatz s = random(DGROUP 0x164[k], 0x165[k] − 1) (0, 2, 12, 25 nach Art, Grenzen DGROUP 0x382: 21, 97), Verein c = random(0, 11), nach einem doppelten Namen einmal random(0, 35) (Merker DGROUP 0x55EE), Managerverein verworfen; +0x1D = c |
+| Art (Rollenwert +0x18) | 0x5B391–0x5B4A9 | 1–20 Torhüter, 21–96 Verteidiger 25 + random(0, 16), 97–179 Stürmer 75 + random(0, 16), 180–183 Torhüter, 184–190 Verteidiger, 191–199 Stürmer |
+| Nationalspieler | 0x2A0B5 → 0x5ACA0 (0x140:0x48, Art 0) | Satz DGROUP 0x55F4 + 6 · Art: Art 0 Indizes 179–199, Vereine 52–63 (DGROUP 0x6AD … + 11), Wechsel der Kaderart bei 184/191; Art 1 Indizes 1–179, Vereine 0–23, Wechsel bei 21/97. Nur Besitzer 6 mit Verein ohne Manager; Verein random, Kaderplatz random der Art, mit random(0, 15) = 0 random(0, 1); doppelter Name (vergeben oder kleinerer Index) → neuer Versuch |
+| Saisonwechsel | 0x274A7 (Saisonende, im Zug von Manager 0), 0x56467/0x56470 | Alter aller 200 Poolplätze + 1; neue Namen der freien Plätze (0x5ACA0 Art 0, dann Art 1); die Werte bleiben |
+| Listenwechsel, Räumen | 0x494EF–0x49549, 0x425B6 (0x108:0x48) | Markt-Satz 4, 10 Plätze: je k = 0 … 9 Platz k frei; ein Platz eines Managers (Besitzer ≠ 4) bleibt und zählt, ein Markt-Platz wird entfernt, die folgenden rücken auf, k zählt weiter – also bleibt etwa jeder zweite; Poolspieler wieder Besitzer 6 |
+| Listenwechsel, Füllen | 0x49566–0x4980F | n = 10 − Managerplätze; n-mal: cx = random(0, 9); Managerplatz → nichts; Markt-Platz → entfernen; Poolindex random(1, 179), mit random(0, 5) = 0 random(180, 199), bis Besitzer 6 (höchstens 1500 Versuche, sonst Ende); Form random(45, 55); Ersatzverein bei Managerverein: Liga nach DGROUP 0x7C0/0x7B1, random(0x7C6[2l], 0x7C7[2l]) bis ohne Manager (+0x1D bleibt); 0x4981E; neuer Platz am Ende (0x108:0x5C = 0x42CB1, Energie random(80, 120)), Besitzer 4, +0x1D, +0x2C = Wert(Preis), +0x28 = Wert(Gehalt), +0x19 = random(3, 12) · 16 + random(3, 12) |
+| Grundstärken | 0x4981E–0x4991C | t = 1 bei Nationalteam (0x128:0x20 = 0x4D2F0); +0x15 = Vereinsfeld 0x19 + random(10t, 14) − 10, +0x16 = Vereinsfeld 0x1B + random(10t, 14) − 10, mit random(0, 4) = 0 + random(12, 20); je auf 10 … 99 (0x120:0x52) |
+| Zeitpunkt | 0x43A9F, 0x54E65–0x54E7C | beim Saisonstart und im Tageslauf mit random(0, Managerzahl + 2) = 0 |
+| Ablöse bei Markt-Angeboten | 0x49332–0x49371 → 0x4748A | Gutschrift Angebot − Angebot / 7 · Restlaufzeit (Drittel-DM); das Angebotsfenster zeigt den Rest als „ABLÖSESUMME“ |
+
+Folgen: Die Startliste ist ein Listenwechsel ab leerem Markt – jeder der 10 Würfe trifft mit (10 − n) / 10 einen freien Platz,
+im Mittel 6,5 Spieler (Video 6, FILE05 7). Poolspieler altern ohne Laufbahnende (nur 0x274A7), die Liste wird über die Jahre
+älter. Gegenprobe FILE05: freie Plätze 1–178 auf Vereinen 0–23 ohne Köln (über 90 % 0–11), 179–199 auf Nationalteams.
+
+`[APPROX]`:
+- **Computerkader bleiben** (Statistik, Kader-KI des Remakes). Ein Poolspieler trägt den Namen eines Datenbankspielers seines
+  Vereins, der im Remake zugleich in dessen Kader steht (zwei Spieler gleichen Namens). Kaderplatz s = s-ter Spieler der Art im
+  Kader des Remakes (die Datenbank-Platznummer ist dort nicht mehr bekannt); ergänzte Plätze („SPIELER n“) zählen mit.
+- **Managerkader** baut das Remake wie bisher aus der Datenbank, nicht aus dem Pool (DGROUP 0x381); alle 199 Plätze werden
+  benannt (daher öfter der weite Vereinsbereich 0–35 als im Original).
+- **Gekaufte Poolspieler** bleiben „vergeben“; steht ihr Spieler beim Saisonwechsel nicht mehr in einem Managerkader, bekommt
+  der Platz einen neuen Spieler mit den Werten des alten (im Original wird der Platz bei Verkauf oder Vertragsende wieder frei).
+  Neue Namen erzeugen neue Spieler (der Name ist im Remake fest) mit neuer ID.
+- **Takt:** Listenwechsel je Ligaspieltag statt je Tag (der Markt schreibt sich je Spieltag fort); Zufall aus der Hauptquelle.
+- **Vertragslose** aus Managervereinen (R204) stehen nach dem Saisonwechsel weiter auf der Liste (höchstens 6) und zählen wie
+  Managerplätze; im Original werden sie freie Poolspieler. Vertragslose anderer Vereine stehen nicht mehr auf der Liste.
+- Sonderprüfung DGROUP 0x6AC (Startwert 56 = Deutschland) in 0x5ACA0 nicht abgebildet (FILE05 zeigt einen Poolspieler
+  Deutschlands); Vereinsfelder aus Datenbankstärke und Abweichung des Laders, Nationalteams ohne Ländertabelle 0x4C4E;
+  Energie auf 99 begrenzt; 0x4907A (0x118:0x4D) nicht abgebildet.
+- Poolspieler sind für den WM-Kader nicht nominierbar (`NationalCandidates`, ihr Platz wird neu vergeben).
 
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
@@ -191,7 +225,6 @@ Eine treue Umsetzung braucht den Pool als eigenes Modell (Datenbank, Spielstand,
 - **Angebot des Spielers verfällt** (random(0, 5), dann Sperre random(9, 17)) und Angebot der Ankündigung „von 1 auf n Jahre“
   stammen im Remake aus der Spur „kader“ (`[APPROX]`, R2-11); umgesetzt ist nur, dass „Mach' ich!“ ohne Eingabe das Angebot
   annimmt.
-- **Wechsel der Liste 0x494EF** (Pool von 200 Spielern) – das Remake zieht aus den vollen Kadern der Computervereine (Teil 3, oben).
 - **Knöpfe im Verhandlungsfenster 1 Pixel zu weit rechts** (nachgemessen in Teil 4, Tabelle unten): In allen drei Vorlagen
   (`oberflaeche_1030`, `karriere_01924`, `karriere_03555`) passen beide Knöpfe mit Versatz −1 | 0 am besten, die Texte des
   Fensters mit 0 | 0. Das Original übergibt aber x = 0x0B bzw. 0x5A (Datei 0x4A444, 0x4A41E) wie das Remake, und 0x4BFF2

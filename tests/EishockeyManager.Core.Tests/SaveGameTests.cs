@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(19, SaveGame.SchemaVersion);
+        Assert.Equal(20, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -35,8 +35,8 @@ public class SaveGameTests
     // Manager.SeriesRecords und Manager.PowerPlayCounts (Spur statistiken-verein), 16 Platzierungen der Weltmeisterschaften
     // (Spur nationalteam-2), 17 Verhandlungs- und Gebotssperre (Spur transfer-original-vertrag). Runde 9 (vorläufig): 18
     // Versicherungsprämie und Abschluss je Spieler (Spur transfer-vertraege-komplett, Teil 2), 19 unaufgefordertes Angebot je
-    // Spieler (Teil 3).
-    private const string ExpectedSchemaFingerprint = "8222F1BEA8041825";
+    // Spieler (Teil 3), 20 Spielerpool des Transfermarkts (Teil 5).
+    private const string ExpectedSchemaFingerprint = "AB6A6368DD22CD48";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

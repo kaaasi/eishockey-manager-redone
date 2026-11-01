@@ -101,16 +101,21 @@ namespace EishockeyManager.Core.Tests;
 /// Gehalt beim Kauf = Wert(Gehalt) (0x29EE4, 0x42F11), zieht keinen Zufall; die Verlängerungen (Forderung mindestens bisheriges
 /// Gehalt) und die Konten ändern sich; vertragslose Spieler (<c>SignFreeAgents</c>) kommen mit 1 Jahr statt 2 (0x42CB1, +0x0B = 1).
 /// Gegenprobe mit altem Startgehalt und alter Laufzeit: alte Werte, passive Abdrücke unverändert.
+/// Spur transfer-vertraege-komplett (Teil 5): alle sechs Abdrücke neu – der Markt kommt aus dem Spielerpool (Listenwechsel
+/// 0x494EF mit random(0, Managerzahl + 2) je Ligaspieltag statt 30 %/50 % aus Computerkadern; Pool beim Spielstart und
+/// Saisonwechsel), damit anderer Verbrauch der Hauptquelle und andere Ergebnisse; Markt-Angebote schreiben Angebot − Angebot / 7
+/// · Restlaufzeit gut (0x49332); auf der Liste stehen nur noch Vertragslose aus Managervereinen (<c>SignFreeAgents</c> holt
+/// also nur eigene zurück).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "B51E23E5AB35A362")]
-    [InlineData(true, 3, "BF6BFD339DCA67AE")]
-    [InlineData(false, 11, "045D33151AFA705F")]
-    [InlineData(true, 11, "0FDCCE425DFFE7E3")]
+    [InlineData(false, 3, "0E7308411D11D39A")]
+    [InlineData(true, 3, "7326B7B88829BC8C")]
+    [InlineData(false, 11, "4E66CD693FE2EC3E")]
+    [InlineData(true, 11, "7B09DAE880C73536")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -118,8 +123,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "2FAE1718E86EC1F6")]
-    [InlineData(true, "D171FF4B1A79F0A1")]
+    [InlineData(false, "71E419242CEC39FE")]
+    [InlineData(true, "D824AAD753F10D14")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

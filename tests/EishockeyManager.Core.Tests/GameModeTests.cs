@@ -275,6 +275,9 @@ public class GameModeTests
     /// Spur transfer-vertraege-komplett (Rest von Teil 2): Konten ab Saison 1 neu – Startgehalt der Managerkader = Wert(Gehalt)
     /// (0x29EE4, ohne Zufall). Titel der Saisons 1–4 unverändert; ab Saison 5 andere Kader nach den Verlängerungen (Forderung
     /// mindestens bisheriges Gehalt) und damit andere Ergebnisse und Zufallsstand. Gegenprobe mit altem Startgehalt: alte Werte.
+    /// Spur transfer-vertraege-komplett (Teil 5): alle Werte neu – der Listenwechsel 0x494EF zieht aus dem Spielerpool mit anderem
+    /// Verbrauch der Hauptquelle (random(0, Managerzahl + 2) je Ligaspieltag statt 30 %/50 %), damit andere Ergebnisse ab Saison 1;
+    /// Markt-Angebote schreiben Angebot − Angebot / 7 · Restlaufzeit gut (0x49332).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -289,7 +292,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|808550,437329|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=1|1537742,332665|WorldChampion=52,CupWinner=24,GermanChampion=24,EuropeanCupWinner=1|2414866,209883|WorldChampion=52,CupWinner=25,GermanChampion=0,EuropeanCupWinner=1|3254740,44296|WorldChampion=52,CupWinner=1,GermanChampion=0,EuropeanCupWinner=1|-7602741,-22445|R600158605 C1843401354";
+        "WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=2|711150,446062|WorldChampion=63,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|1754383,264723|WorldChampion=52,CupWinner=12,GermanChampion=12,EuropeanCupWinner=1|3271708,272521|WorldChampion=52,CupWinner=12,GermanChampion=0,EuropeanCupWinner=1|3675719,102864|WorldChampion=54,CupWinner=12,GermanChampion=1,EuropeanCupWinner=1|3845531,209892|R2075239831 C1037409908";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

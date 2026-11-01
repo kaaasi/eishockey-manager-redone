@@ -11,7 +11,7 @@ namespace EishockeyManager.UI.Tests;
 /// </summary>
 public class MainMenuBefundeP3Tests
 {
-    private static GameState Synthetic()
+    private static GameState Synthetic(int seed = 3)
     {
         var data = new byte[Formats.ClubDatabase.FileLength];
         for (var i = 0; i < Formats.ClubDatabase.ClubsWithSquad; i++)
@@ -22,18 +22,29 @@ public class MainMenuBefundeP3Tests
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 8 });
         setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 2 });
-        return NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 3);
+        return NewGame.Create(Formats.ClubDatabase.Parse(data), setup, seed);
     }
 
-    private static void PlayToNationalTurn(GameState game)
+    /// <summary>
+    /// Erster Seed ab 3, bei dem ein Manager in der ersten Saison Bundestrainer wird und sein Zug kommt. Das hängt am
+    /// Zufallsverbrauch (zuletzt Listenwechsel 0x494EF, Spur transfer-vertraege-komplett Teil 5).
+    /// </summary>
+    private static GameState SyntheticAtNationalTurn()
     {
-        for (var guard = 0; !game.NationalTurn; guard++)
+        for (var seed = 3; seed < 40; seed++)
         {
-            Assert.True(guard < 3000, "Kein Zug des Bundestrainers");
-            foreach (var m in game.Managers)
-                m.Money = Math.Max(m.Money, 10_000_000);
-            game.Continue();
+            var game = Synthetic(seed);
+            for (var guard = 0; !game.NationalTurn && game.Phase != SeasonPhase.SeasonOver; guard++)
+            {
+                Assert.True(guard < 3000, "Kein Zug des Bundestrainers");
+                foreach (var m in game.Managers)
+                    m.Money = Math.Max(m.Money, 10_000_000);
+                game.Continue();
+            }
+            if (game.NationalTurn)
+                return game;
         }
+        throw new InvalidOperationException("Kein Seed mit Zug des Bundestrainers.");
     }
 
     private static (ScreenDriver Driver, MainMenuScreen Menu) Open(GameState game)
@@ -79,8 +90,7 @@ public class MainMenuBefundeP3Tests
     [GameDataFact]
     public void Coach_WithFewerThan10Players_GetsWarning_AndDayDoesNotAdvance()
     {
-        var game = Synthetic();
-        PlayToNationalTurn(game);
+        var game = SyntheticAtNationalTurn();
         Assert.True(game.NationalCoachMenu);
         Assert.True(game.NationalCoach!.Squad.Count < MainMenuScreen.CoachMinPlayers);
         var (d, menu) = Open(game);
@@ -100,8 +110,7 @@ public class MainMenuBefundeP3Tests
     [GameDataFact]
     public void Coach_WithEnoughPlayers_ContinuesWithoutWarning()
     {
-        var game = Synthetic();
-        PlayToNationalTurn(game);
+        var game = SyntheticAtNationalTurn();
         game.AutoNominate();
         Assert.True(game.NationalCoach!.Squad.Count >= MainMenuScreen.CoachMinPlayers);
         var (d, menu) = Open(game);

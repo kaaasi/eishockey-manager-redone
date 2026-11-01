@@ -172,6 +172,9 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             // Spur transfer-vertraege-komplett: Ablöse für Spieler, die am Saisonende gehen (0x27DF3), steht im Buch der neuen Saison.
             long compensation = 0;
             long lowest = long.MaxValue, highest = long.MinValue;
+            // Teil 5 (transfer-vertraege-komplett): Zinsen für ein negatives Konto am Ende der Vorsaison stehen im Buch der neuen
+            // Saison, auch wenn die Ablöse beim Saisonwechsel das Konto wieder ins Plus bringt (Seed 17, Saison 4).
+            long previousSeasonEnd = manager.Money;
             for (var year = 0; year < 4; year++)
             {
                 var club = game.Clubs[manager.ClubIndex];
@@ -187,7 +190,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 var maxRoster = roster;
                 var minRoster = roster;
                 long maxContracts = game.Ads(manager).MonthlyIncome;
-                var seasonLowest = manager.Money;
+                var seasonLowest = Math.Min(manager.Money, previousSeasonEnd);
                 for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
                 {
                     Assert.True(guard < 1000, "Saisonende nicht erreicht");
@@ -226,6 +229,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     highest = Math.Max(highest, manager.Money);
                 }
                 Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+                previousSeasonEnd = manager.Money;
                 var finance = game.Finance(manager).Book;
                 output.WriteLine($"seed={seed}; club={club.Name}; start={league}; active={active}; year={year + 1}; league={club.League}; roster={roster}; begin={moneyAtStart}; end={manager.Money}; homeGames={settledHomeGames}; "
                     + string.Join("; ", Enum.GetValues<FinanceCategory>().Select(c => $"{c}={finance.Current(c)}")));

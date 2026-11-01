@@ -152,7 +152,12 @@ public class SquadLifecycleTests
             PlaySeason(game, active ? () => ExtendOffers(game) : null);
             var expiring = OwnClub(game).Players.Where(p => p.ContractYears == 1 && !p.OnLoan).ToArray();
             foreach (var p in expiring)
-                Assert.True(ContractMessages(game, p).Length == 1, $"Saison {game.Season}: keine Ankündigung für {p.Name}");
+            {
+                // Teil 5: Poolnamen kommen im Remake auch in Computerkadern vor ([APPROX]); die Probe matcht über den Namen.
+                var namesake = AllPlayers(game).Count(q => q.Name == p.Name) > 1;
+                var count = ContractMessages(game, p).Length;
+                Assert.True(namesake ? count >= 1 : count == 1, $"Saison {game.Season}: {count} Ankündigungen für {p.Name}");
+            }
 
             game.StartNextSeason();
 
@@ -215,5 +220,15 @@ public class SquadLifecycleTests
         while (OwnClub(game).Players.Count < 20
                && game.TransferMarket.Listings.FirstOrDefault(l => l.IsFreeAgent) is { } listing)
             Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, listing, 0, loan: false));
+        // Teil 5 (0x494EF): Vertragslose anderer Vereine stehen nicht mehr auf der Liste; der aktive Manager kauft dann
+        // Poolspieler bis 30 Jahre (Poolspieler altern im Original ohne Laufbahnende, 0x274A7) über 130 % des Listenpreises
+        // (immer angenommen, 0x4991D).
+        while (OwnClub(game).Players.Count < 20
+               && game.TransferMarket.Listings.FirstOrDefault(l => l.FromPool && l.Player.Age <= 30) is { } pool)
+        {
+            manager.Money = Math.Max(manager.Money, pool.Price * 2);
+            Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, pool, pool.Price * 135 / 100, loan: false));
+            pool.Player.ContractYears = 2; // wie die Startverträge; die Ankündigungsprobe bleibt bei den übrigen Spielern
+        }
     }
 }

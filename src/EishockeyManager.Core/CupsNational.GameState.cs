@@ -99,7 +99,9 @@ public sealed partial class GameState
             if (club.League is not null)
                 list.AddRange(club.Players.Where(p => !p.IsForeigner).Select(p => new NationalSquadMember(p, club.Index)));
         foreach (var listing in TransferMarket.Listings)
-            if (!listing.Player.IsForeigner && list.All(c => c.Player != listing.Player))
+            // Spur transfer-vertraege-komplett, Teil 5: Poolspieler stehen in keinem Kader; ihr Platz wird beim Listen- und
+            // Saisonwechsel neu vergeben, deshalb nicht nominierbar (wie bisher nur Kaderspieler und Vertragslose).
+            if (!listing.FromPool && !listing.Player.IsForeigner && list.All(c => c.Player != listing.Player))
                 list.Add(new NationalSquadMember(listing.Player, listing.From.Index));
         return list.OrderByDescending(c => c.Player.Condition + c.Player.Technique + c.Player.Form)
             .ThenBy(c => c.Player.Name, StringComparer.Ordinal).ToList();
