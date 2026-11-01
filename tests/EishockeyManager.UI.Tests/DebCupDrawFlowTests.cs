@@ -213,7 +213,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// des Laders 0x2EF1B und Tagesform 0x4F527 ändern alle Ergebnisse; mit und ohne Anzeige weiter gleich.
     /// Spur spielstaerke-manager-2: Managerpaarungen mit Spielerwerten, Energie und Reihenwechsel (0x98F8, 0x87F7, 0x8EF2)
     /// – andere Ergebnisse ab dem ersten Spiel des Managers; mit und ohne Anzeige weiter gleich. Integration Runde 8, Welle 3
-    /// (R8W3I-01): Spielstand vor den Toren der Minute für 0x80CB/0x939A – neue Werte, mit und ohne Anzeige gleich.</summary>
+    /// (R8W3I-01): Spielstand vor den Toren der Minute für 0x80CB/0x939A – neue Werte, mit und ohne Anzeige gleich.
+    /// Spur spielberechnung-komplett, Teil 1 (#204): Wanderung der Teamwerte 0x9D1B – neue Werte ab 1993, mit und ohne
+    /// Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15360 | 1994: DEB 6, DM 2, Tab 15963 | 1995: DEB 2, DM 6, Tab 16073 | 1996: DEB 2, DM 1, Tab 16664";
+        "1993: DEB 8, DM 8, Tab 15262 | 1994: DEB 6, DM 9, Tab 15441 | 1995: DEB 1, DM 1, Tab 16514 | 1996: DEB 1, DM 1, Tab 15802";
 }

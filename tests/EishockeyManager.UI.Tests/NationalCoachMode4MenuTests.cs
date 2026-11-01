@@ -24,7 +24,7 @@ public class NationalCoachMode4MenuTests
         setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 8 });
         setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 2 });
         var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 3);
-        ManagedSquadsUi.PlayAtDatabaseStrength(game); // Vorbedingung „Verein 2, stark“ (spielstaerke-manager-2, 0x98F8)
+        ManagedSquadsUi.PlayAtTopStrength(game); // Vorbedingung „Verein 2, stark“ (0x98F8; #204: Wanderung der Teamwerte)
         return game;
     }
 
@@ -82,7 +82,7 @@ public class NationalCoachMode4MenuTests
         var game = NewGame.Create(database, setup, 1993);
         // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „stärkster Verein wird Bundestrainer“ mit Datenbankstärke
         // wie Synthetic() (ManagedSquadsUi); seit R8W3I-01 erreichte der Verein mit den Werten seiner Spieler den Zug nicht mehr.
-        ManagedSquadsUi.PlayAtDatabaseStrength(game);
+        ManagedSquadsUi.PlayAtTopStrength(game); // #204: seit der Wanderung der Teamwerte Spielerwerte 99
         PlayToNationalTurn(game);
 
         var d = FlowTests.CreateDriver();

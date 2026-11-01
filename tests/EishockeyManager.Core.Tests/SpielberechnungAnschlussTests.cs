@@ -145,10 +145,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur statistiken (Runde 8, #135): beide neu, nur durch die Einzelprämien im Kontostand (Gegenprobe ohne
     /// Einzelprämien: alte Werte); Basis <c>10eb6c5</c>.
     /// Integration Runde 8 (Leitstelle): beide neu auf dem integrierten Stand (Lader, Einzelprämien, Werbebewertung).
+    /// Spur spielberechnung-komplett, Teil 1 (#204): beide neu (Wanderung der Teamwerte 0x9D1B, Begründung bei
+    /// <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "29DA45742C8BD126")]
-    [InlineData(true, "1C56AB7B0380A2D5")]
+    [InlineData(false, "575739FCCDA1B1CA")]
+    [InlineData(true, "5CF9625EBA8DE62A")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -197,8 +199,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Minute, 0x87F7/0x8EF2/0x80CB) – andere WM-Ergebnisse und Pokalquelle (C…), Hauptquelle und Konten gleich.
     // Integration Runde 8, Welle 3 (R8W3I-01): Managerpaarungen des Bundestrainers mit dem Spielstand vor den Toren der
     // Minute – andere WM-Ergebnisse ab Saison 5 und Pokalquelle (C…); Hauptquelle und Konten gleich.
+    // spielberechnung-komplett, Teil 1 (#204): Titel, Konten und Pokalquelle gleich, nur die Hauptquelle (R…) verschoben – die
+    // Wanderung des Spielstarts 0x9D1B zieht beim ersten (WM-)Spiel weitere Zahlen (im Modus „nur Weltkugel“ keine weitere).
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|R1348418928 C885920316";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|R1637125793 C885920316";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem
@@ -225,7 +229,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
                 Assert.InRange(perGame, 6.0, 10.0);
             else
                 Assert.InRange(perGame, 5.0, 11.0);
-            Assert.InRange(draws, 0.03, 0.15);
+            // Spur spielberechnung-komplett (#204): Mit der Wanderung der Teamwerte liegen die Bundesligavereine enger
+            // zusammen (69 … 94); Seed 7 hat dort 15,3 % Unentschieden. Mittel über 12 Seeds × 4 Saisons 10,7 %, Video
+            // (Reihe folgen, Bild folge21_01558: Bundesliga nach dem 44. Spieltag) 30 von 264 = 11,4 %.
+            Assert.InRange(draws, 0.03, league == League.Oberliga ? 0.15 : 0.17);
         }
     }
 }

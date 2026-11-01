@@ -321,6 +321,8 @@ v = Datenbankbyte k, t = v / 10: Kondition 0x18 + k = v − random(0, t) + rando
 (0x952C, Länderwerte aus der Aufstellung, #193), 0x9E46–0x9F31 (0x98F8, Managervereine aus den Spielern), 0x570E (0x1D,
 nicht gelesen), 0x49723 (0x1A = 4, Ov 0x118, nicht gelesen). **Die Teamwerte der Computervereine bleiben also im Original
 das ganze Spiel über gleich** – nur die Tagesform wandert.
+**Berichtigt in §15:** Die Suche hat die Wanderung 0x9D1B übersehen (0x9E46–0x9F31 liegen in 0x9D1B, nicht in 0x98F8) und
+0x58DC (Verkauf an einen Computerverein) nicht erfasst – die Teamwerte wandern im Original ständig.
 
 **Tagesform 0x4F527** (Ov 0x128, aus der Tabellenrechnung 0x50283 mit d = eigene − gegnerische Tore, nur bei
 Wettbewerbscode `[0xD0C2]` = 7 Liga bzw. 8 WM-Gruppe): r = random(0, 2 · |d|) (`0x120:0x61` = |a − b|), 0x17 ± r je
@@ -411,7 +413,8 @@ Europapokalspiele).
 acht Meister in 18 Saisons, die beiden stärksten Vereine nur 6 von 18; im Remake die beiden stärksten 33 von 48 und nie
 ein Verein unter 82. Mit festen Teamwerten der Computervereine (§12) erklärt das weder der Lader noch der Managerteil.
 Offene Kandidaten: Play-off-Format (`[APPROX]`), weitere Schreibzugriffe auf Teamwerte (0x570E auf 0x1D, 0x49723 auf
-0x1A, nicht gelesen), Kaderwechsel durch den Video-Manager (Berliner SC). #204 bleibt offen.
+0x1A, nicht gelesen), Kaderwechsel durch den Video-Manager (Berliner SC). #204 bleibt offen. **Berichtigt in §15:** F19 zeigt Freiburg, nicht Köln; Folge 8
+beginnt ein zweites Spiel. Ursache: Wanderung der Teamwerte 0x9D1B.
 
 
 ## 14. Spielstärke der Managervereine gegen das Original (Spur spielberechnung-komplett, Teil 1; R8W3I-15, #204)
@@ -464,3 +467,60 @@ mit dem Original überein; die stärkere Streuung der Meister im Video (§13) bl
 Meisterfotos der Reihe `folgen` neu zuordnen: Die Fundliste „Meisterfoto“ (`referenz-videos.md`) mischt „Deutscher
 Meister“, „DEB Pokalsieger“ und „Europacupsieger“, und Folge 8 beginnt ein neues Spiel (zwei Laufbahnen statt einer).
 Erst wenn das Video nach der Neuzuordnung weiter streut, ist die Minutenrechnung (§3/§4) der nächste Kandidat.
+**Nachtrag:** Ursache gefunden und umgesetzt, siehe §15.
+
+## 15. Wanderung der Teamwerte 0x9D1B (Spur spielberechnung-komplett, Teil 1; #204)
+
+**Videobefund** (Reihe `folgen`, Referenz-Repo): Die Spielstärke der Computervereine ändert sich über die Saisons stark und in
+beide Richtungen. Paarungen und Vereinsinfo zeigen „Stärke“ = (Kondition + Technik + Form beider Teile) / 6 aus den
+Vereinsfeldern 0x18–0x1D (Datei 0x4F1F1), der Bildschirm „Stärken“ die Felder selbst (0x51206). Beispiele Bundesliga
+(Kondition/Technik „Gesamt“): Nürnberg (Datenbank 63) 87/85 (F18), 80/92 (F20), 89/89 (F24), 64/80 (F28); Krefeld (88)
+73/68 (F18), 98/84 (F24); Kempten (36) und Straubing (20) als Aufsteiger 92/86 und 90/80 (F28). Paarungen F21 1. Spieltag:
+Hedos München Stärke 60, Düsseldorf 65, Nürnberg 77. Schon am Spielstart weichen die Oberligavereine weiter als ± 10 % von der
+Datenbank ab (F1: Heilbronn 24 → 33/31; F8: Timmendorf 34 → 17/18). Zum Vergleich: In `FILE01.HOK` (neues Spiel, sofort
+gesichert) liegen die Werte nahe der Datenbank (Düsseldorf 94/94 82/89, Nürnberg 57/58 58/62) – der Spielstand entsteht vor
+dem ersten Spieltag.
+
+**Meister im Video** (Meisterfotos „Deutscher Meister“ und Bildschirm „Saisonende“; die Fundliste mischt Meister, DEB-Pokal-
+und Europacupsieger): Spiel 1 (Folgen 1–7, fünf Saisons) Düsseldorf F2, Preussen Berlin F3, Freiburg F4, F6, Schwenningen F7;
+Spiel 2 (ab Folge 8, 13 Saisons) Düsseldorf F9, Nürnberg F10, Preussen Berlin F12, F13, Köln F14, Landshut F16, Köln F17,
+Freiburg F19 (§13 nannte Köln), Köln F21, Nürnberg F23, F25, Ratingen F27, F29. Abstiege starker Vereine: Köln (90) nach
+Saison 3 in Spiel 1, Mannheim (84) nach Saison 4, Hedos München (86) nach Saison 2 in Spiel 2, Düsseldorf (92) und Hedos
+München nach Saison 12. Zusammen: acht Meister in 18 Saisons, Düsseldorf und Köln 5 von 18, Meister mit Datenbank ≤ 72
+8 von 18.
+
+**Fundstelle 0x9D1B** (Basis 0x62C:0x1C5B, Argument Modus, jedes Argument ≠ 1 gilt als 3), je Vereinsplatz
+i = 0 … [0x6AD] + 11 in dieser Reihenfolge:
+
+- Vereine (i < [0x6AD] = 52): Liga L = 0x34FD5(i) / 2 (1 Bundesliga, 2 Zweite Liga, 4 sonst → 0, 1, 2); Grenzen DGROUP
+  0x125 + 2L: (69, 94), (39, 73), (15, 43). r = lrandom(0, 2·Modus); b = 3 bei Modus 3, sonst 1; Schritt
+  s = lrandom(0, 2r + 2b) − (Modus + b), also −6 … 2r bzw. −2 … 2r, im Mittel 0.
+- Kondition 0x18 + k (k = 0, 1): + lrandom(s − 1, s + 1). Technik 0x1A + k: lrandom(0, 2) ziehen, bei 0 oder Modus 3
+  + lrandom(s − 1, s + 1). Beide mit 0x120:0x52 begrenzt: Modus 3 auf die Liga-Grenzen, Modus 1 auf 1 … 99.
+- Alle Plätze einschließlich Nationalteams: Form 0x1C + k = lrandom(45, 55) für k = 0, 1, 2 (Schleife bis k < 3, überschreibt
+  auch Feld 0x1E).
+
+**Aufrufe:** Spielstart 0x43A73 Modus 10 (nach Ligamischung 0x43A17 und Spielvorbereitung 0xD8:0x2F); Saisonwechsel 0x56448
+Modus 10 (nach Auf-/Abstieg 0x562F2/0x5636D); Tageslauf 0x54C9F Modus 1, wenn der Tageszähler 0x3B7 ≡ 0 oder 4 (mod 7) ist
+(0x5525A–0x55292, davor 0x20:0xAC5). Europapokal-Gegner (Index > 64) wandern nicht.
+
+**Weiterer Schreiber 0x58DC** (Basis 0x238:0x175C, gerufen aus dem Transferbildschirm 0x46FB3/0x47483, wenn ein Spieler an einen
+Computerverein < 0x40 geht): Mittel a = (Kondition + Technik eines Teils) / 2 (der Teil kommt aus dem Register `si` des
+Aufrufers), d = clamp((Spielerstärke − a + 10) / 3, 1, 10), Teil random(0, 1), Kondition und Technik dieses Teils
++ random(d − 1, d + 1). Nicht umgesetzt (Restlücke: Verkäufe des Managers an Computervereine stärken den Käufer).
+
+**Remake** (`MatchEngine.DriftTeamValues`, `TeamValueDrift`): Spielstart beim ersten Spiel nach dem Lader (`EnsureTeamValues`),
+Saisonwechsel in `OnNewSeasonManager` (nicht im Modus „nur Weltkugel“, `[APPROX]`), Tageslauf in `OnDayClubSeason` an
+Tag ≡ 0, 4 (mod 7) des Saisontags (`[APPROX]`: Tag 0 = 10. September = Tageszähler 0 angenommen). `[APPROX]` Reihenfolge nach
+Vereinsindex; Kondition und Technik bleiben als Abweichung vom Datenbankwert gespeichert, die Grenzen gelten für
+Datenbankwert + Abweichung (die Kaderkorrektur `TeamValue` kommt im Spiel hinzu). Kein neues Schemafeld.
+
+**Wirkung** (`TeamValueDriftTests.ChampionSpread_LikeVideo`, Originaldaten, Managerverein 42 aktiv, 12 Seeds × 4 Saisons):
+
+| | vorher (§13) | mit Wanderung | Video (18 Saisons) |
+|---|---:|---:|---:|
+| verschiedene Meister | 6 | 14 | 8 |
+| Düsseldorf + Köln | 33 von 48 | 10 von 48 | 5 von 18 |
+| Meister mit Datenbank < 80 | 0 | 19 von 48 | 8 von 18 (≤ 72) |
+| Bundesliga Tore je Spiel / Unentschieden | 6,28 / 11,6 % | 6,35 / 10,7 % | – / 11,4 % (F21, 44. Spieltag) |
+

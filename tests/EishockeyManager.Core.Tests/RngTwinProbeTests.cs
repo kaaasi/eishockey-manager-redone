@@ -94,16 +94,20 @@ namespace EishockeyManager.Core.Tests;
 /// <c>SpielberechnungMinutenTests</c> unverändert grün). Keine Gegenprobe, die den alten Verlauf erhält.
 /// Integration Runde 8, Welle 3 (Leitstelle, R8W3I-01 #269): alle sechs neu – 0x80CB/0x939A lesen den Spielstand vor den
 /// Toren der Minute; das ändert Ergebnisse jeder Managerpaarung und damit alle Verläufe.
+/// Spur spielberechnung-komplett, Teil 1 (#204): alle sechs neu – Wanderung der Teamwerte 0x9D1B beim ersten Spiel
+/// (Spielstart, großer Schritt), zweimal je Woche (kleiner Schritt) und nach jedem Saisonwechsel (großer Schritt); andere
+/// Teamwerte der Computervereine, damit andere Ergebnisse ab dem ersten Spieltag und mehr Züge aus der Hauptquelle. Keine
+/// Gegenprobe, die den alten Verlauf erhält (die Wanderung ist der Zweck).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "B51E23E5AB35A362")]
-    [InlineData(true, 3, "1F918CF3F088B998")]
-    [InlineData(false, 11, "045D33151AFA705F")]
-    [InlineData(true, 11, "9638BC3D2695D427")]
+    [InlineData(false, 3, "99D0F267CA03E779")]
+    [InlineData(true, 3, "3B96FD1F299032BF")]
+    [InlineData(false, 11, "5DEBD7CE1804F5BD")]
+    [InlineData(true, 11, "0301F583DD6AEF2E")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -111,8 +115,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "2FAE1718E86EC1F6")]
-    [InlineData(true, "070AD5E8FBB6D9C3")]
+    [InlineData(false, "5BC42F03B361EDC9")]
+    [InlineData(true, "3000EECC3A1C4596")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -106,6 +106,7 @@ public class NationalteamTests
     public void Mode4_AfterAppointment_AutoShowsZero()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
+        ManagedSquads.PlayAtTopStrength(game); // Vorbedingung Bundestrainer (#204: Wanderung der Teamwerte)
         NationalCoachMode4Tests.PlayToClubSeasonEnd(game);
         var coach = game.NationalCoach ?? throw new InvalidOperationException("kein Bundestrainer");
         AssertZero(coach.Tactics);

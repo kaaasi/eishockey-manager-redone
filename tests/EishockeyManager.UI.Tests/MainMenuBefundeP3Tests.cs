@@ -22,7 +22,9 @@ public class MainMenuBefundeP3Tests
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 8 });
         setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 2 });
-        return NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 3);
+        var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 3);
+        ManagedSquadsUi.PlayAtTopStrength(game); // Vorbedingung Bundestrainer (#204: Wanderung der Teamwerte)
+        return game;
     }
 
     private static void PlayToNationalTurn(GameState game)

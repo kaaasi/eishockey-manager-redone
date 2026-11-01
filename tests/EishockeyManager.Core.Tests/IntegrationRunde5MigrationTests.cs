@@ -15,6 +15,7 @@ public class IntegrationRunde5MigrationTests
     public void SchemaFive_FromMode4Track_IsMigrated_AndKeepsOpenTurn()
     {
         var game = GameModeTests.Create(3, true, true, 8, 2);
+        ManagedSquads.PlayAtTopStrength(game); // Vorbedingung Bundestrainer (#204: Wanderung der Teamwerte)
         NationalCoachMode4Tests.PlayToClubSeasonEnd(game);
         game.Continue();
         game.Continue();
