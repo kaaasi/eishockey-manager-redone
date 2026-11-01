@@ -133,7 +133,7 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   4. **Dateidialog** 0x5DBE5 (`SaveLoadScreen.cs`) gegen das Original.
 - **Abnahme:** je Teil Zuordnung mit Fundstelle, roter Test, Pixelvergleich mit Kennzahl; Mehrsaisonprobe bei Geld.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/finanzen-rekonstruktion.md` (eigener Abschnitt), Tests.
-- **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 fertig (#291, Wirkung der Förderung 0x39DEC/0x3A13B offen); Teil 2 fertig (Feld 0x2A9AD; „Kündbar“ beim Aufstieg und Verfall offener Optionen offen); Teile 3–4 offen.
+- **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 fertig (#291, Wirkung der Förderung 0x39DEC/0x3A13B offen); Teil 2 fertig (Feld 0x2A9AD; „Kündbar“ beim Aufstieg und Verfall offener Optionen offen); Teil 3 (#196 Kursverlauf) in Arbeit (Bearbeiter: Claude Code), Teil 4 offen.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
