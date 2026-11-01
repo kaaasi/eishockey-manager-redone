@@ -68,7 +68,8 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
   99Fh (Base-Stand 16): 0AF8Dh, 0B019h, 0B0E6h, 0B447h, 0B7B5h, 0B830h, 0B8C2h, 0B8FEh, 0BE71h, 0BECDh, 0BEFAh, 0BF64h,
   0C0B8h, 0C5CEh, 0C729h, 0C789h.
 - **Abgleich:** `docs/tagesablauf.md`, `GameState.Integration.cs`, Meldungs- und Fensterbausteine in `Widgets.cs`.
-- **Modell:** Claude Opus 5.5. **Status:** wartet auf Go.
+- **Modell:** Claude Opus 5.5. **Status:** Analyse fertig, PR #376 (`docs/analyse/re-meldungen.md`, 24 von 24 Funktionen
+  mit Fundstelle, Kandidaten K1–K10) – wartet auf Review.
 
 ### Spur `re-saisonwechsel` – Manager ohne Liga (#166)
 
