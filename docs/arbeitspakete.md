@@ -327,6 +327,12 @@ Branch `integration/runde-8-welle-3` von `main` 99fa995, zusammengeführt in Pla
   Originaldaten: vorher 2/8, danach 0/8 Seeds), spielen jetzt mit Datenbankstärke (`ManagedSquadsUi`, 7/8). Tore je Spiel:
   Videobeleg nur Oberliga (6–10), übrige Ligen 5–11 (Bundesliga 5,97). Restlücke: Kader von Manager 0 in der Mode4-Probe
   schrumpft auf 12 bis 13 Spieler (nicht spielfähig) – Probe robuster machen.
+- **Nachprüfung** `docs/reviews/2026-11-01-integration-runde-8-welle-3-nachpruefung.md`: R8W3I-12 (#272, Rückschreiben nach
+  dem Saisonende auch auf Level 5) behoben; R8W3I-13 (Zurückstellen bei Ablehnung ist `[ORIGINAL]` 0x4AD3E→0x4AD54) und
+  R8W3I-14 (Begründung Tore je Spiel) berichtigt. **R8W3I-15 (Verdacht, Runde 9, spielstaerke-manager Teil 3):**
+  Managervereine spielen mit Spielerwerten deutlich schwächer als mit Datenbankstärke (Originaldaten, 40 Seeds: Düsseldorf
+  Platz 8,95 statt 3,40, Oberliga-Verein 30 Platz 8,22 statt 2,73); gegen ein Video messen, ob das Original ebenso schwächt.
+  23 Core-Tests und vier Ablauftests umgehen den Abstand mit `PlayAtDatabaseStrength`.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 

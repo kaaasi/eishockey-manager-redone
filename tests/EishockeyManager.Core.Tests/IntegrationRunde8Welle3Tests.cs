@@ -127,4 +127,30 @@ public class IntegrationRunde8Welle3Tests
         Assert.Equal(NegotiationResult.NotInterested, Contracts.Negotiate(game, manager, q, 2, demandQ - 1, false, demandFilled: false));
         Assert.Equal(SquadSetup.Between(twin, 10, 18), q.NegotiationLock); // nur der Zug der Sperre (0x4AD3E)
     }
+
+    /// <summary>
+    /// R8W3I-12 (#272): [ORIGINAL] 0x4A81B–0x4A9A1 rechnet und schreibt Forderung und Laufzeit ohne Levelabfrage; erst
+    /// 0x4A9DB (DGROUP 0xED8 = 0, Level 5) entscheidet, ob das Gehaltsfeld gefüllt wird. Nach dem Saisonende gilt also auch
+    /// auf Level 5 die eingegebene Laufzeit als bisherige und die Forderung als bisheriges Gehalt. Gegenbeispiel aus der
+    /// Nachprüfung: 3 Jahre und 2.300 DM, Eingabe 2 Jahre und 23.000 DM – vorher „zu kurz“ auf Level 5.
+    /// </summary>
+    [Theory]
+    [InlineData(3)]
+    [InlineData(5)]
+    public void Negotiate_AfterSeason_WritesBackOnEveryLevel(int level)
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = 2, Level = level });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
+        var manager = game.Managers[0];
+        var club = game.Clubs[manager.ClubIndex];
+        LifecycleRegressionTests.FinishSeason(game);
+        Assert.True(game.AfterSeasonEnd);
+        var p = club.Players.First(x => x.Role == PlayerRole.Forward && Contracts.Availability(game, x) is null);
+        p.ContractYears = 3;
+        p.MonthlySalary = 2_300;
+        Assert.Equal(level >= 5, Contracts.DemandAfterYears(game, manager, p, 2) is null); // Feld nur bis Level 4 gefüllt
+        Assert.Equal(NegotiationResult.Accepted, Contracts.Negotiate(game, manager, p, 2, 23_000, false, demandFilled: false));
+        Assert.Equal((2, 23_000), (p.ContractYears, p.MonthlySalary));
+    }
 }

@@ -39,7 +39,7 @@ public static class ContractRules
     /// <para>Das Alter liest das Original aus Kaderplatz 3 des Managers statt aus dem verhandelten Spieler (Register DI
     /// steht nach der Zeichenschleife 0x4A3D3–0x4A407 auf 3, Datei 0x4A93F); der Aufrufer übergibt dieses Alter.</para>
     /// <para>Nach dem Saisonende schreibt das Original die Forderung und die Laufzeit sofort in den Kaderplatz (0x4A9A1);
-    /// <see cref="Contracts.Negotiate"/> übernimmt sie mit „Mach' ich!“ (Abbruch stellt beides zurück, 0x4AD54).</para>
+    /// <see cref="Contracts.Negotiate"/> übernimmt sie mit „Mach' ich!“ (Ablehnung und Abbruch stellen beides zurück, 0x4AD3E→0x4AD54).</para>
     /// </summary>
     /// <param name="salaryValueThirds">Spielerwert 0x118:0x70 Art 1 (Gehalt) in Drittel-DM.</param>
     /// <param name="turnFactor">DGROUP 0xE1A4 (85–115).</param>

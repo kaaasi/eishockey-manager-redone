@@ -249,10 +249,15 @@ public static class Contracts
     /// Gehaltsforderung in DM, die nach Eingabe der Laufzeit im Feld „Gehalt / Monat“ steht (<see cref="ContractRules.DemandThirds"/>),
     /// oder null, wenn das Original das Feld nicht füllt (Level 5: DGROUP 0xED8 = 5 − Level = 0, Datei 0x4A9DB). Rein.
     /// </summary>
-    public static int? DemandAfterYears(GameState game, Manager manager, Player p, int years)
+    public static int? DemandAfterYears(GameState game, Manager manager, Player p, int years) =>
+        manager.Level >= 5 ? null : ComputedDemand(game, manager, p, years);
+
+    /// <summary>
+    /// Forderung in DM unabhängig vom Level. [ORIGINAL] 0x4A81B–0x4A9A1 rechnet ohne Levelabfrage (einzige Abfrage von
+    /// DGROUP 0xED8 in 0x4A9DB, nur für das Füllen des Feldes; R8W3I-12, #272).
+    /// </summary>
+    private static int ComputedDemand(GameState game, Manager manager, Player p, int years)
     {
-        if (manager.Level >= 5)
-            return null;
         var club = game.Clubs[manager.ClubIndex];
         var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
         // [ORIGINAL] Alter aus Kaderplatz 3 des Managers (0x4A93F); [APPROX] Reihenfolge des Kaders wie im Remake.
@@ -286,11 +291,12 @@ public static class Contracts
             return refusal;
         var current = CurrentYears(p);
         var currentSalary = p.MonthlySalary;
-        // [ORIGINAL] 0x4A9A1 (R8W3I-02, #270): Nach dem Saisonende schreibt der Dialog Forderung und Laufzeit sofort in den
-        // Kaderplatz; „Mach' ich!“ vergleicht danach mit diesen Werten. [APPROX] Scheitert die Verhandlung, behält das Remake
-        // die alten Werte (das Original stellt sie nur beim Abbruch nachweislich zurück, 0x4AD54).
-        if (game.AfterSeasonEnd && years != 0 && DemandAfterYears(game, manager, p, years) is { } demand)
-            (current, currentSalary) = (years, demand);
+        // [ORIGINAL] 0x4A9A1 (R8W3I-02 #270, R8W3I-12 #272): Nach dem Saisonende schreibt der Dialog Forderung und Laufzeit
+        // auf jedem Level sofort in den Kaderplatz; „Mach' ich!“ vergleicht danach mit diesen Werten (0x4ABD1–0x4AC75).
+        // [ORIGINAL] 0x4AD3E→0x4AD54: Bei Ablehnung und Abbruch stellt das Original die beim Öffnen gesicherten Werte zurück
+        // (0x4A239–0x4A25F) – das Remake ändert den Spieler dann gar nicht.
+        if (game.AfterSeasonEnd && years != 0)
+            (current, currentSalary) = (years, ComputedDemand(game, manager, p, years));
         var result = Decide(game, manager, p, current, currentSalary, years, salary, demandFilled);
         if (result == NegotiationResult.Accepted)
         {

@@ -218,9 +218,9 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
             var perGame = results.Average(r => r.HomeGoals + r.AwayGoals);
             var draws = results.Count(r => r.HomeGoals == r.AwayGoals) / (double)results.Count;
             output.WriteLine($"{league}: {results.Count} Spiele, {perGame:F2} Tore je Spiel, Heim {results.Average(r => r.HomeGoals):F2}, Unentschieden {draws:P1}");
-            // Integration Runde 8, Welle 3 (R8W3I-01): Der Videobeleg gilt nur für die Oberliga (8,0). Die Bundesliga lag
-            // schon vorher an der Grenze (6,09) und fiel mit dem korrekten Spielstand für 0x80CB/0x939A auf 5,97 – in der
-            // Oberliga 6–10 wie belegt, in den übrigen Ligen nur eine Plausibilitätsspanne 5–11.
+            // Integration Runde 8, Welle 3: Der Videobeleg gilt nur für die Oberliga (8,0). Die Bundesliga (ohne
+            // Managerpaarung) streut über den gemeinsamen Zufallsstrom zwischen 5,97 und 6,69 (Seeds 1–12, R8W3I-14) – in
+            // der Oberliga 6–10 wie belegt, in den übrigen Ligen nur eine Plausibilitätsspanne 5–11.
             if (league == League.Oberliga)
                 Assert.InRange(perGame, 6.0, 10.0);
             else
