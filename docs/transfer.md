@@ -84,6 +84,31 @@ Liste hinter dem Fenster am Saisonende = Bildschirm „Verträge“ (Original 0x
 **Befund für `finanzen-rest`:** Nach einem Kauf vom Computermarkt ruft das Original 0x18:0x223E (Datei 0x063BE, Fenster „Nehmen
 Sie einen Sponsor- / zuschuß von … an ?“) mit dem Kaufpreis (Datei 0x47A18–0x47A34); im Remake fehlt das.
 
+## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 2: Versicherung, Sperre)
+
+Umsetzung: `Core/Player.Contract.cs` (`Player.InsurancePremium`, `Player.InsuranceLocked`, `Contracts.InsuranceOffer`,
+`CanChangeInsurance`, `ApplyInsurance`), `Core/Transfer.Insurance.cs` (`GameState.PayInsurance`), Dialog
+`UI/Screens/Team/ContractDialog.cs`; Migration 17 → 18 (vorläufig); Tests `TransferVertraegeKomplettTeil2Tests`,
+`TransferVertraegeKomplettTeil2ScreenTests`.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Prämie | 0x4AA9C–0x4AABF | Einschalten im Fenster: +0x30 = Wert(Gehalt) (0x9D36 Art 1) / 2; Ausschalten: 0 (0x4AAC5) |
+| Umschalten gesperrt | 0x4AA74–0x4AA90 | nicht bei +0x2C Bit 31 (Abschluss) und nicht bei Verletzung (+0x09 &amp; 3 = 2) |
+| Anzeige | 0x4AAD4–0x4AB1C | +0x30 = 0 → „keine“, sonst Betrag mit „ DM“ |
+| Abschluss | 0x4AB73–0x4AB8D | „Mach' ich!“ mit neu eingeschalteter Versicherung → Bit 31, **vor** der Prüfung des Ergebnisses |
+| Gescheitert / Abbruch | 0x4AD39–0x4AD76 | +0x30, Laufzeit und Gehalt wie beim Öffnen; Bit 31 bleibt bei einer gescheiterten Verhandlung; „Abbruch“ springt an Bit 31 vorbei (0x4AB6E) |
+| Kosten | 0x3E8DC | monatlich +0x30 mit den Gehältern (schon bisher über `FinanceRules.MonthlyInsurance`) |
+| Leistung Verletzung | 0x7089–0x7168 | +0x30 · 4 aufs Konto, „NAME ist verletzt.“ / „Ein Fall für die Versicherung: Sie zahlt Ihnen … DM“ (DGROUP 0x134D–0x1359); Aufrufe 0x7542 (Tagesablauf), 0x38D6A (Spiel, 0x20:0xBA9) |
+| Leistung Laufbahnende | 0x2772B–0x277DE | im Saisonende bei +0x0D = 0xFF: +0x30 · 60, „NAME ist invalide.“ (0x135D) |
+| Sperre über den Saisonwechsel (R8W3I-09) | 0x274E8–0x27539 | +0x18 bleibt stehen; nur der Durchlauf ohne Halt (DGROUP 0x1DB) setzt 0 (0x27534) |
+
+`[APPROX]`: ganze DM statt Drittel-DM (Prämie abgerundet, mindestens 1 DM); Leistung als Einnahme der Kategorie Versicherung
+gebucht (Original ohne Buchungsaufruf, 0x7147); Stände vor Schema 18 und Aufrufer, die nur „versichert“ setzen, bekommen die
+bisherige Prämie (10 % des Gehalts, `Contracts.LegacyInsurancePercent`), ebenso die Rückkehr eines verliehenen Spielers ohne
+bekannte Prämie. Beim Kauf bleibt ein vorhandener Abschluss des Spielers stehen (+0x2C Bit 31 bleibt, 0x4781B); scheitert die
+Verhandlung nach dem Kauf, wird der neue Platz verworfen und mit ihm der Abschluss.
+
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
 - **Unaufgeforderte Angebote** für Spieler im eigenen Kader (Kaderplatz +0x09 Bit 0x40, Tagesablauf 0x079DE–0x07A8F: w wie oben,
@@ -99,8 +124,12 @@ Sie einen Sponsor- / zuschuß von … an ?“) mit dem Kaufpreis (Datei 0x47A18�
   Angebote und kann nicht gekauft werden – nicht abgebildet.
 - **Start- und Wechselgehalt** = Wert(Gehalt) (0x29EE4, 0x497A1) noch nicht umgestellt; das Remake nutzt die Forderung aus
   Stärke und Talent. Die Verhandlung rechnet schon mit dem Wert, bisheriges Gehalt bleibt Untergrenze.
-- **Versicherungsprämie** = Wert(Gehalt) / 2 beim Abschluss (+0x30) und Sperre des Kündigens (+0x2C Bit 31) – das Remake
-  rechnet 10 % des Gehalts; Abrechnung 0x07089 offen.
+- **Versicherungsleistung** (`GameState.PayInsurance`, Teil 2) hat noch keinen Auslöser: Verletzungen im Spiel (0x38D6A) und im
+  Tagesablauf (0x7542) sowie das Laufbahnende (+0x0D = 0xFF, 0x2772B) gibt es im Remake noch nicht (spielberechnung-komplett,
+  Teil 3). Dort jeweils `PayInsurance(manager, spieler, careerEnd)` aufrufen.
+- **Gehalt in ganzen DM** (R8W3I-08): Das Original rechnet in Drittel-DM; das Remake speichert ganze DM und rundet Forderung,
+  Prämie und Vergleichsforderung ab (bis 2/3 DM je Monat). `[APPROX]` am Datenmodell, im Code an `Contracts.InsuranceOffer`
+  und `ComputedDemand` vermerkt.
 - **Angebot des Spielers verfällt** (random(0, 5), dann Sperre random(9, 17)) und Angebot der Ankündigung „von 1 auf n Jahre“
   stammen im Remake aus der Spur „kader“ (`[APPROX]`, R2-11); umgesetzt ist nur, dass „Mach' ich!“ ohne Eingabe das Angebot
   annimmt.

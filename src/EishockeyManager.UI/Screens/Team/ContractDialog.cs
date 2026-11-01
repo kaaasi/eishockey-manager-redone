@@ -20,6 +20,7 @@ public sealed class ContractDialog
     private enum Field { None, Years, Salary }
 
     private readonly Func<int, int?> _demand;
+    private readonly Func<int> _insuranceOffer;
     private readonly Func<NegotiationResult?> _availability;
     private readonly int _baseYears, _baseSalary;
     private Field _edit;
@@ -29,17 +30,19 @@ public sealed class ContractDialog
     /// <param name="rect">Rahmen (<see cref="ContractsScreen.DialogRect"/>, <see cref="Top"/>).</param>
     /// <param name="baseYears">Laufzeit ohne Eingabe.</param>
     /// <param name="baseSalary">Gehalt ohne Eingabe.</param>
-    /// <param name="insured">Versicherung beim Öffnen.</param>
+    /// <param name="insurance">Versicherungsprämie beim Öffnen in DM (Kaderplatz +0x30), 0 = keine.</param>
+    /// <param name="insuranceOffer">Prämie beim Einschalten (<see cref="Contracts.InsuranceOffer"/>).</param>
     /// <param name="demand">Forderung nach Eingabe der Laufzeit oder null (Level 5).</param>
     /// <param name="availability">Prüfung beim Anklicken von Laufzeit und Gehalt (0x4A692) oder null = frei.</param>
-    public ContractDialog(Player player, Rect rect, int baseYears, int baseSalary, bool insured, Func<int, int?> demand,
-        Func<NegotiationResult?> availability)
+    public ContractDialog(Player player, Rect rect, int baseYears, int baseSalary, int insurance, Func<int> insuranceOffer,
+        Func<int, int?> demand, Func<NegotiationResult?> availability)
     {
         Player = player;
         Rect = rect;
         _baseYears = baseYears;
         _baseSalary = baseSalary;
-        Insured = insured;
+        Insurance = insurance;
+        _insuranceOffer = insuranceOffer;
         _demand = demand;
         _availability = availability;
     }
@@ -57,7 +60,10 @@ public sealed class ContractDialog
     /// <summary>Gehalt im Feld, 0 = keine Eingabe.</summary>
     public int Salary { get; private set; }
 
-    public bool Insured { get; private set; }
+    /// <summary>Versicherungsprämie im Fenster in DM, 0 = „keine“.</summary>
+    public int Insurance { get; private set; }
+
+    public bool Insured => Insurance > 0;
 
     /// <summary>Steht die vom Dialog gefüllte Forderung im Gehaltsfeld (nach Laufzeit, ohne spätere Gehaltseingabe)?</summary>
     public bool DemandFilled { get; private set; }
@@ -110,7 +116,11 @@ public sealed class ContractDialog
             _editText = "";
         }
         else if (input.Clicked(InsuranceField))
-            Insured = !Insured;
+        {
+            // [ORIGINAL] 0x4AA74–0x4AAD4: nur ohne Abschluss (+0x2C Bit 31) und nicht bei Verletzung; ein → Wert(Gehalt) / 2.
+            if (Contracts.CanChangeInsurance(Player))
+                Insurance = Insured ? 0 : _insuranceOffer();
+        }
         else if (input.Clicked(AcceptButton) || input.Pressed(Key.Enter))
             return Outcome.Offer;
         return Outcome.None;
@@ -164,7 +174,8 @@ public sealed class ContractDialog
 
         DrawValue(s, mini, Field.Years, d.Y + 27, Core.Player.YearsText(Years != 0 ? Years : _baseYears));
         DrawValue(s, mini, Field.Salary, d.Y + 35, ContractsScreen.FormatMoney(Salary != 0 ? Salary : _baseSalary));
-        s.Text(mini, 81, d.Y + 43, Insured ? "abgeschlossen" : "keine", Colors.White); // [APPROX] Text für „mit Versicherung“
+        // [ORIGINAL] 0x4AAD4–0x4AB1C: +0x30 = 0 → „keine“, sonst der Betrag mit „ DM“ (0x38:0x2D8).
+        s.Text(mini, 81, d.Y + 43, Insured ? ContractsScreen.FormatMoney(Insurance) : "keine", Colors.White);
 
         TeamUi.DialogButton(s, assets, AcceptButton.X, AcceptButton.Y, "Mach' ich!");
         TeamUi.DialogButton(s, assets, CancelButton.X, CancelButton.Y, "Abbruch");

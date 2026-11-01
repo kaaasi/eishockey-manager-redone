@@ -115,6 +115,7 @@ public sealed partial class GameState
         p.ContractYears = 0;
         p.MonthlySalary = 0;
         p.Insured = false;
+        p.InsuranceLocked = false;
         p.Notice = ContractNotice.None;
         p.NoticeYears = 0;
         p.NegotiationLock = 0;

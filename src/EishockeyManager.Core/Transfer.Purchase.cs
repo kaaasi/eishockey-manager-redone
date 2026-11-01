@@ -45,8 +45,8 @@ public sealed partial class TransferMarket
         Complete(game, listing, manager, purchase.Offer, loan: false);
         var p = listing.Player;
         p.ContractYears = newYears;
+        Contracts.ApplyInsurance(game, manager, p, insured, accepted: true, lockOnFailure: false);
         p.MonthlySalary = newSalary;
-        p.Insured = insured;
         return result;
     }
 

@@ -211,10 +211,12 @@ public class RngTwinProbeTests
     /// nicht; so bleiben die auf <c>5f8e02a</c> ermittelten Abdrücke vergleichbar. Ebenso <c>Club.DressedCount</c>
     /// (Spur taktik-verein): abgeleitete Anzeige „Eingesetzt: n“, wirkt nicht auf den Spielverlauf – mit dieser Ausnahme
     /// stimmen alle sechs Abdrücke unverändert. Ebenso <c>Club.LeaguePenaltyMinutes</c> (Spur statistiken): Zähler für die
-    /// Fair-Play-Tabelle aus den Spielberichten, ohne Zufall und ohne Rückwirkung auf die Spiele; seine Wirkung (die
-    /// Fair-Play-Prämie) steht im Kontostand.
+    /// Fair-Play-Prämie) steht im Kontostand. Ebenso <c>Player.InsurancePremium</c> und <c>Player.InsuranceLocked</c> (Spur
+    /// transfer-vertraege-komplett, Teil 2): „versichert“ steht weiter als <c>Insured</c> im Abdruck, die Prämie wirkt über den
+    /// Kontostand.
     /// </summary>
-    private static readonly HashSet<string> Excluded = ["Id", "DressedCount", "LeaguePenaltyMinutes"];
+    private static readonly HashSet<string> Excluded =
+        ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked"];
 
     /// <summary>
     /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:

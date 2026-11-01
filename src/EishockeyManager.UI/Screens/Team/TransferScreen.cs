@@ -213,8 +213,8 @@ public sealed class TransferScreen : Screen
     {
         var game = Game;
         _purchase = purchase;
-        _contract = new ContractDialog(purchase.Player, ContractDialog.Top, purchase.Years, purchase.Salary, insured: false,
-            years => Contracts.DemandAfterYears(game, purchase.Buyer, purchase.Player, years, purchase.Salary), () => null);
+        _contract = new ContractDialog(purchase.Player, ContractDialog.Top, purchase.Years, purchase.Salary, insurance: 0,
+            () => Contracts.InsuranceOffer(game, purchase.Buyer, purchase.Player), years => Contracts.DemandAfterYears(game, purchase.Buyer, purchase.Player, years, purchase.Salary), () => null);
     }
 
     private void UpdateContract(InputState input)

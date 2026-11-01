@@ -46,7 +46,7 @@ public class SalaryTests
         {
             salaries += p.MonthlySalary;
             if (p.Insured)
-                insurance += p.MonthlySalary * Contracts.InsurancePercent / 100;
+                insurance += p.InsurancePremium; // Spur transfer-vertraege-komplett: Prämie +0x30 statt 10 % des Gehalts
         }
         Assert.True(insurance > 0);
 

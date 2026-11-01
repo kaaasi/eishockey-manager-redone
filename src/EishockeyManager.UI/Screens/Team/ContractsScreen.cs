@@ -152,8 +152,8 @@ public sealed class ContractsScreen : Screen
     {
         var game = Host.Game!;
         _row = row;
-        _dialog = new ContractDialog(p, DialogRect(row), Contracts.CurrentYears(p), p.MonthlySalary, p.Insured,
-            years => Contracts.DemandAfterYears(game, game.ActiveManager, p, years),
+        _dialog = new ContractDialog(p, DialogRect(row), Contracts.CurrentYears(p), p.MonthlySalary, p.InsurancePremium,
+            () => Contracts.InsuranceOffer(game, game.ActiveManager, p), years => Contracts.DemandAfterYears(game, game.ActiveManager, p, years),
             () => Contracts.Availability(game, p));
     }
 

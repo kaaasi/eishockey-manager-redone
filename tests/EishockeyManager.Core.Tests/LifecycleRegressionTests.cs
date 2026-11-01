@@ -118,7 +118,7 @@ public class LifecycleRegressionTests
 
         Assert.Equal(28, staying.Age);
         Assert.Equal(2, staying.ContractYears);
-        Assert.Equal(0, staying.NegotiationLock);
+        Assert.Equal(5, staying.NegotiationLock); // R8W3I-09 (transfer-vertraege-komplett): Sperre bleibt, 0x274E8–0x27539
         Assert.Equal(28, leaving.Age);
         Assert.Equal(0, leaving.ContractYears);
         Assert.DoesNotContain(leaving, club.Players);
