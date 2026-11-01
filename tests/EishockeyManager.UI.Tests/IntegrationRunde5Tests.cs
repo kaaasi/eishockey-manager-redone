@@ -29,6 +29,10 @@ public class IntegrationRunde5Tests : IDisposable
         context.Directory = _directory;
         context.AutoSaveOverride = false;
         d.StartNewGame(clubIndex: 2); // Modus 4, Düsseldorfer EG (wie Ablauf „bundestrainer-modus4“)
+        // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „Bundestrainer nach der ersten Saison“ wie in NationalCoachMode4MenuTests –
+        // Managerverein mit Datenbankstärke (ManagedSquadsUi). Ohne sie erreichten vor R8W3I-01 2 von 8, danach 0 von 8 Seeds den Zug;
+        // mit ihr 7 von 8 (Messung im PR #268, kein systematischer Stärkeverlust der Managervereine durch den Fix).
+        ManagedSquadsUi.PlayAtDatabaseStrength(d.Host.Game!);
         return d;
     }
 

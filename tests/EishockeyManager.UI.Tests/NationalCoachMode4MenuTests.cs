@@ -80,6 +80,9 @@ public class NationalCoachMode4MenuTests
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "LetsShow", Head = 3, ClubIndex = StrongestBundesligaClub(database) });
         var game = NewGame.Create(database, setup, 1993);
+        // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „stärkster Verein wird Bundestrainer“ mit Datenbankstärke
+        // wie Synthetic() (ManagedSquadsUi); seit R8W3I-01 erreichte der Verein mit den Werten seiner Spieler den Zug nicht mehr.
+        ManagedSquadsUi.PlayAtDatabaseStrength(game);
         PlayToNationalTurn(game);
 
         var d = FlowTests.CreateDriver();

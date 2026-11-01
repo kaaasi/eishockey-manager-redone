@@ -267,6 +267,9 @@ public class GameModeTests
     /// spielstaerke-manager-2 (Basis <c>99fa995</c>): Managerpaarungen rechnen mit den Spielern der Managervereine (0x98F8),
     /// Energie und Reihenwechsel je Minute (0x87F7, 0x8EF2, 0x80CB), Seitentausch random(0, 1) und Strafspieler 0x378C5 –
     /// andere Ergebnisse und Zufallszüge ab dem ersten Spiel der Manager, daher neue Titel, Konten und Zufallsquellen.
+    /// Integration Runde 8, Welle 3 (Leitstelle, R8W3I-01 #269): alle Werte neu (Ergebnisse der Managerpaarungen). Der Kader
+    /// von Manager 0 schrumpft in beiden Ständen gleich (20, 20, 19, 16, dann 13 bzw. 12 Spieler); mit 12 Spielern ist der
+    /// Verein 1997 nicht spielfähig (Strafen 9,2 Mio. DM) – daher das negative Konto in Saison 5, kein neuer Geldfehler.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -281,7 +284,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=2|2225805,310700|WorldChampion=63,CupWinner=0,GermanChampion=1,EuropeanCupWinner=1|3408275,193762|WorldChampion=63,CupWinner=25,GermanChampion=25,EuropeanCupWinner=1|4171842,-3030|WorldChampion=52,CupWinner=12,GermanChampion=13,EuropeanCupWinner=25|4935291,-140151|WorldChampion=52,CupWinner=36,GermanChampion=25,EuropeanCupWinner=25|4826927,-327270|R298321851 C626758734";
+        "WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2225350,405129|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=1|3420342,294365|WorldChampion=52,CupWinner=24,GermanChampion=24,EuropeanCupWinner=1|4153466,83083|WorldChampion=52,CupWinner=25,GermanChampion=0,EuropeanCupWinner=1|4679840,-120071|WorldChampion=52,CupWinner=1,GermanChampion=13,EuropeanCupWinner=1|-6956210,-353316|R409663842 C1843401354";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

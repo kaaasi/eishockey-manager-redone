@@ -321,6 +321,12 @@ Branch `integration/runde-8-welle-3` von `main` 99fa995, zusammengeführt in Pla
   Managerpaarung (`PenalizedPlayer`, Rückgabe 100, Managerwert), -06 Nationalteam des Bundestrainers, -07 Versicherung im
   Vertragsdialog, -08 Gehalt in ganzen DM, -09 Sperre beim Saisonwechsel, -10 Testlücken, -11 #195-Anschluss in einer
   Spurdatei ohne Folgespur (`SeasonEndSummaryScreen.cs`) – im Plan als Ausnahme der Leitstelle nachgetragen.
+- **Folgen von R8W3I-01:** Ergebnisse jeder Managerpaarung ändern sich; Referenzwerte (RngTwinProbe, Mode4, Zähler,
+  WorldOnly, DEB-Pokal) neu. Kein systematischer Stärkeverlust der Managervereine (30 Seeds: mittlerer Platz 5,6 → 5,57,
+  Tordifferenz 42,6 → 43,4). Vier Ablauftests, deren Vorbedingung „Bundestrainer nach Saison 1“ am Zufall hing (Düsseldorf,
+  Originaldaten: vorher 2/8, danach 0/8 Seeds), spielen jetzt mit Datenbankstärke (`ManagedSquadsUi`, 7/8). Tore je Spiel:
+  Videobeleg nur Oberliga (6–10), übrige Ligen 5–11 (Bundesliga 5,97). Restlücke: Kader von Manager 0 in der Mode4-Probe
+  schrumpft auf 12 bis 13 Spieler (nicht spielfähig) – Probe robuster machen.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 

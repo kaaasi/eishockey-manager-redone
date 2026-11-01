@@ -32,6 +32,9 @@ public class WeltkugelDosboxTests
             setup.ToggleEuropeAndWorldCup();
         var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 3);
         Assert.Equal(mode, game.Mode);
+        // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „Verein 2, stark“ wie NationalCoachMode4MenuTests
+        // (spielstaerke-manager-2, 0x98F8: Managerverein spielt sonst mit den Werten seiner Spieler).
+        ManagedSquadsUi.PlayAtDatabaseStrength(game);
         return game;
     }
 
