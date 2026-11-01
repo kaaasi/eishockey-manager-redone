@@ -107,7 +107,7 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   4. **#166 Oberliga-Austausch** nur, wenn der Austausch der Oberliga samt Managervereinen belegt wird; sonst Beleglage im PR.
 - **Abnahme:** je Teil roter Test bzw. Pixelvergleich mit Kennzahl; Mehrsaisonprobe Modus 1, 2, 4; Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/saison.md`, `docs/wettbewerbe.md` (eigene Abschnitte), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** Teil 1 umgesetzt, blockiert (Referenz-Repo in der Sitzung nicht erreichbar: Pixelvergleich und 4 HOK-Tests offen), #293 `spur-wartet`.
+- **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig (#293, Pixelvergleich Tabellen-/Gruppenansicht, `--schnell` grün); Teil 2 in Arbeit.
 
 ### Spur `optionen-wirkung` – Spielstand-Optionen, Einstellungen, Kalender
 

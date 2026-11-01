@@ -717,3 +717,24 @@ Teil 1 (Tabellen), Disassembly `ndisasm -b 16`, Dateiadressen.
   K.-o. (`knockOut: false`), ihre Ergebnisse bleiben unter 30 (Mehrsaisonprobe `WettbewerbeStartordnungTests`). Keine
   Abweichung, keine Änderung nötig.
 
+* **Videobeleg Startordnung** `folge06_02238` (Karriere-Reihe, zweite Saison, „TABELLE Gesamt 1.Spieltag“, 2. Liga mit dem
+  Aufsteiger Berliner SC): Kölner EC, Augsburger EV, EA Kempten, EC Bad Nauheim stehen in vollem Gleichstand (1:1, 2:2) auf
+  5–8. Aus der Vereinsreihenfolge (Indizes 5, 8, 10–15, 18, 26, 31, 42) ergäbe die Tauschsortierung 0x50B45 mit den zwölf
+  Ergebnissen des Bildes Augsburg, Köln, Bad Nauheim, Kempten – das alte `[APPROX]` ist damit widerlegt. Mit der
+  Platzliste der Vorsaison (Bad Nauheim und Berliner SC als Teilnehmer der Aufstiegsrunde `folge06_01257` auf 11/12) ist das
+  Bild erreichbar (rund 17 % der zulässigen Reihenfolgen der übrigen zehn Vereine ergeben es genau); die Abschlusstabelle der
+  Vorsaison zeigt das Video nicht.
+* **Pixelvergleich Tabellen- und Gruppenansicht** am Head der Spur (Graustufen, eigenes Bild verschoben und weichgezeichnet
+  σ 0,5; mittlere Abweichung / Anteil der Pixel über 40):
+
+  | Ablauf, Bild | Vorlage | Fenster, Maske | Versatz (−0,25 \| +0,5) | Versatz (0 \| 0) |
+  |---|---|---|---:|---:|
+  | `tabelle-original` `00_tabelle_1liga_video_13_07` | `oberflaeche_1307` | (4 \| 38) … (316 \| 190) | 9,5 / 3,6 % | 6,5 / 1,2 % |
+  | `tabelle-saison2` `00_tabelle_2liga_saison2_1_spieltag` | `folge06_02238` (Versatz der Reihe (−0,6 \| +0,1): 4,4 / 1,3 %) | wie oben, Namen/Bilanz/Werte (x ≥ 33, y 67 … 153) maskiert, 50,8 % | 7,8 / 1,4 % | 5,2 / 1,4 % |
+  | `europapokal` `00_gruppe1_video_13_11` | `oberflaeche_1311` | ganzes Bild, Sprecher und Mauszeiger maskiert | 6,0 / 1,8 % | 4,8 / 0,3 % |
+  | `wm` `00_gruppe1_video_13_13` | `oberflaeche_1313` | ganzes Bild, Sprecher und Mauszeiger maskiert | 11,5 / 8,8 % | 8,8 / 5,3 % |
+
+  Titel „1.Spieltag“ nach dem Saisonwechsel (0x7A9 = 1, 0x5613E) stimmt; Kopf und Titel allein 4,8 / 1,6 %, Platzspalte mit
+  Auf-/Abstiegsmarken 4,9 / 0,6 %. Restabweichungen an Schrift- und Flaggenkanten (Videounschärfe). Die Seite
+  „Aufstieg“ der Paarungen (Gruppentabelle der Aufstiegsrunde, `folge06_01257`, `folge07_03307`) fehlt im Remake noch
+  (`LeaguePairingsScreen`, `[APPROX]` dort) – kein Vergleich möglich.
