@@ -447,3 +447,22 @@ Rest in der unteren Hälfte: Logos, Schriftkanten und die Übersicht rechts (nic
 - Rechts neben dem Verlauf (x 240/241, y 104–236, `0x58DF6`–`0x58EC5`) liegt ein Regler für Ausschnitt und Maßstab
   (Maßstab 2–64); im Remake nicht nachgebaut – eigenes Paket (Entscheidung Nutzer, 30.10.2026).
 - Die Basiswerte `0x1FD` sind vorbelegte Daten und werden bei „Neues Spiel“ ohne Programmneustart nicht zurückgesetzt.
+
+## Jugendteams – Funktionskarte 0x3A24B (Spur `finanzen-rest`, Teil 1, unvollständig)
+
+Dateioffset 0x3A24B, 1599 Bytes, Overlay 0xF8 (`ndisasm -b16 -o0 -e 0x3A24B em.exe`). Zuordnung, soweit gelesen:
+
+- **Zeichnen** (0x00–0x2F6): Grafik kb\33 (`0x21`), Rahmen bei (31|21) und (104|156) – das Remake hat 157 für das Förderfenster
+  (Videoversatz ±0,5, Pixelvergleich offen). Ligalinien: erste Linie y = 0x35 = 53, Abstand 0x18 = 24 (= `FirstLineY`,
+  `LeaguePitch`). Fahnenhöhe je Mannschaft: y = 0x36 + 24 · Liga + 2 · Platz (Bytes aus dem Managersatz, Stride 0x15, Team
+  `+0..2` Platz, `+3..5` Liga, 0-basiert); danach +16, wenn y in keinem der Intervalle [0x43,0x47]/[0x5B,0x5F] und < 0x70 liegt
+  (Beschriftung ausweichen). **Abweichung:** das Remake nimmt 4 Pixel je Platz (`24 · Rang / 6`), das Original 2 Pixel je Platz –
+  `[APPROX]` in `YouthScreen.FlagBottom`, noch nicht geändert (Wertebereich der Platzbytes ohne Videobild nicht belegt).
+- **Förderung** (ab 0x414): Schritt `500 · 2^Team` (LXMUL 0x3CA), Deckel `10000 · 2^Team` (0x2710); Klick im Balken x 0x79–0xBE
+  (121–190) setzt, außerhalb/Pfeile ± Schritt. Das stimmt mit „Deckel 10.000 · 2^Team“ aus dem Spielstart überein, **nicht** mit
+  `FinanceYouth.cs` (Deckel 10.000, Schritt 1.000 für alle Teams, Video 8:35 nur für die erste Mannschaft belegt).
+  Noch nicht umgesetzt: Schrittweite 500 statt 1.000 (Widerspruch zum Video) und Balkenmaßstab je Team ungeklärt.
+
+**Offen / blockiert:** Referenzbilder (Repo `kaaasi/eishockey-manager-referenz`) waren im Lauf nicht erreichbar
+(`add_repo` fehlte, `fetch-reference.sh` ohne Zugriff). Ohne sie ist weder der Pixelvergleich noch ein roter Test für
+Schritt/Deckel/Fahnenhöhe belegbar; Originaldaten (`em.exe`) kamen aus dem Projekt-ZIP.
