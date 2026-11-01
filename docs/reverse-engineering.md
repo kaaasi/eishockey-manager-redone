@@ -778,7 +778,8 @@ Teil 2 (Nationalteam):
     Vereinsfeld 0x16 − 1 bzw. 0 für Deutschland DGROUP 0x6AC; Byte = Gegnertore · 16 + eigene Tore); Länder als Liste von
     zehn (FIFO), Vereine je Seite fünf. Spielstart füllt 0xFF (0x43726). Leser auch in der Infoleiste (0x441D2–0x442B0).
   * **Saisonwechsel 0x55E3D–0x55EF8:** Tabellenfelder (Punkte, Tore, Gegentore, Spiele, Siege, Niederlagen) aller 64 Teams auf 0,
-    nicht die Bilanzzeichen. Die WM-Auslosung tauscht Rekorde, Gegner und Kopf-an-Kopf mit (0x365B6–0x36799).
+    dazu die Bilanzzeichen 0x825E (0x55EBA–0x55EE0: `strcpy` von DGROUP 0x5503 „--------“ je Hälfte; R9W-D01, #328),
+    nicht Rekorde und Kopf-an-Kopf. Die WM-Auslosung tauscht Rekorde, Gegner und Kopf-an-Kopf mit (0x365B6–0x36799).
   * **Wettbewerbscode DGROUP 0xD0C2** = 0 beim Eintritt ins Hauptmenü (0x44E32); Freundschaftsspiel 0xD (0x30390), WM-Gruppe 8
     (0x30F53), WM-Endrunde 10 (0x31017, Ergebnis über 0x128:0x5C = 0x50283). Zeile „Historische Ergebnisse“ und dritter Knopf
     nur bei Code 0.

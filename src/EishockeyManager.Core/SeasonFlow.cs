@@ -390,6 +390,7 @@ public sealed partial class GameState
         }
 
         Season++;
+        ClearNationalForm(); // Bilanzzeichen leeren, em.exe 0x55EBA (CupsNational.TeamInfo.cs)
         PlayedMatchDays = 0;
         Results.Clear();
         PlayoffResults.Clear();

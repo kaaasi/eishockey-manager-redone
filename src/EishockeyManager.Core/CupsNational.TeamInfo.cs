@@ -164,7 +164,8 @@ public static class TeamRecords
 /// <item>Das Remake schreibt hier nur die Länderspiele (WM, Freundschaftsspiele). [APPROX] Vereinsspiele (Code 7, Pokale)
 ///   werden noch nicht eingetragen – das Vereinsfenster gibt es im Remake nicht.</item>
 /// <item>[APPROX] Bilanzzeichen nur der Länder, als Art 1 = Niederlage, 2 = Unentschieden, 3 = Sieg (Heim/Gast spielt für die
-///   Anzeige keine Rolle). Wie im Original setzt der Saisonwechsel sie nicht zurück.</item>
+///   Anzeige keine Rolle). [ORIGINAL] Der Saisonwechsel leert sie (em.exe Datei 0x55EBA–0x55EE0, siehe
+///   <see cref="ClearNationalForm"/>); Rekorde und Kopf-an-Kopf bleiben.</item>
 /// </list>
 /// </remarks>
 public sealed partial class GameState
@@ -185,6 +186,13 @@ public sealed partial class GameState
     private readonly int[] _teamRecordOpponents = new int[TeamRecords.Teams * TeamRecords.Kinds];
     private readonly int[] _headToHead = Enumerable.Repeat(HeadToHeadEmpty, HeadToHeadSlots * TeamRecords.Teams * HeadToHeadLength).ToArray();
     private readonly int[] _nationalForm = new int[(NationalTeams.Last - NationalTeams.First + 1) * NationalFormLength];
+
+    /// <summary>
+    /// Leert die Bilanzzeichen beim Saisonwechsel. [ORIGINAL] em.exe Datei 0x55EBA–0x55EE0 in der Schleife 0x55E39–0x55EF8
+    /// über alle 64 Teams: <c>strcpy(0x825E + 0x50 · Team + 9 · Hälfte, DGROUP 0x5503 "--------")</c>. Rekorde (0xBD0F) und
+    /// Kopf-an-Kopf (0xAB7B) schreibt die Schleife nicht (R9W-D01, #328).
+    /// </summary>
+    internal void ClearNationalForm() => Array.Clear(_nationalForm);
 
     /// <summary>Rekordwort (0 = keine Eintragung) und Gegner eines Teams.</summary>
     public (int Word, int Opponent) TeamRecord(int club, TeamRecordKind kind)

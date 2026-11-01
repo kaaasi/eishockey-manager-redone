@@ -96,7 +96,8 @@ public class GegnerFensterTests
 
     /// <summary>
     /// Mehrsaisonprobe Modus 1, 2 und 4 (passiv und aktiv), vier Saisonwechsel: Jede gespielte WM trägt ihre Gruppenspiele
-    /// als Bilanz der Länder ein (je fünf, höchstens acht Zeichen), die Kopf-an-Kopf-Liste bleibt bei zehn Einträgen, und
+    /// als Bilanz der Länder ein (fünf Zeichen; der Saisonwechsel leert die Bilanz, R9W-D01), die Kopf-an-Kopf-Liste bleibt
+    /// bei zehn Einträgen, und
     /// Sichern/Laden behält alles. Modus 2 hat keine WM.
     /// </summary>
     [Theory]
@@ -123,10 +124,9 @@ public class GegnerFensterTests
             }
             if (game.Phase == SeasonPhase.GameOver)
                 break;
-            var worldCups = globe ? change + 1 : 0;
             for (var n = NationalTeams.First; n <= NationalTeams.Last; n++)
             {
-                Assert.Equal(Math.Min(GameState.NationalFormLength, 5 * worldCups), game.NationalForm(n).Count(f => f != 0));
+                Assert.Equal(globe ? 5 : 0, game.NationalForm(n).Count(f => f != 0));
                 Assert.Equal(globe ? 5 : 0, game.NationalGroupRecord(n).Games);
                 Assert.True(game.HeadToHead(0, n).Count(v => v != GameState.HeadToHeadEmpty) <= GameState.HeadToHeadLength);
             }
@@ -139,6 +139,33 @@ public class GegnerFensterTests
                 break;
             game.StartNextSeason();
         }
+    }
+
+    /// <summary>
+    /// R9W-D01 (#328): Der Saisonwechsel leert die Bilanzzeichen aller Teams (em.exe Datei 0x55EBA–0x55EE0: strcpy von
+    /// DGROUP 0x5503 „--------“ nach 0x825E + 0x50 · Team + 9 · Hälfte); Rekorde und Kopf-an-Kopf bleiben.
+    /// </summary>
+    [Fact]
+    public void SeasonChange_ClearsNationalForm_KeepsRecordsAndHeadToHead()
+    {
+        var game = GameModeTests.Create(7, true, true, 2, 30);
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 3000, "Saisonende nicht erreicht");
+            foreach (var m in game.Managers)
+                m.Money = Math.Max(m.Money, 10_000_000);
+            game.Continue();
+        }
+        var nations = Enumerable.Range(NationalTeams.First, NationalTeams.Last - NationalTeams.First + 1).ToList();
+        Assert.Contains(nations, n => game.NationalForm(n).Any(f => f != 0));
+        var records = nations.Select(n => game.TeamRecord(n, TeamRecordKind.HomeWin).Word).ToList();
+        var headToHead = nations.Select(n => game.HeadToHead(0, n).ToArray()).ToList();
+
+        game.StartNextSeason();
+
+        Assert.All(nations, n => Assert.All(game.NationalForm(n), f => Assert.Equal(0, f)));
+        Assert.Equal(records, nations.Select(n => game.TeamRecord(n, TeamRecordKind.HomeWin).Word).ToList());
+        Assert.Equal(headToHead, nations.Select(n => game.HeadToHead(0, n).ToArray()).ToList());
     }
 
     /// <summary>Schema 17 (vor dieser Spur): Die Felder werden leer angelegt (Kopf-an-Kopf 255).</summary>
