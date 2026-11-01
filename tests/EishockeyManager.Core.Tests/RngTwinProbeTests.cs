@@ -105,17 +105,18 @@ namespace EishockeyManager.Core.Tests;
 /// 0x494EF mit random(0, Managerzahl + 2) je Ligaspieltag statt 30 %/50 % aus Computerkadern; Pool beim Spielstart und
 /// Saisonwechsel), damit anderer Verbrauch der Hauptquelle und andere Ergebnisse; Markt-Angebote schreiben Angebot − Angebot / 7
 /// · Restlaufzeit gut (0x49332); auf der Liste stehen nur noch Vertragslose aus Managervereinen (<c>SignFreeAgents</c> holt
-/// also nur eigene zurück).
+/// also nur eigene zurück). Die Datenbankspieler des Pools fehlen den Computerkadern; beim Saisonwechsel tauschen Pool und
+/// Computerkader (jeder Name nur einmal, Entscheidung Nutzer 01.11.2026).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "0E7308411D11D39A")]
-    [InlineData(true, 3, "7326B7B88829BC8C")]
-    [InlineData(false, 11, "4E66CD693FE2EC3E")]
-    [InlineData(true, 11, "7B09DAE880C73536")]
+    [InlineData(false, 3, "09FF85788E22C23F")]
+    [InlineData(true, 3, "836AE269A24766CE")]
+    [InlineData(false, 11, "42B0D73485D6E5DE")]
+    [InlineData(true, 11, "40429D63E1283807")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -123,8 +124,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "71E419242CEC39FE")]
-    [InlineData(true, "D824AAD753F10D14")]
+    [InlineData(false, "21979456B79B8E22")]
+    [InlineData(true, "6EA265406C4F87BD")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

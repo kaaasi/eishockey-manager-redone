@@ -217,8 +217,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Spur transfer-vertraege-komplett (Teil 1): ab 1995 neu – nach den Prämien kommt die Verhandlung ausgelaufener Verträge
     /// (0x27D05); Enter ist „Mach' ich!“, die Spieler bleiben ein Jahr statt zu gehen. Mit und ohne Anzeige weiter gleich.
     /// Spur transfer-vertraege-komplett (Teil 5): ab 1993 neu – Pool und Listenwechsel 0x494EF (random(0, Managerzahl + 2) je
-    /// Ligaspieltag) verbrauchen die Hauptquelle anders als die bisherige Liste aus Computerkadern, damit andere Ergebnisse;
+    /// Ligaspieltag) verbrauchen die Hauptquelle anders als die bisherige Liste aus Computerkadern; die Datenbankspieler des
+    /// Pools fehlen den Computerkadern (jeder Name nur einmal), damit andere Ergebnisse;
     /// mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 6, DM 2, Tab 15300 | 1994: DEB 6, DM 6, Tab 16314 | 1995: DEB 6, DM 2, Tab 15631 | 1996: DEB 2, DM 2, Tab 15664";
+        "1993: DEB 6, DM 5, Tab 15395 | 1994: DEB 2, DM 2, Tab 16341 | 1995: DEB 5, DM 1, Tab 15963 | 1996: DEB 2, DM 9, Tab 16488";
 }

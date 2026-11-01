@@ -57,6 +57,9 @@ public static class SquadSetup
     public static void Initialize(GameState game, int seed)
     {
         var random = new Random(unchecked(seed * 7919 + 17));
+        // Spur transfer-vertraege-komplett, Teil 5: Spielerpool vor den Kadern; seine Datenbankspieler fehlen dann den
+        // Computervereinen (jeder Name nur einmal, Entscheidung Nutzer 01.11.2026). Eigene Zufallsquelle.
+        game.TransferMarket.ReservePool(game, seed);
         var usedNames = new HashSet<string>(game.Clubs.SelectMany(c => c.Players).Select(p => p.Name));
         var namePool = usedNames.ToList();
         var managed = game.Managers.GroupBy(m => m.ClubIndex).ToDictionary(g => g.Key, g => g.First().Level);

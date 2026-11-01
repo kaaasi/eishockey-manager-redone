@@ -99,7 +99,8 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   200 Spielern – Entscheidung Nutzer, Befund Ablöse − Angebot / 7 · Laufzeit bei Markt-Angeboten); Teil 4 in PR #310
   (Testlücken R8W3I-10 transfer-Anteil, R8W3I-16, SW-01, W51-02 in `zusatzfunktionen.md`; Pixelvergleich: Markierung der
   Transferliste behoben, Knöpfe 1 Pixel – Ursache offen); Teil 5 in PR #319 (Spielerpool von 200 Spielern, Listenwechsel
-  0x494EF, Ablöse bei Markt-Angeboten 0x49332, Schema 20 vorläufig; Poolnamen doppelt zu Computerkadern `[APPROX]`).
+  0x494EF, Ablöse bei Markt-Angeboten 0x49332, Schema 20 vorläufig; Entscheidungen Nutzer 01.11.2026: Poolnamen nur einmal – Pool vor den
+  Computerkadern, Tausch beim Saisonwechsel –, Poolgröße flexibel, Altern originaltreu, Verjüngung nach v1.0 vorgemerkt).
 
 ### Spur `wettbewerbe-komplett` – Tabellen, Pokale, Nationalteam abschließen
 

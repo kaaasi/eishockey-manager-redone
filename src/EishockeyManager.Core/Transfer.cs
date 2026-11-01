@@ -176,7 +176,7 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>
-    /// Füllt den Markt zu Spielbeginn: Pool bauen (<see cref="BuildPool"/>), dann der Listenwechsel des ersten Saisonstarts
+    /// Füllt den Markt zu Spielbeginn: Pool (schon vor den Kadern gebaut, <see cref="ReservePool"/>), dann der Listenwechsel des ersten Saisonstarts
     /// (<see cref="ChangeList"/>; im Mittel 6–7 Spieler, Video 6, FILE05 7).
     /// </summary>
     public void Initialize(GameState game, Random random)
@@ -184,7 +184,8 @@ public sealed partial class TransferMarket
         _listings.Clear();
         _bids.Clear();
         UpdatedDay = game.PlayedMatchDays;
-        BuildPool(game, random);
+        if (_pool.Count == 0)
+            BuildPool(game, random, TransferPoolLayout.Original, new HashSet<string>());
         ChangeList(game, random);
     }
 

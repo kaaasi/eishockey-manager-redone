@@ -36,7 +36,7 @@ public class SaveGameTests
     // (Spur nationalteam-2), 17 Verhandlungs- und Gebotssperre (Spur transfer-original-vertrag). Runde 9 (vorläufig): 18
     // Versicherungsprämie und Abschluss je Spieler (Spur transfer-vertraege-komplett, Teil 2), 19 unaufgefordertes Angebot je
     // Spieler (Teil 3), 20 Spielerpool des Transfermarkts (Teil 5).
-    private const string ExpectedSchemaFingerprint = "AB6A6368DD22CD48";
+    private const string ExpectedSchemaFingerprint = "40FA165C9BB8801A";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

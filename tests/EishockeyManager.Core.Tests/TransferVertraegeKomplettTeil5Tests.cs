@@ -132,10 +132,12 @@ public class TransferVertraegeKomplettTeil5Tests
         // [APPROX] Im Original belegen die Managerkader rund 25 Plätze (DGROUP 0x381), nur die übrigen bekommen Namen; das Remake
         // benennt alle 178 und trifft öfter einen schon vergebenen Namen (dann 0–35). Mit Seed 5: 141 von 178.
         Assert.True(pool.Count(s => s.Index < 179 && s.Club < 12) / 178.0 > 0.7, "Remake: Anteil 0–11");
-        // [APPROX] Ergänzte Plätze der Computerkader („SPIELER n“, SquadSetup) zählen im Remake wie Datenbankplätze.
-        Assert.All(pool, s => Assert.True(database[s.Club].Players.Any(d => d.Name == s.Player.Name)
-            || s.Player.Name.StartsWith("SPIELER ", StringComparison.Ordinal), s.Player.Name + "@" + s.Club));
-        Assert.True(pool.Count(s => s.Player.Name.StartsWith("SPIELER ", StringComparison.Ordinal)) < 10);
+        Assert.All(pool, s => Assert.True(database[s.Club].Players.Any(d => d.Name == s.Player.Name), s.Player.Name + "@" + s.Club));
+        // Entscheidung Nutzer 01.11.2026: Die Datenbankspieler des Pools fehlen den Computerkadern – jeder Name nur einmal.
+        var squadNames = game.Clubs.SelectMany(c => c.Players).Select(p => p.Name).ToList();
+        Assert.Empty(pool.Select(s => s.Player.Name).Intersect(squadNames));
+        Assert.Equal(squadNames.Count, squadNames.Distinct().Count());
+        Assert.All(game.Clubs.Where(c => c.League is not null), c => Assert.InRange(c.Players.Count, 18, 25));
         Assert.Equal(178, pool.Take(178).Select(s => s.Player.Name).Distinct().Count());
         Assert.Equal(21, pool.Skip(178).Select(s => s.Player.Name).Distinct().Count());
     }
@@ -268,7 +270,6 @@ public class TransferVertraegeKomplettTeil5Tests
         Assert.Same(listing.Player, bought.Player);
         Assert.Equal(PoolOwner.Taken, bought.Owner);
         Assert.Contains(listing.Player, game.Clubs[manager.ClubIndex].Players);
-        Assert.True(game.TransferMarket.Pool.Count(s => ages[s.Index].Player != s.Player) > 150, "kaum neue Namen");
         Assert.Empty(game.ValidatePlayerIdentity());
         var saved = SaveGame.Save(game);
         var loaded = SaveGame.Load(saved);
@@ -276,6 +277,72 @@ public class TransferVertraegeKomplettTeil5Tests
         Assert.Equal(saved, SaveGame.Save(loaded.Game!));
         Assert.Equal(game.TransferMarket.Pool.Select(s => (s.Index, s.Player.Id, s.Player.Name, s.Club, s.Owner)),
             loaded.Game!.TransferMarket.Pool.Select(s => (s.Index, s.Player.Id, s.Player.Name, s.Club, s.Owner)));
+    }
+
+    /// <summary>
+    /// Poolgröße flexibel (Wunsch Nutzer 01.11.2026): 200 ist das Original; andere Größen teilen im Verhältnis des Originals
+    /// auf. Ein Pool mit 400 Plätzen lässt sich bauen, ziehen und sichern.
+    /// </summary>
+    [Fact]
+    public void Layout_IsFlexible_OriginalAnd400()
+    {
+        var original = TransferPoolLayout.For(200);
+        Assert.Same(TransferPoolLayout.Original, original);
+        Assert.Equal((179, 180, 199), (original.LeagueLast, original.FirstNational, original.Last));
+        Assert.Equal((21, 97), original.LeagueRoleStarts);
+        Assert.Equal((179, 184, 191), original.NationalNaming);
+        var big = TransferPoolLayout.For(400);
+        Assert.Equal(399, big.LeagueLast + big.NationalGoalkeepers + big.NationalDefenders + big.NationalForwards);
+        Assert.Equal((40, 152, 167, 8, 14, 18), (big.LeagueGoalkeepers, big.LeagueDefenders, big.LeagueForwards,
+            big.NationalGoalkeepers, big.NationalDefenders, big.NationalForwards));
+
+        var game = TestGames.Create(9);
+        game.TransferMarket.ReservePool(game, 9, big);
+        Assert.Equal(399, game.TransferMarket.Pool.Count);
+        Assert.Equal(big, game.TransferMarket.PoolLayout);
+        Assert.All(game.TransferMarket.Pool, s => Assert.Equal(big.RoleOf(s.Index), s.Player.Role));
+        foreach (var slot in game.TransferMarket.Pool.Where(s => s.Player.Id == 0))
+            Assert.Fail("Poolspieler ohne ID");
+        for (var k = 0; k < 20; k++)
+            game.TransferMarket.ChangeList(game, game.Random);
+        Assert.Contains(game.TransferMarket.Listings, l => game.TransferMarket.Pool.Single(s => s.Player == l.Player).Index > 199);
+        Assert.Empty(game.ValidatePlayerIdentity());
+        var saved = SaveGame.Save(game);
+        var loaded = SaveGame.Load(saved);
+        Assert.True(loaded.Success, loaded.Error);
+        Assert.Equal(big, loaded.Game!.TransferMarket.PoolLayout);
+    }
+
+    /// <summary>
+    /// Originaldaten, vier Saisonwechsel: Kein Poolspieler teilt seinen Namen mit einem Spieler in Kader, bei den Vertragslosen
+    /// oder im Ruhestand (Vorschlag 1, Entscheidung Nutzer 01.11.2026); jeder Spieler hat eine eigene ID.
+    /// </summary>
+    [GameDataFact]
+    public void OriginalDatabase_FourChanges_NamesUniqueAndIdsDistinct()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Joerg", ClubIndex = 2 });
+        var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, 5);
+        var startIds = game.NextPlayerId;
+        for (var change = 0; change < 4; change++)
+        {
+            LifecycleRegressionTests.FinishSeason(game);
+            var before = game.TransferMarket.Pool.Select(s => s.Player).ToList();
+            game.StartNextSeason();
+            // Neue Namen (0x5ACA0): Tausch mit Spielern der Computerkader, die Kadergröße bleibt.
+            Assert.True(game.TransferMarket.Pool.Count(s => !before.Contains(s.Player)) > 100, "kaum neue Namen");
+            // Gleiche Namen gibt es nur durch Talente des Remakes (PlayerFactory.TalentName übernimmt bei einteiligen Namen den
+            // Namen eines vorhandenen Spielers – unverändert, nicht Teil dieser Spur); verglichen werden deshalb die Spieler vom
+            // Spielstart (Datenbank und Pool).
+            var outside = game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).Concat(game.RetiredPlayers)
+                .Where(p => p.Id < startIds).Select(p => p.Name).ToHashSet();
+            Assert.DoesNotContain(game.TransferMarket.PoolPlayers, p => p.Id < startIds && outside.Contains(p.Name));
+            Assert.True(game.TransferMarket.Pool.Count == game.TransferMarket.Pool.Select(s => s.Player.Name).Distinct().Count(),
+                string.Join("; ", game.TransferMarket.Pool.GroupBy(s => s.Player.Name).Where(g => g.Count() > 1).Select(g => string.Join(",", g.Select(s => $"{s.Index}:{s.Owner}:{s.Club}:{g.Key}")))));
+            var ids = game.AllPlayers.Select(p => p.Id).ToList();
+            Assert.Equal(ids.Count, ids.Distinct().Count());
+            Assert.Empty(game.ValidatePlayerIdentity());
+        }
     }
 
     /// <summary>Migration 19 → 20: Ein Stand ohne Pool lädt; der nächste Listenwechsel baut den Pool mit neuen IDs.</summary>

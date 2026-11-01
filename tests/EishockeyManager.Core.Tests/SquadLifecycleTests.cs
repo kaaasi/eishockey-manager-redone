@@ -152,12 +152,7 @@ public class SquadLifecycleTests
             PlaySeason(game, active ? () => ExtendOffers(game) : null);
             var expiring = OwnClub(game).Players.Where(p => p.ContractYears == 1 && !p.OnLoan).ToArray();
             foreach (var p in expiring)
-            {
-                // Teil 5: Poolnamen kommen im Remake auch in Computerkadern vor ([APPROX]); die Probe matcht über den Namen.
-                var namesake = AllPlayers(game).Count(q => q.Name == p.Name) > 1;
-                var count = ContractMessages(game, p).Length;
-                Assert.True(namesake ? count >= 1 : count == 1, $"Saison {game.Season}: {count} Ankündigungen für {p.Name}");
-            }
+                Assert.True(ContractMessages(game, p).Length == 1, $"Saison {game.Season}: keine Ankündigung für {p.Name}");
 
             game.StartNextSeason();
 
@@ -202,8 +197,10 @@ public class SquadLifecycleTests
         _ = managerPlayers;
     }
 
+    // Teil 5 (transfer-vertraege-komplett): auch der Spielerpool – beim Saisonwechsel tauscht er Spieler mit den Computerkadern.
     private static IEnumerable<Player> AllPlayers(GameState game) =>
-        game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).Concat(game.RetiredPlayers);
+        game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).Concat(game.RetiredPlayers)
+            .Concat(game.TransferMarket.PoolPlayers);
 
     /// <summary>Aktiver Manager: nimmt jedes Verlängerungsangebot zur Forderung an.</summary>
     private static void ExtendOffers(GameState game)

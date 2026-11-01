@@ -277,7 +277,8 @@ public class GameModeTests
     /// mindestens bisheriges Gehalt) und damit andere Ergebnisse und Zufallsstand. Gegenprobe mit altem Startgehalt: alte Werte.
     /// Spur transfer-vertraege-komplett (Teil 5): alle Werte neu – der Listenwechsel 0x494EF zieht aus dem Spielerpool mit anderem
     /// Verbrauch der Hauptquelle (random(0, Managerzahl + 2) je Ligaspieltag statt 30 %/50 %), damit andere Ergebnisse ab Saison 1;
-    /// Markt-Angebote schreiben Angebot − Angebot / 7 · Restlaufzeit gut (0x49332).
+    /// Markt-Angebote schreiben Angebot − Angebot / 7 · Restlaufzeit gut (0x49332). Die Datenbankspieler des Pools fehlen den
+    /// Computerkadern, beim Saisonwechsel tauschen Pool und Computerkader (jeder Name nur einmal).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -292,7 +293,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=2|711150,446062|WorldChampion=63,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|1754383,264723|WorldChampion=52,CupWinner=12,GermanChampion=12,EuropeanCupWinner=1|3271708,272521|WorldChampion=52,CupWinner=12,GermanChampion=0,EuropeanCupWinner=1|3675719,102864|WorldChampion=54,CupWinner=12,GermanChampion=1,EuropeanCupWinner=1|3845531,209892|R2075239831 C1037409908";
+        "WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=2|711150,446062|WorldChampion=52,CupWinner=24,GermanChampion=1,EuropeanCupWinner=0|1854793,346577|WorldChampion=52,CupWinner=24,GermanChampion=25,EuropeanCupWinner=1|2634455,340075|WorldChampion=54,CupWinner=12,GermanChampion=13,EuropeanCupWinner=25|3563600,294162|WorldChampion=63,CupWinner=1,GermanChampion=24,EuropeanCupWinner=25|3751390,251607|R1547491340 C660912490";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

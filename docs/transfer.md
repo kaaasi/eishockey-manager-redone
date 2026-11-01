@@ -184,17 +184,27 @@ Entscheidungen Nutzer 01.11.2026 (PR #308). Umsetzung: `Core/Transfer.Pool.cs` (
 
 Folgen: Die Startliste ist ein Listenwechsel ab leerem Markt – jeder der 10 Würfe trifft mit (10 − n) / 10 einen freien Platz,
 im Mittel 6,5 Spieler (Video 6, FILE05 7). Poolspieler altern ohne Laufbahnende (nur 0x274A7), die Liste wird über die Jahre
-älter. Gegenprobe FILE05: freie Plätze 1–178 auf Vereinen 0–23 ohne Köln (über 90 % 0–11), 179–199 auf Nationalteams.
+älter – so bleibt es (Entscheidung Nutzer 01.11.2026: Originaltreue); eine Verjüngung beim Umbenennen ist als Erweiterung nach
+v1.0 vorgemerkt (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C). Gegenprobe FILE05: freie Plätze 1–178 auf Vereinen 0–23 ohne Köln (über 90 % 0–11), 179–199 auf Nationalteams.
 
 `[APPROX]`:
-- **Computerkader bleiben** (Statistik, Kader-KI des Remakes). Ein Poolspieler trägt den Namen eines Datenbankspielers seines
-  Vereins, der im Remake zugleich in dessen Kader steht (zwei Spieler gleichen Namens). Kaderplatz s = s-ter Spieler der Art im
-  Kader des Remakes (die Datenbank-Platznummer ist dort nicht mehr bekannt); ergänzte Plätze („SPIELER n“) zählen mit.
+- **Computerkader bleiben** (Statistik, Kader-KI des Remakes), aber **jeder Name nur einmal** (Entscheidung Nutzer
+  01.11.2026): Der Pool wird vor den Kadern gebaut (`TransferMarket.ReservePool`, aus `SquadSetup.Initialize`), seine
+  Datenbankspieler fehlen den Computervereinen; fehlende Plätze ergänzt der Kaderaufbau. Beim Saisonwechsel tauschen Pool und
+  Computerkader: Steht der neu gezogene Datenbankspieler in einem Computerkader, wird er Poolspieler (mit seinen Werten), der
+  bisherige Poolspieler übernimmt seinen Kaderplatz. Spieler in Managerkadern, bei den Vertragslosen, im Ruhestand, geliehene
+  und nominierte gelten als leere Plätze. Kaderplatz s = s-ter Datenbankspieler der Art (Platznummern leerer Plätze sind nach
+  dem Laden der Datenbank nicht mehr bekannt). Spieler werden über ihre ID unterschieden; gleiche Namen bleiben möglich, wenn
+  eine geänderte Datenbank sie enthält, und entstehen weiter durch Talentnamen (`PlayerFactory.TalentName`, unverändert).
+- **Poolgröße flexibel** (Wunsch Nutzer 01.11.2026): `TransferPoolLayout` mit dem Original (200) und Aufteilung anderer
+  Größen im Verhältnis des Originals (z. B. 400); Ziehung, Arten und Namensbereiche folgen der Aufteilung.
 - **Managerkader** baut das Remake wie bisher aus der Datenbank, nicht aus dem Pool (DGROUP 0x381); alle 199 Plätze werden
-  benannt (daher öfter der weite Vereinsbereich 0–35 als im Original).
+  benannt (daher öfter der weite Vereinsbereich 0–35 als im Original). Gibt es keinen freien Datenbanknamen (synthetische
+  Datenbank, Spielstand vor Teil 5), heißt der Platz „POOLSPIELER n“.
 - **Gekaufte Poolspieler** bleiben „vergeben“; steht ihr Spieler beim Saisonwechsel nicht mehr in einem Managerkader, bekommt
-  der Platz einen neuen Spieler mit den Werten des alten (im Original wird der Platz bei Verkauf oder Vertragsende wieder frei).
-  Neue Namen erzeugen neue Spieler (der Name ist im Remake fest) mit neuer ID.
+  der Platz einen neuen Spieler „POOLSPIELER n“ mit den Werten des alten (im Original wird der Platz bei Verkauf oder
+  Vertragsende wieder frei), der danach wie jeder freie Platz umbenannt wird. Ein Name ist im Remake fest: ein neuer Name ohne
+  Tausch erzeugt einen neuen Spieler mit neuer ID (nur für Poolspieler ohne Spiele).
 - **Takt:** Listenwechsel je Ligaspieltag statt je Tag (der Markt schreibt sich je Spieltag fort); Zufall aus der Hauptquelle.
 - **Vertragslose** aus Managervereinen (R204) stehen nach dem Saisonwechsel weiter auf der Liste (höchstens 6) und zählen wie
   Managerplätze; im Original werden sie freie Poolspieler. Vertragslose anderer Vereine stehen nicht mehr auf der Liste.

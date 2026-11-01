@@ -153,8 +153,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// der Hauptquelle; Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "8CD15FA20CA2D84F")]
-    [InlineData(true, "48EC5D55C3D829BB")]
+    [InlineData(false, "FAAB9C1717561971")]
+    [InlineData(true, "DEC675789C0B2D4A")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -206,7 +206,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Integration Runde 8, Welle 3 (R8W3I-01): Managerpaarungen des Bundestrainers mit dem Spielstand vor den Toren der
     // Minute – andere WM-Ergebnisse ab Saison 5 und Pokalquelle (C…); Hauptquelle und Konten gleich.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|R266397534 C885920316";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|R66365018 C885920316";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem
