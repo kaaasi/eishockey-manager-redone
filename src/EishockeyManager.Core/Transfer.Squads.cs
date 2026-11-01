@@ -99,6 +99,7 @@ public sealed partial class GameState
     internal void AnnounceContractEnds(int day)
     {
         AdvanceNegotiationLocks(); // Spur transfer-original-vertrag: Sperre +0x18 (Tagesablauf 0x76F6)
+        RollUnsolicitedOffers(); // Spur transfer-vertraege-komplett, Teil 3: +0x09 Bit 0x40 (Tagesablauf 0x07972)
         foreach (var manager in ActiveManagers)
         {
             var club = Clubs[manager.ClubIndex];
@@ -143,6 +144,7 @@ public sealed partial class GameState
         p.ContractYears = 0;
         p.MonthlySalary = 0;
         p.Insured = false;
+        p.InsuranceLocked = false;
         p.OnLoan = false;
         p.Loan = null;
         RetiredPlayers.Add(p);

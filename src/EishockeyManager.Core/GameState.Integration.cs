@@ -13,6 +13,8 @@ public sealed partial class GameState
     /// </summary>
     internal void InitializeManagerSystems()
     {
+        // Spur transfer-vertraege-komplett: Startgehalt der Kaderplätze der Manager = Wert(Gehalt) (0x29EE4), ohne Zufall.
+        ApplyStartSalaries();
         _ = Stocks;
         foreach (var manager in Managers)
         {
@@ -41,6 +43,9 @@ public sealed partial class GameState
     /// <summary>Tagesablauf der Vereinssaison (Finanzen, Training, Markt, Verträge, Statistik).</summary>
     private void OnDayClubSeason(int day)
     {
+        // Spur transfer-vertraege-komplett: offene Verhandlungen am Saisonende enden vor dem ersten Tag wie „Abbruch“ (0x27D91).
+        ResolveRenewals();
+
         // Finanzen: Tages-, Wochen- und Monatswechsel bis einschließlich heute
         AdvanceFinanceTo(day);
 

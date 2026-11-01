@@ -169,7 +169,12 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             var manager = game.ActiveManager;
             Assert.Equal(FinanceRules.StartMoney(manager.Level), manager.Money);
             long cumulative = 0;
+            // Spur transfer-vertraege-komplett: Ablöse für Spieler, die am Saisonende gehen (0x27DF3), steht im Buch der neuen Saison.
+            long compensation = 0;
             long lowest = long.MaxValue, highest = long.MinValue;
+            // Teil 5 (transfer-vertraege-komplett): Zinsen für ein negatives Konto am Ende der Vorsaison stehen im Buch der neuen
+            // Saison, auch wenn die Ablöse beim Saisonwechsel das Konto wieder ins Plus bringt (Seed 17, Saison 4).
+            long previousSeasonEnd = manager.Money;
             for (var year = 0; year < 4; year++)
             {
                 var club = game.Clubs[manager.ClubIndex];
@@ -185,7 +190,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 var maxRoster = roster;
                 var minRoster = roster;
                 long maxContracts = game.Ads(manager).MonthlyIncome;
-                var seasonLowest = manager.Money;
+                var seasonLowest = Math.Min(manager.Money, previousSeasonEnd);
                 for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
                 {
                     Assert.True(guard < 1000, "Saisonende nicht erreicht");
@@ -224,6 +229,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     highest = Math.Max(highest, manager.Money);
                 }
                 Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+                previousSeasonEnd = manager.Money;
                 var finance = game.Finance(manager).Book;
                 output.WriteLine($"seed={seed}; club={club.Name}; start={league}; active={active}; year={year + 1}; league={club.League}; roster={roster}; begin={moneyAtStart}; end={manager.Money}; homeGames={settledHomeGames}; "
                     + string.Join("; ", Enum.GetValues<FinanceCategory>().Select(c => $"{c}={finance.Current(c)}")));
@@ -250,17 +256,19 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     var interest = finance.Current(FinanceCategory.Zinsen);
                     Assert.InRange(interest, seasonLowest < 0 ? 12 * (seasonLowest / 10 - 1) : 0, 0);
                     foreach (var category in Enum.GetValues<FinanceCategory>().Except(bounded).Except([FinanceCategory.Zinsen]))
-                        Assert.True(finance.Current(category) == 0, $"{category} = {finance.Current(category)} beim passiven Manager");
+                        Assert.True(finance.Current(category) == (category == FinanceCategory.Transfers ? compensation : 0),
+                            $"{category} = {finance.Current(category)} beim passiven Manager");
                     // Kontokorridor der Saison aus den Spannen oben.
                     var fixedCosts = MonthEnds * (fixedPerMonth + wagesPerMonth);
-                    Assert.InRange(total - interest, minTickets + minSponsors - fixedCosts, maxTickets + maxSponsors + PossiblePremiums.Max() - fixedCosts);
+                    Assert.InRange(total - interest - compensation, minTickets + minSponsors - fixedCosts, maxTickets + maxSponsors + PossiblePremiums.Max() - fixedCosts);
                 }
                 else
                 {
                     Assert.True(finance.Current(FinanceCategory.Unterhalt) <= -MonthEnds * fixedPerMonth, "Unterhalt nach Ausbau nicht kleiner");
                     foreach (var category in Enum.GetValues<FinanceCategory>().Except([FinanceCategory.Eintritt, FinanceCategory.Sponsoren, FinanceCategory.Praemien]))
-                        Assert.True(finance.Current(category) <= 0, $"{category} = {finance.Current(category)} beim aktiven Manager");
-                    Assert.True(total <= maxTickets + maxSponsors + premiums, $"Saisonsaldo {total} über dem Korridor");
+                        Assert.True(finance.Current(category) - (category == FinanceCategory.Transfers ? compensation : 0) <= 0,
+                            $"{category} = {finance.Current(category)} beim aktiven Manager");
+                    Assert.True(total - compensation <= maxTickets + maxSponsors + premiums, $"Saisonsaldo {total} über dem Korridor");
                 }
 
                 cumulative += total;
@@ -271,7 +279,9 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     TestSeason.KeepSquad(game, manager);
                 game.StartNextSeason();
                 Assert.Equal(1994 + year, game.Season);
-                Assert.Equal(0, finance.CurrentTotal);
+                compensation = finance.Current(FinanceCategory.Transfers);
+                Assert.True(compensation >= 0);
+                Assert.Equal(compensation, finance.CurrentTotal);
                 Assert.Equal(total, finance.PreviousTotal);
                 if (active) Assert.Equal(roster, club.Players.Count);
             }

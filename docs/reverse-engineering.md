@@ -68,7 +68,8 @@ Werkzeuge: siehe `tools/reverse-engineering/README.md`.
 | 0x1A | Besitzer: Manager 0–3, **4 = Transfermarkt** (belegt an Original-Spielstand FILE05, `formate/spielstand-original.md`; früher „6“) |
 | 0x1D | Verein / Nationalteam (0xFF = keiner) |
  
-Nur 200 Spieler werden detailliert verwaltet (Kader der menschlichen Manager + Transfermarkt).
+Nur 200 Spieler werden detailliert verwaltet (Kader der menschlichen Manager + Transfermarkt); der Transfermarkt zieht aus
+diesem Pool (Listenwechsel 0x494EF, im Remake seit `transfer-vertraege-komplett` Teil 5, `docs/transfer.md`).
 Computervereine spielen ausschließlich über ihre Teamwerte. Das Remake erzeugt dagegen für alle Vereine
 vollständige Kader (aus den Datenbanknamen) und leitet deren Werte aus den Teamwerten ab – damit funktionieren
 Transfers zwischen allen Vereinen, Statistiken und Ex-/Import einheitlich.
@@ -584,6 +585,30 @@ Formeln und offene Punkte in [transfer.md](transfer.md).
 * Kaderplatz +0x18: 1–99 Verhandlungssperre in Tagen, &gt; 99 Verlängerungsangebot (Jahre + 100), Bit 0x80 Ruhestand;
   +0x1A: Gebotssperre (Bit 0x80 \| 1 &lt;&lt; Manager); +0x30 Versicherungsprämie (Wert(Gehalt) / 2); +0x2C Bit 31 Versicherung
   im Dialog abgeschlossen.
+
+## Kauf und Saisonende mit Vertragsverhandlung (Spur `transfer-vertraege-komplett`, Runde 9)
+
+* **Kauf** 0x4781B–0x47A3E (Ov 0x118): Kaderplatz über 0x108:0x5C, +0x2C = Gebot, Verhandlung `0x4A1DB(Platz, Zeile, y = 0)`
+  (Aufruf 0x4786A, Argumentfolge Zeiger, Zeile, y; y ist der Versatz des Fensters, 0x4A2F3); Ergebnis 0 → 0x47A3E „Der
+  Transfer findet nicht statt.“ (DGROUP 0x1201). Leihe und eigener Spieler ohne Verhandlung (0x47851). Nach dem Kauf vom
+  Computermarkt 0x18:0x223E = Datei 0x063BE „Sponsorzuschuß“ mit dem Kaufpreis (0x47A30).
+* **Saisonende** 0x26F20 (Ov 0xD0): Alter +1 (0x274A7, nur Manager 0), Laufzeit −1 (0x27500, wenn DGROUP 0x1DB = 0 und
+  0xD0B9 ≠ 1); je Manager und Kaderplatz mit +0x0B = 0 (0x27D05): +0x18 = 101, +0x0B = 1, Gehalt Wert(Gehalt) · (147 − Alter)
+  / 100 (der Teiler 100 bleibt vor dem Aufruf 0x118:0x70 auf dem Stapel, `add sp,6`), Verhandlung 0x27D91; scheitert sie
+  oder ist +0x0B = 0: Meldung 0x138D, Ablöse Wert(Preis) / 2 (0x27DF3, ebenso mit Teiler 2 auf dem Stapel) direkt aufs Konto
+  (DGROUP 0x97EA + 0x1AF · Manager), Platz frei (0x108:0x48); sonst Meldung 0x139D über 0x120:0x7A.
+* Umsetzung und Abbildung: `docs/transfer.md` (Teil 1 der Spur).
+
+### Spielerpool und Listenwechsel (Teil 5)
+
+* **Pool** far:8253 (200 × 33, Index 1–199): Startwerte 0x5AF50 (66C3:0730), Namen 0x5AAA0 (66C3:0280, Vereine 0–11 bzw. 0–35)
+  und 0x5ACA0 (0x140:0x48, Satz DGROUP 0x55F4 + 6 · Art: Art 0 = 179–199/Vereine 52–63, Art 1 = 1–179/Vereine 0–23), Art nach
+  Index (0x5B391); Saisonwechsel: Alter + 1 aller Plätze (0x274A7, Schleife 1–199 im Zug von Manager 0), neue Namen 0x56467.
+* **Listenwechsel** 0x494EF (0x118:0x5C): Räumen über 0x425B6 (0x108:0x48, rückt auf; Managerplatz bleibt), Füllen mit
+  random(0, 9), Pool random(1, 179) / random(180, 199), Grundstärken 0x4981E, Platz 0x42CB1 (0x108:0x5C, Energie
+  random(80, 120)). Aufrufer 0x43A9F (Saisonstart), 0x54E7C (random(0, Managerzahl + 2) = 0).
+* **Ablöse bei Markt-Angeboten** 0x49332–0x49371: Angebot − Angebot / 7 · Restlaufzeit.
+* Umsetzung, Tabelle und `[APPROX]`: `docs/transfer.md` (Teil 5).
 
 ## Spielmodus-Optionen 0x2CD1C (Spur `optionen-kalender`, Teil 1: Belege; #228)
 

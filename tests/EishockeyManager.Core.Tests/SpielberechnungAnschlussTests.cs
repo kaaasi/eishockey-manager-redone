@@ -145,10 +145,16 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur statistiken (Runde 8, #135): beide neu, nur durch die Einzelprämien im Kontostand (Gegenprobe ohne
     /// Einzelprämien: alte Werte); Basis <c>10eb6c5</c>.
     /// Integration Runde 8 (Leitstelle): beide neu auf dem integrierten Stand (Lader, Einzelprämien, Werbebewertung).
+    /// Spur transfer-vertraege-komplett (Teil 1): aktiv neu durch die Ablöse am Saisonende (0x27DF3); Gegenprobe ohne Ablöse:
+    /// alter Wert.
+    /// Spur transfer-vertraege-komplett (Rest von Teil 2): aktiv neu durch das Startgehalt Wert(Gehalt) (0x29EE4) und die Laufzeit
+    /// 1 Jahr beim Kauf (0x42CB1); Gegenprobe mit altem Startgehalt und alter Laufzeit: alter Wert.
+    /// Spur transfer-vertraege-komplett (Teil 5): beide neu durch den Listenwechsel aus dem Spielerpool (0x494EF, anderer Verbrauch
+    /// der Hauptquelle; Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "29DA45742C8BD126")]
-    [InlineData(true, "1C56AB7B0380A2D5")]
+    [InlineData(false, "FAAB9C1717561971")]
+    [InlineData(true, "DEC675789C0B2D4A")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -191,6 +197,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
         Assert.Equal(WorldOnlyReference, print);
     }
 
+    // Spur transfer-vertraege-komplett (Teil 5): Titel und Konten gleich, nur die Hauptquelle (R…) verschoben – Pool und
+    // Listenwechsel (0x494EF) beim Saisonwechsel ziehen andere Zahlen als die bisherige Startliste.
     // Spur spielstaerke-manager: Titel und Konten gleich, nur die Hauptquelle (R…) verschoben – der Lader der Teamwerte zieht
     // beim ersten (WM-)Spiel 1650 Zahlen; die WM-Nationalteams spielen ohne Streuung (RatedNation, Form aus dem Lader).
     // spielstaerke-manager-2: Spiele des Bundestrainers sind Managerpaarungen (Energie, Reihenwechsel, Seitentausch je
@@ -198,7 +206,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Integration Runde 8, Welle 3 (R8W3I-01): Managerpaarungen des Bundestrainers mit dem Spielstand vor den Toren der
     // Minute – andere WM-Ergebnisse ab Saison 5 und Pokalquelle (C…); Hauptquelle und Konten gleich.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|R1348418928 C885920316";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|R66365018 C885920316";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem
