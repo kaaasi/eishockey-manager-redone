@@ -120,17 +120,18 @@ namespace EishockeyManager.Core.Tests;
 /// sind, entscheidet das Penaltyschießen des Originals (random(0, 1), dann random(2, 5) je Seite bis ungleich) statt eines
 /// NextDouble-Zugs in KnockoutMatch.Play; danach andere Zufallsfolge. Teil 4 (Zähler) zieht keinen Zufall.
 /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand aller fünf Spuren neu ermittelt; die Ursachen oben
-/// wirken zusammen.
+/// wirken zusammen, dazu der Minutenweg der Pokalspiele ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an,
+/// 0x3702E).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "1975709824956C24")]
-    [InlineData(true, 3, "2C82894D3BE98E46")]
-    [InlineData(false, 11, "E2467AE3A733F236")]
-    [InlineData(true, 11, "DF87946E0FC6635B")]
+    [InlineData(false, 3, "3C53470D3638F3F4")]
+    [InlineData(true, 3, "5CEAC04EA3360124")]
+    [InlineData(false, 11, "C98E7C1980CFAA41")]
+    [InlineData(true, 11, "2BD9CE3FA0A3D417")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -138,8 +139,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "86F9841293D7292C")]
-    [InlineData(true, "CCD223F574F1D495")]
+    [InlineData(false, "E71C0242492FB148")]
+    [InlineData(true, "6605F8402FDD86A2")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

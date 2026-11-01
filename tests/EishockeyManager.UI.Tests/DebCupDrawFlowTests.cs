@@ -224,7 +224,8 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Anzeige weiter gleich. Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): neue Werte ab 1993 (Verletzungen und Schützenwahl in den Spielen des
     /// Managers), mit und ohne Anzeige weiter gleich. Spur spielberechnung-komplett, Teil 5 (0x3901B): 1993 gleich, ab 1994 neuer Meister
     /// (Penaltyschießen des Originals in den Play-offs mit Manager statt NextDouble), mit und ohne Anzeige weiter gleich.
-    /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand neu.</summary>
+    /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand neu, einschließlich Minutenweg der DEB-Pokalspiele
+    /// ohne Manager (Anzeigeschalter an, 0x3702E); mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 8, DM 2, Tab 15275 | 1994: DEB 4, DM 4, Tab 15606 | 1995: DEB 14, DM 14, Tab 16020 | 1996: DEB 21, DM 21, Tab 16144";
+        "1993: DEB 8, DM 5, Tab 15314 | 1994: DEB 6, DM 5, Tab 15917 | 1995: DEB 9, DM 9, Tab 15930 | 1996: DEB 10, DM 6, Tab 16140";
 }

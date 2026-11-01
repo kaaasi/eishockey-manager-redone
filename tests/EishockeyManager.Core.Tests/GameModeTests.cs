@@ -301,8 +301,7 @@ public class GameModeTests
     /// Originals statt NextDouble, anderer Zufallsverbrauch); Konto Manager 1 in Saison 5 jetzt +8.102. Teil 4 (Zähler) zieht
     /// keinen Zufall und ändert nichts.
     /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand aller fünf Spuren neu ermittelt; die Ursachen oben
-    /// wirken zusammen. Konto Manager 1 in Saison 5 −3.122.400 (Spur allein −919.525) – offen für das Review, kein Geldpfad
-    /// in der Integration geändert.
+    /// wirken zusammen. Dazu der Minutenweg der DEB-Pokalspiele ohne Manager (Anzeigeschalter an, optionen-wirkung, 0x3702E).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -320,7 +319,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|660586,481819|WorldChampion=54,CupWinner=8,GermanChampion=3,EuropeanCupWinner=3|1517673,301059|WorldChampion=63,CupWinner=3,GermanChampion=8,EuropeanCupWinner=3|2188016,347867|WorldChampion=63,CupWinner=8,GermanChampion=8,EuropeanCupWinner=8|3114775,211795|WorldChampion=53,CupWinner=8,GermanChampion=8,EuropeanCupWinner=8|4032397,-3122400|R1662215585 C221851274";
+        "WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|609191,348923|WorldChampion=57,CupWinner=1,GermanChampion=6,EuropeanCupWinner=0|1744811,183655|WorldChampion=52,CupWinner=13,GermanChampion=9,EuropeanCupWinner=0|2548980,88083|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=0|3484791,-23008|WorldChampion=60,CupWinner=9,GermanChampion=0,EuropeanCupWinner=0|4183175,-48966|R577716302 C218952038";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -37,8 +37,8 @@ public static partial class MatchEngine
     /// <list type="number">
     /// <item>[ORIGINAL] Spielwertung 0:2/2:0 ohne Berechnung bei nicht spielfähigem Managerverein (0x36DC5, #165).</item>
     /// <item>[ORIGINAL] Pokale (DEB-Pokal, Europapokal, WM) ohne Managerverein: schneller Weg 0x3731F
-    ///   (<see cref="OriginalMinutes.FastCupResult"/>) – das Remake hat keine Anzeige, die den Minutenweg erzwingen würde
-    ///   ([APPROX] Schalter DGROUP 0x227–0x229 gelten als aus). Sonst Minute für Minute (<see cref="OriginalMinutes.Play"/>).</item>
+    ///   (<see cref="OriginalMinutes.FastCupResult"/>), wenn der Anzeigeschalter des Wettbewerbs aus ist (DGROUP 0x227–0x229,
+    ///   <see cref="GameOptions.CupMatchUsesMinuteLoop"/>). Sonst Minute für Minute (<see cref="OriginalMinutes.Play"/>).</item>
     /// <item>Zähler der Spieler (<see cref="CreditPlayers"/>).</item>
     /// </list>
     /// Ein Unentschieden im K.-o.-Spiel nach Verlängerung bleibt im Bericht stehen; den Sieger des Penaltyschießens liefern
@@ -70,7 +70,12 @@ public static partial class MatchEngine
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
         MatchReport report;
-        if (!managerMatch && competition is MatchCompetition.DebCup or MatchCompetition.EuropeanCup or MatchCompetition.WorldCup)
+        // [ORIGINAL] Datei 0x3702E–0x37085: Pokalspiel ohne Managerverein mit eingeschaltetem Anzeigeschalter (DGROUP 0x227–0x229,
+        // GameOptions.CupMatchUsesMinuteLoop) läuft durch die Minutenschleife 0x37088, sonst der schnelle Weg 0x3731F
+        // (Anschluss optionen-wirkung, Integration Runde 9). [APPROX] Das Setzen des WM-Schalters im Bundestrainer-Abschnitt
+        // (0x5541F/0x5575A, Sicherung 0x22C) ist nicht nachgebaut.
+        if (!managerMatch && competition is MatchCompetition.DebCup or MatchCompetition.EuropeanCup or MatchCompetition.WorldCup
+            && !game.Options.CupMatchUsesMinuteLoop(competition))
         {
             var h = OriginalMinutes.Strengths(homeTeam, awayTeam, 0);
             var a = OriginalMinutes.Strengths(awayTeam, homeTeam, 0);

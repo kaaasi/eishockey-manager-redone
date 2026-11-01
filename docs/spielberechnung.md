@@ -254,7 +254,9 @@ Gegentore und Minuten des Torhüters (Review-Befund R7-03, #201; Test `Integrati
 
 1. Spielwertung (#165, 0x36DC5): nicht spielfähiger Managerverein → 0:2 bzw. 2:0 ohne Rechnung (`MatchReport.Forfeit`).
 2. Pokale (DEB-Pokal, Europapokal, WM) ohne Managerverein: schneller Weg 0x3731F (Abschnitt 3). Das Original nimmt ihn nur
-   bei ausgeschalteter Anzeige des Wettbewerbs; das Remake hat keine Anzeige (`[APPROX]`: Schalter gelten als aus).
+   bei ausgeschalteter Anzeige des Wettbewerbs (Spielstand-Optionen DGROUP 0x227–0x229, `GameOptions.CupMatchUsesMinuteLoop`,
+   Datei 0x3702E–0x37085); sonst Minutenschleife (Integration Runde 9). Anfangswerte: DEB-Pokal an, Europapokal und WM aus.
+   `[APPROX]` Der WM-Schalter, den der Bundestrainer-Abschnitt setzt (0x5541F/0x5575A, Sicherung 0x22C), ist nicht nachgebaut.
    K.-o.-Gleichstand: der Sieger des Penaltyzugs (0x376F0) entscheidet, gespeichert bleibt der Gleichstand mit
    `PenaltyWinner` (`[APPROX]` Darstellung; bisher „n.P.“ ebenso).
 3. Sonst Minutenablauf (Abschnitte 2, 4, 6, 9); K.-o. mit Verlängerung 61–70; danach weiter unentschieden → das bisherige

@@ -155,11 +155,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// <see cref="RngTwinProbeTests"/>).
     /// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): beide neu (Verletzungen und Schützenwahl im Spiel, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur spielberechnung-komplett, Teil 5 (0x3901B): beide neu (Penaltyschießen nach Verlängerung, Begründung bei <see cref="RngTwinProbeTests"/>).
-    /// Integration Runde 9 (Leitstelle): beide auf dem integrierten Stand neu.
+    /// Integration Runde 9 (Leitstelle): beide auf dem integrierten Stand neu, einschließlich Minutenweg der Pokalspiele
+    /// ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an, 0x3702E).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "867B8B43E13572DC")]
-    [InlineData(true, "DFBAF98D231604DC")]
+    [InlineData(false, "4562EE27425309D3")]
+    [InlineData(true, "EB706FF5D32A5CFA")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

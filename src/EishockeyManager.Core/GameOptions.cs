@@ -108,9 +108,7 @@ public sealed class GameOptions
     /// eingeschaltetem Anzeigeschalter (Wettbewerbscode DGROUP 0xD0C2 6 → 0x227, 3/5 → 0x228, 8 → 0x229) die Minutenschleife
     /// mit Anzeige (0x37088), sonst der schnelle Weg 0x3731F. Für Liga und Play-offs ohne Bedeutung (<c>false</c>).
     /// <para>
-    /// Noch nicht angeschlossen: Der Aufrufer ist <c>MatchEngine.PlayWithEvents</c> (<c>MatchEngine.Live.cs</c>, Spur
-    /// <c>spielberechnung-komplett</c>), der bisher alle drei Schalter als aus annimmt. Der Anschluss ändert Ergebnisse und
-    /// Zufallsverbrauch der DEB-Pokalspiele der Computervereine (Anfangswert an).
+    /// Aufrufer: <c>MatchEngine.PlayWithEvents</c> (<c>MatchEngine.Live.cs</c>), angeschlossen in der Integration Runde 9.
     /// </para>
     /// </summary>
     public bool CupMatchUsesMinuteLoop(MatchCompetition competition) => ShowsCup(competition) ?? false;
