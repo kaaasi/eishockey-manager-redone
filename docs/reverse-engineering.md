@@ -738,3 +738,26 @@ Teil 1 (Tabellen), Disassembly `ndisasm -b 16`, Dateiadressen.
   Auf-/Abstiegsmarken 4,9 / 0,6 %. Restabweichungen an Schrift- und Flaggenkanten (Videounschärfe). Die Seite
   „Aufstieg“ der Paarungen (Gruppentabelle der Aufstiegsrunde, `folge06_01257`, `folge07_03307`) fehlt im Remake noch
   (`LeaguePairingsScreen`, `[APPROX]` dort) – kein Vergleich möglich.
+
+Teil 2 (Nationalteam):
+
+* **Warnung des Bundestrainers** Datei 0x454C2–0x454D8: nur wenn DGROUP 0xA70E = 5 (Bundestrainer am Zug), Kaderzahl aus
+  `0x120:0x66(5, 0)`, `cmp al,0xA; jnc` – ab 10 Spielern weiter (R8-D02, Test `WettbewerbeNationalteamTests.CoachWarning_Boundary`).
+* **Schreibstelle der WM-Platzierungen** Datei 0x311CF–0x31351 (Ov 0xE8, nach den Platzierungsspielen; Zweig vor 0x311B4
+  legt die nächste Runde an): n = erste 0 der Folge DGROUP 0x828B + 0x50 · Land am Land DGROUP 0x5D5B; n &gt; 15 → für alle
+  zwölf Länder (0x6AD … 0x6AD + 11) Byte j = Byte j + 1 (j = 0 … 14), n = 15 (0x311F8–0x3125C). Byte n = 11 für alle zwölf
+  (0x31266–0x31291), dann für i = DGROUP 0xCFFB, + 2, …, + 6: Land 0x5D5B[i] Platz i − 0xCFFB + 1, Land 0x5D5C[i] Platz
+  i − 0xCFFB + 2 (0x31304–0x31351); bei i = 0xCFFB Weltmeister DGROUP 0xD0F3 und Aufruf 0x350B6(3, Land). Etat des
+  Bundestrainers für die nächste Saison DGROUP 0x29C/0x29E = ((7 − Platzindex) · 300.000 + 900.000) Drittel-DM, sonst
+  300.000 – wie `NationalCoach.BudgetFor`. Remake: höchstens 16 WMs (`GameState.MaxWorldCupRankings`), Test
+  `WettbewerbeNationalteamTests.SeventeenthWorldCup_DropsTheOldest` (vorher blieben alle WMs stehen und zählten mit).
+* **Gegner-/Vereinsfenster** `0x128:0x2A` = Datei **0x4D385–0x4E5D4** (Stub Ov 0x128 Segment 0x14D9: Einträge ab +0x20 je
+  5 Byte, +0x2A → Overlay-Offset 0x95, Overlaybeginn Datei 0x4D2F0), Argumente (Verein, Seite [bp+8] 0/1/2, [bp+0xA]).
+  Texte DGROUP 0x3380–0x35F0 („Höchster Sieg“ 0x33C0, „Höchste Niederl.“ 0x33CE, „Erzielte Tore“ 0x33DF, „Kassierte Tore“
+  0x33ED, „Info über “ 0x33FC, „Spielplan“ 0x3479, „ Platz in der “ 0x3484, „, Stärke: “ 0x3493, „Heimbilanz:“ 0x349E,
+  „Bilanz:“ 0x34AA, „Auswärtsbilanz:“ 0x34CC, „Aus d. letzten Spielen:“ 0x34DC, „Tore / Spiel “ 0x34F4, „Serien “ 0x3502,
+  „Keine bemerkenswerte Serie vorhanden.“ 0x351C, „Historische Ergebnisse gegen “ 0x354C, „Punkte in der Ewigen Tabelle: “
+  0x3588, „Noch keine Eintragung.“ 0x35B5). Länder (Verein ≥ DGROUP 0x6AD) und Vereine haben eigene Zweige (0x4D3DD,
+  0x4D75E, 0x4DA58, 0x4E0EB); Rahmenbild Datei 0x4D40F (`0x38:0x98D` Bild 0x21). Aufrufer: Infoleiste, Stärken (DOSBox 44),
+  WM-Tabelle (DOSBox 14–16), Paarungsansicht 0x302AA, WM-Statistik 0x3B4AE. **Im Remake fehlt das Fenster ganz**; Aufbau,
+  Datenquellen (Rekorde, historische Ergebnisse) und Knopf rechts unten (Symbol je Mausposition) sind noch auszuwerten.
