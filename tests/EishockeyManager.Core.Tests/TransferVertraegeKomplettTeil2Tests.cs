@@ -139,6 +139,59 @@ public class TransferVertraegeKomplettTeil2Tests
         Assert.NotNull(club);
     }
 
+    /// <summary>
+    /// Mehrsaisonprobe (4 Saisonwechsel, passiv und aktiv): aktiv schließt der Manager wöchentlich eine Versicherung ab und
+    /// erhält monatlich eine Leistung. Prämien = Kosten, Sperren 0–18 auch über den Saisonwechsel, Spielstand bleibt gleich
+    /// nach Speichern und Laden; passiv bleibt alles unversichert.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MultiSeason_FourChanges_InsuranceAndLocks(bool active)
+    {
+        var (game, manager, club, _) = Setup(11);
+        long paid = 0;
+        var insuredDeals = 0;
+        for (var change = 0; change < 4; change++)
+        {
+            for (var day = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; day++)
+            {
+                Assert.True(day < 1000, "Saisonende nicht erreicht");
+                manager.Money = Math.Max(manager.Money, 5_000_000);
+                if (active && day % 7 == 0
+                    && club.Players.FirstOrDefault(p => !p.OnLoan && !p.Insured && Contracts.CanChangeInsurance(p)
+                        && Contracts.Availability(game, p) is null) is { } candidate)
+                {
+                    var offer = Contracts.InsuranceOffer(game, manager, candidate);
+                    if (Contracts.Negotiate(game, manager, candidate, 0, 0, insured: true, demandFilled: false)
+                        == NegotiationResult.Accepted)
+                    {
+                        Assert.Equal(offer, candidate.InsurancePremium);
+                        insuredDeals++;
+                    }
+                    Assert.True(candidate.InsuranceLocked);
+                }
+                if (active && day % 30 == 0 && club.Players.FirstOrDefault(p => p.Insured) is { } insured)
+                    paid += game.PayInsurance(manager, insured, careerEnd: false);
+                Assert.All(club.Players, p => Assert.InRange(p.NegotiationLock, 0, 18));
+                game.Continue();
+            }
+            Assert.Equal(club.Players.Sum(p => (long)p.InsurancePremium), FinanceRules.MonthlyInsurance(club));
+            game.StartNextSeason();
+            var saved = SaveGame.Save(game);
+            var loaded = SaveGame.Load(saved);
+            Assert.True(loaded.Success, loaded.Error);
+            Assert.Equal(saved, SaveGame.Save(loaded.Game!));
+        }
+        if (active)
+        {
+            Assert.True(insuredDeals > 0, "keine Versicherung abgeschlossen");
+            Assert.True(paid > 0, "keine Leistung");
+        }
+        else
+            Assert.All(club.Players, p => Assert.False(p.Insured));
+    }
+
     private sealed class NoDraw : Random
     {
         public override int Next(int minValue, int maxValue) => throw new InvalidOperationException();
