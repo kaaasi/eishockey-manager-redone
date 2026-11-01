@@ -64,4 +64,45 @@ public class IntegrationRunde9Tests
 
         Assert.Equal(NextAfterMatch(display: false), NextAfterMatch(display: true));
     }
+
+    /// <summary>
+    /// R9S-03 (#351, Entscheidung Nutzer 01.11.2026): Play-offs und Aufstiegsrunde (Wettbewerbscode 1) ohne Managerverein
+    /// nehmen den schnellen Weg 0x3731F, außer ein Feld „Ergebnisse“ der Meldungsmatrix (DGROUP 0x21E/0x221/0x224) ist an –
+    /// dann die Minutenschleife (em.exe Datei 0x37058–0x37085). Voreingestellt ist die Matrix aus.
+    /// </summary>
+    [Theory]
+    [InlineData(MatchCompetition.Playoff, true)]
+    [InlineData(MatchCompetition.Relegation, false)]
+    public void PlayoffWithoutManager_FastUnlessResultsReported(MatchCompetition competition, bool knockOut)
+    {
+        var game = TestGames.Create(3);
+        MatchEngine.EnsureTeamValues(game);
+        var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
+        var clubs = game.Clubs.Where(c => c.Index < 12 && !managed.Contains(c.Index)).Take(2).ToList();
+        Assert.All(Enum.GetValues<League>(), l => Assert.False(game.Options.ShowsReport(ReportKind.Results, l)));
+
+        int NextAfterMatch(GameOptions options)
+        {
+            var random = new Random(7);
+            MatchEngine.PlayWithEvents(game, clubs[0], clubs[1], competition, knockOut, random);
+            return random.Next();
+        }
+        int FastPath()
+        {
+            // Erwartung schneller Weg: dieselbe Zugfolge wie ein Pokalspiel mit ausgeschaltetem Schalter (0x3731F prüft den
+            // Code nicht), hier über den DEB-Pokal-Schalter gemessen.
+            game.Options.ShowDebCup = false;
+            var random = new Random(7);
+            MatchEngine.PlayWithEvents(game, clubs[0], clubs[1], MatchCompetition.DebCup, knockOut, random);
+            return random.Next();
+        }
+
+        var off = NextAfterMatch(game.Options);
+        game.Options.ToggleReport(ReportKind.Results, League.Oberliga);
+        var on = NextAfterMatch(game.Options);
+        game.Options.ToggleReport(ReportKind.Results, League.Oberliga);
+
+        Assert.NotEqual(off, on);
+        Assert.Equal(FastPath(), off);
+    }
 }

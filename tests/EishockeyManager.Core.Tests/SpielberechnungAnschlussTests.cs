@@ -157,10 +157,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur spielberechnung-komplett, Teil 5 (0x3901B): beide neu (Penaltyschießen nach Verlängerung, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Integration Runde 9 (Leitstelle): beide auf dem integrierten Stand neu, einschließlich Minutenweg der Pokalspiele
     /// ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an, 0x3702E).
+    /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "4562EE27425309D3")]
-    [InlineData(true, "EB706FF5D32A5CFA")]
+    [InlineData(false, "79803AC5ED2C7179")]
+    [InlineData(true, "D68EC5E7AE30E621")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

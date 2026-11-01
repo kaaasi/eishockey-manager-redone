@@ -302,6 +302,7 @@ public class GameModeTests
     /// keinen Zufall und ändert nichts.
     /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand aller fünf Spuren neu ermittelt; die Ursachen oben
     /// wirken zusammen. Dazu der Minutenweg der DEB-Pokalspiele ohne Manager (Anzeigeschalter an, optionen-wirkung, 0x3702E).
+    /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -319,7 +320,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|609191,348923|WorldChampion=57,CupWinner=1,GermanChampion=6,EuropeanCupWinner=0|1744811,183655|WorldChampion=52,CupWinner=13,GermanChampion=9,EuropeanCupWinner=0|2548980,88083|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=0|3484791,-23008|WorldChampion=60,CupWinner=9,GermanChampion=0,EuropeanCupWinner=0|4183175,-48966|R577716302 C218952038";
+        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|609157,348890|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=0|1491638,141753|WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=1|2729776,35181|WorldChampion=55,CupWinner=12,GermanChampion=15,EuropeanCupWinner=4|3734605,-28570|WorldChampion=52,CupWinner=8,GermanChampion=8,EuropeanCupWinner=4|4353063,118997|R967498903 C1705043894";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
