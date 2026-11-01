@@ -13,7 +13,7 @@ git clone https://github.com/kaaasi/eishockey-manager-redone   # bzw. vorhandene
 cd eishockey-manager-redone
 ```
 
-- **Originaldateien:** Repo `kaaasi/eishockey-manager-referenz` per `add_repo` (access `read`) einbinden und nur
+- **Originaldateien:** Repo `kaaasi/eishockey-manager-referenz` per `add_repo` (access `read`, Leitstelle immer `push`) einbinden und nur
   `original/` laden (Sparse, nicht die ~650 MB Videobilder). Details: [docs/originaldateien.md](docs/originaldateien.md).
   Rückfallweg ohne Repo-Zugriff: ZIP aus den Dateien des claude.ai-Projekts „Eishockey Manager Redone“ (Projects-Werkzeug
   `project_info` → `project_read`) in einen eigenen Ordner entpacken; fehlt auch die, den Nutzer bitten, sie anzuhängen.
@@ -28,7 +28,7 @@ cd eishockey-manager-redone
 
   Fehlt das Release oder sind Pakete veraltet: `gh workflow run werkzeuge.yml -R kaaasi/eishockey-manager-redone`
   (läuft auch automatisch, wenn sich `*.csproj` auf `main` ändern).
-- **Referenzbilder:** Repo `kaaasi/eishockey-manager-referenz` per `add_repo` (access `read`) einbinden, dann
+- **Referenzbilder:** Repo `kaaasi/eishockey-manager-referenz` per `add_repo` (access `read`, Leitstelle immer `push`) einbinden, dann
   `tools/claude/fetch-reference.sh [oberflaeche] [karriere] [bundestrainer] [folgen|folgeNN] [eisbaeren|eisbaeren_fNN]
   [duell|duell_…] [speedrun] [uebersicht]` → `~/referenz/` (Reihen und Fundlisten: `docs/referenz-videos.md`). Ein
   vorhandener Klon wird ergänzt; ist er veraltet, bricht das Skript mit Rückgabe 3 ab – dann `~/referenz` löschen und
@@ -42,6 +42,9 @@ cd eishockey-manager-redone
 - Releases lassen sich aus der Sitzung nicht anlegen, nur über Workflows.
 - Mergen (nur als Leitstelle, nach der Merge-Prüfung in `docs/prozess/zusammenarbeit.md`) immer mit dem geprüften
   Head-SHA: `gh api -X PUT repos/kaaasi/eishockey-manager-redone/pulls/<nr>/merge -f sha=<head> -f merge_method=merge`.
+- **Leitstelle:** immer Lese- und Schreibzugriff auf beide Repos (`add_repo` für `eishockey-manager-redone` und
+  `eishockey-manager-referenz`, jeweils access `push`; Vorgabe Nutzer 01.11.2026), z. B. um Spielstände und Bilder im
+  Referenz-Repo abzulegen (dort per PR, Branch `daten/…`).
 - **Geplante Läufe anlegen** (Leitstelle): vorher beide Repos per `add_repo` in der eigenen Sitzung einbinden – der Lauf
   erbt nur diese; Ablauf `docs/vorlagen/leitstelle-start.md` Schritt 7. Im Lauf selbst ist `add_repo` meist nicht
   verfügbar (auch nicht per `ToolSearch`); maßgeblich ist das Einbinden durch die anlegende Sitzung.

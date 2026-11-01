@@ -19,6 +19,8 @@
 Der Zugriffsabsatz steht in **jedem** Startaufruf eines geplanten Spurlaufs (Spur, Fortsetzung) wörtlich; eine Fortsetzung
 übernimmt ihn unverändert. Reviews: nach `review-anfrage.md` (nur wenn Daten nötig; „keine Code-Arbeit“ gilt dort als
 „kein Review“). Voraussetzung auf Seiten der Leitstelle: [leitstelle-start.md](leitstelle-start.md), „Geplante Läufe“.
+Geplante Läufe erben von der Leitstelle auch Schreibrecht auf `kaaasi/eishockey-manager-referenz`; Spuren und Reviews
+schreiben dort trotzdem nie (nur lesen). Fehlen Daten oder Bilder, im PR melden – ablegen nur Leitstelle oder Nutzer.
 
 **Einzelner Folgeteil ohne Fortsetzung:** Kurzaufruf „Geplanter Lauf mit Teilen“, aber statt „Teile und Selbstfortsetzung …
 (höchstens 3 je Spur).“ der Satz „Teile nach Abschnitt ‚Teile und Fortsetzung‘; nur Teil <n>, keine Fortsetzung anlegen.“
