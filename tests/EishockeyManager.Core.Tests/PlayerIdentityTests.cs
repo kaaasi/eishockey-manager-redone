@@ -18,7 +18,10 @@ public class PlayerIdentityTests
         var players = game.Clubs.SelectMany(c => c.Players).ToArray();
         Assert.NotEmpty(players);
         Assert.Equal(Enumerable.Range(1, players.Length), players.Select(p => p.Id));
-        Assert.Equal(players.Length + 1, game.NextPlayerId);
+        // Teil 5: danach die 199 Plätze des Spielerpools in Indexreihenfolge.
+        Assert.Equal(Enumerable.Range(players.Length + 1, TransferPoolRules.Size - 1),
+            game.TransferMarket.Pool.Select(s => s.Player.Id));
+        Assert.Equal(players.Length + TransferPoolRules.Size, game.NextPlayerId);
         Assert.Empty(game.ValidatePlayerIdentity());
     }
 

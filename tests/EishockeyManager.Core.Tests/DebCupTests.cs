@@ -169,12 +169,24 @@ public class DebCupTests
     [Fact]
     public void LeagueResults_DoNotDependOnCupSetting()
     {
-        var with = Create(6, true, 2);
-        var without = Create(6, false, 2);
-        // Gleiche Aufstellungen: Pokalspiele verändern Energie/Verletzungen nicht (MatchEngine nutzt nur die Stärke)
-        TestSeason.PlayRegularSeason(with);
-        TestSeason.PlayRegularSeason(without);
-        Assert.Equal(without.Results, with.Results);
+        // Spielberechnung Teil 3: Pokalspiele eines Managervereins koppeln Liga und Pokal über den Kader (Verletzungen
+        // 0x38B8F, Tore als Gewicht des Schützen 0x386D1) – wie im Original. Die eigene Zufallsquelle wird deshalb bis zum
+        // ersten Pokalspiel des Managervereins geprüft; bis dahin müssen Pokalspiele ohne Manager stattgefunden haben.
+        const int club = 2;
+        var with = Create(6, true, club);
+        var without = Create(6, false, club);
+        var compared = 0;
+        while (!with.RegularSeasonOver)
+        {
+            TestSeason.PlayMatchDay(with);
+            TestSeason.PlayMatchDay(without);
+            if (with.CupMatches.Any(m => m.Involves(club)) || without.CupMatches.Any(m => m.Involves(club)))
+                break;
+            Assert.Equal(without.Results, with.Results);
+            compared = with.Results.Count;
+        }
+        Assert.True(compared > 0);
+        Assert.NotEmpty(with.CupMatches);
     }
 
     /// <summary>

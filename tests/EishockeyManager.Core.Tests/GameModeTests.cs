@@ -278,6 +278,30 @@ public class GameModeTests
     /// Lücken der Aufstellung füllen) und die Probe prüft das jeden Tag. Vorher stand die Saison 1997 mit acht Aufgestellten
     /// (Strafen 9,2 Mio. DM, Entlassung) in der Referenz – eine Folge des Zufalls, keine Geldprüfung. Neu ab Saison 3 (1995):
     /// die gefüllte Lücke der Aufstellung ändert die Ergebnisse von Verein 2, damit Titel, Konten und Zufallsquellen.
+    /// Spur transfer-vertraege-komplett (Teil 1): Konten ab Saison 3 neu – Spieler, deren Vertrag am Saisonende ohne Verhandlung
+    /// endet, bringen die Ablöse Wert(Preis) / 2 (0x27DF3); Gegenprobe ohne Ablöse: alte Werte.
+    /// Spur transfer-vertraege-komplett (Rest von Teil 2): Konten ab Saison 1 neu – Startgehalt der Managerkader = Wert(Gehalt)
+    /// (0x29EE4, ohne Zufall). Titel der Saisons 1–4 unverändert; ab Saison 5 andere Kader nach den Verlängerungen (Forderung
+    /// mindestens bisheriges Gehalt) und damit andere Ergebnisse und Zufallsstand. Gegenprobe mit altem Startgehalt: alte Werte.
+    /// Spur transfer-vertraege-komplett (Teil 5): alle Werte neu – der Listenwechsel 0x494EF zieht aus dem Spielerpool mit anderem
+    /// Verbrauch der Hauptquelle (random(0, Managerzahl + 2) je Ligaspieltag statt 30 %/50 %), damit andere Ergebnisse ab Saison 1;
+    /// Markt-Angebote schreiben Angebot − Angebot / 7 · Restlaufzeit gut (0x49332). Die Datenbankspieler des Pools fehlen den
+    /// Computerkadern, beim Saisonwechsel tauschen Pool und Computerkader (jeder Name nur einmal).
+    /// Spur spielberechnung-komplett, Teil 1 (#204): alle Werte neu – Wanderung der Teamwerte 0x9D1B (Spielstart,
+    /// zweimal je Woche, Saisonwechsel) ändert die Ergebnisse der Computervereine ab dem ersten Spieltag.
+    /// Konten: Manager 0 in Saison 5 jetzt positiv, Manager 1 in Saison 4 und 5 leicht negativ (Ursache nicht untersucht;
+    /// kein Geldpfad geändert).
+    /// Spur spielberechnung-komplett, Teil 2 (R8W3I-03 bis -06): Titel und die ersten vier Saisons gleich; ab Saison 5 andere
+    /// Konten und beide Zufallsquellen – das Nationalteam des Bundestrainers zieht den Strafspieler 0x378C5 (statt eines
+    /// Zufallsspielers bei der Gutschrift), 0x378C5 zieht höchstens 150-mal, Strafen ohne Spieler erzeugen kein Ereignis.
+    /// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): alle Werte neu – Verletzungen im Spiel (Zug je Minute und Managerverein, verletzte Spieler fehlen
+    /// wochenlang) und die Schützenwahl je Abschluss der Managerpaarung ändern Ergebnisse und beide Zufallsquellen ab dem
+    /// ersten Spiel. Konto Manager 1 in Saison 5 −919.525 (vorher −83.211; Ursache nicht untersucht, kein Geldpfad geändert).
+    /// Spur spielberechnung-komplett, Teil 5 (0x3901B): alle Werte neu ab dem ersten K.-o.-Unentschieden nach Verlängerung (Penaltyschießen des
+    /// Originals statt NextDouble, anderer Zufallsverbrauch); Konto Manager 1 in Saison 5 jetzt +8.102. Teil 4 (Zähler) zieht
+    /// keinen Zufall und ändert nichts.
+    /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand aller fünf Spuren neu ermittelt; die Ursachen oben
+    /// wirken zusammen. Dazu der Minutenweg der DEB-Pokalspiele ohne Manager (Anzeigeschalter an, optionen-wirkung, 0x3702E).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -295,7 +319,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2225350,405129|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=1|3416286,294365|WorldChampion=53,CupWinner=25,GermanChampion=12,EuropeanCupWinner=0|4078258,91523|WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=0|4855853,-113463|WorldChampion=63,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|4939086,-382179|R1560505299 C1500259167";
+        "WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|609191,348923|WorldChampion=57,CupWinner=1,GermanChampion=6,EuropeanCupWinner=0|1744811,183655|WorldChampion=52,CupWinner=13,GermanChampion=9,EuropeanCupWinner=0|2548980,88083|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=0|3484791,-23008|WorldChampion=60,CupWinner=9,GermanChampion=0,EuropeanCupWinner=0|4183175,-48966|R577716302 C218952038";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -13,6 +13,10 @@
     <Compile Include="..\EishockeyManager.UI.Tests\Support\GameDataFact.cs" Link="Support\GameDataFact.cs" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Spielstände älterer Schemata aus der synthetischen Datenbank (keine Originaldaten), für Migrationstests -->
+    <EmbeddedResource Include="Fixtures\*.ems.gz" LogicalName="Fixtures.%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>

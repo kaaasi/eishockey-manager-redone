@@ -152,6 +152,12 @@ public class TeamScreenTests
         Assert.Equal(offer, screen.Dialog.Amount);
         d.Press(Key.Enter);
         Assert.Null(screen.Dialog);
+        // Spur transfer-vertraege-komplett: nach der Annahme die Vertragsverhandlung (0x4786A); erst „Mach' ich!“ schließt ab.
+        Assert.NotNull(screen.Contract);
+        Assert.DoesNotContain(listing.Player, club.Players);
+        Assert.Equal(2_000_000, manager.Money);
+        d.Press(Key.Enter);
+        Assert.Null(screen.Contract);
         Assert.Contains(listing.Player, club.Players);
         Assert.Equal(2_000_000 - offer, manager.Money);
         d.Click(10, 10); // Meldung schließen

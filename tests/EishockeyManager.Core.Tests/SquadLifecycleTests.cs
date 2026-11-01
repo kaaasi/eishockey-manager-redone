@@ -197,8 +197,10 @@ public class SquadLifecycleTests
         _ = managerPlayers;
     }
 
+    // Teil 5 (transfer-vertraege-komplett): auch der Spielerpool – beim Saisonwechsel tauscht er Spieler mit den Computerkadern.
     private static IEnumerable<Player> AllPlayers(GameState game) =>
-        game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).Concat(game.RetiredPlayers);
+        game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).Concat(game.RetiredPlayers)
+            .Concat(game.TransferMarket.PoolPlayers);
 
     /// <summary>Aktiver Manager: nimmt jedes Verlängerungsangebot zur Forderung an.</summary>
     private static void ExtendOffers(GameState game)
@@ -215,5 +217,15 @@ public class SquadLifecycleTests
         while (OwnClub(game).Players.Count < 20
                && game.TransferMarket.Listings.FirstOrDefault(l => l.IsFreeAgent) is { } listing)
             Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, listing, 0, loan: false));
+        // Teil 5 (0x494EF): Vertragslose anderer Vereine stehen nicht mehr auf der Liste; der aktive Manager kauft dann
+        // Poolspieler bis 30 Jahre (Poolspieler altern im Original ohne Laufbahnende, 0x274A7) über 130 % des Listenpreises
+        // (immer angenommen, 0x4991D).
+        while (OwnClub(game).Players.Count < 20
+               && game.TransferMarket.Listings.FirstOrDefault(l => l.FromPool && l.Player.Age <= 30) is { } pool)
+        {
+            manager.Money = Math.Max(manager.Money, pool.Price * 2);
+            Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, pool, pool.Price * 135 / 100, loan: false));
+            pool.Player.ContractYears = 2; // wie die Startverträge; die Ankündigungsprobe bleibt bei den übrigen Spielern
+        }
     }
 }

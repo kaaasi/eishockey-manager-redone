@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(19, SaveGame.SchemaVersion);
+        Assert.Equal(22, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -36,7 +36,9 @@ public class SaveGameTests
     // (Spur nationalteam-2), 17 Verhandlungs- und Gebotssperre (Spur transfer-original-vertrag). Runde 9: 18 Rekorde,
     // Kopf-an-Kopf-Liste und Bilanz der Länder (Spur wettbewerbe-komplett, Gegner-Fenster).
     // 19 Spielstand-Optionen GameSetup.Options (Spur optionen-wirkung).
-    private const string ExpectedSchemaFingerprint = "5F82E8AF4D0C593A";
+    // 20 Versicherungsprämie und Abschluss je Spieler (Spur transfer-vertraege-komplett, Teil 2), 21 unaufgefordertes Angebot
+    // je Spieler (Teil 3), 22 Spielerpool des Transfermarkts (Teil 5).
+    private const string ExpectedSchemaFingerprint = "5DEB24A5736D8951";
 
     // ---------- Abnahme 3: Roundtrip ----------
 
