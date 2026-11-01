@@ -8,6 +8,9 @@
 
 ## Ablauf für die Leitstelle
 
+0. **Zugriff (Vorgabe Nutzer 01.11.2026):** Die Leitstelle hat immer Lese- und Schreibzugriff auf beide Repos. Zuerst
+   `add_repo` für `kaaasi/eishockey-manager-redone` und `kaaasi/eishockey-manager-referenz`, jeweils access `push` (ggf. erst
+   per `ToolSearch` mit `select:mcp__claude-code-remote__add_repo` laden). Lehnt die Freigabe das ab, dem Nutzer melden.
 1. Lies `AGENTS.md`, `docs/prozess/zusammenarbeit.md` (vollständig), in `docs/arbeitspakete.md` die aktuelle Runde,
    die offenen PRs (Titel, Bearbeiter, letzter Übergabekommentar) und die Reviews der aktuellen Runde in `docs/reviews/`.
    Kein Vorwissen aus früheren Chats nötig oder vorausgesetzt.
@@ -23,7 +26,7 @@
    (Integration, Plan); ohne PR als `docs/handoffs/<datum>-<thema>.md` auf eigenem Branch.
 7. **Geplante Läufe** (Spuren, Fortsetzungen, Reviews): Geplante Läufe erhalten nur die Repos, die die **anlegende Sitzung**
    eingebunden hat (beobachtet 01.11.2026: zwei Spurläufe ohne Referenz-Repo blockiert, #291, #295); `add_repo` steht im Lauf nicht verlässlich bereit. Deshalb vor dem ersten `create_trigger` der Sitzung
-   beide Repos per `add_repo` einbinden (`eishockey-manager-redone` push, `eishockey-manager-referenz` read) und mit
+   beide Repos nach Schritt 0 eingebunden haben (beide push) und mit
    `git ls-remote https://github.com/kaaasi/eishockey-manager-referenz HEAD` prüfen. Jeder Startaufruf enthält den
    Zugriffsabsatz aus `spur-start.md` (Kurzaufruf „Geplanter Lauf“). Modell nach dem Anlegen mit `update_trigger` setzen,
    wenn es von Opus abweicht – nur auf ausdrücklichen Wunsch des Nutzers (z. B. vom Nutzer bestätigter Plan bzw. Go mit

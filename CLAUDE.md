@@ -42,6 +42,9 @@ cd eishockey-manager-redone
 - Releases lassen sich aus der Sitzung nicht anlegen, nur über Workflows.
 - Mergen (nur als Leitstelle, nach der Merge-Prüfung in `docs/prozess/zusammenarbeit.md`) immer mit dem geprüften
   Head-SHA: `gh api -X PUT repos/kaaasi/eishockey-manager-redone/pulls/<nr>/merge -f sha=<head> -f merge_method=merge`.
+- **Leitstelle:** immer Lese- und Schreibzugriff auf beide Repos (`add_repo` für `eishockey-manager-redone` und
+  `eishockey-manager-referenz`, jeweils access `push`; Vorgabe Nutzer 01.11.2026), z. B. um Spielstände und Bilder im
+  Referenz-Repo abzulegen (dort per PR, Branch `daten/…`).
 - **Geplante Läufe anlegen** (Leitstelle): vorher beide Repos per `add_repo` in der eigenen Sitzung einbinden – der Lauf
   erbt nur diese; Ablauf `docs/vorlagen/leitstelle-start.md` Schritt 7. Im Lauf selbst ist `add_repo` meist nicht
   verfügbar (auch nicht per `ToolSearch`); maßgeblich ist das Einbinden durch die anlegende Sitzung.
