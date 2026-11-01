@@ -166,7 +166,7 @@ public class PixelVereinTests
         // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „Bundestrainer nach der ersten Saison“ wie in NationalCoachMode4MenuTests –
         // Managerverein mit Datenbankstärke (ManagedSquadsUi). Ohne sie erreichten vor R8W3I-01 2 von 8, danach 0 von 8 Seeds den Zug;
         // mit ihr 7 von 8 (Messung im PR #268, kein systematischer Stärkeverlust der Managervereine durch den Fix).
-        ManagedSquadsUi.PlayAtDatabaseStrength(game);
+        ManagedSquadsUi.PlayAtTopStrength(game); // #204: seit der Wanderung der Teamwerte Spielerwerte 99
         for (var guard = 0; !game.NationalTurn; guard++)
         {
             Assert.True(guard < 400, "Kein Zug des Bundestrainers erreicht.");

@@ -413,6 +413,10 @@ public class TransferOriginalVertragTests
                 for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
                 {
                     Assert.True(guard < 500);
+                    // Integration Runde 9 (Leitstelle): keine Entlassung – die Probe prüft Sperren und Wiederholbarkeit, nicht das
+                    // Konto. Auf dem integrierten Stand kauft der aktive Manager sich bis 1996 über die Entlassungsgrenze
+                    // (Phase GameOver am letzten Tag, StartNextSeason scheiterte).
+                    manager.Money = Math.Max(manager.Money, 10_000_000);
                     var club = game.Clubs[manager.ClubIndex];
                     TestSeason.KeepSquad(game, manager);
                     if (active)
@@ -432,6 +436,7 @@ public class TransferOriginalVertragTests
                         Assert.InRange(pl.NegotiationLock, 0, 18);
                     Assert.All(game.TransferMarket.Listings, l => Assert.Equal(0, l.RejectedBy & ~0x81));
                 }
+                Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
                 log.Add($"S{season}:{manager.Money}:{game.Clubs[manager.ClubIndex].Players.Count}");
                 Assert.NotEmpty(SaveGame.Save(game));
                 game.StartNextSeason();

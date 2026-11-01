@@ -459,11 +459,12 @@ Umsetzung: `Core/StatisticsClub.cs`, `UI/Screens/Statistics/ClubStatisticsScreen
   0x50 · Verein (+0/+1 Tore, +4/+5 Gegentore, +8/+9 Spiele Heim/Auswärts), Wert = Tore · 10 / Spiele, „E.Z“.
 * **Über-/Unterzahl** (Managerfelder 0x97D2 + 2 k): k 0–3 Tore/Gegentore in Über- bzw. Unterzahl, gezählt nach jedem Treffer
   in 0xA484 (Datei 0xAA2C–0xAAEF, Feldspieler [bp−0x11]/[bp−0x12], Schütze [bp+0xE], Manager [bp−0x13]/[bp−0x14]);
-  k 4/5 Zahl der Über-/Unterzahlspiele: Strafwurf 0x35818 (Datei 0x35A84–0x35B18, Differenz der Feldspieler = 1 über
-  0x120:0x61), Rücknahme 0x35C7B–0x35CB2, nach einem Tor in Überzahl 0xA939–0xA9A2. Rücksetzen 0x5588E–0x558B2.
+  k 4/5 Zahl der Über-/Unterzahlspiele: Strafwurf 0x35818 (Datei 0x35A84–0x35B18, |Differenz der Feldspieler| = 1 über
+  0x120:0x61), Rücknahme 0x35C7B–0x35CB2, nach einem Tor bei gleicher Zahl, das eine Strafe beendet, 0xA8F9–0xA9A2;
+  bei zusammen 11 Feldspielern kein Torzähler (0xAA18). Rücksetzen 0x5588E–0x558B2.
   Anzeige 0x2D9D9–0x2DB22: Werte auf 0 … 100 begrenzt, Erfolg k0 · 100 / k4 bzw. 100 − k3 · 100 / k5 (ohne Teiler 0 bzw.
-  100), „#“ (DGROUP 0x4DA9) als Prozentzeichen. Die Zählung liegt in der Minutenrechnung (`MatchEngine*.cs`, Spur
-  `spielstaerke-manager`); das Remake hat Regeln, Zustand und Anzeige, der Anschluss fehlt noch.
+  100), „#“ (DGROUP 0x4DA9) als Prozentzeichen. Angeschlossen an die Minutenrechnung in Spur spielberechnung-komplett,
+  Teil 4 (`MatchEngine.PowerPlay.cs`, `docs/spielberechnung.md` §18).
 * **Zuschauer** (0x2DB30–0x2DC87): Schnitt 0x97DE / 0x9748, Rekord 0x97E2 mit Gegner 0x976F, Minuskulisse 0x97E6 mit
   Gegner 0x9770 (99.999 bzw. 0 → „(noch keine...)“), Wert auf y + 6, „(Gegner)“ auf y + 12. **0x3EB30** Benötigter Schnitt:
   (0x3E811(1, 1) − 0x3E657(1)) · 12 / 23 · [0x7A1] / [0x79D] / Eintritt 0x973F, negativ → 0. Probe am Video `folge01_00522`:
@@ -934,3 +935,25 @@ Teil 4 (#166, Oberliga-Austausch samt Managervereinen), Disassembly `ndisasm -b 
   Tabellen, „Weniger als neun Spieler“, Entlassung). Weder Videostelle noch Spielstand mit einem Manager auf 36–41 ist bekannt;
   das Remake kennt Managervereine ohne Liga nicht (`Club.League` = null nur für Computervereine). Umsetzung nur mit diesem Beleg
   und Anschlüssen in fremden Dateien (Finanzen, Hauptmenü, Statistiken) – siehe PR.
+
+## Spielberechnung abschließen (Spur `spielberechnung-komplett`, Runde 9)
+
+Teil 1 (R8W3I-15, #204): Vereinstausch 0x36169 (Schalter 0x80 = nur Kennung, sonst ganzer Vereinssatz mit Tabellensatz
+und Serien), Ligamischung 0x35EDD (je Liga 55 Tausche), Auf-/Abstieg 0x562F2/0x5636D, Spielstart 0x29C78–0x29D9C
+(Managerverein auf einen Platz der Start-Liga), Play-offs 0x31934/0x315E9/0x31505 („best of five“, Heimtausch, drei
+Runden), Spielerschreiber 0x570E/0x49723 (keine Teamwerte). Einzelheiten: [spielberechnung.md](spielberechnung.md) §14.
+Ursache von #204: **Wanderung der Teamwerte 0x9D1B** (Basis 0x62C:0x1C5B; Aufrufe Spielstart 0x43A73 und Saisonwechsel
+0x56448 mit Modus 10, Tageslauf 0x55292 mit Modus 1 an Tageszähler 0x3B7 ≡ 0, 4 mod 7), Liga 0x34FD5, Grenzen DGROUP 0x125,
+Stärke-Anzeige 0x4F1F1 ((0x18 … 0x1D) / 6). Weiterer Schreiber 0x58DC (Basis 0x238:0x175C, Transferbildschirm 0x46FB3/0x47483:
+Käufer gewinnt Kondition/Technik, nicht umgesetzt). Die Suche in §12 von spielberechnung.md hatte 0x9E46–0x9F31 0x98F8
+zugeordnet; sie liegen in 0x9D1B. Einzelheiten: [spielberechnung.md](spielberechnung.md) §15.
+Teil 2 (R8W3I-03 bis -06): 0x378C5 höchstens 150 Züge (Prüfung 0x37A30 vor dem Zug 0x378FC); kein Spieler (100) →
+0x35B33 → 0x3583B ohne Anzeige und Kette; Managerwert 0x974B nur von 0x952C mit Schalter 1 (Tageslauf 0x54F9C–0x54FBF),
+100 unter neun Spielern (0x9698); Nationalteam (Feld 0x16 = 6) zieht über 0x35AB8–0x35B2C ebenfalls 0x378C5. **0x38A36**
+(aus 0x952C an 0x9567, Stub 0x149D:0x8E): Spieler auf dem Eis je Teil (0x388F6), DGROUP 0xCC35, Vereinsfeld 0x32 und
+0x2C Bit 3 – keine automatische Aufstellung. Einzelheiten: [spielberechnung.md](spielberechnung.md) §16.
+Teil 3: **Verletzungen 0x38B8F** (je Minute der Managerpaarung vor den Torchancen, 0x37F06/0x38304) mit Szene 0x53C57
+Ereignis 4 → **Verletzung 0x05B1A** (Tabellen DGROUP 0x181 Wochen, 0x1B9 Häufigkeit, 0x483B schwere Arten; auch aus dem
+Tageslauf 0x07169 an 0x74A9), **Heilung 0x7C12** (wöchentlich), Versicherung 0x07089 (Zahlung +0x30 · 4, nicht umgesetzt);
+**Torschütze 0x541D9 → 0x386D1** je Abschluss der Managerpaarung; Zählung 0x4BE17 (Modus 0 belegt, 1 Aufstellung, 2
+Reserve); Gruppe 0x4180 (Rollenwert / 25 ≤ 2). Einzelheiten: [spielberechnung.md](spielberechnung.md) §17.

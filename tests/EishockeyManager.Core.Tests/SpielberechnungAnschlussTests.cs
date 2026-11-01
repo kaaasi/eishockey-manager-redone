@@ -151,10 +151,16 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// 1 Jahr beim Kauf (0x42CB1); Gegenprobe mit altem Startgehalt und alter Laufzeit: alter Wert.
     /// Spur transfer-vertraege-komplett (Teil 5): beide neu durch den Listenwechsel aus dem Spielerpool (0x494EF, anderer Verbrauch
     /// der Hauptquelle; Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur spielberechnung-komplett, Teil 1 (#204): beide neu (Wanderung der Teamwerte 0x9D1B, Begründung bei
+    /// <see cref="RngTwinProbeTests"/>).
+    /// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): beide neu (Verletzungen und Schützenwahl im Spiel, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur spielberechnung-komplett, Teil 5 (0x3901B): beide neu (Penaltyschießen nach Verlängerung, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Integration Runde 9 (Leitstelle): beide auf dem integrierten Stand neu, einschließlich Minutenweg der Pokalspiele
+    /// ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an, 0x3702E).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "FAAB9C1717561971")]
-    [InlineData(true, "DEC675789C0B2D4A")]
+    [InlineData(false, "4562EE27425309D3")]
+    [InlineData(true, "EB706FF5D32A5CFA")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -205,8 +211,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Minute, 0x87F7/0x8EF2/0x80CB) – andere WM-Ergebnisse und Pokalquelle (C…), Hauptquelle und Konten gleich.
     // Integration Runde 8, Welle 3 (R8W3I-01): Managerpaarungen des Bundestrainers mit dem Spielstand vor den Toren der
     // Minute – andere WM-Ergebnisse ab Saison 5 und Pokalquelle (C…); Hauptquelle und Konten gleich.
+    // spielberechnung-komplett, Teil 1 (#204): Titel, Konten und Pokalquelle gleich, nur die Hauptquelle (R…) verschoben – die
+    // Wanderung des Spielstarts 0x9D1B zieht beim ersten (WM-)Spiel weitere Zahlen (im Modus „nur Weltkugel“ keine weitere).
+    // spielberechnung-komplett, Teil 2 (R8W3I-06): Hauptquelle und Konten gleich; das Nationalteam des Bundestrainers zieht
+    // jetzt den Strafspieler 0x378C5 aus seinem Kader – andere WM-Ergebnisse ab Saison 3 und Pokalquelle (C…).
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|R66365018 C885920316";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=52|500000|R1705866397 C5178594";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem
@@ -233,7 +243,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
                 Assert.InRange(perGame, 6.0, 10.0);
             else
                 Assert.InRange(perGame, 5.0, 11.0);
-            Assert.InRange(draws, 0.03, 0.15);
+            // Spur spielberechnung-komplett (#204): Mit der Wanderung der Teamwerte liegen die Bundesligavereine enger
+            // zusammen (69 … 94); Seed 7 hat dort 15,3 % Unentschieden. Mittel über 12 Seeds × 4 Saisons 10,7 %, Video
+            // (Reihe folgen, Bild folge21_01558: Bundesliga nach dem 44. Spieltag) 30 von 264 = 11,4 %.
+            Assert.InRange(draws, 0.03, league == League.Oberliga ? 0.15 : 0.17);
         }
     }
 }

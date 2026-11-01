@@ -77,7 +77,10 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 - **Abnahme:** je Teil roter Test mit Fundstelle, danach grün; Saisonverteilung (Meister ≥ 8 Saisons, Tore, Strafminuten)
   gegen Videos im PR; Mehrsaisonprobe Modus 1, 2, 4 passiv/aktiv; Referenzwerte begründet.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/spielberechnung.md`, `docs/dosbox-befunde.md` (eigener Abschnitt), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–5 fertig (#295 → #302 → #309 → #311 → #312), Integration
+  `integration/runde-9-spielberechnung-komplett` (zuletzt): #204 behoben (Wanderung der Teamwerte 0x9D1B); Anschluss
+  optionen-wirkung: Pokalspiele ohne Manager folgen dem Anzeigeschalter (0x3702E); Referenzwerte auf dem integrierten Stand
+  neu. Restlücken: 0x58DC (Verkauf an Computerverein), WM-Schalter im Bundestrainer-Abschnitt (0x5541F/0x5575A).
 
 ### Spur `transfer-vertraege-komplett` – Transfers und Verträge abschließen
 

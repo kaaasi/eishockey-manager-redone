@@ -107,16 +107,31 @@ namespace EishockeyManager.Core.Tests;
 /// · Restlaufzeit gut (0x49332); auf der Liste stehen nur noch Vertragslose aus Managervereinen (<c>SignFreeAgents</c> holt
 /// also nur eigene zurück). Die Datenbankspieler des Pools fehlen den Computerkadern; beim Saisonwechsel tauschen Pool und
 /// Computerkader (jeder Name nur einmal, Entscheidung Nutzer 01.11.2026).
+/// Spur spielberechnung-komplett, Teil 1 (#204): alle sechs neu – Wanderung der Teamwerte 0x9D1B beim ersten Spiel
+/// (Spielstart, großer Schritt), zweimal je Woche (kleiner Schritt) und nach jedem Saisonwechsel (großer Schritt); andere
+/// Teamwerte der Computervereine, damit andere Ergebnisse ab dem ersten Spieltag und mehr Züge aus der Hauptquelle. Keine
+/// Gegenprobe, die den alten Verlauf erhält (die Wanderung ist der Zweck).
+/// Spur spielberechnung-komplett, Teil 2 (R8W3I-03 bis -06): drei Abdrücke neu. Passiv Seed 3: das Nationalteam des
+/// Bundestrainers zieht den Strafspieler 0x378C5 (Gegenprobe ohne diesen Zug: alter Abdruck). Aktiv Seed 3 und 11:
+/// 0x378C5 zieht höchstens 150-mal, Strafen ohne Spieler erzeugen kein Ereignis, Managerwert 100 unter neun Spielern.
+/// Spur spielberechnung-komplett, Teil 3 (0x38B8F, 0x386D1): alle sechs neu – je Minute der Managerpaarung ein Verletzungszug, je Abschluss die Schützenwahl
+/// statt der Torverteilung 0x5028 nach dem Spiel für Managervereine. Keine Gegenprobe (geänderter Zufallsverbrauch ist der Zweck).
+/// Spur spielberechnung-komplett, Teil 5 (0x3901B): alle sechs neu – K.-o.-Spiele des Minutenwegs, die nach der Verlängerung unentschieden
+/// sind, entscheidet das Penaltyschießen des Originals (random(0, 1), dann random(2, 5) je Seite bis ungleich) statt eines
+/// NextDouble-Zugs in KnockoutMatch.Play; danach andere Zufallsfolge. Teil 4 (Zähler) zieht keinen Zufall.
+/// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand aller fünf Spuren neu ermittelt; die Ursachen oben
+/// wirken zusammen, dazu der Minutenweg der Pokalspiele ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an,
+/// 0x3702E).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "09FF85788E22C23F")]
-    [InlineData(true, 3, "836AE269A24766CE")]
-    [InlineData(false, 11, "42B0D73485D6E5DE")]
-    [InlineData(true, 11, "40429D63E1283807")]
+    [InlineData(false, 3, "3C53470D3638F3F4")]
+    [InlineData(true, 3, "5CEAC04EA3360124")]
+    [InlineData(false, 11, "C98E7C1980CFAA41")]
+    [InlineData(true, 11, "2BD9CE3FA0A3D417")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -124,8 +139,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "21979456B79B8E22")]
-    [InlineData(true, "6EA265406C4F87BD")]
+    [InlineData(false, "E71C0242492FB148")]
+    [InlineData(true, "6605F8402FDD86A2")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

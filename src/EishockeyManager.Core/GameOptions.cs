@@ -106,11 +106,12 @@ public sealed class GameOptions
     /// <summary>
     /// Weg eines Pokalspiels <b>ohne</b> Managerverein: [ORIGINAL] Spieltagsablauf Datei 0x3702E–0x37085 – bei
     /// eingeschaltetem Anzeigeschalter (Wettbewerbscode DGROUP 0xD0C2 6 → 0x227, 3/5 → 0x228, 8 → 0x229) die Minutenschleife
-    /// mit Anzeige (0x37088), sonst der schnelle Weg 0x3731F. Für Liga und Play-offs ohne Bedeutung (<c>false</c>).
+    /// mit Anzeige (0x37088), sonst der schnelle Weg 0x3731F. Die WM-Endrunde (Code 10) prüft keinen Schalter (immer schnell,
+    /// Aufrufer). [APPROX] Play-offs/Aufstiegsrunde (Code 1) hängen im Original am Feld „Ergebnisse“ der Meldungsmatrix
+    /// (0x37058–0x37085, voreingestellt aus → schneller Weg); im Remake liefert die Methode für sie <c>false</c> und der
+    /// Aufrufer rechnet sie Minute für Minute (R9S-03, #351).
     /// <para>
-    /// Noch nicht angeschlossen: Der Aufrufer ist <c>MatchEngine.PlayWithEvents</c> (<c>MatchEngine.Live.cs</c>, Spur
-    /// <c>spielberechnung-komplett</c>), der bisher alle drei Schalter als aus annimmt. Der Anschluss ändert Ergebnisse und
-    /// Zufallsverbrauch der DEB-Pokalspiele der Computervereine (Anfangswert an).
+    /// Aufrufer: <c>MatchEngine.PlayWithEvents</c> (<c>MatchEngine.Live.cs</c>), angeschlossen in der Integration Runde 9.
     /// </para>
     /// </summary>
     public bool CupMatchUsesMinuteLoop(MatchCompetition competition) => ShowsCup(competition) ?? false;
