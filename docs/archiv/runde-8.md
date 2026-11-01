@@ -11,8 +11,8 @@ Schema 12–14; Review #252, Nachprüfung #254). Welle 3: Plan #255 (Reviews #25
 #246, Idee #251. Geschlossen: #135, #179, #192–#195, #216, #217, #222, #225, #228, #230, #232–#234, #236, #253, #256, #257,
 #260, #269, #270, #272. Offen übernommen in Runde 9: #204, #166, #196 und die Restlücken unten.
 
-Runde 7 (Spielberechnung, Startwerte, DOSBox-Befunde): [archiv/runde-7.md](archiv/runde-7.md); ältere Runden in
-[archiv/](archiv/).
+Runde 7 (Spielberechnung, Startwerte, DOSBox-Befunde): [runde-7.md](runde-7.md); ältere Runden in
+[archiv/](./).
 **Ziel der Runde (Leitstelle nach `docs/re-abdeckung.md`, Auftrag Nutzer 31.10.2026):** die größten unbekannten bzw.
 genäherten Teile von em.exe, die das Spiel bestimmen, aus dem Code belegen und umsetzen – Spielerwert, Transfers und
 Verträge, Tabellen, Spielstärke der Managervereine – sowie die Statistiken und Einzelprämien auf den Zählern aus

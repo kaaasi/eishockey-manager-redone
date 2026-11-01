@@ -10,65 +10,85 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 
 ## Aktuelle Runde: Runde 10 – Sonderrunde Analyse em.exe (ab 01.11.2026)
 
-Runde 9 (Bereiche abschließen): [archiv/runde-9.md](archiv/runde-9.md); ältere Runden in [archiv/](archiv/). **Ziel der
-Runde (Wunsch Nutzer 01.11.2026):** die noch unbekannten bzw. genäherten Teile von em.exe nach
+Runde 9 (Bereiche abschließen): [archiv/runde-9.md](archiv/runde-9.md); ältere Runden in [archiv/](archiv/).
+**Ziel der Runde (Wunsch Nutzer 01.11.2026):** die noch unbekannten bzw. genäherten Teile von em.exe nach
 [re-abdeckung.md](re-abdeckung.md) aus dem Code belegen und so beschreiben, dass Runde 11 und `livespiel` sie umsetzen
-können. Stand der Karte auf `main` am 01.11.2026 (nicht committet): Spielcode 82 % umgesetzt, 2 % genähert, 7 %
+können. Base-Stand der Karte (`main` 29f3062, nicht committet): Spielcode 82 % umgesetzt, 2 % genähert, 7 %
 dokumentiert, 10 % unbekannt.
+**Schreibweise in diesem Abschnitt:** Adressen sind Dateioffsets mit Suffix `h` (`3D45Fh` statt Präfix `0x`), damit
+die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `docs/analyse/` gilt die normale Schreibweise.
 
 ### Regeln der Runde
 
 - **Nur Doku, keine Code-Änderung** (`src/`, `tests/`, `tools/` bleiben unberührt). Hilfsskripte und Ausgaben
   (Disassembly, CSV, Spielstände) bleiben im Arbeitsbereich bzw. Scratch, nie im Repo; Auszüge aus dem Original
   höchstens als kurze Befehlszeilen mit Adresse.
-- **Ein Lauf je Spur, keine Selbstfortsetzung.** Ein PR je Spur (Branch `paket/<spur>`, Base `main`). Reicht die Zeit
-  nicht, Draft mit Übergabe und Label `spur-wartet` (Abschnitt „Teile und Fortsetzung“ in `spur-start.md`, Schritt 4
-  sinngemäß); die Leitstelle legt nach Entscheidung des Nutzers einen einzelnen Folgeteil an.
-- **Dateigrenzen:** je Spur genau eine neue Datei `docs/analyse/<spur>.md` (die Funktionskarte zählt Fundstellen aus
-  `docs/**/*.md`). `docs/reverse-engineering.md`, `docs/re-abdeckung.md` und `docs/arbeitspakete.md` (außer dem eigenen
-  Statuspunkt) ändert nur die Leitstelle in der Integration.
+- **Ein Lauf je Spur, keine Teile, keine Selbstfortsetzung.** Ein PR je Spur (Branch `paket/<spur>`, Base `main`).
+  Reicht die Zeit nicht: Draft mit Übergabe und Label `spur-wartet`; die Leitstelle legt nach Entscheidung des Nutzers
+  einen weiteren Lauf an.
+- **Startaufruf** (R10P-02, #369; geplanter Lauf, wörtlich; Zugriffsabsatz aus `docs/vorlagen/spur-start.md`
+  unverändert):
+
+  > Repo kaaasi/eishockey-manager-redone. Arbeite nach `docs/vorlagen/spur-start.md`. Spur: `<name>`. Agent: Claude
+  > Code. Unbeaufsichtigt, keine Rückfragen. Runde 10 nach `docs/arbeitspakete.md`, „Regeln der Runde“: ein Lauf, keine
+  > Teile, keine Fortsetzung anlegen; Branch `paket/<name>`; statt `tools/pruefen.sh --schnell` die Selbstprüfung nach
+  > „Abnahme je Spur“; bei Zeitmangel Draft mit Übergabe und Label `spur-wartet`. Modell der Spur: `<modell>`.
+  > `<Zugriffsabsatz „Zugriff zuerst prüfen: …“ aus spur-start.md, Kurzaufruf „Geplanter Lauf mit Teilen“, wörtlich>`
+
+  Es gilt der Hauptablauf von `spur-start.md`; der Abschnitt „Teile und Fortsetzung“ entfällt, Schritt 5 (Rebase vor dem
+  Push) bleibt.
+- **Dateigrenzen:** je Spur genau eine neue Datei `docs/analyse/<spur>.md` und der eigene Statuspunkt hier.
+  `docs/reverse-engineering.md` und `docs/re-abdeckung.md` ändert nur die Leitstelle in der Integration.
 - **Inhalt je Fundstelle:** Dateioffset (Schreibweise nach `re-abdeckung.md`, Abschnitt „Fundstellen“, damit die Karte
   sie erkennt), Aufrufer und Aufgerufene, Daten (DGROUP-Variablen, Strukturfelder), Regel in Worten bzw. Pseudocode,
   Beleg (Disassembly, Spielstand, DOSBox-Bild des Nutzers), Abgleich mit dem Remake (Datei, bisherige `[APPROX]`-Stelle)
   und Umsetzungsvorschlag für Runde 11 mit Priorität P1–P3.
-- **Abnahme je Spur:** alle genannten Adressen zugeordnet oder begründet offen; Abschnitt „Kandidaten Runde 11“ mit je
-  einem Eintrag pro Umsetzung (Ziel, Dateien, Testidee); Selbstprüfung mit `funktionskarte.py` (ohne `--write`): die
-  eigenen Adressen stehen nicht mehr auf „unbekannt“. Tests entfallen (reiner Doku-PR); `emtool` darf zur Belegerzeugung
-  gebaut werden (`tools/claude/setup-workspace.sh`).
+- **Abnahme je Spur** (R10P-01, R10P-03): jede Adresse der Spur ist in `docs/analyse/<spur>.md` zugeordnet oder
+  begründet offen. Selbstprüfung: `python3 tools/reverse-engineering/funktionskarte.py <em.exe> --csv
+  <scratch>/karte.csv` (ohne `--write`); für jede Funktion der Spur nennt die Spalte `fundstellen` die eigene
+  Analyse-Datei. Adressen innerhalb einer Funktion (kein Funktionsanfang) und genäherte Funktionen bleiben in der Karte
+  unverändert – dort genügt die Fundstelle in der Analyse-Datei. Abschnitt „Kandidaten Runde 11“ mit je einem Eintrag
+  pro Umsetzung (Ziel, Dateien, Testidee). Tests entfallen (reiner Doku-PR); `emtool` darf zur Belegerzeugung gebaut
+  werden (`tools/claude/setup-workspace.sh`).
 - **Leitstelle danach:** eine Integration `integration/runde-10` gegen `main` (alle Spuren, kein Stapel), Karte mit
   `--write` neu, Verweise in `reverse-engineering.md`, ein Claude-Review, Issues für Runde 11 aus den Kandidaten.
 
 ### Spur `re-geld` – Geld, Börse, Stadion
 
-- **Adressen:** Stadionbau 0x3D45F; Börse/Konto 0x57ECF, 0x581C2, 0x57CFB, 0x58409; Konto Transfermarkt 0x463CC;
-  Grundwert 0x48E62; Jugendförderung 0x39DEC (genähert, Restlücke `finanzen-rest`: Wirkung 0x39DEC/0x3A13B).
+- **Adressen:** Stadionbau 3D45Fh; Börse/Konto 57ECFh, 581C2h, 57CFBh, 58409h; Konto Transfermarkt 463CCh; Grundwert
+  48E62h; Jugendförderung 39DECh und 3A13Bh (genähert, Restlücke `finanzen-rest`).
 - **Abgleich:** `FinanceStocks.cs`, `FinanceYouth.cs`, Stadion- und Kontobuchungen über `GameState.Book`,
   `docs/finanzen-rekonstruktion.md`.
 - **Modell:** Claude Opus 5.5. **Status:** wartet auf Go.
 
 ### Spur `re-meldungen` – Meldungen, Tagesablauf, Fenster
 
-- **Adressen:** Meldungen 0x4C246, 0x4BA58 (genähert); Infofile 0x432EC; Kurve 0x445E0 (Maßstab `[APPROX]`); Tagesablauf
-  0x07C7E, 0x4F325; Fehler/Bildlader 0x25B4A, 0x25764; Fenster Basis 0x902/0x99F.
+- **Adressen:** Meldungen 4C246h, 4BA58h (genähert); Infofile 432ECh; Kurve 445E0h (Maßstab `[APPROX]`); Tagesablauf
+  07C7Eh, 4F325h; Fehler/Bildlader 25B4Ah, 25764h; Fensterbasis – alle unbekannten Funktionen der Basissegmente 902h und
+  99Fh (Base-Stand 16): 0AF8Dh, 0B019h, 0B0E6h, 0B447h, 0B7B5h, 0B830h, 0B8C2h, 0B8FEh, 0BE71h, 0BECDh, 0BEFAh, 0BF64h,
+  0C0B8h, 0C5CEh, 0C729h, 0C789h.
 - **Abgleich:** `docs/tagesablauf.md`, `GameState.Integration.cs`, Meldungs- und Fensterbausteine in `Widgets.cs`.
 - **Modell:** Claude Opus 5.5. **Status:** wartet auf Go.
 
 ### Spur `re-saisonwechsel` – Manager ohne Liga (#166)
 
-- **Adressen:** 0x562C6 und Umfeld (Saisonwechsel eines Managers ohne Liga, Oberliga-Austausch samt Managervereinen).
+- **Adressen:** Saisonende 54C9Fh (in der Karte „umgesetzt“) mit der Stelle 562C6h (innerhalb der Funktion:
+  Saisonwechsel eines Managers ohne Liga, Oberliga-Austausch samt Managervereinen).
 - **Beleg im Original:** Spielstand mit `emtool hok patch` (`docs/formate/spielstand-original.md`) aus einer Vorlage im
   Referenz-Repo `original/spielstaende/`; im PR stehen Befehlszeile, Vorlage und eine DOSBox-Anleitung (was spielen, was
   festhalten). Den Spielstand selbst erzeugt die Leitstelle und gibt ihn dem Nutzer; der Nutzer spielt und liefert
-  Bilder ins Referenz-Repo. Die Auswertung der Bilder ist ein Folgeteil nach Entscheidung des Nutzers.
+  Bilder ins Referenz-Repo. Die Auswertung der Bilder ist ein weiterer Lauf nach Entscheidung des Nutzers.
 - **Abgleich:** `SeasonFlow.cs`, `docs/saison.md`, `[APPROX]` aus #307. **Modell:** Claude Opus 5.5. **Status:** wartet
   auf Go.
 
-### Spur `re-livespiel` – Livespiel Ov 0x130 (nur Analyse)
+### Spur `re-livespiel` – Livespiel Ov 130h (nur Analyse)
 
-- **Adressen:** Overlay 0x130, u. a. 0x5353C, 0x52BD6, 0x56EDD (Torszenen, Anzeigetafel, Reporter; Funktionskarte Nr.
-  14/16).
-- **Ziel:** Grundlage für `livespiel` (letzter Schritt vor v1.0): Ablauf, Ereignisse aus der Spielberechnung, Grafik-
-  und Textquellen, Zeitsteuerung. Keine Umsetzung.
+- **Adressen** (R10P-04, #371): die unbekannten Funktionen von Ov 130h (Base-Stand 19): 51F3Dh, 51FEAh, 52190h, 5224Eh,
+  522ECh, 52382h, 52430h, 52BD6h, 53234h, 53307h, 533D0h, 53453h, 534BCh, 53508h, 5353Ch, 53BF9h, 5434Ch, 56EDDh,
+  570E8h. Umgesetzte Funktionen des Overlays (Spielberechnung, Saisonende 54C9Fh) nur lesen; 54C9Fh/562C6h gehören zu
+  `re-saisonwechsel`.
+- **Ziel:** Grundlage für `livespiel` (Torszenen, Anzeigetafel, Reporter; Funktionskarte Nr. 14/16; letzter Schritt vor
+  v1.0): Ablauf, Ereignisse aus der Spielberechnung, Grafik- und Textquellen, Zeitsteuerung. Keine Umsetzung.
 - **Modell:** Claude Fable 5.1; blockieren die Schutzmaßnahmen die Analyse, meldet der Lauf das im PR (`spur-wartet`)
   und die Leitstelle startet die Spur nach Freigabe des Nutzers mit Claude Opus 5.5 neu. **Status:** wartet auf Go.
 

@@ -11,8 +11,8 @@ Abschluss der Vorlagen (#355, Reviews #361, #365). Offen übernommen in Runde 10
 `docs/arbeitspakete.md`.
 
 
-Runde 8 (Spielerwert, Transfers, Tabellen, Statistiken, Spielstärke der Managervereine): [archiv/runde-8.md](archiv/runde-8.md);
-ältere Runden in [archiv/](archiv/).
+Runde 8 (Spielerwert, Transfers, Tabellen, Statistiken, Spielstärke der Managervereine): [runde-8.md](runde-8.md);
+ältere Runden in [archiv/](./).
 **Ziel der Runde (Auftrag Nutzer 01.11.2026):** weniger, aber größere Spuren, die je einen Bereich abschließen – alle offenen
 Teile und Restlücken aus Runde 8 sind genau einer Spur zugeordnet. **Torszenen, Anzeigetafel und Reporter bleiben
 ausgeklammert** (`livespiel`). **Runde 10 ist eine Sonderrunde** (Wunsch Nutzer 01.11.2026): Analyse der noch unbekannten
