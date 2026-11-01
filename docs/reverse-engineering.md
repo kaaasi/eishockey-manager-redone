@@ -687,3 +687,10 @@ Dateioffsets in `em.exe`, DGROUP = Datei 0x16DD0. Umsetzung und Belege im Bild: 
   0x35EDD werden die Sätze 0x8257, die Vereinssätze 0x9657 und die Serien DGROUP 0xB57B zweier Plätze getauscht
   (0x36467–0x3653A) – darum führt jeder Satz die Flaggennummer selbst. Nicht gefunden: die Stelle, die die Platzierungen
   nach einer WM schreibt.
+
+## Jugendteams 0x3A24B (Spur `finanzen-rest`, Teil 1)
+
+Bildschirm Datei 0x3A24B, Förderbalken 0x39BBD, Kästchen 0x39AD6, Monatswirkung 0x39DEC und Saisonwechsel 0x3A13B (beide
+noch offen). Managersatz DGROUP 0xA078 + 0x15 · Manager (Platz `+0..2`, Liga `+3..5`, Förderung `+6`), Startwerte im
+Spielstart 0x29BAA/0x29BC1. Zuordnung und Belege: [finanzen-rekonstruktion.md](finanzen-rekonstruktion.md), Abschnitt
+„Jugendteams“.

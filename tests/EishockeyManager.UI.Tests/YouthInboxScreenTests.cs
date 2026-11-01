@@ -20,7 +20,7 @@ public class YouthInboxScreenTests
         d.Click(YouthScreen.Bar(0).Right - 1, YouthScreen.Bar(0).Y + 4);
         d.Click(YouthScreen.Bar(2).X + 7, YouthScreen.Bar(2).Y + 4);
         Assert.Equal(10_000, youth[0].Funding);
-        Assert.Equal(1_000, youth[2].Funding);
+        Assert.Equal(4_000, youth[2].Funding); // ⌊7 · 40.000 / 70 / 2.000⌋ · 2.000 (Spur finanzen-rest, Teil 1)
         d.Press(Key.Escape);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }

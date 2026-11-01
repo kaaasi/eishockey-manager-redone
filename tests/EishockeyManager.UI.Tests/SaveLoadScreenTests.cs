@@ -142,6 +142,39 @@ public class SaveLoadScreenTests : IDisposable
         Assert.Equal(saved, Saved(d.Host.Game!));
     }
 
+    // em.exe 0x5DBE5 (Datei 0x5E5ED..0x5E667): Rechtsklick auf einen Eintrag bricht nicht ab, er übernimmt den Namen.
+    [GameDataFact]
+    public void RightClickOnEntry_TakesNameButDoesNotLeaveOrLoad()
+    {
+        var d = NewDriver();
+        d.OpenTile("Sichern");
+        d.Type("rechts");
+        d.Press(Key.Enter);
+        d.OpenTile("Laden");
+        var index = SaveFiles.List(_directory).ToList().FindIndex(e => e.FileName == "RECHTS.ems");
+        var rect = SaveLoadScreen.EntryRect(index / SaveLoadScreen.RowsPerColumn, index % SaveLoadScreen.RowsPerColumn);
+        d.RightClick(rect.X + 3, rect.Y + 3);
+        var screen = Assert.IsType<SaveLoadScreen>(d.Host.Current);
+        Assert.Equal("RECHTS", screen.FileName);
+    }
+
+    // em.exe 0x5DBE5 (Datei 0x5E66A..0x5E68C): Linksklick auf einen Eintrag führt aus, wenn der Name im Feld schon gleich ist.
+    [GameDataFact]
+    public void LeftClickOnEntry_WithSameNameTyped_LoadsAtOnce()
+    {
+        var d = NewDriver();
+        d.OpenTile("Sichern");
+        d.Type("gleich");
+        d.Press(Key.Enter);
+        d.PlayMatchDay();
+        d.OpenTile("Laden");
+        d.Type("gleich");
+        var index = SaveFiles.List(_directory).ToList().FindIndex(e => e.FileName == "GLEICH.ems");
+        var rect = SaveLoadScreen.EntryRect(index / SaveLoadScreen.RowsPerColumn, index % SaveLoadScreen.RowsPerColumn);
+        d.Click(rect.X + 3, rect.Y + 3);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
+    }
+
     [GameDataFact]
     public void ForeignFile_AndNewerVersion_ShowMessage_AndKeepRunningState()
     {
