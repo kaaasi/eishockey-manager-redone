@@ -563,3 +563,20 @@ Spalte x 131–133 oder 240–242 mit hellem 2 × 2-Block. Marke und Streifen si
 sie nicht; ob ein anderes Neuzeichnen sie später entfernt, ist nicht nachgeprüft). Der Klick auf eine Aktie setzt den
 Versatz wie bisher (0x59C6B), der Maßstab bleibt dabei erhalten. Die Anfangssuche des Ausschnitts (`InitialChartOffset`)
 rechnet weiter mit Maßstab 2.
+
+## Dateidialog (em.exe 0x5DBE5, Teil 4 der Spur `finanzen-rest`)
+
+Funktion Datei 0x5DBE5–0x5E88F (Ov 0x140), `SaveLoadScreen.cs`. Maustaste in `[0x5A16]`: 1 = links, 3 = rechts. Lokale Offsets +0x5DBE5.
+
+| Befund | Fundstelle | Remake |
+|---|---|---|
+| Liste: DOS-Suche, Verzeichnisse (Attribut 0x10) zuerst (höchstens 19), Dateien danach (höchstens 199); 3 Spalten × 16 Zeilen = 48 je Seite, Zeilenabstand 7, Spaltenabstand 80 | 0x5DD7D–0x5DFD5, 0x5E0C5 | stimmt (`EntryRect`) |
+| Laufwerksknöpfe: Anzahl aus `[0xE349]` (nur vorhandene), Lage x 53 + 59·i, y 207/220; LÖSCHEN = Knopf 7 mit Rückfrage | 0x5DD62, 0x5E705–0x5E77B | Lage stimmt; Laufwerke ohne Wirkung `[APPROX]` |
+| Linksklick auf Datei: Name im Feld gleich Eintrag → übernehmen und beenden, sonst Name ins Feld | 0x5E66A–0x5E6AF | umgesetzt (vorher nur „zweiter Klick auf denselben“) |
+| Rechtsklick auf Datei: Name (mit Pfad) ins Feld, Dialog bleibt | 0x5E5ED–0x5E667 | umgesetzt ohne Pfadzusatz `[APPROX]` |
+| Rechtsklick sonst: Name leeren, beenden (Abbruch) | 0x5E79F | stimmt |
+| Klick auf Verzeichnis: wechseln und Liste neu lesen | 0x5E5CA–0x5E5DC | nicht umgesetzt (ein fester Ordner) |
+| Hover: Eintrag unter der Maus wird hervorgehoben (Farbe 0 / 3), ohne Taste | 0x5DE45–0x5DF2C | nicht umgesetzt, offen |
+| Beenden: Name ohne „.HOK“ wird um „.HOK“ ergänzt | 0x5DB4B–0x5DB7F | Remake nutzt „.ems“ |
+
+Tests: `SaveLoadScreenTests.RightClickOnEntry_TakesNameButDoesNotLeaveOrLoad`, `LeftClickOnEntry_WithSameNameTyped_LoadsAtOnce` (beide vor dem Fix rot). Zeichnung unverändert; Pixelvergleich nicht neu erhoben (Referenzbilder `oberflaeche_0100`–`_0103` wie in der Klassenbeschreibung).
