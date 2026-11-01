@@ -289,6 +289,12 @@ public class StatistikenVereinTests
                     Assert.True(manager.SeriesRecords[i] >= lastRecords[i]);
                 manager.SeriesRecords.CopyTo(lastRecords, 0);
             }
+            // [ORIGINAL] 0x50283 trägt auch WM-Gruppenspiele (Code 8) in die Serien ein – die Länder (Spur wettbewerbe-komplett, Teil 2).
+            foreach (var r in game.WorldCup?.Groups.SelectMany(g => g.Results) ?? [])
+            {
+                Series.Enter(expected[r.Home], r.HomeGoals, r.AwayGoals, home: true);
+                Series.Enter(expected[r.Away], r.AwayGoals, r.HomeGoals, home: false);
+            }
             Assert.Equal(active, manager.PowerPlayCounts[0] > 0);
             game.StartNextSeason();
             Assert.All(manager.PowerPlayCounts, v => Assert.Equal(0, v));

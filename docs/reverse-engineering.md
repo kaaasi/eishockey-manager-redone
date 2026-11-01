@@ -289,7 +289,7 @@ Overlay 0x128 (Ghidra 59E3). Fundstellen als Dateioffset von em.exe.
   vollständig gleicher Vereine kann sich durch eine angesehene Heim-/Auswärtstabelle ändern.
 * **Startordnung** Datei 0x2F1A2: beim Spielstart Vereinsindex aufsteigend; danach tauscht 0x437D5 (Datei 0x43A08/0x43A0D)
   in der 1. Liga die Plätze 1 und 3 (DGROUP 0x5CCB = 2, 0x5CCD = 0; Deutscher Meister DGROUP 0xD0E6 = 2). Video 13:07. Andere Schreiber von 0x5CCB: nur die
-  Sortierung und 0x35EDD (WM-Reihenfolge). Über den Saisonwechsel bleibt die Liste stehen.
+  Sortierung und 0x35EDD (WM-Reihenfolge). Über den Saisonwechsel bleibt die Liste stehen. Folgesaison siehe Abschnitt „Spur `wettbewerbe-komplett`“.
 * **Tabellenansicht** Datei 0x4F78D: Titel aus DGROUP 0x1011 („   TABELLE “) + Ansicht (Zeiger 0x1001: „Heim“, „Gesamt“,
   „Auswärts“) + Spieltag; Name x 0x21, Bilanz x 0x75 (immer die Gesamtbilanz +4, gleich in jeder Ansicht), Tendenz über
   `0x110:0x4D`, Zahlenzeile ab x 0xA6 als ein Text: „*“, Siege, Unentschieden, Niederlagen (Mindestbreite 2,
@@ -694,3 +694,119 @@ Bildschirm Datei 0x3A24B, Förderbalken 0x39BBD, Kästchen 0x39AD6, Monatswirkun
 noch offen). Managersatz DGROUP 0xA078 + 0x15 · Manager (Platz `+0..2`, Liga `+3..5`, Förderung `+6`), Startwerte im
 Spielstart 0x29BAA/0x29BC1. Zuordnung und Belege: [finanzen-rekonstruktion.md](finanzen-rekonstruktion.md), Abschnitt
 „Jugendteams“.
+
+## Spur `wettbewerbe-komplett`
+
+Teil 1 (Tabellen), Disassembly `ndisasm -b 16`, Dateiadressen.
+
+* **Startordnung ab Saison 2.** 0x5CCB ist eine Bytetabelle (Liga · 12 + Platz → Vereinsindex; 0x2F1A2 füllt sie beim
+  Spielstart mit aufsteigendem Vereinsindex). Der Saisonwechsel in der Tagesfunktion 0x54C9F setzt für alle 64 Vereine die
+  Tabellenfelder beider Hälften auf 0 (Datei 0x55E39–0x55EF8: DGROUP 0x825A, 0x8270, 0x8274, 0x8278, 0x8280, 0x8284 je
+  + 0x50 · Verein, Bilanz 0x825E aus DGROUP 0x5503) und zählt 0x7A9 je Liga auf 1 (0x5613E). Auf- und Abstieg laufen über
+  **0x36169** (Ov 0xF0, Stub +0x4D; `f(a, b, Schalter)`): tauscht die Vereinsnummer der 200 Spieler (+0x1D), den Verein der
+  Manager (DGROUP 0x966F + 0x1AF · Manager) und die Vereinssätze ab DGROUP 0x8257 – die Vereine wechseln also ihre Indizes,
+  0x5CCB bleibt stehen. Paare (0x56137–0x5636D, Ligen 0 und 1): Gruppenplätze DGROUP 0xCD94 + 6 · Liga, Verein über
+  0xCF20 + 0x24 · Liga + Platz; der nächste Verein mit Index ≥ 0x7C1[Liga] (untere Liga: 12 bzw. 24) unter den Plätzen 1–2
+  tauscht mit dem nächsten Verein der oberen Liga unter den Plätzen 3–4. Oberliga (0x56238 ff.): Platzliste 0x5CCB + 24 +
+  11 − k (Letzter, dann Vorletzter) mit einem Zufallsverein 0x847(36, 41) (DGROUP 0x7C2 + 0x7B3 … + 5) – Beleg für Teil 4
+  (#166), hier nur die Reihenfolge. Da am ersten Spieltag alle Felder gleich sind, behält die Tauschsortierung die Liste:
+  Die Folgesaison beginnt mit der Abschlussreihenfolge, der Partner auf dem Platz des Getauschten. Remake:
+  `LeagueTable.SuccessorOrder` aus `SeasonRecord` (Abschlusstabelle, `PromotedInto`/`RelegatedInto` jetzt in
+  Tabellenreihenfolge der Aufstiegsrunde, `LeftOberliga`); Tests `WettbewerbeStartordnungTests`.
+* **Abzug in der Titelzahl** Datei 0x4F986–0x4F9DE: Spieltag im Titel = 0x7A9[Liga] − 1, wenn Parameter 2 = 1 und
+  0x7A9 > 1, sonst 0x7A9. Aufrufer (Stub Ov 0x128 +0x57): Hauptmenü 0x45842 mit 1; automatische Tabelle nach dem Spieltag
+  0x37889 mit 0 (nur bei Schalter DGROUP 0x21F + 3 · Liga), danach erst `inc 0x7A9` (0x37897). Beide zeigen damit die Zahl
+  der gespielten Spieltage, vor dem ersten „1.“ – wie `TableScreen.Title` (`TableTitleNumberTests`). 0x4FA49/0x50215
+  begrenzen 0x7A9 für die Sortierung auf 0x7B6 − 1 = 43 (0x50B45 läuft nur bis 0x7A9 − 1 ≤ 43) und stellen den Wert danach
+  wieder her; ohne Wirkung auf die Anzeige.
+* **Tore modulo 30** 0x30906/0x30916: `while (x > 29) x −= 30` für beide Tore (DGROUP 0x5CAC ff.) vor 0x303D9. Die Marke +30
+  setzt nur das Penaltyschießen im K.-o.-Spiel; Gruppenspiele (WM, Europapokal, Aufstiegsrunde) spielen im Remake ohne
+  K.-o. (`knockOut: false`), ihre Ergebnisse bleiben unter 30 (Mehrsaisonprobe `WettbewerbeStartordnungTests`). Keine
+  Abweichung, keine Änderung nötig.
+
+* **Videobeleg Startordnung** `folge06_02238` (Karriere-Reihe, zweite Saison, „TABELLE Gesamt 1.Spieltag“, 2. Liga mit dem
+  Aufsteiger Berliner SC): Kölner EC, Augsburger EV, EA Kempten, EC Bad Nauheim stehen in vollem Gleichstand (1:1, 2:2) auf
+  5–8. Aus der Vereinsreihenfolge (Indizes 5, 8, 10–15, 18, 26, 31, 42) ergäbe die Tauschsortierung 0x50B45 mit den zwölf
+  Ergebnissen des Bildes Augsburg, Köln, Bad Nauheim, Kempten – das alte `[APPROX]` ist damit widerlegt. Mit der
+  Platzliste der Vorsaison (Bad Nauheim und Berliner SC als Teilnehmer der Aufstiegsrunde `folge06_01257` auf 11/12) ist das
+  Bild erreichbar (rund 17 % der zulässigen Reihenfolgen der übrigen zehn Vereine ergeben es genau); die Abschlusstabelle der
+  Vorsaison zeigt das Video nicht.
+* **Pixelvergleich Tabellen- und Gruppenansicht** am Head der Spur (Graustufen, eigenes Bild verschoben und weichgezeichnet
+  σ 0,5; mittlere Abweichung / Anteil der Pixel über 40):
+
+  | Ablauf, Bild | Vorlage | Fenster, Maske | Versatz (−0,25 \| +0,5) | Versatz (0 \| 0) |
+  |---|---|---|---:|---:|
+  | `tabelle-original` `00_tabelle_1liga_video_13_07` | `oberflaeche_1307` | (4 \| 38) … (316 \| 190) | 9,5 / 3,6 % | 6,5 / 1,2 % |
+  | `tabelle-saison2` `00_tabelle_2liga_saison2_1_spieltag` | `folge06_02238` (Versatz der Reihe (−0,6 \| +0,1): 4,4 / 1,3 %) | wie oben, Namen/Bilanz/Werte (x ≥ 33, y 67 … 153) maskiert, 50,8 % | 7,8 / 1,4 % | 5,2 / 1,4 % |
+  | `europapokal` `00_gruppe1_video_13_11` | `oberflaeche_1311` | ganzes Bild, Sprecher und Mauszeiger maskiert | 6,0 / 1,8 % | 4,8 / 0,3 % |
+  | `wm` `00_gruppe1_video_13_13` | `oberflaeche_1313` | ganzes Bild, Sprecher und Mauszeiger maskiert | 11,5 / 8,8 % | 8,8 / 5,3 % |
+
+  Titel „1.Spieltag“ nach dem Saisonwechsel (0x7A9 = 1, 0x5613E) stimmt; Kopf und Titel allein 4,8 / 1,6 %, Platzspalte mit
+  Auf-/Abstiegsmarken 4,9 / 0,6 %. Restabweichungen an Schrift- und Flaggenkanten (Videounschärfe). Die Seite
+  „Aufstieg“ der Paarungen (Gruppentabelle der Aufstiegsrunde, `folge06_01257`, `folge07_03307`) fehlt im Remake noch
+  (`LeaguePairingsScreen`, `[APPROX]` dort) – kein Vergleich möglich.
+
+Teil 2 (Nationalteam):
+
+* **Warnung des Bundestrainers** Datei 0x454C2–0x454D8: nur wenn DGROUP 0xA70E = 5 (Bundestrainer am Zug), Kaderzahl aus
+  `0x120:0x66(5, 0)`, `cmp al,0xA; jnc` – ab 10 Spielern weiter (R8-D02, Test `WettbewerbeNationalteamTests.CoachWarning_Boundary`).
+* **Schreibstelle der WM-Platzierungen** Datei 0x311CF–0x31351 (Ov 0xE8, nach den Platzierungsspielen; Zweig vor 0x311B4
+  legt die nächste Runde an): n = erste 0 der Folge DGROUP 0x828B + 0x50 · Land am Land DGROUP 0x5D5B; n &gt; 15 → für alle
+  zwölf Länder (0x6AD … 0x6AD + 11) Byte j = Byte j + 1 (j = 0 … 14), n = 15 (0x311F8–0x3125C). Byte n = 11 für alle zwölf
+  (0x31266–0x31291), dann für i = DGROUP 0xCFFB, + 2, …, + 6: Land 0x5D5B[i] Platz i − 0xCFFB + 1, Land 0x5D5C[i] Platz
+  i − 0xCFFB + 2 (0x31304–0x31351); bei i = 0xCFFB Weltmeister DGROUP 0xD0F3 und Aufruf 0x350B6(3, Land). Etat des
+  Bundestrainers für die nächste Saison DGROUP 0x29C/0x29E = ((7 − Platzindex) · 300.000 + 900.000) Drittel-DM, sonst
+  300.000 – wie `NationalCoach.BudgetFor`. Remake: höchstens 16 WMs (`GameState.MaxWorldCupRankings`), Test
+  `WettbewerbeNationalteamTests.SeventeenthWorldCup_DropsTheOldest` (vorher blieben alle WMs stehen und zählten mit).
+* **Gegner-/Vereinsfenster** `0x128:0x2A` = Datei **0x4D385–0x4E5D4** (Stub Ov 0x128 Segment 0x14D9: Einträge ab +0x20 je
+  5 Byte, +0x2A → Overlay-Offset 0x95, Overlaybeginn Datei 0x4D2F0), Argumente (Verein, Seite [bp+8] 0/1/2, [bp+0xA]).
+  Texte DGROUP 0x3380–0x35F0 („Höchster Sieg“ 0x33C0, „Höchste Niederl.“ 0x33CE, „Erzielte Tore“ 0x33DF, „Kassierte Tore“
+  0x33ED, „Info über “ 0x33FC, „Spielplan“ 0x3479, „ Platz in der “ 0x3484, „, Stärke: “ 0x3493, „Heimbilanz:“ 0x349E,
+  „Bilanz:“ 0x34AA, „Auswärtsbilanz:“ 0x34CC, „Aus d. letzten Spielen:“ 0x34DC, „Tore / Spiel “ 0x34F4, „Serien “ 0x3502,
+  „Keine bemerkenswerte Serie vorhanden.“ 0x351C, „Historische Ergebnisse gegen “ 0x354C, „Punkte in der Ewigen Tabelle: “
+  0x3588, „Noch keine Eintragung.“ 0x35B5). Länder (Verein ≥ DGROUP 0x6AD) und Vereine haben eigene Zweige (0x4D3DD,
+  0x4D75E, 0x4DA58, 0x4E0EB); Rahmenbild Datei 0x4D40F (`0x38:0x98D` Bild 0x21). Aufrufer: Infoleiste, Stärken (DOSBox 44),
+  WM-Tabelle 0x2FAB8 (DOSBox 14–16), Paarungsansicht 0x302AA, WM-Statistik 0x3B4AE (alle mit Seite 2 = Gesamt).
+  Umgesetzt als `TeamInfoWindow` (Länderzweig); Aufbau und Koordinaten im Klassenkommentar.
+  * **Hilfsfunktionen im Overlay:** cs:0x00 = „ist Land“ (DGROUP 0x6AD ≤ Verein &lt; 0x6AD + 12), cs:0x26 = Stärke
+    (Vereinsfelder 0x18/0x19, 0x1A/0x1B, 0x1C/0x1D summiert / 6), cs:0x47BF = Bilanzzeichen als Gesichter aus kb\33
+    (Quelle DGROUP 0x537A/0x537E: N (19 | 36), U (25 | 41), S (25 | 36); Rückgabe Spiele · 32 + Punkte), cs:0x12E5 = Rekordtext.
+  * **Rekorde** DGROUP 0xBD0F + 0x10 · Verein + 2 · Art (Wort), Gegner DGROUP 0xBB0F + 8 · Verein + Art; Arten 0–3 Heim (Sieg,
+    Niederlage, Tore, Gegentore), 4–7 Auswärts. Schreiber 0x51133 aus 0x50283 nur bei Code 7/8 (Datei 0x503A4–0x50438,
+    0x50680–0x506BA, 0x50AD0–0x50B07). Der Vergleich ist vorzeichenlos – H-Niederlage und A-Sieg (Modus 1) bleiben immer leer.
+  * **Kopf-an-Kopf** DGROUP 0xAB7B + 0x280 · Manager + 10 · Verein, Schreiber 0x4F5A8 aus 0x50283 für jedes Spiel (Platz =
+    Vereinsfeld 0x16 − 1 bzw. 0 für Deutschland DGROUP 0x6AC; Byte = Gegnertore · 16 + eigene Tore); Länder als Liste von
+    zehn (FIFO), Vereine je Seite fünf. Spielstart füllt 0xFF (0x43726). Leser auch in der Infoleiste (0x441D2–0x442B0).
+  * **Saisonwechsel 0x55E3D–0x55EF8:** Tabellenfelder (Punkte, Tore, Gegentore, Spiele, Siege, Niederlagen) aller 64 Teams auf 0,
+    nicht die Bilanzzeichen. Die WM-Auslosung tauscht Rekorde, Gegner und Kopf-an-Kopf mit (0x365B6–0x36799).
+  * **Wettbewerbscode DGROUP 0xD0C2** = 0 beim Eintritt ins Hauptmenü (0x44E32); Freundschaftsspiel 0xD (0x30390), WM-Gruppe 8
+    (0x30F53), WM-Endrunde 10 (0x31017, Ergebnis über 0x128:0x5C = 0x50283). Zeile „Historische Ergebnisse“ und dritter Knopf
+    nur bei Code 0.
+  * **Dritter Knopf** (0x4D78A, 0x4E3F4): Symbol = Vereinsfeld 0x34 Bits 6–7 (+1 als Zeichen), Klick schaltet 0 → 1 → 2 → 0,
+    schreibt über 0x30:0xB und setzt in DGROUP 0xE1B6 (10 Sätze à 15 Byte) Werte 1–3; Bild DGROUP 0xC12F nicht zugeordnet –
+    im Remake nicht umgesetzt.
+
+Teil 4 (#166, Oberliga-Austausch samt Managervereinen), Disassembly `ndisasm -b 16`, Dateiadressen – **Beleglage, nicht umgesetzt**.
+
+* **Ablauf 0x56137–0x5636D** (Schleife über die drei Tauschgruppen [bp−1] = 0, 1, 2; Anzahl je Gruppe DGROUP 0x7B9 + Gruppe):
+  Gruppen 0/1 wie in Teil 1 (Paare aus 0xCF20/0xCD94). Gruppe 2 (0x56238): ausscheidend [bp−0x13] = Platzliste
+  0x5CCB + 24 + 11 − k (Letzter, dann Vorletzter der Oberliga), nachrückend [bp−0x14] = `0x38:0x847(a, a + 5)` mit
+  a = [0x7C2] + [0x7B3] (Vereine 36–41); 0x56266–0x56282 würfelt neu, solange der Zug dem vorigen gleicht. **Manager werden
+  nicht übersprungen** – anders als `SeasonFlow.FinishClubSeason` (`[APPROX]` „Vereine von Managern ausgenommen“).
+* **Managerverein scheidet aus (0x56287–0x562F7, alle drei Gruppen):** Vereinsfeld +0x16 (Satz 0x3D Byte ab `[0x9657]`) = Manager
+  + 1; ist im Statusbyte (DGROUP 0x959F + 0x1AF · Feld = 0x974E + 0x1AF · Manager) Bit 0x04 frei, setzt 0x562C1 Bit 0x02
+  (Symbol Abstieg). **Nur Gruppe 2** (0x562C6 `cmp [bp−1],2; jc`): Konto (DGROUP 0x97EA + 0x1AF · Manager, 32 Bit) =
+  0x00124F80 = 1.200.000 Drittel = **400.000 DM** (gesetzt, nicht gebucht). Danach Tausch `0xF0:0x4D(aus, ein, 1)` = 0x36169:
+  Vereinssätze, Spielernummern (+0x1D) und Verein des Managers (DGROUP 0x966F + 0x1AF · Manager) wechseln mit – der Manager
+  bleibt bei seinem Verein, der jetzt einen Index 36–41 ohne Liga hat.
+* **Managerverein rückt nach (0x562FA–0x56334):** Gehört der nachrückende Verein einem Manager (Bit 0x04 frei), Bit 0x01 (Aufstieg).
+  Ein Manager ohne Liga kann also über den Zufallszug 36–41 wieder in die Oberliga kommen.
+* **Bit 0x04** = Zwangsabstieg wegen Schulden (0x55F17–0x55F87): Konto ≤ −2.000.000 Drittel (0xFFE17B80), Liga &lt; 2, weder Meister
+  noch Europapokalsieger (Status & 0x28 = 0) und höchstens zwei je Liga ([bp−0x18 + Liga] &lt; 2); der Verein wird in die
+  Abstiegspaare eingesetzt (0x55F93–0x560C5). Damit erklärt sich die Ausnahme „Bit 0x04 nicht gesetzt“ in 0x56287 und 0x562FA.
+* **Liga-Stufe des Managers** danach 0x563C0–0x56409: (Verein ≥ [0x7C1]) + (Verein ≥ [0x7C2]) – höchstens 2, ein Verein 36–41 gilt
+  als Oberliga-Stufe (Kostenstufe, `finanzen-rekonstruktion.md`).
+* **Nicht belegt:** was eine Saison ohne Liga für den Manager bedeutet (Spieltage ohne Ligaspiel, DEB-Pokal-Meldung, Hauptmenü,
+  Tabellen, „Weniger als neun Spieler“, Entlassung). Weder Videostelle noch Spielstand mit einem Manager auf 36–41 ist bekannt;
+  das Remake kennt Managervereine ohne Liga nicht (`Club.League` = null nur für Computervereine). Umsetzung nur mit diesem Beleg
+  und Anschlüssen in fremden Dateien (Finanzen, Hauptmenü, Statistiken) – siehe PR.

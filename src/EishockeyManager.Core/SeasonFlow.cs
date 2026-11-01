@@ -266,8 +266,11 @@ public sealed partial class GameState
 
         foreach (var group in RelegationGroups)
         {
+            // [ORIGINAL] Reihenfolge der Gruppentabelle (Datei 0x56157–0x5636D): em.exe paart den nächsten Aufsteiger unter
+            // den ersten beiden mit dem nächsten Absteiger unter den Plätzen 3 und 4 (Tausch 0x36169) – Grundlage der
+            // Startordnung der Folgesaison (LeagueTable.SuccessorOrder, Spur wettbewerbe-komplett).
             var up = group.Qualified(Clubs);
-            foreach (var club in group.Clubs)
+            foreach (var club in group.Table(Clubs).Select(r => r.Club.Index))
             {
                 var from = Clubs[club].League;
                 if (up.Contains(club) && from == group.Lower)

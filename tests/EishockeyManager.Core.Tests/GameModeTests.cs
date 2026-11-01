@@ -270,6 +270,14 @@ public class GameModeTests
     /// Integration Runde 8, Welle 3 (Leitstelle, R8W3I-01 #269): alle Werte neu (Ergebnisse der Managerpaarungen). Der Kader
     /// von Manager 0 schrumpft in beiden Ständen gleich (20, 20, 19, 16, dann 13 bzw. 12 Spieler); mit 12 Spielern ist der
     /// Verein 1997 nicht spielfähig (Strafen 9,2 Mio. DM) – daher das negative Konto in Saison 5, kein neuer Geldfehler.
+    /// Spur wettbewerbe-komplett Teil 1: Konten ab Saison 2 neu (Manager 0 −4.056 DM in 1994, Manager 1 ab 1996). Ursache: Die
+    /// Startordnung der Folgesaison (Platzliste der Vorsaison, 0x5CCB) ändert bei Gleichstand nach dem 1. Spieltag den
+    /// Tabellenplatz, der die Zuschauer bestimmt (FinanceStadium); Titel und Zufallsquellen unverändert.
+    /// Spur wettbewerbe-komplett Teil 3 (Mehrsaisonproben robust): Manager 0 hält seinen Verein mit
+    /// <see cref="TestSquadKeeper.KeepPlayable"/> spielfähig (Verlängerungen, vertragslose Spieler unter 18 Spielern,
+    /// Lücken der Aufstellung füllen) und die Probe prüft das jeden Tag. Vorher stand die Saison 1997 mit acht Aufgestellten
+    /// (Strafen 9,2 Mio. DM, Entlassung) in der Referenz – eine Folge des Zufalls, keine Geldprüfung. Neu ab Saison 3 (1995):
+    /// die gefüllte Lücke der Aufstellung ändert die Ergebnisse von Verein 2, damit Titel, Konten und Zufallsquellen.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -277,14 +285,17 @@ public class GameModeTests
         var game = Create(11, true, true, 2, 30);
         var print = Fingerprint(game, 5, g =>
         {
-            TestSeason.KeepSquad(g, g.Managers[0]); // Spur heimspiel-statistik (#136), siehe oben
+            TestSquadKeeper.KeepPlayable(g, g.Managers[0]); // wettbewerbe-komplett Teil 3, siehe oben
             ActiveSecondManager(g);
+            // Vorbedingung der Probe ausdrücklich: Manager 0 bleibt im Amt und spielfähig (sonst taugt sie nicht als Geldprobe).
+            Assert.False(g.Managers[0].Dismissed, $"Manager 0 entlassen ({g.Season}, Tag {g.CurrentDay})");
+            Assert.False(g.IsShortHanded(g.Clubs[g.Managers[0].ClubIndex]), $"Manager 0 nicht spielfähig ({g.Season}, Tag {g.CurrentDay})");
         });
         Assert.Equal(Mode4Reference, print);
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2225350,405129|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=1|3420342,294365|WorldChampion=52,CupWinner=24,GermanChampion=24,EuropeanCupWinner=1|4153466,83083|WorldChampion=52,CupWinner=25,GermanChampion=0,EuropeanCupWinner=1|4679840,-120071|WorldChampion=52,CupWinner=1,GermanChampion=13,EuropeanCupWinner=1|-6956210,-353316|R409663842 C1843401354";
+        "WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=2|2225350,405129|WorldChampion=52,CupWinner=24,GermanChampion=0,EuropeanCupWinner=1|3416286,294365|WorldChampion=53,CupWinner=25,GermanChampion=12,EuropeanCupWinner=0|4078258,91523|WorldChampion=54,CupWinner=24,GermanChampion=1,EuropeanCupWinner=0|4855853,-113463|WorldChampion=63,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|4939086,-382179|R1560505299 C1500259167";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -55,6 +55,8 @@ public sealed class TableScreen : Screen
         // DGROUP 0x7A9 + „.Spieltag“, zentriert zwischen x = 5 und 313 auf Grundlinie 54, Farbe 10, Schatten 28. 0x7A9 steht
         // beim Spielstart auf 1 (Datei 0x43A7E): vor dem ersten Spieltag „1.Spieltag“ (Video 13:07), danach die Zahl der
         // gespielten Spieltage (karriere_01021 „36.Spieltag“ bei 36 Spielen, folge21_02711 „3.Spieltag“ bei 3 Spielen).
+        // [ORIGINAL] Abzug Datei 0x4F986: Zahl = 0x7A9 − 1 bei Aufruf aus dem Hauptmenü (Parameter 1, 0x4583B) und 0x7A9 > 1;
+        // die automatische Tabelle nach dem Spieltag (Parameter 0, 0x37882) zeigt 0x7A9 vor dem Weiterzählen (0x37897).
         var matchDay = game.PlayedMatchDays;
         CompetitionWidgets.Centered(s, Assets.Flow, 5, 313, 54, Title(_view, matchDay), 10, 28);
 
