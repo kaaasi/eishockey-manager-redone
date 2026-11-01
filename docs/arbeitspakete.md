@@ -77,7 +77,7 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 - **Abnahme:** je Teil roter Test mit Fundstelle, danach grün; Saisonverteilung (Meister ≥ 8 Saisons, Tore, Strafminuten)
   gegen Videos im PR; Mehrsaisonprobe Modus 1, 2, 4 passiv/aktiv; Referenzwerte begründet.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/spielberechnung.md`, `docs/dosbox-befunde.md` (eigener Abschnitt), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–5 fertig (#295 → #302 → #309 → #311 → #312); Integration zuletzt.
 
 ### Spur `transfer-vertraege-komplett` – Transfers und Verträge abschließen
 
@@ -92,7 +92,13 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 - **Abnahme:** je Regel roter Test, danach grün; Goldtest aus FILE03/05/07 erweitert; Mehrsaisonprobe (Kader, Geld);
   Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/transfer.md`, Tests.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Folgeteil (Entscheidungen Nutzer 01.11.2026, eigener Lauf ohne Fortsetzung, Go 01.11.2026):**
+  5. **Listenwechsel 0x494EF auf das Original umbauen:** Pool von 200 Spielern (Computervereine ohne Spieler) statt Zug aus den
+     Kadern der Computervereine (Beschreibung `docs/transfer.md`, #308); **Ablöse bei Markt-Angeboten** (Bit 0x80) nach 0x49332:
+     gutgeschrieben wird Angebot − Angebot / 7 · Restlaufzeit statt des vollen Angebots. Geänderte Referenzwerte je Fall
+     begründen; Mehrsaisonprobe (Kader, Geld). Branch `paket/transfer-vertraege-komplett-5`, Base `paket/transfer-vertraege-komplett-4`
+     (#310), solange #310 offen ist.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–4 fertig (#294 → #301 → #305 → #308 → #310); Teil 5 läuft.
 
 ### Spur `wettbewerbe-komplett` – Tabellen, Pokale, Nationalteam abschließen
 
@@ -107,7 +113,7 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   4. **#166 Oberliga-Austausch** nur, wenn der Austausch der Oberliga samt Managervereinen belegt wird; sonst Beleglage im PR.
 - **Abnahme:** je Teil roter Test bzw. Pixelvergleich mit Kennzahl; Mehrsaisonprobe Modus 1, 2, 4; Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/saison.md`, `docs/wettbewerbe.md` (eigene Abschnitte), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–4 fertig (#293 → #299 → #306 → #307; Teil 4 nur Beleglage, #166 → Runde 10).
 
 ### Spur `optionen-wirkung` – Spielstand-Optionen, Einstellungen, Kalender
 
@@ -122,7 +128,13 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
      Spieltag.“) ist im Remake vorhanden und wird nur abgeglichen.
 - **Abnahme:** roter Test je Option mit Wirkung; Mehrsaisonprobe mit Moduswechsel; Pixelvergleich; Bildschirme zustandsrein.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/tagesablauf.md`, Tests.
-- **Modell:** Claude Opus 5.5 (Core-Logik). **Status:** offen.
+- **Folgeteil (Entscheidung Nutzer 01.11.2026, eigener Lauf ohne Fortsetzung, Go 01.11.2026):**
+  4. **Torszenen-Schalter zusammenlegen:** Geräteeinstellung „Torszenen zeigen“ (Remake) und Original-Schalter im Spielstand
+     (`GameOptions.LiveMode`, #298) werden ein Schalter; Optionsbildschirm des Originals bleibt die Bedienstelle, die
+     Geräteeinstellung entfällt bzw. wird daraus abgeleitet; Migration alter Spielstände/Einstellungen; Pixelvergleich Bild
+     48–51 unverändert. Branch `paket/optionen-wirkung-4`, Base `paket/optionen-wirkung-3` (#303), solange #303 offen ist.
+- **Modell:** Claude Opus 5.5 (Core-Logik), Teil 4 Claude Sonnet 5.5. **Status:** Teile 1–3 fertig (#292 → #298 → #303);
+  Teil 4 läuft.
 
 ### Spur `finanzen-rest` – Restliche Finanz- und Managerbildschirme
 
@@ -133,12 +145,14 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
   4. **Dateidialog** 0x5DBE5 (`SaveLoadScreen.cs`) gegen das Original.
 - **Abnahme:** je Teil Zuordnung mit Fundstelle, roter Test, Pixelvergleich mit Kennzahl; Mehrsaisonprobe bei Geld.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/finanzen-rekonstruktion.md` (eigener Abschnitt), Tests.
-- **Modell:** Claude Sonnet 5.5. **Status:** offen.
+- **Modell:** Claude Sonnet 5.5. **Status:** Teile 1–4 fertig (#291 → #300 → #304 → #313); Integration läuft.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): letzter Schritt vor v1.0 (Entscheidung Nutzer).
 - Runde 10: Sonderrunde Analyse der unbekannten Teile von em.exe (Wunsch Nutzer 01.11.2026).
+- #166 Saison eines Managers ohne Liga bzw. Oberliga-Austausch samt Managervereinen (Entscheidung Nutzer 01.11.2026, #307):
+  nicht in Runde 9, `[APPROX]` bleibt; in Runde 10 analysieren und mit einem `hok-patch`-Spielstand in DOSBox belegen.
 - Import/Export von Original-Spielständen ins Remake; Highscore am Spielende und Saisonende im Modus „nur Weltkugel“
   (Kandidat für eine DOSBox-Aufnahme mit `hok-patch`).
 - R8-A01 (Spielstände aus Spurbranches laden nicht): Spurbranches sind keine Ausgabestände.
