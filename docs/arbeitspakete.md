@@ -92,6 +92,23 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
 - **Modell:** Claude Fable 5.1; blockieren die Schutzmaßnahmen die Analyse, meldet der Lauf das im PR (`spur-wartet`)
   und die Leitstelle startet die Spur nach Freigabe des Nutzers mit Claude Opus 5.5 neu. **Status:** wartet auf Go.
 
+### Spur `re-rest` – übrige unbekannte Funktionen (Nachtrag, Go Nutzer 01.11.2026)
+
+- **Adressen:** die nach `re-geld`, `re-meldungen` und `re-saisonwechsel` noch unbekannten Funktionen des Spielcodes
+  außer Ov 130h und 575C3h (vermutlich Livespiel, bleibt bei `re-livespiel`); Stand: drei Spurbranches auf 664ff18,
+  53 Funktionen, etwa 7 KB:
+  Basis 238h: 064C9h; Basis 46Eh: 06C9Ch, 06CDFh, 06FA5h (Talentsuche); Basis 62Ch: 0AD7Ah;
+  Ov C0h: 255C0h, 255FFh, 2592Fh, 25A0Eh, 25AF9h, 25B31h; Ov D8h: 28030h, 280DAh, 28111h;
+  Ov E0h: 2A5F5h, 2A6A2h, 2B008h; Ov E8h: 3183Ch, 34872h, 34B3Eh, 34F7Dh, 34FF9h;
+  Ov F0h: 35CBEh, 35D5Dh, 36146h, 367B1h, 369C7h, 36AAAh, 37A4Ah; Ov F8h: 3CA71h, 3CCEBh; Ov 108h: 40290h;
+  Ov 110h: 431CBh, 432C4h, 435CDh, 436DDh, 45CD0h; Ov 118h: 47BCDh, 47CA0h;
+  Ov 120h: 4B0F0h, 4B101h, 4B127h, 4B270h, 4B2BAh, 4B9CDh, 4BD7Eh, 4C6B6h, 4CCB4h; Ov 138h: 59D71h;
+  Ov 140h: 5A820h, 5AA34h, 5AC9Bh, 5E8B0h.
+- **Vorgehen:** je Funktion Aufrufer lesen (meist schon umgesetzt) und die Funktion dem Remake zuordnen; kleine Hilfen
+  dürfen zusammengefasst beschrieben werden. Analysen der anderen Spuren (`docs/analyse/`, auch auf den offenen
+  Spurbranches) nur lesen. Nach einer Adresse kein Doppelpunkt (sonst erkennt die Karte sie nicht, #374).
+- **Modell:** Claude Opus 5.5. **Status:** Go Nutzer 01.11.2026.
+
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): Umsetzung als letzter Schritt vor v1.0; Analyse in
