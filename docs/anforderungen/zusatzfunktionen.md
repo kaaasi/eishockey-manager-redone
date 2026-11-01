@@ -58,3 +58,8 @@ Originaldarstellung bleibt unverändert.
   Listenpreis ab und lässt sich aus den drei Zufallszügen (75–85 %, 110–130 %, 70–120) exakt ausrechnen, ohne Zufall zu
   verbrauchen – die Anzeige verändert damit keinen Spielzustand. Offen: Gebote an andere Manager (Antwort des Verkäufers),
   Darstellung (Prozentzahl oder Ampel) und ob die Anzeige im Netzwerkmodus erlaubt ist.
+- **Spieltag mit Managerverein ganz in der Minutenrechnung (01.11.2026, #349):** Im Original entscheidet ein Merker je
+  Spieltag (em.exe Datei 0x36FEA): Spielt an einem Pokalspieltag ein Managerverein, laufen alle Paarungen des Spieltags
+  durch die Minutenschleife, sonst alle über den schnellen Weg. Das Remake entscheidet je Paarung und bleibt dabei
+  (Entscheidung Nutzer). Nach v1.0 als Einstellung „wie im Original“ anbieten; sie ändert Ergebnisse und Zufallsverbrauch
+  der Pokalspiele ohne Manager.

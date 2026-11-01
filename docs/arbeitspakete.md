@@ -151,6 +151,10 @@ eigenen Abschnitt von `docs/reverse-engineering.md`; Pixelvergleiche und `Origin
 
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): letzter Schritt vor v1.0 (Entscheidung Nutzer).
 - Runde 10: Sonderrunde Analyse der unbekannten Teile von em.exe (Wunsch Nutzer 01.11.2026).
+- Nach Runde 10 (Runde 11, Entscheidung Nutzer 01.11.2026): P3-Befunde der Integration Runde 9 – #327, #329, #342, #344,
+  #347, #348, #354; Robustheit der Mehrsaisonproben (#352, #353).
+- #349 Spieltag mit Managerverein ganz in der Minutenrechnung: Remake-Verhalten bleibt; Original als Einstellung nach v1.0
+  (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C).
 - #166 Saison eines Managers ohne Liga bzw. Oberliga-Austausch samt Managervereinen (Entscheidung Nutzer 01.11.2026, #307):
   nicht in Runde 9, `[APPROX]` bleibt; in Runde 10 analysieren und mit einem `hok-patch`-Spielstand in DOSBox belegen.
 - Import/Export von Original-Spielständen ins Remake; Highscore am Spielende und Saisonende im Modus „nur Weltkugel“

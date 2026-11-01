@@ -28,5 +28,7 @@
    Zugriffsabsatz aus `spur-start.md` (Kurzaufruf „Geplanter Lauf“). Modell nach dem Anlegen mit `update_trigger` setzen,
    wenn es von Opus abweicht – nur auf ausdrücklichen Wunsch des Nutzers (z. B. vom Nutzer bestätigter Plan bzw. Go mit
    Modell). Offene PRs mit `spur-wartet` durchsehen: „Fortsetzung anlegen – Leitstelle“ heißt, die Aufgabe mit dem Prompt aus
-   der Übergabe anlegen; Draft-Status, den ein Lauf nicht aufheben konnte, setzt der Nutzer in der Weboberfläche.
+   der Übergabe anlegen – vorher gegen den Kurzaufruf „Geplanter Lauf mit Teilen“ prüfen; abweichen dürfen nur Spur, Modell,
+   Zähler und PR-Nummer (R9F-03). Draft-Status, den ein Lauf nicht aufheben konnte, setzt der Nutzer; die Leitstelle nur,
+   wenn ihr ein Werkzeug dafür zur Verfügung steht.
 8. Antwort an den Nutzer **knapp** (`AGENTS.md` §7): Ergebnis, Entscheidungsbedarf, nächster Schritt, Kurzaufrufe.
