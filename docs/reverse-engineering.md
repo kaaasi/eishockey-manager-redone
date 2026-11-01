@@ -957,3 +957,16 @@ Ereignis 4 → **Verletzung 0x05B1A** (Tabellen DGROUP 0x181 Wochen, 0x1B9 Häuf
 Tageslauf 0x07169 an 0x74A9), **Heilung 0x7C12** (wöchentlich), Versicherung 0x07089 (Zahlung +0x30 · 4, nicht umgesetzt);
 **Torschütze 0x541D9 → 0x386D1** je Abschluss der Managerpaarung; Zählung 0x4BE17 (Modus 0 belegt, 1 Aufstellung, 2
 Reserve); Gruppe 0x4180 (Rollenwert / 25 ≤ 2). Einzelheiten: [spielberechnung.md](spielberechnung.md) §17.
+
+## Runde 10: Analysen der unbekannten Teile (Sonderrunde)
+
+Die Analysen der Runde 10 stehen je Spur in `docs/analyse/` (Fundstellen, Regeln, Abgleich mit dem Remake und Kandidaten
+für Runde 11); die Funktionskarte zählt sie mit ([re-abdeckung.md](re-abdeckung.md)).
+
+| Spur | Datei | Inhalt |
+|---|---|---|
+| `re-geld` | [analyse/re-geld.md](analyse/re-geld.md) | Stadionbau, Börse und Konto, Transfermarkt-Konto, Grundwert, Jugendförderung; Entscheidungen Nutzer E1/E2 |
+| `re-meldungen` | [analyse/re-meldungen.md](analyse/re-meldungen.md) | Meldungen und Fragen, Infofile, Tabellenkurve, Tagesablauf, Bildlader, Fensterverwaltung |
+| `re-saisonwechsel` | [analyse/re-saisonwechsel.md](analyse/re-saisonwechsel.md) | Saisonende, Oberliga-Austausch mit Managervereinen (#166, berichtigt Teil 4 oben), DOSBox-Beleg |
+| `re-livespiel` | [analyse/re-livespiel.md](analyse/re-livespiel.md) | Livespiel: Spieluhr, Anzeigetafel, Reporter, Torszenen, Spielende (Grundlage für `livespiel`) |
+| `re-rest` | [analyse/re-rest.md](analyse/re-rest.md) | übrige Funktionen des Spielcodes (u. a. Talentsuche, Hilfen der Spieltage, Nachrichten) |

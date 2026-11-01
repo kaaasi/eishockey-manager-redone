@@ -82,7 +82,8 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
   Bilder ins Referenz-Repo. Die Auswertung der Bilder ist ein weiterer Lauf nach Entscheidung des Nutzers.
 - **Abgleich:** `SeasonFlow.cs`, `docs/saison.md`, `[APPROX]` aus #307. **Modell:** Claude Opus 5.5. **Status:** Analyse
   fertig (#377, `docs/analyse/re-saisonwechsel.md`): Managervereine verlassen die Oberliga nie (zweiter Tausch hebt den ersten
-  auf), Konto 400.000 DM, beide Pfeile; DOSBox-Beleg offen (Vorlage `FILE12.HOK` vom Nutzer nötig).
+  auf), Konto 400.000 DM, beide Pfeile. DOSBox-Beleg: `FILE12`–`FILE14` und Bilder im Referenz-Repo
+  (kaaasi/eishockey-manager-referenz#7); Auswertung in einem weiteren Lauf nach Entscheidung des Nutzers.
 
 ### Spur `re-livespiel` – Livespiel Ov 130h (nur Analyse)
 
@@ -100,7 +101,7 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
 ### Spur `re-rest` – übrige unbekannte Funktionen (Nachtrag, Go Nutzer 01.11.2026)
 
 - **Adressen:** die nach `re-geld`, `re-meldungen` und `re-saisonwechsel` noch unbekannten Funktionen des Spielcodes
-  außer Ov 130h und 575C3h (vermutlich Livespiel, bleibt bei `re-livespiel`); Stand: drei Spurbranches auf 664ff18,
+  außer Ov 130h und 575C3h (siehe „Zurückgestellt“, R10R-01 #387); Stand: drei Spurbranches auf 664ff18,
   53 Funktionen, etwa 7 KB:
   Basis 238h: 064C9h; Basis 46Eh: 06C9Ch, 06CDFh, 06FA5h (Talentsuche); Basis 62Ch: 0AD7Ah;
   Ov C0h: 255C0h, 255FFh, 2592Fh, 25A0Eh, 25AF9h, 25B31h; Ov D8h: 28030h, 280DAh, 28111h;
@@ -111,13 +112,16 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
   Ov 140h: 5A820h, 5AA34h, 5AC9Bh, 5E8B0h.
 - **Vorgehen:** je Funktion Aufrufer lesen (meist schon umgesetzt) und die Funktion dem Remake zuordnen; kleine Hilfen
   dürfen zusammengefasst beschrieben werden. Analysen der anderen Spuren (`docs/analyse/`, auch auf den offenen
-  Spurbranches) nur lesen. Nach einer Adresse kein Doppelpunkt (sonst erkennt die Karte sie nicht, #374).
-- **Modell:** Claude Opus 5.5. **Status:** Go Nutzer 01.11.2026.
+  Spurbranches) nur lesen. Nach einer Adresse kein Doppelpunkt (sonst erkennt die Karte sie nicht; Hinweis in
+  `reviews/2026-11-01-plan-runde-10-nachpruefung.md`, R10R-02 #388).
+- **Modell:** Claude Opus 5.5. **Status:** Analyse fertig (PR #381, `docs/analyse/re-rest.md`): 53 von 53 Funktionen
+  zugeordnet, Kandidaten K1–K7 (K1 Talentsuche P2); Übergaben an `livespiel`: 3183Ch, 35CBEh, 40290h.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): Umsetzung als letzter Schritt vor v1.0; Analyse in
-  `re-livespiel`.
+  `re-livespiel`. Noch unbekannt und dort mitzuanalysieren: 575C3h (Ov 138h, Lader `tore\`, einziger Aufrufer 567C8h;
+  R10R-01 #387).
 - Runde 11 (normale Runde, Entscheidung Nutzer 01.11.2026): Kandidaten aus Runde 10; P3-Befunde der Integration Runde 9
   – #327, #329, #342, #344, #347, #348, #354, #358, #362, #363, #364; Robustheit der Mehrsaisonproben (#352, #353,
   #357).
