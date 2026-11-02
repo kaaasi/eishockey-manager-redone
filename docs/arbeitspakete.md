@@ -110,7 +110,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
      Regressionstest Play-offs mit allen Feldern der Meldungsmatrix (#362).
 - **Abnahme:** Mehrsaisonprobe 20 Saisons (Modus 1, 2, 4; passiv/aktiv); je Regel roter Test.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/analyse/re-saisonwechsel.md` (nur Status), Tests. **Modell:** Claude Opus 5.5.
-  **Status:** –
+  **Status:** Teil 1 fertig, Review offen (PR #419).
 
 ### Spur `kader-transfer` – Kader, Transfermarkt, Verträge, Pool
 

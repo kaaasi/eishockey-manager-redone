@@ -303,6 +303,9 @@ public class GameModeTests
     /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand aller fünf Spuren neu ermittelt; die Ursachen oben
     /// wirken zusammen. Dazu der Minutenweg der DEB-Pokalspiele ohne Manager (Anzeigeschalter an, optionen-wirkung, 0x3702E).
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
+    /// Spur saisonwechsel, Teil 1 (S-K1/S-K2, Datei 0x562C6–0x5636D): neu ab der ersten Saison – Manager 1 (Verein 30) endet jede
+    /// Saison unter den letzten zwei der Oberliga, bleibt dort und hat am 29. April 400.000 DM (gesetzt, Datei 0x562D8); vorher stieg der
+    /// nächstschlechtere Verein ab und das Konto lief weiter. Dazu andere Nachrücker (random(36, 41)) und damit anderer Zufallsverbrauch.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -320,7 +323,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|609157,348890|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=0|1491638,141753|WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=1|2729776,35181|WorldChampion=55,CupWinner=12,GermanChampion=15,EuropeanCupWinner=4|3734605,-28570|WorldChampion=52,CupWinner=8,GermanChampion=8,EuropeanCupWinner=4|4353063,118997|R967498903 C1705043894";
+        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|609157,400000|WorldChampion=54,CupWinner=10,GermanChampion=1,EuropeanCupWinner=0|1414827,400000|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2563009,400000|WorldChampion=52,CupWinner=8,GermanChampion=9,EuropeanCupWinner=0|3587659,400000|WorldChampion=52,CupWinner=8,GermanChampion=3,EuropeanCupWinner=0|4231493,400000|R1140319995 C1871903819";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

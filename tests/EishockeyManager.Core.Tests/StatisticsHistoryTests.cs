@@ -57,7 +57,7 @@ public class StatisticsHistoryTests
         }
         Assert.Equal(1, game.Eternal(record.Titles[Title.GermanChampion]).Championships);
         var ranking = game.EternalTable;
-        Assert.Equal(48, ranking.Count);
+        Assert.Equal(42, ranking.Count); // Spur saisonwechsel (A197): Plätze 0–41 wie em.exe, ohne die Vereine auf 42–47
         Assert.Equal(ranking.Select(e => e.Points).OrderDescending(), ranking.Select(e => e.Points));
     }
 

@@ -179,6 +179,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             // der neuen Saison (0x3F02C). Deshalb zählen die Tagesstände der letzten 31 Tage der Vorsaison mit (vorher nur der
             // Endstand; Seed 3, Originaldaten, Bundesliga passiv: im April negativ, am Saisonende positiv).
             var recentBalances = new Queue<long>();
+            long neutral = 0; // Spur saisonwechsel, Teil 1: Konto gesetzt statt gebucht (siehe unten)
             for (var year = 0; year < 4; year++)
             {
                 var club = game.Clubs[manager.ClubIndex];
@@ -194,6 +195,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 var maxRoster = roster;
                 var minRoster = roster;
                 long maxContracts = game.Ads(manager).MonthlyIncome;
+                var keptSet = false;
                 var seasonLowest = Math.Min(Math.Min(manager.Money, previousSeasonEnd), recentBalances.DefaultIfEmpty(0).Min());
                 for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
                 {
@@ -223,7 +225,17 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     maxRoster = Math.Max(maxRoster, club.Players.Count);
                     minRoster = Math.Min(minRoster, club.Players.Count);
                     var book = game.Finance(manager).Book;
-                    Assert.Equal(FinanceRules.StartMoney(manager.Level) + cumulative + book.CurrentTotal, manager.Money);
+                    // Spur saisonwechsel, Teil 1 (S-K1, Datei 0x562D8): Bleibt der Verein als Letzter oder Vorletzter in der Oberliga,
+                    // setzt em.exe das Konto am 29. April auf 400.000 DM, ohne Buchung; danach kommen nur noch die Prämien. Die
+                    // neutrale Differenz zählt getrennt vom Finanzbuch (passive Oberligaprobe: Verein 24 endet unten).
+                    if (game.Phase is SeasonPhase.SeasonOver or SeasonPhase.GameOver && game.History.Count > year
+                        && GameState.KeptInOberliga(game.History[^1], manager.ClubIndex) && !keptSet)
+                    {
+                        Assert.Equal(GameState.OberligaKeptMoney + book.Current(FinanceCategory.Praemien), manager.Money);
+                        neutral += manager.Money - (FinanceRules.StartMoney(manager.Level) + cumulative + neutral + book.CurrentTotal);
+                        keptSet = true;
+                    }
+                    Assert.Equal(FinanceRules.StartMoney(manager.Level) + cumulative + neutral + book.CurrentTotal, manager.Money);
                     var homeGames = HomeGames(game, manager.ClubIndex);
                     minTickets += (homeGames - settledHomeGames) * 50L * price;
                     maxTickets += (homeGames - settledHomeGames) * (long)capacity * price;

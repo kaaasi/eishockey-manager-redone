@@ -139,7 +139,7 @@ public class SeasonFlowTests
                 // Neue Vereine spielen tatsächlich in ihrer neuen Liga
                 foreach (var club in record.PromotedInto[League.Oberliga])
                     Assert.Equal(League.Oberliga, game.Clubs[club].League);
-                foreach (var club in record.LeftOberliga)
+                foreach (var club in record.LeftOberliga.Where(c => !GameState.KeptInOberliga(record, c))) // Spur saisonwechsel: Managerverein bleibt
                     Assert.Null(game.Clubs[club].League);
             }
             leaguesOfManager.Add(game.Clubs[30].League);

@@ -280,19 +280,10 @@ public sealed partial class GameState
             }
         }
 
-        // [APPROX] Die beiden Letzten der Oberliga verlassen die Liga (Vereine von Managern ausgenommen),
-        // zwei zufällige Vereine ohne Liga (Datenbank 36–47) rücken nach – im Video grün unter „Oberliga“.
+        // Oberliga-Austausch wie em.exe (Spur saisonwechsel, S-K1/S-K2, SeasonFlow.Oberliga.cs).
         // [APPROX] Im Modus „nur Weltkugel“ wird keine Liga gespielt, also steigt auch niemand ab (Spur wettbewerbe-weltkugel).
-        var managerClubs = Managers.Select(m => m.ClubIndex).ToHashSet();
-        var leaving = WorldOnly ? new List<int>() : tables[League.Oberliga].Reverse().Where(c => !managerClubs.Contains(c)).Take(2).ToList();
-        record.LeftOberliga.AddRange(leaving);
-        var pool = Clubs.Where(c => c.Index < NewGame.SelectableClubs && c.League is null).Select(c => c.Index).ToList();
-        for (var i = 0; i < leaving.Count && pool.Count > 0; i++)
-        {
-            var pick = pool[Random.Next(pool.Count)];
-            pool.Remove(pick);
-            record.PromotedInto[League.Oberliga].Add(pick);
-        }
+        if (!WorldOnly)
+            ExchangeOberliga(tables[League.Oberliga], record);
 
         CurrentRecord = record;
         Phase = SeasonPhase.ClubSeasonOver;
@@ -323,6 +314,14 @@ public sealed partial class GameState
                 events.Add(SeasonEvent.Promotion);
             if (record.RelegatedInto.Values.Any(l => l.Contains(club.Index)))
                 events.Add(SeasonEvent.Relegation);
+            // [ORIGINAL] Datei 0x562C1–0x56334 (S-K1, DOSBox-Beleg #389, `file13_15`): Bleibt der Verein als Letzter oder
+            // Vorletzter in der Oberliga, setzt em.exe Bit 0x02 und Bit 0x01 (Pfeil hoch, Pfeil runter) und das Konto auf
+            // 400.000 DM – gesetzt, nicht gebucht (neutral, kein Finanzbuch), vor den Prämien des Fensters (Datei 0x5645D).
+            if (KeptInOberliga(record, club.Index))
+            {
+                events.Add(SeasonEvent.Relegation);
+                manager.Money = OberligaKeptMoney;
+            }
             foreach (var (title, winner) in record.Titles)
             {
                 if (winner != club.Index)
@@ -338,7 +337,7 @@ public sealed partial class GameState
                 }
             }
             events.AddRange(SinglePremiumEvents(manager, league)); // Spur statistiken (#135): Einzelprämien (StatisticsClub.cs)
-            var premium = SeasonPremium(league, rank, events);
+            var premium = SeasonPremium(league, rank, PremiumEvents(record, club.Index, events)); // ohne Aufstieg beim Doppeltausch
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
             record.Managers.Add(new ManagerSeasonResult(i, club.Index, league, rank, premium, events));

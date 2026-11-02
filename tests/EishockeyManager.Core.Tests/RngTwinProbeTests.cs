@@ -123,16 +123,19 @@ namespace EishockeyManager.Core.Tests;
 /// wirken zusammen, dazu der Minutenweg der Pokalspiele ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an,
 /// 0x3702E).
 /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
+/// Spur saisonwechsel, Teil 1 (S-K1/S-K2, Datei 0x56238–0x5636D): alle neu – Oberliga-Nachrücker per random(36, 41) über die Plätze
+/// ohne Liga (Wiederholung bei gleichem Zug) statt Zug aus allen Vereinen ohne Liga, anderer Zufallsverbrauch und andere Nachrücker;
+/// ein Managerverein unter den letzten zwei bleibt in der Oberliga (Konto 400.000 DM) statt des nächstschlechteren Vereins.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "0B378A46286A43C1")]
-    [InlineData(true, 3, "67C82ECC92477F1D")]
-    [InlineData(false, 11, "33106723CBD0B865")]
-    [InlineData(true, 11, "C54F0CCBFD36465B")]
+    [InlineData(false, 3, "00AF4E2F07BB7656")]
+    [InlineData(true, 3, "9DC6DC097561B6B6")]
+    [InlineData(false, 11, "B21596B0C4F43C62")]
+    [InlineData(true, 11, "111DE000A7FBCB0D")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -140,8 +143,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "161AEB7D0C3C6BAC")]
-    [InlineData(true, "7C6194C31A773289")]
+    [InlineData(false, "B9CC558F4903EB5D")]
+    [InlineData(true, "BF60231CFF9A09C4")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

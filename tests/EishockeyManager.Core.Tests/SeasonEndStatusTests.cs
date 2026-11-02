@@ -110,7 +110,7 @@ public class SeasonEndStatusTests
         PlayToSeasonEnd(game);
         var record = game.History[^1];
         foreach (var result in record.Managers)
-            Assert.Equal(GameState.SeasonPremium(result.League, result.Rank, result.Events), result.Premium);
+            Assert.Equal(GameState.SeasonPremium(result.League, result.Rank, GameState.PremiumEvents(record, result.Club, result.Events)), result.Premium);
         Assert.True(HasBit(game, record, 2) || HasBit(game, record, 1)); // Vorbedingung: Bit tritt auf
     }
 
@@ -142,7 +142,7 @@ public class SeasonEndStatusTests
                 var expected = globe && top.Contains(result.Club);
                 Assert.Equal(expected, game.HasTopFiveStatus(record, result));
                 if (expected) withBit++; else withoutBit++;
-                Assert.Equal(GameState.SeasonPremium(result.League, result.Rank, result.Events), result.Premium);
+                Assert.Equal(GameState.SeasonPremium(result.League, result.Rank, GameState.PremiumEvents(record, result.Club, result.Events)), result.Premium);
             }
             if (change < 4)
                 game.StartNextSeason();

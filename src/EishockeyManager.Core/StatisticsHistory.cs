@@ -71,7 +71,8 @@ public sealed record ManagerSeasonHistory(
 /// Deutscher Meister +15 und als Bundesligist +10; Erster einer unteren Liga +3; DEB-Pokalsieger +25;
 /// Europacupsieger +40. Belegt am Video (16:38, nach der ersten Saison): Berliner SC (8. der Oberliga) 5 Punkte,
 /// Mannheimer ERC (1. der Bundesliga) 52, Düsseldorfer EG (2., Meister, Europacupsieger) 116.
-/// [APPROX] Das Original führt 42 Vereine (Strukturindex 0–41), das Remake alle 48 wählbaren Vereine.
+/// [ORIGINAL] Das Original führt 42 Vereine (Strukturindex 0–41, A197): Die Vereine auf den Plätzen 42–47 rücken nie in die
+/// Oberliga nach (re-saisonwechsel.md §3, DOSBox-Beleg #389) und fehlen in der Ewigen Tabelle (<see cref="GameState.OutsidePlaces"/>).
 /// </remarks>
 public sealed partial class GameState
 {
@@ -82,10 +83,16 @@ public sealed partial class GameState
     /// <summary>Saison, für die die Statistik zuletzt fortgeschrieben wurde (Schutz gegen doppelte Buchung).</summary>
     public int StatisticsRecordedSeason { get; private set; } = -1;
 
-    /// <summary>Ewige Tabelle aller wählbaren Vereine, sortiert nach Punkten (stabil nach Vereinsindex).</summary>
-    public IReadOnlyList<EternalEntry> EternalTable =>
-        Enumerable.Range(0, NewGame.SelectableClubs).Select(Eternal)
-            .OrderByDescending(e => e.Points).ThenBy(e => e.Club).ToList();
+    /// <summary>Ewige Tabelle der Vereine auf den Plätzen 0–41, sortiert nach Punkten (stabil nach Vereinsindex).</summary>
+    public IReadOnlyList<EternalEntry> EternalTable
+    {
+        get
+        {
+            var neverPromoted = OutsidePlaces().Skip(OutsideDrawPlaces).ToHashSet();
+            return Enumerable.Range(0, NewGame.SelectableClubs).Where(c => !neverPromoted.Contains(c)).Select(Eternal)
+                .OrderByDescending(e => e.Points).ThenBy(e => e.Club).ToList();
+        }
+    }
 
     /// <summary>Eintrag eines Vereins in der Ewigen Tabelle (0 Punkte, solange er noch keinen hat).</summary>
     public EternalEntry Eternal(int club) =>

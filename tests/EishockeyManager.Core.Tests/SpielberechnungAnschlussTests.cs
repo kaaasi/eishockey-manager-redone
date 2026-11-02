@@ -158,10 +158,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Integration Runde 9 (Leitstelle): beide auf dem integrierten Stand neu, einschließlich Minutenweg der Pokalspiele
     /// ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an, 0x3702E).
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
+    /// Spur saisonwechsel, Teil 1: beide neu (Oberliga-Nachrücker random(36, 41), Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "79803AC5ED2C7179")]
-    [InlineData(true, "D68EC5E7AE30E621")]
+    [InlineData(false, "D6489EFB793D0E11")]
+    [InlineData(true, "041D7EB6D9254E25")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
