@@ -4,7 +4,9 @@ Drei Let's-Play-Videos, die 29-teilige Reihe „Eishockey Manager EM“ (Reihen 
 Releases `videos-roh-2` (Reihen `eisbaeren_f01` … `eisbaeren_f65`, `duell_s2a` … `duell_s6d`, `speedrun_t1`/`_t2`, unten)
 dienen als Vorlage für Optik und Ablauf. Die Videos selbst liegen nicht im Repo.
 Einzelbilder (1 pro Sekunde, 320 × 240) und Übersichtsbögen liegen im privaten Repo `kaaasi/eishockey-manager-referenz`;
-laden mit `tools/claude/fetch-reference.sh`. Dateiname = Zeitstempel, z. B. `oberflaeche_1405.png` = 14:05,
+laden mit `tools/claude/fetch-reference.sh`. Einzelne Bilder ohne die ganze Reihe: im Klon `~/referenz` (Sparse,
+`blob:none`) holt `git show HEAD:<reihe>/<bild>.png > <ziel>` nur dieses Bild nach (vorher `git cat-file -e` prüfen; Ziel
+außerhalb des Code-Repos). Dateiname = Zeitstempel, z. B. `oberflaeche_1405.png` = 14:05,
 `bundestrainer_00745.png` = 0:07:45, `folge06_01256.png` = Folge 6, 0:12:56, `eisbaeren_f24_01048.png` = Eisbären-Folge 24, 0:10:48.
 
 ## „Die Oberfläche von EM – einmal alle Funktionen und Menüs“ (720p, 17:35)
