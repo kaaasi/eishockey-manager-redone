@@ -133,7 +133,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** je Regel roter Test; Goldtest aus FILE03/05/07; Mehrsaisonprobe (Kader, Geld); Spielstand-Rundlauf der
   neuen Felder.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/transfer.md`, Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig
-  (#418, Kadergröße nach Start-Liga, Kaufgrenze 29).
+  (#418, Kadergröße nach Start-Liga, Kaufgrenze 29); Teil 2 in Arbeit (Spielerdaten im Modell).
 
 ### Spur `wettbewerbe-spiel` – Spielberechnung, Pokale, Nationalteam
 
