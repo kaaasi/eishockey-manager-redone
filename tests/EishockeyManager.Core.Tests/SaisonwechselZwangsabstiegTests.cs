@@ -103,7 +103,7 @@ public class SaisonwechselZwangsabstiegTests
 
     // ---------- Spielablauf ----------
 
-    private static GameState Create(int seed, bool europe = true, params int[] clubs)
+    internal static GameState Create(int seed, bool europe = true, params int[] clubs)
     {
         var setup = new GameSetup { Duration = GameDuration.Unbegrenzt, EuropeAndWorldCup = europe };
         for (var i = 0; i < clubs.Length; i++)
@@ -135,7 +135,7 @@ public class SaisonwechselZwangsabstiegTests
     /// danach je „und tschüß…“ den Betrag aus <paramref name="money"/>. Bei <paramref name="middle"/> stehen diese Vereine nach
     /// der Hauptrunde außerhalb von Play-Offs und Aufstiegsrunde.
     /// </summary>
-    private static SeasonRecord PlaySeason(GameState game, Func<int, long> money, League? league = null, int[]? bottom = null,
+    internal static SeasonRecord PlaySeason(GameState game, Func<int, long> money, League? league = null, int[]? bottom = null,
         params int[] middle)
     {
         for (var guard = 0; !game.RegularSeasonOver; guard++)
