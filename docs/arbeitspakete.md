@@ -46,14 +46,17 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - `Core/Transfer*.cs` außer `Transfer.Talent.cs`, `Core/Player*.cs` (Ausnahme unten), `Core/Squad.Setup.cs`,
   `Core/NewGame.cs`, `UI/Screens/Team/*`: allein `kader-transfer`. `Core/Player.Factory.cs` ändert `geld` nur für die
   Talentwerte (Teil 6, im PR benannt).
-- `Core/SeasonFlow.cs`, `Core/SeasonRecord.cs`, `Core/SeasonDismissal.cs`, `Core/StatisticsHistory.cs`,
-  `Core/Playoffs.cs`: allein `saisonwechsel`.
+- `Core/Season.cs`, `Core/SeasonFlow.cs`, `Core/SeasonRecord.cs`, `Core/SeasonDismissal.cs`, `Core/StatisticsHistory.cs`,
+  `Core/Playoffs.cs`: allein `saisonwechsel`. **Ausnahme:** `ui-meldungen` ändert in `Core/Season.cs` nur das Feld `Months`
+  (Monatstabelle, im PR benannt; R11P-01).
 - `Core/MatchEngine*.cs`, `Core/Squad.Strength.cs`, `Core/Squad.Tactics.cs`, `Core/Squad.Training.cs`,
   `Core/Squad.Lineup.cs`, `Core/Cups*.cs`, `Core/MeetingHistory.cs`, `Core/Statistics{Strength,Club,Players}.cs`,
   `UI/Screens/Competitions/*`, `UI/Screens/Statistics/*`: allein `wettbewerbe-spiel`. **Ausnahme:** das Feld Belastung
   (Spielerplatz +13h) legt `wettbewerbe-spiel` in `Core/Player.Attributes.cs` an (nur dieses Feld, im PR benannt).
-- Neue Meldungsbausteine unter `UI/`, `Core/Season.cs` (Monatstabelle), `UI/Screens/SeasonEnd*.cs`, Infofile und
-  Tabellenkurve: allein `ui-meldungen`. Aufrufer in fremden Dateien stellt `ui-meldungen` **nicht** um, sondern listet sie
+- Neue Meldungsbausteine unter `UI/`, `UI/Screens/SeasonEnd*.cs`, neue Dateien für Infofile und Tabellenkurve: allein
+  `ui-meldungen`. **Ausnahme `MainMenuScreen.cs` (R11P-02):** `ui-meldungen` lagert `DrawRankCurve` in eine eigene Datei
+  (z. B. `UI/Screens/RankCurve.cs`) aus und schließt in `MainMenuScreen.cs` nur den Aufruf und den versteckten Klick
+  (Infofile) an; sonst nichts in dieser Datei. Aufrufer in fremden Dateien stellt `ui-meldungen` **nicht** um, sondern listet sie
   im PR; die Leitstelle setzt sie in der Integration. Bis dahin nutzen die anderen Spuren die vorhandenen Dialoge.
 - `tools/reverse-engineering/*`, `docs/re-abdeckung.md`, `docs/analyse/inventur.md`: allein `marker-werkzeug`.
 - `Core/GameState.Integration.cs`, `Core/SaveGame.cs`, `MainMenuScreen.cs`: nur minimal und begründet; Anschlüsse in fremde
@@ -86,7 +89,9 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   5. **Finanzbedienung (G4, P2 Nr. 10):** Betragsbalken 58409h, Leihen beim Mitmanager lokal sofort (E2). A034, A312,
      A315, A316, F158.
   6. **Talentsuche (R-K1, P2 Nr. 7):** Start aus der Transferliste (465F1h), Takt, Erfolg, Grenze 28 mit Leihspielern
-     (3CCEBh), Talentwerte 6D7Fh. A127–A132, A242–A246, A328, A050, A118, A120, F011, F012, F089.
+     (3CCEBh), Talentwerte 6D7Fh. A127–A132, A242–A246, A328, A050, A118, A120, F011, F012, F089. Der Knopf in
+     `UI/Screens/Team/TransferScreen.cs` ist Anschluss für die Leitstelle (im PR benannt); Bildschirmfoto-Abnahme nach der
+     Integration (R11P-04).
   7. **Probe:** Ausweg der Finanzprobe (#352).
 - **Abnahme:** je Regel roter Test, danach grün; Mehrsaisonprobe (Geld) je Teil mit Geldwirkung; Jugend: Platzverlauf mit
   festem Zufall über 4 Saisonwechsel.
@@ -101,8 +106,8 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
      −700.000/−600.000 DM.
   3. **Ewige Tabelle mit den Punkten der neuen Liga (S-K4, P2 Nr. 13):** Aufsteiger Platzfeld 1 → 51, Absteiger
      Platzfeld 10 → 22.
-  4. **Proben und Altlasten:** Startordnung bei geladenen Spielständen ab Saison 2 (#329); Schwelle `renamedClashes`
-     (#357); Regressionstest Play-offs mit allen Feldern der Meldungsmatrix (#362).
+  4. **Proben und Altlasten:** Startordnung bei geladenen Spielständen ab Saison 2 (#329, `Season.StartOrder`);
+     Regressionstest Play-offs mit allen Feldern der Meldungsmatrix (#362).
 - **Abnahme:** Mehrsaisonprobe 20 Saisons (Modus 1, 2, 4; passiv/aktiv); je Regel roter Test.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/analyse/re-saisonwechsel.md` (nur Status), Tests. **Modell:** Claude Opus 5.5.
   **Status:** –
@@ -113,15 +118,17 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   1. **Kadergröße nach Start-Liga (P1 Nr. 7):** DGROUP 169h mit `[11Ah] · 4 + Gruppe` (29A3Fh); `ManagedSquadSize` und
      Marker berichtigen. A170.
   2. **Spielerdaten im Modell (P2 Nr. 8, ohne Belastung +13h):** Kaufpreis +2Ch, Versicherung +30h, Verletzungsart +17h,
-     Sperre in Minuten +0Dh (41ACh); Hinweiszeile. A066, A092, A359, A360, A367–A372.
+     Sperre in Minuten +0Dh (41ACh); Hinweiszeile. A066, A092, A359, A360, A367–A372. Die Anzeige der neuen Felder in
+     `UI/Screens/Statistics/PlayerStatisticsScreen.cs` ist Anschluss für die Leitstelle (im PR benannt; R11P-03).
   3. **Transferfolgen beim Computerverein (P1 Nr. 6):** Teamwerte nach Verkauf (58DCh), Sponsorzuschuss nach Kauf vom
      Computermarkt (63BEh, Regel vorher gegenlesen). F005, F006.
   4. **Transfermarkt-Takt (P2 Nr. 4):** Listenwechsel täglich (54E71h), bietender Verein (59B8h), Rückfrage an den Verkäufer
      (47608h–47743h), Start-Tendenz `random(35, 65)` (4907Ah), Kontoleiste (G5, 463CCh). A251, A256–A258, A381, A196,
      A209, F109, F113.
   5. **Vertrag am Saisonende vor dem Zählerreset (P2 Nr. 5, A226)** und **Poolumverteilung (M-K7, M-K8, P2 Nr. 6):** 57E3h,
-     7C7Eh/7EF1h/5521h, Drift 54D9h; #348 (Belegung Pool +15h/+16h).
-  6. **Proben:** Lockerungen (#353), weitere Mutationen ohne roten Test (#347), Kommentar der Verhandlungsprobe (#364).
+     7C7Eh/7EF1h/5521h, Drift 54D9h (F002–F004, F013–F015); #348 (Belegung Pool +15h/+16h).
+  6. **Proben:** Lockerungen (#353), weitere Mutationen ohne roten Test (#347), Kommentar der Verhandlungsprobe (#364),
+     Schwelle `renamedClashes` (#357, `TransferVertraegeKomplettTeil5Tests.cs`; R11P-05).
   7. **Ankündigungen der Kaderspieler (P1 Nr. 9) – nach `re-nachtrag`:** A136, A229–A232, A238, A239.
 - **Abnahme:** je Regel roter Test; Goldtest aus FILE03/05/07; Mehrsaisonprobe (Kader, Geld); Spielstand-Rundlauf der
   neuen Felder.
@@ -176,7 +183,6 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 
 - P3 Nr. 2 (Pixel nach Analyse: G7, G8, M-K4, M-K9, R-K2…R-K5, L8), Nr. 4 (M-K10, R-K6 – Entscheidung Nutzer) und Nr. 6
   (S-K6, nur Analyse): Kandidaten für Runde 12.
-- #398 (README Referenz-Repo): mit dem Merge von kaaasi/eishockey-manager-referenz#8 erledigt (Nutzer).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
