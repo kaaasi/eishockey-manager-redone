@@ -168,7 +168,8 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 
 - **Teile:**
   1. **Funktionskarte:** Adressen mit folgendem Doppelpunkt erkennen (#401, Code-Teil von R10N-01); `docs/analyse/inventur.md`
-     als Fundstelle ausnehmen (#406); Karte mit `--write` neu.
+     als Fundstelle ausnehmen (#406); Befunde R-1 bis R-4 und R-6 zu `disasm.py`/README (#414, R-5 erledigt);
+     Karte mit `--write` neu.
   2. **Doku:** R10A-01 (Tabelle 2 und P3 Nr. 1 in `inventur.md`), R10A-02 (Kopfsatz Archiv Runde 10), R10A-03
      (`re-saisonwechsel.md`), Hinweise des Reviews außerhalb des Diffs (`re-abdeckung.md` „Einordnung“,
      `reverse-engineering.md` FILE13-Beleg); Doku GameOptions/PlayWithEvents (#363).
