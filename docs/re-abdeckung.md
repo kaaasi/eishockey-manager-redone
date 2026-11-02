@@ -149,7 +149,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 4112 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 3741 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -157,9 +157,9 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 202 | 223261 | 72 % | 197 | 213597 | 82 % |
+| umgesetzt | 210 | 225327 | 73 % | 205 | 215663 | 83 % |
 | genähert | 7 | 4216 | 1 % | 7 | 4216 | 2 % |
-| dokumentiert | 212 | 49254 | 16 % | 159 | 42667 | 16 % |
+| dokumentiert | 204 | 47188 | 15 % | 151 | 40601 | 16 % |
 | unbekannt | 258 | 32794 | 11 % | 1 | 421 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
@@ -172,9 +172,9 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Basis 0x0 | 0x01E00–0x0417F | 9088 | 93 | 5 % | 0 % | 5 % | 90 % | C-Laufzeit (Borland C++ 1991: Copyright, INT 21h, rand/LXMUL/LDIV) |
 | Basis 0x238 | 0x04180–0x064E9 | 9066 | 15 | 79 % | 0 % | 21 % | 0 % | Spiellogik Basis (Saisonende, Statistik) |
 | Basis 0x46e | 0x064E0–0x080CA | 7147 | 14 | 66 % | 0 % | 34 % | 0 % | Spiellogik Basis (Training, Spieler) |
-| Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 97 % | 0 % | 3 % | 0 % | Spiellogik Basis (Spielberechnung, Zufall) |
+| Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 98 % | 0 % | 2 % | 0 % | Spiellogik Basis (Spielberechnung, Zufall) |
 | Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 14 % | 0 % | 86 % | 0 % | Fensterverwaltung („Zu viele Fenster auf !“) |
-| Basis 0x99f | 0x0B7F0–0x0C79E | 4015 | 23 | 9 % | 0 % | 91 % | 0 % | Bilder laden (kb\…vga), Texte, Geldausgabe |
+| Basis 0x99f | 0x0B7F0–0x0C79E | 4015 | 23 | 18 % | 0 % | 82 % | 0 % | Bilder laden (kb\…vga), Texte, Geldausgabe |
 | Basis 0xa99 | 0x0C790–0x0D9F1 | 4706 | 34 | 0 % | 0 % | 25 % | 75 % | Speicher (EMS INT 67h, XMS INT 2Fh), Datei |
 | Basis 0xbbf | 0x0D9F0–0x12F58 | 21865 | 78 | 40 % | 0 % | 5 % | 55 % | Grafik und Maus (VGA-Ports, INT 10h, INT 33h) |
 | Basis 0x1115 | 0x12F50–0x13DD0 | 3713 | 37 | 10 % | 0 % | 21 % | 69 % | Dateizugriff (Hüllen um die C-Laufzeit) |
@@ -186,17 +186,17 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Ov 0xd0 (34FF) | 0x26F20–0x27F8A | 4203 | 1 | 100 % | 0 % | 0 % | 0 % | „Erhaltene Prämien:“ |
 | Ov 0xd8 (3606) | 0x28030–0x2A0C2 | 8339 | 4 | 96 % | 0 % | 4 % | 0 % | „Suchen Sie sich einen“ |
 | Ov 0xe0 (3810) | 0x2A1E0–0x2F1EE | 20495 | 18 | 93 % | 0 % | 7 % | 0 % | „JWE Service GmbH“, „(noch keine...)“, „Im ersten Jahr gibt's hi“ |
-| Ov 0xe8 (3D11) | 0x2F530–0x352A2 | 23923 | 33 | 90 % | 0 % | 10 % | 0 % | „Endrunde“, „Jugendteams“, „.Spieltag“ |
+| Ov 0xe8 (3D11) | 0x2F530–0x352A2 | 23923 | 33 | 93 % | 0 % | 7 % | 0 % | „Endrunde“, „Jugendteams“, „.Spieltag“ |
 | Ov 0xf0 (42E9) | 0x35540–0x397BA | 17019 | 26 | 90 % | 0 % | 10 % | 0 % | „Spiele laufen“, „!    Penaltyschiessen   “, „DEB-Pokal“ |
 | Ov 0xf8 (4711) | 0x399D0–0x3CD71 | 13218 | 18 | 89 % | 8 % | 2 % | 0 % | „WM Vorbereitung“, „WM-Statistik“, „Spieler in WM-Kader“ |
-| Ov 0x100 (4A4C) | 0x3CFA0–0x3FDDD | 11838 | 13 | 85 % | 0 % | 15 % | 0 % | „Überdachung“, „bittet Sie an den Verhan“, „Sitzplätze“ |
+| Ov 0x100 (4A4C) | 0x3CFA0–0x3FDDD | 11838 | 13 | 87 % | 0 % | 13 % | 0 % | „Überdachung“, „bittet Sie an den Verhan“, „Sitzplätze“ |
 | Ov 0x108 (4D30) | 0x3FFE0–0x42FC4 | 12261 | 13 | 98 % | 0 % | 2 % | 0 % | „Platz mehr !“, „Rückennummer des Spieler“, „Schon 11 Mann auf“ |
 | Ov 0x110 (502F) | 0x43150–0x45DC3 | 11380 | 20 | 68 % | 10 % | 22 % | 0 % | „autosave.hok“, „Saisonende“, „.Spieltag“ |
 | Ov 0x118 (52F7) | 0x46000–0x4ADE1 | 19938 | 18 | 93 % | 1 % | 7 % | 0 % | „ART   NAME              “, „Grundwert“, „Vertragsverhandlung“ |
 | Ov 0x120 (57D6) | 0x4B0F0–0x4D1B6 | 8391 | 23 | 25 % | 22 % | 52 % | 0 % | „Wer weiß...“, „An Alle:“, „Keine Nachricht für Sie “ |
 | Ov 0x128 (59E3) | 0x4D2F0–0x51BED | 18686 | 18 | 93 % | 0 % | 7 % | 0 % | „Bundesliga“, „PL. TD      VEREIN      “, „Play-Off“ |
 | Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 68 % | 0 % | 32 % | 0 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
-| Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 58 % | 0 % | 38 % | 3 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |
+| Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 63 % | 0 % | 34 % | 3 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |
 | Ov 0x140 (66C3) | 0x5A820–0x5E932 | 16659 | 21 | 97 % | 0 % | 3 % | 0 % | „VERZEICHNIS:“, „Spielstand aus“, „Speichern“ |
 
 ### Dünn belegte große Funktionen (> 2048 Byte, höchstens zwei Fundstellen)
