@@ -133,7 +133,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** je Regel roter Test; Goldtest aus FILE03/05/07; Mehrsaisonprobe (Kader, Geld); Spielstand-Rundlauf der
   neuen Felder.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/transfer.md`, Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig
-  (#418, Kadergröße nach Start-Liga, Kaufgrenze 29); Teil 2 fertig (#427, Kaufpreis, Verletzungsart, Versicherung im Fenster; Sperre = Strafbank, Anschlüsse im PR); Teil 3 fertig (#434, Teamwerte des Käufers nach Verkauf, Sponsorzuschuss nach Kauf vom Computermarkt); Teil 4 fertig (#437, Listenwechsel und Angebote täglich, Bieter 0x059B8, Kontoleiste, Frage an den Verkäufer, Tendenz); Teil 5 fertig (#453, Spiele beim Verein am Saisonende, Poolumverteilung beim Spielstart und Saisonwechsel, Goldtest FILE05); Teil 6 in Arbeit (Proben #353, #347, #364, #357).
+  (#418, Kadergröße nach Start-Liga, Kaufgrenze 29); Teil 2 fertig (#427, Kaufpreis, Verletzungsart, Versicherung im Fenster; Sperre = Strafbank, Anschlüsse im PR); Teil 3 fertig (#434, Teamwerte des Käufers nach Verkauf, Sponsorzuschuss nach Kauf vom Computermarkt); Teil 4 fertig (#437, Listenwechsel und Angebote täglich, Bieter 0x059B8, Kontoleiste, Frage an den Verkäufer, Tendenz); Teil 5 fertig (#453, Spiele beim Verein am Saisonende, Poolumverteilung beim Spielstart und Saisonwechsel, Goldtest FILE05); Teil 6 fertig (#457, Proben #353, #347, #364, #357).
 
 ### Spur `wettbewerbe-spiel` – Spielberechnung, Pokale, Nationalteam
 
