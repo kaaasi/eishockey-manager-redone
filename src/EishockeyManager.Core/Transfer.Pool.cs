@@ -184,14 +184,13 @@ public static class TransferPoolRules
 
     /// <summary>
     /// Kaderplatz-Felder des neuen Markt-Platzes, soweit das Remake sie führt. [ORIGINAL] 0x42E4C: Energie +0x13 =
-    /// random(80, 120); Datei 0x497C7–0x49803: +0x19 = random(3, 12) · 16 + random(3, 12) (Bedeutung offen, nur gezogen).
+    /// random(80, 120); Datei 0x497C7–0x49803: +0x19 = random(3, 12) · 16 + random(3, 12) (Über-/Unterzahl, <see cref="HiddenSkills"/>).
     /// [APPROX] Energie auf 99 begrenzt (Remake-Skala); die Nachbearbeitung 0x118:0x4D (0x4907A) ist nicht abgebildet.
     /// </summary>
     public static void RollSlotFields(Player p, Random random)
     {
         p.Energy = Player.Clamp(TransferRules.Random16(random, 80, 120));
-        _ = TransferRules.Random16(random, 3, 12);
-        _ = TransferRules.Random16(random, 3, 12);
+        HiddenSkills.Roll(p, random); // Spur wettbewerbe-spiel, Teil 7: +0x19 wie gezogen (A185, A186)
     }
 
     /// <summary>

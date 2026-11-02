@@ -304,6 +304,7 @@ public class GameModeTests
     /// wirken zusammen. Dazu der Minutenweg der DEB-Pokalspiele ohne Manager (Anzeigeschalter an, optionen-wirkung, 0x3702E).
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
     /// Spur wettbewerbe-spiel, Teil 3 (A011 ff.): neu – Nationalteams spielen mit ihren eigenen Teamwerten (Kondition/Technik je Teil aus DGROUP 0x4C4E − 2, Form und Tagesform des Vereinsplatzes, Lader 0x2F0CC), das Land des Bundestrainers mit seinem Kader (0x98F8 mit Manager 5); andere WM-Ergebnisse und anderer Zufallsverbrauch nach der ersten WM. Saison 1 bis zur WM gleich (Konten 609.157/348.890), Weltmeister 52 statt 53.
+    /// Spur wettbewerbe-spiel, Teil 7 (A185, A186): neu – Kaderplatz +0x19 der Managerkader beim Spielstart, der Talente und der Marktplätze gewürfelt (random(3, 12) je Halbbyte, Datei 0x299F4/0x06F23/0x49803; eigene Quelle, Hauptquelle unverbraucht) statt 7/7; Über- und Unterzahl der Managerpaarungen rechnen damit, andere Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Gegenprobe: ohne Würfe (alle 7/7) alte Werte. Saison 1 schon anders (Konten 881.540/348.513 statt 609.157/348.890, Weltmeister 63).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -321,7 +322,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|609157,348890|WorldChampion=52,CupWinner=0,GermanChampion=1,EuropeanCupWinner=0|1441019,256890|WorldChampion=53,CupWinner=9,GermanChampion=1,EuropeanCupWinner=1|2516414,221268|WorldChampion=52,CupWinner=5,GermanChampion=11,EuropeanCupWinner=1|3822871,172600|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=1|4509510,110029|R1032452647 C1044400607";
+        "WorldChampion=63,CupWinner=0,GermanChampion=3,EuropeanCupWinner=2|881540,348513|WorldChampion=54,CupWinner=7,GermanChampion=3,EuropeanCupWinner=3|1724634,268342|WorldChampion=54,CupWinner=17,GermanChampion=11,EuropeanCupWinner=3|2490736,203790|WorldChampion=60,CupWinner=10,GermanChampion=10,EuropeanCupWinner=11|3755853,39948|WorldChampion=55,CupWinner=11,GermanChampion=18,EuropeanCupWinner=10|4416873,63661|R1777986925 C1810908482";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

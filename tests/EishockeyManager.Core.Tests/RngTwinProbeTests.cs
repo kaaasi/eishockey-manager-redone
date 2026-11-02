@@ -124,16 +124,17 @@ namespace EishockeyManager.Core.Tests;
 /// 0x3702E).
 /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
 /// Spur wettbewerbe-spiel, Teil 3 (A011 ff.): neu – Nationalteams spielen mit ihren eigenen Teamwerten (Kondition/Technik je Teil aus DGROUP 0x4C4E − 2, Form und Tagesform des Vereinsplatzes, Lader 0x2F0CC), das Land des Bundestrainers mit seinem Kader (0x98F8 mit Manager 5); andere WM-Ergebnisse und anderer Zufallsverbrauch nach der ersten WM.
+/// Spur wettbewerbe-spiel, Teil 7 (A185, A186): neu – Kaderplatz +0x19 der Managerkader beim Spielstart, der Talente und der Marktplätze gewürfelt (random(3, 12) je Halbbyte, Datei 0x299F4/0x06F23/0x49803; eigene Quelle, Hauptquelle unverbraucht) statt 7/7; Über- und Unterzahl der Managerpaarungen rechnen damit, andere Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Gegenprobe: ohne Würfe (alle 7/7) alte Werte.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "7E8AAB8DCF7881A7")]
-    [InlineData(true, 3, "5373B3130DD85F77")]
-    [InlineData(false, 11, "AFF8D990673E6095")]
-    [InlineData(true, 11, "AFE9DE628DE18558")]
+    [InlineData(false, 3, "889E64ADA4B6DA65")]
+    [InlineData(true, 3, "9CE171F6CE99C558")]
+    [InlineData(false, 11, "5C19340A107D1993")]
+    [InlineData(true, 11, "5658B99774378A2D")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -141,8 +142,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "196548B1CD810CDD")]
-    [InlineData(true, "0DDDF8412D08F88D")]
+    [InlineData(false, "CEB85CCF39B656CE")]
+    [InlineData(true, "9D093C373E52BD73")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

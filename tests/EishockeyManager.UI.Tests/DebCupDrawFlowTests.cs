@@ -228,7 +228,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// ohne Manager (Anzeigeschalter an, 0x3702E); mit und ohne Anzeige weiter gleich.
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
     /// Spur wettbewerbe-spiel, Teil 3: 1993 gleich, ab 1994 neu – andere WM-Ergebnisse 1993 (Nationalteams mit eigenen
-    /// Teamwerten, 0x2F0CC) verschieben die Zufallsfolge; mit und ohne Anzeige weiter gleich.</summary>
+    /// Teamwerten, 0x2F0CC) verschieben die Zufallsfolge; mit und ohne Anzeige weiter gleich.
+    /// Spur wettbewerbe-spiel, Teil 7 (A185, A186): ab 1993 neu – Kaderplatz +0x19 des Managerkaders beim Spielstart gewürfelt
+    /// (random(3, 12) je Halbbyte, Datei 0x299F4) statt 7/7; Über- und Unterzahl der Managerpaarungen ändern Ergebnisse und
+    /// Zufallsfolge ab dem ersten Spiel des Managers. Mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 8, DM 5, Tab 15314 | 1994: DEB 10, DM 9, Tab 15757 | 1995: DEB 10, DM 8, Tab 16635 | 1996: DEB 10, DM 8, Tab 16287";
+        "1993: DEB 2, DM 6, Tab 15269 | 1994: DEB 5, DM 21, Tab 15608 | 1995: DEB 19, DM 12, Tab 16123 | 1996: DEB 19, DM 12, Tab 16893";
 }

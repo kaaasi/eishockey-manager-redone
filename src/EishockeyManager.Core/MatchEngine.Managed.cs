@@ -166,8 +166,9 @@ public static partial class MatchEngine
             if (squad.SkatersPerPart[part] <= taken && inMatch)
                 continue;
             var factor = !inMatch || goalie ? 100 : (p.Energy >> 1) + 50;
-            overplay += p.Player.HiddenSkill2;
-            underplay += p.Player.HiddenSkill1;
+            var (over, under) = HiddenSkills.ForMatch(p.Player, squad.NationalCoach); // Nationalteam 0x77 (Datei 0x3CB2C)
+            overplay += over;
+            underplay += under;
             condition += p.Player.Condition;
             var t = p.Player.Technique * factor / 100;
             if (squad.Difficulty < 5 && inMatch && !goalie && TrainingRules.Group(p.Player.Role) - 1 != part && t > 15)

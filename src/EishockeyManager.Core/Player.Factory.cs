@@ -63,6 +63,7 @@ public static class PlayerFactory
         ArgumentNullException.ThrowIfNull(game);
         var p = CreateTalent(name, role, clubStrength, random);
         game.AssignPlayerId(p);
+        HiddenSkills.Roll(p, HiddenSkills.SourceFor(game, p.Id)); // Spur wettbewerbe-spiel, Teil 7: +0x19 (Datei 0x06F23)
         return p;
     }
 

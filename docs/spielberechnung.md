@@ -394,6 +394,9 @@ Reihenfolge gilt auch für die Strafen dieser Minute), ungerade Minute `0x80CB(a
   entfällt, Kaderplatz +0x02 nicht geführt); Unterzahl Technik − (45 − Unterzahl-Halbbytes + 16·(−1 − Differenz)),
   Überzahl + Überzahl-Halbbytes + 16·(Differenz − 1); ohne Torhüter (DGROUP 0xDE16) bricht die Abwehr zusammen und jeder
   Abschluss ist ein Tor (0xA83E, `LiveTeam.OpenNet`). Bundestrainer + Länderspiele/8.
+  Die Halbbytes (Kaderplatz +0x19, unten Unterzahl, oben Überzahl) starten mit random(3, 12) je Halbbyte (Spielstart
+  Datei 0x299F4, Talent Datei 0x06F23, Marktplatz Datei 0x49803), im Nationalteam 7/7 (Datei 0x3CB2C); Training verschiebt
+  sie in 0 … 15 (Teil 7, A185/A186, `HiddenSkills`; `[APPROX]` am Spieler statt am Kaderplatz, Computerspieler 7/7).
 - **0x952C**: Teamwerte des Managervereins aus Reihe 0–2 ohne Spiel und Managerwert M = clamp(d/5 + 20, 0, 40) mit
   d = Σ laufende Summen (Kondition − Technik). Strafen (0x35890) lesen M über Vereinsfeld 0x16 = Manager + 1, also den
   **Satz des nächsten Managers** (übernommen; `[APPROX]` ohne nächsten Manager 0). Für #193 liefert

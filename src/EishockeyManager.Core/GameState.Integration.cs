@@ -15,6 +15,8 @@ public sealed partial class GameState
     {
         // Spur transfer-vertraege-komplett: Startgehalt der Kaderplätze der Manager = Wert(Gehalt) (0x29EE4), ohne Zufall.
         ApplyStartSalaries();
+        // Spur wettbewerbe-spiel, Teil 7: Kaderplatz +0x19 der Managerkader (Datei 0x299F4), eigene Zufallsquelle.
+        RollStartHiddenSkills();
         _ = Stocks;
         foreach (var manager in Managers)
         {
