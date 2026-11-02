@@ -28,7 +28,7 @@ Offen bleiben nur die erwarteten Punkte: WS-02 (Entscheidung Nutzer) und WS-04 (
 | WS-04 (P3) | **offen → Runde 12** | Bestätigt: [`docs/arbeitspakete.md`](https://github.com/kaaasi/eishockey-manager-redone/blob/7860bb1f7fda1061e7dcd1351dc5da43f7309eb8/docs/arbeitspakete.md) nennt „WS-04 (Neuzählung Grenze 5) Runde 12“. Delta berührt `MatchEngine.RecountSkaters` und seine Tests nicht. |
 | WS-05 (P3) | **behoben** (S-K1); übrige Punkte waren Beobachtungen | Siehe unten. |
 
-**WS-01 – behoben.** [`SaveGame.Migration.WettbewerbeSpiel8.cs:21`](https://github.com/kaaasi/eishockey-manager-redone/blob/7860bb1f7fda1061e7dcd1351dc5da43f7309eb8/src/EishockeyManager.Core/SaveGame.Migration.WettbewerbeSpiel8.cs#L21)
+**WS-01 – behoben.** [`SaveGame.Migration.WettbewerbeSpiel8.cs:21`](https://github.com/kaaasi/eishockey-manager-redone/blob/7860bb1f7fda1061e7dcd1351dc5da43f7309eb8/src/EishockeyManager.Core/SaveGame.Migration.WettbewerbeSpiel8.cs#L22)
 setzt `_autoLineup ??= !byHand` mit `byHand` aus `_dressedByHand`; fehlt oder ist das Feld kein Bool, gilt `false`, also
 Einstellung an (Startwert des Originals). Das ist die im Review vorgeschlagene Form. Der neue Test
 `Migration_31To32_KeepsHandMadeLineup` baut das Gegenbeispiel nach (Stürmer 0/0 per `AssignToLineup`, `schema = 31`,
@@ -40,7 +40,7 @@ Ausgangsspiel abweicht (Beobachtung, kein Befund).
 
 **WS-02 – offen (Entscheidung Nutzer).** Umgesetzt ist Alternative 1: Ausnahme nur mit `seed == 17`
 ([`FinanceCalibrationTests.cs:298`](https://github.com/kaaasi/eishockey-manager-redone/blob/7860bb1f7fda1061e7dcd1351dc5da43f7309eb8/tests/EishockeyManager.Core.Tests/FinanceCalibrationTests.cs#L298)),
-dazu `dismissedSeeds <= 1` am Ende (Zeile 387). Jeder andere Seed, der entlassen wird, läuft in die `SeasonOver`-Prüfung
+dazu `dismissedSeeds <= 1` am Ende (Zeile 386). Jeder andere Seed, der entlassen wird, läuft in die `SeasonOver`-Prüfung
 und wird rot; die Mutation bestätigt das (§3). Bewertung der Regel selbst unverändert wie im Review: sachlich vertretbar,
 aber Seed-Auswahl nach Ergebnis – die Entscheidung bleibt beim Nutzer. Restschwäche: Die Zählprüfung `dismissedSeeds <= 1`
 war nicht mehr eigenständig auslösbar, weil `seed == 17` im selben Zweig bereits jeden zweiten entlassenen Seed ausschließt;
