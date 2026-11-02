@@ -159,8 +159,9 @@ Tabellen unten. Reihenfolge innerhalb einer Stufe = Vorschlag für die Reihenfol
 ### P3 – Marker, Pixel, Kosmetik
 
 1. **Marker ohne Codeänderung auf `[ORIGINAL]` stellen** (Verhalten schon belegt und gleich): A026, A044, A139–A141,
-   A264, A265, A276 sowie die Funktionen „vorhanden“ mit P3 in Tabelle 2 (Abgleich mit der Doku, Fundstelle mit
-   `Datei 0x…` schreiben). Ein Sammel-PR je Schicht. – Spur `marker`.
+   A264, A265, A276 sowie die Funktionen „vorhanden“ mit P3 in Tabelle 2 (Abgleich mit der Doku; `Datei 0x…` schreiben
+   nur bei echten Fällen ohne Marker – „vorhanden mit `[ORIGINAL]`“ ist ein Kartenfehler R10N-01, in Runde 11 Teil 1
+   behoben). Ein Sammel-PR je Schicht. – Spur `marker`.
 2. **Pixel nach Analyse:** G7, G8, M-K4, M-K9, R-K2…R-K5, L8 (Tabelle „Kandidaten“).
 3. **Monatsnamen:** Monatstabelle DGROUP 0xA70 schreibt „August“ aus, das Remake „Aug.“ – `Core/Season.cs` – A157 (vor
    Umsetzung gegen das Video prüfen, ob die Anzeige kürzt).
@@ -678,7 +679,7 @@ Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/Eish
 | F013 | 0x07C7E | Basis 0x46e | 627 | dokumentiert | fehlt | Saisonwechsel: freie Poolspieler auf Ligen mit Fehlbedarf umhängen | Keine Entsprechung im Saisonwechsel | M-K7 | P2 |
 | F014 | 0x07EF1 | Basis 0x46e | 122 | dokumentiert | fehlt | Zielverein je Liga reihum (erste fünf Vereine doppelt), Ausland random(64,150) | Teil von 0x07C7E/0x057E3, fehlt im Remake | M-K7 | P2 |
 | F015 | 0x07F6B | Basis 0x46e | 352 | dokumentiert | fehlt | Vereinsliste einer Liga nach Stärke sortieren (Ergebnis ungenutzt) | Teil von 0x07C7E; wirkungslos, nur bei K7 mitbeachten | M-K7 | P3 |
-| F016 | 0x0A3F7 | Basis 0x62c | 141 | dokumentiert | vorhanden | Gegentor dem Torhüter auf dem Eis anrechnen (nur Managervereine) | Core/MatchEngine.Live.cs (CreditPlayers), Marker als 0xA3F7 ohne Datei-Präfix | – | P3 |
+| F016 | 0x0A3F7 | Basis 0x62c | 141 | dokumentiert | vorhanden mit `[ORIGINAL]` (Karte erkennt ihn nicht, R10N-01) | Gegentor dem Torhüter auf dem Eis anrechnen (nur Managervereine) | Core/MatchEngine.Live.cs (CreditPlayers), Marker als 0xA3F7 ohne Datei-Präfix | – | P3 |
 | F017 | 0x0AD7A | Basis 0x62c | 177 | dokumentiert | nicht nötig | Summen der Aufstellung, ohne Aufrufer | Toter Code | – | – |
 | F018 | 0x0AE2B | Basis 0x902 | 354 | dokumentiert | fehlt | Verein zum Zusehen markieren (Vereinsfeld 0x34 Bit 7) für Live-Anzeige | Remake hat keine Markierung/Live-Anzeige (MatchEngine.Shootout [APPROX]) | L1 | P2 |
 | F019 | 0x0AF8D | Basis 0x902 | 140 | dokumentiert | nicht nötig | Bildstreifen kopieren, wahlweise zeilenweise einrollen | Pufferkopie; Aufrufer-Bildschirme zeichnen selbst | – | – |
@@ -731,8 +732,8 @@ Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/Eish
 | F066 | 0x31505 | Ov 0xe8 (3D11) | 228 | dokumentiert | vorhanden | Play-off: Heim und Gast nach jedem Spiel tauschen | Core/Playoffs.cs (Heimrecht [APPROX], Doku belegt) | – | P3 |
 | F067 | 0x315E9 | Ov 0xe8 (3D11) | 595 | dokumentiert | vorhanden | Play-off-Spieltag „best of five“, Siege zählen, drei Runden | Core/Playoffs.cs ([APPROX] → [ORIGINAL] laut Doku möglich) | – | P3 |
 | F068 | 0x3183C | Ov 0xe8 (3D11) | 248 | dokumentiert | fehlt | Live-Tore der Pokal-/WM-Paarungsseiten während der Spiele ablegen | Keine Live-Anzeige im Remake | L1 | P2 |
-| F069 | 0x346D5 | Ov 0xe8 (3D11) | 148 | dokumentiert | vorhanden | Deutsche Europacup-Teilnehmer (Meister, Titelverteidiger) setzen | Core/CupsEurope.cs ([ORIGINAL] 0x346D5 ohne Datei-Präfix) | – | P3 |
-| F070 | 0x347EF | Ov 0xe8 (3D11) | 131 | dokumentiert | vorhanden | DEB-Pokal-Heimrecht: Tausch bei niederklassigem Gastgeber rechts | Core/CupsDeb.cs ([ORIGINAL] 0x347EF ohne Datei-Präfix) | – | P3 |
+| F069 | 0x346D5 | Ov 0xe8 (3D11) | 148 | dokumentiert | vorhanden mit `[ORIGINAL]` (Karte erkennt ihn nicht, R10N-01) | Deutsche Europacup-Teilnehmer (Meister, Titelverteidiger) setzen | Core/CupsEurope.cs ([ORIGINAL] 0x346D5 ohne Datei-Präfix) | – | P3 |
+| F070 | 0x347EF | Ov 0xe8 (3D11) | 131 | dokumentiert | vorhanden mit `[ORIGINAL]` (Karte erkennt ihn nicht, R10N-01) | DEB-Pokal-Heimrecht: Tausch bei niederklassigem Gastgeber rechts | Core/CupsDeb.cs ([ORIGINAL] 0x347EF ohne Datei-Präfix) | – | P3 |
 | F071 | 0x34872 | Ov 0xe8 (3D11) | 43 | dokumentiert | vorhanden | Verein in Liste der deutschen EC-Teilnehmer? | Core/CupsEurope.cs | – | P3 |
 | F072 | 0x34B3E | Ov 0xe8 (3D11) | 56 | dokumentiert | nicht nötig | Ergebniszeile einer DEB-Runde sichern | Ergebnisse liegen in Pokalobjekten (CupsDeb) | – | – |
 | F073 | 0x34F7D | Ov 0xe8 (3D11) | 88 | dokumentiert | nicht nötig | Ergebniszeilen und Pokalablage leeren | Pokalobjekte werden neu angelegt | – | – |
@@ -742,7 +743,7 @@ Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/Eish
 | F077 | 0x35D5D | Ov 0xf0 (42E9) | 239 | dokumentiert | vorhanden | Banner „Ligaspiel“ usw. (Farbe 11/0, 60 Takte) | UI SeasonInfo.DrawBanner, MatchDayScreen – Schatten und Dauer abweichend | R-K3 | P3 |
 | F078 | 0x36146 | Ov 0xf0 (42E9) | 35 | dokumentiert | nicht nötig | Wert a↔b in einem Byte tauschen | Hilfsroutine des Vereinstauschs, im Remake Objektverweise | – | – |
 | F079 | 0x367B1 | Ov 0xf0 (42E9) | 222 | dokumentiert | vorhanden | Tageszähler → Tag, Monat, Jahr (ohne 29. Februar) | Core/Season.cs (LayoutDate, Format) | – | P3 |
-| F080 | 0x3688F | Ov 0xf0 (42E9) | 34 | dokumentiert | vorhanden | mit 1/2 der größere Wert, sonst der zweite | Core/MatchEngine.Original.cs ([ORIGINAL] Datei 0x3688F bereits markiert) | – | – |
+| F080 | 0x3688F | Ov 0xf0 (42E9) | 34 | dokumentiert | vorhanden mit `[ORIGINAL]` (Karte erkennt ihn nicht, R10N-01) | mit 1/2 der größere Wert, sonst der zweite | Core/MatchEngine.Original.cs ([ORIGINAL] Datei 0x3688F bereits markiert) | – | – |
 | F081 | 0x369C7 | Ov 0xf0 (42E9) | 227 | dokumentiert | vorhanden | gewertete Spiele in Ligatabelle/Ergebniszeilen schreiben | Core/MatchEngine.Live.cs (#165) | – | P3 |
 | F082 | 0x36AAA | Ov 0xf0 (42E9) | 179 | dokumentiert | vorhanden | Spiel werten (Marke 0x5A, Wertung 0:2/2:0 merken) | Core/MatchEngine.Live.cs (#165) | – | P3 |
 | F083 | 0x37A4A | Ov 0xf0 (42E9) | 24 | dokumentiert | nicht nötig | „.“ an Platznummer anhängen (strcat) | String-Formatierung in .NET | – | – |

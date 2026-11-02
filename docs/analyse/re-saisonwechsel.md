@@ -159,7 +159,7 @@ gelegt – dann bleibt dieser Verein für immer draußen (zu prüfen am Spielsta
   hängen am **neuen** Vereinsindex, der Platz (Platzfeld des Tabellensatzes, Schreiber Datei 0x51115, mit dem Satz getauscht)
   am Verein. Ein Aufsteiger in die
   Bundesliga bekäme damit 40 + 12 − Platzfeld statt 20 + 12 − Platzfeld + 3 (Platzfeld 0 = Erster), ein Absteiger umgekehrt; ein Oberliga-Absteiger (jetzt 36–41)
-  0, ein Nachrücker 12 − (alter Platz) und +3, wenn das alte Platzfeld 0 ist. Das Remake (`StatisticsHistory.EternalPoints`) rechnet
+  0, ein Nachrücker 12 − (altes Platzfeld) und +3, wenn das alte Platzfeld 0 ist. Das Remake (`StatisticsHistory.EternalPoints`) rechnet
   mit der Liga der gespielten Saison. Nicht am Video belegt (die Belege in `wettbewerbe.md` betreffen Vereine ohne Wechsel).
 - **Letzte Saison** (Datei 0x5641A): Das Programm endet nach dem Austausch und dem Highscore, **vor** dem Saisonende-Fenster
   Datei 0x26F20 (Datei 0x5645D) – in der letzten Saison erscheinen Prämien und Ereignisse nicht. Remake (ui-meldungen Teil 3): `SeasonEndScreen` geht in
