@@ -103,8 +103,9 @@ public class TransferVertraegeKomplettTeil5Tests
 
     /// <summary>
     /// Originaldaten: Pool mit der Originaldatenbank wie in FILE05 (Manager Köln, Verein 2). Im Original stehen freie Plätze
-    /// 1–178 auf Vereinen 0–23 ohne den Managerverein, überwiegend 0–11 (0x5AAA0), 179–199 auf Nationalteams 52–63; jeder
-    /// Name ist ein Datenbankspieler seines Vereins. Das Remake hält dieselben Bereiche.
+    /// 1–178 auf Vereinen 0–23 ohne den Managerverein, überwiegend 0–11 (0x5AAA0, dann Umverteilung 0x057E3), 179–199 auf
+    /// Nationalteams 52–63; jeder Name ist ein Datenbankspieler (bei seinem Verein nur die Nationalspieler und die nicht
+    /// umverteilten Plätze). Das Remake hält dieselben Bereiche.
     /// </summary>
     [GameDataFact]
     public void Pool_OriginalDatabase_MatchesFile05Layout()
@@ -132,7 +133,11 @@ public class TransferVertraegeKomplettTeil5Tests
         // [APPROX] Im Original belegen die Managerkader rund 25 Plätze (DGROUP 0x381), nur die übrigen bekommen Namen; das Remake
         // benennt alle 178 und trifft öfter einen schon vergebenen Namen (dann 0–35). Mit Seed 5: 141 von 178.
         Assert.True(pool.Count(s => s.Index < 179 && s.Club < 12) / 178.0 > 0.7, "Remake: Anteil 0–11");
-        Assert.All(pool, s => Assert.True(database[s.Club].Players.Any(d => d.Name == s.Player.Name), s.Player.Name + "@" + s.Club));
+        // Spur kader-transfer, Teil 5: Die Umverteilung beim Spielstart (0x057E3) hängt die Spieler an Vereine der Managerliga;
+        // nur die Nationalspieler und die nicht umverteilten Plätze stehen noch beim Verein ihres Namens (FILE05: 8 von 154).
+        Assert.All(pool, s => Assert.Contains(database.Clubs, c => c.Players.Any(d => d.Name == s.Player.Name)));
+        Assert.All(pool.Where(s => s.Index >= 179),
+            s => Assert.True(database[s.Club].Players.Any(d => d.Name == s.Player.Name), s.Player.Name + "@" + s.Club));
         // Entscheidung Nutzer 01.11.2026: Die Datenbankspieler des Pools fehlen den Computerkadern – jeder Name nur einmal.
         var squadNames = game.Clubs.SelectMany(c => c.Players).Select(p => p.Name).ToList();
         Assert.Empty(pool.Select(s => s.Player.Name).Intersect(squadNames));
@@ -180,7 +185,10 @@ public class TransferVertraegeKomplettTeil5Tests
     [Fact]
     public void ChangeList_PhaseOne_RemovesEveryOtherMarketSlot_KeepsManagerSlots()
     {
-        var game = TestGames.Create(4);
+        // Spur kader-transfer, Teil 5: Die Umverteilung beim Spielstart (0x057E3) verschiebt die erste Liste; Startwert mit
+        // freiem Pool 180 suchen (vorher fest 4).
+        var game = Enumerable.Range(4, 40).Select(seed => TestGames.Create(seed))
+            .First(g => g.TransferMarket.Pool[179].Owner == PoolOwner.Free);
         var manager = game.ActiveManager;
         var market = game.TransferMarket;
         var own = game.Clubs[manager.ClubIndex].Players.First(p => p.Role == PlayerRole.Forward);

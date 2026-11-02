@@ -230,7 +230,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Spur kader-transfer, Teil 4 (0x54E71, 0x072DD, 0x059B8): neu – der Markt würfelt täglich statt je Ligaspieltag (anderer
     /// Verbrauch der Hauptquelle ab dem ersten Tag); 1993 Pokalsieger und Meister gleich, mit und ohne Anzeige weiter gleich.
     /// Spur kader-transfer, Teil 4, Rest (0x4907A, 0x4981E): 1993 und 1994 gleich, ab 1995 neu (Tendenz der Markt-Plätze im
-    /// Spielerwert, Nationalspieler aus der Ländertabelle; Begründung bei <c>RngTwinProbeTests</c>); mit und ohne Anzeige gleich.</summary>
+    /// Spielerwert, Nationalspieler aus der Ländertabelle; Begründung bei <c>RngTwinProbeTests</c>); mit und ohne Anzeige gleich.
+    /// Spur kader-transfer, Teil 5 (0x057E3, 0x07C7E): 1993 gleich, ab 1994 neu (Poolumverteilung beim Saisonwechsel aus der
+    /// Hauptquelle; Begründung bei <c>RngTwinProbeTests</c>); mit und ohne Anzeige gleich.</summary>
     private const string Reference =
-        "1993: DEB 8, DM 5, Tab 15263 | 1994: DEB 0, DM 10, Tab 16010 | 1995: DEB 17, DM 16, Tab 16736 | 1996: DEB 19, DM 23, Tab 15844";
+        "1993: DEB 8, DM 5, Tab 15263 | 1994: DEB 7, DM 6, Tab 15868 | 1995: DEB 6, DM 9, Tab 15025 | 1996: DEB 11, DM 9, Tab 16845";
 }

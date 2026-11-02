@@ -61,12 +61,12 @@ Werkzeuge: siehe `tools/reverse-engineering/README.md`.
 | 0x00 | Name (17 Zeichen + 0) |
 | 0x12 | Talent 0–9 |
 | 0x14 | Alter |
-| 0x15 | Technik (aus Vereinsfeld 0x19 abgeleitet) |
-| 0x16 | Kondition (aus Vereinsfeld 0x1B abgeleitet, 1/5 Chance auf +12..20) |
+| 0x15 | Kondition: beim Listenwechsel aus Vereinsfeld 0x19 (Kondition, Vereinsfelder 0x18/0x19) abgeleitet (Datei 0x4981E); driftet beim Saisonwechsel und Spielstart um random(1, 7) − 4, 30 … 99 (Datei 0x054D9 aus 0x05521) |
+| 0x16 | Technik: aus Vereinsfeld 0x1B (Technik, Vereinsfelder 0x1A/0x1B) abgeleitet, 1/5 Chance auf +12..20 (Datei 0x4981E); Drift wie +0x15 |
 | 0x17 | Form |
 | 0x18 | Rollenwert (Torhüter 0, Verteidiger 25–41, Stürmer 75–91) |
 | 0x1A | Besitzer: Manager 0–3, **4 = Transfermarkt** (belegt an Original-Spielstand FILE05, `formate/spielstand-original.md`; früher „6“) |
-| 0x1D | Verein / Nationalteam (0xFF = keiner) |
+| 0x1D | Verein / Nationalteam (0xFF = keiner); Umverteilung auf die Ligen Datei 0x057E3 (Spielstart), 0x07C7E (Saisonwechsel), `docs/transfer.md` |
  
 Nur 200 Spieler werden detailliert verwaltet (Kader der menschlichen Manager + Transfermarkt); der Transfermarkt zieht aus
 diesem Pool (Listenwechsel 0x494EF, im Remake seit `transfer-vertraege-komplett` Teil 5, `docs/transfer.md`).

@@ -163,10 +163,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur kader-transfer, Teil 4 (0x54E71, 0x072DD, 0x059B8): beide neu (Markt täglich, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur kader-transfer, Teil 4, Rest (0x4907A, 0x4981E): beide neu (Tendenz der Markt-Plätze im Spielerwert, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur kader-transfer, Teil 5 (A226): beide neu (Spiele beim Verein über den Saisonwechsel im Spielerwert, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur kader-transfer, Teil 5 (0x057E3, 0x07C7E): beide neu (Poolumverteilung, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "FA38CB3E8F8F9CD4")]
-    [InlineData(true, "A5FD85D0B723F6BF")]
+    [InlineData(false, "0F59198BAD995C29")]
+    [InlineData(true, "30666AEF932E1BE6")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -223,6 +224,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // jetzt den Strafspieler 0x378C5 aus seinem Kader – andere WM-Ergebnisse ab Saison 3 und Pokalquelle (C…).
     // kader-transfer, Teil 1 (A170, 0x29A3F): Titel, Konten und Pokalquelle gleich, nur die Hauptquelle (R…) verschoben – der
     // Managerverein (Bundesliga) bekommt beim Spielstart 25 statt 20 Kaderplätze; die Kadererzeugung zieht dafür mehr Zahlen.
+    // kader-transfer, Teil 5 (0x07C7E): unverändert – die Poolumverteilung des Saisonwechsels gehört zum Tageslauf 0x54C9F, den es
+    // im Modus „nur Weltkugel“ nicht gibt; die des Spielstarts zieht aus der Quelle des Kaderaufbaus.
     private const string WorldOnlyReference =
         "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=52|500000|R540662232 C5178594";
 

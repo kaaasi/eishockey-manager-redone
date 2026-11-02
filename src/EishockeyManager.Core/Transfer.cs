@@ -148,7 +148,8 @@ public sealed partial class TransferMarket
     public static long Price(Player p) => TransferRules.PriceThirds(p) / 3;
 
     /// <summary>
-    /// Neue Saison: alte Listings und Gebote verwerfen, Pool fortschreiben (<see cref="StartPoolSeason"/>) und die Liste
+    /// Neue Saison: alte Listings und Gebote verwerfen, Pool fortschreiben (<see cref="StartPoolSeason"/>), auf die Ligen umverteilen
+    /// (<see cref="DistributePoolAtSeasonChange"/>) und die Liste
     /// wechseln (<see cref="ChangeList"/>, [ORIGINAL] Saisonstart 0x43A9F). [APPROX] Das Original behält die Markt-Plätze bis
     /// zum Wechsel; das Remake gibt sie vorher frei, weil Listing-Identitäten nicht in die neue Saison reichen.
     /// </summary>
@@ -169,6 +170,10 @@ public sealed partial class TransferMarket
         foreach (var free in _freeAgents.Where(l => IsManaged(game, l.From)).Take(StartListings))
             _listings.Add(free);
         StartPoolSeason(game, game.Random);
+        // [ORIGINAL] 0x07C7E nach den neuen Namen (Spur kader-transfer, Teil 5); Teil des Tageslaufs 0x54C9F, den es im Modus
+        // „nur Weltkugel“ nicht gibt (0x54CEE).
+        if (!game.WorldOnly)
+            DistributePoolAtSeasonChange(game, game.Random);
         ChangeList(game, game.Random);
     }
 
@@ -190,7 +195,8 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>
-    /// Füllt den Markt zu Spielbeginn: Pool (schon vor den Kadern gebaut, <see cref="ReservePool"/>), dann der Listenwechsel des ersten Saisonstarts
+    /// Füllt den Markt zu Spielbeginn: Pool (schon vor den Kadern gebaut, <see cref="ReservePool"/>), Umverteilung auf die Ligen
+    /// (<see cref="DistributePoolAtStart"/>), dann der Listenwechsel des ersten Saisonstarts
     /// (<see cref="ChangeList"/>; im Mittel 6–7 Spieler, Video 6, FILE05 7).
     /// </summary>
     public void Initialize(GameState game, Random random)
@@ -200,6 +206,7 @@ public sealed partial class TransferMarket
         UpdatedDay = game.PlayedMatchDays;
         if (_pool.Count == 0)
             BuildPool(game, random, TransferPoolLayout.Original, new HashSet<string>());
+        DistributePoolAtStart(game, random); // [ORIGINAL] 0x057E3 vor dem ersten Listenwechsel (Spur kader-transfer, Teil 5)
         ChangeList(game, random);
     }
 

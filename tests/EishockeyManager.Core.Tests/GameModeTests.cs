@@ -328,8 +328,10 @@ public class GameModeTests
     // aus der Hauptquelle (anderer Zufallsverbrauch ab dem ersten Tag); Konto Manager 1 in allen Saisons positiv (Saison 5 51.083).
     // Spur kader-transfer, Teil 5 (A226, 0x27A0C): nur Konten neu ab Saison 3 – Spiele beim Verein (+0x1C) gehen über den
     // Saisonwechsel in Gehälter und Ablösen ein; Titel und Zufallsstände unverändert (Saison 5 Manager 1: 61.083).
+    // Spur kader-transfer, Teil 5 (0x057E3, 0x07C7E): alle Werte neu – Poolumverteilung beim Spielstart und Saisonwechsel (andere
+    // Markt-Plätze ab der ersten Liste, Zufall der Hauptquelle beim Wechsel); Konto Manager 1 in allen Saisons positiv.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=4,GermanChampion=3,EuropeanCupWinner=2|493099,334703|WorldChampion=63,CupWinner=4,GermanChampion=3,EuropeanCupWinner=3|1370295,130281|WorldChampion=53,CupWinner=16,GermanChampion=3,EuropeanCupWinner=3|2564029,76072|WorldChampion=52,CupWinner=6,GermanChampion=4,EuropeanCupWinner=3|3160506,157005|WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|4181006,61083|R2073524456 C732097399";
+        "WorldChampion=52,CupWinner=0,GermanChampion=3,EuropeanCupWinner=2|382959,418209|WorldChampion=63,CupWinner=11,GermanChampion=11,EuropeanCupWinner=3|1295963,337964|WorldChampion=55,CupWinner=4,GermanChampion=3,EuropeanCupWinner=11|2358326,210036|WorldChampion=54,CupWinner=5,GermanChampion=5,EuropeanCupWinner=3|2997573,234836|WorldChampion=53,CupWinner=20,GermanChampion=5,EuropeanCupWinner=3|4153171,126449|R735346506 C1722640733";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

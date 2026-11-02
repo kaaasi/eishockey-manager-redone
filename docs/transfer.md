@@ -310,6 +310,40 @@ die tägliche Änderung fehlt (A134). Die Frage an den Verkäufer zeigt das Frag
 Verkäufers als Kopf, bis der Baustein 0x4C246 (Spur `ui-meldungen`) angeschlossen ist; ohne Oberfläche (`TransferMarket.Buy`)
 bleibt die simulierte Antwort. Länderwerte aus der Aufstellung eines Bundestrainers (0x952C) gehen in die Grundstärken nicht ein.
 
+## Belegt und umgesetzt (Spur `kader-transfer`, Teil 5: Saisonende, Poolumverteilung)
+
+**Zähler am Saisonende (A226).** Das Saisonende 0x26F20 arbeitet in drei Schleifen über alle Manager: erst Prämien, Altern und
+Herunterzählen (Datei 0x26FB0–0x279FA), dann die Saisonzähler aller 29 Kaderplätze auf 0 (Datei 0x27A0C–0x27AA8: +0x00, +0x01
+Strafen, +0x03–+0x05 Tore, +0x06–+0x08 Saisonspiele), erst dann die Verhandlungen (ab Datei 0x27B64). Die Spiele beim jetzigen
+Verein (+0x1C/+0x1E/+0x20, Gewicht 50/20/30 im Spielerwert) werden nur erhöht (Datei 0x41622, 0x5499E, zusammen mit +0x06) und
+bei einem neuen Kaderplatz 0 (FILE07); am Saisonende bleiben sie stehen. Der Auf- und Abstieg liegt schon davor (Datei
+0x56137–0x563AD, Aufruf 0x5645D). Remake: `Player.GamesForClub` (+0x1C) = Saisonspiele + Übertrag `ClubGamesCarry`; der Übertrag
+wird vor dem Zurücksetzen der Zähler fortgeschrieben (`GameState.CarryGamesForClub`, `GameState.Integration.cs`) und beim Eintritt
+in einen Kader (`PlayerFactory.Join`) auf −Saisonspiele gesetzt. Schema 25 (vorläufig). Die bisherige Annahme, das Original
+verhandle vor dem Zurücksetzen und je Manager nach dessen Prämien, war falsch: Tore und Strafen sind auch im Original 0.
+
+**Poolumverteilung (M-K7, M-K8; F002–F004, F013–F015).** `Core/Transfer.PoolDistribution.cs`.
+
+| Schritt | Fundstelle | Regel |
+|---|---|---|
+| Soll je Liga | Datei 0x05521 (aus 0x057E3 und 0x07C7E) | k[l] = belegte Kaderplätze (0x4BE17) der Manager in Liga l = 0 … 2; je Platz 1 … 199 Drift von +0x15 und +0x16 (0x054D9); Plätze &lt; 180 mit Verein ≥ 64 sind „im Ausland“; random(5, 15)-mal Platz random(1, 179): bei mehr als 4 im Ausland bekommt ein gezogener Auslandsspieler einen Verein über 0x059B8 (Schalter 0) und der Zug zählt nicht; Spieler eines Managervereins und, solange mehr als 4 im Ausland sind, alle anderen werden verworfen; sonst neuer Verein über 0x059B8. Dann T = Σ k + Ausland, R = 179 − T, T = 0 → 1, s[l] = (100 · k[l] / T) · R / 100 (Langzahlen) |
+| Drift | Datei 0x054D9 | Wert + random(1, 7) − 4, begrenzt 30 … 99 (0x4BD35) |
+| Zielverein | Datei 0x07EF1 | Liga &gt; 2: random(64, 150); sonst Ligaanfang DGROUP 0x7C0[l] + DGROUP 0x48FE[z], z = DGROUP 0x48FB[l] (dann z + 1, nach 17 → 0; Startwert 0); Managerverein → nächstes z. 0x48FE = 0 0 1 1 2 2 3 3 4 4 5 6 7 8 9 10 11 |
+| Spielstart | Datei 0x057E3 (Aufruf 0x43A83, nach 0x28165 und vor dem ersten Listenwechsel 0x43A9F) | für Platz 1 … 178 ohne Managerverein: für jede Liga q = 0 … 2 mit s[q] ≠ 0 Verein = Zielverein(q), s[q] − 1 – **ohne Abbruch**: ein Spieler zählt bei allen Ligen mit Rest und landet in der letzten |
+| Saisonwechsel | Datei 0x07C7E (Aufruf 0x56631, nach 0x56467/0x56470) | s[3] = 0; Gruppen q = 0 … 3 (Indexbereiche DGROUP 0x7C6/0x7C7: 0–11, 12–23, 24–35, 36–42): je Platz 1 … 179 im Bereich s[q] − 1 (nicht unter 0), Besitzer &gt; 3 → Liste frei[q]; für l = 0 … 3 solange s[l] &gt; 0 (höchstens 1000 Durchgänge) aus jeder anderen Gruppe q zufällige Listenplätze (random(0, Länge − 1), bis 1000 Wiederholungen) mit Zielverein(l) |
+| Vereinslisten | Datei 0x07F6B | Vereine einer Liga nach Stärke sortiert; Ergebnis ungenutzt (0x07EF1 liest das Argument nicht) – nicht abgebildet (F015) |
+
+Beleg FILE01–FILE07 (Spielstart, Köln = Verein 2): 146 der 154 freien Ligaplätze stehen auf 1.-Liga-Vereinen ohne Köln,
+0/1/3/4 mit 20/20/20/22 Spielern, 5 … 11 mit 9–10 (Test `Start_OriginalDatabase_MatchesFile05Distribution`); nur 8 Namen stehen
+noch bei ihrem Datenbankverein.
+
+`[APPROX]`: Gruppe einer Liga = Vereine mit dieser Liga, Gruppe 3 = Vereine ohne Liga unter 48, Platz in der Liga nach Vereinsindex
+(das Original ordnet die Sätze beim Ligawechsel um, 0x35EDD); Verein 150 gibt es im Remake nicht (149); die Drift wirkt nur auf
+freie Plätze (Markt- und Kaderspieler führen ihre Werte am Spieler, im Original im Kaderplatz), gezogen wird für jeden Platz; die
+Managerkader stammen im Remake nicht aus dem Pool, k[l] zählt sie trotzdem (das Soll ist dadurch dasselbe, der Pool hat aber mehr
+freie Spieler); Spielstart mit der Quelle des Kaderaufbaus, Saisonwechsel mit der Hauptquelle, im Modus „nur Weltkugel“ ohne
+Saisonumverteilung (Tageslauf 0x54C9F fehlt dort, 0x54CEE); Schleifen ohne Grenze im Original enden nach 100.000 Versuchen.
+
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
 - **Antwort des verkaufenden Managers:** seit Spur `kader-transfer`, Teil 4 gefragt (0x47655–0x47743); nur ohne Oberfläche
