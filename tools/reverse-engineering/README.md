@@ -9,3 +9,7 @@ und schreiben nur Adressen, Größen und kurze Textauszüge.
 
 Voraussetzung: Python 3, `ndisasm` (Paket `nasm`). Für Einzelstellen weiterhin `ndisasm -b16 -e <offset> -o <offset> em.exe`
 bzw. einen Ausschnitt (`dd`/Python) disassemblieren; Adressrechnung in `docs/reverse-engineering.md`.
+
+Hinweis zu Fundstellen: Die Layout-Konstanten (u. a. 0x255C0 = Overlay-Basis) zählt die Karte nie als Adresse. Die
+Funktion am Anfang von Ov 0xC0 (Datei 0x255C0) wird daher nur über den Stub erkannt: „Stub 0xC0 Einsprung 0x20“
+(belegt in PR #381).
