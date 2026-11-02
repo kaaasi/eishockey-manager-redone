@@ -266,4 +266,4 @@ und der letzte Platz über weniger als neun Spieler erzwungen wird.
 K1, K2 (ein Fall) und K4 sind durch den DOSBox-Beleg gestützt und dürfen mit Verweis auf „Auswertung DOSBox-Beleg“ `[ORIGINAL]` tragen;
 K3 und K5 bleiben bis zu einem eigenen Beleg `[APPROX]`.
 
-**Status Umsetzung (Runde 11, Spur `saisonwechsel`):** K1 und K2 umgesetzt in Teil 1 (PR #419); K3 in Teil 2 (PR #428, `[APPROX]` bis zum Beleg „FILE15“); K4 in Teil 3 (PR #NR3).
+**Status Umsetzung (Runde 11, Spur `saisonwechsel`):** K1 und K2 umgesetzt in Teil 1 (PR #419); K3 in Teil 2 (PR #428, `[APPROX]` bis zum Beleg „FILE15“); K4 in Teil 3 (PR #431).
