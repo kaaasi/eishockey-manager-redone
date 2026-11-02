@@ -48,6 +48,8 @@ werbung = Σ Monatsbetrag der 11 Werbeverträge (7 Bande, Trikot, Fernsehen, 2 E
 Anzeige zusätzlich (Flag 1): Zinsertrag auf Forderungen (2,5 % Manager, 1 % Sparbuch). Gebucht wird davon nichts
 direkt (siehe Tagesabschluss). Belegt: ESC Wolfsburg (Oberliga, 20 Spieler) 4.066 DM = 12.200 Drittel → Summe
 der vier Teamwerte 122; Berliner SC 3.966 DM → 119.
+Remake (Spur geld Teil 2, A035): Vereinsfelder = Datenbankstärke + Abweichung aus Lader und Wanderung
+(`MatchEngine.TeamValuesOf`), nicht mehr aus den Spielerwerten; vor dem ersten Spiel Abweichung 0 ([APPROX]).
 
 ### Ausgaben (`0x3E811`, Anzeige „Ausgaben (Gehälter…)“)
 
@@ -123,7 +125,7 @@ Korrigiert in der Spur `finanzen-werbung` (#132):
 ```
 S  = (2 − StartLiga) · (80 · M + 170)
    + [n ≠ 0] · 32 · (P · (n+1) − 2)  + 47 · E · ([0x7AF]+1),   n = [0x5CF3] (DEB-Pokal-Runde)
-   + 12 · (11 − Mittel der Ligaplätze der letzten ≤ 5 Saisons, ohne Historie 6)
+   + 12 · (11 − Ø-Platz der Platzfelder N−5 … N−1 der laufenden Saison, Summe 0 → 6)      (Spur geld Teil 2, A036)
    + Ø(Spielerwert / 5500)  + random(20,50) · min(4, #Spieler mit Wert/7000 > Ø(Wert/5500) · random(35,55)/10)
    + 3 · W
 R  = min(100, (((S mod 2^16) / 12 + 10 · (2 − StartLiga)) · 85 mod 2^16) / 100)
@@ -143,8 +145,14 @@ Ende (0x3FAC5–0x3FB2E): alles in 16 Bit, Division ohne Vorzeichen, nur nach ob
 Gespeichert wird R beim Spielstart (`0x2A03B`), nach jedem Tagesabschluss (`0x5569F`) und beim Klick auf einen Vertrag
 mit Option (`0x2B7A6`); die Angebote rechnen mit dem gespeicherten Wert.
 [APPROX] im Remake: Abbildung von M/P/E auf die Wettbewerbe des Remakes (`GameState.CurrentParticipation`), Europatermin =
-Zahl der gespielten Europapokaltermine; Ø-Rang über die Saisons des Managers (Original: Index `[0x7A9 + Liga] − 5 … − 1`,
-Index 0 übersprungen, Herkunft offen); Spielerwert = Kaufpreis × 3.
+Zahl der gespielten Europapokaltermine; Spielerwert = Kaufpreis × 3.
+**Ø-Platz (0x3F915–0x3F98E, Spur geld Teil 2):** N = `[0x7A9 + Liga]` (Spieltagszähler, 1 vor dem ersten Spieltag); für
+i = N − 5 … N − 1 und nur i > 0: Summe += Platzfeld(i) + 1 (0x43BED, Halbbyte i ab DGROUP 0x828B + 0x50 · Verein,
+0 = Platz 1); Ø = Summe / (N − max(0, N − 5)), Summe 0 → 6. Platzfeld i schreibt 0x51049 aus der Minutenschleife beim
+Spieltag i + 1 (Index `0x7A9 − 1`, vor `inc 0x7A9` in 0x37897): Feld 0 zählt nie, Feld N − 1 gehört zum noch nicht
+gespielten Spieltag und trägt den Wert der Vorsaison (geleert nur beim Spielstart, 0x54CE9 → 0x436DD), in der ersten
+Saison 0. Nach dem 44. Spieltag (N = 45) liest Feld 44 das untere Halbbyte der Strafminuten (DGROUP 0x82A1). Remake:
+`SponsorRating.AverageRank`, `GameState.RankSlot`, Verlauf je Verein `Club._rankSlots` (Schema 24, vorläufig).
 
 ### Angebote (`0x3FB47`, am Monatsletzten und zur Monatsmitte, beim Spielstart und zu Saisonbeginn)
 
@@ -162,6 +170,7 @@ laufzeit = 12 · random(1, 2) Monate; Option: random(0,7) = 0 → 12 · random(1
 feld +8 = W/10 (Bewertung beim Angebot, geht in den Vertrag)
 ```
 Aufrufe: Spielstart `0x2A061` (Flag = Spielende 1994), Tagesabschluss `0x3EEA7` (Flag 0), Saisonbeginn `0x56650` (Flag 0).
+Die Funktion liest keine Verträge: auch Partner mit laufendem Vertrag dieser Art bekommen Angebote (Spur geld Teil 2, A039).
 Eistafel 1 ist im Werbebildschirm nur mit Überdachung HALLE (Stufe 2), Eistafel 2 nur mit Kühlanlage 'MEGAFROST' (Stufe 2)
 nutzbar (`0x2B56A–0x2B587`).
 

@@ -233,8 +233,9 @@ public sealed partial class GameState
     /// Angebote erneuern ([ORIGINAL] 0x3FB47) mit der gespeicherten Bewertung (W = 10 · 0x97CE). Ohne
     /// <paramref name="noDice"/> wird Partner p nur mit Wahrscheinlichkeit 1/(⌊2p/3⌋ + 1) neu bedient (sonst bleibt sein
     /// Angebot); danach fällt das Angebot aus, wenn random(0, 5 − W/200) ≠ 0 und random(0, 4) ≤ p. Fernsehen hat nur
-    /// fünf Sender (Partner ≥ 5 gelöscht, 0x3FBDA). Partner mit laufendem Vertrag dieser Art bieten nichts an
-    /// ([APPROX] wie bisher; das Original würfelt auch für sie).
+    /// fünf Sender (Partner ≥ 5 gelöscht, 0x3FBDA). [ORIGINAL] Auch Partner mit laufendem Vertrag dieser Art werden
+    /// bedient: 0x3FB47–0x3FDD8 liest nur die Angebotstabelle (DGROUP 0xC313 + 500 · Manager + 100 · Art + 10 · Partner),
+    /// keinen Vertrag (Spur geld Teil 2, A039).
     /// </summary>
     public void RefreshSponsorOffers(Manager manager, bool noDice)
     {
@@ -260,11 +261,6 @@ public sealed partial class GameState
                         continue;
                     }
                 }
-                if (sponsoring.Contracts.Any(c => c.Kind == kind && c.Sponsor == p))
-                {
-                    offers.Remove(p);
-                    continue;
-                }
                 var m = SquadSetup.Between(FinanceRandom, 20, 22);
                 var amount = SponsorRules.OfferAmountThirds(rating, kind, p, m, FinanceRandom);
                 var boards = kind == AdSlotKind.Bande ? SponsorRules.Boards(m, FinanceRandom) : 1;
@@ -288,9 +284,13 @@ public sealed partial class GameState
             RefreshSponsorOffers(manager, noDice: false);
     }
 
-    /// <summary>Nach jedem Tagesabschluss: Bewertung aller Manager neu speichern ([ORIGINAL] 0x5569F nach 0x100:0x4D).</summary>
+    /// <summary>
+    /// Nach jedem Tagesabschluss: Bewertung aller Manager neu speichern ([ORIGINAL] 0x5569F nach 0x100:0x4D). Vorher die
+    /// Platzfelder der gespielten Ligaspieltage sichern (<see cref="RecordRankSlots"/>, Spur geld Teil 2).
+    /// </summary>
     private void DailySponsorRatings()
     {
+        RecordRankSlots();
         foreach (var manager in Managers)
             UpdateSponsorRating(manager);
     }
