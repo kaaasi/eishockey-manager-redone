@@ -57,7 +57,7 @@ public enum TransferResult
     /// <summary>„Sie haben nicht genug Geld !“</summary>
     NotEnoughMoney,
 
-    /// <summary>„Schon 22 Mann im Team !“</summary>
+    /// <summary>„Schon 29 Mann / im Team.“ (DGROUP 0x127D)</summary>
     SquadFull,
 
     /// <summary>„Schon 3 Spieler auf dem Transfermarkt.“</summary>
@@ -80,7 +80,7 @@ public enum TransferResult
 /// Transfermarkt: Kauf (K), Leihe (L) und Verkauf eigener Spieler.
 /// </summary>
 /// <remarks>
-/// [ORIGINAL] Grenzen aus den Meldungen in em.exe: 22 Mann im Team, 3 eigene und 11 Spieler insgesamt auf dem Markt,
+/// [ORIGINAL] Grenzen aus den Meldungen in em.exe: 29 Mann im Team (<see cref="MaxSquad"/>), 3 eigene und 11 Spieler insgesamt auf dem Markt,
 /// Leihgebühr = Kaufpreis / 3 (Datei 0x462EB). Preis, Annahme eines Gebots, Unfair-Grenze, Tageswurf und Höhe der Angebote
 /// für eigene Spieler nach Ov 0x118 (<see cref="TransferRules"/>, <c>docs/transfer.md</c>); Wechsel der Liste aus dem
 /// Spielerpool nach 0x494EF (<see cref="ChangeList"/>). [APPROX] Zeitpunkt des Listenwechsels (je Ligaspieltag statt täglich),
@@ -89,7 +89,15 @@ public enum TransferResult
 /// </remarks>
 public sealed partial class TransferMarket
 {
-    public const int MaxSquad = 22;
+    /// <summary>
+    /// Höchstzahl Spieler eines Managers für Kauf und Leihe. [ORIGINAL] em.exe Datei 0x477CD: der Kauf ruft „Kaderplatz
+    /// anlegen“ (0x108:0x5C = Datei 0x42CB1) mit Grenze 0x1D; dort wird bei mehr als 28 Spielern des Managers (Zählung
+    /// 0xF8:0x75) mit „Schon 29 Mann / im Team.“ (DGROUP 0x127D) abgebrochen. Beleg FILE05 → FILE07: Kölner EC kauft als
+    /// 26. Spieler. Die frühere Grenze 22 stammte aus „Schon 22 Mann / im Team !“, der Meldung der Aufstellung
+    /// (<see cref="Club.MaxDressed"/>). [APPROX] Das Remake zählt nur den eigenen Kader; ob 0xF8:0x75 verliehene Spieler
+    /// mitzählt (Inventur F089), ist offen.
+    /// </summary>
+    public const int MaxSquad = 29;
     public const int MaxOwnListings = 3;
     public const int MaxListings = 11;
 
@@ -468,7 +476,7 @@ public sealed partial class TransferMarket
         TransferResult.Accepted => ["Ihr Angebot wurde", "angenommen !"],
         TransferResult.Rejected => ["Ihr Angebot", "wurde abgelehnt."],
         TransferResult.NotEnoughMoney => ["Sie haben nicht", "genug Geld !"],
-        TransferResult.SquadFull => ["Schon 22 Mann", "im Team !"],
+        TransferResult.SquadFull => ["Schon 29 Mann", "im Team."],
         TransferResult.TooManyOwnListings => ["Schon 3 Spieler auf", "dem Transfermarkt."],
         TransferResult.MarketFull => ["Schon 11 Mann auf", "dem Transfermarkt."],
         TransferResult.Unfair => ["Dieser Betrag ist", "nicht erlaubt (unfair) !"],

@@ -319,8 +319,11 @@ public class GameModeTests
         Assert.Equal(Mode4Reference, print);
     }
 
+    // Spur kader-transfer, Teil 1 (A170, 0x29A3F): alle Werte neu – Managervereine in der Bundesliga haben 25 statt 20
+    // Kaderplätze (Kader nach Start-Liga): andere Kadererzeugung, Gehälter, Spielstärke und damit Titel, Konten und beide
+    // Zufallsquellen. Konto Manager 1 bleibt in allen Saisons positiv (vorher Saison 4 −28.570).
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|609157,348890|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=0|1491638,141753|WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=1|2729776,35181|WorldChampion=55,CupWinner=12,GermanChampion=15,EuropeanCupWinner=4|3734605,-28570|WorldChampion=52,CupWinner=8,GermanChampion=8,EuropeanCupWinner=4|4353063,118997|R967498903 C1705043894";
+        "WorldChampion=52,CupWinner=1,GermanChampion=0,EuropeanCupWinner=2|778605,375429|WorldChampion=52,CupWinner=7,GermanChampion=6,EuropeanCupWinner=0|1483583,200180|WorldChampion=52,CupWinner=6,GermanChampion=7,EuropeanCupWinner=6|2550930,179895|WorldChampion=55,CupWinner=22,GermanChampion=7,EuropeanCupWinner=6|3053452,168010|WorldChampion=53,CupWinner=6,GermanChampion=1,EuropeanCupWinner=6|3889771,34303|R2115427305 C1668306248";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

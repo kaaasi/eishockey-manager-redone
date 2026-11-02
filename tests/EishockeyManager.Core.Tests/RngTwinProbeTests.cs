@@ -123,16 +123,17 @@ namespace EishockeyManager.Core.Tests;
 /// wirken zusammen, dazu der Minutenweg der Pokalspiele ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an,
 /// 0x3702E).
 /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
+/// Spur kader-transfer, Teil 1 (A170, 0x29A3F): neu – der Managerverein in der Bundesliga hat 25 statt 20 Spieler (Kader nach Start-Liga), andere Kadererzeugung, Gehälter und Spielstärke. Keine Gegenprobe (geänderte Kadergröße ist der Zweck).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "0B378A46286A43C1")]
-    [InlineData(true, 3, "67C82ECC92477F1D")]
-    [InlineData(false, 11, "33106723CBD0B865")]
-    [InlineData(true, 11, "C54F0CCBFD36465B")]
+    [InlineData(false, 3, "0E8AC095DFC1AA11")]
+    [InlineData(true, 3, "72C8069390B5AC8C")]
+    [InlineData(false, 11, "78DB6882EF4E0CFC")]
+    [InlineData(true, 11, "DA97BAFE8B3FF9E4")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);

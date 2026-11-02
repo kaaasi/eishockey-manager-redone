@@ -213,6 +213,14 @@ v1.0 vorgemerkt (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C). Gegenpr
   Energie auf 99 begrenzt; 0x4907A (0x118:0x4D) nicht abgebildet.
 - Poolspieler sind für den WM-Kader nicht nominierbar (`NationalCandidates`, ihr Platz wird neu vergeben).
 
+## Belegt und umgesetzt (Spur `kader-transfer`, Teil 1: Kadergröße, Kaufgrenze)
+
+| Regel | Fundstelle em.exe | Umsetzung |
+|---|---|---|
+| Kader der Managervereine zu Spielbeginn nach **Start-Liga** (`[0x11A] · 4 + Gruppe`), nicht nach Level: Bundesliga 2/10/13, 2. Liga 2/9/11, Oberliga 2/8/10 (Tabelle DGROUP 0x169, Datei 0x16F39) | 0x29A3F | `SquadSetup.ManagedSquadSize(League)`; Liga des Vereins wie bei der Startbasis (`[APPROX]` je Manager) |
+| Kauf und Leihe: „Kaderplatz anlegen“ (0x108:0x5C = 0x42CB1) mit Grenze 0x1D; bei mehr als 28 Spielern des Managers (Zählung 0xF8:0x75) „Schon 29 Mann / im Team.“ (DGROUP 0x127D) | 0x477CD, 0x42D1E–0x42D44 | `TransferMarket.MaxSquad` = 29 (vorher 22 aus der Meldung der Aufstellung); `[APPROX]` gezählt wird nur der eigene Kader (F089 offen) |
+| Beleg Spielstände | FILE01/09/10 (Bundesliga) 25 Plätze, FILE12 (Oberliga) 20; FILE05 → FILE07 Kauf als 26. Spieler | `KaderLigaGroesseTests` |
+
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
 - **Antwort des verkaufenden Managers** (Hot-Seat-Rückfrage 0x47608–0x47743) fehlt; das Remake nimmt ab dem geforderten

@@ -158,10 +158,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Integration Runde 9 (Leitstelle): beide auf dem integrierten Stand neu, einschließlich Minutenweg der Pokalspiele
     /// ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an, 0x3702E).
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
+    /// Spur kader-transfer, Teil 1 (A170, 0x29A3F): neu – der Managerverein in der Bundesliga hat 25 statt 20 Spieler (Kader nach Start-Liga), andere Kadererzeugung, Gehälter und Spielstärke.
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "79803AC5ED2C7179")]
-    [InlineData(true, "D68EC5E7AE30E621")]
+    [InlineData(false, "869FB7CF034EAE55")]
+    [InlineData(true, "582B08BB735F08EB")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -216,8 +217,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Wanderung des Spielstarts 0x9D1B zieht beim ersten (WM-)Spiel weitere Zahlen (im Modus „nur Weltkugel“ keine weitere).
     // spielberechnung-komplett, Teil 2 (R8W3I-06): Hauptquelle und Konten gleich; das Nationalteam des Bundestrainers zieht
     // jetzt den Strafspieler 0x378C5 aus seinem Kader – andere WM-Ergebnisse ab Saison 3 und Pokalquelle (C…).
+    // kader-transfer, Teil 1 (A170, 0x29A3F): Titel, Konten und Pokalquelle gleich, nur die Hauptquelle (R…) verschoben – der
+    // Managerverein (Bundesliga) bekommt beim Spielstart 25 statt 20 Kaderplätze; die Kadererzeugung zieht dafür mehr Zahlen.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=52|500000|R1705866397 C5178594";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=52|500000|R540662232 C5178594";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

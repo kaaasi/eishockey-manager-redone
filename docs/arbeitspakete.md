@@ -132,7 +132,8 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   7. **Ankündigungen der Kaderspieler (P1 Nr. 9) – nach `re-nachtrag`:** A136, A229–A232, A238, A239.
 - **Abnahme:** je Regel roter Test; Goldtest aus FILE03/05/07; Mehrsaisonprobe (Kader, Geld); Spielstand-Rundlauf der
   neuen Felder.
-- **Dateigrenzen:** siehe Zuständigkeit; `docs/transfer.md`, Tests. **Modell:** Claude Opus 5.5. **Status:** –
+- **Dateigrenzen:** siehe Zuständigkeit; `docs/transfer.md`, Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig
+  (#418, Kadergröße nach Start-Liga, Kaufgrenze 29).
 
 ### Spur `wettbewerbe-spiel` – Spielberechnung, Pokale, Nationalteam
 
