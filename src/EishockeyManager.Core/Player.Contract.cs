@@ -293,6 +293,19 @@ public static class Contracts
         return Math.Max(MinSalary, value / 3);
     }
 
+    /// <summary>
+    /// Startpreis eines Kaderplatzes des Managers in DM: Wert(Preis) (0x118:0x70 Art 0) im Verein des Managers / 3.
+    /// [ORIGINAL] Spielstart Datei 0x29EB4 (Kaderplatz +0x2C). Ohne Angebot eines Vereins (+0x09 Bit 0x80) zieht Art 0 keinen
+    /// Zufall (0x4A0F9); mit Angebot wirft die Berechnung (bei Spielbeginn gibt es keine Angebote).
+    /// </summary>
+    public static long ValuePrice(GameState game, Manager manager, Player p)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(manager);
+        var club = game.Clubs[manager.ClubIndex];
+        return game.PlayerValueOf(p, club, PlayerValueKind.Price, NoRandom, manager.Level) / 3;
+    }
+
     /// <summary>Monatliche Versicherungsprämie eines Spielers (Kaderplatz +0x30, <see cref="Player.InsurancePremium"/>).</summary>
     public static int InsurancePremium(Player p) => p.InsurancePremium;
 

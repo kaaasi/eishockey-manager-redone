@@ -357,6 +357,8 @@ public sealed partial class TransferMarket
         if (listing.Seller is { } seller)
             game.Book(seller, FinanceCategory.Transfers, offer);
         Move(listing, game.Clubs[manager.ClubIndex], loan);
+        // [ORIGINAL] Datei 0x4781B–0x47833: +0x2C des neuen Kaderplatzes = Gebot (Kauf und Leihe), Bit 31 bleibt.
+        listing.Player.PurchasePrice = offer;
     }
 
     /// <summary>Spieler wechselt vom bisherigen Verein in den Kader des Käufers.</summary>

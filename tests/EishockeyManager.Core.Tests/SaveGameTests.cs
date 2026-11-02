@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(22, SaveGame.SchemaVersion);
+        Assert.Equal(23, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -38,7 +38,8 @@ public class SaveGameTests
     // 19 Spielstand-Optionen GameSetup.Options (Spur optionen-wirkung).
     // 20 Versicherungsprämie und Abschluss je Spieler (Spur transfer-vertraege-komplett, Teil 2), 21 unaufgefordertes Angebot
     // je Spieler (Teil 3), 22 Spielerpool des Transfermarkts (Teil 5).
-    private const string ExpectedSchemaFingerprint = "5DEB24A5736D8951";
+    // 23 Kaufpreis und Verletzungsart je Spieler (Spur kader-transfer, Teil 2; vorläufig, Leitstelle nummeriert).
+    private const string ExpectedSchemaFingerprint = "8418CCB1E2023372";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

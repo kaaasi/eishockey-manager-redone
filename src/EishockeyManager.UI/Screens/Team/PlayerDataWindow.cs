@@ -89,19 +89,26 @@ public static class PlayerDataWindow
         return (goals ? LeagueGoals(p) : p.Games) + "( -)";
     }
 
+    /// <summary>
+    /// Kaufpreis eines Kaderspielers (Feld 0). [ORIGINAL] 0x041AC Feld 0 = Kaderplatz +0x2C ohne Bit 31 (Start- bzw. Kaufpreis,
+    /// <see cref="Player.PurchasePrice"/>).
+    /// </summary>
+    public static long PurchasePrice(Player p) => p.PurchasePrice;
+
     /// <summary>Geldbetrag in DM; 0 wird als „-“ gezeigt. [ORIGINAL] 0x041AC, 0x861–0x889 (Zahl 0 = „-“, sonst „ DM“ angehängt).</summary>
     public static string Money(long amount) => amount > 0 ? TransferScreen.Money(amount) : "-";
 
     /// <summary>
     /// Inhalt der sechs Datenfelder. Reihenfolge wie <see cref="DataHeads"/>. [ORIGINAL] 0x041AC, Adressen 0x684–0x947:
-    /// Betrag 0 → „-“, Versicherung 0 → „keine“, Vertrag „1 Jahr“ / „n Jahre“, bei geliehenen Spielern „GELIEHEN“.
-    /// [APPROX] Versicherung zeigt „ja“ statt der versicherten Summe (Kaderplatz +0x30, im Remake nicht geführt).
+    /// Betrag 0 → „-“, Versicherung 0 → „keine“, sonst die Prämie +0x30 (<see cref="Player.InsurancePremium"/>) in DM,
+    /// Vertrag „1 Jahr“ / „n Jahre“, bei geliehenen Spielern „GELIEHEN“. Kaufpreis: <paramref name="price"/> (Transferliste:
+    /// Listenpreis = +0x2C des Marktplatzes); für Kaderspieler <see cref="PurchasePrice"/>.
     /// </summary>
     public static string[] DataValues(Player p, long price, PlayerDataContext context) =>
     [
         Money(price),
         context.ShowMarketValue ? Money(context.MarketValue) : "-",
-        p.Insured ? "ja" : "keine",
+        p.InsurancePremium > 0 ? Money(p.InsurancePremium) : "keine",
         PenaltyMinutes(p) > 0 ? PenaltyMinutes(p).ToString() : "-",
         context.ShowSalary ? Money(p.MonthlySalary) : "-",
         p.OnLoan ? "GELIEHEN" : p.ContractYears > 0 ? Player.YearsText(p.ContractYears) : "-",

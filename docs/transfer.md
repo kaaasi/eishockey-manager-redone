@@ -127,7 +127,7 @@ Wert(Gehalt) ist ein Vielfaches von 300 Drittel-DM; das Remake speichert es ohne
 der Bundesliga liegen die Startgehälter damit bei 11.000–18.000 DM (FILE01: Kölner EC), in der Oberliga um 1.000 DM.
 
 `[APPROX]`: Tore und Spiele gehen mit den Zählern des Remakes ein (wie bei allen Aufrufen des Spielerwerts); den Startpreis
-(+0x2C) führt das Remake nicht als Feld. Computervereine, Leihen, Talente und Verlängerungen der Computervereine behalten die
+(+0x2C) führt das Remake seit Spur `kader-transfer` Teil 2 als `Player.PurchasePrice`. Computervereine, Leihen, Talente und Verlängerungen der Computervereine behalten die
 Forderung des Remakes (`Contracts.Demand`).
 
 ## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 3: unaufgeforderte Angebote, Knöpfe)
@@ -220,6 +220,35 @@ v1.0 vorgemerkt (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C). Gegenpr
 | Kader der Managervereine zu Spielbeginn nach **Start-Liga** (`[0x11A] · 4 + Gruppe`), nicht nach Level: Bundesliga 2/10/13, 2. Liga 2/9/11, Oberliga 2/8/10 (Tabelle DGROUP 0x169, Datei 0x16F39) | 0x29A3F | `SquadSetup.ManagedSquadSize(League)`; Liga des Vereins wie bei der Startbasis (`[APPROX]` je Manager) |
 | Kauf und Leihe: „Kaderplatz anlegen“ (0x108:0x5C = 0x42CB1) mit Grenze 0x1D; bei mehr als 28 Spielern des Managers (Zählung 0xF8:0x75) „Schon 29 Mann / im Team.“ (DGROUP 0x127D) | 0x477CD, 0x42D1E–0x42D44 | `TransferMarket.MaxSquad` = 29 (vorher 22 aus der Meldung der Aufstellung); `[APPROX]` gezählt wird nur der eigene Kader (F089 offen) |
 | Beleg Spielstände | FILE01/09/10 (Bundesliga) 25 Plätze, FILE12 (Oberliga) 20; FILE05 → FILE07 Kauf als 26. Spieler | `KaderLigaGroesseTests` |
+
+## Belegt und umgesetzt (Spur `kader-transfer`, Teil 2: Spielerdaten im Modell)
+
+Felder des Kaderplatzes (0x34 Byte, DGROUP 0x5DC3 + 0x618 · Manager) für das Spielerdaten-Fenster 0x041AC und die Hinweiszeile
+0x41683; Inventur A360, A368, A369 (P2 Nr. 8). Umsetzung `Core/Player.Slot.cs`, Schema 23 (`SaveGame.Migration.KaderTransfer.cs`).
+
+| Regel | Fundstelle em.exe | Umsetzung |
+|---|---|---|
+| Kaufpreis +0x2C (ohne Bit 31) bei Spielbeginn = Wert(Preis) je Kaderplatz des Managers, ohne Zufall | 0x29EB4 | `Player.PurchasePrice`, `Contracts.ValuePrice`, `ApplyStartSalaries` |
+| Kauf und Leihe: +0x2C = angenommenes Gebot (bei der Leihe die Gebühr), Bit 31 bleibt; nur ohne Merker [bp−0x11] | 0x4781B–0x47833 | `TransferMarket.Complete` |
+| Spielerdaten-Fenster Feld 0 = +0x2C, Feld 2 = Prämie +0x30 (0 → „keine“) | 0x041AC (Sprungtabelle 0xABD) | `PlayerDataWindow.DataValues`, `PlayerDataWindow.PurchasePrice` |
+| Verletzungsart +0x17, Namen der 28 Arten (Zeigertabelle DGROUP 0xA00) | 0x05B1A, 0x41A69–0x41A86 | `Player.InjuryKind`, `InjuryKinds.Names` |
+| Hinweiszeile „Verletzt.(Art)“: DGROUP 0xB84 + 0x50BE „(“ + Name + 0x50C0 „)“, ohne Leerzeichen | 0x41A2F–0x41AA4 | `PlayerHintLine.Status` |
+| Sperre: Strafe setzt +0x0A = 0, +0x09 \| 1, **+0x0D = Strafcode & 7** (2 bzw. 5 Minuten); je Spielminute −1 (0x5488C, 0x5490C); Ende der Strafe +0x09 &amp; ~1, +0x0D = 0 (0x35795); nach dem Spiel löscht 0x551D4–0x551E0 Bit 0 bei +0x0D ≠ 0 | 0x35C02–0x35C0C | nicht umgesetzt (siehe unten) |
+| Beleg Spielstände | FILE01/09/10: +0x2C = Wert(Preis) aller Managerplätze; FILE07 DAFFNER 400.000 DM; alle 13 Stände ohne Sperre, keiner mit Verletzung | `KaderTransferTeil2Tests` |
+
+`[APPROX]` und Anschlüsse:
+
+- **„Sperre in Minuten“ (A369) ist die Strafbank im laufenden Spiel**, keine Spielsperre: +0x0D teilen sich Verletzungswochen und
+  Strafminuten. `Player.SuspendedGames` des Remakes (Spiele) setzt kein Ablauf; die Hinweiszeile zeigt es weiter als Minuten.
+  Die Strafbank führt die Live-Spielberechnung (`Core/MatchEngine*.cs`, Spur `wettbewerbe-spiel`).
+- **Anschluss `wettbewerbe-spiel`** (`Core/MatchEngine.Injuries.cs`, `PlayerInjuries.Inflict`): gezogene Art in
+  `player.InjuryKind` schreiben (eine Zeile, 0x05B1A); bis dahin zeigt die Hinweiszeile „Verletzt.“ ohne Klammer.
+- **Anschluss Leitstelle** (`UI/Screens/Statistics/PlayerStatisticsScreen.cs`, A360, R11P-03): Spalte Kaufpreis aus
+  `Player.PurchasePrice` statt des Spielerwerts.
+- **Anschluss Doku** (`docs/reverse-engineering.md`, Hinweiszeile „[APPROX]“): Verletzungsart umgesetzt; Sperre = Strafbank.
+- Spielstände vor Schema 23: Kaufpreis 0 („-“), Art unbekannt. Computervereine tragen keinen Kaufpreis.
+- Eigener Spieler auf dem Markt: das Original zeigt als Listenpreis das alte +0x2C (Kaderplatz kopiert); das Remake rechnet den Wert
+  frisch (Teil 4).
 
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 

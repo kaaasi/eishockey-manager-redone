@@ -240,10 +240,13 @@ public class RngTwinProbeTests
     /// stimmen alle sechs Abdrücke unverändert. Ebenso <c>Club.LeaguePenaltyMinutes</c> (Spur statistiken): Zähler für die
     /// Fair-Play-Prämie) steht im Kontostand. Ebenso <c>Player.InsurancePremium</c> und <c>Player.InsuranceLocked</c> (Spur
     /// transfer-vertraege-komplett, Teil 2): „versichert“ steht weiter als <c>Insured</c> im Abdruck, die Prämie wirkt über den
-    /// Kontostand.
+    /// Kontostand. Ebenso <c>Player.PurchasePrice</c>, <c>Player.InjuryKind</c> und <c>Player.InjuryName</c> (Spur kader-transfer,
+    /// Teil 2): reine Anzeigefelder des Spielerdaten-Fensters und der Hinweiszeile, ohne Wirkung auf den Spielverlauf – mit
+    /// dieser Ausnahme stimmen alle Abdrücke unverändert.
     /// </summary>
     private static readonly HashSet<string> Excluded =
-        ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked"];
+        ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked", "PurchasePrice", "InjuryKind",
+         "InjuryName"];
 
     /// <summary>
     /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:
