@@ -171,14 +171,7 @@ public static partial class MatchEngine
         var spread = !managed;
         // [ORIGINAL] Der Lader begrenzt nicht (Byte bis v + v/10, also bis 101); begrenzt wird erst in 0x977F
         // (OriginalMatch.LineValues). Untergrenze: Streuung ≥ −v/10, also nie negativ (Review R8-A03).
-        var defense = new PartValues(
-            value + (spread ? loaded.DefenseCondition : 0),
-            value + (spread ? loaded.DefenseTechnique : 0),
-            spread ? loaded.DefenseForm : 50);
-        var attack = new PartValues(
-            value + (spread ? loaded.AttackCondition : 0),
-            value + (spread ? loaded.AttackTechnique : 0),
-            spread ? loaded.AttackForm : 50);
+        var (defense, attack) = spread ? ClubFieldValues(club) : (new PartValues(value, value, 50), new PartValues(value, value, 50));
         var manager = game.ActiveManagers.FirstOrDefault(m => m.ClubIndex == club.Index);
         LiveSquad? squad = null;
         var penaltyValue = 20;

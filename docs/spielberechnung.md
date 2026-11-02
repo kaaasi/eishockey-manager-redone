@@ -716,3 +716,24 @@ Tests `WettbewerbeSpiel3Tests`.
   ist. Die von 0x554CF für Deutschland ausgewürfelte Form verwirft das Remake (die Wanderung zieht sie zweimal je Woche neu).
   Managerwert der Strafen 20 (A084, DOSBox-Probe offen); keine Verletzungen und Über-/Unterzahl-Zähler des Bundestrainers.
   Tagesform nach WM-Gruppenspielen (0x4F527 auch bei Code 8) weiter nicht nachgeführt.
+
+## 21. Teamwerte in der Stärketabelle 0x51206 (Runde 11, Spur wettbewerbe-spiel Teil 4; Inventur P1 Nr. 5, P2 Nr. 16)
+
+Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/StatisticsStrength.cs`, Tests `WettbewerbeSpiel4Tests`.
+
+- **Gelesen** werden je Teil k = 0 (Abwehr), 1 (Sturm) nur Vereinsfelder: Kondition 0x18 + k (Datei 0x5149A), Technik
+  0x1A + k (0x514BD), Form 0x1C + k (0x514E3), Vereinszeiger DGROUP 0x9657 mit Faktor 0x3D; der Trendbalken liest
+  Vereinsfeld 0x17 (Tagesform, 0x51900). Spielerwerte gehen nicht ein (A200, A201).
+- **Remake:** Computervereine `MatchEngine.ClubFieldValues` (Teamwert + Streuung des Laders bzw. Stand der Wanderung §15,
+  Form des Laders; dieselben Werte wie `LiveTeamOf`). Managervereine aus der Aufstellung (`LineupTeamValues`, 0x952C im
+  Tageslauf 0x54F9C–0x54FBF für jeden Manager). Länderteams: Kondition/Technik aus 0x4C4E (`NationalRatings`), Form und
+  Tagesform aus den Feldern des Vereinsplatzes; Land des Bundestrainers aus dessen Aufstellung (§18). Trend =
+  Tagesform (47 … 53).
+- `[APPROX]` Managervereine aus der aktuellen Aufstellung statt dem Stand des letzten Tageslaufs; vor dem ersten Spiel
+  eines Spielstands (Teamwerte noch nicht gezogen) Streuung 0, Form und Tagesform 50.
+- **Finanzen unverändert:** `StrengthTable.TeamValues` (Monatseinnahme `FinanceMonthly`, Zuschauer `FinanceStadium`)
+  rechnet weiter aus den Spielerwerten; die Umstellung der Aufrufer (A035 bzw. 0x4D316) gehört zur Spur geld bzw. der
+  Integration. Kein Zufallszug, Spielergebnisse und Geld bleiben gleich.
+- **Über-/Unterzahl in der Vereinsstatistik (A349):** Der Anschluss der Zähler aus §18 an „Statistiken → Verein“ war
+  schon vorhanden (`Manager.PowerPlayCounts`); geprüft über die Zeitleiste (`WettbewerbeSpiel4ScreenTests`), der
+  veraltete `[APPROX]`-Kommentar in `ClubStatisticsScreen` ist ersetzt.
