@@ -73,7 +73,8 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   Nutzer. Die Spur beschreibt den Ablauf; fehlt das Paar, bleibt es begründet offen.
 - **Abnahme:** wie Runde 10 „Abnahme je Spur“ (Selbstprüfung `funktionskarte.py --csv` ohne `--write`); Datei
   `docs/analyse/re-nachtrag.md` mit Abschnitt „Umsetzung“ je Stelle (Ziel, Dateien, Testidee, Spur dieser Runde).
-- **Dateigrenzen:** nur `docs/analyse/re-nachtrag.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** –
+- **Dateigrenzen:** nur `docs/analyse/re-nachtrag.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** Analyse
+  fertig (PR der Spur, Branch `paket/re-nachtrag`), Umsetzung U1–U16 in `docs/analyse/re-nachtrag.md`; A085/A088 offen (Spielstandpaar).
 
 ### Spur `geld` – Stadion, Jugend, Bank, Sponsoren, Finanzbedienung
 
