@@ -175,17 +175,14 @@ public sealed partial class GameState
             : new int[NationalFormLength];
 
     /// <summary>
-    /// Ergebnis eines Länderspiels eintragen (Gegenstück zu 0x50283 für Länder). Kopf-an-Kopf auf Platz 0, wenn Deutschland
-    /// spielt (Heim: Seite 0 mit lo = Heimtore, hi = Gasttore; Gast: Seite 1 mit lo = Gasttore, hi = Heimtore – so steht
-    /// in der Anzeige immer zuerst die Torzahl des Gegners); nur bei WM-Gruppenspielen Rekorde, Serien und Bilanz.
+    /// Ergebnis eines Länderspiels eintragen (0x50283 für Länder). Kopf-an-Kopf über <see cref="RecordMeeting"/> (Deutschland =
+    /// DGROUP 0x6AC → Platz 0, Heim: Seite 0 mit lo = Heimtore, hi = Gasttore; Gast: Seite 1 mit lo = Gasttore, hi = Heimtore);
+    /// nur bei WM-Gruppenspielen Rekorde, Serien und Bilanz.
     /// [APPROX] Länder haben im Remake keinen Manager (Vereinsfeld 0x16), es zählt nur Deutschland.
     /// </summary>
     public void EnterNationalResult(int home, int away, int hg, int ag, NationalMatchKind kind)
     {
-        if (home == NationalTeams.Germany)
-            TeamRecords.EnterHeadToHead(_headToHead, HeadToHeadOffset(0, away), IsNation(away), 0, hg, ag);
-        if (away == NationalTeams.Germany)
-            TeamRecords.EnterHeadToHead(_headToHead, HeadToHeadOffset(0, home), IsNation(home), 1, ag, hg);
+        RecordMeeting(home, away, hg, ag); // ein Schreiber 0x50283 → 0x4F5A8 für alle Wettbewerbe (Spur wettbewerbe-spiel, Teil 2)
         if (kind != NationalMatchKind.WorldCupGroup)
             return;
         TeamRecords.Enter(_teamRecords, _teamRecordOpponents, home, away, hg, ag);
@@ -193,8 +190,6 @@ public sealed partial class GameState
         ShiftForm(home, hg, ag);
         ShiftForm(away, ag, hg);
     }
-
-    private static int HeadToHeadOffset(int slot, int club) => (slot * TeamRecords.Teams + club) * HeadToHeadLength;
 
     private static bool IsNation(int club) => club is >= NationalTeams.First and <= NationalTeams.Last;
 

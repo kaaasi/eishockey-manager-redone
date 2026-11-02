@@ -151,7 +151,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** je Regel roter Test; Saisonverteilung (Meister, Tore, Strafminuten) im PR; Mehrsaisonprobe Modus 1, 2, 4;
   Referenzwerte begründet.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/spielberechnung.md`, `docs/wettbewerbe.md`, Tests.
-  **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig (PR #420, Review offen); Teil 2 in Arbeit (`paket/wettbewerbe-spiel-2`).
+  **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig (PR #420, Review offen); Teil 2 fertig (PR #425, Review offen); Teil 3 als Nächstes.
 
 ### Spur `ui-meldungen` – Meldungsbausteine, Infofile, Tabellenkurve
 

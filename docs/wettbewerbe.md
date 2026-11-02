@@ -118,6 +118,31 @@ K.-o.-Ansicht seit Runde 6 nach dem Original: eigener Bildschirm „WM-Endrunden
 Funktion wie „DEB-Pokalspiele“ mit Wettbewerb 3), vermessen an `eisbaeren_f35_00646` und `eisbaeren_f44_01330` (Abschnitt
 [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-pixel-wettbewerbe)). **Offen:** WM-Statistik wartet auf `livespiel`.
 
+## Begegnungstabelle aller Wettbewerbe (Spur `wettbewerbe-spiel`, Teil 2; A111, #344)
+
+Infoleiste (zweite Zeile) und Gegner-Fenster lesen eine Tabelle (`Core/MeetingHistory.cs`, DGROUP 0xAB7B, Schreiber 0x4F5A8).
+Eingetragen wird nur aus der Ergebniseintragung em.exe 0x50283, und zwar für jedes Spiel, das sie bekommt:
+
+| Wettbewerb | Aufruf (Datei) | Remake |
+|---|---|---|
+| Liga, Code 7 | 0x50B45 | `GameState.PlayNextMatchDay` |
+| DEB-Pokal, Code 6 | 0x34C5C in 0x34B76 | `DebCup.PlayDay` (neu) |
+| Play-offs, Code 1 | 0x3165B in 0x315E9 (nur gespielte Spiele, < 100) | `GameState.RecordMeetings` – Aufruf im Play-off-Tag (`SeasonFlow.cs`) setzt die Integration |
+| Aufstiegsrunden | 0x30942 in 0x30852, Wettbewerb 1 | wie Play-offs |
+| WM-Gruppe, Code 8 / WM-Endrunde, Code 10 | 0x30942 (Wettbewerb 0) / 0x3108B in 0x30E7B | `EnterNationalResult` → `RecordMeeting` |
+| Freundschaftsspiel, Code 0xD | 0x303BA | `EnterNationalResult` → `RecordMeeting` |
+| Europapokal (Gruppen, Endrunde) | – (0x30852 ruft 0x50283 nur bei Wettbewerb < 2, Datei 0x3091C) | nicht eingetragen |
+
+- Pokal-, Play-off- und WM-Endrunden-Ergebnisse gehen als Endstand **ohne Marken** ein (je − 30 im Heimbyte, solange > 29:
+  Datei 0x34C06–0x34C2A, 0x31622–0x31631, 0x31052–0x31061). Im Remake ist das `KnockoutMatch.HomeGoals/AwayGoals`.
+- Tabelle des Managers: Heimverein mit Manager (Vereinsfeld +0x16) → Seite 0, Gast → Seite 1. Das Land DGROUP 0x6AC schreibt
+  in die Tabelle von Manager 0 (Datei 0x502B4–0x502C8), **auch ohne Bundestrainer**; 0x6AC ist Deutschland (einziger
+  Schreiber: WM-Auslosung Datei 0x35FAC, im Remake ohne Indextausch). Vorher verlangte der Zweig einen ernannten
+  Bundestrainer und Länderspiele hatten einen eigenen Schreibweg (#344).
+- Nur die Begegnungstabelle: Tabellenfelder, Serien und Tagesform schreibt 0x50283 weiter nur bei Code 7/8 (Datei 0x5030D).
+- `[APPROX]` Play-offs im Remake bei Gleichstand mit getrenntem Sieger (`Playoffs.cs`, Spur saisonwechsel): eingetragen wird
+  dann der Gleichstand; im Original der Endstand nach Penaltyschießen.
+
 ## Stärken (`Core/StatisticsStrength.cs`, `UI/Screens/Statistics/StrengthScreen.cs`)
 
 Funktion 0x51206 (Hauptmenü → Stärken → 1. Liga, 2. Liga, Oberliga, Länderteams):

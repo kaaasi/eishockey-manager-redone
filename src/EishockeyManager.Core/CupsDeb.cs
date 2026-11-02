@@ -168,6 +168,9 @@ public sealed class DebCup : ISeasonCompetition
             played.Add(match);
         }
         game.SettleCupMatches(played, importance: 1); // gemeinsame Spielabrechnung, genau einmal je Spiel
+        // [ORIGINAL] 0x34B76 trägt jedes gespielte Spiel über 0x50283 ein (Datei 0x34C5C, Endstand ohne Marke:
+        // 0x34C06–0x34C2A zieht 30 ab, solange das Heimbyte > 29) – Begegnungstabelle (Spur wettbewerbe-spiel, Teil 2).
+        game.RecordMeetings(played);
 
         if (played.Count > 0)
             steps.Add(new MatchesStep(day, Competition.DebCup, played.Any(m => managerClubs.Contains(m.Home) || managerClubs.Contains(m.Away))));
