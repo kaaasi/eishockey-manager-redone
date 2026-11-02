@@ -195,8 +195,9 @@ public class ClubDressedTests
                     Check();
             }
             Check();
-            Assert.All(others, c => Assert.Equal(0, c.Tactics.EffortStrengthBonus()));
-            Assert.Equal(active ? 2 : 0, club.Tactics.EffortStrengthBonus(), 6);
+            // Runde 11 (A178/A182): kein Stärkezuschlag mehr; die eigene Taktik bleibt nur beim aktiven Manager stehen.
+            Assert.All(others, c => Assert.Equal(TacticMode.Auto, c.Tactics.EffortMode));
+            Assert.Equal(active ? Tactics.MaxEffort : 80, club.Tactics.EffectiveEffort(0, 0));
 
             var bytes = SaveGame.Save(game);
             var loaded = SaveGame.Load(bytes);

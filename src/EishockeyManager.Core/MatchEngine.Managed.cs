@@ -68,7 +68,9 @@ public sealed class LiveSquad
 
     /// <summary>
     /// Minutenzähler der Minuten-Vorgabe je Teil und Reihe (DGROUP 0x4926 + 8 · Manager + 4 · Teil + Reihe).
-    /// [APPROX] Im Original nicht beim Spielbeginn zurückgesetzt (nicht gesucht); das Remake beginnt jedes Spiel bei 0.
+    /// [APPROX] Im Original schreibt nur 0x8EF2 den Zähler (Datei 0x911C + 1, Datei 0x9166 = 0 beim Wechsel; kein weiterer
+    /// Leser, Schreiber oder Blockzugriff auf DGROUP 0x4926–0x4955): er läuft über das Spielende in das nächste Spiel
+    /// weiter und gehört nicht zum Spielstand. Das Remake beginnt jedes Spiel bei 0.
     /// </summary>
     public int[,] MinuteCounters { get; } = new int[2, 4];
 
@@ -427,7 +429,8 @@ public static partial class OriginalMinutes
     ///   mit der Nummer der Reihe und greift nie (übernommen).</item>
     /// <item>Modus 3: Reihe des gegnerischen anderen Teils, außer dieser spielt mit der vierten Reihe (dann die
     ///   energiestärkste); die Energieprüfung „+ 8“ vergleicht wieder mit der Nummer (übernommen).</item>
-    /// <item>Modus 4 (Minuten-Vorgabe, nur Manager): Zähler der Reihe + 1; über der Vorgabe Zähler 0 und weiter zur
+    /// <item>Modus 4 (Minuten-Vorgabe, nur Manager): Zähler der Reihe + 1; über der umgerechneten Vorgabe
+    ///   (<see cref="Tactics.MinuteQuota"/>, Datei 0x09140 gegen DGROUP 0xCC73) Zähler 0 und weiter zur
     ///   nächsten Reihe mit Vorgabe ≠ 0 (Ring über 3 bzw. 4 Reihen, höchstens 250 Schritte).</item>
     /// <item>Neue Reihe: Minuten auf dem Eis 0.</item>
     /// </list>
@@ -461,7 +464,7 @@ public static partial class OriginalMinutes
                     current = team.LineEnergy(part, other) + 8 < best || other == 3 ? best : other;
                     break;
                 case 4 when team.Squad is { } squad:
-                    var limit = (int l) => squad.Tactics?.Minutes(l, forwards: part == 1) ?? 0;
+                    var limit = (int l) => squad.Tactics?.MinuteQuota(l, forwards: part == 1) ?? 0;
                     var counter = ++squad.MinuteCounters[part, current];
                     if (limit(current) >= counter)
                         break;

@@ -499,18 +499,23 @@ public static partial class OriginalMinutes
     /// Einsatz und Angriff nach dem Spielstand (nur mit <see cref="LiveTeam.Tactics"/>, siehe dort). [ORIGINAL] 0x939A,
     /// gerade Minuten der Managerpaarung für beide Vereine: Grundwert + Zuschlag des Spielstands, dazu bei einer
     /// Energie der Reihen auf dem Eis ((Abwehr + Sturm) / 2) unter 50 deren Differenz zu 50; begrenzt auf 0 … 100. Bei
-    /// „MANUELL“ schreibt das Original keinen Einsatz ([APPROX] das Remake nimmt dann die eigenen Werte ohne Energieabzug).
+    /// „MANUELL“ schreibt das Original keinen Einsatz (Datei 0x9516: DGROUP 0xA6FA + Manager = 2) und keinen Angriff
+    /// (Datei 0x94E2: DGROUP 0xA706 + Manager ≥ 2); es bleibt der Wert vor dem Spiel.
     /// </summary>
-    private static void FollowTactics(LiveTeam team, int goalDifference)
+    public static void FollowTactics(LiveTeam team, int goalDifference)
     {
         if (team.Tactics is not { } tactics)
             return;
-        var effort = tactics.EffectiveEffort(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
-        var energy = (team.LineEnergy(0, team.DefenseLine) + team.LineEnergy(1, team.AttackLine)) >> 1;
-        if (energy < 50 && tactics.EffortMode != TacticMode.Manual)
-            effort += energy - 50;
-        team.Effort = Math.Clamp(effort, 0, 100);
-        team.AttackLevel = tactics.EffectiveAttack(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
+        if (tactics.EffortMode != TacticMode.Manual)
+        {
+            var effort = tactics.EffectiveEffort(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
+            var energy = (team.LineEnergy(0, team.DefenseLine) + team.LineEnergy(1, team.AttackLine)) >> 1;
+            if (energy < 50)
+                effort += energy - 50;
+            team.Effort = Math.Clamp(effort, 0, 100);
+        }
+        if (tactics.AttackMode != TacticMode.Manual)
+            team.AttackLevel = tactics.EffectiveAttack(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
     }
 
     private static void Score(LiveTeam home, LiveTeam away, int side, (int Normal, int Defensive, int Offensive) h,
