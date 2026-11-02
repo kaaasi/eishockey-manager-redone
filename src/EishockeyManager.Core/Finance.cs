@@ -78,8 +78,26 @@ public static partial class FinanceRules
     /// <summary>Zinssatz zwischen Managern pro Monat („Geld von … leihen (2.5%)“).</summary>
     public const double ManagerLoanRate = 0.025;
 
-    /// <summary>[APPROX] Höchstbetrag des Bankkredits. Im Karriere-Video stehen 584.000 DM Kredit (4 %).</summary>
-    public const long CreditLimit = 1_000_000;
+    /// <summary>
+    /// [ORIGINAL] Höchstbetrag des Bankkredits: em.exe Datei 0x596C2–0x59A12 (Höchstwert links „holen/leihen“ =
+    /// 6.000.000 Drittel-DM minus Schuld bei der Bank), also 2 Mio. DM (docs/analyse/re-geld.md, „Betragsbalken“).
+    /// </summary>
+    public const long CreditLimit = 2_000_000;
+
+    /// <summary>
+    /// [ORIGINAL] Grenze zwischen zwei Managern je Richtung: em.exe Datei 0x596C2–0x59A12 (3.000.000 Drittel-DM minus
+    /// bestehende Forderung bzw. Schuld), also 1 Mio. DM.
+    /// </summary>
+    public const long ManagerLoanLimit = 1_000_000;
+
+    /// <summary>[ORIGINAL] Börsengebühr in Promille beim Kauf und Verkauf: em.exe Datei 0x5915F–0x5952D (w · 15 / 1000).</summary>
+    public const long StockFeePerMille = 15;
+
+    /// <summary>
+    /// Börsengebühr für einen Umsatz <paramref name="value"/> in DM. [APPROX] Das Original rechnet in Drittel-DM
+    /// (⌊3w · 15 / 1000⌋); das Remake führt ganze DM und verwirft den Drittel-Rest (⌊⌊3w · 15 / 1000⌋ / 3⌋ = ⌊w · 15 / 1000⌋).
+    /// </summary>
+    public static long StockFee(long value) => value * StockFeePerMille / 1000;
 
     /// <summary>
     /// Monatliche Gehälter eines Vereins: Summe der Vertragsgehälter (<see cref="Player.MonthlySalary"/>, Bildschirm

@@ -75,6 +75,24 @@ public sealed partial class GameState
         return bank.Savings + Math.Max(0, FinanceRules.CreditLimit - bank.Credit);
     }
 
+    /// <summary>Forderung von <paramref name="self"/> an <paramref name="other"/> minus Schuld bei ihm (Darlehensfeld im Original).</summary>
+    public long ManagerLoanNet(int self, int other) => LoanAmount(self, other) - LoanAmount(other, self);
+
+    /// <summary>
+    /// Höchstbetrag, den <paramref name="self"/> an <paramref name="other"/> zahlen kann (Tilgung und neue Forderung).
+    /// [ORIGINAL] em.exe Datei 0x596C2–0x59A12, rechts: min(1 Mio. DM − was der andere mir schuldet, eigenes Konto > 0).
+    /// </summary>
+    public long MaxLendToManager(int self, int other) =>
+        self == other ? 0 : Math.Max(0, Math.Min(FinanceRules.ManagerLoanLimit - ManagerLoanNet(self, other), Managers[self].Money));
+
+    /// <summary>
+    /// Höchstbetrag, den <paramref name="self"/> bei <paramref name="other"/> leihen kann.
+    /// [ORIGINAL] em.exe Datei 0x596C2–0x59A12, links: nur wenn das Konto des anderen &gt; 0 ist,
+    /// min(1 Mio. DM − was ich ihm schulde, sein Konto).
+    /// </summary>
+    public long MaxBorrowFromManager(int self, int other) =>
+        self == other ? 0 : Math.Max(0, Math.Min(FinanceRules.ManagerLoanLimit - ManagerLoanNet(other, self), Managers[other].Money));
+
     /// <summary>Offener Betrag, den <paramref name="borrower"/> dem <paramref name="lender"/> schuldet.</summary>
     public long LoanAmount(int lender, int borrower) =>
         ManagerLoans.Where(l => l.Lender == lender && l.Borrower == borrower).Sum(l => l.Amount);
@@ -99,6 +117,7 @@ public sealed partial class GameState
     /// </summary>
     public long PayToManager(int from, int to, long amount)
     {
+        amount = Math.Min(amount, MaxLendToManager(from, to));
         var repaid = RepayManagerLoan(from, to, amount);
         return repaid + LendBetweenManagers(from, to, amount - repaid);
     }
@@ -120,7 +139,7 @@ public sealed partial class GameState
     public long LendBetweenManagers(int lender, int borrower, long amount)
     {
         var from = Managers[lender];
-        amount = Math.Min(amount, Math.Max(0, from.Money));
+        amount = Math.Min(amount, MaxLendToManager(lender, borrower));
         if (amount <= 0 || lender == borrower)
             return 0;
         var loan = ManagerLoans.FirstOrDefault(l => l.Lender == lender && l.Borrower == borrower);

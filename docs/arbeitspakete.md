@@ -96,7 +96,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** je Regel roter Test, danach grün; Mehrsaisonprobe (Geld) je Teil mit Geldwirkung; Jugend: Platzverlauf mit
   festem Zufall über 4 Saisonwechsel.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/finanzen-rekonstruktion.md`, `docs/analyse/re-geld.md` (nur Status), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Stadionausbau) PR #417, fertig zum Review; Teil 2 (Sponsorbewertung, Angebote, Monatseinnahme) PR #429, fertig zum Review; Teil 3 (Jugendteams) PR #433, fertig zum Review. Teil 4 (Bank und Börse) in Arbeit (paket/geld-4).
+- **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Stadionausbau) PR #417, fertig zum Review; Teil 2 (Sponsorbewertung, Angebote, Monatseinnahme) PR #429, fertig zum Review; Teil 3 (Jugendteams) PR #433, fertig zum Review. Teil 4 (Bank und Börse) PR #436, fertig zum Review (BoerseStartTests-Probe braucht Leitstellen-Anpassung, siehe PR).
 
 ### Spur `saisonwechsel` – Oberliga, Zwangsabstieg, Ewige Tabelle
 

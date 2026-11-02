@@ -365,7 +365,8 @@ public sealed class FinanceScreen : Screen
     public long MaxLeft() => _selection.Kind switch
     {
         SelectionKind.Bank => Game.MaxWithdrawal(Me),
-        SelectionKind.Manager => Math.Max(0, Game.Managers[_selection.Index].Money),
+        // [ORIGINAL] em.exe Datei 0x596C2–0x59A12: höchstens 1 Mio. DM Schuld je Mitmanager und nur bis zu seinem Konto.
+        SelectionKind.Manager => Game.MaxBorrowFromManager(Game.CurrentManager, _selection.Index),
         _ => Math.Max(0, Me.Money) / Game.Stocks.Stocks[_selection.Index].Price,
     };
 
@@ -373,6 +374,8 @@ public sealed class FinanceScreen : Screen
     public long MaxRight() => _selection.Kind switch
     {
         SelectionKind.Stock => Game.Finance(Me).Holdings[_selection.Index].Count,
+        // [ORIGINAL] em.exe Datei 0x596C2–0x59A12: Tilgung plus höchstens 1 Mio. DM Forderung, nur bis zum eigenen Konto.
+        SelectionKind.Manager => Game.MaxLendToManager(Game.CurrentManager, _selection.Index),
         _ => Math.Max(0, Me.Money),
     };
 

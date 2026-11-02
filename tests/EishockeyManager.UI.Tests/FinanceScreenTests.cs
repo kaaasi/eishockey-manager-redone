@@ -43,7 +43,8 @@ public class FinanceScreenTests
         Assert.Equal(100, screen.LeftAmount);
         Press(d, FinanceScreen.LeftArrow);
         Assert.Equal(100, game.Finance(me).Holdings[1].Count);
-        Assert.Equal(FinanceRules.StartMoney(me.Level) - 100L * price, me.Money);
+        var cost = 100L * price + FinanceRules.StockFee(100L * price);   // Gebühr 1,5 % (em.exe Datei 0x5915F ff.)
+        Assert.Equal(FinanceRules.StartMoney(me.Level) - cost, me.Money);
         Assert.Equal(0, screen.LeftAmount);
 
         Press(d, FinanceScreen.RightPlus, right: true);  // 100 verkaufen
@@ -51,7 +52,7 @@ public class FinanceScreenTests
         Assert.Equal(100, screen.RightAmount);
         Press(d, FinanceScreen.RightArrow);
         Assert.Equal(0, game.Finance(me).Holdings[1].Count);
-        Assert.Equal(FinanceRules.StartMoney(me.Level), me.Money);
+        Assert.Equal(FinanceRules.StartMoney(me.Level) - cost + 100L * price - FinanceRules.StockFee(100L * price), me.Money);
     }
 
     [GameDataFact]
