@@ -202,7 +202,10 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   Anschluss A360: Kaufpreis im Spielerdaten-Fenster der Spielerstatistik (Test `PlayerStatisticsPurchasePriceTests`).
   `FinanceCalibrationTests` (Entscheidung Nutzer 02.11.2026, C): strenge Fassung aus #352 (jede Saison endet regulär),
   passiver Kader zu Saisonbeginn spielfähig gehalten; die Entlassung eines rein passiven Bundesliga-Managers prüft der neue
-  Test `PassiveBundesligaManager_WithoutCare_IsDismissed`. Doku-Anschlüsse (re-meldungen.md, re-geld.md,
+  Test `PassiveBundesligaManager_WithoutCare_IsDismissed`. Wechselwirkungen mit geld/saisonwechsel (Proben nachgeführt, keine
+  Regel geändert): `SponsorBewertungTests` (Konto gesetzt durch S-K1, neutral gezählt), `SaisonwechselDoppelwechselTests`
+  (Aufstiegsrunde festgelegt), `PlayerFactoryTests.TalentSearch_TalentIsComplete` (Suche über das Saisonende hinaus),
+  `LifecycleScreenRegressionTests.R204` (zweiter stimmiger Ausgang: Poolplatz). Doku-Anschlüsse (re-meldungen.md, re-geld.md,
   reverse-engineering.md, spielberechnung.md §15, Inventur A226/A256/A257/A381/F002–F006/F013–F015/F109) mit
   `marker-werkzeug` bzw. im Rundenabschluss.
 

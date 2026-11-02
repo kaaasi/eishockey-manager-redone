@@ -72,7 +72,9 @@ public class SaisonwechselDoppelwechselTests
         // Gegenbeispiel aus dem Review (SW-01): seed 1, Manager auf Verein 12, alle 2.-Liga-Spiele gewonnen, Konto ab
         // 13. April −700.000 DM. Verein 12 gewinnt die Aufstiegsrunde und wird zugleich zwangsweise abgestiegen.
         var game = SaisonwechselZwangsabstiegTests.Create(seed: 1, clubs: Club);
-        var record = PlaySeason(game, _ => -700_000, winner: Club);
+        // Integration Runde 11 (geld + saisonwechsel + kader-transfer): Mit dem integrierten Zufallsverlauf gewinnt Verein 12 die
+        // Aufstiegsrunde nicht mehr von selbst (Verein 14); die Rundenspiele werden deshalb wie in der Mehrsaisonprobe festgelegt.
+        var record = PlaySeason(game, _ => -700_000, winner: Club, winRound: true);
 
         Assert.Equal(League.ZweiteLiga, game.Clubs[Club].League);
         Assert.Contains(SeasonEvent.ForcedRelegation, record.Managers[0].Events);

@@ -84,8 +84,18 @@ public class PlayerFactoryTests
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];
         // Die Finanz-Zufallsquelle hängt nicht vom Spielstand-Seed ab: mehrere Suchen in einem Spiel statt mehrerer Spiele.
-        for (var search = 0; search < 15 && successes == 0 && game.Phase == SeasonPhase.Running; search++)
+        // Integration Runde 11 (geld + saisonwechsel + kader-transfer): Mit dem integrierten Zufallsverlauf endet die erste
+        // Saison nach fünf erfolglosen Suchen (Erfolg je Suche 1 : SuccessDie). Die Probe geht deshalb über das Saisonende hinaus
+        // in die nächste Saison, statt nach der ersten Saison aufzuhören.
+        for (var search = 0; search < 15 && successes == 0; search++)
         {
+            while (game.Phase != SeasonPhase.Running)
+            {
+                if (game.Phase == SeasonPhase.SeasonOver)
+                    game.StartNextSeason();
+                else
+                    game.Continue();
+            }
             manager.Money = 1_000_000;
             TestSeason.KeepSquad(game, manager);
             var before = club.Players.ToList();

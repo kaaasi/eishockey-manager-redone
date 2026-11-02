@@ -39,11 +39,12 @@ public class LifecycleScreenRegressionTests
         // deterministisch, geprüft wird deshalb genau der beobachtete (#353, R9S-05). Bis Teil 4 der Spur kader-transfer: Pool
         // (Verein 9); seit Teil 5 (Poolumverteilung beim Spielstart, andere erste Liste): Nationalspieler, Tausch in den Kader von
         // Verein 59 (0x5ACA0 Art 0). Ändert sich der Zufallsverlauf, hier den neuen Ausgang eintragen und begründen.
+        // Integration Runde 11 (geld + saisonwechsel + kader-transfer): anderer Zufallsverlauf der Hauptquelle, jetzt der
+        // zweite stimmige Ausgang – zurück im Poolplatz (Herkunft Verein 59), ohne Vertrag, in keinem Kader.
         Assert.Equal(59, origin.Index);
-        Assert.Contains(player, origin.Players);
-        Assert.Equal(2, player.ContractYears);
-        Assert.DoesNotContain(player, game.TransferMarket.PoolPlayers);
-        Assert.All(game.Clubs.Where(c => c != origin), c => Assert.DoesNotContain(player, c.Players));
+        Assert.Contains(player, game.TransferMarket.PoolPlayers);
+        Assert.Equal(0, player.ContractYears);
+        Assert.All(game.Clubs, c => Assert.DoesNotContain(player, c.Players));
         Assert.DoesNotContain(player, club.Players);
         Assert.DoesNotContain(expired, club.Players);
         Assert.All(game.Clubs, c => Assert.All(c.Lineup.Players, p => Assert.Contains(p, c.Players)));
