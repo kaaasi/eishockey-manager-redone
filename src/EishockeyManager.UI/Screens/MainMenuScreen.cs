@@ -128,6 +128,13 @@ public sealed class MainMenuScreen : Screen
         if (_selectedBig < 0 && ManagerArea.NewsBar.HasUnread(Game))
             _newsBar = true;
 
+        // Infofile: verstecktes Feld (319 | 0), vor allen übrigen Klicks (0x453E5, Spur ui-meldungen Teil 2)
+        if (InfoFileScreen.IsTrigger(input))
+        {
+            Host.Show(new InfoFileScreen(Host, this));
+            return;
+        }
+
         // Credits (#207): linker oder rechter Klick in die Titelleiste, vor dem Abwählen per Rechtsklick (0x45483).
         if ((input.LeftClick || input.RightClick) && CreditsScreen.TitleArea.Contains(input.MouseX, input.MouseY))
         {
@@ -280,14 +287,16 @@ public sealed class MainMenuScreen : Screen
             // [APPROX] Ohne Liga keine Tabellenkurve; der Bundestrainer sieht hier nichts (kein Videobeleg).
         }
         else if (game.PlayedMatchDays == 0)
+        {
+            RankCurve.DrawAxes(s);
             s.Text(mini, 5, 35, "Vor dem ersten Spieltag.", Colors.White);
+        }
         else if (game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver)
         {
             if (game.UpcomingLeagueMatchDay is { } md)
                 s.TextCentered(mini, 55, 35, $"{md}.Spieltag", Colors.White);
-            if (next?.Opponent.Index is { } o)
-                DrawRankCurve(s, game, o, Colors.White);
-            DrawRankCurve(s, game, team, Colors.Yellow);
+            // Tabellenkurve: Spur ui-meldungen, Teil 2 (UI/Screens/RankCurve.cs, em.exe 0x445E0)
+            RankCurve.Draw(s, Assets, game.RankHistory(team), next?.Opponent.Index is { } o ? game.RankHistory(o) : null);
         }
 
         // Symbole: Wettbewerb, Heim/Auswärts, bisherige Begegnungen, Kontostand
@@ -314,51 +323,6 @@ public sealed class MainMenuScreen : Screen
         Widgets.Head(s, Assets, manager.Head, 232, 33);
         Raised(s, new Rect(274, 32, 41, 42));
         Widgets.Logo(s, Assets, club.LogoGraphic, 275, 34);
-    }
-
-    /// <summary>
-    /// Tabellenkurve im Nachrichtenfeld: Platz nach jedem Spieltag (oben = Platz 1), rechts der aktuelle Platz.
-    /// [APPROX] Maßstab und Lage aus Videobildern geschätzt.
-    /// </summary>
-    private void DrawRankCurve(Surface s, GameState game, int club, byte color)
-    {
-        var history = game.RankHistory(club);
-        if (history.Count == 0)
-            return;
-        const int left = 6, right = 84, top = 43, bottom = 68;
-        // Im Original füllt die Kurve schon nach 17 Spieltagen die ganze Breite → Maßstab = bisherige Spieltage
-        var n = Math.Max(1, history.Count - 1);
-        int X(int i) => left + i * (right - left) / n;
-        int Y(int rank) => top + (rank - 1) * (bottom - top) / 11;
-        for (var i = 0; i < history.Count; i++)
-        {
-            var x0 = X(i);
-            var y0 = Y(history[i]);
-            if (i == 0)
-            {
-                s.Set(x0, y0, color);
-                continue;
-            }
-            var x1 = X(i - 1);
-            var y1 = Y(history[i - 1]);
-            Line(s, x1, y1, x0, y0, color);
-        }
-        s.Text(Assets.Mini, right + 3, Y(history[^1]) - 2, $"{history[^1]}.", color);
-    }
-
-    private static void Line(Surface s, int x0, int y0, int x1, int y1, byte color)
-    {
-        int dx = Math.Abs(x1 - x0), dy = -Math.Abs(y1 - y0);
-        int sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1, err = dx + dy;
-        while (true)
-        {
-            s.Set(x0, y0, color);
-            if (x0 == x1 && y0 == y1)
-                break;
-            var e2 = 2 * err;
-            if (e2 >= dy) { err += dy; x0 += sx; }
-            if (e2 <= dx) { err += dx; y0 += sy; }
-        }
     }
 
     /// <summary>Erhabener Kasten wie im Original: oben/links hell, unten/rechts dunkel mit Schatten.</summary>
