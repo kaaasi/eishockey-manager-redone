@@ -125,16 +125,17 @@ namespace EishockeyManager.Core.Tests;
 /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
 /// Spur kader-transfer, Teil 1 (A170, 0x29A3F): neu – der Managerverein in der Bundesliga hat 25 statt 20 Spieler (Kader nach Start-Liga), andere Kadererzeugung, Gehälter und Spielstärke. Keine Gegenprobe (geänderte Kadergröße ist der Zweck).
 /// Spur kader-transfer, Teil 3 (0x058DC, 0x063BE): neu nur die aktiven Fälle – Verkäufe stärken den Käufer, Käufe vom Computermarkt würfeln den Sponsorzuschuss (anderer Zufallsverbrauch); die passiven Fälle bleiben.
+/// Spur kader-transfer, Teil 4 (0x54E71, 0x072DD, 0x059B8): alle neu – der Markt würfelt Listenwechsel und Angebote täglich statt je Ligaspieltag, Bieter nach 0x059B8 (anderer Verbrauch der Hauptquelle ab dem ersten Tag).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "0E8AC095DFC1AA11")]
-    [InlineData(true, 3, "CDD0AEF08B7481EE")]
-    [InlineData(false, 11, "78DB6882EF4E0CFC")]
-    [InlineData(true, 11, "AFDFBF54C68D1EF1")]
+    [InlineData(false, 3, "EF8178BF31CAE81D")]
+    [InlineData(true, 3, "E4321F15B3EE1E92")]
+    [InlineData(false, 11, "F54A711B0DBDF904")]
+    [InlineData(true, 11, "1593B192120446B2")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -142,8 +143,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "161AEB7D0C3C6BAC")]
-    [InlineData(true, "66C02DAD5237F65E")]
+    [InlineData(false, "4AEE9D99026BFD34")]
+    [InlineData(true, "1D1AE8E9923A8D79")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

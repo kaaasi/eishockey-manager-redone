@@ -402,12 +402,13 @@ public sealed class TransferScreen : Screen
     }
 
     /// <summary>
-    /// Leiste unten: Kontostand, Schulden, Anlagen, Saldo. [APPROX] Schulden und Anlagen liefert das Paket „manager“;
-    /// bis dahin 0 DM.
+    /// Leiste unten: Kontostand, Schulden, Anlagen, Saldo. [ORIGINAL] Werte nach Datei 0x463CC
+    /// (<see cref="GameState.TransferAccount"/>; Spur <c>kader-transfer</c>, Teil 4, A381). [APPROX] Lage aus dem Video,
+    /// x der Anlagen 132 statt 133 (3 + 65 · k) und Zeilen 226/232 statt der Grundlinien 229/236 nicht nachgemessen.
     /// </summary>
     private void DrawAccountBar(Surface s)
     {
-        var money = Manager.Money;
+        var account = Game.TransferAccount(Manager);
         // Streifen über die ganze Breite (Video: Oberkante 3, Füllung 4, unten 6/200/6)
         s.Fill(new Rect(0, 224, Surface.Width, 16), TeamUi.DialogFill);
         s.HLine(0, 224, Surface.Width, 3);
@@ -416,10 +417,10 @@ public sealed class TransferScreen : Screen
         s.HLine(0, 239, Surface.Width, TeamUi.DialogShadow);
         (string Label, long Value, int X)[] fields =
         [
-            ("Kontostand:", money, 3),
-            ("Schulden:", 0, 68),
-            ("Anlagen:", 0, 132),
-            ("Saldo:", money, 198),
+            ("Kontostand:", account.Money, 3),
+            ("Schulden:", account.Debts, 68),
+            ("Anlagen:", account.Assets, 132),
+            ("Saldo:", account.Balance, 198),
         ];
         foreach (var (label, value, x) in fields)
         {

@@ -226,7 +226,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// (Penaltyschießen des Originals in den Play-offs mit Manager statt NextDouble), mit und ohne Anzeige weiter gleich.
     /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand neu, einschließlich Minutenweg der DEB-Pokalspiele
     /// ohne Manager (Anzeigeschalter an, 0x3702E); mit und ohne Anzeige weiter gleich.
-    /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.</summary>
+    /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
+    /// Spur kader-transfer, Teil 4 (0x54E71, 0x072DD, 0x059B8): neu – der Markt würfelt täglich statt je Ligaspieltag (anderer
+    /// Verbrauch der Hauptquelle ab dem ersten Tag); 1993 Pokalsieger und Meister gleich, mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 8, DM 5, Tab 15314 | 1994: DEB 4, DM 4, Tab 15747 | 1995: DEB 4, DM 21, Tab 15977 | 1996: DEB 4, DM 3, Tab 15657";
+        "1993: DEB 8, DM 5, Tab 15263 | 1994: DEB 0, DM 10, Tab 16010 | 1995: DEB 23, DM 16, Tab 16570 | 1996: DEB 16, DM 23, Tab 16563";
 }

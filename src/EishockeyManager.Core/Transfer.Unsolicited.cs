@@ -123,7 +123,7 @@ public sealed partial class GameState
     }
 
     /// <summary>Stärke eines Vereins für <see cref="UnsolicitedOfferRules.Bidder"/>; null = Managerverein bzw. unbekannt.</summary>
-    private int? BidderStrength(int index) =>
+    internal int? BidderStrength(int index) =>
         Managers.Any(m => m.ClubIndex == index) || Clubs.FirstOrDefault(c => c.Index == index) is not { } club
             ? null
             : UnsolicitedOfferRules.ClubStrength(club);

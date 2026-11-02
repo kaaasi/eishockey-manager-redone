@@ -225,7 +225,7 @@ v1.0 vorgemerkt (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C). Gegenpr
   der Platz einen neuen Spieler „POOLSPIELER n“ mit den Werten des alten (im Original wird der Platz bei Verkauf oder
   Vertragsende wieder frei), der danach wie jeder freie Platz umbenannt wird. Ein Name ist im Remake fest: ein neuer Name ohne
   Tausch erzeugt einen neuen Spieler mit neuer ID (nur für Poolspieler ohne Spiele).
-- **Takt:** Listenwechsel je Ligaspieltag statt je Tag (der Markt schreibt sich je Spieltag fort); Zufall aus der Hauptquelle.
+- **Takt:** seit Spur `kader-transfer`, Teil 4 täglich wie im Original (unten); Zufall aus der Hauptquelle.
 - **Vertragslose** aus Managervereinen (R204) stehen nach dem Saisonwechsel weiter auf der Liste (höchstens 6) und zählen wie
   Managerplätze; im Original werden sie freie Poolspieler. Vertragslose anderer Vereine stehen nicht mehr auf der Liste.
 - Sonderprüfung DGROUP 0x6AC (Startwert 56 = Deutschland) in 0x5ACA0 nicht abgebildet (FILE05 zeigt einen Poolspieler
@@ -270,12 +270,37 @@ Felder des Kaderplatzes (0x34 Byte, DGROUP 0x5DC3 + 0x618 · Manager) für das S
 - Eigener Spieler auf dem Markt: das Original zeigt als Listenpreis das alte +0x2C (Kaderplatz kopiert); das Remake rechnet den Wert
   frisch (Teil 4).
 
+## Belegt und umgesetzt (Spur `kader-transfer`, Teil 4: Transfermarkt-Takt)
+
+Umsetzung: `TransferMarket.CatchUp`/`AdvanceDay` (`Core/Transfer.cs`), `GameState.TransferAccount` (`Core/Transfer.AccountBar.cs`),
+Kontoleiste `TransferScreen.DrawAccountBar`; Tests `KaderTransferTeil4Tests`. Kein neues Spielstandsfeld.
+
+| Regel | Fundstelle em.exe | Umsetzung |
+|---|---|---|
+| Listenwechsel **täglich** mit random(0, Managerzahl + 2) = 0 (nach der Managerschleife des Tages) | 0x54E65–0x54E7C | `CatchUp` einmal je Kalendertag aus dem Tagesablauf (vorher je gespieltem Ligaspieltag); A256 |
+| Angebot für eigene Spieler auf dem Markt im Tagesablauf | 0x072DD (Tagesablauf 0x07169) | ebenfalls täglich |
+| Bietender Verein: 0x059B8 mit Europapokal-Schalter 0 (Vereine 0 … 42 ohne Manager, Stärke nahe der Spielerstärke) | 0x07364 | `UnsolicitedOfferRules.Bidder` (vorher beliebiger Ligaverein); A257 |
+| Kontoleiste: Kontostand, Schulden (0x57768), Anlagen (Aktien zum Kurs + Forderungen samt Sparbuch), Saldo = Konto + Anlagen − Schulden | 0x463CC | `GameState.TransferAccount`; A381, F109 |
+
+`[APPROX]`: Zufall weiter aus der Hauptquelle (Abdrücke der Mehrsaisonproben neu); Höhe des Markt-Angebots weiter beim
+Angebot statt beim Anklicken (0x47347); Bieter mit der Stärke des Spielers wie bei den unaufgeforderten Angeboten; Saldo je
+Partner wie bei `TotalDebts` (Kredite zwischen zwei Managern verrechnet, Bank Sparbuch minus Kredit); Lage der Leiste unverändert.
+
+**Offen aus Teil 4:**
+- Rückfrage an den verkaufenden Manager (0x47546–0x475DB, Hot-Seat 0x47608–0x47743; A258) – braucht eine Frage im
+  Transferbildschirm des Verkäufers; bis dahin die simulierte Antwort in `TransferMarket.Buy`.
+- Nachbearbeitung eines neuen Kaderplatzes 0x4907A (Stub 0x118:0x4D; F113): Aufrufer 0x42E6B (Kaderplatz anlegen 0x42CB1,
+  also jeder Kauf und jeder Listenwechsel) und der Tagesablauf 0x07169. Inhalt: +0x0E Tendenz = random(35, 65),
+  +0x14 = random(1, 13) | random(1, 3) · 16 | random(0, 1) · 128. Braucht eine stufenlose Tendenz im Spielermodell (heute
+  dreistufig, `PlayerValue.TrendValue`) und die Deutung von +0x14 – eigener Teil mit Schemaänderung.
+- Grundstärken des Listenwechsels für Nationalteams ohne Ländertabelle (A209).
+
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
 - **Antwort des verkaufenden Managers** (Hot-Seat-Rückfrage 0x47608–0x47743) fehlt; das Remake nimmt ab dem geforderten
   Betrag an, darunter bis 85 % mit sinkender Wahrscheinlichkeit.
-- **Bietender Verein** für Spieler auf dem Markt (Bit 0x80): 0x059B8 ist jetzt belegt (Teil 3), für den Markt aber noch nicht
-  angeschlossen; Pflege der Liste 0x7C12 nicht belegt.
+- **Bietender Verein** für Spieler auf dem Markt (Bit 0x80): seit Spur `kader-transfer`, Teil 4 nach 0x059B8 angeschlossen;
+  Pflege der Liste 0x7C12 nicht belegt.
 - **Zeitpunkt der Züge:** das Original würfelt die Angebotshöhe beim Anklicken, das Remake beim Angebot.
 - **Listenpreis eigener Spieler:** das Original kopiert den Kaderplatz (0x48:0x2BD4) samt altem +0x2C (Start- bzw. Kaufpreis);
   das Remake rechnet den Wert beim Anbieten frisch.

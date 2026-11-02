@@ -83,9 +83,8 @@ public enum TransferResult
 /// [ORIGINAL] Grenzen aus den Meldungen in em.exe: 29 Mann im Team (<see cref="MaxSquad"/>), 3 eigene und 11 Spieler insgesamt auf dem Markt,
 /// Leihgebühr = Kaufpreis / 3 (Datei 0x462EB). Preis, Annahme eines Gebots, Unfair-Grenze, Tageswurf und Höhe der Angebote
 /// für eigene Spieler nach Ov 0x118 (<see cref="TransferRules"/>, <c>docs/transfer.md</c>); Wechsel der Liste aus dem
-/// Spielerpool nach 0x494EF (<see cref="ChangeList"/>). [APPROX] Zeitpunkt des Listenwechsels (je Ligaspieltag statt täglich),
-/// Wahl des bietenden Vereins und die Antwort eines menschlichen Verkäufers.
-/// Der Markt aktualisiert sich selbst (<see cref="CatchUp"/>), bis das Paket „saison“ ihn je Spieltag aufruft.
+/// Spielerpool nach 0x494EF (<see cref="ChangeList"/>), täglich (<see cref="CatchUp"/>, 0x54E71) mit bietendem Verein nach 0x059B8.
+/// [APPROX] Antwort eines menschlichen Verkäufers (siehe <see cref="Buy"/>).
 /// </remarks>
 public sealed partial class TransferMarket
 {
@@ -128,7 +127,7 @@ public sealed partial class TransferMarket
     /// <summary>Offene Gebote für Spieler der Manager („ANGEBOT von …“).</summary>
     public IReadOnlyList<TransferBid> Bids => _bids;
 
-    /// <summary>Letzter Spieltag, bis zu dem der Markt fortgeschrieben ist.</summary>
+    /// <summary>Gespielte Ligaspieltage beim letzten Tagesablauf des Markts (<see cref="CatchUp"/>).</summary>
     public int UpdatedDay { get; private set; }
 
     public static bool IsNationalTeam(Club club) => club.Index is >= 52 and < 64; // ClubCategory.NationalTeam
@@ -197,21 +196,24 @@ public sealed partial class TransferMarket
         ChangeList(game, random);
     }
 
-    /// <summary>Schreibt den Markt bis zum aktuellen Spieltag fort (je Spieltag <see cref="AdvanceDay"/>).</summary>
+    /// <summary>
+    /// Tagesablauf des Markts, gerufen einmal je Kalendertag aus dem Tagesablauf der Zeitleiste (<see cref="AdvanceDay"/>).
+    /// [ORIGINAL] Der Listenwechsel (Datei 0x54E65–0x54E7C) und der Angebotswurf für eigene Spieler auf dem Markt (Tagesablauf
+    /// 0x07169, Datei 0x072DD) fallen täglich, nicht je Ligaspieltag (Spur <c>kader-transfer</c>, Teil 4, A256).
+    /// <see cref="UpdatedDay"/> hält wie bisher die gespielten Ligaspieltage beim letzten Tagesablauf.
+    /// </summary>
     public void CatchUp(GameState game)
     {
-        while (UpdatedDay < game.PlayedMatchDays)
-        {
-            UpdatedDay++;
-            AdvanceDay(game, game.Random);
-        }
+        UpdatedDay = game.PlayedMatchDays;
+        AdvanceDay(game, game.Random);
     }
 
     /// <summary>
-    /// Ein Spieltag: Listenwechsel mit <see cref="ListChangeRoll"/> ([ORIGINAL] 0x54E71; [APPROX] je Ligaspieltag statt je
-    /// Tag). Angebote für eigene Spieler auf dem Markt nach dem Original (<see cref="TransferRules.BidRoll"/>, Höhe
-    /// <see cref="TransferRules.BidAmountThirds"/>); [APPROX] bietender Verein zufällig unter den Computervereinen der Ligen
-    /// (Original 0x238:0x1838 nicht belegt), die Höhe wird schon beim Angebot statt beim Anklicken gewürfelt.
+    /// Ein Tag: Listenwechsel mit <see cref="ListChangeRoll"/> ([ORIGINAL] 0x54E71). Angebote für eigene Spieler auf dem Markt
+    /// nach dem Original (<see cref="TransferRules.BidRoll"/>, Datei 0x072DD); bietender Verein nach 0x059B8
+    /// (<see cref="UnsolicitedOfferRules.Bidder"/> mit Europapokal-Schalter 0, Aufruf 0x07364; A257). [APPROX] Die Höhe
+    /// (<see cref="TransferRules.BidAmountThirds"/>) wird schon beim Angebot statt beim Anklicken (0x47347) gewürfelt; Bieter
+    /// mit der Stärke des Spielers wie bei <see cref="UnsolicitedOfferRules.Bidder"/>.
     /// </summary>
     public void AdvanceDay(GameState game, Random random)
     {
@@ -223,8 +225,11 @@ public sealed partial class TransferMarket
             var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, random);
             if (!TransferRules.BidRoll(value, random) || _bids.Any(b => b.Listing == listing))
                 continue;
-            var buyers = game.Clubs.Where(c => c.League is not null && c != listing.From && !IsManaged(game, c)).ToList();
-            var buyer = buyers[random.Next(buyers.Count)];
+            var index = UnsolicitedOfferRules.Bidder(listing.Player.Strength, foreign: false, game.BidderStrength,
+                random);
+            if (index < 0)
+                continue;
+            var buyer = game.Clubs.First(c => c.Index == index);
             var withOffer = PlayerValue.Compute(PlayerValue.Inputs(listing.Player, listing.From, buyer), PlayerValueKind.Price,
                 (a, b) => TransferRules.Random16(random, a, b));
             _bids.Add(new TransferBid(listing, buyer, TransferRules.BidAmountThirds(withOffer, random) / 3));
