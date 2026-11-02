@@ -194,41 +194,116 @@ public static class TeamUi
 }
 
 /// <summary>
-/// Meldungsfenster über einem Bildschirm (z. B. „Der darf da nicht rein !“). Klick oder Taste schließt es.
-/// [APPROX] Lage und Größe sind nicht aus dem Video belegt; die Texte stammen aus em.exe.
+/// Meldungsfenster über einem Bildschirm (z. B. „Der darf da nicht rein !“) als Baustein <see cref="OriginalDialog"/>
+/// (Integration Runde 11, ui-meldungen, A375, M-K3).
 /// </summary>
+/// <remarks>
+/// <list type="bullet">
+/// <item>[ORIGINAL] em.exe Datei 0x4C246 (<c>docs/analyse/re-meldungen.md</c> §C): Fenster ab (75 | 107), Überschrift = Name des
+///   Managers am Zug, „!“-Felder, Knöpfe nur bei Zeile 3 oder 4, ein Linksklick schließt (<see cref="OriginalDialog.Update"/>).</item>
+/// <item>[ORIGINAL] <see cref="ShowShort"/>: Kurzmeldung Datei 0x0C0B8 ohne Knopf und ohne Eingabe, schließt nach Takten von selbst
+///   (<see cref="ShortMessage"/>); sie gilt für die Texte, die im Original über 0x0C0B8 laufen (Aufrufstellen in der Aufstellung
+///   0x40AF3, 0x40B55, 0x40EB9, in der Transferliste 0x46A4D ff., bei den Freundschaftsspielen 0x3C2C5).</item>
+/// <item>[APPROX] Mit drei und vier Zeilen zeigt das Original Knöpfe, deren Text der Aufrufer (Zeile 4/5) bestimmt; welche Texte die
+///   Aufrufer der Verhandlungs-, Werbe- und Spielmodus-Meldungen übergeben, ist nicht belegt, daher steht „Na gut.“ als Zeile 5
+///   (wie bei der Bundestrainer-Warnung, DGROUP Zeile 5). Mehr als vier Zeilen kennt 0x4C246 nicht; solche Meldungen
+///   (Spielstand-Fehler, Spielmodus) behalten den früheren Rahmen. Komfort: Taste und rechte Maustaste schließen ebenfalls.</item>
+/// </list>
+/// </remarks>
 public sealed class MessageBox
 {
-    private string[] _lines = [];
+    /// <summary>[APPROX] Beschriftung der Knöpfe, wenn der Aufrufer keine Zeile 5 übergibt.</summary>
+    public const string ButtonText = "Na gut.";
 
-    public bool Visible => _lines.Length > 0;
+    private readonly Func<string>? _title;
+    private string[] _lines = [];
+    private ShortMessage? _short;
+
+    /// <param name="title">Name des Managers am Zug (Überschrift); ohne Angabe „An Alle:“.</param>
+    public MessageBox(Func<string>? title = null) => _title = title;
+
+    public bool Visible => _lines.Length > 0 || _short is { Closed: false };
 
     /// <summary>Angezeigte Zeilen (leer, wenn keine Meldung offen ist).</summary>
-    public IReadOnlyList<string> Lines => _lines;
+    public IReadOnlyList<string> Lines => _short is { Closed: false } ? [_short.Line1, _short.Line2] : _lines;
 
-    public void Show(params string[] lines) => _lines = lines;
+    /// <summary>Offene Kurzmeldung (0x0C0B8), sonst null.</summary>
+    public ShortMessage? Short => _short is { Closed: false } ? _short : null;
 
-    public void Close() => _lines = [];
+    public void Show(params string[] lines)
+    {
+        _short = null;
+        _lines = lines;
+    }
+
+    /// <summary>Kurzmeldung ohne Knopf, die nach der Zeit des Originals von selbst schließt (Datei 0x0C0B8, zwei Zeilen).</summary>
+    public void ShowShort(string line1, string line2)
+    {
+        _lines = [];
+        _short = new ShortMessage(_title?.Invoke() ?? "", line1, line2);
+    }
+
+    public void Close()
+    {
+        _lines = [];
+        _short = null;
+    }
 
     /// <summary>Verarbeitet Eingaben, solange die Meldung sichtbar ist. Liefert true, wenn sie die Eingabe verbraucht hat.</summary>
     public bool Update(InputState input)
     {
-        if (!Visible)
+        if (_short is { } shortMessage)
+        {
+            if (shortMessage.Update(input))
+                return true;
+            _short = null; // abgelaufen; die Eingabe dieses Bildes gilt wieder dem Bildschirm
             return false;
-        if (input.LeftClick || input.RightClick || input.Keys.Count > 0 || input.Text.Length > 0)
+        }
+        if (_lines.Length == 0)
+            return false;
+        if (Fits)
+        {
+            var dialog = Dialog("");
+            dialog.Update(input);
+            if (dialog.Closed || input.RightClick || input.Keys.Count > 0 || input.Text.Length > 0)
+                Close();
+        }
+        else if (input.LeftClick || input.RightClick || input.Keys.Count > 0 || input.Text.Length > 0)
             Close();
         return true;
     }
 
-    public void Draw(Surface s, Assets a, int centerX = 160, int centerY = 120)
+    /// <summary>Zeichnet die offene Meldung an der festen Stelle des Originals (75 | 107).</summary>
+    public void Draw(Surface s, Assets a)
     {
-        if (!Visible)
+        if (_short is { Closed: false } shortMessage)
+        {
+            shortMessage.Draw(s, a);
             return;
+        }
+        if (_lines.Length == 0)
+            return;
+        if (Fits)
+        {
+            Dialog(_title?.Invoke() ?? "").Draw(s, a);
+            return;
+        }
+        // [APPROX] Mehr als vier Zeilen: früherer Rahmen, Lage und Größe nicht aus dem Video belegt.
         var width = Math.Max(110, _lines.Max(l => a.Mini.Measure(l)) + 24);
         var height = 22 + 8 * _lines.Length;
-        var r = new Rect(centerX - width / 2, centerY - height / 2, width, height);
+        var r = new Rect(160 - width / 2, 120 - height / 2, width, height);
         Widgets.Frame(s, a, r, FrameStyle.Orange);
         for (var i = 0; i < _lines.Length; i++)
-            s.TextCentered(a.Mini, centerX, r.Y + 11 + 8 * i, _lines[i], Colors.White);
+            s.TextCentered(a.Mini, 160, r.Y + 11 + 8 * i, _lines[i], Colors.White);
     }
+
+    private bool Fits => _lines.Length <= 4;
+
+    private OriginalDialog Dialog(string title) => _lines.Length switch
+    {
+        1 => new OriginalDialog(OriginalDialogKind.Message, title, _lines[0]),
+        2 => new OriginalDialog(OriginalDialogKind.Message, title, _lines[0], _lines[1]),
+        3 => new OriginalDialog(OriginalDialogKind.Message, title, _lines[0], _lines[1], _lines[2], "", ButtonText),
+        _ => new OriginalDialog(OriginalDialogKind.Message, title, _lines[0], _lines[1], _lines[2], _lines[3], ButtonText),
+    };
 }

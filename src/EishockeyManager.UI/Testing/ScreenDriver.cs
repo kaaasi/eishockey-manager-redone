@@ -135,11 +135,11 @@ public sealed class ScreenDriver
             throw new InvalidOperationException($"„Tag weiter“ nur im Hauptmenü, nicht in {Host.Current?.GetType().Name ?? "(keiner)"}.");
         var logo = MainMenuScreen.ContinueLogo;
         Click(logo.X + logo.W / 2, logo.Y + logo.H / 2);
-        // Bundestrainer mit weniger als 10 Kaderspielern (#217): wie der Nutzer die Warnung schließen, „auto“ wählen
+        // Bundestrainer mit weniger als 10 Kaderspielern (#217): die Kurzmeldung (ohne Knopf, M-K2) ablaufen lassen, „auto“ wählen
         // (GameState.AutoNominate) und das Logo noch einmal anklicken.
-        if (Host.Current is MainMenuScreen { Message.Visible: true } && Host.Game is { NationalCoach: not null } game)
+        if (Host.Current is MainMenuScreen { CoachMessage: { } coachMessage } && Host.Game is { NationalCoach: not null } game)
         {
-            Click(5, 5); // Meldung schließen
+            Frames(coachMessage.TotalFrames + 1); // Meldung schließt von selbst
             game.AutoNominate();
             Click(logo.X + logo.W / 2, logo.Y + logo.H / 2);
         }

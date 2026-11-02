@@ -27,12 +27,16 @@ public sealed class NationalLineupScreen : Screen
     public const byte DressedColor = 16;
 
     private readonly Screen _back;
-    private readonly MessageBox _message = new();
+    private readonly MessageBox _message;
     private Player? _selectedPlayer;
     private LineupSlot? _selectedSlot;
     private int _mouseX = -1, _mouseY = -1;
 
-    public NationalLineupScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+    public NationalLineupScreen(ScreenHost host, Screen back) : base(host)
+    {
+        _back = back;
+        _message = new(() => host.Game?.ActiveManager.Name ?? "");
+    }
 
     private NationalCoach? Coach => Host.Game?.NationalCoach;
 
@@ -231,7 +235,7 @@ public sealed class NationalLineupScreen : Screen
         }
 
         TeamUi.DrawSwitch(s, Assets, toTactics: true);
-        _message.Draw(s, Assets, 120, 110);
+        _message.Draw(s, Assets);
     }
 
     /// <summary>

@@ -127,7 +127,7 @@ public class TransferOriginalVertragScreenTests
         d.Click(buy.X + 3, buy.Y + 2);
         Assert.Null(screen.Dialog);
         Assert.Equal(TransferMarket.Message(TransferResult.AlreadyRejected), screen.Message.Lines);
-        d.Click(10, 10);
+        d.Frames(100); // Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst (Klick wirkt nicht)
 
         var layout = PlayerListLayout.TransferList(TeamUi.Rows(club).Count);
         var x = Enumerable.Range(0, 160).First(x => PlayerHintLine.Column(layout, x) == 7);

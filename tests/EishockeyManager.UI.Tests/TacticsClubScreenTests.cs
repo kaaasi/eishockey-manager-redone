@@ -78,12 +78,14 @@ public class TacticsClubScreenTests
         d.Click(button.X + 5, button.Y + 5);
         d.Click(60, RowY(outside));
         Assert.Null(club.Lineup[slot]);
-        d.Click(10, 10); // Meldung schließen
+        d.Frames(100); // Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst (Klick wirkt nicht)
 
         var reserve = club.Dressed.First(p => !club.Lineup.Contains(p) && p != outside);
         d.Click(60, RowY(reserve));
         Assert.False(club.IsDressed(reserve));
-        d.Click(10, 10); // Meldung „Auto-Aufstellung / ist deaktiviert !“ schließen (Datei 0x40ADE, Integration Runde 11)
+        // Integration Runde 11 (ui-meldungen, K2): Der Eingriff schaltet die automatische Aufstellung ab und meldet das als Kurzmeldung
+        // (Datei 0x40ADE -> 0x0C0B8); sie nimmt keine Eingabe an, bis sie von selbst schließt.
+        d.Frames(100);
         d.Click(button.X + 5, button.Y + 5);
         d.Click(60, RowY(outside));
         Assert.Same(outside, club.Lineup[slot]);

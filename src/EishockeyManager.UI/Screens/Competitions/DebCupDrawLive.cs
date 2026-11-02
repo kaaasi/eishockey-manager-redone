@@ -79,9 +79,9 @@ public sealed class DebCupDrawLiveScreen : Screen
     public const string YesText = "Aber klar";
     public const string NoText = "Kein Gedanke";
 
-    public static Rect DialogBox => TransferDialog.QuestionBox;
-    public static Rect YesButton => Widgets.ButtonRect(94, 166);
-    public static Rect NoButton => Widgets.ButtonRect(164, 166);
+    public static Rect DialogBox => OriginalDialog.Window;
+    public static Rect YesButton => OriginalDialog.LeftButton;
+    public static Rect NoButton => OriginalDialog.RightButton;
 
     /// <summary>Bilder je aufgedecktem Platz.</summary>
     public const int RevealFrames = 60;
@@ -171,35 +171,12 @@ public sealed class DebCupDrawLiveScreen : Screen
             DrawQuestion(s, Assets);
     }
 
-    /// <summary>Fragefenster wie das der Talentsuche: oranger Rahmen, zwei „?“-Felder, Überschrift, drei Zeilen, zwei Knöpfe.</summary>
-    private static void DrawQuestion(Surface s, Assets a)
-    {
-        var b = DialogBox;
-        var cx = b.X + b.W / 2 - 2;
-        Widgets.Frame(s, a, b, FrameStyle.Orange);
-        QuestionMark(s, a, b.X + 9, b.Y + 3);
-        QuestionMark(s, a, b.Right - 30, b.Y + 3);
-        Widgets.ShadowText(s, a.Flow, cx, b.Y + 12, DialogTitle, Colors.White, Colors.Black);
-        s.HLine(b.X + 34, b.Y + 24, b.W - 68, Colors.White);
-        for (var i = 0; i < DialogLines.Length; i++)
-            TeamUi.LabelCentered(s, a, cx, b.Y + 30 + 8 * i, DialogLines[i], Colors.White, Colors.Black);
-        s.HLine(b.X + 5, b.Y + 56, b.W - 10, TeamUi.DialogDark);
-        s.HLine(b.X + 5, b.Y + 57, b.W - 10, 37);
-        TeamUi.DialogButton(s, a, YesButton.X, YesButton.Y, YesText);
-        TeamUi.DialogButton(s, a, NoButton.X, NoButton.Y, NoText);
-    }
-
     /// <summary>
-    /// Grünes Feld (22 × 22) mit schwarzem „?“ – wie <c>TransferDialog.QuestionMark</c> (dort privat; Dateigrenze der Spur,
-    /// daher hier wiederholt).
+    /// Fragefenster als Baustein <see cref="OriginalDialog"/> (Integration Runde 11, ui-meldungen, A270, A273). [ORIGINAL] Aufbau
+    /// und Lage der Frage 0x4C246 (<c>re-meldungen.md</c> §C); Überschrift „An Alle:“ (<see cref="DialogTitle"/>, Video 3:40–3:46).
     /// </summary>
-    private static void QuestionMark(Surface s, Assets a, int x, int y)
-    {
-        var r = new Rect(x, y, 22, 22);
-        s.Fill(r, 14);
-        s.Outline(r, 12);
-        s.HLine(x + 1, y + 1, 20, 15);
-        s.VLine(x + 1, y + 1, 20, 15);
-        s.TextCentered(a.Bold, x + 11, y + 4, "?", Colors.Black);
-    }
+    private void DrawQuestion(Surface s, Assets a) => Dialog().Draw(s, a);
+
+    private OriginalDialog Dialog() => new(OriginalDialogKind.Question, DialogTitle,
+        DialogLines[0], DialogLines[1], DialogLines[2], YesText, NoText);
 }

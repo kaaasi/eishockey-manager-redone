@@ -100,6 +100,7 @@ public class NationalScreenTests
         d.Click(tile.X + 5, tile.Y + 5);
         d.Click(tile.X + 5, tile.Y + 5);
         Assert.Equal(["Nicht mehr als", "8 Freundschaftsspiele"], screen.Message.Lines);
+        Assert.NotNull(screen.Message.Short); // Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 (Datei 0x3C2C5), ohne Knopf
         d.Frame();
     }
 
