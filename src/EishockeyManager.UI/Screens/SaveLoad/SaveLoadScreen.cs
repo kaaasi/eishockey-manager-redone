@@ -90,7 +90,7 @@ public sealed class SaveLoadScreen : Screen
     }
 
     private readonly Screen _back;
-    private readonly MessageBox _message = new();
+    private readonly MessageBox _message;
     private IReadOnlyList<SaveEntry> _entries = [];
     private int _page;
     private int _selected = -1;
@@ -101,6 +101,7 @@ public sealed class SaveLoadScreen : Screen
     public SaveLoadScreen(ScreenHost host, Screen back, SaveLoadMode mode) : base(host)
     {
         _back = back;
+        _message = new(() => host.Game?.ActiveManager.Name ?? "");
         Mode = mode;
     }
 

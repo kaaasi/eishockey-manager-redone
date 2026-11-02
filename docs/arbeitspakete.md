@@ -170,9 +170,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   3. **Kosmetik:** Monatsnamen (P3 Nr. 3, A157, vorher gegen das Video prüfen); letzte Saison ohne Saisonende-Fenster
      (S-K5, P3 Nr. 5, nach Video); Kommentar über dem Rechtsklick-Test (#342).
 - **Abnahme:** Bildschirmfoto je Baustein bzw. Aufrufer gegen das Referenzbild; Bildschirme zustandsrein.
-- **Dateigrenzen:** siehe Zuständigkeit; Tests. **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 in Arbeit (PR `paket/ui-meldungen-1`):
-  `UI/OriginalDialog.cs` (Fenster 4C246h, Kurzmeldung C0B8h), `QuitQuestion` und Bundestrainer-Warnung umgestellt; Aufrufer in
-  fremden Dateien stehen im PR. Teil 2 und 3 offen.
+- **Dateigrenzen:** siehe Zuständigkeit; Tests. **Modell:** Claude Sonnet 5.5. **Status:** Spur fertig – integriert (Teil 1 #421, Teil 2 #426, Teil 3 #430; Integration Runde 11, `integration/runde-11-ui-meldungen`).
 
 ### Spur `marker-werkzeug` – Funktionskarte, Doku, Marker
 
@@ -188,7 +186,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** Gegenbeispiel R10N-01 (Mutation `perl -pi` aus dem Review #408) ohne Statuswechsel; `funktionskarte.py
   --write` danach ohne Diff; für Teil 3 je Marker der Abgleich mit der Doku im PR.
 - **Dateigrenzen:** siehe Zuständigkeit; die genannten Doku-Dateien; in Teil 3 nur Kommentarzeilen in `src/`.
-  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 #421, Teil 2 #426, Teil 3 (dieser Branch) (Monatsnamen, Saisonende letzte Saison, Kommentar #342) fertig, Review offen.
+  **Modell:** Claude Sonnet 5.5. **Status:** –
 
 ### Integration Runde 11 (Leitstelle)
 
@@ -223,6 +221,22 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   `TransferAutoLineupTests`); A190 als Kommentar (Neuaufstellung nach Verletzung im Spiel über 53C57h). Doku
   `reverse-engineering.md` (Begegnungen, Verletzungsart) nachgeführt; Inventur A190/A111 mit `marker-werkzeug`. Nicht
   angeschlossen: U8 (Nationalteam Satz 5) – Runde 12.
+- **`ui-meldungen`** (`integration/runde-11-ui-meldungen`, Stapel #421 → #426 → #430): kein Schema, keine Migration. R11U-01 durch die
+  Leitstelle gedeckt (Bundestrainer-Warnung und `QuitQuestion` gehören zum Auftrag der Spur); R11U-02 (Status von `marker-werkzeug`
+  zurück auf „–“, Status in den eigenen Abschnitt), R11U-04 (leere Schlussseite des Infofiles wie im Original, `InfoFileScreen.Layout`),
+  R11U-05 (Zustandsreinheit des Infofiles mit `StateFingerprint.Of`) erledigt; R11U-03 nur eine PR-Angabe. Aufrufer in fremden Dateien
+  auf die Bausteine umgestellt, je mit Test (`OriginalDialogCallersTests`): `Competitions/DebCupDrawLive.cs` (Frage 0x4C246, A270, A273),
+  `Manager/AdvertisingScreen.cs` (Verlängerungsfrage, A304, A308; `RenewalDialog`), `Team/TransferDialog.cs` (Talent, Sponsorzuschuss,
+  Frage an den Verkäufer, A376, A378, A379; `AsDialog`), `Team/TeamUi.cs` `MessageBox` (A375, M-K3: Fenster 75 | 107, „!“-Felder, Knöpfe
+  nur bei Zeile 3/4, Überschrift = Manager am Zug; acht Nutzer) und die Kurzmeldung K2 (`MessageBox.ShowShort`): Aufstellung (Auto-Aufstellung
+  45 Takte, „noch gesperrt !“, „Der darf da nicht rein !“, „Schon 22 Mann im Team !“ – Aufrufe 0x40AF3, 0x40B55, 0x40EB9), Transferliste
+  (genug Geld, Schon 3 Spieler auf, Schon 11 Mann auf, abgelehnt, bereits abgelehnt, findet nicht statt – Aufrufe 0x46A4D ff., 0x42CE3) und
+  Freundschaftsspiele („Nicht mehr als 8 Freundschaftsspiele“, 0x3C2C5). Bestehende Tests nur dort angepasst, wo sie eine Kurzmeldung per Klick
+  schlossen (jetzt `Frames(100)`). Offen: Vereinsinfo 0x4D385 (Kurve x + 30, y − 30) – das Vereinsfenster gibt es im Remake nicht
+  (`TeamInfoWindow` ist nur das Länderfenster), daher nicht angeschlossen; weitere Aufrufer von 0x0C0B8 (Stadion „Die Baufirma / ist noch
+  beleidigt...“ 0x3DE9F, „Kein / Platz mehr !“ 0x414C6, „Schon 6 Feldspieler / auf dem Eis !“ 0x40EF7, Spielstand-Meldungen 0x5C559/0x5C59A) ohne
+  Entsprechung bzw. in fremden Spuren; Nationalaufstellung (0x54C9F) und Meldungen mit mehr als vier Zeilen behalten das Meldungsfenster bzw.
+  den alten Rahmen [APPROX]; Zeile 1 von „noch gesperrt !“ ist im Original „Spieler ist“ (DGROUP 0x1255), im Remake der Spielername.
 
 ### Nicht in Runde 11
 

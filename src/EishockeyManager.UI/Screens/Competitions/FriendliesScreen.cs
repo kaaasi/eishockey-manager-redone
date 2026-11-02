@@ -39,9 +39,13 @@ public sealed class FriendliesScreen : Screen
     public static readonly Rect InfoHit = new(21, 157, 174, 31);
 
     private readonly Screen _back;
-    private readonly MessageBox _message = new();
+    private readonly MessageBox _message;
 
-    public FriendliesScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+    public FriendliesScreen(ScreenHost host, Screen back) : base(host)
+    {
+        _back = back;
+        _message = new(() => host.Game?.ActiveManager.Name ?? "");
+    }
 
     /// <summary>Heimspiel (Vorgabe) oder Auswärtsspiel des eigenen Landes.</summary>
     public bool Home { get; private set; } = true;
@@ -115,7 +119,9 @@ public sealed class FriendliesScreen : Screen
         switch (game.PlayFriendly(opponent, Home))
         {
             case FriendlyResult.TooMany:
-                _message.Show("Nicht mehr als", "8 Freundschaftsspiele");
+                // [ORIGINAL] Datei 0x3C2C5: Kurzmeldung 0x0C0B8 (ohne Knopf, schließt von selbst; Integration Runde 11, ui-meldungen, K2).
+                // [APPROX] „Sie haben nicht / genug Geld !“ darunter hat keinen eigenen Aufruf 0x0C0B8; es bleibt ein Meldungsfenster.
+                _message.ShowShort("Nicht mehr als", "8 Freundschaftsspiele");
                 break;
             case FriendlyResult.NotEnoughMoney:
                 _message.Show("Sie haben nicht", "genug Geld !");

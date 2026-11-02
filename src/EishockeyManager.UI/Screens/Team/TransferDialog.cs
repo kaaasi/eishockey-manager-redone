@@ -16,7 +16,7 @@ public sealed class TransferDialog
     public static readonly Rect Box = new(76, 80, 168, 72);
 
     /// <summary>Fragefenster (Video „LetsShow“, ca. 11:15): oranger Rahmen, zwei „?“-Felder, Trennlinie über den Knöpfen.</summary>
-    public static readonly Rect QuestionBox = new(75, 107, 168, 76);
+    public static readonly Rect QuestionBox = OriginalDialog.Window;
 
     public static Rect AmountField => new(Box.X + 84, Box.Y + 36, 76, 7);
 
@@ -27,9 +27,9 @@ public sealed class TransferDialog
     public bool IsOfferWindow => Kind is DialogKind.Offer or DialogKind.Bid;
 
     public Rect ConfirmButton => IsOfferWindow ? Widgets.ButtonRect(90, OfferBox.Y + 54)
-        : IsQuestion ? Widgets.ButtonRect(95, 167) : Widgets.ButtonRect(Box.X + 12, Box.Y + 55);
+        : IsQuestion ? OriginalDialog.LeftButton : Widgets.ButtonRect(Box.X + 12, Box.Y + 55);
     public Rect CancelButton => IsOfferWindow ? Widgets.ButtonRect(11, OfferBox.Y + 54)
-        : IsQuestion ? Widgets.ButtonRect(165, 167) : Widgets.ButtonRect(Box.X + 99, Box.Y + 55);
+        : IsQuestion ? OriginalDialog.RightButton : Widgets.ButtonRect(Box.X + 99, Box.Y + 55);
 
     /// <summary>
     /// Angebotsfenster 0x491F9 (unaufgefordertes Angebot). [ORIGINAL] Rahmen über 0x490DE mit y = 0 und Höhe 0x47: x 2 … 0xA8,
@@ -106,8 +106,8 @@ public sealed class TransferDialog
 
     /// <summary>
     /// Frage an den verkaufenden Manager (Spur kader-transfer, Teil 4, A258). [ORIGINAL] Datei 0x47655–0x47743: „Nehmen Sie das
-    /// Angebot (Betrag DM)“ / „für Name an ?“, Knöpfe „Na gut.“ / „Nein !“. [APPROX] Fragefenster des Transferbildschirms mit dem
-    /// Namen des gefragten Managers als Kopf, bis der Baustein 0x4C246 (Spur ui-meldungen) angeschlossen ist.
+    /// Angebot (Betrag DM)“ / „für Name an ?“, Knöpfe „Na gut.“ / „Nein !“. Fragefenster als Baustein 0x4C246 (<see cref="OriginalDialog"/>, Integration Runde 11, ui-meldungen)
+    /// mit dem Namen des gefragten Managers als Überschrift. [APPROX] Kein Videobeleg.
     /// </summary>
     public static TransferDialog ForSeller(SellerQuestion question) => new(DialogKind.Seller)
     {
@@ -258,14 +258,24 @@ public sealed class TransferDialog
         ContractDialog.Button(s, a, ConfirmButton, ConfirmText, PressedButton == ConfirmButton);
     }
 
-    /// <summary>Fragefenster wie „LetsShow“ im Video. [APPROX] Die „?“-Felder sind gezeichnet (keine Grafik gefunden).</summary>
-    private void DrawQuestion(Surface s, Assets a)
+    /// <summary>
+    /// Fragefenster der Talentsuche („LetsShow“, Video ca. 11:15), des Sponsorzuschusses und der Frage an den Verkäufer als Baustein
+    /// <see cref="OriginalDialog"/> (Integration Runde 11, ui-meldungen, A376, A378, A379). [ORIGINAL] Aufbau und Lage der Frage
+    /// 0x4C246 (<c>re-meldungen.md</c> §C): „?“-Felder bei x 83 und 212, y 112, untere Linie einfarbig, Knöpfe 94/164 | 166.
+    /// </summary>
+    private void DrawQuestion(Surface s, Assets a) => AsDialog(Title).Draw(s, a);
+
+    private string Title => Kind switch
     {
-        var b = QuestionBox;
-        var cx = b.X + b.W / 2 + 1;
-        Widgets.Frame(s, a, b, FrameStyle.Orange);
-        QuestionMark(s, a, b.X + 7, b.Y + 4);
-        QuestionMark(s, a, b.Right - 29, b.Y + 4);
+        DialogKind.Talent => "LetsShow",
+        DialogKind.Subsidy => Subsidy!.Manager.Name,
+        DialogKind.Seller => Question!.Seller.Name,
+        _ => "ANGEBOT von " + Bid!.Buyer.Name,
+    };
+
+    /// <summary>Frage als Baustein: Überschrift, drei Zeilen, links Zusage (Zeile 4), rechts Absage (Zeile 5).</summary>
+    public OriginalDialog AsDialog(string title)
+    {
         string[] lines = Kind switch
         {
             DialogKind.Talent => ["Möchten Sie, daß Ihr 'Spion'", "für Sie auf Talentsuche geht?", "Preis: " + TransferScreen.Money(Price)],
@@ -273,31 +283,7 @@ public sealed class TransferDialog
             DialogKind.Seller => [$"Nehmen Sie das Angebot ({TransferScreen.Money(Price)})", $"für {Player!.Name} an ?"],
             _ => ["Nehmen Sie das Angebot", $"({TransferScreen.Money(Price)}) für", Player!.Name + " an ?"],
         };
-        var title = Kind switch
-        {
-            DialogKind.Talent => "LetsShow",
-            DialogKind.Subsidy => Subsidy!.Manager.Name,
-            DialogKind.Seller => Question!.Seller.Name,
-            _ => "ANGEBOT von " + Bid!.Buyer.Name,
-        };
-        Widgets.ShadowText(s, a.Flow, cx, b.Y + 12, title, Colors.White, Colors.Black);
-        s.HLine(b.X + 34, b.Y + 24, b.W - 68, Colors.White);
-        for (var i = 0; i < lines.Length; i++)
-            TeamUi.LabelCentered(s, a, cx, b.Y + 30 + 8 * i, lines[i], Colors.White, Colors.Black);
-        s.HLine(b.X + 5, b.Y + 56, b.W - 10, TeamUi.DialogDark);
-        s.HLine(b.X + 5, b.Y + 57, b.W - 10, 37);
-        TeamUi.DialogButton(s, a, ConfirmButton.X, ConfirmButton.Y, ConfirmText);
-        TeamUi.DialogButton(s, a, CancelButton.X, CancelButton.Y, CancelText);
-    }
-
-    /// <summary>Grünes Feld (22 × 22) mit schwarzem „?“.</summary>
-    private static void QuestionMark(Surface s, Assets a, int x, int y)
-    {
-        var r = new Rect(x, y, 22, 22);
-        s.Fill(r, 14);
-        s.Outline(r, 12);
-        s.HLine(x + 1, y + 1, 20, 15);
-        s.VLine(x + 1, y + 1, 20, 15);
-        s.TextCentered(a.Bold, x + 11, y + 4, "?", Colors.Black);
+        return new OriginalDialog(OriginalDialogKind.Question, title, lines[0], lines[1], lines.Length > 2 ? lines[2] : "",
+            ConfirmText, CancelText);
     }
 }

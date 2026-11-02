@@ -27,7 +27,7 @@ public class LineupAutoDisabledMessageTests
         Assert.False(club.AutoLineupEnabled);
         Assert.Equal(["Auto-Aufstellung", "ist deaktiviert !"], screen.MessageLines);
 
-        d.Click(10, 10); // schließen
+        d.Frames(100); // Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst (Klick wirkt nicht)
         Assert.Empty(screen.MessageLines);
         var slot2 = LineupSlot.Defender(0, 1);
         var b2 = LineupScreen.SlotButton(slot2);

@@ -96,6 +96,26 @@ public class InfoFileAndRankCurveTests
         Assert.Equal(19, pages[1].Glyphs.First().Baseline);
     }
 
+    /// <summary>
+    /// Integration Runde 11 (ui-meldungen, R11U-04). Vorher: Endet die Datei nach „#“ oder genau nach der 27. Zeile, ließ <c>Layout</c> die
+    /// leere Schlussseite weg; das Original beginnt nach jedem Seitenende eine neue Seite und zeigt am Dateiende „TASTE!“ (§D Schritt 4).
+    /// </summary>
+    [Theory]
+    [InlineData("A#", 2)]
+    [InlineData("A", 1)]
+    [InlineData("", 1)]
+    [InlineData("#", 2)]
+    public void Layout_EndsWithEmptyLastPage_WhenFileEndsRightAfterPageEnd(string text, int pages) =>
+        Assert.Equal(pages, Layout(text).Count);
+
+    [Fact]
+    public void Layout_FileEndingExactlyAfter27thLine_HasEmptySecondPage()
+    {
+        var pages = Layout(string.Concat(Enumerable.Range(0, 27).Select(_ => "A\n")));
+        Assert.Equal(2, pages.Count);
+        Assert.Empty(pages[1].Glyphs);
+    }
+
     [Fact]
     public void Layout_Tab_JumpsToNextMultipleOf20_ButNotBeyond285()
     {
@@ -139,15 +159,17 @@ public class InfoFileAndRankCurveTests
     public void ClickOnHiddenField_OpensInfoFile_PagesThenBack_WithoutChangingGame()
     {
         var d = MainMenu();
-        var day = d.Host.Game!.DateText;
+        // Integration Runde 11 (ui-meldungen, R11U-05): Zustandsreinheit über den Abdruck des ganzen Spielzustands statt nur des Datums.
+        var before = StateFingerprint.Of(d.Host.Game!);
         d.Click(319, 0);
         var screen = Assert.IsType<InfoFileScreen>(d.Host.Current);
         Assert.Equal(2, screen.PageCount); // Original-infofile: 1153 Byte, 34 Zeilen
         d.Click(100, 100);
         Assert.IsType<InfoFileScreen>(d.Host.Current);
+        Assert.Equal(before, StateFingerprint.Of(d.Host.Game!));
         d.Click(100, 100);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
-        Assert.Equal(day, d.Host.Game!.DateText);
+        Assert.Equal(before, StateFingerprint.Of(d.Host.Game!));
     }
 
     [GameDataFact]

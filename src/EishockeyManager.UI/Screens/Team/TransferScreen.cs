@@ -43,7 +43,7 @@ public sealed class TransferScreen : Screen
     public static int SquadRowAt(int y) => y < FirstRowY - 1 ? -1 : (y - FirstRowY + 1) / RowPitch;
 
     private readonly Screen _back;
-    private readonly MessageBox _message = new();
+    private readonly MessageBox _message;
     private readonly PlayerInfoPopup _info = new();
     private TransferDialog? _dialog;
     private readonly Queue<string[]> _messages = new();
@@ -52,7 +52,11 @@ public sealed class TransferScreen : Screen
     private ContractDialog? _contract;
     private int _mouseX = -1, _mouseY = -1;
 
-    public TransferScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+    public TransferScreen(ScreenHost host, Screen back) : base(host)
+    {
+        _back = back;
+        _message = new(() => host.Game?.ActiveManager.Name ?? "");
+    }
 
     private GameState Game => Host.Game!;
     private Manager Manager => Game.ActiveManager;
@@ -81,6 +85,29 @@ public sealed class TransferScreen : Screen
             _dialog = TransferDialog.ForBid(bid);
     }
 
+    /// <summary>
+    /// Texte der Transferliste, die das Original über die Kurzmeldung 0x0C0B8 zeigt (ohne Knopf, schließt von selbst):
+    /// [ORIGINAL] Datei 0x46A4D „genug Geld“, 0x47106 „Schon 3 Spieler auf“, 0x472EC und 0x47AAE „wurde abgelehnt“, 0x47A80 „findet nicht
+    /// statt“, 0x47B11 „bereits abgelehnt“ (die sieben Aufrufe im Bereich 0x465F1) und 0x42CE3 „Schon 11 Mann auf“ (Integration
+    /// Runde 11, ui-meldungen, K2). [APPROX] Alle übrigen Meldungen (angenommen, Kader voll, unfair, ausgeliehen, Vertrag) gehen im Original
+    /// nicht über 0x0C0B8; sie bleiben Meldungsfenster mit Klick. Der Aufruf 0x46DEF („Dieser Spieler hört am Saisonende auf.“) hat im Remake
+    /// keine Entsprechung.
+    /// </summary>
+    private static readonly string[][] ShortTexts =
+    [
+        TransferMarket.Message(TransferResult.NotEnoughMoney), TransferMarket.Message(TransferResult.TooManyOwnListings),
+        TransferMarket.Message(TransferResult.MarketFull), TransferMarket.Message(TransferResult.Rejected),
+        TransferMarket.Message(TransferResult.AlreadyRejected), TransferMarket.Message(TransferResult.Impossible),
+    ];
+
+    private void Say(params string[] lines)
+    {
+        if (ShortTexts.Any(t => t.AsSpan().SequenceEqual(lines)))
+            _message.ShowShort(lines[0], lines[1]);
+        else
+            _message.Show(lines);
+    }
+
     public override void Update(InputState input)
     {
         _mouseX = input.MouseX;
@@ -88,7 +115,7 @@ public sealed class TransferScreen : Screen
         if (_message.Update(input))
         {
             if (!_message.Visible && _messages.TryDequeue(out var lines))
-                _message.Show(lines);
+                Say(lines);
             return;
         }
         if (_info.Update(input))
@@ -148,7 +175,7 @@ public sealed class TransferScreen : Screen
             {
                 // [ORIGINAL] Sperre nach abgelehntem Gebot wird beim Anklicken geprüft (Datei 0x47140, Meldung 0x47B01).
                 if (TransferMarket.IsLocked(Game, Manager, l))
-                    _message.Show(TransferMarket.Message(TransferResult.AlreadyRejected));
+                    Say(TransferMarket.Message(TransferResult.AlreadyRejected));
                 else
                     _dialog = TransferDialog.ForBuy(l, loan: EntryLoan(i).Contains(x, y));
                 return;
@@ -166,7 +193,7 @@ public sealed class TransferScreen : Screen
                 if (Game.OpenUnsolicitedOffer(Manager, p) is { } offer)
                     _dialog = TransferDialog.ForUnsolicited(offer);
                 else if (p.OnLoan)
-                    _message.Show("Dieser Spieler ist", "nur ausgeliehen.");
+                    Say("Dieser Spieler ist", "nur ausgeliehen.");
                 else
                     _dialog = TransferDialog.ForSale(p, Market.ListingOf(p), TransferMarket.Price(p));
             }
@@ -206,22 +233,22 @@ public sealed class TransferScreen : Screen
             case TransferDialog.DialogKind.Sale when d.Listing is null:
                 var result = Market.Offer(Game, Manager, d.Player!);
                 if (result != TransferResult.Accepted)
-                    _message.Show(TransferMarket.Message(result));
+                    Say(TransferMarket.Message(result));
                 break;
             case TransferDialog.DialogKind.Sale:
                 break; // „Verkaufen“ bei einem Spieler auf dem Markt: bleibt auf dem Markt
             case TransferDialog.DialogKind.Bid:
                 var accepted = Market.Accept(Game, d.Bid!);
                 if (accepted != TransferResult.Accepted)
-                    _message.Show(TransferMarket.Message(accepted)); // „Der Transfer findet nicht statt.“
+                    Say(TransferMarket.Message(accepted)); // „Der Transfer findet nicht statt.“
                 ShowNextBid();
                 break;
             case TransferDialog.DialogKind.Talent:
-                _message.Show(TalentScout.Message(TalentScout.Search(Game, Manager)));
+                Say(TalentScout.Message(TalentScout.Search(Game, Manager)));
                 break;
             case TransferDialog.DialogKind.Offer:
                 if (Game.AcceptUnsolicitedOffer(d.Offer!) != TransferResult.Accepted)
-                    _message.Show(TransferMarket.Message(TransferResult.Impossible));
+                    Say(TransferMarket.Message(TransferResult.Impossible));
                 break;
             case TransferDialog.DialogKind.Subsidy:
                 AnswerSubsidy(d.Subsidy!, accept: true);
@@ -237,7 +264,7 @@ public sealed class TransferScreen : Screen
         else if (bid == TransferResult.Accepted)
             ShowAccepted(subsidy); // Leihe
         else
-            _message.Show(TransferMarket.Message(bid));
+            Say(TransferMarket.Message(bid));
     }
 
     /// <summary>
@@ -250,14 +277,14 @@ public sealed class TransferScreen : Screen
         if (subsidy is not null)
             _dialog = TransferDialog.ForSubsidy(subsidy);
         else
-            _message.Show(TransferMarket.Message(TransferResult.Accepted));
+            Say(TransferMarket.Message(TransferResult.Accepted));
     }
 
     private void AnswerSubsidy(SponsorSubsidyOffer subsidy, bool accept)
     {
         if (accept)
             Game.AcceptSponsorSubsidy(subsidy);
-        _message.Show(TransferMarket.Message(TransferResult.Accepted));
+        Say(TransferMarket.Message(TransferResult.Accepted));
     }
 
     /// <summary>
@@ -283,7 +310,7 @@ public sealed class TransferScreen : Screen
         _purchase = null;
         if (outcome == ContractDialog.Outcome.Cancel)
         {
-            _message.Show(TransferMarket.NotTakingPlace); // 0x47874 → 0x47A3E
+            Say(TransferMarket.NotTakingPlace); // 0x47874 → 0x47A3E
             return;
         }
         var result = Market.Sign(Game, purchase, d.Years, d.Salary, d.Insured, d.DemandFilled, out var subsidy);
@@ -292,7 +319,7 @@ public sealed class TransferScreen : Screen
             ShowAccepted(subsidy);
             return;
         }
-        _message.Show(Contracts.Message(result, purchase.Player));
+        Say(Contracts.Message(result, purchase.Player));
         _messages.Enqueue(TransferMarket.NotTakingPlace);
     }
 
@@ -309,7 +336,7 @@ public sealed class TransferScreen : Screen
         else if (d.Kind == TransferDialog.DialogKind.Subsidy)
             AnswerSubsidy(d.Subsidy!, accept: false);
         else if (d.Kind == TransferDialog.DialogKind.Seller) // „Nein !“: abgelehnt und gesperrt (0x47AC8)
-            _message.Show(TransferMarket.Message(Market.AnswerSeller(Game, d.Question!, accept: false, out _, out _)));
+            Say(TransferMarket.Message(Market.AnswerSeller(Game, d.Question!, accept: false, out _, out _)));
     }
 
     public override void Draw(Surface s)
@@ -393,7 +420,7 @@ public sealed class TransferScreen : Screen
         _dialog?.Draw(s, Assets);
         _contract?.Draw(s, Assets);
         _info.Draw(s, Assets);
-        _message.Draw(s, Assets, 160, 118);
+        _message.Draw(s, Assets);
     }
 
     private string? StatusText(IReadOnlyList<Player> rows, IReadOnlyList<TransferListing> listings)

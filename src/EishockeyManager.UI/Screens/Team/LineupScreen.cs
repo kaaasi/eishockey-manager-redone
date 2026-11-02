@@ -49,7 +49,7 @@ public sealed class LineupScreen : Screen
     };
 
     private readonly Screen _back;
-    private readonly MessageBox _message = new();
+    private readonly MessageBox _message;
     private Player? _selectedPlayer;
     private LineupSlot? _selectedSlot;
     private int _mouseX = -1, _mouseY = -1;
@@ -58,7 +58,11 @@ public sealed class LineupScreen : Screen
     /// <summary>Spielerdaten-Fenster (rechte Maustaste auf einen Namen).</summary>
     public PlayerInfoPopup Info => _info;
 
-    public LineupScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+    public LineupScreen(ScreenHost host, Screen back) : base(host)
+    {
+        _back = back;
+        _message = new(() => host.Game?.ActiveManager.Name ?? "");
+    }
 
     private Club Club => TeamUi.OwnClub(Host);
 
@@ -85,7 +89,7 @@ public sealed class LineupScreen : Screen
         // Einstellung „automatisch aufstellen“ ab und meldet „Auto-Aufstellung / ist deaktiviert !“ (DGROUP 0x124D; Texte
         // Datei 0x1AE4B/0x1AE5C). [APPROX] Trifft der Eingriff mit einer anderen Meldung zusammen, gewinnt diese Meldung.
         if (wasAuto && !Club.AutoLineupEnabled && !_message.Visible)
-            _message.Show("Auto-Aufstellung", "ist deaktiviert !");
+            _message.ShowShort("Auto-Aufstellung", "ist deaktiviert !");
     }
 
     private void HandleInput(InputState input)
@@ -181,7 +185,14 @@ public sealed class LineupScreen : Screen
         Report(Club.AssignToLineup(slot, player), player);
     }
 
-    /// <summary>Meldungen (Texte aus em.exe); „Schon 22 Mann / im Team !“ aus DGROUP 0x11D5.</summary>
+    /// <summary>
+    /// Meldungen (Texte aus em.exe); „Schon 22 Mann / im Team !“ aus DGROUP 0x11D5. [ORIGINAL] Integration Runde 11 (ui-meldungen, K2):
+    /// Die Aufstellung ruft für „noch gesperrt !“ (Datei 0x40B55), „Der darf da / nicht rein !“ und „Schon 22 Mann / im Team !“
+    /// (beide über den Aufruf 0x40EB9) die Kurzmeldung 0x0C0B8 – ohne Knopf, schließt von selbst. [APPROX] „ist verletzt.“ steht
+    /// in keinem der sechs Aufrufe 0x0C0B8 der Aufstellung (0x40AF3, 0x40B55, 0x40DF9, 0x40EB9, 0x40EF7, 0x414C6); der Weg der
+    /// Meldung ist nicht belegt, sie bleibt ein Meldungsfenster mit Klick. Zeile 1 von „noch gesperrt !“ ist im Original der Text
+    /// „Spieler ist“ (DGROUP 0x1255), im Remake der Name des Spielers (offen, Zuordnung der Bedingung 0x40B3E nicht geprüft).
+    /// </summary>
     private void Report(LineupResult result, Player player)
     {
         switch (result)
@@ -190,13 +201,13 @@ public sealed class LineupScreen : Screen
                 _message.Show(player.Name, "ist verletzt.");
                 break;
             case LineupResult.Suspended:
-                _message.Show(player.Name, "noch gesperrt !");
+                _message.ShowShort(player.Name, "noch gesperrt !");
                 break;
             case LineupResult.WrongRole:
-                _message.Show("Der darf da", "nicht rein !");
+                _message.ShowShort("Der darf da", "nicht rein !");
                 break;
             case LineupResult.RosterFull:
-                _message.Show("Schon 22 Mann", "im Team !");
+                _message.ShowShort("Schon 22 Mann", "im Team !");
                 break;
         }
     }
@@ -280,7 +291,7 @@ public sealed class LineupScreen : Screen
         }
 
         TeamUi.DrawSwitch(s, Assets, toTactics: true);
-        _message.Draw(s, Assets, 120, 110);
+        _message.Draw(s, Assets);
         _info.Draw(s, Assets);
     }
 

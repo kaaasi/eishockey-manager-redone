@@ -33,9 +33,12 @@ public sealed class AdvertisingScreen : Screen
     /// <summary>Eistafel 0/1 als Fläche 9/10. [ORIGINAL] 0x2B5DB: Rahmen bei x = 0x10B, y = 0x5B + 0x24 · i, 35 × 25.</summary>
     public static Rect IceBoardRect(int i) => new(267, 91 + 36 * i, 35, 25);
 
-    /// <summary>Ja/Nein der Verlängerungsfrage. [APPROX] Lage nicht aus dem Video (Frage 0x120:0x7A).</summary>
-    public static readonly Rect YesButton = new(110, 136, Widgets.ButtonWidth, Widgets.ButtonHeight);
-    public static readonly Rect NoButton = new(170, 136, Widgets.ButtonWidth, Widgets.ButtonHeight);
+    /// <summary>
+    /// Ja/Nein der Verlängerungsfrage. [ORIGINAL] Lage der Knöpfe der Frage 0x4C246 (Integration Runde 11, ui-meldungen, A304, A308);
+    /// [APPROX] Beschriftung „Ja“/„Nein“ (die Texte, die der Aufrufer als Zeile 4/5 übergibt, sind nicht belegt).
+    /// </summary>
+    public static Rect YesButton => OriginalDialog.LeftButton;
+    public static Rect NoButton => OriginalDialog.RightButton;
     private static readonly (int X, int Y) JerseyLogo = (31, 116);
     private static readonly (int X, int Y) TvLogo = (11, 173);
 
@@ -96,9 +99,13 @@ public sealed class AdvertisingScreen : Screen
     private int? _infoFor;
     private Rect? _pressed;
     private SponsorContract? _renewal;
-    private readonly EishockeyManager.UI.Screens.Team.MessageBox _message = new();
+    private readonly EishockeyManager.UI.Screens.Team.MessageBox _message;
 
-    public AdvertisingScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+    public AdvertisingScreen(ScreenHost host, Screen back) : base(host)
+    {
+        _back = back;
+        _message = new(() => host.Game?.ActiveManager.Name ?? "");
+    }
 
     public AdSlot? SelectedSlot => _slot;
 
@@ -247,18 +254,17 @@ public sealed class AdvertisingScreen : Screen
         _message.Draw(s, Assets);
     }
 
-    /// <summary>[APPROX] Frage im Rahmen der Meldungen (0x120:0x7A), Lage und Knöpfe nicht aus dem Video.</summary>
-    private void DrawRenewalQuestion(Surface s, SponsorContract contract)
-    {
-        var mini = Assets.Mini;
-        var frame = new Rect(70, 92, 180, 66);
-        Widgets.Frame(s, Assets, frame, FrameStyle.Orange);
-        string[] lines = ["Möchten Sie den Vertrag mit", contract.Partner.Name, "verlängern ?"];
-        for (var i = 0; i < lines.Length; i++)
-            s.TextCentered(mini, 160, frame.Y + 10 + 8 * i, lines[i], Colors.White);
-        Button(s, YesButton, "Ja");
-        Button(s, NoButton, "Nein");
-    }
+    /// <summary>
+    /// Verlängerungsfrage als Baustein <see cref="OriginalDialog"/> (Frage 0x4C246, Überschrift = Name des Managers am Zug).
+    /// [APPROX] Zeilenaufteilung und Knopftexte aus den Texten DGROUP 0x3D3D ff., Reihenfolge nicht aus dem Video.
+    /// </summary>
+    public OriginalDialog? RenewalDialog =>
+        _renewal is { } contract
+            ? new OriginalDialog(OriginalDialogKind.Question, Me.Name, "Möchten Sie den Vertrag mit", contract.Partner.Name,
+                "verlängern ?", "Ja", "Nein")
+            : null;
+
+    private void DrawRenewalQuestion(Surface s, SponsorContract contract) => RenewalDialog?.Draw(s, Assets);
 
     /// <summary>Kachel in kb\11: Spalte 0 Firmen, Spalte 1 Sender (oben) und Trikots 8–9, Spalte 2 Trikots 0–7.</summary>
     public static Rect LogoTile(AdSlotKind kind, int sponsor) => kind switch

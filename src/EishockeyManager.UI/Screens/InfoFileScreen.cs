@@ -155,8 +155,9 @@ public sealed class InfoFileScreen : Screen
                     EndPage();
             }
         }
-        if (glyphs.Count > 0 || pages.Count == 0)
-            EndPage();
+        // [ORIGINAL] Datei 0x432EC (re-meldungen.md §D Schritt 4): Nach jedem Seitenende folgt ein neuer Seitenkopf; am Dateiende steht
+        // „TASTE!“ auf der aktuellen Seite – auch wenn sie leer ist (Datei endet nach „#“ oder genau nach der 27. Zeile; R11U-04).
+        EndPage();
         return pages;
     }
 }

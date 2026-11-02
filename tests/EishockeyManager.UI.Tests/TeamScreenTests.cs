@@ -28,7 +28,7 @@ public class TeamScreenTests
         d.Click(gk.X + 5, gk.Y + 5);
         d.Click(60, LineupScreen.FirstRowY + row * LineupScreen.RowPitch + 2);
         Assert.Same(reserveGoalie, club.Lineup.Goalkeeper);
-        d.Click(10, 10); // Meldung „Auto-Aufstellung / ist deaktiviert !“ schließen (Datei 0x40ADE, Integration Runde 11)
+        d.Frames(100); // Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst (Klick wirkt nicht)
 
         // Stürmer auf einen Verteidigerplatz: Meldung, Aufstellung unverändert
         var forward = rows.First(p => p.Role == PlayerRole.Forward);
@@ -37,7 +37,7 @@ public class TeamScreenTests
         d.Click(defenderSlot.X + 5, defenderSlot.Y + 5);
         d.Click(60, LineupScreen.FirstRowY + rows.IndexOf(forward) * LineupScreen.RowPitch + 2);
         Assert.Same(before, club.Lineup[LineupSlot.Defender(0, 0)]);
-        d.Click(10, 10); // Meldung schließen
+        d.Frames(100); // Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst (Klick wirkt nicht)
 
         // Rechtsklick leert, Esc geht zurück ins Hauptmenü
         d.RightClick(defenderSlot.X + 5, defenderSlot.Y + 5);

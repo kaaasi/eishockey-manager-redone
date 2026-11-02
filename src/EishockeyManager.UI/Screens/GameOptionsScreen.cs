@@ -69,10 +69,14 @@ public sealed class GameOptionsScreen : Screen
     public static readonly Rect SpeedArea = new(191, 84, 95, 13);
 
     private readonly Screen _back;
-    private readonly MessageBox _message = new();
+    private readonly MessageBox _message;
     private bool _newModeShown;
 
-    public GameOptionsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+    public GameOptionsScreen(ScreenHost host, Screen back) : base(host)
+    {
+        _back = back;
+        _message = new(() => host.Game?.ActiveManager.Name ?? "");
+    }
 
     private GameOptions Options => Host.Game!.Options;
 

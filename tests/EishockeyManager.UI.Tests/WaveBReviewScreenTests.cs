@@ -43,7 +43,7 @@ public class WaveBReviewScreenTests
         Assert.True(screen.Message.Visible, "Keine Rückmeldung zum abgelehnten Gebot");
         Assert.Equal(TransferMarket.Message(TransferResult.Impossible), screen.Message.Lines);
         Assert.Null(screen.Dialog); // nicht kommentarlos dasselbe Gebot erneut
-        d.Click(10, 10); // Meldung schließen
+        d.Frames(100); // Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst (Klick wirkt nicht)
         Assert.False(screen.Message.Visible);
         Assert.Null(screen.Dialog);
         Assert.DoesNotContain(bids[1], market.Bids);

@@ -30,7 +30,7 @@ public sealed class ContractsScreen : Screen
     public static Rect CancelButton(Rect dialog) => Widgets.ButtonRect(90, dialog.Y + 51);
 
     private readonly Screen? _back;
-    private readonly MessageBox _message = new();
+    private readonly MessageBox _message;
     private readonly Queue<string[]> _messages = new();
     private ContractDialog? _dialog;
     private int _row;
@@ -42,12 +42,17 @@ public sealed class ContractsScreen : Screen
     private readonly Func<Screen>? _next;
     private (int Manager, Player Player)? _renewal;
 
-    public ContractsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+    public ContractsScreen(ScreenHost host, Screen back) : base(host)
+    {
+        _back = back;
+        _message = new(() => host.Game?.ActiveManager.Name ?? "");
+    }
 
     private ContractsScreen(ScreenHost host, Queue<(int, Player)> renewals, Func<Screen> next) : base(host)
     {
         _renewals = renewals;
         _next = next;
+        _message = new(() => host.Game?.ActiveManager.Name ?? "");
     }
 
     /// <summary>
@@ -274,7 +279,7 @@ public sealed class ContractsScreen : Screen
 
         _dialog?.Draw(s, Assets);
         TeamUi.StatusLine(s, Assets, 131, StatusY, _status);
-        _message.Draw(s, Assets, 133, 118);
+        _message.Draw(s, Assets);
     }
 
     /// <summary>„1.500 DM“ (im Dialog mit Tausenderpunkt, in der Liste ohne).</summary>
