@@ -480,12 +480,23 @@ DGROUP 0x79D/0x7A1). Umgesetzt in `Core/FinanceYouth.cs` und `UI/Screens/Manager
 | Innenfläche beider Fenster | Farbe 4 (81, 113, 130) | 2 | Video 8:37 (77, 111, 129) |
 
 **`[APPROX]`, offen:** Durchsichtige Farbe der Fahnen = Hintergrundfarbe 4 der Grafik (Blit-Parameter 0xC0 nicht
-entschlüsselt); Abstand „n.Platz“ – „m.Liga“ gemessen (im Original eine Zeichenkette mit Feldbreite DGROUP 0x374); die
-Startliga nimmt die Liga des Managervereins beim ersten Zugriff auf die Finanzdaten. **Wirkung der Förderung nicht
-übernommen:** Datei 0x39DEC (monatlich, Teamstärke je Jugendteam `+(−3)` = DGROUP 0xA075, Zufall über 0x120:0x57/0x61)
-und 0x3A13B (Saisonwechsel: Auf- und Abstieg) sind noch nicht zugeordnet; `SettleYouth` bleibt `[APPROX]`. Rabatt der
-Talentsuche weiter je volle 1.000 DM Förderung (`[APPROX]`, Bezug unverändert). Alte Spielstände behalten ihre Plätze 1–6
-(jetzt in einer Liga mit 12 Plätzen) und ihre Förderung; keine Migration nötig, weil sich kein Feld ändert.
+entschlüsselt); Abstand „n.Platz“ – „m.Liga“ gemessen (im Original eine Zeichenkette mit Feldbreite DGROUP 0x374).
+Talentsuche: Rabatt weiter je volle 1.000 DM Förderung (`[APPROX]`, Bezug unverändert).
+
+**Wirkung (Runde 11, Spur `geld` Teil 3, G2):** Managersatz tatsächlich ab DGROUP `0xA075` mit Stärke je Team `+0..2`
+davor (re-geld.md „Jugendteams“). Umgesetzt in `Core/FinanceYouth.cs`:
+
+| Stelle | Original | Remake |
+|---|---|---|
+| Startwerte | Spielstart 0x29B76–0x29BC1: Stärke `(2 − StartLiga) · 14 + 52` (80/66/52), Platz 6, Liga = Start-Liga DGROUP 0x11A | `YouthTeam.StartTeams(ManagerSetup.StartLeague)` (#327; vorher Vereinsliga) |
+| Ligaspieltag | Datei 0x39DEC aus dem Tagesablauf 0x55008 an Tagen mit Kalenderbit 0–2, vor den Spielen; Stärke strebt gegen `X = Förderung · 100 / Deckel / 2 + 40`, Platz gegen den Ligabezug DGROUP 0x4EBA (85, 70, 57) − Platz, Schrittweite `random(1, T[0x7A9])` mit fallender Tabelle T | `GameState.YouthMatchDay` aus `AdvanceFinanceTo` (`DailyYouth`), Zufall aus `FinanceRandom` über `TransferRules.Random16` |
+| Saisonwechsel | Datei 0x3A13B (aus 0x55889), t = 2, 1, 0: Platz 1–2 auf (Start 11./12.), Platz 12 ab (Start 2.), sonst Platz 6; jüngeres Team rückt nach `(2 · s[t] + s[t − 1]) / 3` | `GameState.YouthSeasonChange` aus `StartFinanceSeason` |
+| Förderung | Monatsbuchung Datei 0x3E811 | `SettleYouth` (nur Buchung; die genäherte Monatswirkung entfällt) |
+
+`[APPROX]`: Zähler über 44 kommen im Remake nicht vor (letztes Feld T[44] = Endwert von a, wie im Stapel des Originals);
+Start-Liga ohne Eintrag in der Spielvorbereitung = Vereinsliga; ältere Spielstände (Schema ≤ 24) bekommen die Startstärke
+der aktuellen Liga (`SaveGame.Migration.Geld3.cs`). Ob die Jugendstärke außerhalb von Ov 0xF8 weiter wirkt (Talentsuche,
+Jugendspieler), ist offen (re-geld.md „Offen“, Teil 6).
 
 **Pixelvergleich** (normierte Kreuzkorrelation der Graustufen, Remake gegen Videobild; vorher `main` 48c027e):
 

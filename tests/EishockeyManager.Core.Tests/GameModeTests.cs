@@ -305,6 +305,9 @@ public class GameModeTests
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
     /// Spur geld, Teil 2: nur die Kontostände beider Manager neu (Monatseinnahme aus den Vereinsfeldern 0x3E657, Bewertung
     /// und Angebote 0x3F915/0x3FB47); Titel und Zufallsprüfsummen R/C unverändert.
+    /// Spur geld, Teil 3: nur die Kontostände beider Manager neu (Jugendteams je Ligaspieltag 0x39DEC ziehen aus FinanceRandom,
+    /// die monatlichen Züge des alten Näherungswegs entfallen; Börse und Werbebewertung ziehen danach andere Zahlen);
+    /// Titel und Zufallsprüfsummen R/C unverändert.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -322,7 +325,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|616325,358124|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=0|1503803,159553|WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=1|2733580,69091|WorldChampion=55,CupWinner=12,GermanChampion=15,EuropeanCupWinner=4|3736607,44084|WorldChampion=52,CupWinner=8,GermanChampion=8,EuropeanCupWinner=4|4355422,213677|R967498903 C1705043894";
+        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|613322,349084|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=0|1485122,147743|WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=1|2689926,36331|WorldChampion=55,CupWinner=12,GermanChampion=15,EuropeanCupWinner=4|3716418,12948|WorldChampion=52,CupWinner=8,GermanChampion=8,EuropeanCupWinner=4|4327901,204881|R967498903 C1705043894";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

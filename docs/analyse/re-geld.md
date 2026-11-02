@@ -317,7 +317,11 @@ Platz[t] = neu; Liga[t] = l
 
 Sonst startet jedes Team auf Platz 6 (Byte 5).
 
-### Abgleich mit dem Remake
+**Status (Runde 11, Spur `geld` Teil 3):** beide Funktionen umgesetzt (`Core/FinanceYouth.cs`, `YouthMatchDay`,
+`YouthSeasonChange`), Startstärke 0x29B76 und Start-Liga aus der Spielvorbereitung (#327). Die Klemme 0x120:0x57 (Datei
+0x4BD56) rechnet mit Vorzeichen (`cbw`), ein Platz −1 wird also 0.
+
+### Abgleich mit dem Remake (vor Teil 3)
 
 `Core/FinanceYouth.cs`: `SettleYouth` (monatlich, Zufall nach Förderanteil, `[APPROX]`) ersetzt beide Funktionen; es
 gibt keine Jugendstärke, keine Auf- und Absteiger und keinen Neustart auf Platz 6. Die Monatsbuchung der Förderung gehört
