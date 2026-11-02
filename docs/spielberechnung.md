@@ -771,14 +771,35 @@ Geprüft an `em.exe` (`tools/reverse-engineering/disasm.py`), Tests `TaktikTeil5
 - **Eingesetzt (A168):** Der Kader der Managerpaarung (`LiveSquad.Create`) setzt +0x0A wie der Verein (`Club.IsDressed`
   und spielfähig). Nicht Eingesetzte zählen weder in den Reihenwerten (0x98F8) noch in der Energie (0x87F7). Ohne
   Zufallszug-Änderung bei der automatischen Auswahl (alle Abdrücke unverändert).
-- **Feldspieler 0x38A36 (A089, A070) – Regel belegt, Anschluss offen:** 0x388F6(Verein, Manager, Modus, Teil) zählt
+- **Feldspieler 0x38A36 (A089, A070):** 0x388F6(Verein, Manager, Modus, Teil) zählt
   eingesetzte Kaderplätze des Teils (+0x15 Bit 7): Modus 0 Torhüter (Gruppe 0x04180 = 0, Reihe beliebig ≠ 0; keiner →
   Vereinsfeld 0x2E = 0, Datei 0x38A2A), Modus 1 Verteidiger und 2 Stürmer der Reihe auf dem Eis (0x2E/0x30). 0x38A36:
   Grenze 6 (ohne Torhüter und mit < 6 Feldspielern 5); Torhüter + Abwehr + Sturm + belegte Strafbankplätze (0x35540
   Schalter 0) über der Grenze → Sturm = 3 − Überschuss; DGROUP 0xCC37 + 2·m = Abwehr, +1 = Sturm; Vereinsfeld 0x32 =
   Abwehr + Sturm; 0x2C Bit 3 bei genau 6, sonst gelöscht. Aufrufe im Spiel: je Minute zu Beginn von 0x38B8F für beide
   Vereine (Datei 0x38BA9–0x38BBA) und beim Freiwerden 0x35691 (Datei 0x35810); dazu 0x952C (Datei 0x9567).
-  **Nicht angeschlossen:** Probe mit dem Anschluss (Originaldaten, Managerverein passiv): Lücken in der Aufstellung, die
-  das Remake beim Managerverein nicht füllt (`CleanLineups` nur ohne Manager, Einstellung „automatisch aufstellen“
-  DGROUP 0x375 / 0x426BC nicht geführt, A068 in `re-nachtrag`), lassen ihn den Großteil des Spiels mit 4 Feldspielern
-  spielen; 19 Abdruck- und Mehrsaisontests kippen. Anschluss erst zusammen mit der automatischen Aufstellung (A068).
+  Angeschlossen in Teil 8 (`MatchEngine.RecountSkaters`, `CountOnIce`): zu Beginn von `OriginalMinutes.Injuries` für
+  beide Vereine (nur Managervereine mit Kader) und über `PenaltyBox.Released` beim Freiwerden; schreibt
+  `SkatersPerPart`, `PenaltyBox.Skaters` (0x32) und `GoaliePulled` (0x2C Bit 3). `[APPROX]` Startwert 2/3 je Spiel,
+  Sturm nicht unter 0. Vorher kippten mit dem Anschluss 19 Tests, weil Managervereine ohne automatische Aufstellung mit
+  Lücken spielten; mit §23 bleiben nur die Abdrücke (siehe PR Teil 8).
+
+## 23. Automatische Aufstellung 0x426BC/0x42838 (Runde 11, Spur wettbewerbe-spiel Teil 8; A068, A165, A169)
+
+Regel nach `docs/analyse/re-nachtrag.md` §3 (Review #446), Remake `Core/Squad.AutoLineup.cs`, Tests `AutoLineupTeil8Tests`.
+
+- **Einstellung „automatisch aufstellen“** (DGROUP 0x375 + 2 · Manager, Startwert 1): `Club.AutoLineupEnabled`
+  (`[APPROX]` je Verein statt je Manager; Schema 23 → 24). Ein Eingriff in der Aufstellung (Platz setzen/leeren,
+  ein-/aussetzen) schaltet sie ab (Datei 0x40ADE/0x40DE4); „A“ schaltet sie ein und stellt sofort auf (`[APPROX]`,
+  im Original kippt sie der Taktikbildschirm 0x47F4E und stellt dann auf).
+- **0x426BC:** ohne Einstellung nichts. Sonst alle nicht eingesetzt, dann Torhüter (1 × 1), Abwehr (3 × 2), Sturm
+  (3 × 3) mit 0x42838, Block endet ohne Kandidat; danach Ersatz reihum Sturm, Abwehr, Torhüter bis 22 Eingesetzte oder
+  leere Torhütersuche. Ein Feldspieler aus der Ausweichrolle steht auf dem Platz der gesuchten Rolle (`Lineup.Place`);
+  aus der Torhütersuche wird er nur eingesetzt (`[APPROX]`, im Original +0x15 = 1).
+- **0x42838:** freie, spielfähige Spieler der Rolle; Wert (K + T + F) / 3, Gleichstand → späterer Platz
+  (`[APPROX]` Platzfolge = `Club.SortedPlayers`); Ausweichrollen T → A → S, A → S → T, S → A → T; erster freier Torhüter
+  als Feldspieler −1, jeder weitere 1.
+- **Aufrufe im Remake:** Spielstart (`InitializeManagerSystems`, 0x28165), Ende des Tageslaufs (`OnDayClubSeason`,
+  0x07C07), Verletzung im Spiel und Heilung (`Club.RefillLineup`). Nicht angeschlossen: Transferbildschirm 0x465F1,
+  Managerzug 0x44E22 (der nächste Tageslauf holt es nach), Nationalteam (U8, Satz 5) und die Meldung DGROUP 0x124D
+  (Oberfläche, Spur kader-transfer).

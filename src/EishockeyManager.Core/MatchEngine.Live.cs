@@ -199,7 +199,7 @@ public static partial class MatchEngine
                 : 0;
         }
         var fewFit = managed && club.Players.Count > 0 && club.Players.Count(p => p.Available) < MinimumFitForPenalties;
-        return new LiveTeam
+        var team = new LiveTeam
         {
             Defense = defense,
             Attack = attack,
@@ -220,6 +220,9 @@ public static partial class MatchEngine
             // Teil 4: [ORIGINAL] Zähler des Managers (Vereinsfeld 0x16 = Manager + 1 → DGROUP 0x97D2 + 0x1AF · Manager).
             PowerPlayCounts = managed ? manager?.PowerPlayCounts : null,
         };
+        // Teil 8 (A089/A070): [ORIGINAL] 0x35691 zählt beim Freiwerden neu (0x38A36); nur Managervereine (siehe Methode).
+        team.Box.Released = () => RecountSkaters(team);
+        return team;
     }
 
     /// <summary>Vereinsplatz eines Nationalteams ohne eigenen Kader (Spielpartner aus <see cref="GameState.RatedNation"/>).</summary>

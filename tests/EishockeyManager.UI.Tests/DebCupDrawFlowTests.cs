@@ -231,7 +231,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Teamwerten, 0x2F0CC) verschieben die Zufallsfolge; mit und ohne Anzeige weiter gleich.
     /// Spur wettbewerbe-spiel, Teil 7 (A185, A186): ab 1993 neu – Kaderplatz +0x19 des Managerkaders beim Spielstart gewürfelt
     /// (random(3, 12) je Halbbyte, Datei 0x299F4) statt 7/7; Über- und Unterzahl der Managerpaarungen ändern Ergebnisse und
-    /// Zufallsfolge ab dem ersten Spiel des Managers. Mit und ohne Anzeige weiter gleich.</summary>
+    /// Zufallsfolge ab dem ersten Spiel des Managers. Mit und ohne Anzeige weiter gleich.
+    /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): ab 1993 neu – automatische Aufstellung des Managervereins
+    /// (0x426BC, täglich) und Neuzählung der Feldspieler (0x38A36) ändern dessen Spiele. Mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 2, DM 6, Tab 15269 | 1994: DEB 5, DM 21, Tab 15608 | 1995: DEB 19, DM 12, Tab 16123 | 1996: DEB 19, DM 12, Tab 16893";
+        "1993: DEB 9, DM 2, Tab 15370 | 1994: DEB 2, DM 2, Tab 16168 | 1995: DEB 19, DM 6, Tab 15043 | 1996: DEB 19, DM 16, Tab 14926";
 }

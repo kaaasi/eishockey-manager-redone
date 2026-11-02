@@ -29,6 +29,8 @@ public class RefillLineupDressedTests
                 club.Players.Add(p);
             }
         }
+        // Teil 8 (A068): neu aufstellen wie nach dem Transferbildschirm (Datei 0x465F1 ruft 0x426BC).
+        club.ApplyAutoLineup();
         Assert.Equal(Club.MaxDressed, club.DressedCount);
         return (game, club);
     }

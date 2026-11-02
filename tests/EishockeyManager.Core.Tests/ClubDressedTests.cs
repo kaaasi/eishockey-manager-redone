@@ -16,7 +16,11 @@ public class ClubDressedTests
         return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
     }
 
-    /// <summary>Holt einsatzfähige Spieler eines Computervereins, bis der Kader <paramref name="size"/> Spieler hat.</summary>
+    /// <summary>
+    /// Holt einsatzfähige Spieler eines Computervereins, bis der Kader <paramref name="size"/> Spieler hat. Teil 8 (A068):
+    /// danach stellt der Verein neu auf wie das Original nach dem Transferbildschirm (Datei 0x465F1 ruft 0x426BC); die
+    /// Eingesetzten der automatischen Aufstellung stehen seitdem fest und wachsen nicht mehr von selbst mit dem Kader.
+    /// </summary>
     private static void GrowSquad(GameState game, Club club, int size)
     {
         var donors = game.Clubs.Where(c => c != club && c.Players.Count > 0).ToList();
@@ -25,12 +29,16 @@ public class ClubDressedTests
             foreach (var p in donor.Players.Where(p => p.Available && p.Role != PlayerRole.Goalkeeper).ToList())
             {
                 if (club.Players.Count >= size)
+                {
+                    club.ApplyAutoLineup();
                     return;
+                }
                 donor.Lineup.Remove(p);
                 donor.Players.Remove(p);
                 club.Players.Add(p);
             }
         }
+        club.ApplyAutoLineup();
     }
 
     [Fact]

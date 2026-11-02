@@ -64,6 +64,20 @@ public sealed class PenaltyBox
     /// </summary>
     public void Release(int slot, bool force)
     {
+        var before = Skaters;
+        ReleaseCore(slot, force);
+        if (Skaters != before)
+            Released?.Invoke();
+    }
+
+    /// <summary>
+    /// Nach dem Freiwerden eines Platzes: [ORIGINAL] 0x35691 ruft für Managervereine die Neuzählung 0x38A36 (Datei 0x35810,
+    /// <see cref="MatchEngine.RecountSkaters"/>). Gehört nicht zum Spielstand.
+    /// </summary>
+    public Action? Released { get; set; }
+
+    private void ReleaseCore(int slot, bool force)
+    {
         if (slot == 0)
         {
             if ((State & 0xF8) != 0 && !force)

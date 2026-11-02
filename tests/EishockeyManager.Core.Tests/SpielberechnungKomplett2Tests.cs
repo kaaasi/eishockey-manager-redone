@@ -154,6 +154,8 @@ public class SpielberechnungKomplett2Tests
             var game = TestGames.Create(seed);
             MatchEngine.EnsureTeamValues(game);
             var club = game.Clubs[game.Managers[0].ClubIndex];
+            // Teil 8 (A068): weniger Aufgestellte gibt es nur nach einem Eingriff von Hand; der schaltet die automatische Aufstellung ab (Datei 0x40ADE), sonst stellt der Tageslauf wieder voll auf (0x07C07).
+            club.AutoLineupEnabled = false;
             foreach (var p in club.Lineup.Players.Skip(8).ToList())
                 club.Lineup.Remove(p);
             foreach (var c in game.Clubs)

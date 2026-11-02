@@ -60,10 +60,10 @@ public sealed class LiveSquad
     public bool HasGoalie { get; set; } = true;
 
     /// <summary>
-    /// Feldspieler je Teil (DGROUP 0xCC37 + 2 · Manager + Teil). [APPROX] fest 2 und 3; im Original schreibt nur die
-    /// Neuzählung 0x38A36 (je Minute zu Beginn von 0x38B8F und beim Freiwerden 0x35691) – Regel in
-    /// docs/spielberechnung.md §22, Anschluss erst mit der automatischen Aufstellung (A068). Sonderfall 4 Verteidiger
-    /// (Datei 0x9B42) kommt im Remake nicht vor.
+    /// Feldspieler je Teil (DGROUP 0xCC37 + 2 · Manager + Teil). [ORIGINAL] geschrieben von der Neuzählung 0x38A36
+    /// (<see cref="MatchEngine.RecountSkaters"/>; je Minute zu Beginn von 0x38B8F und beim Freiwerden 0x35691).
+    /// [APPROX] Startwert 2 und 3 (im Original der Stand der letzten Neuzählung, auch aus 0x952C außerhalb des Spiels).
+    /// Sonderfall 4 Verteidiger (Datei 0x9B42) kommt im Remake nicht vor.
     /// </summary>
     public int[] SkatersPerPart { get; } = [2, 3];
 
@@ -121,6 +121,57 @@ public static partial class MatchEngine
     /// [APPROX] Belastung = <see cref="TrainingRules.Fatigue"/> (aus der Energie des Remakes).
     /// </summary>
     public static int PreparedPlayerEnergy(Player p) => Math.Min(101 - (TrainingRules.Fatigue(p) >> 3), EnergyCeiling) - 1;
+
+    /// <summary>
+    /// [ORIGINAL] Datei 0x388F6(Verein, Manager, Modus, Teil): eingesetzte Kaderplätze (+0x0A) des Teils (+0x15 Bit 7).
+    /// Art: Torhüter (Gruppe 0x04180 = 0) 0, sonst nach +0x15 Bit 7 Abwehr 1 / Sturm 2 – ein Stürmer auf einem
+    /// Abwehrplatz zählt also als Verteidiger. Modus 0 zählt Torhüter mit beliebiger Reihe ≠ 0, Modus 1/2 nur die Reihe
+    /// auf dem Eis (<paramref name="lineOnIce"/>, Vereinsfeld 0x2E/0x30).
+    /// </summary>
+    public static int CountOnIce(LiveSquad squad, int mode, int part, int lineOnIce)
+    {
+        var n = 0;
+        foreach (var p in squad.Players)
+        {
+            if ((p.Position & 0x80) != part << 7)
+                continue;
+            var line = p.Position & 0x7F;
+            var kind = p.Goalie ? 0 : (p.Position & 0x80) != 0 ? 2 : 1;
+            if ((mode != 0 || line == 0) && line - 1 != lineOnIce)
+                continue;
+            if (p.Dressed && kind == mode)
+                n++;
+        }
+        return n;
+    }
+
+    /// <summary>
+    /// Neuzählung der Feldspieler eines Managervereins (A089, A070). [ORIGINAL] Datei 0x38A36 (nur Vereine ≤ 0x95 mit
+    /// Manager, Vereinsfeld 0x16 ≠ 0): Torhüter g (0x388F6 Modus 0; keiner → Abwehrreihe 0, Datei 0x38A2A), Verteidiger d
+    /// und Stürmer f der Reihen auf dem Eis, belegte Strafbankplätze b (0x35540 Schalter 0). Grenze 6, ohne Torhüter und
+    /// mit d + f &lt; 6 nur 5; g + d + f + b über der Grenze → f = 3 − Überschuss. Dann DGROUP 0xCC37 + 2 · Manager = d,
+    /// +1 = f (<see cref="LiveSquad.SkatersPerPart"/>), Vereinsfeld 0x32 = d + f (<see cref="PenaltyBox.Skaters"/>),
+    /// 0x2C Bit 3 (<see cref="LiveTeam.GoaliePulled"/>) genau bei d + f = 6.
+    /// [APPROX] f unter 0 (mehr als drei über der Grenze) hält das Remake bei 0; im Original ein Byte (nicht geprüft).
+    /// </summary>
+    public static void RecountSkaters(LiveTeam team)
+    {
+        if (team.InjuryManager is null || team.Squad is not { } squad)
+            return;
+        var goalies = CountOnIce(squad, 0, 0, team.DefenseLine);
+        if (goalies == 0)
+            team.DefenseLine = 0;
+        var defenders = CountOnIce(squad, 1, 0, team.DefenseLine);
+        var forwards = CountOnIce(squad, 2, 1, team.AttackLine);
+        var limit = goalies == 0 && defenders + forwards < 6 ? 5 : 6;
+        var total = goalies + defenders + forwards + team.Box.Count;
+        if (total > limit)
+            forwards = Math.Max(0, 3 - (total - limit));
+        squad.SkatersPerPart[0] = defenders;
+        squad.SkatersPerPart[1] = forwards;
+        team.Box.Skaters = defenders + forwards;
+        team.GoaliePulled = defenders + forwards == 6;
+    }
 
     /// <summary>[ORIGINAL] Drittelpause 0x84D7(1) (Datei 0x37A86): Energie + 20, dann wie oben min(…, 91) − 1.</summary>
     public static int RecoveredEnergy(int energy) => Math.Min(energy + 20, EnergyCeiling) - 1;

@@ -30,7 +30,10 @@ public readonly record struct LineupSlot(int Block, PlayerRole Role, int Index)
 
 public sealed partial class GameState
 {
-    /// <summary>Bereinigung gehört zur Simulation; Ansichten dürfen weder Kader noch Aufstellung verändern.</summary>
+    /// <summary>
+    /// Bereinigung gehört zur Simulation; Ansichten dürfen weder Kader noch Aufstellung verändern. Managervereine stellt
+    /// mit der Einstellung „automatisch aufstellen“ der Tageslauf neu auf (<see cref="ApplyAutoLineups"/>, Teil 8).
+    /// </summary>
     private void CleanLineups()
     {
         foreach (var club in Clubs)
@@ -130,6 +133,12 @@ public sealed class Lineup
     }
 
     public void Clear(LineupSlot slot) => this[slot] = null;
+
+    /// <summary>
+    /// Setzt einen Spieler ohne Prüfung der Art auf einen Platz (automatische Aufstellung, Ausweichrollen Datei 0x42838:
+    /// im Original bestimmt +0x15 den Platz, nicht die Rolle).
+    /// </summary>
+    internal void Place(LineupSlot slot, Player player) => this[slot] = player;
 
     public void Remove(Player player)
     {
@@ -296,6 +305,7 @@ public sealed partial class Club
         if (!Lineup.Assign(slot, player))
             return LineupResult.WrongRole;
         _dressed.Add(player.Id);
+        DisableAutoLineup();
         return LineupResult.Assigned;
     }
 
@@ -307,6 +317,7 @@ public sealed partial class Club
         TakeOverDressed();
         Lineup.Clear(slot);
         _dressed.Remove(player.Id);
+        DisableAutoLineup();
     }
 
     /// <summary>Alle Plätze leeren („C“); die Aufgestellten sind danach nicht eingesetzt.</summary>
@@ -317,14 +328,14 @@ public sealed partial class Club
     }
 
     /// <summary>
-    /// Auto-Aufstellung („A“): Aufstellung wie bisher (<see cref="Core.Lineup.AutoFill"/>), danach gilt wieder die
-    /// automatische Auswahl der Eingesetzten. [APPROX] wie beim Nationalteam.
+    /// Auto-Aufstellung („A“): Einstellung „automatisch aufstellen“ ein und sofort neu aufstellen (Datei 0x426BC,
+    /// <see cref="AutoLineupRule"/>). [APPROX] Im Original schaltet der Taktikbildschirm die Einstellung ein, gefolgt von
+    /// derselben Neuaufstellung (Datei 0x48E62, <c>docs/analyse/re-geld.md</c> Taktik Schritt 5).
     /// </summary>
     public void AutoLineup()
     {
-        Lineup.AutoFill(Players);
-        _dressed.Clear();
-        _dressedByHand = false;
+        _autoLineup = true;
+        ApplyAutoLineup();
     }
 
     /// <summary>Linksklick in der Kaderliste: eingesetzten, nicht aufgestellten Spieler herausnehmen (Datei 0x40F59).</summary>
@@ -334,6 +345,7 @@ public sealed partial class Club
             return LineupResult.Unchanged;
         TakeOverDressed();
         _dressed.Remove(player.Id);
+        DisableAutoLineup();
         return LineupResult.Undressed;
     }
 
@@ -341,13 +353,15 @@ public sealed partial class Club
     /// Neuaufstellung nach Verletzung oder Heilung (<see cref="PlayerInjuries.RefillLineup"/>). [ORIGINAL] Datei 0x5C50
     /// (Verletzung 0x05B1A): der Verletzte verliert +0x0A (nicht mehr eingesetzt). Datei 0x426BC setzt höchstens 22 ein
     /// (Zähler [bp-9] ab 1, Vergleich mit 0x17 bei 0x427C0/0x4282C). [APPROX] Bei Auswahl von Hand füllen zuerst
-    /// eingesetzte Reservisten die Lücken, andere nur, solange weniger als 22 eingesetzt sind; das Original stellt nur mit
-    /// der Einstellung DGROUP 0x375 ganz neu auf (im Remake nicht geführt).
+    /// eingesetzte Reservisten die Lücken, andere nur, solange weniger als 22 eingesetzt sind. [ORIGINAL] Mit der
+    /// Einstellung „automatisch aufstellen“ stellt 0x426BC ganz neu auf (<see cref="ApplyAutoLineup"/>).
     /// </summary>
     public void RefillLineup()
     {
         var removed = Lineup.Players.Where(p => !p.Available || !Players.Contains(p)).ToList();
         Lineup.RemoveUnavailable(Players);
+        if (ApplyAutoLineup())
+            return;
         if (!_dressedByHand)
         {
             Lineup.FillGaps(Players);
@@ -378,6 +392,7 @@ public sealed partial class Club
             return LineupResult.RosterFull;
         TakeOverDressed();
         _dressed.Add(player.Id);
+        DisableAutoLineup();
         return LineupResult.Dressed;
     }
 }
