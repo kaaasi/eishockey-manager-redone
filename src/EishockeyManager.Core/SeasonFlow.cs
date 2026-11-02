@@ -264,21 +264,12 @@ public sealed partial class GameState
         if (Playoffs?.Champion is { } champion)
             record.Titles[Title.GermanChampion] = champion;
 
+        // [ORIGINAL] Reihenfolge der Gruppentabelle (Datei 0x56157–0x5636D): em.exe paart den nächsten Aufsteiger unter
+        // den ersten beiden mit dem nächsten Absteiger unter den Plätzen 3 und 4 (Tausch 0x36169) – Grundlage der
+        // Startordnung der Folgesaison (LeagueTable.SuccessorOrder, Spur wettbewerbe-komplett). Zwangsabstieg: 29. April
+        // (SeasonFlow.Zwangsabstieg.cs).
         foreach (var group in RelegationGroups)
-        {
-            // [ORIGINAL] Reihenfolge der Gruppentabelle (Datei 0x56157–0x5636D): em.exe paart den nächsten Aufsteiger unter
-            // den ersten beiden mit dem nächsten Absteiger unter den Plätzen 3 und 4 (Tausch 0x36169) – Grundlage der
-            // Startordnung der Folgesaison (LeagueTable.SuccessorOrder, Spur wettbewerbe-komplett).
-            var up = group.Qualified(Clubs);
-            foreach (var club in group.Table(Clubs).Select(r => r.Club.Index))
-            {
-                var from = Clubs[club].League;
-                if (up.Contains(club) && from == group.Lower)
-                    record.PromotedInto[group.Upper].Add(club);
-                else if (!up.Contains(club) && from == group.Upper)
-                    record.RelegatedInto[group.Lower].Add(club);
-            }
-        }
+            RecordRelegationGroup(record, group, group.Table(Clubs).Select(r => r.Club.Index).ToList());
 
         // Oberliga-Austausch wie em.exe (Spur saisonwechsel, S-K1/S-K2, SeasonFlow.Oberliga.cs).
         // [APPROX] Im Modus „nur Weltkugel“ wird keine Liga gespielt, also steigt auch niemand ab (Spur wettbewerbe-weltkugel).
@@ -298,6 +289,7 @@ public sealed partial class GameState
         foreach (var competition in Competitions)
             if (competition is { Title: { } title, Winner: { } winner })
                 record.Titles[title] = winner;
+        var forced = ApplyForcedRelegation(record); // Spur saisonwechsel Teil 2 (S-K3): Statusbit 0x04, nach den Titelbits
 
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –
         // kein Platz, keine Prämie (Prämien gibt es nur aus der Vereinssaison).
@@ -310,9 +302,12 @@ public sealed partial class GameState
             var league = club.League ?? League.Oberliga;
             var rank = record.FinalTables[league].ToList().IndexOf(club.Index) + 1;
             var events = new List<SeasonEvent>();
-            if (record.PromotedInto.Values.Any(l => l.Contains(club.Index)))
+            // [APPROX] (K3, Disassembly ohne DOSBox-Beleg) Bit 0x04 unterdrückt beide Pfeile (Datei 0x56287–0x56334), Symbol 0.
+            if (forced.Contains(i))
+                events.Add(SeasonEvent.ForcedRelegation);
+            else if (record.PromotedInto.Values.Any(l => l.Contains(club.Index)))
                 events.Add(SeasonEvent.Promotion);
-            if (record.RelegatedInto.Values.Any(l => l.Contains(club.Index)))
+            if (!forced.Contains(i) && record.RelegatedInto.Values.Any(l => l.Contains(club.Index)))
                 events.Add(SeasonEvent.Relegation);
             // [ORIGINAL] Datei 0x562C1–0x56334 (S-K1, DOSBox-Beleg #389, `file13_15`): Bleibt der Verein als Letzter oder
             // Vorletzter in der Oberliga, setzt em.exe Bit 0x02 und Bit 0x01 (Pfeil hoch, Pfeil runter) und das Konto auf

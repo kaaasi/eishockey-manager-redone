@@ -42,6 +42,12 @@ public enum SeasonEvent
 
     /// <summary>Erster der Fair-Play-Tabelle der eigenen Liga (Symbol 13).</summary>
     FairPlay,
+
+    /// <summary>
+    /// Zwangsabstieg wegen Schulden, Statusbit 0x04 (Symbol 0, Tabelle DGROUP 0x4B2E; Spur saisonwechsel Teil 2, S-K3,
+    /// <see cref="GameState.InsertForcedRelegation"/>). Steht anstelle der Pfeile.
+    /// </summary>
+    ForcedRelegation,
 }
 
 /// <summary>Abschneiden eines Managers in einer Saison (Fenster „Saisonende“).</summary>

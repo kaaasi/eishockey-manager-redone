@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(22, SaveGame.SchemaVersion);
+        Assert.Equal(23, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -38,7 +38,8 @@ public class SaveGameTests
     // 19 Spielstand-Optionen GameSetup.Options (Spur optionen-wirkung).
     // 20 Versicherungsprämie und Abschluss je Spieler (Spur transfer-vertraege-komplett, Teil 2), 21 unaufgefordertes Angebot
     // je Spieler (Teil 3), 22 Spielerpool des Transfermarkts (Teil 5).
-    private const string ExpectedSchemaFingerprint = "5DEB24A5736D8951";
+    // Runde 11: 23 SeasonEvent.ForcedRelegation (Spur saisonwechsel Teil 2, Zwangsabstieg; vorläufige Nummer).
+    private const string ExpectedSchemaFingerprint = "B199E4841BF8DE5B";
 
     // ---------- Abnahme 3: Roundtrip ----------
 
