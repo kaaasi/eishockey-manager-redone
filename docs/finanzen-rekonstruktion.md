@@ -191,8 +191,9 @@ also > 500.000 DM).
 - Ereignissymbole aus Statusbits 0–6 (Tabelle `0x4B2E` = 2, 1, 0, 5, 4, 6, 8).
 - Zwei Kennungen aus dem Saisonwechsel (`0xC8:0x20`, High-/Low-Byte je Manager): Symbol 12 bzw. 3, je 300.000 Drittel
   (100.000 DM) – nicht aufgelöst, im Remake Pokal- und Europapokalsieg.
-- `0xE0:0x20(0)` = Erster der Hauptrunde der eigenen Liga (Sortierung nach Punkten, `0x2A29D`): Symbol 13, 100.000 DM –
-  **in jeder Liga**, auch Bundesliga.
+- `0xE0:0x20(0)` = Erster der **Fair-Play-Tabelle** (Strafminuten, `0x2A1E0`; siehe Tabelle unten): Symbol 13, 100.000 DM –
+  **in jeder Liga**, auch Bundesliga. Berichtigt in Runde 10: DOSBox-Beleg `re-saisonwechsel` (Krefelder EV als Letzter
+  der Hauptrunde mit Zelle 13, Datei 0x2721D).
 - Meisterprämie 1.500.000 Drittel im Play-Off-Pfad (`0x55CD3`, schon in #41).
 
 ## Nebenpunkte

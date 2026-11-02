@@ -158,7 +158,7 @@ gelegt – dann bleibt dieser Verein für immer draußen (zu prüfen am Spielsta
 - **Ewige Tabelle nach dem Tausch** (Datei 0x563AF ruft Datei 0x5667A erst nach dem Austausch): Die Ligapunkte (40 bzw. 20)
   hängen am **neuen** Vereinsindex, der Platz (Platzfeld des Tabellensatzes, Schreiber Datei 0x51115, mit dem Satz getauscht)
   am Verein. Ein Aufsteiger in die
-  Bundesliga bekäme damit 40 + 12 − Platz statt 20 + 12 − Platz + 3, ein Absteiger umgekehrt; ein Oberliga-Absteiger (jetzt 36–41)
+  Bundesliga bekäme damit 40 + 12 − Platzfeld statt 20 + 12 − Platzfeld + 3 (Platzfeld 0 = Erster), ein Absteiger umgekehrt; ein Oberliga-Absteiger (jetzt 36–41)
   0, ein Nachrücker 12 − (alter Platz) und +3, wenn das alte Platzfeld 0 ist. Das Remake (`StatisticsHistory.EternalPoints`) rechnet
   mit der Liga der gespielten Saison. Nicht am Video belegt (die Belege in `wettbewerbe.md` betreffen Vereine ohne Wechsel).
 - **Letzte Saison** (Datei 0x5641A): Das Programm endet nach dem Austausch und dem Highscore, **vor** dem Saisonende-Fenster
@@ -214,7 +214,9 @@ aus der Aufstiegsrunde steigt dafür ein Bundesligist weniger ab. Nicht bei Plat
 Belege im Referenz-Repo `original/spielstaende/` (README dort): `FILE12` (neues Spiel, Krefelder EV, Start-Liga Oberliga), `FILE13`
 (daraus mit `hok patch` vor den 42. Spieltag gesetzt), `FILE14` (FILE13 im Original bis zum 10.09.1994 gespielt) und die Bilder
 `file13_1…15`, `file14_1…3`. Ausgewertet mit `emtool hok dump` (Blöcke `965B`, `far:9657`, `5CCB`) und den Bildern; keine Auszüge
-im Repo. Der Lauf folgte der Anleitung oben bis auf den DEB-Pokal (zwei Spiele mit weniger als neun Spielern, ohne Bedeutung).
+im Repo. Der Lauf folgte der Anleitung oben bis auf den DEB-Pokal (zwei Spiele mit weniger als neun Spielern) und die Regler von
+`FILE12` (Level 0 und Start-Stärke 0 statt Level 3 und Abstiegskampf) – beides ohne Bedeutung, weil das Konto fest gesetzt
+und der letzte Platz über weniger als neun Spieler erzwungen wird.
 
 **Ausgangslage:** Tabelle nach dem 44. Spieltag (`file13_7`): 11. ESC Wedemark, 12. Krefelder EV (0 : 6 Punkte). Konto am 14.04.1994
 **−491.221 DM** (`file13_13`). FILE13: Krefelder EV Verein 27, Statusbyte 0, Liga-Stufe 2.
@@ -224,11 +226,11 @@ im Repo. Der Lauf folgte der Anleitung oben bis auf den DEB-Pokal (zwei Spiele m
 | Managerverein unter den letzten zwei bleibt in der Oberliga (3) | **bestätigt** | `file14_2` (Tabelle Oberliga 1. Spieltag 1994/95 mit Krefelder EV); FILE14: Vereinsfeld +0x16 = 1 nur bei Krefelder EV, Platzliste Oberliga enthält ihn, Liga-Stufe 2 |
 | Nur ein Verein von außen rückt nach; das zweite Paar läuft normal (3) | **bestätigt** | `file14_2`: neu sind nur TEV Miesbach (von außen) und EV Landsberg (Absteiger 2. Liga); ESC Wedemark (11.) fehlt. FILE14: Wedemark liegt auf Platz 40, dem früheren Platz von Miesbach |
 | Nachrücker aus 36–41, der Absteiger übernimmt dessen Platz (3, K2) | **bestätigt** (ein Fall) | FILE13 → FILE14: Miesbach 40 → Oberliga, Wedemark 35 → 40; Vereine 42–47 unverändert draußen |
-| Konto auf 400.000 DM gesetzt, nicht gebucht (3) | **bestätigt** | −491.221 DM am 14.04. (`file13_13`) → 400.000 DM im Kopf des Fensters „Ereignisse“ am 29.04. (`file13_15`); ein so runder Wert aus einer Buchung ist ausgeschlossen |
+| Konto auf 400.000 DM gesetzt, nicht gebucht (3) | **bestätigt** | −491.221 DM am 14.04. (`file13_13`) → 400.000 DM im Kopf des Fensters „Ereignisse“ am 29.04. (`file13_15`); „nicht gebucht“ folgt aus dem Disassembly (Datei 0x562D8/0x562DE: zwei `mov` direkt auf das Konto, kein Buchungsaufruf), das Bild belegt das Setzen |
 | Pfeil runter und Pfeil hoch (Bits 0x02 und 0x01) (3) | **bestätigt** | `file13_15` zeigt Pfeil hoch, Pfeil runter (Reihenfolge Bit 0, Bit 1); FILE14 Statusbyte 0x03 |
 | Keine Aufstiegsprämie bei Bit 0 mit Bit 1 (`finanzen-rekonstruktion.md`) | **bestätigt** | `file13_15`: nur 100.000 DM Prämien, kein Betrag für einen Aufstieg |
 | Saisonende-Fenster: Darstellung des Paars (3, war offen) | **geklärt** | `file13_14`: Spalte Oberliga zeigt EV Landsberg (rot) sowie Krefelder EV und TEV Miesbach (beide grün, wie Nachrücker); der echte Absteiger Wedemark erscheint nirgends. Das Fenster liest die Namen über die Auf-/Absteigerlisten, und auf dem Index des ersten Paars steht nach dem Doppeltausch wieder der Managerverein |
-| Ewige Tabelle mit Ligapunkten des neuen Index (4, K4) | **bestätigt** | `file14_3`: ES Weißwasser (Aufsteiger aus der 2. Liga) hat 51 Punkte = 40 + 12 − 1, also Bundesliga-Punkte für Platz 2 der 2. Liga (mit Liga der gespielten Saison wären es höchstens 35). Die übrigen Bundesligisten ergeben die Plätze 1–10 und 12 (Mannheim 77 = 52 + 25 Meister, Landshut 76 = 51 + 25 Pokal, … Ratingen 41); für SB Rosenheim (Absteiger) bleibt Platz 11, mit Bundesliga-Punkten wären das 42 – Rosenheim fehlt aber unter den ersten zwölf. Krefelder EV 1 Punkt = 12 − 11 |
+| Ewige Tabelle mit Ligapunkten des neuen Index (4, K4) | **bestätigt** | `file14_3`: ES Weißwasser (Aufsteiger aus der 2. Liga) hat 51 Punkte = 40 + 12 − 1 (Platzfeld 1 = Platz 2), also Bundesliga-Punkte für Platz 2 der 2. Liga (mit Liga der gespielten Saison wären es höchstens 35). Die übrigen Bundesligisten ergeben die Plätze 1–10 und 12 (Mannheim 77 = 52 + 25 Meister, Landshut 76 = 51 + 25 Pokal, … Ratingen 41); für SB Rosenheim (Absteiger) bleibt Platz 11, mit Bundesliga-Punkten wären das 42 – Rosenheim fehlt aber unter den ersten zwölf. Krefelder EV 1 Punkt = 12 − 11 |
 | Gegenbefund (eigener Verein fehlt, zwei neue Vereine, Konto unverändert) | **nicht eingetreten** | wie oben |
 
 **Nebenbefunde aus dem Beleg:**
@@ -257,7 +259,7 @@ im Repo. Der Lauf folgte der Anleitung oben bis auf den DEB-Pokal (zwei Spiele m
 | K1 | P1 | Oberliga-Austausch wie im Original: die letzten zwei verlassen die Liga; ein Managerverein darunter bleibt, sein Platz wird nicht nachbesetzt (nicht der nächstschlechtere), Konto des Managers auf 400.000 DM (neutral gesetzt, nicht über `Book`; Finanzbuch-Eintrag mit Nutzer klären), Ereignisse Abstieg und Aufstieg (ohne Aufstiegsprämie), Saisonende-Fenster nennt den Managerverein in der Spalte Oberliga mit dem Nachrücker (DOSBox-Beleg) | `Core/SeasonFlow.cs`, `Core/SeasonRecord.cs` (ggf. neues Feld), `GameState.Integration.cs` nur falls der Kontowert am 29. April angeschlossen werden muss | Synthetische Saison mit Managerverein auf Platz 12 der Oberliga: danach weiter Oberliga, genau ein Absteiger/Nachrücker, Konto 400.000 DM, Events beide; Gegenprobe Platz 11 und zwei Manager auf 11/12 (kein Wechsel); Mehrsaisonprobe 4 Saisons passiv/aktiv |
 | K2 | P2 | Nachrücker aus den Plätzen 36–41 (sechs), zweiter Zug ≠ erster; Absteiger übernehmen den Platz des Nachrückers | `Core/SeasonFlow.cs`, ggf. `Core/NewGame.cs` (Startbesetzung der Plätze) | Über 20 Saisons nie ein Datenbankverein 42–47 in der Oberliga; Absteiger der Vorsaison wieder ziehbar |
 | K3 | P2 | Zwangsabstieg wegen Schulden (Bit 0x04): Konto < −666.666,67 DM am 29. April, Bundesliga/2. Liga, nicht Meister/Europacupsieger, höchstens zwei je Liga, Einschub auf Platz 3/4 der Aufstiegsrunde, Symbol 0 | `Core/SeasonFlow.cs`, `Core/SeasonRecord.cs`, `SeasonEvent` (Schema!) | Manager mit −700.000 DM in der Bundesliga steigt ab, mit −600.000 DM nicht; Meister mit Schulden nicht; Mehrsaisonprobe |
-| K4 | P2 | Ewige Tabelle mit den Ligapunkten der **neuen** Liga, Platz aus der gespielten Saison (DOSBox-Beleg: Weißwasser 51) | `Core/StatisticsHistory.cs` | Aufsteiger aus der 2. Liga auf Platz 2: 40 + 11 = 51; Absteiger aus der Bundesliga auf Platz 11: 20 + 2 = 22 |
+| K4 | P2 | Ewige Tabelle mit den Ligapunkten der **neuen** Liga, Platz aus der gespielten Saison (DOSBox-Beleg: Weißwasser 51) | `Core/StatisticsHistory.cs` | Aufsteiger aus der 2. Liga auf Platz 2 (Platzfeld 1): 40 + 12 − 1 = 51; Absteiger aus der Bundesliga auf Platz 11: 20 + 2 = 22 |
 | K5 | P3 | Letzte Saison ohne Saisonende-Fenster (nach Video prüfen) | `UI/Screens/SeasonEndSummaryScreen.cs`, Ablauf Spielende | Dauer 1: nach dem 29. April direkt Highscore/Ende |
 | K6 | P3 | Nur Analyse: Routine finden, die die Vereinssätze je Liga zwischen 29.04. und 10.09. umordnet (Krefelder EV 27 → 24), und klären, ob das Spielplan oder Paarungen beeinflusst | – (Analyse, `docs/`) | FILE13/FILE14 vergleichen; Ergebnis entscheidet, ob das Remake etwas nachbilden muss |
 
