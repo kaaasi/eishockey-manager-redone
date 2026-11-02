@@ -48,7 +48,8 @@ public class StatisticsHistoryTests
             for (var r = 0; r < table.Count; r++)
             {
                 var club = table[r];
-                var expected = GameState.EternalPoints(league, r,
+                // Spur saisonwechsel Teil 3 (S-K4): Liga der nächsten Saison, Platz der gespielten (em.exe nach dem Austausch).
+                var expected = GameState.EternalPoints(record.NextLeague(club, league), r,
                     record.Titles.GetValueOrDefault(Title.GermanChampion, -1) == club,
                     record.Titles.GetValueOrDefault(Title.CupWinner, -1) == club,
                     record.Titles.GetValueOrDefault(Title.EuropeanCupWinner, -1) == club);
@@ -57,7 +58,7 @@ public class StatisticsHistoryTests
         }
         Assert.Equal(1, game.Eternal(record.Titles[Title.GermanChampion]).Championships);
         var ranking = game.EternalTable;
-        Assert.Equal(48, ranking.Count);
+        Assert.Equal(42, ranking.Count); // Spur saisonwechsel (A197): Plätze 0–41 wie em.exe, ohne die Vereine auf 42–47
         Assert.Equal(ranking.Select(e => e.Points).OrderDescending(), ranking.Select(e => e.Points));
     }
 
@@ -120,7 +121,7 @@ public class StatisticsHistoryTests
                 for (var r = 0; r < 12; r++)
                 {
                     var club = record.FinalTables[league][r];
-                    seasonPoints += GameState.EternalPoints(league, r,
+                    seasonPoints += GameState.EternalPoints(record.NextLeague(club, league), r, // S-K4: Liga der nächsten Saison
                         record.Titles.GetValueOrDefault(Title.GermanChampion, -1) == club,
                         record.Titles.GetValueOrDefault(Title.CupWinner, -1) == club,
                         record.Titles.GetValueOrDefault(Title.EuropeanCupWinner, -1) == club);

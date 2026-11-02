@@ -144,6 +144,10 @@ public class FinanceBedienungTests
                 Assert.InRange(game.ManagerLoanNet(0, 1), 0, FinanceRules.ManagerLoanLimit);
             }
 
+            // Integration Runde 11 (geld + saisonwechsel): Der aktive Manager (Verein 30, Oberliga) endet unter den letzten
+            // zwei und bekommt am 29. April 400.000 DM gesetzt (S-K1, Datei 0x562D8). Die Probe prüft die Rückzahlung des
+            // vollen Kredits, deshalb erst danach wieder genug Geld geben.
+            active.Money = Math.Max(active.Money, 5_000_000);
             Assert.Equal(FinanceRules.ManagerLoanLimit, game.LendDefault(1, 0));
             Assert.Equal(FinanceRules.ManagerLoanLimit, game.PayToManager(from: 1, to: 0, game.LendDefault(1, 0)!.Value));
             Assert.Equal(0, game.ManagerLoanNet(1, 0));
