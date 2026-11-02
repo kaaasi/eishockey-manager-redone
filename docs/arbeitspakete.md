@@ -200,8 +200,9 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   Schema vorläufig 22–25 → integriert 27 → 30; Abdrücke (`RngTwinProbeTests`, `SpielberechnungAnschlussTests`,
   `GameModeTests.Mode4`, `DebCupDrawFlowTests`) und Schema-Fingerabdruck neu; #357 mit der Lösung der Spur (keine Schwelle).
   Anschluss A360: Kaufpreis im Spielerdaten-Fenster der Spielerstatistik (Test `PlayerStatisticsPurchasePriceTests`).
-  `FinanceCalibrationTests`: vorläufig die Fassung der Spur (passiver Manager darf ab Saison 2 entlassen werden) –
-  widerspricht #352 (geld Teil 7), Entscheidung Nutzer offen. Doku-Anschlüsse (re-meldungen.md, re-geld.md,
+  `FinanceCalibrationTests` (Entscheidung Nutzer 02.11.2026, C): strenge Fassung aus #352 (jede Saison endet regulär),
+  passiver Kader zu Saisonbeginn spielfähig gehalten; die Entlassung eines rein passiven Bundesliga-Managers prüft der neue
+  Test `PassiveBundesligaManager_WithoutCare_IsDismissed`. Doku-Anschlüsse (re-meldungen.md, re-geld.md,
   reverse-engineering.md, spielberechnung.md §15, Inventur A226/A256/A257/A381/F002–F006/F013–F015/F109) mit
   `marker-werkzeug` bzw. im Rundenabschluss.
 

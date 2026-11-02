@@ -153,6 +153,36 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
     /// </list>
     /// Gegenprobe (#76): hundertfache Grundeinnahmen in <c>MonthlyFinances</c> verletzen die Sponsoren-Obergrenze.
     /// </summary>
+    /// <summary>
+    /// Integration Runde 11 (Entscheidung Nutzer 02.11.2026, C): Spielregel, getrennt von der Kontoprobe. Ein rein passiver
+    /// Bundesliga-Manager (25 Spieler nach A170, kader-transfer Teil 1; keine Verlängerung, keine Werbung, kein Nachkauf) verliert
+    /// Spieler an jedem Saisonende, wird nicht mehr spielfähig, zahlt Strafen („Weniger als neun Spieler“) und wird innerhalb von
+    /// vier Saisons entlassen. Vorher stand das als Ausweg in <see cref="AssertEnvelope"/>.
+    /// </summary>
+    [Theory]
+    [InlineData(3)]
+    [InlineData(41)]
+    public void PassiveBundesligaManager_WithoutCare_IsDismissed(int seed)
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Ganz passiv", ClubIndex = 4 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, seed);
+        var manager = game.ActiveManager;
+        for (var year = 0; year < 4 && game.Phase != SeasonPhase.GameOver; year++)
+        {
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                Assert.True(guard < 1000, "Saisonende nicht erreicht");
+                game.Continue();
+            }
+            if (game.Phase == SeasonPhase.SeasonOver)
+                game.StartNextSeason();
+        }
+        Assert.Equal(SeasonPhase.GameOver, game.Phase);
+        Assert.True(manager.Dismissed, "GameOver ohne Entlassung");
+        Assert.True(game.Finance(manager).Book.Current(FinanceCategory.Strafen) < 0, "Entlassung ohne Strafen");
+    }
+
     private void AssertEnvelope(Func<ClubDatabase> database, League league, bool active)
     {
         const int MonthEnds = 7;
@@ -249,23 +279,14 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                         recentBalances.Dequeue();
                     highest = Math.Max(highest, manager.Money);
                 }
-                if (!active && game.Phase == SeasonPhase.GameOver)
-                {
-                    // Integration Runde 9 (Leitstelle): Der passive Manager schließt keine Werbeverträge und verlängert keine
-                    // Verträge. Auf dem integrierten Stand (Seed 3, Bundesliga, synthetische Datenbank) läuft der Kader
-                    // nach Saison 3 aus (Abgang ohne Verhandlung, transfer-vertraege-komplett Teil 1), der Verein ist nicht
-                    // spielfähig, die Strafen führen zur Entlassung – Spielregel, kein Buchungsfehler. Das Buch ist bis dahin
-                    // täglich geprüft (oben); die Probe dieses Seeds endet hier, mindestens zwei Saisons sind ganz geprüft.
-                    // Spur kader-transfer, Teil 1 (A170, 0x29A3F): der Bundesliga-Kader hat jetzt 25 statt 20 Spieler (wie FILE01,
-                    // Kölner EC); ohne Werbevertrag (Sponsoren ≈ 90.000 DM) übersteigen Gehälter (≈ 2,16 Mio. DM) und Unterhalt die
-                    // Einnahmen, das Konto steht nach Saison 1 bei ≈ −620.000 bis −650.000 DM, Entlassung in Saison 2 (Seed 3, beide
-                    // Datenbanken). Mindestens eine Saison ist ganz geprüft (vorher zwei).
-                    Assert.True(manager.Dismissed, "GameOver ohne Entlassung");
-                    Assert.True(year >= 1, $"Entlassung schon in Saison {year + 1}");
-                    output.WriteLine($"seed={seed}; start={league}; active=False; entlassen in Saison {year + 1}");
-                    break;
-                }
-                Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+                // #352 (R9S-04, Spur geld Teil 7): kein Ausweg bei Entlassung – jede Saison muss regulär enden; eine Entlassung nennt
+                // Strafen und Kader, damit die Ursache sichtbar wird. Integration Runde 11 (Entscheidung Nutzer 02.11.2026, C): Seit
+                // A170 (kader-transfer Teil 1, 25 Spieler in der Bundesliga) ginge ein rein passiver Manager ohne Verlängerungen in
+                // Saison 3–4 an „Weniger als neun Spieler“ unter; deshalb hält die Probe den passiven Kader spielfähig (unten, nach
+                // dem Saisonwechsel). Dass ein rein passiver Bundesliga-Manager entlassen wird, prüft
+                // PassiveBundesligaManager_WithoutCare_IsDismissed getrennt.
+                Assert.True(game.Phase == SeasonPhase.SeasonOver,
+                    $"Saison {year + 1}: {game.Phase}, entlassen={manager.Dismissed}, Strafen={game.Finance(manager).Book.Current(FinanceCategory.Strafen)}, Kader={club.Players.Count}");
                 previousSeasonEnd = manager.Money;
                 var finance = game.Finance(manager).Book;
                 output.WriteLine($"seed={seed}; club={club.Name}; start={league}; active={active}; year={year + 1}; league={club.League}; roster={roster}; begin={moneyAtStart}; end={manager.Money}; homeGames={settledHomeGames}; "
@@ -315,6 +336,11 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 if (!active)
                     TestSeason.KeepSquad(game, manager);
                 game.StartNextSeason();
+                // Integration Runde 11 (Entscheidung Nutzer, C): Kader des passiven Managers zu Saisonbeginn spielfähig halten
+                // (vertragslose Spieler zum Preis 0, keine Buchung, kein Zufallszug); Gehälter der neuen Saison werden erst danach
+                // gemessen.
+                if (!active)
+                    TestSquadKeeper.KeepPlayable(game, manager);
                 Assert.Equal(1994 + year, game.Season);
                 compensation = finance.Current(FinanceCategory.Transfers);
                 Assert.True(compensation >= 0);
@@ -326,10 +352,10 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             // Spur kader-transfer, Teil 1 (A170): passiv in der Bundesliga (25 Spieler, kein Werbevertrag) fällt das Konto jetzt
             // zeitweise unter die Grenze (Originaldaten, Seed 41: −1.586.947 DM in Saison 2). Für den passiven Manager gilt deshalb
             // die Regel selbst – nicht entlassen heißt nie acht Wochen am Stück darunter (SeasonDismissal); sonst bleibt die Grenze.
-            if (!manager.Dismissed && (active || league != League.Bundesliga))
+            Assert.False(manager.Dismissed, "Manager entlassen");
+            if (active || league != League.Bundesliga)
                 Assert.True(lowest > Manager.DebtLimit, $"Konto unter der Entlassungsgrenze: {lowest}");
-            if (!manager.Dismissed)
-                Assert.True(maxDebtDays < Manager.DebtDaysUntilDismissal, $"{maxDebtDays} Tage unter der Grenze ohne Entlassung");
+            Assert.True(maxDebtDays < Manager.DebtDaysUntilDismissal, $"{maxDebtDays} Tage unter der Grenze ohne Entlassung");
         }
     }
 }
