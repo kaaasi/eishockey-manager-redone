@@ -225,7 +225,9 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   Computerverein); `WettbewerbeSpiel2Tests` (Play-offs ohne Manager, Byte wie 4F5A8h); `TacticsClubScreenTests` (Meldung);
   `StadiumAusbauTests` (S-K1 neutral), `KaderTransferTeil4Tests` (Grenze 22 statt 30); `StatistikenVereinTests` und `TestSquadKeeper` (ohne Vertragslose: Spieler eines Computerkaders umsetzen, nur Probe);
   `FinanceCalibrationTests`: passive Bundesliga mit Originaldaten, Seed 17, nach der Acht-Wochen-Regel entlassen – Probe
-  prüft die Ursache und endet für den Seed (**vorläufig, Entscheidung Nutzer offen**).
+  prüft die Ursache und endet für den Seed (nur Seed 17, mindestens zwei Seeds vier Saisons; **vorläufig, Entscheidung
+  Nutzer offen**, WS-02). Review #468: WS-01 (Migration 31 → 32 behält eine Aufstellung von Hand, Einstellung aus,
+  `Migration_31To32_KeepsHandMadeLineup`), WS-03/WS-05 erledigt; WS-04 (Neuzählung Grenze 5) Runde 12.
 
 ### Nicht in Runde 11
 
