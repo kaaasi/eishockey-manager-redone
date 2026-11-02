@@ -33,8 +33,11 @@ JUMP = re.compile(r"^j\w+(?: short)? 0x([0-9a-f]+)$")
 
 
 def cache_key(exe: bytes, repo: Path) -> str:
-    """Hash of em.exe plus path, size and mtime of every file that provides coverage evidence."""
+    """Hash of em.exe, both tool scripts and path, size and mtime of every file that provides coverage evidence."""
     h = hashlib.sha256(exe)
+    # a changed detection rule must not be served from an old cache (review R11M-01)
+    for script in (Path(fk.__file__), Path(__file__)):
+        h.update(hashlib.sha256(script.read_bytes()).digest())
     for sub, pattern in (("src", "*.cs"), ("docs", "*.md")):
         for path in sorted((repo / sub).rglob(pattern)):
             st = path.stat()

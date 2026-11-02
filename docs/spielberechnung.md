@@ -333,7 +333,8 @@ v = Datenbankbyte k, t = v / 10: Kondition 0x18 + k = v − random(0, t) + rando
 nicht gelesen), 0x49723 (0x1A = 4, Ov 0x118, nicht gelesen). **Die Teamwerte der Computervereine bleiben also im Original
 das ganze Spiel über gleich** – nur die Tagesform wandert.
 **Berichtigt in §15:** Die Suche hat die Wanderung 0x9D1B übersehen (0x9E46–0x9F31 liegen in 0x9D1B, nicht in 0x98F8) und
-0x58DC (Verkauf an einen Computerverein) nicht erfasst – die Teamwerte wandern im Original ständig.
+0x58DC (Verkauf an einen Computerverein) nicht erfasst – die Teamwerte wandern im Original ständig (0x58DC seit Runde 11
+umgesetzt, siehe §15).
 
 **Tagesform 0x4F527** (Ov 0x128, aus der Tabellenrechnung 0x50283 mit d = eigene − gegnerische Tore, nur bei
 Wettbewerbscode `[0xD0C2]` = 7 Liga bzw. 8 WM-Gruppe): r = random(0, 2 · |d|) (`0x120:0x61` = |a − b|), 0x17 ± r je
@@ -521,7 +522,12 @@ Modus 10 (nach Auf-/Abstieg 0x562F2/0x5636D); Tageslauf 0x54C9F Modus 1, wenn de
 **Weiterer Schreiber 0x58DC** (Basis 0x238:0x175C, gerufen aus dem Transferbildschirm 0x46FB3/0x47483, wenn ein Spieler an einen
 Computerverein < 0x40 geht): Mittel a = (Kondition + Technik eines Teils) / 2 (der Teil kommt aus dem Register `si` des
 Aufrufers), d = clamp((Spielerstärke − a + 10) / 3, 1, 10), Teil random(0, 1), Kondition und Technik dieses Teils
-+ random(d − 1, d + 1). Nicht umgesetzt (Restlücke: Verkäufe des Managers an Computervereine stärken den Käufer).
++ random(d − 1, d + 1). **Umgesetzt in Runde 11** (Spur `kader-transfer` Teil 3, PR #434; `Core/Transfer.ComputerClub.cs`
+`ComputerClubTransferRules.StrengthenBuyer`, Anschlüsse in `AcceptUnsolicitedOffer` – Aufruf 0x46FB3, nur Verein < 0x40 –
+und `TransferMarket.Accept` – Aufruf 0x47483; Tests `KaderTransferTeil3Tests`): Verkäufe des Managers an Computervereine
+stärken den Käufer. `[APPROX]` Das Mittel a liest das Original über das nicht gesetzte Register `si` (Mauszeile des
+Transferbildschirms, beliebige Bytes); das Remake nimmt (Kondition + Technik beider Teile) / 4, ohne Zufallszug. Ohne
+gezogene Teamwerte (vor dem ersten Spiel) keine Wirkung.
 
 **Remake** (`MatchEngine.DriftTeamValues`, `TeamValueDrift`): Spielstart beim ersten Spiel nach dem Lader (`EnsureTeamValues`),
 Saisonwechsel in `OnNewSeasonManager` (nicht im Modus „nur Weltkugel“, `[APPROX]`), Tageslauf in `OnDayClubSeason` an

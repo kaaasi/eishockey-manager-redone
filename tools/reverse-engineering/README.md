@@ -13,13 +13,13 @@ bzw. einen Ausschnitt (`dd`/Python) disassemblieren; Adressrechnung in `docs/rev
 
 Hinweise zu `disasm.py`:
 
-- **Grenzen:** Im Listing ist die Obergrenze exklusiv (Adressen < `hi`), bei `--xref` inklusiv (`lo` ≤ Wert ≤ `hi`; die
-  Beispiele `0xA845 0xA845` brauchen das). Ein Listing umfasst eine Code-Region; reicht `hi` darüber hinaus, warnt das
+- **Grenzen:** Im Listing ist die Obergrenze exklusiv (Adressen < `hi`), bei `--xref` inklusiv (`lo` ≤ Wert ≤ `hi`; das
+  Beispiel `0xA839 0xA846` und Einzelwerte wie `0xA845 0xA845` brauchen das). Ein Listing umfasst eine Code-Region; reicht `hi` darüber hinaus, warnt das
   Skript auf stderr und endet am Regionsende.
 - **`--xref` bei kleinen Werten:** erfasst jeden `[reg±0x…]`-Operanden, also auch Stack-Zugriffe wie `[bp+0x8]`. Kleine
   Bereiche (z. B. `0x8 0x8`) liefern deshalb Hunderte Treffer; sinnvoll sind DGROUP-Adressen ab etwa `0x100`.
 - **Zwischenspeicher (`--cache`):** enthält auch den Abdeckungsstatus aus `src/` und `docs/`. Er ist an den SHA-256 von
-  `em.exe` und an die Zeitstempel aller Fundstellen-Dateien gebunden (Datei `<cache>.key`); bei Abweichung wird er neu
+  `em.exe`, von `funktionskarte.py` und `disasm.py` und an die Zeitstempel aller Fundstellen-Dateien gebunden (Datei `<cache>.key`); bei Abweichung wird er neu
   erzeugt. Es ist ein Pickle: nur im eigenen Scratch-Ordner anlegen, nie eine fremde Cache-Datei angeben.
 
 Hinweis zu Fundstellen: Die Layout-Konstanten (u. a. 0x255C0 = Overlay-Basis) zählt die Karte nie als Adresse. Die
