@@ -108,6 +108,9 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
      Platzfeld 10 → 22.
   4. **Proben und Altlasten:** Startordnung bei geladenen Spielständen ab Saison 2 (#329, `Season.StartOrder`);
      Regressionstest Play-offs mit allen Feldern der Meldungsmatrix (#362).
+  5. **Befunde Review #441 obenauf (Entscheidung Nutzer 02.11.2026):** SW-01 (P1, Zwangsabsteiger aus der 2. Liga steigt
+     zugleich über die Aufstiegsrunde auf → Ligen 12/13/11) mit rotem Regressionstest und Regel, die 12/12/12 hält; SW-03
+     (Prämientest schärfen). #428 bis #432 bleiben unverändert; der Stapel wird nur als Ganzes gemergt.
 - **Abnahme:** Mehrsaisonprobe 20 Saisons (Modus 1, 2, 4; passiv/aktiv); je Regel roter Test.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/analyse/re-saisonwechsel.md` (nur Status), Tests. **Modell:** Claude Opus 5.5.
   **Status:** –
@@ -148,6 +151,9 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   6. **Doku und Marker:** Verteilungstabellen `docs/spielberechnung.md` §15 auf den integrierten Stand (#354); `[ORIGINAL]`
      für Code 10 mit Vorbehalt (#358).
   7. **Versteckte Fähigkeiten +19h (P2 Nr. 15) – nach `re-nachtrag`:** A185, A186.
+  8. **Automatische Aufstellung (A068) und Neuzählung der Eingesetzten (A089, A070) – nach `re-nachtrag`
+     (Entscheidung Nutzer 02.11.2026):** Regel aus `docs/analyse/re-nachtrag.md` (426BCh/42838h), danach die Neuzählung
+     38A36h aus Teil 5. Nur wenn das Review von #424 die Analyse für A068 als umsetzbar bestätigt; sonst Runde 12.
 - **Abnahme:** je Regel roter Test; Saisonverteilung (Meister, Tore, Strafminuten) im PR; Mehrsaisonprobe Modus 1, 2, 4;
   Referenzwerte begründet.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/spielberechnung.md`, `docs/wettbewerbe.md`, Tests.
@@ -181,6 +187,10 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   **Modell:** Claude Sonnet 5.5. **Status:** –
 
 ### Nicht in Runde 11
+
+- `wettbewerbe-spiel` Teil 5, Rest (Entscheidung Nutzer 02.11.2026): A184 (Belastung +13h statt Energy, fremde Dateien) und
+  A174 (Computervereine ohne Kaderbezug) – Runde 12.
+- SW-02 (P3, Review #441): Ewige Tabelle ohne die letzte Saison, wenn am 29. April alle Manager entlassen werden – Runde 12.
 
 - P3 Nr. 2 (Pixel nach Analyse: G7, G8, M-K4, M-K9, R-K2…R-K5, L8), Nr. 4 (M-K10, R-K6 – Entscheidung Nutzer) und Nr. 6
   (S-K6, nur Analyse): Kandidaten für Runde 12.
