@@ -131,16 +131,19 @@ namespace EishockeyManager.Core.Tests;
 /// Nationalspieler auf dem Markt bekommen Grundstärken aus der Ländertabelle. Die Hauptquelle zieht nicht mehr als vorher (Tendenz
 /// aus <c>TrendRandom</c>). Gegenprobe mit beiden Feldern ausgenommen: die vier synthetischen Abdrücke unverändert, die zwei
 /// mit Originaldatenbank auch ohne den Zweig A209 neu (Wirkung der Tendenz über den Spielerwert).
+/// Spur kader-transfer, Teil 5 (A226, Datei 0x27A0C–0x27AA8): alle neu – neues Feld <c>ClubGamesCarry</c> im Abdruck; die Spiele
+/// beim jetzigen Verein (+0x1C) laufen über den Saisonwechsel weiter und gehen ab der zweiten Saison in Spielerwert, Gehälter und
+/// Preise ein. Die Hauptquelle zieht nicht mehr als vorher (Modus-4-Probe: Titel und Zufallsstände gleich, nur Konten neu).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "AC5BA91A2519B9C3")]
-    [InlineData(true, 3, "377D7BA6EE302FD8")]
-    [InlineData(false, 11, "0EDB92A29F7211C1")]
-    [InlineData(true, 11, "2865B9644BE458B9")]
+    [InlineData(false, 3, "664083F1951FCCBE")]
+    [InlineData(true, 3, "E98180135E67B6AA")]
+    [InlineData(false, 11, "8A35B161E1F4B222")]
+    [InlineData(true, 11, "E1B31A50274499E0")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -148,8 +151,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "759F69B865D0D233")]
-    [InlineData(true, "C9886516BBCCDE00")]
+    [InlineData(false, "4FB0E90032EC5A1E")]
+    [InlineData(true, "9C92DD8975508F52")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

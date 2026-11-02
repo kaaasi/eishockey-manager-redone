@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(24, SaveGame.SchemaVersion);
+        Assert.Equal(25, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -40,7 +40,8 @@ public class SaveGameTests
     // je Spieler (Teil 3), 22 Spielerpool des Transfermarkts (Teil 5).
     // 23 Kaufpreis und Verletzungsart je Spieler (Spur kader-transfer, Teil 2; vorläufig, Leitstelle nummeriert).
     // 24 Tendenzwert, Steuerbyte je Spieler und GameState._trendRandom (Spur kader-transfer, Teil 4; vorläufig).
-    private const string ExpectedSchemaFingerprint = "86A1BDA34C572600";
+    // 25 Übertrag der Spiele beim Verein je Spieler (Spur kader-transfer, Teil 5; vorläufig).
+    private const string ExpectedSchemaFingerprint = "AB0CCE905BA0F585";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

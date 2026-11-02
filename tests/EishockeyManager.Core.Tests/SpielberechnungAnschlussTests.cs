@@ -162,10 +162,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur kader-transfer, Teil 3 (0x058DC, 0x063BE): aktiv neu (Käufer gestärkt, Sponsorzuschuss gewürfelt, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur kader-transfer, Teil 4 (0x54E71, 0x072DD, 0x059B8): beide neu (Markt täglich, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur kader-transfer, Teil 4, Rest (0x4907A, 0x4981E): beide neu (Tendenz der Markt-Plätze im Spielerwert, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur kader-transfer, Teil 5 (A226): beide neu (Spiele beim Verein über den Saisonwechsel im Spielerwert, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "FDF9A80005988D7E")]
-    [InlineData(true, "269010DF86041B01")]
+    [InlineData(false, "FA38CB3E8F8F9CD4")]
+    [InlineData(true, "A5FD85D0B723F6BF")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

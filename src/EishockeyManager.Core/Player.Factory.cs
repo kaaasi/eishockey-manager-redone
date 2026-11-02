@@ -124,6 +124,8 @@ public static class PlayerFactory
         p.NegotiationLock = 0;
         p.ContractYears = contractYears;
         p.MonthlySalary = Contracts.Demand(p);
+        // [ORIGINAL] neuer Kaderplatz (Datei 0x42CB1): Spiele für den Verein +0x1C = 0; die Saisonspiele (+0x06) bleiben (FILE07).
+        p.ClubGamesCarry = -p.Games;
         if (!club.Players.Contains(p))
             club.Players.Add(p);
     }

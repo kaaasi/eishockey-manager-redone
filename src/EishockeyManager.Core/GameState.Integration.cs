@@ -76,6 +76,7 @@ public sealed partial class GameState
     {
         StartFinanceSeason();
         StartStadiumStatisticsSeason(); // Spur heimspiel-statistik (0x55A86)
+        CarryGamesForClub(); // Spur kader-transfer, Teil 5 (A226): Spiele beim Verein (+0x1C) vor dem Zurücksetzen übertragen
         ResetMatchCounters(); // Spur spielberechnung: Spielerzähler je Saison (MatchEngine.Live.cs)
         ResetLeaguePenalties(); // Spur statistiken: Strafminuten der Fair-Play-Tabelle (StatisticsClub.cs, 0x5647A)
         ResetPowerPlayStatistics(); // Spur statistiken-verein: Über-/Unterzahl je Manager (StatisticsClub.cs, 0x5588E)

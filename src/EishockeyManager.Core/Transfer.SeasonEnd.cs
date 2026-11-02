@@ -29,10 +29,14 @@ public sealed record ContractRenewal(Player Player, bool Stays, long Compensatio
 /// Zustand +0x0B = 0, +0x18 = 101 des Originals, ohne neues Spielstandsfeld (<see cref="StartNextSeasonWithRenewals"/>). Der
 /// Bildschirm nach „Erhaltene Prämien“ führt die Verhandlungen; was bis zum ersten Tag der neuen Saison offen ist, endet wie
 /// „Abbruch“ (<see cref="ResolveRenewals"/>). Ohne Oberfläche (<see cref="StartNextSeason"/>) enden sie sofort so.</para>
-/// <para>[APPROX] Das Remake verhandelt nach den Prämien aller Manager (Original: je Manager Prämien, dann Verträge) und nach dem
-/// Zurücksetzen der Saisonzähler (Tore, Spiele) durch den Saisonwechsel; der Wert für Gehalt und Ablöse fällt dadurch niedriger
-/// aus als im Original, das die Zähler der abgelaufenen Saison noch sieht. Die Ablöse bucht das Remake als Transfereinnahme
-/// (<see cref="GameState.Book"/>); das Original schreibt sie ohne den Aufruf 0x18:0x223e des Kaufs direkt auf das Konto.</para>
+/// <para>[ORIGINAL] Reihenfolge in 0x26F20 (Spur kader-transfer, Teil 5, A226): erst für alle Manager Prämien, Altern und
+/// Herunterzählen (Schleife Datei 0x26FB0–0x279FA), dann für alle Manager die Saisonzähler des Kaderplatzes auf 0 (Datei
+/// 0x27A0C–0x27AA8: Strafen +0x00/+0x01, Tore +0x03–+0x05, Saisonspiele +0x06–+0x08; 29 Plätze), erst dann die Verhandlungen
+/// (Schleife ab Datei 0x27B64). Die Spiele beim jetzigen Verein (+0x1C/+0x1E/+0x20) bleiben stehen und gehen in Gehalt und
+/// Ablöse ein; das Remake überträgt sie vor dem Zurücksetzen (<see cref="CarryGamesForClub"/>, <see cref="Player.GamesForClub"/>).
+/// Der Auf- und Abstieg liegt im Original schon davor (Datei 0x56137–0x563AD vor dem Aufruf 0x5645D), wie im Remake.
+/// [APPROX] Die Ablöse bucht das Remake als Transfereinnahme (<see cref="GameState.Book"/>); das Original schreibt sie ohne den
+/// Aufruf 0x18:0x223e des Kaufs direkt auf das Konto.</para>
 /// </remarks>
 public sealed partial class GameState
 {
@@ -157,4 +161,16 @@ public sealed partial class GameState
     [ThreadStatic] private static bool s_deferRenewals;
 
     private static readonly Random NoValueRandom = new GameRandom(0);
+
+    /// <summary>
+    /// Saisonwechsel, vor dem Zurücksetzen der Saisonzähler: Die Spiele der abgelaufenen Saison gehen in die Spiele beim jetzigen
+    /// Verein über (<see cref="Player.ClubGamesCarry"/>). [ORIGINAL] Datei 0x27A0C–0x27AA8 lässt +0x1C stehen; nur Datei 0x41622
+    /// und 0x5499E schreiben das Wort (erhöhen). [APPROX] Auch für Spieler der Computervereine (im Original ohne Kaderplatz) und
+    /// geliehene Spieler (zählen nach der Rückkehr beim Stammverein weiter).
+    /// </summary>
+    internal void CarryGamesForClub()
+    {
+        foreach (var p in Clubs.SelectMany(c => c.Players))
+            p.ClubGamesCarry = p.GamesForClub;
+    }
 }

@@ -184,8 +184,8 @@ public static class PlayerValue
     /// <summary>
     /// Eingänge eines Spielers des Remakes. <paramref name="club"/> ist der Verein, in dessen Kader er steht (null =
     /// vertragslos; Original 0xFF → Spielklasse 1); <paramref name="offer"/> der Verein mit einem offenen Angebot.
-    /// [APPROX] Das Remake zählt Tore nicht je Wettbewerb (alle in +0x03) und Spiele nicht je Verein (alle Spiele in +0x1C,
-    /// +0x1E/+0x20 bleiben 0; SW-02);
+    /// [APPROX] Das Remake zählt Tore nicht je Wettbewerb (alle in +0x03) und Spiele nicht je Wettbewerb (alle Spiele beim jetzigen
+    /// Verein in +0x1C, <see cref="Player.GamesForClub"/>; +0x1E/+0x20 bleiben 0; SW-02);
     /// Tendenz: <see cref="Player.TrendScore"/>, ohne Wert die Mitte der Stufe (<see cref="TrendValue"/>); der Level ist im Remake je Manager.
     /// </summary>
     public static PlayerValueInputs Inputs(Player player, Club? club, Club? offer = null, int level = 3) => new()
@@ -196,7 +196,7 @@ public static class PlayerValue
         Trend = player.TrendScore != 0 ? player.TrendScore : TrendValue(player.Trend),
         Condition = Math.Clamp(player.Condition, 0, 255),
         Technique = Math.Clamp(player.Technique, 0, 255),
-        Games0 = Math.Min(player.Games, 0xFFFF),
+        Games0 = Math.Min(player.GamesForClub, 0xFFFF),
         OfferClub = offer?.Index,
         Age = Math.Clamp(player.Age, 0, 255),
         Goalkeeper = player.Role == Formats.PlayerRole.Goalkeeper,
