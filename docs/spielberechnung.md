@@ -90,7 +90,9 @@ h −= lrandom(0, h); dann mit 1/4 – sonst bei stärkerem Gast mit 1/2 – g +
 Heimwert: h −= lrandom(0, h), h += lrandom(0, h) (gleiche Bedingung) bzw. h += lrandom(0, h), h −= lrandom(0, h) (mit 1/4,
 sonst bei stärkerem Heim mit 1/2). Dann lrandom(0, k) ≠ 0 und h ≤ g bei stärkerem Heim bzw. h ≥ g bei stärkerem Gast →
 alles neu ab 0x9F5C (0x37665–0x37696). K.-o.-Gleichstand (`0xE8:0x70`): random(0, 2) je Seite dazu, bis ungleich,
-Heim + 30 als Penaltymarke (0x376F0–0x377A3).
+Heim + 30 als Penaltymarke (0x376F0–0x377A3). Im Remake (Runde 11, Spur wettbewerbe-spiel Teil 1) bilden DEB-Pokal und
+WM-Endrunde daraus den Endstand mit Marke 1 (`CupMatch.FromReport`, `CupTie.Marks`, `WorldCup.MarksOf`); der Bericht trägt die
+Zusatztore als `ShootoutGoals`, sein Spielstand bleibt der Gleichstand. Die Play-offs (`Playoffs.cs`) bleiben bei Gleichstand + Sieger.
 
 ## 4. Abschluss 0xA484 (`OriginalMinutes.Shot`)
 
@@ -256,7 +258,9 @@ Gegentore und Minuten des Torhüters (Review-Befund R7-03, #201; Test `Integrati
 2. Pokale (DEB-Pokal, Europapokal, WM) ohne Managerverein: schneller Weg 0x3731F (Abschnitt 3). Das Original nimmt ihn nur
    bei ausgeschalteter Anzeige des Wettbewerbs (Spielstand-Optionen DGROUP 0x227–0x229, `GameOptions.CupMatchUsesMinuteLoop`,
    Datei 0x3702E–0x37085); sonst Minutenschleife (Integration Runde 9). Anfangswerte: DEB-Pokal an, Europapokal und WM aus.
-   Die WM-Endrunde (Code 10) prüft keinen Schalter und nimmt immer den schnellen Weg (#350). Play-offs und Aufstiegsrunde
+   Die WM-Endrunde (Code 10) prüft keinen Schalter und nimmt immer den schnellen Weg (#350; der Vergleich 0x3702E–0x37085
+   ist belegt, das Erreichen des Spieltagsablaufs 0x36B5D aus 0x31017 ist aus dem Aufrufmuster geschlossen – der
+   Überlagerungssprung über 0xF0:0x70 ist nicht aufgelöst, R9S-07 #358). Play-offs und Aufstiegsrunde
    (Code 1) ohne Managerverein nehmen den schnellen Weg, außer ein Feld „Ergebnisse“ der Meldungsmatrix (0x21E/0x221/0x224)
    ist an (0x37058–0x37085; voreingestellt aus; #351, Entscheidung Nutzer 01.11.2026). `[APPROX]` Das Original entscheidet
    einmal je Spieltag (Merker 0x36FEA: spielt ein Managerverein, laufen alle Paarungen durch die Minutenschleife), das Remake
@@ -390,6 +394,9 @@ Reihenfolge gilt auch für die Strafen dieser Minute), ungerade Minute `0x80CB(a
   entfällt, Kaderplatz +0x02 nicht geführt); Unterzahl Technik − (45 − Unterzahl-Halbbytes + 16·(−1 − Differenz)),
   Überzahl + Überzahl-Halbbytes + 16·(Differenz − 1); ohne Torhüter (DGROUP 0xDE16) bricht die Abwehr zusammen und jeder
   Abschluss ist ein Tor (0xA83E, `LiveTeam.OpenNet`). Bundestrainer + Länderspiele/8.
+  Die Halbbytes (Kaderplatz +0x19, unten Unterzahl, oben Überzahl) starten mit random(3, 12) je Halbbyte (Spielstart
+  Datei 0x299F4, Talent Datei 0x06F23, Marktplatz Datei 0x49803), im Nationalteam 7/7 (Datei 0x3CB2C); Training verschiebt
+  sie in 0 … 15 (Teil 7, A185/A186, `HiddenSkills`; `[APPROX]` am Spieler statt am Kaderplatz, Computerspieler 7/7).
 - **0x952C**: Teamwerte des Managervereins aus Reihe 0–2 ohne Spiel und Managerwert M = clamp(d/5 + 20, 0, 40) mit
   d = Σ laufende Summen (Kondition − Technik). Strafen (0x35890) lesen M über Vereinsfeld 0x16 = Manager + 1, also den
   **Satz des nächsten Managers** (übernommen; `[APPROX]` ohne nächsten Manager 0). Für #193 liefert
@@ -522,14 +529,21 @@ Tag ≡ 0, 4 (mod 7) des Saisontags (`[APPROX]`: Tag 0 = 10. September = Tagesz�
 Vereinsindex; Kondition und Technik bleiben als Abweichung vom Datenbankwert gespeichert, die Grenzen gelten für
 Datenbankwert + Abweichung (die Kaderkorrektur `TeamValue` kommt im Spiel hinzu). Kein neues Schemafeld.
 
-**Wirkung** (`TeamValueDriftTests.ChampionSpread_LikeVideo`, Originaldaten, Managerverein 42 aktiv, 12 Seeds × 4 Saisons):
+**Wirkung** (`TeamValueDriftTests.ChampionSpread_LikeVideo`, Originaldaten, Managerverein 42 aktiv, 12 Seeds × 4 Saisons;
+Tore aus `SpielstaerkeManagerTests.SeasonDistribution_OriginalDatabase`). Spalte „Runde 11“: Stand der Spur
+wettbewerbe-spiel bis Teil 5 (Branch `paket/wettbewerbe-spiel-5`, auf dem Integrationsstand von Runde 9/10; R9S-06, #354).
 
-| | vorher (§13) | mit Wanderung | Video (18 Saisons) |
-|---|---:|---:|---:|
-| verschiedene Meister | 6 | 14 | 8 |
-| Düsseldorf + Köln | 33 von 48 | 10 von 48 | 5 von 18 |
-| Meister mit Datenbank < 80 | 0 | 19 von 48 | 8 von 18 (≤ 72) |
-| Bundesliga Tore je Spiel / Unentschieden | 6,28 / 11,6 % | 6,35 / 10,7 % | – / 11,4 % (F21, 44. Spieltag) |
+| | vorher (§13) | mit Wanderung | Runde 11 | Video (18 Saisons) |
+|---|---:|---:|---:|---:|
+| verschiedene Meister | 6 | 14 | 16 | 8 |
+| Düsseldorf + Köln | 33 von 48 | 10 von 48 | 5 von 48 | 5 von 18 |
+| Meister mit Datenbank < 80 | 0 | 19 von 48 | 26 von 48 | 8 von 18 (≤ 72) |
+| Bundesliga Tore je Spiel / Unentschieden | 6,28 / 11,6 % | 6,35 / 10,7 % | 6,24 / 11,0 % | – / 11,4 % (F21, 44. Spieltag) |
+
+Einordnung: Das Remake streut die Meister eher stärker als das Video; in 18 Saisons erwartet man aus der Verteilung der 48
+Titel etwa 10 verschiedene Meister (Review R9S-06). Die Abnahmegrenzen des Tests (D + K ≤ 23, schwache ≥ 4, ≥ 6 Meister)
+halten. Diagnostisch aus dem Review (Integration Runde 9, 6 Seeds × 2 Saisons): 2. Liga 7,44 Tore / 8,8 %, Oberliga
+8,11 / 8,7 % (Video Oberliga 8,0 / 7,9 %); Strafminuten 26–27 je Spiel ohne Videowert.
 
 ## 16. Strafen in der Managerpaarung (Spur spielberechnung-komplett, Teil 2; R8W3I-03 bis -06)
 
@@ -549,10 +563,10 @@ Geprüft an `em.exe` (`ndisasm -b 16`), Tests `SpielberechnungKomplett2Tests`.
   demselben Stand (`LiveTeamOf`, „weniger als neun“ = `GameState.IsShortHanded`); der Zweig 100 war vorher toter Code.
 - **R8W3I-06, Nationalteam des Bundestrainers.** 0x35AB8–0x35B2C ruft 0x378C5 für jeden Verein mit Vereinsfeld 0x16 ≠ 0;
   das Nationalteam hat 0x16 = 6 und zieht aus den Kaderplätzen von Manager 5 (DGROUP 0x5DC3 + 5 · 0x618). Unter 8 fitten
-  Kaderspielern keine Strafe (0x358FF). Remake: `LiveTeam.PenaltySquad` aus dem Kader des Bundestrainers
-  (`MatchEngine.NationalPenaltySquad`, Position aus `NationalCoach.Lineup`), die Strafe zählt beim gezogenen Spieler (die
-  Gutschrift zog vorher einen Zufallsspieler). `[APPROX]` Kaderreihenfolge; Reihenwerte und Energie bleiben wie beim
-  Computerverein; Managerwert 20 (das Original liest 0x974B + 6 · 0x1AF hinter den sechs Managersätzen, nicht geprüft).
+  Kaderspielern keine Strafe (0x358FF). Remake: Strafspieler aus dem Kader des Bundestrainers, die Strafe zählt beim
+  gezogenen Spieler (die Gutschrift zog vorher einen Zufallsspieler). Seit §20 spielt das Land ganz mit diesem Kader
+  (`LiveTeam.Squad` aus `MatchEngine.NationalSquad`). `[APPROX]` Kaderreihenfolge; Managerwert 20 (das Original liest
+  0x974B + 6 · 0x1AF hinter den sechs Managersätzen, nicht geprüft).
 - **Verdacht 0x952C → 0x9567 widerlegt.** 0x9567 ruft über Stub 0x149D:0x8E die Funktion **0x38A36** (Verein), keine
   automatische Aufstellung: sie zählt mit 0x388F6 die Spieler der Reihen auf dem Eis (Torhüter, Abwehr, Sturm), zieht die
   Strafbank ab (0x35540 mit Schalter 0), schreibt DGROUP 0xCC35 + 2 · (Feld 0x16) und +1 sowie Vereinsfeld 0x32
@@ -678,3 +692,114 @@ Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Shootout.
 - `[APPROX]` Keine Live-Anzeige (Zweig mit Bit 7 nicht umgesetzt); Zuordnung der Zeilen 0x5C4B zu den Wettbewerben nicht
   gelesen – das Remake schießt in jedem K.-o.-Spiel des Minutenwegs (Pokale mit Manager, Play-offs); der Spielstand bleibt
   der Gleichstand, die Penaltytore stehen getrennt im Bericht.
+- **Endstand und Marken (Runde 11, Spur wettbewerbe-spiel Teil 1):** 0x39088 nimmt die Marke ab (Heimbyte − 30), 0x39789
+  setzt sie wieder – Endstand Gleichstand + Treffer mit **einer** Marke. Ein Tor in der Verlängerung schreibt 0x38402 Heim + 30
+  auf den Stand; im Video stehen danach **zwei** Punkte (`eisbaeren_f44_01330` „4: 3..“ neben „4: 3.“). Die Anzeige 0x32E23 zieht
+  je 30 ab und setzt einen Punkt (0x338AB–0x338E3, Pixel über 0x50:0x3B0 bei x + 22 + 2 · i, 0x339BD). DEB-Pokal und WM-Endrunde
+  übernehmen das über `CupMatch` (Marken 0/1/2). `[APPROX]` Herkunft des Stands vor 0x38402 (Tabelle DGROUP 0xA0BF, 0x37E2D)
+  nicht verfolgt; ob ein Tor in der Verlängerung das Spiel sofort beendet (0x38418 → 0x38524), ist nicht geprüft – das Remake
+  spielt beide Abschnitte (§9).
+
+## 20. Stärke der Nationalteams (Runde 11, Spur wettbewerbe-spiel Teil 3; Inventur P2 Nr. 2)
+
+Geprüft an `em.exe` (`ndisasm -b 16`); umgesetzt in `Core/CupsNational.Strength.cs` und `Core/MatchEngine.National.cs`,
+Tests `WettbewerbeSpiel3Tests`.
+
+- **Keine eigene Formel.** Nationalteams sind Vereinsplätze 52–63; 0x368B1 (Stärke) und 0x977F (Reihenwerte) lesen ihre
+  Vereinsfelder wie bei jedem Verein. Der Lader (Datei 0x2F0CC–0x2F120) überschreibt für die Plätze [0x6AD] … [0x6AD] + 11
+  Kondition 0x18 + k und Technik 0x1A + k mit DGROUP 0x4C4E − 2 (Reihenfolge K Abwehr, T Abwehr, K Sturm, T Sturm), ohne
+  Streuung; Form 0x1C + k = random(45, 55) und Tagesform 0x17 = random(47, 53) wie bei den Vereinen. Remake:
+  `GameState.NationalTeamValues` → `MatchEngine.NationalLiveTeam` (vorher: ein Wert (K + T) / 4 für alle vier Felder,
+  Form und Tagesform 50).
+- **Land ohne Manager** (auch Deutschland ohne Bundestrainer, Vereinsfeld 0x16 = 0): Einsatz und Angriff aus der Automatik
+  der Spielvorbereitung 0x8365, unabhängig von den Modi (R8-B04).
+- **Land des Bundestrainers** (0x16 = 6): Managerverein mit den Kaderplätzen von Manager 5 – Reihenwerte 0x98F8 aus den
+  eingesetzten Spielern aller vier Blöcke (Reihenwechsel 0x8EF2/0x91FF mit vierter Reihe), Technik + Länderspiele / 8
+  (höchstens 99), Taktik des Nationalteams (Einsatz in 0x98F8, Taktik 0x939A, Reihenwechsel), Energie 0x87F7, Strafspieler
+  0x378C5. Vorher: Mittel der 16 Plätze (K + T) / 2 plus Taktikzuschlag `EffortStrengthBonus`, ohne Kader gespielt.
+- **Automatik 0x8365:** doppelte Stärken 0x368B1(Verein, 1, 0, 0, 1) (Datei 0x83AD/0x83CA), Grenze 0x19 (0x840E) –
+  `GameState.NationalMatchStrength` (Reihe 0, Energie der Spielvorbereitung, Minute 0, gleich viele Feldspieler).
+- **„Stärke:“ und Stärketabelle:** 0x952C mit Manager 5 schreibt die Felder 0x18–0x1D des Landes aus der Aufstellung des
+  Bundestrainers (Tageslauf jeden Tag, nach Freundschaftsspielen); `NationalInfoStrength` nimmt sie (A019).
+- `[APPROX]` Einsatz 0x26 in `NationalMatchStrength`: Taktik beim Stand 0:0 gegen gleich starken Gegner (Original: zuletzt
+  gesetzter Wert). Länderwerte mit Bundestrainer aus der aktuellen Aufstellung statt dem Stand des letzten Tageslaufs.
+  Ohne eigene Aufstellung (passiver Bundestrainer) spielt die Automatik `NationalCoach.Lineup` mit drei Reihen (Original:
+  ohne Aufstellung kein Spieler auf dem Eis, nicht nachgebaut). „5 − Level“ aus dem Level des Managers, der Bundestrainer
+  ist. Die von 0x554CF für Deutschland ausgewürfelte Form verwirft das Remake (die Wanderung zieht sie zweimal je Woche neu).
+  Managerwert der Strafen 20 (A084, DOSBox-Probe offen); keine Verletzungen und Über-/Unterzahl-Zähler des Bundestrainers.
+  Tagesform nach WM-Gruppenspielen (0x4F527 auch bei Code 8) weiter nicht nachgeführt.
+
+## 21. Teamwerte in der Stärketabelle 0x51206 (Runde 11, Spur wettbewerbe-spiel Teil 4; Inventur P1 Nr. 5, P2 Nr. 16)
+
+Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/StatisticsStrength.cs`, Tests `WettbewerbeSpiel4Tests`.
+
+- **Gelesen** werden je Teil k = 0 (Abwehr), 1 (Sturm) nur Vereinsfelder: Kondition 0x18 + k (Datei 0x5149A), Technik
+  0x1A + k (0x514BD), Form 0x1C + k (0x514E3), Vereinszeiger DGROUP 0x9657 mit Faktor 0x3D; der Trendbalken liest
+  Vereinsfeld 0x17 (Tagesform, 0x51900). Spielerwerte gehen nicht ein (A200, A201).
+- **Remake:** Computervereine `MatchEngine.ClubFieldValues` (Teamwert + Streuung des Laders bzw. Stand der Wanderung §15,
+  Form des Laders; dieselben Werte wie `LiveTeamOf`). Managervereine aus der Aufstellung (`LineupTeamValues`, 0x952C im
+  Tageslauf 0x54F9C–0x54FBF für jeden Manager). Länderteams: Kondition/Technik aus 0x4C4E (`NationalRatings`), Form und
+  Tagesform aus den Feldern des Vereinsplatzes; Land des Bundestrainers aus dessen Aufstellung (§18). Trend =
+  Tagesform (47 … 53).
+- `[APPROX]` Managervereine aus der aktuellen Aufstellung statt dem Stand des letzten Tageslaufs; vor dem ersten Spiel
+  eines Spielstands (Teamwerte noch nicht gezogen) Streuung 0, Form und Tagesform 50.
+- **Finanzen unverändert:** `StrengthTable.TeamValues` (Monatseinnahme `FinanceMonthly`, Zuschauer `FinanceStadium`)
+  rechnet weiter aus den Spielerwerten; die Umstellung der Aufrufer (A035 bzw. 0x4D316) gehört zur Spur geld bzw. der
+  Integration. Kein Zufallszug, Spielergebnisse und Geld bleiben gleich.
+- **Über-/Unterzahl in der Vereinsstatistik (A349):** Der Anschluss der Zähler aus §18 an „Statistiken → Verein“ war
+  schon vorhanden (`Manager.PowerPlayCounts`); geprüft über die Zeitleiste (`WettbewerbeSpiel4ScreenTests`), der
+  veraltete `[APPROX]`-Kommentar in `ClubStatisticsScreen` ist ersetzt.
+
+## 22. Taktik und Feldspieler (Runde 11, Spur wettbewerbe-spiel Teil 5; Inventur P2 Nr. 1, G6)
+
+Geprüft an `em.exe` (`tools/reverse-engineering/disasm.py`), Tests `TaktikTeil5Tests`.
+
+- **Minuten-Vorgabe (A177, G6):** je Teil zusammen höchstens 20 Minuten (Pfeilgrenze Datei 0x4889F–0x488CE, 0x489C3:
+  Feld < 20 − übrige Reihen). Beim Verlassen des Taktikbildschirms rechnet 0x48E62 (Datei 0x48EEA–0x4901D) um:
+  Reihe 1–3 ⌊Min/2⌋ | (Min & 1), Reihe 4 ⌊Min/2⌋, dann von Reihe 4 rückwärts im Ring bis Summe 8 (Summe > 8: −1 nur bei
+  Werten > 1; sonst +1, bei Werten ≤ 1 nicht in Reihe 4). Modus 4 von 0x8EF2 zählt gegen diese Werte (Datei 0x09140).
+  Remake: `Tactics.MinutesLimit`, `Tactics.MinuteQuota`; `ChangeLines` Modus 4. Beispiele 7/7/6/0 → 3/3/2/0,
+  5/5/5/5 → 3/2/2/1, 0/0/0/0 → 2/3/3/0.
+- **Minutenzähler DGROUP 0x4926 (A090):** nur 0x8EF2 liest und schreibt ihn (Datei 0x90F9, 0x911C, 0x9166); kein
+  weiterer Zugriff, kein Blockzugriff. Er läuft im Original über das Spielende hinaus weiter. `[APPROX]` Das Remake
+  beginnt jedes Spiel bei 0.
+- **„MANUELL“ (A176):** 0x939A schreibt Vereinsfeld 0x26 (Einsatz) nur, wenn der Modus nicht 2 ist (Datei 0x9516), den
+  Angriff in 0x2C nur bei Modus < 2 (Datei 0x94E2). Bei „MANUELL“ bleibt im Spiel der Wert vor dem Spiel (Grundwert +
+  „Unentschieden“, 0x48E62 Schritt 4) – ohne Nachführen nach dem Spielstand und ohne Energieabzug. `FollowTactics`.
+- **Kein Einsatz-Zuschlag (A178, A182):** der Einsatz wirkt nur über Vereinsfeld 0x26 in 0x368B1/0x977F und 0x87F7;
+  `Tactics.EffortStrengthBonus` (±3 um 80) entfällt, `MatchStrength` (nur noch `MatchEngine.Play`) ohne Zuschlag.
+- **Eingesetzt (A168):** Der Kader der Managerpaarung (`LiveSquad.Create`) setzt +0x0A wie der Verein (`Club.IsDressed`
+  und spielfähig). Nicht Eingesetzte zählen weder in den Reihenwerten (0x98F8) noch in der Energie (0x87F7). Ohne
+  Zufallszug-Änderung bei der automatischen Auswahl (alle Abdrücke unverändert).
+- **Feldspieler 0x38A36 (A089, A070):** 0x388F6(Verein, Manager, Modus, Teil) zählt
+  eingesetzte Kaderplätze des Teils (+0x15 Bit 7): Modus 0 Torhüter (Gruppe 0x04180 = 0, Reihe beliebig ≠ 0; keiner →
+  Vereinsfeld 0x2E = 0, Datei 0x38A2A), Modus 1 Verteidiger und 2 Stürmer der Reihe auf dem Eis (0x2E/0x30). 0x38A36:
+  Grenze 6 (ohne Torhüter und mit < 6 Feldspielern 5); Torhüter + Abwehr + Sturm + belegte Strafbankplätze (0x35540
+  Schalter 0) über der Grenze → Sturm = 3 − Überschuss; DGROUP 0xCC37 + 2·m = Abwehr, +1 = Sturm; Vereinsfeld 0x32 =
+  Abwehr + Sturm; 0x2C Bit 3 bei genau 6, sonst gelöscht. Aufrufe im Spiel: je Minute zu Beginn von 0x38B8F für beide
+  Vereine (Datei 0x38BA9–0x38BBA) und beim Freiwerden 0x35691 (Datei 0x35810); dazu 0x952C (Datei 0x9567).
+  Angeschlossen in Teil 8 (`MatchEngine.RecountSkaters`, `CountOnIce`): zu Beginn von `OriginalMinutes.Injuries` für
+  beide Vereine (nur Managervereine mit Kader) und über `PenaltyBox.Released` beim Freiwerden; schreibt
+  `SkatersPerPart`, `PenaltyBox.Skaters` (0x32) und `GoaliePulled` (0x2C Bit 3). `[APPROX]` Startwert 2/3 je Spiel,
+  Sturm nicht unter 0. Vorher kippten mit dem Anschluss 19 Tests, weil Managervereine ohne automatische Aufstellung mit
+  Lücken spielten; mit §23 bleiben nur die Abdrücke (siehe PR Teil 8).
+
+## 23. Automatische Aufstellung 0x426BC/0x42838 (Runde 11, Spur wettbewerbe-spiel Teil 8; A068, A165, A169)
+
+Regel nach `docs/analyse/re-nachtrag.md` §3 (Review #446), Remake `Core/Squad.AutoLineup.cs`, Tests `AutoLineupTeil8Tests`.
+
+- **Einstellung „automatisch aufstellen“** (DGROUP 0x375 + 2 · Manager, Startwert 1): `Club.AutoLineupEnabled`
+  (`[APPROX]` je Verein statt je Manager; Schema 23 → 24). Ein Eingriff in der Aufstellung (Platz setzen/leeren,
+  ein-/aussetzen) schaltet sie ab (Datei 0x40ADE/0x40DE4); „A“ schaltet sie ein und stellt sofort auf (`[APPROX]`,
+  im Original kippt sie der Taktikbildschirm 0x47F4E und stellt dann auf).
+- **0x426BC:** ohne Einstellung nichts. Sonst alle nicht eingesetzt, dann Torhüter (1 × 1), Abwehr (3 × 2), Sturm
+  (3 × 3) mit 0x42838, Block endet ohne Kandidat; danach Ersatz reihum Sturm, Abwehr, Torhüter bis 22 Eingesetzte oder
+  leere Torhütersuche. Ein Feldspieler aus der Ausweichrolle steht auf dem Platz der gesuchten Rolle (`Lineup.Place`);
+  aus der Torhütersuche wird er nur eingesetzt (`[APPROX]`, im Original +0x15 = 1).
+- **0x42838:** freie, spielfähige Spieler der Rolle; Wert (K + T + F) / 3, Gleichstand → späterer Platz
+  (`[APPROX]` Platzfolge = `Club.SortedPlayers`); Ausweichrollen T → A → S, A → S → T, S → A → T; erster freier Torhüter
+  als Feldspieler −1, jeder weitere 1.
+- **Aufrufe im Remake:** Spielstart (`InitializeManagerSystems`, 0x28165), Ende des Tageslaufs (`OnDayClubSeason`,
+  0x07C07), Verletzung im Spiel und Heilung (`Club.RefillLineup`). Nicht angeschlossen: Transferbildschirm 0x465F1,
+  Managerzug 0x44E22 (der nächste Tageslauf holt es nach), Nationalteam (U8, Satz 5) und die Meldung DGROUP 0x124D
+  (Oberfläche, Spur kader-transfer).

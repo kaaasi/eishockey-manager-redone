@@ -154,16 +154,21 @@ namespace EishockeyManager.Core.Tests;
 /// dem Original (anderer Verbrauch der Vertragsquelle <c>ContractRandom</c>, weniger Angebote ohne Frist, Ruhestand über den Saisonwechsel).
 /// Integration Runde 11 (geld + saisonwechsel + kader-transfer): Abdrücke auf dem integrierten Stand neu ermittelt (alle drei Spuren
 /// ändern den Zufallsverbrauch; kein weiterer Unterschied).
+/// Spur wettbewerbe-spiel, Teil 3 (A011 ff.): neu – Nationalteams spielen mit ihren eigenen Teamwerten (Kondition/Technik je Teil aus DGROUP 0x4C4E − 2, Form und Tagesform des Vereinsplatzes, Lader 0x2F0CC), das Land des Bundestrainers mit seinem Kader (0x98F8 mit Manager 5); andere WM-Ergebnisse und anderer Zufallsverbrauch nach der ersten WM.
+/// Spur wettbewerbe-spiel, Teil 7 (A185, A186): neu – Kaderplatz +0x19 der Managerkader beim Spielstart, der Talente und der Marktplätze gewürfelt (random(3, 12) je Halbbyte, Datei 0x299F4/0x06F23/0x49803; eigene Quelle, Hauptquelle unverbraucht) statt 7/7; Über- und Unterzahl der Managerpaarungen rechnen damit, andere Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Gegenprobe: ohne Würfe (alle 7/7) alte Werte.
+/// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): neu – Managervereine stellen mit der Einstellung „automatisch aufstellen“ (Startwert 1) beim Spielstart und täglich nach 0x426BC/0x42838 neu auf (statt Lücken stehen zu lassen bzw. nach Spielwert zu füllen), und die Feldspieler der Managerpaarung zählt je Minute 0x38A36 aus der Aufstellung; andere Aufstellungen und Ergebnisse ab dem ersten Managerspiel.
+/// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
+/// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "78E0AF3ED9F97A8C")]
-    [InlineData(true, 3, "37ADC9CD4A926DD6")]
-    [InlineData(false, 11, "F87389CEA0C3E8D1")]
-    [InlineData(true, 11, "548B9B19371510C9")]
+    [InlineData(false, 3, "FB3429A7D18DE060")]
+    [InlineData(true, 3, "9663CBEAD233BE02")]
+    [InlineData(false, 11, "5F05F7A0AA791820")]
+    [InlineData(true, 11, "81611FEC9A4E0790")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -171,8 +176,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "561426E094F9C640")]
-    [InlineData(true, "468B84E94D907100")]
+    [InlineData(false, "B5025169A07A736C")]
+    [InlineData(true, "DEF061D55591E215")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

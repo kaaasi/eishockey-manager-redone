@@ -10,7 +10,8 @@ public class StrengthTableTests
 
     private static Club Nation(GameState game, int index, int form)
     {
-        var club = new Club { Index = index, Name = $"LAND {index}", Strength = 80 };
+        // Teil 4 (A201): Form aus den Vereinsfeldern 0x1C/0x1D statt der Spielerform (0x514E3).
+        var club = new Club { Index = index, Name = $"LAND {index}", Strength = 80, TeamValues = new ClubTeamValues(0, 0, 0, 0, form, form, 50) };
         club.Players.Add(new Player { Name = "A", Role = PlayerRole.Defender, Form = form });
         club.Players.Add(new Player { Name = "B", Role = PlayerRole.Forward, Form = form });
         return club;

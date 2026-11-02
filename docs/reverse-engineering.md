@@ -519,9 +519,10 @@ Aufstellung 0x3FFE0/0x40364 und Transferliste 0x465F1 gerufen; im Remake öffnet
 * **Bisher falsch im Remake:** Spaltengrenzen um 1–4 Pixel verschoben (Aufstellung jetzt 18, 36, 93, 107, 143, 156, 183, 223, 233);
   „Art des Spielers: “ vor der Rolle; „Verletzt. (Noch n Spiele)“; „Fallend./…“ ohne Erschöpfung; Spalte 7 ohne Durchschnitt;
   Spalte 0 ohne Reihe.
-* **[APPROX]:** Verletzungsart (+0x17), Sperre in Minuten (+0x0D; das Remake zählt Spiele), Belastung +0x13 (aus der Energie) und die
+* **[APPROX]:** Sperre in Minuten (+0x0D; das Remake zählt Spiele), Belastung +0x13 (aus der Energie) und die
   Zeilenschritte der Aufstellung (`LineupScreen.RowAt` klickt bei y = 28 + 6 k, die Hinweiszeile wie das Original bei 29 + 6 k;
-  Klickfläche nicht Teil dieser Spur).
+  Klickfläche nicht Teil dieser Spur). Die Verletzungsart (+0x17) zieht seit der Integration Runde 11 die Verletzung
+  selbst (Datei 0x05B1A, `PlayerInjuries.Inflict`).
 
 ### Spielerdaten-Fenster 0x041AC (`PlayerDataWindow.cs`, `PlayerInfoPopup.cs`)
 
@@ -773,9 +774,10 @@ Hauptmenüschleife 0x44E22 (Datei 0x450EC, Gegner DGROUP 0xE1A6, Heim DGROUP 0xE
   Integration Runde 9: Die Tabelle ist dieselbe wie die Kopf-an-Kopf-Liste des Gegner-Fensters (Spur `wettbewerbe-komplett`) –
   ein Speicher `GameState._headToHead` (`GameState.MeetingTable(manager)`, Schema 18) und ein Schreiber
   `MeetingHistory.RecordAt` (0x4F5A8). Angeschlossen sind die Ligaspiele (`GameState.PlayNextMatchDay`) und die Länderspiele
-  Deutschlands (`EnterNationalResult`). [APPROX] DEB-Pokal, Europapokal und Play-offs/Relegation laufen im Original ebenfalls
-  über 0x50283 (Aufrufer 0x30365, 0x30852, 0x30E7B, 0x315E9, 0x34B76, 0x50B45); im Remake noch nicht angeschlossen, ebenso
-  wenig die Serien (`CountSeries`) dieser Spiele.
+  Deutschlands (`EnterNationalResult`). Runde 11 (Spur `wettbewerbe-spiel` Teil 2, Integration Runde 11): DEB-Pokal
+  (Datei 0x34C5C), Play-offs (Datei 0x3165B) und Aufstiegsrunden (0x30852, Wettbewerb 1) sind über `RecordMeetings`
+  angeschlossen; der Europapokal nicht, weil 0x30852 0x50283 nur für Wettbewerb 0 und 1 ruft (Datei 0x3091C–0x30942).
+  [APPROX] Die Serien (`CountSeries`) dieser Pokal- und Play-off-Spiele sind noch nicht angeschlossen.
 * **Tabellenkurve 0x445E0** (Abgleich, nicht umgebaut): x-Schritt `max(2, 8500 / (n − 1) / 100)` mit n = DGROUP 0x7A9,
   Punkte ab x + 5, y = Grundlinie + 2 · Platz + 0x31; ohne Kurve (n ≤ 1) „Vor dem ersten Spieltag.“ (Zeiger 0x674); Platzzahl
   mit „.“ (0x522F) rechts, bei Überschneidung der beiden Kurven verschoben (Datei 0x44801–0x44891). Das Remake skaliert auf

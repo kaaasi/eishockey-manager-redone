@@ -238,7 +238,16 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Spur kader-transfer, Teil 7 (0x07169): 1993 und 1994 gleich, ab 1995 neu (Ankündigungen und Ruhestand nach dem Original;
     /// Begründung bei <c>RngTwinProbeTests</c>); mit und ohne Anzeige gleich.
     /// Integration Runde 11 (geld + saisonwechsel + kader-transfer): Abdrücke auf dem integrierten Stand neu ermittelt (alle drei Spuren
-    /// ändern den Zufallsverbrauch; kein weiterer Unterschied).</summary>
+    /// ändern den Zufallsverbrauch; kein weiterer Unterschied).
+    /// Spur wettbewerbe-spiel, Teil 3: 1993 gleich, ab 1994 neu – andere WM-Ergebnisse 1993 (Nationalteams mit eigenen
+    /// Teamwerten, 0x2F0CC) verschieben die Zufallsfolge; mit und ohne Anzeige weiter gleich.
+    /// Spur wettbewerbe-spiel, Teil 7 (A185, A186): ab 1993 neu – Kaderplatz +0x19 des Managerkaders beim Spielstart gewürfelt
+    /// (random(3, 12) je Halbbyte, Datei 0x299F4) statt 7/7; Über- und Unterzahl der Managerpaarungen ändern Ergebnisse und
+    /// Zufallsfolge ab dem ersten Spiel des Managers. Mit und ohne Anzeige weiter gleich.
+    /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): ab 1993 neu – automatische Aufstellung des Managervereins
+    /// (0x426BC, täglich) und Neuzählung der Feldspieler (0x38A36) ändern dessen Spiele. Mit und ohne Anzeige weiter gleich.
+    /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
+    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).</summary>
     private const string Reference =
-        "1993: DEB 8, DM 5, Tab 15263 | 1994: DEB 8, DM 8, Tab 15813 | 1995: DEB 6, DM 6, Tab 15272 | 1996: DEB 1, DM 6, Tab 14502";
+        "1993: DEB 0, DM 4, Tab 15368 | 1994: DEB 2, DM 2, Tab 15723 | 1995: DEB 16, DM 2, Tab 15520 | 1996: DEB 2, DM 10, Tab 15362";
 }

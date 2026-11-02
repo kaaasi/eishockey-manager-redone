@@ -78,7 +78,10 @@ public sealed class TrainingPlan
     /// <summary>Wurde die Preisstufe schon festgelegt (beim ersten Vorbereiten)?</summary>
     public bool PriceTierSet { get; private set; }
 
-    /// <summary>Preisindex in Prozent. [ORIGINAL] DGROUP 0x2B8, Startwert 100. [APPROX] Bleibt bei 100.</summary>
+    /// <summary>
+    /// Preisindex in Prozent. [ORIGINAL] DGROUP 0x2B8, Startwert 100; außer Laden/Speichern schreibt ihn nichts, er bleibt 100
+    /// (Leser Datei 0x3E811, Datei 0x59DBF; docs/analyse/re-nachtrag.md Abschnitt 5, A183).
+    /// </summary>
     public int PriceIndex { get; set; } = 100;
 
     /// <summary>
@@ -364,12 +367,14 @@ public readonly record struct TrainingOutcome(int Condition, int Technique, int 
 public sealed partial class Player
 {
     /// <summary>
-    /// Versteckte Fähigkeit (unteres Halbbyte von Spielerfeld 0x19, 0–15), vom Training verändert.
-    /// [APPROX] Bedeutung und Startwert unbekannt; noch ohne Wirkung im Spiel.
+    /// Unterzahl: unteres Halbbyte von Kaderplatz +0x19 (0–15), vom Training verändert, wirkt in der Abwehr in Unterzahl.
+    /// [ORIGINAL] Startwerte und Schreiber siehe <see cref="HiddenSkills"/> (docs/analyse/re-nachtrag.md Abschnitt 6).
+    /// [APPROX] Vorgabe 7 für Spieler, die nie in einen Managerkader oder den Markt kamen (Computervereine; im Original ohne
+    /// Kaderplatz) und für Spielstände vor Teil 7.
     /// </summary>
     public int HiddenSkill1 { get; set; } = 7;
 
-    /// <summary>Versteckte Fähigkeit (oberes Halbbyte von Spielerfeld 0x19, 0–15). [APPROX] wie <see cref="HiddenSkill1"/>.</summary>
+    /// <summary>Überzahl: oberes Halbbyte von Kaderplatz +0x19 (0–15), wirkt im Sturm in Überzahl; sonst wie <see cref="HiddenSkill1"/>.</summary>
     public int HiddenSkill2 { get; set; } = 7;
 }
 

@@ -243,6 +243,11 @@ public sealed partial class GameState
         var relegationGames = RelegationGroups.SelectMany(g => g.PlayDate(index, this, Random)).ToList();
         SettlePostseasonMatches(playoffGames.Select(g => (g.Home, g.Away)) // gemeinsame Spielabrechnung (Paket „wirtschaft“)
             .Concat(relegationGames.Select(g => (g.Home, g.Away))));
+        // [ORIGINAL] Begegnungstabellen auch für Play-offs (Datei 0x3165B, nur gespielte Spiele) und Aufstiegsrunden (0x30942,
+        // Wettbewerb 1); Anschluss aus wettbewerbe-spiel Teil 2 (A111, #425), Integration Runde 11.
+        RecordMeetings(playoffGames);
+        foreach (var g in relegationGames)
+            RecordMeeting(g.Home, g.Away, g.HomeGoals, g.AwayGoals);
 
         var playoffInvolved = playoffGames.Any(g => Involves(g.Home, g.Away));
         var relegationInvolved = relegationGames.Any(g => Involves(g.Home, g.Away));

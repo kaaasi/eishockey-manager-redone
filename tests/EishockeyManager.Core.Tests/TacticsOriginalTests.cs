@@ -116,34 +116,7 @@ public class TacticsOriginalTests
         Assert.False(Tactics.Editable(TacticMode.Manual));
     }
 
-    /// <summary>Abnahme (3): Automatik ohne Zuschlag, eigener Einsatz verschiebt die Stärke um höchstens ±3.</summary>
-    [Fact]
-    public void Effort_ChangesMatchStrength_OnlyWithOwnValues()
-    {
-        var game = TestGames.Create();
-        var club = game.Clubs[2];
-        var before = club.MatchStrength;
-        Assert.Equal(0, club.Tactics.EffortStrengthBonus());
-
-        club.Tactics.EffortMode = TacticMode.Semi;
-        Assert.Equal(0, club.Tactics.EffortStrengthBonus()); // Startwerte = Bezugswert 80
-        Assert.Equal(before, club.MatchStrength);
-
-        for (var b = 0; b < Tactics.Blocks; b++)
-        {
-            foreach (var r in Rows.Skip(1))
-                club.Tactics.SetEffort(b, r, 0);
-            club.Tactics.SetEffort(b, ScoreSituation.Base, 100);
-        }
-        Assert.Equal(2, club.Tactics.EffortStrengthBonus(), 6); // 100 − 80 = 20 → +2
-        Assert.Equal(before + 2, club.MatchStrength);
-
-        for (var b = 0; b < Tactics.Blocks; b++)
-            club.Tactics.SetEffort(b, ScoreSituation.Base, 0);
-        Assert.Equal(-3, club.Tactics.EffortStrengthBonus(), 6); // begrenzt
-        Assert.Equal(before - 3, club.MatchStrength);
-
-        club.Tactics.EffortMode = TacticMode.Auto;
-        Assert.Equal(before, club.MatchStrength);
-    }
+    // Abnahme (3) „Einsatz verschiebt die Stärke um höchstens ±3“ entfällt (A178/A182, Runde 11): der Einsatz wirkt nur in
+    // der Spielberechnung, siehe TaktikTeil5Tests.Effort_DoesNotShiftMatchStrength.
 }
+

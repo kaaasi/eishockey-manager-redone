@@ -130,6 +130,10 @@ public class SeasonEndStatusTests
     {
         var game = GameModeTests.Create(seed, flag, globe, 2, 30);
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
+        // wettbewerbe-spiel, Teil 7 (+0x19 gewürfelt): Mit Datenbankstärke stand Verein 2 bei Seed 3/11 in keiner Saison mehr
+        // unter den ersten fünf (60 Seeds, eine Saison: 48 statt 50 von 60, Mittel Platz 4,28 statt 4,18 – Streuung, keine
+        // Schwächung). Vorbedingung deshalb wie in den Einzelfällen über Spielerwerte 99 für Manager 0.
+        ManagedSquads.PlayAtTopStrength(game, 0);
         var withBit = 0;
         var withoutBit = 0;
         for (var change = 0; change <= 4; change++)

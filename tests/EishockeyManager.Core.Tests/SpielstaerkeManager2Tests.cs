@@ -73,6 +73,8 @@ public class SpielstaerkeManager2Tests
             var game = TestGames.Create(seed);
             MatchEngine.EnsureTeamValues(game);
             var club = game.Clubs[game.Managers[0].ClubIndex];
+            // Teil 8 (A068): weniger Aufgestellte gibt es nur nach einem Eingriff von Hand; der schaltet die automatische Aufstellung ab (Datei 0x40ADE), sonst stellt der Tageslauf wieder voll auf (0x07C07).
+            club.AutoLineupEnabled = false;
             foreach (var p in club.Lineup.Players.Skip(8).ToList())
                 club.Lineup.Remove(p);
             foreach (var c in game.Clubs)
@@ -252,7 +254,10 @@ public class SpielstaerkeManager2Tests
         Assert.Equal(0, team.AttackLine);
     }
 
-    /// <summary>[ORIGINAL] Modus 4: Minuten-Vorgabe, Reihen mit 0 Minuten werden übersprungen.</summary>
+    /// <summary>
+    /// [ORIGINAL] Modus 4: Minuten-Vorgabe, Reihen mit Vorgabe 0 werden übersprungen. Runde 11 (G6): gezählt wird gegen
+    /// die umgerechneten Werte (2/0/1/0 → 3/2/3/0, Datei 0x48E62), vorher gegen die Minuten.
+    /// </summary>
     [Fact]
     public void ChangeLines_MinutesPreset()
     {
@@ -269,7 +274,7 @@ public class SpielstaerkeManager2Tests
             OriginalMinutes.ChangeLines(team, opponent);
             lines.Add(team.DefenseLine);
         }
-        Assert.Equal([0, 0, 2, 2, 0, 0, 0], lines);
+        Assert.Equal([0, 0, 0, 1, 1, 1, 2], lines);
         Assert.Equal(4, team.LineMode);
     }
 

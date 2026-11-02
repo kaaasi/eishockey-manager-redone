@@ -231,12 +231,24 @@ public class StadiumAusbauTests
         for (var year = 0; year < 4; year++)
         {
             long built = 0;
+            var keptSet = false;
             for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
             {
                 Assert.True(guard < 1000, "Saisonende nicht erreicht");
                 if (active)
                     built += StartAffordable(game, me, ref started);
                 game.Continue();
+                // Integration Runde 11 (+ wettbewerbe-spiel): Endet der Verein als Letzter oder Vorletzter in der Oberliga, setzt
+                // em.exe das Konto am 29. April auf 400.000 DM, ohne Buchung (S-K1, Datei 0x562D8; Seed 5 passiv/aktiv in Saison
+                // 4). Die neutrale Differenz zählt außerhalb des Finanzbuchs.
+                if (!keptSet && game.Phase is SeasonPhase.SeasonOver && game.History.Count > year
+                    && GameState.KeptInOberliga(game.History[^1], me.ClubIndex))
+                {
+                    // WS-05 (Review #468): wie FinanceCalibrationTests – Konto = 400.000 DM + Prämien des 29. April ff.
+                    Assert.Equal(GameState.OberligaKeptMoney + game.Finance(me).Book.Current(FinanceCategory.Praemien), me.Money);
+                    cumulative += me.Money - (startMoney + cumulative + game.Finance(me).Book.CurrentTotal);
+                    keptSet = true;
+                }
                 Assert.Equal(startMoney + cumulative + game.Finance(me).Book.CurrentTotal, me.Money);
                 for (var i = 0; i < Stadium.FeatureCount; i++)
                 {

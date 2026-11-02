@@ -42,6 +42,20 @@ public class IntegrationRunde5MigrationTests
         var loaded = result.Game!;
         Assert.True(loaded.NationalTurn);
         Assert.Equal(new Tactics().Effort(0, 0), loaded.Clubs[2].Tactics.Effort(0, 0));
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded));
+        // Teil 8 (A068): Die automatische Aufstellung hält ihre Eingesetzten fest (_dressedByHand = true); Schema 5 kennt
+        // sie nicht, die Migration 4 → 5 nimmt „nicht von Hand“ (bis zum nächsten Tageslauf). Verglichen wird ohne „Eingesetzt“.
+        Assert.All(loaded.Clubs, c => Assert.Equal(c.Lineup.Players.Count(), c.Lineup.Players.Count(c.IsDressed)));
+        Assert.Equal(WithoutDressed(SaveGame.Save(game)), WithoutDressed(SaveGame.Save(loaded)));
+    }
+
+    private static string WithoutDressed(byte[] save)
+    {
+        var root = JsonNode.Parse(save)!.AsObject();
+        foreach (var club in root["vereine"]!.AsArray().Select(n => n!.AsObject()))
+        {
+            club["_dressed"]!["items"] = new JsonArray();
+            club["_dressedByHand"] = false;
+        }
+        return root.ToJsonString();
     }
 }

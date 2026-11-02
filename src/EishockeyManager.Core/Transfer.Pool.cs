@@ -198,16 +198,16 @@ public static class TransferPoolRules
     /// <summary>
     /// Kaderplatz-Felder des neuen Markt-Platzes, soweit das Remake sie führt. [ORIGINAL] 0x42E4C: Energie +0x13 =
     /// random(80, 120); 0x42E6B: Nachbearbeitung 0x118:0x4D = Datei 0x4907A (Tendenz und Steuerbyte, <see cref="Player.RollTrend"/>);
-    /// Datei 0x497C7–0x49803: +0x19 = random(3, 12) · 16 + random(3, 12) (Bedeutung offen, nur gezogen).
+    /// Datei 0x497C7–0x49803: +0x19 = random(3, 12) · 16 + random(3, 12) (Über-/Unterzahl, <see cref="HiddenSkills"/>).
     /// [APPROX] Energie auf 99 begrenzt (Remake-Skala). Die Tendenz zieht das Remake aus <paramref name="trendRandom"/>, sonst aus
-    /// <paramref name="random"/> (siehe <see cref="GameState.TrendRandom"/>).
+    /// <paramref name="random"/> (siehe <see cref="GameState.TrendRandom"/>). Integration Runde 11: Tendenz (kader-transfer Teil 4)
+    /// und +0x19 (wettbewerbe-spiel Teil 7) zusammen, in der Reihenfolge des Originals.
     /// </summary>
     public static void RollSlotFields(Player p, Random random, Random? trendRandom = null)
     {
         p.Energy = Player.Clamp(TransferRules.Random16(random, 80, 120));
         p.RollTrend(trendRandom ?? random);
-        _ = TransferRules.Random16(random, 3, 12);
-        _ = TransferRules.Random16(random, 3, 12);
+        HiddenSkills.Roll(p, random); // Spur wettbewerbe-spiel, Teil 7: +0x19 wie gezogen (A185, A186)
     }
 
     /// <summary>

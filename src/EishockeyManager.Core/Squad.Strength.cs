@@ -77,8 +77,7 @@ public static class TeamStrength
     {
         if (club.Players.Count == 0)
             return club.Strength;
-        var delta = (Rating(club.Lineup) - club.ReferenceRating) * StrengthPerRatingPoint
-                    + club.Tactics.EffortStrengthBonus();
+        var delta = (Rating(club.Lineup) - club.ReferenceRating) * StrengthPerRatingPoint;
         return Math.Clamp((int)Math.Round(club.Strength + delta), 1, 150);
     }
 

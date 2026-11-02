@@ -64,6 +64,9 @@ public sealed class LineupScreen : Screen
 
     public Player? SelectedPlayer => _selectedPlayer;
 
+    /// <summary>Zeilen der offenen Meldung (leer, wenn keine offen ist).</summary>
+    public IReadOnlyList<string> MessageLines => _message.Lines;
+
     public static int RowAt(int y) => y < FirstRowY - 1 ? -1 : (y - FirstRowY + 1) / RowPitch;
 
 
@@ -76,6 +79,17 @@ public sealed class LineupScreen : Screen
         if (_info.Update(input))
             return;
 
+        var wasAuto = Club.AutoLineupEnabled;
+        HandleInput(input);
+        // [ORIGINAL] em.exe Datei 0x40ADE (Integration Runde 11, wettbewerbe-spiel Teil 8): Ein Eingriff von Hand schaltet die
+        // Einstellung „automatisch aufstellen“ ab und meldet „Auto-Aufstellung / ist deaktiviert !“ (DGROUP 0x124D; Texte
+        // Datei 0x1AE4B/0x1AE5C). [APPROX] Trifft der Eingriff mit einer anderen Meldung zusammen, gewinnt diese Meldung.
+        if (wasAuto && !Club.AutoLineupEnabled && !_message.Visible)
+            _message.Show("Auto-Aufstellung", "ist deaktiviert !");
+    }
+
+    private void HandleInput(InputState input)
+    {
         var rows = TeamUi.Rows(Club);
         // [ORIGINAL] em.exe 0x400E9–0x4010D bzw. 0x4084E–0x40872: rechte Maustaste (Ereignis 3) über der Namensspalte
         // (34 < x < 96) einer Zeile der Hinweiszeilen-Rechnung 0x41683 öffnet das Spielerdaten-Fenster 0x041AC

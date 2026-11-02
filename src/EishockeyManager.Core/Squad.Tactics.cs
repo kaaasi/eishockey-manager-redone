@@ -90,8 +90,12 @@ public enum ScoreSituation
 ///   `nur-weltkugel/26`), danach auf den Werten des letzten Spiels (<see cref="RecordAutoLine"/>). Die eigenen Werte
 ///   des Bundestrainers (DGROUP 0xCAE9/0xCB01 + 0x30 · 5) schreibt nur der Taktikbildschirm (Datei 0x48607 ff.) und
 ///   das Laden (Datei 0x5C38C, 0x5CD7D) – sie beginnen ebenfalls bei 0.</item>
-/// <item>[APPROX] „MANUELL“ verwendet bis zum Live-Spiel die eigenen Werte wie „SEMI“. Der Energieabzug im Spiel
-///   (Datei 0x9463–0x94A7, Einsatz − (50 − Energie) bei Energie unter 50) ist nicht übernommen.</item>
+/// <item>[ORIGINAL] „MANUELL“: vor dem Spiel die eigenen Werte wie „SEMI“ (Vereinsfeld 0x26 = Grundwert + „Unentschieden“,
+///   Datei 0x48E62); im Spiel schreibt 0x939A weder Einsatz (Datei 0x9516) noch Angriff (Datei 0x94E2) – kein
+///   Nachführen nach dem Spielstand und kein Energieabzug (<see cref="OriginalMinutes.FollowTactics"/>). [APPROX] Das
+///   Live-Spiel, in dem das Original die Werte bei „MANUELL“ setzt, hat das Remake nicht.</item>
+/// <item>[ORIGINAL] Der Einsatz wirkt nur über Vereinsfeld 0x26 in der Spielberechnung (0x368B1/0x977F, Energie
+///   0x87F7), nicht als Zuschlag auf eine Spielstärke (A178, A182).</item>
 /// </list>
 /// </remarks>
 public sealed class Tactics
@@ -105,8 +109,14 @@ public sealed class Tactics
     /// <summary>[ORIGINAL] Obergrenze des Angriffs (Datei 0x48923: 7).</summary>
     public const int MaxAttack = 7;
 
-    /// <summary>Höchstwert eines Minutenfeldes. [APPROX] Ein Spiel dauert 60 Minuten.</summary>
-    public const int MaxMinutes = 60;
+    /// <summary>
+    /// [ORIGINAL] Minuten-Vorgabe: die vier Reihen eines Teils zusammen höchstens 20 Minuten (Datei 0x48899: 0x14,
+    /// Pfeilgrenze Datei 0x4889F–0x488CE und 0x489C3).
+    /// </summary>
+    public const int MaxMinutesPerPart = 20;
+
+    /// <summary>[ORIGINAL] Summe der umgerechneten Minuten-Vorgabe je Teil (Datei 0x48FA7/0x49019: 8).</summary>
+    public const int MinuteQuotaSum = 8;
 
     /// <summary>[ORIGINAL] Tordifferenz ab der eine Führung bzw. ein Rückstand „hoch“ ist (Datei 0x93E7: Differenz &gt; 2).</summary>
     public const int HighMargin = 3;
@@ -121,9 +131,6 @@ public sealed class Tactics
     /// <summary>[ORIGINAL] Angriff der Automatik (DGROUP 0x491C ff.; Grundwert 0, Datei 0x8499).</summary>
     private static readonly int[] UnderdogAttack = [0, 5, 6, 4, 4, 0];
     private static readonly int[] FavouriteAttack = [0, 4, 5, 6, 7, 4];
-
-    /// <summary>[APPROX] Bezugswert des Einsatzes für den Stärkezuschlag: Automatik bei Gleichstand im ausgeglichenen Spiel.</summary>
-    public const int ReferenceEffort = 80;
 
     private readonly int[,] _effort = new int[Blocks, Situations];
     private readonly int[,] _attack = new int[Blocks, Situations];
@@ -246,8 +253,55 @@ public sealed class Tactics
     /// <summary>Minuten-Vorgabe einer Reihe (0–3); <paramref name="forwards"/> = Sturm, sonst Abwehr.</summary>
     public int Minutes(int line, bool forwards) => _minutes[line, forwards ? 1 : 0];
 
+    /// <summary>Minuten setzen; begrenzt auf 0 … <see cref="MinutesLimit"/>.</summary>
     public void SetMinutes(int line, bool forwards, int value) =>
-        _minutes[line, forwards ? 1 : 0] = Math.Clamp(value, 0, MaxMinutes);
+        _minutes[line, forwards ? 1 : 0] = Math.Clamp(value, 0, MinutesLimit(line, forwards));
+
+    /// <summary>
+    /// [ORIGINAL] Höchster zulässiger Wert eines Minutenfeldes: 20 − Minuten der übrigen Reihen des Teils (Datei
+    /// 0x4889F–0x488CE). Ein Wert über der Grenze (z. B. aus einem älteren Spielstand) bleibt stehen, steigt aber nicht.
+    /// </summary>
+    public int MinutesLimit(int line, bool forwards)
+    {
+        var part = forwards ? 1 : 0;
+        var others = 0;
+        for (var l = 0; l < Blocks; l++)
+            if (l != line)
+                others += _minutes[l, part];
+        return Math.Max(MaxMinutesPerPart - others, Math.Min(_minutes[line, part], MaxMinutesPerPart));
+    }
+
+    /// <summary>
+    /// Umgerechnete Minuten-Vorgabe einer Reihe, gegen die die Spielberechnung im Modus 4 zählt (DGROUP 0xCC73 + 8 ·
+    /// Manager + 4 · Teil + Reihe, Datei 0x09140). [ORIGINAL] Datei 0x48E62 beim Verlassen des Taktikbildschirms
+    /// (Datei 0x48EEA–0x4901D): Reihe 1–3 ⌊Min / 2⌋ | (Min &amp; 1), Reihe 4 ⌊Min / 2⌋; dann von Reihe 4 rückwärts im Ring
+    /// auf Summe 8: bei Summe &gt; 8 −1 nur bei Werten &gt; 1, sonst +1 (bei Werten ≤ 1 nicht in Reihe 4). Das Remake
+    /// rechnet bei Bedarf aus den Minutenfeldern; das ist gleich, weil nur der Bildschirm Minuten und Modus 4 setzt.
+    /// </summary>
+    public int MinuteQuota(int line, bool forwards) => MinuteQuotas(forwards)[line];
+
+    private int[] MinuteQuotas(bool forwards)
+    {
+        var part = forwards ? 1 : 0;
+        var quota = new int[Blocks];
+        var sum = 0;
+        for (var l = 0; l < Blocks; l++)
+        {
+            var m = _minutes[l, part] & 0xFF;
+            quota[l] = l < Blocks - 1 ? (m >> 1) | (m & 1) : m >> 1;
+            sum += quota[l];
+        }
+        var step = sum > MinuteQuotaSum ? -1 : 1;
+        for (var l = Blocks - 1; sum != MinuteQuotaSum; l = l == 0 ? Blocks - 1 : l - 1)
+        {
+            if (quota[l] > 1 || (step == 1 && l != Blocks - 1))
+            {
+                quota[l] += step;
+                sum += step;
+            }
+        }
+        return quota;
+    }
 
     /// <summary>Sind die Minutenfelder in Gebrauch? (Nur bei „Minuten-Vorgabe (s.u.)“.)</summary>
     public bool MinutesActive => LineChange == LineChangeMode.MinutesPreset;
@@ -343,22 +397,6 @@ public sealed class Tactics
         ScoreSituation.HighDeficit => "hoher Rückstand",
         _ => "Grundwert",
     };
-
-    /// <summary>
-    /// Zuschlag auf die Spielstärke durch den Einsatz bei Gleichstand, gewichtet wie die Blöcke.
-    /// [APPROX] Wie der Einsatz im Original auf das Ergebnis wirkt, ist nicht rekonstruiert (Spielsimulation, Overlay
-    /// 5E73). „AUTOM.“ gibt keinen Zuschlag; sonst je Block (Einsatz − <see cref="ReferenceEffort"/>) / 10,
-    /// begrenzt auf −3 … +3 (Wertebereich des bisherigen Zuschlags). Kostet (später) Energie.
-    /// </summary>
-    public double EffortStrengthBonus()
-    {
-        if (EffortMode == TacticMode.Auto)
-            return 0;
-        double sum = 0;
-        for (var b = 0; b < Blocks; b++)
-            sum += TeamStrength.BlockWeights[b] * Math.Clamp((EffectiveEffort(b, 0) - ReferenceEffort) / 10.0, -3, 3);
-        return sum;
-    }
 }
 
 public sealed partial class Club

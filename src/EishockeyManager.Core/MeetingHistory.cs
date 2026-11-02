@@ -114,11 +114,17 @@ public sealed partial class GameState
 {
     /// <summary>
     /// Ergebnis in die Begegnungstabellen der beteiligten Manager eintragen. [ORIGINAL] 0x50283 (Datei 0x50289–0x5030B):
-    /// Heimverein mit Manager → dessen Tabelle, Gegner = Gast, Seite 0, Tore Heim:Gast; Gast mit Manager → Seite 1, Tore
-    /// Gast:Heim. Das Nationalteam des Bundestrainers (DGROUP 0x6AC) schreibt immer in die Tabelle von Manager 0 – dieselbe,
-    /// die das Bundestrainermenü liest (<see cref="MeetingEntries"/>).
-    /// [APPROX] Angeschlossen sind bisher nur die Ligaspiele (<see cref="PlayNextMatchDay"/>); Pokal-, Play-off- und
-    /// WM-Spiele laufen im Original ebenfalls über 0x50283 und werden in der Integration angeschlossen (fremde Dateien).
+    /// Heimverein mit Manager (Vereinsfeld +0x16) → dessen Tabelle, Gegner = Gast, Seite 0, Tore Heim:Gast; Gast mit Manager
+    /// → Seite 1, Tore Gast:Heim. Das Nationalteam DGROUP 0x6AC schreibt immer in die Tabelle von Manager 0 (Datei
+    /// 0x502B4–0x502C8, <c>mov cl, 1</c>) – dieselbe, die das Bundestrainermenü liest (<see cref="MeetingEntries"/>).
+    /// [ORIGINAL] 0x6AC ist Deutschland (Startwert 56); einziger Schreiber ist die WM-Auslosung (Datei 0x35FAC), die den
+    /// Index nach dem Tausch der Ländersätze nachführt. Im Remake behalten die Länder ihren Index – also immer
+    /// <see cref="NationalTeams.Germany"/>, ob ein Bundestrainer ernannt ist oder nicht (#344).
+    /// <para>Aufrufer wie im Original (Spur wettbewerbe-spiel, Teil 2, A111): Liga (<see cref="PlayNextMatchDay"/>, 0x50B45),
+    /// DEB-Pokal (<see cref="DebCup.PlayDay"/>, Datei 0x34C5C), WM-Gruppe und -Endrunde, Freundschaftsspiel (über
+    /// <see cref="EnterNationalResult"/>, Datei 0x30942, 0x3108B, 0x303BA), Play-offs (Datei 0x3165B) und Aufstiegsrunden
+    /// (0x30852 mit Wettbewerb 1) über <see cref="RecordMeetings"/>. Europapokal nicht: 0x30852 ruft 0x50283 nur für
+    /// Wettbewerb 0 und 1 (Datei 0x3091C–0x30942). Pokal- und Play-off-Ergebnisse ohne Marken (Endstand).</para>
     /// </summary>
     public void RecordMeeting(int home, int away, int homeGoals, int awayGoals)
     {
@@ -126,6 +132,13 @@ public sealed partial class GameState
             MeetingHistory.Record(MeetingTable(h), away, home: true, homeGoals, awayGoals);
         if (TableOwner(away) is { } a)
             MeetingHistory.Record(MeetingTable(a), home, home: false, awayGoals, homeGoals);
+    }
+
+    /// <summary>Mehrere Spiele eintragen, je Spiel einmal <see cref="RecordMeeting"/> (Endstand ohne Marken).</summary>
+    public void RecordMeetings(IEnumerable<KnockoutMatch> games)
+    {
+        foreach (var g in games)
+            RecordMeeting(g.Home, g.Away, g.HomeGoals, g.AwayGoals);
     }
 
     /// <summary>
@@ -148,7 +161,7 @@ public sealed partial class GameState
 
     private int? TableOwner(int club)
     {
-        if (NationalCoach is { } coach && coach.Nation == club)
+        if (club == NationalTeams.Germany)
             return Managers.Count > 0 ? 0 : null;
         for (var i = 0; i < Managers.Count && i < HeadToHeadSlots; i++)
             if (Managers[i].ClubIndex == club)

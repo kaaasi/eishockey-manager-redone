@@ -32,8 +32,9 @@ namespace EishockeyManager.UI.Screens.Statistics;
 ///   in (223 … 293 | 179 … 188) bzw. (… | 206 … 215), Grund 0, Rahmen Farbe 6.</item>
 /// <item>[APPROX] Das Original kehrt nach dem Zeichnen ins Menü zurück; wie bei „Fairplay“ schließt hier ein Klick oder
 ///   eine Taste.</item>
-/// <item>[APPROX] Über-/Unterzahl zählt die Minutenrechnung (Spur <c>spielstaerke-manager</c>, Anschluss offen); bis dahin
-///   stehen dort die gespeicherten Zähler (<see cref="Manager.PowerPlayCounts"/>, sonst 0).</item>
+/// <item>[ORIGINAL] Über-/Unterzahl: Managerfelder DGROUP 0x97D2 + 2 · k (<see cref="Manager.PowerPlayCounts"/>), gezählt in der
+///   Minutenrechnung (Tor 0xA939–0xA9A2 und 0xAA2C–0xAAEF, Strafe 0x35A84/0x35B18; <c>docs/spielberechnung.md</c> §18).
+///   Anschluss über die Zeitleiste geprüft (Spur wettbewerbe-spiel, Teil 4, A349: <c>WettbewerbeSpiel4ScreenTests</c>).</item>
 /// </list>
 /// </remarks>
 public sealed class ClubStatisticsScreen : Screen

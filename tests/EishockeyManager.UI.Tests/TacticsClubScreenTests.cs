@@ -62,15 +62,16 @@ public class TacticsClubScreenTests
                 club.Players.Add(p);
             }
         }
+        // Teil 8 (A068): neu aufstellen wie nach dem Transferbildschirm (Datei 0x465F1 ruft 0x426BC); die Eingesetzten
+        // der automatischen Aufstellung stehen fest und wachsen nicht von selbst mit dem Kader.
+        club.ApplyAutoLineup();
         d.OpenTile("Aufstellung");
         var rows = club.SortedPlayers.ToList();
         int RowY(Player p) => LineupScreen.FirstRowY + rows.IndexOf(p) * LineupScreen.RowPitch + 2;
 
-        // Letzter in der Reihenfolge der Automatik (Kondition + Technik + Form): steht hinter den 22 Eingesetzten.
-        var others = club.Players.Where(p => p.Available && !club.Lineup.Contains(p))
-            .OrderByDescending(p => p.Condition + p.Technique + p.Form).ThenBy(p => p.Role).ThenBy(p => p.Number).ToList();
-        Assert.True(club.Lineup.Count + others.Count > 23);
-        var outside = others.Last(p => p.Role != PlayerRole.Goalkeeper);
+        // Ein Spieler außerhalb der 22 Eingesetzten der automatischen Aufstellung (0x426BC).
+        Assert.Equal(Club.MaxDressed, club.DressedCount);
+        var outside = club.Players.First(p => p.Available && !club.IsDressed(p) && p.Role != PlayerRole.Goalkeeper);
         var slot = outside.Role == PlayerRole.Forward ? LineupSlot.Forward(3, 0) : LineupSlot.Defender(3, 0);
         var button = LineupScreen.SlotButton(slot);
         Assert.Null(club.Lineup[slot]);
@@ -82,6 +83,7 @@ public class TacticsClubScreenTests
         var reserve = club.Dressed.First(p => !club.Lineup.Contains(p) && p != outside);
         d.Click(60, RowY(reserve));
         Assert.False(club.IsDressed(reserve));
+        d.Click(10, 10); // Meldung „Auto-Aufstellung / ist deaktiviert !“ schließen (Datei 0x40ADE, Integration Runde 11)
         d.Click(button.X + 5, button.Y + 5);
         d.Click(60, RowY(outside));
         Assert.Same(outside, club.Lineup[slot]);

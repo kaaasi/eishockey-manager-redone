@@ -37,8 +37,9 @@ public static class PlayerInjuries
     ///   = 0 für immer (0xFF).</item>
     /// <item>Status verletzt (+0x09 | 2), Art (+0x17), nicht eingesetzt (+0x0A = 0).</item>
     /// </list>
-    /// [APPROX] Das Remake führt die Art nicht (keine Anzeige in dieser Spur, kein neues Spielstandfeld) und zählt die
-    /// Wochen in <see cref="Player.InjuredGames"/>; die Form des Kaderplatzes steht für die Form des Pools.
+    /// [ORIGINAL] Datei 0x05B1A schreibt die Art in den Kaderplatz (+0x17, <see cref="Player.InjuryKind"/>; Anschluss aus
+    /// kader-transfer Teil 2, Integration Runde 11). [APPROX] Das Remake zählt die Wochen in <see cref="Player.InjuredGames"/>;
+    /// die Form des Kaderplatzes steht für die Form des Pools.
     /// </summary>
     /// <param name="difficulty">„5 − Level“ des Managers (DGROUP 0xED8).</param>
     /// <returns>Gezogene Art 0 … 27.</returns>
@@ -55,6 +56,7 @@ public static class PlayerInjuries
         if (Serious.Contains(kind) && OriginalMatch.Rnd(random, 0, 2 * difficulty + 10 - min / 4) == 0)
             weeks = Permanent;
         player.InjuredGames = weeks;
+        player.InjuryKind = kind; // [ORIGINAL] Datei 0x05B1A: Art in +0x17
         return kind;
     }
 
@@ -79,9 +81,9 @@ public static class PlayerInjuries
     /// Aufstellung nach Verletzung oder Heilung. [ORIGINAL] Nach jeder Verletzung (0x54197, ohne Live-Anzeige) und jeder
     /// Heilung (0x7C77) sowie täglich für Verletzte und Gesperrte (0x7621) ruft das Original 0x426BC (Stub 0x14B7:0x4D):
     /// ist die Einstellung DGROUP 0x375 + 2 · Manager gesetzt, stellt es die Kaderplätze des Managers neu auf (+0x0A, +0x15
-    /// über 0x42838). [APPROX] Die Einstellung führt das Remake nicht; es nimmt Verletzte aus der Aufstellung und füllt nur
-    /// die Lücken (<see cref="Lineup.FillGaps"/>) – nach dem Spiel statt in der Minute, eigene Aufstellungen bleiben sonst.
-    /// Eingesetzt (+0x0A) und die Grenze von 22: <see cref="Club.RefillLineup"/>.
+    /// über 0x42838; Teil 8: <see cref="Club.ApplyAutoLineup"/>, <see cref="AutoLineupRule"/>). [APPROX] Nach dem Spiel
+    /// statt in der Minute; ohne die Einstellung nimmt das Remake Verletzte heraus und füllt Lücken mit eingesetzten
+    /// Reservisten (das Original lässt sie). Eingesetzt (+0x0A) und die Grenze von 22: <see cref="Club.RefillLineup"/>.
     /// </summary>
     public static void RefillLineup(Club club) => club.RefillLineup();
 }
@@ -107,8 +109,8 @@ public static partial class OriginalMinutes
     /// Verletzungen im Spiel. [ORIGINAL] Datei 0x38B8F, je Minute einer Managerpaarung vor den Torchancen (0x37F06), wenn
     /// einer der beiden Vereine einen Manager hat:
     /// <list type="number">
-    /// <item>Feldspieler beider Vereine neu zählen (0x38A36). [APPROX] nicht umgesetzt: das Remake führt die Feldspieler
-    ///   über die Strafbank; ein verletzter Spieler fehlt nur in den Reihenwerten (0x98F8) und bei den Spielerwahlen.</item>
+    /// <item>Feldspieler beider Vereine neu zählen (0x38A36, Datei 0x38BA9–0x38BBA; <see cref="MatchEngine.RecountSkaters"/>,
+    ///   nur Managervereine).</item>
     /// <item>Manager m = 0 … Zahl der Manager − 1 (Satz aktiv, DGROUP 0xA729 + m) und der Bundestrainer (5, nur mit einem
     ///   Verein ≤ 0x3F – also nie mit dem Nationalteam), dessen Verein spielt, in dieser Reihenfolge.</item>
     /// <item>Managerwert des Managers am Zug (DGROUP 0x974B + 0x1AF · [0xA70E]) = 100 oder weniger als 4 eingesetzte Spieler
@@ -123,6 +125,8 @@ public static partial class OriginalMinutes
     /// </summary>
     public static void Injuries(LiveTeam home, LiveTeam away, int minute, MatchReport report, Random random)
     {
+        MatchEngine.RecountSkaters(home);
+        MatchEngine.RecountSkaters(away);
         var teams = new List<(LiveTeam Team, int Side)>();
         if (home.InjuryManager is not null)
             teams.Add((home, 0));

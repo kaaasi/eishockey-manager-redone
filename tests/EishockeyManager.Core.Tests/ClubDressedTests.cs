@@ -16,7 +16,11 @@ public class ClubDressedTests
         return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
     }
 
-    /// <summary>Holt einsatzfähige Spieler eines Computervereins, bis der Kader <paramref name="size"/> Spieler hat.</summary>
+    /// <summary>
+    /// Holt einsatzfähige Spieler eines Computervereins, bis der Kader <paramref name="size"/> Spieler hat. Teil 8 (A068):
+    /// danach stellt der Verein neu auf wie das Original nach dem Transferbildschirm (Datei 0x465F1 ruft 0x426BC); die
+    /// Eingesetzten der automatischen Aufstellung stehen seitdem fest und wachsen nicht mehr von selbst mit dem Kader.
+    /// </summary>
     private static void GrowSquad(GameState game, Club club, int size)
     {
         var donors = game.Clubs.Where(c => c != club && c.Players.Count > 0).ToList();
@@ -25,12 +29,16 @@ public class ClubDressedTests
             foreach (var p in donor.Players.Where(p => p.Available && p.Role != PlayerRole.Goalkeeper).ToList())
             {
                 if (club.Players.Count >= size)
+                {
+                    club.ApplyAutoLineup();
                     return;
+                }
                 donor.Lineup.Remove(p);
                 donor.Players.Remove(p);
                 club.Players.Add(p);
             }
         }
+        club.ApplyAutoLineup();
     }
 
     [Fact]
@@ -119,7 +127,6 @@ public class ClubDressedTests
         var game = Create();
         game.AppointNationalCoach(game.Managers[0]);
         game.AutoNominate();
-        var club = game.Clubs[2];
         var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
         root["schema"] = 4;
         foreach (var c in root["vereine"]!.AsArray().Select(n => n!.AsObject()))
@@ -147,8 +154,13 @@ public class ClubDressedTests
             // Kette bis Schema 12 (Spur nationalteam, #192): Der unveränderte alte Startwert wird zum Startwert des Nationalteams (0).
             Assert.Equal(Tactics.National().Attack(0, r), loaded.NationalCoach!.Tactics.Attack(0, r));
         }
-        Assert.Equal(club.Dressed.Select(p => p.Id), loaded.Clubs[2].Dressed.Select(p => p.Id));
-        Assert.Equal(game.Clubs[2].MatchStrength, loaded.Clubs[2].MatchStrength);
+        // Integration Runde 11 (wettbewerbe-spiel Teil 8 + kader-transfer): Managervereine setzen seit Teil 8 beim Spielstart
+        // von Hand ein (0x426BC, „Eingesetzt“ gespeichert) – einen solchen Stand kann ein Schema-4-Spielstand nicht tragen.
+        // Die Vorgaberegel der Migration 4 prüft daher ein Computerverein; mit dem neuen Start wählen Regel 0x426BC und
+        // Vorgabe beim Managerverein verschiedene Reservisten.
+        var computer = game.Clubs.First(c => c.League is not null && game.Managers.All(m => m.ClubIndex != c.Index)).Index;
+        Assert.Equal(game.Clubs[computer].Dressed.Select(p => p.Id), loaded.Clubs[computer].Dressed.Select(p => p.Id));
+        Assert.Equal(game.Clubs[computer].MatchStrength, loaded.Clubs[computer].MatchStrength);
         var again = SaveGame.Save(loaded);
         Assert.Equal(again, SaveGame.Save(SaveGame.Load(again).Game!));
     }
@@ -195,8 +207,9 @@ public class ClubDressedTests
                     Check();
             }
             Check();
-            Assert.All(others, c => Assert.Equal(0, c.Tactics.EffortStrengthBonus()));
-            Assert.Equal(active ? 2 : 0, club.Tactics.EffortStrengthBonus(), 6);
+            // Runde 11 (A178/A182): kein Stärkezuschlag mehr; die eigene Taktik bleibt nur beim aktiven Manager stehen.
+            Assert.All(others, c => Assert.Equal(TacticMode.Auto, c.Tactics.EffortMode));
+            Assert.Equal(active ? Tactics.MaxEffort : 80, club.Tactics.EffectiveEffort(0, 0));
 
             var bytes = SaveGame.Save(game);
             var loaded = SaveGame.Load(bytes);

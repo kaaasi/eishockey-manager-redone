@@ -116,8 +116,9 @@ public sealed partial class GameState
     /// [ORIGINAL] Spieltagsablauf 0x36DC5–0x36DE9 (Liga) und 0x36F9C ff. (Spiele mit Teilnehmerzahl): Liefert die
     /// Spielabrechnung 0x544C0 1 (Heimmanager) bzw. 2 (Gastmanager), trägt 0x36D2A das Spiel ohne Spielberechnung als
     /// 0:2 bzw. 2:0 ein. Zwischen Markierung und Abrechnung ändert sich die Aufstellung nur durch Verletzungen im Spiel
-    /// (0x38B8F, danach <see cref="PlayerInjuries.RefillLineup"/>); [APPROX] die Abrechnung prüft dann den Stand nach dem
-    /// Spiel (im Original stellt 0x426BC nur mit der Einstellung DGROUP 0x375 neu auf, nicht geprüft).
+    /// (0x38B8F, danach <see cref="PlayerInjuries.RefillLineup"/>; [ORIGINAL] mit der Einstellung „automatisch aufstellen“
+    /// stellt Datei 0x53C57 über 0x426BC ganz neu auf, <see cref="Club.ApplyAutoLineup"/>, A190 Integration Runde 11);
+    /// [APPROX] die Abrechnung prüft dann den Stand nach dem Spiel.
     /// [APPROX] Sind beide Vereine Managervereine und beide nicht spielfähig, prüft das Original die Manager in
     /// Indexreihenfolge; das Remake wertet dann immer 0:2 (Heimverein zuerst).
     /// </summary>

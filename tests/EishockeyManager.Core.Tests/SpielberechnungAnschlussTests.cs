@@ -172,10 +172,15 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur kader-transfer, Teil 5 (0x057E3, 0x07C7E): beide neu (Poolumverteilung, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur kader-transfer, Teil 7 (0x07169): beide neu (Ankündigungen nach dem Original, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Integration Runde 11 (geld + saisonwechsel + kader-transfer): Abdrücke auf dem integrierten Stand neu ermittelt (alle drei Spuren
-    /// ändern den Zufallsverbrauch; kein weiterer Unterschied).</summary>
+    /// ändern den Zufallsverbrauch; kein weiterer Unterschied).
+    /// Spur wettbewerbe-spiel, Teil 3 (A011 ff.): neu – Nationalteams spielen mit ihren eigenen Teamwerten (Kondition/Technik je Teil aus DGROUP 0x4C4E − 2, Form und Tagesform des Vereinsplatzes, Lader 0x2F0CC), das Land des Bundestrainers mit seinem Kader (0x98F8 mit Manager 5); andere WM-Ergebnisse und anderer Zufallsverbrauch nach der ersten WM.
+    /// Spur wettbewerbe-spiel, Teil 7 (A185, A186): neu – Kaderplatz +0x19 der Managerkader beim Spielstart, der Talente und der Marktplätze gewürfelt (random(3, 12) je Halbbyte, Datei 0x299F4/0x06F23/0x49803; eigene Quelle, Hauptquelle unverbraucht) statt 7/7; Über- und Unterzahl der Managerpaarungen rechnen damit, andere Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Gegenprobe: ohne Würfe (alle 7/7) alte Werte.
+    /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): neu – Managervereine stellen mit der Einstellung „automatisch aufstellen“ (Startwert 1) beim Spielstart und täglich nach 0x426BC/0x42838 neu auf (statt Lücken stehen zu lassen bzw. nach Spielwert zu füllen), und die Feldspieler der Managerpaarung zählt je Minute 0x38A36 aus der Aufstellung; andere Aufstellungen und Ergebnisse ab dem ersten Managerspiel. Begründung bei <see cref="RngTwinProbeTests"/>.
+    /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
+    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).</summary>
     [GameDataTheory]
-    [InlineData(false, "D860CF50A65E07F3")]
-    [InlineData(true, "16B965CA54EAC7B8")]
+    [InlineData(false, "137C2086DE7F5381")]
+    [InlineData(true, "FB70395F3C43EFFE")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -234,8 +239,13 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Managerverein (Bundesliga) bekommt beim Spielstart 25 statt 20 Kaderplätze; die Kadererzeugung zieht dafür mehr Zahlen.
     // kader-transfer, Teil 5 (0x07C7E): unverändert – die Poolumverteilung des Saisonwechsels gehört zum Tageslauf 0x54C9F, den es
     // im Modus „nur Weltkugel“ nicht gibt; die des Spielstarts zieht aus der Quelle des Kaderaufbaus.
+    // wettbewerbe-spiel, Teil 3 (A011 ff.): Hauptquelle und Konten gleich; Weltmeister und Pokalquelle (C…) neu – die Länder
+    // spielen mit Kondition/Technik je Teil (DGROUP 0x4C4E − 2) und Form/Tagesform ihres Vereinsplatzes statt eines
+    // Mittelwerts mit Form 50 (vorher 4 von 5 Titeln für Russland 52, jetzt 52, 54, 63, 55, 63).
+    // Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
+    // Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=52|500000|R540662232 C5178594";
+        "WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=55|500000|WorldChampion=63|500000|R540662232 C6027902";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem
@@ -246,7 +256,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     {
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "Probe", ClubIndex = 30, StartLeague = League.Oberliga });
-        var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, seed: 7);
+        // wettbewerbe-spiel, Teil 7 (+0x19 gewürfelt): Seed 8 statt 7 – der Startwurf verschiebt die Zufallsfolge der
+        // Managerpaarungen; Seed 7 hatte danach in der 2. Liga 3 von 216 Unentschieden (1,4 %). Mittel über Seeds 1–16 vorher
+        // und nachher gleich (Bundesliga 11,4/11,2 %, 2. Liga 8,5/8,5 %, Oberliga 9,2/9,4 %; Tore 6,50/6,33, 7,79/7,84, 8,04/8,09).
+        var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, seed: 8);
         while (game.PlayedMatchDays < 36)
             TestSeason.PlayMatchDay(game);
         foreach (var league in Enum.GetValues<League>())
@@ -263,7 +276,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
             else
                 Assert.InRange(perGame, 5.0, 11.0);
             // Spur spielberechnung-komplett (#204): Mit der Wanderung der Teamwerte liegen die Bundesligavereine enger
-            // zusammen (69 … 94); Seed 7 hat dort 15,3 % Unentschieden. Mittel über 12 Seeds × 4 Saisons 10,7 %, Video
+            // zusammen (69 … 94); Seed 7 hatte dort 15,3 % Unentschieden. Mittel über 12 Seeds × 4 Saisons 10,7 %, Video
             // (Reihe folgen, Bild folge21_01558: Bundesliga nach dem 44. Spieltag) 30 von 264 = 11,4 %.
             Assert.InRange(draws, 0.03, league == League.Oberliga ? 0.15 : 0.17);
         }

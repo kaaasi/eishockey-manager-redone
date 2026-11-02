@@ -64,6 +64,20 @@ public sealed class PenaltyBox
     /// </summary>
     public void Release(int slot, bool force)
     {
+        var before = Skaters;
+        ReleaseCore(slot, force);
+        if (Skaters != before)
+            Released?.Invoke();
+    }
+
+    /// <summary>
+    /// Nach dem Freiwerden eines Platzes: [ORIGINAL] 0x35691 ruft für Managervereine die Neuzählung 0x38A36 (Datei 0x35810,
+    /// <see cref="MatchEngine.RecountSkaters"/>). Gehört nicht zum Spielstand.
+    /// </summary>
+    public Action? Released { get; set; }
+
+    private void ReleaseCore(int slot, bool force)
+    {
         if (slot == 0)
         {
             if ((State & 0xF8) != 0 && !force)
@@ -232,8 +246,8 @@ public sealed class LiveTeam
     public LiveSquad? Squad { get; init; }
 
     /// <summary>
-    /// Kader nur für die Spielerwahl der Strafen (0x378C5), wenn <see cref="Squad"/> fehlt: Nationalteam des Bundestrainers
-    /// (R8W3I-06). [ORIGINAL] 0x35AB8–0x35B2C ruft 0x378C5 für jeden Verein mit Vereinsfeld 0x16 ≠ 0, also auch für das
+    /// Kader nur für die Spielerwahl der Strafen (0x378C5), wenn <see cref="Squad"/> fehlt. Seit Teil 3 der Spur
+    /// wettbewerbe-spiel spielt das Nationalteam des Bundestrainers mit <see cref="Squad"/> (R8W3I-06). [ORIGINAL] 0x35AB8–0x35B2C ruft 0x378C5 für jeden Verein mit Vereinsfeld 0x16 ≠ 0, also auch für das
     /// Nationalteam (Manager 5, Kaderplätze DGROUP 0x5DC3 + 5 · 0x618).
     /// </summary>
     public LiveSquad? PenaltySquad { get; init; }
@@ -304,7 +318,10 @@ public sealed class MatchReport
     /// <summary>Penaltyschießen: true Heim, false Gast, null keins (siehe <see cref="MatchEngine.PlayWithEvents"/>).</summary>
     public bool? ShootoutHomeWins { get; set; }
 
-    /// <summary>Tore des Penaltyschießens nach der Verlängerung (<see cref="OriginalMinutes.Shootout"/>), sonst null.</summary>
+    /// <summary>
+    /// Tore des Penaltyschießens: Minutenweg nach der Verlängerung (<see cref="OriginalMinutes.Shootout"/>, je 2 … 5), schneller
+    /// Weg der Pokale die Zusatztore random(0, 2) je Seite (0x376F0); sonst null. Der Spielstand oben bleibt der Gleichstand.
+    /// </summary>
     public (int Home, int Away)? ShootoutGoals { get; set; }
 }
 
@@ -496,18 +513,23 @@ public static partial class OriginalMinutes
     /// Einsatz und Angriff nach dem Spielstand (nur mit <see cref="LiveTeam.Tactics"/>, siehe dort). [ORIGINAL] 0x939A,
     /// gerade Minuten der Managerpaarung für beide Vereine: Grundwert + Zuschlag des Spielstands, dazu bei einer
     /// Energie der Reihen auf dem Eis ((Abwehr + Sturm) / 2) unter 50 deren Differenz zu 50; begrenzt auf 0 … 100. Bei
-    /// „MANUELL“ schreibt das Original keinen Einsatz ([APPROX] das Remake nimmt dann die eigenen Werte ohne Energieabzug).
+    /// „MANUELL“ schreibt das Original keinen Einsatz (Datei 0x9516: DGROUP 0xA6FA + Manager = 2) und keinen Angriff
+    /// (Datei 0x94E2: DGROUP 0xA706 + Manager ≥ 2); es bleibt der Wert vor dem Spiel.
     /// </summary>
-    private static void FollowTactics(LiveTeam team, int goalDifference)
+    public static void FollowTactics(LiveTeam team, int goalDifference)
     {
         if (team.Tactics is not { } tactics)
             return;
-        var effort = tactics.EffectiveEffort(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
-        var energy = (team.LineEnergy(0, team.DefenseLine) + team.LineEnergy(1, team.AttackLine)) >> 1;
-        if (energy < 50 && tactics.EffortMode != TacticMode.Manual)
-            effort += energy - 50;
-        team.Effort = Math.Clamp(effort, 0, 100);
-        team.AttackLevel = tactics.EffectiveAttack(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
+        if (tactics.EffortMode != TacticMode.Manual)
+        {
+            var effort = tactics.EffectiveEffort(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
+            var energy = (team.LineEnergy(0, team.DefenseLine) + team.LineEnergy(1, team.AttackLine)) >> 1;
+            if (energy < 50)
+                effort += energy - 50;
+            team.Effort = Math.Clamp(effort, 0, 100);
+        }
+        if (tactics.AttackMode != TacticMode.Manual)
+            team.AttackLevel = tactics.EffectiveAttack(0, goalDifference, team.TacticsStrength, team.TacticsOpponentStrength);
     }
 
     private static void Score(LiveTeam home, LiveTeam away, int side, (int Normal, int Defensive, int Offensive) h,
@@ -622,8 +644,10 @@ public static partial class OriginalMinutes
         if (team.Squad is { } squad)
         {
             // [ORIGINAL] 0x98F8: Managervereine bilden die Werte aus den Spielern der Reihen auf dem Eis.
-            defense = MatchEngine.ManagedLineValues(squad, team.DefenseLine, 0, advantage, team.Effort, minute, inMatch: true);
-            attack = MatchEngine.ManagedLineValues(squad, team.AttackLine, 1, advantage, team.Effort, minute, inMatch: true);
+            defense = MatchEngine.ManagedLineValues(squad, team.DefenseLine, 0, advantage, team.Effort, minute, inMatch: true,
+                squad.NationalCoach);
+            attack = MatchEngine.ManagedLineValues(squad, team.AttackLine, 1, advantage, team.Effort, minute, inMatch: true,
+                squad.NationalCoach);
             team.OpenNet = !squad.HasGoalie;
         }
         else
