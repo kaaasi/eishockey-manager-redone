@@ -737,3 +737,36 @@ Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/StatisticsStrength.cs
 - **Über-/Unterzahl in der Vereinsstatistik (A349):** Der Anschluss der Zähler aus §18 an „Statistiken → Verein“ war
   schon vorhanden (`Manager.PowerPlayCounts`); geprüft über die Zeitleiste (`WettbewerbeSpiel4ScreenTests`), der
   veraltete `[APPROX]`-Kommentar in `ClubStatisticsScreen` ist ersetzt.
+
+## 22. Taktik und Feldspieler (Runde 11, Spur wettbewerbe-spiel Teil 5; Inventur P2 Nr. 1, G6)
+
+Geprüft an `em.exe` (`tools/reverse-engineering/disasm.py`), Tests `TaktikTeil5Tests`.
+
+- **Minuten-Vorgabe (A177, G6):** je Teil zusammen höchstens 20 Minuten (Pfeilgrenze Datei 0x4889F–0x488CE, 0x489C3:
+  Feld < 20 − übrige Reihen). Beim Verlassen des Taktikbildschirms rechnet 0x48E62 (Datei 0x48EEA–0x4901D) um:
+  Reihe 1–3 ⌊Min/2⌋ | (Min & 1), Reihe 4 ⌊Min/2⌋, dann von Reihe 4 rückwärts im Ring bis Summe 8 (Summe > 8: −1 nur bei
+  Werten > 1; sonst +1, bei Werten ≤ 1 nicht in Reihe 4). Modus 4 von 0x8EF2 zählt gegen diese Werte (Datei 0x09140).
+  Remake: `Tactics.MinutesLimit`, `Tactics.MinuteQuota`; `ChangeLines` Modus 4. Beispiele 7/7/6/0 → 3/3/2/0,
+  5/5/5/5 → 3/2/2/1, 0/0/0/0 → 2/3/3/0.
+- **Minutenzähler DGROUP 0x4926 (A090):** nur 0x8EF2 liest und schreibt ihn (Datei 0x90F9, 0x911C, 0x9166); kein
+  weiterer Zugriff, kein Blockzugriff. Er läuft im Original über das Spielende hinaus weiter. `[APPROX]` Das Remake
+  beginnt jedes Spiel bei 0.
+- **„MANUELL“ (A176):** 0x939A schreibt Vereinsfeld 0x26 (Einsatz) nur, wenn der Modus nicht 2 ist (Datei 0x9516), den
+  Angriff in 0x2C nur bei Modus < 2 (Datei 0x94E2). Bei „MANUELL“ bleibt im Spiel der Wert vor dem Spiel (Grundwert +
+  „Unentschieden“, 0x48E62 Schritt 4) – ohne Nachführen nach dem Spielstand und ohne Energieabzug. `FollowTactics`.
+- **Kein Einsatz-Zuschlag (A178, A182):** der Einsatz wirkt nur über Vereinsfeld 0x26 in 0x368B1/0x977F und 0x87F7;
+  `Tactics.EffortStrengthBonus` (±3 um 80) entfällt, `MatchStrength` (nur noch `MatchEngine.Play`) ohne Zuschlag.
+- **Eingesetzt (A168):** Der Kader der Managerpaarung (`LiveSquad.Create`) setzt +0x0A wie der Verein (`Club.IsDressed`
+  und spielfähig). Nicht Eingesetzte zählen weder in den Reihenwerten (0x98F8) noch in der Energie (0x87F7). Ohne
+  Zufallszug-Änderung bei der automatischen Auswahl (alle Abdrücke unverändert).
+- **Feldspieler 0x38A36 (A089, A070) – Regel belegt, Anschluss offen:** 0x388F6(Verein, Manager, Modus, Teil) zählt
+  eingesetzte Kaderplätze des Teils (+0x15 Bit 7): Modus 0 Torhüter (Gruppe 0x04180 = 0, Reihe beliebig ≠ 0; keiner →
+  Vereinsfeld 0x2E = 0, Datei 0x38A2A), Modus 1 Verteidiger und 2 Stürmer der Reihe auf dem Eis (0x2E/0x30). 0x38A36:
+  Grenze 6 (ohne Torhüter und mit < 6 Feldspielern 5); Torhüter + Abwehr + Sturm + belegte Strafbankplätze (0x35540
+  Schalter 0) über der Grenze → Sturm = 3 − Überschuss; DGROUP 0xCC37 + 2·m = Abwehr, +1 = Sturm; Vereinsfeld 0x32 =
+  Abwehr + Sturm; 0x2C Bit 3 bei genau 6, sonst gelöscht. Aufrufe im Spiel: je Minute zu Beginn von 0x38B8F für beide
+  Vereine (Datei 0x38BA9–0x38BBA) und beim Freiwerden 0x35691 (Datei 0x35810); dazu 0x952C (Datei 0x9567).
+  **Nicht angeschlossen:** Probe mit dem Anschluss (Originaldaten, Managerverein passiv): Lücken in der Aufstellung, die
+  das Remake beim Managerverein nicht füllt (`CleanLineups` nur ohne Manager, Einstellung „automatisch aufstellen“
+  DGROUP 0x375 / 0x426BC nicht geführt, A068 in `re-nachtrag`), lassen ihn den Großteil des Spiels mit 4 Feldspielern
+  spielen; 19 Abdruck- und Mehrsaisontests kippen. Anschluss erst zusammen mit der automatischen Aufstellung (A068).

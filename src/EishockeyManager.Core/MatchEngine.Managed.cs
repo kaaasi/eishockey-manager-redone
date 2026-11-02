@@ -60,9 +60,10 @@ public sealed class LiveSquad
     public bool HasGoalie { get; set; } = true;
 
     /// <summary>
-    /// Feldspieler je Teil (DGROUP 0xCC37 + 2 · Manager + Teil). [APPROX] Das Remake stellt je Block 2 Verteidiger und
-    /// 3 Stürmer auf; die Belegung des Bytes im Original ist nicht gelesen (Sonderfall 4 Verteidiger, Datei 0x9B42, kommt
-    /// im Remake nicht vor).
+    /// Feldspieler je Teil (DGROUP 0xCC37 + 2 · Manager + Teil). [APPROX] fest 2 und 3; im Original schreibt nur die
+    /// Neuzählung 0x38A36 (je Minute zu Beginn von 0x38B8F und beim Freiwerden 0x35691) – Regel in
+    /// docs/spielberechnung.md §22, Anschluss erst mit der automatischen Aufstellung (A068). Sonderfall 4 Verteidiger
+    /// (Datei 0x9B42) kommt im Remake nicht vor.
     /// </summary>
     public int[] SkatersPerPart { get; } = [2, 3];
 
@@ -76,8 +77,9 @@ public sealed class LiveSquad
 
     /// <summary>
     /// Kader eines Managervereins für ein Spiel. Reihenfolge: Torhüter, Verteidiger, Stürmer je nach Rückennummer
-    /// ([APPROX] wie die Listen; die Reihenfolge der Kaderplätze im Original hängt an Kauf und Verkauf). Eingesetzt sind die
-    /// spielfähigen Spieler; die Energie im Spiel setzt die Spielvorbereitung (<see cref="MatchEngine.PreparedPlayerEnergy"/>).
+    /// ([APPROX] wie die Listen; die Reihenfolge der Kaderplätze im Original hängt an Kauf und Verkauf). Eingesetzt
+    /// (+0x0A) sind die im Verein eingesetzten spielfähigen Spieler (<see cref="Club.IsDressed"/>; A168); die Energie im
+    /// Spiel setzt die Spielvorbereitung (<see cref="MatchEngine.PreparedPlayerEnergy"/>).
     /// </summary>
     public static LiveSquad Create(Club club, int difficulty, Tactics? tactics)
     {
@@ -89,7 +91,7 @@ public sealed class LiveSquad
             {
                 Player = p,
                 Position = slot is { } s ? PositionOf(s) : 0,
-                Dressed = p.Available,
+                Dressed = p.Available && club.IsDressed(p),
                 Energy = MatchEngine.PreparedPlayerEnergy(p),
             });
         }

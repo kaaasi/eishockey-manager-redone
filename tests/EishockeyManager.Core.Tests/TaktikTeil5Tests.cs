@@ -4,7 +4,8 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Runde 11, Spur wettbewerbe-spiel Teil 5 (Inventur P2 Nr. 1, G6): Minuten-Vorgabe nach Datei 0x48E62/0x4889F,
-/// Einsatz bei „MANUELL“ nach Datei 0x939A, kein Einsatz-Zuschlag auf die Spielstärke (A176–A178, A182, A090).
+/// Einsatz bei „MANUELL“ nach Datei 0x939A, kein Einsatz-Zuschlag auf die Spielstärke, „eingesetzt“ im Spiel
+/// (A168, A176–A178, A182, A090).
 /// </summary>
 public class TaktikTeil5Tests
 {
@@ -101,5 +102,25 @@ public class TaktikTeil5Tests
         for (var b = 0; b < Tactics.Blocks; b++)
             club.Tactics.SetEffort(b, ScoreSituation.Base, 0);
         Assert.Equal(before, club.MatchStrength);
+    }
+
+    /// <summary>
+    /// A168: Im Kader der Managerpaarung ist nur eingesetzt, wer im Verein eingesetzt ist (Kaderplatz +0x0A, Datei 0x98F8,
+    /// 0x87F7, 0x388F6) – nicht jeder spielfähige Spieler.
+    /// </summary>
+    [Fact]
+    public void LiveSquad_DressedFollowsClub()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Trainer", Head = 0, ClubIndex = 2 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
+        var club = game.Clubs[2];
+        var reserve = club.Dressed.First(p => !club.Lineup.Contains(p));
+        Assert.Equal(LineupResult.Undressed, club.Undress(reserve));
+        Assert.True(reserve.Available);
+
+        var squad = LiveSquad.Create(club, 2, club.Tactics);
+        Assert.False(squad.Players.Single(p => p.Player == reserve).Dressed);
+        Assert.All(squad.Players.Where(p => club.Lineup.Contains(p.Player)), p => Assert.True(p.Dressed));
     }
 }
