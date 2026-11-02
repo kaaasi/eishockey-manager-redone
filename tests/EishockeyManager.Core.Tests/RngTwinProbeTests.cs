@@ -137,16 +137,18 @@ namespace EishockeyManager.Core.Tests;
 /// Spur kader-transfer, Teil 5 (M-K7/M-K8, 0x057E3, 0x07C7E, 0x05521): alle neu – die Poolspieler gehen beim Spielstart (Zufall des
 /// Kaderaufbaus) und beim Saisonwechsel (Hauptquelle: Drift 0x054D9, Auslandsrückholung 0x059B8, Zuteilung) in die Ligen der Manager;
 /// andere Vereine der Markt-Plätze, andere Grundstärken und Preise ab der ersten Liste. Neue Felder <c>_poolTurn…</c> im Abdruck.
+/// Spur kader-transfer, Teil 7 (0x07169, Datei 0x0754D/0x076FA): alle neu – Ruhestand und Verlängerungsangebote der Managerkader nach
+/// dem Original (anderer Verbrauch der Vertragsquelle <c>ContractRandom</c>, weniger Angebote ohne Frist, Ruhestand über den Saisonwechsel).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "23733FD20E471360")]
-    [InlineData(true, 3, "04C860C49292D711")]
-    [InlineData(false, 11, "025494CB0EB689D9")]
-    [InlineData(true, 11, "7B241E8056A7D552")]
+    [InlineData(false, 3, "93AC752133F0E0AD")]
+    [InlineData(true, 3, "E9B2B1D196B485D6")]
+    [InlineData(false, 11, "9135814E83A0409F")]
+    [InlineData(true, 11, "30DB3EBA4B51C32C")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -154,8 +156,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "8D6A5CBF9E7AE556")]
-    [InlineData(true, "1C6629B1E211BEEA")]
+    [InlineData(false, "C68C2984A378A4A7")]
+    [InlineData(true, "B39A5896B61EFC9B")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

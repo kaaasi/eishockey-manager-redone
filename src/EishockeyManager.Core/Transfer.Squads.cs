@@ -13,21 +13,21 @@ namespace EishockeyManager.Core;
 /// geschieht im Bildschirm „Verträge“. Das Laufbahnende meldet „… gibt das Eishockeyspielen im Alter von # Jahren
 /// endgültig auf.“, die Verhandlung „… wird sich mit Ablauf des Vertrages zur Ruhe setzen.“ bzw.
 /// „… ist im Moment nicht verhandlungsbereit.“
-/// [APPROX] Alle Wahrscheinlichkeiten und Altersgrenzen; das Original verwaltet Computervereine nur über Teamwerte
-/// (siehe <see cref="SquadSetup"/>), die Kader-KI ist eine Ergänzung des Remakes.
+/// Ruhestand und Verlängerungsangebote der Managerkader nach dem Tagesablauf 0x07169 (Spur kader-transfer, Teil 7:
+/// <see cref="RetirementRoll"/>, <see cref="OfferLimit"/>, <see cref="OfferedYears"/>). [APPROX] Wahrscheinlichkeiten und
+/// Altersgrenzen der Kader-KI: Das Original verwaltet Computervereine nur über Teamwerte (siehe <see cref="SquadSetup"/>), die
+/// Kader-KI ist eine Ergänzung des Remakes.
 /// </remarks>
 public static class SquadRules
 {
-    /// <summary>Tägliche Chance je Spieler im letzten Vertragsjahr, sich zu melden. [APPROX]</summary>
-    public const double NoticeChancePerDay = 1 / 60.0;
-
-    /// <summary>Anteil der Absagen unter den Ankündigungen (ohne Ruhestand). [APPROX] Video: 1 von 16.</summary>
-    public const double RefuseChance = 0.1;
-
-    /// <summary>Ab diesem Alter kann ein Spieler aufhören. [APPROX]</summary>
+    /// <summary>
+    /// Ab diesem Alter kann ein Spieler eines Computervereins aufhören. [APPROX] Nur Kader-KI der Computervereine (im Original ohne
+    /// Kader; Laufbahnende dort im Saisonende 0x2787A mit Alter &gt; random(37, 42), noch nicht umgesetzt). Managerkader:
+    /// <see cref="RetirementRoll"/>.
+    /// </summary>
     public const int RetireMinAge = 33;
 
-    /// <summary>Ab diesem Alter hört jeder Spieler auf. [APPROX]</summary>
+    /// <summary>Ab diesem Alter hört jeder Spieler eines Computervereins auf. [APPROX] wie <see cref="RetireMinAge"/>.</summary>
     public const int RetireMaxAge = 37;
 
     /// <summary>Computervereine verlängern einen auslaufenden Vertrag mit dieser Chance. [APPROX]</summary>
@@ -53,16 +53,51 @@ public static class SquadRules
         _ => 10,
     };
 
-    /// <summary>Chance, nach Erreichen dieses Alters die Laufbahn zu beenden: 33 → 20 %, … 37 → 100 %. [APPROX]</summary>
+    /// <summary>Chance eines Spielers eines Computervereins, nach Erreichen dieses Alters die Laufbahn zu beenden: 33 → 20 %, …
+    /// 37 → 100 %. [APPROX] Kader-KI (siehe <see cref="RetireMinAge"/>).</summary>
     public static double RetirementChance(int age) =>
         age < RetireMinAge ? 0 : Math.Min(1.0, (age - RetireMinAge + 1) / (double)(RetireMaxAge - RetireMinAge + 1));
 
-    /// <summary>Angebotene Gesamtlaufzeit „von 1 auf n Jahre“: 2 (80 %), 3 (13 %), 4 (7 %). [APPROX] Video: 12 / 2 / 1.</summary>
-    public static int OfferedYears(double roll) => roll < 0.8 ? 2 : roll < 0.93 ? 3 : 4;
+    /// <summary>
+    /// Täglicher Wurf „kündigt an, daß er seinen Vertrag nicht mehr verlängern wird“ (Kaderplatz +0x18 Bit 0x80). [ORIGINAL]
+    /// Tagesablauf 0x07169, Datei 0x0754D–0x0760F, je Platz des Managers am Zug und Tag: c = 100 − 15 bei einem Torhüter
+    /// (Rollenwert Pool +0x18 = 0); Technik − Kondition &gt; 0 → c − (Technik − Kondition) / 2; v = Alter · c / 10; wahr bei
+    /// random(350, 450) &lt; v. Feldspieler unter 36 nie, Torhüter unter 42 nie (<c>docs/analyse/re-nachtrag.md</c>, Abschnitt 1).
+    /// Der Wurf fällt immer; die Bedingungen (kein Bit 0x80, kein offenes Verlängerungsangebot +0x18 ≥ 100) prüft der Aufrufer.
+    /// </summary>
+    public static bool RetirementRoll(Player p, Random random)
+    {
+        var c = p.Role == PlayerRole.Goalkeeper ? 85 : 100;
+        if (p.Technique - p.Condition > 0)
+            c -= (p.Technique - p.Condition) / 2;
+        var v = p.Age * c / 10;
+        return TransferRules.Random16(random, 350, 450) < v;
+    }
+
+    /// <summary>
+    /// Grenze p des Verlängerungswurfs random(0, p) = 0. [ORIGINAL] Datei 0x076FA–0x07951: s = (Kondition + Technik + Form) / 3,
+    /// a = 100 − 100 · min(8, |25 − Alter|) / 8, e = min(5, (+0x1C + +0x1E + +0x20) / 36), p = (60 · s + 40 · a) / 100,
+    /// p − p · e / 10. [APPROX] +0x1E/+0x20 führt das Remake nicht (<see cref="Player.GamesForClub"/> = +0x1C).
+    /// </summary>
+    public static int OfferLimit(Player p)
+    {
+        var s = (p.Condition + p.Technique + p.Form) / 3;
+        var a = 100 - 100 * Math.Min(8, Math.Abs(25 - p.Age)) / 8;
+        var e = Math.Min(5, p.GamesForClub / 36);
+        var limit = (60 * s + 40 * a) / 100;
+        return limit - limit * e / 10;
+    }
+
+    /// <summary>
+    /// Angebotene Gesamtlaufzeit „von 1 auf n Jahre“. [ORIGINAL] Datei 0x07865 ff.: r = random(0, 100); r &gt; 90 → 4, r &gt; 70 → 3,
+    /// sonst 2 (71 / 20 / 10 von 101).
+    /// </summary>
+    public static int OfferedYears(int roll) => roll > 90 ? 4 : roll > 70 ? 3 : 2;
 
     public static string[] OfferText(Player p, int years) =>
         [$"{p.Name} bietet Ihnen an, von 1 auf {years}", "Jahre zu verlängern."];
 
+    /// <summary>Meldung Art 4 (DGROUP 0xCA0 + 16): die Ankündigung des Ruhestands (+0x18 Bit 0x80, <see cref="RetirementRoll"/>).</summary>
     public static string[] RefusalText(Player p) =>
         [$"{p.Name} kündigt an, daß er seinen Vertrag", "nicht mehr verlängern wird."];
 
@@ -72,12 +107,6 @@ public static class SquadRules
 
 public sealed partial class GameState
 {
-    /// <summary>
-    /// Spätester Tag für Vertragsankündigungen: 30. März (späteste im Video). Wer sich bis dahin nicht gemeldet hat,
-    /// meldet sich an diesem Tag; auch danach ins letzte Jahr gerutschte Spieler melden sich sofort.
-    /// </summary>
-    public const int ContractNoticeDeadline = 201;
-
     private GameRandom? _contractRandom;
 
     /// <summary>Spieler, die ihre Laufbahn beendet haben, in der Reihenfolge ihres Abschieds.</summary>
@@ -93,40 +122,53 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Täglich (Zeitleiste): Spieler der Manager im letzten Vertragsjahr kündigen an, ob sie verlängern wollen.
-    /// Jeder Spieler genau einmal je Saison, spätestens am <see cref="ContractNoticeDeadline"/>.
+    /// Täglich (Zeitleiste) je Spieler der Manager. [ORIGINAL] Tagesablauf 0x07169 bis zum Saisonende (Zähler &lt; 233):
+    /// <list type="number">
+    /// <item>Ruhestand (Datei 0x0754D): <see cref="SquadRules.RetirementRoll"/> für jeden Platz, auch Leihspieler und unabhängig von
+    ///   der Laufzeit; ohne Ruhestand-Bit und ohne offenes Verlängerungsangebot → <see cref="ContractNotice.Retiring"/>, Meldung
+    ///   Art 4 „… kündigt an, daß er seinen Vertrag nicht mehr verlängern wird.“ Der Spieler hört bei Vertragsende auf.</item>
+    /// <item>Verlängerungsangebot (Datei 0x076FA–0x07951), nur ohne Leihe: random(0, <see cref="SquadRules.OfferLimit"/>) = 0 und
+    ///   random(0, 3) = 0 (der zweite Wurf nur nach dem ersten), keine offene Meldung, kein Ruhestand-Bit, Restlaufzeit +0x0B = 1 →
+    ///   „von 1 auf n“ (<see cref="SquadRules.OfferedYears"/>). Keine Frist: Wer sich nicht meldet, kommt in die Verhandlung am
+    ///   Saisonende (0x27D05).</item>
+    /// </list>
+    /// Eine eigene Absage gibt es im Original nicht (A230): „nicht mehr verlängern“ ist die Ruhestandsmeldung.
+    /// [APPROX] „Offene Meldung“ (Pool +0x1E) = schon gemeldet (<see cref="Player.Notice"/> ≠ None); das Angebot verfällt nicht
+    /// (Datei 0x0767A, noch offen); Züge aus <see cref="ContractRandom"/>; Reihenfolge im Tag nach Sperren und Angeboten Bit 0x40.
     /// </summary>
     internal void AnnounceContractEnds(int day)
     {
         AdvanceNegotiationLocks(); // Spur transfer-original-vertrag: Sperre +0x18 (Tagesablauf 0x76F6)
         RollUnsolicitedOffers(); // Spur transfer-vertraege-komplett, Teil 3: +0x09 Bit 0x40 (Tagesablauf 0x07972)
+        if (AfterSeasonEnd)
+            return;
         foreach (var manager in ActiveManagers)
         {
             var club = Clubs[manager.ClubIndex];
             foreach (var p in club.Players.ToArray())
             {
-                if (p.ContractYears != 1 || p.OnLoan || p.Notice != ContractNotice.None)
+                if (SquadRules.RetirementRoll(p, ContractRandom) && p.Notice is not (ContractNotice.Retiring or ContractNotice.Offered))
+                {
+                    p.Notice = ContractNotice.Retiring;
+                    p.NoticeYears = 0;
+                    NotifyClub(club, SquadRules.RefusalText(p));
+                }
+                if (p.OnLoan)
                     continue;
-                if (day < ContractNoticeDeadline && ContractRandom.NextDouble() >= SquadRules.NoticeChancePerDay)
+                if (TransferRules.Random16(ContractRandom, 0, SquadRules.OfferLimit(p)) != 0
+                    || TransferRules.Random16(ContractRandom, 0, 3) != 0)
                     continue;
-                Announce(club, p);
+                if (p.Notice != ContractNotice.None || p.ContractYears != 1)
+                    continue;
+                p.Notice = ContractNotice.Offered;
+                p.NoticeYears = SquadRules.OfferedYears(TransferRules.Random16(ContractRandom, 0, 100));
+                NotifyClub(club, SquadRules.OfferText(p, p.NoticeYears));
             }
         }
     }
 
-    private void Announce(Club club, Player p)
+    private void NotifyClub(Club club, string[] text)
     {
-        var roll = ContractRandom.NextDouble();
-        if (roll < SquadRules.RetirementChance(p.Age + 1))
-            p.Notice = ContractNotice.Retiring;
-        else if (ContractRandom.NextDouble() < SquadRules.RefuseChance)
-            p.Notice = ContractNotice.Refused;
-        else
-        {
-            p.Notice = ContractNotice.Offered;
-            p.NoticeYears = SquadRules.OfferedYears(ContractRandom.NextDouble());
-        }
-        var text = p.Notice == ContractNotice.Offered ? SquadRules.OfferText(p, p.NoticeYears) : SquadRules.RefusalText(p);
         foreach (var manager in Managers.Where(m => m.ClubIndex == club.Index && !m.Dismissed))
             Notify(manager, text);
     }

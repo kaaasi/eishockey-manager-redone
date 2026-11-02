@@ -232,7 +232,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Spur kader-transfer, Teil 4, Rest (0x4907A, 0x4981E): 1993 und 1994 gleich, ab 1995 neu (Tendenz der Markt-Plätze im
     /// Spielerwert, Nationalspieler aus der Ländertabelle; Begründung bei <c>RngTwinProbeTests</c>); mit und ohne Anzeige gleich.
     /// Spur kader-transfer, Teil 5 (0x057E3, 0x07C7E): 1993 gleich, ab 1994 neu (Poolumverteilung beim Saisonwechsel aus der
-    /// Hauptquelle; Begründung bei <c>RngTwinProbeTests</c>); mit und ohne Anzeige gleich.</summary>
+    /// Hauptquelle; Begründung bei <c>RngTwinProbeTests</c>); mit und ohne Anzeige gleich.
+    /// Spur kader-transfer, Teil 7 (0x07169): 1993 und 1994 gleich, ab 1995 neu (Ankündigungen und Ruhestand nach dem Original;
+    /// Begründung bei <c>RngTwinProbeTests</c>); mit und ohne Anzeige gleich.</summary>
     private const string Reference =
-        "1993: DEB 8, DM 5, Tab 15263 | 1994: DEB 7, DM 6, Tab 15868 | 1995: DEB 6, DM 9, Tab 15025 | 1996: DEB 11, DM 9, Tab 16845";
+        "1993: DEB 8, DM 5, Tab 15263 | 1994: DEB 7, DM 6, Tab 15868 | 1995: DEB 10, DM 6, Tab 15128 | 1996: DEB 19, DM 6, Tab 15914";
 }

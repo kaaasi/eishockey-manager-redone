@@ -344,6 +344,23 @@ Managerkader stammen im Remake nicht aus dem Pool, k[l] zählt sie trotzdem (das
 freie Spieler); Spielstart mit der Quelle des Kaderaufbaus, Saisonwechsel mit der Hauptquelle, im Modus „nur Weltkugel“ ohne
 Saisonumverteilung (Tageslauf 0x54C9F fehlt dort, 0x54CEE); Schleifen ohne Grenze im Original enden nach 100.000 Versuchen.
 
+## Belegt und umgesetzt (Spur `kader-transfer`, Teil 7: Ankündigungen der Kaderspieler)
+
+Regeln und Fundstellen: `docs/analyse/re-nachtrag.md`, Abschnitt 1 (Tagesablauf 0x07169), Umsetzung U1–U3, U6; im Code
+`SquadRules.RetirementRoll`, `SquadRules.OfferLimit`, `SquadRules.OfferedYears`, `GameState.AnnounceContractEnds`.
+
+- **Ruhestand (A231, A232, A238):** täglich je Platz random(350, 450) &lt; Alter · c / 10 (c = 100, Torhüter 85, − (Technik −
+  Kondition) / 2) → „… kündigt an, daß er seinen Vertrag nicht mehr verlängern wird.“ (Art 4), unabhängig von der Laufzeit, auch
+  bei Leihspielern; das Bit bleibt über den Saisonwechsel, der Spieler hört bei Vertragsende auf.
+- **Verlängerungsangebot (A229, A239):** nur ohne Leihe und bei Restlaufzeit 1, random(0, p) = 0 und random(0, 3) = 0 mit
+  p = (60 · s + 40 · a) / 100 − p · e / 10; n = 2/3/4 mit 71/20/10 von 101; **keine Frist** – wer sich nicht meldet, kommt in die
+  Verhandlung am Saisonende.
+- **Absage (A230):** gibt es nicht; die 10 % `RefuseChance` entfallen (`ContractNotice.Refused` nur noch aus alten Spielständen).
+- **Angebote der Computervereine (A136):** Bit 0x80 nur am Marktplatz – das Remake entsprach schon dem Original (Kommentar).
+
+`[APPROX]`: „offene Meldung“ = schon gemeldet; das Verlängerungsangebot verfällt nicht (Datei 0x0767A, U4 offen); Züge aus der
+Vertragsquelle `ContractRandom`; +0x1E/+0x20 fehlen in e; Laufbahnende der Computervereine weiter nach der Kader-KI (U5 offen).
+
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
 - **Antwort des verkaufenden Managers:** seit Spur `kader-transfer`, Teil 4 gefragt (0x47655–0x47743); nur ohne Oberfläche

@@ -164,10 +164,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur kader-transfer, Teil 4, Rest (0x4907A, 0x4981E): beide neu (Tendenz der Markt-Plätze im Spielerwert, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur kader-transfer, Teil 5 (A226): beide neu (Spiele beim Verein über den Saisonwechsel im Spielerwert, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur kader-transfer, Teil 5 (0x057E3, 0x07C7E): beide neu (Poolumverteilung, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur kader-transfer, Teil 7 (0x07169): beide neu (Ankündigungen nach dem Original, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "0F59198BAD995C29")]
-    [InlineData(true, "30666AEF932E1BE6")]
+    [InlineData(false, "FAA4215BF81A103E")]
+    [InlineData(true, "036D338645179322")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

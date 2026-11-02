@@ -159,6 +159,10 @@ public sealed partial class GameState
                 Retire(owner, player);
                 continue;
             }
+            // Spur kader-transfer, Teil 7 (A231): Das Ruhestand-Bit +0x18 & 0x80 bleibt über den Saisonwechsel stehen (0x26F20
+            // setzt +0x18 nicht zurück, R8W3I-09); der Spieler hört erst bei Vertragsende auf (Datei 0x2787A).
+            if (notice == ContractNotice.Retiring && player.ContractYears > 0 && managed.Contains(owner.Index))
+                player.Notice = ContractNotice.Retiring;
             if (player.ContractYears == 0 && owner == club && renewers.TryGetValue(owner.Index, out var renewer))
             {
                 BeginRenewal(renewer, player);

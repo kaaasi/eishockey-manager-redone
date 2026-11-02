@@ -209,8 +209,10 @@ public sealed partial class GameState
 {
     /// <summary>
     /// Wert (bzw. Gehalt) eines Kaderspielers in Drittel-DM nach 0x118:0x70. Ein offenes Angebot eines Computervereins
-    /// (<see cref="TransferMarket.Bids"/>, erstes Gebot) gilt als Kaderplatz +0x09 Bit 0x80 / +0x16 ([APPROX]: das Original
-    /// kennt Angebote für alle Spieler eines Managers, das Remake nur für Spieler auf der Transferliste).
+    /// (<see cref="TransferMarket.Bids"/>, erstes Gebot) gilt als Kaderplatz +0x09 Bit 0x80 / +0x16. [ORIGINAL] Bit 0x80 setzt nur
+    /// der Tagesablauf für die selbst angebotenen Marktplätze (Datei 0x07358, Verein Datei 0x0736E); Kaderspieler bekommen nur
+    /// Bit 0x40 (Datei 0x07A5C/0x07A8F), das nicht in den Wert eingeht (0x4A0C8) – Spur kader-transfer, Teil 7 (A136,
+    /// <c>docs/analyse/re-nachtrag.md</c>, Abschnitt 2).
     /// <paramref name="random"/> wird nur beim Preis eines Spielers mit Angebot benutzt.
     /// </summary>
     public int PlayerValueOf(Player player, Club? club, PlayerValueKind kind, Random random, int level = 3)
