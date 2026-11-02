@@ -73,7 +73,8 @@ public static partial class MatchEngine
         // [ORIGINAL] Datei 0x3702E–0x37085: Pokalspiel mit eingeschaltetem Anzeigeschalter (DGROUP 0x227 DEB-Pokal, Code 6;
         // 0x228 Europapokal, Code 3/5; 0x229 WM-Gruppe, Code 8; GameOptions.CupMatchUsesMinuteLoop) läuft durch die
         // Minutenschleife 0x37088, sonst der schnelle Weg 0x3731F. Die WM-Endrunde (Code 10, 0x31017) prüft keinen Schalter
-        // und nimmt immer den schnellen Weg (R9S-02, #350). Anschluss optionen-wirkung, Integration Runde 9.
+        // und nimmt immer den schnellen Weg (R9S-02, #350; Erreichen von 0x36B5D aus 0x31017 aus dem Aufrufmuster geschlossen,
+        // Überlagerungssprung 0xF0:0x70 nicht aufgelöst – R9S-07, #358). Anschluss optionen-wirkung, Integration Runde 9.
         // Play-offs/Aufstiegsrunde (Code 1) ebenso, Schalter = Feld „Ergebnisse“ der Meldungsmatrix (0x37058–0x37085, #351).
         // [APPROX] Das Original entscheidet je Spieltag (Merker 0x36FEA „ein Managerverein spielt“: dann laufen alle Paarungen
         // des Spieltags durch die Minutenschleife), das Remake je Paarung – Entscheidung Nutzer 01.11.2026: so lassen, das

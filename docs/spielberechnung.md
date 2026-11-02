@@ -258,7 +258,9 @@ Gegentore und Minuten des Torhüters (Review-Befund R7-03, #201; Test `Integrati
 2. Pokale (DEB-Pokal, Europapokal, WM) ohne Managerverein: schneller Weg 0x3731F (Abschnitt 3). Das Original nimmt ihn nur
    bei ausgeschalteter Anzeige des Wettbewerbs (Spielstand-Optionen DGROUP 0x227–0x229, `GameOptions.CupMatchUsesMinuteLoop`,
    Datei 0x3702E–0x37085); sonst Minutenschleife (Integration Runde 9). Anfangswerte: DEB-Pokal an, Europapokal und WM aus.
-   Die WM-Endrunde (Code 10) prüft keinen Schalter und nimmt immer den schnellen Weg (#350). Play-offs und Aufstiegsrunde
+   Die WM-Endrunde (Code 10) prüft keinen Schalter und nimmt immer den schnellen Weg (#350; der Vergleich 0x3702E–0x37085
+   ist belegt, das Erreichen des Spieltagsablaufs 0x36B5D aus 0x31017 ist aus dem Aufrufmuster geschlossen – der
+   Überlagerungssprung über 0xF0:0x70 ist nicht aufgelöst, R9S-07 #358). Play-offs und Aufstiegsrunde
    (Code 1) ohne Managerverein nehmen den schnellen Weg, außer ein Feld „Ergebnisse“ der Meldungsmatrix (0x21E/0x221/0x224)
    ist an (0x37058–0x37085; voreingestellt aus; #351, Entscheidung Nutzer 01.11.2026). `[APPROX]` Das Original entscheidet
    einmal je Spieltag (Merker 0x36FEA: spielt ein Managerverein, laufen alle Paarungen durch die Minutenschleife), das Remake
@@ -524,14 +526,21 @@ Tag ≡ 0, 4 (mod 7) des Saisontags (`[APPROX]`: Tag 0 = 10. September = Tagesz�
 Vereinsindex; Kondition und Technik bleiben als Abweichung vom Datenbankwert gespeichert, die Grenzen gelten für
 Datenbankwert + Abweichung (die Kaderkorrektur `TeamValue` kommt im Spiel hinzu). Kein neues Schemafeld.
 
-**Wirkung** (`TeamValueDriftTests.ChampionSpread_LikeVideo`, Originaldaten, Managerverein 42 aktiv, 12 Seeds × 4 Saisons):
+**Wirkung** (`TeamValueDriftTests.ChampionSpread_LikeVideo`, Originaldaten, Managerverein 42 aktiv, 12 Seeds × 4 Saisons;
+Tore aus `SpielstaerkeManagerTests.SeasonDistribution_OriginalDatabase`). Spalte „Runde 11“: Stand der Spur
+wettbewerbe-spiel bis Teil 5 (Branch `paket/wettbewerbe-spiel-5`, auf dem Integrationsstand von Runde 9/10; R9S-06, #354).
 
-| | vorher (§13) | mit Wanderung | Video (18 Saisons) |
-|---|---:|---:|---:|
-| verschiedene Meister | 6 | 14 | 8 |
-| Düsseldorf + Köln | 33 von 48 | 10 von 48 | 5 von 18 |
-| Meister mit Datenbank < 80 | 0 | 19 von 48 | 8 von 18 (≤ 72) |
-| Bundesliga Tore je Spiel / Unentschieden | 6,28 / 11,6 % | 6,35 / 10,7 % | – / 11,4 % (F21, 44. Spieltag) |
+| | vorher (§13) | mit Wanderung | Runde 11 | Video (18 Saisons) |
+|---|---:|---:|---:|---:|
+| verschiedene Meister | 6 | 14 | 16 | 8 |
+| Düsseldorf + Köln | 33 von 48 | 10 von 48 | 5 von 48 | 5 von 18 |
+| Meister mit Datenbank < 80 | 0 | 19 von 48 | 26 von 48 | 8 von 18 (≤ 72) |
+| Bundesliga Tore je Spiel / Unentschieden | 6,28 / 11,6 % | 6,35 / 10,7 % | 6,24 / 11,0 % | – / 11,4 % (F21, 44. Spieltag) |
+
+Einordnung: Das Remake streut die Meister eher stärker als das Video; in 18 Saisons erwartet man aus der Verteilung der 48
+Titel etwa 10 verschiedene Meister (Review R9S-06). Die Abnahmegrenzen des Tests (D + K ≤ 23, schwache ≥ 4, ≥ 6 Meister)
+halten. Diagnostisch aus dem Review (Integration Runde 9, 6 Seeds × 2 Saisons): 2. Liga 7,44 Tore / 8,8 %, Oberliga
+8,11 / 8,7 % (Video Oberliga 8,0 / 7,9 %); Strafminuten 26–27 je Spiel ohne Videowert.
 
 ## 16. Strafen in der Managerpaarung (Spur spielberechnung-komplett, Teil 2; R8W3I-03 bis -06)
 
