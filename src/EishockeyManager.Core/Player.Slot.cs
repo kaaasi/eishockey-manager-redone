@@ -26,6 +26,45 @@ public sealed partial class Player
 
     /// <summary>Name der Verletzungsart oder null, wenn die Art unbekannt ist.</summary>
     public string? InjuryName => InjuryKinds.Name(InjuryKind);
+
+    /// <summary>
+    /// Tendenz als Wert des Kaderplatzes +0x0E (30 … 68; 0 = nicht bekannt, dann gilt die Stufe <see cref="Trend"/>).
+    /// [ORIGINAL] Start random(35, 65) in Datei 0x4907A (<see cref="RollTrend"/>); Eingang des Spielerwerts (0x4A0A7), Anzeige
+    /// (Wert − 30) / 13 (0x41AE0), Balken (Wert − 30) · 100 / 38. Spur kader-transfer, Teil 4 (F113).
+    /// </summary>
+    public int TrendScore { get; set; }
+
+    /// <summary>
+    /// Steuerbyte der Tendenz, Kaderplatz +0x14: Bits 0–3 Tage bis zum neuen Zug (1 … 13), Bits 4–6 Schritt (1 … 3), Bit 7
+    /// Richtung (1 = steigend). [ORIGINAL] gezogen in Datei 0x4907A; gelesen im Tagesablauf 0x07169 (Datei 0x7B64–0x7BF8, siehe
+    /// <c>docs/transfer.md</c>). [APPROX] Die tägliche Änderung ist im Remake noch nicht angeschlossen (Inventur A134).
+    /// </summary>
+    public int TrendControl { get; set; }
+
+    /// <summary>Stufe zu einem Tendenzwert. [ORIGINAL] (Wert − 30) / 13, Datei 0x41AE0 (Texte DGROUP 0xB8C).</summary>
+    public static PlayerTrend TrendOf(int score) => (PlayerTrend)Math.Clamp((score - 30) / 13, 0, 2);
+
+    /// <summary>Setzt Tendenzwert und Steuerbyte und die passende Stufe.</summary>
+    public void SetTrendScore(int score, int control)
+    {
+        TrendScore = score;
+        TrendControl = control;
+        Trend = TrendOf(score);
+    }
+
+    /// <summary>
+    /// Nachbearbeitung eines neuen Kaderplatzes. [ORIGINAL] Datei 0x4907A (Stub 0x118:0x4D, gerufen aus „Kaderplatz anlegen“
+    /// 0x42CB1 an 0x42E6B nach der Energie): +0x0E = random(35, 65); +0x14 = random(1, 13), dann | random(1, 3) &lt;&lt; 4, dann
+    /// | random(0, 1) &lt;&lt; 7.
+    /// </summary>
+    public void RollTrend(Random random)
+    {
+        var score = TransferRules.Random16(random, 35, 65);
+        var control = TransferRules.Random16(random, 1, 13);
+        control |= TransferRules.Random16(random, 1, 3) << 4;
+        control |= TransferRules.Random16(random, 0, 1) << 7;
+        SetTrendScore(score, control);
+    }
 }
 
 /// <summary>Verletzungsarten des Originals (Kaderplatz +0x17).</summary>

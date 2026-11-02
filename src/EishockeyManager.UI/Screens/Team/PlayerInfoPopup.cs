@@ -75,7 +75,10 @@ public sealed class PlayerInfoPopup
     [
         p.Technique,
         (p.Condition + p.Technique) / 2,
-        p.Trend switch { PlayerTrend.Rising => 84, PlayerTrend.Falling => 15, _ => 50 },
+        // [ORIGINAL] Balken (+0x0E − 30) · 100 / 38 (0x041AC); [APPROX] ohne Wert die Stufe
+        p.TrendScore != 0
+            ? Math.Clamp((p.TrendScore - 30) * 100 / 38, 0, 99)
+            : p.Trend switch { PlayerTrend.Rising => 84, PlayerTrend.Falling => 15, _ => 50 },
         100 - Math.Clamp(p.Energy, 0, 100),
     ];
 

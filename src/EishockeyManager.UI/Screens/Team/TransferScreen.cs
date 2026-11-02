@@ -184,13 +184,14 @@ public sealed class TransferScreen : Screen
         {
             case TransferDialog.DialogKind.Buy or TransferDialog.DialogKind.Loan:
                 var bid = Market.Bid(Game, Manager, d.Listing!, d.Amount, d.Kind == TransferDialog.DialogKind.Loan, out var purchase,
-                    out var subsidy);
-                if (purchase is not null)
-                    OpenContract(purchase);
-                else if (bid == TransferResult.Accepted)
-                    ShowAccepted(subsidy); // Leihe
+                    out var subsidy, out var question);
+                if (question is not null)
+                    _dialog = TransferDialog.ForSeller(question); // [ORIGINAL] 0x47655: Frage an den verkaufenden Manager
                 else
-                    _message.Show(TransferMarket.Message(bid));
+                    ShowBidResult(bid, purchase, subsidy);
+                break;
+            case TransferDialog.DialogKind.Seller:
+                ShowBidResult(Market.AnswerSeller(Game, d.Question!, accept: true, out var sold, out var soldSubsidy), sold, soldSubsidy);
                 break;
             case TransferDialog.DialogKind.Sale when d.Listing is null:
                 var result = Market.Offer(Game, Manager, d.Player!);
@@ -216,6 +217,17 @@ public sealed class TransferScreen : Screen
                 AnswerSubsidy(d.Subsidy!, accept: true);
                 break;
         }
+    }
+
+    /// <summary>Ergebnis eines Gebots: Verhandlung beim Kauf, Abschluss der Leihe oder Meldung.</summary>
+    private void ShowBidResult(TransferResult bid, TransferPurchase? purchase, SponsorSubsidyOffer? subsidy)
+    {
+        if (purchase is not null)
+            OpenContract(purchase);
+        else if (bid == TransferResult.Accepted)
+            ShowAccepted(subsidy); // Leihe
+        else
+            _message.Show(TransferMarket.Message(bid));
     }
 
     /// <summary>
@@ -286,6 +298,8 @@ public sealed class TransferScreen : Screen
         }
         else if (d.Kind == TransferDialog.DialogKind.Subsidy)
             AnswerSubsidy(d.Subsidy!, accept: false);
+        else if (d.Kind == TransferDialog.DialogKind.Seller) // „Nein !“: abgelehnt und gesperrt (0x47AC8)
+            _message.Show(TransferMarket.Message(Market.AnswerSeller(Game, d.Question!, accept: false, out _, out _)));
     }
 
     public override void Draw(Surface s)

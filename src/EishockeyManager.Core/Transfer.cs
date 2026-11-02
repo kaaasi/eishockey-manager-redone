@@ -74,6 +74,12 @@ public enum TransferResult
 
     /// <summary>„Angebot wurde bereits abgelehnt.“ – Sperre nach abgelehntem Gebot (DGROUP 0x1219/0x121D, Datei 0x47B01).</summary>
     AlreadyRejected,
+
+    /// <summary>
+    /// Der verkaufende Manager wird gefragt („Nehmen Sie das Angebot (…) für … an ?“, Datei 0x47655–0x47743); Antwort mit
+    /// <see cref="TransferMarket.AnswerSeller"/>. Spur kader-transfer, Teil 4 (A258).
+    /// </summary>
+    SellerAsked,
 }
 
 /// <summary>
@@ -84,7 +90,8 @@ public enum TransferResult
 /// Leihgebühr = Kaufpreis / 3 (Datei 0x462EB). Preis, Annahme eines Gebots, Unfair-Grenze, Tageswurf und Höhe der Angebote
 /// für eigene Spieler nach Ov 0x118 (<see cref="TransferRules"/>, <c>docs/transfer.md</c>); Wechsel der Liste aus dem
 /// Spielerpool nach 0x494EF (<see cref="ChangeList"/>), täglich (<see cref="CatchUp"/>, 0x54E71) mit bietendem Verein nach 0x059B8.
-/// [APPROX] Antwort eines menschlichen Verkäufers (siehe <see cref="Buy"/>).
+/// Ein verkaufender Manager wird gefragt (<see cref="AnswerSeller"/>, 0x47655–0x47743); [APPROX] ohne Oberfläche
+/// (<see cref="Buy"/>) eine simulierte Antwort.
 /// </remarks>
 public sealed partial class TransferMarket
 {
@@ -284,9 +291,9 @@ public sealed partial class TransferMarket
     /// <see cref="TransferRules.Accepts"/> (Listenpreis, bei Leihe / 3), abgelehnt → Sperre <see cref="TransferListing.RejectedBy"/>
     /// (0x472F4); wie im Original fällt die Annahme vor der Geldprüfung (0x472C8 vor 0x474F0). Von einem anderen Manager
     /// erst die Geldprüfung, dann die Unfair-Grenze <see cref="TransferRules.IsFair"/> auf dem frischen Wert (0x474F0 vor
-    /// 0x47546, R8-C02). [APPROX] Antwort des verkaufenden Managers (Original fragt ihn, DGROUP 0xD98): ab dem
-    /// geforderten Betrag sicher, darunter bis 85 % mit sinkender Wahrscheinlichkeit. Vertragslose Spieler (Ablöse 0)
-    /// kommen immer.
+    /// 0x47546, R8-C02). [APPROX] Ohne Oberfläche ersetzt eine simulierte Antwort die Frage an den verkaufenden Manager
+    /// (Original 0x47655–0x47743, im Remake <see cref="AnswerSeller"/>): ab dem geforderten Betrag sicher, darunter bis 85 %
+    /// mit sinkender Wahrscheinlichkeit; abgelehnt sperrt wie „Nein !“. Vertragslose Spieler (Ablöse 0) kommen immer.
     /// </summary>
     public TransferResult Buy(GameState game, Manager manager, TransferListing listing, long offer, bool loan)
     {
@@ -313,10 +320,24 @@ public sealed partial class TransferMarket
     /// erfragt (<see cref="GameState.AcceptSponsorSubsidy"/>).
     /// </summary>
     public TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
-        out TransferPurchase? purchase, out SponsorSubsidyOffer? subsidy)
+        out TransferPurchase? purchase, out SponsorSubsidyOffer? subsidy) =>
+        Bid(game, manager, listing, offer, loan, askSeller: false, out purchase, out subsidy, out _);
+
+    /// <summary>
+    /// Gebot aus der Oberfläche: wie <see cref="Bid(GameState, Manager, TransferListing, long, bool, out TransferPurchase?, out SponsorSubsidyOffer?)"/>,
+    /// aber bei einem verkaufenden Manager <see cref="TransferResult.SellerAsked"/> mit der Frage <paramref name="question"/>
+    /// statt der simulierten Antwort (Datei 0x47655–0x47743, A258).
+    /// </summary>
+    public TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
+        out TransferPurchase? purchase, out SponsorSubsidyOffer? subsidy, out SellerQuestion? question) =>
+        Bid(game, manager, listing, offer, loan, askSeller: true, out purchase, out subsidy, out question);
+
+    private TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan, bool askSeller,
+        out TransferPurchase? purchase, out SponsorSubsidyOffer? subsidy, out SellerQuestion? question)
     {
         purchase = null;
         subsidy = null;
+        question = null;
         if (!game.Managers.Contains(manager) || !IsCurrentListing(game, listing)
             || listing.From.Index == manager.ClubIndex && !listing.IsFreeAgent && !listing.FromPool
             || loan && listing.IsFreeAgent
@@ -342,19 +363,39 @@ public sealed partial class TransferMarket
             var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, game.Random);
             if (!TransferRules.IsFair(value, TransferRules.Thirds(offer), loan))
                 return TransferResult.Unfair;
+            if (askSeller)
+            {
+                question = new SellerQuestion(listing, manager, listing.Seller, offer, loan);
+                return TransferResult.SellerAsked;
+            }
             var ratio = asked == 0 ? 1 : offer / (double)asked;
             if (ratio < 1 && (ratio <= 0.85 || game.Random.NextDouble() >= (ratio - 0.85) / 0.15))
+            {
+                Lock(game, listing, manager);
                 return TransferResult.Rejected;
+            }
         }
         else if (!listing.IsFreeAgent
                  && !TransferRules.Accepts(TransferRules.Thirds(listing.Price), TransferRules.Thirds(offer), loan, game.Random))
         {
-            listing.RejectedBy |= 0x80 | ManagerBit(game, manager);
+            Lock(game, listing, manager);
             return TransferResult.Rejected;
         }
         if (offer > manager.Money)
             return TransferResult.NotEnoughMoney;
+        return Close(game, manager, listing, offer, loan, out purchase, out subsidy);
+    }
 
+    /// <summary>[ORIGINAL] Datei 0x47AC8–0x47ADD: abgelehntes Gebot sperrt den Markt-Platz für den Bieter (+0x1A |= 0x80 | Bit).</summary>
+    private static void Lock(GameState game, TransferListing listing, Manager manager) =>
+        listing.RejectedBy |= 0x80 | ManagerBit(game, manager);
+
+    /// <summary>Angenommenes Gebot: Kauf mit offenem Vertrag (<paramref name="purchase"/>) bzw. Leihe abgeschlossen.</summary>
+    private TransferResult Close(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
+        out TransferPurchase? purchase, out SponsorSubsidyOffer? subsidy)
+    {
+        purchase = null;
+        subsidy = null;
         if (!loan)
         {
             purchase = new TransferPurchase(listing, manager, offer, Contracts.PurchaseYears,

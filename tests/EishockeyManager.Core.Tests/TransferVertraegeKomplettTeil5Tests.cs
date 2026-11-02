@@ -240,8 +240,10 @@ public class TransferVertraegeKomplettTeil5Tests
         Assert.Equal(Math.Clamp(club.Strength + values.AttackCondition - 10, 10, 99), p.Condition);
         Assert.Equal(Math.Clamp(club.Strength + values.AttackTechnique - 10 + 12, 10, 99), p.Technique);
         TransferPoolRules.RollMarketStrengths(p, nation, new Lowest());
-        Assert.Equal(Math.Clamp(nation.Strength, 10, 99), p.Condition);
-        Assert.Equal(Math.Clamp(nation.Strength + 12, 10, 99), p.Technique);
+        // Spur kader-transfer, Teil 4 (A209): Nationalteams aus der Ländertabelle DGROUP 0x4C4E (Sturm), nicht der Datenbankstärke.
+        var (_, _, ca, ta) = NationalTeamRatings.Of(nation.Index);
+        Assert.Equal(Math.Clamp(ca, 10, 99), p.Condition);
+        Assert.Equal(Math.Clamp(ta + 12, 10, 99), p.Technique);
         Assert.Equal(180, TransferPoolRules.DrawIndex(new Lowest())); // random(0, 5) = 0 → random(180, 199)
     }
 

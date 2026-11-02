@@ -229,8 +229,8 @@ v1.0 vorgemerkt (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C). Gegenpr
 - **Vertragslose** aus Managervereinen (R204) stehen nach dem Saisonwechsel weiter auf der Liste (höchstens 6) und zählen wie
   Managerplätze; im Original werden sie freie Poolspieler. Vertragslose anderer Vereine stehen nicht mehr auf der Liste.
 - Sonderprüfung DGROUP 0x6AC (Startwert 56 = Deutschland) in 0x5ACA0 nicht abgebildet (FILE05 zeigt einen Poolspieler
-  Deutschlands); Vereinsfelder aus Datenbankstärke und Abweichung des Laders, Nationalteams ohne Ländertabelle 0x4C4E;
-  Energie auf 99 begrenzt; 0x4907A (0x118:0x4D) nicht abgebildet.
+  Deutschlands); Vereinsfelder aus Datenbankstärke und Abweichung des Laders, Nationalteams seit Teil 4 aus der Ländertabelle 0x4C4E (A209);
+  Energie auf 99 begrenzt; 0x4907A (0x118:0x4D) seit Teil 4 abgebildet (Tendenz, Steuerbyte).
 - Poolspieler sind für den WM-Kader nicht nominierbar (`NationalCandidates`, ihr Platz wird neu vergeben).
 
 ## Belegt und umgesetzt (Spur `kader-transfer`, Teil 1: Kadergröße, Kaufgrenze)
@@ -286,19 +286,33 @@ Kontoleiste `TransferScreen.DrawAccountBar`; Tests `KaderTransferTeil4Tests`. Ke
 Angebot statt beim Anklicken (0x47347); Bieter mit der Stärke des Spielers wie bei den unaufgeforderten Angeboten; Saldo je
 Partner wie bei `TotalDebts` (Kredite zwischen zwei Managern verrechnet, Bank Sparbuch minus Kredit); Lage der Leiste unverändert.
 
-**Offen aus Teil 4:**
-- Rückfrage an den verkaufenden Manager (0x47546–0x475DB, Hot-Seat 0x47608–0x47743; A258) – braucht eine Frage im
-  Transferbildschirm des Verkäufers; bis dahin die simulierte Antwort in `TransferMarket.Buy`.
-- Nachbearbeitung eines neuen Kaderplatzes 0x4907A (Stub 0x118:0x4D; F113): Aufrufer 0x42E6B (Kaderplatz anlegen 0x42CB1,
-  also jeder Kauf und jeder Listenwechsel) und der Tagesablauf 0x07169. Inhalt: +0x0E Tendenz = random(35, 65),
-  +0x14 = random(1, 13) | random(1, 3) · 16 | random(0, 1) · 128. Braucht eine stufenlose Tendenz im Spielermodell (heute
-  dreistufig, `PlayerValue.TrendValue`) und die Deutung von +0x14 – eigener Teil mit Schemaänderung.
-- Grundstärken des Listenwechsels für Nationalteams ohne Ländertabelle (A209).
+**Rest von Teil 4** (A258, F113, A209; Tests `KaderTransferTeil4Tests`, `KaderTransferTeil4ScreenTests`, Schema 24
+`SaveGame.Migration.KaderTransfer4.cs`):
+
+| Regel | Fundstelle em.exe | Umsetzung |
+|---|---|---|
+| Gebot auf den Spieler eines Managers: erst Geld (0x474F0), dann Unfair-Grenze 60 … 140 % des Werts (0x47546–0x475DB), dann **Frage an den Verkäufer** über Meldung/Frage 0x4C246 (Stub 0x120:0x7A, Argument Besitzer Pool +0x1A): DGROUP 0xD98 „Nehmen Sie das Angebot (“ + Betrag + 0x14D5 „ DM)“, 0xD9C „für “ + Name + 0xDA0 „ an ?“, Knöpfe 0x12D5 „Na gut.“ / 0x12D9 „Nein !“ | 0x47655–0x47743 | `TransferMarket.Bid(…, out SellerQuestion?)` → `TransferResult.SellerAsked`, `AnswerSeller`; Fragefenster `TransferDialog.ForSeller`; A258 |
+| „Na gut.“: angenommen, weiter wie beim Computermarkt (Kaderplatz 0x477E7, Verhandlung, Geld); „Nein !“: Meldung DGROUP 0x1209 und Sperre des Markt-Platzes für den Bieter (+0x1A \|= 0x80 \| Bit) | 0x4774A, 0x47AC8–0x47ADD | `AnswerSeller`; Sperre jetzt auch bei abgelehnten Geboten an Manager (vorher nur Computermarkt) |
+| Nachbearbeitung eines neuen Kaderplatzes: Tendenz +0x0E = random(35, 65); Steuerbyte +0x14 = random(1, 13) \| random(1, 3) << 4 \| random(0, 1) << 7 | 0x4907A (aus 0x42CB1 an 0x42E6B, nach der Energie 0x42E4C) | `Player.RollTrend`, `TrendScore`, `TrendControl` beim Listenwechsel (`RollSlotFields`); F113 |
+| Anzeige der Tendenz (Wert − 30) / 13 → „Fallend./Konstant./Steigend.“; Balken (Wert − 30) · 100 / 38; Eingang des Spielerwerts | 0x41AE0, 0x041AC, 0x4A0A7 | `Player.TrendOf`, `PlayerInfoPopup.BarValues`, `PlayerValue.Inputs` |
+| Grundstärken des Listenwechsels aus Vereinsfeld 0x19/0x1B; bei Nationalteams (t = 1) setzt der Lader 0x2EF1B diese Felder aus der Ländertabelle DGROUP 0x4C4E (je −2), Deutschland ohne Bundestrainer neu gewürfelt (0x55506) | 0x4981E–0x4991C | `RollMarketStrengths` mit `GameState.NationalRatings` (vorher Datenbankstärke); A209 |
+
+**Tägliche Änderung der Tendenz** (gelesen, nicht umgesetzt – Inventur A134): Im Tagesablauf 0x07169 je Kaderplatz des Managers
+am Zug (Datei 0x7B29–0x7C04, nach der Heilung 0x7C12): t = +0x0E; mit random(0, 3) ≠ 0 wird t um (+0x14 >> 4) & 7 erhöht
+(Bit 7 gesetzt) bzw. erniedrigt; dann zählt +0x14 & 0xF um eins herunter. Erreicht der Zähler 0, ruft 0x7BD4 erneut 0x4907A
+(neuer Wert und neues Steuerbyte, t verfällt); sonst wird t auf 30 … 68 begrenzt (0x7BEA) und nach +0x0E geschrieben.
+
+`[APPROX]`: Tendenz aus eigener Zufallsquelle `GameState.TrendRandom` (das Original nutzt seinen einzigen Generator; so behalten
+Markt, Spiele und Mehrsaisonproben ihre Folgen); ein Kauf übernimmt Tendenz und Steuerbyte vom Markt-Platz (das Original legt
+beim Kauf 0x477E7 einen neuen Kaderplatz an und würfelt neu), Startkader und ältere Spielstände ohne Wert (0 → Mitte der Stufe);
+die tägliche Änderung fehlt (A134). Die Frage an den Verkäufer zeigt das Fragefenster des Transferbildschirms mit dem Namen des
+Verkäufers als Kopf, bis der Baustein 0x4C246 (Spur `ui-meldungen`) angeschlossen ist; ohne Oberfläche (`TransferMarket.Buy`)
+bleibt die simulierte Antwort. Länderwerte aus der Aufstellung eines Bundestrainers (0x952C) gehen in die Grundstärken nicht ein.
 
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
-- **Antwort des verkaufenden Managers** (Hot-Seat-Rückfrage 0x47608–0x47743) fehlt; das Remake nimmt ab dem geforderten
-  Betrag an, darunter bis 85 % mit sinkender Wahrscheinlichkeit.
+- **Antwort des verkaufenden Managers:** seit Spur `kader-transfer`, Teil 4 gefragt (0x47655–0x47743); nur ohne Oberfläche
+  (`TransferMarket.Buy`) nimmt das Remake ab dem geforderten Betrag an, darunter bis 85 % mit sinkender Wahrscheinlichkeit.
 - **Bietender Verein** für Spieler auf dem Markt (Bit 0x80): seit Spur `kader-transfer`, Teil 4 nach 0x059B8 angeschlossen;
   Pflege der Liste 0x7C12 nicht belegt.
 - **Zeitpunkt der Züge:** das Original würfelt die Angebotshöhe beim Anklicken, das Remake beim Angebot.

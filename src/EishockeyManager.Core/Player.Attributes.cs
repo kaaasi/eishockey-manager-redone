@@ -89,7 +89,20 @@ public sealed partial class Player
     /// <summary>Länderspiele (Detailansicht „Länderspiele:“).</summary>
     public int Caps { get; set; }
 
-    public PlayerTrend Trend { get; set; } = PlayerTrend.Constant;
+    /// <summary>
+    /// Stufe der Tendenz („Fallend.“, „Konstant.“, „Steigend.“). Eine Stufe, die nicht zu <see cref="TrendScore"/> passt, löscht
+    /// den Wert (von Hand gesetzte Stufe gilt, Spur kader-transfer, Teil 4).
+    /// </summary>
+    public PlayerTrend Trend
+    {
+        get;
+        set
+        {
+            field = value;
+            if (TrendScore != 0 && TrendOf(TrendScore) != value)
+                TrendScore = 0;
+        }
+    } = PlayerTrend.Constant;
 
     /// <summary>
     /// Stärke = Mittel aus Kondition, Technik und Form, abgerundet. Belegt im Video:

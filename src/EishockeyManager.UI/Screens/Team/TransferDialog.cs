@@ -9,7 +9,7 @@ namespace EishockeyManager.UI.Screens.Team;
 /// </summary>
 public sealed class TransferDialog
 {
-    public enum DialogKind { Buy, Loan, Sale, Bid, Talent, Offer, Subsidy }
+    public enum DialogKind { Buy, Loan, Sale, Bid, Talent, Offer, Subsidy, Seller }
 
     public enum Outcome { None, Confirm, Cancel }
 
@@ -20,8 +20,8 @@ public sealed class TransferDialog
 
     public static Rect AmountField => new(Box.X + 84, Box.Y + 36, 76, 7);
 
-    /// <summary>Fragefenster (Talentsuche, Sponsorzuschuss) statt Verhandlungsdialog?</summary>
-    public bool IsQuestion => Kind is DialogKind.Talent or DialogKind.Subsidy;
+    /// <summary>Fragefenster (Talentsuche, Sponsorzuschuss, Frage an den Verkäufer) statt Verhandlungsdialog?</summary>
+    public bool IsQuestion => Kind is DialogKind.Talent or DialogKind.Subsidy or DialogKind.Seller;
 
     /// <summary>Angebotsfenster 0x491F9 (unaufgefordertes Angebot, Argument 1, bzw. Angebot für einen Spieler auf dem Markt, Argument 0)?</summary>
     public bool IsOfferWindow => Kind is DialogKind.Offer or DialogKind.Bid;
@@ -104,6 +104,22 @@ public sealed class TransferDialog
     /// <summary>Angebotener Sponsorzuschuss (nur <see cref="DialogKind.Subsidy"/>).</summary>
     public SponsorSubsidyOffer? Subsidy { get; private init; }
 
+    /// <summary>
+    /// Frage an den verkaufenden Manager (Spur kader-transfer, Teil 4, A258). [ORIGINAL] Datei 0x47655–0x47743: „Nehmen Sie das
+    /// Angebot (Betrag DM)“ / „für Name an ?“, Knöpfe „Na gut.“ / „Nein !“. [APPROX] Fragefenster des Transferbildschirms mit dem
+    /// Namen des gefragten Managers als Kopf, bis der Baustein 0x4C246 (Spur ui-meldungen) angeschlossen ist.
+    /// </summary>
+    public static TransferDialog ForSeller(SellerQuestion question) => new(DialogKind.Seller)
+    {
+        Question = question,
+        Listing = question.Listing,
+        Player = question.Listing.Player,
+        Price = question.Offer,
+    };
+
+    /// <summary>Offene Frage an den Verkäufer (nur <see cref="DialogKind.Seller"/>).</summary>
+    public SellerQuestion? Question { get; private init; }
+
     /// <summary>Rückfrage zur Talentsuche mit dem Preis nach Rabatt (<see cref="GameState.TalentSearchPrice"/>).</summary>
     public static TransferDialog ForTalent(long price) => new(DialogKind.Talent) { Price = price };
 
@@ -111,6 +127,7 @@ public sealed class TransferDialog
     {
         DialogKind.Sale or DialogKind.Offer or DialogKind.Bid => "Verkaufen",
         DialogKind.Talent or DialogKind.Subsidy => "Aber immer!",
+        DialogKind.Seller => "Na gut.",
         _ => "Mach' ich!",
     };
 
@@ -119,6 +136,7 @@ public sealed class TransferDialog
         DialogKind.Sale when Listing is not null => "Behalten",
         DialogKind.Offer or DialogKind.Bid => "Behalten",
         DialogKind.Talent or DialogKind.Subsidy => "Lieber nicht.",
+        DialogKind.Seller => "Nein !",
         _ => "Abbruch",
     };
 
@@ -252,12 +270,14 @@ public sealed class TransferDialog
         {
             DialogKind.Talent => ["Möchten Sie, daß Ihr 'Spion'", "für Sie auf Talentsuche geht?", "Preis: " + TransferScreen.Money(Price)],
             DialogKind.Subsidy => ["Nehmen Sie einen Sponsor-", "zuschuß von", TransferScreen.Money(Price) + " an ?"],
+            DialogKind.Seller => [$"Nehmen Sie das Angebot ({TransferScreen.Money(Price)})", $"für {Player!.Name} an ?"],
             _ => ["Nehmen Sie das Angebot", $"({TransferScreen.Money(Price)}) für", Player!.Name + " an ?"],
         };
         var title = Kind switch
         {
             DialogKind.Talent => "LetsShow",
             DialogKind.Subsidy => Subsidy!.Manager.Name,
+            DialogKind.Seller => Question!.Seller.Name,
             _ => "ANGEBOT von " + Bid!.Buyer.Name,
         };
         Widgets.ShadowText(s, a.Flow, cx, b.Y + 12, title, Colors.White, Colors.Black);

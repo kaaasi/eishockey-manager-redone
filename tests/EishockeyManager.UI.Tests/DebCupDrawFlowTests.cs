@@ -228,7 +228,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// ohne Manager (Anzeigeschalter an, 0x3702E); mit und ohne Anzeige weiter gleich.
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
     /// Spur kader-transfer, Teil 4 (0x54E71, 0x072DD, 0x059B8): neu – der Markt würfelt täglich statt je Ligaspieltag (anderer
-    /// Verbrauch der Hauptquelle ab dem ersten Tag); 1993 Pokalsieger und Meister gleich, mit und ohne Anzeige weiter gleich.</summary>
+    /// Verbrauch der Hauptquelle ab dem ersten Tag); 1993 Pokalsieger und Meister gleich, mit und ohne Anzeige weiter gleich.
+    /// Spur kader-transfer, Teil 4, Rest (0x4907A, 0x4981E): 1993 und 1994 gleich, ab 1995 neu (Tendenz der Markt-Plätze im
+    /// Spielerwert, Nationalspieler aus der Ländertabelle; Begründung bei <c>RngTwinProbeTests</c>); mit und ohne Anzeige gleich.</summary>
     private const string Reference =
-        "1993: DEB 8, DM 5, Tab 15263 | 1994: DEB 0, DM 10, Tab 16010 | 1995: DEB 23, DM 16, Tab 16570 | 1996: DEB 16, DM 23, Tab 16563";
+        "1993: DEB 8, DM 5, Tab 15263 | 1994: DEB 0, DM 10, Tab 16010 | 1995: DEB 17, DM 16, Tab 16736 | 1996: DEB 19, DM 23, Tab 15844";
 }

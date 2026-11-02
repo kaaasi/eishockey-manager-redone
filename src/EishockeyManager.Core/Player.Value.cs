@@ -171,7 +171,7 @@ public static class PlayerValue
     private static int ClassIndex(int clubClass) => Math.Clamp(clubClass >> 1, 0, BaseSalary.Length - 1);
 
     /// <summary>
-    /// Tendenz des Originals zur Anzeige des Remakes. [APPROX] Das Remake führt nur die drei Stufen; Mitte der Spannen
+    /// Tendenz einer Stufe ohne <see cref="Player.TrendScore"/> (alte Spielstände, Spieler ohne neuen Kaderplatz). [APPROX] Mitte der Spannen
     /// 30–42, 43–55, 56–68 (Anzeige (Wert − 30) / 13, Datei 0x41AE0).
     /// </summary>
     public static int TrendValue(PlayerTrend trend) => trend switch
@@ -186,14 +186,14 @@ public static class PlayerValue
     /// vertragslos; Original 0xFF → Spielklasse 1); <paramref name="offer"/> der Verein mit einem offenen Angebot.
     /// [APPROX] Das Remake zählt Tore nicht je Wettbewerb (alle in +0x03) und Spiele nicht je Verein (alle Spiele in +0x1C,
     /// +0x1E/+0x20 bleiben 0; SW-02);
-    /// Tendenz siehe <see cref="TrendValue"/>; der Level ist im Remake je Manager.
+    /// Tendenz: <see cref="Player.TrendScore"/>, ohne Wert die Mitte der Stufe (<see cref="TrendValue"/>); der Level ist im Remake je Manager.
     /// </summary>
     public static PlayerValueInputs Inputs(Player player, Club? club, Club? offer = null, int level = 3) => new()
     {
         Penalties5 = Math.Min(player.Penalties5, 255),
         Penalties2 = Math.Min(player.Penalties2, 255),
         Goals0 = Math.Min(player.Goals, 255),
-        Trend = TrendValue(player.Trend),
+        Trend = player.TrendScore != 0 ? player.TrendScore : TrendValue(player.Trend),
         Condition = Math.Clamp(player.Condition, 0, 255),
         Technique = Math.Clamp(player.Technique, 0, 255),
         Games0 = Math.Min(player.Games, 0xFFFF),
