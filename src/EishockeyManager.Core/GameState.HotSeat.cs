@@ -30,6 +30,7 @@ public sealed partial class GameState
             if (Managers[i].Dismissed)
                 continue;
             CurrentManager = i;
+            BeginManagerTurn();
             return;
         }
     }
@@ -49,9 +50,17 @@ public sealed partial class GameState
             if (!Managers[next].Dismissed && !_readyManagers.Contains(Managers[next]))
             {
                 CurrentManager = next;
+                BeginManagerTurn();
                 return true;
             }
         }
         return false; // nicht erreichbar: IsLastTurnOfDay war false, also gibt es einen offenen Manager
     }
+
+    /// <summary>
+    /// [ORIGINAL] Beginn des Managerzugs Datei 0x44E22: Aufruf Datei 0x450C6 der Neuaufstellung 0x426BC (Stub 0x108:0x4D)
+    /// für den Manager am Zug – nur mit der Einstellung „automatisch aufstellen“ (<see cref="Club.ApplyAutoLineup"/>;
+    /// Integration Runde 11, Anschluss aus wettbewerbe-spiel Teil 8).
+    /// </summary>
+    private void BeginManagerTurn() => Clubs[ActiveManager.ClubIndex].ApplyAutoLineup();
 }

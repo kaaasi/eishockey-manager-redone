@@ -318,6 +318,11 @@ public class GameModeTests
     /// Integration Runde 11 (+ kader-transfer): alle Werte neu (alle drei Spuren ändern den Zufallsverbrauch). Manager 1 (Verein
     /// 30, Oberliga) endet jede Saison unten und hat am Saisonende 400.000 DM (S-K1) plus Prämien (Saison 1: 500.000); die
     /// Entlassung aus dem Teil-7-Kommentar unten tritt auf dem integrierten Stand nicht mehr auf (KT-05, Review #463).
+    /// Spur wettbewerbe-spiel, Teil 3 (A011 ff.): neu – Nationalteams spielen mit ihren eigenen Teamwerten (Kondition/Technik je Teil aus DGROUP 0x4C4E − 2, Form und Tagesform des Vereinsplatzes, Lader 0x2F0CC), das Land des Bundestrainers mit seinem Kader (0x98F8 mit Manager 5); andere WM-Ergebnisse und anderer Zufallsverbrauch nach der ersten WM. Saison 1 bis zur WM gleich (Konten 609.157/348.890), Weltmeister 52 statt 53.
+    /// Spur wettbewerbe-spiel, Teil 7 (A185, A186): neu – Kaderplatz +0x19 der Managerkader beim Spielstart, der Talente und der Marktplätze gewürfelt (random(3, 12) je Halbbyte, Datei 0x299F4/0x06F23/0x49803; eigene Quelle, Hauptquelle unverbraucht) statt 7/7; Über- und Unterzahl der Managerpaarungen rechnen damit, andere Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Gegenprobe: ohne Würfe (alle 7/7) alte Werte. Saison 1 schon anders (Konten 881.540/348.513 statt 609.157/348.890, Weltmeister 63).
+    /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): neu – Managervereine stellen mit der Einstellung „automatisch aufstellen“ (Startwert 1) beim Spielstart und täglich nach 0x426BC/0x42838 neu auf (statt Lücken stehen zu lassen bzw. nach Spielwert zu füllen), und die Feldspieler der Managerpaarung zählt je Minute 0x38A36 aus der Aufstellung; andere Aufstellungen und Ergebnisse ab dem ersten Managerspiel. Saison 1: Konten 776.819/398.946 statt 881.540/348.513, Pokalsieger 1, Meister 1; Weltmeister 63 unverändert.
+    /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
+    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -350,7 +355,7 @@ public class GameModeTests
     // schrumpft (20 → 13 → 12 → 11), in Saison 5 Strafen und Dispozinsen, entlassen (−4.592.736). Manager 0 bleibt spielfähig.
     // (Stand der Spur vor der Integration; integrierter Stand siehe Zusammenfassung oben.)
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=0,GermanChampion=3,EuropeanCupWinner=2|412175,500000|WorldChampion=54,CupWinner=3,GermanChampion=5,EuropeanCupWinner=3|577721,400000|WorldChampion=53,CupWinner=3,GermanChampion=3,EuropeanCupWinner=5|2648588,400000|WorldChampion=52,CupWinner=13,GermanChampion=20,EuropeanCupWinner=3|3711668,400000|WorldChampion=52,CupWinner=6,GermanChampion=1,EuropeanCupWinner=20|4439513,400000|R696623419 C845472287";
+        "WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|198969,400000|WorldChampion=53,CupWinner=14,GermanChampion=5,EuropeanCupWinner=0|337416,500000|WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=5|2527068,500000|WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=5|3706558,500000|WorldChampion=63,CupWinner=18,GermanChampion=1,EuropeanCupWinner=5|4508205,400000|R1798967879 C1908605390";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

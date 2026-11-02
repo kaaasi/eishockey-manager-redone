@@ -116,8 +116,10 @@ public class SpielberechnungKomplett2Tests
         var other = new Club { Index = coach.Nation == NationalTeams.First ? NationalTeams.First + 1 : NationalTeams.First, Name = "Gegner", Strength = 60 };
 
         var team = MatchEngine.LiveTeamOf(game, nation, other, managed: true, managerMatch: true);
-        Assert.Null(team.Squad); // Reihenwerte und Energie bleiben wie beim Computerverein ([APPROX])
-        var squad = Assert.IsType<LiveSquad>(team.PenaltySquad);
+        // Spur wettbewerbe-spiel, Teil 3 (A079): [ORIGINAL] das Land spielt wie ein Managerverein mit dem Kader (0x98F8 mit
+        // Manager 5); der Strafspieler kommt aus demselben Kader (PenaltyPlayers = Squad).
+        var squad = Assert.IsType<LiveSquad>(team.Squad);
+        Assert.Same(squad, team.PenaltyPlayers);
         Assert.Equal(coach.Squad.Count, squad.Players.Count);
         var lineup = coach.Lineup().Players.ToHashSet();
         Assert.All(squad.Players.Where(p => p.Position != 0), p => Assert.Contains(p.Player, lineup));
@@ -152,6 +154,8 @@ public class SpielberechnungKomplett2Tests
             var game = TestGames.Create(seed);
             MatchEngine.EnsureTeamValues(game);
             var club = game.Clubs[game.Managers[0].ClubIndex];
+            // Teil 8 (A068): weniger Aufgestellte gibt es nur nach einem Eingriff von Hand; der schaltet die automatische Aufstellung ab (Datei 0x40ADE), sonst stellt der Tageslauf wieder voll auf (0x07C07).
+            club.AutoLineupEnabled = false;
             foreach (var p in club.Lineup.Players.Skip(8).ToList())
                 club.Lineup.Remove(p);
             foreach (var c in game.Clubs)

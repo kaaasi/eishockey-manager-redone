@@ -13,9 +13,8 @@ namespace EishockeyManager.Core;
 /// <item>[ORIGINAL] Vor jedem WM-Spiel des Landes schreibt die Automatik ihre Zeile (<see cref="Tactics.RecordAutoLine"/>),
 ///   mit und ohne Bundestrainer. Freundschaftsspiele rufen 0x8365 nicht auf (Aufrufe nur aus dem Spieltagsablauf,
 ///   Datei 0x36F27/0x36F5A; `docs/dosbox-befunde.md`).</item>
-/// <item>[APPROX] Stärken für die Automatik: <see cref="NationalMatchStrength"/> beider Länder. Das Original nimmt die
-///   doppelten Stärken aus 0x149D:0x61 (Datei 0x83AD/0x83CA, Argumente Verein, 1, 0, 0, 1); deren Formel ist nicht
-///   gelesen.</item>
+/// <item>[ORIGINAL] Stärken für die Automatik: <see cref="NationalMatchStrength"/> beider Länder – die doppelten Stärken
+///   aus 0x149D:0x61 = 0x368B1 (Datei 0x83AD/0x83CA, Argumente Verein, 1, 0, 0, 1; Spur wettbewerbe-spiel, Teil 3, A015).</item>
 /// </list>
 /// </remarks>
 public sealed partial class GameState

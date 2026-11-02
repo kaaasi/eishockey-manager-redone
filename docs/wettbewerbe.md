@@ -22,7 +22,7 @@ Heimspiele gehen über die gemeinsame Spielabrechnung `SettleHomeMatch` (genau e
 | Nach dem dritten Termin: Sieger auf Platz 2k, nächste Runde = Sieger der Reihe nach, dann 20 zufällige Vertauschungen | 0x3489D, 0x3494B |
 | Pokalsieger nach dem dritten Endspieltermin (Titel „DEB Pokalsieger“, Meisterfoto – im Video 1995: ESV Kaufbeuren nach dem Deutschen Meister) | 0x34ED0, Karriere 17:37 |
 | Rundennamen „Erste Runde“, „Achtelfinale“, „Viertelfinale“, „Halbfinale“, „Endspiel“ | DGROUP 0x2576 |
-| `[APPROX]` Unentschieden: Original kodiert den Sieger im Ergebnis (+30); hier Penaltyschießen wie in den Play-Offs | – |
+| `[ORIGINAL]` Unentschieden: Endstand mit Marke + 30 wie im Original – schneller Weg random(0, 2) je Seite bis ungleich, Minutenweg Verlängerung und Penaltyschießen (Gleichstand + Treffer 2 … 5); Marken 0/1/2 in `CupTie.Marks`, ein bzw. zwei Punkte in der Übersicht (`CupMatch`, Spur wettbewerbe-spiel Teil 1) | 0x376F0–0x377A3, 0x39770–0x397B3, 0x38402, 0x338AB |
 
 ### Bildschirm „DEB-Pokal Auslosung“ (`UI/Screens/Competitions/DebCupDrawScreen.cs`)
 
@@ -101,7 +101,7 @@ gespielt wurde (Abschnitt [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-
 | Spielwerte der Nationalteams: Tabelle DGROUP 0x4C4E (je Land Kondition Abwehr, Technik Abwehr, Kondition Sturm, Technik Sturm, je −2) | Lader 0x2EFDE; Video „Stärken Länderteams – Gesamt“ 13:18 (Spalten Kondition/Technik = Mittel aus Abwehr und Sturm) |
 | Gruppeneinteilung: Plätze 1–6 / 7–12 der Länderreihenfolge; beim Spielstart und zu jeder Saison 20 Tausche zweier Plätze random(52, 63), die Tausche wirken fort (`WorldCup.Mix`, `WorldCup.Order`) | 0x35EDD, Aufrufe 0x43A17 / 0x5644E |
 | Ohne menschlichen Bundestrainer werden die Werte Deutschlands an den Tagen mit Markierung 255 (13. und 29. April) neu ausgewürfelt: Kondition random(84, 94), Technik random(79, 89), Form random(45, 55) – die WM spielt Deutschland also nie mit den Startwerten (`GameState.NationalRatings`) | 0x554CF |
-| `[APPROX]` Spielstärke = Mittel aus Kondition und Technik; K.-o.-Unentschieden mit Penaltyschießen; Plätze 9–12 nach Gruppenplatz | – |
+| Spielstärke: keine eigene Formel – Vereinsfelder des Landes in 0x368B1/0x977F (Kondition/Technik je Teil aus 0x4C4E − 2, Form/Tagesform des Vereinsplatzes); `docs/spielberechnung.md` §20 (Runde 11, wettbewerbe-spiel Teil 3). `[APPROX]` Plätze 9–12 nach Gruppenplatz (K.-o.-Unentschieden seit Runde 11 nach dem Original: Endstand random(0, 2) je Seite mit Marke, `WorldCup.MarksOf`) | – |
 
 ### Bildschirm WM „Gruppe 1/2“ (`UI/Screens/Competitions/WorldCupScreen.cs`)
 
@@ -117,6 +117,31 @@ Ränge und Linien liegen pixelgenau.
 K.-o.-Ansicht seit Runde 6 nach dem Original: eigener Bildschirm „WM-Endrundenspiele“ (`WorldCupKnockoutScreen`, dieselbe
 Funktion wie „DEB-Pokalspiele“ mit Wettbewerb 3), vermessen an `eisbaeren_f35_00646` und `eisbaeren_f44_01330` (Abschnitt
 [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-pixel-wettbewerbe)). **Offen:** WM-Statistik wartet auf `livespiel`.
+
+## Begegnungstabelle aller Wettbewerbe (Spur `wettbewerbe-spiel`, Teil 2; A111, #344)
+
+Infoleiste (zweite Zeile) und Gegner-Fenster lesen eine Tabelle (`Core/MeetingHistory.cs`, DGROUP 0xAB7B, Schreiber 0x4F5A8).
+Eingetragen wird nur aus der Ergebniseintragung em.exe 0x50283, und zwar für jedes Spiel, das sie bekommt:
+
+| Wettbewerb | Aufruf (Datei) | Remake |
+|---|---|---|
+| Liga, Code 7 | 0x50B45 | `GameState.PlayNextMatchDay` |
+| DEB-Pokal, Code 6 | 0x34C5C in 0x34B76 | `DebCup.PlayDay` (neu) |
+| Play-offs, Code 1 | 0x3165B in 0x315E9 (nur gespielte Spiele, < 100) | `GameState.RecordMeetings` – Aufruf im Play-off-Tag (`SeasonFlow.cs`) setzt die Integration |
+| Aufstiegsrunden | 0x30942 in 0x30852, Wettbewerb 1 | wie Play-offs |
+| WM-Gruppe, Code 8 / WM-Endrunde, Code 10 | 0x30942 (Wettbewerb 0) / 0x3108B in 0x30E7B | `EnterNationalResult` → `RecordMeeting` |
+| Freundschaftsspiel, Code 0xD | 0x303BA | `EnterNationalResult` → `RecordMeeting` |
+| Europapokal (Gruppen, Endrunde) | – (0x30852 ruft 0x50283 nur bei Wettbewerb < 2, Datei 0x3091C) | nicht eingetragen |
+
+- Pokal-, Play-off- und WM-Endrunden-Ergebnisse gehen als Endstand **ohne Marken** ein (je − 30 im Heimbyte, solange > 29:
+  Datei 0x34C06–0x34C2A, 0x31622–0x31631, 0x31052–0x31061). Im Remake ist das `KnockoutMatch.HomeGoals/AwayGoals`.
+- Tabelle des Managers: Heimverein mit Manager (Vereinsfeld +0x16) → Seite 0, Gast → Seite 1. Das Land DGROUP 0x6AC schreibt
+  in die Tabelle von Manager 0 (Datei 0x502B4–0x502C8), **auch ohne Bundestrainer**; 0x6AC ist Deutschland (einziger
+  Schreiber: WM-Auslosung Datei 0x35FAC, im Remake ohne Indextausch). Vorher verlangte der Zweig einen ernannten
+  Bundestrainer und Länderspiele hatten einen eigenen Schreibweg (#344).
+- Nur die Begegnungstabelle: Tabellenfelder, Serien und Tagesform schreibt 0x50283 weiter nur bei Code 7/8 (Datei 0x5030D).
+- `[APPROX]` Play-offs im Remake bei Gleichstand mit getrenntem Sieger (`Playoffs.cs`, Spur saisonwechsel): eingetragen wird
+  dann der Gleichstand; im Original der Endstand nach Penaltyschießen.
 
 ## Stärken (`Core/StatisticsStrength.cs`, `UI/Screens/Statistics/StrengthScreen.cs`)
 
@@ -249,7 +274,7 @@ Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader a
 | Bonus auf drei Werte jedes Kaderspielers, einer eins weniger (x &gt; 2: der erste, sonst der zweite), höchstens 99 | 0x3C18C |
 | Länderspiele zählen für die Spieler der Aufstellung des Managers 5 | 0x872B |
 | `[APPROX]` Kandidaten: alle deutschen Spieler (keine Ausländer) der Ligavereine und des Transfermarkts, nach Summe absteigend – das Original listet seine 200 ausführlich geführten Spieler (Kader der Manager, Transfermarkt) | 0x3C5C9 |
-| `[APPROX]` Stärke des Nationalteams = Mittel von (Kondition + Technik) / 2 über Torhüter und Reihen 1–3 der Aufstellung (16 Plätze, Lücken 0) plus Taktikzuschlag; ohne Aufstellung die Automatik (bester Torhüter, je Reihe 2 Verteidiger + 3 Stürmer). Aufstellung und Taktik: Abschnitt „Aufstellung und Taktik des Nationalteams“ | – |
+| Stärke des Nationalteams wie ein Managerverein aus dem Kader des Bundestrainers (0x98F8 mit Manager 5, + Länderspiele / 8, alle vier Blöcke; `docs/spielberechnung.md` §20). `[APPROX]` ohne Aufstellung die Automatik (bester Torhüter, je Reihe 2 Verteidiger + 3 Stürmer). Aufstellung und Taktik: Abschnitt „Aufstellung und Taktik des Nationalteams“ | 0x98F8, 0x55494 |
 | `[APPROX]` Felder 0x10–0x12 des Kaderplatzes als Kondition, Technik, Form gedeutet (Spaltenfolge „KO TE FO“) | – |
 | `[APPROX]` Energie 70 aller Kaderspieler (Kaderfeld 0x13) setzt das Original beim Öffnen von „WM Vorbereitung“, das Remake beim ersten Freundschaftsspiel der Saison vor dem Spiel (Bildschirme ändern beim Öffnen nichts; Nutzerentscheidung PR #189). Erneutes Öffnen setzt im Original wieder 70, im Remake nicht; Abzug je Spiel fehlt (Spur `spielberechnung`) | 0x3BB51; DOSBox: nach drei Freundschaftsspielen Energie aller Eingesetzten 46, Datum unverändert, Deutschland +3/+3/+5 (`docs/dosbox-befunde.md`) |
 
@@ -278,7 +303,7 @@ Kaderplatz 52 Byte: DGROUP 0x5DC3 + 0x618 · Manager + 0x34 · Platz, 29 Plätze
 | `[APPROX]` Wer von einem besetzten Platz verdrängt wird, bleibt eingesetzt (RESERVE) | – |
 | `[APPROX]` Auto-Aufstellung „A“ wie beim Verein (drei Blöcke), dazu die stärksten Übrigen bis 22 eingesetzt; „C“ leert alle Plätze | – |
 | `[APPROX]` Linksklick auf nicht eingesetzte oder aufgestellte Spieler wählt sie aus (wie beim Verein); Spielerinfo auf Rechtsklick (0x40872) nicht übernommen | – |
-| `[APPROX]` Stärke aus Torhüter und Reihen 1–3 (Reihe 4 zählt nicht), Taktik wie beim Verein (`Tactics.EffortStrengthBonus`); ganz leere Aufstellung → bisherige Automatik | – |
+| Stärke aus den eingesetzten Spielern aller vier Blöcke, Taktik über Einsatz/Angriff im Spiel (0x98F8, 0x939A; kein Zuschlag). `[APPROX]` ganz leere Aufstellung → bisherige Automatik | 0x98F8, 0x8EF2 |
 
 Spielstand Schema 4 (Migration 3 → 4: leere Aufstellung, Grundtaktik, niemand eingesetzt).
 Bildschirmfotos: `emtool screens gamedata ~/work/screens nationalteam-2` (Belegung wie im Video).
@@ -339,7 +364,7 @@ und em.exe 0x8365 (`docs/dosbox-befunde.md`). Umsetzung `Core/Squad.Tactics.cs` 
 | `[ORIGINAL]` Eigene Werte des Bundestrainers beginnen bei 0 (DGROUP 0xCAE9/0xCB01 + 0x30 · 5 schreiben nur Taktikbildschirm und Laden) | Datei 0x48607 ff., 0x5C38C, 0x5CD7D |
 | `[ORIGINAL]` Die Taktik gehört dem Nationalteam: Werte und Modi bleiben über Saisonwechsel und neue Ernennung stehen (Video `bundestrainer_00058` zeigt 60/0/25/20/30/0 aus einer späteren Saison) | Suche nach `0xCAE9`/`0xCB01` in em.exe: nur 0x48607 ff. (Bildschirm) und 0x5C38C/0x5CD7D (Sichern/Laden). Für die Vereinsfelder 0x26–0x3A Deutschlands ist keine Rücksetzung beim Saisonwechsel gefunden; die Suche nach Schreibzugriffen über Zeiger ist nicht vollständig |
 | `[ORIGINAL]` Freundschaftsspiele schreiben keine Werte (0x3BFC4 ruft 0x8365 nicht) | Aufrufliste oben |
-| `[APPROX]` Stärken für die Automatik: `NationalMatchStrength` beider Länder statt 0x149D:0x61 (Formel nicht gelesen) | Datei 0x83AD/0x83CA |
+| Stärken für die Automatik: `NationalMatchStrength` beider Länder = 0x149D:0x61 = 0x368B1(Land, 1, 0, 0, 1) (Runde 11, wettbewerbe-spiel Teil 3) | Datei 0x83AD/0x83CA |
 | `[APPROX]` Wirkung im Spiel unverändert (`Effective*`/`Auto*`, Spur `spielstaerke-manager`); nur Anzeige und eigene Werte sind betroffen | – |
 
 Spielstand: neues Feld `_vacantNationalTactics` (Taktik ohne Bundestrainer) und je Taktik die Anzeige unter „AUTOM.“
@@ -583,7 +608,7 @@ Remake aus den eingetragenen Ergebnissen; Punkte, Tore und Reihenfolge stimmen m
 | PW-02 | „DEB-Pokalspiele“: Gruppenüberschriften in Großbuchstaben („BUNDESLIGA GEGEN ZWEITE LIGA:“). | alle vier Vorlagen |
 | PW-03 | Europapokal: Ergebnisse „links:rechts“ wie die Paarung, auch im Rückspiel, beide Zahlen zweistellig (vorher Rückspiel „Heim:Gast“, ohne Auffüllen). | `folge04_01241` (Dynamo 12:0 Punkte), `eisbaeren_f58_01323` |
 | PW-04 | Europapokal: keine Termine mehr, sobald in der Gruppe gespielt wurde. `[APPROX]`: Bedingung im Code (Datei 0x32294, Parameter [bp+0xA]) nicht ganz aufgelöst. | `eisbaeren_f51_03346`, `eisbaeren_f58_01323` |
-| PW-05 | WM: K.-o.-Ansicht ist „WM-Endrundenspiele“ (Datei 0x32E23, Wettbewerb 3): Rahmen aus n = Begegnungen + 1 − 6 + Abschnitte (1/3/7, DGROUP 0x4DFD), ohne laufendes Spiel ab neun Teilen oben; Pokalbild (0 \| 66); Überschrift → Zeile 7; Ergebnis bei x = 233 (0x3394E); ungespielt „0: 0“; Knopf „Gruppe“ (136 \| 201); im Spielablauf sieben Leerzeichen vor „n.Minute“ (DGROUP 0x4E5F). `[APPROX]`: zwei Punkte für Penaltyschießen, Anzeige im Spielablauf noch ohne Aufrufer. | `eisbaeren_f35_00646`, `eisbaeren_f44_01330` |
+| PW-05 | WM: K.-o.-Ansicht ist „WM-Endrundenspiele“ (Datei 0x32E23, Wettbewerb 3): Rahmen aus n = Begegnungen + 1 − 6 + Abschnitte (1/3/7, DGROUP 0x4DFD), ohne laufendes Spiel ab neun Teilen oben; Pokalbild (0 \| 66); Überschrift → Zeile 7; Ergebnis bei x = 233 (0x3394E); ungespielt „0: 0“; Knopf „Gruppe“ (136 \| 201); im Spielablauf sieben Leerzeichen vor „n.Minute“ (DGROUP 0x4E5F). Punkte = Marken (einer nach Penaltyschießen, zwei nach Tor in der Verlängerung; Runde 11, wettbewerbe-spiel Teil 1). `[APPROX]`: Anzeige im Spielablauf noch ohne Aufrufer. | `eisbaeren_f35_00646`, `eisbaeren_f44_01330` |
 
 Ohne Abweichung: Live-Auslosung (Frage und Ziehung) und Paarungen Liga. Die Anzeige „60.MINUTE“ der Ligapaarungen im
 Spielablauf (gleiches Fenster ohne Knöpfe, Kopfzeile mit Minute) gibt es im Remake noch nicht.

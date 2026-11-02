@@ -80,7 +80,11 @@ public sealed partial class NationalCoach
     private static readonly long[] FriendlyCostThirds =
         [300000, 165000, 180000, 135000, 120000, 150000, 90000, 60000, 105000, 75000, 45000, 195000];
 
-    /// <summary>[APPROX] Aufstellung des Nationalteams: Torhüter, drei Reihen à zwei Verteidiger und drei Stürmer.</summary>
+    /// <summary>
+    /// Reihen der Automatik (<see cref="Lineup"/>) und der Reihenwerte der Anzeige: Torhüter, drei Reihen à zwei Verteidiger
+    /// und drei Stürmer. [ORIGINAL] Im Spiel zählt mit eigener Aufstellung auch die vierte Reihe (0x8EF2/0x91FF: drei bzw.
+    /// mit vierter Reihe vier Reihen, <see cref="MatchEngine.NationalSquad"/>).
+    /// </summary>
     public const int Lines = 3;
 
     private readonly List<NationalSquadMember> _squad = [];
@@ -167,8 +171,9 @@ public sealed partial class NationalCoach
     public static int Value(Player p) => (p.Condition + p.Technique) / 2;
 
     /// <summary>
-    /// Aufstellung, mit der das Nationalteam spielt (WM, Freundschaftsspiel, Länderspiele): die Torhüter- und
-    /// Reihenplätze 1–3 der <see cref="Formation"/> (Spur nationalteam-2); Verletzte und Gesperrte fallen heraus.
+    /// Aufstellung für Länderspiele, Spielerzähler und Anzeige: die Torhüter- und Reihenplätze 1–3 der
+    /// <see cref="Formation"/> (Spur nationalteam-2); Verletzte und Gesperrte fallen heraus. Die Spielberechnung nimmt
+    /// alle vier Blöcke (<see cref="MatchEngine.NationalSquad"/>).
     /// [APPROX] Ist die Formation ganz leer (Bundestrainer hat nichts aufgestellt, z. B. passiver Manager oder
     /// automatische Kaderwahl ohne Halt), gilt die bisherige Automatik: bester unverletzter Torhüter, je Reihe die zwei
     /// besten Verteidiger und drei besten Stürmer (nach Kondition + Technik + Form).
@@ -220,7 +225,4 @@ public sealed record NationalLineup(Player? Goalkeeper, IReadOnlyList<Player?> D
         var list = attack ? Forwards : Defenders;
         return list.Skip(line * size).Take(size).Sum(p => p is null ? 0 : NationalCoach.Value(p)) / size;
     }
-
-    /// <summary>[APPROX] Spielstärke: Mittel der 16 Plätze (Torhüter, 6 Verteidiger, 9 Stürmer), Lücken zählen 0.</summary>
-    public int Strength => Players.Sum(NationalCoach.Value) / (1 + 2 * NationalCoach.Lines + 3 * NationalCoach.Lines);
 }

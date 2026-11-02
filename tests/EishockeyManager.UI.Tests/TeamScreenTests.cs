@@ -28,6 +28,7 @@ public class TeamScreenTests
         d.Click(gk.X + 5, gk.Y + 5);
         d.Click(60, LineupScreen.FirstRowY + row * LineupScreen.RowPitch + 2);
         Assert.Same(reserveGoalie, club.Lineup.Goalkeeper);
+        d.Click(10, 10); // Meldung „Auto-Aufstellung / ist deaktiviert !“ schließen (Datei 0x40ADE, Integration Runde 11)
 
         // Stürmer auf einen Verteidigerplatz: Meldung, Aufstellung unverändert
         var forward = rows.First(p => p.Role == PlayerRole.Forward);

@@ -114,7 +114,7 @@ public sealed class TransferScreen : Screen
 
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
-            Host.Show(_back);
+            Leave();
             return;
         }
         if (!input.LeftClick)
@@ -173,7 +173,18 @@ public sealed class TransferScreen : Screen
             return;
         }
         if (!ListWindow.Contains(x, y))
-            Host.Show(_back);
+            Leave();
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Ende der Transferliste Datei 0x465F1 (Datei 0x47BB5): vor der Rückkehr Neuaufstellung 0x426BC (Stub
+    /// 0x108:0x4D) mit der Einstellung „automatisch aufstellen“ (<see cref="Club.ApplyAutoLineup"/>; Integration Runde 11,
+    /// Anschluss aus wettbewerbe-spiel Teil 8).
+    /// </summary>
+    private void Leave()
+    {
+        Game.Clubs[Manager.ClubIndex].ApplyAutoLineup();
+        Host.Show(_back);
     }
 
     private void Confirm(TransferDialog d)

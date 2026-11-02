@@ -201,8 +201,9 @@ public class NationalCoachTests
         Assert.NotNull(lineup.Goalkeeper);
         Assert.Equal(6, lineup.Defenders.Count);
         Assert.Equal(9, lineup.Forwards.Count);
-        Assert.Equal(lineup.Strength, game.NationalMatchStrength(NationalTeams.Germany));
-        Assert.Equal(lineup.Players.Sum(NationalCoach.Value) / 16, lineup.Strength);
+        // Spur wettbewerbe-spiel, Teil 3: Stärke 0x368B1 aus dem Kader (0x98F8 mit Manager 5) statt Mittel der 16 Plätze;
+        // die Formel prüft WettbewerbeSpiel3Tests.
+        Assert.True(game.NationalMatchStrength(NationalTeams.Germany) > 0);
     }
 
     // ---- Korrekturen an der WM ---------------------------------------------------------------------------------
@@ -237,7 +238,10 @@ public class NationalCoachTests
         while (game.CurrentDay <= SeasonCalendar.ClubSeasonEnd && game.Phase == SeasonPhase.Running)
             game.Continue();
         var (cd, td, ca, ta) = game.NationalRatings(NationalTeams.Germany);
-        Assert.Equal((cd + td + ca + ta) / 4, game.NationalMatchStrength(NationalTeams.Germany));
+        // Spur wettbewerbe-spiel, Teil 3: Die ausgewürfelten Werte sind die Vereinsfelder 0x18–0x1B des Landes (vorher:
+        // Mittel der vier Werte als Stärke).
+        var (defense, attack, _) = game.NationalTeamValues(NationalTeams.Germany);
+        Assert.Equal((cd, td, ca, ta), (defense.Condition, defense.Technique, attack.Condition, attack.Technique));
     }
 
     /// <summary>[ORIGINAL] Datei 0x35EDD: 20 Tausche zweier Plätze random(52, 63), auch derselbe Platz.</summary>

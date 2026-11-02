@@ -33,13 +33,6 @@ public static class NationalTeamRatings
         var (cd, td, ca, ta) = Of(club);
         return ((cd + ca) / 2.0, (td + ta) / 2.0);
     }
-
-    /// <summary>[APPROX] Spielstärke für die Spielberechnung: Mittel aus Kondition und Technik (das Remake rechnet mit einem Wert).</summary>
-    public static int MatchStrength(int club)
-    {
-        var (condition, technique) = Average(club);
-        return (int)((condition + technique) / 2);
-    }
 }
 
 /// <summary>
@@ -62,11 +55,13 @@ public static class NationalTeamRatings
 /// <item>[ORIGINAL] Reihenfolge der Länder: Beim Spielstart und zu jeder neuen Saison tauscht das Original 20-mal zwei
 ///   zufällige Nationalteams (Datei 0x35EDD, je random(52, 63); Aufrufe Datei 0x43A17 und 0x5644E). Die Tausche wirken
 ///   fort, die Gruppen sind die Plätze 1–6 und 7–12 dieser Reihenfolge.</item>
-/// <item>[ORIGINAL] Spielwerte: <see cref="GameState.NationalMatchStrength"/> – ohne Bundestrainer werden die Werte
-///   Deutschlands vor der WM neu ausgewürfelt, mit Bundestrainer zählt dessen Aufstellung ([APPROX] Stärkeformel, siehe
-///   <see cref="NationalLineup.Strength"/>).</item>
+/// <item>[ORIGINAL] Spielwerte: Vereinsfelder des Landes (<see cref="GameState.NationalTeamValues"/>) in der
+///   Spielberechnung 0x368B1/0x977F – ohne Bundestrainer werden die Werte Deutschlands vor der WM neu ausgewürfelt, mit
+///   Bundestrainer spielt das Land aus dessen Kader und Aufstellung wie ein Managerverein (0x98F8 mit Manager 5,
+///   <see cref="MatchEngine.NationalLiveTeam"/>).</item>
 /// </list>
-/// [APPROX] Unentschieden im K.-o.: Penaltyschießen (<see cref="KnockoutMatch.Play"/>); Plätze 9–12 nach Gruppenplatz.
+/// [ORIGINAL] Unentschieden im K.-o.: schneller Weg random(0, 2) je Seite bis ungleich, Endstand mit Marke + 30 (0x376F0;
+/// <see cref="CupMatch"/>, <see cref="MarksOf"/>). [APPROX] Plätze 9–12 nach Gruppenplatz (WM-Tabelle nicht gelesen).
 /// </remarks>
 public sealed class WorldCup : ISeasonCompetition
 {
@@ -91,6 +86,7 @@ public sealed class WorldCup : ISeasonCompetition
     private readonly List<int> _order = Enumerable.Range(NationalTeams.First, Teams).ToList();
     private readonly List<CupGroup> _groups = [];
     private readonly List<List<KnockoutMatch>> _knockout = [];
+    private readonly List<List<int>> _knockoutMarks = [];
     private readonly int?[] _slots = new int?[24];
 
     public Competition Kind => Competition.WorldCup;
@@ -101,6 +97,15 @@ public sealed class WorldCup : ISeasonCompetition
 
     /// <summary>Gespielte K.-o.-Termine: [0] Viertelfinale, [1] Halbfinale + Spiele 5.–8., [2] Endspiel + Platzierungsspiele.</summary>
     public IReadOnlyList<IReadOnlyList<KnockoutMatch>> Knockout => _knockout;
+
+    /// <summary>
+    /// Ergebnismarken des Spiels <paramref name="index"/> am K.-o.-Termin <paramref name="stage"/> (0 regulär, 1 Penaltyschießen,
+    /// 2 Verlängerung; <see cref="CupMatch"/>). Fehlt der Eintrag, 1 bei Penaltysieger, sonst 0.
+    /// </summary>
+    public int MarksOf(int stage, int index) =>
+        stage < _knockoutMarks.Count && index < _knockoutMarks[stage].Count
+            ? _knockoutMarks[stage][index]
+            : _knockout[stage][index].PenaltyWinner is null ? 0 : 1;
 
     public int? Winner { get; private set; }
 
@@ -116,6 +121,7 @@ public sealed class WorldCup : ISeasonCompetition
     {
         _groups.Clear();
         _knockout.Clear();
+        _knockoutMarks.Clear();
         Array.Fill(_slots, null);
         Winner = null;
         Ranking = [];
@@ -203,13 +209,17 @@ public sealed class WorldCup : ISeasonCompetition
         else
         {
             var stage = date - GroupDates;
-            played = KnockoutPairings(stage)
+            var results = KnockoutPairings(stage)
                 .Select(p =>
                 {
                     game.PrepareNationalTactics(p.Home, p.Away); // Spielvorbereitung 0x8365 je Paarung (#192)
-                    return KnockoutMatch.Play(game, day, game.RatedNation(p.Home), game.RatedNation(p.Away), MatchCompetition.WorldCup, random);
+                    return CupMatch.Play(game, day, game.RatedNation(p.Home), game.RatedNation(p.Away), MatchCompetition.WorldCup, random);
                 }).ToList();
+            played = results.Select(r => r.Match).ToList();
+            while (_knockoutMarks.Count < _knockout.Count)
+                _knockoutMarks.Add(_knockout[_knockoutMarks.Count].Select(m => m.PenaltyWinner is null ? 0 : 1).ToList());
             _knockout.Add(played);
+            _knockoutMarks.Add(results.Select(r => r.Marks).ToList());
             foreach (var m in played)
                 game.EnterNationalResult(m.Home, m.Away, m.HomeGoals, m.AwayGoals, NationalMatchKind.WorldCupKnockout); // Code 10
             for (var k = 0; k < 4; k++)

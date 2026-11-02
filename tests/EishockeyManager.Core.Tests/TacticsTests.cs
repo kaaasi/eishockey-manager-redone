@@ -24,7 +24,6 @@ public class TacticsTests
         Assert.Equal(TacticMode.Auto, t.AttackMode);
         Assert.Equal(0, t.Minutes(3, forwards: true));
         Assert.False(t.MinutesActive);
-        Assert.Equal(0, t.EffortStrengthBonus());
     }
 
     [Fact]
@@ -32,7 +31,7 @@ public class TacticsTests
     {
         var t = new Tactics();
         t.SetMinutes(0, false, 100);
-        Assert.Equal(Tactics.MaxMinutes, t.Minutes(0, false));
+        Assert.Equal(Tactics.MaxMinutesPerPart, t.Minutes(0, false));
         t.SetMinutes(1, true, -1);
         Assert.Equal(0, t.Minutes(1, true));
     }

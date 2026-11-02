@@ -29,9 +29,10 @@ public sealed record WorldCupKnockoutSection(string Title, IReadOnlyList<WorldCu
 ///   „Die Paarungen stehen noch nicht fest...“ (Flow, Grundlinie y + 34, Farbe 30) und Knopf „Gruppe“; DOSBox
 ///   <c>dosbox/nur-weltkugel/24</c>. Erreichbar über „Endrunde“ der Paarungsansicht „Gruppe n   m.Spieltag“ (<see cref="CupPairingsScreen"/>,
 ///   DOSBox 20, 21; #194) und nach der Gruppenphase über die Gruppentabelle.</item>
-/// <item>[APPROX] Punkte hinter dem Ergebnis: Das Original setzt einen Punkt nach Verlängerung und zwei (eisbaeren_f44_01330:
-///   „4: 3..“) vermutlich nach Penaltyschießen; das Remake kennt nur das Penaltyschießen bei Gleichstand und zeigt dann zwei
-///   Punkte hinter dem Gleichstand.</item>
+/// <item>[ORIGINAL] Punkte hinter dem Ergebnis = Marken + 30 (Anzeige 0x338AB–0x338E3): einer nach Penaltyschießen mit Endstand
+///   (schneller Weg 0x37761, Minutenweg 0x39789), zwei nach einem Tor in der Verlängerung (0x38402; eisbaeren_f44_01330 „4: 3..“
+///   neben „4: 3.“) – <see cref="WorldCup.MarksOf"/>, <see cref="CupMatch"/>. [APPROX] Die Herkunft des Stands vor 0x38402 ist
+///   nicht verfolgt.</item>
 /// <item>[APPROX] Die Anzeige im Spielablauf („60.Minute“) gibt es im Remake noch nicht (Spur livespiel); vorbereitet über
 ///   <c>liveMinute</c>.</item>
 /// </list>
@@ -94,7 +95,7 @@ public sealed class WorldCupKnockoutScreen : Screen
                 var match = stage < wm.Knockout.Count ? wm.Knockout[stage].ElementAtOrDefault(k) : null;
                 sections[^1].Rows.Add(match is null
                     ? new WorldCupKnockoutRow(home, away, 0, 0, 0)
-                    : new WorldCupKnockoutRow(home, away, match.HomeGoals, match.AwayGoals, match.PenaltyWinner is null ? 0 : 2));
+                    : new WorldCupKnockoutRow(home, away, match.HomeGoals, match.AwayGoals, wm.MarksOf(stage, k)));
             }
         }
         return sections.Select(s => new WorldCupKnockoutSection(s.Title, s.Rows)).ToList();

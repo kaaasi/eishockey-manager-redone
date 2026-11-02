@@ -159,7 +159,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** je Regel roter Test; Saisonverteilung (Meister, Tore, Strafminuten) im PR; Mehrsaisonprobe Modus 1, 2, 4;
   Referenzwerte begründet.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/spielberechnung.md`, `docs/wettbewerbe.md`, Tests.
-  **Modell:** Claude Opus 5.5. **Status:** –
+  **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig (PR #420, Review offen); Teil 2 fertig (PR #425, Review offen); Teil 3 fertig (PR #435, Review offen); Teil 4 fertig (PR #438, Review offen); Fix Aufstellung nach Verletzung (PR #439, aus #437); Teil 5 fertig mit Restlücken (PR #440: A089/A070 nach A068, A184 und A174 Entscheidung Nutzer); Teil 6 fertig (PR #444); Teil 7 fertig (PR #450); Teil 8 fertig (PR #454: automatische Aufstellung A068, Neuzählung A089/A070); Spur fertig – Integration.
 
 ### Spur `ui-meldungen` – Meldungsbausteine, Infofile, Tabellenkurve
 
@@ -210,6 +210,17 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   `LifecycleScreenRegressionTests.R204` (zweiter stimmiger Ausgang: Poolplatz). Doku-Anschlüsse (re-meldungen.md, re-geld.md,
   reverse-engineering.md, spielberechnung.md §15, Inventur A226/A256/A257/A381/F002–F006/F013–F015/F109) mit
   `marker-werkzeug` bzw. im Rundenabschluss.
+- **`wettbewerbe-spiel`** (`integration/runde-11-wettbewerbe-spiel`, Stapel #420 → #425 → #435 → #438 → #439 → #440 → #444 →
+  #450 → #454): Schema vorläufig 24 → integriert 30 → 31 → 32; Abdrücke (`RngTwinProbeTests`, `SpielberechnungAnschlussTests`,
+  `GameModeTests.Mode4`, `DebCupDrawFlowTests`) und Schema-Fingerabdruck neu; `Transfer.Pool.cs` vereint (Trendquelle aus
+  `kader-transfer`, +0x19 aus Teil 7); #357 mit der Lösung von `kader-transfer`. Anschlüsse in fremden Dateien, je mit Test
+  rot → grün: Verletzungsart +0x17 beim Verletzen (05B1Ah, `MatchEngineInjuryKindTests`); Play-offs und Aufstiegsrunde in der
+  Begegnungstabelle (3165Bh/30852h, `WettbewerbeSpiel2Tests.MeetingTable_HoldsPlayoffAndRelegationGames_AfterIntegration`);
+  Meldung „Auto-Aufstellung / ist deaktiviert !“ (40ADEh, `LineupAutoDisabledMessageTests`); Neuaufstellung zu Beginn des
+  Managerzugs (450C6h in 44E22h, `AutoLineupTurnTests`) und beim Verlassen der Transferliste (47BB5h in 465F1h,
+  `TransferAutoLineupTests`); A190 als Kommentar (Neuaufstellung nach Verletzung im Spiel über 53C57h). Doku
+  `reverse-engineering.md` (Begegnungen, Verletzungsart) nachgeführt; Inventur A190/A111 mit `marker-werkzeug`. Nicht
+  angeschlossen: U8 (Nationalteam Satz 5) – Runde 12.
 
 ### Nicht in Runde 11
 

@@ -16,8 +16,8 @@ namespace EishockeyManager.Core;
 ///   sofort die nächste Runde ausgelost (0x3489D): Sieger der Reihe nach, dann 20 zufällige Vertauschungen.</item>
 /// <item>[ORIGINAL] Gegner eines Managers 0x44D75: Platz 2k hat Heimrecht, Spiel nur, solange die Paarung offen ist.</item>
 /// </list>
-/// [APPROX] Unentschieden: das Original kodiert den Sieger im Ergebnis (Wert + 30); hier entscheidet wie in den
-/// Play-Offs ein Penaltyschießen (<see cref="KnockoutMatch.Play"/>).
+/// [ORIGINAL] Unentschieden: schneller Weg random(0, 2) je Seite bis ungleich, Minutenweg Verlängerung und Penaltyschießen
+/// 0x3901B; Endstand mit Marke + 30 (<see cref="CupMatch"/>, <see cref="CupTie.Marks"/>; spielberechnung.md §3/§19).
 /// </remarks>
 public sealed class DebCup : ISeasonCompetition
 {
@@ -163,11 +163,14 @@ public sealed class DebCup : ISeasonCompetition
             if (!tie.PlaysGame(number))
                 continue;
             var (home, away) = CupTie.Pairing(tie, number);
-            var match = KnockoutMatch.Play(game, day, game.Clubs[home], game.Clubs[away], MatchCompetition.DebCup, game.CupRandom);
-            tie.Games.Add(match);
+            var (match, marks) = CupMatch.Play(game, day, game.Clubs[home], game.Clubs[away], MatchCompetition.DebCup, game.CupRandom);
+            tie.Add(match, marks);
             played.Add(match);
         }
         game.SettleCupMatches(played, importance: 1); // gemeinsame Spielabrechnung, genau einmal je Spiel
+        // [ORIGINAL] 0x34B76 trägt jedes gespielte Spiel über 0x50283 ein (Datei 0x34C5C, Endstand ohne Marke:
+        // 0x34C06–0x34C2A zieht 30 ab, solange das Heimbyte > 29) – Begegnungstabelle (Spur wettbewerbe-spiel, Teil 2).
+        game.RecordMeetings(played);
 
         if (played.Count > 0)
             steps.Add(new MatchesStep(day, Competition.DebCup, played.Any(m => managerClubs.Contains(m.Home) || managerClubs.Contains(m.Away))));

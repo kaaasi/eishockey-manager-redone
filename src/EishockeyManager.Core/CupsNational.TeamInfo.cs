@@ -175,17 +175,14 @@ public sealed partial class GameState
             : new int[NationalFormLength];
 
     /// <summary>
-    /// Ergebnis eines Länderspiels eintragen (Gegenstück zu 0x50283 für Länder). Kopf-an-Kopf auf Platz 0, wenn Deutschland
-    /// spielt (Heim: Seite 0 mit lo = Heimtore, hi = Gasttore; Gast: Seite 1 mit lo = Gasttore, hi = Heimtore – so steht
-    /// in der Anzeige immer zuerst die Torzahl des Gegners); nur bei WM-Gruppenspielen Rekorde, Serien und Bilanz.
+    /// Ergebnis eines Länderspiels eintragen (0x50283 für Länder). Kopf-an-Kopf über <see cref="RecordMeeting"/> (Deutschland =
+    /// DGROUP 0x6AC → Platz 0, Heim: Seite 0 mit lo = Heimtore, hi = Gasttore; Gast: Seite 1 mit lo = Gasttore, hi = Heimtore);
+    /// nur bei WM-Gruppenspielen Rekorde, Serien und Bilanz.
     /// [APPROX] Länder haben im Remake keinen Manager (Vereinsfeld 0x16), es zählt nur Deutschland.
     /// </summary>
     public void EnterNationalResult(int home, int away, int hg, int ag, NationalMatchKind kind)
     {
-        if (home == NationalTeams.Germany)
-            TeamRecords.EnterHeadToHead(_headToHead, HeadToHeadOffset(0, away), IsNation(away), 0, hg, ag);
-        if (away == NationalTeams.Germany)
-            TeamRecords.EnterHeadToHead(_headToHead, HeadToHeadOffset(0, home), IsNation(home), 1, ag, hg);
+        RecordMeeting(home, away, hg, ag); // ein Schreiber 0x50283 → 0x4F5A8 für alle Wettbewerbe (Spur wettbewerbe-spiel, Teil 2)
         if (kind != NationalMatchKind.WorldCupGroup)
             return;
         TeamRecords.Enter(_teamRecords, _teamRecordOpponents, home, away, hg, ag);
@@ -193,8 +190,6 @@ public sealed partial class GameState
         ShiftForm(home, hg, ag);
         ShiftForm(away, ag, hg);
     }
-
-    private static int HeadToHeadOffset(int slot, int club) => (slot * TeamRecords.Teams + club) * HeadToHeadLength;
 
     private static bool IsNation(int club) => club is >= NationalTeams.First and <= NationalTeams.Last;
 
@@ -233,15 +228,13 @@ public sealed partial class GameState
 
     /// <summary>
     /// „Stärke:“ eines Landes. [ORIGINAL] Datei 0x4D316 (cs:0x26): Summe der Vereinsfelder 0x18 + k, 0x1A + k, 0x1C + k
-    /// (k = 0, 1: Kondition, Technik und Form von Abwehr und Sturm) / 6. Im Remake Kondition und Technik aus
-    /// <see cref="NationalRatings"/>, Form aus den Teamwerten (<see cref="MatchEngine.TeamValuesOf"/>).
-    /// [APPROX] Mit Bundestrainer schreibt das Original die Werte Deutschlands aus dessen Aufstellung erst nach
-    /// Freundschaftsspielen und WM-Spielen; das Remake nimmt dieselben Länderwerte wie die Spielberechnung.
+    /// (k = 0, 1: Kondition, Technik und Form von Abwehr und Sturm) / 6 – im Remake <see cref="NationalTeamValues"/>.
+    /// [ORIGINAL] Mit Bundestrainer schreibt 0x952C (Manager 5) die Werte Deutschlands jeden Tag aus dessen Aufstellung
+    /// (Tageslauf 0x54F9C–0x54FBF; Spur wettbewerbe-spiel, Teil 3, A019).
     /// </summary>
     public int NationalInfoStrength(int nation)
     {
-        var (cd, td, ca, ta) = NationalRatings(nation);
-        var values = MatchEngine.TeamValuesOf(Clubs[nation]);
-        return (cd + ca + td + ta + values.DefenseForm + values.AttackForm) / 6;
+        var (defense, attack, _) = NationalTeamValues(nation);
+        return (defense.Condition + attack.Condition + defense.Technique + attack.Technique + defense.Form + attack.Form) / 6;
     }
 }

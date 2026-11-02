@@ -48,28 +48,38 @@ public sealed class LiveSquad
     public Tactics? Tactics { get; init; }
 
     /// <summary>
+    /// Kader des Bundestrainers (Manager 5): [ORIGINAL] 0x98F8 zählt im Spiel Länderspiele / 8 auf die Technik
+    /// (<see cref="MatchEngine.ManagedLineValues"/>, <see cref="MatchEngine.NationalSquad"/>).
+    /// </summary>
+    public bool NationalCoach { get; init; }
+
+    /// <summary>
     /// Torhüter auf dem Eis (DGROUP 0xDE16 + Manager): gesetzt beim Bilden der Abwehrwerte (Datei 0x9920/0x999A). Ohne
     /// Torhüter ist jeder gegnerische Abschluss ein Tor (0xA83E) und die Abwehr bricht zusammen (0x9C01).
     /// </summary>
     public bool HasGoalie { get; set; } = true;
 
     /// <summary>
-    /// Feldspieler je Teil (DGROUP 0xCC37 + 2 · Manager + Teil). [APPROX] Das Remake stellt je Block 2 Verteidiger und
-    /// 3 Stürmer auf; die Belegung des Bytes im Original ist nicht gelesen (Sonderfall 4 Verteidiger, Datei 0x9B42, kommt
-    /// im Remake nicht vor).
+    /// Feldspieler je Teil (DGROUP 0xCC37 + 2 · Manager + Teil). [ORIGINAL] geschrieben von der Neuzählung 0x38A36
+    /// (<see cref="MatchEngine.RecountSkaters"/>; je Minute zu Beginn von 0x38B8F und beim Freiwerden 0x35691).
+    /// [APPROX] Startwert 2 und 3 (im Original der Stand der letzten Neuzählung, auch aus 0x952C außerhalb des Spiels).
+    /// Sonderfall 4 Verteidiger (Datei 0x9B42) kommt im Remake nicht vor.
     /// </summary>
     public int[] SkatersPerPart { get; } = [2, 3];
 
     /// <summary>
     /// Minutenzähler der Minuten-Vorgabe je Teil und Reihe (DGROUP 0x4926 + 8 · Manager + 4 · Teil + Reihe).
-    /// [APPROX] Im Original nicht beim Spielbeginn zurückgesetzt (nicht gesucht); das Remake beginnt jedes Spiel bei 0.
+    /// [APPROX] Im Original schreibt nur 0x8EF2 den Zähler (Datei 0x911C + 1, Datei 0x9166 = 0 beim Wechsel; kein weiterer
+    /// Leser, Schreiber oder Blockzugriff auf DGROUP 0x4926–0x4955): er läuft über das Spielende in das nächste Spiel
+    /// weiter und gehört nicht zum Spielstand. Das Remake beginnt jedes Spiel bei 0.
     /// </summary>
     public int[,] MinuteCounters { get; } = new int[2, 4];
 
     /// <summary>
     /// Kader eines Managervereins für ein Spiel. Reihenfolge: Torhüter, Verteidiger, Stürmer je nach Rückennummer
-    /// ([APPROX] wie die Listen; die Reihenfolge der Kaderplätze im Original hängt an Kauf und Verkauf). Eingesetzt sind die
-    /// spielfähigen Spieler; die Energie im Spiel setzt die Spielvorbereitung (<see cref="MatchEngine.PreparedPlayerEnergy"/>).
+    /// ([APPROX] wie die Listen; die Reihenfolge der Kaderplätze im Original hängt an Kauf und Verkauf). Eingesetzt
+    /// (+0x0A) sind die im Verein eingesetzten spielfähigen Spieler (<see cref="Club.IsDressed"/>; A168); die Energie im
+    /// Spiel setzt die Spielvorbereitung (<see cref="MatchEngine.PreparedPlayerEnergy"/>).
     /// </summary>
     public static LiveSquad Create(Club club, int difficulty, Tactics? tactics)
     {
@@ -81,7 +91,7 @@ public sealed class LiveSquad
             {
                 Player = p,
                 Position = slot is { } s ? PositionOf(s) : 0,
-                Dressed = p.Available,
+                Dressed = p.Available && club.IsDressed(p),
                 Energy = MatchEngine.PreparedPlayerEnergy(p),
             });
         }
@@ -111,6 +121,57 @@ public static partial class MatchEngine
     /// [APPROX] Belastung = <see cref="TrainingRules.Fatigue"/> (aus der Energie des Remakes).
     /// </summary>
     public static int PreparedPlayerEnergy(Player p) => Math.Min(101 - (TrainingRules.Fatigue(p) >> 3), EnergyCeiling) - 1;
+
+    /// <summary>
+    /// [ORIGINAL] Datei 0x388F6(Verein, Manager, Modus, Teil): eingesetzte Kaderplätze (+0x0A) des Teils (+0x15 Bit 7).
+    /// Art: Torhüter (Gruppe 0x04180 = 0) 0, sonst nach +0x15 Bit 7 Abwehr 1 / Sturm 2 – ein Stürmer auf einem
+    /// Abwehrplatz zählt also als Verteidiger. Modus 0 zählt Torhüter mit beliebiger Reihe ≠ 0, Modus 1/2 nur die Reihe
+    /// auf dem Eis (<paramref name="lineOnIce"/>, Vereinsfeld 0x2E/0x30).
+    /// </summary>
+    public static int CountOnIce(LiveSquad squad, int mode, int part, int lineOnIce)
+    {
+        var n = 0;
+        foreach (var p in squad.Players)
+        {
+            if ((p.Position & 0x80) != part << 7)
+                continue;
+            var line = p.Position & 0x7F;
+            var kind = p.Goalie ? 0 : (p.Position & 0x80) != 0 ? 2 : 1;
+            if ((mode != 0 || line == 0) && line - 1 != lineOnIce)
+                continue;
+            if (p.Dressed && kind == mode)
+                n++;
+        }
+        return n;
+    }
+
+    /// <summary>
+    /// Neuzählung der Feldspieler eines Managervereins (A089, A070). [ORIGINAL] Datei 0x38A36 (nur Vereine ≤ 0x95 mit
+    /// Manager, Vereinsfeld 0x16 ≠ 0): Torhüter g (0x388F6 Modus 0; keiner → Abwehrreihe 0, Datei 0x38A2A), Verteidiger d
+    /// und Stürmer f der Reihen auf dem Eis, belegte Strafbankplätze b (0x35540 Schalter 0). Grenze 6, ohne Torhüter und
+    /// mit d + f &lt; 6 nur 5; g + d + f + b über der Grenze → f = 3 − Überschuss. Dann DGROUP 0xCC37 + 2 · Manager = d,
+    /// +1 = f (<see cref="LiveSquad.SkatersPerPart"/>), Vereinsfeld 0x32 = d + f (<see cref="PenaltyBox.Skaters"/>),
+    /// 0x2C Bit 3 (<see cref="LiveTeam.GoaliePulled"/>) genau bei d + f = 6.
+    /// [APPROX] f unter 0 (mehr als drei über der Grenze) hält das Remake bei 0; im Original ein Byte (nicht geprüft).
+    /// </summary>
+    public static void RecountSkaters(LiveTeam team)
+    {
+        if (team.InjuryManager is null || team.Squad is not { } squad)
+            return;
+        var goalies = CountOnIce(squad, 0, 0, team.DefenseLine);
+        if (goalies == 0)
+            team.DefenseLine = 0;
+        var defenders = CountOnIce(squad, 1, 0, team.DefenseLine);
+        var forwards = CountOnIce(squad, 2, 1, team.AttackLine);
+        var limit = goalies == 0 && defenders + forwards < 6 ? 5 : 6;
+        var total = goalies + defenders + forwards + team.Box.Count;
+        if (total > limit)
+            forwards = Math.Max(0, 3 - (total - limit));
+        squad.SkatersPerPart[0] = defenders;
+        squad.SkatersPerPart[1] = forwards;
+        team.Box.Skaters = defenders + forwards;
+        team.GoaliePulled = defenders + forwards == 6;
+    }
 
     /// <summary>[ORIGINAL] Drittelpause 0x84D7(1) (Datei 0x37A86): Energie + 20, dann wie oben min(…, 91) − 1.</summary>
     public static int RecoveredEnergy(int energy) => Math.Min(energy + 20, EnergyCeiling) - 1;
@@ -156,8 +217,9 @@ public static partial class MatchEngine
             if (squad.SkatersPerPart[part] <= taken && inMatch)
                 continue;
             var factor = !inMatch || goalie ? 100 : (p.Energy >> 1) + 50;
-            overplay += p.Player.HiddenSkill2;
-            underplay += p.Player.HiddenSkill1;
+            var (over, under) = HiddenSkills.ForMatch(p.Player, squad.NationalCoach); // Nationalteam 0x77 (Datei 0x3CB2C)
+            overplay += over;
+            underplay += under;
             condition += p.Player.Condition;
             var t = p.Player.Technique * factor / 100;
             if (squad.Difficulty < 5 && inMatch && !goalie && TrainingRules.Group(p.Player.Role) - 1 != part && t > 15)
@@ -421,7 +483,8 @@ public static partial class OriginalMinutes
     ///   mit der Nummer der Reihe und greift nie (übernommen).</item>
     /// <item>Modus 3: Reihe des gegnerischen anderen Teils, außer dieser spielt mit der vierten Reihe (dann die
     ///   energiestärkste); die Energieprüfung „+ 8“ vergleicht wieder mit der Nummer (übernommen).</item>
-    /// <item>Modus 4 (Minuten-Vorgabe, nur Manager): Zähler der Reihe + 1; über der Vorgabe Zähler 0 und weiter zur
+    /// <item>Modus 4 (Minuten-Vorgabe, nur Manager): Zähler der Reihe + 1; über der umgerechneten Vorgabe
+    ///   (<see cref="Tactics.MinuteQuota"/>, Datei 0x09140 gegen DGROUP 0xCC73) Zähler 0 und weiter zur
     ///   nächsten Reihe mit Vorgabe ≠ 0 (Ring über 3 bzw. 4 Reihen, höchstens 250 Schritte).</item>
     /// <item>Neue Reihe: Minuten auf dem Eis 0.</item>
     /// </list>
@@ -455,7 +518,7 @@ public static partial class OriginalMinutes
                     current = team.LineEnergy(part, other) + 8 < best || other == 3 ? best : other;
                     break;
                 case 4 when team.Squad is { } squad:
-                    var limit = (int l) => squad.Tactics?.Minutes(l, forwards: part == 1) ?? 0;
+                    var limit = (int l) => squad.Tactics?.MinuteQuota(l, forwards: part == 1) ?? 0;
                     var counter = ++squad.MinuteCounters[part, current];
                     if (limit(current) >= counter)
                         break;

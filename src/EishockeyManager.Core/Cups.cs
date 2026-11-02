@@ -23,6 +23,25 @@ public sealed class CupTie(int first, int second)
 
     public List<KnockoutMatch> Games { get; } = [];
 
+    /// <summary>
+    /// Ergebnismarken je Spiel in <see cref="Games"/> (0 regulär, 1 Penaltyschießen, 2 Verlängerung; <see cref="CupMatch"/>).
+    /// [ORIGINAL] Im Original + 30 je Marke im Heimbyte des Ergebnisses (DGROUP 0x5C4B).
+    /// </summary>
+    public List<int> Marks { get; } = [];
+
+    /// <summary>Marken des Spiels <paramref name="index"/>; fehlt der Eintrag, 1 bei Penaltysieger, sonst 0.</summary>
+    public int MarksOf(int index) =>
+        index < Marks.Count ? Marks[index] : Games[index].PenaltyWinner is null ? 0 : 1;
+
+    /// <summary>Trägt ein gespieltes Spiel mit seinen Marken ein.</summary>
+    public void Add(KnockoutMatch match, int marks)
+    {
+        while (Marks.Count < Games.Count)
+            Marks.Add(MarksOf(Marks.Count));
+        Games.Add(match);
+        Marks.Add(marks);
+    }
+
     public int Wins(int club) => Games.Count(g => g.Winner == club);
     public bool IsDecided => Wins(First) >= WinsNeeded || Wins(Second) >= WinsNeeded;
     public int? Winner => Wins(First) >= WinsNeeded ? First : Wins(Second) >= WinsNeeded ? Second : null;
