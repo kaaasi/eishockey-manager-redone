@@ -153,12 +153,16 @@ public static partial class MatchEngine
     /// <item>Managervereine in der Managerpaarung: [ORIGINAL] Reihenwerte aus den eingesetzten Spielern
     ///   (<see cref="LiveSquad"/>, <see cref="ManagedLineValues"/>, 0x98F8); Strafen mit dem Managerwert des nächsten
     ///   Managersatzes (0x35890, <see cref="ManagedTeamValues"/>). Defense/Attack bleiben die Teamwerte (für die Automatik
-    ///   der Taktik). Nationalteam des Bundestrainers: [APPROX] ohne Kader wie ein Computerverein (Energie, Reihen);
-    ///   [ORIGINAL] Strafspieler 0x378C5 aus dem Kader des Bundestrainers (<see cref="NationalPenaltySquad"/>, R8W3I-06).</item>
+    ///   der Taktik).</item>
+    /// <item>Nationalteams (Vereinsplätze 52–63 ohne Kader, auch das Land des Bundestrainers): [ORIGINAL] eigene Teamwerte,
+    ///   beim Bundestrainer Kader, Taktik und Strafspieler – <see cref="NationalLiveTeam"/> (Spur wettbewerbe-spiel, Teil 3).</item>
     /// </list>
     /// </summary>
     public static LiveTeam LiveTeamOf(GameState game, Club club, Club opponent, bool managed, bool managerMatch)
     {
+        if (IsNation(club))
+            return NationalLiveTeam(game, club.Index, game.NationalMatchStrength(club.Index),
+                IsNation(opponent) ? game.NationalMatchStrength(opponent.Index) : TeamValue(opponent), managerMatch);
         var value = TeamValue(club);
         var opponentValue = TeamValue(opponent);
         var loaded = TeamValuesOf(club);
@@ -200,17 +204,7 @@ public static partial class MatchEngine
                 ? ManagedTeamValues(LiveSquad.Create(nextClub, 0, null), nineOrMore: !game.IsShortHanded(nextClub)).ManagerValue
                 : 0;
         }
-        LiveSquad? penaltySquad = null;
         var fewFit = managed && club.Players.Count > 0 && club.Players.Count(p => p.Available) < MinimumFitForPenalties;
-        if (managed && managerMatch && game.NationalCoach is { } coach && club.Index == coach.Nation)
-        {
-            // R8W3I-06: [ORIGINAL] Das Nationalteam (Vereinsfeld 0x16 = 6) zieht den Strafspieler aus dem Kader des
-            // Bundestrainers (0x378C5 mit Manager 5); unter 8 fitten Kaderspielern keine Strafe (0x358FF, 0x120:0x66(5, 1)).
-            // [APPROX] Reihenwerte und Energie bleiben wie beim Computerverein (kein Squad); der Managerwert der Strafen
-            // bleibt 20 (das Original liest DGROUP 0x974B + 6 · 0x1AF hinter den sechs Managersätzen, nicht geprüft).
-            penaltySquad = NationalPenaltySquad(coach);
-            fewFit = coach.Squad.Count(m => m.Player.Available) < MinimumFitForPenalties;
-        }
         return new LiveTeam
         {
             Defense = defense,
@@ -223,7 +217,6 @@ public static partial class MatchEngine
             Managed = managed,
             LineChange = managed ? club.Tactics.LineChange : null,
             Squad = managerMatch ? squad : null,
-            PenaltySquad = penaltySquad,
             PenaltyManagerValue = penaltyValue,
             TacticsStrength = value,
             TacticsOpponentStrength = opponentValue,
@@ -235,38 +228,9 @@ public static partial class MatchEngine
         };
     }
 
-    /// <summary>
-    /// Kader des Nationalteams für die Spielerwahl der Strafen (R8W3I-06): Kaderplätze in der Reihenfolge des Kaders des
-    /// Bundestrainers, Position aus dessen Aufstellung (<see cref="NationalCoach.Lineup"/>; Block b = Reihe b wie
-    /// <see cref="LiveSquad.PositionOf"/>), eingesetzt = verfügbar. [APPROX] Reihenfolge der Kaderplätze im Original
-    /// (DGROUP 0x5DC3 + 5 · 0x618) nicht gelesen.
-    /// </summary>
-    public static LiveSquad NationalPenaltySquad(NationalCoach coach)
-    {
-        var lineup = coach.Lineup();
-        var positions = new Dictionary<Player, int>();
-        if (lineup.Goalkeeper is { } g)
-            positions[g] = 1;
-        for (var i = 0; i < lineup.Defenders.Count; i++)
-            if (lineup.Defenders[i] is { } d)
-                positions[d] = i / Lineup.DefendersPerBlock + 1;
-        for (var i = 0; i < lineup.Forwards.Count; i++)
-            if (lineup.Forwards[i] is { } f)
-                positions[f] = 0x80 | (i / Lineup.ForwardsPerBlock + 1);
-        var squad = new LiveSquad();
-        foreach (var member in coach.Squad)
-        {
-            var p = member.Player;
-            squad.Players.Add(new LivePlayer
-            {
-                Player = p,
-                Position = positions.GetValueOrDefault(p),
-                Dressed = p.Available,
-                Energy = PreparedPlayerEnergy(p),
-            });
-        }
-        return squad;
-    }
+    /// <summary>Vereinsplatz eines Nationalteams ohne eigenen Kader (Spielpartner aus <see cref="GameState.RatedNation"/>).</summary>
+    private static bool IsNation(Club club) =>
+        club.Index is >= NationalTeams.First and <= NationalTeams.Last && club.Players.Count == 0;
 
     /// <summary>
     /// Teamwert eines Vereins (Maßstab der Vereinsfelder 0x18–0x1B, also der Datenbankstärke): Stärke aus der Datenbank,

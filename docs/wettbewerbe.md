@@ -101,7 +101,7 @@ gespielt wurde (Abschnitt [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-
 | Spielwerte der Nationalteams: Tabelle DGROUP 0x4C4E (je Land Kondition Abwehr, Technik Abwehr, Kondition Sturm, Technik Sturm, je −2) | Lader 0x2EFDE; Video „Stärken Länderteams – Gesamt“ 13:18 (Spalten Kondition/Technik = Mittel aus Abwehr und Sturm) |
 | Gruppeneinteilung: Plätze 1–6 / 7–12 der Länderreihenfolge; beim Spielstart und zu jeder Saison 20 Tausche zweier Plätze random(52, 63), die Tausche wirken fort (`WorldCup.Mix`, `WorldCup.Order`) | 0x35EDD, Aufrufe 0x43A17 / 0x5644E |
 | Ohne menschlichen Bundestrainer werden die Werte Deutschlands an den Tagen mit Markierung 255 (13. und 29. April) neu ausgewürfelt: Kondition random(84, 94), Technik random(79, 89), Form random(45, 55) – die WM spielt Deutschland also nie mit den Startwerten (`GameState.NationalRatings`) | 0x554CF |
-| `[APPROX]` Spielstärke = Mittel aus Kondition und Technik; Plätze 9–12 nach Gruppenplatz (K.-o.-Unentschieden seit Runde 11 nach dem Original: Endstand random(0, 2) je Seite mit Marke, `WorldCup.MarksOf`) | – |
+| Spielstärke: keine eigene Formel – Vereinsfelder des Landes in 0x368B1/0x977F (Kondition/Technik je Teil aus 0x4C4E − 2, Form/Tagesform des Vereinsplatzes); `docs/spielberechnung.md` §20 (Runde 11, wettbewerbe-spiel Teil 3). `[APPROX]` Plätze 9–12 nach Gruppenplatz (K.-o.-Unentschieden seit Runde 11 nach dem Original: Endstand random(0, 2) je Seite mit Marke, `WorldCup.MarksOf`) | – |
 
 ### Bildschirm WM „Gruppe 1/2“ (`UI/Screens/Competitions/WorldCupScreen.cs`)
 
@@ -274,7 +274,7 @@ Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader a
 | Bonus auf drei Werte jedes Kaderspielers, einer eins weniger (x &gt; 2: der erste, sonst der zweite), höchstens 99 | 0x3C18C |
 | Länderspiele zählen für die Spieler der Aufstellung des Managers 5 | 0x872B |
 | `[APPROX]` Kandidaten: alle deutschen Spieler (keine Ausländer) der Ligavereine und des Transfermarkts, nach Summe absteigend – das Original listet seine 200 ausführlich geführten Spieler (Kader der Manager, Transfermarkt) | 0x3C5C9 |
-| `[APPROX]` Stärke des Nationalteams = Mittel von (Kondition + Technik) / 2 über Torhüter und Reihen 1–3 der Aufstellung (16 Plätze, Lücken 0) plus Taktikzuschlag; ohne Aufstellung die Automatik (bester Torhüter, je Reihe 2 Verteidiger + 3 Stürmer). Aufstellung und Taktik: Abschnitt „Aufstellung und Taktik des Nationalteams“ | – |
+| Stärke des Nationalteams wie ein Managerverein aus dem Kader des Bundestrainers (0x98F8 mit Manager 5, + Länderspiele / 8, alle vier Blöcke; `docs/spielberechnung.md` §20). `[APPROX]` ohne Aufstellung die Automatik (bester Torhüter, je Reihe 2 Verteidiger + 3 Stürmer). Aufstellung und Taktik: Abschnitt „Aufstellung und Taktik des Nationalteams“ | 0x98F8, 0x55494 |
 | `[APPROX]` Felder 0x10–0x12 des Kaderplatzes als Kondition, Technik, Form gedeutet (Spaltenfolge „KO TE FO“) | – |
 | `[APPROX]` Energie 70 aller Kaderspieler (Kaderfeld 0x13) setzt das Original beim Öffnen von „WM Vorbereitung“, das Remake beim ersten Freundschaftsspiel der Saison vor dem Spiel (Bildschirme ändern beim Öffnen nichts; Nutzerentscheidung PR #189). Erneutes Öffnen setzt im Original wieder 70, im Remake nicht; Abzug je Spiel fehlt (Spur `spielberechnung`) | 0x3BB51; DOSBox: nach drei Freundschaftsspielen Energie aller Eingesetzten 46, Datum unverändert, Deutschland +3/+3/+5 (`docs/dosbox-befunde.md`) |
 
@@ -303,7 +303,7 @@ Kaderplatz 52 Byte: DGROUP 0x5DC3 + 0x618 · Manager + 0x34 · Platz, 29 Plätze
 | `[APPROX]` Wer von einem besetzten Platz verdrängt wird, bleibt eingesetzt (RESERVE) | – |
 | `[APPROX]` Auto-Aufstellung „A“ wie beim Verein (drei Blöcke), dazu die stärksten Übrigen bis 22 eingesetzt; „C“ leert alle Plätze | – |
 | `[APPROX]` Linksklick auf nicht eingesetzte oder aufgestellte Spieler wählt sie aus (wie beim Verein); Spielerinfo auf Rechtsklick (0x40872) nicht übernommen | – |
-| `[APPROX]` Stärke aus Torhüter und Reihen 1–3 (Reihe 4 zählt nicht), Taktik wie beim Verein (`Tactics.EffortStrengthBonus`); ganz leere Aufstellung → bisherige Automatik | – |
+| Stärke aus den eingesetzten Spielern aller vier Blöcke, Taktik über Einsatz/Angriff im Spiel (0x98F8, 0x939A; kein Zuschlag). `[APPROX]` ganz leere Aufstellung → bisherige Automatik | 0x98F8, 0x8EF2 |
 
 Spielstand Schema 4 (Migration 3 → 4: leere Aufstellung, Grundtaktik, niemand eingesetzt).
 Bildschirmfotos: `emtool screens gamedata ~/work/screens nationalteam-2` (Belegung wie im Video).
@@ -364,7 +364,7 @@ und em.exe 0x8365 (`docs/dosbox-befunde.md`). Umsetzung `Core/Squad.Tactics.cs` 
 | `[ORIGINAL]` Eigene Werte des Bundestrainers beginnen bei 0 (DGROUP 0xCAE9/0xCB01 + 0x30 · 5 schreiben nur Taktikbildschirm und Laden) | Datei 0x48607 ff., 0x5C38C, 0x5CD7D |
 | `[ORIGINAL]` Die Taktik gehört dem Nationalteam: Werte und Modi bleiben über Saisonwechsel und neue Ernennung stehen (Video `bundestrainer_00058` zeigt 60/0/25/20/30/0 aus einer späteren Saison) | Suche nach `0xCAE9`/`0xCB01` in em.exe: nur 0x48607 ff. (Bildschirm) und 0x5C38C/0x5CD7D (Sichern/Laden). Für die Vereinsfelder 0x26–0x3A Deutschlands ist keine Rücksetzung beim Saisonwechsel gefunden; die Suche nach Schreibzugriffen über Zeiger ist nicht vollständig |
 | `[ORIGINAL]` Freundschaftsspiele schreiben keine Werte (0x3BFC4 ruft 0x8365 nicht) | Aufrufliste oben |
-| `[APPROX]` Stärken für die Automatik: `NationalMatchStrength` beider Länder statt 0x149D:0x61 (Formel nicht gelesen) | Datei 0x83AD/0x83CA |
+| Stärken für die Automatik: `NationalMatchStrength` beider Länder = 0x149D:0x61 = 0x368B1(Land, 1, 0, 0, 1) (Runde 11, wettbewerbe-spiel Teil 3) | Datei 0x83AD/0x83CA |
 | `[APPROX]` Wirkung im Spiel unverändert (`Effective*`/`Auto*`, Spur `spielstaerke-manager`); nur Anzeige und eigene Werte sind betroffen | – |
 
 Spielstand: neues Feld `_vacantNationalTactics` (Taktik ohne Bundestrainer) und je Taktik die Anzeige unter „AUTOM.“

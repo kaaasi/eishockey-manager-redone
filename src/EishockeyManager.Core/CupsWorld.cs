@@ -33,13 +33,6 @@ public static class NationalTeamRatings
         var (cd, td, ca, ta) = Of(club);
         return ((cd + ca) / 2.0, (td + ta) / 2.0);
     }
-
-    /// <summary>[APPROX] Spielstärke für die Spielberechnung: Mittel aus Kondition und Technik (das Remake rechnet mit einem Wert).</summary>
-    public static int MatchStrength(int club)
-    {
-        var (condition, technique) = Average(club);
-        return (int)((condition + technique) / 2);
-    }
 }
 
 /// <summary>
@@ -62,9 +55,10 @@ public static class NationalTeamRatings
 /// <item>[ORIGINAL] Reihenfolge der Länder: Beim Spielstart und zu jeder neuen Saison tauscht das Original 20-mal zwei
 ///   zufällige Nationalteams (Datei 0x35EDD, je random(52, 63); Aufrufe Datei 0x43A17 und 0x5644E). Die Tausche wirken
 ///   fort, die Gruppen sind die Plätze 1–6 und 7–12 dieser Reihenfolge.</item>
-/// <item>[ORIGINAL] Spielwerte: <see cref="GameState.NationalMatchStrength"/> – ohne Bundestrainer werden die Werte
-///   Deutschlands vor der WM neu ausgewürfelt, mit Bundestrainer zählt dessen Aufstellung ([APPROX] Stärkeformel, siehe
-///   <see cref="NationalLineup.Strength"/>).</item>
+/// <item>[ORIGINAL] Spielwerte: Vereinsfelder des Landes (<see cref="GameState.NationalTeamValues"/>) in der
+///   Spielberechnung 0x368B1/0x977F – ohne Bundestrainer werden die Werte Deutschlands vor der WM neu ausgewürfelt, mit
+///   Bundestrainer spielt das Land aus dessen Kader und Aufstellung wie ein Managerverein (0x98F8 mit Manager 5,
+///   <see cref="MatchEngine.NationalLiveTeam"/>).</item>
 /// </list>
 /// [ORIGINAL] Unentschieden im K.-o.: schneller Weg random(0, 2) je Seite bis ungleich, Endstand mit Marke + 30 (0x376F0;
 /// <see cref="CupMatch"/>, <see cref="MarksOf"/>). [APPROX] Plätze 9–12 nach Gruppenplatz (WM-Tabelle nicht gelesen).

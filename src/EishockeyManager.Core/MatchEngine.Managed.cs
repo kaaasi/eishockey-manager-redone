@@ -48,6 +48,12 @@ public sealed class LiveSquad
     public Tactics? Tactics { get; init; }
 
     /// <summary>
+    /// Kader des Bundestrainers (Manager 5): [ORIGINAL] 0x98F8 zählt im Spiel Länderspiele / 8 auf die Technik
+    /// (<see cref="MatchEngine.ManagedLineValues"/>, <see cref="MatchEngine.NationalSquad"/>).
+    /// </summary>
+    public bool NationalCoach { get; init; }
+
+    /// <summary>
     /// Torhüter auf dem Eis (DGROUP 0xDE16 + Manager): gesetzt beim Bilden der Abwehrwerte (Datei 0x9920/0x999A). Ohne
     /// Torhüter ist jeder gegnerische Abschluss ein Tor (0xA83E) und die Abwehr bricht zusammen (0x9C01).
     /// </summary>

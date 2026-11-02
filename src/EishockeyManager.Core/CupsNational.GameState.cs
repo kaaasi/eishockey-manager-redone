@@ -42,18 +42,6 @@ public sealed partial class GameState
     public (int ConditionDefense, int TechniqueDefense, int ConditionAttack, int TechniqueAttack) NationalRatings(int club) =>
         club == NationalTeams.Germany && _germanyRatings is { } r ? r : NationalTeamRatings.Of(club);
 
-    /// <summary>
-    /// Spielstärke eines Nationalteams in WM und Freundschaftsspiel: mit Bundestrainer aus dessen Aufstellung und
-    /// Taktik (Spur nationalteam-2), sonst wie <see cref="NationalTeamRatings.MatchStrength"/> aus den Länderwerten.
-    /// </summary>
-    public int NationalMatchStrength(int club)
-    {
-        if (NationalCoach is { } coach && coach.Nation == club)
-            return Math.Max(0, coach.Lineup().Strength + coach.TacticsBonus);
-        var (cd, td, ca, ta) = NationalRatings(club);
-        return (cd + ca + td + ta) / 4;
-    }
-
     /// <summary>Tage mit Markierung 255: Werte des eigenen Landes neu auswürfeln, wenn es keinen Bundestrainer hat.</summary>
     internal void RerollNationalRatings()
     {
@@ -197,12 +185,16 @@ public sealed partial class GameState
         return FriendlyResult.Played;
     }
 
-    /// <summary>Nationalteam als Spielpartner der Spielberechnung (Stärke aus <see cref="NationalMatchStrength"/>).</summary>
+    /// <summary>
+    /// Nationalteam als Spielpartner der Spielberechnung: ein Vereinsplatz ohne Kader, dessen Werte
+    /// <see cref="MatchEngine.LiveTeamOf"/> über <see cref="MatchEngine.NationalLiveTeam"/> aus
+    /// <see cref="NationalTeamValues"/> bildet (Spur wettbewerbe-spiel, Teil 3).
+    /// </summary>
     internal Club RatedNation(int club) => new()
     {
         Index = club,
         Name = Clubs[club].Name,
-        Strength = NationalMatchStrength(club),
+        Strength = Clubs[club].Strength, // Datenbankwert, wirkt nicht (NationalTeamRatings)
     };
 
     /// <summary>WM-Spiel des Bundestrainers: Länderspiele für die Aufstellung zählen.</summary>

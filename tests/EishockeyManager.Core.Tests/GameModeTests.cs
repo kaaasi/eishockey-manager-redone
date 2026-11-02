@@ -303,6 +303,7 @@ public class GameModeTests
     /// Integration Runde 9 (Leitstelle): Werte auf dem integrierten Stand aller fünf Spuren neu ermittelt; die Ursachen oben
     /// wirken zusammen. Dazu der Minutenweg der DEB-Pokalspiele ohne Manager (Anzeigeschalter an, optionen-wirkung, 0x3702E).
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
+    /// Spur wettbewerbe-spiel, Teil 3 (A011 ff.): neu – Nationalteams spielen mit ihren eigenen Teamwerten (Kondition/Technik je Teil aus DGROUP 0x4C4E − 2, Form und Tagesform des Vereinsplatzes, Lader 0x2F0CC), das Land des Bundestrainers mit seinem Kader (0x98F8 mit Manager 5); andere WM-Ergebnisse und anderer Zufallsverbrauch nach der ersten WM. Saison 1 bis zur WM gleich (Konten 609.157/348.890), Weltmeister 52 statt 53.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -320,7 +321,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|609157,348890|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=0|1491638,141753|WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=1|2729776,35181|WorldChampion=55,CupWinner=12,GermanChampion=15,EuropeanCupWinner=4|3734605,-28570|WorldChampion=52,CupWinner=8,GermanChampion=8,EuropeanCupWinner=4|4353063,118997|R967498903 C1705043894";
+        "WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|609157,348890|WorldChampion=52,CupWinner=0,GermanChampion=1,EuropeanCupWinner=0|1441019,256890|WorldChampion=53,CupWinner=9,GermanChampion=1,EuropeanCupWinner=1|2516414,221268|WorldChampion=52,CupWinner=5,GermanChampion=11,EuropeanCupWinner=1|3822871,172600|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=1|4509510,110029|R1032452647 C1044400607";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

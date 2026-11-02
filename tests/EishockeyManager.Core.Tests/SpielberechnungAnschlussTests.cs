@@ -158,10 +158,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Integration Runde 9 (Leitstelle): beide auf dem integrierten Stand neu, einschließlich Minutenweg der Pokalspiele
     /// ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an, 0x3702E).
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
+    /// Spur wettbewerbe-spiel, Teil 3 (A011 ff.): neu – Nationalteams spielen mit ihren eigenen Teamwerten (Kondition/Technik je Teil aus DGROUP 0x4C4E − 2, Form und Tagesform des Vereinsplatzes, Lader 0x2F0CC), das Land des Bundestrainers mit seinem Kader (0x98F8 mit Manager 5); andere WM-Ergebnisse und anderer Zufallsverbrauch nach der ersten WM.
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "79803AC5ED2C7179")]
-    [InlineData(true, "D68EC5E7AE30E621")]
+    [InlineData(false, "69886F5BCC9C31A4")]
+    [InlineData(true, "4E9C0AE1BF16FFCD")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -216,8 +217,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Wanderung des Spielstarts 0x9D1B zieht beim ersten (WM-)Spiel weitere Zahlen (im Modus „nur Weltkugel“ keine weitere).
     // spielberechnung-komplett, Teil 2 (R8W3I-06): Hauptquelle und Konten gleich; das Nationalteam des Bundestrainers zieht
     // jetzt den Strafspieler 0x378C5 aus seinem Kader – andere WM-Ergebnisse ab Saison 3 und Pokalquelle (C…).
+    // wettbewerbe-spiel, Teil 3 (A011 ff.): Hauptquelle und Konten gleich; Weltmeister und Pokalquelle (C…) neu – die Länder
+    // spielen mit Kondition/Technik je Teil (DGROUP 0x4C4E − 2) und Form/Tagesform ihres Vereinsplatzes statt eines
+    // Mittelwerts mit Form 50 (vorher 4 von 5 Titeln für Russland 52, jetzt 52, 54, 63, 55, 63).
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=52|500000|R1705866397 C5178594";
+        "WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=55|500000|WorldChampion=63|500000|R1705866397 C6027902";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

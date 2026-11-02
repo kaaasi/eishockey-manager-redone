@@ -228,15 +228,13 @@ public sealed partial class GameState
 
     /// <summary>
     /// „Stärke:“ eines Landes. [ORIGINAL] Datei 0x4D316 (cs:0x26): Summe der Vereinsfelder 0x18 + k, 0x1A + k, 0x1C + k
-    /// (k = 0, 1: Kondition, Technik und Form von Abwehr und Sturm) / 6. Im Remake Kondition und Technik aus
-    /// <see cref="NationalRatings"/>, Form aus den Teamwerten (<see cref="MatchEngine.TeamValuesOf"/>).
-    /// [APPROX] Mit Bundestrainer schreibt das Original die Werte Deutschlands aus dessen Aufstellung erst nach
-    /// Freundschaftsspielen und WM-Spielen; das Remake nimmt dieselben Länderwerte wie die Spielberechnung.
+    /// (k = 0, 1: Kondition, Technik und Form von Abwehr und Sturm) / 6 – im Remake <see cref="NationalTeamValues"/>.
+    /// [ORIGINAL] Mit Bundestrainer schreibt 0x952C (Manager 5) die Werte Deutschlands jeden Tag aus dessen Aufstellung
+    /// (Tageslauf 0x54F9C–0x54FBF; Spur wettbewerbe-spiel, Teil 3, A019).
     /// </summary>
     public int NationalInfoStrength(int nation)
     {
-        var (cd, td, ca, ta) = NationalRatings(nation);
-        var values = MatchEngine.TeamValuesOf(Clubs[nation]);
-        return (cd + ca + td + ta + values.DefenseForm + values.AttackForm) / 6;
+        var (defense, attack, _) = NationalTeamValues(nation);
+        return (defense.Condition + attack.Condition + defense.Technique + attack.Technique + defense.Form + attack.Form) / 6;
     }
 }

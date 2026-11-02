@@ -232,8 +232,8 @@ public sealed class LiveTeam
     public LiveSquad? Squad { get; init; }
 
     /// <summary>
-    /// Kader nur für die Spielerwahl der Strafen (0x378C5), wenn <see cref="Squad"/> fehlt: Nationalteam des Bundestrainers
-    /// (R8W3I-06). [ORIGINAL] 0x35AB8–0x35B2C ruft 0x378C5 für jeden Verein mit Vereinsfeld 0x16 ≠ 0, also auch für das
+    /// Kader nur für die Spielerwahl der Strafen (0x378C5), wenn <see cref="Squad"/> fehlt. Seit Teil 3 der Spur
+    /// wettbewerbe-spiel spielt das Nationalteam des Bundestrainers mit <see cref="Squad"/> (R8W3I-06). [ORIGINAL] 0x35AB8–0x35B2C ruft 0x378C5 für jeden Verein mit Vereinsfeld 0x16 ≠ 0, also auch für das
     /// Nationalteam (Manager 5, Kaderplätze DGROUP 0x5DC3 + 5 · 0x618).
     /// </summary>
     public LiveSquad? PenaltySquad { get; init; }
@@ -625,8 +625,10 @@ public static partial class OriginalMinutes
         if (team.Squad is { } squad)
         {
             // [ORIGINAL] 0x98F8: Managervereine bilden die Werte aus den Spielern der Reihen auf dem Eis.
-            defense = MatchEngine.ManagedLineValues(squad, team.DefenseLine, 0, advantage, team.Effort, minute, inMatch: true);
-            attack = MatchEngine.ManagedLineValues(squad, team.AttackLine, 1, advantage, team.Effort, minute, inMatch: true);
+            defense = MatchEngine.ManagedLineValues(squad, team.DefenseLine, 0, advantage, team.Effort, minute, inMatch: true,
+                squad.NationalCoach);
+            attack = MatchEngine.ManagedLineValues(squad, team.AttackLine, 1, advantage, team.Effort, minute, inMatch: true,
+                squad.NationalCoach);
             team.OpenNet = !squad.HasGoalie;
         }
         else

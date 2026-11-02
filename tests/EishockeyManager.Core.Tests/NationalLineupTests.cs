@@ -42,8 +42,6 @@ public class NationalLineupTests
     {
         var game = Create();
         var coach = Nominated(game);
-        var automatic = game.NationalMatchStrength(NationalTeams.Germany);
-        Assert.Equal(coach.Lineup().Strength, automatic);
 
         coach.AutoFormation();
         var auto = game.NationalMatchStrength(NationalTeams.Germany);
@@ -72,7 +70,7 @@ public class NationalLineupTests
         Assert.All(outside, p => Assert.DoesNotContain(p, coach.Lineup().Players));
     }
 
-    /// <summary>Taktik wirkt wie beim Verein: Einsatz „SEMI“ 100 % in allen Blöcken = +2 Stärke (Bezug 80 %).</summary>
+    /// <summary>Taktik wirkt wie beim Managerverein: Einsatz „SEMI“ 100 % in allen Blöcken erhöht die Stärke (Bezug 80 %).</summary>
     [Fact]
     public void Tactics_ChangeStrength()
     {
@@ -87,7 +85,9 @@ public class NationalLineupTests
                 coach.Tactics.SetEffort(b, r, 0);
             coach.Tactics.SetEffort(b, ScoreSituation.Base, Tactics.MaxEffort);
         }
-        Assert.Equal(before + 2, game.NationalMatchStrength(NationalTeams.Germany));
+        // Spur wettbewerbe-spiel, Teil 3 (A014): [ORIGINAL] kein Zuschlag mehr (vorher + 2), der Einsatz 100 statt 80 der
+        // Automatik wirkt über die Kondition (0x98F8: Kondition − (100 − Einsatz · Kondition / 100) / 4).
+        Assert.True(game.NationalMatchStrength(NationalTeams.Germany) > before);
     }
 
     /// <summary>Kaderfeld 0x0A „eingesetzt“: neue Kaderspieler nicht eingesetzt; Platz setzen/leeren; Grenze 22.</summary>

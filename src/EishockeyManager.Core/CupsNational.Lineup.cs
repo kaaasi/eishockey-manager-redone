@@ -56,9 +56,10 @@ public enum LineupResult
 /// <item>[ORIGINAL] In der Liste steht die Platznummer (Zeile 1–29) nur bei eingesetzten Spielern, sonst bleiben NR und
 ///   STATUS leer (Video `bundestrainer_00056`: 22 nummerierte Spieler, „Eingesetzt: 22“).</item>
 /// <item>[APPROX] Ein vom Platz verdrängter Spieler bleibt eingesetzt (RESERVE); im Original nicht nachgeprüft.</item>
-/// <item>[APPROX] Spielstärke aus Torhüter und Reihen 1–3 (16 Plätze, wie bisher), Reihe 4 zählt nicht; die Taktik
-///   wirkt wie beim Verein über <see cref="Tactics.EffortStrengthBonus"/>. Die Formel des Originals ist nicht
-///   rekonstruiert.</item>
+/// <item>[ORIGINAL] Spielstärke wie bei einem Managerverein (Spur wettbewerbe-spiel, Teil 3): Reihenwerte aus den
+///   eingesetzten Spielern aller vier Blöcke (0x98F8 mit Manager 5, + Länderspiele / 8), Taktik über Einsatz und
+///   Angriff im Spiel (0x977F/0x98F8, 0x939A) statt eines Zuschlags auf die Stärke (<see cref="MatchEngine.NationalSquad"/>,
+///   <see cref="GameState.NationalMatchStrength"/>).</item>
 /// </list>
 /// </remarks>
 public sealed partial class NationalCoach
@@ -200,9 +201,6 @@ public sealed partial class NationalCoach
         }
         return new NationalLineup(Playing(LineupSlot.Goalkeeper), defenders, forwards);
     }
-
-    /// <summary>[APPROX] Zuschlag der Taktik auf die Spielstärke wie beim Verein (Einsatz bei ausgeglichenem Stand).</summary>
-    public int TacticsBonus => (int)Math.Round(Tactics.EffortStrengthBonus());
 
     private void ReleaseFromFormation(Player player)
     {

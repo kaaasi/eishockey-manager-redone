@@ -551,10 +551,10 @@ Geprüft an `em.exe` (`ndisasm -b 16`), Tests `SpielberechnungKomplett2Tests`.
   demselben Stand (`LiveTeamOf`, „weniger als neun“ = `GameState.IsShortHanded`); der Zweig 100 war vorher toter Code.
 - **R8W3I-06, Nationalteam des Bundestrainers.** 0x35AB8–0x35B2C ruft 0x378C5 für jeden Verein mit Vereinsfeld 0x16 ≠ 0;
   das Nationalteam hat 0x16 = 6 und zieht aus den Kaderplätzen von Manager 5 (DGROUP 0x5DC3 + 5 · 0x618). Unter 8 fitten
-  Kaderspielern keine Strafe (0x358FF). Remake: `LiveTeam.PenaltySquad` aus dem Kader des Bundestrainers
-  (`MatchEngine.NationalPenaltySquad`, Position aus `NationalCoach.Lineup`), die Strafe zählt beim gezogenen Spieler (die
-  Gutschrift zog vorher einen Zufallsspieler). `[APPROX]` Kaderreihenfolge; Reihenwerte und Energie bleiben wie beim
-  Computerverein; Managerwert 20 (das Original liest 0x974B + 6 · 0x1AF hinter den sechs Managersätzen, nicht geprüft).
+  Kaderspielern keine Strafe (0x358FF). Remake: Strafspieler aus dem Kader des Bundestrainers, die Strafe zählt beim
+  gezogenen Spieler (die Gutschrift zog vorher einen Zufallsspieler). Seit §20 spielt das Land ganz mit diesem Kader
+  (`LiveTeam.Squad` aus `MatchEngine.NationalSquad`). `[APPROX]` Kaderreihenfolge; Managerwert 20 (das Original liest
+  0x974B + 6 · 0x1AF hinter den sechs Managersätzen, nicht geprüft).
 - **Verdacht 0x952C → 0x9567 widerlegt.** 0x9567 ruft über Stub 0x149D:0x8E die Funktion **0x38A36** (Verein), keine
   automatische Aufstellung: sie zählt mit 0x388F6 die Spieler der Reihen auf dem Eis (Torhüter, Abwehr, Sturm), zieht die
   Strafbank ab (0x35540 mit Schalter 0), schreibt DGROUP 0xCC35 + 2 · (Feld 0x16) und +1 sowie Vereinsfeld 0x32
@@ -687,3 +687,32 @@ Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Shootout.
   übernehmen das über `CupMatch` (Marken 0/1/2). `[APPROX]` Herkunft des Stands vor 0x38402 (Tabelle DGROUP 0xA0BF, 0x37E2D)
   nicht verfolgt; ob ein Tor in der Verlängerung das Spiel sofort beendet (0x38418 → 0x38524), ist nicht geprüft – das Remake
   spielt beide Abschnitte (§9).
+
+## 20. Stärke der Nationalteams (Runde 11, Spur wettbewerbe-spiel Teil 3; Inventur P2 Nr. 2)
+
+Geprüft an `em.exe` (`ndisasm -b 16`); umgesetzt in `Core/CupsNational.Strength.cs` und `Core/MatchEngine.National.cs`,
+Tests `WettbewerbeSpiel3Tests`.
+
+- **Keine eigene Formel.** Nationalteams sind Vereinsplätze 52–63; 0x368B1 (Stärke) und 0x977F (Reihenwerte) lesen ihre
+  Vereinsfelder wie bei jedem Verein. Der Lader (Datei 0x2F0CC–0x2F120) überschreibt für die Plätze [0x6AD] … [0x6AD] + 11
+  Kondition 0x18 + k und Technik 0x1A + k mit DGROUP 0x4C4E − 2 (Reihenfolge K Abwehr, T Abwehr, K Sturm, T Sturm), ohne
+  Streuung; Form 0x1C + k = random(45, 55) und Tagesform 0x17 = random(47, 53) wie bei den Vereinen. Remake:
+  `GameState.NationalTeamValues` → `MatchEngine.NationalLiveTeam` (vorher: ein Wert (K + T) / 4 für alle vier Felder,
+  Form und Tagesform 50).
+- **Land ohne Manager** (auch Deutschland ohne Bundestrainer, Vereinsfeld 0x16 = 0): Einsatz und Angriff aus der Automatik
+  der Spielvorbereitung 0x8365, unabhängig von den Modi (R8-B04).
+- **Land des Bundestrainers** (0x16 = 6): Managerverein mit den Kaderplätzen von Manager 5 – Reihenwerte 0x98F8 aus den
+  eingesetzten Spielern aller vier Blöcke (Reihenwechsel 0x8EF2/0x91FF mit vierter Reihe), Technik + Länderspiele / 8
+  (höchstens 99), Taktik des Nationalteams (Einsatz in 0x98F8, Taktik 0x939A, Reihenwechsel), Energie 0x87F7, Strafspieler
+  0x378C5. Vorher: Mittel der 16 Plätze (K + T) / 2 plus Taktikzuschlag `EffortStrengthBonus`, ohne Kader gespielt.
+- **Automatik 0x8365:** doppelte Stärken 0x368B1(Verein, 1, 0, 0, 1) (Datei 0x83AD/0x83CA), Grenze 0x19 (0x840E) –
+  `GameState.NationalMatchStrength` (Reihe 0, Energie der Spielvorbereitung, Minute 0, gleich viele Feldspieler).
+- **„Stärke:“ und Stärketabelle:** 0x952C mit Manager 5 schreibt die Felder 0x18–0x1D des Landes aus der Aufstellung des
+  Bundestrainers (Tageslauf jeden Tag, nach Freundschaftsspielen); `NationalInfoStrength` nimmt sie (A019).
+- `[APPROX]` Einsatz 0x26 in `NationalMatchStrength`: Taktik beim Stand 0:0 gegen gleich starken Gegner (Original: zuletzt
+  gesetzter Wert). Länderwerte mit Bundestrainer aus der aktuellen Aufstellung statt dem Stand des letzten Tageslaufs.
+  Ohne eigene Aufstellung (passiver Bundestrainer) spielt die Automatik `NationalCoach.Lineup` mit drei Reihen (Original:
+  ohne Aufstellung kein Spieler auf dem Eis, nicht nachgebaut). „5 − Level“ aus dem Level des Managers, der Bundestrainer
+  ist. Die von 0x554CF für Deutschland ausgewürfelte Form verwirft das Remake (die Wanderung zieht sie zweimal je Woche neu).
+  Managerwert der Strafen 20 (A084, DOSBox-Probe offen); keine Verletzungen und Über-/Unterzahl-Zähler des Bundestrainers.
+  Tagesform nach WM-Gruppenspielen (0x4F527 auch bei Code 8) weiter nicht nachgeführt.
