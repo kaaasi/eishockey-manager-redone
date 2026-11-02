@@ -177,10 +177,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur wettbewerbe-spiel, Teil 7 (A185, A186): neu – Kaderplatz +0x19 der Managerkader beim Spielstart, der Talente und der Marktplätze gewürfelt (random(3, 12) je Halbbyte, Datei 0x299F4/0x06F23/0x49803; eigene Quelle, Hauptquelle unverbraucht) statt 7/7; Über- und Unterzahl der Managerpaarungen rechnen damit, andere Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Gegenprobe: ohne Würfe (alle 7/7) alte Werte.
     /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): neu – Managervereine stellen mit der Einstellung „automatisch aufstellen“ (Startwert 1) beim Spielstart und täglich nach 0x426BC/0x42838 neu auf (statt Lücken stehen zu lassen bzw. nach Spielwert zu füllen), und die Feldspieler der Managerpaarung zählt je Minute 0x38A36 aus der Aufstellung; andere Aufstellungen und Ergebnisse ab dem ersten Managerspiel. Begründung bei <see cref="RngTwinProbeTests"/>.
     /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
-    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug).</summary>
+    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).</summary>
     [GameDataTheory]
-    [InlineData(false, "D944570C9BDE1A1D")]
-    [InlineData(true, "F9B7F7BDAC80B3DB")]
+    [InlineData(false, "137C2086DE7F5381")]
+    [InlineData(true, "FB70395F3C43EFFE")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -243,7 +243,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // spielen mit Kondition/Technik je Teil (DGROUP 0x4C4E − 2) und Form/Tagesform ihres Vereinsplatzes statt eines
     // Mittelwerts mit Form 50 (vorher 4 von 5 Titeln für Russland 52, jetzt 52, 54, 63, 55, 63).
     // Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
-    // Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug).
+    // Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
     private const string WorldOnlyReference =
         "WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=55|500000|WorldChampion=63|500000|R540662232 C6027902";
 

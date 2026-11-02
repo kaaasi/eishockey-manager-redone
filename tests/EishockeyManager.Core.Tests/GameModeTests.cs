@@ -322,7 +322,7 @@ public class GameModeTests
     /// Spur wettbewerbe-spiel, Teil 7 (A185, A186): neu – Kaderplatz +0x19 der Managerkader beim Spielstart, der Talente und der Marktplätze gewürfelt (random(3, 12) je Halbbyte, Datei 0x299F4/0x06F23/0x49803; eigene Quelle, Hauptquelle unverbraucht) statt 7/7; Über- und Unterzahl der Managerpaarungen rechnen damit, andere Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Gegenprobe: ohne Würfe (alle 7/7) alte Werte. Saison 1 schon anders (Konten 881.540/348.513 statt 609.157/348.890, Weltmeister 63).
     /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): neu – Managervereine stellen mit der Einstellung „automatisch aufstellen“ (Startwert 1) beim Spielstart und täglich nach 0x426BC/0x42838 neu auf (statt Lücken stehen zu lassen bzw. nach Spielwert zu füllen), und die Feldspieler der Managerpaarung zählt je Minute 0x38A36 aus der Aufstellung; andere Aufstellungen und Ergebnisse ab dem ersten Managerspiel. Saison 1: Konten 776.819/398.946 statt 881.540/348.513, Pokalsieger 1, Meister 1; Weltmeister 63 unverändert.
     /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
-    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug).
+    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -355,7 +355,7 @@ public class GameModeTests
     // schrumpft (20 → 13 → 12 → 11), in Saison 5 Strafen und Dispozinsen, entlassen (−4.592.736). Manager 0 bleibt spielfähig.
     // (Stand der Spur vor der Integration; integrierter Stand siehe Zusammenfassung oben.)
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|198969,400000|WorldChampion=53,CupWinner=14,GermanChampion=5,EuropeanCupWinner=0|337416,500000|WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=5|2527068,500000|WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=5|3706558,500000|WorldChampion=63,CupWinner=18,GermanChampion=1,EuropeanCupWinner=5|4508205,400000|R1798967879 C1908605390";
+        "WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|198969,400000|WorldChampion=52,CupWinner=3,GermanChampion=12,EuropeanCupWinner=0|626765,400000|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=0|3024743,500000|WorldChampion=54,CupWinner=0,GermanChampion=3,EuropeanCupWinner=0|4115568,400000|WorldChampion=54,CupWinner=3,GermanChampion=5,EuropeanCupWinner=3|4757994,500000|R1886090395 C1947864260";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

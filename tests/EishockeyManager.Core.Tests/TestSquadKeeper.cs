@@ -15,6 +15,8 @@ namespace EishockeyManager.Core.Tests;
 /// die am meisten fehlt; <c>TransferMarket.Buy</c>). Seit kader-transfer Teil 3 würfelt jeder Kauf den Sponsorzuschuss
 /// (random(0, 6) aus der Hauptquelle, Datei 0x063BE), auch beim Vertragslosen; das Angebot wird nicht angenommen, also
 /// keine Buchung, aber anderer Zufallsverbrauch (KT-02, Review #463).</item>
+/// <item>gibt es keinen vertragslosen Spieler mehr, einen Spieler des größten Computerkaders ohne Kauf umsetzen
+/// (Integration Runde 11);</item>
 /// <item>freie Plätze der Aufstellung mit freien Spielern des Kaders füllen (<c>Lineup.FillGaps</c>, bestehende Plätze
 /// bleiben).</item>
 /// </list>
@@ -35,8 +37,26 @@ internal static class TestSquadKeeper
             if (game.TransferMarket.Buy(game, manager, listing, 0, loan: false) != TransferResult.Accepted)
                 break;
         }
+        // Integration Runde 11 (+ wettbewerbe-spiel): Seit der Poolumverteilung (kader-transfer Teil 5) steht zu Saisonbeginn oft
+        // kein vertragsloser Spieler auf der Liste (Originaldaten, Seed 3: Kader 12 nach dem Abstieg). Dann einen Spieler eines
+        // Computervereins ohne Kauf umsetzen – keine Buchung, kein Zufall; nur die Probe, kein Spielweg.
+        while (club.Players.Count < MinSquad && Donor(game, club) is { } donor)
+        {
+            var role = Needed(club);
+            var player = donor.Players.Where(p => p.Role == role && p.Available).OrderBy(p => p.Name, StringComparer.Ordinal).FirstOrDefault()
+                         ?? donor.Players.Where(p => p.Available).OrderBy(p => p.Name, StringComparer.Ordinal).First();
+            donor.Lineup.Remove(player);
+            donor.Players.Remove(player);
+            player.Number = PlayerFactory.FreeNumber(club, player);
+            club.Players.Add(player);
+        }
         club.Lineup.FillGaps(club.Players);
     }
+
+    private static Club? Donor(GameState game, Club club) => game.Clubs
+        .Where(c => c != club && c.League is not null && game.Managers.All(m => m.ClubIndex != c.Index)
+                    && c.Players.Count(p => p.Available) > MinSquad + 2)
+        .OrderByDescending(c => c.Players.Count).ThenBy(c => c.Index).FirstOrDefault();
 
     private static TransferListing? Next(GameState game, Club club)
     {

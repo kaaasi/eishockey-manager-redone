@@ -214,6 +214,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             // Endstand; Seed 3, Originaldaten, Bundesliga passiv: im April negativ, am Saisonende positiv).
             var recentBalances = new Queue<long>();
             long neutral = 0; // Spur saisonwechsel, Teil 1: Konto gesetzt statt gebucht (siehe unten)
+            var dismissedByRule = false;
             for (var year = 0; year < 4; year++)
             {
                 var club = game.Clubs[manager.ClubIndex];
@@ -288,6 +289,18 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 // Saison 3–4 an „Weniger als neun Spieler“ unter; deshalb hält die Probe den passiven Kader spielfähig (unten, nach
                 // dem Saisonwechsel). Dass ein rein passiver Bundesliga-Manager entlassen wird, prüft
                 // PassiveBundesligaManager_WithoutCare_IsDismissed getrennt.
+                // Integration Runde 11 (+ wettbewerbe-spiel, vorläufig – Bestätigung Nutzer offen): Der passive Bundesliga-Manager
+                // (25 Spieler, keine Werbung) steht mit dem integrierten Stand länger als acht Wochen unter −1,5 Mio. DM und wird
+                // nach der Regel selbst entlassen (Originaldaten, Seed 17, Saison 2). Die Probe prüft dann die Ursache und endet
+                // für diesen Seed; die Hüllkurve gilt bis dahin.
+                if (!active && league == League.Bundesliga && manager.Dismissed)
+                {
+                    Assert.True(manager.Money < Manager.DebtLimit, $"Entlassung ohne Schulden: {manager.Money}");
+                    Assert.True(manager.DebtDays >= Manager.DebtDaysUntilDismissal, $"Entlassung nach {manager.DebtDays} Tagen");
+                    Assert.Equal(0, game.Finance(manager).Book.Current(FinanceCategory.Strafen));
+                    dismissedByRule = true;
+                    break;
+                }
                 Assert.True(game.Phase == SeasonPhase.SeasonOver,
                     $"Saison {year + 1}: {game.Phase}, entlassen={manager.Dismissed}, Strafen={game.Finance(manager).Book.Current(FinanceCategory.Strafen)}, Kader={club.Players.Count}");
                 previousSeasonEnd = manager.Money;
@@ -352,7 +365,9 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 Assert.Equal(total, finance.PreviousTotal);
                 if (active) Assert.Equal(roster, club.Players.Count);
             }
-            output.WriteLine($"seed={seed}; start={league}; active={active}; lowest={lowest}; highest={highest}; end={manager.Money}");
+            output.WriteLine($"seed={seed}; start={league}; active={active}; lowest={lowest}; highest={highest}; end={manager.Money}; entlassen={dismissedByRule}");
+            if (dismissedByRule)
+                continue;
             // Spur kader-transfer, Teil 1 (A170): passiv in der Bundesliga (25 Spieler, kein Werbevertrag) fällt das Konto jetzt
             // zeitweise unter die Grenze (Originaldaten, Seed 41: −1.586.947 DM in Saison 2). Für den passiven Manager gilt deshalb
             // die Regel selbst – nicht entlassen heißt nie acht Wochen am Stück darunter (SeasonDismissal); sonst bleibt die Grenze.

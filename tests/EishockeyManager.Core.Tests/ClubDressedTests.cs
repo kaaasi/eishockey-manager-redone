@@ -127,7 +127,6 @@ public class ClubDressedTests
         var game = Create();
         game.AppointNationalCoach(game.Managers[0]);
         game.AutoNominate();
-        var club = game.Clubs[2];
         var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
         root["schema"] = 4;
         foreach (var c in root["vereine"]!.AsArray().Select(n => n!.AsObject()))
@@ -155,8 +154,13 @@ public class ClubDressedTests
             // Kette bis Schema 12 (Spur nationalteam, #192): Der unveränderte alte Startwert wird zum Startwert des Nationalteams (0).
             Assert.Equal(Tactics.National().Attack(0, r), loaded.NationalCoach!.Tactics.Attack(0, r));
         }
-        Assert.Equal(club.Dressed.Select(p => p.Id), loaded.Clubs[2].Dressed.Select(p => p.Id));
-        Assert.Equal(game.Clubs[2].MatchStrength, loaded.Clubs[2].MatchStrength);
+        // Integration Runde 11 (wettbewerbe-spiel Teil 8 + kader-transfer): Managervereine setzen seit Teil 8 beim Spielstart
+        // von Hand ein (0x426BC, „Eingesetzt“ gespeichert) – einen solchen Stand kann ein Schema-4-Spielstand nicht tragen.
+        // Die Vorgaberegel der Migration 4 prüft daher ein Computerverein; mit dem neuen Start wählen Regel 0x426BC und
+        // Vorgabe beim Managerverein verschiedene Reservisten.
+        var computer = game.Clubs.First(c => c.League is not null && game.Managers.All(m => m.ClubIndex != c.Index)).Index;
+        Assert.Equal(game.Clubs[computer].Dressed.Select(p => p.Id), loaded.Clubs[computer].Dressed.Select(p => p.Id));
+        Assert.Equal(game.Clubs[computer].MatchStrength, loaded.Clubs[computer].MatchStrength);
         var again = SaveGame.Save(loaded);
         Assert.Equal(again, SaveGame.Save(SaveGame.Load(again).Game!));
     }
