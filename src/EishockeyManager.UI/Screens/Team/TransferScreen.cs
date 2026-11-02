@@ -93,12 +93,17 @@ public sealed class TransferScreen : Screen
     /// nicht über 0x0C0B8; sie bleiben Meldungsfenster mit Klick. Der Aufruf 0x46DEF („Dieser Spieler hört am Saisonende auf.“) hat im Remake
     /// keine Entsprechung.
     /// </summary>
-    private static readonly string[][] ShortTexts =
+    private static readonly TransferResult[] ShortResults =
     [
-        TransferMarket.Message(TransferResult.NotEnoughMoney), TransferMarket.Message(TransferResult.TooManyOwnListings),
-        TransferMarket.Message(TransferResult.MarketFull), TransferMarket.Message(TransferResult.Rejected),
-        TransferMarket.Message(TransferResult.AlreadyRejected), TransferMarket.Message(TransferResult.Impossible),
+        TransferResult.NotEnoughMoney, TransferResult.TooManyOwnListings, TransferResult.MarketFull, TransferResult.Rejected,
+        TransferResult.AlreadyRejected, TransferResult.Impossible,
     ];
+
+    private static readonly string[][] ShortTexts = ShortResults.Select(TransferMarket.Message).ToArray();
+
+    /// <summary>Meldet die Transferliste dieses Ergebnis als Kurzmeldung (0x0C0B8)?</summary>
+    public static bool IsShortMessage(TransferResult result) =>
+        ShortTexts.Any(t => t.AsSpan().SequenceEqual(TransferMarket.Message(result)));
 
     private void Say(params string[] lines)
     {

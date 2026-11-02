@@ -244,6 +244,8 @@ public class StadiumAusbauTests
                 if (!keptSet && game.Phase is SeasonPhase.SeasonOver && game.History.Count > year
                     && GameState.KeptInOberliga(game.History[^1], me.ClubIndex))
                 {
+                    // WS-05 (Review #468): wie FinanceCalibrationTests – Konto = 400.000 DM + Prämien des 29. April ff.
+                    Assert.Equal(GameState.OberligaKeptMoney + game.Finance(me).Book.Current(FinanceCategory.Praemien), me.Money);
                     cumulative += me.Money - (startMoney + cumulative + game.Finance(me).Book.CurrentTotal);
                     keptSet = true;
                 }

@@ -71,6 +71,9 @@ public sealed class LineupScreen : Screen
     /// <summary>Zeilen der offenen Meldung (leer, wenn keine offen ist).</summary>
     public IReadOnlyList<string> MessageLines => _message.Lines;
 
+    /// <summary>Ist die offene Meldung eine Kurzmeldung (0x0C0B8)?</summary>
+    public bool MessageIsShort => _message.Short is not null;
+
     public static int RowAt(int y) => y < FirstRowY - 1 ? -1 : (y - FirstRowY + 1) / RowPitch;
 
 

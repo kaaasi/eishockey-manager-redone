@@ -232,4 +232,45 @@ public class OriginalDialogCallersTests
         d.Frames(100);
         Assert.False(screen.Message.Visible);
     }
+    /// <summary>MU-01 (Review #469): Bei einer Meldung ist der linke Knopf immer Zeile 5 (Datei 0x4C4E2), nur die Frage nimmt Zeile 4.</summary>
+    [Fact]
+    public void MessageWithFourthLine_LeftButtonIsLineFive()
+    {
+        var message = new OriginalDialog(OriginalDialogKind.Message, "Hans", "Die Firma", "Acme", "wird den Vertrag",
+            "nicht verlängern.", MessageBox.ButtonText);
+        Assert.Equal(MessageBox.ButtonText, message.LeftText);
+        var question = new OriginalDialog(OriginalDialogKind.Question, "Hans", "Möchten Sie", "den Vertrag", "verlängern ?",
+            "Ja", "Nein");
+        Assert.Equal("Ja", question.LeftText);
+    }
+
+    /// <summary>MU-02 (Review #469): jede Kurzmeldung der Transferliste (Aufrufe 0x46A4D ff., 0x42CE3, Texte in DGROUP).</summary>
+    [Theory]
+    [InlineData(TransferResult.NotEnoughMoney)]
+    [InlineData(TransferResult.TooManyOwnListings)]
+    [InlineData(TransferResult.MarketFull)]
+    [InlineData(TransferResult.Rejected)]
+    [InlineData(TransferResult.AlreadyRejected)]
+    [InlineData(TransferResult.Impossible)]
+    public void TransferScreen_ShortMessages(TransferResult result) => Assert.True(TransferScreen.IsShortMessage(result));
+
+    /// <summary>MU-02 (Review #469): „… noch gesperrt !“ in der Aufstellung ist eine Kurzmeldung (Datei 0x40B55 → 0x0C0B8).</summary>
+    [GameDataFact]
+    public void Lineup_Suspended_IsShortMessage()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        d.OpenTile("Aufstellung");
+        var screen = Assert.IsType<LineupScreen>(d.Host.Current);
+        var club = d.Host.Game!.Clubs[d.Host.Game.ActiveManager.ClubIndex];
+        club.AutoLineupEnabled = false;
+        var rows = TeamUi.Rows(club).ToList();
+        var forward = rows.First(p => p.Role == PlayerRole.Forward && p.Available && !club.Lineup.Contains(p));
+        forward.SuspendedGames = 2;
+        var slot = LineupScreen.SlotButton(LineupSlot.Forward(0, 0));
+        d.Click(slot.X + 5, slot.Y + 5);
+        d.Click(60, LineupScreen.FirstRowY + rows.IndexOf(forward) * LineupScreen.RowPitch + 2);
+        Assert.Equal([forward.Name, "noch gesperrt !"], screen.MessageLines);
+        Assert.True(screen.MessageIsShort);
+    }
 }

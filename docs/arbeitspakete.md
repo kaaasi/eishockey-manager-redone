@@ -225,12 +225,14 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   Computerverein); `WettbewerbeSpiel2Tests` (Play-offs ohne Manager, Byte wie 4F5A8h); `TacticsClubScreenTests` (Meldung);
   `StadiumAusbauTests` (S-K1 neutral), `KaderTransferTeil4Tests` (Grenze 22 statt 30); `StatistikenVereinTests` und `TestSquadKeeper` (ohne Vertragslose: Spieler eines Computerkaders umsetzen, nur Probe);
   `FinanceCalibrationTests`: passive Bundesliga mit Originaldaten, Seed 17, nach der Acht-Wochen-Regel entlassen – Probe
-  prüft die Ursache und endet für den Seed (**vorläufig, Entscheidung Nutzer offen**).
+  prüft die Ursache und endet für den Seed (nur Seed 17, mindestens zwei Seeds vier Saisons; **vorläufig, Entscheidung
+  Nutzer offen**, WS-02). Review #468: WS-01 (Migration 31 → 32 behält eine Aufstellung von Hand, Einstellung aus,
+  `Migration_31To32_KeepsHandMadeLineup`), WS-03/WS-05 erledigt; WS-04 (Neuzählung Grenze 5) Runde 12.
 - **`ui-meldungen`** (`integration/runde-11-ui-meldungen`, Stapel #421 → #426 → #430): kein Schema, keine Migration. R11U-01 durch die
   Leitstelle gedeckt (Bundestrainer-Warnung und `QuitQuestion` gehören zum Auftrag der Spur); R11U-02 (Status von `marker-werkzeug`
   zurück auf „–“, Status in den eigenen Abschnitt), R11U-04 (leere Schlussseite des Infofiles wie im Original, `InfoFileScreen.Layout`),
   R11U-05 (Zustandsreinheit des Infofiles mit `StateFingerprint.Of`) erledigt; R11U-03 nur eine PR-Angabe. Aufrufer in fremden Dateien
-  auf die Bausteine umgestellt, je mit Test (`OriginalDialogCallersTests`): `Competitions/DebCupDrawLive.cs` (Frage 0x4C246, A270, A273),
+  auf die Bausteine umgestellt, je mit Test (`OriginalDialogCallersTests`, Freundschaftsspiele in `NationalScreenTests`): `Competitions/DebCupDrawLive.cs` (Frage 0x4C246, A270, A273),
   `Manager/AdvertisingScreen.cs` (Verlängerungsfrage, A304, A308; `RenewalDialog`), `Team/TransferDialog.cs` (Talent, Sponsorzuschuss,
   Frage an den Verkäufer, A376, A378, A379; `AsDialog`), `Team/TeamUi.cs` `MessageBox` (A375, M-K3: Fenster 75 | 107, „!“-Felder, Knöpfe
   nur bei Zeile 3/4, Überschrift = Manager am Zug; acht Nutzer) und die Kurzmeldung K2 (`MessageBox.ShowShort`): Aufstellung (Auto-Aufstellung
@@ -242,6 +244,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   beleidigt...“ 0x3DE9F, „Kein / Platz mehr !“ 0x414C6, „Schon 6 Feldspieler / auf dem Eis !“ 0x40EF7, Spielstand-Meldungen 0x5C559/0x5C59A) ohne
   Entsprechung bzw. in fremden Spuren; Nationalaufstellung (0x54C9F) und Meldungen mit mehr als vier Zeilen behalten das Meldungsfenster bzw.
   den alten Rahmen [APPROX]; Zeile 1 von „noch gesperrt !“ ist im Original „Spieler ist“ (DGROUP 0x1255), im Remake der Spielername.
+  Review #469: MU-01 (linker Knopf einer Meldung immer Zeile 5, 0x4C4E2) behoben, MU-02 (Test je Kurzmeldung), MU-03 erledigt.
 
 ### Nicht in Runde 11
 
