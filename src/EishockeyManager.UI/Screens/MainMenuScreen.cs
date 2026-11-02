@@ -42,16 +42,16 @@ public sealed class MainMenuScreen : Screen
     /// Bundestrainer (DGROUP 0xA70E = 5) und zählt 0x120:0x66 (Modus 0, Datei 0x4BE17: Kaderplätze mit Feld 0x0F ≠ 0)
     /// weniger als 10 Spieler, erscheint die Meldung „Wollen Sie die WM wirklich / mit SO wenigen Spielern bestreiten ?“
     /// (DGROUP 0x403B/0x4056, über 0x38:0x8C8 = Datei 0xC0B8) und die Schleife beginnt von vorn – der Tag läuft nicht weiter.
-    /// [APPROX] Aussehen und Lage der Meldung (Rahmen, Knopf „Na gut.“) sind nicht aus dem Video belegt; das Original
-    /// wertet die Antwort nicht aus (Rücksprung 0x535B in jedem Fall).
+    /// [ORIGINAL] Die Meldung ist eine Kurzmeldung ohne Knopf und ohne Eingabe, die nach 25 Takten zu 18,2 Hz (≈ 1,4 s) von selbst
+    /// schließt (<see cref="ShortMessage"/>, Datei 0x0C0B8, M-K2, A298); das Original wertet keine Antwort aus (Rücksprung 0x535B).
     /// </summary>
     public static readonly string[] CoachWarning = ["Wollen Sie die WM wirklich", "mit SO wenigen Spielern bestreiten ?"];
 
     /// <summary>[ORIGINAL] Mindestzahl Kaderspieler, ab der die Warnung entfällt (Datei 0x454D6: <c>cmp al,0xA</c>).</summary>
     public const int CoachMinPlayers = 10;
 
-    /// <summary>Meldung über dem Hauptmenü (Bundestrainer-Warnung, #217).</summary>
-    public Team.MessageBox Message { get; } = new();
+    /// <summary>Kurzmeldung über dem Hauptmenü (Bundestrainer-Warnung, #217); schließt von selbst, ohne Knopf (M-K2).</summary>
+    public ShortMessage? CoachMessage { get; private set; }
 
     public static MenuTile[][] SmallTiles => MenuTiles.Small;
 
@@ -118,10 +118,22 @@ public sealed class MainMenuScreen : Screen
             }
             return;
         }
-        if (Message.Update(input))
-            return;
+        if (CoachMessage is { } coachMessage)
+        {
+            // [ORIGINAL] Keine Eingabe, solange die Kurzmeldung steht (0x0C0B8, Modus ≥ 2).
+            if (coachMessage.Update(input))
+                return;
+            CoachMessage = null;
+        }
         if (_selectedBig < 0 && ManagerArea.NewsBar.HasUnread(Game))
             _newsBar = true;
+
+        // Infofile: verstecktes Feld (319 | 0), vor allen übrigen Klicks (0x453E5, Spur ui-meldungen Teil 2)
+        if (InfoFileScreen.IsTrigger(input))
+        {
+            Host.Show(new InfoFileScreen(Host, this));
+            return;
+        }
 
         // Credits (#207): linker oder rechter Klick in die Titelleiste, vor dem Abwählen per Rechtsklick (0x45483).
         if ((input.LeftClick || input.RightClick) && CreditsScreen.TitleArea.Contains(input.MouseX, input.MouseY))
@@ -151,7 +163,7 @@ public sealed class MainMenuScreen : Screen
             // [APPROX] Ohne ernannten Bundestrainer (Modus 1 vor dem ersten WM-Termin) gibt es keinen Kader zu zählen.
             if (Game.NationalCoachMenu && Game.NationalCoach is { } coach && coach.Squad.Count < CoachMinPlayers)
             {
-                Message.Show(CoachWarning);
+                CoachMessage = new ShortMessage(Game.ActiveManager.Name, CoachWarning[0], CoachWarning[1]);
                 return;
             }
             Continue_();
@@ -248,7 +260,7 @@ public sealed class MainMenuScreen : Screen
             ManagerArea.NewsBar.Draw(s, Assets, Game); // Nachrichtenleiste (Paket „manager“), nur mit Nachricht (#170)
 
         QuitQuestion?.Draw(s, Assets);
-        Message.Draw(s, Assets);
+        CoachMessage?.Draw(s, Assets);
     }
 
     private void DrawInfoBar(Surface s)
@@ -275,14 +287,16 @@ public sealed class MainMenuScreen : Screen
             // [APPROX] Ohne Liga keine Tabellenkurve; der Bundestrainer sieht hier nichts (kein Videobeleg).
         }
         else if (game.PlayedMatchDays == 0)
+        {
+            RankCurve.DrawAxes(s);
             s.Text(mini, 5, 35, "Vor dem ersten Spieltag.", Colors.White);
+        }
         else if (game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver)
         {
             if (game.UpcomingLeagueMatchDay is { } md)
                 s.TextCentered(mini, 55, 35, $"{md}.Spieltag", Colors.White);
-            if (next?.Opponent.Index is { } o)
-                DrawRankCurve(s, game, o, Colors.White);
-            DrawRankCurve(s, game, team, Colors.Yellow);
+            // Tabellenkurve: Spur ui-meldungen, Teil 2 (UI/Screens/RankCurve.cs, em.exe 0x445E0)
+            RankCurve.Draw(s, Assets, game.RankHistory(team), next?.Opponent.Index is { } o ? game.RankHistory(o) : null);
         }
 
         // Symbole: Wettbewerb, Heim/Auswärts, bisherige Begegnungen, Kontostand
@@ -309,51 +323,6 @@ public sealed class MainMenuScreen : Screen
         Widgets.Head(s, Assets, manager.Head, 232, 33);
         Raised(s, new Rect(274, 32, 41, 42));
         Widgets.Logo(s, Assets, club.LogoGraphic, 275, 34);
-    }
-
-    /// <summary>
-    /// Tabellenkurve im Nachrichtenfeld: Platz nach jedem Spieltag (oben = Platz 1), rechts der aktuelle Platz.
-    /// [APPROX] Maßstab und Lage aus Videobildern geschätzt.
-    /// </summary>
-    private void DrawRankCurve(Surface s, GameState game, int club, byte color)
-    {
-        var history = game.RankHistory(club);
-        if (history.Count == 0)
-            return;
-        const int left = 6, right = 84, top = 43, bottom = 68;
-        // Im Original füllt die Kurve schon nach 17 Spieltagen die ganze Breite → Maßstab = bisherige Spieltage
-        var n = Math.Max(1, history.Count - 1);
-        int X(int i) => left + i * (right - left) / n;
-        int Y(int rank) => top + (rank - 1) * (bottom - top) / 11;
-        for (var i = 0; i < history.Count; i++)
-        {
-            var x0 = X(i);
-            var y0 = Y(history[i]);
-            if (i == 0)
-            {
-                s.Set(x0, y0, color);
-                continue;
-            }
-            var x1 = X(i - 1);
-            var y1 = Y(history[i - 1]);
-            Line(s, x1, y1, x0, y0, color);
-        }
-        s.Text(Assets.Mini, right + 3, Y(history[^1]) - 2, $"{history[^1]}.", color);
-    }
-
-    private static void Line(Surface s, int x0, int y0, int x1, int y1, byte color)
-    {
-        int dx = Math.Abs(x1 - x0), dy = -Math.Abs(y1 - y0);
-        int sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1, err = dx + dy;
-        while (true)
-        {
-            s.Set(x0, y0, color);
-            if (x0 == x1 && y0 == y1)
-                break;
-            var e2 = 2 * err;
-            if (e2 >= dy) { err += dy; x0 += sx; }
-            if (e2 <= dx) { err += dx; y0 += sy; }
-        }
     }
 
     /// <summary>Erhabener Kasten wie im Original: oben/links hell, unten/rechts dunkel mit Schatten.</summary>

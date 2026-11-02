@@ -170,7 +170,9 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   3. **Kosmetik:** Monatsnamen (P3 Nr. 3, A157, vorher gegen das Video prüfen); letzte Saison ohne Saisonende-Fenster
      (S-K5, P3 Nr. 5, nach Video); Kommentar über dem Rechtsklick-Test (#342).
 - **Abnahme:** Bildschirmfoto je Baustein bzw. Aufrufer gegen das Referenzbild; Bildschirme zustandsrein.
-- **Dateigrenzen:** siehe Zuständigkeit; Tests. **Modell:** Claude Sonnet 5.5. **Status:** –
+- **Dateigrenzen:** siehe Zuständigkeit; Tests. **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 in Arbeit (PR `paket/ui-meldungen-1`):
+  `UI/OriginalDialog.cs` (Fenster 4C246h, Kurzmeldung C0B8h), `QuitQuestion` und Bundestrainer-Warnung umgestellt; Aufrufer in
+  fremden Dateien stehen im PR. Teil 2 und 3 offen.
 
 ### Spur `marker-werkzeug` – Funktionskarte, Doku, Marker
 
@@ -186,7 +188,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** Gegenbeispiel R10N-01 (Mutation `perl -pi` aus dem Review #408) ohne Statuswechsel; `funktionskarte.py
   --write` danach ohne Diff; für Teil 3 je Marker der Abgleich mit der Doku im PR.
 - **Dateigrenzen:** siehe Zuständigkeit; die genannten Doku-Dateien; in Teil 3 nur Kommentarzeilen in `src/`.
-  **Modell:** Claude Sonnet 5.5. **Status:** –
+  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 #421, Teil 2 #426, Teil 3 (dieser Branch) (Monatsnamen, Saisonende letzte Saison, Kommentar #342) fertig, Review offen.
 
 ### Integration Runde 11 (Leitstelle)
 

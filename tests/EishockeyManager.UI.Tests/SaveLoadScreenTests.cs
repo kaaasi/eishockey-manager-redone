@@ -142,7 +142,7 @@ public class SaveLoadScreenTests : IDisposable
         Assert.Equal(saved, Saved(d.Host.Game!));
     }
 
-    // em.exe 0x5DBE5 (Datei 0x5E5ED..0x5E667): Rechtsklick auf einen Eintrag bricht nicht ab, er übernimmt den Namen.
+    // em.exe 0x5DBE5 (Datei 0x5E5ED..0x5E667): Rechtsklick auf einen Eintrag bricht nicht ab, er übernimmt den Namen nicht (Namensfeld und Auswahl bleiben).
     [GameDataFact]
     public void RightClickOnEntry_KeepsNameAndDoesNotLeaveOrLoad()
     {

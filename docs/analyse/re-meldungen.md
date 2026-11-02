@@ -242,7 +242,7 @@ dokumentiert; Fehlertexte „Zu viele Fenster auf !“ und „Fenster-Koordinate
 - **Beleg Datei:** `infofile` des Originals hat 1153 Byte, 34 Zeilen (CRLF), CP437-Umlaute (0x81, 0x84, 0x94, 0xE1),
   kein „#“ → zwei Seiten (27 Zeilen je Seite). Die CP437-Umlaute treffen die Latin-1-Tabelle nicht und gehen
   unverändert an den Font.
-- **Remake:** fehlt (`docs/bestandsaufnahme.md`: Hinweise im `infofile`). → K5.
+- **Remake:** `UI/Screens/InfoFileScreen.cs` (Runde 11, Spur `ui-meldungen` Teil 2, K5); Seitenaufbau nach Regel oben, Test `InfoFileAndRankCurveTests`. Offen: Bildaufbau im Video nicht belegt; Schatten [APPROX].
 
 ## E. Tabellenkurve
 
@@ -264,8 +264,7 @@ dokumentiert; Fehlertexte „Zu viele Fenster auf !“ und „Fenster-Koordinate
 - **Folgerung für die Infoleiste:** Plätze 1 … 12 auf y 47 … 69 (2 Pixel je Platz), x ab 6, Länge ⌊85 / (n − 1)⌋ je
   Spieltag (bei 43 Spieltagen 2 Pixel, also über die Achse hinaus). Die Kurve endet beim Platz nach dem vorletzten
   Spieltag – der letzte Punkt liegt eine Schrittweite rechts davon.
-- **Remake:** `MainMenuScreen.DrawRankCurve` [APPROX]: x 6 … 84 auf die bisherigen Spieltage gestreckt, y 43 … 68
-  (Platz − 1) · 25 / 11, keine Achsen in der Funktion. → K6.
+- **Remake:** `UI/Screens/RankCurve.cs` (Runde 11, Teil 2, K6): Achsen, Schritt ⌊85 / (n − 1)⌋, y 47 + 2 p, am Bild `folge06_00000` und `oberflaeche_0842` vermessen. [APPROX] bleibt: Lage der Platzzahl (±1 px) und Verschiebung bei |Δy| < 7; Vereinsinfo 0x4D385 (x + 30, y − 30) nicht angeschlossen.
 
 ## F. Tagesablauf
 

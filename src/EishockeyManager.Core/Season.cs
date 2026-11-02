@@ -86,8 +86,8 @@ public static class SeasonCalendar
 
     private static readonly string[] Weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 
-    /// <summary>[APPROX] Monatsnamen: kurze ausgeschrieben, lange abgekürzt (belegt: „Sept.“, „Okt.“, „Nov.“, „Dez.“, „Januar“, „Februar“, „März“, „April“).</summary>
-    private static readonly string[] Months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez."];
+    /// <summary>[ORIGINAL] Monatsnamen: Tabelle DGROUP 0xA70, Texte ab Datei 0x1907C („Januar“ … „Juli“, „August“, „Sept.“, „Okt.“, „Nov.“, „Dez.“); 0x43B1F hängt sie ungekürzt an. Die Saison (10. Sept. bis 29. April) zeigt keinen August – nur Tabelle belegt, nicht am Video.</summary>
+    private static readonly string[] Months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "Sept.", "Okt.", "Nov.", "Dez."];
 
     public static DateOnly LayoutDate(int day) => Layout.AddDays(day);
 

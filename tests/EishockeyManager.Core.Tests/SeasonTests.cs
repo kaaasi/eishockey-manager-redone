@@ -52,6 +52,16 @@ public class SeasonCalendarTests
         for (var day = 0; day < SeasonCalendar.Length; day++)
             Assert.True((byte)SeasonCalendar.Days[day] == exe[offset + day], $"Tag {day}");
     }
+
+    // em.exe Monatstabelle DGROUP 0xA70 (Datei 0x1907C): „August“ ausgeschrieben, „Sept.“ abgekürzt (A157). Die Saison
+    // (10. Sept. bis 29. April) zeigt keinen August; die Tabelle wird daher direkt geprüft.
+    [Fact]
+    public void MonthTable_MatchesOriginal()
+    {
+        var field = typeof(SeasonCalendar).GetField("Months", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        var months = Assert.IsType<string[]>(field!.GetValue(null));
+        Assert.Equal(["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "Sept.", "Okt.", "Nov.", "Dez."], months);
+    }
 }
 
 public class MatchEngineTests

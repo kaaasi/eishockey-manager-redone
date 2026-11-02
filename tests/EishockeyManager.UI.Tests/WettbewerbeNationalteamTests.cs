@@ -65,7 +65,7 @@ public class WettbewerbeNationalteamTests
         var before = StateFingerprint.Of(game);
 
         d.Click(290, 50); // Vereinslogo = Tag weiter
-        Assert.Equal(warning, menu.Message.Visible);
+        Assert.Equal(warning, menu.CoachMessage is not null);
         if (warning)
         {
             Assert.Same(menu, d.Host.Current);
