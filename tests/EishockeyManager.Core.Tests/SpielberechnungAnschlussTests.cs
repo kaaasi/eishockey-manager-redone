@@ -160,10 +160,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
     /// Spur geld, Teil 2: aktiv neu (Werbebewertung, Angebote, Monatseinnahme; Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur geld, Teil 3: beide neu (Jugendteams je Ligaspieltag ziehen aus FinanceRandom; Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur geld, Teil 6: beide neu (Preis der Talentsuche zieht aus FinanceRandom; Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "AB6B3B9E34731B2C")]
-    [InlineData(true, "98FD32499DD83332")]
+    [InlineData(false, "EF4E0F25E702FE2B")]
+    [InlineData(true, "3B9E4340000A921D")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

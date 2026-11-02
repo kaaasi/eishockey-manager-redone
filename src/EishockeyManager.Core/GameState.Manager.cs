@@ -140,6 +140,9 @@ public sealed partial class GameState
             ExpireMessages();
             // [ORIGINAL] Tagesablauf 0x55008: an Ligaspieltagen die Jugendteams (0x39DEC) vor den Spielen (Spur geld Teil 3).
             DailyYouth(FinanceDay);
+            // [ORIGINAL] Tageslauf 0x54C9F, Datei 0x5528A: Talentsuche an Tagen ≡ 0, 4 (mod 7) (Spur geld Teil 6).
+            if (FinanceDay > 0)
+                DailyTalentSearch(FinanceDay);
             if (FinanceDay > 0)
             {
                 // [ORIGINAL] Tagesabschluss 0x3ED01: Zinskonto, Werbeangebote (Monatsletzter, Monatsmitte), am 1.
@@ -212,7 +215,6 @@ public sealed partial class GameState
     {
         foreach (var done in AdvanceConstruction(manager))
             ConstructionCompleted(manager, done);
-        AdvanceTalentSearch(manager);
     }
 
     private void MonthlyManagerFinances(Manager manager)

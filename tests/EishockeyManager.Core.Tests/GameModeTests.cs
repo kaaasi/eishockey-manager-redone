@@ -308,6 +308,8 @@ public class GameModeTests
     /// Spur geld, Teil 3: nur die Kontostände beider Manager neu (Jugendteams je Ligaspieltag 0x39DEC ziehen aus FinanceRandom,
     /// die monatlichen Züge des alten Näherungswegs entfallen; Börse und Werbebewertung ziehen danach andere Zahlen);
     /// Titel und Zufallsprüfsummen R/C unverändert.
+    /// Spur geld, Teil 6: nur die Kontostände beider Manager neu (Preis der Talentsuche an den Angebotstagen 0x3EEAB zieht
+    /// aus FinanceRandom; Gegenprobe ohne diesen Zug: alter Wert); Titel und Zufallsprüfsummen R/C unverändert.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -325,7 +327,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|613322,349084|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=0|1485122,147743|WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=1|2689926,36331|WorldChampion=55,CupWinner=12,GermanChampion=15,EuropeanCupWinner=4|3716418,12948|WorldChampion=52,CupWinner=8,GermanChampion=8,EuropeanCupWinner=4|4327901,204881|R967498903 C1705043894";
+        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|612685,337744|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=0|1500215,142643|WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=1|2723804,63861|WorldChampion=55,CupWinner=12,GermanChampion=15,EuropeanCupWinner=4|3732928,46664|WorldChampion=52,CupWinner=8,GermanChampion=8,EuropeanCupWinner=4|4338041,250528|R967498903 C1705043894";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

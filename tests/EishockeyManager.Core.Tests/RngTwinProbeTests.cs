@@ -128,16 +128,19 @@ namespace EishockeyManager.Core.Tests;
 /// drei Regeln allein ändert schon einen Teil der Abdrücke (Gegenprobe je Regel im PR).
 /// Spur geld, Teil 3 (Runde 11): neu – Jugendteams je Ligaspieltag nach 0x39DEC (Züge aus FinanceRandom an jedem Ligaspieltag
 /// statt monatlich je Team ein NextDouble; Stärke, Startliga aus der Spielvorbereitung #327, Saisonwechsel 0x3A13B ohne Zufall).
+/// Spur geld, Teil 6 (Runde 11): neu – Preis der Talentsuche an Monatsmitte und Monatsletztem (0x3EEAB: random(0, 1), bei ≠ 0
+/// random(0, 10) aus FinanceRandom). Gegenprobe ohne diesen Zug: alle Abdrücke wie vorher; die Talentsuche selbst läuft in
+/// den Proben nicht.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "7CF044111382EEE9")]
-    [InlineData(true, 3, "BD1C5A6DCB31B298")]
-    [InlineData(false, 11, "D97FAD94CBDF3F3B")]
-    [InlineData(true, 11, "9C3717CCC66D99C3")]
+    [InlineData(false, 3, "F4206520F3839149")]
+    [InlineData(true, 3, "1FA320715FFC9839")]
+    [InlineData(false, 11, "AC652858D25977BD")]
+    [InlineData(true, 11, "A65859781ADD249C")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -145,8 +148,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "44FA5B1573A3DFD1")]
-    [InlineData(true, "7D4CA6161308138C")]
+    [InlineData(false, "D9B02652AB3B85EA")]
+    [InlineData(true, "24B04B2AD204A76F")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

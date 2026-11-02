@@ -242,6 +242,10 @@ positivem Darlehensfeld; Ablauf in [finanzen-rekonstruktion.md](../finanzen-reko
 - Betrag über ±-Knöpfe in festen Schritten statt Balken (Klick = Pixel · `q`, Rundung auf 1.000 DM).
 - Übersicht rechts und Aktienfelder: Inhalt stimmt (Zeilen wie oben), Lage und Farben nicht nachgemessen.
 
+**Status (Runde 11, Spur `geld` Teil 6, PR #448):** Talentsuche nach 0x465F1/0x06FA5/0x06D7F/0x3CCEB (R-K1) umgesetzt;
+Preisfeld DGROUP 0x20D ist der Preis der Talentsuche (keine „Prämie“). Ablauf in
+[finanzen-rekonstruktion.md](../finanzen-rekonstruktion.md), „Talentsuche“.
+
 ## Transfermarkt: Kontoleiste (Datei 0x463CC)
 
 Aufrufer nur Transferliste Datei 0x465F1. Fenster (0 | 222)–(319 | 239) mit Rahmen über `30h:335h`; vier Felder

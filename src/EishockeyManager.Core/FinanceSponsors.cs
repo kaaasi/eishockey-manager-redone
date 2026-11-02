@@ -281,7 +281,10 @@ public sealed partial class GameState
         if (!SponsorRules.IsOfferDay(date))
             return;
         foreach (var manager in Managers)
+        {
             RefreshSponsorOffers(manager, noDice: false);
+            RollTalentSearchPrice(manager); // [ORIGINAL] Datei 0x3EEAB, direkt nach 0x3FB47(0) (Spur geld, Teil 6)
+        }
     }
 
     /// <summary>

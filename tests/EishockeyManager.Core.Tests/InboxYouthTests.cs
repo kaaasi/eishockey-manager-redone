@@ -105,43 +105,4 @@ public class InboxYouthTests
         TestSeason.PlayRegularSeason(game);
         Assert.True(team.Position < start, $"Platz {team.Rank}, Liga {team.League}");
     }
-
-    [Fact]
-    public void TalentSearch_CostsDiscountedPrice_AndReportsAfterSomeWeeks()
-    {
-        var game = TestGames.Create();
-        var me = game.ActiveManager;
-        game.SetYouthFunding(me, YouthTeamKind.Schueler, 10_000);
-        game.SetYouthFunding(me, YouthTeamKind.Jugend, 5_000);
-        Assert.Equal(30, game.TalentSearchDiscount(me));
-        Assert.Equal(63_000, game.TalentSearchPrice(me)); // 90.000 DM (Video) − 30 %
-
-        var squad = game.Clubs[me.ClubIndex].Players.Count;
-        var money = me.Money;
-        Assert.Equal(TalentSearchStart.Started, game.StartTalentSearch(me));
-        Assert.Equal(TalentSearchStart.AlreadyRunning, game.StartTalentSearch(me)); // nur eine Suche gleichzeitig
-        Assert.Equal(money - 63_000, me.Money);
-        Assert.Equal(-63_000, game.Finance(me).Book.Current(FinanceCategory.Talentsuche));
-
-        for (var i = 0; i < 12 && game.Finance(me).TalentSearch is not null; i++)
-            TestSeason.PlayMatchDay(game);
-        Assert.Null(game.Finance(me).TalentSearch);
-        var report = Assert.Single(game.Inbox(me), m => m.Lines[0].StartsWith("Ihr"));
-        if (report.Lines[0] == "Ihre Talentsuche war ein Erfolg.")
-            Assert.Equal(squad + 1, game.Clubs[me.ClubIndex].Players.Count);
-        else
-            Assert.Equal(["Ihr Talentspäher gibt die", "Suche ohne Erfolg auf... Pech..."], report.Lines);
-    }
-
-    [Fact]
-    public void TalentSearch_NotWithFullSquad()
-    {
-        var game = TestGames.Create();
-        var me = game.ActiveManager;
-        var club = game.Clubs[me.ClubIndex];
-        while (club.Players.Count < TalentScout.MaxSquad)
-            club.Players.Add(new Player { Name = "X", Role = Formats.PlayerRole.Forward });
-        Assert.Equal(TalentSearchStart.SquadFull, game.StartTalentSearch(me));
-        Assert.Equal(FinanceRules.StartMoney(me.Level), me.Money);
-    }
 }

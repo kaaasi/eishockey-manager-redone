@@ -78,7 +78,9 @@ ergibt die Formel exakt 87.370 DM (Abschnitt „Unabhängige Nachprüfung“).
 - Zinskonto += (Zinsertrag Forderungen [2 % Manager, 1 % Sparbuch] − Kreditzinsen − 10 % des negativen Kontostands)
   / (Tage im Monat + 1).
 - Am Monatsletzten und am Tag ⌊Monatslänge/2⌋ (`0x3EE6B`): Werbeangebote neu (`0x100:0x5C`), dazu mit 50 % eine
-  „Prämie“ 60.000 + 10.000 · random(0,10), auf 3.000 gerundet (Feld `0x20D + 4·Manager`; im Remake nicht umgesetzt).
+  ein neuer **Preis der Talentsuche** 60.000 + 10.000 · random(0,10) DM, · 3 in Drittel, auf 3.000 Drittel abgerundet (Feld
+  `0x20D + 4·Manager`, Leser nur die Transferliste 0x465F1; früher hier als „Prämie“ gedeutet). Umgesetzt in Spur `geld`
+  Teil 6, Abschnitt „Talentsuche“.
 - Am 1. (`0x3EF52`): Werbeverträge: Restmonate −1; bei 0 ohne Option still gelöscht, mit Option bleibt der Vertrag (und
   zahlt) und es kommt einmal die Meldung „Ein Werbepartner mit Verlängerungsoption / bittet Sie an den Verhandlungstisch.“
 - Am Monatsletzten der Monatsabschluss (oben). Nach dem Tagesabschluss berechnet `0x5569F` die Werbebewertung neu und
@@ -306,7 +308,7 @@ in `tests/EishockeyManager.Core.Tests/FinanceWerbungTests.cs` und `tests/Eishock
 Neuer Zustand (Schema 7, `SaveGame.Migration6.cs`): gespeicherte Bewertung je Manager (−1 in alten Spielständen, beim
 nächsten Gebrauch berechnet), Bewertung in Angebot und Vertrag (alte Verträge 0 → Verhandlung endet immer mit der Frage),
 zweite Eistafel als eigene Art. Offene Verlängerungsfragen alter Spielstände bleiben im Posteingang beantwortbar.
-Nicht umgesetzt: die „Prämie“ der Angebotstage (Feld `0x20D`), Drittel-DM-Summe der Werbeverträge (Remake: DM je Vertrag).
+Nicht umgesetzt: Drittel-DM-Summe der Werbeverträge (Remake: DM je Vertrag).
 
 **Mehrsaisonprobe, Ursache je geändertem Referenzwert.** Ermittelt mit einer Probe, die `RngTwinProbeTests.Run` auf
 Base `1e4731b` und auf dem Spur-Stand laufen lässt und nach jedem Schritt Zustand, Konto und alle vier Zufallsquellen
@@ -481,7 +483,7 @@ DGROUP 0x79D/0x7A1). Umgesetzt in `Core/FinanceYouth.cs` und `UI/Screens/Manager
 
 **`[APPROX]`, offen:** Durchsichtige Farbe der Fahnen = Hintergrundfarbe 4 der Grafik (Blit-Parameter 0xC0 nicht
 entschlüsselt); Abstand „n.Platz“ – „m.Liga“ gemessen (im Original eine Zeichenkette mit Feldbreite DGROUP 0x374).
-Talentsuche: Rabatt weiter je volle 1.000 DM Förderung (`[APPROX]`, Bezug unverändert).
+Talentsuche: Der frühere Rabatt je 1.000 DM Förderung ist seit Spur `geld` Teil 6 entfallen (Abschnitt „Talentsuche“).
 
 **Wirkung (Runde 11, Spur `geld` Teil 3, G2):** Managersatz tatsächlich ab DGROUP `0xA075` mit Stärke je Team `+0..2`
 davor (re-geld.md „Jugendteams“). Umgesetzt in `Core/FinanceYouth.cs`:
@@ -613,6 +615,29 @@ Buchungszeile bucht ihn erneut – nach einer Buchung mit Auswahl 0xFF, die im A
 (Datei 0x5932C; Speicher außerhalb der Tabelle). Das wird nicht nachgebildet. Gehaltene Knöpfe: Takte in Bilder bei 60 Hz
 umgerechnet. Negatives s zeichnet keinen Balken; die Balkenlänge ist auf 0–154 begrenzt. Im Video wird nicht gebucht
 (re-geld.md), die Bedienung ist daher nur aus dem Code belegt.
+
+## Talentsuche (Spur `geld`, Teil 6, R-K1)
+
+Funktionen: Transferliste 0x465F1 (Knopf „Talent“, Rückfrage, Start), Tagesabschluss 0x3ED01 (Preis), Talentsuche 0x06FA5
+(Takt, Ergebnis), Talent anlegen 0x06D7F, Besitz zählen 0x3CCEB. Umsetzung: `Core/FinanceTalent.cs`, `Core/Transfer.Talent.cs`,
+`PlayerFactory.ApplyScoutedTalentValues` (`Core/Player.Factory.cs`); Tests `TalentSearchTests`.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Knopf | 0x46704, 0x468C1 | „Talent“ wird nur bei Zähler 0 gezeichnet und ausgewertet (Managersatz +0xEC = DGROUP 0x9747 + 0x1AF · m) |
+| Rückfrage | 0x468E7–0x4696E | „Möchten Sie, daß Ihr 'Spion' / für Sie auf Talentsuche geht?“ (DGROUP 0x1339/0x133D), „Preis: “ + Betrag + „ DM“ (0x1341, 0x14C9), Knöpfe „Aber immer!“ / „Lieber nicht.“ (0x1311/0x1315); kein „Rabatt:“ (der Text gehört zur Stadion-Rückfrage, Datei 0x1B187) |
+| Start | 0x4697D–0x46A10 | nur mit Konto **>** Preis (sonst „Sie haben nicht / genug Geld !“, 0x1211/0x1215); Preis vom Konto (0x469CA); Zähler = random(3, 10), mit random(0, 3) = 0 zusätzlich + 6; keine Prüfung des Kaders |
+| Preis | DGROUP 0x20D + 4 · m; 0x3EEA2–0x3EF4E | Start 0x41EB0 Drittel = 90.000 DM; an Monatsmitte und Monatsletztem nach den Werbeangeboten (0x3FB47(0)) mit random(0, 1) ≠ 0 neu: 60.000 + 10.000 · random(0, 10) DM |
+| Takt | 0x54C9F, 0x55253–0x5528A | Tageszähler ≡ 0 oder 4 (mod 7), wie die kleine Wanderung der Teamwerte |
+| Ergebnis | 0x06FA5 | je Manager: Zähler 0 → nichts; sonst − 1; bei 0 Erfolg mit random(0, 5 − ⌊(5 − Level) / 2⌋) = 0 (1/4, 1/5, 1/6); Misserfolg „Ihr Talentspäher gibt die / Suche ohne Erfolg auf... Pech...“ |
+| Talent | 0x06D7F(m, random(40, 90), 80) | Besitz ≥ 28 (0x3CCEB) → nichts, **keine Nachricht**; sonst Poolplatz random(1, 179) bis Besitzer 6; Alter random(18, 21), Form random(45, 55), Technik/Kondition random(s − 5, s + 1); Kaderplatz 0x42CB1 (Energie random(80, 120)); +0x19 = random(3, 12) · 16 + random(3, 12); Gehalt Wert(Gehalt) · 80 / 100; Laufzeit random(2, 3); Meldung „Ihre Talentsuche war ein Erfolg. / Ein junger Spieler stößt zu Ihrem Kader.“ |
+| Besitz | 0x3CCEB | eigener Satz ganz, aus den Sätzen der anderen Manager und des Markts die Plätze mit Poolbesitzer = m (verliehene Spieler) |
+
+`[APPROX]`: Der Preis wird als Ausgabe „Talentsuche“ gebucht (Original: direkt vom Konto). Tendenz (0x4907A) und Preis +0x2C
+des neuen Kaderplatzes sind wie beim Kauf nicht abgebildet; Energie auf 99 begrenzt; nach 1.500 vergeblichen Poolversuchen (bzw.
+ohne Pool) ein neuer Spieler (Original: Suche ohne Grenze). Im Fenster „Jugendteams“ gibt es keinen „Spion“ mehr (A328). Die
+Meldungen „Ihr 'Spion' geht / auf Talentsuche.“ und „… ist schon …“ stehen nicht in em.exe; die zweite braucht nur der
+Knopf des Remakes, solange er bei laufender Suche sichtbar ist (Anschluss Leitstelle, `UI/Screens/Team/TransferScreen.cs`).
 
 ## Dateidialog (em.exe 0x5DBE5, Teil 4 der Spur `finanzen-rest`)
 

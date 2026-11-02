@@ -97,12 +97,10 @@ internal static class ManagerScenarios
         d.Click(YouthScreen.Bar(1).Right - 1, YouthScreen.Bar(1).Y + 4);
         d.Click(YouthScreen.Bar(2).X + 35, YouthScreen.Bar(2).Y + 4);
         d.Move(1, 239); d.Save("02_foerderung");
-        d.Click(150, 100); d.Move(1, 239); d.Save("03_spion_rueckfrage");
-        d.Click(YouthScreen.YesButton.X + 5, YouthScreen.YesButton.Y + 4);
-        d.Click(150, 100); d.Move(1, 239); d.Save("04_spion_unterwegs");
-        d.Click(150, 100);
-        for (var md = 0; md < 30; md++) { d.Press(Key.Escape); d.PlayMatchDay(); }
-        d.OpenTile("Jugend"); d.Move(1, 239); d.Save("05_nach_30_spieltagen");
+        // Spur geld Teil 6: kein „Spion“ mehr im Jugendfenster (A328, nur Transferliste 0x465F1).
+        d.Press(Key.Escape);
+        for (var md = 0; md < 30; md++) d.PlayMatchDay();
+        d.OpenTile("Jugend"); d.Move(1, 239); d.Save("03_nach_30_spieltagen");
     }
 
     [Scenario("posteingang")]
