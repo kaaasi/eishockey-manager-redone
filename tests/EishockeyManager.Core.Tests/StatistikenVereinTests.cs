@@ -273,7 +273,9 @@ public class StatistikenVereinTests
             for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
             {
                 Assert.True(guard < 1000, "Saisonende nicht erreicht");
-                TestSeason.KeepSquad(game, manager);
+                // Integration Runde 11 (+ wettbewerbe-spiel): Kader spielfähig halten (TestSquadKeeper) – mit den Regeln aus
+                // kader-transfer schrumpfte der passive Kader in Saison 4 auf 9 (8 aufgestellt), alle Spiele 0:2 ohne Minutenrechnung.
+                TestSquadKeeper.KeepPlayable(game, manager);
                 if (manager.Money < 2_000_000)
                     manager.Money = 2_000_000;
                 if (active && game.Phase == SeasonPhase.Running)

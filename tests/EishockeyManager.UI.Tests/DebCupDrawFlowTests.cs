@@ -247,7 +247,7 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): ab 1993 neu – automatische Aufstellung des Managervereins
     /// (0x426BC, täglich) und Neuzählung der Feldspieler (0x38A36) ändern dessen Spiele. Mit und ohne Anzeige weiter gleich.
     /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
-    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug).</summary>
+    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).</summary>
     private const string Reference =
-        "1993: DEB 0, DM 2, Tab 15392 | 1994: DEB 2, DM 2, Tab 15719 | 1995: DEB 12, DM 12, Tab 15963 | 1996: DEB 10, DM 10, Tab 15286";
+        "1993: DEB 0, DM 4, Tab 15368 | 1994: DEB 2, DM 2, Tab 15723 | 1995: DEB 16, DM 2, Tab 15520 | 1996: DEB 2, DM 10, Tab 15362";
 }

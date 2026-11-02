@@ -29,7 +29,9 @@ public class WettbewerbeSpiel2Tests
         var manager = game.ActiveManager;
         var club = manager.ClubIndex;
         PlayRegularSeason(game);
-        Assert.Empty(game.PlayoffResults);
+        // Integration Runde 11: Continue kann nach dem letzten Ligaspieltag schon den ersten Play-off-Tag spielen (Seed 3);
+        // Play-offs ohne den Manager berühren seine Tabelle nicht (Play-offs selbst: MeetingTable_HoldsPlayoffAndRelegationGames…).
+        Assert.DoesNotContain(game.PlayoffResults, m => m.Home == club || m.Away == club);
 
         var games = game.Results.Where(r => r.Involves(club)).Select(r => (r.Home, r.Away, r.HomeGoals, r.AwayGoals))
             .Concat(game.DebCup!.Matches.Where(m => m.Home == club || m.Away == club).Select(m => (m.Home, m.Away, m.HomeGoals, m.AwayGoals)))
@@ -46,7 +48,8 @@ public class WettbewerbeSpiel2Tests
             foreach (var side in new[] { 0, 1 })
             {
                 var expected = games.Where(g => side == 0 ? g.Home == club && g.Away == opponent : g.Away == club && g.Home == opponent)
-                    .Select(g => side == 0 ? g.HomeGoals + (g.AwayGoals << 4) : g.AwayGoals + (g.HomeGoals << 4))
+                    // Byte wie 0x4F5A8 (ein Ergebnis mit 16 oder mehr Toren läuft über, Seed 5 im integrierten Stand)
+                    .Select(g => (int)(byte)(side == 0 ? g.HomeGoals + (g.AwayGoals << 4) : g.AwayGoals + (g.HomeGoals << 4)))
                     .ToList();
                 Assert.True(expected.Count <= MeetingHistory.Slots);
                 var actual = Enumerable.Range(0, MeetingHistory.Slots).Select(s => table[opponent * 10 + s * 2 + side])

@@ -29,6 +29,12 @@ public sealed partial class GameState
 
         // Spur wettbewerbe-spiel, Teil 8: automatische Aufstellung der Managervereine beim Spielstart (Datei 0x28165).
         ApplyAutoLineups();
+        // Integration Runde 11: Bezugspunkt der Spielstärke ist die Aufstellung beim Spielstart (Club.ReferenceRating) –
+        // nach der Neuaufstellung der Managervereine neu bewerten, damit die Stärke zu Beginn der Datenbankstärke gleicht.
+        // [APPROX] wie die Stärkeformel selbst (TeamStrength).
+        foreach (var club in Clubs)
+            if (Managers.Any(m => m.ClubIndex == club.Index))
+                club.ReferenceRating = TeamStrength.Rating(club.Lineup);
     }
 
     /// <summary>Jeder Tag der Zeitleiste, bevor dessen Spiele ausgetragen werden.</summary>
