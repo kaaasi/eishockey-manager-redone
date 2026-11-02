@@ -168,15 +168,28 @@ public static class TransferPoolRules
     /// t = 1 bei einem Nationalteam (0x128:0x20 = 0x4D2F0, Index 52 … 63), sonst 0; Kondition +0x15 = Vereinsfeld 0x19 +
     /// random(10 · t, 14) − 10, begrenzt auf 10 … 99 (0x120:0x52); Technik +0x16 = Vereinsfeld 0x1B + random(10 · t, 14) − 10,
     /// mit random(0, 4) = 0 zusätzlich + random(12, 20), begrenzt auf 10 … 99. random(0, 14) bzw. random(10, 14).
-    /// [APPROX] Vereinsfelder aus Datenbankstärke und Abweichung des Laders (<see cref="MatchEngine.TeamValuesOf"/>); für
-    /// Nationalteams die Datenbankstärke statt der Ländertabelle DGROUP 0x4C4E.
+    /// Vereinsfelder eines Nationalteams: [ORIGINAL] Lader 0x2EF1B setzt Kondition/Technik aus der Ländertabelle DGROUP 0x4C4E
+    /// (ohne Streuung), Deutschland ohne Bundestrainer neu gewürfelt (0x55506) – <see cref="GameState.NationalRatings"/> (A209).
+    /// [APPROX] Vereinsfelder der Vereine aus Datenbankstärke und Abweichung des Laders (<see cref="MatchEngine.TeamValuesOf"/>);
+    /// Länderwerte aus der Aufstellung eines Bundestrainers (0x952C) gehen nicht ein; ohne <paramref name="game"/> die Tabelle.
     /// </summary>
-    public static void RollMarketStrengths(Player p, Club club, Random random)
+    public static void RollMarketStrengths(Player p, Club club, Random random, GameState? game = null)
     {
-        var t = club.Index is >= NationalTeams.First and <= NationalTeams.Last ? 1 : 0;
-        var values = MatchEngine.TeamValuesOf(club);
-        p.Condition = Math.Clamp(club.Strength + values.AttackCondition + TransferRules.Random16(random, 10 * t, 14) - 10, 10, 99);
-        var technique = club.Strength + values.AttackTechnique + TransferRules.Random16(random, 10 * t, 14) - 10;
+        var national = club.Index is >= NationalTeams.First and <= NationalTeams.Last;
+        var t = national ? 1 : 0;
+        int condition, techniqueBase;
+        if (national)
+        {
+            var (_, _, ca, ta) = game?.NationalRatings(club.Index) ?? NationalTeamRatings.Of(club.Index);
+            (condition, techniqueBase) = (ca, ta);
+        }
+        else
+        {
+            var values = MatchEngine.TeamValuesOf(club);
+            (condition, techniqueBase) = (club.Strength + values.AttackCondition, club.Strength + values.AttackTechnique);
+        }
+        p.Condition = Math.Clamp(condition + TransferRules.Random16(random, 10 * t, 14) - 10, 10, 99);
+        var technique = techniqueBase + TransferRules.Random16(random, 10 * t, 14) - 10;
         if (TransferRules.Random16(random, 0, 4) == 0)
             technique += TransferRules.Random16(random, 12, 20);
         p.Technique = Math.Clamp(technique, 10, 99);
@@ -184,12 +197,15 @@ public static class TransferPoolRules
 
     /// <summary>
     /// Kaderplatz-Felder des neuen Markt-Platzes, soweit das Remake sie führt. [ORIGINAL] 0x42E4C: Energie +0x13 =
-    /// random(80, 120); Datei 0x497C7–0x49803: +0x19 = random(3, 12) · 16 + random(3, 12) (Bedeutung offen, nur gezogen).
-    /// [APPROX] Energie auf 99 begrenzt (Remake-Skala); die Nachbearbeitung 0x118:0x4D (0x4907A) ist nicht abgebildet.
+    /// random(80, 120); 0x42E6B: Nachbearbeitung 0x118:0x4D = Datei 0x4907A (Tendenz und Steuerbyte, <see cref="Player.RollTrend"/>);
+    /// Datei 0x497C7–0x49803: +0x19 = random(3, 12) · 16 + random(3, 12) (Bedeutung offen, nur gezogen).
+    /// [APPROX] Energie auf 99 begrenzt (Remake-Skala). Die Tendenz zieht das Remake aus <paramref name="trendRandom"/>, sonst aus
+    /// <paramref name="random"/> (siehe <see cref="GameState.TrendRandom"/>).
     /// </summary>
-    public static void RollSlotFields(Player p, Random random)
+    public static void RollSlotFields(Player p, Random random, Random? trendRandom = null)
     {
         p.Energy = Player.Clamp(TransferRules.Random16(random, 80, 120));
+        p.RollTrend(trendRandom ?? random);
         _ = TransferRules.Random16(random, 3, 12);
         _ = TransferRules.Random16(random, 3, 12);
     }
@@ -610,8 +626,8 @@ public sealed partial class TransferMarket
             var stand = IsManaged(game, game.Clubs[slot.Club])
                 ? TransferPoolRules.StandIn(slot.Club, c => IsManaged(game, game.Clubs[c]), random)
                 : slot.Club;
-            TransferPoolRules.RollMarketStrengths(p, game.Clubs[stand], random);
-            TransferPoolRules.RollSlotFields(p, random);
+            TransferPoolRules.RollMarketStrengths(p, game.Clubs[stand], random, game);
+            TransferPoolRules.RollSlotFields(p, random, game.TrendRandom);
             p.ContractYears = 0;
             p.MonthlySalary = 0;
             slot.Owner = PoolOwner.Market;

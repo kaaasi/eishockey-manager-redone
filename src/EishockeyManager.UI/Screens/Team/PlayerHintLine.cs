@@ -79,9 +79,11 @@ public static class PlayerHintLine
     /// Text der Hinweiszeile für Spalte <paramref name="column"/> (aus <see cref="Column"/>) oder null (leer). Mit
     /// <paramref name="showExhaustion"/> hängt die Tendenz „ (Erschöpfung: n)“ an – nur in der Aufstellung (Rand 0xE9,
     /// Adresse 0x487). <paramref name="exhaustion"/> ist der Wert Kaderplatz +0x13.
-    /// [APPROX] Das Remake kennt die Verletzungsart (Kaderplatz +0x17), die Sperre in Minuten (+0x0D) und die Belastung
-    /// (+0x13) nicht: „Verletzt.“ steht ohne Klammer, die Sperre zeigt die verbleibenden Spiele, die Belastung kommt aus
-    /// <see cref="Player.Energy"/> (100 − Energie).
+    /// Die Verletzungsart (Kaderplatz +0x17) steht in <see cref="Player.InjuryKind"/> (Spur kader-transfer, Teil 2).
+    /// [APPROX] Die Sperre in Minuten (+0x0D mit +0x09 Bit 0) ist im Original die Strafbank im laufenden Spiel (Strafe 0x35C02:
+    /// +0x0D = 2 bzw. 5, je Minute −1 an 0x5488C/0x5490C, Ende 0x35795, nach dem Spiel gelöscht 0x551E0); das Remake zeigt die
+    /// verbleibenden Spiele aus <see cref="Player.SuspendedGames"/>. Die Belastung (+0x13) kommt aus <see cref="Player.Energy"/>
+    /// (100 − Energie). Unbekannte Art (ältere Spielstände): „Verletzt.“ ohne Klammer.
     /// </summary>
     public static string? Text(Player p, int column, PlayerHintInfo info, bool showExhaustion)
     {
@@ -130,14 +132,15 @@ public static class PlayerHintLine
 
     /// <summary>
     /// Statustext nach 0x41683, Adressen 0x308–0x42F: eingesetzt ohne Reihe → „RESERVE“; sonst nach Kaderplatz +0x09 &amp; 3:
-    /// 0 → „IM TEAM“ (eingesetzt) bzw. „Hängt halt so rum...“, 1 → „Noch n Minuten Gesperrt.“, 2 → „Verletzt.“ (mit Art). Bei Verletzung und Sperre zugleich gilt die Verletzung (wie <see cref="Club.StatusOf"/>).
+    /// 0 → „IM TEAM“ (eingesetzt) bzw. „Hängt halt so rum...“, 1 → „Noch n Minuten Gesperrt.“, 2 → „Verletzt.“ und „(Art)“ ohne Leerzeichen (DGROUP 0xB84, 0x50BE, Name aus 0xA00 + 4 · +0x17, 0x50C0;
+    /// Versätze 0x3D4–0x421). Bei Verletzung und Sperre zugleich gilt die Verletzung (wie <see cref="Club.StatusOf"/>).
     /// </summary>
     private static string Status(Player p, PlayerHintInfo info)
     {
         if (info.Dressed && info.Line == 0)
             return "RESERVE";
         if (p.InjuredGames > 0)
-            return "Verletzt.";
+            return p.InjuryName is { } kind ? $"Verletzt.({kind})" : "Verletzt.";
         if (p.SuspendedGames > 0)
             return $"Noch {p.SuspendedGames} Minuten Gesperrt.";
         return info.Dressed ? "IM TEAM" : "Hängt halt so rum...";

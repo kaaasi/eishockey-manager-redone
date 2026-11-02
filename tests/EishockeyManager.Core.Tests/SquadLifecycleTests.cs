@@ -33,8 +33,9 @@ public class SquadLifecycleTests
 
     /// <summary>
     /// R2-11 (P1): Vorher verlor ein passiver Manager zu Beginn der dritten Saison alle Spieler, ohne dass irgendeine
-    /// Nachricht im Posteingang stand. Jetzt kündigt sich jeder Spieler im letzten Vertragsjahr genau einmal an,
-    /// spätestens am 30. März, mit einem der Originaltexte.
+    /// Nachricht im Posteingang stand. Spur kader-transfer, Teil 7 (Tagesablauf 0x07169): Ein Teil der Spieler im letzten
+    /// Vertragsjahr meldet sich mit einem Angebot oder der Ruhestandsmeldung (höchstens einmal, ohne Frist); wer sich nicht
+    /// meldet, kommt in die Verhandlung am Saisonende (0x27D05) – gewarnt wird also jeder.
     /// </summary>
     [Fact]
     public void R211_PassiveManager_IsWarnedOnceForEveryExpiringPlayer_BeforeTheDeadline()
@@ -47,16 +48,26 @@ public class SquadLifecycleTests
 
         PlaySeason(game);
 
+        var announced = 0;
         foreach (var p in expiring)
         {
             var messages = ContractMessages(game, p);
-            var notice = Assert.Single(messages);
-            Assert.InRange(notice.Day, 0, GameState.ContractNoticeDeadline);
-            var text = string.Join(" ", notice.Lines);
+            Assert.InRange(messages.Length, 0, 1);
+            if (messages.Length == 0)
+            {
+                Assert.Equal(ContractNotice.None, p.Notice);
+                continue;
+            }
+            announced++;
+            var text = string.Join(" ", messages[0].Lines);
             Assert.True(text.Contains("bietet Ihnen an, von 1 auf") && text.EndsWith("Jahre zu verlängern.")
                 || text.EndsWith("kündigt an, daß er seinen Vertrag nicht mehr verlängern wird."), text);
             Assert.NotEqual(ContractNotice.None, p.Notice);
         }
+        Assert.InRange(announced, 1, expiring.Length - 1);
+        game.StartNextSeasonWithRenewals();
+        Assert.All(expiring.Where(p => p.Notice == ContractNotice.None && OwnClub(game).Players.Contains(p)),
+            p => Assert.True(GameState.IsRenewalPending(p), p.Name));
     }
 
     /// <summary>R2-11: Nach dem Angebot lässt sich der Vertrag verlängern; der Spieler bleibt über den Saisonwechsel.</summary>
@@ -151,8 +162,10 @@ public class SquadLifecycleTests
         {
             PlaySeason(game, active ? () => ExtendOffers(game) : null);
             var expiring = OwnClub(game).Players.Where(p => p.ContractYears == 1 && !p.OnLoan).ToArray();
+            // Spur kader-transfer, Teil 7 (0x07169): höchstens eine Ankündigung, ohne Frist; die übrigen gehen in die Verhandlung
+            // am Saisonende (0x27D05).
             foreach (var p in expiring)
-                Assert.True(ContractMessages(game, p).Length == 1, $"Saison {game.Season}: keine Ankündigung für {p.Name}");
+                Assert.True(ContractMessages(game, p).Length <= 1, $"Saison {game.Season}: mehrere Ankündigungen für {p.Name}");
 
             game.StartNextSeason();
 
@@ -171,7 +184,10 @@ public class SquadLifecycleTests
                 foreach (var p in club.Players)
                     Assert.Empty(PlayerFactory.Validate(club, p));
             }
-            Assert.All(game.Clubs.SelectMany(c => c.Players), p => Assert.InRange(p.Age, PlayerFactory.TalentMinAge, 36));
+            Assert.All(computer.SelectMany(c => c.Players), p => Assert.InRange(p.Age, PlayerFactory.TalentMinAge, 36));
+            // Spur kader-transfer, Teil 7 (0x0754D): Im Managerkader kündigen Feldspieler ab 36, Torhüter ab 42 (Technik über
+            // Kondition später) den Ruhestand an und hören erst bei Vertragsende auf – ältere Spieler sind dort möglich.
+            Assert.All(OwnClub(game).Players, p => Assert.InRange(p.Age, PlayerFactory.TalentMinAge, 45));
             Assert.InRange(game.TransferMarket.FreeAgents.Count(), 0, TransferMarket.MaxFreeAgents);
             Assert.All(game.TransferMarket.FreeAgents, p => Assert.Equal(0, p.ContractYears));
             Assert.All(game.RetiredPlayers, p => Assert.DoesNotContain(p, game.Clubs.SelectMany(c => c.Players)));

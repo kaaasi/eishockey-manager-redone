@@ -184,18 +184,30 @@ public class SponsorBewertungTests
         me.Money = 20_000_000;
         var startMoney = me.Money;
         long cumulative = 0;
+        long neutral = 0;
         var signed = 0;
         var club = game.Clubs[me.ClubIndex];
         IReadOnlyList<int> previous = [];
         for (var year = 0; year < 4; year++)
         {
+            var keptSet = false;
             for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
             {
                 Assert.True(guard < 1000, "Saisonende nicht erreicht");
                 if (active)
                     signed += SignBest(game, me);
                 game.Continue();
-                Assert.Equal(startMoney + cumulative + game.Finance(me).Book.CurrentTotal, me.Money);
+                // Integration Runde 11 (geld + saisonwechsel + kader-transfer): Bleibt der Verein als Letzter oder Vorletzter in
+                // der Oberliga, setzt em.exe das Konto am 29. April auf 400.000 DM ohne Buchung (S-K1, Datei 0x562D8); danach
+                // nur noch die Prämien. Die neutrale Differenz zählt getrennt vom Finanzbuch (wie FinanceCalibrationTests).
+                if (!keptSet && game.Phase is SeasonPhase.SeasonOver or SeasonPhase.GameOver && game.History.Count > year
+                    && GameState.KeptInOberliga(game.History[^1], club.Index))
+                {
+                    Assert.Equal(GameState.OberligaKeptMoney + game.Finance(me).Book.Current(FinanceCategory.Praemien), me.Money);
+                    neutral += me.Money - (startMoney + cumulative + neutral + game.Finance(me).Book.CurrentTotal);
+                    keptSet = true;
+                }
+                Assert.Equal(startMoney + cumulative + neutral + game.Finance(me).Book.CurrentTotal, me.Money);
                 Assert.InRange(game.Finance(me).SponsorRating, 0, 100);
                 var sum = 4 * club.Strength + (club.TeamValues is { } v ? v.DefenseCondition + v.AttackCondition + v.DefenseTechnique + v.AttackTechnique : 0);
                 Assert.Equal(5L * club.Players.Count * sum / FinanceRules.ThirdsPerMark, game.MonthlyBaseIncome(me));

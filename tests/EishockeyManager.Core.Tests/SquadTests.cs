@@ -6,10 +6,14 @@ namespace EishockeyManager.Core.Tests;
 public class SquadTests
 {
     [Fact]
-    public void ManagedClub_GetsSquadOfLevel3_WithAutoLineup()
+    public void ManagedClub_Oberliga_GetsSquad2_8_10_WithAutoLineup()
     {
-        var game = TestGames.Create();
-        var club = game.Clubs[2];
+        // Spur kader-transfer, Teil 1 (A170): Kader nach Start-Liga (0x29A3F), nicht nach Level. Das Video startet in der
+        // Oberliga (2/8/10); der Bundesliga-Verein aus TestGames.Create hat jetzt 2/10/13 (KaderLigaGroesseTests).
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "T", StartLeague = League.Oberliga });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, seed: 1);
+        var club = game.Clubs[game.Managers[0].ClubIndex];
         Assert.Equal(2, club.Players.Count(p => p.Role == PlayerRole.Goalkeeper));
         Assert.Equal(8, club.Players.Count(p => p.Role == PlayerRole.Defender));
         Assert.Equal(10, club.Players.Count(p => p.Role == PlayerRole.Forward));

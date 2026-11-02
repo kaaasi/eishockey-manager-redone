@@ -57,7 +57,7 @@ public enum TransferResult
     /// <summary>„Sie haben nicht genug Geld !“</summary>
     NotEnoughMoney,
 
-    /// <summary>„Schon 22 Mann im Team !“</summary>
+    /// <summary>„Schon 29 Mann / im Team.“ (DGROUP 0x127D)</summary>
     SquadFull,
 
     /// <summary>„Schon 3 Spieler auf dem Transfermarkt.“</summary>
@@ -74,22 +74,36 @@ public enum TransferResult
 
     /// <summary>„Angebot wurde bereits abgelehnt.“ – Sperre nach abgelehntem Gebot (DGROUP 0x1219/0x121D, Datei 0x47B01).</summary>
     AlreadyRejected,
+
+    /// <summary>
+    /// Der verkaufende Manager wird gefragt („Nehmen Sie das Angebot (…) für … an ?“, Datei 0x47655–0x47743); Antwort mit
+    /// <see cref="TransferMarket.AnswerSeller"/>. Spur kader-transfer, Teil 4 (A258).
+    /// </summary>
+    SellerAsked,
 }
 
 /// <summary>
 /// Transfermarkt: Kauf (K), Leihe (L) und Verkauf eigener Spieler.
 /// </summary>
 /// <remarks>
-/// [ORIGINAL] Grenzen aus den Meldungen in em.exe: 22 Mann im Team, 3 eigene und 11 Spieler insgesamt auf dem Markt,
+/// [ORIGINAL] Grenzen aus den Meldungen in em.exe: 29 Mann im Team (<see cref="MaxSquad"/>), 3 eigene und 11 Spieler insgesamt auf dem Markt,
 /// Leihgebühr = Kaufpreis / 3 (Datei 0x462EB). Preis, Annahme eines Gebots, Unfair-Grenze, Tageswurf und Höhe der Angebote
 /// für eigene Spieler nach Ov 0x118 (<see cref="TransferRules"/>, <c>docs/transfer.md</c>); Wechsel der Liste aus dem
-/// Spielerpool nach 0x494EF (<see cref="ChangeList"/>). [APPROX] Zeitpunkt des Listenwechsels (je Ligaspieltag statt täglich),
-/// Wahl des bietenden Vereins und die Antwort eines menschlichen Verkäufers.
-/// Der Markt aktualisiert sich selbst (<see cref="CatchUp"/>), bis das Paket „saison“ ihn je Spieltag aufruft.
+/// Spielerpool nach 0x494EF (<see cref="ChangeList"/>), täglich (<see cref="CatchUp"/>, 0x54E71) mit bietendem Verein nach 0x059B8.
+/// Ein verkaufender Manager wird gefragt (<see cref="AnswerSeller"/>, 0x47655–0x47743); [APPROX] ohne Oberfläche
+/// (<see cref="Buy"/>) eine simulierte Antwort.
 /// </remarks>
 public sealed partial class TransferMarket
 {
-    public const int MaxSquad = 22;
+    /// <summary>
+    /// Höchstzahl Spieler eines Managers für Kauf und Leihe. [ORIGINAL] em.exe Datei 0x477CD: der Kauf ruft „Kaderplatz
+    /// anlegen“ (0x108:0x5C = Datei 0x42CB1) mit Grenze 0x1D; dort wird bei mehr als 28 Spielern des Managers (Zählung
+    /// 0xF8:0x75) mit „Schon 29 Mann / im Team.“ (DGROUP 0x127D) abgebrochen. Beleg FILE05 → FILE07: Kölner EC kauft als
+    /// 26. Spieler. Die frühere Grenze 22 stammte aus „Schon 22 Mann / im Team !“, der Meldung der Aufstellung
+    /// (<see cref="Club.MaxDressed"/>). [APPROX] Das Remake zählt nur den eigenen Kader; ob 0xF8:0x75 verliehene Spieler
+    /// mitzählt (Inventur F089), ist offen.
+    /// </summary>
+    public const int MaxSquad = 29;
     public const int MaxOwnListings = 3;
     public const int MaxListings = 11;
 
@@ -120,7 +134,7 @@ public sealed partial class TransferMarket
     /// <summary>Offene Gebote für Spieler der Manager („ANGEBOT von …“).</summary>
     public IReadOnlyList<TransferBid> Bids => _bids;
 
-    /// <summary>Letzter Spieltag, bis zu dem der Markt fortgeschrieben ist.</summary>
+    /// <summary>Gespielte Ligaspieltage beim letzten Tagesablauf des Markts (<see cref="CatchUp"/>).</summary>
     public int UpdatedDay { get; private set; }
 
     public static bool IsNationalTeam(Club club) => club.Index is >= 52 and < 64; // ClubCategory.NationalTeam
@@ -134,7 +148,8 @@ public sealed partial class TransferMarket
     public static long Price(Player p) => TransferRules.PriceThirds(p) / 3;
 
     /// <summary>
-    /// Neue Saison: alte Listings und Gebote verwerfen, Pool fortschreiben (<see cref="StartPoolSeason"/>) und die Liste
+    /// Neue Saison: alte Listings und Gebote verwerfen, Pool fortschreiben (<see cref="StartPoolSeason"/>), auf die Ligen umverteilen
+    /// (<see cref="DistributePoolAtSeasonChange"/>) und die Liste
     /// wechseln (<see cref="ChangeList"/>, [ORIGINAL] Saisonstart 0x43A9F). [APPROX] Das Original behält die Markt-Plätze bis
     /// zum Wechsel; das Remake gibt sie vorher frei, weil Listing-Identitäten nicht in die neue Saison reichen.
     /// </summary>
@@ -155,6 +170,10 @@ public sealed partial class TransferMarket
         foreach (var free in _freeAgents.Where(l => IsManaged(game, l.From)).Take(StartListings))
             _listings.Add(free);
         StartPoolSeason(game, game.Random);
+        // [ORIGINAL] 0x07C7E nach den neuen Namen (Spur kader-transfer, Teil 5); Teil des Tageslaufs 0x54C9F, den es im Modus
+        // „nur Weltkugel“ nicht gibt (0x54CEE).
+        if (!game.WorldOnly)
+            DistributePoolAtSeasonChange(game, game.Random);
         ChangeList(game, game.Random);
     }
 
@@ -176,7 +195,8 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>
-    /// Füllt den Markt zu Spielbeginn: Pool (schon vor den Kadern gebaut, <see cref="ReservePool"/>), dann der Listenwechsel des ersten Saisonstarts
+    /// Füllt den Markt zu Spielbeginn: Pool (schon vor den Kadern gebaut, <see cref="ReservePool"/>), Umverteilung auf die Ligen
+    /// (<see cref="DistributePoolAtStart"/>), dann der Listenwechsel des ersten Saisonstarts
     /// (<see cref="ChangeList"/>; im Mittel 6–7 Spieler, Video 6, FILE05 7).
     /// </summary>
     public void Initialize(GameState game, Random random)
@@ -186,24 +206,28 @@ public sealed partial class TransferMarket
         UpdatedDay = game.PlayedMatchDays;
         if (_pool.Count == 0)
             BuildPool(game, random, TransferPoolLayout.Original, new HashSet<string>());
+        DistributePoolAtStart(game, random); // [ORIGINAL] 0x057E3 vor dem ersten Listenwechsel (Spur kader-transfer, Teil 5)
         ChangeList(game, random);
     }
 
-    /// <summary>Schreibt den Markt bis zum aktuellen Spieltag fort (je Spieltag <see cref="AdvanceDay"/>).</summary>
+    /// <summary>
+    /// Tagesablauf des Markts, gerufen einmal je Kalendertag aus dem Tagesablauf der Zeitleiste (<see cref="AdvanceDay"/>).
+    /// [ORIGINAL] Der Listenwechsel (Datei 0x54E65–0x54E7C) und der Angebotswurf für eigene Spieler auf dem Markt (Tagesablauf
+    /// 0x07169, Datei 0x072DD) fallen täglich, nicht je Ligaspieltag (Spur <c>kader-transfer</c>, Teil 4, A256).
+    /// <see cref="UpdatedDay"/> hält wie bisher die gespielten Ligaspieltage beim letzten Tagesablauf.
+    /// </summary>
     public void CatchUp(GameState game)
     {
-        while (UpdatedDay < game.PlayedMatchDays)
-        {
-            UpdatedDay++;
-            AdvanceDay(game, game.Random);
-        }
+        UpdatedDay = game.PlayedMatchDays;
+        AdvanceDay(game, game.Random);
     }
 
     /// <summary>
-    /// Ein Spieltag: Listenwechsel mit <see cref="ListChangeRoll"/> ([ORIGINAL] 0x54E71; [APPROX] je Ligaspieltag statt je
-    /// Tag). Angebote für eigene Spieler auf dem Markt nach dem Original (<see cref="TransferRules.BidRoll"/>, Höhe
-    /// <see cref="TransferRules.BidAmountThirds"/>); [APPROX] bietender Verein zufällig unter den Computervereinen der Ligen
-    /// (Original 0x238:0x1838 nicht belegt), die Höhe wird schon beim Angebot statt beim Anklicken gewürfelt.
+    /// Ein Tag: Listenwechsel mit <see cref="ListChangeRoll"/> ([ORIGINAL] 0x54E71). Angebote für eigene Spieler auf dem Markt
+    /// nach dem Original (<see cref="TransferRules.BidRoll"/>, Datei 0x072DD); bietender Verein nach 0x059B8
+    /// (<see cref="UnsolicitedOfferRules.Bidder"/> mit Europapokal-Schalter 0, Aufruf 0x07364; A257). [APPROX] Die Höhe
+    /// (<see cref="TransferRules.BidAmountThirds"/>) wird schon beim Angebot statt beim Anklicken (0x47347) gewürfelt; Bieter
+    /// mit der Stärke des Spielers wie bei <see cref="UnsolicitedOfferRules.Bidder"/>.
     /// </summary>
     public void AdvanceDay(GameState game, Random random)
     {
@@ -215,8 +239,11 @@ public sealed partial class TransferMarket
             var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, random);
             if (!TransferRules.BidRoll(value, random) || _bids.Any(b => b.Listing == listing))
                 continue;
-            var buyers = game.Clubs.Where(c => c.League is not null && c != listing.From && !IsManaged(game, c)).ToList();
-            var buyer = buyers[random.Next(buyers.Count)];
+            var index = UnsolicitedOfferRules.Bidder(listing.Player.Strength, foreign: false, game.BidderStrength,
+                random);
+            if (index < 0)
+                continue;
+            var buyer = game.Clubs.First(c => c.Index == index);
             var withOffer = PlayerValue.Compute(PlayerValue.Inputs(listing.Player, listing.From, buyer), PlayerValueKind.Price,
                 (a, b) => TransferRules.Random16(random, a, b));
             _bids.Add(new TransferBid(listing, buyer, TransferRules.BidAmountThirds(withOffer, random) / 3));
@@ -271,9 +298,9 @@ public sealed partial class TransferMarket
     /// <see cref="TransferRules.Accepts"/> (Listenpreis, bei Leihe / 3), abgelehnt → Sperre <see cref="TransferListing.RejectedBy"/>
     /// (0x472F4); wie im Original fällt die Annahme vor der Geldprüfung (0x472C8 vor 0x474F0). Von einem anderen Manager
     /// erst die Geldprüfung, dann die Unfair-Grenze <see cref="TransferRules.IsFair"/> auf dem frischen Wert (0x474F0 vor
-    /// 0x47546, R8-C02). [APPROX] Antwort des verkaufenden Managers (Original fragt ihn, DGROUP 0xD98): ab dem
-    /// geforderten Betrag sicher, darunter bis 85 % mit sinkender Wahrscheinlichkeit. Vertragslose Spieler (Ablöse 0)
-    /// kommen immer.
+    /// 0x47546, R8-C02). [APPROX] Ohne Oberfläche ersetzt eine simulierte Antwort die Frage an den verkaufenden Manager
+    /// (Original 0x47655–0x47743, im Remake <see cref="AnswerSeller"/>): ab dem geforderten Betrag sicher, darunter bis 85 %
+    /// mit sinkender Wahrscheinlichkeit; abgelehnt sperrt wie „Nein !“. Vertragslose Spieler (Ablöse 0) kommen immer.
     /// </summary>
     public TransferResult Buy(GameState game, Manager manager, TransferListing listing, long offer, bool loan)
     {
@@ -292,9 +319,32 @@ public sealed partial class TransferMarket
     /// (Bedingung +0x11 = 0 und Leihe = 0, Datei 0x47851–0x4785B).
     /// </summary>
     public TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
-        out TransferPurchase? purchase)
+        out TransferPurchase? purchase) => Bid(game, manager, listing, offer, loan, out purchase, out _);
+
+    /// <summary>
+    /// Wie <see cref="Bid(GameState, Manager, TransferListing, long, bool, out TransferPurchase?)"/>; nach einer Leihe vom
+    /// Computermarkt liefert <paramref name="subsidy"/> den gewürfelten Sponsorzuschuss (Datei 0x47A34), den die Oberfläche
+    /// erfragt (<see cref="GameState.AcceptSponsorSubsidy"/>).
+    /// </summary>
+    public TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
+        out TransferPurchase? purchase, out SponsorSubsidyOffer? subsidy) =>
+        Bid(game, manager, listing, offer, loan, askSeller: false, out purchase, out subsidy, out _);
+
+    /// <summary>
+    /// Gebot aus der Oberfläche: wie <see cref="Bid(GameState, Manager, TransferListing, long, bool, out TransferPurchase?, out SponsorSubsidyOffer?)"/>,
+    /// aber bei einem verkaufenden Manager <see cref="TransferResult.SellerAsked"/> mit der Frage <paramref name="question"/>
+    /// statt der simulierten Antwort (Datei 0x47655–0x47743, A258).
+    /// </summary>
+    public TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
+        out TransferPurchase? purchase, out SponsorSubsidyOffer? subsidy, out SellerQuestion? question) =>
+        Bid(game, manager, listing, offer, loan, askSeller: true, out purchase, out subsidy, out question);
+
+    private TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan, bool askSeller,
+        out TransferPurchase? purchase, out SponsorSubsidyOffer? subsidy, out SellerQuestion? question)
     {
         purchase = null;
+        subsidy = null;
+        question = null;
         if (!game.Managers.Contains(manager) || !IsCurrentListing(game, listing)
             || listing.From.Index == manager.ClubIndex && !listing.IsFreeAgent && !listing.FromPool
             || loan && listing.IsFreeAgent
@@ -320,35 +370,59 @@ public sealed partial class TransferMarket
             var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, game.Random);
             if (!TransferRules.IsFair(value, TransferRules.Thirds(offer), loan))
                 return TransferResult.Unfair;
+            if (askSeller)
+            {
+                question = new SellerQuestion(listing, manager, listing.Seller, offer, loan);
+                return TransferResult.SellerAsked;
+            }
             var ratio = asked == 0 ? 1 : offer / (double)asked;
             if (ratio < 1 && (ratio <= 0.85 || game.Random.NextDouble() >= (ratio - 0.85) / 0.15))
+            {
+                Lock(game, listing, manager);
                 return TransferResult.Rejected;
+            }
         }
         else if (!listing.IsFreeAgent
                  && !TransferRules.Accepts(TransferRules.Thirds(listing.Price), TransferRules.Thirds(offer), loan, game.Random))
         {
-            listing.RejectedBy |= 0x80 | ManagerBit(game, manager);
+            Lock(game, listing, manager);
             return TransferResult.Rejected;
         }
         if (offer > manager.Money)
             return TransferResult.NotEnoughMoney;
+        return Close(game, manager, listing, offer, loan, out purchase, out subsidy);
+    }
 
+    /// <summary>[ORIGINAL] Datei 0x47AC8–0x47ADD: abgelehntes Gebot sperrt den Markt-Platz für den Bieter (+0x1A |= 0x80 | Bit).</summary>
+    private static void Lock(GameState game, TransferListing listing, Manager manager) =>
+        listing.RejectedBy |= 0x80 | ManagerBit(game, manager);
+
+    /// <summary>Angenommenes Gebot: Kauf mit offenem Vertrag (<paramref name="purchase"/>) bzw. Leihe abgeschlossen.</summary>
+    private TransferResult Close(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
+        out TransferPurchase? purchase, out SponsorSubsidyOffer? subsidy)
+    {
+        purchase = null;
+        subsidy = null;
         if (!loan)
         {
             purchase = new TransferPurchase(listing, manager, offer, Contracts.PurchaseYears,
                 Contracts.ValueSalary(game, manager, listing.Player));
             return TransferResult.Accepted;
         }
-        Complete(game, listing, manager, offer, loan: true);
+        subsidy = Complete(game, listing, manager, offer, loan: true);
         return TransferResult.Accepted;
     }
 
-    private void Complete(GameState game, TransferListing listing, Manager manager, long offer, bool loan)
+    private SponsorSubsidyOffer? Complete(GameState game, TransferListing listing, Manager manager, long offer, bool loan)
     {
         game.Book(manager, FinanceCategory.Transfers, -offer);
         if (listing.Seller is { } seller)
             game.Book(seller, FinanceCategory.Transfers, offer);
         Move(listing, game.Clubs[manager.ClubIndex], loan);
+        // [ORIGINAL] Datei 0x4781B–0x47833: +0x2C des neuen Kaderplatzes = Gebot (Kauf und Leihe), Bit 31 bleibt.
+        listing.Player.PurchasePrice = offer;
+        // [ORIGINAL] Datei 0x47A18–0x47A34: nach dem Abzug Frage nach dem Sponsorzuschuss (nur Computermarkt).
+        return RollSponsorSubsidy(game, listing, manager, offer);
     }
 
     /// <summary>Spieler wechselt vom bisherigen Verein in den Kader des Käufers.</summary>
@@ -438,6 +512,8 @@ public sealed partial class TransferMarket
             _bids.RemoveAll(open => ReferenceEquals(open, bid));
             return TransferResult.Impossible;
         }
+        // [ORIGINAL] Datei 0x47483: Teamwerte des bietenden Vereins steigen (0x58DC), vor der Gutschrift 0x4748A.
+        game.StrengthenBuyer(bid.Buyer, bid.Listing.Player);
         game.Book(seller, FinanceCategory.Transfers, TransferFee(bid));
         Move(bid.Listing, bid.Buyer, loan: false);
         return TransferResult.Accepted;
@@ -468,7 +544,7 @@ public sealed partial class TransferMarket
         TransferResult.Accepted => ["Ihr Angebot wurde", "angenommen !"],
         TransferResult.Rejected => ["Ihr Angebot", "wurde abgelehnt."],
         TransferResult.NotEnoughMoney => ["Sie haben nicht", "genug Geld !"],
-        TransferResult.SquadFull => ["Schon 22 Mann", "im Team !"],
+        TransferResult.SquadFull => ["Schon 29 Mann", "im Team."],
         TransferResult.TooManyOwnListings => ["Schon 3 Spieler auf", "dem Transfermarkt."],
         TransferResult.MarketFull => ["Schon 11 Mann auf", "dem Transfermarkt."],
         TransferResult.Unfair => ["Dieser Betrag ist", "nicht erlaubt (unfair) !"],

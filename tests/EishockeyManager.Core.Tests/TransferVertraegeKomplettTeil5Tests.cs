@@ -103,8 +103,9 @@ public class TransferVertraegeKomplettTeil5Tests
 
     /// <summary>
     /// Originaldaten: Pool mit der Originaldatenbank wie in FILE05 (Manager Köln, Verein 2). Im Original stehen freie Plätze
-    /// 1–178 auf Vereinen 0–23 ohne den Managerverein, überwiegend 0–11 (0x5AAA0), 179–199 auf Nationalteams 52–63; jeder
-    /// Name ist ein Datenbankspieler seines Vereins. Das Remake hält dieselben Bereiche.
+    /// 1–178 auf Vereinen 0–23 ohne den Managerverein, überwiegend 0–11 (0x5AAA0, dann Umverteilung 0x057E3), 179–199 auf
+    /// Nationalteams 52–63; jeder Name ist ein Datenbankspieler (bei seinem Verein nur die Nationalspieler und die nicht
+    /// umverteilten Plätze). Das Remake hält dieselben Bereiche.
     /// </summary>
     [GameDataFact]
     public void Pool_OriginalDatabase_MatchesFile05Layout()
@@ -132,7 +133,11 @@ public class TransferVertraegeKomplettTeil5Tests
         // [APPROX] Im Original belegen die Managerkader rund 25 Plätze (DGROUP 0x381), nur die übrigen bekommen Namen; das Remake
         // benennt alle 178 und trifft öfter einen schon vergebenen Namen (dann 0–35). Mit Seed 5: 141 von 178.
         Assert.True(pool.Count(s => s.Index < 179 && s.Club < 12) / 178.0 > 0.7, "Remake: Anteil 0–11");
-        Assert.All(pool, s => Assert.True(database[s.Club].Players.Any(d => d.Name == s.Player.Name), s.Player.Name + "@" + s.Club));
+        // Spur kader-transfer, Teil 5: Die Umverteilung beim Spielstart (0x057E3) hängt die Spieler an Vereine der Managerliga;
+        // nur die Nationalspieler und die nicht umverteilten Plätze stehen noch beim Verein ihres Namens (FILE05: 8 von 154).
+        Assert.All(pool, s => Assert.Contains(database.Clubs, c => c.Players.Any(d => d.Name == s.Player.Name)));
+        Assert.All(pool.Where(s => s.Index >= 179),
+            s => Assert.True(database[s.Club].Players.Any(d => d.Name == s.Player.Name), s.Player.Name + "@" + s.Club));
         // Entscheidung Nutzer 01.11.2026: Die Datenbankspieler des Pools fehlen den Computerkadern – jeder Name nur einmal.
         var squadNames = game.Clubs.SelectMany(c => c.Players).Select(p => p.Name).ToList();
         Assert.Empty(pool.Select(s => s.Player.Name).Intersect(squadNames));
@@ -180,7 +185,10 @@ public class TransferVertraegeKomplettTeil5Tests
     [Fact]
     public void ChangeList_PhaseOne_RemovesEveryOtherMarketSlot_KeepsManagerSlots()
     {
-        var game = TestGames.Create(4);
+        // Spur kader-transfer, Teil 5: Die Umverteilung beim Spielstart (0x057E3) verschiebt die erste Liste; Startwert mit
+        // freiem Pool 180 suchen (vorher fest 4).
+        var game = Enumerable.Range(4, 40).Select(seed => TestGames.Create(seed))
+            .First(g => g.TransferMarket.Pool[179].Owner == PoolOwner.Free);
         var manager = game.ActiveManager;
         var market = game.TransferMarket;
         var own = game.Clubs[manager.ClubIndex].Players.First(p => p.Role == PlayerRole.Forward);
@@ -240,8 +248,10 @@ public class TransferVertraegeKomplettTeil5Tests
         Assert.Equal(Math.Clamp(club.Strength + values.AttackCondition - 10, 10, 99), p.Condition);
         Assert.Equal(Math.Clamp(club.Strength + values.AttackTechnique - 10 + 12, 10, 99), p.Technique);
         TransferPoolRules.RollMarketStrengths(p, nation, new Lowest());
-        Assert.Equal(Math.Clamp(nation.Strength, 10, 99), p.Condition);
-        Assert.Equal(Math.Clamp(nation.Strength + 12, 10, 99), p.Technique);
+        // Spur kader-transfer, Teil 4 (A209): Nationalteams aus der Ländertabelle DGROUP 0x4C4E (Sturm), nicht der Datenbankstärke.
+        var (_, _, ca, ta) = NationalTeamRatings.Of(nation.Index);
+        Assert.Equal(Math.Clamp(ca, 10, 99), p.Condition);
+        Assert.Equal(Math.Clamp(ta + 12, 10, 99), p.Technique);
         Assert.Equal(180, TransferPoolRules.DrawIndex(new Lowest())); // random(0, 5) = 0 → random(180, 199)
     }
 
@@ -324,11 +334,24 @@ public class TransferVertraegeKomplettTeil5Tests
         setup.Managers.Add(new ManagerSetup { Name = "Joerg", ClubIndex = 2 });
         var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, 5);
         var startIds = game.NextPlayerId;
+        // #357 (R9T-P3-03): neu benannte Plätze (0x5ACA0 ohne Tausch: neuer Spieler mit Alter, Talent und Rolle des alten,
+        // TransferMarket.Rename). Ausgenommen sind Spieler, die beim Tausch aus einem Computerkader kamen – darunter Talente, die
+        // PlayerFactory.TalentName mit dem Namen eines vorhandenen Spielers anlegt (bekannte Lücke, nicht Teil dieser Probe).
+        var renamed = new HashSet<Player>(ReferenceEqualityComparer.Instance);
         for (var change = 0; change < 4; change++)
         {
             LifecycleRegressionTests.FinishSeason(game);
             var before = game.TransferMarket.Pool.Select(s => s.Player).ToList();
+            var previous = game.TransferMarket.Pool.ToDictionary(s => s.Index, s => s.Player);
+            var outsideBefore = game.AllPlayers.Except(before).ToHashSet(ReferenceEqualityComparer.Instance);
             game.StartNextSeason();
+            foreach (var slot in game.TransferMarket.Pool)
+            {
+                var old = previous[slot.Index];
+                if (!ReferenceEquals(old, slot.Player) && !outsideBefore.Contains(slot.Player) && !game.AllPlayers.Contains(old)
+                    && (old.Age, old.Talent, old.Role) == (slot.Player.Age, slot.Player.Talent, slot.Player.Role))
+                    renamed.Add(slot.Player);
+            }
             // Neue Namen (0x5ACA0): Tausch mit Spielern der Computerkader, die Kadergröße bleibt.
             Assert.True(game.TransferMarket.Pool.Count(s => !before.Contains(s.Player)) > 100, "kaum neue Namen");
             // Gleiche Namen gibt es nur durch Talente des Remakes (PlayerFactory.TalentName übernimmt bei einteiligen Namen den
@@ -338,13 +361,12 @@ public class TransferVertraegeKomplettTeil5Tests
                 .Where(p => p.Id < startIds).Select(p => p.Name).ToHashSet();
             Assert.DoesNotContain(game.TransferMarket.PoolPlayers, p => p.Id < startIds && outside.Contains(p.Name));
             // R9T-P2-01 (#346): auch Poolspieler mit neuer ID prüfen (umbenannte Plätze). Ohne Tausch Pool ↔ Computerkader
-            // wären es über 100 Treffer je Saison; übrig bleiben nur Talente, die PlayerFactory.TalentName mit dem Namen eines
-            // vorhandenen Spielers anlegt (bekannte Lücke, nicht Teil dieser Spur) – auf dem integrierten Stand 0–1 je Saison.
-            var renamedClashes = game.TransferMarket.PoolPlayers.Count(p => p.Id >= startIds && outside.Contains(p.Name));
-            // Spur saisonwechsel, Teil 1: Schwelle 5 → 8. Mit den Oberliga-Nachrückern random(36, 41) (anderer Zufallsverbrauch)
-            // sind es 0/6/3/4 je Saison, alle einteilige Namen 17–19-jähriger Talente (TalentName, siehe oben). Die eigentliche
-            // Prüfung der Schwelle bleibt #357 (Spur kader-transfer, Teil 6).
-            Assert.True(renamedClashes <= 8, $"{renamedClashes} Poolspieler mit neuer ID tragen den Namen eines Kaderspielers (Saison {change + 1})");
+            // wären es über 100 Treffer je Saison. #357: Statt einer Schwelle (gemessen 0 / 0 / 1 / 3 bzw. 0 / 4 / 1 / 3, je nach
+            // Zufallsverlauf) bleiben die aus Computerkadern getauschten Spieler außen vor; ein neu benannter Platz trifft nie.
+            var renamedClashes = game.TransferMarket.PoolPlayers
+                .Where(p => p.Id >= startIds && renamed.Contains(p) && outside.Contains(p.Name)).Select(p => p.Name).ToList();
+            Assert.True(renamedClashes.Count == 0,
+                $"Saison {change + 1}: neu benannte Poolspieler mit dem Namen eines Kaderspielers: {string.Join(", ", renamedClashes)}");
             Assert.True(game.TransferMarket.Pool.Count == game.TransferMarket.Pool.Select(s => s.Player.Name).Distinct().Count(),
                 string.Join("; ", game.TransferMarket.Pool.GroupBy(s => s.Player.Name).Where(g => g.Count() > 1).Select(g => string.Join(",", g.Select(s => $"{s.Index}:{s.Owner}:{s.Club}:{g.Key}")))));
             var ids = game.AllPlayers.Select(p => p.Id).ToList();

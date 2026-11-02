@@ -34,19 +34,17 @@ public class LifecycleScreenRegressionTests
         Assert.False(player.OnLoan);
         // Integration Runde 9 (Leitstelle): Der Markt kommt jetzt aus dem Spielerpool (transfer-vertraege-komplett Teil 5,
         // 0x494EF). Ein geliehener Poolspieler kehrt in seinen Poolplatz zurück; ob dieser Platz beim Saisonwechsel in den
-        // Kader seines Vereins wechselt, hängt am Tausch Pool ↔ Computerkader. Beide Ausgänge sind stimmig: im Verein mit um
-        // ein Jahr verkürztem Vertrag oder im Pool ohne Vertrag – nie in beiden, nie beim Manager.
-        if (origin.Players.Contains(player))
-        {
-            Assert.Equal(2, player.ContractYears);
-            Assert.DoesNotContain(player, game.TransferMarket.PoolPlayers);
-        }
-        else
-        {
-            Assert.Contains(player, game.TransferMarket.PoolPlayers);
-            Assert.Equal(0, player.ContractYears);
-            Assert.All(game.Clubs, c => Assert.DoesNotContain(player, c.Players));
-        }
+        // Kader seines Vereins wechselt, hängt am Tausch Pool ↔ Computerkader. Stimmig sind beide Ausgänge (im Verein mit um ein
+        // Jahr verkürztem Vertrag oder im Pool ohne Vertrag – nie in beiden, nie beim Manager); der Ablauf ist aber
+        // deterministisch, geprüft wird deshalb genau der beobachtete (#353, R9S-05). Bis Teil 4 der Spur kader-transfer: Pool
+        // (Verein 9); seit Teil 5 (Poolumverteilung beim Spielstart, andere erste Liste): Nationalspieler, Tausch in den Kader von
+        // Verein 59 (0x5ACA0 Art 0). Ändert sich der Zufallsverlauf, hier den neuen Ausgang eintragen und begründen.
+        // Integration Runde 11 (geld + saisonwechsel + kader-transfer): anderer Zufallsverlauf der Hauptquelle, jetzt der
+        // zweite stimmige Ausgang – zurück im Poolplatz (Herkunft Verein 59), ohne Vertrag, in keinem Kader.
+        Assert.Equal(59, origin.Index);
+        Assert.Contains(player, game.TransferMarket.PoolPlayers);
+        Assert.Equal(0, player.ContractYears);
+        Assert.All(game.Clubs, c => Assert.DoesNotContain(player, c.Players));
         Assert.DoesNotContain(player, club.Players);
         Assert.DoesNotContain(expired, club.Players);
         Assert.All(game.Clubs, c => Assert.All(c.Lineup.Players, p => Assert.Contains(p, c.Players)));

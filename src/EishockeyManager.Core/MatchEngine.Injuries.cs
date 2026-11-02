@@ -81,12 +81,9 @@ public static class PlayerInjuries
     /// ist die Einstellung DGROUP 0x375 + 2 · Manager gesetzt, stellt es die Kaderplätze des Managers neu auf (+0x0A, +0x15
     /// über 0x42838). [APPROX] Die Einstellung führt das Remake nicht; es nimmt Verletzte aus der Aufstellung und füllt nur
     /// die Lücken (<see cref="Lineup.FillGaps"/>) – nach dem Spiel statt in der Minute, eigene Aufstellungen bleiben sonst.
+    /// Eingesetzt (+0x0A) und die Grenze von 22: <see cref="Club.RefillLineup"/>.
     /// </summary>
-    public static void RefillLineup(Club club)
-    {
-        club.Lineup.RemoveUnavailable(club.Players);
-        club.Lineup.FillGaps(club.Players);
-    }
+    public static void RefillLineup(Club club) => club.RefillLineup();
 }
 
 public static partial class OriginalMinutes

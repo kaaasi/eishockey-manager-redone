@@ -151,8 +151,11 @@ public class IntegrationRunde8Welle3Tests
         p.MonthlySalary = 2_300;
         Assert.Equal(level >= 5, Contracts.DemandAfterYears(game, manager, p, 2) is null); // Feld nur bis Level 4 gefüllt
         // #351 (Play-offs ohne Manager über den schnellen Weg): Mit dem anderen Zufallsverlauf liegt die Forderung auf Level 5
-        // über 23.000 / 1,2 DM, dann entscheidet der Zufallszug (0x4A9A1) – geprüft wird hier nur das Zurückschreiben. Das
-        // Gebot liegt deshalb sicher über 120 % jeder Forderung (sofortige Annahme, Transfer.Contract.cs).
+        // bei 23.041 DM (Level 3: 19.768 DM); ein Gebot von 23.000 DM fiel an den Zufallszug (0x4A9A1). Angenommen wird ein Gebot
+        // von 99.900 DM sicher über ContractRules.Accepts (weit über der Forderung); der Zweig years == current && salary >=
+        // currentSalary in Contracts.Decide ist dafür nicht nötig (KT-04, Review #463: Mutation dieses Zweigs bleibt grün).
+        // Ohne Zurückschreiben der Laufzeit lautet das Ergebnis TooShort (#364, PSW-03); geprüft wird also genau das
+        // Zurückschreiben.
         Assert.Equal(NegotiationResult.Accepted, Contracts.Negotiate(game, manager, p, 2, 99_900, false, demandFilled: false));
         Assert.Equal((2, 99_900), (p.ContractYears, p.MonthlySalary));
     }

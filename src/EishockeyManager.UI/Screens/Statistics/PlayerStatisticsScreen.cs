@@ -43,8 +43,8 @@ public enum PlayerStatisticsView
 /// <item>[ORIGINAL] Linksklick auf eine Zeile öffnet das Spielerdaten-Fenster 0x041AC (Datei 0x26B13–0x26BF5), wenn der
 ///   Spieler im Kader eines Managers steht: Zeile = (y − erste Grundlinie + 4) / 7 des Blocks, dessen erste Grundlinie − 5
 ///   über y liegt (x wird nicht geprüft); das Fenster öffnet für diesen Manager (DGROUP 0xA70E vorübergehend gesetzt),
-///   Sichtbarkeit nach <see cref="Team.PlayerDataContext.Create"/>. [APPROX] „Kaufpreis“ (Kaderplatz +0x2C) gibt es im
-///   Remake nicht; gezeigt wird der Spielerwert.</item>
+///   Sichtbarkeit nach <see cref="Team.PlayerDataContext.Create"/>. Feld „Kaufpreis“ = Kaderplatz +0x2C
+///   (<see cref="Team.PlayerDataWindow.PurchasePrice"/>; Anschluss aus kader-transfer Teil 2, A360, Integration Runde 11).</item>
 /// </list>
 /// </remarks>
 public sealed class PlayerStatisticsScreen : Screen
@@ -169,7 +169,7 @@ public sealed class PlayerStatisticsScreen : Screen
             if (!club.Players.Contains(player))
                 continue;
             var context = Team.PlayerDataContext.Create(game, player, club, club, manager.Level);
-            info.Show(player, context.MarketValue, context);
+            info.Show(player, Team.PlayerDataWindow.PurchasePrice(player), context);
             return true;
         }
         return false;
