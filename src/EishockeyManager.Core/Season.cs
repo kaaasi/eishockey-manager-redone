@@ -272,6 +272,10 @@ public static class LeagueTable
     /// zusammen (gleich bis auf die Reihenfolge vollständig gleichstehender Vereine nach angesehenen Heim-/Auswärtstabellen,
     /// siehe <see cref="ComputeRanks"/>). Vereine ohne Partner (z. B. nach einem Moduswechsel) entfallen, übrige
     /// Ligamitglieder folgen in Vereinsreihenfolge.
+    /// [APPROX] (#329, R9W-D02) Spielstände ab Schema 18 sichern den Saisonrekord mit Auf- und Absteigern in Tabellenreihenfolge;
+    /// geladen ergibt sich dieselbe Startordnung (Probe <c>SaisonwechselProbenTests</c>). Ältere Spielstände (Schema ≤ 17)
+    /// führen sie noch in der Reihenfolge der Gruppe; mitten in Saison ≥ 2 geladen, rechnet die laufende Saison mit der neuen
+    /// Startordnung und diesen Paaren. Abweichung vom Stand vor dem Laden nur bei vollem Gleichstand; kein eigenes Schemafeld.
     /// </remarks>
     public static List<int> SuccessorOrder(SeasonRecord previous, League league, IReadOnlyList<int> members)
     {

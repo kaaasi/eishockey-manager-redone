@@ -131,16 +131,21 @@ namespace EishockeyManager.Core.Tests;
 /// Spur geld, Teil 6 (Runde 11): neu – Preis der Talentsuche an Monatsmitte und Monatsletztem (0x3EEAB: random(0, 1), bei ≠ 0
 /// random(0, 10) aus FinanceRandom). Gegenprobe ohne diesen Zug: alle Abdrücke wie vorher; die Talentsuche selbst läuft in
 /// den Proben nicht.
+/// Spur saisonwechsel, Teil 1 (S-K1/S-K2, Datei 0x56238–0x5636D): alle neu – Oberliga-Nachrücker per random(36, 41) über die Plätze
+/// ohne Liga (Wiederholung bei gleichem Zug) statt Zug aus allen Vereinen ohne Liga, anderer Zufallsverbrauch und andere Nachrücker;
+/// ein Managerverein unter den letzten zwei bleibt in der Oberliga (Konto 400.000 DM) statt des nächstschlechteren Vereins.
+/// Integration Runde 11 (geld + saisonwechsel): Abdrücke auf dem integrierten Stand neu ermittelt (beide Spuren ändern den
+/// Zufallsverbrauch; kein weiterer Unterschied).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "F4206520F3839149")]
-    [InlineData(true, 3, "1FA320715FFC9839")]
-    [InlineData(false, 11, "AC652858D25977BD")]
-    [InlineData(true, 11, "A65859781ADD249C")]
+    [InlineData(false, 3, "695434CE24579471")]
+    [InlineData(true, 3, "A37226F386B746A2")]
+    [InlineData(false, 11, "0B6836C41A1082EA")]
+    [InlineData(true, 11, "0188DB2B51659524")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -148,8 +153,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "D9B02652AB3B85EA")]
-    [InlineData(true, "24B04B2AD204A76F")]
+    [InlineData(false, "247E9DEA290DF721")]
+    [InlineData(true, "9621BDB070A42917")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

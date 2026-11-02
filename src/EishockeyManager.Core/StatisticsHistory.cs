@@ -67,11 +67,13 @@ public sealed record ManagerSeasonHistory(
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Punkte der Ewigen Tabelle je Saison (em.exe Datei 0x5667A):
-/// Ligaplatz p (0-basiert) → 12 − p, dazu 40 in der Bundesliga bzw. 20 in der 2. Liga; Vereine ohne Liga 0.
+/// Ligaplatz p (0-basiert) → 12 − p, dazu 40 in der Bundesliga bzw. 20 in der 2. Liga; Vereine ohne Liga 0. Die Liga ist die
+/// der <b>nächsten</b> Saison (nach Auf- und Abstieg), der Platz der aus der gespielten Saison (Spur saisonwechsel Teil 3, S-K4).
 /// Deutscher Meister +15 und als Bundesligist +10; Erster einer unteren Liga +3; DEB-Pokalsieger +25;
 /// Europacupsieger +40. Belegt am Video (16:38, nach der ersten Saison): Berliner SC (8. der Oberliga) 5 Punkte,
 /// Mannheimer ERC (1. der Bundesliga) 52, Düsseldorfer EG (2., Meister, Europacupsieger) 116.
-/// [APPROX] Das Original führt 42 Vereine (Strukturindex 0–41), das Remake alle 48 wählbaren Vereine.
+/// [ORIGINAL] Das Original führt 42 Vereine (Strukturindex 0–41, A197): Die Vereine auf den Plätzen 42–47 rücken nie in die
+/// Oberliga nach (re-saisonwechsel.md §3, DOSBox-Beleg #389) und fehlen in der Ewigen Tabelle (<see cref="GameState.OutsidePlaces"/>).
 /// </remarks>
 public sealed partial class GameState
 {
@@ -82,10 +84,16 @@ public sealed partial class GameState
     /// <summary>Saison, für die die Statistik zuletzt fortgeschrieben wurde (Schutz gegen doppelte Buchung).</summary>
     public int StatisticsRecordedSeason { get; private set; } = -1;
 
-    /// <summary>Ewige Tabelle aller wählbaren Vereine, sortiert nach Punkten (stabil nach Vereinsindex).</summary>
-    public IReadOnlyList<EternalEntry> EternalTable =>
-        Enumerable.Range(0, NewGame.SelectableClubs).Select(Eternal)
-            .OrderByDescending(e => e.Points).ThenBy(e => e.Club).ToList();
+    /// <summary>Ewige Tabelle der Vereine auf den Plätzen 0–41, sortiert nach Punkten (stabil nach Vereinsindex).</summary>
+    public IReadOnlyList<EternalEntry> EternalTable
+    {
+        get
+        {
+            var neverPromoted = OutsidePlaces().Skip(OutsideDrawPlaces).ToHashSet();
+            return Enumerable.Range(0, NewGame.SelectableClubs).Where(c => !neverPromoted.Contains(c)).Select(Eternal)
+                .OrderByDescending(e => e.Points).ThenBy(e => e.Club).ToList();
+        }
+    }
 
     /// <summary>Eintrag eines Vereins in der Ewigen Tabelle (0 Punkte, solange er noch keinen hat).</summary>
     public EternalEntry Eternal(int club) =>
@@ -121,9 +129,9 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Saisonende (29. April, vor der Titelvergabe): Ewige Tabelle, Ewige Bilanz der Manager und „Früher“ fortschreiben.
-    /// Wird aus <c>GameState.Integration.cs</c> genau für diesen Tag aufgerufen; ein zweiter Aufruf in derselben
-    /// Saison ändert nichts.
+    /// Saisonende (29. April): Ewige Tabelle, Ewige Bilanz der Manager und „Früher“ fortschreiben. Wird aus
+    /// <see cref="FinishSeason"/> nach dem Zwangsabstieg aufgerufen (Spur saisonwechsel Teil 3; vorher aus
+    /// <c>GameState.Integration.cs</c> davor); ein zweiter Aufruf in derselben Saison ändert nichts.
     /// </summary>
     internal void RecordSeasonStatistics()
     {
@@ -137,9 +145,16 @@ public sealed partial class GameState
 
         for (var club = 0; club < NewGame.SelectableClubs; club++)
         {
-            var league = Clubs[club].League;
-            var rank0 = league is { } l ? record.FinalTables[l].ToList().IndexOf(club) : -1;
-            var points = EternalPoints(rank0 < 0 ? null : league, Math.Max(0, rank0), champion == club, cupWinner == club, europeWinner == club);
+            var played = Clubs[club].League;
+            var rank0 = played is { } l ? record.FinalTables[l].ToList().IndexOf(club) : -1;
+            // [ORIGINAL] Spur saisonwechsel Teil 3 (S-K4): em.exe ruft Datei 0x5667A erst nach dem Austausch (Datei 0x563AF). Die
+            // Ligapunkte hängen am neuen Vereinsplatz (Index < 12 → 40, < 24 → 20, > 35 → 0, Datei 0x566B8–0x56718), der Platz am
+            // Tabellensatz, der mit dem Verein getauscht wurde (gespielte Saison). DOSBox-Beleg `file14_3`: ES Weißwasser,
+            // Aufsteiger als Zweiter der 2. Liga, 51 = 40 + 12 − 1; Krefelder EV (Letzter, in der Oberliga geblieben) 1.
+            // [APPROX] Nachrücker in die Oberliga (vorher ohne Liga): Ihr Platzfeld ist nicht gelesen; 0 Punkte wie bisher
+            // (`file14_3`: TEV Miesbach höchstens 1 Punkt, hinter Krefeld auf Platz 35).
+            var league = rank0 < 0 ? null : record.NextLeague(club, played);
+            var points = EternalPoints(league, Math.Max(0, rank0), champion == club, cupWinner == club, europeWinner == club);
             if (points == 0 && champion != club && cupWinner != club && europeWinner != club)
                 continue;
             if (!_eternal.TryGetValue(club, out var entry))

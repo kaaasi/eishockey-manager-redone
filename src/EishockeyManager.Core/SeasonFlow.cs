@@ -264,35 +264,17 @@ public sealed partial class GameState
         if (Playoffs?.Champion is { } champion)
             record.Titles[Title.GermanChampion] = champion;
 
+        // [ORIGINAL] Reihenfolge der Gruppentabelle (Datei 0x56157–0x5636D): em.exe paart den nächsten Aufsteiger unter
+        // den ersten beiden mit dem nächsten Absteiger unter den Plätzen 3 und 4 (Tausch 0x36169) – Grundlage der
+        // Startordnung der Folgesaison (LeagueTable.SuccessorOrder, Spur wettbewerbe-komplett). Zwangsabstieg: 29. April
+        // (SeasonFlow.Zwangsabstieg.cs).
         foreach (var group in RelegationGroups)
-        {
-            // [ORIGINAL] Reihenfolge der Gruppentabelle (Datei 0x56157–0x5636D): em.exe paart den nächsten Aufsteiger unter
-            // den ersten beiden mit dem nächsten Absteiger unter den Plätzen 3 und 4 (Tausch 0x36169) – Grundlage der
-            // Startordnung der Folgesaison (LeagueTable.SuccessorOrder, Spur wettbewerbe-komplett).
-            var up = group.Qualified(Clubs);
-            foreach (var club in group.Table(Clubs).Select(r => r.Club.Index))
-            {
-                var from = Clubs[club].League;
-                if (up.Contains(club) && from == group.Lower)
-                    record.PromotedInto[group.Upper].Add(club);
-                else if (!up.Contains(club) && from == group.Upper)
-                    record.RelegatedInto[group.Lower].Add(club);
-            }
-        }
+            RecordRelegationGroup(record, group, group.Table(Clubs).Select(r => r.Club.Index).ToList());
 
-        // [APPROX] Die beiden Letzten der Oberliga verlassen die Liga (Vereine von Managern ausgenommen),
-        // zwei zufällige Vereine ohne Liga (Datenbank 36–47) rücken nach – im Video grün unter „Oberliga“.
+        // Oberliga-Austausch wie em.exe (Spur saisonwechsel, S-K1/S-K2, SeasonFlow.Oberliga.cs).
         // [APPROX] Im Modus „nur Weltkugel“ wird keine Liga gespielt, also steigt auch niemand ab (Spur wettbewerbe-weltkugel).
-        var managerClubs = Managers.Select(m => m.ClubIndex).ToHashSet();
-        var leaving = WorldOnly ? new List<int>() : tables[League.Oberliga].Reverse().Where(c => !managerClubs.Contains(c)).Take(2).ToList();
-        record.LeftOberliga.AddRange(leaving);
-        var pool = Clubs.Where(c => c.Index < NewGame.SelectableClubs && c.League is null).Select(c => c.Index).ToList();
-        for (var i = 0; i < leaving.Count && pool.Count > 0; i++)
-        {
-            var pick = pool[Random.Next(pool.Count)];
-            pool.Remove(pick);
-            record.PromotedInto[League.Oberliga].Add(pick);
-        }
+        if (!WorldOnly)
+            ExchangeOberliga(tables[League.Oberliga], record);
 
         CurrentRecord = record;
         Phase = SeasonPhase.ClubSeasonOver;
@@ -307,6 +289,10 @@ public sealed partial class GameState
         foreach (var competition in Competitions)
             if (competition is { Title: { } title, Winner: { } winner })
                 record.Titles[title] = winner;
+        var forced = ApplyForcedRelegation(record); // Spur saisonwechsel Teil 2 (S-K3): Statusbit 0x04, nach den Titelbits
+        // [ORIGINAL] Ewige Tabelle nach dem Austausch (Datei 0x563AF ruft 0x5667A), mit der Liga der nächsten Saison
+        // (Spur saisonwechsel Teil 3, S-K4; StatisticsHistory.cs). Ewige Bilanz und „Früher“ hängen nicht am Austausch.
+        RecordSeasonStatistics();
 
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –
         // kein Platz, keine Prämie (Prämien gibt es nur aus der Vereinssaison).
@@ -319,10 +305,21 @@ public sealed partial class GameState
             var league = club.League ?? League.Oberliga;
             var rank = record.FinalTables[league].ToList().IndexOf(club.Index) + 1;
             var events = new List<SeasonEvent>();
-            if (record.PromotedInto.Values.Any(l => l.Contains(club.Index)))
+            // [APPROX] (K3, Disassembly ohne DOSBox-Beleg) Bit 0x04 unterdrückt beide Pfeile (Datei 0x56287–0x56334), Symbol 0.
+            if (forced.Contains(i))
+                events.Add(SeasonEvent.ForcedRelegation);
+            else if (record.PromotedInto.Values.Any(l => l.Contains(club.Index)))
                 events.Add(SeasonEvent.Promotion);
-            if (record.RelegatedInto.Values.Any(l => l.Contains(club.Index)))
+            if (!forced.Contains(i) && record.RelegatedInto.Values.Any(l => l.Contains(club.Index)))
                 events.Add(SeasonEvent.Relegation);
+            // [ORIGINAL] Datei 0x562C1–0x56334 (S-K1, DOSBox-Beleg #389, `file13_15`): Bleibt der Verein als Letzter oder
+            // Vorletzter in der Oberliga, setzt em.exe Bit 0x02 und Bit 0x01 (Pfeil hoch, Pfeil runter) und das Konto auf
+            // 400.000 DM – gesetzt, nicht gebucht (neutral, kein Finanzbuch), vor den Prämien des Fensters (Datei 0x5645D).
+            if (KeptInOberliga(record, club.Index))
+            {
+                events.Add(SeasonEvent.Relegation);
+                manager.Money = OberligaKeptMoney;
+            }
             foreach (var (title, winner) in record.Titles)
             {
                 if (winner != club.Index)
@@ -338,7 +335,7 @@ public sealed partial class GameState
                 }
             }
             events.AddRange(SinglePremiumEvents(manager, league)); // Spur statistiken (#135): Einzelprämien (StatisticsClub.cs)
-            var premium = SeasonPremium(league, rank, events);
+            var premium = SeasonPremium(league, rank, PremiumEvents(record, club.Index, events)); // ohne Aufstieg beim Doppeltausch
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
             record.Managers.Add(new ManagerSeasonResult(i, club.Index, league, rank, premium, events));

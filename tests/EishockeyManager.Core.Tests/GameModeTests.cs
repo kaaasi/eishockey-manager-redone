@@ -310,6 +310,11 @@ public class GameModeTests
     /// Titel und Zufallsprüfsummen R/C unverändert.
     /// Spur geld, Teil 6: nur die Kontostände beider Manager neu (Preis der Talentsuche an den Angebotstagen 0x3EEAB zieht
     /// aus FinanceRandom; Gegenprobe ohne diesen Zug: alter Wert); Titel und Zufallsprüfsummen R/C unverändert.
+    /// Spur saisonwechsel, Teil 1 (S-K1/S-K2, Datei 0x562C6–0x5636D): neu ab der ersten Saison – Manager 1 (Verein 30) endet jede
+    /// Saison unter den letzten zwei der Oberliga, bleibt dort und hat am 29. April 400.000 DM (gesetzt, Datei 0x562D8); vorher stieg der
+    /// nächstschlechtere Verein ab und das Konto lief weiter. Dazu andere Nachrücker (random(36, 41)) und damit anderer Zufallsverbrauch.
+    /// Integration Runde 11 (geld + saisonwechsel): Abdrücke auf dem integrierten Stand neu ermittelt (beide Spuren ändern den
+    /// Zufallsverbrauch; kein weiterer Unterschied).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -327,7 +332,7 @@ public class GameModeTests
     }
 
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|612685,337744|WorldChampion=52,CupWinner=16,GermanChampion=1,EuropeanCupWinner=0|1500215,142643|WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=1|2723804,63861|WorldChampion=55,CupWinner=12,GermanChampion=15,EuropeanCupWinner=4|3732928,46664|WorldChampion=52,CupWinner=8,GermanChampion=8,EuropeanCupWinner=4|4338041,250528|R967498903 C1705043894";
+        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|612685,400000|WorldChampion=54,CupWinner=10,GermanChampion=1,EuropeanCupWinner=0|1462395,400000|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2632607,400000|WorldChampion=52,CupWinner=8,GermanChampion=9,EuropeanCupWinner=0|3683039,400000|WorldChampion=52,CupWinner=8,GermanChampion=3,EuropeanCupWinner=0|4346028,400000|R1140319995 C1871903819";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

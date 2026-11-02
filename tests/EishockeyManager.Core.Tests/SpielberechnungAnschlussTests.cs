@@ -161,10 +161,13 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur geld, Teil 2: aktiv neu (Werbebewertung, Angebote, Monatseinnahme; Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur geld, Teil 3: beide neu (Jugendteams je Ligaspieltag ziehen aus FinanceRandom; Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Spur geld, Teil 6: beide neu (Preis der Talentsuche zieht aus FinanceRandom; Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur saisonwechsel, Teil 1: beide neu (Oberliga-Nachrücker random(36, 41), Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Integration Runde 11 (geld + saisonwechsel): beide auf dem integrierten Stand neu ermittelt (beide Spuren ändern den
+    /// Zufallsverbrauch; kein weiterer Unterschied).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "EF4E0F25E702FE2B")]
-    [InlineData(true, "3B9E4340000A921D")]
+    [InlineData(false, "B6D98B0EEE46F3E1")]
+    [InlineData(true, "DAAB3F08C5FFDEE7")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

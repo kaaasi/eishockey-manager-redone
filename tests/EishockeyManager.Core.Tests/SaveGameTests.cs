@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(26, SaveGame.SchemaVersion);
+        Assert.Equal(27, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -38,9 +38,10 @@ public class SaveGameTests
     // 19 Spielstand-Optionen GameSetup.Options (Spur optionen-wirkung).
     // 20 Versicherungsprämie und Abschluss je Spieler (Spur transfer-vertraege-komplett, Teil 2), 21 unaufgefordertes Angebot
     // je Spieler (Teil 3), 22 Spielerpool des Transfermarkts (Teil 5).
-    // Runde 11 (vorläufig): 23 Stadionausbau mit parallelen Baustellen (Spur geld, Teil 1), 24 Platzverlauf je Verein für
+    // Runde 11: 23 Stadionausbau mit parallelen Baustellen (Spur geld, Teil 1), 24 Platzverlauf je Verein für
     // die Werbebewertung (Teil 2), 25 Stärke je Jugendteam (Teil 3), 26 Zähler und Preis der Talentsuche (Teil 6).
-    private const string ExpectedSchemaFingerprint = "EEB129FCAE397C62";
+    // 27 SeasonEvent.ForcedRelegation (Spur saisonwechsel Teil 2, Zwangsabstieg; Integration Runde 11).
+    private const string ExpectedSchemaFingerprint = "784125EC8FB8D1F8";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

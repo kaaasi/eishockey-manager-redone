@@ -114,7 +114,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
      (Prämientest schärfen). #428 bis #432 bleiben unverändert; der Stapel wird nur als Ganzes gemergt.
 - **Abnahme:** Mehrsaisonprobe 20 Saisons (Modus 1, 2, 4; passiv/aktiv); je Regel roter Test.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/analyse/re-saisonwechsel.md` (nur Status), Tests. **Modell:** Claude Opus 5.5.
-  **Status:** –
+  **Status:** Teil 1 fertig, Review offen (PR #419); Teil 2 fertig, Review offen (PR #428, gestapelt auf #419); Teil 3 fertig, Review offen (PR #431, gestapelt auf #428); Teil 4 fertig, Review offen (PR #432, gestapelt auf #431); Review #441: Teil 5 (PR #449, gestapelt auf #432) behebt SW-01 (Zwangsabsteiger mit Aufstieg bleibt oben, Partner in die Oberliga, `[APPROX]`) und SW-03 – Nachprüfung durch die Leitstelle. Restlücke SW-02 (P3): Ewige Tabelle, Ewige Bilanz und „Früher“ fehlen die letzte Saison, wenn am 29. April alle Manager entlassen werden (`GameOver` aus `CheckDebts` vor `FinishSeason`); offen.
 
 ### Spur `kader-transfer` – Kader, Transfermarkt, Verträge, Pool
 
@@ -192,6 +192,9 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **`geld`** (`integration/runde-11-geld`, Stapel #417 → #429 → #433 → #436 → #442 → #448 → #451): Schema 23–26 wie
   vorläufig nummeriert (erste integrierte Spur); `BoerseStartTests` mit Gebühr 1,5 % (#436); Knopf „Talent“ nur bei Zähler 0
   (46704h/468C1h, #448, Test `TransferTalentButtonTests`); E2 in `docs/anforderungen/zusatzfunktionen.md`.
+- **`saisonwechsel`** (`integration/runde-11-saisonwechsel`, Stapel #419 → #428 → #431 → #432 → #449): Schema Zwangsabstieg
+  22 → 23 vorläufig, integriert als 26 → 27 nach `geld`; Abdrücke `RngTwinProbeTests`, `SpielberechnungAnschlussTests`,
+  `GameModeTests.Mode4` und der Schema-Fingerabdruck auf dem integrierten Stand neu (beide Spuren ändern den Zufallsverbrauch).
 
 ### Nicht in Runde 11
 
