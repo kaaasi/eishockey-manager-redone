@@ -11,9 +11,8 @@ namespace EishockeyManager.UI.Screens.ManagerArea;
 /// [ORIGINAL] em.exe Datei 0x3A24B (Bildschirm) und 0x39BBD (Förderbalken); Zuordnung in <c>docs/finanzen-rekonstruktion.md</c>.
 /// </remarks>
 /// <remarks>
-/// [APPROX] Talentsuche: Wo der „Spion“ im Original losgeschickt wird, ist im Video nicht zu sehen. Hier fragt ein
-/// Klick in das Fenster „Jugendteams“ mit den Texten aus em.exe („Möchten Sie, daß Ihr 'Spion' …“, „Preis:“, „Rabatt:“);
-/// Kästchen wie bei der Stadion-Rückfrage, Knöpfe „Ach bitte !“ / „Bloß nicht !“.
+/// [ORIGINAL] Keine Talentsuche: Die Texte des „Spions“ nutzt nur die Transferliste (Datei 0x465F1, DGROUP 0x1339; A328,
+/// Spur geld Teil 6). [APPROX] Ein Klick außerhalb der Förderzeilen kehrt zurück (Abbruchbedingung von 0x3A24B nicht gelesen).
 /// </remarks>
 public sealed class YouthScreen : Screen
 {
@@ -60,18 +59,7 @@ public sealed class YouthScreen : Screen
     /// <summary>Zeilen der Mini-Schrift über der Grundlinie (Ziffern und Großbuchstaben, gemessen UI-Video 8:35: y 103–107).</summary>
     private const int LabelHeight = 5;
 
-    public static readonly Rect Dialog = new(60, 70, 200, 58);
-    public static readonly Rect YesButton = new(75, 114, 80, 9);
-    public static readonly Rect NoButton = new(165, 114, 80, 9);
-    private const byte DialogText = Colors.White;
-    private const byte DialogValue = Colors.Yellow;
-
     private readonly Screen _back;
-    private bool _asking;
-    private string[]? _notice;
-
-    /// <summary>Rückfrage zur Talentsuche ist offen.</summary>
-    public bool AsksTalentSearch => _asking;
 
     public YouthScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
@@ -79,19 +67,6 @@ public sealed class YouthScreen : Screen
 
     public override void Update(InputState input)
     {
-        if (_asking || _notice is not null)
-        {
-            if (_asking && (input.Clicked(YesButton) || input.Pressed(Key.Enter)))
-            {
-                _asking = false;
-                var result = Game.StartTalentSearch(Game.ActiveManager);
-                if (result != TalentSearchStart.Started)
-                    _notice = TalentScout.Message(result);
-            }
-            else if (input.LeftClick || input.RightClick || input.Keys.Count > 0)
-                (_asking, _notice) = (false, null);
-            return;
-        }
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
             Host.Show(_back);
@@ -116,21 +91,8 @@ public sealed class YouthScreen : Screen
                 Game.SetYouthFunding(me, kind, YouthTeam.BarFunding(kind, input.MouseX - bar.X));
             return;
         }
-        if (ChartWindow.Contains(input.MouseX, input.MouseY))
-            AskTalentSearch();
-        else if (!FundingWindow.Contains(input.MouseX, input.MouseY))
+        if (!FundingWindow.Contains(input.MouseX, input.MouseY))
             Host.Show(_back);
-    }
-
-    private void AskTalentSearch()
-    {
-        var me = Game.ActiveManager;
-        if (Game.Finance(me).TalentSearch is not null)
-            _notice = TalentScout.Message(TalentSearchStart.AlreadyRunning);
-        else if (Game.Clubs[me.ClubIndex].Players.Count >= TalentScout.MaxSquad)
-            _notice = TalentScout.Message(TalentSearchStart.SquadFull);
-        else
-            _asking = true;
     }
 
     /// <summary>
@@ -197,9 +159,6 @@ public sealed class YouthScreen : Screen
                 Bevel(s, bar.X + 1, bar.Y + 1, bar.X + teams[i].BarFill, bar.Y + 10, i);
             Bevel(s, 110, bar.Y + 2, 117, bar.Y + 7, i); // [ORIGINAL] Datei 0x39D75
         }
-
-        if (_asking || _notice is not null)
-            DrawDialog(s);
     }
 
     /// <summary>Kästchen mit hellem Rand oben/links und dunklem unten/rechts (Eckpunkte einschließlich). [ORIGINAL] Datei 0x39AD6.</summary>
@@ -211,26 +170,6 @@ public sealed class YouthScreen : Screen
         s.HLine(x1 + 1, y2, x2 - x1, BevelColors[team, 2]);
         if (x2 - x1 > 1 && y2 - y1 > 1)
             s.Fill(new Rect(x1 + 1, y1 + 1, x2 - x1 - 1, y2 - y1 - 1), BevelColors[team, 1]);
-    }
-
-    private void DrawDialog(Surface s)
-    {
-        var mini = Assets.Mini;
-        var me = Game.ActiveManager;
-        s.Fill(Dialog, Colors.Black);
-        s.Outline(Dialog, AxisColor);
-        if (_notice is { } notice)
-        {
-            for (var i = 0; i < notice.Length; i++)
-                s.TextCentered(mini, 160, Dialog.Y + 18 + 9 * i, notice[i], DialogText);
-            return;
-        }
-        s.TextCentered(mini, 160, Dialog.Y + 6, "Möchten Sie, daß Ihr 'Spion'", DialogText);
-        s.TextCentered(mini, 160, Dialog.Y + 14, "für Sie auf Talentsuche geht?", DialogText);
-        s.TextCentered(mini, 160, Dialog.Y + 25, "Preis: " + GameState.FormatMoney(Game.TalentSearchPrice(me)), DialogValue);
-        s.TextCentered(mini, 160, Dialog.Y + 33, $"Rabatt: {Game.TalentSearchDiscount(me)}#" /* „#“ = Prozentzeichen im Original-Font */, DialogValue);
-        s.TextCentered(mini, YesButton.X + YesButton.W / 2, YesButton.Y + 2, "Ach bitte !", DialogValue);
-        s.TextCentered(mini, NoButton.X + NoButton.W / 2, NoButton.Y + 2, "Bloß nicht !", DialogValue);
     }
 }
 

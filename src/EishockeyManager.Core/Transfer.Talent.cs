@@ -1,74 +1,93 @@
 namespace EishockeyManager.Core;
 
-/// <summary>Ergebnis des Auftrags an den „Spion“ (beide Einstiege: Jugendteams und Knopf „Talent“ im Transfer).</summary>
+/// <summary>Ergebnis des Auftrags an den „Spion“ (Knopf „Talent“ in der Transferliste).</summary>
 public enum TalentSearchStart
 {
-    /// <summary>Bezahlt, der „Spion“ ist unterwegs; das Ergebnis kommt nach einigen Wochen als Nachricht.</summary>
+    /// <summary>Bezahlt, der „Spion“ ist unterwegs; das Ergebnis kommt nach einigen Tagen als Nachricht.</summary>
     Started,
 
-    /// <summary>Es läuft schon eine Suche.</summary>
+    /// <summary>
+    /// Es läuft schon eine Suche. [ORIGINAL] Im Original gibt es diesen Fall nicht: Die Transferliste zeichnet den Knopf
+    /// „Talent“ nur bei Zähler 0 (Datei 0x46704) und wertet den Klick nur dann aus (Datei 0x468C1).
+    /// </summary>
     AlreadyRunning,
 
-    /// <summary>„Sie haben nicht genug Geld !“</summary>
+    /// <summary>„Sie haben nicht / genug Geld !“ (DGROUP 0x1211, Datei 0x46A3D).</summary>
     NotEnoughMoney,
-
-    /// <summary>Kader voll.</summary>
-    SquadFull,
 }
 
 /// <summary>
-/// Die eine Talentsuche des Spiels: „Möchten Sie, daß Ihr 'Spion' für Sie auf Talentsuche geht?“ mit „Preis:“
-/// und „Rabatt:“ (Texte aus em.exe). Erreichbar über das Fenster „Jugendteams“ und den Knopf „Talent“ im Transfer;
-/// beide rufen <see cref="GameState.StartTalentSearch"/>. Ablauf in <c>FinanceYouth.cs</c>, Spieler aus der
-/// <see cref="PlayerFactory"/>.
+/// Die Talentsuche des Originals: Knopf „Talent“ in der Transferliste (em.exe Datei 0x465F1), Rückfrage „Möchten Sie, daß
+/// Ihr 'Spion' / für Sie auf Talentsuche geht?“ mit „Preis: … DM“ und den Knöpfen „Aber immer!“ / „Lieber nicht.“
+/// (DGROUP 0x1339/0x133D, 0x1341, 0x1311/0x1315, Datei 0x468E7–0x4696E). Ablauf und Ergebnis in <c>FinanceYouth.cs</c>
+/// (Datei 0x06FA5, 0x06D7F), Preis im Tagesabschluss (Datei 0x3EEA2–0x3EF4E).
 /// </summary>
 /// <remarks>
-/// Bis Runde 2 gab es zwei Suchen mit abweichenden Regeln (Transfer: 90.000 DM, sofortiges Ergebnis, 60 %,
-/// Spieler aus einem Reserveverein, Grenze 22; Jugend: 30.000 DM mit Rabatt, 4 Wochen, 40–85 %, neuer Spieler,
-/// Grenze 30). Vereinheitlicht wie unten; die mit [OFFEN] markierten Punkte sind Produktentscheidungen,
-/// die das Original nicht belegt.
+/// Belege: <c>docs/analyse/re-rest.md</c> „Basis 0x46E – Talentsuche“ und <c>docs/finanzen-rekonstruktion.md</c>
+/// „Talentsuche (Spur geld, Teil 6)“. Bis Teil 6 gab es Rabatt nach Jugendförderung, 4 Wochen, Chance nach Jugendplatz und
+/// Grenze 30 – nichts davon steht im Original; der „Spion“ im Fenster „Jugendteams“ entfällt (A328: die Texte nutzt nur
+/// 0x465F1).
 /// </remarks>
 public static class TalentScout
 {
     /// <summary>
-    /// Grundpreis vor Rabatt. [ORIGINAL] Video („LetsShow“, ca. 11:15, Knopf „Talent“): „Preis: 90.000 DM“.
-    /// [OFFEN] Ob dort bereits ein Rabatt abgezogen war, ist nicht zu sehen.
+    /// Preis beim Spielstart. [ORIGINAL] DGROUP 0x20D + 4 · Manager, Startwert 0x41EB0 = 270.000 Drittel-DM = 90.000 DM
+    /// (Datenbereich der em.exe); Video („LetsShow“, ca. 11:15): „Preis: 90.000 DM“.
     /// </summary>
-    public const long BasePrice = 90_000;
+    public const long StartPrice = 90_000;
 
     /// <summary>
-    /// „Rabatt:“ in Prozent: je 1.000 DM Jugendförderung im Monat 2 %, höchstens 50 %. [APPROX]
+    /// Neuer Preis: 60.000 + 10.000 · random(0, 10) DM. [ORIGINAL] Datei 0x3EEC0–0x3EEF3; danach · 3 / 1 (DGROUP 0x79D/0x7A1,
+    /// DM → Drittel) und auf 3.000 Drittel abgerundet (Datei 0x3EEF7–0x3EF4E) – bei Vielfachen von 10.000 DM ohne Wirkung.
     /// </summary>
-    public const int DiscountPerFundingStep = 2, MaxDiscount = 50;
+    public const long PriceBase = 60_000, PriceStep = 10_000;
 
-    /// <summary>Dauer der Suche in Wochen. [OFFEN] Nicht belegt; früher Transfer sofort, Jugend 4 Wochen.</summary>
-    public const int Weeks = 4;
+    /// <summary>Höchstwert des Würfels für den Preis (random(0, 10)).</summary>
+    public const int PriceSteps = 10;
 
     /// <summary>
-    /// Höchstzahl Spieler im Kader. [OFFEN] „Schon 22 Mann im Team !“ (em.exe) gilt für Transfers; Manager-Kader
-    /// der Level 0/1 haben laut Originaltabelle aber schon 25 Spieler, daher hier die großzügige Grenze der Jugend.
+    /// Zähler beim Start: random(3, 10), mit random(0, 3) = 0 zusätzlich + 6. [ORIGINAL] Datei 0x469D2–0x46A10 (Managersatz
+    /// +0xEC, DGROUP 0x9747 + 0x1AF · Manager). Der Zähler sinkt zweimal je Woche (<see cref="IsTick"/>).
     /// </summary>
-    public const int MaxSquad = 30;
+    public const int MinTicks = 3, MaxTicks = 10, ExtraTicks = 6;
 
     /// <summary>
-    /// Erfolgschance: 40 %, mit der besten Jugendmannschaft bis zu 85 % (1. Platz 1. Liga). [APPROX]
-    /// [OFFEN] früher Transfer pauschal 60 %.
+    /// Höchstzahl Spieler im Besitz des Managers, bis zu der ein Talent noch kommt. [ORIGINAL] Datei 0x06D8D–0x06D97: Zahl aus
+    /// 0x3CCEB ≥ 28 → kein Talent und keine Nachricht (<see cref="GameState.OwnedPlayers"/>).
     /// </summary>
-    public static double SuccessChance(ManagerFinance finance)
-    {
-        var best = finance.Youth.Min(t => t.Position);
-        return 0.4 + 0.45 * (1 - best / (double)(YouthTeam.Leagues * YouthTeam.TeamsPerLeague - 1));
-    }
+    public const int MaxOwned = 28;
 
-    /// <summary>Meldung zum Start (für beide Bildschirme).</summary>
+    /// <summary>
+    /// Stärkenmitte s = random(40, 90) des gefundenen Talents. [ORIGINAL] Datei 0x07020–0x0703D (Aufruf 0x06D7F(m, s, 80)).
+    /// </summary>
+    public const int MinStrength = 40, MaxStrength = 90;
+
+    /// <summary>Gehalt des Talents in Prozent von Wert(Gehalt). [ORIGINAL] drittes Argument 80 an 0x06D7F (Datei 0x07020), Datei 0x06F27–0x06F5A.</summary>
+    public const int SalaryPercent = 80;
+
+    /// <summary>
+    /// Tage, an denen der Zähler sinkt: Tageszähler ≡ 0 oder 4 (mod 7). [ORIGINAL] Tageslauf 0x54C9F ruft 0x06FA5 an Datei
+    /// 0x5528A unter derselben Bedingung wie die kleine Wanderung der Teamwerte (Datei 0x55253–0x5528A,
+    /// <see cref="MatchEngine.IsDriftDay"/>).
+    /// </summary>
+    public static bool IsTick(int day) => MatchEngine.IsDriftDay(day);
+
+    /// <summary>
+    /// Höchstwert des Erfolgswürfels: Erfolg, wenn random(0, 5 − ⌊(5 − Level) / 2⌋) = 0. [ORIGINAL] Datei 0x07003–0x0701E
+    /// (DGROUP 0xED8 = 5 − Level): Chance 1/4 bei Level 0–1, 1/5 bei Level 2–3, 1/6 bei Level 4–5.
+    /// </summary>
+    public static int SuccessDie(int level) => 5 - (5 - level) / 2;
+
+    /// <summary>Meldung zum Start.</summary>
     public static string[] Message(TalentSearchStart result) => result switch
     {
-        TalentSearchStart.Started => ["Ihr 'Spion' geht", "auf Talentsuche."], // [APPROX] Text nicht in em.exe gefunden
-        TalentSearchStart.AlreadyRunning => ["Ihr 'Spion' ist schon", "auf Talentsuche."], // [APPROX]
-        TalentSearchStart.NotEnoughMoney => TransferMarket.Message(TransferResult.NotEnoughMoney),
-        _ => ["Ihr Kader ist", "schon komplett."], // [APPROX]
+        // [APPROX] Das Original zeigt nach dem Start keinen Text; es zeichnet die Stelle des Knopfs neu (Datei 0x46A14–0x46A38).
+        TalentSearchStart.Started => ["Ihr 'Spion' geht", "auf Talentsuche."],
+        // [APPROX] Nur für den Anschluss im Remake; das Original zeigt den Knopf bei laufender Suche nicht (siehe Enum).
+        TalentSearchStart.AlreadyRunning => ["Ihr 'Spion' ist schon", "auf Talentsuche."],
+        _ => TransferMarket.Message(TransferResult.NotEnoughMoney),
     };
 
-    /// <summary>Knopf „Talent“ im Transfer: dieselbe Suche wie der „Spion“ im Fenster „Jugendteams“.</summary>
+    /// <summary>Knopf „Talent“ in der Transferliste (Datei 0x465F1).</summary>
     public static TalentSearchStart Search(GameState game, Manager manager) => game.StartTalentSearch(manager);
 }

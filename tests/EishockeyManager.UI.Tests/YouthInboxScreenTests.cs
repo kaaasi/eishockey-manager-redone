@@ -25,29 +25,25 @@ public class YouthInboxScreenTests
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
 
+    /// <summary>
+    /// Spur geld Teil 6 (A328): Der „Spion“ gehört nur zur Transferliste (em.exe Datei 0x465F1, DGROUP 0x1339); ein Klick in
+    /// das Fenster „Jugendteams“ fragt nichts und verändert nichts.
+    /// </summary>
     [GameDataFact]
-    public void ChartWindow_AsksSpyForTalentSearch()
+    public void ChartWindow_HasNoTalentSearch()
     {
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
         d.OpenTile("Jugend");
-        var youth = Assert.IsType<YouthScreen>(d.Host.Current);
+        Assert.IsType<YouthScreen>(d.Host.Current);
         var game = d.Host.Game!;
         var me = game.ActiveManager;
-
-        d.Click(150, 100);
-        Assert.True(youth.AsksTalentSearch);
-        d.Click(YouthScreen.NoButton.X + 5, YouthScreen.NoButton.Y + 4);
-        Assert.False(youth.AsksTalentSearch);
-        Assert.Null(game.Finance(me).TalentSearch);
-
-        var price = game.TalentSearchPrice(me);
         var money = me.Money;
+
         d.Click(150, 100);
-        d.Click(YouthScreen.YesButton.X + 5, YouthScreen.YesButton.Y + 4);
-        Assert.NotNull(game.Finance(me).TalentSearch);
-        Assert.Equal(money - price, me.Money);
-        Assert.IsType<YouthScreen>(d.Host.Current);
+        Assert.Null(game.Finance(me).TalentSearch);
+        Assert.Equal(money, me.Money);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
 
     [GameDataFact]

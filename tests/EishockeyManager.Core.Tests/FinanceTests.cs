@@ -53,16 +53,18 @@ public class FinanceTests
         var game = TestGames.Create();
         var m = game.ActiveManager;
         var stock = game.Stocks.Stocks[0];
-        var price = stock.Price;
+        stock.Price = 100;
 
+        // Gebühr 1,5 % (em.exe Datei 0x5915F ff., Spur geld Teil 4): 1.000 DM Kurswert kosten 1.015 DM.
         Assert.Equal(10, game.BuyStock(m, 0, 10));
-        Assert.Equal(10L * price, game.DepotPurchaseCost(m));
-        Assert.Equal(FinanceRules.StartMoney(m.Level) - 10L * price, m.Money);
+        Assert.Equal(1_015, game.DepotPurchaseCost(m));
+        Assert.Equal(FinanceRules.StartMoney(m.Level) - 1_015, m.Money);
 
-        stock.Price = price + 10;
-        Assert.Equal(10L * (price + 10), game.DepotValue(m));
+        stock.Price = 110;
+        Assert.Equal(1_100, game.DepotValue(m));
         Assert.Equal(4, game.SellStock(m, 0, 4));
-        Assert.Equal(40, game.Finance(m).Book.Current(FinanceCategory.Aktien));
+        // Erlös 440 − 6 = 434; Kaufpreis des Rests 1.015 · 60 / 100 = 609, abgegangen 406.
+        Assert.Equal(434 - 406, game.Finance(m).Book.Current(FinanceCategory.Aktien));
         Assert.Equal(6, game.Finance(m).Holdings[0].Count);
     }
 

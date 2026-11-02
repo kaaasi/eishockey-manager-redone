@@ -97,7 +97,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** je Regel roter Test, danach grün; Mehrsaisonprobe (Geld) je Teil mit Geldwirkung; Jugend: Platzverlauf mit
   festem Zufall über 4 Saisonwechsel.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/finanzen-rekonstruktion.md`, `docs/analyse/re-geld.md` (nur Status), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** –
+- **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Stadionausbau) PR #417, fertig zum Review; Teil 2 (Sponsorbewertung, Angebote, Monatseinnahme) PR #429, fertig zum Review; Teil 3 (Jugendteams) PR #433, fertig zum Review. Teil 4 (Bank und Börse) PR #436, fertig zum Review (BoerseStartTests-Probe braucht Leitstellen-Anpassung, siehe PR). Teil 5 (Finanzbedienung) PR #442, fertig zum Review. Teil 6 (Talentsuche) PR #448, fertig zum Review (Anschluss Knopf „Talent“ in `TransferScreen.cs` für die Leitstelle). Teil 7 (Probe #352) PR #451, fertig zum Review. Alle Teile fertig – Integration.
 
 ### Spur `saisonwechsel` – Oberliga, Zwangsabstieg, Ewige Tabelle
 
@@ -186,6 +186,12 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   --write` danach ohne Diff; für Teil 3 je Marker der Abgleich mit der Doku im PR.
 - **Dateigrenzen:** siehe Zuständigkeit; die genannten Doku-Dateien; in Teil 3 nur Kommentarzeilen in `src/`.
   **Modell:** Claude Sonnet 5.5. **Status:** –
+
+### Integration Runde 11 (Leitstelle)
+
+- **`geld`** (`integration/runde-11-geld`, Stapel #417 → #429 → #433 → #436 → #442 → #448 → #451): Schema 23–26 wie
+  vorläufig nummeriert (erste integrierte Spur); `BoerseStartTests` mit Gebühr 1,5 % (#436); Knopf „Talent“ nur bei Zähler 0
+  (46704h/468C1h, #448, Test `TransferTalentButtonTests`); E2 in `docs/anforderungen/zusatzfunktionen.md`.
 
 ### Nicht in Runde 11
 

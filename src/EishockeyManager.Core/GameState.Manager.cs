@@ -53,8 +53,21 @@ public sealed partial class GameState
         {
             Stadium = Stadium.ForLeague(Clubs[manager.ClubIndex].League, Setup.Duration == GameDuration.EineSaison),
             CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga,
-            Youth = YouthTeam.StartTeams(Clubs[manager.ClubIndex].League), // Spur finanzen-rest (FinanceYouth.cs)
+            Youth = YouthTeam.StartTeams(StartLeagueOf(manager)), // Spur geld Teil 3 (FinanceYouth.cs, #327)
         };
+
+    /// <summary>
+    /// Start-Liga eines Managers aus der Spielvorbereitung ([ORIGINAL] DGROUP 0x11A; im Remake je Manager,
+    /// <see cref="ManagerSetup.StartLeague"/>). [APPROX] Ohne Eintrag in <see cref="Setup"/> (Tests, alte Spielstände)
+    /// die Liga des Vereins, sonst Oberliga.
+    /// </summary>
+    private League StartLeagueOf(Manager manager)
+    {
+        var i = Managers.ToList().IndexOf(manager);
+        if (i >= 0 && i < Setup.Managers.Count)
+            return Setup.Managers[i].StartLeague;
+        return Clubs[manager.ClubIndex].League ?? League.Oberliga;
+    }
 
     /// <summary>Bucht einen Betrag auf das Konto und ins Finanzbuch.</summary>
     public void Book(Manager manager, FinanceCategory category, long amount)
@@ -125,11 +138,17 @@ public sealed partial class GameState
             FinanceDay++;
             var date = SeasonCalendar.LayoutDate(FinanceDay);
             ExpireMessages();
+            // [ORIGINAL] Tagesablauf 0x55008: an Ligaspieltagen die Jugendteams (0x39DEC) vor den Spielen (Spur geld Teil 3).
+            DailyYouth(FinanceDay);
+            // [ORIGINAL] Tageslauf 0x54C9F, Datei 0x5528A: Talentsuche an Tagen ≡ 0, 4 (mod 7) (Spur geld Teil 6).
+            if (FinanceDay > 0)
+                DailyTalentSearch(FinanceDay);
             if (FinanceDay > 0)
             {
                 // [ORIGINAL] Tagesabschluss 0x3ED01: Zinskonto, Werbeangebote (Monatsletzter, Monatsmitte), am 1.
                 // Restlaufzeiten der Werbeverträge (0x3EF52), am Monatsletzten der Monatsabschluss (0x3F02C, #134);
-                // danach die Werbebewertung neu (0x5569F).
+                // danach die Werbebewertung neu (0x5569F). Zuerst die „beleidigten“ Baufirmen (0x3ED19, Spur geld).
+                DailyStadium();
                 AccrueDailyInterest(date);
                 DailySponsorOffers(date);
                 if (date.Day == 1)
@@ -159,6 +178,8 @@ public sealed partial class GameState
             Finance(manager).CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga;
             // [ORIGINAL] 0x5664D: zu Saisonbeginn neue Werbeangebote (gewürfelt, gespeicherte Bewertung; #133).
             RefreshSponsorOffers(manager, noDice: false);
+            // [ORIGINAL] Saisonwechsel 0x55889: Auf-/Abstieg und Neustart der Jugendteams (0x3A13B, Spur geld Teil 3).
+            YouthSeasonChange(manager);
         }
         FinanceDay = -1;
     }
@@ -192,9 +213,8 @@ public sealed partial class GameState
     private long RecurringExpenses(Manager manager) => Finance(manager).YouthFunding;
     private void WeeklyManagerFinances(Manager manager)
     {
-        if (AdvanceConstruction(manager) is { } done)
+        foreach (var done in AdvanceConstruction(manager))
             ConstructionCompleted(manager, done);
-        AdvanceTalentSearch(manager);
     }
 
     private void MonthlyManagerFinances(Manager manager)

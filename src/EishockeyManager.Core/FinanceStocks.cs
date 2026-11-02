@@ -178,21 +178,32 @@ public sealed partial class GameState
                 Finance(manager).Holdings[i].Count *= 2;
         });
 
-    /// <summary>Kauft Aktien (soweit das Geld reicht). Liefert die Zahl der gekauften Stücke.</summary>
+    /// <summary>
+    /// Kauft Aktien. [ORIGINAL] em.exe Datei 0x596C2 ff. (Höchstwert links = Konto / Kurs, 0 bei Konto ≤ 0) und
+    /// Buchung Datei 0x5915F–0x5952D: w = Stückzahl · Kurs, Kosten w + 1,5 % Gebühr; Konto −= Kosten, Kaufpreis += Kosten.
+    /// Der Höchstwert rechnet die Gebühr nicht ein, das Konto kann dadurch knapp ins Minus gehen.
+    /// Liefert die Zahl der gekauften Stücke.
+    /// </summary>
     public int BuyStock(Manager manager, int stockIndex, int count)
     {
         var stock = Stocks.Stocks[stockIndex];
         count = (int)Math.Min(count, Math.Max(0, manager.Money) / stock.Price);
         if (count <= 0)
             return 0;
+        var value = (long)count * stock.Price;
+        var cost = value + FinanceRules.StockFee(value);
         var holding = Finance(manager).Holdings[stockIndex];
         holding.Count += count;
-        holding.PurchaseCost += (long)count * stock.Price;
-        manager.Money -= (long)count * stock.Price;
+        holding.PurchaseCost += cost;
+        manager.Money -= cost;
         return count;
     }
 
-    /// <summary>Verkauft Aktien. Gewinn/Verlust gegenüber dem Kaufpreis geht ins Finanzbuch (Aktien).</summary>
+    /// <summary>
+    /// Verkauft Aktien. [ORIGINAL] em.exe Datei 0x5915F–0x5952D: Konto += w − 1,5 % Gebühr; der Kaufpreis des Rests ist
+    /// Kaufpreis · ⌊(Zahl − v) · 100 / Zahl⌋ / 100 (ganze Prozent). Erlös minus abgegangener Kaufpreis geht ins
+    /// Finanzbuch „Aktien“ (Remake-Kategorie).
+    /// </summary>
     public int SellStock(Manager manager, int stockIndex, int count)
     {
         var stock = Stocks.Stocks[stockIndex];
@@ -200,10 +211,12 @@ public sealed partial class GameState
         count = Math.Min(count, holding.Count);
         if (count <= 0)
             return 0;
-        var cost = holding.PurchaseCost * count / holding.Count;
-        var revenue = (long)count * stock.Price;
+        var value = (long)count * stock.Price;
+        var revenue = value - FinanceRules.StockFee(value);
+        var rest = holding.PurchaseCost * ((holding.Count - count) * 100L / holding.Count) / 100;
+        var cost = holding.PurchaseCost - rest;
         holding.Count -= count;
-        holding.PurchaseCost -= cost;
+        holding.PurchaseCost = rest;
         manager.Money += revenue;
         Finance(manager).Book.Add(FinanceCategory.Aktien, revenue - cost);
         return count;

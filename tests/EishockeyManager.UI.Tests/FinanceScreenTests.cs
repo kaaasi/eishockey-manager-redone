@@ -17,43 +17,54 @@ public class FinanceScreenTests
         return (d, Assert.IsType<FinanceScreen>(d.Host.Current));
     }
 
-    private static void Press(ScreenDriver d, Rect r, bool right = false)
-    {
-        if (right)
-            d.RightClick(r.X + 4, r.Y + 4);
-        else
-            d.Click(r.X + 4, r.Y + 4);
-    }
+    private static void Press(ScreenDriver d, Rect r) => d.Click(r.X + 2, r.Y + 2);
 
+    /// <summary>
+    /// Kauf und Verkauf nach em.exe (Spur geld Teil 5, G4): Klick links in den Streifen wählt „kaufen“ (keine Vorgabe),
+    /// Klick auf den Balken setzt Pixel · q (Datei 0x590E0), „+“/„−“ ändern um 1 Stück, Klick in die Buchungszeile bucht.
+    /// Rechts ist die Vorgabe der ganze Bestand (Datei 0x5974E).
+    /// </summary>
     [GameDataFact]
-    public void BuyAndSellStocks_WithButtons()
+    public void BuyAndSellStocks_WithBar()
     {
         var (d, screen) = Open();
         var game = d.Host.Game!;
         var me = game.ActiveManager;
         var price = game.Stocks.Stocks[1].Price;
 
-        var row = FinanceScreen.StockRow(1);
+        var row = FinanceScreen.StockSelectArea(1);
         d.Click(row.X + 10, row.Y + 10);
         Assert.Equal(new FinanceScreen.Selection(FinanceScreen.SelectionKind.Stock, 1), screen.Selected);
 
-        Press(d, FinanceScreen.LeftPlus, right: true);   // +100
-        Press(d, FinanceScreen.LeftPlus);                // +10
-        Press(d, FinanceScreen.LeftMinus);               // −10
-        Assert.Equal(100, screen.LeftAmount);
-        Press(d, FinanceScreen.LeftArrow);
-        Assert.Equal(100, game.Finance(me).Holdings[1].Count);
-        Assert.Equal(FinanceRules.StartMoney(me.Level) - 100L * price, me.Money);
-        Assert.Equal(0, screen.LeftAmount);
+        d.Click(60, 92); // linke Hälfte des Streifens: Seite „kaufen“
+        Assert.False(screen.ActiveSide);
+        Assert.Null(screen.Amount);
+        var max = screen.MaxAmount;
+        Assert.Equal(me.Money / price, max);
 
-        Press(d, FinanceScreen.RightPlus, right: true);  // 100 verkaufen
-        Press(d, FinanceScreen.RightPlus);               // mehr als vorhanden geht nicht
-        Assert.Equal(100, screen.RightAmount);
+        d.Click(158 - 10, 93); // 10 Pixel links der Mitte
+        Assert.Equal(FinanceAmountBar.FromPixels(10, max, stock: true), screen.Amount);
+        var count = screen.Amount!.Value + 1;
+        Press(d, FinanceScreen.LeftPlus);
+        Assert.Equal(count, screen.Amount);
+        Press(d, FinanceScreen.LeftArrow);
+        Assert.Equal(count, game.Finance(me).Holdings[1].Count);
+        var cost = count * price + FinanceRules.StockFee(count * price);   // Gebühr 1,5 % (em.exe Datei 0x5915F ff.)
+        Assert.Equal(FinanceRules.StartMoney(me.Level) - cost, me.Money);
+        Assert.Equal(FinanceScreen.SelectionKind.None, screen.Selected.Kind); // nach der Buchung ist nichts gewählt
+        Assert.Null(screen.ActiveSide);
+
+        d.Click(row.X + 10, row.Y + 10);
+        d.Click(230, 92);                 // rechts: Vorgabe = alle Aktien
+        Assert.Equal(count, screen.Amount);
+        Press(d, FinanceScreen.RightPlus); // mehr als vorhanden geht nicht
+        Assert.Equal(count, screen.Amount);
         Press(d, FinanceScreen.RightArrow);
         Assert.Equal(0, game.Finance(me).Holdings[1].Count);
-        Assert.Equal(FinanceRules.StartMoney(me.Level), me.Money);
+        Assert.Equal(FinanceRules.StartMoney(me.Level) - cost + count * price - FinanceRules.StockFee(count * price), me.Money);
     }
 
+    /// <summary>Bank: rechts einzahlen mit „+“ in 1.000-DM-Schritten, links holen mit der Vorgabe Sparbuch (Datei 0x59872).</summary>
     [GameDataFact]
     public void Bank_DepositAndWithdraw()
     {
@@ -64,12 +75,25 @@ public class FinanceScreenTests
 
         d.Click(95, 30); // Bankkasten neben dem Bankbild (das Bankbild öffnet das Finanzbuch)
         Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
-        for (var i = 0; i < 3; i++)
+        d.Click(230, 92);
+        Assert.True(screen.ActiveSide);
+        Assert.Null(screen.Amount);      // kein Kredit: keine Vorgabe, die Knöpfe wirken erst nach dem Balken
+        Press(d, FinanceScreen.RightPlus);
+        Assert.Null(screen.Amount);
+        d.Click(160, 93);                // Pixel 0: Betrag 0
+        Assert.Equal(0, screen.Amount);
+        for (var i = 0; i < 30; i++)
             Press(d, FinanceScreen.RightPlus);
+        Assert.Equal(30_000, screen.Amount);
         Press(d, FinanceScreen.RightArrow);
         Assert.Equal(30_000, bank.Savings);
 
-        Press(d, FinanceScreen.LeftPlus, right: true);   // 100.000 holen: 30.000 Sparbuch + 70.000 Kredit
+        d.Click(95, 30);
+        d.Click(60, 92);
+        Assert.Equal(30_000, screen.Amount); // Vorgabe: Sparbuch
+        for (var i = 0; i < 70; i++)
+            Press(d, FinanceScreen.LeftPlus);
+        Assert.Equal(100_000, screen.Amount);
         Press(d, FinanceScreen.LeftArrow);
         Assert.Equal(0, bank.Savings);
         Assert.Equal(70_000, bank.Credit);
@@ -107,7 +131,7 @@ public class FinanceScreenTests
         var partner = FinanceScreen.PartnerBox(1);
 
         d.Move(partner.X + 10, partner.Y + 10);
-        Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
+        Assert.Equal(FinanceScreen.SelectionKind.None, screen.Selected.Kind); // anfangs nichts gewählt (Datei 0x58A68)
         d.Click(partner.X + 10, partner.Y + 10);
         Assert.Equal(new FinanceScreen.Selection(FinanceScreen.SelectionKind.Manager, 1), screen.Selected);
 

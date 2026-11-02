@@ -77,31 +77,31 @@ public class PlayerFactoryTests
     }
 
     [Fact]
-    public void TalentSearch_TalentIsComplete() // Jugend-„Spion“ und Transfer-Knopf: dieselbe Suche
+    public void TalentSearch_TalentIsComplete() // „Spion“ der Transferliste (Spur geld, Teil 6: Talent aus dem Pool)
     {
         var successes = 0;
-        for (var seed = 0; seed < 10; seed++)
+        var game = TestGames.Create();
+        var manager = game.ActiveManager;
+        var club = game.Clubs[manager.ClubIndex];
+        // Die Finanz-Zufallsquelle hängt nicht vom Spielstand-Seed ab: mehrere Suchen in einem Spiel statt mehrerer Spiele.
+        for (var search = 0; search < 15 && successes == 0 && game.Phase == SeasonPhase.Running; search++)
         {
-            var game = TestGames.Create(seed);
-            var manager = game.ActiveManager;
-            var club = game.Clubs[manager.ClubIndex];
-            foreach (var team in game.Finance(manager).Youth)
-                team.MoveTo(0); // beste Jugend: höchste Erfolgschance
+            manager.Money = 1_000_000;
+            TestSeason.KeepSquad(game, manager);
             var before = club.Players.ToList();
-
-            Assert.Equal(TalentSearchStart.Started, seed % 2 == 0
+            Assert.Equal(TalentSearchStart.Started, search % 2 == 0
                 ? game.StartTalentSearch(manager)
                 : TalentScout.Search(game, manager));
             for (var i = 0; i < 400 && game.Finance(manager).TalentSearch is not null; i++)
                 game.Continue();
             Assert.Null(game.Finance(manager).TalentSearch);
 
-            foreach (var talent in club.Players.Except(before))
+            foreach (var talent in club.Players.Except(before).Where(p => p.ContractYears is 2 or 3 && p.Age is >= 18 and <= 21))
             {
                 successes++;
                 AssertComplete(club, talent);
             }
         }
-        Assert.True(successes > 0, "Keine erfolgreiche Talentsuche in 10 Spielständen");
+        Assert.True(successes > 0, "Keine erfolgreiche Talentsuche in 15 Versuchen");
     }
 }

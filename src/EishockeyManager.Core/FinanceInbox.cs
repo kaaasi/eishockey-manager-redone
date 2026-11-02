@@ -62,14 +62,15 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// „Geld von … leihen (2.5%)“: der andere Manager bekommt eine Anfrage in den Posteingang
-    /// (laut Anleitung beim nächsten Hauptmenü, verfällt nach einer Woche).
+    /// Kreditanfrage an einen Mitmanager: er bekommt sie in den Posteingang (verfällt nach einer Woche).
+    /// Nur für den späteren Netzwerkmodus (Entscheidung Nutzer E2, docs/analyse/re-geld.md); im lokalen Spiel holt der
+    /// Bildschirm Finanzen das Geld wie im Original sofort (<see cref="BorrowFromManager"/>, em.exe Datei 0x59269 ff.).
     /// </summary>
     public Message? RequestLoan(int borrower, int lender, long amount)
     {
         if (amount <= 0 || borrower == lender)
             return null;
-        // [APPROX] Wortlaut der Anfrage nicht im Video; aus den Texten „Geld an … verleihen (2.5%).“ gebildet.
+        // [APPROX] Erweiterung Netzwerkmodus (E2), im Original gibt es keine Anfrage; Wortlaut aus „Geld an … verleihen (2.5%).“ gebildet.
         return Post(Managers[lender], new Message
         {
             Kind = MessageKind.LoanRequest,

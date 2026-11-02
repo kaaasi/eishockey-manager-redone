@@ -5,7 +5,7 @@ namespace EishockeyManager.Core;
 /// <summary>
 /// Zentrale Erzeugung vollständiger Spieler für alle Zugangspfade in einen Kader: Spielstart
 /// (<see cref="SquadSetup"/>), Transfermarkt (<see cref="TransferMarket"/>), Talentsuche
-/// (<see cref="TalentScout"/>, Jugend-„Spion“) und – für das Paket „lebenszyklus“ – neue Talente zum Saisonwechsel.
+/// (<see cref="TalentScout"/>, „Spion“ der Transferliste, <see cref="ApplyScoutedTalentValues"/>) und – für das Paket „lebenszyklus“ – neue Talente zum Saisonwechsel.
 /// </summary>
 /// <remarks>
 /// Vertrag (R2-03, Folgereview 26.10.2026): Ein Spieler, der über <see cref="Join"/> in einen Kader kommt, hat
@@ -15,7 +15,7 @@ namespace EishockeyManager.Core;
 /// </remarks>
 public static class PlayerFactory
 {
-    /// <summary>Talente aus der Talentsuche sind 17–19 Jahre alt. [APPROX] (bisher Transfer-Talentsuche)</summary>
+    /// <summary>Talente der Computervereine sind 17–19 Jahre alt. [APPROX] (Talentsuche des Managers: <see cref="ScoutedMinAge"/>)</summary>
     public const int TalentMinAge = 17, TalentMaxAge = 19;
 
     /// <summary>Verstecktes Talent der gefundenen Spieler. [APPROX]</summary>
@@ -84,6 +84,25 @@ public static class PlayerFactory
         p.Games = p.Goals = p.Assists = p.Penalties2 = p.Penalties5 = p.Caps = 0;
         p.InjuredGames = p.SuspendedGames = 0;
     }
+
+    /// <summary>
+    /// Werte des Talents aus der Talentsuche (Spur geld, Teil 6). [ORIGINAL] em.exe Datei 0x06DE1–0x06E7D (0x06D7F mit
+    /// Stärkenmitte <paramref name="s"/>): Alter random(18, 21), Form random(45, 55), Technik random(s − 5, s + 1), Kondition
+    /// random(s − 5, s + 1) – in dieser Reihenfolge. Talent, Name und Rolle bleiben (Poolspieler). Die Talentsuche der
+    /// Computervereine (<see cref="ApplyTalentValues"/>) ist davon nicht berührt.
+    /// </summary>
+    public static void ApplyScoutedTalentValues(Player p, int s, Random random)
+    {
+        ArgumentNullException.ThrowIfNull(p);
+        p.Age = TransferRules.Random16(random, ScoutedMinAge, ScoutedMaxAge);
+        p.Form = TransferRules.Random16(random, 45, 55);
+        p.Technique = Player.Clamp(TransferRules.Random16(random, s - 5, s + 1));
+        p.Condition = Player.Clamp(TransferRules.Random16(random, s - 5, s + 1));
+        p.InjuredGames = p.SuspendedGames = 0;
+    }
+
+    /// <summary>Alter des Talents aus der Talentsuche. [ORIGINAL] Datei 0x06DE1: random(18, 21).</summary>
+    public const int ScoutedMinAge = 18, ScoutedMaxAge = 21;
 
     /// <summary>
     /// Name eines Talents. [APPROX] Aus Vor- und Nachnamen zweier zufälliger Spieler zusammengesetzt; haben die Namen

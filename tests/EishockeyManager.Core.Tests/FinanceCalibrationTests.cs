@@ -235,19 +235,12 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                         recentBalances.Dequeue();
                     highest = Math.Max(highest, manager.Money);
                 }
-                if (!active && game.Phase == SeasonPhase.GameOver)
-                {
-                    // Integration Runde 9 (Leitstelle): Der passive Manager schließt keine Werbeverträge und verlängert keine
-                    // Verträge. Auf dem integrierten Stand (Seed 3, Bundesliga, synthetische Datenbank) läuft der Kader
-                    // nach Saison 3 aus (Abgang ohne Verhandlung, transfer-vertraege-komplett Teil 1), der Verein ist nicht
-                    // spielfähig, die Strafen führen zur Entlassung – Spielregel, kein Buchungsfehler. Das Buch ist bis dahin
-                    // täglich geprüft (oben); die Probe dieses Seeds endet hier, mindestens zwei Saisons sind ganz geprüft.
-                    Assert.True(manager.Dismissed, "GameOver ohne Entlassung");
-                    Assert.True(year >= 2, $"Entlassung schon in Saison {year + 1}");
-                    output.WriteLine($"seed={seed}; start={league}; active=False; entlassen in Saison {year + 1}");
-                    break;
-                }
-                Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+                // #352 (R9S-04, Spur geld Teil 7): Der Ausweg „passiver Manager entlassen → Probe endet“ (Integration Runde 9)
+                // wurde am Head nie mehr betreten und hätte jede spätere Entlassung samt Kontoprüfung verdeckt. Jetzt muss
+                // jede Saison regulär enden; eine Entlassung nennt Strafen und Kader, damit die Ursache sichtbar wird.
+                Assert.True(game.Phase == SeasonPhase.SeasonOver,
+                    $"Saison {year + 1}: {game.Phase}, entlassen={manager.Dismissed}, Strafen={game.Finance(manager).Book.Current(FinanceCategory.Strafen)}, Kader={club.Players.Count}");
+
                 previousSeasonEnd = manager.Money;
                 var finance = game.Finance(manager).Book;
                 output.WriteLine($"seed={seed}; club={club.Name}; start={league}; active={active}; year={year + 1}; league={club.League}; roster={roster}; begin={moneyAtStart}; end={manager.Money}; homeGames={settledHomeGames}; "
@@ -305,8 +298,8 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 if (active) Assert.Equal(roster, club.Players.Count);
             }
             output.WriteLine($"seed={seed}; start={league}; active={active}; lowest={lowest}; highest={highest}; end={manager.Money}");
-            if (!manager.Dismissed)
-                Assert.True(lowest > Manager.DebtLimit, $"Konto unter der Entlassungsgrenze: {lowest}");
+            Assert.False(manager.Dismissed, "Manager entlassen");
+            Assert.True(lowest > Manager.DebtLimit, $"Konto unter der Entlassungsgrenze: {lowest}");
         }
     }
 }

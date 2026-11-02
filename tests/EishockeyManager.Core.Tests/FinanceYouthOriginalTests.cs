@@ -47,8 +47,9 @@ public class FinanceYouthOriginalTests
     [Fact]
     public void Start_OberligaClubPlaysInTheThirdYouthLeague()
     {
+        // Spur geld Teil 3 (#327): Ligabyte = Start-Liga der Spielvorbereitung (0x29BC1), nicht die Vereinsliga.
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Test", ClubIndex = 42 }); // ohne Liga → Oberliga
+        setup.Managers.Add(new ManagerSetup { Name = "Test", ClubIndex = 42, StartLeague = League.Oberliga }); // ohne Liga → Oberliga
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 7);
         Assert.All(game.Finance(game.ActiveManager).Youth, t => Assert.Equal((3, 6), (t.League, t.Rank)));
     }

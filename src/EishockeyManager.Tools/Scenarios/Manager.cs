@@ -13,20 +13,21 @@ internal static class ManagerScenarios
         d.StartNewGame();
         d.OpenTile("Finanzen");
         d.Move(1, 239); d.Save("01_finanzen_start");
-        d.Move(90, 92); d.Save("02_hinweis_bank_links");
-        d.Move(230, 92); d.Save("03_hinweis_bank_rechts");
 
-        // Herrenhäuser wählen, 100 Stück kaufen
+        // Herrenhäuser wählen, links „kaufen“, Balken und „+“, buchen
         d.Click(20, 115); // Auswahl erst per Klick (#206)
-        d.Save("04_herrenhaeuser_gewaehlt");
-        d.RightClick(FinanceScreen.LeftPlus.X + 4, FinanceScreen.LeftPlus.Y + 4);
-        d.Move(90, 92); d.Save("05_100_stueck");
+        d.Save("02_herrenhaeuser_gewaehlt");
+        d.Click(90, 92); d.Save("03_hinweis_kaufen");
+        d.Click(158 - 40, 93);
+        d.Click(FinanceScreen.LeftPlus.X + 2, FinanceScreen.LeftPlus.Y + 2);
+        d.Move(1, 239); d.Save("04_betrag");
         d.Click(FinanceScreen.LeftArrow.X + 4, FinanceScreen.LeftArrow.Y + 4);
-        d.Move(1, 239); d.Save("06_gekauft");
+        d.Move(1, 239); d.Save("05_gekauft");
 
-        // 50.000 DM aufs Sparbuch
+        // Bank, rechts einzahlen: Balken auf 50 Pixel
         d.Click(95, 30); // Bank wählen (Klick neben das Bankbild, das öffnet das Finanzbuch)
-        for (var i = 0; i < 5; i++) d.Click(FinanceScreen.RightPlus.X + 4, FinanceScreen.RightPlus.Y + 4);
+        d.Click(230, 92);
+        d.Click(160 + 50, 93); d.Save("06_sparbuch_betrag");
         d.Click(FinanceScreen.RightArrow.X + 4, FinanceScreen.RightArrow.Y + 4);
         d.Move(1, 239); d.Save("07_sparbuch");
 
@@ -96,12 +97,10 @@ internal static class ManagerScenarios
         d.Click(YouthScreen.Bar(1).Right - 1, YouthScreen.Bar(1).Y + 4);
         d.Click(YouthScreen.Bar(2).X + 35, YouthScreen.Bar(2).Y + 4);
         d.Move(1, 239); d.Save("02_foerderung");
-        d.Click(150, 100); d.Move(1, 239); d.Save("03_spion_rueckfrage");
-        d.Click(YouthScreen.YesButton.X + 5, YouthScreen.YesButton.Y + 4);
-        d.Click(150, 100); d.Move(1, 239); d.Save("04_spion_unterwegs");
-        d.Click(150, 100);
-        for (var md = 0; md < 30; md++) { d.Press(Key.Escape); d.PlayMatchDay(); }
-        d.OpenTile("Jugend"); d.Move(1, 239); d.Save("05_nach_30_spieltagen");
+        // Spur geld Teil 6: kein „Spion“ mehr im Jugendfenster (A328, nur Transferliste 0x465F1).
+        d.Press(Key.Escape);
+        for (var md = 0; md < 30; md++) d.PlayMatchDay();
+        d.OpenTile("Jugend"); d.Move(1, 239); d.Save("03_nach_30_spieltagen");
     }
 
     [Scenario("posteingang")]
@@ -116,7 +115,8 @@ internal static class ManagerScenarios
         var ads = game.Ads(me);
         ads.Offers[Core.AdSlotKind.Trikot][5] = new Core.SponsorOffer(Core.AdSlotKind.Trikot, 5, 1, 1, 9_000);
         game.AcceptOffer(me, new Core.AdSlot(Core.AdSlotKind.Trikot), 5);
-        for (var md = 0; md < 10; md++) d.PlayMatchDay();
+        // Bauzeit nach em.exe 10–19 Wochen (Spur geld, Teil 1): spielen, bis die Meldung da ist.
+        for (var md = 0; md < 10 || (stadium.Constructions.Any() && md < 60); md++) d.PlayMatchDay();
         d.Move(1, 1); d.Save("02_leiste_nachricht");
         d.Click(NewsBar.ScrollDown.X + 5, NewsBar.ScrollDown.Y + 5); d.Move(1, 1); d.Save("03_leiste_weiter");
         d.Click(100, 210); d.Move(1, 239); d.Save("04_posteingang");
