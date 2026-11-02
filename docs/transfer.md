@@ -304,7 +304,8 @@ am Zug (Datei 0x7B29–0x7C04, nach der Heilung 0x7C12): t = +0x0E; mit random(0
 
 `[APPROX]`: Tendenz aus eigener Zufallsquelle `GameState.TrendRandom` (das Original nutzt seinen einzigen Generator; so behalten
 Markt, Spiele und Mehrsaisonproben ihre Folgen); ein Kauf übernimmt Tendenz und Steuerbyte vom Markt-Platz (das Original legt
-beim Kauf 0x477E7 einen neuen Kaderplatz an und würfelt neu), Startkader und ältere Spielstände ohne Wert (0 → Mitte der Stufe);
+beim Kauf 0x477E7 einen neuen Kaderplatz an, würfelt also neu, und kopiert den Markt-Platz darüber nur bei [bp−0x11] ≠ 0 oder
+einer Leihe, Datei 0x478CF–0x47907; Bedeutung von [bp−0x11] nicht geprüft), Startkader und ältere Spielstände ohne Wert (0 → Mitte der Stufe);
 die tägliche Änderung fehlt (A134). Die Frage an den Verkäufer zeigt das Fragefenster des Transferbildschirms mit dem Namen des
 Verkäufers als Kopf, bis der Baustein 0x4C246 (Spur `ui-meldungen`) angeschlossen ist; ohne Oberfläche (`TransferMarket.Buy`)
 bleibt die simulierte Antwort. Länderwerte aus der Aufstellung eines Bundestrainers (0x952C) gehen in die Grundstärken nicht ein.
