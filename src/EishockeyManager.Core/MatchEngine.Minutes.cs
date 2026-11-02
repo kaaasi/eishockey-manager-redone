@@ -304,7 +304,10 @@ public sealed class MatchReport
     /// <summary>Penaltyschießen: true Heim, false Gast, null keins (siehe <see cref="MatchEngine.PlayWithEvents"/>).</summary>
     public bool? ShootoutHomeWins { get; set; }
 
-    /// <summary>Tore des Penaltyschießens nach der Verlängerung (<see cref="OriginalMinutes.Shootout"/>), sonst null.</summary>
+    /// <summary>
+    /// Tore des Penaltyschießens: Minutenweg nach der Verlängerung (<see cref="OriginalMinutes.Shootout"/>, je 2 … 5), schneller
+    /// Weg der Pokale die Zusatztore random(0, 2) je Seite (0x376F0); sonst null. Der Spielstand oben bleibt der Gleichstand.
+    /// </summary>
     public (int Home, int Away)? ShootoutGoals { get; set; }
 }
 

@@ -22,7 +22,7 @@ Heimspiele gehen über die gemeinsame Spielabrechnung `SettleHomeMatch` (genau e
 | Nach dem dritten Termin: Sieger auf Platz 2k, nächste Runde = Sieger der Reihe nach, dann 20 zufällige Vertauschungen | 0x3489D, 0x3494B |
 | Pokalsieger nach dem dritten Endspieltermin (Titel „DEB Pokalsieger“, Meisterfoto – im Video 1995: ESV Kaufbeuren nach dem Deutschen Meister) | 0x34ED0, Karriere 17:37 |
 | Rundennamen „Erste Runde“, „Achtelfinale“, „Viertelfinale“, „Halbfinale“, „Endspiel“ | DGROUP 0x2576 |
-| `[APPROX]` Unentschieden: Original kodiert den Sieger im Ergebnis (+30); hier Penaltyschießen wie in den Play-Offs | – |
+| `[ORIGINAL]` Unentschieden: Endstand mit Marke + 30 wie im Original – schneller Weg random(0, 2) je Seite bis ungleich, Minutenweg Verlängerung und Penaltyschießen (Gleichstand + Treffer 2 … 5); Marken 0/1/2 in `CupTie.Marks`, ein bzw. zwei Punkte in der Übersicht (`CupMatch`, Spur wettbewerbe-spiel Teil 1) | 0x376F0–0x377A3, 0x39770–0x397B3, 0x38402, 0x338AB |
 
 ### Bildschirm „DEB-Pokal Auslosung“ (`UI/Screens/Competitions/DebCupDrawScreen.cs`)
 
@@ -101,7 +101,7 @@ gespielt wurde (Abschnitt [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-
 | Spielwerte der Nationalteams: Tabelle DGROUP 0x4C4E (je Land Kondition Abwehr, Technik Abwehr, Kondition Sturm, Technik Sturm, je −2) | Lader 0x2EFDE; Video „Stärken Länderteams – Gesamt“ 13:18 (Spalten Kondition/Technik = Mittel aus Abwehr und Sturm) |
 | Gruppeneinteilung: Plätze 1–6 / 7–12 der Länderreihenfolge; beim Spielstart und zu jeder Saison 20 Tausche zweier Plätze random(52, 63), die Tausche wirken fort (`WorldCup.Mix`, `WorldCup.Order`) | 0x35EDD, Aufrufe 0x43A17 / 0x5644E |
 | Ohne menschlichen Bundestrainer werden die Werte Deutschlands an den Tagen mit Markierung 255 (13. und 29. April) neu ausgewürfelt: Kondition random(84, 94), Technik random(79, 89), Form random(45, 55) – die WM spielt Deutschland also nie mit den Startwerten (`GameState.NationalRatings`) | 0x554CF |
-| `[APPROX]` Spielstärke = Mittel aus Kondition und Technik; K.-o.-Unentschieden mit Penaltyschießen; Plätze 9–12 nach Gruppenplatz | – |
+| `[APPROX]` Spielstärke = Mittel aus Kondition und Technik; Plätze 9–12 nach Gruppenplatz (K.-o.-Unentschieden seit Runde 11 nach dem Original: Endstand random(0, 2) je Seite mit Marke, `WorldCup.MarksOf`) | – |
 
 ### Bildschirm WM „Gruppe 1/2“ (`UI/Screens/Competitions/WorldCupScreen.cs`)
 
@@ -583,7 +583,7 @@ Remake aus den eingetragenen Ergebnissen; Punkte, Tore und Reihenfolge stimmen m
 | PW-02 | „DEB-Pokalspiele“: Gruppenüberschriften in Großbuchstaben („BUNDESLIGA GEGEN ZWEITE LIGA:“). | alle vier Vorlagen |
 | PW-03 | Europapokal: Ergebnisse „links:rechts“ wie die Paarung, auch im Rückspiel, beide Zahlen zweistellig (vorher Rückspiel „Heim:Gast“, ohne Auffüllen). | `folge04_01241` (Dynamo 12:0 Punkte), `eisbaeren_f58_01323` |
 | PW-04 | Europapokal: keine Termine mehr, sobald in der Gruppe gespielt wurde. `[APPROX]`: Bedingung im Code (Datei 0x32294, Parameter [bp+0xA]) nicht ganz aufgelöst. | `eisbaeren_f51_03346`, `eisbaeren_f58_01323` |
-| PW-05 | WM: K.-o.-Ansicht ist „WM-Endrundenspiele“ (Datei 0x32E23, Wettbewerb 3): Rahmen aus n = Begegnungen + 1 − 6 + Abschnitte (1/3/7, DGROUP 0x4DFD), ohne laufendes Spiel ab neun Teilen oben; Pokalbild (0 \| 66); Überschrift → Zeile 7; Ergebnis bei x = 233 (0x3394E); ungespielt „0: 0“; Knopf „Gruppe“ (136 \| 201); im Spielablauf sieben Leerzeichen vor „n.Minute“ (DGROUP 0x4E5F). `[APPROX]`: zwei Punkte für Penaltyschießen, Anzeige im Spielablauf noch ohne Aufrufer. | `eisbaeren_f35_00646`, `eisbaeren_f44_01330` |
+| PW-05 | WM: K.-o.-Ansicht ist „WM-Endrundenspiele“ (Datei 0x32E23, Wettbewerb 3): Rahmen aus n = Begegnungen + 1 − 6 + Abschnitte (1/3/7, DGROUP 0x4DFD), ohne laufendes Spiel ab neun Teilen oben; Pokalbild (0 \| 66); Überschrift → Zeile 7; Ergebnis bei x = 233 (0x3394E); ungespielt „0: 0“; Knopf „Gruppe“ (136 \| 201); im Spielablauf sieben Leerzeichen vor „n.Minute“ (DGROUP 0x4E5F). Punkte = Marken (einer nach Penaltyschießen, zwei nach Tor in der Verlängerung; Runde 11, wettbewerbe-spiel Teil 1). `[APPROX]`: Anzeige im Spielablauf noch ohne Aufrufer. | `eisbaeren_f35_00646`, `eisbaeren_f44_01330` |
 
 Ohne Abweichung: Live-Auslosung (Frage und Ziehung) und Paarungen Liga. Die Anzeige „60.MINUTE“ der Ligapaarungen im
 Spielablauf (gleiches Fenster ohne Knöpfe, Kopfzeile mit Minute) gibt es im Remake noch nicht.

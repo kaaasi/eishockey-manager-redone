@@ -97,8 +97,10 @@ public static partial class MatchEngine
             if (shootout)
             {
                 // [ORIGINAL] 0x376F0–0x377A3: random(0, 2) je Seite bis ungleich, Heim + 30 als Penaltymarke.
-                // [APPROX] Das Remake führt das Penaltyschießen wie bisher getrennt: Ergebnis = Gleichstand, Sieger hier.
+                // Der Bericht hält den Gleichstand (Spielerzähler nur für echte Tore) und die Zusatztore getrennt; den
+                // Endstand mit Marke bildet CupMatch.FromReport (Spur wettbewerbe-spiel, Teil 1).
                 report.ShootoutHomeWins = hg > ag;
+                report.ShootoutGoals = (hg - tie, ag - tie);
                 report.HomeGoals = report.AwayGoals = tie;
             }
         }

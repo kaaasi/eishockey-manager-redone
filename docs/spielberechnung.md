@@ -90,7 +90,9 @@ h −= lrandom(0, h); dann mit 1/4 – sonst bei stärkerem Gast mit 1/2 – g +
 Heimwert: h −= lrandom(0, h), h += lrandom(0, h) (gleiche Bedingung) bzw. h += lrandom(0, h), h −= lrandom(0, h) (mit 1/4,
 sonst bei stärkerem Heim mit 1/2). Dann lrandom(0, k) ≠ 0 und h ≤ g bei stärkerem Heim bzw. h ≥ g bei stärkerem Gast →
 alles neu ab 0x9F5C (0x37665–0x37696). K.-o.-Gleichstand (`0xE8:0x70`): random(0, 2) je Seite dazu, bis ungleich,
-Heim + 30 als Penaltymarke (0x376F0–0x377A3).
+Heim + 30 als Penaltymarke (0x376F0–0x377A3). Im Remake (Runde 11, Spur wettbewerbe-spiel Teil 1) bilden DEB-Pokal und
+WM-Endrunde daraus den Endstand mit Marke 1 (`CupMatch.FromReport`, `CupTie.Marks`, `WorldCup.MarksOf`); der Bericht trägt die
+Zusatztore als `ShootoutGoals`, sein Spielstand bleibt der Gleichstand. Die Play-offs (`Playoffs.cs`) bleiben bei Gleichstand + Sieger.
 
 ## 4. Abschluss 0xA484 (`OriginalMinutes.Shot`)
 
@@ -678,3 +680,10 @@ Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Shootout.
 - `[APPROX]` Keine Live-Anzeige (Zweig mit Bit 7 nicht umgesetzt); Zuordnung der Zeilen 0x5C4B zu den Wettbewerben nicht
   gelesen – das Remake schießt in jedem K.-o.-Spiel des Minutenwegs (Pokale mit Manager, Play-offs); der Spielstand bleibt
   der Gleichstand, die Penaltytore stehen getrennt im Bericht.
+- **Endstand und Marken (Runde 11, Spur wettbewerbe-spiel Teil 1):** 0x39088 nimmt die Marke ab (Heimbyte − 30), 0x39789
+  setzt sie wieder – Endstand Gleichstand + Treffer mit **einer** Marke. Ein Tor in der Verlängerung schreibt 0x38402 Heim + 30
+  auf den Stand; im Video stehen danach **zwei** Punkte (`eisbaeren_f44_01330` „4: 3..“ neben „4: 3.“). Die Anzeige 0x32E23 zieht
+  je 30 ab und setzt einen Punkt (0x338AB–0x338E3, Pixel über 0x50:0x3B0 bei x + 22 + 2 · i, 0x339BD). DEB-Pokal und WM-Endrunde
+  übernehmen das über `CupMatch` (Marken 0/1/2). `[APPROX]` Herkunft des Stands vor 0x38402 (Tabelle DGROUP 0xA0BF, 0x37E2D)
+  nicht verfolgt; ob ein Tor in der Verlängerung das Spiel sofort beendet (0x38418 → 0x38524), ist nicht geprüft – das Remake
+  spielt beide Abschnitte (§9).

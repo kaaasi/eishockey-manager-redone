@@ -3,9 +3,9 @@ using EishockeyManager.Core;
 namespace EishockeyManager.UI.Screens.Competitions;
 
 /// <summary>Ergebnis eines Pokalspiels in der Übersicht: Tore von links und rechts, dazu 0–2 Punkte dahinter.</summary>
-/// <param name="Dots">0 = in regulärer Spielzeit, 1 = nach Verlängerung. [ORIGINAL] Der Wert +30 im Ergebnis (Datei 0x37761, 0x38402,
-/// 0x39789: Verlängerung bei Gleichstand) ergibt einen Punkt; ein zweiter (+60) wird nirgends geschrieben. [APPROX] Das Remake entscheidet
-/// Gleichstände im Penaltyschießen und zeigt dafür ebenfalls einen Punkt.</param>
+/// <param name="Dots">Marken des Spiels (<see cref="CupTie.MarksOf"/>): 0 = reguläre Spielzeit, 1 = Penaltyschießen (schneller Weg
+/// 0x37761, Minutenweg 0x39789; Endstand = Gleichstand + Penaltytore), 2 = Tor in der Verlängerung (0x38402 auf den schon markierten
+/// Stand; eisbaeren_f44_01330 „4: 3..“). [ORIGINAL] Je + 30 im Ergebnis ein Punkt (Anzeige Datei 0x338AB–0x338E3).</param>
 public readonly record struct DebCupResult(int Left, int Right, int Dots);
 
 /// <summary>Eine Paarung der laufenden Pokalrunde; <see cref="Results"/> hat einen Eintrag je gespieltem Termin (null = nicht ausgetragen).</summary>
@@ -77,16 +77,17 @@ public sealed record DebCupOverview(int Round, int DatesPlayed, int? NextDay, IR
         var results = new List<DebCupResult?>();
         for (var g = 0; g < played; g++)
         {
-            var match = tie.Games.FirstOrDefault(m => m.Day == dates[g]);
-            if (match is null)
+            var index = tie.Games.FindIndex(m => m.Day == dates[g]);
+            if (index < 0)
                 results.Add(null);
             else
             {
+                var match = tie.Games[index];
                 var leftIsHome = match.Home == left;
                 results.Add(new DebCupResult(
                     leftIsHome ? match.HomeGoals : match.AwayGoals,
                     leftIsHome ? match.AwayGoals : match.HomeGoals,
-                    match.PenaltyWinner is null ? 0 : 1));
+                    tie.MarksOf(index)));
             }
         }
         return new DebCupRow(left, right, results);
@@ -119,9 +120,9 @@ public sealed record DebCupOverview(int Round, int DatesPlayed, int? NextDay, IR
 /// </list>
 /// [APPROX]
 /// <list type="bullet">
-/// <item>Das Remake entscheidet Gleichstände im Penaltyschießen, das Original durch Verlängerung mit Zusatztoren (das Ergebnis
-///   zeigt dann den Endstand); beide erhalten einen Punkt. Der Punkt ist ein einzelnes Pixel in der Ergebnisfarbe (Form und Farbe der
-///   Original-Marke nicht geprüft).</item>
+/// <item>Zwei Punkte nach einem Tor in der Verlängerung stützen sich auf das Videobild (Herkunft des Stands vor 0x38402 nicht verfolgt,
+///   siehe <see cref="CupMatch"/>). [ORIGINAL] Ein Punkt ist ein Pixel: Aufruf 0x50:0x3B0 ohne Farbargument (Zeichenfarbe des Ergebnisses)
+///   bei x + 22 + 2 · i auf der Textzeile (Datei 0x339BD–0x339E3); am Video eisbaeren_f44_01330 ein Pixel auf der Grundlinie.</item>
 /// <item>Ein Klick auf einen Verein im Original wird nicht nachgebildet; jede Taste und jeder Klick führt zurück.</item>
 /// </list>
 /// </remarks>
