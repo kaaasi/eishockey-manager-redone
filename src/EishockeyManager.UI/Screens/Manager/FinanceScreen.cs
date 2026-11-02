@@ -6,9 +6,9 @@ namespace EishockeyManager.UI.Screens.ManagerArea;
 /// Bildschirm Finanzen – Bank und Börse (Hintergrund kb\152, ganzer Bildschirm). Vermessen aus dem UI-Video (5:40–6:20).
 /// <list type="bullet">
 /// <item>Oben die Bank und drei Kästen für die Mitmanager (Kopf), darunter Saldo und Zinsen pro Monat.</item>
-/// <item>Mitte: Knöpfe [+][−] links und [−][+] rechts, Pfeile ◄ ►; darüber erscheint der Hinweis zur gewählten
-///   Bank, zum Manager oder zur Aktie („Geld von der Bank abheben/leihen (4%).“, „Aktien von … kaufen.“).
-///   Linke Hälfte = holen/leihen/kaufen, rechte Hälfte = einzahlen/verleihen/verkaufen.</item>
+/// <item>Mitte: Knöpfe [+][−] links und [−][+] rechts, Pfeile ◄ ►, darunter der Betragsbalken (em.exe Datei 0x58409).
+///   Ein Klick in die linke bzw. rechte Hälfte wählt die Seite und zeigt ihren Hinweis („Geld von der Bank
+///   abheben/leihen (4%).“, „Aktien von … kaufen.“). Linke Hälfte = holen/leihen/kaufen, rechte = einzahlen/verleihen/verkaufen.</item>
 /// <item>Unten die vier Aktien (Kurs, Zahl, Kauf, Wert), der Kursverlauf und rechts die Übersicht.</item>
 /// </list>
 /// Klick auf das Bankbild oder den Kontostand öffnet das Finanzbuch.
@@ -16,9 +16,10 @@ namespace EishockeyManager.UI.Screens.ManagerArea;
 /// <remarks>
 /// [ORIGINAL] Bank, Mitmanager und Aktie werden erst per Klick gewählt (em.exe 0x59B2D, Befund NB-02 #206; Klickfelder
 /// <see cref="BankSelectArea"/>, <see cref="PartnerSelectArea"/>, <see cref="StockSelectArea"/>), Überfahren ändert nichts.
-/// [APPROX] Im Video wird nichts gebucht. Bedienung daher angenommen: [+]/[−] stellen den Betrag der jeweiligen Seite ein (Rechtsklick = zehnfach),
-/// ◄ führt die linke, ► die rechte Buchung aus; der Betrag steht im schwarzen Balken. Leihen bei einem Mitmanager
-/// schickt ihm eine Anfrage in den Posteingang.
+/// [ORIGINAL] Bedienung nach em.exe Datei 0x58A57 (Spur geld Teil 5, G4; docs/finanzen-rekonstruktion.md, „Bedienung“):
+/// Klick in den Streifen y 73–100 wählt die Seite (Vorgabe je Auswahl im Balken), [+]/[−] ändern den Betrag um 1.000 DM
+/// bzw. 1 Stück (gehalten wiederholt), ein Klick auf den Balken setzt Pixel · q, ein Klick in die Zeile y 73–88 bucht.
+/// Leihen beim Mitmanager geht sofort (Entscheidung E2).
 /// </remarks>
 public sealed class FinanceScreen : Screen
 {
@@ -39,21 +40,45 @@ public sealed class FinanceScreen : Screen
     private const int CaptionY1 = 57;
     private const int CaptionY2 = 65;
 
-    public static readonly Rect LeftPlus = new(4, 76, 16, 9);
-    public static readonly Rect LeftMinus = new(23, 76, 16, 9);
-    public static readonly Rect RightMinus = new(280, 76, 16, 9);
-    public static readonly Rect RightPlus = new(298, 76, 16, 9);
+    /// <summary>
+    /// [ORIGINAL] Klickfelder der Knöpfe (em.exe Datei 0x59050–0x590A1: Mauszeile 74–87, Spalte 4–34 links bzw. 284–314
+    /// rechts; Datei 0x58F80–0x58FA1: „+“ links bei x &lt; 19, rechts bei x &gt; 299, sonst „−“). Sie wirken nur auf der
+    /// gewählten Seite.
+    /// </summary>
+    public static readonly Rect LeftPlus = new(4, 74, 15, 14);
+    /// <inheritdoc cref="LeftPlus"/>
+    public static readonly Rect LeftMinus = new(19, 74, 16, 14);
+    /// <inheritdoc cref="LeftPlus"/>
+    public static readonly Rect RightMinus = new(284, 74, 16, 14);
+    /// <inheritdoc cref="LeftPlus"/>
+    public static readonly Rect RightPlus = new(300, 74, 15, 14);
+
+    /// <summary>Pfeile ◄ ► im Hintergrund. Gebucht wird mit einem Klick irgendwo in <see cref="BookingRow"/>.</summary>
     public static readonly Rect LeftArrow = new(150, 76, 9, 10);
+    /// <inheritdoc cref="LeftArrow"/>
     public static readonly Rect RightArrow = new(160, 76, 9, 10);
 
-    /// <summary>Bereich mit Hinweistext und schwarzem Balken (x 4–315, y 89–96).</summary>
-    public static readonly Rect ActionBar = new(0, 73, 320, 25);
-    private static readonly Rect AmountBar = new(4, 89, 312, 8);
-    private const int LeftCenter = 93;
-    private const int RightCenter = 227;
-    private const int HintY1 = 75;
-    private const int HintY2 = 81;
-    private const int AmountY = 90;
+    /// <summary>[ORIGINAL] Streifen, in dem ein Klick die Seite wählt (Datei 0x59531–0x59556: 72 &lt; y &lt; 101).</summary>
+    public static readonly Rect ActionBar = new(0, 73, 320, 28);
+
+    /// <summary>[ORIGINAL] Zeile, in der ein Klick bucht (Datei 0x5911D–0x5915C: 72 &lt; y &lt; 89, Betrag ≠ 0).</summary>
+    public static readonly Rect BookingRow = new(0, 73, 320, 16);
+
+    /// <summary>[ORIGINAL] Klickfeld des Balkens (Datei 0x590AD–0x590DE: 3 &lt; x &lt; 315, x ≠ 159, 89 &lt; y &lt; 99).</summary>
+    public static readonly Rect AmountBarArea = new(4, 90, 311, 9);
+
+    /// <summary>[ORIGINAL] Fläche des Balkens (Datei 0x5851F–0x5853A: x 4–313, y 89–96, Farbe 0).</summary>
+    public static readonly Rect AmountBar = new(4, 89, 310, 8);
+
+    /// <summary>[ORIGINAL] Linke Kante der Beschriftung: 36 links, 167 rechts (Datei 0x596A9–0x596B5: Seite · 131 + 36).</summary>
+    public static int SideX(bool right) => right ? 167 : 36;
+
+    /// <summary>[ORIGINAL] Texte zentriert zwischen x und x + 115 (Datei 0x0B6A5: x + 57 − Breite / 2).</summary>
+    private static int SideCenter(bool right) => SideX(right) + 115 / 2;
+
+    private const int HintY1 = 75;  // [ORIGINAL] Grundlinie 80 (Datei 0x59A94), Oberkante 75
+    private const int HintY2 = 81;  // [ORIGINAL] Grundlinie 86 (Datei 0x59ABA)
+    private const int AmountY = 90; // [ORIGINAL] Grundlinie 95 (Datei 0x58589)
 
     /// <summary>
     /// [ORIGINAL] Klickfeld der Bank (em.exe 0x59BB8–0x59BCB: x &lt; 106, y &lt; 54). Das Bankbild darin öffnet zusätzlich
@@ -113,15 +138,33 @@ public sealed class FinanceScreen : Screen
     private const byte LabelBottom = 50;
     private const byte AccountColor = 12;
 
+    /// <summary>[ORIGINAL] Farbe von Hinweis und Betrag (Datei 0x58586, 0x59A91: 0x1E).</summary>
+    public const byte BarTextColor = 30;
+
+    /// <summary>[ORIGINAL] Farbe des Balkens (Datei 0x58548: 9).</summary>
+    public const byte BarColor = 9;
+
+    /// <summary>[ORIGINAL] Rahmen der Auswahl (Datei 0x59B7C, 0x59BCF: 7 für Mitmanager und Bank; 0x59C38: 0x18 für Aktien).</summary>
+    public const byte SelectionColor = 7;
+    /// <inheritdoc cref="SelectionColor"/>
+    public const byte StockSelectionColor = 0x18;
+
     // ---- Zustand ---------------------------------------------------------------------------
 
     private readonly Screen _back;
-    private Selection _selection = new(SelectionKind.Bank, 0);
-    private long _leftAmount;
-    private long _rightAmount;
-    private Rect? _pressed;
-    private int _mouseX = -1;
-    private int _mouseY = -1;
+    private Selection _selection = new(SelectionKind.None, 0);
+    /// <summary>Gewählte Seite: null = keine, false = links, true = rechts (em.exe <c>[bp-0x1c]</c> 0/36/167).</summary>
+    private bool? _side;
+    /// <summary>Betrag der Seite; null = noch keiner (em.exe −1, Datei 0x596B8).</summary>
+    private long? _amount;
+    private long _max;
+    /// <summary>Zuletzt gezeichneter Balken (das Original zeichnet bei Betrag 0 nichts neu, Datei 0x584B0).</summary>
+    private (long Amount, int Pixels)? _bar;
+    /// <summary>Rahmen früherer Auswahlen, im Original mit Farbe 0 übermalt (Datei 0x59CA3 ff.).</summary>
+    private readonly List<Rect> _erased = [];
+    private int _holdDirection;
+    private int _holdWait;
+    private int _holdSteps;
     /// <summary>Unterkante des Ausschnitts in Drittel-DM (em.exe: Versatz des Kursverlaufs, Zeile 130 der Zeichenfläche).</summary>
     private int _offset = int.MinValue;
     /// <summary>Maßstab: Drittel-DM je Pixel (em.exe <c>[bp-0x1e]</c>), anfangs <see cref="ChartScale"/>.</summary>
@@ -129,14 +172,22 @@ public sealed class FinanceScreen : Screen
 
     public FinanceScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
-    public enum SelectionKind { Bank, Manager, Stock }
+    /// <summary>[ORIGINAL] Anfangs ist nichts gewählt (em.exe Datei 0x58A68: <c>[bp-0x16]</c> = 0xFF).</summary>
+    public enum SelectionKind { None, Bank, Manager, Stock }
 
     /// <summary>Gewähltes Gegenüber: Bank, Mitmanager (Index im Spiel) oder Aktie (0–3).</summary>
     public readonly record struct Selection(SelectionKind Kind, int Index);
 
     public Selection Selected => _selection;
-    public long LeftAmount => _leftAmount;
-    public long RightAmount => _rightAmount;
+
+    /// <summary>Gewählte Seite: null = keine, false = links (holen/leihen/kaufen), true = rechts.</summary>
+    public bool? ActiveSide => _side;
+
+    /// <summary>Betrag im Balken in DM bzw. Stück; null = keiner.</summary>
+    public long? Amount => _amount;
+
+    /// <summary>Höchstwert der gewählten Seite (beim Wählen der Seite bestimmt).</summary>
+    public long MaxAmount => _max;
 
     /// <summary>Kurs in DM auf der mittleren Zeile der Zeichenfläche (Zeile 65, Bildschirmzeile 172).</summary>
     public double ViewPrice => (_offset + ChartCanvas.H) / 3.0;
@@ -161,6 +212,8 @@ public sealed class FinanceScreen : Screen
         _scale = ChartScale;
         _dragging = false;
         _markerX = -1;
+        _erased.Clear();
+        _holdDirection = 0;
     }
 
     // ---- Regler für Ausschnitt und Maßstab (#196) -------------------------------------------
@@ -273,73 +326,181 @@ public sealed class FinanceScreen : Screen
 
     public override void Update(InputState input)
     {
-        _pressed = null;
-        if (input.MouseX >= 0)
-        {
-            _mouseX = input.MouseX;
-            _mouseY = input.MouseY;
-        }
-        if (input.Pressed(Key.Escape) || input.RightClicked(new Rect(0, 0, 320, 70)))
+        if (input.Pressed(Key.Escape) || input.RightClick)
         {
             Host.Show(_back);
             return;
         }
 
+        if (_holdDirection != 0 && Hold(input))
+            return;
+
+        var regulator = input.LeftClick && RegulatorArea.Contains(input.MouseX, input.MouseY);
         UpdateRegulator(input);
+        if (!input.LeftClick)
+            return;
+        var (x, y) = (input.MouseX, input.MouseY);
+        if (regulator)
+        {
+            // [ORIGINAL] Nach dem Regler (Datei 0x58F46 ff.) gilt die Taste als losgelassen: Seite aus, Auswahl bleibt.
+            Deactivate();
+            return;
+        }
 
-        if (input.LeftClick && SelectAt(input.MouseX, input.MouseY) && _selection.Kind == SelectionKind.Stock)
+        if (_side is { } right && _amount is not null && ButtonArea(right).Contains(x, y))
+        {
+            _holdDirection = right ? (x > 299 ? 1 : -1) : (x < 19 ? 1 : -1);
+            _holdSteps = 0;
+            Step();
+            return;
+        }
+        if (_side is { } side && AmountBarArea.Contains(x, y) && x != 159)
+        {
+            SetPixels(side ? x - 160 : 158 - x);
+            return;
+        }
+        if (BookingRow.Contains(x, y) && _side is not null && _amount is > 0 && _selection.Kind != SelectionKind.None)
+        {
+            Execute();
+            Deactivate();
+            Reselect(SelectionKind.None, 0);
+            return;
+        }
+        if (ActionBar.Contains(x, y))
+        {
+            if (_selection.Kind != SelectionKind.None && _side != x > 159)
+                Activate(x > 159);
+            return;
+        }
+
+        Deactivate();
+        if (SelectAt(x, y) && _selection.Kind == SelectionKind.Stock)
             _offset = StockOffset(_selection.Index);
-
-        var factor = input.RightClick ? 10 : 1;
-        bool Hit(Rect r) => (input.LeftClick || input.RightClick) && r.Contains(input.MouseX, input.MouseY);
-
-        if (Hit(LeftPlus)) Change(left: true, +factor, LeftPlus);
-        else if (Hit(LeftMinus)) Change(left: true, -factor, LeftMinus);
-        else if (Hit(RightPlus)) Change(left: false, +factor, RightPlus);
-        else if (Hit(RightMinus)) Change(left: false, -factor, RightMinus);
-        else if (input.Clicked(LeftArrow)) { _pressed = LeftArrow; ExecuteLeft(); }
-        else if (input.Clicked(RightArrow)) { _pressed = RightArrow; ExecuteRight(); }
-        else if (input.Clicked(BankPicture) || input.Clicked(AccountField))
+        if (input.Clicked(BankPicture) || input.Clicked(AccountField))
             Host.Show(new FinanceBookScreen(Host, this));
-        else if (input.RightClick && !ActionBar.Contains(input.MouseX, input.MouseY))
-            Host.Show(_back);
+    }
+
+    /// <summary>[ORIGINAL] Klickfeld der Knöpfe einer Seite (Datei 0x59050–0x590A1).</summary>
+    public static Rect ButtonArea(bool right) => new(right ? 284 : 4, 74, 31, 14);
+
+    /// <summary>
+    /// [ORIGINAL] Gehaltener Knopf (Datei 0x58F80–0x590A1): weiter, solange die Taste gedrückt ist und die Maus im Klickfeld
+    /// der Seite liegt; nach dem k-ten Schritt wartet das Original (8 − k) / 3 BIOS-Takte (Datei 0x5901A–0x5902B, Pause
+    /// 0x130EE), ab dem achten Schritt nicht mehr. [APPROX] Takte in Bilder bei 60 Hz umgerechnet (2 Takte = 7, 1 Takt = 3,
+    /// sonst 1 Bild je Schritt); die Schleife des Originals läuft ohne Pause so schnell wie das Zeichnen.
+    /// </summary>
+    private bool Hold(InputState input)
+    {
+        if (input.LeftClick || !input.LeftDown || _side is not { } right || !ButtonArea(right).Contains(input.MouseX, input.MouseY))
+        {
+            _holdDirection = 0;
+            return false;
+        }
+        if (--_holdWait <= 0)
+            Step();
+        return true;
+    }
+
+    private static readonly int[] HoldFrames = [7, 7, 3, 3, 3, 1, 1];
+
+    private void Step()
+    {
+        _holdWait = _holdSteps < HoldFrames.Length ? HoldFrames[_holdSteps] : 1;
+        _holdSteps++;
+        if (_amount is not { } amount || FinanceAmountBar.Press(amount, _holdDirection, _max, IsStock) is not { } next)
+            return;
+        _amount = next;
+        DrawnBar(FinanceAmountBar.Pixels(amount + _holdDirection * FinanceAmountBar.Step(IsStock), _max, IsStock));
+    }
+
+    /// <summary>[ORIGINAL] Klick auf den Balken (Datei 0x590E0–0x5911A): s = x − 160 rechts bzw. 158 − x links.</summary>
+    private void SetPixels(int pixels)
+    {
+        _amount = FinanceAmountBar.FromPixels(pixels, _max, IsStock);
+        DrawnBar(Math.Clamp(pixels, 0, FinanceAmountBar.Divisor)); // [APPROX] negatives s (andere Hälfte) ohne Balken
+    }
+
+    /// <summary>[ORIGINAL] Datei 0x584AD: bei Betrag 0 zeichnet das Original nichts (der alte Balken bleibt stehen).</summary>
+    private void DrawnBar(int pixels)
+    {
+        if (_amount is > 0 and var amount)
+            _bar = (amount, pixels);
+    }
+
+    private bool IsStock => _selection.Kind == SelectionKind.Stock;
+
+    /// <summary>
+    /// [ORIGINAL] Seite wählen (Datei 0x59562–0x59A60): Hinweis zeigen, Höchstwert und Vorgabe bestimmen, Balken mit der
+    /// Vorgabe zeichnen. Ohne Vorgabe bleibt der Betrag leer, die Knöpfe wirken dann erst nach einem Klick auf den Balken.
+    /// </summary>
+    private void Activate(bool right)
+    {
+        _side = right;
+        _bar = null;
+        _max = right ? MaxRight() : MaxLeft();
+        var preset = right ? RightDefault() : LeftDefault();
+        _amount = preset is { } v ? Math.Min(v, _max) : null;
+        if (preset is { } p)
+            DrawnBar(FinanceAmountBar.Pixels(p, _max, IsStock));
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Klick außerhalb des Streifens (Datei 0x59ADD–0x59B28): Hinweis und Balken löschen, keine Seite.
+    /// [APPROX] Der Betrag wird mit gelöscht; im Original bleibt er stehen, und ein späterer Klick in die Buchungszeile
+    /// bucht ihn erneut mit der dann gültigen (auch leeren) Auswahl (Datei 0x5911D prüft weder Seite noch Auswahl).
+    /// </summary>
+    private void Deactivate()
+    {
+        _side = null;
+        _amount = null;
+        _bar = null;
+        _holdDirection = 0;
     }
 
     /// <summary>
     /// [ORIGINAL] Auswahl nur bei linker Maustaste (em.exe 0x59B2D: <c>DGROUP 0x5A16 == 1</c>, sonst weiter bei 0x59D42).
-    /// Gibt zurück, ob ein Klickfeld getroffen wurde.
+    /// Jeder Linksklick außerhalb des Streifens hebt die bisherige Auswahl auf (Datei 0x59B37) und wählt neu, was getroffen
+    /// ist. Gibt zurück, ob ein Klickfeld getroffen wurde.
     /// </summary>
     private bool SelectAt(int x, int y)
     {
         if (BankSelectArea.Contains(x, y))
-        {
-            Select(new Selection(SelectionKind.Bank, 0));
-            return true;
-        }
+            return Reselect(SelectionKind.Bank, 0);
         var partners = Partners;
         for (var i = 0; i < partners.Count; i++)
             if (PartnerSelectArea(i + 1).Contains(x, y))
-            {
-                Select(new Selection(SelectionKind.Manager, partners[i]));
-                return true;
-            }
+                return Reselect(SelectionKind.Manager, partners[i]);
         for (var i = 0; i < 4; i++)
             if (StockSelectArea(i).Contains(x, y))
-            {
-                Select(new Selection(SelectionKind.Stock, i));
-                return true;
-            }
+                return Reselect(SelectionKind.Stock, i);
+        Reselect(SelectionKind.None, 0);
         return false;
     }
 
-    private void Select(Selection selection)
+    /// <summary>
+    /// [ORIGINAL] Neue Auswahl (Datei 0x59CA3 ff.): hat sie sich geändert, übermalt das Original den alten Rahmen mit Farbe 0.
+    /// </summary>
+    private bool Reselect(SelectionKind kind, int index)
     {
-        if (selection == _selection)
-            return;
-        if ((selection.Kind == SelectionKind.Stock) != (_selection.Kind == SelectionKind.Stock))
-            _leftAmount = _rightAmount = 0;
+        var selection = new Selection(kind, index);
+        if (selection != _selection && SelectionFrame(_selection) is { } old)
+            _erased.Add(old);
         _selection = selection;
+        return kind != SelectionKind.None;
     }
+
+    /// <summary>
+    /// [ORIGINAL] Rahmen der Auswahl (Umriss 0x0B5A7, Ecken eingeschlossen): Bank (23 | 6)–(83 | 50) (Datei 0x59BCF),
+    /// Mitmanager in Kasten k = 1–3 (56 + 71·k | 9)–(95 + 71·k | 48) (Datei 0x59B7C), Aktie i (4 | 106 + 34·i)–(38 | 130 + 34·i)
+    /// (Datei 0x59C38).
+    /// </summary>
+    public Rect? SelectionFrame(Selection selection) => selection.Kind switch
+    {
+        SelectionKind.Bank => new Rect(23, 6, 61, 45),
+        SelectionKind.Manager when Partners.IndexOf(selection.Index) is >= 0 and var k => new Rect(127 + k * 71, 9, 40, 40),
+        SelectionKind.Stock => new Rect(4, 106 + selection.Index * 34, 35, 25),
+        _ => null,
+    };
 
     /// <summary>
     /// [ORIGINAL] Klick auf eine Aktie setzt den Ausschnitt sofort (em.exe 0x59C6B–0x59C8F, innerhalb der Klickauswahl ab
@@ -349,83 +510,89 @@ public sealed class FinanceScreen : Screen
     /// </summary>
     private int StockOffset(int stock) => Game.Stocks.Stocks[stock].Price * 3 - ChartCanvas.H;
 
-    /// <summary>[APPROX] Schrittweite: 10.000 DM bzw. 10 Aktien je Klick.</summary>
-    private long Step => _selection.Kind == SelectionKind.Stock ? 10 : 10_000;
-
-    private void Change(bool left, int steps, Rect button)
-    {
-        _pressed = button;
-        if (left)
-            _leftAmount = Math.Clamp(_leftAmount + steps * Step, 0, MaxLeft());
-        else
-            _rightAmount = Math.Clamp(_rightAmount + steps * Step, 0, MaxRight());
-    }
-
-    /// <summary>Höchstbetrag der linken Buchung (holen, leihen, kaufen).</summary>
+    /// <summary>Höchstbetrag der linken Buchung (holen, leihen, kaufen; em.exe Datei 0x596C2–0x598DC).</summary>
     public long MaxLeft() => _selection.Kind switch
     {
         SelectionKind.Bank => Game.MaxWithdrawal(Me),
-        // [ORIGINAL] em.exe Datei 0x596C2–0x59A12: höchstens 1 Mio. DM Schuld je Mitmanager und nur bis zu seinem Konto.
         SelectionKind.Manager => Game.MaxBorrowFromManager(Game.CurrentManager, _selection.Index),
-        _ => Math.Max(0, Me.Money) / Game.Stocks.Stocks[_selection.Index].Price,
+        // [ORIGINAL] Datei 0x596E7–0x59731: Konto / Kurs, 0 bei Konto ≤ 0.
+        SelectionKind.Stock => Math.Max(0, Me.Money) / Game.Stocks.Stocks[_selection.Index].Price,
+        _ => 0,
     };
 
-    /// <summary>Höchstbetrag der rechten Buchung (einzahlen, verleihen, verkaufen).</summary>
+    /// <summary>Höchstbetrag der rechten Buchung (einzahlen, verleihen, verkaufen; em.exe Datei 0x5974E, 0x598DF–0x5997B).</summary>
     public long MaxRight() => _selection.Kind switch
     {
-        SelectionKind.Stock => Game.Finance(Me).Holdings[_selection.Index].Count,
-        // [ORIGINAL] em.exe Datei 0x596C2–0x59A12: Tilgung plus höchstens 1 Mio. DM Forderung, nur bis zum eigenen Konto.
+        SelectionKind.Bank => GameState.MaxDeposit(Me),
         SelectionKind.Manager => Game.MaxLendToManager(Game.CurrentManager, _selection.Index),
-        _ => Math.Max(0, Me.Money),
+        SelectionKind.Stock => Game.Finance(Me).Holdings[_selection.Index].Count,
+        _ => 0,
     };
 
-    private void ExecuteLeft()
+    /// <summary>[ORIGINAL] Vorgabe links: Sparbuch bzw. Forderung (Datei 0x59872–0x598DC); beim Kauf keine.</summary>
+    public long? LeftDefault() => _selection.Kind switch
     {
-        var amount = Math.Min(_leftAmount, MaxLeft());
+        SelectionKind.Bank => Game.WithdrawalDefault(Me),
+        SelectionKind.Manager => Game.BorrowDefault(Game.CurrentManager, _selection.Index),
+        // [ORIGINAL] Datei 0x59737: bei Konto ≤ 0 Betrag 0 statt keiner.
+        SelectionKind.Stock when Me.Money <= 0 => 0,
+        _ => null,
+    };
+
+    /// <summary>[ORIGINAL] Vorgabe rechts: Schuld höchstens Konto (Datei 0x59994–0x59A12) bzw. alle Aktien (0x5974E–0x59779).</summary>
+    public long? RightDefault() => _selection.Kind switch
+    {
+        SelectionKind.Bank => Game.DepositDefault(Me),
+        SelectionKind.Manager => Game.LendDefault(Game.CurrentManager, _selection.Index),
+        SelectionKind.Stock => Game.Finance(Me).Holdings[_selection.Index].Count is > 0 and var count ? count : null,
+        _ => null,
+    };
+
+    /// <summary>
+    /// [ORIGINAL] Buchung (Datei 0x5915F–0x5952D): links holen/leihen/kaufen, rechts einzahlen/verleihen/verkaufen; danach
+    /// ist nichts mehr gewählt. Ein Mitmanager wird nicht gefragt (Entscheidung E2).
+    /// </summary>
+    private void Execute()
+    {
+        var amount = _amount ?? 0;
+        var right = _side == true;
         switch (_selection.Kind)
         {
+            case SelectionKind.Bank when right:
+                Game.DepositToBank(Me, amount);
+                break;
             case SelectionKind.Bank:
                 Game.WithdrawFromBank(Me, amount);
                 break;
-            case SelectionKind.Manager:
-                // Der andere Manager bekommt eine Anfrage in den Posteingang und muss zustimmen.
-                Game.RequestLoan(Game.CurrentManager, _selection.Index, amount);
+            case SelectionKind.Manager when right:
+                Game.PayToManager(Game.CurrentManager, _selection.Index, amount);
                 break;
-            default:
+            case SelectionKind.Manager:
+                Game.BorrowFromManager(Game.CurrentManager, _selection.Index, amount);
+                break;
+            case SelectionKind.Stock when right:
+                Game.SellStock(Me, _selection.Index, (int)amount);
+                break;
+            case SelectionKind.Stock:
                 Game.BuyStock(Me, _selection.Index, (int)amount);
                 break;
         }
-        _leftAmount = 0;
     }
 
-    private void ExecuteRight()
-    {
-        var amount = Math.Min(_rightAmount, MaxRight());
-        switch (_selection.Kind)
-        {
-            case SelectionKind.Bank:
-                Game.DepositToBank(Me, amount);
-                break;
-            case SelectionKind.Manager:
-                Game.PayToManager(Game.CurrentManager, _selection.Index, amount);
-                break;
-            default:
-                Game.SellStock(Me, _selection.Index, (int)amount);
-                break;
-        }
-        _rightAmount = 0;
-    }
-
-    /// <summary>Hinweistexte (zweizeilig) wie in em.exe; „#“ ist im Spielzeichensatz das Prozentzeichen.</summary>
+    /// <summary>
+    /// [ORIGINAL] Hinweistexte (zweizeilig) aus DGROUP 0xE3C ff. (Datei 0x595CC–0x596A6); „#“ ist im Spielzeichensatz das
+    /// Prozentzeichen. Bei Mitmanager und Aktie beginnt die zweite Zeile mit einem Leerzeichen (DGROUP 0xE54 ff., 0xE60 ff.).
+    /// </summary>
     public (string[] Left, string[] Right) Hints() => _selection.Kind switch
     {
         SelectionKind.Bank => (["Geld von der Bank", "abheben/leihen (4#)."], ["Geld aufs Sparbuch", "einzahlen (1#)"]),
         SelectionKind.Manager => (
-            [$"Geld von {Game.Managers[_selection.Index].Name}", "leihen (2.5#)."],
-            [$"Geld an {Game.Managers[_selection.Index].Name}", "verleihen (2.5#)."]),
-        _ => (
-            [$"Aktien von {Game.Stocks.Stocks[_selection.Index].Name}", "kaufen."],
-            [$"Aktien von {Game.Stocks.Stocks[_selection.Index].Name}", "verkaufen."]),
+            [$"Geld von {Game.Managers[_selection.Index].Name}", " leihen (2.5#)."],
+            [$"Geld an {Game.Managers[_selection.Index].Name}", " verleihen (2.5#)."]),
+        SelectionKind.Stock => (
+            [$"Aktien von {Game.Stocks.Stocks[_selection.Index].Name}", " kaufen."],
+            [$"Aktien von {Game.Stocks.Stocks[_selection.Index].Name}", " verkaufen."]),
+        _ => ([], []),
     };
 
     // ---- Zeichnen --------------------------------------------------------------------------
@@ -468,32 +635,30 @@ public sealed class FinanceScreen : Screen
     private void DrawActionBar(Surface s)
     {
         var mini = Assets.Mini;
-        if (ActionBar.Contains(_mouseX, _mouseY))
+        if (_side is { } right)
         {
-            var (left, right) = Hints();
-            var lines = _mouseX < 160 ? left : right;
-            var center = _mouseX < 160 ? LeftCenter : RightCenter;
-            s.TextCentered(mini, center, HintY1, lines[0], TextColor);
-            s.TextCentered(mini, center, HintY2, lines[1], TextColor);
+            var (left, rightHint) = Hints();
+            var lines = right ? rightHint : left;
+            s.TextCentered(mini, SideCenter(right), HintY1, lines[0], BarTextColor);
+            s.TextCentered(mini, SideCenter(right), HintY2, lines[1], BarTextColor);
+
+            // [ORIGINAL] Balken (Datei 0x58515–0x585A6): Fläche x 4–313 Farbe 0, dann rechts 160 … 159 + s bzw. links
+            // 158 − s … 158 in Farbe 9, darüber der Betrag „v DM“ bzw. „v St.“.
+            if (_bar is { } bar)
+            {
+                s.Fill(AmountBar, 0);
+                // Links ist die Fläche einschließlich x = 158 ein Pixel breiter als rechts (Ecken eingeschlossen).
+                s.Fill(right ? new Rect(160, 89, bar.Pixels, 8) : new Rect(158 - bar.Pixels, 89, bar.Pixels + 1, 8), BarColor);
+                var text = IsStock ? ManagerText.Pieces(bar.Amount) : ManagerText.Money(bar.Amount);
+                s.TextCentered(mini, SideCenter(right), AmountY, text, BarTextColor);
+            }
         }
 
-        string Format(long amount) => _selection.Kind == SelectionKind.Stock ? ManagerText.Pieces(amount) : ManagerText.Money(amount);
-        if (_leftAmount > 0)
-            s.TextCentered(mini, LeftCenter, AmountY, Format(_leftAmount), TextColor);
-        if (_rightAmount > 0)
-            s.TextCentered(mini, RightCenter, AmountY, Format(_rightAmount), TextColor);
-
-        // [APPROX] Gedrückter Knopf: Rahmen hervorheben (Original nicht im Video zu sehen).
-        if (_pressed is { } p)
-            s.Outline(p, Colors.White);
-        if (_selection.Kind == SelectionKind.Stock)
-            s.Outline(StockRow(_selection.Index) with { W = 35 + 4, X = 2, Y = StockRow(_selection.Index).Y + 1, H = 29 }, Colors.Yellow);
-        else if (_selection.Kind == SelectionKind.Manager)
-        {
-            var box = Partners.IndexOf(_selection.Index) + 1;
-            if (box > 0)
-                s.Outline(HeadArea(box).Inflate(1), Colors.Yellow);
-        }
+        // [ORIGINAL] Gedrückte Knöpfe zeichnet das Original nicht (Datei 0x58F80–0x5904F zeichnet nur den Balken, A316).
+        foreach (var frame in _erased)
+            s.Outline(frame, 0);
+        if (SelectionFrame(_selection) is { } current)
+            s.Outline(current, _selection.Kind == SelectionKind.Stock ? StockSelectionColor : SelectionColor);
     }
 
     private void DrawStock(Surface s, int i)

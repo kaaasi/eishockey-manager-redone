@@ -13,13 +13,17 @@ public class FinanceLoanTests
         return NewGame.Create(TestGames.CreateDatabase(), setup, 3);
     }
 
+    /// <summary>
+    /// Spur geld Teil 5 (G4): je Buchung höchstens max(2 Mio. DM − Kredit, Sparbuch) (em.exe Datei 0x5977C–0x598DC), nicht
+    /// mehr Sparbuch plus freier Kreditrahmen; Sollwert 30.000 + 2 Mio. deshalb auf 2 Mio. geändert.
+    /// </summary>
     [Fact]
-    public void MaxWithdrawal_IsSavingsPlusFreeCredit()
+    public void MaxWithdrawal_IsCreditLimitOrSavings()
     {
         var game = TestGames.Create();
         var m = game.ActiveManager;
         game.DepositToBank(m, 30_000);
-        Assert.Equal(30_000 + FinanceRules.CreditLimit, game.MaxWithdrawal(m));
+        Assert.Equal(FinanceRules.CreditLimit, game.MaxWithdrawal(m));
         game.WithdrawFromBank(m, 230_000);
         Assert.Equal(FinanceRules.CreditLimit - 200_000, game.MaxWithdrawal(m));
     }

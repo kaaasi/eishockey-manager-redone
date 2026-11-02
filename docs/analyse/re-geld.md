@@ -232,8 +232,12 @@ und im Rahmen.
 **Status (Runde 11, Spur `geld` Teil 4, PR #436):** Gebühr 1,5 % beim Kauf und Verkauf, Kaufpreis des Rests über ganze
 Prozent, Höchstwert beim Kauf Konto / Kurs ohne Gebühr, Kreditrahmen Bank 2 Mio. DM, Grenze 1 Mio. DM je Richtung zwischen
 Managern (auch für die Höchstwerte im Finanzen-Bildschirm) umgesetzt (`Core/Finance.cs`, `Core/FinanceBank.cs`,
-`Core/FinanceStocks.cs`; Tests `FinanceBankBoerseTests`). Gebühr in ganzen DM statt Drittel-DM (`[APPROX]`). Offen für Teil 5:
-Leihen sofort statt Anfrage, Betragsbalken.
+`Core/FinanceStocks.cs`; Tests `FinanceBankBoerseTests`). Gebühr in ganzen DM statt Drittel-DM (`[APPROX]`).
+
+**Status (Runde 11, Spur `geld` Teil 5, PR #442):** Betragsbalken (Pixel · q, 1.000-DM-Rundung, Vorgabe je Auswahl, Knöpfe
+±1.000 DM / 1 Stück), eine Seite statt zweier Beträge, Leihen beim Mitmanager sofort (E2), Höchstwerte mit Abzug nur bei
+positivem Darlehensfeld; Ablauf in [finanzen-rekonstruktion.md](../finanzen-rekonstruktion.md), „Bedienung“. Stand vor Teil 5:
+
 - Leihen bei einem Mitmanager geht im Remake als Anfrage in den Posteingang, im Original sofort.
 - Betrag über ±-Knöpfe in festen Schritten statt Balken (Klick = Pixel · `q`, Rundung auf 1.000 DM).
 - Übersicht rechts und Aktienfelder: Inhalt stimmt (Zeilen wie oben), Lage und Farben nicht nachgemessen.

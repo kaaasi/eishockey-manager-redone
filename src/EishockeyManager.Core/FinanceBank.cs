@@ -34,17 +34,17 @@ public sealed partial class GameState
     public List<ManagerLoan> ManagerLoans { get; } = [];
 
     /// <summary>
-    /// Geld von der Bank holen: zuerst vom Sparbuch abheben, den Rest als Kredit (bis zum Kreditrahmen).
+    /// Geld von der Bank holen: zuerst vom Sparbuch abheben, den Rest als Kredit (höchstens <see cref="MaxWithdrawal"/>).
     /// Liefert den tatsächlich gutgeschriebenen Betrag.
     /// </summary>
     public long WithdrawFromBank(Manager manager, long amount)
     {
+        amount = Math.Min(amount, MaxWithdrawal(manager));
         if (amount <= 0)
             return 0;
         var bank = Finance(manager).Bank;
         var fromSavings = Math.Min(amount, bank.Savings);
-        var fromCredit = Math.Min(amount - fromSavings, FinanceRules.CreditLimit - bank.Credit);
-        fromCredit = Math.Max(0, fromCredit);
+        var fromCredit = Math.Max(0, Math.Min(amount - fromSavings, FinanceRules.CreditLimit - bank.Credit));
         bank.Savings -= fromSavings;
         bank.Credit += fromCredit;
         manager.Money += fromSavings + fromCredit;
@@ -68,11 +68,37 @@ public sealed partial class GameState
         return amount;
     }
 
-    /// <summary>Höchstbetrag, der von der Bank geholt werden kann (Sparbuch plus freier Kreditrahmen).</summary>
+    /// <summary>
+    /// Höchstbetrag, der in einer Buchung von der Bank geholt werden kann.
+    /// [ORIGINAL] em.exe Datei 0x5977C–0x598DC (Auswahl Bank, links): 6.000.000 Drittel-DM minus Schuld bei der Bank, mindestens
+    /// das Sparbuch – also max(2 Mio. DM − Kredit, Sparbuch), nicht Sparbuch plus freier Kreditrahmen (Teil 5, G4).
+    /// </summary>
     public long MaxWithdrawal(Manager manager)
     {
-        var bank = Finance(manager).Bank;
-        return bank.Savings + Math.Max(0, FinanceRules.CreditLimit - bank.Credit);
+        var balance = Finance(manager).Bank.Balance;
+        return Math.Max(0, Math.Max(FinanceRules.CreditLimit - Math.Max(0, -balance), balance));
+    }
+
+    /// <summary>
+    /// Vorgabe des Betragsbalkens für „von der Bank holen“: das Sparbuch, ohne Sparbuch keine Vorgabe.
+    /// [ORIGINAL] em.exe Datei 0x59872–0x598DC (Darlehensfeld gegenüber der Bank &gt; 0).
+    /// </summary>
+    public long? WithdrawalDefault(Manager manager) => Finance(manager).Bank.Balance is > 0 and var savings ? savings : null;
+
+    /// <summary>
+    /// Höchstbetrag, der zur Bank gebracht werden kann: das eigene Konto, nur wenn es positiv ist.
+    /// [ORIGINAL] em.exe Datei 0x598DF–0x5997B (Auswahl Bank, rechts).
+    /// </summary>
+    public static long MaxDeposit(Manager manager) => Math.Max(0, manager.Money);
+
+    /// <summary>
+    /// Vorgabe für „zur Bank bringen“: der Kredit, höchstens das Konto; ohne Kredit oder ohne Guthaben keine Vorgabe.
+    /// [ORIGINAL] em.exe Datei 0x59994–0x59A12.
+    /// </summary>
+    public long? DepositDefault(Manager manager)
+    {
+        var credit = -Finance(manager).Bank.Balance;
+        return manager.Money > 0 && credit > 0 ? Math.Min(credit, manager.Money) : null;
     }
 
     /// <summary>Forderung von <paramref name="self"/> an <paramref name="other"/> minus Schuld bei ihm (Darlehensfeld im Original).</summary>
@@ -80,18 +106,48 @@ public sealed partial class GameState
 
     /// <summary>
     /// Höchstbetrag, den <paramref name="self"/> an <paramref name="other"/> zahlen kann (Tilgung und neue Forderung).
-    /// [ORIGINAL] em.exe Datei 0x596C2–0x59A12, rechts: min(1 Mio. DM − was der andere mir schuldet, eigenes Konto > 0).
+    /// [ORIGINAL] em.exe Datei 0x598DF–0x5997B, rechts: nur bei eigenem Konto &gt; 0, min(1 Mio. DM − was der andere mir
+    /// schuldet, eigenes Konto); eine eigene Schuld beim anderen erhöht die Grenze nicht (Abzug nur, wenn das Darlehensfeld
+    /// &gt; 0 ist, Datei 0x59924).
     /// </summary>
-    public long MaxLendToManager(int self, int other) =>
-        self == other ? 0 : Math.Max(0, Math.Min(FinanceRules.ManagerLoanLimit - ManagerLoanNet(self, other), Managers[self].Money));
+    public long MaxLendToManager(int self, int other)
+    {
+        var money = Managers[self].Money;
+        if (self == other || money <= 0)
+            return 0;
+        return Math.Max(0, Math.Min(FinanceRules.ManagerLoanLimit - Math.Max(0, ManagerLoanNet(self, other)), money));
+    }
 
     /// <summary>
-    /// Höchstbetrag, den <paramref name="self"/> bei <paramref name="other"/> leihen kann.
-    /// [ORIGINAL] em.exe Datei 0x596C2–0x59A12, links: nur wenn das Konto des anderen &gt; 0 ist,
-    /// min(1 Mio. DM − was ich ihm schulde, sein Konto).
+    /// Höchstbetrag, den <paramref name="self"/> von <paramref name="other"/> holen kann (Forderung einziehen und leihen).
+    /// [ORIGINAL] em.exe Datei 0x5977C–0x598DC, links: nur wenn das Konto des anderen &gt; 0 ist, min(1 Mio. DM − was ich ihm
+    /// schulde, sein Konto); mindestens die eigene Forderung an ihn (die auch bei leerem Konto des anderen eingezogen wird).
     /// </summary>
-    public long MaxBorrowFromManager(int self, int other) =>
-        self == other ? 0 : Math.Max(0, Math.Min(FinanceRules.ManagerLoanLimit - ManagerLoanNet(other, self), Managers[other].Money));
+    public long MaxBorrowFromManager(int self, int other)
+    {
+        if (self == other)
+            return 0;
+        var money = Managers[other].Money;
+        var limit = money > 0 ? Math.Min(FinanceRules.ManagerLoanLimit - Math.Max(0, ManagerLoanNet(other, self)), money) : 0;
+        return Math.Max(0, Math.Max(limit, ManagerLoanNet(self, other)));
+    }
+
+    /// <summary>
+    /// Vorgabe für „von einem Mitmanager holen“: die eigene Forderung an ihn, sonst keine.
+    /// [ORIGINAL] em.exe Datei 0x59872–0x598DC.
+    /// </summary>
+    public long? BorrowDefault(int self, int other) => ManagerLoanNet(self, other) is > 0 and var claim ? claim : null;
+
+    /// <summary>
+    /// Vorgabe für „an einen Mitmanager zahlen“: die eigene Schuld bei ihm, höchstens das eigene Konto; ohne Schuld oder
+    /// ohne Guthaben keine. [ORIGINAL] em.exe Datei 0x59994–0x59A12.
+    /// </summary>
+    public long? LendDefault(int self, int other)
+    {
+        var debt = ManagerLoanNet(other, self);
+        var money = Managers[self].Money;
+        return money > 0 && debt > 0 ? Math.Min(debt, money) : null;
+    }
 
     /// <summary>Offener Betrag, den <paramref name="borrower"/> dem <paramref name="lender"/> schuldet.</summary>
     public long LoanAmount(int lender, int borrower) =>
@@ -113,13 +169,56 @@ public sealed partial class GameState
 
     /// <summary>
     /// Geld an einen anderen Manager geben: zuerst eigene Schulden bei ihm tilgen, den Rest verleihen.
-    /// Liefert den bewegten Betrag.
+    /// Liefert den bewegten Betrag. [ORIGINAL] em.exe Datei 0x59184–0x59266 (rechts): Konto −= v, Konto des anderen += v,
+    /// eigenes Darlehensfeld += v, seines −= v.
     /// </summary>
     public long PayToManager(int from, int to, long amount)
     {
         amount = Math.Min(amount, MaxLendToManager(from, to));
-        var repaid = RepayManagerLoan(from, to, amount);
-        return repaid + LendBetweenManagers(from, to, amount - repaid);
+        if (amount <= 0)
+            return 0;
+        ShiftLoan(from, to, amount);
+        return amount;
+    }
+
+    /// <summary>
+    /// Geld von einem Mitmanager holen: zuerst die eigene Forderung an ihn einziehen, den Rest leihen – im lokalen Spiel
+    /// sofort und ohne seine Zustimmung (Entscheidung Nutzer E2, docs/analyse/re-geld.md). Liefert den bewegten Betrag.
+    /// [ORIGINAL] em.exe Datei 0x59269–0x5932B (links): Konto += v, Konto des anderen −= v (darf negativ werden),
+    /// eigenes Darlehensfeld −= v, seines += v; der Mitmanager wird nicht gefragt.
+    /// </summary>
+    public long BorrowFromManager(int self, int other, long amount)
+    {
+        amount = Math.Min(amount, MaxBorrowFromManager(self, other));
+        if (amount <= 0)
+            return 0;
+        ShiftLoan(other, self, amount);
+        return amount;
+    }
+
+    /// <summary>
+    /// <paramref name="payer"/> zahlt <paramref name="amount"/> an <paramref name="payee"/>: zuerst sinkt die Schuld des
+    /// Zahlers beim Empfänger, der Rest wird Forderung des Zahlers. Neutrale Umbuchung (kein Finanzbuch).
+    /// </summary>
+    private void ShiftLoan(int payer, int payee, long amount)
+    {
+        Managers[payer].Money -= amount;
+        Managers[payee].Money += amount;
+        var debt = ManagerLoans.FirstOrDefault(l => l.Lender == payee && l.Borrower == payer);
+        if (debt is not null)
+        {
+            var repaid = Math.Min(amount, debt.Amount);
+            debt.Amount -= repaid;
+            amount -= repaid;
+            if (debt.Amount == 0)
+                ManagerLoans.Remove(debt);
+        }
+        if (amount <= 0)
+            return;
+        var claim = ManagerLoans.FirstOrDefault(l => l.Lender == payer && l.Borrower == payee);
+        if (claim is null)
+            ManagerLoans.Add(claim = new ManagerLoan { Lender = payer, Borrower = payee });
+        claim.Amount += amount;
     }
 
     /// <summary>Zinsen pro Monat zwischen zwei Managern aus Sicht von <paramref name="self"/> (positiv = Einnahme).</summary>
@@ -135,39 +234,11 @@ public sealed partial class GameState
              - ManagerLoans.Where(l => l.Borrower == index).Sum(l => l.Amount);
     }
 
-    /// <summary>Verleiht Geld von einem Manager an einen anderen (nach Annahme des Angebots).</summary>
-    public long LendBetweenManagers(int lender, int borrower, long amount)
-    {
-        var from = Managers[lender];
-        amount = Math.Min(amount, MaxLendToManager(lender, borrower));
-        if (amount <= 0 || lender == borrower)
-            return 0;
-        var loan = ManagerLoans.FirstOrDefault(l => l.Lender == lender && l.Borrower == borrower);
-        if (loan is null)
-            ManagerLoans.Add(loan = new ManagerLoan { Lender = lender, Borrower = borrower });
-        loan.Amount += amount;
-        from.Money -= amount;
-        Managers[borrower].Money += amount;
-        return amount;
-    }
-
-    /// <summary>Tilgt Schulden bei einem anderen Manager.</summary>
-    public long RepayManagerLoan(int borrower, int lender, long amount)
-    {
-        var loan = ManagerLoans.FirstOrDefault(l => l.Lender == lender && l.Borrower == borrower);
-        if (loan is null)
-            return 0;
-        var debtor = Managers[borrower];
-        amount = Math.Min(Math.Min(amount, loan.Amount), Math.Max(0, debtor.Money));
-        if (amount <= 0)
-            return 0;
-        loan.Amount -= amount;
-        debtor.Money -= amount;
-        Managers[lender].Money += amount;
-        if (loan.Amount == 0)
-            ManagerLoans.Remove(loan);
-        return amount;
-    }
+    /// <summary>
+    /// Verleiht Geld nach Annahme einer Kreditanfrage (<see cref="RequestLoan"/>; nur noch für den späteren Netzwerkmodus,
+    /// Entscheidung E2). Wie <see cref="PayToManager"/>: eine Schuld des Verleihers beim anderen wird zuerst getilgt.
+    /// </summary>
+    public long LendBetweenManagers(int lender, int borrower, long amount) => PayToManager(lender, borrower, amount);
 
     public int IndexOf(Manager manager)
     {

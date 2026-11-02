@@ -13,20 +13,21 @@ internal static class ManagerScenarios
         d.StartNewGame();
         d.OpenTile("Finanzen");
         d.Move(1, 239); d.Save("01_finanzen_start");
-        d.Move(90, 92); d.Save("02_hinweis_bank_links");
-        d.Move(230, 92); d.Save("03_hinweis_bank_rechts");
 
-        // Herrenhäuser wählen, 100 Stück kaufen
+        // Herrenhäuser wählen, links „kaufen“, Balken und „+“, buchen
         d.Click(20, 115); // Auswahl erst per Klick (#206)
-        d.Save("04_herrenhaeuser_gewaehlt");
-        d.RightClick(FinanceScreen.LeftPlus.X + 4, FinanceScreen.LeftPlus.Y + 4);
-        d.Move(90, 92); d.Save("05_100_stueck");
+        d.Save("02_herrenhaeuser_gewaehlt");
+        d.Click(90, 92); d.Save("03_hinweis_kaufen");
+        d.Click(158 - 40, 93);
+        d.Click(FinanceScreen.LeftPlus.X + 2, FinanceScreen.LeftPlus.Y + 2);
+        d.Move(1, 239); d.Save("04_betrag");
         d.Click(FinanceScreen.LeftArrow.X + 4, FinanceScreen.LeftArrow.Y + 4);
-        d.Move(1, 239); d.Save("06_gekauft");
+        d.Move(1, 239); d.Save("05_gekauft");
 
-        // 50.000 DM aufs Sparbuch
+        // Bank, rechts einzahlen: Balken auf 50 Pixel
         d.Click(95, 30); // Bank wählen (Klick neben das Bankbild, das öffnet das Finanzbuch)
-        for (var i = 0; i < 5; i++) d.Click(FinanceScreen.RightPlus.X + 4, FinanceScreen.RightPlus.Y + 4);
+        d.Click(230, 92);
+        d.Click(160 + 50, 93); d.Save("06_sparbuch_betrag");
         d.Click(FinanceScreen.RightArrow.X + 4, FinanceScreen.RightArrow.Y + 4);
         d.Move(1, 239); d.Save("07_sparbuch");
 

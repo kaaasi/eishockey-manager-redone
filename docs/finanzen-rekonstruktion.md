@@ -585,6 +585,35 @@ sie nicht; ob ein anderes Neuzeichnen sie später entfernt, ist nicht nachgeprü
 Versatz wie bisher (0x59C6B), der Maßstab bleibt dabei erhalten. Die Anfangssuche des Ausschnitts (`InitialChartOffset`)
 rechnet weiter mit Maßstab 2.
 
+## Bedienung (Spur `geld`, Teil 5, G4)
+
+Bildschirmschleife Datei 0x58A57 (Ov 0x138), Betragsbalken Datei 0x58409 (Regel in
+[analyse/re-geld.md](analyse/re-geld.md), „Datei 0x58409 – Betragsbalken“). Umsetzung `FinanceScreen.Update`,
+`FinanceAmountBar`; Tests `FinanceBedienungTests` (Core und UI), `FinanceScreenTests`. Ereignisse `[0x5A16]`: 1 = links
+gedrückt, 2 = losgelassen, 3 = rechts (Ende). Zustand: Auswahl `[bp-0x16]` (0xFF = keine, anfangs keine), Seite
+`[bp-0x1c]` (0 / 36 / 167), Betrag `[bp-0x2a]` (−1 = keiner), Höchstwert `[bp-0x2e]`, q `[bp-0x32]`.
+
+| Klick (Reihenfolge der Prüfung) | Fundstelle | Wirkung |
+|---|---|---|
+| Seite gewählt, Taste 1, Mauszeile 74–87, Spalte 4–34 (links) bzw. 284–314 (rechts) | 0x58F50–0x590A1 | Knopf „+“ (x < 19 bzw. x > 299) oder „−“: ±3.000 Drittel bzw. ±1 Stück, gehalten wiederholt (Pause (8 − k) / 3 Takte nach dem k-ten Schritt); ohne Betrag (−1) nichts |
+| Seite gewählt, Spalte 4–314 außer 159, Zeile 90–98 | 0x590AD–0x5911A | Balken: s = x − 160 bzw. 158 − x (andere Hälfte: s < 0 → Höchstwert) |
+| Zeile 73–88, Betrag ≠ 0 und ≠ −1 | 0x5911D–0x5952D | Buchung (jede Spalte, auch auf den Knöpfen der anderen Seite); danach Auswahl 0xFF |
+| Zeile 73–100, Auswahl vorhanden, andere Hälfte als die gewählte Seite | 0x59531–0x59ADB | Seite wählen: Hinweis (Grundlinie 80/86, Farbe 30), Höchstwert und Vorgabe, Balken mit Vorgabe |
+| sonst | 0x59ADD–0x59D3F | Hinweis und Balken löschen, keine Seite; bei Taste 1 Auswahl neu (Rahmen: Bank Farbe 7, Mitmanager 7, Aktie 0x18; alter Rahmen in Farbe 0) |
+
+**Abweichungen vom Remake vorher:** zwei getrennte Beträge mit ±10.000 DM / 10 Stück (Rechtsklick zehnfach), Hinweis beim
+Überfahren, gedrückter Knopf mit weißem Rahmen, Leihen beim Mitmanager als Anfrage in den Posteingang, Anfangsauswahl Bank.
+
+**Höchstwerte** (Datei 0x596C2–0x59A12) wie in re-geld.md; dazu: der Abzug „was ich schulde“ bzw. „was er mir schuldet“
+gilt nur bei positivem Darlehensfeld (Datei 0x597FE, 0x59924), links ist die eigene Forderung immer Mindest-Höchstwert
+(auch bei leerem Konto des anderen, dessen Konto dann negativ wird), Bank links je Buchung max(2 Mio. − Kredit, Sparbuch).
+
+**`[APPROX]`:** Der Betrag wird beim Abwählen der Seite gelöscht. Im Original bleibt er stehen, und ein Klick in die
+Buchungszeile bucht ihn erneut – nach einer Buchung mit Auswahl 0xFF, die im Aktienzweig als Aktie 0x7F gelesen wird
+(Datei 0x5932C; Speicher außerhalb der Tabelle). Das wird nicht nachgebildet. Gehaltene Knöpfe: Takte in Bilder bei 60 Hz
+umgerechnet. Negatives s zeichnet keinen Balken; die Balkenlänge ist auf 0–154 begrenzt. Im Video wird nicht gebucht
+(re-geld.md), die Bedienung ist daher nur aus dem Code belegt.
+
 ## Dateidialog (em.exe 0x5DBE5, Teil 4 der Spur `finanzen-rest`)
 
 Funktion Datei 0x5DBE5–0x5E88F (Ov 0x140), `SaveLoadScreen.cs`. Maustaste in `[0x5A16]`: 1 = links, 3 = rechts. Lokale Offsets +0x5DBE5.

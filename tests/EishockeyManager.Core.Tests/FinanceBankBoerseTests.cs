@@ -51,11 +51,12 @@ public class FinanceBankBoerseTests
         Assert.Equal(1_000_000, game.LoanAmount(lender: 0, borrower: 1));
         Assert.Equal(0, game.PayToManager(from: 0, to: 1, 10_000));
 
-        // Bernd schuldet Anna 1 Mio.: er darf 2 Mio. zahlen (1 Mio. Tilgung, 1 Mio. neue Forderung).
-        Assert.Equal(2_000_000, game.MaxLendToManager(1, 0));
-        Assert.Equal(2_000_000, game.PayToManager(from: 1, to: 0, 3_000_000));
+        // Bernd schuldet Anna 1 Mio.: seine Schuld erhöht die Grenze nicht (Abzug nur bei Darlehensfeld > 0, Datei 0x59924;
+        // Teil 5 berichtigt den Sollwert 2 Mio. aus Teil 4) – er zahlt höchstens 1 Mio., das tilgt die Schuld.
+        Assert.Equal(1_000_000, game.MaxLendToManager(1, 0));
+        Assert.Equal(1_000_000, game.PayToManager(from: 1, to: 0, 3_000_000));
         Assert.Equal(0, game.LoanAmount(lender: 0, borrower: 1));
-        Assert.Equal(1_000_000, game.LoanAmount(lender: 1, borrower: 0));
+        Assert.Equal(0, game.LoanAmount(lender: 1, borrower: 0));
     }
 
     /// <summary>Links (leihen) höchstens 1 Mio. DM minus eigene Schuld beim anderen, und nur bis zu seinem Konto.</summary>
@@ -73,9 +74,12 @@ public class FinanceBankBoerseTests
         Assert.Equal(0, game.MaxBorrowFromManager(0, 1));
         Assert.Equal(0, game.LendBetweenManagers(lender: 1, borrower: 0, 10_000));
 
+        // Teil 5 (Datei 0x59872–0x598DC): leeres Konto des anderen sperrt nur neues Leihen; die eigene Forderung (Bernd an
+        // Anna 1 Mio.) bleibt einziehbar – Sollwert 0 aus Teil 4 deshalb auf 1 Mio. geändert.
         b.Money = 0;
         a.Money = 0;
-        Assert.Equal(0, game.MaxBorrowFromManager(1, 0));
+        Assert.Equal(1_000_000, game.MaxBorrowFromManager(1, 0));
+        Assert.Equal(0, game.MaxBorrowFromManager(0, 1));
     }
 
     /// <summary>Datei 0x5915F ff.: Kosten w + w · 15 / 1000, der Kaufpreis enthält die Gebühr (10 Stück zu 100 DM = 1.015 DM).</summary>
