@@ -162,8 +162,8 @@ gelegt – dann bleibt dieser Verein für immer draußen (zu prüfen am Spielsta
   0, ein Nachrücker 12 − (alter Platz) und +3, wenn das alte Platzfeld 0 ist. Das Remake (`StatisticsHistory.EternalPoints`) rechnet
   mit der Liga der gespielten Saison. Nicht am Video belegt (die Belege in `wettbewerbe.md` betreffen Vereine ohne Wechsel).
 - **Letzte Saison** (Datei 0x5641A): Das Programm endet nach dem Austausch und dem Highscore, **vor** dem Saisonende-Fenster
-  Datei 0x26F20 (Datei 0x5645D) – in der letzten Saison erscheinen Prämien und Ereignisse nicht. Remake: zeigt sie (zu prüfen
-  am Video; Folge mit Spielende).
+  Datei 0x26F20 (Datei 0x5645D) – in der letzten Saison erscheinen Prämien und Ereignisse nicht. Remake (ui-meldungen Teil 3): `SeasonEndScreen` geht in
+  der letzten Saison direkt zum Spielende, ohne das Fenster „Ereignisse“; das Titelträger-Fenster davor bleibt `[APPROX]`.
 
 ## Beleg im Original (DOSBox) – Anleitung
 
