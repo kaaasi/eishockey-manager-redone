@@ -81,8 +81,28 @@ beim Rechnen von Gehalt und Ablöse schon zurückgesetzt; Ablöse als Transferei
 Buchungsaufruf aufs Konto);
 Liste hinter dem Fenster am Saisonende = Bildschirm „Verträge“ (Original 0x108:0x43; Abweichung im Pixelvergleich unten belegt).
 
-**Befund für `finanzen-rest`:** Nach einem Kauf vom Computermarkt ruft das Original 0x18:0x223E (Datei 0x063BE, Fenster „Nehmen
-Sie einen Sponsor- / zuschuß von … an ?“) mit dem Kaufpreis (Datei 0x47A18–0x47A34); im Remake fehlt das.
+## Transferfolgen beim Computerverein (Spur `kader-transfer`, Teil 3; F005, F006)
+
+Umsetzung: `Core/Transfer.ComputerClub.cs` (`ComputerClubTransferRules`, `GameState.StrengthenBuyer`,
+`GameState.AcceptSponsorSubsidy`; `TransferMarket.Bid`/`Sign` mit `out SponsorSubsidyOffer?`); Frage in `UI/Screens/Team/TransferDialog.cs` (`DialogKind.Subsidy`);
+Tests `KaderTransferTeil3Tests`, `KaderTransferTeil3ScreenTests`. Kein neues Spielstandsfeld.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Käufer stärker | 0x058DC (0x238:0x175C) | Argumente Verein, s = (+0x10 + +0x11 + +0x12) / 3; a = (Kondition + Technik eines Teils) / 2; d = (s − a + 10) / 3; Teil k = random(0, 1); d auf 1 … 10 (0x120:0x52); Kondition 0x18 + k und Technik 0x1A + k je + random(d − 1, d + 1), ohne Grenze |
+| Aufruf Angebot | 0x46F89–0x46FB3 | „Verkaufen“ bei einem unaufgeforderten Angebot, nur Verein &lt; 0x40; danach Pool +0x1A = 6 |
+| Aufruf Markt | 0x4743C–0x47483 | Gebot auf einen eigenen Spieler am Markt angenommen, ohne Prüfung des Vereins; danach Gutschrift 0x4748A |
+| Zuschuss | 0x063BE (0x18:0x223E) | nur bei random(0, 6) = 0; Z = P · random(25, 65) / 30000 · 300 (Drittel-DM, volle 100 DM); Frage 0x4C246 „Nehmen Sie einen Sponsor- / zuschuß von / Z DM an ?“, „Aber immer!“ / „Lieber nicht.“; Ja → Konto + Z (0x064AD) |
+| Aufruf Zuschuss | 0x47A00–0x47A34 | nach dem Abzug des gezahlten Betrags P (Kauf nach der Verhandlung und Leihe); nicht bei eigenem Spieler (+[bp−0x11]) und nicht beim Kauf von einem anderen Manager (Rückfrage 0x4774E setzt [bp−0x12]) |
+
+Beleg Zuschuss: FILE05 → FILE07 (`docs/formate/spielstand-original.md`): Gebot 400.000 DM, Zuschuss 220.000 DM = Faktor 55.
+
+`[APPROX]`: Das Mittel a liest das Original über das Register `si`, das 0x058DC nicht setzt (Mauszeile des Transferbildschirms,
+0x46AA1) – also beliebige Bytes der Vereinstabelle; das Remake nimmt (Kondition + Technik beider Teile) / 4. Ohne gezogene
+Teamwerte (neues Spiel vor dem ersten Spiel) keine Wirkung. Der Zuschuss wird als Transfereinnahme gebucht (Original ohne
+Buchungsaufruf); er lebt nur im Fenster (Aufrufer ohne Frage verwerfen ihn wie „Lieber nicht.“); Vertragslose wie Marktspieler; Titel der Frage = Name des Managers; nach
+der Antwort zeigt das Remake weiter „Ihr Angebot wurde angenommen !“. Das Remake nimmt den Spieler zusätzlich in den Kader des
+Computervereins auf (das Original kennt dort nur Teamwerte).
 
 ## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 2: Versicherung, Sperre)
 

@@ -26,8 +26,16 @@ public sealed partial class TransferMarket
     /// Platz ist frisch angelegt (0x108:0x5C).
     /// </summary>
     public NegotiationResult Sign(GameState game, TransferPurchase purchase, int years, int salary, bool insured,
-        bool demandFilled)
+        bool demandFilled) => Sign(game, purchase, years, salary, insured, demandFilled, out _);
+
+    /// <summary>
+    /// Wie <see cref="Sign(GameState, TransferPurchase, int, int, bool, bool)"/>; nach einem Kauf vom Computermarkt liefert
+    /// <paramref name="subsidy"/> den gewürfelten Sponsorzuschuss (Datei 0x47A34, nach dem Abzug des Preises).
+    /// </summary>
+    public NegotiationResult Sign(GameState game, TransferPurchase purchase, int years, int salary, bool insured,
+        bool demandFilled, out SponsorSubsidyOffer? subsidy)
     {
+        subsidy = null;
         ArgumentNullException.ThrowIfNull(game);
         ArgumentNullException.ThrowIfNull(purchase);
         var manager = purchase.Buyer;
@@ -42,7 +50,7 @@ public sealed partial class TransferMarket
             _ = ContractRules.LockDays(game.ContractRandom);
             return result;
         }
-        Complete(game, listing, manager, purchase.Offer, loan: false);
+        subsidy = Complete(game, listing, manager, purchase.Offer, loan: false);
         var p = listing.Player;
         p.ContractYears = newYears;
         Contracts.ApplyInsurance(game, manager, p, insured, accepted: true, lockOnFailure: false);

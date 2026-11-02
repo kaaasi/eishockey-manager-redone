@@ -322,8 +322,10 @@ public class GameModeTests
     // Spur kader-transfer, Teil 1 (A170, 0x29A3F): alle Werte neu – Managervereine in der Bundesliga haben 25 statt 20
     // Kaderplätze (Kader nach Start-Liga): andere Kadererzeugung, Gehälter, Spielstärke und damit Titel, Konten und beide
     // Zufallsquellen. Konto Manager 1 bleibt in allen Saisons positiv (vorher Saison 4 −28.570).
+    // Spur kader-transfer, Teil 3 (0x058DC, 0x063BE): neu ab Saison 5 – Verkäufe stärken den Käufer, Käufe vom Computermarkt
+    // würfeln den Sponsorzuschuss (anderer Zufallsverbrauch); Konto Manager 1 in Saison 5 jetzt 47.271.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=1,GermanChampion=0,EuropeanCupWinner=2|778605,375429|WorldChampion=52,CupWinner=7,GermanChampion=6,EuropeanCupWinner=0|1483583,200180|WorldChampion=52,CupWinner=6,GermanChampion=7,EuropeanCupWinner=6|2550930,179895|WorldChampion=55,CupWinner=22,GermanChampion=7,EuropeanCupWinner=6|3053452,168010|WorldChampion=53,CupWinner=6,GermanChampion=1,EuropeanCupWinner=6|3889771,34303|R2115427305 C1668306248";
+        "WorldChampion=52,CupWinner=1,GermanChampion=0,EuropeanCupWinner=2|778605,375429|WorldChampion=52,CupWinner=7,GermanChampion=6,EuropeanCupWinner=0|1483583,200180|WorldChampion=52,CupWinner=6,GermanChampion=7,EuropeanCupWinner=6|2550930,179895|WorldChampion=55,CupWinner=22,GermanChampion=7,EuropeanCupWinner=6|3053452,168010|WorldChampion=63,CupWinner=3,GermanChampion=1,EuropeanCupWinner=6|4058396,47271|R53111434 C1475566117";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

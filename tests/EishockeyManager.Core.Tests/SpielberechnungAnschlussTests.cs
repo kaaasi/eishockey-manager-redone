@@ -159,10 +159,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an, 0x3702E).
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
     /// Spur kader-transfer, Teil 1 (A170, 0x29A3F): neu – der Managerverein in der Bundesliga hat 25 statt 20 Spieler (Kader nach Start-Liga), andere Kadererzeugung, Gehälter und Spielstärke.
+    /// Spur kader-transfer, Teil 3 (0x058DC, 0x063BE): aktiv neu (Käufer gestärkt, Sponsorzuschuss gewürfelt, Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
     [InlineData(false, "869FB7CF034EAE55")]
-    [InlineData(true, "582B08BB735F08EB")]
+    [InlineData(true, "E5B0448FF710C280")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

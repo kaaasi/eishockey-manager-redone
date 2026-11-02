@@ -300,9 +300,18 @@ public sealed partial class TransferMarket
     /// (Bedingung +0x11 = 0 und Leihe = 0, Datei 0x47851–0x4785B).
     /// </summary>
     public TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
-        out TransferPurchase? purchase)
+        out TransferPurchase? purchase) => Bid(game, manager, listing, offer, loan, out purchase, out _);
+
+    /// <summary>
+    /// Wie <see cref="Bid(GameState, Manager, TransferListing, long, bool, out TransferPurchase?)"/>; nach einer Leihe vom
+    /// Computermarkt liefert <paramref name="subsidy"/> den gewürfelten Sponsorzuschuss (Datei 0x47A34), den die Oberfläche
+    /// erfragt (<see cref="GameState.AcceptSponsorSubsidy"/>).
+    /// </summary>
+    public TransferResult Bid(GameState game, Manager manager, TransferListing listing, long offer, bool loan,
+        out TransferPurchase? purchase, out SponsorSubsidyOffer? subsidy)
     {
         purchase = null;
+        subsidy = null;
         if (!game.Managers.Contains(manager) || !IsCurrentListing(game, listing)
             || listing.From.Index == manager.ClubIndex && !listing.IsFreeAgent && !listing.FromPool
             || loan && listing.IsFreeAgent
@@ -347,11 +356,11 @@ public sealed partial class TransferMarket
                 Contracts.ValueSalary(game, manager, listing.Player));
             return TransferResult.Accepted;
         }
-        Complete(game, listing, manager, offer, loan: true);
+        subsidy = Complete(game, listing, manager, offer, loan: true);
         return TransferResult.Accepted;
     }
 
-    private void Complete(GameState game, TransferListing listing, Manager manager, long offer, bool loan)
+    private SponsorSubsidyOffer? Complete(GameState game, TransferListing listing, Manager manager, long offer, bool loan)
     {
         game.Book(manager, FinanceCategory.Transfers, -offer);
         if (listing.Seller is { } seller)
@@ -359,6 +368,8 @@ public sealed partial class TransferMarket
         Move(listing, game.Clubs[manager.ClubIndex], loan);
         // [ORIGINAL] Datei 0x4781B–0x47833: +0x2C des neuen Kaderplatzes = Gebot (Kauf und Leihe), Bit 31 bleibt.
         listing.Player.PurchasePrice = offer;
+        // [ORIGINAL] Datei 0x47A18–0x47A34: nach dem Abzug Frage nach dem Sponsorzuschuss (nur Computermarkt).
+        return RollSponsorSubsidy(game, listing, manager, offer);
     }
 
     /// <summary>Spieler wechselt vom bisherigen Verein in den Kader des Käufers.</summary>
@@ -448,6 +459,8 @@ public sealed partial class TransferMarket
             _bids.RemoveAll(open => ReferenceEquals(open, bid));
             return TransferResult.Impossible;
         }
+        // [ORIGINAL] Datei 0x47483: Teamwerte des bietenden Vereins steigen (0x58DC), vor der Gutschrift 0x4748A.
+        game.StrengthenBuyer(bid.Buyer, bid.Listing.Player);
         game.Book(seller, FinanceCategory.Transfers, TransferFee(bid));
         Move(bid.Listing, bid.Buyer, loan: false);
         return TransferResult.Accepted;

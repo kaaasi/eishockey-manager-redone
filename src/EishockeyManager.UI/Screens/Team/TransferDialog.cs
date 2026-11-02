@@ -9,7 +9,7 @@ namespace EishockeyManager.UI.Screens.Team;
 /// </summary>
 public sealed class TransferDialog
 {
-    public enum DialogKind { Buy, Loan, Sale, Bid, Talent, Offer }
+    public enum DialogKind { Buy, Loan, Sale, Bid, Talent, Offer, Subsidy }
 
     public enum Outcome { None, Confirm, Cancel }
 
@@ -20,8 +20,8 @@ public sealed class TransferDialog
 
     public static Rect AmountField => new(Box.X + 84, Box.Y + 36, 76, 7);
 
-    /// <summary>Fragefenster (Talentsuche, Gebote) statt Verhandlungsdialog?</summary>
-    public bool IsQuestion => Kind is DialogKind.Talent;
+    /// <summary>Fragefenster (Talentsuche, Sponsorzuschuss) statt Verhandlungsdialog?</summary>
+    public bool IsQuestion => Kind is DialogKind.Talent or DialogKind.Subsidy;
 
     /// <summary>Angebotsfenster 0x491F9 (unaufgefordertes Angebot, Argument 1, bzw. Angebot für einen Spieler auf dem Markt, Argument 0)?</summary>
     public bool IsOfferWindow => Kind is DialogKind.Offer or DialogKind.Bid;
@@ -89,13 +89,28 @@ public sealed class TransferDialog
     /// <summary>Unaufgefordertes Angebot im Fenster (nur <see cref="DialogKind.Offer"/>).</summary>
     public UnsolicitedOffer? Offer { get; private init; }
 
+    /// <summary>
+    /// Frage nach dem Sponsorzuschuss nach einem Kauf vom Computermarkt. [ORIGINAL] Datei 0x063BE: Frage 0x4C246 mit den Zeilen
+    /// „Nehmen Sie einen Sponsor-“ (DGROUP 0x12DD), „zuschuß von“ (0x12E1) und Betrag + „ DM an ?“ (0x14D9), Knöpfe
+    /// „Aber immer!“ (0x1311) und „Lieber nicht.“ (0x1315). [APPROX] Fenster wie die Talentsuche, Titel = Name des Managers
+    /// (0x4C246 erhält den Manager [0xA70E]); kein Videobeleg.
+    /// </summary>
+    public static TransferDialog ForSubsidy(SponsorSubsidyOffer offer) => new(DialogKind.Subsidy)
+    {
+        Subsidy = offer,
+        Price = offer.Amount,
+    };
+
+    /// <summary>Angebotener Sponsorzuschuss (nur <see cref="DialogKind.Subsidy"/>).</summary>
+    public SponsorSubsidyOffer? Subsidy { get; private init; }
+
     /// <summary>Rückfrage zur Talentsuche mit dem Preis nach Rabatt (<see cref="GameState.TalentSearchPrice"/>).</summary>
     public static TransferDialog ForTalent(long price) => new(DialogKind.Talent) { Price = price };
 
     private string ConfirmText => Kind switch
     {
         DialogKind.Sale or DialogKind.Offer or DialogKind.Bid => "Verkaufen",
-        DialogKind.Talent => "Aber immer!",
+        DialogKind.Talent or DialogKind.Subsidy => "Aber immer!",
         _ => "Mach' ich!",
     };
 
@@ -103,7 +118,7 @@ public sealed class TransferDialog
     {
         DialogKind.Sale when Listing is not null => "Behalten",
         DialogKind.Offer or DialogKind.Bid => "Behalten",
-        DialogKind.Talent => "Lieber nicht.",
+        DialogKind.Talent or DialogKind.Subsidy => "Lieber nicht.",
         _ => "Abbruch",
     };
 
@@ -233,10 +248,18 @@ public sealed class TransferDialog
         Widgets.Frame(s, a, b, FrameStyle.Orange);
         QuestionMark(s, a, b.X + 7, b.Y + 4);
         QuestionMark(s, a, b.Right - 29, b.Y + 4);
-        string[] lines = Kind == DialogKind.Talent
-            ? ["Möchten Sie, daß Ihr 'Spion'", "für Sie auf Talentsuche geht?", "Preis: " + TransferScreen.Money(Price)]
-            : ["Nehmen Sie das Angebot", $"({TransferScreen.Money(Price)}) für", Player!.Name + " an ?"];
-        var title = Kind == DialogKind.Talent ? "LetsShow" : "ANGEBOT von " + Bid!.Buyer.Name;
+        string[] lines = Kind switch
+        {
+            DialogKind.Talent => ["Möchten Sie, daß Ihr 'Spion'", "für Sie auf Talentsuche geht?", "Preis: " + TransferScreen.Money(Price)],
+            DialogKind.Subsidy => ["Nehmen Sie einen Sponsor-", "zuschuß von", TransferScreen.Money(Price) + " an ?"],
+            _ => ["Nehmen Sie das Angebot", $"({TransferScreen.Money(Price)}) für", Player!.Name + " an ?"],
+        };
+        var title = Kind switch
+        {
+            DialogKind.Talent => "LetsShow",
+            DialogKind.Subsidy => Subsidy!.Manager.Name,
+            _ => "ANGEBOT von " + Bid!.Buyer.Name,
+        };
         Widgets.ShadowText(s, a.Flow, cx, b.Y + 12, title, Colors.White, Colors.Black);
         s.HLine(b.X + 34, b.Y + 24, b.W - 68, Colors.White);
         for (var i = 0; i < lines.Length; i++)

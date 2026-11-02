@@ -183,9 +183,12 @@ public sealed class TransferScreen : Screen
         switch (d.Kind)
         {
             case TransferDialog.DialogKind.Buy or TransferDialog.DialogKind.Loan:
-                var bid = Market.Bid(Game, Manager, d.Listing!, d.Amount, d.Kind == TransferDialog.DialogKind.Loan, out var purchase);
+                var bid = Market.Bid(Game, Manager, d.Listing!, d.Amount, d.Kind == TransferDialog.DialogKind.Loan, out var purchase,
+                    out var subsidy);
                 if (purchase is not null)
                     OpenContract(purchase);
+                else if (bid == TransferResult.Accepted)
+                    ShowAccepted(subsidy); // Leihe
                 else
                     _message.Show(TransferMarket.Message(bid));
                 break;
@@ -209,7 +212,30 @@ public sealed class TransferScreen : Screen
                 if (Game.AcceptUnsolicitedOffer(d.Offer!) != TransferResult.Accepted)
                     _message.Show(TransferMarket.Message(TransferResult.Impossible));
                 break;
+            case TransferDialog.DialogKind.Subsidy:
+                AnswerSubsidy(d.Subsidy!, accept: true);
+                break;
         }
+    }
+
+    /// <summary>
+    /// Abschluss eines Kaufs bzw. einer Leihe: zuerst die Frage nach dem Sponsorzuschuss, falls gewürfelt (Datei 0x47A34),
+    /// dann die Meldung. [APPROX] Die Meldung „Ihr Angebot wurde angenommen !“ zeigt das Remake zusätzlich (siehe
+    /// <see cref="TransferMarket.Message"/>). Der Zuschuss lebt nur im Fenster (kein Spielstandsfeld).
+    /// </summary>
+    private void ShowAccepted(SponsorSubsidyOffer? subsidy)
+    {
+        if (subsidy is not null)
+            _dialog = TransferDialog.ForSubsidy(subsidy);
+        else
+            _message.Show(TransferMarket.Message(TransferResult.Accepted));
+    }
+
+    private void AnswerSubsidy(SponsorSubsidyOffer subsidy, bool accept)
+    {
+        if (accept)
+            Game.AcceptSponsorSubsidy(subsidy);
+        _message.Show(TransferMarket.Message(TransferResult.Accepted));
     }
 
     /// <summary>
@@ -238,10 +264,10 @@ public sealed class TransferScreen : Screen
             _message.Show(TransferMarket.NotTakingPlace); // 0x47874 → 0x47A3E
             return;
         }
-        var result = Market.Sign(Game, purchase, d.Years, d.Salary, d.Insured, d.DemandFilled);
+        var result = Market.Sign(Game, purchase, d.Years, d.Salary, d.Insured, d.DemandFilled, out var subsidy);
         if (result == NegotiationResult.Accepted)
         {
-            _message.Show(TransferMarket.Message(TransferResult.Accepted));
+            ShowAccepted(subsidy);
             return;
         }
         _message.Show(Contracts.Message(result, purchase.Player));
@@ -258,6 +284,8 @@ public sealed class TransferScreen : Screen
             Market.Decline(d.Bid!);
             ShowNextBid();
         }
+        else if (d.Kind == TransferDialog.DialogKind.Subsidy)
+            AnswerSubsidy(d.Subsidy!, accept: false);
     }
 
     public override void Draw(Surface s)
