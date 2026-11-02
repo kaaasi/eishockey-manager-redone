@@ -220,7 +220,12 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   Managerzugs (450C6h in 44E22h, `AutoLineupTurnTests`) und beim Verlassen der Transferliste (47BB5h in 465F1h,
   `TransferAutoLineupTests`); A190 als Kommentar (Neuaufstellung nach Verletzung im Spiel über 53C57h). Doku
   `reverse-engineering.md` (Begegnungen, Verletzungsart) nachgeführt; Inventur A190/A111 mit `marker-werkzeug`. Nicht
-  angeschlossen: U8 (Nationalteam Satz 5) – Runde 12.
+  angeschlossen: U8 (Nationalteam Satz 5) – Runde 12. Wechselwirkungen (Proben nachgeführt): Bezugsbewertung der
+  Managervereine nach der Startaufstellung neu ([APPROX], `SquadTests`); `ClubDressedTests` (Migration 4 an einem
+  Computerverein); `WettbewerbeSpiel2Tests` (Play-offs ohne Manager, Byte wie 4F5A8h); `TacticsClubScreenTests` (Meldung);
+  `StadiumAusbauTests` (S-K1 neutral), `KaderTransferTeil4Tests` (Grenze 22 statt 30); `StatistikenVereinTests` und `TestSquadKeeper` (ohne Vertragslose: Spieler eines Computerkaders umsetzen, nur Probe);
+  `FinanceCalibrationTests`: passive Bundesliga mit Originaldaten, Seed 17, nach der Acht-Wochen-Regel entlassen – Probe
+  prüft die Ursache und endet für den Seed (**vorläufig, Entscheidung Nutzer offen**).
 
 ### Nicht in Runde 11
 
