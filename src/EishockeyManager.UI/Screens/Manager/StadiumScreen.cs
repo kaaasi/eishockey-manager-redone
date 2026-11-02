@@ -67,7 +67,9 @@ public sealed class StadiumScreen : Screen
     private const byte LabelColor = 252;
     private const byte ValueColor = 31;
     private const byte LevelColor = 24;
+    /// <summary>[ORIGINAL] Kostenzeile Datei 0x3E59A–0x3E5C7: Farbe 8, wenn das Konto reicht, sonst 17.</summary>
     private const byte CostColor = 17;
+    private const byte AffordableColor = 8;
     private const byte BoxColor = 240;
     private const byte DialogText = 252;
 
@@ -80,7 +82,8 @@ public sealed class StadiumScreen : Screen
     private Choice? _hover;
     private Choice? _selected;
     private int _target;
-    private bool _confirm;
+    private StadiumQuote? _quote;
+    private string? _notice;
     private Rect? _pressed;
 
     public StadiumScreen(ScreenHost host, Screen back) : base(host) => _back = back;
@@ -90,7 +93,13 @@ public sealed class StadiumScreen : Screen
     /// <summary>Zielstufe (Bereich) bzw. Zahl der Ausbauschritte (Plätze).</summary>
     public int Target => _target;
 
-    public bool AsksConfirmation => _confirm;
+    public bool AsksConfirmation => _quote is not null;
+
+    /// <summary>Angebot der Baufirma, solange die Frage offen ist.</summary>
+    public StadiumQuote? Quote => _quote;
+
+    /// <summary>Hinweis statt Auswahl („Die Baufirma ist noch beleidigt...“).</summary>
+    public string? Notice => _notice;
 
     private GameState Game => Host.Game!;
     private Core.Manager Me => Game.ActiveManager;
@@ -103,17 +112,17 @@ public sealed class StadiumScreen : Screen
     public override void Update(InputState input)
     {
         _pressed = null;
-        if (_confirm)
+        if (_quote is { } quote)
         {
-            if (input.Clicked(YesButton) || input.Pressed(Key.Enter))
+            // [ORIGINAL] Datei 0x3E389 (Ja) / 0x3E482 (Nein): Nein lässt die Baufirma beleidigt.
+            // [APPROX] Jeder andere Klick oder jede Taste gilt als „Nein“ (Dialog des Remakes).
+            var yes = input.Clicked(YesButton) || input.Pressed(Key.Enter);
+            if (yes || input.LeftClick || input.RightClick || input.Keys.Count > 0)
             {
-                var choice = _selected!.Value;
-                Game.StartConstruction(Me, choice.Project, choice.Feature, _target);
-                _confirm = false;
+                Game.AnswerConstruction(Me, quote, yes);
+                _quote = null;
                 _selected = null;
             }
-            else if (input.LeftClick || input.RightClick || input.Keys.Count > 0)
-                _confirm = false;
             return;
         }
         if (input.Pressed(Key.Escape) || input.RightClick)
@@ -130,8 +139,8 @@ public sealed class StadiumScreen : Screen
         else if (input.Clicked(TicketDown)) { _pressed = TicketDown; Stadium.TicketPrice = Math.Max(Stadium.MinTicketPrice, Stadium.TicketPrice - 1); }
         else if (_selected is not null && input.Clicked(LevelUp)) { _pressed = LevelUp; Step(+1); }
         else if (_selected is not null && input.Clicked(LevelDown)) { _pressed = LevelDown; Step(-1); }
-        else if (_selected is not null && input.Clicked(LevelBox) && CurrentOffer() is not null && Stadium.Construction is null)
-            _confirm = true;
+        else if (_selected is { } sel && input.Clicked(LevelBox))
+            _quote = Game.QuoteConstruction(Me, sel.Project, sel.Feature, _target);
         else if (_hover is { } hover)
             Select(hover);
     }
@@ -157,33 +166,42 @@ public sealed class StadiumScreen : Screen
         return null;
     }
 
-    /// <summary>Wählt einen Ausbau; Zielstufe = nächste Stufe bzw. ein Ausbauschritt.</summary>
+    /// <summary>
+    /// Wählt einen Ausbau; Zielstufe = nächste Stufe bzw. ein Ausbauschritt. Beleidigte Baufirma: Hinweis, keine Auswahl;
+    /// Projekt im Bau oder am Ende: keine Auswahl. [ORIGINAL] Datei 0x3DE71–0x3DF81.
+    /// </summary>
     public void Select(Choice choice)
     {
+        _notice = null;
+        _selected = null;
+        if (Stadium.IsOffended(choice.Project, choice.Feature))
+        {
+            _notice = "Die Baufirma ist noch beleidigt...";
+            return;
+        }
+        if (!Stadium.CanSelect(choice.Project, choice.Feature))
+            return;
         _selected = choice;
-        _target = choice.Project == StadiumProject.Feature ? Stadium.Level(choice.Feature) + 1 : 1;
-        if (CurrentOffer() is null && choice.Project == StadiumProject.Feature)
-            _target = Stadium.Level(choice.Feature);
+        _target = Stadium.FirstTarget(choice.Project, choice.Feature);
     }
 
+    /// <summary>
+    /// ▲▼: höchstens bis zum Höchstziel; ein höheres Ziel nur, wenn das Konto die Kosten deckt.
+    /// [ORIGINAL] Datei 0x3E107–0x3E137.
+    /// </summary>
     private void Step(int delta)
     {
-        var choice = _selected!.Value;
-        if (choice.Project == StadiumProject.Feature)
-        {
-            var max = Stadium.Features[(int)choice.Feature].Levels.Length - 1;
-            _target = Math.Clamp(_target + delta, Math.Min(max, Stadium.Level(choice.Feature) + 1), max);
-        }
-        else
-        {
-            var next = Math.Max(1, _target + delta);
-            if (Stadium.PlacesOffer(choice.Project, next) is not null)
-                _target = next;
-        }
+        var c = _selected!.Value;
+        var next = _target + delta;
+        if (Stadium.Cost(c.Project, c.Feature, next) is not { } cost)
+            return;
+        if (delta > 0 && Me.Money < cost)
+            return;
+        _target = next;
     }
 
-    public (long Cost, int Weeks)? CurrentOffer() => _selected is not { } c ? null
-        : c.Project == StadiumProject.Feature ? Stadium.Offer(c.Feature, _target) : Stadium.PlacesOffer(c.Project, _target);
+    /// <summary>Kosten der gewählten Stufe vor Rabatt.</summary>
+    public long? CurrentCost() => _selected is { } c ? Stadium.Cost(c.Project, c.Feature, _target) : null;
 
     private static string Label(Choice c) => c.Project switch
     {
@@ -196,9 +214,8 @@ public sealed class StadiumScreen : Screen
     {
         if (c.Project == StadiumProject.Feature)
             return Stadium.Features[(int)c.Feature].Levels[_target];
-        var (now, step) = c.Project == StadiumProject.Sitzplaetze ? (Stadium.Seats, Stadium.SeatStep) : (Stadium.Standing, Stadium.StandingStep);
-        // [APPROX] Anzeige der Platzzahl nach dem Ausbau (im Video nicht angeklickt).
-        return Number(now + _target * step);
+        // [ORIGINAL] Kostenzeile Datei 0x3E52B: Platzzahl nach dem Bau.
+        return Number(Stadium.PlacesAfter(c.Project, _target));
     }
 
     private static string Number(long n) => n.ToString("#,0", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
@@ -215,7 +232,7 @@ public sealed class StadiumScreen : Screen
         s.HLine(0, ImageHeight, Surface.Width, PanelLine);
         DrawList(s);
         DrawRight(s);
-        if (_confirm)
+        if (_quote is not null)
             DrawConfirm(s);
     }
 
@@ -278,21 +295,28 @@ public sealed class StadiumScreen : Screen
         Row(189, "Eintritt", $"{Stadium.TicketPrice} DM");
 
         var shown = _hover ?? _selected;
-        if (Stadium.Construction is { } c)
-        {
-            // [APPROX] Laufende Baustelle statt der Stufenwahl (Texte aus em.exe: „ ausbauen“, „Bauzeit: ca. “, „ Wochen“).
-            s.Text(mini, RightLabelX, 200, c.Label + " ausbauen", ValueColor);
-            s.Text(mini, RightLabelX + 2, 221, $"Bauzeit: ca. {c.WeeksLeft} Wochen", CostColor);
-        }
+        if (_notice is { } notice && _hover is null)
+            s.Text(mini, RightLabelX, 200, notice, ValueColor);
         else if (shown is { } choice)
         {
-            s.Text(mini, RightLabelX, 200, Label(choice) + " ausbauen", ValueColor);
-            if (_selected == choice && CurrentOffer() is { } offer)
+            var weeks = Stadium.WeeksLeft(choice.Project, choice.Feature);
+            if (Stadium.IsUnderConstruction(choice.Project, choice.Feature) && weeks > 0)
             {
-                Arrows(s, LevelUp, LevelDown);
-                s.Outline(LevelBox, BoxColor);
-                s.TextCentered(mini, LevelBox.X + LevelBox.W / 2, LevelBox.Y + 3, TargetText(choice), LevelColor);
-                s.Text(mini, RightLabelX + 2, 221, "Kosten: " + GameState.FormatMoney(offer.Cost), CostColor);
+                // [APPROX] Laufende Baustelle statt der Stufenwahl; Text wie Tabelle „Bau“ Datei 0x3D5CA–0x3D5E5.
+                s.Text(mini, RightLabelX, 200, Label(choice), ValueColor);
+                s.Text(mini, RightLabelX + 2, 221, weeks == 1 ? "(Noch 1 Woche)" : $"(Noch {weeks} Wochen)", CostColor);
+            }
+            else
+            {
+                s.Text(mini, RightLabelX, 200, Label(choice) + " ausbauen", ValueColor);
+                if (_selected == choice && CurrentCost() is { } cost)
+                {
+                    Arrows(s, LevelUp, LevelDown);
+                    s.Outline(LevelBox, BoxColor);
+                    s.TextCentered(mini, LevelBox.X + LevelBox.W / 2, LevelBox.Y + 3, TargetText(choice), LevelColor);
+                    s.Text(mini, RightLabelX + 2, 221, "Kosten: " + GameState.FormatMoney(cost),
+                        Me.Money >= cost ? AffordableColor : CostColor);
+                }
             }
         }
 
@@ -316,13 +340,14 @@ public sealed class StadiumScreen : Screen
     {
         var mini = Assets.Mini;
         var choice = _selected!.Value;
-        var offer = CurrentOffer()!.Value;
+        var quote = _quote!;
         s.Fill(Dialog, Colors.Black);
         s.Outline(Dialog, BoxColor);
         s.TextCentered(mini, 160, Dialog.Y + 6, "Möchten Sie Ihr Stadion ausbauen ?", DialogText);
         s.TextCentered(mini, 160, Dialog.Y + 16, $"{Label(choice)}: {TargetText(choice)}", LevelColor);
-        s.TextCentered(mini, 160, Dialog.Y + 26, $"Bauzeit: ca. {offer.Weeks} Wochen", DialogText);
-        s.TextCentered(mini, 160, Dialog.Y + 34, "Kosten: " + GameState.FormatMoney(offer.Cost), CostColor);
+        // [ORIGINAL] Texte „Bauzeit: ca. w Wochen“ (DGROUP 0xDE0) und „Rabatt: r%“ (Datei 0x3E1FE ff.).
+        s.TextCentered(mini, 160, Dialog.Y + 26, $"Bauzeit: ca. {quote.Weeks} Wochen", DialogText);
+        s.TextCentered(mini, 160, Dialog.Y + 34, $"Kosten: {GameState.FormatMoney(quote.Cost)}  Rabatt: {quote.Discount}%", CostColor);
         s.TextCentered(mini, YesButton.X + YesButton.W / 2, YesButton.Y + 2, "Aber klar", ValueColor);
         s.TextCentered(mini, NoButton.X + NoButton.W / 2, NoButton.Y + 2, "Kein Gedanke", ValueColor);
     }

@@ -136,6 +136,10 @@ Platzzahl, Farbe 24.
 | Buchung | Konto direkt | `Book(…, Bau, …)` |
 | Meldung | je fertigem Projekt | ja |
 
+**Status (Runde 11, Spur `geld` Teil 1, PR #417):** Kosten, Bauzeit, parallele Baustellen, Platzgrenze, Rabatt,
+„beleidigt“-Sperre und Baufortschritt wie oben umgesetzt (`Core/FinanceStadium.cs`); Buchung nach E1. Offen: Videostelle
+„Straße 1.200.000 DM“, Wochentakt (Remake: montags, Original: Tageszähler durch 7 teilbar), Tabelle G7.
+
 Die Videowerte im Kommentar zu `FirstStepCost` (Kühlanlage 640.000, Imbißbude 580.000, Kino 520.000, Bowlingbahn 450.000)
 bestätigen K; „Straße 1.200.000 DM“ widerspricht K = 1.300.000 DM – die Videostelle ist nachzusehen (Rabatt wird erst nach
 der Frage abgezogen, kann es also nicht sein).

@@ -116,7 +116,8 @@ internal static class ManagerScenarios
         var ads = game.Ads(me);
         ads.Offers[Core.AdSlotKind.Trikot][5] = new Core.SponsorOffer(Core.AdSlotKind.Trikot, 5, 1, 1, 9_000);
         game.AcceptOffer(me, new Core.AdSlot(Core.AdSlotKind.Trikot), 5);
-        for (var md = 0; md < 10; md++) d.PlayMatchDay();
+        // Bauzeit nach em.exe 10–19 Wochen (Spur geld, Teil 1): spielen, bis die Meldung da ist.
+        for (var md = 0; md < 10 || (stadium.Constructions.Any() && md < 60); md++) d.PlayMatchDay();
         d.Move(1, 1); d.Save("02_leiste_nachricht");
         d.Click(NewsBar.ScrollDown.X + 5, NewsBar.ScrollDown.Y + 5); d.Move(1, 1); d.Save("03_leiste_weiter");
         d.Click(100, 210); d.Move(1, 239); d.Save("04_posteingang");

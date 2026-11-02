@@ -129,7 +129,8 @@ public sealed partial class GameState
             {
                 // [ORIGINAL] Tagesabschluss 0x3ED01: Zinskonto, Werbeangebote (Monatsletzter, Monatsmitte), am 1.
                 // Restlaufzeiten der Werbeverträge (0x3EF52), am Monatsletzten der Monatsabschluss (0x3F02C, #134);
-                // danach die Werbebewertung neu (0x5569F).
+                // danach die Werbebewertung neu (0x5569F). Zuerst die „beleidigten“ Baufirmen (0x3ED19, Spur geld).
+                DailyStadium();
                 AccrueDailyInterest(date);
                 DailySponsorOffers(date);
                 if (date.Day == 1)
@@ -192,7 +193,7 @@ public sealed partial class GameState
     private long RecurringExpenses(Manager manager) => Finance(manager).YouthFunding;
     private void WeeklyManagerFinances(Manager manager)
     {
-        if (AdvanceConstruction(manager) is { } done)
+        foreach (var done in AdvanceConstruction(manager))
             ConstructionCompleted(manager, done);
         AdvanceTalentSearch(manager);
     }

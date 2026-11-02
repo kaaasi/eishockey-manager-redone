@@ -71,7 +71,8 @@ public class InboxYouthTests
         var me = game.ActiveManager;
         var stadium = game.Finance(me).Stadium;
         game.StartConstruction(me, StadiumProject.Feature, StadiumFeature.Anzeigetafel, stadium.Level(StadiumFeature.Anzeigetafel) + 1);
-        for (var i = 0; i < 10 && game.Finance(me).Stadium.Construction is not null; i++)
+        // Bauzeit nach em.exe 10–19 Wochen (Spur geld, Teil 1; vorher 2 Wochen fest).
+        for (var i = 0; i < 60 && game.Finance(me).Stadium.Constructions.Any(); i++)
             TestSeason.PlayMatchDay(game);
         Assert.Contains(game.Inbox(me), m => m.Lines[0] == "Der Stadion-Ausbau (Anzeigetafel)");
     }
