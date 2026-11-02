@@ -110,7 +110,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
      Regressionstest Play-offs mit allen Feldern der Meldungsmatrix (#362).
 - **Abnahme:** Mehrsaisonprobe 20 Saisons (Modus 1, 2, 4; passiv/aktiv); je Regel roter Test.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/analyse/re-saisonwechsel.md` (nur Status), Tests. **Modell:** Claude Opus 5.5.
-  **Status:** Teil 1 fertig, Review offen (PR #419); Teil 2 fertig, Review offen (PR #428, gestapelt auf #419); Teil 3 fertig, Review offen (PR #431, gestapelt auf #428); Teil 4 fertig, Review offen (PR #432, gestapelt auf #431) – alle Teile fertig, Integration.
+  **Status:** Teil 1 fertig, Review offen (PR #419); Teil 2 fertig, Review offen (PR #428, gestapelt auf #419); Teil 3 fertig, Review offen (PR #431, gestapelt auf #428); Teil 4 fertig, Review offen (PR #432, gestapelt auf #431); Review #441: Teil 5 (PR #449, gestapelt auf #432) behebt SW-01 (Zwangsabsteiger mit Aufstieg bleibt oben, Partner in die Oberliga, `[APPROX]`) und SW-03 – Nachprüfung durch die Leitstelle. Restlücke SW-02 (P3): Ewige Tabelle, Ewige Bilanz und „Früher“ fehlen die letzte Saison, wenn am 29. April alle Manager entlassen werden (`GameOver` aus `CheckDebts` vor `FinishSeason`); offen.
 
 ### Spur `kader-transfer` – Kader, Transfermarkt, Verträge, Pool
 

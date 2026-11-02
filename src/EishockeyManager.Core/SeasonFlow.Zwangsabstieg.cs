@@ -141,6 +141,39 @@ public sealed partial class GameState
         }
         foreach (var group in RelegationGroups.Where(g => counts.ContainsKey(g.Upper)))
             RecordRelegationGroup(record, group, tables[group.Upper]);
+        ResolveDoubleMoves(record);
         return forced;
+    }
+
+    /// <summary>
+    /// Zwangsabsteiger der 2. Liga, der zugleich über die Aufstiegsrunde in die Bundesliga aufsteigt (Review #441, SW-01):
+    /// Er bleibt in der Bundesliga; sein Tauschpartner aus der Bundesliga geht statt seiner in die Oberliga.
+    /// </summary>
+    /// <remarks>
+    /// [APPROX] Aus dem Disassembly abgeleitet, ohne DOSBox-Beleg (Review #441 SW-01; Datei 0x55F93 ff.: Gruppe nach
+    /// Liga-Stufe 1, Austausch Gruppe 0 vor Gruppe 1, Datei 0x56137–0x5636D): em.exe tauscht Vereinsplätze (0x36169), nicht
+    /// Vereine. Der erste Tausch (Bundesliga/2. Liga) setzt den Zwangsabsteiger auf den Bundesligaplatz seines Partners und den
+    /// Partner auf seinen Zweitligaplatz; der zweite Tausch (2. Liga/Oberliga) bewegt diesen Platz – also den Partner – in die
+    /// Oberliga. Vorher stand der Verein in beiden Listen, <see cref="SeasonRecord.NextLeague"/> nahm die Bundesliga, und die
+    /// Ligen hatten 12/13/11 Vereine. Jetzt bleiben 12/12/12, und jeder Verein steht in höchstens einer Liste. Der Partner
+    /// ist der Absteiger mit demselben Paarindex (<see cref="RelegationExchange"/> liefert Paare in Reihenfolge). [APPROX] Die
+    /// Startordnung der Folgesaison (<see cref="Season.SuccessorOrder"/>) findet für diese beiden Vereine keinen Partner und
+    /// hängt sie in ihrer neuen Liga hinten an (em.exe: Platz des Partners); nur Ordnung, keine Wirkung auf die Ligagrößen.
+    /// </remarks>
+    private static void ResolveDoubleMoves(SeasonRecord record)
+    {
+        var up = record.PromotedInto[League.Bundesliga];
+        var down = record.RelegatedInto[League.ZweiteLiga];
+        var oberliga = record.RelegatedInto[League.Oberliga];
+        var partners = new List<int>();
+        for (var k = 0; k < up.Count && k < down.Count; k++)
+        {
+            var at = oberliga.IndexOf(up[k]);
+            if (at < 0)
+                continue;
+            oberliga[at] = down[k];
+            partners.Add(down[k]);
+        }
+        down.RemoveAll(partners.Contains);
     }
 }

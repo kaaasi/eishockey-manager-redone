@@ -80,7 +80,10 @@ public class SaisonwechselOberligaTests
         Assert.Equal(12, result.Rank);
         Assert.Contains(SeasonEvent.Promotion, result.Events);
         Assert.Contains(SeasonEvent.Relegation, result.Events);
-        Assert.Equal(0, result.Premium % GameState.SinglePremium); // nur Einzelprämien, keine 300.000 DM für den Aufstieg
+        // Nur Einzelprämien, keine 300.000 DM für den Aufstieg (Review #441, SW-03: genau ein Vielfaches je Einzelprämie –
+        // die Aufstiegsprämie ist selbst ein Vielfaches von 100.000 DM).
+        var singles = result.Events.Count(e => e is SeasonEvent.BestGoalie or SeasonEvent.TopScorer or SeasonEvent.FairPlay);
+        Assert.Equal(GameState.SinglePremium * singles, result.Premium);
         Assert.Equal(GameState.OberligaKeptMoney + result.Premium, game.Managers[0].Money);
 
         game.StartNextSeason();
