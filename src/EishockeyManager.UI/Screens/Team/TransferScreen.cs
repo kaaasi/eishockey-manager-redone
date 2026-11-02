@@ -122,12 +122,11 @@ public sealed class TransferScreen : Screen
 
         var x = input.MouseX;
         var y = input.MouseY;
-        if (TalentButton.Contains(x, y))
+        // [ORIGINAL] em.exe Datei 0x468C1: Der Knopf „Talent“ wertet nur aus, solange keine Suche läuft (Zähler 0);
+        // sonst fällt der Klick durch (Integration Runde 11, Anschluss aus geld Teil 6, #448).
+        if (TalentButton.Contains(x, y) && Game.Finance(Manager).TalentSearch is null)
         {
-            if (Game.Finance(Manager).TalentSearch is not null)
-                _message.Show(TalentScout.Message(TalentSearchStart.AlreadyRunning)); // eine Suche für beide Einstiege
-            else
-                _dialog = TransferDialog.ForTalent(Game.TalentSearchPrice(Manager));
+            _dialog = TransferDialog.ForTalent(Game.TalentSearchPrice(Manager));
             return;
         }
 
@@ -407,7 +406,9 @@ public sealed class TransferScreen : Screen
                 s.Text(Assets.Mini, x + 5, 232, Money(value), Colors.White);
             }
         }
-        TeamUi.DialogButton(s, Assets, TalentButton.X, TalentButton.Y, "Talent");
+        // [ORIGINAL] em.exe Datei 0x46704: Knopf „Talent“ nur bei Zähler 0 (keine laufende Suche).
+        if (Game.Finance(Manager).TalentSearch is null)
+            TeamUi.DialogButton(s, Assets, TalentButton.X, TalentButton.Y, "Talent");
     }
 
     /// <summary>Beige Trennlinie mit dunkler Linie darunter (Video: Index 93 / 198).</summary>

@@ -27,7 +27,9 @@ entschlüsselt sind, ist das im Code mit [APPROX] markiert.
 - **Anforderung:** Mehrspieler über das Netzwerk, auch mit eigenständigem Server.
 - **Leihen bei einem Mitmanager** (Entscheidung Nutzer 01.11.2026, E2 in `docs/analyse/re-geld.md`): Im Netzwerkspiel
   (alle spielen den Spieltag gleichzeitig, er endet erst, wenn alle fertig sind) als Anfrage mit Zustimmung des Verleihers;
-  im lokalen Spiel wie im Original sofort.
+  im lokalen Spiel wie im Original sofort. Stand Runde 11 (`geld` Teil 5, #442): Das lokale Spiel leiht sofort; die
+  Anfrage samt Meldung bleibt als `FinanceInbox.RequestLoan` und `FinanceBank` (Annahme) für den Netzwerkmodus erhalten,
+  ist aber an keinen Bildschirm angeschlossen.
 
 ### 5. Export und Import
 - **Anforderung:** Vereins- und Spielerdaten exportieren und importieren.

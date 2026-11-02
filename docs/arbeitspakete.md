@@ -187,6 +187,12 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Dateigrenzen:** siehe Zuständigkeit; die genannten Doku-Dateien; in Teil 3 nur Kommentarzeilen in `src/`.
   **Modell:** Claude Sonnet 5.5. **Status:** –
 
+### Integration Runde 11 (Leitstelle)
+
+- **`geld`** (`integration/runde-11-geld`, Stapel #417 → #429 → #433 → #436 → #442 → #448 → #451): Schema 23–26 wie
+  vorläufig nummeriert (erste integrierte Spur); `BoerseStartTests` mit Gebühr 1,5 % (#436); Knopf „Talent“ nur bei Zähler 0
+  (46704h/468C1h, #448, Test `TransferTalentButtonTests`); E2 in `docs/anforderungen/zusatzfunktionen.md`.
+
 ### Nicht in Runde 11
 
 - `wettbewerbe-spiel` Teil 5, Rest (Entscheidung Nutzer 02.11.2026): A184 (Belastung +13h statt Energy, fremde Dateien) und

@@ -89,7 +89,7 @@ public sealed class TransferDialog
     /// <summary>Unaufgefordertes Angebot im Fenster (nur <see cref="DialogKind.Offer"/>).</summary>
     public UnsolicitedOffer? Offer { get; private init; }
 
-    /// <summary>Rückfrage zur Talentsuche mit dem Preis nach Rabatt (<see cref="GameState.TalentSearchPrice"/>).</summary>
+    /// <summary>Rückfrage zur Talentsuche mit dem Preis (<see cref="GameState.TalentSearchPrice"/>, gewürfelt Datei 0x3EEAB).</summary>
     public static TransferDialog ForTalent(long price) => new(DialogKind.Talent) { Price = price };
 
     private string ConfirmText => Kind switch

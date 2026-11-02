@@ -254,7 +254,11 @@ public class BoerseStartTests
             {
                 var h = holdings[i];
                 var count = h.Count / 2;
-                expected += (long)count * game.Stocks.Stocks[i].Price - h.PurchaseCost * count / h.Count;
+                // Integration Runde 11 (geld Teil 4, #436): Verkauf abzüglich 1,5 % Gebühr, Kaufpreis des Rests in ganzen
+                // Prozent wie em.exe Datei 0x5915F–0x5952D.
+                var value = (long)count * game.Stocks.Stocks[i].Price;
+                var rest = h.PurchaseCost * ((h.Count - count) * 100L / h.Count) / 100;
+                expected += value - FinanceRules.StockFee(value) - (h.PurchaseCost - rest);
                 Assert.Equal(count, game.SellStock(active, i, count));
             }
             Assert.Equal(trading + expected, game.Finance(active).Book.Current(FinanceCategory.Aktien));
