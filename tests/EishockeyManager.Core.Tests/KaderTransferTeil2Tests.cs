@@ -96,7 +96,7 @@ public class KaderTransferTeil2Tests
         Assert.Equal(saved, SaveGame.Save(loaded.Game!));
     }
 
-    /// <summary>Migration 22 → 23: Kaufpreis 0, Art unbekannt.</summary>
+    /// <summary>Migration 27 → 28 (Spur vorläufig 22 → 23): Kaufpreis 0, Art unbekannt.</summary>
     [Fact]
     public void Migration_FromSchema27()
     {

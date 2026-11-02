@@ -157,6 +157,26 @@ public class KaderTransferTeil7Tests
         Assert.All(expiring.Except(offered).Where(club.Players.Contains), p => Assert.True(GameState.IsRenewalPending(p), p.Name));
     }
 
+    /// <summary>
+    /// RN-2 (Review #446, KT-03 aus Review #463): Ohne Restlaufzeit 1 nie ein Angebot (Datei 0x07865
+    /// <c>cmp byte [es:bx+0xb],0x1</c>, geprüft nach den beiden Würfen). Alle Spieler des Kaders mit Laufzeit 2 über eine ganze
+    /// Saison: bei rund 25 Spielern und Tageschance um 1/200 käme ohne diese Bedingung eine zweistellige Zahl Angebote
+    /// zusammen – die Probe ist also auch ohne festen Zufall scharf (Mutation „Laufzeit nicht prüfen“: rot).
+    /// </summary>
+    [Fact]
+    public void Offer_NeverWithTwoYearsLeft_WholeSquad()
+    {
+        var (game, club) = Game();
+        foreach (var p in club.Players)
+        {
+            p.ContractYears = 2;
+            p.Age = Math.Min(p.Age, 30); // kein Ruhestand
+        }
+        SeasonHelper.PlaySeason(game);
+        Assert.All(club.Players, p => Assert.Equal(0, Offers(game, p)));
+        Assert.All(club.Players, p => Assert.NotEqual(ContractNotice.Offered, p.Notice));
+    }
+
     /// <summary>U2: Leihspieler bekommen kein Verlängerungsangebot (Datei 0x076FA: +0x0C ≠ 0).</summary>
     [Fact]
     public void Offer_NeverForLoanedPlayer()

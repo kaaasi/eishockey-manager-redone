@@ -315,6 +315,9 @@ public class GameModeTests
     /// nächstschlechtere Verein ab und das Konto lief weiter. Dazu andere Nachrücker (random(36, 41)) und damit anderer Zufallsverbrauch.
     /// Integration Runde 11 (geld + saisonwechsel): Abdrücke auf dem integrierten Stand neu ermittelt (beide Spuren ändern den
     /// Zufallsverbrauch; kein weiterer Unterschied).
+    /// Integration Runde 11 (+ kader-transfer): alle Werte neu (alle drei Spuren ändern den Zufallsverbrauch). Manager 1 (Verein
+    /// 30, Oberliga) endet jede Saison unten und hat am Saisonende 400.000 DM (S-K1) plus Prämien (Saison 1: 500.000); die
+    /// Entlassung aus dem Teil-7-Kommentar unten tritt auf dem integrierten Stand nicht mehr auf (KT-05, Review #463).
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -345,6 +348,7 @@ public class GameModeTests
     // Spur kader-transfer, Teil 7 (0x07169): ab Saison 2 neu – Angebote „von 1 auf n“ nach dem Original (ohne Frist, nur ein
     // Teil der Spieler) und Ruhestand ab 36. Der Testmanager 1 verlängert nur angebotene Verträge und kauft nicht: sein Kader
     // schrumpft (20 → 13 → 12 → 11), in Saison 5 Strafen und Dispozinsen, entlassen (−4.592.736). Manager 0 bleibt spielfähig.
+    // (Stand der Spur vor der Integration; integrierter Stand siehe Zusammenfassung oben.)
     internal const string Mode4Reference =
         "WorldChampion=52,CupWinner=0,GermanChampion=3,EuropeanCupWinner=2|412175,500000|WorldChampion=54,CupWinner=3,GermanChampion=5,EuropeanCupWinner=3|577721,400000|WorldChampion=53,CupWinner=3,GermanChampion=3,EuropeanCupWinner=5|2648588,400000|WorldChampion=52,CupWinner=13,GermanChampion=20,EuropeanCupWinner=3|3711668,400000|WorldChampion=52,CupWinner=6,GermanChampion=1,EuropeanCupWinner=20|4439513,400000|R696623419 C845472287";
 

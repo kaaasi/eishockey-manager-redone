@@ -8,11 +8,13 @@ namespace EishockeyManager.Core.Tests;
 /// spielfähig, statt die Vorbedingung dem Zufall (Seed) zu überlassen. Vorher hielt <see cref="TestSeason.KeepSquad"/> nur
 /// angebotene Verlängerungen; Spieler, die nicht verlängern oder aufhören, gingen trotzdem, und ihre Plätze in der
 /// Aufstellung blieben leer (Modus-4-Referenz: Kader 20/20/19/16/12, Saison 5 mit acht Aufgestellten nicht spielfähig).
-/// Eingriffe wie ein Manager am Bildschirm, ohne eigene Zufallszüge:
+/// Eingriffe wie ein Manager am Bildschirm, ohne eigene Zufallszüge der Probe (aber mit den Zügen des Spiels, s. u.):
 /// <list type="number">
 /// <item>angebotene Verlängerungen zur Forderung (wie <see cref="TestSeason.KeepSquad"/>);</item>
 /// <item>unter <see cref="MinSquad"/> Spielern vertragslose Spieler der Transferliste zum Preis 0 holen (nach der Art,
-/// die am meisten fehlt; der Kauf eines vertragslosen Spielers zieht keine Zahl, <c>TransferMarket.Buy</c>);</item>
+/// die am meisten fehlt; <c>TransferMarket.Buy</c>). Seit kader-transfer Teil 3 würfelt jeder Kauf den Sponsorzuschuss
+/// (random(0, 6) aus der Hauptquelle, Datei 0x063BE), auch beim Vertragslosen; das Angebot wird nicht angenommen, also
+/// keine Buchung, aber anderer Zufallsverbrauch (KT-02, Review #463).</item>
 /// <item>freie Plätze der Aufstellung mit freien Spielern des Kaders füllen (<c>Lineup.FillGaps</c>, bestehende Plätze
 /// bleiben).</item>
 /// </list>

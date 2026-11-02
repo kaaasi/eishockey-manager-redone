@@ -139,21 +139,6 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// Sollspanne aus den Formeln des Originals statt technischer Alarmgrenzen, je Saison:
-    /// <list type="bullet">
-    /// <item>Eintritt je Heimspiel zwischen 50 Zuschauern (Untergrenze der Zuschauerformel, 0x3F7A4) und der Kapazität.</item>
-    /// <item>Sponsoren höchstens sieben Monatsabschlüsse (1. Oktober bis 1. April) zu je 5 · Spieler · 396 / 3
-    ///   (Grundeinnahmen mit höchstmöglichen Teamwerten) plus der größten beobachteten Summe laufender Werbeverträge.
-    ///   Passiv: keine Verträge, und mit Kader mindestens 5 · Spieler · 4 / 3 je Monat.</item>
-    /// <item>Prämien = eine Summe der Einzelprämien aus em.exe.</item>
-    /// <item>Passiv: Unterhalt und Gehälter genau sieben Monatsabschlüsse (Konstanten aus em.exe bzw. Vertragsgehälter),
-    ///   alle übrigen Kategorien 0. Damit liegt der Saisonsaldo in einem geschlossenen Korridor.</item>
-    /// <item>Aktiv: alle übrigen Kategorien höchstens 0, also Saisonsaldo höchstens Eintritt + Sponsoren + Prämien (Obergrenzen).</item>
-    /// <item>Konto = Startkonto + Summe des Finanzbuchs nach jedem Schritt; Entlassungsgrenze nie erreicht.</item>
-    /// </list>
-    /// Gegenprobe (#76): hundertfache Grundeinnahmen in <c>MonthlyFinances</c> verletzen die Sponsoren-Obergrenze.
-    /// </summary>
-    /// <summary>
     /// Integration Runde 11 (Entscheidung Nutzer 02.11.2026, C): Spielregel, getrennt von der Kontoprobe. Ein rein passiver
     /// Bundesliga-Manager (25 Spieler nach A170, kader-transfer Teil 1; keine Verlängerung, keine Werbung, kein Nachkauf) verliert
     /// Spieler an jedem Saisonende, wird nicht mehr spielfähig, zahlt Strafen („Weniger als neun Spieler“) und wird innerhalb von
@@ -183,6 +168,24 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
         Assert.True(game.Finance(manager).Book.Current(FinanceCategory.Strafen) < 0, "Entlassung ohne Strafen");
     }
 
+    /// <summary>
+    /// Sollspanne aus den Formeln des Originals statt technischer Alarmgrenzen, je Saison:
+    /// <list type="bullet">
+    /// <item>Eintritt je Heimspiel zwischen 50 Zuschauern (Untergrenze der Zuschauerformel, 0x3F7A4) und der Kapazität.</item>
+    /// <item>Sponsoren höchstens sieben Monatsabschlüsse (1. Oktober bis 1. April) zu je 5 · Spieler · 396 / 3
+    ///   (Grundeinnahmen mit höchstmöglichen Teamwerten) plus der größten beobachteten Summe laufender Werbeverträge.
+    ///   Passiv: keine Verträge, und mit Kader mindestens 5 · Spieler · 4 / 3 je Monat.</item>
+    /// <item>Prämien = eine Summe der Einzelprämien aus em.exe.</item>
+    /// <item>Passiv: Unterhalt und Gehälter genau sieben Monatsabschlüsse (Konstanten aus em.exe bzw. Vertragsgehälter),
+    ///   alle übrigen Kategorien 0. Damit liegt der Saisonsaldo in einem geschlossenen Korridor.</item>
+    /// <item>Aktiv: alle übrigen Kategorien höchstens 0, also Saisonsaldo höchstens Eintritt + Sponsoren + Prämien (Obergrenzen).</item>
+    /// <item>Konto = Startkonto + Summe des Finanzbuchs nach jedem Schritt; keine Entlassung, jede Saison endet regulär (#352).
+    ///   Entlassungsgrenze nie erreicht – Ausnahme passive Bundesliga (Entscheidung Nutzer 02.11.2026, C; KT-01 aus Review #463):
+    ///   Mit 25 Spielern (A170) und ohne Werbung fällt das Konto zeitweise unter −1,5 Mio. DM (Seed 41: −1.586.947 DM); dort gilt
+    ///   die Regel selbst, höchstens acht Wochen am Stück darunter (<see cref="Manager.DebtDaysUntilDismissal"/>).</item>
+    /// </list>
+    /// Gegenprobe (#76): hundertfache Grundeinnahmen in <c>MonthlyFinances</c> verletzen die Sponsoren-Obergrenze.
+    /// </summary>
     private void AssertEnvelope(Func<ClubDatabase> database, League league, bool active)
     {
         const int MonthEnds = 7;
@@ -337,7 +340,8 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     TestSeason.KeepSquad(game, manager);
                 game.StartNextSeason();
                 // Integration Runde 11 (Entscheidung Nutzer, C): Kader des passiven Managers zu Saisonbeginn spielfähig halten
-                // (vertragslose Spieler zum Preis 0, keine Buchung, kein Zufallszug); Gehälter der neuen Saison werden erst danach
+                // (vertragslose Spieler zum Preis 0, keine Buchung; der Kauf würfelt den Sponsorzuschuss aus der Hauptquelle, KT-02,
+                // das Angebot wird verworfen); Gehälter der neuen Saison werden erst danach
                 // gemessen.
                 if (!active)
                     TestSquadKeeper.KeepPlayable(game, manager);
@@ -353,6 +357,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             // zeitweise unter die Grenze (Originaldaten, Seed 41: −1.586.947 DM in Saison 2). Für den passiven Manager gilt deshalb
             // die Regel selbst – nicht entlassen heißt nie acht Wochen am Stück darunter (SeasonDismissal); sonst bleibt die Grenze.
             Assert.False(manager.Dismissed, "Manager entlassen");
+            // KT-01 (Review #463, Entscheidung Nutzer C): passive Bundesliga ausgenommen, siehe Zusammenfassung von AssertEnvelope.
             if (active || league != League.Bundesliga)
                 Assert.True(lowest > Manager.DebtLimit, $"Konto unter der Entlassungsgrenze: {lowest}");
             Assert.True(maxDebtDays < Manager.DebtDaysUntilDismissal, $"{maxDebtDays} Tage unter der Grenze ohne Entlassung");
