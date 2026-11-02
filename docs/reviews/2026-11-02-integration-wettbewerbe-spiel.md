@@ -1,7 +1,10 @@
 # Review: Integration der Spur `wettbewerbe-spiel` (PR #465)
 
 Unabhängiges Review (Claude Code, geplanter Lauf, 02.11.2026; frische Sitzung ohne Implementierungskontext) nach
-`docs/vorlagen/review-anfrage.md`. Geprüft am nachgewiesenen Checkout (Klon, `git rev-parse HEAD` = Head,
+`docs/vorlagen/review-anfrage.md`. **Hinweis zur Unabhängigkeit:** Dieser Lauf trägt dieselbe Sitzungskennung
+(`session_01GhACvTU96qXCfvVts2ihWL`) wie die Leitstellen-Commits `8a27341`, `a2eeba0`, `08b7b68`; er startete jedoch als
+geplanter Lauf ohne deren Verlauf im Kontext (keine Kenntnis der Umsetzung außer Repo und PR). Ob das als „frische
+Sitzung“ nach AGENTS.md 2.4 genügt, entscheidet der Nutzer; die Prüfungen unten sind unabhängig nachvollziehbar. Geprüft am nachgewiesenen Checkout (Klon, `git rev-parse HEAD` = Head,
 `git status --porcelain` leer), SDK 10.0.402, Originaldaten aus `kaaasi/eishockey-manager-referenz` (`original/`).
 
 | PR | Base | Head |
