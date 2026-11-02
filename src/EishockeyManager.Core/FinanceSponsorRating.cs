@@ -7,7 +7,7 @@ namespace EishockeyManager.Core;
 /// S  = (2 − StartLiga) · (80 · M + 170)
 ///    + 32 · (P · (n + 1) − 2), nur wenn n ≠ 0 (n = DEB-Pokal-Runde [0x5CF3])
 ///    + 47 · E · ([0x7AF] + 1)
-///    + 12 · (11 − Mittel der Ligaplätze der letzten ≤ 5 Saisons, ohne Historie 6)
+///    + 12 · (11 − Ø-Platz der letzten fünf Platzfelder der laufenden Saison, Summe 0 → 6; siehe AverageRank)
 ///    + Ø(Spielerwert / 5500) + random(20, 50) · min(4, #Spieler mit Wert / 7000 > Ø(Wert / 5500) · random(35, 55) / 10)
 ///    + 3 · Stadionwert
 /// R  = min(100, ((S mod 2^16) / 12 + 10 · (2 − StartLiga)) · 85 / 100), in 16 Bit ohne Vorzeichen
@@ -91,6 +91,30 @@ public static class SponsorRating
         valuesThirds.Count == 0 ? 0 : valuesThirds.Sum(v => v / 5500) / valuesThirds.Count;
 
     /// <summary>
+    /// Ø-Platz für die Bewertung. [ORIGINAL] em.exe Datei 0x3F915–0x3F98E: N = Spieltagszähler der Liga
+    /// (DGROUP 0x7A9 + Liga, 1 vor dem ersten Spieltag, nach Spieltag m also m + 1); für i = N − 5 … N − 1 und nur i &gt; 0
+    /// Summe += Platzfeld(i) + 1 (0x110:0x4D = Datei 0x43BED, Halbbyte i des Platzverlaufs DGROUP 0x828B, 0 = Platz 1);
+    /// Teiler N − max(0, N − 5) zählt die übersprungenen i ≤ 0 mit (`div bx`, ganzzahlig); Summe 0 → 6 (0x3F98E).
+    /// Das Platzfeld i schreibt die Minutenschleife beim Spieltag i + 1 (Datei 0x51049: Index 0x7A9 − 1, vor dem
+    /// `inc 0x7A9` in 0x37897). Das Fenster umfasst damit Platzfeld 0 nie und als letztes das Feld des noch nicht
+    /// gespielten Spieltags N: es trägt den Wert der Vorsaison (der Verlauf wird nur beim Spielstart geleert,
+    /// 0x54CE9 → 0x436DD), in der ersten Saison 0 (Platz 1).
+    /// </summary>
+    /// <param name="nextMatchDay">N = gespielte Ligaspieltage + 1.</param>
+    /// <param name="place">Platzfeld i (0 = Platz 1).</param>
+    public static int AverageRank(int nextMatchDay, Func<int, int> place)
+    {
+        var first = nextMatchDay - 5;
+        var sum = 0;
+        for (var i = first; i < nextMatchDay; i++)
+            if (i > 0)
+                sum += place(i) + 1;
+        if (sum == 0)
+            return 6;
+        return sum / (nextMatchDay - Math.Max(0, first));
+    }
+
+    /// <summary>
     /// Ende der Rechnung in 16 Bit ohne Vorzeichen. [ORIGINAL] 0x3FAC5–0x3FB2E: S wird als Wort ohne Vorzeichen durch 12
     /// geteilt, + 10 · (2 − Liga), · 85 (nur das untere Wort) / 100; nur nach oben auf 100 gekappt. Ein negatives S
     /// ergibt damit einen hohen Wert (S = −12, Oberliga: 53).
@@ -115,12 +139,8 @@ public static class SponsorRating
         var p = game.CurrentParticipation(club.Index);
         var s = CompetitionScore(tier, p.Championship, p.Cup, p.CupRound, p.Europe, p.EuropeRound);
 
-        // [APPROX] Ø-Rang: das Original zählt die Saisons [0x7A9 + Liga] − 5 … − 1 und überspringt Index 0 (0x3F936);
-        // dessen Herkunft ist nicht sicher geprüft (#132). Hier die letzten ≤ 5 abgeschlossenen Saisons des Managers.
-        var history = game.ManagerHistory(game.IndexOf(manager));
-        var recent = history.TakeLast(5).ToList();
-        var averageRank = recent.Count == 0 ? 6 : recent.Sum(h => h.Rank) / recent.Count;
-        s += 12L * (11 - averageRank);
+        // [ORIGINAL] 0x3F928–0x3F98E: Ø-Platz aus dem Platzverlauf der laufenden Saison (Spur geld Teil 2, A036).
+        s += 12L * (11 - game.SponsorAverageRank(club));
 
         var players = club.Players.ToList();
         long Value(Player pl) => game.PlayerValueOf(pl, club, PlayerValueKind.Price, random, manager.Level);
@@ -165,5 +185,89 @@ public sealed partial class GameState
         var europeRound = europe is null ? 0 : SeasonCalendar.DaysOf(DayEvents.EuropeanCup).Count(d => d < Day);
 
         return new CompetitionParticipation(championship, inCup, cupRound, inEurope, europeRound);
+    }
+}
+
+public sealed partial class Club
+{
+    /// <summary>
+    /// Platzverlauf der Liga ([ORIGINAL] DGROUP 0x828B + 0x50 · Verein, 22 Byte = 44 Halbbytes, 0 = Platz 1; Feld i =
+    /// Platz nach Spieltag i + 1). Geschrieben nach jedem Ligaspieltag (<see cref="GameState.RecordRankSlots"/>), geleert
+    /// nur beim Spielstart; die Werte der Vorsaison bleiben stehen, bis der Spieltag sie überschreibt.
+    /// </summary>
+    private readonly int[] _rankSlots = new int[GameState.RankSlotCount];
+
+    /// <summary>Gespeichertes Platzfeld (0 = Platz 1).</summary>
+    public int StoredRankSlot(int slot) => _rankSlots[slot];
+
+    internal void StoreRankSlot(int slot, int place) => _rankSlots[slot] = place;
+}
+
+public sealed partial class GameState
+{
+    /// <summary>[ORIGINAL] Platzfelder je Verein: 22 Byte ab DGROUP 0x828B (Datei 0x436DD leert 0x16 Byte je Satz).</summary>
+    public const int RankSlotCount = 44;
+
+    /// <summary>
+    /// Zahl der Ligaspieltage, deren Platzfelder schon in <see cref="Club"/> stehen (Spur geld Teil 2). Kleiner als
+    /// <see cref="PlayedMatchDays"/> nur bis zum nächsten Tagesabschluss; größer nach dem Saisonwechsel (dann von vorn).
+    /// </summary>
+    public int RankSlotsRecorded { get; set; }
+
+    /// <summary>
+    /// Spieltagszähler einer Liga wie DGROUP 0x7A9 + Liga: gespielte Ligaspieltage + 1 (Ligen mit kürzerem Spielplan
+    /// zählen nur ihre eigenen Spieltage).
+    /// </summary>
+    public int LeagueMatchDayCounter(League league) =>
+        Math.Min(PlayedMatchDays, Schedules.TryGetValue(league, out var days) ? days.Count : 0) + 1;
+
+    /// <summary>
+    /// Platzfeld i eines Vereins ([ORIGINAL] 0x43BED; 0 = Platz 1). Felder gespielter Spieltage der laufenden Saison
+    /// aus der Tabelle (wie <see cref="RankHistory"/>), übrige aus dem gespeicherten Verlauf (Vorsaison bzw. 0).
+    /// Feld 44 und 45 liegen im Original hinter dem Verlauf im unteren Byte der Strafminuten (DGROUP 0x82A1, Halbbyte
+    /// unten bzw. oben; <see cref="Club.LeaguePenaltyMinutes"/>); gelesen wird Feld 44 nach dem 44. Spieltag (N = 45).
+    /// [APPROX] Felder ab 46 kommen im Remake nicht vor (höchstens 44 Ligaspieltage) und zählen als 0.
+    /// </summary>
+    public int RankSlot(Club club, int slot)
+    {
+        if (club.League is { } league && slot < LeagueMatchDayCounter(league) - 1 && slot < RankSlotCount)
+            return LeagueTable.Compute(this, league, TableView.Gesamt, slot + 1).First(r => r.Club.Index == club.Index).Rank - 1;
+        return slot switch
+        {
+            < RankSlotCount => club.StoredRankSlot(slot),
+            RankSlotCount => club.LeaguePenaltyMinutes & 0x0F,
+            RankSlotCount + 1 => (club.LeaguePenaltyMinutes >> 4) & 0x0F,
+            _ => 0,
+        };
+    }
+
+    /// <summary>
+    /// Ø-Platz der Werbebewertung ([ORIGINAL] 0x3F915–0x3F98E, <see cref="SponsorRating.AverageRank"/>).
+    /// [APPROX] Ohne Liga (Original: Liga des Managers, DGROUP 0x9746) zählt N = 1, also Ø 6.
+    /// </summary>
+    public int SponsorAverageRank(Club club)
+    {
+        var counter = club.League is { } league ? LeagueMatchDayCounter(league) : 1;
+        return SponsorRating.AverageRank(counter, i => RankSlot(club, i));
+    }
+
+    /// <summary>
+    /// Platzfelder der gespielten Ligaspieltage speichern ([ORIGINAL] Datei 0x51049 aus der Minutenschleife, je
+    /// Ligaspieltag für alle Vereine der Liga). [APPROX] Das Remake schreibt sie im nächsten Tagesabschluss nach; gelesen
+    /// werden die Felder der laufenden Saison ohnehin aus der Tabelle (<see cref="RankSlot"/>), gespeichert bleiben sie
+    /// für die nächste Saison stehen.
+    /// </summary>
+    public void RecordRankSlots()
+    {
+        if (RankSlotsRecorded > PlayedMatchDays)
+            RankSlotsRecorded = 0;
+        foreach (var (league, days) in Schedules.OrderBy(s => s.Key))
+        {
+            var last = Math.Min(Math.Min(PlayedMatchDays, days.Count), RankSlotCount);
+            for (var md = RankSlotsRecorded + 1; md <= last; md++)
+                foreach (var row in LeagueTable.Compute(this, league, TableView.Gesamt, md))
+                    row.Club.StoreRankSlot(md - 1, row.Rank - 1);
+        }
+        RankSlotsRecorded = PlayedMatchDays;
     }
 }

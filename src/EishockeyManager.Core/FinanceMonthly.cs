@@ -48,13 +48,17 @@ public static partial class FinanceRules
     public static long MonthlyBaseIncomeThirds(int players, int teamValueSum) => 5L * players * teamValueSum;
 
     /// <summary>
-    /// Summe der vier Teamwerte eines Vereins. [APPROX] Das Original führt Kondition/Technik je Abwehr und
-    /// Sturm als Vereinsfelder; das Remake leitet sie wie die Stärken-Tabelle aus den Spielerwerten ab.
+    /// Summe der vier Teamwerte eines Vereins. [ORIGINAL] 0x3E657 liest die Vereinsfelder 0x18–0x1B (Kondition und
+    /// Technik je Abwehr und Sturm), nicht die Spieler (Spur geld Teil 2, A035); im Remake Datenbankstärke + Abweichung
+    /// (<see cref="MatchEngine.TeamValuesOf"/>, Lader 0x2EF1B, Wanderung 0x9D1B). [APPROX] Vor dem ersten Spiel eines
+    /// Spielstands sind die Abweichungen noch nicht gezogen (siehe <see cref="MatchEngine.LoadTeamValues"/>) und zählen 0;
+    /// für den Sturm gilt wie dort die Vereinsstärke (Datenbankbyte 0).
     /// </summary>
     public static int TeamValueSum(GameState game, Club club)
     {
-        var (defense, attack) = StrengthTable.TeamValues(game, club);
-        return (int)defense.C + (int)defense.T + (int)attack.C + (int)attack.T;
+        _ = game;
+        var v = MatchEngine.TeamValuesOf(club);
+        return 4 * club.Strength + v.DefenseCondition + v.AttackCondition + v.DefenseTechnique + v.AttackTechnique;
     }
 
     /// <summary>Drittel-DM → DM wie die Anzeige des Originals (abgeschnitten, Vorzeichen bleibt).</summary>

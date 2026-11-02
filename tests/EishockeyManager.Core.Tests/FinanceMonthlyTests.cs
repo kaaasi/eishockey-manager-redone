@@ -110,8 +110,11 @@ public class FinanceMonthlyTests
     public void MonthlyIncome_IsTeamValuesTimesPlayers_AsInVideo()
     {
         // [ORIGINAL] 0x3E657: 5 × 20 Spieler × 122 = 12.200 Drittel = 4.066 DM (Karriere-Video ESC Wolfsburg 3:42).
+        // Spur geld Teil 2 (A035): Summe aus den Vereinsfeldern 0x18–0x1B (Stärke + Abweichung), nicht aus den Spielern.
         var (game, me, club) = OberligaGame(level: 3);
         FixSquad(club, BerlinerSalaries, 31, 30);
+        var d = 122 - 4 * club.Strength;
+        club.TeamValues = new ClubTeamValues(d / 4, d / 4, d / 4, d - 3 * (d / 4), 50, 50, 50);
         Assert.Equal(122, FinanceRules.TeamValueSum(game, club));
         Assert.Equal(4_066, game.MonthlyBaseIncome(me));
         Assert.Equal(4_066, game.MonthlyIncome(me) - game.Ads(me).MonthlyIncome);

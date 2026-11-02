@@ -158,10 +158,13 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Integration Runde 9 (Leitstelle): beide auf dem integrierten Stand neu, einschließlich Minutenweg der Pokalspiele
     /// ohne Manager bei eingeschaltetem Anzeigeschalter (DEB-Pokal an, 0x3702E).
     /// Fix #351 (Leitstelle): neu – Play-offs und Aufstiegsrunde ohne Manager über den schnellen Weg 0x3731F (Meldungsmatrix voreingestellt aus, 0x37058), anderer Zufallsverbrauch und andere Meister.
+    /// Spur geld, Teil 2: aktiv neu (Werbebewertung, Angebote, Monatseinnahme; Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur geld, Teil 3: beide neu (Jugendteams je Ligaspieltag ziehen aus FinanceRandom; Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur geld, Teil 6: beide neu (Preis der Talentsuche zieht aus FinanceRandom; Begründung bei <see cref="RngTwinProbeTests"/>).
     /// </summary>
     [GameDataTheory]
-    [InlineData(false, "79803AC5ED2C7179")]
-    [InlineData(true, "D68EC5E7AE30E621")]
+    [InlineData(false, "EF4E0F25E702FE2B")]
+    [InlineData(true, "3B9E4340000A921D")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

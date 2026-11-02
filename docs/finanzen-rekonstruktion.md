@@ -48,6 +48,8 @@ werbung = Σ Monatsbetrag der 11 Werbeverträge (7 Bande, Trikot, Fernsehen, 2 E
 Anzeige zusätzlich (Flag 1): Zinsertrag auf Forderungen (2,5 % Manager, 1 % Sparbuch). Gebucht wird davon nichts
 direkt (siehe Tagesabschluss). Belegt: ESC Wolfsburg (Oberliga, 20 Spieler) 4.066 DM = 12.200 Drittel → Summe
 der vier Teamwerte 122; Berliner SC 3.966 DM → 119.
+Remake (Spur geld Teil 2, A035): Vereinsfelder = Datenbankstärke + Abweichung aus Lader und Wanderung
+(`MatchEngine.TeamValuesOf`), nicht mehr aus den Spielerwerten; vor dem ersten Spiel Abweichung 0 ([APPROX]).
 
 ### Ausgaben (`0x3E811`, Anzeige „Ausgaben (Gehälter…)“)
 
@@ -76,7 +78,9 @@ ergibt die Formel exakt 87.370 DM (Abschnitt „Unabhängige Nachprüfung“).
 - Zinskonto += (Zinsertrag Forderungen [2 % Manager, 1 % Sparbuch] − Kreditzinsen − 10 % des negativen Kontostands)
   / (Tage im Monat + 1).
 - Am Monatsletzten und am Tag ⌊Monatslänge/2⌋ (`0x3EE6B`): Werbeangebote neu (`0x100:0x5C`), dazu mit 50 % eine
-  „Prämie“ 60.000 + 10.000 · random(0,10), auf 3.000 gerundet (Feld `0x20D + 4·Manager`; im Remake nicht umgesetzt).
+  ein neuer **Preis der Talentsuche** 60.000 + 10.000 · random(0,10) DM, · 3 in Drittel, auf 3.000 Drittel abgerundet (Feld
+  `0x20D + 4·Manager`, Leser nur die Transferliste 0x465F1; früher hier als „Prämie“ gedeutet). Umgesetzt in Spur `geld`
+  Teil 6, Abschnitt „Talentsuche“.
 - Am 1. (`0x3EF52`): Werbeverträge: Restmonate −1; bei 0 ohne Option still gelöscht, mit Option bleibt der Vertrag (und
   zahlt) und es kommt einmal die Meldung „Ein Werbepartner mit Verlängerungsoption / bittet Sie an den Verhandlungstisch.“
 - Am Monatsletzten der Monatsabschluss (oben). Nach dem Tagesabschluss berechnet `0x5569F` die Werbebewertung neu und
@@ -123,7 +127,7 @@ Korrigiert in der Spur `finanzen-werbung` (#132):
 ```
 S  = (2 − StartLiga) · (80 · M + 170)
    + [n ≠ 0] · 32 · (P · (n+1) − 2)  + 47 · E · ([0x7AF]+1),   n = [0x5CF3] (DEB-Pokal-Runde)
-   + 12 · (11 − Mittel der Ligaplätze der letzten ≤ 5 Saisons, ohne Historie 6)
+   + 12 · (11 − Ø-Platz der Platzfelder N−5 … N−1 der laufenden Saison, Summe 0 → 6)      (Spur geld Teil 2, A036)
    + Ø(Spielerwert / 5500)  + random(20,50) · min(4, #Spieler mit Wert/7000 > Ø(Wert/5500) · random(35,55)/10)
    + 3 · W
 R  = min(100, (((S mod 2^16) / 12 + 10 · (2 − StartLiga)) · 85 mod 2^16) / 100)
@@ -143,8 +147,14 @@ Ende (0x3FAC5–0x3FB2E): alles in 16 Bit, Division ohne Vorzeichen, nur nach ob
 Gespeichert wird R beim Spielstart (`0x2A03B`), nach jedem Tagesabschluss (`0x5569F`) und beim Klick auf einen Vertrag
 mit Option (`0x2B7A6`); die Angebote rechnen mit dem gespeicherten Wert.
 [APPROX] im Remake: Abbildung von M/P/E auf die Wettbewerbe des Remakes (`GameState.CurrentParticipation`), Europatermin =
-Zahl der gespielten Europapokaltermine; Ø-Rang über die Saisons des Managers (Original: Index `[0x7A9 + Liga] − 5 … − 1`,
-Index 0 übersprungen, Herkunft offen); Spielerwert = Kaufpreis × 3.
+Zahl der gespielten Europapokaltermine; Spielerwert = Kaufpreis × 3.
+**Ø-Platz (0x3F915–0x3F98E, Spur geld Teil 2):** N = `[0x7A9 + Liga]` (Spieltagszähler, 1 vor dem ersten Spieltag); für
+i = N − 5 … N − 1 und nur i > 0: Summe += Platzfeld(i) + 1 (0x43BED, Halbbyte i ab DGROUP 0x828B + 0x50 · Verein,
+0 = Platz 1); Ø = Summe / (N − max(0, N − 5)), Summe 0 → 6. Platzfeld i schreibt 0x51049 aus der Minutenschleife beim
+Spieltag i + 1 (Index `0x7A9 − 1`, vor `inc 0x7A9` in 0x37897): Feld 0 zählt nie, Feld N − 1 gehört zum noch nicht
+gespielten Spieltag und trägt den Wert der Vorsaison (geleert nur beim Spielstart, 0x54CE9 → 0x436DD), in der ersten
+Saison 0. Nach dem 44. Spieltag (N = 45) liest Feld 44 das untere Halbbyte der Strafminuten (DGROUP 0x82A1). Remake:
+`SponsorRating.AverageRank`, `GameState.RankSlot`, Verlauf je Verein `Club._rankSlots` (Schema 24, vorläufig).
 
 ### Angebote (`0x3FB47`, am Monatsletzten und zur Monatsmitte, beim Spielstart und zu Saisonbeginn)
 
@@ -162,6 +172,7 @@ laufzeit = 12 · random(1, 2) Monate; Option: random(0,7) = 0 → 12 · random(1
 feld +8 = W/10 (Bewertung beim Angebot, geht in den Vertrag)
 ```
 Aufrufe: Spielstart `0x2A061` (Flag = Spielende 1994), Tagesabschluss `0x3EEA7` (Flag 0), Saisonbeginn `0x56650` (Flag 0).
+Die Funktion liest keine Verträge: auch Partner mit laufendem Vertrag dieser Art bekommen Angebote (Spur geld Teil 2, A039).
 Eistafel 1 ist im Werbebildschirm nur mit Überdachung HALLE (Stufe 2), Eistafel 2 nur mit Kühlanlage 'MEGAFROST' (Stufe 2)
 nutzbar (`0x2B56A–0x2B587`).
 
@@ -297,7 +308,7 @@ in `tests/EishockeyManager.Core.Tests/FinanceWerbungTests.cs` und `tests/Eishock
 Neuer Zustand (Schema 7, `SaveGame.Migration6.cs`): gespeicherte Bewertung je Manager (−1 in alten Spielständen, beim
 nächsten Gebrauch berechnet), Bewertung in Angebot und Vertrag (alte Verträge 0 → Verhandlung endet immer mit der Frage),
 zweite Eistafel als eigene Art. Offene Verlängerungsfragen alter Spielstände bleiben im Posteingang beantwortbar.
-Nicht umgesetzt: die „Prämie“ der Angebotstage (Feld `0x20D`), Drittel-DM-Summe der Werbeverträge (Remake: DM je Vertrag).
+Nicht umgesetzt: Drittel-DM-Summe der Werbeverträge (Remake: DM je Vertrag).
 
 **Mehrsaisonprobe, Ursache je geändertem Referenzwert.** Ermittelt mit einer Probe, die `RngTwinProbeTests.Run` auf
 Base `1e4731b` und auf dem Spur-Stand laufen lässt und nach jedem Schritt Zustand, Konto und alle vier Zufallsquellen
@@ -471,12 +482,23 @@ DGROUP 0x79D/0x7A1). Umgesetzt in `Core/FinanceYouth.cs` und `UI/Screens/Manager
 | Innenfläche beider Fenster | Farbe 4 (81, 113, 130) | 2 | Video 8:37 (77, 111, 129) |
 
 **`[APPROX]`, offen:** Durchsichtige Farbe der Fahnen = Hintergrundfarbe 4 der Grafik (Blit-Parameter 0xC0 nicht
-entschlüsselt); Abstand „n.Platz“ – „m.Liga“ gemessen (im Original eine Zeichenkette mit Feldbreite DGROUP 0x374); die
-Startliga nimmt die Liga des Managervereins beim ersten Zugriff auf die Finanzdaten. **Wirkung der Förderung nicht
-übernommen:** Datei 0x39DEC (monatlich, Teamstärke je Jugendteam `+(−3)` = DGROUP 0xA075, Zufall über 0x120:0x57/0x61)
-und 0x3A13B (Saisonwechsel: Auf- und Abstieg) sind noch nicht zugeordnet; `SettleYouth` bleibt `[APPROX]`. Rabatt der
-Talentsuche weiter je volle 1.000 DM Förderung (`[APPROX]`, Bezug unverändert). Alte Spielstände behalten ihre Plätze 1–6
-(jetzt in einer Liga mit 12 Plätzen) und ihre Förderung; keine Migration nötig, weil sich kein Feld ändert.
+entschlüsselt); Abstand „n.Platz“ – „m.Liga“ gemessen (im Original eine Zeichenkette mit Feldbreite DGROUP 0x374).
+Talentsuche: Der frühere Rabatt je 1.000 DM Förderung ist seit Spur `geld` Teil 6 entfallen (Abschnitt „Talentsuche“).
+
+**Wirkung (Runde 11, Spur `geld` Teil 3, G2):** Managersatz tatsächlich ab DGROUP `0xA075` mit Stärke je Team `+0..2`
+davor (re-geld.md „Jugendteams“). Umgesetzt in `Core/FinanceYouth.cs`:
+
+| Stelle | Original | Remake |
+|---|---|---|
+| Startwerte | Spielstart 0x29B76–0x29BC1: Stärke `(2 − StartLiga) · 14 + 52` (80/66/52), Platz 6, Liga = Start-Liga DGROUP 0x11A | `YouthTeam.StartTeams(ManagerSetup.StartLeague)` (#327; vorher Vereinsliga) |
+| Ligaspieltag | Datei 0x39DEC aus dem Tagesablauf 0x55008 an Tagen mit Kalenderbit 0–2, vor den Spielen; Stärke strebt gegen `X = Förderung · 100 / Deckel / 2 + 40`, Platz gegen den Ligabezug DGROUP 0x4EBA (85, 70, 57) − Platz, Schrittweite `random(1, T[0x7A9])` mit fallender Tabelle T | `GameState.YouthMatchDay` aus `AdvanceFinanceTo` (`DailyYouth`), Zufall aus `FinanceRandom` über `TransferRules.Random16` |
+| Saisonwechsel | Datei 0x3A13B (aus 0x55889), t = 2, 1, 0: Platz 1–2 auf (Start 11./12.), Platz 12 ab (Start 2.), sonst Platz 6; jüngeres Team rückt nach `(2 · s[t] + s[t − 1]) / 3` | `GameState.YouthSeasonChange` aus `StartFinanceSeason` |
+| Förderung | Monatsbuchung Datei 0x3E811 | `SettleYouth` (nur Buchung; die genäherte Monatswirkung entfällt) |
+
+`[APPROX]`: Zähler über 44 kommen im Remake nicht vor (letztes Feld T[44] = Endwert von a, wie im Stapel des Originals);
+Start-Liga ohne Eintrag in der Spielvorbereitung = Vereinsliga; ältere Spielstände (Schema ≤ 24) bekommen die Startstärke
+der aktuellen Liga (`SaveGame.Migration.Geld3.cs`). Ob die Jugendstärke außerhalb von Ov 0xF8 weiter wirkt (Talentsuche,
+Jugendspieler), ist offen (re-geld.md „Offen“, Teil 6).
 
 **Pixelvergleich** (normierte Kreuzkorrelation der Graustufen, Remake gegen Videobild; vorher `main` 48c027e):
 
@@ -564,6 +586,58 @@ Spalte x 131–133 oder 240–242 mit hellem 2 × 2-Block. Marke und Streifen si
 sie nicht; ob ein anderes Neuzeichnen sie später entfernt, ist nicht nachgeprüft). Der Klick auf eine Aktie setzt den
 Versatz wie bisher (0x59C6B), der Maßstab bleibt dabei erhalten. Die Anfangssuche des Ausschnitts (`InitialChartOffset`)
 rechnet weiter mit Maßstab 2.
+
+## Bedienung (Spur `geld`, Teil 5, G4)
+
+Bildschirmschleife Datei 0x58A57 (Ov 0x138), Betragsbalken Datei 0x58409 (Regel in
+[analyse/re-geld.md](analyse/re-geld.md), „Datei 0x58409 – Betragsbalken“). Umsetzung `FinanceScreen.Update`,
+`FinanceAmountBar`; Tests `FinanceBedienungTests` (Core und UI), `FinanceScreenTests`. Ereignisse `[0x5A16]`: 1 = links
+gedrückt, 2 = losgelassen, 3 = rechts (Ende). Zustand: Auswahl `[bp-0x16]` (0xFF = keine, anfangs keine), Seite
+`[bp-0x1c]` (0 / 36 / 167), Betrag `[bp-0x2a]` (−1 = keiner), Höchstwert `[bp-0x2e]`, q `[bp-0x32]`.
+
+| Klick (Reihenfolge der Prüfung) | Fundstelle | Wirkung |
+|---|---|---|
+| Seite gewählt, Taste 1, Mauszeile 74–87, Spalte 4–34 (links) bzw. 284–314 (rechts) | 0x58F50–0x590A1 | Knopf „+“ (x < 19 bzw. x > 299) oder „−“: ±3.000 Drittel bzw. ±1 Stück, gehalten wiederholt (Pause (8 − k) / 3 Takte nach dem k-ten Schritt); ohne Betrag (−1) nichts |
+| Seite gewählt, Spalte 4–314 außer 159, Zeile 90–98 | 0x590AD–0x5911A | Balken: s = x − 160 bzw. 158 − x (andere Hälfte: s < 0 → Höchstwert) |
+| Zeile 73–88, Betrag ≠ 0 und ≠ −1 | 0x5911D–0x5952D | Buchung (jede Spalte, auch auf den Knöpfen der anderen Seite); danach Auswahl 0xFF |
+| Zeile 73–100, Auswahl vorhanden, andere Hälfte als die gewählte Seite | 0x59531–0x59ADB | Seite wählen: Hinweis (Grundlinie 80/86, Farbe 30), Höchstwert und Vorgabe, Balken mit Vorgabe |
+| sonst | 0x59ADD–0x59D3F | Hinweis und Balken löschen, keine Seite; bei Taste 1 Auswahl neu (Rahmen: Bank Farbe 7, Mitmanager 7, Aktie 0x18; alter Rahmen in Farbe 0) |
+
+**Abweichungen vom Remake vorher:** zwei getrennte Beträge mit ±10.000 DM / 10 Stück (Rechtsklick zehnfach), Hinweis beim
+Überfahren, gedrückter Knopf mit weißem Rahmen, Leihen beim Mitmanager als Anfrage in den Posteingang, Anfangsauswahl Bank.
+
+**Höchstwerte** (Datei 0x596C2–0x59A12) wie in re-geld.md; dazu: der Abzug „was ich schulde“ bzw. „was er mir schuldet“
+gilt nur bei positivem Darlehensfeld (Datei 0x597FE, 0x59924), links ist die eigene Forderung immer Mindest-Höchstwert
+(auch bei leerem Konto des anderen, dessen Konto dann negativ wird), Bank links je Buchung max(2 Mio. − Kredit, Sparbuch).
+
+**`[APPROX]`:** Der Betrag wird beim Abwählen der Seite gelöscht. Im Original bleibt er stehen, und ein Klick in die
+Buchungszeile bucht ihn erneut – nach einer Buchung mit Auswahl 0xFF, die im Aktienzweig als Aktie 0x7F gelesen wird
+(Datei 0x5932C; Speicher außerhalb der Tabelle). Das wird nicht nachgebildet. Gehaltene Knöpfe: Takte in Bilder bei 60 Hz
+umgerechnet. Negatives s zeichnet keinen Balken; die Balkenlänge ist auf 0–154 begrenzt. Im Video wird nicht gebucht
+(re-geld.md), die Bedienung ist daher nur aus dem Code belegt.
+
+## Talentsuche (Spur `geld`, Teil 6, R-K1)
+
+Funktionen: Transferliste 0x465F1 (Knopf „Talent“, Rückfrage, Start), Tagesabschluss 0x3ED01 (Preis), Talentsuche 0x06FA5
+(Takt, Ergebnis), Talent anlegen 0x06D7F, Besitz zählen 0x3CCEB. Umsetzung: `Core/FinanceTalent.cs`, `Core/Transfer.Talent.cs`,
+`PlayerFactory.ApplyScoutedTalentValues` (`Core/Player.Factory.cs`); Tests `TalentSearchTests`.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Knopf | 0x46704, 0x468C1 | „Talent“ wird nur bei Zähler 0 gezeichnet und ausgewertet (Managersatz +0xEC = DGROUP 0x9747 + 0x1AF · m) |
+| Rückfrage | 0x468E7–0x4696E | „Möchten Sie, daß Ihr 'Spion' / für Sie auf Talentsuche geht?“ (DGROUP 0x1339/0x133D), „Preis: “ + Betrag + „ DM“ (0x1341, 0x14C9), Knöpfe „Aber immer!“ / „Lieber nicht.“ (0x1311/0x1315); kein „Rabatt:“ (der Text gehört zur Stadion-Rückfrage, Datei 0x1B187) |
+| Start | 0x4697D–0x46A10 | nur mit Konto **>** Preis (sonst „Sie haben nicht / genug Geld !“, 0x1211/0x1215); Preis vom Konto (0x469CA); Zähler = random(3, 10), mit random(0, 3) = 0 zusätzlich + 6; keine Prüfung des Kaders |
+| Preis | DGROUP 0x20D + 4 · m; 0x3EEA2–0x3EF4E | Start 0x41EB0 Drittel = 90.000 DM; an Monatsmitte und Monatsletztem nach den Werbeangeboten (0x3FB47(0)) mit random(0, 1) ≠ 0 neu: 60.000 + 10.000 · random(0, 10) DM |
+| Takt | 0x54C9F, 0x55253–0x5528A | Tageszähler ≡ 0 oder 4 (mod 7), wie die kleine Wanderung der Teamwerte |
+| Ergebnis | 0x06FA5 | je Manager: Zähler 0 → nichts; sonst − 1; bei 0 Erfolg mit random(0, 5 − ⌊(5 − Level) / 2⌋) = 0 (1/4, 1/5, 1/6); Misserfolg „Ihr Talentspäher gibt die / Suche ohne Erfolg auf... Pech...“ |
+| Talent | 0x06D7F(m, random(40, 90), 80) | Besitz ≥ 28 (0x3CCEB) → nichts, **keine Nachricht**; sonst Poolplatz random(1, 179) bis Besitzer 6; Alter random(18, 21), Form random(45, 55), Technik/Kondition random(s − 5, s + 1); Kaderplatz 0x42CB1 (Energie random(80, 120)); +0x19 = random(3, 12) · 16 + random(3, 12); Gehalt Wert(Gehalt) · 80 / 100; Laufzeit random(2, 3); Meldung „Ihre Talentsuche war ein Erfolg. / Ein junger Spieler stößt zu Ihrem Kader.“ |
+| Besitz | 0x3CCEB | eigener Satz ganz, aus den Sätzen der anderen Manager und des Markts die Plätze mit Poolbesitzer = m (verliehene Spieler) |
+
+`[APPROX]`: Der Preis wird als Ausgabe „Talentsuche“ gebucht (Original: direkt vom Konto). Tendenz (0x4907A) und Preis +0x2C
+des neuen Kaderplatzes sind wie beim Kauf nicht abgebildet; Energie auf 99 begrenzt; nach 1.500 vergeblichen Poolversuchen (bzw.
+ohne Pool) ein neuer Spieler (Original: Suche ohne Grenze). Im Fenster „Jugendteams“ gibt es keinen „Spion“ mehr (A328). Die
+Meldungen „Ihr 'Spion' geht / auf Talentsuche.“ und „… ist schon …“ stehen nicht in em.exe; die zweite braucht nur der
+Knopf des Remakes, solange er bei laufender Suche sichtbar ist (Anschluss Leitstelle, `UI/Screens/Team/TransferScreen.cs`).
 
 ## Dateidialog (em.exe 0x5DBE5, Teil 4 der Spur `finanzen-rest`)
 

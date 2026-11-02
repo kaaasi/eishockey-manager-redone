@@ -136,6 +136,10 @@ Platzzahl, Farbe 24.
 | Buchung | Konto direkt | `Book(…, Bau, …)` |
 | Meldung | je fertigem Projekt | ja |
 
+**Status (Runde 11, Spur `geld` Teil 1, PR #417):** Kosten, Bauzeit, parallele Baustellen, Platzgrenze, Rabatt,
+„beleidigt“-Sperre und Baufortschritt wie oben umgesetzt (`Core/FinanceStadium.cs`); Buchung nach E1. Offen: Videostelle
+„Straße 1.200.000 DM“, Wochentakt (Remake: montags, Original: Tageszähler durch 7 teilbar), Tabelle G7.
+
 Die Videowerte im Kommentar zu `FirstStepCost` (Kühlanlage 640.000, Imbißbude 580.000, Kino 520.000, Bowlingbahn 450.000)
 bestätigen K; „Straße 1.200.000 DM“ widerspricht K = 1.300.000 DM – die Videostelle ist nachzusehen (Rabatt wird erst nach
 der Frage abgezogen, kann es also nicht sein).
@@ -224,9 +228,23 @@ und im Rahmen.
 
 - Keine Gebühr beim Kauf und Verkauf; Kaufpreis beim Verkauf anteilig genau statt über ganze Prozent.
 - Kreditrahmen 1 Mio. DM statt 2 Mio.; Grenze zwischen Managern fehlt (nur Konto des Partners).
+
+**Status (Runde 11, Spur `geld` Teil 4, PR #436):** Gebühr 1,5 % beim Kauf und Verkauf, Kaufpreis des Rests über ganze
+Prozent, Höchstwert beim Kauf Konto / Kurs ohne Gebühr, Kreditrahmen Bank 2 Mio. DM, Grenze 1 Mio. DM je Richtung zwischen
+Managern (auch für die Höchstwerte im Finanzen-Bildschirm) umgesetzt (`Core/Finance.cs`, `Core/FinanceBank.cs`,
+`Core/FinanceStocks.cs`; Tests `FinanceBankBoerseTests`). Gebühr in ganzen DM statt Drittel-DM (`[APPROX]`).
+
+**Status (Runde 11, Spur `geld` Teil 5, PR #442):** Betragsbalken (Pixel · q, 1.000-DM-Rundung, Vorgabe je Auswahl, Knöpfe
+±1.000 DM / 1 Stück), eine Seite statt zweier Beträge, Leihen beim Mitmanager sofort (E2), Höchstwerte mit Abzug nur bei
+positivem Darlehensfeld; Ablauf in [finanzen-rekonstruktion.md](../finanzen-rekonstruktion.md), „Bedienung“. Stand vor Teil 5:
+
 - Leihen bei einem Mitmanager geht im Remake als Anfrage in den Posteingang, im Original sofort.
 - Betrag über ±-Knöpfe in festen Schritten statt Balken (Klick = Pixel · `q`, Rundung auf 1.000 DM).
 - Übersicht rechts und Aktienfelder: Inhalt stimmt (Zeilen wie oben), Lage und Farben nicht nachgemessen.
+
+**Status (Runde 11, Spur `geld` Teil 6, PR #448):** Talentsuche nach 0x465F1/0x06FA5/0x06D7F/0x3CCEB (R-K1) umgesetzt;
+Preisfeld DGROUP 0x20D ist der Preis der Talentsuche (keine „Prämie“). Ablauf in
+[finanzen-rekonstruktion.md](../finanzen-rekonstruktion.md), „Talentsuche“.
 
 ## Transfermarkt: Kontoleiste (Datei 0x463CC)
 
@@ -313,7 +331,11 @@ Platz[t] = neu; Liga[t] = l
 
 Sonst startet jedes Team auf Platz 6 (Byte 5).
 
-### Abgleich mit dem Remake
+**Status (Runde 11, Spur `geld` Teil 3):** beide Funktionen umgesetzt (`Core/FinanceYouth.cs`, `YouthMatchDay`,
+`YouthSeasonChange`), Startstärke 0x29B76 und Start-Liga aus der Spielvorbereitung (#327). Die Klemme 0x120:0x57 (Datei
+0x4BD56) rechnet mit Vorzeichen (`cbw`), ein Platz −1 wird also 0.
+
+### Abgleich mit dem Remake (vor Teil 3)
 
 `Core/FinanceYouth.cs`: `SettleYouth` (monatlich, Zufall nach Förderanteil, `[APPROX]`) ersetzt beide Funktionen; es
 gibt keine Jugendstärke, keine Auf- und Absteiger und keinen Neustart auf Platz 6. Die Monatsbuchung der Förderung gehört

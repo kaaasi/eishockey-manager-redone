@@ -148,11 +148,11 @@ public class BoerseStartScreenTests
         var logo = FinanceScreen.StockSelectArea(2);
 
         d.Click(60, logo.Y + 10); // Infofeld rechts der Logospalte
-        Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
+        Assert.Equal(FinanceScreen.SelectionKind.None, screen.Selected.Kind);
         Assert.Equal(offset, screen.ChartOffset);
 
         d.RightClick(logo.X + 10, logo.Y + 10);
-        Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
+        Assert.Equal(FinanceScreen.SelectionKind.None, screen.Selected.Kind);
         Assert.Equal(offset, screen.ChartOffset);
     }
 
@@ -176,7 +176,7 @@ public class BoerseStartScreenTests
         for (var i = 0; i < 5; i++)
             d.Move(row.X + 10, row.Y + 10);
         Assert.Equal(160, screen.ChartOffset);
-        Assert.Equal(FinanceScreen.SelectionKind.Bank, screen.Selected.Kind);
+        Assert.Equal(FinanceScreen.SelectionKind.None, screen.Selected.Kind);
 
         d.Click(row.X + 10, row.Y + 10);
         Assert.Equal(new FinanceScreen.Selection(FinanceScreen.SelectionKind.Stock, 2), screen.Selected);
