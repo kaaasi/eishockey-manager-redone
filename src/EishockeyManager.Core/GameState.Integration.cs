@@ -52,7 +52,7 @@ public sealed partial class GameState
         // Training: jeder Trainingstag bis heute genau einmal (vorher nur beim Öffnen der Mannschafts-Bildschirme)
         CatchUpTraining();
 
-        // Transfermarkt: je gespieltem Ligaspieltag neue Angebote und Gebote
+        // Transfermarkt: täglich Listenwechsel und Angebote (0x54E71, 0x072DD; Spur kader-transfer, Teil 4)
         TransferMarket.CatchUp(this);
 
         // Verträge: Spieler im letzten Vertragsjahr kündigen an, ob sie verlängern (Spur „kader“, R2-11)
@@ -74,6 +74,7 @@ public sealed partial class GameState
     {
         StartFinanceSeason();
         StartStadiumStatisticsSeason(); // Spur heimspiel-statistik (0x55A86)
+        CarryGamesForClub(); // Spur kader-transfer, Teil 5 (A226): Spiele beim Verein (+0x1C) vor dem Zurücksetzen übertragen
         ResetMatchCounters(); // Spur spielberechnung: Spielerzähler je Saison (MatchEngine.Live.cs)
         ResetLeaguePenalties(); // Spur statistiken: Strafminuten der Fair-Play-Tabelle (StatisticsClub.cs, 0x5647A)
         ResetPowerPlayStatistics(); // Spur statistiken-verein: Über-/Unterzahl je Manager (StatisticsClub.cs, 0x5588E)

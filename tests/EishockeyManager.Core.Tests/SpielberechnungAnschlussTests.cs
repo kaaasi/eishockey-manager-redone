@@ -164,10 +164,18 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur saisonwechsel, Teil 1: beide neu (Oberliga-Nachrücker random(36, 41), Begründung bei <see cref="RngTwinProbeTests"/>).
     /// Integration Runde 11 (geld + saisonwechsel): beide auf dem integrierten Stand neu ermittelt (beide Spuren ändern den
     /// Zufallsverbrauch; kein weiterer Unterschied).
-    /// </summary>
+    /// Spur kader-transfer, Teil 1 (A170, 0x29A3F): neu – der Managerverein in der Bundesliga hat 25 statt 20 Spieler (Kader nach Start-Liga), andere Kadererzeugung, Gehälter und Spielstärke.
+    /// Spur kader-transfer, Teil 3 (0x058DC, 0x063BE): aktiv neu (Käufer gestärkt, Sponsorzuschuss gewürfelt, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur kader-transfer, Teil 4 (0x54E71, 0x072DD, 0x059B8): beide neu (Markt täglich, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur kader-transfer, Teil 4, Rest (0x4907A, 0x4981E): beide neu (Tendenz der Markt-Plätze im Spielerwert, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur kader-transfer, Teil 5 (A226): beide neu (Spiele beim Verein über den Saisonwechsel im Spielerwert, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur kader-transfer, Teil 5 (0x057E3, 0x07C7E): beide neu (Poolumverteilung, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Spur kader-transfer, Teil 7 (0x07169): beide neu (Ankündigungen nach dem Original, Begründung bei <see cref="RngTwinProbeTests"/>).
+    /// Integration Runde 11 (geld + saisonwechsel + kader-transfer): Abdrücke auf dem integrierten Stand neu ermittelt (alle drei Spuren
+    /// ändern den Zufallsverbrauch; kein weiterer Unterschied).</summary>
     [GameDataTheory]
-    [InlineData(false, "B6D98B0EEE46F3E1")]
-    [InlineData(true, "DAAB3F08C5FFDEE7")]
+    [InlineData(false, "D860CF50A65E07F3")]
+    [InlineData(true, "16B965CA54EAC7B8")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -222,8 +230,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Wanderung des Spielstarts 0x9D1B zieht beim ersten (WM-)Spiel weitere Zahlen (im Modus „nur Weltkugel“ keine weitere).
     // spielberechnung-komplett, Teil 2 (R8W3I-06): Hauptquelle und Konten gleich; das Nationalteam des Bundestrainers zieht
     // jetzt den Strafspieler 0x378C5 aus seinem Kader – andere WM-Ergebnisse ab Saison 3 und Pokalquelle (C…).
+    // kader-transfer, Teil 1 (A170, 0x29A3F): Titel, Konten und Pokalquelle gleich, nur die Hauptquelle (R…) verschoben – der
+    // Managerverein (Bundesliga) bekommt beim Spielstart 25 statt 20 Kaderplätze; die Kadererzeugung zieht dafür mehr Zahlen.
+    // kader-transfer, Teil 5 (0x07C7E): unverändert – die Poolumverteilung des Saisonwechsels gehört zum Tageslauf 0x54C9F, den es
+    // im Modus „nur Weltkugel“ nicht gibt; die des Spielstarts zieht aus der Quelle des Kaderaufbaus.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=52|500000|R1705866397 C5178594";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=52|500000|R540662232 C5178594";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

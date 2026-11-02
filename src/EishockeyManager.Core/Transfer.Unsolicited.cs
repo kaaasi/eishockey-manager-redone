@@ -123,7 +123,7 @@ public sealed partial class GameState
     }
 
     /// <summary>Stärke eines Vereins für <see cref="UnsolicitedOfferRules.Bidder"/>; null = Managerverein bzw. unbekannt.</summary>
-    private int? BidderStrength(int index) =>
+    internal int? BidderStrength(int index) =>
         Managers.Any(m => m.ClubIndex == index) || Clubs.FirstOrDefault(c => c.Index == index) is not { } club
             ? null
             : UnsolicitedOfferRules.ClubStrength(club);
@@ -147,7 +147,8 @@ public sealed partial class GameState
 
     /// <summary>
     /// „Verkaufen“ im Angebotsfenster. [ORIGINAL] Datei 0x46F3C–0x46FCF: Konto + Angebot (ohne Abzug), Kaderplatz entfernt
-    /// (0x108:0x48), Pool +0x1D = Verein; Verein &lt; 0x40 nimmt den Spieler auf (0x18:0x175C), sonst Besitzer 6 (Pool).
+    /// (0x108:0x48), Pool +0x1D = Verein; bei Verein &lt; 0x40 steigen dessen Teamwerte (0x18:0x175C = Datei 0x058DC,
+    /// <see cref="StrengthenBuyer"/>); danach Besitzer 6 (Pool).
     /// [APPROX] Ein voller Computerkader bzw. ein Europapokal-Gegner gibt den Spieler in den Pool der Vertragslosen.
     /// </summary>
     public TransferResult AcceptUnsolicitedOffer(UnsolicitedOffer offer)
@@ -163,6 +164,8 @@ public sealed partial class GameState
         club.Lineup.Remove(p);
         p.UnsolicitedOffer = null;
         var buyer = offer.Buyer;
+        if (buyer.Index < UnsolicitedOfferRules.FirstForeignClub)
+            StrengthenBuyer(buyer, p);
         if (buyer.Index < UnsolicitedOfferRules.FirstForeignClub && !TransferMarket.IsNationalTeam(buyer)
             && buyer.Players.Count < PlayerFactory.MaxNumber && Managers.All(m => m.ClubIndex != buyer.Index))
             PlayerFactory.Join(buyer, p, SquadSetup.StartContractYears, loan: false);

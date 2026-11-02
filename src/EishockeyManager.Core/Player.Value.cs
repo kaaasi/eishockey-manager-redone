@@ -171,7 +171,7 @@ public static class PlayerValue
     private static int ClassIndex(int clubClass) => Math.Clamp(clubClass >> 1, 0, BaseSalary.Length - 1);
 
     /// <summary>
-    /// Tendenz des Originals zur Anzeige des Remakes. [APPROX] Das Remake führt nur die drei Stufen; Mitte der Spannen
+    /// Tendenz einer Stufe ohne <see cref="Player.TrendScore"/> (alte Spielstände, Spieler ohne neuen Kaderplatz). [APPROX] Mitte der Spannen
     /// 30–42, 43–55, 56–68 (Anzeige (Wert − 30) / 13, Datei 0x41AE0).
     /// </summary>
     public static int TrendValue(PlayerTrend trend) => trend switch
@@ -184,19 +184,19 @@ public static class PlayerValue
     /// <summary>
     /// Eingänge eines Spielers des Remakes. <paramref name="club"/> ist der Verein, in dessen Kader er steht (null =
     /// vertragslos; Original 0xFF → Spielklasse 1); <paramref name="offer"/> der Verein mit einem offenen Angebot.
-    /// [APPROX] Das Remake zählt Tore nicht je Wettbewerb (alle in +0x03) und Spiele nicht je Verein (alle Spiele in +0x1C,
-    /// +0x1E/+0x20 bleiben 0; SW-02);
-    /// Tendenz siehe <see cref="TrendValue"/>; der Level ist im Remake je Manager.
+    /// [APPROX] Das Remake zählt Tore nicht je Wettbewerb (alle in +0x03) und Spiele nicht je Wettbewerb (alle Spiele beim jetzigen
+    /// Verein in +0x1C, <see cref="Player.GamesForClub"/>; +0x1E/+0x20 bleiben 0; SW-02);
+    /// Tendenz: <see cref="Player.TrendScore"/>, ohne Wert die Mitte der Stufe (<see cref="TrendValue"/>); der Level ist im Remake je Manager.
     /// </summary>
     public static PlayerValueInputs Inputs(Player player, Club? club, Club? offer = null, int level = 3) => new()
     {
         Penalties5 = Math.Min(player.Penalties5, 255),
         Penalties2 = Math.Min(player.Penalties2, 255),
         Goals0 = Math.Min(player.Goals, 255),
-        Trend = TrendValue(player.Trend),
+        Trend = player.TrendScore != 0 ? player.TrendScore : TrendValue(player.Trend),
         Condition = Math.Clamp(player.Condition, 0, 255),
         Technique = Math.Clamp(player.Technique, 0, 255),
-        Games0 = Math.Min(player.Games, 0xFFFF),
+        Games0 = Math.Min(player.GamesForClub, 0xFFFF),
         OfferClub = offer?.Index,
         Age = Math.Clamp(player.Age, 0, 255),
         Goalkeeper = player.Role == Formats.PlayerRole.Goalkeeper,
@@ -209,8 +209,10 @@ public sealed partial class GameState
 {
     /// <summary>
     /// Wert (bzw. Gehalt) eines Kaderspielers in Drittel-DM nach 0x118:0x70. Ein offenes Angebot eines Computervereins
-    /// (<see cref="TransferMarket.Bids"/>, erstes Gebot) gilt als Kaderplatz +0x09 Bit 0x80 / +0x16 ([APPROX]: das Original
-    /// kennt Angebote für alle Spieler eines Managers, das Remake nur für Spieler auf der Transferliste).
+    /// (<see cref="TransferMarket.Bids"/>, erstes Gebot) gilt als Kaderplatz +0x09 Bit 0x80 / +0x16. [ORIGINAL] Bit 0x80 setzt nur
+    /// der Tagesablauf für die selbst angebotenen Marktplätze (Datei 0x07358, Verein Datei 0x0736E); Kaderspieler bekommen nur
+    /// Bit 0x40 (Datei 0x07A5C/0x07A8F), das nicht in den Wert eingeht (0x4A0C8) – Spur kader-transfer, Teil 7 (A136,
+    /// <c>docs/analyse/re-nachtrag.md</c>, Abschnitt 2).
     /// <paramref name="random"/> wird nur beim Preis eines Spielers mit Angebot benutzt.
     /// </summary>
     public int PlayerValueOf(Player player, Club? club, PlayerValueKind kind, Random random, int level = 3)

@@ -81,8 +81,28 @@ beim Rechnen von Gehalt und Ablöse schon zurückgesetzt; Ablöse als Transferei
 Buchungsaufruf aufs Konto);
 Liste hinter dem Fenster am Saisonende = Bildschirm „Verträge“ (Original 0x108:0x43; Abweichung im Pixelvergleich unten belegt).
 
-**Befund für `finanzen-rest`:** Nach einem Kauf vom Computermarkt ruft das Original 0x18:0x223E (Datei 0x063BE, Fenster „Nehmen
-Sie einen Sponsor- / zuschuß von … an ?“) mit dem Kaufpreis (Datei 0x47A18–0x47A34); im Remake fehlt das.
+## Transferfolgen beim Computerverein (Spur `kader-transfer`, Teil 3; F005, F006)
+
+Umsetzung: `Core/Transfer.ComputerClub.cs` (`ComputerClubTransferRules`, `GameState.StrengthenBuyer`,
+`GameState.AcceptSponsorSubsidy`; `TransferMarket.Bid`/`Sign` mit `out SponsorSubsidyOffer?`); Frage in `UI/Screens/Team/TransferDialog.cs` (`DialogKind.Subsidy`);
+Tests `KaderTransferTeil3Tests`, `KaderTransferTeil3ScreenTests`. Kein neues Spielstandsfeld.
+
+| Regel | Fundstelle | Inhalt |
+|---|---|---|
+| Käufer stärker | 0x058DC (0x238:0x175C) | Argumente Verein, s = (+0x10 + +0x11 + +0x12) / 3; a = (Kondition + Technik eines Teils) / 2; d = (s − a + 10) / 3; Teil k = random(0, 1); d auf 1 … 10 (0x120:0x52); Kondition 0x18 + k und Technik 0x1A + k je + random(d − 1, d + 1), ohne Grenze |
+| Aufruf Angebot | 0x46F89–0x46FB3 | „Verkaufen“ bei einem unaufgeforderten Angebot, nur Verein &lt; 0x40; danach Pool +0x1A = 6 |
+| Aufruf Markt | 0x4743C–0x47483 | Gebot auf einen eigenen Spieler am Markt angenommen, ohne Prüfung des Vereins; danach Gutschrift 0x4748A |
+| Zuschuss | 0x063BE (0x18:0x223E) | nur bei random(0, 6) = 0; Z = P · random(25, 65) / 30000 · 300 (Drittel-DM, volle 100 DM); Frage 0x4C246 „Nehmen Sie einen Sponsor- / zuschuß von / Z DM an ?“, „Aber immer!“ / „Lieber nicht.“; Ja → Konto + Z (0x064AD) |
+| Aufruf Zuschuss | 0x47A00–0x47A34 | nach dem Abzug des gezahlten Betrags P (Kauf nach der Verhandlung und Leihe); nicht bei eigenem Spieler (+[bp−0x11]) und nicht beim Kauf von einem anderen Manager (Rückfrage 0x4774E setzt [bp−0x12]) |
+
+Beleg Zuschuss: FILE05 → FILE07 (`docs/formate/spielstand-original.md`): Gebot 400.000 DM, Zuschuss 220.000 DM = Faktor 55.
+
+`[APPROX]`: Das Mittel a liest das Original über das Register `si`, das 0x058DC nicht setzt (Mauszeile des Transferbildschirms,
+0x46AA1) – also beliebige Bytes der Vereinstabelle; das Remake nimmt (Kondition + Technik beider Teile) / 4. Ohne gezogene
+Teamwerte (neues Spiel vor dem ersten Spiel) keine Wirkung. Der Zuschuss wird als Transfereinnahme gebucht (Original ohne
+Buchungsaufruf); er lebt nur im Fenster (Aufrufer ohne Frage verwerfen ihn wie „Lieber nicht.“); Vertragslose wie Marktspieler; Titel der Frage = Name des Managers; nach
+der Antwort zeigt das Remake weiter „Ihr Angebot wurde angenommen !“. Das Remake nimmt den Spieler zusätzlich in den Kader des
+Computervereins auf (das Original kennt dort nur Teamwerte).
 
 ## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 2: Versicherung, Sperre)
 
@@ -127,7 +147,7 @@ Wert(Gehalt) ist ein Vielfaches von 300 Drittel-DM; das Remake speichert es ohne
 der Bundesliga liegen die Startgehälter damit bei 11.000–18.000 DM (FILE01: Kölner EC), in der Oberliga um 1.000 DM.
 
 `[APPROX]`: Tore und Spiele gehen mit den Zählern des Remakes ein (wie bei allen Aufrufen des Spielerwerts); den Startpreis
-(+0x2C) führt das Remake nicht als Feld. Computervereine, Leihen, Talente und Verlängerungen der Computervereine behalten die
+(+0x2C) führt das Remake seit Spur `kader-transfer` Teil 2 als `Player.PurchasePrice`. Computervereine, Leihen, Talente und Verlängerungen der Computervereine behalten die
 Forderung des Remakes (`Contracts.Demand`).
 
 ## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 3: unaufgeforderte Angebote, Knöpfe)
@@ -205,20 +225,148 @@ v1.0 vorgemerkt (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C). Gegenpr
   der Platz einen neuen Spieler „POOLSPIELER n“ mit den Werten des alten (im Original wird der Platz bei Verkauf oder
   Vertragsende wieder frei), der danach wie jeder freie Platz umbenannt wird. Ein Name ist im Remake fest: ein neuer Name ohne
   Tausch erzeugt einen neuen Spieler mit neuer ID (nur für Poolspieler ohne Spiele).
-- **Takt:** Listenwechsel je Ligaspieltag statt je Tag (der Markt schreibt sich je Spieltag fort); Zufall aus der Hauptquelle.
+- **Takt:** seit Spur `kader-transfer`, Teil 4 täglich wie im Original (unten); Zufall aus der Hauptquelle.
 - **Vertragslose** aus Managervereinen (R204) stehen nach dem Saisonwechsel weiter auf der Liste (höchstens 6) und zählen wie
   Managerplätze; im Original werden sie freie Poolspieler. Vertragslose anderer Vereine stehen nicht mehr auf der Liste.
 - Sonderprüfung DGROUP 0x6AC (Startwert 56 = Deutschland) in 0x5ACA0 nicht abgebildet (FILE05 zeigt einen Poolspieler
-  Deutschlands); Vereinsfelder aus Datenbankstärke und Abweichung des Laders, Nationalteams ohne Ländertabelle 0x4C4E;
-  Energie auf 99 begrenzt; 0x4907A (0x118:0x4D) nicht abgebildet.
+  Deutschlands); Vereinsfelder aus Datenbankstärke und Abweichung des Laders, Nationalteams seit Teil 4 aus der Ländertabelle 0x4C4E (A209);
+  Energie auf 99 begrenzt; 0x4907A (0x118:0x4D) seit Teil 4 abgebildet (Tendenz, Steuerbyte).
 - Poolspieler sind für den WM-Kader nicht nominierbar (`NationalCandidates`, ihr Platz wird neu vergeben).
+
+## Belegt und umgesetzt (Spur `kader-transfer`, Teil 1: Kadergröße, Kaufgrenze)
+
+| Regel | Fundstelle em.exe | Umsetzung |
+|---|---|---|
+| Kader der Managervereine zu Spielbeginn nach **Start-Liga** (`[0x11A] · 4 + Gruppe`), nicht nach Level: Bundesliga 2/10/13, 2. Liga 2/9/11, Oberliga 2/8/10 (Tabelle DGROUP 0x169, Datei 0x16F39) | 0x29A3F | `SquadSetup.ManagedSquadSize(League)`; Liga des Vereins wie bei der Startbasis (`[APPROX]` je Manager) |
+| Kauf und Leihe: „Kaderplatz anlegen“ (0x108:0x5C = 0x42CB1) mit Grenze 0x1D; bei mehr als 28 Spielern des Managers (Zählung 0xF8:0x75) „Schon 29 Mann / im Team.“ (DGROUP 0x127D) | 0x477CD, 0x42D1E–0x42D44 | `TransferMarket.MaxSquad` = 29 (vorher 22 aus der Meldung der Aufstellung); `[APPROX]` gezählt wird nur der eigene Kader (F089 offen) |
+| Beleg Spielstände | FILE01/09/10 (Bundesliga) 25 Plätze, FILE12 (Oberliga) 20; FILE05 → FILE07 Kauf als 26. Spieler | `KaderLigaGroesseTests` |
+
+## Belegt und umgesetzt (Spur `kader-transfer`, Teil 2: Spielerdaten im Modell)
+
+Felder des Kaderplatzes (0x34 Byte, DGROUP 0x5DC3 + 0x618 · Manager) für das Spielerdaten-Fenster 0x041AC und die Hinweiszeile
+0x41683; Inventur A360, A368, A369 (P2 Nr. 8). Umsetzung `Core/Player.Slot.cs`, Schema 23 (`SaveGame.Migration.KaderTransfer.cs`).
+
+| Regel | Fundstelle em.exe | Umsetzung |
+|---|---|---|
+| Kaufpreis +0x2C (ohne Bit 31) bei Spielbeginn = Wert(Preis) je Kaderplatz des Managers, ohne Zufall | 0x29EB4 | `Player.PurchasePrice`, `Contracts.ValuePrice`, `ApplyStartSalaries` |
+| Kauf und Leihe: +0x2C = angenommenes Gebot (bei der Leihe die Gebühr), Bit 31 bleibt; nur ohne Merker [bp−0x11] | 0x4781B–0x47833 | `TransferMarket.Complete` |
+| Spielerdaten-Fenster Feld 0 = +0x2C, Feld 2 = Prämie +0x30 (0 → „keine“) | 0x041AC (Sprungtabelle 0xABD) | `PlayerDataWindow.DataValues`, `PlayerDataWindow.PurchasePrice` |
+| Verletzungsart +0x17, Namen der 28 Arten (Zeigertabelle DGROUP 0xA00) | 0x05B1A, 0x41A69–0x41A86 | `Player.InjuryKind`, `InjuryKinds.Names` |
+| Hinweiszeile „Verletzt.(Art)“: DGROUP 0xB84 + 0x50BE „(“ + Name + 0x50C0 „)“, ohne Leerzeichen | 0x41A2F–0x41AA4 | `PlayerHintLine.Status` |
+| Sperre: Strafe setzt +0x0A = 0, +0x09 \| 1, **+0x0D = Strafcode & 7** (2 bzw. 5 Minuten); je Spielminute −1 (0x5488C, 0x5490C); Ende der Strafe +0x09 &amp; ~1, +0x0D = 0 (0x35795); nach dem Spiel löscht 0x551D4–0x551E0 Bit 0 bei +0x0D ≠ 0 | 0x35C02–0x35C0C | nicht umgesetzt (siehe unten) |
+| Beleg Spielstände | FILE01/09/10: +0x2C = Wert(Preis) aller Managerplätze; FILE07 DAFFNER 400.000 DM; alle 13 Stände ohne Sperre, keiner mit Verletzung | `KaderTransferTeil2Tests` |
+
+`[APPROX]` und Anschlüsse:
+
+- **„Sperre in Minuten“ (A369) ist die Strafbank im laufenden Spiel**, keine Spielsperre: +0x0D teilen sich Verletzungswochen und
+  Strafminuten. `Player.SuspendedGames` des Remakes (Spiele) setzt kein Ablauf; die Hinweiszeile zeigt es weiter als Minuten.
+  Die Strafbank führt die Live-Spielberechnung (`Core/MatchEngine*.cs`, Spur `wettbewerbe-spiel`).
+- **Anschluss `wettbewerbe-spiel`** (`Core/MatchEngine.Injuries.cs`, `PlayerInjuries.Inflict`): gezogene Art in
+  `player.InjuryKind` schreiben (eine Zeile, 0x05B1A); bis dahin zeigt die Hinweiszeile „Verletzt.“ ohne Klammer.
+- **Anschluss Leitstelle** (`UI/Screens/Statistics/PlayerStatisticsScreen.cs`, A360, R11P-03): Spalte Kaufpreis aus
+  `Player.PurchasePrice` statt des Spielerwerts.
+- **Anschluss Doku** (`docs/reverse-engineering.md`, Hinweiszeile „[APPROX]“): Verletzungsart umgesetzt; Sperre = Strafbank.
+- Spielstände vor Schema 23: Kaufpreis 0 („-“), Art unbekannt. Computervereine tragen keinen Kaufpreis.
+- Eigener Spieler auf dem Markt: das Original zeigt als Listenpreis das alte +0x2C (Kaderplatz kopiert); das Remake rechnet den Wert
+  frisch (Teil 4).
+
+## Belegt und umgesetzt (Spur `kader-transfer`, Teil 4: Transfermarkt-Takt)
+
+Umsetzung: `TransferMarket.CatchUp`/`AdvanceDay` (`Core/Transfer.cs`), `GameState.TransferAccount` (`Core/Transfer.AccountBar.cs`),
+Kontoleiste `TransferScreen.DrawAccountBar`; Tests `KaderTransferTeil4Tests`. Kein neues Spielstandsfeld.
+
+| Regel | Fundstelle em.exe | Umsetzung |
+|---|---|---|
+| Listenwechsel **täglich** mit random(0, Managerzahl + 2) = 0 (nach der Managerschleife des Tages) | 0x54E65–0x54E7C | `CatchUp` einmal je Kalendertag aus dem Tagesablauf (vorher je gespieltem Ligaspieltag); A256 |
+| Angebot für eigene Spieler auf dem Markt im Tagesablauf | 0x072DD (Tagesablauf 0x07169) | ebenfalls täglich |
+| Bietender Verein: 0x059B8 mit Europapokal-Schalter 0 (Vereine 0 … 42 ohne Manager, Stärke nahe der Spielerstärke) | 0x07364 | `UnsolicitedOfferRules.Bidder` (vorher beliebiger Ligaverein); A257 |
+| Kontoleiste: Kontostand, Schulden (0x57768), Anlagen (Aktien zum Kurs + Forderungen samt Sparbuch), Saldo = Konto + Anlagen − Schulden | 0x463CC | `GameState.TransferAccount`; A381, F109 |
+
+`[APPROX]`: Zufall weiter aus der Hauptquelle (Abdrücke der Mehrsaisonproben neu); Höhe des Markt-Angebots weiter beim
+Angebot statt beim Anklicken (0x47347); Bieter mit der Stärke des Spielers wie bei den unaufgeforderten Angeboten; Saldo je
+Partner wie bei `TotalDebts` (Kredite zwischen zwei Managern verrechnet, Bank Sparbuch minus Kredit); Lage der Leiste unverändert.
+
+**Rest von Teil 4** (A258, F113, A209; Tests `KaderTransferTeil4Tests`, `KaderTransferTeil4ScreenTests`, Schema 24
+`SaveGame.Migration.KaderTransfer4.cs`):
+
+| Regel | Fundstelle em.exe | Umsetzung |
+|---|---|---|
+| Gebot auf den Spieler eines Managers: erst Geld (0x474F0), dann Unfair-Grenze 60 … 140 % des Werts (0x47546–0x475DB), dann **Frage an den Verkäufer** über Meldung/Frage 0x4C246 (Stub 0x120:0x7A, Argument Besitzer Pool +0x1A): DGROUP 0xD98 „Nehmen Sie das Angebot (“ + Betrag + 0x14D5 „ DM)“, 0xD9C „für “ + Name + 0xDA0 „ an ?“, Knöpfe 0x12D5 „Na gut.“ / 0x12D9 „Nein !“ | 0x47655–0x47743 | `TransferMarket.Bid(…, out SellerQuestion?)` → `TransferResult.SellerAsked`, `AnswerSeller`; Fragefenster `TransferDialog.ForSeller`; A258 |
+| „Na gut.“: angenommen, weiter wie beim Computermarkt (Kaderplatz 0x477E7, Verhandlung, Geld); „Nein !“: Meldung DGROUP 0x1209 und Sperre des Markt-Platzes für den Bieter (+0x1A \|= 0x80 \| Bit) | 0x4774A, 0x47AC8–0x47ADD | `AnswerSeller`; Sperre jetzt auch bei abgelehnten Geboten an Manager (vorher nur Computermarkt) |
+| Nachbearbeitung eines neuen Kaderplatzes: Tendenz +0x0E = random(35, 65); Steuerbyte +0x14 = random(1, 13) \| random(1, 3) << 4 \| random(0, 1) << 7 | 0x4907A (aus 0x42CB1 an 0x42E6B, nach der Energie 0x42E4C) | `Player.RollTrend`, `TrendScore`, `TrendControl` beim Listenwechsel (`RollSlotFields`); F113 |
+| Anzeige der Tendenz (Wert − 30) / 13 → „Fallend./Konstant./Steigend.“; Balken (Wert − 30) · 100 / 38; Eingang des Spielerwerts | 0x41AE0, 0x041AC, 0x4A0A7 | `Player.TrendOf`, `PlayerInfoPopup.BarValues`, `PlayerValue.Inputs` |
+| Grundstärken des Listenwechsels aus Vereinsfeld 0x19/0x1B; bei Nationalteams (t = 1) setzt der Lader 0x2EF1B diese Felder aus der Ländertabelle DGROUP 0x4C4E (je −2), Deutschland ohne Bundestrainer neu gewürfelt (0x55506) | 0x4981E–0x4991C | `RollMarketStrengths` mit `GameState.NationalRatings` (vorher Datenbankstärke); A209 |
+
+**Tägliche Änderung der Tendenz** (gelesen, nicht umgesetzt – Inventur A134): Im Tagesablauf 0x07169 je Kaderplatz des Managers
+am Zug (Datei 0x7B29–0x7C04, nach der Heilung 0x7C12): t = +0x0E; mit random(0, 3) ≠ 0 wird t um (+0x14 >> 4) & 7 erhöht
+(Bit 7 gesetzt) bzw. erniedrigt; dann zählt +0x14 & 0xF um eins herunter. Erreicht der Zähler 0, ruft 0x7BD4 erneut 0x4907A
+(neuer Wert und neues Steuerbyte, t verfällt); sonst wird t auf 30 … 68 begrenzt (0x7BEA) und nach +0x0E geschrieben.
+
+`[APPROX]`: Tendenz aus eigener Zufallsquelle `GameState.TrendRandom` (das Original nutzt seinen einzigen Generator; so behalten
+Markt, Spiele und Mehrsaisonproben ihre Folgen); ein Kauf übernimmt Tendenz und Steuerbyte vom Markt-Platz (das Original legt
+beim Kauf 0x477E7 einen neuen Kaderplatz an, würfelt also neu, und kopiert den Markt-Platz darüber nur bei [bp−0x11] ≠ 0 oder
+einer Leihe, Datei 0x478CF–0x47907; Bedeutung von [bp−0x11] nicht geprüft), Startkader und ältere Spielstände ohne Wert (0 → Mitte der Stufe);
+die tägliche Änderung fehlt (A134). Die Frage an den Verkäufer zeigt das Fragefenster des Transferbildschirms mit dem Namen des
+Verkäufers als Kopf, bis der Baustein 0x4C246 (Spur `ui-meldungen`) angeschlossen ist; ohne Oberfläche (`TransferMarket.Buy`)
+bleibt die simulierte Antwort. Länderwerte aus der Aufstellung eines Bundestrainers (0x952C) gehen in die Grundstärken nicht ein.
+
+## Belegt und umgesetzt (Spur `kader-transfer`, Teil 5: Saisonende, Poolumverteilung)
+
+**Zähler am Saisonende (A226).** Das Saisonende 0x26F20 arbeitet in drei Schleifen über alle Manager: erst Prämien, Altern und
+Herunterzählen (Datei 0x26FB0–0x279FA), dann die Saisonzähler aller 29 Kaderplätze auf 0 (Datei 0x27A0C–0x27AA8: +0x00, +0x01
+Strafen, +0x03–+0x05 Tore, +0x06–+0x08 Saisonspiele), erst dann die Verhandlungen (ab Datei 0x27B64). Die Spiele beim jetzigen
+Verein (+0x1C/+0x1E/+0x20, Gewicht 50/20/30 im Spielerwert) werden nur erhöht (Datei 0x41622, 0x5499E, zusammen mit +0x06) und
+bei einem neuen Kaderplatz 0 (FILE07); am Saisonende bleiben sie stehen. Der Auf- und Abstieg liegt schon davor (Datei
+0x56137–0x563AD, Aufruf 0x5645D). Remake: `Player.GamesForClub` (+0x1C) = Saisonspiele + Übertrag `ClubGamesCarry`; der Übertrag
+wird vor dem Zurücksetzen der Zähler fortgeschrieben (`GameState.CarryGamesForClub`, `GameState.Integration.cs`) und beim Eintritt
+in einen Kader (`PlayerFactory.Join`) auf −Saisonspiele gesetzt. Schema 25 (vorläufig). Die bisherige Annahme, das Original
+verhandle vor dem Zurücksetzen und je Manager nach dessen Prämien, war falsch: Tore und Strafen sind auch im Original 0.
+
+**Poolumverteilung (M-K7, M-K8; F002–F004, F013–F015).** `Core/Transfer.PoolDistribution.cs`.
+
+| Schritt | Fundstelle | Regel |
+|---|---|---|
+| Soll je Liga | Datei 0x05521 (aus 0x057E3 und 0x07C7E) | k[l] = belegte Kaderplätze (0x4BE17) der Manager in Liga l = 0 … 2; je Platz 1 … 199 Drift von +0x15 und +0x16 (0x054D9); Plätze &lt; 180 mit Verein ≥ 64 sind „im Ausland“; random(5, 15)-mal Platz random(1, 179): bei mehr als 4 im Ausland bekommt ein gezogener Auslandsspieler einen Verein über 0x059B8 (Schalter 0) und der Zug zählt nicht; Spieler eines Managervereins und, solange mehr als 4 im Ausland sind, alle anderen werden verworfen; sonst neuer Verein über 0x059B8. Dann T = Σ k + Ausland, R = 179 − T, T = 0 → 1, s[l] = (100 · k[l] / T) · R / 100 (Langzahlen) |
+| Drift | Datei 0x054D9 | Wert + random(1, 7) − 4, begrenzt 30 … 99 (0x4BD35) |
+| Zielverein | Datei 0x07EF1 | Liga &gt; 2: random(64, 150); sonst Ligaanfang DGROUP 0x7C0[l] + DGROUP 0x48FE[z], z = DGROUP 0x48FB[l] (dann z + 1, nach 17 → 0; Startwert 0); Managerverein → nächstes z. 0x48FE = 0 0 1 1 2 2 3 3 4 4 5 6 7 8 9 10 11 |
+| Spielstart | Datei 0x057E3 (Aufruf 0x43A83, nach 0x28165 und vor dem ersten Listenwechsel 0x43A9F) | für Platz 1 … 178 ohne Managerverein: für jede Liga q = 0 … 2 mit s[q] ≠ 0 Verein = Zielverein(q), s[q] − 1 – **ohne Abbruch**: ein Spieler zählt bei allen Ligen mit Rest und landet in der letzten |
+| Saisonwechsel | Datei 0x07C7E (Aufruf 0x56631, nach 0x56467/0x56470) | s[3] = 0; Gruppen q = 0 … 3 (Indexbereiche DGROUP 0x7C6/0x7C7: 0–11, 12–23, 24–35, 36–42): je Platz 1 … 179 im Bereich s[q] − 1 (nicht unter 0), Besitzer &gt; 3 → Liste frei[q]; für l = 0 … 3 solange s[l] &gt; 0 (höchstens 1000 Durchgänge) aus jeder anderen Gruppe q zufällige Listenplätze (random(0, Länge − 1), bis 1000 Wiederholungen) mit Zielverein(l) |
+| Vereinslisten | Datei 0x07F6B | Vereine einer Liga nach Stärke sortiert; Ergebnis ungenutzt (0x07EF1 liest das Argument nicht) – nicht abgebildet (F015) |
+
+Beleg FILE01–FILE07 (Spielstart, Köln = Verein 2): 146 der 154 freien Ligaplätze stehen auf 1.-Liga-Vereinen ohne Köln,
+0/1/3/4 mit 20/20/20/22 Spielern, 5 … 11 mit 9–10 (Test `Start_OriginalDatabase_MatchesFile05Distribution`); nur 8 Namen stehen
+noch bei ihrem Datenbankverein.
+
+`[APPROX]`: Gruppe einer Liga = Vereine mit dieser Liga, Gruppe 3 = Vereine ohne Liga unter 48, Platz in der Liga nach Vereinsindex
+(das Original ordnet die Sätze beim Ligawechsel um, 0x35EDD); Verein 150 gibt es im Remake nicht (149); die Drift wirkt nur auf
+freie Plätze (Markt- und Kaderspieler führen ihre Werte am Spieler, im Original im Kaderplatz), gezogen wird für jeden Platz; die
+Managerkader stammen im Remake nicht aus dem Pool, k[l] zählt sie trotzdem (das Soll ist dadurch dasselbe, der Pool hat aber mehr
+freie Spieler); Spielstart mit der Quelle des Kaderaufbaus, Saisonwechsel mit der Hauptquelle, im Modus „nur Weltkugel“ ohne
+Saisonumverteilung (Tageslauf 0x54C9F fehlt dort, 0x54CEE); Schleifen ohne Grenze im Original enden nach 100.000 Versuchen.
+
+## Belegt und umgesetzt (Spur `kader-transfer`, Teil 7: Ankündigungen der Kaderspieler)
+
+Regeln und Fundstellen: `docs/analyse/re-nachtrag.md`, Abschnitt 1 (Tagesablauf 0x07169), Umsetzung U1–U3, U6; im Code
+`SquadRules.RetirementRoll`, `SquadRules.OfferLimit`, `SquadRules.OfferedYears`, `GameState.AnnounceContractEnds`.
+
+- **Ruhestand (A231, A232, A238):** täglich je Platz random(350, 450) &lt; Alter · c / 10 (c = 100, Torhüter 85, − (Technik −
+  Kondition) / 2) → „… kündigt an, daß er seinen Vertrag nicht mehr verlängern wird.“ (Art 4), unabhängig von der Laufzeit, auch
+  bei Leihspielern; das Bit bleibt über den Saisonwechsel, der Spieler hört bei Vertragsende auf.
+- **Verlängerungsangebot (A229, A239):** nur ohne Leihe und bei Restlaufzeit 1, random(0, p) = 0 und random(0, 3) = 0 mit
+  p = (60 · s + 40 · a) / 100 − p · e / 10; n = 2/3/4 mit 71/20/10 von 101; **keine Frist** – wer sich nicht meldet, kommt in die
+  Verhandlung am Saisonende.
+- **Absage (A230):** gibt es nicht; die 10 % `RefuseChance` entfallen (`ContractNotice.Refused` nur noch aus alten Spielständen).
+- **Angebote der Computervereine (A136):** Bit 0x80 nur am Marktplatz – das Remake entsprach schon dem Original (Kommentar).
+
+`[APPROX]`: „offene Meldung“ = schon gemeldet; das Verlängerungsangebot verfällt nicht (Datei 0x0767A, U4 offen); Züge aus der
+Vertragsquelle `ContractRandom`; +0x1E/+0x20 fehlen in e; Laufbahnende der Computervereine weiter nach der Kader-KI (U5 offen).
 
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
-- **Antwort des verkaufenden Managers** (Hot-Seat-Rückfrage 0x47608–0x47743) fehlt; das Remake nimmt ab dem geforderten
-  Betrag an, darunter bis 85 % mit sinkender Wahrscheinlichkeit.
-- **Bietender Verein** für Spieler auf dem Markt (Bit 0x80): 0x059B8 ist jetzt belegt (Teil 3), für den Markt aber noch nicht
-  angeschlossen; Pflege der Liste 0x7C12 nicht belegt.
+- **Antwort des verkaufenden Managers:** seit Spur `kader-transfer`, Teil 4 gefragt (0x47655–0x47743); nur ohne Oberfläche
+  (`TransferMarket.Buy`) nimmt das Remake ab dem geforderten Betrag an, darunter bis 85 % mit sinkender Wahrscheinlichkeit.
+- **Bietender Verein** für Spieler auf dem Markt (Bit 0x80): seit Spur `kader-transfer`, Teil 4 nach 0x059B8 angeschlossen;
+  Pflege der Liste 0x7C12 nicht belegt.
 - **Zeitpunkt der Züge:** das Original würfelt die Angebotshöhe beim Anklicken, das Remake beim Angebot.
 - **Listenpreis eigener Spieler:** das Original kopiert den Kaderplatz (0x48:0x2BD4) samt altem +0x2C (Start- bzw. Kaufpreis);
   das Remake rechnet den Wert beim Anbieten frisch.

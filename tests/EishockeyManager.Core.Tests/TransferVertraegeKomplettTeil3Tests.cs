@@ -161,6 +161,10 @@ public class TransferVertraegeKomplettTeil3Tests
                 foreach (var manager in game.Managers)
                 {
                     TestSeason.KeepSquad(game, manager);
+                    // Spur kader-transfer, Teil 7: keine Entlassung – die Probe prüft Angebote, nicht das Konto. Mit den
+                    // Ankündigungen nach 0x07169 (anderer Zug der Vertragsquelle) geriet der passive Lauf (Startwert 23)
+                    // über die Entlassungsgrenze (Phase GameOver, StartNextSeason scheiterte).
+                    manager.Money = Math.Max(manager.Money, 5_000_000);
                     var club = game.Clubs[manager.ClubIndex];
                     foreach (var p in club.Players.Where(p => p.UnsolicitedOffer is not null).ToList())
                     {

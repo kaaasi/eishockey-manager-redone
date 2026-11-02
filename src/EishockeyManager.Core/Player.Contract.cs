@@ -159,6 +159,10 @@ public sealed partial class GameState
                 Retire(owner, player);
                 continue;
             }
+            // Spur kader-transfer, Teil 7 (A231): Das Ruhestand-Bit +0x18 & 0x80 bleibt über den Saisonwechsel stehen (0x26F20
+            // setzt +0x18 nicht zurück, R8W3I-09); der Spieler hört erst bei Vertragsende auf (Datei 0x2787A).
+            if (notice == ContractNotice.Retiring && player.ContractYears > 0 && managed.Contains(owner.Index))
+                player.Notice = ContractNotice.Retiring;
             if (player.ContractYears == 0 && owner == club && renewers.TryGetValue(owner.Index, out var renewer))
             {
                 BeginRenewal(renewer, player);
@@ -291,6 +295,19 @@ public static class Contracts
         var club = game.Clubs[manager.ClubIndex];
         var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
         return Math.Max(MinSalary, value / 3);
+    }
+
+    /// <summary>
+    /// Startpreis eines Kaderplatzes des Managers in DM: Wert(Preis) (0x118:0x70 Art 0) im Verein des Managers / 3.
+    /// [ORIGINAL] Spielstart Datei 0x29EB4 (Kaderplatz +0x2C). Ohne Angebot eines Vereins (+0x09 Bit 0x80) zieht Art 0 keinen
+    /// Zufall (0x4A0F9); mit Angebot wirft die Berechnung (bei Spielbeginn gibt es keine Angebote).
+    /// </summary>
+    public static long ValuePrice(GameState game, Manager manager, Player p)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(manager);
+        var club = game.Clubs[manager.ClubIndex];
+        return game.PlayerValueOf(p, club, PlayerValueKind.Price, NoRandom, manager.Level) / 3;
     }
 
     /// <summary>Monatliche Versicherungsprämie eines Spielers (Kaderplatz +0x30, <see cref="Player.InsurancePremium"/>).</summary>

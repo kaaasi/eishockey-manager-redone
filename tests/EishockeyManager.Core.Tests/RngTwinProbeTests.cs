@@ -136,16 +136,34 @@ namespace EishockeyManager.Core.Tests;
 /// ein Managerverein unter den letzten zwei bleibt in der Oberliga (Konto 400.000 DM) statt des nächstschlechteren Vereins.
 /// Integration Runde 11 (geld + saisonwechsel): Abdrücke auf dem integrierten Stand neu ermittelt (beide Spuren ändern den
 /// Zufallsverbrauch; kein weiterer Unterschied).
+/// Spur kader-transfer, Teil 1 (A170, 0x29A3F): neu – der Managerverein in der Bundesliga hat 25 statt 20 Spieler (Kader nach Start-Liga), andere Kadererzeugung, Gehälter und Spielstärke. Keine Gegenprobe (geänderte Kadergröße ist der Zweck).
+/// Spur kader-transfer, Teil 3 (0x058DC, 0x063BE): neu nur die aktiven Fälle – Verkäufe stärken den Käufer, Käufe vom Computermarkt würfeln den Sponsorzuschuss (anderer Zufallsverbrauch); die passiven Fälle bleiben.
+/// Spur kader-transfer, Teil 4 (0x54E71, 0x072DD, 0x059B8): alle neu – der Markt würfelt Listenwechsel und Angebote täglich statt je Ligaspieltag, Bieter nach 0x059B8 (anderer Verbrauch der Hauptquelle ab dem ersten Tag).
+/// Spur kader-transfer, Teil 4, Rest (0x4907A, 0x4981E, F113/A209): alle neu – neue Kaderplatz-Felder Tendenzwert und Steuerbyte
+/// (<c>TrendScore</c>, <c>TrendControl</c>) stehen im Abdruck; die Tendenz der Markt-Plätze geht in Spielerwert und Preise ein,
+/// Nationalspieler auf dem Markt bekommen Grundstärken aus der Ländertabelle. Die Hauptquelle zieht nicht mehr als vorher (Tendenz
+/// aus <c>TrendRandom</c>). Gegenprobe mit beiden Feldern ausgenommen: die vier synthetischen Abdrücke unverändert, die zwei
+/// mit Originaldatenbank auch ohne den Zweig A209 neu (Wirkung der Tendenz über den Spielerwert).
+/// Spur kader-transfer, Teil 5 (A226, Datei 0x27A0C–0x27AA8): alle neu – neues Feld <c>ClubGamesCarry</c> im Abdruck; die Spiele
+/// beim jetzigen Verein (+0x1C) laufen über den Saisonwechsel weiter und gehen ab der zweiten Saison in Spielerwert, Gehälter und
+/// Preise ein. Die Hauptquelle zieht nicht mehr als vorher (Modus-4-Probe: Titel und Zufallsstände gleich, nur Konten neu).
+/// Spur kader-transfer, Teil 5 (M-K7/M-K8, 0x057E3, 0x07C7E, 0x05521): alle neu – die Poolspieler gehen beim Spielstart (Zufall des
+/// Kaderaufbaus) und beim Saisonwechsel (Hauptquelle: Drift 0x054D9, Auslandsrückholung 0x059B8, Zuteilung) in die Ligen der Manager;
+/// andere Vereine der Markt-Plätze, andere Grundstärken und Preise ab der ersten Liste. Neue Felder <c>_poolTurn…</c> im Abdruck.
+/// Spur kader-transfer, Teil 7 (0x07169, Datei 0x0754D/0x076FA): alle neu – Ruhestand und Verlängerungsangebote der Managerkader nach
+/// dem Original (anderer Verbrauch der Vertragsquelle <c>ContractRandom</c>, weniger Angebote ohne Frist, Ruhestand über den Saisonwechsel).
+/// Integration Runde 11 (geld + saisonwechsel + kader-transfer): Abdrücke auf dem integrierten Stand neu ermittelt (alle drei Spuren
+/// ändern den Zufallsverbrauch; kein weiterer Unterschied).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "695434CE24579471")]
-    [InlineData(true, 3, "A37226F386B746A2")]
-    [InlineData(false, 11, "0B6836C41A1082EA")]
-    [InlineData(true, 11, "0188DB2B51659524")]
+    [InlineData(false, 3, "78E0AF3ED9F97A8C")]
+    [InlineData(true, 3, "37ADC9CD4A926DD6")]
+    [InlineData(false, 11, "F87389CEA0C3E8D1")]
+    [InlineData(true, 11, "548B9B19371510C9")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -153,8 +171,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "247E9DEA290DF721")]
-    [InlineData(true, "9621BDB070A42917")]
+    [InlineData(false, "561426E094F9C640")]
+    [InlineData(true, "468B84E94D907100")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -252,10 +270,13 @@ public class RngTwinProbeTests
     /// stimmen alle sechs Abdrücke unverändert. Ebenso <c>Club.LeaguePenaltyMinutes</c> (Spur statistiken): Zähler für die
     /// Fair-Play-Prämie) steht im Kontostand. Ebenso <c>Player.InsurancePremium</c> und <c>Player.InsuranceLocked</c> (Spur
     /// transfer-vertraege-komplett, Teil 2): „versichert“ steht weiter als <c>Insured</c> im Abdruck, die Prämie wirkt über den
-    /// Kontostand.
+    /// Kontostand. Ebenso <c>Player.PurchasePrice</c>, <c>Player.InjuryKind</c> und <c>Player.InjuryName</c> (Spur kader-transfer,
+    /// Teil 2): reine Anzeigefelder des Spielerdaten-Fensters und der Hinweiszeile, ohne Wirkung auf den Spielverlauf – mit
+    /// dieser Ausnahme stimmen alle Abdrücke unverändert.
     /// </summary>
     private static readonly HashSet<string> Excluded =
-        ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked"];
+        ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked", "PurchasePrice", "InjuryKind",
+         "InjuryName"];
 
     /// <summary>
     /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:

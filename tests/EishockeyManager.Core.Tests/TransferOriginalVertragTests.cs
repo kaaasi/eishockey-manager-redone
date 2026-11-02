@@ -395,7 +395,9 @@ public class TransferOriginalVertragTests
     /// <summary>
     /// Mehrsaisonprobe (4 Saisonwechsel, passiver und aktiver Manager). Aktiv: verhandelt jeden Spieltag mit dem ersten Spieler
     /// im letzten Vertragsjahr (eigene Laufzeit 2–5, Gehalt um die Forderung) und bietet für den ersten Markt-Spieler 80 %.
-    /// Sperren bleiben 0–18, Kader und Geld bleiben gültig, Spielstand bleibt speicherbar; zwei gleiche Läufe sind gleich.
+    /// Sperren bleiben 0–18, der Kader bleibt gültig, Spielstand bleibt speicherbar; zwei gleiche Läufe sind gleich. Das Konto
+    /// prüft die Probe nicht: Die Geldsperre (10 Mio. je Tag) hält den aktiven Manager im Amt; ohne sie kauft er sich in den
+    /// Dispo (80 % täglich, Abstieg nach Saison 2, Gehälter über dem Eintritt, Dispozinsen 0x3ED4F; R9S-05, #353).
     /// </summary>
     [Theory]
     [InlineData(false)]

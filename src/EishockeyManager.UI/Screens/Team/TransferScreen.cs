@@ -182,11 +182,15 @@ public sealed class TransferScreen : Screen
         switch (d.Kind)
         {
             case TransferDialog.DialogKind.Buy or TransferDialog.DialogKind.Loan:
-                var bid = Market.Bid(Game, Manager, d.Listing!, d.Amount, d.Kind == TransferDialog.DialogKind.Loan, out var purchase);
-                if (purchase is not null)
-                    OpenContract(purchase);
+                var bid = Market.Bid(Game, Manager, d.Listing!, d.Amount, d.Kind == TransferDialog.DialogKind.Loan, out var purchase,
+                    out var subsidy, out var question);
+                if (question is not null)
+                    _dialog = TransferDialog.ForSeller(question); // [ORIGINAL] 0x47655: Frage an den verkaufenden Manager
                 else
-                    _message.Show(TransferMarket.Message(bid));
+                    ShowBidResult(bid, purchase, subsidy);
+                break;
+            case TransferDialog.DialogKind.Seller:
+                ShowBidResult(Market.AnswerSeller(Game, d.Question!, accept: true, out var sold, out var soldSubsidy), sold, soldSubsidy);
                 break;
             case TransferDialog.DialogKind.Sale when d.Listing is null:
                 var result = Market.Offer(Game, Manager, d.Player!);
@@ -208,7 +212,41 @@ public sealed class TransferScreen : Screen
                 if (Game.AcceptUnsolicitedOffer(d.Offer!) != TransferResult.Accepted)
                     _message.Show(TransferMarket.Message(TransferResult.Impossible));
                 break;
+            case TransferDialog.DialogKind.Subsidy:
+                AnswerSubsidy(d.Subsidy!, accept: true);
+                break;
         }
+    }
+
+    /// <summary>Ergebnis eines Gebots: Verhandlung beim Kauf, Abschluss der Leihe oder Meldung.</summary>
+    private void ShowBidResult(TransferResult bid, TransferPurchase? purchase, SponsorSubsidyOffer? subsidy)
+    {
+        if (purchase is not null)
+            OpenContract(purchase);
+        else if (bid == TransferResult.Accepted)
+            ShowAccepted(subsidy); // Leihe
+        else
+            _message.Show(TransferMarket.Message(bid));
+    }
+
+    /// <summary>
+    /// Abschluss eines Kaufs bzw. einer Leihe: zuerst die Frage nach dem Sponsorzuschuss, falls gewürfelt (Datei 0x47A34),
+    /// dann die Meldung. [APPROX] Die Meldung „Ihr Angebot wurde angenommen !“ zeigt das Remake zusätzlich (siehe
+    /// <see cref="TransferMarket.Message"/>). Der Zuschuss lebt nur im Fenster (kein Spielstandsfeld).
+    /// </summary>
+    private void ShowAccepted(SponsorSubsidyOffer? subsidy)
+    {
+        if (subsidy is not null)
+            _dialog = TransferDialog.ForSubsidy(subsidy);
+        else
+            _message.Show(TransferMarket.Message(TransferResult.Accepted));
+    }
+
+    private void AnswerSubsidy(SponsorSubsidyOffer subsidy, bool accept)
+    {
+        if (accept)
+            Game.AcceptSponsorSubsidy(subsidy);
+        _message.Show(TransferMarket.Message(TransferResult.Accepted));
     }
 
     /// <summary>
@@ -237,10 +275,10 @@ public sealed class TransferScreen : Screen
             _message.Show(TransferMarket.NotTakingPlace); // 0x47874 → 0x47A3E
             return;
         }
-        var result = Market.Sign(Game, purchase, d.Years, d.Salary, d.Insured, d.DemandFilled);
+        var result = Market.Sign(Game, purchase, d.Years, d.Salary, d.Insured, d.DemandFilled, out var subsidy);
         if (result == NegotiationResult.Accepted)
         {
-            _message.Show(TransferMarket.Message(TransferResult.Accepted));
+            ShowAccepted(subsidy);
             return;
         }
         _message.Show(Contracts.Message(result, purchase.Player));
@@ -257,6 +295,10 @@ public sealed class TransferScreen : Screen
             Market.Decline(d.Bid!);
             ShowNextBid();
         }
+        else if (d.Kind == TransferDialog.DialogKind.Subsidy)
+            AnswerSubsidy(d.Subsidy!, accept: false);
+        else if (d.Kind == TransferDialog.DialogKind.Seller) // „Nein !“: abgelehnt und gesperrt (0x47AC8)
+            _message.Show(TransferMarket.Message(Market.AnswerSeller(Game, d.Question!, accept: false, out _, out _)));
     }
 
     public override void Draw(Surface s)
@@ -373,12 +415,13 @@ public sealed class TransferScreen : Screen
     }
 
     /// <summary>
-    /// Leiste unten: Kontostand, Schulden, Anlagen, Saldo. [APPROX] Schulden und Anlagen liefert das Paket „manager“;
-    /// bis dahin 0 DM.
+    /// Leiste unten: Kontostand, Schulden, Anlagen, Saldo. [ORIGINAL] Werte nach Datei 0x463CC
+    /// (<see cref="GameState.TransferAccount"/>; Spur <c>kader-transfer</c>, Teil 4, A381). [APPROX] Lage aus dem Video,
+    /// x der Anlagen 132 statt 133 (3 + 65 · k) und Zeilen 226/232 statt der Grundlinien 229/236 nicht nachgemessen.
     /// </summary>
     private void DrawAccountBar(Surface s)
     {
-        var money = Manager.Money;
+        var account = Game.TransferAccount(Manager);
         // Streifen über die ganze Breite (Video: Oberkante 3, Füllung 4, unten 6/200/6)
         s.Fill(new Rect(0, 224, Surface.Width, 16), TeamUi.DialogFill);
         s.HLine(0, 224, Surface.Width, 3);
@@ -387,10 +430,10 @@ public sealed class TransferScreen : Screen
         s.HLine(0, 239, Surface.Width, TeamUi.DialogShadow);
         (string Label, long Value, int X)[] fields =
         [
-            ("Kontostand:", money, 3),
-            ("Schulden:", 0, 68),
-            ("Anlagen:", 0, 132),
-            ("Saldo:", money, 198),
+            ("Kontostand:", account.Money, 3),
+            ("Schulden:", account.Debts, 68),
+            ("Anlagen:", account.Assets, 132),
+            ("Saldo:", account.Balance, 198),
         ];
         foreach (var (label, value, x) in fields)
         {

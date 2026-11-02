@@ -49,6 +49,8 @@ public class TransferOriginalTests
             var offer = listing.Price * 8 / 10;
             var twin = GameRandom.FromState(game.Random.Capture());
             var expected = TransferRules.Accepts(TransferRules.Thirds(listing.Price), TransferRules.Thirds(offer), false, twin);
+            if (expected)
+                _ = ComputerClubTransferRules.SponsorSubsidy(offer, twin); // Kader-Transfer Teil 3: Zuschuss 0x47A34
 
             var result = game.TransferMarket.Buy(game, manager, listing, offer, loan: false);
 

@@ -331,8 +331,22 @@ public class GameModeTests
         Assert.Equal(Mode4Reference, print);
     }
 
+    // Spur kader-transfer, Teil 1 (A170, 0x29A3F): alle Werte neu – Managervereine in der Bundesliga haben 25 statt 20
+    // Kaderplätze (Kader nach Start-Liga): andere Kadererzeugung, Gehälter, Spielstärke und damit Titel, Konten und beide
+    // Zufallsquellen. Konto Manager 1 bleibt in allen Saisons positiv (vorher Saison 4 −28.570).
+    // Spur kader-transfer, Teil 3 (0x058DC, 0x063BE): neu ab Saison 5 – Verkäufe stärken den Käufer, Käufe vom Computermarkt
+    // würfeln den Sponsorzuschuss (anderer Zufallsverbrauch); Konto Manager 1 in Saison 5 jetzt 47.271.
+    // Spur kader-transfer, Teil 4 (0x54E71, 0x072DD, 0x059B8): alle Werte neu – der Markt würfelt täglich statt je Ligaspieltag
+    // aus der Hauptquelle (anderer Zufallsverbrauch ab dem ersten Tag); Konto Manager 1 in allen Saisons positiv (Saison 5 51.083).
+    // Spur kader-transfer, Teil 5 (A226, 0x27A0C): nur Konten neu ab Saison 3 – Spiele beim Verein (+0x1C) gehen über den
+    // Saisonwechsel in Gehälter und Ablösen ein; Titel und Zufallsstände unverändert (Saison 5 Manager 1: 61.083).
+    // Spur kader-transfer, Teil 5 (0x057E3, 0x07C7E): alle Werte neu – Poolumverteilung beim Spielstart und Saisonwechsel (andere
+    // Markt-Plätze ab der ersten Liste, Zufall der Hauptquelle beim Wechsel); Konto Manager 1 in allen Saisons positiv.
+    // Spur kader-transfer, Teil 7 (0x07169): ab Saison 2 neu – Angebote „von 1 auf n“ nach dem Original (ohne Frist, nur ein
+    // Teil der Spieler) und Ruhestand ab 36. Der Testmanager 1 verlängert nur angebotene Verträge und kauft nicht: sein Kader
+    // schrumpft (20 → 13 → 12 → 11), in Saison 5 Strafen und Dispozinsen, entlassen (−4.592.736). Manager 0 bleibt spielfähig.
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=0,EuropeanCupWinner=2|612685,400000|WorldChampion=54,CupWinner=10,GermanChampion=1,EuropeanCupWinner=0|1462395,400000|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2632607,400000|WorldChampion=52,CupWinner=8,GermanChampion=9,EuropeanCupWinner=0|3683039,400000|WorldChampion=52,CupWinner=8,GermanChampion=3,EuropeanCupWinner=0|4346028,400000|R1140319995 C1871903819";
+        "WorldChampion=52,CupWinner=0,GermanChampion=3,EuropeanCupWinner=2|412175,500000|WorldChampion=54,CupWinner=3,GermanChampion=5,EuropeanCupWinner=3|577721,400000|WorldChampion=53,CupWinner=3,GermanChampion=3,EuropeanCupWinner=5|2648588,400000|WorldChampion=52,CupWinner=13,GermanChampion=20,EuropeanCupWinner=3|3711668,400000|WorldChampion=52,CupWinner=6,GermanChampion=1,EuropeanCupWinner=20|4439513,400000|R696623419 C845472287";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

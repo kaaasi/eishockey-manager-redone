@@ -337,6 +337,38 @@ public sealed partial class Club
         return LineupResult.Undressed;
     }
 
+    /// <summary>
+    /// Neuaufstellung nach Verletzung oder Heilung (<see cref="PlayerInjuries.RefillLineup"/>). [ORIGINAL] Datei 0x5C50
+    /// (Verletzung 0x05B1A): der Verletzte verliert +0x0A (nicht mehr eingesetzt). Datei 0x426BC setzt höchstens 22 ein
+    /// (Zähler [bp-9] ab 1, Vergleich mit 0x17 bei 0x427C0/0x4282C). [APPROX] Bei Auswahl von Hand füllen zuerst
+    /// eingesetzte Reservisten die Lücken, andere nur, solange weniger als 22 eingesetzt sind; das Original stellt nur mit
+    /// der Einstellung DGROUP 0x375 ganz neu auf (im Remake nicht geführt).
+    /// </summary>
+    public void RefillLineup()
+    {
+        var removed = Lineup.Players.Where(p => !p.Available || !Players.Contains(p)).ToList();
+        Lineup.RemoveUnavailable(Players);
+        if (!_dressedByHand)
+        {
+            Lineup.FillGaps(Players);
+            return;
+        }
+        foreach (var p in removed)
+            _dressed.Remove(p.Id);
+        var before = Dressed.ToHashSet();
+        Lineup.FillGaps(Players.Where(before.Contains));
+        var room = MaxDressed - before.Count;
+        if (room <= 0)
+            return;
+        Lineup.FillGaps(Players);
+        var added = Lineup.Players.Where(p => !before.Contains(p))
+            .OrderByDescending(TeamStrength.PlayerValue).ThenBy(p => p.Number).ToList();
+        foreach (var p in added.Skip(room))
+            Lineup.Clear(Lineup.FindSlot(p)!.Value);
+        foreach (var p in added.Take(room))
+            _dressed.Add(p.Id);
+    }
+
     /// <summary>Rechtsklick in der Kaderliste: nicht eingesetzten Spieler einsetzen (Datei 0x40E2A, 0x41208).</summary>
     public LineupResult Dress(Player player)
     {

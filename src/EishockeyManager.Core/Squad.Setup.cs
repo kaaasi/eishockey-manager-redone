@@ -13,14 +13,15 @@ namespace EishockeyManager.Core;
 public static class SquadSetup
 {
     /// <summary>
-    /// Kadergröße der Manager-Vereine je Spiel-Level (Torhüter, Verteidiger, Stürmer).
-    /// [ORIGINAL] Tabelle DGROUP 0x169: 2/10/13, 2/9/11, 2/8/10. Level 3 = 2/8/10 ist im Video belegt.
-    /// [APPROX] Level 0 nutzt wie Level 1 den größten Kader.
+    /// Kadergröße der Manager-Vereine je Start-Liga (Torhüter, Verteidiger, Stürmer).
+    /// [ORIGINAL] em.exe Datei 0x29A3F: Tabelle DGROUP 0x169 (Datei 0x16F39: 2/10/13/0, 2/9/11/0, 2/8/10/0) wird mit
+    /// <c>[0x11A] · 4 + Gruppe</c> gelesen, 0x11A = Start-Liga; der Spiel-Level wirkt nicht (Inventur A170).
+    /// Beleg: FILE01/FILE09/FILE10 (Bundesliga) 25 Plätze, FILE12 und folge01 (Oberliga) 20.
     /// </summary>
-    public static (int Goalkeepers, int Defenders, int Forwards) ManagedSquadSize(int level) => level switch
+    public static (int Goalkeepers, int Defenders, int Forwards) ManagedSquadSize(League startLeague) => startLeague switch
     {
-        <= 1 => (2, 10, 13),
-        2 => (2, 9, 11),
+        League.Bundesliga => (2, 10, 13),
+        League.ZweiteLiga => (2, 9, 11),
         _ => (2, 8, 10),
     };
 
@@ -62,16 +63,16 @@ public static class SquadSetup
         game.TransferMarket.ReservePool(game, seed);
         var usedNames = new HashSet<string>(game.Clubs.SelectMany(c => c.Players).Select(p => p.Name));
         var namePool = usedNames.ToList();
-        var managed = game.Managers.GroupBy(m => m.ClubIndex).ToDictionary(g => g.Key, g => g.First().Level);
-        var startBase = StartBases(game);
+        var startLeague = StartLeagues(game);
+        var startBase = startLeague.ToDictionary(e => e.Key, e => StartBase(e.Value.League, e.Value.Strength));
 
         foreach (var club in game.Clubs)
         {
-            if (club.Players.Count == 0 && club.League is null && !managed.ContainsKey(club.Index))
+            if (club.Players.Count == 0 && club.League is null && !startLeague.ContainsKey(club.Index))
                 continue; // Europapokalgegner und leere Einträge spielen ohne Kader
 
-            if (managed.TryGetValue(club.Index, out var level))
-                BuildManagedSquad(club, ManagedSquadSize(level), namePool, usedNames, random);
+            if (startLeague.TryGetValue(club.Index, out var start))
+                BuildManagedSquad(club, ManagedSquadSize(start.League), namePool, usedNames, random);
             else
                 BuildComputerSquad(club, namePool, usedNames, random);
 
@@ -114,7 +115,7 @@ public static class SquadSetup
     /// <summary>Computerverein: alle Datenbankspieler; fehlende Torhüter, Verteidiger, Stürmer werden ergänzt.</summary>
     private static void BuildComputerSquad(Club club, List<string> pool, HashSet<string> used, Random random)
     {
-        var (g, d, f) = ManagedSquadSize(0);
+        var (g, d, f) = ManagedSquadSize(League.Bundesliga);
         Fill(PlayerRole.Goalkeeper, g);
         Fill(PlayerRole.Defender, Math.Min(d, 8));
         Fill(PlayerRole.Forward, Math.Min(f, 10));
@@ -143,19 +144,19 @@ public static class SquadSetup
     }
 
     /// <summary>
-    /// Basis der Startwerte je Manager-Verein: Liga des Vereins bei Spielbeginn und Start-Stärke des Managers
+    /// Start-Liga und Start-Stärke je Manager-Verein für Kadergröße (<see cref="ManagedSquadSize"/>) und Startwerte
     /// (<see cref="StartBase"/>). [APPROX] Das Original kennt nur eine Start-Liga und eine Start-Stärke für alle
     /// Manager und setzt den Verein in die Start-Liga; das Remake führt beides je Manager und lässt einen fest
     /// gewählten Verein in seiner Liga, daher zählt die Liga des Vereins (ligalose Vereine sind dann schon Oberliga).
     /// </summary>
-    private static Dictionary<int, int> StartBases(GameState game)
+    private static Dictionary<int, (League League, StartStrength Strength)> StartLeagues(GameState game)
     {
-        var result = new Dictionary<int, int>();
+        var result = new Dictionary<int, (League, StartStrength)>();
         for (var i = 0; i < game.Managers.Count; i++)
         {
             var club = game.Clubs[game.Managers[i].ClubIndex];
             var setup = i < game.Setup.Managers.Count ? game.Setup.Managers[i] : new ManagerSetup();
-            result.TryAdd(club.Index, StartBase(club.League ?? setup.StartLeague, setup.StartStrength));
+            result.TryAdd(club.Index, (club.League ?? setup.StartLeague, setup.StartStrength));
         }
         return result;
     }

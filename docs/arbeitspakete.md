@@ -136,7 +136,8 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   7. **Ankündigungen der Kaderspieler (P1 Nr. 9) – nach `re-nachtrag`:** A136, A229–A232, A238, A239.
 - **Abnahme:** je Regel roter Test; Goldtest aus FILE03/05/07; Mehrsaisonprobe (Kader, Geld); Spielstand-Rundlauf der
   neuen Felder.
-- **Dateigrenzen:** siehe Zuständigkeit; `docs/transfer.md`, Tests. **Modell:** Claude Opus 5.5. **Status:** –
+- **Dateigrenzen:** siehe Zuständigkeit; `docs/transfer.md`, Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig
+  (#418, Kadergröße nach Start-Liga, Kaufgrenze 29); Teil 2 fertig (#427, Kaufpreis, Verletzungsart, Versicherung im Fenster; Sperre = Strafbank, Anschlüsse im PR); Teil 3 fertig (#434, Teamwerte des Käufers nach Verkauf, Sponsorzuschuss nach Kauf vom Computermarkt); Teil 4 fertig (#437, Listenwechsel und Angebote täglich, Bieter 0x059B8, Kontoleiste, Frage an den Verkäufer, Tendenz); Teil 5 fertig (#453, Spiele beim Verein am Saisonende, Poolumverteilung beim Spielstart und Saisonwechsel, Goldtest FILE05); Teil 6 fertig (#457, Proben #353, #347, #364, #357); Teil 7 fertig (#459, Ruhestand und Verlängerungsangebote nach 0x07169, keine Absage, A136 belegt).
 
 ### Spur `wettbewerbe-spiel` – Spielberechnung, Pokale, Nationalteam
 
@@ -195,6 +196,14 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **`saisonwechsel`** (`integration/runde-11-saisonwechsel`, Stapel #419 → #428 → #431 → #432 → #449): Schema Zwangsabstieg
   22 → 23 vorläufig, integriert als 26 → 27 nach `geld`; Abdrücke `RngTwinProbeTests`, `SpielberechnungAnschlussTests`,
   `GameModeTests.Mode4` und der Schema-Fingerabdruck auf dem integrierten Stand neu (beide Spuren ändern den Zufallsverbrauch).
+- **`kader-transfer`** (`integration/runde-11-kader-transfer`, Stapel #418 → #427 → #434 → #437 → #453 → #457 → #459):
+  Schema vorläufig 22–25 → integriert 27 → 30; Abdrücke (`RngTwinProbeTests`, `SpielberechnungAnschlussTests`,
+  `GameModeTests.Mode4`, `DebCupDrawFlowTests`) und Schema-Fingerabdruck neu; #357 mit der Lösung der Spur (keine Schwelle).
+  Anschluss A360: Kaufpreis im Spielerdaten-Fenster der Spielerstatistik (Test `PlayerStatisticsPurchasePriceTests`).
+  `FinanceCalibrationTests`: vorläufig die Fassung der Spur (passiver Manager darf ab Saison 2 entlassen werden) –
+  widerspricht #352 (geld Teil 7), Entscheidung Nutzer offen. Doku-Anschlüsse (re-meldungen.md, re-geld.md,
+  reverse-engineering.md, spielberechnung.md §15, Inventur A226/A256/A257/A381/F002–F006/F013–F015/F109) mit
+  `marker-werkzeug` bzw. im Rundenabschluss.
 
 ### Nicht in Runde 11
 
