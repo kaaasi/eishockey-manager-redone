@@ -25,8 +25,9 @@ public enum OriginalDialogKind
 ///   bei jedem Linksklick, eine Frage nur durch einen Klick auf einen Knopf. Tastatur und rechte Maustaste werden nicht
 ///   ausgewertet; Komfort-Tasten einer Frage (Escape, Enter) bleiben Sache des Aufrufers (Entscheidung Nutzer, #205, A273/A334).</item>
 /// <item>[ORIGINAL] Rückgabe: Frage linker Knopf 1, rechter 0; Meldung 0, bei Klick auf den linken Knopf 1.</item>
-/// <item>[ORIGINAL] Knopftexte: links Zeile 4 (fehlt sie: Zeile 5), rechts Zeile 5 (0x4C246 + 0x29C … 0x344). Bei einer
-///   Meldung ohne vierte Zeile tragen also beide Knöpfe den Text der fünften Zeile.</item>
+/// <item>[ORIGINAL] Knopftexte: bei der Frage links Zeile 4 (fehlt sie: Zeile 5), rechts Zeile 5 (0x4C246 + 0x29C … 0x344).
+///   Bei einer Meldung ist der linke Knopf immer Zeile 5: Datei 0x4C482 kopiert Zeile 4, 0x4C4E2 überschreibt sie im Modus
+///   Meldung mit Zeile 5 (Zeile 4 wird dann als Text gezeichnet, 0x4C4A0 ff.; MU-01, Review #469).</item>
 /// <item>[APPROX] Lage der Knöpfe: Im Code stehen (95 | 166) und (165 | 166); im Video 3:46 beginnt die Knopfgrafik 1 Pixel weiter links
 ///   (Pixelvergleich, Versatz −1 | 0), daher gezeichnet und getestet ab 94 bzw. 164. Die Beschriftung der Knöpfe (kb\2 mit dunkler Schrift und hellem Schatten) übernimmt
 ///   <see cref="TeamUi.DialogButton"/>; Schriftlage der Textzeilen mit Schatten 1 Pixel nach rechts unten.</item>
@@ -71,7 +72,7 @@ public sealed class OriginalDialog
     public bool HasButtons => Line3.Length > 0 || Line4.Length > 0;
 
     /// <summary>Beschriftung des linken Knopfs: Zeile 4, sonst Zeile 5.</summary>
-    public string LeftText => Line4.Length > 0 ? Line4 : Line5;
+    public string LeftText => Kind == OriginalDialogKind.Question && Line4.Length > 0 ? Line4 : Line5;
 
     /// <summary>Beschriftung des rechten Knopfs: Zeile 5.</summary>
     public string RightText => Line5;

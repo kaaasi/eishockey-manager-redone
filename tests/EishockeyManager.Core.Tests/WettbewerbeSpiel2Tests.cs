@@ -38,7 +38,9 @@ public class WettbewerbeSpiel2Tests
             .ToList();
         var debGames = game.DebCup.Matches.Count(m => m.Home == club || m.Away == club);
         Assert.True(debGames > 0);
-        Assert.True(game.EuropeanCup!.Matches.Count(m => m.Home == club || m.Away == club) > 0); // Europapokal gespielt, nicht eingetragen
+        // Europapokal gespielt, nicht eingetragen. WS-03 (Review #468): Europapokalgegner haben Index ≥ 64 und fallen in
+        // MeetingHistory.Record ohnehin heraus; die Prüfung unten belegt das „nein“ daher nur strukturell (Gegner < 52).
+        Assert.True(game.EuropeanCup!.Matches.Count(m => m.Home == club || m.Away == club) > 0);
 
         var table = game.MeetingTable(manager);
         for (var opponent = 0; opponent < MeetingHistory.FirstNation; opponent++)
