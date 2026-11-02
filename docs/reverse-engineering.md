@@ -934,7 +934,7 @@ bekommt beide Pfeile und das Konto 400.000 DM. Einen Manager ohne Liga gibt es i
   Abstiegspaare eingesetzt (0x55F93–0x560C5). Damit erklärt sich die Ausnahme „Bit 0x04 nicht gesetzt“ in 0x56287 und 0x562FA.
 * **Liga-Stufe des Managers** danach 0x563C0–0x56409: (Verein ≥ [0x7C1]) + (Verein ≥ [0x7C2]) – höchstens 2, ein Verein 36–41 gilt
   als Oberliga-Stufe (Kostenstufe, `finanzen-rekonstruktion.md`).
-* **Entfallen:** die frühere Frage „Saison ohne Liga“ (Runde 10, siehe oben); DOSBox-Beleg mit `FILE13.HOK` steht aus.
+* **Entfallen:** die frühere Frage „Saison ohne Liga“ (Runde 10, siehe oben); der DOSBox-Beleg mit `FILE13.HOK` liegt vor (#389, `docs/analyse/re-saisonwechsel.md`, „Auswertung DOSBox-Beleg“).
 
 ## Spielberechnung abschließen (Spur `spielberechnung-komplett`, Runde 9)
 

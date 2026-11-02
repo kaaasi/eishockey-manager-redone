@@ -36,8 +36,10 @@ public static partial class MatchEngine
     /// Spiel mit der Berechnung des Originals, Ereignissen und Spielerzählern.
     /// <list type="number">
     /// <item>[ORIGINAL] Spielwertung 0:2/2:0 ohne Berechnung bei nicht spielfähigem Managerverein (0x36DC5, #165).</item>
-    /// <item>[ORIGINAL] Pokale (DEB-Pokal, Europapokal, WM) ohne Managerverein: schneller Weg 0x3731F
-    ///   (<see cref="OriginalMinutes.FastCupResult"/>), wenn der Anzeigeschalter des Wettbewerbs aus ist (DGROUP 0x227–0x229,
+    /// <item>[ORIGINAL] Spiele ohne Managerverein (Pokale, Play-offs, Aufstiegsrunde): schneller Weg 0x3731F
+    ///   (<see cref="OriginalMinutes.FastCupResult"/>), wenn der Anzeigeschalter des Wettbewerbs aus ist (DGROUP 0x227–0x229
+    ///   für DEB-Pokal, Europapokal und WM-Gruppe; Feld „Ergebnisse“ der Meldungsmatrix 0x21E/0x221/0x224 für Play-offs und
+    ///   Aufstiegsrunde; die WM-Endrunde prüft keinen Schalter und nimmt immer den schnellen Weg;
     ///   <see cref="GameOptions.CupMatchUsesMinuteLoop"/>). Sonst Minute für Minute (<see cref="OriginalMinutes.Play"/>).</item>
     /// <item>Zähler der Spieler (<see cref="CreditPlayers"/>).</item>
     /// </list>

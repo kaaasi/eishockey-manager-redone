@@ -178,7 +178,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** Gegenbeispiel R10N-01 (Mutation `perl -pi` aus dem Review #408) ohne Statuswechsel; `funktionskarte.py
   --write` danach ohne Diff; für Teil 3 je Marker der Abgleich mit der Doku im PR.
 - **Dateigrenzen:** siehe Zuständigkeit; die genannten Doku-Dateien; in Teil 3 nur Kommentarzeilen in `src/`.
-  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 fertig im PR (Branch `paket/marker-werkzeug-1`); Teile 2–3 offen.
+  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 (#422) und Teil 2 (Branch `paket/marker-werkzeug-2`) im PR; Teil 3 offen (nach Integration der übrigen Spuren, Leitstelle).
 
 ### Nicht in Runde 11
 

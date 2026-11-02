@@ -1,13 +1,13 @@
 # Archiv: Runde 10 – Sonderrunde Analyse em.exe (01.–02.11.2026)
 
 Aus `docs/arbeitspakete.md` ausgelagert am 02.11.2026, damit Agenten beim Einstieg nur die aktuelle Runde lesen.
-Inhalt unverändert bis auf die Überschrift, den ergänzten Absatz „Ergebnis“ und ohne den Abschnitt „Zurückgestellt“ (in
-Runde 11 übernommen). Ergebnisse: `docs/analyse/`; Reviews: `docs/reviews/` (Dateien vom 01.11.2026). Nur bei Bedarf lesen.
+Inhalt unverändert bis auf die Überschrift, den ergänzten Absatz „Ergebnis“, die nachgeführten Status (`re-meldungen`,
+`inventur`), die zwei relativen Links und ohne den Abschnitt „Zurückgestellt“ (in Runde 11 übernommen). Ergebnisse: `docs/analyse/`; Reviews: `docs/reviews/` (Dateien vom 01.11.2026). Nur bei Bedarf lesen.
 
 **Ergebnis:** Sechs Analyse-Spuren, nur Doku: `re-geld` (#375), `re-meldungen` (#376), `re-saisonwechsel` (#377, DOSBox-Beleg
 #389), `re-livespiel` (#378, Fable 5.1), `re-rest` (#381) und `inventur` (#395); Integration #380 (Review #390). Plan #366
 (Reviews #367, #373), Nachträge #379 (Review #383) und #394 (Review #396); Leitstellen-Zugriff #382 (Reviews #384, #385);
-Abschluss mit den P3-Befunden #386, #391–#393, #398, #399, #401–#405. **Funktionskarte Spielcode:** 82 % umgesetzt, 2 %
+Abschluss mit den P3-Befunden #386, #391–#393, #398 (Doku-Teil), #399, #401 (Doku-Teil), #402–#405. **Funktionskarte Spielcode:** 82 % umgesetzt, 2 %
 genähert, 16 % dokumentiert, unbekannt nur 0x575C3 (vorher 10 %). Grundlage für Runde 11: `docs/analyse/inventur.md`
 (priorisierte Liste).
 
@@ -141,4 +141,4 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
 - **Abnahme:** jede `[APPROX]`-Stelle und jede Funktion aus 2 ist genau einer Gruppe zugeordnet (Gegenprobe mit
   `grep -rc` bzw. `funktionskarte.py --csv`); Zahlen der Übersicht stimmen mit der Gegenprobe überein.
 - **Modell:** Claude Opus 5.5. **Status:** fertig (PR #395, `docs/analyse/inventur.md`; Review #400, Befunde R10N-01 bis
-  -05 im Abschluss-PR behoben, R10N-06 für Runde 11).
+  -05 im Abschluss-PR behoben, Code-Teil von R10N-01 in Runde 11, R10N-06 für Runde 11).
