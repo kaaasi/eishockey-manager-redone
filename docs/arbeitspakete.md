@@ -162,7 +162,9 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   3. **Kosmetik:** Monatsnamen (P3 Nr. 3, A157, vorher gegen das Video prüfen); letzte Saison ohne Saisonende-Fenster
      (S-K5, P3 Nr. 5, nach Video); Kommentar über dem Rechtsklick-Test (#342).
 - **Abnahme:** Bildschirmfoto je Baustein bzw. Aufrufer gegen das Referenzbild; Bildschirme zustandsrein.
-- **Dateigrenzen:** siehe Zuständigkeit; Tests. **Modell:** Claude Sonnet 5.5. **Status:** –
+- **Dateigrenzen:** siehe Zuständigkeit; Tests. **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 in Arbeit (PR `paket/ui-meldungen-1`):
+  `UI/OriginalDialog.cs` (Fenster 4C246h, Kurzmeldung C0B8h), `QuitQuestion` und Bundestrainer-Warnung umgestellt; Aufrufer in
+  fremden Dateien stehen im PR. Teil 2 und 3 offen.
 
 ### Spur `marker-werkzeug` – Funktionskarte, Doku, Marker
 

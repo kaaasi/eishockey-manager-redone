@@ -99,13 +99,16 @@ public class MainMenuBefundeP3Tests
         var before = StateFingerprint.Of(game);
 
         d.Click(290, 50);
-        Assert.True(menu.Message.Visible);
-        Assert.Equal(MainMenuScreen.CoachWarning, menu.Message.Lines);
+        Assert.NotNull(menu.CoachMessage);
+        Assert.Equal(MainMenuScreen.CoachWarning, new[] { menu.CoachMessage!.Line1, menu.CoachMessage.Line2 });
         Assert.Same(menu, d.Host.Current);
         Assert.Equal(before, StateFingerprint.Of(game));
 
-        d.Click(10, 10); // schließt die Meldung (und löst nichts weiter aus)
-        Assert.False(menu.Message.Visible);
+        // Kurzmeldung ohne Knopf (M-K2, 0x0C0B8): ein Klick schließt sie nicht, sie läuft von selbst ab
+        d.Click(10, 10);
+        Assert.NotNull(menu.CoachMessage);
+        d.Frames(menu.CoachMessage!.TotalFrames);
+        Assert.Null(menu.CoachMessage);
         Assert.Same(menu, d.Host.Current);
     }
 
@@ -118,7 +121,7 @@ public class MainMenuBefundeP3Tests
         var (d, menu) = Open(game);
 
         d.Click(290, 50);
-        Assert.False(menu.Message.Visible);
+        Assert.Null(menu.CoachMessage);
         Assert.NotSame(menu, d.Host.Current);
     }
 
@@ -128,6 +131,6 @@ public class MainMenuBefundeP3Tests
         var game = Synthetic();
         var (d, menu) = Open(game);
         d.Click(290, 50);
-        Assert.False(menu.Message.Visible);
+        Assert.Null(menu.CoachMessage);
     }
 }

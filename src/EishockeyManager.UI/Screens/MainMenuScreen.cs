@@ -42,16 +42,16 @@ public sealed class MainMenuScreen : Screen
     /// Bundestrainer (DGROUP 0xA70E = 5) und zählt 0x120:0x66 (Modus 0, Datei 0x4BE17: Kaderplätze mit Feld 0x0F ≠ 0)
     /// weniger als 10 Spieler, erscheint die Meldung „Wollen Sie die WM wirklich / mit SO wenigen Spielern bestreiten ?“
     /// (DGROUP 0x403B/0x4056, über 0x38:0x8C8 = Datei 0xC0B8) und die Schleife beginnt von vorn – der Tag läuft nicht weiter.
-    /// [APPROX] Aussehen und Lage der Meldung (Rahmen, Knopf „Na gut.“) sind nicht aus dem Video belegt; das Original
-    /// wertet die Antwort nicht aus (Rücksprung 0x535B in jedem Fall).
+    /// [ORIGINAL] Die Meldung ist eine Kurzmeldung ohne Knopf und ohne Eingabe, die nach 25 Takten zu 18,2 Hz (≈ 1,4 s) von selbst
+    /// schließt (<see cref="ShortMessage"/>, Datei 0x0C0B8, M-K2, A298); das Original wertet keine Antwort aus (Rücksprung 0x535B).
     /// </summary>
     public static readonly string[] CoachWarning = ["Wollen Sie die WM wirklich", "mit SO wenigen Spielern bestreiten ?"];
 
     /// <summary>[ORIGINAL] Mindestzahl Kaderspieler, ab der die Warnung entfällt (Datei 0x454D6: <c>cmp al,0xA</c>).</summary>
     public const int CoachMinPlayers = 10;
 
-    /// <summary>Meldung über dem Hauptmenü (Bundestrainer-Warnung, #217).</summary>
-    public Team.MessageBox Message { get; } = new();
+    /// <summary>Kurzmeldung über dem Hauptmenü (Bundestrainer-Warnung, #217); schließt von selbst, ohne Knopf (M-K2).</summary>
+    public ShortMessage? CoachMessage { get; private set; }
 
     public static MenuTile[][] SmallTiles => MenuTiles.Small;
 
@@ -118,8 +118,13 @@ public sealed class MainMenuScreen : Screen
             }
             return;
         }
-        if (Message.Update(input))
-            return;
+        if (CoachMessage is { } coachMessage)
+        {
+            // [ORIGINAL] Keine Eingabe, solange die Kurzmeldung steht (0x0C0B8, Modus ≥ 2).
+            if (coachMessage.Update(input))
+                return;
+            CoachMessage = null;
+        }
         if (_selectedBig < 0 && ManagerArea.NewsBar.HasUnread(Game))
             _newsBar = true;
 
@@ -151,7 +156,7 @@ public sealed class MainMenuScreen : Screen
             // [APPROX] Ohne ernannten Bundestrainer (Modus 1 vor dem ersten WM-Termin) gibt es keinen Kader zu zählen.
             if (Game.NationalCoachMenu && Game.NationalCoach is { } coach && coach.Squad.Count < CoachMinPlayers)
             {
-                Message.Show(CoachWarning);
+                CoachMessage = new ShortMessage(Game.ActiveManager.Name, CoachWarning[0], CoachWarning[1]);
                 return;
             }
             Continue_();
@@ -248,7 +253,7 @@ public sealed class MainMenuScreen : Screen
             ManagerArea.NewsBar.Draw(s, Assets, Game); // Nachrichtenleiste (Paket „manager“), nur mit Nachricht (#170)
 
         QuitQuestion?.Draw(s, Assets);
-        Message.Draw(s, Assets);
+        CoachMessage?.Draw(s, Assets);
     }
 
     private void DrawInfoBar(Surface s)
