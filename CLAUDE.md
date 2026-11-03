@@ -49,6 +49,16 @@ cd eishockey-manager-redone
   erbt nur diese; Ablauf `docs/vorlagen/leitstelle-start.md` Schritt 7. Im Lauf selbst ist `add_repo` meist nicht
   verfügbar (auch nicht per `ToolSearch`); maßgeblich ist das Einbinden durch die anlegende Sitzung.
 - Commit-Trailer für Claude: `Co-Authored-By: Claude <noreply@anthropic.com>` (bzw. die Zeilen aus der Sitzungsvorgabe).
+- **Git im flachen Klon (Erfahrung Leitstelle Runde 11):** Fetch-Regeln für einzelne Branches (`remote.origin.fetch`) brechen
+  `git fetch` ab, sobald der Branch auf GitHub gelöscht ist („couldn't find remote ref“) – dann
+  `git config --unset-all remote.origin.fetch 'refs/heads/<b>:'` (zweites Argument ist ein regulärer Ausdruck: ohne führendes `+`;
+  Treffer vorher mit `git config --get-all remote.origin.fetch` prüfen). Meldet der Stop-Hinweis „unpushed commits / no remote branch“, obwohl
+  gepusht ist, fehlt nur das Tracking: `git config branch.<b>.remote origin`, `branch.<b>.merge refs/heads/<b>` und eine
+  Fetch-Regel `+refs/heads/<b>:refs/remotes/origin/<b>` eintragen, dann `git fetch`.
+- **Auf geplante Läufe warten:** `send_later` stand nicht verlässlich bereit; bewährt hat sich eine Warteschleife im
+  Hintergrund (`run_in_background`), die per `gh api …/pulls?state=open` auf den Review-Branch wartet – Intervall 60 s,
+  Obergrenze rund zwei Stunden (z. B. `for i in $(seq 1 115)`), danach abbrechen und den Lauf prüfen (`list_triggers`). Nach einem Neustart
+  der Arbeitsumgebung sind solche Schleifen verloren und neu anzulegen.
 
 ## Rolle in diesem Projekt
 
