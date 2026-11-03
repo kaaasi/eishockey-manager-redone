@@ -99,7 +99,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   4. **U8:** Nationalteam Satz 5 mit der Regel der automatischen Aufstellung (426BCh/42838h, `CupsNational.Lineup.cs`).
 - **Dateigrenzen:** siehe Zuständigkeit Runde 11. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig zum Review
   (PR #482: Serien im Original nur bei Code 7/8 – kein Anschluss nötig, Probe und Doku; WS-04 getestet). Teil 2 **blockiert –
-  Entscheidung Nutzer** (PR #483: A184 umgesetzt, Hüllkurvenprobe „passiv Bundesliga“ rot); Teile 3–4 offen.
+  Entscheidung Nutzer** (PR #491: A184 umgesetzt, Hüllkurvenprobe „passiv Bundesliga“ rot); Teile 3–4 offen.
 
 ### Spur `ui-meldungen` – Meldungsfenster, Vereinsfenster, Hauptmenü
 
