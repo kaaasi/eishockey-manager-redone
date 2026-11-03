@@ -44,12 +44,17 @@ public static class SeasonInfo
     };
 
     public static readonly Rect Banner = new(3, 92, 314, 57);
+    public const int BannerBaseline = 126;
 
     /// <summary>Orangefarbenes Banner mit großer Schrift über dem Sternenhintergrund (z. B. „Ligaspiel“).</summary>
     public static void DrawBanner(Surface s, Assets a, string text)
     {
         Widgets.Frame(s, a, Banner, FrameStyle.Orange);
-        Widgets.ShadowText(s, a.Bold, 160, 110, text, 11, 198);
+        // [ORIGINAL] em.exe Datei 0x35D5D (R-K3): Text zentriert, zuerst Farbe 0 auf Grundlinie 127, dann Farbe 11 auf 126 –
+        // der Schatten liegt nur eine Zeile tiefer, nicht seitlich versetzt.
+        var x = 160 - a.Bold.Measure(text) / 2;
+        s.Text(a.Bold, x, Competitions.CompetitionWidgets.Top(a.Bold, BannerBaseline + 1), text, 0);
+        s.Text(a.Bold, x, Competitions.CompetitionWidgets.Top(a.Bold, BannerBaseline), text, 11);
     }
 
     /// <summary>Vereinsname zweizeilig wie auf dem Saisonende-Bildschirm: erstes Wort, dann der Rest.</summary>

@@ -12,7 +12,8 @@ public sealed class SeasonEndScreen : Screen
 {
     public static readonly Rect Window = new(4, 2, 312, 208);
     public static readonly int[] TitleColumns = [42, 122, 202, 282];
-    public static readonly int[] LeagueColumns = [21, 121, 222];
+    // [ORIGINAL] em.exe Datei 0x4CCB4 (R-K2): Zeichen bei x = 100 · Liga + 20, Vereinsname bei x = 100 · Liga + 28, Schatten Farbe 0.
+    public static readonly int[] LeagueColumns = [20, 120, 220];
     public static readonly int[] LeagueHeaderCenters = [52, 159, 264];
     public const int TopRowY = 152;
     public const int BottomRowY = 172;
@@ -24,9 +25,12 @@ public sealed class SeasonEndScreen : Screen
     private const byte HeadingColor = 7;
     private const byte Shadow = 0;
     private const byte LineColor = 1;
-    private const byte ArrowRed = 238;
-    private const byte ArrowGreen = 13;
-    private const byte ArrowBlue = 151;
+    // [ORIGINAL] Datei 0x4CCB4: Farben der Zeichen DGROUP 0x5358[Art] = 18 (Absteiger), 12 (Aufsteiger), 22 (Meister).
+    // Die Paletteneinträge 238/13/151 waren nur die nächsten Farben zum Videobild (andere RGB-Werte).
+    private const byte ArrowRed = 18;
+    private const byte ArrowGreen = 12;
+    private const byte ArrowBlue = 22;
+    public const int NameOffset = 8;
 
     // Pfeile und Kreis aus dem Mini-Font: '&' = Pfeil nach unten, '@' = Pfeil nach oben, '*' = Kreis
     private const string ArrowDown = "&";
@@ -116,8 +120,8 @@ public sealed class SeasonEndScreen : Screen
         {
             s.Text(Assets.Mini, x + 1, y + 1, mark, Shadow);
             s.Text(Assets.Mini, x, y, mark, color);
-            s.Text(Assets.Mini, x + 10, y + 1, Game.Clubs[club].Name, Shadow);
-            s.Text(Assets.Mini, x + 9, y, Game.Clubs[club].Name, TextColor);
+            s.Text(Assets.Mini, x + NameOffset + 1, y + 1, Game.Clubs[club].Name, Shadow);
+            s.Text(Assets.Mini, x + NameOffset, y, Game.Clubs[club].Name, TextColor);
             y += RowPitch;
         }
     }
