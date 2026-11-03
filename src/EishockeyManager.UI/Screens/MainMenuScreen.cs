@@ -89,6 +89,9 @@ public sealed class MainMenuScreen : Screen
         SaveLoad.AutoSave.OnMainMenu(Host);
     }
 
+    /// <summary>Info-Fenster der Infoleiste (<see cref="InfoBarWindows"/>).</summary>
+    public InfoBarWindows InfoWindows { get; } = new();
+
     /// <summary>Offene Sicherheitsfrage von „und tschüß…“ oder null.</summary>
     public QuitQuestion? QuitQuestion { get; private set; }
 
@@ -127,6 +130,10 @@ public sealed class MainMenuScreen : Screen
         }
         if (_selectedBig < 0 && ManagerArea.NewsBar.HasUnread(Game))
             _newsBar = true;
+
+        // Gegner-/Vereinsfenster: Klick auf Gegner- oder Vereinsnamen, vor dem Infofile (0x45375, Spur ui-meldungen Teil 2, UM-2)
+        if (InfoWindows.Update(Game, input))
+            return;
 
         // Infofile: verstecktes Feld (319 | 0), vor allen übrigen Klicks (0x453E5, Spur ui-meldungen Teil 2)
         if (InfoFileScreen.IsTrigger(input))
@@ -259,6 +266,7 @@ public sealed class MainMenuScreen : Screen
         else if (_newsBar)
             ManagerArea.NewsBar.Draw(s, Assets, Game); // Nachrichtenleiste (Paket „manager“), nur mit Nachricht (#170)
 
+        InfoWindows.Draw(s, Assets, Game);
         QuitQuestion?.Draw(s, Assets);
         CoachMessage?.Draw(s, Assets);
     }
