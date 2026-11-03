@@ -159,24 +159,22 @@ public sealed partial class NationalCoach
     }
 
     /// <summary>
-    /// Auto-Aufstellung („A“). [APPROX] Wie beim Verein (<see cref="Core.Lineup.AutoFill"/>, drei Blöcke), die
-    /// Aufgestellten werden eingesetzt, dazu die stärksten übrigen einsatzfähigen Spieler (Kondition + Technik + Form)
-    /// bis 22. Die Auswahlregel des Originals ist nicht rekonstruiert.
+    /// Auto-Aufstellung („A“). [ORIGINAL] Dieselbe Regel wie beim Verein: Satz 5 ruft Datei 0x426BC/0x42838
+    /// (<see cref="AutoLineupRule.Apply"/>; Einstellung DGROUP 0x37F, Aufrufe Datei 0x3B4C6 und im Tageslauf 0x54D84,
+    /// <c>docs/analyse/re-nachtrag.md</c> §3.4): alle verlieren „eingesetzt“, dann Torhüter, Abwehr und Sturm nach
+    /// (Kondition + Technik + Form) / 3, Ersatz reihum bis 22. Kaderplätze in der Reihenfolge der Liste (<see cref="Rows"/>,
+    /// nach Art sortiert wie Datei 0x42D46). Spur wettbewerbe-spiel, Runde 12, Teil 4 (U8); vorher Spielwert mit Energie
+    /// (<see cref="Core.Lineup.AutoFill"/>) und Rest nach Kondition + Technik + Form.
+    /// [APPROX] Innerhalb eines Blocks nach Rückennummer des Vereins sortiert (wie beim Verein,
+    /// <see cref="Core.Lineup.SortBlocksByNumber"/>). Die Einstellung „automatisch“ des Satzes 5 im Tageslauf führt das
+    /// Remake nicht; im Zug des Bundestrainers ist der Aufruf wirkungslos (Einstellung vorher 0, Datei 0x555B7–0x555D6).
     /// </summary>
     public void AutoFormation()
     {
-        var available = _squad.Select(m => m.Player).Where(p => p.Available).ToList();
-        Formation.AutoFill(available);
+        var dressed = AutoLineupRule.Apply(Formation, Rows);
         _dressed.Clear();
-        foreach (var p in Formation.Players)
+        foreach (var p in dressed)
             _dressed.Add(p);
-        foreach (var p in available.Where(p => !_dressed.Contains(p))
-                     .OrderByDescending(p => p.Condition + p.Technique + p.Form).ThenBy(p => p.Role))
-        {
-            if (_dressed.Count >= MaxDressed)
-                break;
-            _dressed.Add(p);
-        }
     }
 
     /// <summary>Alle Plätze leeren („C“); wie beim Leeren einzelner Plätze sind die Aufgestellten danach nicht eingesetzt.</summary>
