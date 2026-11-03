@@ -24,7 +24,21 @@ public sealed class Message
     /// <summary>Saison der Erstellung; zusammen mit Day ein Zeitpunkt auf der fortlaufenden Zeitleiste.</summary>
     public int Season { get; internal set; }
     public required string[] Lines { get; init; }
-    public bool Read { get; set; }
+
+    /// <summary>
+    /// [ORIGINAL] Nachrichten ohne Spieler (Art Bit 3, Datei 0x4B56A) tragen im oberen Halbbyte von <c>+0</c> eine Restlaufzeit,
+    /// die der Tageslauf herunterzählt (Datei 0x54F07–0x54F87): bei 0 ist der Platz frei. Anfangswert 3 (<c>or 0x30</c>).
+    /// Fragen (<see cref="IsQuestion"/>) und Nachrichten zu einem Spieler (<see cref="Player"/>) altern nicht.
+    /// Das Feld „gelesen“ je Nachricht gibt es im Original nicht (Entscheidung Nutzer D8 = A, #537).
+    /// </summary>
+    public int DaysLeft { get; internal set; } = GameState.MessageLifetimeDays;
+
+    /// <summary>
+    /// [ORIGINAL] Poolspieler der Nachricht (Satz <c>+2</c>, Pool <c>+0x1E</c> = „offene Meldung“, Datei 0x4B2F6): Angebote
+    /// („bietet Ihnen an“, „ist an … interessiert“). Solche Nachrichten bleiben, bis das Angebot erledigt ist
+    /// (<see cref="GameState.RemoveMessagesOf"/>, Datei 0x4B270).
+    /// </summary>
+    public Player? Player { get; internal set; }
 
     /// <summary>Erledigt (beantwortet oder verfallen); erledigte Fragen bleiben als Meldung stehen.</summary>
     public bool Done { get; set; }
@@ -50,16 +64,45 @@ public sealed partial class GameState
     /// <summary>Tage, nach denen eine unbeantwortete Kreditanfrage verfällt.</summary>
     public const int LoanRequestDays = 7;
 
+    /// <summary>
+    /// [ORIGINAL] Plätze des gemeinsamen Nachrichtenspeichers aller Manager (Datei 0x4B101: Sätze 0 … 23 zu 0x71 Byte,
+    /// DGROUP 0xD294). Ist er voll, entfällt die neue Nachricht (Datei 0x4B544: Rückgabe 0, kein Kennzeichen).
+    /// </summary>
+    public const int MessageCapacity = 24;
+
+    /// <summary>[ORIGINAL] Tage, die eine Nachricht ohne Spieler liegen bleibt (Anfangswert des oberen Halbbytes 3, Datei 0x4B56A).</summary>
+    public const int MessageLifetimeDays = 3;
+
     public IReadOnlyList<Message> Inbox(Manager manager) => Finance(manager).Inbox;
 
-    public Message Notify(Manager manager, params string[] lines) => Post(manager, new Message { Kind = MessageKind.Info, Day = Day, Lines = lines });
+    /// <summary>Belegte Plätze des gemeinsamen Nachrichtenspeichers.</summary>
+    public int MessagesStored => Managers.Sum(m => Finance(m).Inbox.Count);
 
-    private Message Post(Manager manager, Message message)
+    /// <summary>Legt eine Meldung ab; null, wenn der Nachrichtenspeicher voll ist (<see cref="MessageCapacity"/>).</summary>
+    public Message? Notify(Manager manager, params string[] lines) => Post(manager, new Message { Kind = MessageKind.Info, Day = Day, Lines = lines });
+
+    /// <summary>Meldung zu einem Poolspieler (Angebot): bleibt, bis <see cref="RemoveMessagesOf"/> sie löscht.</summary>
+    public Message? NotifyAbout(Manager manager, Player player, params string[] lines) =>
+        Post(manager, new Message { Kind = MessageKind.Info, Day = Day, Lines = lines, Player = player });
+
+    private Message? Post(Manager manager, Message message)
     {
+        if (MessagesStored >= MessageCapacity)
+            return null;
         message.Season = Season;
         Finance(manager).Inbox.Add(message);
         manager.MarkNewMessage(); // [ORIGINAL] Kennzeichen „neue Nachricht“ DGROUP 0x5A50 + Manager (0x4B5E6, Spur ui-meldungen Teil 4)
         return message;
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Datei 0x4B270 (Aufrufer 0x07169, 0x26F20, 0x425B6, 0x465F1, 0x4A1DB): löscht die offene Meldung eines
+    /// Spielers (Verkauf, Vertrag, Saisonende, Verfall des Angebots).
+    /// </summary>
+    public void RemoveMessagesOf(Player player)
+    {
+        foreach (var manager in Managers)
+            Finance(manager).Inbox.RemoveAll(m => ReferenceEquals(m.Player, player));
     }
 
     /// <summary>
@@ -93,7 +136,6 @@ public sealed partial class GameState
             return false;
         }
         message.Done = true;
-        message.Read = true;
         if (!yes)
             return true;
         switch (message.Kind)
@@ -119,9 +161,34 @@ public sealed partial class GameState
     private void ExpireMessages()
     {
         foreach (var manager in Managers)
-            foreach (var m in Finance(manager).Inbox)
+        {
+            var inbox = Finance(manager).Inbox;
+            foreach (var m in inbox)
                 if (!m.Done && MessageExpired(m, FinanceDay))
                     m.Done = true;
+            // [APPROX] Das Original löscht die offene Meldung an den Stellen, die das Angebot beenden (Verkauf, Verfall, Saisonende,
+            // Datei 0x4B270); das Remake setzt Angebote an mehreren Stellen zurück und räumt hier täglich nach.
+            inbox.RemoveAll(m => m.Player is { } p && p.UnsolicitedOffer is null && p.Notice != ContractNotice.Offered);
+            // [ORIGINAL] Tageslauf Datei 0x54F07–0x54F87: Meldungen ohne Spieler zählen herunter, bei 0 wird der Platz frei.
+            foreach (var m in inbox.Where(m => m.Player is null && !m.IsQuestion))
+                m.DaysLeft--;
+            inbox.RemoveAll(m => m.Player is null && !m.IsQuestion && m.DaysLeft <= 0);
+            SortInbox(inbox);
+        }
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Datei 0x4B127 (Aufruf Datei 0x54EA9, Tageslauf): Sortierung nach dem Schlüssel <c>+1</c> = (Vorrang &lt;&lt; 8) |
+    /// min(Tageszähler DGROUP 0x3B7, 255), absteigend. Das Remake führt den Posteingang mit der neuesten Nachricht zuletzt (Anzeige
+    /// kehrt um); der Schlüssel ist daher aufsteigend nach (Saison, Tag). [APPROX] Vorrang 0 (Aufrufer 0x7169/0x26F20 nicht
+    /// ausgewertet); die Saison gehört dazu, weil das Remake den Tageszähler nicht zurücksetzt und Nachrichten saisonübergreifend liegen.
+    /// Die Sortierung ist stabil: gleiche Schlüssel behalten ihre Reihenfolge.
+    /// </summary>
+    internal static void SortInbox(List<Message> inbox)
+    {
+        var sorted = inbox.OrderBy(m => m.Season).ThenBy(m => Math.Min(m.Day, 255)).ToList();
+        for (var i = 0; i < sorted.Count; i++)
+            inbox[i] = sorted[i];
     }
 
     private bool MessageExpired(Message message, int day) => message.Kind == MessageKind.LoanRequest

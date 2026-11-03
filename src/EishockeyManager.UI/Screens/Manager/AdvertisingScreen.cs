@@ -39,7 +39,8 @@ public sealed class AdvertisingScreen : Screen
     /// </summary>
     public static Rect YesButton => OriginalDialog.LeftButton;
     public static Rect NoButton => OriginalDialog.RightButton;
-    private static readonly (int X, int Y) JerseyLogo = (31, 116);
+    // [ORIGINAL] em.exe Datei 0x2A6A2 Bit 1 (R-K4): belegtes Trikot 31 × 26 nach (30 | 120).
+    private static readonly (int X, int Y) JerseyLogo = (30, 120);
     private static readonly (int X, int Y) TvLogo = (11, 173);
 
     /// <summary>[ORIGINAL] 0x2B268: Umrandung (99|178)–(135|204), Farbe 24 bzw. 7 beim Blättern.</summary>
@@ -270,8 +271,9 @@ public sealed class AdvertisingScreen : Screen
     public static Rect LogoTile(AdSlotKind kind, int sponsor) => kind switch
     {
         AdSlotKind.Fernsehen => new Rect(36, 1 + 25 * sponsor, 33, 23),
-        AdSlotKind.Trikot when sponsor >= 8 => new Rect(36, 1 + 25 * (sponsor - 3), 30, 23),
-        AdSlotKind.Trikot => new Rect(71, 1 + 25 * sponsor, 30, 23),
+        // [ORIGINAL] Datei 0x2A6A2 Bit 1: Trikotbild ≤ 7 aus (70 | 26 · Bild), sonst (39 | 130 + 26 · (Bild − 8)), 31 × 26.
+        AdSlotKind.Trikot when sponsor >= 8 => new Rect(39, 130 + 26 * (sponsor - 8), 31, 26),
+        AdSlotKind.Trikot => new Rect(70, 26 * sponsor, 31, 26),
         _ => new Rect(1, 1 + 25 * sponsor, 33, 23),
     };
 

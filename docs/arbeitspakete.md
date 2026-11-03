@@ -128,7 +128,10 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   Migration, Mehrsaisonprobe. Marker M-K10 auf „nicht nötig“.
 - **Dateigrenzen:** `tools/reverse-engineering/*`, `docs/re-abdeckung.md`, `docs/analyse/inventur.md`, Pixel-Fundstellen in
   den betroffenen Bildschirmen (nur Lage/Farbe), Tests; für Teil 3 `Core/FinanceInbox.cs`. **Modell:** Claude Sonnet 5.5.
-  **Status:** geplant.
+  **Status:** Teil 3 (R-K6 + D8 = A) fertig (PR #542, Branch `paket/pixel-marker-3`, Schema 36, Migration
+  `SaveGame.Migration.PixelMarker3.cs`); Teil 1 (R-K2…R-K5) fertig (PR #543); Teil 2 (Karte/Inventur, Branch
+  `paket/pixel-marker-2`) fertig. Dateigrenzen von Teil 3 erweitert um `UI/Screens/Manager/InboxScreen.cs` und
+  `NewsBar.cs` (D8 = A, #537).
 
 ### Entscheidungen zum Start (Nutzer, 03.11.2026)
 

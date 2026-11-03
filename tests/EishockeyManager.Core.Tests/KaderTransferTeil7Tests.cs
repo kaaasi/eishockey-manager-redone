@@ -79,10 +79,11 @@ public class KaderTransferTeil7Tests
             foreach (var m in game.Managers)
                 m.Money = Math.Max(m.Money, 5_000_000);
             game.Continue();
+            MessageLog.For(game).Collect(game);
         }
     }
 
-    private static int Offers(GameState game, Player p) => game.Inbox(game.ActiveManager)
+    private static int Offers(GameState game, Player p) => MessageLog.For(game).All.Where(m => m.Lines.Length > 0)
         .Count(m => m.Season == game.Season && string.Join(" ", m.Lines).StartsWith($"{p.Name} bietet Ihnen an, von 1 auf", StringComparison.Ordinal));
 
     /// <summary>
@@ -101,7 +102,7 @@ public class KaderTransferTeil7Tests
         Assert.InRange(game.CurrentDay, 30, 40);
         Assert.Equal(ContractNotice.Retiring, old.Notice);
         Assert.NotEqual(ContractNotice.Retiring, young.Notice);
-        Assert.Contains(game.Inbox(game.ActiveManager), m =>
+        Assert.Contains(MessageLog.For(game).All, m =>
             string.Join(" ", m.Lines) == $"{old.Name} kündigt an, daß er seinen Vertrag nicht mehr verlängern wird.");
         Assert.Equal(NegotiationResult.Retiring, Contracts.Negotiate(game, game.ActiveManager, old, 3, 99_999, false, false));
     }
@@ -205,6 +206,7 @@ internal static class SeasonHelper
             foreach (var m in game.Managers)
                 m.Money = Math.Max(m.Money, 5_000_000);
             game.Continue();
+            MessageLog.For(game).Collect(game);
         }
     }
 }

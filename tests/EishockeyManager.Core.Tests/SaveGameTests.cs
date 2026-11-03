@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(35, SaveGame.SchemaVersion);
+        Assert.Equal(36, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -49,7 +49,7 @@ public class SaveGameTests
     // 33 Belastung Player.Strain statt Energy (Spur wettbewerbe-spiel, Runde 12 Teil 2, A184).
     // 34 Satzfolge der Vereine je Liga GameState._leagueSlots (Spur saisonwechsel, Runde 12 Teil 3, S-K6).
     // 35 Manager._newMessage, GameState._contractTurnFactor und _turnRandom (Spur ui-meldungen, Runde 12 Teil 4, E4).
-    private const string ExpectedSchemaFingerprint = "4F547EB1845A35D3";
+    private const string ExpectedSchemaFingerprint = "263E978468D3D133";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

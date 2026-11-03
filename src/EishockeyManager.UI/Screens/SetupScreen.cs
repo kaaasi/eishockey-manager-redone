@@ -269,7 +269,8 @@ public sealed class SetupScreen : Screen
             pageDelta = -1;
         if (input.Pressed(Key.PageDown) || input.Pressed(Key.Down))
             pageDelta = 1;
-        _clubPage = Math.Clamp(_clubPage + pageDelta, 0, ClubPages - 1);
+        // [ORIGINAL] em.exe Datei 0x28E4B–0x28E64 (R-K5): die Seite blättert zyklisch (−1 von 0 → 3, +1 von 3 → 0).
+        _clubPage = (_clubPage + pageDelta + ClubPages) % ClubPages;
 
         for (var k = 0; k < ClubsPerPage; k++)
         {
@@ -284,7 +285,10 @@ public sealed class SetupScreen : Screen
         }
     }
 
-    /// <summary>[APPROX] Reihenfolge der Vereine in der Auswahl: im Original nicht nach Index sortiert.</summary>
+    /// <summary>
+    /// [ORIGINAL] Datei 0x28030 (R-K5): Seite p zeigt die Vereinssätze 12 · p … 12 · p + 11 in Satzreihenfolge – das ist die
+    /// Reihenfolge der Datenbank (Vereinsindex).
+    /// </summary>
     private int ClubAt(int cell) => _clubPage * ClubsPerPage + cell;
 
     public override void Draw(Surface s)
