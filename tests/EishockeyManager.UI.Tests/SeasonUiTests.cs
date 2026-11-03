@@ -68,7 +68,7 @@ public class SeasonUiTests
         game.Setup.Duration = GameDuration.EineSaison;
         var guard = 0;
         var seenSummary = false;
-        while (d.Host.Current is not SeasonEndGameOverScreen && guard++ < 10000)
+        while (d.Host.Current is not EishockeyManager.UI.Screens.Statistics.HighscoreScreen && guard++ < 10000)
         {
             seenSummary |= d.Host.Current is SeasonEndSummaryScreen;
             d.Advance();
@@ -76,10 +76,11 @@ public class SeasonUiTests
         Assert.True(game.IsGameOver);
         // em.exe Datei 0x5641A: letzte Saison endet vor dem Fenster „Ereignisse“ (S-K5)
         Assert.False(seenSummary);
-        d.Advance();
-        // Spielende: erst die Bestenliste (Spur tabellen-highscore, em.exe 0x5642E), dann der Titel
+        // Spielende: erst die Bestenliste (em.exe 0x5642E), dann „Das wars...“ (0x56438 → 0x51F3D, L8), dann der Titel
         var highscore = Assert.IsType<EishockeyManager.UI.Screens.Statistics.HighscoreScreen>(d.Host.Current);
         Assert.Contains(highscore.Table.Entries, e => e.Name == "LetsShow" && !e.IsEmpty);
+        d.Advance();
+        Assert.IsType<SeasonEndGameOverScreen>(d.Host.Current);
         d.Advance();
         Assert.IsType<TitleScreen>(d.Host.Current);
         Assert.Null(d.Host.Game);
