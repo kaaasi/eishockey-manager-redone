@@ -100,7 +100,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
 - **Dateigrenzen:** siehe Zuständigkeit Runde 11. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig zum Review
   (PR #482: Serien im Original nur bei Code 7/8 – kein Anschluss nötig, Probe und Doku; WS-04 getestet). Teil 2 fertig zum
   Review (PR #491: A184 umgesetzt; Hüllkurvenprobe nach D4 = A: passiver Bundesliga-Manager darf nach Schuldenregel bzw.
-  „Weniger als neun Spieler!“ ausscheiden, Ursache geprüft); Teil 3 fertig zum Review (PR folgt: A174, Computervereine mit der
+  „Weniger als neun Spieler!“ ausscheiden, Ursache geprüft); Teil 3 fertig zum Review (PR #495: A174, Computervereine mit der
   Datenbankstärke ohne Aufstellungsbezug); Teil 4 offen.
 
 ### Spur `ui-meldungen` – Meldungsfenster, Vereinsfenster, Hauptmenü
