@@ -51,7 +51,7 @@ public sealed record KnockoutMatch(int Day, int Home, int Away, int HomeGoals, i
 /// <summary>Play-Off-Serie zweier Vereine: wer zuerst <see cref="WinsNeeded"/> Spiele gewinnt.</summary>
 public sealed class PlayoffSeries(int higherSeed, int lowerSeed)
 {
-    /// <summary>[APPROX] „Best of five“: 15 Play-Off-Termine im Kalender = drei Runden à höchstens fünf Spiele.</summary>
+    /// <summary>„Best of five“: drei Siege entscheiden die Serie. [ORIGINAL] Datei 0x315E9 (Siege DGROUP 0xCCA4, nach drei Siegen Ergebnis 100 = nicht ausgetragen; spielberechnung.md §14). Die 15 Termine im Kalender sind drei Runden à höchstens fünf Spiele.</summary>
     public const int WinsNeeded = 3;
 
     public int HigherSeed { get; } = higherSeed;
@@ -63,14 +63,15 @@ public sealed class PlayoffSeries(int higherSeed, int lowerSeed)
     public int? Winner => Wins(HigherSeed) >= WinsNeeded ? HigherSeed : Wins(LowerSeed) >= WinsNeeded ? LowerSeed : null;
     public bool Involves(int club) => HigherSeed == club || LowerSeed == club;
 
-    /// <summary>[APPROX] Heimrecht: Spiele 1, 3, 5 beim besser platzierten Verein.</summary>
+    /// <summary>Heimrecht: Heim und Gast tauschen nach jedem Spiel. [ORIGINAL] Datei 0x31505 (spielberechnung.md §14). [APPROX] Spiel 1 beim besser platzierten Verein (erste Stelle der Paarung) ist nicht gesondert belegt.</summary>
     public (int Home, int Away) NextPairing => Games.Count % 2 == 0 ? (HigherSeed, LowerSeed) : (LowerSeed, HigherSeed);
 }
 
 /// <summary>
 /// Play-Offs der Bundesliga um die Deutsche Meisterschaft.
-/// [APPROX] Format nicht aus dem Original belegt: die ersten acht der Hauptrunde, Viertelfinale 1–8, 2–7, 3–6, 4–5,
-/// Halbfinale (Sieger 1–8 gegen Sieger 4–5, Sieger 2–7 gegen Sieger 3–6), Finale. Je Runde fünf Termine
+/// [ORIGINAL] Datei 0x31934 (Setzung aus 0x5CCB), 0x31BB0 (drei Runden 8 → 4 → 2), 0x31CBF (Meister); spielberechnung.md §14:
+/// die ersten acht der Hauptrunde, Viertelfinale 1–8, 2–7, 3–6, 4–5, Halbfinale, Finale.
+/// [APPROX] Welche Sieger im Halbfinale aufeinandertreffen (1–8 gegen 4–5, 2–7 gegen 3–6) ist nicht gesondert belegt. Je Runde fünf Termine
 /// (Texte im Original: „VIERTELFINALE“, „HALBFINALE“, „Play-Off Spiele“, „Deutsche Meisterschaft“).
 /// </summary>
 public sealed class Playoffs

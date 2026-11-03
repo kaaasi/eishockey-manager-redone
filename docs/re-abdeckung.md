@@ -149,7 +149,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 4718 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 4725 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -157,9 +157,9 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 246 | 239059 | 77 % | 237 | 229319 | 88 % |
+| umgesetzt | 247 | 239287 | 77 % | 238 | 229547 | 88 % |
 | genähert | 4 | 1723 | 1 % | 4 | 1723 | 1 % |
-| dokumentiert | 172 | 35954 | 12 % | 122 | 29438 | 11 % |
+| dokumentiert | 171 | 35726 | 12 % | 121 | 29210 | 11 % |
 | unbekannt | 257 | 32789 | 11 % | 1 | 421 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
@@ -186,7 +186,7 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Ov 0xd0 (34FF) | 0x26F20–0x27F8A | 4203 | 1 | 100 % | 0 % | 0 % | 0 % | „Erhaltene Prämien:“ |
 | Ov 0xd8 (3606) | 0x28030–0x2A0C2 | 8339 | 4 | 96 % | 0 % | 4 % | 0 % | „Suchen Sie sich einen“ |
 | Ov 0xe0 (3810) | 0x2A1E0–0x2F1EE | 20495 | 18 | 93 % | 0 % | 7 % | 0 % | „JWE Service GmbH“, „(noch keine...)“, „Im ersten Jahr gibt's hi“ |
-| Ov 0xe8 (3D11) | 0x2F530–0x352A2 | 23923 | 33 | 95 % | 0 % | 5 % | 0 % | „Endrunde“, „Jugendteams“, „.Spieltag“ |
+| Ov 0xe8 (3D11) | 0x2F530–0x352A2 | 23923 | 33 | 96 % | 0 % | 4 % | 0 % | „Endrunde“, „Jugendteams“, „.Spieltag“ |
 | Ov 0xf0 (42E9) | 0x35540–0x397BA | 17019 | 26 | 90 % | 0 % | 10 % | 0 % | „Spiele laufen“, „!    Penaltyschiessen   “, „DEB-Pokal“ |
 | Ov 0xf8 (4711) | 0x399D0–0x3CD71 | 13218 | 18 | 99 % | 0 % | 1 % | 0 % | „WM Vorbereitung“, „WM-Statistik“, „Spieler in WM-Kader“ |
 | Ov 0x100 (4A4C) | 0x3CFA0–0x3FDDD | 11838 | 13 | 92 % | 8 % | 0 % | 0 % | „Überdachung“, „bittet Sie an den Verhan“, „Sitzplätze“ |
