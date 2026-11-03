@@ -60,7 +60,13 @@ public sealed partial class GameState
     /// <summary>
     /// [ORIGINAL] Beginn des Managerzugs Datei 0x44E22: Aufruf Datei 0x450C6 der Neuaufstellung 0x426BC (Stub 0x108:0x4D)
     /// für den Manager am Zug – nur mit der Einstellung „automatisch aufstellen“ (<see cref="Club.ApplyAutoLineup"/>;
-    /// Integration Runde 11, Anschluss aus wettbewerbe-spiel Teil 8).
+    /// Integration Runde 11, Anschluss aus wettbewerbe-spiel Teil 8). Der Aufbau des Menüs stellt bei jeder Rückkehr erneut auf
+    /// (<see cref="OnMainMenu"/>). [ORIGINAL] Funktionsanfang 0x44E3F: Faktor der Gehaltsforderung je Managerzug
+    /// (<see cref="DrawContractTurnFactor"/>, Spur ui-meldungen Teil 4, E4 = B).
     /// </summary>
-    private void BeginManagerTurn() => Clubs[ActiveManager.ClubIndex].ApplyAutoLineup();
+    private void BeginManagerTurn()
+    {
+        DrawContractTurnFactor();
+        Clubs[ActiveManager.ClubIndex].ApplyAutoLineup();
+    }
 }

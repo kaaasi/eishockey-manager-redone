@@ -38,7 +38,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 32;
+    public const int SchemaVersion = 33;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -90,6 +90,8 @@ public static partial class SaveGame
     /// (<c>SaveGame.Migration.WettbewerbeSpiel.cs</c>).
     /// 31 → 32 (Integration Runde 11): Einstellung „automatisch aufstellen“ je Verein, Spur wettbewerbe-spiel Teil 8
     /// (<c>SaveGame.Migration.WettbewerbeSpiel8.cs</c>).
+    /// 32 → 33 (vorläufig, Runde 12): Kennzeichen „neue Nachricht“ je Manager und Gehaltsfaktor je Managerzug, Spur ui-meldungen
+    /// Teil 4 (<c>SaveGame.Migration.UiMeldungen4.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
@@ -125,6 +127,7 @@ public static partial class SaveGame
             [29] = MigrateKaderTransfer5,
             [30] = MigrateWettbewerbeSpiel,
             [31] = MigrateWettbewerbeSpiel8,
+            [32] = MigrateUiMeldungen4,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

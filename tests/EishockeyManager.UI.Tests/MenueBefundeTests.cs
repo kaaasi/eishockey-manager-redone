@@ -46,6 +46,7 @@ public class MenueBefundeTests
         d.StartNewGame();
         var game = d.Host.Game!;
         game.Notify(game.ActiveManager, "Verletzung außerhalb des Spiels:", "A.BRESAGK (Oberschenkelzerrung)");
+        d.Host.Current!.Enter(); // Menü neu aufbauen (im Spiel kommt die Nachricht mit dem Tagesablauf; ui-meldungen Teil 4, 0x4527C)
         d.Move(1, 1);
         Assert.False(BarAreaEqualsBackground(d), "neue Nachricht zeigt die Leiste");
 

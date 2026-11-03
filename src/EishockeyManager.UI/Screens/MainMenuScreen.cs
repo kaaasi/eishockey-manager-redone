@@ -68,9 +68,10 @@ public sealed class MainMenuScreen : Screen
     /// Nachrichtenleiste sichtbar (PV-08, #170). [ORIGINAL] em.exe Datei 0x4527C–0x45291 (Hauptmenüschleife): Die Leiste
     /// wird nur gezeichnet, wenn für den aktiven Manager das Kennzeichen „neue Nachricht“ (DGROUP 0x5A50 + Manager) gesetzt
     /// ist; es wird dabei gelöscht (Leistenfunktion Datei 0x4B5F4, Aufruf mit 0xFF). Ohne Nachricht bleibt der Hintergrund.
-    /// [APPROX] Das Kennzeichen entspricht hier einer ungelesenen Nachricht; die Leiste bleibt, bis das Menü neu
-    /// aufgebaut wird (Rückkehr aus einem Bildschirm, Tageswechsel, Managerwechsel) – das Original zeichnet das Menü
-    /// dann ohne Leiste neu. Klick auf den Managerkopf als zweiter Auslöser: <see cref="ManagerHead"/> (#216).
+    /// Das Kennzeichen hält der Spielkern (<see cref="Manager.HasNewMessage"/>), gelöscht wird es im Ereignis
+    /// <see cref="GameState.OnMainMenu"/> (Spur ui-meldungen Teil 4, E4 = B); die Leiste bleibt, bis das Menü neu aufgebaut
+    /// wird (Rückkehr aus einem Bildschirm, Tageswechsel, Managerwechsel) – das Original zeichnet das Menü dann ohne Leiste
+    /// neu. Klick auf den Managerkopf als zweiter Auslöser: <see cref="ManagerHead"/> (#216).
     /// </summary>
     private bool _newsBar;
 
@@ -79,14 +80,32 @@ public sealed class MainMenuScreen : Screen
 
     public MainMenuScreen(ScreenHost host) : base(host) { }
 
+    /// <summary>Zug, für den das Menü zuletzt aufgebaut wurde (unterscheidet ersten Aufbau und Rückkehr).</summary>
+    private (GameState Game, int Season, int Day, int Manager)? _builtTurn;
+
     /// <summary>
-    /// Das Hauptmenü eines Zuges ist da: Zähler des automatischen Speicherns fortschreiben (Spur „speichern-dialog“,
-    /// <see cref="SaveLoad.AutoSave"/>). Schreibt nur eine Datei, ändert den Spielzustand nicht.
+    /// Das Hauptmenü wird aufgebaut (erster Aufbau eines Zugs oder Rückkehr aus einem Unterbildschirm): Ereignis
+    /// <see cref="GameState.OnMainMenu"/> im Spielkern (Neuaufstellung, Kennzeichen „neue Nachricht“; E4 = B, Datei 0x44FBD ff.)
+    /// und Zähler des automatischen Speicherns (Spur „speichern-dialog“, <see cref="SaveLoad.AutoSave"/>, schreibt nur eine Datei).
     /// </summary>
     public override void Enter()
     {
-        _newsBar = false; // Menü wird neu aufgebaut: Leiste weg, bis eine neue Nachricht kommt
+        BuildMenu();
         SaveLoad.AutoSave.OnMainMenu(Host);
+    }
+
+    /// <summary>Ein Aufbau des Menüs: genau ein Aufruf des Ereignisses; die Leiste zeigt, was es meldet.</summary>
+    private void BuildMenu()
+    {
+        if (Host.Game is not { } game)
+        {
+            _newsBar = false;
+            return;
+        }
+        var turn = (game, game.Season, game.Day, game.CurrentManager);
+        var isReturn = _builtTurn == turn;
+        _builtTurn = turn;
+        _newsBar = game.OnMainMenu(game.ActiveManager, isReturn);
     }
 
     /// <summary>Info-Fenster der Infoleiste (<see cref="InfoBarWindows"/>).</summary>
@@ -128,9 +147,6 @@ public sealed class MainMenuScreen : Screen
                 return;
             CoachMessage = null;
         }
-        if (_selectedBig < 0 && ManagerArea.NewsBar.HasUnread(Game))
-            _newsBar = true;
-
         // Gegner-/Vereinsfenster: Klick auf Gegner- oder Vereinsnamen, vor dem Infofile (0x45375, Spur ui-meldungen Teil 2, UM-2)
         if (InfoWindows.Update(Game, input))
             return;
@@ -220,6 +236,7 @@ public sealed class MainMenuScreen : Screen
         if (!Game.IsLastTurnOfDay)
         {
             Game.Continue();
+            BuildMenu(); // nächster Manager am Zug: erster Aufbau seines Menüs (E4 = B)
             // Der nächste Manager ist am Zug, das Hauptmenü bleibt stehen: auch das ist ein neuer Hauptmenü-Aufruf
             // für das automatische Speichern (R3C-01, em.exe 0x44E49–0x44E69).
             SaveLoad.AutoSave.OnMainMenu(Host);

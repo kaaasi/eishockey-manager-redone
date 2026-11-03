@@ -70,6 +70,10 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
 - **Echte Einnahmen und Ausgaben nur über `GameState.Book(manager, kategorie, betrag)`.** Neutrale Umbuchungen
   (Bank, Sparbuch, Aktien zum Kurswert, Kredite zwischen Managern) sind kein Aufwand und bleiben getrennt.
 - **Bildschirme verändern keinen Spielzustand durch bloßes Öffnen** (keine Zeit, kein Training, kein Markt, kein Zufall).
+  Was das Original beim Aufbau des Hauptmenüs am Spielzustand ändert (Kennzeichen „neue Nachricht“, Neuaufstellung mit
+  „automatisch aufstellen“, Gehaltsfaktor je Managerzug; em.exe Datei 0x44E22), ist ein Ereignis im Spielkern:
+  `GameState.OnMainMenu(manager, isReturn)` bzw. der Zuganfang in `GameState.HotSeat.cs`. Das Hauptmenü ruft es genau einmal je
+  Aufbau auf und zeichnet nur (Entscheidung Nutzer E4 = B, 03.11.2026); keine weiteren Ausnahmen für Bildschirme.
 - Neue Bildschirme für eine Menükachel ohne fremde Dateien anmelden (Name exakt wie in `Screens/MenuTiles.cs`):
 
   ```csharp

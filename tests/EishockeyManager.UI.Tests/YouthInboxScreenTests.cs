@@ -54,6 +54,7 @@ public class YouthInboxScreenTests
         var game = d.Host.Game!;
         var me = game.ActiveManager;
         var message = game.Notify(me, "Testmeldung", "zweite Zeile");
+        d.Host.Current!.Enter(); // Menü neu aufbauen: das Kennzeichen „neue Nachricht“ zeigt die Leiste (ui-meldungen Teil 4, 0x4527C)
         Assert.Equal(0, NewsBar.Shown(game));
         d.Frame();
         Assert.True(message.Read);
