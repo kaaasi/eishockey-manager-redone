@@ -247,6 +247,7 @@ Dateigrenzen dieser Spur oder zu groß für sie (Folgespur).
 | `FinanceStadium.cs:190/196` Unterhalt | bestätigt | `0x3EA0B–0x3EA8C`: Stufen · DGROUP `0x94` (24000, 7500, 33000, 3000, 4800, 9000, 15000, 15000, 7500) + 15·Sitz + 12·Steh |
 | `FinanceStadium.cs:204` Zuschauer | **abweichend in einem Punkt, behoben** | `0x3F63C–0x3F65B`: geteilt durch rnd(2, 5) nur bei 16 + 3·(2 − Liga) **<** Preis·3/2 (teure Karten); Rest der Formel, Tabellen `0x4FD0/0x4FE0/0x4FF2`, Rundung und Buchung bestätigt |
 | `FinanceStadium.cs:281` Stärke | bestätigt | `0x4D316` (0x128:0x25): Σ der sechs Teamwerte / 6 |
+| `SpectatorRules.Strength` (Runde 12) | umgesetzt | liest die Vereinsfelder 0x18–0x1D (Computerverein Lader/Wanderung, Manager Aufstellung 0x952C), nicht mehr die Spielerwerte; Test `StadiumStrengthTests` |
 | Monatsabschluss, Kontogrenze (ohne Marker) | **fehlte, behoben** | `0x3F10E–0x3F165`: Kontostand auf ±500.000.000 Drittel begrenzt |
 | `FinancePremiums.cs:6` Meisterprämie | **abweichend, behoben** | `0x55CD7` vergleicht mit [0x387] = **DEB-Pokalsieger** (Titelbild `0x350B6`); Meister [0xD0E6] nur Statusbit (`0x55BE4`). Video: Pokalsieg 600.000 DM, Meister 200.000 DM |
 | `FinancePremiums.cs:13` Einzelprämien 100.000 DM | **abweichend**: Pokal/Europapokal behoben, **fehlende Ereignisse #135** | `0x271A9` bester Torhüter, `0x271EF` Topscorer der eigenen Liga im Kader (Rangliste 0xC8:0x20), Europapokalsieg ohne Geld (`0x55D86`) |

@@ -423,7 +423,7 @@ public static class SpectatorRules
     /// </summary>
     public static int EuropeanCupImportance(int date) => date < EuropeanCup.GroupDates ? 2 : 0;
 
-    /// <summary>Stärke eines Vereins für die Zuschauerformel: Mittel der sechs Teamwerte. [ORIGINAL] 0x4D316.</summary>
+    /// <summary>Stärke eines Vereins für die Zuschauerformel: Mittel der sechs Vereinsfelder 0x18–0x1D (Kondition, Technik, Form von Abwehr und Sturm), nicht der Spielerwerte. [ORIGINAL] 0x4D316; Computervereine Lader/Wanderung, Manager Aufstellung (0x952C), siehe <see cref="StrengthTable"/>.</summary>
     public static int Strength(GameState game, Club club)
     {
         var (d, a) = StrengthTable.TeamValues(game, club);
