@@ -153,8 +153,15 @@ public sealed partial class GameState
             InsertForcedRelegation(places, count, club, c => Clubs[c].League == league);
             counts[league] = count + 1;
         }
-        foreach (var group in RelegationGroups.Where(g => counts.ContainsKey(g.Upper)))
-            RecordRelegationGroup(record, group, tables[group.Upper]);
+        // [ORIGINAL] em.exe leert am 29. April alle Auf-/Absteigerlisten (Datei 0x560EB–0x5612E) und füllt sie im Austausch
+        // aller Gruppen aus den Gruppentabellen dieses Tages (Datei 0x56137–0x563A4; re-saisonwechsel.md §1 Schritte 5–7).
+        // Integrationsfehler R12: Vorher wurden nur die Gruppen mit Zwangsabsteiger neu eingetragen; die Gruppe
+        // Bundesliga/2. Liga behielt die Listen vom 13. April, während ResolveDoubleMoves ihre Tabelle vom 29. April nahm.
+        // Wich die Tabelle ab, ging ein Bundesligist in die Oberliga, ohne als Absteiger gezählt zu sein (Ligen 11/13/12).
+        // Ohne Zwangsabsteiger bleibt alles beim 13. April (gleiche Tabelle, solange die Ergebnisse unverändert sind).
+        if (counts.Count > 0)
+            foreach (var group in RelegationGroups.Where(g => tables.ContainsKey(g.Upper)))
+                RecordRelegationGroup(record, group, tables[group.Upper]);
         if (tables.TryGetValue(League.Bundesliga, out var upperPlaces))
             ResolveDoubleMoves(record, upperPlaces, c => Clubs[c].League == League.Bundesliga);
         return forced;

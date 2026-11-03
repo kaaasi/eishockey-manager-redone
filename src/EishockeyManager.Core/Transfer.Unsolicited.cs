@@ -106,6 +106,10 @@ public sealed partial class GameState
             var club = Clubs[manager.ClubIndex];
             foreach (var p in club.Players.ToArray())
             {
+                // [ORIGINAL] Verfall offener Angebote (Datei 0x07626–0x07673): random(0, 3) = 0 löscht +0x09 Bit 0x40 und die Meldung.
+                // Der Wurf fällt nur bei einem offenen Angebot (Spur kader-transfer, Runde 12, U4).
+                if (p.UnsolicitedOffer is not null && TransferRules.Random16(random, 0, 3) == 0)
+                    p.UnsolicitedOffer = null;
                 if (p.OnLoan || p.Notice == ContractNotice.Retiring)
                     continue;
                 var value = PlayerValueOf(p, club, PlayerValueKind.Price, random, manager.Level);

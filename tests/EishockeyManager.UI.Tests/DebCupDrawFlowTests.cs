@@ -252,7 +252,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Grenzen nach dem Spiel (0x549A2) ändern die Kaderenergie der Spielvorbereitung und damit die Spiele des Managers. Mit und
     /// ohne Anzeige weiter gleich.
     /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): ab 1994 neu – Computervereine spielen ohne Bezug zur Remake-Aufstellung
-    /// (0x977F, Vereinsfelder). Mit und ohne Anzeige weiter gleich.</summary>
+    /// (0x977F, Vereinsfelder). Mit und ohne Anzeige weiter gleich.
+    /// Spur kader-transfer, Runde 12, Teil 1 (U4, U5): ab 1995 neu – Angebote verfallen (0x0767A), Poolplätze enden mit Nachfolger
+    /// (0x2787A); anderer Zufallsverbrauch, der Kader des Managers wird mit KeepSquadHelper auch ohne Angebot verlängert.
+    /// Integration Runde 12 (+ kader-transfer): Abdruck auf dem integrierten Stand neu ermittelt. Mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 2, DM 2, Tab 15261 | 1994: DEB 8, DM 2, Tab 15574 | 1995: DEB 2, DM 1, Tab 15457 | 1996: DEB 19, DM 10, Tab 15203";
+        "1993: DEB 4, DM 6, Tab 15341 | 1994: DEB 12, DM 4, Tab 15422 | 1995: DEB 10, DM 4, Tab 15391 | 1996: DEB 10, DM 10, Tab 15611";
 }

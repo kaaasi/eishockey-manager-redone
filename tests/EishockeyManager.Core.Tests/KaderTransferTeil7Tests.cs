@@ -148,8 +148,9 @@ public class KaderTransferTeil7Tests
         Assert.All(expiring.Concat(twoYears), p => Assert.NotEqual(ContractNotice.Refused, p.Notice));
         Assert.All(twoYears, p => Assert.Equal(0, Offers(game, p)));
         var offered = expiring.Where(p => Offers(game, p) > 0).ToList();
-        Assert.All(offered, p => Assert.Equal(1, Offers(game, p)));
-        Assert.All(offered, p => Assert.InRange(p.NoticeYears, 2, 4));
+        // Runde 12, U4: Ein Angebot verfällt (random(0, 5) = 0 je Tag) und kann neu kommen.
+        Assert.All(offered, p => Assert.InRange(Offers(game, p), 1, 10));
+        Assert.All(offered.Where(p => p.Notice == ContractNotice.Offered), p => Assert.InRange(p.NoticeYears, 2, 4)); // verfallene: 0
         // Chance je Tag 1/(4 · (p + 1)), p um 40 … 70: ein Teil meldet sich, nicht jeder (keine Frist).
         Assert.InRange(offered.Count, 3, expiring.Count - 3);
         // Wer sich nicht gemeldet hat, geht in die Verhandlung am Saisonende (0x27D05).

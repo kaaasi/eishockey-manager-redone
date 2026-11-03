@@ -185,10 +185,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Zuschauerstärke aus den Vereinsfeldern (geld Teil 2, 0x4D316) ändert Einnahmen und damit Kauf- und Vertragsentscheidungen
     /// des aktiven Managers; der passive Abdruck bleibt.
     /// R12I-01 (Review #514): neue Kaderplätze (Pool, Talente) mit Belastung random(80, 120) statt 51 … 70 (Datei 0x42E4C) –
-    /// Spieler vom Markt sind belasteter, beide Abdrücke (Originaldatenbank) neu; die synthetischen Abdrücke (Seed 3/11) bleiben.</summary>
+    /// Spieler vom Markt sind belasteter, beide Abdrücke (Originaldatenbank) neu; die synthetischen Abdrücke (Seed 3/11) bleiben.
+    /// Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.</summary>
     [GameDataTheory]
-    [InlineData(false, "34A3BAD14269642C")]
-    [InlineData(true, "1B38DFFC9043836F")]
+    [InlineData(false, "2F5CC98EF758F86E")]
+    [InlineData(true, "75F5165C1DD4B4CA")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -253,7 +254,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
     // Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=55|500000|WorldChampion=63|500000|R540662232 C6027902";
+        "WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=55|500000|WorldChampion=63|500000|R981788763 C6027902";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

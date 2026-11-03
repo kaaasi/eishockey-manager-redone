@@ -59,6 +59,13 @@ public static class SquadRules
         age < RetireMinAge ? 0 : Math.Min(1.0, (age - RetireMinAge + 1) / (double)(RetireMaxAge - RetireMinAge + 1));
 
     /// <summary>
+    /// Laufbahnende ohne Managerkader im Saisonende. [ORIGINAL] Datei 0x2787A–0x279DA (Saisonende 0x26F20, Pool-Schleife 1–199):
+    /// Alter &gt; random(37, 42) (<c>docs/analyse/re-nachtrag.md</c>, Abschnitt 1). Gilt für Computerspieler und Vertragslose;
+    /// der Managerkader folgt der Ruhestandsmeldung (<see cref="RetirementRoll"/>).
+    /// </summary>
+    public static bool CareerEnds(int age, Random random) => age > TransferRules.Random16(random, 37, 42);
+
+    /// <summary>
     /// Täglicher Wurf „kündigt an, daß er seinen Vertrag nicht mehr verlängern wird“ (Kaderplatz +0x18 Bit 0x80). [ORIGINAL]
     /// Tagesablauf 0x07169, Datei 0x0754D–0x0760F, je Platz des Managers am Zug und Tag: c = 100 − 15 bei einem Torhüter
     /// (Rollenwert Pool +0x18 = 0); Technik − Kondition &gt; 0 → c − (Technik − Kondition) / 2; v = Alter · c / 10; wahr bei
@@ -133,8 +140,10 @@ public sealed partial class GameState
     ///   Saisonende (0x27D05).</item>
     /// </list>
     /// Eine eigene Absage gibt es im Original nicht (A230): „nicht mehr verlängern“ ist die Ruhestandsmeldung.
-    /// [APPROX] „Offene Meldung“ (Pool +0x1E) = schon gemeldet (<see cref="Player.Notice"/> ≠ None); das Angebot verfällt nicht
-    /// (Datei 0x0767A, noch offen); Züge aus <see cref="ContractRandom"/>; Reihenfolge im Tag nach Sperren und Angeboten Bit 0x40.
+    /// Ein offenes Angebot verfällt mit random(0, 5) = 0 je Tag (Datei 0x0767A): Meldung gelöscht, Verhandlungssperre
+    /// random(9, 17) Tage (Spur kader-transfer, Runde 12, U4).
+    /// [APPROX] „Offene Meldung“ (Pool +0x1E) = schon gemeldet (<see cref="Player.Notice"/> ≠ None); Züge aus
+    /// <see cref="ContractRandom"/>; Reihenfolge im Tag nach Sperren und Angeboten Bit 0x40.
     /// </summary>
     internal void AnnounceContractEnds(int day)
     {
@@ -153,6 +162,13 @@ public sealed partial class GameState
                     p.NoticeYears = 0;
                     NotifyClub(club, SquadRules.RefusalText(p));
                 }
+                // [ORIGINAL] Verfall eines Verlängerungsangebots (Datei 0x0767A–0x076E3): random(0, 5) = 0 → Sperre random(9, 17), Meldung weg.
+                if (p.Notice == ContractNotice.Offered && TransferRules.Random16(ContractRandom, 0, 5) == 0)
+                {
+                    p.Notice = ContractNotice.None;
+                    p.NoticeYears = 0;
+                    p.NegotiationLock = TransferRules.Random16(ContractRandom, 9, 17);
+                }
                 if (p.OnLoan)
                     continue;
                 if (TransferRules.Random16(ContractRandom, 0, SquadRules.OfferLimit(p)) != 0
@@ -161,6 +177,7 @@ public sealed partial class GameState
                 if (p.Notice != ContractNotice.None || p.ContractYears != 1)
                     continue;
                 p.Notice = ContractNotice.Offered;
+                p.NegotiationLock = 0; // [ORIGINAL] +0x18 = 100 + n ersetzt eine laufende Sperre (Datei 0x07951)
                 p.NoticeYears = SquadRules.OfferedYears(TransferRules.Random16(ContractRandom, 0, 100));
                 NotifyClub(club, SquadRules.OfferText(p, p.NoticeYears));
             }
@@ -192,14 +209,23 @@ public sealed partial class GameState
         RetiredPlayers.Add(p);
     }
 
-    /// <summary>Saisonwechsel, Computerverein: Ruhestand nach Alter, sonst auslaufende Verträge verlängern oder freigeben.</summary>
+    /// <summary>Saisonwechsel, Computerverein: Laufbahnende bei Alter &gt; random(37, 42) mit Nachfolger (U5), sonst auslaufende Verträge verlängern oder freigeben.</summary>
     private void ComputerContractDecision(Club owner, Club current, Player p)
     {
-        if (ContractRandom.NextDouble() < SquadRules.RetirementChance(p.Age))
+        if (SquadRules.CareerEnds(p.Age, ContractRandom))
         {
             current.Players.Remove(p);
             current.Lineup.Remove(p);
             Retire(owner, p);
+            // [ORIGINAL] Neuanlage im selben Pooleintrag (Datei 0x279DA): ein junger Spieler übernimmt den Platz im Verein.
+            if (owner.Players.Count < PlayerFactory.MaxNumber)
+            {
+                var names = Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents).ToList();
+                var successor = PlayerFactory.CreateRenewal(this, PlayerFactory.TalentName(names, ContractRandom), p.Role,
+                    ContractRandom);
+                PlayerFactory.Join(owner, successor, SquadSetup.Between(ContractRandom, SquadRules.ComputerMinYears,
+                    SquadRules.ComputerMaxYears), loan: false);
+            }
             return;
         }
         if (p.ContractYears > 0)
@@ -267,12 +293,32 @@ public sealed partial class GameState
             p.Age++;
             p.NegotiationLock = 0;
             p.Notice = ContractNotice.None;
-            if (ContractRandom.NextDouble() < SquadRules.RetirementChance(p.Age))
+            if (SquadRules.CareerEnds(p.Age, ContractRandom))
             {
                 TransferMarket.Sign(p);
                 Retire(null, p);
             }
         }
+    }
+
+    /// <summary>
+    /// Saisonwechsel, Poolplatz ohne Kaderplatz eines Managers: Laufbahnende bei Alter &gt; random(37, 42) und Neuanlage im selben
+    /// Platz (<see cref="PlayerFactory.CreateRenewal"/>; Verein und Platz bleiben). [ORIGINAL] Datei 0x2787A–0x279DA. Gerufen aus
+    /// <see cref="TransferMarket.StartPoolSeason"/> nach dem Altern des Platzes. Spieler in einem Kader, bei den Vertragslosen
+    /// (<see cref="AgeFreeAgents"/>) oder beim Bundestrainer überspringt das Remake. [APPROX] Zufall der Verträge
+    /// (<see cref="ContractRandom"/>) statt der Hauptquelle.
+    /// </summary>
+    internal void RenewAgedPoolPlayer(PoolSlot slot)
+    {
+        var old = slot.Player;
+        if (slot.Owner != PoolOwner.Free || !SquadRules.CareerEnds(old.Age, ContractRandom)
+            || Clubs.Any(c => c.Players.Contains(old)) || TransferMarket.FreeAgents.Contains(old)
+            || NationalCoach?.Contains(old) == true)
+            return;
+        var names = Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents).ToList();
+        var successor = PlayerFactory.CreateRenewal(this, PlayerFactory.TalentName(names, ContractRandom), old.Role, ContractRandom);
+        Retire(null, old);
+        slot.Player = successor;
     }
 
     private void LimitFreeAgents()

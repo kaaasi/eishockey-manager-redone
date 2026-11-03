@@ -170,21 +170,22 @@ public class RngTwinProbeTests
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "8D3B2C6CCAF3E4AA")]
-    [InlineData(true, 3, "0928FD3FC3D3AEB9")]
-    [InlineData(false, 11, "D05214DFE0EB1D4D")]
-    [InlineData(true, 11, "A8872D7F5D509AC3")]
+    [InlineData(false, 3, "BAF64BC14EFB250D")]
+    [InlineData(true, 3, "946F98B1C2426F30")]
+    [InlineData(false, 11, "66FD8684BCC04AD5")]
+    [InlineData(true, 11, "CCDB49C8514E69C5")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
         Assert.Equal(expected, Run(game, active));
     }
 
+    // Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "3A0FE774F0C0390C")]
-    [InlineData(true, "96F3FFBFB7EE9C3D")]
+    [InlineData(false, "8911A65C5DE5A91F")]
+    [InlineData(true, "78D6E67B6500BA68")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

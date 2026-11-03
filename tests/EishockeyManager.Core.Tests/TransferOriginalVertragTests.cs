@@ -420,7 +420,7 @@ public class TransferOriginalVertragTests
                     // (Phase GameOver am letzten Tag, StartNextSeason scheiterte).
                     manager.Money = Math.Max(manager.Money, 10_000_000);
                     var club = game.Clubs[manager.ClubIndex];
-                    TestSeason.KeepSquad(game, manager);
+                    TestSeason.KeepSquad(game, manager, extendExpired: false); // die Probe verhandelt selbst mit dem Kader
                     if (active)
                     {
                         if (club.Players.FirstOrDefault(pl => pl.ContractYears <= 1 && Contracts.Availability(game, pl) is null) is { } p)

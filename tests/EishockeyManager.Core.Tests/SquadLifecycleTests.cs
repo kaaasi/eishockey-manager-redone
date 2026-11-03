@@ -12,7 +12,7 @@ public class SquadLifecycleTests
     private static Club OwnClub(GameState game) => game.Clubs[game.Managers[0].ClubIndex];
 
     /// <summary>Spielt bis zum Saisonende; <paramref name="eachStep"/> läuft nach jedem Weiter-Schritt.</summary>
-    private static void PlaySeason(GameState game, Action? eachStep = null)
+    internal static void PlaySeason(GameState game, Action? eachStep = null)
     {
         for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
         {
@@ -52,7 +52,7 @@ public class SquadLifecycleTests
         foreach (var p in expiring)
         {
             var messages = ContractMessages(game, p);
-            Assert.InRange(messages.Length, 0, 1);
+            Assert.InRange(messages.Length, 0, 6); // Angebote verfallen und kommen neu (Runde 12, U4)
             if (messages.Length == 0)
             {
                 Assert.Equal(ContractNotice.None, p.Notice);
@@ -62,7 +62,9 @@ public class SquadLifecycleTests
             var text = string.Join(" ", messages[0].Lines);
             Assert.True(text.Contains("bietet Ihnen an, von 1 auf") && text.EndsWith("Jahre zu verlängern.")
                 || text.EndsWith("kündigt an, daß er seinen Vertrag nicht mehr verlängern wird."), text);
-            Assert.NotEqual(ContractNotice.None, p.Notice);
+            // Ein Angebot kann inzwischen verfallen sein (Runde 12, U4): dann steht keine Ankündigung mehr am Spieler.
+            if (!text.Contains("bietet Ihnen an"))
+                Assert.NotEqual(ContractNotice.None, p.Notice);
         }
         Assert.InRange(announced, 1, expiring.Length - 1);
         game.StartNextSeasonWithRenewals();
@@ -164,8 +166,11 @@ public class SquadLifecycleTests
             var expiring = OwnClub(game).Players.Where(p => p.ContractYears == 1 && !p.OnLoan).ToArray();
             // Spur kader-transfer, Teil 7 (0x07169): höchstens eine Ankündigung, ohne Frist; die übrigen gehen in die Verhandlung
             // am Saisonende (0x27D05).
+            // Runde 12, U4 (0x0767A): Ein Angebot verfällt und kann neu kommen – mehrere Angebote sind möglich, die Ruhestandsmeldung
+            // aber höchstens einmal.
             foreach (var p in expiring)
-                Assert.True(ContractMessages(game, p).Length <= 1, $"Saison {game.Season}: mehrere Ankündigungen für {p.Name}");
+                Assert.True(ContractMessages(game, p).Count(m => !string.Join(" ", m.Lines).Contains("bietet Ihnen an", StringComparison.Ordinal)) <= 1,
+                    $"Saison {game.Season}: mehrere Ankündigungen für {p.Name}");
 
             game.StartNextSeason();
 
@@ -184,7 +189,8 @@ public class SquadLifecycleTests
                 foreach (var p in club.Players)
                     Assert.Empty(PlayerFactory.Validate(club, p));
             }
-            Assert.All(computer.SelectMany(c => c.Players), p => Assert.InRange(p.Age, PlayerFactory.TalentMinAge, 36));
+            // Runde 12, U5 (Datei 0x2787A): Laufbahnende bei Alter > random(37, 42) – bis 42 möglich, älter nie.
+            Assert.All(computer.SelectMany(c => c.Players), p => Assert.InRange(p.Age, PlayerFactory.TalentMinAge, 42));
             // Spur kader-transfer, Teil 7 (0x0754D): Im Managerkader kündigen Feldspieler ab 36, Torhüter ab 42 (Technik über
             // Kondition später) den Ruhestand an und hören erst bei Vertragsende auf – ältere Spieler sind dort möglich.
             Assert.All(OwnClub(game).Players, p => Assert.InRange(p.Age, PlayerFactory.TalentMinAge, 45));
@@ -202,14 +208,26 @@ public class SquadLifecycleTests
         var ages = computer.SelectMany(c => c.Players).Select(p => p.Age).ToArray();
         Assert.InRange(ages.Average(), 23.0, 29.0);
         Assert.True(ages.Count(a => a <= 23) >= ages.Length / 10, "kaum junge Spieler");
-        Assert.True(ages.Count(a => a >= 33) <= ages.Length / 10, "zu viele alte Spieler");
+        Assert.True(ages.Count(a => a >= 38) <= ages.Length / 10, "zu viele alte Spieler");
         foreach (var club in computer)
-            Assert.InRange(club.Players.Average(p => p.Age), 21.0, 31.0);
+            Assert.InRange(club.Players.Average(p => p.Age), 21.0, 33.0); // Runde 12, U5: Spieler bleiben bis 42
         Assert.NotEmpty(game.RetiredPlayers);
         Assert.True(known.Count > startPlayers.Length, "keine Neuzugänge aus Talenten");
         Assert.Contains(startPlayers, p => p.Age >= 32 && game.RetiredPlayers.Contains(p));
         if (active)
+        {
+            // Runde 12 (Integrationsfehler Kaderprobe): Der Markt ist zum Saisonstart oft leer – U4 verwirft Angebote, U5 lässt
+            // Spieler länger spielen, und der Listenwechsel kommt erst im Tagesablauf (0x54E65, je Tag mit Wahrscheinlichkeit
+            // 1/(Managerzahl + 2)). Ein echter Spieler kauft in den ersten Tagen nach; die Probe tut es über die Zeitleiste.
+            // Das Original verbietet einen kleinen Kader nicht (nur „Weniger als neun Spieler!“, 0x5447D), die Grenze 18 bleibt.
+            for (var guard = 0; guard < 60 && OwnClub(game).Players.Count < 18 && game.Phase == SeasonPhase.Running; guard++)
+            {
+                game.Managers[0].Money = 10_000_000;
+                game.Continue();
+                SignFreeAgents(game);
+            }
             Assert.True(OwnClub(game).Players.Count >= 18, $"aktiver Manager hat nur {OwnClub(game).Players.Count} Spieler");
+        }
         _ = managerPlayers;
     }
 
@@ -219,7 +237,7 @@ public class SquadLifecycleTests
             .Concat(game.TransferMarket.PoolPlayers);
 
     /// <summary>Aktiver Manager: nimmt jedes Verlängerungsangebot zur Forderung an.</summary>
-    private static void ExtendOffers(GameState game)
+    internal static void ExtendOffers(GameState game)
     {
         foreach (var p in OwnClub(game).Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1))
             Assert.Equal(NegotiationResult.Accepted,
@@ -227,7 +245,7 @@ public class SquadLifecycleTests
     }
 
     /// <summary>Aktiver Manager: füllt den Kader zu Saisonbeginn mit ablösefreien Spielern auf 20 auf.</summary>
-    private static void SignFreeAgents(GameState game)
+    internal static void SignFreeAgents(GameState game)
     {
         var manager = game.Managers[0];
         while (OwnClub(game).Players.Count < 20
@@ -252,6 +270,14 @@ public class SquadLifecycleTests
             manager.Money = Math.Max(manager.Money, older.Price * 2);
             Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, older, older.Price * 135 / 100, loan: false));
             older.Player.ContractYears = 2;
+        }
+        // Runde 12, U5: Poolspieler enden nun bei Alter > random(37, 42); fehlt auch dann ein Spieler bis 32, kommen ältere in Frage.
+        while (OwnClub(game).Players.Count < 20
+               && game.TransferMarket.Listings.FirstOrDefault(l => l.FromPool && l.Player.Age <= 42) is { } oldest)
+        {
+            manager.Money = Math.Max(manager.Money, oldest.Price * 2);
+            Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, manager, oldest, oldest.Price * 135 / 100, loan: false));
+            oldest.Player.ContractYears = 2;
         }
     }
 }
