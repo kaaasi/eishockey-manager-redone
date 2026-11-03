@@ -5,8 +5,11 @@ namespace EishockeyManager.Core;
 /// Austausch der Aufstiegsrunden über die Gruppentabelle (Datei 0x56157–0x5636D).
 /// </summary>
 /// <remarks>
-/// [APPROX] Nach dem Disassembly gelesen, ohne DOSBox-Beleg (re-saisonwechsel.md, Kandidat K3: bleibt bis zum Beleg „FILE15“
-/// `[APPROX]`). Am 29. April (Saisonwechsel, Datei 0x54C9F) prüft em.exe vor dem Austausch je Manager in Managerreihenfolge:
+/// [ORIGINAL] DOSBox-Beleg FILE16 → FILE17 (Spur saisonwechsel Teil 5, D3; re-saisonwechsel.md, „Auswertung D3“): Zweitligist mit
+/// Konto −1.234.094 DM am 14. April steigt zwangsweise ab, Ereignisse zeigen Symbol 0 ohne Pfeile und keine Aufstiegsprämie
+/// (`file16_9`). [APPROX] Nicht belegt sind die Einzelheiten aus dem Disassembly: genaue Grenze, Ausnahme Meister/Europacupsieger,
+/// höchstens zwei je Liga, Bundesligist als Zwangsabsteiger, Reihenfolge der Plätze beim Einschub. Am 29. April
+/// (Saisonwechsel, Datei 0x54C9F) prüft em.exe vor dem Austausch je Manager in Managerreihenfolge:
 /// Konto &lt; −2.000.000 Drittel-DM (Datei 0x55F22–0x55F34, Grenze FFE1 7B80 hex, „gleich“ zählt nicht), weder Deutscher
 /// Meister noch Europacupsieger (Statusbits 0x28, Datei 0x55F59), Bundesliga oder 2. Liga (Datei 0x55F74) und höchstens zwei je
 /// Liga (Zähler im Rahmen, Datei 0x55F6B). Dann setzt es Bit 0x04 (Datei 0x55F87) und schreibt den Verein in die Gruppentabelle
@@ -165,7 +168,10 @@ public sealed partial class GameState
     /// <param name="upperPlaces">Gruppentabelle der Aufstiegsrunde Bundesliga/2. Liga (nach dem Zwangsabstieg).</param>
     /// <param name="isBundesliga">Verein spielt in der Bundesliga.</param>
     /// <remarks>
-    /// [APPROX] Aus dem Disassembly abgeleitet, ohne DOSBox-Beleg (Review #441 SW-01; Datei 0x55F93 ff.: Gruppe nach
+    /// [ORIGINAL] Fall ohne doppelten Platz belegt: DOSBox-Lauf FILE16 → FILE17 (Spur saisonwechsel Teil 5, D3; `file16_6`,
+    /// `file16_8`, `file17_2`–`file17_4`): SV Bayreuth (2. Liga, Zwangsabsteiger) wird Zweiter der Aufstiegsrunde und spielt in der
+    /// Bundesliga, der Bundesligist auf Platz 3 (EV Landshut, Paarpartner) in der Oberliga, Ligen 12/12/12
+    /// (SaisonwechselDoppelwechselOriginalTests). Hergeleitet aus dem Disassembly (Review #441 SW-01; Datei 0x55F93 ff.: Gruppe nach
     /// Liga-Stufe 1, Austausch Gruppe 0 vor Gruppe 1, Datei 0x56137–0x5636D): em.exe tauscht Vereinsplätze (0x36169), nicht
     /// Vereine. Der erste Tausch (Bundesliga/2. Liga) setzt den Zwangsabsteiger auf den Bundesligaplatz seines Partners und den
     /// Partner auf seinen Zweitligaplatz; der zweite Tausch (2. Liga/Oberliga) bewegt diesen Platz – also den Partner – in die
@@ -173,9 +179,9 @@ public sealed partial class GameState
     /// Ligen hatten 12/13/11 Vereine. Jetzt bleiben 12/12/12, und jeder Verein steht in höchstens einer Liste.
     /// Review #458, SW-06: Welcher Verein in die Oberliga geht, folgt der Platzabbildung des ersten Tauschs
     /// (<see cref="RelegationPlaces"/>): der Verein, der danach auf dem Platz des Zweitligisten steht. Ohne doppelten Platz ist
-    /// das der Absteiger mit demselben Paarindex. Mit doppeltem Platz (Bundesliga-Zwangsabsteiger auf Platz 3 und 4) kann es
-    /// ein Zweitligist sein, der in der 2. Liga nur den Platz wechselt; dann bleibt der Zwangsabsteiger in der 2. Liga, wenn er
-    /// nicht aufsteigt. [APPROX] Die Startordnung der Folgesaison (<see cref="Season.SuccessorOrder"/>) findet für die
+    /// das der Absteiger mit demselben Paarindex. [APPROX] Ohne DOSBox-Beleg: Mit doppeltem Platz (Bundesliga-Zwangsabsteiger
+    /// auf Platz 3 und 4) kann es ein Zweitligist sein, der in der 2. Liga nur den Platz wechselt; dann bleibt der
+    /// Zwangsabsteiger in der 2. Liga, wenn er nicht aufsteigt. [APPROX] Die Startordnung der Folgesaison (<see cref="Season.SuccessorOrder"/>) findet für die
     /// betroffenen Vereine keinen Partner und hängt sie in ihrer neuen Liga hinten an (em.exe: Platz des Partners); nur
     /// Ordnung, keine Wirkung auf die Ligagrößen.
     /// </remarks>

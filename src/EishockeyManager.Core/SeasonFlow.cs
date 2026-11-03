@@ -322,7 +322,7 @@ public sealed partial class GameState
             var league = club.League ?? League.Oberliga;
             var rank = record.FinalTables[league].ToList().IndexOf(club.Index) + 1;
             var events = new List<SeasonEvent>();
-            // [APPROX] (K3, Disassembly ohne DOSBox-Beleg) Bit 0x04 unterdrückt beide Pfeile (Datei 0x56287–0x56334), Symbol 0.
+            // [ORIGINAL] (K3, Datei 0x56287–0x56334; DOSBox-Beleg `file16_9`, Teil 5 D3) Bit 0x04 unterdrückt beide Pfeile, Symbol 0.
             if (forced.Contains(i))
                 events.Add(SeasonEvent.ForcedRelegation);
             else if (record.PromotedInto.Values.Any(l => l.Contains(club.Index)))

@@ -26,7 +26,7 @@ public sealed class SeasonEndSummaryScreen : Screen
     /// Ereignissymbol in kb\13 (Zellen 24 × 21 im Raster 24 × 21).
     /// [ORIGINAL] Symbolnummer → Zelle (Datei 0x6CA6 + 0x39: <c>while (n &gt; 5) { n -= 6; y += 21; }</c>, x = n · 24): sechs Zellen je
     /// Zeile, <see cref="Symbol"/> = Spalte <c>n % 6</c>, Zeile <c>n / 6</c>. Statusbits 0–6 zeigen die Symbole 2, 1, 0, 5, 4, 6, 8
-    /// (Tabelle DGROUP 0x4B2E, Datei 0x2714F): Bit 0 Aufstieg = 2 (Pfeil hoch), Bit 1 Abstieg = 1 (Pfeil runter),
+    /// (Tabelle DGROUP 0x4B2E, Datei 0x2714F): Bit 0 Aufstieg = 2 (Pfeil hoch), Bit 1 Abstieg = 1 (Pfeil runter), Bit 2 Zwangsabstieg = 0,
     /// Bit 4 (DEB-Pokal) = 4 (Fahne), Bit 5 (Europapokal) = 6 (Landkarte mit Pokal), Bit 6 (unter den ersten fünf der 1. Liga) = 8 (Weltkugel).
     /// [APPROX] Meister: Das Original zeigt zu Bit 3 das Symbol 5 (DGROUP 0x4B2E); das Remake nimmt weiter den Puck (Zelle 3/0), bis ein Bild den
     /// Meistertitel belegt.
@@ -37,6 +37,9 @@ public sealed class SeasonEndSummaryScreen : Screen
     {
         SeasonEvent.Promotion => Symbol(2),
         SeasonEvent.Relegation => Symbol(1),
+        // [ORIGINAL] Statusbit 0x04 (Zwangsabstieg) → Symbol 0, Tabelle DGROUP 0x4B2E (Datei 0x2714F); DOSBox-Beleg
+        // `file16_9_ereignisse_29april` (Spur saisonwechsel Teil 5, D3). Vorher fiel es auf Symbol 6.
+        SeasonEvent.ForcedRelegation => Symbol(0),
         SeasonEvent.GermanChampion => Cell(3, 0),
         SeasonEvent.CupWinner => Symbol(4),
         SeasonEvent.BestGoalie => Symbol(12),

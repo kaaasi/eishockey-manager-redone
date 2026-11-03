@@ -327,3 +327,41 @@ Abgleich mit `emtool hok dump FILE17.HOK` (Liga-Stufe je Verein) und dem Remake-
 `SaisonwechselDoppelwechselTests.ForcedFromSecondLeague_PromotedInRelegationRound_StaysUp_PartnerDropsTwoLeagues`. Bestätigt die
 Aufnahme die Regel, wechseln die Marker in `ResolveDoubleMoves` und für K3 auf `[ORIGINAL]` mit Bildverweis; sonst neue Regel nach
 dem Befund mit rotem Regressionstest.
+
+### Auswertung D3 (Spur `saisonwechsel` Teil 5, 03.11.2026)
+
+Material im Referenz-Repo (`original/spielstaende/`, PR kaaasi/eishockey-manager-referenz#9 und #10): FILE15, FILE16 (Patch wie
+Schritt 2), FILE16A (nach dem 44. Spieltag), FILE17 (10.09.1994), Bilder `file16_1`–`file16_9`, `file17_1`–`file17_4`.
+Verein SV BAYREUTH (2. Liga), Level 0.
+
+| Erwartung Remake | Original | Ergebnis |
+|---|---|---|
+| Eigener Verein in der **Bundesliga** | FILE17: Manager Liga-Stufe 0, SV BAYREUTH Verein 0; `file17_1`, `file17_2` | bestätigt |
+| Paarpartner in die **Oberliga** | Aufstiegsrunde (`file16_6`): 1. Düsseldorfer EG, 2. SV Bayreuth, 3. EV Landshut, 4. ECD Sauerland. Paar Bayreuth ↔ Landshut; FILE17: EV LANDSHUT in der Oberliga (`file17_4`), Düsseldorf bleibt, Sauerland bleibt 2. Liga | bestätigt |
+| Ligagrößen **12/12/12** | FILE17: 12/12/12 | bestätigt |
+| Ereignisse: **Symbol 0**, keine Pfeile, keine Aufstiegsprämie | `file16_9`: Symbole 0 (Tabelle mit rotem Pfeil), 3 (Topscorer), 13 (Fair-Play); „1. Platz der Zweite Liga, Erhaltene Prämien: 200.000 DM“ = zwei Einzelprämien, keine Aufstiegsprämie (500.000 DM) | bestätigt (Core); **Remake-UI zeigte Symbol 6** → behoben |
+
+Gruppe 2. Liga/Oberliga (nicht fotografiert): Teilnehmer nach `file16_4` (Plätze 11–12: SC Memmingen, EV Landsberg) und FILE17
+(neu in der 2. Liga: ESC Wolfsburg, SC Riessersee). FILE17: Memmingen in der Oberliga, Landsberg bleibt. Mit den Regeln des Remakes
+(`InsertForcedRelegation`, `RelegationExchange`, `ResolveDoubleMoves`) geht für **jede** Platzfolge dieser Gruppe Bayreuth hoch und
+Landshut in die Oberliga; genau die Bundesliga und 2. Liga aus FILE17 ergeben sich, wenn Wolfsburg und Riessersee die Plätze 1–2
+belegten und Landsberg Platz 3 (Einschub überschreibt Landsberg, der damit oben bleibt). Test:
+`SaisonwechselDoppelwechselOriginalTests` (Originaldaten).
+
+**Saisonende-Fenster** (`file16_8`): Bundesliga „Krefelder EV“ (Meister), grün SV Bayreuth; Zweite Liga rot **SC Riessersee**, grün
+SC Riessersee und ESC Wolfsburg; Oberliga rot EV Landshut und SC Memmingen, grün TEV Miesbach und TuS Geretsried. Das bestätigt den
+Platztausch (0x36169): Der Eintrag „Absteiger in die 2. Liga“ zeigt den Platz, auf den der erste Tausch Landshut gesetzt hat und
+den der zweite Tausch mit Riessersee belegt. Die Startordnung bestätigt das ebenso (`file17_3`: Riessersee auf Platz 1 = Platz von
+Bayreuth, Wolfsburg auf Platz 11 = Platz von Memmingen; übrige Plätze wie `file16_4`).
+
+**Folgen:**
+- Marker: `ResolveDoubleMoves` (Fall ohne doppelten Platz), K3 (Zwangsabstieg 2. Liga, Symbol 0, keine Pfeile) auf `[ORIGINAL]` mit
+  Bildverweis. Weiter `[APPROX]`: doppelter Platz, Bundesligist als Zwangsabsteiger, höchstens zwei je Liga, Ausnahme
+  Meister/Europacupsieger, genaue Grenze.
+- Behoben: `SeasonEndSummaryScreen.EventIcon(ForcedRelegation)` lieferte Symbol 6 (Vorgabewert) statt Symbol 0 (roter Test
+  `SaisonwechselDoppelwechselUiTests`).
+- **Offen (Befund, Entscheidung):** Das Remake zeigt im Saisonende-Fenster in der Spalte „Zweite Liga“ keinen roten Eintrag (Landshut
+  steht nach `ResolveDoubleMoves` nur in der Oberliga-Liste); das Original zeigt dort den Verein auf dem getauschten Platz
+  (SC Riessersee, zugleich grün). Ebenso hängt die Startordnung des Remakes die betroffenen Vereine hinten an, em.exe setzt sie auf
+  den Platz des Partners (Kommentar `ResolveDoubleMoves`; gegen `file17_3` nicht im Test geprüft). Beides nur Anzeige bzw.
+  Ordnung, keine Wirkung auf Ligen und Geld.
