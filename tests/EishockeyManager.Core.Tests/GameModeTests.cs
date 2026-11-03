@@ -354,8 +354,10 @@ public class GameModeTests
     // Teil der Spieler) und Ruhestand ab 36. Der Testmanager 1 verlängert nur angebotene Verträge und kauft nicht: sein Kader
     // schrumpft (20 → 13 → 12 → 11), in Saison 5 Strafen und Dispozinsen, entlassen (−4.592.736). Manager 0 bleibt spielfähig.
     // (Stand der Spur vor der Integration; integrierter Stand siehe Zusammenfassung oben.)
+    // Spur geld, Teil 2 (Runde 12, 0x4D316): Zuschauerstärke aus den Vereinsfeldern statt den Spielerwerten – nur die Konten ändern sich
+    // (Meister, Pokalsieger und Zufallszustand R/C bleiben gleich).
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|198969,400000|WorldChampion=52,CupWinner=3,GermanChampion=12,EuropeanCupWinner=0|626765,400000|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=0|3024743,500000|WorldChampion=54,CupWinner=0,GermanChampion=3,EuropeanCupWinner=0|4115568,400000|WorldChampion=54,CupWinner=3,GermanChampion=5,EuropeanCupWinner=3|4757994,500000|R1886090395 C1947864260";
+        "WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|206886,400000|WorldChampion=52,CupWinner=3,GermanChampion=12,EuropeanCupWinner=0|690686,400000|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=0|3100572,500000|WorldChampion=54,CupWinner=0,GermanChampion=3,EuropeanCupWinner=0|4177656,400000|WorldChampion=54,CupWinner=3,GermanChampion=5,EuropeanCupWinner=3|4677771,500000|R1886090395 C1947864260";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

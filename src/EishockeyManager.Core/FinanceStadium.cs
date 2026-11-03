@@ -423,7 +423,7 @@ public static class SpectatorRules
     /// </summary>
     public static int EuropeanCupImportance(int date) => date < EuropeanCup.GroupDates ? 2 : 0;
 
-    /// <summary>Stärke eines Vereins für die Zuschauerformel: Mittel der sechs Teamwerte. [ORIGINAL] 0x4D316.</summary>
+    /// <summary>Stärke eines Vereins für die Zuschauerformel: Mittel der sechs Vereinsfelder 0x18–0x1D (Kondition, Technik, Form von Abwehr und Sturm), nicht der Spielerwerte. [ORIGINAL] 0x4D316; Computervereine Lader/Wanderung, Manager Aufstellung (0x952C), siehe <see cref="StrengthTable"/>.</summary>
     public static int Strength(GameState game, Club club)
     {
         var (d, a) = StrengthTable.TeamValues(game, club);
@@ -483,7 +483,9 @@ public sealed partial class GameState
     /// w + random(0, 4) − 2, Ziel eintragen. Nein: keine Baustelle, die Baufirma bleibt beleidigt.
     /// [ORIGINAL] Datei 0x3E389–0x3E47F (Ja) und 0x3E482 (Nein). Buchung im Finanzbuch „Bau“ nach Entscheidung E1
     /// (re-geld.md); [APPROX] das Original zieht den Betrag ohne Kategorie direkt vom Konto ab – Kontostand und Saldo gleich.
-    /// Liefert false, wenn sich der Stand seit dem Angebot geändert hat (Projekt nicht mehr frei, Konto zu klein).
+    /// Liefert false, wenn sich der Stand seit dem Angebot geändert hat (Projekt nicht mehr frei oder Kosten anders);
+    /// das Konto wird hier nicht mehr geprüft. [ORIGINAL] Datei 0x3E389 ff. zieht bei „Ja“ ohne erneute Kontoprüfung ab (die
+    /// Prüfung steht nur am Angebot, 0x3E107); im Bildschirm ist die Rückfrage modal, das Konto ändert sich dazwischen nicht.
     /// </summary>
     public bool AnswerConstruction(Manager manager, StadiumQuote quote, bool accept)
     {

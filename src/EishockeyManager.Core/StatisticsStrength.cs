@@ -69,12 +69,10 @@ public static class StrengthTable
     private static int Clamp(int v) => Math.Clamp(v, 0, 99);
 
     /// <summary>
-    /// (Kondition, Technik, Form) für Abwehr und Sturm aus den Spielerwerten – für die Finanzen (Monatseinnahme
-    /// <c>FinanceMonthly</c>, Zuschauer <c>FinanceStadium</c>, Spur geld). [APPROX] Das Original liest dort die Vereinsfelder
-    /// wie die Stärketabelle (<see cref="Compute"/>); die Umstellung der Aufrufer setzt die Integration (Teil 4 lässt Geld
-    /// und Zufallsverbrauch unverändert).
+    /// (Kondition, Technik, Form) für Abwehr und Sturm aus den Vereinsfeldern 0x18–0x1D – wie die Stärketabelle
+    /// (<see cref="Compute"/>) und für die Finanzen (Zuschauer <c>SpectatorRules.Strength</c>, Datei 0x4D316; Spur geld, Teil 2).
     /// </summary>
-    public static ((double C, double T, double F) Defense, (double C, double T, double F) Attack) TeamValues(GameState game, Club club) => PlayerValues(game, club);
+    public static ((double C, double T, double F) Defense, (double C, double T, double F) Attack) TeamValues(GameState game, Club club) => FieldValues(game, club);
 
     /// <summary>(Kondition, Technik, Form) für Abwehr und Sturm aus den Vereinsfeldern 0x18–0x1D (siehe Klassenbeschreibung).</summary>
     private static ((double C, double T, double F) Defense, (double C, double T, double F) Attack) FieldValues(GameState game, Club club)
@@ -96,37 +94,5 @@ public static class StrengthTable
 
         static ((double, double, double), (double, double, double)) Of((PartValues D, PartValues A, int) v) =>
             ((v.D.Condition, v.D.Technique, v.D.Form), (v.A.Condition, v.A.Technique, v.A.Form));
-    }
-
-    /// <summary>(Kondition, Technik, Form) für Abwehr und Sturm aus den Spielerwerten (Stand vor Teil 4, nur noch für die Finanzen).</summary>
-    private static ((double C, double T, double F) Defense, (double C, double T, double F) Attack) PlayerValues(GameState game, Club club)
-    {
-        var form = Average(club.Players, p => p.Form, 50);
-        if (club.Index is >= NationalTeams.First and <= NationalTeams.Last)
-        {
-            if (game.NationalCoach is { } coach && coach.Nation == club.Index && coach.Formation.Count > 0)
-            {
-                var (cd, ca, _) = MatchEngine.LineupTeamValues(coach.Formation);
-                return ((cd.Condition, cd.Technique, cd.Form), (ca.Condition, ca.Technique, ca.Form));
-            }
-            var (kd, td, ks, ts) = game.NationalRatings(club.Index);
-            var defenders = club.Players.Where(p => p.Role == PlayerRole.Defender);
-            var forwards = club.Players.Where(p => p.Role == PlayerRole.Forward);
-            return ((kd, td, Average(defenders, p => p.Form, form)), (ks, ts, Average(forwards, p => p.Form, form)));
-        }
-        var lineup = club.Lineup.Players.ToList();
-        var d = lineup.Where(p => p.Role == PlayerRole.Defender).ToList();
-        var a = lineup.Where(p => p.Role == PlayerRole.Forward).ToList();
-        if (d.Count == 0) d = club.Players.Where(p => p.Role == PlayerRole.Defender).ToList();
-        if (a.Count == 0) a = club.Players.Where(p => p.Role == PlayerRole.Forward).ToList();
-        (double, double, double) Of(List<Player> ps) =>
-            (Average(ps, p => p.Condition, club.Strength), Average(ps, p => p.Technique, club.Strength), Average(ps, p => p.Form, form));
-        return (Of(d), Of(a));
-    }
-
-    private static double Average(IEnumerable<Player> players, Func<Player, int> value, double fallback)
-    {
-        var list = players.ToList();
-        return list.Count == 0 ? fallback : list.Average(value);
     }
 }

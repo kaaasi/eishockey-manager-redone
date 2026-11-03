@@ -84,14 +84,17 @@ public class WettbewerbeSpiel4Tests
         Assert.Equal((Math.Min(99, ca), Math.Min(99, ta), 55), (attack.Condition, attack.Technique, attack.Form));
     }
 
-    /// <summary>Die Monatseinnahme und die Zuschauer (Spur geld) lesen weiter <see cref="StrengthTable.TeamValues"/>; bis zur Integration unverändert.</summary>
+    /// <summary>Die Zuschauer (Spur geld, Teil 2) lesen wie die Stärketabelle die Vereinsfelder: <see cref="StrengthTable.TeamValues"/> folgt ihnen.</summary>
     [Fact]
-    public void FinanceTeamValues_Unchanged()
+    public void FinanceTeamValues_FollowClubFields()
     {
         var game = Create();
         var club = ComputerClub(game);
         var before = StrengthTable.TeamValues(game, club);
         club.TeamValues = club.TeamValues!.Value with { DefenseCondition = 9, DefenseForm = 45 };
-        Assert.Equal(before, StrengthTable.TeamValues(game, club));
+        var after = StrengthTable.TeamValues(game, club);
+        Assert.NotEqual(before, after);
+        Assert.Equal(45, after.Defense.F);
+        Assert.Equal(MatchEngine.TeamValue(club) + 9, after.Defense.C);
     }
 }
