@@ -103,7 +103,8 @@ public sealed class SeasonEndScreen : Screen
             var top = new List<(string Mark, byte Color, int Club)>();
             if (league == League.Bundesliga && Record.Titles.TryGetValue(Title.GermanChampion, out var champion))
                 top.Add((Circle, ArrowBlue, champion));
-            top.AddRange(Record.RelegatedInto[league].Select(c => (ArrowDown, ArrowRed, c)));
+            // [ORIGINAL] Doppelwechsel: Platz statt Verein (Spur saisonwechsel Teil 6, D5, `file16_8`).
+            top.AddRange(GameState.ShownRelegatedInto(Record, league).Select(c => (ArrowDown, ArrowRed, c)));
             DrawRows(s, x, TopRowY, top);
             DrawRows(s, x, BottomRowY, Record.PromotedInto[league].Select(c => (ArrowUp, ArrowGreen, c)).ToList());
         }

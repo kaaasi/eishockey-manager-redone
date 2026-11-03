@@ -53,6 +53,7 @@ public static class NewGame
         SquadSetup.Initialize(game, seed); // Paket „mannschaft“: Kader, Spielerwerte, Aufstellung
         game.AssignStartPlayerIds(); // Spur „speichern“: dauerhafte Spieler-IDs, verbraucht keinen Zufall
         game.InitializeManagerSystems();
+        game.InitializeLeagueSlots(); // Spur saisonwechsel Teil 3 (S-K6): Ligamischung 0x35EDD, verbraucht keinen Zufall
         return game;
     }
 

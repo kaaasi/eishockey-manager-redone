@@ -118,17 +118,19 @@ public class StatistikenTests
     public void FairPlay_AscendingByPenaltyMinutes_ExchangeSortOrderOnTies()
     {
         var game = NewGame1();
-        foreach (var club in game.LeagueClubs(League.Bundesliga))
-            club.LeaguePenaltyMinutes = 100 + club.Index;
-        game.Clubs[7].LeaguePenaltyMinutes = 20;
-        game.Clubs[3].LeaguePenaltyMinutes = 20;
-        game.Clubs[9].LeaguePenaltyMinutes = 10;
+        // Indexfolge = Satzfolge der Liga (S-K6, Spur saisonwechsel Teil 3): Satzplatz k statt Vereinsindex k.
+        var slot = game.LeagueSlots(League.Bundesliga);
+        for (var k = 0; k < slot.Count; k++)
+            game.Clubs[slot[k]].LeaguePenaltyMinutes = 100 + k;
+        game.Clubs[slot[7]].LeaguePenaltyMinutes = 20;
+        game.Clubs[slot[3]].LeaguePenaltyMinutes = 20;
+        game.Clubs[slot[9]].LeaguePenaltyMinutes = 10;
 
         var table = game.FairPlayTable(League.Bundesliga);
         Assert.Equal(12, table.Count);
-        // Austauschsortierung wie 0x2A21D: Platz 1 bekommt bei Gleichstand der kleinere Index, dahinter ist sie nicht
-        // stabil (i = 0 holt erst 3, dann 9; i = 1 tauscht 1 ↔ 0 ↔ 7 – Verein 7 landet vor Verein 3).
-        Assert.Equal([9, 7, 3, 0, 1], table.Take(5).Select(r => r.Club.Index));
+        // Austauschsortierung wie 0x2A21D: Platz 1 bekommt bei Gleichstand der kleinere Satzplatz, dahinter ist sie nicht
+        // stabil (i = 0 holt erst 3, dann 9; i = 1 tauscht 1 ↔ 0 ↔ 7 – Satzplatz 7 landet vor Satzplatz 3).
+        Assert.Equal([slot[9], slot[7], slot[3], slot[0], slot[1]], table.Take(5).Select(r => r.Club.Index));
         Assert.Equal(Enumerable.Range(1, 12), table.Select(r => r.Rank));
         Assert.Equal(0, table[0].Games);
         Assert.Equal(1000, table[0].PerGameHundredths); // ohne Spiele durch 1

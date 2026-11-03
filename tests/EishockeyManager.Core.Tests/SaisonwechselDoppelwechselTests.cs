@@ -85,6 +85,13 @@ public class SaisonwechselDoppelwechselTests
         Assert.DoesNotContain(Club, record.RelegatedInto[League.Oberliga]);
         AssertEachClubMovesOnce(record);
         var partner = Assert.Single(record.RelegatedInto[League.Oberliga], c => game.Clubs[c].League == League.Bundesliga);
+        // Review #458, SW-05: Partner ist der Bundesligist, der mit Verein 12 tauscht (gleicher Paarindex in der
+        // Gruppentabelle Bundesliga/2. Liga), nicht irgendein Absteiger. Seit der Integration Runde 11 ist Verein 12 hier das
+        // erste Paar; den Paarindex prüft DoubleMove_PartnerHasSamePairIndex (zweites Paar).
+        var places = game.RelegationGroups.Single(g => g.Upper == League.Bundesliga).Table(game.Clubs).Select(r => r.Club.Index).ToArray();
+        var pair = places.Take(2).Where(c => game.Clubs[c].League != League.Bundesliga).ToList().IndexOf(Club);
+        Assert.True(pair >= 0, "Testaufbau: Verein 12 nicht unter den ersten beiden der Aufstiegsrunde");
+        Assert.Equal(places.Skip(2).Take(2).Where(c => game.Clubs[c].League == League.Bundesliga).ElementAt(pair), partner);
         Assert.DoesNotContain(partner, record.RelegatedInto[League.ZweiteLiga]);
         Assert.Equal(record.PromotedInto[League.Bundesliga].Count - 1, record.RelegatedInto[League.ZweiteLiga].Count);
         Assert.Equal(record.PromotedInto[League.ZweiteLiga].Count, record.RelegatedInto[League.Oberliga].Count);
@@ -129,5 +136,77 @@ public class SaisonwechselDoppelwechselTests
             SaveGameTests.AssertRoundTrip(game);
         }
         Assert.True(doubleMoves >= 3, $"Doppelfall nur {doubleMoves}-mal");
+    }
+
+    // ---- Review #458, SW-06: Partner über die Platzabbildung des ersten Tauschs ----------------------------------------------
+    // Synthetisch: Vereine 0–11 Bundesliga, 12–23 2. Liga. Listen wie nach dem Zwangsabstieg (RecordRelegationGroup).
+
+    private static bool IsBundesliga(int club) => club < 12;
+
+    private static SeasonRecord Record(IReadOnlyList<int> upperPlaces, params int[] intoOberliga)
+    {
+        var record = new SeasonRecord { Season = 0, FinalTables = new Dictionary<League, IReadOnlyList<int>>() };
+        var (promoted, relegated) = GameState.RelegationExchange(upperPlaces, IsBundesliga);
+        record.PromotedInto[League.Bundesliga].AddRange(promoted);
+        record.RelegatedInto[League.ZweiteLiga].AddRange(relegated);
+        record.RelegatedInto[League.Oberliga].AddRange(intoOberliga);
+        return record;
+    }
+
+    [Fact]
+    public void DoubleMove_PartnerHasSamePairIndex()
+    {
+        // Gruppentabelle [12, 13, 10, 5]: Paare 12↔10 und 13↔5. Zweitligist 13 (zwangsabgestiegen, Platz in der Gruppe
+        // 2. Liga/Oberliga) steigt auf; in die Oberliga geht sein Partner 5, nicht der erste Absteiger 10.
+        int[] places = [12, 13, 10, 5];
+        var record = Record(places, 20, 13);
+        GameState.ResolveDoubleMoves(record, places, IsBundesliga);
+        Assert.Equal([12, 13], record.PromotedInto[League.Bundesliga]);
+        Assert.Equal([10], record.RelegatedInto[League.ZweiteLiga]);
+        Assert.Equal([20, 5], record.RelegatedInto[League.Oberliga]);
+        AssertEachClubMovesOnce(record);
+    }
+
+    [Fact]
+    public void DoubleMove_DoublePlace_SecondLeagueClubOnForcedPlaceDropsInstead()
+    {
+        // [A=12, B=13, X1=1, X1=1]: Bundesliga-Zwangsabsteiger 1 hat den zweiten Bundesligisten überschrieben. Platzlogik:
+        // 1→Platz A, 12→Platz B, 13→Platz 1; also Promoted [13], Relegated [1]. Ist B (13) zugleich Zwangsabsteiger der 2. Liga,
+        // geht sein Platz – mit A darauf – in die Oberliga; 1 geht nur in die 2. Liga (vorher: 1 in die Oberliga, A blieb).
+        int[] places = [12, 13, 1, 1];
+        var record = Record(places, 20, 13);
+        Assert.Equal([13], record.PromotedInto[League.Bundesliga]);
+        Assert.Equal([1], record.RelegatedInto[League.ZweiteLiga]);
+        GameState.ResolveDoubleMoves(record, places, IsBundesliga);
+        Assert.Equal([13], record.PromotedInto[League.Bundesliga]);
+        Assert.Equal([1], record.RelegatedInto[League.ZweiteLiga]);
+        Assert.Equal([20, 12], record.RelegatedInto[League.Oberliga]);
+        AssertEachClubMovesOnce(record);
+    }
+
+    [Fact]
+    public void DoubleMove_DoublePlace_ForcedClubNotPromoted_StaysInSecondLeague()
+    {
+        // Wie oben, aber A (12) ist der Zwangsabsteiger der 2. Liga: Er steigt nicht auf, sein Platz trägt nach dem ersten
+        // Tausch den Bundesligisten 1, der damit in die Oberliga geht; A bleibt (auf Platz B) in der 2. Liga
+        // (vorher: A in die Oberliga, 1 in die 2. Liga).
+        int[] places = [12, 13, 1, 1];
+        var record = Record(places, 20, 12);
+        GameState.ResolveDoubleMoves(record, places, IsBundesliga);
+        Assert.Equal([13], record.PromotedInto[League.Bundesliga]);
+        Assert.Empty(record.RelegatedInto[League.ZweiteLiga]);
+        Assert.Equal([20, 1], record.RelegatedInto[League.Oberliga]);
+        AssertEachClubMovesOnce(record);
+    }
+
+    [Fact]
+    public void NoForcedClubInUpperGroup_ListsUnchanged()
+    {
+        int[] places = [12, 13, 10, 5];
+        var record = Record(places, 20, 21);
+        GameState.ResolveDoubleMoves(record, places, IsBundesliga);
+        Assert.Equal([12, 13], record.PromotedInto[League.Bundesliga]);
+        Assert.Equal([10, 5], record.RelegatedInto[League.ZweiteLiga]);
+        Assert.Equal([20, 21], record.RelegatedInto[League.Oberliga]);
     }
 }
