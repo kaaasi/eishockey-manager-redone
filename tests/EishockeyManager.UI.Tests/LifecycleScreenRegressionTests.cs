@@ -43,6 +43,8 @@ public class LifecycleScreenRegressionTests
         // zweite stimmige Ausgang – zurück im Poolplatz (Herkunft Verein 59), ohne Vertrag, in keinem Kader.
         // Runde 12, wettbewerbe-spiel Teil 2 (A184, Belastung + 1 je Spielminute und Grenzen nach dem Spiel ändern Ergebnisse
         // und Zufallsverlauf): wieder der erste stimmige Ausgang – im Kader von Verein 59 mit um ein Jahr verkürztem Vertrag.
+        // Spur kader-transfer, Runde 12, Teil 2 (U9): fester Spielplan, anderer Spielverlauf – der Tausch Pool ↔ Computerkader
+        // erreicht den Spieler jetzt: Vereinskader von Verein 59 (Rückkehr), mit laufendem Vertrag, in keinem Poolplatz.
         Assert.Equal(59, origin.Index);
         Assert.DoesNotContain(player, game.TransferMarket.PoolPlayers);
         Assert.Equal(2, player.ContractYears);

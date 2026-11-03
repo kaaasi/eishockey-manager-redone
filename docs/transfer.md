@@ -358,8 +358,22 @@ Regeln und Fundstellen: `docs/analyse/re-nachtrag.md`, Abschnitt 1 (Tagesablauf 
 - **Absage (A230):** gibt es nicht; die 10 % `RefuseChance` entfallen (`ContractNotice.Refused` nur noch aus alten Spielständen).
 - **Angebote der Computervereine (A136):** Bit 0x80 nur am Marktplatz – das Remake entsprach schon dem Original (Kommentar).
 
-`[APPROX]`: „offene Meldung“ = schon gemeldet; das Verlängerungsangebot verfällt nicht (Datei 0x0767A, U4 offen); Züge aus der
-Vertragsquelle `ContractRandom`; +0x1E/+0x20 fehlen in e; Laufbahnende der Computervereine weiter nach der Kader-KI (U5 offen).
+`[APPROX]`: „offene Meldung“ = schon gemeldet; Züge aus der Vertragsquelle `ContractRandom`; +0x1E/+0x20 fehlen in e.
+
+## Belegt und umgesetzt (Spur `kader-transfer`, Runde 12, Teil 1: U4, U5)
+
+- **Verfall offener Angebote (U4):** Verlängerungsangebot verfällt mit random(0, 5) = 0 je Tag (Datei 0x0767A): Meldung weg,
+  Verhandlungssperre random(9, 17) Tage; ein neues Angebot ersetzt eine laufende Sperre (0x07951). Unaufgefordertes Angebot eines
+  Vereins (Bit 0x40, `Transfer.Unsolicited.cs`) und Gebot am Marktplatz (Bit 0x80, `Transfer.cs`) verfallen mit random(0, 3) = 0 je
+  Tag (Datei 0x07626 bzw. 0x07215). Der Wurf fällt nur bei einem offenen Angebot.
+- **Laufbahnende ohne Managerkader (U5):** Alter > random(37, 42) (`SquadRules.CareerEnds`, Datei 0x2787A) für Computerspieler,
+  Vertragslose und Poolplätze statt der Tabelle 33–37. Nachfolger (`PlayerFactory.CreateRenewal`): Alter random(18, 25),
+  s = random(40, 92), Kondition und Technik je random(s − 5, s + 5); beim Computerverein im selben Kader (Art bleibt), beim
+  Poolplatz im selben Platz (`GameState.RenewAgedPoolPlayer`).
+- `[APPROX]`: Der Nachfolger hat einen neuen Namen und eine neue ID (das Original behält den Pooleintrag samt Namen); Form
+  random(45, 60), Talent random(0, 9), Energie 80 sind ergänzt. Zufall der Verträge statt der Hauptquelle. Kader-KI der
+  Computervereine (Verlängern, Auffüllen) bleibt eine Ergänzung des Remakes.
+- Testhilfen `TestSeason.KeepSquad` und `KeepSquadHelper` verlängern nun auch Spieler, deren Angebot verfallen ist.
 
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
@@ -453,3 +467,29 @@ Vertragslisten) ist nicht geändert. Test: `TransferVertraegeKomplettTeil4Screen
 Testlücken aus Teil 4 (`TransferVertraegeKomplettTeil4Tests`): „unfair“ der Verhandlung bei negativen Eingaben ohne Sperre und
 ohne Zufallszug (R8W3I-10), Umkehrung des Gegenbeispiels nach dem Saisonende auf Level 3 und 5 (R8W3I-16), Zugfolge der
 Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die passende Mutation rot geprüft.
+
+## Belegt und umgesetzt (Spur `kader-transfer`, Runde 12, Teil 2: U9, U15)
+
+- **Liga-Spielplan (U9):** `Schedule.Rounds` nutzt bei 12 Vereinen die feste Tabelle aus em.exe (Datei 0x4E7C7, DGROUP 0x2DC,
+  `docs/analyse/re-nachtrag.md` Abschnitt 4): Spieltag 1 = `ab cd ef gh ij kl`, Spieltag 12 = `ba dc fe hg ji lk` (Heimrecht
+  getauscht, Runde 2 und 4), Runde 3 wie Runde 1. Buchstabe = Rang des Vereinsindex innerhalb der Liga `[APPROX]` (das Original nimmt
+  den Listenplatz, der beim Auf-/Abstieg mit dem Vereinstausch wandert). Ligen mit anderer Vereinszahl und die Play-off-Runden
+  behalten das Kreisverfahren. Die Mischung der Vereine in `NewGame.Create` bleibt nur, damit der Zufallsverbrauch gleich bleibt.
+- **Vereinsplatz beim Start (U15), umgesetzt:** Der Zufallsverein der Start-Liga (Datei 0x29C78) ist nie ein Europapokal-Teilnehmer
+  (Zeile 1, Datei 0x45CD0). `[APPROX]`: zu Spielbeginn nur der Deutsche Meister (Verein 2); weitere Einträge der Tabelle
+  DGROUP 0x3B1 sind nicht ausgewertet. Fest gewählte Vereine bleiben unberührt.
+- **U15, nicht umgesetzt (Entscheidung nötig):** Das Original setzt den Manager *immer* in die Start-Liga (auch ein fest gewählter
+  Verein wird dorthin getauscht, bei Bundesliga immer mit einem Zufallsverein) und kennt den Sonderfall „eine Saison“ (Datei
+  0x29CFA). Das Remake wählt den Verein fest oder zufällig; die Start-Liga-Regler gehört nur zur Zufallswahl, und es gibt keine
+  Spiellänge. Eine Übernahme würde die Vereinswahl der Spielvorbereitung ändern.
+
+## Probe-Rückfallweg (WS-05, Runde 12)
+
+`TestSquadKeeper.KeepPlayable` meldet jetzt per `KeepReport`, wie viele Vertragslose gekauft (`Bought`), wie viele Spieler
+ohne Kauf umgesetzt (`Moved`, Rückfallweg) wurden und ob die Transferliste leer war (`MarketEmpty`). `KaderTransferWs05Tests`
+sichern ab, dass der Rückfallweg nur bei leerem Markt greift, und geben je Saison die Zahlen aus. **Befund:** In vier
+Saisonwechseln (Seeds 3/21 synthetisch, 3/5 mit Originaldaten, passiv und aktiv) wurde der Rückfallweg nie benutzt
+(gekauft 0, umgesetzt 0, Markt-leer 0): Die Kader des Managers bleiben dank Vertragsverlängerungen ≥ 18; ob zu Saisonbeginn
+nach Abstieg Vertragslose verpflichtbar sind, ist damit in diesen Seeds nicht gefordert. Der frühere Seed-3-Fall der Probe
+(Kader 12 nach Abstieg, Review Runde 11) wurde hier nicht nachgestellt; offen bleibt, ob er mit anderen Seeds oder einem
+Abstieg des Managers wieder auftritt.

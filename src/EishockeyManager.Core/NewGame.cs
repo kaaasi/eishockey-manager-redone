@@ -38,6 +38,8 @@ public static class NewGame
         foreach (var league in Enum.GetValues<League>())
         {
             var members = clubs.Where(c => c.League == league).Select(c => c.Index).ToList();
+            // [APPROX] Die Reihenfolge der Vereine spielt für den festen Spielplan keine Rolle (Schedule.Rounds sortiert nach
+            // Vereinsindex); die Mischung bleibt, damit der Zufallsverbrauch des Spielstarts unverändert bleibt.
             Shuffle(members, random);
             schedules[league] = Schedule.Rounds(members, rounds: 4);
         }
@@ -98,7 +100,13 @@ public static class NewGame
                 assigned[i] = chosen;
                 continue;
             }
-            assigned[i] = PickRandomClub(clubs, m.StartLeague, m.StartStrength, reserved, random);
+            // [ORIGINAL] Datei 0x29C78: Zufallsverein der Start-Liga ohne Europapokal-Teilnehmer (Zeile 1, Datei 0x45CD0).
+            // [APPROX] Zu Spielbeginn ist nur der Deutsche Meister (Verein 2) als Teilnehmer belegt; weitere Einträge der
+            // Zeile (DGROUP 0x3B1) sind nicht ausgewertet. Ein fest gewählter Verein bleibt unberührt.
+            var excluded = new HashSet<int>(reserved);
+            if (m.StartLeague == League.Bundesliga && clubs[EuropeanCup.InitialChampion].League == League.Bundesliga)
+                excluded.Add(EuropeanCup.InitialChampion);
+            assigned[i] = PickRandomClub(clubs, m.StartLeague, m.StartStrength, excluded, random);
             reserved.Add(assigned[i]);
         }
 
@@ -138,9 +146,35 @@ public static class NewGame
 
 public static class Schedule
 {
-    /// <summary>Mehrere Runden: Hin- und Rückrunde werden wiederholt (4 Runden = 44 Spieltage bei 12 Vereinen).</summary>
+    /// <summary>
+    /// [ORIGINAL] Liga-Spielplan em.exe Datei 0x4E7C7 (A113, A282): Zeile d = 1…11 der Tabelle aus DGROUP 0x2DC,
+    /// Buchstabe 'a'…'l' = Platz des Vereins innerhalb der Liga (Vereinsindex aufsteigend, Basis 0/12/24). Ab Spieltag 12
+    /// wiederholt sich die Tabelle mit getauschtem Heimrecht (Runde 2 und 4), Runde 3 wie Runde 1.
+    /// </summary>
+    private static readonly string[] OriginalTable =
+    [
+        "abcdefghijkl",
+        "dafchejglibk",
+        "ahgbcjidkefl",
+        "eabilcdfkghj",
+        "aljbcegdfhik",
+        "aclbdjeifgkh",
+        "jabekcglhdif",
+        "akfbcgldejhi",
+        "fabcdelhgijk",
+        "aghbkdicjfel",
+        "iabdchfkeglj",
+    ];
+
+    /// <summary>
+    /// Mehrere Runden: Hin- und Rückrunde werden wiederholt (4 Runden = 44 Spieltage bei 12 Vereinen).
+    /// Bei genau 12 Vereinen gilt die feste Tabelle des Originals ([ORIGINAL]); die Reihenfolge von <paramref name="teams"/>
+    /// spielt dann keine Rolle (Platz = Rang des Vereinsindex).
+    /// </summary>
     public static IReadOnlyList<MatchDay> Rounds(IReadOnlyList<int> teams, int rounds)
     {
+        if (teams.Count == 12 && rounds % 2 == 0)
+            return OriginalRounds(teams.Order().ToList(), rounds);
         var two = DoubleRoundRobin(teams);
         var all = new List<MatchDay>();
         for (var r = 0; r < rounds / 2; r++)
@@ -150,9 +184,42 @@ public static class Schedule
         return all;
     }
 
+    private static IReadOnlyList<MatchDay> OriginalRounds(IReadOnlyList<int> sorted, int rounds)
+    {
+        var days = new List<MatchDay>();
+        for (var day = 1; day <= rounds * 11; day++)
+        {
+            var d = day;
+            var swap = false;
+            while (d >= 12)
+            {
+                d -= 11;
+                swap = !swap;
+            }
+
+            // Wiederholte Runden teilen die Paarungsliste (wie vor Runde 12; Spielstand speichert sie als Verweis).
+            if (day > 22)
+            {
+                days.Add(new MatchDay(day, days[day - 23].Matches));
+                continue;
+            }
+
+            var row = OriginalTable[d - 1];
+            var matches = new List<(int, int)>();
+            for (var k = 0; k < 6; k++)
+            {
+                var home = sorted[row[2 * k] - 'a'];
+                var away = sorted[row[2 * k + 1] - 'a'];
+                matches.Add(swap ? (away, home) : (home, away));
+            }
+            days.Add(new MatchDay(day, matches));
+        }
+        return days;
+    }
+
     /// <summary>
-    /// Hin- und Rückrunde nach dem Kreisverfahren.
-    /// [APPROX] Der Spielplan des Originals ist noch nicht rekonstruiert.
+    /// Hin- und Rückrunde nach dem Kreisverfahren (Rückfall für Ligen mit ungleich 12 Vereinen und die Play-off-Runden).
+    /// [APPROX] Nur der Liga-Spielplan mit 12 Vereinen ist aus dem Original belegt (<see cref="Rounds"/>).
     /// </summary>
     public static IReadOnlyList<MatchDay> DoubleRoundRobin(IReadOnlyList<int> teams)
     {

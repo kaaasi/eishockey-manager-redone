@@ -253,7 +253,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
     // Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=55|500000|WorldChampion=63|500000|R540662232 C6027902";
+        "WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=55|500000|WorldChampion=63|500000|R981788763 C6027902";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem
