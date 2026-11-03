@@ -165,10 +165,10 @@ Tabellen unten. Reihenfolge innerhalb einer Stufe = Vorschlag für die Reihenfol
    A140/A141 geteilt (Heimtausch, Setzung, Runden [ORIGINAL]; Spiel 1 beim besser Platzierten und Halbfinal-Paarung [APPROX]),
    A264/A265 bleiben `[APPROX]` (Patcher-Grenzen weichen vom Original ab). Funktionen „vorhanden“: F066/F067 (Playoffs) erledigt;
    die übrigen sind Zeichen-/Oberflächenfunktionen, deren Gleichheit Pixelmessung braucht (P3 Nr. 2) – keine Umstellung ohne Messung.
-2. **Pixel nach Analyse:** G7, G8, M-K4, M-K9, R-K2…R-K5, L8 (Tabelle „Kandidaten“).
+2. **Pixel nach Analyse:** G7, G8, M-K4, M-K9, R-K2…R-K5, L8 (Tabelle „Kandidaten“). **Stand 03.11.2026:** R-K2…R-K5 erledigt (Pixel-Marker Teil 1, PR #543).
 3. **Monatsnamen:** Monatstabelle DGROUP 0xA70 schreibt „August“ aus, das Remake „Aug.“ – `Core/Season.cs` – A157 (vor
    Umsetzung gegen das Video prüfen, ob die Anzeige kürzt).
-4. **Fehlerhalt (M-K10)** F056; **Nachrichtenspeicher (R-K6)** F115 – nur nach Entscheidung des Nutzers.
+4. **Fehlerhalt (M-K10)** F056 – „nicht nötig“ (D2 = C); **Nachrichtenspeicher (R-K6)** F115–F117 – umgesetzt (Pixel-Marker Teil 3, PR #542).
 5. **Letzte Saison ohne Saisonende-Fenster (S-K5)** – nach Video prüfen. – `UI/Screens/SeasonEndSummaryScreen.cs`.
 6. **Umordnung der Vereinssätze zwischen 29.04. und 10.09. (S-K6, A194)** – nur Analyse (FILE13/FILE14 vergleichen).
 
@@ -598,7 +598,7 @@ Nutzer) sowie die Kandidatenzeilen S-K*, M-K*, R-K* (keine Tabellenzeilen); weit
 | A306 | `UI/Screens/Manager/AdvertisingScreen.cs:158` | a | Klick Eisfläche: obere/untere Hälfte = Tafel 1/2 | Tafelrahmen 0x2B5DB (y = 91 + 36·i, 35 × 25) und re-rest.md §D 0x2A6A2 (268\|92 + 36·i) | – | P3 |
 | A307 | `UI/Screens/Manager/AdvertisingScreen.cs:200` | d | Zeilenaufteilung der Absage-Meldung 0x120:0x4D | Stub 0x120:0x4D nicht analysiert (re-meldungen.md behandelt nur 0x120:0x7A); RE nötig | – | P3 |
 | A308 | `UI/Screens/Manager/AdvertisingScreen.cs:250` | a | Verlängerungsfrage: Rahmen, Lage, Knöpfe | re-meldungen.md §C 0x4C246 (Aufrufer 0x2B0C0): vollständiger Aufbau **Stand Runde 11: umgesetzt (PR #421, Teil 1; Spur `ui-meldungen`, integriert #466): Verlängerungsfrage als `RenewalDialog` über `OriginalDialog`; Zeilenaufteilung und Knopftexte [APPROX].** | M-K1 | P2 |
-| A309 | `UI/Screens/Manager/AdvertisingScreen.cs:286` | a | Logo auf Eistafel | re-rest.md §D 0x2A6A2 Bit 3: 33 × 23 aus (1\|25·Bild+1) nach (268\|92 + 36·i) | R-K4 | P3 |
+| A309 | `UI/Screens/Manager/AdvertisingScreen.cs:286` | a | Logo auf Eistafel | re-rest.md §D 0x2A6A2 Bit 3: 33 × 23 aus (1\|25·Bild+1) nach (268\|92 + 36·i) | R-K4 | erledigt (Pixel-Marker Teil 1) |
 | A310 | `UI/Screens/Manager/AdvertisingScreen.cs:416` | a | Gedrückte Pfeile Werbung fehlen | re-meldungen.md §C 0x4BA58: gedrückt kb\4 (22\|19 + 9j), los (22\|1 + 9j) | M-K4 | P3 |
 | A311 | `UI/Screens/Manager/FinanceBookScreen.cs:10` | b | Finanzbuch-Fenster (in keinem Video) | Erweiterung, zusatzfunktionen.md Z.50, bildschirme.md Z.119 | – | – |
 | A312 | `UI/Screens/Manager/FinanceScreen.cs:19` | a | Bedienung der Finanzbuchungen (±-Knöpfe, Anfrage an Mitmanager) | re-geld.md §0x58409 Betragsbalken, Buchung 0x5915F–0x5952D, Mitmanager ohne Anfrage **Stand Runde 11: umgesetzt (PR #442, Teil 5; Spur `geld`, integriert #452): Bedienung mit Betragsbalken und Seitenwahl nach Datei 0x58409 und 0x5915F–0x5952D, nur aus dem Code belegt (im Video wird nicht gebucht).** | G4 | P2 |
@@ -636,7 +636,7 @@ Nutzer) sowie die Kandidatenzeilen S-K*, M-K*, R-K* (keine Tabellenzeilen); weit
 | A344 | `UI/Screens/SeasonEndWidgets.cs:62` | a | Liga im Genitiv („der Zweiten Liga“) | em.exe-Texte Datei 0x18E64 „Bundesliga“, 0x18E6F „Zweiten Liga“, 0x18E7C „Oberliga“ nach „Platz der“ 0x18806 (noch nicht in docs) | – | P3 |
 | A345 | `UI/Screens/SettingsScreen.cs:12` | b | Geräteeinstellungen (Lautstärke, Vollbild, Autosave) | anforderungen/zusatzfunktionen.md (Lautstärke einstellbar); spielstand.md „Automatisch speichern“ neu | – | – |
 | A346 | `UI/Screens/SetupScreen.cs:185` | d | Meldung „Nur Weltkugel: nur ein Manager“ | Prüfung des Spielmodus im Setup (Ov 0xD8 um Datei 0x295DF) nicht gelesen; RE nötig | – | P3 |
-| A347 | `UI/Screens/SetupScreen.cs:287` | a | Reihenfolge der Vereine in der Auswahl | re-rest.md Datei 0x28030: Seite p zeigt Sätze 12p … 12p+11 in Satzreihenfolge | R-K5 | P3 |
+| A347 | `UI/Screens/SetupScreen.cs:287` | a | Reihenfolge der Vereine in der Auswahl | re-rest.md Datei 0x28030: Seite p zeigt Sätze 12p … 12p+11 in Satzreihenfolge | R-K5 | erledigt (Pixel-Marker Teil 1) |
 | A348 | `UI/Screens/Statistics/ClubStatisticsScreen.cs:33` | b | Klick/Taste schließt statt Rückkehr ins Menü | reverse-engineering.md Vereinsstatistik (kein Warten, Rückkehr nach 0x38:0xDDE); Abweichung durch Bildschirmmodell | – | – |
 | A349 | `UI/Screens/Statistics/ClubStatisticsScreen.cs:35` | a | Über-/Unterzahl-Zähler aus gespeicherten Werten | spielberechnung.md §18 Zähler k = 4/5 (0xA939–0xA9A2, 0x35A84/0x35B18), PowerPlay umgesetzt; Anschluss prüfen, Kommentar evtl. veraltet **Stand Runde 11: erledigt (PR #438, Teil 4; Spur `wettbewerbe-spiel`, integriert #465): Anschluss bestand schon, veralteten Kommentar ersetzt; Test `PowerPlayCounts_FromPlayedMatches_ShownOnClubStatistics`.** | – | P2 |
 | A350 | `UI/Screens/Statistics/EternalTableScreen.cs:23` | d | Bildlauf-Schrittweite Ewige Tabelle | Funktion in Ov 0xE0 (Ewige Tabelle) nicht analysiert; RE nötig | – | P3 |
@@ -734,13 +734,13 @@ Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/Eish
 | F053 | 0x25AB5 | Ov 0xc0 (337B) | 68 | dokumentiert | nicht nötig | EMS-Cacheeintrag anlegen | Kein EMS-Cache nötig | – | – |
 | F054 | 0x25AF9 | Ov 0xc0 (337B) | 56 | dokumentiert | nicht nötig | eigene Zufallsfolge random(100,300)-mal vorspulen | Eigene Zufallsquellen, keine Regelwirkung | – | – |
 | F055 | 0x25B31 | Ov 0xc0 (337B) | 25 | dokumentiert | nicht nötig | srand(time(0)) | .NET-Zufall | – | – |
-| F056 | 0x25B4A | Ov 0xc0 (337B) | 615 | dokumentiert | fehlt | Fehlerhalt: Fehlertext, Spielstand des Tagesbeginns als ERROR.HOK sichern, Ende | Ausnahmen beenden ohne Sicherung; nur AutoSave | M-K10 | P3 |
+| F056 | 0x25B4A | Ov 0xc0 (337B) | 615 | dokumentiert | nicht nötig | Fehlerhalt: Fehlertext, Spielstand des Tagesbeginns als ERROR.HOK sichern, Ende | Remake: Ausnahmen + AutoSave statt ERROR.HOK; Entscheidung D2 = C (Nutzer 03.11.2026), M-K10 nicht übernommen | M-K10 | erledigt |
 | F057 | 0x26D9A | Ov 0xc8 (33FB) | 209 | dokumentiert | vorhanden | Saisonende-Fenster „Ereignisse“ mit Infoleiste | UI/Screens/SeasonEndSummaryScreen.cs | – | P3 |
-| F058 | 0x28030 | Ov 0xd8 (3606) | 170 | dokumentiert | vorhanden | Vereinsauswahl: 12 Logos je Seite in Satzreihenfolge | UI SetupScreen (DrawClubPicker, ClubAt [APPROX]) | R-K5 | P3 |
+| F058 | 0x28030 | Ov 0xd8 (3606) | 170 | dokumentiert | vorhanden | Vereinsauswahl: 12 Logos je Seite in Satzreihenfolge | UI SetupScreen (DrawClubPicker, ClubAt [ORIGINAL]); Seiten blättern zyklisch (Pixel-Marker Teil 1, R-K5) | R-K5 | erledigt |
 | F059 | 0x280DA | Ov 0xd8 (3606) | 55 | dokumentiert | vorhanden | Markierung Managerfeld (Spalte, Zeile) | UI SetupScreen | – | P3 |
 | F060 | 0x28111 | Ov 0xd8 (3606) | 84 | dokumentiert | vorhanden | zwei Markierungsstriche 36 breit, 39 auseinander | UI SetupScreen | – | P3 |
 | F061 | 0x2A5F5 | Ov 0xe0 (3810) | 173 | dokumentiert | vorhanden | „:“ und rechtsbündiger DM-Betrag | UI Finanz-/Stadion-/Werbebildschirme | – | P3 |
-| F062 | 0x2A6A2 | Ov 0xe0 (3810) | 779 | dokumentiert | vorhanden | Werbeflächen zeichnen (Banden, Trikot, TV, Eistafeln) | UI/Screens/Manager/AdvertisingScreen.cs; Trikot abweichend | R-K4 | P3 |
+| F062 | 0x2A6A2 | Ov 0xe0 (3810) | 779 | dokumentiert | vorhanden | Werbeflächen zeichnen (Banden, Trikot, TV, Eistafeln) | UI/Screens/Manager/AdvertisingScreen.cs; Trikot 31 × 26 bei (30, 120) (Pixel-Marker Teil 1, R-K4) | R-K4 | erledigt |
 | F063 | 0x2AE8A | Ov 0xe0 (3810) | 382 | dokumentiert | vorhanden | Summenzeilen Einnahmen/Ausgaben/Saldo im Werbebildschirm | UI/Screens/Manager/AdvertisingScreen.cs (nicht nachgemessen) | – | P3 |
 | F064 | 0x2B008 | Ov 0xe0 (3810) | 184 | dokumentiert | nicht nötig | Kanten eines Auswahlrahmens aus Bild zurückkopieren | Remake zeichnet neu | – | – |
 | F065 | 0x2FB31 | Ov 0xe8 (3D11) | 254 | dokumentiert | vorhanden | Pfeile der WM-Paarungsansicht (Treffer 46×38, gedrückt Quelle+10) | UI/Screens/Competitions/CupPairingsScreen.cs; gedrückte Pfeile fehlen [APPROX] | – | P3 |
@@ -755,7 +755,7 @@ Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/Eish
 | F074 | 0x34FF9 | Ov 0xe8 (3D11) | 189 | dokumentiert | vorhanden | Überschrift „<LIGA> GEGEN <LIGA>:“ der DEB-Pokalgruppen | UI DebCupGamesScreen.GroupTitle | – | P3 |
 | F075 | 0x350B6 | Ov 0xe8 (3D11) | 493 | dokumentiert | vorhanden | Titelbild kb\16 (Deutscher Meister, Pokalsieger, Europacupsieger) | UI/Screens/SeasonEndTrophyScreen.cs | – | P3 |
 | F076 | 0x35CBE | Ov 0xf0 (42E9) | 159 | dokumentiert | fehlt | Hintergrund in drei Farbstreifen der Penalty-Anzeige | Keine Live-/Penaltyanzeige im Remake | L2 | P3 |
-| F077 | 0x35D5D | Ov 0xf0 (42E9) | 239 | dokumentiert | vorhanden | Banner „Ligaspiel“ usw. (Farbe 11/0, 60 Takte) | UI SeasonInfo.DrawBanner, MatchDayScreen – Schatten und Dauer abweichend | R-K3 | P3 |
+| F077 | 0x35D5D | Ov 0xf0 (42E9) | 239 | dokumentiert | vorhanden | Banner „Ligaspiel“ usw. (Farbe 11/0, 60 Takte) | UI SeasonInfo.DrawBanner (Farbe 11 auf 126, Schatten 0 auf 127), MatchDayScreen.BannerFrames = 60 Takte (Pixel-Marker Teil 1, R-K3) | R-K3 | erledigt |
 | F078 | 0x36146 | Ov 0xf0 (42E9) | 35 | dokumentiert | nicht nötig | Wert a↔b in einem Byte tauschen | Hilfsroutine des Vereinstauschs, im Remake Objektverweise | – | – |
 | F079 | 0x367B1 | Ov 0xf0 (42E9) | 222 | dokumentiert | vorhanden | Tageszähler → Tag, Monat, Jahr (ohne 29. Februar) | Core/Season.cs (LayoutDate, Format) | – | P3 |
 | F080 | 0x3688F | Ov 0xf0 (42E9) | 34 | dokumentiert | vorhanden mit `[ORIGINAL]` (Karte erkannte ihn bis Runde 11 Teil 1 nicht, R10N-01) | mit 1/2 der größere Wert, sonst der zweite | Core/MatchEngine.Original.cs ([ORIGINAL] Datei 0x3688F bereits markiert) | – | – |
@@ -793,9 +793,9 @@ Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/Eish
 | F112 | 0x48E62 | Ov 0x118 (52F7) | 536 | dokumentiert | vorhanden | Taktik-Abschluss: Minuten-Vorgabe ≤ 20 je Teil, Umrechnung auf Summe 8 | Core/Squad.Tactics.cs (MaxMinutes 60 [APPROX]); Regel weicht ab | G6 | P2 |
 | F113 | 0x4907A | Ov 0x118 (52F7) | 100 | genähert | fehlt | Nachbearbeitung neuer Marktplatz: Start-Tendenz random(35, 65) | Core/Transfer.Pool.cs RollSlotFields: laut [APPROX] nicht abgebildet; Tendenz nur dreistufig **Stand Runde 11: umgesetzt (PR #437, Teil 4): `Player.TrendScore` (+0x0E = random(35, 65)) und `TrendControl` (+0x14) beim Listenwechsel; Schema-Migration `SaveGame.Migration.KaderTransfer4.cs`.** | – | P2 |
 | F114 | 0x4B0F0 | Ov 0x120 (57D6) | 17 | dokumentiert | nicht nötig | Setzt DGROUP 0xE25E = 10.000, kein Leser | Ohne Wirkung im Original | – | – |
-| F115 | 0x4B101 | Ov 0x120 (57D6) | 38 | dokumentiert | fehlt | Erster freier Nachrichtenplatz (24 gemeinsame Plätze) | Remake-Posteingang unbegrenzt (Core/FinanceInbox.cs); Begrenzung nur nach Nutzerentscheidung | R-K6 | P3 |
-| F116 | 0x4B127 | Ov 0x120 (57D6) | 329 | dokumentiert | vorhanden | Nachrichten sortieren nach Schlüssel +1 absteigend (Tagesfunktion) | Core/FinanceInbox.cs, eigene Reihenfolge | R-K6 | P3 |
-| F117 | 0x4B270 | Ov 0x120 (57D6) | 74 | dokumentiert | vorhanden | Nachricht zu einem Spieler löschen (Verkauf, Vertrag, Saisonende) | Core/FinanceInbox.cs bzw. Transfer-Code (Objektverweise) | R-K6 | P3 |
+| F115 | 0x4B101 | Ov 0x120 (57D6) | 38 | dokumentiert | vorhanden | Erster freier Nachrichtenplatz (24 gemeinsame Plätze) | Core/FinanceInbox.cs: 24 gemeinsame Plätze, voll → Nachricht entfällt (Pixel-Marker Teil 3, R-K6, PR #542) | R-K6 | erledigt |
+| F116 | 0x4B127 | Ov 0x120 (57D6) | 329 | dokumentiert | vorhanden | Nachrichten sortieren nach Schlüssel +1 absteigend (Tagesfunktion) | Core/FinanceInbox.cs: Sortierung nach Schlüssel (Vorrang 0 [APPROX]; Pixel-Marker Teil 3, R-K6) | R-K6 | erledigt |
+| F117 | 0x4B270 | Ov 0x120 (57D6) | 74 | dokumentiert | vorhanden | Nachricht zu einem Spieler löschen (Verkauf, Vertrag, Saisonende) | Core/FinanceInbox.cs: Löschen je Spieler (Pixel-Marker Teil 3, R-K6) | R-K6 | erledigt |
 | F118 | 0x4B2BA | Ov 0x120 (57D6) | 60 | dokumentiert | vorhanden | Zweizeilige Nachricht an den Manager am Zug | Core GameState.Notify | – | P3 |
 | F119 | 0x4B2F6 | Ov 0x120 (57D6) | 766 | dokumentiert | vorhanden | Nachricht anlegen (u. a. „$ bietet Ihnen an, $ Jahre zu verlängern.“) | Core/FinanceInbox.cs, Core/Player.Contract.cs | – | P3 |
 | F120 | 0x4B9CD | Ov 0x120 (57D6) | 139 | dokumentiert | vorhanden | Nächste/vorige Nachricht des Managers in der Nachrichtenleiste | UI/Screens/Manager/NewsBar.cs, InboxScreen.cs | – | P3 |
@@ -806,7 +806,7 @@ Aus `funktionskarte.py --csv` (Stand 2d0b081). Remake-Pfade relativ zu `src/Eish
 | F125 | 0x4C246 | Ov 0x120 (57D6) | 1136 | genähert | vorhanden | Meldungs-/Fragefenster mit Symbolfeld, Ja/Nein, „An Alle:“ | UI QuitQuestion.cs, DebCupDrawLive.cs, TeamUi.MessageBox ([APPROX] Lagen) | M-K1 | P2 |
 | F126 | 0x4C6B6 | Ov 0x120 (57D6) | 145 | dokumentiert | nicht nötig | Kaderplatz eines Poolspielers suchen | Remake hält Objektverweise statt Poolindex | – | – |
 | F127 | 0x4C747 | Ov 0x120 (57D6) | 1389 | dokumentiert | vorhanden | Saisonende-Bildschirm (Titelträger, „Wer weiß...“, Auf-/Absteiger) | UI/Screens/SeasonEndScreen.cs | – | P3 |
-| F128 | 0x4CCB4 | Ov 0x120 (57D6) | 146 | dokumentiert | vorhanden | Zeile Auf-/Absteiger/Meister mit Zeichen &,@,* (Farben 18/12/22) | UI/Screens/SeasonEndScreen.cs DrawRows (Farben 238/13/151, Abstand 9) | R-K2 | P3 |
+| F128 | 0x4CCB4 | Ov 0x120 (57D6) | 146 | dokumentiert | vorhanden | Zeile Auf-/Absteiger/Meister mit Zeichen &,@,* (Farben 18/12/22) | UI/Screens/SeasonEndScreen.cs DrawRows (Farben 18/12/22, Spalten 20/120/220, Name +8; Pixel-Marker Teil 1, R-K2) | R-K2 | erledigt |
 | F129 | 0x4CD46 | Ov 0x120 (57D6) | 1137 | dokumentiert | nicht nötig | Kopierschutz „PASSWORTABFRAGE“ (Handbuchwort) | Entscheidung Nutzer 30.10.2026: Handbuchfrage entfällt (docs/portierung.md) | – | – |
 | F130 | 0x4E7C7 | Ov 0x128 (59E3) | 220 | dokumentiert | vorhanden | Spielplan: Paarungen des Spieltags bestimmen | Core/Season.cs, SeasonFlow.cs (Spielplan) | – | P3 |
 | F131 | 0x4F1F1 | Ov 0x128 (59E3) | 308 | dokumentiert | vorhanden | Paarungszeile „Platz, Stärke“ (Stärke = Mittel Felder 0x18–0x1D / 6) | UI/Screens/Competitions/LeaguePairingsScreen.cs | – | P3 |
