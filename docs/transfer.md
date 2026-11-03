@@ -491,4 +491,5 @@ sichern ab, dass der Rückfallweg nur bei leerem Markt greift, und geben je Sais
 Saisonwechseln (Seeds 3/21 synthetisch, 3/5 mit Originaldaten, passiv und aktiv) wurde der Rückfallweg nie benutzt
 (gekauft 0, umgesetzt 0, Markt-leer 0): Die Kader des Managers bleiben dank Vertragsverlängerungen ≥ 18; ob zu Saisonbeginn
 nach Abstieg Vertragslose verpflichtbar sind, ist damit in diesen Seeds nicht gefordert. Der frühere Seed-3-Fall der Probe
-(Kader 12 nach Abstieg) tritt unter den heutigen Regeln nicht mehr auf.
+(Kader 12 nach Abstieg, Review Runde 11) wurde hier nicht nachgestellt; offen bleibt, ob er mit anderen Seeds oder einem
+Abstieg des Managers wieder auftritt.
