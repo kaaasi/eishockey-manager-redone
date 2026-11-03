@@ -81,10 +81,23 @@ public sealed partial class GameState
     /// </remarks>
     public static (List<int> Promoted, List<int> Relegated) RelegationExchange(IReadOnlyList<int> places, Func<int, bool> isUpper)
     {
+        var at = RelegationPlaces(places, isUpper);
+        int At(int place) => at.TryGetValue(place, out var c) ? c : place;
+        var promoted = at.Keys.Where(isUpper).Select(At).Where(c => !isUpper(c)).ToList();
+        var relegated = at.Keys.Where(c => !isUpper(c)).Select(At).Where(isUpper).ToList();
+        return (promoted, relegated);
+    }
+
+    /// <summary>
+    /// Platzabbildung des Austauschs einer Aufstiegsrunde: Platz (= Verein, der dort vor dem Austausch stand) → Verein nach allen
+    /// Tauschen der Gruppe. Enthält nur getauschte Plätze in Paarreihenfolge (siehe <see cref="RelegationExchange"/>).
+    /// </summary>
+    public static Dictionary<int, int> RelegationPlaces(IReadOnlyList<int> places, Func<int, bool> isUpper)
+    {
         var up = places.Take(2).Where(c => !isUpper(c)).ToList();
         var down = places.Skip(2).Take(2).Where(isUpper).ToList();
         var pairs = Math.Min(up.Count, down.Count);
-        var at = new Dictionary<int, int>(); // Platz (= Verein, der dort anfangs stand) → Verein nach den Tauschen
+        var at = new Dictionary<int, int>();
         int At(int place) => at.TryGetValue(place, out var c) ? c : place;
         for (var k = 0; k < pairs; k++)
         {
@@ -93,9 +106,7 @@ public sealed partial class GameState
             at[upper] = At(lower);
             at[lower] = club;
         }
-        var promoted = down.Take(pairs).Distinct().Select(At).Where(c => !isUpper(c)).ToList();
-        var relegated = up.Take(pairs).Distinct().Select(At).Where(isUpper).ToList();
-        return (promoted, relegated);
+        return at;
     }
 
     /// <summary>Auf- und Absteiger einer Aufstiegsrunde in den Saisonrückblick eintragen (ersetzt frühere Einträge der Gruppe).</summary>
@@ -141,7 +152,8 @@ public sealed partial class GameState
         }
         foreach (var group in RelegationGroups.Where(g => counts.ContainsKey(g.Upper)))
             RecordRelegationGroup(record, group, tables[group.Upper]);
-        ResolveDoubleMoves(record);
+        if (tables.TryGetValue(League.Bundesliga, out var upperPlaces))
+            ResolveDoubleMoves(record, upperPlaces, c => Clubs[c].League == League.Bundesliga);
         return forced;
     }
 
@@ -149,31 +161,35 @@ public sealed partial class GameState
     /// Zwangsabsteiger der 2. Liga, der zugleich über die Aufstiegsrunde in die Bundesliga aufsteigt (Review #441, SW-01):
     /// Er bleibt in der Bundesliga; sein Tauschpartner aus der Bundesliga geht statt seiner in die Oberliga.
     /// </summary>
+    /// <param name="record">Saisonrückblick mit den Listen beider Aufstiegsrunden; wird verändert.</param>
+    /// <param name="upperPlaces">Gruppentabelle der Aufstiegsrunde Bundesliga/2. Liga (nach dem Zwangsabstieg).</param>
+    /// <param name="isBundesliga">Verein spielt in der Bundesliga.</param>
     /// <remarks>
     /// [APPROX] Aus dem Disassembly abgeleitet, ohne DOSBox-Beleg (Review #441 SW-01; Datei 0x55F93 ff.: Gruppe nach
     /// Liga-Stufe 1, Austausch Gruppe 0 vor Gruppe 1, Datei 0x56137–0x5636D): em.exe tauscht Vereinsplätze (0x36169), nicht
     /// Vereine. Der erste Tausch (Bundesliga/2. Liga) setzt den Zwangsabsteiger auf den Bundesligaplatz seines Partners und den
     /// Partner auf seinen Zweitligaplatz; der zweite Tausch (2. Liga/Oberliga) bewegt diesen Platz – also den Partner – in die
     /// Oberliga. Vorher stand der Verein in beiden Listen, <see cref="SeasonRecord.NextLeague"/> nahm die Bundesliga, und die
-    /// Ligen hatten 12/13/11 Vereine. Jetzt bleiben 12/12/12, und jeder Verein steht in höchstens einer Liste. Der Partner
-    /// ist der Absteiger mit demselben Paarindex (<see cref="RelegationExchange"/> liefert Paare in Reihenfolge). [APPROX] Die
-    /// Startordnung der Folgesaison (<see cref="Season.SuccessorOrder"/>) findet für diese beiden Vereine keinen Partner und
-    /// hängt sie in ihrer neuen Liga hinten an (em.exe: Platz des Partners); nur Ordnung, keine Wirkung auf die Ligagrößen.
+    /// Ligen hatten 12/13/11 Vereine. Jetzt bleiben 12/12/12, und jeder Verein steht in höchstens einer Liste.
+    /// Review #458, SW-06: Welcher Verein in die Oberliga geht, folgt der Platzabbildung des ersten Tauschs
+    /// (<see cref="RelegationPlaces"/>): der Verein, der danach auf dem Platz des Zweitligisten steht. Ohne doppelten Platz ist
+    /// das der Absteiger mit demselben Paarindex. Mit doppeltem Platz (Bundesliga-Zwangsabsteiger auf Platz 3 und 4) kann es
+    /// ein Zweitligist sein, der in der 2. Liga nur den Platz wechselt; dann bleibt der Zwangsabsteiger in der 2. Liga, wenn er
+    /// nicht aufsteigt. [APPROX] Die Startordnung der Folgesaison (<see cref="Season.SuccessorOrder"/>) findet für die
+    /// betroffenen Vereine keinen Partner und hängt sie in ihrer neuen Liga hinten an (em.exe: Platz des Partners); nur
+    /// Ordnung, keine Wirkung auf die Ligagrößen.
     /// </remarks>
-    private static void ResolveDoubleMoves(SeasonRecord record)
+    public static void ResolveDoubleMoves(SeasonRecord record, IReadOnlyList<int> upperPlaces, Func<int, bool> isBundesliga)
     {
-        var up = record.PromotedInto[League.Bundesliga];
+        var at = RelegationPlaces(upperPlaces, isBundesliga);
         var down = record.RelegatedInto[League.ZweiteLiga];
         var oberliga = record.RelegatedInto[League.Oberliga];
-        var partners = new List<int>();
-        for (var k = 0; k < up.Count && k < down.Count; k++)
+        for (var i = 0; i < oberliga.Count; i++)
         {
-            var at = oberliga.IndexOf(up[k]);
-            if (at < 0)
+            if (!at.TryGetValue(oberliga[i], out var moved) || moved == oberliga[i])
                 continue;
-            oberliga[at] = down[k];
-            partners.Add(down[k]);
+            oberliga[i] = moved; // der Platz des Zweitligisten geht in die Oberliga, mit dem Verein, der jetzt dort steht
+            down.Remove(moved);  // ein Bundesligist geht damit zwei Ligen tiefer
         }
-        down.RemoveAll(partners.Contains);
     }
 }
