@@ -87,7 +87,8 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
      verpflichtbar sind; Befund im PR.
   4. **E2** (nach `re-pruefung`): Text „noch gesperrt !“ in `LineupScreen.cs` angleichen.
 - **Dateigrenzen:** `Core/Transfer*.cs`, `Core/Player*.cs` (außer Belastung), `Core/Squad.Setup.cs`, `Core/NewGame.cs`,
-  `UI/Screens/Team/*` außer `TeamUi.cs`, Tests, `docs/transfer.md`. **Modell:** Claude Sonnet 5.5. **Status:** geplant.
+  `UI/Screens/Team/*` außer `TeamUi.cs`, Tests, `docs/transfer.md`. **Modell:** Claude Sonnet 5.5.
+  **Status:** Teil 1 in Arbeit (PR #485, Draft); Teile 2–4 offen.
 
 ### Spur `wettbewerbe-spiel` – Serien, Belastung, Computervereine, Nationalteam
 

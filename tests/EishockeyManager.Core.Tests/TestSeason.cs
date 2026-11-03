@@ -24,11 +24,19 @@ public static class TestSeason
     /// brauchen (Eintritt, Finanzkorridor, Pokale), halten damit seinen Kader; sonst greift er weiter nicht ein.
     /// Zieht aus einem eigenen Generator, damit keine Zufallsquelle des Spiels verbraucht wird.
     /// </summary>
-    public static void KeepSquad(GameState game, Manager manager)
+    public static void KeepSquad(GameState game, Manager manager, bool extendExpired = true)
     {
         var club = game.Clubs[manager.ClubIndex];
         foreach (var p in club.Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1).ToArray())
             Contracts.Negotiate(game, manager, p, p.NoticeYears, Contracts.Demand(p) + 100, false, demandFilled: true);
+        // Runde 12, U4 (0x0767A): Ein Angebot verfällt nach einigen Tagen; wer sich nicht mehr meldet, wird wie am Saisonende
+        // um zwei Jahre verlängert (Forderung steht im Feld), soweit nicht gesperrt oder im Ruhestand. Proben, die selbst mit
+        // Spielern im letzten Vertragsjahr verhandeln, schalten das ab (<paramref name="extendExpired"/> = false).
+        if (!extendExpired)
+            return;
+        foreach (var p in club.Players.Where(p => p.Notice == ContractNotice.None && p.ContractYears == 1 && !p.OnLoan
+                     && p.NegotiationLock == 0).ToArray())
+            Contracts.Negotiate(game, manager, p, 2, Contracts.Demand(p) + 100, false, demandFilled: true);
     }
 
     /// <summary>Die ganze Hauptrunde.</summary>

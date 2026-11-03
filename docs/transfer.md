@@ -358,8 +358,22 @@ Regeln und Fundstellen: `docs/analyse/re-nachtrag.md`, Abschnitt 1 (Tagesablauf 
 - **Absage (A230):** gibt es nicht; die 10 % `RefuseChance` entfallen (`ContractNotice.Refused` nur noch aus alten Spielständen).
 - **Angebote der Computervereine (A136):** Bit 0x80 nur am Marktplatz – das Remake entsprach schon dem Original (Kommentar).
 
-`[APPROX]`: „offene Meldung“ = schon gemeldet; das Verlängerungsangebot verfällt nicht (Datei 0x0767A, U4 offen); Züge aus der
-Vertragsquelle `ContractRandom`; +0x1E/+0x20 fehlen in e; Laufbahnende der Computervereine weiter nach der Kader-KI (U5 offen).
+`[APPROX]`: „offene Meldung“ = schon gemeldet; Züge aus der Vertragsquelle `ContractRandom`; +0x1E/+0x20 fehlen in e.
+
+## Belegt und umgesetzt (Spur `kader-transfer`, Runde 12, Teil 1: U4, U5)
+
+- **Verfall offener Angebote (U4):** Verlängerungsangebot verfällt mit random(0, 5) = 0 je Tag (Datei 0x0767A): Meldung weg,
+  Verhandlungssperre random(9, 17) Tage; ein neues Angebot ersetzt eine laufende Sperre (0x07951). Unaufgefordertes Angebot eines
+  Vereins (Bit 0x40, `Transfer.Unsolicited.cs`) und Gebot am Marktplatz (Bit 0x80, `Transfer.cs`) verfallen mit random(0, 3) = 0 je
+  Tag (Datei 0x07626 bzw. 0x07215). Der Wurf fällt nur bei einem offenen Angebot.
+- **Laufbahnende ohne Managerkader (U5):** Alter > random(37, 42) (`SquadRules.CareerEnds`, Datei 0x2787A) für Computerspieler,
+  Vertragslose und Poolplätze statt der Tabelle 33–37. Nachfolger (`PlayerFactory.CreateRenewal`): Alter random(18, 25),
+  s = random(40, 92), Kondition und Technik je random(s − 5, s + 5); beim Computerverein im selben Kader (Art bleibt), beim
+  Poolplatz im selben Platz (`GameState.RenewAgedPoolPlayer`).
+- `[APPROX]`: Der Nachfolger hat einen neuen Namen und eine neue ID (das Original behält den Pooleintrag samt Namen); Form
+  random(45, 60), Talent random(0, 9), Energie 80 sind ergänzt. Zufall der Verträge statt der Hauptquelle. Kader-KI der
+  Computervereine (Verlängern, Auffüllen) bleibt eine Ergänzung des Remakes.
+- Testhilfen `TestSeason.KeepSquad` und `KeepSquadHelper` verlängern nun auch Spieler, deren Angebot verfallen ist.
 
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 

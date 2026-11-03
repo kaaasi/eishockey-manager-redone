@@ -354,8 +354,11 @@ public class GameModeTests
     // Teil der Spieler) und Ruhestand ab 36. Der Testmanager 1 verlängert nur angebotene Verträge und kauft nicht: sein Kader
     // schrumpft (20 → 13 → 12 → 11), in Saison 5 Strafen und Dispozinsen, entlassen (−4.592.736). Manager 0 bleibt spielfähig.
     // (Stand der Spur vor der Integration; integrierter Stand siehe Zusammenfassung oben.)
+    // Spur kader-transfer, Runde 12, Teil 1 (U4, U5): ab Saison 2 neu – Angebote verfallen (Datei 0x0767A, 0x07626), Computerspieler und
+    // Poolplätze enden bei Alter > random(37, 42) mit Nachfolger (Datei 0x2787A; andere Poolbenennung, anderer Zufallsverbrauch).
+    // Der passive Testmanager 1 verlängert nur angebotene Verträge: sein Konto fällt in Saison 5 auf −6.990.533.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|198969,400000|WorldChampion=52,CupWinner=3,GermanChampion=12,EuropeanCupWinner=0|626765,400000|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=0|3024743,500000|WorldChampion=54,CupWinner=0,GermanChampion=3,EuropeanCupWinner=0|4115568,400000|WorldChampion=54,CupWinner=3,GermanChampion=5,EuropeanCupWinner=3|4757994,500000|R1886090395 C1947864260";
+        "WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|198969,400000|WorldChampion=52,CupWinner=3,GermanChampion=12,EuropeanCupWinner=0|1717165,400000|WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=12|2907053,400000|WorldChampion=52,CupWinner=1,GermanChampion=12,EuropeanCupWinner=12|3854810,500000|WorldChampion=53,CupWinner=16,GermanChampion=4,EuropeanCupWinner=12|4670084,-6990533|R1203487338 C544285498";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
