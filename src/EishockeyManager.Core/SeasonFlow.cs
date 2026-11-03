@@ -175,7 +175,19 @@ public sealed partial class GameState
         CleanLineups();
         CheckDebts(day, steps);
         if (Phase == SeasonPhase.GameOver)
+        {
+            // [APPROX] (Review #441, SW-02; Entlassung selbst ist nicht aus em.exe belegt, docs/saison.md): Fällt die
+            // Entlassung des letzten Managers auf den 29. April, schließt die Saison noch ab (Titel, Austausch, Ewige Tabelle,
+            // Chronik) – wie bei der Entlassung eines Teils der Manager an diesem Tag; entlassene Manager erhalten weder
+            // Platz noch Prämie. Vor #431 lief die Fortschreibung im Tageshook vor der Schuldenprüfung. Kein SeasonEndStep:
+            // die Oberfläche zeigt direkt das Spielende.
+            if (day == SeasonCalendar.SeasonEnd)
+            {
+                FinishSeason();
+                Phase = SeasonPhase.GameOver;
+            }
             return;
+        }
         MarkShortHandedClubs(); // Spur heimspiel-statistik (#165): Wertung 0:2/2:0 vor den Spielen des Tages
 
         var events = SeasonCalendar.Events(day);
