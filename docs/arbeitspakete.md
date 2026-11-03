@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 12 – Restpunkte Runde 11, Prüfaufträge E2–E5 (Entwurf, wartet auf Entscheidungen und Go)
+## Aktuelle Runde: Runde 12 – Restpunkte Runde 11, Prüfaufträge E2–E5 (Umsetzung läuft, Start 03.11.2026)
 
 Runde 11 (Umsetzung der Inventur, 02.–03.11.2026) ist abgeschlossen: [archiv/runde-11.md](archiv/runde-11.md) (Spuren,
 Integrationen, Reviews, Funktionskarte, „Entscheidungen Rundenende“ E1–E6); frühere Runden in [archiv/](archiv/).
@@ -18,7 +18,7 @@ als Fundstelle zählt (R10P-01). Im Code und in `docs/analyse/` gilt die normale
 **Ziel der Runde:** alle Kandidaten aus Runde 11 (Liste im Archiv-Übergang, Stand `main` @ `e401dbd`) genau einer Spur
 zuordnen und abarbeiten: Prüfaufträge E2, E4, E5 und S-K6 in em.exe, Rückbau E3, Restbefunde der Reviews (R11G, SW, WS, UM),
 Umsetzungen U4/U5/U8/U9/U15 aus `analyse/re-nachtrag.md`, A174/A184, die zwei offenen Prüfbereiche des Gesamtreviews #474
-und P3 Nr. 2 (Pixel). `livespiel` bleibt zurückgestellt. **Offene Entscheidungen D1–D3 unten; Spuren erst nach Go des Nutzers.**
+und P3 Nr. 2 (Pixel). `livespiel` bleibt zurückgestellt. Entscheidungen D1–D3 und Go des Nutzers am 03.11.2026 (unten).
 
 **Base für alle Spuren:** aktueller `main` (Planstand `e401dbd`); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 11
 (Archiv, Absatz „Base für alle Spuren“ und „Ablauf: Teile und Selbstfortsetzung“): Befund reproduzieren, roter
@@ -72,6 +72,8 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
      (`SeasonFlow.Oberliga.cs`, `docs/analyse/re-saisonwechsel.md`); **S-K6** umsetzen, falls die Analyse eine Abweichung zeigt.
   4. **Gesamtreview #474, Bereich 1:** echter Schema-22-Spielstand (vom Code am letzten Schema-22-Commit erzeugt, kein
      Originalmaterial) als Testdatei, laden, migrieren, 4 Saisonwechsel weiterspielen.
+  5. **Gesamtreview #474, Bereich 2 (D3):** Spielstand für den Doppelwechsel per `hok-patch` vorbereiten, Aufnahmeablauf
+     für den Nutzer im PR; Auswertung nach der Aufnahme (Teil bleibt bis dahin begründet offen).
 - **Dateigrenzen:** siehe Zuständigkeit; Tests (Testdateien unter `tests/**/TestData/`). **Modell:** Claude Opus 5.5. **Status:** geplant.
 
 ### Spur `kader-transfer` – Nachträge U4/U5/U9/U15, E2
@@ -114,21 +116,23 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
 
 - **Teile:** 1. **Pixel R-K2…R-K5** (4CCB4h, 35D5Dh, 2A6A2h, 28030h) gegen Video, Marker nachziehen. 2. **Funktionskarte und
   Inventur** auf den Rundenstand (`funktionskarte.py --write`, zweiter Lauf ohne Diff), Stand je Zeile in `analyse/inventur.md`.
-  3. **D2** (je nach Entscheidung): R-K6 Nachrichtenspeicher 4B101h–4B270h.
+  3. **R-K6 (D2):** Nachrichtenspeicher 4B101h–4B270h wie im Original (24 Plätze, Sortierung, Löschen je Spieler); Schema +
+  Migration, Mehrsaisonprobe. Marker M-K10 auf „nicht nötig“.
 - **Dateigrenzen:** `tools/reverse-engineering/*`, `docs/re-abdeckung.md`, `docs/analyse/inventur.md`, Pixel-Fundstellen in
   den betroffenen Bildschirmen (nur Lage/Farbe), Tests; für Teil 3 `Core/FinanceInbox.cs`. **Modell:** Claude Sonnet 5.5.
   **Status:** geplant.
 
-### Entscheidungen vor dem Start (Nutzer)
+### Entscheidungen zum Start (Nutzer, 03.11.2026)
 
-- **D1 – Zuschnitt der Runde:** A) wie oben (sechs Spuren parallel, `re-pruefung` zuerst, Pixel in den zuständigen Spuren,
-  R-K und Karte in Welle 2) · B) ohne Pixel (P3 Nr. 2 → Runde 13) · C) alle Pixel in `pixel-marker` (Welle 2) · D) Runde 12 nur
-  `re-pruefung`, Umsetzung in Runde 13.
-- **D2 – M-K10 (Fehlerhalt 25B4Ah: Fehlertext, ERROR.HOK des Tagesbeginns, Ende) und R-K6 (24 gemeinsame Nachrichtenplätze,
-  Sortierung):** A) beide wie Original · B) keines (Remake: Ausnahmen + AutoSave, unbegrenzter Posteingang) · C) R-K6 wie
-  Original, M-K10 nicht · D) zurückstellen bis v1.0.
-- **D3 – Gesamtreview #474, Bereich 2 (Doppelwechsel per DOSBox):** A) `saisonwechsel` erzeugt mit `hok-patch` einen
-  passenden Spielstand, der Nutzer nimmt den Wechsel in DOSBox auf · B) nur statisch aus em.exe belegen · C) zurückstellen.
+- **D1 = A:** Zuschnitt wie oben – sechs Spuren, `re-pruefung` zuerst, Pixel in den zuständigen Spuren, R-K2…R-K5 und
+  Funktionskarte in Welle 2 (`pixel-marker`).
+- **D2 = C:** R-K6 (24 gemeinsame Nachrichtenplätze 4B101h, Sortierung 4B127h, Löschen 4B270h) wie im Original –
+  `pixel-marker` Teil 3, Schema + Migration, Mehrsaisonprobe. M-K10 (Fehlerhalt 25B4Ah, ERROR.HOK) wird **nicht** übernommen
+  (Remake: Ausnahmen + AutoSave); Marker in `analyse/inventur.md` auf „nicht nötig“ (Welle 2).
+- **D3 = A:** Doppelwechsel per DOSBox – `saisonwechsel` Teil 5: passenden Spielstand mit `hok-patch` erzeugen (nicht
+  committen, Pfad und Erzeugung im PR), Ablauf der Aufnahme für den Nutzer im PR beschreiben; die Leitstelle legt den
+  Spielstand im Referenz-Repo ab (`original/spielstaende/`), der Nutzer nimmt den Wechsel auf; Auswertung danach.
+- **Go** mit den Modellen je Spur wie oben.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
