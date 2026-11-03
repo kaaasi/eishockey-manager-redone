@@ -51,7 +51,8 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
 - **Abnahme:** wie Runde 10 „Abnahme je Spur“ (Selbstprüfung `funktionskarte.py --csv` ohne `--write`); Datei
   `docs/analyse/re-runde-12.md` mit Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser Runde). Ein Lauf,
   keine Teile, keine Fortsetzung.
-- **Dateigrenzen:** nur `docs/analyse/re-runde-12.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** geplant.
+- **Dateigrenzen:** nur `docs/analyse/re-runde-12.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** fertig,
+  PR #480 (Review offen); Ergebnis und Umsetzung je Punkt in `analyse/re-runde-12.md`.
 
 ### Spur `geld` – Testlücken, Stadionstärke, Pixel Finanzen
 
