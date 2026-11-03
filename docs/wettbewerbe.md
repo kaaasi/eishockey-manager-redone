@@ -140,6 +140,8 @@ Eingetragen wird nur aus der Ergebniseintragung em.exe 0x50283, und zwar für je
   Schreiber: WM-Auslosung Datei 0x35FAC, im Remake ohne Indextausch). Vorher verlangte der Zweig einen ernannten
   Bundestrainer und Länderspiele hatten einen eigenen Schreibweg (#344).
 - Nur die Begegnungstabelle: Tabellenfelder, Serien und Tagesform schreibt 0x50283 weiter nur bei Code 7/8 (Datei 0x5030D).
+  Pokal-, Play-off- und Aufstiegsrundenspiele (Code 6 bzw. 1, Datei 0x35E7C, 0x31AB7) ändern die Serien also nicht; das
+  Remake ruft `CountSeries` entsprechend nur aus Liga und WM-Gruppe (R11A-01, Runde 12, `WettbewerbeSpiel12Tests`).
 - `[APPROX]` Play-offs im Remake bei Gleichstand mit getrenntem Sieger (`Playoffs.cs`, Spur saisonwechsel): eingetragen wird
   dann der Gleichstand; im Original der Endstand nach Penaltyschießen.
 

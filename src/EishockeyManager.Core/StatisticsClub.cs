@@ -267,7 +267,10 @@ public sealed partial class GameState
 {
     /// <summary>
     /// Ligaergebnis in die Serien beider Vereine eintragen (Aufruf aus <see cref="PlayNextMatchDay"/>). [ORIGINAL]
-    /// 0x50283 (Datei 0x50443–0x50AB4).
+    /// 0x50283 (Datei 0x50443–0x50AB4), nur bei Wettbewerbscode DGROUP 0xD0C2 = 7 (Liga) oder 8 (WM-Gruppe, aus
+    /// <see cref="EnterNationalResult"/>); bei jedem anderen Code springt 0x50283 nach der Begegnungstabelle ans Ende
+    /// (Datei 0x5030D–0x5031B). DEB-Pokal (Code 6, Datei 0x35E7C), Play-offs und Aufstiegsrunden (Code 1, Datei 0x31AB7),
+    /// Europapokal, WM-Endrunde und Freundschaftsspiele zählen also keine Serien (R11A-01, Runde 12).
     /// </summary>
     internal static void CountSeries(Club home, Club away, int homeGoals, int awayGoals)
     {

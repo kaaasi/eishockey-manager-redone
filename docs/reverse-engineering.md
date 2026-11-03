@@ -777,7 +777,9 @@ Hauptmenüschleife 0x44E22 (Datei 0x450EC, Gegner DGROUP 0xE1A6, Heim DGROUP 0xE
   Deutschlands (`EnterNationalResult`). Runde 11 (Spur `wettbewerbe-spiel` Teil 2, Integration Runde 11): DEB-Pokal
   (Datei 0x34C5C), Play-offs (Datei 0x3165B) und Aufstiegsrunden (0x30852, Wettbewerb 1) sind über `RecordMeetings`
   angeschlossen; der Europapokal nicht, weil 0x30852 0x50283 nur für Wettbewerb 0 und 1 ruft (Datei 0x3091C–0x30942).
-  [APPROX] Die Serien (`CountSeries`) dieser Pokal- und Play-off-Spiele sind noch nicht angeschlossen.
+  Serien (`CountSeries`) gibt es für diese Spiele im Original nicht (Runde 12, R11A-01): 0x50283 springt nach der
+  Begegnungstabelle bei Code ≠ 7/8 ans Ende (Datei 0x5030D–0x5031B); DEB-Pokal setzt Code 6 (Datei 0x35E7C), Play-off- und
+  Aufstiegsrundentag 1 (Datei 0x31AB7). Probe `WettbewerbeSpiel12Tests.Series_OnlyLeagueResults_NotCupsOrPostseason`.
 * **Tabellenkurve 0x445E0** (Abgleich, nicht umgebaut): x-Schritt `max(2, 8500 / (n − 1) / 100)` mit n = DGROUP 0x7A9,
   Punkte ab x + 5, y = Grundlinie + 2 · Platz + 0x31; ohne Kurve (n ≤ 1) „Vor dem ersten Spieltag.“ (Zeiger 0x674); Platzzahl
   mit „.“ (0x522F) rechts, bei Überschneidung der beiden Kurven verschoben (Datei 0x44801–0x44891). Das Remake skaliert auf
