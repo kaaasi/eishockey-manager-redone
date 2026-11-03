@@ -165,10 +165,10 @@ public class RngTwinProbeTests
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "CD8BEB27630AAC4E")]
-    [InlineData(true, 3, "E51C7BCC704AA42D")]
-    [InlineData(false, 11, "FC5639D844B4EEBD")]
-    [InlineData(true, 11, "746F9251D819A9F6")]
+    [InlineData(false, 3, "3EBEAED25B4E4BEB")]
+    [InlineData(true, 3, "51C5013837E9DC94")]
+    [InlineData(false, 11, "4314C1523E8302D9")]
+    [InlineData(true, 11, "57C0C141A7E90AB6")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -176,8 +176,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "8D92AE74D1C12FBD")]
-    [InlineData(true, "3E66FBA6BE529954")]
+    [InlineData(false, "8D4320EC74BAB0CA")]
+    [InlineData(true, "D4106E10F9470353")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

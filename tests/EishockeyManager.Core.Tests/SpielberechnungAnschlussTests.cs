@@ -179,8 +179,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
     /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).</summary>
     [GameDataTheory]
-    [InlineData(false, "B0A0A11539D8F4D0")]
-    [InlineData(true, "10A1701263C4021B")]
+    [InlineData(false, "20D69630D069F6E4")]
+    [InlineData(true, "F89D7E2749C16DB8")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

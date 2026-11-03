@@ -20,6 +20,38 @@ public class ScheduleTests
         Assert.Equal(132, pairs.Count);
         Assert.Equal(132, pairs.Distinct().Count()); // jede Heim/Gast-Kombination genau einmal
     }
+
+    private static string Letters(MatchDay d, IReadOnlyList<int> teams) =>
+        string.Join(" ", d.Matches.Select(m => $"{(char)('a' + teams.ToList().IndexOf(m.Home))}{(char)('a' + teams.ToList().IndexOf(m.Away))}"));
+
+    [Fact]
+    public void Rounds_TwelveClubs_UseFixedOriginalTable()
+    {
+        var teams = Enumerable.Range(20, 12).ToList(); // Vereinsindex 20–31: Buchstabe = Index − Basis
+        var days = Schedule.Rounds(teams, rounds: 4);
+
+        Assert.Equal(44, days.Count);
+        Assert.Equal("ab cd ef gh ij kl", Letters(days[0], teams));
+        Assert.Equal("da fc he jg li bk", Letters(days[1], teams));
+        Assert.Equal("ia bd ch fk eg lj", Letters(days[10], teams));
+        Assert.Equal("ba dc fe hg ji lk", Letters(days[11], teams)); // Runde 2: Heimrecht getauscht
+        Assert.Equal(Letters(days[0], teams), Letters(days[22], teams)); // Runde 3 wie Runde 1
+        Assert.Equal(Letters(days[11], teams), Letters(days[33], teams)); // Runde 4 wie Runde 2
+    }
+
+    [Fact]
+    public void Rounds_TwelveClubs_FirstHalfHas66DistinctPairings_AndIgnoresInputOrder()
+    {
+        var teams = Enumerable.Range(0, 12).ToList();
+        var shuffled = teams.OrderBy(t => (t * 7) % 12).ToList();
+        var days = Schedule.Rounds(shuffled, rounds: 4);
+
+        var first = days.Take(11).SelectMany(d => d.Matches).ToList();
+        Assert.Equal(66, first.Count);
+        Assert.Equal(66, first.Select(m => (Math.Min(m.Home, m.Away), Math.Max(m.Home, m.Away))).Distinct().Count());
+        Assert.All(days.Take(11), d => Assert.Equal(12, d.Matches.SelectMany(m => new[] { m.Home, m.Away }).Distinct().Count()));
+        Assert.Equal(Letters(Schedule.Rounds(teams, 4)[3], teams), Letters(days[3], teams));
+    }
 }
 
 public static class TestGames
@@ -77,6 +109,27 @@ public class NewGameTests
 
         Assert.Equal(League.Oberliga, game.Clubs[42].League);
         Assert.Equal(12, game.LeagueClubs(League.Oberliga).Count());
+    }
+
+    [Fact]
+    public void Create_RandomBundesligaClub_NeverTakesEuropeanCupParticipant()
+    {
+        // [ORIGINAL] Datei 0x29C78: ein Zufallsverein in Europapokal-Zeile 1 wird verworfen; zu Spielbeginn ist das der Meister (Verein 2).
+        for (var seed = 0; seed < 60; seed++)
+        {
+            var setup = new GameSetup();
+            setup.Managers.Add(new ManagerSetup { Name = "Test", StartLeague = League.Bundesliga, StartStrength = StartStrength.OberesDrittel });
+            var game = NewGame.Create(CreateDatabase(), setup, seed);
+            Assert.NotEqual(EuropeanCup.InitialChampion, game.ActiveManager.ClubIndex);
+        }
+    }
+
+    [Fact]
+    public void Create_FixedClubKeepsChosenEuropeanCupParticipant()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Test", ClubIndex = EuropeanCup.InitialChampion });
+        Assert.Equal(EuropeanCup.InitialChampion, NewGame.Create(CreateDatabase(), setup, seed: 1).ActiveManager.ClubIndex);
     }
 
     [Theory]

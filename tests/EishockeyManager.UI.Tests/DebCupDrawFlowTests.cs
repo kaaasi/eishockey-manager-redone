@@ -251,5 +251,5 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Spur kader-transfer, Runde 12, Teil 1 (U4, U5): ab 1995 neu – Angebote verfallen (0x0767A), Poolplätze enden mit Nachfolger
     /// (0x2787A); anderer Zufallsverbrauch, der Kader des Managers wird mit KeepSquadHelper auch ohne Angebot verlängert.</summary>
     private const string Reference =
-        "1993: DEB 0, DM 4, Tab 15368 | 1994: DEB 2, DM 2, Tab 15723 | 1995: DEB 6, DM 6, Tab 15630 | 1996: DEB 4, DM 1, Tab 15161";
+        "1993: DEB 10, DM 8, Tab 15340 | 1994: DEB 7, DM 2, Tab 15631 | 1995: DEB 10, DM 3, Tab 15559 | 1996: DEB 23, DM 23, Tab 15754";
 }

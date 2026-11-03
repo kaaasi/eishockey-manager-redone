@@ -358,7 +358,7 @@ public class GameModeTests
     // Poolplätze enden bei Alter > random(37, 42) mit Nachfolger (Datei 0x2787A; andere Poolbenennung, anderer Zufallsverbrauch).
     // Der passive Testmanager 1 verlängert nur angebotene Verträge: sein Konto fällt in Saison 5 auf −6.990.533.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|198969,400000|WorldChampion=52,CupWinner=3,GermanChampion=12,EuropeanCupWinner=0|1717165,400000|WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=12|2907053,400000|WorldChampion=52,CupWinner=1,GermanChampion=12,EuropeanCupWinner=12|3854810,500000|WorldChampion=53,CupWinner=16,GermanChampion=4,EuropeanCupWinner=12|4670084,-6990533|R1203487338 C544285498";
+        "WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|273078,400000|WorldChampion=52,CupWinner=17,GermanChampion=1,EuropeanCupWinner=2|1764610,500000|WorldChampion=63,CupWinner=18,GermanChampion=1,EuropeanCupWinner=1|3435624,400000|WorldChampion=53,CupWinner=5,GermanChampion=0,EuropeanCupWinner=1|4399597,-7199326|WorldChampion=52,CupWinner=7,GermanChampion=5,EuropeanCupWinner=0|5039421,-14602377|R1097830000 C711294530";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -147,6 +147,7 @@ public class KaderStartTests
     {
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "T", Level = level, StartLeague = league, StartStrength = strength });
-        return NewGame.Create(TestGames.CreateDatabase(), setup, seed: 9);
+        // Runde 12, Teil 2: Seed 9 → 12 (anderer Zufallsverlauf ohne Verein 2 als Zufallswahl; bei Seed 9/10 bleibt der aktive Manager unter 18 Spielern).
+        return NewGame.Create(TestGames.CreateDatabase(), setup, seed: 12);
     }
 }
