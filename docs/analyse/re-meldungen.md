@@ -211,6 +211,16 @@ dokumentiert; Fehlertexte „Zu viele Fenster auf !“ und „Fenster-Koordinate
   bei Zeile 3/4). **[APPROX]:** Knopflage 94/164 statt 95/165 (Video), Knopftext „Na gut.“, wo der Aufrufer keine Zeile 5
   übergibt, Komfort-Tasten (Escape, Enter, rechte Maustaste) der Aufrufer; Meldungen mit mehr als vier Zeilen
   (Spielstand-Fehler, Spielmodus) und die Nationalaufstellung (0x54C9F) behalten den alten Rahmen.
+- **Remake (Runde 12, Spur `ui-meldungen` Teil 1, E3/UM-3):** `TeamUi.MessageBox` schließt nur per Linksklick (Taste, Text,
+  rechte Maustaste verbraucht, ohne Wirkung). „Na gut.“ ist belegt: Die Meldungen laufen im Original über die Hülle
+  **Datei 0x4BCCC** (Stub 0x120:0x4D, 105 B), die 0x4C246 mit (DGROUP 0xA70E, Z1 … Z4, Z5 = DGROUP 0x12D5 „Na gut.“,
+  Modus 0) ruft; Bildschirm aus/ein über 0x0C5CE davor und danach. Aufrufstellen u. a. Werbung „Die Firma / <Name> /
+  wird den Vertrag / nicht verlängern.“ (DGROUP 0x1171–0x1179, Datei 0x2B873), „Neuer Spielmodus:“ (0x2D502),
+  Vertragsmeldungen (DGROUP 0x1459 ff. Datei 0x401CB, 0x4A6F9; 0x1471 ff. „SOOOO lange …“ 0x4ABC1), Saisonende „kehrt Ihrem
+  Verein / den Rücken...“ (0x27DDB), Spielstand „Achtung ! / Fehler beim / Diskettenzugriff ! / Vorgang abgebrochen.“
+  (DGROUP 0x11DD–0x11E9, Datei 0x5A88A) und „Kein / Eishockey Manager / Spielstand. / !!!“ (0x1441–0x144D, 0x5B6DB,
+  0x5C4F6). Meldungen mit mehr als vier Zeilen (nur Remake: Spielstand-Fehler mit Dateiname und Fehlertext) erscheinen
+  im Fenster 0x4C246 in Seiten zu vier Zeilen ([APPROX]); der alte Rahmen entfällt.
 
 ### Datei 0x4BA58 – Pfeilpaar (Stub 0x120:0x3E, 628 B)
 

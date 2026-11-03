@@ -285,11 +285,13 @@ public class RngTwinProbeTests
     /// transfer-vertraege-komplett, Teil 2): „versichert“ steht weiter als <c>Insured</c> im Abdruck, die Prämie wirkt über den
     /// Kontostand. Ebenso <c>Player.PurchasePrice</c>, <c>Player.InjuryKind</c> und <c>Player.InjuryName</c> (Spur kader-transfer,
     /// Teil 2): reine Anzeigefelder des Spielerdaten-Fensters und der Hinweiszeile, ohne Wirkung auf den Spielverlauf – mit
-    /// dieser Ausnahme stimmen alle Abdrücke unverändert.
+    /// dieser Ausnahme stimmen alle Abdrücke unverändert. Ebenso <c>Manager.HasNewMessage</c> (Spur ui-meldungen, Teil 4): Kennzeichen
+    /// der Nachrichtenleiste im Hauptmenü, ohne Wirkung auf den Spielverlauf – mit dieser Ausnahme stimmen alle Abdrücke unverändert
+    /// (auch der Gehaltsfaktor je Managerzug verschiebt sie nicht).
     /// </summary>
     private static readonly HashSet<string> Excluded =
         ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked", "PurchasePrice", "InjuryKind",
-         "InjuryName"];
+         "InjuryName", "HasNewMessage"];
 
     /// <summary>
     /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:
