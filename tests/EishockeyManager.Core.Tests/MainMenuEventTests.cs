@@ -35,8 +35,8 @@ public class MainMenuEventTests
 
         Assert.True(game.OnMainMenu(a, isReturn: true));
         Assert.False(a.HasNewMessage);
-        Assert.False(game.OnMainMenu(a, isReturn: true)); // zweiter Aufbau: keine Leiste, auch wenn die Nachricht ungelesen ist
-        Assert.Contains(game.Inbox(a), m => !m.Read);
+        Assert.False(game.OnMainMenu(a, isReturn: true)); // zweiter Aufbau: keine Leiste; die Nachricht bleibt im Speicher (kein Feld „gelesen“, D8 = A)
+        Assert.NotEmpty(game.Inbox(a));
     }
 
     /// <summary>Jede Nachrichtenart setzt das Kennzeichen (auch die Kreditanfrage des Netzwerkmodus).</summary>

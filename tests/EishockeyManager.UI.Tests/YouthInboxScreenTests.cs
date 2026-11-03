@@ -53,16 +53,14 @@ public class YouthInboxScreenTests
         d.StartNewGame();
         var game = d.Host.Game!;
         var me = game.ActiveManager;
-        var message = game.Notify(me, "Testmeldung", "zweite Zeile");
+        var message = game.Notify(me, "Testmeldung", "zweite Zeile")!;
         d.Host.Current!.Enter(); // Menü neu aufbauen: das Kennzeichen „neue Nachricht“ zeigt die Leiste (ui-meldungen Teil 4, 0x4527C)
         Assert.Equal(0, NewsBar.Shown(game));
         d.Frame();
-        // Zeichnen der Leiste ändert nichts (AGENTS.md §4, E4 = B); gelesen erst mit dem Öffnen des Posteingangs (Integration R12)
-        Assert.False(message.Read);
+        // Zeichnen der Leiste ändert nichts (AGENTS.md §4, E4 = B); kein Feld „gelesen“ (D8 = A, #537)
 
         d.Click(100, 210);
         var inbox = Assert.IsType<InboxScreen>(d.Host.Current);
-        Assert.True(message.Read);
         Assert.Same(message, Assert.Single(inbox.Page));
         d.Press(Key.Escape);
         Assert.IsType<MainMenuScreen>(d.Host.Current);

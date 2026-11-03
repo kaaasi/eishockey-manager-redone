@@ -240,7 +240,7 @@ public class HeimspielStatistikTests
         var firstSeason = game.Season;
         var passiveLostSquad = false;
 
-        int Messages(Manager m) => game.Inbox(m).Count(x => x.Lines.Contains(GameState.ShortHandedMessage));
+        int Messages(Manager m) => MessageLog.For(game).Of(m).Count(x => x.Lines.Contains(GameState.ShortHandedMessage));
 
         for (var change = 0; change < 4; change++)
         {
@@ -267,6 +267,7 @@ public class HeimspielStatistikTests
                     TestSeason.PlayMatchDay(game);
                 else
                     game.Continue();
+                MessageLog.For(game).Collect(game);
                 // Spielberechnung Teil 5: Der Tageslauf heilt Verletzte (0x7C12, Teil 3) vor der Prüfung 0x36DC5 desselben
                 // Tages; ein vorher nicht spielfähiger Verein kann am Spieltag wieder spielen. Mit dem geänderten
                 // Zufallsverbrauch (Penaltyschießen 0x3901B) kommt das hier vor: nur zählen, was auch danach nicht spielfähig ist.
