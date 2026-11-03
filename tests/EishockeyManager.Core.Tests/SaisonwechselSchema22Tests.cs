@@ -12,7 +12,7 @@ namespace EishockeyManager.Core.Tests;
 /// Schema 22 (<c>02c4bd7</c>, Merge #446) mit synthetischer Datenbank (<c>TestGames.CreateDatabase()</c>), Seed 22, Spieldauer
 /// unbegrenzt; Manager „Aktiv“ auf Verein 2 (Konto mindestens 5 Mio. DM, Kader gehalten) und „Passiv“ auf Verein 14 (keine
 /// Eingriffe). Eine volle Saison, Saisonwechsel, zehn Spieltage der zweiten Saison (1994, Tag 35), dann <c>SaveGame.Save</c>.
-/// Der Erzeuger steht in der PR-Beschreibung (#?), nicht im Repo, weil er nur am alten Stand übersetzt.
+/// Der Erzeuger steht in der PR-Beschreibung (#488), nicht im Repo, weil er nur am alten Stand übersetzt.
 /// </remarks>
 public class SaisonwechselSchema22Tests
 {
