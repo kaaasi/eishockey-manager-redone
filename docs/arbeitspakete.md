@@ -98,7 +98,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   2. **A184:** Belastung (Spielerplatz +13h) als eigenes Feld statt `Energy` (Schema + Migration); Mehrsaisonprobe.
   3. **A174:** Computervereine ohne Kaderbezug (Entscheidung Nutzer 02.11.2026, Review #440); Mehrsaisonprobe.
   4. **U8:** Nationalteam Satz 5 mit der Regel der automatischen Aufstellung (426BCh/42838h, `CupsNational.Lineup.cs`).
-- **Dateigrenzen:** siehe Zuständigkeit Runde 11. **Modell:** Claude Opus 5.5. **Status:** geplant.
+- **Dateigrenzen:** siehe Zuständigkeit Runde 11. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (#485) und Teil 2 (#493) fertig, Teile 3–4 offen; U15-Rest (Start-Liga-Regel) wartet auf Entscheidung Nutzer.
 
 ### Spur `ui-meldungen` – Meldungsfenster, Vereinsfenster, Hauptmenü
 
