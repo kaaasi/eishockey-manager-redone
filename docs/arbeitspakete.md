@@ -28,6 +28,8 @@ Nur Liste, keine Spurplanung; je Zeile die Fundstelle.
   Hinweis aus Review #443): Original untersuchen, danach angleichen oder Regel in `AGENTS.md`/Doku ergänzen.
 - **E5 (B):** S-K1 – Konto am 29. April auf 400.000 DM gesetzt, auch bei hohem Guthaben (562D8h): gezielt in em.exe nachprüfen
   (`SeasonFlow.Oberliga.cs`, `docs/analyse/re-saisonwechsel.md`).
+- **Serien Pokal/Play-offs:** `CountSeries` (`StatisticsClub.cs`) nur für Liga und Länderspiele angeschlossen, nicht für DEB-Pokal,
+  Play-offs und Aufstiegsrunde (`[APPROX]` in `reverse-engineering.md`, Begegnungen; Review #468, erwartet offen; R11A-01, Review #478).
 - **WS-04:** Neuzählung 38A36h – Grenze 5 und Abzug vom Sturm ungetestet (Review #468,
   `reviews/2026-11-02-integration-wettbewerbe-spiel.md`).
 - **A184, A174:** Belastung +13h als eigenes Feld statt `Energy`; Computervereine ohne Kaderbezug (Entscheidung Nutzer
