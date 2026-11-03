@@ -13,7 +13,8 @@ Runde 11“ und „Zurückgestellt“ bleiben als Übergang für Runde 12 in `ar
 `2026-11-02-integration-geld.md` und `-saisonwechsel.md`; Befunde R11G-01..06 als #456 für Runde 12), `kader-transfer`
 (#463, Nachprüfung #464), `wettbewerbe-spiel` (#468, Nachprüfung #471), `ui-meldungen` (#469), `marker-werkzeug` (#470, Teil 3
 #473) und das unabhängige **Gesamtreview von ChatGPT (#474)** mit „vorläufig nein“ (Prüfung nicht vollständig, kein neuer
-Produktfehler; offene Prüfbereiche: echter Schema-22-Spielstand mit Mehrsaisonfortsetzung, Doppelwechsel per DOSBox).
+Produktfehler; offene Prüfbereiche: echter Schema-22-Spielstand mit Mehrsaisonfortsetzung, Doppelwechsel per DOSBox) – vom
+Nutzer als Abschluss angenommen (E6).
 Schema 22 → 32; Abdrücke und Referenzwerte je Spur begründet nachgeführt. **Funktionskarte Spielcode:** 88 % der Bytes
 umgesetzt (238 von 364 Funktionen), 1 % genähert, 11 % dokumentiert, unbekannt nur 575C3h (Zahlen am Ende). Nutzerentscheidungen
 zum Rundenende (03.11.2026) stehen unten; Kandidaten und Restpunkte für Runde 12 in `docs/arbeitspakete.md`.
@@ -282,6 +283,9 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   Review #443): in Runde 12 untersuchen, was das Original macht, danach angleichen oder die Regel ergänzen.
 - **E5 = B:** S-K1 (Konto am 29. April auf 400.000 DM gesetzt, auch bei hohem Guthaben, Datei 562D8h) in Runde 12 gezielt in em.exe
   nachprüfen.
+- **E6 = A:** Gesamtreview #474 („vorläufig nein“, kein neuer Produktfehler) als Abschluss der Runde angenommen; die zwei
+  ungeprüften Bereiche (echter Schema-22-Spielstand mit Mehrsaisonfortsetzung, Doppelwechsel per DOSBox) sind Kandidaten
+  Runde 12.
 
 ### Funktionskarte (Stand Ende Runde 11)
 
