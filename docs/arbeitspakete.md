@@ -88,7 +88,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   4. **E2** (nach `re-pruefung`): Text „noch gesperrt !“ in `LineupScreen.cs` angleichen.
 - **Dateigrenzen:** `Core/Transfer*.cs`, `Core/Player*.cs` (außer Belastung), `Core/Squad.Setup.cs`, `Core/NewGame.cs`,
   `UI/Screens/Team/*` außer `TeamUi.cs`, Tests, `docs/transfer.md`. **Modell:** Claude Sonnet 5.5.
-  **Status:** Teil 1 (#485), Teil 2 (#493), Teil 3 (WS-05, #504) fertig; Teil 4 (E2, nach `re-pruefung`) offen; U15-Rest (Start-Liga-Regel) wartet auf Entscheidung Nutzer.
+  **Status:** Teil 1 (#485), Teil 2 (#493), Teil 3 (WS-05, #504) fertig; Teil 4 (E2, `LineupScreen.cs`) fertig (PR siehe Übergabe, Base `paket/kader-transfer-3`); U15-Rest (Start-Liga-Regel) wartet auf Entscheidung Nutzer.
 
 ### Spur `wettbewerbe-spiel` – Serien, Belastung, Computervereine, Nationalteam
 

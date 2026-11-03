@@ -254,7 +254,8 @@ public class OriginalDialogCallersTests
     [InlineData(TransferResult.Impossible)]
     public void TransferScreen_ShortMessages(TransferResult result) => Assert.True(TransferScreen.IsShortMessage(result));
 
-    /// <summary>MU-02 (Review #469): „… noch gesperrt !“ in der Aufstellung ist eine Kurzmeldung (Datei 0x40B55 → 0x0C0B8).</summary>
+    /// <summary>MU-02 (Review #469): Die Sperre in der Aufstellung ist eine Kurzmeldung (0x0C0B8). Text seit E2 (Spur kader-transfer
+    /// Teil 4): Listenklick → „Spieler ist“ / „Gesperrt.“ (Datei 0x40E01); „noch gesperrt !“ gehört zum Klick auf den Platz (0x40B55).</summary>
     [GameDataFact]
     public void Lineup_Suspended_IsShortMessage()
     {
@@ -270,7 +271,7 @@ public class OriginalDialogCallersTests
         var slot = LineupScreen.SlotButton(LineupSlot.Forward(0, 0));
         d.Click(slot.X + 5, slot.Y + 5);
         d.Click(60, LineupScreen.FirstRowY + rows.IndexOf(forward) * LineupScreen.RowPitch + 2);
-        Assert.Equal([forward.Name, "noch gesperrt !"], screen.MessageLines);
+        Assert.Equal(["Spieler ist", "Gesperrt."], screen.MessageLines);
         Assert.True(screen.MessageIsShort);
     }
 }

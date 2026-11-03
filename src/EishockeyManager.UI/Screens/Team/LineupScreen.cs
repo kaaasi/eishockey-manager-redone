@@ -50,6 +50,7 @@ public sealed class LineupScreen : Screen
 
     private readonly Screen _back;
     private readonly MessageBox _message;
+    private (string Line1, string Line2)? _queued;
     private Player? _selectedPlayer;
     private LineupSlot? _selectedSlot;
     private int _mouseX = -1, _mouseY = -1;
@@ -83,6 +84,13 @@ public sealed class LineupScreen : Screen
         _mouseY = input.MouseY;
         if (_message.Update(input))
             return;
+        // [ORIGINAL] Die zweite Meldung folgt, sobald die erste weg ist (em.exe Datei 0x40ACF–0x40B55: erst „ist deaktiviert !“, dann die Sperre).
+        if (_queued is { } next && !_message.Visible)
+        {
+            _queued = null;
+            _message.ShowShort(next.Line1, next.Line2);
+            return;
+        }
         if (_info.Update(input))
             return;
 
@@ -91,8 +99,13 @@ public sealed class LineupScreen : Screen
         // [ORIGINAL] em.exe Datei 0x40ADE (Integration Runde 11, wettbewerbe-spiel Teil 8): Ein Eingriff von Hand schaltet die
         // Einstellung „automatisch aufstellen“ ab und meldet „Auto-Aufstellung / ist deaktiviert !“ (DGROUP 0x124D; Texte
         // Datei 0x1AE4B/0x1AE5C). [APPROX] Trifft der Eingriff mit einer anderen Meldung zusammen, gewinnt diese Meldung.
-        if (wasAuto && !Club.AutoLineupEnabled && !_message.Visible)
+        // [ORIGINAL] Kommt eine zweite Meldung hinzu (Datei 0x40B55, 0x40EB9), steht „ist deaktiviert !“ vorn, die zweite danach.
+        if (wasAuto && !Club.AutoLineupEnabled)
+        {
+            if (_message.Short is { } second)
+                _queued = (second.Line1, second.Line2);
             _message.ShowShort("Auto-Aufstellung", "ist deaktiviert !");
+        }
     }
 
     private void HandleInput(InputState input)
@@ -132,6 +145,18 @@ public sealed class LineupScreen : Screen
 
         if (OnSlot(input.MouseX, input.MouseY, out var slot))
         {
+            // [ORIGINAL] em.exe Datei 0x40B37–0x40B55: Klick auf einen belegten Platz, dessen Spieler Restdauer ≠ 0 und Status
+            // gesperrt/verletzt hat → Kurzmeldung „Spieler ist“ / „noch gesperrt !“, keine Aktion (auch für Verletzte).
+            // [APPROX] Nur Linksklick; der Rechtsklick leert den Platz weiter (Prüfung des Originals für die rechte Taste fehlt).
+            // Im Remake nehmen Verletzung und Sperre den Spieler schon aus der Aufstellung heraus – der Fall tritt nur auf, wenn
+            // der Status nach dem Aufstellen entsteht. Mit Automatik: erst deaktivieren (Datei 0x40ACF), dann diese Meldung.
+            if (input.LeftClick && Club.Lineup[slot] is { } placed && (placed.InjuredGames > 0 || placed.SuspendedGames > 0))
+            {
+                Club.AutoLineupEnabled = false;
+                ClearSelection();
+                _message.ShowShort("Spieler ist", "noch gesperrt !");
+                return;
+            }
             if (input.RightClick)
             {
                 Club.ClearLineupSlot(slot);
@@ -189,22 +214,22 @@ public sealed class LineupScreen : Screen
     }
 
     /// <summary>
-    /// Meldungen (Texte aus em.exe); „Schon 22 Mann / im Team !“ aus DGROUP 0x11D5. [ORIGINAL] Integration Runde 11 (ui-meldungen, K2):
-    /// Die Aufstellung ruft für „noch gesperrt !“ (Datei 0x40B55), „Der darf da / nicht rein !“ und „Schon 22 Mann / im Team !“
-    /// (beide über den Aufruf 0x40EB9) die Kurzmeldung 0x0C0B8 – ohne Knopf, schließt von selbst. [APPROX] „ist verletzt.“ steht
-    /// in keinem der sechs Aufrufe 0x0C0B8 der Aufstellung (0x40AF3, 0x40B55, 0x40DF9, 0x40EB9, 0x40EF7, 0x414C6); der Weg der
-    /// Meldung ist nicht belegt, sie bleibt ein Meldungsfenster mit Klick. Zeile 1 von „noch gesperrt !“ ist im Original der Text
-    /// „Spieler ist“ (DGROUP 0x1255), im Remake der Name des Spielers (offen, Zuordnung der Bedingung 0x40B3E nicht geprüft).
+    /// Meldungen (Texte aus em.exe); „Schon 22 Mann / im Team !“ aus DGROUP 0x11D5. [ORIGINAL] Die Aufstellung ruft für alle Fälle die
+    /// Kurzmeldung 0x0C0B8 – ohne Knopf, schließt von selbst. E2 (Spur kader-transfer Teil 4, docs/analyse/re-runde-12.md):
+    /// Ein Gesperrter oder Verletzter aus der Kaderliste ergibt „Spieler ist“ / „Gesperrt.“ bzw. „Verletzt.“ (Datei 0x40E01–0x40E27,
+    /// Zeile 2 aus DGROUP 0xB88/0xB84, gemeinsamer Aufruf 0x40EB9); Zeile 1 ist fester Text, kein Name. „noch gesperrt !“ gehört zum
+    /// Klick auf den Platz (siehe <see cref="HandleInput"/>, Datei 0x40B55). Fall „Keine Reihe / ausgewählt !“ (Datei 0x40EB9, DGROUP 0x1221):
+    /// ohne Entsprechung – das Remake wählt erst den Spieler oder den Platz und prüft erst bei der Zuordnung.
     /// </summary>
     private void Report(LineupResult result, Player player)
     {
         switch (result)
         {
             case LineupResult.Injured:
-                _message.Show(player.Name, "ist verletzt.");
+                _message.ShowShort("Spieler ist", "Verletzt.");
                 break;
             case LineupResult.Suspended:
-                _message.ShowShort(player.Name, "noch gesperrt !");
+                _message.ShowShort("Spieler ist", "Gesperrt.");
                 break;
             case LineupResult.WrongRole:
                 _message.ShowShort("Der darf da", "nicht rein !");
