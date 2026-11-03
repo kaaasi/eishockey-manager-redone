@@ -99,7 +99,12 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   2. **A184:** Belastung (Spielerplatz +13h) als eigenes Feld statt `Energy` (Schema + Migration); Mehrsaisonprobe.
   3. **A174:** Computervereine ohne Kaderbezug (Entscheidung Nutzer 02.11.2026, Review #440); Mehrsaisonprobe.
   4. **U8:** Nationalteam Satz 5 mit der Regel der automatischen Aufstellung (426BCh/42838h, `CupsNational.Lineup.cs`).
-- **Dateigrenzen:** siehe Zuständigkeit Runde 11. **Modell:** Claude Opus 5.5. **Status:** geplant.
+- **Dateigrenzen:** siehe Zuständigkeit Runde 11. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig zum Review
+  (PR #482: Serien im Original nur bei Code 7/8 – kein Anschluss nötig, Probe und Doku; WS-04 getestet). Teil 2 fertig zum
+  Review (PR #491: A184 umgesetzt; Hüllkurvenprobe nach D4 = A: passiver Bundesliga-Manager darf nach Schuldenregel bzw.
+  „Weniger als neun Spieler!“ ausscheiden, Ursache geprüft); Teil 3 fertig zum Review (PR #495: A174, Computervereine mit der
+  Datenbankstärke ohne Aufstellungsbezug); Teil 4 fertig zum Review (PR #503: U8, Auto-Aufstellung des Nationalteams nach
+  0x426BC/0x42838). Spur fertig – Integration.
 
 ### Spur `ui-meldungen` – Meldungsfenster, Vereinsfenster, Hauptmenü
 

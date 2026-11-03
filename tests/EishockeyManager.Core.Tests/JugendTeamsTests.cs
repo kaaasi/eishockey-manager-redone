@@ -181,13 +181,15 @@ public class JugendTeamsTests
         var run = Run();
         Assert.Equal(run, Run());
         // R11G-03: Sollwert des Protokolls (Seed 5, 4 Saisonwechsel) – Abdruck der Spur geld Teil 3 für Platz- und Stärkeverlauf.
+        // Integration Runde 12: neu ermittelt, weil wettbewerbe-spiel (A184 Belastung, A174 Computervereine) die Ligaergebnisse und
+        // damit den Zufallsverbrauch vor der Jugendrechnung ändert; Richtung (aktiv ≥ +15, passiv ≤ −15) unverändert geprüft.
         Assert.Equal(active ? ExpectedActive : ExpectedPassive, run);
     }
 
     private const string ExpectedActive =
-        "0:Schueler:2/11/63;0:Jugend:2/11/63;0:Junioren:2/11/64;1:Schueler:1/11/76;1:Jugend:1/11/74;1:Junioren:1/11/74;2:Schueler:1/6/79;2:Jugend:1/6/79;2:Junioren:1/6/80;3:Schueler:1/6/83;3:Jugend:1/6/82;3:Junioren:1/6/83";
+        "0:Schueler:2/11/59;0:Jugend:2/11/59;0:Junioren:2/11/59;1:Schueler:2/6/65;1:Jugend:2/6/68;1:Junioren:1/11/71;2:Schueler:1/11/74;2:Jugend:1/11/78;2:Junioren:1/6/79;3:Schueler:1/6/83;3:Jugend:1/6/81;3:Junioren:1/6/81";
     private const string ExpectedPassive =
-        "0:Schueler:2/2/65;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:3/2/50;1:Jugend:3/2/51;1:Junioren:3/2/54;2:Schueler:3/6/44;2:Jugend:3/6/42;2:Junioren:3/6/43;3:Schueler:3/6/41;3:Jugend:3/6/41;3:Junioren:3/6/41";
+        "0:Schueler:2/2/69;0:Jugend:1/6/73;0:Junioren:2/2/72;1:Schueler:3/2/57;1:Jugend:2/2/61;1:Junioren:2/6/63;2:Schueler:3/6/45;2:Jugend:3/2/48;2:Junioren:3/2/48;3:Schueler:3/6/40;3:Jugend:3/6/40;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

@@ -205,7 +205,8 @@ public static class TransferPoolRules
     /// </summary>
     public static void RollSlotFields(Player p, Random random, Random? trendRandom = null)
     {
-        p.Energy = Player.Clamp(TransferRules.Random16(random, 80, 120));
+        // [ORIGINAL] Belastung des neuen Kaderplatzes random(80, 120) (Datei 0x42E4C–0x42E5E; A184, Integration Runde 12, R12I-01).
+        p.Strain = TransferRules.Random16(random, 80, 120);
         p.RollTrend(trendRandom ?? random);
         HiddenSkills.Roll(p, random); // Spur wettbewerbe-spiel, Teil 7: +0x19 wie gezogen (A185, A186)
     }
@@ -507,8 +508,8 @@ public sealed partial class TransferMarket
         player.MonthlySalary = 0;
         player.Insured = false;
         player.Notice = ContractNotice.None;
-        if (old.Energy <= 0)
-            old.Energy = PlayerFactory.TalentEnergy; // [APPROX] Energie gibt es nur am Kaderplatz (+0x13); wie ein Talent
+        if (old.Strain >= TrainingRules.DefaultStrain)
+            old.Strain = TrainingRules.DefaultStrain - PlayerFactory.TalentEnergy; // [APPROX] Energie gibt es nur am Kaderplatz (+0x13); wie ein Talent
         PlayerFactory.Join(club, old, years, loan: false);
         club.Lineup.FillGaps(club.Players);
         slot.Player = player;
@@ -525,7 +526,7 @@ public sealed partial class TransferMarket
         var fresh = new Player
         {
             Name = name, Role = old.Role, Age = old.Age, Talent = old.Talent, Condition = old.Condition,
-            Technique = old.Technique, Form = old.Form, Energy = old.Energy,
+            Technique = old.Technique, Form = old.Form, Strain = old.Strain,
         };
         if (old.Id != 0)
             game.AssignPlayerId(fresh);

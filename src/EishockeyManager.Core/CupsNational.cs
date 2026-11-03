@@ -67,8 +67,9 @@ public sealed partial class NationalCoach
     public static readonly int[] AutoSquad = [3, 10, 16];
 
     /// <summary>
-    /// [ORIGINAL] Energie der Kaderspieler zu Beginn der Freundschaftsspiele: Datei 0x3BB51
-    /// (<c>mov byte [bx+0x5DD6],0x46</c>, Schleife über die 29 Plätze ab 0x3BB22). Zeitpunkt siehe
+    /// [ORIGINAL] Belastung (Kaderplatz +0x13 = 0x5DD6 − 0x5DC3) der Kaderspieler zu Beginn der Freundschaftsspiele: Datei
+    /// 0x3BB51 (<c>mov byte [bx+0x5DD6],0x46</c>, Schleife über die 29 Plätze ab 0x3BB22); die Spalte E zeigt 70 · 10 / 15 =
+    /// 46 (A184, Runde 12; vorher als Energie gelesen). Name aus Kompatibilität. Zeitpunkt siehe
     /// <see cref="GameState.PlayFriendly"/> ([APPROX]).
     /// </summary>
     public const int FriendlyEnergy = 70;

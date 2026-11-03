@@ -379,7 +379,10 @@ public sealed class TransferScreen : Screen
             s.TextRight(mini, 116, y, p.Technique.ToString(), c);
             s.TextRight(mini, 128, y, p.Form.ToString(), c);
             s.TextRight(mini, 139, y, p.Role == PlayerRole.Goalkeeper ? "-" : p.Goals.ToString(), c);
-            s.TextRight(mini, 152, y, p.Energy.ToString(), c);
+            // [ORIGINAL] Spalte E = Belastung · 10 / 15, Farbe 0x10 über 130 wie in der Nationalaufstellung (Datei 0x42335–0x4236D;
+            // A184, Integration Runde 12, R12I-01).
+            s.TextRight(mini, 152, y, TrainingRules.ExhaustionDisplay(p).ToString(),
+                TrainingRules.ExhaustionWarning(p) ? Competitions.NationalLineupScreen.ExhaustionColor : c);
         }
 
         // Transferliste

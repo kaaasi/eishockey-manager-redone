@@ -177,10 +177,18 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur wettbewerbe-spiel, Teil 7 (A185, A186): neu – Kaderplatz +0x19 der Managerkader beim Spielstart, der Talente und der Marktplätze gewürfelt (random(3, 12) je Halbbyte, Datei 0x299F4/0x06F23/0x49803; eigene Quelle, Hauptquelle unverbraucht) statt 7/7; Über- und Unterzahl der Managerpaarungen rechnen damit, andere Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Gegenprobe: ohne Würfe (alle 7/7) alte Werte.
     /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): neu – Managervereine stellen mit der Einstellung „automatisch aufstellen“ (Startwert 1) beim Spielstart und täglich nach 0x426BC/0x42838 neu auf (statt Lücken stehen zu lassen bzw. nach Spielwert zu füllen), und die Feldspieler der Managerpaarung zählt je Minute 0x38A36 aus der Aufstellung; andere Aufstellungen und Ergebnisse ab dem ersten Managerspiel. Begründung bei <see cref="RngTwinProbeTests"/>.
     /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
-    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).</summary>
+    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
+    /// Runde 12, Spur wettbewerbe-spiel Teil 2 (A184): neu – Belastung + 1 in Managerpaarungen und Grenzen nach dem Spiel
+    /// (Datei 0x8C82, 0x549A2). Begründung bei <see cref="RngTwinProbeTests"/>.
+    /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): neu – Computervereine ohne Kaderbezug (Begründung ebenda).
+    /// Integration Runde 12 (geld + wettbewerbe-spiel): aktiver Abdruck auf dem integrierten Stand neu ermittelt – die
+    /// Zuschauerstärke aus den Vereinsfeldern (geld Teil 2, 0x4D316) ändert Einnahmen und damit Kauf- und Vertragsentscheidungen
+    /// des aktiven Managers; der passive Abdruck bleibt.
+    /// R12I-01 (Review #514): neue Kaderplätze (Pool, Talente) mit Belastung random(80, 120) statt 51 … 70 (Datei 0x42E4C) –
+    /// Spieler vom Markt sind belasteter, beide Abdrücke (Originaldatenbank) neu; die synthetischen Abdrücke (Seed 3/11) bleiben.</summary>
     [GameDataTheory]
-    [InlineData(false, "137C2086DE7F5381")]
-    [InlineData(true, "941096B786570172")]
+    [InlineData(false, "34A3BAD14269642C")]
+    [InlineData(true, "1B38DFFC9043836F")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

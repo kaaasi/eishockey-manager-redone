@@ -272,7 +272,10 @@ public sealed class ContractsScreen : Screen
             s.TextRight(mini, 106, y, p.Strength.ToString(), c);
             s.TextRight(mini, 117, y, p.Role == PlayerRole.Goalkeeper ? "-" : p.Goals.ToString(), c);
             s.Text(mini, 123, y, TeamUi.StatusText(club.StatusOf(p)), c);
-            s.TextRight(mini, 169, y, p.Energy.ToString(), c);
+            // [ORIGINAL] Spalte E = Belastung · 10 / 15, Farbe 0x10 über 130 wie in der Nationalaufstellung (Datei 0x42335–0x4236D;
+            // A184, Integration Runde 12, R12I-01).
+            s.TextRight(mini, 169, y, TrainingRules.ExhaustionDisplay(p).ToString(),
+                TrainingRules.ExhaustionWarning(p) ? Competitions.NationalLineupScreen.ExhaustionColor : c);
             s.Text(mini, 177, y, p.ContractText, c);
             s.TextRight(mini, 259, y, $"{p.MonthlySalary} DM", c);
         }

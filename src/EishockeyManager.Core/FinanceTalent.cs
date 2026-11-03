@@ -140,7 +140,8 @@ public sealed partial class GameState
         }
         PlayerFactory.ApplyScoutedTalentValues(p, s, random);
         PlayerFactory.Join(club, p, contractYears: Contracts.MinYears, loan: false);
-        p.Energy = Player.Clamp(TransferRules.Random16(random, 80, 120));
+        // [ORIGINAL] Belastung des neuen Kaderplatzes random(80, 120) (Datei 0x42E4C–0x42E5E; A184, Integration Runde 12, R12I-01).
+        p.Strain = TransferRules.Random16(random, 80, 120);
         _ = TransferRules.Random16(random, 3, 12); // Kaderplatz +0x19 (Bedeutung offen, A185/A186), nur gezogen
         _ = TransferRules.Random16(random, 3, 12);
         p.MonthlySalary = Math.Max(Contracts.MinSalary,

@@ -128,7 +128,7 @@ public static class PlayerHintLine
     private enum PlayerRoleIndex { Goalkeeper, Defender, Forward }
 
     /// <summary>Belastung (Kaderplatz +0x13) – [APPROX] aus der Energie des Remakes.</summary>
-    private static int Exhaustion(Player p) => 100 - Math.Clamp(p.Energy, 0, 100);
+    private static int Exhaustion(Player p) => Math.Clamp(p.Strain - 50, 0, 100); // [APPROX] wie bisher 100 − Energie, aus der Belastung (R12I-01)
 
     /// <summary>
     /// Statustext nach 0x41683, Adressen 0x308–0x42F: eingesetzt ohne Reihe → „RESERVE“; sonst nach Kaderplatz +0x09 &amp; 3:

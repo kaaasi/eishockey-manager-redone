@@ -118,7 +118,7 @@ public static partial class MatchEngine
     /// <summary>
     /// Energie eines Kaderplatzes bei der Spielvorbereitung. [ORIGINAL] Datei 0x86B2–0x86EE: 101 − Belastung / 8
     /// (Spielerfeld 0x13 &gt;&gt; 3), dann herunterzählen, solange der Wert über 0x5B liegt – also min(…, 91) − 1.
-    /// [APPROX] Belastung = <see cref="TrainingRules.Fatigue"/> (aus der Energie des Remakes).
+    /// Belastung = <see cref="Player.Strain"/> (Datei 0x86B5, seit A184 eigenes Feld statt 150 − Energie).
     /// </summary>
     public static int PreparedPlayerEnergy(Player p) => Math.Min(101 - (TrainingRules.Fatigue(p) >> 3), EnergyCeiling) - 1;
 
@@ -318,8 +318,8 @@ public static partial class OriginalMinutes
     ///   Kondition (Vereinsfeld 0x18 + Teil) &gt; lrandom(0, 100) + 1 mehr. Reihe auf dem Eis: Minuten auf dem Eis + 1 = m;
     ///   − ((lrandom(0, Einsatz) + 75) / 40 + 1) − 4 (m ≥ lrandom(0, 5)) − 8 (m &gt; lrandom(5, 15)), begrenzt 1 … 99.</item>
     /// <item>Managerverein je eingesetztem Kaderplatz ebenso mit der Kondition des Spielers (+0x10); auf dem Eis vorher
-    ///   lrandom(0, 4 + (Kondition &gt; Technik)) = 0 → Belastung + 1 ([APPROX] die Belastung führt das Remake über die
-    ///   Energie, der Zug bleibt). Danach Energie der Reihen = (Summe der Feldspieler, Abwehr mit 90 für den fehlenden
+    ///   lrandom(0, 4 + (Kondition &gt; Technik)) = 0 → Belastung + 1 (<see cref="Player.Strain"/>, Datei 0x8C82; A184,
+    ///   ohne das Nationalteam, siehe dort). Danach Energie der Reihen = (Summe der Feldspieler, Abwehr mit 90 für den fehlenden
     ///   dritten Platz) / 3 (Vereinsfeld 0x1E + 4 · Teil + Reihe).</item>
     /// </list>
     /// </summary>
@@ -374,8 +374,11 @@ public static partial class OriginalMinutes
                     minutes = ++team.OnIceMinutes[part];
                     started[part] = true;
                 }
-                // Belastung (+0x13): Zug wie im Original, die Belastung selbst führt das Remake nicht getrennt.
-                OriginalMatch.Rnd(random, 0, 4 + (p.Player.Condition > p.Player.Technique ? 1 : 0));
+                // [ORIGINAL] Datei 0x8C53–0x8C82: lrandom(0, 4 + (Kondition > Technik)) = 0 → Belastung (+0x13) + 1, Byte (A184).
+                // [APPROX] Das Nationalteam hat im Original eigene Kaderplätze (Satz des Bundestrainers); die + 1 trifft dort nur
+                // die Kopie. Im Remake ist der Spieler derselbe wie im Verein – der Zug bleibt, die Belastung im Verein nicht.
+                if (OriginalMatch.Rnd(random, 0, 4 + (p.Player.Condition > p.Player.Technique ? 1 : 0)) == 0 && !squad.NationalCoach)
+                    p.Player.Strain = (p.Player.Strain + 1) & 0xFF;
                 p.Energy = Math.Clamp(p.Energy - Drain(team.Effort, minutes, random), 1, 99);
             }
             var l = p.Position & 0x7F;

@@ -159,25 +159,32 @@ namespace EishockeyManager.Core.Tests;
 /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): neu – Managervereine stellen mit der Einstellung „automatisch aufstellen“ (Startwert 1) beim Spielstart und täglich nach 0x426BC/0x42838 neu auf (statt Lücken stehen zu lassen bzw. nach Spielwert zu füllen), und die Feldspieler der Managerpaarung zählt je Minute 0x38A36 aus der Aufstellung; andere Aufstellungen und Ergebnisse ab dem ersten Managerspiel.
 /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
 /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
+/// Runde 12, Spur wettbewerbe-spiel Teil 2 (A184): neu – Belastung (Kaderplatz +0x13) als eigenes Feld; in Managerpaarungen
+/// Belastung + 1 bei lrandom(0, 4 + (Kondition &gt; Technik)) = 0 (Datei 0x8C82; der Zug selbst bestand schon), nach dem Spiel
+/// 50 … 150 (Datei 0x549A2). Die Spielvorbereitung (101 − Belastung/8, 0x84D7) gibt damit andere Kaderenergien; andere
+/// Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Zufallszüge unverändert (kein neuer Zug).
+/// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): neu – Computervereine spielen mit der Datenbankstärke ohne Bezug zur Remake-Aufstellung ([ORIGINAL] 0x977F liest nur die Vereinsfelder); Verletzungen, Verkäufe und Aufstellungslücken eines Computervereins ändern seine Stärke nicht mehr. Andere Ergebnisse, sobald ein Computerverein mit veränderter Aufstellung spielt; keine neuen Zufallszüge.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "FB3429A7D18DE060")]
-    [InlineData(true, 3, "CF3E305C0FCBADC8")]
-    [InlineData(false, 11, "5F05F7A0AA791820")]
-    [InlineData(true, 11, "60C07D1B08A4C383")]
+    [InlineData(false, 3, "8D3B2C6CCAF3E4AA")]
+    [InlineData(true, 3, "0928FD3FC3D3AEB9")]
+    [InlineData(false, 11, "D05214DFE0EB1D4D")]
+    [InlineData(true, 11, "A8872D7F5D509AC3")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
         Assert.Equal(expected, Run(game, active));
     }
 
+    // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
+    // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "8E745B445EF2F4E0")]
-    [InlineData(true, "92A75FFDDFD823FF")]
+    [InlineData(false, "3A0FE774F0C0390C")]
+    [InlineData(true, "96F3FFBFB7EE9C3D")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
