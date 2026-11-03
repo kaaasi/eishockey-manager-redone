@@ -121,8 +121,33 @@ public sealed class ScreenDriver
             if (presses >= MatchDayFrameLimit)
                 throw new TimeoutException(
                     $"Spieltag nach {presses} Tastendrücken nicht beendet – Bildschirm {Host.Current?.GetType().Name ?? "(keiner)"} statt Hauptmenü.");
-            Press(Key.Enter);
+            Step();
         }
+    }
+
+    /// <summary>
+    /// Ist auf dem aktuellen Bildschirm ein Meldungsfenster (<see cref="Screens.Team.MessageBox"/>) offen? Es schließt wie im
+    /// Original nur per Linksklick (Datei 0x4C246, E3 Runde 12), Enter wirkt dort nicht.
+    /// </summary>
+    public bool MessageOpen => Host.Current switch
+    {
+        Screens.Team.ContractsScreen c => c.Message.Visible && c.Message.Short is null,
+        Screens.Team.TransferScreen t => t.Message.Visible && t.Message.Short is null,
+        Screens.Competitions.FriendliesScreen f => f.Message.Visible && f.Message.Short is null,
+        Screens.SaveLoad.SaveLoadScreen l => l.MessageLines.Count > 0,
+        _ => false,
+    };
+
+    /// <summary>Schließt ein offenes Meldungsfenster mit einem Linksklick in das Fenster (0x4C246).</summary>
+    public void CloseMessage() => Click(OriginalDialog.Window.X + 20, OriginalDialog.Window.Y + 40);
+
+    /// <summary>Ein Schritt außerhalb des Hauptmenüs: offene Meldung per Linksklick schließen, sonst Enter.</summary>
+    private void Step()
+    {
+        if (MessageOpen)
+            CloseMessage();
+        else
+            Press(Key.Enter);
     }
 
     /// <summary>
@@ -155,7 +180,7 @@ public sealed class ScreenDriver
         if (Host.Current is MainMenuScreen)
             NextDay();
         else
-            Press(Key.Enter);
+            Step();
     }
 
     /// <summary>Öffnet im Hauptmenü eine kleine Kachel über ihren Namen (siehe <see cref="MenuTiles"/>).</summary>

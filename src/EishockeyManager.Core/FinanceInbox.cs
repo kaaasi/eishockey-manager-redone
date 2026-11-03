@@ -58,6 +58,7 @@ public sealed partial class GameState
     {
         message.Season = Season;
         Finance(manager).Inbox.Add(message);
+        manager.MarkNewMessage(); // [ORIGINAL] Kennzeichen „neue Nachricht“ DGROUP 0x5A50 + Manager (0x4B5E6, Spur ui-meldungen Teil 4)
         return message;
     }
 

@@ -79,7 +79,8 @@ Originaldarstellung bleibt unverändert.
   (0x3702E–0x37085). Das Remake entscheidet je Paarung und bleibt dabei (Entscheidung Nutzer). Nach v1.0 als Einstellung
   „wie im Original“ anbieten; sie ändert Ergebnisse und Zufallsverbrauch der Spiele ohne Manager.
 - **Meldungsfenster per Taste oder Rechtsklick schließen (03.11.2026, Entscheidung Nutzer E3, C):** Im Original schließt
-  eine Meldung (Meldungsfenster, Kurzmeldung) nur der Linksklick bzw. der Knopf. Das Remake schließt sie derzeit zusätzlich
-  per Rechtsklick, Taste und Texteingabe (`TeamUi.MessageBox`, `[APPROX]`, Komfort). Das wird zurückgebaut (Kandidat
-  Runde 12); danach gilt wie im Original nur der Linksklick. Erst nach v1.0 als abschaltbare Einstellung „Meldungen mit Taste
-  oder Rechtsklick schließen“ wieder anbieten (ändert nur die Bedienung, keinen Spielzustand).
+  eine Meldung (Meldungsfenster, Kurzmeldung) nur der Linksklick bzw. der Knopf (em.exe Datei 0x4C246 wertet nur Mausereignis 1
+  aus). Das Remake schloss sie bis Runde 11 zusätzlich per Rechtsklick, Taste und Texteingabe; seit Runde 12 (Spur
+  `ui-meldungen` Teil 1) gilt wie im Original nur der Linksklick, die übrigen Eingaben werden verbraucht und bleiben ohne
+  Wirkung. Erst nach v1.0 als abschaltbare Einstellung „Meldungen mit Taste oder Rechtsklick schließen“ wieder anbieten
+  (ändert nur die Bedienung, keinen Spielzustand). Ort im Code: `MessageBox.Update` (`UI/Screens/Team/TeamUi.cs`).

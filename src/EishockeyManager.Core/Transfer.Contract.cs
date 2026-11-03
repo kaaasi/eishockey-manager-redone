@@ -120,12 +120,12 @@ public static class ContractRules
 public sealed partial class GameState
 {
     /// <summary>
-    /// Faktor der Gehaltsforderung (DGROUP 0xE1A4) für den heutigen Tag. [APPROX] Das Original zieht ihn zu Beginn jedes
-    /// Managerzugs aus dem Spielzufall; das Remake leitet ihn je Saison und Tag aus einem eigenen Startwert ab, damit kein
-    /// weiterer Zustand und kein Zug in den bestehenden Zufallsquellen nötig ist. Rein (zieht nichts aus dem Spielstand).
+    /// Faktor der Gehaltsforderung (DGROUP 0xE1A4) des laufenden Managerzugs. [ORIGINAL] Gezogen zu Beginn jedes Managerzugs
+    /// (Datei 0x44E3F, <see cref="BeginManagerTurn"/>; Spur ui-meldungen Teil 4, E4 = B). [APPROX] Solange in einem älteren
+    /// Spielstand noch nicht gezogen wurde, gilt der frühere, je Saison und Tag abgeleitete Wert. Rein (zieht nichts).
     /// </summary>
-    public int ContractTurnFactor =>
-        ContractRules.TurnFactor(new GameRandom(unchecked(Season * 1_000_003 + CurrentDay * 7_919
+    public int ContractTurnFactor => _contractTurnFactor != 0 ? _contractTurnFactor
+        : ContractRules.TurnFactor(new GameRandom(unchecked(Season * 1_000_003 + CurrentDay * 7_919
             + Managers.Sum(m => m.ClubIndex * 41 + m.Head) + 17)));
 
     /// <summary>

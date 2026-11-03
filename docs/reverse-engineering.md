@@ -896,7 +896,9 @@ Teil 2 (Nationalteam):
   0x3588, „Noch keine Eintragung.“ 0x35B5). Länder (Verein ≥ DGROUP 0x6AD) und Vereine haben eigene Zweige (0x4D3DD,
   0x4D75E, 0x4DA58, 0x4E0EB); Rahmenbild Datei 0x4D40F (`0x38:0x98D` Bild 0x21). Aufrufer: Infoleiste, Stärken (DOSBox 44),
   WM-Tabelle 0x2FAB8 (DOSBox 14–16), Paarungsansicht 0x302AA, WM-Statistik 0x3B4AE (alle mit Seite 2 = Gesamt).
-  Umgesetzt als `TeamInfoWindow` (Länderzweig); Aufbau und Koordinaten im Klassenkommentar.
+  Umgesetzt als `TeamInfoWindow` (Länderzweig) und `ClubInfoWindow` (Vereinszweig und Teams ab 0x40, Runde 12 UM-2,
+  `analyse/re-runde-12.md`); Aufbau und Koordinaten in den Klassenkommentaren. Aus dem Hauptmenü per Klick auf Gegner- bzw.
+  eigenen Vereinsnamen der Infoleiste (Datei 0x45375, 0x453B4; `InfoBarWindows`).
   * **Hilfsfunktionen im Overlay:** cs:0x00 = „ist Land“ (DGROUP 0x6AD ≤ Verein &lt; 0x6AD + 12), cs:0x26 = Stärke
     (Vereinsfelder 0x18/0x19, 0x1A/0x1B, 0x1C/0x1D summiert / 6), cs:0x47BF = Bilanzzeichen als Gesichter aus kb\33
     (Quelle DGROUP 0x537A/0x537E: N (19 | 36), U (25 | 41), S (25 | 36); Rückgabe Spiele · 32 + Punkte), cs:0x12E5 = Rekordtext.

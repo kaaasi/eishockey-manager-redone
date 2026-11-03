@@ -37,14 +37,14 @@ public static partial class SaveGame
         if (root["kennung"] is not JsonValue identifier || !identifier.TryGetValue<string>(out var text) || text != Identifier)
             return Fail("Die Datei ist kein Spielstand dieses Spiels.");
         if (root["schema"] is not JsonValue schemaValue || !schemaValue.TryGetValue<int>(out var schema) || schema < 1)
-            return Fail("Der Spielstand hat keine gültige Version.");
+            return FailVersion("Der Spielstand hat keine gültige Version.");
         if (schema > SchemaVersion)
-            return Fail($"Der Spielstand stammt aus einer neueren Version (Schema {schema}, unterstützt bis {SchemaVersion}).");
+            return FailVersion($"Der Spielstand stammt aus einer neueren Version (Schema {schema}, unterstützt bis {SchemaVersion}).");
 
         for (; schema < SchemaVersion; schema++)
         {
             if (!Migrations.TryGetValue(schema, out var migrate))
-                return Fail($"Spielstände mit Schema {schema} können nicht mehr geladen werden.");
+                return FailVersion($"Spielstände mit Schema {schema} können nicht mehr geladen werden.");
             root = migrate(root);
         }
 
@@ -66,6 +66,9 @@ public static partial class SaveGame
     }
 
     private static SaveLoadResult Fail(string message) => new(null, message);
+
+    /// <summary>Kennung stimmt, Version nicht (<see cref="SaveLoadResult.WrongVersion"/>).</summary>
+    private static SaveLoadResult FailVersion(string message) => new(null, message) { WrongVersion = true };
 
     private sealed class Reader(JsonElement root, bool checkNullability = true)
     {
