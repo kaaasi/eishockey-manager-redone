@@ -662,3 +662,22 @@ Tests: `SaveLoadScreenTests.RightClickOnEntry_TakesNameButDoesNotLeaveOrLoad`, `
 `DailyYouth`, `DailyTalentSearch`, `DailyStadium` und `YouthSeasonChange` hängen in `GameState.Manager.cs` in der bestehenden
 täglichen Finanzschleife bzw. im Saisonwechsel (statt `GameState.Integration.cs`). Reihenfolge wie im Original (0x55008,
 0x54C9F, 0x3ED19); bewusst so belassen, weil es dieselbe Schleife ist, die früher `AdvanceTalentSearch` rief.
+
+## Pixelprobe G7/G8 gegen Video (Runde 12, Spur geld Teil 3)
+
+Vorlage: Oberflächen-Video `oberflaeche_0813` (Stadion, Spielbeginn; Auswahl per Differenz gegen `emtool screens … stadion`, 7,5 % der
+Pixel weichen ab) und `folge01_00510` (Finanzen, Bank, Spielbeginn). Messung: Verschiebung (dx, dy) mit kleinstem mittlerem
+Grauwertfehler, Videobild ca. (−0,25 | +0,5) Pixel gegenüber dem Original (`docs/portierung.md`).
+
+- **G7 Stadiontabelle (0x3D45F, 0x3E52B):** Linke Tabelle (Namen, Doppelpunkt, Stufentexte, neun Zeilen) deckt sich bei (0, 0); die
+  Zeilenabstände stimmen. Rechter Block (Sitz-/Stehplätze, Eintritt mit ▲▼, Konto): Video 1 Pixel weiter rechts (dx = +1; Eintritt
+  und Pfeile dx = +1, dy = +1). Aus einem Einzelbild ist das nicht von Skalierungsrauschen zu trennen – **keine Änderung** am Code,
+  Messung offen für den Abgleich mit der Zeichenroutine (`[APPROX]` bleibt für die x-Lage des rechten Blocks; Konstanten
+  `RightLabelX`/`RightColonX`/`RightValueX` in `StadiumScreen.cs`). Das Kontostand-Feld (500.000 vs. 400.000 DM) ist Zustand, kein Layoutbefund.
+- **G8 Finanzübersicht (0x57CFB, 0x57ECF, 0x581C2):** Rechte Übersicht (Kontostand, Untereinander, Bank, Aktien, Kaufpreis, Depot-Wert,
+  Depot-Saldo) hat dieselbe Reihenfolge, Beschriftung und Ausrichtung (Beschriftungen links, Beträge rechtsbündig in „DM“); die Zeilen
+  liegen im Video 1–2 Pixel tiefer (Kaufpreis ≈ +2 gegenüber der Aktien-Zeile). Die Kästen links (Kurs/Zahl/Kauf/Wert) und der Kursverlauf
+  waren im Video ein anderer Zustand (Spielbeginn nach dem Laden, Kurse zufällig), sie sind nur nach Layout (Farben je Papier) vergleichbar. Kein Befund
+  mit Sollwert; eine Änderung der Zeilenhöhen braucht ein zustandsgleiches Bild (gleiche Kurse und Kontostand).
+- **Ergebnis:** G7 und G8 sind geprüft, ohne Code-Änderung; offene Maße oben. Für eine verbindliche Korrektur fehlt ein Bild mit
+  gleichem Spielzustand.
