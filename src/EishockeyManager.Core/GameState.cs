@@ -107,6 +107,7 @@ public sealed partial class GameState
                 Results.Add(new MatchResult(league, day.Number, home, away, hg, ag));
                 CountSeries(Clubs[home], Clubs[away], hg, ag); // Spur statistiken-verein: Serien (StatisticsClub.cs, 0x50283)
                 RecordMeeting(home, away, hg, ag); // Spur optionen-wirkung: Begegnungen der Infoleiste (MeetingHistory.cs, 0x50283)
+                EnterLeagueRecords(home, away, hg, ag); // Integration R12 (ui-meldungen Teil 2): Rekorde 0x50283 Code 7 (CupsNational.TeamInfo.cs)
             }
         }
         UpdateSeriesRecords(); // Spur statistiken-verein: Rekordserien der Manager (StatisticsClub.cs, 0x50CDB)

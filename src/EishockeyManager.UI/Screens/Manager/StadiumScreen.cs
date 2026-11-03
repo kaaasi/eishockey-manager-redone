@@ -87,10 +87,14 @@ public sealed class StadiumScreen : Screen
     private Choice? _selected;
     private int _target;
     private StadiumQuote? _quote;
-    private string? _notice;
+    private readonly Team.MessageBox _message;
     private Rect? _pressed;
 
-    public StadiumScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+    public StadiumScreen(ScreenHost host, Screen back) : base(host)
+    {
+        _back = back;
+        _message = new Team.MessageBox(() => Host.Game?.ActiveManager.Name ?? "");
+    }
 
     public Choice? Selected => _selected;
 
@@ -102,8 +106,11 @@ public sealed class StadiumScreen : Screen
     /// <summary>Angebot der Baufirma, solange die Frage offen ist.</summary>
     public StadiumQuote? Quote => _quote;
 
-    /// <summary>Hinweis statt Auswahl („Die Baufirma ist noch beleidigt...“).</summary>
-    public string? Notice => _notice;
+    /// <summary>
+    /// Kurzmeldung statt Auswahl („Die Baufirma“ / „ist noch beleidigt...“, <see cref="ShortMessageTexts.BuilderOffended"/>).
+    /// [ORIGINAL] Datei 0x3DE9F über 0x0C0B8 (Integration Runde 12, Anschluss ui-meldungen Teil 3, UM-4).
+    /// </summary>
+    public Team.MessageBox Message => _message;
 
     private GameState Game => Host.Game!;
     private Core.Manager Me => Game.ActiveManager;
@@ -116,6 +123,8 @@ public sealed class StadiumScreen : Screen
     public override void Update(InputState input)
     {
         _pressed = null;
+        if (_message.Update(input))
+            return; // [ORIGINAL] 0x0C0B8: ohne Knopf und ohne Eingabe, schließt nach 75 Takten von selbst
         if (_quote is { } quote)
         {
             // [ORIGINAL] Datei 0x3E389 (Ja) / 0x3E482 (Nein): Nein lässt die Baufirma beleidigt.
@@ -171,16 +180,16 @@ public sealed class StadiumScreen : Screen
     }
 
     /// <summary>
-    /// Wählt einen Ausbau; Zielstufe = nächste Stufe bzw. ein Ausbauschritt. Beleidigte Baufirma: Hinweis, keine Auswahl;
+    /// Wählt einen Ausbau; Zielstufe = nächste Stufe bzw. ein Ausbauschritt. Beleidigte Baufirma: Kurzmeldung, keine Auswahl;
     /// Projekt im Bau oder am Ende: keine Auswahl. [ORIGINAL] Datei 0x3DE71–0x3DF81.
     /// </summary>
     public void Select(Choice choice)
     {
-        _notice = null;
         _selected = null;
-        if (Stadium.IsOffended(choice.Project, choice.Feature))
+        if (ShortMessageTexts.IsBuilderOffended(Stadium, choice.Project, choice.Feature))
         {
-            _notice = "Die Baufirma ist noch beleidigt...";
+            var text = ShortMessageTexts.BuilderOffended; // [ORIGINAL] Datei 0x3DE9F, danach keine Auswahl
+            _message.ShowShort(text.Line1, text.Line2);
             return;
         }
         if (!Stadium.CanSelect(choice.Project, choice.Feature))
@@ -238,6 +247,7 @@ public sealed class StadiumScreen : Screen
         DrawRight(s);
         if (_quote is not null)
             DrawConfirm(s);
+        _message.Draw(s, Assets);
     }
 
     private void Part(Surface s, Rect source, int x, int y) => s.Blit(Assets.Image(Parts), source, x, y, transparent: 0);
@@ -299,9 +309,7 @@ public sealed class StadiumScreen : Screen
         Row(TicketRowY, "Eintritt", $"{Stadium.TicketPrice} DM");
 
         var shown = _hover ?? _selected;
-        if (_notice is { } notice && _hover is null)
-            s.Text(mini, RightLabelX, 200, notice, ValueColor);
-        else if (shown is { } choice)
+        if (shown is { } choice)
         {
             var weeks = Stadium.WeeksLeft(choice.Project, choice.Feature);
             if (Stadium.IsUnderConstruction(choice.Project, choice.Feature) && weeks > 0)

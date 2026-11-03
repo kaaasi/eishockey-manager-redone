@@ -122,8 +122,10 @@ public static class TeamRecords
 ///   Bilanz nur bei Code 7 (Liga) und 8 (WM-Gruppe).</item>
 /// <item>[ORIGINAL] Die WM-Auslosung 0x35EDD tauscht diese Sätze mit den Ländern (Datei 0x365B6–0x36799); im Remake behalten
 ///   die Länder ihren Index, ein Tausch entfällt.</item>
-/// <item>Das Remake schreibt hier nur die Länderspiele (WM, Freundschaftsspiele). [APPROX] Vereinsspiele (Code 7, Pokale)
-///   werden noch nicht eingetragen – das Vereinsfenster gibt es im Remake nicht.</item>
+/// <item>Rekorde der Vereine: Ligaspiele (Code 7) über <see cref="EnterLeagueRecords"/> aus <see cref="PlayNextMatchDay"/>, für das
+///   Vereinsfenster (<c>ClubInfoWindow</c>, Spur ui-meldungen Teil 2; Anschluss Integration Runde 12). [APPROX] Pokal-, Play-off-
+///   und Aufstiegsrundenspiele schreiben keine Rekorde (wie die Serien); ihr Code beim Aufruf von 0x50283 ist nicht geprüft. [APPROX] Bilanzzeichen der Vereine werden nicht geführt (das
+///   Vereinsfenster rechnet die Bilanz aus <see cref="Results"/>).</item>
 /// <item>[APPROX] Bilanzzeichen nur der Länder, als Art 1 = Niederlage, 2 = Unentschieden, 3 = Sieg (Heim/Gast spielt für die
 ///   Anzeige keine Rolle). [ORIGINAL] Der Saisonwechsel leert sie (em.exe Datei 0x55EBA–0x55EE0, siehe
 ///   <see cref="ClearNationalForm"/>); Rekorde und Kopf-an-Kopf bleiben.</item>
@@ -190,6 +192,13 @@ public sealed partial class GameState
         ShiftForm(home, hg, ag);
         ShiftForm(away, ag, hg);
     }
+
+    /// <summary>
+    /// [ORIGINAL] Rekorde eines Ligaspiels (0x50283 bei Code 7, Datei 0x503A4–0x50438, 0x50680–0x506BA, 0x50AD0–0x50B07): beide
+    /// Vereine über <see cref="TeamRecords.Enter"/>. Aufruf je Spiel aus <see cref="PlayNextMatchDay"/> (Integration Runde 12).
+    /// </summary>
+    internal void EnterLeagueRecords(int home, int away, int hg, int ag) =>
+        TeamRecords.Enter(_teamRecords, _teamRecordOpponents, home, away, hg, ag);
 
     private static bool IsNation(int club) => club is >= NationalTeams.First and <= NationalTeams.Last;
 

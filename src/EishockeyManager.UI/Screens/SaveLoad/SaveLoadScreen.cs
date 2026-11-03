@@ -320,6 +320,15 @@ public sealed class SaveLoadScreen : Screen
         }
 
         var result = SaveGame.Load(data);
+        if (result.WrongVersion)
+        {
+            // [ORIGINAL] Datei 0x5C559: Kennung stimmt, Version nicht → Kurzmeldung (0x0C0B8), Datei schließen, zurück zur
+            // Auswahl (Integration Runde 12, Anschluss ui-meldungen Teil 3, UM-4). [APPROX] Der Grund (Schema) entfällt wie im
+            // Original; das Remake unterscheidet „fehlt“, „neuer“ und „ohne Migration“ nur in SaveLoadResult.Error.
+            var text = ShortMessageTexts.WrongVersion;
+            _message.ShowShort(text.Line1, text.Line2);
+            return;
+        }
         if (result.Game is not { } game)
         {
             Warn(["Die Datei", shown, "kann nicht geladen werden.", .. Wrap(result.Error ?? "Unbekannter Fehler.")]);
@@ -376,10 +385,14 @@ public sealed class SaveLoadScreen : Screen
         Refresh();
     }
 
-    /// <summary>Bricht einen Text auf Zeilen um, die in das Meldungsfenster passen.</summary>
+    /// <summary>
+    /// Bricht einen Text auf Zeilen um, die in das Meldungsfenster passen. [APPROX] Breite 158 px = Linie unten des Fensters
+    /// 0x4C246 (80 … 237, <see cref="OriginalDialog"/>); vorher 200 px, damit reichten Fehlertexte über den Rahmen (168 px,
+    /// Restlücke #483; Integration Runde 12).
+    /// </summary>
     private string[] Wrap(string text)
     {
-        const int maxWidth = 200;
+        const int maxWidth = 158;
         var lines = new List<string>();
         var line = "";
         foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
