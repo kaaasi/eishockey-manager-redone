@@ -11,6 +11,13 @@ namespace EishockeyManager.Core;
 public sealed record SaveLoadResult(GameState? Game, string? Error)
 {
     public bool Success => Game is not null;
+
+    /// <summary>
+    /// Kennung stimmt, die Version aber nicht (Schema fehlt, ist neuer oder ohne Migration). [ORIGINAL] Gegenstück zu em.exe
+    /// Datei 0x5C3E3: „KRON_0.99“ stimmt, die folgenden 4 Byte sind nicht „EH0“ → Kurzmeldung 0x5C559 statt Meldungsfenster
+    /// (Integration Runde 12, Anschluss ui-meldungen Teil 3, UM-4).
+    /// </summary>
+    public bool WrongVersion { get; init; }
 }
 
 /// <summary>

@@ -30,6 +30,8 @@ public sealed class DesktopGame : Game
     private readonly ScreenHost _host;
     private readonly Surface _surface = new();
     private readonly InputState _input = new();
+    private readonly ScreenTransition _transition = ScreenTransition.ForDesktop(); // M-K9, 0x0C5CE (Integration Runde 12, #492)
+    private TimeSpan _now;
     private readonly byte[] _rgba = new byte[Surface.Width * Surface.Height * 4];
     private readonly StringBuilder _typed = new();
     private AudioOutput? _audio;
@@ -101,6 +103,8 @@ public sealed class DesktopGame : Game
         _typed.Clear();
 
         _host.Update(_input);
+        _now = gameTime.TotalGameTime;
+        _transition.Observe(_host, _now);
         if (_host.ExitRequested)
             Exit();
 
@@ -113,7 +117,8 @@ public sealed class DesktopGame : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        _host.Draw(_surface);
+        if (!_transition.Draw(_surface, _host.Assets, _now))
+            _host.Draw(_surface);
         _surface.ToRgba(_rgba);
         _texture!.SetData(_rgba);
 

@@ -45,9 +45,6 @@ public static class NewsBar
         return box.Value;
     }
 
-    /// <summary>Hat der aktive Manager eine ungelesene Nachricht (Auslöser der Leiste im Hauptmenü, #170)?</summary>
-    public static bool HasUnread(GameState game) => game.Inbox(game.ActiveManager).Any(m => !m.Read);
-
     /// <summary>Verarbeitet Klicks auf die Leiste; true, wenn die Eingabe verbraucht wurde.</summary>
     public static bool Update(ScreenHost host, Screen menu, InputState input)
     {
@@ -85,7 +82,8 @@ public static class NewsBar
         }
         var index = Shown(game);
         var message = inbox[index];
-        message.Read = true;
+        // Zeichnen ändert nichts (AGENTS.md §4, E4 = B): „gelesen“ setzt der Posteingang beim Öffnen (InboxScreen.Enter;
+        // Integration Runde 12, Anschluss ui-meldungen Teil 4).
         // [APPROX] Kopfzeile = erste Zeile, weißes Feld = weitere Zeilen; Inhalt einer Nachricht ist im Video nicht zu sehen.
         s.TextCentered(mini, center, 207, ManagerText.ForFont(message.Lines[0]), TextColor);
         for (var i = 1; i < Math.Min(3, message.Lines.Length); i++)

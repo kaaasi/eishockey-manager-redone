@@ -33,7 +33,7 @@ public class MenueBefundeTests
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
         Assert.IsType<MainMenuScreen>(d.Host.Current);
-        Assert.False(NewsBar.HasUnread(d.Host.Game!));
+        Assert.DoesNotContain(d.Host.Game!.Inbox(d.Host.Game!.ActiveManager), m => !m.Read);
         d.Move(1, 1);
         Assert.True(BarAreaEqualsBackground(d), "ohne Nachricht bleibt der Hintergrund stehen");
     }

@@ -1,3 +1,5 @@
+using EishockeyManager.Core;
+
 namespace EishockeyManager.UI;
 
 /// <summary>
@@ -47,6 +49,30 @@ public sealed class ScreenTransition
     }
 
     public bool IsActive(TimeSpan now) => now < _until;
+
+    /// <summary>
+    /// Zwischenbild des Desktop-Spiels (Anschluss Integration Runde 12, ui-meldungen Teil 5): ohne Zwischenbild zu den Bildschirmen,
+    /// die über ihrem Vorgänger zeichnen (<see cref="Screens.CreditsScreen"/>, <see cref="Screens.InfoFileScreen"/>,
+    /// <see cref="Screens.ManagerArea.FinanceBookScreen"/>; Liste aus #492).
+    /// </summary>
+    public static ScreenTransition ForDesktop() =>
+        new(s => s is Screens.CreditsScreen or Screens.InfoFileScreen or Screens.ManagerArea.FinanceBookScreen);
+
+    private GameState? _lastGame;
+
+    /// <summary>
+    /// Wie <see cref="Observe(Screen?, TimeSpan)"/>, setzt zusätzlich <see cref="PageFlip"/>, wenn der Host ein anderes Spiel bekommt:
+    /// [ORIGINAL] false nach dem Laden eines Spielstands (Datei 0x5687A), true beim Spielstart (Datei 0x439C0). [APPROX] „Laden“ =
+    /// das neue Spiel kam aus dem Bildschirm Laden/Sichern (<see cref="Screens.SaveLoad.SaveLoadScreen"/>); jeder andere Wechsel
+    /// des Spiels gilt als Spielstart.
+    /// </summary>
+    public void Observe(ScreenHost host, TimeSpan now)
+    {
+        if (host.Game is { } game && !ReferenceEquals(game, _lastGame))
+            PageFlip = _last is not Screens.SaveLoad.SaveLoadScreen;
+        _lastGame = host.Game;
+        Observe(host.Current, now);
+    }
 
     /// <summary>Zeichnet das Zwischenbild, solange es aktiv ist; sonst false (dann zeichnet der Bildschirm selbst).</summary>
     public bool Draw(Surface s, Assets assets, TimeSpan now)

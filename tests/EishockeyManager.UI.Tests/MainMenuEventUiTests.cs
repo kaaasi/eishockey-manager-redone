@@ -48,8 +48,8 @@ public class MainMenuEventUiTests
         Assert.True(menu.NewsBarVisible);
         Assert.False(game.ActiveManager.HasNewMessage);
 
-        d.Frame(); // erstes Zeichnen der Leiste (markiert die gezeigte Nachricht als gelesen, NewsBar.Draw)
         var before = StateFingerprint.Of(game);
+        d.Frame(); // erstes Zeichnen der Leiste (setzt seit Integration R12 auch „gelesen“ nicht mehr, NewsBar.Draw)
         for (var i = 0; i < 3; i++)
             d.Move(10 + i, 10);
         var after = StateFingerprint.Of(game);

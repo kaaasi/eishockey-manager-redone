@@ -194,6 +194,14 @@ public sealed class TransferScreen : Screen
             if (row >= 0 && row < rows.Count)
             {
                 var p = rows[row];
+                // [ORIGINAL] Datei 0x46DEF: Ruhestand angekündigt (Kaderplatz +0x18 Bit 0x80) → nur die Kurzmeldung, kein Angebot
+                // und kein Verkauf; sonst weiter ab 0x46DFA (Integration Runde 12, Anschluss ui-meldungen Teil 3, UM-4).
+                if (ShortMessageTexts.AnnouncedRetirement(p))
+                {
+                    var text = ShortMessageTexts.PlayerRetires;
+                    _message.ShowShort(text.Line1, text.Line2);
+                    return;
+                }
                 // [ORIGINAL] Datei 0x46E04: Spieler mit unaufgefordertem Angebot (+0x09 Bit 0x40) öffnen das Angebotsfenster.
                 if (Game.OpenUnsolicitedOffer(Manager, p) is { } offer)
                     _dialog = TransferDialog.ForUnsolicited(offer);

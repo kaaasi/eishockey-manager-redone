@@ -60,7 +60,7 @@ public class StadiumScreenTests
         Click(d, StadiumScreen.FeatureRow((int)StadiumFeature.Bowlingbahn));
         Assert.Equal(StadiumFeature.Bowlingbahn, screen.Selected?.Feature);
 
-        // „Kein Gedanke“: Baufirma beleidigt, Hinweis statt Auswahl
+        // „Kein Gedanke“: Baufirma beleidigt, Kurzmeldung statt Auswahl
         Click(d, StadiumScreen.LevelBox);
         Assert.True(screen.AsksConfirmation);
         Click(d, StadiumScreen.NoButton);
@@ -68,7 +68,11 @@ public class StadiumScreenTests
         Assert.False(stadium.IsUnderConstruction(StadiumProject.Feature, StadiumFeature.Bowlingbahn));
         Click(d, StadiumScreen.FeatureRow((int)StadiumFeature.Bowlingbahn));
         Assert.Null(screen.Selected);
-        Assert.Equal("Die Baufirma ist noch beleidigt...", screen.Notice);
+        // Kurzmeldung 0x3DE9F (0x0C0B8) ohne Knopf; sie schließt nach 75 Takten von selbst (Integration R12, UM-4)
+        var notice = Assert.IsType<ShortMessage>(screen.Message.Short);
+        Assert.Equal(("Die Baufirma", "ist noch beleidigt..."), (notice.Line1, notice.Line2));
+        d.Frames(notice.TotalFrames);
+        Assert.Null(screen.Message.Short);
 
         var price = stadium.TicketPrice;
         Click(d, StadiumScreen.TicketUp);
