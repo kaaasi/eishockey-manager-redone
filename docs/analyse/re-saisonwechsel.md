@@ -365,3 +365,17 @@ Bayreuth, Wolfsburg auf Platz 11 = Platz von Memmingen; übrige Plätze wie `fil
   (SC Riessersee, zugleich grün). Ebenso hängt die Startordnung des Remakes die betroffenen Vereine hinten an, em.exe setzt sie auf
   den Platz des Partners (Kommentar `ResolveDoubleMoves`; gegen `file17_3` nicht im Test geprüft). Beides nur Anzeige bzw.
   Ordnung, keine Wirkung auf Ligen und Geld.
+
+### Umsetzung E5 und S-K6 (Spur `saisonwechsel` Teil 3, 03.11.2026)
+
+- **E5:** keine Codeänderung nötig (Remake stimmt mit Datei 0x5629D–0x562DE). Marker in `SeasonFlow.cs`/`SeasonFlow.Oberliga.cs`
+  ergänzt („ohne Kontoprüfung“); Tests `SaisonwechselKontoTests` (Guthaben 2.000.000 DM bzw. Schulden −500.000 DM → 400.000 DM,
+  Platz 12 der 2. Liga unverändert; zwei Manager auf 11/12 schon in `SaisonwechselOberligaTests`).
+- **S-K6 (Entscheidung A):** Satzfolge je Liga `GameState.LeagueSlots` (`SeasonFlow.LeagueSlots.cs`), beim Spielstart und im
+  Saisonwechsel 55 Tausche je Liga; der Auf-/Absteiger übernimmt vorher den Satzplatz seines Partners. `FairPlayTable` geht nach
+  dieser Folge (A194 → `[ORIGINAL]`). Schema 33 (vorläufig), Migration `SaveGame.Migration.Saisonwechsel3.cs`: ältere Stände
+  beginnen mit Indexfolge. `[APPROX]`: Zufall aus dem Zustand von `GameState.Random` abgeleitet, ohne ihn weiterzuschalten;
+  gemischt erst in `StartNextSeason` (Original vor dem Fenster „Saisonende“). Tests `SaisonwechselSatzfolgeTests`.
+- **Offene Frage (nicht geprüft):** Im Original wandert die Strafminutensumme mit dem Vereinssatz (Tabellensatz 0x50), und die
+  Mischung 0x5644E läuft nach Auf- und Abstieg, aber vor der Fair-Play-Prämie 0x27213. Ob die Prämie dann über die **neue** Liga
+  des Managers rechnet, ist nicht gelesen (Kandidat für `re-pruefung`).

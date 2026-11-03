@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(32, SaveGame.SchemaVersion);
+        Assert.Equal(33, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -46,7 +46,7 @@ public class SaveGameTests
     // 30 Übertrag der Spiele beim Verein je Spieler und Zähler der Poolumverteilung (Spur kader-transfer, Teil 5).
     // 31 Ergebnismarken der Pokalspiele CupTie.Marks und WorldCup._knockoutMarks (Spur wettbewerbe-spiel, Teil 1; Integration Runde 11).
     // 32 Einstellung „automatisch aufstellen“ Club._autoLineup (Spur wettbewerbe-spiel, Teil 8; Integration Runde 11).
-    private const string ExpectedSchemaFingerprint = "01D99F71B726F672";
+    private const string ExpectedSchemaFingerprint = "3C47CA6033893C64";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

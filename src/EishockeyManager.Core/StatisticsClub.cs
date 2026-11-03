@@ -50,12 +50,12 @@ public sealed partial class GameState
     /// DGROUP 0x7C0 + Liga in Indexfolge, Austauschsortierung aufsteigend nach Strafminuten (Datei 0x2A21D–0x2A292:
     /// Tausch nur bei echt mehr Minuten). Bei Gleichstand um Platz 1 steht der Verein mit dem kleineren Index vorn
     /// (das entscheidet die Fair-Play-Prämie); dahinter ist die Sortierung nicht stabil und wird genau so nachgebildet.
-    /// [APPROX] Reihenfolge der Ligaplätze: Vereinsindex des Remakes (das Original tauscht die Vereinssätze beim Auf- und
-    /// Abstieg, die Indexfolge innerhalb einer Liga kann daher abweichen).
+    /// [ORIGINAL] Indexfolge = Satzfolge der Liga nach der Ligamischung Datei 0x35EDD (<see cref="LeagueSlots"/>, S-K6,
+    /// Spur saisonwechsel Teil 3; vorher `[APPROX]` Vereinsindex, A194).
     /// </summary>
     public IReadOnlyList<FairPlayRow> FairPlayTable(League league)
     {
-        var order = LeagueClubs(league).OrderBy(c => c.Index).ToList();
+        var order = LeagueSlots(league).Select(i => Clubs[i]).ToList();
         for (var i = 0; i < order.Count; i++)
             for (var j = i + 1; j < order.Count; j++)
                 if (order[i].LeaguePenaltyMinutes > order[j].LeaguePenaltyMinutes)

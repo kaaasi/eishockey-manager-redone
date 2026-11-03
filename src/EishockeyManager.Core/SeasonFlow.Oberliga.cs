@@ -24,7 +24,7 @@ public sealed partial class GameState
 
     /// <summary>Konto eines Managers, dessen Verein als Letzter oder Vorletzter in der Oberliga bleibt.</summary>
     /// <remarks>[ORIGINAL] Datei 0x562D8/0x562DE: 0x00124F80 Drittel = 400.000 DM, gesetzt, nicht gebucht (DOSBox-Beleg
-    /// `file13_15`: −491.221 DM → 400.000 DM).</remarks>
+    /// `file13_15`: −491.221 DM → 400.000 DM). Ohne Kontoprüfung (E5, Datei 0x5629D–0x562DE): auch ein Guthaben wird gekürzt.</remarks>
     public const long OberligaKeptMoney = 400_000;
 
     /// <summary>
