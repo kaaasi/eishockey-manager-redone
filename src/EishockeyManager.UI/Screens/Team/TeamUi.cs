@@ -204,19 +204,28 @@ public static class TeamUi
 /// <item>[ORIGINAL] <see cref="ShowShort"/>: Kurzmeldung Datei 0x0C0B8 ohne Knopf und ohne Eingabe, schließt nach Takten von selbst
 ///   (<see cref="ShortMessage"/>); sie gilt für die Texte, die im Original über 0x0C0B8 laufen (Aufrufstellen in der Aufstellung
 ///   0x40AF3, 0x40B55, 0x40EB9, in der Transferliste 0x46A4D ff., bei den Freundschaftsspielen 0x3C2C5).</item>
-/// <item>[APPROX] Mit drei und vier Zeilen zeigt das Original Knöpfe, deren Text der Aufrufer (Zeile 4/5) bestimmt; welche Texte die
-///   Aufrufer der Verhandlungs-, Werbe- und Spielmodus-Meldungen übergeben, ist nicht belegt, daher steht „Na gut.“ als Zeile 5
-///   (wie bei der Bundestrainer-Warnung, DGROUP Zeile 5). Mehr als vier Zeilen kennt 0x4C246 nicht; solche Meldungen
-///   (Spielstand-Fehler, Spielmodus) behalten den früheren Rahmen. Komfort: Taste und rechte Maustaste schließen ebenfalls.</item>
+/// <item>[ORIGINAL] Knopftext „Na gut.“: Die Meldungen der Aufrufer laufen im Original über die Hülle Datei 0x4BCCC (Stub 0x120:0x4D),
+///   die 0x4C246 mit (Manager am Zug DGROUP 0xA70E, Zeile 1 … 4, Zeile 5 = DGROUP 0x12D5 „Na gut.“, Modus 0) ruft – z. B. Werbung
+///   „Die Firma … nicht verlängern.“ Datei 0x2B873, Spielmodus „Neuer Spielmodus:“ 0x2D502, Vertragsmeldungen 0x401CB/0x4A6F9 ff.,
+///   Spielstand 0x5A88A. Mit drei oder vier Zeilen zeigen beide Knöpfe daher „Na gut.“.</item>
+/// <item>[ORIGINAL] Eingabe nur per Linksklick (0x4C246 wertet nur Mausereignis 1 aus); Taste, Texteingabe und rechte Maustaste
+///   werden verbraucht, schließen aber nicht (E3, Entscheidung Nutzer 03.11.2026, C; abschaltbarer Komfort erst nach v1.0,
+///   <c>docs/anforderungen/zusatzfunktionen.md</c> Abschnitt C).</item>
+/// <item>[APPROX] Mehr als vier Zeilen kennt 0x4C246 nicht; solche Meldungen gibt es nur im Remake (Spielstand-Fehler mit Dateiname
+///   und Fehlertext). Sie erscheinen im Fenster des Originals in Seiten zu je vier Zeilen, jede Seite schließt per Linksklick.</item>
 /// </list>
 /// </remarks>
 public sealed class MessageBox
 {
-    /// <summary>[APPROX] Beschriftung der Knöpfe, wenn der Aufrufer keine Zeile 5 übergibt.</summary>
+    /// <summary>[ORIGINAL] Beschriftung der Knöpfe: Zeile 5 der Hülle Datei 0x4BCCC (DGROUP 0x12D5 „Na gut.“).</summary>
     public const string ButtonText = "Na gut.";
+
+    /// <summary>Höchstzahl der Textzeilen eines Fensters (0x4C246: Zeile 1 … 4).</summary>
+    public const int MaxLines = 4;
 
     private readonly Func<string>? _title;
     private string[] _lines = [];
+    private string[] _rest = [];
     private ShortMessage? _short;
 
     /// <param name="title">Name des Managers am Zug (Überschrift); ohne Angabe „An Alle:“.</param>
@@ -224,7 +233,7 @@ public sealed class MessageBox
 
     public bool Visible => _lines.Length > 0 || _short is { Closed: false };
 
-    /// <summary>Angezeigte Zeilen (leer, wenn keine Meldung offen ist).</summary>
+    /// <summary>Angezeigte Zeilen (leer, wenn keine Meldung offen ist; bei mehr als vier Zeilen die aktuelle Seite).</summary>
     public IReadOnlyList<string> Lines => _short is { Closed: false } ? [_short.Line1, _short.Line2] : _lines;
 
     /// <summary>Offene Kurzmeldung (0x0C0B8), sonst null.</summary>
@@ -233,23 +242,29 @@ public sealed class MessageBox
     public void Show(params string[] lines)
     {
         _short = null;
-        _lines = lines;
+        _lines = lines.Take(MaxLines).ToArray();
+        _rest = lines.Skip(MaxLines).ToArray();
     }
 
     /// <summary>Kurzmeldung ohne Knopf, die nach der Zeit des Originals von selbst schließt (Datei 0x0C0B8, zwei Zeilen).</summary>
     public void ShowShort(string line1, string line2)
     {
         _lines = [];
+        _rest = [];
         _short = new ShortMessage(_title?.Invoke() ?? "", line1, line2);
     }
 
     public void Close()
     {
         _lines = [];
+        _rest = [];
         _short = null;
     }
 
-    /// <summary>Verarbeitet Eingaben, solange die Meldung sichtbar ist. Liefert true, wenn sie die Eingabe verbraucht hat.</summary>
+    /// <summary>
+    /// Verarbeitet Eingaben, solange die Meldung sichtbar ist. Liefert true, wenn sie die Eingabe verbraucht hat. Nur ein
+    /// Linksklick schließt (bzw. blättert zur nächsten Seite); alle anderen Eingaben werden verbraucht und bleiben ohne Wirkung.
+    /// </summary>
     public bool Update(InputState input)
     {
         if (_short is { } shortMessage)
@@ -261,15 +276,15 @@ public sealed class MessageBox
         }
         if (_lines.Length == 0)
             return false;
-        if (Fits)
+        var dialog = Dialog("");
+        dialog.Update(input);
+        if (dialog.Closed)
         {
-            var dialog = Dialog("");
-            dialog.Update(input);
-            if (dialog.Closed || input.RightClick || input.Keys.Count > 0 || input.Text.Length > 0)
+            if (_rest.Length > 0)
+                Show(_rest);
+            else
                 Close();
         }
-        else if (input.LeftClick || input.RightClick || input.Keys.Count > 0 || input.Text.Length > 0)
-            Close();
         return true;
     }
 
@@ -281,23 +296,9 @@ public sealed class MessageBox
             shortMessage.Draw(s, a);
             return;
         }
-        if (_lines.Length == 0)
-            return;
-        if (Fits)
-        {
+        if (_lines.Length > 0)
             Dialog(_title?.Invoke() ?? "").Draw(s, a);
-            return;
-        }
-        // [APPROX] Mehr als vier Zeilen: früherer Rahmen, Lage und Größe nicht aus dem Video belegt.
-        var width = Math.Max(110, _lines.Max(l => a.Mini.Measure(l)) + 24);
-        var height = 22 + 8 * _lines.Length;
-        var r = new Rect(160 - width / 2, 120 - height / 2, width, height);
-        Widgets.Frame(s, a, r, FrameStyle.Orange);
-        for (var i = 0; i < _lines.Length; i++)
-            s.TextCentered(a.Mini, 160, r.Y + 11 + 8 * i, _lines[i], Colors.White);
     }
-
-    private bool Fits => _lines.Length <= 4;
 
     private OriginalDialog Dialog(string title) => _lines.Length switch
     {

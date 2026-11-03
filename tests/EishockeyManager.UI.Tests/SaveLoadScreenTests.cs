@@ -199,7 +199,11 @@ public class SaveLoadScreenTests : IDisposable
             Assert.NotEmpty(screen.MessageLines);
             Assert.Same(game, d.Host.Game);
             Assert.Equal(before, Fingerprint(d));
-            d.Press(Key.Enter); // Meldung schließen
+            d.Press(Key.Enter); // Enter schließt die Meldung nicht (nur Linksklick, Datei 0x4C246, E3 Runde 12)
+            Assert.NotEmpty(screen.MessageLines);
+            for (var page = 0; page < 3 && screen.MessageLines.Count > 0; page++)
+                d.CloseMessage(); // mehr als vier Zeilen: Seiten zu je vier Zeilen (UM-3, Runde 12)
+            Assert.Empty(screen.MessageLines);
             d.Press(Key.Escape);
             Assert.IsType<MainMenuScreen>(d.Host.Current);
         }

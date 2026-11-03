@@ -110,7 +110,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
      listen, die Leitstelle schließt sie in der Integration an.
   4. **E4** (nach `re-pruefung`): Hauptmenü angleichen oder Ausnahme in `AGENTS.md` §4 begründet vorschlagen (Leitstelle).
   5. **Pixel M-K4, M-K9, L8:** 4BA58h; 0C5CEh/45D46h; Spielende-Bildschirm 51F3Dh (`SeasonEndGameOverScreen`).
-- **Dateigrenzen:** siehe Zuständigkeit Runde 11 und oben. **Modell:** Claude Opus 5.5. **Status:** geplant.
+- **Dateigrenzen:** siehe Zuständigkeit Runde 11 und oben. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig (PR #483); Teile 2–4 warten auf `re-pruefung` (#480).
 
 ### Spur `pixel-marker` – Welle 2 (nach der Integration der übrigen Spuren)
 

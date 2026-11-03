@@ -135,11 +135,14 @@ public class OriginalDialogCallersTests
     }
 
     [Fact]
-    public void MessageBox_MoreThanFourLines_KeepsOldFrame_AndStillCloses()
+    public void MessageBox_MoreThanFourLines_ShowsSecondPage_ThenCloses()
     {
+        // Runde 12 (ui-meldungen Teil 1, UM-3): Seiten zu vier Zeilen im Fenster 0x4C246 statt des früheren Rahmens.
         var box = new MessageBox();
         box.Show("a", "b", "c", "d", "e");
         Assert.True(box.Visible);
+        Assert.True(box.Update(new InputState { MouseX = 5, MouseY = 5, LeftClick = true }));
+        Assert.Equal(["e"], box.Lines);
         Assert.True(box.Update(new InputState { MouseX = 5, MouseY = 5, LeftClick = true }));
         Assert.False(box.Visible);
     }
