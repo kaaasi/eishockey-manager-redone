@@ -26,21 +26,31 @@ internal static class TestSquadKeeper
     /// <summary>Kadergröße, unter der nachgekauft wird (Aufstellung 16 = Torhüter, sechs Verteidiger, neun Stürmer).</summary>
     public const int MinSquad = 18;
 
-    public static void KeepPlayable(GameState game, Manager manager)
+    /// <summary>
+    /// Was <see cref="KeepPlayable"/> getan hat (kader-transfer Teil 3, WS-05): <paramref name="Bought"/> = regulär
+    /// verpflichtete Vertragslose; <paramref name="Moved"/> = ohne Kauf umgesetzte Spieler (Rückfallweg, verdeckt einen leeren
+    /// Markt); <paramref name="MarketEmpty"/> = der Kader war zu klein und die Transferliste hatte keinen Vertragslosen mehr.
+    /// </summary>
+    public readonly record struct KeepReport(int Bought, int Moved, bool MarketEmpty);
+
+    public static KeepReport KeepPlayable(GameState game, Manager manager, bool allowFallback = true)
     {
         if (manager.Dismissed)
-            return;
+            return default;
         TestSeason.KeepSquad(game, manager);
         var club = game.Clubs[manager.ClubIndex];
+        int bought = 0, moved = 0;
         while (club.Players.Count < MinSquad && Next(game, club) is { } listing)
         {
             if (game.TransferMarket.Buy(game, manager, listing, 0, loan: false) != TransferResult.Accepted)
                 break;
+            bought++;
         }
+        var marketEmpty = club.Players.Count < MinSquad && Next(game, club) is null;
         // Integration Runde 11 (+ wettbewerbe-spiel): Seit der Poolumverteilung (kader-transfer Teil 5) steht zu Saisonbeginn oft
         // kein vertragsloser Spieler auf der Liste (Originaldaten, Seed 3: Kader 12 nach dem Abstieg). Dann einen Spieler eines
         // Computervereins ohne Kauf umsetzen – keine Buchung, kein Zufall; nur die Probe, kein Spielweg.
-        while (club.Players.Count < MinSquad && Donor(game, club) is { } donor)
+        while (allowFallback && club.Players.Count < MinSquad && Donor(game, club) is { } donor)
         {
             var role = Needed(club);
             var player = donor.Players.Where(p => p.Role == role && p.Available).OrderBy(p => p.Name, StringComparer.Ordinal).FirstOrDefault()
@@ -49,8 +59,10 @@ internal static class TestSquadKeeper
             donor.Players.Remove(player);
             player.Number = PlayerFactory.FreeNumber(club, player);
             club.Players.Add(player);
+            moved++;
         }
         club.Lineup.FillGaps(club.Players);
+        return new KeepReport(bought, moved, marketEmpty);
     }
 
     private static Club? Donor(GameState game, Club club) => game.Clubs

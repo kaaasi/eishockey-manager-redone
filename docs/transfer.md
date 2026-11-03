@@ -482,3 +482,13 @@ Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die
   Verein wird dorthin getauscht, bei Bundesliga immer mit einem Zufallsverein) und kennt den Sonderfall „eine Saison“ (Datei
   0x29CFA). Das Remake wählt den Verein fest oder zufällig; die Start-Liga-Regler gehört nur zur Zufallswahl, und es gibt keine
   Spiellänge. Eine Übernahme würde die Vereinswahl der Spielvorbereitung ändern.
+
+## Probe-Rückfallweg (WS-05, Runde 12)
+
+`TestSquadKeeper.KeepPlayable` meldet jetzt per `KeepReport`, wie viele Vertragslose gekauft (`Bought`), wie viele Spieler
+ohne Kauf umgesetzt (`Moved`, Rückfallweg) wurden und ob die Transferliste leer war (`MarketEmpty`). `KaderTransferWs05Tests`
+sichern ab, dass der Rückfallweg nur bei leerem Markt greift, und geben je Saison die Zahlen aus. **Befund:** In vier
+Saisonwechseln (Seeds 3/21 synthetisch, 3/5 mit Originaldaten, passiv und aktiv) wurde der Rückfallweg nie benutzt
+(gekauft 0, umgesetzt 0, Markt-leer 0): Die Kader des Managers bleiben dank Vertragsverlängerungen ≥ 18; ob zu Saisonbeginn
+nach Abstieg Vertragslose verpflichtbar sind, ist damit in diesen Seeds nicht gefordert. Der frühere Seed-3-Fall der Probe
+(Kader 12 nach Abstieg) tritt unter den heutigen Regeln nicht mehr auf.
