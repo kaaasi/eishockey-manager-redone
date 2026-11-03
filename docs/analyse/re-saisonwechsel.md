@@ -267,3 +267,63 @@ K1, K2 (ein Fall) und K4 sind durch den DOSBox-Beleg gestützt und dürfen mit V
 K3 und K5 bleiben bis zu einem eigenen Beleg `[APPROX]`.
 
 **Status Umsetzung (Runde 11, Spur `saisonwechsel`):** K1 und K2 umgesetzt in Teil 1 (PR #419); K3 in Teil 2 (PR #428, `[APPROX]` bis zum Beleg „FILE15“); K4 in Teil 3 (PR #431); Proben (#329, #362, Mehrsaisonprobe Modus 1) in Teil 4 (PR #432).
+
+## Doppelwechsel im Original – Aufnahme (Runde 12, D3)
+
+**Frage** (Review #441 SW-01, #458 SW-05/06, Gesamtreview #474 Bereich 2): Was macht em.exe, wenn ein Managerverein der 2. Liga am
+29. April zwangsweise absteigt (Konto unter −666.666,67 DM, Abschnitt 2) und zugleich über die Aufstiegsrunde in die Bundesliga
+aufsteigt? Das Remake (`SeasonFlow.Zwangsabstieg.cs`, `ResolveDoubleMoves`, `[APPROX]` nach dem Disassembly): Der Verein bleibt in
+der Bundesliga; der Bundesligist, der im Tausch Bundesliga/2. Liga auf seinen Platz kam (Paarpartner), geht zwei Ligen tiefer in die
+Oberliga; Ligagrößen 12/12/12. Die Aufnahme belegt zugleich den Zwangsabstieg selbst (Kandidat K3, Beleg „FILE15“ oben).
+
+Keine Vorlage hat einen Manager in der 2. Liga (FILE01–11 Bundesliga bzw. „nur Weltkugel“, FILE12–14 Oberliga), und
+`emtool hok patch` ändert die Liga nicht. Deshalb wie beim Oberliga-Beleg drei Schritte.
+
+**Schritt 1 (Nutzer, einmalig):** In DOSBox ein neues Spiel: ein Manager, Spielmodus Fahne + Weltkugel, **Level 0**, **Dauer ≥ 2**
+(sonst endet das Spiel am 29. April, Abschnitt 4), **Start-Liga 2. Liga**, die **stärkste** angebotene Start-Stärke (der Verein muss
+die 2. Liga und die Aufstiegsrunde gewinnen). Sofort sichern als `FILE15.HOK`, Bild des Hauptmenüs (Verein, Konto) dazu.
+Die Leitstelle legt beides im Referenz-Repo unter `original/spielstaende/` ab (Branch `daten/…`, PR).
+
+**Schritt 2 (Leitstelle):** Sprung vor den 42. Spieltag wie bei FILE13 (Kalender: 42. Spieltag = 31.01.1994, Tageszähler 144;
+`spieltag` gilt für alle drei Ligen) und Konto unter die Grenze des Zwangsabstiegs:
+
+```
+emtool hok patch FILE15.HOK FILE16.HOK datum=31.01.1994 zaehler=144 spieltag=42 konto=-1000000
+```
+
+Probe am Code (03.11.2026, Spur `saisonwechsel` Teil 5) mit FILE12 als Ersatzvorlage: Der Befehl schreibt einen Stand mit gültigen
+Prüfsummen, Datum 31.01.1994, Konto −3.000.000 Drittel = −1.000.000 DM; `hok dump` liest ihn. Die Probedatei ist nicht abgelegt.
+−1.000.000 DM liegt unter der Grenze des Zwangsabstiegs und über der Entlassungsgrenze des Remakes (−1,5 Mio. DM, ohnehin nur
+`[APPROX]`, im Original nicht belegt).
+
+**Schritt 3 (Nutzer, DOSBox; Bilder ins Referenz-Repo, Namen `file16_…`):**
+
+1. FILE16 laden. Hauptmenü fotografieren (31.01.1994, 42. Spieltag, Konto −1.000.000 DM, Liga-Anzeige 2. Liga).
+2. Spieltage 42–44 spielen (die Tabelle kennt nur diese Spiele, siehe FILE13). Nach dem 44. Spieltag die Tabelle **2. Liga**
+   fotografieren. Der eigene Verein muss unter den ersten zwei stehen (Teilnehmer der Aufstiegsrunde); sonst FILE16 neu laden.
+   Steht er dort: sichern als `FILE16A.HOK` (Zwischenstand für Wiederholungen der Aufstiegsrunde).
+3. Aufstiegsrunde spielen. Am Ende die Tabelle **„Play-Off / Aufstiegsrunden“** fotografieren, **Gruppe Bundesliga/2. Liga mit allen
+   vier Plätzen** (wichtig für die Auswertung: Reihenfolge der Plätze 1–4). Der eigene Verein muss auf Platz 1 oder 2 stehen, sonst
+   FILE16A neu laden und die Runde wiederholen.
+4. Vor dem 29. April (z. B. am 14. April, „Saisonende“) das Konto prüfen: Es muss **unter −666.667 DM** liegen. Liegt es darüber
+   (Heimspieleinnahmen), einen Spieler vom Transfermarkt kaufen, bis es darunter liegt, und fotografieren.
+5. Am 29. April alle Fenster fotografieren, besonders **Ereignisse** (erwartet nach Abschnitt 2: Symbol 0, keine Pfeile) und
+   **Saisonende** (Spalten je Liga, rot/grün – wer steht wo?).
+6. Erstes Hauptmenü der neuen Saison (10. September): Liga des eigenen Vereins (Infoleiste, Gegner), dann die Tabellen
+   **Bundesliga, 2. Liga und Oberliga** zum 1. Spieltag fotografieren (Vereine zählen). Spielstand sichern als `FILE17.HOK`.
+7. Falls der Manager unterwegs entlassen wird oder das Spiel eine Meldung zu den Schulden zeigt: Bild und Datum festhalten,
+   Stand sichern, abbrechen – das ist selbst ein Befund (Entlassung im Original nicht belegt).
+
+**Auswertung (Spur `saisonwechsel` bzw. Folgerunde, nach Ablage von FILE16/FILE17 und den Bildern):**
+
+| Erwartung Remake | Gegenbefund |
+|---|---|
+| Eigener Verein in der neuen Saison in der **Bundesliga** | eigener Verein in der Oberliga (Zwangsabstieg geht vor) oder in der 2. Liga |
+| Der Bundesligist der Aufstiegsrunde mit **demselben Paarindex** geht in die **Oberliga** (Platz 1 der Gruppe ↔ höher platzierter Bundesligist auf Platz 3/4, Platz 2 ↔ der andere; zählt nur Zweitligisten auf 1–2 und Bundesligisten auf 3–4) | ein anderer Verein der Gruppe in der Oberliga, oder der Partner nur in der 2. Liga |
+| Ligagrößen **12/12/12** | 12/13/11 o. ä. |
+| Ereignisse: Symbol 0, keine Pfeile, keine Aufstiegsprämie | Pfeil hoch oder Aufstiegsprämie |
+
+Abgleich mit `emtool hok dump FILE17.HOK` (Liga-Stufe je Verein) und dem Remake-Test
+`SaisonwechselDoppelwechselTests.ForcedFromSecondLeague_PromotedInRelegationRound_StaysUp_PartnerDropsTwoLeagues`. Bestätigt die
+Aufnahme die Regel, wechseln die Marker in `ResolveDoubleMoves` und für K3 auf `[ORIGINAL]` mit Bildverweis; sonst neue Regel nach
+dem Befund mit rotem Regressionstest.
