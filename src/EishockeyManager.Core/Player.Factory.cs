@@ -57,6 +57,31 @@ public static class PlayerFactory
         return p;
     }
 
+    /// <summary>
+    /// Nachfolger eines Spielers, der die Laufbahn beendet hat (noch in keinem Kader). [ORIGINAL] Neuanlage im selben Pooleintrag,
+    /// Datei 0x2787A–0x279DA: Alter random(18, 25), s = random(40, 92), die Grundstärken (Pool +0x15, +0x16) je
+    /// random(s − 5, s + 5), Länderspiele (+0x19) 0; der Verein bleibt. Im Remake sind das Kondition und Technik.
+    /// [APPROX] Das Original behält den Namen des Pooleintrags; das Remake legt einen neuen Spieler an (neuer Name, neue ID), damit
+    /// der Ruheständler mit seiner Laufbahn erhalten bleibt. Form random(45, 60), Talent random(0, 9) und Energie
+    /// <see cref="TalentEnergy"/> sind ergänzt (im Original nicht belegt).
+    /// </summary>
+    public static Player CreateRenewal(GameState game, string name, PlayerRole role, Random random)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        var p = new Player { Name = name, Role = role };
+        p.Age = TransferRules.Random16(random, 18, 25);
+        var s = TransferRules.Random16(random, 40, 92);
+        p.Condition = Player.Clamp(TransferRules.Random16(random, s - 5, s + 5));
+        p.Technique = Player.Clamp(TransferRules.Random16(random, s - 5, s + 5));
+        p.Form = TransferRules.Random16(random, 45, 60);
+        p.Talent = TransferRules.Random16(random, 0, 9);
+        p.Energy = TalentEnergy;
+        p.Trend = PlayerTrend.Rising;
+        game.AssignPlayerId(p);
+        HiddenSkills.Roll(p, HiddenSkills.SourceFor(game, p.Id));
+        return p;
+    }
+
     /// <summary>Neues Talent für den laufenden Spielstand: wie oben, zusätzlich mit neuer Spieler-ID (Spur „speichern“).</summary>
     public static Player CreateTalent(GameState game, string name, PlayerRole role, int clubStrength, Random random)
     {

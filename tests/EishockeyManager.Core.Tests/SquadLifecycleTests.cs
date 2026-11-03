@@ -12,7 +12,7 @@ public class SquadLifecycleTests
     private static Club OwnClub(GameState game) => game.Clubs[game.Managers[0].ClubIndex];
 
     /// <summary>Spielt bis zum Saisonende; <paramref name="eachStep"/> läuft nach jedem Weiter-Schritt.</summary>
-    private static void PlaySeason(GameState game, Action? eachStep = null)
+    internal static void PlaySeason(GameState game, Action? eachStep = null)
     {
         for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
         {
@@ -219,7 +219,7 @@ public class SquadLifecycleTests
             .Concat(game.TransferMarket.PoolPlayers);
 
     /// <summary>Aktiver Manager: nimmt jedes Verlängerungsangebot zur Forderung an.</summary>
-    private static void ExtendOffers(GameState game)
+    internal static void ExtendOffers(GameState game)
     {
         foreach (var p in OwnClub(game).Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1))
             Assert.Equal(NegotiationResult.Accepted,
@@ -227,7 +227,7 @@ public class SquadLifecycleTests
     }
 
     /// <summary>Aktiver Manager: füllt den Kader zu Saisonbeginn mit ablösefreien Spielern auf 20 auf.</summary>
-    private static void SignFreeAgents(GameState game)
+    internal static void SignFreeAgents(GameState game)
     {
         var manager = game.Managers[0];
         while (OwnClub(game).Players.Count < 20

@@ -555,6 +555,7 @@ public sealed partial class TransferMarket
                 slot.Owner = PoolOwner.Free;
             }
             slot.Player.Age++;
+            game.RenewAgedPoolPlayer(slot); // [ORIGINAL] Laufbahnende und Neuanlage im Poolplatz (Datei 0x2787A, Spur kader-transfer, U5)
         }
         Rename(game, nationals: true, random, HeldNames(game), exchange: true);
         Rename(game, nationals: false, random, HeldNames(game), exchange: true); // nach dem Tausch neu bestimmt

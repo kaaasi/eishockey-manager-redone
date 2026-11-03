@@ -234,6 +234,12 @@ public sealed partial class TransferMarket
         if (ListChangeRoll(game.Managers.Count, random))
             ChangeList(game, random);
 
+        // [ORIGINAL] Verfall offener Gebote an den Marktplätzen (Datei 0x07215–0x0726A): random(0, 3) = 0 löscht Bit 0x80 samt
+        // Meldung (Spur kader-transfer, Runde 12, U4); der Wurf fällt nur bei einem offenen Gebot.
+        foreach (var bid in _bids.ToList())
+            if (TransferRules.Random16(random, 0, 3) == 0)
+                _bids.Remove(bid);
+
         foreach (var listing in _listings.Where(l => l.Seller is not null).ToList())
         {
             var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, random);
