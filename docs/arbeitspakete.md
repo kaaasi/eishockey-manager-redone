@@ -186,7 +186,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** Gegenbeispiel R10N-01 (Mutation `perl -pi` aus dem Review #408) ohne Statuswechsel; `funktionskarte.py
   --write` danach ohne Diff; für Teil 3 je Marker der Abgleich mit der Doku im PR.
 - **Dateigrenzen:** siehe Zuständigkeit; die genannten Doku-Dateien; in Teil 3 nur Kommentarzeilen in `src/`.
-  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 #422, Teil 2 #423 integriert; Teil 3 offen (Leitstelle legt Lauf an).
+  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 #422, Teil 2 #423 integriert; Teil 3 in Arbeit (Branch `paket/marker-werkzeug-3`, PR siehe unten; Marker A026/A044/A139/A276 auf `[ORIGINAL]`, A140/A141 geteilt, A264/A265 bleiben `[APPROX]`; R11I-01 in `inventur.md`).
 
 ### Integration Runde 11 (Leitstelle)
 

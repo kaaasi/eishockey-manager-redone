@@ -60,8 +60,8 @@ public sealed partial class GameState
 
     /// <summary>
     /// Hauptmenü des Bundestrainers: im Modus „nur Weltkugel“ führt Manager 0 das Nationalteam (im Original der Zug
-    /// „Manager 5“, DGROUP 0xA70E = 5). [APPROX] Schon vor der Ernennung am ersten WM-Termin, damit das Menü des
-    /// Vereins im Modus 1 nie erscheint. Im Modus 4 nur während des Zugs des Bundestrainers (<see cref="NationalTurn"/>).
+    /// „Manager 5“, DGROUP 0xA70E = 5). [ORIGINAL] Im Modus 1 springt die Tagesfunktion am ersten Tag (0x54CEE) und ruft
+    /// das Hauptmenü erst am Tagesende (0x555A3), so dass das Menü des Vereins nie erscheint (dosbox-befunde.md). Im Modus 4 nur während des Zugs des Bundestrainers (<see cref="NationalTurn"/>).
     /// </summary>
     public bool NationalCoachMenu => WorldOnly || _nationalTurn;
 

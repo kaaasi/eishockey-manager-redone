@@ -26,8 +26,8 @@ public sealed record DebCupOverview(int Round, int DatesPlayed, int? NextDay, IR
     /// Runden 2–5 auf die neue Rundennummer 2–5 gesetzt (0x348E2) und beim Saisonwechsel auf 0 gelöscht (Schleife 0x565D3–0x565EC
     /// über DGROUP 0x7AC–0x7B0). Die erste Runde heißt also nur in der ersten Saison „Erste Runde“, danach bleibt der Name leer
     /// (Videobilder: „Erste Runde“ `oberflaeche_0400` im ersten Spieljahr; nur das Datum `duell_s2a_01217`, `folge13_02545`).
-    /// [APPROX] Ein geladener Spielstand der ersten Saison zeigt hier ebenfalls „Erste Runde“ (ob das Original das Byte mitsichert,
-    /// ist nicht geprüft).
+    /// [ORIGINAL] Ein geladener Spielstand der ersten Saison zeigt hier ebenfalls „Erste Runde“: der Block Datei 0x0903B sichert
+    /// DGROUP 0x7A9–0x7B0, also auch 0x7AD (formate/spielstand-original.md).
     /// </summary>
     public static string RoundTitle(int round, int season) =>
         round == 0 && season != GameState.FirstSeason ? "" : DebCup.RoundNames[round];
