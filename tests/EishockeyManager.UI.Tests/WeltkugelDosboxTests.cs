@@ -190,8 +190,8 @@ public class WeltkugelDosboxTests
     /// [ORIGINAL] Datei 0x3BB51 (<c>mov byte [bx+0x5DD6],0x46</c>, Schleife über 29 Plätze ab 0x3BB22): Das Öffnen von
     /// „WM Vorbereitung“ setzt die Energie aller belegten Kaderplätze auf 70. [APPROX] Entscheidung des Nutzers
     /// (30.10.2026, PR #189): Das Remake setzt sie beim ersten Freundschaftsspiel der Saison, weil Bildschirme beim
-    /// Öffnen nichts ändern; der Abzug je Spiel (70 − 3 · 8 = 46) gehört zu `spielberechnung`. Vorher blieb die Energie
-    /// unverändert.
+    /// Öffnen nichts ändern. Runde 12 (A184, wettbewerbe-spiel Teil 2): Das Byte 0x5DD6 − 0x5DC3 = +0x13 ist die Belastung,
+    /// keine Energie; die Spalte E zeigt Belastung · 10 / 15 (Datei 0x4235E), also 70 → 46 – kein Abzug je Spiel.
     /// </summary>
     [Fact]
     public void FirstFriendly_SetsSquadEnergyTo70()
@@ -210,7 +210,8 @@ public class WeltkugelDosboxTests
         game.NationalAccount = 10_000_000;
 
         Assert.Equal(FriendlyResult.Played, game.PlayFriendly(opponent, home: false));
-        Assert.All(coach.Squad, m => Assert.Equal(NationalCoach.FriendlyEnergy, m.Player.Energy));
+        Assert.All(coach.Squad, m => Assert.Equal(NationalCoach.FriendlyEnergy, m.Player.Strain));
+        Assert.All(coach.Squad, m => Assert.Equal(46, TrainingRules.ExhaustionDisplay(m.Player))); // DOSBox: Spalte E 46
         Assert.Equal(55, outsider.Energy);
 
         // Nur beim ersten Spiel der Saison: ein zweites Spiel setzt nicht erneut.
@@ -266,7 +267,7 @@ public class WeltkugelDosboxTests
 
         var opponent = NationalTeams.First == game.NationalCoach.Nation ? NationalTeams.First + 1 : NationalTeams.First;
         Assert.Equal(FriendlyResult.Played, game.PlayFriendly(opponent, home: false));
-        Assert.All(game.NationalCoach.Squad, m => Assert.Equal(NationalCoach.FriendlyEnergy, m.Player.Energy));
+        Assert.All(game.NationalCoach.Squad, m => Assert.Equal(NationalCoach.FriendlyEnergy, m.Player.Strain));
     }
 
     /// <summary>
@@ -329,7 +330,7 @@ public class WeltkugelDosboxTests
                     m.Player.Energy = 55;
                 var opponent = NationalTeams.First == coach.Nation ? NationalTeams.First + 1 : NationalTeams.First;
                 Assert.Equal(FriendlyResult.Played, game.PlayFriendly(opponent, home: false));
-                Assert.All(coach.Squad, m => Assert.Equal(NationalCoach.FriendlyEnergy, m.Player.Energy));
+                Assert.All(coach.Squad, m => Assert.Equal(NationalCoach.FriendlyEnergy, m.Player.Strain));
                 seasonsWithFriendly.Add(game.Season);
             }
             if (game.Phase == SeasonPhase.SeasonOver)

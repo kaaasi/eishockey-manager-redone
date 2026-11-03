@@ -203,6 +203,7 @@ Managerpaarung werden die Werte aus den eingesetzten Spielern der Reihe gebildet
 | Lader der Teamwerte 0x2EF1B (Streuung, Form, Tagesform), Tagesform nach Ligaspielen 0x4F527 | `[ORIGINAL]`, Zeitpunkt des Ziehens `[APPROX]` (Abschnitt 12) | `MatchEngine.LoadTeamValues`, `UpdateDayForm`, `Club.TeamValues` |
 | Verletzungen im Spiel | umgesetzt (§17) | `OriginalMinutes.Injuries`, `PlayerInjuries` |
 | Anschluss an Spieltage, Zähler je Saison, Mehrsaisonprobe | erledigt (Teil 3), Sollwerte auf dem Branch | `MatchEngine.PlayWithEvents`, Abschnitt 11 |
+| Computervereine ohne Kaderbezug (A174, Runde 12 Teil 3): Teamwert = Datenbankstärke, Aufstellung wirkt nur bei Managervereinen (`[APPROX]`) | `[ORIGINAL]` (0x977F liest nur die Vereinsfelder) | `MatchEngine.TeamValue(GameState, Club)`, `ComputerTeamValue` |
 
 Rollenwert (Spielerfeld 0x18) führt das Remake nicht: `[APPROX]` Verteidiger 33, Stürmer 83 (Mitte der Spannen).
 Verletzungen im Spiel sind noch nicht gesucht (Kandidat: Kaderplatz-Felder in 0x548A8 ff.); das Remake erzeugt im Spiel
@@ -382,7 +383,10 @@ Reihenfolge gilt auch für die Strafen dieser Minute), ungerade Minute `0x80CB(a
   Kondition > lrandom(0, 100) + 2; auf dem Eis: Minuten m + 1, − ((lrandom(0, Einsatz) + 75)/40 + 1) − 4 (m ≥ lrandom(0, 5))
   − 8 (m > lrandom(5, 15)), 1 … 99. Managerverein ebenso je eingesetztem Kaderplatz (Kondition des Spielers; vorher
   lrandom(0, 4 + (Kondition > Technik)) = 0 → Belastung + 1), danach Reihenenergie = Summe der Feldspieler / 3 (Abwehr mit
-  90 für den fehlenden dritten Platz).
+  90 für den fehlenden dritten Platz). Seit Runde 12 (A184) führt das Remake die Belastung als eigenes Feld (`Player.Strain`):
+  + 1 wie oben (Datei 0x8C82), nach dem Spiel eines Managervereins 50 … 150 für alle Kaderplätze (Spielabrechnung 0x544C0,
+  Datei 0x549A2–0x549BB). Mit dem Standardplan erholt das Training nicht (Erholung 0), die Belastung der Stammspieler steigt
+  daher über die Saison bis 150 (Spalte E 100) – nur freie Einheiten senken sie.
 - **0x80CB** (nur Computervereine bzw. „Automatisch“): Modi (2, 2); (2, 1) bei Führung von a nach Minute 40 oder weniger
   Feldspielern; (1, 2) bei Rückstand nach Minute 40 oder mehr Feldspielern, sonst Stärkevergleich 2·S (8 Bit):
   +20 → (3, 2), +15 → (2, 3). Computer ziehen in Minute 58/59/68/69 bei einem Tor Rückstand den Torhüter (wirksam 59/69).

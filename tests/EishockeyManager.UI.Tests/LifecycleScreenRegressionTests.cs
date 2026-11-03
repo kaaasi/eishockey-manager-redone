@@ -41,10 +41,13 @@ public class LifecycleScreenRegressionTests
         // Verein 59 (0x5ACA0 Art 0). Ändert sich der Zufallsverlauf, hier den neuen Ausgang eintragen und begründen.
         // Integration Runde 11 (geld + saisonwechsel + kader-transfer): anderer Zufallsverlauf der Hauptquelle, jetzt der
         // zweite stimmige Ausgang – zurück im Poolplatz (Herkunft Verein 59), ohne Vertrag, in keinem Kader.
+        // Runde 12, wettbewerbe-spiel Teil 2 (A184, Belastung + 1 je Spielminute und Grenzen nach dem Spiel ändern Ergebnisse
+        // und Zufallsverlauf): wieder der erste stimmige Ausgang – im Kader von Verein 59 mit um ein Jahr verkürztem Vertrag.
         Assert.Equal(59, origin.Index);
-        Assert.Contains(player, game.TransferMarket.PoolPlayers);
-        Assert.Equal(0, player.ContractYears);
-        Assert.All(game.Clubs, c => Assert.DoesNotContain(player, c.Players));
+        Assert.DoesNotContain(player, game.TransferMarket.PoolPlayers);
+        Assert.Equal(2, player.ContractYears);
+        Assert.Contains(player, origin.Players);
+        Assert.All(game.Clubs.Where(c => c != origin), c => Assert.DoesNotContain(player, c.Players));
         Assert.DoesNotContain(player, club.Players);
         Assert.DoesNotContain(expired, club.Players);
         Assert.All(game.Clubs, c => Assert.All(c.Lineup.Players, p => Assert.Contains(p, c.Players)));

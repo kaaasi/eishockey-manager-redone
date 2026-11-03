@@ -26,7 +26,7 @@ public class StadiumStrengthTests
         var game = Create();
         var club = ComputerClub(game);
         club.TeamValues = new ClubTeamValues(DefenseCondition: 3, AttackCondition: -2, DefenseTechnique: 5, AttackTechnique: 1, DefenseForm: 48, AttackForm: 52, DayForm: 50);
-        var value = MatchEngine.TeamValue(club);
+        var value = MatchEngine.TeamValue(game, club);
         Assert.Equal((4 * value + 3 - 2 + 5 + 1 + 48 + 52) / 6, SpectatorRules.Strength(game, club));
     }
 

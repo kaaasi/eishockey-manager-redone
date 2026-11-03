@@ -134,7 +134,7 @@ public sealed partial class GameState
     /// <summary>
     /// Freundschaftsspiel vereinbaren und sofort austragen („WM Vorbereitung“, Datei 0x3BF9B ff.): Kosten vom
     /// <see cref="NationalAccount"/>, Ergebnis, Wertebonus für alle Kaderspieler, Länderspiele der Aufstellung.
-    /// [APPROX] Das Original setzt die Energie aller Kaderspieler beim Öffnen von „WM Vorbereitung“ auf
+    /// [APPROX] Das Original setzt die Belastung (Kaderplatz +0x13) aller Kaderspieler beim Öffnen von „WM Vorbereitung“ auf
     /// <see cref="NationalCoach.FriendlyEnergy"/> (Datei 0x3BB51). Bildschirme ändern beim Öffnen keinen Zustand,
     /// deshalb setzt das Remake sie beim ersten Freundschaftsspiel der Saison, vor dem Spiel (Entscheidung des Nutzers,
     /// PR #189). Abweichung: Im Original setzt jedes erneute Öffnen wieder auf 70, im Remake nur das erste Spiel. Den
@@ -153,7 +153,7 @@ public sealed partial class GameState
         BookNational(NationalBookingKind.Friendly, -cost);
         if (coach.Friendlies.Count == 0)
             foreach (var member in coach.Squad)
-                member.Player.Energy = NationalCoach.FriendlyEnergy;
+                member.Player.Strain = NationalCoach.FriendlyEnergy; // Kaderplatz +0x13 (A184)
 
         var random = CupRandom;
         // Reihenfolge der Zufallszahlen wie im Original: x vor dem Spiel, Bonus danach.

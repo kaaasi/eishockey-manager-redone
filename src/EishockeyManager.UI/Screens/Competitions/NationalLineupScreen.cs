@@ -26,6 +26,9 @@ public sealed class NationalLineupScreen : Screen
     /// <summary>Farbe der Zeile „Eingesetzt: n“. [ORIGINAL] Datei 0x41D84 (Farbe 0x10).</summary>
     public const byte DressedColor = 16;
 
+    /// <summary>Spalte E bei Belastung über 130. [ORIGINAL] Datei 0x4233F (<c>mov byte [bp-0x6], 0x10</c>).</summary>
+    public const byte ExhaustionColor = 0x10;
+
     private readonly Screen _back;
     private readonly MessageBox _message;
     private Player? _selectedPlayer;
@@ -212,7 +215,8 @@ public sealed class NationalLineupScreen : Screen
             s.TextRight(mini, 178, y, p.Penalties5.ToString(), c);
             if (coach.StatusOf(p) is { } status)
                 s.Text(mini, 185, y, TeamUi.StatusText(status), c);
-            s.TextRight(mini, 231, y, p.Energy.ToString(), c);
+            // [ORIGINAL] Spalte E = Belastung · 10 / 15, Farbe 0x10 über 130 (Datei 0x42335–0x4236D; A184, Runde 12).
+            s.TextRight(mini, 231, y, TrainingRules.ExhaustionDisplay(p).ToString(), TrainingRules.ExhaustionWarning(p) ? ExhaustionColor : c);
         }
         TeamUi.StatusLine(s, Assets, 131, LineupScreen.StatusY, HoverText(coach, rows));
 

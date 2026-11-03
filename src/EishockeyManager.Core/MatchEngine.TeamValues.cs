@@ -159,14 +159,14 @@ public static partial class MatchEngine
         club.TeamValues ?? new ClubTeamValues(0, 0, 0, 0, club.Index > 64 ? 45 : 50, club.Index > 64 ? 45 : 50, 50);
 
     /// <summary>
-    /// Vereinsfelder 0x18–0x1D eines Computervereins (Abwehr, Sturm): Kondition und Technik = <see cref="TeamValue"/> +
+    /// Vereinsfelder 0x18–0x1D eines Computervereins (Abwehr, Sturm): Kondition und Technik = <see cref="ComputerTeamValue"/> +
     /// Streuung des Laders bzw. Stand der Wanderung, Form 0x1C/0x1D. Dieselben Werte nutzt die Minutenrechnung
     /// (<see cref="LiveTeamOf"/>) und die Stärketabelle (<see cref="StrengthTable"/>, 0x51206). [ORIGINAL] Der Lader begrenzt
     /// nicht (bis v + v/10); begrenzt wird erst beim Lesen (0x977F bzw. 0x120:0x52 in 0x51206).
     /// </summary>
     public static (PartValues Defense, PartValues Attack) ClubFieldValues(Club club)
     {
-        var value = TeamValue(club);
+        var value = ComputerTeamValue(club);
         var v = TeamValuesOf(club);
         return (new PartValues(value + v.DefenseCondition, value + v.DefenseTechnique, v.DefenseForm),
             new PartValues(value + v.AttackCondition, value + v.AttackTechnique, v.AttackForm));
