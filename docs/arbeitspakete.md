@@ -52,7 +52,8 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   `docs/analyse/re-runde-12.md` mit Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser Runde). Ein Lauf,
   keine Teile, keine Fortsetzung.
 - **Dateigrenzen:** nur `docs/analyse/re-runde-12.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** fertig,
-  PR #480 (Review offen); Ergebnis und Umsetzung je Punkt in `analyse/re-runde-12.md`.
+  PR #480; Befunde Review #494 (R12RP-01 bis -06) behoben, Nachprüfung offen; Ergebnis und Umsetzung je Punkt in
+  `analyse/re-runde-12.md`.
 
 ### Spur `geld` – Testlücken, Stadionstärke, Pixel Finanzen
 
