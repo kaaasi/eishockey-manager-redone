@@ -79,4 +79,60 @@ public class StadiumScreenTests
         d.Press(Key.Escape);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
+    /// <summary>
+    /// Pixelprobe G7 (Spur geld Teil 3): rechter Block gegen DOSBox-Bild <c>file15_2_stadion</c> (FILE15.HOK, Eintritt 12 DM,
+    /// Konto 650.000 DM; nur im privaten Referenz-Repo). Gemessene Spalten: Beschriftung ab x = 213, Doppelpunkt x = 267,
+    /// Sitz-/Stehplatz- und Eintrittswerte ab x = 271, Konto-Betrag endet bei x = 310; Zeile „Eintritt“ beginnt in y = 190.
+    /// </summary>
+    [GameDataFact]
+    public void RightBlockColumnsMatchDosBoxImage()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        game.ActiveManager.Money = 650_000;
+        var stadium = game.Finance(game.ActiveManager).Stadium;
+        stadium.Seats = 2_500;
+        stadium.Standing = 3_500;
+        stadium.TicketPrice = 12;
+        d.OpenTile("Stadion");
+        d.Move(319, 239);
+        var px = d.Surface.Pixels;
+        var bg = px[230 * Surface.Width + 200];
+
+        List<(int From, int To)> Runs(int x0, int x1, int y0, int y1)
+        {
+            var runs = new List<(int, int)>();
+            int? start = null;
+            for (var x = x0; x < x1; x++)
+            {
+                var on = false;
+                for (var y = y0; y < y1 && !on; y++)
+                    on = px[y * Surface.Width + x] != bg;
+                if (on && start is null) start = x;
+                if (!on && start is { } s) { runs.Add((s, x - 1)); start = null; }
+            }
+            return runs;
+        }
+
+        int Top(int x0, int x1, int y0, int y1)
+        {
+            for (var y = y0; y < y1; y++)
+                for (var x = x0; x < x1; x++)
+                    if (px[y * Surface.Width + x] != bg) return y;
+            return -1;
+        }
+
+        var seats = Runs(205, 320, 177, 185);
+        Assert.Equal(213, seats[0].From);
+        Assert.Equal(267, seats.First(r => r.From >= 260).From);
+        Assert.Equal(271, seats.First(r => r.From >= 268).From);
+        var ticket = Runs(211, 320, 187, 197);
+        Assert.Equal(213, ticket[0].From);
+        Assert.Equal(272, ticket.First(r => r.From >= 268).From);
+        Assert.Equal(190, Top(211, 260, 186, 198));
+        var account = Runs(205, 320, 228, 237);
+        Assert.Equal(213, account[0].From);
+        Assert.Equal(310, account[^1].To);
+    }
 }

@@ -180,7 +180,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).</summary>
     [GameDataTheory]
     [InlineData(false, "137C2086DE7F5381")]
-    [InlineData(true, "FB70395F3C43EFFE")]
+    [InlineData(true, "941096B786570172")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

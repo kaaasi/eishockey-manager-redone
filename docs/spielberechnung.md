@@ -749,9 +749,10 @@ Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/StatisticsStrength.cs
   Tagesform (47 … 53).
 - `[APPROX]` Managervereine aus der aktuellen Aufstellung statt dem Stand des letzten Tageslaufs; vor dem ersten Spiel
   eines Spielstands (Teamwerte noch nicht gezogen) Streuung 0, Form und Tagesform 50.
-- **Finanzen unverändert:** `StrengthTable.TeamValues` (Monatseinnahme `FinanceMonthly`, Zuschauer `FinanceStadium`)
-  rechnet weiter aus den Spielerwerten; die Umstellung der Aufrufer (A035 bzw. 0x4D316) gehört zur Spur geld bzw. der
-  Integration. Kein Zufallszug, Spielergebnisse und Geld bleiben gleich.
+- **Finanzen (Stand Runde 12, Spur geld Teil 2):** `StrengthTable.TeamValues` liest jetzt dieselben Vereinsfelder wie die
+  Stärketabelle; die Zuschauerstärke (`SpectatorRules.Strength`, Datei 0x4D316) ist das Mittel der sechs Felder 0x18–0x1D, die
+  Monatseinnahme (`FinanceMonthly.TeamValueSum`, 0x3E657) las sie schon. Kein Zufallszug mehr oder weniger; Meister und
+  Zufallszustände bleiben gleich, nur die Konten ändern sich (Abdrücke `GameModeTests.Mode4Reference`, `RngTwinProbeTests`).
 - **Über-/Unterzahl in der Vereinsstatistik (A349):** Der Anschluss der Zähler aus §18 an „Statistiken → Verein“ war
   schon vorhanden (`Manager.PowerPlayCounts`); geprüft über die Zeitleiste (`WettbewerbeSpiel4ScreenTests`), der
   veraltete `[APPROX]`-Kommentar in `ClubStatisticsScreen` ist ersetzt.

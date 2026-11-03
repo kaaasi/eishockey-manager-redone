@@ -247,6 +247,7 @@ Dateigrenzen dieser Spur oder zu groß für sie (Folgespur).
 | `FinanceStadium.cs:190/196` Unterhalt | bestätigt | `0x3EA0B–0x3EA8C`: Stufen · DGROUP `0x94` (24000, 7500, 33000, 3000, 4800, 9000, 15000, 15000, 7500) + 15·Sitz + 12·Steh |
 | `FinanceStadium.cs:204` Zuschauer | **abweichend in einem Punkt, behoben** | `0x3F63C–0x3F65B`: geteilt durch rnd(2, 5) nur bei 16 + 3·(2 − Liga) **<** Preis·3/2 (teure Karten); Rest der Formel, Tabellen `0x4FD0/0x4FE0/0x4FF2`, Rundung und Buchung bestätigt |
 | `FinanceStadium.cs:281` Stärke | bestätigt | `0x4D316` (0x128:0x25): Σ der sechs Teamwerte / 6 |
+| `SpectatorRules.Strength` (Runde 12) | umgesetzt | liest die Vereinsfelder 0x18–0x1D (Computerverein Lader/Wanderung, Manager Aufstellung 0x952C), nicht mehr die Spielerwerte; Test `StadiumStrengthTests` |
 | Monatsabschluss, Kontogrenze (ohne Marker) | **fehlte, behoben** | `0x3F10E–0x3F165`: Kontostand auf ±500.000.000 Drittel begrenzt |
 | `FinancePremiums.cs:6` Meisterprämie | **abweichend, behoben** | `0x55CD7` vergleicht mit [0x387] = **DEB-Pokalsieger** (Titelbild `0x350B6`); Meister [0xD0E6] nur Statusbit (`0x55BE4`). Video: Pokalsieg 600.000 DM, Meister 200.000 DM |
 | `FinancePremiums.cs:13` Einzelprämien 100.000 DM | **abweichend**: Pokal/Europapokal behoben, **fehlende Ereignisse #135** | `0x271A9` bester Torhüter, `0x271EF` Topscorer der eigenen Liga im Kader (Rangliste 0xC8:0x20), Europapokalsieg ohne Geld (`0x55D86`) |
@@ -655,3 +656,42 @@ Funktion Datei 0x5DBE5–0x5E88F (Ov 0x140), `SaveLoadScreen.cs`. Maustaste in `
 | Beenden: Name ohne „.HOK“ wird um „.HOK“ ergänzt | 0x5DB4B–0x5DB7F | Remake nutzt „.ems“ |
 
 Tests: `SaveLoadScreenTests.RightClickOnEntry_TakesNameButDoesNotLeaveOrLoad`, `LeftClickOnEntry_WithSameNameTyped_LoadsAtOnce` (beide vor dem Fix rot). Zeichnung unverändert; Pixelvergleich nicht neu erhoben (Referenzbilder `oberflaeche_0100`–`_0103` wie in der Klassenbeschreibung).
+
+## Vermerk Tagesanschlüsse (R11G-06, Runde 12)
+
+`DailyYouth`, `DailyTalentSearch`, `DailyStadium` und `YouthSeasonChange` hängen in `GameState.Manager.cs` in der bestehenden
+täglichen Finanzschleife bzw. im Saisonwechsel (statt `GameState.Integration.cs`). Reihenfolge wie im Original (0x55008,
+0x54C9F, 0x3ED19); bewusst so belassen, weil es dieselbe Schleife ist, die früher `AdvanceTalentSearch` rief.
+
+## Pixelprobe G7/G8 gegen Video (Runde 12, Spur geld Teil 3)
+
+Vorlage: Oberflächen-Video `oberflaeche_0813` (Stadion, Spielbeginn; Auswahl per Differenz gegen `emtool screens … stadion`, 7,5 % der
+Pixel weichen ab) und `folge01_00510` (Finanzen, Bank, Spielbeginn). Messung: Verschiebung (dx, dy) mit kleinstem mittlerem
+Grauwertfehler, Videobild ca. (−0,25 | +0,5) Pixel gegenüber dem Original (`docs/portierung.md`).
+
+- **G7 Stadiontabelle (0x3D45F, 0x3E52B):** Linke Tabelle (Namen, Doppelpunkt, Stufentexte, neun Zeilen) deckt sich bei (0, 0); die
+  Zeilenabstände stimmen. Rechter Block (Sitz-/Stehplätze, Eintritt mit ▲▼, Konto): Video 1 Pixel weiter rechts (dx = +1; Eintritt
+  und Pfeile dx = +1, dy = +1). Aus einem Einzelbild ist das nicht von Skalierungsrauschen zu trennen – **keine Änderung** am Code,
+  Messung offen für den Abgleich mit der Zeichenroutine (`[APPROX]` bleibt für die x-Lage des rechten Blocks; Konstanten
+  `RightLabelX`/`RightColonX`/`RightValueX` in `StadiumScreen.cs`). Das Kontostand-Feld (500.000 vs. 400.000 DM) ist Zustand, kein Layoutbefund.
+- **G8 Finanzübersicht (0x57CFB, 0x57ECF, 0x581C2):** Rechte Übersicht (Kontostand, Untereinander, Bank, Aktien, Kaufpreis, Depot-Wert,
+  Depot-Saldo) hat dieselbe Reihenfolge, Beschriftung und Ausrichtung (Beschriftungen links, Beträge rechtsbündig in „DM“); die Zeilen
+  liegen im Video 1–2 Pixel tiefer (Kaufpreis ≈ +2 gegenüber der Aktien-Zeile). Die Kästen links (Kurs/Zahl/Kauf/Wert) und der Kursverlauf
+  waren im Video ein anderer Zustand (Spielbeginn nach dem Laden, Kurse zufällig), sie sind nur nach Layout (Farben je Papier) vergleichbar. Kein Befund
+  mit Sollwert; eine Änderung der Zeilenhöhen braucht ein zustandsgleiches Bild (gleiche Kurse und Kontostand).
+- **Ergebnis:** G7 und G8 sind geprüft, ohne Code-Änderung; offene Maße oben. Für eine verbindliche Korrektur fehlt ein Bild mit
+  gleichem Spielzustand.
+
+### Nachmessung G7/G8 mit DOSBox-Bildern (Runde 12, Spur geld, Fortsetzung 1)
+
+Vorlage: `original/spielstaende/bilder/file15_2_stadion.png` und `file15_3_finanzen.png` (Referenz-Repo, DOSBox 0.74, ungeschnitten,
+2×-Pixelverdopplung, Spielfläche ab (1 | 26)), Zustand `FILE15.HOK` (Eintritt 12 DM, Konto 650.000 DM). Zustandsgleich gerendert
+(Stufen, Plätze, Eintritt, Konto, Kurse 104/95/62/156 DM) und Spalten bzw. Zeilen je Element gemessen – die frühere Video-Unschärfe entfällt.
+
+- **G7 Stadion, [ORIGINAL] statt [APPROX]:** rechter Block: Beschriftung ab x = 213 (vorher 212), Doppelpunkt x = 267 (262), Werte
+  ab x = 271 (266), Konto-Betrag rechtsbündig bis x = 310 (309), Zeile „Eintritt“ in y = 190 (189). Linke Liste ist unverändert
+  (Doppelpunkt/Werte dort schon ± 0). Korrigiert in `StadiumScreen.cs`, Test `RightBlockColumnsMatchDosBoxImage`.
+- **Offen:** ▲▼ sind im Original Grafik (Bereich x 192–210, y 190–195, schattiert), bei uns gezeichnete Dreiecke (`[APPROX]`);
+  der Hinweistext „… ausbauen“ beginnt bei x = 213, y = 201 (Randzeile, nicht geändert, solange die Auswahl-Zeilen ohne Bild bleiben).
+- **G8 Finanzübersicht:** rechte Übersicht stimmt zustandsgleich ohne Verschiebung (dx = dy = 0; Zeilen 130, 154, 166, 214 praktisch
+  pixelgleich). Die 1–2 px tieferen Zeilen im Video waren Videoversatz. **Keine Änderung nötig**, G8 erledigt.

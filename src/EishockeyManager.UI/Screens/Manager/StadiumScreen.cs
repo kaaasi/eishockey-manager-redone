@@ -28,9 +28,13 @@ public sealed class StadiumScreen : Screen
     public static readonly Rect LevelUp = new(194, 210, 7, 6);
     public static readonly Rect LevelDown = new(202, 210, 7, 6);
     public static readonly Rect LevelBox = new(212, 208, 103, 11);
-    private const int RightLabelX = 212;
-    private const int RightColonX = 262;
-    private const int RightValueX = 266;
+    // [ORIGINAL] gemessen am DOSBox-Bild file15_2_stadion (Referenz-Repo, FILE15.HOK; Spur geld Teil 3, Pixelprobe G7):
+    // Beschriftung ab x = 213, Doppelpunkt x = 267, Werte ab x = 271, Konto-Betrag rechtsbündig bei 312, Eintritt-Zeile y = 190.
+    private const int RightLabelX = 213;
+    private const int RightColonX = 267;
+    private const int RightValueX = 271;
+    private const int AccountRight = 312;
+    private const int TicketRowY = 190;
 
     /// <summary>
     /// Bereiche im Stadionbild. Gastronomie, Kino, Bowlingbahn, Überdachung und Verkehrsanbindung aus den
@@ -292,7 +296,7 @@ public sealed class StadiumScreen : Screen
         Row(SeatsRow.Y + 1, "Sitzplätze", Number(Stadium.Seats));
         Row(StandingRow.Y + 1, "Stehplätze", Number(Stadium.Standing));
         Arrows(s, TicketUp, TicketDown);
-        Row(189, "Eintritt", $"{Stadium.TicketPrice} DM");
+        Row(TicketRowY, "Eintritt", $"{Stadium.TicketPrice} DM");
 
         var shown = _hover ?? _selected;
         if (_notice is { } notice && _hover is null)
@@ -321,7 +325,7 @@ public sealed class StadiumScreen : Screen
         }
 
         s.Text(mini, RightLabelX, 232, "Konto:", LabelColor);
-        s.TextRight(mini, 311, 232, GameState.FormatMoney(Me.Money), LabelColor);
+        s.TextRight(mini, AccountRight, 232, GameState.FormatMoney(Me.Money), LabelColor);
     }
 
     /// <summary>[APPROX] ▲▼ als kleine Dreiecke gezeichnet (Grafik nicht gefunden).</summary>
