@@ -128,7 +128,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   Migration, Mehrsaisonprobe. Marker M-K10 auf „nicht nötig“.
 - **Dateigrenzen:** `tools/reverse-engineering/*`, `docs/re-abdeckung.md`, `docs/analyse/inventur.md`, Pixel-Fundstellen in
   den betroffenen Bildschirmen (nur Lage/Farbe), Tests; für Teil 3 `Core/FinanceInbox.cs`. **Modell:** Claude Sonnet 5.5.
-  **Status:** geplant.
+  **Status:** Teil 3 fertig (PR #542); Teil 1 (R-K2…R-K5) fertig (PR #543); Teil 2 offen.
 
 ### Entscheidungen zum Start (Nutzer, 03.11.2026)
 
