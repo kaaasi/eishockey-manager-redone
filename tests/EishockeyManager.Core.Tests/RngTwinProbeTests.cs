@@ -180,9 +180,11 @@ public class RngTwinProbeTests
         Assert.Equal(expected, Run(game, active));
     }
 
+    // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
+    // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "842BCF1E4E4DB320")]
-    [InlineData(true, "735F117A722426AD")]
+    [InlineData(false, "3A0FE774F0C0390C")]
+    [InlineData(true, "96F3FFBFB7EE9C3D")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

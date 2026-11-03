@@ -183,10 +183,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): neu – Computervereine ohne Kaderbezug (Begründung ebenda).
     /// Integration Runde 12 (geld + wettbewerbe-spiel): aktiver Abdruck auf dem integrierten Stand neu ermittelt – die
     /// Zuschauerstärke aus den Vereinsfeldern (geld Teil 2, 0x4D316) ändert Einnahmen und damit Kauf- und Vertragsentscheidungen
-    /// des aktiven Managers; der passive Abdruck bleibt.</summary>
+    /// des aktiven Managers; der passive Abdruck bleibt.
+    /// R12I-01 (Review #514): neue Kaderplätze (Pool, Talente) mit Belastung random(80, 120) statt 51 … 70 (Datei 0x42E4C) –
+    /// Spieler vom Markt sind belasteter, beide Abdrücke (Originaldatenbank) neu; die synthetischen Abdrücke (Seed 3/11) bleiben.</summary>
     [GameDataTheory]
-    [InlineData(false, "0971EB079BD2E088")]
-    [InlineData(true, "D21A19FFA304AAE8")]
+    [InlineData(false, "34A3BAD14269642C")]
+    [InlineData(true, "1B38DFFC9043836F")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
