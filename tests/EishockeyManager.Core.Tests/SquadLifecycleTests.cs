@@ -215,7 +215,19 @@ public class SquadLifecycleTests
         Assert.True(known.Count > startPlayers.Length, "keine Neuzugänge aus Talenten");
         Assert.Contains(startPlayers, p => p.Age >= 32 && game.RetiredPlayers.Contains(p));
         if (active)
+        {
+            // Runde 12 (Integrationsfehler Kaderprobe): Der Markt ist zum Saisonstart oft leer – U4 verwirft Angebote, U5 lässt
+            // Spieler länger spielen, und der Listenwechsel kommt erst im Tagesablauf (0x54E65, je Tag mit Wahrscheinlichkeit
+            // 1/(Managerzahl + 2)). Ein echter Spieler kauft in den ersten Tagen nach; die Probe tut es über die Zeitleiste.
+            // Das Original verbietet einen kleinen Kader nicht (nur „Weniger als neun Spieler!“, 0x5447D), die Grenze 18 bleibt.
+            for (var guard = 0; guard < 60 && OwnClub(game).Players.Count < 18 && game.Phase == SeasonPhase.Running; guard++)
+            {
+                game.Managers[0].Money = 10_000_000;
+                game.Continue();
+                SignFreeAgents(game);
+            }
             Assert.True(OwnClub(game).Players.Count >= 18, $"aktiver Manager hat nur {OwnClub(game).Players.Count} Spieler");
+        }
         _ = managerPlayers;
     }
 
