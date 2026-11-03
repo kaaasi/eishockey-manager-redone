@@ -356,7 +356,7 @@ public static class SpectatorRules
     public static int Compute(Stadium stadium, int homeStrength, int awayStrength, int homeRank, int awayRank,
         int homeLeague, int awayLeague, int importance, int levelSteps, Random random)
     {
-        // [ORIGINAL] Datei 0x38:0x847: random(a, b) mit b < a tauscht die Grenzen (finanzen-rekonstruktion.md „Zufall“; Fall negativer Preisfaktor K).
+        // [ORIGINAL] Datei 0xC037 (0x38:0x847 in finanzen-rekonstruktion.md): random(a, b) mit b < a tauscht die Grenzen (finanzen-rekonstruktion.md „Zufall“; Fall negativer Preisfaktor K).
         int Rnd(int a, int b) => a <= b ? SquadSetup.Between(random, a, b) : SquadSetup.Between(random, b, a);
         var hs = homeStrength + 17;
         var @as = awayStrength + 17;

@@ -78,3 +78,8 @@ Originaldarstellung bleibt unverändert.
   laufen alle Paarungen des Spieltags durch die Minutenschleife, sonst je nach Anzeigeschalter des Wettbewerbs
   (0x3702E–0x37085). Das Remake entscheidet je Paarung und bleibt dabei (Entscheidung Nutzer). Nach v1.0 als Einstellung
   „wie im Original“ anbieten; sie ändert Ergebnisse und Zufallsverbrauch der Spiele ohne Manager.
+- **Meldungsfenster per Taste oder Rechtsklick schließen (03.11.2026, Entscheidung Nutzer E3, C):** Im Original schließt
+  eine Meldung (Meldungsfenster, Kurzmeldung) nur der Linksklick bzw. der Knopf. Das Remake schließt sie derzeit zusätzlich
+  per Rechtsklick, Taste und Texteingabe (`TeamUi.MessageBox`, `[APPROX]`, Komfort). Das wird zurückgebaut (Kandidat
+  Runde 12); danach gilt wie im Original nur der Linksklick. Erst nach v1.0 als abschaltbare Einstellung „Meldungen mit Taste
+  oder Rechtsklick schließen“ wieder anbieten (ändert nur die Bedienung, keinen Spielzustand).

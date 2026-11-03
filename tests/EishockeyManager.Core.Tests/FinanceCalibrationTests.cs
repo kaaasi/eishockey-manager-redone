@@ -290,7 +290,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 // Saison 3–4 an „Weniger als neun Spieler“ unter; deshalb hält die Probe den passiven Kader spielfähig (unten, nach
                 // dem Saisonwechsel). Dass ein rein passiver Bundesliga-Manager entlassen wird, prüft
                 // PassiveBundesligaManager_WithoutCare_IsDismissed getrennt.
-                // Integration Runde 11 (+ wettbewerbe-spiel, vorläufig – Bestätigung Nutzer offen): Der passive Bundesliga-Manager
+                // Integration Runde 11 (+ wettbewerbe-spiel; Entscheidung Nutzer 03.11.2026, E1, A): Der passive Bundesliga-Manager
                 // (25 Spieler, keine Werbung) steht mit dem integrierten Stand länger als acht Wochen unter −1,5 Mio. DM und wird
                 // nach der Regel selbst entlassen (Originaldaten, Seed 17, Saison 2). Die Probe prüft dann die Ursache und endet
                 // für diesen Seed; die Hüllkurve gilt bis dahin.
