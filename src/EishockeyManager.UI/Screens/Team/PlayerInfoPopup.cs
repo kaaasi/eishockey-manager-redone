@@ -82,7 +82,7 @@ public sealed class PlayerInfoPopup
         p.TrendScore != 0
             ? Math.Clamp((p.TrendScore - 30) * 100 / 38, 0, 99)
             : p.Trend switch { PlayerTrend.Rising => 84, PlayerTrend.Falling => 15, _ => 50 },
-        100 - Math.Clamp(p.Energy, 0, 100),
+        Math.Clamp(p.Strain - 50, 0, 100), // [APPROX] wie bisher 100 − Energie, aus der Belastung (R12I-01)
     ];
 
     public void Draw(Surface s, Assets a)

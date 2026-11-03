@@ -273,7 +273,10 @@ public sealed class LineupScreen : Screen
             s.TextRight(mini, 178, y, p.Penalties5.ToString(), c);
             if (dressed.Contains(p) || p.InjuredGames > 0 || p.SuspendedGames > 0)
                 s.Text(mini, 185, y, TeamUi.StatusText(club.StatusOf(p)), c);
-            s.TextRight(mini, 231, y, p.Energy.ToString(), c);
+            // [ORIGINAL] Spalte E = Belastung · 10 / 15, Farbe 0x10 über 130 wie in der Nationalaufstellung (Datei 0x42335–0x4236D;
+            // A184, Integration Runde 12, R12I-01).
+            s.TextRight(mini, 231, y, TrainingRules.ExhaustionDisplay(p).ToString(),
+                TrainingRules.ExhaustionWarning(p) ? Competitions.NationalLineupScreen.ExhaustionColor : c);
         }
         TeamUi.StatusLine(s, Assets, 131, StatusY, HoverText(rows));
 
