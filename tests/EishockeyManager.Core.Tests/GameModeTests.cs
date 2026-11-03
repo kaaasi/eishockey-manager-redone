@@ -362,8 +362,10 @@ public class GameModeTests
     // (Stand der Spur vor der Integration; integrierter Stand siehe Zusammenfassung oben.)
     // Spur geld, Teil 2 (Runde 12, 0x4D316): Zuschauerstärke aus den Vereinsfeldern statt den Spielerwerten – nur die Konten ändern sich
     // (Meister, Pokalsieger und Zufallszustand R/C bleiben gleich).
+    // Integration Runde 12 (geld + wettbewerbe-spiel): Stand der Spur wettbewerbe-spiel mit den Konten nach geld Teil 2 – Meister,
+    // Pokalsieger und R/C wie bei wettbewerbe-spiel, nur die Kontostände weichen ab.
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=1,EuropeanCupWinner=2|309266,500000|WorldChampion=54,CupWinner=10,GermanChampion=0,EuropeanCupWinner=1|778682,500000|WorldChampion=53,CupWinner=10,GermanChampion=1,EuropeanCupWinner=0|2362825,400000|WorldChampion=55,CupWinner=0,GermanChampion=10,EuropeanCupWinner=1|3353464,-6334514|WorldChampion=53,CupWinner=6,GermanChampion=3,EuropeanCupWinner=10|500000,-12925992|R624177291 C1638076128";
+        "WorldChampion=53,CupWinner=0,GermanChampion=1,EuropeanCupWinner=2|312841,500000|WorldChampion=54,CupWinner=10,GermanChampion=0,EuropeanCupWinner=1|880576,500000|WorldChampion=53,CupWinner=10,GermanChampion=1,EuropeanCupWinner=0|2448417,400000|WorldChampion=55,CupWinner=0,GermanChampion=10,EuropeanCupWinner=1|3378476,-6370213|WorldChampion=53,CupWinner=6,GermanChampion=3,EuropeanCupWinner=10|500000,-12999836|R624177291 C1638076128";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
