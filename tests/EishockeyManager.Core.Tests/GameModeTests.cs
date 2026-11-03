@@ -364,11 +364,12 @@ public class GameModeTests
     // (Meister, Pokalsieger und Zufallszustand R/C bleiben gleich).
     // Integration Runde 12 (geld + wettbewerbe-spiel): Stand der Spur wettbewerbe-spiel mit den Konten nach geld Teil 2 – Meister,
     // Pokalsieger und R/C wie bei wettbewerbe-spiel, nur die Kontostände weichen ab.
+    // Integration Runde 12 (+ kader-transfer): neu – U4/U5/U9 ändern Spielverlauf, Titel, Konten und Zufallszustand.
     // Spur kader-transfer, Runde 12, Teil 1 (U4, U5): ab Saison 2 neu – Angebote verfallen (Datei 0x0767A, 0x07626), Computerspieler und
     // Poolplätze enden bei Alter > random(37, 42) mit Nachfolger (Datei 0x2787A; andere Poolbenennung, anderer Zufallsverbrauch).
     // Der passive Testmanager 1 verlängert nur angebotene Verträge: sein Konto fällt in Saison 5 auf −6.990.533.
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=1,EuropeanCupWinner=2|312841,500000|WorldChampion=54,CupWinner=10,GermanChampion=0,EuropeanCupWinner=1|880576,500000|WorldChampion=53,CupWinner=10,GermanChampion=1,EuropeanCupWinner=0|2448417,400000|WorldChampion=55,CupWinner=0,GermanChampion=10,EuropeanCupWinner=1|3378476,-6370213|WorldChampion=53,CupWinner=6,GermanChampion=3,EuropeanCupWinner=10|500000,-12999836|R624177291 C1638076128";
+        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|502709,500000|WorldChampion=55,CupWinner=8,GermanChampion=4,EuropeanCupWinner=3|1747123,400000|WorldChampion=57,CupWinner=15,GermanChampion=16,EuropeanCupWinner=3|2408769,500000|WorldChampion=54,CupWinner=17,GermanChampion=17,EuropeanCupWinner=16|2785511,-4113566|WorldChampion=63,CupWinner=11,GermanChampion=11,EuropeanCupWinner=17|400000,-8111821|R1213235468 C1251305994";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
