@@ -232,6 +232,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 var minRoster = roster;
                 long maxContracts = game.Ads(manager).MonthlyIncome;
                 var keptSet = false;
+                var shortHandedSeen = false;
                 var seasonLowest = Math.Min(Math.Min(manager.Money, previousSeasonEnd), recentBalances.DefaultIfEmpty(0).Min());
                 for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
                 {
@@ -258,6 +259,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     var price = stadium.TicketPrice;
                     var capacity = stadium.Capacity;
                     game.Continue();
+                    shortHandedSeen |= game.IsShortHanded(club);
                     maxRoster = Math.Max(maxRoster, club.Players.Count);
                     minRoster = Math.Min(minRoster, club.Players.Count);
                     var book = game.Finance(manager).Book;
@@ -294,12 +296,22 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 // (25 Spieler, keine Werbung) steht mit dem integrierten Stand länger als acht Wochen unter −1,5 Mio. DM und wird
                 // nach der Regel selbst entlassen (Originaldaten, Seed 17, Saison 2). Die Probe prüft dann die Ursache und endet
                 // für diesen Seed; die Hüllkurve gilt bis dahin.
-                // WS-02 (Review #468): Ausnahme nur für den bekannten Fall Seed 17; jeder andere Seed muss vier Saisons schaffen.
-                if (!active && league == League.Bundesliga && manager.Dismissed && seed == 17)
+                // WS-02 (Review #468) beschränkte die Ausnahme auf Seed 17. Spur wettbewerbe-spiel Teil 2 (A184; Entscheidung Nutzer
+                // 03.11.2026, D4 = A): Mit der Belastung des Originals (+ 1 je Spielminute 0x8C82, Grenzen 0x549A2, Erholung 0 beim
+                // Standardplan) steigt die Belastung der Stammspieler auf 150; der passive Bundesliga-Manager ist schwächer und
+                // scheidet bei weiteren Seeds aus (Originaldaten Seed 3: Saison 2 nach der Schuldenregel ohne Strafen; synthetisch Seed 3:
+                // Saison 3 nach „Weniger als neun Spieler!“, 7 · 200.000 DM, dann Schuldenregel). Zugelassen sind deshalb für jeden
+                // Seed genau diese beiden Ursachen, beide Originalregeln: Entlassung nur über die Schuldenregel (CheckDebts, acht Wochen
+                // unter −1,5 Mio. DM) und Strafen nur aus „Weniger als neun Spieler!“ (0x5447D: 200.000 DM je Spiel, einzige
+                // Buchung der Kategorie), die nur gebucht werden, wenn der Verein in dieser Saison nicht spielfähig war (GameState.IsShortHanded nach einem Tag).
+                if (!active && league == League.Bundesliga && manager.Dismissed)
                 {
                     Assert.True(manager.Money < Manager.DebtLimit, $"Entlassung ohne Schulden: {manager.Money}");
                     Assert.True(manager.DebtDays >= Manager.DebtDaysUntilDismissal, $"Entlassung nach {manager.DebtDays} Tagen");
-                    Assert.Equal(0, game.Finance(manager).Book.Current(FinanceCategory.Strafen));
+                    var penalties = game.Finance(manager).Book.Current(FinanceCategory.Strafen);
+                    Assert.Equal(0, penalties % GameState.ShortHandedPenalty);
+                    Assert.True(penalties == 0 || shortHandedSeen, $"Strafen {penalties} ohne „Weniger als neun Spieler!“");
+                    output.WriteLine($"seed={seed}; Saison {year + 1}: entlassen nach der Schuldenregel; Strafen={penalties}; Kader={club.Players.Count}");
                     dismissedByRule = true;
                     break;
                 }
@@ -382,7 +394,8 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 Assert.True(lowest > Manager.DebtLimit, $"Konto unter der Entlassungsgrenze: {lowest}");
             Assert.True(maxDebtDays < Manager.DebtDaysUntilDismissal, $"{maxDebtDays} Tage unter der Grenze ohne Entlassung");
         }
-        // WS-02: Die Mehrsaisonprobe bleibt erbracht – mindestens zwei Seeds laufen vier Saisons.
-        Assert.True(dismissedSeeds <= 1, $"{dismissedSeeds} Seeds entlassen");
+        // WS-02: Die Mehrsaisonprobe bleibt erbracht – außer passiv in der Bundesliga (D4 = A, oben) laufen alle Seeds vier
+        // Saisons; dort prüft jeder ausgeschiedene Seed die Ursache, mindestens einer muss die vierte Saison erreichen.
+        Assert.True(dismissedSeeds <= (!active && league == League.Bundesliga ? 2 : 0), $"{dismissedSeeds} Seeds entlassen");
     }
 }
