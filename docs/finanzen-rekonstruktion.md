@@ -681,3 +681,17 @@ Grauwertfehler, Videobild ca. (−0,25 | +0,5) Pixel gegenüber dem Original (`d
   mit Sollwert; eine Änderung der Zeilenhöhen braucht ein zustandsgleiches Bild (gleiche Kurse und Kontostand).
 - **Ergebnis:** G7 und G8 sind geprüft, ohne Code-Änderung; offene Maße oben. Für eine verbindliche Korrektur fehlt ein Bild mit
   gleichem Spielzustand.
+
+### Nachmessung G7/G8 mit DOSBox-Bildern (Runde 12, Spur geld, Fortsetzung 1)
+
+Vorlage: `original/spielstaende/bilder/file15_2_stadion.png` und `file15_3_finanzen.png` (Referenz-Repo, DOSBox 0.74, ungeschnitten,
+2×-Pixelverdopplung, Spielfläche ab (1 | 26)), Zustand `FILE15.HOK` (Eintritt 12 DM, Konto 650.000 DM). Zustandsgleich gerendert
+(Stufen, Plätze, Eintritt, Konto, Kurse 104/95/62/156 DM) und Spalten bzw. Zeilen je Element gemessen – die frühere Video-Unschärfe entfällt.
+
+- **G7 Stadion, [ORIGINAL] statt [APPROX]:** rechter Block: Beschriftung ab x = 213 (vorher 212), Doppelpunkt x = 267 (262), Werte
+  ab x = 271 (266), Konto-Betrag rechtsbündig bis x = 310 (309), Zeile „Eintritt“ in y = 190 (189). Linke Liste ist unverändert
+  (Doppelpunkt/Werte dort schon ± 0). Korrigiert in `StadiumScreen.cs`, Test `RightBlockColumnsMatchDosBoxImage`.
+- **Offen:** ▲▼ sind im Original Grafik (Bereich x 192–210, y 190–195, schattiert), bei uns gezeichnete Dreiecke (`[APPROX]`);
+  der Hinweistext „… ausbauen“ beginnt bei x = 213, y = 201 (Randzeile, nicht geändert, solange die Auswahl-Zeilen ohne Bild bleiben).
+- **G8 Finanzübersicht:** rechte Übersicht stimmt zustandsgleich ohne Verschiebung (dx = dy = 0; Zeilen 130, 154, 166, 214 praktisch
+  pixelgleich). Die 1–2 px tieferen Zeilen im Video waren Videoversatz. **Keine Änderung nötig**, G8 erledigt.
