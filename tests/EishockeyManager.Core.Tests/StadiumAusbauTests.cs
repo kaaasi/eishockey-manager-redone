@@ -111,15 +111,54 @@ public class StadiumAusbauTests
         Assert.InRange(discounts[0] / 3_000.0, 0.36, 0.43);
     }
 
-    /// <summary>Bauzeiten je Projekt aus DGROUP 0xEC/0xED (Bytes lo, hi).</summary>
+    /// <summary>
+    /// Bauzeiten je Projekt aus DGROUP 0xEC/0xED (Bytes lo, hi), alle 11 Zeilen in Projektreihenfolge (R11G-02; die Tabelle
+    /// wurde im Review #455 gegen die Datei geprüft).
+    /// </summary>
     [Theory]
     [InlineData(StadiumProject.Feature, StadiumFeature.Ueberdachung, 20, 30)]
+    [InlineData(StadiumProject.Feature, StadiumFeature.Anzeigetafel, 12, 17)]
+    [InlineData(StadiumProject.Feature, StadiumFeature.Kuehlanlage, 16, 25)]
+    [InlineData(StadiumProject.Feature, StadiumFeature.Sitzkomfort, 6, 9)]
     [InlineData(StadiumProject.Feature, StadiumFeature.Zustand, 5, 8)]
     [InlineData(StadiumProject.Feature, StadiumFeature.Verkehrsanbindung, 40, 60)]
+    [InlineData(StadiumProject.Feature, StadiumFeature.Gastronomie, 17, 24)]
+    [InlineData(StadiumProject.Feature, StadiumFeature.Kino, 14, 18)]
+    [InlineData(StadiumProject.Feature, StadiumFeature.Bowlingbahn, 10, 15)]
     [InlineData(StadiumProject.Sitzplaetze, default(StadiumFeature), 12, 17)]
     [InlineData(StadiumProject.Stehplaetze, default(StadiumFeature), 10, 14)]
     public void BuildTime_FromTable(StadiumProject project, StadiumFeature feature, int lo, int hi) =>
         Assert.Equal((lo, hi), Stadium.BuildTime(project, feature));
+
+    /// <summary>
+    /// R11G-01: Bauende genau nach den Restwochen. Datei 0x3D340–0x3D365: Restwochen 0 überspringen, 1 abziehen, bei 0 fertig.
+    /// Bei n Restwochen ist das Projekt nach n − 1 Wochen noch im Bau und nach der n-ten Woche fertig – nicht eine Woche früher.
+    /// </summary>
+    [Theory]
+    [InlineData(StadiumProject.Feature, StadiumFeature.Kino)]
+    [InlineData(StadiumProject.Sitzplaetze, default(StadiumFeature))]
+    [InlineData(StadiumProject.Stehplaetze, default(StadiumFeature))]
+    public void ConstructionEnds_InTheWeekWhenWeeksLeftReachZero(StadiumProject project, StadiumFeature feature)
+    {
+        var game = TestGames.Create();
+        var me = game.ActiveManager;
+        me.Money = Rich;
+        var stadium = game.Finance(me).Stadium;
+        Assert.True(game.StartConstruction(me, project, feature, stadium.FirstTarget(project, feature)));
+        var weeks = stadium.WeeksLeft(project, feature);
+        Assert.True(weeks >= 3);
+        for (var week = 1; week < weeks; week++)
+        {
+            Assert.Empty(stadium.AdvanceWeek());
+            Assert.True(stadium.IsUnderConstruction(project, feature));
+            Assert.Equal(weeks - week, stadium.WeeksLeft(project, feature));
+        }
+        var done = Assert.Single(stadium.AdvanceWeek());
+        Assert.Equal(project, done.Project);
+        Assert.False(stadium.IsUnderConstruction(project, feature));
+        Assert.Equal(0, stadium.WeeksLeft(project, feature));
+        Assert.Empty(stadium.AdvanceWeek());
+    }
 
     /// <summary>Nach „Ja“: Restwochen in [w − 2, w + 2]; fertig genau nach so vielen Bauwochen.</summary>
     [Fact]

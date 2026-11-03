@@ -61,7 +61,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   2. **`FinanceStadium.Strength`** mit Spielerwerten statt Vereinsfeldern (4D316h, PR #438) – Geldwirkung, Mehrsaisonprobe.
   3. **Pixel G7, G8:** Stadiontabelle 3D45Fh, Finanzübersicht 57CFBh/57ECFh/581C2h gegen Video (`boerse-start`).
 - **Dateigrenzen:** `Core/Finance*.cs`, `UI/Screens/Manager/*`, Tests, `docs/finanzen-rekonstruktion.md`. **Modell:** Claude
-  Sonnet 5.5. **Status:** geplant.
+  Sonnet 5.5. **Status:** Teil 1 fertig (PR `paket/geld-1`), Teile 2–3 offen.
 
 ### Spur `saisonwechsel` – Restbefunde, S-K1, Schema-22-Probe
 

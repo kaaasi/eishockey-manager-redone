@@ -178,8 +178,16 @@ public class JugendTeamsTests
             return string.Join(";", log);
         }
 
-        Assert.Equal(Run(), Run());
+        var run = Run();
+        Assert.Equal(run, Run());
+        // R11G-03: Sollwert des Protokolls (Seed 5, 4 Saisonwechsel) – Abdruck der Spur geld Teil 3 für Platz- und Stärkeverlauf.
+        Assert.Equal(active ? ExpectedActive : ExpectedPassive, run);
     }
+
+    private const string ExpectedActive =
+        "0:Schueler:2/11/63;0:Jugend:2/11/63;0:Junioren:2/11/64;1:Schueler:1/11/76;1:Jugend:1/11/74;1:Junioren:1/11/74;2:Schueler:1/6/79;2:Jugend:1/6/79;2:Junioren:1/6/80;3:Schueler:1/6/83;3:Jugend:1/6/82;3:Junioren:1/6/83";
+    private const string ExpectedPassive =
+        "0:Schueler:2/2/65;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:3/2/50;1:Jugend:3/2/51;1:Junioren:3/2/54;2:Schueler:3/6/44;2:Jugend:3/6/42;2:Junioren:3/6/43;3:Schueler:3/6/41;3:Jugend:3/6/41;3:Junioren:3/6/41";
 }
 
 public class JugendTeamsMigrationTests

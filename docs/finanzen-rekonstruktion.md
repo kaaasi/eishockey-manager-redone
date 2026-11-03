@@ -655,3 +655,9 @@ Funktion Datei 0x5DBE5–0x5E88F (Ov 0x140), `SaveLoadScreen.cs`. Maustaste in `
 | Beenden: Name ohne „.HOK“ wird um „.HOK“ ergänzt | 0x5DB4B–0x5DB7F | Remake nutzt „.ems“ |
 
 Tests: `SaveLoadScreenTests.RightClickOnEntry_TakesNameButDoesNotLeaveOrLoad`, `LeftClickOnEntry_WithSameNameTyped_LoadsAtOnce` (beide vor dem Fix rot). Zeichnung unverändert; Pixelvergleich nicht neu erhoben (Referenzbilder `oberflaeche_0100`–`_0103` wie in der Klassenbeschreibung).
+
+## Vermerk Tagesanschlüsse (R11G-06, Runde 12)
+
+`DailyYouth`, `DailyTalentSearch`, `DailyStadium` und `YouthSeasonChange` hängen in `GameState.Manager.cs` in der bestehenden
+täglichen Finanzschleife bzw. im Saisonwechsel (statt `GameState.Integration.cs`). Reihenfolge wie im Original (0x55008,
+0x54C9F, 0x3ED19); bewusst so belassen, weil es dieselbe Schleife ist, die früher `AdvanceTalentSearch` rief.
