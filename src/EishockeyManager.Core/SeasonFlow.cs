@@ -175,7 +175,19 @@ public sealed partial class GameState
         CleanLineups();
         CheckDebts(day, steps);
         if (Phase == SeasonPhase.GameOver)
+        {
+            // [APPROX] (Review #441, SW-02; Entlassung selbst ist nicht aus em.exe belegt, docs/saison.md): Fällt die
+            // Entlassung des letzten Managers auf den 29. April, schließt die Saison noch ab (Titel, Austausch, Ewige Tabelle,
+            // Chronik) – wie bei der Entlassung eines Teils der Manager an diesem Tag; entlassene Manager erhalten weder
+            // Platz noch Prämie. Vor #431 lief die Fortschreibung im Tageshook vor der Schuldenprüfung. Kein SeasonEndStep:
+            // die Oberfläche zeigt direkt das Spielende.
+            if (day == SeasonCalendar.SeasonEnd)
+            {
+                FinishSeason();
+                Phase = SeasonPhase.GameOver;
+            }
             return;
+        }
         MarkShortHandedClubs(); // Spur heimspiel-statistik (#165): Wertung 0:2/2:0 vor den Spielen des Tages
 
         var events = SeasonCalendar.Events(day);
@@ -310,7 +322,7 @@ public sealed partial class GameState
             var league = club.League ?? League.Oberliga;
             var rank = record.FinalTables[league].ToList().IndexOf(club.Index) + 1;
             var events = new List<SeasonEvent>();
-            // [APPROX] (K3, Disassembly ohne DOSBox-Beleg) Bit 0x04 unterdrückt beide Pfeile (Datei 0x56287–0x56334), Symbol 0.
+            // [ORIGINAL] (K3, Datei 0x56287–0x56334; DOSBox-Beleg `file16_9`, Teil 5 D3) Bit 0x04 unterdrückt beide Pfeile, Symbol 0.
             if (forced.Contains(i))
                 events.Add(SeasonEvent.ForcedRelegation);
             else if (record.PromotedInto.Values.Any(l => l.Contains(club.Index)))
@@ -320,6 +332,9 @@ public sealed partial class GameState
             // [ORIGINAL] Datei 0x562C1–0x56334 (S-K1, DOSBox-Beleg #389, `file13_15`): Bleibt der Verein als Letzter oder
             // Vorletzter in der Oberliga, setzt em.exe Bit 0x02 und Bit 0x01 (Pfeil hoch, Pfeil runter) und das Konto auf
             // 400.000 DM – gesetzt, nicht gebucht (neutral, kein Finanzbuch), vor den Prämien des Fensters (Datei 0x5645D).
+            // [ORIGINAL] E5 (re-runde-12.md, Datei 0x5629D–0x562DE): ohne Kontoprüfung – Guthaben wird gekürzt, Schulden
+            // gehoben; nur Gruppe 2 (Datei 0x562C6), nie Bundesliga/2. Liga. Bit 0x04 (Zwangsabstieg) prüft das Remake hier
+            // nicht: in der Oberliga nicht erreichbar (re-saisonwechsel.md Abschnitt 2). Tests: SaisonwechselKontoTests.
             if (KeptInOberliga(record, club.Index))
             {
                 events.Add(SeasonEvent.Relegation);
@@ -379,6 +394,7 @@ public sealed partial class GameState
         foreach (var club in Clubs)
             if (club.Index < NewGame.SelectableClubs)
                 club.League = record.NextLeague(club.Index, club.League);
+        AdvanceLeagueSlots(record); // S-K6: Satzfolge je Liga, Datei 0x5644E (SeasonFlow.LeagueSlots.cs)
 
         foreach (var league in Enum.GetValues<League>())
         {
