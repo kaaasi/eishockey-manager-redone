@@ -74,7 +74,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
      Originalmaterial) als Testdatei, laden, migrieren, 4 Saisonwechsel weiterspielen.
   5. **Gesamtreview #474, Bereich 2 (D3):** Spielstand für den Doppelwechsel per `hok-patch` vorbereiten, Aufnahmeablauf
      für den Nutzer im PR; Auswertung nach der Aufnahme (Teil bleibt bis dahin begründet offen).
-- **Dateigrenzen:** siehe Zuständigkeit; Tests (Testdateien unter `tests/**/TestData/`). **Modell:** Claude Opus 5.5. **Status:** Teile 1, 2, 4, 5 fertig (PR #481, #486, #488, #489); Teil 3 (E5, S-K6 = A) in Arbeit (PR folgt); Teil 6 (D5 = A: Saisonende-Fenster und Startordnung beim Doppelwechsel) offen.
+- **Dateigrenzen:** siehe Zuständigkeit; Tests (Testdateien unter `tests/**/TestData/`). **Modell:** Claude Opus 5.5. **Status:** Teile 1, 2, 4, 5 fertig (PR #481, #486, #488, #489); Teil 3 (E5, S-K6 = A) fertig (PR #510); Teil 6 (D5 = A: Saisonende-Fenster und Startordnung beim Doppelwechsel) fertig (PR folgt). Spur fertig – Integration.
 
 ### Spur `kader-transfer` – Nachträge U4/U5/U9/U15, E2
 

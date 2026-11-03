@@ -79,7 +79,7 @@ public sealed partial class GameState
     /// ersten beiden spielen oben“. [APPROX] (K3, ohne Beleg) Mit Zwangsabstieg kann derselbe Platz zweimal vorkommen
     /// (Zwangsabsteiger auf Platz 3 und 4); dann wirken beide Tausche nacheinander auf die Plätze, wie in em.exe. Das Ergebnis
     /// ist die Wanderung zwischen den Ligen. [APPROX] Das Remake hält keine Vereinsplätze; die Startordnung der Folgesaison
-    /// (<see cref="Season.SuccessorOrder"/>) paart Auf- und Absteiger in Listenreihenfolge. Nur im Fall mit doppeltem Platz
+    /// (<see cref="LeagueTable.SuccessorOrder"/>) paart Auf- und Absteiger in Listenreihenfolge. Nur im Fall mit doppeltem Platz
     /// weicht sie ab (em.exe verschiebt dort auch einen Verein innerhalb der unteren Liga).
     /// </remarks>
     public static (List<int> Promoted, List<int> Relegated) RelegationExchange(IReadOnlyList<int> places, Func<int, bool> isUpper)
@@ -181,9 +181,9 @@ public sealed partial class GameState
     /// (<see cref="RelegationPlaces"/>): der Verein, der danach auf dem Platz des Zweitligisten steht. Ohne doppelten Platz ist
     /// das der Absteiger mit demselben Paarindex. [APPROX] Ohne DOSBox-Beleg: Mit doppeltem Platz (Bundesliga-Zwangsabsteiger
     /// auf Platz 3 und 4) kann es ein Zweitligist sein, der in der 2. Liga nur den Platz wechselt; dann bleibt der
-    /// Zwangsabsteiger in der 2. Liga, wenn er nicht aufsteigt. [APPROX] Die Startordnung der Folgesaison (<see cref="Season.SuccessorOrder"/>) findet für die
-    /// betroffenen Vereine keinen Partner und hängt sie in ihrer neuen Liga hinten an (em.exe: Platz des Partners); nur
-    /// Ordnung, keine Wirkung auf die Ligagrößen.
+    /// Zwangsabsteiger in der 2. Liga, wenn er nicht aufsteigt. [ORIGINAL] Anzeige und Startordnung (Teil 6, D5): siehe
+    /// <see cref="ShownRelegatedInto"/> und <see cref="FirstExchangeRelegatedInto"/> – die betroffenen Vereine erhalten den Platz
+    /// ihres Partners (`file16_8`, `file17_3`).
     /// </remarks>
     public static void ResolveDoubleMoves(SeasonRecord record, IReadOnlyList<int> upperPlaces, Func<int, bool> isBundesliga)
     {
@@ -198,4 +198,72 @@ public sealed partial class GameState
             down.Remove(moved);  // ein Bundesligist geht damit zwei Ligen tiefer
         }
     }
+
+    /// <summary>
+    /// Doppelwechsel des Saisonrückblicks: Bundesligist <c>Club</c>, der nach <see cref="ResolveDoubleMoves"/> in die Oberliga
+    /// geht, sein Eintrag in <see cref="SeasonRecord.RelegatedInto"/> der Oberliga (<c>OberligaIndex</c>) und sein Paarindex im
+    /// ersten Tausch Bundesliga/2. Liga (<c>PairIndex</c>, −1 = unbekannt).
+    /// </summary>
+    /// <remarks>
+    /// Paarindex: Der erste Tausch paart <c>down[k]</c> mit <c>up[k]</c> (<see cref="RelegationPlaces"/>); <c>up[k]</c> ist der
+    /// Zwangsabsteiger, erkennbar am Ereignis <see cref="SeasonEvent.ForcedRelegation"/> seines Managers. [APPROX] Ohne
+    /// Ereignis (synthetische Rückblicke) oder bei zwei Zwangsabsteigern in einer Gruppe in Reihenfolge der Manager.
+    /// </remarks>
+    private static List<(int Club, int OberligaIndex, int PairIndex)> DoubleMoves(SeasonRecord record)
+    {
+        var moves = new List<(int, int, int)>();
+        if (!record.FinalTables.TryGetValue(League.Bundesliga, out var bundesliga))
+            return moves;
+        var up = record.PromotedInto[League.Bundesliga];
+        var pairs = record.Managers.Where(m => m.Events.Contains(SeasonEvent.ForcedRelegation))
+            .Select(m => up.IndexOf(m.Club)).Where(k => k >= 0).Distinct().ToList();
+        var oberliga = record.RelegatedInto[League.Oberliga];
+        for (var i = 0; i < oberliga.Count; i++)
+        {
+            if (!bundesliga.Contains(oberliga[i]))
+                continue;
+            var k = pairs.Count > 0 ? pairs[0] : -1;
+            if (pairs.Count > 0)
+                pairs.RemoveAt(0);
+            moves.Add((oberliga[i], i, k));
+        }
+        return moves;
+    }
+
+    private static IReadOnlyList<int> WithDoubleMoves(SeasonRecord record, League league, Func<(int Club, int OberligaIndex, int PairIndex), int?> entry)
+    {
+        var list = record.RelegatedInto[league];
+        if (league != League.ZweiteLiga)
+            return list;
+        var moves = DoubleMoves(record);
+        if (moves.Count == 0)
+            return list;
+        var result = list.ToList();
+        foreach (var move in moves.OrderBy(m => m.PairIndex < 0 ? int.MaxValue : m.PairIndex))
+            if (entry(move) is { } club)
+                result.Insert(move.PairIndex < 0 ? result.Count : Math.Min(move.PairIndex, result.Count), club);
+        return result;
+    }
+
+    /// <summary>
+    /// Absteiger in die Liga, wie das Fenster „Saisonende“ sie zeigt (rot, Pfeil nach unten).
+    /// </summary>
+    /// <remarks>
+    /// [ORIGINAL] Spur saisonwechsel Teil 6 (D5 = A, DOSBox-Beleg `file16_8_saisonende`): em.exe zeigt Plätze, nicht Vereine.
+    /// Der Eintrag „Absteiger in die 2. Liga“ ist der Platz, auf den der erste Tausch den Bundesligisten gesetzt hat; der zweite
+    /// Tausch (2. Liga/Oberliga) belegt ihn mit dem Aufsteiger aus der Oberliga, der mit diesem Bundesligisten gepaart ist
+    /// (<see cref="SeasonRecord.PromotedInto"/> der 2. Liga, gleicher Index wie in <see cref="SeasonRecord.RelegatedInto"/> der
+    /// Oberliga). So steht SC Riessersee in der Spalte „Zweite Liga“ rot und grün, EV Landshut nur in der Oberliga.
+    /// Ohne Doppelwechsel und für die übrigen Ligen gleich <see cref="SeasonRecord.RelegatedInto"/>.
+    /// </remarks>
+    public static IReadOnlyList<int> ShownRelegatedInto(SeasonRecord record, League league) =>
+        WithDoubleMoves(record, league, m => record.PromotedInto[League.ZweiteLiga] is var p && m.OberligaIndex < p.Count ? p[m.OberligaIndex] : null);
+
+    /// <summary>
+    /// Absteiger in die Liga nach dem ersten Tausch (vor <see cref="ResolveDoubleMoves"/>): für die 2. Liga mit dem Bundesligisten,
+    /// der danach weiter in die Oberliga geht. Grundlage der Platzpaare (Startordnung, Satzfolge): Der Aufsteiger in die Bundesliga
+    /// übernimmt dessen Bundesligaplatz (Datei 0x36169; Beleg `file17_2`).
+    /// </summary>
+    public static IReadOnlyList<int> FirstExchangeRelegatedInto(SeasonRecord record, League league) =>
+        WithDoubleMoves(record, league, m => m.Club);
 }

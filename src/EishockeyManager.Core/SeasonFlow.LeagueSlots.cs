@@ -69,9 +69,9 @@ public sealed partial class GameState
         foreach (var league in Enum.GetValues<League>())
         {
             if (league > League.Bundesliga)
-                Pair(record.PromotedInto[league - 1], record.RelegatedInto[league]);
+                Pair(record.PromotedInto[league - 1], ShownRelegatedInto(record, league));
             if (league < League.Oberliga)
-                Pair(record.RelegatedInto[league + 1], record.PromotedInto[league]);
+                Pair(FirstExchangeRelegatedInto(record, league + 1), record.PromotedInto[league]);
         }
         Pair(record.LeftOberliga, record.PromotedInto[League.Oberliga]);
 

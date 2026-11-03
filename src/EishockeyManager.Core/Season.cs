@@ -287,10 +287,11 @@ public static class LeagueTable
             for (var i = 0; i < leaving.Count && i < arriving.Count; i++)
                 partner[leaving[i]] = arriving[i];
         }
+        // Doppelwechsel (Spur saisonwechsel Teil 6, D5): Plätze wie em.exe nach beiden Tauschen (`file17_3`).
         if (league > League.Bundesliga)
-            Pair(previous.PromotedInto[league - 1], previous.RelegatedInto[league]);
+            Pair(previous.PromotedInto[league - 1], GameState.ShownRelegatedInto(previous, league));
         if (league < League.Oberliga)
-            Pair(previous.RelegatedInto[league + 1], previous.PromotedInto[league]);
+            Pair(GameState.FirstExchangeRelegatedInto(previous, league + 1), previous.PromotedInto[league]);
         else
             Pair(previous.LeftOberliga, previous.PromotedInto[League.Oberliga]);
 

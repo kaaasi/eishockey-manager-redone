@@ -379,3 +379,12 @@ Bayreuth, Wolfsburg auf Platz 11 = Platz von Memmingen; übrige Plätze wie `fil
 - **Offene Frage (nicht geprüft):** Im Original wandert die Strafminutensumme mit dem Vereinssatz (Tabellensatz 0x50), und die
   Mischung 0x5644E läuft nach Auf- und Abstieg, aber vor der Fair-Play-Prämie 0x27213. Ob die Prämie dann über die **neue** Liga
   des Managers rechnet, ist nicht gelesen (Kandidat für `re-pruefung`).
+
+### Umsetzung D5 (Spur `saisonwechsel` Teil 6, 03.11.2026)
+
+Entscheidung D5 = A umgesetzt: `GameState.ShownRelegatedInto` (Fenster „Saisonende“: Spalte „Zweite Liga“ rot der Verein auf dem
+getauschten Platz, `file16_8`) und `GameState.FirstExchangeRelegatedInto` (Liste nach dem ersten Tausch) in
+`SeasonFlow.Zwangsabstieg.cs`; `LeagueTable.SuccessorOrder` und die Satzfolge paaren damit wie em.exe (`file17_3`: Riessersee auf
+Bayreuths Platz, Wolfsburg auf Memmingens, Bayreuth auf Landshuts Bundesligaplatz). Daten der Ligen unverändert. Test
+`SaisonwechselDoppelwechselAnzeigeTests`. `[APPROX]`: Paarindex über das Ereignis Zwangsabstieg des Managers; zwei Zwangsabsteiger in
+einer Gruppe und der Fall mit doppeltem Platz weiter ohne Beleg.
