@@ -21,8 +21,10 @@ public enum ReportKind
 /// <para>
 /// Alle Optionen sind <b>Anzeigeschalter</b>: Keine meldet einen Wettbewerb an oder ab, keine ändert den Spielmodus
 /// (<see cref="GameSetup.Mode"/>, DGROUP 0xD0B9 wird nur in der Spielvorbereitung geschrieben). Spielwirkung haben nur
-/// <see cref="ShowDebCup"/>, <see cref="ShowEuropeanCup"/> und <see cref="ShowWorldCup"/> – mittelbar über den Weg der
-/// Pokalspiele ohne Managerverein (<see cref="CupMatchUsesMinuteLoop"/>).
+/// <see cref="ShowDebCup"/>, <see cref="ShowEuropeanCup"/> und <see cref="ShowWorldCup"/> sowie die Felder „Ergebnisse“
+/// der Meldungsmatrix (Index 1/4/7, <see cref="ReportKind.Results"/>) – mittelbar über den Weg der Spiele ohne Managerverein
+/// (Pokale, Play-offs und Aufstiegsrunde; <see cref="CupMatchUsesMinuteLoop"/>): Minutenschleife oder schneller Weg, damit
+/// auch anderer Zufallsverbrauch (#351).
 /// </para>
 /// <para>
 /// [APPROX] Nicht geführt: Index 13 (Hintergrundgrafik, DGROUP 0x22A) und 14 (Scrolling, je Manager DGROUP 0x120 + Manager,

@@ -259,9 +259,14 @@ k = 0–3 bei x = 3 + 65·k, Text (`DGROUP 0x11C5`) auf Grundlinie 229, Wert auf
 | 3 | Saldo: | Konto + Anlagen − Schulden |
 
 Das ist die Regel aus [finanzen-rekonstruktion.md](../finanzen-rekonstruktion.md), Abschnitt „Bank (`0x46432` ff.)“ – die
-Stelle liegt aber im Transfermarkt-Overlay, nicht im Finanzen-Bildschirm. **Remake:** `TransferScreen.DrawAccountBar`
-zeigt Schulden und Anlagen fest 0 (`[APPROX]`), Saldo = Konto; x der Anlagen 132 statt 133, Zeilen 226/232 statt
-Grundlinien 229/236 (Lage nicht nachgemessen).
+Stelle liegt aber im Transfermarkt-Overlay, nicht im Finanzen-Bildschirm. **Remake (vor Runde 11):**
+`TransferScreen.DrawAccountBar` zeigte Schulden und Anlagen fest 0 (`[APPROX]`), Saldo = Konto; x der Anlagen 132 statt 133,
+Zeilen 226/232 statt Grundlinien 229/236 (Lage nicht nachgemessen).
+
+**Status (Runde 11, Spur `kader-transfer` Teil 4, PR #437; Inventur A381, F109, Kandidat G5):** Schulden, Anlagen und Saldo
+nach dieser Regel umgesetzt (`GameState.TransferAccount` in `Core/Transfer.AccountBar.cs`, Anzeige in
+`TransferScreen.DrawAccountBar`; Test `KaderTransferTeil4Tests`). `[APPROX]`: Saldo je Partner verrechnet wie bei
+`TotalDebts`. Lage und Schriftgrundlinien der Leiste wurden nicht neu vermessen.
 
 ## Taktik-Abschluss (Datei 0x48E62)
 
@@ -285,6 +290,9 @@ Verlassen (Datei 0x48E19) mit Vereinssatz, Merker und den vier Bildzeigern des B
 (Datei 0x09140), also mit den Werten aus Schritt 3 (Summe 8). `MatchEngine.Managed.cs` (Reihenwechsel, Modus 4) nimmt
 `Tactics.Minutes` direkt (0–60, `MaxMinutes [APPROX]`); Schritt 3 und die Grenze 20 je Teil fehlen. Schritt 2 und 4 sind
 im Remake schon so (`Squad.Tactics.cs`).
+
+**Status (Runde 11, Spur `wettbewerbe-spiel` Teil 5, PR #440; Kandidat G6):** Minuten-Vorgabe (Schritt 3) und Grenze 20 je
+Teil umgesetzt, Einzelheiten in [spielberechnung.md](../spielberechnung.md) §22. Stand vor Teil 5 siehe oben.
 
 ## Jugendteams (Ov 0xF8)
 
@@ -365,6 +373,10 @@ Jugendspieler), zeigen die Zugriffe auf `DGROUP 0xA075` außerhalb dieser Funkti
   Datei 0x5BDC0, 0x5C7A4 schreiben nur).
 
 ## Kandidaten Runde 11
+
+**Stand nach Integration Runde 11:** G1 (PR #417), G2 (#433), G3 (#436), G4 (#442) durch die Spur `geld` umgesetzt, G5 durch
+die Spur `kader-transfer` (#437), G6 durch die Spur `wettbewerbe-spiel` (#440); Statuszeilen in den Abschnitten oben. G7 und
+G8 (P3, Pixelabgleich) stehen in „Nicht in Runde 11“ von `arbeitspakete.md`.
 
 | Nr. | Prio | Ziel | Dateien | Testidee |
 |---|---|---|---|---|

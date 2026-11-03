@@ -186,7 +186,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** Gegenbeispiel R10N-01 (Mutation `perl -pi` aus dem Review #408) ohne Statuswechsel; `funktionskarte.py
   --write` danach ohne Diff; für Teil 3 je Marker der Abgleich mit der Doku im PR.
 - **Dateigrenzen:** siehe Zuständigkeit; die genannten Doku-Dateien; in Teil 3 nur Kommentarzeilen in `src/`.
-  **Modell:** Claude Sonnet 5.5. **Status:** –
+  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 #422, Teil 2 #423 integriert; Teil 3 offen (Leitstelle legt Lauf an).
 
 ### Integration Runde 11 (Leitstelle)
 
@@ -208,8 +208,8 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   Regel geändert): `SponsorBewertungTests` (Konto gesetzt durch S-K1, neutral gezählt), `SaisonwechselDoppelwechselTests`
   (Aufstiegsrunde festgelegt), `PlayerFactoryTests.TalentSearch_TalentIsComplete` (Suche über das Saisonende hinaus),
   `LifecycleScreenRegressionTests.R204` (zweiter stimmiger Ausgang: Poolplatz). Doku-Anschlüsse (re-meldungen.md, re-geld.md,
-  reverse-engineering.md, spielberechnung.md §15, Inventur A226/A256/A257/A381/F002–F006/F013–F015/F109) mit
-  `marker-werkzeug` bzw. im Rundenabschluss.
+  reverse-engineering.md, spielberechnung.md §15, Inventur A226/A256/A257/A381/F002–F006/F013–F015/F109) in der
+  Integration `marker-werkzeug` nachgetragen.
 - **`wettbewerbe-spiel`** (`integration/runde-11-wettbewerbe-spiel`, Stapel #420 → #425 → #435 → #438 → #439 → #440 → #444 →
   #450 → #454): Schema vorläufig 24 → integriert 30 → 31 → 32; Abdrücke (`RngTwinProbeTests`, `SpielberechnungAnschlussTests`,
   `GameModeTests.Mode4`, `DebCupDrawFlowTests`) und Schema-Fingerabdruck neu; `Transfer.Pool.cs` vereint (Trendquelle aus
@@ -219,7 +219,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   Meldung „Auto-Aufstellung / ist deaktiviert !“ (40ADEh, `LineupAutoDisabledMessageTests`); Neuaufstellung zu Beginn des
   Managerzugs (450C6h in 44E22h, `AutoLineupTurnTests`) und beim Verlassen der Transferliste (47BB5h in 465F1h,
   `TransferAutoLineupTests`); A190 als Kommentar (Neuaufstellung nach Verletzung im Spiel über 53C57h). Doku
-  `reverse-engineering.md` (Begegnungen, Verletzungsart) nachgeführt; Inventur A190/A111 mit `marker-werkzeug`. Nicht
+  `reverse-engineering.md` (Begegnungen, Verletzungsart) nachgeführt; Inventur A190/A111 in der Integration `marker-werkzeug` nachgetragen. Nicht
   angeschlossen: U8 (Nationalteam Satz 5) – Runde 12. Wechselwirkungen (Proben nachgeführt): Bezugsbewertung der
   Managervereine nach der Startaufstellung neu ([APPROX], `SquadTests`); `ClubDressedTests` (Migration 4 an einem
   Computerverein); `WettbewerbeSpiel2Tests` (Play-offs ohne Manager, Byte wie 4F5A8h); `TacticsClubScreenTests` (Meldung);
@@ -245,6 +245,19 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   Entsprechung bzw. in fremden Spuren; Nationalaufstellung (0x54C9F) und Meldungen mit mehr als vier Zeilen behalten das Meldungsfenster bzw.
   den alten Rahmen [APPROX]; Zeile 1 von „noch gesperrt !“ ist im Original „Spieler ist“ (DGROUP 0x1255), im Remake der Spielername.
   Review #469: MU-01 (linker Knopf einer Meldung immer Zeile 5, 0x4C4E2) behoben, MU-02 (Test je Kurzmeldung), MU-03 erledigt.
+- **`marker-werkzeug`** (Teile 1–2, `integration/runde-11-marker-werkzeug`, Stapel #422 → #423): Review
+  [2026-11-02-marker-werkzeug.md](reviews/2026-11-02-marker-werkzeug.md) (beide mergebar); Befunde R11M-01 (Cache-Schlüssel von
+  `disasm.py` enthält jetzt die SHA-256 von `funktionskarte.py` und `disasm.py`), R11M-02 (README-Beispiel) und R11M-03
+  (Wortlaut in `inventur.md` Tabelle 2, F016/F069/F070/F080) behoben. Die Kommentare in `MatchEngine.Live.cs` (#423, Teil 2, #363)
+  ließen sich ohne Konflikt mit `wettbewerbe-spiel` vereinen. Funktionskarte auf dem integrierten Stand mit `--write` neu
+  erzeugt (Stand der Paketzweige; Base 202 umgesetzt / 212 dokumentiert; Funktionen umgesetzt 210 → 246, genähert 7 → 4, dokumentiert 204 → 172, unbekannt 258 → 257; Zuordnungen 3741 → 4712;
+  Spielcode umgesetzt 205 → 237 von 364); ein zweiter Lauf erzeugt dieselbe Datei, die Gegenprobe R10N-01 (Mutation `perl -pi`
+  auf allen `src/**/*.cs` einer Kopie) ändert die CSV nicht. Doku-Anschlüsse der Spuren nachgetragen:
+  `re-meldungen.md` (Remake-Zeilen und Kandidaten K1–K3, K5–K8 auf die Bausteine `OriginalDialog`/`ShortMessage`, `InfoFileScreen`,
+  `RankCurve`, `Transfer.PoolDistribution.cs`), `re-geld.md` (Kontoleiste G5, Minuten-Vorgabe G6, Stand der Kandidaten),
+  `reverse-engineering.md` und `spielberechnung.md` §15 (Teamwerte des Käufers umgesetzt, PR #434), `inventur.md` (Zeilen
+  mit „Stand Runde 11“ für die Spuren `kader-transfer` und `wettbewerbe-spiel`); KTN-01 (Testkommentar in
+  `KaderTransferTeil7Tests`, Zahl berichtigt). Teil 3 (Marker ohne Codeänderung) legt die Leitstelle als eigenen Lauf an.
 
 ### Nicht in Runde 11
 

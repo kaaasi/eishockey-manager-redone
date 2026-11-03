@@ -10,9 +10,17 @@ Baut auf funktionskarte.py auf (gleiche Funktionsgrenzen und Overlay-Auflösung)
       alle Befehle des Spielcodes, die Speicheroperanden (mit --imm auch Direktwerte) im DGROUP-Bereich benutzen –
       findet Schreiber und Leser einer Tabelle. Die Analyse wird in <scratch>/an.pickle zwischengespeichert.
 
+Bereichsgrenzen: im Listing ist die Obergrenze exklusiv (Adressen < hi), bei --xref inklusiv (lo <= Wert <= hi).
+Ein Listing umfasst eine Code-Region; reicht hi darüber hinaus, steht eine Warnung auf stderr.
+Der Zwischenspeicher gehört nur in den eigenen Scratch-Ordner (Pickle: nie eine fremde Datei angeben); er ist an
+SHA-256 von em.exe und an die Zeitstempel aller Fundstellen-Dateien (src/*.cs, docs/**/*.md) gebunden und wird bei
+Abweichung neu erzeugt.
+
 Ausgaben gehören nicht ins Repo (Auszüge aus dem Original); der Status stammt aus den Fundstellen in src/ und docs/.
 """
 import argparse
+import hashlib
+import os
 import pickle
 import re
 import sys
@@ -24,10 +32,26 @@ import funktionskarte as fk  # noqa: E402
 JUMP = re.compile(r"^j\w+(?: short)? 0x([0-9a-f]+)$")
 
 
+def cache_key(exe: bytes, repo: Path) -> str:
+    """Hash of em.exe, both tool scripts and path, size and mtime of every file that provides coverage evidence."""
+    h = hashlib.sha256(exe)
+    # a changed detection rule must not be served from an old cache (review R11M-01)
+    for script in (Path(fk.__file__), Path(__file__)):
+        h.update(hashlib.sha256(script.read_bytes()).digest())
+    for sub, pattern in (("src", "*.cs"), ("docs", "*.md")):
+        for path in sorted((repo / sub).rglob(pattern)):
+            st = path.stat()
+            h.update(f"{path.relative_to(repo).as_posix()}|{st.st_size}|{st.st_mtime_ns}\n".encode())
+    return h.hexdigest()
+
+
 def load(exe_path: Path, repo: Path, cache: Path | None):
-    if cache and cache.exists():
-        return pickle.loads(cache.read_bytes())
     exe = exe_path.read_bytes()
+    key = cache_key(exe, repo) if cache else ""
+    key_file = cache.with_name(cache.name + ".key") if cache else None
+    # the key is checked before the pickle is read; a stale or foreign cache is rebuilt instead of trusted
+    if cache and key_file.exists() and cache.exists() and key_file.read_text().strip() == key:
+        return pickle.loads(cache.read_bytes())
     an = fk.Analyzer(exe)
     an.run()
     rc = fk.RefCollector(an)
@@ -35,6 +59,7 @@ def load(exe_path: Path, repo: Path, cache: Path | None):
     rc.scan_docs(repo)
     if cache:
         cache.write_bytes(pickle.dumps(an))
+        key_file.write_text(key + "\n")
     return an
 
 
@@ -52,6 +77,9 @@ def listing(an, lo: int, hi: int) -> None:
     region = an.region_of(lo)
     if region is None:
         sys.exit(f"{lo:#x} liegt in keinem Code-Bereich")
+    if hi > region.start + region.size:
+        print(f"Warnung: {hi:#x} liegt hinter dem Ende der Region ({region.start + region.size:#x}); "
+              "die Ausgabe endet dort.", file=sys.stderr)
     starts = {f.start: f for f in an.functions}
     for off, raw, text in an.code[region.key]:
         addr = region.start + off
@@ -120,4 +148,10 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        code = main()
+        sys.stdout.flush()
+    except BrokenPipeError:  # "| head": leave quietly
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        code = 0
+    sys.exit(code)

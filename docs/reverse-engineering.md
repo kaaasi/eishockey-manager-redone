@@ -936,7 +936,7 @@ bekommt beide Pfeile und das Konto 400.000 DM. Einen Manager ohne Liga gibt es i
   Abstiegspaare eingesetzt (0x55F93–0x560C5). Damit erklärt sich die Ausnahme „Bit 0x04 nicht gesetzt“ in 0x56287 und 0x562FA.
 * **Liga-Stufe des Managers** danach 0x563C0–0x56409: (Verein ≥ [0x7C1]) + (Verein ≥ [0x7C2]) – höchstens 2, ein Verein 36–41 gilt
   als Oberliga-Stufe (Kostenstufe, `finanzen-rekonstruktion.md`).
-* **Entfallen:** die frühere Frage „Saison ohne Liga“ (Runde 10, siehe oben); DOSBox-Beleg mit `FILE13.HOK` steht aus.
+* **Entfallen:** die frühere Frage „Saison ohne Liga“ (Runde 10, siehe oben); der DOSBox-Beleg mit `FILE13.HOK` liegt vor (#389, `docs/analyse/re-saisonwechsel.md`, „Auswertung DOSBox-Beleg“).
 
 ## Spielberechnung abschließen (Spur `spielberechnung-komplett`, Runde 9)
 
@@ -947,7 +947,7 @@ Runden), Spielerschreiber 0x570E/0x49723 (keine Teamwerte). Einzelheiten: [spiel
 Ursache von #204: **Wanderung der Teamwerte 0x9D1B** (Basis 0x62C:0x1C5B; Aufrufe Spielstart 0x43A73 und Saisonwechsel
 0x56448 mit Modus 10, Tageslauf 0x55292 mit Modus 1 an Tageszähler 0x3B7 ≡ 0, 4 mod 7), Liga 0x34FD5, Grenzen DGROUP 0x125,
 Stärke-Anzeige 0x4F1F1 ((0x18 … 0x1D) / 6). Weiterer Schreiber 0x58DC (Basis 0x238:0x175C, Transferbildschirm 0x46FB3/0x47483:
-Käufer gewinnt Kondition/Technik, nicht umgesetzt). Die Suche in §12 von spielberechnung.md hatte 0x9E46–0x9F31 0x98F8
+Käufer gewinnt Kondition/Technik, seit Runde 11 umgesetzt in `Core/Transfer.ComputerClub.cs`, PR #434). Die Suche in §12 von spielberechnung.md hatte 0x9E46–0x9F31 0x98F8
 zugeordnet; sie liegen in 0x9D1B. Einzelheiten: [spielberechnung.md](spielberechnung.md) §15.
 Teil 2 (R8W3I-03 bis -06): 0x378C5 höchstens 150 Züge (Prüfung 0x37A30 vor dem Zug 0x378FC); kein Spieler (100) →
 0x35B33 → 0x3583B ohne Anzeige und Kette; Managerwert 0x974B nur von 0x952C mit Schalter 1 (Tageslauf 0x54F9C–0x54FBF),

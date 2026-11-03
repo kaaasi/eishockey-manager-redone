@@ -160,8 +160,8 @@ public class KaderTransferTeil7Tests
     /// <summary>
     /// RN-2 (Review #446, KT-03 aus Review #463): Ohne Restlaufzeit 1 nie ein Angebot (Datei 0x07865
     /// <c>cmp byte [es:bx+0xb],0x1</c>, geprüft nach den beiden Würfen). Alle Spieler des Kaders mit Laufzeit 2 über eine ganze
-    /// Saison: bei rund 25 Spielern und Tageschance um 1/200 käme ohne diese Bedingung eine zweistellige Zahl Angebote
-    /// zusammen – die Probe ist also auch ohne festen Zufall scharf (Mutation „Laufzeit nicht prüfen“: rot).
+    /// Saison: bei rund 25 Spielern und Tageschance um 1/200 kämen ohne diese Bedingung mehrere Angebote
+    /// zusammen (gemessen bei der Mutation: 8 von 25 Spielern, je eines) – die Probe ist also auch ohne festen Zufall scharf (Mutation „Laufzeit nicht prüfen“: rot).
     /// </summary>
     [Fact]
     public void Offer_NeverWithTwoYearsLeft_WholeSquad()

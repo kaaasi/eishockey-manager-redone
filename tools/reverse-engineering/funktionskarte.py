@@ -413,12 +413,15 @@ HEX = r"0x[0-9A-Fa-f]{3,5}"
 RANGE = re.compile(rf"({HEX})`?\s*(?:–|-|bis)\s*`?({HEX})")
 SEGOFF = re.compile(r"(?<![\w.:])(0x)?([0-9A-Fa-f]{2,4}):(0x)?([0-9A-Fa-f]{2,5})(?![\w:])")
 CONSTANTS = {HEADER, SEG_TABLE, OVERLAY_BASE, DGROUP_FILE, 0x255B0}  # layout constants, not functions
-BARE = re.compile(rf"(?<![\w:+]){HEX}(?![\w:])")
+# a colon after the address is fine ("Datei 0x3688F: ..."), unless a hex digit follows ("seg:off")
+BARE = re.compile(rf"(?<![\w:+]){HEX}(?![\w]|:[0-9A-Fa-f])")
 FILE_KEYWORDS = re.compile(r"Datei\s*`?0x|em\.exe|[Ff]ile\s*`?0x|Dateioffset|Datei-?[Oo]ffset")
 STUBREF = re.compile(r"Stub(?:-Selektor)?\s+`?(0x[0-9A-Fa-f]+)`?[^\n]{0,40}?(Funktionsoffset|Stub-Offset|Einsprung|Offset)\s+`?(0x[0-9A-Fa-f]+)")
 EXE_KEYWORDS = re.compile(r"em\.exe")
 # docs about other binary files: "Datei 0x…" there is an offset in that file, not in em.exe
 OTHER_FILE_DOCS = {"docs/formate/spielstand-original.md"}
+# docs that list addresses as an inventory of the findings, not as evidence (#406)
+NOT_EVIDENCE_DOCS = {"docs/re-abdeckung.md", "docs/analyse/inventur.md"}
 # words that introduce a DGROUP variable when written right before a small value ("Liste `0x5D3B`")
 DGROUP_WORDS = re.compile(r"(Liste|Tabellen?|Paarungen|Runde|Termin|Struktur|[Mm]anagerstruktur|Vereinsstruktur|"
                           r"Managerwert|Flag|Variable|Zustand)\s*`?$")
@@ -587,7 +590,7 @@ class RefCollector:
             parts = rel.parts
             if len(parts) > 1 and parts[1] in ("archiv", "reviews"):
                 continue
-            if rel.as_posix() == "docs/re-abdeckung.md":
+            if rel.as_posix() in NOT_EVIDENCE_DOCS:
                 continue
             content = path.read_text(encoding="utf-8", errors="replace")
             self.file_keywords = EXE_KEYWORDS if rel.as_posix() in OTHER_FILE_DOCS else FILE_KEYWORDS

@@ -23,15 +23,15 @@ benutzt.
 | Datei 0x0BECD | Schrift wählen | `Assets`-Fonts | – |
 | Datei 0x0BEFA | Bildpuffer freigeben | – | – |
 | Datei 0x0BF64 | EMS-Bildcache: Seiten einblenden | – | – |
-| Datei 0x0C0B8 | Kurzmeldung ohne Knopf, schließt nach Zeit | `MessageBox` (Klick) | **K2 (P2)** |
+| Datei 0x0C0B8 | Kurzmeldung ohne Knopf, schließt nach Zeit | `ShortMessage`, `MessageBox.ShowShort` (Runde 11) | K2 (erledigt) |
 | Datei 0x0C5CE | Bildschirm aus/ein (Seitenwechsel, Palette) | – | K9 (P3) |
 | Datei 0x0C729 | Speicher anfordern, sonst SPEICHER-Error | – | – |
 | Datei 0x0C789 | Speicher freigeben | – | – |
-| Datei 0x4C246 | Meldung/Frage (Stub 0x120:0x7A) | `QuitQuestion`, `TransferDialog.QuestionBox` u. a. | **K1 (P2)**, K3 (P3) |
+| Datei 0x4C246 | Meldung/Frage (Stub 0x120:0x7A) | `OriginalDialog` (Runde 11); Aufrufer `QuitQuestion`, `DebCupDrawLive`, `AdvertisingScreen`, `TransferDialog`, `MessageBox` | K1, K3 (erledigt, Rest im Abschnitt Kandidaten) |
 | Datei 0x4BA58 | Pfeilpaar (Stub 0x120:0x3E) | `AdvertisingScreen` | K4 (P3) |
-| Datei 0x432EC | Infofile anzeigen (Klick auf Pixel 319 \| 0) | fehlt | **K5 (P2)** |
-| Datei 0x445E0 | Tabellenkurve | `MainMenuScreen.DrawRankCurve` [APPROX] | **K6 (P2)** |
-| Datei 0x07C7E | Saisonwechsel: freie Poolspieler auf Ligen verteilen | fehlt | **K7 (P2)** |
+| Datei 0x432EC | Infofile anzeigen (Klick auf Pixel 319 \| 0) | `InfoFileScreen` (Runde 11) | K5 (erledigt) |
+| Datei 0x445E0 | Tabellenkurve | `RankCurve` (Runde 11) | K6 (erledigt) |
+| Datei 0x07C7E | Saisonwechsel: freie Poolspieler auf Ligen verteilen | `Transfer.PoolDistribution.cs` (Runde 11) | K7, K8 (erledigt) |
 | Datei 0x4F325 | Tabellenfelder sichern/herstellen | keine Sicherung nötig | – |
 | Datei 0x25B4A | Fehlerhalt mit ERROR.HOK, Programmende | Ausnahme | K10 (P3) |
 | Datei 0x25764 | EMS-Bildcache beim Spielstart füllen | – (alles im Speicher) | – |
@@ -141,8 +141,12 @@ dokumentiert; Fehlertexte „Zu viele Fenster auf !“ und „Fenster-Koordinate
   m = 75 − 30 · [Zeile 1 beginnt mit „Auto-“]. Modus ≥ 2 heißt in 0x4C246: **kein Knopf, keine Eingabe**, Pause m
   (`0x50:0x19E`, Datei 0x130EE = m / 3 BIOS-Takte, also 25 bzw. 15 Takte ≈ 1,4 s bzw. 0,8 s bei 18,2 Hz), dann
   schließt die Meldung von selbst. Rückgabe immer 1.
-- **Remake:** `MainMenuScreen.CoachWarning` (über `TeamUi.MessageBox`, Knopf „Na gut.“ [APPROX], Klick schließt) und
-  weitere Meldungen der Aufrufer. **Abweichung:** Im Original gibt es keinen Knopf und kein Warten auf Eingabe. → K2.
+- **Remake (Runde 11, Spur `ui-meldungen`, K2):** `ShortMessage` (`UI/OriginalDialog.cs`) ohne Knopf und ohne Eingabe,
+  schließt nach Modus / 3 Takten (75 bzw. 45 bei „Auto-…“); `MainMenuScreen.CoachWarning` und über
+  `MessageBox.ShowShort` die Kurzmeldungen der Aufstellung (0x40AF3, 0x40B55, 0x40EB9), der Transferliste (0x46A4D ff.,
+  0x42CE3) und der Freundschaftsspiele (0x3C2C5). Test `OriginalDialogCallersTests`. Nicht angeschlossen: Aufrufer
+  ohne Entsprechung im Remake (Stadion „Die Baufirma / ist noch beleidigt...“ 0x3DE9F, „Kein / Platz mehr !“ 0x414C6,
+  „Schon 6 Feldspieler / auf dem Eis !“ 0x40EF7, Spielstand-Meldungen 0x5C559/0x5C59A).
 
 ### Datei 0x0C5CE – Bildschirm aus/ein (347 B)
 
@@ -199,11 +203,14 @@ dokumentiert; Fehlertexte „Zu viele Fenster auf !“ und „Fenster-Koordinate
 - **Rückgabe:** Frage: linker Knopf 1, rechter Knopf 0; Meldung: 0 (Klick auf den linken Knopf: 1); Meldung mit Zeit:
   −1 (0xFF). Danach Fenster zu und
   beide Knöpfe freigeben.
-- **Remake:** `QuitQuestion` (Rahmen = `TransferDialog.QuestionBox`, Knöpfe 94/164 | 166, „?“-Felder
-  (84 | 110) 22 × 22 mit Umriss am Rand und Lichtkante 15 [APPROX], Escape/rechte Taste = rechter Knopf [APPROX]),
-  `DebCupDrawLiveScreen`, `AdvertisingScreen` (Frage 0x120:0x7A [APPROX]), `TeamUi.MessageBox` (eigener Rahmen,
-  [APPROX]). **Abweichungen:** Lage der Symbolfelder (Original 83 | 112 bzw. 212 | 112), Umriss eine Zeile/Spalte
-  eingerückt und ohne Lichtkante, Meldungsfarben 16/17 mit „!“, untere Linie einfarbig 0, keine Tasten. → K1, K3.
+- **Remake (Runde 11, Spur `ui-meldungen`, K1/K3):** `OriginalDialog` (`UI/OriginalDialog.cs`) als ein Baustein nach der
+  Tabelle oben (Symbolfelder 83/212 | 112 mit eingerücktem Umriss, „!“ 16/17, „?“ 12/14, untere Linie Farbe 0, nur
+  Linksklick). Aufrufer umgestellt (Test `OriginalDialogCallersTests`): `QuitQuestion`, `DebCupDrawLive` (Frage 0x4C246,
+  A270, A273), `AdvertisingScreen` (Verlängerungsfrage, `RenewalDialog`, A304, A308), `TransferDialog` (Talent,
+  Sponsorzuschuss, Frage an den Verkäufer, `AsDialog`) und `TeamUi.MessageBox` (Überschrift = Manager am Zug, Knöpfe nur
+  bei Zeile 3/4). **[APPROX]:** Knopflage 94/164 statt 95/165 (Video), Knopftext „Na gut.“, wo der Aufrufer keine Zeile 5
+  übergibt, Komfort-Tasten (Escape, Enter, rechte Maustaste) der Aufrufer; Meldungen mit mehr als vier Zeilen
+  (Spielstand-Fehler, Spielmodus) und die Nationalaufstellung (0x54C9F) behalten den alten Rahmen.
 
 ### Datei 0x4BA58 – Pfeilpaar (Stub 0x120:0x3E, 628 B)
 
@@ -294,8 +301,12 @@ dokumentiert; Fehlertexte „Zu viele Fenster auf !“ und „Fenster-Koordinate
   (nicht geprüft); Spieler mit Verein ≥ 64 (Ausland, ≠ 0xFF) zählen; random(5, 15)-mal einen zufälligen Spieler
   1 … 179 nehmen und, solange mehr als 4 im Ausland sind, einem Auslandsspieler einen neuen Verein über 0x059B8 geben;
   dann s[l] = k[l] · 100 / Σk · (179 − Auslandsspieler) / 100 (LXMUL/LDIV; Rundungsfolge nicht im Einzelnen geprüft).
-- **Remake:** keine Entsprechung; `TransferMarket` erneuert beim Saisonwechsel nur Namen und Vereine der Plätze mit
-  Besitzer 6 (0x5ACA0 aus 0x56467, `Transfer.Pool.cs`). → K7 (mit Mehrsaisonprobe).
+- **Remake (Runde 11, Spur `kader-transfer`, Teil 5, PR #453):** `Core/Transfer.PoolDistribution.cs`: Soll je Liga, Drift
+  (0x054D9) und Auslandsrückholung (0x05521, 0x059B8), Zielverein reihum mit doppelten ersten fünf (0x07EF1, Zähler
+  DGROUP 0x48FB im Spielstand), Spielstart 0x057E3, Saisonwechsel 0x07C7E (nach den neuen Namen, nicht im Modus „nur
+  Weltkugel“). `TransferMarket` erneuert daneben weiter Namen und Vereine der Plätze mit Besitzer 6 (0x5ACA0 aus
+  0x56467, `Transfer.Pool.cs`). Test `KaderTransferTeil5PoolTests` (Goldtest `Start_OriginalDatabase_MatchesFile05Distribution`,
+  Mehrsaisonprobe). → K7, K8 erledigt.
 
 ### Datei 0x4F325 – Tabellenfelder sichern/herstellen (Ov 0x128, 463 B)
 
@@ -356,10 +367,14 @@ dokumentiert; Fehlertexte „Zu viele Fenster auf !“ und „Fenster-Koordinate
 | K9 | P3 | Bildschirmwechsel mit Zwischenbild kb\22 (0x0C5CE/0x45D46) | `ScreenHost` | Bildfolge beim Wechsel |
 | K10 | P3 | Fehlerhalt: bei Absturz Spielstand des Tagesbeginns als `ERROR.HOK` sichern und Meldung zeigen | `src/EishockeyManager.Desktop`, `SaveLoad` | Test mit erzwungener Ausnahme |
 
+**Stand nach Integration Runde 11:** K1, K2, K3, K5, K6 durch die Spur `ui-meldungen` (PR #421, #426, #430) umgesetzt
+(Remake-Zeilen in den Abschnitten C, D und E); K7 und K8 durch die Spur `kader-transfer` Teil 5 (PR #453). Offen bleiben
+K4, K9 und K10.
+
 ## Offen
 
 - 0x0B447: welche Werte bei „Alle schließen“ in DGROUP 0x5F4D ff. stehen (Laufzeit, DOSBox).
-- 0x05521: Wirkung von 0x054D9 auf die Spielerfelder +0x15/+0x16 und genaue Rundung.
+- 0x05521: Wirkung von 0x054D9 auf die Spielerfelder +0x15/+0x16 (geklärt in Runde 11, PR #453: Kondition/Technik des Poolspielers, Drift ±; Tabelle in `reverse-engineering.md` berichtigt) und genaue Rundung der Sollzahl (offen).
 - 0x130EE: Takt 18,2 Hz angenommen (BIOS-Zähler 0040:006C); ob 0x11FD den PIT umprogrammiert und den BIOS-Zähler
   schneller zählen lässt, ist nicht geprüft.
 - 0x0BE71: Ersatzliste DGROUP 0x4A54 ist in der Datei gleich der Suchliste; ein Schreiber zur Laufzeit wurde nicht gesucht.
