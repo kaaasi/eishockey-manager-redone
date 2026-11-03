@@ -163,16 +163,17 @@ namespace EishockeyManager.Core.Tests;
 /// Belastung + 1 bei lrandom(0, 4 + (Kondition &gt; Technik)) = 0 (Datei 0x8C82; der Zug selbst bestand schon), nach dem Spiel
 /// 50 … 150 (Datei 0x549A2). Die Spielvorbereitung (101 − Belastung/8, 0x84D7) gibt damit andere Kaderenergien; andere
 /// Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Zufallszüge unverändert (kein neuer Zug).
+/// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): neu – Computervereine spielen mit der Datenbankstärke ohne Bezug zur Remake-Aufstellung ([ORIGINAL] 0x977F liest nur die Vereinsfelder); Verletzungen, Verkäufe und Aufstellungslücken eines Computervereins ändern seine Stärke nicht mehr. Andere Ergebnisse, sobald ein Computerverein mit veränderter Aufstellung spielt; keine neuen Zufallszüge.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "4D224E973511C742")]
-    [InlineData(true, 3, "551E9B8224C8D4B8")]
-    [InlineData(false, 11, "E6CF0CEB189A5F74")]
-    [InlineData(true, 11, "332A898C9510EDFE")]
+    [InlineData(false, 3, "8D3B2C6CCAF3E4AA")]
+    [InlineData(true, 3, "59E0F208EF82DC89")]
+    [InlineData(false, 11, "D05214DFE0EB1D4D")]
+    [InlineData(true, 11, "A8872D7F5D509AC3")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -180,8 +181,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "0D32300F45EA6222")]
-    [InlineData(true, "1BBED8622F0067E6")]
+    [InlineData(false, "842BCF1E4E4DB320")]
+    [InlineData(true, "2C1300868BBBCBC6")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

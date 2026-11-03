@@ -29,7 +29,7 @@ public class WettbewerbeSpiel4Tests
         var game = Create();
         var club = ComputerClub(game);
         club.TeamValues = new ClubTeamValues(3, -2, 1, -4, 46, 54, 52);
-        var value = MatchEngine.TeamValue(club);
+        var value = MatchEngine.TeamValue(game, club);
         var defense = StrengthTable.Compute(game, [club], StrengthView.Abwehr).Single();
         var attack = StrengthTable.Compute(game, [club], StrengthView.Sturm).Single();
         Assert.Equal((Math.Min(99, value + 3), Math.Min(99, value + 1), 46, 52), (defense.Condition, defense.Technique, defense.Form, defense.Trend));

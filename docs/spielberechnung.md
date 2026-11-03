@@ -203,6 +203,7 @@ Managerpaarung werden die Werte aus den eingesetzten Spielern der Reihe gebildet
 | Lader der Teamwerte 0x2EF1B (Streuung, Form, Tagesform), Tagesform nach Ligaspielen 0x4F527 | `[ORIGINAL]`, Zeitpunkt des Ziehens `[APPROX]` (Abschnitt 12) | `MatchEngine.LoadTeamValues`, `UpdateDayForm`, `Club.TeamValues` |
 | Verletzungen im Spiel | umgesetzt (§17) | `OriginalMinutes.Injuries`, `PlayerInjuries` |
 | Anschluss an Spieltage, Zähler je Saison, Mehrsaisonprobe | erledigt (Teil 3), Sollwerte auf dem Branch | `MatchEngine.PlayWithEvents`, Abschnitt 11 |
+| Computervereine ohne Kaderbezug (A174, Runde 12 Teil 3): Teamwert = Datenbankstärke, Aufstellung wirkt nur bei Managervereinen (`[APPROX]`) | `[ORIGINAL]` (0x977F liest nur die Vereinsfelder) | `MatchEngine.TeamValue(GameState, Club)`, `ComputerTeamValue` |
 
 Rollenwert (Spielerfeld 0x18) führt das Remake nicht: `[APPROX]` Verteidiger 33, Stürmer 83 (Mitte der Spannen).
 Verletzungen im Spiel sind noch nicht gesucht (Kandidat: Kaderplatz-Felder in 0x548A8 ff.); das Remake erzeugt im Spiel

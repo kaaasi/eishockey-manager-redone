@@ -250,7 +250,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
     /// Runde 12, Spur wettbewerbe-spiel Teil 2 (A184): ab 1993 neu – Belastung (+0x13) + 1 in Managerpaarungen (Datei 0x8C82) und
     /// Grenzen nach dem Spiel (0x549A2) ändern die Kaderenergie der Spielvorbereitung und damit die Spiele des Managers. Mit und
-    /// ohne Anzeige weiter gleich.</summary>
+    /// ohne Anzeige weiter gleich.
+    /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): ab 1994 neu – Computervereine spielen ohne Bezug zur Remake-Aufstellung
+    /// (0x977F, Vereinsfelder). Mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 2, DM 2, Tab 15261 | 1994: DEB 8, DM 8, Tab 15626 | 1995: DEB 8, DM 8, Tab 15655 | 1996: DEB 3, DM 6, Tab 15601";
+        "1993: DEB 2, DM 2, Tab 15261 | 1994: DEB 8, DM 2, Tab 15574 | 1995: DEB 2, DM 1, Tab 15457 | 1996: DEB 19, DM 10, Tab 15203";
 }

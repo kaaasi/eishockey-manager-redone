@@ -179,10 +179,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
     /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
     /// Runde 12, Spur wettbewerbe-spiel Teil 2 (A184): neu – Belastung + 1 in Managerpaarungen und Grenzen nach dem Spiel
-    /// (Datei 0x8C82, 0x549A2). Begründung bei <see cref="RngTwinProbeTests"/>.</summary>
+    /// (Datei 0x8C82, 0x549A2). Begründung bei <see cref="RngTwinProbeTests"/>.
+    /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): neu – Computervereine ohne Kaderbezug (Begründung ebenda).</summary>
     [GameDataTheory]
-    [InlineData(false, "6099D595024C507D")]
-    [InlineData(true, "D5E058495291325D")]
+    [InlineData(false, "0971EB079BD2E088")]
+    [InlineData(true, "08AD683AD3B11EAE")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -82,10 +82,10 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
     public void LiveTeam_UsesLoaderValues_ForComputerClubs()
     {
         var game = Game();
-        var club = game.Clubs.First(c => c.Index != game.Managers[0].ClubIndex && c.Players.Count > 0 && MatchEngine.TeamValue(c) is > 10 and < 90);
+        var club = game.Clubs.First(c => c.Index != game.Managers[0].ClubIndex && c.Players.Count > 0 && MatchEngine.TeamValue(game, c) is > 10 and < 90);
         var opponent = game.Clubs.First(c => c != club && c.Players.Count > 0);
         club.TeamValues = new ClubTeamValues(-3, 2, 1, -4, 46, 54, 52);
-        var value = MatchEngine.TeamValue(club);
+        var value = MatchEngine.TeamValue(game, club);
         var team = MatchEngine.LiveTeamOf(game, club, opponent, managed: false, managerMatch: false);
         Assert.Equal(new PartValues(value - 3, value + 1, 46), team.Defense);
         Assert.Equal(new PartValues(value + 2, value - 4, 54), team.Attack);
@@ -100,7 +100,7 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
         var club = game.Clubs[game.Managers[0].ClubIndex];
         var opponent = game.Clubs.First(c => c != club && c.Players.Count > 0);
         club.TeamValues = new ClubTeamValues(-3, 2, 1, -4, 46, 54, 52);
-        var value = MatchEngine.TeamValue(club);
+        var value = MatchEngine.TeamValue(game, club);
         var team = MatchEngine.LiveTeamOf(game, club, opponent, managed: true, managerMatch: true);
         Assert.Equal(new PartValues(value, value, 50), team.Defense);
         Assert.Equal(new PartValues(value, value, 50), team.Attack);

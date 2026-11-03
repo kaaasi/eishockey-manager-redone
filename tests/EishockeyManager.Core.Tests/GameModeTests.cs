@@ -327,6 +327,8 @@ public class GameModeTests
     /// lrandom(0, 4 + …) = 0 Belastung + 1 (Datei 0x8C82, Zug unverändert), nach dem Spiel 50 … 150 (0x549A2). Die
     /// Spielvorbereitung (101 − Belastung/8) gibt damit andere Kaderenergien, andere Ergebnisse ab dem ersten Managerspiel.
     /// Saison 1: Konten 309.266/500.000, Weltmeister 53, Meister 1.
+    /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): ab Saison 3 neu – Computervereine spielen ohne Bezug zur Remake-Aufstellung
+    /// (0x977F, Vereinsfelder); Saisons 1–2 unverändert.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -359,7 +361,7 @@ public class GameModeTests
     // schrumpft (20 → 13 → 12 → 11), in Saison 5 Strafen und Dispozinsen, entlassen (−4.592.736). Manager 0 bleibt spielfähig.
     // (Stand der Spur vor der Integration; integrierter Stand siehe Zusammenfassung oben.)
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=0,GermanChampion=1,EuropeanCupWinner=2|309266,500000|WorldChampion=54,CupWinner=10,GermanChampion=0,EuropeanCupWinner=1|778682,500000|WorldChampion=63,CupWinner=0,GermanChampion=6,EuropeanCupWinner=1|2411685,-2563640|WorldChampion=54,CupWinner=17,GermanChampion=13,EuropeanCupWinner=6|2928967,-5288824|WorldChampion=52,CupWinner=9,GermanChampion=6,EuropeanCupWinner=6|400000,-10768981|R1516996395 C402219606";
+        "WorldChampion=53,CupWinner=0,GermanChampion=1,EuropeanCupWinner=2|309266,500000|WorldChampion=54,CupWinner=10,GermanChampion=0,EuropeanCupWinner=1|778682,500000|WorldChampion=53,CupWinner=10,GermanChampion=1,EuropeanCupWinner=0|2362825,400000|WorldChampion=55,CupWinner=0,GermanChampion=10,EuropeanCupWinner=1|3353464,-6334514|WorldChampion=53,CupWinner=6,GermanChampion=3,EuropeanCupWinner=10|500000,-12925992|R624177291 C1638076128";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

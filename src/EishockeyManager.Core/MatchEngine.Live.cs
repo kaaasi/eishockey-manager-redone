@@ -165,9 +165,9 @@ public static partial class MatchEngine
     {
         if (IsNation(club))
             return NationalLiveTeam(game, club.Index, game.NationalMatchStrength(club.Index),
-                IsNation(opponent) ? game.NationalMatchStrength(opponent.Index) : TeamValue(opponent), managerMatch);
-        var value = TeamValue(club);
-        var opponentValue = TeamValue(opponent);
+                IsNation(opponent) ? game.NationalMatchStrength(opponent.Index) : TeamValue(game, opponent), managerMatch);
+        var value = TeamValue(game, club);
+        var opponentValue = TeamValue(game, opponent);
         var loaded = TeamValuesOf(club);
         // Managervereine bilden ihre Reihenwerte im Original aus den Spielern (0x98F8); die Streuung und Form des Laders
         // wirken dort nicht ([APPROX] Teamwert ohne Streuung, Form 50). Die Tagesform 0x17 gilt für alle Vereine.
@@ -232,16 +232,33 @@ public static partial class MatchEngine
         club.Index is >= NationalTeams.First and <= NationalTeams.Last && club.Players.Count == 0;
 
     /// <summary>
-    /// Teamwert eines Vereins (Maßstab der Vereinsfelder 0x18–0x1B, also der Datenbankstärke): Stärke aus der Datenbank,
-    /// verschoben um die Veränderung der Aufstellung gegenüber dem Spielbeginn wie <see cref="TeamStrength.MatchStrength"/>,
-    /// aber ohne dessen Einsatzzuschlag (der Einsatz wirkt in der Rechnung des Originals selbst). Vereine ohne Kader
-    /// (Nationalteams aus <c>RatedNation</c>, Europapokal-Gegner) spielen mit ihrer Stärke. Begrenzt auf 0 … 100.
-    /// [APPROX] Abbildung der Remake-Kader auf die Teamwerte (das Original führt für Computervereine keine Spieler).
+    /// Teamwert eines Vereins (Maßstab der Vereinsfelder 0x18–0x1B, also der Datenbankstärke).
+    /// <list type="bullet">
+    /// <item>Computervereine (auch Nationalteams aus <c>RatedNation</c> und Europapokal-Gegner): [ORIGINAL] nur die
+    ///   Datenbankstärke – 0x977F liest die Vereinsfelder, das Original führt für Computervereine keine Spieler (Datei
+    ///   0x9C63 ff., docs/spielberechnung.md §7); die Felder wandern über 0x9D1B/0x58DC (<see cref="DriftTeamValues"/>,
+    ///   Streuung in <see cref="ClubFieldValues"/>). Spur wettbewerbe-spiel, Runde 12, Teil 3 (A174; Entscheidung Nutzer
+    ///   02.11.2026): vorher verschob die Remake-Aufstellung auch diese Stärke.</item>
+    /// <item>Managervereine (<see cref="IsManaged"/>): <see cref="ManagedClubValue"/>.</item>
+    /// </list>
     /// </summary>
-    public static int TeamValue(Club club)
+    public static int TeamValue(GameState game, Club club) =>
+        IsManaged(game, club) ? ManagedClubValue(club) : ComputerTeamValue(club);
+
+    /// <summary>Teamwert eines Computervereins: Datenbankstärke, begrenzt auf 0 … 100 (siehe <see cref="TeamValue(GameState, Club)"/>).</summary>
+    public static int ComputerTeamValue(Club club) => Math.Clamp(club.Strength, 0, 100);
+
+    /// <summary>
+    /// Teamwert eines Managervereins: Stärke aus der Datenbank, verschoben um die Veränderung der Aufstellung gegenüber dem
+    /// Spielbeginn wie <see cref="TeamStrength.MatchStrength"/>, aber ohne dessen Einsatzzuschlag (der Einsatz wirkt in der
+    /// Rechnung des Originals selbst). Ohne Kader die Stärke. Begrenzt auf 0 … 100.
+    /// [APPROX] Abbildung der Remake-Kader auf die Teamwerte; im Original bilden Managervereine ihre Werte aus den Spielern
+    /// (0x98F8, in der Managerpaarung über <see cref="LiveSquad"/>).
+    /// </summary>
+    public static int ManagedClubValue(Club club)
     {
         if (club.Players.Count == 0)
-            return Math.Clamp(club.Strength, 0, 100);
+            return ComputerTeamValue(club);
         var delta = (TeamStrength.Rating(club.Lineup) - club.ReferenceRating) * TeamStrength.StrengthPerRatingPoint;
         return Math.Clamp((int)Math.Round(club.Strength + delta), 0, 100);
     }
