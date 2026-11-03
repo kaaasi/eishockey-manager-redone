@@ -177,10 +177,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spur wettbewerbe-spiel, Teil 7 (A185, A186): neu – Kaderplatz +0x19 der Managerkader beim Spielstart, der Talente und der Marktplätze gewürfelt (random(3, 12) je Halbbyte, Datei 0x299F4/0x06F23/0x49803; eigene Quelle, Hauptquelle unverbraucht) statt 7/7; Über- und Unterzahl der Managerpaarungen rechnen damit, andere Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Gegenprobe: ohne Würfe (alle 7/7) alte Werte.
     /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): neu – Managervereine stellen mit der Einstellung „automatisch aufstellen“ (Startwert 1) beim Spielstart und täglich nach 0x426BC/0x42838 neu auf (statt Lücken stehen zu lassen bzw. nach Spielwert zu füllen), und die Feldspieler der Managerpaarung zählt je Minute 0x38A36 aus der Aufstellung; andere Aufstellungen und Ergebnisse ab dem ersten Managerspiel. Begründung bei <see cref="RngTwinProbeTests"/>.
     /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
-    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).</summary>
+    /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
+    /// Runde 12, Spur wettbewerbe-spiel Teil 2 (A184): neu – Belastung + 1 in Managerpaarungen und Grenzen nach dem Spiel
+    /// (Datei 0x8C82, 0x549A2). Begründung bei <see cref="RngTwinProbeTests"/>.</summary>
     [GameDataTheory]
-    [InlineData(false, "137C2086DE7F5381")]
-    [InlineData(true, "FB70395F3C43EFFE")]
+    [InlineData(false, "6099D595024C507D")]
+    [InlineData(true, "D5E058495291325D")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

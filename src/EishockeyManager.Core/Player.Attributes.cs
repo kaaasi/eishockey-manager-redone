@@ -50,8 +50,26 @@ public sealed partial class Player
     /// <summary>Form (FO) – dritte Zahl unter STÄRKEN.</summary>
     public int Form { get; set; }
 
-    /// <summary>Energie 0–100 (Spalte E). Sinkt durch Spiele und hartes Training, steigt an freien Tagen.</summary>
-    public int Energy { get; set; }
+    /// <summary>
+    /// Belastung (Kaderplatz +0x13, ein Byte; 50 = frisch … 150 = erschöpft). [ORIGINAL] Schreiber in em.exe: neuer
+    /// Kaderplatz random(80, 120) (Datei 0x42E4C–0x42E5E), Training − Erholung, danach 50 … 150 (Datei 0x6B08–0x6B1A),
+    /// Spielminute + 1 bei lrandom(0, 4 + (Kondition &gt; Technik)) = 0 (Datei 0x8C82, Byte), nach dem Spiel eines
+    /// Managervereins 50 … 150 (Datei 0x549A2–0x549BB), „WM Vorbereitung“ 70 (Datei 0x3BB51), Transferliste − 10 über 56
+    /// (Datei 0x71BB). Leser: Spielvorbereitung 0x84D7 (101 − Belastung/8), Trainingswirkung 0x659C, Spalte E der Listen
+    /// (Belastung · 10 / 15, Datei 0x4235E), Hinweiszeile „Erschöpfung“ (Datei 0x41B29). A184, Runde 12.
+    /// </summary>
+    public int Strain { get; set; } = TrainingRules.DefaultStrain;
+
+    /// <summary>
+    /// Energie 0–100 des Remakes, aus der Belastung abgeleitet (150 − <see cref="Strain"/>). [APPROX] Übergang bis die
+    /// Aufrufer in fremden Dateien (Anzeigen, neue Kaderplätze) die Belastung direkt lesen und schreiben (A184, Liste im
+    /// PR der Spur wettbewerbe-spiel Teil 2); wird nicht gespeichert.
+    /// </summary>
+    public int Energy
+    {
+        get => Math.Clamp(150 - Strain, 0, 100);
+        set => Strain = 150 - value;
+    }
 
     /// <summary>Spiele gesamt (Liga und Pokal), Spalte SP.</summary>
     public int Games { get; set; }

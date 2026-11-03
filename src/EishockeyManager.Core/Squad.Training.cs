@@ -217,11 +217,40 @@ public static class TrainingRules
     /// <summary>Wert „5 − Level“ des Originals (DGROUP 0xED8). Ab 4 (Level 0/1) wirkt die Planung nicht.</summary>
     public static int LevelValue(int level) => 5 - level;
 
+    /// <summary>Untere und obere Grenze der Belastung nach Training und Spiel. [ORIGINAL] Datei 0x6B13–0x6B1A, 0x549A5–0x549BB.</summary>
+    public const int MinStrain = 50, MaxStrain = 150;
+
     /// <summary>
-    /// Belastung (Original: Spielerfeld 0x13, 50 = frisch … 150 = erschöpft). [APPROX] Im Remake aus der Energie
-    /// abgeleitet: Belastung = 150 − Energie.
+    /// Belastung eines Spielers ohne Kaderplatz-Startwert. [APPROX] Entspricht der früheren Energie 0 des Remakes (Belastung
+    /// 150), damit Spieler ohne gesetzten Wert sich wie bisher verhalten (z. B. Poolspieler vor dem Tausch, Transfer.Pool).
     /// </summary>
-    public static int Fatigue(Player p) => Math.Clamp(150 - p.Energy, 50, 150);
+    public const int DefaultStrain = 150;
+
+    /// <summary>
+    /// Belastung (Kaderplatz +0x13) wie das Training sie liest: das Byte ohne Begrenzung. [ORIGINAL] Datei 0x6623.
+    /// Bis Runde 11 war das 150 − Energie (A184).
+    /// </summary>
+    public static int Fatigue(Player p) => p.Strain;
+
+    /// <summary>
+    /// Wert der Spalte E (Aufstellung, Verträge, Transfer) und der Hinweiszeile „Erschöpfung“: Belastung · 10 / 15.
+    /// [ORIGINAL] Datei 0x4235E–0x4236D (Listen) und 0x41B29–0x41B38 (Hinweiszeile). Beleg: nach „WM Vorbereitung“
+    /// (Belastung 70) zeigt das Original 46 (docs/dosbox-befunde.md).
+    /// </summary>
+    public static int ExhaustionDisplay(Player p) => p.Strain * 10 / 15;
+
+    /// <summary>Spalte E in Hervorhebungsfarbe 0x10 bei Belastung über 130. [ORIGINAL] Datei 0x42338–0x4233F.</summary>
+    public static bool ExhaustionWarning(Player p) => p.Strain > 130;
+
+    /// <summary>
+    /// Nach dem Spiel eines Managervereins: Belastung aller Kaderplätze auf 50 … 150. [ORIGINAL] Spielabrechnung 0x544C0,
+    /// Schleife über die Kaderplätze ab Datei 0x548A8, Grenzen Datei 0x549A2–0x549BB (auch für nicht Eingesetzte).
+    /// </summary>
+    public static void ClampStrain(IEnumerable<Player> players)
+    {
+        foreach (var p in players)
+            p.Strain = Math.Clamp(p.Strain, MinStrain, MaxStrain);
+    }
 
     /// <summary>
     /// Ein Trainingstag für einen Spieler. Liefert die Änderungen (für Tests und Anzeige).
@@ -312,8 +341,8 @@ public static class TrainingRules
         }
 
         var recovery = Round((int)(energy * 100 / EnergyNorm[group]) * 2, true, random);
-        var newFatigue = Math.Clamp(fatigue - recovery, 50, 150);
-        p.Energy = 150 - newFatigue;
+        // [ORIGINAL] Datei 0x6B08–0x6B1A: Belastung − Erholung (Byte), dann 50 … 150.
+        p.Strain = Math.Clamp((fatigue - recovery) & 0xFF, MinStrain, MaxStrain);
 
         return new TrainingOutcome(changes[0], changes[1], changes[2], changes[3], recovery, bonus);
     }

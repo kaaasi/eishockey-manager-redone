@@ -159,16 +159,20 @@ namespace EishockeyManager.Core.Tests;
 /// Spur wettbewerbe-spiel, Teil 8 (A068, A089/A070): neu – Managervereine stellen mit der Einstellung „automatisch aufstellen“ (Startwert 1) beim Spielstart und täglich nach 0x426BC/0x42838 neu auf (statt Lücken stehen zu lassen bzw. nach Spielwert zu füllen), und die Feldspieler der Managerpaarung zählt je Minute 0x38A36 aus der Aufstellung; andere Aufstellungen und Ergebnisse ab dem ersten Managerspiel.
 /// Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
 /// Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
+/// Runde 12, Spur wettbewerbe-spiel Teil 2 (A184): neu – Belastung (Kaderplatz +0x13) als eigenes Feld; in Managerpaarungen
+/// Belastung + 1 bei lrandom(0, 4 + (Kondition &gt; Technik)) = 0 (Datei 0x8C82; der Zug selbst bestand schon), nach dem Spiel
+/// 50 … 150 (Datei 0x549A2). Die Spielvorbereitung (101 − Belastung/8, 0x84D7) gibt damit andere Kaderenergien; andere
+/// Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Zufallszüge unverändert (kein neuer Zug).
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "FB3429A7D18DE060")]
-    [InlineData(true, 3, "9663CBEAD233BE02")]
-    [InlineData(false, 11, "5F05F7A0AA791820")]
-    [InlineData(true, 11, "81611FEC9A4E0790")]
+    [InlineData(false, 3, "4D224E973511C742")]
+    [InlineData(true, 3, "551E9B8224C8D4B8")]
+    [InlineData(false, 11, "E6CF0CEB189A5F74")]
+    [InlineData(true, 11, "332A898C9510EDFE")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -176,8 +180,8 @@ public class RngTwinProbeTests
     }
 
     [GameDataTheory]
-    [InlineData(false, "B5025169A07A736C")]
-    [InlineData(true, "DEF061D55591E215")]
+    [InlineData(false, "0D32300F45EA6222")]
+    [InlineData(true, "1BBED8622F0067E6")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

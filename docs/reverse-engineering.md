@@ -519,7 +519,8 @@ Aufstellung 0x3FFE0/0x40364 und Transferliste 0x465F1 gerufen; im Remake öffnet
 * **Bisher falsch im Remake:** Spaltengrenzen um 1–4 Pixel verschoben (Aufstellung jetzt 18, 36, 93, 107, 143, 156, 183, 223, 233);
   „Art des Spielers: “ vor der Rolle; „Verletzt. (Noch n Spiele)“; „Fallend./…“ ohne Erschöpfung; Spalte 7 ohne Durchschnitt;
   Spalte 0 ohne Reihe.
-* **[APPROX]:** Sperre in Minuten (+0x0D; das Remake zählt Spiele), Belastung +0x13 (aus der Energie) und die
+* **[APPROX]:** Sperre in Minuten (+0x0D; das Remake zählt Spiele), Belastung +0x13 (seit Runde 12 eigenes Feld `Player.Strain`,
+  A184; die Hinweiszeile liest noch die abgeleitete Energie, Anschluss offen) und die
   Zeilenschritte der Aufstellung (`LineupScreen.RowAt` klickt bei y = 28 + 6 k, die Hinweiszeile wie das Original bei 29 + 6 k;
   Klickfläche nicht Teil dieser Spur). Die Verletzungsart (+0x17) zieht seit der Integration Runde 11 die Verletzung
   selbst (Datei 0x05B1A, `PlayerInjuries.Inflict`).

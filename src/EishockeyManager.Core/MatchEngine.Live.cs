@@ -292,6 +292,9 @@ public static partial class MatchEngine
         }
         if (report.Forfeit)
             return;
+        // [ORIGINAL] Spielabrechnung 0x544C0, Kaderplatzschleife ab Datei 0x548A8: Belastung aller Spieler 50 … 150
+        // (Datei 0x549A2–0x549BB; A184, Runde 12). Bei „nicht spielfähig“ endet die Abrechnung vorher.
+        TrainingRules.ClampStrain(club.Players);
         CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report);
         if (report.Events.Any(e => e.Kind == MatchEventKind.Injury && e.Side == side))
             PlayerInjuries.RefillLineup(club);

@@ -169,7 +169,9 @@ public static class PlayerFactory
         Check(p.Condition is >= 1 and <= Player.MaxValue, $"Kondition {p.Condition}");
         Check(p.Technique is >= 1 and <= Player.MaxValue, $"Technik {p.Technique}");
         Check(p.Form is >= 1 and <= Player.MaxValue, $"Form {p.Form}");
-        Check(p.Energy is >= 1 and <= 100, $"Energie {p.Energy}");
+        // A184 (Spur wettbewerbe-spiel, Runde 12): Belastung (Kaderplatz +0x13) statt Energie; gültig 50 … 150 wie nach Training
+        // und Spiel (Datei 0x6B13, 0x549A2). Belastung 150 hieß vorher Energie 0 und war ungültig.
+        Check(p.Strain is >= TrainingRules.MinStrain and <= TrainingRules.MaxStrain, $"Belastung {p.Strain}");
         Check(p.Number is >= 1 and <= MaxNumber, $"Rückennummer {p.Number}");
         Check(club.Players.Count(q => q.Number == p.Number) <= 1, $"Rückennummer {p.Number} doppelt");
         Check(p.ContractYears is >= Contracts.MinYears and <= Contracts.MaxYears, $"Vertragsdauer {p.ContractYears}");
