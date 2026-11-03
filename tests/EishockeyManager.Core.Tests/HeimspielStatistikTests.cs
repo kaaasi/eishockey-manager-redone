@@ -308,10 +308,14 @@ public class HeimspielStatistikTests
                     Assert.InRange(stats.Average!.Value, stats.Minimum, stats.Record);
                     Assert.True(stats.Record <= game.Finance(manager).Stadium.Capacity);
                 }
+                // Nachrichtenspeicher wie im Original (pixel-marker Teil 3): eine Meldung im Lauf mehrerer Tage ohne Zug kann vor der
+                // Beobachtung wieder aus dem Speicher laufen (3 Tage, Datei 0x54F07); die Strafen im Finanzbuch zählen vollständig.
                 var messages = Messages(manager) - messagesBefore[manager];
-                Assert.Equal(-200_000L * messages, game.Finance(manager).Book.Current(FinanceCategory.Strafen));
+                var fines = -game.Finance(manager).Book.Current(FinanceCategory.Strafen) / 200_000L;
+                Assert.Equal(0, game.Finance(manager).Book.Current(FinanceCategory.Strafen) % 200_000L);
+                Assert.InRange(messages, 0, fines);
             }
-            Assert.True(Messages(active) - messagesBefore[active] >= 1, "Strafe am 5. Spieltag fehlt");
+            Assert.True(game.Finance(active).Book.Current(FinanceCategory.Strafen) <= -200_000L, "Strafe am 5. Spieltag fehlt");
             Assert.True(game.Finance(active).HomeStatistics.Games > 0);
             if (passiveClub.Players.Count == 0)
             {
