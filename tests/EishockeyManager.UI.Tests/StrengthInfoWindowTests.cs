@@ -9,22 +9,19 @@ namespace EishockeyManager.UI.Tests;
 public class StrengthInfoWindowTests
 {
     [Theory]
-    [InlineData(28, 30, 0)]
-    [InlineData(212, 30, 0)]
-    [InlineData(100, 13, 0)]   // Division zur 0 hin: (13 − 27) / 15 = 0
-    [InlineData(100, 41, 0)]
-    [InlineData(100, 42, 1)]
-    [InlineData(100, 191, 10)]
-    [InlineData(100, 206, 11)]
-    public void RowAt_FollowsOriginalHitTest(int x, int y, int expected) =>
-        Assert.Equal(expected, StrengthScreen.RowAt(x, y, 12));
+    [InlineData(28, 0)]
+    [InlineData(41, 0)]
+    [InlineData(42, 1)]
+    [InlineData(191, 10)]
+    [InlineData(206, 11)]
+    public void RowAt_FollowsOriginalHitTest(int y, int expected) => Assert.Equal(expected, StrengthScreen.RowAt(y, 12));
 
     [Theory]
-    [InlineData(27, 30)]   // 0x1B < x
-    [InlineData(213, 30)]  // x < 0xD5
-    [InlineData(100, 12)]  // Zeile −1
-    [InlineData(100, 207)] // Zeile 12 von 12
-    public void RowAt_OutsideIsNull(int x, int y) => Assert.Null(StrengthScreen.RowAt(x, y, 12));
+    [InlineData(27)]   // 0x1B < y
+    [InlineData(13)]
+    [InlineData(207)]  // Zeile 12 von 12
+    [InlineData(213)]  // y < 0xD5
+    public void RowAt_OutsideIsNull(int y) => Assert.Null(StrengthScreen.RowAt(y, 12));
 
     [GameDataFact]
     public void ClickOnClubRow_OpensClubWindow_ClosesWithoutChangingState()

@@ -68,15 +68,16 @@ public sealed class StrengthScreen : Screen
 
     /// <summary>
     /// [ORIGINAL] Klick auf eine Zeile öffnet das Vereins-/Länderfenster 0x128:0x2A (Datei 0x4D385, Seite 2 = Gesamt, ohne dritten
-    /// Knopf; DOSBox 44): Datei 0x51A02–0x51A59, nur linke Taste, 27 &lt; x &lt; 213, Zeile = (y − 27) / 15 (Division zur 0 hin,
-    /// also auch y 13 … 26 → Zeile 0), gültig unter der Zahl der Teams der Liste (DGROUP 0x7B1).
+    /// Knopf; DOSBox 44): Datei 0x51A02–0x51A59, nur linke Taste, Maus-y (Feld +0 des Mausblocks) mit 27 &lt; y &lt; 213, Zeile =
+    /// (y − 27) / 15 (Division zur 0 hin, also auch y 13 … 26 nicht, aber y 28 … 41 → Zeile 0), gültig unter der Zahl der Teams der
+    /// Liste (DGROUP 0x7B1). Die Maus-x wird nicht geprüft.
     /// </summary>
-    public static int? RowAt(int x, int y, int rowCount)
+    public static int? RowAt(int y, int rowCount)
     {
-        if (x <= 27 || x >= 213)
+        if (y <= 27 || y >= 213)
             return null;
         var row = (y - 27) / RowPitch;
-        return row >= 0 && row < rowCount ? row : null;
+        return row < rowCount ? row : null;
     }
 
     /// <summary>Info-Fenster aus der Liste (Verein oder Land), ändert keinen Spielzustand.</summary>
@@ -86,7 +87,7 @@ public sealed class StrengthScreen : Screen
     {
         if (InfoWindows.Nation.Update(input) | InfoWindows.Club.Update(input))
             return;
-        if (input.LeftClick && RowAt(input.MouseX, input.MouseY, Rows.Count) is { } clicked)
+        if (input.LeftClick && RowAt(input.MouseY, Rows.Count) is { } clicked)
         {
             InfoWindows.Show(Rows[clicked].Club.Index);
             return;
