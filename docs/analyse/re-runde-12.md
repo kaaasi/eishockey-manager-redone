@@ -119,10 +119,10 @@ if f != 0 and (status(f) & 0x04) == 0:                // Datei 0x5629D–0x562B3
 nach dem Auf- und Abstieg (0x562F2/0x5636D), der Ewigen Tabelle (0x5667A) und 0x09D1B, vor 0x346D5 und dem Fenster
 „Saisonende“ 0x26F20 (Datei 0x5645D); außerdem beim Spielstart (0x43A17). Ablauf:
 
-1. **Länder:** 20-mal zwei Plätze `random(a, a + 11)` (a = DGROUP 0x6AD) tauschen (auch derselbe Platz): Kostenwerte
+1. **Länder:** 20-mal zwei Plätze `lrandom(a, a + 11)` (a = DGROUP 0x6AD; Zufall **lrandom** Datei 0xBFD5, nicht `random` Datei 0xC037, berichtigt in Runde 13, `re-runde-13.md` S-K6-b) tauschen (auch derselbe Platz): Kostenwerte
    DGROUP 0x26C + 4 · (Platz − a), Nationalteam des Managers DGROUP 0x6AC mitgeführt, Tausch 0x36169 mit Schalter 0
    (Datei 0x35EF2–0x35FCF). Im Remake schon als WM-Tausch (`CupsWorld.cs`).
-2. **Ligen 0–2:** je **55-mal** zwei Plätze `random(b, b + n − 1)` (b = DGROUP 0x7C0 + Liga, n = DGROUP 0x7B1 + Liga = 12),
+2. **Ligen 0–2:** je **55-mal** zwei Plätze `lrandom(b, b + n − 1)` (ebenfalls lrandom Datei 0xBFD5, Zustand DGROUP 0xE017 nicht im Spielstand) (b = DGROUP 0x7C0 + Liga, n = DGROUP 0x7B1 + Liga = 12),
    Tausch 0x36169 mit Schalter 1 (ganzer Vereinssatz 0x3D, Tabellensatz 0x50, Serien, Spieler +0x1D, Manager) und in der
    Platzliste DGROUP 0x5CCB + 12 · Liga die beiden Einträge vertauscht, damit sie denselben Verein behalten (Datei
    0x35FD2–0x3613F). Die Vereine bleiben in ihrer Liga, nur ihre Plätze (Indizes) wechseln.

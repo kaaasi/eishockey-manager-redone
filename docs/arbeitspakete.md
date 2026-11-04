@@ -134,8 +134,12 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
      bytegleich vergleicht (Sichern in Speicher); Abweichungen als Befund-Issues (P2), nicht selbst beheben, außer trivial.
   2. **Funktionskarte und Inventur** auf den Rundenstand (`funktionskarte.py --write`, zweiter Lauf ohne Diff), Stand je Zeile in
      `analyse/inventur.md` für alle in Runde 13 belegten IDs.
-- **Dateigrenzen:** `tests/**/Support/`, neue Testdatei, `tools/reverse-engineering/*`, `docs/re-abdeckung.md`, `docs/analyse/inventur.md`.
-  **Modell:** Claude Sonnet 5.5. **Status:** geplant.
+- **Dateigrenzen:** `tests/**/Support/`, neue Testdatei, `tools/reverse-engineering/*`, `docs/re-abdeckung.md`, `docs/analyse/inventur.md`;
+  nach L12 zusätzlich `docs/spielberechnung.md` §14, `docs/analyse/re-runde-12.md` (S-K6: `lrandom`) und Feldbelege nach
+  `docs/formate/spielstand-original.md`; nach R13RDN-01 (#577) die veralteten Verweise in `docs/analyse/re-runde-13.md`.
+  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 fertig (PR #607 `paket/pruefung-karte-1`, 04.11.2026): 0 Abweichungen, keine
+  Befund-Issues; Teil 2 fertig (PR #608 `paket/pruefung-karte-2`, gestapelt auf Teil 1): Funktionskarte neu (Spielcode 257/2/104/1,
+  zweiter Lauf ohne Diff), Inventur „Stand Runde 13“, Doku nach L12. Spur fertig – Review.
 
 ### Integration Runde 13
 

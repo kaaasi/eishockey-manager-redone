@@ -24,7 +24,7 @@ Aufruffolge Datei 0x56448/0x5644E/0x5645D.
 | A028 | widerlegt | Zug des Bundestrainers an jedem WM-Tag, auch nach dem Ausscheiden („Spielfrei“) | `nationalteam` |
 | A058 | widerlegt | Teamwert-Wanderung läuft auch im Modus „nur Weltkugel“ | `saison` |
 | A085 | belegt (Abweichung) | Bundestrainer: „auto“ nach Art, dann Summe; Gleichstand nach Poolindex (Remake: Name). Verein: Platzfolge über den Saisonwechsel unverändert | `nationalteam` / `kader-start` |
-| A088 | belegt (Abweichung) | Zähler-Rücksetzung wie Remake, aber Transfermarkt-Spieler behalten ihre Zähler | `saison` (Dateigrenze offen, Frage 4) |
+| A088 | belegt (Abweichung) | Zähler-Rücksetzung wie Remake, aber Transfermarkt-Spieler behalten ihre Zähler | `saison` (L4) |
 | A091 | widerlegt | „Nr.“ = Kaderplatz + 1; Verkauf: Plätze rücken auf, Kauf: hinten an | `kader-start` |
 | A125 | belegt | `Players[3]` folgt der Platzfolge des Originals | `kader-start` |
 | A163 | widerlegt | Oberliga-Austausch auch im Modus „nur Weltkugel“; Ligen 1/2 unverändert | `saison` |
@@ -729,8 +729,9 @@ Spielstände FILE13/14, FILE16A/17, FILE22/23 (Strafminuten = Tabellensatz DGROU
 - **Umsetzung:** keine Verhaltensänderung; `[APPROX]` bleibt mit berichtigter Begründung („lrandom Datei 0xBFD5, gemeinsame
   Folge mit Spielberechnung und Teamwert-Wanderung, Zustand DGROUP 0xE017 nicht im Spielstand → nicht nachbildbar“), dazu
   `random(b, b + 11)` → `lrandom(b, b + 11)` im Kommentar `src/EishockeyManager.Core/SeasonFlow.LeagueSlots.cs`; Doku
-  `docs/analyse/re-runde-12.md` (S-K6, Punkte 1 und 2) und `docs/spielberechnung.md` §14 (Aufruf 0x439BB streichen).
-  Testidee: keine (reine Begründung); bestehende Verteilungs-/Mehrsaisonprobe genügt. Spur: `saison`.
+  `docs/analyse/re-runde-12.md` (S-K6, Punkte 1 und 2) und `docs/spielberechnung.md` §14 (Aufruf 0x439BB streichen) –
+  **nicht `saison`, sondern `pruefung-karte` (L12); erledigt in PR #608 (Teil 2).**
+  Testidee: keine (reine Begründung); bestehende Verteilungs-/Mehrsaisonprobe genügt. Spur: `saison` (Code-Kommentar), Doku `pruefung-karte` (L12).
 
 ### S-K6-c – Fair-Play-Prämie alte/neue Liga
 
@@ -776,7 +777,7 @@ Spielstände FILE13/14, FILE16A/17, FILE22/23 (Strafminuten = Tabellensatz DGROU
    0, neue Satzfolge) zeigen wie das Original, oder bleibt die Anzeige `[APPROX]`? Das bestimmt, ob eine zweite Satzfolge
    gespeichert werden muss (Schema).
 2. Doku-Berichtigungen (lrandom statt random in `re-runde-12.md`/Code-Kommentar; Aufruf „nach dem Lader 0x439BB“ in
-   `spielberechnung.md` §14 streichen) – an Spur `saison` mitgeben oder Leitstelle?
+   `spielberechnung.md` §14 streichen) – an Spur `saison` mitgeben oder Leitstelle? **Entschieden (L12): `pruefung-karte`** (Doku), `saison` nur den Code-Kommentar.
 3. 0x346D5 (`0xE8:0x8E`, direkt nach der Mischung, auch beim Spielstart) nicht gelesen – vermutlich Neuaufbau von Tabelle
    oder Spielplan; ggf. Prüfauftrag.
 

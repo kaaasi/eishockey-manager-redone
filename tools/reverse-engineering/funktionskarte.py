@@ -427,6 +427,8 @@ DGROUP_WORDS = re.compile(r"(Liste|Tabellen?|Paarungen|Runde|Termin|Struktur|[Mm
                           r"Managerwert|Flag|Variable|Zustand)\s*`?$")
 # DGROUP values that a comment calls "Datei" by mistake (checked against the bytes of em.exe)
 DGROUP_MISLABELLED: dict[int, str] = {}
+# offsets in the decrypted savegame are written "HOK 0x…" (docs/formate/spielstand-original.md, docs/analyse/re-runde-13.md)
+HOK_PREFIX = re.compile(r"\bHOK\s*`?$")
 SENTENCE_CUT = re.compile(r"\.\s|;|\n\s*(?:///?|\*)?\s*\n|\[(?:ORIGINAL|APPROX)\]|\|")
 DGROUP_CTX = re.compile(r"(DGROUP|Feld|Spielerfeld|Vereinsfeld|Manager-Feld|Index|Globale|Zähler|Byte|Wort)\s*$")
 
@@ -509,6 +511,8 @@ class RefCollector:
         if an.region_of(a) is None or a in CONSTANTS:
             return False
         before = text[max(0, pos - 24):pos]
+        if HOK_PREFIX.search(before):
+            return False  # "HOK 0x…" = offset in the decrypted savegame, not in em.exe (Runde 13, #567)
         if DGROUP_CTX.search(before) or before.rstrip().endswith("+"):
             return False
         # DGROUP lists ("DGROUP 0x4861, Norm 0x48CD") until a sentence break
