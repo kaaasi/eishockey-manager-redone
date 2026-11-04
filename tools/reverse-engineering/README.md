@@ -28,3 +28,6 @@ erkannt, zählt als *Fundstelle* aber nur über die Stub-Schreibweise, z. B. „
 PR #381); erkannt werden auch „Stub-Selektor“ sowie die Wörter „Funktionsoffset“, „Stub-Offset“, „Einsprung“ und „Offset“.
 Eine Adresse mit direkt folgendem Doppelpunkt („Datei 0x3688F: …“) zählt als Adresse, solange kein Hexwert folgt
 (sonst `Segment:Offset`). `docs/analyse/inventur.md` und `docs/re-abdeckung.md` zählt die Karte nicht als Fundstelle.
+Offsets im entschlüsselten Spielstand schreibt die Doku als `HOK 0x…` (Beispiel `docs/analyse/re-runde-13.md`); die Karte zählt eine Adresse mit
+direkt vorangehendem `HOK` nie als em.exe-Fundstelle (Runde 13, #567, R13RD-01). Ohne das Präfix würde jede Hexzahl einer
+Spielstand-Auswertung als Dateioffset in `em.exe` gelten.

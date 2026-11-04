@@ -328,6 +328,8 @@ FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die S
 | Kaderplatz `+0x02` | offen; steigt in der Saison (TRAVNICEK, MORRISON, LANGLOIS 0→2 von FILE16A nach FILE22), wird beim Saisonwechsel **nicht** zurückgesetzt | FILE22→FILE23 unverändert |
 | Pool `+0x1C` | Ligaspiele der Saison (gleich Kaderplatz `+0x06`), Saisonwechsel → 0 | FILE22→FILE23, 16 von 16 → 0 |
 | DGROUP `0x375 + 2 · m` | „automatisch aufstellen“ liegt in HOK `0x00844` | FILE05 01, FILE06 00, FILE24 00 (Byte `0x376` = 01), FILE25 01 |
+| Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf kommt der Spieler hinten an | FILE05 → FILE07 (Kauf) und FILE26 (Verkauf), em.exe Datei `0x42CB1` (Kauf), `0x425B6` (Verkauf); Remake `KaderStartRunde13Teil4Tests` (PR #599) |
+| HOK `0x08EED` / `0x08EF7` | DGROUP `0xA776` (Teilnehmerliste Europapokal, deutsche Teilnehmer; die Mischung 0x35EDD führt Meister und Titelverteidiger über 0x36146 mit) bzw. DGROUP `0xA763` | FILE22 → FILE23: Kölner EC Satz 4 → 8, Liste = 8 (PR #579, 0x346D5 nach L8) |
 
 ## Offene Punkte
 

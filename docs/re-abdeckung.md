@@ -149,7 +149,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 5097 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 5561 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -157,9 +157,9 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 265 | 243611 | 79 % | 254 | 233855 | 90 % |
-| genähert | 3 | 1605 | 1 % | 3 | 1605 | 1 % |
-| dokumentiert | 154 | 31520 | 10 % | 106 | 25020 | 10 % |
+| umgesetzt | 268 | 244674 | 79 % | 257 | 234918 | 90 % |
+| genähert | 2 | 684 | 0 % | 2 | 684 | 0 % |
+| dokumentiert | 152 | 31378 | 10 % | 104 | 24878 | 10 % |
 | unbekannt | 257 | 32789 | 11 % | 1 | 421 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
@@ -189,7 +189,7 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Ov 0xe8 (3D11) | 0x2F530–0x352A2 | 23923 | 33 | 96 % | 0 % | 4 % | 0 % | „Endrunde“, „Jugendteams“, „.Spieltag“ |
 | Ov 0xf0 (42E9) | 0x35540–0x397BA | 17019 | 26 | 91 % | 0 % | 9 % | 0 % | „Spiele laufen“, „!    Penaltyschiessen   “, „DEB-Pokal“ |
 | Ov 0xf8 (4711) | 0x399D0–0x3CD71 | 13218 | 18 | 99 % | 0 % | 1 % | 0 % | „WM Vorbereitung“, „WM-Statistik“, „Spieler in WM-Kader“ |
-| Ov 0x100 (4A4C) | 0x3CFA0–0x3FDDD | 11838 | 13 | 92 % | 8 % | 0 % | 0 % | „Überdachung“, „bittet Sie an den Verhan“, „Sitzplätze“ |
+| Ov 0x100 (4A4C) | 0x3CFA0–0x3FDDD | 11838 | 13 | 100 % | 0 % | 0 % | 0 % | „Überdachung“, „bittet Sie an den Verhan“, „Sitzplätze“ |
 | Ov 0x108 (4D30) | 0x3FFE0–0x42FC4 | 12261 | 13 | 98 % | 0 % | 2 % | 0 % | „Platz mehr !“, „Rückennummer des Spieler“, „Schon 11 Mann auf“ |
 | Ov 0x110 (502F) | 0x43150–0x45DC3 | 11380 | 20 | 90 % | 0 % | 10 % | 0 % | „autosave.hok“, „Saisonende“, „.Spieltag“ |
 | Ov 0x118 (52F7) | 0x46000–0x4ADE1 | 19938 | 18 | 99 % | 0 % | 1 % | 0 % | „ART   NAME              “, „Grundwert“, „Vertragsverhandlung“ |
@@ -210,10 +210,9 @@ Der Status gilt je Funktion: schon eine Fundstelle zählt die ganze Funktion. Di
 
 | # | Datei | Bereich | Größe | Status | Aufrufer | Vermutung (automatisch) |
 |---:|---|---|---:|---|---|---|
-| 1 | 0x3D45F | Ov 0x100 (4A4C)+0x4BF | 921 | genähert | 0x3D7F8 | „Überdachung“, „Sitzplätze“, „OHNE DACH“, „Konto“ |
-| 2 | 0x25B4A | Ov 0xc0 (337B)+0x58A | 615 | genähert | 0x0B019, 0x0C17D, 0x0C729 … | „Alles klar!“, „LIB-Error“, „GRAFIK-Error“, „DISK-Error“ |
-| 3 | 0x575C3 | Ov 0x138 (63A2)+0x143 | 421 | unbekannt | 0x567C8 | „toreÖ“ |
-| 4 | 0x52B91 | Ov 0x130 (5E73)+0xD01 | 69 | genähert | 0x0977F, 0x378C5, 0x37A62 … | gerufen von 0x0977F (umgesetzt) |
+| 1 | 0x25B4A | Ov 0xc0 (337B)+0x58A | 615 | genähert | 0x0B019, 0x0C17D, 0x0C729 … | „Alles klar!“, „LIB-Error“, „GRAFIK-Error“, „DISK-Error“ |
+| 2 | 0x575C3 | Ov 0x138 (63A2)+0x143 | 421 | unbekannt | 0x567C8 | „toreÖ“ |
+| 3 | 0x52B91 | Ov 0x130 (5E73)+0xD01 | 69 | genähert | 0x0977F, 0x378C5, 0x37A62 … | gerufen von 0x0977F (umgesetzt) |
 
 ### Funktionen mit Zugriff auf offene Globale
 
@@ -233,7 +232,6 @@ Vermutung = automatisch abgeleitete Hinweise (benutzte Texte, auch über Zeigert
 | Datei | Bereich | Größe | Status | Aufrufer | Vermutung |
 |---|---|---:|---|---:|---|
 | 0x25B4A | Ov 0xc0 (337B)+0x58A | 615 | genähert | 15 | „Alles klar!“, „LIB-Error“, „GRAFIK-Error“ |
-| 0x3D45F | Ov 0x100 (4A4C)+0x4BF | 921 | genähert | 1 | „Überdachung“, „Sitzplätze“, „OHNE DACH“ |
 | 0x52B91 | Ov 0x130 (5E73)+0xD01 | 69 | genähert | 4 | gerufen von 0x0977F (umgesetzt) |
 | 0x575C3 | Ov 0x138 (63A2)+0x143 | 421 | unbekannt | 1 | „toreÖ“ |
 
