@@ -124,7 +124,7 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
      neuen Spiels (Original prüfen: 44E22h), Kommentar `MainMenuEventTests.cs`; Hinweis `NewsBar.Shown` aus Review #546 prüfen.
      `Fixes #539`, `#540`, `#541`.
 - **Dateigrenzen:** siehe Zuständigkeit; `UI/Screens/MainMenuScreen.cs` nur für #540 minimal; Tests; `docs/finanzen-rekonstruktion.md`.
-  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 fertig (PR #570 `paket/ui-rest-1`, 04.11.2026); Teile 2–4 offen.
+  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 fertig (PR #570 `paket/ui-rest-1`, 04.11.2026); Teil 2 fertig (`paket/ui-rest-2`, gestapelt auf Teil 1); Teile 3–4 offen.
 
 ### Spur `pruefung-karte` – Welle 2 (nach der Integration der übrigen Spuren)
 

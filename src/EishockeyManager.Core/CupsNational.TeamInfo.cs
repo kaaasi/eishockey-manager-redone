@@ -123,8 +123,10 @@ public static class TeamRecords
 /// <item>[ORIGINAL] Die WM-Auslosung 0x35EDD tauscht diese Sätze mit den Ländern (Datei 0x365B6–0x36799); im Remake behalten
 ///   die Länder ihren Index, ein Tausch entfällt.</item>
 /// <item>Rekorde der Vereine: Ligaspiele (Code 7) über <see cref="EnterLeagueRecords"/> aus <see cref="PlayNextMatchDay"/>, für das
-///   Vereinsfenster (<c>ClubInfoWindow</c>, Spur ui-meldungen Teil 2; Anschluss Integration Runde 12). [APPROX] Pokal-, Play-off-
-///   und Aufstiegsrundenspiele schreiben keine Rekorde (wie die Serien); ihr Code beim Aufruf von 0x50283 ist nicht geprüft. [APPROX] Bilanzzeichen der Vereine werden nicht geführt (das
+///   Vereinsfenster (<c>ClubInfoWindow</c>, Spur ui-meldungen Teil 2; Anschluss Integration Runde 12). [ORIGINAL] Pokal-, Play-off-
+///   und Aufstiegsrundenspiele schreiben keine Rekorde (wie die Serien): 0x50283 prüft den Wettbewerbscode DGROUP 0xD0C2 nur auf
+///   7 und 8 (Datei 0x5030D–0x5031B), DEB-Pokal ist 6 (0x35E7C), Play-offs und Aufstiegsrunden 1 (0x31AB7); Probe
+///   <c>ClubRecordsSeasonTests</c> (ui-rest Teil 2). [APPROX] Bilanzzeichen der Vereine werden nicht geführt (das
 ///   Vereinsfenster rechnet die Bilanz aus <see cref="Results"/>).</item>
 /// <item>[APPROX] Bilanzzeichen nur der Länder, als Art 1 = Niederlage, 2 = Unentschieden, 3 = Sieg (Heim/Gast spielt für die
 ///   Anzeige keine Rolle). [ORIGINAL] Der Saisonwechsel leert sie (em.exe Datei 0x55EBA–0x55EE0, siehe
