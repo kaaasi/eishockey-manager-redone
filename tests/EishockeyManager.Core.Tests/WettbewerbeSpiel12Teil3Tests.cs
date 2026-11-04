@@ -108,7 +108,7 @@ public class WettbewerbeSpiel12Teil3Tests
             if (change < 4)
             {
                 if (!active)
-                    TestSeason.KeepSquad(game, manager);
+                    TestSeason.KeepSquad(game, manager, extendExpired: true); // R12K-03: Kader wie bisher halten
                 game.StartNextSeason();
             }
         }

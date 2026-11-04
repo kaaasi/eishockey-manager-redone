@@ -190,7 +190,7 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
             for (var guard = 0; game.History.Count < 4 || d.Host.Current is not MainMenuScreen; guard++)
             {
                 Assert.True(guard < 80000, "Vier Saisonwechsel nicht erreicht");
-                KeepSquadHelper.KeepSquads(game); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen
+                KeepSquadHelper.KeepSquads(game, extendExpired: true); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen (R12K-03)
                 Step(d, live);
             }
             return Summary(game);

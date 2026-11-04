@@ -534,8 +534,9 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>
-    /// Saisonwechsel des Pools. [ORIGINAL] Saisonende 0x274A7: Alter +0x14 aller Poolplätze + 1 (ohne Laufbahnende –
-    /// Entscheidung Nutzer 01.11.2026: Originaltreue; Verjüngung beim Umbenennen ist als Erweiterung nach v1.0 vorgemerkt,
+    /// Saisonwechsel des Pools. [ORIGINAL] Saisonende 0x274A7: Alter +0x14 aller Poolplätze + 1; danach Laufbahnende und
+    /// Neuanlage im selben Platz (<see cref="GameState.RenewAgedPoolPlayer"/>, Datei 0x2787A). Das Umbenennen verjüngt nicht
+    /// (Entscheidung Nutzer 01.11.2026: Originaltreue; Verjüngung beim Umbenennen ist als Erweiterung nach v1.0 vorgemerkt,
     /// <c>docs/anforderungen/zusatzfunktionen.md</c>); Datei 0x56467/0x56470: neue Namen der freien Plätze (Art 0, dann Art 1).
     /// [APPROX] Vergebene Plätze, deren Spieler nicht mehr in einem Managerkader steht, bekommen einen neuen Spieler mit den
     /// Werten des alten (im Original wird der Platz bei Verkauf oder Vertragsende wieder frei); der alte bleibt, wo er ist, und
