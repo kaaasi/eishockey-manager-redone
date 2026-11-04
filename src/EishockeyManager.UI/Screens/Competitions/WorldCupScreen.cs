@@ -3,8 +3,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.UI.Screens.Competitions;
 
 /// <summary>
-/// WM „Gruppe 1/2“ (Tabellen → Tabelle WM): Tabelle einer Gruppe mit Flaggen; nach der Gruppenphase
-/// zusätzlich die K.-o.-Spiele. Zeigt nur vorhandenen Zustand.
+/// WM „Gruppe 1/2“ (Tabellen → Tabelle WM): Tabelle einer Gruppe mit Flaggen. Zeigt nur vorhandenen Zustand.
 /// </summary>
 /// <remarks>
 /// Aufbau aus em.exe (Datei 0x2F5B6), vermessen am Video „Die Oberfläche von EM“ (13:13):
@@ -16,11 +15,20 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// <item>Flagge = Logo des Nationalteams (kb\(80 + Logo), 38 × 38). [ORIGINAL] Aufruf mit x = 46 bzw. 102 (Farbe 30), y − 20;
 ///   die Zeichenfunktion 0xF8:0x43 setzt das Bild um (2 | 2) versetzt (vermessen) → (48 | y − 18) bzw. (104 | y − 18).</item>
 /// <item>[ORIGINAL] „Plus:Minus Tore:Gegentore“ Bold bei x = 170, Zahlen mit Mindestbreite 2.</item>
-/// <item>[APPROX] Knopf „Gruppe 2“/„Gruppe 1“ unten rechts als Knopf aus kb\2 (vermessen); Knopf „Endrunde“ nach der
-///   Gruppenphase (Lage nicht im Video) öffnet „WM-Endrundenspiele“ (<see cref="WorldCupKnockoutScreen"/>, seit Runde 6 am Video
-///   vermessen), dessen Knopf „Gruppe“ hierher zurückführt.</item>
+/// <item>[ORIGINAL] Knopf „Gruppe 2“/„Gruppe 1“ bei (237 | 211), 57 × 12 (A293, Spur nationalteam Runde 13): Datei
+///   0x2F625–0x2F690 zeichnet ihn mit 0x4C196 bei (0xED | 0xD3), Text DGROUP 0x65C „Gruppe“ + Nummer der anderen Gruppe;
+///   Klickfläche x 237–293, y 211–222 (Datei 0x2FA4A–0x2FA6C) → Rückgabe 12 − Gruppe an den Verteiler 0x3A88A, der die
+///   andere Gruppe zeigt (Datei 0x3AC84–0x3AC8E). Gezeichnet nur beim Aufruf aus dem Menü (Argument 2 = 0); im Tagesablauf
+///   (Datei 0x30FF2–0x3100D) fehlt er – das Remake zeigt die Tabelle nur aus dem Menü.</item>
+/// <item>[ORIGINAL] Keinen Knopf „Endrunde“ (A293, L6): 0x2F5B6 kennt nur den Gruppenknopf. Die Endrundenspiele erreicht das
+///   Original über „Paarungen → WM“ (0x2FC2F, Verteilerfälle 8/9, Datei 0x3AC10–0x3AC3C), deren Rückgabe 10 der Verteiler
+///   0x3A88A in „WM-Endrundenspiele“ (0x32E23 mit Wettbewerb 3, Datei 0x3AC67–0x3AC75; Sprungtabelle Datei 0x3ACCB) umsetzt –
+///   im Remake <see cref="CupPairingsScreen"/> → <see cref="WorldCupKnockoutScreen"/>. Bis Runde 13 hatte das Remake hier einen
+///   eigenen Knopf „Endrunde“ bei x = 173.</item>
 /// <item>[ORIGINAL] Klick auf eine Zeile öffnet das Gegner-Fenster 0x128:0x2A (<see cref="RowAt"/>, <see cref="TeamInfoWindow"/>).
-///   [APPROX] Ein Linksklick außerhalb der Zeilen und Knöpfe kehrt wie bisher zurück (im Original wartet die Tabelle weiter).</item>
+///   [ORIGINAL] Ein Linksklick außerhalb der Zeilen und des Knopfs bewirkt nichts; zurück nur mit Rechtsklick (Ereignis 3)
+///   (A294, Spur nationalteam Runde 13: Datei 0x2FA2D–0x2FADC, Ausgang nur bei DGROUP 0x5A16 = 3, sonst Sprung nach
+///   Datei 0x2FA1E). [APPROX] Escape führt als Komfort des Remakes ebenfalls zurück (Tasten prüft das Original nicht).</item>
 /// </list>
 /// </remarks>
 public sealed class WorldCupScreen : Screen
@@ -34,7 +42,6 @@ public sealed class WorldCupScreen : Screen
     public const int ButtonX = 237;
     public const int ButtonY = 211;
     public static readonly Rect GroupButton = Widgets.ButtonRect(ButtonX, ButtonY);
-    public static readonly Rect KnockoutButton = Widgets.ButtonRect(ButtonX - 64, ButtonY);
 
     private readonly Screen _back;
     private readonly CupGroup? _fixed;
@@ -62,8 +69,6 @@ public sealed class WorldCupScreen : Screen
 
     public CupGroup? Group => _fixed ?? Host.Game?.WorldCup?.Groups.ElementAtOrDefault(View);
 
-    private bool KnockoutKnown => Host.Game?.WorldCup?.KnockoutPairings(0).Count > 0;
-
     public override void Update(InputState input)
     {
         if (_info.Update(input))
@@ -81,10 +86,6 @@ public sealed class WorldCupScreen : Screen
         }
         if (input.Clicked(GroupButton))
             View = View == 0 ? 1 : 0;
-        else if (KnockoutKnown && input.Clicked(KnockoutButton))
-            Host.Show(new WorldCupKnockoutScreen(Host, _back, () => new WorldCupScreen(Host, _back, View)));
-        else if (input.LeftClick || input.Keys.Count > 0)
-            Host.Show(_back);
     }
 
     public override void Draw(Surface s)
@@ -98,8 +99,6 @@ public sealed class WorldCupScreen : Screen
         s.HLine(27, 24, 292 - 27 + 1, Colors.White);
 
         Widgets.Button(s, Assets, ButtonX, ButtonY, View == 0 ? "Gruppe 2" : "Gruppe 1");
-        if (KnockoutKnown)
-            Widgets.Button(s, Assets, KnockoutButton.X, ButtonY, "Endrunde");
 
         if (Group is not { } group || Host.Game is not { } game)
             return;
