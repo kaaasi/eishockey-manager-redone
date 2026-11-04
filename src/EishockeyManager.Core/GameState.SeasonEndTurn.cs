@@ -7,8 +7,18 @@ namespace EishockeyManager.Core;
 /// <remarks>
 /// [ORIGINAL] Das Saisonende läuft im Original je Manager in einer Schleife (em.exe Datei 0x26FB0–0x279FA Prämien/Altern,
 /// ab 0x27B64 die Verhandlungen); das Fenster „Ereignisse“ folgt Datei 0x5645D → 0x26F20.
-/// [APPROX] Wo das Original den Zeiger auf den Manager am Zug umstellt, ist nicht einzeln belegt; das Remake stellt ihn
-/// beim Wechsel zum jeweiligen Manager um.
+/// [ORIGINAL] Zeiger auf den Manager am Zug (DGROUP 0xA70E, Kopie 0xA70D) im Fenster „Saisonende“ Datei 0x26F20:
+/// Schleife 1 (Seiten mit Prämien und Ereignissen) setzt beide am Anfang jeder Runde auf den Manager i (Datei 0x26FB0–0x26FB3),
+/// also bevor dessen Seite erscheint; Zählung ab 0 bis [0x386] (Datei 0x279ED–0x279FA), im Modus „nur Weltkugel“
+/// ([0xD0B9] = 1) ab [0x386], also gar nicht (Datei 0x26F2F–0x26FAA). Kurzzeitige Umstellungen auf den Besitzer eines Spielers
+/// (Datei 0x2756B) setzt dieselbe Runde zurück (Datei 0x27636, 0x279DA–0x279DD). Die Verhandlungen setzen beide wieder je
+/// Manager (Datei 0x27B64–0x27B76); wer keinen auslaufenden Vertrag hat (0x4BE17 = 0, Datei 0x27BC6), wird ohne Anzeige
+/// übersprungen. Nach dem Fenster setzt der Saisonwechsel beide auf 0 (Datei 0x564E1–0x564F2), die Zugfolge beginnt vorn.
+/// Das Remake stellt <see cref="CurrentManager"/> an denselben Stellen um: Seite i (<see cref="ShowSeasonEndManager"/>),
+/// nächste Verhandlung (<see cref="SwitchToRenewalManager"/>; Manager ohne Verhandlung zeigt auch das Original nicht),
+/// danach der erste Manager (<see cref="ReturnToFirstActiveManager"/>).
+/// [APPROX] Entlassene Manager: Das Original zählt alle [0x386] Manager; das Remake führt Entlassene (Entlassung selbst ist
+/// [APPROX], SeasonDismissal.cs) ohne Seite und beginnt beim ersten nicht entlassenen.
 /// </remarks>
 public sealed partial class GameState
 {
