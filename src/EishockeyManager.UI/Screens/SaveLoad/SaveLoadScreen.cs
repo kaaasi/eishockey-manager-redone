@@ -386,9 +386,11 @@ public sealed class SaveLoadScreen : Screen
     }
 
     /// <summary>
-    /// Bricht einen Text auf Zeilen um, die in das Meldungsfenster passen. [APPROX] Breite 158 px = Linie unten des Fensters
-    /// 0x4C246 (80 … 237, <see cref="OriginalDialog"/>); vorher 200 px, damit reichten Fehlertexte über den Rahmen (168 px,
-    /// Restlücke #483; Integration Runde 12).
+    /// Bricht einen Text auf Zeilen um, die in das Meldungsfenster passen. [ORIGINAL] Die Breite 158 px ist die Linie unten
+    /// des Fensters 0x4C246 (80 … 237 = 158 Pixel, <see cref="OriginalDialog"/>, Datei 0x4C246). [APPROX] Der Umbruch selbst: das
+    /// Original bricht nicht um, seine Meldungen sind feste DGROUP-Zeilen (<c>docs/analyse/re-meldungen.md</c> §C: „Meldungen
+    /// mit mehr als vier Zeilen (nur Remake …)“); nur die Fehlertexte mit Dateiname und Fehlertext des Remakes brauchen ihn.
+    /// Mehr als diese Breite ist nicht zu belegen. Vorher 200 px, damit reichten Fehlertexte über den Rahmen (Restlücke #483).
     /// </summary>
     private string[] Wrap(string text)
     {
