@@ -165,8 +165,10 @@ public class GameModeTests
         Assert.Equal(0, game.Finance(manager).Book.CurrentTotal);
         var record = game.History[^1];
         Assert.Empty(record.Managers);
-        Assert.Empty(record.LeftOberliga);
-        Assert.All(record.PromotedInto.Values, Assert.Empty);
+        // Spur saison Teil 4 (A163): Der Oberliga-Austausch läuft auch im Modus 1 (Datei 0x56238), sonst kein Auf- und Abstieg.
+        Assert.Equal(2, record.LeftOberliga.Count);
+        Assert.Empty(record.PromotedInto[League.Bundesliga]);
+        Assert.Empty(record.PromotedInto[League.ZweiteLiga]);
         Assert.True(record.Titles.ContainsKey(Title.WorldChampion));
         Assert.False(record.Titles.ContainsKey(Title.GermanChampion));
     }

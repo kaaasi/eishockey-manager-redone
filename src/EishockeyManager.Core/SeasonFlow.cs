@@ -289,9 +289,14 @@ public sealed partial class GameState
             RecordRelegationGroup(record, group, group.Table(Clubs).Select(r => r.Club.Index).ToList());
 
         // Oberliga-Austausch wie em.exe (Spur saisonwechsel, S-K1/S-K2, SeasonFlow.Oberliga.cs).
-        // [APPROX] Im Modus „nur Weltkugel“ wird keine Liga gespielt, also steigt auch niemand ab (Spur wettbewerbe-weltkugel).
-        if (!WorldOnly)
-            ExchangeOberliga(tables[League.Oberliga], record);
+        // [ORIGINAL] auch im Modus „nur Weltkugel“ (A163, Spur saison Teil 4; docs/analyse/re-runde-13.md): Datei 0x56238–0x56284
+        // ohne Modusprüfung über die ungespielte Platzliste DGROUP 0x5CCB (= Startordnung, LeagueTable.StartOrder). Ohne Ligaspiele
+        // gibt es keine Aufstiegsrunden, zwischen 1. Liga, 2. Liga und Oberliga wechselt niemand. Spielstände FILE20 → FILE21:
+        // HEC HEILBRONN und EC BAD TÖLZ (Plätze 34/35) gehen, EHC STRAUBING und ESV KÖNIGSBRUNN (Plätze 37/41) rücken nach;
+        // 1. und 2. Liga mit denselben zwölf Namen. [APPROX] Steht im Modus 1 der (nie geführte) Verein des Managers auf den
+        // letzten beiden Plätzen, bleibt er wie in den anderen Modi (Doppeltausch); ob em.exe dort das Vereinsfeld +0x16 setzt, ist
+        // nicht gelesen (in FILE20/21 nicht betroffen).
+        ExchangeOberliga(tables[League.Oberliga], record);
 
         CurrentRecord = record;
         Phase = SeasonPhase.ClubSeasonOver;

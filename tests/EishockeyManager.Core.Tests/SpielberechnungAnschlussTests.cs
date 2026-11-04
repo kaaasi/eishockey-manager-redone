@@ -255,8 +255,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Mittelwerts mit Form 50 (vorher 4 von 5 Titeln für Russland 52, jetzt 52, 54, 63, 55, 63).
     // Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
     // Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
+    // Runde 13, Spur saison Teil 4 (A058, A163): Konten gleich; Weltmeister ab Saison 2, Haupt- und Pokalquelle neu – die große
+    // Wanderung 0x9D1B (Datei 0x56448) läuft auch im Modus „nur Weltkugel“ und würfelt die Form aller Plätze neu, dazu zieht der
+    // Oberliga-Austausch (Datei 0x56238) zwei Nachrücker aus der Hauptquelle.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=55|500000|WorldChampion=63|500000|R981788763 C6027902";
+        "WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=54|500000|WorldChampion=52|500000|WorldChampion=53|500000|R356180146 C211126353";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem
