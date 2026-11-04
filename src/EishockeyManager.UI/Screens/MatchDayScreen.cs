@@ -14,8 +14,12 @@ namespace EishockeyManager.UI.Screens;
 /// </summary>
 public sealed class MatchDayScreen : Screen
 {
-    /// <summary>[ORIGINAL] Datei 0x35D5D: 60 Takte zu 18,2 Hz warten (0x130EE), ≈ 3,3 s (R-K3); vorher 75 Bilder.</summary>
-    public static readonly int BannerFrames = ShortMessage.FramesFor(180);
+    /// <summary>
+    /// [ORIGINAL] Datei 0x35D5D/0x35E1D: Argument 0x3C = 60 an die Wartefunktion Datei 0x130EE, die zuerst durch 3 teilt
+    /// (0x130F1–0x130FE) → 20 Takte zu 18,2 Hz ≈ 1,1 s = 66 Bilder (R-K3, Review #546 R12PM-01). Video `bundestrainer_00120`,
+    /// `_00157`, `_00246`: Banner auf genau einem Bild (1 Bild/s).
+    /// </summary>
+    public static readonly int BannerFrames = ShortMessage.FramesFor(60);
     public const int FramesPerMinute = 3;
     public const int Minutes = 60;
 

@@ -46,9 +46,9 @@ public class PixelMarkerTests
         Assert.True(mini.Height > 0);
     }
 
-    /// <summary>R-K3: Text Farbe 11 auf Grundlinie 126, Schatten Farbe 0 eine Zeile tiefer ohne seitlichen Versatz; 60 Takte.</summary>
+    /// <summary>R-K3: Text Farbe 11 auf Grundlinie 126, Schatten Farbe 0 eine Zeile tiefer ohne seitlichen Versatz; 20 Takte (Argument 60 / 3).</summary>
     [GameDataFact]
-    public void Banner_TextOnBaseline126_ShadowOneRowBelow_60Ticks()
+    public void Banner_TextOnBaseline126_ShadowOneRowBelow_20Ticks()
     {
         var d = FlowTests.CreateDriver();
         var a = d.Host.Assets;
@@ -75,7 +75,9 @@ public class PixelMarkerTests
             else if (shadowProbe.Pixels[i] == 0)
                 Assert.Equal(0, s.Pixels[i]);
         }
-        Assert.Equal(198, MatchDayScreen.BannerFrames);
+        // R12PM-01: 0x130EE teilt das Argument 60 durch 3 → 20 Takte ≈ 1,1 s; Video bundestrainer_00120/00157/00246: ein Bild.
+        Assert.InRange(MatchDayScreen.BannerFrames, 60, 72);
+        Assert.Equal(66, MatchDayScreen.BannerFrames);
     }
 
     /// <summary>R-K4: Trikotbild 31 × 26 aus der eigenen Spalte.</summary>
