@@ -21,12 +21,61 @@ public sealed class StadiumScreen : Screen
     private const int ListColonX = 57;
     private const int ListValueX = 59;
 
+    /// <summary>[ORIGINAL] Maus-y, oberhalb derer die rechte Taste nicht umschaltet (Datei 0x3DB62: <c>cmp si, 0xA7</c>, „größer“).</summary>
+    public const int BuildSwitchY = 167;
+
+    /// <summary>
+    /// Hinweiszeile „… ausbauen“, Oberkante. [ORIGINAL] gemessen am DOSBox-Bild <c>file01_3_stadion</c> (Gastronomie, Referenz-Repo
+    /// <c>original/spielstaende/bilder</c>): x = 213, y = 201 (vorher 200).
+    /// </summary>
+    public const int HintY = 201;
+
+    /// <summary>Anzeige „Bau“ statt „Ist“ (nur lesen).</summary>
+    public bool ShowsBuildTable => _showBuild;
+
+    /// <summary>
+    /// Wert einer Zeile der Teile-Tabelle ohne „: “. [ORIGINAL] Datei 0x3D4FE–0x3D5E9: Modus 1 ohne Zielstufe „(keine Bautätigkeiten)“
+    /// (DGROUP 0xDD0), sonst Name der Zielstufe + „ (Noch “ + Restwochen + „ Wochen“ (bei genau 1 ohne das letzte Zeichen) + „)“.
+    /// </summary>
+    public static string FeatureValue(Stadium stadium, StadiumFeature feature, bool buildMode)
+    {
+        if (!buildMode)
+            return stadium.LevelText(feature);
+        var target = stadium.TargetLevel(feature);
+        if (target == 0)
+            return "(keine Bautätigkeiten)";
+        var weeks = stadium.WeeksLeft(StadiumProject.Feature, feature);
+        return Stadium.Features[(int)feature].Levels[target] + " (Noch " + weeks + (weeks == 1 ? " Woche" : " Wochen") + ")";
+    }
+
+    /// <summary>
+    /// Wert einer Platzzeile. [ORIGINAL] Datei 0x3D63D–0x3D76A: Modus 0 die Plätze, Modus 1 ohne Bau „(kein Bau...)“ (DGROUP 0xDD4),
+    /// sonst Plätze nach dem Bau + „ (“ + Restwochen + „)“.
+    /// </summary>
+    public static string PlacesValue(Stadium stadium, StadiumProject project, bool buildMode)
+    {
+        var seats = project == StadiumProject.Sitzplaetze;
+        if (!buildMode)
+            return Number(seats ? stadium.Seats : stadium.Standing);
+        var target = seats ? stadium.SeatsTarget : stadium.StandingTarget;
+        return target == 0 ? "(kein Bau...)" : Number(target) + " (" + stadium.WeeksLeft(project, StadiumFeature.Ueberdachung) + ")";
+    }
+
     public static readonly Rect SeatsRow = new(212, 172, 104, 7);
     public static readonly Rect StandingRow = new(212, 179, 104, 7);
-    public static readonly Rect TicketUp = new(194, 188, 7, 6);
-    public static readonly Rect TicketDown = new(202, 188, 7, 6);
-    public static readonly Rect LevelUp = new(194, 210, 7, 6);
-    public static readonly Rect LevelDown = new(202, 210, 7, 6);
+
+    /// <summary>
+    /// [ORIGINAL] Pfeilpaare über <see cref="UI.ArrowPair"/> (0x120:0x3E, Halten 0): Eintritt Datei 0x3DD89 (192 | 189, 202 | 189),
+    /// Stufenwahl 0x3E0BC (192 | 210, 202 | 210), Flächen 8 × 9. Linker Pfeil liefert −1: Eintritt = Eintritt − (−1) (0x3DDB3),
+    /// Ziel = Ziel − (−1) (0x3E0D7), also links „mehr“. Geändert wird nur im Frame des Klicks (Ereignis 1, 0x3DD93/0x3E0CD):
+    /// gehaltene Taste wiederholt nichts.
+    /// </summary>
+    public static readonly Rect TicketUp = new(192, 189, ArrowPair.HitWidth, ArrowPair.HitHeight);
+    public static readonly Rect TicketDown = new(202, 189, ArrowPair.HitWidth, ArrowPair.HitHeight);
+    public static readonly Rect LevelUp = new(192, 210, ArrowPair.HitWidth, ArrowPair.HitHeight);
+    public static readonly Rect LevelDown = new(202, 210, ArrowPair.HitWidth, ArrowPair.HitHeight);
+    private readonly ArrowPair _ticketArrows = new(TicketUp.X, TicketUp.Y, TicketDown.X, TicketDown.Y);
+    private readonly ArrowPair _levelArrows = new(LevelUp.X, LevelUp.Y, LevelDown.X, LevelDown.Y);
     public static readonly Rect LevelBox = new(212, 208, 103, 11);
     // [ORIGINAL] gemessen am DOSBox-Bild file15_2_stadion (Referenz-Repo, FILE15.HOK; Spur geld Teil 3, Pixelprobe G7):
     // Beschriftung ab x = 213, Doppelpunkt x = 267, Werte ab x = 271, Konto-Betrag rechtsbündig bei 312, Eintritt-Zeile y = 190.
@@ -70,6 +119,9 @@ public sealed class StadiumScreen : Screen
     private const byte PanelLine = 57;
     private const byte LabelColor = 252;
     private const byte ValueColor = 31;
+
+    /// <summary>[ORIGINAL] Wertfarbe der Tabelle 0x3D45F: 31 − 30 · Modus (Datei 0x3D5FB–0x3D607, 0x3D737–0x3D743), im Bau-Modus 1.</summary>
+    private const byte BuildValueColor = 1;
     private const byte LevelColor = 24;
     /// <summary>[ORIGINAL] Kostenzeile Datei 0x3E59A–0x3E5C7: Farbe 8, wenn das Konto reicht, sonst 17.</summary>
     private const byte CostColor = 17;
@@ -83,12 +135,17 @@ public sealed class StadiumScreen : Screen
     public readonly record struct Choice(StadiumProject Project, StadiumFeature Feature);
 
     private readonly Screen _back;
+    /// <summary>
+    /// Tabelle im Modus 1 („Bau“, Datei 0x3D45F, Argument [bp+0xA]). [ORIGINAL] Umschalten mit der rechten Maustaste bei Maus-y &gt;
+    /// 167 (Datei 0x3DB5B–0x3DB7D: <c>cmp [0x5A16], 3 / cmp si, 0xA7</c>, si = Maus-y); die rechte Taste verlässt den Bildschirm sonst
+    /// (Datei 0x3E4D4). Aufbau des Bildschirms: Modus 0.
+    /// </summary>
+    private bool _showBuild;
     private Choice? _hover;
     private Choice? _selected;
     private int _target;
     private StadiumQuote? _quote;
     private readonly Team.MessageBox _message;
-    private Rect? _pressed;
 
     public StadiumScreen(ScreenHost host, Screen back) : base(host)
     {
@@ -122,7 +179,6 @@ public sealed class StadiumScreen : Screen
 
     public override void Update(InputState input)
     {
-        _pressed = null;
         if (_message.Update(input))
             return; // [ORIGINAL] 0x0C0B8: ohne Knopf und ohne Eingabe, schließt nach 75 Takten von selbst
         if (_quote is { } quote)
@@ -138,6 +194,11 @@ public sealed class StadiumScreen : Screen
             }
             return;
         }
+        if (input.RightClick && input.MouseY > BuildSwitchY)
+        {
+            _showBuild = !_showBuild;
+            return;
+        }
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
             Host.Show(_back);
@@ -145,13 +206,13 @@ public sealed class StadiumScreen : Screen
         }
 
         _hover = HitTest(input.MouseX, input.MouseY);
+        var ticket = _ticketArrows.Update(input);
+        var level = LevelArrowsShown ? _levelArrows.Update(input) : 0;
         if (!input.LeftClick)
             return;
 
-        if (input.Clicked(TicketUp)) { _pressed = TicketUp; Stadium.TicketPrice = Math.Min(Stadium.MaxTicketPrice, Stadium.TicketPrice + 1); }
-        else if (input.Clicked(TicketDown)) { _pressed = TicketDown; Stadium.TicketPrice = Math.Max(Stadium.MinTicketPrice, Stadium.TicketPrice - 1); }
-        else if (_selected is not null && input.Clicked(LevelUp)) { _pressed = LevelUp; Step(+1); }
-        else if (_selected is not null && input.Clicked(LevelDown)) { _pressed = LevelDown; Step(-1); }
+        if (ticket != 0) Stadium.TicketPrice = Math.Clamp(Stadium.TicketPrice - ticket, Stadium.MinTicketPrice, Stadium.MaxTicketPrice);
+        else if (level != 0) Step(-level);
         else if (_selected is { } sel && input.Clicked(LevelBox))
             _quote = Game.QuoteConstruction(Me, sel.Project, sel.Feature, _target);
         else if (_hover is { } hover)
@@ -290,22 +351,23 @@ public sealed class StadiumScreen : Screen
             var y = FeatureRow(i).Y + 1;
             s.Text(mini, 0, y, Stadium.Features[i].Label, LabelColor);
             s.Text(mini, ListColonX, y, ":", LabelColor);
-            s.Text(mini, ListValueX, y, Stadium.LevelText((StadiumFeature)i), ValueColor);
+            s.Text(mini, ListValueX, y, FeatureValue(Stadium, (StadiumFeature)i, _showBuild), _showBuild ? BuildValueColor : ValueColor);
         }
     }
 
     private void DrawRight(Surface s)
     {
         var mini = Assets.Mini;
-        void Row(int y, string label, string value)
+        void Row(int y, string label, string value, byte color = ValueColor)
         {
             s.Text(mini, RightLabelX, y, label, LabelColor);
             s.Text(mini, RightColonX, y, ":", LabelColor);
-            s.Text(mini, RightValueX, y, value, ValueColor);
+            s.Text(mini, RightValueX, y, value, color);
         }
-        Row(SeatsRow.Y + 1, "Sitzplätze", Number(Stadium.Seats));
-        Row(StandingRow.Y + 1, "Stehplätze", Number(Stadium.Standing));
-        Arrows(s, TicketUp, TicketDown);
+        var placesColor = _showBuild ? BuildValueColor : ValueColor;
+        Row(SeatsRow.Y + 1, "Sitzplätze", PlacesValue(Stadium, StadiumProject.Sitzplaetze, _showBuild), placesColor);
+        Row(StandingRow.Y + 1, "Stehplätze", PlacesValue(Stadium, StadiumProject.Stehplaetze, _showBuild), placesColor);
+        Arrows(s, _ticketArrows);
         Row(TicketRowY, "Eintritt", $"{Stadium.TicketPrice} DM");
 
         var shown = _hover ?? _selected;
@@ -315,15 +377,15 @@ public sealed class StadiumScreen : Screen
             if (Stadium.IsUnderConstruction(choice.Project, choice.Feature) && weeks > 0)
             {
                 // [APPROX] Laufende Baustelle statt der Stufenwahl; Text wie Tabelle „Bau“ Datei 0x3D5CA–0x3D5E5.
-                s.Text(mini, RightLabelX, 200, Label(choice), ValueColor);
+                s.Text(mini, RightLabelX, HintY, Label(choice), ValueColor);
                 s.Text(mini, RightLabelX + 2, 221, weeks == 1 ? "(Noch 1 Woche)" : $"(Noch {weeks} Wochen)", CostColor);
             }
             else
             {
-                s.Text(mini, RightLabelX, 200, Label(choice) + " ausbauen", ValueColor);
+                s.Text(mini, RightLabelX, HintY, Label(choice) + " ausbauen", ValueColor);
                 if (_selected == choice && CurrentCost() is { } cost)
                 {
-                    Arrows(s, LevelUp, LevelDown);
+                    Arrows(s, _levelArrows);
                     s.Outline(LevelBox, BoxColor);
                     s.TextCentered(mini, LevelBox.X + LevelBox.W / 2, LevelBox.Y + 3, TargetText(choice), LevelColor);
                     s.Text(mini, RightLabelX + 2, 221, "Kosten: " + GameState.FormatMoney(cost),
@@ -336,17 +398,21 @@ public sealed class StadiumScreen : Screen
         s.TextRight(mini, AccountRight, 232, GameState.FormatMoney(Me.Money), LabelColor);
     }
 
-    /// <summary>[APPROX] ▲▼ als kleine Dreiecke gezeichnet (Grafik nicht gefunden).</summary>
-    private void Arrows(Surface s, Rect up, Rect down)
+    /// <summary>
+    /// ▲▼ aus kb\4 über <see cref="UI.ArrowPair"/>: [ORIGINAL] losgelassen Quelle (22 | 1 + 9 · j) 8 × 7 nach (x + 2 | y + 1),
+    /// gedrückt (22 | 19 + 9 · j) (Datei 0x4BAD3–0x4BBFE); im Video orange mit dunkler Kante.
+    /// </summary>
+    private void Arrows(Surface s, ArrowPair pair)
     {
-        var du = _pressed == up ? 1 : 0;
-        var dd = _pressed == down ? 1 : 0;
-        for (var row = 0; row < 4; row++)
-        {
-            s.HLine(up.X + 3 - row, up.Y + 1 + row + du, 1 + 2 * row, ValueColor);
-            s.HLine(down.X + row, down.Y + 1 + row + dd, 7 - 2 * row, ValueColor);
-        }
+        var image = Assets.Image(ArrowPair.Image);
+        pair.DrawReleased(s, image, -1);
+        pair.DrawReleased(s, image, +1);
+        pair.Draw(s, image);
     }
+
+    /// <summary>Stufenwahl sichtbar (Pfeile 0x3E0BC werden nur dann abgefragt).</summary>
+    private bool LevelArrowsShown => _selected is { } c && !(Stadium.IsUnderConstruction(c.Project, c.Feature) && Stadium.WeeksLeft(c.Project, c.Feature) > 0)
+        && CurrentCost() is not null;
 
     private void DrawConfirm(Surface s)
     {

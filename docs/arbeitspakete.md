@@ -124,7 +124,7 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
      neuen Spiels (Original prüfen: 44E22h), Kommentar `MainMenuEventTests.cs`; Hinweis `NewsBar.Shown` aus Review #546 prüfen.
      `Fixes #539`, `#540`, `#541`.
 - **Dateigrenzen:** siehe Zuständigkeit; `UI/Screens/MainMenuScreen.cs` nur für #540 minimal; Tests; `docs/finanzen-rekonstruktion.md`.
-  **Modell:** Claude Sonnet 5.5. **Status:** geplant.
+  **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 fertig (PR #570 `paket/ui-rest-1`, 04.11.2026); Teil 2 fertig (`paket/ui-rest-2`, gestapelt auf Teil 1); Teil 3 fertig (`paket/ui-rest-3`, gestapelt); Teil 4 fertig (`paket/ui-rest-4`, gestapelt). Spur fertig – Integration.
 
 ### Spur `pruefung-karte` – Welle 2 (nach der Integration der übrigen Spuren)
 
@@ -149,6 +149,10 @@ Leitstelle L1–L12 in #567, L13–L15 in #578/#583.
   Konflikt, `GameState.Integration.cs` automatisch zusammengeführt, L9): `tools/pruefen.sh` alle drei Läufe an `9e20c55`
   bestanden (2192/0/0, 1845/0/311, Pflichtlauf 1846/346). Nebenbefunde (#580): Reihenlogik der Vereinsaufstellung wie A010,
   Sperre Transfer/Training ab der WM-Gruppenphase ohne Inventur-ID → Kandidaten Runde 14. Review offen.
+- **`ui-rest`** – Branch `integration/runde-13-ui-rest` auf `integration/runde-13-nationalteam` (#570, #572, #573, #574 ohne
+  Konflikt): `tools/pruefen.sh` alle drei Läufe an `4ad24bf` bestanden (2217/0/0, 1859/0/322, Pflichtlauf 1860/357). Offene
+  `[APPROX]`: Bremse der Werbepfeile, Farbe der Bau-Tabelle und „(Noch n Wochen)“ (DOSBox-Aufnahme `runde-13`, Sitzung 3);
+  Inventurzeilen A305, A327, A326, F091, F106, A016 trägt `pruefung-karte` nach. Review offen.
 
 ### Entscheidungen zum Start (Nutzer, 04.11.2026)
 

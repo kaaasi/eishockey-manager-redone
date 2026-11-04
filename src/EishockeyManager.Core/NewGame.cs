@@ -56,6 +56,7 @@ public static class NewGame
         game.AssignStartPlayerIds(); // Spur „speichern“: dauerhafte Spieler-IDs, verbraucht keinen Zufall
         game.InitializeManagerSystems();
         game.InitializeLeagueSlots(); // Spur saisonwechsel Teil 3 (S-K6): Ligamischung 0x35EDD, verbraucht keinen Zufall
+        game.BeginFirstTurn(); // ui-rest Teil 4 (R12U-04): Faktor des ersten Managerzugs (0x44E3F), eigene Zufallsquelle
         return game;
     }
 

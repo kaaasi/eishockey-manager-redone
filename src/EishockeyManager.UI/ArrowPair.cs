@@ -69,6 +69,10 @@ public sealed class ArrowPair
     public int Update(InputState input)
     {
         var released = !input.LeftDown && !input.LeftClick;
+        // [APPROX] Ein neues Drücken (LeftClick) während einer gemerkten Richtung heißt: dazwischen wurde losgelassen, ohne dass ein
+        // Frame es sah (im Original steht das Loslassen als Ereignis 2 in der Warteschlange). Neu auswerten statt weiterzählen.
+        if (_held != 0 && input.LeftClick)
+            _held = 0;
         if (_held != 0)
         {
             if (!released)
