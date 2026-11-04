@@ -63,7 +63,7 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
 - **Abnahme:** wie Runde 12 `re-pruefung`: Datei `docs/analyse/re-runde-13.md` mit Ergebnis je ID (belegt / widerlegt /
   nicht entscheidbar, Fundstelle: Datei, Byte, Bild) und Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser
   Runde). Selbstprüfung `funktionskarte.py --csv` ohne `--write`. Ein Lauf, keine Teile, keine Fortsetzung.
-- **Dateigrenzen:** nur `docs/analyse/re-runde-13.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** geplant.
+- **Dateigrenzen:** nur `docs/analyse/re-runde-13.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** fertig, PR #567 (04.11.2026): `docs/analyse/re-runde-13.md`, 25 Punkte ausgewertet, 8 offene Fragen an die Leitstelle.
 
 ### Spur `kader-start` – U15-Rest, Vereinsauswahl, Kaderbefunde
 
