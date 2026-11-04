@@ -54,6 +54,21 @@ public class BildschirmeOeffnenZustandTests
         Assert.Empty(changed);
     }
 
+    /// <summary>
+    /// R12G-01 (#558): „Tag weiter“ lässt die Zeit in der Eingabe des Hauptmenüs vergehen, nicht beim Öffnen des Spieltag-Bildschirms.
+    /// </summary>
+    [GameDataFact]
+    public void MatchDayScreen_OpeningAndDrawingDoNotChangeGameState()
+    {
+        var (d, game) = Start();
+        game.CurrentManager = 1;
+        var menu = (MainMenuScreen)d.Host.Current!;
+        var steps = game.Continue(); // die Eingabe „Tag weiter“ im Hauptmenü
+        var before = SaveGame.Save(game);
+        ShowAndDraw(d, new MatchDayScreen(d.Host, menu, steps));
+        Assert.True(before.AsSpan().SequenceEqual(SaveGame.Save(game)), "MatchDayScreen lässt beim Öffnen Zeit vergehen");
+    }
+
     [GameDataFact]
     public void SeasonEndScreens_OpeningAndDrawingDoNotChangeGameState()
     {
