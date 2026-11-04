@@ -68,3 +68,64 @@ Stand derselben Sitzung („Keinen heutigen Spielstand laden !“) – dann DOSB
 1. Neues Spiel, **fest gewählter Verein** (Bundesligist), **Start-Liga 2. Liga**, Spieldauer ≥ 2: Spielvorbereitung und erstes
    Hauptmenü fotografieren (Verein, Liga), sichern als **FILE27**.
 2. Neues Spiel wie 1, aber **Spieldauer „eine Saison“**: dieselben Bilder, sichern als **FILE28**.
+
+## Aufnahme `runde-13` (Plan Leitstelle 04.11.2026)
+
+Gesammelt aus den offenen Punkten von `docs/analyse/re-runde-13.md` (Frage 7, „nicht entscheidbar“) und allen noch offenen
+Zeilen der Gruppe c in `docs/analyse/inventur.md`, die nur mit DOSBox belegbar sind. Videopunkte (A002, A005, A057, A142, A272,
+A291, A301) sind ausgenommen. Nummern ab **FILE29** (höchste vorhandene: FILE28); sie rücken auf, wenn eine Nummer schon belegt ist.
+Je Schritt sind die Inventur-IDs genannt. Die mit „optional“ markierten Schritte nur machen, wenn sie ohne großen Aufwand gehen.
+Bilder heißen `fileNN_<k>_<inhalt>.png`, Notizen des Nutzers kommen wörtlich in die README.
+
+### Sitzung 1 – Neues Spiel: Spielvorbereitung und Spielstart
+
+1. Spielvorbereitung: Modus „nur Weltkugel“ wählen, danach einen zweiten Manager hinzufügen. Fotografieren, ob das Original den
+   Start zulässt oder etwas sperrt (A056).
+2. Neues Spiel, **ein Manager**, Spieldauer **„eine Saison“**, Verein frei. Spielvorbereitung fotografieren und direkt im ersten
+   Hauptmenü sichern als **FILE29** (U15-c, A180 Taktik-Startwerte, A166 Eingesetzt nach Spielstart, A082 Strafen-Managerwert
+   bei einem Manager).
+3. Mit demselben Spiel bis vor das **erste Heimspiel** spielen, sichern als **FILE30**; nach dem Spiel sichern als **FILE31**
+   (A046 Tabellenplatz vor Spieltag 1).
+
+### Sitzung 2 – Kader und Taktik im Handbetrieb, Start FILE05 (20.09.1993)
+
+1. „Automatisch aufstellen“ ausschalten, sichern als **FILE32**. Taktik-Bildschirm öffnen, die Modus-Pfeile oben und unten je
+   mehrmals klicken und die Folge notieren (A373). Taktik ohne Änderung verlassen, sichern als **FILE33**. Danach einen Tag weiter,
+   sichern als **FILE34** und notieren, ob die Automatik wieder an ist (Taktik-Befund aus `re-runde-13.md`, DGROUP 0x375).
+2. Aufstellung bedienen: auf nicht eingesetzte und auf aufgestellte Spieler links klicken, je ein Bild der STATUS-Spalte (A364).
+   Ein Bild der Kaderliste mit einem verletzten, **nicht eingesetzten** Spieler (A012).
+3. Einen Spieler kaufen. Kader vorher und nachher fotografieren, nach dem Kauf sichern als **FILE35** (A167, A091, A135).
+4. Einen **gesperrten** Spieler in der Aufstellung lassen (bis zur ersten Sperre weiterspielen), sichern als **FILE36**, einen Tag
+   weiter, sichern als **FILE37** (A189 Gesperrte).
+5. Vor einem **Pokalspiel** sichern als **FILE38**, nach dem Pokalspiel als **FILE39**, nach dem folgenden Ligaspiel als **FILE40**
+   (A135 Tore je Wettbewerb).
+6. Transfermarkt: einen eigenen Spieler auf die Liste setzen und die Liste fotografieren (A380), mit der Maus über einem Eintrag
+   fotografieren (A382). Ein Angebot für einen Spieler auf dem Markt abwarten oder abgeben, Angebotsfenster fotografieren (A377).
+   Vertragsverhandlung über buntem Hintergrund fotografieren (A374).
+7. Finanzen: einen Regler ziehen, loslassen, fotografieren (A313). Eine Nachricht öffnen und die Leiste fotografieren (A321).
+   Historie fotografieren (A357).
+8. Optional: einen Spieler **ausleihen** bzw. verleihen und den Stand vor und nach dem Leihende sichern als **FILE41/FILE42**
+   (A115).
+
+### Sitzung 3 – Stadion ausbauen (Fortsetzung von Sitzung 2 oder ein Stand mit viel Geld)
+
+1. Einen Ausbau mit Bauzeit beauftragen. Während der Bauzeit das Stadion fotografieren, auch die Tabelle „Bau“ (rechte Maustaste
+   unten im Bild schaltet „Ist/Bau“ um), sichern als **FILE43** (Spur `ui-rest`: Farbe der Bau-Tabelle, Zeile „(Noch n Wochen)“).
+2. Gastronomie Stufe 1 und 2 sowie Kino bauen, nach Fertigstellung das Stadionbild fotografieren, sichern als **FILE44**
+   (A323, A325).
+
+### Sitzung 4 – Saisonende mit Kaderabgang, Start ein Vereinsspiel kurz vor dem 29. April
+
+1. Einen Spieler mit auslaufendem Vertrag nicht verlängern. Saisonende-Verhandlung fotografieren, auch die Liste dahinter (A362).
+   Vor dem 29. April sichern als **FILE45**, nach dem Saisonwechsel im ersten Hauptmenü als **FILE46** und den Kader fotografieren
+   (A085, A091 Abgang am Saisonende).
+
+### Sitzung 5 – Bundestrainer, Start FILE11 (14.04.1994) oder FILE18
+
+1. Die Bundestrainer-Aufstellung **ganz leeren**, sichern als **FILE47**, einen Tag weiter, sichern als **FILE48** (A009).
+2. WM-Kader auf „auto“ stellen, danach einen Spieler **von Hand** aufnehmen, Kader fotografieren, sichern als **FILE49** (A085).
+3. Nach der Gruppenphase aus dem Menü zu den **Endrundenspielen** gehen und jeden Schritt fotografieren (A293, „Endrunde“).
+
+### Sitzung 6 (optional) – Speichern-Dialog
+
+1. Mehr als 48 Spielstände anlegen (Kopien reichen), Speichern-Dialog mit Seitenwechsel fotografieren (A338).
