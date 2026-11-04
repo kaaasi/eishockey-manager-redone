@@ -85,8 +85,11 @@ public class SaisonwechselSatzfolgeTests
     public void MultiSeason_SlotsRemixedEachSeasonChange_MembersFollowPromotion(bool active)
     {
         // Mehrsaisonprobe (AGENTS.md §5): 4 Saisonwechsel.
+        // R12S-01 (#521): Auf- und Abstieg ändern die Folge in jeder Liga ohnehin. Ohne Mischung behalten die Vereine, die in
+        // ihrer Liga bleiben, ihre Satzplätze (der Neue übernimmt den Platz seines Partners, 0x36169) und damit ihre
+        // Reihenfolge untereinander; erst die 55 Tausche (0x35FD2) ändern sie. Gezählt wird daher nur diese Reihenfolge.
         var game = Create(seed: 21, 5, 30);
-        var changed = 0;
+        var remixed = 0;
         for (var season = 0; season < 4; season++)
         {
             PlayToSeasonEnd(game, active);
@@ -99,11 +102,13 @@ public class SaisonwechselSatzfolgeTests
                 var slots = game.LeagueSlots(league);
                 Assert.Equal(GameState.ClubsPerLeague, slots.Count);
                 Assert.Equal(Members(game, league), slots.Order());
-                if (!slots.SequenceEqual(before[league]))
-                    changed++;
+                var stayed = before[league].Intersect(slots).ToHashSet();
+                Assert.True(stayed.Count >= 2, $"{league}: zu wenige Vereine geblieben");
+                if (!slots.Where(stayed.Contains).SequenceEqual(before[league].Where(stayed.Contains)))
+                    remixed++;
             }
         }
-        Assert.True(changed >= 10, $"Satzfolge nur {changed}-mal von 12 neu gemischt");
+        Assert.True(remixed >= 10, $"Reihenfolge der gebliebenen Vereine nur {remixed}-mal von 12 neu gemischt");
     }
 
     [Fact]
@@ -120,8 +125,25 @@ public class SaisonwechselSatzfolgeTests
     }
 
     [Fact]
-    public void Schema32Save_WithoutSlots_LoadsWithIndexOrder_MixedAtNextSeasonChange()
+    public void UnusualLeagueSize_AtSeasonChange_SlotsFallBackToIndexOrder()
     {
+        // R12S-02 (#522): Bei ungewöhnlicher Ligagröße (synthetisch) gilt die Indexfolge, nicht die veraltete Folge der
+        // abgelaufenen Saison.
+        var game = Create(seed: 3, 5);
+        PlayToSeasonEnd(game, active: false);
+        var record = game.CurrentRecord!;
+        var moved = game.LeagueClubs(League.Oberliga).Select(c => c.Index)
+            .First(c => c < NewGame.SelectableClubs && record.NextLeague(c, League.Oberliga) == League.Oberliga);
+        game.Clubs[moved].League = League.ZweiteLiga; // 2. Liga 13, Oberliga 11 Vereine
+        game.StartNextSeason();
+        foreach (var league in Enum.GetValues<League>())
+            Assert.Equal(Members(game, league), game.LeagueSlots(league));
+    }
+
+    [Fact]
+    public void Schema32Save_WithoutSlots_MigratesTo34_LoadsWithIndexOrder_MixedAtNextSeasonChange()
+    {
+        // Weg 32 → 33 (A184) → 34 (S-K6, Satzfolge); R12S-03 (#523).
         var game = Create(seed: 7, 5);
         TestSeason.PlayMatchDay(game);
         var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
