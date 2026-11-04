@@ -60,6 +60,47 @@ public sealed partial class GameState
     }
 
     /// <summary>
+    /// Länderwerte aus der Aufstellung des Bundestrainers: 0x952C mit Manager 5 (Datei 0x0952C–0x0977E) schreibt die
+    /// Vereinsfelder 0x18–0x1D des Landes ohne Bedingung aus Reihe 0–2 der Aufstellung, leere Plätze zählen 0
+    /// (<see cref="MatchEngine.LineupTeamValues"/>; DOSBox FILE20: nur ein Stürmer 88/96/57 in Reihe 1 → 00 09 00 0A 00 06).
+    /// Kondition und Technik (0x18–0x1B) stehen in <see cref="NationalRatings"/>, die Form (0x1C/0x1D) im Vereinsplatz
+    /// (<see cref="Club.TeamValues"/>), den der Saisonwechsel wie bei allen Plätzen neu würfelt (DOSBox FILE20 → FILE21:
+    /// 0x18–0x1B bleiben, 0x1C/0x1D neu; Review R13RD-04).
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] Aufrufe (A009, Spur nationalteam Runde 13, <c>docs/analyse/re-runde-13.md</c>): Verlassen der Aufstellung
+    ///   (Datei 0x41506–0x4151A, <see cref="OnNationalLineupLeft"/>), Tageslauf (Datei 0x54F9C–0x54FBF) und nach dem Menü des
+    ///   Bundestrainers an WM-Tagen (Datei 0x555D6). Nicht nach einem Freundschaftsspiel.</item>
+    /// <item>[APPROX] Das Remake rechnet an jedem Tag vor dessen Spielen (<c>GameState.Integration.cs</c>, OnDayManager), also
+    ///   nach dem Halt des Bundestrainers. Im Modus „nur Weltkugel“ ruft das Original nur 0x555D6 (kein Tageslauf); zwischen
+    ///   zwei WM-Tagen ändert sich die Aufstellung dort nur über den Bildschirm, der beim Verlassen ohnehin rechnet.</item>
+    /// <item>[APPROX] Ohne Spieler in der Aufstellung (auch die Automatik leer, weil der Kader leer ist) schreibt das Remake
+    ///   nichts. Das Original schriebe 0; einen leeren Kader am Spieltag schließt dort die Warnung vor dem Weiterschalten aus
+    ///   (A300, DOSBox `file11_11`), und 0x555D6 rechnet nach dem Menü neu.</item>
+    /// <item>[APPROX] Vor dem ersten Spiel eines Spielstands zieht der Aufruf die Teamwerte (<see cref="MatchEngine.EnsureTeamValues"/>),
+    ///   damit der Lader die Form nicht überschreibt; das Original lädt sie beim Spielstart.</item>
+    /// </list>
+    /// </summary>
+    internal void UpdateNationalTeamValues()
+    {
+        if (NationalCoach is not { Nation: NationalTeams.Germany } coach || coach.TeamValueFormation() is not { Count: > 0 } lineup)
+            return;
+        var club = Clubs[coach.Nation];
+        if (club.TeamValues is null)
+            MatchEngine.EnsureTeamValues(this);
+        var (defense, attack, _) = MatchEngine.LineupTeamValues(lineup);
+        _germanyRatings = (defense.Condition, defense.Technique, attack.Condition, attack.Technique);
+        club.TeamValues = MatchEngine.TeamValuesOf(club) with { DefenseForm = defense.Form, AttackForm = attack.Form };
+    }
+
+    /// <summary>
+    /// Ereignis „Aufstellung des Bundestrainers verlassen“ (Datei 0x41506–0x4151A: 0x952C mit DGROUP 0xA70E). [APPROX] Der
+    /// Bildschirm meldet es nur, wenn der Besuch die Aufstellung geändert hat: Bildschirme ändern durch bloßes Öffnen keinen
+    /// Spielzustand (AGENTS.md, E4). Unterschied zum Original nur, wenn sich seit der letzten Rechnung Spielerwerte geändert
+    /// haben (Bonus eines Freundschaftsspiels); dann rechnet der nächste Tag.
+    /// </summary>
+    public void OnNationalLineupLeft() => UpdateNationalTeamValues();
+
+    /// <summary>
     /// Ein Manager wird Bundestrainer des eigenen Landes (Datei 0x55440 ff.): Der Etat <see cref="NationalBudget"/>
     /// geht auf das <see cref="NationalAccount"/>, der Kader beginnt leer. Ist er in dieser Saison schon
     /// ernannt, bleibt alles unverändert (kein zweiter Etat, Kader bleibt; Review R3A-03).
@@ -117,7 +158,17 @@ public sealed partial class GameState
         return NominationResult.Added;
     }
 
-    /// <summary>„auto“ (Datei 0x3CA06 ff.): Kader leeren, dann je Art die Besten nach Kondition + Technik + Form.</summary>
+    /// <summary>
+    /// „auto“ (Datei 0x3CA06 ff.): Kader leeren, dann je Art die Besten nach Kondition + Technik + Form.
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] Kaderplätze 0–2 Torhüter, 3–12 Verteidiger, 13–28 Stürmer, je Art absteigend nach der Summe; bei
+    ///   Gleichstand gewinnt der zuerst durchsuchte Spieler (Datei 0x3CC01: Schleife über Pool 1 … 0xB3, strikter Vergleich
+    ///   Datei 0x3CCBA–0x3CCC4). Beleg DOSBox FILE18, Satz 5: LEDLIN (Pool 129) vor DEISENBERGER (169), je 228; LEE (114) vor
+    ///   KUHNKE (166), je 220 – nicht nach dem Namen (A085, Spur nationalteam Runde 13).</item>
+    /// <item>[APPROX] Einen Poolindex führt das Remake nicht: Gleichstand nach <see cref="Player.Id"/> (Anlagereihenfolge der
+    ///   Spieler) statt nach dem Pool des Originals; bis Runde 13 nach dem Namen.</item>
+    /// </list>
+    /// </summary>
     public void AutoNominate()
     {
         var coach = NationalCoach ?? throw new InvalidOperationException("Kein Bundestrainer.");
@@ -127,6 +178,7 @@ public sealed partial class GameState
         for (var r = 0; r < roles.Length; r++)
             foreach (var c in candidates.Where(c => c.Player.Role == roles[r] && c.Player.InjuredGames == 0)
                          .OrderByDescending(c => c.Player.Condition + c.Player.Technique + c.Player.Form)
+                         .ThenBy(c => c.Player.Id)
                          .Take(NationalCoach.AutoSquad[r]))
                 coach.Add(c.Player, c.Club);
     }
@@ -174,14 +226,9 @@ public sealed partial class GameState
             p.Caps++;
         coach.AddFriendly(new FriendlyMatch(homeClub, awayClub, hg, ag, bonus));
         EnterNationalResult(homeClub, awayClub, hg, ag, NationalMatchKind.Friendly); // 0x50283, Code 0xD (Datei 0x303BA)
-        // #193 (Integration Runde 8, Welle 3, Leitstelle): [ORIGINAL] Nach dem Freundschaftsspiel schreibt 0x952C mit
-        // Manager 5 (Bundestrainer) die Teamwerte des Landes aus dessen Aufstellung (Aufruf 0x555D6, Spur
-        // spielstaerke-manager-2). [APPROX] Ohne eigene Aufstellung (Automatik) bleiben die Länderwerte stehen.
-        if (coach.Nation == NationalTeams.Germany && coach.Formation.Count > 0)
-        {
-            var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
-            _germanyRatings = (defense.Condition, defense.Technique, attack.Condition, attack.Technique);
-        }
+        // A009 (Spur nationalteam Runde 13): [ORIGINAL] Das Freundschaftsspiel schreibt die Länderwerte nicht neu (kein Aufrufer
+        // von 0x952C im Overlay 0xF8, Datei 0x3BF9B/0x3C05E; DOSBox FILE18 → FILE19: Werte von Verein 54 unverändert trotz
+        // Bonus und neuer Aufstellung). Bis Runde 13 schrieb das Remake sie hier (#193).
         return FriendlyResult.Played;
     }
 

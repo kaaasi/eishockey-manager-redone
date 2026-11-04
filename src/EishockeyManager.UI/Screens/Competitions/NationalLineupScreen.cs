@@ -14,11 +14,12 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// eingesetzten Spielern, sonst bleiben NR und STATUS leer; „Eingesetzt“ zählt die Eingesetzten (höchstens 22).
 /// Regeln: <see cref="NationalCoach"/> (Datei <c>CupsNational.Lineup.cs</c>).
 /// <para>
-/// Bedienung: Platz anklicken, dann Spieler (oder umgekehrt); Rechtsklick auf einen Platz leert ihn (der Spieler ist
-/// danach nicht mehr eingesetzt); Linksklick auf einen Reservisten nimmt ihn heraus, Rechtsklick auf einen nicht
-/// Eingesetzten setzt ihn ein. [APPROX] Ein Linksklick auf einen nicht eingesetzten oder aufgestellten Spieler wählt
-/// ihn wie beim Verein aus; die Spielerinfo auf Rechtsklick (Datei 0x40872) ist nicht übernommen. Tasten A und C wie
-/// beim Verein.
+/// Bedienung wie im Original (A010, Spur nationalteam Runde 13; Regeln <see cref="NationalCoach.ClickPlayer"/>): Klick auf
+/// einen Block bzw. den Torhüterkasten wählt die Reihe (Nummer in Farbe 0x10), Klick auf einen Spieler der Liste setzt ihn
+/// auf den ersten freien Platz seiner Art in dieser Reihe oder nimmt einen Aufgestellten heraus; Rechtsklick auf einen
+/// Platzknopf leert ihn (der Spieler ist danach nicht mehr eingesetzt). Tasten A und C wie beim Verein. [APPROX] Die
+/// Spielerinfo auf Rechtsklick (Datei 0x40872) ist nicht übernommen; Escape führt wie der Rechtsklick außerhalb der Liste
+/// zurück.
 /// </para>
 /// </remarks>
 public sealed class NationalLineupScreen : Screen
@@ -31,8 +32,11 @@ public sealed class NationalLineupScreen : Screen
 
     private readonly Screen _back;
     private readonly MessageBox _message;
-    private Player? _selectedPlayer;
-    private LineupSlot? _selectedSlot;
+    /// <summary>[ORIGINAL] Farbe der Nummer der gewählten Reihe (Datei 0x4090A, sonst 2 Datei 0x408D3).</summary>
+    public const byte SelectedLineColor = 0x10;
+
+    private int? _selectedLine;
+    private bool _changed;
     private int _mouseX = -1, _mouseY = -1;
 
     public NationalLineupScreen(ScreenHost host, Screen back) : base(host)
@@ -43,9 +47,11 @@ public sealed class NationalLineupScreen : Screen
 
     private NationalCoach? Coach => Host.Game?.NationalCoach;
 
-    public Player? SelectedPlayer => _selectedPlayer;
+    /// <summary>Gewählte Reihe 0–3 bzw. <see cref="NationalCoach.GoalkeeperLine"/>, null = keine (DGROUP [bp−9] = 0xFF).</summary>
+    public int? SelectedLine => _selectedLine;
 
-    public LineupSlot? SelectedSlot => _selectedSlot;
+    /// <summary>Meldungsfenster bzw. Kurzmeldung des Bildschirms.</summary>
+    public MessageBox Message => _message;
 
     public override void Update(InputState input)
     {
@@ -55,7 +61,7 @@ public sealed class NationalLineupScreen : Screen
             return;
         if (Coach is not { } coach || input.Pressed(Key.Escape))
         {
-            Host.Show(_back);
+            Leave(_back);
             return;
         }
 
@@ -64,95 +70,106 @@ public sealed class NationalLineupScreen : Screen
         {
             case "A":
                 coach.AutoFormation();
-                ClearSelection();
+                _changed = true;
                 return;
             case "C":
                 coach.ClearFormation();
-                ClearSelection();
+                _changed = true;
                 return;
         }
 
         if (input.LeftClick && TeamUi.SwitchButton.Contains(input.MouseX, input.MouseY))
         {
-            Host.Show(Tactics(Host, _back));
+            Leave(Tactics(Host, _back));
             return;
         }
 
-        if (OnSlot(input.MouseX, input.MouseY, out var slot))
+        if (input.RightClick && OnSlot(input.MouseX, input.MouseY, out var slot))
         {
-            if (input.RightClick)
-            {
-                coach.ClearSlot(slot);
-                ClearSelection();
-            }
-            else if (input.LeftClick)
-            {
-                if (_selectedPlayer is { } p)
-                    TryAssign(coach, slot, p);
-                else
-                    _selectedSlot = _selectedSlot == slot ? null : slot;
-            }
+            coach.ClearSlot(slot);
+            _changed = true;
+            return;
+        }
+        if (LineAt(input.MouseX, input.MouseY) is { } line)
+        {
+            // [ORIGINAL] Klick in einen Block wählt die Reihe (Datei 0x40890–0x40943).
+            if (input.LeftClick)
+                _selectedLine = line;
             return;
         }
 
         var inList = LineupScreen.Window.Contains(input.MouseX, input.MouseY);
         var row = inList ? LineupScreen.RowAt(input.MouseY) : -1;
         var player = row >= 0 && row < rows.Count ? rows[row] : null;
-        if (input.RightClick)
+        if (!input.LeftClick && !input.RightClick)
+            return;
+        if (player is null)
         {
-            if (player is null)
-                Host.Show(_back);
-            else if (!coach.IsDressed(player))
-                Report(coach.Dress(player), player);
+            if (input.RightClick)
+                Leave(_back);
             return;
         }
-        if (!input.LeftClick || player is null)
-            return;
-        if (_selectedSlot is { } target)
-            TryAssign(coach, target, player);
-        else if (coach.IsDressed(player) && !coach.Formation.Contains(player))
-        {
-            coach.Undress(player);
-            ClearSelection();
-        }
-        else
-            _selectedPlayer = _selectedPlayer == player ? null : player;
+        var selected = _selectedLine;
+        var result = coach.ClickPlayer(player, ref selected, right: input.RightClick);
+        _selectedLine = selected;
+        if (result is LineupResult.Assigned or LineupResult.TakenOut or LineupResult.Dressed or LineupResult.Undressed)
+            _changed = true;
+        Report(result);
     }
 
     /// <summary>Taktik des Nationalteams (gleicher Bildschirm wie beim Verein), Umschalter zurück zur Aufstellung.</summary>
     public static Screen Tactics(ScreenHost host, Screen back) =>
         new TacticsScreen(host, back, () => host.Game!.NationalCoach!.Tactics, () => new NationalLineupScreen(host, back));
 
-    private void ClearSelection()
+    /// <summary>
+    /// Verlassen (Datei 0x41506–0x4151A): 0x952C schreibt die Länderwerte aus der Aufstellung
+    /// (<see cref="GameState.OnNationalLineupLeft"/>), hier nur nach einer Änderung (siehe dort, [APPROX]).
+    /// </summary>
+    private void Leave(Screen next)
     {
-        _selectedPlayer = null;
-        _selectedSlot = null;
+        if (_changed)
+            Host.Game?.OnNationalLineupLeft();
+        _changed = false;
+        Host.Show(next);
     }
 
-    private void TryAssign(NationalCoach coach, LineupSlot slot, Player player)
-    {
-        ClearSelection();
-        Report(coach.Assign(slot, player), player);
-    }
-
-    /// <summary>Meldungen wie beim Verein; „Schon 22 Mann / im Team !“ aus DGROUP 0x11D5.</summary>
-    private void Report(LineupResult result, Player player)
+    /// <summary>
+    /// Meldungen wie beim Verein (gleicher Bildschirm 0x40364, Kurzmeldung 0x0C0B8; <see cref="LineupScreen"/>): „Spieler ist“ /
+    /// „Verletzt.“ bzw. „Gesperrt.“ (Datei 0x40E01–0x40E27), „Schon 22 Mann / im Team !“ (DGROUP 0x11D5), „Keine Reihe /
+    /// ausgewählt !“ (DGROUP 0x1221), „Der darf da / nicht rein !“ (DGROUP 0x1229), „Kein / Platz mehr !“ (Datei 0x414C6).
+    /// </summary>
+    private void Report(LineupResult result)
     {
         switch (result)
         {
             case LineupResult.Injured:
-                _message.Show(player.Name, "ist verletzt.");
+                _message.ShowShort("Spieler ist", "Verletzt.");
                 break;
             case LineupResult.Suspended:
-                _message.Show(player.Name, "noch gesperrt !");
+                _message.ShowShort("Spieler ist", "Gesperrt.");
                 break;
             case LineupResult.WrongRole:
-                _message.Show("Der darf da", "nicht rein !");
+                _message.ShowShort("Der darf da", "nicht rein !");
                 break;
             case LineupResult.RosterFull:
-                _message.Show("Schon 22 Mann", "im Team !");
+                _message.ShowShort("Schon 22 Mann", "im Team !");
+                break;
+            case LineupResult.NoLineSelected:
+                _message.ShowShort("Keine Reihe", "ausgewählt !");
+                break;
+            case LineupResult.NoRoom:
+                _message.ShowShort(ShortMessageTexts.NoRoom.Line1, ShortMessageTexts.NoRoom.Line2);
                 break;
         }
+    }
+
+    /// <summary>Reihe unter der Maus: Block 0–3 oder Torhüterkasten (<see cref="NationalCoach.GoalkeeperLine"/>).</summary>
+    public static int? LineAt(int x, int y)
+    {
+        for (var b = 0; b < Lineup.Blocks; b++)
+            if (LineupScreen.BlockBox(b).Contains(x, y))
+                return b;
+        return LineupScreen.GoalieBox.Contains(x, y) ? NationalCoach.GoalkeeperLine : null;
     }
 
     private static bool OnSlot(int x, int y, out LineupSlot slot)
@@ -200,7 +217,7 @@ public sealed class NationalLineupScreen : Screen
             var p = rows[i];
             var y = LineupScreen.FirstRowY + i * LineupScreen.RowPitch;
             var c = TeamUi.RoleColor(p.Role);
-            if (i == hoverRow || p == _selectedPlayer)
+            if (i == hoverRow)
                 TeamUi.HoverRow(s, LineupScreen.ListLeft + 3, y, LineupScreen.ListWidth - 8, LineupScreen.RowPitch);
             if (coach.NumberOf(p) is { } number)
                 s.TextRight(mini, 17, y, number.ToString(), c);
@@ -223,19 +240,19 @@ public sealed class NationalLineupScreen : Screen
         for (var b = 0; b < Lineup.Blocks; b++)
         {
             Widgets.Frame(s, Assets, LineupScreen.BlockBox(b), FrameStyle.Orange);
-            s.Text(mini, 251, 33 + 42 * b, $"{b + 1}.", TeamUi.DimColor);
+            s.Text(mini, 251, 33 + 42 * b, $"{b + 1}.", b == _selectedLine ? SelectedLineColor : TeamUi.DimColor);
         }
         Widgets.Frame(s, Assets, LineupScreen.GoalieBox, FrameStyle.Orange);
         // [ORIGINAL] Zahl der eingesetzten Spieler (0x120:0x66 Modus 3, Datei 0x41D20) in Farbe 16 (Datei 0x41D84,
         // Video: dunkles Weinrot); die Vereinsaufstellung nimmt 17.
         s.TextCentered(mini, 282, 189, $"Eingesetzt: {coach.DressedCount}", DressedColor);
-        s.Text(mini, 250, 202, "TW", TeamUi.DimColor);
+        s.Text(mini, 250, 202, "TW", _selectedLine == NationalCoach.GoalkeeperLine ? SelectedLineColor : TeamUi.DimColor);
 
         foreach (var slot in LineupSlot.All)
         {
             var r = LineupScreen.SlotButton(slot);
             var number = coach.Formation[slot] is { } player ? coach.NumberOf(player)?.ToString() ?? "" : "";
-            TeamUi.SmallButton(s, Assets, r.X, r.Y, number, pressed: slot == _selectedSlot);
+            TeamUi.SmallButton(s, Assets, r.X, r.Y, number, pressed: false);
         }
 
         TeamUi.DrawSwitch(s, Assets, toTactics: true);
