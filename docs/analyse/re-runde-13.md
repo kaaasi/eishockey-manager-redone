@@ -730,7 +730,7 @@ Spielstände FILE13/14, FILE16A/17, FILE22/23 (Strafminuten = Tabellensatz DGROU
   Folge mit Spielberechnung und Teamwert-Wanderung, Zustand DGROUP 0xE017 nicht im Spielstand → nicht nachbildbar“), dazu
   `random(b, b + 11)` → `lrandom(b, b + 11)` im Kommentar `src/EishockeyManager.Core/SeasonFlow.LeagueSlots.cs`; Doku
   `docs/analyse/re-runde-12.md` (S-K6, Punkte 1 und 2) und `docs/spielberechnung.md` §14 (Aufruf 0x439BB streichen) –
-  **nicht `saison`, sondern `pruefung-karte` (L12); erledigt in PR #607 (Teil 2).**
+  **nicht `saison`, sondern `pruefung-karte` (L12); erledigt in PR #608 (Teil 2).**
   Testidee: keine (reine Begründung); bestehende Verteilungs-/Mehrsaisonprobe genügt. Spur: `saison` (Code-Kommentar), Doku `pruefung-karte` (L12).
 
 ### S-K6-c – Fair-Play-Prämie alte/neue Liga
