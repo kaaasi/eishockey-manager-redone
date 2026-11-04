@@ -120,7 +120,10 @@ internal static class Wettbewerbe
         }
         d.Host.Show(new WorldCupScreen(d.Host, new MainMenuScreen(d.Host)));
         d.Frame(); d.Save("03_gruppe1_gespielt");
-        d.Click(WorldCupScreen.KnockoutButton.X + 5, WorldCupScreen.KnockoutButton.Y + 5);
+        // A293 (Spur nationalteam Runde 13): Endrundenspiele über „Paarungen → WM“ wie im Original.
+        d.Host.Show(new CupPairingsScreen(d.Host, new MainMenuScreen(d.Host)));
+        d.Frame();
+        d.Click(CupPairingsScreen.Buttons[1].X + 5, CupPairingsScreen.Buttons[1].Y + 5);
         d.Frame(); d.Save("04_endrunde");
     }
 

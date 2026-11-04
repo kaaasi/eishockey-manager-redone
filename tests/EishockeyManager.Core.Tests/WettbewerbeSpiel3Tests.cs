@@ -113,7 +113,10 @@ public class WettbewerbeSpiel3Tests
         Assert.All(squad.Players.Where(p => p.Dressed), p => Assert.True(coach.IsDressed(p.Player)));
     }
 
-    /// <summary>Regressionstest (vorher rot, A019): „Stärke:“ mit Bundestrainer aus den Werten, die 0x952C (Manager 5) schreibt.</summary>
+    /// <summary>
+    /// Regressionstest (vorher rot, A019): „Stärke:“ mit Bundestrainer aus den Werten, die 0x952C (Manager 5) schreibt –
+    /// seit Runde 13 (A009) beim Verlassen der Aufstellung (<see cref="FixedFormation"/>).
+    /// </summary>
     [Fact]
     public void InfoStrength_WithCoach_FromFormation()
     {
@@ -164,6 +167,8 @@ public class WettbewerbeSpiel3Tests
             Set(forwards[i], 75, 85, 55, 8);
             Assert.Equal(LineupResult.Assigned, coach.Assign(LineupSlot.Forward(0, i), forwards[i]));
         }
+        // Spur nationalteam Runde 13 (A009): 0x952C schreibt die Länderwerte beim Verlassen der Aufstellung, nicht bei jedem Lesen.
+        game.OnNationalLineupLeft();
         return (game, coach);
     }
 }

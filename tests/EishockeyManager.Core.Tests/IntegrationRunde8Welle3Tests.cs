@@ -8,11 +8,12 @@ namespace EishockeyManager.Core.Tests;
 public class IntegrationRunde8Welle3Tests
 {
     /// <summary>
-    /// #193: Nach einem Freundschaftsspiel schreibt das Original die Teamwerte des Nationalteams aus der Aufstellung des
-    /// Bundestrainers (0x952C mit Manager 5, Aufruf 0x555D6). Die Länderwerte Deutschlands folgen danach der Aufstellung.
+    /// #193, berichtigt in Runde 13 (A009, Spur nationalteam): Das Freundschaftsspiel schreibt die Länderwerte nicht (kein
+    /// Aufrufer von 0x952C im Overlay 0xF8; DOSBox FILE18 → FILE19 unverändert). Erst das Verlassen der Aufstellung
+    /// (Datei 0x41506) schreibt sie aus der Aufstellung des Bundestrainers (0x952C mit Manager 5).
     /// </summary>
     [Fact]
-    public void Friendly_SetsGermanyRatingsFromCoachLineup()
+    public void Friendly_KeepsGermanyRatings_LeavingLineupSetsThem()
     {
         var game = GameModeTests.Create(7, false, true, 2);
         game.Continue();
@@ -22,14 +23,16 @@ public class IntegrationRunde8Welle3Tests
         FillFormation(coach);
         var before = game.NationalRatings(NationalTeams.Germany);
         Assert.Equal(FriendlyResult.Played, game.PlayFriendly(52, home: true));
+        Assert.Equal(before, game.NationalRatings(NationalTeams.Germany));
 
+        game.OnNationalLineupLeft();
         var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
         Assert.NotEqual(before, game.NationalRatings(NationalTeams.Germany));
         Assert.Equal((defense.Condition, defense.Technique, attack.Condition, attack.Technique),
             game.NationalRatings(NationalTeams.Germany));
     }
 
-    /// <summary>[APPROX] Ohne eigene Aufstellung (Automatik) bleiben die Länderwerte stehen.</summary>
+    /// <summary>[ORIGINAL] Das Freundschaftsspiel schreibt die Länderwerte nicht (A009), auch ohne eigene Aufstellung.</summary>
     [Fact]
     public void Friendly_WithoutFormation_KeepsGermanyRatings()
     {

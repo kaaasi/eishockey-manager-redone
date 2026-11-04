@@ -46,8 +46,9 @@ public static class ShortMessageTexts
     public static readonly ShortMessageText SixSkaters = new("Schon 6 Feldspieler", "auf dem Eis !");
 
     /// <summary>
-    /// [ORIGINAL] Datei 0x414C6, DGROUP 0x50A7/0x50AC: Spieler in die gewählte Reihe, Abwehr- und Sturmhälfte voll. Ohne
-    /// Entsprechung: Im Remake wählt der Manager den Platz selbst (<c>LineupSlot</c>), eine volle Reihe kann nicht auftreten.
+    /// [ORIGINAL] Datei 0x414C6, DGROUP 0x50A7/0x50AC: Spieler in die gewählte Reihe, Abwehr- und Sturmhälfte voll. Aufrufer:
+    /// Aufstellung des Nationalteams (<c>NationalLineupScreen</c>, A010, Spur nationalteam Runde 13); die Vereinsaufstellung
+    /// wählt im Remake weiter den Platz selbst (<c>LineupSlot</c>).
     /// </summary>
     public static readonly ShortMessageText NoRoom = new("Kein", "Platz mehr !");
 

@@ -183,7 +183,9 @@ public sealed class MainMenuScreen : Screen
         if (input.Clicked(ContinueLogo))
         {
             // Bundestrainer mit zu kleinem Kader: Warnung statt Tagesablauf (#217, 0x454C2).
-            // [APPROX] Ohne ernannten Bundestrainer (Modus 1 vor dem ersten WM-Termin) gibt es keinen Kader zu zählen.
+            // [ORIGINAL] Der Wächter „ernannt“ ist gleichwertig (A300, Spur nationalteam Runde 13): Das Original prüft nur DGROUP
+            // 0xA70E = 5 (Datei 0x454C2–0x454F2); ein Menü mit Zug 5 gibt es erst nach der Ernennung (Datei 0x54D19,
+            // 0x5557F–0x55587). DOSBox `file11_11`: Kader leer nach der Ernennung → Warnung, der Tag läuft nicht weiter.
             if (Game.NationalCoachMenu && Game.NationalCoach is { } coach && coach.Squad.Count < CoachMinPlayers)
             {
                 CoachMessage = new ShortMessage(Game.ActiveManager.Name, CoachWarning[0], CoachWarning[1]);

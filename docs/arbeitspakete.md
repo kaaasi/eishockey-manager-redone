@@ -107,7 +107,8 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
      minimal).
   3. **WM-Tabelle:** A293 (Lage der Knöpfe „Gruppe 1/2“, „Endrunde“), A294 (Linksklick außerhalb kehrt zurück) gegen die Bilder
      `file2*_*` (Pixel: Lage/Farbe, Bildschirmfoto-Ablauf).
-- **Dateigrenzen:** siehe Zuständigkeit; Tests, `docs/wettbewerbe.md`. **Modell:** Claude Opus 5.5. **Status:** geplant.
+- **Dateigrenzen:** siehe Zuständigkeit; Tests, `docs/wettbewerbe.md`. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig
+  (PR #580: A009, A010, A023, A085, R13RD-04), Teil 2 fertig (PR #581: A027, A028, A284, A300), Teil 3 fertig (PR #584: A293, A294). Spur fertig – Integration.
 
 ### Spur `ui-rest` – Restlücken `ui-meldungen`, Pixel, Hauptmenü-Tests
 
@@ -144,6 +145,10 @@ Leitstelle L1–L12 in #567, L13–L15 in #578/#583.
 - **`saison`** – Branch `integration/runde-13-saison` (#569, #571, #579, #583 ohne Konflikt, `main` @ `48e1e67` nachgezogen):
   `tools/pruefen.sh` alle drei Läufe an `07e8a39` bestanden (2178/0/0, 1834/0/308, Pflichtlauf 1835/343). Schema 38 mit
   Leerschritt 37 (L5); A088 bleibt `[APPROX]` (L14, Kandidat Runde 14). Review offen.
+- **`nationalteam`** – Branch `integration/runde-13-nationalteam` auf `integration/runde-13-saison` (#580, #581, #584 ohne
+  Konflikt, `GameState.Integration.cs` automatisch zusammengeführt, L9): `tools/pruefen.sh` alle drei Läufe an `9e20c55`
+  bestanden (2192/0/0, 1845/0/311, Pflichtlauf 1846/346). Nebenbefunde (#580): Reihenlogik der Vereinsaufstellung wie A010,
+  Sperre Transfer/Training ab der WM-Gruppenphase ohne Inventur-ID → Kandidaten Runde 14. Review offen.
 
 ### Entscheidungen zum Start (Nutzer, 04.11.2026)
 

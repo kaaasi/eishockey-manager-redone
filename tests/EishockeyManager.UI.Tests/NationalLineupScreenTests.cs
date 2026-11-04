@@ -1,3 +1,4 @@
+using EishockeyManager.Formats;
 using EishockeyManager.Core;
 using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens;
@@ -125,6 +126,51 @@ public class NationalLineupScreenTests
             d.Click(r.X + 5, r.Y + 5);
     }
 
+    /// <summary>
+    /// A010 (Spur nationalteam Runde 13): Regressionstest, vorher rot (Linksklick auf einen Reservisten nahm ihn heraus, ein
+    /// Platz verdrängte seinen Spieler). [ORIGINAL] Reihe wählen, Reservist bei voller Reihe → „Kein / Platz mehr !“, nichts
+    /// ändert sich (DOSBox `file19_08`); Linksklick auf einen Aufgestellten nimmt ihn heraus (`file19_06` → `file19_07`).
+    /// Verlassen nach der Änderung schreibt die Länderwerte (A009, Datei 0x41506).
+    /// </summary>
+    [GameDataFact]
+    public void A010_FullLine_NoRoom_ClickOnPlacedTakesOut()
+    {
+        var (d, game) = StartWorldOnly();
+        game.AutoNominate();
+        var coach = game.NationalCoach!;
+        coach.AutoFormation();
+        game.OnNationalLineupLeft();
+        d.OpenTile("Aufstellung");
+        var screen = Assert.IsType<NationalLineupScreen>(d.Host.Current);
+        d.Frame();
+        var rows = coach.Rows.ToList();
+        var reserve = rows.FindIndex(p => p.Role == PlayerRole.Defender && coach.StatusOf(p) == PlayerStatus.Reserve);
+        Assert.True(reserve >= 0);
+        var formation = LineupSlot.All.Select(s => coach.Formation[s]).ToList();
+        var dressed = coach.DressedCount;
+        var ratings = game.NationalRatings(NationalTeams.Germany);
+
+        ClickSlot(d, LineupSlot.Defender(0, 0)); // Reihe 1 wählen (voll)
+        d.Click(60, RowY(reserve));
+        Assert.Equal(formation, LineupSlot.All.Select(s => coach.Formation[s]));
+        Assert.Equal(dressed, coach.DressedCount);
+        Assert.True(coach.IsDressed(rows[reserve]));
+        Assert.Equal(["Kein", "Platz mehr !"], screen.Message.Lines);
+        Assert.NotNull(screen.Message.Short); // Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst
+        d.Frames(100);
+
+        var placed = coach.Formation[LineupSlot.Forward(0, 0)]!;
+        d.Click(60, RowY(rows.IndexOf(placed)));
+        Assert.Null(coach.Formation[LineupSlot.Forward(0, 0)]);
+        Assert.False(coach.IsDressed(placed));
+        Assert.Equal(dressed - 1, coach.DressedCount);
+        Assert.Equal(ratings, game.NationalRatings(NationalTeams.Germany));
+
+        d.Press(Key.Escape);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
+        Assert.NotEqual(ratings, game.NationalRatings(NationalTeams.Germany));
+    }
+
     [GameDataFact]
     public void Lineup_Clicks_FollowOriginalRules_AndTacticsBelongToNationalTeam()
     {
@@ -135,19 +181,20 @@ public class NationalLineupScreenTests
         var screen = Assert.IsType<NationalLineupScreen>(d.Host.Current);
         d.Frame();
 
-        // Platz, dann Spieler: Torhüter in Zeile 2 ins Tor – eingesetzt, Nummer 2 wie die Zeile.
+        // Reihe, dann Spieler (A010, Runde 13): Torhüterkasten wählen, Torhüter in Zeile 2 – ins Tor, eingesetzt, Nummer 2.
         ClickSlot(d, LineupSlot.Goalkeeper);
-        Assert.Equal(LineupSlot.Goalkeeper, screen.SelectedSlot);
+        Assert.Equal(NationalCoach.GoalkeeperLine, screen.SelectedLine);
         d.Click(60, RowY(1));
         var keeper = coach.Rows[1];
         Assert.Same(keeper, coach.Formation.Goalkeeper);
         Assert.Equal(2, coach.NumberOf(keeper));
         Assert.Equal(1, coach.DressedCount);
 
-        // Rechtsklick auf einen nicht Eingesetzten setzt ihn ein, Linksklick nimmt ihn wieder heraus.
+        // Rechtsklick auf einen nicht Eingesetzten setzt ihn ein, ein zweiter Rechtsklick nimmt ihn wieder heraus
+        // (Datei 0x40F35–0x40F59; bis Runde 13 Linksklick).
         d.RightClick(60, RowY(0));
         Assert.True(coach.IsDressed(coach.Rows[0]));
-        d.Click(60, RowY(0));
+        d.RightClick(60, RowY(0));
         Assert.False(coach.IsDressed(coach.Rows[0]));
 
         // Rechtsklick auf den Platz leert ihn; der Torhüter ist danach nicht mehr eingesetzt.
@@ -161,8 +208,8 @@ public class NationalLineupScreenTests
         Assert.Equal(NationalCoach.MaxDressed, coach.DressedCount);
         d.RightClick(60, RowY(NationalCoach.MaxDressed));
         Assert.Equal(NationalCoach.MaxDressed, coach.DressedCount);
-        d.Frame();
-        d.Click(10, 10); // Meldung schließen
+        Assert.NotNull(screen.Message.Short); // Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst
+        d.Frames(100);
 
         // Taktik über den Umschalter: Änderungen treffen das Nationalteam, nicht den Verein.
         var clubTactics = game.Clubs[game.Managers[0].ClubIndex].Tactics;

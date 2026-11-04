@@ -66,7 +66,9 @@ public static class NationalMenu
         if (game.NationalCoachMenu && tile.Name == "Highscore")
             return CoachHighscoreLocked(game);
         if (game.NationalCoachMenu)
-            // [APPROX] Vor der Ernennung (Saisonbeginn bis zum ersten WM-Termin) bleibt auch die Mannschaft gesperrt.
+            // [ORIGINAL] Nach der Ernennung sind die Mannschaftskacheln offen, auch vor der Kaderwahl (A284, Spur nationalteam
+            // Runde 13; DOSBox `file11_03`, FILE11). Ein Menü „vor der Ernennung“ gibt es im Original nicht (Datei 0x54D19,
+            // 0x55587); der Zweig mit NationalCoach = null ist nur ein Wächter des Remakes.
             return !CoachTiles.Contains(tile.Name) || (game.NationalCoach is null && NeedsCoach.Contains(tile.Name));
         return (game.Mode == GameMode.ClubOnly && WorldTiles.Contains(tile.Name)) || TileLocks.IsLocked(game, tile); // Sperren der Spielvorbereitung (Spur tabellen-highscore)
     }
