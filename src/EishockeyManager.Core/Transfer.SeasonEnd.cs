@@ -112,8 +112,7 @@ public sealed partial class GameState
         var compensation = (long)(value / 2) / 3;
         if (compensation > 0)
             Book(manager, FinanceCategory.Transfers, compensation);
-        club.Players.Remove(p);
-        club.Lineup.Remove(p);
+        club.RemovePlayer(p);
         if (TransferMarket.ListingOf(p) is { } listing)
             TransferMarket.Withdraw(listing);
         p.ContractYears = 0;

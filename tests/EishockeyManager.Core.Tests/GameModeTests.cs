@@ -13,7 +13,7 @@ public class GameModeTests
     {
         var setup = new GameSetup();
         foreach (var (club, i) in clubs.Select((c, i) => (c, i)))
-            setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = club });
+            setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = club, StartLeague = NewGame.DatabaseLeague(club) ?? League.Oberliga });
         if (setup.ClubCompetitions != flag)
             Assert.True(setup.ToggleClubCompetitions());
         if (setup.EuropeAndWorldCup != globe)
@@ -374,8 +374,10 @@ public class GameModeTests
     // Satzfolge (Datei 0x2A1E0/0x56409, Mischung 0x5644E vor 0x5645D). Manager 1 bleibt als Letzter in der Oberliga (Konto auf
     // 400.000 DM gesetzt) und verliert in Saison 1 und 3 die Fair-Play-Prämie (100.000 DM) gegen die Nachrücker mit 0 Minuten;
     // danach andere Konten, ab Saison 4 andere Kaufentscheidungen, Titel in Saison 5 und Zufallszustand.
+    // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
+    // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|502709,400000|WorldChampion=55,CupWinner=8,GermanChampion=4,EuropeanCupWinner=3|1747123,400000|WorldChampion=57,CupWinner=15,GermanChampion=16,EuropeanCupWinner=3|2408769,400000|WorldChampion=54,CupWinner=17,GermanChampion=17,EuropeanCupWinner=16|2785511,-4255801|WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=17|400000,-8404150|R447796559 C1666445596";
+        "WorldChampion=52,CupWinner=11,GermanChampion=1,EuropeanCupWinner=2|96040,400000|WorldChampion=52,CupWinner=4,GermanChampion=1,EuropeanCupWinner=1|1402820,400000|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=1|2154396,400000|WorldChampion=54,CupWinner=3,GermanChampion=13,EuropeanCupWinner=0|2718434,400000|WorldChampion=54,CupWinner=0,GermanChampion=9,EuropeanCupWinner=13|2952676,-7124085|R677985496 C1798453752";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

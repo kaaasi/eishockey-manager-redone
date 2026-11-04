@@ -477,11 +477,20 @@ Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die
   behalten das Kreisverfahren. Die Mischung der Vereine in `NewGame.Create` bleibt nur, damit der Zufallsverbrauch gleich bleibt.
 - **Vereinsplatz beim Start (U15), umgesetzt:** Der Zufallsverein der Start-Liga (Datei 0x29C78) ist nie ein Europapokal-Teilnehmer
   (Zeile 1, Datei 0x45CD0). `[APPROX]`: zu Spielbeginn nur der Deutsche Meister (Verein 2); weitere Einträge der Tabelle
-  DGROUP 0x3B1 sind nicht ausgewertet. Fest gewählte Vereine bleiben unberührt.
-- **U15, nicht umgesetzt (Entscheidung nötig):** Das Original setzt den Manager *immer* in die Start-Liga (auch ein fest gewählter
+  DGROUP 0x3B1 sind nicht ausgewertet. Fest gewählte Vereine: siehe U15-a unten.
+- **U15-Rest, entschieden, Umsetzung Runde 13:** Das Original setzt den Manager *immer* in die Start-Liga (auch ein fest gewählter
   Verein wird dorthin getauscht, bei Bundesliga immer mit einem Zufallsverein) und kennt den Sonderfall „eine Saison“ (Datei
-  0x29CFA). Das Remake wählt den Verein fest oder zufällig; die Start-Liga-Regler gehört nur zur Zufallswahl, und es gibt keine
-  Spiellänge. Eine Übernahme würde die Vereinswahl der Spielvorbereitung ändern.
+  0x29CFA). Das Remake wählt den Verein bisher fest oder zufällig; die Start-Liga-Regler gehört nur zur Zufallswahl. Entscheidung
+  Nutzer **D7 = D** (Runde 12): wie im Original; dazu **D2 = A** (04.11.2026): „eine Saison“ nur mit Start-Liga Bundesliga (Sperre
+  im `SetupScreen`). Umsetzung in Runde 13, Spur `kader-start` Teil 2 (nach `re-dosbox`, `docs/arbeitspakete.md`).
+- **U15-a und U15-b umgesetzt (Runde 13, Spur `kader-start` Teil 2, L1, L13 = A):** `NewGame.PlaceInStartLeague`
+  (Datei 0x29C3B–0x29CF2): Ein fest gewählter Verein bleibt nur, wenn die Start-Liga nicht die Bundesliga ist, er schon in ihr
+  spielt und sein Platz ≤ 35 ist; sonst tauscht er mit einem Zufallsplatz der Start-Liga (nie der Verein eines früheren
+  Managers, nie der Europapokal-Teilnehmer). Die Teamwerte (`Club.Strength`) bleiben am Platz, der Verdrängte übernimmt Liga
+  bzw. „ohne Liga“ des Managervereins; ein Verein ohne Liga landet direkt in der Start-Liga (A112 „rückt in die Oberliga“
+  entfällt). Belege FILE27/FILE28/FILE15 (`docs/analyse/re-runde-13.md`), Tests `KaderStartStartLigaTests`. Die Sperre „eine
+  Saison“ nur mit Bundesliga prüft `GameSetup.Step` (Datei 0x2890E–0x2891C). `[APPROX]`: Zufallsquelle `GameState.Random`;
+  gezogen wird in Indexfolge, solange die Satzfolge erst nach der Vergabe entsteht (R-K5, Teil 3). U15-c bleibt `[APPROX]` (L2).
 
 ## Probe-Rückfallweg (WS-05, Runde 12)
 

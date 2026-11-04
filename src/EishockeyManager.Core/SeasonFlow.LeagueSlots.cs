@@ -28,6 +28,8 @@ namespace EishockeyManager.Core;
 /// Der Tausch 0x36169 führt beide Indizes über 0x36146 mit (Datei 0x36270/0x36284), die Mischung ändert die Teilnehmer also
 /// nicht (Spielstände FILE22 → FILE23: Meister KÖLNER EC Satz 4 → 8, Teilnehmerliste 8). Im Remake mit festen Vereinsindizes:
 /// <see cref="EuropeanCup"/> beim Saisonstart, gleiches Ergebnis (zwischen 29. April und Saisonstart ändert sich nichts daran).
+/// Spielstart (R-K5, Spur kader-start): die Startmischung entsteht vor der Spielvorbereitung aus dem Spielstart-Seed
+/// (<see cref="NewGame.StartOrder"/>), die Vereinsauswahl zeigt sie; danach nur der Managertausch, keine zweite Mischung.
 /// </remarks>
 public sealed partial class GameState
 {
@@ -70,13 +72,21 @@ public sealed partial class GameState
     /// </summary>
     public IReadOnlyList<int> NextLeagueSlots(League league) => Segment(_nextLeagueSlots, league).ToList();
 
-    /// <summary>Spielstart (Datei 0x43A17): Satzfolge = Vereinsindex, dann gemischt.</summary>
-    internal void InitializeLeagueSlots()
+    /// <summary>
+    /// Spielstart: Satzfolge = Startmischung (Datei 0x43A17, vor der Spielvorbereitung; <see cref="NewGame.StartOrder"/>) mit
+    /// den Plätzen nach dem Managertausch (U15-a, Datei 0x29CF2), ohne weitere Mischung (R-K5, Spur kader-start).
+    /// </summary>
+    /// <param name="places">Platz → Verein, mindestens die 36 Ligaplätze.</param>
+    internal void InitializeLeagueSlots(IReadOnlyList<int> places)
     {
         _leagueSlots.Clear();
+        _leagueSlots.AddRange(places.Take(3 * ClubsPerLeague));
         foreach (var league in Enum.GetValues<League>())
-            _leagueSlots.AddRange(LeagueClubs(league).Select(c => c.Index).Order());
-        MixLeagueSlots();
+            if (!StoredSlots(league).Order().SequenceEqual(LeagueClubs(league).Select(c => c.Index).Order()))
+            {
+                _leagueSlots.Clear(); // ungewöhnliche Ligabelegung (synthetische Spielstände): Indexfolge gilt
+                return;
+            }
     }
 
     /// <summary>

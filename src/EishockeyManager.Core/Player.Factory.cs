@@ -145,7 +145,10 @@ public static class PlayerFactory
         return first.Length > 1 && last.Length > 0 ? $"{first[0]} {last[^1]}" : all[random.Next(all.Count)].Name;
     }
 
-    /// <summary>Kleinste freie Rückennummer im Kader (1–99).</summary>
+    /// <summary>
+    /// Kleinste freie Rückennummer im Kader (1–99). Seit A091 vergibt das Spiel die Nr. als Kaderplatz + 1
+    /// (<see cref="Club.RenumberPlayers"/>); bleibt für Testhelfer, die Spieler direkt in einen Kader legen.
+    /// </summary>
     public static int FreeNumber(Club club, Player? except = null)
     {
         for (var n = 1; n <= MaxNumber; n++)
@@ -155,14 +158,13 @@ public static class PlayerFactory
     }
 
     /// <summary>
-    /// Nimmt einen Spieler in einen Kader auf: neue freie Rückennummer, neuer Vertrag zur Gehaltsforderung,
+    /// Nimmt einen Spieler in einen Kader auf: hinten an, Nr. = Kaderplatz + 1 (<see cref="Club.RenumberPlayers"/>), neuer Vertrag zur Gehaltsforderung,
     /// ohne Versicherung und ohne abgelehntes Angebot. Gemeinsamer Abschluss für Transfer, Leihe und Talentsuche.
     /// </summary>
     public static void Join(Club club, Player p, int contractYears, bool loan, PlayerLoan? agreement = null)
     {
         if (loan != (agreement is not null) || agreement?.Origin == club)
             throw new ArgumentException("Eine Leihe benötigt einen anderen Stammverein und dessen Vertrag.", nameof(agreement));
-        p.Number = FreeNumber(club, p);
         p.OnLoan = loan;
         p.Loan = agreement;
         p.Insured = false;
@@ -171,8 +173,10 @@ public static class PlayerFactory
         p.MonthlySalary = Contracts.Demand(p);
         // [ORIGINAL] neuer Kaderplatz (Datei 0x42CB1): Spiele für den Verein +0x1C = 0; die Saisonspiele (+0x06) bleiben (FILE07).
         p.ClubGamesCarry = -p.Games;
+        // [ORIGINAL] A091: neuer Kaderplatz hinten an (Datei 0x42CB1; FILE05 → FILE07: DAFFNER auf Platz 25, Nr. 26).
         if (!club.Players.Contains(p))
             club.Players.Add(p);
+        club.RenumberPlayers();
     }
 
     /// <summary>

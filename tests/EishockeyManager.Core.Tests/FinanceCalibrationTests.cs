@@ -41,7 +41,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
     {
         var setup = new GameSetup();
         var index = (int)league * 12;
-        setup.Managers.Add(new ManagerSetup { Name = "Prämie", ClubIndex = index });
+        setup.Managers.Add(new ManagerSetup { Name = "Prämie", ClubIndex = index, StartLeague = NewGame.DatabaseLeague(index) ?? League.Oberliga });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
         for (var guard = 0; game.Phase == SeasonPhase.Running; guard++)
         {
@@ -198,7 +198,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
         foreach (var seed in new[] { 3, 17, 41 })
         {
             var setup = new GameSetup();
-            setup.Managers.Add(new ManagerSetup { Name = "Finanzprobe", ClubIndex = league == League.Oberliga ? 24 : 4 });
+            setup.Managers.Add(new ManagerSetup { Name = "Finanzprobe", ClubIndex = league == League.Oberliga ? 24 : 4, StartLeague = league == League.Oberliga ? League.Oberliga : League.Bundesliga });
             var game = NewGame.Create(database(), setup, seed);
             var manager = game.ActiveManager;
             Assert.Equal(FinanceRules.StartMoney(manager.Level), manager.Money);

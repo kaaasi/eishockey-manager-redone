@@ -37,7 +37,7 @@ internal static class TestSquadKeeper
     {
         if (manager.Dismissed)
             return default;
-        TestSeason.KeepSquad(game, manager);
+        TestSeason.KeepSquad(game, manager, extendExpired: true); // spielfähig halten: auch ohne Angebot verlängern (R12K-03)
         var club = game.Clubs[manager.ClubIndex];
         int bought = 0, moved = 0;
         while (club.Players.Count < MinSquad && Next(game, club) is { } listing)

@@ -30,7 +30,7 @@ public class WeltkugelDosboxTests
             setup.ToggleClubCompetitions();
         if (mode == GameMode.ClubOnly)
             setup.ToggleEuropeAndWorldCup();
-        var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 3);
+        var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 22); // kader-start U15-a/R-K5 (L13): Saat 3 → 22, Vorbedingung „Verein 2, stark“ nach dem Starttausch
         Assert.Equal(mode, game.Mode);
         // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „Verein 2, stark“ wie NationalCoachMode4MenuTests
         // (spielstaerke-manager-2, 0x98F8: Managerverein spielt sonst mit den Werten seiner Spieler).

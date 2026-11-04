@@ -76,15 +76,16 @@ public sealed class LiveSquad
     public int[,] MinuteCounters { get; } = new int[2, 4];
 
     /// <summary>
-    /// Kader eines Managervereins für ein Spiel. Reihenfolge: Torhüter, Verteidiger, Stürmer je nach Rückennummer
-    /// ([APPROX] wie die Listen; die Reihenfolge der Kaderplätze im Original hängt an Kauf und Verkauf). Eingesetzt
+    /// Kader eines Managervereins für ein Spiel. [ORIGINAL] Reihenfolge der Kaderplätze (<see cref="Club.Players"/>, A091):
+    /// beim Start Torhüter, Abwehr, Sturm; Kauf hinten an (Datei 0x42CB1, FILE07), Verkauf rückt auf (Datei 0x425B6, FILE26),
+    /// Saisonwechsel unverändert (A085, FILE22/FILE23 HOK 0x06A27 + 0x34 · Platz, +0x0F je Platz gleich). Eingesetzt
     /// (+0x0A) sind die im Verein eingesetzten spielfähigen Spieler (<see cref="Club.IsDressed"/>; A168); die Energie im
     /// Spiel setzt die Spielvorbereitung (<see cref="MatchEngine.PreparedPlayerEnergy"/>).
     /// </summary>
     public static LiveSquad Create(Club club, int difficulty, Tactics? tactics)
     {
         var squad = new LiveSquad { Difficulty = difficulty, Tactics = tactics };
-        foreach (var p in club.SortedPlayers)
+        foreach (var p in club.Players)
         {
             var slot = club.Lineup.FindSlot(p);
             squad.Players.Add(new LivePlayer

@@ -63,7 +63,18 @@ public sealed class SetupScreen : Screen
     private int _frame;
     private string? _message;
 
-    public SetupScreen(ScreenHost host) : base(host) { }
+    /// <summary>
+    /// Spielstart-Seed, fest ab dem Aufbau des Bildschirms: Er bestimmt die Startmischung der Vereinsauswahl (R-K5,
+    /// <see cref="NewGame.StartOrder"/>) und den Spielstart. Die Mischung leitet sich nur daraus ab (kein Zufallszug beim Öffnen).
+    /// </summary>
+    private readonly int _seed;
+    private readonly int[] _places;
+
+    public SetupScreen(ScreenHost host) : base(host)
+    {
+        _seed = host.Seed ?? Environment.TickCount;
+        _places = NewGame.StartOrder(_seed);
+    }
 
     public GameSetup Setup => _setup;
 
@@ -111,7 +122,8 @@ public sealed class SetupScreen : Screen
             }
             else if (i == _setup.Managers.Count && input.Clicked(slot))
             {
-                _setup.Managers.Add(new ManagerSetup { Head = -1 }); // im Original bleibt das Kopffeld bis zur Auswahl leer
+                // Im Original bleibt das Kopffeld bis zur Auswahl leer; die Start-Liga gilt für alle Manager (L1, DGROUP 0x11A).
+                _setup.Managers.Add(new ManagerSetup { Head = -1, StartLeague = _setup.StartLeague });
                 _selected = i;
                 _mode = Mode.HeadPicker;
                 return;
@@ -142,27 +154,11 @@ public sealed class SetupScreen : Screen
             TryStart();
     }
 
-    /// <summary>Regler verstellen: begrenzt, kein Umlauf (siehe <see cref="SetupSliders"/>).</summary>
-    private void Step(int row, int delta)
-    {
-        var slider = (SetupSlider)row;
-        var m = Selected;
-        switch (slider)
-        {
-            case SetupSlider.Level when m is not null:
-                m.Level = SetupSliders.Step(slider, m.Level, delta);
-                break;
-            case SetupSlider.Duration:
-                _setup.Duration = (GameDuration)SetupSliders.Step(slider, (int)_setup.Duration, delta);
-                break;
-            case SetupSlider.StartLeague when m is not null:
-                m.StartLeague = (League)SetupSliders.Step(slider, (int)m.StartLeague, delta);
-                break;
-            case SetupSlider.StartStrength when m is not null:
-                m.StartStrength = (StartStrength)SetupSliders.Step(slider, (int)m.StartStrength, delta);
-                break;
-        }
-    }
+    /// <summary>
+    /// Regler verstellen: begrenzt, kein Umlauf, „eine Saison“ nur mit Start-Liga Bundesliga (U15-b, siehe
+    /// <see cref="GameSetup.Step"/>; [ORIGINAL] Datei 0x2890E–0x2891C).
+    /// </summary>
+    private void Step(int row, int delta) => _setup.Step((SetupSlider)row, delta, Selected);
 
     private int FirstFreeHead()
     {
@@ -196,8 +192,7 @@ public sealed class SetupScreen : Screen
                 _setup.Managers[i].Head = FirstFreeHead();
         }
 
-        var seed = Host.Seed ?? Environment.TickCount;
-        Host.Game = NewGame.Create(Assets.Database, _setup, seed);
+        Host.Game = NewGame.Create(Assets.Database, _setup, _seed);
         // [ORIGINAL] #195: Im Modus „nur Weltkugel“ läuft nach „Los jetzt!“ zuerst die Tagesfunktion Datei 0x54C9F (Sprung
         // 0x54CEE zum WM-Termin, Ernennung), das Hauptmenü 0x44E22 kommt erst am Tagesende (0x555A3) – DOSBox 06.
         if (Host.Game.WorldOnly)
@@ -249,7 +244,7 @@ public sealed class SetupScreen : Screen
     {
         _mode = Mode.ClubPicker;
         var club = Selected?.ClubIndex;
-        _clubPage = club is { } c ? c / ClubsPerPage : 0;
+        _clubPage = club is { } c ? CellOf(c).Page : 0;
     }
 
     private void UpdateClubPicker(InputState input)
@@ -286,13 +281,20 @@ public sealed class SetupScreen : Screen
     }
 
     /// <summary>
-    /// [ORIGINAL] Datei 0x28030 (R-K5): Seite p zeigt die Vereinssätze 12 · p … 12 · p + 11; der Aufrufer blättert zyklisch
-    /// (Datei 0x28E4B).
-    /// [APPROX] Reihenfolge innerhalb der Seite: hier der Vereinsindex der Datenbank. Die Videobilder `oberflaeche_0128`,
-    /// `_0133` und `_0136` zeigen dieselben 12 Vereine je Seite in anderer Reihenfolge (Seite 0: Remake-Plätze 5, 3, 1, 4, 9,
-    /// 0, 8, 6, 2, 7, 10, 11); die Satzreihenfolge des Originals ist nicht der Dateiindex (Review #546 R12PM-03, evtl. S-K6).
+    /// [ORIGINAL] Datei 0x28030 (R-K5, #549): Seite p zeigt die Vereinssätze 12 · p … 12 · p + 11 in Satzfolge; der Aufrufer
+    /// blättert zyklisch (Datei 0x28E4B). Die Sätze sind beim Öffnen schon gemischt (Ligamischung Datei 0x43A17 vor der
+    /// Spielvorbereitung Datei 0x43A61): Seiten 0–2 = Vereine der Liga in der Startmischung, Seite 3 (ohne Liga) in
+    /// Datenbankfolge. Belege `oberflaeche_0128`/`_0133` (Seite 0/1 permutiert), `_0136` (Seite 3, Zelle 8 = HEC Bonn = DB 44),
+    /// <c>docs/analyse/re-runde-13.md</c>, R-K5. Zufallsquelle `[APPROX]` siehe <see cref="NewGame.StartOrder"/>.
     /// </summary>
-    private int ClubAt(int cell) => _clubPage * ClubsPerPage + cell;
+    private int ClubAt(int cell) => _places[_clubPage * ClubsPerPage + cell];
+
+    /// <summary>Seite und Zelle, in der die Vereinsauswahl den Verein zeigt (für Bildschirmabläufe und Tests).</summary>
+    public (int Page, int Cell) CellOf(int clubIndex)
+    {
+        var place = Array.IndexOf(_places, clubIndex);
+        return (place / ClubsPerPage, place % ClubsPerPage);
+    }
 
     public override void Draw(Surface s)
     {
@@ -352,7 +354,7 @@ public sealed class SetupScreen : Screen
         s.Blit(elements, new Rect(113, _setup.EuropeAndWorldCup ? 115 : 102, 57, 13), ModeGlobe.X, ModeGlobe.Y);
 
         var m = Selected ?? new ManagerSetup();
-        int[] values = [m.Level, (int)_setup.Duration, (int)m.StartLeague, (int)m.StartStrength];
+        int[] values = [m.Level, (int)_setup.Duration, (int)_setup.StartLeague, (int)m.StartStrength];
         for (var row = 0; row < values.Length; row++)
         {
             var strip = SetupSliders.Strip((SetupSlider)row, values[row]);
