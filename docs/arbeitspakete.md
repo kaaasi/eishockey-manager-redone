@@ -81,7 +81,7 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
      `[ORIGINAL]`; Mehrsaisonprobe.
 - **Dateigrenzen:** `Core/NewGame.cs`, `Core/Transfer*.cs`, `Core/Player*.cs`, `Core/Squad*.cs`, `Core/StadiumStatistics.cs`,
   `UI/Screens/SetupScreen.cs`, `UI/Screens/Team/*` außer `TeamUi.cs`, Tests, `docs/transfer.md`; `MatchEngine.Managed.cs`/`.Live.cs`
-  nur die Kaderreihenfolge. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (R12K-01 bis -04) fertig, PR #568; Teile 2–4 warten auf `re-dosbox`.
+  nur die Kaderreihenfolge. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (R12K-01 bis -04) fertig, PR #568; Teil 2 (U15-a, U15-b) in Arbeit, PR folgt (Branch `paket/kader-start-2`, gestapelt auf #568).
 
 ### Spur `saison` – Satzfolge, Managerwechsel, Saisonwechsel „nur Weltkugel“
 
