@@ -62,9 +62,9 @@ oder einen einzelnen Folgeteil mit Base nennt (dann ohne Schritt 5).
    von `paket/<spur>-<n-1>` und PR-Base = dieser Branch; ist er gemergt, von `main`. Rebase vor dem Push (Hauptablauf Schritt 5): nur der
    unterste offene Teil auf `origin/main`, jeder höhere auf seinen Base-Branch (`git rebase origin/paket/<spur>-<n-1>`);
    danach `git push --force-with-lease` nur auf eigene Branches.
-3. **Teil abschließen:** grünes `tools/pruefen.sh --schnell`, PR „Ready for review“ (lässt sich das aus dem Lauf nicht setzen –
-   REST kennt keinen Weg, GraphQL ist gesperrt –, im Übergabekommentar vermerken; es setzt der Nutzer, die Leitstelle nur,
-   wenn ihr ein Werkzeug dafür zur Verfügung steht),
+3. **Teil abschließen:** grünes `tools/pruefen.sh --schnell`, PR „Ready for review“ setzen:
+   `gh api -X POST repos/kaaasi/eishockey-manager-redone/pulls/<nr>/ccr/ready_for_review` (Antwort `{"draft":false}`; erprobt
+   04.11.2026). Scheitert der Aufruf, Fehlermeldung im Übergabekommentar vermerken; dann setzt es die Leitstelle mit demselben Aufruf,
    Übergabekommentar mit „Fortsetzungen verbraucht: n von 3“. Dann den nächsten Teil im selben Lauf beginnen, solange Zeit bleibt.
 4. **Teil blockiert** (kein grünes `--schnell`, Beleg fehlt, Referenz-Repo unerreichbar, fremde Datei nötig): Teil als Draft-PR mit Übergabe lassen,
    Label `spur-wartet` setzen, im Übergabekommentar „blockiert – Entscheidung Nutzer“ und den Grund. **Keine Fortsetzung**

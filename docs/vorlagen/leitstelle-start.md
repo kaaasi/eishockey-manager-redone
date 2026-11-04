@@ -33,6 +33,6 @@
    wenn es von Opus abweicht – nur auf ausdrücklichen Wunsch des Nutzers (z. B. vom Nutzer bestätigter Plan bzw. Go mit
    Modell). Offene PRs mit `spur-wartet` durchsehen: „Fortsetzung anlegen – Leitstelle“ heißt, die Aufgabe mit dem Prompt aus
    der Übergabe anlegen – vorher gegen den Kurzaufruf „Geplanter Lauf mit Teilen“ prüfen; abweichen dürfen nur Spur, Modell,
-   Zähler und PR-Nummer (R9F-03). Draft-Status, den ein Lauf nicht aufheben konnte, setzt der Nutzer; die Leitstelle nur,
-   wenn ihr ein Werkzeug dafür zur Verfügung steht.
+   Zähler und PR-Nummer (R9F-03). Draft-Status, den ein Lauf nicht aufheben konnte, hebt die Leitstelle
+   selbst auf (`gh api -X POST …/pulls/<nr>/ccr/ready_for_review`), nicht der Nutzer.
 8. Antwort an den Nutzer **knapp** (`AGENTS.md` §7): Ergebnis, Entscheidungsbedarf, nächster Schritt, Kurzaufrufe.

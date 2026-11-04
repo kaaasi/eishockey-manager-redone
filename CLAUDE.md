@@ -38,6 +38,8 @@ cd eishockey-manager-redone
 
 - GraphQL ist gesperrt → `gh api` (REST) statt `gh pr …`. PR anlegen:
   `gh api repos/kaaasi/eishockey-manager-redone/pulls -f title=… -f head=<branch> -f base=main -f body=…`.
+- Draft-Status: „Ready for review“ mit `gh api -X POST repos/kaaasi/eishockey-manager-redone/pulls/<nr>/ccr/ready_for_review`,
+  zurück mit `…/ccr/convert_to_draft` (GraphQL-Ersatz der Sitzung, erprobt 04.11.2026).
 - Nur repository-bezogene Endpunkte sind erreichbar (keine Nutzer-, Billing- oder Projects-Endpunkte).
 - Releases lassen sich aus der Sitzung nicht anlegen, nur über Workflows.
 - Mergen (nur als Leitstelle, nach der Merge-Prüfung in `docs/prozess/zusammenarbeit.md`) immer mit dem geprüften
