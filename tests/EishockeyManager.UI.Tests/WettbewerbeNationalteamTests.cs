@@ -63,6 +63,7 @@ public class WettbewerbeNationalteamTests
         d.Host.Show(menu);
         d.Frame();
         var before = StateFingerprint.Of(game);
+        var day = game.CurrentDay;
 
         d.Click(290, 50); // Vereinslogo = Tag weiter
         Assert.Equal(warning, menu.CoachMessage is not null);
@@ -72,6 +73,8 @@ public class WettbewerbeNationalteamTests
             Assert.Equal(before, StateFingerprint.Of(game));
         }
         else
-            Assert.NotSame(menu, d.Host.Current);
+            // Spur nationalteam Runde 13 (A028): Der Bundestrainer ist an jedem WM-Tag am Zug, auch wenn Deutschland nicht
+            // spielt („Spielfrei“); dann gibt es keine Spiele zu zeigen und das Menü kommt sofort wieder – geprüft wird der Tag.
+            Assert.True(game.CurrentDay > day);
     }
 }
