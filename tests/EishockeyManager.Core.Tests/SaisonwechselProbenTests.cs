@@ -103,22 +103,22 @@ public class SaisonwechselProbenTests
 
     /// <summary>
     /// Abnahme der Spur, Mehrsaisonprobe Modus 1 („nur Weltkugel“, 20 Saisonwechsel, passiver und aktiver Bundestrainer):
-    /// Ohne Vereinssaison steigt niemand auf oder ab, die Oberliga tauscht nicht, kein Zwangsabstieg, kein Saisonende-Ereignis,
-    /// das Vereinskonto bleibt unverändert. Modus 2 und 4: <see cref="SaisonwechselOberligaTests"/>,
+    /// Ohne Vereinssaison steigt niemand zwischen den Ligen auf oder ab, kein Zwangsabstieg, kein Saisonende-Ereignis, das
+    /// Vereinskonto bleibt unverändert. Die Oberliga tauscht wie in den anderen Modi ihre letzten beiden der Platzliste gegen
+    /// zwei Vereine ohne Liga ([ORIGINAL] A163, Spur saison Teil 4: Datei 0x56238 ohne Modusprüfung, FILE20 → FILE21;
+    /// <see cref="SaisonWeltkugelTests"/>). Modus 2 und 4: <see cref="SaisonwechselOberligaTests"/>,
     /// <see cref="SaisonwechselZwangsabstiegTests"/>.
-    /// [APPROX] Ob em.exe im Modus 1 den Saisonwechsel 0x563AF überhaupt durchläuft, ist nicht gelesen (Spur wettbewerbe-weltkugel).
     /// </summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void WorldOnly_TwentySeasonChanges_NoExchangeNoForcedRelegation(bool active)
+    public void WorldOnly_TwentySeasonChanges_OnlyOberligaExchange_NoForcedRelegation(bool active)
     {
         var game = GameModeTests.Create(7, false, true, 5);
         Assert.Equal(GameMode.WorldOnly, game.Mode);
         var manager = game.Managers[0];
         var money = manager.Money;
         var leagues = game.Clubs.Select(c => c.League).ToList();
-        var outside = game.OutsidePlaces().ToList();
         for (var change = 0; change < 20; change++)
         {
             if (active)
@@ -136,12 +136,17 @@ public class SaisonwechselProbenTests
             }
             var record = game.History[^1];
             Assert.Empty(record.Managers);
-            Assert.Empty(record.LeftOberliga);
-            Assert.All(Enum.GetValues<League>(), l => Assert.Empty(record.PromotedInto[l]));
+            Assert.Equal(2, record.LeftOberliga.Count);
+            Assert.Equal(2, record.PromotedInto[League.Oberliga].Count);
+            Assert.Empty(record.PromotedInto[League.Bundesliga]);
+            Assert.Empty(record.PromotedInto[League.ZweiteLiga]);
             Assert.All(Enum.GetValues<League>(), l => Assert.Empty(record.RelegatedInto[l]));
             game.StartNextSeason();
-            Assert.Equal(leagues, game.Clubs.Select(c => c.League).ToList());
-            Assert.Equal(outside, game.OutsidePlaces().ToList());
+            for (var c = 0; c < leagues.Count; c++)
+                if (leagues[c] is League.Bundesliga or League.ZweiteLiga)
+                    Assert.Equal(leagues[c], game.Clubs[c].League);
+            Assert.Equal(GameState.ClubsPerLeague, game.LeagueClubs(League.Oberliga).Count());
+            Assert.All(record.LeftOberliga, c => Assert.Contains(c, game.OutsidePlaces()));
             Assert.Equal(money, manager.Money);
             Assert.False(manager.Dismissed);
         }

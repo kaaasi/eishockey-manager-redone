@@ -289,9 +289,14 @@ public sealed partial class GameState
             RecordRelegationGroup(record, group, group.Table(Clubs).Select(r => r.Club.Index).ToList());
 
         // Oberliga-Austausch wie em.exe (Spur saisonwechsel, S-K1/S-K2, SeasonFlow.Oberliga.cs).
-        // [APPROX] Im Modus „nur Weltkugel“ wird keine Liga gespielt, also steigt auch niemand ab (Spur wettbewerbe-weltkugel).
-        if (!WorldOnly)
-            ExchangeOberliga(tables[League.Oberliga], record);
+        // [ORIGINAL] auch im Modus „nur Weltkugel“ (A163, Spur saison Teil 4; docs/analyse/re-runde-13.md): Datei 0x56238–0x56284
+        // ohne Modusprüfung über die ungespielte Platzliste DGROUP 0x5CCB (= Startordnung, LeagueTable.StartOrder). Ohne Ligaspiele
+        // gibt es keine Aufstiegsrunden, zwischen 1. Liga, 2. Liga und Oberliga wechselt niemand. Spielstände FILE20 → FILE21:
+        // HEC HEILBRONN und EC BAD TÖLZ (Plätze 34/35) gehen, EHC STRAUBING und ESV KÖNIGSBRUNN (Plätze 37/41) rücken nach;
+        // 1. und 2. Liga mit denselben zwölf Namen. [APPROX] Steht im Modus 1 der (nie geführte) Verein des Managers auf den
+        // letzten beiden Plätzen, bleibt er wie in den anderen Modi (Doppeltausch); ob em.exe dort das Vereinsfeld +0x16 setzt, ist
+        // nicht gelesen (in FILE20/21 nicht betroffen).
+        ExchangeOberliga(tables[League.Oberliga], record);
 
         CurrentRecord = record;
         Phase = SeasonPhase.ClubSeasonOver;
@@ -310,6 +315,9 @@ public sealed partial class GameState
         // [ORIGINAL] Ewige Tabelle nach dem Austausch (Datei 0x563AF ruft 0x5667A), mit der Liga der nächsten Saison
         // (Spur saisonwechsel Teil 3, S-K4; StatisticsHistory.cs). Ewige Bilanz und „Früher“ hängen nicht am Austausch.
         RecordSeasonStatistics();
+        // [ORIGINAL] Ligamischung am 29. April nach Austausch und Ewiger Tabelle, vor dem Fenster mit den Prämien (Datei 0x5644E vor
+        // 0x5645D; Spur saison Teil 3, S-K6-a, SeasonFlow.LeagueSlots.cs). Verbraucht keinen Zufall.
+        PrepareNextLeagueSlots(record);
 
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –
         // kein Platz, keine Prämie (Prämien gibt es nur aus der Vereinssaison).
@@ -354,7 +362,8 @@ public sealed partial class GameState
                     case Title.WorldChampion: break;
                 }
             }
-            events.AddRange(SinglePremiumEvents(manager, league)); // Spur statistiken (#135): Einzelprämien (StatisticsClub.cs)
+            // Spur statistiken (#135): Einzelprämien; Fair-Play über die Liga der nächsten Saison (S-K6-c, SeasonFlow.FairPlay.cs)
+            events.AddRange(SeasonEndSinglePremiums(record, manager, league));
             var premium = SeasonPremium(league, rank, PremiumEvents(record, club.Index, events)); // ohne Aufstieg beim Doppeltausch
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
@@ -394,7 +403,7 @@ public sealed partial class GameState
         foreach (var club in Clubs)
             if (club.Index < NewGame.SelectableClubs)
                 club.League = record.NextLeague(club.Index, club.League);
-        AdvanceLeagueSlots(record); // S-K6: Satzfolge je Liga, Datei 0x5644E (SeasonFlow.LeagueSlots.cs)
+        AdvanceLeagueSlots(record); // S-K6: am 29. April gebildete Satzfolge übernehmen, Datei 0x5644E (SeasonFlow.LeagueSlots.cs)
 
         foreach (var league in Enum.GetValues<League>())
         {

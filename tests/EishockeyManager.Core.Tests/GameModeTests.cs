@@ -165,8 +165,10 @@ public class GameModeTests
         Assert.Equal(0, game.Finance(manager).Book.CurrentTotal);
         var record = game.History[^1];
         Assert.Empty(record.Managers);
-        Assert.Empty(record.LeftOberliga);
-        Assert.All(record.PromotedInto.Values, Assert.Empty);
+        // Spur saison Teil 4 (A163): Der Oberliga-Austausch läuft auch im Modus 1 (Datei 0x56238), sonst kein Auf- und Abstieg.
+        Assert.Equal(2, record.LeftOberliga.Count);
+        Assert.Empty(record.PromotedInto[League.Bundesliga]);
+        Assert.Empty(record.PromotedInto[League.ZweiteLiga]);
         Assert.True(record.Titles.ContainsKey(Title.WorldChampion));
         Assert.False(record.Titles.ContainsKey(Title.GermanChampion));
     }
@@ -368,8 +370,12 @@ public class GameModeTests
     // Spur kader-transfer, Runde 12, Teil 1 (U4, U5): ab Saison 2 neu – Angebote verfallen (Datei 0x0767A, 0x07626), Computerspieler und
     // Poolplätze enden bei Alter > random(37, 42) mit Nachfolger (Datei 0x2787A; andere Poolbenennung, anderer Zufallsverbrauch).
     // Der passive Testmanager 1 verlängert nur angebotene Verträge: sein Konto fällt in Saison 5 auf −6.990.533.
+    // Runde 13, Spur saison Teil 3 (S-K6-c, re-runde-13.md): Fair-Play-Prämie über die Liga der nächsten Saison in deren neuer
+    // Satzfolge (Datei 0x2A1E0/0x56409, Mischung 0x5644E vor 0x5645D). Manager 1 bleibt als Letzter in der Oberliga (Konto auf
+    // 400.000 DM gesetzt) und verliert in Saison 1 und 3 die Fair-Play-Prämie (100.000 DM) gegen die Nachrücker mit 0 Minuten;
+    // danach andere Konten, ab Saison 4 andere Kaufentscheidungen, Titel in Saison 5 und Zufallszustand.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|502709,500000|WorldChampion=55,CupWinner=8,GermanChampion=4,EuropeanCupWinner=3|1747123,400000|WorldChampion=57,CupWinner=15,GermanChampion=16,EuropeanCupWinner=3|2408769,500000|WorldChampion=54,CupWinner=17,GermanChampion=17,EuropeanCupWinner=16|2785511,-4113566|WorldChampion=63,CupWinner=11,GermanChampion=11,EuropeanCupWinner=17|400000,-8111821|R1213235468 C1251305994";
+        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|502709,400000|WorldChampion=55,CupWinner=8,GermanChampion=4,EuropeanCupWinner=3|1747123,400000|WorldChampion=57,CupWinner=15,GermanChampion=16,EuropeanCupWinner=3|2408769,400000|WorldChampion=54,CupWinner=17,GermanChampion=17,EuropeanCupWinner=16|2785511,-4255801|WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=17|400000,-8404150|R447796559 C1666445596";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

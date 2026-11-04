@@ -95,7 +95,7 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
   4. **A058/A088/A163 (nach `re-dosbox`):** Saisonwechsel im Modus „nur Weltkugel“ (Teamwert-Wanderung, Oberliga-Austausch,
      Zurücksetzen der Spielerzähler) nach Befund; Mehrsaisonprobe im Modus „nur Weltkugel“.
 - **Dateigrenzen:** siehe Zuständigkeit; Tests, `docs/analyse/re-saisonwechsel.md`, `docs/saison.md`. **Modell:** Claude Opus 5.5.
-  **Status:** geplant.
+  **Status:** Teil 1 in Review (PR #569), Teil 2 in Review (PR #571), Teil 3 in Review (PR #579), Teil 4 in Review (A058, A163; A088 wartet auf Entscheidung der Leitstelle).
 
 ### Spur `nationalteam` – Bundestrainer nach der DOSBox-Aufnahme (nach `re-dosbox`)
 
@@ -135,6 +135,15 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
      `analyse/inventur.md` für alle in Runde 13 belegten IDs.
 - **Dateigrenzen:** `tests/**/Support/`, neue Testdatei, `tools/reverse-engineering/*`, `docs/re-abdeckung.md`, `docs/analyse/inventur.md`.
   **Modell:** Claude Sonnet 5.5. **Status:** geplant.
+
+### Integration Runde 13
+
+Folge nach L15 (Nutzer 04.11.2026): `saison` → `nationalteam` → `ui-rest` → `kader-start` → `pruefung-karte`. Entscheidungen der
+Leitstelle L1–L12 in #567, L13–L15 in #578/#583.
+
+- **`saison`** – Branch `integration/runde-13-saison` (#569, #571, #579, #583 ohne Konflikt, `main` @ `48e1e67` nachgezogen):
+  `tools/pruefen.sh` alle drei Läufe an `07e8a39` bestanden (2178/0/0, 1834/0/308, Pflichtlauf 1835/343). Schema 38 mit
+  Leerschritt 37 (L5); A088 bleibt `[APPROX]` (L14, Kandidat Runde 14). Review offen.
 
 ### Entscheidungen zum Start (Nutzer, 04.11.2026)
 

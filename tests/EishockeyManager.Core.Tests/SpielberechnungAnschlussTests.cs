@@ -186,9 +186,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// des aktiven Managers; der passive Abdruck bleibt.
     /// R12I-01 (Review #514): neue Kaderplätze (Pool, Talente) mit Belastung random(80, 120) statt 51 … 70 (Datei 0x42E4C) –
     /// Spieler vom Markt sind belasteter, beide Abdrücke (Originaldatenbank) neu; die synthetischen Abdrücke (Seed 3/11) bleiben.
-    /// Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.</summary>
+    /// Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.
+    /// Runde 13, Spur saison Teil 3 (S-K6-a/c): passiv neu – Fair-Play-Prämie über die neue Liga und Satzfolge vom 29. April
+    /// (Begründung bei <see cref="RngTwinProbeTests"/>); aktiv unverändert.</summary>
     [GameDataTheory]
-    [InlineData(false, "2F5CC98EF758F86E")]
+    [InlineData(false, "1CD3CB9E390B654E")]
     [InlineData(true, "75F5165C1DD4B4CA")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
@@ -253,8 +255,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Mittelwerts mit Form 50 (vorher 4 von 5 Titeln für Russland 52, jetzt 52, 54, 63, 55, 63).
     // Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
     // Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
+    // Runde 13, Spur saison Teil 4 (A058, A163): Konten gleich; Weltmeister ab Saison 2, Haupt- und Pokalquelle neu – die große
+    // Wanderung 0x9D1B (Datei 0x56448) läuft auch im Modus „nur Weltkugel“ und würfelt die Form aller Plätze neu, dazu zieht der
+    // Oberliga-Austausch (Datei 0x56238) zwei Nachrücker aus der Hauptquelle.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=55|500000|WorldChampion=63|500000|R981788763 C6027902";
+        "WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=54|500000|WorldChampion=52|500000|WorldChampion=53|500000|R356180146 C211126353";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

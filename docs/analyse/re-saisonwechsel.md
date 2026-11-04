@@ -378,7 +378,8 @@ Bayreuth, Wolfsburg auf Platz 11 = Platz von Memmingen; übrige Plätze wie `fil
   gemischt erst in `StartNextSeason` (Original vor dem Fenster „Saisonende“). Tests `SaisonwechselSatzfolgeTests`.
 - **Offene Frage (nicht geprüft):** Im Original wandert die Strafminutensumme mit dem Vereinssatz (Tabellensatz 0x50), und die
   Mischung 0x5644E läuft nach Auf- und Abstieg, aber vor der Fair-Play-Prämie 0x27213. Ob die Prämie dann über die **neue** Liga
-  des Managers rechnet, ist nicht gelesen (Kandidat für `re-pruefung`).
+  des Managers rechnet, ist nicht gelesen (Kandidat für `re-pruefung`). Beantwortet: ja (re-runde-13.md S-K6-c), umgesetzt in
+  Runde 13 (unten).
 
 ### Umsetzung D5 (Spur `saisonwechsel` Teil 6, 03.11.2026)
 
@@ -388,3 +389,51 @@ getauschten Platz, `file16_8`) und `GameState.FirstExchangeRelegatedInto` (Liste
 Bayreuths Platz, Wolfsburg auf Memmingens, Bayreuth auf Landshuts Bundesligaplatz). Daten der Ligen unverändert. Test
 `SaisonwechselDoppelwechselAnzeigeTests`. `[APPROX]`: Paarindex über das Ereignis Zwangsabstieg des Managers; zwei Zwangsabsteiger in
 einer Gruppe und der Fall mit doppeltem Platz weiter ohne Beleg.
+
+### Umsetzung S-K6-Rest (Spur `saison` Teil 3, Runde 13, 04.11.2026)
+
+Grundlage `docs/analyse/re-runde-13.md` (S-K6-a/b/c) und Entscheidungen der Leitstelle L3, L5, L8, L12 in PR #567.
+
+- **S-K6-a (Mischzeitpunkt, `[APPROX]` → `[ORIGINAL]`):** `FinishSeason` (29. April) bildet nach Zwangsabstieg und Ewiger Tabelle die
+  Satzfolge der **nächsten** Saison (`PrepareNextLeagueSlots`: Mitglieder aus `SeasonRecord.NextLeague`, Partnerersatz wie bisher, dann
+  55 Tausche je Liga) und speichert sie (`_nextLeagueSlots`, Abfrage `GameState.NextLeagueSlots`); `StartNextSeason` übernimmt sie
+  unverändert, ohne erneut zu mischen. Schema 38 (L5), Migration `SaveGame.Migration.Saison.cs` (leere Liste; ein Stand vom
+  Bildschirm „Saisonende“ vor Schema 38 bildet die Folge wie bisher erst beim Saisonwechsel). Schema 36 → 37 ist für `kader-start`
+  vorbehalten; bis zur Integration steht dort eine Leermigration. Geänderte Methoden in `SeasonFlow.LeagueSlots.cs` (L3):
+  `AdvanceLeagueSlots` (übernimmt die vorab gebildete Folge, sonst wie bisher), neu `PrepareNextLeagueSlots`, `SuccessorSlots`
+  (Partnerersatz aus `AdvanceLeagueSlots` herausgelöst), `Mix`, `NextLeagueSlots`.
+- **S-K6-b (Zufallsquelle):** Verhalten unverändert, Begründung des `[APPROX]` im Code berichtigt (lrandom Datei 0xBFD5, Zustand DGROUP
+  0xE017 nicht im Spielstand). Die gleichlautenden Stellen in `docs/spielberechnung.md` §14 und `docs/analyse/re-runde-12.md` ändert
+  nach L12 `pruefung-karte` (Bedarf im PR genannt).
+- **S-K6-c (Fair-Play-Prämie):** über die Liga der nächsten Saison in der neuen Satzfolge (`SeasonFlow.FairPlay.cs`,
+  `FairPlayPremiumWinner`), mit den Strafminuten der abgelaufenen Saison; Nachrücker aus den ligalosen Vereinen haben 0. Torhüter
+  und Topscorer bleiben bei der alten Liga. `StatisticsClub.cs` (`ui-rest`) bleibt unverändert; die Anzeige der Fair-Play-Tabelle
+  zwischen 29. April und Saisonstart ist im Remake nicht erreichbar.
+- **0x346D5 (L8):** Datei 0x56453 `0xE8:0x8E`, auch beim Spielstart: deutsche Europapokal-Teilnehmer neu (DGROUP 0xA763 drei mal sechs
+  Plätze auf 0x80, Liste DGROUP 0xA776 mit Länge DGROUP 0xA775: Deutscher Meister DGROUP 0xD0E6, dazu der Europacupsieger DGROUP 0x388,
+  wenn deutsch und nicht schon in der Liste, Prüfung Datei 0x34872). Die Mischung verschiebt beide Indizes mit: 0x36169 ruft dafür
+  0x36146 mit DGROUP 0xD0E6 (Datei 0x36270) und 0x388 (Datei 0x36284) auf. Spielstände FILE22 (14.04.) → FILE23 (10.09.):
+  Meister KÖLNER EC Satz 4 → 8, `HOK 0x08EED` (Liste) = 8; FILE13 → FILE14 Meister Satz 0x0B in Liste und `HOK 0x08EF7`. Remake:
+  `EuropeanCup` beim Saisonstart mit festen Vereinsindizes, gleiches Ergebnis; zugeordnet in `SeasonFlow.LeagueSlots.cs`.
+- Tests `SaisonSatzfolgeSaisonendeTests` (Mehrsaisonprobe 4 Wechsel passiv/aktiv, Aufsteiger gegen alte und neue Liga, Oberliga-Manager
+  gegen Nachrücker, Speichern im Saisonende, Migration 37 → 38).
+
+### Umsetzung A058, A163, A088 (Spur `saison` Teil 4, Runde 13, 04.11.2026)
+
+- **A058 (`[ORIGINAL]`):** Die große Wanderung der Teamwerte (Datei 0x56448 → 0x9D1B, Modus 10) läuft auch im Modus „nur Weltkugel“
+  (`GameState.Integration.cs`, `OnNewSeasonManager`). Beleg FILE20 → FILE21.
+- **A163 (`[ORIGINAL]`):** Der Oberliga-Austausch (Datei 0x56238–0x56284) läuft auch im Modus 1, über die ungespielte Platzliste
+  (= Startordnung, `LeagueTable.StartOrder`/`SuccessorOrder`). Zwischen den Ligen 1/2/Oberliga wechselt niemand (keine
+  Aufstiegsrunden). Beleg FILE20 → FILE21: Plätze 34/35 gehen, 37/41 rücken nach. `[APPROX]`: Managerverein auf den letzten beiden
+  Plätzen im Modus 1 (Doppeltausch wie in den anderen Modi, nicht belegt).
+- Tests `SaisonWeltkugelTests` (je 4 Saisonwechsel, passiv und aktiv); `SaisonwechselProbenTests` (Modus 1, 20 Wechsel) und
+  `GameModeTests.WorldOnly_SeasonRunsThroughWorldCup…` auf das belegte Verhalten umgestellt.
+- **A088: offen, Entscheidung Leitstelle.** Original: Zähler der Kaderplätze des Transfermarkts (Satz 4) bleiben über den Wechsel
+  stehen, die Poolzähler (+0x1B/+0x1C/+0x1F) aller 200 Poolspieler werden gelöscht, ein Kauf übernimmt die Poolzähler. Im Remake
+  teilen sich Marktplatz und Spieler ein `Player`-Objekt (`TransferListing.Player`). Die Marktliste wird beim Saisonwechsel neu
+  gebildet (`TransferMarket.StartSeason`, `[APPROX]` „Listing-Identitäten“). Vertragslose (`FreeAgents`) und Poolspieler
+  (`TransferMarket.Pool`, von `ResetMatchCounters` nicht erfasst) sind getrennt geführt. Getrennte Markt- und Poolzähler brauchen
+  einen neuen Zustand je Spieler oder Marktplatz (Schema) und Änderungen in `Transfer*.cs`. Das geht über die „kleinen Änderungen in
+  `MatchEngine.Live.cs`/`Player.Factory.cs`“ nach L4 hinaus. Zu klären: Soll `saison` ein Schemafeld (Schema 38, Migration
+  `SaveGame.Migration.Saison.cs`) und den Anschluss in `Transfer.cs` ändern dürfen, oder bleibt A088 `[APPROX]`? Dabei auch zu klären,
+  ob Poolspieler im Remake überhaupt Saisonzähler sammeln.
