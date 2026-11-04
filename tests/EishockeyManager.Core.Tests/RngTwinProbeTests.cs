@@ -173,16 +173,18 @@ namespace EishockeyManager.Core.Tests;
 /// Originaldatenbank-Abdrücke (Verein 42, Start-Liga Oberliga) unverändert.
 /// Runde 13, kader-start Teil 3 (R-K5, L13): alle Abdrücke neu – die Satzfolge entsteht vor der Spielvorbereitung aus dem
 /// Spielstart-Seed (Datei 0x43A17, `NewGame.StartOrder`), der Zufallsplatz des Starttauschs ist ein Satzplatz dieser Folge.
+/// Runde 13, kader-start Teil 4 (A091/A166): alle Abdrücke neu – Nr. = Kaderplatz + 1 (Kauf hinten an, Verkauf rückt auf),
+/// Spiel und Auto-Aufstellung in Kaderplatzfolge statt Rolle/Nummer; andere Gleichstände und Spielverläufe.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "0F6C935EE872102B")]
-    [InlineData(true, 3, "434D00DEAD4F3D70")]
-    [InlineData(false, 11, "5262EDDF4E77E0D2")]
-    [InlineData(true, 11, "A25AA3275EDD38A9")]
+    [InlineData(false, 3, "1501663F0197426F")]
+    [InlineData(true, 3, "377126FABD83B898")]
+    [InlineData(false, 11, "6B6DAAD441C0C2A2")]
+    [InlineData(true, 11, "C429365C16B41D63")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -193,8 +195,8 @@ public class RngTwinProbeTests
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "986AA7BF9A9EB473")]
-    [InlineData(true, "813DE9160D4A67C7")]
+    [InlineData(false, "C2A2F88417587DD1")]
+    [InlineData(true, "FD69401E5D7397F7")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
