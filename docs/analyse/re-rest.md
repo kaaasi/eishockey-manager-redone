@@ -133,6 +133,11 @@ Verein), Nachrichten DGROUP 0xD294 (24 × 0x71). Hilfen der C-Laufzeit: 0x0390B 
   40 · (i div 3)) ins Ziel kopieren, Puffer freigeben (0x0BEFA). Der Aufrufer blättert p zyklisch 0 … 3 (Datei
   0x28E4E–0x28E64). Die Seiten zeigen also die Sätze 0–47 **in Satzreihenfolge**. Remake: `SetupScreen.ClubCell`
   (Raster 40, 38 × 38) stimmt; `ClubAt` trägt `[APPROX]` „im Original nicht nach Index sortiert“ → **K5**.
+  **Nachtrag Review #546 (R12PM-03):** Die Videobilder `oberflaeche_0128` (Seite 0), `_0133` (Seite 1) und `_0136`
+  (Seite 3) zeigen je Seite dieselben 12 Vereine wie das Remake, aber in anderer Reihenfolge (Seite 0: Remake-Plätze 5, 3,
+  1, 4, 9, 0, 8, 6, 2, 7, 10, 11). „Satzreihenfolge“ ist also nicht der Vereinsindex der Datenbankdatei; vermutlich ordnet
+  das Original die Sätze vorher um (S-K6/A194). Belegt sind Seitenzuordnung und Blättern; die Reihenfolge innerhalb der
+  Seite bleibt `[APPROX]`.
 - **Datei 0x280DA** (55 B, Aufruf Datei 0x28AE8): (Farbe, Spalte s, Zeile z) → bei s > 0 und z ≠ −1 0x28111((s − 1) ·
   132 + 7, 51 · z + 40, Farbe). **Datei 0x28111** (84 B, auch direkt Datei 0x28B0B/0x28B3C): (x, y, Farbe) → Linien
   (x | y)–(x + 35 | y) und (x | y + 39)–(x + 35 | y + 39) über 0x0B7B5. Markierung von Kopf (Spalte 1, x = 7) bzw. Logo
@@ -182,7 +187,7 @@ Verein), Nachrichten DGROUP 0xD294 (24 × 0x71). Hilfen der C-Laufzeit: 0x0390B 
 - **Datei 0x35D5D – Banner** (239 B, Aufrufer 0x30365 Freundschaftsspiel, 0x30E7B WM, 0x3139F Europacup, 0x31934
   Play-Off, 0x35E4C DEB-Pokal, 0x35EA4 Ligaspiel, 0x4C747): Bildschirm aus, Fenster 0x0B155(x 4, y 92, 13 × 3 Teile,
   Art 2), Schrift 1, Text zentriert 0 … 319 zuerst in Farbe 0 auf Grundlinie 127, dann in Farbe 11 auf 126 (kein
-  seitlicher Schatten), Bildschirm ein; ohne Durchlauf (DGROUP 0x1DB = 0) 60 Takte warten (0x130EE, ≈ 3,3 s), Bildschirm
+  seitlicher Schatten), Bildschirm ein; ohne Durchlauf (DGROUP 0x1DB = 0) 0x3C = 60 an 0x130EE übergeben; die Wartefunktion teilt zuerst durch 3 (Datei 0x130F1–0x130FE), wartet also 20 Takte ≈ 1,1 s (berichtigt nach Review #546 R12PM-01, vorher hier „60 Takte ≈ 3,3 s“; Video `bundestrainer_00120/_00157/_00246`: Banner auf einem Bild), Bildschirm
   aus, alle Fenster zu (127), 0x45D46. Remake `SeasonInfo.DrawBanner`: Schatten (+1 | +1) in Farbe 198,
   `MatchDayScreen.BannerFrames` = 75 → **K3**.
 - **Datei 0x36146** (35 B, Aufrufer 0x36169): `*p == a → b, *p == b → a`. Hilfe des Platztauschs in 0x36169.
@@ -296,13 +301,14 @@ Nachrichtensatz (DGROUP 0xD294 + 0x71 · k, k < 24): `+0` Art (Bits 0–2 Manage
   Grundlinien 156/164/176/184 (vorher prüfen, ob 238/13/151 im Spiel dieselben RGB-Werte haben). Datei:
   `src/EishockeyManager.UI/Screens/SeasonEndScreen.cs`. Test: Bildschirmfoto, Pixelfarben der Zeichen.
 - **K3 (P3) Banner nach 0x35D5D.** Ziel: Farbe 11 auf Grundlinie 126, darunter Farbe 0 eine Zeile tiefer (kein
-  seitlicher Versatz), Dauer 60 Takte zu 18,2 Hz. Dateien: `SeasonEndWidgets.cs` (`DrawBanner`), `MatchDayScreen.cs`.
+  seitlicher Versatz), Dauer 20 Takte zu 18,2 Hz (Argument 60 / 3, R12PM-01). Dateien: `SeasonEndWidgets.cs` (`DrawBanner`), `MatchDayScreen.cs`.
   Test: gerendertes Banner, Pixel unter und neben dem Text; Dauer in Bildern.
 - **K4 (P3) Trikotwerbung nach 0x2A6A2.** Ziel: Trikotbild 31 × 26 aus der eigenen Spalte (70 | 26 · Bild) bzw.
   (39 | 130 + 26 · (Bild − 8)) bei (30 | 120), frei 33 × 23 bei (30 | 122). Datei: `AdvertisingScreen.cs`. Test:
   Bildschirmfoto mit Trikotvertrag gegen Video.
 - **K5 (P3) Vereinsauswahl nach 0x28030.** Ziel: Seite p zeigt die Sätze 12p … 12p + 11 in Satzreihenfolge (4 Seiten,
-  zyklisch); `[APPROX]` in `SetupScreen.ClubAt` auflösen. Test: Reihenfolge gegen die Datenbankreihenfolge.
+  zyklisch); `[APPROX]` in `SetupScreen.ClubAt` auflösen. Test: Reihenfolge gegen die Datenbankreihenfolge. **Stand Runde 12:** Seitenzuordnung und
+  Blättern umgesetzt (#543); Reihenfolge innerhalb der Seite offen (Nachtrag oben, R12PM-03).
 - **K6 (P3, Entscheidung Nutzer) Nachrichtenspeicher nach 0x4B101/0x4B127/0x4B270.** Ziel: 24 gemeinsame Plätze, voll →
   Nachricht entfällt, Sortierung nach Schlüssel. Datei: `FinanceInbox.cs`. Test: 25. Nachricht, Reihenfolge. Nur, wenn
   das begrenzte Verhalten gewünscht ist; vorher Schlüssel `+1` klären.

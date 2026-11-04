@@ -46,9 +46,9 @@ public class PixelMarkerTests
         Assert.True(mini.Height > 0);
     }
 
-    /// <summary>R-K3: Text Farbe 11 auf Grundlinie 126, Schatten Farbe 0 eine Zeile tiefer ohne seitlichen Versatz; 60 Takte.</summary>
+    /// <summary>R-K3: Text Farbe 11 auf Grundlinie 126, Schatten Farbe 0 eine Zeile tiefer ohne seitlichen Versatz; 20 Takte (Argument 60 / 3).</summary>
     [GameDataFact]
-    public void Banner_TextOnBaseline126_ShadowOneRowBelow_60Ticks()
+    public void Banner_TextOnBaseline126_ShadowOneRowBelow_20Ticks()
     {
         var d = FlowTests.CreateDriver();
         var a = d.Host.Assets;

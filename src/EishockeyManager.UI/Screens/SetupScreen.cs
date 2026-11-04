@@ -286,8 +286,11 @@ public sealed class SetupScreen : Screen
     }
 
     /// <summary>
-    /// [ORIGINAL] Datei 0x28030 (R-K5): Seite p zeigt die Vereinssätze 12 · p … 12 · p + 11 in Satzreihenfolge – das ist die
-    /// Reihenfolge der Datenbank (Vereinsindex).
+    /// [ORIGINAL] Datei 0x28030 (R-K5): Seite p zeigt die Vereinssätze 12 · p … 12 · p + 11; der Aufrufer blättert zyklisch
+    /// (Datei 0x28E4B).
+    /// [APPROX] Reihenfolge innerhalb der Seite: hier der Vereinsindex der Datenbank. Die Videobilder `oberflaeche_0128`,
+    /// `_0133` und `_0136` zeigen dieselben 12 Vereine je Seite in anderer Reihenfolge (Seite 0: Remake-Plätze 5, 3, 1, 4, 9,
+    /// 0, 8, 6, 2, 7, 10, 11); die Satzreihenfolge des Originals ist nicht der Dateiindex (Review #546 R12PM-03, evtl. S-K6).
     /// </summary>
     private int ClubAt(int cell) => _clubPage * ClubsPerPage + cell;
 
