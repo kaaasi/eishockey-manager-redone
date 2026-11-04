@@ -153,6 +153,10 @@ Leitstelle L1–L12 in #567, L13–L15 in #578/#583.
   Konflikt): `tools/pruefen.sh` alle drei Läufe an `4ad24bf` bestanden (2217/0/0, 1859/0/322, Pflichtlauf 1860/357). Offene
   `[APPROX]`: Bremse der Werbepfeile, Farbe der Bau-Tabelle und „(Noch n Wochen)“ (DOSBox-Aufnahme `runde-13`, Sitzung 3);
   Inventurzeilen A305, A327, A326, F091, F106, A016 trägt `pruefung-karte` nach. Review offen.
+- **`kader-start`** – Branch `integration/runde-13-kader-start` von `main` @ `cc8b0a0` mit dem auf `main` gehobenen Stapel
+  `paket/kader-start-4-main` (Teile 1–4 = #568, #578, #589, #599; Force-Push der PR-Branches war dem Lauf verwehrt, die Teil-PRs
+  werden nach dem Merge geschlossen): `tools/pruefen.sh` alle drei Läufe an `9ab735d` bestanden (2257/0/0, 1896/0/325,
+  Pflichtlauf 1897/360). Fingerabdrücke einmal auf dem integrierten Stand neu (L13/L15). Review offen.
 
 ### Entscheidungen zum Start (Nutzer, 04.11.2026)
 
