@@ -149,6 +149,10 @@ Leitstelle L1–L12 in #567, L13–L15 in #578/#583.
   Konflikt, `GameState.Integration.cs` automatisch zusammengeführt, L9): `tools/pruefen.sh` alle drei Läufe an `9e20c55`
   bestanden (2192/0/0, 1845/0/311, Pflichtlauf 1846/346). Nebenbefunde (#580): Reihenlogik der Vereinsaufstellung wie A010,
   Sperre Transfer/Training ab der WM-Gruppenphase ohne Inventur-ID → Kandidaten Runde 14. Review offen.
+- **`ui-rest`** – Branch `integration/runde-13-ui-rest` auf `integration/runde-13-nationalteam` (#570, #572, #573, #574 ohne
+  Konflikt): `tools/pruefen.sh` alle drei Läufe an `4ad24bf` bestanden (2217/0/0, 1859/0/322, Pflichtlauf 1860/357). Offene
+  `[APPROX]`: Bremse der Werbepfeile, Farbe der Bau-Tabelle und „(Noch n Wochen)“ (DOSBox-Aufnahme `runde-13`, Sitzung 3);
+  Inventurzeilen A305, A327, A326, F091, F106, A016 trägt `pruefung-karte` nach. Review offen.
 
 ### Entscheidungen zum Start (Nutzer, 04.11.2026)
 
