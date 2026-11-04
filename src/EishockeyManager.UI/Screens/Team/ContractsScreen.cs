@@ -69,7 +69,12 @@ public sealed class ContractsScreen : Screen
             if (!game.Managers[i].Dismissed)
                 foreach (var p in game.PendingRenewals(game.Managers[i]))
                     queue.Enqueue((i, p));
-        return queue.Count == 0 ? next() : new ContractsScreen(host, queue, next);
+        if (queue.Count == 0)
+            return next();
+        // R12U-02: Die erste Verhandlung wird hier geöffnet (Aufruf aus der Eingabe des Fensters davor), nicht in Enter.
+        var screen = new ContractsScreen(host, queue, next);
+        screen.OpenNextRenewal();
+        return screen._dialog is null ? next() : screen;
     }
 
     /// <summary>Am Saisonende: Verhandlung mit diesem Spieler läuft bzw. steht als Nächstes an.</summary>
@@ -90,12 +95,6 @@ public sealed class ContractsScreen : Screen
     public ContractDialog? Dialog => _dialog;
 
     public static int RowAt(int y) => y < FirstRowY - 1 ? -1 : (y - FirstRowY + 1) / RowPitch;
-
-    public override void Enter()
-    {
-        if (_renewals is not null)
-            NextRenewal();
-    }
 
     public override void Update(InputState input)
     {
@@ -165,20 +164,25 @@ public sealed class ContractsScreen : Screen
     /// <summary>Nächste Verhandlung am Saisonende öffnen, sonst zum nächsten Bildschirm.</summary>
     private void NextRenewal()
     {
+        OpenNextRenewal();
+        if (_dialog is null && !_message.Visible && _renewals!.Count == 0)
+            Host.Show(_next!());
+    }
+
+    private void OpenNextRenewal()
+    {
         var game = Host.Game!;
         while (_dialog is null && !_message.Visible && _renewals!.TryDequeue(out var next))
         {
             if (!GameState.IsRenewalPending(next.Player))
                 continue;
-            game.CurrentManager = next.Manager;
+            game.SwitchToRenewalManager(next.Manager); // Ablauf der Verhandlungen, nicht Öffnen (R12U-02)
             var row = TeamUi.Rows(Club).ToList().IndexOf(next.Player);
             if (row < 0)
                 continue;
             _renewal = next;
             Open(next.Player, row);
         }
-        if (_dialog is null && !_message.Visible && _renewals!.Count == 0)
-            Host.Show(_next!());
     }
 
     private void UpdateDialog(InputState input)
