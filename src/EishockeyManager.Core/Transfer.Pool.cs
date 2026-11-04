@@ -282,8 +282,7 @@ public sealed partial class TransferMarket
                 continue;
             if (club.Players.FirstOrDefault(p => p.Name == slot.Player.Name) is { } taken)
             {
-                club.Players.Remove(taken);
-                club.Lineup.Remove(taken);
+                club.RemovePlayer(taken);
                 club.Lineup.FillGaps(club.Players);
             }
         }
@@ -501,8 +500,7 @@ public sealed partial class TransferMarket
     {
         var old = slot.Player;
         var years = Math.Max(1, player.ContractYears);
-        club.Players.Remove(player);
-        club.Lineup.Remove(player);
+        club.RemovePlayer(player);
         player.UnsolicitedOffer = null;
         player.ContractYears = 0;
         player.MonthlySalary = 0;
