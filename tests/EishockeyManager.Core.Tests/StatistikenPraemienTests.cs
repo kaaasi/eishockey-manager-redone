@@ -148,7 +148,10 @@ public class StatistikenPraemienTests
             foreach (var result in record.Managers)
             {
                 var manager = game.Managers[result.Manager];
-                var single = game.SinglePremiumEvents(manager, result.League);
+                // Spur saison Teil 3 (S-K6-c): Fair-Play über die Liga der nächsten Saison (SeasonFlow.FairPlay.cs).
+                var single = game.SinglePremiumEvents(manager, result.League).Where(e => e != SeasonEvent.FairPlay).ToList();
+                if (game.FairPlayPremiumWinner(record, manager.ClubIndex) == manager.ClubIndex)
+                    single.Add(SeasonEvent.FairPlay);
                 Assert.Equal(single, result.Events.Where(e => e is SeasonEvent.BestGoalie or SeasonEvent.TopScorer or SeasonEvent.FairPlay));
                 Assert.Equal(result.Premium, game.Finance(manager).Book.Current(FinanceCategory.Praemien));
                 paid += single.Count;

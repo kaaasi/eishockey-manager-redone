@@ -94,7 +94,8 @@ public class SaisonwechselSatzfolgeTests
         {
             PlayToSeasonEnd(game, active);
             var before = Enum.GetValues<League>().ToDictionary(l => l, l => game.LeagueSlots(l).ToArray());
-            // Saisonende-Fenster ist offen: die Fair-Play-Prämie sieht die Folge der abgelaufenen Saison ([APPROX] Zeitpunkt).
+            // Saisonende-Fenster ist offen: Die laufende Folge bleibt bis StartNextSeason; die der nächsten Saison ist am 29. April
+            // schon gebildet (Spur saison Teil 3, S-K6-a; SaisonSatzfolgeSaisonendeTests).
             Assert.Equal(before[League.Bundesliga], game.LeagueSlots(League.Bundesliga));
             game.StartNextSeason();
             foreach (var league in Enum.GetValues<League>())

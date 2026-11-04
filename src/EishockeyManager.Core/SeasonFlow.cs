@@ -310,6 +310,9 @@ public sealed partial class GameState
         // [ORIGINAL] Ewige Tabelle nach dem Austausch (Datei 0x563AF ruft 0x5667A), mit der Liga der nächsten Saison
         // (Spur saisonwechsel Teil 3, S-K4; StatisticsHistory.cs). Ewige Bilanz und „Früher“ hängen nicht am Austausch.
         RecordSeasonStatistics();
+        // [ORIGINAL] Ligamischung am 29. April nach Austausch und Ewiger Tabelle, vor dem Fenster mit den Prämien (Datei 0x5644E vor
+        // 0x5645D; Spur saison Teil 3, S-K6-a, SeasonFlow.LeagueSlots.cs). Verbraucht keinen Zufall.
+        PrepareNextLeagueSlots(record);
 
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –
         // kein Platz, keine Prämie (Prämien gibt es nur aus der Vereinssaison).
@@ -354,7 +357,8 @@ public sealed partial class GameState
                     case Title.WorldChampion: break;
                 }
             }
-            events.AddRange(SinglePremiumEvents(manager, league)); // Spur statistiken (#135): Einzelprämien (StatisticsClub.cs)
+            // Spur statistiken (#135): Einzelprämien; Fair-Play über die Liga der nächsten Saison (S-K6-c, SeasonFlow.FairPlay.cs)
+            events.AddRange(SeasonEndSinglePremiums(record, manager, league));
             var premium = SeasonPremium(league, rank, PremiumEvents(record, club.Index, events)); // ohne Aufstieg beim Doppeltausch
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
@@ -394,7 +398,7 @@ public sealed partial class GameState
         foreach (var club in Clubs)
             if (club.Index < NewGame.SelectableClubs)
                 club.League = record.NextLeague(club.Index, club.League);
-        AdvanceLeagueSlots(record); // S-K6: Satzfolge je Liga, Datei 0x5644E (SeasonFlow.LeagueSlots.cs)
+        AdvanceLeagueSlots(record); // S-K6: am 29. April gebildete Satzfolge übernehmen, Datei 0x5644E (SeasonFlow.LeagueSlots.cs)
 
         foreach (var league in Enum.GetValues<League>())
         {
