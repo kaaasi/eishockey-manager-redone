@@ -27,19 +27,6 @@ public sealed class InboxScreen : Screen
 
     public InboxScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
-    /// <summary>
-    /// Öffnen des Posteingangs: Die Nachrichten der ersten Seite gelten als gelesen. [APPROX] Das Remake-Kennzeichen „gelesen“
-    /// (Auswahl der gezeigten Nachricht in der Leiste) hat kein Gegenstück im Original; gesetzt wird es beim Öffnen und beim
-    /// Blättern statt beim Zeichnen (AGENTS.md §4, E4 = B; Integration Runde 12, Anschluss ui-meldungen Teil 4).
-    /// </summary>
-    public override void Enter() => MarkPageRead();
-
-    private void MarkPageRead()
-    {
-        foreach (var m in Page)
-            m.Read = true;
-    }
-
     private GameState Game => Host.Game!;
 
     /// <summary>Nachrichten der aktuellen Seite, neueste zuerst.</summary>
@@ -54,13 +41,10 @@ public sealed class InboxScreen : Screen
             return;
         }
         var pages = Math.Max(1, (Game.Inbox(Game.ActiveManager).Count + PerPage - 1) / PerPage);
-        var previous = _page;
         if (input.Pressed(Key.PageDown) || input.Pressed(Key.Down) || input.Wheel < 0)
             _page = Math.Min(pages - 1, _page + 1);
         if (input.Pressed(Key.PageUp) || input.Pressed(Key.Up) || input.Wheel > 0)
             _page = Math.Max(0, _page - 1);
-        if (_page != previous)
-            MarkPageRead();
         if (!input.LeftClick)
             return;
 

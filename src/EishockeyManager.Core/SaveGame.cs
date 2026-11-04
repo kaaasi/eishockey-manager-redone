@@ -45,7 +45,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 35;
+    public const int SchemaVersion = 36;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -141,6 +141,7 @@ public static partial class SaveGame
             [32] = MigrateWettbewerbeSpiel12,
             [33] = MigrateSaisonwechsel3,
             [34] = MigrateUiMeldungen4,
+            [35] = MigratePixelMarker3,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

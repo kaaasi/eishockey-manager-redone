@@ -240,7 +240,7 @@ public class HeimspielStatistikTests
         var firstSeason = game.Season;
         var passiveLostSquad = false;
 
-        int Messages(Manager m) => game.Inbox(m).Count(x => x.Lines.Contains(GameState.ShortHandedMessage));
+        int Messages(Manager m) => MessageLog.For(game).Of(m).Count(x => x.Lines.Contains(GameState.ShortHandedMessage));
 
         for (var change = 0; change < 4; change++)
         {
@@ -267,6 +267,7 @@ public class HeimspielStatistikTests
                     TestSeason.PlayMatchDay(game);
                 else
                     game.Continue();
+                MessageLog.For(game).Collect(game);
                 // Spielberechnung Teil 5: Der Tageslauf heilt Verletzte (0x7C12, Teil 3) vor der Prüfung 0x36DC5 desselben
                 // Tages; ein vorher nicht spielfähiger Verein kann am Spieltag wieder spielen. Mit dem geänderten
                 // Zufallsverbrauch (Penaltyschießen 0x3901B) kommt das hier vor: nur zählen, was auch danach nicht spielfähig ist.
@@ -307,10 +308,14 @@ public class HeimspielStatistikTests
                     Assert.InRange(stats.Average!.Value, stats.Minimum, stats.Record);
                     Assert.True(stats.Record <= game.Finance(manager).Stadium.Capacity);
                 }
+                // Nachrichtenspeicher wie im Original (pixel-marker Teil 3): eine Meldung im Lauf mehrerer Tage ohne Zug kann vor der
+                // Beobachtung wieder aus dem Speicher laufen (3 Tage, Datei 0x54F07); die Strafen im Finanzbuch zählen vollständig.
                 var messages = Messages(manager) - messagesBefore[manager];
-                Assert.Equal(-200_000L * messages, game.Finance(manager).Book.Current(FinanceCategory.Strafen));
+                var fines = -game.Finance(manager).Book.Current(FinanceCategory.Strafen) / 200_000L;
+                Assert.Equal(0, game.Finance(manager).Book.Current(FinanceCategory.Strafen) % 200_000L);
+                Assert.InRange(messages, 0, fines);
             }
-            Assert.True(Messages(active) - messagesBefore[active] >= 1, "Strafe am 5. Spieltag fehlt");
+            Assert.True(game.Finance(active).Book.Current(FinanceCategory.Strafen) <= -200_000L, "Strafe am 5. Spieltag fehlt");
             Assert.True(game.Finance(active).HomeStatistics.Games > 0);
             if (passiveClub.Players.Count == 0)
             {

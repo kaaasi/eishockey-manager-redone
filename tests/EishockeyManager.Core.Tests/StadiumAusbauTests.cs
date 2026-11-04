@@ -60,7 +60,7 @@ public class StadiumAusbauTests
         Assert.Equal(zustand + 1, stadium.Level(StadiumFeature.Zustand));
         Assert.Equal(seats + 500, stadium.Seats);
         Assert.Equal(standing + 500, stadium.Standing);
-        Assert.Equal(3, game.Inbox(me).Count(m => m.Lines[0].StartsWith("Der Stadion-Ausbau (", StringComparison.Ordinal)));
+        Assert.Equal(3, MessageLog.For(game).All.Count(m => m.Lines[0].StartsWith("Der Stadion-Ausbau (", StringComparison.Ordinal)));
     }
 
     /// <summary>A042: Verkehrsanbindung 40–60 Wochen (± 2), also nach 15 Bauwochen sicher noch nicht fertig (vorher 6 Wochen).</summary>
@@ -277,6 +277,7 @@ public class StadiumAusbauTests
                 if (active)
                     built += StartAffordable(game, me, ref started);
                 game.Continue();
+                MessageLog.For(game).Collect(game); // der Nachrichtenspeicher räumt nach drei Tagen (R-K6)
                 // Integration Runde 11 (+ wettbewerbe-spiel): Endet der Verein als Letzter oder Vorletzter in der Oberliga, setzt
                 // em.exe das Konto am 29. April auf 400.000 DM, ohne Buchung (S-K1, Datei 0x562D8; Seed 5 passiv/aktiv in Saison
                 // 4). Die neutrale Differenz zählt außerhalb des Finanzbuchs.
@@ -302,11 +303,13 @@ public class StadiumAusbauTests
             TestSeason.KeepSquad(game, me);
             game.StartNextSeason();
         }
-        var reports = game.Inbox(me).Count(m => m.Lines[0].StartsWith("Der Stadion-Ausbau (", StringComparison.Ordinal));
+        var reports = MessageLog.For(game).All.Count(m => m.Lines[0].StartsWith("Der Stadion-Ausbau (", StringComparison.Ordinal));
         if (active)
         {
             Assert.True(started >= 5, $"nur {started} Ausbauten");
-            Assert.Equal(started - stadium.Constructions.Count(), reports);
+            // Der Nachrichtenspeicher räumt nach drei Tagen (pixel-marker Teil 3): Eine Meldung, die in einem Lauf mehrerer Tage ohne
+            // Zug entsteht, kann vor der Beobachtung verschwinden – nie mehr Meldungen als fertige Projekte.
+            Assert.InRange(reports, 1, started - stadium.Constructions.Count());
         }
         else
         {

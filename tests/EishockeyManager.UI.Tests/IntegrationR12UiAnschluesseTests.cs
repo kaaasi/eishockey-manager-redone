@@ -132,26 +132,7 @@ public class IntegrationR12UiAnschluesseTests : IDisposable
         Assert.IsType<SaveLoadScreen>(d.Host.Current);
     }
 
-    // ---- #515 (E4): „gelesen“ beim Öffnen des Posteingangs -----------------------------------------------------------------
-
-    /// <summary>Öffnen des Posteingangs markiert die erste Seite, Blättern die nächste; Zeichnen ändert nichts.</summary>
-    [Fact]
-    public void Inbox_MarksReadOnOpenAndPaging_NotOnDraw()
-    {
-        var game = Synthetic();
-        var host = new ScreenHost(null!) { Game = game };
-        var me = game.ActiveManager;
-        var messages = Enumerable.Range(0, InboxScreen.PerPage + 1).Select(i => game.Notify(me, $"Nachricht {i}")).ToList();
-        Assert.All(messages, m => Assert.False(m.Read));
-
-        var inbox = new InboxScreen(host, new Blank(host));
-        host.Show(inbox);
-        Assert.False(messages[0].Read); // älteste steht auf Seite 2
-        Assert.All(messages.Skip(1), m => Assert.True(m.Read));
-
-        inbox.Update(new InputState { Keys = { Key.PageDown } });
-        Assert.True(messages[0].Read);
-    }
+    // „gelesen“ beim Öffnen des Posteingangs entfällt (D8 = A, #537): siehe InboxOpenTests.
 
     private sealed class Blank(ScreenHost host) : Screen(host)
     {

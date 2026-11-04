@@ -109,7 +109,10 @@ public sealed partial class GameState
                 // [ORIGINAL] Verfall offener Angebote (Datei 0x07626–0x07673): random(0, 3) = 0 löscht +0x09 Bit 0x40 und die Meldung.
                 // Der Wurf fällt nur bei einem offenen Angebot (Spur kader-transfer, Runde 12, U4).
                 if (p.UnsolicitedOffer is not null && TransferRules.Random16(random, 0, 3) == 0)
+                {
                     p.UnsolicitedOffer = null;
+                    RemoveMessagesOf(p); // [ORIGINAL] Datei 0x07626–0x07673 → 0x4B270
+                }
                 if (p.OnLoan || p.Notice == ContractNotice.Retiring)
                     continue;
                 var value = PlayerValueOf(p, club, PlayerValueKind.Price, random, manager.Level);
@@ -121,7 +124,7 @@ public sealed partial class GameState
                     continue;
                 p.UnsolicitedOffer = Clubs.First(c => c.Index == buyer);
                 foreach (var m in Managers.Where(m => m.ClubIndex == club.Index && !m.Dismissed))
-                    Notify(m, $"{p.UnsolicitedOffer.Name} ist an", $"{p.Name} interessiert.");
+                    NotifyAbout(m, p, $"{p.UnsolicitedOffer.Name} ist an", $"{p.Name} interessiert.");
             }
         }
     }

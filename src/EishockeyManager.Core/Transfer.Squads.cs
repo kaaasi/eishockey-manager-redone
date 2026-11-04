@@ -160,13 +160,14 @@ public sealed partial class GameState
                 {
                     p.Notice = ContractNotice.Retiring;
                     p.NoticeYears = 0;
-                    NotifyClub(club, SquadRules.RefusalText(p));
+                    NotifyClub(club, SquadRules.RefusalText(p), p);
                 }
                 // [ORIGINAL] Verfall eines Verlängerungsangebots (Datei 0x0767A–0x076E3): random(0, 5) = 0 → Sperre random(9, 17), Meldung weg.
                 if (p.Notice == ContractNotice.Offered && TransferRules.Random16(ContractRandom, 0, 5) == 0)
                 {
                     p.Notice = ContractNotice.None;
                     p.NoticeYears = 0;
+                    RemoveMessagesOf(p); // [ORIGINAL] Datei 0x0767A–0x076E3 → 0x4B270
                     p.NegotiationLock = TransferRules.Random16(ContractRandom, 9, 17);
                 }
                 if (p.OnLoan)
@@ -179,15 +180,18 @@ public sealed partial class GameState
                 p.Notice = ContractNotice.Offered;
                 p.NegotiationLock = 0; // [ORIGINAL] +0x18 = 100 + n ersetzt eine laufende Sperre (Datei 0x07951)
                 p.NoticeYears = SquadRules.OfferedYears(TransferRules.Random16(ContractRandom, 0, 100));
-                NotifyClub(club, SquadRules.OfferText(p, p.NoticeYears));
+                NotifyClub(club, SquadRules.OfferText(p, p.NoticeYears), p);
             }
         }
     }
 
-    private void NotifyClub(Club club, string[] text)
+    private void NotifyClub(Club club, string[] text, Player? about = null)
     {
         foreach (var manager in Managers.Where(m => m.ClubIndex == club.Index && !m.Dismissed))
-            Notify(manager, text);
+            if (about is not null && about.Notice == ContractNotice.Offered)
+                NotifyAbout(manager, about, text); // offene Meldung des Spielers (Pool +0x1E)
+            else
+                Notify(manager, text);
     }
 
     /// <summary>Laufbahnende: Spieler verlässt Kader bzw. Pool endgültig; Manager des Vereins bekommen eine Nachricht.</summary>
@@ -197,6 +201,7 @@ public sealed partial class GameState
         {
             club.Players.Remove(p);
             club.Lineup.Remove(p);
+            RemoveMessagesOf(p);
             foreach (var manager in Managers.Where(m => m.ClubIndex == club.Index && !m.Dismissed))
                 Notify(manager, SquadRules.RetirementText(p));
         }

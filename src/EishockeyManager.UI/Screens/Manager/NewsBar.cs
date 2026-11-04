@@ -28,19 +28,23 @@ public static class NewsBar
     /// <summary>Gezeigte Nachricht (Index im Posteingang) je Manager.</summary>
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ManagerFinance, StrongBox> Cursor = new();
 
-    private sealed class StrongBox { public int Value = -1; }
+    private sealed class StrongBox { public int Value = -1; public int Count = -1; }
 
     private static StrongBox Of(GameState game) => Cursor.GetValue(game.Finance(game.ActiveManager), _ => new StrongBox());
 
-    /// <summary>Index der gezeigten Nachricht: zuletzt gewählte, sonst die älteste ungelesene, sonst die neueste.</summary>
+    /// <summary>
+    /// Index der gezeigten Nachricht: zuletzt gewählte, sonst die neueste. Das Original hat kein Feld „gelesen“ (D8 = A, #537):
+    /// die Leiste zeigt die Nachricht, die das Kennzeichen „neue Nachricht“ ausgelöst hat (Datei 0x4B5F4 mit dem Platz der neuen
+    /// Nachricht), und blättert von dort (Datei 0x4B9CD). Ändert sich der Speicher, beginnt die Anzeige wieder bei der neuesten.
+    /// </summary>
     public static int Shown(GameState game)
     {
         var inbox = game.Inbox(game.ActiveManager);
         var box = Of(game);
-        if (box.Value < 0 || box.Value >= inbox.Count)
+        if (box.Value < 0 || box.Value >= inbox.Count || box.Count != inbox.Count)
         {
-            var unread = inbox.ToList().FindIndex(m => !m.Read);
-            box.Value = unread >= 0 ? unread : inbox.Count - 1;
+            box.Value = inbox.Count - 1;
+            box.Count = inbox.Count;
         }
         return box.Value;
     }
@@ -82,8 +86,7 @@ public static class NewsBar
         }
         var index = Shown(game);
         var message = inbox[index];
-        // Zeichnen ändert nichts (AGENTS.md §4, E4 = B): „gelesen“ setzt der Posteingang beim Öffnen (InboxScreen.Enter;
-        // Integration Runde 12, Anschluss ui-meldungen Teil 4).
+        // Zeichnen und Öffnen des Posteingangs ändern nichts (AGENTS.md §4, E4 = B, D8 = A): kein Feld „gelesen“ im Original.
         // [APPROX] Kopfzeile = erste Zeile, weißes Feld = weitere Zeilen; Inhalt einer Nachricht ist im Video nicht zu sehen.
         s.TextCentered(mini, center, 207, ManagerText.ForFont(message.Lines[0]), TextColor);
         for (var i = 1; i < Math.Min(3, message.Lines.Length); i++)

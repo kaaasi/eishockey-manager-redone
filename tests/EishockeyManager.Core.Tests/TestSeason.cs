@@ -7,6 +7,39 @@ namespace EishockeyManager.Core.Tests;
 /// Training und alle anderen Tagesabläufe mitlaufen. <see cref="GameState.PlayNextMatchDay"/> allein
 /// spielt nur die Ligaspiele und lässt den Kalender stehen.
 /// </summary>
+/// <summary>
+/// Alle Nachrichten, die ein Spiel je abgelegt hat. Der Nachrichtenspeicher des Originals (R-K6, pixel-marker Teil 3) hat 24 Plätze und
+/// räumt Meldungen nach drei Tagen; Proben, die über Wochen zählen, was gemeldet wurde, sammeln hier nach jedem Tag.
+/// </summary>
+public sealed class MessageLog
+{
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<GameState, MessageLog> Logs = new();
+    private readonly HashSet<Message> _seen = new(ReferenceEqualityComparer.Instance);
+
+    private readonly Dictionary<Manager, List<Message>> _byManager = [];
+
+    public List<Message> All { get; } = [];
+
+    /// <summary>Nachrichten, die <paramref name="manager"/> je bekommen hat.</summary>
+    public IReadOnlyList<Message> Of(Manager manager) => _byManager.TryGetValue(manager, out var list) ? list : [];
+
+    public static MessageLog For(GameState game) => Logs.GetOrCreateValue(game);
+
+    /// <summary>Nimmt die neuen Nachrichten aller Manager auf; nach jedem <see cref="GameState.Continue"/> aufrufen.</summary>
+    public void Collect(GameState game)
+    {
+        foreach (var manager in game.Managers)
+            foreach (var message in game.Inbox(manager))
+                if (_seen.Add(message))
+                {
+                    All.Add(message);
+                    if (!_byManager.TryGetValue(manager, out var list))
+                        _byManager[manager] = list = [];
+                    list.Add(message);
+                }
+    }
+}
+
 public static class TestSeason
 {
     /// <summary>Bis einschließlich des nächsten Ligaspieltags.</summary>
@@ -14,7 +47,10 @@ public static class TestSeason
     {
         var played = game.PlayedMatchDays;
         while (game.PlayedMatchDays == played && game.Phase == SeasonPhase.Running && !game.RegularSeasonOver)
+        {
             game.Continue();
+            MessageLog.For(game).Collect(game);
+        }
     }
 
     /// <summary>
