@@ -191,8 +191,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Bundesliga (Datei 0x29CF2, Teamwerte bleiben am Platz). kader-start Teil 3 (R-K5): erneut neu – Satzfolge vor der
     /// Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.</summary>
     [GameDataTheory]
-    [InlineData(false, "8B14E15F889B6AB1")]
-    [InlineData(true, "BCF60CD376EF05CF")]
+    [InlineData(false, "8A1DE63A23E08C2C")]
+    [InlineData(true, "CF3D44B91274657B")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -145,7 +145,10 @@ public static class PlayerFactory
         return first.Length > 1 && last.Length > 0 ? $"{first[0]} {last[^1]}" : all[random.Next(all.Count)].Name;
     }
 
-    /// <summary>Kleinste freie Rückennummer im Kader (1–99).</summary>
+    /// <summary>
+    /// Kleinste freie Rückennummer im Kader (1–99). Seit A091 vergibt das Spiel die Nr. als Kaderplatz + 1
+    /// (<see cref="Club.RenumberPlayers"/>); bleibt für Testhelfer, die Spieler direkt in einen Kader legen.
+    /// </summary>
     public static int FreeNumber(Club club, Player? except = null)
     {
         for (var n = 1; n <= MaxNumber; n++)
