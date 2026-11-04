@@ -90,7 +90,9 @@ ist deshalb verbindlich und wird im Merge-Kommentar abgehakt:
 1. [ ] **Head-SHA** des PR = der SHA, den das Review freigegeben hat (bei Abweichung: Nachprüfung).
 2. [ ] **Base aktuell:** PR ist gegen den aktuellen `main` gebaut bzw. ohne Konflikt; bei neuem `main` seit dem
    Review: Integrationstest lokal wiederholen.
-3. [ ] **CI grün auf genau diesem Head** (Check-Runs des Head-SHA, nicht eines älteren Laufs).
+3. [ ] **CI grün auf genau diesem Head** (Check-Runs des Head-SHA, nicht eines älteren Laufs). Ändert der PR nur `docs/**`
+   oder `*.md`, startet die CI nicht (`build.yml`, `paths-ignore`): dann „entfällt, nur Doku“ abhaken, nachdem
+   `compare`/`--stat` das bestätigt hat.
 4. [ ] **Originaldaten-Nachweis:** Testtabelle aus `tools/pruefen.sh` mit Originaldaten zum Head (in PR oder Review);
    bei Integrations-PRs alle drei Läufe.
    Ein Review „nur Codelesen“ bzw. an einem unverifizierten Stand (`docs/vorlagen/review-anfrage.md`, Schritt 2) zählt

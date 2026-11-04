@@ -1,14 +1,24 @@
 name: Build
 
+# Actions-Minuten sparen (Entscheidung Nutzer 04.11.2026): reine Doku-Änderungen bauen nicht, Draft-PRs bauen erst
+# bei „Ready for review“, ein neuer Push bricht den überholten Lauf desselben PRs ab.
 on:
   push:
     branches: [main]
     tags: ['v*']
+    paths-ignore: ['docs/**', '**/*.md']
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore: ['docs/**', '**/*.md']
   workflow_dispatch:   # „Run workflow“ in Actions: baut zusätzlich die Downloads (Job publish)
+
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
