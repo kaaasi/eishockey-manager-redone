@@ -473,7 +473,11 @@ sie aus den Spielern kommt.
   die Teamwerte 0x17–0x1D bleiben am Platz (nur Spielstart 0x29CF2/0x29D9C, Managerverein in die Start-Liga). **Sonst:**
   ganzer Vereinssatz (0x3D Byte), bei Vereinen < 0x40 auch Tabellensatz 0x8257 (0x50 Byte) und Serien 0xB57B (0x15 Byte).
   Aufrufe mit vollem Tausch: 0x35EDD (WM-Länder 20-mal, danach je Liga 55-mal zwei zufällige Plätze der Liga, Platzliste
-  0x5CCB mitgetauscht; beim Spielstart 0x43A17, nach dem Lader 0x439BB) und der Saisonwechsel 0x562F2/0x5636D (Auf-/Abstieg,
+  0x5CCB mitgetauscht; Zufall lrandom Datei 0xBFD5, nicht `random` 0xC037). **Aufrufer von 0x35EDD** sind nur zwei: der
+  Spielstart (Datei 0x43A17 in 0x437D5, vor der Spielvorbereitung 0x28030) und der Saisonwechsel am 29. April (Datei 0x5644E in
+  0x54C9F, nach Auf-/Abstieg und Ewiger Tabelle, vor dem Fenster „Saisonende“). Ein Aufruf „nach dem Lader“ besteht nicht:
+  Datei 0x439BB ruft nur den Lader 0x2EF1B (Runde 13, `re-runde-13.md` S-K6-a, R-K5). Außerdem tauscht voll der
+  Saisonwechsel 0x562F2/0x5636D (Auf-/Abstieg,
   Oberliga ↔ ligalose Vereine). Die Teamwerte wandern also immer mit dem Verein – keine Quelle der Streuung.
 - **Play-off-Format 0x31934/0x315E9 (Ov 0xE8)** belegt das Remake-Format: Setzung 1–8, 2–7, 3–6, 4–5 aus 0x5CCB; „best of
   five“ (Spiel `[0xCCA3]` 0 … 4, Siege DGROUP 0xCCA4 + Paarung, nach drei Siegen Ergebnis 100 = nicht ausgetragen);

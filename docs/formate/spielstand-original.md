@@ -258,8 +258,8 @@ würfelt daher im beobachteten Bereich; das Original vergleicht die ID nur mit s
 | `+0x10`–`+0x12` | Stärken (drei Werte wie in der Spalte STÄRKEN) | alle 32 Spieler |
 | `+0x13` | Spalte **E** = `+0x13 · 10 / 15` (ganzzahlig), hervorgehoben bei `+0x13 > 0x82` (em.exe `0x42335`) | alle 25 (z. B. HEISS 91 → 60, MENDE 50 → 33) |
 | `+0x15` | Reihe 1–3 (untere Bits), Bit 0x80 = Sturm; der eingesetzte Torhüter hat Reihe 1 | Aufstellung: Reihen 1–3, TW Nr. 2 |
-| `+0x1C` | Spiele für den jetzigen Verein (nach einem Kauf 0) | alle 25, FILE07 |
-| `+0x22` | gleich der Ligator-Zahl `+0x03` in allen Ständen (Bedeutung offen, evtl. Saisontore gesamt) | alle 25 |
+| `+0x1C` | Spiele für den jetzigen Verein (nach einem Kauf 0); je Wettbewerb `+0x1C`/`+0x1E`/`+0x20`, siehe „Saisonwechsel und Kader“ | alle 25, FILE07 |
+| `+0x22` | gleich der Ligator-Zahl `+0x03` in allen Ständen: Tore beim jetzigen Verein; je Wettbewerb `+0x22`/`+0x24`/`+0x26`, siehe „Saisonwechsel und Kader“ | alle 25 |
 | `+0x28` | Gehalt (4 Byte, Drittel-DM) = Spalte WERT bei „Verträge“ | alle 25, z. B. HEISS 17.100 DM |
 | `+0x2C` | Preis (4 Byte, Drittel-DM) = Transferliste „(K)“; Leihe „(L)“ = ein Drittel davon. Nach dem Kauf steht dort der vom Nutzer gebotene und bezahlte Kaufpreis (FILE07) | 7 Marktspieler, FILE07 |
 | `+0x30`–`+0x33` | Versicherung (4 Byte, als zwei Wörter `+0x30`/`+0x32` mit `or` verknüpft): ≠ 0 → Zusatz „(v)“ hinter der Vertragsdauer (em.exe `0x42410`) | – (kein Fall in den Ständen) |
@@ -311,6 +311,23 @@ Spielmodus `0xD0B9`: 1 = nur Weltkugel, 2 = nur Fahne, 4 = beide – bestätigt 
 VERABSCHEUT IHRE TATEN !“ mit „SOLLTE ES IHNEN ETWA PASSIERT SEIN, DAß SIE OHNE JEGLICHE BÖSE ABSICHT MIT EINEM
 MONITOR MANIPULIEREN WOLLTEN ?“ (Texte DGROUP `0x2664`, `0x269A`, `0x26AF`; Fehlercode 5, Anzeige ab `0x5CEFA`).
 Bild: Referenz-Repo `original/spielstaende/bilder/kaputt_mogelguru.png`. Für `hok-patch`: Prüfsummen müssen stimmen.
+
+## Saisonwechsel und Kader (FILE16A, FILE22–26, Runde 13)
+
+Zusätzliche Feldbelege aus der Auswertung der DOSBox-Sitzungen 2 und 3 (Grundlage FILE16A, FILE22, FILE23 – Sitzung 2 –,
+FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die Startstände FILE01, FILE27, FILE28; Auswertung
+[re-runde-13.md](../analyse/re-runde-13.md), Abschnitt „Sitzung 2 und 3“). Kaderplatz = `0x5DC3` + 0x618 · Satz + 0x34 · Platz
+(DGROUP), im Strom ab `0x06A27`; Spielerpool ab `0x0505F` (`far:8253`, 33 Byte). Befehlsadressen sind Dateioffsets in
+`em.exe`, Offsets im Spielstand stehen als „HOK 0x…“.
+
+| Feld | Befund | Beleg |
+|---|---|---|
+| Kaderplatz `+0x1C`/`+0x1E`/`+0x20` (Wörter) | Spiele beim jetzigen Verein je Wettbewerb 0/1/2; gleich `+0x06`/`+0x07`/`+0x08` bis zum Saisonwechsel, danach **nicht** zurückgesetzt | FILE16A/FILE22/FILE05/FILE24 Spiegel ohne Ausnahme (außer dem gekauften DAFFNER, FILE07 Platz 25); FILE23 `+0x1C` = 3, `+0x1E` = 2 bei `+0x06`/`+0x07` = 0 |
+| Kaderplatz `+0x22`/`+0x24`/`+0x26` (Wörter) | Tore beim jetzigen Verein je Wettbewerb; gleich `+0x03`/`+0x04`/`+0x05` (Feldspieler), beim Saisonwechsel **nicht** zurückgesetzt; Torhüter 0 (sein `+0x03` sind Gegentore) | wie oben, z. B. HADRASCHEK FILE22 `+0x04` = 4, `+0x24` = 4 → FILE23 `+0x04` = 0, `+0x24` = 4; em.exe Datei `0x54300`/`0x54314` (`cmp word [+0x22],0xFF`, `inc word`) |
+| Kaderplatz `+0x09` Bit 0x02, `+0x0D`, `+0x17` | verletzt, Restdauer, Verletzungsart | em.exe Datei `0x5C44` (`or +0x09,2`), `0x5BE5` (`+0x0D`), `0x5C4C` (`+0x17`), `0x5C50` (`+0x0A = 0`); FILE24 STEFAN `+0x09` 00→02, `+0x0D` 0→10, `+0x17` 00→10 |
+| Kaderplatz `+0x02` | offen; steigt in der Saison (TRAVNICEK, MORRISON, LANGLOIS 0→2 von FILE16A nach FILE22), wird beim Saisonwechsel **nicht** zurückgesetzt | FILE22→FILE23 unverändert |
+| Pool `+0x1C` | Ligaspiele der Saison (gleich Kaderplatz `+0x06`), Saisonwechsel → 0 | FILE22→FILE23, 16 von 16 → 0 |
+| DGROUP `0x375 + 2 · m` | „automatisch aufstellen“ liegt in HOK `0x00844` | FILE05 01, FILE06 00, FILE24 00 (Byte `0x376` = 01), FILE25 01 |
 
 ## Offene Punkte
 
