@@ -1,6 +1,6 @@
 # Archiv: Runde 12 – Restpunkte Runde 11, Prüfaufträge E2–E5 (03.–04.11.2026)
 
-Aus `docs/arbeitspakete.md` ausgelagert am 04.11.2026. Inhalt unverändert bis auf die Überschrift, den Absatz „Ergebnis“, die
+Aus `docs/arbeitspakete.md` ausgelagert am 04.11.2026. Inhalt unverändert bis auf die Überschrift, den Absatz „Ergebnis“, die nachgeführten Status der Spuren (Review #562, P3-1), die
 relativen Links und die Abschnitte „Entscheidungen während der Runde“, „Abschluss“ und „Funktionskarte“ am Ende; der Abschnitt
 „Zurückgestellt“ bleibt als Übergang für Runde 13 in `arbeitspakete.md`. Reviews: `docs/reviews/` (Dateien vom 03.–04.11.2026).
 Nur bei Bedarf lesen.
@@ -58,7 +58,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   `docs/analyse/re-runde-12.md` mit Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser Runde). Ein Lauf,
   keine Teile, keine Fortsetzung.
 - **Dateigrenzen:** nur `docs/analyse/re-runde-12.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** fertig,
-  PR #480; Befunde Review #494 (R12RP-01 bis -06) behoben, Nachprüfung offen; Ergebnis und Umsetzung je Punkt in
+  PR #480; Befunde Review #494 (R12RP-01 bis -06) behoben, Nachprüfung #507 („Ja“), gemergt; Ergebnis und Umsetzung je Punkt in
   `analyse/re-runde-12.md`.
 
 ### Spur `geld` – Testlücken, Stadionstärke, Pixel Finanzen
@@ -69,7 +69,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   2. **`FinanceStadium.Strength`** mit Spielerwerten statt Vereinsfeldern (4D316h, PR #438) – Geldwirkung, Mehrsaisonprobe.
   3. **Pixel G7, G8:** Stadiontabelle 3D45Fh, Finanzübersicht 57CFBh/57ECFh/581C2h gegen Video (`boerse-start`).
 - **Dateigrenzen:** `Core/Finance*.cs`, `UI/Screens/Manager/*`, Tests, `docs/finanzen-rekonstruktion.md`. **Modell:** Claude
-  Sonnet 5.5. **Status:** Teil 1 fertig (PR #484), Teil 2 fertig (PR #487), Teil 3 fertig (PR #490): G7 rechter Stadionblock nach DOSBox-Bild korrigiert, G8 ohne Abweichung; offen nur die ▲▼-Grafik (`[APPROX]`).
+  Sonnet 5.5. **Status:** Teil 1 fertig (PR #484), Teil 2 fertig (PR #487), Teil 3 fertig (PR #490); integriert #505: G7 rechter Stadionblock nach DOSBox-Bild korrigiert, G8 ohne Abweichung; offen nur die ▲▼-Grafik (`[APPROX]`).
 
 ### Spur `saisonwechsel` – Restbefunde, S-K1, Schema-22-Probe
 
@@ -82,7 +82,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
      Originalmaterial) als Testdatei, laden, migrieren, 4 Saisonwechsel weiterspielen.
   5. **Gesamtreview #474, Bereich 2 (D3):** Spielstand für den Doppelwechsel per `hok-patch` vorbereiten, Aufnahmeablauf
      für den Nutzer im PR; Auswertung nach der Aufnahme (Teil bleibt bis dahin begründet offen).
-- **Dateigrenzen:** siehe Zuständigkeit; Tests (Testdateien unter `tests/**/TestData/`). **Modell:** Claude Opus 5.5. **Status:** Teile 1, 2, 4, 5 fertig (PR #481, #486, #488, #489); Teil 3 (E5, S-K6 = A) fertig (PR #510); Teil 6 (D5 = A: Saisonende-Fenster und Startordnung beim Doppelwechsel) fertig (PR folgt). Spur fertig – Integration.
+- **Dateigrenzen:** siehe Zuständigkeit; Tests (Testdateien unter `tests/**/TestData/`). **Modell:** Claude Opus 5.5. **Status:** Teile 1, 2, 4, 5 fertig (PR #481, #486, #488, #489); Teil 3 (E5, S-K6 = A) fertig (PR #510); Teil 6 (D5 = A: Saisonende-Fenster und Startordnung beim Doppelwechsel) fertig (PR #512). Integriert #519 (Review #520).
 
 ### Spur `kader-transfer` – Nachträge U4/U5/U9/U15, E2
 
@@ -96,7 +96,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   4. **E2** (nach `re-pruefung`): Text „noch gesperrt !“ in `LineupScreen.cs` angleichen.
 - **Dateigrenzen:** `Core/Transfer*.cs`, `Core/Player*.cs` (außer Belastung), `Core/Squad.Setup.cs`, `Core/NewGame.cs`,
   `UI/Screens/Team/*` außer `TeamUi.cs`, Tests, `docs/transfer.md`. **Modell:** Claude Sonnet 5.5.
-  **Status:** Teil 1 (#485), Teil 2 (#493), Teil 3 (WS-05, #504) fertig; Teil 4 (E2, `LineupScreen.cs`) fertig (PR siehe Übergabe, Base `paket/kader-transfer-3`); U15-Rest (Start-Liga-Regel) wartet auf Entscheidung Nutzer.
+  **Status:** Teil 1 (#485), Teil 2 (#493), Teil 3 (WS-05, #504) fertig; Teil 4 (E2, `LineupScreen.cs`) fertig (PR #509); integriert #526 mit #524/#525 (Review #529); U15-Rest nach D7 = D in Runde 13.
 
 ### Spur `wettbewerbe-spiel` – Serien, Belastung, Computervereine, Nationalteam
 
@@ -106,7 +106,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   2. **A184:** Belastung (Spielerplatz +13h) als eigenes Feld statt `Energy` (Schema + Migration); Mehrsaisonprobe.
   3. **A174:** Computervereine ohne Kaderbezug (Entscheidung Nutzer 02.11.2026, Review #440); Mehrsaisonprobe.
   4. **U8:** Nationalteam Satz 5 mit der Regel der automatischen Aufstellung (426BCh/42838h, `CupsNational.Lineup.cs`).
-- **Dateigrenzen:** siehe Zuständigkeit Runde 11. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig zum Review
+- **Dateigrenzen:** siehe Zuständigkeit Runde 11. **Modell:** Claude Opus 5.5. **Status:** integriert #508 (Review #514, Nachprüfung #518); Teil 1 fertig zum Review
   (PR #482: Serien im Original nur bei Code 7/8 – kein Anschluss nötig, Probe und Doku; WS-04 getestet). Teil 2 fertig zum
   Review (PR #491: A184 umgesetzt; Hüllkurvenprobe nach D4 = A: passiver Bundesliga-Manager darf nach Schuldenregel bzw.
   „Weniger als neun Spieler!“ ausscheiden, Ursache geprüft); Teil 3 fertig zum Review (PR #495: A174, Computervereine mit der
@@ -136,7 +136,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   den betroffenen Bildschirmen (nur Lage/Farbe), Tests; für Teil 3 `Core/FinanceInbox.cs`. **Modell:** Claude Sonnet 5.5.
   **Status:** Teil 3 (R-K6 + D8 = A) fertig (PR #542, Branch `paket/pixel-marker-3`, Schema 36, Migration
   `SaveGame.Migration.PixelMarker3.cs`); Teil 1 (R-K2…R-K5) fertig (PR #543); Teil 2 (Karte/Inventur, Branch
-  `paket/pixel-marker-2`) fertig. Dateigrenzen von Teil 3 erweitert um `UI/Screens/Manager/InboxScreen.cs` und
+  `paket/pixel-marker-2`) fertig (PR #544); integriert #545 mit Korrektur #551 (Review #546, Nachprüfung #552). Dateigrenzen von Teil 3 erweitert um `UI/Screens/Manager/InboxScreen.cs` und
   `NewsBar.cs` (D8 = A, #537).
 
 ### Entscheidungen zum Start (Nutzer, 03.11.2026)

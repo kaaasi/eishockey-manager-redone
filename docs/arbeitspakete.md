@@ -35,8 +35,9 @@ Nur Liste, keine Spurplanung; je Zeile die Fundstelle.
 - **P3-Issues:** R12S-01…03 (#521–#523), R12K-01…04 (#530–#533), R12U-03…05 (#539–#541); Hinweis `NewsBar.Shown` (Review #546).
 - **Offene Prüfbereiche der Gesamt-Nachprüfung (#557):** Freiprüfung aller Bildschirme über Konstruktoren und indirekte Aufrufe
   (bisher Menükacheln, Saisonende, Spieltag); `[APPROX]` Zeitpunkt des Managerwechsels am Saisonende (`GameState.SeasonEndTurn.cs`).
-- **Pixel offen:** G7 Texte „(Noch n Wochen)“/„(kein Bau...)“ (3D45Fh), G8 Zeilenhöhen (57ECFh), Farben 18/12/22 der
-  Saisonende-Zeilen am Video (R-K2).
+- **Pixel offen:** G7 Text „(kein Bau...)“ fehlt im Code, Wortlaut von „(Noch n Wochen)“ (`[APPROX]`, `StadiumScreen.cs`) und
+  Hinweiszeile „… ausbauen“ (x 213, y 201) belegen (3D45Fh); Farben 18/12/22 der Saisonende-Zeilen am Video (R-K2). G8 ist erledigt
+  (Nachmessung mit DOSBox-Bild, `finanzen-rekonstruktion.md`).
 - `livespiel` bleibt zurückgestellt (siehe „Zurückgestellt“).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
