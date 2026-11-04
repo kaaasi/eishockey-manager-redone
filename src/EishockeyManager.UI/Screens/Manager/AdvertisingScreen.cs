@@ -49,9 +49,19 @@ public sealed class AdvertisingScreen : Screen
     /// <summary>[ORIGINAL] 0x2A9AD: Logo bzw. schwarze leere Fläche (0x30:0x800) innerhalb der Umrandung, 35 × 25.</summary>
     public static readonly Rect LogoArea = new(100, 179, 35, 25);
 
-    /// <summary>[APPROX] Trefferflächen der Pfeile; das Original prüft sie in 0x120:0x3E (138|183) bzw. (138|192).</summary>
-    public static readonly Rect ArrowUp = new(137, 181, 13, 11);
-    public static readonly Rect ArrowDown = new(137, 192, 13, 12);
+    /// <summary>
+    /// [ORIGINAL] Trefferflächen der Pfeile 8 × 9: Aufruf 0x2BA72 (und 0x2BFF7) von 0x120:0x3E mit (138 | 183, 138 | 192, Halten 0),
+    /// Fläche 1 liefert −1 (zurück), Fläche 2 +1 (weiter), Baustein <see cref="UI.ArrowPair"/>.
+    /// </summary>
+    public static readonly Rect ArrowUp = new(138, 183, ArrowPair.HitWidth, ArrowPair.HitHeight);
+    public static readonly Rect ArrowDown = new(138, 192, ArrowPair.HitWidth, ArrowPair.HitHeight);
+
+    /// <summary>
+    /// [APPROX] Bremse der Wiederholung bei gehaltener Taste. Das Original hat hier keine: die Schleife ab 0x2B99F fragt die
+    /// Maus ohne Pause ab (0x38:0x878, Datei 0xC068) und blättert je Durchlauf einen Schritt (0x2BE0A–0x2BE4A), das Tempo
+    /// bestimmt der Rechner. Das Remake blättert nach <see cref="RepeatDelayFrames"/> Frames alle <see cref="RepeatEveryFrames"/> Frames.
+    /// </summary>
+    public const int RepeatDelayFrames = 20, RepeatEveryFrames = 6;
 
     /// <summary>[ORIGINAL] 0x2B2CE: Pfeilpaar kb\4 (20|0) 10 × 17 bei (138|183), Rahmen (137|182)–(148|200) Farbe 24 (0x2B300).</summary>
     public static readonly Rect ArrowFrame = new(137, 182, 12, 19);
@@ -99,6 +109,8 @@ public sealed class AdvertisingScreen : Screen
     private int _stationCursor = -1;
     private int? _infoFor;
     private Rect? _pressed;
+    private readonly ArrowPair _arrows = new(ArrowUp.X, ArrowUp.Y, ArrowDown.X, ArrowDown.Y);
+    private int _heldFrames;
     private SponsorContract? _renewal;
     private readonly EishockeyManager.UI.Screens.Team.MessageBox _message;
 
@@ -152,6 +164,17 @@ public sealed class AdvertisingScreen : Screen
             Host.Show(_back);
             return;
         }
+        var step = _arrows.Update(input);
+        if (step != 0)
+        {
+            // [ORIGINAL] 0x2BE0A: Schritt −1/+1 bei jedem Durchlauf mit Rückgabe ≠ 0; [APPROX] Bremse bei gehaltener Taste.
+            var first = input.LeftClick;
+            _heldFrames = first ? 0 : _heldFrames + 1;
+            if (first || (_heldFrames >= RepeatDelayFrames && (_heldFrames - RepeatDelayFrames) % RepeatEveryFrames == 0))
+                Browse(step);
+            return;
+        }
+        _heldFrames = 0;
         if (!input.LeftClick)
             return;
 
@@ -179,11 +202,7 @@ public sealed class AdvertisingScreen : Screen
             }
         }
 
-        if (ArrowUp.Contains(x, y))
-            Browse(-1, ArrowUp);
-        else if (ArrowDown.Contains(x, y))
-            Browse(+1, ArrowDown);
-        else if (InfoButton.Contains(x, y) && CanShowInfo())
+        if (InfoButton.Contains(x, y) && CanShowInfo())
         {
             _pressed = InfoButton;
             _infoFor = Cursor;
@@ -211,13 +230,14 @@ public sealed class AdvertisingScreen : Screen
         }
     }
 
-    private void Browse(int delta, Rect button)
+    private void Browse(int delta)
     {
         if (_slot is not { } slot)
             return;
-        _pressed = button;
         var count = Sponsor.For(slot.Kind).Length;
-        var next = Cursor < 0 ? (delta > 0 ? 0 : count - 1) : (Cursor + delta + count) % count;
+        // [ORIGINAL] 0x2BE0A–0x2BE3C: der Index klemmt bei 0 und 9 (Sender 4), kein Umbruch; [APPROX] vom Vertragsmodus (Cursor −1)
+        // aus beginnt das Blättern wie bisher am jeweiligen Ende.
+        var next = Cursor < 0 ? (delta > 0 ? 0 : count - 1) : Math.Clamp(Cursor + delta, 0, count - 1);
         if (slot.Kind == AdSlotKind.Fernsehen)
             _stationCursor = next;
         else
@@ -421,13 +441,13 @@ public sealed class AdvertisingScreen : Screen
     }
 
     /// <summary>
-    /// Pfeilpaar aus kb\4 mit Rahmen (0x2B2CE/0x2B300). [APPROX] Eine gedrückte Darstellung (Rückmeldung in 0x120:0x3E)
-    /// ist nicht nachgebaut.
+    /// Pfeilpaar aus kb\4 mit Rahmen (0x2B2CE/0x2B300); der gedrückte Pfeil kommt aus <see cref="UI.ArrowPair"/> (0x120:0x3E).
     /// </summary>
     private void DrawArrows(Surface s)
     {
         s.Blit(Assets.Image(4), new Rect(20, 0, 10, 17), ArrowFrame.X + 1, ArrowFrame.Y + 1);
         s.Outline(ArrowFrame, BoxBorder);
+        _arrows.Draw(s, Assets.Image(ArrowPair.Image));
     }
 
     private void DrawTotals(Surface s)

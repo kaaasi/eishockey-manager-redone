@@ -23,10 +23,19 @@ public sealed class StadiumScreen : Screen
 
     public static readonly Rect SeatsRow = new(212, 172, 104, 7);
     public static readonly Rect StandingRow = new(212, 179, 104, 7);
-    public static readonly Rect TicketUp = new(194, 188, 7, 6);
-    public static readonly Rect TicketDown = new(202, 188, 7, 6);
-    public static readonly Rect LevelUp = new(194, 210, 7, 6);
-    public static readonly Rect LevelDown = new(202, 210, 7, 6);
+
+    /// <summary>
+    /// [ORIGINAL] Pfeilpaare über <see cref="UI.ArrowPair"/> (0x120:0x3E, Halten 0): Eintritt Datei 0x3DD89 (192 | 189, 202 | 189),
+    /// Stufenwahl 0x3E0BC (192 | 210, 202 | 210), Flächen 8 × 9. Linker Pfeil liefert −1: Eintritt = Eintritt − (−1) (0x3DDB3),
+    /// Ziel = Ziel − (−1) (0x3E0D7), also links „mehr“. Geändert wird nur im Frame des Klicks (Ereignis 1, 0x3DD93/0x3E0CD):
+    /// gehaltene Taste wiederholt nichts.
+    /// </summary>
+    public static readonly Rect TicketUp = new(192, 189, ArrowPair.HitWidth, ArrowPair.HitHeight);
+    public static readonly Rect TicketDown = new(202, 189, ArrowPair.HitWidth, ArrowPair.HitHeight);
+    public static readonly Rect LevelUp = new(192, 210, ArrowPair.HitWidth, ArrowPair.HitHeight);
+    public static readonly Rect LevelDown = new(202, 210, ArrowPair.HitWidth, ArrowPair.HitHeight);
+    private readonly ArrowPair _ticketArrows = new(TicketUp.X, TicketUp.Y, TicketDown.X, TicketDown.Y);
+    private readonly ArrowPair _levelArrows = new(LevelUp.X, LevelUp.Y, LevelDown.X, LevelDown.Y);
     public static readonly Rect LevelBox = new(212, 208, 103, 11);
     // [ORIGINAL] gemessen am DOSBox-Bild file15_2_stadion (Referenz-Repo, FILE15.HOK; Spur geld Teil 3, Pixelprobe G7):
     // Beschriftung ab x = 213, Doppelpunkt x = 267, Werte ab x = 271, Konto-Betrag rechtsbündig bei 312, Eintritt-Zeile y = 190.
@@ -88,7 +97,6 @@ public sealed class StadiumScreen : Screen
     private int _target;
     private StadiumQuote? _quote;
     private readonly Team.MessageBox _message;
-    private Rect? _pressed;
 
     public StadiumScreen(ScreenHost host, Screen back) : base(host)
     {
@@ -122,7 +130,6 @@ public sealed class StadiumScreen : Screen
 
     public override void Update(InputState input)
     {
-        _pressed = null;
         if (_message.Update(input))
             return; // [ORIGINAL] 0x0C0B8: ohne Knopf und ohne Eingabe, schließt nach 75 Takten von selbst
         if (_quote is { } quote)
@@ -145,13 +152,13 @@ public sealed class StadiumScreen : Screen
         }
 
         _hover = HitTest(input.MouseX, input.MouseY);
+        var ticket = _ticketArrows.Update(input);
+        var level = LevelArrowsShown ? _levelArrows.Update(input) : 0;
         if (!input.LeftClick)
             return;
 
-        if (input.Clicked(TicketUp)) { _pressed = TicketUp; Stadium.TicketPrice = Math.Min(Stadium.MaxTicketPrice, Stadium.TicketPrice + 1); }
-        else if (input.Clicked(TicketDown)) { _pressed = TicketDown; Stadium.TicketPrice = Math.Max(Stadium.MinTicketPrice, Stadium.TicketPrice - 1); }
-        else if (_selected is not null && input.Clicked(LevelUp)) { _pressed = LevelUp; Step(+1); }
-        else if (_selected is not null && input.Clicked(LevelDown)) { _pressed = LevelDown; Step(-1); }
+        if (ticket != 0) Stadium.TicketPrice = Math.Clamp(Stadium.TicketPrice - ticket, Stadium.MinTicketPrice, Stadium.MaxTicketPrice);
+        else if (level != 0) Step(-level);
         else if (_selected is { } sel && input.Clicked(LevelBox))
             _quote = Game.QuoteConstruction(Me, sel.Project, sel.Feature, _target);
         else if (_hover is { } hover)
@@ -305,7 +312,7 @@ public sealed class StadiumScreen : Screen
         }
         Row(SeatsRow.Y + 1, "Sitzplätze", Number(Stadium.Seats));
         Row(StandingRow.Y + 1, "Stehplätze", Number(Stadium.Standing));
-        Arrows(s, TicketUp, TicketDown);
+        Arrows(s, _ticketArrows);
         Row(TicketRowY, "Eintritt", $"{Stadium.TicketPrice} DM");
 
         var shown = _hover ?? _selected;
@@ -323,7 +330,7 @@ public sealed class StadiumScreen : Screen
                 s.Text(mini, RightLabelX, 200, Label(choice) + " ausbauen", ValueColor);
                 if (_selected == choice && CurrentCost() is { } cost)
                 {
-                    Arrows(s, LevelUp, LevelDown);
+                    Arrows(s, _levelArrows);
                     s.Outline(LevelBox, BoxColor);
                     s.TextCentered(mini, LevelBox.X + LevelBox.W / 2, LevelBox.Y + 3, TargetText(choice), LevelColor);
                     s.Text(mini, RightLabelX + 2, 221, "Kosten: " + GameState.FormatMoney(cost),
@@ -336,17 +343,21 @@ public sealed class StadiumScreen : Screen
         s.TextRight(mini, AccountRight, 232, GameState.FormatMoney(Me.Money), LabelColor);
     }
 
-    /// <summary>[APPROX] ▲▼ als kleine Dreiecke gezeichnet (Grafik nicht gefunden).</summary>
-    private void Arrows(Surface s, Rect up, Rect down)
+    /// <summary>
+    /// ▲▼ aus kb\4 über <see cref="UI.ArrowPair"/>: [ORIGINAL] losgelassen Quelle (22 | 1 + 9 · j) 8 × 7 nach (x + 2 | y + 1),
+    /// gedrückt (22 | 19 + 9 · j) (Datei 0x4BAD3–0x4BBFE); im Video orange mit dunkler Kante.
+    /// </summary>
+    private void Arrows(Surface s, ArrowPair pair)
     {
-        var du = _pressed == up ? 1 : 0;
-        var dd = _pressed == down ? 1 : 0;
-        for (var row = 0; row < 4; row++)
-        {
-            s.HLine(up.X + 3 - row, up.Y + 1 + row + du, 1 + 2 * row, ValueColor);
-            s.HLine(down.X + row, down.Y + 1 + row + dd, 7 - 2 * row, ValueColor);
-        }
+        var image = Assets.Image(ArrowPair.Image);
+        pair.DrawReleased(s, image, -1);
+        pair.DrawReleased(s, image, +1);
+        pair.Draw(s, image);
     }
+
+    /// <summary>Stufenwahl sichtbar (Pfeile 0x3E0BC werden nur dann abgefragt).</summary>
+    private bool LevelArrowsShown => _selected is { } c && !(Stadium.IsUnderConstruction(c.Project, c.Feature) && Stadium.WeeksLeft(c.Project, c.Feature) > 0)
+        && CurrentCost() is not null;
 
     private void DrawConfirm(Surface s)
     {

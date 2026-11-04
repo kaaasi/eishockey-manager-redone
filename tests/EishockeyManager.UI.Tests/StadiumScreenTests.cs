@@ -131,10 +131,10 @@ public class StadiumScreenTests
         Assert.Equal(213, seats[0].From);
         Assert.Equal(267, seats.First(r => r.From >= 260).From);
         Assert.Equal(271, seats.First(r => r.From >= 268).From);
-        var ticket = Runs(211, 320, 187, 197);
+        var ticket = Runs(212, 320, 187, 197); // ab 212: die Pfeile (kb\4) enden bei 211
         Assert.Equal(213, ticket[0].From);
         Assert.Equal(272, ticket.First(r => r.From >= 268).From);
-        Assert.Equal(190, Top(211, 260, 186, 198));
+        Assert.Equal(190, Top(212, 260, 186, 198));
         var account = Runs(205, 320, 228, 237);
         Assert.Equal(213, account[0].From);
         Assert.Equal(310, account[^1].To);
