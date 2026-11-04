@@ -86,11 +86,15 @@ public static class NewGame
                 throw new ArgumentException($"Verein {chosen} wurde von mehreren Managern gewählt.", nameof(setup));
         }
 
-        var league = setup.StartLeague;
+        // [ORIGINAL] Die Start-Liga ist ein Wert für alle Manager (DGROUP 0x11A, L1); die Spielvorbereitung setzt sie über
+        // GameSetup.StartLeague für alle gleich. Gelesen wird sie je Manager, damit Aufbauten im Code (Tests, ältere
+        // Spielstände) Manager verschiedener Ligen anlegen können; bei gleicher Liga ist das Ergebnis dasselbe.
         var earlier = new HashSet<int>();
-        foreach (var chosen in setup.Managers.Select(m => m.ClubIndex).OfType<int>())
+        foreach (var m in setup.Managers)
         {
-            if (PlaceInStartLeague(clubs, chosen, league, earlier, random) is { } partner && partner != chosen)
+            if (m.ClubIndex is not { } chosen)
+                continue;
+            if (PlaceInStartLeague(clubs, chosen, m.StartLeague, earlier, random) is { } partner && partner != chosen)
                 swaps?.Add((chosen, partner));
             earlier.Add(chosen);
         }
@@ -108,9 +112,9 @@ public static class NewGame
             // 0x2964C); das Remake zieht aus dem Drittel der Start-Liga ohne Europapokal-Teilnehmer (Zeile 1, Datei 0x45CD0).
             // Zu Spielbeginn ist nur der Deutsche Meister (Verein 2) als Teilnehmer belegt. Kein Platztausch.
             var excluded = new HashSet<int>(reserved);
-            if (league == League.Bundesliga && clubs[EuropeanCup.InitialChampion].League == League.Bundesliga)
+            if (m.StartLeague == League.Bundesliga && clubs[EuropeanCup.InitialChampion].League == League.Bundesliga)
                 excluded.Add(EuropeanCup.InitialChampion);
-            assigned[i] = PickRandomClub(clubs, league, m.StartStrength, excluded, random);
+            assigned[i] = PickRandomClub(clubs, m.StartLeague, m.StartStrength, excluded, random);
             reserved.Add(assigned[i]);
         }
 
@@ -160,6 +164,20 @@ public static class NewGame
         return partner;
     }
 
+    /// <summary>
+    /// Liga eines Vereins laut Datenbank (Index 0–11 Bundesliga, 12–23 2. Liga, 24–35 Oberliga, sonst ohne Liga) – die
+    /// Start-Liga, in der ein fest gewählter Verein der 2. Liga oder Oberliga bleibt (<see cref="PlaceInStartLeague"/>).
+    /// [ORIGINAL] DGROUP 0x7C0 (erster Platz je Liga 0/12/24) und 0x7B1 (12 Plätze je Liga), Datei 0x29C78.
+    /// </summary>
+    public static League? DatabaseLeague(int clubIndex) => clubIndex switch
+    {
+        < 0 => null,
+        < 12 => League.Bundesliga,
+        < 24 => League.ZweiteLiga,
+        <= LastLeagueSlot => League.Oberliga,
+        _ => null,
+    };
+
     /// <summary>Letzter Ligaplatz. [ORIGINAL] DGROUP 0x7CB = 35 (Plätze 0–35 Bundesliga bis Oberliga).</summary>
     private const int LastLeagueSlot = 35;
 
@@ -178,7 +196,10 @@ public static class NewGame
         return band[random.Next(band.Count)].Index;
     }
 
-    /// <summary>Kopie eines Vereins mit anderer Stärke (Teamwerte bleiben beim Platztausch am Platz, U15-a).</summary>
+    /// <summary>
+    /// Kopie eines Vereins mit anderer Stärke (Teamwerte bleiben beim Platztausch am Platz, U15-a). Zu diesem Zeitpunkt trägt
+    /// der Verein nur die Felder aus <see cref="Create"/> (Index, Name, Stärke, Logo, Liga, Datenbankspieler).
+    /// </summary>
     private static Club WithStrength(Club club, int strength)
     {
         var copy = new Club

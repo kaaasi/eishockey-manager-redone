@@ -168,6 +168,9 @@ namespace EishockeyManager.Core.Tests;
 /// Satzfolge der nächsten Saison entsteht am 29. April (Startwert aus dem Zufallszustand dieses Tages, ohne Zug) und die
 /// Fair-Play-Prämie rechnet über die Liga der nächsten Saison in dieser Folge; andere Prämien, Konten und danach Kauf- und
 /// Vertragsentscheidungen. Gegenprobe: ohne Bildung am 29. April und mit der alten Prämienregel alle Abdrücke unverändert.
+/// Runde 13, kader-start Teil 2 (U15-a, L13): synthetische Abdrücke (Seed 3/11) neu – der feste Verein tauscht beim Spielstart in
+/// die Start-Liga (Datei 0x29CF2, bei Bundesliga immer, Teamwerte bleiben am Platz); ein Zufallszug mehr beim Spielstart.
+/// Originaldatenbank-Abdrücke (Verein 42, Start-Liga Oberliga) unverändert.
 /// </summary>
 public class RngTwinProbeTests
 {
@@ -193,7 +196,7 @@ public class RngTwinProbeTests
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Probe", ClubIndex = 42 });
+        setup.Managers.Add(new ManagerSetup { Name = "Probe", ClubIndex = 42, StartLeague = League.Oberliga });
         var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, seed: 3);
         Assert.Equal(expected, Run(game, active));
     }

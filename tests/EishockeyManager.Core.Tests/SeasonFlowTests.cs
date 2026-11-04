@@ -7,7 +7,7 @@ public class SeasonFlowTests
     private static GameState Create(int clubIndex = 2, GameDuration duration = GameDuration.Unbegrenzt, int seed = 3, bool debCup = true)
     {
         var setup = new GameSetup { Duration = duration, DebCup = debCup };
-        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = clubIndex });
+        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = clubIndex, StartLeague = NewGame.DatabaseLeague(clubIndex) ?? League.Oberliga });
         return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
     }
 
@@ -211,7 +211,7 @@ public class SeasonFlowTests
     {
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "A", ClubIndex = 2 });
-        setup.Managers.Add(new ManagerSetup { Name = "B", ClubIndex = 14 });
+        setup.Managers.Add(new ManagerSetup { Name = "B", ClubIndex = 14, StartLeague = League.ZweiteLiga });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 1);
         while (!game.Managers[0].Dismissed)
         {

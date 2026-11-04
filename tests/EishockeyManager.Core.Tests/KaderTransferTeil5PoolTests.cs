@@ -134,7 +134,7 @@ public class KaderTransferTeil5PoolTests
     {
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2 });
-        setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 14 });
+        setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 14, StartLeague = League.ZweiteLiga });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
         Assert.Equal(League.ZweiteLiga, game.Clubs[14].League);
         // Die ersten Plätze (Schleife ab Index 1) landen alle in der 2. Liga, nicht in der ersten Liga mit Soll.

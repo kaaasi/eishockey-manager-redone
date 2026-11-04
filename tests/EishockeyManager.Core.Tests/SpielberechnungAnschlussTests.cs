@@ -14,7 +14,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     private static GameState Game(int managerClub = 2, int seed = 3)
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = managerClub });
+        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = managerClub, StartLeague = NewGame.DatabaseLeague(managerClub) ?? League.Oberliga });
         return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
     }
 
@@ -188,7 +188,9 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spieler vom Markt sind belasteter, beide Abdrücke (Originaldatenbank) neu; die synthetischen Abdrücke (Seed 3/11) bleiben.
     /// Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.
     /// Runde 13, Spur saison Teil 3 (S-K6-a/c): passiv neu – Fair-Play-Prämie über die neue Liga und Satzfolge vom 29. April
-    /// (Begründung bei <see cref="RngTwinProbeTests"/>); aktiv unverändert.</summary>
+    /// (Begründung bei <see cref="RngTwinProbeTests"/>); aktiv unverändert.
+    /// kader-start Teil 2 (U15-a, L13): Originaldatenbank-Abdrücke neu – der feste Verein 2 tauscht beim Spielstart innerhalb der
+    /// Bundesliga (Datei 0x29CF2, Teamwerte bleiben am Platz).</summary>
     [GameDataTheory]
     [InlineData(false, "1CD3CB9E390B654E")]
     [InlineData(true, "75F5165C1DD4B4CA")]
@@ -258,6 +260,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 13, Spur saison Teil 4 (A058, A163): Konten gleich; Weltmeister ab Saison 2, Haupt- und Pokalquelle neu – die große
     // Wanderung 0x9D1B (Datei 0x56448) läuft auch im Modus „nur Weltkugel“ und würfelt die Form aller Plätze neu, dazu zieht der
     // Oberliga-Austausch (Datei 0x56238) zwei Nachrücker aus der Hauptquelle.
+    // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     private const string WorldOnlyReference =
         "WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=54|500000|WorldChampion=52|500000|WorldChampion=53|500000|R356180146 C211126353";
 
