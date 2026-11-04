@@ -159,7 +159,7 @@ public class JugendTeamsTests
                     Assert.True(guard < 1000, "Saisonende nicht erreicht");
                     me.Money = Math.Max(me.Money, 1_000_000);
                     if (active)
-                        TestSeason.KeepSquad(game, me);
+                        TestSeason.KeepSquad(game, me, extendExpired: true); // R12K-03: Abdruck mit gehaltenem Kader
                     game.Continue();
                 }
                 game.StartNextSeason();

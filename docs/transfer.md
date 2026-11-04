@@ -478,10 +478,11 @@ Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die
 - **Vereinsplatz beim Start (U15), umgesetzt:** Der Zufallsverein der Start-Liga (Datei 0x29C78) ist nie ein Europapokal-Teilnehmer
   (Zeile 1, Datei 0x45CD0). `[APPROX]`: zu Spielbeginn nur der Deutsche Meister (Verein 2); weitere Einträge der Tabelle
   DGROUP 0x3B1 sind nicht ausgewertet. Fest gewählte Vereine bleiben unberührt.
-- **U15, nicht umgesetzt (Entscheidung nötig):** Das Original setzt den Manager *immer* in die Start-Liga (auch ein fest gewählter
+- **U15-Rest, entschieden, Umsetzung Runde 13:** Das Original setzt den Manager *immer* in die Start-Liga (auch ein fest gewählter
   Verein wird dorthin getauscht, bei Bundesliga immer mit einem Zufallsverein) und kennt den Sonderfall „eine Saison“ (Datei
-  0x29CFA). Das Remake wählt den Verein fest oder zufällig; die Start-Liga-Regler gehört nur zur Zufallswahl, und es gibt keine
-  Spiellänge. Eine Übernahme würde die Vereinswahl der Spielvorbereitung ändern.
+  0x29CFA). Das Remake wählt den Verein bisher fest oder zufällig; die Start-Liga-Regler gehört nur zur Zufallswahl. Entscheidung
+  Nutzer **D7 = D** (Runde 12): wie im Original; dazu **D2 = A** (04.11.2026): „eine Saison“ nur mit Start-Liga Bundesliga (Sperre
+  im `SetupScreen`). Umsetzung in Runde 13, Spur `kader-start` Teil 2 (nach `re-dosbox`, `docs/arbeitspakete.md`).
 
 ## Probe-Rückfallweg (WS-05, Runde 12)
 
