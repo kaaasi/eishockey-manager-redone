@@ -3,8 +3,9 @@
 Stand: abgeschlossen (04.11.2026, geplanter Lauf Claude Opus 5.5, PR #567; Issue #534). Quellen: Spielstände FILE05–FILE28 und
 Bilder aus `kaaasi/eishockey-manager-referenz` (`original/spielstaende/`, README mit den Beobachtungen des Nutzers, Stand
 `e3a591e`), `emtool hok dump` und der entschlüsselte Klartext (Verfahren `docs/formate/spielstand-original.md`), Disassembly
-von `em.exe` mit `tools/reverse-engineering/disasm.py`. Adressen in `em.exe` sind Dateioffsets (`Datei 0x…`), DGROUP = Segment
-0x14FD (Datei 0x16DD0 + Versatz). „Ergebnis“ bezieht sich auf die Remake-Annahme der jeweiligen `[APPROX]`-Stelle
+von `em.exe` mit `tools/reverse-engineering/disasm.py`. Adressen in `em.exe` stehen als `Datei 0x…`, DGROUP = Segment
+0x14FD (Datei 0x16DD0 + Versatz). Offsets im entschlüsselten Spielstand (`hok.load`) stehen als `HOK 0x…`, nicht als
+`Datei 0x…` (Review R13RD-01). „Ergebnis“ bezieht sich auf die Remake-Annahme der jeweiligen `[APPROX]`-Stelle
 (`docs/analyse/inventur.md`): **belegt** = Remake stimmt mit dem Original, **widerlegt** = Remake weicht ab (Umsetzung nötig),
 **nicht entscheidbar** = Beleg fehlt (genannt).
 
@@ -34,20 +35,20 @@ Aufruffolge Datei 0x56448/0x5644E/0x5645D.
 | A293 | teils | Gruppenknopf (237 \| 211) belegt; Knopf „Endrunde“ gibt es nicht, Menüweg offen | `nationalteam` |
 | A294 | widerlegt | Linksklick außerhalb bewirkt nichts; zurück nur mit Rechtsklick | `nationalteam` |
 | A300 | belegt | gleichwertig (Menü mit Zug 5 erst nach der Ernennung) | `nationalteam` |
-| U15-a | Remake widerlegt | fester Verein tauscht mit Zufallsplatz der Start-Liga (Datei 0x29CF2), Teamwerte bleiben am Platz | `kader-start` |
+| U15-a | widerlegt | fester Verein tauscht mit Zufallsplatz der Start-Liga (Datei 0x29CF2), Teamwerte bleiben am Platz | `kader-start` |
 | U15-b | belegt | Dauer 0 × Start-Liga ≠ Bundesliga: Reglerschritt wird stumm zurückgenommen (Datei 0x2890E) | `kader-start` |
 | U15-c | nicht entscheidbar | Sonderfall „eine Saison, ein Manager“ (Europapokal-Platz, Datei 0x29CFA); Spielstand fehlt | `kader-start` |
-| R-K5 | Remake widerlegt | Vereinsauswahl zeigt die beim Start schon gemischte Satzfolge (Datei 0x43A17 vor 0x43A61) | `kader-start` |
-| S-K6-a | Remake widerlegt | Mischung am 29.04. (Datei 0x5644E) vor dem Prämienfenster, nicht in `StartNextSeason` | `saison` |
-| S-K6-b | `[APPROX]` bleibt | Zufallsquelle lrandom (Datei 0xBFD5), Zustand nicht im Spielstand → nicht nachbildbar; Begründung berichtigen | `saison` |
-| S-K6-c | Remake widerlegt | Fair-Play-Prämie über die neue Liga in neuer Satzfolge | `saison` (Anschluss `ui-rest`) |
+| R-K5 | widerlegt | Vereinsauswahl zeigt die beim Start schon gemischte Satzfolge (Datei 0x43A17 vor 0x43A61) | `kader-start` |
+| S-K6-a | widerlegt | Mischung am 29.04. (Datei 0x5644E) vor dem Prämienfenster, nicht in `StartNextSeason` | `saison` |
+| S-K6-b | nicht entscheidbar (`[APPROX]` bleibt) | Zufallsquelle lrandom (Datei 0xBFD5), Zustand nicht im Spielstand → nicht nachbildbar; Begründung berichtigen | `saison` |
+| S-K6-c | widerlegt | Fair-Play-Prämie über die neue Liga in neuer Satzfolge | `saison` (Anschluss `ui-rest`) |
 
 ## Sitzung 1 – Bundestrainer (FILE11, FILE18–21)
 
 Grundlage: Spielstände `FILE11/18/19/20/21.HOK` (entschlüsselt mit `hok.load`), Bilder `file11_*`, `file18_*`, `file19_*`,
 `file20_*`, `file21_*`, README „Beobachtungen des Nutzers, Sitzung 1“, em.exe (disasm.py). Offsets: Kaderplätze Satz 5 =
-Datei 0x06A27 + 5 · 0x618 = Datei 0x0889F (DGROUP 0x5DC3 + 5 · 0x618), Vereine far:9657 ab Datei 0x018A1 (0x3D je Verein,
-Feldversatz im Satz), Platzliste DGROUP 0x5CCB = Datei 0x08F97. Manager 5 führt Verein 54 (Datei 0x00E87 + 5 · 0x1AF + 0x14 = 54
+HOK 0x06A27 + 5 · 0x618 = HOK 0x0889F (DGROUP 0x5DC3 + 5 · 0x618), Vereine far:9657 ab HOK 0x018A1 (0x3D je Verein,
+Feldversatz im Satz), Platzliste DGROUP 0x5CCB = HOK 0x08F97. Manager 5 führt Verein 54 (HOK 0x00E87 + 5 · 0x1AF + 0x14 = 54
 in FILE11–20, 58 in FILE21). Das Land DEUTSCHLAND ist Verein 54 (FILE21: 58); Verein 7 (FILE21: 5) ist der gleichnamige
 Bundesliga-Platz des Managers.
 
@@ -224,7 +225,7 @@ Bundesliga-Platz des Managers.
     Vereine von den Plätzen 36–41 rücken nach.
   - Zwischen 1. Liga, 2. Liga und Oberliga wechselt niemand. Die Mengen bleiben gleich, nur die Reihenfolge innerhalb der
     Ligen ändert sich.
-- **Fundstelle:** Platzliste DGROUP 0x5CCB (Datei 0x08F97), Oberliga-Teil Plätze 24–35:
+- **Fundstelle:** Platzliste DGROUP 0x5CCB (HOK 0x08F97), Oberliga-Teil Plätze 24–35:
   - FILE20 (gleich FILE11): …, TSV ERDING, HEC HEILBRONN, EC BAD TÖLZ.
   - FILE21: …, TSV ERDING, EHC STRAUBING, ESV KÖNIGSBRUNN.
   - HEILBRONN (Platz 34) und BAD TÖLZ (Platz 35) stehen in FILE21 auf Index 37 bzw. 41, außerhalb. STRAUBING (FILE20 Index 37)
@@ -322,9 +323,12 @@ Bundesliga-Platz des Managers.
 - **Aufstellung nach dem Freundschaftsspiel:** FILE18→FILE19 ändert die Aufstellung von Satz 5 (siehe A009); `file19_05`
   zeigt den neuen Stand. Ob das Spiel (0x977F hat den Aufrufer Datei 0x3B4C6) oder der Nutzer umgestellt hat, ist aus den
   Bildern nicht zu trennen. Betrifft A013.
-- **Länderwerte über den Saisonwechsel:** In FILE21 hat Deutschland (Verein 58) weiter 0/9/0/10, und Feld 0x16 = 6 bleibt
-  (Bundestrainer bleibt im Modus 1). Kein Neuwürfeln der Länderwerte im Modus 1. Spur `saison`, sofern
-  `RerollNationalRatings` dort greift.
+- **Länderwerte über den Saisonwechsel:** In FILE21 hat Deutschland (Verein 58) in den Feldern 0x18–0x1B weiter 0/9/0/10,
+  und Feld 0x16 = 6 bleibt (Bundestrainer bleibt im Modus 1). Die Felder 0x1C/0x1D werden dagegen neu gewürfelt (FILE20
+  `00 06` → FILE21 `33 2E`, wie bei allen Plätzen; A058: Form 0x1C–0x1E). Nur 0x18–0x1B bleiben also im Modus 1 erhalten.
+  Folgerung für A009/A058: Der gespeicherte Länderwert (`_germanyRatings`) führt nur die Werte aus 0x18–0x1B über den
+  Saisonwechsel, die Form (0x1C/0x1D) würfelt der Saisonwechsel neu. Spur `saison`, sofern `RerollNationalRatings` dort
+  greift; `nationalteam` beachtet es bei A009.
 - **Dauer der Warnung:** Der Nutzer schätzt sie auf ca. 2 s, das Remake rechnet ≈ 1,4 s (A298). Eine Schätzung, kein Messwert.
 - **Kandidaten für „auto“:** Pool 1…179 ohne Ausländerprüfung in 0x3CC01. Die Liste „Spieler in WM-Kader“ zeigt 179 Spieler;
   das Remake filtert Ausländer. BIAKIN und GARDNER sind grau, Grund offen.
@@ -340,8 +344,8 @@ Bundesliga-Platz des Managers.
 ## Sitzung 2 und 3 – Saisonwechsel und Kader (FILE16A, FILE22–26)
 
 Grundlage: FILE16A, FILE22, FILE23 (Sitzung 2), FILE05, FILE24, FILE25, FILE26 (Sitzung 3), zum Vergleich FILE06/FILE07 und
-die Startstände FILE01, FILE27, FILE28. Rohstrom per `hok.load`, Kaderplätze Datei 0x06A27 + 0x618 · Satz + 0x34 · Platz
-(DGROUP 0x5DC3), Spielerpool Datei 0x0505F (`far:8253`, 33 Byte). Auswerteskripte (Scratch, nicht im Repo):
+die Startstände FILE01, FILE27, FILE28. Rohstrom per `hok.load`, Kaderplätze HOK 0x06A27 + 0x618 · Satz + 0x34 · Platz
+(DGROUP 0x5DC3), Spielerpool HOK 0x0505F (`far:8253`, 33 Byte). Auswerteskripte (Scratch, nicht im Repo):
 `/root/s/py/s23.py` (Rohdump), `s23diff.py` (Feldvergleich zweier Stände), `s23cols.py` (Zählerspalten),
 `s23auto.py` (Nachbau von Datei 0x426BC gegen die Stände).
 
@@ -359,7 +363,7 @@ eingeschalteter Einstellung** ohne Abweichung. Nur FILE06 weicht ab, und genau u
 | Kaderplatz `+0x09` Bit 0x02, `+0x0D`, `+0x17` | verletzt, Restdauer, Verletzungsart | em.exe `Datei 0x5C44` (`or +0x09,2`), `0x5BE5` (`+0x0D`), `0x5C4C` (`+0x17`), `0x5C50` (`+0x0A = 0`); FILE24 STEFAN `+0x09` 00→02, `+0x0D` 0→10, `+0x17` 00→10 |
 | Kaderplatz `+0x02` | offen; steigt in der Saison (TRAVNICEK, MORRISON, LANGLOIS 0→2 von FILE16A nach FILE22), wird beim Saisonwechsel **nicht** zurückgesetzt | FILE22→FILE23 unverändert |
 | Pool `+0x1C` | Ligaspiele der Saison (gleich Kaderplatz `+0x06`), Saisonwechsel → 0 | FILE22→FILE23, 16 von 16 → 0 |
-| DGROUP 0x375 + 2 · m | „automatisch aufstellen“ liegt in Datei 0x00844 | FILE05 01, FILE06 00, FILE24 00 (Byte 0x376 = 01), FILE25 01 |
+| DGROUP 0x375 + 2 · m | „automatisch aufstellen“ liegt in HOK 0x00844 | FILE05 01, FILE06 00, FILE24 00 (Byte 0x376 = 01), FILE25 01 |
 
 ### A085 – Reihenfolge der Kaderplätze über den Saisonwechsel (Vereinsteil)
 
@@ -367,8 +371,8 @@ eingeschalteter Einstellung** ohne Abweichung. Nur FILE06 weicht ab, und genau u
   Poolindex. Weder sortiert das Original neu, noch schiebt es Plätze zusammen. Von FILE16A nach FILE22 gilt dasselbe. Das
   Remake ordnet `Club.Players` am Saisonwechsel ebenfalls nicht um. Nicht geprüft ist ein Abgang am Saisonende (Vertrag
   ausgelaufen), denn in diesem Paar gehen alle Verträge von 2 auf 1. Der Teil zum Bundestrainer (Satz 5,
-  `MatchEngine.Live.cs:239`) gehört zu Sitzung 1.
-- **Fundstelle:** FILE22/FILE23 Datei 0x06A27 + 0x34 · Platz, `+0x0F` je Platz gleich (Platz 0 HABNITT p2 … Platz 21 NOACK p108);
+  `MatchEngine.National.cs:58`) gehört zu Sitzung 1.
+- **Fundstelle:** FILE22/FILE23 HOK 0x06A27 + 0x34 · Platz, `+0x0F` je Platz gleich (Platz 0 HABNITT p2 … Platz 21 NOACK p108);
   Bild `file23_3_kader.png`.
 - **Umsetzung:** Ziel: keine für den Verein. Den Befund in der Doku der Kaderreihenfolge (A091) als [ORIGINAL] mit Fundstelle
   FILE22/FILE23 vermerken. Dateien: `src/EishockeyManager.Core/MatchEngine.Managed.cs` (Kommentar zu `LiveSquad.Create`),
@@ -398,7 +402,7 @@ eingeschalteter Einstellung** ohne Abweichung. Nur FILE06 weicht ab, und genau u
   FreeAgents), `src/EishockeyManager.Core/Player.Factory.cs` (`Join`: Saisonzähler aus dem „Pool“). Testidee: Ein Marktspieler
   mit 2 Toren behält nach `StartNextSeason` Tore = 2 und den Listenpreis. Nach dem Kauf hat er Tore = 0 und Spiele = 0. Ein
   Kaderspieler hat Spiele = 0, `GamesForClub` bleibt. Spur: `saison`. Die Änderung liegt in `MatchEngine.Live.cs` und
-  `Player.Factory.cs`, außerhalb der Dateigrenzen von `saison`; siehe offene Fragen.
+  `Player.Factory.cs`; `saison` ändert dort wenig, mit Begründung im PR (Entscheidung L4).
 
 ### A091 – Kaderreihenfolge nach Rückennummer statt Kaderplätzen
 
@@ -436,7 +440,7 @@ eingeschalteter Einstellung** ohne Abweichung. Nur FILE06 weicht ab, und genau u
   - Saisonwechsel unverändert (FILE22/FILE23: Platz 3 = DOLL p23 in beiden).
   Es bleibt richtig, solange die Umsetzung von A091 die Liste nicht umsortiert. Nicht gegen das Original geprüft ist die
   Rückkehr eines Leihspielers (`Player.Contract.cs:199`, `Add` hinten).
-- **Fundstelle:** FILE22/FILE23 Datei 0x06A27 + 3 · 0x34 (`+0x0F` = 23, beide Stände). FILE05/FILE26/FILE07 Platz 3 = MAYR p23
+- **Fundstelle:** FILE22/FILE23 HOK 0x06A27 + 3 · 0x34 (`+0x0F` = 23, beide Stände). FILE05/FILE26/FILE07 Platz 3 = MAYR p23
   in allen drei. em.exe `Datei 0x4A93F` (Fundstelle laut Code). Platzverschiebung `Datei 0x425B6`.
 - **Umsetzung:** Ziel: keine Änderung am Verhalten. `[APPROX]` in `Player.Contract.cs:399` → `[ORIGINAL]` mit den Fundstellen
   FILE07/FILE26/FILE23. Dateien: `src/EishockeyManager.Core/Player.Contract.cs`. Testidee: Kader mit fünf Spielern; Platz 1
@@ -458,7 +462,7 @@ eingeschalteter Einstellung** ohne Abweichung. Nur FILE06 weicht ab, und genau u
 - **Fundstelle:** `/root/s/py/s23auto.py` gegen die genannten Stände (alle „keine Abweichung“). em.exe `Datei 0x426E7–0x42706`
   (alle `+0x0A` = 0), `0x42744`/`0x42777` (eingesetzt, Reihe), `0x427C0–0x4282C` (Ersatz bis 22), `0x428B1–0x4292F`
   (Kandidat `+0x0A` = 0, `+0x09 & 3` = 0, (K+T+F)/3, Gleichstand → späterer Platz). Aufrufe: Spielstart `0x28165`, Ende
-  Transferliste `0x47BB5`, Tageslauf `0x7C07`, Spieltag `0x54D9E`/`0x5530B`. Bilder `file05_2_aufstellung.png`,
+  Transferliste `0x47BB5`, Tageslauf Datei `0x7C07`, Spieltag `0x54D9E`/`0x5530B`. Bilder `file05_2_aufstellung.png`,
   `file26_3_aufstellung_nachher.png`.
 - **Umsetzung:** Ziel: `Club.AutoDressed` an `AutoLineupRule` angleichen: Eingesetzte vor der ersten Auto-Aufstellung
   ebenfalls nach 0x426BC, oder sicherstellen, dass jeder Managerverein vor der ersten Anzeige `ApplyAutoLineup` durchläuft.
@@ -466,7 +470,8 @@ eingeschalteter Einstellung** ohne Abweichung. Nur FILE06 weicht ab, und genau u
   Kaderplätze“ vermerken. Die verbleibende Abweichung ist die Platzfolge (A091). Dateien: `src/EishockeyManager.Core/Squad.Lineup.cs`,
   `Squad.AutoLineup.cs`. Testidee: Synthetischer Kader mit den Stärken aus FILE05 (25 Spieler, Platzfolge wie dort) →
   `ApplyAutoLineup` ergibt genau die Reihen und Eingesetzten aus FILE05. Mit DAFFNER hinten ergibt er FILE07, ohne HOCK
-  ergibt er FILE26. Spur: `kader-start`.
+  ergibt er FILE26. Spur: `kader-start`. A166 wechselt erst mit diesem Regressionstest von `kader-start` auf `[ORIGINAL]`:
+  Die Auswerteskripte liegen nicht im Repo, nachgerechnet hat das Review nur eine Stichprobe (Review R13RD-06).
 
 ### A167 – Aufgestellte immer eingesetzt, neue Kaderspieler nicht eingesetzt
 
@@ -508,7 +513,7 @@ eingeschalteter Einstellung** ohne Abweichung. Nur FILE06 weicht ab, und genau u
   `0x29E5B`, `0x40CF8`, `0x41210`, `0x4158A`, `0x415AB`, `0x42777`, `0x42816`, `0x4776B`, `0x4988F`, `0x5B084`. Bilder
   `file24_2_aufstellung_im_spiel_stefan_verl.png`, `file24_3_popup_spieler_verletzt_im_spiel.png`, `file24_5…`, `file25_2_aufstellung.png`.
 - **Umsetzung:** Ziel: `[APPROX]` in `StadiumStatistics.cs:107` → `[ORIGINAL]` für Verletzte (Fundstellen oben). Den Satz „ob das
-  Original sie vorher aus der Aufstellung nimmt“ ersetzen durch: „`+0x15` bleibt, `+0x0A` = 0 (0x5C50); gezählt wird beides“.
+  Original sie vorher aus der Aufstellung nimmt“ ersetzen durch: „`+0x15` bleibt, `+0x0A` = 0 (Datei 0x5C50); gezählt wird beides“.
   Gesperrte bleiben `[APPROX]`, ebenso die Neuaufstellung von Hand in `Squad.Lineup.cs:355`. Der Code-Hinweis „keine
   Neuaufstellung ohne Einstellung“ wird dort eingetragen. Dateien: `src/EishockeyManager.Core/StadiumStatistics.cs`,
   `Squad.Lineup.cs`. Testidee: Auto-Aufstellung an, Verletzung im Spiel → im Spiel „Eingesetzt“ 21 und Lücke, nach der
@@ -533,8 +538,8 @@ eingeschalteter Einstellung** ohne Abweichung. Nur FILE06 weicht ab, und genau u
 
 ## Sitzung 4 – Vereinsplatz beim Start (U15/D7) und R-K5 (FILE27, FILE28)
 
-Werkzeuge: `hok.load` (Vereinssätze far:9657 ab Datei 0x018A1, 48 × 0x3D; Tabelle DGROUP 0x5CCB ab 0x08F97; Regler
-DGROUP 0x118–0x11B ab 0x000E2; Meister DGROUP 0xD0E6 ab 0x00E82), Skripte `/root/s/py/s4clubs.py`, `/root/s/py/s4tv.py`;
+Werkzeuge: `hok.load` (Vereinssätze far:9657 ab HOK 0x018A1, 48 × 0x3D; Tabelle DGROUP 0x5CCB ab HOK 0x08F97; Regler
+DGROUP 0x118–0x11B ab HOK 0x000E2; Meister DGROUP 0xD0E6 ab HOK 0x00E82), Skripte `/root/s/py/s4clubs.py`, `/root/s/py/s4tv.py`;
 `emtool vereine` (Datenbankreihenfolge); Disassembly Datei 0x28165 ff., 0x29B60–0x29DA4, 0x43960–0x43B40.
 
 Datenbankreihenfolge (Bezug für „Remake-Index“): 0 Eisbären … 2 Düsseldorf, 5 Kölner EC, 8 Mannheim, 9 München; 12–23
@@ -542,7 +547,7 @@ Datenbankreihenfolge (Bezug für „Remake-Index“): 0 Eisbären … 2 Düsseld
 
 ### U15-a – Start-Liga bei fest gewähltem Verein (Tausch)
 
-- **Ergebnis:** belegt (Original-Regel), widerlegt (Remake-Annahme „fester Verein bleibt in seiner Liga“). Das Original setzt
+- **Ergebnis:** widerlegt (Remake-Annahme „fester Verein bleibt in seiner Liga“; die Original-Regel ist gelesen). Das Original setzt
   jeden Managerverein in die gewählte Start-Liga: Er tauscht mit einem Zufallsplatz r der Start-Liga (ohne Vereine früherer
   Manager, ohne Europapokal-Eintrag Zeile 1) per Datei 0x36169 mit Schalter 0x80 – Name, Logo (Feld 0x34), Manager (0x16),
   Wort 0x3B, Spieler (+0x1D) und Managerzuordnung wandern, die **Teamwerte 0x17–0x1D bleiben am Platz**. Der verdrängte Verein
@@ -614,7 +619,7 @@ Datenbankreihenfolge (Bezug für „Remake-Index“): 0 Eisbären … 2 Düsseld
 
 ### R-K5 – Reihenfolge der Vereinsauswahl innerhalb einer Seite
 
-- **Ergebnis:** belegt (Ursache gefunden), Remake-Annahme „Datenbankindex“ widerlegt. Die Vereinsauswahl Datei 0x28030 zeigt
+- **Ergebnis:** widerlegt (Remake-Annahme „Datenbankindex“; Ursache im Original gefunden). Die Vereinsauswahl Datei 0x28030 zeigt
   die Vereinssätze 12p … 12p + 11 in Satzreihenfolge, und die Sätze sind beim Öffnen der Spielvorbereitung **schon gemischt**:
   Beim Spielstart läuft die Ligamischung 0x35EDD (55 Tausche je Liga 0–2, voller Satztausch) vor dem Aufruf der
   Spielvorbereitung. Die beobachtete Reihenfolge ist also eine zufällige Permutation je Programmstart (srand(time) Datei
@@ -655,8 +660,8 @@ Datenbankreihenfolge (Bezug für „Remake-Index“): 0 Eisbären … 2 Düsseld
 
 ## S-K6-Rest – Mischzeitpunkt, Zufallsquelle, Fair-Play-Prämie
 
-Grundlage: Disassembly `em.exe` (Datei 0x54C9F-Saisonwechsel, 0x35EDD, 0x36169, 0x2A1E0, 0x26F20, 0xBFD5, 0x5667A),
-Spielstände FILE13/14, FILE16A/17, FILE22/23 (Strafminuten = Tabellensatz DGROUP 0x8257 + 0x50 · v, Feld +0x4A, Datei
+Grundlage: Disassembly `em.exe` (Datei 0x54C9F-Saisonwechsel, 0x35EDD, 0x36169, 0x2A1E0, 0x26F20, 0xBFD5, 0x5667A).
+Spielstände FILE13/14, FILE16A/17, FILE22/23 (Strafminuten = Tabellensatz DGROUP 0x8257 + 0x50 · v, Feld +0x4A, HOK
 0x03C5F + 0x50 · v + 0x4A; Vereinsnamen far:9657), Bilder `file13_15`, `file16_8`, `file16_9`, `file23_1`.
 
 **Ablauf am 29. April (Datei 0x54C9F, gelesen):**
@@ -678,7 +683,8 @@ Spielstände FILE13/14, FILE16A/17, FILE22/23 (Strafminuten = Tabellensatz DGROU
 
 ### S-K6-a – Mischzeitpunkt
 
-- **Ergebnis:** belegt (Remake-Annahme „Original mischt am 29. April vor dem Fenster 0x5645D“ stimmt; das Remake weicht ab).
+- **Ergebnis:** widerlegt (das Remake mischt in `StartNextSeason`, das Original am 29. April vor dem Fenster 0x5645D; die
+  Beschreibung im Remake-`[APPROX]` stimmt, das Verhalten weicht ab).
   Die Mischung 0x35EDD läuft am 29. April nach Auf-/Abstieg, Ewiger Tabelle, dem Spalten-Bildschirm „Saisonende“ 0x4C747,
   der Liga-Stufe und der Teamwert-Wanderung, aber **vor** dem Ereignis-/Prämienfenster 0x26F20 und vor dem Löschen der
   Strafminuten. Die zwei „Saisonende“-Bilder liegen also auf verschiedenen Seiten der Mischung: Die Spalten (0x4C747, liest
@@ -705,7 +711,8 @@ Spielstände FILE13/14, FILE16A/17, FILE22/23 (Strafminuten = Tabellensatz DGROU
 
 ### S-K6-b – Zufallsquelle der 55 Tausche
 
-- **Ergebnis:** widerlegt im Detail (Code-Kommentar und `re-runde-12.md` nennen `random(b, b + 11)`): Länder- und
+- **Ergebnis:** nicht entscheidbar (Zustand des Generators nicht im Spielstand, `[APPROX]` bleibt); die Begründung ist
+  falsch (Code-Kommentar und `re-runde-12.md` nennen `random(b, b + 11)`): Länder- und
   Ligatausche ziehen aus **lrandom** Datei 0xBFD5 (`0x38:0x7E5`), nicht aus C-`rand`/`random` Datei 0xC037. lrandom ist ein
   eigener Generator x = (16 · x + 167) mod 4.000.000, Ergebnis a + x · (b − a + 1) / 4.000.000, Zustand 32 Bit DGROUP
   0xE017/0xE019; ihn benutzen auch Spielberechnung (0x87F7, 0x9F5C, 0xA484, 0x36B5D, 0x37A62), Teamwert-Wanderung 0x09D1B
@@ -761,7 +768,7 @@ Spielstände FILE13/14, FILE16A/17, FILE22/23 (Strafminuten = Tabellensatz DGROU
   mit 0 Minuten gewinnt nur, wenn sein Satzplatz vor dem der Nachrücker liegt. Spur: `saison` (Anschluss `ui-rest`).
   Optionaler DOSBox-Gegenbeweis: FILE22 mit Konto über −666.667 DM (kein Zwangsabstieg, Bayreuth bleibt 2. Liga) und
   gepatchten Strafminuten Bayreuth 1, SC Riessersee (steigt in die 2. Liga auf) 0 → alte Liga: Prämie, neue Liga: keine
-  (braucht ein `hok patch` für Datei 0x03C5F + 0x50 · v + 0x4A, gibt es so noch nicht).
+  (braucht ein `hok patch` für HOK 0x03C5F + 0x50 · v + 0x4A, gibt es so noch nicht).
 
 ### Offene Fragen dieses Abschnitts
 
@@ -775,22 +782,39 @@ Spielstände FILE13/14, FILE16A/17, FILE22/23 (Strafminuten = Tabellensatz DGROU
 
 ## Umsetzung
 
-Je Punkt stehen Ziel, Dateien und Testidee im jeweiligen Abschnitt oben. Zuordnung zu den Spuren dieser Runde:
+Je Punkt stehen Ziel, Dateien und Testidee im jeweiligen Abschnitt oben. Zuordnung zu den Spuren dieser Runde nach den
+Entscheidungen der Leitstelle L1–L8 ([Kommentar in #567](https://github.com/kaaasi/eishockey-manager-redone/pull/567#issuecomment-6633257714)) und L9–L12 ([Ergänzung](https://github.com/kaaasi/eishockey-manager-redone/pull/567#issuecomment-6633831366)); bei Widerspruch zu den
+Abschnitten oben gelten diese Entscheidungen:
 
 - **`nationalteam`** (nach dem Merge dieses PRs): A009, A010, A028, A294 (Verhaltensänderung); A085 Gleichstand (Kandidatenfolge
-  statt Name); A293 (Knopf nur aus dem Menü, „Endrunde“ bleibt `[APPROX]`); A023, A027, A284, A300 nur `[APPROX]` → `[ORIGINAL]`.
-  Nebenbefunde Sitzung 1 (Sperre Transfer/Training ab der Gruppenphase, Kandidaten ohne Ausländerfilter) prüfen.
-- **`kader-start`:** U15-a (Tausch in die Start-Liga, `NewGame`), U15-b (Sperre im `SetupScreen`, D2), R-K5 (Startpermutation
-  vor der Spielvorbereitung), A091 (Kaderplatzfolge statt Rückennummer), A166 (Rückfall `Club.AutoDressed`), A125/A167/A189
-  `[ORIGINAL]` mit Fundstelle; U15-c nach Entscheidung (Frage 2). Mehrsaisonprobe für U15-a und A091.
-- **`saison`:** A058 und A163 (Modus „nur Weltkugel“), S-K6-a (Satzfolge am 29.04. bilden), S-K6-c (Fair-Play über die neue
-  Liga), S-K6-b (Begründung des `[APPROX]`), A088 (Transfermarkt-Zähler; Dateigrenze Frage 4). Mehrsaisonprobe Pflicht.
+  statt Name); A293 (Knopf nur aus dem Menü; „Endrunde“: Datei 0x3A88A lesen, sonst `[APPROX]`, L6); A023, A027, A284, A300 nur
+  `[APPROX]` → `[ORIGINAL]`. Nebenbefunde Sitzung 1 (Sperre Transfer/Training ab der Gruppenphase, Kandidaten ohne
+  Ausländerfilter, Länderwerte 0x18–0x1B über den Saisonwechsel) prüfen. Dateien außerhalb der eigenen Spur:
+  `GameState.Integration.cs` nur für den Tageslauf des Bundestrainers (A009, A028), wenig und mit Begründung im PR (L9);
+  `StatisticsStrength.cs` gehört `nationalteam` (L10).
+- **`kader-start`:** U15-a (Tausch in die Start-Liga, `NewGame`), U15-b (Sperre im `SetupScreen`, D2; Start-Liga global wie im
+  Original, L1), R-K5 (Startpermutation vor der Spielvorbereitung), A091 (Kaderplatzfolge statt Rückennummer), A166 (Rückfall
+  `Club.AutoDressed`; `[ORIGINAL]` erst mit dem Regressionstest), A125/A167/A189 `[ORIGINAL]` mit Fundstelle; U15-c bleibt
+  `[APPROX]` (L2). Mehrsaisonprobe für U15-a und A091. `GameSetup.cs` gehört `kader-start` (L11). `SeasonFlow.LeagueSlots.cs`
+  nur für die Belegung beim Spielstart (U15-a, R-K5), kleine Änderungen, geänderte Methoden im PR nennen (L3). In
+  `MatchEngine.Live.cs`/`Player.Factory.cs` nur die Kaderreihenfolge (L4). Schema 37 nur, falls L1 ein neues Feld braucht (L5).
+- **`saison`:** A058 und A163 (Modus „nur Weltkugel“), S-K6-a (Satzfolge am 29.04. bilden, neue Liga ab 29.04. mit Migration,
+  Schema 38, `Core/SaveGame.Migration.Saison.cs`, L5), S-K6-c (Fair-Play über die neue Liga), S-K6-b (Begründung des
+  `[APPROX]` im Code-Kommentar von `SeasonFlow.LeagueSlots.cs`), A088 (Transfermarkt-Zähler, wenig in `MatchEngine.Live.cs`
+  `ResetMatchCounters` und `Player.Factory.cs`, Begründung im PR, L4); 0x346D5 mitlesen und zuordnen (L8).
+  `SeasonFlow.LeagueSlots.cs` für den Saisonwechsel (S-K6-a), Konflikte mit `kader-start` löst die Leitstelle bei der
+  Integration (Folge `kader-start` → `saison`, L3). Mehrsaisonprobe Pflicht.
 - **`ui-rest`:** nur der Anschluss `FairPlayTable` für S-K6-c (`StatisticsClub.cs`), mit `saison` abstimmen.
-- **Doku** (Leitstelle oder `pruefung-karte`): `docs/spielberechnung.md` §14 – Aufruf von 0x35EDD „nach dem Lader 0x439BB“
-  ist falsch (Aufrufer 0x437D5 Datei 0x43A17 und 0x54C9F Datei 0x5644E); `re-runde-12.md` S-K6: `lrandom` statt `random`;
-  neue Feldbelege aus Sitzung 2/3 für `docs/formate/spielstand-original.md` (Abschnitt Sitzung 2 und 3 oben).
+- **`pruefung-karte`** (Welle 2, L12): `docs/spielberechnung.md` §14 – Aufruf von 0x35EDD „nach dem Lader 0x439BB“ ist falsch
+  (Aufrufer 0x437D5 Datei 0x43A17 und 0x54C9F Datei 0x5644E); `docs/analyse/re-runde-12.md` S-K6: `lrandom` statt `random`;
+  neue Feldbelege aus Sitzung 2/3 für `docs/formate/spielstand-original.md` (Abschnitt Sitzung 2 und 3 oben). `saison` und
+  `kader-start` ändern diese drei Dateien nicht, auch wenn die Abschnitte oben sie nennen (U15-a, S-K6-b), sondern nennen den
+  Bedarf im PR.
+- **Fehlende Aufnahmen** (Frage 7): entscheidet der Nutzer; bis dahin bleiben die betroffenen Punkte `[APPROX]` (L7).
 
 ## Offene Fragen an die Leitstelle (gesammelt)
+
+Entschieden als L1–L8 im Kommentar der Leitstelle in #567 (siehe „Umsetzung“).
 
 1. **Start-Liga global?** Original: ein Satz DGROUP 0x118–0x11B für alle Manager; Remake je Manager. `kader-start` die Start-Liga
    global machen lassen oder die Sperre U15-b gegen alle Manager prüfen?
@@ -811,7 +835,11 @@ Je Punkt stehen Ziel, Dateien und Testidee im jeweiligen Abschnitt oben. Zuordnu
 ## Selbstprüfung
 
 `python3 tools/reverse-engineering/funktionskarte.py gamedata/em.exe --repo . --csv <scratch>` ohne `--write` (Stand dieses
-Branches): 679 Funktionen, 5355 Zuordnungen; Spielcode umgesetzt 254, genähert 3, dokumentiert 106, unbekannt 1 (Lader `tore\`,
-zurückgestellt bei `livespiel`), umgesetzt 90 % der Bytes; diese Datei ist Fundstelle in 72 Funktionen. Den Stand in
+Branches): 679 Funktionen, 5349 Zuordnungen (Base `8afd750`: 5097); Spielcode umgesetzt 254, genähert 3, dokumentiert 106,
+unbekannt 1 (Lader `tore\`, zurückgestellt bei `livespiel`), umgesetzt 90 % der Bytes; Gesamtzeile wie am Base: dokumentiert
+154, unbekannt 257. Diese Datei ist Fundstelle in 69 Funktionen und ändert keinen Status gegenüber dem Base. Nach R13RD-01
+(Spielstand-Offsets als `HOK 0x…`, Kopf ohne das Wort „Dateioffsets“, sonst liest die Karte jede Hexzahl als em.exe-Offset)
+entfallen die im Review genannten falschen Zuordnungen zu vier Funktionen; die Funktion, die nur über den Strafminuten-Offset
+im Spielstand „dokumentiert“ war, ist wieder unbekannt (Tabelle Base/Head im Übergabekommentar in #567). Den Stand in
 `re-abdeckung.md` und die Zeilen in `inventur.md` schreibt `pruefung-karte` (Welle 2). Keine Originaldaten oder Bilder im Repo;
 Bildnamen verweisen nur auf das Referenz-Repo.
