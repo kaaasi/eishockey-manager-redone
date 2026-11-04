@@ -145,6 +145,10 @@ Leitstelle L1–L12 in #567, L13–L15 in #578/#583.
 - **`saison`** – Branch `integration/runde-13-saison` (#569, #571, #579, #583 ohne Konflikt, `main` @ `48e1e67` nachgezogen):
   `tools/pruefen.sh` alle drei Läufe an `07e8a39` bestanden (2178/0/0, 1834/0/308, Pflichtlauf 1835/343). Schema 38 mit
   Leerschritt 37 (L5); A088 bleibt `[APPROX]` (L14, Kandidat Runde 14). Review offen.
+- **`nationalteam`** – Branch `integration/runde-13-nationalteam` auf `integration/runde-13-saison` (#580, #581, #584 ohne
+  Konflikt, `GameState.Integration.cs` automatisch zusammengeführt, L9): `tools/pruefen.sh` alle drei Läufe an `9e20c55`
+  bestanden (2192/0/0, 1845/0/311, Pflichtlauf 1846/346). Nebenbefunde (#580): Reihenlogik der Vereinsaufstellung wie A010,
+  Sperre Transfer/Training ab der WM-Gruppenphase ohne Inventur-ID → Kandidaten Runde 14. Review offen.
 
 ### Entscheidungen zum Start (Nutzer, 04.11.2026)
 
