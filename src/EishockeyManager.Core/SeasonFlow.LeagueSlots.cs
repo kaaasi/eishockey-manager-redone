@@ -26,7 +26,7 @@ public sealed partial class GameState
 
     /// <summary>
     /// Satzfolge aller drei Ligen hintereinander (Bundesliga, 2. Liga, Oberliga; je <see cref="ClubsPerLeague"/> Einträge).
-    /// Leer in Spielständen vor Schema 33 (Migration); dann gilt bis zum nächsten Saisonwechsel die Indexfolge.
+    /// Leer in Spielständen vor Schema 34 (Migration); dann gilt bis zum nächsten Saisonwechsel die Indexfolge.
     /// </summary>
     private readonly List<int> _leagueSlots = [];
 
@@ -83,7 +83,10 @@ public sealed partial class GameState
                 .Where(members.Contains).Distinct().ToList();
             order.AddRange(members.Where(c => !order.Contains(c)).Order());
             if (order.Count != ClubsPerLeague)
-                return; // ungewöhnliche Ligagröße (synthetische Spielstände): Folge nicht führen, Indexfolge gilt
+            {
+                _leagueSlots.Clear(); // ungewöhnliche Ligagröße (synthetische Spielstände): Folge nicht führen, Indexfolge gilt
+                return;
+            }
             next.AddRange(order);
         }
         _leagueSlots.Clear();

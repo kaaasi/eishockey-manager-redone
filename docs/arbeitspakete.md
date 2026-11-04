@@ -95,7 +95,7 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
   4. **A058/A088/A163 (nach `re-dosbox`):** Saisonwechsel im Modus „nur Weltkugel“ (Teamwert-Wanderung, Oberliga-Austausch,
      Zurücksetzen der Spielerzähler) nach Befund; Mehrsaisonprobe im Modus „nur Weltkugel“.
 - **Dateigrenzen:** siehe Zuständigkeit; Tests, `docs/analyse/re-saisonwechsel.md`, `docs/saison.md`. **Modell:** Claude Opus 5.5.
-  **Status:** geplant.
+  **Status:** Teil 1 in Review (PR #569).
 
 ### Spur `nationalteam` – Bundestrainer nach der DOSBox-Aufnahme (nach `re-dosbox`)
 
