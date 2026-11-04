@@ -177,10 +177,10 @@ public class RngTwinProbeTests
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "B54D8F5BAD017D38")]
-    [InlineData(true, 3, "09843F6CF7B8374F")]
-    [InlineData(false, 11, "66FD8684BCC04AD5")]
-    [InlineData(true, 11, "CCDB49C8514E69C5")]
+    [InlineData(false, 3, "6927110A2E58967B")]
+    [InlineData(true, 3, "642103BA0B540BAE")]
+    [InlineData(false, 11, "DC47CDF473F7E601")]
+    [InlineData(true, 11, "AB514D4A97C4C511")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);

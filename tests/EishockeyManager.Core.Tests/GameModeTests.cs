@@ -376,7 +376,7 @@ public class GameModeTests
     // danach andere Konten, ab Saison 4 andere Kaufentscheidungen, Titel in Saison 5 und Zufallszustand.
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|502709,400000|WorldChampion=55,CupWinner=8,GermanChampion=4,EuropeanCupWinner=3|1747123,400000|WorldChampion=57,CupWinner=15,GermanChampion=16,EuropeanCupWinner=3|2408769,400000|WorldChampion=54,CupWinner=17,GermanChampion=17,EuropeanCupWinner=16|2785511,-4255801|WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=17|400000,-8404150|R447796559 C1666445596";
+        "WorldChampion=54,CupWinner=1,GermanChampion=3,EuropeanCupWinner=2|311110,400000|WorldChampion=63,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|1652647,400000|WorldChampion=52,CupWinner=17,GermanChampion=15,EuropeanCupWinner=3|2275792,400000|WorldChampion=52,CupWinner=8,GermanChampion=17,EuropeanCupWinner=15|2791822,400000|WorldChampion=52,CupWinner=15,GermanChampion=3,EuropeanCupWinner=15|400000,400000|R601937203 C661253338";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

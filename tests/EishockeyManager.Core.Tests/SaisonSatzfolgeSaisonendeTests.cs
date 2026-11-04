@@ -14,7 +14,7 @@ public class SaisonSatzfolgeSaisonendeTests
     {
         var setup = new GameSetup { Duration = GameDuration.Unbegrenzt, EuropeAndWorldCup = true };
         for (var i = 0; i < clubs.Length; i++)
-            setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = clubs[i] });
+            setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = clubs[i], StartLeague = (League)(clubs[0] / 12) }); // kader-start U15-a (L13)
         return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
     }
 
