@@ -91,7 +91,7 @@ Base-Lauf: Die neuen Testdateien wurden in einen Base-Checkout kopiert. Nur dort
 | R12K-03 (#532) | `KeepSquad_DefaultExtendsOnlyOfferedContracts` rot | Vorgabe `extendExpired = true` → rot | grün |
 | R12K-04 (#533) | – (Doku `docs/transfer.md`) | – | gelesen, stimmig |
 | U15-a (0x29C3B–0x29CF2) | `KaderStartStartLigaTests` 13 von 15 rot; grün nur `FixedClubAlreadyInStartLeague_Kept` (Gegenprobe) | `PlaceInStartLeague` → `null` → alle Tausch-Tests rot (auch FILE27 mit Originaldaten, Mehrsaisonprobe passiv/aktiv) | grün |
-| U15-a gegen FILE27/FILE28 | – | – | `emtool hok dump`: Kopf FILE05 „Start-Liga 0“ bzw. Liga je Stand wie in `re-runde-13.md`; Test `OriginalDatabase_KoelnSecondLeague_LikeFile27` grün |
+| U15-a gegen FILE27/FILE28 | – | – | FILE27/FILE28 nicht selbst gedumpt (Beleg aus `re-runde-13.md`, U15-a); Test `OriginalDatabase_KoelnSecondLeague_LikeFile27` mit Originaldatenbank grün |
 | U15-b (0x2890E) | API fehlt (Übersetzungsfehler) | Sperrbedingung abgeschaltet → `Duration_OtherStartLeague…` (2), `StartLeague_OneSeason…` rot | grün (auch UI `OneSeason_LocksStartLeague_ForAllManagers`) |
 | L1 | API fehlt | – | `StartLeague_SharedByAllManagers` grün; Code: Setter setzt alle Manager, `SetupScreen` übernimmt den Wert für neue Manager |
 | R-K5 (0x43A17 → 0x35EDD, 0x28030) | API fehlt | Tausche in `StartOrder` abgeschaltet → `StartOrder_PagesHoldTheirLeague…` (3) rot; `PlaceInStartLeague` → `null` → `StartSwap_ExchangesSlots…` (3) rot | grün (auch UI `ClubPicker_ShowsStartOrder…`, Seite 3 Zelle 8 = DB 44 wie `_0136`) |
