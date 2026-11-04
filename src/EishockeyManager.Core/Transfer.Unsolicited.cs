@@ -167,8 +167,7 @@ public sealed partial class GameState
         if (TransferMarket.ListingOf(p) is { } listing)
             TransferMarket.Withdraw(listing);
         Book(offer.Manager, FinanceCategory.Transfers, offer.Amount);
-        club.Players.Remove(p);
-        club.Lineup.Remove(p);
+        club.RemovePlayer(p);
         p.UnsolicitedOffer = null;
         var buyer = offer.Buyer;
         if (buyer.Index < UnsolicitedOfferRules.FirstForeignClub)

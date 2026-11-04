@@ -18,8 +18,10 @@ namespace EishockeyManager.Core;
 ///   Ausweichrollen (Torhüter → Abwehr → Sturm, Abwehr → Sturm → Torhüter, Sturm → Abwehr → Torhüter; Datei
 ///   0x4285C–0x4296A). Als Feldspieler zählt der erste freie Torhüter mit −1 (nie gewählt), jeder weitere mit 1
 ///   (Datei 0x42913–0x4292C); ist der erste übersprungen, endet die Suche, sobald die Ausgangsrolle wieder erreicht ist.</item>
-/// <item>[APPROX] Kaderplätze in der Reihenfolge von <see cref="Club.SortedPlayers"/> (wie <see cref="LiveSquad.Create"/>;
-///   im Original hängt die Platzfolge an Kauf und Verkauf).</item>
+/// <item>[ORIGINAL] Kaderplätze in der Reihenfolge von <see cref="Club.Players"/> (A091, wie <see cref="LiveSquad.Create"/>):
+///   Kauf hinten an, Verkauf rückt auf, Saisonwechsel unverändert (Datei 0x42CB1, 0x425B6; FILE05/FILE07/FILE26,
+///   FILE22/FILE23). Die Platzfolge entscheidet den Gleichstand in Datei 0x42838 (FILE05 Reihe 3: LALA vor HANEMANN und
+///   H.STEIGER, alle Wert 68; FILE07: DAFFNER auf Platz 25 verdrängt LALA).</item>
 /// <item>[APPROX] Ein Feldspieler aus der Torhütersuche (kein Torhüter frei) bekommt im Original +0x15 = 1 und steht damit
 ///   in der ersten Abwehrreihe; das Remake setzt ihn nur ein (der Torhüterplatz nimmt nur Torhüter).</item>
 /// </list>
@@ -116,6 +118,18 @@ public static class AutoLineupRule
             }
         }
 
+        FillReserves(slots, dressed, count);
+        lineup.SortBlocksByNumber();
+        return slots.Where((_, i) => dressed[i]).ToList();
+    }
+
+    /// <summary>
+    /// Datei 0x427C0–0x4282C: reihum Sturm, Abwehr, Torhüter je ein Ersatzspieler (<see cref="FindBest"/>), bis
+    /// <see cref="Club.MaxDressed"/> eingesetzt sind oder auch die Torhütersuche leer bleibt. <paramref name="count"/> ist der
+    /// Zähler [bp-9] (1 + bisher Eingesetzte).
+    /// </summary>
+    public static void FillReserves(IReadOnlyList<Player> slots, bool[] dressed, int count)
+    {
         while (count < Club.MaxDressed + 1)
         {
             var last = -1;
@@ -136,9 +150,6 @@ public static class AutoLineupRule
             if (last == -1)
                 break;
         }
-
-        lineup.SortBlocksByNumber();
-        return slots.Where((_, i) => dressed[i]).ToList();
     }
 }
 
@@ -170,9 +181,10 @@ public sealed partial class Club
     /// </summary>
     public bool ApplyAutoLineup()
     {
+        RenumberPlayers(); // A091: Nr. = Kaderplatz + 1 auch für Stände aus der Zeit der freien Rückennummern
         if (!_autoLineup)
             return false;
-        var dressed = AutoLineupRule.Apply(Lineup, SortedPlayers.ToList());
+        var dressed = AutoLineupRule.Apply(Lineup, Players.ToList());
         _dressed.Clear();
         _dressed.UnionWith(dressed.Select(p => p.Id));
         _dressedByHand = true;
