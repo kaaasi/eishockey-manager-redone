@@ -19,6 +19,16 @@ public sealed class SeasonEndSummaryScreen : Screen
 
     public SeasonEndSummaryScreen(ScreenHost host, MainMenuScreen menu) : base(host) => _menu = menu;
 
+    /// <summary>
+    /// Öffnet das Fenster für den ersten Manager. Der Aufruf gehört in die Eingabe des Bildschirms davor (R12U-02):
+    /// Der Managerwechsel steht im Spielkern, <see cref="Enter"/> und <see cref="Draw"/> ändern nichts.
+    /// </summary>
+    public static SeasonEndSummaryScreen Open(ScreenHost host, MainMenuScreen menu)
+    {
+        host.Game!.ShowSeasonEndManager(0);
+        return new SeasonEndSummaryScreen(host, menu);
+    }
+
     private GameState Game => Host.Game!;
     private SeasonRecord Record => Game.History[^1];
 
@@ -69,7 +79,7 @@ public sealed class SeasonEndSummaryScreen : Screen
         _index++;
         if (_index < Record.Managers.Count)
         {
-            Game.CurrentManager = Record.Managers[_index].Manager;
+            Game.ShowSeasonEndManager(_index); // Eingabe löst den Managerwechsel aus (R12U-02), nicht Enter/Draw
             return;
         }
         if (Game.IsGameOver)
@@ -86,19 +96,13 @@ public sealed class SeasonEndSummaryScreen : Screen
 
     private Screen AfterRenewals()
     {
-        Game.CurrentManager = Game.ActiveManagers.Select(m => Game.Managers.ToList().IndexOf(m)).First();
+        Game.ReturnToFirstActiveManager();
         // [ORIGINAL] #195 (Integration Runde 8, Welle 3, Vorschlag aus PR #265): Im Modus „nur Weltkugel“ läuft auch nach dem
         // Saisonwechsel zuerst die Tagesfunktion Datei 0x54C9F (Sprung zum WM-Termin); das Menü kommt erst am Tagesende.
         if (Game.WorldOnly)
             Game.Continue();
         // [ORIGINAL] Datei 0x56609: Auslosung der ersten DEB-Pokal-Runde beim Saisonwechsel (Spur debpokal-auslosung)
         return Competitions.DebCupDrawFlow.AtSeasonStart(Host, _menu);
-    }
-
-    public override void Enter()
-    {
-        if (Record.Managers.Count > 0)
-            Game.CurrentManager = Record.Managers[Math.Min(_index, Record.Managers.Count - 1)].Manager;
     }
 
     public override void Draw(Surface s)
