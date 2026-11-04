@@ -1,4 +1,5 @@
 using EishockeyManager.Core;
+using EishockeyManager.Formats;
 using EishockeyManager.UI;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.Team;
@@ -74,6 +75,8 @@ public class BildschirmeOeffnenZustandTests
 
         // Verhandlungen am Saisonende (Aufruf wie in der Eingabe des Fensters davor).
         game.CurrentManager = 1;
+        foreach (var m in game.ActiveManagers)
+            game.Clubs[m.ClubIndex].Players.First(x => x.Role == PlayerRole.Forward && !x.OnLoan).ContractYears = 1;
         game.StartNextSeasonWithRenewals();
         var screen = ContractsScreen.ForSeasonEnd(d.Host, () => menu);
         var contracts = Assert.IsType<ContractsScreen>(screen);
