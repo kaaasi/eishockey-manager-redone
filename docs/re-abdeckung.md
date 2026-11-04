@@ -73,7 +73,7 @@ nichts aus dem Original; die CSV gehört nicht ins Repo. Nach jeder Spur mit neu
 
 ## Ergebnis in Kürze
 
-* Spielcode (ohne Systemsegmente), Stand nach Runde 11: **88 % der Bytes umgesetzt**, 1 % genähert, 11 % dokumentiert (nach Runde 10: 82 / 2 / 16),
+* Spielcode (ohne Systemsegmente), Stand nach Runde 12: **90 % der Bytes umgesetzt**, 1 % genähert, 10 % dokumentiert (nach Runde 11: 88 / 1 / 11; nach Runde 10: 82 / 2 / 16),
   unbekannt nur noch eine Funktion (0x575C3, 421 Byte, bei `livespiel` zurückgestellt). Maßgeblich sind die Zahlen im
   erzeugten Teil. Wegen der Körnung ist „umgesetzt“ eine Obergrenze; was die Funktionskarte als „dokumentiert“ führt, ordnet
   `docs/analyse/inventur.md` ein (fehlt im Remake, vorhanden ohne `[ORIGINAL]`, nicht nötig).
@@ -149,7 +149,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 5096 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 5097 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 

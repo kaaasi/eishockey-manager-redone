@@ -55,6 +55,9 @@ cd eishockey-manager-redone
   Treffer vorher mit `git config --get-all remote.origin.fetch` prüfen). Meldet der Stop-Hinweis „unpushed commits / no remote branch“, obwohl
   gepusht ist, fehlt nur das Tracking: `git config branch.<b>.remote origin`, `branch.<b>.merge refs/heads/<b>` und eine
   Fetch-Regel `+refs/heads/<b>:refs/remotes/origin/<b>` eintragen, dann `git fetch`.
+- **Ende geplanter Läufe (Erfahrung Leitstelle Runde 12):** Läufe melden ihr Ende nicht. Vor jeder Statusauskunft
+  `list_triggers` (Feld `last_run.status`/`finished_at`) prüfen, nicht nur den PR; ein Draft-PR heißt nicht „läuft noch“.
+  Reviews durch ChatGPT brauchen Codex mit Netzzugang; Titel und Head-SHA der Review-Datei vor der Auswertung prüfen.
 - **Auf geplante Läufe warten:** `send_later` stand nicht verlässlich bereit; bewährt hat sich eine Warteschleife im
   Hintergrund (`run_in_background`), die per `gh api …/pulls?state=open` auf den Review-Branch wartet – Intervall 60 s,
   Obergrenze rund zwei Stunden (z. B. `for i in $(seq 1 115)`), danach abbrechen und den Lauf prüfen (`list_triggers`). Nach einem Neustart
