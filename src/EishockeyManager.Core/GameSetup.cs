@@ -53,8 +53,8 @@ public sealed class ManagerSetup
     /// <summary>
     /// Start-Liga. [ORIGINAL] Ein Wert für alle Manager (DGROUP 0x11A, Entscheidung L1); die Spielvorbereitung setzt ihn
     /// über <see cref="GameSetup.StartLeague"/> für alle gleich. Je Manager geführt bleibt er für ältere Spielstände
-    /// und Tests, die Manager einzeln anlegen. [APPROX] Der Spielstart liest ihn weiter je Manager (Vereinsvergabe,
-    /// Kadergröße); der Tausch in die Start-Liga (U15-a, Datei 0x29C3B–0x29CF2) ist noch offen.
+    /// und Tests, die Manager einzeln anlegen. Der Spielstart liest ihn je Manager (Tausch in die Start-Liga U15-a,
+    /// <see cref="NewGame.PlaceInStartLeague"/>; Zufallsverein; Kadergröße) – bei gleichem Wert für alle wie im Original.
     /// </summary>
     public League StartLeague { get; set; } = League.Bundesliga;
     public StartStrength StartStrength { get; set; } = StartStrength.Mittelfeld;

@@ -255,7 +255,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// (0x977F, Vereinsfelder). Mit und ohne Anzeige weiter gleich.
     /// Spur kader-transfer, Runde 12, Teil 1 (U4, U5): ab 1995 neu – Angebote verfallen (0x0767A), Poolplätze enden mit Nachfolger
     /// (0x2787A); anderer Zufallsverbrauch, der Kader des Managers wird mit KeepSquadHelper auch ohne Angebot verlängert.
-    /// Integration Runde 12 (+ kader-transfer): Abdruck auf dem integrierten Stand neu ermittelt. Mit und ohne Anzeige weiter gleich.</summary>
+    /// Integration Runde 12 (+ kader-transfer): Abdruck auf dem integrierten Stand neu ermittelt. Mit und ohne Anzeige weiter gleich.
+    /// Runde 13, kader-start Teil 2 (U15-a, L13): ab 1993 neu – Verein 42 tauscht mit Start-Liga Oberliga in die Oberliga
+    /// (Datei 0x29CF2, Teamwerte bleiben am Platz, Oberliga-Kader); mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 4, DM 6, Tab 15341 | 1994: DEB 12, DM 4, Tab 15422 | 1995: DEB 10, DM 4, Tab 15391 | 1996: DEB 10, DM 10, Tab 15611";
+        "1993: DEB 6, DM 5, Tab 15321 | 1994: DEB 19, DM 6, Tab 15595 | 1995: DEB 8, DM 8, Tab 15316 | 1996: DEB 1, DM 8, Tab 15680";
 }

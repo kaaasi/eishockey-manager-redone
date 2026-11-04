@@ -70,7 +70,7 @@ public class FinanceWerbungTests
     public void Rating_IgnoresEternalChampionships()
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Z", Head = 0, ClubIndex = 14 });
+        setup.Managers.Add(new ManagerSetup { Name = "Z", Head = 0, ClubIndex = 14, StartLeague = League.ZweiteLiga });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
         var me = game.ActiveManager;
         Assert.Equal(League.ZweiteLiga, game.Clubs[me.ClubIndex].League);

@@ -164,16 +164,19 @@ namespace EishockeyManager.Core.Tests;
 /// 50 … 150 (Datei 0x549A2). Die Spielvorbereitung (101 − Belastung/8, 0x84D7) gibt damit andere Kaderenergien; andere
 /// Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Zufallszüge unverändert (kein neuer Zug).
 /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): neu – Computervereine spielen mit der Datenbankstärke ohne Bezug zur Remake-Aufstellung ([ORIGINAL] 0x977F liest nur die Vereinsfelder); Verletzungen, Verkäufe und Aufstellungslücken eines Computervereins ändern seine Stärke nicht mehr. Andere Ergebnisse, sobald ein Computerverein mit veränderter Aufstellung spielt; keine neuen Zufallszüge.
+/// Runde 13, kader-start Teil 2 (U15-a, L13): synthetische Abdrücke (Seed 3/11) neu – der feste Verein tauscht beim Spielstart in
+/// die Start-Liga (Datei 0x29CF2, bei Bundesliga immer, Teamwerte bleiben am Platz); ein Zufallszug mehr beim Spielstart.
+/// Originaldatenbank-Abdrücke (Verein 42, Start-Liga Oberliga) unverändert.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "BAF64BC14EFB250D")]
-    [InlineData(true, 3, "946F98B1C2426F30")]
-    [InlineData(false, 11, "66FD8684BCC04AD5")]
-    [InlineData(true, 11, "CCDB49C8514E69C5")]
+    [InlineData(false, 3, "6927110A2E58967B")]
+    [InlineData(true, 3, "9385375DD06C0A61")]
+    [InlineData(false, 11, "DC47CDF473F7E601")]
+    [InlineData(true, 11, "AB514D4A97C4C511")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -189,7 +192,7 @@ public class RngTwinProbeTests
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Probe", ClubIndex = 42 });
+        setup.Managers.Add(new ManagerSetup { Name = "Probe", ClubIndex = 42, StartLeague = League.Oberliga });
         var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, seed: 3);
         Assert.Equal(expected, Run(game, active));
     }

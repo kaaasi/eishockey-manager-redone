@@ -13,7 +13,7 @@ public class GameModeTests
     {
         var setup = new GameSetup();
         foreach (var (club, i) in clubs.Select((c, i) => (c, i)))
-            setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = club });
+            setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = club, StartLeague = NewGame.DatabaseLeague(club) ?? League.Oberliga });
         if (setup.ClubCompetitions != flag)
             Assert.True(setup.ToggleClubCompetitions());
         if (setup.EuropeAndWorldCup != globe)
@@ -368,8 +368,9 @@ public class GameModeTests
     // Spur kader-transfer, Runde 12, Teil 1 (U4, U5): ab Saison 2 neu – Angebote verfallen (Datei 0x0767A, 0x07626), Computerspieler und
     // Poolplätze enden bei Alter > random(37, 42) mit Nachfolger (Datei 0x2787A; andere Poolbenennung, anderer Zufallsverbrauch).
     // Der passive Testmanager 1 verlängert nur angebotene Verträge: sein Konto fällt in Saison 5 auf −6.990.533.
+    // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|502709,500000|WorldChampion=55,CupWinner=8,GermanChampion=4,EuropeanCupWinner=3|1747123,400000|WorldChampion=57,CupWinner=15,GermanChampion=16,EuropeanCupWinner=3|2408769,500000|WorldChampion=54,CupWinner=17,GermanChampion=17,EuropeanCupWinner=16|2785511,-4113566|WorldChampion=63,CupWinner=11,GermanChampion=11,EuropeanCupWinner=17|400000,-8111821|R1213235468 C1251305994";
+        "WorldChampion=54,CupWinner=1,GermanChampion=3,EuropeanCupWinner=2|311110,400000|WorldChampion=63,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|1652647,400000|WorldChampion=52,CupWinner=17,GermanChampion=15,EuropeanCupWinner=3|2275792,500000|WorldChampion=52,CupWinner=8,GermanChampion=17,EuropeanCupWinner=15|2891822,500000|WorldChampion=52,CupWinner=15,GermanChampion=3,EuropeanCupWinner=15|400000,400000|R601937203 C661253338";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

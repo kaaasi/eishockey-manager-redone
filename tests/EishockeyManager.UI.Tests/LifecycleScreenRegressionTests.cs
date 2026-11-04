@@ -46,11 +46,12 @@ public class LifecycleScreenRegressionTests
         // Spur kader-transfer, Runde 12, Teil 2 (U9): fester Spielplan, anderer Spielverlauf – der Tausch Pool ↔ Computerkader
         // erreicht den Spieler jetzt: Vereinskader von Verein 59 (Rückkehr), mit laufendem Vertrag, in keinem Poolplatz.
         // Integration Runde 12 (wettbewerbe-spiel + kader-transfer): Ausgang wie bei wettbewerbe-spiel Teil 2 (Prüfung unten).
+        // Runde 13, kader-start Teil 2 (U15-a, L13): Verein 42 tauscht mit Start-Liga Oberliga in die Oberliga (Datei 0x29CF2,
+        // Teamwerte des Platzes, Oberliga-Kader) – anderer Zufallsverlauf, wieder der zweite stimmige Ausgang (Poolplatz).
         Assert.Equal(59, origin.Index);
-        Assert.DoesNotContain(player, game.TransferMarket.PoolPlayers);
-        Assert.Equal(2, player.ContractYears);
-        Assert.Contains(player, origin.Players);
-        Assert.All(game.Clubs.Where(c => c != origin), c => Assert.DoesNotContain(player, c.Players));
+        Assert.Contains(player, game.TransferMarket.PoolPlayers);
+        Assert.Equal(0, player.ContractYears);
+        Assert.All(game.Clubs, c => Assert.DoesNotContain(player, c.Players));
         Assert.DoesNotContain(player, club.Players);
         Assert.DoesNotContain(expired, club.Players);
         Assert.All(game.Clubs, c => Assert.All(c.Lineup.Players, p => Assert.Contains(p, c.Players)));

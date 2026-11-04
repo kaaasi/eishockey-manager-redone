@@ -14,7 +14,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     private static GameState Game(int managerClub = 2, int seed = 3)
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = managerClub });
+        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = managerClub, StartLeague = NewGame.DatabaseLeague(managerClub) ?? League.Oberliga });
         return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
     }
 
@@ -186,10 +186,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// des aktiven Managers; der passive Abdruck bleibt.
     /// R12I-01 (Review #514): neue Kaderplätze (Pool, Talente) mit Belastung random(80, 120) statt 51 … 70 (Datei 0x42E4C) –
     /// Spieler vom Markt sind belasteter, beide Abdrücke (Originaldatenbank) neu; die synthetischen Abdrücke (Seed 3/11) bleiben.
-    /// Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.</summary>
+    /// Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.
+    /// kader-start Teil 2 (U15-a, L13): Originaldatenbank-Abdrücke neu – der feste Verein 2 tauscht beim Spielstart innerhalb der
+    /// Bundesliga (Datei 0x29CF2, Teamwerte bleiben am Platz).</summary>
     [GameDataTheory]
-    [InlineData(false, "2F5CC98EF758F86E")]
-    [InlineData(true, "75F5165C1DD4B4CA")]
+    [InlineData(false, "5C8A389AE478DA03")]
+    [InlineData(true, "60560F18F7F34EC1")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -253,8 +255,9 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Mittelwerts mit Form 50 (vorher 4 von 5 Titeln für Russland 52, jetzt 52, 54, 63, 55, 63).
     // Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
     // Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
+    // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=63|500000|WorldChampion=55|500000|WorldChampion=63|500000|R981788763 C6027902";
+        "WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|WorldChampion=60|500000|R1046516136 C1283793558";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

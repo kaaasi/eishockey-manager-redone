@@ -68,7 +68,7 @@ public class SaisonwechselProbenTests
     public void PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop(MatchCompetition competition, bool knockOut,
         League league)
     {
-        var game = TestGames.Create(3);
+        var game = TestGames.Create(5); // kader-start U15-a (L13): Saat 3 → 5, Vorbedingung nach dem Starttausch (Spiel ohne Gleichstand)
         MatchEngine.EnsureTeamValues(game);
         var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
         var clubs = game.Clubs.Where(c => c.Index < 12 && !managed.Contains(c.Index)).Take(2).ToList();

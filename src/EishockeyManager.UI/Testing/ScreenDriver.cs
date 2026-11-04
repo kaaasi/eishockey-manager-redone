@@ -87,6 +87,9 @@ public sealed class ScreenDriver
                 Wheel(-1);
             var c = SetupScreen.ClubCell(club % SetupScreen.ClubsPerPage);
             Click(c.X + 5, c.Y + 5);
+            // kader-start (U15-a, L13): Start-Liga = Liga des Vereins (ohne Liga: Oberliga), damit er dort bleibt (Datei 0x29C3B).
+            for (var l = 0; l < (int)(Core.NewGame.DatabaseLeague(club) ?? Core.League.Oberliga); l++)
+                Click(SetupScreen.ArrowDown(2).X + 5, SetupScreen.ArrowDown(2).Y + 3);
         }
         Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
         // Spur debpokal-auslosung: nach „Los jetzt!“ fragt das Spiel, ob die DEB-Pokal-Auslosung live gezeigt werden soll

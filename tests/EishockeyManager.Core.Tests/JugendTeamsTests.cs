@@ -187,10 +187,12 @@ public class JugendTeamsTests
         Assert.Equal(active ? ExpectedActive : ExpectedPassive, run);
     }
 
+    // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     private const string ExpectedActive =
-        "0:Schueler:2/11/65;0:Jugend:2/11/66;0:Junioren:2/11/65;1:Schueler:1/11/71;1:Jugend:1/11/75;1:Junioren:1/11/77;2:Schueler:1/6/78;2:Jugend:1/6/80;2:Junioren:1/6/82;3:Schueler:1/6/81;3:Jugend:1/6/83;3:Junioren:1/6/84";
+        "0:Schueler:2/11/61;0:Jugend:2/11/65;0:Junioren:2/11/67;1:Schueler:1/12/70;1:Jugend:1/11/71;1:Junioren:1/11/75;2:Schueler:1/6/75;2:Jugend:1/6/77;2:Junioren:1/6/80;3:Schueler:1/6/82;3:Jugend:1/6/83;3:Junioren:1/6/82";
+    // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/63;0:Jugend:2/2/64;0:Junioren:2/2/67;1:Schueler:3/2/57;1:Jugend:3/2/53;1:Junioren:3/2/54;2:Schueler:3/6/48;2:Jugend:3/6/45;2:Junioren:3/6/45;3:Schueler:3/6/46;3:Jugend:3/6/44;3:Junioren:3/6/41";
+        "0:Schueler:2/2/62;0:Jugend:2/2/67;0:Junioren:1/6/69;1:Schueler:3/2/52;1:Jugend:3/2/52;1:Junioren:2/2/59;2:Schueler:3/6/45;2:Jugend:3/6/45;2:Junioren:3/2/48;3:Schueler:3/6/41;3:Jugend:3/6/41;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

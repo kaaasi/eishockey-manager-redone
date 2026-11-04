@@ -57,7 +57,7 @@ public class NationalCoachMode4Tests
     [Fact]
     public void Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach()
     {
-        var game = GameModeTests.Create(3, true, true, 2, 1);
+        var game = GameModeTests.Create(18, true, true, 2, 1); // kader-start U15-a (L13): Saat 3 → 18, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         var top = game.FinalTables()[League.Bundesliga].Take(5).ToList();
@@ -68,7 +68,7 @@ public class NationalCoachMode4Tests
     [Fact]
     public void Mode4_NoManagerInTopFive_NoCoach()
     {
-        var game = GameModeTests.Create(3, true, true, 8, 20);
+        var game = GameModeTests.Create(4, true, true, 8, 20); // kader-start U15-a (L13): Saat 3 → 4, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         Assert.Null(ExpectedCoach(game));
