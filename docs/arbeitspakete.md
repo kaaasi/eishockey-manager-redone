@@ -21,10 +21,12 @@ als Fundstelle zählt (R10P-01). Im Code und in `docs/analyse/` gilt die normale
 Nur Liste, keine Spurplanung; je Zeile die Fundstelle.
 
 - **U15-Rest (D7 = D):** Start-Liga-Regel des Originals (auch bei fest gewähltem Verein, bei Bundesliga per Tausch) und
-  Sonderfall „eine Saison“ (`Core/NewGame.cs`, `docs/transfer.md`; #493, #533). Beleg: DOSBox-Aufnahme Sitzung 4 (FILE27/28).
-- **DOSBox-Auswertung:** Aufnahme `runde-12` nach `vorlagen/dosbox-aufnahme.md` – Sitzung 1 abgelegt (FILE18–21, 78 Bilder,
-  Referenz-PR #11, Issue #534; A023, A009, A010, A028, A058, A085, A163, A284, A293, A294, A300), Sitzungen 2–4 offen (A088, A091,
-  A125, A166, A167, A189, U15). Analysespur „Auswertung DOSBox“.
+  Sonderfall „eine Saison“ (`Core/NewGame.cs`, `docs/transfer.md`; #493, #533). Beleg: DOSBox-Aufnahme Sitzung 4 (FILE27/28, liegt vor).
+- **DOSBox-Auswertung:** Aufnahme `runde-12` nach `vorlagen/dosbox-aufnahme.md` vollständig abgelegt (Issue #534):
+  Sitzung 1 Bundestrainer FILE18–21, 78 Bilder (Referenz-PR #11; A009, A010, A023, A027, A028, A058, A085, A163, A284, A293, A294,
+  A300), Sitzung 2 Saisonwechsel FILE22–23 (#12; A085, A088, A091, A125), Sitzung 3 Kader FILE24–26 (#13; A166, A167, A189),
+  Sitzung 4 Vereinsplatz beim Start FILE27–28 (#14; U15/D7 – Befund: „eine Saison“ nur mit Start-Liga Bundesliga wählbar).
+  Noch nicht ausgewertet – Analysespur „Auswertung DOSBox“.
 - **Restlücken `ui-meldungen` (#535):** `ArrowPair` in Werbung (2BA72h) und Stadion (3DD89h/3E0BCh) – Bremse des Aufrufers;
   Vereinsfenster aus „Stärken“ (Aufrufstelle); Vereinsrekorde aus Pokal-/Play-off-Spielen; Umbruchbreite `SaveLoadScreen.Wrap`.
 - **R-K5 (#549):** Reihenfolge der Vereinsauswahl innerhalb der Seite (Video `oberflaeche_0128/_0133/_0136`; Zusammenhang mit

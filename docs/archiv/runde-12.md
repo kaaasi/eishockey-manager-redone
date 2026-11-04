@@ -12,7 +12,7 @@ Review #520), `kader-transfer` (#526 mit den Integrationsfehlern #524 Doppelwech
 #552). **Gesamtreview durch ChatGPT** (#555, „Nein“: P2 #538) und **Nachprüfung** (#557, alle Rot-Grün-Gegenproben nachgeholt,
 Entscheidungsabgleich; neuer P2 #558); beide P2 behoben (#556 Bildschirme ändern beim Öffnen keinen Spielzustand, #559 Spieltag
 ohne Zeit beim Öffnen; Nachprüfung #560 „Ja“). Schema 32 → 36. DOSBox: Doppelwechsel FILE15–17 (Referenz-PRs #9, #10),
-Vorlage `docs/vorlagen/dosbox-aufnahme.md` (#528), Aufnahme Sitzung 1 (FILE18–21, Referenz-PR #11, Issue #534).
+Vorlage `docs/vorlagen/dosbox-aufnahme.md` (#528), Aufnahme `runde-12` vollständig (FILE18–28, Referenz-PRs #11–#14, Issue #534; Auswertung Runde 13).
 Runde 11: [runde-11.md](runde-11.md); ältere Runden in [./](./).
 
 
