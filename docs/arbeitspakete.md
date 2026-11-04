@@ -19,7 +19,7 @@ als Fundstelle zählt (R10P-01). Im Code und in `docs/analyse/` gilt die normale
 abarbeiten: Auswertung der DOSBox-Aufnahme `runde-12` (FILE18–28, Issue #534) mit Umsetzung der belegten Inventur-Punkte,
 U15-Rest (D7 = D), Restlücken `ui-meldungen` (#535), R-K5-Reihenfolge (#549), `[APPROX]` S-K6 (#510), alle P3-Issues
 (#521–#523, #530–#533, #539–#541, #565), die offenen Prüfbereiche der Gesamt-Nachprüfung (#557) und die offenen Pixel
-(G7, R-K2). `livespiel` bleibt zurückgestellt. Entscheidungen D1–D3 und Go des Nutzers (unten; Stand: **offen**).
+(G7, R-K2). `livespiel` bleibt zurückgestellt. Entscheidungen D1–D3 und Go des Nutzers am 04.11.2026 (unten).
 
 **Base für alle Spuren:** aktueller `main` (Planstand `a773c1c`); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 12
 (Archiv, Absätze „Base für alle Spuren“ und „Zuständigkeit für gemeinsame Dateien“): Befund reproduzieren, roter
@@ -136,14 +136,15 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
 - **Dateigrenzen:** `tests/**/Support/`, neue Testdatei, `tools/reverse-engineering/*`, `docs/re-abdeckung.md`, `docs/analyse/inventur.md`.
   **Modell:** Claude Sonnet 5.5. **Status:** geplant.
 
-### Entscheidungen zum Start (Nutzer, offen)
+### Entscheidungen zum Start (Nutzer, 04.11.2026)
 
-- **D1 Zuschnitt:** Vorschlag A – sechs Spuren wie oben (`re-dosbox` zuerst, vier Umsetzungsspuren, `pruefung-karte` als
-  Welle 2). Alternativen und Empfehlung im Plan-PR.
-- **D2 „eine Saison“:** Sperre der Spieldauer „eine Saison“ auf Start-Liga Bundesliga wie im Original übernehmen (Befund
-  Sitzung 4) – Vorschlag A: ja, wie im Original; Lockerung erst nach v1.0 als Einstellung (`anforderungen/zusatzfunktionen.md` C).
-- **D3 Gesamtreview:** am Rundenende wie Runde 12 (ChatGPT in Codex mit Netzzugang, Nachprüfung durch Claude) – Vorschlag A.
-- **Go** mit den Modellen je Spur wie oben: steht aus.
+- **D1 = A:** Zuschnitt wie oben – sechs Spuren, `re-dosbox` zuerst, vier Umsetzungsspuren, `pruefung-karte` als Welle 2.
+- **D2 = A:** Spieldauer „eine Saison“ nur mit Start-Liga Bundesliga wie im Original (Sperre im `SetupScreen`, `kader-start`
+  Teil 2); Lockerung erst nach v1.0 als Einstellung (`anforderungen/zusatzfunktionen.md`, Abschnitt C).
+- **D3 = A:** Gesamtreview am Rundenende durch ChatGPT (GPT-6.1 Terra, Codex mit Netzzugang) und Nachprüfung durch Claude,
+  wie Runde 12.
+- **Go** mit den Modellen je Spur wie oben (Nutzer, 04.11.2026). Umsetzung, Integration und Abschluss durch eine neue
+  Leitstelle mit Claude Opus 5.5 (Entscheidung Nutzer 04.11.2026, PR #561).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
