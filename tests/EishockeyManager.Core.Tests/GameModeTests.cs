@@ -375,6 +375,7 @@ public class GameModeTests
     // 400.000 DM gesetzt) und verliert in Saison 1 und 3 die Fair-Play-Prämie (100.000 DM) gegen die Nachrücker mit 0 Minuten;
     // danach andere Konten, ab Saison 4 andere Kaufentscheidungen, Titel in Saison 5 und Zufallszustand.
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
+    // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     internal const string Mode4Reference =
         "WorldChampion=54,CupWinner=1,GermanChampion=3,EuropeanCupWinner=2|311110,400000|WorldChampion=63,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|1652647,400000|WorldChampion=52,CupWinner=17,GermanChampion=15,EuropeanCupWinner=3|2275792,400000|WorldChampion=52,CupWinner=8,GermanChampion=17,EuropeanCupWinner=15|2791822,400000|WorldChampion=52,CupWinner=15,GermanChampion=3,EuropeanCupWinner=15|400000,400000|R601937203 C661253338";
 

@@ -190,7 +190,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Runde 13, Spur saison Teil 3 (S-K6-a/c): passiv neu – Fair-Play-Prämie über die neue Liga und Satzfolge vom 29. April
     /// (Begründung bei <see cref="RngTwinProbeTests"/>); aktiv unverändert.
     /// kader-start Teil 2 (U15-a, L13): Originaldatenbank-Abdrücke neu – der feste Verein 2 tauscht beim Spielstart innerhalb der
-    /// Bundesliga (Datei 0x29CF2, Teamwerte bleiben am Platz).</summary>
+    /// Bundesliga (Datei 0x29CF2, Teamwerte bleiben am Platz). kader-start Teil 3 (R-K5): erneut neu – Satzfolge vor der
+    /// Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.</summary>
     [GameDataTheory]
     [InlineData(false, "AFB79FDB629B5A47")]
     [InlineData(true, "C6B3F2C36D4A13CF")]
@@ -261,6 +262,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Wanderung 0x9D1B (Datei 0x56448) läuft auch im Modus „nur Weltkugel“ und würfelt die Form aller Plätze neu, dazu zieht der
     // Oberliga-Austausch (Datei 0x56238) zwei Nachrücker aus der Hauptquelle.
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
+    // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     private const string WorldOnlyReference =
         "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=53|500000|WorldChampion=52|500000|R1085522836 C353368038";
 

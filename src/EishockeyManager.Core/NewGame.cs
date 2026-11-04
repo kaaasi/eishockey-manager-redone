@@ -32,8 +32,9 @@ public static class NewGame
             return club;
         }).ToList();
 
+        var places = StartOrder(seed); // R-K5: Ligamischung vor der Spielvorbereitung (Datei 0x43A17)
         var swaps = new List<(int Club, int Partner)>();
-        var managers = AssignClubs(clubs, setup, random, swaps);
+        var managers = AssignClubs(clubs, setup, random, swaps, places);
         foreach (var (club, partner) in swaps)
             (clubs[club], clubs[partner]) = (WithStrength(clubs[club], clubs[partner].Strength),
                 WithStrength(clubs[partner], clubs[club].Strength));
@@ -59,7 +60,7 @@ public static class NewGame
         SquadSetup.Initialize(game, seed); // Paket „mannschaft“: Kader, Spielerwerte, Aufstellung
         game.AssignStartPlayerIds(); // Spur „speichern“: dauerhafte Spieler-IDs, verbraucht keinen Zufall
         game.InitializeManagerSystems();
-        game.InitializeLeagueSlots(); // Spur saisonwechsel Teil 3 (S-K6): Ligamischung 0x35EDD, verbraucht keinen Zufall
+        game.InitializeLeagueSlots(places); // S-K6/R-K5: Satzfolge = Startmischung mit den Plätzen nach dem Managertausch
         game.BeginFirstTurn(); // ui-rest Teil 4 (R12U-04): Faktor des ersten Managerzugs (0x44E3F), eigene Zufallsquelle
         return game;
     }
@@ -71,10 +72,13 @@ public static class NewGame
     /// </summary>
     /// <param name="swaps">Erhält je Platztausch das Paar (Managerverein, Tauschpartner); die Teamwerte bleiben am Platz
     /// (<see cref="Create"/> tauscht dafür die Stärke).</param>
+    /// <param name="places">Satzfolge Platz → Verein (48 Einträge, <see cref="StartOrder"/>); der Zufallsplatz wird darin
+    /// gezogen, der Tausch tauscht die Plätze. Ohne Angabe gilt die Indexfolge.</param>
     /// <exception cref="ArgumentException">Fester Verein außerhalb 0–47 oder von zwei Managern gewählt.</exception>
     public static List<Manager> AssignClubs(IReadOnlyList<Club> clubs, GameSetup setup, Random random,
-        List<(int Club, int Partner)>? swaps = null)
+        List<(int Club, int Partner)>? swaps = null, int[]? places = null)
     {
+        places ??= Enumerable.Range(0, SelectableClubs).ToArray();
         var reserved = new HashSet<int>();
         foreach (var m in setup.Managers)
         {
@@ -94,7 +98,7 @@ public static class NewGame
         {
             if (m.ClubIndex is not { } chosen)
                 continue;
-            if (PlaceInStartLeague(clubs, chosen, m.StartLeague, earlier, random) is { } partner && partner != chosen)
+            if (PlaceInStartLeague(clubs, chosen, m.StartLeague, earlier, random, places) is { } partner && partner != chosen)
                 swaps?.Add((chosen, partner));
             earlier.Add(chosen);
         }
@@ -137,31 +141,66 @@ public static class NewGame
     /// Der Verdrängte übernimmt Platz und Liga des Managervereins (auch „ohne Liga“). Bei Start-Liga Bundesliga wird
     /// immer gezogen, r = v ist möglich. Belege FILE27/FILE28 (Köln fest, Start-Liga 2. Liga: Weißwasser bzw. Hannover in
     /// der Bundesliga mit Kölns Teamwerten), FILE15 (Bayreuth bleibt in der 2. Liga); <c>docs/analyse/re-runde-13.md</c>, U15-a.
-    /// [APPROX] Zufallsquelle: <see cref="GameState.Random"/> statt des gemeinsamen Zufalls; gezogen wird ein Verein der
-    /// Start-Liga in Indexfolge (die Satzfolge entsteht im Remake erst nach der Vergabe, R-K5). Europapokal-Zeile 1 zu
+    /// Der Zufallsplatz r ist ein Satzplatz der Startmischung (<paramref name="places"/>, R-K5): gezogen wird der Platz, nicht der
+    /// Vereinsindex; nach dem Tausch stehen v und r auf den Plätzen des anderen.
+    /// [APPROX] Zufallsquelle: <see cref="GameState.Random"/> statt des gemeinsamen Zufalls. Europapokal-Zeile 1 zu
     /// Spielbeginn: nur der Deutsche Meister (Verein 2).
     /// </summary>
     /// <returns>Tauschpartner (auch der Verein selbst bei r = v) oder null, wenn der Verein bleibt.</returns>
     internal static int? PlaceInStartLeague(IReadOnlyList<Club> clubs, int club, League league,
-        IReadOnlySet<int> earlierManagers, Random random)
+        IReadOnlySet<int> earlierManagers, Random random, int[] places)
     {
         var own = clubs[club];
-        if (league != League.Bundesliga && own.League == league && club <= LastLeagueSlot)
+        var ownPlace = Array.IndexOf(places, club);
+        if (league != League.Bundesliga && own.League == league && ownPlace <= LastLeagueSlot)
             return null;
-        var members = clubs.Where(c => c.League == league).Select(c => c.Index).Order().ToList();
-        var candidates = members.Where(r => !earlierManagers.Contains(r)
-            && !(league == League.Bundesliga && r == EuropeanCup.InitialChampion)).ToList();
-        if (candidates.Count == 0)
+        var first = (int)league * LeagueSize;
+        bool Excluded(int r) => earlierManagers.Contains(r) || (league == League.Bundesliga && r == EuropeanCup.InitialChampion);
+        if (Enumerable.Range(first, LeagueSize).All(slot => Excluded(places[slot])))
             return null;
-        int partner;
+        int partnerPlace;
         do
-            partner = members[random.Next(members.Count)];
-        while (!candidates.Contains(partner));
+            partnerPlace = first + random.Next(LeagueSize);
+        while (Excluded(places[partnerPlace]));
+        var partner = places[partnerPlace];
         if (partner == club)
             return partner;
         var other = clubs[partner];
         (own.League, other.League) = (other.League, own.League);
+        (places[ownPlace], places[partnerPlace]) = (partner, club);
         return partner;
+    }
+
+    /// <summary>Plätze je Liga. [ORIGINAL] DGROUP 0x7B1 + Liga = 12.</summary>
+    private const int LeagueSize = 12;
+
+    /// <summary>
+    /// Satzfolge Platz → Verein beim Programmstart (R-K5, #549): Ligamischung 0x35EDD vor der Spielvorbereitung, je Liga 0–2
+    /// 55 Tausche zweier Plätze random(b, b + 11) (auch derselbe Platz); Plätze 36–47 (ohne Liga) bleiben in Datenbankfolge.
+    /// Die Vereinsauswahl zeigt auf Seite p die Plätze 12 · p … 12 · p + 11 dieser Folge (Datei 0x28030), der Spielstart
+    /// übernimmt sie als Satzfolge der Ligen (<see cref="GameState.LeagueSlots"/>).
+    /// [ORIGINAL] em.exe Datei 0x43A17 (Aufruf 0x35EDD) vor Datei 0x43A61 (Spielvorbereitung 0x28165), danach keine weitere
+    /// Mischung bis zum Hauptmenü (Datei 0x43A66–0x43B40); Belege <c>oberflaeche_0128/_0133/_0136</c>, FILE01/10/27/28
+    /// (<c>docs/analyse/re-runde-13.md</c>, R-K5); Tauschschleife Datei 0x35FD2–0x3613F.
+    /// [APPROX] Zufallsquelle: Das Original zieht nach srand(time) (Datei 0x439F5) aus dem gemeinsamen Zufall; das Remake
+    /// leitet die Mischung aus dem Spielstart-Seed ab, ohne <see cref="GameState.Random"/> weiterzuschalten. Dieselbe Saat
+    /// gibt in der Spielvorbereitung und beim Spielstart dieselbe Folge (der Bildschirm würfelt nichts).
+    /// </summary>
+    public static int[] StartOrder(int seed)
+    {
+        var places = Enumerable.Range(0, SelectableClubs).ToArray();
+        var random = new GameRandom(unchecked(seed * 7919 + 0x35EDD) & int.MaxValue);
+        for (var league = 0; league < 3; league++)
+        {
+            var b = league * LeagueSize;
+            for (var n = 0; n < GameState.LeagueSlotSwaps; n++)
+            {
+                var x = b + random.Next(LeagueSize);
+                var y = b + random.Next(LeagueSize);
+                (places[x], places[y]) = (places[y], places[x]);
+            }
+        }
+        return places;
     }
 
     /// <summary>

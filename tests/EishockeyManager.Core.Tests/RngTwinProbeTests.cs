@@ -171,6 +171,8 @@ namespace EishockeyManager.Core.Tests;
 /// Runde 13, kader-start Teil 2 (U15-a, L13): synthetische Abdrücke (Seed 3/11) neu – der feste Verein tauscht beim Spielstart in
 /// die Start-Liga (Datei 0x29CF2, bei Bundesliga immer, Teamwerte bleiben am Platz); ein Zufallszug mehr beim Spielstart.
 /// Originaldatenbank-Abdrücke (Verein 42, Start-Liga Oberliga) unverändert.
+/// Runde 13, kader-start Teil 3 (R-K5, L13): alle Abdrücke neu – die Satzfolge entsteht vor der Spielvorbereitung aus dem
+/// Spielstart-Seed (Datei 0x43A17, `NewGame.StartOrder`), der Zufallsplatz des Starttauschs ist ein Satzplatz dieser Folge.
 /// </summary>
 public class RngTwinProbeTests
 {
