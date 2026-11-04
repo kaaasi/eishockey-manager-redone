@@ -63,8 +63,9 @@ public class BildschirmeOeffnenZustandTests
         var (d, game) = Start();
         game.CurrentManager = 1;
         var menu = (MainMenuScreen)d.Host.Current!;
+        var steps = game.Continue(); // die Eingabe „Tag weiter“ im Hauptmenü
         var before = SaveGame.Save(game);
-        ShowAndDraw(d, new MatchDayScreen(d.Host, menu));
+        ShowAndDraw(d, new MatchDayScreen(d.Host, menu, steps));
         Assert.True(before.AsSpan().SequenceEqual(SaveGame.Save(game)), "MatchDayScreen lässt beim Öffnen Zeit vergehen");
     }
 
