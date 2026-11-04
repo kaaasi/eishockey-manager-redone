@@ -35,3 +35,53 @@ public class StadiumArrowTests
         Assert.Equal(price + 1, stadium.TicketPrice);
     }
 }
+
+/// <summary>ui-rest Teil 3 (G7): Tabelle „Bau“ im Stadion (em.exe Datei 0x3D45F, Modus 1; Umschalten Datei 0x3DB5B).</summary>
+public class StadiumBuildTableTests
+{
+    [GameDataFact]
+    public void RightClickBelowY167_TogglesBuildTable_OtherwiseLeaves()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        d.OpenTile("Stadion");
+        var screen = Assert.IsType<StadiumScreen>(d.Host.Current);
+        Assert.False(screen.ShowsBuildTable);
+        d.RightClick(100, 167);                    // y > 167 verlangt: 167 selbst nicht
+        Assert.IsNotType<StadiumScreen>(d.Host.Current);
+
+        d.OpenTile("Stadion");
+        screen = Assert.IsType<StadiumScreen>(d.Host.Current);
+        d.RightClick(100, 168);
+        Assert.True(screen.ShowsBuildTable);
+        Assert.Same(screen, d.Host.Current);
+        d.RightClick(250, 230);
+        Assert.False(screen.ShowsBuildTable);
+    }
+
+    [GameDataFact]
+    public void BuildTexts_FollowTheOriginalStrings()
+    {
+        var stadium = new Stadium();
+        Assert.Equal("(keine Bautätigkeiten)", StadiumScreen.FeatureValue(stadium, StadiumFeature.Kino, buildMode: true));
+        Assert.Equal(stadium.LevelText(StadiumFeature.Kino), StadiumScreen.FeatureValue(stadium, StadiumFeature.Kino, buildMode: false));
+        Assert.Equal("(kein Bau...)", StadiumScreen.PlacesValue(stadium, StadiumProject.Sitzplaetze, buildMode: true));
+
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var me = game.ActiveManager;
+        me.Money = 50_000_000;
+        var built = game.Finance(me).Stadium;
+        void Build(StadiumProject project, StadiumFeature feature, int target) =>
+            game.AnswerConstruction(me, game.QuoteConstruction(me, project, feature, target)!, accept: true);
+
+        Build(StadiumProject.Feature, StadiumFeature.Kino, 1);
+        var weeks = built.WeeksLeft(StadiumProject.Feature, StadiumFeature.Kino);
+        Assert.Equal(Stadium.Features[(int)StadiumFeature.Kino].Levels[1] + " (Noch " + weeks + (weeks == 1 ? " Woche)" : " Wochen)"),
+            StadiumScreen.FeatureValue(built, StadiumFeature.Kino, buildMode: true));
+        Build(StadiumProject.Sitzplaetze, StadiumFeature.Ueberdachung, 1);
+        Assert.Equal(StadiumScreen.PlacesValue(built, StadiumProject.Sitzplaetze, buildMode: true),
+            $"{built.SeatsTarget:#,0}".Replace(",", ".") + " (" + built.WeeksLeft(StadiumProject.Sitzplaetze, StadiumFeature.Ueberdachung) + ")");
+    }
+}

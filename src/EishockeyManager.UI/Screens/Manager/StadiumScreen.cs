@@ -21,6 +21,46 @@ public sealed class StadiumScreen : Screen
     private const int ListColonX = 57;
     private const int ListValueX = 59;
 
+    /// <summary>[ORIGINAL] Maus-y, oberhalb derer die rechte Taste nicht umschaltet (Datei 0x3DB62: <c>cmp si, 0xA7</c>, „größer“).</summary>
+    public const int BuildSwitchY = 167;
+
+    /// <summary>
+    /// Hinweiszeile „… ausbauen“, Oberkante. [ORIGINAL] gemessen am DOSBox-Bild <c>file01_3_stadion</c> (Gastronomie, Referenz-Repo
+    /// <c>original/spielstaende/bilder</c>): x = 213, y = 201 (vorher 200).
+    /// </summary>
+    public const int HintY = 201;
+
+    /// <summary>Anzeige „Bau“ statt „Ist“ (nur lesen).</summary>
+    public bool ShowsBuildTable => _showBuild;
+
+    /// <summary>
+    /// Wert einer Zeile der Teile-Tabelle ohne „: “. [ORIGINAL] Datei 0x3D4FE–0x3D5E9: Modus 1 ohne Zielstufe „(keine Bautätigkeiten)“
+    /// (DGROUP 0xDD0), sonst Name der Zielstufe + „ (Noch “ + Restwochen + „ Wochen“ (bei genau 1 ohne das letzte Zeichen) + „)“.
+    /// </summary>
+    public static string FeatureValue(Stadium stadium, StadiumFeature feature, bool buildMode)
+    {
+        if (!buildMode)
+            return stadium.LevelText(feature);
+        var target = stadium.TargetLevel(feature);
+        if (target == 0)
+            return "(keine Bautätigkeiten)";
+        var weeks = stadium.WeeksLeft(StadiumProject.Feature, feature);
+        return Stadium.Features[(int)feature].Levels[target] + " (Noch " + weeks + (weeks == 1 ? " Woche" : " Wochen") + ")";
+    }
+
+    /// <summary>
+    /// Wert einer Platzzeile. [ORIGINAL] Datei 0x3D63D–0x3D76A: Modus 0 die Plätze, Modus 1 ohne Bau „(kein Bau...)“ (DGROUP 0xDD4),
+    /// sonst Plätze nach dem Bau + „ (“ + Restwochen + „)“.
+    /// </summary>
+    public static string PlacesValue(Stadium stadium, StadiumProject project, bool buildMode)
+    {
+        var seats = project == StadiumProject.Sitzplaetze;
+        if (!buildMode)
+            return Number(seats ? stadium.Seats : stadium.Standing);
+        var target = seats ? stadium.SeatsTarget : stadium.StandingTarget;
+        return target == 0 ? "(kein Bau...)" : Number(target) + " (" + stadium.WeeksLeft(project, StadiumFeature.Ueberdachung) + ")";
+    }
+
     public static readonly Rect SeatsRow = new(212, 172, 104, 7);
     public static readonly Rect StandingRow = new(212, 179, 104, 7);
 
@@ -79,6 +119,9 @@ public sealed class StadiumScreen : Screen
     private const byte PanelLine = 57;
     private const byte LabelColor = 252;
     private const byte ValueColor = 31;
+
+    /// <summary>[ORIGINAL] Wertfarbe der Tabelle 0x3D45F: 31 − 30 · Modus (Datei 0x3D5FB–0x3D607, 0x3D737–0x3D743), im Bau-Modus 1.</summary>
+    private const byte BuildValueColor = 1;
     private const byte LevelColor = 24;
     /// <summary>[ORIGINAL] Kostenzeile Datei 0x3E59A–0x3E5C7: Farbe 8, wenn das Konto reicht, sonst 17.</summary>
     private const byte CostColor = 17;
@@ -92,6 +135,12 @@ public sealed class StadiumScreen : Screen
     public readonly record struct Choice(StadiumProject Project, StadiumFeature Feature);
 
     private readonly Screen _back;
+    /// <summary>
+    /// Tabelle im Modus 1 („Bau“, Datei 0x3D45F, Argument [bp+0xA]). [ORIGINAL] Umschalten mit der rechten Maustaste bei Maus-y &gt;
+    /// 167 (Datei 0x3DB5B–0x3DB7D: <c>cmp [0x5A16], 3 / cmp si, 0xA7</c>, si = Maus-y); die rechte Taste verlässt den Bildschirm sonst
+    /// (Datei 0x3E4D4). Aufbau des Bildschirms: Modus 0.
+    /// </summary>
+    private bool _showBuild;
     private Choice? _hover;
     private Choice? _selected;
     private int _target;
@@ -143,6 +192,11 @@ public sealed class StadiumScreen : Screen
                 _quote = null;
                 _selected = null;
             }
+            return;
+        }
+        if (input.RightClick && input.MouseY > BuildSwitchY)
+        {
+            _showBuild = !_showBuild;
             return;
         }
         if (input.Pressed(Key.Escape) || input.RightClick)
@@ -297,21 +351,22 @@ public sealed class StadiumScreen : Screen
             var y = FeatureRow(i).Y + 1;
             s.Text(mini, 0, y, Stadium.Features[i].Label, LabelColor);
             s.Text(mini, ListColonX, y, ":", LabelColor);
-            s.Text(mini, ListValueX, y, Stadium.LevelText((StadiumFeature)i), ValueColor);
+            s.Text(mini, ListValueX, y, FeatureValue(Stadium, (StadiumFeature)i, _showBuild), _showBuild ? BuildValueColor : ValueColor);
         }
     }
 
     private void DrawRight(Surface s)
     {
         var mini = Assets.Mini;
-        void Row(int y, string label, string value)
+        void Row(int y, string label, string value, byte color = ValueColor)
         {
             s.Text(mini, RightLabelX, y, label, LabelColor);
             s.Text(mini, RightColonX, y, ":", LabelColor);
-            s.Text(mini, RightValueX, y, value, ValueColor);
+            s.Text(mini, RightValueX, y, value, color);
         }
-        Row(SeatsRow.Y + 1, "Sitzplätze", Number(Stadium.Seats));
-        Row(StandingRow.Y + 1, "Stehplätze", Number(Stadium.Standing));
+        var placesColor = _showBuild ? BuildValueColor : ValueColor;
+        Row(SeatsRow.Y + 1, "Sitzplätze", PlacesValue(Stadium, StadiumProject.Sitzplaetze, _showBuild), placesColor);
+        Row(StandingRow.Y + 1, "Stehplätze", PlacesValue(Stadium, StadiumProject.Stehplaetze, _showBuild), placesColor);
         Arrows(s, _ticketArrows);
         Row(TicketRowY, "Eintritt", $"{Stadium.TicketPrice} DM");
 
@@ -322,12 +377,12 @@ public sealed class StadiumScreen : Screen
             if (Stadium.IsUnderConstruction(choice.Project, choice.Feature) && weeks > 0)
             {
                 // [APPROX] Laufende Baustelle statt der Stufenwahl; Text wie Tabelle „Bau“ Datei 0x3D5CA–0x3D5E5.
-                s.Text(mini, RightLabelX, 200, Label(choice), ValueColor);
+                s.Text(mini, RightLabelX, HintY, Label(choice), ValueColor);
                 s.Text(mini, RightLabelX + 2, 221, weeks == 1 ? "(Noch 1 Woche)" : $"(Noch {weeks} Wochen)", CostColor);
             }
             else
             {
-                s.Text(mini, RightLabelX, 200, Label(choice) + " ausbauen", ValueColor);
+                s.Text(mini, RightLabelX, HintY, Label(choice) + " ausbauen", ValueColor);
                 if (_selected == choice && CurrentCost() is { } cost)
                 {
                     Arrows(s, _levelArrows);
