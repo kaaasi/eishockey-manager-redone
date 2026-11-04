@@ -111,7 +111,8 @@ public sealed class SetupScreen : Screen
             }
             else if (i == _setup.Managers.Count && input.Clicked(slot))
             {
-                _setup.Managers.Add(new ManagerSetup { Head = -1 }); // im Original bleibt das Kopffeld bis zur Auswahl leer
+                // Im Original bleibt das Kopffeld bis zur Auswahl leer; die Start-Liga gilt für alle Manager (L1, DGROUP 0x11A).
+                _setup.Managers.Add(new ManagerSetup { Head = -1, StartLeague = _setup.StartLeague });
                 _selected = i;
                 _mode = Mode.HeadPicker;
                 return;
@@ -142,27 +143,11 @@ public sealed class SetupScreen : Screen
             TryStart();
     }
 
-    /// <summary>Regler verstellen: begrenzt, kein Umlauf (siehe <see cref="SetupSliders"/>).</summary>
-    private void Step(int row, int delta)
-    {
-        var slider = (SetupSlider)row;
-        var m = Selected;
-        switch (slider)
-        {
-            case SetupSlider.Level when m is not null:
-                m.Level = SetupSliders.Step(slider, m.Level, delta);
-                break;
-            case SetupSlider.Duration:
-                _setup.Duration = (GameDuration)SetupSliders.Step(slider, (int)_setup.Duration, delta);
-                break;
-            case SetupSlider.StartLeague when m is not null:
-                m.StartLeague = (League)SetupSliders.Step(slider, (int)m.StartLeague, delta);
-                break;
-            case SetupSlider.StartStrength when m is not null:
-                m.StartStrength = (StartStrength)SetupSliders.Step(slider, (int)m.StartStrength, delta);
-                break;
-        }
-    }
+    /// <summary>
+    /// Regler verstellen: begrenzt, kein Umlauf, „eine Saison“ nur mit Start-Liga Bundesliga (U15-b, siehe
+    /// <see cref="GameSetup.Step"/>; [ORIGINAL] Datei 0x2890E–0x2891C).
+    /// </summary>
+    private void Step(int row, int delta) => _setup.Step((SetupSlider)row, delta, Selected);
 
     private int FirstFreeHead()
     {
@@ -352,7 +337,7 @@ public sealed class SetupScreen : Screen
         s.Blit(elements, new Rect(113, _setup.EuropeAndWorldCup ? 115 : 102, 57, 13), ModeGlobe.X, ModeGlobe.Y);
 
         var m = Selected ?? new ManagerSetup();
-        int[] values = [m.Level, (int)_setup.Duration, (int)m.StartLeague, (int)m.StartStrength];
+        int[] values = [m.Level, (int)_setup.Duration, (int)_setup.StartLeague, (int)m.StartStrength];
         for (var row = 0; row < values.Length; row++)
         {
             var strip = SetupSliders.Strip((SetupSlider)row, values[row]);

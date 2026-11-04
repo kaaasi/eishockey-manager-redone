@@ -50,6 +50,12 @@ public sealed class ManagerSetup
     /// </summary>
     public int Level { get; set; } = 3;
 
+    /// <summary>
+    /// Start-Liga. [ORIGINAL] Ein Wert für alle Manager (DGROUP 0x11A, Entscheidung L1); die Spielvorbereitung setzt ihn
+    /// über <see cref="GameSetup.StartLeague"/> für alle gleich. Je Manager geführt bleibt er für ältere Spielstände
+    /// und Tests, die Manager einzeln anlegen. [APPROX] Der Spielstart liest ihn weiter je Manager (Vereinsvergabe,
+    /// Kadergröße); der Tausch in die Start-Liga (U15-a, Datei 0x29C3B–0x29CF2) ist noch offen.
+    /// </summary>
     public League StartLeague { get; set; } = League.Bundesliga;
     public StartStrength StartStrength { get; set; } = StartStrength.Mittelfeld;
 }
@@ -75,7 +81,10 @@ public static class SetupSliders
     /// <summary>Höchstwert des Reglers. [ORIGINAL] DGROUP 0x11C.</summary>
     public static int Maximum(SetupSlider slider) => Maxima[(int)slider];
 
-    /// <summary>Einen Schritt verstellen, an beiden Enden begrenzt.</summary>
+    /// <summary>
+    /// Einen Schritt verstellen, an beiden Enden begrenzt. Die Sperre „eine Saison nur mit Bundesliga“ prüft
+    /// <see cref="GameSetup.Step"/>.
+    /// </summary>
     public static int Step(SetupSlider slider, int value, int delta) => Math.Clamp(value + delta, 0, Maximum(slider));
 
     /// <summary>
@@ -111,6 +120,22 @@ public sealed class GameSetup
     public bool DebCup { get; set; } = true;
 
     public GameDuration Duration { get; set; } = GameDuration.Unbegrenzt;
+
+    /// <summary>
+    /// Start-Liga, ein Wert für alle Manager. [ORIGINAL] DGROUP 0x11A (Regler 2 der Spielvorbereitung, Setup-Werte
+    /// 0x118–0x11B; README FILE09 „Start-Liga gilt für alle Manager“; Entscheidung Leitstelle L1 in #567). Das Remake führt
+    /// den Wert weiter in <see cref="ManagerSetup.StartLeague"/> (Spielstände, Tests); gelesen wird der Wert von
+    /// Manager 0, das Setzen gilt für alle. Ohne Manager: Bundesliga ([ORIGINAL] Vorgabe 0).
+    /// </summary>
+    public League StartLeague
+    {
+        get => Managers.Count > 0 ? Managers[0].StartLeague : League.Bundesliga;
+        set
+        {
+            foreach (var m in Managers)
+                m.StartLeague = value;
+        }
+    }
 
     /// <summary>
     /// Spielstand-Optionen des Originals (Optionsbildschirm 0x2CD1C, Spur optionen-wirkung). Gehören zum Spielstand; die
@@ -150,6 +175,46 @@ public sealed class GameSetup
     /// </summary>
     public bool CanStart => Managers.Count > 0 && Managers.All(m => m.Name.Length > 0) && Mode is { } mode
         && (mode != GameMode.WorldOnly || Managers.Count == 1);
+
+    /// <summary>
+    /// Einen Regler der Spielvorbereitung um <paramref name="delta"/> verstellen (U15-b, Entscheidung Nutzer D2 = A).
+    /// [ORIGINAL] em.exe Datei 0x2890A <c>add [bx+0x118], al</c>, danach Datei 0x2890E–0x2891C: Ist die Dauer
+    /// (DGROUP 0x119) „eine Saison“ und die Start-Liga (DGROUP 0x11A) nicht die Bundesliga, wird der Schritt
+    /// zurückgenommen – ohne Meldung, ohne Ersatz-Umstellen (Sprung über das Neuzeichnen nach Datei 0x2899D). Die Prüfung
+    /// läuft vor der Begrenzung (Datei 0x28925–0x28944, <see cref="SetupSliders.Step"/>) und nach jedem der vier Regler.
+    /// Folge: Mit „eine Saison“ bleibt die Start-Liga auf Bundesliga stehen, mit 2. Liga oder Oberliga bleibt die Dauer
+    /// auf „drei Saisons“. Belege <c>file28_3</c>–<c>file28_5</c> (<c>docs/analyse/re-runde-13.md</c>, U15-b).
+    /// Level und Start-Stärke gelten für <paramref name="manager"/> (ohne Manager: kein Schritt); [APPROX] im Original
+    /// sind auch sie ein Wert für alle Manager (DGROUP 0x118/0x11B).
+    /// </summary>
+    /// <returns>true, wenn sich ein Wert geändert hat.</returns>
+    public bool Step(SetupSlider slider, int delta, ManagerSetup? manager)
+    {
+        if (manager is null && slider is SetupSlider.Level or SetupSlider.StartStrength)
+            return false;
+        var value = slider switch
+        {
+            SetupSlider.Level => manager!.Level,
+            SetupSlider.Duration => (int)Duration,
+            SetupSlider.StartLeague => (int)StartLeague,
+            _ => (int)manager!.StartStrength,
+        };
+        var duration = slider == SetupSlider.Duration ? value + delta : (int)Duration;
+        var league = slider == SetupSlider.StartLeague ? value + delta : (int)StartLeague;
+        if (duration == (int)GameDuration.EineSaison && league != (int)League.Bundesliga)
+            return false;
+        var next = SetupSliders.Step(slider, value, delta);
+        if (next == value)
+            return false;
+        switch (slider)
+        {
+            case SetupSlider.Level: manager!.Level = next; break;
+            case SetupSlider.Duration: Duration = (GameDuration)next; break;
+            case SetupSlider.StartLeague: StartLeague = (League)next; break;
+            default: manager!.StartStrength = (StartStrength)next; break;
+        }
+        return true;
+    }
 
     /// <summary>Verein, der bereits von einem anderen Manager gewählt wurde?</summary>
     public bool IsClubTaken(int clubIndex, ManagerSetup? except = null) =>
