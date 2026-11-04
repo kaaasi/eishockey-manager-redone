@@ -369,8 +369,9 @@ public class GameModeTests
     // Poolplätze enden bei Alter > random(37, 42) mit Nachfolger (Datei 0x2787A; andere Poolbenennung, anderer Zufallsverbrauch).
     // Der passive Testmanager 1 verlängert nur angebotene Verträge: sein Konto fällt in Saison 5 auf −6.990.533.
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
+    // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=1,GermanChampion=3,EuropeanCupWinner=2|311110,400000|WorldChampion=63,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|1652647,400000|WorldChampion=52,CupWinner=17,GermanChampion=15,EuropeanCupWinner=3|2275792,500000|WorldChampion=52,CupWinner=8,GermanChampion=17,EuropeanCupWinner=15|2891822,500000|WorldChampion=52,CupWinner=15,GermanChampion=3,EuropeanCupWinner=15|400000,400000|R601937203 C661253338";
+        "WorldChampion=52,CupWinner=11,GermanChampion=1,EuropeanCupWinner=2|96040,500000|WorldChampion=52,CupWinner=4,GermanChampion=1,EuropeanCupWinner=1|1402820,400000|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=1|2154396,500000|WorldChampion=54,CupWinner=3,GermanChampion=13,EuropeanCupWinner=0|2718434,500000|WorldChampion=53,CupWinner=18,GermanChampion=13,EuropeanCupWinner=13|2953330,-7225210|R2134677961 C1014797838";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

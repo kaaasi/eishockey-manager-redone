@@ -83,9 +83,12 @@ public sealed class ScreenDriver
         if (clubIndex is { } club)
         {
             Click(150, 60);
-            for (var p = 0; p < club / SetupScreen.ClubsPerPage; p++)
+            // kader-start (R-K5, L13): die Vereinsauswahl zeigt die Startmischung – Seite und Zelle beim Bildschirm erfragen.
+            var (page, slot) = (Host.Current as SetupScreen ?? throw new InvalidOperationException("Keine Spielvorbereitung."))
+                .CellOf(club);
+            for (var p = 0; p < page; p++)
                 Wheel(-1);
-            var c = SetupScreen.ClubCell(club % SetupScreen.ClubsPerPage);
+            var c = SetupScreen.ClubCell(slot);
             Click(c.X + 5, c.Y + 5);
             // kader-start (U15-a, L13): Start-Liga = Liga des Vereins (ohne Liga: Oberliga), damit er dort bleibt (Datei 0x29C3B).
             for (var l = 0; l < (int)(Core.NewGame.DatabaseLeague(club) ?? Core.League.Oberliga); l++)

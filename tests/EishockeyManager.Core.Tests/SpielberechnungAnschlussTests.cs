@@ -188,10 +188,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spieler vom Markt sind belasteter, beide Abdrücke (Originaldatenbank) neu; die synthetischen Abdrücke (Seed 3/11) bleiben.
     /// Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.
     /// kader-start Teil 2 (U15-a, L13): Originaldatenbank-Abdrücke neu – der feste Verein 2 tauscht beim Spielstart innerhalb der
-    /// Bundesliga (Datei 0x29CF2, Teamwerte bleiben am Platz).</summary>
+    /// Bundesliga (Datei 0x29CF2, Teamwerte bleiben am Platz). kader-start Teil 3 (R-K5): erneut neu – Satzfolge vor der
+    /// Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.</summary>
     [GameDataTheory]
-    [InlineData(false, "5C8A389AE478DA03")]
-    [InlineData(true, "60560F18F7F34EC1")]
+    [InlineData(false, "8B14E15F889B6AB1")]
+    [InlineData(true, "BCF60CD376EF05CF")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -256,8 +257,9 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Integration Runde 11 (+ wettbewerbe-spiel): Abdrücke auf dem integrierten Stand neu ermittelt (alle vier Spuren ändern
     // Spielverlauf bzw. Zufallsverbrauch; dazu die Anschlüsse der Integration: Verletzungsart +0x17, Neuaufstellung je Managerzug, Bezugsbewertung nach der Startaufstellung).
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
+    // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|WorldChampion=60|500000|R1046516136 C1283793558";
+        "WorldChampion=52|500000|WorldChampion=63|500000|WorldChampion=63|500000|WorldChampion=54|500000|WorldChampion=60|500000|R867635107 C1283793558";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

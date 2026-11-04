@@ -15,6 +15,8 @@ namespace EishockeyManager.Core;
 /// [APPROX] Zufallsquelle: Das Original zieht aus dem gemeinsamen Zufall. Das Remake leitet die Mischung aus dem Zustand
 /// von <see cref="GameState.Random"/> ab, ohne ihn weiterzuschalten – sonst verschöben sich alle übrigen Spielverläufe
 /// (Liga, Pokale, Transfers); die Verteilung der Satzfolge (55 Zufallstausche) ist dieselbe.
+/// Spielstart (R-K5, Spur kader-start): die Startmischung entsteht vor der Spielvorbereitung aus dem Spielstart-Seed
+/// (<see cref="NewGame.StartOrder"/>), die Vereinsauswahl zeigt sie; danach nur der Managertausch, keine zweite Mischung.
 /// [APPROX] Zeitpunkt: em.exe mischt am 29. April vor dem Fenster „Saisonende“ (0x5644E vor 0x5645D); das Remake wechselt
 /// die Ligen erst in <see cref="GameState.StartNextSeason"/> und mischt dort. Die Fair-Play-Prämie des Saisonendes sieht
 /// daher noch die Satzfolge der abgelaufenen Saison (Wirkung nur bei Gleichstand um Platz 1).
@@ -45,13 +47,21 @@ public sealed partial class GameState
     private IEnumerable<int> StoredSlots(League league) =>
         _leagueSlots.Count == 3 * ClubsPerLeague ? _leagueSlots.Skip((int)league * ClubsPerLeague).Take(ClubsPerLeague) : [];
 
-    /// <summary>Spielstart (Datei 0x43A17): Satzfolge = Vereinsindex, dann gemischt.</summary>
-    internal void InitializeLeagueSlots()
+    /// <summary>
+    /// Spielstart: Satzfolge = Startmischung (Datei 0x43A17, vor der Spielvorbereitung; <see cref="NewGame.StartOrder"/>) mit
+    /// den Plätzen nach dem Managertausch (U15-a, Datei 0x29CF2), ohne weitere Mischung (R-K5, Spur kader-start).
+    /// </summary>
+    /// <param name="places">Platz → Verein, mindestens die 36 Ligaplätze.</param>
+    internal void InitializeLeagueSlots(IReadOnlyList<int> places)
     {
         _leagueSlots.Clear();
+        _leagueSlots.AddRange(places.Take(3 * ClubsPerLeague));
         foreach (var league in Enum.GetValues<League>())
-            _leagueSlots.AddRange(LeagueClubs(league).Select(c => c.Index).Order());
-        MixLeagueSlots();
+            if (!StoredSlots(league).Order().SequenceEqual(LeagueClubs(league).Select(c => c.Index).Order()))
+            {
+                _leagueSlots.Clear(); // ungewöhnliche Ligabelegung (synthetische Spielstände): Indexfolge gilt
+                return;
+            }
     }
 
     /// <summary>

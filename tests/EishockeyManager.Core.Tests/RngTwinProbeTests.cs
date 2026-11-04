@@ -167,16 +167,18 @@ namespace EishockeyManager.Core.Tests;
 /// Runde 13, kader-start Teil 2 (U15-a, L13): synthetische Abdrücke (Seed 3/11) neu – der feste Verein tauscht beim Spielstart in
 /// die Start-Liga (Datei 0x29CF2, bei Bundesliga immer, Teamwerte bleiben am Platz); ein Zufallszug mehr beim Spielstart.
 /// Originaldatenbank-Abdrücke (Verein 42, Start-Liga Oberliga) unverändert.
+/// Runde 13, kader-start Teil 3 (R-K5, L13): alle Abdrücke neu – die Satzfolge entsteht vor der Spielvorbereitung aus dem
+/// Spielstart-Seed (Datei 0x43A17, `NewGame.StartOrder`), der Zufallsplatz des Starttauschs ist ein Satzplatz dieser Folge.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "6927110A2E58967B")]
-    [InlineData(true, 3, "9385375DD06C0A61")]
-    [InlineData(false, 11, "DC47CDF473F7E601")]
-    [InlineData(true, 11, "AB514D4A97C4C511")]
+    [InlineData(false, 3, "90034F49FFF2F081")]
+    [InlineData(true, 3, "434D00DEAD4F3D70")]
+    [InlineData(false, 11, "5262EDDF4E77E0D2")]
+    [InlineData(true, 11, "2CE99A4B1B980B35")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -187,8 +189,8 @@ public class RngTwinProbeTests
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "8911A65C5DE5A91F")]
-    [InlineData(true, "78D6E67B6500BA68")]
+    [InlineData(false, "C5E6A55DF30DB83B")]
+    [InlineData(true, "FA154E474F1A76C1")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -83,7 +83,7 @@ public class StatistikenPraemienTests
     [Fact]
     public void OtherClubLeads_NoSinglePremium()
     {
-        var game = AtClubSeasonOver(5, 4); // kader-start U15-a (L13): Saat 3 → 4, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
+        var game = AtClubSeasonOver(5, 3); // kader-start U15-a/R-K5 (L13): Saat 3 → 3, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var rival = game.Clubs[6];
         MakeOwnPlayersBest(game, rival);
