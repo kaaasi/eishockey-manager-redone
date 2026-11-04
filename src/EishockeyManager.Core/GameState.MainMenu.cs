@@ -55,6 +55,14 @@ public sealed partial class GameState
     private void DrawContractTurnFactor() => _contractTurnFactor = ContractRules.TurnFactor(TurnRandom);
 
     /// <summary>
+    /// Erster Managerzug eines neuen Spiels. [ORIGINAL] Der erste Menüaufbau beginnt am Funktionsanfang 0x44E3F und zieht den Faktor
+    /// der Gehaltsforderung wie jeder Zug (R12U-04, #540); im Remake lief bisher nur <see cref="BeginManagerTurn"/> aus
+    /// <see cref="StartTurns"/> und <see cref="PassTurn"/>, der erste Tag eines neuen Spiels nutzte den abgeleiteten Ersatzwert.
+    /// Zieht nur aus <see cref="TurnRandom"/> (keine andere Zufallsquelle, keine Aufstellung: die macht der erste Aufbau des Menüs).
+    /// </summary>
+    internal void BeginFirstTurn() => DrawContractTurnFactor();
+
+    /// <summary>
     /// Das Hauptmenü wird für <paramref name="manager"/> aufgebaut (erster Aufbau eines Zugs, Rückkehr aus einem Unterbildschirm,
     /// Laden). [ORIGINAL] Datei 0x44FBD ff.: Neuaufstellung 0x426BC mit „automatisch aufstellen“ (Datei 0x450C6, bei jedem Aufbau,
     /// nicht nur am Zuganfang) und Kennzeichen „neue Nachricht“ (Datei 0x4527C–0x45291): ist es gesetzt, wird es gelöscht und die

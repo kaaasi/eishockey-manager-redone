@@ -28,7 +28,7 @@ public static class NewsBar
     /// <summary>Gezeigte Nachricht (Index im Posteingang) je Manager.</summary>
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ManagerFinance, StrongBox> Cursor = new();
 
-    private sealed class StrongBox { public int Value = -1; public int Count = -1; }
+    private sealed class StrongBox { public int Value = -1; public int Count = -1; public Message? Newest; public Message? Oldest; }
 
     private static StrongBox Of(GameState game) => Cursor.GetValue(game.Finance(game.ActiveManager), _ => new StrongBox());
 
@@ -41,10 +41,18 @@ public static class NewsBar
     {
         var inbox = game.Inbox(game.ActiveManager);
         var box = Of(game);
-        if (box.Value < 0 || box.Value >= inbox.Count || box.Count != inbox.Count)
+        var newest = inbox.Count > 0 ? inbox[^1] : null;
+        var oldest = inbox.Count > 0 ? inbox[0] : null;
+        // Hinweis aus Review #546: Fällt an einem Tag eine Meldung weg und kommt eine neue hinzu, bleibt die Anzahl gleich, der
+        // Index zeigte aber auf eine andere Nachricht. Deshalb gilt auch eine andere neueste bzw. älteste Nachricht als „Speicher
+        // geändert“ (ui-rest Teil 4).
+        if (box.Value < 0 || box.Value >= inbox.Count || box.Count != inbox.Count
+            || !ReferenceEquals(box.Newest, newest) || !ReferenceEquals(box.Oldest, oldest))
         {
             box.Value = inbox.Count - 1;
             box.Count = inbox.Count;
+            box.Newest = newest;
+            box.Oldest = oldest;
         }
         return box.Value;
     }

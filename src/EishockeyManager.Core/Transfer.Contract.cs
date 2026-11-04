@@ -121,7 +121,8 @@ public sealed partial class GameState
 {
     /// <summary>
     /// Faktor der Gehaltsforderung (DGROUP 0xE1A4) des laufenden Managerzugs. [ORIGINAL] Gezogen zu Beginn jedes Managerzugs
-    /// (Datei 0x44E3F, <see cref="BeginManagerTurn"/>; Spur ui-meldungen Teil 4, E4 = B). [APPROX] Solange in einem älteren
+    /// (Datei 0x44E3F, <see cref="BeginManagerTurn"/>; Spur ui-meldungen Teil 4, E4 = B). Der erste Tag eines neuen Spiels zieht
+    /// ihn in <see cref="NewGame.Create"/> (R12U-04). [APPROX] Solange in einem älteren
     /// Spielstand noch nicht gezogen wurde, gilt der frühere, je Saison und Tag abgeleitete Wert. Rein (zieht nichts).
     /// </summary>
     public int ContractTurnFactor => _contractTurnFactor != 0 ? _contractTurnFactor

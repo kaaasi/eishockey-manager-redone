@@ -111,7 +111,7 @@ public class MainMenuEventTests
         Assert.Throws<ArgumentException>(() => game.OnMainMenu(other, isReturn: false));
     }
 
-    /// <summary>Kennzeichen und Faktor überstehen Sichern und Laden; Stände vor Schema 33 bekommen die Startwerte.</summary>
+    /// <summary>Kennzeichen und Faktor überstehen Sichern und Laden; Stände vor Schema 35 (Teil 4 der Spur ui-meldungen) bekommen die Startwerte.</summary>
     [Fact]
     public void NewMessageAndTurnFactor_RoundTripAndMigrate()
     {
@@ -126,7 +126,13 @@ public class MainMenuEventTests
         Assert.Equal(factor, loaded.Game.ContractTurnFactor);
         Assert.Equal(saved, SaveGame.Save(loaded.Game));
 
-        var root = JsonNode.Parse(saved)!.AsObject();
+        // Stand „vor Teil 4“: Seit R12U-04 zieht schon das neue Spiel einen Faktor (eigene Zufallsquelle als Objekt im Spielstand);
+        // ein echter alter Stand hat beides nicht – also beides zurücksetzen, bevor gesichert wird (sonst fehlte eine Objektnummer).
+        var type = typeof(GameState);
+        type.GetField("_turnRandom", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(game, null);
+        type.GetField("_contractTurnFactor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(game, 0);
+        var legacy = SaveGame.Save(game);
+        var root = JsonNode.Parse(legacy)!.AsObject();
         root["schema"] = 34; // vor Teil 4 (Schema 34 → 35, Integration Runde 12)
         var spiel = root["spiel"]!.AsObject();
         spiel.Remove("_turnRandom");
@@ -139,5 +145,24 @@ public class MainMenuEventTests
         Assert.InRange(old.Game.ContractTurnFactor, 85, 115); // früherer abgeleiteter Wert bis zum nächsten Zug
         old.Game.Continue();
         Assert.InRange(old.Game.ContractTurnFactor, 85, 115);
+    }
+}
+
+/// <summary>ui-rest Teil 4 (R12U-04, #540): Der erste Managerzug eines neuen Spiels zieht den Faktor (Datei 0x44E3F).</summary>
+public class FirstTurnFactorTests
+{
+    [Theory]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    public void NewGame_DrawsFactorFromTurnRandom_NotTheDerivedFallback(int seed)
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, seed);
+
+        // erste Ziehung aus der Zufallsquelle des Faktors (GameState.MainMenu.cs: Seed aus Saison, Manager)
+        var expected = ContractRules.TurnFactor(new GameRandom(unchecked(game.Season * 1_000_003 + game.Managers.Sum(m => m.ClubIndex * 41 + m.Head) + 29)));
+        Assert.Equal(expected, game.ContractTurnFactor);
     }
 }
