@@ -185,8 +185,8 @@ public class SpielberechnungKomplett4Tests
 
     /// <summary>
     /// #193: [ORIGINAL] Der Stärkevergleich zeigt für das Land des Bundestrainers die Teamwerte aus seiner Aufstellung
-    /// (0x952C mit Manager 5: Kondition, Technik und Form; Tageslauf 0x54F9C, nach Freundschaftsspielen 0x555D6). Vorher:
-    /// Würfelwerte und das Mittel der Spielerform.
+    /// (0x952C mit Manager 5: Kondition, Technik und Form). Vorher: Würfelwerte und das Mittel der Spielerform. Seit Runde 13
+    /// (A009) geschrieben beim Verlassen der Aufstellung und im Tageslauf, nicht bei jedem Lesen.
     /// </summary>
     [Fact]
     public void StrengthTable_CoachNation_ShowsLineupValues()
@@ -197,7 +197,8 @@ public class SpielberechnungKomplett4Tests
         var coach = game.NationalCoach!;
         Assert.Equal(NationalTeams.Germany, coach.Nation);
         FillFormation(coach);
-        var germany = new Club { Index = NationalTeams.Germany, Name = "Deutschland", Strength = 60 };
+        game.OnNationalLineupLeft();
+        var germany = game.Clubs[NationalTeams.Germany];
 
         var (d, a, _) = MatchEngine.LineupTeamValues(coach.Formation);
         var row = StrengthTable.Compute(game, [germany], StrengthView.Abwehr).Single();
@@ -209,6 +210,8 @@ public class SpielberechnungKomplett4Tests
         var before = StrengthTable.Compute(game, [germany], StrengthView.Gesamt).Single();
         foreach (var p in coach.Formation.Players)
             p.Form += 5;
+        Assert.Equal(before, StrengthTable.Compute(game, [germany], StrengthView.Gesamt).Single()); // A009: erst nach der Rechnung
+        game.OnNationalLineupLeft();
         var after = StrengthTable.Compute(game, [germany], StrengthView.Gesamt).Single();
         Assert.True(after.Form > before.Form);
     }

@@ -32,8 +32,9 @@ public sealed record StrengthRow(Club Club, int Condition, int Technique, int Fo
 ///   Reihe 0–2 der Aufstellung (<see cref="MatchEngine.LineupTeamValues"/>). [APPROX] Aus der aktuellen Aufstellung statt dem
 ///   Stand des letzten Tageslaufs; ohne Aufstellung die Felder des Laders.</item>
 /// <item>Länderteams: Kondition und Technik aus <see cref="GameState.NationalRatings"/> (DGROUP 0x4C4E, Deutschland vor der
-///   WM neu ausgewürfelt), Form und Tagesform aus den Feldern des Vereinsplatzes. Land des Bundestrainers mit eigener
-///   Aufstellung: Kondition, Technik und Form aus der Aufstellung (0x952C, #193).</item>
+///   WM neu ausgewürfelt), Form und Tagesform aus den Feldern des Vereinsplatzes (<see cref="GameState.NationalTeamValues"/>).
+///   Land des Bundestrainers: dieselben Felder, geschrieben von 0x952C aus seiner Aufstellung (A009,
+///   <c>GameState.UpdateNationalTeamValues</c>).</item>
 /// <item>[APPROX] Vor dem ersten Spiel eines Spielstands sind die Teamwerte noch nicht gezogen
 ///   (<see cref="MatchEngine.LoadTeamValues"/>): Streuung 0, Form und Tagesform 50 (<see cref="MatchEngine.TeamValuesOf"/>).</item>
 /// </list>
@@ -79,10 +80,9 @@ public static class StrengthTable
     {
         if (club.Index is >= NationalTeams.First and <= NationalTeams.Last)
         {
-            // #193: [ORIGINAL] Das Land des Bundestrainers zeigt die Teamwerte, die 0x952C mit Manager 5 aus dessen
-            // Aufstellung schreibt (Tageslauf 0x54F9C–0x54FBF, nach jedem Freundschaftsspiel 0x555D6; DOSBox 27–29 → 41–43).
-            if (game.NationalCoach is { } coach && coach.Nation == club.Index && coach.Formation.Count > 0)
-                return Of(MatchEngine.LineupTeamValues(coach.Formation));
+            // A009 (Spur nationalteam Runde 13): [ORIGINAL] Auch das Land des Bundestrainers zeigt die gespeicherten Felder
+            // 0x18–0x1D, die 0x952C mit Manager 5 aus dessen Aufstellung schreibt (GameState.UpdateNationalTeamValues), nicht
+            // die aktuelle Aufstellung (Datei 0x5149A–0x514E3 liest nur die Vereinsfelder).
             var loaded = MatchEngine.TeamValuesOf(club);
             var (kd, td, ks, ts) = game.NationalRatings(club.Index);
             return ((kd, td, loaded.DefenseForm), (ks, ts, loaded.AttackForm));

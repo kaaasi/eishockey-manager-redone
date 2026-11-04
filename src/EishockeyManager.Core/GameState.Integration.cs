@@ -45,6 +45,11 @@ public sealed partial class GameState
         if (!WorldOnly)
             OnDayClubSeason(day);
 
+        // Spur nationalteam Runde 13 (A009, L9): Länderwerte aus der Aufstellung des Bundestrainers (0x952C mit Manager 5,
+        // Tageslauf Datei 0x54F9C–0x54FBF und nach dem Menü an WM-Tagen Datei 0x555D6) – vor der Ernennung des Tages wie im
+        // Original (Ernennung erst nach dem Tag, Datei 0x553A2).
+        UpdateNationalTeamValues();
+
         // Paket „wettbewerbe“: an den Tagen mit Markierung 255 im Modus 4 den Bundestrainer ernennen (Spur
         // bundestrainer-modus4), dann die Werte Deutschlands ohne Bundestrainer neu auswürfeln.
         if (day is SeasonCalendar.ClubSeasonEnd or SeasonCalendar.SeasonEnd)

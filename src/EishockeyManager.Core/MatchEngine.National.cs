@@ -55,7 +55,9 @@ public static partial class MatchEngine
     /// +0x0A wie im Aufstellungsbildschirm (<see cref="NationalCoach.IsDressed"/>), Technik + Länderspiele / 8 im Spiel
     /// (0x98F8, <see cref="LiveSquad.NationalCoach"/>). [APPROX] Ohne eigene Aufstellung (passiver Bundestrainer) die
     /// Automatik <see cref="NationalCoach.Lineup"/> mit drei Reihen, alle verfügbaren eingesetzt; „5 − Level“ (DGROUP 0xED8)
-    /// aus dem Level des Managers, der Bundestrainer ist; Reihenfolge der Kaderplätze wie der WM-Kader (nicht gelesen).
+    /// aus dem Level des Managers, der Bundestrainer ist. [ORIGINAL] Reihenfolge der Kaderplätze wie der WM-Kader: nach „auto“
+    /// Plätze 0–2 Torhüter, 3–12 Verteidiger, 13–28 Stürmer, je Art absteigend nach Summe (A085, DOSBox FILE18 Satz 5;
+    /// <see cref="GameState.AutoNominate"/>).
     /// </summary>
     public static LiveSquad NationalSquad(GameState game, NationalCoach coach)
     {

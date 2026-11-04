@@ -267,7 +267,7 @@ Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader a
 |---|---|
 | Etat beim Amtsantritt: DGROUP 0x29C = 1.500.000 Drittel-DM = 500.000 DM; nach jeder WM 100.000 DM, Platz 1–8 (11 − Platz) · 100.000 DM | Datei 0x554A6, 0x31293 ff. |
 | Kader: höchstens 29 (Zähler &gt; 28 → abgelehnt); Klick auf Kaderspieler entlässt, Verletzte werden nicht aufgenommen | 0x3CAD5, 0x3C928 |
-| „auto“: Kader leeren, dann 3 Torhüter, 10 Verteidiger, 16 Stürmer (DGROUP 0x4EDE) – je Art der Unverletzte mit der höchsten Summe Kondition + Technik + Form | 0x3CA06, 0x3CC01 |
+| „auto“: Kader leeren, dann 3 Torhüter, 10 Verteidiger, 16 Stürmer (DGROUP 0x4EDE) – je Art der Unverletzte mit der höchsten Summe Kondition + Technik + Form; Kaderplätze 0–2/3–12/13–28 je Art absteigend, Gleichstand: zuerst durchsuchter Spieler (A085, Runde 13; `[APPROX]` Spieler-Id statt Poolindex) | 0x3CA06, 0x3CC01, 0x3CCBA; DOSBox FILE18 |
 | Am Saisonende kehren alle Kaderspieler zurück, das Amt endet | 0x557B0, 0x5580E |
 | Kosten (Drittel-DM, DGROUP 0x26C, je Land 52–63): 300.000, 165.000, 180.000, 135.000, 120.000, 150.000, 90.000, 60.000, 105.000, 75.000, 45.000, 195.000 – im Remake durch 3 (100.000 … 15.000 DM), Heimspiel doppelt | 0x3BE78 |
 | Höchstens 8 Spiele je Saison (DGROUP 0xD0C1), „Nicht mehr als / 8 Freundschaftsspiele“; zu wenig Geld: „Sie haben nicht / genug Geld !“ | 0x3BF9B, 0x3C2A3 |
@@ -299,12 +299,14 @@ Kaderplatz 52 Byte: DGROUP 0x5DC3 + 0x618 · Manager + 0x34 · Platz, 29 Plätze
 | Aufnahme in den WM-Kader nullt den Platz: neue Kaderspieler sind weder eingesetzt noch aufgestellt; Kader nach Art sortiert | 0x42E2A, 0x42D46 |
 | Auf einen Platz setzen macht eingesetzt; bei 22 Eingesetzten wird ein weiterer abgewiesen: „Schon 22 Mann / im Team !“ (DGROUP 0x11D5) | 0x415B2, 0x40E2A–0x40E61 |
 | Platz leeren (aus dem Menü, Kennwert 0): auch nicht mehr eingesetzt | 0x40CF8–0x40D0D |
-| Linksklick (Mausereignis 1) auf einen eingesetzten, nicht aufgestellten Spieler nimmt ihn heraus; Rechtsklick (Ereignis 3) auf einen nicht eingesetzten setzt ihn ein | 0x40F45–0x40F59, 0x411FE; Ereignisse 0xBBF:0x24DF |
+| Rechtsklick (Mausereignis 3) auf einen eingesetzten, nicht aufgestellten Spieler nimmt ihn heraus, auf einen nicht eingesetzten setzt ihn ein (A010, Runde 13; vorher Linksklick) | 0x40F35–0x40F59, 0x411FE; Ereignisse 0xBBF:0x24DF |
+| Auswahl nach Reihe (A010, Runde 13): Klick auf einen Block bzw. den Torhüterkasten wählt die Reihe (Nummer in Farbe 0x10); Linksklick auf einen nicht Aufgestellten setzt ihn auf den ersten freien Platz seiner Art in der Reihe, sonst „Kein / Platz mehr !“, ohne Reihe „Keine Reihe / ausgewählt !“, Torhüter/Feldspieler im falschen Kasten „Der darf da / nicht rein !“; Klick auf einen Aufgestellten nimmt ihn heraus (Linksklick: nicht mehr eingesetzt, Rechtsklick: eingesetzt) und wählt seine Reihe | 0x40890–0x40943, 0x40E77–0x40EB9, 0x40F7C–0x411FE, 0x41287–0x414C6; DOSBox `file19_06`–`file19_08` |
+| `[APPROX]` Volle Hälfte der Reihe: das Original versucht die andere Hälfte und öffnet in Reihe 1 einen sechsten Feldspielerplatz; das Remake (feste Plätze je Art) meldet gleich „Kein / Platz mehr !“ | 0x413E8–0x414ED |
 | NR = Zeile im Kader (1–29), nur bei Eingesetzten; sonst NR und STATUS leer | Video 00056 |
 | „Eingesetzt: n“ in Farbe 16 (Füllung 4) | 0x41D61–0x41D9D |
-| `[APPROX]` Wer von einem besetzten Platz verdrängt wird, bleibt eingesetzt (RESERVE) | – |
 | `[APPROX]` Auto-Aufstellung „A“ wie beim Verein (drei Blöcke), dazu die stärksten Übrigen bis 22 eingesetzt; „C“ leert alle Plätze | – |
-| `[APPROX]` Linksklick auf nicht eingesetzte oder aufgestellte Spieler wählt sie aus (wie beim Verein); Spielerinfo auf Rechtsklick (0x40872) nicht übernommen | – |
+| `[APPROX]` Spielerinfo auf Rechtsklick (0x40872) nicht übernommen | – |
+| Länderwerte (Vereinsfelder 0x18–0x1D des Landes) schreibt 0x952C mit Manager 5 aus Reihe 0–2 der Aufstellung, leere Plätze zählen 0: beim Verlassen der Aufstellung, im Tageslauf und nach dem Menü an WM-Tagen – nicht nach Freundschaftsspielen; gelesen wird der gespeicherte Stand (A009, Runde 13). `[APPROX]` Verlassen nur nach einer Änderung, Rechnung im Remake an jedem Tag vor dessen Spielen, leere Aufstellung → Automatik | 0x0952C, 0x41506, 0x54F9C, 0x555D6; DOSBox FILE18–FILE20 |
 | Stärke aus den eingesetzten Spielern aller vier Blöcke, Taktik über Einsatz/Angriff im Spiel (0x98F8, 0x939A; kein Zuschlag). `[APPROX]` ganz leere Aufstellung → bisherige Automatik | 0x98F8, 0x8EF2 |
 
 Spielstand Schema 4 (Migration 3 → 4: leere Aufstellung, Grundtaktik, niemand eingesetzt).
