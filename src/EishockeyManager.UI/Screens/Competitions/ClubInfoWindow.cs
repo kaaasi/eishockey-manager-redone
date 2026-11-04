@@ -35,8 +35,8 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   Bildschirm gibt es im Remake nicht, der Knopf steht ohne Wirkung. Dritter Knopf (Einschätzung, ändert Spielzustand) und
 ///   Wettbewerbscode DGROUP 0xD0C2 wie im Länderzweig (<see cref="TeamInfoWindow"/>).</item>
 /// <item>[APPROX] Bilanz, Bilanzzeichen und „Tore / Spiel“ aus den Ligaergebnissen der Saison (<see cref="GameState.Results"/>,
-///   wie der Tabellensatz, den nur Wettbewerbscode 7/8 füllt und der Saisonwechsel leert). Rekorde der Vereine trägt das
-///   Remake noch nicht ein (<see cref="GameState.EnterNationalResult"/> nur für Länder): bis dahin „Noch keine Eintragung.“.</item>
+///   wie der Tabellensatz, den nur Wettbewerbscode 7/8 füllt und der Saisonwechsel leert). Rekorde der Vereine tragen
+///   seit Runde 12 die Ligaspiele ein ([ORIGINAL] nur Wettbewerbscode 7 in 0x50283; Pokal und Play-offs nicht, <c>ClubRecordsSeasonTests</c>).</item>
 /// </list>
 /// </remarks>
 public sealed class ClubInfoWindow
