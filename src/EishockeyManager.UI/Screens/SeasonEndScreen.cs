@@ -58,7 +58,7 @@ public sealed class SeasonEndScreen : Screen
         if (Game.IsGameOver)
             Host.Show(new SeasonEndGameOverScreen(Host, null, null));
         else
-            Host.Show(new SeasonEndSummaryScreen(Host, _menu));
+            Host.Show(SeasonEndSummaryScreen.Open(Host, _menu));
     }
 
     public override void Draw(Surface s)

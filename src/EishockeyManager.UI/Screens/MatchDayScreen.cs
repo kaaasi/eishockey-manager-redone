@@ -38,10 +38,19 @@ public sealed class MatchDayScreen : Screen
     private int _frame;
     private bool _started;
 
-    public MatchDayScreen(ScreenHost host, MainMenuScreen menu) : base(host) => _menu = menu;
+    /// <summary>
+    /// <paramref name="steps"/> sind die Ergebnisse von <see cref="GameState.Continue"/>, das der Aufrufer (Eingabe „Tag weiter“ im
+    /// Hauptmenü) bereits ausgeführt hat: Der Bildschirm zeigt nur an und lässt beim Öffnen keine Zeit vergehen
+    /// (AGENTS.md §4, #558).
+    /// </summary>
+    public MatchDayScreen(ScreenHost host, MainMenuScreen menu, IReadOnlyList<SeasonStep>? steps = null) : base(host)
+    {
+        _menu = menu;
+        Steps = steps ?? [];
+    }
 
     /// <summary>Die Schritte des letzten „Tag weiter“ (für Tests).</summary>
-    public IReadOnlyList<SeasonStep> Steps { get; private set; } = [];
+    public IReadOnlyList<SeasonStep> Steps { get; }
 
     /// <summary>Text des gerade gezeigten Banners oder null.</summary>
     public string? CurrentBanner => (_current as BannerItem)?.Text;
@@ -53,7 +62,6 @@ public sealed class MatchDayScreen : Screen
         if (_started)
             return;
         _started = true;
-        Steps = Game.Continue();
         foreach (var step in Steps)
         {
             switch (step)
