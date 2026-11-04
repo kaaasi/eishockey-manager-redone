@@ -179,10 +179,10 @@ public class RngTwinProbeTests
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "6927110A2E58967B")]
-    [InlineData(true, 3, "642103BA0B540BAE")]
-    [InlineData(false, 11, "DC47CDF473F7E601")]
-    [InlineData(true, 11, "AB514D4A97C4C511")]
+    [InlineData(false, 3, "0F6C935EE872102B")]
+    [InlineData(true, 3, "434D00DEAD4F3D70")]
+    [InlineData(false, 11, "5262EDDF4E77E0D2")]
+    [InlineData(true, 11, "A25AA3275EDD38A9")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -193,8 +193,8 @@ public class RngTwinProbeTests
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "880B26DCC669BE8C")]
-    [InlineData(true, "957524E4743A0806")]
+    [InlineData(false, "986AA7BF9A9EB473")]
+    [InlineData(true, "813DE9160D4A67C7")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

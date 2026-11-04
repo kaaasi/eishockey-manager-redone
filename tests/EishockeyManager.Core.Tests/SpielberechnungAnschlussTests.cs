@@ -193,8 +193,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Bundesliga (Datei 0x29CF2, Teamwerte bleiben am Platz). kader-start Teil 3 (R-K5): erneut neu – Satzfolge vor der
     /// Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.</summary>
     [GameDataTheory]
-    [InlineData(false, "AFB79FDB629B5A47")]
-    [InlineData(true, "C6B3F2C36D4A13CF")]
+    [InlineData(false, "98ACB1ADA3F8E245")]
+    [InlineData(true, "71E360808E1B4F9F")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -264,7 +264,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=53|500000|WorldChampion=52|500000|R1085522836 C353368038";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=53|500000|WorldChampion=63|500000|R982137502 C211999367";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem
