@@ -81,8 +81,10 @@ public sealed partial class GameState
     /// Modus „nur Weltkugel“, erster Tag der Saison: [ORIGINAL] Datei 0x54CEE–0x54D38 – der Tageszähler springt ohne
     /// Tagesverarbeitung (keine Liga, keine Finanzen, kein Training, kein Markt) bis zum ersten WM-Termin; danach wird
     /// Manager 0 Bundestrainer (DGROUP 0xD0BA = 1, Ernennung samt Etat 0x55436 ff.).
-    /// [APPROX] Das Remake hält danach vor dem ersten WM-Spiel an, damit der Bundestrainer seinen Kader wählen kann
-    /// (das Original wählt ihn an dieser Stelle nur im Durchlauf ohne Halt, DGROUP 0x1DB, automatisch).
+    /// [ORIGINAL] Danach hält das Spiel vor dem ersten WM-Spiel mit leerem Kader an (A027, Spur nationalteam Runde 13): Das
+    /// Original setzt nur die Ernennung (Datei 0x54D19, DGROUP 0xD0BA = 1) und zeigt das Menü des Bundestrainers am ersten
+    /// WM-Tag; „auto“ (0x3CA06) und Satz 5 nur im Durchlauf (DGROUP 0x1DB ≠ 0, Datei 0x54D1E–0x54D2D), den das Remake nicht
+    /// kennt. DOSBox FILE11: 14.04.1994, Satz 5 leer, DGROUP 0xA70E = 5; `file11_12` „Eingesetzt: 0“.
     /// </summary>
     /// <returns>true, wenn gesprungen wurde.</returns>
     internal bool SkipToWorldCup()
@@ -95,12 +97,16 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Spielt das Nationalteam des Bundestrainers an diesem Tag? Hält die Zeitleiste an – im Modus „nur Weltkugel“ und
-    /// im Modus 4 (Zug des Bundestrainers). [APPROX] Das Original gibt den Zug an jedem WM-Tag (0x555AD); alle
-    /// WM-Termine sind Spieltage Deutschlands, solange es im Turnier steht.
+    /// Ist der Bundestrainer an diesem Tag am Zug? Hält die Zeitleiste an – im Modus „nur Weltkugel“ und im Modus 4 (Zug
+    /// des Bundestrainers). [ORIGINAL] An jedem WM-Tag (Ereignis 0x10), solange es einen Bundestrainer gibt – auch wenn
+    /// Deutschland ausgeschieden ist oder an dem Tag nicht spielt; das Menü zeigt dann „Spielfrei“ (A028, Spur nationalteam
+    /// Runde 13): Datei 0x5557F–0x555A3 ruft das Hauptmenü 0x44E22 bei DGROUP 0x9EDA ≠ 0xFD und Tagesereignis ≠ 0 und fragt
+    /// das Spiel der eigenen Mannschaft nicht ab; DOSBox `file19_28` (24.04.1994 „Spielfrei“), `file20_02`, `file20_04`
+    /// (Deutschland Gruppe 1 Platz 6). Bis Runde 13 hielt das Remake nur an Spieltagen Deutschlands. Nach dem letzten WM-Tag
+    /// folgt der Saisonwechsel ohne Halt (`file21_02` → `file21_03`).
     /// </summary>
     internal bool NationalCoachPlaysOn(int day) =>
-        NationalCoach is { } coach && MatchOn(day, coach.Nation) is not null;
+        NationalCoach is not null && SeasonCalendar.Events(day).HasFlag(DayEvents.WorldCup);
 
     /// <summary>Vereine (außer im Modus „nur Weltkugel“) und das Nationalteam des Bundestrainers: „eigene“ Spiele.</summary>
     internal HashSet<int> ManagerTeams()

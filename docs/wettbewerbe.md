@@ -467,7 +467,7 @@ und zum Saisonende (0x55809) sowie in jedem Modus über die Tabellensuche 0xE8:0
 | Am Saisonende kehren die Kaderspieler zurück, das Amt endet (in allen Modi); nur Modus 1 setzt 0xD0BA[0] neu | 0x557A5–0x5580E |
 | Infoleiste im Zug des Bundestrainers: WM-Gegner Deutschlands und Nationalkonto (wie Modus 1, Video `bundestrainer_00026`) | – |
 | Platzierung aus der Abschlusstabelle der Hauptrunde (Gesamt): 0x5CCB steht beim Lesen immer in der Gesamtordnung – die Tabellenansicht sortiert für „Heim“/„Auswärts“ nur vorübergehend und beim Verlassen wieder nach „Gesamt“ (0x50256), der Tagesbeginn ebenso (0x36CD3). `[APPROX]` Nur die Reihenfolge vollständig gleicher Vereine kann abweichen (Spur `tabellen-original-2`) | 0x50B45, 0x4FA8D, 0x50256 |
-| `[APPROX]` Zug des Bundestrainers nur an WM-Tagen, an denen Deutschland spielt (wie der Halt im Modus 1); das Original gibt ihn an jedem WM-Tag – Deutschland spielt an allen acht Terminen | 0x555AD |
+| `[ORIGINAL]` Zug des Bundestrainers (Modus 4) und Halt im Modus 1 an jedem WM-Tag, auch wenn Deutschland ausgeschieden ist oder nicht spielt („Spielfrei“); danach Saisonwechsel ohne Halt (A028, Runde 13; vorher nur an Spieltagen Deutschlands) | 0x5557F–0x555A3; DOSBox `file19_28`, `file20_02`, `file20_04` |
 | `[APPROX]` Reihenfolge: Zug des Bundestrainers vor dem Austragen des Tages, damit Kader und Aufstellung für das WM-Spiel gelten | – |
 
 Unterschiede zu Modus 1: keine Ernennung zu Saisonbeginn und kein Sprung – die Vereinssaison läuft normal; Ernennung
