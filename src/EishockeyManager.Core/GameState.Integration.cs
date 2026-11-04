@@ -93,9 +93,11 @@ public sealed partial class GameState
         ResetLeaguePenalties(); // Spur statistiken: Strafminuten der Fair-Play-Tabelle (StatisticsClub.cs, 0x5647A)
         ResetPowerPlayStatistics(); // Spur statistiken-verein: Über-/Unterzahl je Manager (StatisticsClub.cs, 0x5588E)
         // Spur spielberechnung-komplett (#204): große Wanderung der Teamwerte nach Auf- und Abstieg (0x56448).
-        // [APPROX] nicht im Modus „nur Weltkugel“ (dort kein Tageslauf, 0x54CEE; Saisonwechsel nicht geprüft).
-        if (!WorldOnly)
-            MatchEngine.DriftTeamValues(this, TeamValueDrift.Season);
+        // [ORIGINAL] auch im Modus „nur Weltkugel“ (A058, Spur saison Teil 4; docs/analyse/re-runde-13.md): Datei 0x56448 ruft
+        // 0x9D1B mit Modus 10 ohne Modusprüfung. Spielstände FILE20 → FILE21 (Modus 1): Ligavereine Kondition/Technik
+        // (Felder 0x18–0x1B) gewandert und in den Ligagrenzen (Kaufbeuren 80 78 79 75 → 92 91 90 87, Düsseldorf 94 × 4 an der
+        // Obergrenze), alle zwölf Nationalteams dort unverändert, Form 0x1C–0x1E überall neu.
+        MatchEngine.DriftTeamValues(this, TeamValueDrift.Season);
     }
 
     /// <summary>

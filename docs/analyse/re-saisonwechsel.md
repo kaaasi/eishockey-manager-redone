@@ -417,3 +417,23 @@ Grundlage `docs/analyse/re-runde-13.md` (S-K6-a/b/c) und Entscheidungen der Leit
   `EuropeanCup` beim Saisonstart mit festen Vereinsindizes, gleiches Ergebnis; zugeordnet in `SeasonFlow.LeagueSlots.cs`.
 - Tests `SaisonSatzfolgeSaisonendeTests` (Mehrsaisonprobe 4 Wechsel passiv/aktiv, Aufsteiger gegen alte und neue Liga, Oberliga-Manager
   gegen Nachrücker, Speichern im Saisonende, Migration 37 → 38).
+
+### Umsetzung A058, A163, A088 (Spur `saison` Teil 4, Runde 13, 04.11.2026)
+
+- **A058 (`[ORIGINAL]`):** Die große Wanderung der Teamwerte (Datei 0x56448 → 0x9D1B, Modus 10) läuft auch im Modus „nur Weltkugel“
+  (`GameState.Integration.cs`, `OnNewSeasonManager`). Beleg FILE20 → FILE21.
+- **A163 (`[ORIGINAL]`):** Der Oberliga-Austausch (Datei 0x56238–0x56284) läuft auch im Modus 1, über die ungespielte Platzliste
+  (= Startordnung, `LeagueTable.StartOrder`/`SuccessorOrder`). Zwischen den Ligen 1/2/Oberliga wechselt niemand (keine
+  Aufstiegsrunden). Beleg FILE20 → FILE21: Plätze 34/35 gehen, 37/41 rücken nach. `[APPROX]`: Managerverein auf den letzten beiden
+  Plätzen im Modus 1 (Doppeltausch wie in den anderen Modi, nicht belegt).
+- Tests `SaisonWeltkugelTests` (je 4 Saisonwechsel, passiv und aktiv); `SaisonwechselProbenTests` (Modus 1, 20 Wechsel) und
+  `GameModeTests.WorldOnly_SeasonRunsThroughWorldCup…` auf das belegte Verhalten umgestellt.
+- **A088: offen, Entscheidung Leitstelle.** Original: Zähler der Kaderplätze des Transfermarkts (Satz 4) bleiben über den Wechsel
+  stehen, die Poolzähler (+0x1B/+0x1C/+0x1F) aller 200 Poolspieler werden gelöscht, ein Kauf übernimmt die Poolzähler. Im Remake
+  teilen sich Marktplatz und Spieler ein `Player`-Objekt (`TransferListing.Player`). Die Marktliste wird beim Saisonwechsel neu
+  gebildet (`TransferMarket.StartSeason`, `[APPROX]` „Listing-Identitäten“). Vertragslose (`FreeAgents`) und Poolspieler
+  (`TransferMarket.Pool`, von `ResetMatchCounters` nicht erfasst) sind getrennt geführt. Getrennte Markt- und Poolzähler brauchen
+  einen neuen Zustand je Spieler oder Marktplatz (Schema) und Änderungen in `Transfer*.cs`. Das geht über die „kleinen Änderungen in
+  `MatchEngine.Live.cs`/`Player.Factory.cs`“ nach L4 hinaus. Zu klären: Soll `saison` ein Schemafeld (Schema 38, Migration
+  `SaveGame.Migration.Saison.cs`) und den Anschluss in `Transfer.cs` ändern dürfen, oder bleibt A088 `[APPROX]`? Dabei auch zu klären,
+  ob Poolspieler im Remake überhaupt Saisonzähler sammeln.
