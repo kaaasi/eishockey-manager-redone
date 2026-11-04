@@ -364,7 +364,7 @@ public class SaveLoadScreenTests : IDisposable
         {
             if (game.Phase == SeasonPhase.SeasonOver)
                 game.StartNextSeason();
-            KeepSquadHelper.KeepSquads(game); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen
+            KeepSquadHelper.KeepSquads(game, extendExpired: true); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen (R12K-03)
             if (AutoSave.OnMainMenu(d.Host))
             {
                 writes++;

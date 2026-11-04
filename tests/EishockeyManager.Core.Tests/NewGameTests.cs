@@ -103,7 +103,7 @@ public class NewGameTests
     public void Create_ClubWithoutLeagueMovesIntoOberliga()
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Test", ClubIndex = 42 });
+        setup.Managers.Add(new ManagerSetup { Name = "Test", ClubIndex = 42, StartLeague = League.Oberliga });
 
         var game = NewGame.Create(CreateDatabase(), setup, seed: 7);
 

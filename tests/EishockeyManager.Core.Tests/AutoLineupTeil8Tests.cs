@@ -167,7 +167,7 @@ public class AutoLineupTeil8Tests
     [Fact]
     public void Migration_31To32_KeepsHandMadeLineup()
     {
-        var game = Create();
+        var game = Create(4); // kader-start U15-a/R-K5 (L13): Saat 3 → 4, Vorbedingung nach dem Starttausch
         var club = game.Clubs[2];
         var slot = LineupSlot.Forward(0, 0);
         var choice = club.Players.First(p => p.Role == PlayerRole.Forward && p.Available && club.IsDressed(p) && !club.Lineup.Contains(p));

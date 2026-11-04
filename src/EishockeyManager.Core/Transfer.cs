@@ -445,8 +445,7 @@ public sealed partial class TransferMarket
         }
         else if (!listing.IsFreeAgent)
         {
-            from.Players.Remove(p);
-            from.Lineup.Remove(p);
+            from.RemovePlayer(p);
             if (listing.Seller is null)
                 from.Lineup.FillGaps(from.Players); // Computerverein stellt selbst um, Manager nicht
         }

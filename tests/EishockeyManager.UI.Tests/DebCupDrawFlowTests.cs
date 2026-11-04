@@ -190,7 +190,7 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
             for (var guard = 0; game.History.Count < 4 || d.Host.Current is not MainMenuScreen; guard++)
             {
                 Assert.True(guard < 80000, "Vier Saisonwechsel nicht erreicht");
-                KeepSquadHelper.KeepSquads(game); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen
+                KeepSquadHelper.KeepSquads(game, extendExpired: true); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen (R12K-03)
                 Step(d, live);
             }
             return Summary(game);
@@ -255,7 +255,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// (0x977F, Vereinsfelder). Mit und ohne Anzeige weiter gleich.
     /// Spur kader-transfer, Runde 12, Teil 1 (U4, U5): ab 1995 neu – Angebote verfallen (0x0767A), Poolplätze enden mit Nachfolger
     /// (0x2787A); anderer Zufallsverbrauch, der Kader des Managers wird mit KeepSquadHelper auch ohne Angebot verlängert.
-    /// Integration Runde 12 (+ kader-transfer): Abdruck auf dem integrierten Stand neu ermittelt. Mit und ohne Anzeige weiter gleich.</summary>
+    /// Integration Runde 12 (+ kader-transfer): Abdruck auf dem integrierten Stand neu ermittelt. Mit und ohne Anzeige weiter gleich.
+    /// Runde 13, kader-start Teil 2 (U15-a, L13): ab 1993 neu – Verein 42 tauscht mit Start-Liga Oberliga in die Oberliga
+    /// (Datei 0x29CF2, Teamwerte bleiben am Platz, Oberliga-Kader); mit und ohne Anzeige weiter gleich. Teil 3 (R-K5): erneut neu –
+    /// Satzfolge vor der Spielvorbereitung (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.</summary>
     private const string Reference =
-        "1993: DEB 4, DM 6, Tab 15341 | 1994: DEB 12, DM 4, Tab 15422 | 1995: DEB 10, DM 4, Tab 15391 | 1996: DEB 10, DM 10, Tab 15611";
+        "1993: DEB 21, DM 6, Tab 15379 | 1994: DEB 23, DM 0, Tab 15591 | 1995: DEB 8, DM 8, Tab 15807 | 1996: DEB 10, DM 8, Tab 15236";
 }

@@ -15,8 +15,8 @@ public class ClubAssignmentTests
     private static ManagerSetup Manager(string name, Pick pick, int fixedClub, League league, StartStrength strength) =>
         pick switch
         {
-            Pick.Fixed => new ManagerSetup { Name = name, ClubIndex = fixedClub },
-            Pick.NoLeague => new ManagerSetup { Name = name, ClubIndex = fixedClub },
+            Pick.Fixed => new ManagerSetup { Name = name, ClubIndex = fixedClub, StartLeague = NewGame.DatabaseLeague(fixedClub) ?? League.Oberliga },
+            Pick.NoLeague => new ManagerSetup { Name = name, ClubIndex = fixedClub, StartLeague = NewGame.DatabaseLeague(fixedClub) ?? League.Oberliga },
             _ => new ManagerSetup { Name = name, StartLeague = league, StartStrength = strength },
         };
 
@@ -46,7 +46,7 @@ public class ClubAssignmentTests
         {
             var setup = new GameSetup();
             setup.Managers.Add(new ManagerSetup { Name = "A", StartLeague = League.Bundesliga, StartStrength = StartStrength.Mittelfeld });
-            setup.Managers.Add(new ManagerSetup { Name = "B", ClubIndex = fixedClub });
+            setup.Managers.Add(new ManagerSetup { Name = "B", ClubIndex = fixedClub, StartLeague = NewGame.DatabaseLeague(fixedClub) ?? League.Oberliga });
             AssertExclusive(NewGame.Create(database, setup, seed), setup);
         }
     }
@@ -89,9 +89,9 @@ public class ClubAssignmentTests
         for (var seed = 0; seed < 100; seed++)
         {
             var setup = new GameSetup();
-            setup.Managers.Add(new ManagerSetup { Name = "A", ClubIndex = 45 });
+            setup.Managers.Add(new ManagerSetup { Name = "A", ClubIndex = 45, StartLeague = League.Oberliga });
             for (var c = 24; c < 27; c++)
-                setup.Managers.Add(new ManagerSetup { Name = $"M{c}", ClubIndex = c });
+                setup.Managers.Add(new ManagerSetup { Name = $"M{c}", ClubIndex = c, StartLeague = NewGame.DatabaseLeague(c) ?? League.Oberliga });
             var game = NewGame.Create(database, setup, seed);
             AssertExclusive(game, setup);
             Assert.Equal(1, Enumerable.Range(27, 9).Count(c => game.Clubs[c].League is null));

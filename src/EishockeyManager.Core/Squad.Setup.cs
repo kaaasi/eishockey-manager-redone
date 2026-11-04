@@ -76,10 +76,7 @@ public static class SquadSetup
             else
                 BuildComputerSquad(club, namePool, usedNames, random);
 
-            foreach (var p in club.Players)
-                p.Number = 0;
-            foreach (var p in club.Players)
-                p.Number = PlayerFactory.FreeNumber(club, p); // 1, 2, 3 … in Kaderreihenfolge
+            club.RenumberPlayers(); // A091: Nr. = Kaderplatz + 1
             RollValues(club, startBase.TryGetValue(club.Index, out var b) ? b : null, random);
             club.Lineup.AutoFill(club.Players);
             club.ReferenceRating = TeamStrength.Rating(club.Lineup);

@@ -199,8 +199,7 @@ public sealed partial class GameState
     {
         if (club is not null)
         {
-            club.Players.Remove(p);
-            club.Lineup.Remove(p);
+            club.RemovePlayer(p);
             RemoveMessagesOf(p);
             foreach (var manager in Managers.Where(m => m.ClubIndex == club.Index && !m.Dismissed))
                 Notify(manager, SquadRules.RetirementText(p));
@@ -219,8 +218,7 @@ public sealed partial class GameState
     {
         if (SquadRules.CareerEnds(p.Age, ContractRandom))
         {
-            current.Players.Remove(p);
-            current.Lineup.Remove(p);
+            current.RemovePlayer(p);
             Retire(owner, p);
             // [ORIGINAL] Neuanlage im selben Pooleintrag (Datei 0x279DA): ein junger Spieler übernimmt den Platz im Verein.
             if (owner.Players.Count < PlayerFactory.MaxNumber)

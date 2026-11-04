@@ -168,16 +168,23 @@ namespace EishockeyManager.Core.Tests;
 /// Satzfolge der nächsten Saison entsteht am 29. April (Startwert aus dem Zufallszustand dieses Tages, ohne Zug) und die
 /// Fair-Play-Prämie rechnet über die Liga der nächsten Saison in dieser Folge; andere Prämien, Konten und danach Kauf- und
 /// Vertragsentscheidungen. Gegenprobe: ohne Bildung am 29. April und mit der alten Prämienregel alle Abdrücke unverändert.
+/// Runde 13, kader-start Teil 2 (U15-a, L13): synthetische Abdrücke (Seed 3/11) neu – der feste Verein tauscht beim Spielstart in
+/// die Start-Liga (Datei 0x29CF2, bei Bundesliga immer, Teamwerte bleiben am Platz); ein Zufallszug mehr beim Spielstart.
+/// Originaldatenbank-Abdrücke (Verein 42, Start-Liga Oberliga) unverändert.
+/// Runde 13, kader-start Teil 3 (R-K5, L13): alle Abdrücke neu – die Satzfolge entsteht vor der Spielvorbereitung aus dem
+/// Spielstart-Seed (Datei 0x43A17, `NewGame.StartOrder`), der Zufallsplatz des Starttauschs ist ein Satzplatz dieser Folge.
+/// Runde 13, kader-start Teil 4 (A091/A166): alle Abdrücke neu – Nr. = Kaderplatz + 1 (Kauf hinten an, Verkauf rückt auf),
+/// Spiel und Auto-Aufstellung in Kaderplatzfolge statt Rolle/Nummer; andere Gleichstände und Spielverläufe.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "B54D8F5BAD017D38")]
-    [InlineData(true, 3, "09843F6CF7B8374F")]
-    [InlineData(false, 11, "66FD8684BCC04AD5")]
-    [InlineData(true, 11, "CCDB49C8514E69C5")]
+    [InlineData(false, 3, "1501663F0197426F")]
+    [InlineData(true, 3, "377126FABD83B898")]
+    [InlineData(false, 11, "6B6DAAD441C0C2A2")]
+    [InlineData(true, 11, "C429365C16B41D63")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -188,12 +195,12 @@ public class RngTwinProbeTests
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "880B26DCC669BE8C")]
-    [InlineData(true, "957524E4743A0806")]
+    [InlineData(false, "C2A2F88417587DD1")]
+    [InlineData(true, "FD69401E5D7397F7")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Probe", ClubIndex = 42 });
+        setup.Managers.Add(new ManagerSetup { Name = "Probe", ClubIndex = 42, StartLeague = League.Oberliga });
         var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, seed: 3);
         Assert.Equal(expected, Run(game, active));
     }

@@ -14,7 +14,7 @@ public class NationalCoachTests
     private static GameState Create(int seed = 3, int club = 2)
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Trainer", Head = 0, ClubIndex = club });
+        setup.Managers.Add(new ManagerSetup { Name = "Trainer", Head = 0, ClubIndex = club, StartLeague = NewGame.DatabaseLeague(club) ?? League.Oberliga });
         return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
     }
 

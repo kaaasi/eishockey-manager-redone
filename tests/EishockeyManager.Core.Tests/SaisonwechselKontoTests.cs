@@ -14,7 +14,7 @@ public class SaisonwechselKontoTests
     {
         var setup = new GameSetup { Duration = GameDuration.Unbegrenzt, EuropeAndWorldCup = true };
         for (var i = 0; i < clubs.Length; i++)
-            setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = clubs[i] });
+            setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = clubs[i], StartLeague = NewGame.DatabaseLeague(clubs[i]) ?? League.Oberliga });
         return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
     }
 

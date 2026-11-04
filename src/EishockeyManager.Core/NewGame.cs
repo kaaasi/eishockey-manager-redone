@@ -32,7 +32,12 @@ public static class NewGame
             return club;
         }).ToList();
 
-        var managers = AssignClubs(clubs, setup, random);
+        var places = StartOrder(seed); // R-K5: Ligamischung vor der Spielvorbereitung (Datei 0x43A17)
+        var swaps = new List<(int Club, int Partner)>();
+        var managers = AssignClubs(clubs, setup, random, swaps, places);
+        foreach (var (club, partner) in swaps)
+            (clubs[club], clubs[partner]) = (WithStrength(clubs[club], clubs[partner].Strength),
+                WithStrength(clubs[partner], clubs[club].Strength));
 
         var schedules = new Dictionary<League, IReadOnlyList<MatchDay>>();
         foreach (var league in Enum.GetValues<League>())
@@ -55,19 +60,25 @@ public static class NewGame
         SquadSetup.Initialize(game, seed); // Paket „mannschaft“: Kader, Spielerwerte, Aufstellung
         game.AssignStartPlayerIds(); // Spur „speichern“: dauerhafte Spieler-IDs, verbraucht keinen Zufall
         game.InitializeManagerSystems();
-        game.InitializeLeagueSlots(); // Spur saisonwechsel Teil 3 (S-K6): Ligamischung 0x35EDD, verbraucht keinen Zufall
+        game.InitializeLeagueSlots(places); // S-K6/R-K5: Satzfolge = Startmischung mit den Plätzen nach dem Managertausch
         game.BeginFirstTurn(); // ui-rest Teil 4 (R12U-04): Faktor des ersten Managerzugs (0x44E3F), eigene Zufallsquelle
         return game;
     }
 
     /// <summary>
-    /// Exklusive Vereinsvergabe (Befund R2-07): Erst werden die festen Wahlen aller Manager reserviert und geprüft,
-    /// dann rücken ligalose Wahlen in die Oberliga (Verdrängung nur nicht reservierter Vereine), zuletzt folgen die
-    /// Zufallswahlen unter Ausschluss aller bereits vergebenen Vereine. Die Reihenfolge der Manager bleibt erhalten.
+    /// Vereinsvergabe beim Spielstart (Befund R2-07, U15-a): Erst werden die festen Wahlen aller Manager geprüft und der
+    /// Reihe nach in die Start-Liga gesetzt (<see cref="PlaceInStartLeague"/>), zuletzt folgen die Zufallswahlen unter
+    /// Ausschluss aller bereits vergebenen Vereine. Die Reihenfolge der Manager bleibt erhalten.
     /// </summary>
+    /// <param name="swaps">Erhält je Platztausch das Paar (Managerverein, Tauschpartner); die Teamwerte bleiben am Platz
+    /// (<see cref="Create"/> tauscht dafür die Stärke).</param>
+    /// <param name="places">Satzfolge Platz → Verein (48 Einträge, <see cref="StartOrder"/>); der Zufallsplatz wird darin
+    /// gezogen, der Tausch tauscht die Plätze. Ohne Angabe gilt die Indexfolge.</param>
     /// <exception cref="ArgumentException">Fester Verein außerhalb 0–47 oder von zwei Managern gewählt.</exception>
-    public static List<Manager> AssignClubs(IReadOnlyList<Club> clubs, GameSetup setup, Random random)
+    public static List<Manager> AssignClubs(IReadOnlyList<Club> clubs, GameSetup setup, Random random,
+        List<(int Club, int Partner)>? swaps = null, int[]? places = null)
     {
+        places ??= Enumerable.Range(0, SelectableClubs).ToArray();
         var reserved = new HashSet<int>();
         foreach (var m in setup.Managers)
         {
@@ -79,17 +90,17 @@ public static class NewGame
                 throw new ArgumentException($"Verein {chosen} wurde von mehreren Managern gewählt.", nameof(setup));
         }
 
-        // [APPROX] Ein Verein ohne Liga (Index 36–47) rückt in die Oberliga und verdrängt dort einen zufälligen
-        // Verein, den kein Manager fest gewählt hat.
-        foreach (var chosen in setup.Managers.Select(m => m.ClubIndex).OfType<int>())
+        // [ORIGINAL] Die Start-Liga ist ein Wert für alle Manager (DGROUP 0x11A, L1); die Spielvorbereitung setzt sie über
+        // GameSetup.StartLeague für alle gleich. Gelesen wird sie je Manager, damit Aufbauten im Code (Tests, ältere
+        // Spielstände) Manager verschiedener Ligen anlegen können; bei gleicher Liga ist das Ergebnis dasselbe.
+        var earlier = new HashSet<int>();
+        foreach (var m in setup.Managers)
         {
-            var club = clubs[chosen];
-            if (club.League is not null)
+            if (m.ClubIndex is not { } chosen)
                 continue;
-            var candidates = clubs.Where(c => c.League == League.Oberliga && !reserved.Contains(c.Index)).ToList();
-            var replaced = candidates[random.Next(candidates.Count)];
-            replaced.League = null;
-            club.League = League.Oberliga;
+            if (PlaceInStartLeague(clubs, chosen, m.StartLeague, earlier, random, places) is { } partner && partner != chosen)
+                swaps?.Add((chosen, partner));
+            earlier.Add(chosen);
         }
 
         var assigned = new int[setup.Managers.Count];
@@ -101,9 +112,9 @@ public static class NewGame
                 assigned[i] = chosen;
                 continue;
             }
-            // [ORIGINAL] Datei 0x29C78: Zufallsverein der Start-Liga ohne Europapokal-Teilnehmer (Zeile 1, Datei 0x45CD0).
-            // [APPROX] Zu Spielbeginn ist nur der Deutsche Meister (Verein 2) als Teilnehmer belegt; weitere Einträge der
-            // Zeile (DGROUP 0x3B1) sind nicht ausgewertet. Ein fest gewählter Verein bleibt unberührt.
+            // [APPROX] Zufallswahl nach Start-Stärke gibt es im Original nicht (jeder Manager wählt einen Verein, Datei
+            // 0x2964C); das Remake zieht aus dem Drittel der Start-Liga ohne Europapokal-Teilnehmer (Zeile 1, Datei 0x45CD0).
+            // Zu Spielbeginn ist nur der Deutsche Meister (Verein 2) als Teilnehmer belegt. Kein Platztausch.
             var excluded = new HashSet<int>(reserved);
             if (m.StartLeague == League.Bundesliga && clubs[EuropeanCup.InitialChampion].League == League.Bundesliga)
                 excluded.Add(EuropeanCup.InitialChampion);
@@ -121,6 +132,95 @@ public static class NewGame
     }
 
     /// <summary>
+    /// Setzt den fest gewählten Verein eines Managers in die Start-Liga (U15-a, Entscheidung Nutzer D7 = D).
+    /// [ORIGINAL] em.exe Datei 0x29C3B–0x29CF2: Behalten nur, wenn Start-Liga ≠ Bundesliga, der Verein schon in ihr spielt
+    /// und sein Platz ≤ DGROUP 0x7CB (35) ist. Sonst Zufallsplatz r der Start-Liga (Datei 0x29C78
+    /// <c>random([0x7C0+L], [0x7C0+L]+[0x7B1+L]−1)</c>), neu gezogen, solange r der Verein eines früheren Managers ist
+    /// (Datei 0x29C9B–0x29CC3) oder in Zeile 1 des Europapokals steht (Datei 0x29CCC, 0x45CD0(r, 1)); dann Tausch
+    /// Datei 0x29CF2 <c>0x36169(v, r, 0x80)</c>: Name, Logo, Manager und Spieler wandern, die Teamwerte bleiben am Platz.
+    /// Der Verdrängte übernimmt Platz und Liga des Managervereins (auch „ohne Liga“). Bei Start-Liga Bundesliga wird
+    /// immer gezogen, r = v ist möglich. Belege FILE27/FILE28 (Köln fest, Start-Liga 2. Liga: Weißwasser bzw. Hannover in
+    /// der Bundesliga mit Kölns Teamwerten), FILE15 (Bayreuth bleibt in der 2. Liga); <c>docs/analyse/re-runde-13.md</c>, U15-a.
+    /// Der Zufallsplatz r ist ein Satzplatz der Startmischung (<paramref name="places"/>, R-K5): gezogen wird der Platz, nicht der
+    /// Vereinsindex; nach dem Tausch stehen v und r auf den Plätzen des anderen.
+    /// [APPROX] Zufallsquelle: <see cref="GameState.Random"/> statt des gemeinsamen Zufalls. Europapokal-Zeile 1 zu
+    /// Spielbeginn: nur der Deutsche Meister (Verein 2).
+    /// </summary>
+    /// <returns>Tauschpartner (auch der Verein selbst bei r = v) oder null, wenn der Verein bleibt.</returns>
+    internal static int? PlaceInStartLeague(IReadOnlyList<Club> clubs, int club, League league,
+        IReadOnlySet<int> earlierManagers, Random random, int[] places)
+    {
+        var own = clubs[club];
+        var ownPlace = Array.IndexOf(places, club);
+        if (league != League.Bundesliga && own.League == league && ownPlace <= LastLeagueSlot)
+            return null;
+        var first = (int)league * LeagueSize;
+        bool Excluded(int r) => earlierManagers.Contains(r) || (league == League.Bundesliga && r == EuropeanCup.InitialChampion);
+        if (Enumerable.Range(first, LeagueSize).All(slot => Excluded(places[slot])))
+            return null;
+        int partnerPlace;
+        do
+            partnerPlace = first + random.Next(LeagueSize);
+        while (Excluded(places[partnerPlace]));
+        var partner = places[partnerPlace];
+        if (partner == club)
+            return partner;
+        var other = clubs[partner];
+        (own.League, other.League) = (other.League, own.League);
+        (places[ownPlace], places[partnerPlace]) = (partner, club);
+        return partner;
+    }
+
+    /// <summary>Plätze je Liga. [ORIGINAL] DGROUP 0x7B1 + Liga = 12.</summary>
+    private const int LeagueSize = 12;
+
+    /// <summary>
+    /// Satzfolge Platz → Verein beim Programmstart (R-K5, #549): Ligamischung 0x35EDD vor der Spielvorbereitung, je Liga 0–2
+    /// 55 Tausche zweier Plätze random(b, b + 11) (auch derselbe Platz); Plätze 36–47 (ohne Liga) bleiben in Datenbankfolge.
+    /// Die Vereinsauswahl zeigt auf Seite p die Plätze 12 · p … 12 · p + 11 dieser Folge (Datei 0x28030), der Spielstart
+    /// übernimmt sie als Satzfolge der Ligen (<see cref="GameState.LeagueSlots"/>).
+    /// [ORIGINAL] em.exe Datei 0x43A17 (Aufruf 0x35EDD) vor Datei 0x43A61 (Spielvorbereitung 0x28165), danach keine weitere
+    /// Mischung bis zum Hauptmenü (Datei 0x43A66–0x43B40); Belege <c>oberflaeche_0128/_0133/_0136</c>, FILE01/10/27/28
+    /// (<c>docs/analyse/re-runde-13.md</c>, R-K5); Tauschschleife Datei 0x35FD2–0x3613F.
+    /// [APPROX] Zufallsquelle: Das Original zieht nach srand(time) (Datei 0x439F5) aus dem gemeinsamen Zufall; das Remake
+    /// leitet die Mischung aus dem Spielstart-Seed ab, ohne <see cref="GameState.Random"/> weiterzuschalten. Dieselbe Saat
+    /// gibt in der Spielvorbereitung und beim Spielstart dieselbe Folge (der Bildschirm würfelt nichts).
+    /// </summary>
+    public static int[] StartOrder(int seed)
+    {
+        var places = Enumerable.Range(0, SelectableClubs).ToArray();
+        var random = new GameRandom(unchecked(seed * 7919 + 0x35EDD) & int.MaxValue);
+        for (var league = 0; league < 3; league++)
+        {
+            var b = league * LeagueSize;
+            for (var n = 0; n < GameState.LeagueSlotSwaps; n++)
+            {
+                var x = b + random.Next(LeagueSize);
+                var y = b + random.Next(LeagueSize);
+                (places[x], places[y]) = (places[y], places[x]);
+            }
+        }
+        return places;
+    }
+
+    /// <summary>
+    /// Liga eines Vereins laut Datenbank (Index 0–11 Bundesliga, 12–23 2. Liga, 24–35 Oberliga, sonst ohne Liga) – die
+    /// Start-Liga, in der ein fest gewählter Verein der 2. Liga oder Oberliga bleibt (<see cref="PlaceInStartLeague"/>).
+    /// [ORIGINAL] DGROUP 0x7C0 (erster Platz je Liga 0/12/24) und 0x7B1 (12 Plätze je Liga), Datei 0x29C78.
+    /// </summary>
+    public static League? DatabaseLeague(int clubIndex) => clubIndex switch
+    {
+        < 0 => null,
+        < 12 => League.Bundesliga,
+        < 24 => League.ZweiteLiga,
+        <= LastLeagueSlot => League.Oberliga,
+        _ => null,
+    };
+
+    /// <summary>Letzter Ligaplatz. [ORIGINAL] DGROUP 0x7CB = 35 (Plätze 0–35 Bundesliga bis Oberliga).</summary>
+    private const int LastLeagueSlot = 35;
+
+    /// <summary>
     /// Zufälliger Verein der Start-Liga aus dem gewählten Drittel (nach Stärke sortiert), ohne die vergebenen Vereine.
     /// Ist das Drittel voll vergeben, wird aus der ganzen Liga gewählt.
     /// </summary>
@@ -133,6 +233,20 @@ public static class NewGame
         if (band.Count == 0)
             band = sorted.Where(c => !taken.Contains(c.Index)).ToList();
         return band[random.Next(band.Count)].Index;
+    }
+
+    /// <summary>
+    /// Kopie eines Vereins mit anderer Stärke (Teamwerte bleiben beim Platztausch am Platz, U15-a). Zu diesem Zeitpunkt trägt
+    /// der Verein nur die Felder aus <see cref="Create"/> (Index, Name, Stärke, Logo, Liga, Datenbankspieler).
+    /// </summary>
+    private static Club WithStrength(Club club, int strength)
+    {
+        var copy = new Club
+        {
+            Index = club.Index, Name = club.Name, Strength = strength, LogoGraphic = club.LogoGraphic, League = club.League,
+        };
+        copy.Players.AddRange(club.Players);
+        return copy;
     }
 
     private static void Shuffle<T>(IList<T> list, Random random)

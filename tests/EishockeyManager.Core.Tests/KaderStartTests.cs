@@ -45,7 +45,7 @@ public class KaderStartTests
     public void UiVideo_BerlinerSc_Mittelfeld_Values29To33()
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "LetsShow", ClubIndex = 42, StartStrength = StartStrength.Mittelfeld });
+        setup.Managers.Add(new ManagerSetup { Name = "LetsShow", ClubIndex = 42, StartLeague = League.Oberliga, StartStrength = StartStrength.Mittelfeld });
         var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, seed: 2);
 
         Assert.All(game.Clubs[42].Players, p =>

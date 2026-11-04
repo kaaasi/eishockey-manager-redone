@@ -60,14 +60,15 @@ public static class TestSeason
     /// brauchen (Eintritt, Finanzkorridor, Pokale), halten damit seinen Kader; sonst greift er weiter nicht ein.
     /// Zieht aus einem eigenen Generator, damit keine Zufallsquelle des Spiels verbraucht wird.
     /// </summary>
-    public static void KeepSquad(GameState game, Manager manager, bool extendExpired = true)
+    public static void KeepSquad(GameState game, Manager manager, bool extendExpired = false)
     {
         var club = game.Clubs[manager.ClubIndex];
         foreach (var p in club.Players.Where(p => p.Notice == ContractNotice.Offered && p.ContractYears == 1).ToArray())
             Contracts.Negotiate(game, manager, p, p.NoticeYears, Contracts.Demand(p) + 100, false, demandFilled: true);
-        // Runde 12, U4 (0x0767A): Ein Angebot verfällt nach einigen Tagen; wer sich nicht mehr meldet, wird wie am Saisonende
-        // um zwei Jahre verlängert (Forderung steht im Feld), soweit nicht gesperrt oder im Ruhestand. Proben, die selbst mit
-        // Spielern im letzten Vertragsjahr verhandeln, schalten das ab (<paramref name="extendExpired"/> = false).
+        // Runde 12, U4 (0x0767A): Ein Angebot verfällt nach einigen Tagen. Standard (R12K-03, #532): nur angebotene Verlängerungen,
+        // damit passive Proben den Kaderschwund zeigen. Proben, die den Kader trotzdem voll brauchen (Abdrücke, Entlassung
+        // vermeiden), setzen <paramref name="extendExpired"/> = true: dann wird jeder Spieler im letzten Vertragsjahr ohne
+        // Angebot um zwei Jahre verlängert (Forderung steht im Feld), soweit nicht gesperrt oder im Ruhestand.
         if (!extendExpired)
             return;
         foreach (var p in club.Players.Where(p => p.Notice == ContractNotice.None && p.ContractYears == 1 && !p.OnLoan

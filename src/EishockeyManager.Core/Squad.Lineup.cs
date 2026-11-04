@@ -230,11 +230,19 @@ public sealed class Lineup
 ///   („Schon 22 Mann / im Team !“, Datei 0x40E2A–0x40E61). Aufstellen setzt ein (Datei 0x415B2), Platz leeren nimmt
 ///   heraus (Datei 0x40CF8–0x40D0D); Linksklick nimmt einen eingesetzten, nicht aufgestellten Spieler heraus,
 ///   Rechtsklick setzt einen nicht eingesetzten ein (Datei 0x40F45–0x40F59, 0x411FE).</item>
-/// <item>[APPROX] Solange niemand von Hand ein- oder aussetzt, gelten die Aufgestellten und die stärksten übrigen
-///   einsatzfähigen Spieler bis 22 als eingesetzt (Video Aufstellung ~9:00: 20 Spieler, „Eingesetzt: 20“). Wie das
-///   Original das Feld beim Spielstart, bei Transfers und für Computervereine setzt, ist nicht rekonstruiert.</item>
-/// <item>[APPROX] Aufgestellte zählen immer als eingesetzt; neue Kaderspieler sind nach der ersten Änderung von Hand
-///   nicht eingesetzt (wie die Aufnahme in den WM-Kader, Datei 0x42E2A).</item>
+/// <item>[ORIGINAL] A166: Beim Spielstart (Datei 0x28165), am Ende der Transferliste (Datei 0x47BB5), im Tageslauf (Datei
+///   0x7C07) und am Spieltag (Datei 0x54D9E/0x5530B) setzt Datei 0x426BC die Eingesetzten (<see cref="AutoLineupRule"/>;
+///   nachgerechnet gegen FILE01, FILE05, FILE07, FILE16A, FILE22–FILE28, Regressionstest mit dem Kader aus FILE05/FILE07/FILE26).
+///   Bis zum ersten solchen Lauf (oder ohne Einstellung) gelten die Aufgestellten und die Ersatzrunde von 0x426BC
+///   (Datei 0x427C0–0x4282C, <see cref="AutoDressed"/>). Computervereine haben im Original keine Kaderplätze und damit kein
+///   +0x0A; für sie ist „eingesetzt“ nur ein Remake-Wert.</item>
+/// <item>[ORIGINAL] A167: Ein neuer Kaderplatz entsteht leer (Datei 0x42E3A löscht 0x34 Byte, also +0x0A = 0 und +0x15 = 0);
+///   eingesetzt wird der neue Spieler nur durch die Auto-Aufstellung beim Verlassen der Transferliste (Datei 0x47BB5, FILE07:
+///   DAFFNER) – nach der ersten Änderung von Hand bleibt er nicht eingesetzt. Aufgestellte zählen immer als eingesetzt
+///   (Aufstellen setzt ein, Datei 0x415B2; Platz leeren nimmt heraus, FILE06). [APPROX] Kauf bei ausgeschalteter Einstellung
+///   zeigt kein Stand. Bewusste Modellabweichung: Ein Verletzter behält im Original seine Reihe +0x15 und verliert nur +0x0A
+///   (Datei 0x5C50, FILE24 STEFAN); das Remake nimmt ihn aus der Aufstellung (<see cref="RefillLineup"/>). Gleichwertig,
+///   solange kein Leser +0x15 ohne +0x0A auswertet; betrifft auch Export und Import von Spielständen.</item>
 /// <item>[APPROX] Eingesetzt wirkt bisher nur auf die Anzeige; die Spielstärke kommt weiter aus der Aufstellung.</item>
 /// </list>
 /// </remarks>
@@ -264,17 +272,15 @@ public sealed partial class Club
 
     public bool IsDressed(Player player) => Dressed.Contains(player);
 
+    /// <summary>
+    /// A166: Eingesetzte, solange niemand von Hand oder über <see cref="ApplyAutoLineup"/> eingesetzt hat – die Aufgestellten,
+    /// dann die Ersatzrunde von Datei 0x426BC (<see cref="AutoLineupRule.FillReserves"/>) in Kaderplatzfolge.
+    /// </summary>
     private List<Player> AutoDressed(List<Player> squad)
     {
-        var dressed = squad.Where(Lineup.Contains).ToList();
-        foreach (var p in squad.Where(p => p.Available && !dressed.Contains(p))
-                     .OrderByDescending(p => p.Condition + p.Technique + p.Form).ThenBy(p => p.Role).ThenBy(p => p.Number))
-        {
-            if (dressed.Count >= MaxDressed)
-                break;
-            dressed.Add(p);
-        }
-        return squad.Where(dressed.Contains).ToList();
+        var dressed = squad.Select(Lineup.Contains).ToArray();
+        AutoLineupRule.FillReserves(squad, dressed, 1 + dressed.Count(d => d));
+        return squad.Where((_, i) => dressed[i]).ToList();
     }
 
     /// <summary>Erste Änderung von Hand: die bisher automatisch Eingesetzten festhalten.</summary>
@@ -352,9 +358,12 @@ public sealed partial class Club
     /// <summary>
     /// Neuaufstellung nach Verletzung oder Heilung (<see cref="PlayerInjuries.RefillLineup"/>). [ORIGINAL] Datei 0x5C50
     /// (Verletzung 0x05B1A): der Verletzte verliert +0x0A (nicht mehr eingesetzt). Datei 0x426BC setzt höchstens 22 ein
-    /// (Zähler [bp-9] ab 1, Vergleich mit 0x17 bei 0x427C0/0x4282C). [APPROX] Bei Auswahl von Hand füllen zuerst
-    /// eingesetzte Reservisten die Lücken, andere nur, solange weniger als 22 eingesetzt sind. [ORIGINAL] Mit der
-    /// Einstellung „automatisch aufstellen“ stellt 0x426BC ganz neu auf (<see cref="ApplyAutoLineup"/>).
+    /// (Zähler [bp-9] ab 1, Vergleich mit 0x17 bei 0x427C0/0x4282C). [ORIGINAL] A189: Mit der Einstellung „automatisch
+    /// aufstellen“ stellt 0x426BC nach dem Spieltag ganz neu auf (Datei 0x54D8C–0x54D9E, 0x552F9–0x5530B; FILE24
+    /// „Eingesetzt: 22“, <see cref="ApplyAutoLineup"/>). [APPROX] Ohne die Einstellung schreibt im Original im Verletzungsweg
+    /// niemand +0x15 (Schreiber nur 0x426BC, Oberfläche, Transfer, Saisonwechsel) – keine Neuaufstellung, die Lücke bliebe
+    /// vermutlich; kein Stand im Handmodus belegt das. Das Remake füllt dann zuerst mit eingesetzten Reservisten, andere nur,
+    /// solange weniger als 22 eingesetzt sind.
     /// </summary>
     public void RefillLineup()
     {

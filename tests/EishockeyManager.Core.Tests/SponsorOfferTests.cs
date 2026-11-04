@@ -59,7 +59,7 @@ public class SponsorOfferTests
     public void Rating_FreshClub_IsModerate_AndBundesligaHigher()
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "O", Head = 0, ClubIndex = 24 });
+        setup.Managers.Add(new ManagerSetup { Name = "O", Head = 0, ClubIndex = 24, StartLeague = League.Oberliga });
         setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 2 });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
         var oberliga = SponsorRating.Compute(game, game.Managers[0]);
@@ -73,7 +73,7 @@ public class SponsorOfferTests
     private static (GameState Game, Manager Manager) EmptyOberligaClub(bool debCup)
     {
         var setup = new GameSetup { DebCup = debCup };
-        setup.Managers.Add(new ManagerSetup { Name = "O", Head = 0, ClubIndex = 24 });
+        setup.Managers.Add(new ManagerSetup { Name = "O", Head = 0, ClubIndex = 24, StartLeague = League.Oberliga });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
         var manager = game.Managers[0];
         game.Clubs[manager.ClubIndex].Players.Clear();

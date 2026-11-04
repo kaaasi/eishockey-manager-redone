@@ -46,6 +46,9 @@ public class LifecycleScreenRegressionTests
         // Spur kader-transfer, Runde 12, Teil 2 (U9): fester Spielplan, anderer Spielverlauf – der Tausch Pool ↔ Computerkader
         // erreicht den Spieler jetzt: Vereinskader von Verein 59 (Rückkehr), mit laufendem Vertrag, in keinem Poolplatz.
         // Integration Runde 12 (wettbewerbe-spiel + kader-transfer): Ausgang wie bei wettbewerbe-spiel Teil 2 (Prüfung unten).
+        // Runde 13, kader-start Teil 2 (U15-a, L13): Verein 42 tauscht mit Start-Liga Oberliga in die Oberliga (Datei 0x29CF2,
+        // Teamwerte des Platzes, Oberliga-Kader) – anderer Zufallsverlauf, wieder der zweite stimmige Ausgang (Poolplatz).
+        // Teil 3 (R-K5): Satzfolge vor der Spielvorbereitung, Zufallsplatz als Satzplatz – wieder der erste Ausgang (Verein 59).
         Assert.Equal(59, origin.Index);
         Assert.DoesNotContain(player, game.TransferMarket.PoolPlayers);
         Assert.Equal(2, player.ContractYears);

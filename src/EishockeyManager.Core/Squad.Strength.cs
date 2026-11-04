@@ -24,8 +24,33 @@ public sealed partial class Club
         : Lineup.Contains(player) ? PlayerStatus.InTeam
         : PlayerStatus.Reserve;
 
-    /// <summary>Kader sortiert wie in den Listen des Originals: Torhüter, Verteidiger, Stürmer, je nach Rückennummer.</summary>
+    /// <summary>
+    /// Kader nach Rolle (Torhüter, Verteidiger, Stürmer), je nach Nr. (= Kaderplatz + 1, <see cref="RenumberPlayers"/>).
+    /// [APPROX] Nur für Listen der Oberfläche; Spiel und Auto-Aufstellung nehmen die Kaderplatzfolge (<see cref="Players"/>, A091).
+    /// </summary>
     public IEnumerable<Player> SortedPlayers => Players.OrderBy(p => p.Role).ThenBy(p => p.Number);
+
+    /// <summary>
+    /// A091: Nr. = Kaderplatz + 1. [ORIGINAL] Das Original kennt keine eigene Rückennummer; die „Nr.“ ist der Kaderplatz + 1
+    /// (FILE26: nach dem Verkauf von Platz 13 heißen die Plätze 14–24 dann 13–23). Die Kaderplätze sind die Reihenfolge von
+    /// <see cref="Players"/>: Kauf hinten an (Datei 0x42CB1, FILE07: Platz 25), Verkauf rückt auf (Datei 0x425B6, FILE05 → FILE26),
+    /// Saisonwechsel unverändert (A085, FILE22/FILE23: alle 22 Plätze behalten ihren Poolindex).
+    /// </summary>
+    public void RenumberPlayers()
+    {
+        for (var i = 0; i < Players.Count; i++)
+            Players[i].Number = i + 1;
+    }
+
+    /// <summary>
+    /// Spieler verlässt den Kader: Platz entfällt, die folgenden Plätze rücken auf (Datei 0x425B6, A091), Aufstellung ohne ihn.
+    /// </summary>
+    public void RemovePlayer(Player player)
+    {
+        Players.Remove(player);
+        Lineup.Remove(player);
+        RenumberPlayers();
+    }
 }
 
 /// <summary>

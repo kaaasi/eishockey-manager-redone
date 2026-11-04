@@ -13,7 +13,7 @@ public class StatistikenPraemienTests
     private static GameState AtClubSeasonOver(int club, int seed)
     {
         var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Prämie", Head = 0, ClubIndex = club });
+        setup.Managers.Add(new ManagerSetup { Name = "Prämie", Head = 0, ClubIndex = club, StartLeague = NewGame.DatabaseLeague(club) ?? League.Oberliga });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, seed);
         for (var guard = 0; game.Phase == SeasonPhase.Running; guard++)
         {
@@ -83,7 +83,7 @@ public class StatistikenPraemienTests
     [Fact]
     public void OtherClubLeads_NoSinglePremium()
     {
-        var game = AtClubSeasonOver(5, 3);
+        var game = AtClubSeasonOver(5, 4); // kader-start U15-a/R-K5 (L13): Saat 3 → 4 (auf main mit S-K6-c), Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var rival = game.Clubs[6];
         MakeOwnPlayersBest(game, rival);
