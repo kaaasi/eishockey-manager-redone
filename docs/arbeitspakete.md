@@ -108,7 +108,7 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
   3. **WM-Tabelle:** A293 (Lage der Knöpfe „Gruppe 1/2“, „Endrunde“), A294 (Linksklick außerhalb kehrt zurück) gegen die Bilder
      `file2*_*` (Pixel: Lage/Farbe, Bildschirmfoto-Ablauf).
 - **Dateigrenzen:** siehe Zuständigkeit; Tests, `docs/wettbewerbe.md`. **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig
-  (PR #580: A009, A010, A023, A085, R13RD-04), Teil 2 fertig (PR #581: A027, A028, A284, A300), Teil 3 offen.
+  (PR #580: A009, A010, A023, A085, R13RD-04), Teil 2 fertig (PR #581: A027, A028, A284, A300), Teil 3 fertig (PR #584: A293, A294). Spur fertig – Integration.
 
 ### Spur `ui-rest` – Restlücken `ui-meldungen`, Pixel, Hauptmenü-Tests
 

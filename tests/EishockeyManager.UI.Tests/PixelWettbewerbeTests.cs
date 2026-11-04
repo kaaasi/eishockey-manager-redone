@@ -144,8 +144,10 @@ public class PixelWettbewerbeTests
 
         d.Host.Show(new Screens.MainMenuScreen(d.Host));
         var state = StateFingerprint.Of(game);
-        d.OpenTile("Tabelle WM"); // #194: „Paarungen → WM“ ist jetzt die Paarungsansicht
-        d.Click(WorldCupScreen.KnockoutButton.X + 5, WorldCupScreen.KnockoutButton.Y + 5);
+        // A293 (Spur nationalteam Runde 13): kein Knopf „Endrunde“ in der Gruppentabelle; die Endrundenspiele kommen wie im
+        // Original aus „Paarungen → WM“ (0x2FC2F → Verteiler 0x3A88A, Fall 10).
+        d.OpenTile("WM");
+        d.Click(CupPairingsScreen.Buttons[1].X + 5, CupPairingsScreen.Buttons[1].Y + 5);
         d.Frame();
         Assert.IsType<WorldCupKnockoutScreen>(d.Host.Current);
         Assert.Equal(state, StateFingerprint.Of(game)); // zustandsrein
@@ -158,8 +160,8 @@ public class PixelWettbewerbeTests
         CompetitionWidgets.Centered(d.Surface, d.Host.Assets.Mini, 160, 160, 221, "Gruppe", Colors.White, null);
         Assert.Equal(before, d.Surface.Pixels);
 
-        // Knopf „Gruppe“ führt zur Gruppenansicht zurück
+        // Knopf „Gruppe“ führt zur Gruppenansicht der Paarungen zurück
         d.Click(WorldCupKnockoutScreen.Button.X + 5, WorldCupKnockoutScreen.Button.Y + 5);
-        Assert.IsType<WorldCupScreen>(d.Host.Current);
+        Assert.IsType<CupPairingsScreen>(d.Host.Current);
     }
 }
