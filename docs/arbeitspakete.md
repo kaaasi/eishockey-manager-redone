@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 14 – Restpunkte, DOSBox-Auswertung `runde-13`, Import `*.HOK` (Plan 05.11.2026, Go ausstehend)
+## Aktuelle Runde: Runde 14 – Restpunkte, DOSBox-Auswertung `runde-13`, Import `*.HOK` (Plan 05.11.2026, Go 05.11.2026)
 
 Runde 13 (04.–05.11.2026) ist abgeschlossen: [archiv/runde-13.md](archiv/runde-13.md) (Spuren, Integrationen, Reviews,
 Entscheidungen L1–L15, Funktionskarte: Spielcode 90 %); frühere Runden in [archiv/](archiv/).
@@ -18,7 +18,7 @@ die normale Schreibweise.
 **Ziel der Runde (Nutzer 05.11.2026: alle offenen Issues bearbeiten und lösen):** alle Kandidaten aus dem Übergang (unten, Vorentscheidungen E14-1 bis E14-3, Issue #601) genau einer Spur
 zuordnen und abarbeiten: Auswertung der DOSBox-Aufnahme `runde-13` mit Umsetzung der belegten Inventur-Punkte, alle P3-Issues
 (#591, #592, #594, #595, #597, #598, #603–#605, #610, #611, #619–#621, #625), Nebenbefunde `nationalteam` (#580), Restlücken
-#600/#623, #349 (Umfang nach R14-D4) und **Import von Original-Spielständen `*.HOK`** (E14-1 C, Umfang nach Entscheidung R14-D2). `livespiel` bleibt
+#600/#623, #349 (R14-D4 = A) und **Import von Original-Spielständen `*.HOK`** (E14-1 C, R14-D2 = B: Export in Runde 15). `livespiel` bleibt
 zurückgestellt.
 
 **Stand DOSBox-Aufnahme `runde-13`** (Plan `vorlagen/dosbox-aufnahme.md`): Sitzung 1 (FILE29–31, Referenz-PR #15) und
@@ -67,7 +67,7 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   Datei, Byte, Bild) und Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser Runde). Selbstprüfung
   `funktionskarte.py --csv` ohne `--write`.
 - **Dateigrenzen:** nur `docs/analyse/re-runde-14.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5.
-  **Status:** geplant.
+  **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `saison` – Satzfolge, Fair-Play, Oberliga
 
@@ -77,14 +77,14 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   2. **#600-Rest:** `OutsidePlaces` in `SeasonFlow.Oberliga.cs` paart nach Index – gegen das Original prüfen, Kommentar A112
      berichtigen; Mehrsaisonprobe.
   3. **Saisonbefunde aus `re-dosbox`** (nach `re-dosbox`, nur falls dort der Spur `saison` zugeordnet).
-  4. **#349 (nach R14-D4):** Merker „Managerverein spielt“ je Spieltag wie im Original (36FEAh, 3702Eh–37085h) als abschaltbare
-     Einstellung; Vorgabe nach R14-D4. Test: Spieltag mit Managerverein im Pokal rechnet alle Paarungen in der Minutenschleife,
+  4. **#349 (R14-D4 = A):** Merker „Managerverein spielt“ je Spieltag wie im Original (36FEAh, 3702Eh–37085h) als abschaltbare
+     Einstellung; Vorgabe Remake-Verhalten. Test: Spieltag mit Managerverein im Pokal rechnet alle Paarungen in der Minutenschleife,
      Zufallsverbrauch gegenüber Remake-Verhalten verschieden; Mehrsaisonprobe mit beiden Einstellungen. Doku
      `anforderungen/zusatzfunktionen.md` Abschnitt C nachziehen.
 - **Dateigrenzen:** `Core/SeasonFlow*.cs`, `Core/GameState.SeasonEndTurn.cs`, für Teil 4 die Auswahl der Minutenrechnung
   (`Core/Cups*.cs` außer `CupsNational*`, `Core/MatchEngine*.cs` nur diese Stelle), ein Schalter in `GameOptionsScreen.cs` und
   im Optionsmodell, `docs/anforderungen/zusatzfunktionen.md`, eigene Tests. **Modell:** Claude Sonnet 5.5.
-  **Status:** geplant.
+  **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `nationalteam` – Tagesfolge 952Ch, Länderwerte, Nebenbefunde
 
@@ -95,7 +95,7 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
      WM-Gruppenphase (Fundstelle, neue Inventur-ID über `pruefung-karte`); WM-Kader-Reihenfolge beim Einsortieren (3CABFh,
      Restlücke #623).
   3. **Bundestrainer-Befunde aus `re-dosbox` Teil 2** (A009 leer, A085 Handaufnahme, A293), sobald Sitzung 5 ausgewertet ist.
-- **Dateigrenzen:** wie oben „allein `nationalteam`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** geplant.
+- **Dateigrenzen:** wie oben „allein `nationalteam`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `kader-start` – Spielstart, Kader, Aufstellung
 
@@ -107,7 +107,7 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   3. **Anschluss Sperre ab WM-Gruppenphase** an Transfer und Training (nach `nationalteam` Teil 2).
   4. **Saisonende-Abgang aus `re-dosbox` Teil 2** (A362, A085, A091), sobald Sitzung 4 ausgewertet ist.
 - **Dateigrenzen:** wie oben „allein `kader-start`“, `UI/Screens/Team/*` außer `TeamUi.cs` und `TransferDialog.cs`, eigene Tests,
-  `docs/transfer.md`. **Modell:** Claude Opus 5.5. **Status:** geplant.
+  `docs/transfer.md`. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `ui-rest` – Darstellung aus der Aufnahme, Stadionpfeile
 
@@ -117,11 +117,11 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   2. **Darstellung aus `re-dosbox`** (nach `re-dosbox`): A373 (Pfeilfolge Taktik), Taktik-Befund DGROUP 375h (falls Anzeige),
      A364, A380, A382, A377, A374, A313, A321, A357 – Pixeltests gegen die Bilder der Sitzung 2.
   3. **Stadion aus `re-dosbox` Teil 2** (A323, A325, A326), sobald Sitzung 3 ausgewertet ist; A338 nur, falls Sitzung 6 kommt.
-- **Dateigrenzen:** wie oben `ui-rest`, eigene Tests. **Modell:** Claude Sonnet 5.5. **Status:** geplant.
+- **Dateigrenzen:** wie oben `ui-rest`, eigene Tests. **Modell:** Claude Sonnet 5.5. **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `hok-import` – Original-Spielstände `*.HOK` ins Remake (E14-1 C)
 
-Umfang nach Entscheidung **R14-D2** (Vorschlag B: Feldkarte und Import, Export in Runde 15).
+Umfang nach Entscheidung **R14-D2 = B**: Feldkarte und Import, Export in Runde 15.
 - **Teile:**
   1. **Feldkarte:** jedes Feld des Remake-Spielstands (Schema 39) einem HOK-Feld zuordnen (belegt / abgeleitet / nicht im
      Original / unbekannt), Grundlage `docs/formate/spielstand-original.md`, `OriginalSaveGame.cs`, FILE01–41. Ergebnis als
@@ -132,8 +132,7 @@ Umfang nach Entscheidung **R14-D2** (Vorschlag B: Feldkarte und Import, Export i
      `Continue()` über einen Spieltag und eine Mehrsaisonprobe ohne Fehler.
   3. **Zugang:** `emtool hok import <hok> <ziel>` und Laden-Dialog listet `*.HOK` (Import beim Laden, Hinweis bei
      Prüfsummenfehler wie „Der kleine Mogelguru“). Bildschirmfoto-Ablauf Hauptmenü nach Import gegen das DOSBox-Bild des Stands.
-  4. Export (Remake → `*.HOK`): nur bei R14-D2 = A.
-- **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** geplant.
+- **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `pruefung-karte` – Welle 2 (nach der Integration aller Spuren)
 
@@ -142,19 +141,20 @@ Umfang nach Entscheidung **R14-D2** (Vorschlag B: Feldkarte und Import, Export i
   WM-Gruppenphase; Funktionskarte `--write` (zweiter Lauf ohne Diff); Freiprüfung der Bildschirme.
 - **Dateigrenzen:** `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`,
   die in den Issues genannten Test- und Kommentarstellen, `Core/GameState.MainMenu.cs` (nur Kommentar). **Modell:**
-  Claude Sonnet 5.5. **Status:** geplant.
+  Claude Sonnet 5.5. **Status:** Go 05.11.2026, Start offen.
 
 ### Gesamtreview am Rundenende (E14-3)
 
 Vollprüfung durch ChatGPT (Codex mit Netzzugang) nach `vorlagen/review-anfrage.md`, Abschnitt „Gesamtreview am Rundenende“;
 Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terra (Codex).
 
-### Entscheidungen zum Plan (offen, Issue #601)
+### Entscheidungen zum Plan (Nutzer, Go 05.11.2026, PR #627)
 
-- **R14-D1 Zuschnitt** (Vorschlag A: sieben Spuren wie oben), **R14-D2 Umfang `*.HOK`** (Vorschlag B: Feldkarte + Import,
-  Export Runde 15), **R14-D3 späte Sitzungen 3–6** (Vorschlag A: Folgeteile in derselben Runde bis zum Integrationsbeginn der
-  jeweiligen Spur, später Eintreffendes → Runde 15), **R14-D4 #349** (Vorschlag A: Original-Verhalten jetzt als
-  Einstellung, Vorgabe Remake-Verhalten). Optionen mit Vor- und Nachteilen im Plan-PR.
+- **R14-D1 = A:** sieben Spuren wie oben, Modelle wie in den Spurabschnitten.
+- **R14-D2 = B:** `*.HOK` in Runde 14 Feldkarte und Import; Export in Runde 15.
+- **R14-D3 = A:** Sitzungen 3–6 über `re-dosbox` Teil 2, umgesetzt in Folgeteilen der Fachspuren bis zu deren
+  Integrationsbeginn; später Eintreffendes → Runde 15.
+- **R14-D4 = A:** #349 jetzt als Einstellung „wie im Original“, Vorgabe Remake-Verhalten (Entscheidung 01.11.2026 vorgezogen).
 
 ### Vorentscheidungen Runde 14 (Nutzer, 04.11.2026, Issue #601)
 
@@ -170,7 +170,7 @@ Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terr
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): Umsetzung als letzter Schritt vor v1.0; Analyse in
   `re-livespiel`. Noch unbekannt und bei der Umsetzung von `livespiel` mitzuanalysieren (zusammen mit L7, `tore\`-Format):
   575C3h (Ov 138h, Lader `tore\`, einziger Aufrufer 567C8h; R10R-01 #387).
-- #349: in Runde 14 nach R14-D4 (Spur `saison` Teil 4).
+- #349: in Runde 14 (R14-D4 = A, Spur `saison` Teil 4).
 - Highscore am Spielende und Saisonende im Modus „nur Weltkugel“ (Kandidat für eine DOSBox-Aufnahme mit `hok-patch`).
   Import/Export ist in Runde 14 (E14-1, Spur `hok-import`).
 - R8-A01 (Spielstände aus Spurbranches laden nicht): Spurbranches sind keine Ausgabestände.
