@@ -49,3 +49,19 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
 5. Ablage: nichts am Code oder am geprüften PR ändern, nichts ins Referenz-Repo schreiben. Datei auf neuem Branch `review/<thema>` (Basis `main`), PR mit
    **nur dieser Datei**, Commit-Trailer mit deinem Agentennamen. Ohne Schreibzugriff: Datei an den Nutzer.
 6. Antwort an den Nutzer: Link zum Review-PR, Empfehlung in einem Satz.
+
+## Gesamtreview am Rundenende (Vollprüfung, Vorgabe Nutzer 05.11.2026)
+
+Das Gesamtreview prüft das ganze Delta der Runde **vollständig**, nicht in Stichproben. Damit entfällt die frühere Nachprüfung
+durch Claude. Nachgeprüft wird nur noch das Delta von Fixes, die aus dem Gesamtreview folgen. Die Leitstelle setzt
+im Kurzaufruf hinter „Besonders prüfen:“ diesen Absatz ein:
+
+> Vollprüfung, keine Stichproben: (1) jeder in der Runde neue oder geänderte Test wird per Gegenprobe rot gemacht (am Base oder per
+> gezielter Mutation in einer Kopie), Ergebnis je Test in einer Tabelle; (2) jeder neu eingetragene oder geänderte Sollwert,
+> Fingerabdruck und jede geänderte Saat wird einzeln auf die verursachende Regel zurückgeführt (Rückmutation der Regel → Wert
+> fällt); (3) jede Entscheidung der Runde (Liste im Abschnitt „Aktuelle Runde“ und in den genannten PR-Kommentaren) wird gegen den
+> Code geprüft, Ergebnis je Entscheidung; (4) jede neue `[ORIGINAL]`-Fundstelle wird in em.exe bzw. im Spielstand nachgelesen;
+> (5) jeder Bildschirm und jedes Hauptmenü-Ereignis gegen AGENTS.md §4. Was aus Zeit- oder Umgebungsgründen nicht geprüft
+> werden kann, steht als „offener Prüfbereich“ mit Grund im Bericht. Jeder offene Prüfbereich bedeutet Merge-Empfehlung „Nein“.
+> Reicht eine Sitzung nicht, zuerst den Bericht mit dem bisherigen Stand ablegen und im Bericht die verbleibenden Bereiche
+> nennen. Die Fortsetzung erfolgt in einem neuen Chat mit „Fortsetzung Gesamtreview, Bericht `<datei>`“.
