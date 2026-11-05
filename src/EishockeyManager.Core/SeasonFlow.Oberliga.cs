@@ -32,11 +32,16 @@ public sealed partial class GameState
     /// <see cref="OutsideDrawPlaces"/> sind die möglichen Nachrücker der Oberliga.
     /// </summary>
     /// <remarks>
-    /// Start: Platz = Datenbankindex. [APPROX] Hat ein Manager beim Spielstart einen Verein ohne Liga gewählt, verdrängt er einen
-    /// Oberligisten (<see cref="NewGame.AssignClubs"/>); im Original nimmt der Verdrängte den Platz des Gewählten ein (Tausch
-    /// mit Schalter 0x80, reverse-engineering.md Teil 1). Welcher Verdrängte zu welchem Gewählten gehört, hält das Remake nicht
-    /// fest; bei mehreren werden beide aufsteigend nach Vereinsindex gepaart. Danach je Saison: Der Oberliga-Absteiger
-    /// übernimmt den Platz seines Nachrückers.
+    /// Start: Platz = Datenbankindex. Hat ein Manager beim Spielstart einen Verein ohne Liga gewählt, tauscht er mit einem
+    /// Zufallsplatz seiner Start-Liga (<see cref="NewGame.PlaceInStartLeague"/>, U15-a); der Verdrängte (aus Bundesliga,
+    /// 2. Liga oder Oberliga, je nach Start-Liga) nimmt den Platz des gewählten Vereins ein. Danach je Saison: Der
+    /// Oberliga-Absteiger übernimmt den Platz seines Nachrückers.
+    /// [ORIGINAL] Tausch Datei 0x29C78–0x29CF7 mit 0x36169(v, r, 0x80): r erhält den alten Platz von v, auch ohne Liga
+    /// (docs/analyse/re-nachtrag.md §8). [APPROX] Das Remake hält die Paare (gewählter Verein, Verdrängter) nicht fest und
+    /// leitet sie hier ab: aus den Vereinen der ersten Saison, bei mehreren gewählten Vereinen ohne Liga werden gewählte und
+    /// Verdrängte beide aufsteigend nach Vereinsindex gepaart. Bei einem Manager ist die Paarung eindeutig; bei mehreren
+    /// kann nur die Platzzuordnung (nicht die Menge der Verdrängten) vom Original abweichen – das beeinflusst allein, welcher
+    /// Verein auf Platz 36–41 (Nachrücker-Kandidaten) liegt. Ein eigenes Schemafeld lohnt dafür nicht (#600).
     /// </remarks>
     public IReadOnlyList<int> OutsidePlaces()
     {
