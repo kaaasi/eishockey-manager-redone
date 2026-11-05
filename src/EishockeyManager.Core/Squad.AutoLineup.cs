@@ -178,10 +178,11 @@ public sealed partial class Club
 
     /// <summary>
     /// Datei 0x426BC: mit der Einstellung neu aufstellen (<see cref="AutoLineupRule"/>); ohne sie bleibt alles, wie es ist.
+    /// Die Nr. (A091, <see cref="RenumberPlayers"/>) bleibt unberührt: Sie folgt dem Kaderplatz bei Kauf und Abgang; Stände aus
+    /// der Zeit der freien Rückennummern nummeriert das Laden um (Schema 38 → 39, R13G-01/#613, #606).
     /// </summary>
     public bool ApplyAutoLineup()
     {
-        RenumberPlayers(); // A091: Nr. = Kaderplatz + 1 auch für Stände aus der Zeit der freien Rückennummern
         if (!_autoLineup)
             return false;
         var dressed = AutoLineupRule.Apply(Lineup, Players.ToList());
