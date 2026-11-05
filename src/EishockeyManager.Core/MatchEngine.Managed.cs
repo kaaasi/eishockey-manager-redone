@@ -77,7 +77,7 @@ public sealed class LiveSquad
 
     /// <summary>
     /// Kader eines Managervereins für ein Spiel. [ORIGINAL] Reihenfolge der Kaderplätze (<see cref="Club.Players"/>, A091):
-    /// beim Start Torhüter, Abwehr, Sturm; Kauf hinten an (Datei 0x42CB1, FILE07), Verkauf rückt auf (Datei 0x425B6, FILE26),
+    /// beim Start Torhüter, Abwehr, Sturm; Kauf nach Spielerart einsortiert (Datei 0x42D55, R13GN-01; Stürmer hinten FILE07), Verkauf rückt auf (Datei 0x425B6, FILE26),
     /// Saisonwechsel unverändert (A085, FILE22/FILE23 HOK 0x06A27 + 0x34 · Platz, +0x0F je Platz gleich). Eingesetzt
     /// (+0x0A) sind die im Verein eingesetzten spielfähigen Spieler (<see cref="Club.IsDressed"/>; A168); die Energie im
     /// Spiel setzt die Spielvorbereitung (<see cref="MatchEngine.PreparedPlayerEnergy"/>).

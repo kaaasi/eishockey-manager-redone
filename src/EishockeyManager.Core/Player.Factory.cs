@@ -158,10 +158,12 @@ public static class PlayerFactory
     }
 
     /// <summary>
-    /// Nimmt einen Spieler in einen Kader auf: hinten an, Nr. = Kaderplatz + 1 (<see cref="Club.RenumberPlayers"/>), neuer Vertrag zur Gehaltsforderung,
+    /// Nimmt einen Spieler in einen Kader auf: nach Spielerart einsortiert (<see cref="InsertSlot"/>), Nr. = Kaderplatz + 1 (<see cref="Club.RenumberPlayers"/>), neuer Vertrag zur Gehaltsforderung,
     /// ohne Versicherung und ohne abgelehntes Angebot. Gemeinsamer Abschluss für Transfer, Leihe und Talentsuche.
     /// </summary>
-    public static void Join(Club club, Player p, int contractYears, bool loan, PlayerLoan? agreement = null)
+    /// <param name="managerSquad">Kader eines Managervereins (Kaderplätze des Originals, <see cref="InsertSlot"/>); <c>false</c> für
+    /// Computervereine.</param>
+    public static void Join(Club club, Player p, int contractYears, bool loan, PlayerLoan? agreement = null, bool managerSquad = true)
     {
         if (loan != (agreement is not null) || agreement?.Origin == club)
             throw new ArgumentException("Eine Leihe benötigt einen anderen Stammverein und dessen Vertrag.", nameof(agreement));
@@ -173,10 +175,29 @@ public static class PlayerFactory
         p.MonthlySalary = Contracts.Demand(p);
         // [ORIGINAL] neuer Kaderplatz (Datei 0x42CB1): Spiele für den Verein +0x1C = 0; die Saisonspiele (+0x06) bleiben (FILE07).
         p.ClubGamesCarry = -p.Games;
-        // [ORIGINAL] A091: neuer Kaderplatz hinten an (Datei 0x42CB1; FILE05 → FILE07: DAFFNER auf Platz 25, Nr. 26).
         if (!club.Players.Contains(p))
-            club.Players.Add(p);
+            InsertSlot(club, p, managerSquad);
         club.RenumberPlayers();
+    }
+
+    /// <summary>
+    /// Fügt einen Spieler als neuen Kaderplatz ein (ohne Nummernvergabe; danach <see cref="Club.RenumberPlayers"/>).
+    /// [ORIGINAL] A091/R13GN-01 (#622): em.exe Datei 0x42D55–0x42DA1 sucht ab Platz 0 den ersten leeren Platz oder den ersten,
+    /// dessen Spielerart (Datei 0x04180: Pool +0x18 / 25, höchstens 2 – 0 Torhüter, 1 Verteidiger, 2 Stürmer) größer als die des
+    /// Neuen ist (<c>cmp al,[bp-2]</c>/<c>ja</c>, Datei 0x42D96); ab dort rückt die Folge per memmove um einen Platz nach hinten
+    /// (Datei 0x42DC3–0x42E27). Ein Torhüter steht damit hinter dem letzten Torhüter vor dem ersten Verteidiger, ein Stürmer
+    /// hinten (FILE05 → FILE07: DAFFNER, Stürmer, auf Platz 25, Nr. 26). Aufrufer von 0x42CB1 sind Talentsuche (0x06D7F), Leihrückkehr
+    /// am Saisonende (0x2758B), Spielstart (0x28165), WM-Kader (0x3CABF), Transferliste Kauf/Leihe (0x47066, 0x477E7), Listenwechsel
+    /// (0x4970A) und Managerkader-Neuanlage (0x5B1CD) – alle für Managerkader (DGROUP 0x5DC3 + 0x618 · Manager).
+    /// [APPROX] Computervereine (<paramref name="managerSquad"/> = <c>false</c>) haben im Original keine Kaderplätze (nur Pool +0x1D;
+    /// 0x42CB1 schreibt nur Managerkader). Ihre Neuzugänge (Nachfolger, Auffüllen, Gebot auf einen Managerspieler, Kauf vom
+    /// Manager, Pooltausch, Leihrückkehr) hängt das Remake wie bisher hinten an; die Folge zählt dort nur für die Anzeige der Nr.
+    /// und die eigene Aufstellung des Computervereins.
+    /// </summary>
+    public static void InsertSlot(Club club, Player p, bool managerSquad)
+    {
+        var at = managerSquad ? club.Players.FindIndex(q => q.Role > p.Role) : -1;
+        club.Players.Insert(at < 0 ? club.Players.Count : at, p);
     }
 
     /// <summary>

@@ -227,7 +227,7 @@ public sealed partial class GameState
                 var successor = PlayerFactory.CreateRenewal(this, PlayerFactory.TalentName(names, ContractRandom), p.Role,
                     ContractRandom);
                 PlayerFactory.Join(owner, successor, SquadSetup.Between(ContractRandom, SquadRules.ComputerMinYears,
-                    SquadRules.ComputerMaxYears), loan: false);
+                    SquadRules.ComputerMaxYears), loan: false, managerSquad: false);
             }
             return;
         }
@@ -279,11 +279,11 @@ public sealed partial class GameState
             {
                 var p = candidates[ContractRandom.Next(candidates.Count)];
                 TransferMarket.Sign(p);
-                PlayerFactory.Join(club, p, years, loan: false);
+                PlayerFactory.Join(club, p, years, loan: false, managerSquad: false);
                 return;
             }
             var talent = PlayerFactory.CreateTalent(this, PlayerFactory.TalentName(names, ContractRandom), role, club.Strength, ContractRandom);
-            PlayerFactory.Join(club, talent, Math.Max(2, years), loan: false);
+            PlayerFactory.Join(club, talent, Math.Max(2, years), loan: false, managerSquad: false);
             names.Add(talent);
         }
     }

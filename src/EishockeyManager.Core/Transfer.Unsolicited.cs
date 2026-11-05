@@ -174,7 +174,7 @@ public sealed partial class GameState
             StrengthenBuyer(buyer, p);
         if (buyer.Index < UnsolicitedOfferRules.FirstForeignClub && !TransferMarket.IsNationalTeam(buyer)
             && buyer.Players.Count < PlayerFactory.MaxNumber && Managers.All(m => m.ClubIndex != buyer.Index))
-            PlayerFactory.Join(buyer, p, SquadSetup.StartContractYears, loan: false);
+            PlayerFactory.Join(buyer, p, SquadSetup.StartContractYears, loan: false, managerSquad: false);
         else
             TransferMarket.Release(club, p);
         return TransferResult.Accepted;

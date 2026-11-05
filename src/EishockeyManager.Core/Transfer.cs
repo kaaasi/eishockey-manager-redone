@@ -424,7 +424,7 @@ public sealed partial class TransferMarket
         game.Book(manager, FinanceCategory.Transfers, -offer);
         if (listing.Seller is { } seller)
             game.Book(seller, FinanceCategory.Transfers, offer);
-        Move(listing, game.Clubs[manager.ClubIndex], loan);
+        Move(listing, game.Clubs[manager.ClubIndex], loan, managerSquad: true);
         // [ORIGINAL] Datei 0x4781B–0x47833: +0x2C des neuen Kaderplatzes = Gebot (Kauf und Leihe), Bit 31 bleibt.
         listing.Player.PurchasePrice = offer;
         // [ORIGINAL] Datei 0x47A18–0x47A34: nach dem Abzug Frage nach dem Sponsorzuschuss (nur Computermarkt).
@@ -432,7 +432,7 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>Spieler wechselt vom bisherigen Verein in den Kader des Käufers.</summary>
-    private void Move(TransferListing listing, Club to, bool loan)
+    private void Move(TransferListing listing, Club to, bool loan, bool managerSquad)
     {
         var p = listing.Player;
         var from = listing.From;
@@ -453,7 +453,7 @@ public sealed partial class TransferMarket
         p.UnsolicitedOffer = null; // Kaderplatz entfällt samt +0x09 Bit 0x40
         var agreement = loan ? new PlayerLoan(from, p.ContractYears, p.MonthlySalary, p.Insured) : null;
         _freeAgents.Remove(listing);
-        PlayerFactory.Join(to, p, loan ? 1 : SquadSetup.StartContractYears, loan, agreement);
+        PlayerFactory.Join(to, p, loan ? 1 : SquadSetup.StartContractYears, loan, agreement, managerSquad);
     }
 
     /// <summary>Setzt einen eigenen Spieler auf den Markt („Verkaufen“).</summary>
@@ -520,7 +520,7 @@ public sealed partial class TransferMarket
         // [ORIGINAL] Datei 0x47483: Teamwerte des bietenden Vereins steigen (0x58DC), vor der Gutschrift 0x4748A.
         game.StrengthenBuyer(bid.Buyer, bid.Listing.Player);
         game.Book(seller, FinanceCategory.Transfers, TransferFee(bid));
-        Move(bid.Listing, bid.Buyer, loan: false);
+        Move(bid.Listing, bid.Buyer, loan: false, managerSquad: false); // Bieter ist nie ein Managerverein (oben)
         return TransferResult.Accepted;
     }
 

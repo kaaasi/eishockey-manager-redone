@@ -4,8 +4,8 @@ namespace EishockeyManager.Core;
 
 /// <summary>
 /// Migration Schema 38 → 39 (Runde 13, Fix R13G-01/#613 und R13KI-04/#606): Nr. = Kaderplatz + 1 für alle Vereine.
-/// [ORIGINAL] A091: Das Original kennt keine eigene Rückennummer, die „Nr.“ ist der Kaderplatz + 1 (Kauf hinten an Datei 0x42CB1,
-/// FILE07; Verkauf rückt auf Datei 0x425B6, FILE05 → FILE26; <see cref="Club.RenumberPlayers"/>).
+/// [ORIGINAL] A091: Das Original kennt keine eigene Rückennummer, die „Nr.“ ist der Kaderplatz + 1 (Kauf nach Spielerart einsortiert Datei 0x42D55,
+/// R13GN-01, Stürmer hinten FILE07; Verkauf rückt auf Datei 0x425B6, FILE05 → FILE26; <see cref="Club.RenumberPlayers"/>).
 /// [APPROX] Remake-Anpassung ohne Gegenstück im Original: Spielstände aus der Zeit der freien Rückennummern (bis zur Integration
 /// kader-start, PR #600) führen abweichende Nummern. Bisher glich sie erst die Neuaufstellung (Hauptmenü, auch bei ausgeschalteter
 /// Automatik) bzw. bei Computervereinen erst Kauf oder Abgang an; jetzt einmalig beim Laden, danach nur noch bei Kaderänderungen.

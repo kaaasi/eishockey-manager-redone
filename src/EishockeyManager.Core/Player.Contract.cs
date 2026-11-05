@@ -192,8 +192,11 @@ public sealed partial class GameState
                 TransferMarket.Release(owner, player);
                 continue;
             }
-            owner.Players.Add(player); // Stammvertrag erhalten; Join würde ihn überschreiben.
-            owner.RenumberPlayers(); // [APPROX] hinten an wie ein Kauf (A125: Rückkehr nicht gegen das Original geprüft)
+            // Stammvertrag erhalten; Join würde ihn überschreiben. [ORIGINAL] R13GN-01 (#622): Rückkehr zu einem Managerverein über
+            // 0x42CB1 mit dem Manager des Stammvereins (Pool +0x1A, Saisonende Datei 0x27553–0x2758B), also nach Spielerart einsortiert.
+            // [APPROX] Rückkehr zu einem Computerverein (Datei 0x27576: Manager ≥ 4, ohne Kaderplatz) hinten an (InsertSlot).
+            PlayerFactory.InsertSlot(owner, player, managed.Contains(owner.Index));
+            owner.RenumberPlayers();
         }
         RefillComputerSquads(before);
         LimitFreeAgents();
@@ -394,8 +397,8 @@ public static class Contracts
         var club = game.Clubs[manager.ClubIndex];
         var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
         // [ORIGINAL] Alter aus Kaderplatz 3 des Managers (0x4A93F). A125: Players ist die Platzfolge des Originals (Start
-        // Torhüter/Abwehr/Sturm, Kauf hinten FILE07, Verkauf rückt auf FILE26 Datei 0x425B6, Saisonwechsel unverändert
-        // FILE22/FILE23: Platz 3 = DOLL p23 in beiden).
+        // Torhüter/Abwehr/Sturm, Kauf nach Spielerart einsortiert Datei 0x42D55 (R13GN-01; Stürmer hinten FILE07), Verkauf rückt
+        // auf FILE26 Datei 0x425B6, Saisonwechsel unverändert FILE22/FILE23: Platz 3 = DOLL p23 in beiden).
         var age = club.Players.Count > 3 ? club.Players[3].Age : p.Age;
         return ContractRules.DemandThirds(value, game.ContractTurnFactor, game.ContractSeasonRemaining, years,
             game.AfterSeasonEnd, age, currentSalary * 3) / 3;
