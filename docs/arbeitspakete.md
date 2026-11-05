@@ -95,7 +95,8 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
      WM-Gruppenphase (Fundstelle, neue Inventur-ID über `pruefung-karte`); WM-Kader-Reihenfolge beim Einsortieren (3CABFh,
      Restlücke #623).
   3. **Bundestrainer-Befunde aus `re-dosbox` Teil 2** (A009 leer, A085 Handaufnahme, A293), sobald Sitzung 5 ausgewertet ist.
-- **Dateigrenzen:** wie oben „allein `nationalteam`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
+- **Dateigrenzen:** wie oben „allein `nationalteam`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (#594, #595)
+  fertig, PR #630 (Review offen); Teil 2 in Arbeit.
 
 ### Spur `kader-start` – Spielstart, Kader, Aufstellung
 

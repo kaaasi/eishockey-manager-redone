@@ -71,7 +71,8 @@ public sealed partial class GameState
     ///   (Datei 0x41506–0x4151A, <see cref="OnNationalLineupLeft"/>), Tageslauf (Datei 0x54F9C–0x54FBF) und nach dem Menü des
     ///   Bundestrainers an WM-Tagen (Datei 0x555D6). Nicht nach einem Freundschaftsspiel.</item>
     /// <item>[APPROX] Das Remake rechnet an jedem Tag vor dessen Spielen (<c>GameState.Integration.cs</c>, OnDayManager), also
-    ///   nach dem Halt des Bundestrainers. Im Modus „nur Weltkugel“ ruft das Original nur 0x555D6 (kein Tageslauf); zwischen
+    ///   nach dem Halt des Bundestrainers. [ORIGINAL] Im Tageslauf vor der kleinen Wanderung (Datei 0x54FBF vor 0x55292, #594):
+    ///   an Wandertagen gilt danach die gewürfelte Form 0x1C/0x1D. Im Modus „nur Weltkugel“ ruft das Original nur 0x555D6 (kein Tageslauf); zwischen
     ///   zwei WM-Tagen ändert sich die Aufstellung dort nur über den Bildschirm, der beim Verlassen ohnehin rechnet.</item>
     /// <item>[APPROX] Ohne Spieler in der Aufstellung (auch die Automatik leer, weil der Kader leer ist) schreibt das Remake
     ///   nichts. Das Original schriebe 0; einen leeren Kader am Spieltag schließt dort die Warnung vor dem Weiterschalten aus
