@@ -64,4 +64,21 @@ im Kurzaufruf hinter „Besonders prüfen:“ diesen Absatz ein:
 > (5) jeder Bildschirm und jedes Hauptmenü-Ereignis gegen AGENTS.md §4. Was aus Zeit- oder Umgebungsgründen nicht geprüft
 > werden kann, steht als „offener Prüfbereich“ mit Grund im Bericht. Jeder offene Prüfbereich bedeutet Merge-Empfehlung „Nein“.
 > Reicht eine Sitzung nicht, zuerst den Bericht mit dem bisherigen Stand ablegen und im Bericht die verbleibenden Bereiche
-> nennen. Die Fortsetzung erfolgt in einem neuen Chat mit „Fortsetzung Gesamtreview, Bericht `<datei>`“.
+> nennen. Die Fortsetzung erfolgt in einem neuen Chat mit „Fortsetzung Gesamtreview, Bericht `<datei>`“ und schreibt eine
+> **neue** Datei `<datei>-teil<n>.md` auf einem neuen Branch (siehe „Aufrufe für ChatGPT/Codex“).
+
+## Aufrufe für ChatGPT/Codex (Erfahrung Leitstelle Runde 13, 05.11.2026)
+
+Codex klont das Repo beim Start der Aufgabe mit dem dort gewählten Branch. Der Agent arbeitet danach **ohne Netz**
+(`git fetch`/`clone` scheitern mit „Failed to connect to proxy port 8080“). Den PR legt Codex selbst an. Daraus folgt
+für jeden Kurzaufruf an ChatGPT:
+
+1. **Head nur auf dem gewählten Branch:** Der Head-SHA muss der Stand des Branches sein, den der Nutzer in Codex auswählt
+   (meist `main`). Liegt er auf einem anderen Branch (z. B. Fix-PR), nennt die Leitstelle dem Nutzer diesen Branch. Base-SHA
+   und ältere Stände müssen in der Historie dieses Branches liegen.
+2. **Ablage immer neu:** neuer Branch `review/<thema>`, neue Datei, neuer PR. Nie einen bestehenden Branch fortschreiben,
+   auch nicht bei einer Fortsetzung (dann `…-teil<n>.md`).
+3. **Keine Netzbefehle im Aufruf:** keine Vorprüfung mit `git fetch`, `git ls-remote` oder `add_repo`. Originaldaten und
+   Spielstände kommen über den GitHub-Connector oder das Setup der Codex-Umgebung. Fehlen sie, gehört das als offener
+   Prüfbereich in den Bericht.
+4. Der Zugriffsabsatz aus `spur-start.md` gilt nur für Claude-Läufe.
