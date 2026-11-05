@@ -81,6 +81,8 @@ public class SaisonSatzfolgeSaisonendeTests
                 Assert.Equal(GameState.ClubsPerLeague, next[league].Length);
                 Assert.Equal(NextMembers(game, league), next[league].Order());
             }
+            // R13IS-01 (#591): Zufall zwischen 29. April und Saisonstart; ohne Übernahme der Folge würde sie neu gemischt (anderer Seed).
+            game.Random.Next(1_000_000);
             var random = game.Random.Capture();
             game.StartNextSeason();
             foreach (var league in Enum.GetValues<League>())
@@ -254,5 +256,29 @@ public class SaisonSatzfolgeSaisonendeTests
         _ = game.NextLeagueSlots(League.Oberliga);
         _ = game.FairPlayPremiumWinner(game.CurrentRecord!, 5);
         Assert.Equal(before, SaveGame.Save(game));
+    }
+
+    [Fact]
+    public void FairPlayWinner_WithoutFormedSlots_FallsBackToIndexOrder()
+    {
+        // R13IS-02 (#592), rot vor dem Fix: ohne gespeicherte Folge (Schema-37-Stand) lieferte FairPlayPremiumWinner null.
+        const int club = 5;
+        var game = Create(seed: 7, club);
+        PlayToSeasonEnd(game);
+        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
+        root["schema"] = 37;
+        Assert.True(root["spiel"]!.AsObject().Remove("_nextLeagueSlots"));
+        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
+        Assert.True(loaded.Success, loaded.Error);
+        var old = loaded.Game!;
+        var record = old.CurrentRecord!;
+        foreach (var c in old.Clubs)
+            c.LeaguePenaltyMinutes = 50;
+        old.Clubs[club].LeaguePenaltyMinutes = 10;
+
+        Assert.Equal(club, old.FairPlayPremiumWinner(record, club));
+        var other = old.Clubs.First(c => c.Index != club && record.NextLeague(c.Index, c.League) == record.NextLeague(club, old.Clubs[club].League));
+        other.LeaguePenaltyMinutes = 10; // Gleichstand → erster der Indexfolge
+        Assert.Equal(Math.Min(club, other.Index), old.FairPlayPremiumWinner(record, club));
     }
 }
