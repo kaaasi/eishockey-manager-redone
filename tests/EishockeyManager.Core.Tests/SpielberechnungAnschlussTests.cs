@@ -192,10 +192,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// kader-start Teil 2 (U15-a, L13): Originaldatenbank-Abdrücke neu – der feste Verein 2 tauscht beim Spielstart innerhalb der
     /// Bundesliga (Datei 0x29CF2, Teamwerte bleiben am Platz). kader-start Teil 3 (R-K5): erneut neu – Satzfolge vor der
     /// Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
-    /// kader-start Teil 4 (A091/A166): beide neu – Kaderplatzfolge statt Rolle/Nummer in Spiel und Auto-Aufstellung.</summary>
+    /// kader-start Teil 4 (A091/A166): beide neu – Kaderplatzfolge statt Rolle/Nummer in Spiel und Auto-Aufstellung.
+    /// Fix R13GN-01 (#622): aktiv neu – gekaufte Torhüter/Verteidiger nach Spielerart einsortiert (Datei 0x42D55) statt hinten an;
+    /// passiv unverändert (Gegenprobe wie in <see cref="RngTwinProbeTests"/>).</summary>
     [GameDataTheory]
     [InlineData(false, "6C2D30784D430A5A")]
-    [InlineData(true, "98AD5EF36A0277C8")]
+    [InlineData(true, "FB60D817157E2013")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -508,7 +508,7 @@ public sealed partial class TransferMarket
         player.Notice = ContractNotice.None;
         if (old.Strain >= TrainingRules.DefaultStrain)
             old.Strain = TrainingRules.DefaultStrain - PlayerFactory.TalentEnergy; // [APPROX] Energie gibt es nur am Kaderplatz (+0x13); wie ein Talent
-        PlayerFactory.Join(club, old, years, loan: false);
+        PlayerFactory.Join(club, old, years, loan: false, managerSquad: false); // nur Computerkader (squads)
         club.Lineup.FillGaps(club.Players);
         slot.Player = player;
     }

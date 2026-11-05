@@ -6,7 +6,7 @@ namespace EishockeyManager.Core.Tests;
 /// <summary>
 /// Spur <c>kader-start</c>, Runde 13, Teil 4: Kaderbefunde aus <c>docs/analyse/re-runde-13.md</c>, Sitzung 2 und 3.
 /// <list type="bullet">
-/// <item>A091: Nr. = Kaderplatz + 1; Verkauf rückt auf, Kauf hinten an; Auto-Aufstellung und Spiel in Kaderplatzfolge
+/// <item>A091: Nr. = Kaderplatz + 1; Verkauf rückt auf, Kauf nach Spielerart einsortiert (R13GN-01, Stürmer hinten); Auto-Aufstellung und Spiel in Kaderplatzfolge
 ///   (vorher kleinste freie Rückennummer und Folge Rolle/Nummer).</item>
 /// <item>A166: Eingesetzte ohne Lauf von 0x426BC über dessen Ersatzrunde (vorher Summe K + T + F ohne Reihum-Auffüllung).</item>
 /// <item>Regressionstest A166 (Review R13RD-06): die Kaderwerte aus FILE05 (Spielstand des Nutzers, Satz 0, Köln) ergeben
@@ -91,7 +91,7 @@ public class KaderStartRunde13Teil4Tests
         var club = File05Club();
         club.ApplyAutoLineup();
         PlayerFactory.Join(club, NewPlayer(Daffner, "Neu"), 2, loan: false);
-        Assert.Equal(26, club.Players[^1].Number); // [ORIGINAL] Datei 0x42CB1: hinten an
+        Assert.Equal(26, club.Players[^1].Number); // [ORIGINAL] Datei 0x42D55: Stürmer hinten (größte Art)
 
         club.ApplyAutoLineup(); // Ende der Transferliste (Datei 0x47BB5)
 
@@ -151,7 +151,7 @@ public class KaderStartRunde13Teil4Tests
         var squad = LiveSquad.Create(club, 3, null);
 
         Assert.Equal(club.Players, squad.Players.Select(p => p.Player));
-        Assert.Same(goalie, squad.Players[^1].Player);
+        Assert.Same(goalie, squad.Players[2].Player); // hinter den beiden Torhütern (Datei 0x42D55, R13GN-01)
     }
 
     // ---- A166: Rückfall ohne Lauf von 0x426BC -------------------------------------------------------------------------
@@ -197,8 +197,8 @@ public class KaderStartRunde13Teil4Tests
 
     /// <summary>
     /// Mehrsaisonprobe (AGENTS.md §5): vier Saisonwechsel, passiver und aktiver Manager. In jedem Kader gilt Nr. = Platz + 1.
-    /// Im Managerkader behält, wer bleibt, seine Folge, und Neue stehen dahinter (A085: der Saisonwechsel ordnet nicht um,
-    /// FILE22/FILE23). Computervereine sind ausgenommen: dort kehren Leihspieler hinten zurück.
+    /// Im Managerkader behält, wer bleibt, seine Folge (A085: der Saisonwechsel ordnet nicht um, FILE22/FILE23); Neue stehen
+    /// nach Spielerart einsortiert (Datei 0x42D55, R13GN-01).
     /// </summary>
     [Theory]
     [InlineData(false)]
@@ -222,11 +222,13 @@ public class KaderStartRunde13Teil4Tests
                 if (bought || game.Phase != SeasonPhase.Running || own.Players.Count >= TransferMarket.MaxSquad
                     || game.TransferMarket.Listings.FirstOrDefault(l => l.From != own && !l.Player.OnLoan) is not { } listing)
                     return;
-                // Ein Kauf je Saison: hinten an (Datei 0x42CB1).
+                // Ein Kauf je Saison: nach Spielerart einsortiert (Datei 0x42D55).
                 game.Managers[0].Money = Math.Max(game.Managers[0].Money, listing.Price * 3);
                 Assert.Equal(TransferResult.Accepted,
                     game.TransferMarket.Buy(game, game.Managers[0], listing, listing.Price * 2, loan: false));
-                Assert.Same(listing.Player, own.Players[^1]);
+                var at = own.Players.IndexOf(listing.Player);
+                Assert.All(own.Players.Take(at), q => Assert.True(q.Role <= listing.Player.Role));
+                Assert.True(at + 1 == own.Players.Count || own.Players[at + 1].Role > listing.Player.Role);
                 AssertNumbersAreSlots(own);
                 bought = true;
             }
@@ -234,7 +236,6 @@ public class KaderStartRunde13Teil4Tests
             Assert.All(game.Clubs.Where(c => c.Players.Count > 0), AssertNumbersAreSlots);
             var stayed = own.Players.Where(before.Contains).ToArray();
             Assert.Equal(before.Where(stayed.Contains), stayed);
-            Assert.Equal(stayed, own.Players.Take(stayed.Length));
         }
         Assert.Equal(1997, game.Season);
     }

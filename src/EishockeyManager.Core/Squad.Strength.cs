@@ -33,7 +33,8 @@ public sealed partial class Club
     /// <summary>
     /// A091: Nr. = Kaderplatz + 1. [ORIGINAL] Das Original kennt keine eigene Rückennummer; die „Nr.“ ist der Kaderplatz + 1
     /// (FILE26: nach dem Verkauf von Platz 13 heißen die Plätze 14–24 dann 13–23). Die Kaderplätze sind die Reihenfolge von
-    /// <see cref="Players"/>: Kauf hinten an (Datei 0x42CB1, FILE07: Platz 25), Verkauf rückt auf (Datei 0x425B6, FILE05 → FILE26),
+    /// <see cref="Players"/>: Kauf nach Spielerart einsortiert (Datei 0x42D55,
+    /// R13GN-01; Stürmer hinten FILE07: Platz 25), Verkauf rückt auf (Datei 0x425B6, FILE05 → FILE26),
     /// Saisonwechsel unverändert (A085, FILE22/FILE23: alle 22 Plätze behalten ihren Poolindex).
     /// </summary>
     public void RenumberPlayers()

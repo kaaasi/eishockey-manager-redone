@@ -19,7 +19,7 @@ namespace EishockeyManager.Core;
 ///   0x4285C–0x4296A). Als Feldspieler zählt der erste freie Torhüter mit −1 (nie gewählt), jeder weitere mit 1
 ///   (Datei 0x42913–0x4292C); ist der erste übersprungen, endet die Suche, sobald die Ausgangsrolle wieder erreicht ist.</item>
 /// <item>[ORIGINAL] Kaderplätze in der Reihenfolge von <see cref="Club.Players"/> (A091, wie <see cref="LiveSquad.Create"/>):
-///   Kauf hinten an, Verkauf rückt auf, Saisonwechsel unverändert (Datei 0x42CB1, 0x425B6; FILE05/FILE07/FILE26,
+///   Kauf nach Spielerart einsortiert (R13GN-01), Verkauf rückt auf, Saisonwechsel unverändert (Datei 0x42D55, 0x425B6; FILE05/FILE07/FILE26,
 ///   FILE22/FILE23). Die Platzfolge entscheidet den Gleichstand in Datei 0x42838 (FILE05 Reihe 3: LALA vor HANEMANN und
 ///   H.STEIGER, alle Wert 68; FILE07: DAFFNER auf Platz 25 verdrängt LALA).</item>
 /// <item>[APPROX] Ein Feldspieler aus der Torhütersuche (kein Torhüter frei) bekommt im Original +0x15 = 1 und steht damit

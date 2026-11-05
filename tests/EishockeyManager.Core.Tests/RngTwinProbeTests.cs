@@ -175,6 +175,10 @@ namespace EishockeyManager.Core.Tests;
 /// Spielstart-Seed (Datei 0x43A17, `NewGame.StartOrder`), der Zufallsplatz des Starttauschs ist ein Satzplatz dieser Folge.
 /// Runde 13, kader-start Teil 4 (A091/A166): alle Abdrücke neu – Nr. = Kaderplatz + 1 (Kauf hinten an, Verkauf rückt auf),
 /// Spiel und Auto-Aufstellung in Kaderplatzfolge statt Rolle/Nummer; andere Gleichstände und Spielverläufe.
+/// Fix R13GN-01 (#622): aktive Abdrücke neu – der aktive Manager verpflichtet nach jedem Saisonwechsel Vertragslose aller Arten
+/// (<c>SignFreeAgents</c>); Torhüter und Verteidiger stehen jetzt hinter dem letzten Spieler ihrer Art (Datei 0x42D55) statt hinten:
+/// andere Nr., Kaderplatz 3 (Gehaltsforderung 0x4A93F) und Gleichstände der Auto-Aufstellung. Passive Abdrücke unverändert.
+/// Gegenprobe: Kauf über die Transferliste wieder hinten an (<c>managerSquad: false</c> in <c>TransferMarket.Complete</c>) → alle alten Werte.
 /// </summary>
 public class RngTwinProbeTests
 {
@@ -182,9 +186,9 @@ public class RngTwinProbeTests
 
     [Theory]
     [InlineData(false, 3, "1501663F0197426F")]
-    [InlineData(true, 3, "377126FABD83B898")]
+    [InlineData(true, 3, "57912317E80C4918")]
     [InlineData(false, 11, "6B6DAAD441C0C2A2")]
-    [InlineData(true, 11, "C429365C16B41D63")]
+    [InlineData(true, 11, "FC146C171B47B16F")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -196,7 +200,7 @@ public class RngTwinProbeTests
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
     [InlineData(false, "C2A2F88417587DD1")]
-    [InlineData(true, "FD69401E5D7397F7")]
+    [InlineData(true, "771D1BE3680653F5")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
