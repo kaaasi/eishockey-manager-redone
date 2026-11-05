@@ -401,10 +401,14 @@ public sealed class StadiumScreen : Screen
     /// <summary>
     /// ▲▼ aus kb\4 über <see cref="UI.ArrowPair"/>: [ORIGINAL] losgelassen Quelle (22 | 1 + 9 · j) 8 × 7 nach (x + 2 | y + 1),
     /// gedrückt (22 | 19 + 9 · j) (Datei 0x4BAD3–0x4BBFE); im Video orange mit dunkler Kante.
+    /// [ORIGINAL] Davor je Pfeil die Grundgrafik kb\4 (20 | 9 · j) 10 × 8 nach (x + 10 · j | y) (Datei 0x3DAE0–0x3DB29 Eintritt,
+    /// 0x3DFAB–0x3DFF4 Stufe); jeder Pfeil ist damit 10 Pixel breit (#597).
     /// </summary>
     private void Arrows(Surface s, ArrowPair pair)
     {
         var image = Assets.Image(ArrowPair.Image);
+        for (var j = 0; j < 2; j++)
+            s.Blit(image, new Rect(20, 9 * j, 10, 8), pair.First.X + 10 * j, pair.First.Y);
         pair.DrawReleased(s, image, -1);
         pair.DrawReleased(s, image, +1);
         pair.Draw(s, image);

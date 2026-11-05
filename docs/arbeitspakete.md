@@ -117,7 +117,7 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   2. **Darstellung aus `re-dosbox`** (nach `re-dosbox`): A373 (Pfeilfolge Taktik), Taktik-Befund DGROUP 375h (falls Anzeige),
      A364, A380, A382, A377, A374, A313, A321, A357 – Pixeltests gegen die Bilder der Sitzung 2.
   3. **Stadion aus `re-dosbox` Teil 2** (A323, A325, A326), sobald Sitzung 3 ausgewertet ist; A338 nur, falls Sitzung 6 kommt.
-- **Dateigrenzen:** wie oben `ui-rest`, eigene Tests. **Modell:** Claude Sonnet 5.5. **Status:** Go 05.11.2026, Start offen.
+- **Dateigrenzen:** wie oben `ui-rest`, eigene Tests. **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 (#597) umgesetzt, PR `paket/ui-rest-1` (05.11.2026); Teile 2–3 offen (nach `re-dosbox`).
 
 ### Spur `hok-import` – Original-Spielstände `*.HOK` ins Remake (E14-1 C)
 
