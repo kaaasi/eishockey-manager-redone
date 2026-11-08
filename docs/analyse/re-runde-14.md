@@ -1,8 +1,8 @@
 # Auswertung DOSBox-Aufnahme `runde-13` (Spur `re-dosbox`, Runde 14)
 
 Stand: Teil 1 abgeschlossen (geplanter Lauf Claude Opus 5.5, PR #628): Sitzungen 1 und 2, Spielstände FILE29–41 und FILE37A.
-Teil 2 (Sitzungen 3–7, FILE43–49A; FILE46 ersetzt FILE42) folgt in einem eigenen PR in derselben Datei.
 Korrekturen nach Review #643 (R14RD1-01 bis -05) durch die Leitstelle am 08.11.2026.
+Teil 2 (PR #642): Sitzungen 3–7, FILE43–49A ohne FILE45, dazu FILE46 für das Leihende A115 (Abschnitt „Teil 2“).
 
 Quellen: Spielstände und Bilder aus `kaaasi/eishockey-manager-referenz` (`original/spielstaende/`, README mit den Angaben des
 Nutzers, Stand `36aeca9`), `emtool hok dump`, der entschlüsselte Klartext (Verfahren `docs/formate/spielstand-original.md`)
@@ -42,7 +42,7 @@ Remake stimmt mit dem Original, **widerlegt** = Remake weicht ab (Umsetzung nöt
 | A321 | teils | Kopffeld = Datum, weißes Feld = Text (zwei Zeilen), kein Zähler bei einer Nachricht | `ui-rest` |
 | A357 | widerlegt | Balken Liga Index 29, DEB-Pokal Index 27 (nicht 200); Marke 2/4/6 + Stiel 2 Pixel breit | `ui-rest` |
 | A115 | nicht entscheidbar (Teil 1) | Leihende liegt in FILE46 (ersetzt FILE42); Auswertung in Teil 2 | – |
-| A088, A009, A085 | kein neuer Beleg | Sitzungen 1–2 enthalten keinen Saisonwechsel und keinen Bundestrainer; Teil 2 | – |
+| A088, A009, A085 | kein neuer Beleg | Sitzungen 1–2 enthalten keinen Saisonwechsel und keinen Bundestrainer; siehe Teil 2 | – |
 
 ## Sitzung 1 – Spielvorbereitung und Spielstart (FILE29–31)
 
@@ -424,9 +424,424 @@ Je Punkt stehen Ziel, Dateien und Testidee oben. Zusammenfassung nach Spuren (Pl
    und für U15-c `Core/Highscore.cs` ändern; `ui-rest` für A357 `UI/Screens/Statistics/HistoryScreen.cs`; A012 → `nationalteam`;
    Feldbelege in `docs/formate/spielstand-original.md` → `hok-import`.
 
+## Teil 2 – Sitzungen 3–7 (FILE43–49A)
+
+Geplanter Lauf Claude Opus 5.5, PR #642 (gestapelt auf #628). Material laut Issue #639: Sitzung 3 Stadion (FILE43, FILE43A,
+FILE44), Sitzung 4 Saisonende (FILE46, Start FILE44; FILE45 entfällt), Sitzung 5 Bundestrainer (FILE47–49, FILE49A), Sitzung 6
+Speichern-Dialog (`a338_1…3`, ohne Spielstand), Sitzung 7 Stadion Stufe 2/3 (FILE44A, FILE44B). Referenz-Repo Stand `779a1c8`.
+Verfahren wie Teil 1. Das Stadionbild nutzt die Palette `kb\14` (6 Bit), die übrigen Bilder `kb\21`.
+
+### Übersicht Teil 2
+
+| ID | Ergebnis | Kern | Spur |
+|---|---|---|---|
+| A323/A325 | widerlegt (Lage) / belegt (Stufenfolge) | Teile aus Tabelle DGROUP 0x4F3D/0x4F5B/0x4F79, Folge DGROUP 0x4F97 (Kino zuletzt), Maske 0xC0 (Datei 0x3D904–0x3D9EB); alle fünf Stadionbilder damit pixelgleich | `ui-rest` |
+| A325 (Rest) | nicht entscheidbar | Kein Bild von Kino MITTEL mit Restaurant, Autobahn, Halboffen, Bowlingbahn (Lage folgt aus derselben Tabelle); Stufe unter Kneipen = IMBIßBUDE (belegt) | `ui-rest` |
+| A326 | teils | Bau-Tabelle Farbe 1 und Ist-Ansicht im Bau belegt; rechts kein „(Noch n Wochen)“; Ausbau-Frage ist das Fragefenster Datei 0x4C246 („Ja.“/„Nein.“) | `ui-rest` |
+| A362 | teils | Liste = Verträge-Liste (belegt), aber einmal vor den Verhandlungen gezeichnet (Datei 0x27C9F): WERT altes Gehalt, „Kein V.“; Fenster x = 2 | `kader-start` |
+| A091/A380 | belegt (neu) | Nicht verkaufter Transferlisten-Spieler kehrt am Saisonende zurück, nach Art einsortiert, nicht eingesetzt (Datei 0x27547–0x27665) | `kader-start` |
+| A085 (Verein) | belegt | Platzfolge über den Saisonwechsel unverändert, Abgänge fallen weg, Rückkehrer einsortiert | – |
+| A115 | teils / nicht entscheidbar (Versicherung) | Marktleihe endet frei (Pool 6); Rückkehr zum Manager kopiert den Leih-Kaderplatz (nur nach Code) | `kader-start` |
+| Saisonende | belegt | 100.000 DM = eine Einzelprämie; Gehalt 19.152 = Wert · 114/100, Ablöse 155.500 = Wert(Preis)/2 | `kader-start` (Test) |
+| A088 | teils belegt | Kaderplatz: Saisonzähler `+0x03`–`+0x08` → 0, Gesamtzähler `+0x1C`–`+0x26` bleiben; Pool/Markt nicht verglichen | `kader-start` |
+| A321 | teils (neu) | Datum rot (Index 17), wenn eine weitere Nachricht folgt (Datei 0x4B71E, 0x4B9CD) | `ui-rest` |
+| A189 | nicht entscheidbar | Kein Gesperrter in FILE43–49A (kein `+0x09` Bit 0x01) | – |
+| A009 | widerlegt | Bundestrainer hat „automatisch aufstellen“ (DGROUP 0x37F/0x380, Vorgabe an, Neuaufstellung beim Menüaufbau); Herausnehmen schaltet ab; leere Aufstellung spielt leer (0:17), Länderwerte 0 | `nationalteam` |
+| A085 (WM-Kader) | belegt | Voller Kader: Klick wirkungslos; Herausnehmen rückt auf, Aufnehmen nach Art (Datei 0x3CA71, 0x3CABF), Herkunft `+0x0C` | `nationalteam` |
+| A293 | belegt / widerlegt (Startseite) | Kein „Endrunde“ in der Tabelle; „Paarungen → WM“ springt ab WM-Stufe 5 in die Endrunde (Datei 0x44B1C) | `nationalteam` |
+| A338 | Bild belegt / Bedienung widerlegt | Kein „SEITE:“ (DGROUP 0xBC0 nie gelesen); Blättern nur über `ArrowPair` (150 \| 169)/(174 \| 169), Schritt 48, an den Enden wirkungslos (Datei 0x5E386–0x5E42B); keine Tasten, kein Mausrad; roter Marker unter der Maus | `hok-import` |
+| A339 | widerlegt | Infofeld Datei 0x5B661 aus dem unverschlüsselten Kopf (Kennung, Jahr, Managerzahl, Spieltag, 4 × 0x28); Fenster (71 \| 71) 8 × 3; nur solange die rechte Taste gehalten wird | `hok-import` |
+
+## Sitzung 3 und 7 – Stadion ausbauen (FILE43–44, FILE44A, FILE44B)
+
+Grundlage: FILE41 (vorher), FILE43 (Sitzkomfort im Bau, 20.12.1993), FILE43A (Konto 20 Mio., sonst FILE43), FILE44 (Kino KLEIN
+und KNEIPEN fertig, 14.04.1994), FILE44A (Kino MITTEL fertig, RESTAURANT im Bau, 10.09.1994), FILE44B (RESTAURANT und Kino GROß
+fertig, 17.09.1994); Bilder `file43_1…7`, `file44_1…8`, `file44a_1…10`, `file44b_1…7`. Stadionsatz des Managers 0 =
+DGROUP 0x9771 (HOK 0x00F9D): je Bereich i Stufe (+2·i) und Zielstufe (+2·i+1), Restwochen +0x12 + p. Die Bilder sind
+pixelgleich mit kb\14 (Palette kb\14, 6 Bit); Teile aus kb\8.
+
+### A323/A325 – Teile des Stadionbilds (kb\8)
+
+- **Ergebnis:** widerlegt (Lage, Quellrechtecke, Reihenfolge, Transparenz). Das Original zeichnet die Teile aus einer Tabelle;
+  mit ihr ist das Stadionbild in `file43_2`, `file43_7`, `file44_7`, `file44a_10` und `file44b_6` im Bildbereich (0–167)
+  **pixelgleich** (0 abweichende Pixel). Das Remake weicht ab: Kinos 15 Zeilen zu tief, Imbiß 6 Zeilen, Quellrechtecke mit
+  Trennlinien von kb\8 (sichtbare Fremdzeilen/-spalten), falsche Reihenfolge, Transparenz 0 statt 0xC0.
+- **Tabelle** (DGROUP, je Eintrag 2 Byte, Index 6 · k + 2 · (Stufe − 1)): Bereichsfolge DGROUP 0x4F97 = 5, 6, 8, 0, 7
+  (Verkehrsanbindung, Gastronomie, Bowlingbahn, Überdachung, Kino – Kino zuletzt), Ziel (x | y) DGROUP 0x4F3D, Größe (w × h)
+  DGROUP 0x4F5B, Quelle (x | y) in kb\8 DGROUP 0x4F79; Stufe 0 zeichnet nichts.
+
+  | Teil | Ziel | Quelle | Größe | Remake (Quelle → Ziel) | Bildbeleg |
+  |---|---|---|---|---|---|
+  | Straße | (244 \| 50) | (0 \| 0) | 66 × 118 | (0 \| 0) 68 × 118 → (244 \| 50) | alle |
+  | Autobahn | (244 \| 50) | (66 \| 0) | 76 × 118 | (68 \| 0) 75 × 118 → (246 \| 50) | – |
+  | Imbißbude | (25 \| 112) | (211 \| 109) | 50 × 30 | (211 \| 110) 50 × 28 → (23 \| 118) | `file43_2`, `file43_7` |
+  | Kneipen | (21 \| 105) | (211 \| 139) | 56 × 39 | (211 \| 138) 56 × 40 → (20 \| 108) | `file44_7`, `file44a_10` |
+  | Restaurant | (13 \| 91) | (143 \| 115) | 68 × 58 | (143 \| 115) 67 × 56 → (14 \| 92) | `file44b_6` |
+  | Bowlingbahn | (201 \| 94) | (142 \| 60) | 68 × 55 | (143 \| 59) 64 × 57 → (202 \| 93) | – |
+  | Halboffen | (79 \| 57) | (142 \| 0) | 144 × 60 | (143 \| 0) 143 × 59 → (81 \| 54) | – |
+  | Halle | (80 \| 57) | (0 \| 118) | 143 × 57 | (0 \| 117) 143 × 58 → (80 \| 56) | alle |
+  | Kino klein | (29 \| 44) | (144 \| 173) | 52 × 21 | (143 \| 171) 55 × 23 → (27 \| 57) | `file44_7` |
+  | Kino mittel | (27 \| 42) | (210 \| 86) | 53 × 23 | (209 \| 87) 54 × 23 → (27 \| 57) | `file44a_10` |
+  | Kino groß | (24 \| 39) | (210 \| 60) | 58 × 26 | (209 \| 59) 61 × 28 → (24 \| 54) | `file44b_6` |
+
+- **Reihenfolge:** Mit der Remake-Folge (Verkehr, Überdachung, Gastronomie, Kino, Bowling) weicht `file44b_6` in 10 Pixeln
+  (Spalte 80, Zeilen 91–112: Restaurant über der Halle) ab; mit der Originalfolge 0.
+- **Transparenz:** Maske 0xC0 (Index 192, Datei 0x3D92D `mov al, 0xC0` als letztes Argument der Kopie 0x50:0xA79 = Datei
+  0x139C9). Mit Transparenz 0 weicht `file44a_10` in 16 Pixeln ab (Kino mittel, x 74–79, y 42–44: Index 0 ist dort deckend).
+- **Stufenfolge (A325):** belegt. Gastronomie OHNE/IMBIßBUDE/KNEIPEN/RESTAURANT, Kino OHNE/KLEIN/MITTEL/GROß wie
+  `FinanceStadium.cs`; Stufen-Bytes FILE44 `2 1 1 1 2 1 2 1 0`, FILE44A Gastronomie 2 → Ziel 3, Kino 2, FILE44B `… 3 3 0`. Die
+  Stufe unter den Kneipen ist die IMBIßBUDE (Startstufe Bundesliga, im Bild `file43_2` mit Schriftzug, Lage oben belegt).
+  Kino KLEIN → GROß in einem Auftrag (`file44b_2`: 1.040.000 DM = 2 · 520.000) und KNEIPEN → RESTAURANT 580.000 DM stimmen mit
+  `Stadium.Cost` (linear je Stufe) und der Stufenwahl bis zur Höchststufe.
+- **Nicht entscheidbar (Bild):** Kino MITTEL zusammen mit Restaurant, Autobahn, Halboffen, Bowlingbahn – kein Bild. Die Lage
+  folgt aber aus derselben Tabelle; Überdeckung nur über die Reihenfolge.
+- **Fundstelle:** em.exe Datei 0x3D904–0x3D9EB (Schleife über 5 Bereiche, Tabellen DGROUP 0x4F97, 0x4F3D, 0x4F5B, 0x4F79),
+  Datei 0x3D92D (Maske 0xC0); Template-Abgleich der Bilder (Spielkoordinaten, Bild 642 × 507 doppelt ab (1 | 26)).
+- **Umsetzung:** `DrawBuildings` auf die Tabelle umstellen (Ziel, Quelle, Größe je Bereich und Stufe, Folge 5, 6, 8, 0, 7,
+  Transparenz 0xC0; `Part` mit Maskenindex statt 0), `[APPROX]` an Zeile 103/329 durch `[ORIGINAL]` mit Fundstelle ersetzen.
+  Test: Stadionbild je Stufe rendern, Teilrechtecke gegen die Tabelle prüfen; Pixeltest `file44b_6`-Stand (Restaurant über
+  Halle, Spalte 80) synthetisch über Reihenfolge. Hinweis: Die Hotspots (`Hotspots`, Kino 18 | 53) liegen nach der Korrektur
+  teils neben den Gebäuden (Kino jetzt y 39–65) – nicht aus dem Original belegt, eigene Prüfung. Dateien:
+  `UI/Screens/Manager/StadiumScreen.cs`. Spur: `ui-rest`.
+
+### A326 – Bau-Tabelle und Baustellenanzeige
+
+- **Ergebnis:** teils.
+  - **Bau-Tabelle belegt:** Werte und „(kein Bau...)“ in Farbe 1 (`file43_3`, `file43_6`, `file44_6`; Ist-Ansicht Farbe 31,
+    `file43_7`), Beschriftung wie Ist. Im Bau „SITZE MIT KISSEN (Noch 8 Wochen)“, übrige Zeilen „(keine Bautätigkeiten)“,
+    rechts „(kein Bau...)“; mehrere Bauten zugleich (`file44_6`: Sitzkomfort 8, KNEIPEN 16, KLEIN 17 Wochen). Restwochen im
+    Stand: FILE43 HOK 0x00FB2 (Projekt 3) = 8; FILE44A Projekt 6 = 1 (Restaurant am 10.09.1994 noch 1 Woche). Nach der
+    Fertigstellung leer (`file44_8`).
+  - **Ist-Ansicht im Bau belegt:** zeigt die alte Stufe (PLASTIKSCHALEN, `file43_7`; KNEIPEN in `file44a_10` während RESTAURANT
+    im Bau).
+  - **Baustellenanzeige rechts widerlegt:** Überfahren eines Bereichs im Bau zeigt nur „Gastronomie ausbauen“ (Maus (177 | 218)
+    in der Zeile Gastronomie, KNEIPEN im Bau, `file44_6`) – kein „(Noch n Wochen)“, keine Stufenwahl, keine Kostenzeile. Das
+    Remake schreibt dort Bereich ohne „ausbauen“ und „(Noch n Wochen)“ (`StadiumScreen.cs` `[APPROX]` „Laufende Baustelle“).
+  - Ausbau-Frage **widerlegt:** Das Original nutzt das Fragefenster Datei 0x4C246 (Aufruf Datei 0x3E37A, Titel = Managername,
+    Zeichen „?“, Zeilen „Möchten Sie Ihr Stadion ausbauen ?“, „Rabatt: r%“, „Bauzeit: ca. w Wochen“, Knöpfe „Ja.“/„Nein.“;
+    `file43_5`, `file44_3`, `file44_5`). Das Remake zeichnet ein eigenes Fenster (Kostenzeile, „Aber klar“/„Kein Gedanke“,
+    jeder andere Klick = Nein).
+- **Fundstelle:** Bilder oben; Datei 0x3D5CA–0x3D5F8 (Text „ (Noch “ DGROUP 0xC4C, Zahl 0x0BAB2 ohne Auffüllen, „ Wochen“
+  DGROUP 0xDD8, „)“ DGROUP 0x501F), Datei 0x3D5FB–0x3D607 (Farbe 31 − 30 · Modus), Datei 0x3E2EF–0x3E37A (Frage).
+- **Umsetzung:** Zweig „Laufende Baustelle“ in `DrawRight` entfernen (auch im Bau „<Bereich> ausbauen“, ohne Stufenwahl);
+  `DrawConfirm`/Eingabe durch `OriginalDialog` (Frage, drei Zeilen, Knöpfe „Ja.“/„Nein.“, nur linke Maustaste) ersetzen.
+  Test: Bereich im Bau überfahren → Hinweis „… ausbauen“, keine Zeile 221; Frage über `OriginalDialog` mit den drei Zeilen.
+  Dateien: `UI/Screens/Manager/StadiumScreen.cs`. Spur: `ui-rest`.
+
+## Sitzung 4 – Saisonende mit Kaderabgang (FILE44 → FILE46)
+
+Grundlage: FILE44 (14.04.1994, Byte 0x7A9 = 45, Kader 25, KJELLBERG Platz 24 mit +0x0B = 1, VALLIERE Platz 25 geliehen,
+HOHENADL im Markt-Satz 4 Platz 5 mit +0x09 = 0x80), FILE46 (10.09.1994, Saisonzähler 1, Kader 24), zum Vergleich FILE41;
+Bilder `file46_1…6`. Klartext wie in Teil 1 entschlüsselt (Kaderplatz HOK 0x06A27 + 0x618 · Satz + 0x34 · Platz, Spielerpool
+HOK 0x0505F, 33 Byte; Nachrichten DGROUP 0xD294 = HOK 0x0AF72, 24 × 0x71).
+
+### A362 – Liste hinter den Saisonende-Verhandlungen
+
+- **Ergebnis:** teils. Die Liste ist die Kaderliste mit den Spalten von „Verträge“ (ART NAME SP ST TO STATUS E V.DAUER WERT),
+  wie im Remake (belegt). Widerlegt ist ihr Inhalt während der Verhandlung: Das Original zeichnet die Liste **einmal vor** der
+  Schleife (Datei 0x27C9F, `0x108:0x43`) und erst nach einem Abgang neu (Datei 0x27F31); `+0x0B = 1` und das neue Gehalt
+  `+0x28` (Datei 0x27D15–0x27D70) schreibt es danach. Bei KJELLBERG steht daher in der Liste „Kein V.“ und WERT **18.800 DM**
+  (altes Gehalt), im Fenster „1 Jahr“, „19.152 DM“. Das Remake setzt `MonthlySalary` schon im Kaderwechsel (`BeginRenewal`) und
+  zeichnet die Liste live – WERT zeigte 19.152.
+  - Lage: Kopfzeile y 19–23, Zeilen ab y 29 im Abstand 6 (Remake `FirstRowY` 29, `RowPitch` 6 belegt; `HeaderY` 20 – 1 Pixel
+    zu prüfen). Fenster (KJELLBERG Zeile 23 → oben): Rahmen hell (2 | 29) bis dunkel (166 | 95), Schatten 2 Pixel (167–168,
+    96–97); Remake `DialogRect` x = 1, Breite 166 → 1 Pixel links zu weit (gleiche Abweichung wie A377).
+  - Vor der Verhandlung sind schon alle Saisonschritte gelaufen: SP/TO 0, alle Laufzeiten 2 → 1 Jahr, VALLIERE fehlt, HOHENADL
+    steht wieder auf Platz 11 (siehe A091).
+- **Fundstelle:** `file46_3` (Fensterrahmen (146 | 178 | 195) oben/links, (32 | 48 | 81) rechts/unten);
+  em.exe Datei 0x27C9F, 0x27D15–0x27D70, 0x27D91 (`0x118:0x75`), 0x27F31; `emtool hok dump` FILE44/FILE46.
+- **Umsetzung:** Ziel: Liste beim Öffnen der Saisonende-Verhandlungen als Abbild (Gehalt vor `BeginRenewal`, Laufzeit „Kein V.“)
+  zeichnen und erst nach einem Abgang neu aufbauen; `DialogRect` x = 2, Breite 165 prüfen (gemeinsam mit A377), `HeaderY` am
+  Bild prüfen. Dateien `UI/Screens/Team/ContractsScreen.cs` (das alte Gehalt hält der Bildschirm selbst oder der Kern als
+  `Player.PreviousSalary` – nur falls ohne Schemaänderung möglich, sonst Abbild beim Aufbau). Testidee: Saisonende mit einem
+  auslaufenden Vertrag, Pixel der WERT-Zeile = altes Gehalt, Fenster = neues; Pixelprobe gegen `file46_3`. Spur: `kader-start` Teil 4 (`UI/Screens/Team/*` gehört `kader-start`).
+
+### A091 / A380 – Rückkehr von der Transferliste am Saisonende
+
+- **Ergebnis:** belegt (neu): Ein eigener Spieler, der auf der Transferliste nicht verkauft wurde, kehrt am Saisonende in den
+  Kader zurück und wird **nach Spielerart einsortiert**: HOHENADL (ABW) aus Markt-Satz 4 Platz 5 → Kader Platz 11 (vor BRANDL,
+  dem ersten STU), alle folgenden rücken um eins nach hinten. Im Kaderplatz: `+0x0A` = 0 (nicht eingesetzt), `+0x15` = 0,
+  `+0x09` 0x80 → 0, Laufzeit 2 → 1 (heruntergezählt, noch im Markt-Satz). Pool `+0x1A` = 0 (Manager) bleibt.
+  - Mechanik: Die Saisonschleife über alle Sätze (auch 4 = Markt) vergleicht Pool `+0x1A` (Besitzer) mit dem Satz, in dem der
+    Spieler steht (Datei 0x27547). Weicht er ab und ist Besitzer < 4, holt `0x108:0x5C` (Datei 0x42CB1, Einsortieren) einen
+    Platz, der Kaderplatz wird kopiert (0x34 Byte, Datei 0x275D2), danach `+0x0C` = 0 und `+0x18` &= 0x7F (Datei 0x2764B,
+    0x27665) und der alte Platz frei (`0x108:0x48`, Datei 0x27628). Vorher `+0x09` &= 0x3F (Datei 0x274EB). Gleicher Weg wie die
+    Leihrückkehr (A115).
+  - Das Remake behält den Spieler auf der Transferliste im Kader (A380, Teil 1); erst mit dem Umbau A380 braucht es diese
+    Rückkehr.
+- **Fundstelle:** `emtool hok dump` FILE44 (Markt Platz 5, `+0x09` = 0x80, `+0x0B` = 2) / FILE46 (Kader Platz 11); Bild `file46_3`
+  (Zeile 11 mit 11.000 DM bereits am 30.04.); em.exe wie oben.
+- **Umsetzung:** Mit A380 (`kader-start` Teil 2): Saisonende gibt nicht verkaufte eigene Transferlisten-Spieler an den Kader
+  zurück, über `PlayerFactory.InsertSlot` (nach Art), nicht eingesetzt, Reihe leer, Laufzeit wie alle heruntergezählt, vor den
+  Verhandlungen. Datei `Core/Player.Contract.cs` (Kaderwechsel). Testidee: Spieler auf die Liste, Saisonwechsel ohne Verkauf →
+  Platz nach Art, `IsInLineup` false, Laufzeit − 1; Mehrsaisonprobe. Spur: `kader-start` Teil 4.
+
+### A085 – Platzfolge des Vereins über den Saisonwechsel
+
+- **Ergebnis:** belegt. Die Folge der 22 Verbleibenden ist unverändert; nur die Abgänge (KJELLBERG Platz 24, VALLIERE Platz 25)
+  fallen weg und der Rückkehrer wird einsortiert (A091). Eingesetzt `+0x0A` und Reihe `+0x15` bleiben bei allen stehen.
+- **Fundstelle:** `emtool hok dump` FILE44/FILE46 (Plätze 1–23).
+- **Umsetzung:** keine (Remake `LiveSquad`/`RenumberPlayers`, `[ORIGINAL]` Runde 13). Spur: –.
+
+### A115 – Leihende
+
+- **Ergebnis:** teils.
+  - Leihe vom Markt endet mit dem Saisonwechsel: VALLIERE (Pool `+0x1A` = 4, „von FRANKREICH“) ist in FILE46 weder im Kader
+    noch im Markt; Pool `+0x1A` = 6 (frei). Code: Besitzer ≥ 4 → `+0x1A` = 6, Platz frei (Datei 0x27571–0x275FF, 0x27628).
+    Schon vor der Verhandlung (Liste `file46_3` ohne VALLIERE). Belegt am Stand.
+  - Versicherungsprämie: **nicht entscheidbar** am Stand (VALLIERE `+0x30`–`+0x33` = 0 in FILE41/FILE44). Nach dem Code kehrt ein
+    an einen Manager zurückgehender Spieler mit einer **Kopie des Leih-Kaderplatzes** zurück (0x34 Byte, nur `+0x0C` und
+    `+0x18`-Bit 0x80 gelöscht), also mit Laufzeit, Gehalt und Versicherung aus der Leihe; das Remake setzt dagegen Vertrag,
+    Gehalt und `Insured` aus `PlayerLoan` (Stand beim Verleiher) zurück – nach Code widerlegt, am Stand nicht geprüft.
+  - Das Leih-Kennzeichen ist `+0x0C` (VALLIERE 0xB9 in FILE41/44).
+- **Fundstelle:** `emtool hok dump` FILE41/FILE44/FILE46 (Pool 179 VALLIERE `+0x1A` 4 → 6); em.exe Datei 0x27547–0x27665.
+- **Umsetzung:** Ziel: Leihe vom Markt → am Saisonende frei (Pool frei), nicht zurück zu einem Verein; Leihe zwischen Managern →
+  Rückkehr mit dem Kaderplatz des Entleihers (Laufzeit/Gehalt/Versicherung aus der Leihe) – erst nach Lesen von
+  `0x48:0x2BD4` (Kopierrichtung) umsetzen, sonst `[APPROX]` lassen. Datei `Core/Player.Contract.cs` (Saisonwechsel,
+  `PlayerLoan`). Testidee: Marktleihe → nach `StartNextSeason` frei und nicht im Kader des Herkunftsvereins. Spur: `kader-start`.
+
+### Saisonende-Ablauf, Prämie, Ablöse (ohne eigene ID)
+
+- **Ergebnis:** belegt, soweit am Bild prüfbar.
+  - Ereignisse 30.04.1994: ein Symbol, „10. Platz der Bundesliga“, „Erhaltene Prämien: 100.000 DM“ = eine Einzelprämie, keine
+    Tabellenprämie (Remake `SeasonPremium`, `Premium(...) = 0`). Welches Symbol (Topscorer/Torhüter/Fair-Play), nicht bestimmt.
+  - Verhandlung: Alter 33 = Pool `+0x14` nach dem Altern (FILE44 32 → FILE46 33), Laufzeit 1 Jahr, Gehalt 19.152 DM =
+    Wert(Gehalt) · (147 − 33) / 100 ⇒ Wert(Gehalt) = 16.800 DM; „Abbruch“ → „kehrt Ihrem Verein den Rücken...“, Ablöse
+    155.500 DM = Wert(Preis) / 2 ⇒ Wert(Preis) = 311.000 DM (Remake-Formel `RenewalSalaryThirds`, `Compensation`).
+  - Saisonzähler im Kaderplatz: `+0x00`, `+0x01`, `+0x03`–`+0x08` → 0; `+0x02`, `+0x1C`–`+0x26` bleiben (wie Runde 13, A226);
+    Verletzungen (MENDE 14, BRANDL 7, LIEBSCH 2 Spiele) sind bis zum 10.09. ausgeheilt (`+0x09` Bit 0x02, `+0x0D` = 0) – Ort
+    im Code nicht gelesen.
+- **Fundstelle:** `file46_1…5`, `emtool hok dump` FILE44/FILE46.
+- **Umsetzung:** Zahlenprobe als Test, sobald `hok-import` Stände laden kann: KJELLBERG aus FILE44 → `RenewalSalaryThirds` = 3 ·
+  19.152, Ablöse 155.500 DM. Spur: `kader-start` (Test), sonst keine.
+
+### A321 – Nachrichtenleiste (Ergänzung)
+
+- **Ergebnis:** teils (neu): Das Datum oben ist **rot (Index 17)**, wenn es eine weitere Nachricht des Managers gibt, sonst
+  schwarz (Index 0): Farbe = erste Zeile · (`0x4B9CD`(Platz, 1) ≠ 0xFF) · 0x11 (Datei 0x4B71E–0x4B73C); `0x4B9CD` sucht ab dem
+  Platz vorwärts im Nachrichtenspeicher DGROUP 0xD294 (24 × 0x71) die nächste Nachricht desselben Managers (`& 7` = DGROUP
+  0xA70D). FILE46 hat zwei Nachrichten (Plätze 0 und 1), `file46_6` zeigt die zum 13.04.1994 mit rotem Datum; `file37a_1` (eine
+  Nachricht) schwarz. Die zwei Pfeile rechts stehen in beiden Bildern. Zeilen: erste Zeile y = 212 (Unterkante), weitere
+  + 7 + 5, dann + 7 (Datei 0x4B6F0, 0x4B75D–0x4B769).
+- **Fundstelle:** `file46_6` (Datum x 133–185, y 208–213, Farbe (178 | 16 | 16) = Index 17), `file37a_1`; em.exe Datei
+  0x4B6F0–0x4B76D, 0x4B9CD–0x4BA56; HOK 0x0AF72 FILE46.
+- **Umsetzung:** `NewsBar.Draw`: Datum in Index 17, wenn es nach der angezeigten noch eine Nachricht gibt, sonst Index 0
+  (`[ORIGINAL]` mit Fundstelle). Datei `UI/Screens/Manager/NewsBar.cs`. Testidee: zwei Nachrichten → Kopfzeile Index 17, eine →
+  Index 0. Spur: `ui-rest`.
+
+### A088 – Spielerzähler zum Saisonwechsel (L14)
+
+- **Ergebnis:** teils belegt (Vereinskader): Im Kaderplatz gehen `+0x00`, `+0x01` und `+0x03`–`+0x08` (Zähler je Wettbewerb,
+  siehe A135) auf 0; `+0x02` und `+0x1C`–`+0x26` (Gesamtzähler) bleiben stehen. Pool `+0x1B`/`+0x1F` und Transfermarkt-Spieler
+  nicht verglichen.
+- **Fundstelle:** `emtool hok dump` FILE44/FILE46 (Kaderplätze Satz 0).
+- **Umsetzung:** mit A135 (`kader-start` Teil 2, Zähler je Wettbewerb): Rücksetzung nur der Saisonzähler, Gesamtzähler
+  behalten; Testidee in der Mehrsaisonprobe. `[APPROX]` für Pool und Markt bleibt (L14). Spur: `kader-start`.
+
+### A189 – Gesperrte (Sitzungen 3–7)
+
+- **Ergebnis:** nicht entscheidbar. In FILE43–FILE49A hat kein Kaderplatz (alle sechs Sätze) `+0x09` Bit 0x01; nur Verletzte
+  (Bit 0x02: FILE43 HEISS, FILE44 MENDE/BRANDL/LIEBSCH, FILE44B MAYR, FILE48 HANTSCHKE).
+- **Fundstelle:** `emtool hok dump`/Klartext FILE43, 43A, 44, 44A, 44B, 46–49, 49A.
+- **Umsetzung:** keine; `[APPROX]` in `StadiumStatistics.cs` bleibt. Spur: –.
+
+## Sitzung 5 – Bundestrainer (FILE47–49, FILE49A)
+
+Grundlage: FILE47 (FILE18 geladen, Aufstellung des Bundestrainers bis auf die Reserve geleert, im Hauptmenü gesichert; nach dem
+Laden wieder „Eingesetzt: 22“), FILE48 (FILE18 geladen, geleert, einen Tag weiter: DEUTSCHLAND – TSCHECHEI 0:17, Aufstellung
+bleibt leer), FILE49 (FILE11 geladen, WM-Kader mit „auto“), FILE49A (dazu KÜNAST heraus, ENGLBRECHT von Hand hinein). Bilder
+`file47_1…4`, `file48_1…6`, `file49_1…8`, `file49a_1…2`. Vergleich mit FILE11/FILE18. Offsets: Kaderplatz des WM-Kaders =
+Satz 5, DGROUP 0x5DC3 + 5 · 0x618 + 0x34 · Platz (HOK 0x06A27 + 0x1E78 + …), Einstellung „automatisch aufstellen“ des
+Bundestrainers DGROUP 0x37F (aktuell) / 0x380 (gesichert) = Block DGROUP 0x375 Byte 10/11 (HOK 0x0084E/0x0084F), Länderwerte
+Vereinssatz 54 (DEUTSCHLAND) Felder 0x18–0x1D.
+
+### A009 – Leere Aufstellung des Bundestrainers
+
+- **Ergebnis:** widerlegt (Remake-Automatik bei leerer Aufstellung, keine Einstellung „automatisch“ für Satz 5, Länderwerte).
+  - Das Leeren löscht bei allen Aufgestellten +0x0A und +0x15; die sechs Reservespieler (MERK, KÜNAST, DOLAK, BUKOWSKI, PURVES,
+    R.REUTER) bleiben eingesetzt („Eingesetzt: 6“, `file47_3`). Dabei geht DGROUP 0x37F von 1 auf 0 (Herausnehmen schaltet
+    „automatisch aufstellen“ ab wie beim Verein, FILE06); 0x380 bleibt 1 (FILE47: Block 0x375 `… 00 01`).
+  - Der Bundestrainer hat „automatisch aufstellen“ von Anfang an eingeschaltet (FILE11/18/49: 0x37F = 0x380 = 1). Sein Zug:
+    0x37F := 0x380, Hauptmenü 0x44E22 (dort bei jedem Aufbau Neuaufstellung 0x426BC, Datei 0x450C6), nach dem Menü
+    0x380 := 0x37F, 0x37F := 0, 0x426BC (wirkungslos), Länderwerte 0x952C. Deshalb steht nach dem Laden von FILE47 wieder die
+    volle Aufstellung (0x37F := 0x380 = 1, dann 0x426BC → 22), während in FILE48 das Weiterschalten 0x380 := 0 gesichert hat:
+    Die Aufstellung bleibt über den Spieltag leer (FILE48 Block `… 00 00`, alle +0x0A außer der Reserve 0).
+  - Die leere Aufstellung spielt: 0:17 gegen TSCHECHEI, kein Spieler bekommt ein Spiel (SP überall 0, auch die Reserve,
+    `file48_6`); keine Warnung (die Warnung A300 betrifft den leeren WM-Kader). Das Remake setzt bei leerer Formation die
+    Automatik ein (`NationalCoach.Lineup`, `MatchEngine.NationalSquad`, `TeamValueFormation`).
+  - Länderwerte: Schon das Verlassen der leeren Aufstellung schreibt 0 in die Felder 0x18–0x1D (FILE47: `00 00 00 00 00 00`,
+    FILE18: `58 5A 53 57 33 33`); das Remake schreibt bei leerer Formation nichts (`[APPROX]` in `UpdateNationalTeamValues`).
+  - Statuszeile „Hängt halt so rum...“ beim nicht eingesetzten LEE (`file48_6`): belegt (`PlayerHintLine`, Status 0, nicht
+    eingesetzt). Spalte NR nur bei Eingesetzten (2, 3, 11, 12, 24, 25 – wie A364 Teil 1).
+- **Fundstelle:**
+  - em.exe Datei 0x40ADE/0x40DE4 (Aufstellung: Herausnehmen setzt 0x375 + 2 · m = 0), 0x426CC–0x426E4 (Neuaufstellung nur bei
+    Einstellung ≠ 0), 0x55599–0x555D6 (Zug des Bundestrainers: zurückholen, Menü, sichern, 0x426BC, 0x952C), 0x450C6 (Menü).
+  - HOK 0x0084E/0x0084F: FILE18 `01 01`, FILE47 `00 01`, FILE48 `00 00`; Satz 5 +0x0A/+0x15 FILE18 → FILE47/48; Vereinssatz 54
+    0x18–0x1D FILE18/47/48. Bilder `file47_2…4`, `file48_1…6`.
+- **Umsetzung:**
+  - Ziel: Einstellung „automatisch aufstellen“ für den Bundestrainer (Vorgabe an, gesichert/aktuell wie Teil 1 Taktik 375h);
+    Neuaufstellung beim Aufbau seines Hauptmenüs, wenn an; Herausnehmen in der Aufstellung schaltet sie ab. Leere Formation
+    ohne Einstellung = leere Aufstellung im Spiel (keine Remake-Automatik), Länderwerte 0.
+  - Dateien: `Core/CupsNational.cs` (`Lineup`), `Core/CupsNational.Lineup.cs` (`TeamValueFormation`, Einstellung, Herausnehmen),
+    `Core/CupsNational.GameState.cs` (`UpdateNationalTeamValues`), `Core/MatchEngine.National.cs` (`NationalSquad`); Anschluss
+    Menüaufbau über `GameState.OnMainMenu`/`GameState.HotSeat.cs` (minimal, im PR begründet); ggf. Schemafeld mit Migration.
+  - Testidee: FILE18-artiger Stand, Aufstellung leeren und Tag weiter → Länderspiel ohne aufgestellte Spieler (keine Spiele
+    gezählt), Länderwerte 0; leeren ohne Weiterschalten, Menü neu aufbauen nach Laden → 22 eingesetzt.
+  - Spur: `nationalteam`.
+
+### A085 – WM-Kader von Hand
+
+- **Ergebnis:** belegt.
+  - Bei vollem Kader (29) bewirkt ein Klick auf einen weiteren Spieler nichts (Angabe Nutzer); Remake `ToggleNomination` →
+    `SquadFull` ohne Meldung.
+  - Herausnehmen rückt auf (0x3CA71 → 0x425B6, wie der Verkauf), Aufnehmen sortiert nach Art ein (0x3CABF → 0x42CB1/0x42D55,
+    wie der Kauf): ENGLBRECHT (TW) steht in FILE49A auf Platz 3, wo KÜNAST stand. Remake: `Rows` stabil nach Art → ebenfalls
+    Platz 3.
+  - Herkunft: Aufnahme setzt Pool +0x1D auf das Land (ENGLBRECHT 7 → 54) und merkt den Verein in Kaderplatz +0x0C (Verein +
+    0x80); Herausnehmen schreibt ihn zurück (KÜNAST 54 → 7). Dazu +0x0B = 1, +0x19 = 0x77. Remake: `NationalSquadMember.Club`.
+  - ENGLBRECHT ist in FILE49A eingesetzt (Reserve): nicht durch die Aufnahme (0x3CABF setzt +0x0A nicht), sondern durch die
+    Neuaufstellung beim nächsten Menüaufbau (Einstellung an, siehe A009). Im Remake bleibt er nicht eingesetzt – Folge von A009.
+  - Die Bytes +0x0E, +0x13 (E), +0x14 und +0x28/+0x29 aller 29 Plätze unterscheiden sich schon zwischen FILE18 und FILE49
+    (beide „auto“ aus FILE11): je Aufbau neu gewürfelt, kein Befund zur Handaufnahme.
+- **Fundstelle:** em.exe Datei 0x3C928–0x3C9C0 (Klick, Platzsuche über Satz 5 +0x0F = DGROUP 0x7C4A), 0x3CA71–0x3CABE,
+  0x3CABF–0x3CB8C; HOK Satz 5 und Pool far:8253 FILE49 → FILE49A; Bilder `file49_2…3`, `file49a_1…2`.
+- **Umsetzung:**
+  - Ziel: keine Änderung an der Aufnahme; Kommentar `[ORIGINAL]` mit Fundstelle an `ToggleNomination` (rückt auf, nach Art,
+    Herkunft +0x0C). Eingesetzt nach Aufnahme kommt mit A009.
+  - Dateien: `Core/CupsNational.GameState.cs` (nur Kommentar). Testidee: voller Kader + Klick → `SquadFull`, Kader unverändert;
+    TW heraus und TW hinein → Zeile 3.
+  - Spur: `nationalteam`.
+
+### A293 – „Endrunde“ nach der Gruppenphase
+
+- **Ergebnis:** belegt (Knöpfe) / widerlegt (Startseite „Paarungen → WM“).
+  - Tabellen → WM zeigt auch nach der Gruppenphase nur die Gruppentabelle mit Knopf „Gruppe 2“ bei (237 | 211) (`file49_6`);
+    keinen Knopf „Endrunde“ – Aussage Runde 13 (L6) bestätigt.
+  - Paarungen → WM öffnet am 24.04.1994 direkt „WM-Endrundenspiele“ (Viertelfinale, Knopf „Gruppe“ bei (136 | 201),
+    `file49_7`); „Gruppe“ führt zu „Gruppe 1   5.Spieltag“ mit den vier Knöpfen (Pfeil, „Endrunde“, „Gruppe 2“, Pfeil) ab
+    x = 39 + 65 i, y = 180 (`file49_8`). Lagen wie im Remake (`WorldCupKnockoutScreen`, `CupPairingsScreen`).
+  - Startseite: Der Menüaufbau setzt die gemerkte Seite von „Paarungen → WM“ (DGROUP 0x5127) auf 10 (Endrunde), sobald die
+    WM-Stufe DGROUP 0x7AE = 5 ist (nach den fünf Gruppenspieltagen). Das Remake beginnt immer mit Gruppe 1 (Seite 8) und merkt
+    keine Seite (A268). Der Kommentar in `WorldCupKnockoutScreen` („nach der Gruppenphase über die Gruppentabelle“) ist falsch.
+- **Fundstelle:** em.exe Datei 0x44A5A–0x44A6A und 0x44B15–0x44B1C (0x44A48, Aufruf aus 0x44E22: `mov byte [0x5127],0xa`
+  bei [0x7AE] = 5), 0x458A2–0x458BB (Kachel mit gemerkter Seite); Bilder `file49_5…8`.
+- **Umsetzung:**
+  - Ziel: „Paarungen → WM“ öffnet ab WM-Stufe 5 „WM-Endrundenspiele“ (Rückweg „Gruppe“ → Gruppe 1, Spieltag 5); Kommentar in
+    `WorldCupKnockoutScreen.cs` berichtigen. Gemerkte Seite allgemein bleibt A268.
+  - Dateien: `UI/Screens/Competitions/WorldCupScreen.cs` (`WorldCupMenuEntries.Pairings`), `WorldCupKnockoutScreen.cs`
+    (Kommentar), ggf. `CupPairingsScreen.cs`.
+  - Testidee: Stand nach fünf Gruppenspieltagen → Kachel „WM“ (Paarungen) öffnet `WorldCupKnockoutScreen`; davor
+    `CupPairingsScreen`.
+  - Spur: `nationalteam`.
+
+## Sitzung 6 – Speichern-Dialog mit mehr als 48 Einträgen (A338, A339)
+
+Grundlage: Aufnahme des Nutzers in DOSBox 0.74-3 (Verzeichnis C:\EM, 53 Einträge: 5 Verzeichnisse, AUTOSAVE.HOK, EM.EXE,
+FILE01…, INFOFILE, KOPIE01–KOPIE30 als Kopien von FILE46), Bilder `a338_1…3`, Angaben des Nutzers in der README des
+Referenz-Repos. Disassembly Ov 0x140: Dialog Datei 0x5DBE5 (Stub 0x140:0x7F), Spielstand-Info Datei 0x5B661 (Stub 0x140:0x57).
+Kopf von FILE46 (unverschlüsselt) zum Abgleich mit dem Infofeld (KOPIE30 = FILE46).
+
+### A338 – Bild und Bedienung des Speichern-Dialogs, „SEITE:“, Blättern
+
+- **Ergebnis:** Bild belegt (gleicher Aufbau wie „Laden“, Titel „Speichern“; 3 Spalten × 16 = 48 Einträge je Seite,
+  Verzeichnisse vor den Dateien); Bedienung des Remakes widerlegt:
+  - **„SEITE:“ gibt es nicht.** Der Text DGROUP 0x270C liegt nur in der Zeigertabelle (DGROUP 0xBC0); kein Befehl in em.exe
+    liest 0xBC0/0xBC2 (Bytefolge über die ganze Datei gesucht), dagegen werden die Nachbarn „VERZEICHNIS:“ (0xBB8),
+    „FILENAME      :“ (0xBBC) und „LÖSCHEN“ (0xBC4) gelesen (Datei 0x5DFD3, 0x5E086, 0x5DC45). Bilder: kein Seitentext.
+  - **Blättern nur über das Pfeilpaar** 0x4BA58 (Datei 0x5E3B5: Flächen (150 | 169) = −1, (174 | 169) = +1, je 8 × 9,
+    Halten = 1 → Wirkung beim Loslassen), nur bei linker Taste (Ereignis DGROUP 0x5A16 = 1) und Maus-y 169–177 (Datei
+    0x5E386–0x5E3A0). −1: Versatz [bp−0x18] − 48 nur, wenn Versatz > 47; +1: Versatz + 48 nur, wenn kleiner als Verzeichnisse
+    + Dateien ([bp−0x10] + [bp−0x12]) (Datei 0x5E3C2–0x5E3EC); am Anfang bzw. Ende ohne Wirkung, dann die drei Spalten leeren
+    und neu füllen (Datei 0x5E3F2–0x5E42B). Bild: oberer Pfeil etwa (152–157 | 172–175), unterer (177–181 | 172–174).
+  - **Keine Tasten, kein Mausrad:** Die Dialogschleife (Datei 0x5E200–0x5E20C, 0x38:0x878) liest nur Mausereignisse; Tastatur
+    gibt es nur im Eingabefeld 0x0BAFB, das ein Linksklick auf VERZEICHNIS/FILENAME öffnet (Datei 0x5E42E–0x5E530). Angabe
+    Nutzer: Mausrad und Tastatur wirkungslos.
+  - **Markierung unter der Maus:** Beim Überfahren eines Eintrags zeichnet das Original links neben der Zeile einen roten
+    Marker (Datei 0x5E2C7–0x5E329, Aufruf 0xF8:0x25, Fläche (43 + 80 · Spalte | 55 + 7 · Zeile)–(45 + 80 · Spalte | 60 + 7 ·
+    Zeile)) und löscht ihn beim Verlassen mit Farbe 3 (Datei 0x5E334–0x5E377). Trefferfeld der Liste: 42 < x < 266,
+    53 < y < 166, Zeile = (y − 54) / 7, Spalte über 0x7A + 80 · Spalte (Datei 0x5E221–0x5E266). Bild `a338_3`.
+- **Remake-Abweichungen** (`UI/Screens/SaveLoad/SaveLoadScreen.cs`):
+  - Z. 167–168: Mausrad blättert – entfällt.
+  - Z. 169–172: Bild↑/Bild↓ blättern – entfällt; Pfeilflächen `PageUpRect`/`PageDownRect` (Z. 61–62: (146 | 166) 16 × 14,
+    (170 | 166) 18 × 14) statt 8 × 9 bei (150 | 169)/(174 | 169), Wirkung beim Drücken statt beim Loslassen.
+  - Z. 454–455, 473–497: Pfeile nachgezeichnet (`DrawArrow`, `[APPROX]`) statt Baustein `ArrowPair` (kb\4, Halten = 1;
+    Aufrufstelle 0x5E3B5 steht schon in `ArrowPair.cs`).
+  - Z. 507–508: „SEITE: n“ bei mehr als einer Seite – entfällt; Klassenkommentar Z. 22 und Z. 31–32 berichtigen.
+  - Roter Marker unter der Maus fehlt.
+- **Fundstelle:** em.exe Datei 0x5DBE5 (0x5E200–0x5E42B), 0x4BA58; DGROUP 0x270C, 0xBB8–0xBC7; Bilder `a338_1` (Seite 1,
+  48 Einträge), `a338_2` (Seite 2, KOPIE26–30), `a338_3`.
+- **Umsetzung:** Ziel: Blättern nur über `ArrowPair(150, 169, 174, 169, hold: true)`, Schritt 48 mit den Grenzen oben, kein
+  Seitentext, keine Tasten/Mausrad, roter Marker unter der Maus. Dateien: `UI/Screens/SaveLoad/SaveLoadScreen.cs`.
+  Testidee: 53 Einträge → Seite 2 nur über Klick und Loslassen auf (174 | 169), weiterer Klick bleibt auf Seite 2, (150 | 169)
+  zurück, Seite 1 bleibt; Mausrad und Bild↓ ändern nichts; Bildprobe ohne „SEITE:“. Spur: `hok-import` Teil 4 (L6).
+
+### A339 – Spielstand-Info beim Rechtsklick (Datei 0x5B661)
+
+- **Ergebnis:** widerlegt (Remake zeigt nichts). Rechtsklick (Ereignis 3) auf einen Dateieintrag baut Verzeichnis + „\“ +
+  Name (Datei 0x5E5ED–0x5E659) und ruft 0x5B661; das Namensfeld bleibt unberührt (schon `[ORIGINAL]` im Remake). 0x5B661:
+  - Datei öffnen (0x50:0x17); scheitert das, Fehlerweg 0x5A862 und Rückgabe 0. Kopf lesen: 10 Byte Kennung, mit DGROUP
+    0x55DF verglichen; falsch → Meldung „Kein / Eishockey Manager / Spielstand. / !!!“ (DGROUP 0x45D7–0x45FA, 0x4BCCC) (Datei
+    0x5B68E–0x5B6EA). Dann 4 Byte Jahr, 1 Byte Managerzahl, 1 Byte Spieltag, 0xA0 Byte = 4 Managereinträge zu 0x28 (Datei
+    0x5B6EC–0x5B736). Abgleich FILE46: Kennung „KRON_0.99“, Jahr 1994, 1 Manager, Spieltag 1, Eintrag 0: Liga 0, Byte +1 = 0,
+    „Joerg“ (+2), „KÖLNER EC“ (+0x15) – genau der Inhalt von `a338_3`. Der Kopf steht unverschlüsselt vor dem Datenteil.
+  - Fenster 0x0B155 bei (71 | 71), 8 × 3 Kacheln, Stil 3 (Datei 0x5B73C–0x5B764); Bild: Rahmen (71 | 71)–(262 | 127), orange
+    wie die übrigen Rahmen.
+  - Zeile 1: „SPIELSTAND“ (DGROUP 0xBAC „spielstand“ über 0x4BD7E in Großbuchstaben) + „:“ + Pfad, mittig zwischen x 72 und
+    261, y 81, Farbe 7, darunter Linie (77 | 83)–(254 | 83) Farbe 7 (Datei 0x5B767–0x5B7EA).
+  - Zeile 2: „ Jahr“ (DGROUP 0x2852) + Jahr + „, “ + Spieltag + „.Spieltag“ (DGROUP 0x1B2D), mittig, y 90, Farbe 1 (Datei
+    0x5B7ED–0x5B8A0); Bild „Jahr 1994, 1.Spieltag“ (Leerzeichen vor der Zahl im Bild; Zahlformat 0x0BAB2 nicht gelesen).
+  - Je Manager i < Managerzahl, y = 99 + 7 · i, Farbe 1: Name bei x 76, Verein bei x 133, Liga (DGROUP 0x9EC + 4 · Liga:
+    Bundesliga/Zweite Liga/Oberliga) bei x 212 nur, wenn Byte +1 = 0 (Datei 0x5B8A3–0x5B9A5; Bedeutung von +1 nicht gelesen).
+  - **Halten:** Schleife 0x38:0x878 bis Ereignis 2 oder 4 (Loslassen), dann Fenster zurück (0x0B447) und weiter im Dialog
+    (Datei 0x5B9A8–0x5B9D4). Das Feld bleibt also nur bei gehaltener Taste stehen (Angabe Nutzer bestätigt).
+  - FILENAME leer in `a338_3`: Die Rechtsklick-Strecke schreibt das Namensfeld nicht; das leere Feld stammt aus der Bedienung
+    davor (kein Befund).
+- **Remake-Abweichung:** `TryRightClickEntry` (Z. 220–232) und der Klassenkommentar Z. 26–28 (`[APPROX]` #326): kein Infofeld.
+- **Fundstelle:** em.exe Datei 0x5B661–0x5B9DC, 0x5E5ED–0x5E667; DGROUP 0x2852, 0xBAC, 0x1B2D (über 0x670), 0x9EC; Kopf
+  FILE46; Bild `a338_3`.
+- **Umsetzung:** Ziel: Infofeld solange die rechte Taste gehalten wird (ausblenden beim Loslassen beider Tasten), Inhalt
+  Pfad, Jahr/Spieltag, je Manager Name/Verein/Liga mit den Lagen oben; bei Original-Dateien `*.HOK` aus dem Kopf (176 Byte,
+  unverschlüsselt), bei Remake-Ständen aus den gleichen Feldern des eigenen Formats; falsche Kennung → Meldung „Kein
+  Eishockey Manager Spielstand. !!!“. Dateien: `UI/Screens/SaveLoad/SaveLoadScreen.cs`, Kopf-Leser in
+  `Formats/OriginalSaveGame*.cs`. Testidee: Kopf von FILE46 → „Jahr 1994, 1.Spieltag“, „Joerg“, „KÖLNER EC“, „Bundesliga“
+  (`[GameDataFact]`); Rechts gedrückt → Feld sichtbar, Loslassen → weg, Namensfeld und Auswahl unverändert. Spur:
+  `hok-import` Teil 4 (L6).
+
+## Umsetzung Teil 2
+
+Je Punkt stehen Ziel, Dateien und Testidee oben. Zusammenfassung nach Spuren:
+
+- **`ui-rest` Teil 3** (Plan Punkt 3): A323/A325 (Tabelle, Folge, Maske 0xC0), A326 (rechts ohne „(Noch n Wochen)“,
+  Fragefenster 0x4C246) in `StadiumScreen.cs`; dazu A321 (rotes Datum, `NewsBar.cs`) mit Teil 2.
+- **`kader-start` Teil 2:** A115 (Marktleihe endet frei; Rückkehr zum Manager erst nach Lesen von `0x48:0x2BD4`), A088 (mit
+  A135).
+- **`kader-start` Teil 4** (Plan Punkt 4): A362 (Abbild der Liste, Fenster x = 2, `ContractsScreen.cs`), A091/A380 (Rückkehr
+  von der Transferliste am Saisonende; setzt den Umbau A380 aus Teil 2 voraus), Zahlenprobe Saisonende als Test; A085 (Verein)
+  ohne Änderung.
+- **`nationalteam`** (Folgeteil, Plan Punkt 3): A009 (Einstellung „automatisch aufstellen“ für den Bundestrainer, leere
+  Aufstellung spielt leer, Länderwerte 0), A085 (nur Kommentar), A293 (Startseite „Paarungen → WM“ ab WM-Stufe 5, Kommentar in
+  `WorldCupKnockoutScreen.cs`).
+- **`hok-import` Teil 4** (L6): A338, A339 in `SaveLoadScreen.cs`, Kopf-Leser in `Formats/OriginalSaveGame*.cs`.
+- **`pruefung-karte`:** Feldbelege für `docs/formate/spielstand-original.md` (Stadion DGROUP 0x9771, Restwochen, 0x37F/0x380,
+  Kopf 176 Byte, Kaderplatz `+0x0C` Leihe/Herkunft) und Inventur-Stand der IDs oben.
+
+## Offene Fragen Teil 2 an die Leitstelle
+
+1. **A009, Schema:** Die Einstellung „automatisch aufstellen“ des Bundestrainers braucht zwei Bytes im Spielstand (aktuell und
+   gesichert, wie Taktik 375h beim Verein) und einen Anschluss an `GameState.OnMainMenu`. `nationalteam` oder zusammen mit
+   Taktik 375h in `kader-start` Teil 2?
+2. **A362:** Das alte Gehalt in der Liste braucht entweder ein Abbild im Bildschirm oder ein Kernfeld; Vorschlag Abbild ohne
+   Schemaänderung (`kader-start` Teil 4).
+3. **A115:** Leihe zwischen Managern ist am Stand nicht belegt (nur nach Code); umsetzen nach Code oder `[APPROX]` lassen?
+4. **Fehlende Aufnahmen** (Runde 15): Kino MITTEL mit Restaurant und die Bereiche Autobahn, Halboffen, Bowlingbahn im
+   Stadionbild (A325), Spieler mit Sperre über Spiele (A189), Rückkehr aus einer Leihe zwischen Managern mit Versicherung
+   (A115).
+
 ## Selbstprüfung
 
 `python3 tools/reverse-engineering/funktionskarte.py gamedata/em.exe --repo . --csv <scratch>` ohne `--write`, Base `59f98cf`
 gegen diesen Branch: je 679 Funktionen, Status unverändert (umgesetzt 268, dokumentiert 152, genähert 2, unbekannt 257); diese
 Datei ist Fundstelle in 20 Funktionen und ändert keinen Status. Den Stand in `re-abdeckung.md` und die Zeilen in `inventur.md`
-schreibt `pruefung-karte` (Welle 2). Keine Originaldaten oder Bilder im Repo; Bildnamen verweisen nur auf das Referenz-Repo.
+schreibt `pruefung-karte` (Welle 2).
+Teil 2: derselbe Aufruf, Base `6568de7` (Teil 1) gegen diesen Branch: je 679 Funktionen, Status unverändert (268/152/2/257);
+die Datei ist jetzt Fundstelle in 46 Funktionen (vorher 20). Keine Originaldaten oder Bilder im Repo; Bildnamen verweisen nur auf das Referenz-Repo.
