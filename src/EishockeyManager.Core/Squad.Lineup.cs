@@ -268,6 +268,12 @@ public sealed partial class Club
         }
     }
 
+    /// <summary>
+    /// Spieler verliert „eingesetzt“ (+0x0A = 0), ohne die Einstellung „automatisch aufstellen“ zu berühren. [ORIGINAL] Transferliste
+    /// Datei 0x47093 vor dem Kopieren in den Markt-Platz (A380): Kehrt der Spieler zurück, ist er nicht eingesetzt.
+    /// </summary>
+    internal void ForgetDressed(Player player) => _dressed.Remove(player.Id);
+
     /// <summary>Anzahl der Eingesetzten („Eingesetzt: n“).</summary>
     public int DressedCount => Dressed.Count;
 

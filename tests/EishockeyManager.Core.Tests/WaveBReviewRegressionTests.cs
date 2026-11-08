@@ -55,30 +55,30 @@ public class WaveBReviewRegressionTests
     [Fact]
     public void PR3502_BidThatBecameInvalid_IsRejectedWithResultAndRemoved()
     {
+        // A380 (kader-start Teil 2c): Der Spieler auf der Liste verlässt den Kader, die Mindestbesetzung greift schon beim
+        // Aufsetzen. Ungültig wird ein Gebot nun, wenn der verkaufende Manager den Verein gewechselt hat.
         var game = TestGames.Create();
         var market = game.TransferMarket;
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];
         foreach (var extra in club.Players.Where(p => p.Role == PlayerRole.Defender).Skip(5).ToArray())
-        {
-            club.Players.Remove(extra);
-            club.Lineup.Remove(extra);
-        }
+            club.RemovePlayer(extra);
         var defenders = club.Players.Where(p => p.Role == PlayerRole.Defender).Take(2).ToArray();
-        foreach (var d in defenders)
-            Assert.Equal(TransferResult.Accepted, market.Offer(game, manager, d));
-        for (var i = 0; market.Bids.Count(b => b.Listing.Seller == manager) < 2 && i < 500; i++)
+        Assert.Equal(TransferResult.Accepted, market.Offer(game, manager, defenders[0]));
+        Assert.Equal(TransferResult.Impossible, market.Offer(game, manager, defenders[1]));
+        Assert.Equal(TransferMarket.MinDefenders, club.Players.Count(p => p.Role == PlayerRole.Defender));
+        for (var i = 0; market.Bids.Count(b => b.Listing.Seller == manager) < 1 && i < 500; i++)
             market.AdvanceDay(game, game.Random);
-        var bids = market.Bids.Where(b => b.Listing.Seller == manager).ToArray();
-        Assert.Equal(2, bids.Length);
+        var bid = Assert.Single(market.Bids, b => b.Listing.Seller == manager);
 
-        Assert.Equal(TransferResult.Accepted, market.Accept(game, bids[0]));
+        var home = manager.ClubIndex;
+        manager.ClubIndex = game.Clubs.First(c => c != club && c != bid.Buyer && c.Index < 52).Index;
         var money = manager.Money;
-        Assert.Equal(TransferResult.Impossible, market.Accept(game, bids[1]));
+        Assert.Equal(TransferResult.Impossible, market.Accept(game, bid));
+        manager.ClubIndex = home;
 
         Assert.Equal(money, manager.Money);
-        Assert.Equal(TransferMarket.MinDefenders, club.Players.Count(p => p.Role == PlayerRole.Defender));
-        Assert.DoesNotContain(bids[1], market.Bids);
-        Assert.Equal(TransferResult.Impossible, market.Accept(game, bids[0])); // Wiederholung ebenfalls ohne Wirkung
+        Assert.DoesNotContain(bid, market.Bids);
+        Assert.Equal(TransferResult.Impossible, market.Accept(game, bid)); // Wiederholung ebenfalls ohne Wirkung
     }
 }

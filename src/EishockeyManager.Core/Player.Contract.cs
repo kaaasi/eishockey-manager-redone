@@ -116,6 +116,8 @@ public sealed partial class GameState
             c => Enum.GetValues<Formats.PlayerRole>().ToDictionary(r => r, r => c.Players.Count(p => p.Role == r)));
 
         AgeFreeAgents();
+        // A091/A380: nicht verkaufte eigene Spieler von der Transferliste zurück in den Kader, vor Altern und Herunterzählen.
+        TransferMarket.ReturnListedPlayers(this);
         // Snapshot vor Rückgaben: Vereinsreihenfolge darf keinen Spieler zweimal altern lassen.
         var players = Clubs.SelectMany(c => c.Players.Select(p => (Club: c, Player: p))).ToArray();
         // Spur transfer-vertraege-komplett: ausgelaufene Verträge im Kader eines Managers werden am Saisonende verhandelt

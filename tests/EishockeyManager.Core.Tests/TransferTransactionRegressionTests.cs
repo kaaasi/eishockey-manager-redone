@@ -33,7 +33,9 @@ public class TransferTransactionRegressionTests
             case "withdraw": market.Withdraw(bid.Listing); break;
             case "decline": market.Decline(bid); break;
             case "forged": bid = new TransferBid(bid.Listing, bid.Buyer, bid.Amount); break;
-            case "ownership": bid.Listing.From.Players.Remove(bid.Listing.Player); break;
+            case "ownership": // A380: der Spieler steht nicht mehr im Kader; ein fremder Kader macht den Markt-Platz ungültig
+                game.Clubs.First(c => c != bid.Listing.From && c != bid.Buyer).Players.Add(bid.Listing.Player);
+                break;
         }
         var money = game.ActiveManager.Money;
         var book = game.Finance(game.ActiveManager).Book.Current(FinanceCategory.Transfers);

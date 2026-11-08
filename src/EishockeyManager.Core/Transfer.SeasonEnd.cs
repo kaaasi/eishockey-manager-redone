@@ -114,7 +114,7 @@ public sealed partial class GameState
             Book(manager, FinanceCategory.Transfers, compensation);
         club.RemovePlayer(p);
         if (TransferMarket.ListingOf(p) is { } listing)
-            TransferMarket.Withdraw(listing);
+            TransferMarket.Unlist(listing); // Altstand vor A380: Spieler noch im Kader
         p.ContractYears = 0;
         p.MonthlySalary = 0;
         p.Insured = false;

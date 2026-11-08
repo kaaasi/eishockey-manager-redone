@@ -375,6 +375,20 @@ Regeln und Fundstellen: `docs/analyse/re-nachtrag.md`, Abschnitt 1 (Tagesablauf 
   Computervereine (Verlängern, Auffüllen) bleibt eine Ergänzung des Remakes.
 - Testhilfen `TestSeason.KeepSquad` und `KeepSquadHelper` verlängern nun auch Spieler, deren Angebot verfallen ist.
 
+## Belegt und umgesetzt (Spur `kader-start`, Runde 14, Teil 2c: A380 – eigener Spieler auf der Transferliste)
+
+| Was | Fundstelle | Regel |
+|---|---|---|
+| Aufsetzen | 0x46FDD–0x470DE | höchstens 3 Markt-Plätze mit Pool +0x1A = Manager (0x11F9), Pool +0x1A muss der Manager sein (0x11F1); Markt-Platz in Satz 4 (0x108:0x5C, Grenze 0x0A), alter Kaderplatz +0x0A = 0, Platz (0x34 Byte) unverändert kopiert (0x470C4), Kaderplatz frei (0x108:0x48): **der Spieler verlässt den Kader**, die Plätze rücken auf; Pool-Satz behält Besitzer und Verein (FILE40 → FILE41) |
+| Zurückziehen | 0x47331 → 0x474E4 → 0x477A9 | Klick auf den eigenen Markt-Platz ohne Gebot (+0x09 ohne Bit 0x80): Kaderplatz anlegen (0x108:0x5C, Grenze 0x1D, nach Art einsortiert), ohne Verhandlung und Buchung zurückkopiert (0x47907), Markt-Platz frei (0x47954); mit Gebot das Angebotsfenster (0x473FF) |
+| Gehalt | 0x3E8DC–0x3E99F | Monatssumme +0x28/+0x30 über die Kaderplätze **und** die Markt-Plätze mit Pool +0x1A = Manager: der Spieler auf der Liste kostet weiter (`FinanceRules.MonthlyWages(game, club)`) |
+| Saisonende | 0x27547–0x27665 | nicht verkaufte eigene Spieler kehren in den Kader zurück, nach Art einsortiert, nicht eingesetzt (FILE44 → FILE46); das Remake gibt sie vor Altern und Herunterzählen zurück (`TransferMarket.ReturnListedPlayers`) |
+
+`[APPROX]`: Mindestbesetzung je Art beim Aufsetzen (wie bisher, im Original nicht gefunden), Listenpreis aus dem Spielerwert (das
+Original kopiert +0x2C, den Kaufpreis, in den Markt-Platz – nicht nachgeprüft), Klickfläche des eigenen Markt-Platzes wie Kauf/Leihe,
+voller Kader am Saisonende (Spieler wird vertragslos). Altstände (Spieler vor A380 noch im Kader) verlieren beim Zurückziehen nur
+den Markt-Platz. Anzeige (blauer Art-Buchstabe, Statuszeile „von <Manager>“) → `ui-rest`.
+
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 
 - **Antwort des verkaufenden Managers:** seit Spur `kader-transfer`, Teil 4 gefragt (0x47655–0x47743); nur ohne Oberfläche

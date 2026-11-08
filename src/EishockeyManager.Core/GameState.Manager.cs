@@ -92,7 +92,7 @@ public sealed partial class GameState
     {
         var club = Clubs[manager.ClubIndex];
         var training = FinanceRules.ToMarks(FinanceRules.MonthlyTrainingExpenseThirds(manager.Training.RawCostPerTrainingDay));
-        var expenses = MonthlyBaseExpenses(manager) + FinanceRules.MonthlyWages(club) + FinanceRules.MonthlyInsurance(club)
+        var expenses = MonthlyBaseExpenses(manager) + FinanceRules.MonthlyWages(this, club) + FinanceRules.MonthlyInsurance(this, club)
             + Finance(manager).Stadium.MonthlyUpkeep + RecurringExpenses(manager)
             + training + MonthlyDebtInterest(manager)
             + (manager.Money < 0 ? -manager.Money / 10 : 0);
@@ -195,8 +195,8 @@ public sealed partial class GameState
         foreach (var manager in Managers)
         {
             var club = Clubs[manager.ClubIndex];
-            Book(manager, FinanceCategory.Gehaelter, -FinanceRules.MonthlyWages(club));
-            var insurance = FinanceRules.MonthlyInsurance(club);
+            Book(manager, FinanceCategory.Gehaelter, -FinanceRules.MonthlyWages(this, club)); // A380: samt eigener Transferliste
+            var insurance = FinanceRules.MonthlyInsurance(this, club);
             if (insurance > 0)
                 Book(manager, FinanceCategory.Versicherung, -insurance);
             // [ORIGINAL] Monatsabschluss 0x3F02C: Grundausgaben und Stadionunterhalt (Finanzbuch „Unterhalt“),
