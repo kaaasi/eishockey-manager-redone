@@ -86,7 +86,7 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
 - **Dateigrenzen:** `Core/SeasonFlow*.cs`, `Core/GameState.SeasonEndTurn.cs`, für Teil 4 die Auswahl der Minutenrechnung
   (`Core/Cups*.cs` außer `CupsNational*`, `Core/MatchEngine*.cs` nur diese Stelle), ein Schalter in `GameOptionsScreen.cs` und
   im Optionsmodell, `docs/anforderungen/zusatzfunktionen.md`, eigene Tests. **Modell:** Claude Sonnet 5.5.
-  **Status:** Go 05.11.2026, Start offen.
+  **Status (08.11.2026):** Teil 1 PR #632, Teil 2 PR #635 (auf #632), Teil 4 PR (auf #635); Teil 3 offen (wartet auf `re-dosbox`).
 
 ### Spur `nationalteam` – Tagesfolge 952Ch, Länderwerte, Nebenbefunde
 

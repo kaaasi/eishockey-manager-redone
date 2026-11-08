@@ -73,11 +73,13 @@ Originaldarstellung bleibt unverändert.
   nur für einen Versuch; Gebote an andere Manager folgen einer eigenen Regel (Grenze „unfair“ 60–140 % des frisch berechneten
   Werts 0x47546, danach Antwort des Verkäufers). Offen: Darstellung (Prozentzahl oder Ampel) und ob die Anzeige im
   Netzwerkmodus erlaubt ist.
-- **Spieltag mit Managerverein ganz in der Minutenrechnung (01.11.2026, #349):** Im Original entscheidet ein Merker je
-  Spieltag (em.exe Datei 0x36FEA): Spielt an einem Spieltag von Pokal, Play-offs oder Aufstiegsrunde ein Managerverein,
-  laufen alle Paarungen des Spieltags durch die Minutenschleife, sonst je nach Anzeigeschalter des Wettbewerbs
-  (0x3702E–0x37085). Das Remake entscheidet je Paarung und bleibt dabei (Entscheidung Nutzer). Nach v1.0 als Einstellung
-  „wie im Original“ anbieten; sie ändert Ergebnisse und Zufallsverbrauch der Spiele ohne Manager.
+- **Spieltag mit Managerverein ganz in der Minutenrechnung (01.11.2026, #349; umgesetzt Runde 14, R14-D4 = A):** Im Original
+  entscheidet ein Merker je Spieltag (em.exe Datei 0x36FEA–0x3700B, Sprung 0x37028): Spielt an einem Tag ein Managerverein,
+  laufen alle Paarungen von Pokal, Play-offs und Aufstiegsrunde durch die Minutenschleife (auch die WM-Endrunde), sonst je nach
+  Anzeigeschalter des Wettbewerbs (0x3702E–0x37085). Das Remake entscheidet vorgabemäßig je Paarung (Entscheidung Nutzer);
+  die Einstellung „Ganzer Tag“ (`GameOptions.ManagerDayMinuteLoop`, Optionsbildschirm unten rechts im Pokalfenster, Schema 40)
+  schaltet das Verhalten des Originals ein. Sie ändert Ergebnisse und Zufallsverbrauch der Spiele ohne Manager. Der
+  Schalter ist kein Bestandteil des Originalbildschirms 0x2CD1C.
 - **Meldungsfenster per Taste oder Rechtsklick schließen (03.11.2026, Entscheidung Nutzer E3, C):** Im Original schließt
   eine Meldung (Meldungsfenster, Kurzmeldung) nur der Linksklick bzw. der Knopf (em.exe Datei 0x4C246 wertet nur Mausereignis 1
   aus). Das Remake schloss sie bis Runde 11 zusätzlich per Rechtsklick, Taste und Texteingabe; seit Runde 12 (Spur

@@ -71,6 +71,16 @@ public sealed class GameOptions
     /// <summary>Index 12 (DGROUP 0x229): WM-Spiele anzeigen.</summary>
     public bool ShowWorldCup { get; set; }
 
+    /// <summary>
+    /// Zusatzeinstellung „Ganzer Tag“ (Spur saison Teil 4, #349, Entscheidung R14-D4 = A): Spielt an einem Tag ein Managerverein,
+    /// rechnet der Spieltag <b>alle</b> Paarungen von Pokal, Play-offs und Aufstiegsrunde in der Minutenschleife.
+    /// [ORIGINAL] Merker „Managerverein spielt“ je Spieltag (Datei 0x36FEA–0x3700B: DGROUP 0xA729 + m für m = 0…5, dann
+    /// <c>cmp [bp-5],0 / jnz 0x37088</c> bei 0x37028, vor den Wettbewerbsprüfungen 0x3702E–0x37085). Vorgabe aus: Das Remake
+    /// entscheidet je Paarung (<see cref="CupMatchUsesMinuteLoop"/>); eingeschaltet ändern sich Ergebnisse und Zufallsverbrauch
+    /// der Spiele ohne Manager. Kein Schalter des Originals (nicht in der Optionsmatrix 0x2CD1C).
+    /// </summary>
+    public bool ManagerDayMinuteLoop { get; set; }
+
     /// <summary>Spielgeschwindigkeit (DGROUP 0x262), 0–80 in Zehnerschritten.</summary>
     public int MatchSpeed { get; set; } = DefaultMatchSpeed;
 
