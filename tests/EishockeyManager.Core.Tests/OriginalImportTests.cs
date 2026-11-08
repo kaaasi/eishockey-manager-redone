@@ -200,7 +200,7 @@ public sealed class OriginalImportTests(ITestOutputHelper output)
     private static (OriginalSaveGame Save, ClubDatabase Database) Load(string file) =>
         (OriginalSaveGame.Read(File.ReadAllBytes(OriginalSave(file))), ClubDatabase.Load(TestGameData.Load()));
 
-    private static string OriginalSave(string name)
+    internal static string OriginalSave(string name)
     {
         var folder = Environment.GetEnvironmentVariable("EM_SAVEGAMES");
         if (string.IsNullOrEmpty(folder))

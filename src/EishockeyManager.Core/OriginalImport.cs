@@ -14,8 +14,9 @@ namespace EishockeyManager.Core;
 /// Felder (Kader der Managervereine, Teamwerte, Konto, Stadion, Bank, Optionen …).
 /// </para>
 /// <para>
-/// [APPROX] Was das HOK nicht oder nicht belegt führt (Feldkarte Status N/U) und was dieser Teil noch nicht übernimmt
-/// (Pokale, Spielerpool, Transfermarkt, Börse, Werbeverträge, Training, Nachrichten, Taktik), ergibt sich aus dem Nachspielen: es ist
+/// [APPROX] Was das HOK nicht oder nicht belegt führt (Feldkarte Status N/U) und was der Import noch nicht übernimmt
+/// (Pokale, Spielerpool, Transfermarkt, Nationalkader, Nachrichten; Teil 4a übernimmt Börse, Werbung, Training, Taktik, Serien,
+/// Darlehen in <c>OriginalImport.Rest.cs</c>), ergibt sich aus dem Nachspielen: es ist
 /// ein gültiger Remake-Zustand am selben Tag, aber nicht der des Originals. Zufall aus neuer Saat (Regel 6).
 /// </para>
 /// </summary>
@@ -311,6 +312,7 @@ public sealed partial class GameState
             if (!WorldOnly)
                 ApplySquad(save, Clubs[Managers[m].ClubIndex], m, clubOf, foreigners);
         }
+        //ApplyOriginalRest(save, clubOf); // Teil 4a (OriginalImport.Rest.cs)
         // [ORIGINAL] Manager am Zug DGROUP 0xA70E (0–3; 5 = Bundestrainer). [APPROX] Der Zug des Bundestrainers beginnt im Remake
         // mit dem Tageslauf; der Import setzt dann Manager 0.
         var current = save.Block("A70E")[0];
@@ -351,8 +353,7 @@ public sealed partial class GameState
         stadium.SeatsTarget = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x1F)..]);
         stadium.Standing = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x21)..]);
         stadium.StandingTarget = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x23)..]);
-        // Bankdarlehen: Eintrag i = 4 der Darlehensliste +0x19B (negativ = Schuld), Drittel-DM (FILE08).
-        finance.Bank.Credit = -(long)BinaryPrimitives.ReadInt32LittleEndian(record[(0x19B + 4 * 4)..]) / 3;
+        // Bank und Managerdarlehen: ApplyLoans (Teil 4a, OriginalImport.Rest.cs).
         finance.SponsorRating = BinaryPrimitives.ReadInt16LittleEndian(record[0x173..]);
         finance.TalentPrice = BinaryPrimitives.ReadInt32LittleEndian(save.Block("020D").AsSpan(4 * m)) / 3;
         finance.InterestAccrualThirds = BinaryPrimitives.ReadInt32LittleEndian(save.Block("02A0").AsSpan(4 * m)); // Drittel bleiben
