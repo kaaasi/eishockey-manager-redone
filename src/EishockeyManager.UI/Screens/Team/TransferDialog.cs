@@ -18,7 +18,14 @@ public sealed class TransferDialog
     /// <summary>Fragefenster (Video „LetsShow“, ca. 11:15): oranger Rahmen, zwei „?“-Felder, Trennlinie über den Knöpfen.</summary>
     public static readonly Rect QuestionBox = OriginalDialog.Window;
 
-    public static Rect AmountField => new(Box.X + 84, Box.Y + 36, 76, 7);
+    /// <summary>
+    /// Kauf- und Leihfenster: Rahmen (2 | 29)–(166 | 71), Schatten bis (168 | 73), also links über der Kaderliste, nicht mittig.
+    /// [ORIGINAL] DOSBox-Sitzung 2, `file40_08` (VALLIERE kaufen), `file40_09` (leihen), `file35_2` (A377).
+    /// </summary>
+    public static readonly Rect BuyBox = new(2, 29, 164, 42);
+
+    /// <summary>Eingabezeile unter „Ihr Angebot:“ (Eingabemarke, Kauf und Leihe). [APPROX] Lage aus dem Bild geschätzt (x 14, y 60).</summary>
+    public static Rect AmountField => new(BuyBox.X + 10, BuyBox.Y + 30, 76, 9);
 
     /// <summary>Fragefenster (Talentsuche, Sponsorzuschuss, Frage an den Verkäufer) statt Verhandlungsdialog?</summary>
     public bool IsQuestion => Kind is DialogKind.Talent or DialogKind.Subsidy or DialogKind.Seller;
@@ -26,9 +33,12 @@ public sealed class TransferDialog
     /// <summary>Angebotsfenster 0x491F9 (unaufgefordertes Angebot, Argument 1, bzw. Angebot für einen Spieler auf dem Markt, Argument 0)?</summary>
     public bool IsOfferWindow => Kind is DialogKind.Offer or DialogKind.Bid;
 
-    public Rect ConfirmButton => IsOfferWindow ? Widgets.ButtonRect(90, OfferBox.Y + 54)
+    private bool IsBuyOrLoan => Kind is DialogKind.Buy or DialogKind.Loan;
+
+    /// <summary>Kauf und Leihe haben im Original keine Knöpfe (nur Eingabe und Enter bzw. Esc / rechte Maustaste), A377.</summary>
+    public Rect ConfirmButton => IsBuyOrLoan ? new Rect(0, 0, 0, 0) : IsOfferWindow ? Widgets.ButtonRect(90, OfferBox.Y + 54)
         : IsQuestion ? OriginalDialog.LeftButton : Widgets.ButtonRect(Box.X + 12, Box.Y + 55);
-    public Rect CancelButton => IsOfferWindow ? Widgets.ButtonRect(11, OfferBox.Y + 54)
+    public Rect CancelButton => IsBuyOrLoan ? new Rect(0, 0, 0, 0) : IsOfferWindow ? Widgets.ButtonRect(11, OfferBox.Y + 54)
         : IsQuestion ? OriginalDialog.RightButton : Widgets.ButtonRect(Box.X + 99, Box.Y + 55);
 
     /// <summary>
@@ -192,7 +202,7 @@ public sealed class TransferDialog
             return;
         }
         var mini = a.Mini;
-        var b = Box;
+        var b = IsBuyOrLoan ? BuyBox : Box;
         var cx = b.X + b.W / 2;
         TeamUi.DialogFrame(s, b);
         TeamUi.DialogTitle(s, a, cx + 1, b.Y + 5, Kind switch
@@ -203,22 +213,18 @@ public sealed class TransferDialog
             DialogKind.Talent => "LetsShow",
             _ => "Transfermarkt",
         });
-        s.HLine(b.X + 4, b.Y + 14, b.W - 8, Colors.White);
+        s.HLine(b.X + (IsBuyOrLoan ? 2 : 4), b.Y + 14, b.W - (IsBuyOrLoan ? 4 : 8), Colors.White);
 
         switch (Kind)
         {
             case DialogKind.Buy or DialogKind.Loan:
-                s.TextCentered(mini, cx, b.Y + 18, $"{Player!.Name}, {Player.Age} Jahre alt", Colors.White);
-                s.Text(mini, b.X + 6, b.Y + 27, Kind == DialogKind.Buy ? "ABLÖSESUMME :" : "LEIHGEBÜHR :", Colors.White);
-                s.Text(mini, b.X + 84, b.Y + 27, TransferScreen.Money(Price), Colors.White);
-                s.Text(mini, b.X + 6, b.Y + 37, "Ihr Angebot:", Colors.White);
-                if (_editing)
-                {
-                    var x = s.Text(mini, b.X + 84, b.Y + 37, _edit, Colors.White);
-                    s.Fill(new Rect(x + 1, b.Y + 37, 3, 5), 1);
-                }
-                else
-                    s.Text(mini, b.X + 84, b.Y + 37, TransferScreen.Money(Amount), Colors.White);
+                // [ORIGINAL] Nur Titel, Linie und „Ihr Angebot:“ in der großen Schrift, darunter die Eingabemarke (A377);
+                // keine Zeilen „…, n Jahre alt“, „ABLÖSESUMME“/„LEIHGEBÜHR“ und keine Knöpfe.
+                // [APPROX] Das Original zeigt nur die Marke; das Remake schreibt den Vorgabebetrag davor.
+                s.Text(a.Flow, b.X + 9, b.Y + 19, "Ihr Angebot:", Colors.White);
+                var field = AmountField;
+                var x = s.Text(mini, field.X, field.Y + 2, _editing ? _edit : TransferScreen.Money(Amount), Colors.White);
+                s.Fill(new Rect(x + 1, field.Y + 1, 3, 6), 1);
                 break;
             case DialogKind.Sale:
                 s.TextCentered(mini, cx, b.Y + 18, $"{Player!.Name}, {Player.Age} Jahre alt", Colors.White);
