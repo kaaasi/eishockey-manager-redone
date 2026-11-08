@@ -69,7 +69,8 @@ public sealed partial class NationalCoach
         _turnOpen = false;
     }
 
-    /// <summary>Tageslauf an Tagen mit Ereignis (Datei 0x54D8C–0x54D9E): mit der gesicherten Einstellung neu aufstellen.</summary>
+    /// <summary>Tageslauf des Hauptwegs an Tagen mit Ereignis (Datei 0x54D8C–0x54D9E): mit der gesicherten Einstellung neu aufstellen
+    /// (nicht in der WM-Schleife, R14NT-02).</summary>
     internal void OnEventDay() => ApplyAutoLineup(_autoLineupSaved);
 
     /// <summary>Einstellung beim Amtsantritt: die gesicherte des Vorgängers (globale Bytes, kein Zurücksetzen).</summary>
@@ -117,9 +118,51 @@ public sealed partial class GameState
     }
 
     /// <summary>
+    /// Läuft der Tag in der WM-Schleife des Originals? [ORIGINAL] Nach dem Tag mit Markierung 255 (13. April) ernennt das
+    /// Original den Bundestrainer (Datei 0x55482/0x55485) und rechnet die folgenden Tage in der Schleife Datei 0x55570–0x55740
+    /// statt im Tageslauf 0x54D41–0x55292 (Review #662, R14NT-01). Das Remake nimmt sie ab der Ernennung (Modus 4).
+    /// [APPROX] Ohne Bundestrainer läuft im Original dieselbe Schleife (ohne Menü und 0x952C); das Remake rechnet diese Tage
+    /// weiter im Tageslauf der Vereinssaison samt Wanderung (bestehende Abweichung seit #204, Auftrag Leitstelle: nur ab der
+    /// Ernennung).
+    /// </summary>
+    private bool InWorldCupLoop(int day) =>
+        !WorldOnly && NationalCoach is not null && day > SeasonCalendar.ClubSeasonEnd;
+
+    /// <summary>
+    /// Ein Tag der WM-Schleife (Datei 0x55570–0x55740) nach Finanzen, Training und Markt des Remakes.
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] An Tagen mit Ereignis (Datei 0x55587–0x55597: Tagesbyte ≠ 0) nach dem Menü des Bundestrainers
+    ///   0x37F/0x380 (Datei 0x55599/0x555BF, <see cref="PassNationalTurn"/>), 0x426BC mit 0x37F = 0 (Datei 0x555CA, wirkungslos)
+    ///   und 0x952C(5, 0) (Datei 0x555D6, <see cref="UpdateNationalTeamValues"/>); dann die WM-Spiele 0x30E7B(1) (Datei 0x555F3,
+    ///   im Remake die Wettbewerbe nach diesem Tageslauf). Keine Neuaufstellung „Tag mit Ereignis“ (0x54D41, R14NT-02) und kein
+    ///   0x952C(5, 1) des Hauptwegs: Es spielt die Aufstellung, die der Bundestrainer zuletzt gesehen hat.</item>
+    /// <item>[ORIGINAL] Keine kleine Wanderung 0x9D1B (in der Schleife kein Aufruf; der nächste bei Datei 0x56448 im
+    ///   Saisonwechsel).</item>
+    /// <item>[ORIGINAL] Tageslauf 0x07169 nur an Tagen ≡ 0 oder 4 mod 7 (Datei 0x55634–0x5565C): Heilung
+    ///   (<see cref="HealInjuries"/>) und Aufstellungsautomatik der Managervereine (Datei 0x07C07,
+    ///   <see cref="ApplyAutoLineups"/>).</item>
+    /// <item>[APPROX] Finanzen, Training, Markt und Vertragsmeldungen des Remakes laufen davor wie im Tageslauf der Vereinssaison.
+    ///   Das Original ruft in der Schleife kein Training und den Markt nur über 0x07169 (Tage ≡ 0/4); nach dem Tageswechsel je
+    ///   Manager 0x3ED01, 0x3F833, wöchentlich 0x3D316 und je Spieler 0x07C12 (Datei 0x55694–0x55721). Nicht einzeln umgestellt
+    ///   (eigener Befund für die Leitstelle).</item>
+    /// </list>
+    /// </summary>
+    private void OnDayWorldCupLoop(int day)
+    {
+        if (NationalCoachPlaysOn(day))
+            UpdateNationalTeamValues();
+        if (!MatchEngine.IsDriftDay(day))
+            return;
+        HealInjuries(day);
+        ApplyAutoLineups();
+    }
+
+    /// <summary>
     /// Tageslauf des Nationalteams in der Vereinssaison (aus <c>OnDayClubSeason</c>): an Tagen mit Ereignis Neuaufstellung mit der
     /// gesicherten Einstellung (Datei 0x54D41–0x54DAA), dann die Länderwerte (Datei 0x54F9C–0x54FBF, <see cref="UpdateNationalTeamValues"/>).
-    /// [ORIGINAL] Ereignis = Kalenderbyte ≠ 0, ≠ 0xFF (9 zählt wie 0, Datei 0x54D4C–0x54D65); mit Bundestrainer sind das die WM-Tage.
+    /// [ORIGINAL] Ereignis = Kalenderbyte ≠ 0, ≠ 0xFF (9 zählt wie 0, Datei 0x54D4C–0x54D65). Nur der Hauptweg: Mit Bundestrainer
+    /// nimmt im Original die WM-Schleife den Tag (<see cref="OnDayWorldCupLoop"/>, R14NT-01/02); hier wirkt es nur bei einem vor
+    /// dem 13. April ernannten Bundestrainer (nur Tests).
     /// </summary>
     private void OnDayNationalTeam(int day)
     {

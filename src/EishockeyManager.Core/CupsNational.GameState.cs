@@ -70,10 +70,12 @@ public sealed partial class GameState
     /// <item>[ORIGINAL] Aufrufe (A009, Spur nationalteam Runde 13, <c>docs/analyse/re-runde-13.md</c>): Verlassen der Aufstellung
     ///   (Datei 0x41506–0x4151A, <see cref="OnNationalLineupLeft"/>), Tageslauf (Datei 0x54F9C–0x54FBF) und nach dem Menü des
     ///   Bundestrainers an WM-Tagen (Datei 0x555D6). Nicht nach einem Freundschaftsspiel.</item>
-    /// <item>[APPROX] Das Remake rechnet an jedem Tag vor dessen Spielen (<c>GameState.Integration.cs</c>, OnDayManager), also
-    ///   nach dem Halt des Bundestrainers. [ORIGINAL] Im Tageslauf vor der kleinen Wanderung (Datei 0x54FBF vor 0x55292, #594):
-    ///   an Wandertagen gilt danach die gewürfelte Form 0x1C/0x1D. Im Modus „nur Weltkugel“ ruft das Original nur 0x555D6 (kein Tageslauf); zwischen
-    ///   zwei WM-Tagen ändert sich die Aufstellung dort nur über den Bildschirm, der beim Verlassen ohnehin rechnet.</item>
+    /// <item>[ORIGINAL] Modus 4 nach der Ernennung (WM-Schleife Datei 0x55570–0x55740, R14NT-01): nur an Tagen mit Ereignis nach
+    ///   dem Menü (Datei 0x555D6), dann die WM-Spiele; keine Wanderung, Deutschland spielt mit der Form der Aufstellung. Der Aufruf
+    ///   im Tageslauf des Hauptwegs (Datei 0x54FBF vor der Wanderung 0x55292, #594) ist mit Bundestrainer nicht erreichbar.
+    ///   [APPROX] Im Modus „nur Weltkugel“ rechnet das Remake an jedem Tag vor dessen Spielen (das Original nur 0x555D6, kein
+    ///   Tageslauf); zwischen zwei WM-Tagen ändert sich die Aufstellung dort nur über den Bildschirm, der beim Verlassen ohnehin
+    ///   rechnet.</item>
     /// <item>[ORIGINAL] Eine leere Aufstellung schreibt 0 (A009, DOSBox FILE47: 0x18–0x1D = 00 00 00 00 00 00 schon nach dem
     ///   Verlassen der geleerten Aufstellung; FILE18 vorher 58 5A 53 57 33 33).</item>
     /// <item>[APPROX] Mit leerem WM-Kader schreibt das Remake nichts. Das Original schriebe auch dann 0; einen leeren Kader am

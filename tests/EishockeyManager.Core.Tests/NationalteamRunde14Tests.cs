@@ -17,11 +17,15 @@ public class NationalteamRunde14Tests
     /// 0x1C/0x1D aller Plätze einschließlich der Nationalteams neu, Kondition und Technik der Nationalteams (0x18–0x1B) bleiben.
     /// Modus 4 (Fahne und Weltkugel), Wandertag ohne WM-Spiel: Form gewürfelt (45 … 55), Kondition/Technik aus der Aufstellung.
     /// An einem Tag ohne Wanderung bleibt die Form der Aufstellung.
+    /// Review #662 (R14NT-01): Die Reihenfolge ist belegt, mit Bundestrainer aber im Original nicht erreichbar (vor dem 13. April
+    /// gibt es keinen, danach rechnet die WM-Schleife). Der Test ernennt deshalb künstlich zu Saisonbeginn und prüft nur den
+    /// Hauptweg der Vereinssaison bis zum 13. April; die WM nach einer echten Ernennung prüft
+    /// <see cref="Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm"/>.
     /// </summary>
     [Theory]
     [InlineData(3)]
     [InlineData(11)]
-    public void Day_NationalValuesBeforeDrift_DriftDayShowsRolledForm(int seed)
+    public void Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(int seed)
     {
         var game = GameModeTests.Create(seed, true, true, 2);
         Assert.Equal(GameMode.Full, game.Mode);
@@ -42,6 +46,7 @@ public class NationalteamRunde14Tests
             game.Continue();
             Assert.Equal(SeasonPhase.Running, game.Phase);
             var last = game.CurrentDay - 1; // RunDays hält vor dem Spieltag des Managers: zuletzt gerechnet ist der Vortag
+            Assert.True(last <= SeasonCalendar.ClubSeasonEnd); // nur Hauptweg (Phase Running endet mit dem 13. April)
             if (SeasonCalendar.Events(last).HasFlag(DayEvents.WorldCup) || last < 1)
                 continue;
 
