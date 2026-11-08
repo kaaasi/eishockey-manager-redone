@@ -53,8 +53,9 @@ public static partial class MatchEngine
     /// Kader des Nationalteams für die Minutenrechnung. [ORIGINAL] Kaderplätze des Bundestrainers (Manager 5): Platz +0x15
     /// aus der Aufstellung (alle vier Blöcke, Block b = Reihe b; 0x8E5F/0x91FF zählen eine vierte Reihe, A022), eingesetzt
     /// +0x0A wie im Aufstellungsbildschirm (<see cref="NationalCoach.IsDressed"/>), Technik + Länderspiele / 8 im Spiel
-    /// (0x98F8, <see cref="LiveSquad.NationalCoach"/>). [APPROX] Ohne eigene Aufstellung (passiver Bundestrainer) die
-    /// Automatik <see cref="NationalCoach.Lineup"/> mit drei Reihen, alle verfügbaren eingesetzt; „5 − Level“ (DGROUP 0xED8)
+    /// (0x98F8, <see cref="LiveSquad.NationalCoach"/>). [ORIGINAL] Ohne „automatisch aufstellen“ spielt eine leere Aufstellung leer
+    /// (A009, FILE48 0:17). [APPROX] Mit der Einstellung und leerer Aufstellung die Ersatz-Automatik
+    /// <see cref="NationalCoach.Lineup"/> mit drei Reihen, alle verfügbaren eingesetzt; „5 − Level“ (DGROUP 0xED8)
     /// aus dem Level des Managers, der Bundestrainer ist. [ORIGINAL] Reihenfolge der Kaderplätze wie der WM-Kader: nach „auto“
     /// Plätze 0–2 Torhüter, 3–12 Verteidiger, 13–28 Stürmer, je Art absteigend nach Summe (A085, DOSBox FILE18 Satz 5;
     /// <see cref="GameState.AutoNominate"/>).
@@ -69,7 +70,7 @@ public static partial class MatchEngine
             NationalCoach = true,
         };
         var positions = new Dictionary<Player, int>();
-        var own = coach.Formation.Count > 0;
+        var own = !coach.UsesStandInLineup;
         if (own)
         {
             foreach (var slot in LineupSlot.All)

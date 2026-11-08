@@ -69,7 +69,10 @@ public static class NationalMenu
             // [ORIGINAL] Nach der Ernennung sind die Mannschaftskacheln offen, auch vor der Kaderwahl (A284, Spur nationalteam
             // Runde 13; DOSBox `file11_03`, FILE11). Ein Menü „vor der Ernennung“ gibt es im Original nicht (Datei 0x54D19,
             // 0x55587); der Zweig mit NationalCoach = null ist nur ein Wächter des Remakes.
-            return !CoachTiles.Contains(tile.Name) || (game.NationalCoach is null && NeedsCoach.Contains(tile.Name));
+            // [ORIGINAL] Ab dem ersten gespielten WM-Termin sind „Transfer“ und „Training“ gesperrt (Datei 0x4509E–0x450A4,
+            // DGROUP 0x518C/0x518D = WM-Stufe 0x7AE; DOSBox `file19_26`; #580, Spur nationalteam Runde 14).
+            return !CoachTiles.Contains(tile.Name) || (game.NationalCoach is null && NeedsCoach.Contains(tile.Name))
+                || (game.NationalSquadLocked && tile.Name is "Transfer" or "Training");
         return (game.Mode == GameMode.ClubOnly && WorldTiles.Contains(tile.Name)) || TileLocks.IsLocked(game, tile); // Sperren der Spielvorbereitung (Spur tabellen-highscore)
     }
 

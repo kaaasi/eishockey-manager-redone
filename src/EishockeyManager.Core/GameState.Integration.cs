@@ -42,13 +42,14 @@ public sealed partial class GameState
     {
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ gibt es keine Vereinssaison – keine Finanzen,
         // kein Training, kein Markt, keine Vertragsmeldungen, keine Ligastatistik (Datei 0x54CEE: kein Tageslauf).
-        if (!WorldOnly)
-            OnDayClubSeason(day);
-
         // Spur nationalteam Runde 13 (A009, L9): Länderwerte aus der Aufstellung des Bundestrainers (0x952C mit Manager 5,
         // Tageslauf Datei 0x54F9C–0x54FBF und nach dem Menü an WM-Tagen Datei 0x555D6) – vor der Ernennung des Tages wie im
-        // Original (Ernennung erst nach dem Tag, Datei 0x553A2).
-        UpdateNationalTeamValues();
+        // Original (Ernennung erst nach dem Tag, Datei 0x553A2). Im Tageslauf der Vereinssaison vor der kleinen Wanderung
+        // (siehe OnDayClubSeason, #594); im Modus „nur Weltkugel“ ([APPROX], kein Tageslauf im Original) hier.
+        if (!WorldOnly)
+            OnDayClubSeason(day);
+        else
+            UpdateNationalTeamValues();
 
         // Paket „wettbewerbe“: an den Tagen mit Markierung 255 im Modus 4 den Bundestrainer ernennen (Spur
         // bundestrainer-modus4), dann die Werte Deutschlands ohne Bundestrainer neu auswürfeln.
@@ -76,6 +77,15 @@ public sealed partial class GameState
 
         // Paket „wettbewerbe“: Ewige Tabelle, Ewige Bilanz und „Früher“ schreibt seit Spur saisonwechsel Teil 3 (S-K4)
         // FinishSeason nach Zwangsabstieg und Austausch fort (em.exe Datei 0x563AF).
+
+        // Spur nationalteam Runde 14 (#594, R13IN-01): [ORIGINAL] 0x952C(Manager 5, 1) liegt in der Tagesfunktion 0x54C9F bei
+        // Datei 0x54F9C–0x54FBF, die kleine Wanderung danach bei Datei 0x5525A–0x55292 (dazwischen kein Sprung aus dem Bereich).
+        // Die Wanderung würfelt die Form 0x1C/0x1D Deutschlands neu; an Wandertagen gilt also die gewürfelte Form, nicht die
+        // der Aufstellung. Auch die Heilung (0x07169, Datei 0x552A6) und die Aufstellungsautomatik (Datei 0x07C07) folgen erst
+        // danach. [APPROX] Das Original rechnet 0x952C nach den Menüs der Manager; Finanzen, Training und Markt des Remakes
+        // stehen davor wie bisher (Reihenfolge zu ihnen nicht einzeln gelesen). A009 (Runde 14 Teil 3): davor an Tagen mit
+        // Ereignis die Neuaufstellung von Satz 5 mit der gesicherten Einstellung (Datei 0x54D41–0x54DAA).
+        OnDayNationalTeam(day);
 
         // Spur spielberechnung-komplett (#204): kleine Wanderung der Teamwerte zweimal je Woche (0x5525A–0x55292)
         if (MatchEngine.IsDriftDay(day))

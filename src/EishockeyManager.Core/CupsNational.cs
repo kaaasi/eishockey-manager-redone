@@ -178,13 +178,17 @@ public sealed partial class NationalCoach
     /// Aufstellung für Länderspiele, Spielerzähler und Anzeige: die Torhüter- und Reihenplätze 1–3 der
     /// <see cref="Formation"/> (Spur nationalteam-2); Verletzte und Gesperrte fallen heraus. Die Spielberechnung nimmt
     /// alle vier Blöcke (<see cref="MatchEngine.NationalSquad"/>).
-    /// [APPROX] Ist die Formation ganz leer (Bundestrainer hat nichts aufgestellt, z. B. passiver Manager oder
-    /// automatische Kaderwahl ohne Halt), gilt die bisherige Automatik: bester unverletzter Torhüter, je Reihe die zwei
-    /// besten Verteidiger und drei besten Stürmer (nach Kondition + Technik + Form).
+    /// [ORIGINAL] Ohne die Einstellung „automatisch aufstellen“ spielt eine leere Formation leer (A009, DOSBox FILE48: Einstellung
+    /// 0x37F = 0x380 = 0, 0:17 gegen TSCHECHEI, kein Spieler bekommt ein Spiel). Aufgestellt wird über die Einstellung
+    /// (<c>CupsNational.AutoLineup.cs</c>).
+    /// [APPROX] Mit der Einstellung, aber leerer Formation (Kader gewählt, das Menü seitdem nicht neu aufgebaut und kein Tag mit
+    /// Ereignis gelaufen – nur in Abläufen ohne Oberfläche) gilt die bisherige Automatik des Remakes als Ersatz für die Neuaufstellung,
+    /// die das Original beim nächsten Menüaufbau macht: bester unverletzter Torhüter, je Reihe die zwei besten Verteidiger und drei
+    /// besten Stürmer (nach Kondition + Technik + Form).
     /// </summary>
     public NationalLineup Lineup()
     {
-        if (Formation.Count > 0)
+        if (!UsesStandInLineup)
             return FormationLineup();
         List<Player?> Best(PlayerRole role, int count) => _squad.Select(m => m.Player)
             .Where(p => p.Role == role && p.Available)
@@ -193,7 +197,20 @@ public sealed partial class NationalCoach
             Best(PlayerRole.Defender, 2 * Lines), Best(PlayerRole.Forward, 3 * Lines));
     }
 
-    internal void Add(Player player, int club) => _squad.Add(new NationalSquadMember(player, club));
+    /// <summary>Ersatz-Automatik von <see cref="Lineup"/>: leere Formation mit Einstellung „automatisch aufstellen“ ([APPROX]).</summary>
+    internal bool UsesStandInLineup => Formation.Count == 0 && AutoLineupEnabled;
+
+    /// <summary>
+    /// Nimmt einen Spieler in den WM-Kader auf. [ORIGINAL] 0x3CABF (Handaufnahme Datei 0x3C97A, „auto“ Datei 0x3CA4C) ruft
+    /// 0x42CB1 für Manager 5 mit Grenze 0x1D (Datei 0x3CAF6–0x3CB09): erster Platz, dessen Spielerart größer als die des Neuen
+    /// ist, sonst hinten an – wie <see cref="PlayerFactory.InsertSlot"/> (#623, Spur nationalteam Runde 14). „auto“ nimmt je Art
+    /// nacheinander auf und bleibt damit unverändert.
+    /// </summary>
+    internal void Add(Player player, int club)
+    {
+        var at = _squad.FindIndex(m => m.Player.Role > player.Role);
+        _squad.Insert(at < 0 ? _squad.Count : at, new NationalSquadMember(player, club));
+    }
 
     internal void Remove(Player player)
     {

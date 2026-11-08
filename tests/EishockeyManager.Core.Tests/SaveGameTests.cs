@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(40, SaveGame.SchemaVersion);
+        Assert.Equal(41, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -51,7 +51,9 @@ public class SaveGameTests
     // 35 Manager._newMessage, GameState._contractTurnFactor und _turnRandom (Spur ui-meldungen, Runde 12 Teil 4, E4).
     // 39 ohne neues Feld: Nr. = Kaderplatz + 1 für alle Vereine beim Laden (Fix R13G-01/#613, #606); Abdruck unverändert.
     // 40 GameOptions.ManagerDayMinuteLoop (Spur saison, Runde 14 Teil 4, #349).
-    private const string ExpectedSchemaFingerprint = "E3546517EB3E0A02";
+    // 41 NationalCoach._autoLineup/_autoLineupSaved/_turnOpen und GameState._nationalAutoLineupSaved (Spur nationalteam Teil 3, A009;
+    // Integration Runde 14, Abdruck neu: Felder aus nationalteam kommen zu denen aus saison 40 hinzu).
+    private const string ExpectedSchemaFingerprint = "B6E7D3FAE51E7325";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

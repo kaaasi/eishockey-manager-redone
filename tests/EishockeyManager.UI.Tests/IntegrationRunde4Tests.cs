@@ -60,6 +60,11 @@ public class IntegrationRunde4Tests : IDisposable
         if (coach.Formation[slot] is not null)
             coach.ClearSlot(slot);
         Assert.Equal(LineupResult.Assigned, coach.Assign(slot, keeper));
+        // A009 (Runde 14): Der Eingriff schaltet „automatisch aufstellen“ nur für den Zug ab (0x37F); erst das Weiterschalten sichert
+        // es (0x380 := 0x37F). Ohne das stellte der Neubeginn des Zugs nach dem Laden wieder auf (0x37F := 0x380, FILE47).
+        d.PlayMatchDay();
+        Assert.False(coach.AutoLineupEnabled);
+        Assert.Same(keeper, coach.Formation[slot]);
         coach.Tactics.AttackMode = TacticMode.Semi;
         var strength = game.NationalMatchStrength(NationalTeams.Germany);
         var saved = Convert.ToBase64String(SaveGame.Save(game));
