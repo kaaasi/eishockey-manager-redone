@@ -85,10 +85,10 @@ public class TeamScreenTests
         var screen = Assert.IsType<TacticsScreen>(d.Host.Current);
         var t = d.Host.Game!.Clubs[d.Host.Game.ActiveManager.ClubIndex].Tactics;
 
-        // Feld bei AUTOM. gesperrt (Startwert 60, Datei 0x8413)
+        // Feld bei AUTOM. gesperrt (Startwert 0, A180 kader-start Runde 14; vorher 60)
         var grund = TacticsScreen.SituationArrows(ScoreSituation.Base, attack: false);
         d.Click(grund.X + 4, grund.Y + 2);
-        Assert.Equal(60, t.Effort(0, ScoreSituation.Base));
+        Assert.Equal(0, t.Effort(0, ScoreSituation.Base));
 
         var mode = TacticsScreen.EffortArrows;
         d.Click(mode.X + 4, mode.Y + 2);
@@ -99,10 +99,10 @@ public class TeamScreenTests
         Assert.Equal(1, screen.Block);
         d.Click(grund.X + 4, grund.Y + 2);
         d.Click(grund.X + 4, grund.Y + 2);
-        Assert.Equal(62, t.Effort(1, ScoreSituation.Base));
+        Assert.Equal(2, t.Effort(1, ScoreSituation.Base));
         d.Click(grund.X + 4, grund.Y + grund.H - 2);
-        Assert.Equal(61, t.Effort(1, ScoreSituation.Base));
-        Assert.Equal(60, t.Effort(0, ScoreSituation.Base));
+        Assert.Equal(1, t.Effort(1, ScoreSituation.Base));
+        Assert.Equal(0, t.Effort(0, ScoreSituation.Base));
 
         // Minuten nur bei „Minuten-Vorgabe (s.u.)“
         var line = TacticsScreen.LineChangeArrows;

@@ -107,13 +107,15 @@ public class TacticsClubScreenTests
         var up = TacticsScreen.SituationArrows(ScoreSituation.Tied, attack: true);
         var mode = TacticsScreen.AttackArrows;
 
+        // Startwert 0 (A180, kader-start Runde 14; vorher 6 aus der ausgeglichenen Zeile).
         d.Click(up.X + 4, up.Y + 2);
-        Assert.Equal(6, t.Attack(0, ScoreSituation.Tied));
+        Assert.Equal(0, t.Attack(0, ScoreSituation.Tied));
         d.Click(mode.X + 4, mode.Y + 2);
         Assert.Equal(TacticMode.Semi, t.AttackMode);
         d.Click(up.X + 4, up.Y + 2);
-        Assert.Equal(7, t.Attack(0, ScoreSituation.Tied));
-        d.Click(up.X + 4, up.Y + 2);
+        Assert.Equal(1, t.Attack(0, ScoreSituation.Tied));
+        for (var i = 0; i < 7; i++)
+            d.Click(up.X + 4, up.Y + 2);
         Assert.Equal(7, t.Attack(0, ScoreSituation.Tied)); // Obergrenze 7
         d.Click(mode.X + 4, mode.Y + 2);
         Assert.Equal(TacticMode.Manual, t.AttackMode);
