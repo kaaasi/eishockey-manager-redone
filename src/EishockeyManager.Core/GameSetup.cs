@@ -175,9 +175,19 @@ public sealed class GameSetup
 
     /// <summary>
     /// „Los jetzt!“ ist möglich: alle Manager benannt, ein Spielmodus gewählt ([ORIGINAL] Datei 0x295DF: ohne Knopf
-    /// kein Start). [APPROX] „nur Weltkugel“ nur mit genau einem Manager – das Original verhindert mehrere Manager
-    /// dort nur über die Sperre der Fahne, nicht beim späteren Hinzufügen.
+    /// kein Start). „nur Weltkugel“ nur mit genau einem Manager: [ORIGINAL] A056, Datei 0x28ACF – bei „nur Weltkugel“
+    /// führt jeder Klick in die Managerzeilen auf Zeile 0 (<see cref="ManagerRowFor"/>), ein zweiter Manager entsteht also
+    /// nicht; umgekehrt sperrt ein zweiter benannter Manager die Fahne (Datei 0x28717). Die Bedingung hier ist nur
+    /// Absicherung (z. B. zweiter, noch unbenannter Manager vor dem Abschalten der Fahne); [APPROX] das Original prüft beim
+    /// Start nicht und zeigt keine Meldung.
     /// </summary>
+    /// <summary>
+    /// Managerzeile, auf die ein Klick in Zeile <paramref name="row"/> wirkt. [ORIGINAL] A056, em.exe Datei 0x28AA9–0x28ADB:
+    /// Zeile = (y − 0x26) / 0x33, höchstens 3; bei Spielmodus „nur Weltkugel“ (Knopfbits <c>[bp−0x57]</c> = 2) immer 0.
+    /// Bilder <c>file29_1</c>/<c>file29_2</c> (Aufnahme runde-13, <c>docs/analyse/re-runde-14.md</c>).
+    /// </summary>
+    public int ManagerRowFor(int row) => Mode == GameMode.WorldOnly ? 0 : Math.Clamp(row, 0, MaxManagers - 1);
+
     public bool CanStart => Managers.Count > 0 && Managers.All(m => m.Name.Length > 0) && Mode is { } mode
         && (mode != GameMode.WorldOnly || Managers.Count == 1);
 

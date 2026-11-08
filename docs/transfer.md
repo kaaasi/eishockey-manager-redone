@@ -486,11 +486,13 @@ Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die
 - **U15-a und U15-b umgesetzt (Runde 13, Spur `kader-start` Teil 2, L1, L13 = A):** `NewGame.PlaceInStartLeague`
   (Datei 0x29C3B–0x29CF2): Ein fest gewählter Verein bleibt nur, wenn die Start-Liga nicht die Bundesliga ist, er schon in ihr
   spielt und sein Platz ≤ 35 ist; sonst tauscht er mit einem Zufallsplatz der Start-Liga (nie der Verein eines früheren
-  Managers, nie der Europapokal-Teilnehmer). Die Teamwerte (`Club.Strength`) bleiben am Platz, der Verdrängte übernimmt Liga
+  Managers, nie Platz 0: Der Europapokal-Filter 0x45CD0(r, 1) sieht beim Spielstart eine leere Tabelle, Runde 14). Die Teamwerte (`Club.Strength`) bleiben am Platz, der Verdrängte übernimmt Liga
   bzw. „ohne Liga“ des Managervereins; ein Verein ohne Liga landet direkt in der Start-Liga (A112 „rückt in die Oberliga“
   entfällt). Belege FILE27/FILE28/FILE15 (`docs/analyse/re-runde-13.md`), Tests `KaderStartStartLigaTests`. Die Sperre „eine
   Saison“ nur mit Bundesliga prüft `GameSetup.Step` (Datei 0x2890E–0x2891C). `[APPROX]`: Zufallsquelle `GameState.Random`;
-  gezogen wird in Indexfolge, solange die Satzfolge erst nach der Vergabe entsteht (R-K5, Teil 3). U15-c bleibt `[APPROX]` (L2).
+  gezogen wird in Indexfolge, solange die Satzfolge erst nach der Vergabe entsteht (R-K5, Teil 3). U15-c umgesetzt (Runde 14, `kader-start` Teil 2, L2 aufgehoben): Ein Manager und eine Saison → der Managerverein
+  tauscht auf Platz 0 der Bundesliga (Datei 0x29CFA–0x29D9C, FILE29; `NewGame.OneSeasonSingleManager`); das Managerfeld
+  DGROUP 0x9744 = 1 ist nicht abgebildet (`docs/analyse/re-runde-14.md`).
 
 ## Probe-Rückfallweg (WS-05, Runde 12)
 
