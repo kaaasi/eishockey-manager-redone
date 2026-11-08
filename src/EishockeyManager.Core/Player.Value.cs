@@ -47,10 +47,10 @@ public readonly record struct PlayerValueInputs
     /// </summary>
     public int Games0 { get; init; }
 
-    /// <summary>Kaderplatz +0x1E (Wort), Gewicht 20; Bedeutung offen (<c>spielstand-original.md</c>, SW-02).</summary>
+    /// <summary>Kaderplatz +0x1E (Wort), Gewicht 20: Pokalspiele beim jetzigen Verein ([ORIGINAL] A135, FILE38 → FILE39).</summary>
     public int Games1 { get; init; }
 
-    /// <summary>Kaderplatz +0x20 (Wort), Gewicht 30; Bedeutung offen (<c>spielstand-original.md</c>, SW-02).</summary>
+    /// <summary>Kaderplatz +0x20 (Wort), Gewicht 30: Europapokalspiele beim jetzigen Verein ([ORIGINAL] A135, Feldfolge).</summary>
     public int Games2 { get; init; }
 
     /// <summary>
@@ -184,19 +184,24 @@ public static class PlayerValue
     /// <summary>
     /// Eingänge eines Spielers des Remakes. <paramref name="club"/> ist der Verein, in dessen Kader er steht (null =
     /// vertragslos; Original 0xFF → Spielklasse 1); <paramref name="offer"/> der Verein mit einem offenen Angebot.
-    /// [APPROX] Das Remake zählt Tore nicht je Wettbewerb (alle in +0x03) und Spiele nicht je Wettbewerb (alle Spiele beim jetzigen
-    /// Verein in +0x1C, <see cref="Player.GamesForClub"/>; +0x1E/+0x20 bleiben 0; SW-02);
+    /// [ORIGINAL] A135 (Runde 14, re-runde-14.md): Saisontore je Wettbewerb +0x03/+0x04/+0x05 (<see cref="Player.SeasonGoals"/>)
+    /// und Spiele beim jetzigen Verein je Wettbewerb +0x1C/+0x1E/+0x20 (<see cref="Player.ClubGames"/>), Beleg FILE38 → FILE40;
+    /// Gewichte 30/30/40 und 50/20/30 in <see cref="PlayerValue.Compute"/>.
     /// Tendenz: <see cref="Player.TrendScore"/>, ohne Wert die Mitte der Stufe (<see cref="TrendValue"/>); der Level ist im Remake je Manager.
     /// </summary>
     public static PlayerValueInputs Inputs(Player player, Club? club, Club? offer = null, int level = 3) => new()
     {
         Penalties5 = Math.Min(player.Penalties5, 255),
         Penalties2 = Math.Min(player.Penalties2, 255),
-        Goals0 = Math.Min(player.Goals, 255),
+        Goals0 = Math.Min(player.SeasonGoals(CompetitionSlot.League), 255),
+        Goals1 = Math.Min(player.SeasonGoals(CompetitionSlot.Cup), 255),
+        Goals2 = Math.Min(player.SeasonGoals(CompetitionSlot.Europe), 255),
         Trend = player.TrendScore != 0 ? player.TrendScore : TrendValue(player.Trend),
         Condition = Math.Clamp(player.Condition, 0, 255),
         Technique = Math.Clamp(player.Technique, 0, 255),
-        Games0 = Math.Min(player.GamesForClub, 0xFFFF),
+        Games0 = Math.Min(player.ClubGames(CompetitionSlot.League), 0xFFFF),
+        Games1 = Math.Min(player.ClubGames(CompetitionSlot.Cup), 0xFFFF),
+        Games2 = Math.Min(player.ClubGames(CompetitionSlot.Europe), 0xFFFF),
         OfferClub = offer?.Index,
         Age = Math.Clamp(player.Age, 0, 255),
         Goalkeeper = player.Role == Formats.PlayerRole.Goalkeeper,

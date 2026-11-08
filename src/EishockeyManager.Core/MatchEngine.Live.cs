@@ -316,16 +316,17 @@ public static partial class MatchEngine
         // [ORIGINAL] Spielabrechnung 0x544C0, Kaderplatzschleife ab Datei 0x548A8: Belastung aller Spieler 50 … 150
         // (Datei 0x549A2–0x549BB; A184, Runde 12). Bei „nicht spielfähig“ endet die Abrechnung vorher.
         TrainingRules.ClampStrain(club.Players);
-        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report);
-        if (report.Events.Any(e => e.Kind == MatchEventKind.Injury && e.Side == side))
-            PlayerInjuries.RefillLineup(club);
+        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report, CompetitionSlots.Of(competition));
+        PlayerInjuries.AfterMatch(club, injured: report.Events.Any(e => e.Kind == MatchEventKind.Injury && e.Side == side));
     }
 
     /// <summary>Zähler einer gemanagten Mannschaft aus ihrer Aufstellung (Managerverein oder Nationalteam des Bundestrainers).</summary>
-    private static void CreditLineup(List<Player> lineup, Player? keeper, int against, int side, MatchReport report)
+    private static void CreditLineup(List<Player> lineup, Player? keeper, int against, int side, MatchReport report,
+        CompetitionSlot slot = CompetitionSlot.League)
     {
+        // [ORIGINAL] A135: Spiele je Wettbewerb (+0x06/+0x1C + Wettbewerb, Datei 0x5494C–0x5499E), Tore +0x03/+0x22 + Wettbewerb.
         foreach (var p in lineup)
-            p.Games++;
+            p.CountGame(slot);
         if (keeper is { } goalie)
         {
             goalie.GoalsAgainst += against;
@@ -334,10 +335,11 @@ public static partial class MatchEngine
         foreach (var e in report.Events)
         {
             // [ORIGINAL] 0x54248–0x54337 (Teil 3): Vorlage Spielerfeld 0x1F + 1, Tor Kaderplatz +0x22 + 1 (Liga und Pokal).
-            // [APPROX] Spielerfeld 0x1B (nur Wettbewerb 0, DGROUP 0xD0BF) und die Grenze 255 führt das Remake nicht getrennt.
+            // [ORIGINAL] je Wettbewerb DGROUP 0xD0BF (Datei 0x542F4–0x54333, A135). [APPROX] Spielerfeld 0x1B (nur Wettbewerb 0)
+            // und die Grenze 255 führt das Remake nicht getrennt.
             if (e.Kind == MatchEventKind.Goal && e.Side == side && e.Player is { } scorer)
             {
-                scorer.Goals++;
+                scorer.CountGoal(slot);
                 if (e.Assist is { } assist)
                     assist.Assists++;
                 continue;
@@ -374,6 +376,9 @@ public sealed partial class GameState
     internal void ResetMatchCounters()
     {
         foreach (var p in Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents))
+        {
             p.Games = p.Goals = p.Assists = p.Penalties2 = p.Penalties5 = p.GoalsAgainst = p.GoalieMinutes = 0;
+            p.ResetCompetitionCounters(); // A135: +0x04/+0x05, +0x07/+0x08
+        }
     }
 }

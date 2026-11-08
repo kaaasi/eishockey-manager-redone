@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(40, SaveGame.SchemaVersion);
+        Assert.Equal(41, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -51,7 +51,8 @@ public class SaveGameTests
     // 35 Manager._newMessage, GameState._contractTurnFactor und _turnRandom (Spur ui-meldungen, Runde 12 Teil 4, E4).
     // 39 ohne neues Feld: Nr. = Kaderplatz + 1 für alle Vereine beim Laden (Fix R13G-01/#613, #606); Abdruck unverändert.
     // 40 GameSetup._startLeague: Start-Liga ohne Manager (Spur kader-start Runde 14 Teil 1, R13KI-03/#605; Leitstelle nummeriert).
-    private const string ExpectedSchemaFingerprint = "B86EAA1FDF2C943C";
+    // 41 Club._tableRank (A046) und Tore/Spiele je Wettbewerb am Player (A135), Spur kader-start Runde 14 Teil 2b; Leitstelle nummeriert.
+    private const string ExpectedSchemaFingerprint = "D3EE23598BFD1F35";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

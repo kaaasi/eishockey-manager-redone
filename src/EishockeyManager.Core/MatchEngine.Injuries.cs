@@ -78,14 +78,35 @@ public static class PlayerInjuries
     }
 
     /// <summary>
-    /// Aufstellung nach Verletzung oder Heilung. [ORIGINAL] Nach jeder Verletzung (0x54197, ohne Live-Anzeige) und jeder
-    /// Heilung (0x7C77) sowie täglich für Verletzte und Gesperrte (0x7621) ruft das Original 0x426BC (Stub 0x14B7:0x4D):
-    /// ist die Einstellung DGROUP 0x375 + 2 · Manager gesetzt, stellt es die Kaderplätze des Managers neu auf (+0x0A, +0x15
-    /// über 0x42838; Teil 8: <see cref="Club.ApplyAutoLineup"/>, <see cref="AutoLineupRule"/>). [APPROX] Nach dem Spiel
-    /// statt in der Minute; ohne die Einstellung nimmt das Remake Verletzte heraus und füllt Lücken mit eingesetzten
-    /// Reservisten (das Original lässt sie). Eingesetzt (+0x0A) und die Grenze von 22: <see cref="Club.RefillLineup"/>.
+    /// Aufstellung nach Verletzung oder Heilung außerhalb der Spiele. [ORIGINAL] Nach jeder Heilung (0x7C77) sowie täglich
+    /// für Verletzte und Gesperrte (0x7621) ruft das Original 0x426BC (Stub 0x14B7:0x4D): ist die Einstellung DGROUP 0x375 +
+    /// 2 · Manager gesetzt, stellt es die Kaderplätze des Managers neu auf (+0x0A, +0x15 über 0x42838; Teil 8:
+    /// <see cref="Club.ApplyAutoLineup"/>, <see cref="AutoLineupRule"/>). Ohne die Einstellung nimmt das Remake Verletzte
+    /// heraus und füllt Lücken mit eingesetzten Reservisten ([APPROX], das Original lässt sie). Eingesetzt (+0x0A) und die
+    /// Grenze von 22: <see cref="Club.RefillLineup"/>. Nach einem Spiel: <see cref="AfterMatch"/>.
     /// </summary>
     public static void RefillLineup(Club club) => club.RefillLineup();
+
+    /// <summary>
+    /// Aufstellung eines Managervereins nach seinem Spiel (Taktik-Befund DGROUP 375h, Runde 14, <c>docs/analyse/re-runde-14.md</c>).
+    /// [ORIGINAL] Vor den Spielen des Tages sichert der Tageslauf die Einstellung „automatisch aufstellen“ und schaltet sie
+    /// ab (Datei 0x54FCE–0x54FE8: 0x376 + 2 · m := 0x375 + 2 · m, 0x375 + 2 · m := 0, für alle Manager und den Bundestrainer
+    /// mit Verein, vor den Spieltagen 0x35EA4/0x35E4C). Die Verletzung im Spiel (Szene 0x53C57, Ereignis 4 → 0x5411E:
+    /// 0x05B1A, ohne Live-Anzeige Datei 0x54197–0x5419D) ruft zwar 0x426BC, das wegen 0x375 = 0 nichts tut. Nach den Spielen
+    /// holt der Tageslauf die Einstellung zurück und stellt neu auf (Datei 0x54D8C–0x54D9E, 0x552F9–0x5530B: 0x375 := 0x376,
+    /// dann 0x426BC) – auch ohne Verletzung. Mit der Einstellung stellt das Remake daher nach jedem Spiel ganz neu auf
+    /// (<see cref="Club.ApplyAutoLineup"/>); ohne sie nur nach einer Verletzung wie <see cref="RefillLineup"/>.
+    /// [APPROX] Das Remake stellt direkt nach dem Spiel des Vereins statt nach allen Spielen des Tages auf; gleichwertig, weil
+    /// ein Verein je Tag nur ein Spiel hat und die Regel <see cref="AutoLineupRule"/> ohne Zufall arbeitet. Das Remake führt
+    /// das gesicherte Byte 0x376 nicht: Es wird vor jedem Lesen aus 0x375 neu geschrieben und steht nur während der Spiele
+    /// anders (FILE32/33 0x375 = 0, 0x376 = 1 nach dem Umschalten im Taktikbildschirm ohne Spieltag; HOK 0x00844).
+    /// Mit Live-Anzeige ruft das Original statt 0x426BC das Fenster 0x5434C (Datei 0x5416D–0x54192; Remake ohne Live-Anzeige).
+    /// </summary>
+    public static void AfterMatch(Club club, bool injured)
+    {
+        if (club.AutoLineupEnabled || injured)
+            club.RefillLineup();
+    }
 }
 
 public static partial class OriginalMinutes

@@ -108,6 +108,7 @@ public static class PlayerFactory
         p.Energy = TalentEnergy;
         p.Trend = PlayerTrend.Rising;
         p.Games = p.Goals = p.Assists = p.Penalties2 = p.Penalties5 = p.Caps = 0;
+        p.ResetCompetitionCounters();
         p.InjuredGames = p.SuspendedGames = 0;
     }
 
@@ -174,7 +175,8 @@ public static class PlayerFactory
         p.ContractYears = contractYears;
         p.MonthlySalary = Contracts.Demand(p);
         // [ORIGINAL] neuer Kaderplatz (Datei 0x42CB1): Spiele für den Verein +0x1C = 0; die Saisonspiele (+0x06) bleiben (FILE07).
-        p.ClubGamesCarry = -p.Games;
+        // A135: alle Vereinszähler +0x1C–+0x26 je Wettbewerb.
+        p.StartClubCounters();
         if (!club.Players.Contains(p))
             InsertSlot(club, p, managerSquad);
         club.RenumberPlayers();

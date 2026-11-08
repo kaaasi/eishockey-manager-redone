@@ -170,6 +170,6 @@ public sealed partial class GameState
     internal void CarryGamesForClub()
     {
         foreach (var p in Clubs.SelectMany(c => c.Players))
-            p.ClubGamesCarry = p.GamesForClub;
+            p.CarryClubCounters(); // A135: alle Wettbewerbe (+0x1C–+0x26)
     }
 }

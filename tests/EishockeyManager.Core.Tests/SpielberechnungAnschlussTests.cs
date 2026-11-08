@@ -195,9 +195,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// kader-start Teil 4 (A091/A166): beide neu – Kaderplatzfolge statt Rolle/Nummer in Spiel und Auto-Aufstellung.
     /// Fix R13GN-01 (#622): aktiv neu – gekaufte Torhüter/Verteidiger nach Spielerart einsortiert (Datei 0x42D55) statt hinten an;
     /// passiv unverändert (Gegenprobe wie in <see cref="RngTwinProbeTests"/>).</summary>
+    // kader-start Runde 14 Teil 2b: alle Abdrücke neu – Spielerwert mit Toren/Spielen je Wettbewerb (A135), Neuaufstellung nach jedem Spiel mit „automatisch aufstellen“ (375h).
     [GameDataTheory]
-    [InlineData(false, "6C2D30784D430A5A")]
-    [InlineData(true, "FB60D817157E2013")]
+    [InlineData(false, "F870B1D62625C180")]
+    [InlineData(true, "E68DED1685288C73")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
