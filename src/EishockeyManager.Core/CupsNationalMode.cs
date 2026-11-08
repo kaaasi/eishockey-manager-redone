@@ -159,14 +159,21 @@ public sealed partial class GameState
     {
         if (_nationalTurn)
         {
+            EndNationalCoachTurn(); // A009: Datei 0x555BF–0x555CA
             _nationalTurn = false;
             return false;
         }
-        if (WorldOnly || NationalCoach is not { } coach || Managers[coach.Manager].Dismissed || !NationalCoachPlaysOn(CurrentDay))
+        if (WorldOnly)
+        {
+            EndNationalCoachTurn(); // „nur Weltkugel“: Manager 0 führt nur den Zug des Bundestrainers (A009)
+            return false;
+        }
+        if (NationalCoach is not { } coach || Managers[coach.Manager].Dismissed || !NationalCoachPlaysOn(CurrentDay))
             return false;
         _readyManagers.Add(ActiveManager);
         _nationalTurn = true;
         CurrentManager = coach.Manager;
+        BeginNationalCoachTurn(); // A009: Datei 0x55599/0x5559C
         return true;
     }
 }

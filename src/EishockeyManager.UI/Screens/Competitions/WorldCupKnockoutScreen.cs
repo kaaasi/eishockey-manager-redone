@@ -28,7 +28,8 @@ public sealed record WorldCupKnockoutSection(string Title, IReadOnlyList<WorldCu
 /// <item>[ORIGINAL] Vor der Endrunde (WM-Stufe DGROUP 0x7AE &lt; 5, Datei 0x3337B) ein Rahmen ohne Zeilen (5 Teile ab y = 70) mit
 ///   „Die Paarungen stehen noch nicht fest...“ (Flow, Grundlinie y + 34, Farbe 30) und Knopf „Gruppe“; DOSBox
 ///   <c>dosbox/nur-weltkugel/24</c>. Erreichbar über „Endrunde“ der Paarungsansicht „Gruppe n   m.Spieltag“ (<see cref="CupPairingsScreen"/>,
-///   DOSBox 20, 21; #194) und nach der Gruppenphase über die Gruppentabelle.</item>
+///   DOSBox 20, 21; #194). [ORIGINAL] Im Menü des Bundestrainers öffnet „Paarungen → WM“ ab WM-Stufe 5 direkt diese Seite (A293,
+///   DOSBox `file49_7`; <c>WorldCupMenuEntries.Pairings</c>); die Gruppentabelle hat keinen Knopf „Endrunde“ (`file49_6`).</item>
 /// <item>[ORIGINAL] Punkte hinter dem Ergebnis = Marken + 30 (Anzeige 0x338AB–0x338E3): einer nach Penaltyschießen mit Endstand
 ///   (schneller Weg 0x37761, Minutenweg 0x39789), zwei nach einem Tor in der Verlängerung (0x38402; eisbaeren_f44_01330 „4: 3..“
 ///   neben „4: 3.“) – <see cref="WorldCup.MarksOf"/>, <see cref="CupMatch"/>. [APPROX] Die Herkunft des Stands vor 0x38402 ist
@@ -41,6 +42,12 @@ public sealed class WorldCupKnockoutScreen : Screen
 {
     public const string Title = "WM-Endrundenspiele";
     public const string ButtonText = "Gruppe";
+
+    /// <summary>
+    /// WM-Stufe, ab der „Paarungen → WM“ im Menü des Bundestrainers diese Seite öffnet (A293): nach den fünf Gruppenterminen
+    /// (DGROUP 0x7AE = 5, Datei 0x44B15).
+    /// </summary>
+    public const int CoachStartStage = 5;
 
     /// <summary>Text vor der Endrunde (DGROUP 0x1E58, wie beim Europapokal).</summary>
     public const string NotYetKnown = EuropeanCupScreen.NotYetKnown;

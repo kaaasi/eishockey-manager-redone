@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(39, SaveGame.SchemaVersion);
+        Assert.Equal(40, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -50,7 +50,9 @@ public class SaveGameTests
     // 34 Satzfolge der Vereine je Liga GameState._leagueSlots (Spur saisonwechsel, Runde 12 Teil 3, S-K6).
     // 35 Manager._newMessage, GameState._contractTurnFactor und _turnRandom (Spur ui-meldungen, Runde 12 Teil 4, E4).
     // 39 ohne neues Feld: Nr. = Kaderplatz + 1 für alle Vereine beim Laden (Fix R13G-01/#613, #606); Abdruck unverändert.
-    private const string ExpectedSchemaFingerprint = "8F2FBF53475D516B";
+    // 40 (vorläufig, Runde 14; Nummer vergibt die Leitstelle): NationalCoach._autoLineup/_autoLineupSaved/_turnOpen und
+    // GameState._nationalAutoLineupSaved (Spur nationalteam Teil 3, A009).
+    private const string ExpectedSchemaFingerprint = "B6E7D3FAE51E7325";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

@@ -83,8 +83,9 @@ public sealed partial class GameState
         // Die Wanderung würfelt die Form 0x1C/0x1D Deutschlands neu; an Wandertagen gilt also die gewürfelte Form, nicht die
         // der Aufstellung. Auch die Heilung (0x07169, Datei 0x552A6) und die Aufstellungsautomatik (Datei 0x07C07) folgen erst
         // danach. [APPROX] Das Original rechnet 0x952C nach den Menüs der Manager; Finanzen, Training und Markt des Remakes
-        // stehen davor wie bisher (Reihenfolge zu ihnen nicht einzeln gelesen).
-        UpdateNationalTeamValues();
+        // stehen davor wie bisher (Reihenfolge zu ihnen nicht einzeln gelesen). A009 (Runde 14 Teil 3): davor an Tagen mit
+        // Ereignis die Neuaufstellung von Satz 5 mit der gesicherten Einstellung (Datei 0x54D41–0x54DAA).
+        OnDayNationalTeam(day);
 
         // Spur spielberechnung-komplett (#204): kleine Wanderung der Teamwerte zweimal je Woche (0x5525A–0x55292)
         if (MatchEngine.IsDriftDay(day))

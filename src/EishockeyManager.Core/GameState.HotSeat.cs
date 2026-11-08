@@ -68,5 +68,6 @@ public sealed partial class GameState
     {
         DrawContractTurnFactor();
         Clubs[ActiveManager.ClubIndex].ApplyAutoLineup();
+        BeginNationalCoachTurn(); // A009 (L8): „nur Weltkugel“ – der Zug von Manager 0 ist der des Bundestrainers
     }
 }

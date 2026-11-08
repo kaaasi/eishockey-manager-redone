@@ -74,17 +74,20 @@ public sealed partial class GameState
     ///   nach dem Halt des Bundestrainers. [ORIGINAL] Im Tageslauf vor der kleinen Wanderung (Datei 0x54FBF vor 0x55292, #594):
     ///   an Wandertagen gilt danach die gewürfelte Form 0x1C/0x1D. Im Modus „nur Weltkugel“ ruft das Original nur 0x555D6 (kein Tageslauf); zwischen
     ///   zwei WM-Tagen ändert sich die Aufstellung dort nur über den Bildschirm, der beim Verlassen ohnehin rechnet.</item>
-    /// <item>[APPROX] Ohne Spieler in der Aufstellung (auch die Automatik leer, weil der Kader leer ist) schreibt das Remake
-    ///   nichts. Das Original schriebe 0; einen leeren Kader am Spieltag schließt dort die Warnung vor dem Weiterschalten aus
-    ///   (A300, DOSBox `file11_11`), und 0x555D6 rechnet nach dem Menü neu.</item>
+    /// <item>[ORIGINAL] Eine leere Aufstellung schreibt 0 (A009, DOSBox FILE47: 0x18–0x1D = 00 00 00 00 00 00 schon nach dem
+    ///   Verlassen der geleerten Aufstellung; FILE18 vorher 58 5A 53 57 33 33).</item>
+    /// <item>[APPROX] Mit leerem WM-Kader schreibt das Remake nichts. Das Original schriebe auch dann 0; einen leeren Kader am
+    ///   Spieltag schließt dort die Warnung vor dem Weiterschalten aus (A300, DOSBox `file11_11`), und 0x555D6 rechnet nach dem Menü
+    ///   neu. Ohne die Ausnahme fiele Deutschland bei einem Bundestrainer ohne Kader (passiver Manager, Proben) auf 0.</item>
     /// <item>[APPROX] Vor dem ersten Spiel eines Spielstands zieht der Aufruf die Teamwerte (<see cref="MatchEngine.EnsureTeamValues"/>),
     ///   damit der Lader die Form nicht überschreibt; das Original lädt sie beim Spielstart.</item>
     /// </list>
     /// </summary>
     internal void UpdateNationalTeamValues()
     {
-        if (NationalCoach is not { Nation: NationalTeams.Germany } coach || coach.TeamValueFormation() is not { Count: > 0 } lineup)
+        if (NationalCoach is not { Nation: NationalTeams.Germany, Squad.Count: > 0 } coach)
             return;
+        var lineup = coach.TeamValueFormation();
         var club = Clubs[coach.Nation];
         if (club.TeamValues is null)
             MatchEngine.EnsureTeamValues(this);
@@ -132,6 +135,7 @@ public sealed partial class GameState
                 ? current
                 : throw new InvalidOperationException("In dieser Saison ist bereits ein anderer Manager Bundestrainer.");
         NationalCoach = new NationalCoach(index, NationalTeams.Germany);
+        NationalCoach.TakeOverAutoLineup(_nationalAutoLineupSaved); // A009: DGROUP 0x37F/0x380 überdauern das Amt
         HandNationalTacticsToCoach(NationalCoach);
         BookNational(NationalBookingKind.Budget, NationalBudget);
         return NationalCoach;
@@ -156,6 +160,14 @@ public sealed partial class GameState
     /// <summary>
     /// Klick auf einen Spieler in „Spieler in WM-Kader“ (Datei 0x3C928): Kaderspieler werden entlassen, andere
     /// unverletzte Spieler aufgenommen, solange weniger als 29 im Kader stehen.
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] A085 (Sitzung 5, Review #649): Bei vollem Kader bewirkt der Klick nichts (Datei 0x3C928–0x3C9C0, Platzsuche
+    ///   über Satz 5 +0x0F; Angabe Nutzer). Herausnehmen rückt auf (Datei 0x3CA71 → 0x425B6, wie der Verkauf), Aufnehmen sortiert nach
+    ///   Art ein (Datei 0x3CABF → 0x42CB1/0x42D55, wie der Kauf; <see cref="NationalCoach.Add"/>): ENGLBRECHT (TW) steht in FILE49A
+    ///   auf Platz 3, wo KÜNAST stand. Die Aufnahme merkt den Verein im Kaderplatz +0x0C (<see cref="NationalSquadMember.Club"/>),
+    ///   das Herausnehmen schreibt ihn zurück. Eingesetzt wird der Neue nicht durch die Aufnahme (0x3CABF setzt +0x0A nicht), sondern
+    ///   durch die Neuaufstellung beim nächsten Menüaufbau, wenn „automatisch aufstellen“ an ist (A009).</item>
+    /// </list>
     /// </summary>
     public NominationResult ToggleNomination(Player player)
     {
@@ -277,6 +289,8 @@ public sealed partial class GameState
     internal void StartNationalSeason()
     {
         TakeNationalTacticsFromCoach();
+        if (NationalCoach is { } coach)
+            _nationalAutoLineupSaved = coach.SavedAutoLineup;
         NationalCoach = null;
         _nationalTurn = false;
     }

@@ -58,4 +58,43 @@ public class NationalteamRunde14UiTests
         Assert.False(NationalMenu.IsLocked(game, Tile("Transfer")));
         Assert.False(NationalMenu.IsLocked(game, Tile("Training")));
     }
+
+    private sealed class Dummy(ScreenHost host) : Screen(host)
+    {
+        public override void Update(InputState input) { }
+        public override void Draw(Surface surface) { }
+    }
+
+    /// <summary>
+    /// A293 (Sitzung 5, Review #649 R14RD2-02): Regressionstest (vorher rot: „Paarungen → WM“ begann immer mit Gruppe 1).
+    /// [ORIGINAL] Im Zug des Bundestrainers öffnet die Kachel nach den fünf Gruppenterminen (WM-Stufe 5, Datei 0x44B15–0x44B1C)
+    /// „WM-Endrundenspiele“ (DOSBox `file49_7`); „Gruppe“ führt zu „Gruppe 1   5.Spieltag“ (`file49_8`). Davor die Gruppenseite.
+    /// [APPROX] ohne gemerkte Seite (A268): auch nach Stufe 5.
+    /// </summary>
+    [Fact]
+    public void CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive()
+    {
+        var game = WorldOnly();
+        game.Continue();
+        game.AutoNominate();
+        var host = new ScreenHost(null!) { Game = game };
+        var menu = new Dummy(host);
+        var open = MenuEntries.All["WM"];
+        while (game.WorldCupStage < WorldCupKnockoutScreen.CoachStartStage)
+        {
+            Assert.IsType<CupPairingsScreen>(open(host, menu));
+            game.Continue();
+        }
+        Assert.True(game.NationalCoachMenu);
+        var knockout = Assert.IsType<WorldCupKnockoutScreen>(open(host, menu));
+        host.Show(knockout);
+        var b = WorldCupKnockoutScreen.Button;
+        knockout.Update(new InputState { MouseX = b.X + 2, MouseY = b.Y + 2, LeftClick = true });
+        var group = Assert.IsType<CupPairingsScreen>(host.Current);
+        Assert.Equal("Gruppe 1   5.Spieltag", group.Title);
+
+        game.Continue(); // Viertelfinale gespielt: Stufe 6
+        Assert.True(game.WorldCupStage > WorldCupKnockoutScreen.CoachStartStage);
+        Assert.IsType<WorldCupKnockoutScreen>(open(host, menu));
+    }
 }

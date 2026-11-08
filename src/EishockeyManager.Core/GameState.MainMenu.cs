@@ -71,14 +71,15 @@ public sealed partial class GameState
     /// <param name="manager">Manager am Zug.</param>
     /// <param name="isReturn">
     /// Rückkehr ins Menü desselben Zugs (Datei 0x45961/0x4596C → 0x44FBD) statt erster Aufbau. Beide Wege laufen ab 0x44FBD gleich;
-    /// der Faktor des Zugs (0x44E3F) ist schon in <see cref="BeginManagerTurn"/> gezogen. Nur zur Nachvollziehbarkeit.
+    /// der Faktor des Zugs (0x44E3F) ist schon in <see cref="BeginManagerTurn"/> gezogen. Im Zug des Bundestrainers beginnt ein
+    /// Aufbau ohne Rücksprung (Laden) den Zug neu (A009, <see cref="OnNationalCoachMenu"/>).
     /// </param>
     public bool OnMainMenu(Manager manager, bool isReturn)
     {
         if (!Managers.Contains(manager))
             throw new ArgumentException("Manager gehört nicht zu diesem Spiel.", nameof(manager));
-        _ = isReturn;
         Clubs[manager.ClubIndex].ApplyAutoLineup();
+        OnNationalCoachMenu(isReturn); // A009 (L8, Spur nationalteam Runde 14): Neuaufstellung von Satz 5 im Zug des Bundestrainers
         return manager.TakeNewMessage();
     }
 }
