@@ -188,7 +188,8 @@ public static partial class MatchEngine
             ownValue = ManagedTeamValues(squad, nineOrMore: !game.IsShortHanded(club)).ManagerValue;
             injuryManager = game.Managers.ToList().IndexOf(manager);
             // [ORIGINAL] Strafen lesen den Managerwert über Vereinsfeld 0x16 = Manager + 1 (Datei 0x35890), also den Satz
-            // des nächsten Managers (übernommen). [APPROX] Ohne nächsten Manager 0 (nicht belegter Satz, nicht geprüft).
+            // des nächsten Managers (übernommen). [ORIGINAL] A082: Ohne nächsten Manager 0 – der nicht belegte Satz behält
+            // DGROUP 0x974B + 0x1AF · m = 0 über alle Spieltage (FILE03/05/31/32/36/41, Manager 1–5; re-runde-14.md).
             // R8W3I-05: [ORIGINAL] gelesen wird der gespeicherte Wert DGROUP 0x974B, den nur 0x952C schreibt – mit Schalter 1
             // im Tageslauf 0x54C9F für jeden Manager vor den Spielen des Tages (0x54F9C–0x54FBF), bei weniger als neun
             // aufgestellten und eingesetzten Spielern 100 (0x9698–0x96A8). [APPROX] Das Remake rechnet ihn hier aus

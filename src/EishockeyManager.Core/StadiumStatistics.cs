@@ -105,8 +105,9 @@ public sealed partial class GameState
     /// werden über 0x149D:0x89 (Datei 0x388F6) die Kaderplätze mit Aufstellungsposition (+0x15) und „eingesetzt“
     /// (+0x0A); bei weniger als neun setzt das Original den Managerwert 0x974B auf 100, sonst auf 20–40.
     /// [ORIGINAL] A189, Verletzte: +0x15 bleibt, +0x0A = 0 (Datei 0x5C50, FILE05 → FILE24 STEFAN 3S, CHAIDAROV 1S);
-    /// gezählt wird beides, der Verletzte zählt also nicht – wie hier über <see cref="Player.Available"/>.
-    /// [APPROX] Gesperrte: kein Stand mit gesperrtem Aufgestellten; die Auswahl 0x42838 schließt +0x09 &amp; 3 (beide Bits) aus.
+    /// gezählt wird beides, der Verletzte zählt also nicht – wie hier über <see cref="Player.Available"/>. Auch im Handmodus
+    /// und bei Verletzung außerhalb des Spiels belegt (FILE36 MENDE, FILE37 HEISS: +0x0A gelöscht, Reihe bleibt; re-runde-14.md).
+    /// [APPROX] Gesperrte: kein Stand mit Sperre über Spiele (FILE34–41: „GESP.“ nur im Spiel); die Auswahl 0x42838 schließt +0x09 &amp; 3 (beide Bits) aus.
     /// </summary>
     public bool IsShortHanded(Club club) => club.Lineup.Players.Count(p => p.Available) < MinimumPlayers;
 

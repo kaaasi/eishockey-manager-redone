@@ -239,8 +239,9 @@ public sealed class Lineup
 /// <item>[ORIGINAL] A167: Ein neuer Kaderplatz entsteht leer (Datei 0x42E3A löscht 0x34 Byte, also +0x0A = 0 und +0x15 = 0);
 ///   eingesetzt wird der neue Spieler nur durch die Auto-Aufstellung beim Verlassen der Transferliste (Datei 0x47BB5, FILE07:
 ///   DAFFNER) – nach der ersten Änderung von Hand bleibt er nicht eingesetzt. Aufgestellte zählen immer als eingesetzt
-///   (Aufstellen setzt ein, Datei 0x415B2; Platz leeren nimmt heraus, FILE06). [APPROX] Kauf bei ausgeschalteter Einstellung
-///   zeigt kein Stand. Bewusste Modellabweichung: Ein Verletzter behält im Original seine Reihe +0x15 und verliert nur +0x0A
+///   (Aufstellen setzt ein, Datei 0x415B2; Platz leeren nimmt heraus, FILE06). [ORIGINAL] Auch bei ausgeschalteter
+///   Einstellung (DGROUP 0x375 = 0): Kauf KJELLBERG (FILE35) und Leihe VALLIERE (FILE41) ohne „eingesetzt“ und ohne Reihe.
+///   A091: Kauf und Leihe hinten in der Art-Gruppe, Verkauf und Transferliste rücken auf (FILE35/37A/41). Bewusste Modellabweichung: Ein Verletzter behält im Original seine Reihe +0x15 und verliert nur +0x0A
 ///   (Datei 0x5C50, FILE24 STEFAN); das Remake nimmt ihn aus der Aufstellung (<see cref="RefillLineup"/>). Gleichwertig,
 ///   solange kein Leser +0x15 ohne +0x0A auswertet; betrifft auch Export und Import von Spielständen.</item>
 /// <item>[APPROX] Eingesetzt wirkt bisher nur auf die Anzeige; die Spielstärke kommt weiter aus der Aufstellung.</item>
