@@ -126,7 +126,7 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   2. **Darstellung aus `re-dosbox`** (nach `re-dosbox`): A373 (Pfeilfolge Taktik), Taktik-Befund DGROUP 375h (falls Anzeige),
      A380, A382, A377, A374, A313, A321, A357 (A364 → `kader-start`, L3) – Pixeltests gegen die Bilder der Sitzung 2.
   3. **Stadion aus `re-dosbox` Teil 2** (A323, A325, A326), sobald Sitzung 3 ausgewertet ist. A338/A339 → `hok-import` (L6).
-- **Dateigrenzen:** wie oben `ui-rest`, eigene Tests; nach L7 zusätzlich `UI/Screens/Statistics/HistoryScreen.cs` (A357). **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 (#597) umgesetzt, PR `paket/ui-rest-1` (05.11.2026); Teil 2 umgesetzt (A373, A374, A377, A382, A313, A321, A357), PR #647 `paket/ui-rest-2` (08.11.2026); offen daraus: Taktik-Knopf 375h, A380/A180-Anzeige (hängen am Kern von `kader-start`), A364 (`kader-start`); Teil 3 offen (nach `re-dosbox` Teil 2, #642).
+- **Dateigrenzen:** wie oben `ui-rest`, eigene Tests; nach L7 zusätzlich `UI/Screens/Statistics/HistoryScreen.cs` (A357). **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 (#597) umgesetzt, PR `paket/ui-rest-1` (05.11.2026); Teil 2 umgesetzt (A373, A374, A377, A382, A313, A321, A357), PR #647 `paket/ui-rest-2` (08.11.2026); offen daraus: Taktik-Knopf 375h, A380/A180-Anzeige (hängen am Kern von `kader-start`), A364 (`kader-start`); Teil 3 in Arbeit (A323, A325, A326), `paket/ui-rest-3` (08.11.2026).
 
 ### Spur `hok-import` – Original-Spielstände `*.HOK` ins Remake (E14-1 C)
 
