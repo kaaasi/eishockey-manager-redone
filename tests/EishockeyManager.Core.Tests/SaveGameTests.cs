@@ -53,7 +53,7 @@ public class SaveGameTests
     // 40 GameOptions.ManagerDayMinuteLoop (Spur saison, Runde 14 Teil 4, #349).
     // 41 NationalCoach._autoLineup/_autoLineupSaved/_turnOpen und GameState._nationalAutoLineupSaved (Spur nationalteam Teil 3, A009;
     // Integration Runde 14, Abdruck neu: Felder aus nationalteam kommen zu denen aus saison 40 hinzu).
-    private const string ExpectedSchemaFingerprint = "B6E7D3FAE51E7325";
+    private const string ExpectedSchemaFingerprint = "E34C26033CF5029C";
 
     // ---------- Abnahme 3: Roundtrip ----------
 
