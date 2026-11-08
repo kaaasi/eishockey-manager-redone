@@ -129,6 +129,66 @@ public class NationalteamRunde14Tests
         });
     }
 
+    /// <summary>
+    /// Mehrsaisonprobe zu R14NT-01/02 (AGENTS.md §5: 4 Saisonwechsel, passiver und aktiver Manager), Modus 4: Verein 2 je Saison
+    /// mit Höchstwerten (Vorbedingung Ernennung). Je Saison echte Ernennung am 13. April, WM vollständig (Stufe 7, Weltmeister),
+    /// keine Wanderung in der WM-Schleife: passiv (WM-Kader leer, nichts schreibt die Länderwerte) bleibt die Form Deutschlands über
+    /// alle WM-Tage einer Saison gleich; aktiv (Kader „auto“, Aufstellung in Saison 0 geleert, Form 1) liegt sie an jedem WM-Tag
+    /// unter 45. Speichern/Laden bleibt stabil.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Mode4_FourSeasonChanges_WorldCupLoopEverySeason(bool active)
+    {
+        var game = GameModeTests.Create(3, true, true, 2);
+        var probe = new FormProbe(NationalTeams.Germany);
+        game.Competitions.Insert(0, probe);
+        for (var season = 0; season < 5; season++)
+        {
+            probe.Seen.Clear();
+            bool nominated = false, appointed = false;
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                appointed |= game.NationalCoach?.Manager == 0 && game.CurrentDay > SeasonCalendar.ClubSeasonEnd;
+                Assert.True(guard < 3000, "Saisonende nicht erreicht");
+                foreach (var m in game.Managers)
+                    m.Money = Math.Max(m.Money, 10_000_000);
+                if (game.Phase == SeasonPhase.Running)
+                {
+                    TestSeason.KeepSquad(game, game.Managers[0], extendExpired: true); // Vorbedingung Ernennung über die Saisons
+                    ManagedSquads.PlayAtTopStrength(game, 0);
+                }
+                if (active && game.NationalTurn && !nominated)
+                {
+                    game.AutoNominate();
+                    if (season == 0)
+                        game.NationalCoach!.ClearFormation();
+                    nominated = true;
+                }
+                if (active && game.NationalCoach is { } c)
+                    LowerSquadForm(c);
+                game.Continue();
+            }
+            Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+            Assert.NotNull(game.WorldCup!.Winner);
+            Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
+            Assert.True(appointed, $"Saison {season}: keine Ernennung"); // echte Ernennung in jeder Saison
+            Assert.Equal(SeasonCalendar.DaysOf(DayEvents.WorldCup).Count(), probe.Seen.Count);
+            if (active)
+                Assert.All(probe.Seen, v => Assert.InRange(Math.Max(v.DefenseForm, v.AttackForm), 0, 44));
+            else
+                Assert.Single(probe.Seen.Select(v => (v.DefenseForm, v.AttackForm)).Distinct());
+
+            game.Competitions.Remove(probe);
+            var saved = SaveGame.Save(game);
+            Assert.Equal(saved, SaveGame.Save(SaveGame.Load(saved).Game!));
+            game.Competitions.Insert(0, probe);
+            if (season < 4)
+                game.StartNextSeason();
+        }
+    }
+
     /// <summary>Misst an jedem WM-Tag die Form eines Landes vor den WM-Spielen (steht in <c>Competitions</c> vor der WM).</summary>
     private sealed class FormProbe(int nation) : ISeasonCompetition
     {
