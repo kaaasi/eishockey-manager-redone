@@ -331,6 +331,460 @@ FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die S
 | Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf wird der Spieler nach Spielerart einsortiert (vor dem ersten leeren Platz oder dem ersten Platz größerer Art; ein Stürmer kommt damit hinten an) | FILE05 → FILE07 (Kauf eines Stürmers) und FILE26 (Verkauf), em.exe Datei `0x42D55`–`0x42DA1` mit memmove ab `0x42DC3` (Kauf, R13GN-01/#622), `0x425B6` (Verkauf); Remake `KaderStartRunde13Teil4Tests` (PR #599), `KaufEinsortierenTests` (PR #623) |
 | HOK `0x08EED` / `0x08EF7` | DGROUP `0xA776` (Teilnehmerliste Europapokal, deutsche Teilnehmer; die Mischung 0x35EDD führt Meister und Titelverteidiger über 0x36146 mit) bzw. DGROUP `0xA763` | FILE22 → FILE23: Kölner EC Satz 4 → 8, Liste = 8 (PR #579, 0x346D5 nach L8) |
 
+## Feldkarte Remake-Spielstand (Schema 39) ↔ HOK
+
+Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
+Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
+rot, sobald ein Feld fehlt oder wegfällt. Grundlage: Blocktabelle oben, `OriginalSaveGame.cs`, die `[ORIGINAL]`-Fundstellen
+des Spielkerns und die Stände FILE01–FILE41. Die Karte ist Arbeitsgrundlage für den Import (Teil 2), keine neue Belegung:
+was hier „B“ heißt, ist schon oben oder in den genannten Fundstellen belegt.
+
+**Status:** **B** belegt – das Feld steht im HOK, Bedeutung an Ständen oder in em.exe belegt. **A** abgeleitet – aus
+HOK-Feldern (oder der Datenbank `kb\23`) eindeutig berechenbar, Regel in der Spalte Import. **N** nicht im Original –
+Remake-eigener Zustand oder ein Original-Zustand, der nachweislich **nicht** im Spielstand liegt; der Import setzt den
+genannten Wert `[APPROX]`. **U** unbekannt – das Original führt den Zustand wahrscheinlich, der Ort im HOK ist nicht belegt;
+der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt.
+
+**Schreibweise der Quelle:** Blockname wie in der Tabelle oben (DGROUP-Adresse), dahinter der Versatz. Sätze:
+`965B+x` = Managersatz (DGROUP `0x965B + 0x1AF · m + x`; m = 0–3 Manager, 4 Bank/Transfermarkt, 5 Bundestrainer),
+`far:9657+x` = Vereinssatz (`0x3D · Satzplatz + x`), `far:8253+x` = Pool-Spieler (33 Byte), `5DC3+x` = Kaderplatz
+(`0x618 · Satz + 0x34 · Platz + x`; Satz 0–3 Manager, 4 Transfermarkt, 5 Nationalteam), `8257` = Tabellensatz des Vereins
+(DGROUP `0x825A + 0x50 · Satzplatz + x`, Heim/Auswärts je Feld; reverse-engineering.md „Ligatabelle“), `Kopf` = Klartextteil.
+
+**Grundregeln des Imports** (gelten für alle Zeilen):
+
+1. **Vereine:** Der Satzplatz im HOK (0–149) ist nicht der Remake-Vereinsindex: die Ligavereine werden je Spiel und Saison
+   gemischt (FILE10, FILE13 → FILE14, 0x35EDD). Zuordnung über den Namen `far:9657+0x00` zum Datenbankverein `kb\23`;
+   Ausnahme Modus „nur Weltkugel“: der Vereinssatz des Managers trägt dort „DEUTSCHLAND“ (FILE11), sein Datenbankverein
+   kommt aus dem übrigen Satzbestand (der fehlende Name). Alle Vereinsverweise (Tabelle `5CCB`, Ergebnisse, Pool `+0x1D`,
+   Manager `965B+0x14`, Pokale) laufen über diese Zuordnung.
+2. **Satzfolge:** Die Satzplätze 0–11, 12–23, 24–35 je Liga ergeben `_leagueSlots` (Remake-Indizes in HOK-Folge).
+3. **Spieler:** Nur Managerkader (`5DC3` Satz 0–3), Transfermarkt (Satz 4), Nationalkader (Satz 5) und der Pool
+   (`far:8253`, 200 Sätze) sind einzeln geführt. Die Kader der Computervereine erzeugt der Import wie ein neues Spiel aus der
+   Datenbank (`NewGame`) und passt ihre Werte an die Teamwerte `far:9657+0x17…0x1D` an (`[APPROX]`, wie Spielstart).
+   Spieler-IDs vergibt der Import neu (Pool vor Kadern, Reihenfolge Satz/Platz).
+4. **Geld:** HOK in Drittel-DM, Remake in DM: Wert / 3 (Zinskonto und Talentpreis: Drittel bleiben, wo das Remake Drittel führt).
+5. **Zeit:** Remake-Tag 0 = 10. September = Tageszähler `03B7` = 1, also `CurrentDay = 03B7 − 1`; Saison = 1993 + `03BD`.
+6. **Zufall:** Kein Generatorzustand im HOK (Abschnitt „Zufallszustand“). Alle Remake-Zufallsquellen werden aus einer
+   neuen Saat erzeugt `[APPROX]`; die Spielstand-ID und die Sicherungssperre werden ignoriert (Entscheidung Nutzer).
+
+### GameState
+
+| Feld | S | HOK-Quelle | Import |
+|---|---|---|---|
+| `GameState.Clubs` | B | `far:9657` (150 Sätze) | 150 Vereine aus der Datenbank, Werte je Satz nach Regel 1 |
+| `GameState.Competitions` | A | `5CFB`, `CED8`, `A776`, `07A9+6` | DEB-Pokal, Europapokal, WM aus den Wettbewerbsblöcken (Zeilen der Wettbewerbe unten) |
+| `GameState.CurrentDay` | A | `03B7` | `03B7 − 1` (Regel 5) |
+| `GameState.CurrentManager` | B | `A70E` | Manager am Zug; 5 = Bundestrainer → `_nationalTurn` |
+| `GameState.CurrentRecord` | N | `Kopf` – | null (Import nur in der laufenden Saison); nach `03B7` > 232 aus Tabellen neu bilden `[APPROX]` |
+| `GameState.FinanceDay` | A | `03B7` | `CurrentDay − 1` (Tagesabschluss des Vortags ist gebucht) |
+| `GameState.History` | N | – | leer; das Original führt nur Titelträger und Ewige Tabelle |
+| `GameState.ManagerLoans` | B | `965B+0x19B` (+4 · i) | Darlehen Manager m bei i (i = 0–3; negativ = Schuld), / 3 |
+| `GameState.Managers` | B | `0386`, `965B` | `0386` Manager, Sätze 0 … n − 1 |
+| `GameState.NationalAccount` | B | `965B+0x18F` Satz 5 | Konto des Nationalteams (DGROUP 0xA055), / 3 |
+| `GameState.NationalBookings` | N | – | eine Buchung „Carryover“ mit dem Kontostand |
+| `GameState.NationalBudget` | N | – | DGROUP 0x29C liegt in keinem Block: Startwert `NationalCoach.FirstBudget` |
+| `GameState.NationalCoach` | A | `D0BA`, `06AC`, `A70E` | Amt, wenn `D0BA` einen Manager nennt; Land `06AC` (Regel 1) |
+| `GameState.NextPlayerId` | A | `far:8253` | höchste vergebene ID + 1 (Regel 3) |
+| `GameState.Phase` | A | `03B7`, `5A14` | Running; ClubSeasonOver bei `03B7` > 232; GameOver bei Jahr `5A18` ≥ Spielende `5A14` nach Saisonende |
+| `GameState.PlayedMatchDays` | A | `07A9` | nächster Spieltag der Bundesliga − 1 |
+| `GameState.PlayoffResults` | A | `CED8`, `CDB8` | Spiele aus Paarungen `CED8` und Toren `CDB8` (Aufbau Termine offen) |
+| `GameState.Playoffs` | A | `CED8`, `CCA4` | ab Ende der Hauptrunde: Paarungen `CED8`, Siege `CCA4` |
+| `GameState.Random` | N | – | neue Saat (Regel 6) |
+| `GameState.RankSlotsRecorded` | A | `07A9` | = `PlayedMatchDays` (Platzfelder DGROUP 0x828B sind geschrieben) |
+| `GameState.RelegationGroups` | A | `CED8+0x48`, `CDB8`, `CD88` | Gruppen ab 0xCF20, Platzlisten `CD88`, Punkte/Tore `CD58`/`CD28`/`CCF8` |
+| `GameState.Results` | A | `A0CB` | Tore je Liga · 0x210 + Spieltag · 12 + Paarung; Vereine aus dem Spielplan (siehe `Schedules`) |
+| `GameState.RetiredPlayers` | N | – | leer |
+| `GameState.Schedules` | A | `5D7B` | feste Paarungstabelle 0x4E7C7 über die Satzplätze (re-runde-12.md); Tabelle in em.exe noch nicht gelesen, nur der laufende Spieltag steht in `5D7B` |
+| `GameState.Season` | B | `03BD` | 1993 + Saisonzähler |
+| `GameState.Setup` | B | `0118`, `D0B9`, `5A14` | Zeilen `GameSetup` |
+| `GameState.StatisticsRecordedSeason` | A | `03BD` | Saison − 1 (Statistik der laufenden Saison noch offen) |
+| `GameState.TrainedUntil` | A | `03B7`, `03BD` | (Saison, `CurrentDay`) |
+| `GameState.TransferMarket` | B | `5DC3` Satz 4, `far:8253` | Zeilen `TransferMarket` |
+| `GameState._contractRandom` | N | – | null (wird bei Bedarf aus `Random` gebildet) |
+| `GameState._contractTurnFactor` | N | – | 0 = im Zug neu ziehen |
+| `GameState._cupRandom` | N | – | null |
+| `GameState._eternal` | U | `AB7B`? | Ewige Tabelle: Ort nicht belegt; leer |
+| `GameState._financeRandom` | N | – | null |
+| `GameState._germanyRatings` | U | – | null (neu berechnet beim nächsten Länderspiel) |
+| `GameState._headToHead` | B | `AB7B+0x000` | DGROUP 0xAB7B + 0x280 · m + 10 · Verein: im Original **4** Manager-Plätze (0xA00 Byte), im Remake 6; Plätze 4–5 leer |
+| `GameState._leagueSlots` | A | `far:9657` | Regel 2 |
+| `GameState._managerBalance` | U | – | leer (Bilanz Manager gegen Manager) |
+| `GameState._managerHistory` | N | – | leer |
+| `GameState._nationalForm` | U | – | Vorgabe wie neues Spiel |
+| `GameState._nationalTurn` | A | `A70E` | `A70E` = 5 |
+| `GameState._nextLeagueSlots` | N | – | leer (wird am 29. April gebildet) |
+| `GameState._readyManagers` | N | – | leer |
+| `GameState._stocks` | B | `D0F4`, `01FD`, `A891`, `A895` | Zeilen `Stock` |
+| `GameState._teamRecordOpponents` | B | `AB7B+0xF94` | DGROUP 0xBB0F + 8 · Verein + Art (64 Vereine) |
+| `GameState._teamRecords` | B | `AB7B+0x1194` | DGROUP 0xBD0F + 0x10 · Verein + 2 · Art |
+| `GameState._trendRandom` | N | – | null |
+| `GameState._turnRandom` | N | – | null |
+| `GameState._vacantNationalTactics` | A | `far:9657+0x26` | Taktik des Landes aus dem Vereinssatz Deutschland, wenn kein Bundestrainer im Amt |
+| `GameState._worldCupRankings` | U | – | leer |
+
+### GameSetup, GameOptions, ManagerSetup
+
+| Feld | S | HOK-Quelle | Import |
+|---|---|---|---|
+| `GameSetup.ClubCompetitions` | B | `D0B9` | Bit 0x02 bzw. Wert 2/4 (Fahne) |
+| `GameSetup.DebCup` | N | – | true (kein Schalter des Originals) |
+| `GameSetup.Duration` | B | `0118+1` | Regler Dauer 0–3; Gegenprobe `5A14` (Dauer 0 → 1994, 3 → 22222) |
+| `GameSetup.EuropeAndWorldCup` | B | `D0B9` | Wert 1/4 (Weltkugel) |
+| `GameSetup.Managers` | B | `Kopf`, `965B` | je Manager eine `ManagerSetup` |
+| `GameSetup.Options` | B | `021D`, `0262` | Zeilen `GameOptions` |
+| `GameOptions.LiveMode` | B | `021D+9` | DGROUP 0x226 |
+| `GameOptions.MatchSpeed` | B | `0262` | DGROUP 0x262 |
+| `GameOptions.Reports` | B | `021D+0` | Index 0–8 |
+| `GameOptions.ShowDebCup` | B | `021D+10` | DGROUP 0x227 |
+| `GameOptions.ShowEuropeanCup` | B | `021D+11` | DGROUP 0x228 |
+| `GameOptions.ShowWorldCup` | B | `021D+12` | DGROUP 0x229 |
+| `ManagerSetup.ClubIndex` | A | `965B+0x14` | Vereinsindex nach Regel 1 |
+| `ManagerSetup.Head` | U | – | Managerkopf: Ort im Managersatz nicht belegt; 0 |
+| `ManagerSetup.Level` | B | `0118+0` | ein Wert für alle (Gegenprobe `0ED8` = 5 − Level) |
+| `ManagerSetup.Name` | B | `965B+0x00` | Name (19 Byte), Gegenprobe `Kopf` |
+| `ManagerSetup.StartLeague` | B | `0118+2` | ein Wert für alle |
+| `ManagerSetup.StartStrength` | B | `0118+3` | ein Wert für alle |
+
+### Manager, ManagerFinance
+
+| Feld | S | HOK-Quelle | Import |
+|---|---|---|---|
+| `Manager.ClubIndex` | B | `965B+0x14` | Regel 1 |
+| `Manager.DebtDays` | U | – | 0 |
+| `Manager.Dismissed` | U | `965B+0xF3` | Statusbyte, Bit für „entlassen“ nicht belegt; false |
+| `Manager.FinanceData` | B | `965B` | Zeilen `ManagerFinance` |
+| `Manager.Head` | U | – | wie `ManagerSetup.Head` |
+| `Manager.Level` | B | `0118+0` | Level |
+| `Manager.Money` | B | `965B+0x18F` | Konto / 3 |
+| `Manager.Name` | B | `965B+0x00` | Name |
+| `Manager.PowerPlayCounts` | B | `965B+0x177` | sechs Wörter (DGROUP 0x97D2 + 2 · k) |
+| `Manager.SeriesRecords` | B | `AB7B+0xF40` | DGROUP 0xBABB + 0x15 · m (4 Manager) |
+| `Manager.Training` | B | `A8A1` | Zeilen `TrainingPlan` |
+| `Manager._newMessage` | B | `5A50` | Byte je Manager |
+| `ManagerFinance.Bank` | B | `965B+0x1AB` | Zeilen `BankAccount` |
+| `ManagerFinance.Book` | N | – | Remake-Buchführung: leer (Anzeige „Ausgaben/Einnahmen“ beginnt neu) |
+| `ManagerFinance.CostLeague` | B | `965B+0xEB` | Liga-Stufe 0–2 |
+| `ManagerFinance.Holdings` | B | `D214` | Zeilen `StockHolding` |
+| `ManagerFinance.Inbox` | B | `D294` | 24 Sätze zu 0x71 Byte, gemeinsam für alle Manager; Zeilen `Message` |
+| `ManagerFinance.InterestAccrualThirds` | B | `02A0` | 4 Byte je Manager, Drittel-DM unverändert |
+| `ManagerFinance.LastHomeGame` | U | `965B+0x197` | 0x97F2 „zuletzt berechnete Einnahmen“, Zuschauer nicht belegt; null |
+| `ManagerFinance.ManagerLoanAccrualThirds` | N | – | 0 (Aufteilung nur fürs Finanzbuch) |
+| `ManagerFinance.SponsorRating` | B | `965B+0x173` | Wort |
+| `ManagerFinance.Sponsoring` | B | `C15B`, `C313` | Zeilen `Sponsoring` |
+| `ManagerFinance.Stadium` | B | `965B+0x116` | Zeilen `Stadium` |
+| `ManagerFinance.TalentPrice` | B | `020D` | 4 Byte je Manager, / 3 |
+| `ManagerFinance.TalentSearch` | B | `965B+0xEC` | Restzähler; 0 → null |
+| `ManagerFinance.Youth` | B | `A075` | 0x15 Byte je Manager; Zeilen `YouthTeam` |
+| `ManagerFinance._homeStatistics` | B | `965B+0xED` | Zeilen `StadiumStatistics` |
+| `BankAccount.Credit` | B | `965B+0x1AB` | Darlehen Bank (i = 4), Vorzeichen umkehren, / 3 (FILE08) |
+| `BankAccount.Savings` | U | – | Sparbuch: Ort nicht belegt; 0 |
+| `FinanceBook._current` | N | – | 0 |
+| `FinanceBook._previous` | N | – | 0 |
+| `ManagerLoan.Amount` | B | `965B+0x19B` | Betrag / 3 |
+| `ManagerLoan.Borrower` | B | `965B+0x19B` | Satz mit negativem Eintrag |
+| `ManagerLoan.Lender` | B | `965B+0x19B` | Index i des Eintrags |
+
+### Stadion, Zuschauer, Jugend, Training, Talentsuche
+
+| Feld | S | HOK-Quelle | Import |
+|---|---|---|---|
+| `Stadium.Seats` | B | `965B+0x133` | Stadion +0x1D |
+| `Stadium.SeatsTarget` | B | `965B+0x135` | Stadion +0x1F |
+| `Stadium.Standing` | B | `965B+0x137` | Stadion +0x21 |
+| `Stadium.StandingTarget` | B | `965B+0x139` | Stadion +0x23 |
+| `Stadium.TicketPrice` | B | `965B+0xE4` | Eintritt (DM) |
+| `Stadium._levels` | B | `965B+0x116` | Stadion +2 · i (9 Bereiche) |
+| `Stadium._offended` | N | – | DGROUP 0xCC09 liegt in keinem Block: false |
+| `Stadium._targets` | B | `965B+0x117` | Stadion +2 · i + 1 |
+| `Stadium._weeksLeft` | B | `965B+0x128` | Stadion +0x12 + p |
+| `StadiumStatistics.Games` | B | `965B+0xED` | Heimspiele (0x9748) |
+| `StadiumStatistics.Minimum` | B | `965B+0x18B` | Minuskulisse (0x97E6) |
+| `StadiumStatistics.MinimumOpponent` | B | `965B+0x115` | Gegner (0x9770), Regel 1 |
+| `StadiumStatistics.Record` | B | `965B+0x187` | Rekord (0x97E2) |
+| `StadiumStatistics.RecordOpponent` | B | `965B+0x114` | Gegner (0x976F), Regel 1 |
+| `StadiumStatistics.Total` | B | `965B+0x183` | Summe (0x97DE) |
+| `StadiumStatistics._curve` | B | `965B+0xFE` | Zuschauer / 1000 je Heimspiel (0x9759 + n): Kurve × 1000 `[APPROX]` |
+| `YouthTeam.Funding` | B | `A075+9` | Förderung (DGROUP 0xA078 + 6 + Mannschaft), Stufe × Schritt |
+| `YouthTeam.Kind` | A | `A075` | Platz in der Dreiergruppe (Schüler, Jugend, Junioren) |
+| `YouthTeam.League` | B | `A075+6` | Liga (0xA078 + 3 + Mannschaft) |
+| `YouthTeam.Rank` | B | `A075+3` | Platz (0xA078 + Mannschaft) |
+| `YouthTeam.Strength` | B | `A075+0` | Stärke (0xA075 + Mannschaft) |
+| `TrainingPlan.PriceIndex` | B | `02BC` | Preisindex (Code nennt DGROUP 0x2B8; der gesicherte Block heißt 0x2BC – in Teil 2 klären) |
+| `TrainingPlan.PriceTierSet` | U | – | true, wenn `_priceTier` gesetzt |
+| `TrainingPlan._priceTier` | U | `965B+0x193` | Trainingskosten/Woche (0x97EE) → Stufe zurückrechnen `[APPROX]` |
+| `TrainingPlan._units` | B | `A8A1` | 28 Byte je Manager, Art = Leistenfolge (FILE05, FILE08) |
+| `TalentSearch.TicksLeft` | B | `965B+0xEC` | Restzähler 1–16 |
+
+### Sponsoren, Aktien, Nachrichten
+
+| Feld | S | HOK-Quelle | Import |
+|---|---|---|---|
+| `Sponsoring.Contracts` | B | `C15B` | 11 Flächen zu 10 Byte je Manager; belegte Flächen |
+| `Sponsoring.Offers` | B | `C313` | 500 · m + 100 · Art + 10 · Partner |
+| `SponsorContract.Boards` | A | `C15B` | Bandenflächen 0–6 desselben Partners |
+| `SponsorContract.Kind` | A | `C15B` | Flächenindex: 0–6 Bande, 7 Trikot, 8 Fernsehen, 9/10 Eis |
+| `SponsorContract.MonthlyAmount` | B | `C15B+0` | Betrag / 3 |
+| `SponsorContract.MonthsLeft` | B | `C15B+5` | Restmonate |
+| `SponsorContract.OptionMonths` | B | `C15B+6` | Option (ohne Bit 0x80) |
+| `SponsorContract.SignedRating` | B | `C15B+8` | Bewertung beim Angebot |
+| `SponsorContract.Sponsor` | B | `C15B+4` | Partner |
+| `SponsorOffer.Boards` | B | `C313+4` | Banden |
+| `SponsorOffer.Kind` | A | `C313` | Art aus dem Satzindex |
+| `SponsorOffer.MonthlyAmount` | B | `C313+0` | Betrag / 3 |
+| `SponsorOffer.Months` | B | `C313+5` | Laufzeit |
+| `SponsorOffer.OptionMonths` | B | `C313+6` | Option |
+| `SponsorOffer.Rating` | B | `C313+8` | Bewertung (W / 10) |
+| `SponsorOffer.Sponsor` | A | `C313` | Partner aus dem Satzindex |
+| `StockMarket.Stocks` | B | `D0F4` | vier Aktien zu 0x48 Byte |
+| `Stock.Base` | B | `01FD` | 4 Byte je Aktie, Hundertstel-DM |
+| `Stock.Countdown` | B | `A891` | Byte je Aktie |
+| `Stock.Direction` | B | `A895` | Byte je Aktie |
+| `Stock.History` | B | `D0F4+0` | 36 Wörter Kursverlauf / 3 |
+| `Stock.Name` | A | `D0F4` | feste Namen des Originals (Remake `FinanceStocks`) |
+| `Stock.Price` | B | `D0F4+0x46` | letztes Wort (0xD13A) / 3 |
+| `StockHolding.Count` | B | `D214+4` | Stückzahl (32 · m + 8 · i) |
+| `StockHolding.PurchaseCost` | B | `D214+0` | Kaufpreis / 3 |
+| `Message.Amount` | U | `D294` | Kreditwunsch: Feld im Satz nicht belegt; 0 |
+| `Message.Borrower` | U | `D294` | Kreditwunsch: nicht belegt |
+| `Message.Contract` | N | – | null (nur Spielstände vor Schema 7) |
+| `Message.Day` | A | `D294` | Tageszähler im Satz (min(0x3B7, 255), FinanceInbox) − 1 |
+| `Message.DaysLeft` | B | `D294+0` | oberes Halbbyte von +0 |
+| `Message.Done` | U | `D294` | false |
+| `Message.Kind` | A | `D294+0` | Art Bit 3 (ohne Spieler) / Angebot mit Spieler |
+| `Message.Lines` | U | `D294` | Text im Satz nicht belegt; aus Art und Spieler neu bilden `[APPROX]` |
+| `Message.Player` | B | `D294+2` | Poolspieler (Pool +0x1E = offene Meldung) |
+| `Message.Season` | A | `03BD` | laufende Saison |
+
+### Vereine, Teamwerte, Taktik, Aufstellung
+
+| Feld | S | HOK-Quelle | Import |
+|---|---|---|---|
+| `Club.ForfeitsMatch` | A | `5DC3+0x0A` | weniger als neun Eingesetzte im Managerkader; sonst false |
+| `Club.Index` | A | `far:9657+0x00` | Datenbankindex nach Regel 1 |
+| `Club.League` | A | `far:9657` | Satzplatz / 12 für Plätze 0–35, sonst null |
+| `Club.LeaguePenaltyMinutes` | B | `8257` | DGROUP 0x82A1 + 0x50 · Satz (Wort) |
+| `Club.Lineup` | A | `5DC3+0x15` | Managervereine aus Reihe/Sturm-Bit und `+0x0A`; sonst Auto-Aufstellung |
+| `Club.LogoGraphic` | A | `far:9657+0x34` | Logo (Datenbankwert) |
+| `Club.Name` | B | `far:9657+0x00` | Name; „nur Weltkugel“ siehe Regel 1 |
+| `Club.Players` | A | `5DC3` | Managervereine aus dem Kader; sonst erzeugt (Regel 3) |
+| `Club.ReferenceRating` | N | – | neu aus der Auto-Aufstellung |
+| `Club.SeriesCurrent` | B | `AB7B+0xA00` | DGROUP 0xB57B + 0x15 · Satz (64 Sätze) |
+| `Club.Strength` | A | `far:9657` | Datenbankstärke `kb\23` |
+| `Club.Tactics` | B | `A6FB`, `A707`, `A701`, `CAE9` | Zeilen `Tactics` (Managervereine); sonst Automatik |
+| `Club.TeamValues` | B | `far:9657+0x17` | Zeilen `ClubTeamValues` |
+| `Club._autoLineup` | B | `0375+0` | 2 Byte je Manager (FILE05/06/24/25) |
+| `Club._dressed` | A | `5DC3+0x0A` | IDs der Spieler mit `+0x0A` = 1 |
+| `Club._dressedByHand` | A | `0375` | nicht „automatisch aufstellen“ |
+| `Club._rankSlots` | B | `8257` | DGROUP 0x828B + 0x50 · Satz, 44 Halbbytes |
+| `ClubTeamValues.AttackCondition` | B | `far:9657+0x19` | Kondition Sturm |
+| `ClubTeamValues.AttackForm` | B | `far:9657+0x1D` | Form Sturm |
+| `ClubTeamValues.AttackTechnique` | B | `far:9657+0x1B` | Technik Sturm |
+| `ClubTeamValues.DayForm` | B | `far:9657+0x17` | random(47, 53), nach jedem Ligaspiel nachgeführt |
+| `ClubTeamValues.DefenseCondition` | B | `far:9657+0x18` | Kondition Abwehr |
+| `ClubTeamValues.DefenseForm` | B | `far:9657+0x1C` | Form Abwehr |
+| `ClubTeamValues.DefenseTechnique` | B | `far:9657+0x1A` | Technik Abwehr |
+| `Tactics.AttackMode` | B | `A707` | Byte je Manager |
+| `Tactics.EffortMode` | B | `A6FB` | Byte je Manager |
+| `Tactics.Goalie` | U | `A89A`? | 6 Byte je Manager, Deutung offen; Auto |
+| `Tactics.LineChange` | B | `A701` | Byte je Manager (re-rest.md, Taktikbildschirm) |
+| `Tactics._attack` | B | `CAE9` | 0x30 je Manager, Angriffshälfte |
+| `Tactics._effort` | B | `CAE9` | 0x30 je Manager, Einsatzhälfte |
+| `Tactics._minutes` | B | `CC43` | 8 · m + 4 · Teil + Block |
+| `Tactics._shownAutoAttack` | A | `far:9657+0x35` | nur Nationalteam: Vereinssatz +0x35–0x3A |
+| `Tactics._shownAutoEffort` | A | `far:9657+0x26` | nur Nationalteam: Vereinssatz +0x26–0x2B |
+| `Lineup._defenders` | A | `5DC3+0x15` | Reihe 1–3 ohne Sturm-Bit, Nationalteam Satz 5 |
+| `Lineup._forwards` | A | `5DC3+0x15` | Reihe 1–3 mit Bit 0x80 |
+| `Lineup._goalkeeper` | A | `5DC3+0x15` | Torhüter mit Reihe 1 |
+
+### Spieler, Pool, Transfermarkt
+
+| Feld | S | HOK-Quelle | Import |
+|---|---|---|---|
+| `Player.Age` | B | `far:8253+0x14` | Alter |
+| `Player.Assists` | B | `far:8253+0x1F` | Wort; beim Torhüter Spielminuten |
+| `Player.Caps` | U | – | 0 |
+| `Player.ClubGamesCarry` | A | `5DC3+0x1C` | `+0x1C` − `+0x06` (Spiele beim Verein aus Vorsaisons) |
+| `Player.Condition` | B | `5DC3+0x10` | Kader; Pool `+0x15` |
+| `Player.ContractYears` | B | `5DC3+0x0B` | 0 = „kein V.“ |
+| `Player.Form` | B | `5DC3+0x12` | Kader; Pool `+0x17` |
+| `Player.Games` | B | `5DC3+0x06` | Summe `+0x06` … `+0x08` |
+| `Player.GoalieMinutes` | B | `far:8253+0x1F` | Torhüter |
+| `Player.Goals` | B | `5DC3+0x03` | Summe `+0x03` … `+0x05` (Feldspieler) |
+| `Player.GoalsAgainst` | B | `5DC3+0x03` | Torhüter: Gegentore |
+| `Player.HiddenSkill1` | B | `5DC3+0x19` | unteres Halbbyte |
+| `Player.HiddenSkill2` | B | `5DC3+0x19` | oberes Halbbyte |
+| `Player.Id` | N | – | neu vergeben (Regel 3) |
+| `Player.InjuredGames` | B | `5DC3+0x0D` | Restdauer bei `+0x09` Bit 0x02 |
+| `Player.InjuryKind` | B | `5DC3+0x17` | Art 0–27 |
+| `Player.InsuranceLocked` | B | `5DC3+0x2C` | Bit 31 |
+| `Player.InsurancePremium` | B | `5DC3+0x30` | Prämie / 3 |
+| `Player.IsForeigner` | A | `far:8253+0x00` | Ausländerliste der Datenbank nach Namen |
+| `Player.Loan` | U | `5DC3+0x2C` | Leihe „(L)“: Herkunft und Vertragsdaten nicht belegt; null |
+| `Player.MonthlySalary` | B | `5DC3+0x28` | Gehalt / 3 |
+| `Player.Name` | B | `far:8253+0x00` | Name (17 Zeichen) |
+| `Player.NegotiationLock` | B | `5DC3+0x18` | Tage |
+| `Player.Notice` | A | `far:8253+0x1E` | ≠ 0 → Offered `[APPROX]` (Art der Ankündigung nicht belegt) |
+| `Player.NoticeYears` | U | – | 0 |
+| `Player.Number` | A | `5DC3` | Kaderplatz + 1 (keine Rückennummer im Original) |
+| `Player.OnLoan` | U | – | false |
+| `Player.Penalties2` | B | `5DC3+0x01` | 2-Minuten-Strafen |
+| `Player.Penalties5` | B | `5DC3+0x00` | 5-Minuten-Strafen |
+| `Player.PurchasePrice` | B | `5DC3+0x2C` | ohne Bit 31, / 3 |
+| `Player.Role` | A | `far:8253+0x18` | Rollenwert 0 → Torhüter, < 50 Abwehr, sonst Sturm |
+| `Player.Strain` | B | `5DC3+0x13` | Belastung 50–150 |
+| `Player.SuspendedGames` | U | – | 0 |
+| `Player.Talent` | B | `far:8253+0x12` | 0–9 |
+| `Player.Technique` | B | `5DC3+0x11` | Kader; Pool `+0x16` |
+| `Player.Trend` | A | `5DC3+0x14` | Bit 7 Richtung, Schritt Bits 4–6 |
+| `Player.TrendControl` | B | `5DC3+0x14` | Steuerbyte |
+| `Player.TrendScore` | U | – | 0 |
+| `Player.UnsolicitedOffer` | B | `5DC3+0x09` | Bit 0x40, Verein `+0x16` (Regel 1) |
+| `PlayerLoan.ContractYears` | U | – | wie `Player.Loan` |
+| `PlayerLoan.Insured` | U | – | wie `Player.Loan` |
+| `PlayerLoan.MonthlySalary` | U | – | wie `Player.Loan` |
+| `PlayerLoan.Origin` | U | – | wie `Player.Loan` |
+| `PoolSlot.Club` | B | `far:8253+0x1D` | Regel 1; 0xFF = keiner |
+| `PoolSlot.Index` | B | `far:8253` | Satznummer 1–199 |
+| `PoolSlot.Owner` | B | `far:8253+0x1A` | 0–3 Manager → Taken, 4 → Market, sonst Free |
+| `PoolSlot.Player` | B | `far:8253` | Spieler mit Pool-Grundwerten (`+0x15`–`+0x17`) |
+| `PoolDatabaseName.Club` | N | – | Remake-Zuordnung Datenbankname ↔ Pool: aus den Poolnamen neu bilden |
+| `PoolDatabaseName.Name` | N | – | wie `Club` |
+| `PoolDatabaseName.Slot` | N | – | wie `Club` |
+| `TransferBid.Amount` | U | – | offene Gebote nicht belegt; leer |
+| `TransferBid.Buyer` | U | – | leer |
+| `TransferBid.Listing` | U | – | leer |
+| `TransferListing.From` | B | `far:8253+0x1D` | Verein des Poolspielers (Regel 1) |
+| `TransferListing.FromPool` | A | `5DC3+0x0F` | Marktplatz mit Pool-Spieler, nicht aus einem Managerkader |
+| `TransferListing.IsFreeAgent` | A | `5DC3+0x0B` | Vertrag 0 und Preis 0 |
+| `TransferListing.ListedDay` | U | – | `PlayedMatchDays` |
+| `TransferListing.Player` | B | `5DC3+0x0F` | Satz 4, Poolindex |
+| `TransferListing.Price` | B | `5DC3+0x2C` | Satz 4, Preis / 3 |
+| `TransferListing.RejectedBy` | B | `5DC3+0x1A` | Satz 4: Bit 0x80 und 1 << Manager |
+| `TransferListing.Seller` | U | – | null (vom Manager angebotene Spieler: Kennung nicht belegt) |
+| `TransferMarket.UpdatedDay` | A | `07A9` | = `PlayedMatchDays` |
+| `TransferMarket._bids` | U | – | leer |
+| `TransferMarket._databaseNames` | N | – | neu bilden |
+| `TransferMarket._freeAgents` | U | – | leer |
+| `TransferMarket._listings` | B | `5DC3` | Satz 4 (FILE05: 7 Plätze) |
+| `TransferMarket._pool` | B | `far:8253` | 200 Sätze |
+| `TransferMarket._poolTurnBundesliga` | N | – | DGROUP 0x48FB liegt in keinem Block: 0 (wie nach Programmstart) |
+| `TransferMarket._poolTurnOberliga` | N | – | wie oben (0x48FD) |
+| `TransferMarket._poolTurnZweiteLiga` | N | – | wie oben (0x48FC) |
+
+### Liga, Pokale, Nationalteam, Saisonbilanz
+
+| Feld | S | HOK-Quelle | Import |
+|---|---|---|---|
+| `MatchDay.Matches` | A | `5D7B` | Paarungen nach Tabelle 0x4E7C7 (siehe `GameState.Schedules`) |
+| `MatchDay.Number` | A | `07A9` | Spieltag |
+| `MatchResult.Away` | A | `A0CB` | Gast der Paarung nach Spielplan |
+| `MatchResult.AwayGoals` | B | `A0CB` | zweites Byte der Paarung |
+| `MatchResult.Home` | A | `A0CB` | Heim der Paarung nach Spielplan |
+| `MatchResult.HomeGoals` | B | `A0CB` | erstes Byte (Marken + 30 bei Pokalspielen) |
+| `MatchResult.League` | A | `A0CB` | Liga aus dem Abschnitt (0x210 je Liga) |
+| `MatchResult.MatchDay` | A | `A0CB` | Spieltag aus dem Versatz |
+| `MatchBalance.Draws` | A | `8257` (0x825A + 0x50 · Satz + 0x1E) | Spiele − Siege − Niederlagen (Original zählt Unentschieden nicht) |
+| `MatchBalance.GoalsAgainst` | B | `8257` (0x825A + 0x50 · Satz + 0x1A) | Heim/Auswärts |
+| `MatchBalance.GoalsFor` | B | `8257` (0x825A + 0x50 · Satz + 0x16) | Heim/Auswärts |
+| `MatchBalance.Losses` | B | `8257` (0x825A + 0x50 · Satz + 0x2A) | Heim/Auswärts |
+| `MatchBalance.PointsMinus` | A | `8257` (0x825A + 0x50 · Satz + 0x1E) | 2 · Niederlagen + Unentschieden |
+| `MatchBalance.PointsPlus` | B | `8257` (0x825A + 0x50 · Satz + 0x00) | Punkte Heim/Auswärts |
+| `MatchBalance.Wins` | B | `8257` (0x825A + 0x50 · Satz + 0x26) | Heim/Auswärts |
+| `KnockoutMatch.Away` | A | `5CFB`, `CED8` | Gast aus der jeweiligen Paarungsliste |
+| `KnockoutMatch.AwayGoals` | B | `5C4B` | Tore modulo 30 |
+| `KnockoutMatch.Day` | A | `5C4B` | Termin aus der Zeile (Zuordnung der Zeilen offen, MatchEngine.Live) |
+| `KnockoutMatch.Home` | A | `5CFB`, `CED8` | Heim aus der Paarungsliste |
+| `KnockoutMatch.HomeGoals` | B | `5C4B` | Tore modulo 30 |
+| `KnockoutMatch.PenaltyWinner` | A | `5C4B` | Marke 1 (+30) = Penaltyschießen |
+| `CupTie.First` | B | `5CFB` | Paarung, linke Seite |
+| `CupTie.Games` | A | `5C4B` | Spiele der Paarung |
+| `CupTie.Marks` | B | `5C4B` | Marke = Heimbyte div 30 |
+| `CupTie.Second` | B | `5CFB` | Paarung, rechte Seite |
+| `CupGroup.Number` | A | `CED8+0x11C` | Gruppe aus dem Satzindex |
+| `CupGroup.Results` | B | `CED8`, `CDB8` | Paarungen und Tore der Gruppe |
+| `CupGroup.Teams` | B | `CED8+0x11C` | DGROUP 0xCFF4 + 8 · Wettbewerb + 4 · Gruppe |
+| `DebCup.Winner` | B | `0387` | DEB-Pokalsieger (nach dem Finale) |
+| `DebCup._draw` | B | `5CFB` | Auslosung |
+| `DebCup._rounds` | B | `5CF3`, `CFFC` | Runde und Spiele |
+| `EuropeanCup.FinalRound` | A | `CED8+0x11C` | ab dem siebten Termin `07A9+6` |
+| `EuropeanCup.GermanEntrants` | B | `A776` | deutsche Teilnehmer (FILE22/23) |
+| `EuropeanCup.Winner` | B | `0388` | Europacupsieger |
+| `EuropeanCup._draw` | B | `A763` | Auslosung (18 Byte) |
+| `EuropeanCup._groups` | A | `CED8+0x11C`, `CED8` | Gruppen aus 0xCFF4 und Paarungen |
+| `WorldCup.Ranking` | A | `CFF8+3` | Platzierungsspiele ab DGROUP 0xCFFB |
+| `WorldCup.Winner` | U | – | Weltmeister: Ort nicht belegt; aus dem Endspiel |
+| `WorldCup._groups` | A | `CED8+0x11C`, `CED8` | wie Europapokal (Wettbewerb WM) |
+| `WorldCup._knockout` | A | `5CFB+0x60` | Paare ab DGROUP 0x5D5B |
+| `WorldCup._knockoutMarks` | A | `5C4B` | Marken wie `CupTie.Marks` |
+| `WorldCup._order` | U | – | Auslosungsfolge: nicht belegt; Indexfolge |
+| `WorldCup._slots` | U | – | leer bis zur Auslosung |
+| `Playoffs.Seeds` | A | `5CCB` | Plätze 1–8 der Abschlusstabelle |
+| `Playoffs._rounds` | B | `CED8`, `CCA4` | Serien und Siege |
+| `PlayoffSeries.Games` | B | `CDB8` | Tore je Spiel |
+| `PlayoffSeries.HigherSeed` | B | `CED8` | Paarung |
+| `PlayoffSeries.LowerSeed` | B | `CED8` | Paarung |
+| `RelegationGroup.Clubs` | B | `CD88` | Platzliste der Gruppe |
+| `RelegationGroup.PlayedRounds` | A | `07A9` | aus dem Termin |
+| `RelegationGroup.Results` | B | `CED8+0x48`, `CDB8` | Paarungen und Tore |
+| `RelegationGroup.Rounds` | B | `CED8+0x48` | 6 Byte je Spieltag |
+| `RelegationGroup.Upper` | A | `CED8` | Gruppe 1: Bundesliga, Gruppe 2: 2. Liga |
+| `NationalCoach.Formation` | A | `5DC3+0x15` | Satz 5, wie `Lineup` |
+| `NationalCoach.Manager` | B | `D0BA` | ernannter Manager |
+| `NationalCoach.Nation` | B | `06AC` | Land (Regel 1) |
+| `NationalCoach.Tactics` | B | `A6FB+5` | Modi und Werte des Satzes 5 (`A707+5`, `CAE9+0xF0`) |
+| `NationalCoach._dressed` | A | `5DC3+0x0A` | Satz 5 |
+| `NationalCoach._friendlies` | B | `D0C1`, `D0C3` | Zahl und Ergebnisse; Paarungen `D0CB`/`D0D3`/`D0DB` (Zuordnung offen), Kosten `026C` |
+| `NationalCoach._squad` | B | `5DC3` | Satz 5 |
+| `NationalSquadMember.Club` | B | `far:8253+0x1D` | Verein des Spielers |
+| `NationalSquadMember.Player` | B | `5DC3+0x0F` | Satz 5, Poolindex |
+| `FriendlyMatch.Away` | U | `D0CB` | Zuordnung der drei 8-Byte-Blöcke offen |
+| `FriendlyMatch.AwayGoals` | B | `D0C3` | Ergebnis |
+| `FriendlyMatch.Bonus` | U | `026C` | Kosten je Nationalteam; Prämie nicht belegt |
+| `FriendlyMatch.Home` | U | `D0D3` | wie `Away` |
+| `FriendlyMatch.HomeGoals` | B | `D0C3` | Ergebnis |
+| `NationalBooking.Amount` | N | – | siehe `GameState.NationalBookings` |
+| `NationalBooking.Kind` | N | – | Carryover |
+| `NationalBooking.Season` | N | – | laufende Saison |
+| `SeasonRecord.FinalTables` | N | – | nur in `CurrentRecord` (null) |
+| `SeasonRecord.LeftOberliga` | N | – | wie oben |
+| `SeasonRecord.Managers` | N | – | wie oben |
+| `SeasonRecord.PromotedInto` | N | – | wie oben |
+| `SeasonRecord.RelegatedInto` | N | – | wie oben |
+| `SeasonRecord.Season` | N | – | wie oben |
+| `SeasonRecord.Titles` | A | `0387`, `D0E6`, `0388` | Titelträger der Vorsaison (Pokal, Meister, Europacup); bei `CurrentRecord` = null nicht nötig |
+| `ManagerSeasonResult.Club` | N | – | wie `SeasonRecord` |
+| `ManagerSeasonResult.Events` | N | – | wie `SeasonRecord` |
+| `ManagerSeasonResult.League` | N | – | wie `SeasonRecord` |
+| `ManagerSeasonResult.Manager` | N | – | wie `SeasonRecord` |
+| `ManagerSeasonResult.Premium` | N | – | wie `SeasonRecord` |
+| `ManagerSeasonResult.Rank` | N | – | wie `SeasonRecord` |
+| `ManagerSeasonHistory.Club` | N | – | Verlauf beginnt mit dem Import |
+| `ManagerSeasonHistory.Deb` | N | – | wie `Club` |
+| `ManagerSeasonHistory.DebRound` | N | – | wie `Club` |
+| `ManagerSeasonHistory.Europe` | N | – | wie `Club` |
+| `ManagerSeasonHistory.EuropeFinalRound` | N | – | wie `Club` |
+| `ManagerSeasonHistory.League` | N | – | wie `Club` |
+| `ManagerSeasonHistory.LeagueOutcome` | N | – | wie `Club` |
+| `ManagerSeasonHistory.Rank` | N | – | wie `Club` |
+| `ManagerSeasonHistory.Season` | N | – | wie `Club` |
+| `EternalEntry.Championships` | U | – | wie `GameState._eternal` |
+| `EternalEntry.Club` | U | – | wie `GameState._eternal` |
+| `EternalEntry.CupWins` | U | – | wie `GameState._eternal` |
+| `EternalEntry.EuropeanCupWins` | U | – | wie `GameState._eternal` |
+| `EternalEntry.Points` | U | – | wie `GameState._eternal` |
+
+### Offen für Teil 2 (Import)
+
+- **Spielplan:** Paarungstabelle 0x4E7C7 in em.exe lesen; ohne sie lassen sich die Tore in `A0CB` vergangener Spieltage
+  keinen Vereinen zuordnen. Ersatz bis dahin: Tabelle aus `8257` übernehmen (Punkte, Tore, Spiele je Verein) und `Results`
+  nur für den laufenden Spieltag (`5D7B`) bilden `[APPROX]`.
+- **Pokalzeilen `5C4B`** (Zuordnung Zeile ↔ Wettbewerb/Termin), Freundschaftsspiel-Blöcke `D0CB`/`D0D3`/`D0DB`, `A89A`,
+  Sparbuch, Ewige Tabelle, Managerkopf, Leihe: an FILE16A, FILE29–FILE41 vergleichen, sonst bei `U` bleiben.
+- **Preisindex:** Fundstelle im Code 0x2B8 gegen Block `02BC` prüfen (FILE29: `02BC` = 100).
+- **Bundestrainer-Satz:** Managersatz 5 (Konto DGROUP 0xA055) – im Kommentar `CupsNational.GameState.cs` „Manager-Satz 4“
+  genannt (Zählung ab 0x94AC); hier einheitlich ab 0x965B.
+
 ## Offene Punkte
 
 - Deutung der Blöcke ohne Eintrag in der Tabelle, besonders `8257` (0x1400), `AB7B` (0x1594), `D294` (0xA98),
