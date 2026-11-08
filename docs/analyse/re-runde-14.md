@@ -1,6 +1,7 @@
 # Auswertung DOSBox-Aufnahme `runde-13` (Spur `re-dosbox`, Runde 14)
 
-Stand: Teil 1 (geplanter Lauf Claude Opus 5.5, PR #628): Sitzungen 1 und 2, Spielstände FILE29–41 und FILE37A.
+Stand: Teil 1 abgeschlossen (geplanter Lauf Claude Opus 5.5, PR #628): Sitzungen 1 und 2, Spielstände FILE29–41 und FILE37A.
+Korrekturen nach Review #643 (R14RD1-01 bis -05) durch die Leitstelle am 08.11.2026.
 Teil 2 (PR #642): Sitzungen 3–7, FILE43–49A ohne FILE45, dazu FILE46 für das Leihende A115 (Abschnitt „Teil 2“).
 
 Quellen: Spielstände und Bilder aus `kaaasi/eishockey-manager-referenz` (`original/spielstaende/`, README mit den Angaben des
@@ -8,7 +9,9 @@ Nutzers, Stand `36aeca9`), `emtool hok dump`, der entschlüsselte Klartext (Verf
 und das Disassembly von `em.exe` (`tools/reverse-engineering/disasm.py`). Schreibweise wie in `re-runde-13.md`: Adressen in
 `em.exe` als `Datei 0x…`, DGROUP-Adressen als `DGROUP 0x…`, Offsets im entschlüsselten Spielstand als `HOK 0x…`.
 Bildkoordinaten sind Spielkoordinaten (320 × 240): Die DOSBox-Bilder (642 × 507) zeigen das Spiel doppelt ab Pixel (1 | 26).
-Die Farben der Bilder stimmen exakt mit der Palette `kb\21.vga` überein (6 Bit), Indizes sind daher direkt ablesbar.
+Die Farben der Bilder stimmen exakt mit der Palette `kb\21.vga` überein (6 Bit). Indizes sind daraus ablesbar, eindeutig bis auf
+doppelte Farben der Palette: (97 | 0 | 16) = 16 oder 96, (243 | 195 | 113) = 31 oder 63, (32 | 48 | 81) = 29 oder 147. Gewählt ist
+jeweils der übliche Index; für Pixeltests unerheblich, als `[ORIGINAL]`-Index „nach Farbe“ zu schreiben (R14RD1-04).
 
 „Ergebnis“ bezieht sich auf die Remake-Annahme der jeweiligen `[APPROX]`-Stelle (`docs/analyse/inventur.md`): **belegt** =
 Remake stimmt mit dem Original, **widerlegt** = Remake weicht ab (Umsetzung nötig), **nicht entscheidbar** = Beleg fehlt.
@@ -23,7 +26,7 @@ Remake stimmt mit dem Original, **widerlegt** = Remake weicht ab (Umsetzung nöt
 | A166 | belegt | Start: 16 Aufgestellte + 6 Stärkste eingesetzt (FILE29); Handmodus: kein Auffüllen (22 → 18) | `kader-start` |
 | A082 | belegt | Satz des nicht belegten Managers 1: DGROUP 0x974B + 0x1AF bleibt 0 | `kader-start` |
 | A046 | widerlegt | Tabellenfeld DGROUP 0x8288 + 0x50 · Verein vor dem 1. Spieltag 0 (Spielstart) bzw. Endstand der Vorsaison | `kader-start` |
-| A373 | belegt | Pfeil oben = nächster Modus, unten = voriger (Datei 0x487A8–0x487B8, 0x48C07–0x48C25) | `ui-rest` |
+| A373 | widerlegt | Pfeil **unten** = nächster Modus, oben = voriger, an den Enden kein Schritt (Datei 0x487A8–0x487B8, 0x48BD2–0x48C25); Remake umgekehrt und mit Umlauf (R14RD1-01) | `ui-rest` |
 | Taktik 375h | widerlegt | Taktik oben links ist „automatisch aufstellen“ (DGROUP 0x375 + 2 · m), kein Torwartwechsel; zweites Byte 0x376 + 2 · m sichert die Einstellung über den Spieltag | `ui-rest` / `kader-start` |
 | A364 | teils | Rechtsklick auf den Namen → Spielerdaten (belegt); STATUS leer bei nicht Eingesetzten (belegt); NR leer bei nicht Eingesetzten (widerlegt); Linksklick nicht aufgenommen | `ui-rest` |
 | A012 | belegt | VERL./GESP. auch bei nicht eingesetzten Spielern | `kader-start` |
@@ -38,7 +41,7 @@ Remake stimmt mit dem Original, **widerlegt** = Remake weicht ab (Umsetzung nöt
 | A313 | nicht entscheidbar (Kursregler) / widerlegt (Betragsbalken) | Balken verschwindet, sobald die Maus die Zeilen 73–100 verlässt (Datei 0x59531–0x5955F), nicht erst beim Klick | `ui-rest` |
 | A321 | teils | Kopffeld = Datum, weißes Feld = Text (zwei Zeilen), kein Zähler bei einer Nachricht | `ui-rest` |
 | A357 | widerlegt | Balken Liga Index 29, DEB-Pokal Index 27 (nicht 200); Marke 2/4/6 + Stiel 2 Pixel breit | `ui-rest` |
-| A115 | nicht entscheidbar | FILE42 (Leihende) nicht erzeugt (Angabe Nutzer) | – |
+| A115 | nicht entscheidbar (Teil 1) | Leihende liegt in FILE46 (ersetzt FILE42); Auswertung in Teil 2 | – |
 | A088, A009, A085 | kein neuer Beleg | Sitzungen 1–2 enthalten keinen Saisonwechsel und keinen Bundestrainer; siehe Teil 2 | – |
 
 ## Sitzung 1 – Spielvorbereitung und Spielstart (FILE29–31)
@@ -78,14 +81,19 @@ Taktikwerte DGROUP 0xCAE9 = HOK 0x0BA26.
   - 0x45CD0(r, 1) durchsucht Zeile 1 der Tabelle DGROUP 0x5CFB mit 2 · [0x3B1 + [0x5CF4]] Einträgen. Beim Spielstart ist die
     Tabelle noch leer (Startwert 0 in em.exe, DGROUP 0x5CF4 = 0 → 64 Einträge); gefüllt wird sie erst nach der Spielvorbereitung
     (0x341AB über Datei 0x43A8C, Spielvorbereitung Datei 0x43A61). Damit trifft der Filter genau **Platz 0**, nicht den
-    Deutschen Meister. Nach dem Füllen bleiben die Einträge 8–31 der Zeile 0 (Füllwerte), Platz 0 gilt also auch danach als
-    „Teilnehmer“.
+    Deutschen Meister. Nach dem Füllen ist DGROUP 0x5CF4 = 1 (32 Einträge); in **Zeile 1** sind 8 belegt (FILE29 HOK 0x08F2C:
+    148 75 9 110 138 125 95 114), die Einträge 8–31 bleiben 0 – Platz 0 gilt also auch danach als „Teilnehmer“. Zeile 2 ist 0,
+    Zeile 3 = 0xFF (R14RD1-03).
+  - Geltungsbereich: Das gilt für den Einstieg Datei 0x43A61 (einmal je Programmlauf). Der zweite Aufrufer Datei 0x45755 (aus
+    0x44E22, Argument 0) sieht eine gefüllte Tabelle; dort ist der Sonderfall wegen `[bp−0x64]` = `[0x386]` ≠ 0 aus (Datei
+    0x2819C–0x281A1, 0x29CFA), der Filter von U15-a (Datei 0x29CC5–0x29CD5) schlösse aber die Europapokal-Teilnehmer und Platz 0
+    aus. Ob dieser Zweig dort erreicht wird, ist nicht gelesen; die Umsetzung „`partnerPlace == 0`“ gilt nur für „neues Spiel“.
   - Folgen: (1) U15-c: Der Managerverein landet immer auf Platz 0. FILE29: ESV KAUFBEUREN auf Platz 0, Feld 0x9744 = 1. Am
     echten Europapokal nimmt er nicht teil (Zeile 1 nach dem Füllen: 148 75 9 110 138 125 95 114 – Platz 9 = DÜSSELDORFER EG
     = Meister DGROUP 0xD0E6 = 9). Die Wirkung von 0x9744 = 1 außerhalb des Highscores ist nicht gelesen. (2) U15-a: Der
     Zufallsplatz r der Start-Liga ist nie Platz 0 (statt „nie der Meister, Verein 2“). Verträglich mit allen Ständen:
     Managervereine auf Platz 2 (FILE01), 1 (FILE10), 3/8 (FILE09), keiner auf Platz 0.
-- **Fundstelle:** em.exe Datei 0x29CFA–0x29D23 (Bedingung, `mov byte [bx-0x68bc],1` = DGROUP 0x9744 + 0x1AF · m),
+- **Fundstelle:** em.exe Datei 0x29CFA–0x29D23 (Bedingung, setzt DGROUP 0x9744 + 0x1AF · m auf 1),
   0x29D28–0x29D7F (Zufallsplatz der Bundesliga, Ausschluss früherer Manager, 0x45CD0(r, 1)), 0x29D9C `0x36169(v, r, 0x80)`;
   0x45CD0–0x45D42 (Suche in DGROUP 0x5CFB + 0x20 · Zeile); Schreiber der Tabelle 0x341AB (Datei 0x3435D, 0x343E3), Aufruf
   Datei 0x43A8C nach 0x43A61. FILE29/30/31: HOK 0x00F70 = 1; FILE01/05/09/10/27/28: 30. Bild `file29_3` (Spielvorbereitung).
@@ -151,7 +159,7 @@ Taktikwerte DGROUP 0xCAE9 = HOK 0x0BA26.
   (Datei 0x54608–0x5462D), nicht aus einer Vortabelle. Vor dem ersten Spieltag des Spiels ist das Feld für alle Vereine 0
   (= Platz 1). In späteren Saisons steht dort vor dem 1. Spieltag der Wert vom Ende der Vorsaison (nicht neu berechnet, nach
   Auf-/Abstieg am Satzplatz). Das Remake nimmt die Reihenfolge der Liga.
-- **Fundstelle:** em.exe Datei 0x54608–0x5464A (Argumente `[bx−0x7D78]` = DGROUP 0x8288 + 0x50 · Heim/Gast an 0x3F185).
+- **Fundstelle:** em.exe Datei 0x54608–0x5464A (Argumente DGROUP 0x8288 + 0x50 · Heim/Gast an 0x3F185).
   HOK 0x03C5F + 0x31 + 0x50 · i: FILE29/30/01/12 alle 0; FILE31 (nach dem 1. Spieltag) Plätze 0–11 gesetzt; FILE14/17/23
   (10.09., vor dem 1. Spieltag der zweiten Saison) Werte der Vorsaison (Doppelte innerhalb einer Liga nach dem Tausch).
 - **Umsetzung:**
@@ -173,13 +181,19 @@ Grundlage: Start FILE05 (KÖLNER EC, Manager „Joerg“), danach im selben Spie
 
 ### A373 – Pfeilrichtung bei den Modi
 
-- **Ergebnis:** belegt. Pfeil oben = nächster Wert, unten = voriger, für alle vier Modusknöpfe; Reihenfolge der Reihen-Modi
+- **Ergebnis:** widerlegt (korrigiert nach Review #643, R14RD1-01). Pfeil **unten** = nächster Wert, oben = voriger, für alle
+  vier Modusknöpfe; an den Enden bleibt der Wert stehen (kein Umlauf). Maus: `di` = y (Datei 0x484A1–0x484AC); `[bp−0xC]` = 1
+  genau dann, wenn y **unter** der Mitte liegt (Datei 0x48783–0x487B8, Bildschirm-y wächst nach unten); die gedrückte Darstellung
+  liegt dann 7 bzw. 9 Zeilen tiefer (Datei 0x487BB–0x487D0). Reihenfolge der Reihen-Modi
   Automatisch → Spiel nur mit 2 Reihen → Energiestärkster Block → Nach Gegnerreihe → Minuten-Vorgabe → Voll manuell (wie
   `LineChangeMode`).
-- **Fundstelle:** em.exe Datei 0x487A8–0x487B8 (`[bp−0xC]` = 1, wenn y über der Mitte des Pfeilpaars), 0x48C07–0x48C25
-  (Schritt +1 bei `[bp−0xC]` = 1, −1 bei 0), Grenzen 0x48BD2–0x48BFF (0 … Anzahl − 1, kein Umlauf). Bilder `file33_02…08`.
-- **Umsetzung:** `[APPROX] Richtung der Pfeile` in `TacticsScreen.cs` → `[ORIGINAL]`. Prüfen, ob `Cycle` umläuft (Original:
-  bleibt an den Enden stehen). Spur: `ui-rest`.
+- **Fundstelle:** em.exe Datei 0x487A8–0x487B8 (`[bp−0xC]` = 1, wenn y unter der Mitte des Pfeilpaars), 0x48C07–0x48C25
+  (Schritt +1 bei `[bp−0xC]` = 1, −1 bei 0), Grenzen 0x48BD2–0x48BFF (0 … Anzahl − 1, kein Umlauf). Die Bilder `file33_02…08`
+  und die Angabe des Nutzers entscheiden die Richtung nicht.
+- **Umsetzung:** `TacticsScreen.Step` umdrehen (+1 für die untere Hälfte), `Cycle` durch Begrenzen auf 0 … Anzahl − 1 ersetzen,
+  `[ORIGINAL] Datei 0x487A8–0x487B8, 0x48BD2–0x48C25`. Testidee: untere Hälfte der Reihen-Pfeile auf „Automatisch“ → „Spiel nur
+  mit 2 Reihen“; obere Hälfte auf „Automatisch“ → unverändert. Zahlenpfeile (Datei 0x489AB ff., gleiche Variable) mitprüfen.
+  Spur: `ui-rest`.
 
 ### Taktik-Befund DGROUP 375h – Knopf oben links und Spieltag
 
@@ -233,8 +247,8 @@ Grundlage: Start FILE05 (KÖLNER EC, Manager „Joerg“), danach im selben Spie
 - **Ergebnis:** belegt. `file36_1`/`file36_2`: MENDE (FILE36 nicht eingesetzt, Reihe 1A) mit „VERL.“; `file36_1` HOCK im Spiel
   ohne NR mit „GESP.(2)“; `file37_2`/`file39_3` HEISS (FILE37 nicht eingesetzt) mit „VERL.“. Vereins- und Nationalaufstellung
   teilen den Code (Datei 0x40364).
-- **Umsetzung:** `[APPROX]` in `CupsNational.Lineup.cs` → `[ORIGINAL]` mit diesen Bildern. Spur: `kader-start` (Kommentar
-  in fremder Datei nur mit Freigabe; sonst an `nationalteam` melden).
+- **Umsetzung:** `[APPROX]` in `CupsNational.Lineup.cs` → `[ORIGINAL]` mit diesen Bildern. Spur: `nationalteam` (Datei
+  `CupsNational.Lineup.cs` gehört `nationalteam`, L7).
 
 ### A167 – Neue Kaderspieler nicht eingesetzt (auch Handmodus)
 
@@ -246,7 +260,7 @@ Grundlage: Start FILE05 (KÖLNER EC, Manager „Joerg“), danach im selben Spie
 ### A091 – Kaderplätze bei Kauf, Leihe, Verkauf und Transferliste
 
 - **Ergebnis:** belegt. Kauf KJELLBERG (STU) → Nr. 26 hinten (Gruppe STU ist die letzte); Verkauf SCHIFFL (Nr. 7, FILE37A) →
-  MENDE 8 → 7, alle folgenden rücken auf, KJELLBERG 26 → 25; HOHENADL (Nr. 9) auf die Transferliste → Plätze rücken auf
+  MENDE 8 → 7, alle folgenden rücken auf, KJELLBERG 26 → 25; HOHENADL (Nr. 8 seit FILE37A, vorher 9) auf die Transferliste → Plätze rücken auf
   (FILE41: KJELLBERG 24), Leihe VALLIERE (STU) → Nr. 25.
 - **Fundstelle:** `emtool hok dump` FILE35/37/37A/40/41, Bilder `file35_5`, `file37a_4`, `file40_10`.
 - **Umsetzung:** keine; Einsortieren nach Art bei TOR/ABW nicht aufgenommen. Spur: `kader-start`.
@@ -311,7 +325,7 @@ Grundlage: Start FILE05 (KÖLNER EC, Manager „Joerg“), danach im selben Spie
   (65 | 0 | 0). Index 96 hat dieselbe Farbe; 16 ist der übliche Index. Die normale Trennlinie ist **eine** Zeile Index 31
   (243 | 195 | 113), darunter Hintergrund 4 – nicht 93 mit 198 darunter.
 - **Fundstelle:** `file40_05` (Maus auf HOHENADL, Eintrag 6): Zeilen 132 und 148, x 180–314 Index 16; `file40_06` (VOELKLE,
-  Eintrag 7): Zeilen 148 und 164. Übrige Trennlinien `file40_04`: Zeilen 52 + 16 · k Index 31, Zeile darunter Index 4.
+  Eintrag 8 ab 0): Zeilen 164 und 180, x 180–314 Index 16 (Zeile 148 ist die normale Linie, Index 31). Übrige Trennlinien `file40_04`: Zeilen 52 + 16 · k Index 31, Zeile darunter Index 4.
 - **Umsetzung:** `HoverEntryColor = 16`, `EntryLine` einzeilig Index 31; `[APPROX]` → `[ORIGINAL]` (DOSBox-Bild, exakt). Pixeltest
   gegen `file40_05`. Datei `src/EishockeyManager.UI/Screens/Team/TransferScreen.cs`. Spur: `ui-rest`.
 
@@ -374,7 +388,8 @@ Grundlage: Start FILE05 (KÖLNER EC, Manager „Joerg“), danach im selben Spie
 
 ### Weitere IDs aus dem Plan
 
-- **A115** (Versicherung bei Rückkehr aus Leihe): nicht entscheidbar, FILE42 fehlt (Angabe Nutzer: optional später).
+- **A115** (Versicherung bei Rückkehr aus Leihe): in Teil 1 nicht entscheidbar; das Leihende liegt in FILE46 (ersetzt FILE42),
+  Auswertung in Teil 2.
 - **A088** (Zähler zum Saisonwechsel, L14): kein Saisonwechsel in Sitzung 1–2. Nebenbei belegt A135 die Zählerfelder je
   Wettbewerb, die A088 betrifft.
 - **A009, A085** (Bundestrainer): kein Bundestrainer in diesen Sitzungen → Teil 2.
@@ -388,7 +403,7 @@ Je Punkt stehen Ziel, Dateien und Testidee oben. Zusammenfassung nach Spuren (Pl
 - **`ui-rest` Teil 2:** A373, Taktik 375h (Knopf oben links), A364 (NR), A380 (Anzeige), A382, A377, A374, A313, A321, A357,
   A180 (Anzeige „AUTOM.“).
 - **`nationalteam`:** A012 nur Kommentar in `CupsNational.Lineup.cs`; Hinweis: Anzeige „AUTOM.“ Grundwert aus Feld 0x2D.
-- **`pruefung-karte`:** Feldbelege für `docs/formate/spielstand-original.md` (0x9744, 0x8288, 0x375/0x376, +0x03–0x08,
+- **`hok-import`** (L7, Datei allein `hok-import`): Feldbelege für `docs/formate/spielstand-original.md` (0x9744, 0x8288, 0x375/0x376, +0x03–0x08,
   +0x22–0x26, Markt-Kaderplatz bei Transferliste).
 
 ## Offene Fragen an die Leitstelle
@@ -401,6 +416,13 @@ Je Punkt stehen Ziel, Dateien und Testidee oben. Zusammenfassung nach Spuren (Pl
    Tageslauf; vorher 0x53C57 nachlesen.
 5. **Fehlende Aufnahmen** (Kandidaten): Leihende (A115, FILE42), Spieler mit Sperre über Spiele (A189), Nachricht mit mehr als zwei
    Zeilen bzw. mehreren Nachrichten (A321), Europapokal-Balken (A357), Linksklick in der Aufstellung (A364).
+
+6. **Dateigrenzen der Umsetzungsvorschläge (Review #643, R14RD1-02)** – entschieden als L7 (Leitstelle 08.11.2026):
+   `kader-start` darf für A046 `Core/FinanceStadium.cs` (`TableRank`) und `Core/FinanceSponsorRating.cs` (nur das Tabellenfeld),
+   für A082 `Core/MatchEngine.Live.cs` (nur Kommentar), für A189 `Core/StadiumStatistics.cs` (nur Kommentar), für A135 die
+   Buchung von Spielen und Toren je Wettbewerb (`Core/Cups*.cs` außer `CupsNational*`, `Core/MatchEngine*.cs`, nur diese Stelle)
+   und für U15-c `Core/Highscore.cs` ändern; `ui-rest` für A357 `UI/Screens/Statistics/HistoryScreen.cs`; A012 → `nationalteam`;
+   Feldbelege in `docs/formate/spielstand-original.md` → `hok-import`.
 
 ## Teil 2 – Sitzungen 3–7 (FILE43–49A)
 

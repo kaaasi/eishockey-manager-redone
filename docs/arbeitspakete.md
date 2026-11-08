@@ -67,7 +67,8 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   Datei, Byte, Bild) und Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser Runde). Selbstprüfung
   `funktionskarte.py --csv` ohne `--write`.
 - **Dateigrenzen:** nur `docs/analyse/re-runde-14.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5.
-  **Status:** Teil 1 (Sitzungen 1–2, FILE29–41, FILE37A) fertig, PR #628; Teil 2 (Sitzungen 3–7, FILE43–49A) fertig, PR #642.
+  **Status:** Teil 1 (Sitzungen 1–2, FILE29–41, FILE37A) fertig, PR #628 (gemergt nach Review #643/#644); Teil 2
+  (Sitzungen 3–7, FILE43–49A) fertig, PR #642.
 
 ### Spur `saison` – Satzfolge, Fair-Play, Oberliga
 
@@ -76,7 +77,8 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
      `FairPlayPremiumWinner` ohne `SuccessorSlots` mit Rückfall wie `LeagueSlots` (Fundstelle 27213h) oder `[APPROX]`.
   2. **#600-Rest:** `OutsidePlaces` in `SeasonFlow.Oberliga.cs` paart nach Index – gegen das Original prüfen, Kommentar A112
      berichtigen; Mehrsaisonprobe.
-  3. **Saisonbefunde aus `re-dosbox`** (nach `re-dosbox`, nur falls dort der Spur `saison` zugeordnet).
+  3. ~~Saisonbefunde aus `re-dosbox`~~ – entfällt für Teil 1 (`re-runde-14.md` ordnet `saison` nichts zu); nur falls Teil 2 etwas
+     zuordnet.
   4. **#349 (R14-D4 = A):** Merker „Managerverein spielt“ je Spieltag wie im Original (36FEAh, 3702Eh–37085h) als abschaltbare
      Einstellung; Vorgabe Remake-Verhalten. Test: Spieltag mit Managerverein im Pokal rechnet alle Paarungen in der Minutenschleife,
      Zufallsverbrauch gegenüber Remake-Verhalten verschieden; Mehrsaisonprobe mit beiden Einstellungen. Doku
@@ -94,7 +96,8 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   2. **Nebenbefunde #580:** Reihenlogik der Vereinsaufstellung wie A010 (Fundstelle nachlesen); Sperre Transfer/Training ab der
      WM-Gruppenphase (Fundstelle, neue Inventur-ID über `pruefung-karte`); WM-Kader-Reihenfolge beim Einsortieren (3CABFh,
      Restlücke #623).
-  3. **Bundestrainer-Befunde aus `re-dosbox` Teil 2** (A009 leer, A085 Handaufnahme, A293), sobald Sitzung 5 ausgewertet ist.
+  3. **A012** (L7): `[APPROX]` in `CupsNational.Lineup.cs` → `[ORIGINAL]` (Bilder `file36_1`/`file36_2`, `file37_2`/`file39_3`);
+     dazu **Bundestrainer-Befunde aus `re-dosbox` Teil 2** (A009 leer, A085 Handaufnahme, A293), sobald Sitzung 5 ausgewertet ist.
 - **Dateigrenzen:** wie oben „allein `nationalteam`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `kader-start` – Spielstart, Kader, Aufstellung
@@ -103,11 +106,17 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   1. **#605, #625:** Start-Liga in `GameSetup` selbst führen, ohne Manager `false`; Test Einsortieren bei `JoinScoutedTalent`,
      Aufruferliste in `Player.Factory.cs` (Adressen aus #625).
   2. **Spielstart und Kader aus `re-dosbox`** (nach `re-dosbox`): U15-c, A056, A180, A166, A082, A046, A088 (L14), A167, A091,
-     A135, A189, A012, A115 – nur abweichend Belegtes umsetzen, Übereinstimmungen auf `[ORIGINAL]`; Mehrsaisonprobe.
-  3. **Anschluss Sperre ab WM-Gruppenphase** an Transfer und Training (nach `nationalteam` Teil 2).
+     A135, A189, A115 (A012 → `nationalteam`, L7) – nur abweichend Belegtes umsetzen, Übereinstimmungen auf `[ORIGINAL]`; Mehrsaisonprobe.
+     Nach L1–L4 (#628): U15-c umsetzen (L2 Runde 13 aufgehoben); Schemafelder A046/A135/A380; Taktik 375h im Kern
+     (`MatchEngine.Injuries.cs` nur dafür, vorher 0x53C57 lesen); A364 und Reihenlogik der Vereinsaufstellung wie A010 (aus
+     `nationalteam`, #637) in `UI/Screens/Team/LineupScreen.cs` und `Core/Squad.Lineup.cs`.
+  3. ~~Anschluss Sperre ab WM-Gruppenphase~~ – entfällt (L5: Sperre nur im Menü des Bundestrainers, #637).
   4. **Saisonende-Abgang aus `re-dosbox` Teil 2** (A362, A085, A091), sobald Sitzung 4 ausgewertet ist.
 - **Dateigrenzen:** wie oben „allein `kader-start`“, `UI/Screens/Team/*` außer `TeamUi.cs` und `TransferDialog.cs`, eigene Tests,
-  `docs/transfer.md`. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
+  `docs/transfer.md`. Dazu nach L4/L7 jeweils nur für den genannten Punkt: `Core/MatchEngine.Injuries.cs` (Taktik 375h),
+  `Core/FinanceStadium.cs` (`TableRank`) und `Core/FinanceSponsorRating.cs` (Tabellenfeld, A046), `Core/MatchEngine.Live.cs`
+  (Kommentar A082), `Core/StadiumStatistics.cs` (Kommentar A189), Buchung von Spielen und Toren je Wettbewerb in `Core/Cups*.cs`
+  außer `CupsNational*` und `Core/MatchEngine*.cs` (A135), `Core/Highscore.cs` (U15-c). **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `ui-rest` – Darstellung aus der Aufnahme, Stadionpfeile
 
@@ -115,13 +124,14 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   1. **#597:** Eintrittspfeile 10 Pixel breit wie im Original (Aufbau 3D7F8h ff., Grundgrafik kb\4 (20 | 0)), Pixeltest gegen
      `file01_3`.
   2. **Darstellung aus `re-dosbox`** (nach `re-dosbox`): A373 (Pfeilfolge Taktik), Taktik-Befund DGROUP 375h (falls Anzeige),
-     A364, A380, A382, A377, A374, A313, A321, A357 – Pixeltests gegen die Bilder der Sitzung 2.
-  3. **Stadion aus `re-dosbox` Teil 2** (A323, A325, A326), sobald Sitzung 3 ausgewertet ist; A338 nur, falls Sitzung 6 kommt.
-- **Dateigrenzen:** wie oben `ui-rest`, eigene Tests. **Modell:** Claude Sonnet 5.5. **Status:** Go 05.11.2026, Start offen.
+     A380, A382, A377, A374, A313, A321, A357 (A364 → `kader-start`, L3) – Pixeltests gegen die Bilder der Sitzung 2.
+  3. **Stadion aus `re-dosbox` Teil 2** (A323, A325, A326), sobald Sitzung 3 ausgewertet ist. A338/A339 → `hok-import` (L6).
+- **Dateigrenzen:** wie oben `ui-rest`, eigene Tests; nach L7 zusätzlich `UI/Screens/Statistics/HistoryScreen.cs` (A357). **Modell:** Claude Sonnet 5.5. **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `hok-import` – Original-Spielstände `*.HOK` ins Remake (E14-1 C)
 
-Umfang nach Entscheidung **R14-D2 = B**: Feldkarte und Import, Export in Runde 15.
+Umfang nach Entscheidung **R14-D2 = B**: Feldkarte und Import, Export in Runde 15; **E14-4 = A**: alle beim Import bisher
+nicht übernommenen Felder noch in Runde 14. Fortsetzungen: höchstens 5 statt 3 (Nutzer 08.11.2026).
 - **Teile:**
   1. **Feldkarte:** jedes Feld des Remake-Spielstands (Schema 39) einem HOK-Feld zuordnen (belegt / abgeleitet / nicht im
      Original / unbekannt), Grundlage `docs/formate/spielstand-original.md`, `OriginalSaveGame.cs`, FILE01–41. Ergebnis als
@@ -132,6 +142,12 @@ Umfang nach Entscheidung **R14-D2 = B**: Feldkarte und Import, Export in Runde 1
      `Continue()` über einen Spieltag und eine Mehrsaisonprobe ohne Fehler.
   3. **Zugang:** `emtool hok import <hok> <ziel>` und Laden-Dialog listet `*.HOK` (Import beim Laden, Hinweis bei
      Prüfsummenfehler wie „Der kleine Mogelguru“). Bildschirmfoto-Ablauf Hauptmenü nach Import gegen das DOSBox-Bild des Stands.
+  4. **Restfelder (E14-4 = A):** alle in #638 nicht übernommenen Bereiche importieren – Pokale, Pool/Transfermarkt,
+     Nationalkader, Börse, Werbung, Training, Taktik, Nachrichten, Serien, Managerdarlehen. Unbekannte Bytes zuerst an
+     FILE01–49A und in em.exe klären, Feldkarte nachziehen; was unbelegt bleibt, `[APPROX]` mit Grund. Bei Bedarf als zwei Teile
+     (4a/4b), Tests je Bereich mit Originaldaten.
+  5. **Speichern-Dialog wie im Original (L6, nach `re-dosbox` Teil 2):** A338/A339 – Blättern nur über die zwei Pfeile, kein
+     „SEITE:“, Infofeld nur bei gehaltener rechter Maustaste; Pixeltest gegen `a338_*`.
 - **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `pruefung-karte` – Welle 2 (nach der Integration aller Spuren)
@@ -155,6 +171,14 @@ Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terr
 - **R14-D3 = A:** Sitzungen 3–6 über `re-dosbox` Teil 2, umgesetzt in Folgeteilen der Fachspuren bis zu deren
   Integrationsbeginn; später Eintreffendes → Runde 15.
 - **R14-D4 = A:** #349 jetzt als Einstellung „wie im Original“, Vorgabe Remake-Verhalten (Entscheidung 01.11.2026 vorgezogen).
+- **E14-4 = A** (08.11.2026): Restfelder des Imports in Runde 14 (`hok-import` Teil 4), dafür 1–2 zusätzliche Fortsetzungen.
+- **E14-5 = C** (08.11.2026): keine Nachaufnahme für A115, A189, A321, A357, A364; die Punkte bleiben `[APPROX]`, eine
+  Aufnahme später nach Lust des Nutzers.
+- **Leitstelle L7** (08.11.2026, `re-runde-14.md` Frage 6, Review #643 R14RD1-02): Dateigrenzen in den Spurabschnitten
+  `kader-start` und `ui-rest` erweitert (unten); A012 → `nationalteam`; Feldbelege in `formate/spielstand-original.md` → `hok-import`.
+- **Leitstelle L1–L6** (08.11.2026, Kommentar in #628): U15-c umsetzen; Schemafelder in `kader-start` Teil 2;
+  `LineupScreen.cs` allein `kader-start` (A364, A010-Reihenlogik); Taktik 375h im Kern bei `kader-start`; `kader-start` Teil 3
+  entfällt; Speichern-Dialog A338/A339 wie im Original bei `hok-import`.
 
 ### Vorentscheidungen Runde 14 (Nutzer, 04.11.2026, Issue #601)
 
@@ -166,6 +190,8 @@ Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terr
   Claude außer dem Delta von Fixes.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
+
+- DOSBox-Nachaufnahme für A115, A189, A321, A357, A364 (E14-5 = C): später, wenn der Nutzer Lust hat.
 
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): Umsetzung als letzter Schritt vor v1.0; Analyse in
   `re-livespiel`. Noch unbekannt und bei der Umsetzung von `livespiel` mitzuanalysieren (zusammen mit L7, `tore\`-Format):
