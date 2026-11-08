@@ -100,11 +100,16 @@ public sealed partial class GameState
 
     /// <summary>
     /// WM-Stufe: gespielte WM-Termine. [ORIGINAL] DGROUP 0x7AE: 0 bei der Anmeldung der WM (0x30E7B mit Argument 0, Datei
-    /// 0x30E89), + 1 nach jedem Termin (Datei 0x311C8); 5 Gruppentermine, dann drei K.-o.-Termine.
+    /// 0x30E89), + 1 nach jedem Termin (einziger Zähler Datei 0x311C8) außer dem Finale: Bei Stufe 7 springt der Termin bei
+    /// Datei 0x31152 (<c>cmp [0x7ae],7</c> / <c>jnl 0x311CF</c>) am Zähler vorbei (R14NT-04). 5 Gruppentermine, dann drei
+    /// K.-o.-Termine; nach dem Finale also 7.
     /// </summary>
     public int WorldCupStage => WorldCup is not { Groups.Count: > 0 } wm
         ? 0
-        : wm.Groups[0].Results.Count / (WorldCup.GroupSize / 2) + wm.Knockout.Count;
+        : Math.Min(wm.Groups[0].Results.Count / (WorldCup.GroupSize / 2) + wm.Knockout.Count, FinalWorldCupStage);
+
+    /// <summary>Höchste WM-Stufe (Finaltermin, Datei 0x31152): 5 Gruppentermine + 2 K.-o.-Termine.</summary>
+    public const int FinalWorldCupStage = WorldCup.GroupDates + 2;
 
     /// <summary>
     /// „Transfer“ („Spieler in WM-Kader“) und „Training“ („WM Vorbereitung“) im Menü des Bundestrainers gesperrt (#580,

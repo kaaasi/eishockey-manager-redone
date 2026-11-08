@@ -250,7 +250,7 @@ public class NationalteamRunde14Tests
     /// <summary>
     /// #580: [ORIGINAL] Aufbau des Hauptmenüs (Datei 0x4509E–0x450A4): im Zug des Bundestrainers Sperrbytes DGROUP 0x518C/0x518D
     /// (Tabelle 0x5159 + 42, Reihe Mannschaft, Plätze 4 und 5 = „Transfer“, „Training“) = WM-Stufe DGROUP 0x7AE (gespielte
-    /// WM-Termine; 0 bei der Anmeldung, Datei 0x30E89, + 1 je Termin, Datei 0x311C8). DOSBox `file19_26` (20.04.1994).
+    /// WM-Termine; 0 bei der Anmeldung, Datei 0x30E89, + 1 je Termin außer dem Finale, Datei 0x311C8/0x31152). DOSBox `file19_26` (20.04.1994).
     /// </summary>
     [Fact]
     public void WorldCupStage_LocksNationalSquadFromFirstDate()
@@ -268,7 +268,9 @@ public class NationalteamRunde14Tests
             Assert.True(guard < 50);
             game.Continue();
         }
-        Assert.Equal(WorldCup.GroupDates + 3, game.WorldCupStage);
+        // R14NT-04: [ORIGINAL] Der Finaltermin zählt nicht (Datei 0x31152 überspringt 0x311C8): nach dem Finale 7, nicht 8.
+        Assert.NotNull(game.WorldCup!.Winner);
+        Assert.Equal(7, game.WorldCupStage);
         game.StartNextSeason();
         Assert.Equal(0, game.WorldCupStage);
         Assert.False(game.NationalSquadLocked);
