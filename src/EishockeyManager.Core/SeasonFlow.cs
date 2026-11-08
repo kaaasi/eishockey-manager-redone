@@ -117,7 +117,7 @@ public sealed partial class GameState
 
     private static int PlayoffDateIndex(int day) => SeasonCalendar.DaysOf(DayEvents.Playoffs).ToList().IndexOf(day);
 
-    private bool ManagerPlaysOn(int day) =>
+    internal bool ManagerPlaysOn(int day) =>
         ActiveManagers.Any(m => MatchOn(day, m.ClubIndex) is not null) || NationalCoachPlaysOn(day); // Bundestrainer: Spur wettbewerbe-weltkugel
 
     /// <summary>

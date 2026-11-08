@@ -39,8 +39,14 @@ public sealed class GameOptionsScreen : Screen
     /// <summary>[ORIGINAL] Fenster der Pokale (0x2E | 0xB3), 10 × 3 Rahmenteile.</summary>
     public static readonly Rect CupWindow = new(46, 179, 240, 57);
 
-    /// <summary>Anzahl der Schalter (Index 0–14).</summary>
-    public const int SwitchCount = 15;
+    /// <summary>Anzahl der Schalter (Index 0–14 wie im Original, 15 = Zusatzschalter „Ganzer Tag“).</summary>
+    public const int SwitchCount = 16;
+
+    /// <summary>
+    /// Index 15: Zusatzschalter „Ganzer Tag“ (<see cref="GameOptions.ManagerDayMinuteLoop"/>, #349, R14-D4 = A). Kein Schalter des
+    /// Originals; [APPROX] Platz rechts neben „WM-Spiele“ im Pokalfenster, Schalter klein wie Index 10–12.
+    /// </summary>
+    public const int ManagerDaySwitch = 15;
 
     /// <summary>Index des Torszenen-Schalters (DGROUP 0x226, dreistufig).</summary>
     public const int GoalScenesSwitch = 9;
@@ -55,9 +61,9 @@ public sealed class GameOptionsScreen : Screen
     public const int ScrollingSwitch = 14;
 
     // [ORIGINAL] DGROUP 0x4C06 (x), 0x4BE8 (y), 0x4BCA (1 = kleiner Schalter)
-    private static readonly int[] SwitchX = [222, 222, 222, 252, 252, 252, 282, 282, 282, 200, 184, 214, 200, 244, 220];
-    private static readonly int[] SwitchY = [130, 144, 158, 130, 144, 158, 130, 144, 158, 24, 188, 204, 218, 39, 54];
-    private static readonly bool[] SwitchSmall = [true, true, true, true, true, true, true, true, true, false, true, true, true, false, false];
+    private static readonly int[] SwitchX = [222, 222, 222, 252, 252, 252, 282, 282, 282, 200, 184, 214, 200, 244, 220, 268];
+    private static readonly int[] SwitchY = [130, 144, 158, 130, 144, 158, 130, 144, 158, 24, 188, 204, 218, 39, 54, 218];
+    private static readonly bool[] SwitchSmall = [true, true, true, true, true, true, true, true, true, false, true, true, true, false, false, true];
 
     private const byte Transparent = 0xC0;
     private const int SpeedX = 190;
@@ -98,6 +104,7 @@ public sealed class GameOptionsScreen : Screen
         10 => Options.ShowDebCup ? 1 : 0,
         11 => Options.ShowEuropeanCup ? 1 : 0,
         12 => Options.ShowWorldCup ? 1 : 0,
+        ManagerDaySwitch => Options.ManagerDayMinuteLoop ? 1 : 0,
         _ => 1,
     };
 
@@ -157,6 +164,9 @@ public sealed class GameOptionsScreen : Screen
             case 12:
                 options.ShowWorldCup = !options.ShowWorldCup;
                 break;
+            case ManagerDaySwitch:
+                options.ManagerDayMinuteLoop = !options.ManagerDayMinuteLoop;
+                break;
         }
     }
 
@@ -179,6 +189,7 @@ public sealed class GameOptionsScreen : Screen
         string[] cups = ["DEB-Pokal", "Europapokal", "WM-Spiele"];
         for (var c = 0; c < cups.Length; c++)
             Centered(s, small, 100, 193 + 16 * c, cups[c]);
+        Centered(s, small, 243, 225, "Ganzer Tag"); // Zusatzschalter (kein Original)
 
         // [ORIGINAL] Schrift 2 (Flow)
         string[] top = ["Torszenen", "Hintergrundgrafik", "Scrolling", "Spielgeschwindigkeit"];
