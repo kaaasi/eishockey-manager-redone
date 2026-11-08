@@ -86,7 +86,17 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
 - **Dateigrenzen:** `Core/SeasonFlow*.cs`, `Core/GameState.SeasonEndTurn.cs`, für Teil 4 die Auswahl der Minutenrechnung
   (`Core/Cups*.cs` außer `CupsNational*`, `Core/MatchEngine*.cs` nur diese Stelle), ein Schalter in `GameOptionsScreen.cs` und
   im Optionsmodell, `docs/anforderungen/zusatzfunktionen.md`, eigene Tests. **Modell:** Claude Sonnet 5.5.
-  **Status (08.11.2026):** Teil 1 PR #632, Teil 2 PR #635 (auf #632), Teil 4 PR (auf #635); Teil 3 offen (wartet auf `re-dosbox`).
+  **Status (08.11.2026):** integriert in PR #652 (Teile 1, 2, 4: #632, #635, #636; Teil 3 entfällt, #645), wartet auf Review.
+
+### Integration Runde 14
+
+Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); die folgenden Spuren nummerieren ab 41.
+
+| Spur | Status | PR | Head-SHA |
+|---|---|---|---|
+| `saison` | integriert, Prüfung grün (2288 / 0 / 0 mit Daten), wartet auf Review | #652 (Branch `integration/runde-14-saison`, Base `b7e1eb2`) | im Übergabekommentar von #652 |
+
+Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 → `pruefung-karte`.
 
 ### Spur `nationalteam` – Tagesfolge 952Ch, Länderwerte, Nebenbefunde
 
