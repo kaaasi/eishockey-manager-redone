@@ -19,7 +19,7 @@ namespace EishockeyManager.Core;
 /// ein gültiger Remake-Zustand am selben Tag, aber nicht der des Originals. Zufall aus neuer Saat (Regel 6).
 /// </para>
 /// </summary>
-public static class OriginalImport
+public static partial class OriginalImport
 {
     /// <summary>Länge des Vereinsnamens im Vereinssatz (far:9657 + 0x00). [ORIGINAL] wie Teil 1 (Regel 1, FILE05–FILE29).</summary>
     public const int ClubNameLength = 0x16;

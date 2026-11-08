@@ -14,6 +14,9 @@ public enum SaveEntryKind
 
     /// <summary>Andere Datei (grau, ohne Wirkung).</summary>
     Other,
+
+    /// <summary>Original-Spielstand (<c>*.HOK</c>): beim Laden gelb und wählbar (Import), beim Sichern grau.</summary>
+    Original,
 }
 
 /// <summary>Eintrag der Dateiliste: Dateiname (wie auf der Platte) und Art.</summary>
