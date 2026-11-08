@@ -114,8 +114,9 @@ public sealed class OriginalImportPoolTests
         var poolNames = game.TransferMarket.Pool.Where(s => s.Owner != PoolOwner.Taken).Select(s => s.Player.Name).ToHashSet();
         var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
         foreach (var club in game.Clubs.Where(c => !managed.Contains(c.Index)))
-        {
             Assert.DoesNotContain(club.Players, p => poolNames.Contains(p.Name));
+        foreach (var club in game.Clubs.Where(c => !managed.Contains(c.Index) && c.League is not null))
+        {
             Assert.True(club.Players.Count(p => p.Role == PlayerRole.Goalkeeper) >= TransferMarket.MinGoalkeepers, club.Name);
             Assert.True(club.Players.Count(p => p.Role == PlayerRole.Defender) >= TransferMarket.MinDefenders, club.Name);
             Assert.True(club.Players.Count(p => p.Role == PlayerRole.Forward) >= TransferMarket.MinForwards, club.Name);

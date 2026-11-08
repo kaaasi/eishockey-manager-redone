@@ -15,8 +15,9 @@ namespace EishockeyManager.Core;
 /// </para>
 /// <para>
 /// [APPROX] Was das HOK nicht oder nicht belegt führt (Feldkarte Status N/U) und was der Import noch nicht übernimmt
-/// (Pokale, Spielerpool, Transfermarkt, Nationalkader, Nachrichten; Teil 4a übernimmt Börse, Werbung, Training, Taktik, Serien,
-/// Darlehen in <c>OriginalImport.Rest.cs</c>), ergibt sich aus dem Nachspielen: es ist
+/// (Pokale und WM; Teil 4a übernimmt Börse, Werbung, Training, Taktik, Serien, Darlehen in <c>OriginalImport.Rest.cs</c>,
+/// Teil 4b Pool und Markt, Nationalkader und Nachrichten in <c>OriginalImport.Market.cs</c>, <c>.National.cs</c>,
+/// <c>.Messages.cs</c>), ergibt sich aus dem Nachspielen: es ist
 /// ein gültiger Remake-Zustand am selben Tag, aber nicht der des Originals. Zufall aus neuer Saat (Regel 6).
 /// </para>
 /// </summary>
@@ -305,14 +306,18 @@ public sealed partial class GameState
         var foreigners = database.Clubs.SelectMany(c => c.Players).Where(p => p.IsForeigner).Select(p => p.Name).ToHashSet();
         ApplyTeamValues(save, clubOf);
         var records = save.Block("965B");
+        var squadPlayers = new Dictionary<int, Player>(); // Poolindex → Spieler eines übernommenen Managerkaders
         for (var m = 0; m < Managers.Count; m++)
         {
             var record = records.AsSpan(m * OriginalSaveGame.ManagerRecordLength, OriginalSaveGame.ManagerRecordLength);
             ApplyManager(save, m, record);
             if (!WorldOnly)
-                ApplySquad(save, Clubs[Managers[m].ClubIndex], m, clubOf, foreigners);
+                ApplySquad(save, Clubs[Managers[m].ClubIndex], m, clubOf, foreigners, squadPlayers);
         }
         ApplyOriginalRest(save, clubOf); // Teil 4a (OriginalImport.Rest.cs)
+        var pool = ApplyPoolAndMarket(save, clubOf, squadPlayers, foreigners); // Teil 4b (OriginalImport.Market.cs)
+        ApplyNationalSquad(save, clubOf, pool, squadPlayers); // Teil 4b (OriginalImport.National.cs)
+        ApplyMessages(save, pool); // Teil 4b (OriginalImport.Messages.cs)
         // [ORIGINAL] Manager am Zug DGROUP 0xA70E (0–3; 5 = Bundestrainer). [APPROX] Der Zug des Bundestrainers beginnt im Remake
         // mit dem Tageslauf; der Import setzt dann Manager 0.
         var current = save.Block("A70E")[0];
@@ -373,16 +378,26 @@ public sealed partial class GameState
     /// <summary>
     /// Kader eines Managervereins aus den Kaderplätzen 5DC3 (Satz m) und dem Pool far:8253 (Feldkarte „Spieler“). Spieler mit
     /// gleichem Namen und gleicher Rolle behalten ihr Objekt (und ihre ID), damit Verweise des Nachspielens gültig bleiben.
+    /// Teil 4b: Ein Spieler, den der Manager auf die Transferliste gesetzt hat, steht im Original nicht mehr im Kadersatz,
+    /// sondern im Marktsatz 4 (Pool-Besitzer = Manager; Feldbelege L7, FILE40 → FILE41). Im Remake bleibt er im Kader
+    /// (<see cref="TransferMarket.Offer"/>); er folgt hier hinter den eigenen Plätzen. <paramref name="squadPlayers"/> erhält
+    /// je Poolindex den Spieler.
     /// </summary>
-    private void ApplySquad(OriginalSaveGame save, Club club, int record, int[] clubOf, HashSet<string> foreigners)
+    private void ApplySquad(OriginalSaveGame save, Club club, int record, int[] clubOf, HashSet<string> foreigners,
+        Dictionary<int, Player> squadPlayers)
     {
         var squad = save.Block("5DC3");
         var pool = save.Block("far:8253");
         var old = club.Players.ToList();
         var players = new List<(Player Player, int Line, bool Forward, bool Dressed)>();
-        for (var i = 0; i < OriginalSaveGame.SquadSlotsPerManager; i++)
+        var places = Enumerable.Range(0, OriginalSaveGame.SquadSlotsPerManager)
+            .Select(i => record * 0x618 + i * OriginalSaveGame.SquadSlotLength)
+            .Concat(Enumerable.Range(0, OriginalSaveGame.SquadSlotsPerManager)
+                .Select(i => OriginalImport.MarketRecord * 0x618 + i * OriginalSaveGame.SquadSlotLength)
+                .Where(o => squad[o + 0x0F] != 0 && pool[squad[o + 0x0F] * OriginalSaveGame.PoolRecordLength + 0x1A] == record));
+        foreach (var offset in places)
         {
-            var slot = squad.AsSpan(record * 0x618 + i * OriginalSaveGame.SquadSlotLength, OriginalSaveGame.SquadSlotLength);
+            var slot = squad.AsSpan(offset, OriginalSaveGame.SquadSlotLength);
             if (!slot.ContainsAnyExcept((byte)0))
                 continue;
             var entry = pool.AsSpan(slot[0x0F] * OriginalSaveGame.PoolRecordLength, OriginalSaveGame.PoolRecordLength);
@@ -397,6 +412,7 @@ public sealed partial class GameState
                 AssignPlayerId(player);
             }
             ApplySlot(player, slot, entry, clubOf);
+            squadPlayers[slot[0x0F]] = player;
             players.Add((player, slot[0x15] & 0x0F, (slot[0x15] & 0x80) != 0, slot[0x0A] != 0));
         }
 

@@ -239,7 +239,13 @@ public sealed partial class GameState
     /// </summary>
     private void ApplyTactics(OriginalSaveGame save, Club club, int m)
     {
-        var tactics = club.Tactics;
+        ApplyTacticValues(save, club.Tactics, m);
+        club.AutoLineupEnabled = save.Block("0375")[2 * m] != 0;
+    }
+
+    /// <summary>Modi, Werte und Minuten des Satzes <paramref name="m"/> (0–3 Manager, 5 Bundestrainer; Teil 4b).</summary>
+    private static void ApplyTacticValues(OriginalSaveGame save, Tactics tactics, int m)
+    {
         tactics.EffortMode = (TacticMode)Math.Min((int)save.Block("A6FB")[m], 2);
         tactics.AttackMode = (TacticMode)Math.Min((int)save.Block("A707")[m], 2);
         tactics.LineChange = (LineChangeMode)Math.Min((int)save.Block("A701")[m], (int)LineChangeMode.FullyManual);
@@ -265,7 +271,6 @@ public sealed partial class GameState
         for (var part = 0; part < 2; part++)
             for (var line = 0; line < Lineup.Blocks; line++)
                 tactics.SetMinutes(line, part == 1, minutes[4 * part + line]);
-        club.AutoLineupEnabled = save.Block("0375")[2 * m] != 0;
     }
 
     /// <summary>
