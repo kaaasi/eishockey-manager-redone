@@ -108,7 +108,382 @@ public static class OriginalImport
 
 public sealed partial class GameState
 {
-    /// <summary>Baut aus einem Original-Spielstand einen gültigen Spielstand des Remakes (noch nicht umgesetzt).</summary>
-    public static GameState ImportOriginal(OriginalSaveGame save, ClubDatabase database, int seed) =>
-        throw new NotImplementedException("Import noch nicht umgesetzt");
+    /// <summary>
+    /// Baut aus einem Original-Spielstand einen gültigen Spielstand des Remakes (siehe <see cref="OriginalImport"/>).
+    /// </summary>
+    /// <param name="seed">Saat für alle Zufallsquellen (Regel 6: das HOK führt keinen Generatorzustand).</param>
+    public static GameState ImportOriginal(OriginalSaveGame save, ClubDatabase database, int seed)
+    {
+        ArgumentNullException.ThrowIfNull(save);
+        ArgumentNullException.ThrowIfNull(database);
+        var clubOf = OriginalImport.ClubIndices(save, database);
+        var managerCount = save.Block("0386")[0];
+        if (managerCount is < 1 or > GameSetup.MaxManagers)
+            throw new InvalidDataException($"Zahl der Manager {managerCount} (DGROUP 0x386) ungültig.");
+
+        var game = CreateImported(save, database, clubOf, managerCount, seed);
+        game.ReplayTo(save);
+        game.ApplyOriginal(save, clubOf, database);
+        return game;
+    }
+
+    // ---- (1) Spielstart ----------------------------------------------------------------------------------------
+
+    private static GameState CreateImported(OriginalSaveGame save, ClubDatabase database, int[] clubOf, int managerCount, int seed)
+    {
+        var random = new GameRandom(seed);
+        var setupBlock = save.Block("0118");
+        var mode = OriginalImport.Mode(save);
+        var setup = new GameSetup
+        {
+            // [ORIGINAL] Regler DGROUP 0x118–0x11B (Level, Dauer, Start-Liga, Start-Stärke), Feldkarte „GameSetup“.
+            Duration = (GameDuration)Math.Clamp((int)setupBlock[1], 0, 3),
+            DebCup = true, // [APPROX] kein Schalter des Originals (Feldkarte N)
+            EuropeAndWorldCup = mode is GameMode.WorldOnly or GameMode.Full,
+        };
+        if (mode == GameMode.WorldOnly)
+            setup.ToggleClubCompetitions();
+
+        var managerRecords = save.Block("965B");
+        var managers = new List<Manager>();
+        for (var m = 0; m < managerCount; m++)
+        {
+            var record = managerRecords.AsSpan(m * OriginalSaveGame.ManagerRecordLength, OriginalSaveGame.ManagerRecordLength);
+            var name = CName(record[..0x13]);
+            var club = clubOf[record[0x14]];
+            setup.Managers.Add(new ManagerSetup
+            {
+                Name = name,
+                Head = 0, // [APPROX] Managerkopf: Ort im HOK nicht belegt (Feldkarte U)
+                ClubIndex = club,
+                Level = Math.Clamp((int)setupBlock[0], 0, ManagerSetup.LevelCount - 1),
+                StartLeague = (League)Math.Clamp((int)setupBlock[2], 0, 2),
+                StartStrength = (StartStrength)Math.Clamp((int)setupBlock[3], 0, 2),
+            });
+            managers.Add(new Manager
+            {
+                Name = name, Head = 0, ClubIndex = club, Level = setup.Managers[m].Level,
+                Money = FinanceRules.StartMoney(setup.Managers[m].Level),
+            });
+        }
+        ApplyOptions(save, setup.Options);
+
+        // Regel 2: Satzplätze 0–11, 12–23, 24–35 sind die drei Ligen; andere Vereine spielen in keiner Liga.
+        var leagueOf = new Dictionary<int, League>();
+        for (var slot = 0; slot < 3 * ClubsPerLeague; slot++)
+            leagueOf[clubOf[slot]] = (League)(slot / ClubsPerLeague);
+        var clubs = database.Clubs.Select(c =>
+        {
+            var club = new Club
+            {
+                Index = c.Index,
+                Name = c.Name,
+                // [APPROX] Datenbankstärke kb\23. Nach einem Platztausch beim Spielstart (U15-a) führt das Remake die Stärke des
+                // Tauschpartners; das HOK zeigt den Tausch nicht (die Teamwerte bleiben am Satz und werden übernommen).
+                Strength = c.Strength,
+                LogoGraphic = c.LogoGraphic,
+                League = leagueOf.TryGetValue(c.Index, out var league) ? league : null,
+            };
+            club.Players.AddRange(c.Players.Select(p => new Player { Name = p.Name, Role = p.Role, IsForeigner = p.IsForeigner }));
+            return club;
+        }).ToList();
+
+        // Spielplan: feste Tabelle 0x4E7C7, Buchstabe = Platz in der Satzfolge der Liga (re-nachtrag.md §4). Schedule.Rounds
+        // ordnet nach Vereinsindex; über die Platznummern 0–11 gerechnet und auf die Vereine der Satzfolge abgebildet ergibt sich
+        // genau der Plan des Originals.
+        var schedules = new Dictionary<League, IReadOnlyList<MatchDay>>();
+        foreach (var league in Enum.GetValues<League>())
+        {
+            var slots = Enumerable.Range((int)league * ClubsPerLeague, ClubsPerLeague).Select(s => clubOf[s]).ToArray();
+            schedules[league] = Schedule.Rounds(Enumerable.Range(0, ClubsPerLeague).ToList(), rounds: 4)
+                .Select(d => new MatchDay(d.Number, d.Matches.Select(p => (slots[p.Home], slots[p.Away])).ToList()))
+                .ToList();
+        }
+
+        var game = new GameState
+        {
+            Setup = setup,
+            Clubs = clubs,
+            Managers = managers,
+            Schedules = schedules,
+            Random = random,
+        };
+        game.Season = OriginalImport.Season(save);
+        SquadSetup.Initialize(game, seed);
+        game.AssignStartPlayerIds();
+        game.InitializeManagerSystems();
+        game.InitializeLeagueSlots(clubOf.Take(4 * ClubsPerLeague).ToList());
+        game.BeginFirstTurn();
+        return game;
+    }
+
+    /// <summary>Optionen DGROUP 0x21D–0x229 und 0x262 (Feldkarte „GameOptions“).</summary>
+    private static void ApplyOptions(OriginalSaveGame save, GameOptions options)
+    {
+        var switches = save.Block("021D");
+        for (var i = 0; i < options.Reports.Length; i++)
+            options.Reports[i] = switches[i] != 0;
+        options.LiveMode = Math.Clamp((int)switches[9], 0, GameOptions.LiveModeCount - 1);
+        options.ShowDebCup = switches[10] != 0;
+        options.ShowEuropeanCup = switches[11] != 0;
+        options.ShowWorldCup = switches[12] != 0;
+        options.SetMatchSpeed(BinaryPrimitives.ReadInt16LittleEndian(save.Block("0262")));
+    }
+
+    // ---- (2) Nachspielen bis zum Tag des HOK -------------------------------------------------------------------
+
+    /// <summary>
+    /// Zeitleiste von Tag 0 bis vor den Tag des HOK (der Tag selbst ist im Original noch nicht verarbeitet: Hauptmenü vor
+    /// dem Tageslauf, Zähler 0x3B7 = Tag + 1). Ligaspieltage tragen danach die Ergebnisse des Originals, damit Tabelle,
+    /// Play-off-Setzliste und Aufstiegsrunden dem HOK folgen. [APPROX] Pokale, Markt, Training und Finanzen laufen nach den
+    /// Regeln des Remakes; was belegt ist, überschreibt <see cref="ApplyOriginal"/>.
+    /// </summary>
+    private void ReplayTo(OriginalSaveGame save)
+    {
+        var target = OriginalImport.Day(save);
+        if (target is < 0 or >= SeasonCalendar.Length)
+            throw new InvalidDataException($"Tageszähler {target + 1} (DGROUP 0x3B7) außerhalb der Saison.");
+        var steps = new List<SeasonStep>();
+        if (target > 0 && SkipToWorldCup() && CurrentDay > target)
+            throw new InvalidDataException($"„Nur Weltkugel“ vor der WM (Tag {target}) wird nicht unterstützt.");
+        while (CurrentDay < target)
+        {
+            var played = PlayedMatchDays;
+            ProcessDay(CurrentDay, steps);
+            if (PlayedMatchDays != played)
+                SubstituteLeagueResults(save, PlayedMatchDays);
+            if (Phase is SeasonPhase.SeasonOver or SeasonPhase.GameOver)
+                throw new InvalidDataException($"Saison endet beim Nachspielen vor Tag {target}.");
+            CurrentDay++;
+        }
+
+        foreach (var league in Enum.GetValues<League>())
+            if (Schedules[league].Count > 0 && OriginalImport.NextMatchDay(save, league) - 1 != Math.Min(PlayedMatchDays, Schedules[league].Count)
+                && !WorldOnly && !RegularSeasonOver)
+                throw new InvalidDataException(
+                    $"Spieltag {OriginalImport.NextMatchDay(save, league)} (DGROUP 0x7A9) passt nicht zu Tag {target} ({PlayedMatchDays} gespielt).");
+        StartTurns();
+    }
+
+    /// <summary>
+    /// Ersetzt die berechneten Ergebnisse eines Ligaspieltags durch die des HOK (Paarung k = Paarung k des Plans). Steht für den
+    /// Spieltag in allen drei Ligen nur 0:0, hat das Original ihn nicht eingetragen (Stand mit vorgestelltem Tageszähler, FILE16A:
+    /// die Tabellensätze 0x825A zählen dort 2 Spiele bei 43 Spieltagen); dann entfallen seine Ergebnisse, damit die Tabelle
+    /// der des Originals gleicht. [APPROX] 18 Spiele 0:0 an einem Spieltag kommen im Spiel nicht vor.
+    /// </summary>
+    private void SubstituteLeagueResults(OriginalSaveGame save, int matchDay)
+    {
+        var block = save.Block("A0CB");
+        if (Enum.GetValues<League>().All(l => block.AsSpan(OriginalImport.ResultsPerLeague * (int)l + 12 * (matchDay - 1), 12)
+                .IndexOfAnyExcept((byte)0) < 0))
+        {
+            Results.RemoveAll(r => r.MatchDay == matchDay);
+            return;
+        }
+        foreach (var (league, days) in Schedules)
+        {
+            if (matchDay > days.Count)
+                continue;
+            var matches = days[matchDay - 1].Matches;
+            for (var k = 0; k < matches.Count; k++)
+            {
+                var (home, away) = matches[k];
+                var index = Results.FindIndex(r => r.League == league && r.MatchDay == matchDay && r.Home == home && r.Away == away);
+                if (index < 0)
+                    throw new InvalidOperationException($"Ergebnis {league} Spieltag {matchDay} Paarung {k} fehlt.");
+                var (hg, ag) = OriginalImport.LeagueResult(save, league, matchDay, k);
+                Results[index] = Results[index] with { HomeGoals = hg, AwayGoals = ag };
+            }
+        }
+    }
+
+    // ---- (3) Belegte Felder übernehmen -------------------------------------------------------------------------
+
+    private void ApplyOriginal(OriginalSaveGame save, int[] clubOf, ClubDatabase database)
+    {
+        var foreigners = database.Clubs.SelectMany(c => c.Players).Where(p => p.IsForeigner).Select(p => p.Name).ToHashSet();
+        ApplyTeamValues(save, clubOf);
+        var records = save.Block("965B");
+        for (var m = 0; m < Managers.Count; m++)
+        {
+            var record = records.AsSpan(m * OriginalSaveGame.ManagerRecordLength, OriginalSaveGame.ManagerRecordLength);
+            ApplyManager(save, m, record);
+            if (!WorldOnly)
+                ApplySquad(save, Clubs[Managers[m].ClubIndex], m, clubOf, foreigners);
+        }
+        // [ORIGINAL] Manager am Zug DGROUP 0xA70E (0–3; 5 = Bundestrainer). [APPROX] Der Zug des Bundestrainers beginnt im Remake
+        // mit dem Tageslauf; der Import setzt dann Manager 0.
+        var current = save.Block("A70E")[0];
+        if (current < Managers.Count && current != CurrentManager && !Managers[current].Dismissed)
+        {
+            CurrentManager = current;
+            BeginManagerTurn();
+        }
+    }
+
+    /// <summary>Teamwerte far:9657 + 0x17 … 0x1D aller Vereinssätze (Feldkarte „ClubTeamValues“).</summary>
+    private void ApplyTeamValues(OriginalSaveGame save, int[] clubOf)
+    {
+        var records = save.Block("far:9657");
+        for (var slot = 0; slot < clubOf.Length; slot++)
+        {
+            var r = records.AsSpan(slot * OriginalSaveGame.ClubRecordLength, OriginalSaveGame.ClubRecordLength);
+            if (WorldOnly && Managers.Any(m => m.ClubIndex == clubOf[slot]))
+                continue; // Satz des Managervereins trägt im Modus „nur Weltkugel“ das Land (Regel 1)
+            Clubs[clubOf[slot]].TeamValues = new ClubTeamValues(r[0x18], r[0x19], r[0x1A], r[0x1B], r[0x1C], r[0x1D], r[0x17]);
+        }
+    }
+
+    /// <summary>Konto, Eintritt, Stadion, Bankdarlehen, Liga-Stufe, Werbebewertung, Talentpreis, Zinsdrittel, Jugend (Feldkarte
+    /// „Manager, ManagerFinance“, „Stadion …“).</summary>
+    private void ApplyManager(OriginalSaveGame save, int m, ReadOnlySpan<byte> record)
+    {
+        var manager = Managers[m];
+        manager.Money = BinaryPrimitives.ReadInt32LittleEndian(record[0x18F..]) / 3; // Regel 4: Drittel-DM
+        var finance = Finance(manager);
+        finance.CostLeague = (League)Math.Clamp((int)record[0xEB], 0, 2);
+        var stadium = finance.Stadium;
+        stadium.TicketPrice = record[0xE4];
+        const int s = 0x116; // Stadion: Stufe/Ziel je Bereich, Wochen, Plätze
+        for (var i = 0; i < Stadium.FeatureCount; i++)
+            stadium.SetLevel((StadiumFeature)i, record[s + 2 * i]);
+        stadium.Seats = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x1D)..]);
+        stadium.SeatsTarget = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x1F)..]);
+        stadium.Standing = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x21)..]);
+        stadium.StandingTarget = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x23)..]);
+        // Bankdarlehen: Eintrag i = 4 der Darlehensliste +0x19B (negativ = Schuld), Drittel-DM (FILE08).
+        finance.Bank.Credit = -(long)BinaryPrimitives.ReadInt32LittleEndian(record[(0x19B + 4 * 4)..]) / 3;
+        finance.SponsorRating = BinaryPrimitives.ReadInt16LittleEndian(record[0x173..]);
+        finance.TalentPrice = BinaryPrimitives.ReadInt32LittleEndian(save.Block("020D").AsSpan(4 * m)) / 3;
+        finance.InterestAccrualThirds = BinaryPrimitives.ReadInt32LittleEndian(save.Block("02A0").AsSpan(4 * m)); // Drittel bleiben
+
+        // Jugend DGROUP 0xA075 + 0x15 · m: Stärke +0..2, Platz +3..5 und Liga +6..8 (0-basiert), Förderung +9 (3 × Drittel-DM).
+        var youth = save.Block("A075").AsSpan(0x15 * m, 0x15);
+        foreach (var team in finance.Youth)
+        {
+            var k = (int)team.Kind;
+            team.Strength = youth[k];
+            team.Rank = youth[3 + k] + 1;
+            team.League = youth[6 + k] + 1;
+            team.Funding = BinaryPrimitives.ReadInt32LittleEndian(youth[(9 + 4 * k)..]) / 3;
+        }
+    }
+
+    /// <summary>
+    /// Kader eines Managervereins aus den Kaderplätzen 5DC3 (Satz m) und dem Pool far:8253 (Feldkarte „Spieler“). Spieler mit
+    /// gleichem Namen und gleicher Rolle behalten ihr Objekt (und ihre ID), damit Verweise des Nachspielens gültig bleiben.
+    /// </summary>
+    private void ApplySquad(OriginalSaveGame save, Club club, int record, int[] clubOf, HashSet<string> foreigners)
+    {
+        var squad = save.Block("5DC3");
+        var pool = save.Block("far:8253");
+        var old = club.Players.ToList();
+        var players = new List<(Player Player, int Line, bool Forward, bool Dressed)>();
+        for (var i = 0; i < OriginalSaveGame.SquadSlotsPerManager; i++)
+        {
+            var slot = squad.AsSpan(record * 0x618 + i * OriginalSaveGame.SquadSlotLength, OriginalSaveGame.SquadSlotLength);
+            if (!slot.ContainsAnyExcept((byte)0))
+                continue;
+            var entry = pool.AsSpan(slot[0x0F] * OriginalSaveGame.PoolRecordLength, OriginalSaveGame.PoolRecordLength);
+            var name = CName(entry[..0x12]);
+            var role = entry[0x18] == 0 ? PlayerRole.Goalkeeper : entry[0x18] < 50 ? PlayerRole.Defender : PlayerRole.Forward;
+            var player = old.FirstOrDefault(p => p.Name == name && p.Role == role);
+            if (player is not null)
+                old.Remove(player);
+            else
+            {
+                player = new Player { Name = name, Role = role, IsForeigner = foreigners.Contains(name) };
+                AssignPlayerId(player);
+            }
+            ApplySlot(player, slot, entry, clubOf);
+            players.Add((player, slot[0x15] & 0x0F, (slot[0x15] & 0x80) != 0, slot[0x0A] != 0));
+        }
+
+        club.ClearLineup();
+        foreach (var p in old)
+            club.RemovePlayer(p);
+        club.Players.Clear();
+        club.Players.AddRange(players.Select(p => p.Player));
+        club.RenumberPlayers(); // Nr. = Kaderplatz + 1 (Feldkarte „Player.Number“)
+
+        // Aufstellung: Reihe 1–3 (+0x15, Bit 0x80 Sturm), Torhüter mit Reihe 1; Plätze in Kaderfolge.
+        var used = new Dictionary<(int Block, PlayerRole Role), int>();
+        foreach (var (player, line, _, _) in players)
+        {
+            if (line is < 1 or > 3)
+                continue;
+            LineupSlot? target = player.Role switch
+            {
+                PlayerRole.Goalkeeper when line == 1 && club.Lineup.Goalkeeper is null => LineupSlot.Goalkeeper,
+                PlayerRole.Defender => NextSlot(line - 1, PlayerRole.Defender, Lineup.DefendersPerBlock),
+                PlayerRole.Forward => NextSlot(line - 1, PlayerRole.Forward, Lineup.ForwardsPerBlock),
+                _ => null,
+            };
+            if (target is { } t && player.Available)
+                club.Lineup.Assign(t, player);
+        }
+        foreach (var (player, _, _, dressed) in players)
+            if (dressed && !club.Lineup.Contains(player) && club.DressedCount < Club.MaxDressed)
+                club.Dress(player);
+        return;
+
+        LineupSlot? NextSlot(int block, PlayerRole role, int capacity)
+        {
+            used.TryGetValue((block, role), out var n);
+            if (n >= capacity)
+                return null;
+            used[(block, role)] = n + 1;
+            return role == PlayerRole.Defender ? LineupSlot.Defender(block, n) : LineupSlot.Forward(block, n);
+        }
+    }
+
+    /// <summary>Werte eines Kaderplatzes (0x34 Byte) und des Pool-Spielers (33 Byte). Geld in Drittel-DM (Regel 4).</summary>
+    private void ApplySlot(Player p, ReadOnlySpan<byte> slot, ReadOnlySpan<byte> entry, int[] clubOf)
+    {
+        p.Age = entry[0x14];
+        p.Talent = entry[0x12];
+        p.Condition = slot[0x10];
+        p.Technique = slot[0x11];
+        p.Form = slot[0x12];
+        p.Strain = slot[0x13];
+        p.TrendControl = slot[0x14];
+        p.Penalties5 = slot[0x00];
+        p.Penalties2 = slot[0x01];
+        var goals = slot[0x03] + slot[0x04] + slot[0x05];
+        p.Games = slot[0x06] + slot[0x07] + slot[0x08];
+        p.ClubGamesCarry = BinaryPrimitives.ReadInt16LittleEndian(slot[0x1C..]) + BinaryPrimitives.ReadInt16LittleEndian(slot[0x1E..])
+            + BinaryPrimitives.ReadInt16LittleEndian(slot[0x20..]) - p.Games; // Wörter je Wettbewerb (re-runde-13.md)
+        if (p.Role == PlayerRole.Goalkeeper)
+        {
+            p.Goals = 0;
+            p.GoalsAgainst = goals;
+            p.GoalieMinutes = BinaryPrimitives.ReadUInt16LittleEndian(entry[0x1F..]);
+            p.Assists = 0;
+        }
+        else
+        {
+            p.Goals = goals;
+            p.Assists = BinaryPrimitives.ReadUInt16LittleEndian(entry[0x1F..]);
+        }
+        p.InjuredGames = (slot[0x09] & 0x02) != 0 ? slot[0x0D] : 0;
+        if (p.InjuredGames > 0)
+            p.InjuryKind = slot[0x17];
+        p.SuspendedGames = 0; // [APPROX] Feldkarte U
+        p.ContractYears = slot[0x0B];
+        p.NegotiationLock = slot[0x18];
+        p.HiddenSkill1 = slot[0x19] & 0x0F;
+        p.HiddenSkill2 = slot[0x19] >> 4;
+        p.MonthlySalary = BinaryPrimitives.ReadInt32LittleEndian(slot[0x28..]) / 3;
+        var price = BinaryPrimitives.ReadUInt32LittleEndian(slot[0x2C..]);
+        p.InsuranceLocked = (price & 0x8000_0000) != 0;
+        p.PurchasePrice = (price & 0x7FFF_FFFF) / 3;
+        p.InsurancePremium = BinaryPrimitives.ReadInt32LittleEndian(slot[0x30..]) / 3;
+        p.UnsolicitedOffer = (slot[0x09] & 0x40) != 0 && slot[0x16] < clubOf.Length ? Clubs[clubOf[slot[0x16]]] : null;
+    }
+
+    private static string CName(ReadOnlySpan<byte> raw)
+    {
+        var end = raw.IndexOf((byte)0);
+        return GameText.Decode(end < 0 ? raw : raw[..end]).TrimEnd();
+    }
 }

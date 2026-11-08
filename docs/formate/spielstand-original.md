@@ -774,16 +774,37 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `EternalEntry.EuropeanCupWins` | U | – | wie `GameState._eternal` |
 | `EternalEntry.Points` | U | – | wie `GameState._eternal` |
 
-### Offen für Teil 2 (Import)
+### Import im Spielkern (Teil 2)
 
-- **Spielplan:** Paarungstabelle 0x4E7C7 in em.exe lesen; ohne sie lassen sich die Tore in `A0CB` vergangener Spieltage
-  keinen Vereinen zuordnen. Ersatz bis dahin: Tabelle aus `8257` übernehmen (Punkte, Tore, Spiele je Verein) und `Results`
-  nur für den laufenden Spieltag (`5D7B`) bilden `[APPROX]`.
-- **Pokalzeilen `5C4B`** (Zuordnung Zeile ↔ Wettbewerb/Termin), Freundschaftsspiel-Blöcke `D0CB`/`D0D3`/`D0DB`, `A89A`,
-  Sparbuch, Ewige Tabelle, Managerkopf, Leihe: an FILE16A, FILE29–FILE41 vergleichen, sonst bei `U` bleiben.
-- **Preisindex:** Fundstelle im Code 0x2B8 gegen Block `02BC` prüfen (FILE29: `02BC` = 100).
-- **Bundestrainer-Satz:** Managersatz 5 (Konto DGROUP 0xA055) – im Kommentar `CupsNational.GameState.cs` „Manager-Satz 4“
-  genannt (Zählung ab 0x94AC); hier einheitlich ab 0x965B.
+`GameState.ImportOriginal(save, datenbank, saat)` in `Core/OriginalImport.cs`; Tests `OriginalImportTests` (alle Stände
+FILE01–FILE41, Rundreise, Mehrsaisonprobe). Ablauf in drei Schritten:
+
+1. **Spielstart** wie `NewGame.Create`, aber Ligen und Satzfolge aus den Satzplätzen 0–35 (Regeln 1/2), Managervereine aus
+   `965B+0x14`, kein Platztausch und keine Startmischung; Setup (`0118`, `D0B9`) und Optionen (`021D`, `0262`) aus dem HOK.
+2. **Nachspielen** der Zeitleiste von Tag 0 bis vor den Tag `03B7 − 1` (der Tag selbst ist im Original noch nicht
+   verarbeitet). Nach jedem Ligaspieltag ersetzt der Import die berechneten Ergebnisse durch die aus `A0CB`, so dass Tabelle,
+   Play-off-Setzliste und Aufstiegsrunden dem Original folgen. Steht ein ganzer Spieltag in allen Ligen auf 0:0, hat das
+   Original ihn nicht eingetragen (FILE16A, vorgestellter Tageszähler: Tabellensätze mit 2 Spielen bei 43 Spieltagen); seine
+   Ergebnisse entfallen `[APPROX]`.
+3. **Übernahme** der belegten Felder: Teamwerte aller Vereinssätze (`far:9657+0x17…0x1D`), je Manager Konto, Eintritt,
+   Stadion, Bankdarlehen, Liga-Stufe, Werbebewertung, Talentpreis, Zinsdrittel, Jugend; Kader der Managervereine aus `5DC3`
+   und dem Pool (Werte, Statistik, Vertrag, Gehalt, Versicherung, Verletzung, Aufstellung Reihe 1–3, Eingesetzte); Manager
+   am Zug `A70E`. Gleichnamige Spieler gleicher Rolle behalten Objekt und ID aus dem Nachspielen.
+
+**Spielplan und Ergebnisse (belegt in Teil 2):** Die Buchstaben der festen Tabelle 0x4E7C7 (`Schedule`, re-nachtrag.md §4)
+sind Plätze in der **Satzfolge** der Liga, nicht im Vereinsindex. Ergebnis von Paarung k am Spieltag d der Liga L:
+`A0CB + 0x210 · L + 12 · (d − 1) + 2 · k` (Heimtore, Gasttore). Probe: die daraus gerechnete Tabelle gleicht den
+Tabellensätzen `8257` (Punkte, Tore, Gegentore, Spiele, Siege, Niederlagen) an FILE05, FILE16A, FILE24, FILE31, FILE36,
+FILE37A, FILE40. Das Remake rechnet den Plan nach dem Import über die Satzfolge; ab der nächsten Saison wieder nach
+`Schedule.Rounds` (Vereinsindex) – Abweichung des Remakes, nicht Teil dieser Spur.
+
+**Noch nicht übernommen** (Stand aus dem Nachspielen nach Remake-Regeln, `[APPROX]`): Pokale und WM (`5CFB`, `CED8`,
+`5C4B`, `A776`, `A763`), Spielerpool und Transfermarkt (`far:8253`, `5DC3` Satz 4), Nationalkader (Satz 5), Börse (`D0F4`
+ff.; Umrechnung der Kurse nicht geprüft), Werbeverträge (`C15B`, `C313`), Trainingsplan (`A8A1`), Taktik (`A6FB`, `A707`,
+`A701`, `CAE9`, `CC43`), Nachrichten (`D294`), Serien und Rekorde (`AB7B`), Strafminuten und Platzfelder (`8257`),
+Managerdarlehen (`965B+0x19B`, i = 0–3), Konto des Nationalteams. Weiter offen aus Teil 1: Pokalzeilen `5C4B`,
+Freundschaftsspiele `D0CB`/`D0D3`/`D0DB`, `A89A`, Sparbuch, Ewige Tabelle, Managerkopf, Leihe; Preisindex 0x2B8 gegen
+Block `02BC`; Zählung des Bundestrainer-Satzes.
 
 ## Offene Punkte
 

@@ -132,7 +132,7 @@ Umfang nach Entscheidung **R14-D2 = B**: Feldkarte und Import, Export in Runde 1
      `Continue()` über einen Spieltag und eine Mehrsaisonprobe ohne Fehler.
   3. **Zugang:** `emtool hok import <hok> <ziel>` und Laden-Dialog listet `*.HOK` (Import beim Laden, Hinweis bei
      Prüfsummenfehler wie „Der kleine Mogelguru“). Bildschirmfoto-Ablauf Hauptmenü nach Import gegen das DOSBox-Bild des Stands.
-- **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Feldkarte) fertig, PR #633 (08.11.2026); Teil 2 offen.
+- **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Feldkarte) fertig, PR #633 (08.11.2026); Teil 2 (Import Spielkern) fertig, PR #638 (08.11.2026); Teil 3 offen.
 
 ### Spur `pruefung-karte` – Welle 2 (nach der Integration aller Spuren)
 
