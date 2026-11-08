@@ -66,6 +66,109 @@ public class NationalteamRunde14Tests
         Assert.True(driftSeen && plainSeen, $"Wandertag {driftSeen}, Tag ohne Wanderung {plainSeen}");
     }
 
+    // ---- R14NT-01/02: WM-Schleife des Originals nach der Ernennung ------------------------------------------------
+
+    /// <summary>
+    /// Modus 4 mit echter Ernennung: Verein 2 spielt mit Höchstwerten (Vorbedingung Tabellenplatz wie
+    /// <c>NationalCoachMode4Tests</c>) bis nach dem 13. April; dann Kader und Aufstellung automatisch.
+    /// </summary>
+    private static (GameState Game, NationalCoach Coach) AppointedAfterClubSeason(int seed)
+    {
+        var game = GameModeTests.Create(seed, true, true, 2);
+        Assert.Equal(GameMode.Full, game.Mode);
+        ManagedSquads.PlayAtTopStrength(game, 0);
+        NationalCoachMode4Tests.PlayToClubSeasonEnd(game);
+        var coach = Assert.IsType<NationalCoach>(game.NationalCoach); // echte Ernennung am 13. April (Datei 0x553A2 ff.)
+        Assert.Equal(0, coach.Manager);
+        Assert.Equal(SeasonCalendar.ClubSeasonEnd + 1, game.CurrentDay);
+        game.AutoNominate();
+        coach.AutoFormation();
+        return (game, coach);
+    }
+
+    /// <summary>Form 1 für den ganzen WM-Kader: jede Aufstellung liegt dann weit unter der gewürfelten Form 45 … 55.</summary>
+    private static void LowerSquadForm(NationalCoach coach)
+    {
+        foreach (var member in coach.Squad)
+            member.Player.Form = 1;
+    }
+
+    /// <summary>
+    /// R14NT-01 (P1): Regressionstest (vorher rot: Form Deutschlands an den Wandertagen 224/228 gewürfelt, 45 … 55).
+    /// [ORIGINAL] Nach der Ernennung (Datei 0x55482/0x55485) läuft die WM in der Schleife Datei 0x55570–0x55740: je WM-Tag
+    /// Menü des Bundestrainers, 0x37F/0x380 und 0x426BC (Datei 0x55599–0x555CA), 0x952C(5, 0) (Datei 0x555D6), dann die
+    /// WM-Spiele 0x30E7B(1) (Datei 0x555F3). Die kleine Wanderung 0x9D1B ruft die Schleife nicht (einziger Aufruf hinter
+    /// 0x555D6 bei Datei 0x56448, Saisonwechsel). Also spielt Deutschland auch am 5. Gruppentermin (Tag 224 ≡ 0 mod 7) und
+    /// am Halbfinale (Tag 228 ≡ 4 mod 7) mit der Form der Aufstellung.
+    /// </summary>
+    [Theory]
+    [InlineData(3)]
+    [InlineData(11)]
+    public void Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(int seed)
+    {
+        var (game, coach) = AppointedAfterClubSeason(seed);
+        var probe = new FormProbe(NationalTeams.Germany);
+        game.Competitions.Insert(0, probe); // vor der WM: misst die Form Deutschlands unmittelbar vor deren Spielen
+        for (var guard = 0; game.Phase == SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 100, "Saisonende nicht erreicht");
+            LowerSquadForm(coach);
+            game.Continue();
+        }
+        var driftDates = probe.Seen.Where(s => MatchEngine.IsDriftDay(s.Day)).ToList();
+        Assert.Equal([224, 228], driftDates.Select(s => s.Day));
+        Assert.All(probe.Seen, s =>
+        {
+            Assert.InRange(s.DefenseForm, 0, 44);
+            Assert.InRange(s.AttackForm, 0, 44);
+        });
+    }
+
+    /// <summary>Misst an jedem WM-Tag die Form eines Landes vor den WM-Spielen (steht in <c>Competitions</c> vor der WM).</summary>
+    private sealed class FormProbe(int nation) : ISeasonCompetition
+    {
+        public List<(int Day, int DefenseForm, int AttackForm)> Seen { get; } = [];
+        public Competition Kind => Competition.WorldCup;
+        public DayEvents Days => DayEvents.WorldCup;
+        public Title? Title => null;
+        public int? Winner => null;
+        public void StartSeason(GameState game) { }
+        public (int Opponent, bool Home)? MatchOn(GameState game, int day, int club) => null;
+
+        public void PlayDay(GameState game, int day, List<SeasonStep> steps)
+        {
+            var (defense, attack, _) = game.NationalTeamValues(nation);
+            Seen.Add((day, defense.Form, attack.Form));
+        }
+    }
+
+    /// <summary>
+    /// R14NT-02 (P2): Regressionstest (vorher rot: der Tageslauf stellte am WM-Tag nach dem Zug des Bundestrainers neu auf,
+    /// Datei 0x54D41–0x54DAA des Hauptwegs; am Tag 216 spielte Deutschland mit Abwehrform 20 statt 1). [ORIGINAL] In der
+    /// WM-Schleife stellt nach dem Menü nur 0x426BC bei Datei 0x555CA auf, mit 0x37F = 0 also wirkungslos: Es spielt die
+    /// Aufstellung, die der Bundestrainer zuletzt gesehen hat, auch wenn sich Spielerwerte danach ändern.
+    /// </summary>
+    [Theory]
+    [InlineData(3)]
+    [InlineData(11)]
+    public void Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(int seed)
+    {
+        var (game, coach) = AppointedAfterClubSeason(seed);
+        var germany = game.Clubs[NationalTeams.Germany];
+        game.Continue(); // Vereinsmanager fertig → Zug des Bundestrainers am Tag 216 (Menü stellt automatisch auf)
+        Assert.True(game.NationalTurn);
+        var day = game.CurrentDay;
+        Assert.True(SeasonCalendar.Events(day).HasFlag(DayEvents.WorldCup));
+        var seen = LineupSlot.All.Select(s => coach.Formation[s]).ToList();
+        foreach (var p in seen.OfType<Player>())
+            p.Form = 1; // nach dem Menü: eine neue Automatik nähme jetzt andere Spieler
+        game.Continue();
+        Assert.True(game.CurrentDay > day);
+        Assert.Equal(seen, LineupSlot.All.Select(s => coach.Formation[s]).ToList());
+        var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
+        Assert.Equal((defense.Form, attack.Form), (germany.TeamValues!.Value.DefenseForm, germany.TeamValues.Value.AttackForm));
+    }
+
     // ---- #595 ----------------------------------------------------------------------------------------------------
 
     /// <summary>
