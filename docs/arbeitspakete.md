@@ -67,7 +67,8 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   Datei, Byte, Bild) und Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser Runde). Selbstprüfung
   `funktionskarte.py --csv` ohne `--write`.
 - **Dateigrenzen:** nur `docs/analyse/re-runde-14.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5.
-  **Status:** Go 05.11.2026, Start offen.
+  **Status:** Teil 1 (Sitzungen 1–2, FILE29–41, FILE37A) fertig, PR #628 (Korrekturen nach Review #643); Teil 2
+  (Sitzungen 3–7, FILE43–49A) läuft.
 
 ### Spur `saison` – Satzfolge, Fair-Play, Oberliga
 
