@@ -39,7 +39,7 @@ public sealed class ScreenDriver
     }
 
     public void Click(int x, int y) => Frame(i => { i.MouseX = x; i.MouseY = y; i.LeftClick = true; });
-    public void RightClick(int x, int y) => Frame(i => { i.MouseX = x; i.MouseY = y; i.RightClick = true; });
+    public void RightClick(int x, int y) => Frame(i => { i.MouseX = x; i.MouseY = y; i.RightClick = true; i.RightDown = true; });
     public void Move(int x, int y) => Frame(i => { i.MouseX = x; i.MouseY = y; });
 
     /// <summary>Linke Taste bei der ersten Position drücken, über die weiteren ziehen, dann loslassen.</summary>
