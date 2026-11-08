@@ -51,7 +51,7 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   (nur Darstellung): `ui-rest`.
 - `src/EishockeyManager.Formats/OriginalSaveGame*.cs`, neue Dateien `Core/OriginalImport*.cs`, `UI/Screens/SaveLoad/*`,
   `src/EishockeyManager.Tools/Hok*.cs`, `docs/formate/spielstand-original.md`: allein `hok-import`.
-- `Core/GameState.MainMenu.cs` (nur Kommentar #598): `pruefung-karte`.
+- `Core/GameState.MainMenu.cs`: ein Aufruf für A009 `nationalteam` (L8), danach Kommentar #598 `pruefung-karte` (Welle 2).
 - Tests nur in den Testdateien der eigenen Spur; fremde Testdateien nur `pruefung-karte` (Welle 2, #603, #604, #620, #621).
 
 ### Spur `re-dosbox` – Auswertung der DOSBox-Aufnahme `runde-13` (zuerst, nur Doku)
@@ -97,8 +97,13 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
      WM-Gruppenphase (Fundstelle, neue Inventur-ID über `pruefung-karte`); WM-Kader-Reihenfolge beim Einsortieren (3CABFh,
      Restlücke #623).
   3. **A012** (L7): `[APPROX]` in `CupsNational.Lineup.cs` → `[ORIGINAL]` (Bilder `file36_1`/`file36_2`, `file37_2`/`file39_3`);
-     dazu **Bundestrainer-Befunde aus `re-dosbox` Teil 2** (A009 leer, A085 Handaufnahme, A293), sobald Sitzung 5 ausgewertet ist.
-- **Dateigrenzen:** wie oben „allein `nationalteam`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
+     dazu **Bundestrainer-Befunde aus `re-dosbox` Teil 2** (#642): A009 („automatisch aufstellen“ des Bundestrainers, zwei Bytes
+     DGROUP 0x37F/0x380 mit Schema und Migration in eigener Datei, Neuaufstellung über `OnMainMenu`; L8), A085 (WM-Kader), A293
+     wie im Original nach Review #649 R14RD2-02 (Startseite nur beim ersten Aufbau eines Zugs, nur bei WM-Stufe = 5; ohne gemerkte
+     Seite `[APPROX]`).
+- **Dateigrenzen:** wie oben „allein `nationalteam`“, eigene Tests; nach L8 zusätzlich `Core/GameState.MainMenu.cs` (ein Aufruf in
+  `OnMainMenu` für A009), `Core/GameState.HotSeat.cs` (nur falls für A009 nötig), `UI/Screens/Competitions/WorldCupKnockoutScreen.cs`
+  und `CupPairingsScreen.cs` (A293). **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
 
 ### Spur `kader-start` – Spielstart, Kader, Aufstellung
 
@@ -111,7 +116,10 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
      (`MatchEngine.Injuries.cs` nur dafür, vorher 0x53C57 lesen); A364 und Reihenlogik der Vereinsaufstellung wie A010 (aus
      `nationalteam`, #637) in `UI/Screens/Team/LineupScreen.cs` und `Core/Squad.Lineup.cs`.
   3. ~~Anschluss Sperre ab WM-Gruppenphase~~ – entfällt (L5: Sperre nur im Menü des Bundestrainers, #637).
-  4. **Saisonende-Abgang aus `re-dosbox` Teil 2** (A362, A085, A091), sobald Sitzung 4 ausgewertet ist.
+  4. **Saisonende-Abgang aus `re-dosbox` Teil 2** (#642): A362 als Abbild im Bildschirm ohne Schemaänderung (L9), A091/A380
+     (Rückkehr von der Transferliste), A115 nach dem Code wie im Original (Kopierrichtung belegt, Review #649 R14RD2-03; Leihe
+     zwischen Managern nur aus dem Code, L10), A088 (belegt nur `+0x00`, `+0x01`, `+0x03`, `+0x04`, `+0x06`, `+0x07`, R14RD2-05),
+     Saisonende-Test (Prämie, Gehalt, Ablöse).
 - **Dateigrenzen:** wie oben „allein `kader-start`“, `UI/Screens/Team/*` außer `TeamUi.cs` und `TransferDialog.cs`, eigene Tests,
   `docs/transfer.md`. Dazu nach L4/L7 jeweils nur für den genannten Punkt: `Core/MatchEngine.Injuries.cs` (Taktik 375h),
   `Core/FinanceStadium.cs` (`TableRank`) und `Core/FinanceSponsorRating.cs` (Tabellenfeld, A046), `Core/MatchEngine.Live.cs`
@@ -174,6 +182,10 @@ Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terr
 - **E14-4 = A** (08.11.2026): Restfelder des Imports in Runde 14 (`hok-import` Teil 4), dafür 1–2 zusätzliche Fortsetzungen.
 - **E14-5 = C** (08.11.2026): keine Nachaufnahme für A115, A189, A321, A357, A364; die Punkte bleiben `[APPROX]`, eine
   Aufnahme später nach Lust des Nutzers.
+- **Leitstelle L8–L10** (08.11.2026, offene Fragen Teil 2 in `re-runde-14.md`, Review #649): L8 A009 → `nationalteam` mit
+  den Dateien oben (R14RD2-01); L9 A362 als Abbild ohne Schemaänderung (`kader-start` Teil 4); L10 A115 nach dem Code wie im
+  Original. Die P3-Präzisierungen R14RD2-02 bis -05 aus Review #649 und R14RD1N-02/-03 aus #644 gelten für die Umsetzung in den
+  Spuren; die Korrektur in `re-runde-14.md` übernimmt `pruefung-karte` (Welle 2).
 - **Leitstelle L7** (08.11.2026, `re-runde-14.md` Frage 6, Review #643 R14RD1-02): Dateigrenzen in den Spurabschnitten
   `kader-start` und `ui-rest` erweitert (unten); A012 → `nationalteam`; Feldbelege in `formate/spielstand-original.md` → `hok-import`.
 - **Leitstelle L1–L6** (08.11.2026, Kommentar in #628): U15-c umsetzen; Schemafelder in `kader-start` Teil 2;
