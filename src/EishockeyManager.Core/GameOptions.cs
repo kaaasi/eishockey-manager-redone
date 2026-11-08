@@ -75,7 +75,8 @@ public sealed class GameOptions
     /// Zusatzeinstellung „Ganzer Tag“ (Spur saison Teil 4, #349, Entscheidung R14-D4 = A): Spielt an einem Tag ein Managerverein,
     /// rechnet der Spieltag <b>alle</b> Paarungen von Pokal, Play-offs und Aufstiegsrunde in der Minutenschleife.
     /// [ORIGINAL] Merker „Managerverein spielt“ je Spieltag (Datei 0x36FEA–0x3700B: DGROUP 0xA729 + m für m = 0…5, dann
-    /// <c>cmp [bp-5],0 / jnz 0x37088</c> bei 0x37028, vor den Wettbewerbsprüfungen 0x3702E–0x37085). Vorgabe aus: Das Remake
+    /// <c>cmp [bp-5],0 / jnz 0x37088</c> bei 0x37028, vor den Wettbewerbsprüfungen 0x3702E–0x37085). [APPROX] Der Teil „auch
+    /// die WM-Endrunde“ ist nur aus dem Aufrufmuster geschlossen (Erreichen von 0x36B5D aus 0x31017, R9S-07, #358). Vorgabe aus: Das Remake
     /// entscheidet je Paarung (<see cref="CupMatchUsesMinuteLoop"/>); eingeschaltet ändern sich Ergebnisse und Zufallsverbrauch
     /// der Spiele ohne Manager. Kein Schalter des Originals (nicht in der Optionsmatrix 0x2CD1C).
     /// </summary>

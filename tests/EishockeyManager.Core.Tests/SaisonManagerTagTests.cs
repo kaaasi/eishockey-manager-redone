@@ -54,40 +54,83 @@ public class SaisonManagerTagTests
         throw new InvalidOperationException($"Kein Tag mit {kind} für den Manager gefunden.");
     }
 
+    /// <summary>Wie <see cref="PlayManagerCupDay"/>, zählt aber schnellen Weg und Minutenschleife des einen Tages.</summary>
+    private static (int Fast, int Loop, int Day) CountManagerCupDay(GameState game, Competition kind)
+    {
+        for (var guard = 0; guard < 5000; guard++)
+        {
+            Hold(game);
+            if (game.Phase == SeasonPhase.Running
+                && game.MatchOn(game.CurrentDay, game.Managers[0].ClubIndex) is { } m && m.Competition == kind)
+            {
+                var day = game.CurrentDay;
+                OriginalMinutes.FastCupCalls = 0;
+                OriginalMinutes.MinuteLoopCalls = 0;
+                game.Continue();
+                return (OriginalMinutes.FastCupCalls, OriginalMinutes.MinuteLoopCalls, day);
+            }
+            if (game.Phase is SeasonPhase.SeasonOver or SeasonPhase.GameOver)
+                break;
+            game.Continue();
+        }
+        throw new InvalidOperationException($"Kein Tag mit {kind} für den Manager gefunden.");
+    }
+
     [Fact]
     public void ManagerPlaysCupDay_OptionOn_AllPairingsUseMinuteLoop_RandomDiffers()
     {
         const Competition kind = Competition.DebCup;
-        // Rot ohne Fix: Die Einstellung gab es nicht; beide Läufe verbrauchen gleich viel Zufall (je Paarung entschieden).
-        // Bundesligist Köln (5) spielt im DEB-Pokal; Schalter 0x227 aus → ohne Merker schneller Weg
-        // für die Paarungen ohne Manager.
+        // R14S-01/-02: Rot am Head 194f387 – der Merker wurde je Paarung neu gebildet und kippte, sobald das Spiel des Managers
+        // gerechnet war (13 von 16 Paarungen am Tag 12 liefen im schnellen Weg). Bundesligist Köln (5), DEB-Pokal-Schalter aus.
         var off = Create(seed: 5, option: false, 5);
         var on = Create(seed: 5, option: true, 5);
-        var (randomOff, dayOff) = PlayManagerCupDay(off, kind);
-        var (randomOn, dayOn) = PlayManagerCupDay(on, kind);
-        Assert.Equal(dayOff, dayOn);                // Liga ist von der Einstellung unberührt: gleicher Verlauf bis dahin
-        Assert.NotEqual(randomOff, randomOn);       // Paarungen ohne Manager rechnen Minute für Minute (anderer Zufallsverbrauch)
+        var (fastOff, loopOff, dayOff) = CountManagerCupDay(off, kind);
+        var (fastOn, loopOn, dayOn) = CountManagerCupDay(on, kind);
+        Assert.Equal(dayOff, dayOn);          // Liga ist von der Einstellung unberührt: gleicher Verlauf bis dahin
+        Assert.True(fastOff > 0, "Vorgabe aus: Paarungen ohne Manager rechnen im schnellen Weg");
+        Assert.Equal(0, fastOn);              // an: KEINE Paarung im schnellen Weg
+        Assert.True(loopOn >= fastOff + loopOff, "alle Paarungen laufen durch die Minutenschleife");
+        Assert.NotEqual(off.CaptureRng(), on.CaptureRng());
     }
 
     [Fact]
     public void NoManagerInvolved_OptionDoesNothing_SameRandom()
     {
-        // Tag mit Wettbewerb, an dem der Manager nicht spielt, ändert die Einstellung nichts: gesamte Saison bis zum
-        // Vereinssaisonende ohne Managerverein im Pokal – Manager in der Oberliga, Pokal-Tage ohne ihn sind selten; wir
-        // vergleichen darum nur, dass ein Lauf mit Einstellung aus und einer an bis zum ersten Pokaltag des Managers
-        // dieselbe Zufallsfolge haben (Ligaspiele rechnen immer Minute für Minute).
-        var off = Create(seed: 9, option: false, 30);
-        var on = Create(seed: 9, option: true, 30);
-        for (var i = 0; i < 20; i++)
+        // R14S-02: Pokal-/Play-off-Tag, an dem KEIN Managerverein spielt (Köln ist ausgeschieden bzw. nicht dabei), mit
+        // eingeschalteter Option: derselbe Zustand, einmal aus, einmal an → gleiche Zufallsfolge und gleich viele Paarungen im
+        // schnellen Weg. Mutation „Bedingung Managerverein spielt entfernt“ (Option allein schaltet die Minutenschleife) macht
+        // den Lauf „an“ minutenweise → rot. Zwei Klone desselben Zustands, damit frühere Unterschiede nichts verfälschen.
+        var game = Create(seed: 5, option: false, 5);
+        var checkedKinds = new HashSet<DayEvents>();
+        for (var guard = 0; guard < 5000 && game.Phase is not (SeasonPhase.SeasonOver or SeasonPhase.GameOver); guard++)
         {
-            Hold(off);
-            Hold(on);
-            if (off.MatchOn(off.CurrentDay, 30) is { } m && m.Competition != Competition.League)
-                break;
-            off.Continue();
-            on.Continue();
-            Assert.Equal(off.CaptureRng(), on.CaptureRng());
+            Hold(game);
+            var day = game.CurrentDay;
+            // Continue() hält nur an Manager-Tagen; die Tage dazwischen (ohne Managerverein) laufen in einem Aufruf. Beginnt der
+            // Aufruf an einem Ligatag des Managers (Wettbewerb unberührt), ist jeder Pokal-/Play-off-Tag darin einer ohne Manager.
+            var own = game.MatchOn(day, game.Managers[0].ClubIndex);
+            var kind = own is null ? DayEvents.None : DayEvents.League;
+            if (game.Phase == SeasonPhase.Running && own is { Competition: Competition.League } && !game.RegularSeasonOver
+                && checkedKinds.Count < 1)
+            {
+                var bytes = SaveGame.Save(game);
+                var a = SaveGame.Load(bytes).Game!;
+                var b = SaveGame.Load(bytes).Game!;
+                b.Options.ManagerDayMinuteLoop = true;
+                OriginalMinutes.FastCupCalls = 0;
+                a.Continue();
+                var fastA = OriginalMinutes.FastCupCalls;
+                OriginalMinutes.FastCupCalls = 0;
+                b.Continue();
+                var fastB = OriginalMinutes.FastCupCalls;
+                Assert.Equal(a.CaptureRng(), b.CaptureRng());
+                Assert.Equal(fastA, fastB);
+                if (fastA > 0)
+                    checkedKinds.Add(kind);
+            }
+            game.Continue();
         }
+        Assert.NotEmpty(checkedKinds); // mindestens ein Aufruf ohne Managerverein mit schnellem Weg gefunden
     }
 
     [Fact]
