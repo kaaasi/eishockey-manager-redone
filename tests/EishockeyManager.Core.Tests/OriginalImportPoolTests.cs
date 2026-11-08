@@ -204,6 +204,33 @@ public sealed class OriginalImportPoolTests
         Assert.Equal(10, message.Day);
     }
 
+    /// <summary>Rundreise mit Pool, Markt, Nationalkader und Nachrichten: Remake-Spielstand speichern, laden, weiterspielen.</summary>
+    [GameDataTheory]
+    [InlineData("FILE18.HOK")]
+    [InlineData("FILE20.HOK")]
+    [InlineData("FILE41.HOK")]
+    public void Import_RoundTripWithPoolMarketNational(string file)
+    {
+        var (_, game, _) = Import(file);
+        using var stream = new MemoryStream();
+        SaveGame.Save(game, stream);
+        var loaded = SaveGame.Load(stream.ToArray());
+        Assert.True(loaded.Success, loaded.Error);
+        var copy = loaded.Game!;
+        Assert.Equal(game.TransferMarket.Pool.Select(s => (s.Index, s.Player.Id, s.Owner, s.Club)),
+            copy.TransferMarket.Pool.Select(s => (s.Index, s.Player.Id, s.Owner, s.Club)));
+        Assert.Equal(game.TransferMarket.Listings.Select(l => (l.Player.Id, l.Price, l.Seller?.Name)),
+            copy.TransferMarket.Listings.Select(l => (l.Player.Id, l.Price, l.Seller?.Name)));
+        Assert.Equal(game.NationalCoach?.Squad.Select(m => m.Player.Id), copy.NationalCoach?.Squad.Select(m => m.Player.Id));
+        Assert.Equal(game.Inbox(game.Managers[0]).Select(m => string.Join("|", m.Lines)),
+            copy.Inbox(copy.Managers[0]).Select(m => string.Join("|", m.Lines)));
+        if (copy.Mode == GameMode.WorldOnly)
+            copy.Continue();
+        else
+            TestSeason.PlayMatchDay(copy);
+        Assert.Empty(copy.ValidatePlayerIdentity());
+    }
+
     private static string Name(ReadOnlySpan<byte> raw)
     {
         var end = raw.IndexOf((byte)0);

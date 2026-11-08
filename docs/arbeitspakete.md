@@ -132,7 +132,7 @@ Umfang nach Entscheidung **R14-D2 = B**: Feldkarte und Import, Export in Runde 1
      `Continue()` über einen Spieltag und eine Mehrsaisonprobe ohne Fehler.
   3. **Zugang:** `emtool hok import <hok> <ziel>` und Laden-Dialog listet `*.HOK` (Import beim Laden, Hinweis bei
      Prüfsummenfehler wie „Der kleine Mogelguru“). Bildschirmfoto-Ablauf Hauptmenü nach Import gegen das DOSBox-Bild des Stands.
-- **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Feldkarte) fertig, PR #633 (08.11.2026); Teil 2 (Import Spielkern) fertig, PR #638 (08.11.2026); Teil 3 (Zugang) fertig, PR #640 (08.11.2026); Teil 4a (Restfelder ohne Pokale, Pool/Markt, Nationalkader, Nachrichten) fertig, PR #648 (08.11.2026); Teil 4b (Pokale, Pool/Transfermarkt, Nationalkader, Nachrichten) offen; Teil 5 (Speichern-Dialog A338/A339, L6) nach `re-dosbox` Teil 2.
+- **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Feldkarte) fertig, PR #633 (08.11.2026); Teil 2 (Import Spielkern) fertig, PR #638 (08.11.2026); Teil 3 (Zugang) fertig, PR #640 (08.11.2026); Teil 4a (Restfelder ohne Pokale, Pool/Markt, Nationalkader, Nachrichten) fertig, PR #648 (08.11.2026); Teil 4b (Pool/Transfermarkt, Nationalkader, Nachrichten) fertig, PR #651 (08.11.2026); Teil 4c (Pokale und WM, Zuordnung `5CFB`/`5C4B` erst aus em.exe) offen; Teil 5 (Speichern-Dialog A338/A339, L6) nach `re-dosbox` Teil 2.
 
 ### Spur `pruefung-karte` – Welle 2 (nach der Integration aller Spuren)
 

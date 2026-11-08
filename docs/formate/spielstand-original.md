@@ -548,11 +548,11 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Message.Amount` | U | `D294` | Kreditwunsch: Feld im Satz nicht belegt; 0 |
 | `Message.Borrower` | U | `D294` | Kreditwunsch: nicht belegt |
 | `Message.Contract` | N | – | null (nur Spielstände vor Schema 7) |
-| `Message.Day` | A | `D294` | Tageszähler im Satz (min(0x3B7, 255), FinanceInbox) − 1 |
+| `Message.Day` | A | `D294+1` | Sortierschlüssel im Satz (min(0x3B7, 255), FinanceInbox) − 1 (FILE20: 217, 221) |
 | `Message.DaysLeft` | B | `D294+0` | oberes Halbbyte von +0 |
 | `Message.Done` | U | `D294` | false |
 | `Message.Kind` | A | `D294+0` | Art Bit 3 (ohne Spieler) / Angebot mit Spieler |
-| `Message.Lines` | U | `D294` | Text im Satz nicht belegt; aus Art und Spieler neu bilden `[APPROX]` |
+| `Message.Lines` | B | `D294+3` | Text im Satz, nullterminiert, Zeilen durch „^“ getrennt (FILE20/FILE48: Datum, Kopf, Spieler) |
 | `Message.Player` | B | `D294+2` | Poolspieler (Pool +0x1E = offene Meldung) |
 | `Message.Season` | A | `03BD` | laufende Saison |
 
@@ -799,8 +799,7 @@ FILE37A, FILE40. Das Remake rechnet den Plan nach dem Import über die Satzfolge
 `Schedule.Rounds` (Vereinsindex) – Abweichung des Remakes, nicht Teil dieser Spur.
 
 **Noch nicht übernommen** (Stand aus dem Nachspielen nach Remake-Regeln, `[APPROX]`; Teil 4b): Pokale und WM (`5CFB`, `CED8`,
-`5C4B`, `A776`, `A763`), Spielerpool und Transfermarkt (`far:8253`, `5DC3` Satz 4), Nationalkader (Satz 5), Nachrichten
-(`D294`). Teil 4a übernimmt die übrigen Bereiche (Abschnitt unten). Weiter offen aus Teil 1: Pokalzeilen `5C4B`,
+`5C4B`, `A776`, `A763`; Teil 4c). Teil 4a und 4b übernehmen die übrigen Bereiche (Abschnitte unten). Weiter offen aus Teil 1: Pokalzeilen `5C4B`,
 Freundschaftsspiele `D0CB`/`D0D3`/`D0DB`, `A89A`, Ewige Tabelle, Managerkopf, Leihe, Zuschauerstatistik (`965B+0xED` ff.);
 Zählung des Bundestrainer-Satzes.
 
@@ -829,6 +828,24 @@ laufende Serien `AB7B+0xA00` + 21 · Satz, Rekorde `AB7B+0x1194` + 0x10 · Satz 
 DGROUP 0x82A1 + 0x50 · Satz (Wort), Platzfelder DGROUP 0x828B + 0x50 · Satz: 44 Halbbytes, Feld i im Byte i / 2, gerades i im
 unteren Halbbyte (FILE03: Feld 2 = Platz in der Tabelle `5CCB` nach dem 3. Spieltag; FILE36). Rekordserien der Manager
 `AB7B+0xF40` + 21 · m. Nationalkonto: Satz 5 `+0x18F` / 3 als eine Übertragsbuchung (FILE18: 1.000.000 DM).
+
+### Pool, Markt, Nationalkader, Nachrichten (Teil 4b)
+
+`OriginalImport.Market.cs`, `.National.cs`, `.Messages.cs` (Aufruf nach Teil 4a), Tests `OriginalImportPoolTests`.
+
+| Bereich | HOK | Import | Beleg |
+|---|---|---|---|
+| Pool | `far:8253` + 33 · i, i = 1–199 | Name, Talent, Alter, Grundwerte `+0x15`–`+0x17`, Art aus `+0x18`, Verein `+0x1D` (Regel 1); Besitzer `+0x1A` 0–3 → vergeben (derselbe Spieler wie im Managerkader), 4 → Markt, sonst frei | FILE05: 25 vergeben, 7 Markt; Besitzer an allen Ständen nur 0, 1, 4, 6 |
+| Transferliste | `5DC3` Satz 4 in Platzfolge | `+0x0F` Poolindex, Preis `+0x2C` / 3, Sperre `+0x1A`, Werte `+0x10`–`+0x14`, `+0x19`; Besitzer 4 → Poolangebot (Herkunft = Poolverein), 0–3 → Angebot des Managers, Spieler bleibt im Kader; Poolindex 0 = Rest des aufgerückten Satzes, kein Eintrag `[APPROX]` | FILE05 (KÜNAST 435.000 DM … D.HEGEN), FILE41 (HOHENADL Platz 7, Besitzer 0, 316.000 DM; Platz 11 mit Index 0) |
+| Managerkader | `5DC3` Satz m + Marktplätze mit Besitzer m | Angebote des Managers folgen hinter den eigenen Plätzen | FILE40 → FILE41 (L7) |
+| Nationalkader | `5DC3` Satz 5 (29 Plätze) | Poolindex → Spieler; Werte `+0x10`–`+0x13` für Pool- und Marktspieler `[APPROX]` (ein Wertesatz je Spieler); Reihe `+0x15` (Bit 0x80 Sturm), eingesetzt `+0x0A`; Bundestrainer aus dem Nachspielen `[APPROX]` (`D0BA` an allen Ständen 0) | FILE18–FILE20, FILE47–FILE49A (Pool `+0x1D` der Nominierten = Land 54) |
+| Taktik Bundestrainer | `A6FB`/`A707`/`A701` + 5, `CAE9` + 0xF0, `CC43` + 0x28 | wie Teil 4a | FILE18 |
+| Nachrichten | `D294` + 0x71 · k, k < 24 | `+0` Bits 0–2 Manager, Bit 3 ohne Spieler, oberes Halbbyte Restlaufzeit; `+1` Schlüssel = Tag + 1; `+2` Poolspieler; ab `+3` Text („^“ trennt Zeilen); Nachrichten des Nachspielens entfallen | FILE20 (zwei Verletzungsmeldungen), FILE48; Satz mit Spieler an keinem Stand |
+
+Jeder Name nur einmal (Entscheidung Nutzer 01.11.2026): Poolnamen weichen in den Computerkadern einem nicht mehr gebrauchten
+Poolspieler des Nachspielens gleicher Art, sonst einem neuen Spieler mit den Werten des alten und einem freien Datenbanknamen
+`[APPROX]`; Gebote und Vertragslose des Nachspielens entfallen (Feldkarte U). Gleichnamige Poolspieler gleicher Art aus dem
+Nachspielen behalten Objekt und ID.
 
 ### Feldbelege aus der DOSBox-Aufnahme `runde-13` (re-runde-14.md, Leitstelle L7)
 
@@ -869,10 +886,16 @@ liegt bei den genannten Spuren.
   `kaputt_mogelguru.png` (08.11.2026): Datum, Manager, Verein, Gegner, Spieltag, Tabellenkurve, Konto und „Vor dem ersten
   Spieltag.“ stimmen. Abweichungen: Managerkopf (nicht im HOK belegt, Feldkarte U; das Original zeigt in beiden Ständen den
   Kopf mit Sonnenbrille) und bei FILE05 eine Nachricht aus dem Nachspielen („EC RATINGEN ist an J.SCHULZ interessiert.“),
-  wo das Original keine zeigt (Nachrichten `D294` nicht übernommen).
+  wo das Original keine zeigt (seit Teil 4b behoben: Nachrichten aus `D294`).
 
 ## Offene Punkte
 
+- **Pokale und WM (Teil 4c):** Import noch aus dem Nachspielen. Befunde Teil 4b: `5C4B` steht an allen Ständen FILE05–FILE44
+  auf 0 (Pokalergebnisse also nicht dort; Marken + 30 im Ergebnisblock `A0CB`?); `5CFB` +0…+31 ist zu Saisonbeginn die
+  Auslosung der ersten Runde (FILE05: 32 verschiedene Satzplätze 0–35), spätere Runden überschreiben den Anfang (FILE36:
+  `9 2 1 3 8 7 0 5 FF 0 …`, Deutung offen), `5CFB`+0x60 ff. Paare der WM (FILE22/FILE44); `5CF3`+0 Runde (FILE05 1, FILE36 3,
+  FILE44 5). Vor dem Import Zuordnung aus em.exe (Auslosung 0x341AB, 0x3489D, Spiel 0x34B76) klären. Die Klassen in
+  `Core/Cups*.cs` sind nicht `partial`; der Import braucht dort einen Zugang (fremde Dateien, im PR begründen).
 - Deutung der Blöcke ohne Eintrag in der Tabelle, besonders `8257` (0x1400), `AB7B` (0x1594), `D294` (0xA98),
   `C313` (0x7D0), `D0F4`, `5D7B` (Permutation der 36 Vereine, ändert sich mit dem Spieltag; nicht die Tabelle).
 - Vereinsdatensatz: in FILE03 ändern sich `+0x17`–`+0x3A` (Form, Teamwerte, weitere Statistik?). Punkte und Tore der
