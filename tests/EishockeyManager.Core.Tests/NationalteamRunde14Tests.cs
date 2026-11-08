@@ -214,8 +214,14 @@ public class NationalteamRunde14Tests
 
         // Erster Tag der neuen Saison: neue Ernennung, Kader leer → 0x952C schreibt im Remake nichts.
         Assert.Null(game.NationalCoach);
-        game.Continue();
+        game.Continue(); // Sprung zum ersten WM-Termin und Ernennung; der Tag ist noch nicht gerechnet
         Assert.NotNull(game.NationalCoach);
+        Assert.Empty(game.NationalCoach!.Squad);
+        // R14NT-06: den ersten WM-Tag mit Bundestrainer und leerem Kader wirklich rechnen (vorher hielt der Test vorher an).
+        var firstDay = game.CurrentDay;
+        Assert.Equal(GameState.FirstWorldCupDay, firstDay);
+        game.Continue();
+        Assert.True(game.CurrentDay > firstDay, "erster WM-Tag nicht gerechnet");
         Assert.Empty(game.NationalCoach!.Squad);
         Assert.Equal((0, 0, 9, 10), game.NationalRatings(NationalTeams.Germany));
         Assert.Equal(form, (germany.TeamValues.Value.DefenseForm, germany.TeamValues.Value.AttackForm));

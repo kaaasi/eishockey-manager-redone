@@ -216,6 +216,9 @@ public class NationalteamRunde14Teil3Tests
         Assert.Equal(NominationResult.Removed, game.ToggleNomination(third));
         Assert.Equal(NominationResult.Added, game.ToggleNomination(outsider));
         Assert.Same(outsider, coach.Rows[2]);
+        // R14NT-06: Reihenfolge des Kaders (nicht nur der nach Art geordneten Zeilen): Der Neue steht an der Stelle des
+        // Herausgenommenen, vor dem ersten Verteidiger (0x42CB1, wie FILE49A ENGLBRECHT auf Platz 3); hinten anhängen wäre rot.
+        Assert.Equal(squad.Select(p => p == third ? outsider : p), coach.Squad.Select(m => m.Player));
         Assert.False(coach.IsDressed(outsider));
         game.OnMainMenu(game.ActiveManager, isReturn: true);
         Assert.Equal(NationalCoach.MaxDressed, coach.DressedCount);
