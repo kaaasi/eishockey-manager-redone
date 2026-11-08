@@ -136,17 +136,12 @@ internal static class WorldCupMenuEntries
     /// „Paarungen → WM“. [ORIGINAL] A293 (Sitzung 5, Review #649 R14RD2-02): Im Zug des Bundestrainers setzt die Gegnersuche des
     /// Hauptmenüs (Datei 0x44F9E/0x44FB7 → 0x44A48, nur für das Nationalteam, Argument 0x10) die gemerkte Seite DGROUP 0x5127 bei
     /// WM-Stufe DGROUP 0x7AE = 5 auf 10 (Datei 0x44B15–0x44B1C) – die Kachel öffnet dann „WM-Endrundenspiele“ (DOSBox `file49_7`,
-    /// 24.04.1994), „Gruppe“ führt zu „Gruppe 1   5.Spieltag“ (`file49_8`). Die Kachel liest und schreibt die Seite in
-    /// DGROUP 0x5122 + 5 (Datei 0x458A2–0x458BB).
-    /// [APPROX] Eine gemerkte Seite führt das Remake nicht (A268): Es öffnet im Menü des Bundestrainers ab WM-Stufe 5 immer die
-    /// Endrunde, sonst Gruppe 1. Das Original setzt die Seite nur beim ersten Aufbau eines Zugs (die Rückkehr springt nach 0x44FBD,
-    /// Datei 0x45961) und nur bei Stufe = 5; danach bleibt die zuletzt gezeigte Seite (z. B. eine Gruppe nach „Gruppe“).
+    /// 24.04.1994), „Gruppe“ führt zu „Gruppe 1   5.Spieltag“ (`file49_8`). Nur beim ersten Aufbau eines Zugs (Rückkehr Datei
+    /// 0x45961 → 0x44FBD umgeht 0x44A48); sonst die gemerkte Seite (Datei 0x458A2–0x458BB). Review #662 R14NT-05, L11: gemerkte
+    /// Seite als Zustand der Oberfläche (<see cref="WorldCupPairingsPages"/>).
     /// </summary>
     [MenuEntry("WM")]
-    private static Screen Pairings(ScreenHost host, Screen back) =>
-        host.Game is { NationalCoachMenu: true, WorldCupStage: >= WorldCupKnockoutScreen.CoachStartStage }
-            ? new WorldCupKnockoutScreen(host, back, () => new CupPairingsScreen(host, back))
-            : new CupPairingsScreen(host, back);
+    private static Screen Pairings(ScreenHost host, Screen back) => WorldCupPairingsPages.FromTile(host, back);
 
     [MenuEntry("Tabelle WM")]
     private static Screen Table(ScreenHost host, Screen back) => new WorldCupScreen(host, back);

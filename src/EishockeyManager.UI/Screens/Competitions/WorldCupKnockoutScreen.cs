@@ -44,8 +44,8 @@ public sealed class WorldCupKnockoutScreen : Screen
     public const string ButtonText = "Gruppe";
 
     /// <summary>
-    /// WM-Stufe, ab der „Paarungen → WM“ im Menü des Bundestrainers diese Seite öffnet (A293): nach den fünf Gruppenterminen
-    /// (DGROUP 0x7AE = 5, Datei 0x44B15).
+    /// WM-Stufe, bei der „Paarungen → WM“ im ersten Aufbau eines Zugs des Bundestrainers diese Seite öffnet (A293): nach den fünf
+    /// Gruppenterminen (DGROUP 0x7AE = 5, Datei 0x44B15); sonst die gemerkte Seite (<see cref="WorldCupPairingsPages"/>).
     /// </summary>
     public const int CoachStartStage = 5;
 
