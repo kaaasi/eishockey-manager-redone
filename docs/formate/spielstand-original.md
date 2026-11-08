@@ -806,6 +806,24 @@ Managerdarlehen (`965B+0x19B`, i = 0–3), Konto des Nationalteams. Weiter offen
 Freundschaftsspiele `D0CB`/`D0D3`/`D0DB`, `A89A`, Sparbuch, Ewige Tabelle, Managerkopf, Leihe; Preisindex 0x2B8 gegen
 Block `02BC`; Zählung des Bundestrainer-Satzes.
 
+### Zugang (Teil 3)
+
+- **Werkzeug:** `emtool hok import <hok> <ziel> [--gamedata ordner] [--seed n] [--force]` schreibt den importierten Stand als
+  Remake-Spielstand (`*.ems`; ohne Endung wird sie ergänzt). Saat ohne `--seed` fest 1993 `[APPROX]` (wiederholbar).
+  Rückgabe 0 = geschrieben, 1 = kein Original-Spielstand oder nicht importierbar, 3 = Prüfsumme falsch (nichts geschrieben).
+- **Laden-Dialog** (`UI/Screens/SaveLoad/`): listet `*.HOK` mit gültigem 8.3-Namen; beim Laden gelb und wählbar, beim
+  Sichern grau (das Remake schreibt kein HOK; Export Runde 15). Getippter Name: der Remake-Stand `*.ems` geht vor, sonst
+  der gleichnamige HOK; ein Klick auf den HOK-Eintrag importiert immer diesen. Kern: `OriginalImport.TryImport` in
+  `Core/OriginalImport.Access.cs` (keine Ausnahme nach außen; Saat `ScreenHost.Seed`, sonst die Uhr wie beim neuen Spiel).
+- **Falsche Prüfsumme:** Bildschirm „Der kleine Mogelguru“ (`MogelguruScreen`, Texte und Bild oben), es wird nichts geladen,
+  Klick oder Taste führt zurück in den Dialog `[APPROX]` (Ablauf nach dem Bildschirm im Original offen, siehe unten).
+- **Bildschirmfoto-Ablauf** `hok-import` (`Tools/Scenarios/HokImportAblauf.cs`): Dialog mit FILE05, FILE29, KAPUTT; Mogelguru;
+  Hauptmenü nach Import von FILE05 und FILE29. Sichtvergleich mit `file05_1_hauptmenue.png`, `file29_4_hauptmenue.png`,
+  `kaputt_mogelguru.png` (08.11.2026): Datum, Manager, Verein, Gegner, Spieltag, Tabellenkurve, Konto und „Vor dem ersten
+  Spieltag.“ stimmen. Abweichungen: Managerkopf (nicht im HOK belegt, Feldkarte U; das Original zeigt in beiden Ständen den
+  Kopf mit Sonnenbrille) und bei FILE05 eine Nachricht aus dem Nachspielen („EC RATINGEN ist an J.SCHULZ interessiert.“),
+  wo das Original keine zeigt (Nachrichten `D294` nicht übernommen).
+
 ## Offene Punkte
 
 - Deutung der Blöcke ohne Eintrag in der Tabelle, besonders `8257` (0x1400), `AB7B` (0x1594), `D294` (0xA98),

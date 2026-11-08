@@ -83,6 +83,7 @@ public sealed class HokImportAccessTests : IDisposable
         Copy("FILE05.HOK");
         var d = NewDriver();
         var expected = OriginalImport.Load(OriginalSave("FILE05.HOK"), d.Host.Assets.Database, d.Host.Seed!.Value);
+        expected.OnMainMenu(expected.ActiveManager, isReturn: false); // Aufbau des Hauptmenüs (E4 = B)
 
         d.OpenTile("Laden");
         d.Type("file05");
@@ -90,7 +91,7 @@ public sealed class HokImportAccessTests : IDisposable
 
         Assert.IsType<MainMenuScreen>(d.Host.Current);
         Assert.Equal(Saved(expected), Saved(d.Host.Game!));
-        Assert.Contains("20. September  1993", d.Host.Game!.DateText);
+        Assert.Contains("20. Sept.  1993", d.Host.Game!.DateText);
     }
 
     [GameDataFact]
@@ -130,7 +131,7 @@ public sealed class HokImportAccessTests : IDisposable
         d.Click(rect.X + 3, rect.Y + 3);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
         Assert.NotEqual(remake, Saved(d.Host.Game!));
-        Assert.Contains("20. September  1993", d.Host.Game!.DateText);
+        Assert.Contains("20. Sept.  1993", d.Host.Game!.DateText);
     }
 
     /// <summary>[ORIGINAL] KAPUTT.HOK zeigt im Original „Der kleine Mogelguru“ (Bild kaputt_mogelguru.png); geladen wird nichts.</summary>

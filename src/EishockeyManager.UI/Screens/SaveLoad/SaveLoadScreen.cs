@@ -32,6 +32,11 @@ public enum SaveLoadMode
 /// „SEITE:“ nicht belegt). Die Pfeile ▲▼ sind nach den Pixeln des Videos nachgezeichnet.
 /// </para>
 /// <para>
+/// <b>Original-Spielstände (Spur hok-import, Teil 3):</b> Der Dialog listet auch <c>*.HOK</c>. Beim Laden sind sie gelb und
+/// werden importiert (<see cref="OriginalImport.TryImport"/>); beim Sichern sind sie grau. Eine falsche Prüfsumme zeigt
+/// „Der kleine Mogelguru“ und lädt nichts.
+/// </para>
+/// <para>
 /// Das Öffnen und Abbrechen ändert den Spielzustand nicht (Test <c>OpenAndCancel_ChangesNoGameState</c>); ein Fehler beim
 /// Laden lässt den laufenden Spielstand unberührt.
 /// </para>
@@ -204,7 +209,7 @@ public sealed class SaveLoadScreen : Screen
             {
                 if (!input.Clicked(EntryRect(column, row)))
                     continue;
-                if (EntryAt(column, row) is { Kind: SaveEntryKind.Save } entry)
+                if (EntryAt(column, row) is { } entry && IsSelectable(entry))
                     ClickEntry(IndexAt(column, row), entry);
                 return;
             }
@@ -225,11 +230,18 @@ public sealed class SaveLoadScreen : Screen
             {
                 if (input.MouseX < 0 || !EntryRect(column, row).Contains(input.MouseX, input.MouseY))
                     continue;
-                return EntryAt(column, row) is { Kind: SaveEntryKind.Save };
+                return EntryAt(column, row) is { } entry && IsSelectable(entry);
             }
         }
         return false;
     }
+
+    /// <summary>
+    /// Wählbar sind Remake-Spielstände und – nur beim Laden – Original-Spielstände <c>*.HOK</c> (Import, Spur hok-import Teil 3).
+    /// [APPROX] Beim Sichern sind sie grau: das Remake schreibt kein HOK (Export erst Runde 15, R14-D2 = B).
+    /// </summary>
+    private bool IsSelectable(SaveEntry entry) =>
+        entry.Kind == SaveEntryKind.Save || (entry.Kind == SaveEntryKind.Original && Mode == SaveLoadMode.Load);
 
     private void ChangePage(int delta) => _page = Math.Clamp(_page + delta, 0, PageCount - 1);
 
@@ -239,6 +251,7 @@ public sealed class SaveLoadScreen : Screen
         // [ORIGINAL] em.exe 0x5E66A–0x5E68C: gleicher Name wie im Feld → ausführen, sonst Name übernehmen.
         if (_selected == index || string.Equals(_name, entry.BaseName, StringComparison.OrdinalIgnoreCase))
         {
+            _selected = index; // die angeklickte Datei gilt (gleicher Name als .ems und .HOK)
             Execute();
             return;
         }
@@ -262,12 +275,21 @@ public sealed class SaveLoadScreen : Screen
         }
 
         if (Mode == SaveLoadMode.Load)
-            Load(directory, name);
+        {
+            if (SelectedEntry is { Kind: SaveEntryKind.Original } original && original.BaseName == name)
+                Import(Path.Combine(directory, original.FileName));
+            else if (!SaveFiles.Exists(directory, name) && File.Exists(SaveFiles.OriginalPathOf(directory, name)))
+                Import(SaveFiles.OriginalPathOf(directory, name));
+            else
+                Load(directory, name);
+        }
         else if (SaveFiles.Exists(directory, name))
             Ask(Pending.Overwrite, name);
         else
             Save(directory, name);
     }
+
+    private SaveEntry? SelectedEntry => _selected >= 0 && _selected < _entries.Count ? _entries[_selected] : null;
 
     private void Warn(params string[] lines) => _message.Show(lines);
 
@@ -327,6 +349,42 @@ public sealed class SaveLoadScreen : Screen
             // Original; das Remake unterscheidet „fehlt“, „neuer“ und „ohne Migration“ nur in SaveLoadResult.Error.
             var text = ShortMessageTexts.WrongVersion;
             _message.ShowShort(text.Line1, text.Line2);
+            return;
+        }
+        if (result.Game is not { } game)
+        {
+            Warn(["Die Datei", shown, "kann nicht geladen werden.", .. Wrap(result.Error ?? "Unbekannter Fehler.")]);
+            return;
+        }
+
+        Host.Game = game;
+        Host.Show(new MainMenuScreen(Host));
+    }
+
+    /// <summary>
+    /// Original-Spielstand importieren (Spur hok-import, Teil 3; <see cref="OriginalImport.TryImport"/>). Getippt gilt der
+    /// Remake-Spielstand vor dem gleichnamigen HOK; ein Klick auf den HOK-Eintrag importiert ihn. Falsche Prüfsumme:
+    /// „Der kleine Mogelguru“ (<see cref="MogelguruScreen"/>), es wird nichts geladen. [APPROX] Zufall: neue Saat
+    /// (Feldkarte Regel 6) – <see cref="ScreenHost.Seed"/>, sonst die Uhr wie beim neuen Spiel.
+    /// </summary>
+    private void Import(string path)
+    {
+        var shown = Path.GetFileName(path).ToUpperInvariant();
+        byte[] data;
+        try
+        {
+            data = File.ReadAllBytes(path);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            Warn(["Die Datei", shown, "kann nicht geladen werden.", .. Wrap(File.Exists(path) ? "Sie ist nicht lesbar." : "Sie ist nicht vorhanden.")]);
+            return;
+        }
+
+        var result = OriginalImport.TryImport(data, Assets.Database, Host.Seed ?? Environment.TickCount);
+        if (result.ChecksumError)
+        {
+            Host.Show(new MogelguruScreen(Host, this));
             return;
         }
         if (result.Game is not { } game)
@@ -446,7 +504,7 @@ public sealed class SaveLoadScreen : Screen
                 if (EntryAt(column, row) is not { } entry)
                     continue;
                 var selected = _selected == IndexAt(column, row);
-                var color = selected ? Colors.White : entry.Kind == SaveEntryKind.Save ? Colors.Yellow : DirectoryColor;
+                var color = selected ? Colors.White : IsSelectable(entry) ? Colors.Yellow : DirectoryColor;
                 s.Text(Assets.Mini, FirstBarX + column * BarPitch + 7, FirstRowY + row * RowPitch, entry.DisplayName, color);
             }
         }

@@ -28,6 +28,28 @@ public static partial class OriginalImport
     /// </summary>
     public static OriginalImportResult TryImport(ReadOnlySpan<byte> data, ClubDatabase database, int seed)
     {
-        throw new NotImplementedException();
+        OriginalSaveGame save;
+        try
+        {
+            save = OriginalSaveGame.Read(data);
+        }
+        catch (InvalidDataException e)
+        {
+            return new(null, false, e.Message);
+        }
+        if (!save.ChecksumsValid)
+            return new(null, true, "Prüfsumme falsch.");
+        try
+        {
+            return new(GameState.ImportOriginal(save, database, seed), false, null);
+        }
+        catch (Exception e) when (e is InvalidDataException or InvalidOperationException or ArgumentException or IndexOutOfRangeException)
+        {
+            return new(null, false, e.Message);
+        }
     }
+
+    /// <summary>Hat die Datei die Endung eines Original-Spielstands (<c>*.HOK</c>, beliebige Schreibweise)?</summary>
+    public static bool IsOriginalFileName(string fileName) =>
+        fileName.EndsWith(FileExtension, StringComparison.OrdinalIgnoreCase);
 }
