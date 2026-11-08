@@ -84,26 +84,26 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 | Datei | Name | Byte | Deutung |
 |---|---|---:|---|
 | `0x000BA` | `02A0` | 24 | Zinskonto je Manager (6 × 4) |
-| `0x000D2` | `020D` | 16 |  |
+| `0x000D2` | `020D` | 16 | Talentpreis je Manager (4 × 4, Drittel-DM) |
 | `0x000E2` | `0118` | 4 | Setup-Regler Level, Dauer, Start-Liga, Start-Stärke |
 | `0x000E6` | `0120` | 4 |  |
-| `0x000EA` | `D214` | 128 |  |
-| `0x0016A` | `D0F4` | 288 |  |
-| `0x0028A` | `01FD` | 16 |  |
+| `0x000EA` | `D214` | 128 | Aktienbesitz: 32 · Manager + 8 · Aktie (+0 Kaufpreis, +4 Stück) |
+| `0x0016A` | `D0F4` | 288 | Kursverlauf: 4 Aktien × 36 Wörter (Drittel-DM), letztes = Kurs |
+| `0x0028A` | `01FD` | 16 | Basiswert je Aktie (Hundertstel-DM) |
 | `0x0029A` | `A89A` | 6 |  |
-| `0x002A0` | `A891` | 4 |  |
-| `0x002A4` | `A895` | 4 |  |
+| `0x002A0` | `A891` | 4 | Restdauer der Kurstendenz je Aktie |
+| `0x002A4` | `A895` | 4 | Kurstendenz je Aktie (0 fallend, 2 steigend) |
 | `0x002A8` | `0178` | 4 |  |
 | `0x002AC` | `017C` | 1 |  |
 | `0x002AD` | `A707` | 6 | Taktikmodus Angriff je Manager |
-| `0x002B3` | `A701` | 6 |  |
+| `0x002B3` | `A701` | 6 | Reihenwechsel-Modus je Manager (0–5) |
 | `0x002B9` | `A6FB` | 6 | Taktikmodus Einsatz je Manager |
 | `0x002BF` | `CCB2` | 70 |  |
 | `0x00305` | `CCA4` | 14 |  |
 | `0x00313` | `CCA3` | 1 | Meisterrunde |
 | `0x00314` | `D0B9` | 1 | Spielmodus Fahne/Weltkugel |
-| `0x00315` | `CC73` | 48 |  |
-| `0x00345` | `CC43` | 48 |  |
+| `0x00315` | `CC73` | 48 | Minuten-Vorgabe umgerechnet (Summe 8; 8 · Manager + 4 · Teil + Reihe) |
+| `0x00345` | `CC43` | 48 | Minuten-Vorgabe (8 · Manager + 4 · Teil + Reihe; Teil 0 Abwehr, 1 Sturm) |
 | `0x00375` | `CD28` | 48 |  |
 | `0x003A5` | `CCF8` | 48 |  |
 | `0x003D5` | `D074` | 1 |  |
@@ -133,7 +133,7 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 | `0x0083E` | `A88D` | 4 |  |
 | `0x00842` | `A70E` | 1 | Manager am Zug |
 | `0x00843` | `A70D` | 1 |  |
-| `0x00844` | `0375` | 12 |  |
+| `0x00844` | `0375` | 12 | „automatisch aufstellen“ je Manager: 0x375 + 2 · m aktuell, 0x376 + 2 · m gesichert |
 | `0x00850` | `A0CB` | 1584 | Ergebnisse: 3 Ligen × 0x210, je Spieltag 6 Paarungen × 2 Tore |
 | `0x00E80` | `0386` | 1 | Zahl der Manager |
 | `0x00E81` | `0387` | 1 | DEB-Pokalsieger |
@@ -144,7 +144,7 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 | `0x00E86` | `038B` | 1 |  |
 | `0x00E87` | `965B` | 2586 | Manager (6 × 0x1AF) |
 | `0x018A1` | `far:9657` | 9150 | Vereine und Nationalteams (150 × 0x3D) |
-| `0x03C5F` | `8257` | 5120 |  |
+| `0x03C5F` | `8257` | 5120 | Tabellensätze 64 × 0x50 ab DGROUP 0x825A (Punkte, Tore, Platzfelder 0x828B, Platz 0x8288, Strafminuten 0x82A1) |
 | `0x0505F` | `far:8253` | 6600 | Spieler (200 × 33) |
 | `0x06A27` | `5DC3` | 9360 | Kaderplätze (6 × 0x618, Platz 0x34) |
 | `0x08EB7` | `5D7B` | 36 |  |
@@ -162,9 +162,9 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 | `0x08F97` | `5CCB` | 36 | Tabelle: Vereinsindex je Liga × 12 + Platz |
 | `0x08FBB` | `5C4B` | 128 |  |
 | `0x0903B` | `07A9` | 8 | 0x7A9–0x7AB nächster Spieltag je Liga; 0x7AF Europapokal-Termin, 0x7B0 Runden |
-| `0x09043` | `AB7B` | 5524 |  |
+| `0x09043` | `AB7B` | 5524 | Kopf-an-Kopf (+0), Serien (+0xA00), Rekordserien Manager (+0xF40), Rekordgegner (+0xF94), Rekorde (+0x1194) |
 | `0x0A5D7` | `021D` | 16 | Wettbewerbsschalter (0x227 DEB-Pokal) |
-| `0x0A5E7` | `C313` | 2000 |  |
+| `0x0A5E7` | `C313` | 2000 | Werbeangebote: 0x1F4 · Manager + 0x64 · Art + 10 · Partner |
 | `0x0ADB7` | `C15B` | 440 | Werbeflächen (0x6E je Manager) |
 | `0x0AF6F` | `0ED8` | 1 | 5 − Spiel-Level |
 | `0x0AF70` | `5A14` | 2 | Spielende (Jahr; Dauer 0 → 1994, Dauer 3 „∞“ → 22222) |
@@ -174,7 +174,7 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 | `0x0BA0E` | `A969` | 2 | Tageszähler (wie 0x3B7, Rolle offen) |
 | `0x0BA10` | `0246` | 16 |  |
 | `0x0BA20` | `A8A0` | 1 |  |
-| `0x0BA21` | `5A50` | 5 |  |
+| `0x0BA21` | `5A50` | 5 | Kennzeichen „neue Nachricht“ je Manager |
 | `0x0BA26` | `CAE9` | 288 | Taktikwerte Einsatz/Angriff (0x30 je Manager) |
 | `0x0BB46` | `CAE3` | 6 |  |
 
@@ -478,7 +478,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `ManagerFinance.Youth` | B | `A075` | 0x15 Byte je Manager; Zeilen `YouthTeam` |
 | `ManagerFinance._homeStatistics` | B | `965B+0xED` | Zeilen `StadiumStatistics` |
 | `BankAccount.Credit` | B | `965B+0x1AB` | Darlehen Bank (i = 4), Vorzeichen umkehren, / 3 (FILE08) |
-| `BankAccount.Savings` | U | – | Sparbuch: Ort nicht belegt; 0 |
+| `BankAccount.Savings` | A | `965B+0x1AB` | positiver Bankeintrag (i = 4) / 3 `[APPROX]` (an keinem Stand belegt; Saldo wie im Remake Sparbuch − Kredit) |
 | `FinanceBook._current` | N | – | 0 |
 | `FinanceBook._previous` | N | – | 0 |
 | `ManagerLoan.Amount` | B | `965B+0x19B` | Betrag / 3 |
@@ -573,7 +573,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Club.Strength` | A | `far:9657` | Datenbankstärke `kb\23` |
 | `Club.Tactics` | B | `A6FB`, `A707`, `A701`, `CAE9` | Zeilen `Tactics` (Managervereine); sonst Automatik |
 | `Club.TeamValues` | B | `far:9657+0x17` | Zeilen `ClubTeamValues` |
-| `Club._autoLineup` | B | `0375+0` | 2 Byte je Manager (FILE05/06/24/25) |
+| `Club._autoLineup` | B | `0375+0` | 0x375 + 2 · m (aktuell); 0x376 + 2 · m sichert den Wert über die Spiele des Tages (re-runde-14.md, Taktik 375h) |
 | `Club._dressed` | A | `5DC3+0x0A` | IDs der Spieler mit `+0x0A` = 1 |
 | `Club._dressedByHand` | A | `0375` | nicht „automatisch aufstellen“ |
 | `Club._rankSlots` | B | `8257` | DGROUP 0x828B + 0x50 · Satz, 44 Halbbytes |
@@ -586,7 +586,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `ClubTeamValues.DefenseTechnique` | B | `far:9657+0x1A` | Technik Abwehr |
 | `Tactics.AttackMode` | B | `A707` | Byte je Manager |
 | `Tactics.EffortMode` | B | `A6FB` | Byte je Manager |
-| `Tactics.Goalie` | U | `A89A`? | 6 Byte je Manager, Deutung offen; Auto |
+| `Tactics.Goalie` | N | – | Knopf oben links ist „automatisch aufstellen“ (0x375, re-runde-14.md), kein Torwartwechsel; Auto. `A89A` (6 Byte) bleibt offen |
 | `Tactics.LineChange` | B | `A701` | Byte je Manager (re-rest.md, Taktikbildschirm) |
 | `Tactics._attack` | B | `CAE9` | 0x30 je Manager, Angriffshälfte |
 | `Tactics._effort` | B | `CAE9` | 0x30 je Manager, Einsatzhälfte |
@@ -798,13 +798,60 @@ Tabellensätzen `8257` (Punkte, Tore, Gegentore, Spiele, Siege, Niederlagen) an 
 FILE37A, FILE40. Das Remake rechnet den Plan nach dem Import über die Satzfolge; ab der nächsten Saison wieder nach
 `Schedule.Rounds` (Vereinsindex) – Abweichung des Remakes, nicht Teil dieser Spur.
 
-**Noch nicht übernommen** (Stand aus dem Nachspielen nach Remake-Regeln, `[APPROX]`): Pokale und WM (`5CFB`, `CED8`,
-`5C4B`, `A776`, `A763`), Spielerpool und Transfermarkt (`far:8253`, `5DC3` Satz 4), Nationalkader (Satz 5), Börse (`D0F4`
-ff.; Umrechnung der Kurse nicht geprüft), Werbeverträge (`C15B`, `C313`), Trainingsplan (`A8A1`), Taktik (`A6FB`, `A707`,
-`A701`, `CAE9`, `CC43`), Nachrichten (`D294`), Serien und Rekorde (`AB7B`), Strafminuten und Platzfelder (`8257`),
-Managerdarlehen (`965B+0x19B`, i = 0–3), Konto des Nationalteams. Weiter offen aus Teil 1: Pokalzeilen `5C4B`,
-Freundschaftsspiele `D0CB`/`D0D3`/`D0DB`, `A89A`, Sparbuch, Ewige Tabelle, Managerkopf, Leihe; Preisindex 0x2B8 gegen
-Block `02BC`; Zählung des Bundestrainer-Satzes.
+**Noch nicht übernommen** (Stand aus dem Nachspielen nach Remake-Regeln, `[APPROX]`; Teil 4b): Pokale und WM (`5CFB`, `CED8`,
+`5C4B`, `A776`, `A763`), Spielerpool und Transfermarkt (`far:8253`, `5DC3` Satz 4), Nationalkader (Satz 5), Nachrichten
+(`D294`). Teil 4a übernimmt die übrigen Bereiche (Abschnitt unten). Weiter offen aus Teil 1: Pokalzeilen `5C4B`,
+Freundschaftsspiele `D0CB`/`D0D3`/`D0DB`, `A89A`, Ewige Tabelle, Managerkopf, Leihe, Zuschauerstatistik (`965B+0xED` ff.);
+Zählung des Bundestrainer-Satzes.
+
+### Restfelder (Teil 4a)
+
+`OriginalImport.Rest.cs` (Aufruf am Ende von Schritt 3), Tests `OriginalImportRestTests`. Je Manager:
+
+| Bereich | HOK | Import | Beleg |
+|---|---|---|---|
+| Bank, Sparbuch | `965B+0x1AB` (Eintrag i = 4) | negativ → Kredit, positiv → Sparbuch `[APPROX]`, / 3 | FILE08 (Kredit 701.000 DM) |
+| Managerdarlehen | `965B+0x19B` + 4 · i (i = 0–3) | negativer Eintrag i im Satz m → Darlehen Gläubiger i, Schuldner m, / 3 `[APPROX]` | Gegenbuchung beim Bankkredit FILE08 (Satz 4 Eintrag 0 = +2.103.000); Managerdarlehen an keinem Stand |
+| Börse | `D0F4`, `01FD`, `A891`, `A895` | Verlauf 36 Wörter / 3, Kurs = letzter Wert; Basiswert, Restdauer, Tendenz | FILE01: 84 / 119 / 135 / 147 DM |
+| Aktienbesitz | `D214` + 32 · m + 8 · i | +0 Kaufpreis / 3, +4 Stück | an keinem Stand belegt (alle 0) |
+| Werbeangebote | `C313` + 0x1F4 · m + 0x64 · k + 10 · p | Art k 0 Bande, 1 Trikot, 2 Fernsehen, 3/4 Eis; Betrag 0 = kein Angebot `[APPROX]`; +4 Banden, +5 Laufzeit, +6 Option, +7 Logo (= p), +8 Bewertung | FILE05 |
+| Werbeverträge | `C15B` + 0x6E · m + 10 · Fläche | Flächen 0–6 Bande (gleicher Partner, Betrag, Restlaufzeit = ein Vertrag `[APPROX]`), 7 Trikot, 8 Fernsehen, 9/10 Eis; +6 ohne Bit 0x80 („Kündbar.“, im Remake nicht geführt) | finanzen-rekonstruktion.md; an keinem Stand ein Vertrag |
+| Training | `A8A1` + 28 · m | Einheit Tag · 4 + Einheit; Preisindex `02BC` (überall 100) | FILE05 = Standardplan, FILE08 Einheit 8 = 1, FILE09 alles frei |
+| Taktik | `A6FB`, `A707`, `A701`, `CAE9` + 0x30 · m, `CC43` + 8 · m | Modi; Einsatz Block · 6 + Spielstand, Angriff + 0x18; Minuten 4 · Teil + Reihe | FILE24/FILE40 (Block 0 mit Automatikwerten) |
+| automatisch aufstellen | `0375` + 2 · m | ≠ 0 → `AutoLineupEnabled` | FILE34–41 = 0 (Handmodus), FILE05 = 1 |
+| Über-/Unterzahl | `965B+0x177` | sechs Wörter | FILE36: 12 1 1 24 71 81 |
+| Talentsuche | `965B+0xEC` | Restzähler, 0 = keine | an keinem Stand ≠ 0 |
+| neue Nachricht | `5A50` + m | Kennzeichen | FILE20/21/48: Manager 0 = 1 |
+
+Je Satzplatz 0–63 (Verein nach Regel 1; Sätze, deren Verein im Remake keinen Index unter 64 hat, entfallen – nicht beobachtet):
+laufende Serien `AB7B+0xA00` + 21 · Satz, Rekorde `AB7B+0x1194` + 0x10 · Satz + 2 · Art mit Gegner `AB7B+0xF94` + 8 · Satz + Art
+(Gegner als Satzplatz, Regel 1), Kopf-an-Kopf `AB7B` + 0x280 · m + 10 · Satz (Managerplätze 0–3; 4–5 leer), Strafminuten
+DGROUP 0x82A1 + 0x50 · Satz (Wort), Platzfelder DGROUP 0x828B + 0x50 · Satz: 44 Halbbytes, Feld i im Byte i / 2, gerades i im
+unteren Halbbyte (FILE03: Feld 2 = Platz in der Tabelle `5CCB` nach dem 3. Spieltag; FILE36). Rekordserien der Manager
+`AB7B+0xF40` + 21 · m. Nationalkonto: Satz 5 `+0x18F` / 3 als eine Übertragsbuchung (FILE18: 1.000.000 DM).
+
+### Feldbelege aus der DOSBox-Aufnahme `runde-13` (re-runde-14.md, Leitstelle L7)
+
+Belegt in `docs/analyse/re-runde-14.md` (Spur `re-dosbox`), hier für die Feldkarte zusammengefasst; die Umsetzung im Spielkern
+liegt bei den genannten Spuren.
+
+- **DGROUP 0x9744 + 0x1AF · m** (`965B+0xE9`): 1 bei „eine Saison, ein Manager“ (Spielende 1994, ein Manager; em.exe Datei
+  0x29CFA–0x29D23), sonst 30 = „nicht im Wettbewerb“. FILE29/30/31: HOK 0x00F70 = 1; FILE01/05/09/10/27/28: 30 (U15-c).
+- **DGROUP 0x8288 + 0x50 · Satz** (`8257`, Tabellensatz +0x2E): Tabellenplatz für die Zuschauerformel 0x3F185 (Datei
+  0x54608–0x5464A), 0 = Platz 1. Vor dem ersten Spieltag des Spiels 0, in späteren Saisons der Wert vom Ende der Vorsaison.
+  HOK 0x03C5F + 0x31 + 0x50 · i: FILE29/30/01/12 alle 0, FILE31 gesetzt, FILE14/17/23 Werte der Vorsaison (A046). Im Remake
+  noch kein Feld (Schema bei `kader-start`); der Import übernimmt es deshalb nicht.
+- **DGROUP 0x375/0x376 + 2 · m** (`0375`): 0x375 = „automatisch aufstellen“ (Knopf oben links im Taktikbildschirm, kein
+  Torwartwechsel), 0x376 sichert den Wert, während der Spiele des Tages ist 0x375 = 0 (Datei 0x54FCE–0x54FE8, 0x552F9–0x5530B,
+  0x54D8C–0x54D9E). FILE29–31/05: 1/1; FILE32/33: 0/1; FILE34–41: 0/0. Der Import liest 0x375.
+- **Kaderplatz +0x03–0x08, +0x1C–0x26** (`5DC3`): Tore +0x03/+0x04/+0x05 und Spiele +0x06/+0x07/+0x08 je Wettbewerb (Liga,
+  DEB-Pokal, Europapokal); beim jetzigen Verein Spiele +0x1C/+0x1E/+0x20 und Tore +0x22/+0x24/+0x26 (Wörter). SP und TO der
+  Kaderliste zeigen die Summe (FILE38 → FILE39 Pokal, FILE39 → FILE40 Liga; A135). Der Import summiert wie bisher (Remake
+  zählt nicht je Wettbewerb).
+- **Markt-Kaderplatz bei Transferliste** (`5DC3` Satz 4): Ein vom Manager auf die Liste gesetzter Spieler verlässt den Kader,
+  sein Kaderplatz wandert in den Marktsatz, die Plätze rücken auf; der Pool-Satz behält Besitzer = Manager (`far:8253+0x1A`)
+  und Verein (`+0x1D`). FILE40 → FILE41: HOHENADL Markt Platz 7, Pool-Satz 28 `+0x1A` = 0, `+0x1D` = 2 (A380). Für den Import
+  des Transfermarkts (Teil 4b): Marktplatz mit Pool-Besitzer 0–3 = Angebot dieses Managers.
 
 ### Zugang (Teil 3)
 

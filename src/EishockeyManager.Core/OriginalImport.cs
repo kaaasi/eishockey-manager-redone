@@ -312,7 +312,7 @@ public sealed partial class GameState
             if (!WorldOnly)
                 ApplySquad(save, Clubs[Managers[m].ClubIndex], m, clubOf, foreigners);
         }
-        //ApplyOriginalRest(save, clubOf); // Teil 4a (OriginalImport.Rest.cs)
+        ApplyOriginalRest(save, clubOf); // Teil 4a (OriginalImport.Rest.cs)
         // [ORIGINAL] Manager am Zug DGROUP 0xA70E (0–3; 5 = Bundestrainer). [APPROX] Der Zug des Bundestrainers beginnt im Remake
         // mit dem Tageslauf; der Import setzt dann Manager 0.
         var current = save.Block("A70E")[0];
