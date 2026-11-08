@@ -384,10 +384,27 @@ Regeln und Fundstellen: `docs/analyse/re-nachtrag.md`, Abschnitt 1 (Tagesablauf 
 | Gehalt | 0x3E8DC–0x3E99F | Monatssumme +0x28/+0x30 über die Kaderplätze **und** die Markt-Plätze mit Pool +0x1A = Manager: der Spieler auf der Liste kostet weiter (`FinanceRules.MonthlyWages(game, club)`) |
 | Saisonende | 0x27547–0x27665 | nicht verkaufte eigene Spieler kehren in den Kader zurück, nach Art einsortiert, nicht eingesetzt (FILE44 → FILE46); das Remake gibt sie vor Altern und Herunterzählen zurück (`TransferMarket.ReturnListedPlayers`) |
 
-`[APPROX]`: Mindestbesetzung je Art beim Aufsetzen (wie bisher, im Original nicht gefunden), Listenpreis aus dem Spielerwert (das
-Original kopiert +0x2C, den Kaufpreis, in den Markt-Platz – nicht nachgeprüft), Klickfläche des eigenen Markt-Platzes wie Kauf/Leihe,
+`[APPROX]`: Mindestbesetzung je Art beim Aufsetzen (wie bisher, im Original nicht gefunden), Listenpreis aus dem Spielerwert nur
+noch ohne Kaufpreis (Altstände; seit Teil 4 `[ORIGINAL]`, siehe unten), Klickfläche des eigenen Markt-Platzes wie Kauf/Leihe,
 voller Kader am Saisonende (Spieler wird vertragslos). Altstände (Spieler vor A380 noch im Kader) verlieren beim Zurückziehen nur
 den Markt-Platz. Anzeige (blauer Art-Buchstabe, Statuszeile „von <Manager>“) → `ui-rest`.
+
+## Belegt und umgesetzt (Spur `kader-start`, Runde 14, Teil 4: Saisonende-Abgang)
+
+Grundlage `docs/analyse/re-runde-14.md` Sitzung 4 (FILE44 → FILE46) und Review `docs/reviews/2026-11-08-re-dosbox-r14-2.md`
+(R14RD2-03, -05).
+
+| Was | Fundstelle | Regel |
+|---|---|---|
+| Listenpreis eigener Markt-Plätze | 0x470C4 | Markt-Platz = Kopie des Kaderplatzes, also Preis = +0x2C (`Player.PurchasePrice`): HOHENADL FILE40 316.000 DM → FILE41 Markt 316.000 DM, `file40_04` „316.000 DM (K)“, „105.333 DM (L)“ = Preis / 3; ohne Kaufpreis (Altstand) `[APPROX]` der Spielerwert |
+| A115 Leihende | 0x27547–0x27665 | Pool +0x1A ≥ 4 (Leihe vom Markt) → +0x1A = 6, der Spieler ist frei (VALLIERE FILE44 → FILE46); Besitzer ein Manager → neuer Kaderplatz bei ihm (0x42CB1, nach Art) mit einer **Kopie des Leih-Kaderplatzes** (0x48:0x2BD4 alt → neu, R14RD2-03): Laufzeit heruntergezählt, Gehalt und Versicherung aus der Leihe; +0x0C = 0, +0x18 &= 0x7F. Laufzeit 0 → Verhandlung beim Verleiher (Schleife ab 0x27B64). `[APPROX]` Leihe zwischen Managern nur nach dem Code; vom Markt Geliehene werden Vertragslose (`TransferMarket.Release`) statt freier Poolplätze |
+| A362 Liste der Verhandlungen | 0x27C9F, 0x27D15–0x27D70, 0x27F31, 0x423A2 | Liste einmal vor der Schleife gezeichnet, nach einem Abgang neu: offene Verträge „kein V.“ (DGROUP 0x510E) mit altem Gehalt (KJELLBERG 18.800 DM, Fenster 19.152 DM, `file46_3`); Abbild im Bildschirm (`ContractsScreen.SeasonEndRows`), altes Gehalt `GameState.SalaryBeforeRenewal` (kein Spielstandsfeld). Fenster (2 \| 29)–(166 \| 95), Kopfzeile y 19, Linien y 25/209 ab x 7 (`file46_3`, `file40_11`) |
+| A088 Saisonzähler | 0x27A0C–0x27AA8 | Kaderplatz +0x00, +0x01, +0x03, +0x04, +0x06, +0x07 → 0, +0x1C–+0x26 und +0x02 bleiben (FILE44 → FILE46); +0x05/+0x08 nur nach dem Code |
+| Zahlen | 0x27D1F–0x27D70, 0x27DE3–0x27E1C | Gehalt = Wert(Gehalt) · (147 − Alter) / 100 (16.800 · 114 / 100 = 19.152), Ablöse = Wert(Preis) / 2 (311.000 / 2 = 155.500), Prämie 100.000 DM = eine Einzelprämie |
+
+Restlücken: Hintergrund der Verhandlungsliste (Vereinsname oben, Kachel rechts unten in `file46_3`) fehlt; Rahmenfarben des Fensters
+im Bild (146 \| 178 \| 195) hell und (32 \| 48 \| 81) dunkel, Ecken in Füllfarbe, Schatten treppenförmig, Knopfschrift 1 Pixel links –
+gemeinsamer Baustein `TeamUi.DialogFrame`/`DialogButton` (`ui-rest`); Spalte WERT 1 Pixel (Abstand Zahl – „DM“).
 
 ## Noch offen (`[APPROX]` im Code, weitere Teile)
 

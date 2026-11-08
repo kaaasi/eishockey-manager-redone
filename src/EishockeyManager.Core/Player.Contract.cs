@@ -1,6 +1,10 @@
 namespace EishockeyManager.Core;
 
-/// <summary>Eigentümer und unveränderter Stammvertrag während einer Leihe bis zum Saisonende.</summary>
+/// <summary>
+/// Eigentümer einer Leihe bis zum Saisonende. Laufzeit, Gehalt und Versicherung halten den Stammvertrag beim Verleiher fest; die
+/// Rückkehr nimmt seit A115 den Leihvertrag mit (Kopie des Kaderplatzes, <see cref="GameState.StartNextSeason"/>), die Felder bleiben
+/// nur für das Spielstandsschema.
+/// </summary>
 public sealed record PlayerLoan(Club Origin, int ContractYears, int MonthlySalary, bool Insured);
 
 /// <summary>
@@ -57,7 +61,10 @@ public sealed partial class Player
             : Math.Max(1, MonthlySalary * Contracts.LegacyInsurancePercent / 100);
     }
 
-    /// <summary>Ausgeliehener Spieler („ (ausgeliehen)“) – kehrt zum Saisonende zum Eigentümer zurück.</summary>
+    /// <summary>
+    /// Ausgeliehener Spieler („ (ausgeliehen)“) – am Saisonende zurück zum verleihenden Manager bzw. frei, wenn er vom Markt
+    /// (Computerverein) geliehen war (A115).
+    /// </summary>
     public bool OnLoan { get; set; }
 
     public PlayerLoan? Loan { get; set; }
@@ -83,7 +90,7 @@ public sealed partial class Player
     /// <summary>„2 Jahre“, „1 Jahr“.</summary>
     public static string YearsText(int years) => years == 1 ? "1 Jahr" : $"{years} Jahre";
 
-    /// <summary>Spalte V.DAUER: „2 Jahre“, mit Versicherung „4 Jahre(v)“.</summary>
+    /// <summary>Spalte V.DAUER: „2 Jahre“, mit Versicherung „4 Jahre(v)“ (ohne Vertrag zeigt die Liste „kein V.“, <c>ContractsScreen</c>).</summary>
     public string ContractText => YearsText(ContractYears) + (Insured ? "(v)" : "");
 }
 
@@ -135,13 +142,28 @@ public sealed partial class GameState
             var owner = club;
             if (player.Loan is { } loan)
             {
+                // A115 (re-runde-14, R14RD2-03): Saisonschleife 0x26F20, Datei 0x27547–0x27665. [ORIGINAL] Pool +0x1A (Besitzer)
+                // ≥ 4 – Leihe vom Markt, also von einem Computerverein – → +0x1A = 6, der Spieler ist frei (Datei 0x275FF, Platz
+                // frei 0x27628; FILE44 → FILE46 VALLIERE, Pool 179 +0x1A 4 → 6, weder im Kader noch im Markt). Besitzer < 4 – ein
+                // Manager – → neuer Kaderplatz bei ihm (0x42CB1, nach Spielerart) mit einer Kopie des Leih-Kaderplatzes (0x34 Byte,
+                // 0x48:0x2BD4 kopiert alt → neu wie bei HOHENADL FILE44 Satz 4 Platz 5 → FILE46 Satz 0 Platz 11): Laufzeit (schon
+                // heruntergezählt, Datei 0x27500), Gehalt und Versicherung aus der Leihe, danach +0x0C = 0 (Leihe) und +0x18 &= 0x7F
+                // (Ruhestand-Ankündigung). Der Stammvertrag in PlayerLoan bleibt ungenutzt (Feld nur für ältere Spielstände).
+                // [APPROX] Leihe zwischen Managern ist an keinem Spielstand belegt, nur nach dem Code.
                 club.RemovePlayer(player);
-                owner = loan.Origin;
-                player.ContractYears = loan.ContractYears;
-                player.MonthlySalary = loan.MonthlySalary;
-                player.Insured = loan.Insured; // [APPROX] Prämie der Rückkehr: bisherige, sonst LegacyInsurancePercent
                 player.OnLoan = false;
                 player.Loan = null;
+                if (!managed.Contains(loan.Origin.Index))
+                {
+                    player.ContractYears = 0;
+                    player.MonthlySalary = 0;
+                    player.Insured = false;
+                    player.InsuranceLocked = false;
+                    TransferMarket.Release(loan.Origin, player);
+                    continue;
+                }
+                owner = loan.Origin;
+                notice = ContractNotice.None; // +0x18 &= 0x7F (Datei 0x27665)
             }
 
             player.ContractYears = Math.Max(0, player.ContractYears - 1);
@@ -170,7 +192,9 @@ public sealed partial class GameState
                     CancelRenewal(renewer, player); // ohne Oberfläche: wie „Abbruch“ (Spieler geht gegen Ablöse)
                 continue;
             }
-            if (player.ContractYears == 0)
+            if (owner != club)
+                returns.Add((owner, player)); // auch mit Laufzeit 0: Verhandlung beim Stammverein nach dem Einsortieren
+            else if (player.ContractYears == 0)
             {
                 owner.RemovePlayer(player);
                 player.MonthlySalary = 0;
@@ -178,8 +202,6 @@ public sealed partial class GameState
                 player.InsuranceLocked = false;
                 TransferMarket.Release(owner, player);
             }
-            else if (owner != club)
-                returns.Add((owner, player));
         }
         // Erst nach allen Abgängen Nummern vergeben, unabhängig von der Vereinsreihenfolge.
         foreach (var (owner, player) in returns)
@@ -199,6 +221,22 @@ public sealed partial class GameState
             // [APPROX] Rückkehr zu einem Computerverein (Datei 0x27576: Manager ≥ 4, ohne Kaderplatz) hinten an (InsertSlot).
             PlayerFactory.InsertSlot(owner, player, managed.Contains(owner.Index));
             owner.RenumberPlayers();
+            if (player.ContractYears > 0)
+                continue;
+            // [ORIGINAL] Die Verhandlungen laufen nach dem Einsortieren über alle Kaderplätze der Manager (Schleife ab Datei
+            // 0x27B64), also auch für den Rückkehrer mit Laufzeit 0.
+            if (renewers.TryGetValue(owner.Index, out var renewer))
+            {
+                BeginRenewal(renewer, player);
+                if (!s_deferRenewals)
+                    CancelRenewal(renewer, player);
+                continue;
+            }
+            owner.RemovePlayer(player);
+            player.MonthlySalary = 0;
+            player.Insured = false;
+            player.InsuranceLocked = false;
+            TransferMarket.Release(owner, player);
         }
         RefillComputerSquads(before);
         LimitFreeAgents();

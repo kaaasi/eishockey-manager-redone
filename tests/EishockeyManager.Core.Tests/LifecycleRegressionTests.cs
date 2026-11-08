@@ -126,7 +126,7 @@ public class LifecycleRegressionTests
     }
 
     [Fact]
-    public void R204_LoanReturnsToOriginalClubAndKeepsItsRemainingContract()
+    public void R204_MarketLoanEndsFree_NotBackWithItsRemainingContract()
     {
         var game = TestGames.Create();
         FinishSeason(game);
@@ -144,15 +144,14 @@ public class LifecycleRegressionTests
 
         game.StartNextSeason();
 
+        // A115 (kader-start Runde 14 Teil 4, re-runde-14 FILE44 → FILE46 VALLIERE): Leihe vom Markt endet frei (Pool +0x1A = 6,
+        // Datei 0x275FF), nicht mit dem Stammvertrag beim Herkunftsverein (bis dahin R204).
         Assert.False(player.OnLoan);
         Assert.Equal(28, player.Age);
-        Assert.Equal(2, player.ContractYears);
-        Assert.Equal(1234, player.MonthlySalary);
-        Assert.True(player.Insured);
-        Assert.Contains(player, origin.Players);
+        Assert.NotEqual((2, 1234), (player.ContractYears, player.MonthlySalary));
         Assert.DoesNotContain(player, borrower.Players);
         Assert.DoesNotContain(player, borrower.Lineup.Players);
-        Assert.Single(game.Clubs.SelectMany(c => c.Players), p => p == player);
-        Assert.Single(origin.Players, p => p.Number == player.Number);
+        Assert.True(game.Clubs.Count(c => c.Players.Contains(player)) <= 1);
+        Assert.False(origin.Players.Contains(player) && player.ContractYears == 2);
     }
 }

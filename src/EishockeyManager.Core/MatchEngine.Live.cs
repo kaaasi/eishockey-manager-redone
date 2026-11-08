@@ -370,8 +370,15 @@ public sealed partial class GameState
 {
     /// <summary>
     /// Neue Saison: Spielerzähler der Spielberechnung (Spiele, Tore, Vorlagen, Strafen, Gegentore, Torhüterminuten)
-    /// auf 0. [APPROX] Das Zurücksetzen im Original ist nicht gesucht; die Zähler gelten im Remake je Saison.
-    /// Länderspiele (<see cref="Player.Caps"/>) bleiben.
+    /// auf 0. Länderspiele (<see cref="Player.Caps"/>) bleiben.
+    /// [ORIGINAL] A088 (L14, re-runde-14 Sitzung 4): Kaderplätze der Manager, Datei 0x27A0C–0x27AA8; am Stand belegt FILE44 → FILE46
+    /// (Satz 0) für 5-Minuten-Strafen +0x00 (<see cref="Player.Penalties5"/>), 2-Minuten-Strafen +0x01 (<see cref="Player.Penalties2"/>),
+    /// Tore Liga/Pokal +0x03/+0x04 (<see cref="Player.Goals"/>, <see cref="Player.CupGoals"/>) und Spiele Liga/Pokal +0x06/+0x07
+    /// (<see cref="Player.Games"/>, <see cref="Player.CupGames"/>) → 0; die Zähler beim Verein +0x1C–+0x26 bleiben
+    /// (<see cref="CarryGamesForClub"/>), ebenso +0x02.
+    /// [APPROX] Europapokal +0x05/+0x08 nur nach dem Code (am Stand schon vorher 0, R14RD2-05.5); Vorlagen, Gegentore und
+    /// Torhüterminuten haben kein belegtes Feld im Kaderplatz; Spieler der Computervereine, im Pool und auf dem Markt (im Original
+    /// ohne Kaderplatz bzw. Pool +0x1B/+0x1F) nicht verglichen.
     /// </summary>
     internal void ResetMatchCounters()
     {

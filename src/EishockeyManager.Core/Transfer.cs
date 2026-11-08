@@ -463,8 +463,10 @@ public sealed partial class TransferMarket
     /// im alten Kaderplatz „eingesetzt“ +0x0A = 0, den Platz (0x34 Byte, Gehalt, Laufzeit, Kaufpreis) unverändert in den
     /// Markt-Platz kopieren (Datei 0x470C4) und den Kaderplatz freigeben (0x108:0x48, Datei 0x470D6: die folgenden Plätze rücken
     /// auf). Der Pool-Satz behält Besitzer = Manager und Verein (+0x1D). Beleg FILE40 → FILE41 (HOHENADL, re-runde-14 A380).
-    /// [APPROX] Mindestbesetzung je Art (<see cref="CanLeave"/>) und der Preis aus dem Spielerwert (<see cref="Price"/>) wie
-    /// bisher; das Original kopiert +0x2C des Kaderplatzes (Kaufpreis) in den Markt-Platz.
+    /// [ORIGINAL] Listenpreis = +0x2C des Kaderplatzes (<see cref="Player.PurchasePrice"/>, mit dem Platz kopiert, Datei 0x470C4):
+    /// HOHENADL FILE40 Kaderplatz +0x2C = 316.000 DM → FILE41 Markt-Platz 316.000 DM, Bild <c>file40_04</c> „316.000 DM (K)“,
+    /// Leihgebühr „105.333 DM (L)“ = Preis / 3. [APPROX] Ohne Kaufpreis (0, Altstände vor kader-transfer) der Preis aus dem
+    /// Spielerwert (<see cref="Price"/>); Mindestbesetzung je Art (<see cref="CanLeave"/>) wie bisher.
     /// </summary>
     public TransferResult Offer(GameState game, Manager manager, Player player)
     {
@@ -481,7 +483,7 @@ public sealed partial class TransferMarket
         {
             Player = player,
             From = club,
-            Price = Price(player),
+            Price = player.PurchasePrice > 0 ? player.PurchasePrice : Price(player),
             Seller = manager,
             ListedDay = game.PlayedMatchDays,
         });

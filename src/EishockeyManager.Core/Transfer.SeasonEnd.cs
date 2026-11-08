@@ -58,12 +58,40 @@ public sealed partial class GameState
     public int RenewalSalaryThirds(Manager manager, Player p)
     {
         var value = PlayerValueOf(p, Clubs[manager.ClubIndex], PlayerValueKind.Salary, NoValueRandom, manager.Level);
-        return unchecked(value * (147 - p.Age)) / 100;
+        return RenewalSalaryThirds(value, p.Age);
     }
+
+    /// <summary>
+    /// Formel zu <see cref="RenewalSalaryThirds(Manager, Player)"/>: Wert(Gehalt) in Drittel-DM · (147 − Alter) / 100. [ORIGINAL]
+    /// Beleg FILE44 → FILE46 (Saisonende, re-runde-14): KJELLBERG, Alter 33 nach dem Altern, Fenster <c>file46_3</c> 19.152 DM =
+    /// 16.800 DM · 114 / 100.
+    /// </summary>
+    public static int RenewalSalaryThirds(int salaryValueThirds, int age) => unchecked(salaryValueThirds * (147 - age)) / 100;
+
+    /// <summary>
+    /// Ablöse in DM, wenn der Spieler am Saisonende geht: Wert(Preis) (Drittel-DM) / 2, angezeigt / 3. [ORIGINAL] Datei
+    /// 0x27DE3–0x27E1C; Beleg <c>file46_5</c> „Ablösesumme von 155.500 DM“ = 311.000 DM / 2 (KJELLBERG).
+    /// </summary>
+    public static long RenewalCompensation(long priceValueThirds) => priceValueThirds / 2 / 3;
+
+    /// <summary>
+    /// Gehalt vor dem Kaderwechsel eines Spielers, dessen Vertrag am Saisonende verhandelt wird, sonst das jetzige. Für die Liste
+    /// hinter den Verhandlungen (A362): Das Original zeichnet sie vor dem Schreiben des neuen Gehalts (Datei 0x27C9F vor
+    /// 0x27D70). [APPROX] Nur im Speicher, kein Spielstandsfeld: nach dem Laden eines Standes mitten in den Verhandlungen (die
+    /// Oberfläche lässt dort kein Speichern zu) das jetzige Gehalt.
+    /// </summary>
+    public int SalaryBeforeRenewal(Player p) =>
+        IsRenewalPending(p) && s_salaryBeforeRenewal.TryGetValue(p, out var salary) ? salary.Value : p.MonthlySalary;
+
+    // Statisch und schwach je Spieler, damit es kein Spielstandsfeld ist (SaveGame speichert alle Instanzfelder); jede Verhandlung
+    // überschreibt den Eintrag (BeginRenewal), geladene Spieler sind neue Objekte.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Player, System.Runtime.CompilerServices.StrongBox<int>>
+        s_salaryBeforeRenewal = new();
 
     /// <summary>Kaderwechsel: Vertrag ist ausgelaufen, der Spieler wartet auf die Verhandlung (0x27D15–0x27D70).</summary>
     private void BeginRenewal(Manager manager, Player p)
     {
+        s_salaryBeforeRenewal.AddOrUpdate(p, new(p.MonthlySalary));
         p.Notice = ContractNotice.Offered;
         p.NoticeYears = 1;
         p.ContractYears = 0;
@@ -109,7 +137,7 @@ public sealed partial class GameState
         var club = Clubs[manager.ClubIndex];
         // [ORIGINAL] 0x27DE3–0x27E1C: Wert(Preis) / 2 in Drittel-DM aufs Konto (Anzeige / 3).
         var value = PlayerValueOf(p, club, PlayerValueKind.Price, ContractRandom, manager.Level);
-        var compensation = (long)(value / 2) / 3;
+        var compensation = RenewalCompensation(value);
         if (compensation > 0)
             Book(manager, FinanceCategory.Transfers, compensation);
         club.RemovePlayer(p);
