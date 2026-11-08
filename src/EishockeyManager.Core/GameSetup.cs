@@ -125,17 +125,22 @@ public sealed class GameSetup
     /// Start-Liga, ein Wert für alle Manager. [ORIGINAL] DGROUP 0x11A (Regler 2 der Spielvorbereitung, Setup-Werte
     /// 0x118–0x11B; README FILE09 „Start-Liga gilt für alle Manager“; Entscheidung Leitstelle L1 in #567). Das Remake führt
     /// den Wert weiter in <see cref="ManagerSetup.StartLeague"/> (Spielstände, Tests); gelesen wird der Wert von
-    /// Manager 0, das Setzen gilt für alle. Ohne Manager: Bundesliga ([ORIGINAL] Vorgabe 0).
+    /// Manager 0, das Setzen gilt für alle. Ohne Manager gilt der in <see cref="GameSetup"/> selbst geführte Wert
+    /// ([ORIGINAL] Vorgabe 0 = Bundesliga; einstellbar vor dem ersten Manager, R13KI-03 #605); <see cref="AddManager"/>
+    /// übernimmt ihn.
     /// </summary>
     public League StartLeague
     {
-        get => Managers.Count > 0 ? Managers[0].StartLeague : League.Bundesliga;
+        get => Managers.Count > 0 ? Managers[0].StartLeague : _startLeague;
         set
         {
+            _startLeague = value;
             foreach (var m in Managers)
                 m.StartLeague = value;
         }
     }
+
+    private League _startLeague = League.Bundesliga;
 
     /// <summary>
     /// Spielstand-Optionen des Originals (Optionsbildschirm 0x2CD1C, Spur optionen-wirkung). Gehören zum Spielstand; die
@@ -214,6 +219,18 @@ public sealed class GameSetup
             default: manager!.StartStrength = (StartStrength)next; break;
         }
         return true;
+    }
+
+    /// <summary>
+    /// Einen Manager anlegen; er übernimmt die eingestellte <see cref="StartLeague"/> (ein Wert für alle, L1, R13KI-03 #605).
+    /// Die Spielvorbereitung legt Manager nur hierüber an. Direktes <c>Managers.Add</c> (Tests, Aufbauten im Code) behält den
+    /// Wert des <see cref="ManagerSetup"/>.
+    /// </summary>
+    public ManagerSetup AddManager(ManagerSetup m)
+    {
+        m.StartLeague = StartLeague;
+        Managers.Add(m);
+        return m;
     }
 
     /// <summary>Verein, der bereits von einem anderen Manager gewählt wurde?</summary>

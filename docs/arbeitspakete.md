@@ -107,7 +107,7 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   3. **Anschluss Sperre ab WM-Gruppenphase** an Transfer und Training (nach `nationalteam` Teil 2).
   4. **Saisonende-Abgang aus `re-dosbox` Teil 2** (A362, A085, A091), sobald Sitzung 4 ausgewertet ist.
 - **Dateigrenzen:** wie oben „allein `kader-start`“, `UI/Screens/Team/*` außer `TeamUi.cs` und `TransferDialog.cs`, eigene Tests,
-  `docs/transfer.md`. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
+  `docs/transfer.md`. **Modell:** Claude Opus 5.5. **Status:** Teil 1 PR #631 (Branch `paket/kader-start-r14-1`, da `paket/kader-start-1…4` aus Runde 13 noch bestehen); Teil 2 wartet auf `re-dosbox`, Teil 3 auf `nationalteam` Teil 2.
 
 ### Spur `ui-rest` – Darstellung aus der Aufnahme, Stadionpfeile
 

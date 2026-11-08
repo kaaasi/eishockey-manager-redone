@@ -123,7 +123,7 @@ public sealed class SetupScreen : Screen
             else if (i == _setup.Managers.Count && input.Clicked(slot))
             {
                 // Im Original bleibt das Kopffeld bis zur Auswahl leer; die Start-Liga gilt für alle Manager (L1, DGROUP 0x11A).
-                _setup.Managers.Add(new ManagerSetup { Head = -1, StartLeague = _setup.StartLeague });
+                _setup.AddManager(new ManagerSetup { Head = -1 });
                 _selected = i;
                 _mode = Mode.HeadPicker;
                 return;

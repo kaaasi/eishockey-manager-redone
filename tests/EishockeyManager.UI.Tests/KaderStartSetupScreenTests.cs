@@ -92,4 +92,26 @@ public class KaderStartSetupScreenTests
         Assert.Equal(44, screen.Setup.Managers[0].ClubIndex);
         Assert.Equal((3, 8), screen.CellOf(44));
     }
+
+    /// <summary>
+    /// R13KI-03 (#605): Start-Liga vor dem ersten Manager über den Regler einstellen; der danach angelegte Manager übernimmt sie
+    /// (ein Wert für alle, DGROUP 0x11A). Vorher blieb der Regler ohne Manager wirkungslos (Bundesliga).
+    /// </summary>
+    [GameDataFact]
+    public void StartLeague_BeforeFirstManager_IsAdopted()
+    {
+        var d = FlowTests.CreateDriver();
+        d.Host.Show(new TitleScreen(d.Host));
+        d.Frame();
+        d.Click(160, 120);
+        var setup = Assert.IsType<SetupScreen>(d.Host.Current).Setup;
+        Assert.Empty(setup.Managers);
+
+        Arrow(d, SetupSlider.StartLeague, +1);
+        Assert.Equal(League.ZweiteLiga, setup.StartLeague);
+        AddManager(d, 0, 0, "Erster");
+
+        Assert.Equal(League.ZweiteLiga, Assert.Single(setup.Managers).StartLeague);
+        d.Frame();
+    }
 }

@@ -186,9 +186,12 @@ public static class PlayerFactory
     /// dessen Spielerart (Datei 0x04180: Pool +0x18 / 25, höchstens 2 – 0 Torhüter, 1 Verteidiger, 2 Stürmer) größer als die des
     /// Neuen ist (<c>cmp al,[bp-2]</c>/<c>ja</c>, Datei 0x42D96); ab dort rückt die Folge per memmove um einen Platz nach hinten
     /// (Datei 0x42DC3–0x42E27). Ein Torhüter steht damit hinter dem letzten Torhüter vor dem ersten Verteidiger, ein Stürmer
-    /// hinten (FILE05 → FILE07: DAFFNER, Stürmer, auf Platz 25, Nr. 26). Aufrufer von 0x42CB1 sind Talentsuche (0x06D7F), Leihrückkehr
-    /// am Saisonende (0x2758B), Spielstart (0x28165), WM-Kader (0x3CABF), Transferliste Kauf/Leihe (0x47066, 0x477E7), Listenwechsel
-    /// (0x4970A) und Managerkader-Neuanlage (0x5B1CD) – alle für Managerkader (DGROUP 0x5DC3 + 0x618 · Manager).
+    /// hinten (FILE05 → FILE07: DAFFNER, Stürmer, auf Platz 25, Nr. 26). Aufrufstellen von 0x42CB1 (R623-02, #625): direkt
+    /// <c>call 0x108:0x5c</c> bei Datei 0x2758B (Leihrückkehr am Saisonende), 0x29996 (Spielstart in 0x28165), 0x3CB09 (WM-Kader),
+    /// 0x47066 und 0x477E7 (Transferliste Kauf/Leihe), 0x4970A (Listenwechsel 0x494EF) und 0x5B1CD (Pool-Neuanlage 0x5AF50);
+    /// die Talentsuche 0x06D7F ruft über <c>call 0x14b7:0x5c</c> bei 0x06EB9. Ziel ist der Satz in DGROUP 0xA70E (Kaderplätze
+    /// DGROUP 0x5DC3 + 0x618 · Satz): ein Managerkader, nur beim Listenwechsel Satz 4 = Transfermarkt (Datei 0x494F9
+    /// <c>mov byte [0xa70e],0x4</c>) – der Markt ist im Remake kein <see cref="Club.Players"/>.
     /// [APPROX] Computervereine (<paramref name="managerSquad"/> = <c>false</c>) haben im Original keine Kaderplätze (nur Pool +0x1D;
     /// 0x42CB1 schreibt nur Managerkader). Ihre Neuzugänge (Nachfolger, Auffüllen, Gebot auf einen Managerspieler, Kauf vom
     /// Manager, Pooltausch, Leihrückkehr) hängt das Remake wie bisher hinten an; die Folge zählt dort nur für die Anzeige der Nr.
