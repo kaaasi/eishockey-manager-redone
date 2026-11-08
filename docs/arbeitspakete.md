@@ -97,7 +97,7 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   3. **Bundestrainer-Befunde aus `re-dosbox` Teil 2** (A009 leer, A085 Handaufnahme, A293), sobald Sitzung 5 ausgewertet ist.
 - **Dateigrenzen:** wie oben „allein `nationalteam`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (#594, #595)
   fertig, PR #630; Teil 2 (Sperre Transfer/Training ab dem ersten WM-Termin, WM-Kader nach Art einsortiert) fertig, PR #637;
-  Teil 2 „Reihenlogik der Vereinsaufstellung“ wartet auf die Leitstelle (Dateien `kader-start`); Teil 3 wartet auf `re-dosbox` Teil 2.
+  Teil 2 „Reihenlogik der Vereinsaufstellung“ wartet auf die Leitstelle (Dateien `kader-start`); Teil 3 (A012, A009, A085, A293) in Arbeit, PR folgt.
 
 ### Spur `kader-start` – Spielstart, Kader, Aufstellung
 
