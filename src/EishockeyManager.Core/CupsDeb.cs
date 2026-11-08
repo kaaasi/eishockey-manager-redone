@@ -19,7 +19,7 @@ namespace EishockeyManager.Core;
 /// [ORIGINAL] Unentschieden: schneller Weg random(0, 2) je Seite bis ungleich, Minutenweg Verlängerung und Penaltyschießen
 /// 0x3901B; Endstand mit Marke + 30 (<see cref="CupMatch"/>, <see cref="CupTie.Marks"/>; spielberechnung.md §3/§19).
 /// </remarks>
-public sealed class DebCup : ISeasonCompetition
+public sealed partial class DebCup : ISeasonCompetition
 {
     public const int Teams = 32;
     public const int RoundCount = 5;

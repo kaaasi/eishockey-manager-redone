@@ -15,9 +15,9 @@ namespace EishockeyManager.Core;
 /// </para>
 /// <para>
 /// [APPROX] Was das HOK nicht oder nicht belegt führt (Feldkarte Status N/U) und was der Import noch nicht übernimmt
-/// (Pokale und WM; Teil 4a übernimmt Börse, Werbung, Training, Taktik, Serien, Darlehen in <c>OriginalImport.Rest.cs</c>,
-/// Teil 4b Pool und Markt, Nationalkader und Nachrichten in <c>OriginalImport.Market.cs</c>, <c>.National.cs</c>,
-/// <c>.Messages.cs</c>), ergibt sich aus dem Nachspielen: es ist
+/// (Teil 4a übernimmt Börse, Werbung, Training, Taktik, Serien, Darlehen in <c>OriginalImport.Rest.cs</c>, Teil 4b Pool und
+/// Markt, Nationalkader und Nachrichten in <c>OriginalImport.Market.cs</c>, <c>.National.cs</c>, <c>.Messages.cs</c>, Teil 4c
+/// Pokale und WM in <c>OriginalImport.Cups.cs</c>), ergibt sich aus dem Nachspielen: es ist
 /// ein gültiger Remake-Zustand am selben Tag, aber nicht der des Originals. Zufall aus neuer Saat (Regel 6).
 /// </para>
 /// </summary>
@@ -318,6 +318,7 @@ public sealed partial class GameState
         var pool = ApplyPoolAndMarket(save, clubOf, squadPlayers, foreigners); // Teil 4b (OriginalImport.Market.cs)
         ApplyNationalSquad(save, clubOf, pool, squadPlayers); // Teil 4b (OriginalImport.National.cs)
         ApplyMessages(save, pool); // Teil 4b (OriginalImport.Messages.cs)
+        ApplyCups(save, clubOf); // Teil 4c (OriginalImport.Cups.cs)
         // [ORIGINAL] Manager am Zug DGROUP 0xA70E (0–3; 5 = Bundestrainer). [APPROX] Der Zug des Bundestrainers beginnt im Remake
         // mit dem Tageslauf; der Import setzt dann Manager 0.
         var current = save.Block("A70E")[0];

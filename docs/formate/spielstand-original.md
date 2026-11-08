@@ -106,10 +106,10 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 | `0x00345` | `CC43` | 48 | Minuten-Vorgabe (8 · Manager + 4 · Teil + Reihe; Teil 0 Abwehr, 1 Sturm) |
 | `0x00375` | `CD28` | 48 |  |
 | `0x003A5` | `CCF8` | 48 |  |
-| `0x003D5` | `D074` | 1 |  |
-| `0x003D6` | `D014` | 96 |  |
-| `0x00436` | `D075` | 32 |  |
-| `0x00456` | `CFFC` | 24 | DEB-Pokal (Spiele) |
+| `0x003D5` | `D074` | 1 | DEB-Pokal: Spiel der laufenden Runde (0–2) |
+| `0x003D6` | `D014` | 96 | DEB-Pokal: Tore je Spiel (32 · Spiel + Platz, Heimbyte + 30 je Marke, 100 = nicht ausgetragen) |
+| `0x00436` | `D075` | 32 | DEB-Pokal: Siege je Platz |
+| `0x00456` | `CFFC` | 24 | Gruppenteilnehmer DGROUP 0xCFF4 + 8 · Wettbewerb (+8 Europapokal, +16 Endrunde) |
 | `0x0046E` | `CFF8` | 4 |  |
 | `0x00472` | `CED8` | 288 | Play-Off-/Aufstiegsrunden-Gruppen (ab 0xCF20) |
 | `0x00592` | `CDB8` | 288 |  |
@@ -156,11 +156,11 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 | `0x08EED` | `A776` | 10 |  |
 | `0x08EF7` | `A763` | 18 |  |
 | `0x08F0A` | `A75A` | 2 |  |
-| `0x08F0C` | `5CFB` | 128 | DEB-Pokal-Paarungen |
-| `0x08F8C` | `5CF3` | 8 | DEB-Pokal-Runde |
+| `0x08F0C` | `5CFB` | 128 | Pokalplätze 32 · Wettbewerb (0 DEB-Pokal; +0x60 K.-o.-Plätze WM bzw. Endrunde/Aufstiegsrunde) |
+| `0x08F8C` | `5CF3` | 8 | Pokalrunde je Wettbewerb (DEB-Pokal 1–5) |
 | `0x08F94` | `5CF0` | 3 |  |
 | `0x08F97` | `5CCB` | 36 | Tabelle: Vereinsindex je Liga × 12 + Platz |
-| `0x08FBB` | `5C4B` | 128 |  |
+| `0x08FBB` | `5C4B` | 128 | Pokaltore des laufenden Tages (nach dem Eintragen gelöscht) |
 | `0x0903B` | `07A9` | 8 | 0x7A9–0x7AB nächster Spieltag je Liga; 0x7AF Europapokal-Termin, 0x7B0 Runden |
 | `0x09043` | `AB7B` | 5524 | Kopf-an-Kopf (+0), Serien (+0xA00), Rekordserien Manager (+0xF40), Rekordgegner (+0xF94), Rekorde (+0x1194) |
 | `0x0A5D7` | `021D` | 16 | Wettbewerbsschalter (0x227 DEB-Pokal) |
@@ -692,14 +692,14 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `MatchBalance.PointsPlus` | B | `8257` (0x825A + 0x50 · Satz + 0x00) | Punkte Heim/Auswärts |
 | `MatchBalance.Wins` | B | `8257` (0x825A + 0x50 · Satz + 0x26) | Heim/Auswärts |
 | `KnockoutMatch.Away` | A | `5CFB`, `CED8` | Gast aus der jeweiligen Paarungsliste |
-| `KnockoutMatch.AwayGoals` | B | `5C4B` | Tore modulo 30 |
-| `KnockoutMatch.Day` | A | `5C4B` | Termin aus der Zeile (Zuordnung der Zeilen offen, MatchEngine.Live) |
+| `KnockoutMatch.AwayGoals` | A | `D014`, `CDB8` | DEB-Pokal: Platz des Gasts; Gruppen: Gasttor-Byte (Teil 4c) |
+| `KnockoutMatch.Day` | A | `D014`, `CED8` | Termin aus Spielnummer bzw. Terminzeile (Teil 4c) |
 | `KnockoutMatch.Home` | A | `5CFB`, `CED8` | Heim aus der Paarungsliste |
-| `KnockoutMatch.HomeGoals` | B | `5C4B` | Tore modulo 30 |
-| `KnockoutMatch.PenaltyWinner` | A | `5C4B` | Marke 1 (+30) = Penaltyschießen |
+| `KnockoutMatch.HomeGoals` | A | `D014`, `CDB8` | Heimbyte modulo 30 (Teil 4c) |
+| `KnockoutMatch.PenaltyWinner` | A | `D014` | Marke 1 (+30) = Penaltyschießen (Teil 4c) |
 | `CupTie.First` | B | `5CFB` | Paarung, linke Seite |
-| `CupTie.Games` | A | `5C4B` | Spiele der Paarung |
-| `CupTie.Marks` | B | `5C4B` | Marke = Heimbyte div 30 |
+| `CupTie.Games` | A | `D014`, `D074` | Spiele der Paarung (Teil 4c) |
+| `CupTie.Marks` | A | `D014` | Marke = Heimbyte div 30 (Teil 4c) |
 | `CupTie.Second` | B | `5CFB` | Paarung, rechte Seite |
 | `CupGroup.Number` | A | `CED8+0x11C` | Gruppe aus dem Satzindex |
 | `CupGroup.Results` | B | `CED8`, `CDB8` | Paarungen und Tore der Gruppe |
@@ -710,13 +710,13 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `EuropeanCup.FinalRound` | A | `CED8+0x11C` | ab dem siebten Termin `07A9+6` |
 | `EuropeanCup.GermanEntrants` | B | `A776` | deutsche Teilnehmer (FILE22/23) |
 | `EuropeanCup.Winner` | B | `0388` | Europacupsieger |
-| `EuropeanCup._draw` | B | `A763` | Auslosung (18 Byte) |
+| `EuropeanCup._draw` | A | `CFFC+8` | Teilnehmer DGROUP 0xD004 (Teil 4c); `A763` (18 Byte) ungedeutet |
 | `EuropeanCup._groups` | A | `CED8+0x11C`, `CED8` | Gruppen aus 0xCFF4 und Paarungen |
 | `WorldCup.Ranking` | A | `CFF8+3` | Platzierungsspiele ab DGROUP 0xCFFB |
 | `WorldCup.Winner` | U | – | Weltmeister: Ort nicht belegt; aus dem Endspiel |
 | `WorldCup._groups` | A | `CED8+0x11C`, `CED8` | wie Europapokal (Wettbewerb WM) |
 | `WorldCup._knockout` | A | `5CFB+0x60` | Paare ab DGROUP 0x5D5B |
-| `WorldCup._knockoutMarks` | A | `5C4B` | Marken wie `CupTie.Marks` |
+| `WorldCup._knockoutMarks` | U | – | Tore und Marken der WM-K.-o.-Spiele nicht im HOK (`5C4B` nach jedem Termin leer); Import 1:0, Marke 0 `[APPROX]` |
 | `WorldCup._order` | U | – | Auslosungsfolge: nicht belegt; Indexfolge |
 | `WorldCup._slots` | U | – | leer bis zur Auslosung |
 | `Playoffs.Seeds` | A | `5CCB` | Plätze 1–8 der Abschlusstabelle |
@@ -798,8 +798,8 @@ Tabellensätzen `8257` (Punkte, Tore, Gegentore, Spiele, Siege, Niederlagen) an 
 FILE37A, FILE40. Das Remake rechnet den Plan nach dem Import über die Satzfolge; ab der nächsten Saison wieder nach
 `Schedule.Rounds` (Vereinsindex) – Abweichung des Remakes, nicht Teil dieser Spur.
 
-**Noch nicht übernommen** (Stand aus dem Nachspielen nach Remake-Regeln, `[APPROX]`; Teil 4b): Pokale und WM (`5CFB`, `CED8`,
-`5C4B`, `A776`, `A763`; Teil 4c). Teil 4a und 4b übernehmen die übrigen Bereiche (Abschnitte unten). Weiter offen aus Teil 1: Pokalzeilen `5C4B`,
+**Noch nicht übernommen** (Stand aus dem Nachspielen nach Remake-Regeln, `[APPROX]`): frühere DEB-Pokal-Runden (das Original
+führt nur die laufende), Auslosung Europapokal `A763`. Teil 4a–4c übernehmen die übrigen Bereiche (Abschnitte unten). Weiter offen aus Teil 1: Pokalzeilen `5C4B`,
 Freundschaftsspiele `D0CB`/`D0D3`/`D0DB`, `A89A`, Ewige Tabelle, Managerkopf, Leihe, Zuschauerstatistik (`965B+0xED` ff.);
 Zählung des Bundestrainer-Satzes.
 
@@ -847,6 +847,36 @@ Poolspieler des Nachspielens gleicher Art, sonst einem neuen Spieler mit den Wer
 `[APPROX]`; Gebote und Vertragslose des Nachspielens entfallen (Feldkarte U). Gleichnamige Poolspieler gleicher Art aus dem
 Nachspielen behalten Objekt und ID.
 
+### Pokale und WM (Teil 4c)
+
+`OriginalImport.Cups.cs` (Aufruf nach Teil 4b), Tests `OriginalImportCupTests`. Zuordnung aus em.exe (Datei-Offsets):
+
+- **Plätze** DGROUP `0x5CFB` + 32 · Wettbewerb, **Runde** `0x5CF3` + Wettbewerb. Auslosung 0x341AB (Parameter Wettbewerb) setzt die
+  Runde auf 1; 0x3489D liest die Zahl der Sieger aus DGROUP 0x3B1[Runde], schreibt Platz 2k → k, dahinter `0xFF`, tauscht 20-mal
+  und zählt die Runde hoch (bei 5 Abbruch). Hinter dem `0xFF` stehen Reste älterer Runden (FILE36 `9 2 1 3 8 7 0 5 FF …` =
+  Viertelfinale, Runde 3).
+- **DEB-Pokal-Termin** 0x34B76: `0x5C4B` = Tore des laufenden Tages je Platz (Heimbyte + 30 je Marke), 0x34B3E sichert sie
+  nach `0xD014` + 32 · Spiel (Spiel = `0xD074`, 0–2), dann je Paarung Eintrag über 0x50283, Sieg an Platz 2k bei Heimtoren ≥
+  Gasttoren (Datei 0x34C76 „jnc“), Siege `0xD075` + Platz; danach `0x5C4B` = 0 (deshalb an jedem Stand 0). Zwei Siege → nächstes
+  Spiel 100 (nicht ausgetragen). Nach Spiel 1 und 2 tauschen die Vereine einer Paarung Platz, Siege und gesicherte Tore (die
+  Einträge folgen also immer dem Verein); nach Spiel 3 Sieger auf Platz 2k, `0xD074` und Siege auf 0, Auslosung der nächsten Runde.
+  Nach dem Endspiel: Sieger `0x387`, `0xD074` = 2, Plätze wie vor dem dritten Termin (0x34ED6–0x34EFC).
+- **Import DEB-Pokal:** laufende Runde aus `5CF3`, Paarungen aus den Plätzen (ungerader Spielzähler = getauscht), Spiele aus
+  `D014` mit Heimrecht nach Spielnummer, Marke = Heimbyte div 30, Tore mod 30, Marke 1 → Penaltysieger; Endspiel fertig, wenn
+  `D074` = 2 und alle Siege 0. Belege FILE38/39 (Viertelfinale vor und nach Spiel 1), FILE44 (Endspiel 4:4 und 3:3 mit zwei
+  Marken, 1:4, Sieger `0387`). `[APPROX]` frühere Runden aus dem Nachspielen; Ziehungsfolge vor dem Heimrechttausch 0x347EF
+  nicht gesichert.
+- **Gruppen** 0x30427: Teilnehmer DGROUP `0xCFF4` + 8 · Wettbewerb + 4 · Gruppe (Europapokal Wettbewerb 2 = `CFFC`+8, Endrunde
+  Wettbewerb 3 = `CFFC`+16), Paarungen `CED8` und Tore `CDB8` + 0x48 · Wettbewerb + 0x24 · Gruppe + 6 · Termin (drei Paare je
+  Termin; Europapokal mit einem Füllpaar). WM = Wettbewerb 0, Gruppe g = Sätze 52 + 6g … (die Tausche 0x35EDD vertauschen die
+  Sätze, Regel 1). Termine gespielt: Europapokal `07A9`+6 (0x7AF), WM `07A9`+5 (0x7AE). Belege FILE36 (Europapokal nach Termin 7),
+  FILE38 (nach Termin 12, Sieger = `0388` von FILE43), FILE48 (WM nach Termin 1), FILE20 (nach dem Halbfinale).
+- **WM-K.-o.:** Plätze `5CFB`+0x60 = DGROUP 0x5D5B (24 Plätze wie das Remake, Sieger vorn, Weiterverteilung 0x12C). Tore der
+  K.-o.-Spiele sind nicht gesichert: Import 1:0 für den Sieger `[APPROX]`. In Spielständen mit Vereinssaison belegen Endrunde und
+  Aufstiegsrunde dieselben Plätze (FILE36, FILE44); der Import liest sie nur nach dem fünften WM-Termin.
+- **Deutsche Europapokal-Teilnehmer** `A776`: Folge der Liste, Zahl (DGROUP 0xA775) nicht im HOK → Teilnehmer = Vereine der
+  Auslosung unter 64 `[APPROX]`.
+
 ### Feldbelege aus der DOSBox-Aufnahme `runde-13` (re-runde-14.md, Leitstelle L7)
 
 Belegt in `docs/analyse/re-runde-14.md` (Spur `re-dosbox`), hier für die Feldkarte zusammengefasst; die Umsetzung im Spielkern
@@ -890,12 +920,8 @@ liegt bei den genannten Spuren.
 
 ## Offene Punkte
 
-- **Pokale und WM (Teil 4c):** Import noch aus dem Nachspielen. Befunde Teil 4b: `5C4B` steht an allen Ständen FILE05–FILE44
-  auf 0 (Pokalergebnisse also nicht dort; Marken + 30 im Ergebnisblock `A0CB`?); `5CFB` +0…+31 ist zu Saisonbeginn die
-  Auslosung der ersten Runde (FILE05: 32 verschiedene Satzplätze 0–35), spätere Runden überschreiben den Anfang (FILE36:
-  `9 2 1 3 8 7 0 5 FF 0 …`, Deutung offen), `5CFB`+0x60 ff. Paare der WM (FILE22/FILE44); `5CF3`+0 Runde (FILE05 1, FILE36 3,
-  FILE44 5). Vor dem Import Zuordnung aus em.exe (Auslosung 0x341AB, 0x3489D, Spiel 0x34B76) klären. Die Klassen in
-  `Core/Cups*.cs` sind nicht `partial`; der Import braucht dort einen Zugang (fremde Dateien, im PR begründen).
+- **Pokale (nach Teil 4c):** Auslosung Europapokal `A763` (18 Byte) und `CFF8`, `5CF0` ungedeutet; Tore der WM-K.-o.-Spiele
+  nicht im HOK.
 - Deutung der Blöcke ohne Eintrag in der Tabelle, besonders `8257` (0x1400), `AB7B` (0x1594), `D294` (0xA98),
   `C313` (0x7D0), `D0F4`, `5D7B` (Permutation der 36 Vereine, ändert sich mit dem Spieltag; nicht die Tabelle).
 - Vereinsdatensatz: in FILE03 ändern sich `+0x17`–`+0x3A` (Form, Teamwerte, weitere Statistik?). Punkte und Tore der
