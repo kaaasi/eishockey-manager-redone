@@ -114,13 +114,14 @@ public class NewGameTests
     [Fact]
     public void Create_RandomBundesligaClub_NeverTakesEuropeanCupParticipant()
     {
-        // [ORIGINAL] Datei 0x29C78: ein Zufallsverein in Europapokal-Zeile 1 wird verworfen; zu Spielbeginn ist das der Meister (Verein 2).
+        // [ORIGINAL] Datei 0x29C78: ein Zufallsverein in Europapokal-Zeile 1 wird verworfen; beim Spielstart ist die Tabelle leer,
+        // getroffen wird Platz 0 der Startmischung (U15-c, kader-start Runde 14; vorher Verein 2).
         for (var seed = 0; seed < 60; seed++)
         {
             var setup = new GameSetup();
             setup.Managers.Add(new ManagerSetup { Name = "Test", StartLeague = League.Bundesliga, StartStrength = StartStrength.OberesDrittel });
             var game = NewGame.Create(CreateDatabase(), setup, seed);
-            Assert.NotEqual(EuropeanCup.InitialChampion, game.ActiveManager.ClubIndex);
+            Assert.NotEqual(NewGame.StartOrder(seed)[0], game.ActiveManager.ClubIndex);
         }
     }
 

@@ -202,6 +202,9 @@ public static partial class MatchEngine
                 : 0;
         }
         var fewFit = managed && club.Players.Count > 0 && club.Players.Count(p => p.Available) < MinimumFitForPenalties;
+        // A180: [ORIGINAL] Spielvorbereitung 0x8365 je Paarung (Datei 0x36D12) schreibt die Zeile der Automatik in den
+        // Vereinssatz – für die Anzeige „AUTOM.“ festgehalten; ohne Manager ohne Blick auf die Modi (Datei 0x842B).
+        club.Tactics.RecordAutoLine(value, opponentValue, unmanaged: manager is null);
         var team = new LiveTeam
         {
             Defense = defense,

@@ -89,4 +89,31 @@ public class KaderStartRunde14Teil2Tests
         }
         Assert.True(championDrawn);
     }
+
+    /// <summary>
+    /// A180 (FILE29/FILE31): Beim Spielstart stehen eigene Werte und Anzeige „AUTOM.“ des Managervereins auf 0; nach dem ersten
+    /// Spieltag zeigt „AUTOM.“ die Zeile der Automatik (60/0/25/20/30/0 bzw. 40/20/20/15/20/0), die eigenen Werte bleiben 0.
+    /// Vorher starteten Vereine mit der ausgeglichenen Zeile.
+    /// </summary>
+    [Fact]
+    public void ClubTactics_StartAtZero_AutoLineAfterFirstMatchDay()
+    {
+        var game = NewGame.Create(TestGames.CreateDatabase(), Setup(GameDuration.Unbegrenzt, 5), 3);
+        var tactics = game.Clubs[game.Managers[0].ClubIndex].Tactics;
+        var situations = Enum.GetValues<ScoreSituation>();
+        Assert.True(tactics.KeepsLastAutoLine);
+        Assert.All(Enumerable.Range(0, Tactics.Blocks), b => Assert.All(situations, r =>
+        {
+            Assert.Equal(0, tactics.Effort(b, r));
+            Assert.Equal(0, tactics.Attack(b, r));
+            Assert.Equal(0, tactics.ShownEffort(b, r));
+            Assert.Equal(0, tactics.ShownAttack(b, r));
+        }));
+
+        TestSeason.PlayMatchDay(game);
+
+        var shown = situations.Select(r => tactics.ShownEffort(0, r)).ToArray();
+        Assert.True(shown.SequenceEqual([60, 0, 25, 20, 30, 0]) || shown.SequenceEqual([40, 20, 20, 15, 20, 0]), string.Join(" ", shown));
+        Assert.All(situations, r => Assert.Equal(0, tactics.Effort(0, r)));
+    }
 }
