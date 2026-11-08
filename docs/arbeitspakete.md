@@ -95,7 +95,7 @@ Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nati
 | Spur | Status | PR | Head-SHA |
 |---|---|---|---|
 | `saison` | integriert, Prüfung grün (2288 / 0 / 0 mit Daten), wartet auf Review | #652 (Branch `integration/runde-14-saison`, Base `b7e1eb2`) | im Übergabekommentar von #652 |
-| `nationalteam` | integriert (#630, #637, #653; Schema 41), Prüfung grün (2305 / 0 / 0 mit Daten), wartet auf Review | #661 (Branch `integration/runde-14-nationalteam`, Base `3e0cf69`) | im Übergabekommentar von #661 |
+| `nationalteam` | integriert (#630, #637, #653; Schema 41); Review #662 „Nein“ → Korrekturen R14NT-01–06 auf dem Branch (08.11.2026), wartet auf Nachprüfung | #661 (Branch `integration/runde-14-nationalteam`, Base `3e0cf69`) | im Übergabekommentar von #661 |
 
 Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 → `pruefung-karte`.
 
