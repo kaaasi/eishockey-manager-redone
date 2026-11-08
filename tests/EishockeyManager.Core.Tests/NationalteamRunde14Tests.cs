@@ -112,4 +112,57 @@ public class NationalteamRunde14Tests
         Assert.Equal((0, 0, 9, 10), game.NationalRatings(NationalTeams.Germany));
         Assert.Equal(form, (germany.TeamValues.Value.DefenseForm, germany.TeamValues.Value.AttackForm));
     }
+    // ---- Teil 2: Nebenbefunde #580 -------------------------------------------------------------------------------
+
+    /// <summary>
+    /// #580/#623: Regressionstest (vorher rot: Handaufnahme hängte hinten an). [ORIGINAL] Klick in „Spieler in WM-Kader“
+    /// (Datei 0x3C97A) → 0x3CABF → 0x42CB1 (Datei 0x3CB09, Grenze 0x1D = 29, Manager 5): erster Platz, dessen Spielerart größer
+    /// als die des Neuen ist (wie <see cref="PlayerFactory.InsertSlot"/>). Stürmer, Verteidiger, Torhüter, Verteidiger → T, V, V, S.
+    /// </summary>
+    [Fact]
+    public void HandNomination_InsertsByRole()
+    {
+        var game = GameModeTests.Create(7, false, true, 2);
+        game.Continue();
+        var coach = game.NationalCoach!;
+        Assert.Empty(coach.Squad);
+        var candidates = game.NationalCandidates().Select(c => c.Player).Where(p => p.InjuredGames == 0).ToList();
+        Player Pick(PlayerRole role, int skip = 0) => candidates.Where(p => p.Role == role).Skip(skip).First();
+        var (f, d1, g, d2) = (Pick(PlayerRole.Forward), Pick(PlayerRole.Defender), Pick(PlayerRole.Goalkeeper), Pick(PlayerRole.Defender, 1));
+        foreach (var p in new[] { f, d1, g, d2 })
+            Assert.Equal(NominationResult.Added, game.ToggleNomination(p));
+        Assert.Equal([g, d1, d2, f], coach.Squad.Select(m => m.Player));
+
+        // Entlassen und wieder aufnehmen: wieder hinter dem letzten seiner Art.
+        Assert.Equal(NominationResult.Removed, game.ToggleNomination(d1));
+        Assert.Equal(NominationResult.Added, game.ToggleNomination(d1));
+        Assert.Equal([g, d2, d1, f], coach.Squad.Select(m => m.Player));
+    }
+
+    /// <summary>
+    /// #580: [ORIGINAL] Aufbau des Hauptmenüs (Datei 0x4509E–0x450A4): im Zug des Bundestrainers Sperrbytes DGROUP 0x518C/0x518D
+    /// (Tabelle 0x5159 + 42, Reihe Mannschaft, Plätze 4 und 5 = „Transfer“, „Training“) = WM-Stufe DGROUP 0x7AE (gespielte
+    /// WM-Termine; 0 bei der Anmeldung, Datei 0x30E89, + 1 je Termin, Datei 0x311C8). DOSBox `file19_26` (20.04.1994).
+    /// </summary>
+    [Fact]
+    public void WorldCupStage_LocksNationalSquadFromFirstDate()
+    {
+        var game = GameModeTests.Create(7, false, true, 2);
+        game.Continue();
+        Assert.Equal(0, game.WorldCupStage);
+        Assert.False(game.NationalSquadLocked);
+        game.AutoNominate();
+        game.Continue();
+        Assert.Equal(1, game.WorldCupStage);
+        Assert.True(game.NationalSquadLocked);
+        for (var guard = 0; game.Phase == SeasonPhase.Running; guard++)
+        {
+            Assert.True(guard < 50);
+            game.Continue();
+        }
+        Assert.Equal(WorldCup.GroupDates + 3, game.WorldCupStage);
+        game.StartNextSeason();
+        Assert.Equal(0, game.WorldCupStage);
+        Assert.False(game.NationalSquadLocked);
+    }
 }

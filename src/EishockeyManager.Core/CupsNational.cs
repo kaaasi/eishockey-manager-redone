@@ -193,7 +193,17 @@ public sealed partial class NationalCoach
             Best(PlayerRole.Defender, 2 * Lines), Best(PlayerRole.Forward, 3 * Lines));
     }
 
-    internal void Add(Player player, int club) => _squad.Add(new NationalSquadMember(player, club));
+    /// <summary>
+    /// Nimmt einen Spieler in den WM-Kader auf. [ORIGINAL] 0x3CABF (Handaufnahme Datei 0x3C97A, „auto“ Datei 0x3CA4C) ruft
+    /// 0x42CB1 für Manager 5 mit Grenze 0x1D (Datei 0x3CAF6–0x3CB09): erster Platz, dessen Spielerart größer als die des Neuen
+    /// ist, sonst hinten an – wie <see cref="PlayerFactory.InsertSlot"/> (#623, Spur nationalteam Runde 14). „auto“ nimmt je Art
+    /// nacheinander auf und bleibt damit unverändert.
+    /// </summary>
+    internal void Add(Player player, int club)
+    {
+        var at = _squad.FindIndex(m => m.Player.Role > player.Role);
+        _squad.Insert(at < 0 ? _squad.Count : at, new NationalSquadMember(player, club));
+    }
 
     internal void Remove(Player player)
     {

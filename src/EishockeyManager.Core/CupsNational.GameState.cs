@@ -94,6 +94,22 @@ public sealed partial class GameState
     }
 
     /// <summary>
+    /// WM-Stufe: gespielte WM-Termine. [ORIGINAL] DGROUP 0x7AE: 0 bei der Anmeldung der WM (0x30E7B mit Argument 0, Datei
+    /// 0x30E89), + 1 nach jedem Termin (Datei 0x311C8); 5 Gruppentermine, dann drei K.-o.-Termine.
+    /// </summary>
+    public int WorldCupStage => WorldCup is not { Groups.Count: > 0 } wm
+        ? 0
+        : wm.Groups[0].Results.Count / (WorldCup.GroupSize / 2) + wm.Knockout.Count;
+
+    /// <summary>
+    /// „Transfer“ („Spieler in WM-Kader“) und „Training“ („WM Vorbereitung“) im Menü des Bundestrainers gesperrt (#580,
+    /// Nebenbefund Runde 13). [ORIGINAL] Datei 0x4509E–0x450A4: im Zug von Manager 5 Sperrbytes DGROUP 0x518C/0x518D = WM-Stufe
+    /// DGROUP 0x7AE, also ab dem ersten gespielten WM-Termin bis zur neuen Saison (DOSBox `file19_26`, 20.04.1994). Die Menüs
+    /// der Vereinsmanager sperrt das Original damit nicht (Zweig Datei 0x45057–0x4509C).
+    /// </summary>
+    public bool NationalSquadLocked => WorldCupStage > 0;
+
+    /// <summary>
     /// Ereignis „Aufstellung des Bundestrainers verlassen“ (Datei 0x41506–0x4151A: 0x952C mit DGROUP 0xA70E). [APPROX] Der
     /// Bildschirm meldet es nur, wenn der Besuch die Aufstellung geändert hat: Bildschirme ändern durch bloßes Öffnen keinen
     /// Spielzustand (AGENTS.md, E4). Unterschied zum Original nur, wenn sich seit der letzten Rechnung Spielerwerte geändert
