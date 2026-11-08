@@ -402,6 +402,10 @@ Je Punkt stehen Ziel, Dateien und Testidee oben. Zusammenfassung nach Spuren (Pl
 5. **Fehlende Aufnahmen** (Kandidaten): Leihende (A115, FILE42), Spieler mit Sperre über Spiele (A189), Nachricht mit mehr als zwei
    Zeilen bzw. mehreren Nachrichten (A321), Europapokal-Balken (A357), Linksklick in der Aufstellung (A364).
 
+## Teil 2 – Sitzungen 3–7 (FILE43–49A)
+
+In Arbeit (geplanter Lauf Claude Opus 5.5, PR folgt).
+
 ## Selbstprüfung
 
 `python3 tools/reverse-engineering/funktionskarte.py gamedata/em.exe --repo . --csv <scratch>` ohne `--write`, Base `59f98cf`
