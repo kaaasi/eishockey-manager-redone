@@ -109,15 +109,41 @@ public class TacticsClubScreenTests
 
         d.Click(up.X + 4, up.Y + 2);
         Assert.Equal(6, t.Attack(0, ScoreSituation.Tied));
-        d.Click(mode.X + 4, mode.Y + 2);
+        d.Click(mode.X + 4, mode.Y + mode.H - 2);
         Assert.Equal(TacticMode.Semi, t.AttackMode);
         d.Click(up.X + 4, up.Y + 2);
         Assert.Equal(7, t.Attack(0, ScoreSituation.Tied));
         d.Click(up.X + 4, up.Y + 2);
         Assert.Equal(7, t.Attack(0, ScoreSituation.Tied)); // Obergrenze 7
-        d.Click(mode.X + 4, mode.Y + 2);
+        d.Click(mode.X + 4, mode.Y + mode.H - 2);
         Assert.Equal(TacticMode.Manual, t.AttackMode);
         d.Click(up.X + 4, up.Y + up.H - 2);
         Assert.Equal(7, t.Attack(0, ScoreSituation.Tied));
+    }
+
+    /// <summary>
+    /// A373 (Review #643 R14RD1-01): Modusknöpfe: untere Hälfte = nächster Wert, obere = voriger, an den Enden kein Umlauf
+    /// (em.exe Datei 0x487A8–0x487B8, 0x48BD2–0x48C25).
+    /// </summary>
+    [GameDataFact]
+    public void Tactics_ModeArrows_LowerHalfIsNext_NoWrap()
+    {
+        var (d, _, club) = Start();
+        d.OpenTile("Taktik");
+        var t = club.Tactics;
+        var line = TacticsScreen.LineChangeArrows;
+        Assert.Equal(LineChangeMode.Automatic, t.LineChange);
+
+        d.Click(line.X + 4, line.Y + 2); // obere Hälfte am Anfang: unverändert
+        Assert.Equal(LineChangeMode.Automatic, t.LineChange);
+        d.Click(line.X + 4, line.Y + line.H - 2);
+        Assert.Equal(LineChangeMode.TwoLinesOnly, t.LineChange);
+        d.Click(line.X + 4, line.Y + 2);
+        Assert.Equal(LineChangeMode.Automatic, t.LineChange);
+
+        var last = Enum.GetValues<LineChangeMode>()[^1];
+        for (var i = 0; i < 10; i++)
+            d.Click(line.X + 4, line.Y + line.H - 2);
+        Assert.Equal(last, t.LineChange); // Ende: kein Umlauf
     }
 }

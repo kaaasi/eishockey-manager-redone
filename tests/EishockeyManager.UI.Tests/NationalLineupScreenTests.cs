@@ -216,7 +216,7 @@ public class NationalLineupScreenTests
         d.Click(TeamUi.SwitchButton.X + 5, TeamUi.SwitchButton.Y + 5);
         Assert.IsType<TacticsScreen>(d.Host.Current);
         d.Frame();
-        d.Click(TacticsScreen.EffortArrows.X + 2, TacticsScreen.EffortArrows.Y + 2);
+        d.Click(TacticsScreen.EffortArrows.X + 2, TacticsScreen.EffortArrows.Y + TacticsScreen.EffortArrows.H - 2);
         Assert.Equal(TacticMode.Semi, coach.Tactics.EffortMode);
         Assert.Equal(TacticMode.Auto, clubTactics.EffortMode);
         d.Click(TeamUi.SwitchButton.X + 5, TeamUi.SwitchButton.Y + 5);
