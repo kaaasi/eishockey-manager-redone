@@ -78,13 +78,18 @@ public static partial class MatchEngine
         // und nimmt immer den schnellen Weg (R9S-02, #350; Erreichen von 0x36B5D aus 0x31017 aus dem Aufrufmuster geschlossen,
         // Überlagerungssprung 0xF0:0x70 nicht aufgelöst – R9S-07, #358). Anschluss optionen-wirkung, Integration Runde 9.
         // Play-offs/Aufstiegsrunde (Code 1) ebenso, Schalter = Feld „Ergebnisse“ der Meldungsmatrix (0x37058–0x37085, #351).
-        // [APPROX] Das Original entscheidet je Spieltag (Merker 0x36FEA „ein Managerverein spielt“: dann laufen alle Paarungen
-        // des Spieltags durch die Minutenschleife), das Remake je Paarung – Entscheidung Nutzer 01.11.2026: so lassen, das
-        // Verhalten des Originals als Einstellung nach v1.0 (#349). Das Setzen des WM-Schalters im Bundestrainer-Abschnitt
+        // [APPROX] Das Original entscheidet je Spieltag (Merker 0x36FEA „ein Managerverein spielt“, einmal je Tag in
+        // GameState.ManagerDayFlag gebildet: dann laufen alle Paarungen des Spieltags durch die Minutenschleife; da 0x37028 vor
+        // den Codeprüfungen liegt, auch die WM-Endrunde – [APPROX], denn dass die WM-Endrunde 0x36B5D überhaupt erreicht, ist
+        // nur aus dem Aufrufmuster geschlossen, R9S-07, #358), das Remake
+        // je Paarung (Vorgabe, Entscheidung Nutzer 01.11.2026); das Verhalten des Originals gibt es als Einstellung
+        // GameOptions.ManagerDayMinuteLoop (R14-D4 = A, #349). Das Setzen des WM-Schalters im Bundestrainer-Abschnitt
         // (0x5541F/0x5575A, Sicherung 0x22C) ist nicht nachgebaut.
         var minuteLoop = competition == MatchCompetition.WorldCup && knockOut
             ? false
             : game.Options.CupMatchUsesMinuteLoop(competition);
+        if (GameState.ManagerDayFlag)
+            minuteLoop = true; // [ORIGINAL] Merker 0x36FEA: Managerverein spielt an diesem Tag → alle Paarungen Minute für Minute
         if (!managerMatch && competition is MatchCompetition.DebCup or MatchCompetition.EuropeanCup or MatchCompetition.WorldCup
                 or MatchCompetition.Playoff or MatchCompetition.Relegation
             && !minuteLoop)

@@ -28,10 +28,28 @@ public sealed partial class GameState
         if (record.NextLeague(club, Clubs[club].League) is not { } league)
             return null;
         int? first = null;
-        foreach (var c in NextLeagueSlots(league))
+        foreach (var c in NextLeagueOrder(record, league))
             if (first is null || Clubs[c].LeaguePenaltyMinutes < Clubs[first.Value].LeaguePenaltyMinutes)
                 first = c;
         return first;
+    }
+
+    /// <summary>
+    /// Vereine der Liga der nächsten Saison in Satzfolge; fehlt die am 29. April gebildete Folge (Spielstand vor Schema 38,
+    /// ungewöhnliche Ligagröße, nur synthetisch), gilt wie bei <see cref="LeagueSlots"/> die Indexfolge der Mitglieder.
+    /// </summary>
+    /// <remarks>
+    /// [APPROX] Rückfall auf die Indexfolge: Im Original gibt es immer eine Satzfolge (DGROUP 0x7C0 ff.); nur bei gleichen
+    /// Strafminuten entscheidet die Reihenfolge, daher ist die Abweichung auf Spielstände ohne gespeicherte Folge begrenzt (R13IS-02, #592).
+    /// </remarks>
+    private IEnumerable<int> NextLeagueOrder(SeasonRecord record, League league)
+    {
+        var slots = NextLeagueSlots(league);
+        if (slots.Count > 0)
+            return slots;
+        return Clubs
+            .Where(c => (c.Index < NewGame.SelectableClubs ? record.NextLeague(c.Index, c.League) : c.League) == league)
+            .Select(c => c.Index).Order();
     }
 
     /// <summary>

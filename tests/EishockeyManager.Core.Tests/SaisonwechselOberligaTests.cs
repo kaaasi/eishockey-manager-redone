@@ -232,4 +232,62 @@ public class SaisonwechselOberligaTests
             Assert.All(game.OutsidePlaces(), c => Assert.Null(game.Clubs[c].League));
         }
     }
+
+    [Theory]
+    [InlineData(League.Bundesliga)]
+    [InlineData(League.ZweiteLiga)]
+    [InlineData(League.Oberliga)]
+    public void StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague(League startLeague)
+    {
+        // #600-Rest (A112): Seit U15-a tauscht der gewählte Verein ohne Liga mit einem Zufallsplatz der START-Liga
+        // (Datei 0x29C78–0x29CF7, 0x36169), nicht mehr nur mit einem Oberligisten. Der Verdrängte nimmt den Platz des
+        // gewählten Vereins ein (hier 44) und rückt nie als Nachrücker nach.
+        var setup = new GameSetup { Duration = GameDuration.Unbegrenzt, EuropeAndWorldCup = true };
+        setup.Managers.Add(new ManagerSetup { Name = "M", Head = 0, ClubIndex = 44, StartLeague = startLeague });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, seed: 3);
+
+        Assert.Equal(startLeague, game.Clubs[44].League);
+        var displaced = Enumerable.Range(0, 36).Single(c => game.Clubs[c].League is null);
+        Assert.Equal(displaced, game.OutsidePlaces()[44 - GameState.FirstOutsidePlace]);
+        Assert.DoesNotContain(displaced, game.OutsidePlaces().Take(GameState.OutsideDrawPlaces));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StartSwap_TwoChosenClubsWithoutLeague_BothDisplacedOutside_MultiSeason(bool active)
+    {
+        // Mehrsaisonprobe (4 Wechsel): zwei Manager ohne Liga gewählt (Start-Liga Bundesliga). [APPROX] Welcher Verdrängte
+        // auf welchem Platz liegt, ist bei mehreren aus den Saisonrückblicken nicht ableitbar (Paarung nach Index); geprüft
+        // wird, dass beide Verdrängten draußen stehen, die Plätze eine Permutation bleiben und die Oberliga voll bleibt.
+        var setup = new GameSetup { Duration = GameDuration.Unbegrenzt, EuropeAndWorldCup = true };
+        setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 40, StartLeague = League.Bundesliga });
+        setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 44, StartLeague = League.Bundesliga });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, seed: 12);
+        var displaced = Enumerable.Range(0, 36).Where(c => game.Clubs[c].League is null).ToArray();
+        Assert.Equal(2, displaced.Length);
+        Assert.Equal(displaced.Order(), new[] { game.OutsidePlaces()[40 - 36], game.OutsidePlaces()[44 - 36] }.Order());
+
+        for (var season = 0; season < 4; season++)
+        {
+            for (var guard = 0; game.Phase != SeasonPhase.SeasonOver; guard++)
+            {
+                Assert.True(guard < 5000, "Saisonende nicht erreicht");
+                foreach (var m in game.Managers)
+                {
+                    m.Money = 10_000_000;
+                    TestSeason.KeepSquad(game, m);
+                }
+                if (active && !game.RegularSeasonOver)
+                    TestSeason.PlayMatchDay(game);
+                else
+                    game.Continue();
+            }
+            game.StartNextSeason();
+            var outside = game.OutsidePlaces();
+            Assert.Equal(12, outside.Distinct().Count());
+            Assert.All(outside, c => Assert.Null(game.Clubs[c].League));
+            Assert.Equal(GameState.ClubsPerLeague, game.LeagueClubs(League.Oberliga).Count());
+        }
+    }
 }

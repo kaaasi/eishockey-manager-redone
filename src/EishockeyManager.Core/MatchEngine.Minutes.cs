@@ -433,6 +433,7 @@ public static partial class OriginalMinutes
     /// </summary>
     public static MatchReport Play(LiveTeam home, LiveTeam away, MatchRules rules, Random random)
     {
+        MinuteLoopCalls++;
         var report = new MatchReport();
         PlayPeriod(home, away, rules, 1, 20, report, random);
         PlayPeriod(home, away, rules, 21, 40, report, random);
@@ -582,10 +583,19 @@ public static partial class OriginalMinutes
         return (h, g, shootout);
     }
 
+    /// <summary>Testhaken: Zahl der Aufrufe des schnellen Wegs 0x3731F je Thread (kein Spielzustand, nicht gespeichert).</summary>
+    [ThreadStatic]
+    public static int FastCupCalls;
+
+    /// <summary>Testhaken: Zahl der Aufrufe der Minutenschleife <see cref="Play"/> je Thread (kein Spielzustand).</summary>
+    [ThreadStatic]
+    public static int MinuteLoopCalls;
+
     /// <summary>Wie <see cref="FastCupResult"/>, zusätzlich der Gleichstand vor dem Penaltyschießen.</summary>
     public static (int Home, int Away, bool Shootout, int Tie) FastCupResultWithTie(MatchSide home, MatchSide away,
         bool homeIsClub, bool awayIsClub, bool worldCup, bool playoff, bool knockOut, Random random)
     {
+        FastCupCalls++;
         var si = home.Strength + (homeIsClub ? 6 : 0);
         var di = away.Strength + (awayIsClub ? 6 : 0);
         var k = Math.Min(4, Math.Abs(si / 3 - di / 3));

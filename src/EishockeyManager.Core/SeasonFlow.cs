@@ -117,7 +117,7 @@ public sealed partial class GameState
 
     private static int PlayoffDateIndex(int day) => SeasonCalendar.DaysOf(DayEvents.Playoffs).ToList().IndexOf(day);
 
-    private bool ManagerPlaysOn(int day) =>
+    internal bool ManagerPlaysOn(int day) =>
         ActiveManagers.Any(m => MatchOn(day, m.ClubIndex) is not null) || NationalCoachPlaysOn(day); // Bundestrainer: Spur wettbewerbe-weltkugel
 
     /// <summary>
@@ -169,7 +169,30 @@ public sealed partial class GameState
     /// <summary>Paket „mannschaft“: neue Saison hat begonnen (Alter, Verträge, Talente …).</summary>
     partial void OnNewSeasonTeam();
 
+    /// <summary>
+    /// [ORIGINAL] Merker „Managerverein spielt“ (em.exe Datei 0x36FEA–0x3700B, geprüft bei 0x37028; Sätze DGROUP 0xA729 + m
+    /// gelöscht 0x32AA3, gesetzt 0x545A6/0x547C7, zurückgesetzt 0x54FF3): wird <b>einmal je Tag</b> vor den ersten Spielen
+    /// gebildet und gilt nur innerhalb dieses Tages (statisch je Thread, damit nicht im Spielstand: SaveGame speichert alle Instanzfelder). Nur gesetzt, wenn
+    /// <see cref="GameOptions.ManagerDayMinuteLoop"/> an ist; <c>MatchEngine.PlayWithEvents</c> liest nur diesen Wert
+    /// (R14S-01, nicht je Paarung neu über <see cref="ManagerPlaysOn"/>, das mit dem Spielfortschritt kippt).
+    /// </summary>
+    [ThreadStatic]
+    internal static bool ManagerDayFlag;
+
     private void ProcessDay(int day, List<SeasonStep> steps)
+    {
+        ManagerDayFlag = false;
+        try
+        {
+            ProcessDayCore(day, steps);
+        }
+        finally
+        {
+            ManagerDayFlag = false;
+        }
+    }
+
+    private void ProcessDayCore(int day, List<SeasonStep> steps)
     {
         OnDayManager(day);
         CleanLineups();
@@ -189,6 +212,7 @@ public sealed partial class GameState
             return;
         }
         MarkShortHandedClubs(); // Spur heimspiel-statistik (#165): Wertung 0:2/2:0 vor den Spielen des Tages
+        ManagerDayFlag = Options.ManagerDayMinuteLoop && ManagerPlaysOn(day); // Merker vor den ersten Spielen des Tages (R14S-01)
 
         var events = SeasonCalendar.Events(day);
         if (day == SeasonCalendar.ClubSeasonEnd)
