@@ -26,18 +26,18 @@ public class TransferVertraegeKomplettTeil4ScreenTests
         Assert.Null(screen.Dialog);
 
         byte At(int px, int py) => d.Surface.Pixels[py * Surface.Width + px];
-        // #347 (R9T-P3-01): Sollwert als Zahl, nicht die Konstante des Bildschirms – Index 201 nach `oberflaeche_1100`/`1102`.
-        const byte hover = 201;
+        // #347 (R9T-P3-01): Sollwert als Zahl, nicht die Konstante des Bildschirms – Index 16 nach DOSBox `file40_05` (A382).
+        const byte hover = 16;
         Assert.Equal(hover, TransferScreen.HoverEntryColor);
         foreach (var x in new[] { TransferScreen.ListLeft, 250, TransferScreen.ListRight })
         {
             Assert.Equal(hover, At(x, y - 4));
             Assert.Equal(hover, At(x, y + 12));
-            Assert.Equal(198, At(x, y - 3)); // zweite Zeile der Trennlinie unverändert
-            Assert.Equal(198, At(x, y + 13));
+            Assert.NotEqual(198, At(x, y - 3)); // keine zweite Zeile der Trennlinie mehr (A382)
+            Assert.NotEqual(198, At(x, y + 13));
             Assert.NotEqual(17, At(x, y - 1)); // keine hellrote Linie über dem Namen
-            Assert.Equal(93, At(x, y - 4 - TransferScreen.EntryPitch)); // Linie über dem vorigen Eintrag bleibt hell
-            Assert.Equal(93, At(x, y + 12 + TransferScreen.EntryPitch));
+            Assert.Equal(31, At(x, y - 4 - TransferScreen.EntryPitch)); // Linie über dem vorigen Eintrag: einzeilig Index 31
+            Assert.Equal(31, At(x, y + 12 + TransferScreen.EntryPitch));
         }
     }
 }

@@ -71,7 +71,8 @@ public static class TeamUi
     /// <summary>
     /// Dialogfenster wie die Vertragsverhandlung im Video (ca. 10:25): Füllung 4, oben und links eine weiße Linie,
     /// unten und rechts eine dunkle, dazu 2 px Schlagschatten. Nicht der kb\2-Rahmen der großen Fenster.
-    /// [APPROX] Der Schatten ist einfarbig; das Original dunkelt den Hintergrund vermutlich ab (im Video nicht trennbar).
+    /// [ORIGINAL] Der Schatten ist einfarbig Index 6, auch über Listentext und Linien, kein Abdunkeln (DOSBox-Sitzung 2,
+    /// `file40_12` gegen `file40_13`: 460 von 464 Pixeln Index 6; A374).
     /// </summary>
     public static void DialogFrame(Surface s, Rect r)
     {

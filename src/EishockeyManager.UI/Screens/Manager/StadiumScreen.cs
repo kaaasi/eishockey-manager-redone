@@ -88,6 +88,8 @@ public sealed class StadiumScreen : Screen
     /// <summary>
     /// Bereiche im Stadionbild. Gastronomie, Kino, Bowlingbahn, Überdachung und Verkehrsanbindung aus den
     /// Mauspositionen im Video; [APPROX] Anzeigetafel und Sitzkomfort an den Tribünen angenommen.
+    /// [APPROX] Das Kino liegt seit der Tabelle (A323) bis y 39 hinauf; die Fläche blieb unverändert, weil der Treffer im Original
+    /// nicht belegt ist.
     /// </summary>
     public static readonly (StadiumFeature Feature, Rect Area)[] Hotspots =
     [
@@ -100,18 +102,31 @@ public sealed class StadiumScreen : Screen
         (StadiumFeature.Verkehrsanbindung, new Rect(250, 50, 70, 118)),
     ];
 
-    /// <summary>Teile aus kb\8 (Quelle, Ziel). Lage per Pixelvergleich mit kb\14 bestimmt bzw. [APPROX] auf den freien Flächen.</summary>
-    private static readonly Rect Strasse = new(0, 0, 68, 118);
-    private static readonly Rect Autobahn = new(68, 0, 75, 118);
-    private static readonly Rect Halle = new(0, 117, 143, 58);
-    private static readonly Rect Halboffen = new(143, 0, 143, 59);
-    private static readonly Rect Bowling = new(143, 59, 64, 57);
-    private static readonly Rect Restaurant = new(143, 115, 67, 56);
-    private static readonly Rect KinoKlein = new(143, 171, 55, 23);
-    private static readonly Rect KinoMittel = new(209, 87, 54, 23);
-    private static readonly Rect KinoGross = new(209, 59, 61, 28);
-    private static readonly Rect Imbiss = new(211, 110, 50, 28);
-    private static readonly Rect Kneipe = new(211, 138, 56, 40);
+    /// <summary>
+    /// [ORIGINAL] Teile des Stadionbilds aus kb\8: Das Original zeichnet sie aus einer Tabelle (em.exe Datei 0x3D904–0x3D9EB, DGROUP:
+    /// Ziel 0x4F3D, Größe 0x4F5B, Quelle 0x4F79, je Eintrag 2 Byte, Index 6 · Bereich + 2 · (Stufe − 1)). Stufe 0 zeichnet nichts;
+    /// Pixelprobe der Bilder file43_2, file43_7, file44_7, file44a_10, file44b_6 (0 abweichende Pixel im Bildbereich, Sitzung 3/7).
+    /// Verkehrsanbindung hat nur zwei Stufen (Straße, Autobahn).
+    /// </summary>
+    public readonly record struct PartEntry(Rect Source, int DestX, int DestY);
+
+    private static PartEntry E(int sx, int sy, int w, int h, int dx, int dy) => new(new Rect(sx, sy, w, h), dx, dy);
+
+    public static readonly Dictionary<StadiumFeature, PartEntry[]> PartTable = new()
+    {
+        [StadiumFeature.Verkehrsanbindung] = [E(0, 0, 66, 118, 244, 50), E(66, 0, 76, 118, 244, 50)],
+        [StadiumFeature.Gastronomie] = [E(211, 109, 50, 30, 25, 112), E(211, 139, 56, 39, 21, 105), E(143, 115, 68, 58, 13, 91)],
+        [StadiumFeature.Bowlingbahn] = [E(142, 60, 68, 55, 201, 94)],
+        [StadiumFeature.Ueberdachung] = [E(142, 0, 144, 60, 79, 57), E(0, 118, 143, 57, 80, 57)],
+        [StadiumFeature.Kino] = [E(144, 173, 52, 21, 29, 44), E(210, 86, 53, 23, 27, 42), E(210, 60, 58, 26, 24, 39)],
+    };
+
+    /// <summary>[ORIGINAL] Zeichenfolge der Bereiche (DGROUP 0x4F97 = 5, 6, 8, 0, 7): Kino zuletzt, Restaurant liegt vor der Halle.</summary>
+    public static readonly StadiumFeature[] PartOrder =
+        [StadiumFeature.Verkehrsanbindung, StadiumFeature.Gastronomie, StadiumFeature.Bowlingbahn, StadiumFeature.Ueberdachung, StadiumFeature.Kino];
+
+    /// <summary>[ORIGINAL] Maskenindex der Teile (Datei 0x3D92D: <c>mov al, 0xC0</c>, letztes Argument der Kopie 0x50:0xA79).</summary>
+    public const int PartMask = 0xC0;
 
     // ---- Farben (Palette von kb\14) --------------------------------------------------------
 
@@ -127,7 +142,6 @@ public sealed class StadiumScreen : Screen
     private const byte CostColor = 17;
     private const byte AffordableColor = 8;
     private const byte BoxColor = 240;
-    private const byte DialogText = 252;
 
     // ---- Zustand ---------------------------------------------------------------------------
 
@@ -173,23 +187,31 @@ public sealed class StadiumScreen : Screen
     private Core.Manager Me => Game.ActiveManager;
     private Stadium Stadium => Game.Finance(Me).Stadium;
 
-    public static readonly Rect YesButton = new(70, 128, 80, 9);
-    public static readonly Rect NoButton = new(170, 128, 80, 9);
-    private static readonly Rect Dialog = new(50, 84, 220, 60);
+    /// <summary>[ORIGINAL] Knöpfe „Ja.“ / „Nein.“ des Fragefensters Datei 0x4C246 (<see cref="OriginalDialog"/>).</summary>
+    public static readonly Rect YesButton = OriginalDialog.LeftButton;
+    public static readonly Rect NoButton = OriginalDialog.RightButton;
+
+    /// <summary>
+    /// [ORIGINAL] Ausbau-Frage: Fragefenster Datei 0x4C246 (Aufruf Datei 0x3E37A), Titel = Managername, Zeilen „Möchten Sie Ihr Stadion
+    /// ausbauen ?“, „Rabatt: r%“, „Bauzeit: ca. w Wochen“, Knöpfe „Ja.“/„Nein.“; Datei 0x3E2EF–0x3E37A; Bilder file43_5, file44_3, file44_5.
+    /// Nur die linke Maustaste zählt (Baustein), kein Klick daneben.
+    /// </summary>
+    private OriginalDialog? _dialog;
+    public OriginalDialog? Dialog => _dialog;
 
     public override void Update(InputState input)
     {
         if (_message.Update(input))
             return; // [ORIGINAL] 0x0C0B8: ohne Knopf und ohne Eingabe, schließt nach 75 Takten von selbst
-        if (_quote is { } quote)
+        if (_quote is { } quote && _dialog is { } dialog)
         {
-            // [ORIGINAL] Datei 0x3E389 (Ja) / 0x3E482 (Nein): Nein lässt die Baufirma beleidigt.
-            // [APPROX] Jeder andere Klick oder jede Taste gilt als „Nein“ (Dialog des Remakes).
-            var yes = input.Clicked(YesButton) || input.Pressed(Key.Enter);
-            if (yes || input.LeftClick || input.RightClick || input.Keys.Count > 0)
+            // [ORIGINAL] Datei 0x3E389 (Ja) / 0x3E482 (Nein): Nein lässt die Baufirma beleidigt; nur Klicks auf die Knöpfe antworten.
+            dialog.Update(input);
+            if (dialog.Result is { } answer)
             {
-                Game.AnswerConstruction(Me, quote, yes);
+                Game.AnswerConstruction(Me, quote, answer == 1);
                 _quote = null;
+                _dialog = null;
                 _selected = null;
             }
             return;
@@ -214,7 +236,12 @@ public sealed class StadiumScreen : Screen
         if (ticket != 0) Stadium.TicketPrice = Math.Clamp(Stadium.TicketPrice - ticket, Stadium.MinTicketPrice, Stadium.MaxTicketPrice);
         else if (level != 0) Step(-level);
         else if (_selected is { } sel && input.Clicked(LevelBox))
+        {
             _quote = Game.QuoteConstruction(Me, sel.Project, sel.Feature, _target);
+            if (_quote is { } q)
+                _dialog = new OriginalDialog(OriginalDialogKind.Question, Me.Name, "Möchten Sie Ihr Stadion ausbauen ?",
+                    $"Rabatt: {q.Discount}%", $"Bauzeit: ca. {q.Weeks} Wochen", "Ja.", "Nein.");
+        }
         else if (_hover is { } hover)
             Select(hover);
     }
@@ -306,41 +333,22 @@ public sealed class StadiumScreen : Screen
         s.HLine(0, ImageHeight, Surface.Width, PanelLine);
         DrawList(s);
         DrawRight(s);
-        if (_quote is not null)
+        if (_dialog is not null)
             DrawConfirm(s);
         _message.Draw(s, Assets);
     }
 
-    private void Part(Surface s, Rect source, int x, int y) => s.Blit(Assets.Image(Parts), source, x, y, transparent: 0);
-
     private void DrawBuildings(Surface s)
     {
         var st = Stadium;
-        switch (st.Level(StadiumFeature.Verkehrsanbindung))
+        foreach (var feature in PartOrder)
         {
-            case 1: Part(s, Strasse, 244, 50); break;
-            case 2: Part(s, Autobahn, 246, 50); break;
+            var level = st.Level(feature);
+            if (level <= 0)
+                continue;
+            var e = PartTable[feature][level - 1];
+            s.Blit(Assets.Image(Parts), e.Source, e.DestX, e.DestY, transparent: PartMask);
         }
-        switch (st.Level(StadiumFeature.Ueberdachung))
-        {
-            case 1: Part(s, Halboffen, 81, 54); break;
-            case 2: Part(s, Halle, 80, 56); break;
-        }
-        // [APPROX] Imbiß und Kneipe auf der Fläche des Restaurants, Kinos auf der Fläche oben links.
-        switch (st.Level(StadiumFeature.Gastronomie))
-        {
-            case 1: Part(s, Imbiss, 23, 118); break;
-            case 2: Part(s, Kneipe, 20, 108); break;
-            case 3: Part(s, Restaurant, 14, 92); break;
-        }
-        switch (st.Level(StadiumFeature.Kino))
-        {
-            case 1: Part(s, KinoKlein, 27, 57); break;
-            case 2: Part(s, KinoMittel, 27, 57); break;
-            case 3: Part(s, KinoGross, 24, 54); break;
-        }
-        if (st.Level(StadiumFeature.Bowlingbahn) > 0)
-            Part(s, Bowling, 202, 93);
     }
 
     private void DrawList(Surface s)
@@ -373,24 +381,16 @@ public sealed class StadiumScreen : Screen
         var shown = _hover ?? _selected;
         if (shown is { } choice)
         {
-            var weeks = Stadium.WeeksLeft(choice.Project, choice.Feature);
-            if (Stadium.IsUnderConstruction(choice.Project, choice.Feature) && weeks > 0)
+            // [ORIGINAL] Bereich im Bau: wie sonst „<Bereich> ausbauen“, kein „(Noch n Wochen)“, keine Stufenwahl, keine Kostenzeile
+            // (Maus über Gastronomie bei KNEIPEN im Bau, file44_6; Sitzung 3).
+            s.Text(mini, RightLabelX, HintY, Label(choice) + " ausbauen", ValueColor);
+            if (_selected == choice && CurrentCost() is { } cost)
             {
-                // [APPROX] Laufende Baustelle statt der Stufenwahl; Text wie Tabelle „Bau“ Datei 0x3D5CA–0x3D5E5.
-                s.Text(mini, RightLabelX, HintY, Label(choice), ValueColor);
-                s.Text(mini, RightLabelX + 2, 221, weeks == 1 ? "(Noch 1 Woche)" : $"(Noch {weeks} Wochen)", CostColor);
-            }
-            else
-            {
-                s.Text(mini, RightLabelX, HintY, Label(choice) + " ausbauen", ValueColor);
-                if (_selected == choice && CurrentCost() is { } cost)
-                {
-                    Arrows(s, _levelArrows);
-                    s.Outline(LevelBox, BoxColor);
-                    s.TextCentered(mini, LevelBox.X + LevelBox.W / 2, LevelBox.Y + 3, TargetText(choice), LevelColor);
-                    s.Text(mini, RightLabelX + 2, 221, "Kosten: " + GameState.FormatMoney(cost),
-                        Me.Money >= cost ? AffordableColor : CostColor);
-                }
+                Arrows(s, _levelArrows);
+                s.Outline(LevelBox, BoxColor);
+                s.TextCentered(mini, LevelBox.X + LevelBox.W / 2, LevelBox.Y + 3, TargetText(choice), LevelColor);
+                s.Text(mini, RightLabelX + 2, 221, "Kosten: " + GameState.FormatMoney(cost),
+                    Me.Money >= cost ? AffordableColor : CostColor);
             }
         }
 
@@ -401,10 +401,14 @@ public sealed class StadiumScreen : Screen
     /// <summary>
     /// ▲▼ aus kb\4 über <see cref="UI.ArrowPair"/>: [ORIGINAL] losgelassen Quelle (22 | 1 + 9 · j) 8 × 7 nach (x + 2 | y + 1),
     /// gedrückt (22 | 19 + 9 · j) (Datei 0x4BAD3–0x4BBFE); im Video orange mit dunkler Kante.
+    /// [ORIGINAL] Davor je Pfeil die Grundgrafik kb\4 (20 | 9 · j) 10 × 8 nach (x + 10 · j | y) (Datei 0x3DAE0–0x3DB29 Eintritt,
+    /// 0x3DFAB–0x3DFF4 Stufe); jeder Pfeil ist damit 10 Pixel breit (#597).
     /// </summary>
     private void Arrows(Surface s, ArrowPair pair)
     {
         var image = Assets.Image(ArrowPair.Image);
+        for (var j = 0; j < 2; j++)
+            s.Blit(image, new Rect(20, 9 * j, 10, 8), pair.First.X + 10 * j, pair.First.Y);
         pair.DrawReleased(s, image, -1);
         pair.DrawReleased(s, image, +1);
         pair.Draw(s, image);
@@ -414,21 +418,7 @@ public sealed class StadiumScreen : Screen
     private bool LevelArrowsShown => _selected is { } c && !(Stadium.IsUnderConstruction(c.Project, c.Feature) && Stadium.WeeksLeft(c.Project, c.Feature) > 0)
         && CurrentCost() is not null;
 
-    private void DrawConfirm(Surface s)
-    {
-        var mini = Assets.Mini;
-        var choice = _selected!.Value;
-        var quote = _quote!;
-        s.Fill(Dialog, Colors.Black);
-        s.Outline(Dialog, BoxColor);
-        s.TextCentered(mini, 160, Dialog.Y + 6, "Möchten Sie Ihr Stadion ausbauen ?", DialogText);
-        s.TextCentered(mini, 160, Dialog.Y + 16, $"{Label(choice)}: {TargetText(choice)}", LevelColor);
-        // [ORIGINAL] Texte „Bauzeit: ca. w Wochen“ (DGROUP 0xDE0) und „Rabatt: r%“ (Datei 0x3E1FE ff.).
-        s.TextCentered(mini, 160, Dialog.Y + 26, $"Bauzeit: ca. {quote.Weeks} Wochen", DialogText);
-        s.TextCentered(mini, 160, Dialog.Y + 34, $"Kosten: {GameState.FormatMoney(quote.Cost)}  Rabatt: {quote.Discount}%", CostColor);
-        s.TextCentered(mini, YesButton.X + YesButton.W / 2, YesButton.Y + 2, "Aber klar", ValueColor);
-        s.TextCentered(mini, NoButton.X + NoButton.W / 2, NoButton.Y + 2, "Kein Gedanke", ValueColor);
-    }
+    private void DrawConfirm(Surface s) => _dialog!.Draw(s, Assets);
 }
 
 /// <summary>Anmeldung im Hauptmenü (Manager → Stadion).</summary>
