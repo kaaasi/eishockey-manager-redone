@@ -16,7 +16,7 @@ Erwartet offen: GitHub-Suche nach offenen Issues bestätigt [#620](https://githu
 
 - Frische unabhängige Sitzung; `git fetch origin`, anschließend sauberer Checkout `b13046422b285404ad6ddbe7b5f1b18e22069eea`, `git status --porcelain` leer. `origin/main` entsprach beim Abruf dem Head. SDK `/workspace/.dotnet/dotnet --version`: `10.0.402`. `gamedata` verweist auf lokale Originaldaten; die aktuelle Referenz `origin/main` wurde nach `/tmp/r14-referenz/original/spielstaende` gelesen, `EM_SAVEGAMES` darauf gesetzt. Keine Originaldateien im Commit.
 - Vor dem Nachladen fehlte FILE44 in der älteren lokalen Referenzkopie; der erste gezielte Lauf scheiterte daher mit neun `FileNotFoundException` und ist **kein Produktbefund**. Nach Bereitstellung der aktuellen Spielstände Wiederholung am sauberen Head: `EM_REQUIRE_GAMEDATA=1 dotnet test tests/EishockeyManager.Core.Tests -c Release --no-build --filter 'FullyQualifiedName~PlayoffSemifinalTests|FullyQualifiedName~TagestaktSommerpauseReviewTests|FullyQualifiedName~File44_ToNewSeason_AccountFollowsFile46'`: **20 bestanden, 0 fehlgeschlagen, 0 übersprungen**.
-- R683: Der synthetische Test zeigt Halbfinale Sieger 1–8 gegen Sieger 3–6 sowie Sieger 2–7 gegen Sieger 4–5; auch die Tests für Import und Schema-43-Migration wurden im gefilterten Lauf ausgeführt. R688S-01: Sommerzähler 234–365 entsprechen 1. Mai bis 9. September, vier Monatsabschlüsse. Der Fall des fehlenden Tagesabschlusses am 30. April im normalen Ablauf ist durch diese Zählerprobe allein noch nicht vollständig unabhängig geprüft. R688S-03: Schuldenläufe einschließlich vier Saisonwechseln und Zwangsabstieg grün; das ist keine vollständige Widerlegung aller möglichen Entlassungspfade.
+- R683: Der synthetische Test zeigt Halbfinale Sieger 1–8 gegen Sieger 3–6 sowie Sieger 2–7 gegen Sieger 4–5; auch die Tests für Import und Schema-43-Migration wurden im gefilterten Lauf ausgeführt. R688S-01: Sommerzähler 234–365 entsprechen 1. Mai bis 9. September, vier Monatsabschlüsse. Zusätzlich bestätigte ein temporärer Test in der unveränderten Produktkopie bei einem normalen Neuspiel nach `Continue()` bis zum Saisonende `FinanceDay` = 29. April und `LoadCounterOffset` = 0 (1 bestanden). R688S-03: Schuldenläufe einschließlich vier Saisonwechseln und Zwangsabstieg grün; das ist keine vollständige Widerlegung aller möglichen Entlassungspfade.
 - FILE44 → FILE46: Originalstände 18.027.183 → 15.887.669 DM, Differenz **−2.139.514 DM**. In einer isolierten Kopie wurde die Toleranzbehauptung des Tests durch `Assert.Equal(-2_106_011, me.Money - start)` ersetzt: **1 bestanden**, Saat 4711. Remake also **−2.106.011 DM**; Differenz zum Original 33.503 DM. Der Testausgang ist kein Nachweis für die einzelnen Buchungskategorien.
 - Das Referenzbild `file46_2` wurde selbst angesehen: Saisonende 30. April, Konto 17.523.876 DM, Prämie 100.000 DM. Gegen FILE44 ergibt dies −603.307 DM vor den weiteren Saisonwechselbuchungen.
 - em.exe selbst: `objdump -D -b binary -m i8086 -Mintel` ab Datei `0x26F55` ergibt `mov word ptr ds:0x3b7,0xe9`, ab `0x564BC` `add word ptr ds:0x3b7,0x1`. Diese zwei Einzelstellen stützen das Setzen von 233 und das Weiterzählen auf 234; sie belegen für sich genommen weder die ganze Schleife noch alle neuen Fundstellen. Das projektinterne `disasm.py` scheiterte, weil `ndisasm` fehlt; `objdump` ist für einzelne bekannte Instruktionsgrenzen verfügbar.
@@ -43,9 +43,24 @@ Grüne Originalläufe und die folgenden gezielten Rückmutationen liefen getrenn
 | Nutzer 09.11.: keine Entlassung wegen Schulden; Zwangsabstieg | Gefilterte Tests `DeepDebts_NoDismissal_GameContinues` und `PassiveBundesligaManager_NeverDismissed_ForcedRelegationInstead` für beide Saaten grün; vollständige Prüfung aller Aufrufer und Originalstellen offen. |
 | Nutzer 09.11.: Ladeeigenheit des Markierungstags, C | [Import](https://github.com/kaaasi/eishockey-manager-redone/blob/b13046422b285404ad6ddbe7b5f1b18e22069eea/src/EishockeyManager.Core/OriginalImport.cs#L89) erkennt den Versatz; [Spielkern](https://github.com/kaaasi/eishockey-manager-redone/blob/b13046422b285404ad6ddbe7b5f1b18e22069eea/src/EishockeyManager.Core/GameState.LoadQuirk.cs#L48) setzt ihn und führt den Tagesabschluss aus. FILE44-Gegenbeispiel grün; vollständige Prüfung aller Fälle und Aufrufer offen. |
 | R14-D4 = A | `GameOptions.ManagerDayMinuteLoop` ist standardmäßig `false`, der Optionsbildschirm schaltet ihn, `SeasonFlow` setzt den Tagesmerker nur bei aktiver Option und Managerpaarung. Vollständige Prüfung aller Wettbewerbspfade und Gegenproben offen. |
-| R14-D1, D2, D3 | Einzelne Entscheidungen gegen den gesamten Code und Prozess noch nicht vollständig geprüft. |
-| E14-1, E14-2, E14-3, E14-4, E14-5 | Einzelprüfung noch offen; Prozessentscheidungen getrennt von ausführbarem Verhalten prüfen. |
-| L1, L2, L3, L4, L5, L6, L7, L8, L9, L10 | Je Entscheidung Umsetzung und Dateigrenzen noch nicht vollständig geprüft. |
+| R14-D1 = A | Offen: Spuren und Modelle gegen die tatsächlichen Abläufe prüfen. |
+| R14-D2 = B | Offen: HOK-Feldkarte und Import gegen Abgrenzung des Exports prüfen. |
+| R14-D3 = A | Offen: Aufnahme und Zuordnung der Folgeumsetzungen prüfen. |
+| E14-1 = A + C | Offen: Restpunkte, HOK-Import und Zurückstellung Livespiel prüfen. |
+| E14-2 = A | Offen: Ablauf der Auswertung und späterer Aufnahmen prüfen. |
+| E14-3 = A | Offen: geforderte Gesamtreview-Vollprüfung ist nicht abgeschlossen. |
+| E14-4 = A | Offen: Restfelder des Imports einzeln prüfen. |
+| E14-5 = C | Offen: fünf zurückgestellte Aufnahmefälle und `[APPROX]`-Markierungen prüfen. |
+| L1 | Offen: U15-c und Filter prüfen. |
+| L2 | Offen: Felder A046/A135/A380 und Migration prüfen. |
+| L3 | Offen: Aufstellung/Reihenlogik und Dateigrenzen prüfen. |
+| L4 | Offen: Taktik 375h und Dateigrenzen prüfen. |
+| L5 | Offen: WM-Sperre nur im Bundestrainer-Menü prüfen. |
+| L6 | Offen: Speichern-Dialog A338/A339 prüfen. |
+| L7 | Offen: Dateigrenzen, A012 und Feldbelege prüfen. |
+| L8 | Offen: A009 im Nationalteam prüfen. |
+| L9 | Offen: A362 als Abbild ohne Schemaänderung prüfen. |
+| L10 | Offen: A115 gemäß Originalcode prüfen. |
 | Weitere Entscheidungen aus den in „Aktuelle Runde“ genannten PR-Kommentaren | Kommentare #627, #628 und #649 gelesen; übrige genannte Kommentare und weitere Einzelentscheidungen noch nicht vollständig erhoben und gegen den Code geprüft. |
 
 **Offener Prüfbereich – Entscheidungen:** Die obige Tabelle ist keine vollständige Entscheidungsliste und ersetzt keine Prüfung je Entscheidung. Grund: PR-Kommentare und die vollständigen Codepfade wurden in dieser Sitzung noch nicht ausgewertet.
@@ -56,7 +71,15 @@ Grüne Originalläufe und die folgenden gezielten Rückmutationen liefen getrenn
 
 ### Standardprüfung
 
-Der vorgeschriebene vollständige Lauf `PATH=/workspace/.dotnet:$PATH NuGetAudit=false UseSharedCompilation=false DOTNET_PROCESSOR_COUNT=2 EM_SAVEGAMES=/tmp/r14-referenz/original/spielstaende tools/pruefen.sh` wurde auf dem sauberen Head gestartet. Ergebnisse werden nach Abschluss hier eingetragen. Der Socket-Test scheiterte zunächst in der Sandbox mit `PermissionError`; die tatsächlich ausgeführten Testläufe nutzten die vorgesehene Freigabe für den lokalen Socket. `NuGetAudit=false` wurde nur für diesen Lauf gesetzt.
+Der vorgeschriebene vollständige Lauf `PATH=/workspace/.dotnet:$PATH NuGetAudit=false UseSharedCompilation=false DOTNET_PROCESSOR_COUNT=2 EM_SAVEGAMES=/tmp/r14-referenz/original/spielstaende tools/pruefen.sh` wurde auf dem sauberen Head gestartet. Build und Lauf mit Originaldaten sind beendet; die beiden weiteren Läufe laufen noch. 
+
+| Lauf | bestanden | fehlgeschlagen | übersprungen |
+|---|---:|---:|---:|
+| Mit Originaldaten | 2625 | 0 | 0 |
+| Ohne Originaldaten | läuft | – | – |
+| Pflichtlauf ohne Daten | ausstehend | – | – |
+
+Der Socket-Test scheiterte zunächst in der Sandbox mit `PermissionError`; die tatsächlich ausgeführten Testläufe nutzten die vorgesehene Freigabe für den lokalen Socket. `NuGetAudit=false` wurde nur für diesen Lauf gesetzt.
 
 ### Akzeptierte `[APPROX]` und Annahmen
 
