@@ -87,7 +87,7 @@ public sealed record UnsolicitedOffer(Manager Manager, Player Player, Club Buyer
 public sealed partial class GameState
 {
     /// <summary>
-    /// Täglich im Zug jedes Managers (Tagesablauf 0x07169, Datei 0x07972–0x07AEF): bis zum Saisonende (Tageszähler &lt; 233)
+    /// Am Takttag im Lauf jedes Managers (Tagesablauf 0x07169, Datei 0x07972–0x07AEF; #678, R688-09): bis zum Saisonende (Tageszähler &lt; 233)
     /// je Kaderplatz ohne Leihe (+0x0C) und ohne Rücktritt (+0x18 Bit 0x80) der Wurf <see cref="UnsolicitedOfferRules.Roll"/>;
     /// ohne offene Meldung des Spielers (Pool +0x1E) → +0x09 |= 0x40, Verein nach <see cref="UnsolicitedOfferRules.Bidder"/>
     /// und die Meldung „… ist an … interessiert.“ (0x14CF:0x39, Vorlage DGROUP 0x29B7).

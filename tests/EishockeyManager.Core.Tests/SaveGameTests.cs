@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(44, SaveGame.SchemaVersion);
+        Assert.Equal(45, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -57,7 +57,8 @@ public class SaveGameTests
     // 43 Club._tableRank (A046) und Tore/Spiele je Wettbewerb am Player (A135), Spur kader-start Runde 14 Teil 2b (vorläufig 41).
     // 44 PlayoffSeries.HomeClub/AwayClub statt HigherSeed/LowerSeed (Fixlauf #676, R683-04; Abdruck neu nur durch die Umbenennung),
     // dazu Viertelfinale älterer Stände in Platzfolge (R683-01, Migration ohne neues Feld).
-    private const string ExpectedSchemaFingerprint = "C80E5F69D5D80155";
+    // 45 GameState.DayOpened: Tageswechsel vor dem Halt (#688, R688-04).
+    private const string ExpectedSchemaFingerprint = "EF1C0708EA4560A3";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

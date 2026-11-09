@@ -8,30 +8,39 @@ im Original das Programm); Bildschirme schreiben beim Öffnen nichts fort.
 
 Das Hauptmenü zeigt den Tag **T** des nächsten eigenen Spiels.
 
-- Alle Tage **vor T** sind genau einmal verarbeitet (`TrainedUntil == (Saison, T − 1)`).
-- Tag **T selbst ist noch nicht verarbeitet** – kein Training, keine Finanzen, keine Spiele dieses Tages.
+- Alle Tage **vor T** sind genau einmal verarbeitet, dazu der **Tageswechsel zu T** (#688, R688-04; `DayOpened`,
+  `TrainedUntil == (Saison, T)`, `FinanceDay == T`): Tagesabschluss, Takt 0x07169 mit Training und Markt, Neuaufstellung und
+  Listenwechsel der Tage mit Ereignis. `[ORIGINAL]` Datei 0x55204–0x552D3 (nach den Spielen von T − 1) und 0x54D68–0x54E7C liegen
+  vor dem Menü 0x44E22 (Datei 0x54EB2); die Spielstände des Originals sind dort gesichert (Zähler 0x3B7 = T + 1).
+- **Nicht** gerechnet sind 0x952C des Bundestrainers (Datei 0x54F9C, nach den Menüs), Schuldenprüfung und die Spiele von T.
 - Jetzt bedienen die Manager ihre Bildschirme. Öffnen und Schließen ändert nichts; nur ausdrückliche Handlungen
   (Plan zeichnen, Kauf, Vertrag, Bank …) wirken – und zwar sofort.
 
 ## „Tag weiter“ – Reihenfolge je Tag
 
-`Continue()` verarbeitet ab Tag T jeden Tag einzeln (`SeasonFlow.ProcessDay`) und hält am nächsten eigenen
-Spieltag wieder an:
+`Continue()` spielt Tag T (`SeasonFlow.ProcessDay`), rechnet den Tageswechsel zum nächsten Tag (`SeasonFlow.OpenDay` →
+`OnDayOpen`) und hält am nächsten eigenen Spieltag wieder an:
 
 | Schritt | Was | Wo |
 |---|---|---|
-| 1 | Finanzen bis einschließlich heute: Tages-, Wochen-, Monatswechsel (Werbung, Gehälter, Aktien …) | `GameState.Integration.cs` → `AdvanceFinanceTo(day)` |
-| 2 | **Tagesablauf 0x07169** nur am Takttag (Zähler 0x3B7 ≡ 0/4 mod 7, Mittwoch und Samstag; #678) je Manager: Markt (Verfall, Gebote, Angebote), Verträge, **Training** mit dem **jetzt gültigen Plan** | `GameState.Integration.cs` → `MainPathDailyRun(day)` (`GameState.DailyRun.cs`) |
-| 3 | Listenwechsel des Transfermarkts: an Tagen mit Ereignis ein Wurf je Managerzug (0x54E71) | `GameState.Integration.cs` → `MainPathListChanges(day)` |
-| 4 | Schulden prüfen, ggf. Entlassung | `SeasonFlow.CheckDebts` |
-| 5 | Ende der Vereinssaison / Saisonende | `SeasonFlow.ProcessDay` |
-| 6 | Spiele des Tages: Liga (mit Spieltagsabrechnung), Play-Offs/Aufstiegsrunde, weitere Wettbewerbe | `SeasonFlow.ProcessDay` |
+| 1 | Nach den Menüs: Länderwerte 0x952C (Hauptweg) bzw. Schritt (a) der WM-Schleife, Ernennung am Tag mit Markierung 255 | `GameState.Integration.cs` → `OnDayManager(day)` |
+| 2 | Schulden prüfen, ggf. Entlassung | `SeasonFlow.CheckDebts` |
+| 3 | Ende der Vereinssaison / Saisonende | `SeasonFlow.ProcessDay` |
+| 4 | Spiele des Tages: Liga (mit Spieltagsabrechnung), Play-Offs/Aufstiegsrunde, weitere Wettbewerbe | `SeasonFlow.ProcessDay` |
+| 5 | Tageswechsel zum nächsten Tag: Finanzen (Tages-, Wochen-, Monatswechsel; Stadionbau am Zähler ≡ 0), Wanderung | `GameState.Integration.cs` → `OnDayOpen(day)` |
+| 6 | **Tagesablauf 0x07169** nur am Takttag (Zähler 0x3B7 ≡ 0/4 mod 7, Mittwoch und Samstag; #678) je Manager: Markt (Verfall, Gebote, Angebote), Verträge, Heilung, **Training**, Tendenz, Aufstellung | `MainPathDailyRun(day)` (`GameState.DailyRun.cs`) |
+| 7 | Tage mit Ereignis: Neuaufstellung je Satz (0x54D9E), Listenwechsel ein Wurf je Managerzug (0x54E71) | `MainPathEventDayLineups`, `MainPathListChanges` |
+
+Nach dem 13. April ersetzt die WM-Schleife die Schritte 5–7 (`CupsNational.WorldCupLoop.cs`: (c) des Vortags, (d)). Ein neues
+Spiel, der erste Tag einer Saison und Spielstände vor Schema 45 holen den Tageswechsel vor den Spielen des Tages nach.
 
 Daraus folgt:
 
-- **Plan ändern → Training des Tages:** Ein am angezeigten Tag T geänderter Trainingsplan gilt schon für das Training
-  von Tag T (abgerechnet beim Weiterspielen). Test: `PassiveScreenTests.PlanChangedOnPausedDay_AppliesToThatDaysTraining`.
-- Der Transfermarkt reagiert auf einen Ligaspieltag am **nächsten verarbeiteten Takttag** (Schritt 2 läuft vor den Spielen).
+- **Training → Plan ändern:** Am angezeigten Takttag T ist dessen Training schon gerechnet; ein im Menü geänderter Plan gilt ab
+  dem nächsten Takt (wie im Original). Test: `PassiveScreenTests.PlanChangedOnPausedTrainingDay_AppliesFromNextTick`.
+- Der Transfermarkt reagiert auf einen Ligaspieltag am **nächsten Takttag**, vor dessen Menü.
+- `[APPROX]` Im Hot-Seat rechnet das Remake die Listenwechsel-Würfe aller Manager vor dem ersten Menü des Tages (Original: Wurf
+  von Manager i nach dem Menü von Manager i − 1).
 - Der Tageslauf wird **nur** aus `GameState.Integration.cs` aufgerufen (Hauptweg) bzw. aus der WM-Schleife
   (`CupsNational.WorldCupLoop.cs`).
   Neue Tages-, Wochen- oder Saisonereignisse dort anschließen, nie in einem `Screen.Enter()`.
@@ -42,7 +51,7 @@ Daraus folgt:
 
 - `OpeningEveryTile_OnPausedDay_ChangesNoGameState` – an einem angehaltenen Trainingstag alle Kacheln öffnen und
   schließen: vollständiger Zustandsabdruck (alle Felder: Geld, Finanzbuch, Spielerwerte, Markt, innerer Zustand der
-  Zufallsgeneratoren …) unverändert, Tag T weiterhin unverarbeitet.
+  Zufallsgeneratoren …) unverändert, Tag T weiterhin ungespielt (Tageswechsel gerechnet).
 - `AfterBrowsing_EachDayIsProcessedExactlyOnce` – zwei gleiche Spiele, nur in einem werden alle Kacheln geöffnet;
   nach zwei Spieltagen ist der Zustand identisch.
 

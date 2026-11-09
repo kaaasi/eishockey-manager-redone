@@ -277,7 +277,7 @@ Kontoleiste `TransferScreen.DrawAccountBar`; Tests `KaderTransferTeil4Tests`. Ke
 
 | Regel | Fundstelle em.exe | Umsetzung |
 |---|---|---|
-| Listenwechsel mit random(0, Managerzahl + 2) = 0 **im Zug jedes Managers** an Tagen mit Ereignis (Tagesbyte ∉ {0, 255}, Datei 0x54D5C/0x54D65), nicht in der WM-Schleife | 0x54E65–0x54E7C | `TransferMarket.ListChangeTurn` je Manager aus `MainPathListChanges` (#678; vorher einmal je Kalendertag); A256 |
+| Listenwechsel mit random(0, Managerzahl + 2) = 0 **im Zug jedes Managers** an Tagen mit Ereignis (Tagesbyte ∉ {0, 9, 255}, 9 gilt als 0, Datei 0x54D4C–0x54D65), nicht in der WM-Schleife, nicht beim Saisonwechsel (Liste bleibt, R688-05) | 0x54E65–0x54E7C | `TransferMarket.ListChangeTurn` je Manager aus `MainPathListChanges` (#678; vorher einmal je Kalendertag); A256 |
 | Angebot für eigene Spieler auf dem Markt im Tagesablauf, Gebotsverfall nur im Lauf von Manager 0, Markt-Verfall +0x13 > 0x38 → −10 | 0x072DD, 0x07215, 0x071BB (Tagesablauf 0x07169, Hauptweg nur am Zähler ≡ 0/4) | `TransferMarket.CatchUpManagerDay` aus `ManagerDailyRun` bzw. Schritt (c) der WM-Schleife (#678) |
 | Bietender Verein: 0x059B8 mit Europapokal-Schalter 0 (Vereine 0 … 42 ohne Manager, Stärke nahe der Spielerstärke) | 0x07364 | `UnsolicitedOfferRules.Bidder` (vorher beliebiger Ligaverein); A257 |
 | Kontoleiste: Kontostand, Schulden (0x57768), Anlagen (Aktien zum Kurs + Forderungen samt Sparbuch), Saldo = Konto + Anlagen − Schulden | 0x463CC | `GameState.TransferAccount`; A381, F109 |
@@ -297,7 +297,7 @@ Partner wie bei `TotalDebts` (Kredite zwischen zwei Managern verrechnet, Bank Sp
 | Anzeige der Tendenz (Wert − 30) / 13 → „Fallend./Konstant./Steigend.“; Balken (Wert − 30) · 100 / 38; Eingang des Spielerwerts | 0x41AE0, 0x041AC, 0x4A0A7 | `Player.TrendOf`, `PlayerInfoPopup.BarValues`, `PlayerValue.Inputs` |
 | Grundstärken des Listenwechsels aus Vereinsfeld 0x19/0x1B; bei Nationalteams (t = 1) setzt der Lader 0x2EF1B diese Felder aus der Ländertabelle DGROUP 0x4C4E (je −2), Deutschland ohne Bundestrainer neu gewürfelt (0x55506) | 0x4981E–0x4991C | `RollMarketStrengths` mit `GameState.NationalRatings` (vorher Datenbankstärke); A209 |
 
-**Tägliche Änderung der Tendenz** (gelesen, nicht umgesetzt – Inventur A134): Im Tagesablauf 0x07169 je Kaderplatz des Managers
+**Änderung der Tendenz je Takt** (umgesetzt mit #688, R688-07, Inventur A134; `GameState.AdvanceTrend` im Kaderteil von 0x07169): Im Tagesablauf 0x07169 je Kaderplatz des Managers
 am Zug (Datei 0x7B29–0x7C04, nach der Heilung 0x7C12): t = +0x0E; mit random(0, 3) ≠ 0 wird t um (+0x14 >> 4) & 7 erhöht
 (Bit 7 gesetzt) bzw. erniedrigt; dann zählt +0x14 & 0xF um eins herunter. Erreicht der Zähler 0, ruft 0x7BD4 erneut 0x4907A
 (neuer Wert und neues Steuerbyte, t verfällt); sonst wird t auf 30 … 68 begrenzt (0x7BEA) und nach +0x0E geschrieben.
@@ -306,7 +306,7 @@ am Zug (Datei 0x7B29–0x7C04, nach der Heilung 0x7C12): t = +0x0E; mit random(0
 Markt, Spiele und Mehrsaisonproben ihre Folgen); ein Kauf übernimmt Tendenz und Steuerbyte vom Markt-Platz (das Original legt
 beim Kauf 0x477E7 einen neuen Kaderplatz an, würfelt also neu, und kopiert den Markt-Platz darüber nur bei [bp−0x11] ≠ 0 oder
 einer Leihe, Datei 0x478CF–0x47907; Bedeutung von [bp−0x11] nicht geprüft), Startkader und ältere Spielstände ohne Wert (0 → Mitte der Stufe);
-die tägliche Änderung fehlt (A134). Die Frage an den Verkäufer zeigt das Fragefenster des Transferbildschirms mit dem Namen des
+die Änderung je Takt (A134, seit #688) überspringt Plätze ohne Wert oder Steuerbyte (0). Die Frage an den Verkäufer zeigt das Fragefenster des Transferbildschirms mit dem Namen des
 Verkäufers als Kopf, bis der Baustein 0x4C246 (Spur `ui-meldungen`) angeschlossen ist; ohne Oberfläche (`TransferMarket.Buy`)
 bleibt die simulierte Antwort. Länderwerte aus der Aufstellung eines Bundestrainers (0x952C) gehen in die Grundstärken nicht ein.
 

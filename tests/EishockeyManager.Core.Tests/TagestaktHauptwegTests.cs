@@ -182,7 +182,8 @@ public class TagestaktHauptwegTests
     /// #678: Schritt (c) der WM-Schleife (Datei 0x5565C, 0x07169 für Manager 0 nach den WM-Spielen der Tage 216, 220, 230) würfelt
     /// Angebote auf die Markt-Plätze von Manager 0 (Datei 0x072DD) und keine auf die von Manager 1; Verträge (Datei 0x073E3–0x07AEF)
     /// nur für die Kaderplätze von Manager 0 – die Spieler von Manager 1 bekommen in der Schleife weder Meldung noch Angebot.
-    /// Regressionstest (vorher rot: kein Angebotswurf in der Schleife; Verträge für alle Manager). Modus 4, Manager 0 wird
+    /// Regressionstest (vorher rot: kein Angebotswurf in der Schleife; Verträge für alle Manager – R688-02: mit Sperre 50 bei Manager 1
+    /// rot, Mutation „<c>AnnounceContractEnds(day)</c> in (c)“). Modus 4, Manager 0 wird
     /// Bundestrainer (die Zeitleiste hält an den WM-Tagen), Manager 1 in der 2. Liga.
     /// </summary>
     [Fact]
@@ -215,6 +216,10 @@ public class TagestaktHauptwegTests
             var p1 = Listable(game.Clubs[m1.ClubIndex]);
             Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, m0, p0));
             Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, m1, p1));
+            // R688-02 (Review #688): Sperre 50 für alle Spieler von Manager 1 – ohne sie bliebe die Mutation „Verträge aller Manager“
+            // in (c) grün (Sperre 0 zählt nicht, Meldung und Angebot fallen in den wenigen Takten selten).
+            foreach (var p in game.Clubs[m1.ClubIndex].Players)
+                p.NegotiationLock = 50;
             var squad1 = game.Clubs[m1.ClubIndex].Players.ToDictionary(p => p, p => (p.Notice, p.NegotiationLock, p.UnsolicitedOffer));
             for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
             {

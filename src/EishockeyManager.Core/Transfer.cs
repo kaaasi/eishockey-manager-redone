@@ -149,13 +149,20 @@ public sealed partial class TransferMarket
     public static long Price(Player p) => TransferRules.PriceThirds(p) / 3;
 
     /// <summary>
-    /// Neue Saison: alte Listings und Gebote verwerfen, Pool fortschreiben (<see cref="StartPoolSeason"/>), auf die Ligen umverteilen
-    /// (<see cref="DistributePoolAtSeasonChange"/>) und die Liste
-    /// wechseln (<see cref="ChangeList"/>, [ORIGINAL] Saisonstart 0x43A9F). [APPROX] Das Original behält die Markt-Plätze bis
-    /// zum Wechsel; das Remake gibt sie vorher frei, weil Listing-Identitäten nicht in die neue Saison reichen.
+    /// Neue Saison: Gebote verwerfen, Pool fortschreiben (<see cref="StartPoolSeason"/>), auf die Ligen umverteilen
+    /// (<see cref="DistributePoolAtSeasonChange"/>). #688 (R688-05): [ORIGINAL] Die Markt-Plätze bleiben: Der Saisonwechsel
+    /// (Datei 0x563AF–0x565A7) ruft den Listenwechsel 0x494EF nicht (Aufrufer nur Spielstart Datei 0x43A9F und Hauptweg 0x54E7C);
+    /// Belege FILE44 (14.04.1994) → FILE46/FILE44A (10.09.1994) und FILE22 → FILE23: Liste gleich, Alter + 1, nur der eigene
+    /// HOHENADL ist in den Kader zurückgekehrt (<see cref="ReturnListedPlayers"/>, vorher im Saisonhaken der Manager). Vorher
+    /// [APPROX] neue Liste per <see cref="ChangeList"/>.
+    /// [APPROX] Neue Listing-Identitäten (eine noch gehaltene Referenz aus der Vorsaison ist ungültig), Spieltag des Eintrags 0;
+    /// Sperren nach abgelehnten Geboten bleiben am Platz. Die Spieler der Markt-Plätze sind im Remake die Poolspieler selbst: Sie
+    /// altern mit dem Pool, Umbenennen und Laufbahnende treffen nur freie Plätze.
     /// </summary>
     public void StartSeason(GameState game)
     {
+        var kept = _listings.Where(l => l.FromPool && l.Seller is null && !l.IsFreeAgent
+                                        && SlotOf(l.Player) is { Owner: PoolOwner.Market }).ToList();
         // Neue Listing-Identitäten: Auch eine noch gehaltene Referenz aus der Vorsaison ist ungültig.
         var released = _freeAgents.ToArray();
         _freeAgents.Clear();
@@ -163,19 +170,29 @@ public sealed partial class TransferMarket
             Release(old.From, old.Player);
         _listings.Clear();
         _bids.Clear();
-        foreach (var slot in _pool.Where(s => s.Owner == PoolOwner.Market))
+        foreach (var slot in _pool.Where(s => s.Owner == PoolOwner.Market && !kept.Any(l => ReferenceEquals(l.Player, s.Player))))
             slot.Owner = PoolOwner.Free;
         UpdatedDay = game.PlayedMatchDays;
+        foreach (var listing in kept)
+            _listings.Add(new TransferListing
+            {
+                Player = listing.Player,
+                From = listing.From,
+                Price = listing.Price,
+                FromPool = true,
+                RejectedBy = listing.RejectedBy,
+            });
         // [APPROX] R204: Spieler, deren Vertrag in einem Managerverein endete, bleiben die Saison über verpflichtbar (höchstens
-        // StartListings). Im Original werden sie freie Poolspieler (Besitzer 6) und kommen nur über den Listenwechsel zurück.
-        foreach (var free in _freeAgents.Where(l => IsManaged(game, l.From)).Take(StartListings))
+        // StartListings, auf den freien der zehn Plätze). Im Original werden sie freie Poolspieler (Besitzer 6) und kommen nur über
+        // den Listenwechsel zurück.
+        foreach (var free in _freeAgents.Where(l => IsManaged(game, l.From))
+                     .Take(Math.Min(StartListings, Math.Max(0, TransferPoolRules.MarketSlots - kept.Count))))
             _listings.Add(free);
         StartPoolSeason(game, game.Random);
         // [ORIGINAL] 0x07C7E nach den neuen Namen (Spur kader-transfer, Teil 5); Teil des Tageslaufs 0x54C9F, den es im Modus
         // „nur Weltkugel“ nicht gibt (0x54CEE).
         if (!game.WorldOnly)
             DistributePoolAtSeasonChange(game, game.Random);
-        ChangeList(game, game.Random);
     }
 
     internal void Release(Club from, Player player)
@@ -212,8 +229,8 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>
-    /// Markttag in einem Zug (<see cref="AdvanceDay"/>) mit <see cref="UpdatedDay"/> = gespielte Ligaspieltage. Die Zeitleiste ruft
-    /// ihn seit #678 nicht mehr: Listenwechsel je Managerzug an Tagen mit Ereignis (<see cref="ListChangeTurn"/>, Datei
+    /// Markttag in einem Zug (<see cref="AdvanceDay"/>) mit <see cref="UpdatedDay"/> = gespielte Ligaspieltage. Nur Tests und
+    /// Werkzeuge (R688-09); die Zeitleiste ruft ihn seit #678 nicht mehr: Listenwechsel je Managerzug an Tagen mit Ereignis (<see cref="ListChangeTurn"/>, Datei
     /// 0x54E65–0x54E7C), Angebotswurf und Gebotsverfall nur im Tagesablauf 0x07169 am Takttag (<see cref="CatchUpManagerDay"/>).
     /// </summary>
     public void CatchUp(GameState game)

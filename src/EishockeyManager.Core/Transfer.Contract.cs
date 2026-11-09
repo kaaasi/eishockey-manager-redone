@@ -144,7 +144,7 @@ public sealed partial class GameState
         (Phase != SeasonPhase.SeasonOver && HasPendingRenewals ? ContractRules.SeasonMatchDays : PlayedMatchDays) + 1);
 
     /// <summary>
-    /// Täglich (Tagesablauf 0x07169, Datei 0x76E5–0x76F6): Verhandlungssperren der Spieler aller Manager zählen um einen Tag
+    /// Je Lauf von 0x07169 am Takttag (Datei 0x76E5–0x76F6; #678, R688-09): Verhandlungssperren der Spieler des Managers zählen um eins
     /// herunter; Sperren nach abgelehnten Geboten lösen. Gerufen aus <see cref="AnnounceContractEnds"/>.
     /// </summary>
     private void AdvanceNegotiationLocks(Manager? only = null)

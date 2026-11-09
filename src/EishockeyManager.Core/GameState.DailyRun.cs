@@ -1,38 +1,47 @@
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Tagesablauf 0x07169 des Originals (Training, Markt, Verträge eines Managers) und Listenwechsel 0x494EF im Hauptweg (#678).
+/// Tagesablauf 0x07169 des Originals (Training, Markt, Verträge eines Managers), Listenwechsel 0x494EF im Hauptweg (#678) und die
+/// Sommerpause des Saisonwechsels (#688, R688-03).
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Selbst nachgelesen (<c>tools/reverse-engineering/disasm.py gamedata/em.exe 0x551F0 0x552E0</c>, <c>… 0x07169 0x07C12</c>,
-/// <c>… 0x54D38 0x54EF4</c>):
+/// <c>… 0x54D38 0x54EF4</c>, <c>… 0x56460 0x565B0</c>):
 /// <list type="bullet">
-/// <item>Hauptweg nach den Spielen: Datei 0x55204 zählt DGROUP 0x3B7 weiter, Datei 0x55253–0x55288 prüft den neuen Stand ≡ 0 oder
-///   ≡ 4 (mod 7) (Zähler + 3 ≡ 0); nur dann Talentsuche 0x06FA5, Wanderung 0x9D1B und je Manager (DGROUP 0xA70E = 0 … Zahl − 1)
-///   0x07169 (Datei 0x552A6), am Stand ≡ 0 danach der Stadionbau 0x3D316 (Datei 0x552C3). Im Remake der Tageslauf
-///   <c>OnDayManager(e)</c> mit dem Zähler <see cref="DayCounter.Of"/>(e) = e + 1: Takt an den Tagen e ≡ 3, 6 (mod 7), Mittwoch und
-///   Samstag (Tag 0 = Sonntag).</item>
+/// <item>Hauptweg nach den Spielen von Tag e − 1: Datei 0x55204 zählt DGROUP 0x3B7 weiter (neuer Stand e + 1 =
+///   <see cref="DayCounter.Of"/>(e)), je Manager Tagesabschluss 0x3ED01/0x3F833 (Datei 0x5522B/0x55230), dann prüft Datei
+///   0x55253–0x55288 den Stand ≡ 0 oder ≡ 4 (mod 7) (Zähler + 3 ≡ 0); nur dann Talentsuche 0x06FA5, Wanderung 0x9D1B und je Manager
+///   (DGROUP 0xA70E = 0 … Zahl − 1) 0x07169 (Datei 0x552A6), am Stand ≡ 0 danach der Stadionbau 0x3D316 (Datei 0x552C3). Erst
+///   danach folgen am Tag e die Neuaufstellungen der Tage mit Ereignis und die Managerzüge mit den Menüs. Im Remake ist das der
+///   Tageswechsel <c>OnDayOpen(e)</c>, den die Zeitleiste vor dem Halt rechnet (#688, R688-04): Takt an den Tagen e ≡ 3, 6 (mod 7),
+///   Mittwoch und Samstag (Tag 0 = Sonntag), jeweils vor deren Menüs.</item>
 /// <item>0x07169 für Manager i: nur bei i = 0 (Datei 0x0718F–0x07197) je Markt-Platz Markt-Verfall (0x071BB), Lösen der Sperre
-///   (0x071CC) und Gebotsverfall (0x07215–0x0726A); für jeden Manager der Angebotswurf auf die Markt-Plätze mit Pool +0x1A = i
-///   (0x0727C–0x073CE), bis Zähler 233 die Verträge seiner Kaderplätze (0x073E3–0x07AEF), dann je Kaderplatz Heilung 0x07C12 und
-///   Training 0x0659C (0x07AF2–0x07C04), Aufstellungsautomatik 0x426BC (0x07C07).</item>
-/// <item>Listenwechsel 0x494EF: im Zug jedes Managers (Schleife Datei 0x54E3F–0x54EF4, Wurf 0x54E65–0x54E7C random(0, Zahl + 2) = 0),
-///   vor seinem Hauptmenü 0x44E22. Tage mit Tagesbyte 0 (9 gilt als 0) oder 255 springen bei Datei 0x54D5C/0x54D65 nach 0x55073
-///   und überspringen die Züge samt Wurf; die WM-Schleife (Datei 0x55570–0x55740) und Modus 1 (Datei 0x54D38) rufen ihn nicht.
-///   Weitere Aufrufer: nur der Saisonstart (Datei 0x437D5).</item>
+///   (0x071CC) und Gebotsverfall (0x07215–0x0726A); für jeden Manager je Markt-Platz mit Pool +0x1A = i die Heilung 0x07C12 (0x072CB)
+///   und der Angebotswurf (0x072DD); bis Zähler 233 die Verträge seiner Kaderplätze (0x073E3–0x07AEF), dann die Trainingskosten
+///   (0x07AF2) und je Kaderplatz Heilung 0x07C12 (0x07B4E), Training 0x0659C (0x07B5E) und Tendenz (0x07B64–0x07BFC),
+///   Aufstellungsautomatik 0x426BC (0x07C07). Die Schleife läuft für jeden Platz 0 … [0x386] − 1, auch für entlassene Manager.</item>
+/// <item>Tage mit Ereignis (Tagesbyte ∉ {0, 9, 255}): je Satz 0 … 5 (Manager und Bundestrainer) 0x426BC (Datei 0x54D9E), dann je
+///   Managerzug der Listenwechsel 0x494EF (Schleife Datei 0x54E3F–0x54EF4, Wurf 0x54E65–0x54E7C random(0, Zahl + 2) = 0) vor dem
+///   Hauptmenü 0x44E22 (0x54EB2). Tage mit Tagesbyte 0 (9 gilt als 0) oder 255 springen bei Datei 0x54D5C/0x54D65 nach 0x55073;
+///   die WM-Schleife (Datei 0x55570–0x55740) und Modus 1 (Datei 0x54D38) rufen den Listenwechsel nicht. Weiterer Aufrufer von
+///   0x494EF: nur der Spielstart (Datei 0x437D5, Aufruf 0x43A9F); der Saisonwechsel behält die Liste (R688-05).</item>
+/// <item>Sommerpause (Datei 0x56476–0x56598): nach dem Saisonende zählt Datei 0x564BC den Zähler weiter, dann je Kalendertag (Datum
+///   + 1, Datei 0x564DB) je Manager der Stadionbau bei Zähler ≡ 0 (Datei 0x564F5–0x5650D), der Tagesabschluss 0x3ED01 (0x56512) und
+///   die Heilung 0x07C12 je Kaderplatz (0x5653C), danach Zähler + 1 (0x56566) – bis das Datum der 9. September ist (Tag DGROUP
+///   0x5A20 = 9, Monat 0x5A1C = 8, Datei 0x56570–0x56593).</item>
 /// </list>
 /// </remarks>
 public sealed partial class GameState
 {
     /// <summary>
-    /// Takttag des Hauptwegs für den Tageslauf <c>OnDayManager(day)</c>: Zähler <see cref="DayCounter.Of"/>(day) ≡ 0 oder 4 (mod 7).
+    /// Takttag des Hauptwegs für den Tageswechsel <c>OnDayOpen(day)</c>: Zähler <see cref="DayCounter.Of"/>(day) ≡ 0 oder 4 (mod 7).
     /// [ORIGINAL] Datei 0x55253–0x55288 (siehe Klassenkommentar).
     /// </summary>
     public static bool IsDailyRunDay(int day) => MatchEngine.IsDriftDay(DayCounter.Of(day));
 
     /// <summary>
-    /// Tag mit Listenwechsel-Wurf in den Managerzügen? [ORIGINAL] Hauptweg (nicht Modus 1, nicht Eintrittstag oder Tage der
-    /// WM-Schleife), Tagesbyte ∉ {0, 9, 255} (Datei 0x54D4C–0x54D65).
+    /// Tag mit Ereignis im Hauptweg (Neuaufstellung je Satz, Listenwechsel-Wurf in den Managerzügen)? [ORIGINAL] nicht Modus 1,
+    /// nicht Eintrittstag oder Tage der WM-Schleife, Tagesbyte ∉ {0, 9, 255} (Datei 0x54D4C–0x54D65).
     /// </summary>
     public bool IsListChangeDay(int day)
     {
@@ -43,8 +52,9 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Hauptweg: am Takttag 0x07169 je Manager in Managerreihenfolge (Datei 0x55298–0x552D3). [APPROX] Entlassene Manager
-    /// überspringt das Remake (sie haben keinen Verein mehr); der Gebotsverfall bleibt an Manager 0 gebunden.
+    /// Hauptweg: am Takttag 0x07169 je Manager in Managerreihenfolge (Datei 0x55298–0x552D3), auch für entlassene Manager (#688,
+    /// R688-06): Markt-Teil (bei Platz 0 Verfall, Lösen der Sperre und Gebotsverfall) wie im Original. [APPROX] Kaderplätze und
+    /// Training hat ein entlassener Manager im Remake nicht mehr (er hat keinen Verein).
     /// </summary>
     private void MainPathDailyRun(int day)
     {
@@ -52,44 +62,197 @@ public sealed partial class GameState
         if (!IsDailyRunDay(day))
             return;
         foreach (var manager in Managers.ToList())
-            if (!manager.Dismissed)
-                ManagerDailyRun(day, manager);
+            ManagerDailyRun(day, manager);
     }
 
     /// <summary>
     /// 0x07169 im Hauptweg für einen Manager: Markt (<see cref="DailyRunMarket"/>), Verträge (<see cref="AnnounceContractEnds"/> nur
-    /// für ihn), Training seiner Kaderplätze (<see cref="TrainManager"/>). [APPROX] Heilung und Aufstellungsautomatik rechnet das
-    /// Remake im Tageslauf für alle Vereine (<see cref="HealInjuries"/> davor, <see cref="ApplyAutoLineups"/> danach).
+    /// für ihn; bei einem entlassenen Manager nur das Lösen der Sperre von Platz 0), Heilung, Training, Tendenz und Aufstellung seiner
+    /// Kaderplätze (<see cref="ManagerSquadRun"/>).
     /// </summary>
     private void ManagerDailyRun(int day, Manager manager)
     {
-        DailyRunMarket(manager);
+        DailyRunMarket(day, manager);
         AnnounceContractEnds(day, manager);
-        TrainManager(manager);
+        if (!manager.Dismissed)
+            ManagerSquadRun(day, manager);
     }
 
     /// <summary>
-    /// Markt-Teil von 0x07169: für Manager 0 der Markt-Verfall (Datei 0x071BB, <see cref="MarketDecayAbove"/>), dann Gebotsverfall
-    /// und Angebotswurf (<see cref="TransferMarket.CatchUpManagerDay"/>: Verfall nur Manager 0, Wurf nur auf seine Plätze).
-    /// [APPROX] Das Lösen der Sperre (0x071CC) liegt im Remake bei den Verträgen (<see cref="AnnounceContractEnds"/>, eigene
-    /// Zufallsquelle). Untergrenze 50 des Verfalls wie in der WM-Schleife (R14NT4N-03).
+    /// Markt-Teil von 0x07169: für Manager 0 der Markt-Verfall (Datei 0x071BB, <see cref="MarketDecayAbove"/>), dann Heilung der
+    /// eigenen Markt-Plätze (Datei 0x072CB), Gebotsverfall und Angebotswurf (<see cref="TransferMarket.CatchUpManagerDay"/>: Verfall
+    /// nur Manager 0, Wurf nur auf seine Plätze). [APPROX] Das Lösen der Sperre (0x071CC) liegt im Remake bei den Verträgen
+    /// (<see cref="AnnounceContractEnds"/>, eigene Zufallsquelle). Untergrenze 50 des Verfalls wie in der WM-Schleife (R14NT4N-03).
     /// </summary>
-    private void DailyRunMarket(Manager manager)
+    private void DailyRunMarket(int day, Manager manager)
     {
         if (Managers.Count > 0 && Managers[0] == manager)
             foreach (var listing in TransferMarket.Listings)
                 if (listing.Player.Strain > MarketDecayAbove)
                     listing.Player.Strain = Math.Max(listing.Player.Strain - MarketDecay, TrainingRules.MinStrain);
+        // #688 (R688-07): [ORIGINAL] Heilung je Markt-Platz mit Pool +0x1A = Manager vor dessen Angebotswurf (Datei 0x072A0–0x072CB).
+        if (!manager.Dismissed && PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
+            foreach (var listing in TransferMarket.OwnListingsOutsideSquad(Clubs[manager.ClubIndex]))
+                PlayerInjuries.Heal(listing.Player);
         TransferMarket.CatchUpManagerDay(this, manager);
     }
 
-    /// <summary>Hauptweg: an Tagen mit Ereignis je Managerzug der Wurf des Listenwechsels (<see cref="IsListChangeDay"/>).</summary>
+    /// <summary>
+    /// Kaderteil von 0x07169 (Datei 0x07AF2–0x07C07) für einen Manager im Verein: Heilung je Kaderplatz (0x07C12 an Tagen mit Zähler
+    /// ≡ 0 mod 7, danach die Neuaufstellung, Datei 0x07C77), Training mit Kosten (<see cref="TrainManager"/>), Tendenz
+    /// (<see cref="AdvanceTrend"/>), am Ende die Aufstellungsautomatik (Datei 0x07C07). [APPROX] Heilung, Training und Tendenz je Platz
+    /// nacheinander statt verschränkt: Sie wirken nur auf den eigenen Platz, das Training zieht aus der Hauptquelle, die Tendenz aus
+    /// <see cref="TrendRandom"/>.
+    /// </summary>
+    private void ManagerSquadRun(int day, Manager manager)
+    {
+        var club = Clubs[manager.ClubIndex];
+        if (PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
+            HealSquad(club);
+        TrainManager(manager);
+        foreach (var p in club.Players)
+            AdvanceTrend(p, TrendRandom);
+        club.ApplyAutoLineup();
+    }
+
+    private static void HealSquad(Club club)
+    {
+        var healed = false;
+        foreach (var p in club.Players)
+            healed |= PlayerInjuries.Heal(p);
+        if (healed)
+            PlayerInjuries.RefillLineup(club);
+    }
+
+    /// <summary>
+    /// Heilung der Kaderplätze aller Manager am Heiltag (Zähler <see cref="DayCounter.Of"/>(day) ≡ 0 mod 7). [ORIGINAL] WM-Schleife
+    /// Schritt (d), Datei 0x556D2–0x55712 (je Manager, je Kaderplatz 0x07C12).
+    /// </summary>
+    private void HealManagerSquads(int day)
+    {
+        if (!PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
+            return;
+        foreach (var club in ManagedClubs())
+            HealSquad(club);
+    }
+
+    /// <summary>
+    /// Heilung der Spieler ohne Kaderplatz eines Managers: Computervereine und Vertragslose. [APPROX] Das Original führt Verletzungen
+    /// nur in den Kaderplätzen der Manager und des Markts (0x07C12 hat nur die Aufrufer 0x07169 und 0x54C9F); im Remake behalten
+    /// Spieler, die verletzt einen Managerkader verlassen, ihre Verletzung und heilen am Heiltag wie bisher.
+    /// </summary>
+    private void HealUnmanaged(int day)
+    {
+        if (!PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
+            return;
+        var managed = ManagedClubs().ToHashSet();
+        foreach (var club in Clubs.Where(c => !managed.Contains(c)))
+        {
+            foreach (var p in club.Players)
+                PlayerInjuries.Heal(p);
+            foreach (var listing in TransferMarket.OwnListingsOutsideSquad(club))
+                PlayerInjuries.Heal(listing.Player);
+        }
+        foreach (var p in TransferMarket.FreeAgents)
+            PlayerInjuries.Heal(p);
+    }
+
+    private IEnumerable<Club> ManagedClubs() =>
+        Managers.Where(m => !m.Dismissed).Select(m => Clubs[m.ClubIndex]).Distinct();
+
+    /// <summary>
+    /// Tendenz eines Kaderplatzes im Tagesablauf (#688, R688-07, Inventur A134). [ORIGINAL] Datei 0x07B64–0x07BFC: t = +0x0E; mit
+    /// random(0, 3) ≠ 0 (0x07B77) wird t um (+0x14 &gt;&gt; 4) &amp; 7 erhöht (Bit 7 gesetzt) bzw. erniedrigt; das untere Halbbyte von
+    /// +0x14 zählt um eins herunter (Bytearithmetik, Datei 0x07BB1–0x07BC8). Erreicht es 0, zieht 0x4907A Wert und Steuerbyte neu
+    /// (Datei 0x07BD4, <see cref="Player.RollTrend"/>); sonst wird t auf 30 … 68 begrenzt (0x4BD35, Datei 0x07BEA) und geschrieben.
+    /// [APPROX] Zufall aus <see cref="TrendRandom"/> wie beim Ziehen (Spur kader-transfer Teil 4); Plätze ohne bekannten Wert oder ohne
+    /// Steuerbyte (0: Startkader, ältere Spielstände) behalten ihre Stufe – im Original hat jeder Kaderplatz beide Werte (0x4907A).
+    /// </summary>
+    public static void AdvanceTrend(Player p, Random random)
+    {
+        if (p.TrendScore == 0 || p.TrendControl == 0)
+            return;
+        var t = p.TrendScore;
+        var control = p.TrendControl;
+        if (TransferRules.Random16(random, 0, 3) != 0)
+        {
+            var step = (control >> 4) & 7;
+            t += (control & 0x80) != 0 ? step : -step;
+        }
+        var days = (control & 0x0F) - 1;
+        control = ((control & 0xF0) + days) & 0xFF;
+        if (days == 0)
+        {
+            p.RollTrend(random);
+            return;
+        }
+        p.SetTrendScore(Math.Clamp(t, 30, 68), control);
+    }
+
+    /// <summary>
+    /// Hauptweg, Tage mit Ereignis vor den Managerzügen: je Satz die Neuaufstellung (Datei 0x54D68–0x54DBA; 0x426BC bei 0x54D9E, nur
+    /// mit „automatisch aufstellen“, <see cref="Club.ApplyAutoLineup"/>). [APPROX] Satz 5 (Bundestrainer, nur bei 0x9EDA &lt; 0x3F:
+    /// Neuaufstellung mit der gesicherten Einstellung und 0x952C(5, 0) bei 0x54DAA) rechnet das Remake nach den Menüs vor 0x952C(5, 1)
+    /// (<c>OnDayManager</c>, A009 Runde 14 Teil 3): Einen Bundestrainer gibt es im Hauptweg nur in Tests (Ernennung erst am 13. April,
+    /// danach WM-Schleife).
+    /// </summary>
+    private void MainPathEventDayLineups(int day)
+    {
+        if (IsListChangeDay(day))
+            ApplyAutoLineups();
+    }
+
+    /// <summary>
+    /// Hauptweg: an Tagen mit Ereignis je Managerzug der Wurf des Listenwechsels (<see cref="IsListChangeDay"/>). [APPROX] Im
+    /// Hot-Seat rechnet das Remake die Würfe aller Manager vor dem ersten Menü des Tages; im Original fällt der Wurf von Manager i
+    /// erst nach dem Menü von Manager i − 1 (Datei 0x54E3F–0x54EF4).
+    /// </summary>
     private void MainPathListChanges(int day)
     {
         if (!IsListChangeDay(day))
             return;
         for (var i = 0; i < Managers.Count; i++)
             TransferMarket.ListChangeTurn(this);
+    }
+
+    /// <summary>Datum, an dem die Sommerpause endet. [ORIGINAL] Datei 0x56570–0x56593: Tag DGROUP 0x5A20 = 9, Monat 0x5A1C = 8.</summary>
+    public const int SummerBreakEndMonth = 9, SummerBreakEndDay = 9;
+
+    /// <summary>
+    /// Tageszähler der Sommerpause, je Kalendertag nach dem Saisonende bis zum 9. September (#688, R688-03). [ORIGINAL] Datei 0x564BC
+    /// zählt nach dem Saisonende (Zähler <see cref="DayCounter.Of"/>(<see cref="SeasonCalendar.SeasonEnd"/>)) einmal weiter, die
+    /// Schleife Datei 0x564D2–0x56593 rechnet dann je Datum mit dem Zähler und zählt danach weiter (Datei 0x56566). Ergebnis: 233 … 365
+    /// für den 30. April bis 9. September.
+    /// </summary>
+    public static IEnumerable<int> SummerBreakCounters()
+    {
+        var date = SeasonCalendar.LayoutDate(SeasonCalendar.SeasonEnd);
+        var counter = DayCounter.Of(SeasonCalendar.SeasonEnd) + 1;
+        do
+        {
+            date = date.AddDays(1);
+            yield return counter++;
+        }
+        while (date.Month != SummerBreakEndMonth || date.Day != SummerBreakEndDay);
+    }
+
+    /// <summary>
+    /// Sommerpause des Saisonwechsels (#688, R688-03): je Tageszähler ≡ 0 (mod 7) der Stadionbau aller Manager (0x3D316, Datei
+    /// 0x5650D; <see cref="WeeklyFinances"/>) und die Heilung ihrer Kaderplätze (0x07C12, Datei 0x5653C, prüft selbst Zähler ≡ 0).
+    /// [APPROX] Der tägliche Tagesabschluss 0x3ED01 der Sommerpause (Datei 0x56512: Zinsen, Werbung, Monatsabschlüsse Mai bis August)
+    /// ist nicht angeschlossen (Restlücke, eigener Befund); die Sommerpause läuft im Remake im Saisonhaken der Manager nach dem neuen
+    /// Finanzbuch, ohne eigenen Kalendertag.
+    /// </summary>
+    private void RunSummerBreak()
+    {
+        foreach (var counter in SummerBreakCounters())
+        {
+            if (counter % 7 != 0)
+                continue;
+            WeeklyFinances();
+            foreach (var club in ManagedClubs())
+                HealSquad(club);
+        }
     }
 }
 

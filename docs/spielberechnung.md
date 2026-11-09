@@ -539,8 +539,8 @@ Transferbildschirms, beliebige Bytes); das Remake nimmt (Kondition + Technik bei
 gezogene Teamwerte (vor dem ersten Spiel) keine Wirkung.
 
 **Remake** (`MatchEngine.DriftTeamValues`, `TeamValueDrift`): Spielstart beim ersten Spiel nach dem Lader (`EnsureTeamValues`),
-Saisonwechsel in `OnNewSeasonManager` (nicht im Modus „nur Weltkugel“, `[APPROX]`), Tageslauf in `OnDayClubSeason` an
-Tag ≡ 0, 4 (mod 7) des Saisontags (`[APPROX]`: Tag 0 = 10. September = Tageszähler 0 angenommen). `[APPROX]` Reihenfolge nach
+Saisonwechsel in `OnNewSeasonManager` (nicht im Modus „nur Weltkugel“, `[APPROX]`), Tageswechsel in `OpenClubSeasonDay` (vor dem Menü,
+#688) an Tagen mit Zähler `DayCounter.Of(Tag)` ≡ 0, 4 (mod 7) (#675). `[APPROX]` Reihenfolge nach
 Vereinsindex; Kondition und Technik bleiben als Abweichung vom Datenbankwert gespeichert, die Grenzen gelten für
 Datenbankwert + Abweichung (die Kaderkorrektur `TeamValue` kommt im Spiel hinzu). Kein neues Schemafeld.
 
@@ -817,7 +817,8 @@ Regel nach `docs/analyse/re-nachtrag.md` §3 (Review #446), Remake `Core/Squad.A
 - **0x42838:** freie, spielfähige Spieler der Rolle; Wert (K + T + F) / 3, Gleichstand → späterer Platz
   (`[APPROX]` Platzfolge = `Club.SortedPlayers`); Ausweichrollen T → A → S, A → S → T, S → A → T; erster freier Torhüter
   als Feldspieler −1, jeder weitere 1.
-- **Aufrufe im Remake:** Spielstart (`InitializeManagerSystems`, 0x28165), Ende des Tageslaufs (`OnDayClubSeason`,
-  0x07C07), Verletzung im Spiel und Heilung (`Club.RefillLineup`). Nicht angeschlossen: Transferbildschirm 0x465F1,
-  Managerzug 0x44E22 (der nächste Tageslauf holt es nach), Nationalteam (U8, Satz 5) und die Meldung DGROUP 0x124D
+- **Aufrufe im Remake:** Spielstart (`InitializeManagerSystems`, 0x28165), am Ende von 0x07169 je Manager (`ManagerSquadRun`,
+  0x07C07), an Tagen mit Ereignis vor den Zügen (`MainPathEventDayLineups`, 0x54D9E; #688, R688-07), Zuganfang 0x44E22,
+  Verletzung im Spiel und Heilung (`Club.RefillLineup`). Nicht angeschlossen: Transferbildschirm 0x465F1,
+  Nationalteam (U8, Satz 5) und die Meldung DGROUP 0x124D
   (Oberfläche, Spur kader-transfer).

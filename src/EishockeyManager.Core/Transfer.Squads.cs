@@ -66,7 +66,7 @@ public static class SquadRules
     public static bool CareerEnds(int age, Random random) => age > TransferRules.Random16(random, 37, 42);
 
     /// <summary>
-    /// Täglicher Wurf „kündigt an, daß er seinen Vertrag nicht mehr verlängern wird“ (Kaderplatz +0x18 Bit 0x80). [ORIGINAL]
+    /// Wurf je Takt „kündigt an, daß er seinen Vertrag nicht mehr verlängern wird“ (Kaderplatz +0x18 Bit 0x80). [ORIGINAL]
     /// Tagesablauf 0x07169, Datei 0x0754D–0x0760F, je Platz des Managers am Zug und Tag: c = 100 − 15 bei einem Torhüter
     /// (Rollenwert Pool +0x18 = 0); Technik − Kondition &gt; 0 → c − (Technik − Kondition) / 2; v = Alter · c / 10; wahr bei
     /// random(350, 450) &lt; v. Feldspieler unter 36 nie, Torhüter unter 42 nie (<c>docs/analyse/re-nachtrag.md</c>, Abschnitt 1).
@@ -130,7 +130,7 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Täglich (Zeitleiste) je Spieler der Manager. [ORIGINAL] Tagesablauf 0x07169 bis zum Saisonende (Zähler &lt; 233):
+    /// Am Takttag (Zeitleiste, #678; R688-09) je Spieler des Managers. [ORIGINAL] Tagesablauf 0x07169 bis zum Saisonende (Zähler &lt; 233):
     /// <list type="number">
     /// <item>Ruhestand (Datei 0x0754D): <see cref="SquadRules.RetirementRoll"/> für jeden Platz, auch Leihspieler und unabhängig von
     ///   der Laufzeit; ohne Ruhestand-Bit und ohne offenes Verlängerungsangebot → <see cref="ContractNotice.Retiring"/>, Meldung
@@ -141,8 +141,8 @@ public sealed partial class GameState
     ///   Saisonende (0x27D05).</item>
     /// </list>
     /// Eine eigene Absage gibt es im Original nicht (A230): „nicht mehr verlängern“ ist die Ruhestandsmeldung.
-    /// Ein offenes Angebot verfällt mit random(0, 5) = 0 je Tag (Datei 0x0767A): Meldung gelöscht, Verhandlungssperre
-    /// random(9, 17) Tage (Spur kader-transfer, Runde 12, U4).
+    /// Ein offenes Angebot verfällt mit random(0, 5) = 0 je Lauf von 0x07169 (Datei 0x0767A): Meldung gelöscht, Verhandlungssperre
+    /// random(9, 17) Takte (Spur kader-transfer, Runde 12, U4; seit #678 zählt sie je Takt, R688-09).
     /// [APPROX] „Offene Meldung“ (Pool +0x1E) = schon gemeldet (<see cref="Player.Notice"/> ≠ None); Züge aus
     /// <see cref="ContractRandom"/>; Reihenfolge im Tag nach Sperren und Angeboten Bit 0x40.
     /// #678: [ORIGINAL] 0x07169 rechnet die Kaderplätze des Managers DGROUP 0xA70E (Satz 0x5DC3 + Manager · 0x618, Datei 0x07402);

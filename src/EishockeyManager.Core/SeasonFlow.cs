@@ -150,6 +150,9 @@ public sealed partial class GameState
             if (Phase is SeasonPhase.SeasonOver or SeasonPhase.GameOver)
                 return steps;
             CurrentDay++;
+            // #688 (R688-04): Der Tageswechsel nach den Spielen des Vortags (Tagesabschluss, Takt, Listenwechsel) liegt im Original
+            // vor den Managermenüs des neuen Tages (Datei 0x55204–0x552D3, dann 0x54E3F–0x54EF4) – also vor dem Halt.
+            OpenDay(CurrentDay);
             // Nach der Vereinssaison hält das Original am 14. April an („Saisonende“ in der Infoleiste)
             if (Phase == SeasonPhase.ClubSeasonOver && CurrentDay == SeasonCalendar.ClubSeasonEnd + 1)
                 return steps;
@@ -160,8 +163,31 @@ public sealed partial class GameState
 
     // ---- Anschlusspunkte für andere Pakete (in deren eigener partial-Datei implementieren) -------------
 
-    /// <summary>Paket „manager“: jeder Tag der Zeitleiste, bevor dessen Spiele ausgetragen werden (Tageswechsel der Finanzen).</summary>
+    /// <summary>
+    /// Paket „manager“: jeder Tag der Zeitleiste nach den Managermenüs, bevor dessen Spiele ausgetragen werden. Der Tageswechsel
+    /// davor läuft in <see cref="OnDayOpen"/>.
+    /// </summary>
     partial void OnDayManager(int day);
+
+    /// <summary>
+    /// #688 (R688-04): Tageswechsel zum Tag <paramref name="day"/> vor dessen Managermenüs (Tagesabschluss, Takt 0x07169,
+    /// Listenwechsel). [ORIGINAL] Datei 0x55204–0x552D3 nach den Spielen des Vortags, Züge Datei 0x54E3F–0x54EF4 vor dem Menü 0x44E22.
+    /// </summary>
+    partial void OnDayOpen(int day);
+
+    /// <summary>
+    /// Ist der Tageswechsel zu <see cref="CurrentDay"/> schon gerechnet (<see cref="OpenDay"/>)? Die Zeitleiste rechnet ihn vor dem
+    /// Halt; Spielstände vor Schema 45, ein neues Spiel und der erste Tag einer Saison holen ihn vor den Spielen des Tages nach.
+    /// </summary>
+    public bool DayOpened { get; private set; }
+
+    private void OpenDay(int day)
+    {
+        if (DayOpened)
+            return;
+        DayOpened = true;
+        OnDayOpen(day);
+    }
 
     /// <summary>Paket „manager“: neue Saison hat begonnen (Finanzbuch, Stadion …).</summary>
     partial void OnNewSeasonManager();
@@ -184,6 +210,8 @@ public sealed partial class GameState
         ManagerDayFlag = false;
         try
         {
+            OpenDay(day);
+            DayOpened = false;
             ProcessDayCore(day, steps);
         }
         finally

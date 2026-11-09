@@ -237,8 +237,9 @@ public sealed partial class GameState
     // ---- (2) Nachspielen bis zum Tag des HOK -------------------------------------------------------------------
 
     /// <summary>
-    /// Zeitleiste von Tag 0 bis vor den Tag des HOK (der Tag selbst ist im Original noch nicht verarbeitet: Hauptmenü vor
-    /// dem Tageslauf, Zähler 0x3B7 = Tag + 1). Ligaspieltage tragen danach die Ergebnisse des Originals, damit Tabelle,
+    /// Zeitleiste von Tag 0 bis vor den Tag des HOK, dazu dessen Tageswechsel (Zähler 0x3B7 = Tag + 1): Das HOK ist im Hauptmenü
+    /// des Tages gesichert, nach dem Tagesabschluss, dem Takt 0x07169 und den Würfen des Listenwechsels, vor den Spielen (#688,
+    /// R688-04: Datei 0x55204–0x552D3 und 0x54E71 liegen vor dem Menü 0x44E22). Ligaspieltage tragen danach die Ergebnisse des Originals, damit Tabelle,
     /// Play-off-Setzliste und Aufstiegsrunden dem HOK folgen. [APPROX] Pokale, Markt, Training und Finanzen laufen nach den
     /// Regeln des Remakes; was belegt ist, überschreibt <see cref="ApplyOriginal"/>.
     /// </summary>
@@ -266,6 +267,7 @@ public sealed partial class GameState
                 && !WorldOnly && !RegularSeasonOver)
                 throw new InvalidDataException(
                     $"Spieltag {OriginalImport.NextMatchDay(save, league)} (DGROUP 0x7A9) passt nicht zu Tag {target} ({PlayedMatchDays} gespielt).");
+        OpenDay(CurrentDay); // #688 (R688-04): Tageswechsel zum gesicherten Tag, vor dem Überschreiben mit den Werten des HOK
         StartTurns();
     }
 

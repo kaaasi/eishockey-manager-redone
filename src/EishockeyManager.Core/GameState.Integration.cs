@@ -37,20 +37,38 @@ public sealed partial class GameState
                 club.ReferenceRating = TeamStrength.Rating(club.Lineup);
     }
 
-    /// <summary>Jeder Tag der Zeitleiste, bevor dessen Spiele ausgetragen werden.</summary>
-    partial void OnDayManager(int day)
+    /// <summary>
+    /// Tageswechsel zum Tag <paramref name="day"/> vor den Managermenüs (#688, R688-04): im Original nach den Spielen des Vortags
+    /// (Hauptweg Datei 0x55204–0x552D3, WM-Schleife Schritt (c) und (d) Datei 0x5561A–0x55740), dann die Tage mit Ereignis vor den
+    /// Zügen (Datei 0x54D68–0x54DBA) und je Zug der Listenwechsel (Datei 0x54E71) vor dem Menü 0x44E22 (Datei 0x54EB2).
+    /// </summary>
+    partial void OnDayOpen(int day)
     {
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ gibt es keine Vereinssaison – keine Finanzen,
         // kein Training, kein Markt, keine Vertragsmeldungen, keine Ligastatistik (Datei 0x54CEE: kein Tageslauf).
+        if (!WorldOnly)
+            OpenClubSeasonDay(day);
+        else
+            OpenWorldOnlyLoopDay(day); // Review #674, R14NT4-04: auch Modus 1 läuft durch die WM-Schleife (CupsNational.WorldCupLoop.cs)
+    }
+
+    /// <summary>Jeder Tag der Zeitleiste nach den Managermenüs, bevor dessen Spiele ausgetragen werden.</summary>
+    partial void OnDayManager(int day)
+    {
         // Spur nationalteam Runde 13 (A009, L9): Länderwerte aus der Aufstellung des Bundestrainers (0x952C mit Manager 5,
         // Tageslauf Datei 0x54F9C–0x54FBF und nach dem Menü an WM-Tagen Datei 0x555D6) – vor der Ernennung des Tages wie im
-        // Original (Ernennung erst nach dem Tag, Datei 0x553A2). Im Tageslauf der Vereinssaison vor der kleinen Wanderung
-        // (siehe OnDayClubSeason, #594), nach der Ernennung im Modus 4 nur noch in der WM-Schleife (R14NT-01); im Modus
-        // „nur Weltkugel“ ([APPROX], kein Tageslauf im Original) hier.
-        if (!WorldOnly)
-            OnDayClubSeason(day);
+        // Original (Ernennung erst nach dem Tag, Datei 0x553A2). #688 (R688-04/-08): nach den Menüs, also nach dem Takt des Tages
+        // (OnDayOpen) wie im Original; nach der Ernennung im Modus 4 nur noch in der WM-Schleife (R14NT-01).
+        if (WorldOnly)
+            UpdateNationalTeamValues(); // Modus 1: Schritt (a) der Schleife ([APPROX] vor dem ersten WM-Tag kein Tageslauf im Original)
+        else if (InWorldCupLoop(day))
+            WorldCupLoopStepA(day);
+        else if (IsWorldCupEntryDay(day))
+            OnDayWorldCupEntry(day);
         else
-            OnDayWorldOnlyLoop(day); // Review #674, R14NT4-04: auch Modus 1 läuft durch die WM-Schleife (CupsNational.WorldCupLoop.cs)
+            // [ORIGINAL] 0x952C(5, 1) nach den Zügen, Datei 0x54F9C–0x54FBF (#594); davor an Tagen mit Ereignis die Neuaufstellung von
+            // Satz 5 mit der gesicherten Einstellung (A009, Datei 0x54D41–0x54DAA; [APPROX] nach den Menüs, siehe MainPathEventDayLineups).
+            OnDayNationalTeam(day);
 
         // Paket „wettbewerbe“: an den Tagen mit Markierung 255 im Modus 4 den Bundestrainer ernennen (Spur
         // bundestrainer-modus4), dann die Werte Deutschlands ohne Bundestrainer neu auswürfeln.
@@ -58,8 +76,8 @@ public sealed partial class GameState
             OnNationalMarkerDay();
     }
 
-    /// <summary>Tagesablauf der Vereinssaison (Finanzen, Training, Markt, Verträge, Statistik).</summary>
-    private void OnDayClubSeason(int day)
+    /// <summary>Tageswechsel der Vereinssaison (Finanzen, Takt mit Training, Markt und Verträgen, Listenwechsel).</summary>
+    private void OpenClubSeasonDay(int day)
     {
         // Spur transfer-vertraege-komplett: offene Verhandlungen am Saisonende enden vor dem ersten Tag wie „Abbruch“ (0x27D91).
         ResolveRenewals();
@@ -70,61 +88,48 @@ public sealed partial class GameState
         // 0x952C des Hauptwegs, keine Neuaufstellung „Tag mit Ereignis“. Ausgenommen der erste Tag (R14NT4N-01, unten).
         if (InWorldCupLoop(day))
         {
-            OnDayWorldCupLoop(day);
+            OpenWorldCupLoopDay(day);
             return;
         }
         // Nachprüfung #681 (R14NT4N-01): Der Tageswechsel nach den Spielen des 13. April (Zähler 217) gehört im Original noch
         // zum Hauptweg (Datei 0x55204–0x552D3), erst danach beginnt die Schleife (Datei 0x552D5); siehe OnDayWorldCupEntry.
-        var worldCupEntry = IsWorldCupEntryDay(day);
 
-        // Finanzen: Tages-, Wochen- und Monatswechsel bis einschließlich heute
+        // Finanzen: Tages-, Wochen- und Monatswechsel bis einschließlich heute. [ORIGINAL] Tagesabschluss 0x3ED01/0x3F833 je
+        // Manager direkt nach dem Weiterzählen (Datei 0x5522B/0x55230), vor dem Takt.
         AdvanceFinanceTo(day);
 
         // Paket „wettbewerbe“: Ewige Tabelle, Ewige Bilanz und „Früher“ schreibt seit Spur saisonwechsel Teil 3 (S-K4)
         // FinishSeason nach Zwangsabstieg und Austausch fort (em.exe Datei 0x563AF).
 
-        // Spur nationalteam Runde 14 (#594, R13IN-01): [ORIGINAL] Reihenfolge belegt: 0x952C(Manager 5, 1) liegt in der
-        // Tagesfunktion 0x54C9F bei Datei 0x54F9C–0x54FBF, die kleine Wanderung danach bei Datei 0x5525A–0x55292 (dazwischen
-        // kein Sprung aus dem Bereich); an Wandertagen gilt danach die gewürfelte Form 0x1C/0x1D. Erreichbar nur auf dem
-        // Hauptweg (Tage mit Ereignis, Byte ∉ {0, 9, 0xFF}, Datei 0x54D5C) und nur mit Bundestrainer (Satz 5 bei 0x9EDA < 0x3F):
-        // Den gibt es im Original vor der Ernennung (Datei 0x55485) nie, danach nimmt die WM-Schleife den Tag (Review #662,
-        // R14NT-01, oben). Im Remake also ohne Wirkung, solange der Bundestrainer nicht künstlich vor dem 13. April ernannt wird
-        // (nur Tests). Auch die Heilung (0x07169, Datei 0x552A6) und die Aufstellungsautomatik (Datei 0x07C07) folgen erst
-        // danach. [APPROX] Das Original rechnet 0x952C nach den Menüs der Manager; Finanzen, Training und Markt des Remakes
-        // stehen davor wie bisher (Reihenfolge zu ihnen nicht einzeln gelesen). A009 (Runde 14 Teil 3): davor an Tagen mit
-        // Ereignis die Neuaufstellung von Satz 5 mit der gesicherten Einstellung (Datei 0x54D41–0x54DAA, nur Hauptweg).
-        if (!worldCupEntry)
-            OnDayNationalTeam(day);
-
         // Spur spielberechnung-komplett (#204): kleine Wanderung der Teamwerte zweimal je Woche (0x5525A–0x55292). #675 (Review
         // #674, R14NT4-03): Datei 0x55204 zählt DGROUP 0x3B7 nach den Spielen des Vortags weiter, Talentsuche, Wanderung und
         // 0x07169 (Datei 0x55253–0x552D3) prüfen den neuen Stand = Tag + 1 (DayCounter); ebenso TalentScout.IsTick und die
-        // Heilung (PlayerInjuries.IsHealingDay über HealInjuries).
+        // Heilung (PlayerInjuries.IsHealingDay).
         if (MatchEngine.IsDriftDay(DayCounter.Of(day)))
             MatchEngine.DriftTeamValues(this, TeamValueDrift.Weekly);
 
-        // Spur spielberechnung-komplett, Teil 3: Verletzungen heilen wochenweise (0x7C12 im Tageslauf 0x07169)
-        HealInjuries(day);
+        // #688 (R688-07): Die Heilung der Managerkader und ihrer Markt-Plätze rechnet 0x07169 je Manager (MainPathDailyRun);
+        // [APPROX] Spieler ohne Kaderplatz eines Managers (Computervereine, Vertragslose) heilen weiter am Heiltag.
+        HealUnmanaged(day);
 
-        // #678: Training, Markt (Verfall, Gebote, Angebote) und Verträge nur am Takttag, je Manager (0x07169, Datei 0x552A6;
-        // GameState.DailyRun.cs). Vorher [APPROX] Training Mi/So, Markt und Verträge täglich.
+        // #678: Training, Markt (Verfall, Gebote, Angebote), Verträge, Heilung und Aufstellung nur am Takttag, je Manager
+        // (0x07169, Datei 0x552A6; GameState.DailyRun.cs). Vorher [APPROX] Training Mi/So, Markt und Verträge täglich.
         MainPathDailyRun(day);
 
-        // Spur wettbewerbe-spiel, Teil 8: automatische Aufstellung am Ende des Tageslaufs (Datei 0x07C07, A068)
-        ApplyAutoLineups();
+        // #688 (R688-07): an Tagen mit Ereignis vor den Zügen je Satz die Neuaufstellung (Datei 0x54D68–0x54DBA, 0x426BC bei
+        // 0x54D9E). Vorher [APPROX] täglich am Ende des Tageslaufs.
+        MainPathEventDayLineups(day);
 
         // #678: Listenwechsel 0x494EF in den Managerzügen der Tage mit Ereignis (Datei 0x54E71; nicht am Eintrittstag).
         MainPathListChanges(day);
-
-        // R14NT4N-01: am Eintrittstag der Schleife nach dem Takt des Hauptwegs Schritt (a) der Schleife (Datei 0x555D6).
-        if (worldCupEntry)
-            OnDayWorldCupEntry(day);
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>
     partial void OnNewSeasonManager()
     {
         StartFinanceSeason();
+        // #688 (R688-03): Sommerpause zwischen Saisonende und erstem Tag (Datei 0x564D2–0x56593): Stadionbau und Heilung je Woche.
+        RunSummerBreak();
         StartStadiumStatisticsSeason(); // Spur heimspiel-statistik (0x55A86)
         // Spur kader-start (A091/A380, Review R14KS-02): nicht verkaufte eigene Spieler von der Transferliste zurück in den Kader,
         // bevor Spiele übertragen und Saisonzähler gelöscht werden. [ORIGINAL] Rückkehr Datei 0x27547–0x27665 in der
