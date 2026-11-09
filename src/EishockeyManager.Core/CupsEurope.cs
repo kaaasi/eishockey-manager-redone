@@ -23,7 +23,7 @@ namespace EishockeyManager.Core;
 /// [APPROX] „Stärke“ der Gegner = erster Datenbankwert (Abwehr); der zweite Wert (Sturm) wird im Remake nicht
 /// geführt (Befund A01). Die Formabschläge der Europapokal-Gegner (−5) wirken nicht, weil das Remake ohne Formwerte rechnet.
 /// </remarks>
-public sealed class EuropeanCup : ISeasonCompetition
+public sealed partial class EuropeanCup : ISeasonCompetition
 {
     public const int Teams = 8;
     public const int GroupSize = 4;

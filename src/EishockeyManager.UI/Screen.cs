@@ -31,6 +31,9 @@ public sealed class InputState
     /// <summary>Rechte Maustaste wurde in diesem Frame gedrückt.</summary>
     public bool RightClick { get; set; }
 
+    /// <summary>Rechte Maustaste ist gedrückt (auch gehalten), z. B. für die Spielstand-Info des Speichern-Dialogs (em.exe 0x5B661).</summary>
+    public bool RightDown { get; set; }
+
     /// <summary>Mausrad: positiv = nach oben.</summary>
     public int Wheel { get; set; }
 
@@ -49,7 +52,7 @@ public sealed class InputState
 
     public void Reset()
     {
-        LeftClick = LeftDown = RightClick = false;
+        LeftClick = LeftDown = RightClick = RightDown = false;
         Wheel = 0;
         Keys.Clear();
         Text = "";

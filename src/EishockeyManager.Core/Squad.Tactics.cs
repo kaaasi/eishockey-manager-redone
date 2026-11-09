@@ -103,7 +103,7 @@ public enum ScoreSituation
 ///   0x87F7), nicht als Zuschlag auf eine Spielstärke (A178, A182).</item>
 /// </list>
 /// </remarks>
-public sealed class Tactics
+public sealed partial class Tactics
 {
     public const int Blocks = Lineup.Blocks;
     public const int Situations = 6;
