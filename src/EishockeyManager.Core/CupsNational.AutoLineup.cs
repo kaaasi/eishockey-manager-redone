@@ -124,10 +124,10 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Tageslauf des Nationalteams in der Vereinssaison (aus <c>OnDayClubSeason</c>): an Tagen mit Ereignis Neuaufstellung mit der
+    /// Tageslauf des Nationalteams in der Vereinssaison (aus <c>OnDayManager</c> nach den Menüs, #688): an Tagen mit Ereignis Neuaufstellung mit der
     /// gesicherten Einstellung (Datei 0x54D41–0x54DAA), dann die Länderwerte (Datei 0x54F9C–0x54FBF, <see cref="UpdateNationalTeamValues"/>).
     /// [ORIGINAL] Ereignis = Kalenderbyte ≠ 0, ≠ 0xFF (9 zählt wie 0, Datei 0x54D4C–0x54D65). Nur der Hauptweg: Nach dem
-    /// 13. April nimmt im Original die WM-Schleife den Tag (<see cref="OnDayWorldCupLoop"/>, R14NT-01/02, #664); hier wirkt es nur
+    /// 13. April nimmt im Original die WM-Schleife den Tag (<see cref="OpenWorldCupLoopDay"/>, R14NT-01/02, #664); hier wirkt es nur
     /// bei einem vor dem 13. April ernannten Bundestrainer (nur Tests).
     /// </summary>
     private void OnDayNationalTeam(int day)

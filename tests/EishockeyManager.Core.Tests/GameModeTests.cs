@@ -339,6 +339,10 @@ public class GameModeTests
         var print = Fingerprint(game, 5, g =>
         {
             TestSquadKeeper.KeepPlayable(g, g.Managers[0]); // wettbewerbe-komplett Teil 3, siehe oben
+            // #688 (Sommerpause wie im Original, Nutzer 09.11.2026): Mit den Monatsabschlüssen der Sommerpause rutscht der passive
+            // Manager 0 (Bundesliga, ohne Werbung) sonst tief ins Minus (vor R688S-03 Entlassung in Saison 2); die Probe hält sein Konto
+            // bei mindestens 1 Mio. DM (ohne Buchung), der Abdruck enthält es weiter.
+            g.Managers[0].Money = Math.Max(g.Managers[0].Money, 1_000_000);
             ActiveSecondManager(g);
             // Vorbedingung der Probe ausdrücklich: Manager 0 bleibt im Amt und spielfähig (sonst taugt sie nicht als Geldprobe).
             Assert.False(g.Managers[0].Dismissed, $"Manager 0 entlassen ({g.Season}, Tag {g.CurrentDay})");
@@ -396,8 +400,27 @@ public class GameModeTests
     // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
     // Gegenüber main: Saison 1 Pokalsieger gleich, Meister und Weltmeister neu (die Angaben der Zeile #676 galten für Base e5fe46f); Manager 1
     // ist in Saison 5 nicht mehr spielfähig (Konto −7.327.742), die Probe prüft weiter nur Manager 0.
+    // #678/#679 (Tagestakt Hauptweg): neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert).
+    // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
+    // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
+    // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Ursachen R688-05 (Liste über den Saisonwechsel), R688-04 (Takt vor dem Halt) und R688-03 (Sommerpause: Stadionbau, Heilung);
+    // jede einzeln zurück → anderer Wert. Tendenz, Aufstellung, Heilung je Manager, entlassene Manager einzeln zurück →
+    // gleicher Wert.
+    // Titel ab Saison 1 neu; Manager 1 (Verein 30, verlängert nur angebotene Verträge, die jetzt nur noch an den Takttagen kommen)
+    // verliert ab Saison 3 seinen Kader und zahlt Strafen (Konto −6.762.898 … −24.472.210); die Probe prüft weiter nur Manager 0.
+    // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
+    // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
+    // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f; hier zusätzlich das Konto von Manager 0, das die Probe jetzt hält.
+    // Nachprüfung #691 (R688S-01/-03, Leitstelle Runde 14): neu – R688S-01: Sommerpause ab Zähler 234 = 1. Mai (Datei 0x26F55 setzt 233),
+    // kein Tagesabschluss des 30. April (Werbeangebote, April-Abschluss, Börse): anderer Zufallsverbrauch ab Saison 2, Konto Manager 0
+    // in Saison 2 2.429.195 statt 2.443.220 (gehalten bei 1 Mio.). Gegenproben: Start 233 und alte Schuldenregel → alter Wert; Start 234
+    // und alte Schuldenregel → dieser Wert (die Regel greift mit vier Sommerabschlüssen nicht mehr). R688S-03 (keine Entlassung): Manager 1
+    // (Verein 30, Oberliga) wurde im alten Stand entlassen und sein Konto lief weiter (−7.016.851 … −63.624.530); jetzt bleibt er wie
+    // im Original unten in der Oberliga und steht am 29. April bei 400.000 DM (S-K1), Saison 4 dazu 100.000 DM Prämie.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=11,GermanChampion=11,EuropeanCupWinner=2|402268,400000|WorldChampion=53,CupWinner=0,GermanChampion=3,EuropeanCupWinner=11|1794272,400000|WorldChampion=52,CupWinner=0,GermanChampion=7,EuropeanCupWinner=11|2406786,400000|WorldChampion=54,CupWinner=7,GermanChampion=7,EuropeanCupWinner=7|3046744,400000|WorldChampion=52,CupWinner=7,GermanChampion=7,EuropeanCupWinner=7|3108982,-7327742|R1107079070 C1895578420";
+        "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=57,CupWinner=4,GermanChampion=1,EuropeanCupWinner=0|2429195,400000|WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2301516,400000|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|1969543,500000|WorldChampion=52,CupWinner=18,GermanChampion=4,EuropeanCupWinner=0|1462802,400000|R1179893277 C1809965060";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

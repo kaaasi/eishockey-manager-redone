@@ -205,8 +205,22 @@ public class JugendTeamsTests
     // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
     // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
     // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    // #678/#679 (Tagestakt Hauptweg): neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert). Richtung (≥ +15) weiter geprüft.
+    // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
+    // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
+    // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter StartSeason
+    // → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager, Sommerpause
+    // und entlassene Manager einzeln zurück → gleicher Wert.
+    // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
+    // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
+    // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f.
+    // Nachprüfung #691 (R688S-01, Leitstelle Runde 14): neu – Sommerpause ab Zähler 234 = 1. Mai (Datei 0x26F55 setzt 233, 0x564BC zählt
+    // weiter), kein Tagesabschluss des 30. April (Werbeangebote am Monatsletzten, April-Abschluss, Börse): anderer Zufallsverbrauch ab
+    // dem 1. Mai; Saison 0 unverändert, Richtung weiter geprüft. Gegenprobe: Start 233 zurück → alter Wert.
     private const string ExpectedActive =
-        "0:Schueler:2/11/57;0:Jugend:2/11/60;0:Junioren:2/11/63;1:Schueler:2/6/70;1:Jugend:2/6/70;1:Junioren:1/11/72;2:Schueler:1/11/74;2:Jugend:1/11/78;2:Junioren:1/6/80;3:Schueler:1/6/81;3:Jugend:1/6/82;3:Junioren:1/6/82";
+        "0:Schueler:2/11/61;0:Jugend:2/11/62;0:Junioren:2/11/64;1:Schueler:2/6/67;1:Jugend:2/6/69;1:Junioren:1/11/72;2:Schueler:1/11/80;2:Jugend:1/11/78;2:Junioren:1/6/80;3:Schueler:1/6/84;3:Jugend:1/6/84;3:Junioren:1/6/83";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -225,8 +239,22 @@ public class JugendTeamsTests
     // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
     // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
     // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    // #678/#679 (Tagestakt Hauptweg): neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert). Richtung (≤ −15) weiter geprüft.
+    // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
+    // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
+    // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter StartSeason
+    // → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager, Sommerpause
+    // und entlassene Manager einzeln zurück → gleicher Wert.
+    // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
+    // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
+    // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f.
+    // Nachprüfung #691 (R688S-01, Leitstelle Runde 14): neu – Sommerpause ab Zähler 234 = 1. Mai (Datei 0x26F55 setzt 233, 0x564BC zählt
+    // weiter), kein Tagesabschluss des 30. April (Werbeangebote am Monatsletzten, April-Abschluss, Börse): anderer Zufallsverbrauch ab
+    // dem 1. Mai; Saison 0 unverändert, Richtung weiter geprüft. Gegenprobe: Start 233 zurück → alter Wert.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/63;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:2/6/54;1:Jugend:3/2/54;1:Junioren:2/6/58;2:Schueler:2/6/47;2:Jugend:3/6/43;2:Junioren:3/2/45;3:Schueler:3/2/44;3:Jugend:3/6/42;3:Junioren:3/6/42";
+        "0:Schueler:2/2/66;0:Jugend:2/2/68;0:Junioren:2/2/70;1:Schueler:3/2/52;1:Jugend:2/6/56;1:Junioren:2/6/57;2:Schueler:3/6/48;2:Jugend:3/2/46;2:Junioren:3/2/46;3:Schueler:3/6/44;3:Jugend:3/6/41;3:Junioren:3/6/41";
 }
 
 public class JugendTeamsMigrationTests

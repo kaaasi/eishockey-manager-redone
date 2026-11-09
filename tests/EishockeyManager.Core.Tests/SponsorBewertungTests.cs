@@ -196,6 +196,11 @@ public class SponsorBewertungTests
                 Assert.True(guard < 1000, "Saisonende nicht erreicht");
                 if (active)
                     signed += SignBest(game, me);
+                // #688 (Sommerpause wie im Original): fünf Monatsabschlüsse ohne Spiele je Sommer; die Probe prüft Bewertung und
+                // Einnahmen – Konto halten (neutral, ohne Buchung), sonst Entlassung nach der Schuldenregel.
+                var topUp = Math.Max(0, 5_000_000 - me.Money);
+                me.Money += topUp;
+                neutral += topUp;
                 game.Continue();
                 // Integration Runde 11 (geld + saisonwechsel + kader-transfer): Bleibt der Verein als Letzter oder Vorletzter in
                 // der Oberliga, setzt em.exe das Konto am 29. April auf 400.000 DM ohne Buchung (S-K1, Datei 0x562D8); danach

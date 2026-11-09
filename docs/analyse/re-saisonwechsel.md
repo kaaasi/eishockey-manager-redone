@@ -77,8 +77,9 @@ then
 nach oben; der Verein wird im Austausch (Abschnitt 3) als Absteiger gefunden. Symbol im Fenster „Ereignisse“: Bit 2 →
 Symbol 0 (Tabelle DGROUP 0x4B2E, `saison.md`).
 
-**Remake:** nicht vorhanden (`SeasonFlow` kennt nur die Entlassung nach 8 Wochen unter −1,5 Mio. DM). Gilt nicht für die
-Oberliga; einen Abstieg aus der Oberliga erzwingt es nicht.
+**Remake:** umgesetzt (Spur saisonwechsel Teil 2, `SeasonFlow.Zwangsabstieg.cs`, `ApplyForcedRelegation` am 29. April; DOSBox-Beleg
+FILE16 → FILE17). Gilt nicht für die Oberliga; einen Abstieg aus der Oberliga erzwingt es nicht. Die Entlassung nach 8 Wochen unter
+−1,5 Mio. DM war eine Remake-Regel ohne Fundstelle und ist entfernt (#688, R688S-03; `SeasonDismissal.cs`: keine Entlassung in em.exe).
 
 ## 3. Austausch der drei Tauschgruppen (Datei 0x56137–0x563A4)
 
@@ -205,8 +206,8 @@ Gegenbefund, der die Analyse widerlegen würde: eigener Verein fehlt in der Ober
 emtool hok patch FILE01.HOK FILE15.HOK konto=-1000000 datum=31.01.1994 zaehler=144 spieltag=42
 ```
 
-Kölner EC (Bundesliga) bis zum 29. April spielen (die Entlassung droht erst nach 8 Wochen unter −1,5 Mio. DM; Konto im Blick
-behalten), Ereignisse und Saisonende fotografieren. Erwartet: Symbol 0 in „Ereignisse“, Köln in der neuen Saison in der 2. Liga,
+Kölner EC (Bundesliga) bis zum 29. April spielen (eine Entlassung wegen Schulden gibt es weder im Original noch seit #688 im Remake;
+Konto im Blick behalten), Ereignisse und Saisonende fotografieren. Erwartet: Symbol 0 in „Ereignisse“, Köln in der neuen Saison in der 2. Liga,
 aus der Aufstiegsrunde steigt dafür ein Bundesligist weniger ab. Nicht bei Platz 1 (Meister) oder Europacupsieg.
 
 ## Auswertung DOSBox-Beleg
@@ -293,8 +294,8 @@ emtool hok patch FILE15.HOK FILE16.HOK datum=31.01.1994 zaehler=144 spieltag=42 
 
 Probe am Code (03.11.2026, Spur `saisonwechsel` Teil 5) mit FILE12 als Ersatzvorlage: Der Befehl schreibt einen Stand mit gültigen
 Prüfsummen, Datum 31.01.1994, Konto −3.000.000 Drittel = −1.000.000 DM; `hok dump` liest ihn. Die Probedatei ist nicht abgelegt.
-−1.000.000 DM liegt unter der Grenze des Zwangsabstiegs und über der Entlassungsgrenze des Remakes (−1,5 Mio. DM, ohnehin nur
-`[APPROX]`, im Original nicht belegt).
+−1.000.000 DM liegt unter der Grenze des Zwangsabstiegs (die frühere Entlassungsgrenze des Remakes von −1,5 Mio. DM ist seit #688
+entfernt, R688S-03).
 
 **Schritt 3 (Nutzer, DOSBox; Bilder ins Referenz-Repo, Namen `file16_…`):**
 
@@ -311,8 +312,8 @@ Prüfsummen, Datum 31.01.1994, Konto −3.000.000 Drittel = −1.000.000 DM; `ho
    **Saisonende** (Spalten je Liga, rot/grün – wer steht wo?).
 6. Erstes Hauptmenü der neuen Saison (10. September): Liga des eigenen Vereins (Infoleiste, Gegner), dann die Tabellen
    **Bundesliga, 2. Liga und Oberliga** zum 1. Spieltag fotografieren (Vereine zählen). Spielstand sichern als `FILE17.HOK`.
-7. Falls der Manager unterwegs entlassen wird oder das Spiel eine Meldung zu den Schulden zeigt: Bild und Datum festhalten,
-   Stand sichern, abbrechen – das ist selbst ein Befund (Entlassung im Original nicht belegt).
+7. Falls das Spiel eine Meldung zu den Schulden zeigt oder der Manager ausscheidet: Bild und Datum festhalten, Stand sichern,
+   abbrechen – das wäre ein Befund (nach dem Disassembly gibt es keine Entlassung wegen Schulden, #688 R688S-03).
 
 **Auswertung (Spur `saisonwechsel` bzw. Folgerunde, nach Ablage von FILE16/FILE17 und den Bildern):**
 

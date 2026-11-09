@@ -24,8 +24,8 @@ namespace EishockeyManager.Core.Tests;
 /// Nachprüfung #681 (R14NT4N-01): Der erste Tageslauf nach dem 13. April (Remake <c>OnDayManager(216)</c>, Wechsel nach den
 /// Spielen des Tages mit Markierung 255, Zähler 217) ist im Original noch Hauptweg (Datei 0x55204–0x552D3: Talentsuche 0x06FA5,
 /// kleine Wanderung 0x9D1B, 0x07169 je Manager, Stadionbau), erst Datei 0x552D5 führt in die Schleife. Im WM-Zeitraum also
-/// genau eine Wanderung und ein Schritt der Talentsuche (217 ≡ 0 mod 7), danach keine mehr. Der Tag 216 ist ein Donnerstag
-/// (kein Trainingstag des Remake-Hauptwegs, [APPROX] Takttag-Regel → #678).
+/// genau eine Wanderung und ein Schritt der Talentsuche (217 ≡ 0 mod 7), danach keine mehr. Seit #678 auch 0x07169 je Manager
+/// (Training, Markt-Verfall) nach der Takttag-Regel des Hauptwegs, ohne Listenwechsel.
 /// </remarks>
 public class NationalteamRunde14Teil4Tests
 {
@@ -68,10 +68,14 @@ public class NationalteamRunde14Teil4Tests
             club.TeamValues = club.TeamValues!.Value with { DefenseForm = 0, AttackForm = 0 };
     }
 
-    /// <summary>Hat seit <see cref="ClearLeagueForms"/> mindestens eine Wanderung gewürfelt?</summary>
-    private static void AssertLeagueFormsDrifted(GameState game) =>
+    /// <summary>
+    /// #688 (R688-04): Keine Wanderung seit <see cref="ClearLeagueForms"/> am Halt des 14. April: Die eine Wanderung des
+    /// Tageswechsels zu Tag 216 (Zähler 217, Datei 0x55292) liegt wie im Original vor dessen Menü, die Schleife wandert nicht.
+    /// </summary>
+    private static void AssertLeagueFormsNotDrifted(GameState game) =>
         Assert.All(game.Clubs.Where(c => c.League is not null && c.TeamValues is not null),
-            c => Assert.InRange(c.TeamValues!.Value.DefenseForm, 45, 55));
+            c => Assert.Equal(0, c.TeamValues!.Value.DefenseForm));
+
 
     /// <summary>
     /// Bis hinter den Tag 216 spielen (Bundestrainer am Zug: Continue hält am nächsten WM-Tag) und die Teamwerte danach liefern.
@@ -119,9 +123,8 @@ public class NationalteamRunde14Teil4Tests
     /// 0x07169 tut also nichts: kein Training, kein Markt, keine Aufstellungsautomatik; keine Wanderung in der Schleife.
     /// R14NT4N-01 (Nachprüfung #681; vorher rot: Formen der Ligavereine blieben 0): Der Tageslauf von Tag 216 (Zähler 217) ist
     /// noch Hauptweg mit einer Wanderung (Datei 0x55292). Dass es bei dieser einen bleibt, prüft
-    /// <see cref="Mode4_Coach_TrainingOnlyAfterWorldCupDriftDays"/> (dort hält die Zeitleiste hinter Tag 216). Kein Training am
-    /// Tag 216 (Donnerstag); kein Listenwechsel (im Original übersprungen, Datei 0x54E71; im Remake [APPROX] Wurf des Hauptwegs,
-    /// in diesen Saaten ohne Wechsel).
+    /// <see cref="Mode4_Coach_TrainingOnlyAfterWorldCupDriftDays"/> (dort hält die Zeitleiste hinter Tag 216). Training am
+    /// Tag 216 nur im Hauptweg-Takt (#678, ein Training je Manager); kein Listenwechsel (im Original übersprungen, Datei 0x54E71).
     /// </summary>
     [Theory]
     [InlineData(3)]
@@ -133,17 +136,21 @@ public class NationalteamRunde14Teil4Tests
         NationalCoachMode4Tests.PlayToClubSeasonEnd(game);
         Assert.Null(game.NationalCoach);
         var injured = game.Clubs[2].Players[0];
-        injured.InjuredGames = 3; // Heilung 0x07C12 läuft weiter: Tage 216, 223, 230 (Zähler 217, 224, 231 ≡ 0 mod 7)
+        // Heilung 0x07C12 läuft weiter: Tage 223, 230 (Zähler 224, 231 ≡ 0 mod 7); die von Tag 216 (217) liegt vor dem Halt (#688)
+        injured.InjuredGames = 2;
         var before = Window.Take(game);
         var strains = SetListingStrains(game);
         ClearLeagueForms(game);
 
         PlayToSeasonOver(game);
 
+        // #678: Der Hauptweg-Tageswechsel zu Tag 216 (Zähler 217 ≡ 0) ruft 0x07169 je Manager (Datei 0x552A6): ein Training und ein
+        // Markt-Verfall, #688 (R688-04) wie im Original vor dem Menü des 14. April, also vor diesem Fenster; danach (ohne WM-Spiele)
+        // keins mehr. Gegenprobe: Takt nach dem Halt (Stand #678) → je ein Training und ein Verfall im Fenster.
         Assert.All(before.TrainingDelta(game), d => Assert.Equal(0, d));
         Assert.Equal(before.Listings, game.TransferMarket.Listings.Select(l => l.Player));
         Assert.Empty(game.TransferMarket.Bids);
-        AssertLeagueFormsDrifted(game);
+        AssertLeagueFormsNotDrifted(game);
         Assert.Equal(0, injured.InjuredGames);
         Assert.Equal(strains, ListingStrains(game)); // kein Markt-Verfall 0x071BB ohne WM-Spiele
     }
@@ -172,10 +179,13 @@ public class NationalteamRunde14Teil4Tests
 
         PlayToSeasonOver(game);
 
+        // #678: Der Takt des Hauptweg-Tageswechsels zu Tag 216 (Zähler 217 ≡ 0, je ein Training beider Manager und ein Verfall) liegt
+        // seit #688 (R688-04) wie im Original vor dem Menü des 14. April, also vor diesem Fenster. Gegenprobe: Takt nach dem Halt
+        // (Stand #678) → [−4, −1], 4.
         Assert.Equal([-3 * before.TrainingCost[0], 0], before.TrainingDelta(game));
         Assert.Equal(Decayed(strains, 3), ListingStrains(game));
         Assert.Equal(before.Listings, game.TransferMarket.Listings.Select(l => l.Player)); // kein Listenwechsel (R14NT4-05)
-        AssertLeagueFormsDrifted(game); // R14NT4N-01: eine Wanderung im Hauptweg-Tageslauf von Tag 216
+        AssertLeagueFormsNotDrifted(game); // R14NT4N-01: die eine Wanderung (Tag 216) liegt vor dem Halt (#688)
         Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
         Assert.NotNull(game.WorldCup!.Winner);
     }
@@ -205,11 +215,13 @@ public class NationalteamRunde14Teil4Tests
                 g.AutoNominate();
         };
 
+        // #688 (R688-04): Die Wanderung des Tageswechsels zu Tag 216 (Zähler 217) liegt vor dem Halt am 14. April; danach keine mehr.
+        Assert.True(game.DayOpened);
         var afterEntry = PlayEntryDay(game, nominate);
-        Assert.NotEqual(before.TeamValues, afterEntry);
+        Assert.Equal(before.TeamValues, afterEntry);
         PlayToSeasonOver(game, nominate);
 
-        Assert.Equal([-3 * before.TrainingCost[0]], before.TrainingDelta(game));
+        Assert.Equal([-3 * before.TrainingCost[0]], before.TrainingDelta(game)); // #688: Takt von Tag 216 vor dem Fenster
         Assert.Equal(afterEntry, LeagueTeamValues(game));
         Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
     }
@@ -253,8 +265,10 @@ public class NationalteamRunde14Teil4Tests
             var afterEntry = PlayEntryDay(game, nominate);
             PlayToSeasonOver(game, nominate);
 
+            // #688 (R688-04): Der Takt des Tageswechsels zu Tag 216 (Zähler 217, je ein Training beider Manager, eine Wanderung) liegt
+            // vor dem Halt am 14. April, also vor diesem Fenster.
             Assert.Equal([-3 * before.TrainingCost[0], 0], before.TrainingDelta(game));
-            AssertLeagueFormsDrifted(game);
+            AssertLeagueFormsNotDrifted(game);
             if (hasCoach)
                 Assert.Equal(afterEntry, LeagueTeamValues(game));
             Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
@@ -370,6 +384,9 @@ public class NationalteamRunde14Teil4Tests
             game.Continue();
         }
 
+        // #688 (R688-04): Ohne „nur Weltkugel“ läuft der Hauptweg-Takt zu Tag 216 (Zähler 217 ≡ 0, Verfall von Manager 0, Datei
+        // 0x552A6) wie im Original vor dem Menü des 14.04., in dem FILE18 gesichert ist – der Halt hier entspricht FILE18 in beiden
+        // Modi. Gegenprobe: Takt nach dem Halt (Stand #678) → ohne „nur Weltkugel“ 2, 3, 4.
         Assert.Equal(Decayed(strains, 1), seen[218]); // FILE18 → FILE48
         Assert.Equal(Decayed(strains, 2), seen[230]); // FILE19 → FILE20
         Assert.Equal(Decayed(strains, 3), ListingStrains(game));
@@ -436,8 +453,8 @@ public class NationalteamRunde14Teil4Tests
     /// (Zähler 0x3B7 − [0x6AF]) ≡ 0 (mod 7); [0x6AF] ist 0 (DGROUP-Startwert, Datei 0x16DD0 + 0x6AF; nur Leser 0x07C3B,
     /// 0x43A93, 0x565A7, die den Zähler zum Spiel- und Saisonstart auf [0x6AF] setzen). Schritt (d) heilt nach dem Weiterzählen
     /// (Remake-Tage 216, 223, 230: Zähler 217, 224, 231), Schritt (c) für den Kader von Manager 0 vor dem Weiterzählen nach den
-    /// WM-Spielen der Tage 216 und 230 (Zähler 217, 231). Ein Spieler von Manager 0 heilt also fünf Wochen, einer ohne Manager
-    /// drei.
+    /// WM-Spielen der Tage 216 und 230 (Zähler 217, 231). #688 (R688-04): Die Heilung des Tageswechsels zu Tag 216 liegt vor dem
+    /// Halt am 14. April; im Fenster heilt ein Spieler von Manager 0 also vier Wochen, einer ohne Manager zwei.
     /// </summary>
     [Fact]
     public void Mode4_NoCoach_HealingFollowsDayCounter()
@@ -448,8 +465,8 @@ public class NationalteamRunde14Teil4Tests
         Assert.Null(game.NationalCoach);
         var own = game.Clubs[game.Managers[0].ClubIndex].Players[^1];
         var other = game.Clubs[SecondLeagueClub(2)].Players[^1];
-        own.InjuredGames = 6;
-        other.InjuredGames = 4;
+        own.InjuredGames = 5;
+        other.InjuredGames = 3;
 
         PlayToSeasonOver(game);
 
@@ -461,7 +478,9 @@ public class NationalteamRunde14Teil4Tests
     /// R14NT4-02 (Review #674): Regressionstest (Mutation M5 – Talentsuche 0x06FA5 und Jugend 0x39DEC in der Schleife – blieb
     /// grün). [ORIGINAL] 0x06FA5 hat nur den Aufrufer Datei 0x5528A im Hauptweg, in 0x55570–0x55740 kein Aufruf: Eine laufende
     /// Suche zählt in der Schleife nicht herunter, mit und ohne Bundestrainer. R14NT4N-01 (Nachprüfung #681; vorher rot: 3):
-    /// Der Tageslauf von Tag 216 ist noch Hauptweg, Zähler 217 ≡ 0 (mod 7) → genau ein Schritt (3 → 2).
+    /// Der Tageslauf von Tag 216 ist noch Hauptweg, Zähler 217 ≡ 0 (mod 7) → genau ein Schritt. #688 (R688-04): Dieser Schritt liegt
+    /// wie im Original vor dem Menü des 14. April, also vor dem Setzen hier; im Fenster bleibt die Suche stehen (3 → 3). Den Schritt
+    /// am Tag 216 prüft <see cref="MainPath_TalentSearchTicks_FollowDayCounter"/> (Takttage bis 60) nicht; er folgt derselben Regel.
     /// </summary>
     [Theory]
     [InlineData(false)]
@@ -485,7 +504,7 @@ public class NationalteamRunde14Teil4Tests
                 g.AutoNominate();
         });
 
-        Assert.All(game.Managers, m => Assert.Equal(2, game.Finance(m).TalentSearch?.TicksLeft));
+        Assert.All(game.Managers, m => Assert.Equal(3, game.Finance(m).TalentSearch?.TicksLeft));
     }
 
     /// <summary>
@@ -493,7 +512,7 @@ public class NationalteamRunde14Teil4Tests
     /// [ORIGINAL] Datei 0x55204 zählt DGROUP 0x3B7 nach den Spielen weiter, Talentsuche 0x06FA5, Wanderung 0x9D1B und 0x07169
     /// (Datei 0x55253–0x552D3) prüfen den neuen Wert ≡ 0/4 (mod 7). Im Tageslauf <c>OnDayManager(e)</c> ist das Zähler e + 1:
     /// Takt an den Tagen 3, 6, 10, 13, 17, 20 … FILE24 (Tag 14, Zähler 15) → FILE25 (Tag 17, 18): ein Takt (Markt-Verfall
-    /// E −6/−7) nach den Spielen von Tag 16, im Remake vor den Spielen von Tag 17 (das Remake rechnet den Tageslauf nach dem Menü).
+    /// E −6/−7) nach den Spielen von Tag 16, #688 (R688-04) im Remake wie im Original vor dem Menü von Tag 17.
     /// </summary>
     [Fact]
     public void MainPath_TalentSearchTicks_FollowDayCounter()

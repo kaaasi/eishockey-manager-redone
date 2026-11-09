@@ -37,7 +37,7 @@ public sealed partial class Player
     /// <summary>
     /// Steuerbyte der Tendenz, Kaderplatz +0x14: Bits 0–3 Tage bis zum neuen Zug (1 … 13), Bits 4–6 Schritt (1 … 3), Bit 7
     /// Richtung (1 = steigend). [ORIGINAL] gezogen in Datei 0x4907A; gelesen im Tagesablauf 0x07169 (Datei 0x7B64–0x7BF8, siehe
-    /// <c>docs/transfer.md</c>). [APPROX] Die tägliche Änderung ist im Remake noch nicht angeschlossen (Inventur A134).
+    /// <c>docs/transfer.md</c>); seit #688 (R688-07, A134) je Takt angeschlossen (<see cref="GameState.AdvanceTrend"/>).
     /// </summary>
     public int TrendControl { get; set; }
 

@@ -150,6 +150,9 @@ public sealed partial class GameState
             if (Phase is SeasonPhase.SeasonOver or SeasonPhase.GameOver)
                 return steps;
             CurrentDay++;
+            // #688 (R688-04): Der Tageswechsel nach den Spielen des Vortags (Tagesabschluss, Takt, Listenwechsel) liegt im Original
+            // vor den Managermenüs des neuen Tages (Datei 0x55204–0x552D3, dann 0x54E3F–0x54EF4) – also vor dem Halt.
+            OpenDay(CurrentDay);
             // Nach der Vereinssaison hält das Original am 14. April an („Saisonende“ in der Infoleiste)
             if (Phase == SeasonPhase.ClubSeasonOver && CurrentDay == SeasonCalendar.ClubSeasonEnd + 1)
                 return steps;
@@ -160,8 +163,31 @@ public sealed partial class GameState
 
     // ---- Anschlusspunkte für andere Pakete (in deren eigener partial-Datei implementieren) -------------
 
-    /// <summary>Paket „manager“: jeder Tag der Zeitleiste, bevor dessen Spiele ausgetragen werden (Tageswechsel der Finanzen).</summary>
+    /// <summary>
+    /// Paket „manager“: jeder Tag der Zeitleiste nach den Managermenüs, bevor dessen Spiele ausgetragen werden. Der Tageswechsel
+    /// davor läuft in <see cref="OnDayOpen"/>.
+    /// </summary>
     partial void OnDayManager(int day);
+
+    /// <summary>
+    /// #688 (R688-04): Tageswechsel zum Tag <paramref name="day"/> vor dessen Managermenüs (Tagesabschluss, Takt 0x07169,
+    /// Listenwechsel). [ORIGINAL] Datei 0x55204–0x552D3 nach den Spielen des Vortags, Züge Datei 0x54E3F–0x54EF4 vor dem Menü 0x44E22.
+    /// </summary>
+    partial void OnDayOpen(int day);
+
+    /// <summary>
+    /// Ist der Tageswechsel zu <see cref="CurrentDay"/> schon gerechnet (<see cref="OpenDay"/>)? Die Zeitleiste rechnet ihn vor dem
+    /// Halt; Spielstände vor Schema 45, ein neues Spiel und der erste Tag einer Saison holen ihn vor den Spielen des Tages nach.
+    /// </summary>
+    public bool DayOpened { get; private set; }
+
+    private void OpenDay(int day)
+    {
+        if (DayOpened)
+            return;
+        DayOpened = true;
+        OnDayOpen(day);
+    }
 
     /// <summary>Paket „manager“: neue Saison hat begonnen (Finanzbuch, Stadion …).</summary>
     partial void OnNewSeasonManager();
@@ -184,6 +210,8 @@ public sealed partial class GameState
         ManagerDayFlag = false;
         try
         {
+            OpenDay(day);
+            DayOpened = false;
             ProcessDayCore(day, steps);
         }
         finally
@@ -196,14 +224,13 @@ public sealed partial class GameState
     {
         OnDayManager(day);
         CleanLineups();
-        CheckDebts(day, steps);
+        CheckDismissed();
         if (Phase == SeasonPhase.GameOver)
         {
-            // [APPROX] (Review #441, SW-02; Entlassung selbst ist nicht aus em.exe belegt, docs/saison.md): Fällt die
-            // Entlassung des letzten Managers auf den 29. April, schließt die Saison noch ab (Titel, Austausch, Ewige Tabelle,
-            // Chronik) – wie bei der Entlassung eines Teils der Manager an diesem Tag; entlassene Manager erhalten weder
-            // Platz noch Prämie. Vor #431 lief die Fortschreibung im Tageshook vor der Schuldenprüfung. Kein SeasonEndStep:
-            // die Oberfläche zeigt direkt das Spielende.
+            // [APPROX] (Review #441, SW-02; nur noch mit ausgeschiedenen Managern aus älteren Spielständen, R688S-03): Sind am
+            // 29. April alle Manager ausgeschieden, schließt die Saison noch ab (Titel, Austausch, Ewige Tabelle, Chronik) – wie
+            // beim Ausscheiden eines Teils der Manager; ausgeschiedene Manager erhalten weder Platz noch Prämie. Kein
+            // SeasonEndStep: die Oberfläche zeigt direkt das Spielende.
             if (day == SeasonCalendar.SeasonEnd)
             {
                 FinishSeason();
@@ -457,22 +484,13 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Entlassung: Wer 8 Wochen am Stück mit mehr als 1,5 Mio. DM im Minus steht, wird entlassen
-    /// (laut Anforderungen, nur lokale Spiele). Im Hot-Seat spielen die übrigen Manager weiter.
+    /// Ausgeschiedene Manager (<see cref="Manager.Dismissed"/>, nur aus älteren Spielständen): Sind alle ausgeschieden, endet das
+    /// Spiel; sonst geht der Zug an den nächsten aktiven Manager. [ORIGINAL] Keine Entlassung wegen Schulden (#688, R688S-03,
+    /// <c>SeasonDismissal.cs</c>): Die Remake-Regel „acht Wochen unter −1,5 Mio. DM“ ist entfernt; Schulden wirken wie im Original
+    /// über den Zwangsabstieg am 29. April (<c>SeasonFlow.Zwangsabstieg.cs</c>) und die Kontogrenze im Monatsabschluss.
     /// </summary>
-    private void CheckDebts(int day, List<SeasonStep> steps)
+    private void CheckDismissed()
     {
-        for (var i = 0; i < Managers.Count; i++)
-        {
-            var m = Managers[i];
-            if (m.Dismissed)
-                continue;
-            m.DebtDays = m.Money < Manager.DebtLimit ? m.DebtDays + 1 : 0;
-            if (m.DebtDays < Manager.DebtDaysUntilDismissal)
-                continue;
-            m.Dismissed = true;
-            steps.Add(new DismissalStep(day, i));
-        }
         if (Managers.Count > 0 && Managers.All(m => m.Dismissed))
         {
             Phase = SeasonPhase.GameOver;

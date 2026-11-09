@@ -21,7 +21,10 @@ Die Zuordnung der Werte ist an den Videos belegt: DEB-Symbol in der Infoleiste a
 „Play-Off / Aufstiegsrunden“ nach dem 44. Spieltag; Europacupsieger zwischen 15.11. und 3.12.
 
 Das Original kennt **keinen 29. Februar** („Donnerstag, 22. März“, „Samstag, 14. April“ in allen Jahren).
-Am Saisonende steht „Montag, 29. April“, obwohl der Kalender einen Sonntag ergibt – wird so nachgebildet.
+Am Saisonende steht „Montag, 29. April“, obwohl der Kalender einen Sonntag ergibt – wird so nachgebildet. Hinweis (#688,
+R688S-01): Das Saisonende 0x26F20 setzt den Tageszähler auf 233 (Datei 0x26F55), das ist der 30. April = Montag im Kalender
+1989/90; der DOSBox-Stand `file46_2` zeigt im Fenster „Saisonende“ „Montag, 30. April“. Ob das Video wirklich „29. April“ zeigt, ist
+offen (A158).
 
 ## Infoleiste
 
@@ -49,7 +52,11 @@ spielfreie Tage –, bis wieder ein Verein eines Managers spielt. Belegt: 1995/9
 5. **29. April**: Saisonende – Titel, Prämien (`[APPROX]`, belegt nur 1. Platz Oberliga = 400.000 DM),
    Ereignisse je Manager, dann neue Saison am 10. September oder Spielende nach der gewählten Dauer.
 
-**Entlassung**: 8 Wochen am Stück unter −1,5 Mio. DM; im Hot-Seat spielen die übrigen Manager weiter.
+**Keine Entlassung wegen Schulden** (#688, R688S-03; `SeasonDismissal.cs`): em.exe vergleicht das Konto nur beim Stadionauftrag,
+beim Kauf, beim Zwangsabstieg am 29. April (< −2.000.000 Drittel, `SeasonFlow.Zwangsabstieg.cs`) und mit der Kontogrenze
+±500.000.000 Drittel im Monatsabschluss (Datei 0x3F10E–0x3F165); das Spielende hängt nur am Endjahr. Die frühere Remake-Regel
+„8 Wochen unter −1,5 Mio. DM“ ist entfernt. Ausgeschiedene Manager älterer Spielstände (`Manager.Dismissed`) werden im Hot-Seat
+übersprungen.
 
 **Erweiterung**: DEB-Pokal, Europapokal und WM melden sich über `ISeasonCompetition` in `GameState.Competitions`
 an und werden an ihren Kalendertagen aufgerufen (Infoleiste, Anhalten von „Tag weiter“, Titel am Saisonende).
@@ -120,7 +127,7 @@ Tauschpartners (Spur `wettbewerbe-komplett`, `LeagueTable.SuccessorOrder`); `[AP
 | Infoleiste nach der Vereinssaison: Zielflagge, „Saisonende“ | `MainMenuScreen.DrawInfoBar` (minimal) | 10:50, 24:50 |
 | Saisonende: Titelträger, neue Vereine je Liga (rot = Absteiger, grün = Aufsteiger, blau = Meister) | `SeasonEndScreen.cs` | 11:50, 18:36, 25:52 |
 | Fenster „Ereignisse“ mit Platzierung und Prämie je Manager | `SeasonEndSummaryScreen.cs` | 11:53, 18:38 |
-| Entlassung, Spielende | `SeasonEndGameOverScreen.cs` | – (`[APPROX]`) |
+| Spielende (Entlassungstext nur für ausgeschiedene Manager älterer Spielstände) | `SeasonEndGameOverScreen.cs` | – (`[APPROX]`) |
 
 Bildschirmfotos: `emtool screens gamedata <ziel> saison saison_aufstieg`.
 

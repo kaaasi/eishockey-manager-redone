@@ -196,10 +196,28 @@ public class RngTwinProbeTests
     // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
     // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
     // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
-    [InlineData(false, 3, "975D2A6C4C60BA51")]
-    [InlineData(true, 3, "973330F4EBB72702")]
-    [InlineData(false, 11, "F541B5175D1801F9")]
-    [InlineData(true, 11, "BFFCFD23EBA50AE0")]
+    // #678/#679 (Tagestakt Hauptweg): neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert).
+    // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
+    // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
+    // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Passiv: Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter
+    // StartSeason → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager,
+    // Sommerpause und entlassene Manager einzeln zurück → gleicher Wert. Aktiv: Ursachen R688-05 (Liste über den Saisonwechsel)
+    // und R688-04 (Takt des Halttags vor den Eingriffen des aktiven Managers); jede einzeln zurück → anderer Wert. Tendenz,
+    // Aufstellung, Heilung, Sommerpause, entlassene Manager einzeln zurück → gleicher Wert.
+    // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
+    // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
+    // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f.
+    // Nachprüfung #691 (R688S-01/-03, Leitstelle Runde 14): neu – (1) R688S-01: Die Sommerpause beginnt mit Zähler 234 = 1. Mai (Datei
+    // 0x26F55 setzt 233, 0x564BC zählt weiter); der Tagesabschluss des 30. April (Werbeangebote am Monatsletzten 0x3EE6B, April-Abschluss
+    // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
+    // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
+    // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → alle sechs alten Werte; nur Start 233 → andere Werte (Feld).
+    [InlineData(false, 3, "71C440ACDC165036")]
+    [InlineData(true, 3, "F647215D0B088A26")]
+    [InlineData(false, 11, "82605FA6E5525270")]
+    [InlineData(true, 11, "3705607C914AE2C0")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -215,8 +233,27 @@ public class RngTwinProbeTests
     // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
     // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
     // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
-    [InlineData(false, "717B7C3D66940E4D")]
-    [InlineData(true, "13BD58ED33F37DA9")]
+    // #678/#679 (Tagestakt Hauptweg): neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert).
+    // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
+    // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
+    // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Passiv: Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter
+    // StartSeason → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager,
+    // Sommerpause und entlassene Manager einzeln zurück → gleicher Wert. Aktiv: Ursachen R688-05 (Liste über den
+    // Saisonwechsel), R688-04 (Takt vor dem Halt) und R688-03 (Sommerpause: Stadionbau, Heilung); jede einzeln zurück → anderer
+    // Wert. Tendenz, Aufstellung, Heilung je Manager, entlassene Manager einzeln zurück → gleicher Wert.
+    // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
+    // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
+    // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f; Originaldatenbank aktiv zusätzlich durch die Lage der Sommerpause
+    // nach dem Kaderwechsel (Gegenprobe ohne Tagesabschluss und mit Werbeangeboten vorher → weiter anders).
+    // Nachprüfung #691 (R688S-01/-03, Leitstelle Runde 14): neu – (1) R688S-01: Die Sommerpause beginnt mit Zähler 234 = 1. Mai (Datei
+    // 0x26F55 setzt 233, 0x564BC zählt weiter); der Tagesabschluss des 30. April (Werbeangebote am Monatsletzten 0x3EE6B, April-Abschluss
+    // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
+    // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
+    // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → beide alten Werte; nur Start 233 → andere Werte (Feld).
+    [InlineData(false, "8A64633B9AF694CD")]
+    [InlineData(true, "18C9B0A5398CF96B")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -21,8 +21,8 @@ public sealed partial class TransferMarket
         game.Clubs.SelectMany(OwnListingsOutsideSquad).Select(l => l.Player);
 
     /// <summary>
-    /// Markt-Teil des Tageslaufs 0x07169 für einen Manager, ohne Listenwechsel (für die WM-Schleife, Review R14NT4-05; den Aufruf
-    /// stellt die Spur <c>nationalteam</c> um). [ORIGINAL] Datei 0x0718F–0x07197: Die Schleife über alle Markt-Plätze (Satz 4,
+    /// Markt-Teil des Tageslaufs 0x07169 für einen Manager, ohne Listenwechsel (Review R14NT4-05). Aufrufer seit #678: der Hauptweg
+    /// am Takttag je Manager und Schritt (c) der WM-Schleife für Manager 0 (<c>GameState.DailyRun.cs</c>). [ORIGINAL] Datei 0x0718F–0x07197: Die Schleife über alle Markt-Plätze (Satz 4,
     /// DGROUP 0x7623) mit dem Verfall der Gebote (Datei 0x07215–0x0726A) läuft nur für Manager 0 (DGROUP 0xA70E = 0); die zweite
     /// Schleife (ab Datei 0x0727C) würfelt Angebote nur für die Markt-Plätze mit Pool +0x1A = Manager (Datei 0x072A0–0x072DD).
     /// Den Listenwechsel 0x494EF rufen nur Datei 0x437D5 und 0x54C9F (Hauptweg 0x54E7C), nicht 0x07169; im Original bleibt die

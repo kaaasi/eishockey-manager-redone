@@ -45,7 +45,10 @@ public class NationalteamRunde14Tests
                     p.Form = 1;
             game.Continue();
             Assert.Equal(SeasonPhase.Running, game.Phase);
-            var last = game.CurrentDay - 1; // RunDays hält vor dem Spieltag des Managers: zuletzt gerechnet ist der Vortag
+            // RunDays hält vor dem Spieltag h des Managers. #688 (R688-04/-08): Der Tageswechsel zu h (Takt 0x07169, Wanderung) ist
+            // wie im Original schon gerechnet, 0x952C(5, 1) (Datei 0x54F9C, nach den Menüs) zuletzt am Vortag.
+            var halt = game.CurrentDay;
+            var last = halt - 1;
             Assert.True(last <= SeasonCalendar.ClubSeasonEnd); // nur Hauptweg (Phase Running endet mit dem 13. April)
             if (SeasonCalendar.Events(last).HasFlag(DayEvents.WorldCup) || last < 1)
                 continue;
@@ -53,10 +56,14 @@ public class NationalteamRunde14Tests
             var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
             Assert.InRange(defense.Form, 0, 44);
             Assert.InRange(attack.Form, 0, 44);
-            Assert.Equal((defense.Condition, defense.Technique, attack.Condition, attack.Technique),
-                game.NationalRatings(NationalTeams.Germany));
+            // #688 (R688-08): [ORIGINAL] Training im Takt (0x07169, Datei 0x552A6) vor 0x952C desselben Tages (Datei 0x54FBF): Die
+            // Länderwerte des Vortags enthalten dessen Training. Abweichen dürfen sie nur, wenn der Takt des Halttags schon wieder
+            // trainiert hat. Gegenprobe: Reihenfolge von #678 (0x952C vor dem Takt) → rot an Halttagen nach einem Takttag.
+            if (!GameState.IsDailyRunDay(halt))
+                Assert.Equal((defense.Condition, defense.Technique, attack.Condition, attack.Technique),
+                    game.NationalRatings(NationalTeams.Germany));
             var values = germany.TeamValues!.Value;
-            if ((last + 1) % 7 is 0 or 4) // #675: Zähler 0x3B7 nach dem Weiterzählen = Tag + 1 (DayCounter), Datei 0x55204/0x55253
+            if (GameState.IsDailyRunDay(halt)) // #675: Zähler 0x3B7 nach dem Weiterzählen = Tag + 1 (DayCounter), Datei 0x55204/0x55253
             {
                 driftSeen = true;
                 Assert.InRange(values.DefenseForm, 45, 55);

@@ -206,9 +206,27 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
     // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
     // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    // #678/#679 (Tagestakt Hauptweg): neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert).
+    // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
+    // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
+    // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Passiv: Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter
+    // StartSeason → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager,
+    // Sommerpause und entlassene Manager einzeln zurück → gleicher Wert. Aktiv: Ursache R688-05 (Liste über den Saisonwechsel),
+    // dazu R688-04 nur zusammen mit ihr (einzeln zurück: R688-05 → anderer Wert, R688-04 → gleicher Wert). Tendenz,
+    // Aufstellung, Heilung, Sommerpause, entlassene Manager → gleicher Wert.
+    // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
+    // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
+    // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f.
+    // Nachprüfung #691 (R688S-01/-03, Leitstelle Runde 14): neu – (1) R688S-01: Die Sommerpause beginnt mit Zähler 234 = 1. Mai (Datei
+    // 0x26F55 setzt 233, 0x564BC zählt weiter); der Tagesabschluss des 30. April (Werbeangebote am Monatsletzten 0x3EE6B, April-Abschluss
+    // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
+    // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
+    // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → beide alten Werte; nur Start 233 → andere Werte (Feld).
     [GameDataTheory]
-    [InlineData(false, "7755FA3A80BEFFDE")]
-    [InlineData(true, "5F5FDF1472303164")]
+    [InlineData(false, "7643FD5C4D33C359")]
+    [InlineData(true, "3BFBFB82C212FDB8")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -277,8 +295,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Oberliga-Austausch (Datei 0x56238) zwei Nachrücker aus der Hauptquelle.
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
+    // Review #688 (R688-05, Fixlauf Leitstelle Runde 14): Konten gleich; Weltmeister ab Saison 3 und Haupt-/Pokalquelle neu – der
+    // Saisonwechsel behält die Markt-Plätze (kein Listenwechsel 0x494EF) und zieht dafür keine Zahlen. Gegenprobe: alter
+    // TransferMarket.StartSeason → alter Wert; Takt vor dem Halt (R688-04) und Sommerpause (R688-03) einzeln zurück → gleicher Wert.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=53|500000|WorldChampion=63|500000|R982137502 C211999367";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=54|500000|R1374974225 C782029941";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

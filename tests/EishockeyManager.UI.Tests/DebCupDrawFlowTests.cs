@@ -274,6 +274,14 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
     // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
     // Gegenüber main: 1993 Meister und Tabelle gleich, Pokal neu (die Angaben der Zeile #676 galten für Base e5fe46f). Mit und ohne Anzeige gleich.
+    // #678/#679 (Tagestakt Hauptweg): ab 1993 neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert). Mit und ohne Anzeige weiter gleich.
+    // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
+    // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
+    // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter StartSeason
+    // → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager, Sommerpause
+    // und entlassene Manager einzeln zurück → gleicher Wert.
     private const string Reference =
-        "1993: DEB 8, DM 5, Tab 15381 | 1994: DEB 7, DM 8, Tab 15375 | 1995: DEB 5, DM 7, Tab 15397 | 1996: DEB 2, DM 2, Tab 15414";
+        "1993: DEB 8, DM 8, Tab 15392 | 1994: DEB 7, DM 8, Tab 15770 | 1995: DEB 3, DM 9, Tab 15843 | 1996: DEB 19, DM 4, Tab 15264";
 }

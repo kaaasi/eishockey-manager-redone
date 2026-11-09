@@ -237,8 +237,9 @@ public sealed partial class GameState
     // ---- (2) Nachspielen bis zum Tag des HOK -------------------------------------------------------------------
 
     /// <summary>
-    /// Zeitleiste von Tag 0 bis vor den Tag des HOK (der Tag selbst ist im Original noch nicht verarbeitet: Hauptmenü vor
-    /// dem Tageslauf, Zähler 0x3B7 = Tag + 1). Ligaspieltage tragen danach die Ergebnisse des Originals, damit Tabelle,
+    /// Zeitleiste von Tag 0 bis vor den Tag des HOK, dazu dessen Tageswechsel (Zähler 0x3B7 = Tag + 1): Das HOK ist im Hauptmenü
+    /// des Tages gesichert, nach dem Tagesabschluss, dem Takt 0x07169 und den Würfen des Listenwechsels, vor den Spielen (#688,
+    /// R688-04: Datei 0x55204–0x552D3 und 0x54E71 liegen vor dem Menü 0x44E22). Ligaspieltage tragen danach die Ergebnisse des Originals, damit Tabelle,
     /// Play-off-Setzliste und Aufstiegsrunden dem HOK folgen. [APPROX] Pokale, Markt, Training und Finanzen laufen nach den
     /// Regeln des Remakes; was belegt ist, überschreibt <see cref="ApplyOriginal"/>.
     /// </summary>
@@ -266,6 +267,7 @@ public sealed partial class GameState
                 && !WorldOnly && !RegularSeasonOver)
                 throw new InvalidDataException(
                     $"Spieltag {OriginalImport.NextMatchDay(save, league)} (DGROUP 0x7A9) passt nicht zu Tag {target} ({PlayedMatchDays} gespielt).");
+        OpenDay(CurrentDay); // #688 (R688-04): Tageswechsel zum gesicherten Tag, vor dem Überschreiben mit den Werten des HOK
         StartTurns();
     }
 
@@ -436,7 +438,7 @@ public sealed partial class GameState
                 player = new Player { Name = name, Role = role, IsForeigner = foreigners.Contains(name) };
                 AssignPlayerId(player);
             }
-            ApplySlot(player, slot, entry, clubOf);
+            ApplySlot(player, slot, entry, clubOf, club);
             squadPlayers[slot[0x0F]] = player;
             if (listed)
                 continue; // A380: nur auf dem Markt-Platz
@@ -482,7 +484,8 @@ public sealed partial class GameState
     }
 
     /// <summary>Werte eines Kaderplatzes (0x34 Byte) und des Pool-Spielers (33 Byte). Geld in Drittel-DM (Regel 4).</summary>
-    private void ApplySlot(Player p, ReadOnlySpan<byte> slot, ReadOnlySpan<byte> entry, int[] clubOf)
+    /// <param name="club">Verein des Kaderplatzes (Leihe: nie der Verleiher) oder null für einen Markt-Platz.</param>
+    private void ApplySlot(Player p, ReadOnlySpan<byte> slot, ReadOnlySpan<byte> entry, int[] clubOf, Club? club)
     {
         p.Age = entry[0x14];
         p.Talent = entry[0x12];
@@ -548,6 +551,24 @@ public sealed partial class GameState
         p.PurchasePrice = (price & 0x7FFF_FFFF) / 3;
         p.InsurancePremium = BinaryPrimitives.ReadInt32LittleEndian(slot[0x30..]) / 3;
         p.UnsolicitedOffer = (slot[0x09] & 0x40) != 0 && slot[0x16] < clubOf.Length ? Clubs[clubOf[slot[0x16]]] : null;
+        // #688 (R688S-02, A115): Leihe. [ORIGINAL] Kaderplatz +0x0C = Verein + 0x80 (Datei 0x47920–0x47925 bei der Leihe, 0 sonst;
+        // Prüfung „… ist leider von <Verein> nur ausgeliehen“ Datei 0x4A692, docs/transfer.md), Pool +0x1A bleibt beim Verleiher
+        // (4 = Markt). FILE44 VALLIERE: +0x0C = 0xB9 (Vereinssatz 57, ein Land), Pool +0x1A = 4; am Saisonende frei ohne Ablöse (FILE46,
+        // Pool +0x1A = 6, Datei 0x275FF). Der Verein in +0x0C ist der Vereinssatz des Originals (0–47 Ligavereine, ab 52 Länder;
+        // Abbildung clubOf wie bei +0x16).
+        // [APPROX] Stammvertrag (Laufzeit, Gehalt, Versicherung) in PlayerLoan unbelegt: Werte des Leih-Kaderplatzes; der
+        // Saisonwechsel braucht nur den Verleiher (StartSquadSeason).
+        var loanSlot = slot[0x0C] & 0x7F;
+        if (club is not null && (slot[0x0C] & 0x80) != 0 && loanSlot < clubOf.Length && Clubs[clubOf[loanSlot]] is { } lender && lender != club)
+        {
+            p.OnLoan = true;
+            p.Loan = new PlayerLoan(lender, p.ContractYears, p.MonthlySalary, p.Insured);
+        }
+        else
+        {
+            p.OnLoan = false;
+            p.Loan = null;
+        }
     }
 
     private static string CName(ReadOnlySpan<byte> raw)

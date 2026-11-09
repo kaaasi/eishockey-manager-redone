@@ -20,10 +20,12 @@ public class DeadlineRegressionTests
         var requestAtThree = game.RequestLoan(0, 1, 11_000)!;
         while (game.Day < 10)
             game.Continue();
-        // Tag 10 ist noch nicht verarbeitet. Die Frage von Tag 3 ist exakt sieben Tage alt.
+        // Tag 10 ist noch nicht gespielt; #688 (R688-04): sein Tagesabschluss liegt wie im Original vor dem Menü (Datei 0x5522B).
+        // Die Frage von Tag 3 ist exakt sieben Tage alt und mit dem Tagesabschluss von Tag 10 schon verfallen; die Antwort prüft die
+        // Frist trotzdem selbst (vorher: Frage noch offen, Tagesabschluss erst nach dem Menü).
         Assert.Equal(10, game.Day);
-        Assert.Equal(9, game.FinanceDay);
-        Assert.True(requestAtThree.IsQuestion);
+        Assert.Equal(10, game.FinanceDay);
+        Assert.False(requestAtThree.IsQuestion);
         var money = game.Managers.Select(m => m.Money).ToArray();
         Assert.False(game.Answer(game.Managers[1], requestAtThree, true));
         Assert.Equal(money, game.Managers.Select(m => m.Money));

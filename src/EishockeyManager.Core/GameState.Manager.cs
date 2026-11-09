@@ -163,7 +163,9 @@ public sealed partial class GameState
                     foreach (var manager in Managers)
                         CountDownSponsorContracts(manager);
             }
-            if (FinanceDay > 0 && date.DayOfWeek == DayOfWeek.Monday)
+            // #679: [ORIGINAL] Stadionbau 0x3D316 am Tageszähler 0x3B7 ≡ 0 (mod 7) nach dem Weiterzählen (Hauptweg Datei 0x552AB–0x552C3,
+            // WM-Schleife Datei 0x556B5–0x556CD), im Tageslauf also Zähler DayCounter.Of(Tag) – samstags, vorher montags.
+            if (FinanceDay > 0 && DayCounter.Of(FinanceDay) % 7 == 0)
                 WeeklyFinances();
             if (FinanceDay > 0 && date.Day == DateTime.DaysInMonth(date.Year, date.Month))
                 MonthlyFinances();
@@ -184,12 +186,20 @@ public sealed partial class GameState
             Finance(manager).Book.NewSeason();
             // [ORIGINAL] 0x563C0: Kostenstufe = Liga der neuen Saison (Spur finanzen-2).
             Finance(manager).CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga;
-            // [ORIGINAL] 0x5664D: zu Saisonbeginn neue Werbeangebote (gewürfelt, gespeicherte Bewertung; #133).
-            RefreshSponsorOffers(manager, noDice: false);
             // [ORIGINAL] Saisonwechsel 0x55889: Auf-/Abstieg und Neustart der Jugendteams (0x3A13B, Spur geld Teil 3).
             YouthSeasonChange(manager);
         }
         FinanceDay = -1;
+    }
+
+    /// <summary>
+    /// [ORIGINAL] 0x5664D: zu Saisonbeginn neue Werbeangebote (gewürfelt, gespeicherte Bewertung; #133), nach der Sommerpause
+    /// (Datei 0x56650 hinter der Schleife 0x564D2–0x56593; #688, vorher in <see cref="StartFinanceSeason"/>).
+    /// </summary>
+    internal void StartSponsorSeason()
+    {
+        foreach (var manager in Managers)
+            RefreshSponsorOffers(manager, noDice: false);
     }
 
     private void WeeklyFinances()

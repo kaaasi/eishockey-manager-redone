@@ -277,8 +277,8 @@ Kontoleiste `TransferScreen.DrawAccountBar`; Tests `KaderTransferTeil4Tests`. Ke
 
 | Regel | Fundstelle em.exe | Umsetzung |
 |---|---|---|
-| Listenwechsel **täglich** mit random(0, Managerzahl + 2) = 0 (nach der Managerschleife des Tages) | 0x54E65–0x54E7C | `CatchUp` einmal je Kalendertag aus dem Tagesablauf (vorher je gespieltem Ligaspieltag); A256 |
-| Angebot für eigene Spieler auf dem Markt im Tagesablauf | 0x072DD (Tagesablauf 0x07169) | ebenfalls täglich |
+| Listenwechsel mit random(0, Managerzahl + 2) = 0 **im Zug jedes Managers** an Tagen mit Ereignis (Tagesbyte ∉ {0, 9, 255}, 9 gilt als 0, Datei 0x54D4C–0x54D65), nicht in der WM-Schleife, nicht beim Saisonwechsel (Liste bleibt, R688-05) | 0x54E65–0x54E7C | `TransferMarket.ListChangeTurn` je Manager aus `MainPathListChanges` (#678; vorher einmal je Kalendertag); A256 |
+| Angebot für eigene Spieler auf dem Markt im Tagesablauf, Gebotsverfall nur im Lauf von Manager 0, Markt-Verfall +0x13 > 0x38 → −10 | 0x072DD, 0x07215, 0x071BB (Tagesablauf 0x07169, Hauptweg nur am Zähler ≡ 0/4) | `TransferMarket.CatchUpManagerDay` aus `ManagerDailyRun` bzw. Schritt (c) der WM-Schleife (#678) |
 | Bietender Verein: 0x059B8 mit Europapokal-Schalter 0 (Vereine 0 … 42 ohne Manager, Stärke nahe der Spielerstärke) | 0x07364 | `UnsolicitedOfferRules.Bidder` (vorher beliebiger Ligaverein); A257 |
 | Kontoleiste: Kontostand, Schulden (0x57768), Anlagen (Aktien zum Kurs + Forderungen samt Sparbuch), Saldo = Konto + Anlagen − Schulden | 0x463CC | `GameState.TransferAccount`; A381, F109 |
 
@@ -297,7 +297,7 @@ Partner wie bei `TotalDebts` (Kredite zwischen zwei Managern verrechnet, Bank Sp
 | Anzeige der Tendenz (Wert − 30) / 13 → „Fallend./Konstant./Steigend.“; Balken (Wert − 30) · 100 / 38; Eingang des Spielerwerts | 0x41AE0, 0x041AC, 0x4A0A7 | `Player.TrendOf`, `PlayerInfoPopup.BarValues`, `PlayerValue.Inputs` |
 | Grundstärken des Listenwechsels aus Vereinsfeld 0x19/0x1B; bei Nationalteams (t = 1) setzt der Lader 0x2EF1B diese Felder aus der Ländertabelle DGROUP 0x4C4E (je −2), Deutschland ohne Bundestrainer neu gewürfelt (0x55506) | 0x4981E–0x4991C | `RollMarketStrengths` mit `GameState.NationalRatings` (vorher Datenbankstärke); A209 |
 
-**Tägliche Änderung der Tendenz** (gelesen, nicht umgesetzt – Inventur A134): Im Tagesablauf 0x07169 je Kaderplatz des Managers
+**Änderung der Tendenz je Takt** (umgesetzt mit #688, R688-07, Inventur A134; `GameState.AdvanceTrend` im Kaderteil von 0x07169): Im Tagesablauf 0x07169 je Kaderplatz des Managers
 am Zug (Datei 0x7B29–0x7C04, nach der Heilung 0x7C12): t = +0x0E; mit random(0, 3) ≠ 0 wird t um (+0x14 >> 4) & 7 erhöht
 (Bit 7 gesetzt) bzw. erniedrigt; dann zählt +0x14 & 0xF um eins herunter. Erreicht der Zähler 0, ruft 0x7BD4 erneut 0x4907A
 (neuer Wert und neues Steuerbyte, t verfällt); sonst wird t auf 30 … 68 begrenzt (0x7BEA) und nach +0x0E geschrieben.
@@ -306,7 +306,7 @@ am Zug (Datei 0x7B29–0x7C04, nach der Heilung 0x7C12): t = +0x0E; mit random(0
 Markt, Spiele und Mehrsaisonproben ihre Folgen); ein Kauf übernimmt Tendenz und Steuerbyte vom Markt-Platz (das Original legt
 beim Kauf 0x477E7 einen neuen Kaderplatz an, würfelt also neu, und kopiert den Markt-Platz darüber nur bei [bp−0x11] ≠ 0 oder
 einer Leihe, Datei 0x478CF–0x47907; Bedeutung von [bp−0x11] nicht geprüft), Startkader und ältere Spielstände ohne Wert (0 → Mitte der Stufe);
-die tägliche Änderung fehlt (A134). Die Frage an den Verkäufer zeigt das Fragefenster des Transferbildschirms mit dem Namen des
+die Änderung je Takt (A134, seit #688) überspringt Plätze ohne Wert oder Steuerbyte (0). Die Frage an den Verkäufer zeigt das Fragefenster des Transferbildschirms mit dem Namen des
 Verkäufers als Kopf, bis der Baustein 0x4C246 (Spur `ui-meldungen`) angeschlossen ist; ohne Oberfläche (`TransferMarket.Buy`)
 bleibt die simulierte Antwort. Länderwerte aus der Aufstellung eines Bundestrainers (0x952C) gehen in die Grundstärken nicht ein.
 
@@ -397,7 +397,7 @@ Grundlage `docs/analyse/re-runde-14.md` Sitzung 4 (FILE44 → FILE46) und Review
 | Was | Fundstelle | Regel |
 |---|---|---|
 | Listenpreis eigener Markt-Plätze | 0x470C4 | Markt-Platz = Kopie des Kaderplatzes, also Preis = +0x2C (`Player.PurchasePrice`): HOHENADL FILE40 316.000 DM → FILE41 Markt 316.000 DM, `file40_04` „316.000 DM (K)“, „105.333 DM (L)“ = Preis / 3; ohne Kaufpreis (Altstand) `[APPROX]` der Spielerwert |
-| A115 Leihende | 0x27547–0x27665 | Pool +0x1A ≥ 4 (Leihe vom Markt) → +0x1A = 6, der Spieler ist frei (VALLIERE FILE44 → FILE46); Besitzer ein Manager → neuer Kaderplatz bei ihm (0x42CB1, nach Art) mit einer **Kopie des Leih-Kaderplatzes** (0x48:0x2BD4 alt → neu, R14RD2-03): Laufzeit heruntergezählt, Gehalt und Versicherung aus der Leihe; +0x0C = 0, +0x18 &= 0x7F. Laufzeit 0 → Verhandlung beim Verleiher (Schleife ab 0x27B64). `[APPROX]` Leihe zwischen Managern nur nach dem Code; vom Markt Geliehene werden Vertragslose (`TransferMarket.Release`) statt freier Poolplätze |
+| A115 Leihende | 0x27547–0x27665 | Pool +0x1A ≥ 4 (Leihe vom Markt) → +0x1A = 6, der Spieler ist frei (VALLIERE FILE44 → FILE46); Besitzer ein Manager → neuer Kaderplatz bei ihm (0x42CB1, nach Art) mit einer **Kopie des Leih-Kaderplatzes** (0x48:0x2BD4 alt → neu, R14RD2-03): Laufzeit heruntergezählt, Gehalt und Versicherung aus der Leihe; +0x0C = 0, +0x18 &= 0x7F. Laufzeit 0 → Verhandlung beim Verleiher (Schleife ab 0x27B64). `[APPROX]` Leihe zwischen Managern nur nach dem Code; vom Markt Geliehene werden Vertragslose (`TransferMarket.Release`) statt freier Poolplätze. Import (#688, R688S-02): Kaderplatz `+0x0C` = Vereinssatz + 0x80 → `OnLoan`/`Loan` (FILE44 VALLIERE `0xB9`) |
 | A362 Liste der Verhandlungen | 0x27C9F, 0x27D15–0x27D70, 0x27F31, 0x423A2 | Liste einmal vor der Schleife gezeichnet, nach einem Abgang neu: offene Verträge „kein V.“ (DGROUP 0x510E) mit altem Gehalt (KJELLBERG 18.800 DM, Fenster 19.152 DM, `file46_3`); Abbild im Bildschirm (`ContractsScreen.SeasonEndRows`), altes Gehalt `GameState.SalaryBeforeRenewal` (kein Spielstandsfeld). Fenster (2 \| 29)–(166 \| 95), Kopfzeile y 19, Linien y 25/209 ab x 7 (`file46_3`, `file40_11`) |
 | A088 Saisonzähler | 0x27A0C–0x27AA8 | Kaderplatz +0x00, +0x01, +0x03, +0x04, +0x06, +0x07 → 0, +0x1C–+0x26 und +0x02 bleiben (FILE44 → FILE46); +0x05/+0x08 nur nach dem Code |
 | Zahlen | 0x27D1F–0x27D70, 0x27DE3–0x27E1C | Gehalt = Wert(Gehalt) · (147 − Alter) / 100 (16.800 · 114 / 100 = 19.152), Ablöse = Wert(Preis) / 2 (311.000 / 2 = 155.500), Prämie 100.000 DM = eine Einzelprämie |

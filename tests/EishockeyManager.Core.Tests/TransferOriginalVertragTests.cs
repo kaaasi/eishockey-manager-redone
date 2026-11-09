@@ -120,7 +120,7 @@ public class TransferOriginalVertragTests
 
     /// <summary>
     /// Gesperrt: Eingaben werden mit „ist im Moment nicht verhandlungsbereit.“ abgewiesen (0x4A704), ohne neue Sperre; die
-    /// Sperre zählt täglich herunter (0x76F6). „Mach' ich!“ ohne Eingaben ändert nichts und gelingt (0x4ABFA).
+    /// Sperre zählt je Tagesablauf 0x07169 herunter (0x76F6; im Hauptweg an den Takttagen, #678). „Mach' ich!“ ohne Eingaben ändert nichts und gelingt (0x4ABFA).
     /// </summary>
     [Fact]
     public void Lock_RefusesInput_AndCountsDownDaily()
@@ -133,8 +133,9 @@ public class TransferOriginalVertragTests
         Assert.Equal(NegotiationResult.Accepted, Contracts.Negotiate(game, manager, p, 0, 0, insured: true, false));
         Assert.True(p.Insured);
 
-        var day = game.Day;
-        while (game.Day < day + 3)
+        // #678: 0x76F6 liegt im Tagesablauf 0x07169, der im Hauptweg nur an den Takttagen läuft (GameState.IsDailyRunDay).
+        var from = game.FinanceDay;
+        while (Enumerable.Range(from + 1, game.FinanceDay - from).Count(GameState.IsDailyRunDay) < 3)
             game.Continue();
         Assert.Equal(0, p.NegotiationLock);
         Assert.Null(Contracts.Availability(game, p));

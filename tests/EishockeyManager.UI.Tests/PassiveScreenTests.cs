@@ -45,10 +45,15 @@ public class PassiveScreenTests
     private static void AssertSame(string expected, string actual, string what) =>
         Assert.True(expected == actual, $"{what} hat sich verändert – {StateFingerprint.FirstDifference(expected, actual)}");
 
-    /// <summary>Der Tag im Hauptmenü ist noch nicht verarbeitet, alle Tage davor genau einmal.</summary>
+    /// <summary>
+    /// Der Tag im Hauptmenü ist noch nicht gespielt, alle Tage davor genau einmal. #688 (R688-04): Sein Tageswechsel (Takt mit
+    /// Training, Tagesabschluss) liegt wie im Original vor dem Menü (Datei 0x55204–0x552D3 vor 0x44E22).
+    /// </summary>
     private static void AssertPausedDayUnprocessed(GameState game)
     {
-        Assert.Equal((game.Season, game.Day - 1), game.TrainedUntil);
+        Assert.True(game.DayOpened);
+        Assert.Equal((game.Season, game.Day), game.TrainedUntil);
+        Assert.Equal(game.Day, game.FinanceDay);
         Assert.True(game.TransferMarket.UpdatedDay <= game.PlayedMatchDays);
     }
 
@@ -149,11 +154,12 @@ public class PassiveScreenTests
     }
 
     /// <summary>
-    /// Reihenfolge „Plan ändern → Training“: Ein am angehaltenen Trainingstag geänderter Plan gilt bereits für
-    /// diesen Tag; abgerechnet wird erst beim Weiterspielen.
+    /// Reihenfolge „Training → Plan ändern“ (#688, R688-04): Am angehaltenen Trainingstag ist dessen Training (Takt 0x07169 vor
+    /// dem Menü) schon gerechnet und gebucht; ein im Menü geänderter Plan gilt ab dem nächsten Takt. Vorher [APPROX] galt er schon
+    /// für den angehaltenen Tag (einen Takt früher als im Original, Review #688 R688-04).
     /// </summary>
     [GameDataFact]
-    public void PlanChangedOnPausedDay_AppliesToThatDaysTraining()
+    public void PlanChangedOnPausedTrainingDay_AppliesFromNextTick()
     {
         var d = PausedOnTrainingDay();
         var game = d.Host.Game!;
@@ -176,7 +182,7 @@ public class PassiveScreenTests
         Assert.Equal(before, Training()); // Öffnen und Ändern bucht nichts
 
         d.PlayMatchDay();
-        var trainingDays = Enumerable.Range(paused, game.Day - paused).Count(GameState.IsTrainingDay);
+        var trainingDays = Enumerable.Range(paused + 1, game.Day - paused).Count(GameState.IsTrainingDay);
         Assert.True(trainingDays >= 1);
         Assert.Equal(before - trainingDays * newCost, Training());
     }

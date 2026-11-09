@@ -38,7 +38,9 @@ public sealed class TeamValueDriftTests(ITestOutputHelper output)
     public void GameStart_DriftsIntoLeagueBounds()
     {
         var game = Game();
-        TestSeason.PlayMatchDay(game);
+        // #688 (R688-04): Nach dem ersten Spieltag hat der Tageswechsel des Halttags schon die kleine Wanderung gerechnet (vor
+        // dem Menü wie im Original); geprüft wird deshalb direkt die Wanderung des Spielstarts.
+        MatchEngine.EnsureTeamValues(game);
         var outside = 0;
         foreach (var club in game.Clubs.Where(c => c.Index < NationalTeams.First && c.Players.Count > 0))
         {
@@ -47,8 +49,7 @@ public sealed class TeamValueDriftTests(ITestOutputHelper output)
             Assert.InRange(club.TeamValues!.Value.DefenseForm, 45, 55);
             Assert.InRange(club.TeamValues!.Value.AttackForm, 45, 55);
         }
-        // Am ersten Spieltag (Tag 0 ≡ 0 mod 7) läuft vor den Spielen die kleine Wanderung noch nicht (Werte erst beim ersten
-        // Spiel); die nächsten Schritte kommen ab Tag 4. Nach dem ersten Spieltag also alles in den Liga-Grenzen.
+        // Direkt nach der Wanderung des Spielstarts alles in den Liga-Grenzen.
         Assert.Equal(0, outside);
     }
 

@@ -126,10 +126,11 @@ public sealed partial class GameState
     /// 29. April, vor den Ereignissen: Zwangsabstieg wegen Schulden. Liefert die Manager (Index) mit Statusbit 0x04.
     /// </summary>
     /// <remarks>
-    /// [APPROX] Nur aktive Manager: Die Entlassung (8 Wochen unter −1,5 Mio. DM) stammt aus den Anforderungen, nicht aus
-    /// em.exe; das Konto eines Entlassenen ändert sich nicht mehr und würde seinen früheren Verein jede Saison absteigen
-    /// lassen. [APPROX] Das Remake prüft nach dem Tageswechsel der Finanzen des 29. April (<see cref="OnDayManager"/>); die
-    /// Reihenfolge in em.exe zwischen Tagesbuchungen und Saisonwechsel ist nicht gelesen.
+    /// [APPROX] Nur aktive Manager: Ausgeschiedene (<see cref="Manager.Dismissed"/>, nur aus älteren Spielständen; #688, R688S-03:
+    /// keine Entlassung wegen Schulden in em.exe) haben kein laufendes Konto mehr und würden ihren früheren Verein jede Saison
+    /// absteigen lassen. [ORIGINAL] Der letzte Tagesabschluss vor dem Saisonwechsel ist der des 29. April (Zähler 232, WM-Schleife
+    /// Datei 0x55670–0x5569F), danach folgt ohne weiteren Tag der Saisonwechsel (Datei 0x55724–0x55743; R688S-01) – das Remake prüft
+    /// ebenso nach dem Tageswechsel des 29. April (<c>OpenDay</c>).
     /// </remarks>
     private HashSet<int> ApplyForcedRelegation(SeasonRecord record)
     {

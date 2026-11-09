@@ -13,7 +13,7 @@ namespace EishockeyManager.Core;
 ///   <b>in dieselbe Schleife</b> Datei 0x55570–0x55740 – im Modus 2 („nur Fahne“) genauso wie im Modus 4 ohne Ernennung.
 ///   Der Modus 1 („nur Weltkugel“) springt schon am Saisonanfang dorthin (Datei 0x54CEE–0x54D38: Zähler bis zum ersten WM-Tag
 ///   weiter, Datei 0x54CF7, dann 0x553FF) und läuft ab dem ersten WM-Tag ebenso durch die Schleife (Review #674, R14NT4-04;
-///   <see cref="OnDayWorldOnlyLoop"/>).</item>
+///   <see cref="OpenWorldOnlyLoopDay"/>).</item>
 /// <item>Ein Tag der Schleife: (a) nur mit Bundestrainer und Tagesbyte ≠ 0 sein Menü, 0x37F/0x380 und 0x952C(5, 0) (Datei
 ///   0x55587–0x555D6, <see cref="NationalCoach"/>); (b) Modus ≠ 2 und Tagesbyte ≠ 0: WM-Spiele 0x30E7B(1) (Datei 0x555DD–0x555F3);
 ///   (c) Tageszähler DGROUP 0x3B7 ≡ 0 oder 4 (mod 7), geprüft vor dem Weiterzählen: Tagesablauf 0x07169 (Datei 0x5561A–0x5565C,
@@ -33,7 +33,7 @@ public sealed partial class GameState
     /// Läuft der Tag in der WM-Schleife des Originals? [ORIGINAL] Alle Tage nach dem Tag mit Markierung 255 (13. April) bis zum
     /// Saisonwechsel, in jeder Spielart mit Vereinssaison und unabhängig von der Ernennung (siehe Klassenkommentar; #664) –
     /// ohne den ersten: Dessen Tageslauf (Wechsel nach den Spielen des 13. April) rechnet noch der Hauptweg
-    /// (<see cref="IsWorldCupEntryDay"/>, R14NT4N-01). Der Modus 1 hat seinen eigenen Anschluss (<see cref="OnDayWorldOnlyLoop"/>).
+    /// (<see cref="IsWorldCupEntryDay"/>, R14NT4N-01). Der Modus 1 hat seinen eigenen Anschluss (<see cref="OpenWorldOnlyLoopDay"/>).
     /// </summary>
     private bool InWorldCupLoop(int day) => !WorldOnly && day > SeasonCalendar.ClubSeasonEnd + 1;
 
@@ -48,12 +48,11 @@ public sealed partial class GameState
     /// 0x5522B/0x55230), bei 217 ≡ 0 (mod 7) Talentsuche 0x06FA5 (0x5528A), kleine Wanderung 0x9D1B (0x55292), 0x07169 je
     /// Manager (0x552A6) und Stadionbau 0x3D316 (0x552C3). Erst Datei 0x552D5 prüft die Markierung des gespielten Tags (255) und
     /// geht über die Ernennung in die Schleife. FILE22/FILE44 (Modus 4, 14.04.) haben 0x3B7 = 217: kein weiterer Zählschritt.
-    /// Im Remake läuft dieser Tag also über den Hauptweg (<c>OnDayClubSeason</c>) mit Tagesabschluss und Talentsuche
+    /// Im Remake läuft dieser Tag also über den Hauptweg (<c>OpenClubSeasonDay</c>) mit Tagesabschluss und Talentsuche
     /// (<see cref="AdvanceFinance"/> mit <c>clubDay: true</c>; Jugendteams nur an Ligaspieltagen), Wanderung, Heilung und
     /// Aufstellungsautomatik; an seiner Stelle von 0x952C des Hauptwegs Schritt (a) der Schleife (<see cref="OnDayWorldCupEntry"/>).
-    /// [APPROX] Training und Markt (0x07169) nach den Regeln des Hauptwegs im Remake (<see cref="CatchUpTraining"/>,
-    /// <see cref="TransferMarket.CatchUp"/>), auch mit dem Listenwechsel 0x494EF, den der Tag mit Markierung 255 im Original
-    /// überspringt (Datei 0x54E71 liegt in 0x54D68–0x55072); Takttag-Regel und Listenwechsel kommen mit #678.
+    /// [ORIGINAL] 0x07169 je Manager am Takt 217 ≡ 0 (<see cref="MainPathDailyRun"/>, #678); kein Listenwechsel 0x494EF, den der
+    /// Tag mit Markierung 255 überspringt (Datei 0x54E71 liegt in 0x54D68–0x55072; <see cref="IsListChangeDay"/>).
     /// </remarks>
     private bool IsWorldCupEntryDay(int day) => !WorldOnly && day == SeasonCalendar.ClubSeasonEnd + 1;
 
@@ -70,34 +69,44 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Ein Tag der WM-Schleife (Datei 0x55570–0x55740) im Tageslauf des Remakes, vor den Spielen des Tages <paramref name="day"/>:
+    /// Tageswechsel zu einem Tag der WM-Schleife (Datei 0x55570–0x55740) vor dessen Menüs (#688, R688-04), also nach den Spielen
+    /// des Vortags:
     /// <list type="number">
-    /// <item>[ORIGINAL] Schritt (c) des Vortags: Er läuft im Original nach den WM-Spielen des Vortags (Datei 0x5565C hinter 0x555F3),
-    ///   im Remake also hier (<see cref="WorldCupLoopStepC"/>).</item>
+    /// <item>[ORIGINAL] Schritt (c) des Vortags: Er läuft im Original nach den WM-Spielen des Vortags (Datei 0x5565C hinter 0x555F3)
+    ///   (<see cref="WorldCupLoopStepC"/>).</item>
     /// <item>[ORIGINAL] Schritt (d) zum Tag <paramref name="day"/>: Tagesabschluss ohne Talentsuche und Jugendteams
-    ///   (<see cref="AdvanceFinance"/> mit <c>clubDay: false</c>), Heilung (<see cref="HealInjuries"/>; 0x07C12 nach dem
-    ///   Weiterzählen, Zähler <see cref="DayCounter.Of"/>(day) ≡ 0 mod 7). [APPROX] Wie <see cref="HealInjuries"/>: auch die
-    ///   Spieler ohne Manager und die freien Marktspieler, das Original in der Schleife nur die Kaderplätze der Manager.</item>
-    /// <item>[ORIGINAL] Schritt (a): an WM-Tagen mit Bundestrainer nach dessen Menü 0x952C(5, 0) (Datei 0x555D6,
-    ///   <see cref="UpdateNationalTeamValues"/>). Keine Neuaufstellung „Tag mit Ereignis“ (0x54D41, R14NT-02) und kein 0x952C(5, 1)
-    ///   des Hauptwegs: Es spielt die Aufstellung, die der Bundestrainer zuletzt gesehen hat. Schritt (b) sind die Wettbewerbe
-    ///   des Tages nach diesem Tageslauf.</item>
+    ///   (<see cref="AdvanceFinance"/> mit <c>clubDay: false</c>; darin der Stadionbau am Zähler ≡ 0, Datei 0x556B5–0x556CD), Heilung
+    ///   je Kaderplatz der Manager (0x07C12, Datei 0x556D2–0x55712, nach dem Weiterzählen, Zähler <see cref="DayCounter.Of"/>(day)
+    ///   ≡ 0 mod 7; <see cref="HealManagerSquads"/>). [APPROX] Spieler ohne Kaderplatz eines Managers heilen ebenso
+    ///   (<see cref="HealUnmanaged"/>; das Original kennt für sie keine Verletzung).</item>
     /// </list>
     /// Kein Training und kein Markt an den übrigen Tagen, keine Talentsuche, keine Jugendteams, keine Wanderung, keine
-    /// Aufstellungsautomatik außer in Schritt (c) und nach einer Heilung.
+    /// Aufstellungsautomatik außer in Schritt (c) und nach einer Heilung, keine Neuaufstellung „Tag mit Ereignis“ (0x54D41, R14NT-02).
     /// </summary>
-    private void OnDayWorldCupLoop(int day)
+    private void OpenWorldCupLoopDay(int day)
     {
+        TrainedUntil = (Season, day); // #678: Training nur in Schritt (c)
         WorldCupLoopStepC(day);
         AdvanceFinance(day, clubDay: false);
-        HealInjuries(day);
+        HealManagerSquads(day);
+        HealUnmanaged(day);
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Schritt (a) der WM-Schleife nach den Menüs: an WM-Tagen mit Bundestrainer nach dessen Menü 0x952C(5, 0) (Datei
+    /// 0x555D6, <see cref="UpdateNationalTeamValues"/>). Kein 0x952C(5, 1) des Hauptwegs: Es spielt die Aufstellung, die der
+    /// Bundestrainer zuletzt gesehen hat. Schritt (b) sind die Wettbewerbe des Tages danach.
+    /// </summary>
+    private void WorldCupLoopStepA(int day)
+    {
         if (NationalCoachPlaysOn(day))
             UpdateNationalTeamValues();
     }
 
     /// <summary>
     /// Modus 1 („nur Weltkugel“) ab dem ersten WM-Tag: dieselbe Schleife (Datei 0x54D38 → 0x553FF → 0x55570; Review #674,
-    /// R14NT4-04), vor den Spielen des Tages <paramref name="day"/>.
+    /// R14NT4-04), Tageswechsel vor dem Menü des Tages <paramref name="day"/> (#688); Schritt (a) folgt nach dem Menü
+    /// (<c>OnDayManager</c>).
     /// <list type="bullet">
     /// <item>[ORIGINAL] Schritt (c) des Vortags mit dem Markt-Verfall wie in den übrigen Modi (<see cref="WorldCupLoopStepC"/>);
     ///   Beleg FILE18 → FILE48 und FILE19 → FILE20 (siehe dort).</item>
@@ -105,19 +114,17 @@ public sealed partial class GameState
     ///   Spieler, das Original für die Kaderplätze von Manager 0 – im Modus 1 die Spieler Deutschlands, FILE18 „Verein 7
     ///   DEUTSCHLAND“). [APPROX] Ohne Tagesabschluss 0x3ED01/0x3F833 und Stadionbau 0x3D316: Das Remake hat in diesem Modus keine
     ///   Vereinsfinanzen (Konto im Original FILE19 → FILE20 unverändert, 500.000 DM).</item>
-    /// <item>[ORIGINAL] Schritt (a): Länderwerte aus der Aufstellung des Bundestrainers (0x952C(5, 0), Datei 0x555D6).</item>
-    /// <item>[ORIGINAL] Am ersten WM-Tag nur (a): Der Sprung Datei 0x54CF7–0x54D38 zählt ohne Tageslauf bis zum ersten WM-Tag, die
+    /// <item>[ORIGINAL] Am ersten WM-Tag nichts: Der Sprung Datei 0x54CF7–0x54D38 zählt ohne Tageslauf bis zum ersten WM-Tag, die
     ///   Schleife beginnt mit dessen Spielen; (c) und (d) gibt es erst danach.</item>
     /// </list>
     /// </summary>
-    private void OnDayWorldOnlyLoop(int day)
+    private void OpenWorldOnlyLoopDay(int day)
     {
         if (day > FirstWorldCupDay)
         {
             WorldCupLoopStepC(day);
             HealInjuries(day);
         }
-        UpdateNationalTeamValues();
     }
 
     /// <summary>
@@ -162,39 +169,28 @@ public sealed partial class GameState
     ///   Belastung in 50 … 150 bleibt (<see cref="PlayerFactory.Validate"/>, Dateien kader-start).</item>
     /// <item>Inhalt für Manager 0 (nicht im Modus 1): Heilung seiner Kaderplätze (Datei 0x07B4E → 0x07C12 mit dem Zähler der Spiele,
     ///   <see cref="PlayerInjuries.IsHealingDay"/>), danach je Platz das Training (Datei 0x07B5E → 0x0659C,
-    ///   <see cref="TrainingRules.Apply"/>, Kosten wie <see cref="TrainOneDay"/>), Aufstellungsautomatik (Datei 0x07C07).
-    ///   [APPROX] Verträge (Ankündigungen, Verlängerungen, Sperren; Datei 0x07215–0x07AEF) über <see cref="AnnounceContractEnds"/>
-    ///   für alle Manager: Die Tagesfunktion kennt keinen einzelnen Manager (Dateien der Spur kader-start). [APPROX] Ohne den
-    ///   Verfall offener Gebote (Datei 0x07215–0x0726A) und den Angebotswurf für die Marktspieler von Manager 0 (Datei 0x072DD):
-    ///   <see cref="TransferMarket.AdvanceDay"/> rechnet beides nur zusammen mit dem Listenwechsel für alle Manager (Restlücke
-    ///   kader-start, R14NT4-05).</item>
+    ///   <see cref="TrainingRules.Apply"/>, Kosten wie <see cref="TrainOneDay"/>), Tendenz (Datei 0x07B64–0x07BFC, #688),
+    ///   Aufstellungsautomatik (Datei 0x07C07); gemeinsam mit dem Hauptweg in <see cref="ManagerSquadRun"/>.
+    ///   [ORIGINAL] Verträge (Ankündigungen, Verlängerungen, Sperren; Datei 0x073E3–0x07AEF) über <see cref="AnnounceContractEnds"/>
+    ///   nur für Manager 0 (Kaderplätze 0x5DC3 + 0xA70E · 0x618, Datei 0x07402), Verfall offener Gebote (Datei 0x07215–0x0726A)
+    ///   und Angebotswurf auf seine Markt-Plätze (Datei 0x072DD) über <see cref="TransferMarket.CatchUpManagerDay"/> (#678), in der
+    ///   Reihenfolge des Originals: Markt, Verträge, Heilung und Training, Aufstellung.</item>
     /// <item>[APPROX] Modus 1: nur der Markt. Die Kaderplätze von Manager 0 sind dort die Spieler Deutschlands (FILE18 „Verein 7
     ///   DEUTSCHLAND“), das Remake führt keinen eigenen Kader des Managers in diesem Modus; Konto FILE19 → FILE20 unverändert.</item>
     /// </list>
     /// </summary>
     private void WorldCupLoopDailyRun(int day)
     {
-        if (Managers.Count == 0 || Managers[0] is not { Dismissed: false } manager)
+        if (Managers.Count == 0)
             return;
-        foreach (var listing in TransferMarket.Listings)
-            if (listing.Player.Strain > MarketDecayAbove)
-                listing.Player.Strain = Math.Max(listing.Player.Strain - MarketDecay, TrainingRules.MinStrain);
+        var manager = Managers[0];
+        // #678: Verfall, Gebotsverfall und Angebotswurf von Manager 0 (Datei 0x0718F–0x073CE); #688 (R688-06): auch wenn Manager 0
+        // entlassen ist (0x07169 läuft für Platz 0 unabhängig davon).
+        DailyRunMarket(day, manager);
         if (WorldOnly)
             return;
-        var club = Clubs[manager.ClubIndex];
-        if (PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
-        {
-            var healed = false;
-            foreach (var p in club.Players)
-                healed |= PlayerInjuries.Heal(p);
-            if (healed)
-                PlayerInjuries.RefillLineup(club);
-        }
-        var plan = PrepareTraining(manager);
-        Book(manager, FinanceCategory.Training, -plan.CostPerTrainingDay);
-        foreach (var player in club.Players)
-            TrainingRules.Apply(player, plan, manager.Level, Random);
-        AnnounceContractEnds(day);
-        club.ApplyAutoLineup();
+        AnnounceContractEnds(day, manager); // #678: nur die Kaderplätze von Manager 0 (Datei 0x07402: Satz 0x5DC3 + 0xA70E · 0x618)
+        if (!manager.Dismissed)
+            ManagerSquadRun(day, manager); // Heilung, Training, Tendenz je Kaderplatz, Aufstellung (Datei 0x07AF2–0x07C07)
     }
 }

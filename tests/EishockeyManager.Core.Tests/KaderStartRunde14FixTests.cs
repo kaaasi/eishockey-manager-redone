@@ -130,6 +130,7 @@ public class KaderStartRunde14FixTests
             for (var guard = 0; game.Phase != SeasonPhase.SeasonOver; guard++)
             {
                 Assert.True(guard < 2000, "Saisonende nicht erreicht");
+                manager.Money = Math.Max(manager.Money, 5_000_000); // #688 (Sommerpause wie im Original): fünf Monatsabschlüsse ohne Spiele je Sommer; die Probe prüft Markt und Speichern, nicht das Konto – Konto halten, sonst Entlassung nach der Schuldenregel.
                 game.Continue();
                 MessageLog.For(game).Collect(game);
                 TestSeason.KeepSquad(game, manager, extendExpired: true);
