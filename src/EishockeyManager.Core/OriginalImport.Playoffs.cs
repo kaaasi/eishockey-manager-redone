@@ -107,7 +107,7 @@ public sealed partial class Playoffs
             throw new InvalidDataException($"Play-off-Runde {round}, Spiel {game} (DGROUP 0x7B0/0xCCA3) ungültig.");
         var days = SeasonCalendar.DaysOf(DayEvents.Playoffs);
         var playoffs = new Playoffs(seeds);
-        var expectedFirst = playoffs._rounds[0].Select(s => (s.HigherSeed, s.LowerSeed)).ToList();
+        var expectedFirst = playoffs._rounds[0].Select(s => (s.HomeClub, s.AwayClub)).ToList();
         playoffs._rounds.Clear();
         // Plätze der Paarungen je Runde in Platzfolge wie Playoffs.Rounds; Prepare paart eine noch offene Runde nach Tabelle DGROUP
         // 0x144 wie das Original (1–8 gegen 3–6, 2–7 gegen 4–5, Heimrecht beim kleineren Platz; #676).
@@ -135,7 +135,7 @@ public sealed partial class Playoffs
                 }
                 series.Add(s);
             }
-            if (r == 0 && !series.Select(s => (s.HigherSeed, s.LowerSeed)).Order().SequenceEqual(expectedFirst.Order()))
+            if (r == 0 && !series.Select(s => (s.HomeClub, s.AwayClub)).Order().SequenceEqual(expectedFirst.Order()))
                 throw new InvalidDataException("Play-off-Viertelfinale (DGROUP 0x5D3B) passt nicht zur Abschlusstabelle 0x5CCB.");
             playoffs._rounds.Add(series);
         }

@@ -331,7 +331,7 @@ FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die S
 | Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf wird der Spieler nach Spielerart einsortiert (vor dem ersten leeren Platz oder dem ersten Platz größerer Art; ein Stürmer kommt damit hinten an) | FILE05 → FILE07 (Kauf eines Stürmers) und FILE26 (Verkauf), em.exe Datei `0x42D55`–`0x42DA1` mit memmove ab `0x42DC3` (Kauf, R13GN-01/#622), `0x425B6` (Verkauf); Remake `KaderStartRunde13Teil4Tests` (PR #599), `KaufEinsortierenTests` (PR #623) |
 | HOK `0x08EED` / `0x08EF7` | DGROUP `0xA776` (Teilnehmerliste Europapokal, deutsche Teilnehmer; die Mischung 0x35EDD führt Meister und Titelverteidiger über 0x36146 mit) bzw. DGROUP `0xA763` | FILE22 → FILE23: Kölner EC Satz 4 → 8, Liste = 8 (PR #579, 0x346D5 nach L8) |
 
-## Feldkarte Remake-Spielstand (Schema 43) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 44) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -735,8 +735,8 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Playoffs.Seeds` | A | `5CCB` | Plätze 1–8 der Abschlusstabelle |
 | `Playoffs._rounds` | B | `5CFB+0x40`, `CCB2`, `CCA4` | Runden 0 … 0x7B0 aus den Plätzen 0x5D3B, Spiele 0xCCB2; Siege ergeben sich aus den Spielen (0xCCA4 mit 0x14 = Gast des fünften Termins mit drei Siegen, auch bei vorher entschiedener Serie, danach getauscht; R14HN-02). Halbfinale/Endspiel des Remakes nach Tabelle DGROUP 0x144 wie das Original (#676) |
 | `PlayoffSeries.Games` | B | `CCB2` | 14 · Spiel + Platz, Tore modulo 30 (Marken abgezogen `[APPROX]`), 100 = nicht ausgetragen; Heimrecht Spiel 1/3/5 beim Platz 2k |
-| `PlayoffSeries.HigherSeed` | B | `5CFB+0x40` | Platz 2k (nach ungerader Spielzahl der laufenden Runde bzw. Siegbyte 0x14 im fertigen Endspiel getauscht) |
-| `PlayoffSeries.LowerSeed` | B | `5CFB+0x40` | Platz 2k + 1 |
+| `PlayoffSeries.HomeClub` | B | `5CFB+0x40` | Platz 2k (nach ungerader Spielzahl der laufenden Runde bzw. Siegbyte 0x14 im fertigen Endspiel getauscht) |
+| `PlayoffSeries.AwayClub` | B | `5CFB+0x40` | Platz 2k + 1 |
 | `RelegationGroup.Clubs` | B | `CFFC` | Teilnehmer DGROUP 0xCFF4 + 8 + 4 · Gruppe (zwei Letzte oben, zwei Erste unten, 0x30511) |
 | `RelegationGroup.PlayedRounds` | A | `CD58+12` | Punktsumme der Gruppe / 4 (zwei Punkte je Spiel; das HOK führt keinen Terminzähler) |
 | `RelegationGroup.Results` | B | `CED8+0x48`, `CDB8+0x48` | Paarungen und Tore + 0x24 · Gruppe + 6 · Termin (zwei Paare) für die gespielten Termine |
@@ -960,6 +960,8 @@ liegt bei den genannten Spuren.
 - Fixlauf #676: Play-off-Halbfinale nach Tabelle DGROUP 0x144 auch im Remake (`Playoffs.cs` `[ORIGINAL]`), Serien in Platzfolge;
   Feldkartenprüfung ohne Kommentare (R14HN-01), Tests für eine laufende Play-off-Runde und eine teilweise gespielte Aufstiegsrunde
   (R14HN-03, synthetisch aus FILE44), eigener Spieler auf dem Markt-Platz nicht im Kader (A380).
+- Schema 44 (R683-01/-04): `PlayoffSeries.HomeClub`/`AwayClub` statt `HigherSeed`/`LowerSeed` (erster Verein = Platz 2k, ab dem
+  Halbfinale nicht immer der besser Platzierte); die Migration ordnet ein laufendes Viertelfinale älterer Stände in Platzfolge.
 
 ### Zugang (Teil 3)
 

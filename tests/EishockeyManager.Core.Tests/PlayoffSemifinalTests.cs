@@ -1,4 +1,6 @@
 using System.Buffers.Binary;
+using System.Text;
+using System.Text.Json.Nodes;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
 
@@ -37,7 +39,7 @@ public sealed class PlayoffSemifinalTests
         int[] seeds = [101, 102, 103, 104, 105, 106, 107, 108];
         var playoffs = new Playoffs(seeds);
         Assert.Equal(new[] { (101, 108), (102, 107), (103, 106), (104, 105) },
-            playoffs.Rounds[0].Select(s => (s.HigherSeed, s.LowerSeed)));
+            playoffs.Rounds[0].Select(s => (s.HomeClub, s.AwayClub)));
         Win(Series(playoffs, 0, 101), 108);
         Win(Series(playoffs, 0, 102), 102);
         Win(Series(playoffs, 0, 103), 103);
@@ -45,20 +47,21 @@ public sealed class PlayoffSemifinalTests
 
         var semi = playoffs.SeriesOn(Playoffs.DatesPerRound, 108);
         Assert.NotNull(semi);
-        Assert.Equal(new[] { (108, 103), (102, 105) }, playoffs.Rounds[1].Select(s => (s.HigherSeed, s.LowerSeed)));
+        Assert.Equal(new[] { (108, 103), (102, 105) }, playoffs.Rounds[1].Select(s => (s.HomeClub, s.AwayClub)));
         Assert.Equal((108, 103), playoffs.Rounds[1][0].NextPairing); // Spiel 1 beim kleineren Platz (8), nicht beim Dritten
 
         Win(Series(playoffs, 1, 103), 103);
         Win(Series(playoffs, 1, 102), 102);
         Assert.NotNull(playoffs.SeriesOn(2 * Playoffs.DatesPerRound, 102));
-        Assert.Equal((103, 102), (playoffs.Rounds[2][0].HigherSeed, playoffs.Rounds[2][0].LowerSeed));
+        Assert.Equal((103, 102), (playoffs.Rounds[2][0].HomeClub, playoffs.Rounds[2][0].AwayClub));
         Assert.Equal((103, 102), playoffs.Rounds[2][0].NextPairing);
     }
 
     /// <summary>
     /// Mehrsaisonprobe (4 Saisonwechsel, passiver Oberligist und aktiver Bundesligist im Hot-Seat, alles über
     /// <see cref="GameState.Continue"/>): In jeder Saison paaren Halbfinale und Endspiel nach Tabelle DGROUP 0x144, Spiel 1 beim
-    /// kleineren Platz; der Meister steht im Saisonrückblick.
+    /// kleineren Platz; der Meister steht im Saisonrückblick. Der aktive Manager ändert den Eintrittspreis, verlängert angebotene
+    /// Verträge und kauft alle 20 Schritte einen Spieler vom Markt (R683-03).
     /// </summary>
     [Fact]
     public void MultiSeason_FourChanges_PlayoffsPairByTable0x144()
@@ -69,6 +72,7 @@ public sealed class PlayoffSemifinalTests
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 7);
         var active = game.Managers[1];
         var upsets = 0;
+        var transfers = 0;
         for (var season = 0; season < 5; season++)
         {
             var step = 0;
@@ -81,13 +85,16 @@ public sealed class PlayoffSemifinalTests
                     TestSquadKeeper.KeepPlayable(game, m);
                 }
                 game.Finance(active).Stadium.TicketPrice = 5 + step++ % 7; // aktiver Manager handelt in jedem Schritt
+                GameModeTests.ActiveSecondManager(game); // R683-03: verlängert angebotene Verträge
+                if (step % 20 == 0)
+                    transfers += BuyOne(game, active); // R683-03: kauft einen Spieler vom Markt
                 game.Continue();
             }
             var playoffs = game.Playoffs!;
             Assert.Equal(3, playoffs.Rounds.Count);
             var s = playoffs.Seeds;
             Assert.Equal(new[] { (s[0], s[7]), (s[1], s[6]), (s[2], s[5]), (s[3], s[4]) },
-                playoffs.Rounds[0].Select(x => (x.HigherSeed, x.LowerSeed)));
+                playoffs.Rounds[0].Select(x => (x.HomeClub, x.AwayClub)));
             for (var round = 1; round < 3; round++)
             {
                 var previous = playoffs.Rounds[round - 1];
@@ -95,15 +102,16 @@ public sealed class PlayoffSemifinalTests
                 for (var k = 0; k < playoffs.Rounds[round].Count; k++)
                 {
                     var series = playoffs.Rounds[round][k];
-                    Assert.Equal((previous[k].Winner, previous[k + half].Winner), (series.HigherSeed, series.LowerSeed));
-                    Assert.Equal(series.HigherSeed, series.Games[0].Home);
-                    upsets += s.ToList().IndexOf(series.HigherSeed) > s.ToList().IndexOf(series.LowerSeed) ? 1 : 0;
+                    Assert.Equal((previous[k].Winner, previous[k + half].Winner), (series.HomeClub, series.AwayClub));
+                    Assert.Equal(series.HomeClub, series.Games[0].Home);
+                    upsets += s.ToList().IndexOf(series.HomeClub) > s.ToList().IndexOf(series.AwayClub) ? 1 : 0;
                 }
             }
             Assert.Equal(playoffs.Champion, game.History[^1].Titles[Title.GermanChampion]);
             if (season < 4)
                 game.StartNextSeason();
         }
+        Assert.True(transfers > 0, "aktiver Manager hat keinen Spieler gekauft");
         Assert.Equal(5, game.History.Count);
         // Probe trifft auch den Fall, dass der schlechter Platzierte Heimrecht hat (Sieger der oberen Paarung).
         Assert.True(upsets > 0, "kein Heimrecht beim schlechter Platzierten in fünf Saisons");
@@ -124,14 +132,14 @@ public sealed class PlayoffSemifinalTests
         var slots = OriginalImport.PlayoffSlots(save);
         // HOK: Halbfinale Platz 8/9 und 10/11 in Setzreihenfolge (nach dem Rundenwechsel wiederhergestellt, 0x31C3A).
         Assert.Equal(new[] { (clubOf[slots[8]], clubOf[slots[9]]), (clubOf[slots[10]], clubOf[slots[11]]) },
-            imported.Rounds[1].Select(s => (s.HigherSeed, s.LowerSeed)));
+            imported.Rounds[1].Select(s => (s.HomeClub, s.AwayClub)));
 
         var own = new Playoffs(imported.Seeds);
         for (var round = 0; round < 3; round++)
         {
-            Assert.NotNull(own.SeriesOn(round * Playoffs.DatesPerRound, imported.Rounds[round][0].HigherSeed));
-            Assert.Equal(imported.Rounds[round].Select(s => (s.HigherSeed, s.LowerSeed)),
-                own.Rounds[round].Select(s => (s.HigherSeed, s.LowerSeed)));
+            Assert.NotNull(own.SeriesOn(round * Playoffs.DatesPerRound, imported.Rounds[round][0].HomeClub));
+            Assert.Equal(imported.Rounds[round].Select(s => (s.HomeClub, s.AwayClub)),
+                own.Rounds[round].Select(s => (s.HomeClub, s.AwayClub)));
             for (var k = 0; k < own.Rounds[round].Count; k++)
                 own.Rounds[round][k].Games.AddRange(imported.Rounds[round][k].Games);
         }
@@ -196,7 +204,7 @@ public sealed class PlayoffSemifinalTests
         for (var k = 0; k < 4; k++)
         {
             var s = playoffs.Rounds[0][k];
-            Assert.Equal((expected[k].HigherSeed, expected[k].LowerSeed), (s.HigherSeed, s.LowerSeed));
+            Assert.Equal((expected[k].HomeClub, expected[k].AwayClub), (s.HomeClub, s.AwayClub));
             Assert.Equal(expected[k].Games.Take(played), s.Games);
         }
     }
@@ -306,6 +314,102 @@ public sealed class PlayoffSemifinalTests
         }
         Assert.True(checkedStands > 20, $"nur {checkedStands} Stände mit Managerkader");
         Assert.True(cupCarries > 0, "kein Stand mit Pokalübertrag");
+    }
+
+    /// <summary>
+    /// R683-01 (Migration 43 → 44): Ein Stand mit laufendem Viertelfinale (4 Spiele gespielt) aus der Zeit vor #676 führte die
+    /// Serien als 1–8, 4–5, 2–7, 3–6 und die Felder <c>HigherSeed</c>/<c>LowerSeed</c>. Der Test baut diesen Stand aus einem heutigen
+    /// (Schema 44 → 43, alte Folge, Objektnummern neu). Nach dem Laden stehen die Serien in Platzfolge, der Stand ist Byte für
+    /// Byte der ungesicherte, und das Halbfinale paart nach Tabelle 0x144 wie ohne Sichern: Sieger 1–8 gegen 3–6, 2–7 gegen 4–5.
+    /// Ohne Migration paarte dieser Stand 1–8 gegen 2–7 (Gegenbeispiel des Reviews: Sieger 1, 4, 2, 3 → 1–2 | 4–3 statt 1–3 | 2–4).
+    /// </summary>
+    [Fact]
+    public void Load_Schema43_RunningQuarterFinal_SemifinalByTable0x144()
+    {
+        var game = TestGames.Create(3);
+        for (var guard = 0; game.Playoffs is not { } p || p.Rounds[0].Sum(x => x.Games.Count) < 4; guard++)
+        {
+            Assert.True(guard < 5000, "Viertelfinale nicht erreicht");
+            game.Continue();
+        }
+        Assert.Equal(4, game.Playoffs!.Rounds[0].Sum(x => x.Games.Count));
+        var current = SaveGame.Save(game);
+
+        var old = SaveGame.Load(ToSchema43(current));
+        Assert.True(old.Success, old.Error);
+        var loaded = old.Game!;
+        var s = loaded.Playoffs!.Seeds;
+        Assert.Equal(new[] { (s[0], s[7]), (s[1], s[6]), (s[2], s[5]), (s[3], s[4]) },
+            loaded.Playoffs.Rounds[0].Select(x => (x.HomeClub, x.AwayClub)));
+        Assert.True(current.AsSpan().SequenceEqual(SaveGame.Save(loaded)), "migrierter Stand weicht vom ungesicherten ab");
+
+        foreach (var g in new[] { game, loaded })
+            for (var guard = 0; g.Playoffs!.Rounds.Count < 2 || g.Playoffs.Rounds[1].Sum(x => x.Games.Count) == 0; guard++)
+            {
+                Assert.True(guard < 500, "Halbfinale nicht erreicht");
+                g.Continue();
+            }
+        var quarter = loaded.Playoffs!.Rounds[0];
+        Assert.Equal(new[] { (quarter[0].Winner, quarter[2].Winner), (quarter[1].Winner, quarter[3].Winner) },
+            loaded.Playoffs.Rounds[1].Select(x => ((int?)x.HomeClub, (int?)x.AwayClub)));
+        Assert.Equal(game.Playoffs!.Rounds[1].Select(x => (x.HomeClub, x.AwayClub)),
+            loaded.Playoffs.Rounds[1].Select(x => (x.HomeClub, x.AwayClub)));
+    }
+
+    /// <summary>Kauft den ersten Spieler vom Markt, der nicht aus dem eigenen Verein kommt, zum Listenpreis (Kader höchstens 26).</summary>
+    private static int BuyOne(GameState game, Manager manager)
+    {
+        if (game.Clubs[manager.ClubIndex].Players.Count >= 26)
+            return 0;
+        foreach (var listing in game.TransferMarket.Listings.Where(l => l.From.Index != manager.ClubIndex).ToList())
+            if (game.TransferMarket.Buy(game, manager, listing, listing.Price, loan: false) == TransferResult.Accepted)
+                return 1;
+        return 0;
+    }
+
+    /// <summary>Heutigen Stand in die Form von Schema 43 vor #676 bringen (nur Testhilfe).</summary>
+    private static byte[] ToSchema43(byte[] data)
+    {
+        var root = JsonNode.Parse(data)!.AsObject();
+        root["schema"] = 43;
+        var playoffs = root["spiel"]!["Playoffs"]!.AsObject();
+        foreach (var series in playoffs["_rounds"]!["items"]!.AsArray().SelectMany(r => r!["items"]!.AsArray()).Select(x => x!.AsObject()))
+        {
+            var (home, away) = (series["HomeClub"]!, series["AwayClub"]!);
+            series.Remove("HomeClub");
+            series.Remove("AwayClub");
+            series["HigherSeed"] = home;
+            series["LowerSeed"] = away;
+        }
+        var first = playoffs["_rounds"]!["items"]![0]!["items"]!.AsArray();
+        var neu = first.ToList();
+        first.Clear();
+        foreach (var k in new[] { 0, 3, 1, 2 }) // vor #676: 1–8, 4–5, 2–7, 3–6
+            first.Add(neu[k]);
+        var map = new Dictionary<int, int>();
+        var next = 0;
+        Renumber(root);
+        return Encoding.UTF8.GetBytes(root.ToJsonString());
+
+        void Renumber(JsonNode? node)
+        {
+            if (node is JsonObject obj)
+            {
+                if (obj["$id"] is JsonValue id)
+                {
+                    map[id.GetValue<int>()] = next;
+                    obj["$id"] = next++;
+                }
+                else if (obj.Count == 1 && obj["$ref"] is JsonValue r)
+                    obj["$ref"] = map[r.GetValue<int>()];
+                foreach (var (key, child) in obj.ToArray())
+                    if (key is not "$id" and not "$ref")
+                        Renumber(child);
+            }
+            else if (node is JsonArray array)
+                foreach (var child in array.ToArray())
+                    Renumber(child);
+        }
     }
 
     private static List<byte[]> OccupiedSlots(OriginalSaveGame save, int record) =>

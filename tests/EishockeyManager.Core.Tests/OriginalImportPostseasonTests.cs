@@ -82,18 +82,18 @@ public sealed class OriginalImportPostseasonTests(ITestOutputHelper output)
                 // fünften Spiels stehen, wenn der Gast die Serie gewann (Siegbyte 0x14 auf Platz 2k): dann ist Platz 2k der Gast von Spiel 1.
                 var swapped = round == 2 && wins[p] == 0x14;
                 var (slotFirst, slotSecond) = swapped ? (p + 1, p) : (p, p + 1);
-                Assert.Equal((clubOf[slots[slotFirst]], clubOf[slots[slotSecond]]), (s.HigherSeed, s.LowerSeed));
+                Assert.Equal((clubOf[slots[slotFirst]], clubOf[slots[slotSecond]]), (s.HomeClub, s.AwayClub));
                 var expectedGames = Enumerable.Range(0, 5).Where(g => results[14 * g + p] != OriginalImport.CupNotPlayed).ToList();
                 Assert.Equal(expectedGames.Count, s.Games.Count);
                 for (var g = 0; g < expectedGames.Count; g++)
                 {
                     var (a, b) = (results[14 * g + slotFirst] % 30, results[14 * g + slotSecond] % 30);
-                    var (home, away) = g % 2 == 0 ? (s.HigherSeed, s.LowerSeed) : (s.LowerSeed, s.HigherSeed);
+                    var (home, away) = g % 2 == 0 ? (s.HomeClub, s.AwayClub) : (s.AwayClub, s.HomeClub);
                     var (hg, ag) = g % 2 == 0 ? (a, b) : (b, a);
                     Assert.Equal((home, away, hg, ag), (s.Games[g].Home, s.Games[g].Away, s.Games[g].HomeGoals, s.Games[g].AwayGoals));
                 }
-                Assert.Equal(wins[slotFirst] == 0x14 ? 3 : wins[slotFirst], s.Wins(s.HigherSeed));
-                Assert.Equal(wins[slotSecond] == 0x14 ? 3 : wins[slotSecond], s.Wins(s.LowerSeed));
+                Assert.Equal(wins[slotFirst] == 0x14 ? 3 : wins[slotFirst], s.Wins(s.HomeClub));
+                Assert.Equal(wins[slotSecond] == 0x14 ? 3 : wins[slotSecond], s.Wins(s.AwayClub));
                 Assert.True(s.IsDecided);
                 all.AddRange(s.Games);
             }
@@ -101,7 +101,7 @@ public sealed class OriginalImportPostseasonTests(ITestOutputHelper output)
             // = Sieger der Serie k gegen Sieger der Serie k + Serienzahl / 2.
             if (round > 0)
                 for (var k = 0; k < series.Count; k++)
-                    Assert.Equal((playoffs.Rounds[round - 1][k].Winner, playoffs.Rounds[round - 1][k + series.Count].Winner), (series[k].HigherSeed, series[k].LowerSeed));
+                    Assert.Equal((playoffs.Rounds[round - 1][k].Winner, playoffs.Rounds[round - 1][k + series.Count].Winner), (series[k].HomeClub, series[k].AwayClub));
         }
         Assert.Equal(all.OrderBy(g => g.Day).ThenBy(g => g.Home), game.PlayoffResults.OrderBy(g => g.Day).ThenBy(g => g.Home));
         Assert.Equal(playoffs.Champion, game.CurrentRecord?.Titles[Title.GermanChampion]);

@@ -49,23 +49,26 @@ public sealed record KnockoutMatch(int Day, int Home, int Away, int HomeGoals, i
 }
 
 /// <summary>
-/// Play-Off-Serie zweier Vereine: wer zuerst <see cref="WinsNeeded"/> Spiele gewinnt. <see cref="HigherSeed"/> ist der erste
+/// Play-Off-Serie zweier Vereine: wer zuerst <see cref="WinsNeeded"/> Spiele gewinnt. <see cref="HomeClub"/> ist der erste
 /// Verein der Paarung (Platz 2k, Heimrecht in Spiel 1): im Viertelfinale der besser Platzierte, danach der Sieger der oberen
 /// Paarung der Vorrunde (<see cref="Playoffs"/>, Tabelle DGROUP 0x144) – er kann schlechter platziert sein.
 /// </summary>
-public sealed class PlayoffSeries(int higherSeed, int lowerSeed)
+public sealed class PlayoffSeries(int homeClub, int awayClub)
 {
     /// <summary>„Best of five“: drei Siege entscheiden die Serie. [ORIGINAL] Datei 0x315E9 (Siege DGROUP 0xCCA4, nach drei Siegen Ergebnis 100 = nicht ausgetragen; spielberechnung.md §14). Die 15 Termine im Kalender sind drei Runden à höchstens fünf Spiele.</summary>
     public const int WinsNeeded = 3;
 
-    public int HigherSeed { get; } = higherSeed;
-    public int LowerSeed { get; } = lowerSeed;
+    /// <summary>Erster Verein der Paarung (Platz 2k), Heimrecht in Spiel 1, 3, 5. Bis Schema 43 <c>HigherSeed</c> (R683-04).</summary>
+    public int HomeClub { get; } = homeClub;
+
+    /// <summary>Zweiter Verein der Paarung (Platz 2k + 1), Heimrecht in Spiel 2 und 4. Bis Schema 43 <c>LowerSeed</c>.</summary>
+    public int AwayClub { get; } = awayClub;
     public List<KnockoutMatch> Games { get; } = [];
 
     public int Wins(int club) => Games.Count(g => g.Winner == club);
-    public bool IsDecided => Wins(HigherSeed) >= WinsNeeded || Wins(LowerSeed) >= WinsNeeded;
-    public int? Winner => Wins(HigherSeed) >= WinsNeeded ? HigherSeed : Wins(LowerSeed) >= WinsNeeded ? LowerSeed : null;
-    public bool Involves(int club) => HigherSeed == club || LowerSeed == club;
+    public bool IsDecided => Wins(HomeClub) >= WinsNeeded || Wins(AwayClub) >= WinsNeeded;
+    public int? Winner => Wins(HomeClub) >= WinsNeeded ? HomeClub : Wins(AwayClub) >= WinsNeeded ? AwayClub : null;
+    public bool Involves(int club) => HomeClub == club || AwayClub == club;
 
     /// <summary>
     /// Heimrecht: Heim und Gast tauschen nach jedem Spiel. [ORIGINAL] Datei 0x31505 (spielberechnung.md §14), Aufruf nach jedem der
@@ -73,7 +76,7 @@ public sealed class PlayoffSeries(int higherSeed, int lowerSeed)
     /// besser Platzierte, danach der Sieger der oberen Paarung, siehe <see cref="Playoffs"/>). Am HOK geprüft (FILE22/FILE44,
     /// <c>OriginalImport.Playoffs.cs</c>).
     /// </summary>
-    public (int Home, int Away) NextPairing => Games.Count % 2 == 0 ? (HigherSeed, LowerSeed) : (LowerSeed, HigherSeed);
+    public (int Home, int Away) NextPairing => Games.Count % 2 == 0 ? (HomeClub, AwayClub) : (AwayClub, HomeClub);
 }
 
 /// <summary>
