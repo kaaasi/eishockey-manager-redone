@@ -79,8 +79,9 @@ public sealed class OriginalImportPoolTests
     }
 
     /// <summary>
-    /// FILE41: HOHENADL (Pool 28, Besitzer 0) steht auf dem Markt-Platz 7 – Angebot des Managers, Spieler bleibt im Kader
-    /// (Feldbelege L7, A380); der Rest des aufgerückten Satzes (Platz 11 mit Poolindex 0) ist kein Eintrag.
+    /// FILE41: HOHENADL (Pool 28, Besitzer 0) steht auf dem Markt-Platz 7 – Angebot des Managers, Spieler nur auf dem Markt-Platz,
+    /// nicht im Kader (Feldbelege L7, A380; seit #676, vorher blieb er im Kader); der Rest des aufgerückten Satzes (Platz 11 mit
+    /// Poolindex 0) ist kein Eintrag.
     /// </summary>
     [GameDataFact]
     public void Import_MarketListingOfManager()
@@ -95,7 +96,7 @@ public sealed class OriginalImportPoolTests
         Assert.Equal(316_000L, own.Price);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         Assert.Same(club, own.From);
-        Assert.Contains(own.Player, club.Players);
+        Assert.DoesNotContain(own.Player, club.Players);
         Assert.Same(own, game.TransferMarket.ListingOf(own.Player));
         Assert.All(listings.Where(l => l != own), l => Assert.True(l.FromPool));
     }
