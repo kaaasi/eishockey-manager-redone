@@ -92,8 +92,8 @@ schreibt zuerst einen Übernahmekommentar („übernommen ab SHA …, Tests …�
   6. Das **Gesamtreview** am Rundenende (ChatGPT, Vollprüfung) bleibt unverändert das letzte Netz.
 
   **Modellwahl (Ergänzung Nutzer 09.11.2026):** Claude Opus 5.5 bleibt überall, wo es Fehler und damit Nacharbeit
-  vermeidet – Spielregeln, Spielkern, Disassembly, Import, Erstreviews und Nachprüfungen. Claude Sonnet 5.5 nur für
-  mechanische Arbeit: Integrationen ohne eigene Regeländerung, reine Doku-Prüfungen, Kommentare und einfache
+  vermeidet – Spielregeln, Spielkern, Disassembly, Import, Erstreviews und Nachprüfungen von Code. Claude Sonnet 5.5 nur für
+  mechanische Arbeit: Integrationen ohne eigene Regeländerung, reine Doku-Prüfungen (auch Nachprüfungen reiner Doku-PRs), Kommentare und einfache
   Testergänzungen. Im Zweifel Opus. Die Leitstelle setzt das Modell danach selbst (`docs/vorlagen/leitstelle-start.md`).
 - **Befunde als Issues** (seit 28.10.2026): Beim Auswerten legt die Leitstelle je Befund ein Issue an – Titel
   `<ID>: <Kurzbeschreibung>`, Labels `befund` und `P0`–`P3`, Link auf die Review-Datei. Der PR, der den Befund behebt,

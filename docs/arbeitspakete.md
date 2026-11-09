@@ -229,6 +229,11 @@ Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terr
 - Highscore am Spielende und Saisonende im Modus „nur Weltkugel“ (Kandidat für eine DOSBox-Aufnahme mit `hok-patch`).
   Import/Export ist in Runde 14 (E14-1, Spur `hok-import`).
 - R8-A01 (Spielstände aus Spurbranches laden nicht): Spurbranches sind keine Ausgabestände.
+- Restlücke A134 (R688N-02, Review `reviews/2026-11-09-tagestakt-hauptweg-nachpruefung.md`): Die Tendenz je Takt (#688,
+  Datei 0x07B64–0x07BFC) wirkt nur auf Kaderplätze mit Tendenzwert und Steuerbyte. Ein neues Spiel legt den Startkader ohne
+  beides an (`TestGames.Create(3)`: 0 von 25), also wirkt sie dort erst auf importierte HOK-Stände und über 0x4907A neu angelegte
+  Plätze. Kandidat Runde 15: Startwerte des Kaders beim Spielstart nach em.exe (Aufrufer von 0x4907A im Spielstart) lesen und
+  übernehmen (Dateien `kader-start`).
 
 ## Paket `hok-format` – Original-Spielstände `*.HOK`
 
