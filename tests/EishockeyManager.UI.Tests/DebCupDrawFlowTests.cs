@@ -268,8 +268,16 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Nachprüfung #681 (R14NT4N-01): ab 1994 neu (1993 unverändert) – der Tageslauf von Tag 216 (Zähler 217) rechnet wie im
     /// Original noch den Takt des Hauptwegs (Wanderung, Talentsuche, Training/Markt/Verträge, Heilung), erst danach die Schleife;
     /// anderer Zufallsverbrauch ab dem 14. April 1994. Gegenprobe: nur die Core-Änderung zurück → alter Wert. Mit und ohne Anzeige
-    /// weiter gleich.
-    /// #678/#679 (Tagestakt Hauptweg): ab 1993 neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert). Mit und ohne Anzeige weiter gleich.</summary>
+    /// weiter gleich.</summary>
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. 1993: Pokal und Tabelle gleich, nur der Meister (DM) neu; ab 1994 alles neu. Mit und ohne Anzeige weiter gleich.
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    // Gegenüber main: 1993 Meister und Tabelle gleich, Pokal neu (die Angaben der Zeile #676 galten für Base e5fe46f). Mit und ohne Anzeige gleich.
+    // #678/#679 (Tagestakt Hauptweg): ab 1993 neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert). Mit und ohne Anzeige weiter gleich.
+    // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
+    // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
+    // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
     private const string Reference =
-        "1993: DEB 2, DM 5, Tab 15392 | 1994: DEB 5, DM 10, Tab 15527 | 1995: DEB 1, DM 5, Tab 15382 | 1996: DEB 10, DM 10, Tab 15428";
+        "1993: DEB 8, DM 8, Tab 15392 | 1994: DEB 1, DM 10, Tab 15868 | 1995: DEB 5, DM 2, Tab 16029 | 1996: DEB 8, DM 2, Tab 16014";
 }

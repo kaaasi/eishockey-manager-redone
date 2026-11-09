@@ -99,7 +99,7 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 | `0x002B3` | `A701` | 6 | Reihenwechsel-Modus je Manager (0–5) |
 | `0x002B9` | `A6FB` | 6 | Taktikmodus Einsatz je Manager |
 | `0x002BF` | `CCB2` | 70 | Play-offs: Tore je Spiel (14 · Spiel + Platz; Heimbyte + 30 je Marke, 100 = nicht ausgetragen) |
-| `0x00305` | `CCA4` | 14 | Play-offs: Siege je Platz (0x14 = Gast gewinnt die Serie im fünften Spiel) |
+| `0x00305` | `CCA4` | 14 | Play-offs: Siege je Platz (0x14 = Gast des fünften Termins mit mehr als zwei Siegen, auch bei vorher entschiedener Serie; 0x3168B–0x316BF) |
 | `0x00313` | `CCA3` | 1 | Play-offs: Spiel der laufenden Runde (0–4; 5 nach dem Endspiel) |
 | `0x00314` | `D0B9` | 1 | Spielmodus Fahne/Weltkugel |
 | `0x00315` | `CC73` | 48 | Minuten-Vorgabe umgerechnet (Summe 8; 8 · Manager + 4 · Teil + Reihe) |
@@ -331,7 +331,7 @@ FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die S
 | Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf wird der Spieler nach Spielerart einsortiert (vor dem ersten leeren Platz oder dem ersten Platz größerer Art; ein Stürmer kommt damit hinten an) | FILE05 → FILE07 (Kauf eines Stürmers) und FILE26 (Verkauf), em.exe Datei `0x42D55`–`0x42DA1` mit memmove ab `0x42DC3` (Kauf, R13GN-01/#622), `0x425B6` (Verkauf); Remake `KaderStartRunde13Teil4Tests` (PR #599), `KaufEinsortierenTests` (PR #623) |
 | HOK `0x08EED` / `0x08EF7` | DGROUP `0xA776` (Teilnehmerliste Europapokal, deutsche Teilnehmer; die Mischung 0x35EDD führt Meister und Titelverteidiger über 0x36146 mit) bzw. DGROUP `0xA763` | FILE22 → FILE23: Kölner EC Satz 4 → 8, Liste = 8 (PR #579, 0x346D5 nach L8) |
 
-## Feldkarte Remake-Spielstand (Schema 43) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 44) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -568,7 +568,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Club.League` | A | `far:9657` | Satzplatz / 12 für Plätze 0–35, sonst null |
 | `Club.LeaguePenaltyMinutes` | B | `8257` | DGROUP 0x82A1 + 0x50 · Satz (Wort) |
 | `Club.Lineup` | A | `5DC3+0x15` | Managervereine aus Reihe/Sturm-Bit und `+0x0A`; sonst Auto-Aufstellung |
-| `Club.LogoGraphic` | A | `far:9657+0x34` | Logo (Datenbankwert) |
+| `Club.LogoGraphic` | A | `far:9657` | Logo aus der Datenbank `kb\23` über den Namen (Regel 1); der Satz +0x34 wird nicht gelesen (R14HN-01: der Versatz stand bisher nur zufällig in einem Kommentar) |
 | `Club.Name` | B | `far:9657+0x00` | Name; „nur Weltkugel“ siehe Regel 1 |
 | `Club.Players` | A | `5DC3` | Managervereine aus dem Kader; sonst erzeugt (Regel 3) |
 | `Club.ReferenceRating` | N | – | neu aus der Auto-Aufstellung |
@@ -610,14 +610,14 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Player.Caps` | U | – | 0 |
 | `Player.ClubGamesCarry` | A | `5DC3+0x1C` | `+0x1C` − `+0x06` (Ligaspiele beim Verein aus Vorsaisons; A135: je Wettbewerb) |
 | `Player.ClubCupGamesCarry` | A | `5DC3+0x1E` | `+0x1E` − `+0x07` (A135, Schema 43) |
-| `Player.ClubEuropeGamesCarry` | A | `5DC3+0x20` | `+0x20` − `+0x08` (A135) |
+| `Player.ClubEuropeGamesCarry` | A | `5DC3+0x20` | `+0x20` − `+0x08` (A135; Europapokal: nur aus Datei 0x5494C–0x5499E belegt, kein Original-Stand hat Europapokalspiele oder -tore (R14KS9-01)) |
 | `Player.ClubGoalsCarry` | A | `5DC3+0x22` | `+0x22` − `+0x03` (Feldspieler; Torhüter 0, [APPROX]) |
 | `Player.ClubCupGoalsCarry` | A | `5DC3+0x24` | `+0x24` − `+0x04` (Feldspieler; Torhüter 0) |
-| `Player.ClubEuropeGoalsCarry` | A | `5DC3+0x26` | `+0x26` − `+0x05` (Feldspieler; Torhüter 0) |
+| `Player.ClubEuropeGoalsCarry` | A | `5DC3+0x26` | `+0x26` − `+0x05` (Feldspieler; Torhüter 0; Europapokal: nur aus Datei 0x5494C–0x5499E belegt, kein Original-Stand hat Europapokalspiele oder -tore (R14KS9-01)) |
 | `Player.CupGames` | B | `5DC3+0x07` | Saisonspiele DEB-Pokal (A135), Teil von `Games` |
-| `Player.EuropeGames` | B | `5DC3+0x08` | Saisonspiele Europapokal (A135), Teil von `Games` |
+| `Player.EuropeGames` | B | `5DC3+0x08` | Saisonspiele Europapokal (A135), Teil von `Games`; Europapokal: nur aus Datei 0x5494C–0x5499E belegt, kein Original-Stand hat Europapokalspiele oder -tore (R14KS9-01) |
 | `Player.CupGoals` | B | `5DC3+0x04` | Saisontore DEB-Pokal (Feldspieler; Torhüter 0), Teil von `Goals` |
-| `Player.EuropeGoals` | B | `5DC3+0x05` | Saisontore Europapokal (Feldspieler; Torhüter 0), Teil von `Goals` |
+| `Player.EuropeGoals` | B | `5DC3+0x05` | Saisontore Europapokal (Feldspieler; Torhüter 0), Teil von `Goals`; Europapokal: nur aus Datei 0x5494C–0x5499E belegt, kein Original-Stand hat Europapokalspiele oder -tore (R14KS9-01) |
 | `Player.Condition` | B | `5DC3+0x10` | Kader; Pool `+0x15` |
 | `Player.ContractYears` | B | `5DC3+0x0B` | 0 = „kein V.“ |
 | `Player.Form` | B | `5DC3+0x12` | Kader; Pool `+0x17` |
@@ -637,7 +637,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Player.MonthlySalary` | B | `5DC3+0x28` | Gehalt / 3 |
 | `Player.Name` | B | `far:8253+0x00` | Name (17 Zeichen) |
 | `Player.NegotiationLock` | B | `5DC3+0x18` | Tage |
-| `Player.Notice` | B | `5DC3+0x18` | Bit 0x80 → Retiring (0x4A692), > 99 → Offered (Angebot des Spielers, 0x4A3AF; Saisonende 0x27D05 = 101), sonst None (Sperre, siehe `NegotiationLock`) |
+| `Player.Notice` | B | `5DC3+0x18` | Bit 0x80 → Retiring (Test 0x4A6C7, R14HN-03), > 99 → Offered (Angebot des Spielers, 0x4A3AF; Saisonende 0x27D05 = 101), sonst None (Sperre, siehe `NegotiationLock`) |
 | `Player.NoticeYears` | B | `5DC3+0x18` | bei Offered: +0x18 − 100 |
 | `Player.Number` | A | `5DC3` | Kaderplatz + 1 (keine Rückennummer im Original) |
 | `Player.OnLoan` | U | – | false |
@@ -733,10 +733,10 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `WorldCup._order` | U | – | Auslosungsfolge: nicht belegt; Indexfolge |
 | `WorldCup._slots` | U | – | leer bis zur Auslosung |
 | `Playoffs.Seeds` | A | `5CCB` | Plätze 1–8 der Abschlusstabelle |
-| `Playoffs._rounds` | B | `5CFB+0x40`, `CCB2`, `CCA4` | Runden 0 … 0x7B0 aus den Plätzen 0x5D3B, Spiele 0xCCB2; Siege ergeben sich aus den Spielen (0xCCA4 mit 0x14 = Gastsieg im fünften Spiel) |
+| `Playoffs._rounds` | B | `5CFB+0x40`, `CCB2`, `CCA4` | Runden 0 … 0x7B0 aus den Plätzen 0x5D3B, Spiele 0xCCB2; Siege ergeben sich aus den Spielen (0xCCA4 mit 0x14 = Gast des fünften Termins mit drei Siegen, auch bei vorher entschiedener Serie, danach getauscht; R14HN-02). Halbfinale/Endspiel des Remakes nach Tabelle DGROUP 0x144 wie das Original (#676) |
 | `PlayoffSeries.Games` | B | `CCB2` | 14 · Spiel + Platz, Tore modulo 30 (Marken abgezogen `[APPROX]`), 100 = nicht ausgetragen; Heimrecht Spiel 1/3/5 beim Platz 2k |
-| `PlayoffSeries.HigherSeed` | B | `5CFB+0x40` | Platz 2k (nach ungerader Spielzahl der laufenden Runde bzw. Siegbyte 0x14 im fertigen Endspiel getauscht) |
-| `PlayoffSeries.LowerSeed` | B | `5CFB+0x40` | Platz 2k + 1 |
+| `PlayoffSeries.HomeClub` | B | `5CFB+0x40` | Platz 2k (nach ungerader Spielzahl der laufenden Runde bzw. Siegbyte 0x14 im fertigen Endspiel getauscht) |
+| `PlayoffSeries.AwayClub` | B | `5CFB+0x40` | Platz 2k + 1 |
 | `RelegationGroup.Clubs` | B | `CFFC` | Teilnehmer DGROUP 0xCFF4 + 8 + 4 · Gruppe (zwei Letzte oben, zwei Erste unten, 0x30511) |
 | `RelegationGroup.PlayedRounds` | A | `CD58+12` | Punktsumme der Gruppe / 4 (zwei Punkte je Spiel; das HOK führt keinen Terminzähler) |
 | `RelegationGroup.Results` | B | `CED8+0x48`, `CDB8+0x48` | Paarungen und Tore + 0x24 · Gruppe + 6 · Termin (zwei Paare) für die gespielten Termine |
@@ -855,7 +855,7 @@ unteren Halbbyte (FILE03: Feld 2 = Platz in der Tabelle `5CCB` nach dem 3. Spiel
 | Bereich | HOK | Import | Beleg |
 |---|---|---|---|
 | Pool | `far:8253` + 33 · i, i = 1–199 | Name, Talent, Alter, Grundwerte `+0x15`–`+0x17`, Art aus `+0x18`, Verein `+0x1D` (Regel 1); Besitzer `+0x1A` 0–3 → vergeben (derselbe Spieler wie im Managerkader), 4 → Markt, sonst frei | FILE05: 25 vergeben, 7 Markt; Besitzer an allen Ständen nur 0, 1, 4, 6 |
-| Transferliste | `5DC3` Satz 4 in Platzfolge | `+0x0F` Poolindex, Preis `+0x2C` / 3, Sperre `+0x1A`, Werte `+0x10`–`+0x14`, `+0x19`; Besitzer 4 → Poolangebot (Herkunft = Poolverein), 0–3 → Angebot des Managers, Spieler bleibt im Kader; Poolindex 0 = Rest des aufgerückten Satzes, kein Eintrag `[APPROX]` | FILE05 (KÜNAST 435.000 DM … D.HEGEN), FILE41 (HOHENADL Platz 7, Besitzer 0, 316.000 DM; Platz 11 mit Index 0) |
+| Transferliste | `5DC3` Satz 4 in Platzfolge | `+0x0F` Poolindex, Preis `+0x2C` / 3, Sperre `+0x1A`, Werte `+0x10`–`+0x14`, `+0x19`; Besitzer 4 → Poolangebot (Herkunft = Poolverein), 0–3 → Angebot des Managers, Spieler nur auf dem Markt-Platz, nicht im Kader (A380, #676); Poolindex 0 = Rest des aufgerückten Satzes, kein Eintrag `[APPROX]` | FILE05 (KÜNAST 435.000 DM … D.HEGEN), FILE41 (HOHENADL Platz 7, Besitzer 0, 316.000 DM; Platz 11 mit Index 0) |
 | Managerkader | `5DC3` Satz m + Marktplätze mit Besitzer m | Angebote des Managers folgen hinter den eigenen Plätzen | FILE40 → FILE41 (L7) |
 | Nationalkader | `5DC3` Satz 5 (29 Plätze) | Poolindex → Spieler; Werte `+0x10`–`+0x13` für Pool- und Marktspieler `[APPROX]` (ein Wertesatz je Spieler); Reihe `+0x15` (Bit 0x80 Sturm), eingesetzt `+0x0A`; Bundestrainer aus dem Nachspielen `[APPROX]` (`D0BA` an allen Ständen 0) | FILE18–FILE20, FILE47–FILE49A (Pool `+0x1D` der Nominierten = Land 54) |
 | Taktik Bundestrainer | `A6FB`/`A707`/`A701` + 5, `CAE9` + 0xF0, `CC43` + 0x28 | wie Teil 4a | FILE18 |
@@ -904,12 +904,12 @@ Saisonwechsel). Zuordnung aus em.exe (Overlay 0xE8, Datei-Offsets):
 - **Play-off-Plätze** DGROUP 0x5D3B (`5CFB`+0x40, 24 Plätze): Setzung 0x319AC–0x319D4 schreibt Platz 2i = `5CCB`[i], 2i + 1 =
   `5CCB`[7 − i]; Viertelfinale Plätze 0–7, Halbfinale 8–11, Endspiel 12–13. Tabelle DGROUP 0x144 beim Rundenwechsel
   (0x31BED–0x31C4D): Sieger von Platz 0 → 8, 2 → 10, 4 → 9, 6 → 11, 8 → 12, 10 → 13, Verlierer → Platz 23 (Halbfinale also 1–8
-  gegen 3–6 und 2–7 gegen 4–5, Heimrecht in Spiel 1 beim kleineren Platz; das Remake paart eigene Spiele anders, `[APPROX]` in
-  `Playoffs.cs`). Runde DGROUP 0x7B0, Spiel der Runde 0xCCA3 (0–4; 5 nach dem Endspiel), Anfang der Runde 0xCFFA (0, 8, 12).
+  gegen 3–6 und 2–7 gegen 4–5, Heimrecht in Spiel 1 beim kleineren Platz; seit #676 paart das Remake eigene Spiele ebenso, `[ORIGINAL]` in
+  `Playoffs.cs`, Serien in Platzfolge). Runde DGROUP 0x7B0, Spiel der Runde 0xCCA3 (0–4; 5 nach dem Endspiel), Anfang der Runde 0xCFFA (0, 8, 12).
 - **Spiele** DGROUP 0xCCB2 + 14 · Spiel + Platz (0x3173A–0x317AE): Heimbyte + 30 je Marke (die Schleife 0x31622–0x31631 zieht sie
   vor der Wertung ab), 100 = nicht ausgetragen (0x31800 für das nächste Spiel nach dem dritten Sieg). Sieger nach Toren, Gleichstand
-  zählt für den Gast (0x3166E `jnc` → 0xCCA5). Siege 0xCCA4 + Platz; gewinnt der Gast im fünften Spiel die Serie, steht dort 0x14
-  (0x316BF). Nach jedem der ersten vier Spiele tauschen Heim und Gast samt Siegen und bisherigen Spielen (0x31505, Aufruf
+  zählt für den Gast (0x3166E `jnc` → 0xCCA5). Siege 0xCCA4 + Platz; hat beim fünften Termin der Gast mehr als zwei Siege, steht dort 0x14
+  (0x3168B–0x316BF), danach wird getauscht – auch wenn die Serie schon vorher entschieden war (FILE22 Endspiel 3:0; R14HN-02). Nach jedem der ersten vier Spiele tauschen Heim und Gast samt Siegen und bisherigen Spielen (0x31505, Aufruf
   0x316C9); beim Rundenwechsel stellt 0x31C3A–0x31C46 die Setzreihenfolge wieder her. Im Import: Paarung (2k, 2k + 1) in
   Setzreihenfolge, in der laufenden Runde nach ungerader Spielzahl getauscht, im fertigen Endspiel bei Siegbyte 0x14. Meister
   `D0E6` (0x31CBF). `[APPROX]` Die Marken stehen an FILE22/FILE44 auch bei klaren Ergebnissen (4:2) und werden nicht gedeutet.
@@ -942,9 +942,10 @@ liegt bei den genannten Spuren.
 - **Markt-Kaderplatz bei Transferliste** (`5DC3` Satz 4): Ein vom Manager auf die Liste gesetzter Spieler verlässt den Kader,
   sein Kaderplatz wandert in den Marktsatz, die Plätze rücken auf; der Pool-Satz behält Besitzer = Manager (`far:8253+0x1A`)
   und Verein (`+0x1D`). FILE40 → FILE41: HOHENADL Markt Platz 7, Pool-Satz 28 `+0x1A` = 0, `+0x1D` = 2 (A380). Für den Import
-  des Transfermarkts (Teil 4b): Marktplatz mit Pool-Besitzer 0–3 = Angebot dieses Managers.
+  des Transfermarkts (Teil 4b): Marktplatz mit Pool-Besitzer 0–3 = Angebot dieses Managers; der Spieler steht seit #676 auch im
+  importierten Remake-Stand nur auf dem Markt-Platz, nicht im Kader (FILE26 HOCK, FILE41 HOHENADL; Test `PlayoffSemifinalTests`).
 
-### Stand Integration Runde 14 (Schema 41) und offene Felder aus `kader-start` (PR #669, Schema 42/43)
+### Stand Integration Runde 14 (Schema 43) und Fixlauf #676
 
 - Neu seit der Karte (Schema 40/41): `GameOptions.ManagerDayMinuteLoop` (nur Remake, Import `false`) und „automatisch aufstellen“
   des Bundestrainers (`0375`, 0x37F/0x380; der Import übernimmt 0x380, Test `OriginalImportRunde14Tests`).
@@ -952,11 +953,15 @@ liegt bei den genannten Spuren.
   Zuschauerstatistik, Freundschaftsspiele, Tendenzwert `5DC3+0x0E`, Ankündigung `5DC3+0x18`, Bundestrainer-Amt aus dem Vereinssatz
   des Landes, Taktikanzeige des Nationalteams, Titelträger `0387`/`0388` nach dem Endspiel; `OriginalImportFieldMapTests` prüft
   seitdem, dass jede Zeile mit Status B/A ihren Block (und ihre Versätze) im Importcode hat.
-- **Noch nicht abgebildet, sobald #669 auf `main` liegt (Restlücke, Schema 42/43 aus dem Branch):** Start-Liga in `GameSetup`
-  (42), Tabellenfeld je Verein (A046, 43: `8257` Tabellensatz +0x2E, siehe oben) und Tore/Spiele je Wettbewerb (A135, 43:
-  Kaderplatz +0x03–0x08 und +0x1C–0x26). Der Import setzt sie nicht; die Feldkarte muss dann auf Schema 43 gezogen werden
-  (`OriginalImportFieldMapTests` wird bis dahin rot). Leihe und Transferliste (A380) laufen über Felder, die schon in der Karte
-  stehen (Marktplatz und Pool-Besitzer); Taktik 375h ist als `Club._autoLineup` importiert.
+- Schema 42/43 aus `kader-start` (#669) ist in der Karte und im Import: Start-Liga `0118+2`, Tabellenfeld `8257` (A046), Spiele und
+  Tore je Wettbewerb samt Überträgen (A135, Kaderplatz +0x03–0x08 und +0x1C–0x26). Die Überträge prüft
+  `PlayoffSemifinalTests.Import_CarriesPerCompetition_AllStands` an allen Ständen (Pokalüberträge ab der zweiten Saison,
+  R14KS9-01); Europapokal ist an keinem Stand belegt, nur aus Datei 0x5494C–0x5499E.
+- Fixlauf #676: Play-off-Halbfinale nach Tabelle DGROUP 0x144 auch im Remake (`Playoffs.cs` `[ORIGINAL]`), Serien in Platzfolge;
+  Feldkartenprüfung ohne Kommentare (R14HN-01), Tests für eine laufende Play-off-Runde und eine teilweise gespielte Aufstiegsrunde
+  (R14HN-03, synthetisch aus FILE44), eigener Spieler auf dem Markt-Platz nicht im Kader (A380).
+- Schema 44 (R683-01/-04): `PlayoffSeries.HomeClub`/`AwayClub` statt `HigherSeed`/`LowerSeed` (erster Verein = Platz 2k, ab dem
+  Halbfinale nicht immer der besser Platzierte); die Migration ordnet ein laufendes Viertelfinale älterer Stände in Platzfolge.
 
 ### Zugang (Teil 3)
 

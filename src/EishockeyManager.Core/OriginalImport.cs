@@ -365,7 +365,7 @@ public sealed partial class GameState
         // [ORIGINAL] Laufende Ausbauten (R14HI-02): Ziel +0x117 + 2 · Bereich (FILE43: Sitzkomfort 0 → 1, FILE44A: Gastronomie 2 → 3),
         // Restwochen +0x128 + Projekt 0–10 (FILE43: 8, FILE44A: 1); Projekt im Bau, wenn das Ziel ≠ 0 ist (Datei 0x3DF1F–0x3DF81).
         for (var p = 0; p < Stadium.ProjectCount; p++)
-            stadium.ImportConstruction(p, p < Stadium.FeatureCount ? record[s + 2 * p + 1] : 0, record[s + 0x12 + p]);
+            stadium.ImportConstruction(p, p < Stadium.FeatureCount ? record[0x117 + 2 * p] : 0, record[0x128 + p]);
         // Bank und Managerdarlehen: ApplyLoans (Teil 4a, OriginalImport.Rest.cs).
         finance.SponsorRating = BinaryPrimitives.ReadInt16LittleEndian(record[0x173..]);
         // [ORIGINAL] Zuschauerstatistik (R14HI-04; Fortschreibung Datei 0x54664–0x54760, Felder als DGROUP bei Manager 0): Heimspiele
@@ -403,9 +403,10 @@ public sealed partial class GameState
     /// Kader eines Managervereins aus den Kaderplätzen 5DC3 (Satz m) und dem Pool far:8253 (Feldkarte „Spieler“). Spieler mit
     /// gleichem Namen und gleicher Rolle behalten ihr Objekt (und ihre ID), damit Verweise des Nachspielens gültig bleiben.
     /// Teil 4b: Ein Spieler, den der Manager auf die Transferliste gesetzt hat, steht im Original nicht mehr im Kadersatz,
-    /// sondern im Marktsatz 4 (Pool-Besitzer = Manager; Feldbelege L7, FILE40 → FILE41). Im Remake bleibt er im Kader
-    /// (<see cref="TransferMarket.Offer"/>); er folgt hier hinter den eigenen Plätzen. <paramref name="squadPlayers"/> erhält
-    /// je Poolindex den Spieler.
+    /// sondern im Marktsatz 4 (Pool-Besitzer = Manager; Feldbelege L7, FILE40 → FILE41). Seit A380 (#669) gilt das auch im Remake
+    /// (<see cref="TransferMarket.Offer"/>): Der Spieler wird übernommen, steht aber nicht im Kader, nicht in der Aufstellung und
+    /// nicht unter den Eingesetzten (+0x0A = 0, Datei 0x47093); das Angebot legt <c>ApplyPoolAndMarket</c> an (#676, Leitstelle
+    /// Runde 14; FILE26 HOCK, FILE41 HOHENADL). <paramref name="squadPlayers"/> erhält je Poolindex den Spieler.
     /// </summary>
     private void ApplySquad(OriginalSaveGame save, Club club, int record, int[] clubOf, HashSet<string> foreigners,
         Dictionary<int, Player> squadPlayers)
@@ -415,11 +416,11 @@ public sealed partial class GameState
         var old = club.Players.ToList();
         var players = new List<(Player Player, int Line, bool Forward, bool Dressed)>();
         var places = Enumerable.Range(0, OriginalSaveGame.SquadSlotsPerManager)
-            .Select(i => record * 0x618 + i * OriginalSaveGame.SquadSlotLength)
+            .Select(i => (Offset: record * 0x618 + i * OriginalSaveGame.SquadSlotLength, Listed: false))
             .Concat(Enumerable.Range(0, OriginalSaveGame.SquadSlotsPerManager)
-                .Select(i => OriginalImport.MarketRecord * 0x618 + i * OriginalSaveGame.SquadSlotLength)
-                .Where(o => squad[o + 0x0F] != 0 && pool[squad[o + 0x0F] * OriginalSaveGame.PoolRecordLength + 0x1A] == record));
-        foreach (var offset in places)
+                .Select(i => (Offset: OriginalImport.MarketRecord * 0x618 + i * OriginalSaveGame.SquadSlotLength, Listed: true))
+                .Where(o => squad[o.Offset + 0x0F] != 0 && pool[squad[o.Offset + 0x0F] * OriginalSaveGame.PoolRecordLength + 0x1A] == record));
+        foreach (var (offset, listed) in places)
         {
             var slot = squad.AsSpan(offset, OriginalSaveGame.SquadSlotLength);
             if (!slot.ContainsAnyExcept((byte)0))
@@ -437,6 +438,8 @@ public sealed partial class GameState
             }
             ApplySlot(player, slot, entry, clubOf);
             squadPlayers[slot[0x0F]] = player;
+            if (listed)
+                continue; // A380: nur auf dem Markt-Platz
             players.Add((player, slot[0x15] & 0x0F, (slot[0x15] & 0x80) != 0, slot[0x0A] != 0));
         }
 
@@ -530,7 +533,7 @@ public sealed partial class GameState
             p.InjuryKind = slot[0x17];
         p.SuspendedGames = 0; // [APPROX] Feldkarte U
         p.ContractYears = slot[0x0B];
-        // [ORIGINAL] Kaderplatz +0x18 (docs/transfer.md): Bit 0x80 „wird sich mit Ablauf des Vertrages zur Ruhe setzen“ (0x4A692),
+        // [ORIGINAL] Kaderplatz +0x18 (docs/transfer.md): Bit 0x80 „wird sich mit Ablauf des Vertrages zur Ruhe setzen“ (Test bei 0x4A6C7 im Zweig ab 0x4A692),
         // > 99 Angebot des Spielers „von 1 auf n Jahre“ mit n = +0x18 − 100 (0x4A3AF; Saisonende 0x27D05 schreibt 101), sonst
         // Verhandlungssperre in Tagen (R14HI-04). Die Meldung dazu steht im Pool +0x1E (offene Meldung), nicht im Vertragsfeld.
         var notice = slot[0x18];

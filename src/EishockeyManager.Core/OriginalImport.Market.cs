@@ -60,7 +60,8 @@ public sealed partial class GameState
     /// <item>Besitzer 0–3 mit Platz in einem übernommenen Managerkader: derselbe Spieler, vergeben. [APPROX] Ohne übernommenen
     ///   Kader („nur Weltkugel“) der gleichnamige Spieler des Managervereins, sonst frei.</item>
     /// <item>Marktplatz mit Besitzer 4: Angebot aus dem Pool (<see cref="TransferListing.FromPool"/>); mit Besitzer 0–3: Angebot
-    ///   dieses Managers, der Spieler bleibt im Kader (Feldbelege L7). [APPROX] Ein Platz mit Poolindex 0 ist der Rest des
+    ///   dieses Managers, der Spieler steht nur auf dem Markt-Platz, nicht im Kader (Feldbelege L7; A380 wie
+    ///   <see cref="TransferMarket.Offer"/>, #676). [APPROX] Ein Platz mit Poolindex 0 ist der Rest des
     ///   aufgerückten Satzes (FILE41 Platz 11) und kein Eintrag; Vertragslose (Preis 0) sind an keinem Stand belegt und gelten
     ///   wie Poolangebote.</item>
     /// <item>[APPROX] Gleichnamige Spieler gleicher Art aus dem Pool des Nachspielens behalten Objekt und ID. Jeder Name nur
@@ -147,7 +148,8 @@ public sealed partial class GameState
                 });
             }
             else if (slot.Owner == PoolOwner.Taken && e[0x1A] < Managers.Count
-                     && Clubs[Managers[e[0x1A]].ClubIndex] is var own && own.Players.Contains(slot.Player))
+                     && Clubs[Managers[e[0x1A]].ClubIndex] is var own
+                     && (squadPlayers.GetValueOrDefault(index) == slot.Player || own.Players.Contains(slot.Player)))
                 listings.Add(new TransferListing
                 {
                     Player = slot.Player, From = own, Price = price, Seller = Managers[e[0x1A]], ListedDay = PlayedMatchDays,

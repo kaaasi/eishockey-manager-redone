@@ -12,8 +12,10 @@ namespace EishockeyManager.Core;
 ///   der Runde DGROUP 0xCCA3 (0–4; 5 nach dem Endspiel), Anfang der Runde DGROUP 0xCFFA (0, 8, 12).</item>
 /// <item>[ORIGINAL] Spiele DGROUP 0xCCB2 + 14 · Spiel + Platz (0x3173A–0x317AE), Tore des Heimbytes + 30 je Marke (Schleife
 ///   0x31622–0x31631 zieht sie vor der Wertung ab), 100 = nicht ausgetragen (0x31800). Sieger nach Toren; Gleichstand zählt für den
-///   Gast (0x3166E „jnc“ → 0xCCA5). Siege DGROUP 0xCCA4 + Platz; gewinnt der Gast im fünften Spiel die Serie, steht dort 0x14
-///   (0x316BF). Nach jedem der ersten vier Spiele tauschen Heim und Gast samt Siegen und bisherigen Spielen (0x31505, Aufruf
+///   Gast (0x3166E „jnc“ → 0xCCA5). Siege DGROUP 0xCCA4 + Platz. Siegbyte 0x14 (0x3168B–0x316BF, R14HN-02): Hat
+///   beim fünften Termin (<c>CCA3</c> = 4) der Gast dieses Termins mehr als zwei Siege, stehen seine Siege danach als 0x14, und
+///   0x316C9 tauscht die Paarung – auch wenn die Serie schon vorher entschieden war (FILE22: Endspiel 3:0 für Köln, Spiele 4/5 = 100,
+///   <c>CCA4[12]</c> = 0x14; ebenso Viertelfinale 0/1). Der Sieger steht damit auf Platz 2k. Nach jedem der ersten vier Spiele tauschen Heim und Gast samt Siegen und bisherigen Spielen (0x31505, Aufruf
 ///   0x316C9); beim Rundenwechsel stellt 0x31C3A–0x31C46 die Setzreihenfolge wieder her. Heimrecht in Spiel 1, 3, 5 beim Platz 2k.</item>
 /// <item>[ORIGINAL] Aufstiegsrunden = Wettbewerb 1 der Gruppentabellen (0x30852, Aufruf 0x38691): Teilnehmer DGROUP 0xCFF4 + 8 + 4 · Gruppe
 ///   (<c>CFFC</c>; Gruppe 0 Bundesliga/2. Liga, 1 = 2. Liga/Oberliga: die zwei Letzten der oberen, dann die zwei Ersten der unteren
@@ -29,7 +31,7 @@ public static partial class OriginalImport
     /// <summary>Zahl der Play-off-Plätze in DGROUP 0x5D3B (Viertelfinale, Halbfinale, Endspiel).</summary>
     public const int PlayoffSlotCount = 14;
 
-    /// <summary>Siegbyte des Gastes, der im fünften Spiel die Serie gewinnt (0x316BF).</summary>
+    /// <summary>Siegbyte des Gastes des fünften Termins mit mehr als zwei Siegen (0x316BF; auch bei vorher entschiedener Serie).</summary>
     public const byte PlayoffAwayWinsMark = 0x14;
 
     /// <summary>Play-off-Plätze DGROUP 0x5D3B ff. (<c>5CFB</c> + 0x40, 24 Byte).</summary>
@@ -93,7 +95,7 @@ public sealed partial class Playoffs
     /// <summary>
     /// Play-offs aus dem HOK (siehe <see cref="OriginalImport"/>, Teil 4d): Runden 0 … DGROUP 0x7B0 aus den Plätzen 0x5D3B, Spiele aus
     /// 0xCCB2. Paarung (2k, 2k + 1) steht in Setzreihenfolge; in der laufenden Runde ist sie nach ungerader Spielzahl getauscht
-    /// (0x31505), im fertigen Endspiel, wenn der Gast die Serie gewann (Siegbyte 0x14).
+    /// (0x31505), im fertigen Endspiel bei Siegbyte 0x14 (Gast des fünften Termins mit drei Siegen).
     /// </summary>
     internal static Playoffs ImportOriginal(OriginalSaveGame save, int[] clubOf, IReadOnlyList<int> seeds)
     {
@@ -105,12 +107,11 @@ public sealed partial class Playoffs
             throw new InvalidDataException($"Play-off-Runde {round}, Spiel {game} (DGROUP 0x7B0/0xCCA3) ungültig.");
         var days = SeasonCalendar.DaysOf(DayEvents.Playoffs);
         var playoffs = new Playoffs(seeds);
-        var expectedFirst = playoffs._rounds[0].Select(s => (s.HigherSeed, s.LowerSeed)).ToList();
+        var expectedFirst = playoffs._rounds[0].Select(s => (s.HomeClub, s.AwayClub)).ToList();
         playoffs._rounds.Clear();
-        // Plätze der Paarungen je Runde in der Reihenfolge der Sieger in der nächsten Runde (Tabelle DGROUP 0x144): so paart Prepare
-        // eine noch offene Runde wie das Original (1–8 gegen 3–6, 2–7 gegen 4–5); eigene Spiele des Remakes paaren anders ([APPROX]
-        // in Playoffs.cs), das Heimrecht einer noch nicht ausgelosten Runde folgt dort dem besser Platzierten.
-        int[][] pairSlots = [[0, 4, 2, 6], [8, 10], [12]];
+        // Plätze der Paarungen je Runde in Platzfolge wie Playoffs.Rounds; Prepare paart eine noch offene Runde nach Tabelle DGROUP
+        // 0x144 wie das Original (1–8 gegen 3–6, 2–7 gegen 4–5, Heimrecht beim kleineren Platz; #676).
+        int[][] pairSlots = [[0, 2, 4, 6], [8, 10], [12]];
         for (var r = 0; r <= round; r++)
         {
             var current = r == round && game < DatesPerRound;
@@ -134,7 +135,7 @@ public sealed partial class Playoffs
                 }
                 series.Add(s);
             }
-            if (r == 0 && !series.Select(s => (s.HigherSeed, s.LowerSeed)).Order().SequenceEqual(expectedFirst.Order()))
+            if (r == 0 && !series.Select(s => (s.HomeClub, s.AwayClub)).Order().SequenceEqual(expectedFirst.Order()))
                 throw new InvalidDataException("Play-off-Viertelfinale (DGROUP 0x5D3B) passt nicht zur Abschlusstabelle 0x5CCB.");
             playoffs._rounds.Add(series);
         }

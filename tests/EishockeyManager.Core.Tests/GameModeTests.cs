@@ -390,11 +390,20 @@ public class GameModeTests
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. Meister und Pokalsieger der Saison 1 gleich; der Weltmeister 1993 (nach den Play-offs) und alles Weitere neu.
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    // Gegenüber main: Saison 1 Pokalsieger gleich, Meister und Weltmeister neu (die Angaben der Zeile #676 galten für Base e5fe46f); Manager 1
+    // ist in Saison 5 nicht mehr spielfähig (Konto −7.327.742), die Probe prüft weiter nur Manager 0.
     // #678/#679 (Tagestakt Hauptweg): neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert).
+    // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
+    // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
+    // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
     // Titel ab Saison 1 neu; Manager 1 (Verein 30, verlängert nur angebotene Verträge, die jetzt nur noch an den Takttagen kommen)
     // verliert ab Saison 3 seinen Kader und zahlt Strafen (Konto −6.762.898 … −24.472.210); die Probe prüft weiter nur Manager 0.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=0,GermanChampion=4,EuropeanCupWinner=2|207155,400000|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=4|1575332,400000|WorldChampion=52,CupWinner=1,GermanChampion=4,EuropeanCupWinner=4|2170359,-6762898|WorldChampion=54,CupWinner=1,GermanChampion=9,EuropeanCupWinner=4|2671108,-12496853|WorldChampion=53,CupWinner=4,GermanChampion=4,EuropeanCupWinner=4|400000,-24472210|R316688368 C78687070";
+        "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|208946,400000|WorldChampion=63,CupWinner=0,GermanChampion=1,EuropeanCupWinner=0|1555152,400000|WorldChampion=52,CupWinner=5,GermanChampion=1,EuropeanCupWinner=1|2267184,-6720310|WorldChampion=63,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2835720,-12835125|WorldChampion=55,CupWinner=15,GermanChampion=15,EuropeanCupWinner=1|2922312,-25387823|R1992245788 C1591741509";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

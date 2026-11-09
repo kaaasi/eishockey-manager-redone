@@ -67,6 +67,8 @@ public partial class OriginalImportFieldMapTests
     /// genannte Block muss im Importcode (<c>Core/OriginalImport*.cs</c>, Kopf: <c>Formats/OriginalSaveHeader.cs</c>) gelesen werden –
     /// als <c>Block("…")</c> bzw. als Zeichenkette – und jeder Versatz <c>+0x…</c> der Quelle als Hexzahl im Importcode vorkommen.
     /// Vorher führte die Karte z. B. `D0C1`, `CD58`, `0387` und `965B+0x117` als belegt, ohne dass ein Import sie las.
+    /// Nachprüfung R14HN-01: Kommentare zählen nicht (<see cref="StripComments"/>); vorher erfüllte ein Versatz, der nur im Kommentar
+    /// über der Codezeile stand (0x117/0x128 bei <c>ImportConstruction</c>), die Prüfung auch ohne die Codezeile.
     /// </summary>
     [Fact]
     public void FieldMap_ImportedRows_HaveTheirBlocksAndOffsetsInTheImportCode()
@@ -95,7 +97,60 @@ public partial class OriginalImportFieldMapTests
         var root = RepositoryRoot();
         var files = Directory.GetFiles(Path.Combine(root, "src", "EishockeyManager.Core"), "OriginalImport*.cs")
             .Append(Path.Combine(root, "src", "EishockeyManager.Formats", "OriginalSaveHeader.cs"));
-        return string.Join("\n", files.Select(File.ReadAllText));
+        return string.Join("\n", files.Select(f => StripComments(File.ReadAllText(f))));
+    }
+
+    /// <summary>R14HN-01: Der Abgleich zählt nur Code und Zeichenketten, keine Kommentare.</summary>
+    [Fact]
+    public void StripComments_RemovesLineAndBlockCommentsButKeepsStrings()
+    {
+        const string code = "var a = record[0x116]; // +0x117\n/* 0x128 */ var b = \"965B\"; var c = \"x // 0x1D\";\n/// <c>0x133</c>\nvar d = '/';";
+        var stripped = StripComments(code);
+        Assert.Contains("0x116", stripped);
+        Assert.Contains("\"965B\"", stripped);
+        Assert.Contains("\"x // 0x1D\"", stripped);
+        Assert.Contains("'/'", stripped);
+        Assert.DoesNotContain("0x117", stripped);
+        Assert.DoesNotContain("0x128", stripped);
+        Assert.DoesNotContain("0x133", stripped);
+    }
+
+    /// <summary>Entfernt <c>//</c>- und <c>/* */</c>-Kommentare (auch Doku-Kommentare); Zeichenketten und Zeichen bleiben stehen.</summary>
+    private static string StripComments(string code)
+    {
+        var result = new System.Text.StringBuilder(code.Length);
+        var i = 0;
+        while (i < code.Length)
+        {
+            var c = code[i];
+            var next = i + 1 < code.Length ? code[i + 1] : '\0';
+            if (c == '/' && next == '/')
+            {
+                while (i < code.Length && code[i] != '\n')
+                    i++;
+            }
+            else if (c == '/' && next == '*')
+            {
+                var end = code.IndexOf("*/", i + 2, StringComparison.Ordinal);
+                i = end < 0 ? code.Length : end + 2;
+                result.Append(' ');
+            }
+            else if (c is '"' or '\'')
+            {
+                // Zeichenkette oder Zeichen bis zum ungeschützten Ende (verbatim-Zeichenketten kommen im Importcode nicht vor).
+                var start = i++;
+                while (i < code.Length && code[i] != c && code[i] != '\n')
+                    i += code[i] == '\\' ? 2 : 1;
+                i = Math.Min(i + 1, code.Length);
+                result.Append(code, start, i - start);
+            }
+            else
+            {
+                result.Append(c);
+                i++;
+            }
+        }
+        return result.ToString();
     }
 
     private static string Normalize(string hex) =>
