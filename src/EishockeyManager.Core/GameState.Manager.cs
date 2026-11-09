@@ -131,7 +131,14 @@ public sealed partial class GameState
     }
 
     /// <summary>Rechnet alle Tage bis einschließlich <paramref name="day"/> ab (Monats-, Wochen- und Tageswechsel).</summary>
-    public void AdvanceFinanceTo(int day)
+    public void AdvanceFinanceTo(int day) => AdvanceFinance(day, clubDay: true);
+
+    /// <summary>
+    /// Gemeinsamer Kern des Tageswechsels der Finanzen. <paramref name="clubDay"/>: Tageslauf des Hauptwegs mit Jugendteams
+    /// (0x39DEC, Datei 0x5501C) und Talentsuche (0x06FA5, Datei 0x5528A); false für die WM-Schleife (Datei 0x55570–0x55740 ruft
+    /// beide nicht; Spur nationalteam, Review #674 R14NT4-02/-07). Sonst gleich, damit beide Wege nicht auseinanderlaufen.
+    /// </summary>
+    internal void AdvanceFinance(int day, bool clubDay)
     {
         while (FinanceDay < day)
         {
@@ -139,9 +146,10 @@ public sealed partial class GameState
             var date = SeasonCalendar.LayoutDate(FinanceDay);
             ExpireMessages();
             // [ORIGINAL] Tagesablauf 0x55008: an Ligaspieltagen die Jugendteams (0x39DEC) vor den Spielen (Spur geld Teil 3).
-            DailyYouth(FinanceDay);
-            // [ORIGINAL] Tageslauf 0x54C9F, Datei 0x5528A: Talentsuche an Tagen ≡ 0, 4 (mod 7) (Spur geld Teil 6).
-            if (FinanceDay > 0)
+            if (clubDay)
+                DailyYouth(FinanceDay);
+            // [ORIGINAL] Tageslauf 0x54C9F, Datei 0x5528A: Talentsuche an Tagen mit Zähler 0x3B7 ≡ 0, 4 (mod 7) (Spur geld Teil 6).
+            if (clubDay && FinanceDay > 0)
                 DailyTalentSearch(FinanceDay);
             if (FinanceDay > 0)
             {

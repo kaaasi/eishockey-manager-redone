@@ -260,8 +260,11 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// (Datei 0x29CF2, Teamwerte bleiben am Platz, Oberliga-Kader); mit und ohne Anzeige weiter gleich. Teil 3 (R-K5): erneut neu –
     /// Satzfolge vor der Spielvorbereitung (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     /// Runde 14, nationalteam Teil 4 (#664): ab 1994 neu (1993 unverändert) – ohne Bundestrainer läuft die WM in der WM-Schleife
-    /// des Originals (Datei 0x55570–0x55740: keine Wanderung, kein Training, kein Markt außer nach den Tagen 224/228, keine
-    /// Talentsuche). Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert. Mit und ohne Anzeige weiter gleich.</summary>
+    /// des Originals (Datei 0x55570–0x55740: keine Wanderung, kein Training, kein Markt außer nach bestimmten WM-Tagen – dort
+    /// 224/228, falsch). Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert. Mit und ohne Anzeige weiter gleich.
+    /// Review #674 (R14NT4-01/-05, #675): ab 1993 neu – Takttage (Wanderung, Talentsuche) und Heilung des Hauptwegs mit dem
+    /// Tageszähler 0x3B7 = Tag + 1 (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …), dazu (c) der WM-Schleife nach den WM-Spielen der
+    /// Tage 216, 220, 230 samt Markt-Verfall und ohne Listenwechsel. Mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 21, DM 6, Tab 15379 | 1994: DEB 2, DM 21, Tab 15421 | 1995: DEB 6, DM 21, Tab 15352 | 1996: DEB 23, DM 23, Tab 15121";
+        "1993: DEB 9, DM 5, Tab 15381 | 1994: DEB 2, DM 1, Tab 15726 | 1995: DEB 5, DM 5, Tab 15666 | 1996: DEB 23, DM 0, Tab 16476";
 }

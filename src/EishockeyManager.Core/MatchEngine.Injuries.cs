@@ -63,10 +63,11 @@ public static class PlayerInjuries
     /// <summary>
     /// Heilung. [ORIGINAL] Datei 0x7C12 aus dem Tageslauf 0x07169 für die Kaderplätze der Manager und ihre Marktplätze:
     /// verletzt (+0x09 &amp; 2), nicht 0xFF und nicht 0 → + 0x0D − 1, wenn (Tageszähler 0x3B7 − [0x6AF]) durch 7 teilbar
-    /// ist; danach Status frei, wenn +0x0D = 0. [APPROX] Versatz DGROUP 0x6AF nicht gelesen (0); alle Spieler des
-    /// Spielstands (im Remake verletzen sich nur Spieler der Manager).
+    /// ist; danach Status frei, wenn +0x0D = 0. [ORIGINAL] [0x6AF] = 0 (DGROUP-Startwert, kein Schreiber; siehe
+    /// <see cref="DayCounter"/>), <paramref name="dayCounter"/> ist also der Zähler 0x3B7 selbst (#675, Review #674 R14NT4-01/-03).
+    /// [APPROX] Alle Spieler des Spielstands (im Remake verletzen sich nur Spieler der Manager).
     /// </summary>
-    public static bool IsHealingDay(int day) => day % 7 == 0;
+    public static bool IsHealingDay(int dayCounter) => dayCounter % 7 == 0;
 
     /// <returns>Ist der Spieler jetzt geheilt?</returns>
     public static bool Heal(Player player)
@@ -215,10 +216,14 @@ public static partial class OriginalMinutes
 
 public sealed partial class GameState
 {
-    /// <summary>Heilung der Verletzungen (siehe <see cref="PlayerInjuries.Heal"/>), einmal je Tag des Tageslaufs.</summary>
+    /// <summary>
+    /// Heilung der Verletzungen (siehe <see cref="PlayerInjuries.Heal"/>), einmal je Tag des Tageslaufs. [ORIGINAL] Im Hauptweg
+    /// (0x07169 aus Datei 0x552A6) und in Schritt (d) der WM-Schleife (Datei 0x556F7) nach dem Weiterzählen: Zähler
+    /// <see cref="DayCounter.Of"/>(day) (#675).
+    /// </summary>
     public void HealInjuries(int day)
     {
-        if (!PlayerInjuries.IsHealingDay(day))
+        if (!PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
             return;
         foreach (var club in Clubs)
         {

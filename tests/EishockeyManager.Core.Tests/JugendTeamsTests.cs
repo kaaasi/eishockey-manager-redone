@@ -190,21 +190,29 @@ public class JugendTeamsTests
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Runde 14, nationalteam Teil 4 (#664): neu ab Saison 1 – der aktive Manager wird nicht Bundestrainer, die WM läuft trotzdem
-    // in der WM-Schleife (Datei 0x55570–0x55740: kein Training, kein Markt außer nach den Tagen 224/228, keine Talentsuche, keine
-    // Wanderung); Saison 0 unverändert. Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert.
+    // in der WM-Schleife (Datei 0x55570–0x55740: kein Training, kein Markt außer nach bestimmten WM-Tagen (dort 224/228, falsch),
+    // keine Wanderung); Saison 0 unverändert. Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert.
+    // Review #674 (R14NT4-01/-05, #675): neu ab Saison 0 – (c) der WM-Schleife nach den WM-Spielen der Tage 216, 220 und 230
+    // (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel; Takttage (Wanderung, Talentsuche) und Heilung
+    // des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück → weder alter
+    // noch neuer Wert, beide Teile wirken.
     private const string ExpectedActive =
-        "0:Schueler:2/11/58;0:Jugend:2/11/60;0:Junioren:2/11/62;1:Schueler:2/6/66;1:Jugend:1/11/70;1:Junioren:1/11/74;2:Schueler:1/11/73;2:Jugend:1/6/78;2:Junioren:1/6/83;3:Schueler:1/6/78;3:Jugend:1/6/80;3:Junioren:1/6/83";
+        "0:Schueler:2/11/57;0:Jugend:2/11/60;0:Junioren:2/11/63;1:Schueler:2/6/69;1:Jugend:2/6/69;1:Junioren:2/6/68;2:Schueler:1/11/74;2:Jugend:1/11/75;2:Junioren:1/11/76;3:Schueler:1/6/82;3:Jugend:1/6/81;3:Junioren:1/6/79";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
     // WM ohne kleine Wanderung (WM-Schleife Datei 0x55570–0x55740), damit ändert sich der Zufallsverbrauch ab dem 14. April.
     // Saison 0 unverändert, Richtung (≤ −15) weiter geprüft.
     // Runde 14, nationalteam Teil 4 (#664): neu ab Saison 1 – mit Bundestrainer trainiert in der WM-Schleife nur noch Manager 0
-    // nach den WM-Spielen der Tage 224/228 (Datei 0x5565C, DGROUP 0xA70E = 0), Markt ebenso, keine Talentsuche 0x06FA5 (statt
-    // Training an jedem Trainingstag und täglichem Markt). Die Gegenprobe „Schleife nur mit Bundestrainer“ ändert diesen Wert
-    // nicht (er hängt allein am Weg mit Bundestrainer); Saison 0 unverändert, Richtung (≤ −15) weiter geprüft.
+    // nach bestimmten WM-Tagen (Datei 0x5565C, DGROUP 0xA70E = 0; dort 224/228, falsch), Markt ebenso (statt Training an jedem
+    // Trainingstag und täglichem Markt). Die Gegenprobe „Schleife nur mit Bundestrainer“ ändert diesen Wert nicht (er hängt allein
+    // am Weg mit Bundestrainer); Saison 0 unverändert, Richtung (≤ −15) weiter geprüft.
+    // Review #674 (R14NT4-01/-05, #675): neu ab Saison 0 – (c) der WM-Schleife nach den WM-Spielen der Tage 216, 220 und 230
+    // (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel; Takttage (Wanderung, Talentsuche) und Heilung
+    // des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück → weder alter
+    // noch neuer Wert, beide Teile wirken. Richtung weiter geprüft.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/62;0:Jugend:2/2/67;0:Junioren:1/6/69;1:Schueler:2/6/61;1:Jugend:2/6/56;1:Junioren:2/2/58;2:Schueler:3/2/52;2:Jugend:3/2/48;2:Junioren:3/2/46;3:Schueler:3/6/43;3:Jugend:3/6/43;3:Junioren:3/6/44";
+        "0:Schueler:2/2/63;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:3/2/54;1:Jugend:3/2/55;1:Junioren:2/6/57;2:Schueler:3/6/45;2:Jugend:3/6/45;2:Junioren:3/2/47;3:Schueler:3/6/43;3:Jugend:3/6/42;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

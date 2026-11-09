@@ -61,7 +61,7 @@ public class SeasonEndStatusTests
     [Fact]
     public void Full_EveryManagerInTopFive_GetsStatusBit()
     {
-        var game = GameModeTests.Create(17, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
+        var game = GameModeTests.Create(56, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56, Vorbedingung beide unter den ersten fünf
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];
@@ -105,7 +105,7 @@ public class SeasonEndStatusTests
     [Fact]
     public void StatusBit_DoesNotChangeStoredEventsOrPremium()
     {
-        var game = GameModeTests.Create(3, true, true, 2, 1);
+        var game = GameModeTests.Create(5, true, true, 2, 1); // #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): Saat 3 → 5, Vorbedingung Bit
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];

@@ -213,4 +213,36 @@ public class NationalteamRunde14UiTests
         d.RightClick(box.X + 1, box.Y + 1); // Block ohne Platz: ebenfalls zurück
         Assert.IsType<MainMenuScreen>(d.Host.Current);
     }
+
+    /// <summary>
+    /// R14NT4-06 (Review #674): Regressionstest (Mutation U5 – Bedingung nie wahr – blieb grün). [ORIGINAL] Datei 0x40ACF–0x40AF3
+    /// schaltet „automatisch aufstellen“ ab, Datei 0x40B37–0x40B5D: ein Verletzter oder Gesperrter mit Restdauer (+0x0D ≠ 0,
+    /// +0x09 &amp; 3 ≠ 0) bleibt auf dem Platz, Meldung „Spieler ist“ / „noch gesperrt !“ (DGROUP 0x1255/0x1251).
+    /// </summary>
+    [GameDataTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(bool suspended)
+    {
+        var (d, game) = NationalLineupScreenTests.StartWorldOnly();
+        game.AutoNominate();
+        var coach = game.NationalCoach!;
+        coach.AutoFormation();
+        var slot = LineupSlot.Defender(0, 0);
+        var placed = coach.Formation[slot]!;
+        if (suspended)
+            placed.SuspendedGames = 1;
+        else
+            placed.InjuredGames = 2;
+
+        d.OpenTile("Aufstellung");
+        var screen = Assert.IsType<NationalLineupScreen>(d.Host.Current);
+        d.Frame();
+        NationalLineupScreenTests.ClickSlot(d, slot);
+        Assert.IsType<NationalLineupScreen>(d.Host.Current);
+        Assert.Same(placed, coach.Formation[slot]);
+        Assert.True(coach.IsDressed(placed));
+        Assert.False(coach.AutoLineupEnabled);
+        Assert.Equal(["Spieler ist", "noch gesperrt !"], screen.Message.Lines);
+    }
 }

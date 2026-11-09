@@ -66,11 +66,12 @@ public static class TalentScout
     public const int SalaryPercent = 80;
 
     /// <summary>
-    /// Tage, an denen der Zähler sinkt: Tageszähler ≡ 0 oder 4 (mod 7). [ORIGINAL] Tageslauf 0x54C9F ruft 0x06FA5 an Datei
+    /// Tage, an denen der Zähler sinkt: Tageszähler 0x3B7 ≡ 0 oder 4 (mod 7). [ORIGINAL] Tageslauf 0x54C9F ruft 0x06FA5 an Datei
     /// 0x5528A unter derselben Bedingung wie die kleine Wanderung der Teamwerte (Datei 0x55253–0x5528A,
-    /// <see cref="MatchEngine.IsDriftDay"/>).
+    /// <see cref="MatchEngine.IsDriftDay"/>), nach dem Weiterzählen bei Datei 0x55204: im Tageslauf des Remake-Tags
+    /// <paramref name="day"/> also Zähler <see cref="DayCounter.Of"/>(day) = day + 1 (#675, Review #674 R14NT4-03).
     /// </summary>
-    public static bool IsTick(int day) => MatchEngine.IsDriftDay(day);
+    public static bool IsTick(int day) => MatchEngine.IsDriftDay(DayCounter.Of(day));
 
     /// <summary>
     /// Höchstwert des Erfolgswürfels: Erfolg, wenn random(0, 5 − ⌊(5 − Level) / 2⌋) = 0. [ORIGINAL] Datei 0x07003–0x0701E

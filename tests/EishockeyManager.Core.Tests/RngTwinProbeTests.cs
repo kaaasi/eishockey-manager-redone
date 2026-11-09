@@ -179,17 +179,18 @@ namespace EishockeyManager.Core.Tests;
 /// (<c>SignFreeAgents</c>); Torhüter und Verteidiger stehen jetzt hinter dem letzten Spieler ihrer Art (Datei 0x42D55) statt hinten:
 /// andere Nr., Kaderplatz 3 (Gehaltsforderung 0x4A93F) und Gleichstände der Auto-Aufstellung. Passive Abdrücke unverändert.
 /// Gegenprobe: Kauf über die Transferliste wieder hinten an (<c>managerSquad: false</c> in <c>TransferMarket.Complete</c>) → alle alten Werte.
-/// Runde 14, nationalteam Teil 4 (#664): neu ab dem 14. April der ersten Saison – ohne Bundestrainer läuft die WM in der WM-Schleife des Originals (Datei 0x55570–0x55740): keine Wanderung, kein Training, kein Markt außer nach den WM-Spielen der Tage 224/228, keine Talentsuche. Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert. Gilt für alle sechs Abdrücke.
+/// Runde 14, nationalteam Teil 4 (#664): neu ab dem 14. April der ersten Saison – ohne Bundestrainer läuft die WM in der WM-Schleife des Originals (Datei 0x55570–0x55740): keine Wanderung, kein Training, kein Markt außer nach den WM-Spielen bestimmter Tage (dort 224/228, falsch, siehe unten). Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert. Gilt für alle sechs Abdrücke.
+/// Review #674 (R14NT4-01/-05, #675): neu – (c) der WM-Schleife nach den WM-Spielen der Tage 216, 220 und 230 (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel, Takttage (Wanderung, Talentsuche) und Heilung des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück auf den Remake-Tag → weder alter noch neuer Wert, beide Teile wirken. Gilt für alle sechs Abdrücke.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "EB4E4CBD6E34161E")]
-    [InlineData(true, 3, "79D9BA31D8BFB5F7")]
-    [InlineData(false, 11, "F28175EEA5A724E5")]
-    [InlineData(true, 11, "72274730CC60FD85")]
+    [InlineData(false, 3, "13B4B9BF97AA6791")]
+    [InlineData(true, 3, "5ADC850A1A889D0D")]
+    [InlineData(false, 11, "286D192F1797731D")]
+    [InlineData(true, 11, "9960C6895BC6A787")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -200,8 +201,8 @@ public class RngTwinProbeTests
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "FD41A4D9F2D2AE37")]
-    [InlineData(true, "DFF38E6174089044")]
+    [InlineData(false, "1446A537FF2DE7EC")] // Review #674 (R14NT4-01/-05, #675), Begründung im Klassenkommentar
+    [InlineData(true, "125887AB15C5C11C")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -393,7 +393,9 @@ public class SpielstaerkeManager2Tests
     [InlineData(true)]
     public void FourSeasonChanges_ManagedMatchesPlausible(bool active)
     {
-        var game = GameModeTests.Create(3, true, true, 2, 30);
+        // #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): Saat 3 → 4. Mit Saat 3 ein 21:0 gegen Verein 2 bei vollständiger
+        // Aufstellung samt Torhüter (Belastung im Mittel 130), also kein fehlender Torhüter; Saat 4 bleibt unter 20 Toren.
+        var game = GameModeTests.Create(4, true, true, 2, 30);
         long goals = 0, games = 0, maxGoals = 0;
         RngTwinProbeTests.Run(game, active, beforeChange: g =>
         {

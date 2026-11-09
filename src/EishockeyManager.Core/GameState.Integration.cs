@@ -50,7 +50,7 @@ public sealed partial class GameState
         if (!WorldOnly)
             OnDayClubSeason(day);
         else
-            UpdateNationalTeamValues();
+            OnDayWorldOnlyLoop(day); // Review #674, R14NT4-04: auch Modus 1 läuft durch die WM-Schleife (CupsNational.WorldCupLoop.cs)
 
         // Paket „wettbewerbe“: an den Tagen mit Markierung 255 im Modus 4 den Bundestrainer ernennen (Spur
         // bundestrainer-modus4), dann die Werte Deutschlands ohne Bundestrainer neu auswürfeln.
@@ -101,8 +101,11 @@ public sealed partial class GameState
         // Ereignis die Neuaufstellung von Satz 5 mit der gesicherten Einstellung (Datei 0x54D41–0x54DAA, nur Hauptweg).
         OnDayNationalTeam(day);
 
-        // Spur spielberechnung-komplett (#204): kleine Wanderung der Teamwerte zweimal je Woche (0x5525A–0x55292)
-        if (MatchEngine.IsDriftDay(day))
+        // Spur spielberechnung-komplett (#204): kleine Wanderung der Teamwerte zweimal je Woche (0x5525A–0x55292). #675 (Review
+        // #674, R14NT4-03): Datei 0x55204 zählt DGROUP 0x3B7 nach den Spielen des Vortags weiter, Talentsuche, Wanderung und
+        // 0x07169 (Datei 0x55253–0x552D3) prüfen den neuen Stand = Tag + 1 (DayCounter); ebenso TalentScout.IsTick und die
+        // Heilung (PlayerInjuries.IsHealingDay über HealInjuries).
+        if (MatchEngine.IsDriftDay(DayCounter.Of(day)))
             MatchEngine.DriftTeamValues(this, TeamValueDrift.Weekly);
 
         // Spur spielberechnung-komplett, Teil 3: Verletzungen heilen wochenweise (0x7C12 im Tageslauf 0x07169)
