@@ -438,7 +438,7 @@ public sealed partial class GameState
                 player = new Player { Name = name, Role = role, IsForeigner = foreigners.Contains(name) };
                 AssignPlayerId(player);
             }
-            ApplySlot(player, slot, entry, clubOf);
+            ApplySlot(player, slot, entry, clubOf, club);
             squadPlayers[slot[0x0F]] = player;
             if (listed)
                 continue; // A380: nur auf dem Markt-Platz
@@ -484,7 +484,8 @@ public sealed partial class GameState
     }
 
     /// <summary>Werte eines Kaderplatzes (0x34 Byte) und des Pool-Spielers (33 Byte). Geld in Drittel-DM (Regel 4).</summary>
-    private void ApplySlot(Player p, ReadOnlySpan<byte> slot, ReadOnlySpan<byte> entry, int[] clubOf)
+    /// <param name="club">Verein des Kaderplatzes (Leihe: nie der Verleiher) oder null für einen Markt-Platz.</param>
+    private void ApplySlot(Player p, ReadOnlySpan<byte> slot, ReadOnlySpan<byte> entry, int[] clubOf, Club? club)
     {
         p.Age = entry[0x14];
         p.Talent = entry[0x12];
@@ -550,6 +551,24 @@ public sealed partial class GameState
         p.PurchasePrice = (price & 0x7FFF_FFFF) / 3;
         p.InsurancePremium = BinaryPrimitives.ReadInt32LittleEndian(slot[0x30..]) / 3;
         p.UnsolicitedOffer = (slot[0x09] & 0x40) != 0 && slot[0x16] < clubOf.Length ? Clubs[clubOf[slot[0x16]]] : null;
+        // #688 (R688S-02, A115): Leihe. [ORIGINAL] Kaderplatz +0x0C = Verein + 0x80 (Datei 0x47920–0x47925 bei der Leihe, 0 sonst;
+        // Prüfung „… ist leider von <Verein> nur ausgeliehen“ Datei 0x4A692, docs/transfer.md), Pool +0x1A bleibt beim Verleiher
+        // (4 = Markt). FILE44 VALLIERE: +0x0C = 0xB9 (Vereinssatz 57, ein Land), Pool +0x1A = 4; am Saisonende frei ohne Ablöse (FILE46,
+        // Pool +0x1A = 6, Datei 0x275FF). Der Verein in +0x0C ist der Vereinssatz des Originals (0–47 Ligavereine, ab 52 Länder;
+        // Abbildung clubOf wie bei +0x16).
+        // [APPROX] Stammvertrag (Laufzeit, Gehalt, Versicherung) in PlayerLoan unbelegt: Werte des Leih-Kaderplatzes; der
+        // Saisonwechsel braucht nur den Verleiher (StartSquadSeason).
+        var loanSlot = slot[0x0C] & 0x7F;
+        if (club is not null && (slot[0x0C] & 0x80) != 0 && loanSlot < clubOf.Length && Clubs[clubOf[loanSlot]] is { } lender && lender != club)
+        {
+            p.OnLoan = true;
+            p.Loan = new PlayerLoan(lender, p.ContractYears, p.MonthlySalary, p.Insured);
+        }
+        else
+        {
+            p.OnLoan = false;
+            p.Loan = null;
+        }
     }
 
     private static string CName(ReadOnlySpan<byte> raw)

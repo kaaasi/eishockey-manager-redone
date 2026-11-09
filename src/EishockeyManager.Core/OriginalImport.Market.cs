@@ -136,7 +136,7 @@ public sealed partial class GameState
             if (slot.Owner == PoolOwner.Market)
             {
                 var p = slot.Player;
-                ApplySlot(p, s, e, clubOf);
+                ApplySlot(p, s, e, clubOf, club: null);
                 p.ContractYears = 0;
                 p.MonthlySalary = 0;
                 p.PurchasePrice = 0;

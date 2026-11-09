@@ -219,35 +219,56 @@ public sealed partial class GameState
     public const int SummerBreakEndMonth = 9, SummerBreakEndDay = 9;
 
     /// <summary>
-    /// Tageszähler der Sommerpause, je Kalendertag nach dem Saisonende bis zum 9. September (#688, R688-03). [ORIGINAL] Datei 0x564BC
-    /// zählt nach dem Saisonende (Zähler <see cref="DayCounter.Of"/>(<see cref="SeasonCalendar.SeasonEnd"/>)) einmal weiter, die
-    /// Schleife Datei 0x564D2–0x56593 rechnet dann je Datum mit dem Zähler und zählt danach weiter (Datei 0x56566). Ergebnis: 233 … 365
-    /// für den 30. April bis 9. September.
+    /// Tageszähler, den das Saisonende 0x26F20 setzt (#688, R688S-01). [ORIGINAL] Datei 0x26F55: <c>mov word [0x3B7], 0xE9</c> = 233
+    /// (= 30. April über 0x367B1; Fenster „Saisonende“ zeigt „Montag, 30. April“, DOSBox-Bild <c>file46_2</c>). Die WM-Schleife endet
+    /// davor mit dem Tagesabschluss zum Zähler <see cref="DayCounter.Of"/>(<see cref="SeasonCalendar.SeasonEnd"/>) = 232 (29. April,
+    /// Datei 0x55670–0x5569F; danach steht der Spielplan auf Markierung 255 und Datei 0x55724–0x55743 geht ohne weiteren Tag zum
+    /// Saisonwechsel). Für den 30. April gibt es im Original keinen Tagesabschluss und keinen April-Monatsabschluss.
+    /// </summary>
+    public const int SeasonEndCounter = 233;
+
+    /// <summary>
+    /// Tageszähler der Sommerpause, je Kalendertag vom 1. Mai bis zum 9. September (#688, R688-03/R688S-01). [ORIGINAL] Nach dem
+    /// Saisonende (<see cref="SeasonEndCounter"/> = 233) zählt Datei 0x564BC einmal weiter, die Schleife Datei 0x564D2–0x56593
+    /// rechnet dann je Datum mit dem Zähler (0x367B1 bei 0x564DB) und zählt danach weiter (Datei 0x56566), bis der Tag 9. September
+    /// gerechnet ist (Datei 0x5657A–0x56593). Ergebnis: 234 … 365 für den 1. Mai bis 9. September, 132 Tage mit vier
+    /// Monatsabschlüssen (Ende Mai bis August) und 19 Bauwochen (Zähler 238 … 364).
     /// </summary>
     public static IEnumerable<int> SummerBreakCounters()
     {
-        var date = SeasonCalendar.LayoutDate(SeasonCalendar.SeasonEnd);
-        var counter = DayCounter.Of(SeasonCalendar.SeasonEnd) + 1;
-        do
+        var counter = SeasonEndCounter + 1;
+        var date = SeasonCalendar.LayoutDate(counter - 1);
+        while (true)
         {
+            yield return counter;
+            if (date.Month == SummerBreakEndMonth && date.Day == SummerBreakEndDay)
+                yield break;
+            counter++;
             date = date.AddDays(1);
-            yield return counter++;
         }
-        while (date.Month != SummerBreakEndMonth || date.Day != SummerBreakEndDay);
     }
 
     /// <summary>
     /// Sommerpause des Saisonwechsels (#688, R688-03; Nutzer 09.11.2026: wie im Original). [ORIGINAL] Datei 0x564D2–0x56593 je
-    /// Kalendertag vom 30. April bis 9. September (<see cref="SummerBreakCounters"/>), je Manager:
+    /// Kalendertag vom 1. Mai bis 9. September (<see cref="SummerBreakCounters"/>), je Manager:
     /// <list type="number">
     /// <item>bei Zähler ≡ 0 (mod 7) der Stadionbau 0x3D316 (Datei 0x564F5–0x5650D; <see cref="WeeklyFinances"/>),</item>
     /// <item>der Tagesabschluss 0x3ED01 (Datei 0x56512) wie im Hauptweg: Baufirmen (0x3ED19), Zinskonto (0x3ED4F), Werbeangebote zur
     ///   Monatsmitte und am Monatsletzten (0x3EE6B), am 1. die Restlaufzeiten der Werbeverträge (0x3EF52), am Monatsletzten der
-    ///   Monatsabschluss (0x3F02C: Gehälter, Versicherung, Unterhalt, Grundeinnahmen, Werbung, Jugend, Zinsen; 30. April und Ende
-    ///   Mai bis August), Börsentag (0x3ED4A),</item>
+    ///   Monatsabschluss (0x3F02C: Gehälter, Versicherung, Unterhalt, Grundeinnahmen, Werbung, Jugend, Zinsen; Ende Mai bis
+    ///   August), Börsentag (0x3ED4A),</item>
     /// <item>die Heilung 0x07C12 je Kaderplatz (Datei 0x5653C; prüft selbst Zähler ≡ 0).</item>
     /// </list>
     /// Keine Werbebewertung 0x3F833 (nur Hauptweg und WM-Schleife), keine Talentsuche, keine Jugendteams, keine Spiele, kein Training.
+    /// [ORIGINAL] Kein Tagesabschluss für den 30. April (R688S-01, Review #691 berichtigt): Die WM-Schleife schließt zuletzt den
+    /// 29. April ab (Zähler 232, Datei 0x55670–0x5569F; im Remake <c>OpenDay(231)</c> der Zeitleiste), das Saisonende 0x26F20 setzt
+    /// den Zähler auf 233 (<see cref="SeasonEndCounter"/>) und 0x564BC zählt vor der Schleife auf 234 = 1. Mai. Der
+    /// April-Monatsabschluss (0x3F02C prüft Tag = Monatslänge) fällt damit im Original jedes Jahr aus: elf Monatsabschlüsse je
+    /// Jahr (sieben der Spielzeit, vier der Sommerpause). Der DOSBox-Stand <c>file46_2</c> (17.523.876 DM am 30. April, also
+    /// 603.307 DM unter FILE44 + Prämie) bucht den April nur, weil FILE44 im Menü des Markierungstags gesichert ist (Datei 0x55350,
+    /// nach dem Tageswechsel 0x55204): Nach dem Laden läuft dieser Tageswechsel erneut (Datei 0x54D41 → 0x55073 → 0x55204, Zähler
+    /// 218 = 15. April, Bild <c>file46_1</c>), die WM-Schleife steht dann einen Tag später und schließt zuletzt den 30. April ab.
+    /// [APPROX] Der Import spielt diese Eigenheit des Ladens nicht nach (OriginalImport, Tag 216 mit gerechnetem Tageswechsel).
     /// [APPROX] Ohne eigenen Kalendertag des Remakes (die Bücher führen die Beträge in der neuen Saison, Datei 0x56476 zählt die
     /// Saison vor der Schleife weiter); Bau, Tagesabschluss und Heilung je Tag für alle Manager nacheinander statt je Manager
     /// verschränkt (sie wirken je Manager getrennt; die Börse rechnet wie im Hauptweg einmal je Tag, Entscheidung #188). Im Modus

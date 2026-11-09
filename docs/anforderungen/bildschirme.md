@@ -133,8 +133,9 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 ### Saisonende
 „Saisonende“ in großer Schrift, darunter Weltmeister, DEB-Pokal, Deutscher Meister, Europa-Pokal und je Liga
 Aufsteiger (rot) und Absteiger (grün). Nach der gewählten Spieldauer folgt das Spielende mit Highscore.
-Wer zu lange zu hohe Schulden hat (unter −1,5 Mio. DM für 8 Wochen, nur lokale Spiele), wird entlassen – Spielende
-mit Entlassungstext; im Hot-Seat spielen die übrigen Manager weiter.
+Keine Entlassung wegen Schulden (#688, R688S-03, wie im Original: em.exe kennt keine; Folge von Schulden ist der Zwangsabstieg am
+29. April, Konto < −666.667 DM). Die frühere Anforderung „unter −1,5 Mio. DM für 8 Wochen → Entlassung, Spielende mit
+Entlassungstext“ ist gestrichen; der Entlassungstext bleibt nur für ausgeschiedene Manager älterer Spielstände.
 
 ## Pixelvergleich Runde 6 (Spur `pixel-verein`)
 

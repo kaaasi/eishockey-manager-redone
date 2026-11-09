@@ -188,22 +188,24 @@ public class SeasonFlowTests
         Assert.Equal(0, GameState.Premium(League.Oberliga, 4));
     }
 
+    /// <summary>
+    /// #688 (R688S-03): Schulden führen nicht zur Entlassung – em.exe kennt keine (<c>SeasonDismissal.cs</c>); vorher endete das
+    /// Spiel nach acht Wochen unter −1,5 Mio. DM. Das Konto bleibt im Minus, die Zeitleiste läuft weiter.
+    /// </summary>
     [Fact]
-    public void Debts_LeadToDismissalAfterEightWeeks()
+    public void Debts_DoNotDismiss()
     {
         var game = Create();
         var steps = new List<SeasonStep>();
-        while (!game.IsGameOver)
+        for (var guard = 0; game.CurrentDay < 100 && game.Phase == SeasonPhase.Running; guard++)
         {
-            // Schulden festhalten: Heimspieleinnahmen dürfen sie nicht abbauen (seit Runde 2 bucht die Abrechnung
-            // die echten, niedrigeren Vertragsgehälter statt der Pauschale)
+            Assert.True(guard < 300);
             game.ActiveManager.Money = -2_000_000;
             steps.AddRange(game.Continue());
         }
-
-        var dismissal = Assert.Single(steps.OfType<DismissalStep>());
-        Assert.Equal(Manager.DebtDaysUntilDismissal - 1, dismissal.Day);
-        Assert.True(game.Managers[0].Dismissed);
+        Assert.Empty(steps.OfType<DismissalStep>());
+        Assert.False(game.Managers[0].Dismissed);
+        Assert.False(game.IsGameOver);
     }
 
     [Fact]
@@ -213,11 +215,9 @@ public class SeasonFlowTests
         setup.Managers.Add(new ManagerSetup { Name = "A", ClubIndex = 2 });
         setup.Managers.Add(new ManagerSetup { Name = "B", ClubIndex = 14, StartLeague = League.ZweiteLiga });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 1);
-        while (!game.Managers[0].Dismissed)
-        {
-            game.Managers[0].Money = -1_700_000; // Einnahmen eines Heimspiels (Bundesliga: 13 DM Eintritt, Spur finanzen-2) dürfen die Schulden nicht abbauen
-            game.Continue();
-        }
+        // #688 (R688S-03): kein Weg des Spiels setzt das Kennzeichen mehr; ausgeschieden wie aus einem älteren Spielstand.
+        game.Managers[0].Dismissed = true;
+        game.Continue();
         Assert.False(game.IsGameOver);
         Assert.Equal(1, game.CurrentManager);
         Assert.Single(game.ActiveManagers);

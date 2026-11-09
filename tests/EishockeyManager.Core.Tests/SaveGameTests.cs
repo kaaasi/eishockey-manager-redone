@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(45, SaveGame.SchemaVersion);
+        Assert.Equal(46, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -58,7 +58,8 @@ public class SaveGameTests
     // 44 PlayoffSeries.HomeClub/AwayClub statt HigherSeed/LowerSeed (Fixlauf #676, R683-04; Abdruck neu nur durch die Umbenennung),
     // dazu Viertelfinale älterer Stände in Platzfolge (R683-01, Migration ohne neues Feld).
     // 45 GameState.DayOpened: Tageswechsel vor dem Halt (#688, R688-04).
-    private const string ExpectedSchemaFingerprint = "EF1C0708EA4560A3";
+    // 46 Manager.DebtDays entfällt: keine Entlassung wegen Schulden (#688, R688S-03; im Original nicht vorhanden).
+    private const string ExpectedSchemaFingerprint = "B29FEBF2CCC262FE";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

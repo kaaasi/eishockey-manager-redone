@@ -209,10 +209,15 @@ public class RngTwinProbeTests
     // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
     // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
     // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f.
-    [InlineData(false, 3, "84E750F82F7D9F95")]
-    [InlineData(true, 3, "7FE0F7232407897B")]
-    [InlineData(false, 11, "ACC64DD24B00B182")]
-    [InlineData(true, 11, "B13EC505F2828450")]
+    // Nachprüfung #691 (R688S-01/-03, Leitstelle Runde 14): neu – (1) R688S-01: Die Sommerpause beginnt mit Zähler 234 = 1. Mai (Datei
+    // 0x26F55 setzt 233, 0x564BC zählt weiter); der Tagesabschluss des 30. April (Werbeangebote am Monatsletzten 0x3EE6B, April-Abschluss
+    // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
+    // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
+    // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → alle sechs alten Werte; nur Start 233 → andere Werte (Feld).
+    [InlineData(false, 3, "71C440ACDC165036")]
+    [InlineData(true, 3, "F647215D0B088A26")]
+    [InlineData(false, 11, "82605FA6E5525270")]
+    [InlineData(true, 11, "3705607C914AE2C0")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -242,8 +247,13 @@ public class RngTwinProbeTests
     // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
     // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f; Originaldatenbank aktiv zusätzlich durch die Lage der Sommerpause
     // nach dem Kaderwechsel (Gegenprobe ohne Tagesabschluss und mit Werbeangeboten vorher → weiter anders).
-    [InlineData(false, "3FAF424DD8BFBAC0")]
-    [InlineData(true, "FB8A6B2A4C450581")]
+    // Nachprüfung #691 (R688S-01/-03, Leitstelle Runde 14): neu – (1) R688S-01: Die Sommerpause beginnt mit Zähler 234 = 1. Mai (Datei
+    // 0x26F55 setzt 233, 0x564BC zählt weiter); der Tagesabschluss des 30. April (Werbeangebote am Monatsletzten 0x3EE6B, April-Abschluss
+    // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
+    // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
+    // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → beide alten Werte; nur Start 233 → andere Werte (Feld).
+    [InlineData(false, "8A64633B9AF694CD")]
+    [InlineData(true, "18C9B0A5398CF96B")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

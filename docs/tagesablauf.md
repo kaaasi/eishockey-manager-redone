@@ -24,7 +24,7 @@ Das Hauptmenü zeigt den Tag **T** des nächsten eigenen Spiels.
 | Schritt | Was | Wo |
 |---|---|---|
 | 1 | Nach den Menüs: Länderwerte 0x952C (Hauptweg) bzw. Schritt (a) der WM-Schleife, Ernennung am Tag mit Markierung 255 | `GameState.Integration.cs` → `OnDayManager(day)` |
-| 2 | Schulden prüfen, ggf. Entlassung | `SeasonFlow.CheckDebts` |
+| 2 | Ausgeschiedene Manager überspringen (keine Entlassung wegen Schulden, #688 R688S-03) | `SeasonFlow.CheckDismissed` |
 | 3 | Ende der Vereinssaison / Saisonende | `SeasonFlow.ProcessDay` |
 | 4 | Spiele des Tages: Liga (mit Spieltagsabrechnung), Play-Offs/Aufstiegsrunde, weitere Wettbewerbe | `SeasonFlow.ProcessDay` |
 | 5 | Tageswechsel zum nächsten Tag: Finanzen (Tages-, Wochen-, Monatswechsel; Stadionbau am Zähler ≡ 0), Wanderung | `GameState.Integration.cs` → `OnDayOpen(day)` |
@@ -32,9 +32,10 @@ Das Hauptmenü zeigt den Tag **T** des nächsten eigenen Spiels.
 | 7 | Tage mit Ereignis: Neuaufstellung je Satz (0x54D9E), Listenwechsel ein Wurf je Managerzug (0x54E71) | `MainPathEventDayLineups`, `MainPathListChanges` |
 
 **Sommerpause** (Saisonwechsel, `GameState.RunSummerBreak`; `[ORIGINAL]` Datei 0x564D2–0x56593, #688): nach dem Kaderwechsel je
-Kalendertag vom 30. April bis 9. September Stadionbau (Zähler ≡ 0), Tagesabschluss 0x3ED01 (Zinsen, Werbung, Börse, Monatsabschlüsse
-30. April und Ende Mai bis August mit Gehältern und Unterhalt) und Heilung; danach die Werbeangebote des Saisonbeginns (0x56650).
-Gebucht wird im Buch der neuen Saison.
+Kalendertag vom 1. Mai bis 9. September (Zähler 234–365: Datei 0x26F55 setzt 233, 0x564BC zählt weiter) Stadionbau (Zähler ≡ 0),
+Tagesabschluss 0x3ED01 (Zinsen, Werbung, Börse, Monatsabschlüsse Ende Mai bis August mit Gehältern und Unterhalt) und Heilung;
+danach die Werbeangebote des Saisonbeginns (0x56650). Gebucht wird im Buch der neuen Saison. Der 30. April hat im Original keinen
+Tagesabschluss (die WM-Schleife schließt zuletzt den 29. April ab, Zähler 232; R688S-01): elf Monatsabschlüsse je Jahr, kein April.
 
 Nach dem 13. April ersetzt die WM-Schleife die Schritte 5–7 (`CupsNational.WorldCupLoop.cs`: (c) des Vortags, (d)). Ein neues
 Spiel, der erste Tag einer Saison und Spielstände vor Schema 45 holen den Tageswechsel vor den Spielen des Tages nach.

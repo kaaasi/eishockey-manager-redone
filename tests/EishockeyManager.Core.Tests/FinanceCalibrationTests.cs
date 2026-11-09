@@ -141,42 +141,41 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
     /// <summary>
     /// Integration Runde 11 (Entscheidung Nutzer 02.11.2026, C): Spielregel, getrennt von der Kontoprobe. Ein rein passiver
     /// Bundesliga-Manager (25 Spieler nach A170, kader-transfer Teil 1; keine Verlängerung, keine Werbung, kein Nachkauf) verliert
-    /// Spieler an jedem Saisonende, wird nicht mehr spielfähig, zahlt Strafen („Weniger als neun Spieler“) und wird innerhalb von
-    /// vier Saisons entlassen. Vorher stand das als Ausweg in <see cref="AssertEnvelope"/>.
+    /// Spieler an jedem Saisonende, wird nicht mehr spielfähig und zahlt Strafen („Weniger als neun Spieler“).
     /// </summary>
     /// <remarks>
-    /// #678 (Tagestakt 0x07169 im Hauptweg): Saat 3 → 5. Mit Training an den Takttagen (Mittwoch/Samstag statt Mittwoch/Sonntag)
-    /// laufen die Spiele anders; bei Saat 3 steht das Konto nach Saison 1 bei −451.877 statt −348.719 DM, der Manager wird in
-    /// Saison 2 wegen der Schulden entlassen, bevor er Spieler verliert (Strafen 0) – die Probe braucht den Weg über die Strafen.
-    /// #688 (Sommerpause wie im Original, Nutzer 09.11.2026): Die Sommerpause bucht fünf weitere Monatsabschlüsse ohne Spiele
-    /// (25 Spieler: 5 · 308.000 DM Gehälter); jetzt scheitert der Manager bei allen Saaten 1–60 schon in Saison 2 an der
-    /// Schuldenregel (acht Wochen unter −1,5 Mio. DM), bevor er Spieler verliert. Geprüft wird deshalb die Entlassung nach einer
-    /// der beiden Originalregeln: Schuldenregel oder Strafen „Weniger als neun Spieler“.
+    /// #678 (Tagestakt 0x07169 im Hauptweg): Saat 3 → 5. #688 (Sommerpause wie im Original, Nutzer 09.11.2026): Die Sommerpause bucht
+    /// vier weitere Monatsabschlüsse ohne Spiele (Ende Mai bis August; R688S-01: kein April-Abschluss). #688 (R688S-03): Die
+    /// Remake-Regel „Entlassung nach acht Wochen unter −1,5 Mio. DM“ ist entfernt – em.exe kennt keine Entlassung wegen Schulden
+    /// (<c>SeasonDismissal.cs</c>). Vorher scheiterte der Manager bei allen Saaten in Saison 2 an dieser Regel; jetzt spielt er vier
+    /// Saisons mit tiefen Schulden, steigt am 29. April zwangsweise ab (Konto &lt; −666.667 DM, Datei 0x55F22) und wird nie entlassen;
+    /// die Strafen „Weniger als neun Spieler“ (0x5447D) bleiben die einzige Buchung ihrer Kategorie.
     /// </remarks>
     [Theory]
     [InlineData(5)]
     [InlineData(41)]
-    public void PassiveBundesligaManager_WithoutCare_IsDismissed(int seed)
+    public void PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation(int seed)
     {
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "Ganz passiv", ClubIndex = 4 });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, seed);
         var manager = game.ActiveManager;
-        for (var year = 0; year < 4 && game.Phase != SeasonPhase.GameOver; year++)
+        for (var year = 0; year < 4; year++)
         {
             for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
             {
                 Assert.True(guard < 1000, "Saisonende nicht erreicht");
                 game.Continue();
             }
-            if (game.Phase == SeasonPhase.SeasonOver)
-                game.StartNextSeason();
+            Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+            Assert.False(manager.Dismissed, $"Saison {year + 1}: entlassen");
+            game.StartNextSeason();
         }
-        Assert.Equal(SeasonPhase.GameOver, game.Phase);
-        Assert.True(manager.Dismissed, "GameOver ohne Entlassung");
-        Assert.True(game.Finance(manager).Book.Current(FinanceCategory.Strafen) < 0
-                    || (manager.Money < Manager.DebtLimit && manager.DebtDays >= Manager.DebtDaysUntilDismissal),
-            $"Entlassung ohne Strafen und ohne Schuldenregel: {manager.Money}, {manager.DebtDays} Tage");
+        Assert.Equal(4, game.History.Count);
+        Assert.True(manager.Money < -1_500_000, $"Probe ohne tiefe Schulden: {manager.Money} DM");
+        Assert.Contains(game.History, r => r.Managers.Any(m => m.Manager == 0 && m.Events.Contains(SeasonEvent.ForcedRelegation)));
+        var penalties = game.Finance(manager).Book.PreviousTotal == 0 ? 0 : game.Finance(manager).Book.Current(FinanceCategory.Strafen);
+        Assert.Equal(0, penalties % GameState.ShortHandedPenalty);
     }
 
     /// <summary>
@@ -191,9 +190,9 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
     ///   alle übrigen Kategorien 0. Damit liegt der Saisonsaldo in einem geschlossenen Korridor.</item>
     /// <item>Aktiv: alle übrigen Kategorien höchstens 0, also Saisonsaldo höchstens Eintritt + Sponsoren + Prämien (Obergrenzen).</item>
     /// <item>Konto = Startkonto + Summe des Finanzbuchs nach jedem Schritt; keine Entlassung, jede Saison endet regulär (#352).
-    ///   Entlassungsgrenze nie erreicht – Ausnahme passive Bundesliga (Entscheidung Nutzer 02.11.2026, C; KT-01 aus Review #463):
-    ///   Mit 25 Spielern (A170) und ohne Werbung fällt das Konto zeitweise unter −1,5 Mio. DM (Seed 41: −1.586.947 DM); dort gilt
-    ///   die Regel selbst, höchstens acht Wochen am Stück darunter (<see cref="Manager.DebtDaysUntilDismissal"/>).</item>
+    ///   #688 (R688S-03): Eine Entlassung wegen Schulden gibt es nicht mehr (im Original nicht vorhanden); der passive
+    ///   Bundesliga-Manager ohne Werbung läuft mit Schulden vier Saisons durch (Zwangsabstieg am 29. April wie im Original,
+    ///   Konto gesetzt bleibt auf die Oberliga-Regel beschränkt).</item>
     /// </list>
     /// Gegenprobe (#76): hundertfache Grundeinnahmen in <c>MonthlyFinances</c> verletzen die Sponsoren-Obergrenze.
     /// </summary>
@@ -205,7 +204,6 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             FinanceCategory.Eintritt, FinanceCategory.Sponsoren, FinanceCategory.Praemien,
             FinanceCategory.Unterhalt, FinanceCategory.Gehaelter,
         ];
-        var dismissedSeeds = 0;
         foreach (var seed in new[] { 3, 17, 41 })
         {
             var setup = new GameSetup();
@@ -219,7 +217,6 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             // Spur transfer-vertraege-komplett: Ablöse für Spieler, die am Saisonende gehen (0x27DF3), steht im Buch der neuen Saison.
             long compensation = 0;
             long lowest = long.MaxValue, highest = long.MinValue;
-            var maxDebtDays = 0;
             // Teil 5 (transfer-vertraege-komplett): Zinsen für ein negatives Konto am Ende der Vorsaison stehen im Buch der neuen
             // Saison, auch wenn die Ablöse beim Saisonwechsel das Konto wieder ins Plus bringt (Seed 17, Saison 4).
             long previousSeasonEnd = manager.Money;
@@ -228,7 +225,6 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             // Endstand; Seed 3, Originaldaten, Bundesliga passiv: im April negativ, am Saisonende positiv).
             var recentBalances = new Queue<long>();
             long neutral = 0; // Spur saisonwechsel, Teil 1: Konto gesetzt statt gebucht (siehe unten)
-            var dismissedByRule = false;
             for (var year = 0; year < 4; year++)
             {
                 var club = game.Clubs[manager.ClubIndex];
@@ -292,42 +288,19 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     maxTickets += (homeGames - settledHomeGames) * (long)capacity * price;
                     settledHomeGames = homeGames;
                     lowest = Math.Min(lowest, manager.Money);
-                    maxDebtDays = Math.Max(maxDebtDays, manager.DebtDays);
                     seasonLowest = Math.Min(seasonLowest, manager.Money);
                     recentBalances.Enqueue(manager.Money);
                     if (recentBalances.Count > 31)
                         recentBalances.Dequeue();
                     highest = Math.Max(highest, manager.Money);
                 }
-                // #352 (R9S-04, Spur geld Teil 7): kein Ausweg bei Entlassung – jede Saison muss regulär enden; eine Entlassung nennt
-                // Strafen und Kader, damit die Ursache sichtbar wird. Integration Runde 11 (Entscheidung Nutzer 02.11.2026, C): Seit
-                // A170 (kader-transfer Teil 1, 25 Spieler in der Bundesliga) ginge ein rein passiver Manager ohne Verlängerungen in
-                // Saison 3–4 an „Weniger als neun Spieler“ unter; deshalb hält die Probe den passiven Kader spielfähig (unten, nach
-                // dem Saisonwechsel). Dass ein rein passiver Bundesliga-Manager entlassen wird, prüft
-                // PassiveBundesligaManager_WithoutCare_IsDismissed getrennt.
-                // Integration Runde 11 (+ wettbewerbe-spiel; Entscheidung Nutzer 03.11.2026, E1, A): Der passive Bundesliga-Manager
-                // (25 Spieler, keine Werbung) steht mit dem integrierten Stand länger als acht Wochen unter −1,5 Mio. DM und wird
-                // nach der Regel selbst entlassen (Originaldaten, Seed 17, Saison 2). Die Probe prüft dann die Ursache und endet
-                // für diesen Seed; die Hüllkurve gilt bis dahin.
-                // WS-02 (Review #468) beschränkte die Ausnahme auf Seed 17. Spur wettbewerbe-spiel Teil 2 (A184; Entscheidung Nutzer
-                // 03.11.2026, D4 = A): Mit der Belastung des Originals (+ 1 je Spielminute 0x8C82, Grenzen 0x549A2, Erholung 0 beim
-                // Standardplan) steigt die Belastung der Stammspieler auf 150; der passive Bundesliga-Manager ist schwächer und
-                // scheidet bei weiteren Seeds aus (Originaldaten Seed 3: Saison 2 nach der Schuldenregel ohne Strafen; synthetisch Seed 3:
-                // Saison 3 nach „Weniger als neun Spieler!“, 7 · 200.000 DM, dann Schuldenregel). Zugelassen sind deshalb für jeden
-                // Seed genau diese beiden Ursachen, beide Originalregeln: Entlassung nur über die Schuldenregel (CheckDebts, acht Wochen
-                // unter −1,5 Mio. DM) und Strafen nur aus „Weniger als neun Spieler!“ (0x5447D: 200.000 DM je Spiel, einzige
-                // Buchung der Kategorie), die nur gebucht werden, wenn der Verein in dieser Saison nicht spielfähig war (GameState.IsShortHanded nach einem Tag).
-                if (!active && league == League.Bundesliga && manager.Dismissed)
-                {
-                    Assert.True(manager.Money < Manager.DebtLimit, $"Entlassung ohne Schulden: {manager.Money}");
-                    Assert.True(manager.DebtDays >= Manager.DebtDaysUntilDismissal, $"Entlassung nach {manager.DebtDays} Tagen");
-                    var penalties = game.Finance(manager).Book.Current(FinanceCategory.Strafen);
-                    Assert.Equal(0, penalties % GameState.ShortHandedPenalty);
-                    Assert.True(penalties == 0 || shortHandedSeen, $"Strafen {penalties} ohne „Weniger als neun Spieler!“");
-                    output.WriteLine($"seed={seed}; Saison {year + 1}: entlassen nach der Schuldenregel; Strafen={penalties}; Kader={club.Players.Count}");
-                    dismissedByRule = true;
-                    break;
-                }
+                // #352 (R9S-04, Spur geld Teil 7): kein Ausweg bei Entlassung – jede Saison muss regulär enden. Integration Runde 11
+                // (Entscheidung Nutzer 02.11.2026, C): Seit A170 (kader-transfer Teil 1, 25 Spieler in der Bundesliga) ginge ein rein
+                // passiver Manager ohne Verlängerungen in Saison 3–4 an „Weniger als neun Spieler“ unter; deshalb hält die Probe den
+                // passiven Kader spielfähig (unten, nach dem Saisonwechsel). #688 (R688S-03): Die frühere Ausnahme „Entlassung nach der
+                // Schuldenregel“ (Seeds der passiven Bundesliga, Review #468 WS-02, D4 = A) entfällt mit der Regel – em.exe kennt keine
+                // Entlassung wegen Schulden; der passive Bundesliga-Manager läuft jetzt mit Schulden durch und steigt am 29. April
+                // zwangsweise ab (Zwangsabstieg, Kostenstufe und Kader der Folgesaison ändern sich, die Spannen folgen ihnen je Saison).
                 Assert.True(game.Phase == SeasonPhase.SeasonOver,
                     $"Saison {year + 1}: {game.Phase}, entlassen={manager.Dismissed}, Strafen={game.Finance(manager).Book.Current(FinanceCategory.Strafen)}, Kader={club.Players.Count}");
                 previousSeasonEnd = manager.Money;
@@ -336,8 +309,9 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     + string.Join("; ", Enum.GetValues<FinanceCategory>().Select(c => $"{c}={finance.Current(c)}")));
 
                 // #688 (Sommerpause wie im Original, Nutzer 09.11.2026): Das Buch der Saison beginnt mit den Buchungen der Sommerpause
-                // (fünf Monatsabschlüsse, Zinsen, Werbung; Datei 0x564D2–0x56593) und der Ablöse; die Spannen unten gelten für die
-                // sieben Monatsabschlüsse der Spielzeit, also ohne diesen Anfangsstand (geprüft nach StartNextSeason).
+                // (vier Monatsabschlüsse Ende Mai bis August, Zinsen, Werbung; Datei 0x564D2–0x56593; R688S-01: kein April-Abschluss)
+                // und der Ablöse; die Spannen unten gelten für die sieben Monatsabschlüsse der Spielzeit (30. September bis 31. März),
+                // also ohne diesen Anfangsstand (geprüft nach StartNextSeason).
                 long InSeason(FinanceCategory category) => finance.Current(category) - summerBook[(int)category];
                 // Sollspanne je Kategorie aus den Originalformeln:
                 var tickets = InSeason(FinanceCategory.Eintritt);
@@ -395,40 +369,30 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 Assert.True(compensation >= 0);
                 Assert.Equal(cumulative - previousCumulative, finance.PreviousTotal);
                 previousCumulative = cumulative;
-                // #688: Sommerpause wie im Original (Datei 0x564D2–0x56593): fünf Monatsabschlüsse (30. April, Ende Mai bis August) mit
-                // Gehältern, Unterhalt und Grundeinnahmen; keine Spiele, keine Prämien, kein Eintritt.
+                // #688: Sommerpause wie im Original (Datei 0x564D2–0x56593): vier Monatsabschlüsse (Ende Mai bis August; R688S-01: der
+                // 30. April hat im Original keinen Tagesabschluss, Datei 0x26F55 setzt den Zähler auf 233, die Schleife beginnt mit 234 =
+                // 1. Mai) mit Gehältern, Unterhalt und Grundeinnahmen; keine Spiele, keine Prämien, kein Eintritt.
                 summerBook = [.. Enum.GetValues<FinanceCategory>().Select(c => finance.Current(c))];
                 summerTotal = finance.CurrentTotal;
-                Assert.Equal(-5 * summerWages, finance.Current(FinanceCategory.Gehaelter));
+                Assert.Equal(-4 * summerWages, finance.Current(FinanceCategory.Gehaelter));
                 var summerFixed = FinanceRules.ToMarks(ExpectedBaseExpenseThirds(manager.Level, game.Finance(manager).CostLeague))
                                   + FinanceRules.ToMarks(ExpectedUpkeepThirds(stadium));
                 if (active)
                     Assert.True(finance.Current(FinanceCategory.Unterhalt) < 0, "Unterhalt der Sommerpause"); // Ausbau kann im Sommer fertig werden
                 else
-                    Assert.Equal(-5 * summerFixed, finance.Current(FinanceCategory.Unterhalt));
+                    Assert.Equal(-4 * summerFixed, finance.Current(FinanceCategory.Unterhalt));
                 Assert.Equal(0, finance.Current(FinanceCategory.Eintritt));
                 Assert.Equal(0, finance.Current(FinanceCategory.Praemien));
                 if (active) Assert.Equal(roster, club.Players.Count);
             }
-            output.WriteLine($"seed={seed}; start={league}; active={active}; lowest={lowest}; highest={highest}; end={manager.Money}; entlassen={dismissedByRule}");
-            if (dismissedByRule)
-            {
-                dismissedSeeds++;
-                continue;
-            }
-            // Spur kader-transfer, Teil 1 (A170): passiv in der Bundesliga (25 Spieler, kein Werbevertrag) fällt das Konto jetzt
-            // zeitweise unter die Grenze (Originaldaten, Seed 41: −1.586.947 DM in Saison 2). Für den passiven Manager gilt deshalb
-            // die Regel selbst – nicht entlassen heißt nie acht Wochen am Stück darunter (SeasonDismissal); sonst bleibt die Grenze.
+            output.WriteLine($"seed={seed}; start={league}; active={active}; lowest={lowest}; highest={highest}; end={manager.Money}");
             Assert.False(manager.Dismissed, "Manager entlassen");
-            // KT-01 (Review #463, Entscheidung Nutzer C): passive Bundesliga ausgenommen, siehe Zusammenfassung von AssertEnvelope.
+            // KT-01 (Review #463, Entscheidung Nutzer C): passive Bundesliga ausgenommen (25 Spieler, kein Werbevertrag: Konto
+            // zeitweise tief im Minus); sonst bleibt das Konto über −1,5 Mio. DM (Plausibilitätsgrenze der Probe, keine Spielregel mehr).
             if (active || league != League.Bundesliga)
-                Assert.True(lowest > Manager.DebtLimit, $"Konto unter der Entlassungsgrenze: {lowest}");
-            Assert.True(maxDebtDays < Manager.DebtDaysUntilDismissal, $"{maxDebtDays} Tage unter der Grenze ohne Entlassung");
+                Assert.True(lowest > -1_500_000, $"Konto unter −1,5 Mio. DM: {lowest}");
+            Assert.True(lowest >= -FinanceRules.BalanceLimit, $"Konto unter der Grenze des Originals: {lowest}");
         }
-        // WS-02: Die Mehrsaisonprobe bleibt erbracht – außer passiv in der Bundesliga (D4 = A, oben) laufen alle Seeds vier
-        // Saisons; dort prüft jeder ausgeschiedene Seed die Ursache. #688 (Sommerpause wie im Original): Mit den fünf
-        // Monatsabschlüssen der Sommerpause scheidet der passive Bundesliga-Manager ohne Werbung bei allen drei Seeds nach der
-        // Schuldenregel aus (vorher mindestens einer vier Saisons); die übrigen drei Fälle laufen weiter vier Saisons.
-        Assert.True(dismissedSeeds <= (!active && league == League.Bundesliga ? 3 : 0), $"{dismissedSeeds} Seeds entlassen");
+        // WS-02 / #688 (R688S-03): Die Mehrsaisonprobe ist für alle Seeds und alle vier Fälle über vier Saisons erbracht.
     }
 }

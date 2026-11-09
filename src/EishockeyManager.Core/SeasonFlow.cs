@@ -224,14 +224,13 @@ public sealed partial class GameState
     {
         OnDayManager(day);
         CleanLineups();
-        CheckDebts(day, steps);
+        CheckDismissed();
         if (Phase == SeasonPhase.GameOver)
         {
-            // [APPROX] (Review #441, SW-02; Entlassung selbst ist nicht aus em.exe belegt, docs/saison.md): Fällt die
-            // Entlassung des letzten Managers auf den 29. April, schließt die Saison noch ab (Titel, Austausch, Ewige Tabelle,
-            // Chronik) – wie bei der Entlassung eines Teils der Manager an diesem Tag; entlassene Manager erhalten weder
-            // Platz noch Prämie. Vor #431 lief die Fortschreibung im Tageshook vor der Schuldenprüfung. Kein SeasonEndStep:
-            // die Oberfläche zeigt direkt das Spielende.
+            // [APPROX] (Review #441, SW-02; nur noch mit ausgeschiedenen Managern aus älteren Spielständen, R688S-03): Sind am
+            // 29. April alle Manager ausgeschieden, schließt die Saison noch ab (Titel, Austausch, Ewige Tabelle, Chronik) – wie
+            // beim Ausscheiden eines Teils der Manager; ausgeschiedene Manager erhalten weder Platz noch Prämie. Kein
+            // SeasonEndStep: die Oberfläche zeigt direkt das Spielende.
             if (day == SeasonCalendar.SeasonEnd)
             {
                 FinishSeason();
@@ -485,22 +484,13 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Entlassung: Wer 8 Wochen am Stück mit mehr als 1,5 Mio. DM im Minus steht, wird entlassen
-    /// (laut Anforderungen, nur lokale Spiele). Im Hot-Seat spielen die übrigen Manager weiter.
+    /// Ausgeschiedene Manager (<see cref="Manager.Dismissed"/>, nur aus älteren Spielständen): Sind alle ausgeschieden, endet das
+    /// Spiel; sonst geht der Zug an den nächsten aktiven Manager. [ORIGINAL] Keine Entlassung wegen Schulden (#688, R688S-03,
+    /// <c>SeasonDismissal.cs</c>): Die Remake-Regel „acht Wochen unter −1,5 Mio. DM“ ist entfernt; Schulden wirken wie im Original
+    /// über den Zwangsabstieg am 29. April (<c>SeasonFlow.Zwangsabstieg.cs</c>) und die Kontogrenze im Monatsabschluss.
     /// </summary>
-    private void CheckDebts(int day, List<SeasonStep> steps)
+    private void CheckDismissed()
     {
-        for (var i = 0; i < Managers.Count; i++)
-        {
-            var m = Managers[i];
-            if (m.Dismissed)
-                continue;
-            m.DebtDays = m.Money < Manager.DebtLimit ? m.DebtDays + 1 : 0;
-            if (m.DebtDays < Manager.DebtDaysUntilDismissal)
-                continue;
-            m.Dismissed = true;
-            steps.Add(new DismissalStep(day, i));
-        }
         if (Managers.Count > 0 && Managers.All(m => m.Dismissed))
         {
             Phase = SeasonPhase.GameOver;

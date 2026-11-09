@@ -95,16 +95,17 @@ public class TagestaktHauptwegReviewTests
     // ---- R688-03: Sommerpause ----------------------------------------------------------------------------------
 
     /// <summary>
-    /// R688-03: [ORIGINAL] Zähler der Sommerpause (Datei 0x564BC, Schleife 0x564D2–0x56593 bis zum 9. September): 233 … 365 für den
-    /// 30. April bis 9. September, davon 19 mit Zähler ≡ 0 (mod 7).
+    /// R688-03: [ORIGINAL] Zähler der Sommerpause (Datei 0x26F55 setzt 233, Datei 0x564BC zählt auf 234, Schleife 0x564D2–0x56593 bis
+    /// zum 9. September): 234 … 365 für den 1. Mai bis 9. September, davon 19 mit Zähler ≡ 0 (mod 7). R688S-01 (#691): vorher
+    /// 233 … 365 ab dem 30. April (<c>TagestaktSommerpauseReviewTests</c>).
     /// </summary>
     [Fact]
     public void SummerBreak_CountersFromSeasonEndToNinthOfSeptember()
     {
         var counters = GameState.SummerBreakCounters().ToList();
-        Assert.Equal(233, counters[0]);
+        Assert.Equal(234, counters[0]);
         Assert.Equal(365, counters[^1]);
-        Assert.Equal(133, counters.Count);
+        Assert.Equal(132, counters.Count);
         Assert.Equal(19, counters.Count(c => c % 7 == 0));
         Assert.Equal((4, 29), (SeasonCalendar.LayoutDate(SeasonCalendar.SeasonEnd).Month, SeasonCalendar.LayoutDate(SeasonCalendar.SeasonEnd).Day));
     }
@@ -138,11 +139,12 @@ public class TagestaktHauptwegReviewTests
     /// <summary>
     /// R688-03 (Nutzer 09.11.2026: Sommerpause wie im Original): Regressionstest (vorher rot: keine Buchung zwischen Saisonende und
     /// neuer Saison). [ORIGINAL] Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512), am Monatsletzten der Monatsabschluss
-    /// 0x3F02C: 30. April, 31. Mai, 30. Juni, 31. Juli, 31. August – fünfmal Gehälter, Unterhalt und Grundeinnahmen, gebucht in
-    /// der neuen Saison (Datei 0x56476 zählt die Saison vor der Schleife weiter).
+    /// 0x3F02C: 31. Mai, 30. Juni, 31. Juli, 31. August – viermal Gehälter, Unterhalt und Grundeinnahmen, gebucht in der neuen
+    /// Saison (Datei 0x56476 zählt die Saison vor der Schleife weiter). R688S-01 (#691): kein 30. April – die Schleife beginnt mit
+    /// Zähler 234 = 1. Mai (<see cref="GameState.SummerBreakCounters"/>).
     /// </summary>
     [Fact]
-    public void SummerBreak_DayClose_FiveMonthEndsBooked()
+    public void SummerBreak_DayClose_FourMonthEndsBooked()
     {
         var game = TestGames.Create();
         var me = game.ActiveManager;
@@ -153,17 +155,22 @@ public class TagestaktHauptwegReviewTests
 
         var club = game.Clubs[me.ClubIndex];
         var book = game.Finance(me).Book;
-        Assert.Equal(-5 * FinanceRules.MonthlyWages(game, club), book.Current(FinanceCategory.Gehaelter));
+        Assert.Equal(-4 * FinanceRules.MonthlyWages(game, club), book.Current(FinanceCategory.Gehaelter));
         Assert.True(book.Current(FinanceCategory.Unterhalt) < 0);
         Assert.True(book.Current(FinanceCategory.Sponsoren) > 0);
-        Assert.Equal(5, Enumerable.Range(SeasonCalendar.SeasonEnd + 1, 133).Select(SeasonCalendar.LayoutDate)
+        Assert.Equal(4, GameState.SummerBreakCounters().Select(c => SeasonCalendar.LayoutDate(c - 1))
             .Count(d => d.Day == DateTime.DaysInMonth(d.Year, d.Month)));
     }
 
     /// <summary>
-    /// R688-03 am Original-Stand, Größenordnung: FILE44 (14.04.1994, 18.027.183 DM) → FILE46 (10.09.1994, 15.887.669 DM), also
-    /// −2.139.514 DM über Restsaison und Sommerpause. Das Remake rechnet die Spiele der Restsaison selbst (andere Prämien und
-    /// Zuschauer); Remake −1.956.130 DM (91 %), ohne den Tagesabschluss der Sommerpause +388.500 DM.
+    /// R688-03 am Original-Stand: FILE44 (14.04.1994, 18.027.183 DM) → FILE46 (10.09.1994, 15.887.669 DM), also −2.139.514 DM über
+    /// Restsaison und Sommerpause (ohne den Tagesabschluss der Sommerpause stand das Remake bei +388.500 DM). R688S-01/-02 (#691):
+    /// Der Original-Lauf bucht wegen der Ladeeigenheit des Markierungstags zusätzlich den April-Abschluss des 25er-Kaders
+    /// (603.307 DM, <c>file46_2</c>; siehe <c>TagestaktSommerpauseReviewTests</c>), der Import spielt das nicht nach. Vergleichbar ist
+    /// deshalb Original + 603.307 = −1.536.207 DM: Prämie +100.000, Ablöse KJELLBERG +155.500, vier Sommermonate −1.791.707 DM
+    /// (im Mittel −447.927 DM). Das Remake bucht die Sommermonate mit seinen Monatsposten (FILE44-Kader: Gehälter 291.100,
+    /// Unterhalt 192.866, Grundeinnahmen +15.040, also −468.926 DM je Monat, rund 21.000 DM je Monat mehr als das Original;
+    /// Kategoriesummen fehlen im HOK). Spanne: ±100.000 DM um den bereinigten Originalwert (vorher ±15 % = ±320.000 DM).
     /// </summary>
     [GameDataFact]
     public void File44_ToNewSeason_AccountFollowsFile46()
@@ -182,7 +189,10 @@ public class TagestaktHauptwegReviewTests
         game.StartNextSeason();
         var original = Import("FILE46.HOK").Managers[0].Money;
         Assert.Equal(15_887_669, original);
-        Assert.InRange(me.Money - start, (original - start) * 115 / 100, (original - start) * 85 / 100);
+        const long AprilByLoadQuirk = 603_307; // file46_2: 18.027.183 + 100.000 − 17.523.876
+        var comparable = original - start + AprilByLoadQuirk;
+        Assert.Equal(-1_536_207, comparable);
+        Assert.InRange(me.Money - start, comparable - 100_000, comparable + 100_000);
     }
 
     /// <summary>

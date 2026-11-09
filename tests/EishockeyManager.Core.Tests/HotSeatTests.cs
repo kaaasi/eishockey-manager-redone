@@ -109,20 +109,23 @@ public class HotSeatTests
         }
     }
 
-    /// <summary>Wird ein Manager bei der Tagesverarbeitung entlassen, ist er ab dem nächsten Tag nicht mehr am Zug.</summary>
+    /// <summary>
+    /// Scheidet ein Manager während eines Tages aus (Kennzeichen gesetzt, nachdem er seinen Zug bestätigt hat; #688, R688S-03: kein
+    /// Weg der Zeitleiste setzt es mehr, es kommt aus älteren Spielständen), ist er ab dem nächsten Tag nicht mehr am Zug.
+    /// </summary>
     [Fact]
     public void DismissalDuringDay_ExcludedFromNextDay()
     {
         var game = Create(3);
-        while (!game.Managers[1].Dismissed)
-        {
-            game.Managers[1].Money = -1_600_000;
-            game.Continue();
-        }
+        var (first, _) = PlayDay(game); // Tag 0 mit allen drei Managern
+        Assert.Equal([0, 1, 2], first);
+        game.Continue(); // Manager 0 bestätigt, Manager 1 am Zug
+        game.Continue(); // Manager 1 bestätigt, Manager 2 am Zug
+        game.Managers[1].Dismissed = true;
+        game.Continue(); // Manager 2 bestätigt: Tag läuft, CheckDismissed überspringt Manager 1 fortan
         Assert.False(game.IsGameOver);
         for (var day = 0; day < 3; day++)
         {
-            game.Managers[1].Money = -1_600_000;
             var (turns, simulations) = PlayDay(game);
             Assert.Equal([0, 2], turns);
             Assert.Equal(1, simulations);

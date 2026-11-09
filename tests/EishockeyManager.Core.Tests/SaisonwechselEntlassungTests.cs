@@ -3,47 +3,48 @@ using EishockeyManager.Core;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur saisonwechsel, Runde 12 Teil 1 (Review #441, SW-02): Werden am 29. April alle Manager entlassen, endet das Spiel
-/// erst nach dem Saisonabschluss – die Ewige Tabelle enthält die gespielte Saison wie im Fall, dass nur ein Teil der Manager
-/// an diesem Tag entlassen wird (Hot-Seat).
+/// Ausgeschiedene Manager (<see cref="Manager.Dismissed"/>) im Saisonablauf. #688 (R688S-03): Die Entlassung wegen Schulden gibt es
+/// nicht mehr (im Original nicht vorhanden, <c>SeasonDismissal.cs</c>); kein Weg der Zeitleiste setzt das Kennzeichen, es kommt nur
+/// aus älteren Spielständen. Der Testaufbau setzt es direkt am Halt des 14. April. Der Fall der Spur saisonwechsel (Review #441,
+/// SW-02: alle Manager genau am 29. April entlassen, Saison noch abgeschlossen) ist von der Zeitleiste aus nicht mehr erreichbar;
+/// geprüft bleiben Hot-Seat mit einem ausgeschiedenen Manager und das Spielende, wenn keiner mehr aktiv ist.
 /// </summary>
 public class SaisonwechselEntlassungTests
 {
     [Fact]
-    public void AllManagersDismissedOnSeasonEnd_EternalTableContainsSeason()
+    public void OneManagerDismissed_OtherFinishesSeason_RecordWithoutDismissed()
     {
-        var (game, steps) = PlayUntilDismissalOnSeasonEnd(seed: 71, clubs: [2]);
-
-        var dismissal = Assert.Single(steps.OfType<DismissalStep>());
-        Assert.Equal(SeasonCalendar.SeasonEnd, dismissal.Day);
-        Assert.True(game.IsGameOver);
+        var game = PlayToClubSeasonOver(seed: 73, clubs: [2, 14]);
+        game.Managers[0].Dismissed = true;
+        var steps = new List<SeasonStep>();
+        for (var guard = 0; game.Phase == SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 100, "Saisonende nicht erreicht");
+            steps.AddRange(game.Continue());
+        }
+        Assert.Empty(steps.OfType<DismissalStep>()); // R688S-03: die Zeitleiste erzeugt keinen Entlassungsschritt mehr
+        Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+        Assert.Equal(1, game.CurrentManager);
         var record = Assert.Single(game.History);
-        Assert.Empty(record.Managers); // entlassen: kein Platz, keine Prämie (wie bei Entlassung eines Teils der Manager)
-
-        // Meister und Bundesligisten aus der gespielten Saison stehen in der Ewigen Tabelle (vorher: leer).
+        Assert.Single(record.Managers, m => m.Manager == 1); // ausgeschieden: kein Platz, keine Prämie
+        Assert.DoesNotContain(record.Managers, m => m.Manager == 0);
         var champion = record.Titles[Title.GermanChampion];
         Assert.Equal(1, game.Eternal(champion).Championships);
-        foreach (var club in record.FinalTables[League.Bundesliga])
-            Assert.True(game.Eternal(club).Points > 0, $"Verein {club} fehlt in der Ewigen Tabelle");
     }
 
     [Fact]
-    public void AllManagersDismissedOnSeasonEnd_SameEternalTableAsPartialDismissal()
+    public void AllManagersDismissed_GameOverAtNextDay()
     {
-        // Gleicher Ablauf mit zwei Managern: am 29. April wird nur Manager 0 entlassen (Spiel läuft weiter) bzw. beide.
-        var (partial, _) = PlayUntilDismissalOnSeasonEnd(seed: 73, clubs: [2, 14], dismissed: [0]);
-        var (all, _) = PlayUntilDismissalOnSeasonEnd(seed: 73, clubs: [2, 14], dismissed: [0, 1]);
-        Assert.False(partial.IsGameOver);
-        Assert.True(all.IsGameOver);
-        for (var club = 0; club < NewGame.SelectableClubs; club++)
-            Assert.Equal(partial.Eternal(club).Points, all.Eternal(club).Points);
+        var game = PlayToClubSeasonOver(seed: 71, clubs: [2]);
+        game.Managers[0].Dismissed = true;
+        var steps = game.Continue();
+        Assert.Empty(steps.OfType<DismissalStep>());
+        Assert.True(game.IsGameOver);
+        Assert.Empty(game.History); // vor dem 29. April ausgeschieden: kein Saisonabschluss (wie bisher mitten in der Saison)
     }
 
-    /// <summary>
-    /// Spielt die Vereinssaison mit vollem Konto und setzt danach das Konto der Manager <paramref name="dismissed"/> (Vorgabe: alle)
-    /// so tief, dass die Entlassung genau am 29. April fällt (Schuldentage bis dahin, Testaufbau).
-    /// </summary>
-    private static (GameState Game, List<SeasonStep> Steps) PlayUntilDismissalOnSeasonEnd(int seed, int[] clubs, int[]? dismissed = null)
+    /// <summary>Spielt die Vereinssaison mit vollem Konto bis zum Halt „Saisonende“ (14. April).</summary>
+    private static GameState PlayToClubSeasonOver(int seed, int[] clubs)
     {
         var game = SaisonwechselZwangsabstiegTests.Create(seed, europe: false, clubs);
         for (var guard = 0; game.Phase == SeasonPhase.Running; guard++)
@@ -57,19 +58,7 @@ public class SaisonwechselEntlassungTests
             game.Continue();
         }
         Assert.Equal(SeasonPhase.ClubSeasonOver, game.Phase);
-        var days = SeasonCalendar.SeasonEnd - game.CurrentDay + 1; // Tage bis einschließlich 29. April
-        Assert.True(days > 1 && days < Manager.DebtDaysUntilDismissal, "Testaufbau: Entlassung muss auf den 29. April fallen");
-        foreach (var i in dismissed ?? Enumerable.Range(0, game.Managers.Count).ToArray())
-        {
-            game.Managers[i].Money = -5_000_000;
-            game.Managers[i].DebtDays = Manager.DebtDaysUntilDismissal - days;
-        }
-        var steps = new List<SeasonStep>();
-        for (var guard = 0; game.Phase == SeasonPhase.ClubSeasonOver; guard++)
-        {
-            Assert.True(guard < 100, "Saisonende nicht erreicht");
-            steps.AddRange(game.Continue());
-        }
-        return (game, steps);
+        Assert.Equal(SeasonCalendar.ClubSeasonEnd + 1, game.CurrentDay);
+        return game;
     }
 }

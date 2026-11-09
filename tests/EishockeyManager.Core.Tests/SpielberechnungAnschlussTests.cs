@@ -219,9 +219,14 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
     // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
     // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f.
+    // Nachprüfung #691 (R688S-01/-03, Leitstelle Runde 14): neu – (1) R688S-01: Die Sommerpause beginnt mit Zähler 234 = 1. Mai (Datei
+    // 0x26F55 setzt 233, 0x564BC zählt weiter); der Tagesabschluss des 30. April (Werbeangebote am Monatsletzten 0x3EE6B, April-Abschluss
+    // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
+    // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
+    // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → beide alten Werte; nur Start 233 → andere Werte (Feld).
     [GameDataTheory]
-    [InlineData(false, "9B071FB85F9B1A83")]
-    [InlineData(true, "898D53CA02DA2DDD")]
+    [InlineData(false, "7643FD5C4D33C359")]
+    [InlineData(true, "3BFBFB82C212FDB8")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

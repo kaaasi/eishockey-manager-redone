@@ -104,7 +104,10 @@ public sealed record BannerStep(int Day, string Text) : SeasonStep(Day);
 /// <summary>Meisterfoto (kb\16) mit Titel und Sieger.</summary>
 public sealed record TrophyStep(int Day, Title Title, int Club) : SeasonStep(Day);
 
-/// <summary>Ein Manager wurde wegen zu hoher Schulden entlassen.</summary>
+/// <summary>
+/// Ein Manager ist ausgeschieden. Seit #688 (R688S-03) erzeugt die Zeitleiste diesen Schritt nicht mehr: Das Original kennt keine
+/// Entlassung wegen Schulden (<c>SeasonDismissal.cs</c>); der Typ bleibt für die Oberfläche (<c>MatchDayScreen</c>).
+/// </summary>
 public sealed record DismissalStep(int Day, int Manager) : SeasonStep(Day);
 
 /// <summary>Saisonende erreicht: Bildschirm „Saisonende“, danach Fenster mit dem eigenen Abschneiden.</summary>

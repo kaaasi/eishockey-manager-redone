@@ -45,7 +45,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 45;
+    public const int SchemaVersion = 46;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -117,6 +117,8 @@ public static partial class SaveGame
     /// 43 → 44 (Runde 14, Fixlauf #676, R683-01/-04): Viertelfinale in Platzfolge (Halbfinale nach Tabelle DGROUP 0x144),
     /// <c>PlayoffSeries.HomeClub</c>/<c>AwayClub</c> statt <c>HigherSeed</c>/<c>LowerSeed</c> (<c>SaveGame.Migration.PlayoffHalbfinale.cs</c>).
     /// 44 → 45 (Runde 14, #688, R688-04): Tageswechsel vor dem Halt, <c>GameState.DayOpened</c> (<c>SaveGame.Migration.Tagestakt.cs</c>).
+    /// 45 → 46 (Runde 14, #688, R688S-03): keine Entlassung wegen Schulden, <c>Manager.DebtDays</c> entfällt
+    /// (<c>SaveGame.Migration.Schulden.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
@@ -165,6 +167,7 @@ public static partial class SaveGame
             [42] = MigrateKaderStart2,
             [43] = MigratePlayoffHalbfinale,
             [44] = MigrateTagestakt,
+            [45] = MigrateSchulden,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

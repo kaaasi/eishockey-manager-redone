@@ -263,7 +263,8 @@ würfelt daher im beobachteten Bereich; das Original vergleicht die ID nur mit s
 | `+0x28` | Gehalt (4 Byte, Drittel-DM) = Spalte WERT bei „Verträge“ | alle 25, z. B. HEISS 17.100 DM |
 | `+0x2C` | Preis (4 Byte, Drittel-DM) = Transferliste „(K)“; Leihe „(L)“ = ein Drittel davon. Nach dem Kauf steht dort der vom Nutzer gebotene und bezahlte Kaufpreis (FILE07) | 7 Marktspieler, FILE07 |
 | `+0x30`–`+0x33` | Versicherung (4 Byte, als zwei Wörter `+0x30`/`+0x32` mit `or` verknüpft): ≠ 0 → Zusatz „(v)“ hinter der Vertragsdauer (em.exe `0x42410`) | – (kein Fall in den Ständen) |
-| `+0x02`, `+0x09`, `+0x0C`–`+0x0E`, `+0x14`, `+0x16`–`+0x1B`, `+0x20`, `+0x21`, `+0x23`–`+0x27` | offen (`+0x09` Bits 0x40/Wert 2: Hervorhebungen der Zeile; `+0x0C` ≠ 0: eigene Farbe der Spalte ART) | em.exe `0x41F6A`, `0x42057` |
+| `+0x0C` | Leihe: Vereinssatz des Verleihers + 0x80 (em.exe `0x47920–0x47925`; „… ist leider von <Verein> nur ausgeliehen“ `0x4A692`), 0 sonst; eigene Farbe der Spalte ART (`0x42057`) | FILE44 VALLIERE `0xB9` (Satz 57), Pool `+0x1A` = 4 |
+| `+0x02`, `+0x09`, `+0x0D`, `+0x0E`, `+0x14`, `+0x16`–`+0x1B`, `+0x20`, `+0x21`, `+0x23`–`+0x27` | offen (`+0x09` Bits 0x40/Wert 2: Hervorhebungen der Zeile) | em.exe `0x41F6A`, `0x42057` |
 
 **Spalten des Bildschirms** (em.exe: Zeilenfunktion ab `0x41F13`, Spaltennummer → Sprungtabelle `cs:0x258E`, Segment ab
 Datei `0x3FFE0`; Kopftexte über Zeigertabelle DGROUP `0x1065`): 0 Nr. (nur bei `+0x0A` ≠ 0), 1 ART, 2 Name (Pool),
@@ -331,7 +332,7 @@ FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die S
 | Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf wird der Spieler nach Spielerart einsortiert (vor dem ersten leeren Platz oder dem ersten Platz größerer Art; ein Stürmer kommt damit hinten an) | FILE05 → FILE07 (Kauf eines Stürmers) und FILE26 (Verkauf), em.exe Datei `0x42D55`–`0x42DA1` mit memmove ab `0x42DC3` (Kauf, R13GN-01/#622), `0x425B6` (Verkauf); Remake `KaderStartRunde13Teil4Tests` (PR #599), `KaufEinsortierenTests` (PR #623) |
 | HOK `0x08EED` / `0x08EF7` | DGROUP `0xA776` (Teilnehmerliste Europapokal, deutsche Teilnehmer; die Mischung 0x35EDD führt Meister und Titelverteidiger über 0x36146 mit) bzw. DGROUP `0xA763` | FILE22 → FILE23: Kölner EC Satz 4 → 8, Liste = 8 (PR #579, 0x346D5 nach L8) |
 
-## Feldkarte Remake-Spielstand (Schema 45) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 46) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -455,8 +456,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | Feld | S | HOK-Quelle | Import |
 |---|---|---|---|
 | `Manager.ClubIndex` | B | `965B+0x14` | Regel 1 |
-| `Manager.DebtDays` | U | – | 0 |
-| `Manager.Dismissed` | U | `965B+0xF3` | Statusbyte, Bit für „entlassen“ nicht belegt; false |
+| `Manager.Dismissed` | U | `965B+0xF3` | Statusbyte, Bit für „entlassen“ nicht belegt; false (seit Schema 46 setzt es kein Weg des Spiels mehr, #688 R688S-03) |
 | `Manager.FinanceData` | B | `965B` | Zeilen `ManagerFinance` |
 | `Manager.Head` | U | – | wie `ManagerSetup.Head` |
 | `Manager.Level` | B | `0118+0` | Level |
@@ -634,14 +634,14 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Player.InsuranceLocked` | B | `5DC3+0x2C` | Bit 31 |
 | `Player.InsurancePremium` | B | `5DC3+0x30` | Prämie / 3 |
 | `Player.IsForeigner` | A | `far:8253+0x00` | Ausländerliste der Datenbank nach Namen |
-| `Player.Loan` | U | `5DC3+0x2C` | Leihe „(L)“: Herkunft und Vertragsdaten nicht belegt; null |
+| `Player.Loan` | B | `5DC3+0x0C` | Leihe: `+0x0C` = Vereinssatz + 0x80 (em.exe `0x47920–0x47925`), Verleiher über die Vereinsabbildung; Laufzeit/Gehalt/Versicherung aus dem Leih-Kaderplatz (`[APPROX]`, Stammvertrag nicht belegt); sonst null (#688 R688S-02, A115: FILE44 VALLIERE `0xB9`, Pool `+0x1A` 4) |
 | `Player.MonthlySalary` | B | `5DC3+0x28` | Gehalt / 3 |
 | `Player.Name` | B | `far:8253+0x00` | Name (17 Zeichen) |
 | `Player.NegotiationLock` | B | `5DC3+0x18` | Tage |
 | `Player.Notice` | B | `5DC3+0x18` | Bit 0x80 → Retiring (Test 0x4A6C7, R14HN-03), > 99 → Offered (Angebot des Spielers, 0x4A3AF; Saisonende 0x27D05 = 101), sonst None (Sperre, siehe `NegotiationLock`) |
 | `Player.NoticeYears` | B | `5DC3+0x18` | bei Offered: +0x18 − 100 |
 | `Player.Number` | A | `5DC3` | Kaderplatz + 1 (keine Rückennummer im Original) |
-| `Player.OnLoan` | U | – | false |
+| `Player.OnLoan` | B | `5DC3+0x0C` | Bit 0x80 gesetzt → true (#688 R688S-02, A115) |
 | `Player.Penalties2` | B | `5DC3+0x01` | 2-Minuten-Strafen |
 | `Player.Penalties5` | B | `5DC3+0x00` | 5-Minuten-Strafen |
 | `Player.PurchasePrice` | B | `5DC3+0x2C` | ohne Bit 31, / 3 |
@@ -965,6 +965,9 @@ liegt bei den genannten Spuren.
   Halbfinale nicht immer der besser Platzierte); die Migration ordnet ein laufendes Viertelfinale älterer Stände in Platzfolge.
 - Schema 45 (#688, R688-04): `GameState.DayOpened` – der Tageswechsel (Tagesabschluss, Takt 0x07169, Listenwechsel) läuft vor dem
   Halt; ältere Stände wurden vor ihm gesichert (Migration: false, die Zeitleiste holt ihn vor den Spielen des Tages nach).
+- Schema 46 (#688, R688S-03, Nachprüfung #691): `Manager.DebtDays` entfällt – em.exe kennt keine Entlassung wegen Schulden
+  (`SeasonDismissal.cs`); die Migration streicht das Feld. R688S-02: `Player.OnLoan`/`Player.Loan` aus Kaderplatz `+0x0C`
+  (Leihe, Verleiher = Vereinssatz + 0x80), bisher U.
 
 ### Zugang (Teil 3)
 
