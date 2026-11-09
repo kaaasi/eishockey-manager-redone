@@ -194,10 +194,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     /// kader-start Teil 4 (A091/A166): beide neu – Kaderplatzfolge statt Rolle/Nummer in Spiel und Auto-Aufstellung.
     /// Fix R13GN-01 (#622): aktiv neu – gekaufte Torhüter/Verteidiger nach Spielerart einsortiert (Datei 0x42D55) statt hinten an;
-    /// passiv unverändert (Gegenprobe wie in <see cref="RngTwinProbeTests"/>).</summary>
+    /// passiv unverändert (Gegenprobe wie in <see cref="RngTwinProbeTests"/>).
+    /// Runde 14, nationalteam Teil 4 (#664): neu ab dem 14. April der ersten Saison – ohne Bundestrainer läuft die WM in der WM-Schleife des Originals (Datei 0x55570–0x55740): keine Wanderung, kein Training, kein Markt außer nach den WM-Spielen der Tage 224/228, keine Talentsuche. Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert.</summary>
     [GameDataTheory]
-    [InlineData(false, "6C2D30784D430A5A")]
-    [InlineData(true, "FB60D817157E2013")]
+    [InlineData(false, "975AFB438379AA19")]
+    [InlineData(true, "8FE6B0F5FA66E66F")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

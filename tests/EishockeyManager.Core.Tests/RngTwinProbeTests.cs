@@ -179,16 +179,17 @@ namespace EishockeyManager.Core.Tests;
 /// (<c>SignFreeAgents</c>); Torhüter und Verteidiger stehen jetzt hinter dem letzten Spieler ihrer Art (Datei 0x42D55) statt hinten:
 /// andere Nr., Kaderplatz 3 (Gehaltsforderung 0x4A93F) und Gleichstände der Auto-Aufstellung. Passive Abdrücke unverändert.
 /// Gegenprobe: Kauf über die Transferliste wieder hinten an (<c>managerSquad: false</c> in <c>TransferMarket.Complete</c>) → alle alten Werte.
+/// Runde 14, nationalteam Teil 4 (#664): neu ab dem 14. April der ersten Saison – ohne Bundestrainer läuft die WM in der WM-Schleife des Originals (Datei 0x55570–0x55740): keine Wanderung, kein Training, kein Markt außer nach den WM-Spielen der Tage 224/228, keine Talentsuche. Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert. Gilt für alle sechs Abdrücke.
 /// </summary>
 public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "1501663F0197426F")]
-    [InlineData(true, 3, "57912317E80C4918")]
-    [InlineData(false, 11, "6B6DAAD441C0C2A2")]
-    [InlineData(true, 11, "FC146C171B47B16F")]
+    [InlineData(false, 3, "EB4E4CBD6E34161E")]
+    [InlineData(true, 3, "79D9BA31D8BFB5F7")]
+    [InlineData(false, 11, "F28175EEA5A724E5")]
+    [InlineData(true, 11, "72274730CC60FD85")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -199,8 +200,8 @@ public class RngTwinProbeTests
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "C2A2F88417587DD1")]
-    [InlineData(true, "771D1BE3680653F5")]
+    [InlineData(false, "FD41A4D9F2D2AE37")]
+    [InlineData(true, "DFF38E6174089044")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

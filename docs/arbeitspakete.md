@@ -115,7 +115,7 @@ Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 �
      Seite `[APPROX]`).
 - **Dateigrenzen:** wie oben „allein `nationalteam`“, eigene Tests; nach L8 zusätzlich `Core/GameState.MainMenu.cs` (ein Aufruf in
   `OnMainMenu` für A009), `Core/GameState.HotSeat.cs` (nur falls für A009 nötig), `UI/Screens/Competitions/WorldCupKnockoutScreen.cs`
-  und `CupPairingsScreen.cs` (A293). **Modell:** Claude Opus 5.5. **Status (08.11.2026):** Teil 1 (#594, #595) fertig, PR #630; Teil 2 (Sperre Transfer/Training ab dem ersten WM-Termin, WM-Kader nach Art) fertig, PR #637; Teil 3 (A012, A009, A085, A293) fertig, PR #653; alle drei integriert in `integration/runde-14-nationalteam` (Schema 41), wartet auf Review. Reihenlogik der Vereinsaufstellung (Teil 2, A010) liegt bei `kader-start` (L3). **Status (09.11.2026):** Teil 4 (#664 WM-Schleife ohne Bundestrainer, R14NT-N1, Rechtsklick in `NationalLineupScreen`) in Arbeit, Branch `paket/nationalteam-4`.
+  und `CupPairingsScreen.cs` (A293). **Modell:** Claude Opus 5.5. **Status (08.11.2026):** Teil 1 (#594, #595) fertig, PR #630; Teil 2 (Sperre Transfer/Training ab dem ersten WM-Termin, WM-Kader nach Art) fertig, PR #637; Teil 3 (A012, A009, A085, A293) fertig, PR #653; alle drei integriert in `integration/runde-14-nationalteam` (Schema 41), wartet auf Review. Reihenlogik der Vereinsaufstellung (Teil 2, A010) liegt bei `kader-start` (L3). **Status (09.11.2026):** Teil 4 (#664 WM-Schleife auch ohne Bundestrainer, ohne Training/Markt außer nach den WM-Spielen der Tage 224/228; R14NT-N1; Rechtsklick in `NationalLineupScreen` verlässt den Bildschirm) fertig, PR #672, wartet auf Review; kein neues Spielstandfeld.
 
 ### Spur `kader-start` – Spielstart, Kader, Aufstellung
 

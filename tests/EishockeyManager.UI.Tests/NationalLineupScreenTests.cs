@@ -120,7 +120,21 @@ public class NationalLineupScreenTests
         Assert.Equal(0, Count(s, 250, 186, 316, 196, c => c == Screens.Team.TeamUi.HoverColor));
     }
 
-    private static void ClickSlot(ScreenDriver d, LineupSlot slot, bool right = false)
+    /// <summary>Klick in einen Block neben den Platzknöpfen (wählt nur die Reihe).</summary>
+    internal static void ClickBlock(ScreenDriver d, int block)
+    {
+        var box = LineupScreen.BlockBox(block);
+        for (var y = box.Y + 1; y < box.Y + box.H - 1; y++)
+            for (var x = box.X + 1; x < box.X + box.W - 1; x++)
+                if (!LineupSlot.All.Any(s => LineupScreen.SlotButton(s).Contains(x, y)))
+                {
+                    d.Click(x, y);
+                    return;
+                }
+        Assert.Fail("Block ohne freien Punkt");
+    }
+
+    internal static void ClickSlot(ScreenDriver d, LineupSlot slot, bool right = false)
     {
         var r = LineupScreen.SlotButton(slot);
         if (right)
@@ -153,7 +167,7 @@ public class NationalLineupScreenTests
         var dressed = coach.DressedCount;
         var ratings = game.NationalRatings(NationalTeams.Germany);
 
-        ClickSlot(d, LineupSlot.Defender(0, 0)); // Reihe 1 wählen (voll)
+        ClickBlock(d, 0); // Reihe 1 wählen (voll); ein Klick auf einen Platz leerte ihn (Datei 0x40AA3)
         d.Click(60, RowY(reserve));
         Assert.Equal(formation, LineupSlot.All.Select(s => coach.Formation[s]));
         Assert.Equal(dressed, coach.DressedCount);
@@ -200,8 +214,8 @@ public class NationalLineupScreenTests
         d.RightClick(60, RowY(0));
         Assert.False(coach.IsDressed(coach.Rows[0]));
 
-        // Rechtsklick auf den Platz leert ihn; der Torhüter ist danach nicht mehr eingesetzt.
-        ClickSlot(d, LineupSlot.Goalkeeper, right: true);
+        // Linksklick auf den belegten Platz leert ihn (Datei 0x40AA3–0x40D0D); der Torhüter ist danach nicht mehr eingesetzt.
+        ClickSlot(d, LineupSlot.Goalkeeper);
         Assert.Null(coach.Formation.Goalkeeper);
         Assert.Equal(0, coach.DressedCount);
 

@@ -16,10 +16,11 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// <para>
 /// Bedienung wie im Original (A010, Spur nationalteam Runde 13; Regeln <see cref="NationalCoach.ClickPlayer"/>): Klick auf
 /// einen Block bzw. den Torhüterkasten wählt die Reihe (Nummer in Farbe 0x10), Klick auf einen Spieler der Liste setzt ihn
-/// auf den ersten freien Platz seiner Art in dieser Reihe oder nimmt einen Aufgestellten heraus; Rechtsklick auf einen
-/// Platzknopf leert ihn (der Spieler ist danach nicht mehr eingesetzt). Tasten A und C wie beim Verein. [APPROX] Die
-/// Spielerinfo auf Rechtsklick (Datei 0x40872) ist nicht übernommen; Escape führt wie der Rechtsklick außerhalb der Liste
-/// zurück.
+/// auf den ersten freien Platz seiner Art in dieser Reihe oder nimmt einen Aufgestellten heraus; Linksklick auf einen belegten
+/// Platzknopf leert ihn (der Spieler ist danach nicht mehr eingesetzt), Rechtsklick außerhalb der Listenzeilen – auch auf
+/// einen Platz – verlässt den Bildschirm (Spur nationalteam Runde 14 Teil 4, Hinweis aus #667). Tasten A und C wie beim
+/// Verein. [APPROX] Die Spielerinfo auf Rechtsklick (Datei 0x40872) ist nicht übernommen; Escape führt wie der Rechtsklick
+/// außerhalb der Liste zurück.
 /// </para>
 /// </remarks>
 public sealed class NationalLineupScreen : Screen
@@ -84,20 +85,6 @@ public sealed class NationalLineupScreen : Screen
             return;
         }
 
-        if (input.RightClick && OnSlot(input.MouseX, input.MouseY, out var slot))
-        {
-            coach.ClearSlot(slot);
-            _changed = true;
-            return;
-        }
-        if (LineAt(input.MouseX, input.MouseY) is { } line)
-        {
-            // [ORIGINAL] Klick in einen Block wählt die Reihe (Datei 0x40890–0x40943).
-            if (input.LeftClick)
-                _selectedLine = line;
-            return;
-        }
-
         var inList = LineupScreen.Window.Contains(input.MouseX, input.MouseY);
         var row = inList ? LineupScreen.RowAt(input.MouseY) : -1;
         var player = row >= 0 && row < rows.Count ? rows[row] : null;
@@ -105,8 +92,13 @@ public sealed class NationalLineupScreen : Screen
             return;
         if (player is null)
         {
+            // [ORIGINAL] Datei 0x40886–0x4088D: nur die linke Taste (DGROUP 0x5A16 = 1) erreicht Blöcke und Plätze; die rechte
+            // (3) außerhalb der Listenzeilen – auch auf einem Platz – verlässt den Bildschirm (Datei 0x40D6B–0x40D78, Zeile 0x7F
+            // aus 0x41683).
             if (input.RightClick)
                 Leave(_back);
+            else
+                ClickLines(coach, input.MouseX, input.MouseY);
             return;
         }
         var selected = _selectedLine;
@@ -115,6 +107,32 @@ public sealed class NationalLineupScreen : Screen
         if (result is LineupResult.Assigned or LineupResult.TakenOut or LineupResult.Dressed or LineupResult.Undressed)
             _changed = true;
         Report(result);
+    }
+
+    /// <summary>
+    /// Linksklick neben der Liste. [ORIGINAL] Datei 0x40890–0x40943: ein Block bzw. der Torhüterkasten wählt die Reihe. Datei
+    /// 0x40AA3–0x40D0D: Klick auf einen belegten Platz schaltet „automatisch aufstellen“ ab und meldet das (Datei 0x40ACF–0x40AF3,
+    /// „Auto-Aufstellung / ist deaktiviert !“, DGROUP 0x1249/0x124D); ein Verletzter oder Gesperrter mit Restdauer (+0x0D ≠ 0,
+    /// +0x09 &amp; 3 ≠ 0) bleibt mit „Spieler ist“ / „noch gesperrt !“ stehen (Datei 0x40B37–0x40B5D), sonst wird der Platz leer
+    /// und der Spieler ist nicht mehr eingesetzt (Datei 0x40CF8–0x40D0D). Ein leerer Platz ändert nichts (Datei 0x40AC4).
+    /// </summary>
+    private void ClickLines(NationalCoach coach, int x, int y)
+    {
+        if (LineAt(x, y) is { } line)
+            _selectedLine = line;
+        if (!OnSlot(x, y, out var slot) || coach.Formation[slot] is not { } placed)
+            return;
+        var wasAuto = coach.AutoLineupEnabled;
+        if (placed.InjuredGames > 0 || placed.SuspendedGames > 0)
+        {
+            coach.SwitchOffAutoLineup();
+            _message.ShowShort("Spieler ist", "noch gesperrt !"); // ersetzt die Kurzmeldung davor
+            return;
+        }
+        coach.ClearSlot(slot);
+        _changed = true;
+        if (wasAuto)
+            _message.ShowShort("Auto-Aufstellung", "ist deaktiviert !");
     }
 
     /// <summary>Taktik des Nationalteams (gleicher Bildschirm wie beim Verein), Umschalter zurück zur Aufstellung.</summary>

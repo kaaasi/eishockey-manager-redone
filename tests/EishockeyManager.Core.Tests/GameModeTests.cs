@@ -376,8 +376,12 @@ public class GameModeTests
     // danach andere Konten, ab Saison 4 andere Kaufentscheidungen, Titel in Saison 5 und Zufallszustand.
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
+    // Runde 14, nationalteam Teil 4 (#664): neu ab der WM der ersten Saison (Weltmeister 63 statt 52; Konten von Saison 1
+    // unverändert) – kein Manager unter den ersten fünf, die WM läuft trotzdem in der WM-Schleife (Datei 0x55570–0x55740): keine
+    // Wanderung der Teamwerte vor den WM-Spielen, kein Training, kein Markt außer nach den Tagen 224/228, keine Talentsuche; damit
+    // anderer Zufallsverbrauch ab dem 14. April. Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=11,GermanChampion=1,EuropeanCupWinner=2|96040,400000|WorldChampion=52,CupWinner=4,GermanChampion=1,EuropeanCupWinner=1|1402820,400000|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=1|2154396,400000|WorldChampion=54,CupWinner=3,GermanChampion=13,EuropeanCupWinner=0|2718434,400000|WorldChampion=54,CupWinner=0,GermanChampion=9,EuropeanCupWinner=13|2952676,-7124085|R677985496 C1798453752";
+        "WorldChampion=63,CupWinner=11,GermanChampion=1,EuropeanCupWinner=2|96040,400000|WorldChampion=54,CupWinner=7,GermanChampion=11,EuropeanCupWinner=1|1499053,400000|WorldChampion=52,CupWinner=8,GermanChampion=8,EuropeanCupWinner=11|2247877,400000|WorldChampion=52,CupWinner=16,GermanChampion=3,EuropeanCupWinner=8|2940811,400000|WorldChampion=52,CupWinner=11,GermanChampion=7,EuropeanCupWinner=3|3181179,400000|R408700991 C319207655";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

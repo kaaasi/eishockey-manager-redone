@@ -64,6 +64,16 @@ public sealed partial class GameState
         // Spur transfer-vertraege-komplett: offene Verhandlungen am Saisonende enden vor dem ersten Tag wie „Abbruch“ (0x27D91).
         ResolveRenewals();
 
+        // Spur nationalteam Runde 14 (R14NT-01/02, Review #662; Teil 4, #664): Nach dem 13. April läuft im Original jeder Tag in
+        // der WM-Schleife (Datei 0x55570–0x55740, siehe CupsNational.WorldCupLoop.cs) – mit und ohne Bundestrainer: eigener
+        // Tagesabschluss, kein Training und kein Markt außer nach den WM-Spielen der Tage ≡ 0/4, keine kleine Wanderung, kein
+        // 0x952C des Hauptwegs, keine Neuaufstellung „Tag mit Ereignis“.
+        if (InWorldCupLoop(day))
+        {
+            OnDayWorldCupLoop(day);
+            return;
+        }
+
         // Finanzen: Tages-, Wochen- und Monatswechsel bis einschließlich heute
         AdvanceFinanceTo(day);
 
@@ -79,21 +89,12 @@ public sealed partial class GameState
         // Paket „wettbewerbe“: Ewige Tabelle, Ewige Bilanz und „Früher“ schreibt seit Spur saisonwechsel Teil 3 (S-K4)
         // FinishSeason nach Zwangsabstieg und Austausch fort (em.exe Datei 0x563AF).
 
-        // Spur nationalteam Runde 14 (R14NT-01/02, Review #662): Nach der Ernennung im Modus 4 läuft die WM in der eigenen
-        // Schleife des Originals (Datei 0x55570–0x55740, siehe OnDayWorldCupLoop): keine kleine Wanderung, kein 0x952C des
-        // Hauptwegs, keine Neuaufstellung „Tag mit Ereignis“.
-        if (InWorldCupLoop(day))
-        {
-            OnDayWorldCupLoop(day);
-            return;
-        }
-
         // Spur nationalteam Runde 14 (#594, R13IN-01): [ORIGINAL] Reihenfolge belegt: 0x952C(Manager 5, 1) liegt in der
         // Tagesfunktion 0x54C9F bei Datei 0x54F9C–0x54FBF, die kleine Wanderung danach bei Datei 0x5525A–0x55292 (dazwischen
         // kein Sprung aus dem Bereich); an Wandertagen gilt danach die gewürfelte Form 0x1C/0x1D. Erreichbar nur auf dem
         // Hauptweg (Tage mit Ereignis, Byte ∉ {0, 9, 0xFF}, Datei 0x54D5C) und nur mit Bundestrainer (Satz 5 bei 0x9EDA < 0x3F):
         // Den gibt es im Original vor der Ernennung (Datei 0x55485) nie, danach nimmt die WM-Schleife den Tag (Review #662,
-        // R14NT-01). Im Remake also ohne Wirkung, solange der Bundestrainer nicht künstlich vor dem 13. April ernannt wird
+        // R14NT-01, oben). Im Remake also ohne Wirkung, solange der Bundestrainer nicht künstlich vor dem 13. April ernannt wird
         // (nur Tests). Auch die Heilung (0x07169, Datei 0x552A6) und die Aufstellungsautomatik (Datei 0x07C07) folgen erst
         // danach. [APPROX] Das Original rechnet 0x952C nach den Menüs der Manager; Finanzen, Training und Markt des Remakes
         // stehen davor wie bisher (Reihenfolge zu ihnen nicht einzeln gelesen). A009 (Runde 14 Teil 3): davor an Tagen mit

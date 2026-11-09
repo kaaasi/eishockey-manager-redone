@@ -258,7 +258,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Integration Runde 12 (+ kader-transfer): Abdruck auf dem integrierten Stand neu ermittelt. Mit und ohne Anzeige weiter gleich.
     /// Runde 13, kader-start Teil 2 (U15-a, L13): ab 1993 neu – Verein 42 tauscht mit Start-Liga Oberliga in die Oberliga
     /// (Datei 0x29CF2, Teamwerte bleiben am Platz, Oberliga-Kader); mit und ohne Anzeige weiter gleich. Teil 3 (R-K5): erneut neu –
-    /// Satzfolge vor der Spielvorbereitung (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.</summary>
+    /// Satzfolge vor der Spielvorbereitung (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
+    /// Runde 14, nationalteam Teil 4 (#664): ab 1994 neu (1993 unverändert) – ohne Bundestrainer läuft die WM in der WM-Schleife
+    /// des Originals (Datei 0x55570–0x55740: keine Wanderung, kein Training, kein Markt außer nach den Tagen 224/228, keine
+    /// Talentsuche). Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert. Mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 21, DM 6, Tab 15379 | 1994: DEB 23, DM 0, Tab 15591 | 1995: DEB 8, DM 8, Tab 15807 | 1996: DEB 10, DM 8, Tab 15236";
+        "1993: DEB 21, DM 6, Tab 15379 | 1994: DEB 2, DM 21, Tab 15421 | 1995: DEB 6, DM 21, Tab 15352 | 1996: DEB 23, DM 23, Tab 15121";
 }
