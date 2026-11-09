@@ -218,8 +218,9 @@ public sealed partial class GameState
             }
             // Stammvertrag erhalten; Join würde ihn überschreiben. [ORIGINAL] R13GN-01 (#622): Rückkehr zu einem Managerverein über
             // 0x42CB1 mit dem Manager des Stammvereins (Pool +0x1A, Saisonende Datei 0x27553–0x2758B), also nach Spielerart einsortiert.
-            // [APPROX] Rückkehr zu einem Computerverein (Datei 0x27576: Manager ≥ 4, ohne Kaderplatz) hinten an (InsertSlot).
-            PlayerFactory.InsertSlot(owner, player, managed.Contains(owner.Index));
+            // Seit A115 kommen hier nur Rückkehrer zu Managervereinen an: eine Leihe von einem Computerverein endet oben frei
+            // (Datei 0x275FF; Review R14KS-06).
+            PlayerFactory.InsertSlot(owner, player, managerSquad: true);
             owner.RenumberPlayers();
             if (player.ContractYears > 0)
                 continue;

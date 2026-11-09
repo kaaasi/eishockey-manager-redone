@@ -58,7 +58,7 @@ public class KaderStartTeil4Tests
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var donor = game.Clubs.First(c => c != club && c.Index < 48 && c.Players.Count(p => p.Role == PlayerRole.Forward) > 3);
         var p = donor.Players.Last(q => q.Role == PlayerRole.Forward);
-        p.Age = 25;
+        p.Age = 32; // nach dem Altern 33 > SquadRules.FreeAgentMaxAge: das Auffüllen der Computervereine zieht ihn nicht
         donor.RemovePlayer(p);
         PlayerFactory.Join(club, p, 1, loan: true, new PlayerLoan(donor, 3, 4_321, false), managerSquad: true);
         FinishSeason(game);
@@ -70,13 +70,12 @@ public class KaderStartTeil4Tests
         Assert.False(p.OnLoan);
         Assert.Null(p.Loan);
         Assert.DoesNotContain(p, club.Players);
-        // Frei heißt: kein Stammvertrag mehr. Ein Computerverein darf ihn danach wie jeden Vertragslosen verpflichten
-        // (Auffüllen des Kaders), aber nicht mit dem alten Vertrag 3 → 2 Jahre und 4.321 DM.
-        var holder = game.Clubs.FirstOrDefault(c => c.Players.Contains(p));
-        if (holder is null)
-            Assert.Contains(p, game.TransferMarket.FreeAgents.Concat(game.RetiredPlayers));
-        else
-            Assert.NotEqual((2, 4_321), (p.ContractYears, p.MonthlySalary));
+        // Frei heißt (Review R14KS-03): in keinem Kader, unter den Vertragslosen, ohne Vertrag (Besitzer frei, +0x1A = 6). Das
+        // Auffüllen der Computervereine (Kader-KI) zieht ihn wegen des Alters nicht; eine Rückkehr in den Kader des
+        // Computervereins (auch mit Vertrag 0) ist damit rot.
+        Assert.DoesNotContain(game.Clubs, c => c.Players.Contains(p));
+        Assert.Single(game.TransferMarket.FreeAgents, q => q == p);
+        Assert.Equal((0, 0, false), (p.ContractYears, p.MonthlySalary, p.Insured));
     }
 
     /// <summary>

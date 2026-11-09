@@ -148,10 +148,14 @@ public class LifecycleRegressionTests
         // Datei 0x275FF), nicht mit dem Stammvertrag beim Herkunftsverein (bis dahin R204).
         Assert.False(player.OnLoan);
         Assert.Equal(28, player.Age);
-        Assert.NotEqual((2, 1234), (player.ContractYears, player.MonthlySalary));
+        // Review R14KS-03: so streng wie der alte R204-Test (genau ein Ort, eine Nummer) – jetzt bei den Vertragslosen statt im
+        // Kader des Herkunftsvereins, ohne Vertrag.
+        Assert.Equal((0, 0, false), (player.ContractYears, player.MonthlySalary, player.Insured));
         Assert.DoesNotContain(player, borrower.Players);
         Assert.DoesNotContain(player, borrower.Lineup.Players);
-        Assert.True(game.Clubs.Count(c => c.Players.Contains(player)) <= 1);
-        Assert.False(origin.Players.Contains(player) && player.ContractYears == 2);
+        Assert.DoesNotContain(player, origin.Players);
+        Assert.DoesNotContain(game.Clubs, c => c.Players.Contains(player));
+        Assert.Single(game.TransferMarket.FreeAgents, q => q == player);
+        Assert.Single(game.AllPlayers, p => p == player);
     }
 }

@@ -455,7 +455,10 @@ public sealed partial class Club
     ///   sonst „Kein / Platz mehr !“ (Datei 0x414BC–0x414C6). Niemand wird verdrängt.</item>
     /// <item>[APPROX] Wie beim Nationalteam: Ist die eigene Hälfte der Reihe voll, versucht das Original die andere Hälfte
     ///   (Datei 0x414D3–0x414ED) und öffnet in Reihe 1 einen sechsten Feldspielerplatz (Datei 0x413E8–0x414B4, Meldung „Schon 6
-    ///   Feldspieler“ Datei 0x40EF7); das Remake hat feste Plätze je Art und meldet gleich „Kein / Platz mehr !“.</item>
+    ///   Feldspieler“ Datei 0x40EF7). Das Remake hat keine Plätze außerhalb der Art: <see cref="Lineup"/> führt je Reihe drei
+    ///   Stürmer- und zwei Verteidigerplätze, und <see cref="Lineup.Fits"/> lässt nur die passende Art zu (auch für die
+    ///   automatische Aufstellung). Ein Ausweichen in die andere Hälfte oder auf einen sechsten Platz ist so nicht darstellbar;
+    ///   es meldet gleich „Kein / Platz mehr !“ (Review R14KS-06).</item>
     /// </list>
     /// </summary>
     /// <param name="player">angeklickter Spieler (muss im Kader stehen).</param>
