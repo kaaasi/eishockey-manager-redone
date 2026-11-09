@@ -360,6 +360,10 @@ public sealed partial class GameState
         stadium.SeatsTarget = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x1F)..]);
         stadium.Standing = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x21)..]);
         stadium.StandingTarget = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x23)..]);
+        // [ORIGINAL] Laufende Ausbauten (R14HI-02): Ziel +0x117 + 2 · Bereich (FILE43: Sitzkomfort 0 → 1, FILE44A: Gastronomie 2 → 3),
+        // Restwochen +0x128 + Projekt 0–10 (FILE43: 8, FILE44A: 1); Projekt im Bau, wenn das Ziel ≠ 0 ist (Datei 0x3DF1F–0x3DF81).
+        for (var p = 0; p < Stadium.ProjectCount; p++)
+            stadium.ImportConstruction(p, p < Stadium.FeatureCount ? record[s + 2 * p + 1] : 0, record[s + 0x12 + p]);
         // Bank und Managerdarlehen: ApplyLoans (Teil 4a, OriginalImport.Rest.cs).
         finance.SponsorRating = BinaryPrimitives.ReadInt16LittleEndian(record[0x173..]);
         finance.TalentPrice = BinaryPrimitives.ReadInt32LittleEndian(save.Block("020D").AsSpan(4 * m)) / 3;
