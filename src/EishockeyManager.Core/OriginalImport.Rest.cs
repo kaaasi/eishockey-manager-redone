@@ -158,22 +158,26 @@ public sealed partial class GameState
         var sponsoring = Finance(Managers[m]).Sponsoring;
         var contracts = save.Block("C15B").AsSpan(0x6E * m, 0x6E);
         sponsoring.Contracts.Clear();
+        // Bandenflächen desselben Vertrags: Schlüssel aus dem Rohbetrag (Drittel-DM), nicht aus dem gerundeten Monatsbetrag –
+        // 1.000.001 / 3 · 3 = 999.999 fand den Schlüssel nicht (Review R14HI-03, KeyNotFoundException).
         var boards = new Dictionary<(int Sponsor, int Amount, int Months), List<int>>();
+        var keys = new List<(int Sponsor, int Amount, int Months)>(); // Schlüssel je Vertrag in sponsoring.Contracts
         for (var area = 0; area < 11; area++)
         {
             var c = contracts.Slice(10 * area, 10);
             var amount = BinaryPrimitives.ReadInt32LittleEndian(c);
             if (amount == 0)
                 continue;
+            var key = (c[4], amount, (int)c[5]);
             if (area < Sponsoring.BoardCount)
             {
-                var key = (c[4], amount, c[5]);
                 if (!boards.TryGetValue(key, out var list))
                     boards[key] = list = [];
                 list.Add(area);
                 if (list.Count > 1)
                     continue;
             }
+            keys.Add(key);
             sponsoring.Contracts.Add(new SponsorContract
             {
                 Kind = OriginalImport.AreaKind(area),
@@ -191,7 +195,7 @@ public sealed partial class GameState
             var contract = sponsoring.Contracts[i];
             if (contract.Kind != AdSlotKind.Bande)
                 continue;
-            var areas = boards[(contract.Sponsor, (int)(contract.MonthlyAmount * 3), contract.MonthsLeft)];
+            var areas = boards[keys[i]];
             sponsoring.Contracts[i] = new SponsorContract
             {
                 Kind = contract.Kind, Sponsor = contract.Sponsor, Boards = areas.ToArray(), MonthlyAmount = contract.MonthlyAmount,

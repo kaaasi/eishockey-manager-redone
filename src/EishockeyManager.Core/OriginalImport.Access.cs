@@ -43,8 +43,10 @@ public static partial class OriginalImport
         {
             return new(GameState.ImportOriginal(save, database, seed), false, null);
         }
-        catch (Exception e) when (e is InvalidDataException or InvalidOperationException or ArgumentException or IndexOutOfRangeException)
+        catch (Exception e)
         {
+            // Jede Ausnahme des Imports ist ein Ladefehler (Review R14HI-03: eine KeyNotFoundException aus ApplySponsoring kam durch die
+            // frühere Typliste und beendete das Programm). Der Import baut immer einen neuen GameState; der laufende Stand bleibt.
             return new(null, false, e.Message);
         }
     }
