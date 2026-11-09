@@ -184,7 +184,9 @@ public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
-    // kader-start Runde 14 Teil 2b: alle Abdrücke neu – Spielerwert mit Toren/Spielen je Wettbewerb (A135), Neuaufstellung nach jedem Spiel mit „automatisch aufstellen“ (375h).
+    // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
+    // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
+    // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     [Theory]
     [InlineData(false, 3, "D1DB938BDEDCC71C")]
     [InlineData(true, 3, "E3C497CB9A0929D2")]

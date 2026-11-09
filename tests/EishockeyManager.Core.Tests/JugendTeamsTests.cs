@@ -189,7 +189,9 @@ public class JugendTeamsTests
 
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
-    // kader-start Runde 14 Teil 2b (A135 Spielerwert je Wettbewerb, Taktik 375h Neuaufstellung nach dem Spiel): neu.
+    // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
+    // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
+    // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     private const string ExpectedActive =
         "0:Schueler:2/11/58;0:Jugend:2/11/60;0:Junioren:2/11/62;1:Schueler:1/12/70;1:Jugend:2/6/70;1:Junioren:1/11/72;2:Schueler:1/6/78;2:Jugend:1/11/78;2:Junioren:1/6/80;3:Schueler:1/6/83;3:Jugend:1/6/80;3:Junioren:1/6/81";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.

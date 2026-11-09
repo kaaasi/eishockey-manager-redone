@@ -376,7 +376,9 @@ public class GameModeTests
     // danach andere Konten, ab Saison 4 andere Kaufentscheidungen, Titel in Saison 5 und Zufallszustand.
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
-    // kader-start Runde 14 Teil 2b (A135 Spielerwert je Wettbewerb, Taktik 375h Neuaufstellung nach dem Spiel): neu.
+    // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
+    // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
+    // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     internal const string Mode4Reference =
         "WorldChampion=52,CupWinner=11,GermanChampion=1,EuropeanCupWinner=2|96040,400000|WorldChampion=52,CupWinner=4,GermanChampion=1,EuropeanCupWinner=1|1402820,400000|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=1|2105399,400000|WorldChampion=54,CupWinner=3,GermanChampion=13,EuropeanCupWinner=0|2608038,400000|WorldChampion=54,CupWinner=0,GermanChampion=9,EuropeanCupWinner=13|2812224,-7124085|R677985496 C1798453752";
 
