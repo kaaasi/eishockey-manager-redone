@@ -14,7 +14,7 @@ Erwartet offen: GitHub-Suche nach offenen Issues bestätigt [#620](https://githu
 
 ### Prüfstand und Gegenbeispiele
 
-- Frische unabhängige Sitzung; `git fetch origin`, anschließend sauberer Checkout `b13046422b285404ad6ddbe7b5f1b18e22069eea`, `git status --porcelain` leer. `origin/main` entsprach beim Abruf dem Head. SDK `/workspace/.dotnet/dotnet --version`: `10.0.402`. `gamedata` verweist auf lokale Originaldaten; die aktuelle Referenz `origin/main` wurde nach `/tmp/r14-referenz/original/spielstaende` gelesen, `EM_SAVEGAMES` darauf gesetzt. Keine Originaldateien im Commit.
+- Frische unabhängige Sitzung; `git fetch origin`, anschließend sauberer Checkout `b13046422b285404ad6ddbe7b5f1b18e22069eea`, `git status --porcelain` leer. `origin/main` entsprach beim Abruf dem Head. SDK `/workspace/.dotnet/dotnet --version`: `10.0.402`. `gamedata` verweist auf lokale Originaldaten; Spielstände der Referenz `779a1c8af8597adf51a8538d87cfb5a228179f79` wurden nach `/tmp/r14-referenz/original/spielstaende` gelesen, `EM_SAVEGAMES` darauf gesetzt. `em.exe` hat denselben Git-Blob wie diese Referenz (`88b1039b9ef9b5d952c1c7ac85368fc58ac91803`). Keine Originaldateien im Commit.
 - Vor dem Nachladen fehlte FILE44 in der älteren lokalen Referenzkopie; der erste gezielte Lauf scheiterte daher mit neun `FileNotFoundException` und ist **kein Produktbefund**. Nach Bereitstellung der aktuellen Spielstände Wiederholung am sauberen Head: `EM_REQUIRE_GAMEDATA=1 dotnet test tests/EishockeyManager.Core.Tests -c Release --no-build --filter 'FullyQualifiedName~PlayoffSemifinalTests|FullyQualifiedName~TagestaktSommerpauseReviewTests|FullyQualifiedName~File44_ToNewSeason_AccountFollowsFile46'`: **20 bestanden, 0 fehlgeschlagen, 0 übersprungen**.
 - R683: Der synthetische Test zeigt Halbfinale Sieger 1–8 gegen Sieger 3–6 sowie Sieger 2–7 gegen Sieger 4–5; auch die Tests für Import und Schema-43-Migration wurden im gefilterten Lauf ausgeführt. R688S-01: Sommerzähler 234–365 entsprechen 1. Mai bis 9. September, vier Monatsabschlüsse. Zusätzlich bestätigte ein temporärer Test in der unveränderten Produktkopie bei einem normalen Neuspiel nach `Continue()` bis zum Saisonende `FinanceDay` = 29. April und `LoadCounterOffset` = 0 (1 bestanden). R688S-03: Schuldenläufe einschließlich vier Saisonwechseln und Zwangsabstieg grün; das ist keine vollständige Widerlegung aller möglichen Entlassungspfade.
 - FILE44 → FILE46: Originalstände 18.027.183 → 15.887.669 DM, Differenz **−2.139.514 DM**. In einer isolierten Kopie wurde die Toleranzbehauptung des Tests durch `Assert.Equal(-2_106_011, me.Money - start)` ersetzt: **1 bestanden**, Saat 4711. Remake also **−2.106.011 DM**; Differenz zum Original 33.503 DM. Der Testausgang ist kein Nachweis für die einzelnen Buchungskategorien.
@@ -71,13 +71,13 @@ Grüne Originalläufe und die folgenden gezielten Rückmutationen liefen getrenn
 
 ### Standardprüfung
 
-Der vorgeschriebene vollständige Lauf `PATH=/workspace/.dotnet:$PATH NuGetAudit=false UseSharedCompilation=false DOTNET_PROCESSOR_COUNT=2 EM_SAVEGAMES=/tmp/r14-referenz/original/spielstaende tools/pruefen.sh` wurde auf dem sauberen Head gestartet. Build und Lauf mit Originaldaten sind beendet; die beiden weiteren Läufe laufen noch. 
+Der vorgeschriebene vollständige Lauf `PATH=/workspace/.dotnet:$PATH NuGetAudit=false UseSharedCompilation=false DOTNET_PROCESSOR_COUNT=2 EM_SAVEGAMES=/tmp/r14-referenz/original/spielstaende tools/pruefen.sh` wurde auf dem sauberen Head gestartet. Build und alle drei Läufe sind abgeschlossen; das Skript meldet „Ergebnis: bestanden“ und bestätigt für den Pflichtlauf das Scheitern wegen fehlender Originaldaten.
 
 | Lauf | bestanden | fehlgeschlagen | übersprungen |
 |---|---:|---:|---:|
 | Mit Originaldaten | 2625 | 0 | 0 |
-| Ohne Originaldaten | läuft | – | – |
-| Pflichtlauf ohne Daten | ausstehend | – | – |
+| Ohne Originaldaten | 2076 | 0 | 452 |
+| Pflichtlauf ohne Daten (scheitert wie gewollt) | 2092 | 533 | 0 |
 
 Der Socket-Test scheiterte zunächst in der Sandbox mit `PermissionError`; die tatsächlich ausgeführten Testläufe nutzten die vorgesehene Freigabe für den lokalen Socket. `NuGetAudit=false` wurde nur für diesen Lauf gesetzt.
 
