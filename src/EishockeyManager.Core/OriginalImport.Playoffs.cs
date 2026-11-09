@@ -60,6 +60,10 @@ public sealed partial class GameState
         var finalTable = save.Block("5CCB");
         var seeds = Enumerable.Range(0, Playoffs.Teams).Select(i => clubOf[finalTable[i]]).ToList();
         Playoffs = Playoffs.ImportOriginal(save, clubOf, seeds);
+        // [ORIGINAL] Deutscher Meister DGROUP 0xD0E6 (0x31CBF) – nach dem Endspiel muss er der Sieger der Serie sein.
+        int titleHolder = save.Block("D0E6")[0];
+        if (Playoffs.Champion is { } decided && (titleHolder >= clubOf.Length || clubOf[titleHolder] != decided))
+            throw new InvalidDataException($"Deutscher Meister (DGROUP 0xD0E6 = {titleHolder}) passt nicht zum Endspiel.");
         PlayoffResults.Clear();
         PlayoffResults.AddRange(Playoffs.Rounds.SelectMany(r => r).SelectMany(s => s.Games).OrderBy(g => g.Day));
 

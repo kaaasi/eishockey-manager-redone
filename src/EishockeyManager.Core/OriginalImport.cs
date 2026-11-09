@@ -356,10 +356,10 @@ public sealed partial class GameState
         const int s = 0x116; // Stadion: Stufe/Ziel je Bereich, Wochen, Plätze
         for (var i = 0; i < Stadium.FeatureCount; i++)
             stadium.SetLevel((StadiumFeature)i, record[s + 2 * i]);
-        stadium.Seats = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x1D)..]);
-        stadium.SeatsTarget = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x1F)..]);
-        stadium.Standing = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x21)..]);
-        stadium.StandingTarget = BinaryPrimitives.ReadInt16LittleEndian(record[(s + 0x23)..]);
+        stadium.Seats = BinaryPrimitives.ReadInt16LittleEndian(record[0x133..]); // Stadion +0x1D
+        stadium.SeatsTarget = BinaryPrimitives.ReadInt16LittleEndian(record[0x135..]); // +0x1F
+        stadium.Standing = BinaryPrimitives.ReadInt16LittleEndian(record[0x137..]); // +0x21
+        stadium.StandingTarget = BinaryPrimitives.ReadInt16LittleEndian(record[0x139..]); // +0x23
         // [ORIGINAL] Laufende Ausbauten (R14HI-02): Ziel +0x117 + 2 · Bereich (FILE43: Sitzkomfort 0 → 1, FILE44A: Gastronomie 2 → 3),
         // Restwochen +0x128 + Projekt 0–10 (FILE43: 8, FILE44A: 1); Projekt im Bau, wenn das Ziel ≠ 0 ist (Datei 0x3DF1F–0x3DF81).
         for (var p = 0; p < Stadium.ProjectCount; p++)

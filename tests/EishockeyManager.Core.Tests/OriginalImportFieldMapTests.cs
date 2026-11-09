@@ -62,6 +62,45 @@ public partial class OriginalImportFieldMapTests
         }
     }
 
+    /// <summary>
+    /// Review R14HI-04: Der Status B/A muss zum Code passen. Jede Zeile mit Status B/A nennt Blöcke (und Versätze) als Quelle; jeder
+    /// genannte Block muss im Importcode (<c>Core/OriginalImport*.cs</c>, Kopf: <c>Formats/OriginalSaveHeader.cs</c>) gelesen werden –
+    /// als <c>Block("…")</c> bzw. als Zeichenkette – und jeder Versatz <c>+0x…</c> der Quelle als Hexzahl im Importcode vorkommen.
+    /// Vorher führte die Karte z. B. `D0C1`, `CD58`, `0387` und `965B+0x117` als belegt, ohne dass ein Import sie las.
+    /// </summary>
+    [Fact]
+    public void FieldMap_ImportedRows_HaveTheirBlocksAndOffsetsInTheImportCode()
+    {
+        var code = ImportCode();
+        var blocksInCode = CodeBlockLiteral().Matches(code).Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
+        var hexInCode = HexLiteral().Matches(code).Select(m => Normalize(m.Value)).ToHashSet(StringComparer.Ordinal);
+        var problems = new List<string>();
+        foreach (var row in Rows().Where(r => r.Status is "B" or "A"))
+        {
+            foreach (Match reference in SourceReference().Matches(row.Source))
+            {
+                var block = reference.Groups[1].Value;
+                if (block != "Kopf" && !blocksInCode.Contains(block))
+                    problems.Add($"Zeile {row.Line} ({row.Field}): Block `{block}` liest kein Import.");
+                foreach (Capture offset in reference.Groups[2].Captures)
+                    if (!hexInCode.Contains(Normalize(offset.Value)))
+                        problems.Add($"Zeile {row.Line} ({row.Field}): Versatz {offset.Value} von `{block}` steht in keinem Import.");
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+    }
+
+    private static string ImportCode()
+    {
+        var root = RepositoryRoot();
+        var files = Directory.GetFiles(Path.Combine(root, "src", "EishockeyManager.Core"), "OriginalImport*.cs")
+            .Append(Path.Combine(root, "src", "EishockeyManager.Formats", "OriginalSaveHeader.cs"));
+        return string.Join("\n", files.Select(File.ReadAllText));
+    }
+
+    private static string Normalize(string hex) =>
+        "0x" + Convert.ToInt32(hex.TrimStart('+')[2..], 16).ToString("X", System.Globalization.CultureInfo.InvariantCulture);
+
     /// <summary>Alle Felder des Schemas („Typ.Feld“), ohne Aufzählungen, Implementierungszeilen und Tupelfelder.</summary>
     private static HashSet<string> SchemaFields() =>
         SaveGame.SchemaDescription()
@@ -87,13 +126,15 @@ public partial class OriginalImportFieldMapTests
         return rows;
     }
 
-    private static string Document()
+    private static string Document() => File.ReadAllText(Path.Combine(RepositoryRoot(), "docs", "formate", "spielstand-original.md"));
+
+    private static string RepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "EishockeyManager.slnx")))
             directory = directory.Parent;
         Assert.NotNull(directory);
-        return File.ReadAllText(Path.Combine(directory.FullName, "docs", "formate", "spielstand-original.md"));
+        return directory.FullName;
     }
 
     /// <summary>Tabellenzeile <c>| `Typ.Feld` | S | Quelle | Import |</c>.</summary>
@@ -103,4 +144,16 @@ public partial class OriginalImportFieldMapTests
     /// <summary>Erster Blockverweis der Quelle: <c>`965B`</c>, <c>`far:8253`</c> oder <c>`Kopf`</c>.</summary>
     [GeneratedRegex(@"`(Kopf|far:[0-9A-F]{4}|[0-9A-F]{4})[`+]")]
     private static partial Regex BlockReference();
+
+    /// <summary>Alle Blockverweise der Quelle mit ihren Versätzen: <c>`965B+0x116+2i`</c> → Block `965B`, Versätze 0x116.</summary>
+    [GeneratedRegex(@"`(Kopf|far:[0-9A-F]{4}|[0-9A-F]{4})(\+0x[0-9A-Fa-f]+)*[^`]*`")]
+    private static partial Regex SourceReference();
+
+    /// <summary>Blockname als Zeichenkette im Code: <c>Block("965B")</c>, <c>"far:9657"</c>.</summary>
+    [GeneratedRegex(@"""(far:[0-9A-F]{4}|[0-9A-F]{4})""")]
+    private static partial Regex CodeBlockLiteral();
+
+    /// <summary>Hexzahl im Code.</summary>
+    [GeneratedRegex(@"0x[0-9A-Fa-f]+")]
+    private static partial Regex HexLiteral();
 }
