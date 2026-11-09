@@ -22,7 +22,7 @@ public sealed class TransferDialog
     /// Kauf- und Leihfenster: Rahmen (2 | 29)–(166 | 71), Schatten bis (168 | 73), also links über der Kaderliste, nicht mittig.
     /// [ORIGINAL] DOSBox-Sitzung 2, `file40_08` (VALLIERE kaufen), `file40_09` (leihen), `file35_2` (A377).
     /// </summary>
-    public static readonly Rect BuyBox = new(2, 29, 164, 42);
+    public static readonly Rect BuyBox = new(2, 29, 165, 43);
 
     /// <summary>Eingabezeile unter „Ihr Angebot:“ (Eingabemarke, Kauf und Leihe). [APPROX] Lage aus dem Bild geschätzt (x 14, y 60).</summary>
     public static Rect AmountField => new(BuyBox.X + 10, BuyBox.Y + 30, 76, 9);
@@ -234,6 +234,8 @@ public sealed class TransferDialog
                 break;
         }
 
+        // Kauf und Leihe haben im Original keine Knöpfe (R14UR-01): nichts bei (0 | 0) zeichnen
+        if (IsBuyOrLoan) return;
         TeamUi.DialogButton(s, a, ConfirmButton.X, ConfirmButton.Y, ConfirmText);
         TeamUi.DialogButton(s, a, CancelButton.X, CancelButton.Y, CancelText);
     }

@@ -169,7 +169,7 @@ public sealed class HistoryScreen : Screen
     public static byte BarColorNormal(int graph) => graph == 2 ? (byte)29 : (byte)27;
 
     /// <summary>
-    /// Balkenhöhe: Liga nach Gesamtplatz (36 Stufen à 2 Pixel, Rang 0-basiert; „12. Platz der Oberliga“ = 2 Pixel, [ORIGINAL] `file14_5`; vorher 37 − … = 4 Pixel),
+    /// Balkenhöhe: Liga nach Gesamtplatz (2 · (37 − …) Pixel mit 1-basiertem Rang, wie ihn <c>StatisticsHistory</c> speichert; „12. Platz der Oberliga“ = 2 Pixel, [ORIGINAL] `file14_5`; R14UR-02),
     /// Pokale nach erreichter Runde. [APPROX] DEB-Pokal 3 Pixel je Runde („Erste Runde“ = 3 Pixel, `file14_5`; Formel in em.exe
     /// nicht gelesen, zweiter Messpunkt fehlt), Europapokal wie bisher geschätzt.
     /// </summary>
@@ -177,7 +177,7 @@ public sealed class HistoryScreen : Screen
     {
         0 => h.Europe switch { CupOutcome.Winner => range, CupOutcome.Eliminated => h.EuropeFinalRound ? range * 2 / 3 : range / 3, _ => 0 },
         1 => h.Deb switch { CupOutcome.Winner => range, CupOutcome.Eliminated => Math.Min(range, 3 * (h.DebRound + 1)), _ => 0 },
-        _ => Math.Min(range, 2 * (36 - (h.Rank + 12 * (int)h.League))),
+        _ => Math.Min(range, 2 * (37 - (h.Rank + 12 * (int)h.League))),
     };
 
     private static byte BarColor(int graph, ManagerSeasonHistory h) =>

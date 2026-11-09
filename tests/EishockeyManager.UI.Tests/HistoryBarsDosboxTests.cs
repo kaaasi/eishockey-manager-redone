@@ -16,15 +16,16 @@ public class HistoryBarsDosboxTests
         var game = d.Host.Game!;
         var field = typeof(GameState).GetField("_managerHistory", BindingFlags.Instance | BindingFlags.NonPublic)!;
         var map = (Dictionary<int, List<ManagerSeasonHistory>>)field.GetValue(game)!;
-        // „12. Platz der Oberliga“ (Rang 0-basiert 11), „DEB-Pokal: Erste Runde“
+        // „12. Platz der Oberliga“ (Rang 12, 1-basiert wie im Kern: `StatisticsHistory` speichert IndexOf + 1), „DEB-Pokal: Erste Runde“
         map[game.CurrentManager] =
         [
-            new ManagerSeasonHistory(1993, game.ActiveManager.ClubIndex, League.Oberliga, 11, LeagueOutcome.Rank,
+            new ManagerSeasonHistory(1993, game.ActiveManager.ClubIndex, League.Oberliga, 12, LeagueOutcome.Rank,
                 CupOutcome.Eliminated, 0, CupOutcome.NotParticipating, false),
         ];
         d.OpenTile("Früher");
         d.Frame();
         Assert.IsType<HistoryScreen>(d.Host.Current);
+        Assert.Equal("12. Platz der Oberliga", HistoryScreen.Lines(map[game.CurrentManager][0])[0].Text); // `file14_5`
 
         byte At(int x, int y) => d.Surface.Pixels[y * Surface.Width + x];
         // Liga: Balken x 117–118, y 171–172 (Index 29), Achse y 173
