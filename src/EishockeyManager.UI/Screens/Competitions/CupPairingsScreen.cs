@@ -142,9 +142,9 @@ public sealed class CupPairingsScreen : Screen
         else if (input.Clicked(Buttons[3]))
             Day = Day == Days - 1 ? 0 : Day + 1;
         else if (input.Clicked(Buttons[1]))
-            Host.Show(new WorldCupKnockoutScreen(Host, _back, () => new CupPairingsScreen(Host, _back, Group)));
+            Host.Show(WorldCupPairingsPages.Open(Host, _back, WorldCupPairingsPages.Knockout, Group)); // gemerkte Seite (A293)
         else if (input.Clicked(Buttons[2]))
-            Host.Show(new CupPairingsScreen(Host, _back, 1 - Group));
+            Host.Show(WorldCupPairingsPages.Open(Host, _back, WorldCupPairingsPages.GroupPage(1 - Group)));
         else if (input.LeftClick && FlagAt(input.MouseX, input.MouseY) is var (k, away) && Rows.ElementAtOrDefault(k) is { } row)
             _info.Show(away ? row.Away : row.Home);
     }

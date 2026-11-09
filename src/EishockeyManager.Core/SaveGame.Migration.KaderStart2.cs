@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Migration Schema 40 → 41 (Runde 14, Spur kader-start Teil 2b; die Leitstelle nummeriert das Schema bei der Integration):
+/// Migration Schema 42 → 43 (Runde 14, Spur kader-start Teil 2b; die Leitstelle nummeriert das Schema bei der Integration):
 /// <list type="bullet">
 /// <item>A046: Tabellenfeld je Verein (<c>Club._tableRank</c>, DGROUP 0x8288). [APPROX] Ältere Stände: das Platzfeld des
 ///   zuletzt gespeicherten Ligaspieltags (<c>_rankSlots</c>[<see cref="GameState.RankSlotsRecorded"/> − 1], derselbe

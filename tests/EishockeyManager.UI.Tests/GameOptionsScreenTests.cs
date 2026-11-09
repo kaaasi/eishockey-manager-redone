@@ -170,4 +170,16 @@ public class GameOptionsScreenTests
         d.RightClick(100, 100);
         Assert.IsType<SettingsScreen>(d.Host.Current);
     }
+
+    /// <summary>Zusatzschalter „Ganzer Tag“ (#349): Vorgabe aus, Klick schaltet die Einstellung um.</summary>
+    [GameDataFact]
+    public void ManagerDaySwitch_TogglesOption()
+    {
+        var (d, _, game) = Open();
+        Assert.False(game.Options.ManagerDayMinuteLoop);
+        ClickSwitch(d, GameOptionsScreen.ManagerDaySwitch);
+        Assert.True(game.Options.ManagerDayMinuteLoop);
+        ClickSwitch(d, GameOptionsScreen.ManagerDaySwitch);
+        Assert.False(game.Options.ManagerDayMinuteLoop);
+    }
 }
