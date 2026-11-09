@@ -89,7 +89,8 @@ public enum TransferResult
 /// [ORIGINAL] Grenzen aus den Meldungen in em.exe: 29 Mann im Team (<see cref="MaxSquad"/>), 3 eigene und 11 Spieler insgesamt auf dem Markt,
 /// Leihgebühr = Kaufpreis / 3 (Datei 0x462EB). Preis, Annahme eines Gebots, Unfair-Grenze, Tageswurf und Höhe der Angebote
 /// für eigene Spieler nach Ov 0x118 (<see cref="TransferRules"/>, <c>docs/transfer.md</c>); Wechsel der Liste aus dem
-/// Spielerpool nach 0x494EF (<see cref="ChangeList"/>), täglich (<see cref="CatchUp"/>, 0x54E71) mit bietendem Verein nach 0x059B8.
+/// Spielerpool nach 0x494EF (<see cref="ChangeList"/>), im Zug jedes Managers an Tagen mit Ereignis (<see cref="ListChangeTurn"/>,
+/// 0x54E71; #678) mit bietendem Verein nach 0x059B8.
 /// Ein verkaufender Manager wird gefragt (<see cref="AnswerSeller"/>, 0x47655–0x47743); [APPROX] ohne Oberfläche
 /// (<see cref="Buy"/>) eine simulierte Antwort.
 /// </remarks>
@@ -211,10 +212,9 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>
-    /// Tagesablauf des Markts, gerufen einmal je Kalendertag aus dem Tagesablauf der Zeitleiste (<see cref="AdvanceDay"/>).
-    /// [ORIGINAL] Der Listenwechsel (Datei 0x54E65–0x54E7C) und der Angebotswurf für eigene Spieler auf dem Markt (Tagesablauf
-    /// 0x07169, Datei 0x072DD) fallen täglich, nicht je Ligaspieltag (Spur <c>kader-transfer</c>, Teil 4, A256).
-    /// <see cref="UpdatedDay"/> hält wie bisher die gespielten Ligaspieltage beim letzten Tagesablauf.
+    /// Markttag in einem Zug (<see cref="AdvanceDay"/>) mit <see cref="UpdatedDay"/> = gespielte Ligaspieltage. Die Zeitleiste ruft
+    /// ihn seit #678 nicht mehr: Listenwechsel je Managerzug an Tagen mit Ereignis (<see cref="ListChangeTurn"/>, Datei
+    /// 0x54E65–0x54E7C), Angebotswurf und Gebotsverfall nur im Tagesablauf 0x07169 am Takttag (<see cref="CatchUpManagerDay"/>).
     /// </summary>
     public void CatchUp(GameState game)
     {
@@ -223,7 +223,8 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>
-    /// Ein Tag: Listenwechsel mit <see cref="ListChangeRoll"/> ([ORIGINAL] 0x54E71). Angebote für eigene Spieler auf dem Markt
+    /// Ein Markttag in einem Zug (Tests, Werkzeuge; die Zeitleiste rechnet seit #678 <see cref="ListChangeTurn"/> und
+    /// <see cref="CatchUpManagerDay"/> getrennt): Listenwechsel mit <see cref="ListChangeRoll"/> ([ORIGINAL] 0x54E71). Angebote für eigene Spieler auf dem Markt
     /// nach dem Original (<see cref="TransferRules.BidRoll"/>, Datei 0x072DD); bietender Verein nach 0x059B8
     /// (<see cref="UnsolicitedOfferRules.Bidder"/> mit Europapokal-Schalter 0, Aufruf 0x07364; A257). [APPROX] Die Höhe
     /// (<see cref="TransferRules.BidAmountThirds"/>) wird schon beim Angebot statt beim Anklicken (0x47347) gewürfelt; Bieter

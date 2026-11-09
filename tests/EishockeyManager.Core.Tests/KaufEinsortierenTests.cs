@@ -150,8 +150,15 @@ public class KaufEinsortierenTests
         var (game, own, _) = Game();
         SquadLifecycleTests.PlaySeason(game, () => { });
         game.StartNextSeason();
-        var listing = game.TransferMarket.Listings.FirstOrDefault(l => l.From != own && !l.Player.OnLoan
-                                                                         && l.Player.Role == PlayerRole.Goalkeeper);
+        TransferListing? Goalkeeper() => game.TransferMarket.Listings.FirstOrDefault(l => l.From != own && !l.Player.OnLoan
+                                                                                         && l.Player.Role == PlayerRole.Goalkeeper);
+        // Vorbedingung Torhüter auf der Liste; #678 (Listenwechsel nur in den Managerzügen der Tage mit Ereignis) ändert den Verlauf.
+        var listing = Goalkeeper();
+        for (var i = 0; i < 50 && listing is null; i++)
+        {
+            game.TransferMarket.ChangeList(game, game.Random);
+            listing = Goalkeeper();
+        }
         Assert.NotNull(listing);
         game.Managers[0].Money = Math.Max(game.Managers[0].Money, listing.Price * 3);
 

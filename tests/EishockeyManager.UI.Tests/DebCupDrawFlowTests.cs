@@ -268,7 +268,8 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Nachprüfung #681 (R14NT4N-01): ab 1994 neu (1993 unverändert) – der Tageslauf von Tag 216 (Zähler 217) rechnet wie im
     /// Original noch den Takt des Hauptwegs (Wanderung, Talentsuche, Training/Markt/Verträge, Heilung), erst danach die Schleife;
     /// anderer Zufallsverbrauch ab dem 14. April 1994. Gegenprobe: nur die Core-Änderung zurück → alter Wert. Mit und ohne Anzeige
-    /// weiter gleich.</summary>
+    /// weiter gleich.
+    /// #678/#679 (Tagestakt Hauptweg): ab 1993 neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert). Mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 9, DM 5, Tab 15381 | 1994: DEB 5, DM 2, Tab 15829 | 1995: DEB 5, DM 9, Tab 15756 | 1996: DEB 5, DM 5, Tab 16395";
+        "1993: DEB 2, DM 5, Tab 15392 | 1994: DEB 5, DM 10, Tab 15527 | 1995: DEB 1, DM 5, Tab 15382 | 1996: DEB 10, DM 10, Tab 15428";
 }

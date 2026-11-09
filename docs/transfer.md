@@ -277,8 +277,8 @@ Kontoleiste `TransferScreen.DrawAccountBar`; Tests `KaderTransferTeil4Tests`. Ke
 
 | Regel | Fundstelle em.exe | Umsetzung |
 |---|---|---|
-| Listenwechsel **täglich** mit random(0, Managerzahl + 2) = 0 (nach der Managerschleife des Tages) | 0x54E65–0x54E7C | `CatchUp` einmal je Kalendertag aus dem Tagesablauf (vorher je gespieltem Ligaspieltag); A256 |
-| Angebot für eigene Spieler auf dem Markt im Tagesablauf | 0x072DD (Tagesablauf 0x07169) | ebenfalls täglich |
+| Listenwechsel mit random(0, Managerzahl + 2) = 0 **im Zug jedes Managers** an Tagen mit Ereignis (Tagesbyte ∉ {0, 255}, Datei 0x54D5C/0x54D65), nicht in der WM-Schleife | 0x54E65–0x54E7C | `TransferMarket.ListChangeTurn` je Manager aus `MainPathListChanges` (#678; vorher einmal je Kalendertag); A256 |
+| Angebot für eigene Spieler auf dem Markt im Tagesablauf, Gebotsverfall nur im Lauf von Manager 0, Markt-Verfall +0x13 > 0x38 → −10 | 0x072DD, 0x07215, 0x071BB (Tagesablauf 0x07169, Hauptweg nur am Zähler ≡ 0/4) | `TransferMarket.CatchUpManagerDay` aus `ManagerDailyRun` bzw. Schritt (c) der WM-Schleife (#678) |
 | Bietender Verein: 0x059B8 mit Europapokal-Schalter 0 (Vereine 0 … 42 ohne Manager, Stärke nahe der Spielerstärke) | 0x07364 | `UnsolicitedOfferRules.Bidder` (vorher beliebiger Ligaverein); A257 |
 | Kontoleiste: Kontostand, Schulden (0x57768), Anlagen (Aktien zum Kurs + Forderungen samt Sparbuch), Saldo = Konto + Anlagen − Schulden | 0x463CC | `GameState.TransferAccount`; A381, F109 |
 

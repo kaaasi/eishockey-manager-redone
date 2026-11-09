@@ -24,8 +24,8 @@ namespace EishockeyManager.Core.Tests;
 /// Nachprüfung #681 (R14NT4N-01): Der erste Tageslauf nach dem 13. April (Remake <c>OnDayManager(216)</c>, Wechsel nach den
 /// Spielen des Tages mit Markierung 255, Zähler 217) ist im Original noch Hauptweg (Datei 0x55204–0x552D3: Talentsuche 0x06FA5,
 /// kleine Wanderung 0x9D1B, 0x07169 je Manager, Stadionbau), erst Datei 0x552D5 führt in die Schleife. Im WM-Zeitraum also
-/// genau eine Wanderung und ein Schritt der Talentsuche (217 ≡ 0 mod 7), danach keine mehr. Der Tag 216 ist ein Donnerstag
-/// (kein Trainingstag des Remake-Hauptwegs, [APPROX] Takttag-Regel → #678).
+/// genau eine Wanderung und ein Schritt der Talentsuche (217 ≡ 0 mod 7), danach keine mehr. Seit #678 auch 0x07169 je Manager
+/// (Training, Markt-Verfall) nach der Takttag-Regel des Hauptwegs, ohne Listenwechsel.
 /// </remarks>
 public class NationalteamRunde14Teil4Tests
 {
@@ -119,9 +119,8 @@ public class NationalteamRunde14Teil4Tests
     /// 0x07169 tut also nichts: kein Training, kein Markt, keine Aufstellungsautomatik; keine Wanderung in der Schleife.
     /// R14NT4N-01 (Nachprüfung #681; vorher rot: Formen der Ligavereine blieben 0): Der Tageslauf von Tag 216 (Zähler 217) ist
     /// noch Hauptweg mit einer Wanderung (Datei 0x55292). Dass es bei dieser einen bleibt, prüft
-    /// <see cref="Mode4_Coach_TrainingOnlyAfterWorldCupDriftDays"/> (dort hält die Zeitleiste hinter Tag 216). Kein Training am
-    /// Tag 216 (Donnerstag); kein Listenwechsel (im Original übersprungen, Datei 0x54E71; im Remake [APPROX] Wurf des Hauptwegs,
-    /// in diesen Saaten ohne Wechsel).
+    /// <see cref="Mode4_Coach_TrainingOnlyAfterWorldCupDriftDays"/> (dort hält die Zeitleiste hinter Tag 216). Training am
+    /// Tag 216 nur im Hauptweg-Takt (#678, ein Training je Manager); kein Listenwechsel (im Original übersprungen, Datei 0x54E71).
     /// </summary>
     [Theory]
     [InlineData(3)]
@@ -140,12 +139,14 @@ public class NationalteamRunde14Teil4Tests
 
         PlayToSeasonOver(game);
 
-        Assert.All(before.TrainingDelta(game), d => Assert.Equal(0, d));
+        // #678: Der Hauptweg-Tageslauf von Tag 216 (Zähler 217 ≡ 0) ruft 0x07169 je Manager (Datei 0x552A6): ein Training und ein
+        // Markt-Verfall; danach (ohne WM-Spiele) keins mehr. Gegenprobe: alte Regel (Training Mi/So, Tag 216 = Donnerstag) → 0.
+        Assert.All(before.TrainingDelta(game).Zip(before.TrainingCost), d => Assert.Equal(-d.Second, d.First));
         Assert.Equal(before.Listings, game.TransferMarket.Listings.Select(l => l.Player));
         Assert.Empty(game.TransferMarket.Bids);
         AssertLeagueFormsDrifted(game);
         Assert.Equal(0, injured.InjuredGames);
-        Assert.Equal(strains, ListingStrains(game)); // kein Markt-Verfall 0x071BB ohne WM-Spiele
+        Assert.Equal(Decayed(strains, 1), ListingStrains(game)); // ein Markt-Verfall 0x071BB (Tag 216), keiner ohne WM-Spiele
     }
 
     /// <summary>
@@ -172,8 +173,10 @@ public class NationalteamRunde14Teil4Tests
 
         PlayToSeasonOver(game);
 
-        Assert.Equal([-3 * before.TrainingCost[0], 0], before.TrainingDelta(game));
-        Assert.Equal(Decayed(strains, 3), ListingStrains(game));
+        // #678: dazu je ein Training beider Manager und ein Markt-Verfall im Hauptweg-Tageslauf von Tag 216 (Zähler 217 ≡ 0,
+        // 0x07169 je Manager, Datei 0x552A6). Gegenprobe: alte Regel (Training Mi/So, Markt ohne Verfall im Hauptweg) → [−3, 0], 3.
+        Assert.Equal([-4 * before.TrainingCost[0], -before.TrainingCost[1]], before.TrainingDelta(game));
+        Assert.Equal(Decayed(strains, 4), ListingStrains(game));
         Assert.Equal(before.Listings, game.TransferMarket.Listings.Select(l => l.Player)); // kein Listenwechsel (R14NT4-05)
         AssertLeagueFormsDrifted(game); // R14NT4N-01: eine Wanderung im Hauptweg-Tageslauf von Tag 216
         Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
@@ -209,7 +212,7 @@ public class NationalteamRunde14Teil4Tests
         Assert.NotEqual(before.TeamValues, afterEntry);
         PlayToSeasonOver(game, nominate);
 
-        Assert.Equal([-3 * before.TrainingCost[0]], before.TrainingDelta(game));
+        Assert.Equal([-4 * before.TrainingCost[0]], before.TrainingDelta(game)); // #678: + Hauptweg-Takt am Tag 216 (Zähler 217)
         Assert.Equal(afterEntry, LeagueTeamValues(game));
         Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
     }
@@ -253,7 +256,8 @@ public class NationalteamRunde14Teil4Tests
             var afterEntry = PlayEntryDay(game, nominate);
             PlayToSeasonOver(game, nominate);
 
-            Assert.Equal([-3 * before.TrainingCost[0], 0], before.TrainingDelta(game));
+            // #678: + je ein Training beider Manager im Hauptweg-Tageslauf von Tag 216 (Zähler 217 ≡ 0, Datei 0x552A6)
+            Assert.Equal([-4 * before.TrainingCost[0], -before.TrainingCost[1]], before.TrainingDelta(game));
             AssertLeagueFormsDrifted(game);
             if (hasCoach)
                 Assert.Equal(afterEntry, LeagueTeamValues(game));
@@ -370,9 +374,13 @@ public class NationalteamRunde14Teil4Tests
             game.Continue();
         }
 
-        Assert.Equal(Decayed(strains, 1), seen[218]); // FILE18 → FILE48
-        Assert.Equal(Decayed(strains, 2), seen[230]); // FILE19 → FILE20
-        Assert.Equal(Decayed(strains, 3), ListingStrains(game));
+        // #678: Ohne „nur Weltkugel“ läuft vor den Spielen von Tag 216 noch der Hauptweg-Tageslauf mit Zähler 217 ≡ 0 und dem
+        // Verfall von Manager 0 (Datei 0x552A6); FILE18 ist danach gesichert (Menü des 14.04.), der Stand vor ihm hier eine
+        // Ausführung früher. Gegenprobe: alte Regel (kein Verfall im Hauptweg) → 1, 2, 3.
+        var entry = worldOnly ? 0 : 1;
+        Assert.Equal(Decayed(strains, entry + 1), seen[218]); // FILE18 → FILE48
+        Assert.Equal(Decayed(strains, entry + 2), seen[230]); // FILE19 → FILE20
+        Assert.Equal(Decayed(strains, entry + 3), ListingStrains(game));
         Assert.Equal(players, game.TransferMarket.Listings.Select(l => l.Player)); // kein Listenwechsel 0x494EF (R14NT4-05)
     }
 

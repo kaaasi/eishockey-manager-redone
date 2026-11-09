@@ -178,6 +178,101 @@ public class TagestaktHauptwegTests
         Assert.DoesNotContain(bid0, game.TransferMarket.Bids);
     }
 
+    /// <summary>
+    /// #678: Schritt (c) der WM-Schleife (Datei 0x5565C, 0x07169 für Manager 0 nach den WM-Spielen der Tage 216, 220, 230) würfelt
+    /// Angebote auf die Markt-Plätze von Manager 0 (Datei 0x072DD) und keine auf die von Manager 1; Verträge (Datei 0x073E3–0x07AEF)
+    /// nur für die Kaderplätze von Manager 0 – die Spieler von Manager 1 bekommen in der Schleife weder Meldung noch Angebot.
+    /// Regressionstest (vorher rot: kein Angebotswurf in der Schleife; Verträge für alle Manager). Modus 4, Manager 0 wird
+    /// Bundestrainer (die Zeitleiste hält an den WM-Tagen), Manager 1 in der 2. Liga.
+    /// </summary>
+    [Fact]
+    public void WorldCupLoop_StepC_MarketAndContractsOnlyManagerZero()
+    {
+        var bidSeen = false;
+        foreach (var seed in new[] { 3, 11 })
+        {
+            var second = Enumerable.Range(0, 200).First(i => NewGame.DatabaseLeague(i) == League.ZweiteLiga);
+            var game = GameModeTests.Create(seed, true, true, 2, second);
+            ManagedSquads.PlayAtTopStrength(game, 0);
+            TopUp(game);
+            NationalCoachMode4Tests.PlayToClubSeasonEnd(game);
+            Assert.Equal(0, game.NationalCoach?.Manager);
+            void Step()
+            {
+                TopUp(game);
+                if (game.NationalTurn && game.NationalCoach!.Squad.Count == 0)
+                    game.AutoNominate();
+                game.Continue();
+            }
+            for (var guard = 0; game.CurrentDay <= SeasonCalendar.ClubSeasonEnd + 1; guard++)
+            {
+                Assert.True(guard < 20, "Tag 216 nicht verlassen");
+                Step();
+            }
+            Assert.True(game.CurrentDay < SeasonCalendar.SeasonEnd);
+            var (m0, m1) = (game.Managers[0], game.Managers[1]);
+            var p0 = Listable(game.Clubs[m0.ClubIndex]);
+            var p1 = Listable(game.Clubs[m1.ClubIndex]);
+            Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, m0, p0));
+            Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, m1, p1));
+            var squad1 = game.Clubs[m1.ClubIndex].Players.ToDictionary(p => p, p => (p.Notice, p.NegotiationLock, p.UnsolicitedOffer));
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                Assert.True(guard < 200, "Saisonende nicht erreicht");
+                Step();
+                Assert.DoesNotContain(game.TransferMarket.Bids, b => b.Listing.Player == p1);
+                bidSeen |= game.TransferMarket.Bids.Any(b => b.Listing.Player == p0);
+            }
+            Assert.All(squad1, e => Assert.Equal(e.Value, (e.Key.Notice, e.Key.NegotiationLock, e.Key.UnsolicitedOffer)));
+        }
+        Assert.True(bidSeen, "kein Angebot auf den Markt-Platz von Manager 0 in der WM-Schleife");
+    }
+
+    /// <summary>
+    /// Mehrsaisonprobe zu #678/#679 (AGENTS.md §5: 4 Saisonwechsel, passiv und aktiv), Modus 2 („nur Fahne“, keine WM-Spiele, also
+    /// kein Schritt (c)), zwei Manager: Je Saison trainiert jeder Manager genau an den Takttagen bis einschließlich Tag 216
+    /// (Eintrittstag, Zähler 217), danach nicht mehr; Speichern/Laden bytegleich, Spieler eindeutig. Aktiv: Kader gehalten, je
+    /// Saison ein eigener Spieler auf dem Markt.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FourSeasonChanges_TwoManagers_TrainingOnTicks(bool active)
+    {
+        var game = GameModeTests.Create(7, true, false, 2, 30);
+        Assert.Equal(GameMode.ClubOnly, game.Mode);
+        var ticks = Ticks(0, SeasonCalendar.ClubSeasonEnd + 1).Length;
+        for (var change = 0; change < 4; change++)
+        {
+            foreach (var m in game.Managers)
+                PaidTraining(m);
+            var costs = game.Managers.Select(m => game.PrepareTraining(m).CostPerTrainingDay).ToArray();
+            if (active)
+            {
+                var club = game.Clubs[game.Managers[0].ClubIndex];
+                Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, game.Managers[0], Listable(club)));
+            }
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                Assert.True(guard < 2000, "Saisonende nicht erreicht");
+                TopUp(game);
+                if (active)
+                    foreach (var m in game.Managers)
+                        TestSeason.KeepSquad(game, m, extendExpired: true);
+                game.Continue();
+            }
+            for (var i = 0; i < game.Managers.Count; i++)
+                Assert.Equal(-ticks * costs[i], game.Finance(game.Managers[i]).Book.Current(FinanceCategory.Training));
+            var saved = SaveGame.Save(game);
+            var loaded = SaveGame.Load(saved);
+            Assert.True(loaded.Success, loaded.Error);
+            Assert.Equal(saved, SaveGame.Save(loaded.Game!));
+            game = loaded.Game!;
+            Assert.Empty(game.ValidatePlayerIdentity());
+            game.StartNextSeason();
+        }
+    }
+
     private static Player Listable(Club club)
     {
         Assert.True(club.ApplyAutoLineup());

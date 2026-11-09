@@ -144,8 +144,13 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
     /// Spieler an jedem Saisonende, wird nicht mehr spielfähig, zahlt Strafen („Weniger als neun Spieler“) und wird innerhalb von
     /// vier Saisons entlassen. Vorher stand das als Ausweg in <see cref="AssertEnvelope"/>.
     /// </summary>
+    /// <remarks>
+    /// #678 (Tagestakt 0x07169 im Hauptweg): Saat 3 → 5. Mit Training an den Takttagen (Mittwoch/Samstag statt Mittwoch/Sonntag)
+    /// laufen die Spiele anders; bei Saat 3 steht das Konto nach Saison 1 bei −451.877 statt −348.719 DM, der Manager wird in
+    /// Saison 2 wegen der Schulden entlassen, bevor er Spieler verliert (Strafen 0) – die Probe braucht den Weg über die Strafen.
+    /// </remarks>
     [Theory]
-    [InlineData(3)]
+    [InlineData(5)]
     [InlineData(41)]
     public void PassiveBundesligaManager_WithoutCare_IsDismissed(int seed)
     {

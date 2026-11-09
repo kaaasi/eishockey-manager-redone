@@ -21,8 +21,8 @@ Spieltag wieder an:
 | Schritt | Was | Wo |
 |---|---|---|
 | 1 | Finanzen bis einschließlich heute: Tages-, Wochen-, Monatswechsel (Werbung, Gehälter, Aktien …) | `GameState.Integration.cs` → `AdvanceFinanceTo(day)` |
-| 2 | **Training des Tages** (Mittwoch, Sonntag) mit dem **jetzt gültigen Plan** | `GameState.Integration.cs` → `CatchUpTraining()` |
-| 3 | Transfermarkt: je seit der letzten Aktualisierung gespieltem Ligaspieltag neue Angebote und Gebote | `GameState.Integration.cs` → `TransferMarket.CatchUp()` |
+| 2 | **Tagesablauf 0x07169** nur am Takttag (Zähler 0x3B7 ≡ 0/4 mod 7, Mittwoch und Samstag; #678) je Manager: Markt (Verfall, Gebote, Angebote), Verträge, **Training** mit dem **jetzt gültigen Plan** | `GameState.Integration.cs` → `MainPathDailyRun(day)` (`GameState.DailyRun.cs`) |
+| 3 | Listenwechsel des Transfermarkts: an Tagen mit Ereignis ein Wurf je Managerzug (0x54E71) | `GameState.Integration.cs` → `MainPathListChanges(day)` |
 | 4 | Schulden prüfen, ggf. Entlassung | `SeasonFlow.CheckDebts` |
 | 5 | Ende der Vereinssaison / Saisonende | `SeasonFlow.ProcessDay` |
 | 6 | Spiele des Tages: Liga (mit Spieltagsabrechnung), Play-Offs/Aufstiegsrunde, weitere Wettbewerbe | `SeasonFlow.ProcessDay` |
@@ -31,8 +31,9 @@ Daraus folgt:
 
 - **Plan ändern → Training des Tages:** Ein am angezeigten Tag T geänderter Trainingsplan gilt schon für das Training
   von Tag T (abgerechnet beim Weiterspielen). Test: `PassiveScreenTests.PlanChangedOnPausedDay_AppliesToThatDaysTraining`.
-- Der Transfermarkt reagiert auf einen Ligaspieltag am **nächsten verarbeiteten Tag** (Schritt 3 läuft vor den Spielen).
-- `CatchUpTraining()` und `TransferMarket.CatchUp()` werden **nur** aus `GameState.Integration.cs` aufgerufen.
+- Der Transfermarkt reagiert auf einen Ligaspieltag am **nächsten verarbeiteten Takttag** (Schritt 2 läuft vor den Spielen).
+- Der Tageslauf wird **nur** aus `GameState.Integration.cs` aufgerufen (Hauptweg) bzw. aus der WM-Schleife
+  (`CupsNational.WorldCupLoop.cs`).
   Neue Tages-, Wochen- oder Saisonereignisse dort anschließen, nie in einem `Screen.Enter()`.
 
 ## Abnahme

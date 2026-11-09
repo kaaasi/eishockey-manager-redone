@@ -390,8 +390,11 @@ public class GameModeTests
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
+    // #678/#679 (Tagestakt Hauptweg): neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert).
+    // Titel ab Saison 1 neu; Manager 1 (Verein 30, verlängert nur angebotene Verträge, die jetzt nur noch an den Takttagen kommen)
+    // verliert ab Saison 3 seinen Kader und zahlt Strafen (Konto −6.762.898 … −24.472.210); die Probe prüft weiter nur Manager 0.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=11,GermanChampion=0,EuropeanCupWinner=2|402643,400000|WorldChampion=63,CupWinner=11,GermanChampion=7,EuropeanCupWinner=0|1825857,400000|WorldChampion=54,CupWinner=11,GermanChampion=12,EuropeanCupWinner=7|2492942,400000|WorldChampion=52,CupWinner=1,GermanChampion=3,EuropeanCupWinner=12|3117742,400000|WorldChampion=63,CupWinner=21,GermanChampion=3,EuropeanCupWinner=3|3606406,400000|R1026447858 C18165625";
+        "WorldChampion=54,CupWinner=0,GermanChampion=4,EuropeanCupWinner=2|207155,400000|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=4|1575332,400000|WorldChampion=52,CupWinner=1,GermanChampion=4,EuropeanCupWinner=4|2170359,-6762898|WorldChampion=54,CupWinner=1,GermanChampion=9,EuropeanCupWinner=4|2671108,-12496853|WorldChampion=53,CupWinner=4,GermanChampion=4,EuropeanCupWinner=4|400000,-24472210|R316688368 C78687070";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

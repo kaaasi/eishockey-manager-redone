@@ -53,8 +53,12 @@ public class NationalteamRunde14Tests
             var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
             Assert.InRange(defense.Form, 0, 44);
             Assert.InRange(attack.Form, 0, 44);
-            Assert.Equal((defense.Condition, defense.Technique, attack.Condition, attack.Technique),
-                game.NationalRatings(NationalTeams.Germany));
+            // #678: Am Takttag trainiert 0x07169 (Datei 0x552A6) die Kaderplätze der Manager nach 0x952C (Datei 0x54FBF) – die
+            // Länderwerte stammen dann aus der Aufstellung vor dem Training; gleich sind sie nur an Tagen ohne Takt. Gegenprobe:
+            // alte Reihenfolge (Training vor 0x952C) → an allen Tagen gleich.
+            if ((last + 1) % 7 is not (0 or 4))
+                Assert.Equal((defense.Condition, defense.Technique, attack.Condition, attack.Technique),
+                    game.NationalRatings(NationalTeams.Germany));
             var values = germany.TeamValues!.Value;
             if ((last + 1) % 7 is 0 or 4) // #675: Zähler 0x3B7 nach dem Weiterzählen = Tag + 1 (DayCounter), Datei 0x55204/0x55253
             {

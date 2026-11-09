@@ -201,10 +201,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
     /// Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     /// (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
-    /// Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).</summary>
+    /// Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
+    /// #678/#679 (Tagestakt Hauptweg): neu – 0x07169 (Training, Markt-Verfall, Gebote, Angebote, Verträge) nur an den Takttagen je Manager, Listenwechsel nur in den Managerzügen der Tage mit Ereignis, Training Mi/Sa statt Mi/So; anderer Spielverlauf und Zufallsverbrauch ab der ersten Woche. Stadionbau am Zähler ≡ 0 allein ändert keinen Abdruck (Gegenprobe: Montag zurück → gleicher Wert; alles zurück → alter Wert).</summary>
     [GameDataTheory]
-    [InlineData(false, "D92E9F662A1522AB")]
-    [InlineData(true, "A8F64326846979F4")]
+    [InlineData(false, "FAB7A7AB3E1E85B8")]
+    [InlineData(true, "9C2847DF3A1AE5E8")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

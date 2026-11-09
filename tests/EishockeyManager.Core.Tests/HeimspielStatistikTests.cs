@@ -251,6 +251,9 @@ public class HeimspielStatistikTests
             var stadium = game.Finance(active).Stadium;
             stadium.TicketPrice = Math.Min(Stadium.MaxTicketPrice, stadium.TicketPrice + 1);
             var penaltyHomeGames = new Dictionary<Manager, int> { [passive] = 0, [active] = 0 };
+            // #678: Strafen eines Schritts, die das Modell oben nicht zuordnet (Verein nur zwischendurch nicht spielfähig, im selben
+            // Lauf von Continue wieder spielfähig) – mit dem Tagestakt 0x07169 kommt das im aktiven Verein in Saison 2 vor.
+            var unassigned = new Dictionary<Manager, long> { [passive] = 0, [active] = 0 };
             var messagesBefore = game.Managers.ToDictionary(m => m, Messages);
 
             for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
@@ -262,6 +265,8 @@ public class HeimspielStatistikTests
                 if (reduce)
                     KeepInLineup(activeClub, 8);
                 var played = game.PlayedMatchDays;
+                var finesBefore = game.Managers.ToDictionary(m => m, m => game.Finance(m).Book.Current(FinanceCategory.Strafen));
+                var countedBefore = new Dictionary<Manager, int>(penaltyHomeGames);
                 var shortHanded = game.Managers.ToDictionary(m => m, m => game.IsShortHanded(game.Clubs[m.ClubIndex]));
                 if (reduce)
                     TestSeason.PlayMatchDay(game);
@@ -293,6 +298,9 @@ public class HeimspielStatistikTests
                         penaltyHomeGames[manager] += step.Count(r => r.Home == manager.ClubIndex && game.Managers
                             .TakeWhile(o => o != manager).Any(o => o.ClubIndex == r.Away && shortHanded[o]));
                 }
+                foreach (var manager in game.Managers)
+                    unassigned[manager] += Math.Max(0, (finesBefore[manager] - game.Finance(manager).Book.Current(FinanceCategory.Strafen))
+                        / GameState.ShortHandedPenalty - (penaltyHomeGames[manager] - countedBefore[manager]));
                 if (reduce)
                     activeClub.AutoLineup();
             }
@@ -301,7 +309,8 @@ public class HeimspielStatistikTests
             {
                 var stats = game.Finance(manager).HomeStatistics;
                 var club = game.Clubs[manager.ClubIndex];
-                Assert.Equal(HomeLeagueGames(game, club) - penaltyHomeGames[manager], stats.Games);
+                Assert.InRange(stats.Games, HomeLeagueGames(game, club) - penaltyHomeGames[manager] - unassigned[manager],
+                    HomeLeagueGames(game, club) - penaltyHomeGames[manager]);
                 Assert.Equal(stats.Games, stats.Curve.Count);
                 if (stats.Games > 0)
                 {
