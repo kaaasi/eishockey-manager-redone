@@ -116,8 +116,10 @@ public sealed partial class DebCup
         _rounds.Add(ties);
         _draw.Clear();
         _draw.AddRange(ties.SelectMany(t => new[] { t.First, t.Second }));
-        // [ORIGINAL] DEB-Pokalsieger DGROUP 0x387 (0x34ED6); vor dem Endspiel der Vorjahressieger.
-        Winner = finished ? ties[0].Winner : null;
+        // [ORIGINAL] DEB-Pokalsieger DGROUP 0x387 (0x34ED6) nach dem Endspiel (R14HI-04). Vor dem Endspiel hält 0x387 den Vorjahressieger
+        // (FILE05: EV Landshut), den das Remake nur in History führt (Feldkarte N): Winner bleibt null, sonst stünde der Pokal still.
+        int holder = save.Block("0387")[0];
+        Winner = !finished ? null : holder < clubOf.Length ? clubOf[holder] : ties[0].Winner;
     }
 }
 
@@ -127,7 +129,7 @@ public sealed partial class EuropeanCup
     /// Gruppen, Endrunde und Ergebnisse aus dem HOK (Teil 4c). [ORIGINAL] Teilnehmer DGROUP 0xD004 (Gruppe 1 = 0–3, Gruppe 2 =
     /// 4–7), Endrunde 0xD00C, Paarungen und Tore ab 0xCED8/0xCDB8 + 0x90 (Endrunde + 0xD8), Termine 0x7AF (FILE36: 7, FILE38: 12).
     /// [APPROX] Deutsche Teilnehmer = Vereine der Auslosung unter 64 in der Folge von DGROUP 0xA776 (die Zahl 0xA775 sichert das
-    /// HOK nicht). Europacupsieger nach dem zwölften Termin = Erster der Endrunde wie im Spiel (DGROUP 0x388).
+    /// HOK nicht). Europacupsieger nach dem zwölften Termin aus DGROUP 0x388 (R14HI-04).
     /// </summary>
     internal void ImportOriginal(OriginalSaveGame save, int[] clubOf, IReadOnlyList<Club> clubs)
     {
@@ -156,8 +158,11 @@ public sealed partial class EuropeanCup
         FinalRound = new CupGroup(0, final[..GroupSize].ToArray().Select(t => clubOf[t]).ToList());
         for (var d = GroupDates; d < Math.Min(dates, 2 * GroupDates); d++)
             AddResults(FinalRound, OriginalImport.GroupDate(save, 3, 0, d - GroupDates, 2), d - GroupDates, days[d], clubOf);
+        // [ORIGINAL] Europacupsieger DGROUP 0x388 (0x314D6: Platz 1 der Endrunde nach dem zwölften Termin; FILE37A/FILE38: Malmö FF). Vorher
+        // Vorjahressieger (FILE05: 64 = Klagenfurter AC), nur in History (Feldkarte N): Winner bleibt null (R14HI-04).
+        int holder = save.Block("0388")[0];
         if (dates >= 2 * GroupDates)
-            Winner = FinalRound.Table(clubs)[0].Club.Index;
+            Winner = holder < clubOf.Length ? clubOf[holder] : FinalRound.Table(clubs)[0].Club.Index;
     }
 
     /// <summary>Ergebnisse eines Termins; die Paarungen des HOK müssen dem Spielplan der Gruppe entsprechen.</summary>

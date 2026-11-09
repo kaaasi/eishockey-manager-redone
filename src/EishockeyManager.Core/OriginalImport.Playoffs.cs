@@ -103,7 +103,9 @@ public sealed partial class Playoffs
         var playoffs = new Playoffs(seeds);
         var expectedFirst = playoffs._rounds[0].Select(s => (s.HigherSeed, s.LowerSeed)).ToList();
         playoffs._rounds.Clear();
-        // Plätze der Paarungen je Runde in der Reihenfolge der Sieger in der nächsten Runde (Tabelle DGROUP 0x144, wie der Konstruktor).
+        // Plätze der Paarungen je Runde in der Reihenfolge der Sieger in der nächsten Runde (Tabelle DGROUP 0x144): so paart Prepare
+        // eine noch offene Runde wie das Original (1–8 gegen 3–6, 2–7 gegen 4–5); eigene Spiele des Remakes paaren anders ([APPROX]
+        // in Playoffs.cs), das Heimrecht einer noch nicht ausgelosten Runde folgt dort dem besser Platzierten.
         int[][] pairSlots = [[0, 4, 2, 6], [8, 10], [12]];
         for (var r = 0; r <= round; r++)
         {
@@ -128,7 +130,7 @@ public sealed partial class Playoffs
                 }
                 series.Add(s);
             }
-            if (r == 0 && !series.Select(s => (s.HigherSeed, s.LowerSeed)).SequenceEqual(expectedFirst))
+            if (r == 0 && !series.Select(s => (s.HigherSeed, s.LowerSeed)).Order().SequenceEqual(expectedFirst.Order()))
                 throw new InvalidDataException("Play-off-Viertelfinale (DGROUP 0x5D3B) passt nicht zur Abschlusstabelle 0x5CCB.");
             playoffs._rounds.Add(series);
         }

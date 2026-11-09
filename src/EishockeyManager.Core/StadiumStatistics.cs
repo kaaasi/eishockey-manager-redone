@@ -69,6 +69,22 @@ public sealed class StadiumStatistics
         Games++;
     }
 
+    /// <summary>
+    /// Statistik aus einem Original-Spielstand (Spur hok-import, R14HI-04): Zähler 0x9748, Kurve 0x9759 + n (nur die ersten
+    /// <paramref name="games"/> Werte, der Rest ist Rest der Vorsaison), Summe, Rekord und Minuskulisse mit Gegnern (Vereinsindex).
+    /// </summary>
+    internal void Import(int games, IEnumerable<int> curve, long total, int record, int recordOpponent, int minimum, int minimumOpponent)
+    {
+        _curve.Clear();
+        _curve.AddRange(curve);
+        Games = games;
+        Total = total;
+        Record = record;
+        RecordOpponent = recordOpponent;
+        Minimum = minimum;
+        MinimumOpponent = minimumOpponent;
+    }
+
     /// <summary>Saisonwechsel. [ORIGINAL] 0x55A86–0x55ADB; die Gegner bleiben wie im Original stehen.</summary>
     public void NewSeason()
     {

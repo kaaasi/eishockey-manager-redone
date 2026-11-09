@@ -310,7 +310,7 @@ public sealed partial class GameState
         for (var m = 0; m < Managers.Count; m++)
         {
             var record = records.AsSpan(m * OriginalSaveGame.ManagerRecordLength, OriginalSaveGame.ManagerRecordLength);
-            ApplyManager(save, m, record);
+            ApplyManager(save, m, record, clubOf);
             if (!WorldOnly)
                 ApplySquad(save, Clubs[Managers[m].ClubIndex], m, clubOf, foreigners, squadPlayers);
         }
@@ -345,7 +345,7 @@ public sealed partial class GameState
 
     /// <summary>Konto, Eintritt, Stadion, Bankdarlehen, Liga-Stufe, Werbebewertung, Talentpreis, Zinsdrittel, Jugend (Feldkarte
     /// „Manager, ManagerFinance“, „Stadion …“).</summary>
-    private void ApplyManager(OriginalSaveGame save, int m, ReadOnlySpan<byte> record)
+    private void ApplyManager(OriginalSaveGame save, int m, ReadOnlySpan<byte> record, int[] clubOf)
     {
         var manager = Managers[m];
         manager.Money = BinaryPrimitives.ReadInt32LittleEndian(record[0x18F..]) / 3; // Regel 4: Drittel-DM
@@ -366,6 +366,22 @@ public sealed partial class GameState
             stadium.ImportConstruction(p, p < Stadium.FeatureCount ? record[s + 2 * p + 1] : 0, record[s + 0x12 + p]);
         // Bank und Managerdarlehen: ApplyLoans (Teil 4a, OriginalImport.Rest.cs).
         finance.SponsorRating = BinaryPrimitives.ReadInt16LittleEndian(record[0x173..]);
+        // [ORIGINAL] Zuschauerstatistik (R14HI-04; Fortschreibung Datei 0x54664–0x54760, Felder als DGROUP bei Manager 0): Heimspiele
+        // 0x9748 (+0xED), Kurve 0x9759 + n (+0xFE, Zuschauer / 1000, 22 Plätze), Summe 0x97DE (+0x183), Rekord 0x97E2 (+0x187) mit
+        // Gegner 0x976F (+0x114), Minuskulisse 0x97E6 (+0x18B) mit Gegner 0x9770 (+0x115); Gegner als Satzplatz (Regel 1), beim
+        // Spielstart 0 (Satz 0, FILE01) und bleiben über den Saisonwechsel stehen (FILE46) – „noch keiner“ (−1) nur vor dem ersten
+        // Heimspiel der ersten Saison.
+        var homeGames = Math.Min((int)record[0xED], 22);
+        var neverPlayedAtHome = homeGames == 0 && OriginalImport.Season(save) == FirstSeason;
+        var curve = new List<int>();
+        for (var i = 0; i < homeGames; i++)
+            curve.Add(record[0xFE + i]);
+        int recordOpponent = record[0x114], minimumOpponent = record[0x115];
+        finance.HomeStatistics.Import(homeGames, curve,
+            BinaryPrimitives.ReadInt32LittleEndian(record[0x183..]), BinaryPrimitives.ReadInt32LittleEndian(record[0x187..]),
+            !neverPlayedAtHome && recordOpponent < clubOf.Length ? clubOf[recordOpponent] : -1,
+            BinaryPrimitives.ReadInt32LittleEndian(record[0x18B..]),
+            !neverPlayedAtHome && minimumOpponent < clubOf.Length ? clubOf[minimumOpponent] : -1);
         finance.TalentPrice = BinaryPrimitives.ReadInt32LittleEndian(save.Block("020D").AsSpan(4 * m)) / 3;
         finance.InterestAccrualThirds = BinaryPrimitives.ReadInt32LittleEndian(save.Block("02A0").AsSpan(4 * m)); // Drittel bleiben
 
@@ -470,6 +486,11 @@ public sealed partial class GameState
         p.Form = slot[0x12];
         p.Strain = slot[0x13];
         p.TrendControl = slot[0x14];
+        // [ORIGINAL] Tendenzwert Kaderplatz +0x0E (30 … 68, Start random(35, 65) Datei 0x4907A; Anzeige (Wert − 30) / 13, 0x41AE0 –
+        // Player.Slot.cs); die Stufe folgt daraus (R14HI-04). [APPROX] 0 (nicht gesetzt) lässt die Stufe des Nachspielens stehen.
+        p.TrendScore = slot[0x0E];
+        if (p.TrendScore != 0)
+            p.Trend = Player.TrendOf(p.TrendScore);
         p.Penalties5 = slot[0x00];
         p.Penalties2 = slot[0x01];
         var goals = slot[0x03] + slot[0x04] + slot[0x05];
@@ -493,7 +514,13 @@ public sealed partial class GameState
             p.InjuryKind = slot[0x17];
         p.SuspendedGames = 0; // [APPROX] Feldkarte U
         p.ContractYears = slot[0x0B];
-        p.NegotiationLock = slot[0x18];
+        // [ORIGINAL] Kaderplatz +0x18 (docs/transfer.md): Bit 0x80 „wird sich mit Ablauf des Vertrages zur Ruhe setzen“ (0x4A692),
+        // > 99 Angebot des Spielers „von 1 auf n Jahre“ mit n = +0x18 − 100 (0x4A3AF; Saisonende 0x27D05 schreibt 101), sonst
+        // Verhandlungssperre in Tagen (R14HI-04). Die Meldung dazu steht im Pool +0x1E (offene Meldung), nicht im Vertragsfeld.
+        var notice = slot[0x18];
+        (p.Notice, p.NoticeYears, p.NegotiationLock) = (notice & 0x80) != 0 ? (ContractNotice.Retiring, 0, 0)
+            : notice > 99 ? (ContractNotice.Offered, notice - 100, 0)
+            : (ContractNotice.None, 0, (int)notice);
         p.HiddenSkill1 = slot[0x19] & 0x0F;
         p.HiddenSkill2 = slot[0x19] >> 4;
         p.MonthlySalary = BinaryPrimitives.ReadInt32LittleEndian(slot[0x28..]) / 3;
