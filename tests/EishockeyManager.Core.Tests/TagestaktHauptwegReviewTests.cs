@@ -164,13 +164,14 @@ public class TagestaktHauptwegReviewTests
 
     /// <summary>
     /// R688-03 am Original-Stand: FILE44 (14.04.1994, 18.027.183 DM) → FILE46 (10.09.1994, 15.887.669 DM), also −2.139.514 DM über
-    /// Restsaison und Sommerpause (ohne den Tagesabschluss der Sommerpause stand das Remake bei +388.500 DM). R688S-01/-02 (#691):
-    /// Der Original-Lauf bucht wegen der Ladeeigenheit des Markierungstags zusätzlich den April-Abschluss des 25er-Kaders
-    /// (603.307 DM, <c>file46_2</c>; siehe <c>TagestaktSommerpauseReviewTests</c>), der Import spielt das nicht nach. Vergleichbar ist
-    /// deshalb Original + 603.307 = −1.536.207 DM: Prämie +100.000, Ablöse KJELLBERG +155.500, vier Sommermonate −1.791.707 DM
-    /// (im Mittel −447.927 DM). Das Remake bucht die Sommermonate mit seinen Monatsposten (FILE44-Kader: Gehälter 291.100,
-    /// Unterhalt 192.866, Grundeinnahmen +15.040, also −468.926 DM je Monat, rund 21.000 DM je Monat mehr als das Original;
-    /// Kategoriesummen fehlen im HOK). Spanne: ±100.000 DM um den bereinigten Originalwert (vorher ±15 % = ±320.000 DM).
+    /// Restsaison und Sommerpause. Spur pruefung-karte Teil 5 (Entscheidung Nutzer 09.11.2026, C): Der Import spielt die
+    /// Ladeeigenheit des Markierungstags nach (GameState.LoadQuirk.cs), der Original-Lauf bucht deshalb auch im Remake den
+    /// April-Abschluss des 25er-Kaders (<c>file46_2</c>, Test <c>File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2</c>).
+    /// Vorher verglich der Test Original + 603.307 DM (vorher rot gegen den Originalwert: −1.617.704 DM). Begründete Restabweichung
+    /// (Saat 4711: −2.106.011 DM, 33.503 DM über dem Original): April-Abschluss 115.000 DM unter dem Original, die vier Sommermonate
+    /// zusammen rund 81.000 DM teurer (FILE44-Kader: Gehälter 291.100, Unterhalt 192.866, Grundeinnahmen +15.040, also −468.926 DM je
+    /// Monat gegen im Mittel rund −448.000 DM; Review #692), Ablöse KJELLBERG 2.500 DM über <c>file46_5</c> (Zufall). Kategoriesummen
+    /// fehlen im HOK. Spanne: ±100.000 DM um den Originalwert.
     /// </summary>
     [GameDataFact]
     public void File44_ToNewSeason_AccountFollowsFile46()
@@ -189,10 +190,8 @@ public class TagestaktHauptwegReviewTests
         game.StartNextSeason();
         var original = Import("FILE46.HOK").Managers[0].Money;
         Assert.Equal(15_887_669, original);
-        const long AprilByLoadQuirk = 603_307; // file46_2: 18.027.183 + 100.000 − 17.523.876
-        var comparable = original - start + AprilByLoadQuirk;
-        Assert.Equal(-1_536_207, comparable);
-        Assert.InRange(me.Money - start, comparable - 100_000, comparable + 100_000);
+        Assert.Equal(-2_139_514, original - start);
+        Assert.InRange(me.Money - start, original - start - 100_000, original - start + 100_000);
     }
 
     /// <summary>

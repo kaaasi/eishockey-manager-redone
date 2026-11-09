@@ -45,7 +45,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 46;
+    public const int SchemaVersion = 47;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -119,6 +119,8 @@ public static partial class SaveGame
     /// 44 → 45 (Runde 14, #688, R688-04): Tageswechsel vor dem Halt, <c>GameState.DayOpened</c> (<c>SaveGame.Migration.Tagestakt.cs</c>).
     /// 45 → 46 (Runde 14, #688, R688S-03): keine Entlassung wegen Schulden, <c>Manager.DebtDays</c> entfällt
     /// (<c>SaveGame.Migration.Schulden.cs</c>).
+    /// 46 → 47 (Runde 14, pruefung-karte Teil 5): Ladeversatz des Markierungstags, <c>GameState.LoadCounterOffset</c>
+    /// (<c>SaveGame.Migration.Ladeeigenheit.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
@@ -158,7 +160,7 @@ public static partial class SaveGame
             [33] = MigrateSaisonwechsel3,
             [34] = MigrateUiMeldungen4,
             [35] = MigratePixelMarker3,
-            [36] = MigrateSaisonPlatzhalter37, // Lücke für kader-start (L5), schließt die Leitstelle bei der Integration
+            [36] = MigrateSaisonPlatzhalter37, // leerer Schritt: kader-start brauchte die Lücke in Runde 13 nicht (L5, #621)
             [37] = MigrateSaison,
             [38] = MigrateNummern,
             [39] = MigrateSaison4,
@@ -168,6 +170,7 @@ public static partial class SaveGame
             [43] = MigratePlayoffHalbfinale,
             [44] = MigrateTagestakt,
             [45] = MigrateSchulden,
+            [46] = MigrateLadeeigenheit,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

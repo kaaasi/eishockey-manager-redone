@@ -16,6 +16,11 @@ namespace EishockeyManager.Core;
 /// Folgetags (<c>OnDayManager(e)</c>), also mit dem Zähler <see cref="Of"/>(e) = e + 1. Schritt (c) der WM-Schleife prüft vor dem
 /// Weiterzählen den Zähler der Spiele des Vortags e − 1, also <see cref="Of"/>(e − 1) = e.
 /// </para>
+/// <para>
+/// Ausnahme: Nach dem HOK-Import eines im Menü des Markierungstags gesicherten Stands steht der Zähler bis zum Saisonwechsel einen
+/// höher (Ladeeigenheit, <c>GameState.LoadCounterOffset</c>, <c>GameState.LoadQuirk.cs</c>); die Spielregeln fragen deshalb
+/// <c>GameState.Counter</c>.
+/// </para>
 /// </remarks>
 public static class DayCounter
 {

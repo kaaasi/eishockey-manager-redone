@@ -140,7 +140,9 @@ public sealed partial class GameState
     /// </summary>
     internal void AdvanceFinance(int day, bool clubDay)
     {
-        while (FinanceDay < day)
+        // Ladeeigenheit des Markierungstags (GameState.LoadQuirk.cs): Der Finanztag läuft dem Tag um den Ladeversatz voraus.
+        var target = FinanceTarget(day);
+        while (FinanceDay < target)
         {
             FinanceDay++;
             var date = SeasonCalendar.LayoutDate(FinanceDay);

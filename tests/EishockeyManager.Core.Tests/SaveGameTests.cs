@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(46, SaveGame.SchemaVersion);
+        Assert.Equal(47, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -49,6 +49,9 @@ public class SaveGameTests
     // 33 Belastung Player.Strain statt Energy (Spur wettbewerbe-spiel, Runde 12 Teil 2, A184).
     // 34 Satzfolge der Vereine je Liga GameState._leagueSlots (Spur saisonwechsel, Runde 12 Teil 3, S-K6).
     // 35 Manager._newMessage, GameState._contractTurnFactor und _turnRandom (Spur ui-meldungen, Runde 12 Teil 4, E4).
+    // 36 Nachrichtenspeicher wie im Original, Message.Read entfällt (Spur pixel-marker, Runde 12 Teil 3, R-K6).
+    // 37 ohne Änderung: Lücke, die kader-start in Runde 13 nicht gebraucht hat (L5; SaveGame.Migration.Saison.cs).
+    // 38 Satzfolge der nächsten Saison GameState._nextLeagueSlots (Spur saison, Runde 13 Teil 3, S-K6-a; #621).
     // 39 ohne neues Feld: Nr. = Kaderplatz + 1 für alle Vereine beim Laden (Fix R13G-01/#613, #606); Abdruck unverändert.
     // 40 GameOptions.ManagerDayMinuteLoop (Spur saison, Runde 14 Teil 4, #349).
     // 41 NationalCoach._autoLineup/_autoLineupSaved/_turnOpen und GameState._nationalAutoLineupSaved (Spur nationalteam Teil 3, A009;
@@ -59,7 +62,8 @@ public class SaveGameTests
     // dazu Viertelfinale älterer Stände in Platzfolge (R683-01, Migration ohne neues Feld).
     // 45 GameState.DayOpened: Tageswechsel vor dem Halt (#688, R688-04).
     // 46 Manager.DebtDays entfällt: keine Entlassung wegen Schulden (#688, R688S-03; im Original nicht vorhanden).
-    private const string ExpectedSchemaFingerprint = "B29FEBF2CCC262FE";
+    // 47 GameState.LoadCounterOffset: Ladeeigenheit des Markierungstags beim HOK-Import (pruefung-karte Teil 5, Nutzer 09.11.2026 C).
+    private const string ExpectedSchemaFingerprint = "38C12552B42BF30F";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

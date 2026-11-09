@@ -244,7 +244,7 @@ public sealed partial class GameState
     /// </summary>
     public void HealInjuries(int day)
     {
-        if (!PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
+        if (!PlayerInjuries.IsHealingDay(Counter(day)))
             return;
         foreach (var club in Clubs)
         {

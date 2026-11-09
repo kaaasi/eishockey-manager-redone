@@ -73,7 +73,7 @@ nichts aus dem Original; die CSV gehört nicht ins Repo. Nach jeder Spur mit neu
 
 ## Ergebnis in Kürze
 
-* Spielcode (ohne Systemsegmente), Stand nach Runde 12: **90 % der Bytes umgesetzt**, 1 % genähert, 10 % dokumentiert (nach Runde 11: 88 / 1 / 11; nach Runde 10: 82 / 2 / 16),
+* Spielcode (ohne Systemsegmente), Stand nach Runde 14: **90 % der Bytes umgesetzt** (261 statt 257 Funktionen), 0 % genähert, 9 % dokumentiert (nach Runde 12/13: 90 / 1 / 10; nach Runde 11: 88 / 1 / 11; nach Runde 10: 82 / 2 / 16),
   unbekannt nur noch eine Funktion (0x575C3, 421 Byte, bei `livespiel` zurückgestellt). Maßgeblich sind die Zahlen im
   erzeugten Teil. Wegen der Körnung ist „umgesetzt“ eine Obergrenze; was die Funktionskarte als „dokumentiert“ führt, ordnet
   `docs/analyse/inventur.md` ein (fehlt im Remake, vorhanden ohne `[ORIGINAL]`, nicht nötig).
@@ -149,7 +149,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 5579 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 6463 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -157,9 +157,9 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 268 | 244674 | 79 % | 257 | 234918 | 90 % |
-| genähert | 2 | 684 | 0 % | 2 | 684 | 0 % |
-| dokumentiert | 152 | 31378 | 10 % | 104 | 24878 | 10 % |
+| umgesetzt | 274 | 246062 | 79 % | 263 | 236306 | 91 % |
+| genähert | 3 | 896 | 0 % | 3 | 896 | 0 % |
+| dokumentiert | 145 | 29778 | 10 % | 97 | 23278 | 9 % |
 | unbekannt | 257 | 32789 | 11 % | 1 | 421 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
@@ -173,7 +173,7 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Basis 0x238 | 0x04180–0x064E9 | 9066 | 15 | 96 % | 0 % | 4 % | 0 % | Spiellogik Basis (Saisonende, Statistik) |
 | Basis 0x46e | 0x064E0–0x080CA | 7147 | 14 | 93 % | 0 % | 7 % | 0 % | Spiellogik Basis (Training, Spieler) |
 | Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 98 % | 0 % | 2 % | 0 % | Spiellogik Basis (Spielberechnung, Zufall) |
-| Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 19 % | 0 % | 81 % | 0 % | Fensterverwaltung („Zu viele Fenster auf !“) |
+| Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 52 % | 0 % | 48 % | 0 % | Fensterverwaltung („Zu viele Fenster auf !“) |
 | Basis 0x99f | 0x0B7F0–0x0C79E | 4015 | 23 | 33 % | 0 % | 67 % | 0 % | Bilder laden (kb\…vga), Texte, Geldausgabe |
 | Basis 0xa99 | 0x0C790–0x0D9F1 | 4706 | 34 | 0 % | 0 % | 25 % | 75 % | Speicher (EMS INT 67h, XMS INT 2Fh), Datei |
 | Basis 0xbbf | 0x0D9F0–0x12F58 | 21865 | 78 | 40 % | 0 % | 5 % | 55 % | Grafik und Maus (VGA-Ports, INT 10h, INT 33h) |
@@ -182,20 +182,20 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Basis 0x125b | 0x143B0–0x14D6C | 2493 | 21 | 0 % | 0 % | 9 % | 91 % | Sound Blaster digital (DMA-Ports 0x02–0x0C) |
 | Basis 0x12f7 | 0x14D70–0x1621B | 5292 | 19 | 0 % | 0 % | 44 % | 56 % | FM-Treiber SBFMDRV (CmfPlayer.cs), Tastatur (Port 0x60, INT 16h) |
 | Ov 0xc0 (337B) | 0x255C0–0x25DB0 | 2033 | 14 | 0 % | 30 % | 70 % | 0 % | „Alles klar!“ |
-| Ov 0xc8 (33FB) | 0x25E30–0x26E6A | 4155 | 2 | 95 % | 0 % | 5 % | 0 % | „Die besten“, „Ereignisse“ |
+| Ov 0xc8 (33FB) | 0x25E30–0x26E6A | 4155 | 2 | 100 % | 0 % | 0 % | 0 % | „Die besten“, „Ereignisse“ |
 | Ov 0xd0 (34FF) | 0x26F20–0x27F8A | 4203 | 1 | 100 % | 0 % | 0 % | 0 % | „Erhaltene Prämien:“ |
 | Ov 0xd8 (3606) | 0x28030–0x2A0C2 | 8339 | 4 | 98 % | 0 % | 2 % | 0 % | „Suchen Sie sich einen“ |
 | Ov 0xe0 (3810) | 0x2A1E0–0x2F1EE | 20495 | 18 | 96 % | 0 % | 4 % | 0 % | „JWE Service GmbH“, „(noch keine...)“, „Im ersten Jahr gibt's hi“ |
-| Ov 0xe8 (3D11) | 0x2F530–0x352A2 | 23923 | 33 | 96 % | 0 % | 4 % | 0 % | „Endrunde“, „Jugendteams“, „.Spieltag“ |
-| Ov 0xf0 (42E9) | 0x35540–0x397BA | 17019 | 26 | 91 % | 0 % | 9 % | 0 % | „Spiele laufen“, „!    Penaltyschiessen   “, „DEB-Pokal“ |
-| Ov 0xf8 (4711) | 0x399D0–0x3CD71 | 13218 | 18 | 99 % | 0 % | 1 % | 0 % | „WM Vorbereitung“, „WM-Statistik“, „Spieler in WM-Kader“ |
+| Ov 0xe8 (3D11) | 0x2F530–0x352A2 | 23923 | 33 | 97 % | 0 % | 3 % | 0 % | „Endrunde“, „Jugendteams“, „.Spieltag“ |
+| Ov 0xf0 (42E9) | 0x35540–0x397BA | 17019 | 26 | 93 % | 0 % | 7 % | 0 % | „Spiele laufen“, „!    Penaltyschiessen   “, „DEB-Pokal“ |
+| Ov 0xf8 (4711) | 0x399D0–0x3CD71 | 13218 | 18 | 100 % | 0 % | 0 % | 0 % | „WM Vorbereitung“, „WM-Statistik“, „Spieler in WM-Kader“ |
 | Ov 0x100 (4A4C) | 0x3CFA0–0x3FDDD | 11838 | 13 | 100 % | 0 % | 0 % | 0 % | „Überdachung“, „bittet Sie an den Verhan“, „Sitzplätze“ |
 | Ov 0x108 (4D30) | 0x3FFE0–0x42FC4 | 12261 | 13 | 98 % | 0 % | 2 % | 0 % | „Platz mehr !“, „Rückennummer des Spieler“, „Schon 11 Mann auf“ |
 | Ov 0x110 (502F) | 0x43150–0x45DC3 | 11380 | 20 | 90 % | 0 % | 10 % | 0 % | „autosave.hok“, „Saisonende“, „.Spieltag“ |
 | Ov 0x118 (52F7) | 0x46000–0x4ADE1 | 19938 | 18 | 99 % | 0 % | 1 % | 0 % | „ART   NAME              “, „Grundwert“, „Vertragsverhandlung“ |
 | Ov 0x120 (57D6) | 0x4B0F0–0x4D1B6 | 8391 | 23 | 64 % | 0 % | 36 % | 0 % | „Wer weiß...“, „An Alle:“, „Keine Nachricht für Sie “ |
 | Ov 0x128 (59E3) | 0x4D2F0–0x51BED | 18686 | 18 | 96 % | 0 % | 4 % | 0 % | „Bundesliga“, „PL. TD      VEREIN      “, „Play-Off“ |
-| Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 69 % | 0 % | 31 % | 0 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
+| Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 69 % | 1 % | 30 % | 0 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
 | Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 84 % | 0 % | 13 % | 3 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |
 | Ov 0x140 (66C3) | 0x5A820–0x5E932 | 16659 | 21 | 97 % | 0 % | 3 % | 0 % | „VERZEICHNIS:“, „Spielstand aus“, „Speichern“ |
 
@@ -212,7 +212,8 @@ Der Status gilt je Funktion: schon eine Fundstelle zählt die ganze Funktion. Di
 |---:|---|---|---:|---|---|---|
 | 1 | 0x25B4A | Ov 0xc0 (337B)+0x58A | 615 | genähert | 0x0B019, 0x0C17D, 0x0C729 … | „Alles klar!“, „LIB-Error“, „GRAFIK-Error“, „DISK-Error“ |
 | 2 | 0x575C3 | Ov 0x138 (63A2)+0x143 | 421 | unbekannt | 0x567C8 | „toreÖ“ |
-| 3 | 0x52B91 | Ov 0x130 (5E73)+0xD01 | 69 | genähert | 0x0977F, 0x378C5, 0x37A62 … | gerufen von 0x0977F (umgesetzt) |
+| 3 | 0x5434C | Ov 0x130 (5E73)+0x24BC | 212 | genähert | 0x38D96, 0x53C57 | gerufen von 0x38D96 (dokumentiert) |
+| 4 | 0x52B91 | Ov 0x130 (5E73)+0xD01 | 69 | genähert | 0x0977F, 0x378C5, 0x37A62 … | gerufen von 0x0977F (umgesetzt) |
 
 ### Funktionen mit Zugriff auf offene Globale
 
@@ -233,6 +234,7 @@ Vermutung = automatisch abgeleitete Hinweise (benutzte Texte, auch über Zeigert
 |---|---|---:|---|---:|---|
 | 0x25B4A | Ov 0xc0 (337B)+0x58A | 615 | genähert | 15 | „Alles klar!“, „LIB-Error“, „GRAFIK-Error“ |
 | 0x52B91 | Ov 0x130 (5E73)+0xD01 | 69 | genähert | 4 | gerufen von 0x0977F (umgesetzt) |
+| 0x5434C | Ov 0x130 (5E73)+0x24BC | 212 | genähert | 2 | gerufen von 0x38D96 (dokumentiert) |
 | 0x575C3 | Ov 0x138 (63A2)+0x143 | 421 | unbekannt | 1 | „toreÖ“ |
 
 <!-- END generiert -->

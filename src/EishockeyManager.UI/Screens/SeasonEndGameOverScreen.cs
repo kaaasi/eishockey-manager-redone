@@ -3,7 +3,8 @@ using EishockeyManager.Core;
 namespace EishockeyManager.UI.Screens;
 
 /// <summary>
-/// Entlassung eines Managers (zu lange zu hohe Schulden) oder Spielende nach der gewählten Spieldauer.
+/// Spielende nach der gewählten Spieldauer oder – nur noch bei ausgeschiedenen Managern älterer Spielstände – Entlassung
+/// („hat Sie wegen der hohen Schulden“). Das Spiel selbst entlässt nicht mehr (#688, R688S-03; R688S2-02).
 /// </summary>
 /// <remarks>
 /// <list type="bullet">

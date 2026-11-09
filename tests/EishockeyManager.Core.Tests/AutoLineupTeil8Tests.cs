@@ -182,6 +182,9 @@ public class AutoLineupTeil8Tests
         var loaded = result.Game!;
         Assert.False(loaded.Clubs[2].AutoLineupEnabled);
         loaded.Continue();
+        // #604 (R13KI-02): Vorbedingung ausdrücklich – der Spieler ist nach dem Tag noch spielfähig (sonst nimmt ihn der Tag
+        // regelgerecht vom Platz, z. B. Saat 3: verletzt).
+        Assert.True(loaded.FindPlayer(choice.Id)!.Available, "Vorbedingung verletzt: Spieler nicht mehr spielfähig");
         Assert.Equal(choice.Id, loaded.Clubs[2].Lineup[slot]!.Id);
     }
 

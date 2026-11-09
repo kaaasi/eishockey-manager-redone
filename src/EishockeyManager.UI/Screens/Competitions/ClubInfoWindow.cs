@@ -36,7 +36,8 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   Wettbewerbscode DGROUP 0xD0C2 wie im Länderzweig (<see cref="TeamInfoWindow"/>).</item>
 /// <item>[APPROX] Bilanz, Bilanzzeichen und „Tore / Spiel“ aus den Ligaergebnissen der Saison (<see cref="GameState.Results"/>,
 ///   wie der Tabellensatz, den nur Wettbewerbscode 7/8 füllt und der Saisonwechsel leert). Rekorde der Vereine tragen
-///   seit Runde 12 die Ligaspiele ein ([ORIGINAL] nur Wettbewerbscode 7 in 0x50283; Pokal und Play-offs nicht, <c>ClubRecordsSeasonTests</c>).</item>
+///   seit Runde 12 die Ligaspiele ein ([ORIGINAL] 0x50283 trägt nur bei Wettbewerbscode 7 (Liga) und 8 (WM-Gruppe, nur Länder) ein, Datei 0x5030D–0x5031B;
+///   Pokal und Play-offs nicht, <c>ClubRecordsSeasonTests</c>; #619).</item>
 /// </list>
 /// </remarks>
 public sealed class ClubInfoWindow

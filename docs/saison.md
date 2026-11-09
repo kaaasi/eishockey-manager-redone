@@ -21,10 +21,12 @@ Die Zuordnung der Werte ist an den Videos belegt: DEB-Symbol in der Infoleiste a
 „Play-Off / Aufstiegsrunden“ nach dem 44. Spieltag; Europacupsieger zwischen 15.11. und 3.12.
 
 Das Original kennt **keinen 29. Februar** („Donnerstag, 22. März“, „Samstag, 14. April“ in allen Jahren).
-Am Saisonende steht „Montag, 29. April“, obwohl der Kalender einen Sonntag ergibt – wird so nachgebildet. Hinweis (#688,
-R688S-01): Das Saisonende 0x26F20 setzt den Tageszähler auf 233 (Datei 0x26F55), das ist der 30. April = Montag im Kalender
-1989/90; der DOSBox-Stand `file46_2` zeigt im Fenster „Saisonende“ „Montag, 30. April“. Ob das Video wirklich „29. April“ zeigt, ist
-offen (A158).
+Am Saisonende steht „Montag, 29. April“, obwohl der Kalender einen Sonntag ergibt – wird so nachgebildet. Ursache (A158, Spur
+`pruefung-karte` Teil 6, selbst nachgelesen): Der Datumstext 0x43B1F nimmt den Wochentag aus dem Tageszähler ((Zähler + 5) mod 7,
+Datei 0x43B2E), Tag und Monat aus DGROUP 0x5A20/0x5A1C, die 0x367B1 zuletzt in der WM-Schleife gesetzt hat (Datei 0x5567D, Zähler
+232 = 29. April). Das Saisonende 0x26F20 setzt den Zähler auf 233 (Datei 0x26F55) ohne 0x367B1 und zeichnet danach das Fenster
+(0x26D9A): Wochentag von 233 = Montag. Der DOSBox-Stand `file46_2` („Montag, 30. April“) kommt aus FILE44 mit der Ladeeigenheit
+des Markierungstags (Zähler einen höher, letzter Tag der Schleife 233 = 30. April; `GameState.LoadQuirk.cs`).
 
 ## Infoleiste
 
@@ -52,9 +54,11 @@ spielfreie Tage –, bis wieder ein Verein eines Managers spielt. Belegt: 1995/9
 5. **29. April**: Saisonende – Titel, Prämien (`[APPROX]`, belegt nur 1. Platz Oberliga = 400.000 DM),
    Ereignisse je Manager, dann neue Saison am 10. September oder Spielende nach der gewählten Dauer.
 
-**Keine Entlassung wegen Schulden** (#688, R688S-03; `SeasonDismissal.cs`): em.exe vergleicht das Konto nur beim Stadionauftrag,
-beim Kauf, beim Zwangsabstieg am 29. April (< −2.000.000 Drittel, `SeasonFlow.Zwangsabstieg.cs`) und mit der Kontogrenze
-±500.000.000 Drittel im Monatsabschluss (Datei 0x3F10E–0x3F165); das Spielende hängt nur am Endjahr. Die frühere Remake-Regel
+**Keine Entlassung wegen Schulden** (#688, R688S-03; `SeasonDismissal.cs`): em.exe vergleicht das Konto nur in der
+Vermögensrechnung „Verein“ (Datei 0x2E20C), im Stadionaufbau (0x3E11A), beim Stadionauftrag (0x3EADB), bei den Sollzinsen
+(0x3EE05), beim Kauf (0x42A8F), beim Zwangsabstieg am 29. April (< −2.000.000 Drittel, `SeasonFlow.Zwangsabstieg.cs`), in der
+Börse (0x596F2/0x597A6/0x598EA) und mit der Kontogrenze ±500.000.000 Drittel im Monatsabschluss (Datei 0x3F10E–0x3F165;
+R688S2-01); keiner dieser Vergleiche setzt ein Statusbit oder beendet das Spiel; das Spielende hängt nur am Endjahr. Die frühere Remake-Regel
 „8 Wochen unter −1,5 Mio. DM“ ist entfernt. Ausgeschiedene Manager älterer Spielstände (`Manager.Dismissed`) werden im Hot-Seat
 übersprungen.
 

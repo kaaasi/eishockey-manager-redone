@@ -178,6 +178,10 @@ public sealed partial class GameState
     /// <summary>
     /// Ist der Tageswechsel zu <see cref="CurrentDay"/> schon gerechnet (<see cref="OpenDay"/>)? Die Zeitleiste rechnet ihn vor dem
     /// Halt; Spielstände vor Schema 45, ein neues Spiel und der erste Tag einer Saison holen ihn vor den Spielen des Tages nach.
+    /// [APPROX] Tag 0 (Restlücke #688, Issue #699): Im Original beginnen Spiel und Saison mit Index und Zähler 0
+    /// (Datei 0x565A1–0x565B0, 0x43A93), der erste Tageswechsel läuft vor dem ersten Menü (Datei 0x54D41 → 0x55073 → 0x55204,
+    /// Zähler 1 = 10. September; FILE01: 1/1) mit Tagesabschluss 0x3ED01/0x3F833 je Manager. Das Remake rechnet an Tag 0 keinen
+    /// Tagesabschluss (<c>AdvanceFinance</c>: Finanztag &gt; 0) und den Listenwechsel-Wurf erst nach dem ersten Menü.
     /// </summary>
     public bool DayOpened { get; private set; }
 

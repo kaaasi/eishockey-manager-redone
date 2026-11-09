@@ -332,7 +332,7 @@ FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die S
 | Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf wird der Spieler nach Spielerart einsortiert (vor dem ersten leeren Platz oder dem ersten Platz größerer Art; ein Stürmer kommt damit hinten an) | FILE05 → FILE07 (Kauf eines Stürmers) und FILE26 (Verkauf), em.exe Datei `0x42D55`–`0x42DA1` mit memmove ab `0x42DC3` (Kauf, R13GN-01/#622), `0x425B6` (Verkauf); Remake `KaderStartRunde13Teil4Tests` (PR #599), `KaufEinsortierenTests` (PR #623) |
 | HOK `0x08EED` / `0x08EF7` | DGROUP `0xA776` (Teilnehmerliste Europapokal, deutsche Teilnehmer; die Mischung 0x35EDD führt Meister und Titelverteidiger über 0x36146 mit) bzw. DGROUP `0xA763` | FILE22 → FILE23: Kölner EC Satz 4 → 8, Liste = 8 (PR #579, 0x346D5 nach L8) |
 
-## Feldkarte Remake-Spielstand (Schema 46) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 47) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -379,8 +379,9 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState.CurrentManager` | B | `A70E` | Manager am Zug; 5 = Bundestrainer → `_nationalTurn` |
 | `GameState.CurrentRecord` | N | `Kopf` – | null (Import nur in der laufenden Saison); nach `03B7` > 232 aus Tabellen neu bilden `[APPROX]` |
 | `GameState.DayOpened` | A | `03B7` | true: Das HOK ist im Menü nach dem Tageswechsel zum Tag `03B7` − 1 gesichert (Tagesabschluss, Takt, Listenwechsel; #688, R688-04) |
-| `GameState.FinanceDay` | A | `03B7` | `CurrentDay` (Tagesabschluss zum gesicherten Tag ist gebucht, #688; vorher `CurrentDay − 1`) |
+| `GameState.FinanceDay` | A | `03B7` | `CurrentDay` (Tagesabschluss zum gesicherten Tag ist gebucht, #688; vorher `CurrentDay − 1`); am Markierungstag `CurrentDay + 1` (zweiter Tageswechsel, Ladeeigenheit) |
 | `GameState.History` | N | – | leer; das Original führt nur Titelträger und Ewige Tabelle |
+| `GameState.LoadCounterOffset` | A | `03B7`, `A969` | 1, wenn `A969` = `03B7` − 1 (im Menü des Markierungstags gesichert: FILE22, FILE44): Datei 0x54D41 → 0x55204 zählt nach dem Laden erneut weiter (Zähler 218 = 15. April, `file46_1`), bis zum Saisonwechsel (Datei 0x26F55); sonst 0 (Spur `pruefung-karte` Teil 5, Nutzer 09.11.2026 C) |
 | `GameState.ManagerLoans` | B | `965B+0x19B` (+4 · i) | Darlehen Manager m bei i (i = 0–3; negativ = Schuld), / 3 |
 | `GameState.Managers` | B | `0386`, `965B` | `0386` Manager, Sätze 0 … n − 1 |
 | `GameState.NationalAccount` | B | `965B+0x18F` Satz 5 | Konto des Nationalteams (DGROUP 0xA055), / 3 |
@@ -968,6 +969,9 @@ liegt bei den genannten Spuren.
 - Schema 46 (#688, R688S-03, Nachprüfung #691): `Manager.DebtDays` entfällt – em.exe kennt keine Entlassung wegen Schulden
   (`SeasonDismissal.cs`); die Migration streicht das Feld. R688S-02: `Player.OnLoan`/`Player.Loan` aus Kaderplatz `+0x0C`
   (Leihe, Verleiher = Vereinssatz + 0x80), bisher U.
+- Schema 47 (Spur `pruefung-karte` Teil 5, Entscheidung Nutzer 09.11.2026 C): `GameState.LoadCounterOffset` – Ladeeigenheit des
+  Markierungstags (`GameState.LoadQuirk.cs`); FILE44 → Saisonende bucht wie `file46_2` den April-Abschluss am 30. April. Migration:
+  ältere Stände 0.
 
 ### Zugang (Teil 3)
 

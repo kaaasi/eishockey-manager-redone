@@ -12,8 +12,9 @@ namespace EishockeyManager.Core.Tests;
 /// [ORIGINAL] Selbst nachgelesen (<c>tools/reverse-engineering/disasm.py gamedata/em.exe …</c>): WM-Schleife Datei 0x55570–0x55740
 /// (Tagesabschluss zum Zähler 232 = 29. April, dann Markierung 255 → Saisonwechsel 0x55743), Saisonende 0x26F20 setzt den Zähler
 /// 0x3B7 auf 233 (Datei 0x26F55), Sommerschleife Datei 0x564BC–0x56593 ab Zähler 234 = 1. Mai; Leihe Kaderplatz +0x0C = Verein + 0x80
-/// (Datei 0x47920–0x47925); alle Leser des Kontos (DGROUP 0x97EA + 0x1AF · Manager): Vergleiche nur in Stadion (0x3E811), Kauf
-/// (0x42996), Zwangsabstieg (0x55F22–0x55F34) und Kontogrenze ±500.000.000 Drittel im Monatsabschluss (0x3F10E–0x3F165) – keine
+/// (Datei 0x47920–0x47925); alle Leser des Kontos (DGROUP 0x97EA + 0x1AF · Manager): Vergleiche nur in „Verein“ (0x2E20C), Stadionaufbau
+/// (0x3E11A), Stadionauftrag (0x3EADB), Sollzinsen (0x3EE05), Kauf (0x42A8F), Zwangsabstieg (0x55F22–0x55F34), Börse
+/// (0x596F2/0x597A6/0x598EA) und Kontogrenze ±500.000.000 Drittel im Monatsabschluss (0x3F10E–0x3F165; R688S2-01) – keine
 /// Entlassung wegen Schulden.
 /// </remarks>
 public class TagestaktSommerpauseReviewTests
@@ -56,25 +57,26 @@ public class TagestaktSommerpauseReviewTests
     }
 
     /// <summary>
-    /// R688S-01 am Original-Stand: FILE44 (14.04.1994, 18.027.183 DM) bis zum Bildschirm „Saisonende“ ändert sich das Konto nur um die
-    /// Prämie (10. Platz, 100.000 DM): kein April-Monatsabschluss, weder vor dem Kaderwechsel noch danach (vorher rot: der 30. April
-    /// war der erste Tag der Sommerpause und buchte den April mit dem neuen Kader). Die Bücher der neuen Saison zeigen genau vier
+    /// R688S-01 und Ladeeigenheit (Spur pruefung-karte Teil 5, Entscheidung Nutzer 09.11.2026: C) am Original-Stand: FILE44
+    /// (14.04.1994, 18.027.183 DM) ist im Menü des Markierungstags gesichert (Datei 0x55350, nach dem Tageswechsel 0x55204). Nach dem
+    /// Laden läuft dieser Tageswechsel erneut (Zähler 218 = „Sonntag, 15. April“, Bild <c>file46_1</c>, Konto unverändert), die
+    /// WM-Schleife steht einen Zähler höher und schließt zuletzt den 30. April ab – mit dem April-Abschluss des 25er-Kaders, vor dem
+    /// Kaderwechsel. DOSBox-Bild <c>file46_2</c>: 17.523.876 DM am Bildschirm „Saisonende“ = FILE44 + Prämie (100.000) − 603.307 DM.
+    /// Regressionstest (vorher rot: kein Gehaltsabschluss zwischen 14. und 29. April, Konto 18.127.183 DM). [APPROX] Restabweichung:
+    /// Der April-Abschluss des Remakes beträgt −488.307 DM (Gehälter −319.899, Unterhalt −192.866, Grundeinnahmen/Werbung +24.458,
+    /// Saat 4711), das Original −603.307 DM; die 115.000 DM sind ohne Kategoriesummen im HOK nicht zuzuordnen (FILE46 führt nur die
+    /// Summen der neuen Saison). Spanne: file46_2 bis 130.000 DM darüber. Die Bücher der neuen Saison zeigen danach genau vier
     /// Gehaltsabschlüsse des Sommerkaders.
-    /// <para>
-    /// Zum DOSBox-Bild <c>file46_2</c> (17.523.876 DM, also 603.307 DM darunter): FILE44 ist im Menü des Markierungstags gesichert
-    /// (Datei 0x55350, nach dem Tageswechsel 0x55204); nach dem Laden läuft dieser Tageswechsel im Original erneut (Zähler 218 =
-    /// 15. April, Bild <c>file46_1</c>), die WM-Schleife steht einen Tag später und schließt zuletzt den 30. April ab – mit dem
-    /// April-Abschluss des 25er-Kaders. Diese Eigenheit des Ladens spielt der Import nicht nach ([APPROX], <c>RunSummerBreak</c>);
-    /// die Größenordnung des Unterschieds ist der Monatsabschluss des FILE44-Kaders (Gegenprobe unten).
-    /// </para>
     /// </summary>
     [GameDataFact]
-    public void File44_SeasonEndScreen_AccountIsFile44PlusPremium_NoAprilMonthEnd()
+    public void File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2()
     {
         var game = Import("FILE44.HOK");
         var me = game.Managers[0];
         var club = game.Clubs[me.ClubIndex];
         Assert.Equal(18_027_183, me.Money);
+        Assert.Equal(1, game.LoadCounterOffset);
+        Assert.StartsWith("Sonntag, 15.", game.DateText);
         var aprilWages = FinanceRules.MonthlyWages(game, club); // 25 Spieler, mit KJELLBERG und VALLIERE
         var oldBook = game.Finance(me).Book;
         var wagesBefore = oldBook.Current(FinanceCategory.Gehaelter);
@@ -83,16 +85,14 @@ public class TagestaktSommerpauseReviewTests
 
         Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
         Assert.Equal(100_000, oldBook.Current(FinanceCategory.Praemien));
-        Assert.Equal(wagesBefore, oldBook.Current(FinanceCategory.Gehaelter)); // kein Gehaltsabschluss zwischen 14. und 29. April
-        Assert.Equal(18_127_183, me.Money);
-        // Gegenprobe zur Abweichung von file46_2: ein Monatsabschluss des 25er-Kaders (Gehälter, Unterhalt, Grundeinnahmen) liegt in
-        // der Größenordnung der 603.307 DM, die das DOSBox-Bild tiefer steht ([APPROX] Rest: Posten ohne Kategoriesummen im HOK).
-        var aprilUpkeep = FinanceRules.ToMarks(FinanceRules.MonthlyBaseExpenseThirds(me.Level, game.Finance(me).CostLeague))
-                          + game.Finance(me).Stadium.MonthlyUpkeep;
-        Assert.InRange(aprilWages + aprilUpkeep, 603_307 * 7 / 10, 603_307);
+        Assert.Equal(wagesBefore - aprilWages, oldBook.Current(FinanceCategory.Gehaelter)); // ein Abschluss, am 30. April
+        Assert.StartsWith("Montag, 30.", game.DateText);
+        const long File46_2 = 17_523_876;
+        Assert.InRange(me.Money, File46_2, File46_2 + 130_000);
 
         game.StartNextSeason();
 
+        Assert.Equal(0, game.LoadCounterOffset);
         var summerWages = FinanceRules.MonthlyWages(game, club); // 24 Spieler, ohne KJELLBERG und VALLIERE
         Assert.True(summerWages < aprilWages);
         Assert.Equal(-4 * summerWages, game.Finance(me).Book.Current(FinanceCategory.Gehaelter));

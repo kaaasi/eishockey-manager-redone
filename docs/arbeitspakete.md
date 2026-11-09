@@ -180,7 +180,9 @@ nicht übernommenen Felder noch in Runde 14. Fortsetzungen: höchstens 5 statt 3
   WM-Gruppenphase; Funktionskarte `--write` (zweiter Lauf ohne Diff); Freiprüfung der Bildschirme.
 - **Dateigrenzen:** `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`,
   die in den Issues genannten Test- und Kommentarstellen, `Core/GameState.MainMenu.cs` (nur Kommentar). **Modell:**
-  Claude Sonnet 5.5. **Status:** Go 05.11.2026, Start offen.
+  Claude Sonnet 5.5 (Lauf 09.11.2026: Claude Opus 5.5, Leitstelle). **Status:** Teile 1–4 fertig (#693 Inventur/Karte/Doku,
+  #694 P3 Leitstelle, #695 #603/#604/#619/#621, #696 #610/#611/#620 – #620 teilweise); Teil 5 (HOK-Import mit Ladeeigenheit
+  des Markierungstags, Entscheidung C, Schema 47) fertig #697; Teil 6 (Restlücken #688: A158 `[ORIGINAL]`, übrige als Issue #699) fertig #700.
 
 ### Gesamtreview am Rundenende (E14-3)
 
@@ -227,6 +229,11 @@ Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terr
 - Highscore am Spielende und Saisonende im Modus „nur Weltkugel“ (Kandidat für eine DOSBox-Aufnahme mit `hok-patch`).
   Import/Export ist in Runde 14 (E14-1, Spur `hok-import`).
 - R8-A01 (Spielstände aus Spurbranches laden nicht): Spurbranches sind keine Ausgabestände.
+- Restlücke A134 (R688N-02, Review `reviews/2026-11-09-tagestakt-hauptweg-nachpruefung.md`): Die Tendenz je Takt (#688,
+  Datei 0x07B64–0x07BFC) wirkt nur auf Kaderplätze mit Tendenzwert und Steuerbyte. Ein neues Spiel legt den Startkader ohne
+  beides an (`TestGames.Create(3)`: 0 von 25), also wirkt sie dort erst auf importierte HOK-Stände und über 0x4907A neu angelegte
+  Plätze. Kandidat Runde 15: Startwerte des Kaders beim Spielstart nach em.exe (Aufrufer von 0x4907A im Spielstart) lesen und
+  übernehmen (Dateien `kader-start`).
 
 ## Paket `hok-format` – Original-Spielstände `*.HOK`
 

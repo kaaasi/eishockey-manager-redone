@@ -135,7 +135,7 @@ public sealed partial class GameState
     private void WorldCupLoopStepC(int day)
     {
         var previous = day - 1;
-        if (previous > SeasonCalendar.ClubSeasonEnd && MatchEngine.IsDriftDay(DayCounter.Of(previous))
+        if (previous > SeasonCalendar.ClubSeasonEnd && MatchEngine.IsDriftDay(Counter(previous))
             && WorldCupPlayedOn(previous))
             WorldCupLoopDailyRun(previous);
     }

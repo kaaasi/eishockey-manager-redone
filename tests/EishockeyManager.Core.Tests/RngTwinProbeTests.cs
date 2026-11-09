@@ -168,9 +168,12 @@ namespace EishockeyManager.Core.Tests;
 /// Satzfolge der nächsten Saison entsteht am 29. April (Startwert aus dem Zufallszustand dieses Tages, ohne Zug) und die
 /// Fair-Play-Prämie rechnet über die Liga der nächsten Saison in dieser Folge; andere Prämien, Konten und danach Kauf- und
 /// Vertragsentscheidungen. Gegenprobe: ohne Bildung am 29. April und mit der alten Prämienregel alle Abdrücke unverändert.
+/// Ursächlich ist S-K6-c (Prämienregel): S-K6-a allein ändert keinen der acht Abdrücke, weil der Startwert der Satzfolge
+/// derselbe bleibt (Gegenprobe Review #616, R13GN-04, #621).
 /// Runde 13, kader-start Teil 2 (U15-a, L13): synthetische Abdrücke (Seed 3/11) neu – der feste Verein tauscht beim Spielstart in
 /// die Start-Liga (Datei 0x29CF2, bei Bundesliga immer, Teamwerte bleiben am Platz); ein Zufallszug mehr beim Spielstart.
-/// Originaldatenbank-Abdrücke (Verein 42, Start-Liga Oberliga) unverändert.
+/// Die frühere Angabe „Originaldatenbank-Abdrücke (Verein 42, Start-Liga Oberliga) unverändert“ hielt die Gegenprobe des
+/// Reviews #616 nicht (R13GN-04, #621); die Ursache der Änderung ist nicht einzeln belegt.
 /// Runde 13, kader-start Teil 3 (R-K5, L13): alle Abdrücke neu – die Satzfolge entsteht vor der Spielvorbereitung aus dem
 /// Spielstart-Seed (Datei 0x43A17, `NewGame.StartOrder`), der Zufallsplatz des Starttauschs ist ein Satzplatz dieser Folge.
 /// Runde 13, kader-start Teil 4 (A091/A166): alle Abdrücke neu – Nr. = Kaderplatz + 1 (Kauf hinten an, Verkauf rückt auf),

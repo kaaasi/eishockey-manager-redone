@@ -49,14 +49,16 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// [ORIGINAL] Funktionsanfang des Hauptmenüs (Datei 0x44E3F/0x44E46), einmal je Managerzug: DGROUP 0xE1A4 = random(0x55, 0x73).
+    /// [ORIGINAL] Am Funktionsanfang des Hauptmenüs (Datei 0x44E22; Zufallsaufruf 0x44E3F, Schreiben 0x44E46), einmal je
+    /// Managerzug: DGROUP 0xE1A4 = random(0x55, 0x73).
     /// Nach dem Laden (Einstieg Datei 0x44E6D) wird nicht neu gezogen.
     /// </summary>
     private void DrawContractTurnFactor() => _contractTurnFactor = ContractRules.TurnFactor(TurnRandom);
 
     /// <summary>
-    /// Erster Managerzug eines neuen Spiels. [ORIGINAL] Der erste Menüaufbau beginnt am Funktionsanfang 0x44E3F und zieht den Faktor
-    /// der Gehaltsforderung wie jeder Zug (R12U-04, #540); im Remake lief bisher nur <see cref="BeginManagerTurn"/> aus
+    /// Erster Managerzug eines neuen Spiels. [ORIGINAL] Der erste Menüaufbau beginnt am Funktionsanfang 0x44E22 und zieht
+    /// (Aufruf 0x38:0x847 bei 0x44E3F) den Faktor der Gehaltsforderung wie jeder Zug (R12U-04, #540); im Remake lief bisher nur
+    /// <see cref="BeginManagerTurn"/> aus
     /// <see cref="StartTurns"/> und <see cref="PassTurn"/>, der erste Tag eines neuen Spiels nutzte den abgeleiteten Ersatzwert.
     /// Zieht nur aus <see cref="TurnRandom"/> (keine andere Zufallsquelle, keine Aufstellung: die macht der erste Aufbau des Menüs).
     /// </summary>
@@ -71,8 +73,8 @@ public sealed partial class GameState
     /// <param name="manager">Manager am Zug.</param>
     /// <param name="isReturn">
     /// Rückkehr ins Menü desselben Zugs (Datei 0x45961/0x4596C → 0x44FBD) statt erster Aufbau. Beide Wege laufen ab 0x44FBD gleich;
-    /// der Faktor des Zugs (0x44E3F) ist schon in <see cref="BeginManagerTurn"/> gezogen. Im Zug des Bundestrainers beginnt ein
-    /// Aufbau ohne Rücksprung (Laden) den Zug neu (A009, <see cref="OnNationalCoachMenu"/>).
+    /// der Faktor des Zugs (Datei 0x44E3F/0x44E46) ist schon in <see cref="BeginManagerTurn"/> gezogen. Im Zug des Bundestrainers
+    /// beginnt ein Aufbau ohne Rücksprung (Laden) den Zug neu (A009, <see cref="OnNationalCoachMenu"/>).
     /// </param>
     public bool OnMainMenu(Manager manager, bool isReturn)
     {

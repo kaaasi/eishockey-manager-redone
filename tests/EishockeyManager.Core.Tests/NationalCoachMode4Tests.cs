@@ -61,6 +61,8 @@ public class NationalCoachMode4Tests
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         var top = game.FinalTables()[League.Bundesliga].Take(5).ToList();
+        // #604 (R13KI-02): Vorbedingung ausdrücklich – beide Managervereine (1 und 2) unter den ersten fünf.
+        Assert.True(top.Contains(1) && top.Contains(2), $"Vorbedingung verletzt: erste fünf {string.Join(", ", top)}");
         var expected = top.IndexOf(1) < top.IndexOf(2) ? 1 : 0;
         Assert.Equal(expected, game.NationalCoach?.Manager);
     }
@@ -68,7 +70,7 @@ public class NationalCoachMode4Tests
     [Fact]
     public void Mode4_NoManagerInTopFive_NoCoach()
     {
-        var game = GameModeTests.Create(4, true, true, 8, 20); // kader-start U15-a (L13): Saat 3 → 4, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
+        var game = GameModeTests.Create(3, true, true, 8, 20); // #621 (R13GN-04): Saat wieder 3 – die Änderung 3 → 4 (L13) war nicht nötig
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         Assert.Null(ExpectedCoach(game));

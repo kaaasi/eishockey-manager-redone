@@ -117,6 +117,7 @@ public sealed class TransferScreen : Screen
     {
         _mouseX = input.MouseX;
         _mouseY = input.MouseY;
+        TrackHoverEntry();
         if (_message.Update(input))
         {
             if (!_message.Visible && _messages.TryDequeue(out var lines))
@@ -414,13 +415,10 @@ public sealed class TransferScreen : Screen
         s.Text(mini, 201, ListHeaderY, "NAME", lh);
         s.Text(mini, 251, ListHeaderY, "STÄRKEN", lh);
         s.Text(mini, 292, ListHeaderY, "ALTER", lh);
-        EntryLine(s, 36);
+        EntryLine(s, 36, _repaintedLines.Contains(36));
 
         var listings = Market.Listings;
-        var hoverEntry = -1;
-        for (var i = 0; i < listings.Count; i++)
-            if (_dialog is null && !_info.Visible && new Rect(ListLeft - 2, FirstEntryY - 1 + EntryPitch * i, ListRight - ListLeft + 4, 13).Contains(_mouseX, _mouseY))
-                hoverEntry = i;
+        var hoverEntry = HoveredEntry(listings);
         for (var i = 0; i < listings.Count; i++)
         {
             var l = listings[i];
@@ -436,7 +434,7 @@ public sealed class TransferScreen : Screen
             s.TextRight(mini, 313, y, p.Age + " J.", c);
             s.Text(mini, ListLeft, y + 6, Money(l.Price) + " (K)", TeamUi.DimColor);
             s.TextRight(mini, 315, y + 6, Money(l.LoanFee) + " (L)", TeamUi.DimColor);
-            EntryLine(s, y + 12);
+            EntryLine(s, y + 12, _repaintedLines.Contains(y + 12));
         }
         for (var i = 0; i < listings.Count; i++)
             if (i == hoverEntry || _dialog?.Listing == listings[i])
@@ -481,17 +479,20 @@ public sealed class TransferScreen : Screen
         return 0;
     }
 
-    /// <summary>
-    /// Leiste unten: Kontostand, Schulden, Anlagen, Saldo. [ORIGINAL] Werte nach Datei 0x463CC
-    /// (<see cref="GameState.TransferAccount"/>; Spur <c>kader-transfer</c>, Teil 4, A381). [APPROX] Lage aus dem Video,
-    /// x der Anlagen 132 statt 133 (3 + 65 · k) und Zeilen 226/232 statt der Grundlinien 229/236 nicht nachgemessen.
-    /// </summary>
     /// <summary>Kontoleiste unten (ohne Schatten), siehe <see cref="DrawAccountBar"/>.</summary>
     public static readonly Rect AccountBar = new(0, 223, 318, 15);
 
     /// <summary>Schrift „Saldo:“ und Betrag in der Kontoleiste. [ORIGINAL] (6 | 9 | 18) = Index 240, `file40_04`.</summary>
     public const byte SaldoColor = 240;
 
+    /// <summary>
+    /// Leiste unten: Kontostand, Schulden, Anlagen, Saldo. [ORIGINAL] Werte nach Datei 0x463CC
+    /// (<see cref="GameState.TransferAccount"/>; Spur <c>kader-transfer</c>, Teil 4, A381). [ORIGINAL] Beschriftung bei
+    /// x = 3 + 65 · k, Grundlinie 0xE5 = 229 (Datei 0x46533–0x4657A; oberste Zeile y 225, `file40_03`/`file40_04`, R14KS9-03),
+    /// Betrag Grundlinie 0xEC = 236 (Datei 0x465B3–0x465CA). [APPROX] Das Original zeichnet den Betrag bei derselben x wie die
+    /// Beschriftung; im Bild `file40_04` beginnt er 1 (Kontostand, Saldo) bzw. 5 Pixel (Schulden, Anlagen) weiter rechts – die
+    /// Einrückung kommt aus der Zahlformatierung (Datei 0x46582–0x465AB, nicht gelesen). Das Remake rückt wie bisher fest ein.
+    /// </summary>
     private void DrawAccountBar(Surface s)
     {
         var account = Game.TransferAccount(Manager);
@@ -510,7 +511,7 @@ public sealed class TransferScreen : Screen
         [
             ("Kontostand:", account.Money, 3),
             ("Schulden:", account.Debts, 68),
-            ("Anlagen:", account.Assets, 132),
+            ("Anlagen:", account.Assets, 133),
             ("Saldo:", account.Balance, 198),
         ];
         foreach (var (label, value, x) in fields)
@@ -519,12 +520,12 @@ public sealed class TransferScreen : Screen
             if (saldo)
             {
                 // [ORIGINAL] „Saldo:“ und Betrag (6 | 9 | 18) = Index 240, `file40_04` (vorher Index 29; Review R14N-02).
-                s.Text(Assets.Mini, x, 226, label, SaldoColor);
+                s.Text(Assets.Mini, x, 225, label, SaldoColor);
                 s.Text(Assets.Mini, x, 232, Money(value), SaldoColor);
             }
             else
             {
-                TeamUi.Label(s, Assets, x, 226, label, Colors.White, TeamUi.DialogShadow);
+                TeamUi.Label(s, Assets, x, 225, label, Colors.White, TeamUi.DialogShadow);
                 s.Text(Assets.Mini, x + 5, 232, Money(value), Colors.White);
             }
         }
@@ -553,8 +554,61 @@ public sealed class TransferScreen : Screen
     /// </summary>
     public const byte SeparatorColor = 31;
 
-    private static void EntryLine(Surface s, int y) =>
-        s.HLine(ListLeft - 1, y, ListRight - ListLeft + 3, SeparatorColor);
+    /// <summary>
+    /// Trennlinie zeichnen. [ORIGINAL] Der Aufbau der Liste zieht sie von x 181 bis 313 (Datei 0x46386–0x463AB, Linie 0x0B7B5 mit
+    /// (0xB5 | 16 · k + 0x34)–(0x139 | …), Farbe 0x1F); die Markierung (Datei 0x46B58–0x46BAF, Farbe 0x10) und ihr Zurücksetzen
+    /// beim Verlassen des Eintrags (Datei 0x46AFE–0x46B55, Farbe 0x1F) ziehen sie von x 180 bis 314. Nach einer Markierung bleibt die
+    /// Linie also zwei Pixel länger, bis die Liste neu aufgebaut wird (`file40_04`: 181–313; `file40_05`–`07`: einzelne Linien
+    /// 180–314; R14UR-10).
+    /// </summary>
+    private static void EntryLine(Surface s, int y, bool repainted)
+    {
+        if (repainted)
+            s.HLine(ListLeft - 1, y, ListRight - ListLeft + 3, SeparatorColor);
+        else
+            s.HLine(ListLeft, y, ListRight - ListLeft + 1, SeparatorColor);
+    }
+
+    /// <summary>Eintrag der Transferliste unter der Maus, −1 ohne (auch bei offenem Fenster).</summary>
+    private int HoveredEntry(IReadOnlyList<TransferListing> listings)
+    {
+        if (_dialog is not null || _info.Visible)
+            return -1;
+        for (var i = 0; i < listings.Count; i++)
+            if (new Rect(ListLeft - 2, FirstEntryY - 1 + EntryPitch * i, ListRight - ListLeft + 4, 13).Contains(_mouseX, _mouseY))
+                return i;
+        return -1;
+    }
+
+    /// <summary>
+    /// Merkt die Trennlinien, die eine Markierung schon einmal überzeichnet hat (siehe <see cref="EntryLine"/>).
+    /// [APPROX] Das Original baut die Liste nach Kauf, Leihe oder Angebot neu auf; das Remake vergisst die Linien, sobald sich die
+    /// Einträge der Liste ändern.
+    /// </summary>
+    private void TrackHoverEntry()
+    {
+        var listings = Market.Listings;
+        if (!listings.SequenceEqual(_drawnListings))
+        {
+            _drawnListings = [.. listings];
+            _repaintedLines.Clear();
+            _lastHoverEntry = -1;
+        }
+        var hover = HoveredEntry(listings);
+        if (hover == _lastHoverEntry)
+            return;
+        foreach (var entry in new[] { _lastHoverEntry, hover })
+            if (entry >= 0)
+            {
+                _repaintedLines.Add(FirstEntryY + EntryPitch * entry - 4);
+                _repaintedLines.Add(FirstEntryY + EntryPitch * entry + 12);
+            }
+        _lastHoverEntry = hover;
+    }
+
+    private readonly HashSet<int> _repaintedLines = [];
+    private TransferListing[] _drawnListings = [];
+    private int _lastHoverEntry = -1;
 
     /// <summary>„231.000 DM“.</summary>
     public static string Money(long amount) => amount.ToString("#,0", CultureInfo.GetCultureInfo("de-DE")) + " DM";

@@ -38,7 +38,7 @@ public class WettbewerbeSpiel1Tests
     [Theory]
     [InlineData(5, true)]
     [InlineData(11, true)]
-    [InlineData(4, false)] // kader-start U15-a (L13): Saat 5 → 4, Vorbedingung nach dem Starttausch
+    [InlineData(5, false)] // #621 (R13GN-04): Saat wieder 5 – die Änderung 5 → 4 (L13) war nicht nötig
     public void DebCup_NoMatchEndsLevel_ShootoutInFinalScore(int seed, bool minuteLoop)
     {
         var game = SeasonWithCups(seed);

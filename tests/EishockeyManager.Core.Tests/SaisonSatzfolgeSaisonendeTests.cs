@@ -94,15 +94,25 @@ public class SaisonSatzfolgeSaisonendeTests
         }
     }
 
+    /// <summary>
+    /// Die Bildung am 29. April zieht keinen Zufall (Startwert aus dem Zufallszustand, ohne Zug). #620 (R13GN-03): Der frühere
+    /// Vergleich zweier gleich gesäter Spiele blieb auch mit einer Mischung aus <c>GameState.Random</c> grün. Jetzt wird die
+    /// Bildung am Saisonende noch einmal direkt aufgerufen: Zufallszustand und Folge bleiben gleich.
+    /// </summary>
     [Fact]
     public void Preparing_NextSlots_DoesNotAdvanceGameRandom()
     {
-        var a = Create(seed: 9, 5);
-        var b = Create(seed: 9, 5);
-        PlayToSeasonEnd(a);
-        PlayToSeasonEnd(b);
-        Assert.Equal(a.Random.Capture(), b.Random.Capture());
-        Assert.Equal(a.NextLeagueSlots(League.ZweiteLiga), b.NextLeagueSlots(League.ZweiteLiga));
+        var game = Create(seed: 9, 5);
+        PlayToSeasonEnd(game);
+        var random = game.Random.Capture();
+        var slots = Enum.GetValues<League>().ToDictionary(l => l, l => game.NextLeagueSlots(l).ToArray());
+        Assert.All(slots.Values, s => Assert.Equal(GameState.ClubsPerLeague, s.Length));
+        typeof(GameState).GetMethod("PrepareNextLeagueSlots",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .Invoke(game, [game.History[^1]]);
+        Assert.Equal(random, game.Random.Capture());
+        foreach (var league in Enum.GetValues<League>())
+            Assert.Equal(slots[league], game.NextLeagueSlots(league));
     }
 
     /// <summary>

@@ -127,6 +127,7 @@ public sealed partial class GameState
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>
     partial void OnNewSeasonManager()
     {
+        EndLoadCounterOffset(); // Teil 5 pruefung-karte: Datei 0x26F55 setzt den Zähler fest (GameState.LoadQuirk.cs)
         StartFinanceSeason();
         StartStadiumStatisticsSeason(); // Spur heimspiel-statistik (0x55A86)
         // Spur kader-start (A091/A380, Review R14KS-02): nicht verkaufte eigene Spieler von der Transferliste zurück in den Kader,

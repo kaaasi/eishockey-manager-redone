@@ -84,8 +84,11 @@ public sealed partial class GameState
 
     public IEnumerable<Club> LeagueClubs(League league) => Clubs.Where(c => c.League == league);
 
-    /// <summary>Datumszeile der Infoleiste, z. B. „Sonntag, 10. Sept.  1993“.</summary>
-    public string DateText => SeasonCalendar.Format(Day, Season);
+    /// <summary>
+    /// Datumszeile der Infoleiste, z. B. „Sonntag, 10. Sept.  1993“. [ORIGINAL] Datum aus dem Tageszähler (0x367B1), also mit dem
+    /// Ladeversatz des Markierungstags (GameState.LoadQuirk.cs; <c>file46_1</c>: FILE44 nach dem Laden „Sonntag, 15. April“).
+    /// </summary>
+    public string DateText => SeasonCalendar.Format(Day + LoadCounterOffset, Season);
 
     /// <summary>Spielt den nächsten Ligaspieltag in allen Ligen. Liefert false, wenn die Hauptrunde vorbei ist.</summary>
     public bool PlayNextMatchDay()
