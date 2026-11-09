@@ -251,5 +251,9 @@ public sealed partial class GameState
         }
         foreach (var p in TransferMarket.FreeAgents)
             PlayerInjuries.Heal(p);
+        // [ORIGINAL] Tageslauf 0x07169 ruft 0x7C12 auch für die Markt-Plätze (Satz 4, DGROUP 0x7623 + i · 0x34) mit Pool +0x1A =
+        // Manager (Datei 0x72A0–0x72CB): eigene Spieler auf der Liste außerhalb des Kaders (A380) heilen weiter (Review R14KS-02).
+        foreach (var p in TransferMarket.ListedOutsideSquads(this))
+            PlayerInjuries.Heal(p);
     }
 }

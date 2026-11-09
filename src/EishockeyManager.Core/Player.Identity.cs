@@ -37,10 +37,13 @@ public sealed partial class GameState
             AssignPlayerId(slot.Player);
     }
 
-    /// <summary>Alle Spieler des Spielstands: Kader, Vertragslose, Laufbahnende und freie bzw. angebotene Poolspieler.</summary>
+    /// <summary>
+    /// Alle Spieler des Spielstands: Kader, Vertragslose, Laufbahnende, freie bzw. angebotene Poolspieler und eigene Spieler
+    /// auf der Transferliste außerhalb des Kaders (A380, Spur kader-start; Review R14KS-01).
+    /// </summary>
     public IEnumerable<Player> AllPlayers =>
         Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents).Concat(RetiredPlayers)
-            .Concat(TransferMarket.PoolPlayers);
+            .Concat(TransferMarket.PoolPlayers).Concat(TransferMarket.ListedOutsideSquads(this));
 
     /// <summary>Spieler zur ID oder null.</summary>
     public Player? FindPlayer(int id) => id <= 0 ? null : AllPlayers.FirstOrDefault(p => p.Id == id);

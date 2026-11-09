@@ -14,12 +14,20 @@ public sealed partial class TransferMarket
                              && !club.Players.Contains(l.Player));
 
     /// <summary>
+    /// Spieler aller eigenen Markt-Plätze außerhalb des Kaders (A380). Sie stehen in keinem Kader und gehören trotzdem zum
+    /// Spielstand (<see cref="GameState.AllPlayers"/>, Review R14KS-01).
+    /// </summary>
+    internal IEnumerable<Player> ListedOutsideSquads(GameState game) =>
+        game.Clubs.SelectMany(OwnListingsOutsideSquad).Select(l => l.Player);
+
+    /// <summary>
     /// Saisonwechsel: Nicht verkaufte eigene Spieler kehren in den Kader zurück, nach Spielerart einsortiert, nicht eingesetzt
     /// (A091/A380, re-runde-14). [ORIGINAL] Saisonschleife 0x26F20 über alle Sätze (auch Satz 4 = Markt): Pool +0x1A (Besitzer)
     /// &lt; 4 und ≠ Satz → Kaderplatz anlegen (0x108:0x5C, Datei 0x42CB1), Platz kopieren (Datei 0x275D2), +0x0C = 0 und
     /// +0x18 &amp;= 0x7F (Datei 0x2764B, 0x27665), Markt-Platz frei (0x108:0x48, Datei 0x27628); Beleg FILE44 → FILE46
-    /// (HOHENADL, Platz 11 vor dem ersten Stürmer). Das Remake gibt die Spieler vor Altern und Herunterzählen zurück; sie laufen
-    /// dann wie alle Kaderspieler durch den Kaderwechsel (Laufzeit − 1, Verhandlung bei Laufzeit 0).
+    /// (HOHENADL, Platz 11 vor dem ersten Stürmer). Das Remake gibt die Spieler im Saisonhaken der Manager vor dem Übertrag der
+    /// Spiele und dem Löschen der Saisonzähler zurück (wie das Original: Löschen erst ab Datei 0x27A0C, Review R14KS-02); sie
+    /// laufen dann wie alle Kaderspieler durch den Kaderwechsel (Altern, Laufzeit − 1, Verhandlung bei Laufzeit 0).
     /// [APPROX] Volle Kader (29) behalten den Spieler nicht: er wird vertragslos wie bei der Leihrückkehr ohne freie Nummer.
     /// </summary>
     internal void ReturnListedPlayers(GameState game)
