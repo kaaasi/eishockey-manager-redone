@@ -95,11 +95,13 @@ public class KaderStartRunde14FixTests
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, p));
         p.InjuredGames = 2;
 
-        game.HealInjuries(7);
+        // Merge #669 in #672 (#675, Review #674 R14NT4-03): Heiltag nach dem Zähler 0x3B7 = Tag + 1 (DayCounter), also die
+        // Tageslauf-Tage 6, 13 … statt 7, 14 ….
+        game.HealInjuries(6);
         Assert.Equal(1, p.InjuredGames);
-        game.HealInjuries(8); // kein Heiltag
+        game.HealInjuries(7); // kein Heiltag
         Assert.Equal(1, p.InjuredGames);
-        game.HealInjuries(14);
+        game.HealInjuries(13);
         Assert.Equal(0, p.InjuredGames);
     }
 

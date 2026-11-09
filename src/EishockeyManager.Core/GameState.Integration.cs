@@ -50,7 +50,7 @@ public sealed partial class GameState
         if (!WorldOnly)
             OnDayClubSeason(day);
         else
-            UpdateNationalTeamValues();
+            OnDayWorldOnlyLoop(day); // Review #674, R14NT4-04: auch Modus 1 läuft durch die WM-Schleife (CupsNational.WorldCupLoop.cs)
 
         // Paket „wettbewerbe“: an den Tagen mit Markierung 255 im Modus 4 den Bundestrainer ernennen (Spur
         // bundestrainer-modus4), dann die Werte Deutschlands ohne Bundestrainer neu auswürfeln.
@@ -63,6 +63,19 @@ public sealed partial class GameState
     {
         // Spur transfer-vertraege-komplett: offene Verhandlungen am Saisonende enden vor dem ersten Tag wie „Abbruch“ (0x27D91).
         ResolveRenewals();
+
+        // Spur nationalteam Runde 14 (R14NT-01/02, Review #662; Teil 4, #664): Nach dem 13. April läuft im Original jeder Tag in
+        // der WM-Schleife (Datei 0x55570–0x55740, siehe CupsNational.WorldCupLoop.cs) – mit und ohne Bundestrainer: eigener
+        // Tagesabschluss, kein Training und kein Markt außer nach den WM-Spielen der Tage ≡ 0/4, keine kleine Wanderung, kein
+        // 0x952C des Hauptwegs, keine Neuaufstellung „Tag mit Ereignis“. Ausgenommen der erste Tag (R14NT4N-01, unten).
+        if (InWorldCupLoop(day))
+        {
+            OnDayWorldCupLoop(day);
+            return;
+        }
+        // Nachprüfung #681 (R14NT4N-01): Der Tageswechsel nach den Spielen des 13. April (Zähler 217) gehört im Original noch
+        // zum Hauptweg (Datei 0x55204–0x552D3), erst danach beginnt die Schleife (Datei 0x552D5); siehe OnDayWorldCupEntry.
+        var worldCupEntry = IsWorldCupEntryDay(day);
 
         // Finanzen: Tages-, Wochen- und Monatswechsel bis einschließlich heute
         AdvanceFinanceTo(day);
@@ -79,29 +92,24 @@ public sealed partial class GameState
         // Paket „wettbewerbe“: Ewige Tabelle, Ewige Bilanz und „Früher“ schreibt seit Spur saisonwechsel Teil 3 (S-K4)
         // FinishSeason nach Zwangsabstieg und Austausch fort (em.exe Datei 0x563AF).
 
-        // Spur nationalteam Runde 14 (R14NT-01/02, Review #662): Nach der Ernennung im Modus 4 läuft die WM in der eigenen
-        // Schleife des Originals (Datei 0x55570–0x55740, siehe OnDayWorldCupLoop): keine kleine Wanderung, kein 0x952C des
-        // Hauptwegs, keine Neuaufstellung „Tag mit Ereignis“.
-        if (InWorldCupLoop(day))
-        {
-            OnDayWorldCupLoop(day);
-            return;
-        }
-
         // Spur nationalteam Runde 14 (#594, R13IN-01): [ORIGINAL] Reihenfolge belegt: 0x952C(Manager 5, 1) liegt in der
         // Tagesfunktion 0x54C9F bei Datei 0x54F9C–0x54FBF, die kleine Wanderung danach bei Datei 0x5525A–0x55292 (dazwischen
         // kein Sprung aus dem Bereich); an Wandertagen gilt danach die gewürfelte Form 0x1C/0x1D. Erreichbar nur auf dem
         // Hauptweg (Tage mit Ereignis, Byte ∉ {0, 9, 0xFF}, Datei 0x54D5C) und nur mit Bundestrainer (Satz 5 bei 0x9EDA < 0x3F):
         // Den gibt es im Original vor der Ernennung (Datei 0x55485) nie, danach nimmt die WM-Schleife den Tag (Review #662,
-        // R14NT-01). Im Remake also ohne Wirkung, solange der Bundestrainer nicht künstlich vor dem 13. April ernannt wird
+        // R14NT-01, oben). Im Remake also ohne Wirkung, solange der Bundestrainer nicht künstlich vor dem 13. April ernannt wird
         // (nur Tests). Auch die Heilung (0x07169, Datei 0x552A6) und die Aufstellungsautomatik (Datei 0x07C07) folgen erst
         // danach. [APPROX] Das Original rechnet 0x952C nach den Menüs der Manager; Finanzen, Training und Markt des Remakes
         // stehen davor wie bisher (Reihenfolge zu ihnen nicht einzeln gelesen). A009 (Runde 14 Teil 3): davor an Tagen mit
         // Ereignis die Neuaufstellung von Satz 5 mit der gesicherten Einstellung (Datei 0x54D41–0x54DAA, nur Hauptweg).
-        OnDayNationalTeam(day);
+        if (!worldCupEntry)
+            OnDayNationalTeam(day);
 
-        // Spur spielberechnung-komplett (#204): kleine Wanderung der Teamwerte zweimal je Woche (0x5525A–0x55292)
-        if (MatchEngine.IsDriftDay(day))
+        // Spur spielberechnung-komplett (#204): kleine Wanderung der Teamwerte zweimal je Woche (0x5525A–0x55292). #675 (Review
+        // #674, R14NT4-03): Datei 0x55204 zählt DGROUP 0x3B7 nach den Spielen des Vortags weiter, Talentsuche, Wanderung und
+        // 0x07169 (Datei 0x55253–0x552D3) prüfen den neuen Stand = Tag + 1 (DayCounter); ebenso TalentScout.IsTick und die
+        // Heilung (PlayerInjuries.IsHealingDay über HealInjuries).
+        if (MatchEngine.IsDriftDay(DayCounter.Of(day)))
             MatchEngine.DriftTeamValues(this, TeamValueDrift.Weekly);
 
         // Spur spielberechnung-komplett, Teil 3: Verletzungen heilen wochenweise (0x7C12 im Tageslauf 0x07169)
@@ -109,6 +117,10 @@ public sealed partial class GameState
 
         // Spur wettbewerbe-spiel, Teil 8: automatische Aufstellung am Ende des Tageslaufs (Datei 0x07C07, A068)
         ApplyAutoLineups();
+
+        // R14NT4N-01: am Eintrittstag der Schleife nach dem Takt des Hauptwegs Schritt (a) der Schleife (Datei 0x555D6).
+        if (worldCupEntry)
+            OnDayWorldCupEntry(day);
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>

@@ -179,6 +179,8 @@ namespace EishockeyManager.Core.Tests;
 /// (<c>SignFreeAgents</c>); Torhüter und Verteidiger stehen jetzt hinter dem letzten Spieler ihrer Art (Datei 0x42D55) statt hinten:
 /// andere Nr., Kaderplatz 3 (Gehaltsforderung 0x4A93F) und Gleichstände der Auto-Aufstellung. Passive Abdrücke unverändert.
 /// Gegenprobe: Kauf über die Transferliste wieder hinten an (<c>managerSquad: false</c> in <c>TransferMarket.Complete</c>) → alle alten Werte.
+/// Runde 14, nationalteam Teil 4 (#664): neu ab dem 14. April der ersten Saison – ohne Bundestrainer läuft die WM in der WM-Schleife des Originals (Datei 0x55570–0x55740): keine Wanderung, kein Training, kein Markt außer nach den WM-Spielen bestimmter Tage (dort 224/228, falsch, siehe unten). Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert. Gilt für alle sechs Abdrücke.
+/// Review #674 (R14NT4-01/-05, #675): neu – (c) der WM-Schleife nach den WM-Spielen der Tage 216, 220 und 230 (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel, Takttage (Wanderung, Talentsuche) und Heilung des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück auf den Remake-Tag → weder alter noch neuer Wert, beide Teile wirken. Gilt für alle sechs Abdrücke.
 /// </summary>
 public class RngTwinProbeTests
 {
@@ -188,10 +190,12 @@ public class RngTwinProbeTests
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     [Theory]
-    [InlineData(false, 3, "D1DB938BDEDCC71C")]
-    [InlineData(true, 3, "E3C497CB9A0929D2")]
-    [InlineData(false, 11, "7B5253F48D190DE7")]
-    [InlineData(true, 11, "A089DF089315EDB5")]
+    // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
+    // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
+    [InlineData(false, 3, "201CE3A7E7AD2B69")]
+    [InlineData(true, 3, "FF77B9EAE4BFCB98")]
+    [InlineData(false, 11, "9D252484A6B094E2")]
+    [InlineData(true, 11, "60A237D8FFE61FFC")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -202,8 +206,9 @@ public class RngTwinProbeTests
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "3101D28B8A472AD6")]
-    [InlineData(true, "9E2DFED2DCC80D05")]
+    // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
+    [InlineData(false, "A34A978FEBB38BEF")]
+    [InlineData(true, "3FBDDC0C2796DD49")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

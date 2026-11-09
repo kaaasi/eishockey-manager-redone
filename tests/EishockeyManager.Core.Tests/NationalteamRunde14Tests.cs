@@ -56,7 +56,7 @@ public class NationalteamRunde14Tests
             Assert.Equal((defense.Condition, defense.Technique, attack.Condition, attack.Technique),
                 game.NationalRatings(NationalTeams.Germany));
             var values = germany.TeamValues!.Value;
-            if (MatchEngine.IsDriftDay(last))
+            if ((last + 1) % 7 is 0 or 4) // #675: Zähler 0x3B7 nach dem Weiterzählen = Tag + 1 (DayCounter), Datei 0x55204/0x55253
             {
                 driftSeen = true;
                 Assert.InRange(values.DefenseForm, 45, 55);
@@ -99,12 +99,13 @@ public class NationalteamRunde14Tests
     }
 
     /// <summary>
-    /// R14NT-01 (P1): Regressionstest (vorher rot: Form Deutschlands an den Wandertagen 224/228 gewürfelt, 45 … 55).
+    /// R14NT-01 (P1): Regressionstest (vorher rot: Form Deutschlands an Wandertagen der WM gewürfelt, 45 … 55).
     /// [ORIGINAL] Nach der Ernennung (Datei 0x55482/0x55485) läuft die WM in der Schleife Datei 0x55570–0x55740: je WM-Tag
     /// Menü des Bundestrainers, 0x37F/0x380 und 0x426BC (Datei 0x55599–0x555CA), 0x952C(5, 0) (Datei 0x555D6), dann die
     /// WM-Spiele 0x30E7B(1) (Datei 0x555F3). Die kleine Wanderung 0x9D1B ruft die Schleife nicht (einziger Aufruf hinter
-    /// 0x555D6 bei Datei 0x56448, Saisonwechsel). Also spielt Deutschland auch am 5. Gruppentermin (Tag 224 ≡ 0 mod 7) und
-    /// am Halbfinale (Tag 228 ≡ 4 mod 7) mit der Form der Aufstellung.
+    /// 0x555D6 bei Datei 0x56448, Saisonwechsel). Also spielt Deutschland auch an den WM-Tagen, deren Tageslauf im Hauptweg
+    /// gewandert hätte, mit der Form der Aufstellung: Zähler 0x3B7 = Tag + 1 ≡ 0/4 (mod 7), Tage 216, 220, 230 (#675, Review #674;
+    /// vorher mit dem Remake-Tag 224/228).
     /// </summary>
     [Theory]
     [InlineData(3)]
@@ -120,8 +121,8 @@ public class NationalteamRunde14Tests
             LowerSquadForm(coach);
             game.Continue();
         }
-        var driftDates = probe.Seen.Where(s => MatchEngine.IsDriftDay(s.Day)).ToList();
-        Assert.Equal([224, 228], driftDates.Select(s => s.Day));
+        var driftDates = probe.Seen.Where(s => MatchEngine.IsDriftDay(DayCounter.Of(s.Day))).ToList();
+        Assert.Equal([216, 220, 230], driftDates.Select(s => s.Day));
         Assert.All(probe.Seen, s =>
         {
             Assert.InRange(s.DefenseForm, 0, 44);

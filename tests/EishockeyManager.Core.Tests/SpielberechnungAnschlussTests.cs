@@ -194,13 +194,17 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     /// kader-start Teil 4 (A091/A166): beide neu – Kaderplatzfolge statt Rolle/Nummer in Spiel und Auto-Aufstellung.
     /// Fix R13GN-01 (#622): aktiv neu – gekaufte Torhüter/Verteidiger nach Spielerart einsortiert (Datei 0x42D55) statt hinten an;
-    /// passiv unverändert (Gegenprobe wie in <see cref="RngTwinProbeTests"/>).</summary>
-    // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
-    // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
-    // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
+    /// passiv unverändert (Gegenprobe wie in <see cref="RngTwinProbeTests"/>).
+    /// Runde 14, nationalteam Teil 4 (#664): neu ab dem 14. April der ersten Saison – ohne Bundestrainer läuft die WM in der WM-Schleife des Originals (Datei 0x55570–0x55740): keine Wanderung, kein Training, kein Markt außer nach den WM-Spielen bestimmter Tage (dort 224/228, falsch, siehe unten). Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert.
+    /// Review #674 (R14NT4-01/-05, #675): neu – (c) der WM-Schleife nach den WM-Spielen der Tage 216, 220 und 230 (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel, Takttage (Wanderung, Talentsuche) und Heilung des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück auf den Remake-Tag → weder alter noch neuer Wert, beide Teile wirken.
+    /// Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
+    /// kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
+    /// Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
+    /// (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
+    /// Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).</summary>
     [GameDataTheory]
-    [InlineData(false, "F870B1D62625C180")]
-    [InlineData(true, "E68DED1685288C73")]
+    [InlineData(false, "D92E9F662A1522AB")]
+    [InlineData(true, "A8F64326846979F4")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

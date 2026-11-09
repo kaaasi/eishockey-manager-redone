@@ -57,7 +57,7 @@ public class NationalCoachMode4Tests
     [Fact]
     public void Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach()
     {
-        var game = GameModeTests.Create(17, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
+        var game = GameModeTests.Create(56, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56, Vorbedingung beide unter den ersten fünf
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         var top = game.FinalTables()[League.Bundesliga].Take(5).ToList();
@@ -90,7 +90,7 @@ public class NationalCoachMode4Tests
     public void Mode4_Appointment_BeforeReroll_GermanyKeepsBaseRatings()
     {
         // [ORIGINAL] Datei 0x554CF: Ausgewürfelt wird nur, wenn nach der Ernennung kein Bundestrainer da ist.
-        var game = GameModeTests.Create(2, true, true, 2); // kader-start U15-a/R-K5 (L13): Saat 3 → 2, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
+        var game = GameModeTests.Create(22, true, true, 2); // kader-start U15-a/R-K5 (L13): Saat 3 → 2; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 2 → 22, Vorbedingung Verein 2 unter den ersten fünf
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         Assert.NotNull(game.NationalCoach);

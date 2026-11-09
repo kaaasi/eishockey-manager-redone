@@ -258,7 +258,17 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Integration Runde 12 (+ kader-transfer): Abdruck auf dem integrierten Stand neu ermittelt. Mit und ohne Anzeige weiter gleich.
     /// Runde 13, kader-start Teil 2 (U15-a, L13): ab 1993 neu – Verein 42 tauscht mit Start-Liga Oberliga in die Oberliga
     /// (Datei 0x29CF2, Teamwerte bleiben am Platz, Oberliga-Kader); mit und ohne Anzeige weiter gleich. Teil 3 (R-K5): erneut neu –
-    /// Satzfolge vor der Spielvorbereitung (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.</summary>
+    /// Satzfolge vor der Spielvorbereitung (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
+    /// Runde 14, nationalteam Teil 4 (#664): ab 1994 neu (1993 unverändert) – ohne Bundestrainer läuft die WM in der WM-Schleife
+    /// des Originals (Datei 0x55570–0x55740: keine Wanderung, kein Training, kein Markt außer nach bestimmten WM-Tagen – dort
+    /// 224/228, falsch). Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert. Mit und ohne Anzeige weiter gleich.
+    /// Review #674 (R14NT4-01/-05, #675): ab 1993 neu – Takttage (Wanderung, Talentsuche) und Heilung des Hauptwegs mit dem
+    /// Tageszähler 0x3B7 = Tag + 1 (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …), dazu (c) der WM-Schleife nach den WM-Spielen der
+    /// Tage 216, 220, 230 samt Markt-Verfall und ohne Listenwechsel. Mit und ohne Anzeige weiter gleich.
+    /// Nachprüfung #681 (R14NT4N-01): ab 1994 neu (1993 unverändert) – der Tageslauf von Tag 216 (Zähler 217) rechnet wie im
+    /// Original noch den Takt des Hauptwegs (Wanderung, Talentsuche, Training/Markt/Verträge, Heilung), erst danach die Schleife;
+    /// anderer Zufallsverbrauch ab dem 14. April 1994. Gegenprobe: nur die Core-Änderung zurück → alter Wert. Mit und ohne Anzeige
+    /// weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 21, DM 6, Tab 15379 | 1994: DEB 23, DM 0, Tab 15591 | 1995: DEB 8, DM 8, Tab 15807 | 1996: DEB 10, DM 8, Tab 15236";
+        "1993: DEB 9, DM 5, Tab 15381 | 1994: DEB 5, DM 2, Tab 15829 | 1995: DEB 5, DM 9, Tab 15756 | 1996: DEB 5, DM 5, Tab 16395";
 }

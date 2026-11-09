@@ -93,12 +93,13 @@ public class SpielberechnungKomplett3Tests
         var b = club.Players[1];
         a.InjuredGames = 2;
         b.InjuredGames = PlayerInjuries.Permanent;
-        game.HealInjuries(13);
+        // #675 (Review #674, R14NT4-03): Heiltag nach dem Zähler 0x3B7 = Tag + 1 (DayCounter), also Remake-Tage 13, 20, 27.
+        game.HealInjuries(12);
         Assert.Equal(2, a.InjuredGames);
-        game.HealInjuries(14);
-        game.HealInjuries(21);
+        game.HealInjuries(13);
+        game.HealInjuries(20);
         Assert.Equal(0, a.InjuredGames);
-        game.HealInjuries(28);
+        game.HealInjuries(27);
         Assert.Equal(0, a.InjuredGames);
         Assert.Equal(PlayerInjuries.Permanent, b.InjuredGames);
     }

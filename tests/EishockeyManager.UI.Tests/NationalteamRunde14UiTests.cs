@@ -1,6 +1,8 @@
 using EishockeyManager.Core;
+using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.Competitions;
+using EishockeyManager.UI.Screens.Team;
 
 namespace EishockeyManager.UI.Tests;
 
@@ -129,5 +131,118 @@ public class NationalteamRunde14UiTests
         var again = Assert.IsType<CupPairingsScreen>(open(host, menu));
         Assert.Equal("Gruppe 1   5.Spieltag", again.Title);
         Assert.Equal(before, SaveGame.Save(game));
+    }
+
+    /// <summary>
+    /// R14NT-N1 (Nachprüfung #665): Regressionstest für das Rücksetzen der gemerkten WM-Seite beim Saisonwechsel (Mutation M5a –
+    /// Zeile in <c>WorldCupPairingsPages.Of</c> auskommentiert – macht ihn rot: die Kachel zeigte in der neuen Saison Gruppe 2).
+    /// [ORIGINAL] Datei 0x5649D–0x564BA: Der Saisonwechsel kopiert die Startwerte 0x5128 … 0x512C nach 0x5123 … 0x5127, die Seite
+    /// der Kachel „WM“ ist danach wieder Gruppe 1. Ablauf aus der Nachprüfung: „nur Weltkugel“, „WM“, „Gruppe 2“, Kachel erneut →
+    /// Gruppe 2; Saisonende, <c>StartNextSeason</c>, <c>Continue</c>, Kachel → Gruppe 1.
+    /// </summary>
+    [Fact]
+    public void CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup()
+    {
+        var game = WorldOnly();
+        game.Continue();
+        game.AutoNominate();
+        var host = new ScreenHost(null!) { Game = game };
+        var menu = new Dummy(host);
+        var open = MenuEntries.All["WM"];
+        game.OnMainMenu(game.Managers[0], isReturn: false);
+        var first = Assert.IsType<CupPairingsScreen>(open(host, menu));
+        Assert.Equal(0, first.Group);
+        host.Show(first);
+        var b = CupPairingsScreen.Buttons[2];
+        first.Update(new InputState { MouseX = b.X + 2, MouseY = b.Y + 2, LeftClick = true });
+        Assert.Equal(1, Assert.IsType<CupPairingsScreen>(host.Current).Group);
+        game.OnMainMenu(game.Managers[0], isReturn: true);
+        Assert.Equal(1, Assert.IsType<CupPairingsScreen>(open(host, menu)).Group);
+
+        for (var guard = 0; game.Phase != SeasonPhase.SeasonOver; guard++)
+        {
+            Assert.True(guard < 100, "Saisonende nicht erreicht");
+            game.Continue();
+        }
+        game.StartNextSeason();
+        game.Continue();
+        game.OnMainMenu(game.Managers[0], isReturn: false);
+        Assert.True(game.WorldCupStage < WorldCupKnockoutScreen.CoachStartStage);
+        Assert.Equal(0, Assert.IsType<CupPairingsScreen>(open(host, menu)).Group);
+    }
+
+    /// <summary>
+    /// Hinweis aus #667 (Regressionstest, vorher rot: Rechtsklick auf einen Platz leerte ihn, der Bildschirm blieb offen).
+    /// [ORIGINAL] Derselbe Code wie beim Verein (Datei 0x40364): Die rechte Taste (DGROUP 0x5A16 = 3) erreicht Blöcke und Plätze
+    /// nicht (Datei 0x40886–0x4088D) und verlässt außerhalb der Listenzeilen den Bildschirm (Datei 0x40D6B–0x40D78). Die linke
+    /// Taste wählt die Reihe (Datei 0x40890–0x40943) und leert einen belegten Platz (Datei 0x40AA3–0x40D0D); war „automatisch
+    /// aufstellen“ an, schaltet sie es ab und meldet „Auto-Aufstellung / ist deaktiviert !“ (Datei 0x40ACF–0x40AF3).
+    /// </summary>
+    [GameDataFact]
+    public void NationalLineup_RightClickOnSlotLeaves_LeftClickClears()
+    {
+        var (d, game) = NationalLineupScreenTests.StartWorldOnly();
+        game.AutoNominate();
+        var coach = game.NationalCoach!;
+        coach.AutoFormation();
+        var slot = LineupSlot.Defender(0, 0);
+        var placed = coach.Formation[slot];
+        Assert.NotNull(placed);
+
+        d.OpenTile("Aufstellung");
+        Assert.IsType<NationalLineupScreen>(d.Host.Current);
+        d.Frame();
+        NationalLineupScreenTests.ClickSlot(d, slot, right: true);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
+        Assert.Same(placed, coach.Formation[slot]);
+        Assert.True(coach.AutoLineupEnabled);
+
+        d.OpenTile("Aufstellung");
+        var screen = Assert.IsType<NationalLineupScreen>(d.Host.Current);
+        d.Frame();
+        NationalLineupScreenTests.ClickSlot(d, slot);
+        Assert.IsType<NationalLineupScreen>(d.Host.Current);
+        Assert.Null(coach.Formation[slot]);
+        Assert.False(coach.IsDressed(placed));
+        Assert.Equal(0, screen.SelectedLine);
+        Assert.False(coach.AutoLineupEnabled);
+        Assert.Equal(["Auto-Aufstellung", "ist deaktiviert !"], screen.Message.Lines);
+        d.Frames(100);
+
+        var box = LineupScreen.BlockBox(1);
+        d.RightClick(box.X + 1, box.Y + 1); // Block ohne Platz: ebenfalls zurück
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
+    }
+
+    /// <summary>
+    /// R14NT4-06 (Review #674): Regressionstest (Mutation U5 – Bedingung nie wahr – blieb grün). [ORIGINAL] Datei 0x40ACF–0x40AF3
+    /// schaltet „automatisch aufstellen“ ab, Datei 0x40B37–0x40B5D: ein Verletzter oder Gesperrter mit Restdauer (+0x0D ≠ 0,
+    /// +0x09 &amp; 3 ≠ 0) bleibt auf dem Platz, Meldung „Spieler ist“ / „noch gesperrt !“ (DGROUP 0x1255/0x1251).
+    /// </summary>
+    [GameDataTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(bool suspended)
+    {
+        var (d, game) = NationalLineupScreenTests.StartWorldOnly();
+        game.AutoNominate();
+        var coach = game.NationalCoach!;
+        coach.AutoFormation();
+        var slot = LineupSlot.Defender(0, 0);
+        var placed = coach.Formation[slot]!;
+        if (suspended)
+            placed.SuspendedGames = 1;
+        else
+            placed.InjuredGames = 2;
+
+        d.OpenTile("Aufstellung");
+        var screen = Assert.IsType<NationalLineupScreen>(d.Host.Current);
+        d.Frame();
+        NationalLineupScreenTests.ClickSlot(d, slot);
+        Assert.IsType<NationalLineupScreen>(d.Host.Current);
+        Assert.Same(placed, coach.Formation[slot]);
+        Assert.True(coach.IsDressed(placed));
+        Assert.False(coach.AutoLineupEnabled);
+        Assert.Equal(["Spieler ist", "noch gesperrt !"], screen.Message.Lines);
     }
 }
