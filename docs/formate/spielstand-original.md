@@ -331,7 +331,7 @@ FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die S
 | Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf wird der Spieler nach Spielerart einsortiert (vor dem ersten leeren Platz oder dem ersten Platz größerer Art; ein Stürmer kommt damit hinten an) | FILE05 → FILE07 (Kauf eines Stürmers) und FILE26 (Verkauf), em.exe Datei `0x42D55`–`0x42DA1` mit memmove ab `0x42DC3` (Kauf, R13GN-01/#622), `0x425B6` (Verkauf); Remake `KaderStartRunde13Teil4Tests` (PR #599), `KaufEinsortierenTests` (PR #623) |
 | HOK `0x08EED` / `0x08EF7` | DGROUP `0xA776` (Teilnehmerliste Europapokal, deutsche Teilnehmer; die Mischung 0x35EDD führt Meister und Titelverteidiger über 0x36146 mit) bzw. DGROUP `0xA763` | FILE22 → FILE23: Kölner EC Satz 4 → 8, Liste = 8 (PR #579, 0x346D5 nach L8) |
 
-## Feldkarte Remake-Spielstand (Schema 39) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 41) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -412,6 +412,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._managerBalance` | U | – | leer (Bilanz Manager gegen Manager) |
 | `GameState._managerHistory` | N | – | leer |
 | `GameState._nationalForm` | U | – | Vorgabe wie neues Spiel |
+| `GameState._nationalAutoLineupSaved` | B | `0375+11` | DGROUP 0x380 zwischen zwei Ämtern (A009, Schema 41); gleiche Quelle wie `NationalCoach._autoLineupSaved` |
 | `GameState._nationalTurn` | A | `A70E` | `A70E` = 5 |
 | `GameState._nextLeagueSlots` | N | – | leer (wird am 29. April gebildet) |
 | `GameState._readyManagers` | N | – | leer |
@@ -434,6 +435,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameSetup.Managers` | B | `Kopf`, `965B` | je Manager eine `ManagerSetup` |
 | `GameSetup.Options` | B | `021D`, `0262` | Zeilen `GameOptions` |
 | `GameOptions.LiveMode` | B | `021D+9` | DGROUP 0x226 |
+| `GameOptions.ManagerDayMinuteLoop` | N | – | Einstellung des Remakes „Ganzer Tag“ (R14-D4 = A, #349, Schema 40): kein Schalter des Originals; Import `false` |
 | `GameOptions.MatchSpeed` | B | `0262` | DGROUP 0x262 |
 | `GameOptions.Reports` | B | `021D+0` | Index 0–8 |
 | `GameOptions.ShowDebCup` | B | `021D+10` | DGROUP 0x227 |
@@ -730,6 +732,9 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `RelegationGroup.Rounds` | B | `CED8+0x48` | 6 Byte je Spieltag |
 | `RelegationGroup.Upper` | A | `CED8` | Gruppe 1: Bundesliga, Gruppe 2: 2. Liga |
 | `NationalCoach.Formation` | A | `5DC3+0x15` | Satz 5, wie `Lineup` |
+| `NationalCoach._autoLineup` | B | `0375+10` | DGROUP 0x37F (A009, Schema 41); Import: gesicherter Wert 0x380, Zug nicht offen `[APPROX]` |
+| `NationalCoach._autoLineupSaved` | B | `0375+11` | DGROUP 0x380 (`0x375 + 2 · 5 + 1`) |
+| `NationalCoach._turnOpen` | N | – | Zugzustand des Bundestrainers liegt nicht im Spielstand; Import `false`, der nächste Menüaufbau beginnt den Zug |
 | `NationalCoach.Manager` | B | `D0BA` | ernannter Manager |
 | `NationalCoach.Nation` | B | `06AC` | Land (Regel 1) |
 | `NationalCoach.Tactics` | B | `A6FB+5` | Modi und Werte des Satzes 5 (`A707+5`, `CAE9+0xF0`) |
@@ -899,6 +904,16 @@ liegt bei den genannten Spuren.
   sein Kaderplatz wandert in den Marktsatz, die Plätze rücken auf; der Pool-Satz behält Besitzer = Manager (`far:8253+0x1A`)
   und Verein (`+0x1D`). FILE40 → FILE41: HOHENADL Markt Platz 7, Pool-Satz 28 `+0x1A` = 0, `+0x1D` = 2 (A380). Für den Import
   des Transfermarkts (Teil 4b): Marktplatz mit Pool-Besitzer 0–3 = Angebot dieses Managers.
+
+### Stand Integration Runde 14 (Schema 41) und offene Felder aus `kader-start` (PR #669, Schema 42/43)
+
+- Neu seit der Karte (Schema 40/41): `GameOptions.ManagerDayMinuteLoop` (nur Remake, Import `false`) und „automatisch aufstellen“
+  des Bundestrainers (`0375`, 0x37F/0x380; der Import übernimmt 0x380, Test `OriginalImportRunde14Tests`).
+- **Noch nicht abgebildet, sobald #669 auf `main` liegt (Restlücke, Schema 42/43 aus dem Branch):** Start-Liga in `GameSetup`
+  (42), Tabellenfeld je Verein (A046, 43: `8257` Tabellensatz +0x2E, siehe oben) und Tore/Spiele je Wettbewerb (A135, 43:
+  Kaderplatz +0x03–0x08 und +0x1C–0x26). Der Import setzt sie nicht; die Feldkarte muss dann auf Schema 43 gezogen werden
+  (`OriginalImportFieldMapTests` wird bis dahin rot). Leihe und Transferliste (A380) laufen über Felder, die schon in der Karte
+  stehen (Marktplatz und Pool-Besitzer); Taktik 375h ist als `Club._autoLineup` importiert.
 
 ### Zugang (Teil 3)
 

@@ -20,6 +20,9 @@ public sealed partial class GameState
     private void ApplyNationalSquad(OriginalSaveGame save, int[] clubOf, Dictionary<int, Player> pool,
         Dictionary<int, Player> squadPlayers)
     {
+        // A009 (Schema 41): „automatisch aufstellen“ des Bundestrainers = Satz 5 im Block 0375 (0x375 + 2 · 5 aktuell, 0x380 gesichert).
+        // [APPROX] Der Zug gilt als nicht offen (wie nach der Migration 40 → 41): Es zählt der gesicherte Wert 0x380.
+        _nationalAutoLineupSaved = save.Block("0375")[2 * OriginalImport.NationalRecord + 1] != 0;
         if (NationalCoach is not { } coach)
             return;
         coach.ClearSquad();
@@ -64,5 +67,6 @@ public sealed partial class GameState
             if (dressed && !coach.Formation.Contains(player))
                 coach.Dress(player);
         ApplyTacticValues(save, coach.Tactics, OriginalImport.NationalRecord);
+        coach.TakeOverAutoLineup(_nationalAutoLineupSaved); // nach dem Aufstellen: Assign/Dress dürfen den Wert nicht verändern
     }
 }
