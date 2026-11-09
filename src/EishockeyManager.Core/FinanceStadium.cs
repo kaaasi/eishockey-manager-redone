@@ -284,6 +284,17 @@ public sealed class Stadium
     }
 
     /// <summary>
+    /// Baustelle aus einem Original-Spielstand (Spur hok-import, R14HI-02): Zielstufe (Manager-Satz +0x117 + 2 · Bereich) und
+    /// Restwochen (+0x128 + Projekt) unverändert übernehmen; Plätze im Bau stehen schon in <see cref="SeatsTarget"/>/<see cref="StandingTarget"/>.
+    /// </summary>
+    internal void ImportConstruction(int project, int target, int weeks)
+    {
+        if (project < FeatureCount)
+            _targets[project] = target;
+        _weeksLeft[project] = weeks;
+    }
+
+    /// <summary>
     /// Eine Bauwoche: Restwochen − 1 je Baustelle; bei 0 Stufe = Zielstufe bzw. Plätze = Zielplätze. Liefert die fertigen
     /// Projekte in Projektreihenfolge. [ORIGINAL] Datei 0x3D316.
     /// </summary>

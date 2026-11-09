@@ -97,6 +97,7 @@ Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nati
 | `saison` | integriert, Prüfung grün (2288 / 0 / 0 mit Daten), wartet auf Review | #652 (Branch `integration/runde-14-saison`, Base `b7e1eb2`) | im Übergabekommentar von #652 |
 | `nationalteam` | integriert (#630, #637, #653; Schema 41); Review #662 „Nein“ → Korrekturen R14NT-01–06 auf dem Branch (08.11.2026), wartet auf Nachprüfung | #661 (Branch `integration/runde-14-nationalteam`, Base `3e0cf69`) | im Übergabekommentar von #661 |
 | `ui-rest` | integriert (#634, #647, #657; Schema bleibt 41, Spur ändert den Spielstand nicht), Prüfung grün (2321 / 0 / 0 mit Daten), wartet auf Review | #666 (Branch `integration/runde-14-ui-rest`, Base `6e1bf44`) | im Übergabekommentar von #666 |
+| `hok-import` | integriert (#633, #638, #640, #648, #651, #654, #658; Schema bleibt 41, Spur ändert den Spielstand nicht); Review #673 „Nein“ → Befunde R14HI-01–07 auf dem Branch behoben (09.11.2026: Play-offs/Aufstiegsrunden Teil 4d, Ausbauten, Werbevertrag-Schlüssel, Feldkarte B/A gegen den Code geprüft, Testlücken, Marker); Mehrsaisonprobe aller 52 Stände; wartet auf Nachprüfung | #670 (Branch `integration/runde-14-hok-import`, Base `1e9a233`, danach `main` mit #666 und #673 hineingemergt) | im Übergabekommentar von #670 |
 
 Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 → `pruefung-karte`.
 
@@ -168,7 +169,8 @@ nicht übernommenen Felder noch in Runde 14. Fortsetzungen: höchstens 5 statt 3
      (4a/4b), Tests je Bereich mit Originaldaten.
   5. **Speichern-Dialog wie im Original (L6, nach `re-dosbox` Teil 2):** A338/A339 – Blättern nur über die zwei Pfeile, kein
      „SEITE:“, Infofeld nur bei gehaltener rechter Maustaste; Pixeltest gegen `a338_*`.
-- **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
+
+- **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Feldkarte) fertig, PR #633 (08.11.2026); Teil 2 (Import Spielkern) fertig, PR #638 (08.11.2026); Teil 3 (Zugang) fertig, PR #640 (08.11.2026); Teil 4a (Restfelder ohne Pokale, Pool/Markt, Nationalkader, Nachrichten) fertig, PR #648 (08.11.2026); Teil 4b (Pool/Transfermarkt, Nationalkader, Nachrichten) fertig, PR #651 (08.11.2026); Teil 4c (DEB-Pokal, Europapokal, WM aus em.exe zugeordnet) fertig, PR #654 (08.11.2026); Teil 5 (Speichern-Dialog A338/A339, L6; zusätzlicher Lauf E14-6 = A) fertig, PR #658 (08.11.2026); alle sieben integriert in `integration/runde-14-hok-import` (PR #670, 09.11.2026), wartet auf Review.
 
 ### Spur `pruefung-karte` – Welle 2 (nach der Integration aller Spuren)
 

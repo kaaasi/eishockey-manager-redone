@@ -14,9 +14,11 @@ internal static class HokDump
     {
         if (args.Count >= 1 && args[0].Equals("patch", StringComparison.OrdinalIgnoreCase))
             return HokPatch.Run(args.Skip(1).ToList());
+        if (args.Count >= 1 && args[0].Equals("import", StringComparison.OrdinalIgnoreCase))
+            return HokImport.Run(args.Skip(1).ToList());
         if (args.Count < 2 || !args[0].Equals("dump", StringComparison.OrdinalIgnoreCase))
         {
-            Console.Error.WriteLine("Aufruf: emtool hok dump <datei> [block …] | emtool hok patch <vorlage> <ziel> feld=wert …");
+            Console.Error.WriteLine("Aufruf: emtool hok dump <datei> [block …] | emtool hok patch <vorlage> <ziel> feld=wert … | emtool hok import <hok> <ziel>");
             return 1;
         }
 

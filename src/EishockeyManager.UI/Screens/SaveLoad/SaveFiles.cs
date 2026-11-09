@@ -14,6 +14,9 @@ public enum SaveEntryKind
 
     /// <summary>Andere Datei (grau, ohne Wirkung).</summary>
     Other,
+
+    /// <summary>Original-Spielstand (<c>*.HOK</c>): beim Laden gelb und wählbar (Import), beim Sichern grau.</summary>
+    Original,
 }
 
 /// <summary>Eintrag der Dateiliste: Dateiname (wie auf der Platte) und Art.</summary>
@@ -98,7 +101,8 @@ public static class SaveFiles
             var files = Directory.EnumerateFiles(directory)
                 .Select(p => Path.GetFileName(p))
                 .Where(n => !n.EndsWith(TempSuffix, StringComparison.OrdinalIgnoreCase))
-                .Select(n => new SaveEntry(n, IsSaveFileName(n) ? SaveEntryKind.Save : SaveEntryKind.Other))
+                .Select(n => new SaveEntry(n, IsSaveFileName(n) ? SaveEntryKind.Save
+                    : IsOriginalFileName(n) ? SaveEntryKind.Original : SaveEntryKind.Other))
                 .OrderBy(e => e.FileName, StringComparer.OrdinalIgnoreCase);
             return [.. directories, .. files];
         }
@@ -114,13 +118,27 @@ public static class SaveFiles
         && NormalizeName(fileName) is not null;
 
     /// <summary>
+    /// Ist die Datei ein Original-Spielstand (<c>*.HOK</c>) mit gültigem Namen? Spur hok-import, Teil 3: der Laden-Dialog
+    /// importiert ihn (<see cref="OriginalImport.TryImport"/>).
+    /// </summary>
+    public static bool IsOriginalFileName(string fileName) =>
+        OriginalImport.IsOriginalFileName(fileName)
+        && NormalizeName(fileName[..^OriginalImport.FileExtension.Length]) is not null;
+
+    /// <summary>Pfad des Original-Spielstands zu einem Namen (<c>FILE05</c> → vorhandene <c>FILE05.HOK</c> in beliebiger Schreibweise).</summary>
+    public static string OriginalPathOf(string directory, string baseName) =>
+        FindFile(directory, baseName + OriginalImport.FileExtension);
+
+    /// <summary>
     /// Pfad der Spielstanddatei zu einem Namen. Liegt schon eine Datei an, deren Name sich nur in der Schreibweise
     /// unterscheidet (<c>test1.EMS</c>), wird sie benutzt – so entstehen auf Systemen mit Groß-/Kleinschreibung
     /// keine zwei Dateien zum selben Namen.
     /// </summary>
-    public static string PathOf(string directory, string baseName)
+    public static string PathOf(string directory, string baseName) =>
+        FindFile(directory, FileNameOf(baseName));
+
+    private static string FindFile(string directory, string wanted)
     {
-        var wanted = FileNameOf(baseName);
         if (Directory.Exists(directory))
         {
             try
