@@ -97,7 +97,7 @@ Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nati
 | `saison` | integriert, Prüfung grün (2288 / 0 / 0 mit Daten), wartet auf Review | #652 (Branch `integration/runde-14-saison`, Base `b7e1eb2`) | im Übergabekommentar von #652 |
 | `nationalteam` | integriert (#630, #637, #653; Schema 41); Review #662 „Nein“ → Korrekturen R14NT-01–06 auf dem Branch (08.11.2026), wartet auf Nachprüfung | #661 (Branch `integration/runde-14-nationalteam`, Base `3e0cf69`) | im Übergabekommentar von #661 |
 | `ui-rest` | integriert (#634, #647, #657; Schema bleibt 41, Spur ändert den Spielstand nicht), Prüfung grün (2321 / 0 / 0 mit Daten), wartet auf Review | #666 (Branch `integration/runde-14-ui-rest`, Base `6e1bf44`) | im Übergabekommentar von #666 |
-| `kader-start` | integriert (#631, #646, #655, #659, #663, #667; Schema 42 = Start-Liga, 43 = Tabellenfeld/Wettbewerbszähler); Review #677 „Nein“ → Fixlauf R14KS-01–08 (09.11.2026) | #669 (Branch `integration/runde-14-kader-start`, Base `1e9a233`) | im Übergabekommentar von #669 |
+| `kader-start` | integriert (#631, #646, #655, #659, #663, #667; Schema 42 = Start-Liga, 43 = Tabellenfeld/Wettbewerbszähler); Review #677 „Nein“ → Fixlauf R14KS-01–08, R14N-01–03, R14NT4-05/07 erledigt (09.11.2026), Prüfung grün (2404 / 0 / 0 mit Daten), wartet auf Nachprüfung | #669 (Branch `integration/runde-14-kader-start`, Base `1e9a233`) | im Übergabekommentar von #669 |
 
 Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 → `pruefung-karte`.
 
