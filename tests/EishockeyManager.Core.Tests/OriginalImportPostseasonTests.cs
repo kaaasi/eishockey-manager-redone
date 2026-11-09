@@ -184,6 +184,47 @@ public sealed class OriginalImportPostseasonTests(ITestOutputHelper output)
         Assert.True(checkedStands >= 2, $"nur {checkedStands} Stände nach der Hauptrunde");
     }
 
+    /// <summary>
+    /// Mehrsaisonprobe nach dem Import aller Original-Stände (Auftrag Leitstelle Runde 14, Schritt 9): vier Saisonwechsel mit
+    /// aktiven Managern (Konto mindestens 2 Mio. DM, Kader gehalten) ohne Ausnahme, Spielerkennungen gültig, Ligen zu je zwölf
+    /// Vereinen. Stände mit Spieldauer „eine Saison“ enden vorher (GameOver).
+    /// </summary>
+    [GameDataFact]
+    public void Import_AllStands_FourSeasonChanges()
+    {
+        var folder = Path.GetDirectoryName(OriginalImportTests.OriginalSave("FILE01.HOK"))!;
+        var database = ClubDatabase.Load(TestGameData.Load());
+        foreach (var path in Directory.GetFiles(folder, "FILE*.HOK").Order(StringComparer.Ordinal))
+        {
+            var save = OriginalSaveGame.Read(File.ReadAllBytes(path));
+            var game = GameState.ImportOriginal(save, database, Seed);
+            var start = game.Season;
+            var changes = 0;
+            for (; changes < 4 && game.Phase != SeasonPhase.GameOver; changes++)
+            {
+                for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+                {
+                    Assert.True(guard < 3000, $"{Path.GetFileName(path)}: Saisonende nicht erreicht");
+                    foreach (var m in game.Managers)
+                    {
+                        m.Money = Math.Max(m.Money, 2_000_000);
+                        TestSeason.KeepSquad(game, m, extendExpired: true);
+                    }
+                    game.Continue();
+                }
+                if (game.Phase == SeasonPhase.GameOver)
+                    break;
+                game.StartNextSeason();
+                Assert.Empty(game.ValidatePlayerIdentity());
+                if (!game.WorldOnly)
+                    foreach (var league in Enum.GetValues<League>())
+                        Assert.Equal(GameState.ClubsPerLeague, game.Clubs.Count(c => c.League == league));
+            }
+            output.WriteLine($"{Path.GetFileName(path)}: {start} → {game.Season}, {changes} Wechsel, {game.Phase}");
+            Assert.True(game.Season == start + 4 || game.Phase == SeasonPhase.GameOver, $"{Path.GetFileName(path)}: nur bis {game.Season}");
+        }
+    }
+
     private static string Names(GameState game, IEnumerable<int> clubs) => string.Join(", ", clubs.Order().Select(c => game.Clubs[c].Name));
 
     private static (OriginalSaveGame Save, GameState Game, int[] ClubOf) Import(string file)
