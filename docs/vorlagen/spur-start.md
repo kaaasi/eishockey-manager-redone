@@ -78,7 +78,8 @@ oder einen einzelnen Folgeteil mit Base nennt (dann ohne Schritt 5).
    - die Aufgabe (Name, Zeitpunkt) im Übergabekommentar nennen;
    - lehnt die Freigabe `create_trigger` ab (beobachtet 01.11.2026, häufig): Label `spur-wartet` setzen und im Übergabekommentar
      „Fortsetzung anlegen – Leitstelle“ mit dem fertigen Prompt (Name, Startaufruf mit Zähler) vermerken; die Leitstelle legt
-     die Aufgabe an und setzt das Modell laut vom Nutzer bestätigtem Plan.
+     die Aufgabe an und setzt das Modell laut vom Nutzer bestätigtem Plan bzw. nach `docs/prozess/zusammenarbeit.md` §5
+     „Modellwahl“.
 6. **Kettenende:** Sind alle Teile fertig, oder ist n = 3 und Teile bleiben offen: keine Fortsetzung; Label `spur-wartet`
    auf den obersten PR und im Übergabekommentar „Spur fertig – Integration“ bzw. „Fortsetzungen erschöpft – Entscheidung
    Nutzer“. Die Leitstelle sieht offene PRs mit `spur-wartet` durch.

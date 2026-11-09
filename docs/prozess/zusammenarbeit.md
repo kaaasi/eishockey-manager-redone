@@ -79,21 +79,22 @@ schreibt zuerst einen Übernahmekommentar („übernommen ab SHA …, Tests …�
 - Ändert sich der Head nach dem Review, ist eine **Nachprüfung** des Deltas nötig (`…-nachpruefung.md`), außer im
   Fall „nur P2/P3“ der sparsamen Kette (unten).
 - **Sparsame Kette (Entscheidung Nutzer 09.11.2026, Vorschläge 1 + 2):**
-  1. **Erstreview** eines PR (Paket- oder Integrations-PR): vollständig mit Claude Opus 5.5 – alle drei Läufe von
+  1. **Erstreview** eines PR (Paket- oder Integrations-PR): vollständig (reviewt Claude: mit Claude Opus 5.5) – alle drei Läufe von
      `tools/pruefen.sh`, Mutationen, Pixelvergleich, Fehlerfälle/Fuzzing, Fundstellen in em.exe.
   2. **Fixlauf:** Prüfung mit `tools/pruefen.sh --schnell` (den Lauf ohne Daten übernimmt die CI).
   3. **Nachprüfung** nur, wenn der Fixlauf einen **P0- oder P1-Befund** behebt: nur das Delta, nur die Gegenbeispiele und
      Rückmutationen dieser Befunde (keine erneute Vollprüfung, kein neuer Pixelvergleich außerhalb der Befunde).
-  - **Modellwahl (Ergänzung Nutzer 09.11.2026):** Claude Opus 5.5 bleibt überall, wo es Fehler und damit Nacharbeit vermeidet –
-    Spielregeln, Spielkern, Disassembly, Import, Erstreviews und Nachprüfungen. Claude Sonnet 5.5 nur für mechanische
-    Arbeit: Integrationen ohne eigene Regeländerung, reine Doku-Prüfungen, Kommentare und einfache Testergänzungen. Im
-    Zweifel Opus.
   4. Behebt der Fixlauf **nur P2/P3**: keine Nachprüfung. Die Leitstelle prüft selbst Delta (`compare`/`--stat`, betroffene
      Dateien), CI auf dem Head und die Testtabelle des Fixlaufs und vermerkt das im Merge-Kommentar
      („Delta geprüft durch Leitstelle, nur P2/P3“).
   5. **P3-Befunde** bekommen keinen eigenen Lauf: Die Leitstelle legt sie als Issue (Label `P3`) an und gibt sie gesammelt
      an `pruefung-karte` bzw. den letzten Lauf der Runde. Ein Fixlauf, der ohnehin läuft, darf P3 mitnehmen.
   6. Das **Gesamtreview** am Rundenende (ChatGPT, Vollprüfung) bleibt unverändert das letzte Netz.
+
+  **Modellwahl (Ergänzung Nutzer 09.11.2026):** Claude Opus 5.5 bleibt überall, wo es Fehler und damit Nacharbeit
+  vermeidet – Spielregeln, Spielkern, Disassembly, Import, Erstreviews und Nachprüfungen. Claude Sonnet 5.5 nur für
+  mechanische Arbeit: Integrationen ohne eigene Regeländerung, reine Doku-Prüfungen, Kommentare und einfache
+  Testergänzungen. Im Zweifel Opus. Die Leitstelle setzt das Modell danach selbst (`docs/vorlagen/leitstelle-start.md`).
 - **Befunde als Issues** (seit 28.10.2026): Beim Auswerten legt die Leitstelle je Befund ein Issue an – Titel
   `<ID>: <Kurzbeschreibung>`, Labels `befund` und `P0`–`P3`, Link auf die Review-Datei. Der PR, der den Befund behebt,
   schließt das Issue (`Fixes #<nr>` in der Beschreibung). Pakete und Status bleiben in `docs/arbeitspakete.md`.
