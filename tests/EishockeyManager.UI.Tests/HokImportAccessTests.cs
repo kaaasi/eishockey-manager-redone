@@ -134,6 +134,29 @@ public sealed class HokImportAccessTests : IDisposable
         Assert.Contains("20. Sept.  1993", d.Host.Game!.DateText);
     }
 
+    /// <summary>
+    /// Review R14HI-05 (M45): Name getippt, dann **ein** Klick auf den gleichnamigen HOK-Eintrag → der angeklickte HOK wird importiert,
+    /// nicht der gleichnamige Remake-Stand (<c>_selected</c> muss beim Ausführen auf den Eintrag zeigen).
+    /// </summary>
+    [GameDataFact]
+    public void SameName_TypedThenSingleClickOnHok_Imports()
+    {
+        var d = NewDriver();
+        d.OpenTile("Sichern");
+        d.Type("file05");
+        d.Press(Key.Enter);
+        var remake = Saved(d.Host.Game!);
+        Copy("FILE05.HOK");
+
+        d.OpenTile("Laden");
+        d.Type("file05");
+        var rect = EntryRectOf(_directory, "FILE05.HOK");
+        d.Click(rect.X + 3, rect.Y + 3);
+        Assert.IsType<MainMenuScreen>(d.Host.Current);
+        Assert.NotEqual(remake, Saved(d.Host.Game!));
+        Assert.Contains("20. Sept.  1993", d.Host.Game!.DateText);
+    }
+
     /// <summary>[ORIGINAL] KAPUTT.HOK zeigt im Original „Der kleine Mogelguru“ (Bild kaputt_mogelguru.png); geladen wird nichts.</summary>
     [GameDataFact]
     public void ChecksumError_ShowsMogelguru_AndKeepsRunningGame()

@@ -281,6 +281,48 @@ public sealed class OriginalImportReviewR14Tests
             Assert.Equal("MALMÖ FF", game.Clubs[game.EuropeanCup.Winner!.Value].Name);
     }
 
+    // ---- R14HI-05: Testlücken M03, M09 ----------------------------------------------------------------------------
+
+    /// <summary>
+    /// Regel 1 im Modus „nur Weltkugel“ (M03): Der Satz des Managervereins trägt den Namen des Landes (FILE11: zwei Sätze
+    /// „DEUTSCHLAND“). Der Satz des Landes (`06AC`) bekommt den Datenbankindex Deutschlands, der Satz des Managervereins
+    /// (`965B+0x14`) den einzigen Datenbanknamen, der im Satzbestand fehlt – nicht umgekehrt.
+    /// </summary>
+    [GameDataTheory]
+    [InlineData("FILE11.HOK")]
+    [InlineData("FILE18.HOK")]
+    public void ClubIndices_WorldOnly_NationKeepsItsIndex_ManagerSlotGetsTheMissingClub(string file)
+    {
+        var save = OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave(file)));
+        var database = ClubDatabase.Load(TestGameData.Load());
+        var clubOf = OriginalImport.ClubIndices(save, database);
+        int nationSlot = save.Block("06AC")[0], managerSlot = save.Block("965B")[0x14];
+        var records = save.Block("far:9657");
+        Assert.Equal(OriginalImport.ClubName(records, nationSlot), OriginalImport.ClubName(records, managerSlot)); // beide „DEUTSCHLAND“
+        Assert.Equal(database.Clubs.Single(c => c.Name == "DEUTSCHLAND").Index, clubOf[nationSlot]);
+        Assert.Equal(NationalTeams.Germany, clubOf[nationSlot]);
+        var names = Enumerable.Range(0, ClubDatabase.TotalClubs).Select(slot => OriginalImport.ClubName(records, slot)).ToHashSet();
+        var missing = database.Clubs.Single(c => !names.Contains(c.Name));
+        Assert.Equal(missing.Index, clubOf[managerSlot]);
+        Assert.NotEqual(clubOf[nationSlot], clubOf[managerSlot]);
+    }
+
+    /// <summary>
+    /// „automatisch aufstellen“ (M09): aktueller Wert DGROUP 0x375 + 2 · m, nicht der gesicherte 0x376. FILE32/FILE33 haben 0/1
+    /// (Handbetrieb, Sicherung noch 1), FILE05 1/1.
+    /// </summary>
+    [GameDataTheory]
+    [InlineData("FILE32.HOK", false)]
+    [InlineData("FILE33.HOK", false)]
+    [InlineData("FILE05.HOK", true)]
+    public void Import_AutoLineup_ReadsCurrentByteNotTheSavedOne(string file, bool enabled)
+    {
+        var (save, game, _) = Import(file);
+        Assert.Equal(enabled ? 1 : 0, save.Block("0375")[0]);
+        Assert.Equal(1, save.Block("0375")[1]);
+        Assert.Equal(enabled, game.Clubs[game.Managers[0].ClubIndex].AutoLineupEnabled);
+    }
+
     internal static (OriginalSaveGame Save, GameState Game, int[] ClubOf) Import(string file)
     {
         var save = OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave(file)));
