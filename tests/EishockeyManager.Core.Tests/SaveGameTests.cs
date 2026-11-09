@@ -49,6 +49,9 @@ public class SaveGameTests
     // 33 Belastung Player.Strain statt Energy (Spur wettbewerbe-spiel, Runde 12 Teil 2, A184).
     // 34 Satzfolge der Vereine je Liga GameState._leagueSlots (Spur saisonwechsel, Runde 12 Teil 3, S-K6).
     // 35 Manager._newMessage, GameState._contractTurnFactor und _turnRandom (Spur ui-meldungen, Runde 12 Teil 4, E4).
+    // 36 Nachrichtenspeicher wie im Original, Message.Read entfällt (Spur pixel-marker, Runde 12 Teil 3, R-K6).
+    // 37 ohne Änderung: Lücke, die kader-start in Runde 13 nicht gebraucht hat (L5; SaveGame.Migration.Saison.cs).
+    // 38 Satzfolge der nächsten Saison GameState._nextLeagueSlots (Spur saison, Runde 13 Teil 3, S-K6-a; #621).
     // 39 ohne neues Feld: Nr. = Kaderplatz + 1 für alle Vereine beim Laden (Fix R13G-01/#613, #606); Abdruck unverändert.
     // 40 GameOptions.ManagerDayMinuteLoop (Spur saison, Runde 14 Teil 4, #349).
     // 41 NationalCoach._autoLineup/_autoLineupSaved/_turnOpen und GameState._nationalAutoLineupSaved (Spur nationalteam Teil 3, A009;

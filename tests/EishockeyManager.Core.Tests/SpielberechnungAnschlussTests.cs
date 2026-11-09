@@ -188,7 +188,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Spieler vom Markt sind belasteter, beide Abdrücke (Originaldatenbank) neu; die synthetischen Abdrücke (Seed 3/11) bleiben.
     /// Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.
     /// Runde 13, Spur saison Teil 3 (S-K6-a/c): passiv neu – Fair-Play-Prämie über die neue Liga und Satzfolge vom 29. April
-    /// (Begründung bei <see cref="RngTwinProbeTests"/>); aktiv unverändert.
+    /// (Begründung bei <see cref="RngTwinProbeTests"/>; ursächlich S-K6-c, S-K6-a allein ändert keinen Abdruck). Die frühere
+    /// Angabe „aktiv unverändert“ hielt die Gegenprobe des Reviews #616 nicht (R13GN-04, #621).
     /// kader-start Teil 2 (U15-a, L13): Originaldatenbank-Abdrücke neu – der feste Verein 2 tauscht beim Spielstart innerhalb der
     /// Bundesliga (Datei 0x29CF2, Teamwerte bleiben am Platz). kader-start Teil 3 (R-K5): erneut neu – Satzfolge vor der
     /// Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.

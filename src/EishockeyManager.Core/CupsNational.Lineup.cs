@@ -196,8 +196,10 @@ public sealed partial class NationalCoach
     /// Klick auf einen Spieler der Kaderliste im Aufstellungsbildschirm (Datei 0x40D8D–0x4120D, Menüaufruf mit Kennwert 0).
     /// <list type="bullet">
     /// <item>[ORIGINAL] Jeder Klick schaltet zuerst „automatisch aufstellen“ ab (Datei 0x40DCD–0x40DE4, vor allen Prüfungen; A009).</item>
-    /// <item>[ORIGINAL] Verletzte und Gesperrte (+0x09 &amp; 3 ≠ 0): nur die Meldung, keine Änderung (Datei 0x40E01–0x40E27,
-    ///   für beide Maustasten). Danach ein nicht Eingesetzter bei 22 Eingesetzten: „Schon 22 Mann / im Team !“ (Datei
+    /// <item>[ORIGINAL] Verletzte oder Gesperrte (+0x09 &amp; 3 = 1 bzw. 2): nur die Meldung, keine Änderung (Datei
+    ///   0x40E01–0x40E27, für beide Maustasten). Bei +0x09 &amp; 3 = 3 (verletzt und gesperrt) gibt es keine Meldung, der Klick
+    ///   läuft weiter wie bei einem Spielfähigen (Datei 0x40E01–0x40E0B). [APPROX] Das Remake meldet dann „verletzt“; Sperren
+    ///   setzt der Spielkern ohnehin nicht (#619, R13GN-02). Danach ein nicht Eingesetzter bei 22 Eingesetzten: „Schon 22 Mann / im Team !“ (Datei
     ///   0x40E2A–0x40E61).</item>
     /// <item>[ORIGINAL] Aufgestellter (+0x15 ≠ 0): aus seinem Platz nehmen, seine Reihe wird die gewählte (Datei 0x40F7C–0x411C1).
     ///   Linksklick: danach nicht mehr eingesetzt (+0x0A = Kennwert = 0, Datei 0x4115F–0x4116F); Rechtsklick: wieder eingesetzt

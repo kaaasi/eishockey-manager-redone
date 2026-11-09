@@ -27,8 +27,9 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   eigenen Knopf „Endrunde“ bei x = 173.</item>
 /// <item>[ORIGINAL] Klick auf eine Zeile öffnet das Gegner-Fenster 0x128:0x2A (<see cref="RowAt"/>, <see cref="TeamInfoWindow"/>).
 ///   [ORIGINAL] Ein Linksklick außerhalb der Zeilen und des Knopfs bewirkt nichts; zurück nur mit Rechtsklick (Ereignis 3)
-///   (A294, Spur nationalteam Runde 13: Datei 0x2FA2D–0x2FADC, Ausgang nur bei DGROUP 0x5A16 = 3, sonst Sprung nach
-///   Datei 0x2FA1E). [APPROX] Escape führt als Komfort des Remakes ebenfalls zurück (Tasten prüft das Original nicht).</item>
+///   (A294, Spur nationalteam Runde 13: Datei 0x2FA2D–0x2FADC, Ausgang bei DGROUP 0x5A16 = 3, sonst Sprung nach
+///   Datei 0x2FA1E). Ebenso verlässt der Durchlauf ohne Halt (DGROUP 0x1DB ≠ 0, Datei 0x2FAD3–0x2FADA) die Seite; den gibt es im
+///   Remake nicht (#619). [APPROX] Escape führt als Komfort des Remakes ebenfalls zurück (Tasten prüft das Original nicht).</item>
 /// </list>
 /// </remarks>
 public sealed class WorldCupScreen : Screen

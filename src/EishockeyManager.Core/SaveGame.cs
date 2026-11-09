@@ -158,7 +158,7 @@ public static partial class SaveGame
             [33] = MigrateSaisonwechsel3,
             [34] = MigrateUiMeldungen4,
             [35] = MigratePixelMarker3,
-            [36] = MigrateSaisonPlatzhalter37, // Lücke für kader-start (L5), schließt die Leitstelle bei der Integration
+            [36] = MigrateSaisonPlatzhalter37, // leerer Schritt: kader-start brauchte die Lücke in Runde 13 nicht (L5, #621)
             [37] = MigrateSaison,
             [38] = MigrateNummern,
             [39] = MigrateSaison4,

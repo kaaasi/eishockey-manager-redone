@@ -75,34 +75,30 @@ public class IntegrationRunde9Tests
     [InlineData(MatchCompetition.Relegation, false)]
     public void PlayoffWithoutManager_FastUnlessResultsReported(MatchCompetition competition, bool knockOut)
     {
-        var game = TestGames.Create(5); // kader-start U15-a (L13): Saat 3 → 5, Vorbedingung nach dem Starttausch (Spiel ohne Gleichstand)
+        // #603 (R13KI-01): Saat wieder 3. Der Weg wird über die Testhaken der beiden Wege bestimmt, nicht mehr über den gleichen
+        // Zufallsverbrauch wie ein DEB-Pokalspiel – der schnelle Weg mit Play-off-Kennung (FastCupResultWithTie mit rules.Playoff)
+        // verbraucht je nach Teamwerten anders als der DEB-Pokal (Saat 3: 3:2 gegen 5:2).
+        var game = TestGames.Create(3);
         MatchEngine.EnsureTeamValues(game);
         var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
         var clubs = game.Clubs.Where(c => c.Index < 12 && !managed.Contains(c.Index)).Take(2).ToList();
         Assert.All(Enum.GetValues<League>(), l => Assert.False(game.Options.ShowsReport(ReportKind.Results, l)));
 
-        int NextAfterMatch(GameOptions options)
+        (int Fast, int Minutes) Paths()
         {
-            var random = new Random(7);
-            MatchEngine.PlayWithEvents(game, clubs[0], clubs[1], competition, knockOut, random);
-            return random.Next();
-        }
-        int FastPath()
-        {
-            // Erwartung schneller Weg: dieselbe Zugfolge wie ein Pokalspiel mit ausgeschaltetem Schalter (0x3731F prüft den
-            // Code nicht), hier über den DEB-Pokal-Schalter gemessen.
-            game.Options.ShowDebCup = false;
-            var random = new Random(7);
-            MatchEngine.PlayWithEvents(game, clubs[0], clubs[1], MatchCompetition.DebCup, knockOut, random);
-            return random.Next();
+            OriginalMinutes.FastCupCalls = 0;
+            OriginalMinutes.MinuteLoopCalls = 0;
+            MatchEngine.PlayWithEvents(game, clubs[0], clubs[1], competition, knockOut, new Random(7));
+            return (OriginalMinutes.FastCupCalls, OriginalMinutes.MinuteLoopCalls);
         }
 
-        var off = NextAfterMatch(game.Options);
+        var off = Paths();
         game.Options.ToggleReport(ReportKind.Results, League.Oberliga);
-        var on = NextAfterMatch(game.Options);
+        var on = Paths();
         game.Options.ToggleReport(ReportKind.Results, League.Oberliga);
 
-        Assert.NotEqual(off, on);
-        Assert.Equal(FastPath(), off);
+        Assert.Equal((1, 0), off); // schneller Weg 0x3731F
+        Assert.Equal(0, on.Fast);
+        Assert.True(on.Minutes > 0); // Minutenschleife
     }
 }

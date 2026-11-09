@@ -26,8 +26,8 @@ public static partial class SaveGame
     }
 
     /// <summary>
-    /// Schema 36 → 37 ist der Spur kader-start vorbehalten (L5); bis zur Integration ohne Änderung, damit Spielstände mit
-    /// Schema 36 auf diesem Stand laden. Die Leitstelle ersetzt den Eintrag bei der Integration (Folge kader-start → saison).
+    /// Schema 36 → 37 war der Spur kader-start vorbehalten (L5). Sie brauchte die Lücke in Runde 13 nicht; der Schritt bleibt ohne Änderung, damit Spielstände mit Schema 36 laden
+    /// (#621, R13GN-05).
     /// </summary>
     private static JsonObject MigrateSaisonPlatzhalter37(JsonObject root) => root;
 }

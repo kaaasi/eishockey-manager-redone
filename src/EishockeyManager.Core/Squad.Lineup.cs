@@ -259,8 +259,10 @@ public sealed class Lineup
 /// <item>[ORIGINAL] A166: Beim Spielstart (Datei 0x28165), am Ende der Transferliste (Datei 0x47BB5), im Tageslauf (Datei
 ///   0x7C07) und am Spieltag (Datei 0x54D9E/0x5530B) setzt Datei 0x426BC die Eingesetzten (<see cref="AutoLineupRule"/>;
 ///   nachgerechnet gegen FILE01, FILE05, FILE07, FILE16A, FILE22–FILE28, Regressionstest mit dem Kader aus FILE05/FILE07/FILE26).
-///   Bis zum ersten solchen Lauf (oder ohne Einstellung) gelten die Aufgestellten und die Ersatzrunde von 0x426BC
-///   (Datei 0x427C0–0x4282C, <see cref="AutoDressed"/>). Computervereine haben im Original keine Kaderplätze und damit kein
+///   Ohne Einstellung endet 0x426BC sofort (DGROUP 0x375 − 1 = 0xFF, Datei 0x426C4–0x426E4) und lässt +0x0A stehen.
+///   [APPROX] Bis zum ersten Lauf gelten im Remake die Aufgestellten und die Ersatzrunde von 0x426BC (Datei 0x427C0–0x4282C,
+///   <see cref="AutoDressed"/>) – ein Rückfall für Stände ohne gespeicherte Eingesetzte, nicht der Weg ohne Einstellung
+///   (R13GN-02, #619). Bei Managervereinen läuft 0x426BC schon beim Spielstart. Computervereine haben im Original keine Kaderplätze und damit kein
 ///   +0x0A; für sie ist „eingesetzt“ nur ein Remake-Wert.</item>
 /// <item>[ORIGINAL] A167: Ein neuer Kaderplatz entsteht leer (Datei 0x42E3A löscht 0x34 Byte, also +0x0A = 0 und +0x15 = 0);
 ///   eingesetzt wird der neue Spieler nur durch die Auto-Aufstellung beim Verlassen der Transferliste (Datei 0x47BB5, FILE07:

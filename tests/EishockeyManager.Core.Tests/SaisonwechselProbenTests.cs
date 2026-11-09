@@ -55,8 +55,8 @@ public class SaisonwechselProbenTests
     /// <summary>
     /// #362 (PSW-01): Jedes der drei Felder „Ergebnisse“ (DGROUP 0x21E/0x221/0x224, em.exe Datei 0x3705F–0x3706D, ODER) schaltet
     /// Play-offs und Aufstiegsrunde ohne Managerverein allein auf die Minutenschleife; die Zeilen „Drittelpause“ und „Tabelle“
-    /// derselben Liga nicht. Vergleich über den Zufallsverbrauch: aus = schneller Weg 0x3731F (wie ein Pokalspiel mit
-    /// ausgeschaltetem Schalter).
+    /// derselben Liga nicht. #603 (R13KI-01): Weg über die Testhaken der beiden Wege (vorher Vergleich des Zufallsverbrauchs
+    /// mit einem DEB-Pokalspiel – gleich nur für bestimmte Teamwerte, weil der schnelle Weg die Play-off-Kennung auswertet).
     /// </summary>
     [Theory]
     [InlineData(MatchCompetition.Playoff, true, League.Bundesliga)]
@@ -68,24 +68,26 @@ public class SaisonwechselProbenTests
     public void PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop(MatchCompetition competition, bool knockOut,
         League league)
     {
-        var game = TestGames.Create(5); // kader-start U15-a (L13): Saat 3 → 5, Vorbedingung nach dem Starttausch (Spiel ohne Gleichstand)
+        var game = TestGames.Create(3); // #603: Saat wieder 3 (die Saat 5 aus L13 verdeckte nur den brüchigen Vergleich)
         MatchEngine.EnsureTeamValues(game);
         var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
         var clubs = game.Clubs.Where(c => c.Index < 12 && !managed.Contains(c.Index)).Take(2).ToList();
         Assert.All(Enum.GetValues<League>(), l => Assert.False(game.Options.ShowsReport(ReportKind.Results, l)));
 
-        int NextAfterMatch(MatchCompetition played)
+        bool MinuteLoop()
         {
-            var random = new Random(7);
-            MatchEngine.PlayWithEvents(game, clubs[0], clubs[1], played, knockOut, random);
-            return random.Next();
+            OriginalMinutes.FastCupCalls = 0;
+            OriginalMinutes.MinuteLoopCalls = 0;
+            MatchEngine.PlayWithEvents(game, clubs[0], clubs[1], competition, knockOut, new Random(7));
+            Assert.Equal(1, OriginalMinutes.FastCupCalls + Math.Min(1, OriginalMinutes.MinuteLoopCalls)); // genau ein Weg
+            return OriginalMinutes.MinuteLoopCalls > 0;
         }
-        int WithField(ReportKind kind)
+        bool WithField(ReportKind kind)
         {
             game.Options.ToggleReport(kind, league);
             try
             {
-                return NextAfterMatch(competition);
+                return MinuteLoop();
             }
             finally
             {
@@ -93,12 +95,10 @@ public class SaisonwechselProbenTests
             }
         }
 
-        game.Options.ShowDebCup = false;
-        var fast = NextAfterMatch(MatchCompetition.DebCup);
-        Assert.Equal(fast, NextAfterMatch(competition));
-        Assert.NotEqual(fast, WithField(ReportKind.Results));
-        Assert.Equal(fast, WithField(ReportKind.Intermission));
-        Assert.Equal(fast, WithField(ReportKind.Table));
+        Assert.False(MinuteLoop());
+        Assert.True(WithField(ReportKind.Results));
+        Assert.False(WithField(ReportKind.Intermission));
+        Assert.False(WithField(ReportKind.Table));
     }
 
     /// <summary>

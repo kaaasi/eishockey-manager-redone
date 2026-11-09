@@ -43,7 +43,7 @@ public class SeasonEndStatusTests
     [Fact]
     public void Full_ManagerInTopFive_GetsStatusBit_OtherNot()
     {
-        var game = GameModeTests.Create(4, true, true, 8, 2); // kader-start U15-a (L13): Saat 3 → 4, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
+        var game = GameModeTests.Create(3, true, true, 8, 2); // #621 (R13GN-04): Saat wieder 3 – die Änderung 3 → 4 (L13) war nicht nötig
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         // Spielberechnung Teil 3 (Verletzungen 0x38B8F) schwächt die Kader: Verein 2 mit Spielerwerten 99 (wie PlayAtTopStrength).
         foreach (var p in game.Clubs[2].Players)
@@ -164,7 +164,7 @@ public class SeasonEndStatusTests
     [Fact]
     public void SaveLoad_StatusBitIsDerivedFromSavedData()
     {
-        var game = GameModeTests.Create(4, true, true, 8, 2); // kader-start U15-a (L13): Saat 3 → 4, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
+        var game = GameModeTests.Create(3, true, true, 8, 2); // #621 (R13GN-04): Saat wieder 3 – die Änderung 3 → 4 (L13) war nicht nötig
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         // Spielberechnung Teil 3 (Verletzungen 0x38B8F) schwächt die Kader: Verein 2 mit Spielerwerten 99 (wie PlayAtTopStrength).
         foreach (var p in game.Clubs[2].Players)

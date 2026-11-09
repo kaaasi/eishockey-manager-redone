@@ -12,8 +12,9 @@ namespace EishockeyManager.Core;
 /// also bevor dessen Seite erscheint; Zählung ab 0 bis [0x386] (Datei 0x279ED–0x279FA), im Modus „nur Weltkugel“
 /// ([0xD0B9] = 1) ab [0x386], also gar nicht (Datei 0x26F2F–0x26FAA). Kurzzeitige Umstellungen auf den Besitzer eines Spielers
 /// (Datei 0x2756B) setzt dieselbe Runde zurück (Datei 0x27636, 0x279DA–0x279DD). Die Verhandlungen setzen beide wieder je
-/// Manager (Datei 0x27B64–0x27B76); wer keinen auslaufenden Vertrag hat (0x4BE17 = 0, Datei 0x27BC6), wird ohne Anzeige
-/// übersprungen. Nach dem Fenster setzt der Saisonwechsel beide auf 0 (Datei 0x564E1–0x564F2), die Zugfolge beginnt vorn.
+/// Manager (Datei 0x27B64–0x27B76); übersprungen wird ohne Anzeige, wer keinen belegten Kaderplatz hat (0x4BE17 = 0,
+/// Datei 0x27BC6) oder keinen auslaufenden Vertrag (Merker [bp−0x18] aus der Platzschleife Datei 0x27B96–0x27BB6, geprüft
+/// Datei 0x27BCF–0x27BD8; R13GN-02, #619). Nach dem Fenster setzt der Saisonwechsel beide auf 0 (Datei 0x564E1–0x564F2), die Zugfolge beginnt vorn.
 /// Das Remake stellt <see cref="CurrentManager"/> an denselben Stellen um: Seite i (<see cref="ShowSeasonEndManager"/>),
 /// nächste Verhandlung (<see cref="SwitchToRenewalManager"/>; Manager ohne Verhandlung zeigt auch das Original nicht),
 /// danach der erste Manager (<see cref="ReturnToFirstActiveManager"/>).
