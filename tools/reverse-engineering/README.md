@@ -31,3 +31,5 @@ Eine Adresse mit direkt folgendem Doppelpunkt („Datei 0x3688F: …“) zählt 
 Offsets im entschlüsselten Spielstand schreibt die Doku als `HOK 0x…` (Beispiel `docs/analyse/re-runde-13.md`); die Karte zählt eine Adresse mit
 direkt vorangehendem `HOK` nie als em.exe-Fundstelle (Runde 13, #567, R13RD-01). Ohne das Präfix würde jede Hexzahl einer
 Spielstand-Auswertung als Dateioffset in `em.exe` gelten.
+Das Präfix gilt nur für die Adresse direkt dahinter: **je Adresse ein `HOK`** (`HOK 0x08EED` / `HOK 0x08EF7`, nicht
+`HOK 0x08EED` / `0x08EF7`; Aufzählungen wie „HOK 0x00844, 0x575C3“ zählen die zweite Adresse als em.exe-Fundstelle, #611, R13PK-04).

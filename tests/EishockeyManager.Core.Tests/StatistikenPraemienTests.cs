@@ -154,7 +154,9 @@ public class StatistikenPraemienTests
                 var manager = game.Managers[result.Manager];
                 // Spur saison Teil 3 (S-K6-c): Fair-Play über die Liga der nächsten Saison (SeasonFlow.FairPlay.cs).
                 var single = game.SinglePremiumEvents(manager, result.League).Where(e => e != SeasonEvent.FairPlay).ToList();
-                if (game.FairPlayPremiumWinner(record, manager.ClubIndex) == manager.ClubIndex)
+                // #620 (R13GN-03): Sieger unabhängig von FairPlayPremiumWinner – wenigste Strafminuten in der Liga der nächsten
+                // Saison, bei Gleichstand der erste in der am 29. April gebildeten Satzfolge.
+                if (ExpectedFairPlayWinner(game, record, manager.ClubIndex) == manager.ClubIndex)
                     single.Add(SeasonEvent.FairPlay);
                 Assert.Equal(single, result.Events.Where(e => e is SeasonEvent.BestGoalie or SeasonEvent.TopScorer or SeasonEvent.FairPlay));
                 Assert.Equal(result.Premium, game.Finance(manager).Book.Current(FinanceCategory.Praemien));
@@ -167,5 +169,14 @@ public class StatistikenPraemienTests
             Assert.All(game.Clubs.SelectMany(c => c.Players), p => Assert.Equal(0, p.Goals));
         }
         Assert.True(paid >= 4, "Zu wenige Einzelprämien – Probe prüft wenig");
+    }
+
+    private static int? ExpectedFairPlayWinner(GameState game, SeasonRecord record, int club)
+    {
+        if (record.NextLeague(club, game.Clubs[club].League) is not { } league)
+            return null;
+        var order = game.NextLeagueSlots(league);
+        Assert.Equal(GameState.ClubsPerLeague, order.Count);
+        return order.OrderBy(c => game.Clubs[c].LeaguePenaltyMinutes).First(); // stabil: Satzfolge bei Gleichstand
     }
 }

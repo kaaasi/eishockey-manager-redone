@@ -76,13 +76,21 @@ public class NummerierungMigrationTests
         Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded.Game));
     }
 
+    /// <summary>
+    /// Aktuelle Stände laufen nicht durch die Migration 38 → 39. #620 (R13GN-03): Vorher blieb der Test auch grün, wenn die
+    /// Migration auf aktuelle Stände angewandt wurde (Nr. = Platz + 1 ist dort ohnehin erfüllt). Daher eine abweichende Nr.
+    /// vor dem Sichern: Sie muss das Laden überstehen.
+    /// </summary>
     [Fact]
     public void CurrentSave_RoundTrip_Unchanged()
     {
         var game = Create();
+        var player = game.Clubs[game.ActiveManager.ClubIndex].Players[0];
+        player.Number = 77;
         var data = SaveGame.Save(game);
         var loaded = SaveGame.Load(data);
         Assert.True(loaded.Success, loaded.Error);
         Assert.Equal(data, SaveGame.Save(loaded.Game!));
+        Assert.Equal(77, loaded.Game!.FindPlayer(player.Id)!.Number);
     }
 }

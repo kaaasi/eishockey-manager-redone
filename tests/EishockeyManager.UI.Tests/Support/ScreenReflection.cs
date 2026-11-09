@@ -12,7 +12,8 @@ namespace EishockeyManager.Tests.Support;
 /// </summary>
 /// <remarks>
 /// Nicht erzeugbar sind nur Konstruktoren mit Parametern, für die <see cref="TryResolve"/> kein Argument kennt; sie werden
-/// mit dem Parametertyp gemeldet, damit die Abdeckung sichtbar bleibt und nicht still schrumpft.
+/// mit dem Parametertyp gemeldet und in <c>BildschirmeFreipruefungTests</c> mit der festen Liste <c>NotConstructible</c>
+/// verglichen, damit die Abdeckung nicht still schrumpft (#610, R13PK-02).
 /// </remarks>
 public static class ScreenReflection
 {

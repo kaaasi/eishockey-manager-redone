@@ -29,5 +29,15 @@ public class SeasonEndColorsTests
         Assert.Equal(new byte[] { 243, 0, 0 }, rgb.Slice(18 * 3, 3).ToArray());
         Assert.Equal(new byte[] { 81, 97, 16 }, rgb.Slice(12 * 3, 3).ToArray());
         Assert.Equal(new byte[] { 48, 65, 195 }, rgb.Slice(22 * 3, 3).ToArray());
+        // #620 (R13GN-03): auch die Indizes selbst müssen im Bild stehen (mit den alten 238/13/151 blieb der Test grün).
+        // Nur die Spalten der Zeichen (vor den Vereinsnamen) der drei Ligen, beide Zeilenblöcke.
+        var used = SeasonEndScreen.LeagueColumns
+            .SelectMany(x => Enumerable.Range(x, SeasonEndScreen.NameOffset))
+            .SelectMany(x => Enumerable.Range(SeasonEndScreen.TopRowY - 6, SeasonEndScreen.BottomRowY + 2 * SeasonEndScreen.RowPitch
+                - SeasonEndScreen.TopRowY + 6).Select(y => d.Surface.Pixels[y * Surface.Width + x]))
+            .ToHashSet();
+        Assert.Contains((byte)18, used);
+        Assert.Contains((byte)12, used);
+        Assert.Contains((byte)22, used);
     }
 }

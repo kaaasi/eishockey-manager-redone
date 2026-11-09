@@ -73,8 +73,15 @@ public class WettbewerbeNationalteamTests
             Assert.Equal(before, StateFingerprint.Of(game));
         }
         else
+        {
             // Spur nationalteam Runde 13 (A028): Der Bundestrainer ist an jedem WM-Tag am Zug, auch wenn Deutschland nicht
             // spielt („Spielfrei“); dann gibt es keine Spiele zu zeigen und das Menü kommt sofort wieder – geprüft wird der Tag.
             Assert.True(game.CurrentDay > day);
+            // #620 (R13GN-03): Halt am nächsten WM-Tag, ob Deutschland spielt oder nicht (A028) – vorher blieb der Zweig auch
+            // mit der alten Regel „nur an Spieltagen Deutschlands“ grün.
+            var next = Enumerable.Range(day + 1, SeasonCalendar.SeasonEnd - day)
+                .First(t => SeasonCalendar.Events(t).HasFlag(DayEvents.WorldCup));
+            Assert.Equal(next, game.CurrentDay);
+        }
     }
 }
