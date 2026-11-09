@@ -147,15 +147,17 @@ public sealed partial class GameState
     /// Täglich (Tagesablauf 0x07169, Datei 0x76E5–0x76F6): Verhandlungssperren der Spieler aller Manager zählen um einen Tag
     /// herunter; Sperren nach abgelehnten Geboten lösen. Gerufen aus <see cref="AnnounceContractEnds"/>.
     /// </summary>
-    private void AdvanceNegotiationLocks()
+    private void AdvanceNegotiationLocks(Manager? only = null)
     {
-        foreach (var club in ActiveManagers.Select(m => Clubs[m.ClubIndex]).Distinct())
+        foreach (var club in ActiveManagers.Where(m => only is null || m == only).Select(m => Clubs[m.ClubIndex]).Distinct())
             foreach (var p in club.Players)
                 if (p.NegotiationLock > 0)
                     p.NegotiationLock--;
         // Sperren nach abgelehntem Gebot (Tagesablauf 0x071CC); Zufall der Verträge, damit Spielergebnisse unberührt bleiben.
         // Die Quelle erst anfassen, wenn eine Sperre besteht: Ihr Startwert hängt vom Zeitpunkt der ersten Nutzung ab.
-        if (TransferMarket.Listings.Any(l => (l.RejectedBy & 0x7F) == 1))
+        // #678: [ORIGINAL] nur im Lauf von Manager 0 (Datei 0x0718F–0x07197).
+        if ((only is null || (Managers.Count > 0 && Managers[0] == only))
+            && TransferMarket.Listings.Any(l => (l.RejectedBy & 0x7F) == 1))
             TransferMarket.ReleaseBidLocks(ContractRandom);
     }
 }

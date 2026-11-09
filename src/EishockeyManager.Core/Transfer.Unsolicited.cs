@@ -94,14 +94,17 @@ public sealed partial class GameState
     /// [APPROX] Zufall: eigene, je Saison und Tag abgeleitete Quelle wie <see cref="ContractTurnFactor"/>, damit Spielergebnisse
     /// und Markt ihre Folgen behalten; „offene Meldung“ = noch nicht angeklicktes Angebot; Rücktritt = Ankündigung
     /// <see cref="ContractNotice.Retiring"/>.
+    /// #678: mit <paramref name="only"/> nur die Kaderplätze dieses Managers (0x07169 je Manager); [APPROX] Quelle zusätzlich je
+    /// Managernummer abgeleitet (Manager 0 wie bisher), damit die Läufe eines Tages nicht dieselbe Folge ziehen.
     /// </summary>
-    internal void RollUnsolicitedOffers()
+    internal void RollUnsolicitedOffers(Manager? only = null)
     {
         if (AfterSeasonEnd)
             return;
+        var index = only is null ? 0 : Math.Max(0, Managers.ToList().IndexOf(only));
         var random = new GameRandom(unchecked(Season * 1_000_033 + CurrentDay * 6_151
-            + Managers.Sum(m => m.ClubIndex * 43 + m.Head) + 29));
-        foreach (var manager in ActiveManagers)
+            + Managers.Sum(m => m.ClubIndex * 43 + m.Head) + 29 + index * 7_919));
+        foreach (var manager in ActiveManagers.Where(m => only is null || m == only))
         {
             var club = Clubs[manager.ClubIndex];
             foreach (var p in club.Players.ToArray())

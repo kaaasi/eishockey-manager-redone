@@ -145,14 +145,16 @@ public sealed partial class GameState
     /// random(9, 17) Tage (Spur kader-transfer, Runde 12, U4).
     /// [APPROX] „Offene Meldung“ (Pool +0x1E) = schon gemeldet (<see cref="Player.Notice"/> ≠ None); Züge aus
     /// <see cref="ContractRandom"/>; Reihenfolge im Tag nach Sperren und Angeboten Bit 0x40.
+    /// #678: [ORIGINAL] 0x07169 rechnet die Kaderplätze des Managers DGROUP 0xA70E (Satz 0x5DC3 + Manager · 0x618, Datei 0x07402);
+    /// mit <paramref name="only"/> nur dessen Plätze (Hauptweg je Manager, WM-Schleife Schritt (c) nur Manager 0).
     /// </summary>
-    internal void AnnounceContractEnds(int day)
+    internal void AnnounceContractEnds(int day, Manager? only = null)
     {
-        AdvanceNegotiationLocks(); // Spur transfer-original-vertrag: Sperre +0x18 (Tagesablauf 0x76F6)
-        RollUnsolicitedOffers(); // Spur transfer-vertraege-komplett, Teil 3: +0x09 Bit 0x40 (Tagesablauf 0x07972)
+        AdvanceNegotiationLocks(only); // Spur transfer-original-vertrag: Sperre +0x18 (Tagesablauf 0x76F6)
+        RollUnsolicitedOffers(only); // Spur transfer-vertraege-komplett, Teil 3: +0x09 Bit 0x40 (Tagesablauf 0x07972)
         if (AfterSeasonEnd)
             return;
-        foreach (var manager in ActiveManagers)
+        foreach (var manager in ActiveManagers.Where(m => only is null || m == only))
         {
             var club = Clubs[manager.ClubIndex];
             foreach (var p in club.Players.ToArray())

@@ -418,9 +418,12 @@ public sealed partial class GameState
     /// <summary>Saison und Tag, bis zu denen das Training fortgeschrieben ist.</summary>
     public (int Season, int Day) TrainedUntil { get; private set; } = (FirstSeason, 0);
 
-    /// <summary>Trainingstage: Mittwoch und Sonntag (zweimal pro Woche). [APPROX] Wochentage; im Original Tag mod 7 = 0 und = 4.</summary>
-    public static bool IsTrainingDay(int day) =>
-        SeasonCalendar.LayoutDate(day).DayOfWeek is DayOfWeek.Wednesday or DayOfWeek.Sunday;
+    /// <summary>
+    /// Trainingstage des Hauptwegs: die Takttage des Tageszählers (<see cref="IsDailyRunDay"/>, #678), im Tageslauf
+    /// <c>OnDayManager(day)</c> Mittwoch und Samstag. [ORIGINAL] Training 0x0659C nur in 0x07169 (Datei 0x07B5E), das der Hauptweg
+    /// bei Zähler 0x3B7 ≡ 0/4 (mod 7) ruft (Datei 0x55253–0x552A6); vorher [APPROX] Mittwoch und Sonntag.
+    /// </summary>
+    public static bool IsTrainingDay(int day) => IsDailyRunDay(day);
 
     /// <summary>Plan eines Managers vorbereiten (Preisstufe bei Spielbeginn, Standardplan bzw. Level 5).</summary>
     public TrainingPlan PrepareTraining(Manager manager)
@@ -438,18 +441,25 @@ public sealed partial class GameState
     public void TrainOneDay()
     {
         foreach (var manager in Managers)
-        {
-            var plan = PrepareTraining(manager);
-            Book(manager, FinanceCategory.Training, -plan.CostPerTrainingDay);
-            foreach (var player in Clubs[manager.ClubIndex].Players)
-                TrainingRules.Apply(player, plan, manager.Level, Random);
-        }
+            TrainManager(manager);
     }
 
     /// <summary>
-    /// Schreibt das Training bis zum aktuellen Tag fort (jeder Trainingstag einmal). Wird von den
-    /// Mannschafts-Bildschirmen aufgerufen, bis das Paket „saison“ <see cref="TrainOneDay"/> je Trainingstag aufruft.
-    /// Der Tag des Spielbeginns zählt nicht. [APPROX] Beim Saisonwechsel werden nicht nachgeholte Tage der alten
+    /// Trainingstag eines Managers: Kosten vom Konto, Wirkung auf seine Kaderplätze. [ORIGINAL] 46E:0C89, je Kaderplatz 0x0659C im
+    /// Tagesablauf 0x07169 (Datei 0x07B5E).
+    /// </summary>
+    internal void TrainManager(Manager manager)
+    {
+        var plan = PrepareTraining(manager);
+        Book(manager, FinanceCategory.Training, -plan.CostPerTrainingDay);
+        foreach (var player in Clubs[manager.ClubIndex].Players)
+            TrainingRules.Apply(player, plan, manager.Level, Random);
+    }
+
+    /// <summary>
+    /// Schreibt das Training bis zum aktuellen Tag fort (jeder Trainingstag einmal, alle Manager). Die Zeitleiste trainiert seit
+    /// #678 im Tagesablauf 0x07169 je Manager (<c>GameState.DailyRun.cs</c>) und setzt <see cref="TrainedUntil"/> selbst; dieser
+    /// Weg bleibt für Spielstände und Tests. Der Tag des Spielbeginns zählt nicht. [APPROX] Beim Saisonwechsel werden nicht nachgeholte Tage der alten
     /// Saison übersprungen.
     /// </summary>
     public void CatchUpTraining()

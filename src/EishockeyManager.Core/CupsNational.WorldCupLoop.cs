@@ -51,9 +51,8 @@ public sealed partial class GameState
     /// Im Remake läuft dieser Tag also über den Hauptweg (<c>OnDayClubSeason</c>) mit Tagesabschluss und Talentsuche
     /// (<see cref="AdvanceFinance"/> mit <c>clubDay: true</c>; Jugendteams nur an Ligaspieltagen), Wanderung, Heilung und
     /// Aufstellungsautomatik; an seiner Stelle von 0x952C des Hauptwegs Schritt (a) der Schleife (<see cref="OnDayWorldCupEntry"/>).
-    /// [APPROX] Training und Markt (0x07169) nach den Regeln des Hauptwegs im Remake (<see cref="CatchUpTraining"/>,
-    /// <see cref="TransferMarket.CatchUp"/>), auch mit dem Listenwechsel 0x494EF, den der Tag mit Markierung 255 im Original
-    /// überspringt (Datei 0x54E71 liegt in 0x54D68–0x55072); Takttag-Regel und Listenwechsel kommen mit #678.
+    /// [ORIGINAL] 0x07169 je Manager am Takt 217 ≡ 0 (<see cref="MainPathDailyRun"/>, #678); kein Listenwechsel 0x494EF, den der
+    /// Tag mit Markierung 255 überspringt (Datei 0x54E71 liegt in 0x54D68–0x55072; <see cref="IsListChangeDay"/>).
     /// </remarks>
     private bool IsWorldCupEntryDay(int day) => !WorldOnly && day == SeasonCalendar.ClubSeasonEnd + 1;
 
@@ -88,6 +87,7 @@ public sealed partial class GameState
     /// </summary>
     private void OnDayWorldCupLoop(int day)
     {
+        TrainedUntil = (Season, day); // #678: Training nur in Schritt (c)
         WorldCupLoopStepC(day);
         AdvanceFinance(day, clubDay: false);
         HealInjuries(day);
@@ -163,11 +163,10 @@ public sealed partial class GameState
     /// <item>Inhalt für Manager 0 (nicht im Modus 1): Heilung seiner Kaderplätze (Datei 0x07B4E → 0x07C12 mit dem Zähler der Spiele,
     ///   <see cref="PlayerInjuries.IsHealingDay"/>), danach je Platz das Training (Datei 0x07B5E → 0x0659C,
     ///   <see cref="TrainingRules.Apply"/>, Kosten wie <see cref="TrainOneDay"/>), Aufstellungsautomatik (Datei 0x07C07).
-    ///   [APPROX] Verträge (Ankündigungen, Verlängerungen, Sperren; Datei 0x07215–0x07AEF) über <see cref="AnnounceContractEnds"/>
-    ///   für alle Manager: Die Tagesfunktion kennt keinen einzelnen Manager (Dateien der Spur kader-start). [APPROX] Ohne den
-    ///   Verfall offener Gebote (Datei 0x07215–0x0726A) und den Angebotswurf für die Marktspieler von Manager 0 (Datei 0x072DD):
-    ///   <see cref="TransferMarket.AdvanceDay"/> rechnet beides nur zusammen mit dem Listenwechsel für alle Manager (Restlücke
-    ///   kader-start, R14NT4-05).</item>
+    ///   [ORIGINAL] Verträge (Ankündigungen, Verlängerungen, Sperren; Datei 0x073E3–0x07AEF) über <see cref="AnnounceContractEnds"/>
+    ///   nur für Manager 0 (Kaderplätze 0x5DC3 + 0xA70E · 0x618, Datei 0x07402), Verfall offener Gebote (Datei 0x07215–0x0726A)
+    ///   und Angebotswurf auf seine Markt-Plätze (Datei 0x072DD) über <see cref="TransferMarket.CatchUpManagerDay"/> (#678), in der
+    ///   Reihenfolge des Originals: Markt, Verträge, Heilung und Training, Aufstellung.</item>
     /// <item>[APPROX] Modus 1: nur der Markt. Die Kaderplätze von Manager 0 sind dort die Spieler Deutschlands (FILE18 „Verein 7
     ///   DEUTSCHLAND“), das Remake führt keinen eigenen Kader des Managers in diesem Modus; Konto FILE19 → FILE20 unverändert.</item>
     /// </list>
@@ -176,11 +175,10 @@ public sealed partial class GameState
     {
         if (Managers.Count == 0 || Managers[0] is not { Dismissed: false } manager)
             return;
-        foreach (var listing in TransferMarket.Listings)
-            if (listing.Player.Strain > MarketDecayAbove)
-                listing.Player.Strain = Math.Max(listing.Player.Strain - MarketDecay, TrainingRules.MinStrain);
+        DailyRunMarket(manager); // #678: Verfall, Gebotsverfall und Angebotswurf von Manager 0 (Datei 0x0718F–0x073CE)
         if (WorldOnly)
             return;
+        AnnounceContractEnds(day, manager); // #678: nur die Kaderplätze von Manager 0 (Datei 0x07402: Satz 0x5DC3 + 0xA70E · 0x618)
         var club = Clubs[manager.ClubIndex];
         if (PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
         {
@@ -190,11 +188,7 @@ public sealed partial class GameState
             if (healed)
                 PlayerInjuries.RefillLineup(club);
         }
-        var plan = PrepareTraining(manager);
-        Book(manager, FinanceCategory.Training, -plan.CostPerTrainingDay);
-        foreach (var player in club.Players)
-            TrainingRules.Apply(player, plan, manager.Level, Random);
-        AnnounceContractEnds(day);
+        TrainManager(manager);
         club.ApplyAutoLineup();
     }
 }

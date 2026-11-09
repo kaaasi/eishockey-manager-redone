@@ -80,15 +80,6 @@ public sealed partial class GameState
         // Finanzen: Tages-, Wochen- und Monatswechsel bis einschließlich heute
         AdvanceFinanceTo(day);
 
-        // Training: jeder Trainingstag bis heute genau einmal (vorher nur beim Öffnen der Mannschafts-Bildschirme)
-        CatchUpTraining();
-
-        // Transfermarkt: täglich Listenwechsel und Angebote (0x54E71, 0x072DD; Spur kader-transfer, Teil 4)
-        TransferMarket.CatchUp(this);
-
-        // Verträge: Spieler im letzten Vertragsjahr kündigen an, ob sie verlängern (Spur „kader“, R2-11)
-        AnnounceContractEnds(day);
-
         // Paket „wettbewerbe“: Ewige Tabelle, Ewige Bilanz und „Früher“ schreibt seit Spur saisonwechsel Teil 3 (S-K4)
         // FinishSeason nach Zwangsabstieg und Austausch fort (em.exe Datei 0x563AF).
 
@@ -115,8 +106,15 @@ public sealed partial class GameState
         // Spur spielberechnung-komplett, Teil 3: Verletzungen heilen wochenweise (0x7C12 im Tageslauf 0x07169)
         HealInjuries(day);
 
+        // #678: Training, Markt (Verfall, Gebote, Angebote) und Verträge nur am Takttag, je Manager (0x07169, Datei 0x552A6;
+        // GameState.DailyRun.cs). Vorher [APPROX] Training Mi/So, Markt und Verträge täglich.
+        MainPathDailyRun(day);
+
         // Spur wettbewerbe-spiel, Teil 8: automatische Aufstellung am Ende des Tageslaufs (Datei 0x07C07, A068)
         ApplyAutoLineups();
+
+        // #678: Listenwechsel 0x494EF in den Managerzügen der Tage mit Ereignis (Datei 0x54E71; nicht am Eintrittstag).
+        MainPathListChanges(day);
 
         // R14NT4N-01: am Eintrittstag der Schleife nach dem Takt des Hauptwegs Schritt (a) der Schleife (Datei 0x555D6).
         if (worldCupEntry)

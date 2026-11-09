@@ -163,7 +163,9 @@ public sealed partial class GameState
                     foreach (var manager in Managers)
                         CountDownSponsorContracts(manager);
             }
-            if (FinanceDay > 0 && date.DayOfWeek == DayOfWeek.Monday)
+            // #679: [ORIGINAL] Stadionbau 0x3D316 am Tageszähler 0x3B7 ≡ 0 (mod 7) nach dem Weiterzählen (Hauptweg Datei 0x552AB–0x552C3,
+            // WM-Schleife Datei 0x556B5–0x556CD), im Tageslauf also Zähler DayCounter.Of(Tag) – samstags, vorher montags.
+            if (FinanceDay > 0 && DayCounter.Of(FinanceDay) % 7 == 0)
                 WeeklyFinances();
             if (FinanceDay > 0 && date.Day == DateTime.DaysInMonth(date.Year, date.Month))
                 MonthlyFinances();
