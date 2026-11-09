@@ -179,6 +179,8 @@ namespace EishockeyManager.Core.Tests;
 /// (<c>SignFreeAgents</c>); Torhüter und Verteidiger stehen jetzt hinter dem letzten Spieler ihrer Art (Datei 0x42D55) statt hinten:
 /// andere Nr., Kaderplatz 3 (Gehaltsforderung 0x4A93F) und Gleichstände der Auto-Aufstellung. Passive Abdrücke unverändert.
 /// Gegenprobe: Kauf über die Transferliste wieder hinten an (<c>managerSquad: false</c> in <c>TransferMarket.Complete</c>) → alle alten Werte.
+/// Runde 14, nationalteam Teil 4 (#664): neu ab dem 14. April der ersten Saison – ohne Bundestrainer läuft die WM in der WM-Schleife des Originals (Datei 0x55570–0x55740): keine Wanderung, kein Training, kein Markt außer nach den WM-Spielen bestimmter Tage (dort 224/228, falsch, siehe unten). Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert. Gilt für alle sechs Abdrücke.
+/// Review #674 (R14NT4-01/-05, #675): neu – (c) der WM-Schleife nach den WM-Spielen der Tage 216, 220 und 230 (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel, Takttage (Wanderung, Talentsuche) und Heilung des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück auf den Remake-Tag → weder alter noch neuer Wert, beide Teile wirken. Gilt für alle sechs Abdrücke.
 /// </summary>
 public class RngTwinProbeTests
 {
@@ -189,10 +191,15 @@ public class RngTwinProbeTests
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte.
     [Theory]
-    [InlineData(false, 3, "55915D383A358497")]
-    [InlineData(true, 3, "760191600C84958E")]
-    [InlineData(false, 11, "5391132359525FAF")]
-    [InlineData(true, 11, "2B85C97B4D1FE3CA")]
+    // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
+    // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    [InlineData(false, 3, "975D2A6C4C60BA51")]
+    [InlineData(true, 3, "973330F4EBB72702")]
+    [InlineData(false, 11, "F541B5175D1801F9")]
+    [InlineData(true, 11, "BFFCFD23EBA50AE0")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -204,8 +211,12 @@ public class RngTwinProbeTests
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte.
     [GameDataTheory]
-    [InlineData(false, "D9F3F8EF2962B1B3")]
-    [InlineData(true, "804823BF5744F2AF")]
+    // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    [InlineData(false, "717B7C3D66940E4D")]
+    [InlineData(true, "13BD58ED33F37DA9")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

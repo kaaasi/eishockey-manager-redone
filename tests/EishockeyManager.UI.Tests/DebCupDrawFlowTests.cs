@@ -259,7 +259,21 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Runde 13, kader-start Teil 2 (U15-a, L13): ab 1993 neu – Verein 42 tauscht mit Start-Liga Oberliga in die Oberliga
     /// (Datei 0x29CF2, Teamwerte bleiben am Platz, Oberliga-Kader); mit und ohne Anzeige weiter gleich. Teil 3 (R-K5): erneut neu –
     /// Satzfolge vor der Spielvorbereitung (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
-    /// Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. 1993: Pokal und Tabelle gleich, nur der Meister (DM) neu; ab 1994 alles neu. Mit und ohne Anzeige weiter gleich.</summary>
+    /// Runde 14, nationalteam Teil 4 (#664): ab 1994 neu (1993 unverändert) – ohne Bundestrainer läuft die WM in der WM-Schleife
+    /// des Originals (Datei 0x55570–0x55740: keine Wanderung, kein Training, kein Markt außer nach bestimmten WM-Tagen – dort
+    /// 224/228, falsch). Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert. Mit und ohne Anzeige weiter gleich.
+    /// Review #674 (R14NT4-01/-05, #675): ab 1993 neu – Takttage (Wanderung, Talentsuche) und Heilung des Hauptwegs mit dem
+    /// Tageszähler 0x3B7 = Tag + 1 (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …), dazu (c) der WM-Schleife nach den WM-Spielen der
+    /// Tage 216, 220, 230 samt Markt-Verfall und ohne Listenwechsel. Mit und ohne Anzeige weiter gleich.
+    /// Nachprüfung #681 (R14NT4N-01): ab 1994 neu (1993 unverändert) – der Tageslauf von Tag 216 (Zähler 217) rechnet wie im
+    /// Original noch den Takt des Hauptwegs (Wanderung, Talentsuche, Training/Markt/Verträge, Heilung), erst danach die Schleife;
+    /// anderer Zufallsverbrauch ab dem 14. April 1994. Gegenprobe: nur die Core-Änderung zurück → alter Wert. Mit und ohne Anzeige
+    /// weiter gleich.</summary>
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. 1993: Pokal und Tabelle gleich, nur der Meister (DM) neu; ab 1994 alles neu. Mit und ohne Anzeige weiter gleich.
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    // Gegenüber main: 1993 Meister und Tabelle gleich, Pokal neu (die Angaben der Zeile #676 galten für Base e5fe46f). Mit und ohne Anzeige gleich.
     private const string Reference =
-        "1993: DEB 21, DM 5, Tab 15379 | 1994: DEB 23, DM 8, Tab 15656 | 1995: DEB 23, DM 6, Tab 15632 | 1996: DEB 0, DM 23, Tab 15745";
+        "1993: DEB 8, DM 5, Tab 15381 | 1994: DEB 7, DM 8, Tab 15375 | 1995: DEB 5, DM 7, Tab 15397 | 1996: DEB 2, DM 2, Tab 15414";
 }

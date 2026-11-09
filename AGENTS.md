@@ -106,8 +106,9 @@ Desktop (MonoGame) → UI (Bildschirme, 320×240-Palettenpuffer) → Core (Spiel
     synthetischen Tests). Den Lauf ohne Originaldaten übernimmt die CI. Ohne Originaldaten läuft `--schnell` wie die CI;
     dann im PR ausdrücklich „Originaldaten nicht geprüft“ angeben.
   - **Alle drei Läufe** (`tools/pruefen.sh` ohne Option: mit Daten, ohne Daten `EM_SKIP_GAMEDATA=1`, Pflichtlauf ohne Daten,
-    der scheitern **muss**) nur bei Integrations-PRs, Reviews und Änderungen an der Test-Infrastruktur
-    (`tests/**/Support/`, Testprojekte, `tools/pruefen.sh`, `.github/`).
+    der scheitern **muss**) nur bei Integrations-PRs, Erstreviews und Änderungen an der Test-Infrastruktur
+    (`tests/**/Support/`, Testprojekte, `tools/pruefen.sh`, `.github/`). Fixläufe und Nachprüfungen: `--schnell`
+    (sparsame Kette, `docs/prozess/zusammenarbeit.md` §5).
   - Wer `tools/pruefen.sh` ändert, führt zusätzlich `tools/pruefen-selbsttest.sh` aus (Testdouble, kein SDK nötig).
   - Während der Arbeit nur die betroffenen Tests ausführen (`dotnet test <projekt> --filter …`), die volle Prüfung erst vor dem Push.
 - Tests mit Originaldaten **nur** mit `[GameDataFact]`/`[GameDataTheory]` und `TestGameData.Load()`

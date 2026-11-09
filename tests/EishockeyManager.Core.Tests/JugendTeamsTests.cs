@@ -189,20 +189,44 @@ public class JugendTeamsTests
 
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
+    // Runde 14, nationalteam Teil 4 (#664): neu ab Saison 1 – der aktive Manager wird nicht Bundestrainer, die WM läuft trotzdem
+    // in der WM-Schleife (Datei 0x55570–0x55740: kein Training, kein Markt außer nach bestimmten WM-Tagen (dort 224/228, falsch),
+    // keine Wanderung); Saison 0 unverändert. Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert.
+    // Review #674 (R14NT4-01/-05, #675): neu ab Saison 0 – (c) der WM-Schleife nach den WM-Spielen der Tage 216, 220 und 230
+    // (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel; Takttage (Wanderung, Talentsuche) und Heilung
+    // des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück → weder alter
+    // noch neuer Wert, beide Teile wirken.
+    // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert. Saison 0 unverändert, Richtung (≥ +15) weiter geprüft.
     // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
+    // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
     // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. Saison 0 unverändert, Richtung weiter geprüft.
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
     private const string ExpectedActive =
-        "0:Schueler:2/11/58;0:Jugend:2/11/60;0:Junioren:2/11/62;1:Schueler:2/6/67;1:Jugend:2/6/70;1:Junioren:1/11/72;2:Schueler:1/11/73;2:Jugend:1/11/75;2:Junioren:1/6/77;3:Schueler:1/6/81;3:Jugend:1/6/78;3:Junioren:1/6/80";
+        "0:Schueler:2/11/57;0:Jugend:2/11/60;0:Junioren:2/11/63;1:Schueler:2/6/70;1:Jugend:2/6/70;1:Junioren:1/11/72;2:Schueler:1/11/74;2:Jugend:1/11/78;2:Junioren:1/6/80;3:Schueler:1/6/81;3:Jugend:1/6/82;3:Junioren:1/6/82";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
     // WM ohne kleine Wanderung (WM-Schleife Datei 0x55570–0x55740), damit ändert sich der Zufallsverbrauch ab dem 14. April.
     // Saison 0 unverändert, Richtung (≤ −15) weiter geprüft.
+    // Runde 14, nationalteam Teil 4 (#664): neu ab Saison 1 – mit Bundestrainer trainiert in der WM-Schleife nur noch Manager 0
+    // nach bestimmten WM-Tagen (Datei 0x5565C, DGROUP 0xA70E = 0; dort 224/228, falsch), Markt ebenso (statt Training an jedem
+    // Trainingstag und täglichem Markt). Die Gegenprobe „Schleife nur mit Bundestrainer“ ändert diesen Wert nicht (er hängt allein
+    // am Weg mit Bundestrainer); Saison 0 unverändert, Richtung (≤ −15) weiter geprüft.
+    // Review #674 (R14NT4-01/-05, #675): neu ab Saison 0 – (c) der WM-Schleife nach den WM-Spielen der Tage 216, 220 und 230
+    // (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel; Takttage (Wanderung, Talentsuche) und Heilung
+    // des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück → weder alter
+    // noch neuer Wert, beide Teile wirken. Richtung weiter geprüft.
+    // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert. Saison 0 unverändert, Richtung (≤ −15) weiter geprüft.
     // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. Saison 0 unverändert.
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/62;0:Jugend:2/2/67;0:Junioren:1/6/69;1:Schueler:3/2/50;1:Jugend:3/2/55;1:Junioren:2/2/56;2:Schueler:3/6/43;2:Jugend:3/6/46;2:Junioren:3/2/48;3:Schueler:3/6/40;3:Jugend:3/6/42;3:Junioren:3/6/46";
+        "0:Schueler:2/2/63;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:2/6/54;1:Jugend:3/2/54;1:Junioren:2/6/58;2:Schueler:2/6/47;2:Jugend:3/6/43;2:Junioren:3/2/45;3:Schueler:3/2/44;3:Jugend:3/6/42;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

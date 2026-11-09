@@ -83,7 +83,7 @@ public class StatistikenPraemienTests
     [Fact]
     public void OtherClubLeads_NoSinglePremium()
     {
-        var game = AtClubSeasonOver(5, 4); // kader-start U15-a/R-K5 (L13): Saat 3 → 4 (auf main mit S-K6-c), Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
+        var game = AtClubSeasonOver(5, 13); // kader-start U15-a/R-K5 (L13): Saat 3 → 4 (auf main mit S-K6-c); #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 4 → 13, Vorbedingung Verein 5 Erster der Satzfolge der neuen Liga
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var rival = game.Clubs[6];
         MakeOwnPlayersBest(game, rival);
@@ -94,6 +94,7 @@ public class StatistikenPraemienTests
         // #676: Bei Gleichstand entscheidet die am 29. April gemischte Satzfolge der neuen Liga (S-K6-c, Zufall). Mit der neuen
         // Halbfinal-Paarung verbraucht die Saison andere Zufallszahlen, die Mischung stellt dann Verein 6 vor 5; der Rivale hat
         // deshalb eine Minute mehr, damit Fair-Play eindeutig beim Manager bleibt.
+        // Nach dem Merge von main (#672, Saat 13) erneut geprüft: mit Rivale 0 weiter rot (Gleichstand), mit 1 grün.
         rival.LeaguePenaltyMinutes = 1;
         club.LeaguePenaltyMinutes = 0;
         FinishSeason(game);

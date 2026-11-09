@@ -376,12 +376,28 @@ public class GameModeTests
     // danach andere Konten, ab Saison 4 andere Kaufentscheidungen, Titel in Saison 5 und Zufallszustand.
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
+    // Runde 14, nationalteam Teil 4 (#664): neu ab der WM der ersten Saison (Weltmeister 63 statt 52; Konten von Saison 1
+    // unverändert) – kein Manager unter den ersten fünf, die WM läuft trotzdem in der WM-Schleife (Datei 0x55570–0x55740): keine
+    // Wanderung der Teamwerte vor den WM-Spielen (seit #681: außer im Tageslauf von Tag 216, Hauptweg), kein Training und kein Markt außer nach bestimmten WM-Tagen (dort 224/228, falsch);
+    // damit anderer Zufallsverbrauch ab dem 14. April. Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert.
+    // Review #674 (R14NT4-01/-05, #675): neu – (c) der WM-Schleife nach den WM-Spielen der Tage 216, 220 und 230 (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel, Takttage (Wanderung, Talentsuche) und Heilung des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück auf den Remake-Tag → weder alter noch neuer Wert, beide Teile wirken.
+    // Titel ab Saison 1 neu; Manager 1 (Verein 30, verlängert nur angebotene Verträge) hat in Saison 5 nur noch 9 statt 11 Spieler,
+    // ist nicht spielfähig und wird entlassen (Konto −7.188.716); die Probe prüft weiter nur Manager 0 (im Amt, spielfähig).
+    // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
+    // Weltmeister Saison 1 54 statt 52 (Konten von Saison 1 gleich), ab Saison 2 Titel und Konten neu; Manager 1 bleibt in Saison 5
+    // spielfähig (Konto 400.000 DM).
     // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
+    // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
     // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. Meister und Pokalsieger der Saison 1 gleich; der Weltmeister 1993 (nach den Play-offs) und alles Weitere neu.
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    // Gegenüber main: Saison 1 Pokalsieger gleich, Meister und Weltmeister neu (die Angaben der Zeile #676 galten für Base e5fe46f); Manager 1
+    // ist in Saison 5 nicht mehr spielfähig (Konto −7.327.742), die Probe prüft weiter nur Manager 0.
     internal const string Mode4Reference =
-        "WorldChampion=63,CupWinner=11,GermanChampion=1,EuropeanCupWinner=2|94915,400000|WorldChampion=63,CupWinner=1,GermanChampion=8,EuropeanCupWinner=1|1317101,400000|WorldChampion=52,CupWinner=7,GermanChampion=7,EuropeanCupWinner=1|1936168,400000|WorldChampion=52,CupWinner=0,GermanChampion=8,EuropeanCupWinner=7|2427192,-2630804|WorldChampion=52,CupWinner=6,GermanChampion=3,EuropeanCupWinner=8|2682177,-4201644|R775878578 C1966541813";
+        "WorldChampion=52,CupWinner=11,GermanChampion=11,EuropeanCupWinner=2|402268,400000|WorldChampion=53,CupWinner=0,GermanChampion=3,EuropeanCupWinner=11|1794272,400000|WorldChampion=52,CupWinner=0,GermanChampion=7,EuropeanCupWinner=11|2406786,400000|WorldChampion=54,CupWinner=7,GermanChampion=7,EuropeanCupWinner=7|3046744,400000|WorldChampion=52,CupWinner=7,GermanChampion=7,EuropeanCupWinner=7|3108982,-7327742|R1107079070 C1895578420";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

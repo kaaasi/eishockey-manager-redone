@@ -46,9 +46,12 @@ public class SquadLifecycleTests
         var expiring = OwnClub(game).Players.Where(p => p.ContractYears == 1 && !p.OnLoan).ToArray();
         Assert.Equal(OwnClub(game).Players.Count, expiring.Length); // alle Startverträge laufen jetzt aus
 
-        PlaySeason(game);
+        // Spur nationalteam Teil 4 (Nachprüfung #681, R14NT4N-01): Gezählt wird jeder Spieler, der in der Saison eine Meldung hatte.
+        // Am Saisonende allein zu zählen hing am Zufall: Offene Angebote verfallen je Tag mit random(0, 5) = 0 (Datei 0x0767A),
+        // und mit dem Tageslauf des Hauptwegs am 14. April waren in dieser Saat beide letzten Angebote bis zum Saisonende verfallen.
+        var everAnnounced = new HashSet<Player>();
+        PlaySeason(game, () => everAnnounced.UnionWith(expiring.Where(p => ContractMessages(game, p).Length > 0)));
 
-        var announced = 0;
         foreach (var p in expiring)
         {
             var messages = ContractMessages(game, p);
@@ -58,7 +61,7 @@ public class SquadLifecycleTests
                 Assert.Equal(ContractNotice.None, p.Notice);
                 continue;
             }
-            announced++;
+            Assert.Contains(p, everAnnounced);
             var text = string.Join(" ", messages[0].Lines);
             Assert.True(text.Contains("bietet Ihnen an, von 1 auf") && text.EndsWith("Jahre zu verlängern.")
                 || text.EndsWith("kündigt an, daß er seinen Vertrag nicht mehr verlängern wird."), text);
@@ -66,7 +69,7 @@ public class SquadLifecycleTests
             if (!text.Contains("bietet Ihnen an"))
                 Assert.NotEqual(ContractNotice.None, p.Notice);
         }
-        Assert.InRange(announced, 1, expiring.Length - 1);
+        Assert.InRange(everAnnounced.Count, 1, expiring.Length - 1);
         game.StartNextSeasonWithRenewals();
         Assert.All(expiring.Where(p => p.Notice == ContractNotice.None && OwnClub(game).Players.Contains(p)),
             p => Assert.True(GameState.IsRenewalPending(p), p.Name));

@@ -628,7 +628,9 @@ random(0, 30 · [0xED8] + x + 100) = 0 an 0x7479 – außerhalb des Spiels, nich
 - +0x09 | 2 (verletzt), +0x17 = Art (Namen DGROUP 0xA00), +0x0A = 0 (vom Eis), Text „Verletzt: …“.
 - **Heilung 0x7C12** (Tageslauf 0x07169 an 0x72CB für Marktplätze der Manager und an 0x7B4E für ihre Kaderplätze):
   verletzt, +0x0D ∉ {0, 0xFF} und (Tageszähler 0x3B7 − [0x6AF]) mod 7 = 0 → +0x0D − 1; Status frei bei +0x0D = 0.
-  `[APPROX]` Versatz [0x6AF] nicht gelesen (0), Remake: `Player.InjuredGames` zählt die Wochen, Art nicht geführt.
+  `[ORIGINAL]` [0x6AF] = 0 (DGROUP-Startwert, kein Schreiber; Spiel- und Saisonstart setzen 0x3B7 := [0x6AF], Datei 0x43A93/
+  0x565A7). Der Zähler steht an den Spielen von Tag d auf d + 1 (`DayCounter`, Review #674/#675). Remake: `Player.InjuredGames`
+  zählt die Wochen, Art nicht geführt.
 
 **Torschütze 0x541D9** (Ov 0x130; Stub 0x14E1:0x84). In der Managerpaarung (Byte [bp−9] ≠ 0x1E in 0xA484) ruft **jeder
 Abschluss** – Tor ([bp−4] = 1) oder nicht (0), nur der Abbruch in der Verlängerung 0xA64E nicht – die Szene 0x53C57; ohne
