@@ -146,4 +146,25 @@ public class TacticsClubScreenTests
             d.Click(line.X + 4, line.Y + line.H - 2);
         Assert.Equal(last, t.LineChange); // Ende: kein Umlauf
     }
+
+    /// <summary>R14UR-09 / A373: Torwart-Pfeil oben links – untere Hälfte = nächster Wert, obere = voriger, kein Umlauf.</summary>
+    [GameDataFact]
+    public void Tactics_GoalieArrows_LowerHalfIsNext_NoWrap()
+    {
+        var (d, _, club) = Start();
+        d.OpenTile("Taktik");
+        var t = club.Tactics;
+        var arrows = TacticsScreen.GoalieArrows;
+        var values = Enum.GetValues<GoalieMode>();
+        t.Goalie = values[0];
+
+        d.Click(arrows.X + 4, arrows.Y + 2); // obere Hälfte am Anfang: unverändert (kein Umlauf)
+        Assert.Equal(values[0], t.Goalie);
+        d.Click(arrows.X + 4, arrows.Y + arrows.H - 2); // untere Hälfte: nächster Wert
+        Assert.Equal(values[1], t.Goalie);
+        d.Click(arrows.X + 4, arrows.Y + arrows.H - 2); // am Ende: kein Umlauf
+        Assert.Equal(values[^1], t.Goalie);
+        d.Click(arrows.X + 4, arrows.Y + 2); // obere Hälfte: voriger Wert
+        Assert.Equal(values[^2], t.Goalie);
+    }
 }

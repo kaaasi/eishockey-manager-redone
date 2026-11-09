@@ -49,5 +49,10 @@ public class HistoryBarsDosboxTests
         Assert.Equal(0, Width(180));
         Assert.Equal(HistoryScreen.MarkerColor, At(115, 176));
         Assert.Equal(HistoryScreen.MarkerColor, At(120, 176));
+        // R14UR-09: Lage jeder Marken-Zeile (Spitze x 117–118 ab y 174, Mitte 116–119, Basis 115–120, Stiel 117–118)
+        foreach (var (y, x0, x1) in new[] { (174, 117, 118), (175, 116, 119), (176, 115, 120), (177, 117, 118), (178, 117, 118), (179, 117, 118) })
+            for (var x = 112; x <= 123; x++)
+                Assert.Equal(x >= x0 && x <= x1, At(x, y) == HistoryScreen.MarkerColor);
+        Assert.NotEqual(HistoryScreen.MarkerColor, At(117, 173));
     }
 }

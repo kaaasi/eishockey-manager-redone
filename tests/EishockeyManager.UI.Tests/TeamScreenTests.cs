@@ -106,8 +106,10 @@ public class TeamScreenTests
 
         // Minuten nur bei „Minuten-Vorgabe (s.u.)“
         var line = TacticsScreen.LineChangeArrows;
-        while (t.LineChange != LineChangeMode.MinutesPreset)
+        // Obergrenze (R14UR-09): bei falscher Pfeilrichtung rot statt Endlosschleife
+        for (var guard = 0; guard < Enum.GetValues<LineChangeMode>().Length && t.LineChange != LineChangeMode.MinutesPreset; guard++)
             d.Click(line.X + 4, line.Y + line.H - 2);
+        Assert.Equal(LineChangeMode.MinutesPreset, t.LineChange);
         var minutes = TacticsScreen.MinutesArrows(0, forwards: true);
         d.Click(minutes.X + 4, minutes.Y + 2);
         Assert.Equal(1, t.Minutes(0, forwards: true));
