@@ -31,7 +31,7 @@
    Nutzer melden (Fehlermeldung von `add_repo` bzw. `ls-remote`). Jeder Startaufruf enthält den
    Zugriffsabsatz aus `spur-start.md` (Kurzaufruf „Geplanter Lauf“). Modell nach dem Anlegen mit `update_trigger` setzen,
    wenn es von Opus abweicht – nur auf ausdrücklichen Wunsch des Nutzers (z. B. vom Nutzer bestätigter Plan bzw. Go mit
-   Modell). Offene PRs mit `spur-wartet` durchsehen: „Fortsetzung anlegen – Leitstelle“ heißt, die Aufgabe mit dem Prompt aus
+   Modell) oder für mechanische Arbeit nach `docs/prozess/zusammenarbeit.md` §5 „Modellwahl“ (Vorgabe Nutzer 09.11.2026). Offene PRs mit `spur-wartet` durchsehen: „Fortsetzung anlegen – Leitstelle“ heißt, die Aufgabe mit dem Prompt aus
    der Übergabe anlegen – vorher gegen den Kurzaufruf „Geplanter Lauf mit Teilen“ prüfen; abweichen dürfen nur Spur, Modell,
    Zähler und PR-Nummer (R9F-03). Draft-Status, den ein Lauf nicht aufheben konnte, hebt die Leitstelle
    selbst auf (`gh api -X POST …/pulls/<nr>/ccr/ready_for_review`), nicht der Nutzer.

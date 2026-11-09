@@ -34,7 +34,8 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
    Prüfe genau den genannten Head: bei einem Klon `git rev-parse HEAD` gleich dem Head-SHA und `git status --porcelain`
    leer (sonst unverifizierter Stand), bei einer Rekonstruktion
    Tree-SHA des Checkouts (z. B. `git add -A && git write-tree`) gleich dem Tree-SHA des Zielcommits; Blob-Hashes
-   einzelner Dateien genügen nicht. Baue ihn selbst, führe `tools/pruefen.sh` (alle drei Läufe) aus. Aussagen aus der
+   einzelner Dateien genügen nicht. Baue ihn selbst, führe `tools/pruefen.sh` aus (Erstreview: alle drei Läufe; Nachprüfung: `--schnell`,
+   `docs/prozess/zusammenarbeit.md` §5 „Sparsame Kette“). Aussagen aus der
    PR-Beschreibung nicht ungeprüft übernehmen.
 3. Führe zuerst die genannten Gegenbeispiele erneut aus, dann: Diff lesen, betroffene Aufrufer, neue Tests. Eine
    Gegenprobe pro neuem Test, wo es geht (gezielte Mutation in einer temporären Kopie → Test muss rot werden).
@@ -53,7 +54,8 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
 ## Gesamtreview am Rundenende (Vollprüfung, Vorgabe Nutzer 05.11.2026)
 
 Das Gesamtreview prüft das ganze Delta der Runde **vollständig**, nicht in Stichproben. Damit entfällt die frühere Nachprüfung
-durch Claude. Nachgeprüft wird nur noch das Delta von Fixes, die aus dem Gesamtreview folgen. Die Leitstelle setzt
+durch Claude. Nachgeprüft wird nur noch das Delta von Fixes, die aus dem Gesamtreview folgen (nur bei P0/P1, sonst prüft die Leitstelle
+nach `docs/prozess/zusammenarbeit.md` §5 „Sparsame Kette“). Die Leitstelle setzt
 im Kurzaufruf hinter „Besonders prüfen:“ diesen Absatz ein:
 
 > Vollprüfung, keine Stichproben: (1) jeder in der Runde neue oder geänderte Test wird per Gegenprobe rot gemacht (am Base oder per
