@@ -216,9 +216,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Sommerpause und entlassene Manager einzeln zurück → gleicher Wert. Aktiv: Ursache R688-05 (Liste über den Saisonwechsel),
     // dazu R688-04 nur zusammen mit ihr (einzeln zurück: R688-05 → anderer Wert, R688-04 → gleicher Wert). Tendenz,
     // Aufstellung, Heilung, Sommerpause, entlassene Manager → gleicher Wert.
+    // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
+    // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
+    // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f.
     [GameDataTheory]
-    [InlineData(false, "77A6BCFC2C6CC1D6")]
-    [InlineData(true, "66020C10FC7F9FE8")]
+    [InlineData(false, "9B071FB85F9B1A83")]
+    [InlineData(true, "898D53CA02DA2DDD")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

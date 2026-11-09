@@ -128,8 +128,6 @@ public sealed partial class GameState
     partial void OnNewSeasonManager()
     {
         StartFinanceSeason();
-        // #688 (R688-03): Sommerpause zwischen Saisonende und erstem Tag (Datei 0x564D2–0x56593): Stadionbau und Heilung je Woche.
-        RunSummerBreak();
         StartStadiumStatisticsSeason(); // Spur heimspiel-statistik (0x55A86)
         // Spur kader-start (A091/A380, Review R14KS-02): nicht verkaufte eigene Spieler von der Transferliste zurück in den Kader,
         // bevor Spiele übertragen und Saisonzähler gelöscht werden. [ORIGINAL] Rückkehr Datei 0x27547–0x27665 in der
@@ -151,5 +149,13 @@ public sealed partial class GameState
     /// Neue Saison: Kader, Stammverträge, Leihende, Aufstellungen und Markt gemeinsam umstellen.
     /// Das Training beginnt mit Tag 0 neu (siehe <see cref="CatchUpTraining"/>).
     /// </summary>
-    partial void OnNewSeasonTeam() => StartSquadSeason();
+    partial void OnNewSeasonTeam()
+    {
+        StartSquadSeason();
+        // #688 (R688-03, Nutzer 09.11.2026: „Sommerpause wie im Original berechnen“): Sommerpause zwischen Saisonende und erstem Tag
+        // (Datei 0x564D2–0x56593) nach dem Saisonende der Kader (0x26F20, Datei 0x5645D) und vor den Werbeangeboten des
+        // Saisonbeginns (0x3FB47, Datei 0x56650): je Kalendertag Stadionbau, Tagesabschluss 0x3ED01 und Heilung.
+        RunSummerBreak();
+        StartSponsorSeason();
+    }
 }

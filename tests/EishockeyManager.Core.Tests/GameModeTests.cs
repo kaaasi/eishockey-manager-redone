@@ -339,6 +339,10 @@ public class GameModeTests
         var print = Fingerprint(game, 5, g =>
         {
             TestSquadKeeper.KeepPlayable(g, g.Managers[0]); // wettbewerbe-komplett Teil 3, siehe oben
+            // #688 (Sommerpause wie im Original, Nutzer 09.11.2026): Mit den fünf Monatsabschlüssen der Sommerpause wird der
+            // passive Manager 0 (Bundesliga, ohne Werbung) sonst in Saison 2 nach der Schuldenregel entlassen; die Probe hält sein
+            // Konto bei mindestens 1 Mio. DM (ohne Buchung), der Abdruck enthält es weiter.
+            g.Managers[0].Money = Math.Max(g.Managers[0].Money, 1_000_000);
             ActiveSecondManager(g);
             // Vorbedingung der Probe ausdrücklich: Manager 0 bleibt im Amt und spielfähig (sonst taugt sie nicht als Geldprobe).
             Assert.False(g.Managers[0].Dismissed, $"Manager 0 entlassen ({g.Season}, Tag {g.CurrentDay})");
@@ -406,8 +410,11 @@ public class GameModeTests
     // gleicher Wert.
     // Titel ab Saison 1 neu; Manager 1 (Verein 30, verlängert nur angebotene Verträge, die jetzt nur noch an den Takttagen kommen)
     // verliert ab Saison 3 seinen Kader und zahlt Strafen (Konto −6.762.898 … −24.472.210); die Probe prüft weiter nur Manager 0.
+    // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
+    // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
+    // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f; hier zusätzlich das Konto von Manager 0, das die Probe jetzt hält.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|208946,400000|WorldChampion=57,CupWinner=4,GermanChampion=1,EuropeanCupWinner=0|1678846,400000|WorldChampion=55,CupWinner=0,GermanChampion=3,EuropeanCupWinner=0|2238785,-6777239|WorldChampion=52,CupWinner=11,GermanChampion=0,EuropeanCupWinner=0|2956051,-12952690|WorldChampion=54,CupWinner=20,GermanChampion=20,EuropeanCupWinner=0|500000,-24937504|R1191915444 C1165496966";
+        "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=57,CupWinner=4,GermanChampion=1,EuropeanCupWinner=0|2443220,400000|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|1945428,-7016851|WorldChampion=53,CupWinner=1,GermanChampion=3,EuropeanCupWinner=0|1667422,-21214141|WorldChampion=52,CupWinner=1,GermanChampion=11,EuropeanCupWinner=0|400000,-63624530|R469612583 C1017212678";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

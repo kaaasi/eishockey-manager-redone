@@ -136,6 +136,56 @@ public class TagestaktHauptwegReviewTests
     }
 
     /// <summary>
+    /// R688-03 (Nutzer 09.11.2026: Sommerpause wie im Original): Regressionstest (vorher rot: keine Buchung zwischen Saisonende und
+    /// neuer Saison). [ORIGINAL] Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512), am Monatsletzten der Monatsabschluss
+    /// 0x3F02C: 30. April, 31. Mai, 30. Juni, 31. Juli, 31. August – fünfmal Gehälter, Unterhalt und Grundeinnahmen, gebucht in
+    /// der neuen Saison (Datei 0x56476 zählt die Saison vor der Schleife weiter).
+    /// </summary>
+    [Fact]
+    public void SummerBreak_DayClose_FiveMonthEndsBooked()
+    {
+        var game = TestGames.Create();
+        var me = game.ActiveManager;
+        PlayToSeasonOver(game);
+        TopUp(game);
+
+        game.StartNextSeason();
+
+        var club = game.Clubs[me.ClubIndex];
+        var book = game.Finance(me).Book;
+        Assert.Equal(-5 * FinanceRules.MonthlyWages(game, club), book.Current(FinanceCategory.Gehaelter));
+        Assert.True(book.Current(FinanceCategory.Unterhalt) < 0);
+        Assert.True(book.Current(FinanceCategory.Sponsoren) > 0);
+        Assert.Equal(5, Enumerable.Range(SeasonCalendar.SeasonEnd + 1, 133).Select(SeasonCalendar.LayoutDate)
+            .Count(d => d.Day == DateTime.DaysInMonth(d.Year, d.Month)));
+    }
+
+    /// <summary>
+    /// R688-03 am Original-Stand, Größenordnung: FILE44 (14.04.1994, 18.027.183 DM) → FILE46 (10.09.1994, 15.887.669 DM), also
+    /// −2.139.514 DM über Restsaison und Sommerpause. Das Remake rechnet die Spiele der Restsaison selbst (andere Prämien und
+    /// Zuschauer); Remake −1.956.130 DM (91 %), ohne den Tagesabschluss der Sommerpause +388.500 DM.
+    /// </summary>
+    [GameDataFact]
+    public void File44_ToNewSeason_AccountFollowsFile46()
+    {
+        var game = Import("FILE44.HOK");
+        var me = game.Managers[0];
+        var start = me.Money;
+        Assert.Equal(18_027_183, start);
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 3000, "Saisonende nicht erreicht");
+            if (game.NationalTurn && game.NationalCoach!.Squad.Count == 0)
+                game.AutoNominate();
+            game.Continue();
+        }
+        game.StartNextSeason();
+        var original = Import("FILE46.HOK").Managers[0].Money;
+        Assert.Equal(15_887_669, original);
+        Assert.InRange(me.Money - start, (original - start) * 115 / 100, (original - start) * 85 / 100);
+    }
+
+    /// <summary>
     /// R688-03/-04 am Original-Stand: FILE44 (14.04.1994, Zähler 217) → FILE44A (10.09.1994). Im Original vergehen bis zum ersten Tag
     /// der neuen Saison 21 Bauwochen: Takte 224 und 231 der Saison (der Takt 217 liegt vor dem Menü, in dem FILE44 gesichert ist)
     /// und 19 der Sommerpause; das Restaurant „ca. 23 Wochen“ steht dort bei 1 Woche. Regressionstest (vorher rot: 20 → 17, also

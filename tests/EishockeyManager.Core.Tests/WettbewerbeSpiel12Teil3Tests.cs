@@ -95,6 +95,8 @@ public class WettbewerbeSpiel12Teil3Tests
                     manager.Money = 10_000_000;
                     TestSquadKeeper.KeepPlayable(game, manager);
                 }
+                else
+                    manager.Money = Math.Max(manager.Money, 5_000_000); // #688 (Sommerpause wie im Original): fünf Monatsabschlüsse ohne Spiele je Sommer; die Probe prüft Computervereine, nicht das Konto – Konto halten, sonst Entlassung nach der Schuldenregel.
                 game.Continue();
                 foreach (var club in game.Clubs.Where(c => c.Players.Count > 0 && !MatchEngine.IsManaged(game, c)))
                 {

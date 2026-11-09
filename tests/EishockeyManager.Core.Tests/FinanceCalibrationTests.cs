@@ -148,6 +148,10 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
     /// #678 (Tagestakt 0x07169 im Hauptweg): Saat 3 → 5. Mit Training an den Takttagen (Mittwoch/Samstag statt Mittwoch/Sonntag)
     /// laufen die Spiele anders; bei Saat 3 steht das Konto nach Saison 1 bei −451.877 statt −348.719 DM, der Manager wird in
     /// Saison 2 wegen der Schulden entlassen, bevor er Spieler verliert (Strafen 0) – die Probe braucht den Weg über die Strafen.
+    /// #688 (Sommerpause wie im Original, Nutzer 09.11.2026): Die Sommerpause bucht fünf weitere Monatsabschlüsse ohne Spiele
+    /// (25 Spieler: 5 · 308.000 DM Gehälter); jetzt scheitert der Manager bei allen Saaten 1–60 schon in Saison 2 an der
+    /// Schuldenregel (acht Wochen unter −1,5 Mio. DM), bevor er Spieler verliert. Geprüft wird deshalb die Entlassung nach einer
+    /// der beiden Originalregeln: Schuldenregel oder Strafen „Weniger als neun Spieler“.
     /// </remarks>
     [Theory]
     [InlineData(5)]
@@ -170,7 +174,9 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
         }
         Assert.Equal(SeasonPhase.GameOver, game.Phase);
         Assert.True(manager.Dismissed, "GameOver ohne Entlassung");
-        Assert.True(game.Finance(manager).Book.Current(FinanceCategory.Strafen) < 0, "Entlassung ohne Strafen");
+        Assert.True(game.Finance(manager).Book.Current(FinanceCategory.Strafen) < 0
+                    || (manager.Money < Manager.DebtLimit && manager.DebtDays >= Manager.DebtDaysUntilDismissal),
+            $"Entlassung ohne Strafen und ohne Schuldenregel: {manager.Money}, {manager.DebtDays} Tage");
     }
 
     /// <summary>
@@ -207,7 +213,9 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             var game = NewGame.Create(database(), setup, seed);
             var manager = game.ActiveManager;
             Assert.Equal(FinanceRules.StartMoney(manager.Level), manager.Money);
-            long cumulative = 0;
+            long cumulative = 0, previousCumulative = 0;
+            var summerBook = new long[FinanceBook.CategoryCount];
+            long summerTotal = 0;
             // Spur transfer-vertraege-komplett: Ablöse für Spieler, die am Saisonende gehen (0x27DF3), steht im Buch der neuen Saison.
             long compensation = 0;
             long lowest = long.MaxValue, highest = long.MinValue;
@@ -327,50 +335,55 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 output.WriteLine($"seed={seed}; club={club.Name}; start={league}; active={active}; year={year + 1}; league={club.League}; roster={roster}; begin={moneyAtStart}; end={manager.Money}; homeGames={settledHomeGames}; "
                     + string.Join("; ", Enum.GetValues<FinanceCategory>().Select(c => $"{c}={finance.Current(c)}")));
 
+                // #688 (Sommerpause wie im Original, Nutzer 09.11.2026): Das Buch der Saison beginnt mit den Buchungen der Sommerpause
+                // (fünf Monatsabschlüsse, Zinsen, Werbung; Datei 0x564D2–0x56593) und der Ablöse; die Spannen unten gelten für die
+                // sieben Monatsabschlüsse der Spielzeit, also ohne diesen Anfangsstand (geprüft nach StartNextSeason).
+                long InSeason(FinanceCategory category) => finance.Current(category) - summerBook[(int)category];
                 // Sollspanne je Kategorie aus den Originalformeln:
-                var tickets = finance.Current(FinanceCategory.Eintritt);
+                var tickets = InSeason(FinanceCategory.Eintritt);
                 Assert.InRange(tickets, minTickets, maxTickets);
                 var maxSponsors = MonthEnds * (FinanceRules.ToMarks(5L * maxRoster * MaxTeamValueSum) + maxContracts);
-                var sponsors = finance.Current(FinanceCategory.Sponsoren);
+                var sponsors = InSeason(FinanceCategory.Sponsoren);
                 Assert.True(sponsors <= maxSponsors, $"Sponsoren {sponsors} über der Obergrenze {maxSponsors} (Saison {year + 1})");
-                var premiums = finance.Current(FinanceCategory.Praemien);
+                var premiums = InSeason(FinanceCategory.Praemien);
                 Assert.Contains(premiums, PossiblePremiums);
 
-                var total = finance.CurrentTotal;
+                var total = finance.CurrentTotal - summerTotal;
                 if (!active)
                 {
                     Assert.Equal(0, maxContracts);
                     var minSponsors = MonthEnds * FinanceRules.ToMarks(5L * minRoster * 4);
                     Assert.True(sponsors >= minSponsors, $"Sponsoren {sponsors} unter {minSponsors}");
-                    Assert.Equal(-MonthEnds * fixedPerMonth, finance.Current(FinanceCategory.Unterhalt));
-                    Assert.Equal(-MonthEnds * wagesPerMonth, finance.Current(FinanceCategory.Gehaelter));
+                    Assert.Equal(-MonthEnds * fixedPerMonth, InSeason(FinanceCategory.Unterhalt));
+                    Assert.Equal(-MonthEnds * wagesPerMonth, InSeason(FinanceCategory.Gehaelter));
                     // Spur heimspiel-statistik (#136): Mit gehaltenem Kader rutscht der passive Oberligist ab Saison 3 ins Minus;
                     // dann fallen Überziehungszinsen an (0x3ED4F: 10 % des negativen Kontos je Monat, höchstens zwölf Monate).
-                    var interest = finance.Current(FinanceCategory.Zinsen);
+                    var interest = InSeason(FinanceCategory.Zinsen);
                     Assert.InRange(interest, seasonLowest < 0 ? 12 * (seasonLowest / 10 - 1) : 0, 0);
                     foreach (var category in Enum.GetValues<FinanceCategory>().Except(bounded).Except([FinanceCategory.Zinsen]))
-                        Assert.True(finance.Current(category) == (category == FinanceCategory.Transfers ? compensation : 0),
-                            $"{category} = {finance.Current(category)} beim passiven Manager");
+                        Assert.True(InSeason(category) == 0,
+                            $"{category} = {InSeason(category)} beim passiven Manager");
                     // Kontokorridor der Saison aus den Spannen oben.
                     var fixedCosts = MonthEnds * (fixedPerMonth + wagesPerMonth);
-                    Assert.InRange(total - interest - compensation, minTickets + minSponsors - fixedCosts, maxTickets + maxSponsors + PossiblePremiums.Max() - fixedCosts);
+                    Assert.InRange(total - interest, minTickets + minSponsors - fixedCosts, maxTickets + maxSponsors + PossiblePremiums.Max() - fixedCosts);
                 }
                 else
                 {
-                    Assert.True(finance.Current(FinanceCategory.Unterhalt) <= -MonthEnds * fixedPerMonth, "Unterhalt nach Ausbau nicht kleiner");
+                    Assert.True(InSeason(FinanceCategory.Unterhalt) <= -MonthEnds * fixedPerMonth, "Unterhalt nach Ausbau nicht kleiner");
                     foreach (var category in Enum.GetValues<FinanceCategory>().Except([FinanceCategory.Eintritt, FinanceCategory.Sponsoren, FinanceCategory.Praemien]))
-                        Assert.True(finance.Current(category) - (category == FinanceCategory.Transfers ? compensation : 0) <= 0,
-                            $"{category} = {finance.Current(category)} beim aktiven Manager");
-                    Assert.True(total - compensation <= maxTickets + maxSponsors + premiums, $"Saisonsaldo {total} über dem Korridor");
+                        Assert.True(InSeason(category) - 0 <= 0,
+                            $"{category} = {InSeason(category)} beim aktiven Manager");
+                    Assert.True(total <= maxTickets + maxSponsors + premiums, $"Saisonsaldo {total} über dem Korridor");
                 }
 
-                cumulative += total;
+                cumulative += finance.CurrentTotal;
                 // Spur heimspiel-statistik (#136): Der passive Manager verlängert die angebotenen Verträge erst nach dem
                 // letzten Monatsabschluss (Gehälter der Saison bleiben fest), sonst ist sein Kader ab Saison 3 leer und
                 // „Weniger als neun Spieler“ (200.000 DM je Spiel) führt zur Entlassung.
                 if (!active)
                     TestSeason.KeepSquad(game, manager);
                 game.StartNextSeason();
+                var summerWages = FinanceRules.MonthlyWages(game, club); // Kader der Sommerpause, vor dem Auffüllen unten
                 // Integration Runde 11 (Entscheidung Nutzer, C): Kader des passiven Managers zu Saisonbeginn spielfähig halten
                 // (vertragslose Spieler zum Preis 0, keine Buchung; der Kauf würfelt den Sponsorzuschuss aus der Hauptquelle, KT-02,
                 // das Angebot wird verworfen); Gehälter der neuen Saison werden erst danach
@@ -380,8 +393,21 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 Assert.Equal(1994 + year, game.Season);
                 compensation = finance.Current(FinanceCategory.Transfers);
                 Assert.True(compensation >= 0);
-                Assert.Equal(compensation, finance.CurrentTotal);
-                Assert.Equal(total, finance.PreviousTotal);
+                Assert.Equal(cumulative - previousCumulative, finance.PreviousTotal);
+                previousCumulative = cumulative;
+                // #688: Sommerpause wie im Original (Datei 0x564D2–0x56593): fünf Monatsabschlüsse (30. April, Ende Mai bis August) mit
+                // Gehältern, Unterhalt und Grundeinnahmen; keine Spiele, keine Prämien, kein Eintritt.
+                summerBook = [.. Enum.GetValues<FinanceCategory>().Select(c => finance.Current(c))];
+                summerTotal = finance.CurrentTotal;
+                Assert.Equal(-5 * summerWages, finance.Current(FinanceCategory.Gehaelter));
+                var summerFixed = FinanceRules.ToMarks(ExpectedBaseExpenseThirds(manager.Level, game.Finance(manager).CostLeague))
+                                  + FinanceRules.ToMarks(ExpectedUpkeepThirds(stadium));
+                if (active)
+                    Assert.True(finance.Current(FinanceCategory.Unterhalt) < 0, "Unterhalt der Sommerpause"); // Ausbau kann im Sommer fertig werden
+                else
+                    Assert.Equal(-5 * summerFixed, finance.Current(FinanceCategory.Unterhalt));
+                Assert.Equal(0, finance.Current(FinanceCategory.Eintritt));
+                Assert.Equal(0, finance.Current(FinanceCategory.Praemien));
                 if (active) Assert.Equal(roster, club.Players.Count);
             }
             output.WriteLine($"seed={seed}; start={league}; active={active}; lowest={lowest}; highest={highest}; end={manager.Money}; entlassen={dismissedByRule}");
@@ -400,7 +426,9 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             Assert.True(maxDebtDays < Manager.DebtDaysUntilDismissal, $"{maxDebtDays} Tage unter der Grenze ohne Entlassung");
         }
         // WS-02: Die Mehrsaisonprobe bleibt erbracht – außer passiv in der Bundesliga (D4 = A, oben) laufen alle Seeds vier
-        // Saisons; dort prüft jeder ausgeschiedene Seed die Ursache, mindestens einer muss die vierte Saison erreichen.
-        Assert.True(dismissedSeeds <= (!active && league == League.Bundesliga ? 2 : 0), $"{dismissedSeeds} Seeds entlassen");
+        // Saisons; dort prüft jeder ausgeschiedene Seed die Ursache. #688 (Sommerpause wie im Original): Mit den fünf
+        // Monatsabschlüssen der Sommerpause scheidet der passive Bundesliga-Manager ohne Werbung bei allen drei Seeds nach der
+        // Schuldenregel aus (vorher mindestens einer vier Saisons); die übrigen drei Fälle laufen weiter vier Saisons.
+        Assert.True(dismissedSeeds <= (!active && league == League.Bundesliga ? 3 : 0), $"{dismissedSeeds} Seeds entlassen");
     }
 }

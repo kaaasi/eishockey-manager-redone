@@ -186,12 +186,20 @@ public sealed partial class GameState
             Finance(manager).Book.NewSeason();
             // [ORIGINAL] 0x563C0: Kostenstufe = Liga der neuen Saison (Spur finanzen-2).
             Finance(manager).CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga;
-            // [ORIGINAL] 0x5664D: zu Saisonbeginn neue Werbeangebote (gewürfelt, gespeicherte Bewertung; #133).
-            RefreshSponsorOffers(manager, noDice: false);
             // [ORIGINAL] Saisonwechsel 0x55889: Auf-/Abstieg und Neustart der Jugendteams (0x3A13B, Spur geld Teil 3).
             YouthSeasonChange(manager);
         }
         FinanceDay = -1;
+    }
+
+    /// <summary>
+    /// [ORIGINAL] 0x5664D: zu Saisonbeginn neue Werbeangebote (gewürfelt, gespeicherte Bewertung; #133), nach der Sommerpause
+    /// (Datei 0x56650 hinter der Schleife 0x564D2–0x56593; #688, vorher in <see cref="StartFinanceSeason"/>).
+    /// </summary>
+    internal void StartSponsorSeason()
+    {
+        foreach (var manager in Managers)
+            RefreshSponsorOffers(manager, noDice: false);
     }
 
     private void WeeklyFinances()

@@ -44,6 +44,7 @@ public class IntegrationRunde6Tests : IDisposable
         var seasonsChecked = 0;
         for (var guard = 0; seasonsChecked < 2 && guard < 60000; guard++)
         {
+            me.Money = Math.Max(me.Money, 5_000_000); // #688 (Sommerpause wie im Original): fünf Monatsabschlüsse ohne Spiele je Sommer; die Probe prüft Statistik, Bewertung und Speichern, nicht das Konto – Konto halten, sonst Entlassung nach der Schuldenregel.
             d.Advance();
             if (d.Host.Current is not MainMenuScreen || game.NationalTurn)
                 continue;

@@ -31,6 +31,11 @@ Das Hauptmenü zeigt den Tag **T** des nächsten eigenen Spiels.
 | 6 | **Tagesablauf 0x07169** nur am Takttag (Zähler 0x3B7 ≡ 0/4 mod 7, Mittwoch und Samstag; #678) je Manager: Markt (Verfall, Gebote, Angebote), Verträge, Heilung, **Training**, Tendenz, Aufstellung | `MainPathDailyRun(day)` (`GameState.DailyRun.cs`) |
 | 7 | Tage mit Ereignis: Neuaufstellung je Satz (0x54D9E), Listenwechsel ein Wurf je Managerzug (0x54E71) | `MainPathEventDayLineups`, `MainPathListChanges` |
 
+**Sommerpause** (Saisonwechsel, `GameState.RunSummerBreak`; `[ORIGINAL]` Datei 0x564D2–0x56593, #688): nach dem Kaderwechsel je
+Kalendertag vom 30. April bis 9. September Stadionbau (Zähler ≡ 0), Tagesabschluss 0x3ED01 (Zinsen, Werbung, Börse, Monatsabschlüsse
+30. April und Ende Mai bis August mit Gehältern und Unterhalt) und Heilung; danach die Werbeangebote des Saisonbeginns (0x56650).
+Gebucht wird im Buch der neuen Saison.
+
 Nach dem 13. April ersetzt die WM-Schleife die Schritte 5–7 (`CupsNational.WorldCupLoop.cs`: (c) des Vortags, (d)). Ein neues
 Spiel, der erste Tag einer Saison und Spielstände vor Schema 45 holen den Tageswechsel vor den Spielen des Tages nach.
 

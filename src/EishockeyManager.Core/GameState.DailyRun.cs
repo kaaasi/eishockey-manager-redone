@@ -237,22 +237,49 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Sommerpause des Saisonwechsels (#688, R688-03): je Tageszähler ≡ 0 (mod 7) der Stadionbau aller Manager (0x3D316, Datei
-    /// 0x5650D; <see cref="WeeklyFinances"/>) und die Heilung ihrer Kaderplätze (0x07C12, Datei 0x5653C, prüft selbst Zähler ≡ 0).
-    /// [APPROX] Der tägliche Tagesabschluss 0x3ED01 der Sommerpause (Datei 0x56512: Zinsen, Werbung, Monatsabschlüsse Mai bis August)
-    /// ist nicht angeschlossen (Restlücke, eigener Befund); die Sommerpause läuft im Remake im Saisonhaken der Manager nach dem neuen
-    /// Finanzbuch, ohne eigenen Kalendertag.
+    /// Sommerpause des Saisonwechsels (#688, R688-03; Nutzer 09.11.2026: wie im Original). [ORIGINAL] Datei 0x564D2–0x56593 je
+    /// Kalendertag vom 30. April bis 9. September (<see cref="SummerBreakCounters"/>), je Manager:
+    /// <list type="number">
+    /// <item>bei Zähler ≡ 0 (mod 7) der Stadionbau 0x3D316 (Datei 0x564F5–0x5650D; <see cref="WeeklyFinances"/>),</item>
+    /// <item>der Tagesabschluss 0x3ED01 (Datei 0x56512) wie im Hauptweg: Baufirmen (0x3ED19), Zinskonto (0x3ED4F), Werbeangebote zur
+    ///   Monatsmitte und am Monatsletzten (0x3EE6B), am 1. die Restlaufzeiten der Werbeverträge (0x3EF52), am Monatsletzten der
+    ///   Monatsabschluss (0x3F02C: Gehälter, Versicherung, Unterhalt, Grundeinnahmen, Werbung, Jugend, Zinsen; 30. April und Ende
+    ///   Mai bis August), Börsentag (0x3ED4A),</item>
+    /// <item>die Heilung 0x07C12 je Kaderplatz (Datei 0x5653C; prüft selbst Zähler ≡ 0).</item>
+    /// </list>
+    /// Keine Werbebewertung 0x3F833 (nur Hauptweg und WM-Schleife), keine Talentsuche, keine Jugendteams, keine Spiele, kein Training.
+    /// [APPROX] Ohne eigenen Kalendertag des Remakes (die Bücher führen die Beträge in der neuen Saison, Datei 0x56476 zählt die
+    /// Saison vor der Schleife weiter); Bau, Tagesabschluss und Heilung je Tag für alle Manager nacheinander statt je Manager
+    /// verschränkt (sie wirken je Manager getrennt; die Börse rechnet wie im Hauptweg einmal je Tag, Entscheidung #188). Im Modus
+    /// „nur Weltkugel“ ohne Tagesabschluss: Das Remake führt dort keine Vereinsfinanzen (wie in der WM-Schleife).
     /// </summary>
     private void RunSummerBreak()
     {
         foreach (var counter in SummerBreakCounters())
         {
-            if (counter % 7 != 0)
-                continue;
-            WeeklyFinances();
-            foreach (var club in ManagedClubs())
-                HealSquad(club);
+            var date = SeasonCalendar.LayoutDate(counter - 1);
+            if (counter % 7 == 0)
+                WeeklyFinances();
+            if (!WorldOnly)
+                SummerDayClose(date);
+            if (PlayerInjuries.IsHealingDay(counter))
+                foreach (var club in ManagedClubs())
+                    HealSquad(club);
         }
+    }
+
+    /// <summary>Tagesabschluss 0x3ED01 eines Tages der Sommerpause (siehe <see cref="RunSummerBreak"/>; Teile wie <see cref="AdvanceFinance"/>).</summary>
+    private void SummerDayClose(DateOnly date)
+    {
+        DailyStadium();
+        AccrueDailyInterest(date);
+        DailySponsorOffers(date);
+        if (date.Day == 1)
+            foreach (var manager in Managers)
+                CountDownSponsorContracts(manager);
+        if (date.Day == DateTime.DaysInMonth(date.Year, date.Month))
+            MonthlyFinances();
+        AdvanceStocks();
     }
 }
 

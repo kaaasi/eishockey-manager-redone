@@ -206,10 +206,13 @@ public class RngTwinProbeTests
     // Sommerpause und entlassene Manager einzeln zurück → gleicher Wert. Aktiv: Ursachen R688-05 (Liste über den Saisonwechsel)
     // und R688-04 (Takt des Halttags vor den Eingriffen des aktiven Managers); jede einzeln zurück → anderer Wert. Tendenz,
     // Aufstellung, Heilung, Sommerpause, entlassene Manager einzeln zurück → gleicher Wert.
-    [InlineData(false, 3, "55E4FED38920B60E")]
-    [InlineData(true, 3, "586A688350052B49")]
-    [InlineData(false, 11, "D33EED9476CC801F")]
-    [InlineData(true, 11, "BAB9CD4839235AA4")]
+    // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
+    // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
+    // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f.
+    [InlineData(false, 3, "84E750F82F7D9F95")]
+    [InlineData(true, 3, "7FE0F7232407897B")]
+    [InlineData(false, 11, "ACC64DD24B00B182")]
+    [InlineData(true, 11, "B13EC505F2828450")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -235,8 +238,12 @@ public class RngTwinProbeTests
     // Sommerpause und entlassene Manager einzeln zurück → gleicher Wert. Aktiv: Ursachen R688-05 (Liste über den
     // Saisonwechsel), R688-04 (Takt vor dem Halt) und R688-03 (Sommerpause: Stadionbau, Heilung); jede einzeln zurück → anderer
     // Wert. Tendenz, Aufstellung, Heilung je Manager, entlassene Manager einzeln zurück → gleicher Wert.
-    [InlineData(false, "E69E49F4FE930BF6")]
-    [InlineData(true, "1324E979ECB46177")]
+    // Nutzer 09.11.2026 („Sommerpause wie im Original“): neu – Tagesabschluss 0x3ED01 je Tag der Sommerpause (Datei 0x56512: fünf
+    // Monatsabschlüsse, Zinsen, Werbung, Börse) und Sommerpause nach dem Kaderwechsel (Datei 0x5645D vor 0x564D2), Werbeangebote des
+    // Saisonbeginns danach (0x56650). Gegenprobe: ohne Tagesabschluss der Sommerpause → Wert von f98f22f; Originaldatenbank aktiv zusätzlich durch die Lage der Sommerpause
+    // nach dem Kaderwechsel (Gegenprobe ohne Tagesabschluss und mit Werbeangeboten vorher → weiter anders).
+    [InlineData(false, "3FAF424DD8BFBAC0")]
+    [InlineData(true, "FB8A6B2A4C450581")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
