@@ -49,11 +49,12 @@ public class LifecycleScreenRegressionTests
         // Runde 13, kader-start Teil 2 (U15-a, L13): Verein 42 tauscht mit Start-Liga Oberliga in die Oberliga (Datei 0x29CF2,
         // Teamwerte des Platzes, Oberliga-Kader) – anderer Zufallsverlauf, wieder der zweite stimmige Ausgang (Poolplatz).
         // Teil 3 (R-K5): Satzfolge vor der Spielvorbereitung, Zufallsplatz als Satzplatz – wieder der erste Ausgang (Verein 59).
+        // Runde 14, kader-start Teil 4 (A115, re-runde-14 FILE44 → FILE46 VALLIERE): Eine Leihe vom Markt endet am Saisonende frei
+        // (Pool +0x1A = 6, Datei 0x275FF) – der Spieler kehrt nicht mehr mit seinem Vertrag zum Herkunftsverein zurück. Stimmig ist
+        // damit nur noch: in keinem Kader mit dem alten Vertrag (3 → 2 Jahre), höchstens in einem Kader (neu verpflichtet).
         Assert.Equal(59, origin.Index);
-        Assert.DoesNotContain(player, game.TransferMarket.PoolPlayers);
-        Assert.Equal(2, player.ContractYears);
-        Assert.Contains(player, origin.Players);
-        Assert.All(game.Clubs.Where(c => c != origin), c => Assert.DoesNotContain(player, c.Players));
+        Assert.False(origin.Players.Contains(player) && player.ContractYears == 2);
+        Assert.True(game.Clubs.Count(c => c.Players.Contains(player)) <= 1);
         Assert.DoesNotContain(player, club.Players);
         Assert.DoesNotContain(expired, club.Players);
         Assert.All(game.Clubs, c => Assert.All(c.Lineup.Players, p => Assert.Contains(p, c.Players)));

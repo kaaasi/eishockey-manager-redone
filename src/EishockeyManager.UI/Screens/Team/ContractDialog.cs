@@ -166,7 +166,8 @@ public sealed class ContractDialog
         var d = Rect;
         TeamUi.DialogFrame(s, d);
         TeamUi.DialogTitle(s, assets, 84, d.Y + 5, "Vertragsverhandlung");
-        s.HLine(5, d.Y + 14, 159, Colors.White);
+        // [ORIGINAL] Trennlinie x 6–163, Doppelpunkte x 76: DOSBox-Bild file46_3 (A362).
+        s.HLine(6, d.Y + 14, 158, Colors.White);
         s.TextCentered(mini, 80, d.Y + 18, $"{p.Name}, {p.Age} Jahre alt", Colors.White); // Video: Mitte bei x = 79–80
 
         const byte label = Colors.White;
@@ -174,7 +175,7 @@ public sealed class ContractDialog
         s.Text(mini, 7, d.Y + 35, "Gehalt / Monat", label);
         s.Text(mini, 7, d.Y + 43, "Versicherung", label);
         for (var i = 0; i < 3; i++)
-            s.Text(mini, 77, d.Y + 27 + 8 * i, ":", Colors.White);
+            s.Text(mini, 76, d.Y + 27 + 8 * i, ":", Colors.White);
 
         DrawValue(s, mini, Field.Years, d.Y + 27, Core.Player.YearsText(Years != 0 ? Years : _baseYears));
         DrawValue(s, mini, Field.Salary, d.Y + 35, ContractsScreen.FormatMoney(Salary != 0 ? Salary : _baseSalary));

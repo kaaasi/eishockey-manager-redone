@@ -91,8 +91,8 @@ public class KaderStartStartLigaTests
 
     /// <summary>
     /// Start-Liga Bundesliga: immer ein Zufallsplatz der Bundesliga, auch für einen Bundesligisten (Datei 0x29C3B: Behalten nur
-    /// bei L ≠ 0). Zieht er den eigenen Platz, bleibt alles; sonst tauschen beide die Stärke. Der Europapokal-Teilnehmer
-    /// (Zeile 1, zu Spielbeginn Verein 2) wird nie gezogen (Datei 0x29CCC) – Verein 2 selbst wandert deshalb immer.
+    /// bei L ≠ 0). Zieht er den eigenen Platz, bleibt alles; sonst tauschen beide die Stärke. Der Europapokal-Filter
+    /// (Zeile 1, Datei 0x29CCC) trifft beim Spielstart nur Platz 0 (leere Tabelle, U15-c) – der Verein dort wandert deshalb immer.
     /// </summary>
     [Fact]
     public void Bundesliga_AlwaysDraws_NeverTheEuropeanCupPlace()
@@ -100,14 +100,18 @@ public class KaderStartStartLigaTests
         var kept = 0;
         for (var seed = 0; seed < 40; seed++)
         {
-            var game = Create(seed, League.Bundesliga, 5);
+            // U15-c (re-runde-14.md): Beim Spielstart ist die Europapokal-Tabelle leer, der Filter trifft Platz 0 der
+            // Startmischung (vorher: Verein 2, der Deutsche Meister).
+            var placeZero = NewGame.StartOrder(seed)[0];
+            var own = placeZero == 5 ? 6 : 5;
+            var game = Create(seed, League.Bundesliga, own);
             Assert.All(game.Clubs.Where(c => c.Index < 36), c => Assert.Equal(NewGame.DatabaseLeague(c.Index), c.League));
-            Assert.Equal(DatabaseStrength(EuropeanCup.InitialChampion), game.Clubs[EuropeanCup.InitialChampion].Strength);
-            if (game.Clubs[5].Strength == DatabaseStrength(5))
+            Assert.Equal(DatabaseStrength(placeZero), game.Clubs[placeZero].Strength);
+            if (game.Clubs[own].Strength == DatabaseStrength(own))
                 kept++;
 
-            var champion = Create(seed, League.Bundesliga, EuropeanCup.InitialChampion);
-            Assert.NotEqual(DatabaseStrength(EuropeanCup.InitialChampion), champion.Clubs[EuropeanCup.InitialChampion].Strength);
+            var onPlaceZero = Create(seed, League.Bundesliga, placeZero);
+            Assert.NotEqual(DatabaseStrength(placeZero), onPlaceZero.Clubs[placeZero].Strength);
         }
         Assert.InRange(kept, 1, 39); // eigener Platz möglich, aber nicht immer
     }

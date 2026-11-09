@@ -145,6 +145,8 @@ public sealed partial class GameState
         };
         if (mode == GameMode.WorldOnly)
             setup.ToggleClubCompetitions();
+        // Start-Liga DGROUP 0x11A, ein Wert für alle Manager (Schema 42, kader-start #605): auch ohne Manager gesetzt.
+        setup.StartLeague = (League)Math.Clamp((int)setupBlock[2], 0, 2);
 
         var managerRecords = save.Block("965B");
         var managers = new List<Manager>();
@@ -495,10 +497,19 @@ public sealed partial class GameState
         p.Penalties2 = slot[0x01];
         var goals = slot[0x03] + slot[0x04] + slot[0x05];
         p.Games = slot[0x06] + slot[0x07] + slot[0x08];
-        p.ClubGamesCarry = BinaryPrimitives.ReadInt16LittleEndian(slot[0x1C..]) + BinaryPrimitives.ReadInt16LittleEndian(slot[0x1E..])
-            + BinaryPrimitives.ReadInt16LittleEndian(slot[0x20..]) - p.Games; // Wörter je Wettbewerb (re-runde-13.md)
+        // A135 (kader-start Runde 14, Schema 43): Zähler je Wettbewerb – Saisonspiele +0x06/+0x07/+0x08 (Byte), beim Verein
+        // +0x1C/+0x1E/+0x20 (Wort); der Übertrag ist der Vereinswert ohne die laufende Saison (Player.Competitions.cs).
+        p.CupGames = slot[0x07];
+        p.EuropeGames = slot[0x08];
+        p.ClubGamesCarry = BinaryPrimitives.ReadInt16LittleEndian(slot[0x1C..]) - slot[0x06];
+        p.ClubCupGamesCarry = BinaryPrimitives.ReadInt16LittleEndian(slot[0x1E..]) - slot[0x07];
+        p.ClubEuropeGamesCarry = BinaryPrimitives.ReadInt16LittleEndian(slot[0x20..]) - slot[0x08];
         if (p.Role == PlayerRole.Goalkeeper)
         {
+            // [APPROX] Beim Torhüter zählen +0x03–0x05 und +0x22–0x26 die Gegentore; das Remake führt Gegentore ohne Wettbewerb und
+            // ohne Vereinswert (Tore je Wettbewerb und Überträge 0).
+            p.CupGoals = p.EuropeGoals = 0;
+            p.ClubGoalsCarry = p.ClubCupGoalsCarry = p.ClubEuropeGoalsCarry = 0;
             p.Goals = 0;
             p.GoalsAgainst = goals;
             p.GoalieMinutes = BinaryPrimitives.ReadUInt16LittleEndian(entry[0x1F..]);
@@ -507,6 +518,11 @@ public sealed partial class GameState
         else
         {
             p.Goals = goals;
+            p.CupGoals = slot[0x04];
+            p.EuropeGoals = slot[0x05];
+            p.ClubGoalsCarry = BinaryPrimitives.ReadInt16LittleEndian(slot[0x22..]) - slot[0x03];
+            p.ClubCupGoalsCarry = BinaryPrimitives.ReadInt16LittleEndian(slot[0x24..]) - slot[0x04];
+            p.ClubEuropeGoalsCarry = BinaryPrimitives.ReadInt16LittleEndian(slot[0x26..]) - slot[0x05];
             p.Assists = BinaryPrimitives.ReadUInt16LittleEndian(entry[0x1F..]);
         }
         p.InjuredGames = (slot[0x09] & 0x02) != 0 ? slot[0x0D] : 0;

@@ -22,7 +22,7 @@ public class LineupAutoDisabledMessageTests
 
         var slot = LineupSlot.Defender(0, 0);
         var b = LineupScreen.SlotButton(slot);
-        d.RightClick(b.X + 5, b.Y + 5);
+        d.Click(b.X + 5, b.Y + 5); // Linksklick leert den Platz (Datei 0x40CF8; Runde 14 Teil 6, vorher Rechtsklick)
         Assert.Null(club.Lineup[slot]);
         Assert.False(club.AutoLineupEnabled);
         Assert.Equal(["Auto-Aufstellung", "ist deaktiviert !"], screen.MessageLines);
@@ -31,7 +31,7 @@ public class LineupAutoDisabledMessageTests
         Assert.Empty(screen.MessageLines);
         var slot2 = LineupSlot.Defender(0, 1);
         var b2 = LineupScreen.SlotButton(slot2);
-        d.RightClick(b2.X + 5, b2.Y + 5);
+        d.Click(b2.X + 5, b2.Y + 5);
         Assert.Null(club.Lineup[slot2]);
         Assert.Empty(screen.MessageLines); // schon aus: keine zweite Meldung
     }

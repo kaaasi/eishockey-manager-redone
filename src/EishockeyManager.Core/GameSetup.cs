@@ -125,17 +125,22 @@ public sealed class GameSetup
     /// Start-Liga, ein Wert für alle Manager. [ORIGINAL] DGROUP 0x11A (Regler 2 der Spielvorbereitung, Setup-Werte
     /// 0x118–0x11B; README FILE09 „Start-Liga gilt für alle Manager“; Entscheidung Leitstelle L1 in #567). Das Remake führt
     /// den Wert weiter in <see cref="ManagerSetup.StartLeague"/> (Spielstände, Tests); gelesen wird der Wert von
-    /// Manager 0, das Setzen gilt für alle. Ohne Manager: Bundesliga ([ORIGINAL] Vorgabe 0).
+    /// Manager 0, das Setzen gilt für alle. Ohne Manager gilt der in <see cref="GameSetup"/> selbst geführte Wert
+    /// ([ORIGINAL] Vorgabe 0 = Bundesliga; einstellbar vor dem ersten Manager, R13KI-03 #605); <see cref="AddManager"/>
+    /// übernimmt ihn.
     /// </summary>
     public League StartLeague
     {
-        get => Managers.Count > 0 ? Managers[0].StartLeague : League.Bundesliga;
+        get => Managers.Count > 0 ? Managers[0].StartLeague : _startLeague;
         set
         {
+            _startLeague = value;
             foreach (var m in Managers)
                 m.StartLeague = value;
         }
     }
+
+    private League _startLeague = League.Bundesliga;
 
     /// <summary>
     /// Spielstand-Optionen des Originals (Optionsbildschirm 0x2CD1C, Spur optionen-wirkung). Gehören zum Spielstand; die
@@ -169,9 +174,19 @@ public sealed class GameSetup
     }
 
     /// <summary>
+    /// Managerzeile, auf die ein Klick in Zeile <paramref name="row"/> wirkt. [ORIGINAL] A056, em.exe Datei 0x28AA9–0x28ADB:
+    /// Zeile = (y − 0x26) / 0x33, höchstens 3; bei Spielmodus „nur Weltkugel“ (Knopfbits <c>[bp−0x57]</c> = 2) immer 0.
+    /// Bilder <c>file29_1</c>/<c>file29_2</c> (Aufnahme runde-13, <c>docs/analyse/re-runde-14.md</c>).
+    /// </summary>
+    public int ManagerRowFor(int row) => Mode == GameMode.WorldOnly ? 0 : Math.Clamp(row, 0, MaxManagers - 1);
+
+    /// <summary>
     /// „Los jetzt!“ ist möglich: alle Manager benannt, ein Spielmodus gewählt ([ORIGINAL] Datei 0x295DF: ohne Knopf
-    /// kein Start). [APPROX] „nur Weltkugel“ nur mit genau einem Manager – das Original verhindert mehrere Manager
-    /// dort nur über die Sperre der Fahne, nicht beim späteren Hinzufügen.
+    /// kein Start). „nur Weltkugel“ nur mit genau einem Manager: [ORIGINAL] A056, Datei 0x28ACF – bei „nur Weltkugel“
+    /// führt jeder Klick in die Managerzeilen auf Zeile 0 (<see cref="ManagerRowFor"/>), ein zweiter Manager entsteht also
+    /// nicht; umgekehrt sperrt ein zweiter benannter Manager die Fahne (Datei 0x28717). Die Bedingung hier ist nur
+    /// Absicherung (z. B. zweiter, noch unbenannter Manager vor dem Abschalten der Fahne); [APPROX] das Original prüft beim
+    /// Start nicht und zeigt keine Meldung.
     /// </summary>
     public bool CanStart => Managers.Count > 0 && Managers.All(m => m.Name.Length > 0) && Mode is { } mode
         && (mode != GameMode.WorldOnly || Managers.Count == 1);
@@ -214,6 +229,18 @@ public sealed class GameSetup
             default: manager!.StartStrength = (StartStrength)next; break;
         }
         return true;
+    }
+
+    /// <summary>
+    /// Einen Manager anlegen; er übernimmt die eingestellte <see cref="StartLeague"/> (ein Wert für alle, L1, R13KI-03 #605).
+    /// Die Spielvorbereitung legt Manager nur hierüber an. Direktes <c>Managers.Add</c> (Tests, Aufbauten im Code) behält den
+    /// Wert des <see cref="ManagerSetup"/>.
+    /// </summary>
+    public ManagerSetup AddManager(ManagerSetup m)
+    {
+        m.StartLeague = StartLeague;
+        Managers.Add(m);
+        return m;
     }
 
     /// <summary>Verein, der bereits von einem anderen Manager gewählt wurde?</summary>

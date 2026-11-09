@@ -79,9 +79,14 @@ public enum ScoreSituation
 /// <item>[ORIGINAL] Im Spiel gilt Grundwert + Zuschlag des Spielstands; „hoch“ ab 3 Toren Differenz. Einsatz wird auf
 ///   0…100 begrenzt, Angriff in drei Bit gespeichert (Datei 0x939A–0x9506). Bei „MANUELL“ überschreibt das Spiel
 ///   die Werte nicht (sie werden im Live-Spiel gesetzt, Datei 0x94E2, 0x9516).</item>
-/// <item>[APPROX] Vereine: Bis zum ersten Spiel, und solange das Remake keine Spielvorbereitung je Paarung hat, zeigt
-///   „AUTOM.“ die Zeile für ein ausgeglichenes Spiel gegen einen gleich starken Gegner (Video `bundestrainer_00058`:
-///   60/0/25/20/30/0 und 0/4/5/6/7/4). Eigene Werte eines neuen Vereins starten mit derselben Zeile.</item>
+/// <item>[ORIGINAL] A180, Vereine wie das Nationalteam: Beim Spielstart stehen die eigenen Werte (DGROUP 0xCAE9/0xCB01
+///   + 0x30 · m) und die Vereinsfelder 0x26–0x2B/0x35–0x3A aller Vereine auf 0 (FILE29/30, FILE01/12/15/27); die Automatik
+///   schreibt erst vor dem ersten Spiel (FILE31: Kaufbeuren 60/0/25/20/30/0 und 0/4/5/6/7/4, eigene Werte weiter 0). Die
+///   Anzeige „AUTOM.“ zeigt bis dahin 0, danach die Zeile des letzten Spiels (<see cref="RecordAutoLine"/>, aufgerufen je
+///   Spiel aus <see cref="MatchEngine.LiveTeamOf"/>); SEMI zeigt die eigenen Werte, anfangs 0 (<c>file33_15</c>).
+///   <c>docs/analyse/re-runde-14.md</c>, A180. [APPROX] Spielstände vor Runde 14 behalten Startwert und Anzeige der
+///   ausgeglichenen Zeile (<see cref="KeepsLastAutoLine"/> = false, keine Migration). Ob das Umschalten eines Modus die
+///   Vereinsfelder löscht (FILE33 Köln), ist nicht gelesen.</item>
 /// <item>[ORIGINAL] Nationalteam (#192, <see cref="National"/>): kein Startwert. Die Automatik 0x8365 schreibt
 ///   Einsatz (Felder 0x26–0x2B) und Angriff (0x35–0x3A) in den Vereinssatz nur vor einem Spiel, und nur wenn der Verein
 ///   keinen Manager hat oder dessen Modus „AUTOM.“ ist (Datei 0x8421–0x847D Einsatz, 0x8481–0x84BD Angriff); Aufrufe
@@ -138,17 +143,27 @@ public sealed partial class Tactics
 
     /// <summary>
     /// Angezeigte Werte unter „AUTOM.“ (Grundwert und fünf Zuschläge) = Werte, die die Automatik vor dem letzten Spiel
-    /// geschrieben hat (Vereinssatz 0x26–0x2B bzw. 0x35–0x3A). Nur beim Nationalteam geführt; null = Anzeige wie bisher
-    /// (Vereine, [APPROX] siehe Klasse).
+    /// geschrieben hat (Vereinssatz 0x26–0x2B bzw. 0x35–0x3A). null = Anzeige der ausgeglichenen Zeile (Spielstände vor
+    /// Runde 14, [APPROX] siehe Klasse).
     /// </summary>
     private readonly int[]? _shownAutoEffort;
     private readonly int[]? _shownAutoAttack;
 
-    /// <summary>Taktik eines Vereins; eigene Werte starten mit der Zeile für ein ausgeglichenes Spiel ([APPROX], siehe Klasse).</summary>
+    /// <summary>
+    /// [ORIGINAL] Taktik eines Vereins (A180, siehe Klasse): eigene Werte und Anzeige unter „AUTOM.“ stehen auf 0, bis die
+    /// Automatik vor dem ersten Spiel schreibt – wie <see cref="National"/>.
+    /// </summary>
     public Tactics()
-        : this(EvenEffort, FavouriteAttack)
+        : this(new int[Situations], new int[Situations], new int[Situations], new int[Situations])
     {
     }
+
+    /// <summary>
+    /// Startwerte eines Vereins vor Runde 14 (ausgeglichene Zeile 60/0/25/20/30/0 und 0/4/5/6/7/4, Anzeige „AUTOM.“ ohne
+    /// letzte Automatik, <see cref="KeepsLastAutoLine"/> = false) – so laden Spielstände vor A180. Gebraucht zum Erkennen
+    /// unveränderter alter Startwerte (<c>SaveGame.Migration.Nationalteam.cs</c>) und in Tests der Taktikrechnung.
+    /// </summary>
+    public static Tactics LegacyStart() => new(EvenEffort, FavouriteAttack);
 
     private Tactics(int[] effort, int[] attack)
     {
@@ -179,7 +194,7 @@ public sealed partial class Tactics
         _shownAutoAttack = shownAutoAttack;
     }
 
-    /// <summary>Führt diese Taktik die Werte des letzten Spiels für die Anzeige unter „AUTOM.“ (Nationalteam)?</summary>
+    /// <summary>Führt diese Taktik die Werte des letzten Spiels für die Anzeige unter „AUTOM.“ (seit Runde 14 jede neue Taktik)?</summary>
     public bool KeepsLastAutoLine => _shownAutoEffort is not null;
 
     /// <summary>
@@ -328,8 +343,8 @@ public sealed partial class Tactics
         (ownStrength < opponentStrength ? UnderdogAttack : FavouriteAttack)[(int)situation];
 
     /// <summary>
-    /// Angezeigter Einsatz: bei „AUTOM.“ beim Nationalteam die Werte des letzten Spiels (vorher 0, [ORIGINAL]), beim
-    /// Verein die Automatik für ein ausgeglichenes Spiel ([APPROX], siehe Klasse); sonst der eigene Wert.
+    /// Angezeigter Einsatz: bei „AUTOM.“ die Werte des letzten Spiels (vorher 0, [ORIGINAL] A180/#192); in Spielständen vor
+    /// Runde 14 beim Verein die Automatik für ein ausgeglichenes Spiel ([APPROX], siehe Klasse); sonst der eigene Wert.
     /// </summary>
     public int ShownEffort(int block, ScoreSituation situation) =>
         EffortMode != TacticMode.Auto ? Effort(block, situation)

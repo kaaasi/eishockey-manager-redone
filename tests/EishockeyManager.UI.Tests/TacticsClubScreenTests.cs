@@ -73,26 +73,27 @@ public class TacticsClubScreenTests
         Assert.Equal(Club.MaxDressed, club.DressedCount);
         var outside = club.Players.First(p => p.Available && !club.IsDressed(p) && p.Role != PlayerRole.Goalkeeper);
         var slot = outside.Role == PlayerRole.Forward ? LineupSlot.Forward(3, 0) : LineupSlot.Defender(3, 0);
-        var button = LineupScreen.SlotButton(slot);
+        // Reihe 4 wählen (Klick in den Block, Datei 0x40890), dann den Spieler (Datei 0x40E2A vor der Reihenlogik).
+        var block = LineupScreen.BlockBox(3);
         Assert.Null(club.Lineup[slot]);
-        d.Click(button.X + 5, button.Y + 5);
+        d.Click(block.X + 3, block.Y + 5);
         d.Click(60, RowY(outside));
         Assert.Null(club.Lineup[slot]);
-        d.Frames(100); // Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst (Klick wirkt nicht)
+        d.Frames(200); // erst „ist deaktiviert !“ (Datei 0x40DE4), dann „Schon 22 Mann“ – beide schließen von selbst; Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst (Klick wirkt nicht)
 
+        // Rechtsklick (außerhalb der Namensspalte) nimmt einen Reservisten heraus (Datei 0x40F59; vorher Linksklick).
         var reserve = club.Dressed.First(p => !club.Lineup.Contains(p) && p != outside);
-        d.Click(60, RowY(reserve));
+        d.RightClick(150, RowY(reserve));
         Assert.False(club.IsDressed(reserve));
         // Integration Runde 11 (ui-meldungen, K2): Der Eingriff schaltet die automatische Aufstellung ab und meldet das als Kurzmeldung
         // (Datei 0x40ADE -> 0x0C0B8); sie nimmt keine Eingabe an, bis sie von selbst schließt.
         d.Frames(100);
-        d.Click(button.X + 5, button.Y + 5);
-        d.Click(60, RowY(outside));
+        d.Click(60, RowY(outside)); // Reihe 4 bleibt gewählt: erster freier Platz seiner Art (Datei 0x412A1)
         Assert.Same(outside, club.Lineup[slot]);
         Assert.Equal(Club.MaxDressed, club.DressedCount);
 
         // Rechtsklick auf einen nicht Eingesetzten: wieder abgewiesen, Bildschirm bleibt.
-        d.RightClick(60, RowY(reserve));
+        d.RightClick(150, RowY(reserve));
         Assert.IsType<LineupScreen>(d.Host.Current);
         Assert.False(club.IsDressed(reserve));
     }
@@ -107,13 +108,15 @@ public class TacticsClubScreenTests
         var up = TacticsScreen.SituationArrows(ScoreSituation.Tied, attack: true);
         var mode = TacticsScreen.AttackArrows;
 
+        // Startwert 0 (A180, kader-start Runde 14; vorher 6 aus der ausgeglichenen Zeile).
         d.Click(up.X + 4, up.Y + 2);
-        Assert.Equal(6, t.Attack(0, ScoreSituation.Tied));
+        Assert.Equal(0, t.Attack(0, ScoreSituation.Tied));
         d.Click(mode.X + 4, mode.Y + mode.H - 2);
         Assert.Equal(TacticMode.Semi, t.AttackMode);
         d.Click(up.X + 4, up.Y + 2);
-        Assert.Equal(7, t.Attack(0, ScoreSituation.Tied));
-        d.Click(up.X + 4, up.Y + 2);
+        Assert.Equal(1, t.Attack(0, ScoreSituation.Tied));
+        for (var i = 0; i < 7; i++)
+            d.Click(up.X + 4, up.Y + 2);
         Assert.Equal(7, t.Attack(0, ScoreSituation.Tied)); // Obergrenze 7
         d.Click(mode.X + 4, mode.Y + mode.H - 2);
         Assert.Equal(TacticMode.Manual, t.AttackMode);

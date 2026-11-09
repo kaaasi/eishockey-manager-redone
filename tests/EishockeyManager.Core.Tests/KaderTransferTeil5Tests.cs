@@ -59,7 +59,7 @@ public class KaderTransferTeil5Tests
     public void SeasonEnd_OfferSalary_KeepsGamesForClub()
     {
         var (game, manager, club, p) = SeasonEnd();
-        var games = p.Games;
+        var games = p.SeasonGames(CompetitionSlot.League); // A135: +0x1C zählt nur die Liga
         Assert.True(games > 10, $"zu wenige Spiele: {games}");
         game.StartNextSeasonWithRenewals();
         Assert.True(GameState.IsRenewalPending(p));
@@ -67,7 +67,10 @@ public class KaderTransferTeil5Tests
         Assert.Equal(games, p.GamesForClub);
         var value = ValueAtSeasonEnd(game, manager, club, p, games, PlayerValueKind.Salary, new Random(0));
         var without = ValueAtSeasonEnd(game, manager, club, p, 0, PlayerValueKind.Salary, new Random(0));
-        Assert.True(value > without, "Spiele müssen den Wert erhöhen");
+        // A135: +0x1C zählt nur noch Ligaspiele; bei rund 50 Spielen rundet der Gehaltsterm (Gewicht 7) auf 0.
+        Assert.True(value >= without, "Spiele dürfen den Wert nicht senken");
+        Assert.True(ValueAtSeasonEnd(game, manager, club, p, 400, PlayerValueKind.Salary, new Random(0)) > without,
+            "Spiele müssen den Wert erhöhen");
         Assert.Equal(Math.Max(Contracts.MinSalary, value * (147 - p.Age) / 100 / 3), p.MonthlySalary);
         Assert.Equal(value, game.PlayerValueOf(p, club, PlayerValueKind.Salary, new Random(0), manager.Level));
     }
@@ -77,7 +80,7 @@ public class KaderTransferTeil5Tests
     public void SeasonEnd_Compensation_KeepsGamesForClub()
     {
         var (game, manager, club, p) = SeasonEnd();
-        var games = p.Games;
+        var games = p.SeasonGames(CompetitionSlot.League); // A135
         game.StartNextSeasonWithRenewals();
         // Der Preis zieht nur bei einem Angebot Zufall (0x49E1B); hier ohne Angebot.
         var value = ValueAtSeasonEnd(game, manager, club, p, games, PlayerValueKind.Price, new Random(0));
@@ -105,7 +108,7 @@ public class KaderTransferTeil5Tests
             foreach (var other in club.Players)
                 other.ContractYears = Math.Max(other.ContractYears, 3);
             PlaySeason(game);
-            expected += p.Games;
+            expected += p.SeasonGames(CompetitionSlot.League); // A135: +0x1C zählt nur die Liga
             Assert.Equal(expected, p.GamesForClub);
             if (active && season == 1)
             {

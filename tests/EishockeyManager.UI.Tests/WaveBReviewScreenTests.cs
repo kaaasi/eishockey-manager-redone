@@ -17,11 +17,13 @@ public class WaveBReviewScreenTests
         var market = game.TransferMarket;
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];
-        foreach (var extra in club.Players.Where(p => p.Role == PlayerRole.Defender).Skip(5).ToArray())
+        // A380 (kader-start Teil 2c): Mindestbesetzung greift beim Aufsetzen; sechs Verteidiger erlauben zwei Markt-Plätze.
+        foreach (var extra in club.Players.Where(p => p.Role == PlayerRole.Defender).Skip(6).ToArray())
         {
             club.Players.Remove(extra);
             club.Lineup.Remove(extra);
         }
+        Assert.Equal(6, club.Players.Count(p => p.Role == PlayerRole.Defender));
         foreach (var defender in club.Players.Where(p => p.Role == PlayerRole.Defender).Take(2).ToArray())
             Assert.Equal(TransferResult.Accepted, market.Offer(game, manager, defender));
         for (var i = 0; market.Bids.Count(b => b.Listing.Seller == manager) < 2 && i < 500; i++)
@@ -36,6 +38,9 @@ public class WaveBReviewScreenTests
         d.Click(confirm.X + 5, confirm.Y + 5);
         Assert.Same(bids[1], screen.Dialog!.Bid); // nächstes Gebot
 
+        // Ungültig wird das zweite Gebot, weil der Spieler inzwischen in einem fremden Kader steht.
+        var elsewhere = game.Clubs.First(c => c != club && c != bids[1].Buyer && c.Index < 52);
+        elsewhere.Players.Add(bids[1].Listing.Player);
         var money = manager.Money;
         confirm = screen.Dialog.ConfirmButton;
         d.Click(confirm.X + 5, confirm.Y + 5);
@@ -48,6 +53,7 @@ public class WaveBReviewScreenTests
         Assert.Null(screen.Dialog);
         Assert.DoesNotContain(bids[1], market.Bids);
         Assert.Equal(money, manager.Money);
-        Assert.Equal(TransferMarket.MinDefenders, club.Players.Count(p => p.Role == PlayerRole.Defender));
+        Assert.Contains(bids[1].Listing.Player, elsewhere.Players);
+        Assert.DoesNotContain(bids[1].Listing.Player, bids[1].Buyer.Players);
     }
 }

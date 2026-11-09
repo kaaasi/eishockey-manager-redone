@@ -292,7 +292,8 @@ public class TransferOriginalTests
                     manager.Money = 2_000_000; // keine Entlassung im Testlauf
                 if (active && game.Phase == SeasonPhase.Running)
                     Act();
-                Assert.All(market.Listings.Where(l => !l.IsFreeAgent), l => Assert.Equal(0, l.Price % 1000));
+                // Computermarkt: Preise auf 1.000 DM; eigene Markt-Plätze tragen den Kaufpreis +0x2C (kader-start Teil 4, Datei 0x470C4).
+                Assert.All(market.Listings.Where(l => !l.IsFreeAgent && l.Seller is null), l => Assert.Equal(0, l.Price % 1000));
                 Assert.All(market.Bids, b => Assert.Equal(0, b.Amount % 100));
                 Assert.InRange(club.Players.Count, 1, TransferMarket.MaxSquad);
                 game.Continue();

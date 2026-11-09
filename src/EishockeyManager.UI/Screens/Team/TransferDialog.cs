@@ -19,7 +19,7 @@ public sealed class TransferDialog
     public static readonly Rect QuestionBox = OriginalDialog.Window;
 
     /// <summary>
-    /// Kauf- und Leihfenster: Rahmen (2 | 29)–(166 | 71), Schatten bis (168 | 73), also links über der Kaderliste, nicht mittig.
+    /// Kauf- und Leihfenster: Rahmen (2 | 29)–(166 | 71), Schatten bis x 168 / y 73 (äußere Ecken in Füllfarbe), also links über der Kaderliste, nicht mittig.
     /// [ORIGINAL] DOSBox-Sitzung 2, `file40_08` (VALLIERE kaufen), `file40_09` (leihen), `file35_2` (A377).
     /// </summary>
     public static readonly Rect BuyBox = new(2, 29, 165, 43);
@@ -43,9 +43,12 @@ public sealed class TransferDialog
 
     /// <summary>
     /// Angebotsfenster 0x491F9 (unaufgefordertes Angebot). [ORIGINAL] Rahmen über 0x490DE mit y = 0 und Höhe 0x47: x 2 … 0xA8,
-    /// y 0x1C … 0x63 (wie die Vertragsverhandlung beim Kauf, <see cref="ContractDialog.Top"/>, nur 4 Pixel höher).
+    /// y 0x1C … 0x63 (wie die Vertragsverhandlung beim Kauf, <see cref="ContractDialog.Top"/>, nur 4 Pixel höher). Wie
+    /// <see cref="BuyBox"/> (gleicher Aufruf 0xB155 mit x 2 … 0xA8, `file40_08`) und das Verhandlungsfenster (`file46_3`) beginnt der
+    /// Rahmen bei x 2, Breite 165; der Schatten reicht bis x 0xA8 (Review R14KS-08; vorher x 1, Breite 166). [APPROX] Kein
+    /// DOSBox-Bild dieses Fensters.
     /// </summary>
-    public static readonly Rect OfferBox = new(1, 29, 166, 71);
+    public static readonly Rect OfferBox = new(2, 29, 165, 71);
 
     private string _edit = "";
     private bool _editing;
@@ -255,7 +258,7 @@ public sealed class TransferDialog
         var b = OfferBox;
         TeamUi.DialogFrame(s, b);
         TeamUi.DialogTitle(s, a, 84, 0x28 - 6, "Manager " + Player!.Name);
-        s.HLine(5, 0x2B, 159, Colors.White);
+        s.HLine(6, 0x2B, 0xA3 - 6 + 1, Colors.White); // [ORIGINAL] Datei 0x4917B–0x4919A: Linie (6 | 0x2B)–(0xA3 | 0x2B), Farbe 7
         var buyer = Kind == DialogKind.Bid ? Bid!.Buyer : Offer!.Buyer;
         s.Text(mini, 7, 0x34 - 4, "ANGEBOT von " + buyer.Name + " :", Colors.White);
         s.TextCentered(mini, (4 + 0xA6) / 2, 0x3C - 4, TransferScreen.Money(Price), Colors.White);

@@ -14,9 +14,16 @@ internal static class Mannschaft
         d.OpenTile("Aufstellung");
         d.Move(212, 157); d.Save("01_aufstellung");
         d.Move(170, 48); d.Save("02_hover_strafen");
-        d.Click(60, 30); d.Click(264, 27); d.Save("03_falscher_platz");
-        d.Click(10, 10); d.Click(60, 36); d.Click(282, 207); d.Move(282, 207); d.Save("04_torhueter_getauscht");
-        d.RightClick(264, 27); d.Move(212, 157); d.Save("05_platz_geleert");
+        // Bedienung wie im Original (A010, Datei 0x40890–0x414C6): Reihe per Klick in den Block wählen, Linksklick auf einen
+        // Spieler setzt ihn auf den ersten freien Platz seiner Art, Linksklick auf einen belegten Platz leert ihn,
+        // Rechtsklick auf einen Platz verlässt den Bildschirm.
+        // Ohne diesen Schritt erscheint bei der ersten Änderung „Auto-Aufstellung ist deaktiviert!“ (Datei 0x40DCD–0x40DE4) und
+        // verdeckt die Bilder; hier gezielt abgeschaltet wie in `aufstellung-reihen`.
+        d.Host.Game!.Clubs[d.Host.Game.ActiveManager.ClubIndex].AutoLineupEnabled = false;
+        d.Click(250, 50); d.Click(60, 36); d.Save("03_falscher_platz");
+        d.Frames(300); d.Click(60, 30); d.Click(60, 36); d.Move(282, 207); d.Save("04_torhueter_getauscht");
+        d.Click(264, 27); d.Move(212, 157); d.Save("05_platz_geleert");
+        d.RightClick(264, 27); d.Save("06_rechtsklick_verlaesst");
     }
 
     [Scenario("vertraege")]

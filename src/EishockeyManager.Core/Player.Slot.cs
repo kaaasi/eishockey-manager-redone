@@ -50,10 +50,10 @@ public sealed partial class Player
     /// <summary>
     /// Spiele für den jetzigen Verein (Kaderplatz +0x1C, Wort; Gewicht 50 im Spielerwert). [ORIGINAL] erhöht mit den Saisonspielen
     /// +0x06 (Datei 0x41613/0x41622, 0x54973/0x5499E), nach einem Kauf 0 (neuer Kaderplatz, FILE07), am Saisonende **nicht**
-    /// zurückgesetzt – Datei 0x27A0C–0x27AA8 löscht nur +0x00, +0x01, +0x03–+0x05, +0x06–+0x08. [APPROX] Das Remake zählt alle
-    /// Wettbewerbe in <see cref="Games"/> und damit in +0x1C (+0x1E/+0x20 bleiben 0, SW-02).
+    /// zurückgesetzt – Datei 0x27A0C–0x27AA8 löscht nur +0x00, +0x01, +0x03–+0x05, +0x06–+0x08. Nur Ligaspiele (A135; Pokal
+    /// +0x1E, Europapokal +0x20: <see cref="ClubGames"/>).
     /// </summary>
-    public int GamesForClub => Math.Max(0, Games + ClubGamesCarry);
+    public int GamesForClub => ClubGames(CompetitionSlot.League);
 
     /// <summary>Stufe zu einem Tendenzwert. [ORIGINAL] (Wert − 30) / 13, Datei 0x41AE0 (Texte DGROUP 0xB8C).</summary>
     public static PlayerTrend TrendOf(int score) => (PlayerTrend)Math.Clamp((score - 30) / 13, 0, 2);

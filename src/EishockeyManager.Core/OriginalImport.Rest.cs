@@ -320,6 +320,8 @@ public sealed partial class GameState
                 var b = table[OriginalImport.TableField(0x828B, slot) + i / 2];
                 target.StoreRankSlot(i, i % 2 == 0 ? b & 0x0F : b >> 4);
             }
+            // A046 (kader-start Runde 14, Schema 43): Tabellenfeld der Zuschauerformel DGROUP 0x8288 + 0x50 · Satz (0 = Platz 1).
+            target.StoreTableRank(table[OriginalImport.TableField(0x8288, slot)]);
         }
         for (var m = 0; m < Math.Min(Managers.Count, OriginalImport.HeadToHeadManagers); m++)
             for (var k = 0; k < Series.Count; k++)

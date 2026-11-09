@@ -175,7 +175,20 @@ public sealed class TransferScreen : Screen
                 return;
             }
             if (l.Seller == Manager)
+            {
+                // A380: Der eigene Markt-Platz steht außerhalb des Kaders. [ORIGINAL] Datei 0x47331: mit offenem Gebot (+0x09 Bit
+                // 0x80) das Angebotsfenster, sonst zurück in den Kader (0x474E4 → 0x477A9, Transfermarket.Withdraw).
+                // [APPROX] Klickfläche wie Kauf/Leihe der fremden Plätze.
+                if (EntryBuy(i).Contains(x, y) || EntryLoan(i).Contains(x, y))
+                {
+                    if (Market.Bids.FirstOrDefault(b => b.Listing == l) is { } bid)
+                        _dialog = TransferDialog.ForBid(bid);
+                    else if (Market.Withdraw(l) is var back && back != TransferResult.Accepted)
+                        Say(TransferMarket.Message(back));
+                    return;
+                }
                 continue;
+            }
             if (EntryBuy(i).Contains(x, y) || EntryLoan(i).Contains(x, y))
             {
                 // [ORIGINAL] Sperre nach abgelehntem Gebot wird beim Anklicken geprüft (Datei 0x47140, Meldung 0x47B01).
@@ -381,7 +394,7 @@ public sealed class TransferScreen : Screen
             if (i == hover || (_dialog?.Player == p))
                 TeamUi.HoverRow(s, 6, y, 158, RowPitch);
             s.Text(mini, 7, y, p.RoleShort, c);
-            s.Text(mini, 25, y, Market.ListingOf(p) is null ? p.Name : p.Name + " *", c); // [APPROX] * = auf dem Markt
+            s.Text(mini, 25, y, p.Name, c); // A380: Spieler auf der Transferliste stehen nicht im Kader (kein „*“)
             s.TextRight(mini, 90, y, p.Games.ToString(), c);
             s.TextRight(mini, 104, y, p.Condition.ToString(), c);
             s.TextRight(mini, 116, y, p.Technique.ToString(), c);
@@ -473,15 +486,26 @@ public sealed class TransferScreen : Screen
     /// (<see cref="GameState.TransferAccount"/>; Spur <c>kader-transfer</c>, Teil 4, A381). [APPROX] Lage aus dem Video,
     /// x der Anlagen 132 statt 133 (3 + 65 · k) und Zeilen 226/232 statt der Grundlinien 229/236 nicht nachgemessen.
     /// </summary>
+    /// <summary>Kontoleiste unten (ohne Schatten), siehe <see cref="DrawAccountBar"/>.</summary>
+    public static readonly Rect AccountBar = new(0, 223, 318, 15);
+
+    /// <summary>Schrift „Saldo:“ und Betrag in der Kontoleiste. [ORIGINAL] (6 | 9 | 18) = Index 240, `file40_04`.</summary>
+    public const byte SaldoColor = 240;
+
     private void DrawAccountBar(Surface s)
     {
         var account = Game.TransferAccount(Manager);
-        // Streifen über die ganze Breite (Video: Oberkante 3, Füllung 4, unten 6/200/6)
-        s.Fill(new Rect(0, 224, Surface.Width, 16), TeamUi.DialogFill);
-        s.HLine(0, 224, Surface.Width, 3);
-        s.HLine(0, 237, Surface.Width, TeamUi.DialogShadow);
-        s.HLine(0, 238, Surface.Width, TeamUi.DialogDark);
-        s.HLine(0, 239, Surface.Width, TeamUi.DialogShadow);
+        // [ORIGINAL] Leiste wie ein Dialogfenster (0 | 223)–(317 | 237): Füllung 4, oben und links hell (Index 1), unten und rechts
+        // dunkel (Index 29), Ecke rechts unten schwarz, Schatten Index 6 in x 318–319 und y 238–239. DOSBox-Sitzung 2, `file40_03`,
+        // `file40_04`, `file35_1`; vorher eine Zeile tiefer und unten 6/29/6 (Review R14N-02).
+        // [APPROX] Die drei äußeren Schattenecken (319 | 225), (2 | 239), (319 | 239) zeigen in den Bildern wechselnde Farben
+        // ((60 | 60 | 60) bzw. (16 | 25 | 29)), nicht die Füllfarbe der Dialoge; das Remake lässt dort den Hintergrund stehen.
+        var bar = AccountBar;
+        var corners = new[] { (bar.X + bar.W + 1, bar.Y + 2), (bar.X + 2, bar.Y + bar.H + 1), (bar.X + bar.W + 1, bar.Y + bar.H + 1) }
+            .Select(c => (c.Item1, c.Item2, s.Pixels[c.Item2 * Surface.Width + c.Item1])).ToArray();
+        TeamUi.DialogFrame(s, bar);
+        foreach (var (x0, y0, c0) in corners)
+            s.Set(x0, y0, c0);
         (string Label, long Value, int X)[] fields =
         [
             ("Kontostand:", account.Money, 3),
@@ -494,8 +518,9 @@ public sealed class TransferScreen : Screen
             var saldo = x == 198; // Video: Saldo dunkel und ohne Einrückung
             if (saldo)
             {
-                s.Text(Assets.Mini, x, 226, label, TeamUi.DialogDark);
-                s.Text(Assets.Mini, x, 232, Money(value), TeamUi.DialogDark);
+                // [ORIGINAL] „Saldo:“ und Betrag (6 | 9 | 18) = Index 240, `file40_04` (vorher Index 29; Review R14N-02).
+                s.Text(Assets.Mini, x, 226, label, SaldoColor);
+                s.Text(Assets.Mini, x, 232, Money(value), SaldoColor);
             }
             else
             {

@@ -113,13 +113,25 @@ public static class NewGame
                 continue;
             }
             // [APPROX] Zufallswahl nach Start-Stärke gibt es im Original nicht (jeder Manager wählt einen Verein, Datei
-            // 0x2964C); das Remake zieht aus dem Drittel der Start-Liga ohne Europapokal-Teilnehmer (Zeile 1, Datei 0x45CD0).
-            // Zu Spielbeginn ist nur der Deutsche Meister (Verein 2) als Teilnehmer belegt. Kein Platztausch.
+            // 0x2964C); das Remake zieht aus dem Drittel der Start-Liga ohne den Verein auf Platz 0 – wie der Filter
+            // 0x45CD0(r, 1) beim Spielstart (leere Tabelle DGROUP 0x5CFB, U15-c in re-runde-14.md). Kein Platztausch.
             var excluded = new HashSet<int>(reserved);
-            if (m.StartLeague == League.Bundesliga && clubs[EuropeanCup.InitialChampion].League == League.Bundesliga)
-                excluded.Add(EuropeanCup.InitialChampion);
+            if (m.StartLeague == League.Bundesliga)
+                excluded.Add(places[0]);
             assigned[i] = PickRandomClub(clubs, m.StartLeague, m.StartStrength, excluded, random);
             reserved.Add(assigned[i]);
+        }
+
+        if (OneSeasonSingleManager(setup) && clubs[assigned[0]].League == League.Bundesliga)
+        {
+            // U15-c: ein Manager, eine Saison → Managerverein auf Platz 0 (Teamwerte bleiben am Platz).
+            var own = Array.IndexOf(places, assigned[0]);
+            var partner = places[0];
+            if (own > 0)
+            {
+                (places[own], places[0]) = (partner, assigned[0]);
+                swaps?.Add((assigned[0], partner));
+            }
         }
 
         return setup.Managers
@@ -143,8 +155,10 @@ public static class NewGame
     /// der Bundesliga mit Kölns Teamwerten), FILE15 (Bayreuth bleibt in der 2. Liga); <c>docs/analyse/re-runde-13.md</c>, U15-a.
     /// Der Zufallsplatz r ist ein Satzplatz der Startmischung (<paramref name="places"/>, R-K5): gezogen wird der Platz, nicht der
     /// Vereinsindex; nach dem Tausch stehen v und r auf den Plätzen des anderen.
-    /// [APPROX] Zufallsquelle: <see cref="GameState.Random"/> statt des gemeinsamen Zufalls. Europapokal-Zeile 1 zu
-    /// Spielbeginn: nur der Deutsche Meister (Verein 2).
+    /// [ORIGINAL] Europapokal-Zeile 1 beim Spielstart: Die Tabelle DGROUP 0x5CFB ist noch leer (Startwert 0, DGROUP 0x5CF4 = 0
+    /// → 64 Einträge 0), gefüllt wird sie erst nach der Spielvorbereitung (0x341AB über Datei 0x43A8C). Der Filter trifft
+    /// also genau **Platz 0**, nicht den Deutschen Meister (U15-c, <c>docs/analyse/re-runde-14.md</c>; FILE01/09/10: kein
+    /// Managerverein auf Platz 0). [APPROX] Zufallsquelle: <see cref="GameState.Random"/> statt des gemeinsamen Zufalls.
     /// </summary>
     /// <returns>Tauschpartner (auch der Verein selbst bei r = v) oder null, wenn der Verein bleibt.</returns>
     internal static int? PlaceInStartLeague(IReadOnlyList<Club> clubs, int club, League league,
@@ -155,13 +169,13 @@ public static class NewGame
         if (league != League.Bundesliga && own.League == league && ownPlace <= LastLeagueSlot)
             return null;
         var first = (int)league * LeagueSize;
-        bool Excluded(int r) => earlierManagers.Contains(r) || (league == League.Bundesliga && r == EuropeanCup.InitialChampion);
-        if (Enumerable.Range(first, LeagueSize).All(slot => Excluded(places[slot])))
+        bool Excluded(int slot) => earlierManagers.Contains(places[slot]) || slot == 0;
+        if (Enumerable.Range(first, LeagueSize).All(Excluded))
             return null;
         int partnerPlace;
         do
             partnerPlace = first + random.Next(LeagueSize);
-        while (Excluded(places[partnerPlace]));
+        while (Excluded(partnerPlace));
         var partner = places[partnerPlace];
         if (partner == club)
             return partner;
@@ -170,6 +184,17 @@ public static class NewGame
         (places[ownPlace], places[partnerPlace]) = (partner, club);
         return partner;
     }
+
+    /// <summary>
+    /// Sonderfall „eine Saison, ein Manager“ (U15-c). [ORIGINAL] em.exe Datei 0x29CFA–0x29D9C: neues Spiel (<c>[bp−0x64]</c> = 0),
+    /// Spielende DGROUP 0x5A14 = 1994 und DGROUP 0x386 = 1 Manager → Managerfeld DGROUP 0x9744 + 0x1AF · m = 1, dann Zufallsplatz r
+    /// der Bundesliga, bis 0x45CD0(r, 1) ≠ 0, und Tausch 0x36169(v, r, 0x80). Beim Spielstart ist die Europapokal-Tabelle leer,
+    /// der Filter trifft nur Platz 0: Der Managerverein landet immer auf Platz 0 (FILE29: ESV KAUFBEUREN auf Platz 0,
+    /// HOK 0x00F70 = 1; <c>docs/analyse/re-runde-14.md</c>, U15-c). [APPROX] Das Remake tauscht direkt, ohne die Zufallszüge der
+    /// Schleife; das Feld 0x9744 bildet es nicht ab (Wirkung außer im Highscore nicht gelesen, <see cref="HighscoreRules"/>).
+    /// </summary>
+    internal static bool OneSeasonSingleManager(GameSetup setup) =>
+        setup.Managers.Count == 1 && setup.Duration == GameDuration.EineSaison;
 
     /// <summary>Plätze je Liga. [ORIGINAL] DGROUP 0x7B1 + Liga = 12.</summary>
     private const int LeagueSize = 12;

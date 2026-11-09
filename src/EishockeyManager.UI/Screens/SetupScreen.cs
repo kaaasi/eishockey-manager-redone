@@ -105,25 +105,27 @@ public sealed class SetupScreen : Screen
             return;
         }
 
-        for (var i = 0; i < GameSetup.MaxManagers; i++)
+        for (var row = 0; row < GameSetup.MaxManagers; row++)
         {
-            var slot = new Rect(3, 38 + i * SlotPitch, 175, 44);
+            var slot = new Rect(3, 38 + row * SlotPitch, 175, 44);
+            // [ORIGINAL] A056, Datei 0x28ACF: bei „nur Weltkugel“ wirkt jeder Klick in die Managerzeilen auf Zeile 0.
+            var i = _setup.ManagerRowFor(row);
             if (i < _setup.Managers.Count)
             {
-                if (input.RightClicked(NameArea(i)))
+                if (input.RightClicked(NameArea(row)))
                 {
                     _setup.Managers.RemoveAt(i);
                     _selected = Math.Min(_selected, _setup.Managers.Count - 1);
                     return;
                 }
-                if (input.Clicked(HeadArea(i))) { _selected = i; _mode = Mode.HeadPicker; return; }
-                if (input.Clicked(NameArea(i))) { _selected = i; _mode = Mode.NameEntry; return; }
-                if (input.Clicked(LogoArea(i))) { _selected = i; OpenClubPicker(); return; }
+                if (input.Clicked(HeadArea(row))) { _selected = i; _mode = Mode.HeadPicker; return; }
+                if (input.Clicked(NameArea(row))) { _selected = i; _mode = Mode.NameEntry; return; }
+                if (input.Clicked(LogoArea(row))) { _selected = i; OpenClubPicker(); return; }
             }
             else if (i == _setup.Managers.Count && input.Clicked(slot))
             {
                 // Im Original bleibt das Kopffeld bis zur Auswahl leer; die Start-Liga gilt für alle Manager (L1, DGROUP 0x11A).
-                _setup.Managers.Add(new ManagerSetup { Head = -1, StartLeague = _setup.StartLeague });
+                _setup.AddManager(new ManagerSetup { Head = -1 });
                 _selected = i;
                 _mode = Mode.HeadPicker;
                 return;
@@ -178,12 +180,11 @@ public sealed class SetupScreen : Screen
         // [ORIGINAL] Datei 0x295DF: Ohne Spielmodus nimmt „Los jetzt!“ keinen Klick an (keine Meldung).
         if (_setup.Mode is not { } mode)
             return;
-        // [APPROX] Meldung nicht aus dem Original: „nur Weltkugel“ gibt es nur für einen Manager (Bundestrainer).
+        // [ORIGINAL] A056: Ein zweiter Manager entsteht bei „nur Weltkugel“ nicht (ManagerRowFor, Datei 0x28ACF), eine
+        // Meldung gibt es nicht. [APPROX] Absicherung ohne Meldung für den Rest-Fall (zweiter, unbenannter Manager vor dem
+        // Abschalten der Fahne), siehe GameSetup.CanStart.
         if (mode == GameMode.WorldOnly && _setup.Managers.Count > 1)
-        {
-            _message = "Nur Weltkugel: nur ein Manager.";
             return;
-        }
         for (var i = 0; i < _setup.Managers.Count; i++)
         {
             if (_setup.Managers[i].Name.Length == 0)

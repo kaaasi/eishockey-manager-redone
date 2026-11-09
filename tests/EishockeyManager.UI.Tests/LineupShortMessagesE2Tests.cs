@@ -35,6 +35,13 @@ public class LineupShortMessagesE2Tests
         d.Click(60, LineupScreen.FirstRowY + rows.IndexOf(p) * LineupScreen.RowPitch + 2);
     }
 
+    /// <summary>Reihe wählen, ohne einen Platz zu treffen (Klick in den Block neben die Knöpfe, Datei 0x40890).</summary>
+    private static void SelectLine(ScreenDriver d, int block)
+    {
+        var box = LineupScreen.BlockBox(block);
+        d.Click(box.X + 3, box.Y + 5);
+    }
+
     private static Player FreeForward(Club club) =>
         TeamUi.Rows(club).First(p => p.Role == PlayerRole.Forward && p.Available && !club.Lineup.Contains(p));
 
@@ -46,7 +53,7 @@ public class LineupShortMessagesE2Tests
         var p = FreeForward(club);
         p.SuspendedGames = 2;
         var before = club.Lineup[LineupSlot.Forward(0, 0)];
-        ClickSlot(d, LineupSlot.Forward(0, 0));
+        SelectLine(d, 0);
         ClickRow(d, club, p);
         Assert.Equal(["Spieler ist", "Gesperrt."], screen.MessageLines);
         Assert.True(screen.MessageIsShort);
@@ -61,7 +68,7 @@ public class LineupShortMessagesE2Tests
         var (d, screen, club) = Open();
         var p = FreeForward(club);
         p.InjuredGames = 3;
-        ClickSlot(d, LineupSlot.Forward(0, 0));
+        SelectLine(d, 0);
         ClickRow(d, club, p);
         Assert.Equal(["Spieler ist", "Verletzt."], screen.MessageLines);
         Assert.True(screen.MessageIsShort);
@@ -87,7 +94,7 @@ public class LineupShortMessagesE2Tests
         Assert.Same(p, club.Lineup[slot]);
     }
 
-    /// <summary>Gesunder Spieler im Feld: kein Meldungsfenster (Klick wählt den Platz wie bisher).</summary>
+    /// <summary>Gesunder Spieler im Feld: kein Meldungsfenster (der Klick leert den Platz, Datei 0x40CF8).</summary>
     [GameDataFact]
     public void Field_ClickOnHealthyPlayer_ShowsNoMessage()
     {

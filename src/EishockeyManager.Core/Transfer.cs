@@ -233,14 +233,23 @@ public sealed partial class TransferMarket
     {
         if (ListChangeRoll(game.Managers.Count, random))
             ChangeList(game, random);
+        AdvanceBids(game, random, expire: true, null);
+    }
 
+    /// <summary>
+    /// Verfall (<paramref name="expire"/>, alle Gebote) und Wurf der Gebote; <paramref name="only"/> = Wurf nur für die Markt-Plätze
+    /// dieses Managers.
+    /// </summary>
+    private void AdvanceBids(GameState game, Random random, bool expire, Manager? only)
+    {
         // [ORIGINAL] Verfall offener Gebote an den Marktplätzen (Datei 0x07215–0x0726A): random(0, 3) = 0 löscht Bit 0x80 samt
         // Meldung (Spur kader-transfer, Runde 12, U4); der Wurf fällt nur bei einem offenen Gebot.
-        foreach (var bid in _bids.ToList())
-            if (TransferRules.Random16(random, 0, 3) == 0)
-                _bids.Remove(bid);
+        if (expire)
+            foreach (var bid in _bids.ToList())
+                if (TransferRules.Random16(random, 0, 3) == 0)
+                    _bids.Remove(bid);
 
-        foreach (var listing in _listings.Where(l => l.Seller is not null).ToList())
+        foreach (var listing in _listings.Where(l => l.Seller is not null && (only is null || l.Seller == only)).ToList())
         {
             var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, random);
             if (!TransferRules.BidRoll(value, random) || _bids.Any(b => b.Listing == listing))
@@ -456,7 +465,18 @@ public sealed partial class TransferMarket
         PlayerFactory.Join(to, p, loan ? 1 : SquadSetup.StartContractYears, loan, agreement, managerSquad);
     }
 
-    /// <summary>Setzt einen eigenen Spieler auf den Markt („Verkaufen“).</summary>
+    /// <summary>
+    /// Setzt einen eigenen Spieler auf den Markt („Verkaufen“): Der Spieler verlässt den Kader (A380).
+    /// [ORIGINAL] Datei 0x46FDD–0x470DE: höchstens 3 Markt-Plätze mit Pool +0x1A = Manager (DGROUP 0x11F9 „Schon 3 Spieler …“),
+    /// Pool +0x1A muss der Manager sein (sonst 0x11F1); dann Markt-Platz in Satz 4 anlegen (0x108:0x5C, Grenze 0x0A = 11 Plätze),
+    /// im alten Kaderplatz „eingesetzt“ +0x0A = 0, den Platz (0x34 Byte, Gehalt, Laufzeit, Kaufpreis) unverändert in den
+    /// Markt-Platz kopieren (Datei 0x470C4) und den Kaderplatz freigeben (0x108:0x48, Datei 0x470D6: die folgenden Plätze rücken
+    /// auf). Der Pool-Satz behält Besitzer = Manager und Verein (+0x1D). Beleg FILE40 → FILE41 (HOHENADL, re-runde-14 A380).
+    /// [ORIGINAL] Listenpreis = +0x2C des Kaderplatzes (<see cref="Player.PurchasePrice"/>, mit dem Platz kopiert, Datei 0x470C4):
+    /// HOHENADL FILE40 Kaderplatz +0x2C = 316.000 DM → FILE41 Markt-Platz 316.000 DM, Bild <c>file40_04</c> „316.000 DM (K)“,
+    /// Leihgebühr „105.333 DM (L)“ = Preis / 3. [APPROX] Ohne Kaufpreis (0, Altstände vor kader-transfer) der Preis aus dem
+    /// Spielerwert (<see cref="Price"/>); Mindestbesetzung je Art (<see cref="CanLeave"/>) wie bisher.
+    /// </summary>
     public TransferResult Offer(GameState game, Manager manager, Player player)
     {
         var club = game.Clubs[manager.ClubIndex];
@@ -472,15 +492,43 @@ public sealed partial class TransferMarket
         {
             Player = player,
             From = club,
-            Price = Price(player),
+            Price = player.PurchasePrice > 0 ? player.PurchasePrice : Price(player),
             Seller = manager,
             ListedDay = game.PlayedMatchDays,
         });
+        club.ForgetDressed(player); // +0x0A = 0 (Datei 0x47093)
+        club.RemovePlayer(player); // Platz frei, Aufstellung ohne ihn, Nummern rücken auf (0x425B6)
         return TransferResult.Accepted;
     }
 
-    /// <summary>Nimmt einen eigenen Spieler vom Markt („Behalten“).</summary>
-    public void Withdraw(TransferListing listing)
+    /// <summary>
+    /// Nimmt einen eigenen Spieler vom Markt zurück (Anklicken des eigenen Markt-Platzes ohne offenes Gebot): Er kehrt in den Kader
+    /// zurück, nach Spielerart einsortiert (<see cref="PlayerFactory.InsertSlot"/>), nicht eingesetzt, mit unverändertem Vertrag.
+    /// [ORIGINAL] Datei 0x47331–0x4733B (Pool +0x1A = Manager, Markt-Platz +0x09 ohne Bit 0x80) → 0x474E4 ([bp−0x11] = 1) →
+    /// 0x477A9: Kaderplatz anlegen (0x108:0x5C, Grenze 0x1D, Datei 0x477E7), ohne Vertragsverhandlung (0x4A1DB übersprungen) und
+    /// ohne Buchung den Markt-Platz unverändert zurückkopieren (0x34 Byte, Datei 0x47907), Markt-Platz freigeben (0x108:0x48,
+    /// Datei 0x47954). Kein freier Kaderplatz (0x7F) → Abbruch über 0x47A3E; das Remake meldet „Schon 29 Mann“
+    /// (<see cref="TransferResult.SquadFull"/>, Meldung der Kaderplatz-Anlage 0x42CB1).
+    /// Altstände (vor A380 noch im Kader) verlieren nur den Markt-Platz.
+    /// </summary>
+    public TransferResult Withdraw(TransferListing listing)
+    {
+        if (!_listings.Contains(listing) || listing.Seller is null)
+            return TransferResult.Impossible;
+        var club = listing.From;
+        if (!club.Players.Contains(listing.Player))
+        {
+            if (club.Players.Count >= MaxSquad)
+                return TransferResult.SquadFull;
+            PlayerFactory.InsertSlot(club, listing.Player, managerSquad: true);
+            club.RenumberPlayers();
+        }
+        Unlist(listing);
+        return TransferResult.Accepted;
+    }
+
+    /// <summary>Entfernt einen Markt-Platz samt Geboten, ohne den Spieler zu bewegen.</summary>
+    internal void Unlist(TransferListing listing)
     {
         _listings.Remove(listing);
         _bids.RemoveAll(b => b.Listing == listing);
@@ -533,11 +581,14 @@ public sealed partial class TransferMarket
             return _freeAgents.Contains(listing) && !game.Clubs.Any(c => c.Players.Contains(listing.Player));
         if (listing.FromPool)
             return SlotOf(listing.Player) is { Owner: PoolOwner.Market } && !game.Clubs.Any(c => c.Players.Contains(listing.Player));
+        if (listing.Seller is { } seller)
+            // A380: Der eigene Markt-Platz steht außerhalb des Kaders (Altstände: noch im Kader, dann mit Mindestbesetzung).
+            return game.Managers.Contains(seller) && seller.ClubIndex == listing.From.Index
+                && (!listing.From.Players.Contains(listing.Player) || CanLeave(listing.From, listing.Player))
+                && game.Clubs.Where(c => c != listing.From).All(c => !c.Players.Contains(listing.Player));
         return listing.From.Players.Contains(listing.Player) && CanLeave(listing.From, listing.Player)
             && game.Clubs.Where(c => c != listing.From).All(c => !c.Players.Contains(listing.Player))
-            && (listing.Seller is null
-                ? !IsManaged(game, listing.From)
-                : game.Managers.Contains(listing.Seller) && listing.Seller.ClubIndex == listing.From.Index);
+            && !IsManaged(game, listing.From);
     }
 
     /// <summary>Gebot ablehnen.</summary>
