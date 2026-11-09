@@ -106,7 +106,7 @@ public class FinanceBedienungTests
         d.Drag(Enumerable.Repeat((FinanceScreen.RightPlus.X + 2, FinanceScreen.RightPlus.Y + 2), 30).ToArray());
         var steps = (screen.Amount!.Value - start) / 1_000;
         Assert.InRange(steps, 4, 29);
-        d.Move(1, 239);
+        d.Move(150, 80);
         Assert.Equal(steps * 1_000 + start, screen.Amount);
 
         // Balken rechts 160 … 159 + s in Farbe 9, links davon Farbe 0, Knopf unverändert
@@ -153,15 +153,32 @@ public class FinanceBedienungTests
     {
         var (d, screen, _) = TwoManagers();
         d.Click(95, 30);
-        d.Move(1, 239);
+        d.Move(150, 80);
         var baseline = d.Surface.Pixels.ToArray();
         d.Move(60, 92); // Überfahren zeigt nichts
         Assert.Equal(baseline, d.Surface.Pixels);
         d.Click(230, 92);
-        d.Move(1, 239);
+        d.Move(150, 80);
         Assert.Contains(FinanceScreen.BarTextColor, Row(d, 77, 167, 282));
         Assert.Equal(baseline[(77 * 320 + 40)..(77 * 320 + 160)], Row(d, 77, 40, 160));
         Assert.Equal(("Geld aufs Sparbuch", "einzahlen (1#)"), (screen.Hints().Right[0], screen.Hints().Right[1]));
+    }
+
+    /// <summary>A313: Balken und Seite verschwinden, sobald die Maus den Streifen (y 73–100) verlässt, ohne Klick (Datei 0x59531).</summary>
+    [GameDataFact]
+    public void AmountBar_DisappearsWhenMouseLeavesStrip()
+    {
+        var (d, screen, _) = TwoManagers();
+        d.Click(95, 30);
+        d.Click(230, 92);
+        d.Click(160 + 10, 93);
+        Assert.NotNull(screen.ActiveSide);
+        Assert.Equal(FinanceScreen.BarColor, d.Surface.Pixels[96 * 320 + 160]);
+        d.Move(150, 80); // noch im Streifen
+        Assert.NotNull(screen.ActiveSide);
+        d.Move(150, 60); // darüber
+        Assert.Null(screen.ActiveSide);
+        Assert.NotEqual(FinanceScreen.BarColor, d.Surface.Pixels[96 * 320 + 160]);
     }
 
     private static byte[] Row(ScreenDriver d, int y, int x1, int x2) => d.Surface.Pixels[(y * 320 + x1)..(y * 320 + x2)];

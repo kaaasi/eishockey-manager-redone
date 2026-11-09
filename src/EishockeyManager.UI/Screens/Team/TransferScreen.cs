@@ -508,13 +508,10 @@ public sealed class TransferScreen : Screen
             TeamUi.DialogButton(s, Assets, TalentButton.X, TalentButton.Y, "Talent");
     }
 
-    /// <summary>Beige Trennlinie mit dunkler Linie darunter (Video: Index 93 / 198).</summary>
     /// <summary>
-    /// Markierung des Eintrags unter der Maus: Die beiden Trennlinien über und unter dem Eintrag (obere Zeile der Linie) werden
-    /// dunkelrot, die untere Zeile (198) bleibt. [ORIGINAL] Pixelvergleich `oberflaeche_1100` (LANGE) und `oberflaeche_1102`
-    /// (LAPORTE): Zeilen y − 4 und y + 12 gemessen (68–75 | 38 | 40–47), Index 201 (65 | 0 | 0) mit Unschärfe; die Zeile
-    /// y − 1 bleibt Hintergrund. Vorher zeichnete das Remake hellrot (17) in Zeile y − 1, die untere Linie überschrieb
-    /// <see cref="EntryLine"/>. Index 201 statt 16/253 aus der Rotkomponente geschätzt: [APPROX] (Video unscharf).
+    /// Markierung des Eintrags unter der Maus: Die beiden Trennlinien über und unter dem Eintrag werden Index 16. [ORIGINAL]
+    /// DOSBox-Sitzung 2, `file40_05` (Eintrag 6: Zeilen 132 und 148, x 180–314) und `file40_06` (Zeilen 164 und 180); Index 16
+    /// (97 | 0 | 16), A382 widerlegte das frühere geschätzte Index 201.
     /// </summary>
     private static void HoverEntry(Surface s, int y)
     {
@@ -523,13 +520,16 @@ public sealed class TransferScreen : Screen
     }
 
     /// <summary>Farbe der Trennlinien um den markierten Eintrag der Transferliste (siehe <see cref="HoverEntry"/>).</summary>
-    public const byte HoverEntryColor = 201;
+    public const byte HoverEntryColor = 16;
 
-    private static void EntryLine(Surface s, int y)
-    {
-        s.HLine(ListLeft - 1, y, ListRight - ListLeft + 3, TeamUi.EntryLineColor);
-        s.HLine(ListLeft - 1, y + 1, ListRight - ListLeft + 3, 198);
-    }
+    /// <summary>
+    /// Normale Trennlinie: **eine** Zeile Index 31 (243 | 195 | 113), darunter Hintergrund 4. [ORIGINAL] DOSBox-Sitzung 2,
+    /// `file40_04`: Zeilen 52 + 16 · k (A382; vorher 93 mit 198 darunter).
+    /// </summary>
+    public const byte SeparatorColor = 31;
+
+    private static void EntryLine(Surface s, int y) =>
+        s.HLine(ListLeft - 1, y, ListRight - ListLeft + 3, SeparatorColor);
 
     /// <summary>„231.000 DM“.</summary>
     public static string Money(long amount) => amount.ToString("#,0", CultureInfo.GetCultureInfo("de-DE")) + " DM";

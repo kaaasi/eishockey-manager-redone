@@ -39,8 +39,8 @@ public sealed class OriginalDialog
     public const string DefaultTitle = "An Alle:";
 
     public static readonly Rect Window = new(75, 107, 168, 76);
-    public static readonly Rect LeftButton = Widgets.ButtonRect(94, 166);
-    public static readonly Rect RightButton = Widgets.ButtonRect(164, 166);
+    public static readonly Rect LeftButton = Widgets.ButtonRect(95, 166);
+    public static readonly Rect RightButton = Widgets.ButtonRect(165, 166);
 
     private const int TitleCenter = 157; // (105 + 210) / 2, abgerundet
     private const int TitleBaseline = 125;
@@ -148,7 +148,7 @@ public sealed class OriginalDialog
         var lines = TextLines;
         var baselines = Baselines;
         for (var i = 0; i < lines.Count; i++)
-            TeamUi.LabelCentered(s, a, TitleCenter, baselines[i] - TextTopOffset, lines[i], Colors.White, Colors.Black);
+            DrawLine(s, a, baselines[i] - TextTopOffset, lines[i]);
 
         s.HLine(80, 163, 158, Colors.Black);
         if (HasButtons)
@@ -156,6 +156,17 @@ public sealed class OriginalDialog
             TeamUi.DialogButton(s, a, LeftButton.X, LeftButton.Y, LeftText);
             TeamUi.DialogButton(s, a, RightButton.X, RightButton.Y, RightText);
         }
+    }
+
+    /// <summary>
+    /// Textzeile zentriert mit Schatten (1 Pixel rechts unten). Zahlen mit Mindestbreite enthalten
+    /// <see cref="Screens.Competitions.CompetitionWidgets.FigureSpace"/>: unsichtbar, so breit wie „0“ (R14UR-03, `file43_5`).
+    /// </summary>
+    private static void DrawLine(Surface s, Assets a, int top, string text)
+    {
+        var x = TitleCenter - Screens.Competitions.CompetitionWidgets.Width(a.Mini, text) / 2;
+        Screens.Competitions.CompetitionWidgets.Draw(s, a.Mini, x + 1, top + 1, text, Colors.Black);
+        Screens.Competitions.CompetitionWidgets.Draw(s, a.Mini, x, top, text, Colors.White);
     }
 
     private void Symbol(Surface s, Assets a, Rect field)
