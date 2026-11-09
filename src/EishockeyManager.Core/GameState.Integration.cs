@@ -67,12 +67,15 @@ public sealed partial class GameState
         // Spur nationalteam Runde 14 (R14NT-01/02, Review #662; Teil 4, #664): Nach dem 13. April läuft im Original jeder Tag in
         // der WM-Schleife (Datei 0x55570–0x55740, siehe CupsNational.WorldCupLoop.cs) – mit und ohne Bundestrainer: eigener
         // Tagesabschluss, kein Training und kein Markt außer nach den WM-Spielen der Tage ≡ 0/4, keine kleine Wanderung, kein
-        // 0x952C des Hauptwegs, keine Neuaufstellung „Tag mit Ereignis“.
+        // 0x952C des Hauptwegs, keine Neuaufstellung „Tag mit Ereignis“. Ausgenommen der erste Tag (R14NT4N-01, unten).
         if (InWorldCupLoop(day))
         {
             OnDayWorldCupLoop(day);
             return;
         }
+        // Nachprüfung #681 (R14NT4N-01): Der Tageswechsel nach den Spielen des 13. April (Zähler 217) gehört im Original noch
+        // zum Hauptweg (Datei 0x55204–0x552D3), erst danach beginnt die Schleife (Datei 0x552D5); siehe OnDayWorldCupEntry.
+        var worldCupEntry = IsWorldCupEntryDay(day);
 
         // Finanzen: Tages-, Wochen- und Monatswechsel bis einschließlich heute
         AdvanceFinanceTo(day);
@@ -99,7 +102,8 @@ public sealed partial class GameState
         // danach. [APPROX] Das Original rechnet 0x952C nach den Menüs der Manager; Finanzen, Training und Markt des Remakes
         // stehen davor wie bisher (Reihenfolge zu ihnen nicht einzeln gelesen). A009 (Runde 14 Teil 3): davor an Tagen mit
         // Ereignis die Neuaufstellung von Satz 5 mit der gesicherten Einstellung (Datei 0x54D41–0x54DAA, nur Hauptweg).
-        OnDayNationalTeam(day);
+        if (!worldCupEntry)
+            OnDayNationalTeam(day);
 
         // Spur spielberechnung-komplett (#204): kleine Wanderung der Teamwerte zweimal je Woche (0x5525A–0x55292). #675 (Review
         // #674, R14NT4-03): Datei 0x55204 zählt DGROUP 0x3B7 nach den Spielen des Vortags weiter, Talentsuche, Wanderung und
@@ -113,6 +117,10 @@ public sealed partial class GameState
 
         // Spur wettbewerbe-spiel, Teil 8: automatische Aufstellung am Ende des Tageslaufs (Datei 0x07C07, A068)
         ApplyAutoLineups();
+
+        // R14NT4N-01: am Eintrittstag der Schleife nach dem Takt des Hauptwegs Schritt (a) der Schleife (Datei 0x555D6).
+        if (worldCupEntry)
+            OnDayWorldCupEntry(day);
     }
 
     /// <summary>Neue Saison: Finanzbuch umstellen, Tageszähler der Finanzen zurücksetzen.</summary>

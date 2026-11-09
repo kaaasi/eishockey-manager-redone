@@ -378,13 +378,16 @@ public class GameModeTests
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Runde 14, nationalteam Teil 4 (#664): neu ab der WM der ersten Saison (Weltmeister 63 statt 52; Konten von Saison 1
     // unverändert) – kein Manager unter den ersten fünf, die WM läuft trotzdem in der WM-Schleife (Datei 0x55570–0x55740): keine
-    // Wanderung der Teamwerte vor den WM-Spielen, kein Training und kein Markt außer nach bestimmten WM-Tagen (dort 224/228, falsch);
+    // Wanderung der Teamwerte vor den WM-Spielen (seit #681: außer im Tageslauf von Tag 216, Hauptweg), kein Training und kein Markt außer nach bestimmten WM-Tagen (dort 224/228, falsch);
     // damit anderer Zufallsverbrauch ab dem 14. April. Gegenprobe: Schleife nur mit Bundestrainer (alter Stand) → alter Wert.
     // Review #674 (R14NT4-01/-05, #675): neu – (c) der WM-Schleife nach den WM-Spielen der Tage 216, 220 und 230 (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel, Takttage (Wanderung, Talentsuche) und Heilung des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück auf den Remake-Tag → weder alter noch neuer Wert, beide Teile wirken.
     // Titel ab Saison 1 neu; Manager 1 (Verein 30, verlängert nur angebotene Verträge) hat in Saison 5 nur noch 9 statt 11 Spieler,
     // ist nicht spielfähig und wird entlassen (Konto −7.188.716); die Probe prüft weiter nur Manager 0 (im Amt, spielfähig).
+    // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
+    // Weltmeister Saison 1 54 statt 52 (Konten von Saison 1 gleich), ab Saison 2 Titel und Konten neu; Manager 1 bleibt in Saison 5
+    // spielfähig (Konto 400.000 DM).
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=11,GermanChampion=0,EuropeanCupWinner=2|402643,400000|WorldChampion=55,CupWinner=0,GermanChampion=11,EuropeanCupWinner=0|1835460,400000|WorldChampion=52,CupWinner=12,GermanChampion=7,EuropeanCupWinner=11|2476371,400000|WorldChampion=63,CupWinner=7,GermanChampion=7,EuropeanCupWinner=11|3086177,400000|WorldChampion=52,CupWinner=7,GermanChampion=11,EuropeanCupWinner=7|3184081,-7188716|R952195006 C1361230806";
+        "WorldChampion=54,CupWinner=11,GermanChampion=0,EuropeanCupWinner=2|402643,400000|WorldChampion=63,CupWinner=11,GermanChampion=7,EuropeanCupWinner=0|1825857,400000|WorldChampion=54,CupWinner=11,GermanChampion=12,EuropeanCupWinner=7|2541718,400000|WorldChampion=52,CupWinner=1,GermanChampion=3,EuropeanCupWinner=12|3206493,400000|WorldChampion=63,CupWinner=21,GermanChampion=3,EuropeanCupWinner=3|3739487,400000|R1026447858 C18165625";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

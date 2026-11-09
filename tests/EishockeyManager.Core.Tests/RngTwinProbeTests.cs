@@ -187,10 +187,11 @@ public class RngTwinProbeTests
     private const int SeasonChanges = 4;
 
     [Theory]
-    [InlineData(false, 3, "13B4B9BF97AA6791")]
-    [InlineData(true, 3, "5ADC850A1A889D0D")]
-    [InlineData(false, 11, "286D192F1797731D")]
-    [InlineData(true, 11, "9960C6895BC6A787")]
+    // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
+    [InlineData(false, 3, "CFD037719DE46BE1")]
+    [InlineData(true, 3, "8A17B485ACE6F184")]
+    [InlineData(false, 11, "EA9870EBAC94AFCC")]
+    [InlineData(true, 11, "0320A4484A67CA9A")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -201,8 +202,8 @@ public class RngTwinProbeTests
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "1446A537FF2DE7EC")] // Review #674 (R14NT4-01/-05, #675), Begründung im Klassenkommentar
-    [InlineData(true, "125887AB15C5C11C")]
+    [InlineData(false, "460D89F52AB34CDA")] // Review #674 (R14NT4-01/-05, #675), Begründung im Klassenkommentar; Nachprüfung #681 (R14NT4N-01) siehe oben
+    [InlineData(true, "F136593647F7052A")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -31,10 +31,43 @@ public sealed partial class GameState
 {
     /// <summary>
     /// Läuft der Tag in der WM-Schleife des Originals? [ORIGINAL] Alle Tage nach dem Tag mit Markierung 255 (13. April) bis zum
-    /// Saisonwechsel, in jeder Spielart mit Vereinssaison und unabhängig von der Ernennung (siehe Klassenkommentar; #664). Der
-    /// Modus 1 hat seinen eigenen Anschluss (<see cref="OnDayWorldOnlyLoop"/>).
+    /// Saisonwechsel, in jeder Spielart mit Vereinssaison und unabhängig von der Ernennung (siehe Klassenkommentar; #664) –
+    /// ohne den ersten: Dessen Tageslauf (Wechsel nach den Spielen des 13. April) rechnet noch der Hauptweg
+    /// (<see cref="IsWorldCupEntryDay"/>, R14NT4N-01). Der Modus 1 hat seinen eigenen Anschluss (<see cref="OnDayWorldOnlyLoop"/>).
     /// </summary>
-    private bool InWorldCupLoop(int day) => !WorldOnly && day > SeasonCalendar.ClubSeasonEnd;
+    private bool InWorldCupLoop(int day) => !WorldOnly && day > SeasonCalendar.ClubSeasonEnd + 1;
+
+    /// <summary>
+    /// Erster Tag nach dem 13. April (Tag <see cref="SeasonCalendar.ClubSeasonEnd"/> + 1) in den Spielarten mit Vereinssaison:
+    /// Sein Tageslauf ist im Remake der Tageswechsel nach den Spielen des Tages mit Markierung 255, Zähler
+    /// <see cref="DayCounter.Of"/>(day) = 217 (Nachprüfung #681, R14NT4N-01).
+    /// </summary>
+    /// <remarks>
+    /// [ORIGINAL] Selbst nachgelesen (<c>disasm.py gamedata/em.exe 0x54D41 0x55300</c>): Markierung 255 springt bei Datei 0x54D65
+    /// nach 0x55073 und läuft ohne Sprung bis 0x55204; dort zählt 0x3B7 auf 217, je Manager folgen 0x3ED01/0x3F833 (Datei
+    /// 0x5522B/0x55230), bei 217 ≡ 0 (mod 7) Talentsuche 0x06FA5 (0x5528A), kleine Wanderung 0x9D1B (0x55292), 0x07169 je
+    /// Manager (0x552A6) und Stadionbau 0x3D316 (0x552C3). Erst Datei 0x552D5 prüft die Markierung des gespielten Tags (255) und
+    /// geht über die Ernennung in die Schleife. FILE22/FILE44 (Modus 4, 14.04.) haben 0x3B7 = 217: kein weiterer Zählschritt.
+    /// Im Remake läuft dieser Tag also über den Hauptweg (<c>OnDayClubSeason</c>) mit Tagesabschluss und Talentsuche
+    /// (<see cref="AdvanceFinance"/> mit <c>clubDay: true</c>; Jugendteams nur an Ligaspieltagen), Wanderung, Heilung und
+    /// Aufstellungsautomatik; an seiner Stelle von 0x952C des Hauptwegs Schritt (a) der Schleife (<see cref="OnDayWorldCupEntry"/>).
+    /// [APPROX] Training und Markt (0x07169) nach den Regeln des Hauptwegs im Remake (<see cref="CatchUpTraining"/>,
+    /// <see cref="TransferMarket.CatchUp"/>), auch mit dem Listenwechsel 0x494EF, den der Tag mit Markierung 255 im Original
+    /// überspringt (Datei 0x54E71 liegt in 0x54D68–0x55072); Takttag-Regel und Listenwechsel kommen mit #678.
+    /// </remarks>
+    private bool IsWorldCupEntryDay(int day) => !WorldOnly && day == SeasonCalendar.ClubSeasonEnd + 1;
+
+    /// <summary>
+    /// Am Eintrittstag der Schleife statt 0x952C(5, 1) des Hauptwegs: [ORIGINAL] Schritt (a) der Schleife, an einem WM-Tag mit
+    /// Bundestrainer dessen Menü und 0x952C(5, 0) (Datei 0x555D6), nach dem Takt des Hauptwegs (Wanderung Datei 0x55292 würfelt
+    /// die Form, 0x952C rechnet danach die Werte aus der Aufstellung). Keine Neuaufstellung „Tag mit Ereignis“ (Datei
+    /// 0x54D41–0x54DAA liegt im übersprungenen Teil).
+    /// </summary>
+    private void OnDayWorldCupEntry(int day)
+    {
+        if (NationalCoachPlaysOn(day))
+            UpdateNationalTeamValues();
+    }
 
     /// <summary>
     /// Ein Tag der WM-Schleife (Datei 0x55570–0x55740) im Tageslauf des Remakes, vor den Spielen des Tages <paramref name="day"/>:

@@ -196,8 +196,9 @@ public class JugendTeamsTests
     // (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel; Takttage (Wanderung, Talentsuche) und Heilung
     // des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück → weder alter
     // noch neuer Wert, beide Teile wirken.
+    // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert. Saison 0 unverändert, Richtung (≥ +15) weiter geprüft.
     private const string ExpectedActive =
-        "0:Schueler:2/11/57;0:Jugend:2/11/60;0:Junioren:2/11/63;1:Schueler:2/6/69;1:Jugend:2/6/69;1:Junioren:2/6/68;2:Schueler:1/11/74;2:Jugend:1/11/75;2:Junioren:1/11/76;3:Schueler:1/6/82;3:Jugend:1/6/81;3:Junioren:1/6/79";
+        "0:Schueler:2/11/57;0:Jugend:2/11/60;0:Junioren:2/11/63;1:Schueler:2/6/66;1:Jugend:2/6/68;1:Junioren:1/12/70;2:Schueler:1/11/76;2:Jugend:1/11/77;2:Junioren:1/6/77;3:Schueler:1/6/80;3:Jugend:1/6/80;3:Junioren:1/6/83";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -211,8 +212,9 @@ public class JugendTeamsTests
     // (Zähler 0x3B7 = Tag + 1) samt Markt-Verfall 0x071BB und ohne Listenwechsel; Takttage (Wanderung, Talentsuche) und Heilung
     // des Hauptwegs mit dem Zähler (Tage 3, 6, 10, 13 … statt 0, 4, 7, 11 …). Gegenprobe: nur der Hauptweg zurück → weder alter
     // noch neuer Wert, beide Teile wirken. Richtung weiter geprüft.
+    // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert. Saison 0 unverändert, Richtung (≤ −15) weiter geprüft.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/63;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:3/2/54;1:Jugend:3/2/55;1:Junioren:2/6/57;2:Schueler:3/6/45;2:Jugend:3/6/45;2:Junioren:3/2/47;3:Schueler:3/6/43;3:Jugend:3/6/42;3:Junioren:3/6/42";
+        "0:Schueler:2/2/63;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:3/2/55;1:Jugend:3/2/55;1:Junioren:2/6/59;2:Schueler:3/6/45;2:Jugend:3/6/44;2:Junioren:3/2/45;3:Schueler:3/6/42;3:Jugend:3/6/40;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests
