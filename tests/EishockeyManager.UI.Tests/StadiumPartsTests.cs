@@ -1,6 +1,7 @@
 using EishockeyManager.Core;
 using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens.ManagerArea;
+using EishockeyManager.UI.Screens.Team;
 using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.UI.Tests;
@@ -99,12 +100,18 @@ public class StadiumPartsTests
         Assert.Equal(OriginalDialogKind.Question, dialog.Kind);
         Assert.Equal(me.Name, dialog.Title);
         Assert.Equal("Möchten Sie Ihr Stadion ausbauen ?", dialog.Line1);
-        Assert.Equal($"Rabatt: {screen.Quote!.Discount}%", dialog.Line2);
-        Assert.Equal($"Bauzeit: ca. {screen.Quote.Weeks} Wochen", dialog.Line3);
+        // R14UR-03: „Rabatt:“ + Zahl Breite 2 + „#“ (Prozentzeichen der Schrift), „Bauzeit: ca. “ + Zahl Breite 2 + „ Wochen“
+        Assert.Equal("Rabatt:" + EishockeyManager.UI.Screens.Statistics.ClubStatisticsScreen.Number(screen.Quote!.Discount, 2, false) + "#", dialog.Line2);
+        Assert.Equal("Bauzeit: ca. " + EishockeyManager.UI.Screens.Statistics.ClubStatisticsScreen.Number(screen.Quote.Weeks, 2, false) + " Wochen", dialog.Line3);
         Assert.Equal(("Ja.", "Nein."), (dialog.LeftText, dialog.RightText));
 
         // Klick daneben und rechte Maustaste lassen die Frage offen (nur Knöpfe antworten)
         d.Click(5, 5);
+        Assert.True(screen.AsksConfirmation);
+        // R14UR-09: die rechte Maustaste schließt die Frage nicht – weder daneben noch auf „Ja.“ oder „Nein.“
+        d.RightClick(5, 5);
+        d.RightClick(StadiumScreen.YesButton.X + 5, StadiumScreen.YesButton.Y + 3);
+        d.RightClick(StadiumScreen.NoButton.X + 5, StadiumScreen.NoButton.Y + 3);
         Assert.True(screen.AsksConfirmation);
         d.Click(StadiumScreen.YesButton.X + 5, StadiumScreen.YesButton.Y + 3);
         Assert.False(screen.AsksConfirmation);
@@ -115,5 +122,49 @@ public class StadiumPartsTests
         for (var y = 219; y < 228; y++)
             for (var x = 213; x < 316; x++)
                 Assert.Equal(px[230 * Surface.Width + 200], px[y * Surface.Width + x]);
+    }
+
+    /// <summary>
+    /// R14UR-03 / R14UR-08: Ausbau-Frage gegen DOSBox `file43_5` (Rabatt 6, 8 Wochen): je Pixelzeile der beiden Textbänder
+    /// Anzahl der Schriftpixel und äußerste x-Werte (Mitte 157, Zahlen mit unsichtbarer Auffüllung), Knopfkanten bei x 95 / 165.
+    /// </summary>
+    [GameDataFact]
+    public void ConstructionQuestion_TextRowsAndButtons_LikeDosbox()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var dialog = new OriginalDialog(OriginalDialogKind.Question, "Kjellberg", "Möchten Sie Ihr Stadion ausbauen ?",
+            StadiumScreen.ConstructionDiscountLine(6), StadiumScreen.ConstructionWeeksLine(8), "Ja.", "Nein.");
+        d.Surface.Fill(new Rect(0, 0, Surface.Width, Surface.Height), TeamUi.DialogFill);
+        dialog.Draw(d.Surface, d.Host.Assets);
+        var px = d.Surface.Pixels;
+
+        (int Min, int Max, int Count) Row(int y)
+        {
+            var xs = Enumerable.Range(82, 154).Where(x => px[y * Surface.Width + x] != TeamUi.DialogFill).ToList();
+            return (xs.Min(), xs.Max(), xs.Count);
+        }
+        // Zeilen 145–150 „Rabatt: 6#“ (Pixelzeilen y 145 … 150), 153–158 „Bauzeit: ca.  8 Wochen“
+        Assert.Equal([(134, 178, 11), (134, 179, 26), (134, 178, 28), (134, 178, 28), (134, 179, 29), (135, 179, 19)],
+            Enumerable.Range(145, 6).Select(Row));
+        Assert.Equal([(112, 187, 10), (112, 199, 42), (112, 200, 55), (112, 201, 57), (112, 201, 55), (113, 201, 40)],
+            Enumerable.Range(153, 6).Select(Row));
+
+        // Knöpfe: Kante links bei x 95 (Zeile 167), Oberkante Zeile 166 ab x 96; rechter Knopf bei x 165 / 166
+        byte At(int x, int y) => px[y * Surface.Width + x];
+        Assert.Equal(95, OriginalDialog.LeftButton.X);
+        Assert.Equal(165, OriginalDialog.RightButton.X);
+        foreach (var bx in new[] { 95, 165 })
+        {
+            Assert.Equal(TeamUi.DialogFill, At(bx - 1, 167));
+            Assert.NotEqual(TeamUi.DialogFill, At(bx, 167));
+            Assert.Equal(TeamUi.DialogFill, At(bx, 166));
+            Assert.NotEqual(TeamUi.DialogFill, At(bx + 1, 166));
+        }
+        // Beschriftung: „Ja.“ beginnt bei x 120, „Nein.“ bei x 185 (Zeile 170 / 169)
+        Assert.Equal(TeamUi.DialogDark, At(120, 169));
+        Assert.Equal(TeamUi.DialogDark, At(185, 169));
+        Assert.NotEqual(TeamUi.DialogDark, At(119, 169));
+        Assert.NotEqual(TeamUi.DialogDark, At(184, 169));
     }
 }

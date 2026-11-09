@@ -240,11 +240,21 @@ public sealed class StadiumScreen : Screen
             _quote = Game.QuoteConstruction(Me, sel.Project, sel.Feature, _target);
             if (_quote is { } q)
                 _dialog = new OriginalDialog(OriginalDialogKind.Question, Me.Name, "Möchten Sie Ihr Stadion ausbauen ?",
-                    $"Rabatt: {q.Discount}%", $"Bauzeit: ca. {q.Weeks} Wochen", "Ja.", "Nein.");
+                    ConstructionDiscountLine(q.Discount), ConstructionWeeksLine(q.Weeks), "Ja.", "Nein.");
         }
         else if (_hover is { } hover)
             Select(hover);
     }
+
+    /// <summary>
+    /// Zeile 2 der Ausbau-Frage. [ORIGINAL] Datei 0x3E238–0x3E37A: DGROUP 0x43B7 „Rabatt:“ (ohne Leerzeichen), die Zahl mit
+    /// Mindestbreite 2 (Zahlenausgabe 0x0B954, <see cref="EishockeyManager.UI.Screens.Statistics.ClubStatisticsScreen.Number"/>) und DGROUP 0x502F „#“,
+    /// in der Schrift das Prozentzeichen (R14UR-03).
+    /// </summary>
+    public static string ConstructionDiscountLine(int discount) => "Rabatt:" + EishockeyManager.UI.Screens.Statistics.ClubStatisticsScreen.Number(discount, 2, false) + "#";
+
+    /// <summary>Zeile 3 der Ausbau-Frage. [ORIGINAL] Datei 0x3E238–0x3E37A: DGROUP 0x2F31 „Bauzeit: ca. “, Zahl Breite 2, DGROUP 0x2F1F „ Wochen“.</summary>
+    public static string ConstructionWeeksLine(int weeks) => "Bauzeit: ca. " + EishockeyManager.UI.Screens.Statistics.ClubStatisticsScreen.Number(weeks, 2, false) + " Wochen";
 
     private Choice? HitTest(int x, int y)
     {

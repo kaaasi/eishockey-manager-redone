@@ -108,7 +108,7 @@ public static class TeamUi
     public static void DialogButton(Surface s, Assets a, int x, int y, string text)
     {
         s.Blit(a.Image(2), new Rect(17, 179, Widgets.ButtonWidth, Widgets.ButtonHeight), x, y, transparent: 0);
-        var cx = x + Widgets.ButtonWidth / 2 + 2;
+        var cx = x + Widgets.ButtonWidth / 2 + 1; // [ORIGINAL] 1 Pixel weiter links als zuvor (`file46_3`: „Mach' ich!“/„Abbruch“, `file43_5`: „Ja.“/„Nein.“)
         var tx = cx - a.Mini.Measure(text) / 2;
         s.Text(a.Mini, tx + 1, y + 4, text, 1);
         s.Text(a.Mini, tx, y + 3, text, DialogDark);
