@@ -167,4 +167,39 @@ public class StadiumPartsTests
         Assert.NotEqual(TeamUi.DialogDark, At(119, 169));
         Assert.NotEqual(TeamUi.DialogDark, At(184, 169));
     }
+
+    /// <summary>
+    /// R14UR-06: Trefferflächen nach em.exe 0x3DB83–0x3DC4B – Stufe-1-Eintrag der Teile-Tabelle, Grenzen einschließlich
+    /// (Ziel … Ziel + Größe), Folge Verkehr, Gastronomie, Bowling, Überdachung, Kino; der erste Treffer gewinnt.
+    /// </summary>
+    [Theory]
+    [InlineData(StadiumFeature.Verkehrsanbindung, 244, 50, 67, 119)]
+    [InlineData(StadiumFeature.Gastronomie, 25, 112, 51, 31)]
+    [InlineData(StadiumFeature.Bowlingbahn, 201, 94, 69, 56)]
+    [InlineData(StadiumFeature.Ueberdachung, 79, 57, 145, 61)]
+    [InlineData(StadiumFeature.Kino, 29, 44, 53, 22)]
+    public void Hotspot_EdgesAreInclusive_LikeOriginal(StadiumFeature feature, int x, int y, int w, int h)
+    {
+        var area = StadiumScreen.Hotspots.Single(hs => hs.Feature == feature).Area;
+        Assert.Equal(new Rect(x, y, w, h), area);
+        // Innenpunkte an allen vier Rändern (einschließlich Ziel + Größe), die nicht von einem früheren Bereich überdeckt sind
+        var order = StadiumScreen.PartOrder.ToList();
+        bool Earlier(int px, int py) => order.TakeWhile(f => f != feature)
+            .Any(f => StadiumScreen.Hotspots.Single(hs => hs.Feature == f).Area.Contains(px, py));
+        foreach (var (px, py) in new[] { (x, y + h / 2), (x + w - 1, y + h / 2), (x + w / 2, y), (x + w / 2, y + h - 1) })
+            if (!Earlier(px, py))
+                Assert.Equal(feature, StadiumScreen.HotspotAt(px, py));
+        // knapp daneben: kein Treffer dieses Bereichs
+        foreach (var (px, py) in new[] { (x - 1, y + h / 2), (x + w, y + h / 2), (x + w / 2, y - 1), (x + w / 2, y + h) })
+            Assert.NotEqual(feature, StadiumScreen.HotspotAt(px, py));
+    }
+
+    [Fact]
+    public void Hotspot_FirstHitWins_InOrderOfTheOriginal()
+    {
+        // Kino (29 … 82 | 44 … 65) überlappt die Überdachung (79 … 224 | 57 … 117) bei x 79–82, y 57–65: Überdachung kommt zuerst
+        Assert.Equal(StadiumFeature.Ueberdachung, StadiumScreen.HotspotAt(80, 60));
+        Assert.Equal(StadiumFeature.Kino, StadiumScreen.HotspotAt(78, 60));
+        Assert.Equal(StadiumFeature.Kino, StadiumScreen.HotspotAt(80, 56));
+    }
 }

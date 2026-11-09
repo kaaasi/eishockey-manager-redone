@@ -86,23 +86,6 @@ public sealed class StadiumScreen : Screen
     private const int TicketRowY = 190;
 
     /// <summary>
-    /// Bereiche im Stadionbild. Gastronomie, Kino, Bowlingbahn, Überdachung und Verkehrsanbindung aus den
-    /// Mauspositionen im Video; [APPROX] Anzeigetafel und Sitzkomfort an den Tribünen angenommen.
-    /// [APPROX] Das Kino liegt seit der Tabelle (A323) bis y 39 hinauf; die Fläche blieb unverändert, weil der Treffer im Original
-    /// nicht belegt ist.
-    /// </summary>
-    public static readonly (StadiumFeature Feature, Rect Area)[] Hotspots =
-    [
-        (StadiumFeature.Anzeigetafel, new Rect(112, 56, 82, 7)),
-        (StadiumFeature.Sitzkomfort, new Rect(100, 102, 106, 12)),
-        (StadiumFeature.Ueberdachung, new Rect(90, 63, 126, 39)),
-        (StadiumFeature.Kino, new Rect(18, 53, 72, 30)),
-        (StadiumFeature.Gastronomie, new Rect(4, 110, 90, 44)),
-        (StadiumFeature.Bowlingbahn, new Rect(194, 110, 80, 44)),
-        (StadiumFeature.Verkehrsanbindung, new Rect(250, 50, 70, 118)),
-    ];
-
-    /// <summary>
     /// [ORIGINAL] Teile des Stadionbilds aus kb\8: Das Original zeichnet sie aus einer Tabelle (em.exe Datei 0x3D904–0x3D9EB, DGROUP:
     /// Ziel 0x4F3D, Größe 0x4F5B, Quelle 0x4F79, je Eintrag 2 Byte, Index 6 · Bereich + 2 · (Stufe − 1)). Stufe 0 zeichnet nichts;
     /// Pixelprobe der Bilder file43_2, file43_7, file44_7, file44a_10, file44b_6 (0 abweichende Pixel im Bildbereich, Sitzung 3/7).
@@ -127,6 +110,26 @@ public sealed class StadiumScreen : Screen
 
     /// <summary>[ORIGINAL] Maskenindex der Teile (Datei 0x3D92D: <c>mov al, 0xC0</c>, letztes Argument der Kopie 0x50:0xA79).</summary>
     public const int PartMask = 0xC0;
+
+    /// <summary>
+    /// Bereiche im Stadionbild. [ORIGINAL] Trefferprüfung Datei 0x3DB83–0x3DC4B (nach dem Zeichnen, 0x3D7F8): Schleife i = 0 … 4 in der
+    /// Folge <see cref="PartOrder"/> (DGROUP 0x4F97 = 5, 6, 8, 0, 7); es zählt immer der Eintrag der Stufe 1 (<c>[bp−9] = 0</c>,
+    /// unabhängig vom gebauten Stand) mit Ziel x/y (DGROUP 0x4F3D) und Größe (0x4F5B): Ziel x ≤ Maus-x ≤ Ziel x + Breite und
+    /// Ziel y ≤ Maus-y ≤ Ziel y + Höhe, also Grenzen einschließlich (hier Breite + 1, Höhe + 1 für <see cref="Rect.Contains"/>);
+    /// der erste Treffer gewinnt. Erst danach folgen im Original die Sonderflächen der rechten Tafel (0x3DC59 ff.). (R14UR-06)
+    /// [APPROX] Anzeigetafel und Sitzkomfort sind im Original an dieser Stelle nicht zu finden; sie bleiben an den Tribünen
+    /// angenommen und werden erst nach den Teilen geprüft.
+    /// </summary>
+    public static readonly (StadiumFeature Feature, Rect Area)[] Hotspots =
+    [
+        .. PartOrder.Select(f =>
+        {
+            var e = PartTable[f][0];
+            return (f, new Rect(e.DestX, e.DestY, e.Source.W + 1, e.Source.H + 1));
+        }),
+        (StadiumFeature.Anzeigetafel, new Rect(112, 56, 82, 7)),
+        (StadiumFeature.Sitzkomfort, new Rect(100, 102, 106, 12)),
+    ];
 
     // ---- Farben (Palette von kb\14) --------------------------------------------------------
 
@@ -256,16 +259,22 @@ public sealed class StadiumScreen : Screen
     /// <summary>Zeile 3 der Ausbau-Frage. [ORIGINAL] Datei 0x3E238–0x3E37A: DGROUP 0x2F31 „Bauzeit: ca. “, Zahl Breite 2, DGROUP 0x2F1F „ Wochen“.</summary>
     public static string ConstructionWeeksLine(int weeks) => "Bauzeit: ca. " + EishockeyManager.UI.Screens.Statistics.ClubStatisticsScreen.Number(weeks, 2, false) + " Wochen";
 
+    /// <summary>Baubereich unter der Maus im Stadionbild: der erste Treffer der <see cref="Hotspots"/> gewinnt.</summary>
+    public static StadiumFeature? HotspotAt(int x, int y)
+    {
+        foreach (var (feature, area) in Hotspots)
+            if (area.Contains(x, y))
+                return feature;
+        return null;
+    }
+
     private Choice? HitTest(int x, int y)
     {
         if (x < 0)
             return null;
         if (y < ImageHeight)
         {
-            foreach (var (feature, area) in Hotspots)
-                if (area.Contains(x, y))
-                    return new Choice(StadiumProject.Feature, feature);
-            return null;
+            return HotspotAt(x, y) is { } f ? new Choice(StadiumProject.Feature, f) : null;
         }
         for (var i = 0; i < Stadium.FeatureCount; i++)
             if (FeatureRow(i).Contains(x, y))
