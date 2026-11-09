@@ -22,25 +22,26 @@ public class TeamScreenTests
         var rows = club.SortedPlayers.ToList();
         var reserveGoalie = rows.Take(2).Single(p => club.Lineup.Goalkeeper != p);
         var row = rows.IndexOf(reserveGoalie);
-        // Erst den Platz, dann den Spieler: Linksklick auf einen eingesetzten Reservisten allein nimmt ihn heraus
-        // (Datei 0x40F45, Spur taktik-verein).
+        // Klick auf den Torhüterplatz leert ihn und wählt die Torhüterreihe (Datei 0x40890, 0x40CF8), dann der Spieler: erster
+        // freier Platz der Reihe (Datei 0x412A1; A010, Runde 14 Teil 6).
         var gk = LineupScreen.SlotButton(LineupSlot.Goalkeeper);
         d.Click(gk.X + 5, gk.Y + 5);
+        d.Frames(100); // „Auto-Aufstellung / ist deaktiviert !“ (Datei 0x40ADE) schließt von selbst
         d.Click(60, LineupScreen.FirstRowY + row * LineupScreen.RowPitch + 2);
         Assert.Same(reserveGoalie, club.Lineup.Goalkeeper);
         d.Frames(100); // Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst (Klick wirkt nicht)
 
-        // Stürmer auf einen Verteidigerplatz: Meldung, Aufstellung unverändert
-        var forward = rows.First(p => p.Role == PlayerRole.Forward);
+        // Stürmer in die Torhüterreihe: „Der darf da / nicht rein !“, Aufstellung unverändert (Datei 0x40E8F–0x40EB9)
+        var forward = rows.First(p => p.Role == PlayerRole.Forward && !club.Lineup.Contains(p));
         var defenderSlot = LineupScreen.SlotButton(LineupSlot.Defender(0, 0));
-        var before = club.Lineup[LineupSlot.Defender(0, 0)];
-        d.Click(defenderSlot.X + 5, defenderSlot.Y + 5);
+        Assert.NotNull(club.Lineup[LineupSlot.Defender(0, 0)]);
         d.Click(60, LineupScreen.FirstRowY + rows.IndexOf(forward) * LineupScreen.RowPitch + 2);
-        Assert.Same(before, club.Lineup[LineupSlot.Defender(0, 0)]);
+        Assert.Same(reserveGoalie, club.Lineup.Goalkeeper);
+        Assert.False(club.Lineup.Contains(forward));
         d.Frames(100); // Integration Runde 11 (ui-meldungen, K2): Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst (Klick wirkt nicht)
 
-        // Rechtsklick leert, Esc geht zurück ins Hauptmenü
-        d.RightClick(defenderSlot.X + 5, defenderSlot.Y + 5);
+        // Linksklick leert (Datei 0x40CF8), Esc geht zurück ins Hauptmenü
+        d.Click(defenderSlot.X + 5, defenderSlot.Y + 5);
         Assert.Null(club.Lineup[LineupSlot.Defender(0, 0)]);
         d.Press(Key.Escape);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
