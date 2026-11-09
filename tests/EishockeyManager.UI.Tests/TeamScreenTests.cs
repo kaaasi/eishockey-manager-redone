@@ -92,7 +92,7 @@ public class TeamScreenTests
         Assert.Equal(0, t.Effort(0, ScoreSituation.Base));
 
         var mode = TacticsScreen.EffortArrows;
-        d.Click(mode.X + 4, mode.Y + 2);
+        d.Click(mode.X + 4, mode.Y + mode.H - 2);
         Assert.Equal(TacticMode.Semi, t.EffortMode);
 
         var tab = TacticsScreen.BlockTab(1);
@@ -107,8 +107,10 @@ public class TeamScreenTests
 
         // Minuten nur bei „Minuten-Vorgabe (s.u.)“
         var line = TacticsScreen.LineChangeArrows;
-        while (t.LineChange != LineChangeMode.MinutesPreset)
-            d.Click(line.X + 4, line.Y + 2);
+        // Obergrenze (R14UR-09): bei falscher Pfeilrichtung rot statt Endlosschleife
+        for (var guard = 0; guard < Enum.GetValues<LineChangeMode>().Length && t.LineChange != LineChangeMode.MinutesPreset; guard++)
+            d.Click(line.X + 4, line.Y + line.H - 2);
+        Assert.Equal(LineChangeMode.MinutesPreset, t.LineChange);
         var minutes = TacticsScreen.MinutesArrows(0, forwards: true);
         d.Click(minutes.X + 4, minutes.Y + 2);
         Assert.Equal(1, t.Minutes(0, forwards: true));
