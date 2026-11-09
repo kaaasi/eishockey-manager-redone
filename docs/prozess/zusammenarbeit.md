@@ -81,11 +81,13 @@ schreibt zuerst einen Übernahmekommentar („übernommen ab SHA …, Tests …�
 - **Sparsame Kette (Entscheidung Nutzer 09.11.2026, Vorschläge 1 + 2):**
   1. **Erstreview** eines PR (Paket- oder Integrations-PR): vollständig mit Claude Opus 5.5 – alle drei Läufe von
      `tools/pruefen.sh`, Mutationen, Pixelvergleich, Fehlerfälle/Fuzzing, Fundstellen in em.exe.
-  2. **Fixlauf:** Claude Sonnet 5.5; Claude Opus 5.5 nur, wenn ein P0/P1-Befund behoben wird oder die Behebung viel
-     Disassembly verlangt. Prüfung mit `tools/pruefen.sh --schnell` (den Lauf ohne Daten übernimmt die CI).
-  3. **Nachprüfung** nur, wenn der Fixlauf einen **P0- oder P1-Befund** behebt: Claude Sonnet 5.5, nur das Delta, nur die
-     Gegenbeispiele und Rückmutationen dieser Befunde (keine erneute Vollprüfung, kein neuer Pixelvergleich außerhalb der
-     Befunde).
+  2. **Fixlauf:** Prüfung mit `tools/pruefen.sh --schnell` (den Lauf ohne Daten übernimmt die CI).
+  3. **Nachprüfung** nur, wenn der Fixlauf einen **P0- oder P1-Befund** behebt: nur das Delta, nur die Gegenbeispiele und
+     Rückmutationen dieser Befunde (keine erneute Vollprüfung, kein neuer Pixelvergleich außerhalb der Befunde).
+  - **Modellwahl (Ergänzung Nutzer 09.11.2026):** Claude Opus 5.5 bleibt überall, wo es Fehler und damit Nacharbeit vermeidet –
+    Spielregeln, Spielkern, Disassembly, Import, Erstreviews und Nachprüfungen. Claude Sonnet 5.5 nur für mechanische
+    Arbeit: Integrationen ohne eigene Regeländerung, reine Doku-Prüfungen, Kommentare und einfache Testergänzungen. Im
+    Zweifel Opus.
   4. Behebt der Fixlauf **nur P2/P3**: keine Nachprüfung. Die Leitstelle prüft selbst Delta (`compare`/`--stat`, betroffene
      Dateien), CI auf dem Head und die Testtabelle des Fixlaufs und vermerkt das im Merge-Kommentar
      („Delta geprüft durch Leitstelle, nur P2/P3“).
