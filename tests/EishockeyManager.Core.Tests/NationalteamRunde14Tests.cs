@@ -21,10 +21,16 @@ public class NationalteamRunde14Tests
     /// gibt es keinen, danach rechnet die WM-Schleife). Der Test ernennt deshalb künstlich zu Saisonbeginn und prüft nur den
     /// Hauptweg der Vereinssaison bis zum 13. April; die WM nach einer echten Ernennung prüft
     /// <see cref="Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm"/>.
+    /// R688N-03 (Nachprüfung #688): Die Gegenprobe (Takt nach 0x952C desselben Tages) wird nur sichtbar, wenn das Training des
+    /// Takts die Länderwerte ändert – mit Saat 3 nicht. Gegenprobe am Head mit den Saaten 3, 5, 7, 9, 11, 13, 17, 19, 23, 29, 31:
+    /// rot für 7, 9, 11, 13, 17, 19, 23; daher vier rot werdende Saaten neben 3.
     /// </summary>
     [Theory]
     [InlineData(3)]
+    [InlineData(7)]
     [InlineData(11)]
+    [InlineData(13)]
+    [InlineData(17)]
     public void Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(int seed)
     {
         var game = GameModeTests.Create(seed, true, true, 2);

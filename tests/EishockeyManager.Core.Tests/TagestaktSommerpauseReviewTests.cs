@@ -12,8 +12,9 @@ namespace EishockeyManager.Core.Tests;
 /// [ORIGINAL] Selbst nachgelesen (<c>tools/reverse-engineering/disasm.py gamedata/em.exe …</c>): WM-Schleife Datei 0x55570–0x55740
 /// (Tagesabschluss zum Zähler 232 = 29. April, dann Markierung 255 → Saisonwechsel 0x55743), Saisonende 0x26F20 setzt den Zähler
 /// 0x3B7 auf 233 (Datei 0x26F55), Sommerschleife Datei 0x564BC–0x56593 ab Zähler 234 = 1. Mai; Leihe Kaderplatz +0x0C = Verein + 0x80
-/// (Datei 0x47920–0x47925); alle Leser des Kontos (DGROUP 0x97EA + 0x1AF · Manager): Vergleiche nur in Stadion (0x3E811), Kauf
-/// (0x42996), Zwangsabstieg (0x55F22–0x55F34) und Kontogrenze ±500.000.000 Drittel im Monatsabschluss (0x3F10E–0x3F165) – keine
+/// (Datei 0x47920–0x47925); alle Leser des Kontos (DGROUP 0x97EA + 0x1AF · Manager): Vergleiche nur in „Verein“ (0x2E20C), Stadionaufbau
+/// (0x3E11A), Stadionauftrag (0x3EADB), Sollzinsen (0x3EE05), Kauf (0x42A8F), Zwangsabstieg (0x55F22–0x55F34), Börse
+/// (0x596F2/0x597A6/0x598EA) und Kontogrenze ±500.000.000 Drittel im Monatsabschluss (0x3F10E–0x3F165; R688S2-01) – keine
 /// Entlassung wegen Schulden.
 /// </remarks>
 public class TagestaktSommerpauseReviewTests

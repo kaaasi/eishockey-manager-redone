@@ -52,9 +52,11 @@ spielfreie Tage –, bis wieder ein Verein eines Managers spielt. Belegt: 1995/9
 5. **29. April**: Saisonende – Titel, Prämien (`[APPROX]`, belegt nur 1. Platz Oberliga = 400.000 DM),
    Ereignisse je Manager, dann neue Saison am 10. September oder Spielende nach der gewählten Dauer.
 
-**Keine Entlassung wegen Schulden** (#688, R688S-03; `SeasonDismissal.cs`): em.exe vergleicht das Konto nur beim Stadionauftrag,
-beim Kauf, beim Zwangsabstieg am 29. April (< −2.000.000 Drittel, `SeasonFlow.Zwangsabstieg.cs`) und mit der Kontogrenze
-±500.000.000 Drittel im Monatsabschluss (Datei 0x3F10E–0x3F165); das Spielende hängt nur am Endjahr. Die frühere Remake-Regel
+**Keine Entlassung wegen Schulden** (#688, R688S-03; `SeasonDismissal.cs`): em.exe vergleicht das Konto nur in der
+Vermögensrechnung „Verein“ (Datei 0x2E20C), im Stadionaufbau (0x3E11A), beim Stadionauftrag (0x3EADB), bei den Sollzinsen
+(0x3EE05), beim Kauf (0x42A8F), beim Zwangsabstieg am 29. April (< −2.000.000 Drittel, `SeasonFlow.Zwangsabstieg.cs`), in der
+Börse (0x596F2/0x597A6/0x598EA) und mit der Kontogrenze ±500.000.000 Drittel im Monatsabschluss (Datei 0x3F10E–0x3F165;
+R688S2-01); keiner dieser Vergleiche setzt ein Statusbit oder beendet das Spiel; das Spielende hängt nur am Endjahr. Die frühere Remake-Regel
 „8 Wochen unter −1,5 Mio. DM“ ist entfernt. Ausgeschiedene Manager älterer Spielstände (`Manager.Dismissed`) werden im Hot-Seat
 übersprungen.
 
