@@ -9,12 +9,15 @@ namespace EishockeyManager.UI.Screens.Team;
 /// und zwei Verteidigern (Rückennummern auf kleinen Knöpfen aus kb\2) und der Torhüter (TW).
 /// </summary>
 /// <remarks>
-/// Bedienung: Spieler anklicken, dann Platz (oder umgekehrt); Rechtsklick auf einen Platz leert ihn.
-/// [ORIGINAL] Wie beim Nationalteam (derselbe Code, Datei 0x40364): Linksklick auf einen eingesetzten, nicht aufgestellten
-/// Spieler nimmt ihn heraus, Rechtsklick auf einen nicht eingesetzten setzt ihn ein, höchstens 22 Eingesetzte
-/// („Schon 22 Mann / im Team !“), „Eingesetzt: n“ in Farbe 16 (Datei 0x41D84). Regeln: <see cref="Club.MaxDressed"/>.
-/// [APPROX] Linksklick auf nicht eingesetzte oder aufgestellte Spieler wählt sie aus; STATUS bleibt bei nicht
-/// Eingesetzten leer (wie beim Nationalteam), NR zeigt weiter die Rückennummer.
+/// [ORIGINAL] Bedienung wie beim Nationalteam (derselbe Code, Datei 0x40364; A010, Spur kader-start Runde 14 Teil 6):
+/// Linksklick in einen Block bzw. den Torhüterkasten wählt die Reihe (Nummer in Farbe 0x10, Datei 0x40890–0x40943); ein
+/// Linksklick auf einen belegten Platz leert ihn zusätzlich (Datei 0x40AA3–0x40D0D, danach nicht eingesetzt). Klick auf einen
+/// Spieler der Liste: <see cref="Club.ClickPlayer"/> (Linksklick in die gewählte Reihe oder Aufgestellten heraus, Rechtsklick
+/// einsetzen/herausnehmen). Rechtsklick außerhalb der Listenzeilen – auch auf einen Platz – verlässt den Bildschirm (Datei
+/// 0x40D6B–0x40D78, Zeile 0x7F aus 0x41683). Höchstens 22 Eingesetzte („Schon 22 Mann / im Team !“), „Eingesetzt: n“ in
+/// Farbe 16 (Datei 0x41D84).
+/// [ORIGINAL] A364: NR (Kaderplatz + 1) und STATUS stehen nur bei Eingesetzten (Datei 0x42027–0x42031 bzw. 0x42281–0x422A7;
+/// DOSBox <c>file34_3</c>: J.SCHULZ, DOBRYZINSKI, SANDNER ohne Nummer); Verletzte und Gesperrte zeigen den Status immer (A012).
 /// [APPROX] Tasten A (Auto-Aufstellung) und C (leeren) – im Video nicht zu sehen. Unten rechts geht es zur Taktik.
 /// </remarks>
 public sealed class LineupScreen : Screen
@@ -51,8 +54,10 @@ public sealed class LineupScreen : Screen
     private readonly Screen _back;
     private readonly MessageBox _message;
     private (string Line1, string Line2)? _queued;
-    private Player? _selectedPlayer;
-    private LineupSlot? _selectedSlot;
+    /// <summary>[ORIGINAL] Farbe der Nummer der gewählten Reihe (Datei 0x4090A, sonst 2 Datei 0x408D3), wie beim Nationalteam.</summary>
+    public const byte SelectedLineColor = 0x10;
+
+    private int? _selectedLine;
     private int _mouseX = -1, _mouseY = -1;
     private readonly PlayerInfoPopup _info = new();
 
@@ -67,7 +72,8 @@ public sealed class LineupScreen : Screen
 
     private Club Club => TeamUi.OwnClub(Host);
 
-    public Player? SelectedPlayer => _selectedPlayer;
+    /// <summary>Gewählte Reihe 0–3 bzw. <see cref="Lineup.GoalkeeperLine"/>, null = keine (DGROUP [bp−9] = 0xFF beim Aufbau).</summary>
+    public int? SelectedLine => _selectedLine;
 
     /// <summary>Zeilen der offenen Meldung (leer, wenn keine offen ist).</summary>
     public IReadOnlyList<string> MessageLines => _message.Lines;
@@ -128,72 +134,69 @@ public sealed class LineupScreen : Screen
         {
             case "A":
                 Club.AutoLineup();
-                ClearSelection();
                 return;
             case "C":
                 Club.ClearLineup();
-                ClearSelection();
                 return;
         }
 
-        if (input.Clicked(TeamUi.SwitchButton))
+        if (input.LeftClick && TeamUi.SwitchButton.Contains(input.MouseX, input.MouseY))
         {
             if (MenuEntries.TryCreate("Taktik", Host, _back, out var tactics))
                 Leave(tactics!);
             return;
         }
 
-        if (OnSlot(input.MouseX, input.MouseY, out var slot))
-        {
-            // [ORIGINAL] em.exe Datei 0x40B37–0x40B55: Klick auf einen belegten Platz, dessen Spieler Restdauer ≠ 0 und Status
-            // gesperrt/verletzt hat → Kurzmeldung „Spieler ist“ / „noch gesperrt !“, keine Aktion (auch für Verletzte).
-            // [APPROX] Nur Linksklick; der Rechtsklick leert den Platz weiter (Prüfung des Originals für die rechte Taste fehlt).
-            // Im Remake nehmen Verletzung und Sperre den Spieler schon aus der Aufstellung heraus – der Fall tritt nur auf, wenn
-            // der Status nach dem Aufstellen entsteht. Mit Automatik: erst deaktivieren (Datei 0x40ACF), dann diese Meldung.
-            if (input.LeftClick && Club.Lineup[slot] is { } placed && (placed.InjuredGames > 0 || placed.SuspendedGames > 0))
-            {
-                Club.AutoLineupEnabled = false;
-                ClearSelection();
-                _message.ShowShort("Spieler ist", "noch gesperrt !");
-                return;
-            }
-            if (input.RightClick)
-            {
-                Club.ClearLineupSlot(slot);
-                ClearSelection();
-            }
-            else if (input.LeftClick)
-            {
-                if (_selectedPlayer is { } p)
-                    TryAssign(slot, p);
-                else
-                    _selectedSlot = _selectedSlot == slot ? null : slot;
-            }
-            return;
-        }
-
         var inList = Window.Contains(input.MouseX, input.MouseY);
         var listRow = inList ? RowAt(input.MouseY) : -1;
         var player = listRow >= 0 && listRow < rows.Count ? rows[listRow] : null;
-        if (input.RightClick)
+        if (player is null)
         {
-            if (player is null)
+            // [ORIGINAL] Datei 0x40D6B–0x40D78: Rechtsklick außerhalb der Listenzeilen verlässt den Bildschirm.
+            if (input.RightClick)
                 Leave(_back);
-            else if (!Club.IsDressed(player))
-                Report(Club.Dress(player), player);
+            else if (input.LeftClick)
+                ClickLines(input.MouseX, input.MouseY);
             return;
         }
-        if (!input.LeftClick || player is null)
+        if (!input.LeftClick && !input.RightClick)
             return;
-        if (_selectedSlot is { } target)
-            TryAssign(target, player);
-        else if (Club.IsDressed(player) && !Club.Lineup.Contains(player))
+        var line = _selectedLine;
+        var result = Club.ClickPlayer(player, ref line, right: input.RightClick);
+        _selectedLine = line;
+        Report(result);
+    }
+
+    /// <summary>
+    /// Linksklick rechts neben der Liste. [ORIGINAL] Datei 0x40890–0x40943: ein Block bzw. der Torhüterkasten wählt die Reihe.
+    /// Datei 0x4095E–0x40D0D: Klick auf einen belegten Platz – Verletzter oder Gesperrter mit Restdauer (+0x0D ≠ 0, +0x09 &amp; 3 ≠ 0):
+    /// Kurzmeldung „Spieler ist“ / „noch gesperrt !“ (Datei 0x40B37–0x40B55, auch für Verletzte); sonst Platz leeren, der Spieler
+    /// ist nicht mehr eingesetzt (Datei 0x40CF8–0x40D0D). Beides schaltet „automatisch aufstellen“ ab (Datei 0x40ACF–0x40ADE); ein
+    /// leerer Platz ändert nichts (Datei 0x40AC4). Im Remake nehmen Verletzung und Sperre den Spieler schon aus der Aufstellung –
+    /// die Meldung tritt nur auf, wenn der Status nach dem Aufstellen entsteht.
+    /// </summary>
+    private void ClickLines(int x, int y)
+    {
+        if (LineAt(x, y) is { } line)
+            _selectedLine = line;
+        if (!OnSlot(x, y, out var slot) || Club.Lineup[slot] is not { } placed)
+            return;
+        if (placed.InjuredGames > 0 || placed.SuspendedGames > 0)
         {
-            Club.Undress(player);
-            ClearSelection();
+            Club.AutoLineupEnabled = false;
+            _message.ShowShort("Spieler ist", "noch gesperrt !");
+            return;
         }
-        else
-            _selectedPlayer = _selectedPlayer == player ? null : player;
+        Club.ClearLineupSlot(slot);
+    }
+
+    /// <summary>Reihe unter der Maus: Block 0–3 oder Torhüterkasten (<see cref="Lineup.GoalkeeperLine"/>).</summary>
+    public static int? LineAt(int x, int y)
+    {
+        for (var b = 0; b < Lineup.Blocks; b++)
+            if (BlockBox(b).Contains(x, y))
+                return b;
+        return GoalieBox.Contains(x, y) ? Lineup.GoalkeeperLine : null;
     }
 
     private void Leave(Screen next)
@@ -201,27 +204,16 @@ public sealed class LineupScreen : Screen
         Host.Show(next);
     }
 
-    private void ClearSelection()
-    {
-        _selectedPlayer = null;
-        _selectedSlot = null;
-    }
-
-    private void TryAssign(LineupSlot slot, Player player)
-    {
-        ClearSelection();
-        Report(Club.AssignToLineup(slot, player), player);
-    }
-
     /// <summary>
     /// Meldungen (Texte aus em.exe); „Schon 22 Mann / im Team !“ aus DGROUP 0x11D5. [ORIGINAL] Die Aufstellung ruft für alle Fälle die
     /// Kurzmeldung 0x0C0B8 – ohne Knopf, schließt von selbst. E2 (Spur kader-transfer Teil 4, docs/analyse/re-runde-12.md):
     /// Ein Gesperrter oder Verletzter aus der Kaderliste ergibt „Spieler ist“ / „Gesperrt.“ bzw. „Verletzt.“ (Datei 0x40E01–0x40E27,
     /// Zeile 2 aus DGROUP 0xB88/0xB84, gemeinsamer Aufruf 0x40EB9); Zeile 1 ist fester Text, kein Name. „noch gesperrt !“ gehört zum
-    /// Klick auf den Platz (siehe <see cref="HandleInput"/>, Datei 0x40B55). Fall „Keine Reihe / ausgewählt !“ (Datei 0x40EB9, DGROUP 0x1221):
-    /// ohne Entsprechung – das Remake wählt erst den Spieler oder den Platz und prüft erst bei der Zuordnung.
+    /// Klick auf den Platz (siehe <see cref="ClickLines"/>, Datei 0x40B55). „Keine Reihe / ausgewählt !“ (DGROUP 0x1221),
+    /// „Der darf da / nicht rein !“ (DGROUP 0x1229, Datei 0x40E77–0x40EB9) und „Kein / Platz mehr !“ (Datei 0x414C6) wie beim
+    /// Nationalteam (A010).
     /// </summary>
-    private void Report(LineupResult result, Player player)
+    private void Report(LineupResult result)
     {
         switch (result)
         {
@@ -236,6 +228,12 @@ public sealed class LineupScreen : Screen
                 break;
             case LineupResult.RosterFull:
                 _message.ShowShort("Schon 22 Mann", "im Team !");
+                break;
+            case LineupResult.NoLineSelected:
+                _message.ShowShort("Keine Reihe", "ausgewählt !");
+                break;
+            case LineupResult.NoRoom:
+                _message.ShowShort(ShortMessageTexts.NoRoom.Line1, ShortMessageTexts.NoRoom.Line2);
                 break;
         }
     }
@@ -284,9 +282,11 @@ public sealed class LineupScreen : Screen
             var p = rows[i];
             var y = FirstRowY + i * RowPitch;
             var c = TeamUi.RoleColor(p.Role);
-            if (i == hoverRow || p == _selectedPlayer)
+            if (i == hoverRow)
                 TeamUi.HoverRow(s, ListLeft + 3, y, ListWidth - 8, RowPitch);
-            s.TextRight(mini, 17, y, p.Number.ToString(), c);
+            // [ORIGINAL] A364: NR (Kaderplatz + 1) nur bei Eingesetzten (Datei 0x42027–0x42031: +0x0A = 0 → leer; DOSBox file34_3).
+            if (dressed.Contains(p))
+                s.TextRight(mini, 17, y, p.Number.ToString(), c);
             s.Text(mini, 18, y, p.RoleShort, c);
             s.Text(mini, 36, y, p.Name, c);
             s.TextRight(mini, 102, y, p.Games.ToString(), c);
@@ -308,17 +308,17 @@ public sealed class LineupScreen : Screen
         for (var b = 0; b < Lineup.Blocks; b++)
         {
             Widgets.Frame(s, Assets, BlockBox(b), FrameStyle.Orange);
-            s.Text(mini, 251, 33 + 42 * b, $"{b + 1}.", TeamUi.DimColor);
+            s.Text(mini, 251, 33 + 42 * b, $"{b + 1}.", b == _selectedLine ? SelectedLineColor : TeamUi.DimColor);
         }
         Widgets.Frame(s, Assets, GoalieBox, FrameStyle.Orange);
         s.TextCentered(mini, 282, 189, $"Eingesetzt: {dressed.Count}", DressedColor);
-        s.Text(mini, 250, 202, "TW", TeamUi.DimColor);
+        s.Text(mini, 250, 202, "TW", _selectedLine == Lineup.GoalkeeperLine ? SelectedLineColor : TeamUi.DimColor);
 
         foreach (var slot in LineupSlot.All)
         {
             var r = SlotButton(slot);
             var player = club.Lineup[slot];
-            TeamUi.SmallButton(s, Assets, r.X, r.Y, player?.Number.ToString() ?? "", pressed: slot == _selectedSlot);
+            TeamUi.SmallButton(s, Assets, r.X, r.Y, player?.Number.ToString() ?? "", pressed: false);
         }
 
         TeamUi.DrawSwitch(s, Assets, toTactics: true);

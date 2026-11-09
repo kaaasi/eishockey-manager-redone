@@ -193,7 +193,8 @@ public static partial class MatchEngine
             ownValue = ManagedTeamValues(squad, nineOrMore: !game.IsShortHanded(club)).ManagerValue;
             injuryManager = game.Managers.ToList().IndexOf(manager);
             // [ORIGINAL] Strafen lesen den Managerwert über Vereinsfeld 0x16 = Manager + 1 (Datei 0x35890), also den Satz
-            // des nächsten Managers (übernommen). [APPROX] Ohne nächsten Manager 0 (nicht belegter Satz, nicht geprüft).
+            // des nächsten Managers (übernommen). [ORIGINAL] A082: Ohne nächsten Manager 0 – der nicht belegte Satz behält
+            // DGROUP 0x974B + 0x1AF · m = 0 über alle Spieltage (FILE03/05/31/32/36/41, Manager 1–5; re-runde-14.md).
             // R8W3I-05: [ORIGINAL] gelesen wird der gespeicherte Wert DGROUP 0x974B, den nur 0x952C schreibt – mit Schalter 1
             // im Tageslauf 0x54C9F für jeden Manager vor den Spielen des Tages (0x54F9C–0x54FBF), bei weniger als neun
             // aufgestellten und eingesetzten Spielern 100 (0x9698–0x96A8). [APPROX] Das Remake rechnet ihn hier aus
@@ -206,6 +207,9 @@ public static partial class MatchEngine
                 : 0;
         }
         var fewFit = managed && club.Players.Count > 0 && club.Players.Count(p => p.Available) < MinimumFitForPenalties;
+        // A180: [ORIGINAL] Spielvorbereitung 0x8365 je Paarung (Datei 0x36D12) schreibt die Zeile der Automatik in den
+        // Vereinssatz – für die Anzeige „AUTOM.“ festgehalten; ohne Manager ohne Blick auf die Modi (Datei 0x842B).
+        club.Tactics.RecordAutoLine(value, opponentValue, unmanaged: manager is null);
         var team = new LiveTeam
         {
             Defense = defense,
@@ -317,16 +321,17 @@ public static partial class MatchEngine
         // [ORIGINAL] Spielabrechnung 0x544C0, Kaderplatzschleife ab Datei 0x548A8: Belastung aller Spieler 50 … 150
         // (Datei 0x549A2–0x549BB; A184, Runde 12). Bei „nicht spielfähig“ endet die Abrechnung vorher.
         TrainingRules.ClampStrain(club.Players);
-        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report);
-        if (report.Events.Any(e => e.Kind == MatchEventKind.Injury && e.Side == side))
-            PlayerInjuries.RefillLineup(club);
+        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report, CompetitionSlots.Of(competition));
+        PlayerInjuries.AfterMatch(club, injured: report.Events.Any(e => e.Kind == MatchEventKind.Injury && e.Side == side));
     }
 
     /// <summary>Zähler einer gemanagten Mannschaft aus ihrer Aufstellung (Managerverein oder Nationalteam des Bundestrainers).</summary>
-    private static void CreditLineup(List<Player> lineup, Player? keeper, int against, int side, MatchReport report)
+    private static void CreditLineup(List<Player> lineup, Player? keeper, int against, int side, MatchReport report,
+        CompetitionSlot slot = CompetitionSlot.League)
     {
+        // [ORIGINAL] A135: Spiele je Wettbewerb (+0x06/+0x1C + Wettbewerb, Datei 0x5494C–0x5499E), Tore +0x03/+0x22 + Wettbewerb.
         foreach (var p in lineup)
-            p.Games++;
+            p.CountGame(slot);
         if (keeper is { } goalie)
         {
             goalie.GoalsAgainst += against;
@@ -335,10 +340,11 @@ public static partial class MatchEngine
         foreach (var e in report.Events)
         {
             // [ORIGINAL] 0x54248–0x54337 (Teil 3): Vorlage Spielerfeld 0x1F + 1, Tor Kaderplatz +0x22 + 1 (Liga und Pokal).
-            // [APPROX] Spielerfeld 0x1B (nur Wettbewerb 0, DGROUP 0xD0BF) und die Grenze 255 führt das Remake nicht getrennt.
+            // [ORIGINAL] je Wettbewerb DGROUP 0xD0BF (Datei 0x542F4–0x54333, A135). [APPROX] Spielerfeld 0x1B (nur Wettbewerb 0)
+            // und die Grenze 255 führt das Remake nicht getrennt.
             if (e.Kind == MatchEventKind.Goal && e.Side == side && e.Player is { } scorer)
             {
-                scorer.Goals++;
+                scorer.CountGoal(slot);
                 if (e.Assist is { } assist)
                     assist.Assists++;
                 continue;
@@ -369,12 +375,22 @@ public sealed partial class GameState
 {
     /// <summary>
     /// Neue Saison: Spielerzähler der Spielberechnung (Spiele, Tore, Vorlagen, Strafen, Gegentore, Torhüterminuten)
-    /// auf 0. [APPROX] Das Zurücksetzen im Original ist nicht gesucht; die Zähler gelten im Remake je Saison.
-    /// Länderspiele (<see cref="Player.Caps"/>) bleiben.
+    /// auf 0. Länderspiele (<see cref="Player.Caps"/>) bleiben.
+    /// [ORIGINAL] A088 (L14, re-runde-14 Sitzung 4): Kaderplätze der Manager, Datei 0x27A0C–0x27AA8; am Stand belegt FILE44 → FILE46
+    /// (Satz 0) für 5-Minuten-Strafen +0x00 (<see cref="Player.Penalties5"/>), 2-Minuten-Strafen +0x01 (<see cref="Player.Penalties2"/>),
+    /// Tore Liga/Pokal +0x03/+0x04 (<see cref="Player.Goals"/>, <see cref="Player.CupGoals"/>) und Spiele Liga/Pokal +0x06/+0x07
+    /// (<see cref="Player.Games"/>, <see cref="Player.CupGames"/>) → 0; die Zähler beim Verein +0x1C–+0x26 bleiben
+    /// (<see cref="CarryGamesForClub"/>), ebenso +0x02.
+    /// [APPROX] Europapokal +0x05/+0x08 nur nach dem Code (am Stand schon vorher 0, R14RD2-05.5); Vorlagen, Gegentore und
+    /// Torhüterminuten haben kein belegtes Feld im Kaderplatz; Spieler der Computervereine, im Pool und auf dem Markt (im Original
+    /// ohne Kaderplatz bzw. Pool +0x1B/+0x1F) nicht verglichen.
     /// </summary>
     internal void ResetMatchCounters()
     {
         foreach (var p in Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents))
+        {
             p.Games = p.Goals = p.Assists = p.Penalties2 = p.Penalties5 = p.GoalsAgainst = p.GoalieMinutes = 0;
+            p.ResetCompetitionCounters(); // A135: +0x04/+0x05, +0x07/+0x08
+        }
     }
 }

@@ -140,6 +140,8 @@ public sealed partial class GameState
         }
         PlayerFactory.ApplyScoutedTalentValues(p, s, random);
         PlayerFactory.Join(club, p, contractYears: Contracts.MinYears, loan: false);
+        // [ORIGINAL] Talentsuche ruft 0x42CB1 für den Managerkader (Datei 0x06EB9 in 0x06D7F): einsortiert nach Spielerart
+        // (managerSquad = Vorgabe true; Test KaderStartRunde14Tests, R623-01).
         // [ORIGINAL] Belastung des neuen Kaderplatzes random(80, 120) (Datei 0x42E4C–0x42E5E; A184, Integration Runde 12, R12I-01).
         p.Strain = TransferRules.Random16(random, 80, 120);
         _ = TransferRules.Random16(random, 3, 12); // Kaderplatz +0x19 (Bedeutung offen, A185/A186), nur gezogen

@@ -82,13 +82,19 @@ public static class TeamUi
     /// unten und rechts eine dunkle (<see cref="DialogDark"/>), dazu 2 px Schlagschatten. Nicht der kb\2-Rahmen der großen Fenster.
     /// [ORIGINAL] Die Ecken links oben, rechts oben und links unten haben die Füllfarbe, die Ecke rechts unten ist schwarz
     /// (Index 0); Kauffenster (2 | 29)–(166 | 71) in `file40_08`, Vertragsfenster in `file46_3`.
-    /// [ORIGINAL] Der Schatten ist einfarbig Index 6, auch über Listentext und Linien, kein Abdunkeln (DOSBox-Sitzung 2,
+    /// [ORIGINAL] Der Schatten ist einfarbig Index 6 (bis auf die drei äußeren Ecken in Füllfarbe, R14N-01), auch über Listentext und Linien, kein Abdunkeln (DOSBox-Sitzung 2,
     /// `file40_12` gegen `file40_13`: 460 von 464 Pixeln Index 6; A374).
     /// </summary>
     public static void DialogFrame(Surface s, Rect r)
     {
         s.Fill(new Rect(r.X + 2, r.Y + r.H, r.W, 2), DialogShadow);
         s.Fill(new Rect(r.X + r.W, r.Y + 2, 2, r.H), DialogShadow);
+        // [ORIGINAL] Die drei äußeren Schattenecken haben die Füllfarbe (20 | 28 | 32) = Index 4: Kauffenster (168 | 31), (4 | 73),
+        // (168 | 73) in `file40_08`, `file40_09`, `file35_2`; Vertragsfenster (168 | 31), (4 | 97), (168 | 97) in `file46_3`,
+        // `file40_12`, `file35_3` (R14N-01).
+        s.Set(r.X + r.W + 1, r.Y + 2, DialogFill);
+        s.Set(r.X + 2, r.Y + r.H + 1, DialogFill);
+        s.Set(r.X + r.W + 1, r.Y + r.H + 1, DialogFill);
         s.Fill(r, DialogFill);
         s.HLine(r.X + 1, r.Y, r.W - 2, DialogLight);
         s.VLine(r.X, r.Y + 1, r.H - 2, DialogLight);

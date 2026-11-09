@@ -14,7 +14,7 @@ namespace EishockeyManager.Core;
 /// <item>[APPROX] Ein alter Spielstand kennt die Werte des letzten WM-Spiels nicht: Die Anzeige unter „AUTOM.“ beginnt
 ///   bei 0 und zeigt ab dem nächsten WM-Spiel des Landes dessen Werte.</item>
 /// <item>[APPROX] Eigene Werte eines amtierenden Bundestrainers: Stehen sie in allen vier Blöcken noch auf dem alten
-///   Startwert (Zeile eines neuen Vereins, <c>new Tactics()</c>), gelten sie als nie geändert und bekommen den
+///   Startwert (Zeile eines neuen Vereins vor Runde 14, <c>Tactics.LegacyStart()</c>), gelten sie als nie geändert und bekommen den
 ///   Startwert des Nationalteams (0); von Hand geänderte Werte bleiben.</item>
 /// </list>
 /// Unerwartete Formen bleiben unverändert; der Reader meldet sie.
@@ -62,7 +62,7 @@ public static partial class SaveGame
     /// <summary>Alte Startwerte (alle Blöcke wie ein neuer Verein) durch den Startwert des Nationalteams (0) ersetzen.</summary>
     private static void ResetUntouchedStartValues(JsonObject tactics)
     {
-        var start = new Tactics();
+        var start = Tactics.LegacyStart();
         if (!IsGrid(tactics["_effort"], (b, i) => start.Effort(b, (ScoreSituation)i))
             || !IsGrid(tactics["_attack"], (b, i) => start.Attack(b, (ScoreSituation)i)))
             return;

@@ -80,7 +80,9 @@ public class TaktikTeil5Tests
         Assert.Equal(77, team.Effort);
         Assert.Equal(5, team.AttackLevel);
 
-        var semi = new Tactics { EffortMode = TacticMode.Semi, AttackMode = TacticMode.Semi };
+        var semi = Tactics.LegacyStart(); // Startwerte vor A180 (Runde 14)
+        semi.EffortMode = TacticMode.Semi;
+        semi.AttackMode = TacticMode.Semi;
         var other = new LiveTeam { Energy = 30, Tactics = semi, Effort = 77, AttackLevel = 5 };
         OriginalMinutes.FollowTactics(other, goalDifference: 0);
         // Grundwert 60 + Unentschieden 20 − (50 − 30) = 60 (Energieabzug Datei 0x9490–0x94A7).

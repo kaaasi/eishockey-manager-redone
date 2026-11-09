@@ -386,8 +386,12 @@ public class GameModeTests
     // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
     // Weltmeister Saison 1 54 statt 52 (Konten von Saison 1 gleich), ab Saison 2 Titel und Konten neu; Manager 1 bleibt in Saison 5
     // spielfähig (Konto 400.000 DM).
+    // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
+    // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
+    // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
+    // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=11,GermanChampion=0,EuropeanCupWinner=2|402643,400000|WorldChampion=63,CupWinner=11,GermanChampion=7,EuropeanCupWinner=0|1825857,400000|WorldChampion=54,CupWinner=11,GermanChampion=12,EuropeanCupWinner=7|2541718,400000|WorldChampion=52,CupWinner=1,GermanChampion=3,EuropeanCupWinner=12|3206493,400000|WorldChampion=63,CupWinner=21,GermanChampion=3,EuropeanCupWinner=3|3739487,400000|R1026447858 C18165625";
+        "WorldChampion=54,CupWinner=11,GermanChampion=0,EuropeanCupWinner=2|402643,400000|WorldChampion=63,CupWinner=11,GermanChampion=7,EuropeanCupWinner=0|1825857,400000|WorldChampion=54,CupWinner=11,GermanChampion=12,EuropeanCupWinner=7|2492942,400000|WorldChampion=52,CupWinner=1,GermanChampion=3,EuropeanCupWinner=12|3117742,400000|WorldChampion=63,CupWinner=21,GermanChampion=3,EuropeanCupWinner=3|3606406,400000|R1026447858 C18165625";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

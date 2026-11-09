@@ -128,6 +128,10 @@ public sealed partial class GameState
     {
         StartFinanceSeason();
         StartStadiumStatisticsSeason(); // Spur heimspiel-statistik (0x55A86)
+        // Spur kader-start (A091/A380, Review R14KS-02): nicht verkaufte eigene Spieler von der Transferliste zurück in den Kader,
+        // bevor Spiele übertragen und Saisonzähler gelöscht werden. [ORIGINAL] Rückkehr Datei 0x27547–0x27665 in der
+        // Satzschleife der Saisonschleife 0x26F20, Löschen der Zähler erst danach ab Datei 0x27A0C.
+        TransferMarket.ReturnListedPlayers(this);
         CarryGamesForClub(); // Spur kader-transfer, Teil 5 (A226): Spiele beim Verein (+0x1C) vor dem Zurücksetzen übertragen
         ResetMatchCounters(); // Spur spielberechnung: Spielerzähler je Saison (MatchEngine.Live.cs)
         ResetLeaguePenalties(); // Spur statistiken: Strafminuten der Fair-Play-Tabelle (StatisticsClub.cs, 0x5647A)

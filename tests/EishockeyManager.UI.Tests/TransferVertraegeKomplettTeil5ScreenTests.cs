@@ -43,7 +43,7 @@ public class TransferVertraegeKomplettTeil5ScreenTests
         Assert.Equal(TransferDialog.DialogKind.Bid, dialog.Kind);
         Assert.True(dialog.IsOfferWindow);
         Assert.False(dialog.IsQuestion);
-        Assert.Equal(TransferDialog.OfferBox.X + 10, dialog.CancelButton.X); // „Behalten“ (0x0B | 0x53)
+        Assert.Equal(0x0B, dialog.CancelButton.X); // „Behalten“ fest aus dem Code (R14KS-08: nicht OfferBox.X + 10) (0x0B | 0x53)
         Assert.Equal(90, dialog.ConfirmButton.X); // „Verkaufen“ (0x5A | 0x53)
         var fee = TransferMarket.TransferFee(bid);
         Assert.Equal((TransferRules.Thirds(bid.Amount) - TransferRules.Thirds(bid.Amount) / 7 * 2) / 3, fee);
@@ -64,6 +64,8 @@ public class TransferVertraegeKomplettTeil5ScreenTests
         d.Click(dialog.CancelButton.X + 5, dialog.CancelButton.Y + 3);
         Assert.Equal(money, game.ActiveManager.Money);
         Assert.Empty(game.TransferMarket.Bids);
-        Assert.Contains(bid.Listing.Player, game.Clubs[game.ActiveManager.ClubIndex].Players);
+        // A380: „Behalten“ lehnt nur das Gebot ab (Datei 0x47433); der Spieler bleibt auf der Liste, außerhalb des Kaders.
+        Assert.DoesNotContain(bid.Listing.Player, game.Clubs[game.ActiveManager.ClubIndex].Players);
+        Assert.Same(bid.Listing, game.TransferMarket.ListingOf(bid.Listing.Player));
     }
 }

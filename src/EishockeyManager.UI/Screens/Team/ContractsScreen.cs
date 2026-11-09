@@ -15,13 +15,21 @@ namespace EishockeyManager.UI.Screens.Team;
 public sealed class ContractsScreen : Screen
 {
     public static readonly Rect Window = new(1, 14, 264, 209);
-    public const int HeaderY = 20;
+
+    /// <summary>
+    /// Oberkante der Spaltenköpfe. [ORIGINAL] DOSBox-Bilder <c>file40_11</c> (Verträge) und <c>file46_3</c> (Saisonende): Schrift
+    /// y 19–23, Linien y 25 und y 209 jeweils x 7–251 (A362).
+    /// </summary>
+    public const int HeaderY = 19;
     public const int FirstRowY = 29;
     public const int RowPitch = 6;
     public const int StatusY = 213;
 
-    /// <summary>Lage der Verhandlung: Zeilen im oberen Teil → darunter (y = 109), sonst darüber (y = 29).</summary>
-    public static Rect DialogRect(int row) => new(1, FirstRowY + row * RowPitch < 100 ? 109 : 29, 166, 67);
+    /// <summary>
+    /// Lage der Verhandlung: Zeilen im oberen Teil → darunter (y = 109), sonst darüber (y = 29). [ORIGINAL] Rahmen hell ab
+    /// (2 | 29), dunkel bis (166 | 95), Schatten 167–168 bzw. 96–97: DOSBox-Bild <c>file46_3</c> (KJELLBERG, Zeile 25 → oben; A362).
+    /// </summary>
+    public static Rect DialogRect(int row) => new(2, FirstRowY + row * RowPitch < 100 ? 109 : 29, 165, 67);
 
     public static Rect YearsField(Rect dialog) => new(76, dialog.Y + 26, 80, 7);
     public static Rect SalaryField(Rect dialog) => new(76, dialog.Y + 34, 80, 7);
@@ -42,6 +50,11 @@ public sealed class ContractsScreen : Screen
     private readonly Func<Screen>? _next;
     private (int Manager, Player Player)? _renewal;
 
+    // A362: Abbild der Liste hinter den Saisonende-Verhandlungen (Spieler, V.DAUER, WERT) und für welchen Manager es gilt.
+    private IReadOnlyList<(Player Player, string Contract, int Salary)>? _picture;
+    private int _pictureManager = -1;
+    private bool _departed;
+
     public ContractsScreen(ScreenHost host, Screen back) : base(host)
     {
         _back = back;
@@ -58,8 +71,15 @@ public sealed class ContractsScreen : Screen
     /// <summary>
     /// Verhandlungen am Saisonende (em.exe 0x26F20, Datei 0x27CE5–0x27F49): je Manager und Spieler mit ausgelaufenem Vertrag
     /// das Verhandlungsfenster (Lage nach der Zeile wie im Bildschirm „Verträge“, 0x27D74), danach „… bleibt Ihnen auch die
-    /// nächste Saison erhalten“ bzw. „… kehrt Ihrem Verein den Rücken...“ mit der Ablöse. [APPROX] Die Liste dahinter ist die
-    /// des Bildschirms „Verträge“ (Original: Kaderliste 0x108:0x43, nicht vermessen). Ohne offene Verhandlung: <paramref name="next"/>.
+    /// nächste Saison erhalten“ bzw. „… kehrt Ihrem Verein den Rücken...“ mit der Ablöse. Ohne offene Verhandlung: <paramref name="next"/>.
+    /// [ORIGINAL] A362 (re-runde-14 Sitzung 4, R14RD2): Die Liste dahinter ist die Spielerliste 0x108:0x43 (Datei 0x41DCD) mit den
+    /// Spalten von „Verträge“, gezeichnet einmal vor der Schleife (Datei 0x27C9F) und erst nach einem Abgang neu (Datei 0x27F31);
+    /// Laufzeit +0x0B = 1 und das neue Gehalt +0x28 schreibt die Schleife erst danach (Datei 0x27D15–0x27D70). Deshalb zeigt die Liste
+    /// bei einem offenen Vertrag „kein V.“ und das alte Gehalt (<c>file46_3</c>: KJELLBERG 18.800 DM, im Fenster 19.152 DM). Das
+    /// Remake hält dieses Abbild im Bildschirm (<see cref="SeasonEndRows"/>; altes Gehalt aus <see cref="GameState.SalaryBeforeRenewal"/>)
+    /// und baut es nach einem Abgang und je Manager neu auf.
+    /// [APPROX] Der Hintergrund des Originals (Vereinsname oben, Kachel rechts unten in <c>file46_3</c>) fehlt; das Remake zeigt
+    /// den Hintergrund von „Verträge“.
     /// </summary>
     public static Screen ForSeasonEnd(ScreenHost host, Func<Screen> next)
     {
@@ -87,6 +107,9 @@ public sealed class ContractsScreen : Screen
 
     /// <summary>Text der Statuszeile (Hinweiszeile 0x41683) nach dem letzten Bild.</summary>
     public string? Status => _status;
+
+    /// <summary>Abbild der Liste am Saisonende (Spieler, Spalte V.DAUER, Spalte WERT in DM), sonst null (A362).</summary>
+    public IReadOnlyList<(Player Player, string Contract, int Salary)>? SeasonEndRows => _picture;
 
     /// <summary>Spieler, mit dem gerade verhandelt wird (oder null).</summary>
     public Player? Negotiating => _dialog?.Player;
@@ -177,12 +200,23 @@ public sealed class ContractsScreen : Screen
             if (!GameState.IsRenewalPending(next.Player))
                 continue;
             game.SwitchToRenewalManager(next.Manager); // Ablauf der Verhandlungen, nicht Öffnen (R12U-02)
-            var row = TeamUi.Rows(Club).ToList().IndexOf(next.Player);
+            if (_picture is null || _departed || _pictureManager != next.Manager)
+                TakePicture(next.Manager);
+            var row = _picture!.Select(r => r.Player).ToList().IndexOf(next.Player);
             if (row < 0)
                 continue;
             _renewal = next;
             Open(next.Player, row);
         }
+    }
+
+    /// <summary>Liste neu zeichnen (Datei 0x27C9F bzw. nach einem Abgang 0x27F31): offene Verträge mit „kein V.“ und altem Gehalt.</summary>
+    private void TakePicture(int manager)
+    {
+        var game = Host.Game!;
+        _picture = TeamUi.Rows(Club).Select(p => (p, ContractText(p), game.SalaryBeforeRenewal(p))).ToList();
+        _pictureManager = manager;
+        _departed = false;
     }
 
     private void UpdateDialog(InputState input)
@@ -196,7 +230,10 @@ public sealed class ContractsScreen : Screen
             case ContractDialog.Outcome.Cancel:
                 _dialog = null;
                 if (_renewal is { } r)
+                {
+                    _departed = true; // „Abbruch“: der Spieler geht immer
                     Show(Host.Game!.CancelRenewal(Host.Game!.Managers[r.Manager], r.Player)?.Messages ?? []);
+                }
                 _renewal = null;
                 break;
             default:
@@ -218,6 +255,7 @@ public sealed class ContractsScreen : Screen
             if (game.NegotiateRenewal(game.Managers[r.Manager], p, d.Years, d.Salary, d.Insured, d.DemandFilled) is not
                 var (result, outcome))
                 return;
+            _departed |= !outcome.Stays;
             var lines = new List<string[]>();
             if (result != NegotiationResult.Accepted)
                 lines.Add(Contracts.Message(result, p));
@@ -249,19 +287,20 @@ public sealed class ContractsScreen : Screen
         Widgets.Frame(s, Assets, Window, FrameStyle.Orange);
 
         const byte h = TeamUi.HeaderColor;
-        s.Text(mini, 6, HeaderY, "ART", h);
-        s.Text(mini, 26, HeaderY, "NAME", h);
-        s.Text(mini, 82, HeaderY, "SP", h);
+        // [ORIGINAL] Lage der Köpfe und Linien aus file40_11/file46_3 (siehe HeaderY).
+        s.Text(mini, 7, HeaderY, "ART", h);
+        s.Text(mini, 27, HeaderY, "NAME", h);
+        s.Text(mini, 83, HeaderY, "SP", h);
         s.Text(mini, 97, HeaderY, "ST", h);
-        s.Text(mini, 109, HeaderY, "TO", h);
+        s.Text(mini, 110, HeaderY, "TO", h);
         s.Text(mini, 123, HeaderY, "STATUS", h);
-        s.Text(mini, 162, HeaderY, "E", h);
+        s.Text(mini, 163, HeaderY, "E", h);
         s.Text(mini, 171, HeaderY, "V.DAUER", h);
         s.Text(mini, 217, HeaderY, "WERT", h);
-        s.HLine(6, 25, 246, TeamUi.LineColor);
-        s.HLine(6, 210, 246, TeamUi.LineColor);
+        s.HLine(7, 25, 245, TeamUi.LineColor);
+        s.HLine(7, 209, 245, TeamUi.LineColor);
 
-        var rows = TeamUi.Rows(club);
+        var rows = _picture?.Select(r => r.Player).ToList() ?? TeamUi.Rows(club);
         var hoverRow = _dialog is null && Window.Contains(_mouseX, _mouseY) ? RowAt(_mouseY) : -1;
         for (var i = 0; i < rows.Count; i++)
         {
@@ -280,14 +319,24 @@ public sealed class ContractsScreen : Screen
             // A184, Integration Runde 12, R12I-01).
             s.TextRight(mini, 169, y, TrainingRules.ExhaustionDisplay(p).ToString(),
                 TrainingRules.ExhaustionWarning(p) ? Competitions.NationalLineupScreen.ExhaustionColor : c);
-            s.Text(mini, 177, y, p.ContractText, c);
-            s.TextRight(mini, 259, y, $"{p.MonthlySalary} DM", c);
+            s.Text(mini, 177, y, _picture?[i].Contract ?? ContractText(p), c);
+            s.TextRight(mini, 259, y, $"{_picture?[i].Salary ?? p.MonthlySalary} DM", c);
         }
 
         _dialog?.Draw(s, Assets);
         TeamUi.StatusLine(s, Assets, 131, StatusY, _status);
         _message.Draw(s, Assets);
     }
+
+    /// <summary>„kein V.“ (DGROUP 0x510E).</summary>
+    public const string NoContractText = "kein V.";
+
+    /// <summary>
+    /// Spalte V.DAUER: <see cref="Player.ContractText"/>, ohne Vertrag (Laufzeit 0, nur während der Verhandlung am Saisonende)
+    /// „kein V.“. [ORIGINAL] Spielerliste Datei 0x423A2–0x423B0: +0x0B = 0 → DGROUP 0x510E ohne „(v)“; Bild <c>file46_3</c>
+    /// (KJELLBERG, letzte Zeile), Pixel gleich.
+    /// </summary>
+    public static string ContractText(Player p) => p.ContractYears == 0 ? NoContractText : p.ContractText;
 
     /// <summary>„1.500 DM“ (im Dialog mit Tausenderpunkt, in der Liste ohne).</summary>
     public static string FormatMoney(int amount) =>

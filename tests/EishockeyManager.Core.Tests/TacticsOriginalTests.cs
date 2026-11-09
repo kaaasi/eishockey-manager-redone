@@ -10,11 +10,19 @@ public class TacticsOriginalTests
 {
     private static readonly ScoreSituation[] Rows = Enum.GetValues<ScoreSituation>();
 
-    /// <summary>Video `bundestrainer_00058`/`00059` (AUTOM.): Einsatz 60/0/25/20/30/0, Angriff 0/4/5/6/7/4.</summary>
+    /// <summary>
+    /// Video `bundestrainer_00058`/`00059` (AUTOM.): Einsatz 60/0/25/20/30/0, Angriff 0/4/5/6/7/4 – die Startwerte vor
+    /// Runde 14 (<see cref="Tactics.LegacyStart"/>). Seit A180 (kader-start Runde 14) startet ein Verein mit 0 (FILE29).
+    /// </summary>
     [Fact]
     public void Defaults_ShowEvenMatchRowOfOriginal()
     {
-        var t = new Tactics();
+        Assert.All(Enumerable.Range(0, Tactics.Blocks), b => Assert.All(Rows, r =>
+        {
+            Assert.Equal(0, new Tactics().Effort(b, r));
+            Assert.Equal(0, new Tactics().Attack(b, r));
+        }));
+        var t = Tactics.LegacyStart();
         int[] effort = [60, 0, 25, 20, 30, 0];
         int[] attack = [0, 4, 5, 6, 7, 4];
         for (var b = 0; b < Tactics.Blocks; b++)
@@ -27,7 +35,7 @@ public class TacticsOriginalTests
     [Fact]
     public void EffortIsPercent_AttackUpToSeven_BaseAndSurchargeShareTheLimit()
     {
-        var t = new Tactics();
+        var t = Tactics.LegacyStart();
         t.SetEffort(0, ScoreSituation.Base, 100);
         Assert.Equal(70, t.Effort(0, ScoreSituation.Base)); // 100 − größter Zuschlag (30)
         t.SetEffort(0, ScoreSituation.Tied, 100);
@@ -87,7 +95,8 @@ public class TacticsOriginalTests
     [InlineData(-3, 60)]
     public void EffectiveEffort_IsBasePlusSituation(int goalDifference, int expected)
     {
-        var t = new Tactics { EffortMode = TacticMode.Semi };
+        var t = Tactics.LegacyStart();
+        t.EffortMode = TacticMode.Semi;
         Assert.Equal(expected, t.EffectiveEffort(3, goalDifference));
         t.EffortMode = TacticMode.Auto;
         Assert.Equal(expected, t.EffectiveEffort(3, goalDifference, 50, 50));
@@ -96,7 +105,8 @@ public class TacticsOriginalTests
     [Fact]
     public void EffectiveAttack_KeepsThreeBits()
     {
-        var t = new Tactics { AttackMode = TacticMode.Semi };
+        var t = Tactics.LegacyStart();
+        t.AttackMode = TacticMode.Semi;
         Assert.Equal(6, t.EffectiveAttack(0, 0));
         for (var r = 1; r < 5; r++)
             t.SetAttack(0, Rows[r], 0);

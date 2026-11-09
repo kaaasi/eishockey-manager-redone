@@ -135,6 +135,31 @@ public sealed class Lineup
     public void Clear(LineupSlot slot) => this[slot] = null;
 
     /// <summary>
+    /// Reihe des Torhüterplatzes bei der Auswahl nach Reihe (im Original Block 4 neben den Reihen 0–3, Datei 0x40E8F);
+    /// gleich <see cref="NationalCoach.GoalkeeperLine"/>.
+    /// </summary>
+    public const int GoalkeeperLine = Blocks;
+
+    /// <summary>
+    /// Plätze einer Reihe für eine Art in der Reihenfolge der Suche des Originals (Datei 0x412C9–0x41386): Sturm Plätze 0–2,
+    /// Abwehr 3–4, in der Torhüterreihe nur der Torhüterplatz.
+    /// </summary>
+    public static IEnumerable<LineupSlot> SlotsOfLine(int line, PlayerRole role)
+    {
+        if (line == GoalkeeperLine)
+        {
+            yield return LineupSlot.Goalkeeper;
+            yield break;
+        }
+        var count = role == PlayerRole.Forward ? ForwardsPerBlock : DefendersPerBlock;
+        for (var i = 0; i < count; i++)
+            yield return role == PlayerRole.Forward ? LineupSlot.Forward(line, i) : LineupSlot.Defender(line, i);
+    }
+
+    /// <summary>Reihe eines Platzes (0–3, Torhüter <see cref="GoalkeeperLine"/>).</summary>
+    public static int LineOf(LineupSlot slot) => slot.Role == PlayerRole.Goalkeeper ? GoalkeeperLine : slot.Block;
+
+    /// <summary>
     /// Setzt einen Spieler ohne Prüfung der Art auf einen Platz (automatische Aufstellung, Ausweichrollen Datei 0x42838:
     /// im Original bestimmt +0x15 den Platz, nicht die Rolle).
     /// </summary>
@@ -228,8 +253,9 @@ public sealed class Lineup
 ///   Aufruf Datei 0x41D3F), Farbe 16 (Datei 0x41D84).</item>
 /// <item>[ORIGINAL] Höchstens 22 eingesetzt; ein weiterer wird beim Aufstellen oder Einsetzen abgewiesen
 ///   („Schon 22 Mann / im Team !“, Datei 0x40E2A–0x40E61). Aufstellen setzt ein (Datei 0x415B2), Platz leeren nimmt
-///   heraus (Datei 0x40CF8–0x40D0D); Linksklick nimmt einen eingesetzten, nicht aufgestellten Spieler heraus,
-///   Rechtsklick setzt einen nicht eingesetzten ein (Datei 0x40F45–0x40F59, 0x411FE).</item>
+///   heraus (Datei 0x40CF8–0x40D0D); Rechtsklick nimmt einen eingesetzten, nicht aufgestellten Spieler heraus und setzt einen
+///   nicht eingesetzten ein (Datei 0x40F35–0x40F59, 0x411FE). Linksklick: Auswahl nach Reihe (<see cref="ClickPlayer"/>, A010;
+///   Runde 14 Teil 6 – bis dahin nahm der Linksklick einen Reservisten heraus).</item>
 /// <item>[ORIGINAL] A166: Beim Spielstart (Datei 0x28165), am Ende der Transferliste (Datei 0x47BB5), im Tageslauf (Datei
 ///   0x7C07) und am Spieltag (Datei 0x54D9E/0x5530B) setzt Datei 0x426BC die Eingesetzten (<see cref="AutoLineupRule"/>;
 ///   nachgerechnet gegen FILE01, FILE05, FILE07, FILE16A, FILE22–FILE28, Regressionstest mit dem Kader aus FILE05/FILE07/FILE26).
@@ -239,8 +265,9 @@ public sealed class Lineup
 /// <item>[ORIGINAL] A167: Ein neuer Kaderplatz entsteht leer (Datei 0x42E3A löscht 0x34 Byte, also +0x0A = 0 und +0x15 = 0);
 ///   eingesetzt wird der neue Spieler nur durch die Auto-Aufstellung beim Verlassen der Transferliste (Datei 0x47BB5, FILE07:
 ///   DAFFNER) – nach der ersten Änderung von Hand bleibt er nicht eingesetzt. Aufgestellte zählen immer als eingesetzt
-///   (Aufstellen setzt ein, Datei 0x415B2; Platz leeren nimmt heraus, FILE06). [APPROX] Kauf bei ausgeschalteter Einstellung
-///   zeigt kein Stand. Bewusste Modellabweichung: Ein Verletzter behält im Original seine Reihe +0x15 und verliert nur +0x0A
+///   (Aufstellen setzt ein, Datei 0x415B2; Platz leeren nimmt heraus, FILE06). [ORIGINAL] Auch bei ausgeschalteter
+///   Einstellung (DGROUP 0x375 = 0): Kauf KJELLBERG (FILE35) und Leihe VALLIERE (FILE41) ohne „eingesetzt“ und ohne Reihe.
+///   A091: Kauf und Leihe hinten in der Art-Gruppe, Verkauf und Transferliste rücken auf (FILE35/37A/41). Bewusste Modellabweichung: Ein Verletzter behält im Original seine Reihe +0x15 und verliert nur +0x0A
 ///   (Datei 0x5C50, FILE24 STEFAN); das Remake nimmt ihn aus der Aufstellung (<see cref="RefillLineup"/>). Gleichwertig,
 ///   solange kein Leser +0x15 ohne +0x0A auswertet; betrifft auch Export und Import von Spielständen.</item>
 /// <item>[APPROX] Eingesetzt wirkt bisher nur auf die Anzeige; die Spielstärke kommt weiter aus der Aufstellung.</item>
@@ -266,6 +293,12 @@ public sealed partial class Club
             return squad.Where(p => Lineup.Contains(p) || _dressed.Contains(p.Id)).ToList();
         }
     }
+
+    /// <summary>
+    /// Spieler verliert „eingesetzt“ (+0x0A = 0), ohne die Einstellung „automatisch aufstellen“ zu berühren. [ORIGINAL] Transferliste
+    /// Datei 0x47093 vor dem Kopieren in den Markt-Platz (A380): Kehrt der Spieler zurück, ist er nicht eingesetzt.
+    /// </summary>
+    internal void ForgetDressed(Player player) => _dressed.Remove(player.Id);
 
     /// <summary>Anzahl der Eingesetzten („Eingesetzt: n“).</summary>
     public int DressedCount => Dressed.Count;
@@ -344,7 +377,7 @@ public sealed partial class Club
         ApplyAutoLineup();
     }
 
-    /// <summary>Linksklick in der Kaderliste: eingesetzten, nicht aufgestellten Spieler herausnehmen (Datei 0x40F59).</summary>
+    /// <summary>Rechtsklick in der Kaderliste: eingesetzten, nicht aufgestellten Spieler herausnehmen (Datei 0x40F45–0x40F59).</summary>
     public LineupResult Undress(Player player)
     {
         if (!Players.Contains(player) || Lineup.Contains(player) || !IsDressed(player))
@@ -403,5 +436,66 @@ public sealed partial class Club
         _dressed.Add(player.Id);
         DisableAutoLineup();
         return LineupResult.Dressed;
+    }
+
+    /// <summary>
+    /// Klick auf einen Spieler der Kaderliste im Aufstellungsbildschirm. [ORIGINAL] Derselbe Code wie beim Nationalteam
+    /// (Datei 0x40D8D–0x4120D, Menüaufruf mit Kennwert 0, Kaderplatz des aktiven Managers DGROUP 0x5DC3 + 0x618 · Manager;
+    /// A010 Runde 13, Regeln <see cref="NationalCoach.ClickPlayer"/>; Spur kader-start Runde 14 Teil 6):
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] Jeder Klick schaltet zuerst „automatisch aufstellen“ ab (Datei 0x40DCD–0x40DE4, DGROUP 0x375 + 2 · Manager).</item>
+    /// <item>[ORIGINAL] Verletzte und Gesperrte (+0x09 &amp; 3 ≠ 0): nur die Meldung (Datei 0x40E01–0x40E27). Danach ein nicht
+    ///   Eingesetzter bei 22 Eingesetzten: „Schon 22 Mann / im Team !“ (Datei 0x40E2A–0x40E61).</item>
+    /// <item>[ORIGINAL] Aufgestellter (+0x15 ≠ 0): aus seinem Platz, seine Reihe wird die gewählte (Datei 0x40F7C–0x411FB);
+    ///   Linksklick: danach nicht eingesetzt (+0x0A = Kennwert = 0, Datei 0x4115F–0x4116F), Rechtsklick: eingesetzt (Datei 0x41208).</item>
+    /// <item>[ORIGINAL] Rechtsklick sonst: Reservist heraus (Datei 0x40F59), nicht Eingesetzter einsetzen (Datei 0x41208).</item>
+    /// <item>[ORIGINAL] Linksklick sonst (auch auf einen Reservisten, Datei 0x40F1E–0x40F32): ohne Reihe „Keine Reihe /
+    ///   ausgewählt !“, Torhüter nur in die Torhüterreihe, Feldspieler nicht dorthin („Der darf da / nicht rein !“, Datei
+    ///   0x40E77–0x40EB9); dann der erste freie Platz der Art in der Reihe (Datei 0x412A1–0x41381), eingesetzt (Datei 0x415B2),
+    ///   sonst „Kein / Platz mehr !“ (Datei 0x414BC–0x414C6). Niemand wird verdrängt.</item>
+    /// <item>[APPROX] Wie beim Nationalteam: Ist die eigene Hälfte der Reihe voll, versucht das Original die andere Hälfte
+    ///   (Datei 0x414D3–0x414ED) und öffnet in Reihe 1 einen sechsten Feldspielerplatz (Datei 0x413E8–0x414B4, Meldung „Schon 6
+    ///   Feldspieler“ Datei 0x40EF7). Das Remake hat keine Plätze außerhalb der Art: <see cref="Lineup"/> führt je Reihe drei
+    ///   Stürmer- und zwei Verteidigerplätze, und <see cref="Lineup.Fits"/> lässt nur die passende Art zu (auch für die
+    ///   automatische Aufstellung). Ein Ausweichen in die andere Hälfte oder auf einen sechsten Platz ist so nicht darstellbar;
+    ///   es meldet gleich „Kein / Platz mehr !“ (Review R14KS-06).</item>
+    /// </list>
+    /// </summary>
+    /// <param name="player">angeklickter Spieler (muss im Kader stehen).</param>
+    /// <param name="line">gewählte Reihe 0–3, <see cref="Lineup.GoalkeeperLine"/> oder null (keine, DGROUP [bp−9] = 0xFF);
+    /// nach dem Herausnehmen die Reihe des Spielers.</param>
+    /// <param name="right">Rechtsklick (Ereignis 3) statt Linksklick (Ereignis 1).</param>
+    public LineupResult ClickPlayer(Player player, ref int? line, bool right)
+    {
+        if (!Players.Contains(player))
+            return LineupResult.NotInSquad;
+        DisableAutoLineup();
+        if (player.InjuredGames > 0)
+            return LineupResult.Injured;
+        if (player.SuspendedGames > 0)
+            return LineupResult.Suspended;
+        if (!IsDressed(player) && DressedCount >= MaxDressed)
+            return LineupResult.RosterFull;
+        if (Lineup.FindSlot(player) is { } from)
+        {
+            TakeOverDressed();
+            Lineup.Clear(from);
+            if (right)
+                _dressed.Add(player.Id);
+            else
+                _dressed.Remove(player.Id);
+            line = Lineup.LineOf(from);
+            return LineupResult.TakenOut;
+        }
+        if (right)
+            return IsDressed(player) ? Undress(player) : Dress(player);
+        if (line is not { } l)
+            return LineupResult.NoLineSelected;
+        if ((player.Role == PlayerRole.Goalkeeper) != (l == Lineup.GoalkeeperLine))
+            return LineupResult.WrongRole;
+        foreach (var slot in Lineup.SlotsOfLine(l, player.Role))
+            if (Lineup[slot] is null)
+                return AssignToLineup(slot, player);
+        return LineupResult.NoRoom;
     }
 }

@@ -90,7 +90,7 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
 
 ### Integration Runde 14
 
-Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nationalteam` 41 (vom Spurbranch mit 40 umnummeriert); `ui-rest` ändert den Spielstand nicht (bleibt 41); die folgenden Spuren nummerieren ab 42.
+Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nationalteam` 41 (vom Spurbranch mit 40 umnummeriert); `ui-rest` ändert den Spielstand nicht (bleibt 41); `kader-start` 42 (Start-Liga) und 43 (Tabellenfeld, Wettbewerbszähler); die folgenden Spuren nummerieren ab 44.
 
 | Spur | Status | PR | Head-SHA |
 |---|---|---|---|
@@ -98,6 +98,7 @@ Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nati
 | `nationalteam` | integriert (#630, #637, #653; Schema 41); Review #662 „Nein“ → Korrekturen R14NT-01–06 auf dem Branch (08.11.2026), wartet auf Nachprüfung | #661 (Branch `integration/runde-14-nationalteam`, Base `3e0cf69`) | im Übergabekommentar von #661 |
 | `ui-rest` | integriert (#634, #647, #657; Schema bleibt 41, Spur ändert den Spielstand nicht), Prüfung grün (2321 / 0 / 0 mit Daten), wartet auf Review | #666 (Branch `integration/runde-14-ui-rest`, Base `6e1bf44`) | im Übergabekommentar von #666 |
 | `hok-import` | integriert (#633, #638, #640, #648, #651, #654, #658; Schema bleibt 41, Spur ändert den Spielstand nicht); Review #673 „Nein“ → Befunde R14HI-01–07 auf dem Branch behoben (09.11.2026: Play-offs/Aufstiegsrunden Teil 4d, Ausbauten, Werbevertrag-Schlüssel, Feldkarte B/A gegen den Code geprüft, Testlücken, Marker); Mehrsaisonprobe aller 52 Stände; wartet auf Nachprüfung | #670 (Branch `integration/runde-14-hok-import`, Base `1e9a233`, danach `main` mit #666 und #673 hineingemergt) | im Übergabekommentar von #670 |
+| `kader-start` | integriert (#631, #646, #655, #659, #663, #667; Schema 42 = Start-Liga, 43 = Tabellenfeld/Wettbewerbszähler); Review #677 „Nein“ → Fixlauf R14KS-01–08, R14N-01–03, R14NT4-05/07 erledigt, #670 hineingemergt (09.11.2026), Prüfung grün (2542 / 0 / 0 mit Daten), wartet auf Nachprüfung | #669 (Branch `integration/runde-14-kader-start`, Base `1e9a233`) | im Übergabekommentar von #669 |
 
 Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 → `pruefung-karte`.
 
@@ -137,7 +138,7 @@ Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 �
   `docs/transfer.md`. Dazu nach L4/L7 jeweils nur für den genannten Punkt: `Core/MatchEngine.Injuries.cs` (Taktik 375h),
   `Core/FinanceStadium.cs` (`TableRank`) und `Core/FinanceSponsorRating.cs` (Tabellenfeld, A046), `Core/MatchEngine.Live.cs`
   (Kommentar A082), `Core/StadiumStatistics.cs` (Kommentar A189), Buchung von Spielen und Toren je Wettbewerb in `Core/Cups*.cs`
-  außer `CupsNational*` und `Core/MatchEngine*.cs` (A135), `Core/Highscore.cs` (U15-c). **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
+  außer `CupsNational*` und `Core/MatchEngine*.cs` (A135), `Core/Highscore.cs` (U15-c). **Modell:** Claude Opus 5.5. **Status (09.11.2026):** Teile 1, 2a–2c, 4 und 6 fertig (PR #631, #646, #655, #659, #663, #667, Branches `paket/kader-start-r14-1…6`), integriert in #669 (`integration/runde-14-kader-start`, Schema 42/43), wartet auf Review. Offen für `nationalteam` (#664): Rechtsklick auf einen Platz in `NationalLineupScreen` verlässt im Original den Bildschirm, geleert wird per Linksklick.
 
 ### Spur `ui-rest` – Darstellung aus der Aufnahme, Stadionpfeile
 

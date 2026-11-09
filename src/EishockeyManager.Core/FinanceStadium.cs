@@ -448,15 +448,17 @@ public sealed partial class GameState
     private static int LeagueCode(Club club) => club.League is { } l ? (int)l : 0;
 
     /// <summary>
-    /// Tabellenplatz 0–11 vor dem Spieltag (Vortabelle wie bisher). [APPROX] Vor dem ersten Spieltag die Reihenfolge
-    /// der Liga, ohne Liga 0; welchen Platz das Original dann einsetzt, ist nicht belegt.
+    /// Tabellenplatz 0–11 vor dem Spieltag. [ORIGINAL] A046 (Runde 14): Die Zuschauerformel liest das Tabellenfeld DGROUP
+    /// 0x8288 + 0x50 · Verein (Datei 0x54608–0x5464A, <see cref="Club.StoredTableRank"/>). Ab dem 2. Spieltag steht dort der
+    /// Platz nach dem letzten Ligaspieltag – das Remake rechnet ihn aus der Tabelle; vor dem 1. Spieltag 0 im ersten Spieljahr
+    /// bzw. der Endstand der Vorsaison. Ohne Liga 0.
     /// </summary>
     private int TableRank(Club club, int matchDay)
     {
         if (club.League is not { } league)
             return 0;
         if (matchDay <= 1)
-            return Math.Max(0, LeagueClubs(league).ToList().IndexOf(club));
+            return club.StoredTableRank;
         var row = LeagueTable.Compute(this, league, TableView.Gesamt, matchDay - 1).FirstOrDefault(r => r.Club.Index == club.Index);
         return row is null ? 5 : row.Rank - 1;
     }

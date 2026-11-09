@@ -186,12 +186,16 @@ public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
+    // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
+    // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
+    // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     [Theory]
     // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
-    [InlineData(false, 3, "CFD037719DE46BE1")]
-    [InlineData(true, 3, "8A17B485ACE6F184")]
-    [InlineData(false, 11, "EA9870EBAC94AFCC")]
-    [InlineData(true, 11, "0320A4484A67CA9A")]
+    // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
+    [InlineData(false, 3, "201CE3A7E7AD2B69")]
+    [InlineData(true, 3, "FF77B9EAE4BFCB98")]
+    [InlineData(false, 11, "9D252484A6B094E2")]
+    [InlineData(true, 11, "60A237D8FFE61FFC")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -202,8 +206,9 @@ public class RngTwinProbeTests
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "460D89F52AB34CDA")] // Review #674 (R14NT4-01/-05, #675), Begründung im Klassenkommentar; Nachprüfung #681 (R14NT4N-01) siehe oben
-    [InlineData(true, "F136593647F7052A")]
+    // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
+    [InlineData(false, "A34A978FEBB38BEF")]
+    [InlineData(true, "3FBDDC0C2796DD49")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

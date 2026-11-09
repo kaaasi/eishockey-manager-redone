@@ -118,17 +118,31 @@ public class NationalteamTests
         AssertZero(coach.Tactics);
     }
 
-    /// <summary>Vereine bleiben unverändert: „AUTOM.“ zeigt die Zeile für ein ausgeglichenes Spiel ([APPROX]).</summary>
+    /// <summary>
+    /// Vereine: seit A180 (kader-start Runde 14) wie das Nationalteam (<see cref="Club_AutoDisplay_KeepsLastLine"/>); Spielstände
+    /// vor Runde 14 (<see cref="Tactics.LegacyStart"/>) zeigen weiter die Zeile für ein ausgeglichenes Spiel ([APPROX]).
+    /// </summary>
     [Fact]
     public void Club_AutoDisplay_Unchanged()
     {
-        var tactics = new Tactics();
+        var tactics = Tactics.LegacyStart();
         Assert.False(tactics.KeepsLastAutoLine);
         Assert.Equal([60, 0, 25, 20, 30, 0], ShownEffort(tactics));
         Assert.Equal([0, 4, 5, 6, 7, 4], ShownAttack(tactics));
         Assert.Equal(60, tactics.Effort(0, ScoreSituation.Base));
         tactics.RecordAutoLine(0, 100);
         Assert.Equal([60, 0, 25, 20, 30, 0], ShownEffort(tactics));
+    }
+
+    /// <summary>A180: Ein neuer Verein zeigt unter „AUTOM.“ 0, nach einem Spiel dessen Zeile.</summary>
+    [Fact]
+    public void Club_AutoDisplay_KeepsLastLine()
+    {
+        var tactics = new Tactics();
+        Assert.True(tactics.KeepsLastAutoLine);
+        Assert.All(ShownEffort(tactics), v => Assert.Equal(0, v));
+        tactics.RecordAutoLine(0, 100);
+        Assert.Equal([40, 20, 20, 15, 20, 0], ShownEffort(tactics));
     }
 
     // ---- Werte des letzten Spiels ----------------------------------------------------------------------------
@@ -262,6 +276,46 @@ public class NationalteamTests
         }
     }
 
+    /// <summary>
+    /// Spielstand ohne die Vereinsanzeige „AUTOM.“ (seit A180, Runde 14), Objektnummern in Dokumentfolge neu vergeben (die
+    /// Nummern folgen der Schreibreihenfolge, <c>SaveGame.Writer</c>).
+    /// </summary>
+    private static string WithoutClubAutoLines(byte[] save)
+    {
+        var root = JsonNode.Parse(save)!.AsObject();
+        foreach (var club in root["vereine"]!.AsArray().Select(n => n!["Tactics"]!.AsObject()))
+        {
+            club.Remove("_shownAutoEffort");
+            club.Remove("_shownAutoAttack");
+        }
+        var ids = new Dictionary<int, int>();
+        Renumber(root);
+        return root.ToJsonString();
+
+        void Renumber(JsonNode? node)
+        {
+            switch (node)
+            {
+                case JsonObject obj:
+                    if (obj["$id"] is JsonValue id)
+                    {
+                        var next = ids.Count;
+                        ids[id.GetValue<int>()] = next;
+                        obj["$id"] = next;
+                    }
+                    if (obj["$ref"] is JsonValue reference)
+                        obj["$ref"] = ids[reference.GetValue<int>()];
+                    foreach (var (_, child) in obj.ToArray())
+                        Renumber(child);
+                    break;
+                case JsonArray array:
+                    foreach (var child in array)
+                        Renumber(child);
+                    break;
+            }
+        }
+    }
+
     private static GameState Load(JsonObject root)
     {
         var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
@@ -303,6 +357,7 @@ public class NationalteamTests
         var loaded = Load(ToSchema11(game));
         Assert.True(loaded.NationalTactics.KeepsLastAutoLine);
         AssertZero(loaded.NationalTactics);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded));
+        // Seit A180 (kader-start Runde 14) führen auch Vereine die letzte Automatik; Schema 11 kennt sie nicht (null).
+        Assert.Equal(WithoutClubAutoLines(SaveGame.Save(game)), WithoutClubAutoLines(SaveGame.Save(loaded)));
     }
 }
