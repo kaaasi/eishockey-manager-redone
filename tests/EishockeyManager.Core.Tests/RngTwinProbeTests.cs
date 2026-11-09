@@ -200,10 +200,16 @@ public class RngTwinProbeTests
     // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
     // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
     // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
-    [InlineData(false, 3, "2210C25D97FD50F2")]
-    [InlineData(true, 3, "5781479698E2091E")]
-    [InlineData(false, 11, "D7DA74B2E3CECC28")]
-    [InlineData(true, 11, "44BD6628D885192C")]
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Passiv: Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter
+    // StartSeason → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager,
+    // Sommerpause und entlassene Manager einzeln zurück → gleicher Wert. Aktiv: Ursachen R688-05 (Liste über den Saisonwechsel)
+    // und R688-04 (Takt des Halttags vor den Eingriffen des aktiven Managers); jede einzeln zurück → anderer Wert. Tendenz,
+    // Aufstellung, Heilung, Sommerpause, entlassene Manager einzeln zurück → gleicher Wert.
+    [InlineData(false, 3, "55E4FED38920B60E")]
+    [InlineData(true, 3, "586A688350052B49")]
+    [InlineData(false, 11, "D33EED9476CC801F")]
+    [InlineData(true, 11, "BAB9CD4839235AA4")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -223,8 +229,14 @@ public class RngTwinProbeTests
     // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
     // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
     // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
-    [InlineData(false, "38774FA4F1A29150")]
-    [InlineData(true, "69CEC28505632B27")]
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Passiv: Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter
+    // StartSeason → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager,
+    // Sommerpause und entlassene Manager einzeln zurück → gleicher Wert. Aktiv: Ursachen R688-05 (Liste über den
+    // Saisonwechsel), R688-04 (Takt vor dem Halt) und R688-03 (Sommerpause: Stadionbau, Heilung); jede einzeln zurück → anderer
+    // Wert. Tendenz, Aufstellung, Heilung je Manager, entlassene Manager einzeln zurück → gleicher Wert.
+    [InlineData(false, "E69E49F4FE930BF6")]
+    [InlineData(true, "1324E979ECB46177")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

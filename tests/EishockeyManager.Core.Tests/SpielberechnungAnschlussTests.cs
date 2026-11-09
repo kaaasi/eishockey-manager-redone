@@ -210,9 +210,15 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
     // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
     // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Passiv: Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter
+    // StartSeason → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager,
+    // Sommerpause und entlassene Manager einzeln zurück → gleicher Wert. Aktiv: Ursache R688-05 (Liste über den Saisonwechsel),
+    // dazu R688-04 nur zusammen mit ihr (einzeln zurück: R688-05 → anderer Wert, R688-04 → gleicher Wert). Tendenz,
+    // Aufstellung, Heilung, Sommerpause, entlassene Manager → gleicher Wert.
     [GameDataTheory]
-    [InlineData(false, "AE1AA1E9EDDAC647")]
-    [InlineData(true, "C54BF09A041ECC9E")]
+    [InlineData(false, "77A6BCFC2C6CC1D6")]
+    [InlineData(true, "66020C10FC7F9FE8")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -281,8 +287,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Oberliga-Austausch (Datei 0x56238) zwei Nachrücker aus der Hauptquelle.
     // kader-start Teil 2 (U15-a, L13): neu – der fest gewählte Verein tauscht beim Spielstart in die Start-Liga (Datei 0x29CF2, auch innerhalb der Bundesliga); Zufallsverbrauch und Teamwerte ab Spielstart anders.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
+    // Review #688 (R688-05, Fixlauf Leitstelle Runde 14): Konten gleich; Weltmeister ab Saison 3 und Haupt-/Pokalquelle neu – der
+    // Saisonwechsel behält die Markt-Plätze (kein Listenwechsel 0x494EF) und zieht dafür keine Zahlen. Gegenprobe: alter
+    // TransferMarket.StartSeason → alter Wert; Takt vor dem Halt (R688-04) und Sommerpause (R688-03) einzeln zurück → gleicher Wert.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=53|500000|WorldChampion=63|500000|R982137502 C211999367";
+        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=54|500000|R1374974225 C782029941";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

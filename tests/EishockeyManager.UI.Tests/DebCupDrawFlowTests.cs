@@ -278,6 +278,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
     // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
     // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter StartSeason
+    // → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager, Sommerpause
+    // und entlassene Manager einzeln zurück → gleicher Wert.
     private const string Reference =
-        "1993: DEB 8, DM 8, Tab 15392 | 1994: DEB 1, DM 10, Tab 15868 | 1995: DEB 5, DM 2, Tab 16029 | 1996: DEB 8, DM 2, Tab 16014";
+        "1993: DEB 8, DM 8, Tab 15392 | 1994: DEB 7, DM 8, Tab 15770 | 1995: DEB 3, DM 9, Tab 15843 | 1996: DEB 19, DM 4, Tab 15264";
 }

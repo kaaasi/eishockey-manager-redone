@@ -262,6 +262,60 @@ public class TagestaktHauptwegReviewTests
         Assert.Contains(game.Clubs[game.Managers[0].ClubIndex].Players, p => p.Name == "HOHENADL");
     }
 
+    /// <summary>
+    /// Mehrsaisonprobe zu R688-03/-04/-05 (AGENTS.md §5: 4 Saisonwechsel, passiv und aktiv, zwei Manager): An jedem Halt ist der
+    /// Tageswechsel gerechnet; jeder Saisonwechsel behält die Markt-Plätze aus dem Pool (Alter + 1) und rechnet 19 Bauwochen der
+    /// Sommerpause; Speichern/Laden bytegleich, Spieler eindeutig. Aktiv: Kader gehalten, je Saison ein eigener Spieler auf dem Markt.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FourSeasonChanges_TwoManagers_MarketKeptAndSummerBreak(bool active)
+    {
+        var game = TwoManagers(7);
+        for (var change = 0; change < 4; change++)
+        {
+            if (active)
+            {
+                var club = game.Clubs[game.Managers[0].ClubIndex];
+                Assert.True(club.ApplyAutoLineup());
+                var p = club.Players.Where(x => !x.OnLoan && x.Role != PlayerRole.Goalkeeper && TransferMarket.CanLeave(club, x))
+                    .OrderByDescending(x => x.Strength).First();
+                Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, game.Managers[0], p));
+            }
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                Assert.True(guard < 2000, "Saisonende nicht erreicht");
+                TopUp(game);
+                if (active)
+                    foreach (var m in game.Managers)
+                        TestSeason.KeepSquad(game, m, extendExpired: true);
+                game.Continue();
+                if (game.CurrentDay > 0 && game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver)
+                    Assert.True(game.DayOpened); // Tag 0 einer Saison holt den Tageswechsel vor seinen Spielen nach
+            }
+            var saved = SaveGame.Save(game);
+            var loaded = SaveGame.Load(saved);
+            Assert.True(loaded.Success, loaded.Error);
+            Assert.Equal(saved, SaveGame.Save(loaded.Game!));
+            game = loaded.Game!;
+            Assert.Empty(game.ValidatePlayerIdentity());
+
+            var market = game.TransferMarket.Listings.Where(l => l.FromPool).Select(l => (l.Player, l.Player.Age)).ToList();
+            var me = game.Managers[1];
+            TopUp(game);
+            var feature = new[] { StadiumFeature.Gastronomie, StadiumFeature.Kino, StadiumFeature.Bowlingbahn, StadiumFeature.Anzeigetafel }[change];
+            Assert.True(game.QuoteConstruction(me, StadiumProject.Feature, feature, game.Finance(me).Stadium.Level(feature) + 1) is { } quote
+                && game.AnswerConstruction(me, quote with { Weeks = 30 }, accept: true), $"kein Ausbau {feature}");
+            var weeks = game.Finance(me).Stadium.WeeksLeft(StadiumProject.Feature, feature);
+            game.StartNextSeason();
+            Assert.Equal(market.Select(m => m.Player), game.TransferMarket.Listings.Where(l => l.FromPool).Select(l => l.Player));
+            Assert.Equal(market.Select(m => m.Age + 1), game.TransferMarket.Listings.Where(l => l.FromPool).Select(l => l.Player.Age));
+            Assert.Equal(weeks - 19, game.Finance(me).Stadium.WeeksLeft(StadiumProject.Feature, feature));
+            Assert.False(game.DayOpened);
+        }
+    }
+
     // ---- R688-06: entlassener Manager 0 ------------------------------------------------------------------------
 
     /// <summary>

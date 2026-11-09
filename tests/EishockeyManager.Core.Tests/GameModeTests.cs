@@ -400,10 +400,14 @@ public class GameModeTests
     // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
     // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
     // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Ursachen R688-05 (Liste über den Saisonwechsel), R688-04 (Takt vor dem Halt) und R688-03 (Sommerpause: Stadionbau, Heilung);
+    // jede einzeln zurück → anderer Wert. Tendenz, Aufstellung, Heilung je Manager, entlassene Manager einzeln zurück →
+    // gleicher Wert.
     // Titel ab Saison 1 neu; Manager 1 (Verein 30, verlängert nur angebotene Verträge, die jetzt nur noch an den Takttagen kommen)
     // verliert ab Saison 3 seinen Kader und zahlt Strafen (Konto −6.762.898 … −24.472.210); die Probe prüft weiter nur Manager 0.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|208946,400000|WorldChampion=63,CupWinner=0,GermanChampion=1,EuropeanCupWinner=0|1555152,400000|WorldChampion=52,CupWinner=5,GermanChampion=1,EuropeanCupWinner=1|2267184,-6720310|WorldChampion=63,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2835720,-12835125|WorldChampion=55,CupWinner=15,GermanChampion=15,EuropeanCupWinner=1|2922312,-25387823|R1992245788 C1591741509";
+        "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|208946,400000|WorldChampion=57,CupWinner=4,GermanChampion=1,EuropeanCupWinner=0|1678846,400000|WorldChampion=55,CupWinner=0,GermanChampion=3,EuropeanCupWinner=0|2238785,-6777239|WorldChampion=52,CupWinner=11,GermanChampion=0,EuropeanCupWinner=0|2956051,-12952690|WorldChampion=54,CupWinner=20,GermanChampion=20,EuropeanCupWinner=0|500000,-24937504|R1191915444 C1165496966";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

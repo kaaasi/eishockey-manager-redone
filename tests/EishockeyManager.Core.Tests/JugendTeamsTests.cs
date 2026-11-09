@@ -209,8 +209,12 @@ public class JugendTeamsTests
     // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
     // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
     // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter StartSeason
+    // → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager, Sommerpause
+    // und entlassene Manager einzeln zurück → gleicher Wert.
     private const string ExpectedActive =
-        "0:Schueler:2/11/61;0:Jugend:2/11/62;0:Junioren:2/11/64;1:Schueler:2/6/68;1:Jugend:1/11/72;1:Junioren:1/11/72;2:Schueler:1/11/76;2:Jugend:1/6/78;2:Junioren:1/6/77;3:Schueler:1/6/81;3:Jugend:1/6/81;3:Junioren:1/6/82";
+        "0:Schueler:2/11/61;0:Jugend:2/11/62;0:Junioren:2/11/64;1:Schueler:2/6/70;1:Jugend:1/11/72;1:Junioren:1/11/75;2:Schueler:1/11/77;2:Jugend:1/6/79;2:Junioren:1/6/82;3:Schueler:1/6/82;3:Jugend:1/6/82;3:Junioren:1/6/83";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -233,8 +237,12 @@ public class JugendTeamsTests
     // Merge main (#683) in #688: neu ermittelt, beide Ursachen wirken – #683 (Halbfinale nach 0x144) und #688 (Tagestakt Hauptweg).
     // Gegenproben: #683 zurück (Playoffs.cs, OriginalImport*.cs, SaveGame.cs von ca47ff0) → Wert von #688 am Head ca47ff0;
     // alter Takt (GameState.Integration.cs, CupsNational.WorldCupLoop.cs, GameState.Manager.cs von 4e72f01, Training Mi/So) → Wert von main.
+    // Review #688 (R688-03/-04/-05, Fixlauf Leitstelle Runde 14): neu. Gegenprobe gesamt: alter TransferMarket.StartSeason und Tageswechsel
+    // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter StartSeason
+    // → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager, Sommerpause
+    // und entlassene Manager einzeln zurück → gleicher Wert.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/66;0:Jugend:2/2/68;0:Junioren:2/2/70;1:Schueler:3/2/51;1:Jugend:2/6/57;1:Junioren:2/6/60;2:Schueler:3/6/44;2:Jugend:3/2/47;2:Junioren:3/2/46;3:Schueler:3/6/41;3:Jugend:3/6/43;3:Junioren:3/6/43";
+        "0:Schueler:2/2/66;0:Jugend:2/2/68;0:Junioren:2/2/70;1:Schueler:3/2/54;1:Jugend:2/6/57;1:Junioren:2/6/59;2:Schueler:3/6/47;2:Jugend:3/2/45;2:Junioren:3/2/47;3:Schueler:3/6/41;3:Jugend:3/6/40;3:Junioren:3/6/41";
 }
 
 public class JugendTeamsMigrationTests
