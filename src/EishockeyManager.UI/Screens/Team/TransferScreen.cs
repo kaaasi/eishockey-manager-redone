@@ -175,7 +175,20 @@ public sealed class TransferScreen : Screen
                 return;
             }
             if (l.Seller == Manager)
+            {
+                // A380: Der eigene Markt-Platz steht außerhalb des Kaders. [ORIGINAL] Datei 0x47331: mit offenem Gebot (+0x09 Bit
+                // 0x80) das Angebotsfenster, sonst zurück in den Kader (0x474E4 → 0x477A9, Transfermarket.Withdraw).
+                // [APPROX] Klickfläche wie Kauf/Leihe der fremden Plätze.
+                if (EntryBuy(i).Contains(x, y) || EntryLoan(i).Contains(x, y))
+                {
+                    if (Market.Bids.FirstOrDefault(b => b.Listing == l) is { } bid)
+                        _dialog = TransferDialog.ForBid(bid);
+                    else if (Market.Withdraw(l) is var back && back != TransferResult.Accepted)
+                        Say(TransferMarket.Message(back));
+                    return;
+                }
                 continue;
+            }
             if (EntryBuy(i).Contains(x, y) || EntryLoan(i).Contains(x, y))
             {
                 // [ORIGINAL] Sperre nach abgelehntem Gebot wird beim Anklicken geprüft (Datei 0x47140, Meldung 0x47B01).
@@ -381,7 +394,7 @@ public sealed class TransferScreen : Screen
             if (i == hover || (_dialog?.Player == p))
                 TeamUi.HoverRow(s, 6, y, 158, RowPitch);
             s.Text(mini, 7, y, p.RoleShort, c);
-            s.Text(mini, 25, y, Market.ListingOf(p) is null ? p.Name : p.Name + " *", c); // [APPROX] * = auf dem Markt
+            s.Text(mini, 25, y, p.Name, c); // A380: Spieler auf der Transferliste stehen nicht im Kader (kein „*“)
             s.TextRight(mini, 90, y, p.Games.ToString(), c);
             s.TextRight(mini, 104, y, p.Condition.ToString(), c);
             s.TextRight(mini, 116, y, p.Technique.ToString(), c);

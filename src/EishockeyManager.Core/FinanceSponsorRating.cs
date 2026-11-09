@@ -201,6 +201,20 @@ public sealed partial class Club
     public int StoredRankSlot(int slot) => _rankSlots[slot];
 
     internal void StoreRankSlot(int slot, int place) => _rankSlots[slot] = place;
+
+    /// <summary>
+    /// Tabellenfeld der Zuschauerformel (A046, Runde 14; 0 = Platz 1). [ORIGINAL] DGROUP 0x8288 + 0x50 · Verein, geschrieben mit
+    /// dem Platzverlauf nach jedem Ligaspieltag (Datei 0x51115 in 0x51049), gelesen von der Zuschauerformel 0x3F185 (Datei
+    /// 0x54608–0x5464A). Beim Spielstart 0 für alle Vereine, beim Saisonwechsel unverändert (Endstand der Vorsaison; HOK
+    /// 0x03C5F + 0x31 + 0x50 · i: FILE29/30/01/12 alle 0, FILE14/17/23 vor dem 1. Spieltag der zweiten Saison die Plätze der
+    /// Vorsaison). Bleibt beim Verein, auch nach Auf- oder Abstieg (Doppelte innerhalb einer Liga in FILE14/17/23).
+    /// </summary>
+    private int _tableRank;
+
+    /// <summary>Gespeichertes Tabellenfeld (0 = Platz 1; siehe Feld).</summary>
+    public int StoredTableRank => _tableRank;
+
+    internal void StoreTableRank(int place) => _tableRank = place;
 }
 
 public sealed partial class GameState
@@ -266,7 +280,10 @@ public sealed partial class GameState
             var last = Math.Min(Math.Min(PlayedMatchDays, days.Count), RankSlotCount);
             for (var md = RankSlotsRecorded + 1; md <= last; md++)
                 foreach (var row in LeagueTable.Compute(this, league, TableView.Gesamt, md))
+                {
                     row.Club.StoreRankSlot(md - 1, row.Rank - 1);
+                    row.Club.StoreTableRank(row.Rank - 1); // A046: DGROUP 0x8288, derselbe Schreiber (Datei 0x51115)
+                }
         }
         RankSlotsRecorded = PlayedMatchDays;
     }

@@ -184,11 +184,12 @@ public class RngTwinProbeTests
 {
     private const int SeasonChanges = 4;
 
+    // kader-start Runde 14 Teil 2b: alle Abdrücke neu – Spielerwert mit Toren/Spielen je Wettbewerb (A135), Neuaufstellung nach jedem Spiel mit „automatisch aufstellen“ (375h).
     [Theory]
-    [InlineData(false, 3, "1501663F0197426F")]
-    [InlineData(true, 3, "57912317E80C4918")]
-    [InlineData(false, 11, "6B6DAAD441C0C2A2")]
-    [InlineData(true, 11, "FC146C171B47B16F")]
+    [InlineData(false, 3, "D1DB938BDEDCC71C")]
+    [InlineData(true, 3, "E3C497CB9A0929D2")]
+    [InlineData(false, 11, "7B5253F48D190DE7")]
+    [InlineData(true, 11, "A089DF089315EDB5")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -199,8 +200,8 @@ public class RngTwinProbeTests
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
     [GameDataTheory]
-    [InlineData(false, "C2A2F88417587DD1")]
-    [InlineData(true, "771D1BE3680653F5")]
+    [InlineData(false, "3101D28B8A472AD6")]
+    [InlineData(true, "9E2DFED2DCC80D05")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

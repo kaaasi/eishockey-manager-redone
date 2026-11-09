@@ -165,7 +165,7 @@ public sealed partial class GameState
         if (!Managers.Contains(offer.Manager) || !club.Players.Contains(p) || p.OnLoan)
             return TransferResult.Impossible;
         if (TransferMarket.ListingOf(p) is { } listing)
-            TransferMarket.Withdraw(listing);
+            TransferMarket.Unlist(listing); // Altstand vor A380: Spieler noch im Kader
         Book(offer.Manager, FinanceCategory.Transfers, offer.Amount);
         club.RemovePlayer(p);
         p.UnsolicitedOffer = null;

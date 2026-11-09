@@ -64,6 +64,8 @@ public class TransferVertraegeKomplettTeil5ScreenTests
         d.Click(dialog.CancelButton.X + 5, dialog.CancelButton.Y + 3);
         Assert.Equal(money, game.ActiveManager.Money);
         Assert.Empty(game.TransferMarket.Bids);
-        Assert.Contains(bid.Listing.Player, game.Clubs[game.ActiveManager.ClubIndex].Players);
+        // A380: „Behalten“ lehnt nur das Gebot ab (Datei 0x47433); der Spieler bleibt auf der Liste, außerhalb des Kaders.
+        Assert.DoesNotContain(bid.Listing.Player, game.Clubs[game.ActiveManager.ClubIndex].Players);
+        Assert.Same(bid.Listing, game.TransferMarket.ListingOf(bid.Listing.Player));
     }
 }

@@ -45,7 +45,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 41;
+    public const int SchemaVersion = 43;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -110,6 +110,10 @@ public static partial class SaveGame
     /// (<c>SaveGame.Migration.Saison4.cs</c>).
     /// 40 → 41 (Runde 14, Integration): „automatisch aufstellen“ des Bundestrainers, Spur nationalteam Teil 3, A009
     /// (<c>SaveGame.Migration.Nationalteam3.cs</c>; auf dem Spurbranch vorläufig 40, wegen Kollision mit saison neu nummeriert).
+    /// 41 → 42 (Runde 14): Start-Liga in GameSetup selbst, Spur kader-start Teil 1, R13KI-03/#605
+    /// (<c>SaveGame.Migration.KaderStart.cs</c>; auf dem Spurbranch vorläufig 39 → 40, nach Merge von main neu nummeriert).
+    /// 42 → 43 (Runde 14): Tabellenfeld je Verein (A046) und Tore/Spiele je Wettbewerb (A135), Spur kader-start Teil 2b
+    /// (<c>SaveGame.Migration.KaderStart2.cs</c>; vorläufig 40 → 41).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
@@ -154,6 +158,8 @@ public static partial class SaveGame
             [38] = MigrateNummern,
             [39] = MigrateSaison4,
             [40] = MigrateNationalteam3,
+            [41] = MigrateKaderStart,
+            [42] = MigrateKaderStart2,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

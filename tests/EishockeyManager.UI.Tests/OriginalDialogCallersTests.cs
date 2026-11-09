@@ -178,7 +178,7 @@ public class OriginalDialogCallersTests
         var club = d.Host.Game!.Clubs[d.Host.Game.ActiveManager.ClubIndex];
         club.AutoLineupEnabled = true;
         var b = LineupScreen.SlotButton(LineupSlot.Defender(0, 0));
-        d.RightClick(b.X + 5, b.Y + 5);
+        d.Click(b.X + 5, b.Y + 5); // Linksklick leert den Platz (Datei 0x40CF8; Runde 14 Teil 6, vorher Rechtsklick)
         Assert.Equal(["Auto-Aufstellung", "ist deaktiviert !"], screen.MessageLines);
 
         // [ORIGINAL] 0x0C0B8: „Auto-…“ steht 45 / 3 Takte (49 Bilder), ein Klick schließt nicht und löst nichts aus
@@ -200,9 +200,9 @@ public class OriginalDialogCallersTests
         var club = d.Host.Game!.Clubs[d.Host.Game.ActiveManager.ClubIndex];
         club.AutoLineupEnabled = false;
         var rows = TeamUi.Rows(club).ToList();
-        var forward = rows.First(p => p.Role == PlayerRole.Forward && p.Available);
-        var slot = LineupScreen.SlotButton(LineupSlot.Defender(0, 0));
-        d.Click(slot.X + 5, slot.Y + 5);
+        var forward = rows.First(p => p.Role == PlayerRole.Forward && p.Available && !club.Lineup.Contains(p));
+        // Torhüterreihe wählen (Klick in den Kasten neben den Platz, Datei 0x40890), dann ein Stürmer: Datei 0x40E8F–0x40EB9.
+        d.Click(LineupScreen.GoalieBox.X + 3, LineupScreen.GoalieBox.Y + 5);
         d.Click(60, LineupScreen.FirstRowY + rows.IndexOf(forward) * LineupScreen.RowPitch + 2);
         Assert.Equal(["Der darf da", "nicht rein !"], screen.MessageLines);
         d.Click(10, 10); // Kurzmeldung nimmt keine Eingabe an

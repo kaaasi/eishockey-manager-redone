@@ -7,8 +7,8 @@ namespace EishockeyManager.Core;
 /// <list type="bullet">
 /// <item>Eigene Taktikwerte haben eine neue Bedeutung (Einsatz 0–100 %, Angriff 0–7 statt −3…+3, siehe
 ///   <see cref="Tactics"/>). Alte Werte lassen sich nicht umrechnen; Verein und Bundestrainer bekommen die Startwerte
-///   eines neuen Teams. Modi, Torwart- und Linienwechsel und Minuten bleiben. [APPROX] Wer „SEMI“ oder „MANUELL“
-///   eingestellt hatte, spielt danach mit den Startwerten (Einsatz bei Gleichstand 80 %: kein Stärkezuschlag).</item>
+///   eines neuen Teams (seit Runde 14 alle 0, A180: <c>new Tactics()</c>). Modi, Torwart- und Linienwechsel und Minuten
+///   bleiben. [APPROX] Wer „SEMI“ oder „MANUELL“ eingestellt hatte, spielt danach mit den Startwerten.</item>
 /// <item>Vereine bekommen „Eingesetzt“ (<c>_dressed</c>, <c>_dressedByHand</c>): niemand von Hand eingesetzt, es gilt
 ///   die automatische Auswahl (<see cref="Club.Dressed"/>).</item>
 /// </list>

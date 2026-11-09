@@ -84,13 +84,14 @@ public static class SquadRules
     /// <summary>
     /// Grenze p des Verlängerungswurfs random(0, p) = 0. [ORIGINAL] Datei 0x076FA–0x07951: s = (Kondition + Technik + Form) / 3,
     /// a = 100 − 100 · min(8, |25 − Alter|) / 8, e = min(5, (+0x1C + +0x1E + +0x20) / 36), p = (60 · s + 40 · a) / 100,
-    /// p − p · e / 10. [APPROX] +0x1E/+0x20 führt das Remake nicht (<see cref="Player.GamesForClub"/> = +0x1C).
+    /// p − p · e / 10. Spiele beim Verein je Wettbewerb seit A135 (<see cref="Player.ClubGames"/>).
     /// </summary>
     public static int OfferLimit(Player p)
     {
         var s = (p.Condition + p.Technique + p.Form) / 3;
         var a = 100 - 100 * Math.Min(8, Math.Abs(25 - p.Age)) / 8;
-        var e = Math.Min(5, p.GamesForClub / 36);
+        var e = Math.Min(5, (p.ClubGames(CompetitionSlot.League) + p.ClubGames(CompetitionSlot.Cup)
+                             + p.ClubGames(CompetitionSlot.Europe)) / 36);
         var limit = (60 * s + 40 * a) / 100;
         return limit - limit * e / 10;
     }

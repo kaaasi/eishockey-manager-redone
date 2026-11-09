@@ -176,6 +176,7 @@ public class KaufEinsortierenTests
         keeper.Age = 25;
         origin.RemovePlayer(keeper);
         PlayerFactory.Join(borrower, keeper, 1, loan: true, new PlayerLoan(origin, 2, keeper.MonthlySalary, false));
+        keeper.ContractYears = 2; // A115 (kader-start Teil 4): Rückkehr mit dem Leih-Kaderplatz, also mit Restlaufzeit
         AssertSortedIn(borrower, keeper);
 
         LifecycleRegressionTests.FinishSeason(game);

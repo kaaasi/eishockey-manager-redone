@@ -135,7 +135,7 @@ Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 �
   `docs/transfer.md`. Dazu nach L4/L7 jeweils nur für den genannten Punkt: `Core/MatchEngine.Injuries.cs` (Taktik 375h),
   `Core/FinanceStadium.cs` (`TableRank`) und `Core/FinanceSponsorRating.cs` (Tabellenfeld, A046), `Core/MatchEngine.Live.cs`
   (Kommentar A082), `Core/StadiumStatistics.cs` (Kommentar A189), Buchung von Spielen und Toren je Wettbewerb in `Core/Cups*.cs`
-  außer `CupsNational*` und `Core/MatchEngine*.cs` (A135), `Core/Highscore.cs` (U15-c). **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
+  außer `CupsNational*` und `Core/MatchEngine*.cs` (A135), `Core/Highscore.cs` (U15-c). **Modell:** Claude Opus 5.5. **Status:** Teil 1 PR #631 (Branch `paket/kader-start-r14-1`, da `paket/kader-start-1…4` aus Runde 13 noch bestehen); Teil 2 wartet auf `re-dosbox`, Teil 3 auf `nationalteam` Teil 2.
 
 ### Spur `ui-rest` – Darstellung aus der Aufnahme, Stadionpfeile
 
