@@ -91,8 +91,11 @@ public class StatistikenPraemienTests
             p.GoalsAgainst = Math.Max(1, p.GoalsAgainst);
         foreach (var c in game.LeagueClubs(League.Bundesliga))
             c.LeaguePenaltyMinutes = 500;
-        rival.LeaguePenaltyMinutes = 0;
-        club.LeaguePenaltyMinutes = 0; // Gleichstand: Index 5 vor 6 – Fair-Play bleibt beim Manager
+        // #676: Bei Gleichstand entscheidet die am 29. April gemischte Satzfolge der neuen Liga (S-K6-c, Zufall). Mit der neuen
+        // Halbfinal-Paarung verbraucht die Saison andere Zufallszahlen, die Mischung stellt dann Verein 6 vor 5; der Rivale hat
+        // deshalb eine Minute mehr, damit Fair-Play eindeutig beim Manager bleibt.
+        rival.LeaguePenaltyMinutes = 1;
+        club.LeaguePenaltyMinutes = 0;
         FinishSeason(game);
 
         var events = game.History[^1].Managers.Single().Events;

@@ -56,6 +56,60 @@ public sealed class PlayoffSemifinalTests
     }
 
     /// <summary>
+    /// Mehrsaisonprobe (4 Saisonwechsel, passiver Oberligist und aktiver Bundesligist im Hot-Seat, alles über
+    /// <see cref="GameState.Continue"/>): In jeder Saison paaren Halbfinale und Endspiel nach Tabelle DGROUP 0x144, Spiel 1 beim
+    /// kleineren Platz; der Meister steht im Saisonrückblick.
+    /// </summary>
+    [Fact]
+    public void MultiSeason_FourChanges_PlayoffsPairByTable0x144()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "PASSIV", Head = 0, ClubIndex = 30 });
+        setup.Managers.Add(new ManagerSetup { Name = "AKTIV", Head = 1, ClubIndex = 6 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 7);
+        var active = game.Managers[1];
+        var upsets = 0;
+        for (var season = 0; season < 5; season++)
+        {
+            var step = 0;
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                Assert.True(guard < 2000, "Saisonende nicht erreicht");
+                foreach (var m in game.Managers)
+                {
+                    m.Money = Math.Max(m.Money, 10_000_000); // keine Entlassung im Testlauf
+                    TestSquadKeeper.KeepPlayable(game, m);
+                }
+                game.Finance(active).Stadium.TicketPrice = 5 + step++ % 7; // aktiver Manager handelt in jedem Schritt
+                game.Continue();
+            }
+            var playoffs = game.Playoffs!;
+            Assert.Equal(3, playoffs.Rounds.Count);
+            var s = playoffs.Seeds;
+            Assert.Equal(new[] { (s[0], s[7]), (s[1], s[6]), (s[2], s[5]), (s[3], s[4]) },
+                playoffs.Rounds[0].Select(x => (x.HigherSeed, x.LowerSeed)));
+            for (var round = 1; round < 3; round++)
+            {
+                var previous = playoffs.Rounds[round - 1];
+                var half = previous.Count / 2;
+                for (var k = 0; k < playoffs.Rounds[round].Count; k++)
+                {
+                    var series = playoffs.Rounds[round][k];
+                    Assert.Equal((previous[k].Winner, previous[k + half].Winner), (series.HigherSeed, series.LowerSeed));
+                    Assert.Equal(series.HigherSeed, series.Games[0].Home);
+                    upsets += s.ToList().IndexOf(series.HigherSeed) > s.ToList().IndexOf(series.LowerSeed) ? 1 : 0;
+                }
+            }
+            Assert.Equal(playoffs.Champion, game.History[^1].Titles[Title.GermanChampion]);
+            if (season < 4)
+                game.StartNextSeason();
+        }
+        Assert.Equal(5, game.History.Count);
+        // Probe trifft auch den Fall, dass der schlechter Platzierte Heimrecht hat (Sieger der oberen Paarung).
+        Assert.True(upsets > 0, "kein Heimrecht beim schlechter Platzierten in fünf Saisons");
+    }
+
+    /// <summary>
     /// FILE44 und FILE22 (Endspiel gespielt): Spielt das Remake die übernommenen Viertelfinal- und Halbfinalergebnisse selbst durch,
     /// entstehen Halbfinale und Endspiel mit denselben Paarungen und demselben Heimrecht wie im HOK (Plätze 8–13 von DGROUP 0x5D3B).
     /// </summary>

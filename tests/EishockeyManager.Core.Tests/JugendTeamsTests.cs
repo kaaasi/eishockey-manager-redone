@@ -192,15 +192,17 @@ public class JugendTeamsTests
     // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. Saison 0 unverändert, Richtung weiter geprüft.
     private const string ExpectedActive =
-        "0:Schueler:2/11/58;0:Jugend:2/11/60;0:Junioren:2/11/62;1:Schueler:1/12/70;1:Jugend:2/6/70;1:Junioren:1/11/72;2:Schueler:1/6/78;2:Jugend:1/11/78;2:Junioren:1/6/80;3:Schueler:1/6/83;3:Jugend:1/6/80;3:Junioren:1/6/81";
+        "0:Schueler:2/11/58;0:Jugend:2/11/60;0:Junioren:2/11/62;1:Schueler:2/6/67;1:Jugend:2/6/70;1:Junioren:1/11/72;2:Schueler:1/11/73;2:Jugend:1/11/75;2:Junioren:1/6/77;3:Schueler:1/6/81;3:Jugend:1/6/78;3:Junioren:1/6/80";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
     // WM ohne kleine Wanderung (WM-Schleife Datei 0x55570–0x55740), damit ändert sich der Zufallsverbrauch ab dem 14. April.
     // Saison 0 unverändert, Richtung (≤ −15) weiter geprüft.
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. Saison 0 unverändert.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/62;0:Jugend:2/2/67;0:Junioren:1/6/69;1:Schueler:3/2/56;1:Jugend:3/2/54;1:Junioren:2/2/57;2:Schueler:3/6/48;2:Jugend:3/6/47;2:Junioren:3/2/49;3:Schueler:3/6/43;3:Jugend:3/6/41;3:Junioren:3/6/41";
+        "0:Schueler:2/2/62;0:Jugend:2/2/67;0:Junioren:1/6/69;1:Schueler:3/2/50;1:Jugend:3/2/55;1:Junioren:2/2/56;2:Schueler:3/6/43;2:Jugend:3/6/46;2:Junioren:3/2/48;3:Schueler:3/6/40;3:Jugend:3/6/42;3:Junioren:3/6/46";
 }
 
 public class JugendTeamsMigrationTests

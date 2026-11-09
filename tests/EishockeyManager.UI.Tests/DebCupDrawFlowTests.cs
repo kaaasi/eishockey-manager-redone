@@ -258,7 +258,8 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Integration Runde 12 (+ kader-transfer): Abdruck auf dem integrierten Stand neu ermittelt. Mit und ohne Anzeige weiter gleich.
     /// Runde 13, kader-start Teil 2 (U15-a, L13): ab 1993 neu – Verein 42 tauscht mit Start-Liga Oberliga in die Oberliga
     /// (Datei 0x29CF2, Teamwerte bleiben am Platz, Oberliga-Kader); mit und ohne Anzeige weiter gleich. Teil 3 (R-K5): erneut neu –
-    /// Satzfolge vor der Spielvorbereitung (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.</summary>
+    /// Satzfolge vor der Spielvorbereitung (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
+    /// Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. 1993: Pokal und Tabelle gleich, nur der Meister (DM) neu; ab 1994 alles neu. Mit und ohne Anzeige weiter gleich.</summary>
     private const string Reference =
-        "1993: DEB 21, DM 6, Tab 15379 | 1994: DEB 23, DM 0, Tab 15591 | 1995: DEB 8, DM 8, Tab 15807 | 1996: DEB 10, DM 8, Tab 15236";
+        "1993: DEB 21, DM 5, Tab 15379 | 1994: DEB 23, DM 8, Tab 15656 | 1995: DEB 23, DM 6, Tab 15632 | 1996: DEB 0, DM 23, Tab 15745";
 }

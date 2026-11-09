@@ -187,11 +187,12 @@ public class RngTwinProbeTests
     // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte.
     [Theory]
-    [InlineData(false, 3, "D1DB938BDEDCC71C")]
-    [InlineData(true, 3, "E3C497CB9A0929D2")]
-    [InlineData(false, 11, "7B5253F48D190DE7")]
-    [InlineData(true, 11, "A089DF089315EDB5")]
+    [InlineData(false, 3, "55915D383A358497")]
+    [InlineData(true, 3, "760191600C84958E")]
+    [InlineData(false, 11, "5391132359525FAF")]
+    [InlineData(true, 11, "2B85C97B4D1FE3CA")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -201,9 +202,10 @@ public class RngTwinProbeTests
     // Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte.
     [GameDataTheory]
-    [InlineData(false, "3101D28B8A472AD6")]
-    [InlineData(true, "9E2DFED2DCC80D05")]
+    [InlineData(false, "D9F3F8EF2962B1B3")]
+    [InlineData(true, "804823BF5744F2AF")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

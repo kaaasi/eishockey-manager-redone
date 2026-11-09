@@ -379,8 +379,9 @@ public class GameModeTests
     // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. Meister und Pokalsieger der Saison 1 gleich; der Weltmeister 1993 (nach den Play-offs) und alles Weitere neu.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=11,GermanChampion=1,EuropeanCupWinner=2|96040,400000|WorldChampion=52,CupWinner=4,GermanChampion=1,EuropeanCupWinner=1|1402820,400000|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=1|2105399,400000|WorldChampion=54,CupWinner=3,GermanChampion=13,EuropeanCupWinner=0|2608038,400000|WorldChampion=54,CupWinner=0,GermanChampion=9,EuropeanCupWinner=13|2812224,-7124085|R677985496 C1798453752";
+        "WorldChampion=63,CupWinner=11,GermanChampion=1,EuropeanCupWinner=2|94915,400000|WorldChampion=63,CupWinner=1,GermanChampion=8,EuropeanCupWinner=1|1317101,400000|WorldChampion=52,CupWinner=7,GermanChampion=7,EuropeanCupWinner=1|1936168,400000|WorldChampion=52,CupWinner=0,GermanChampion=8,EuropeanCupWinner=7|2427192,-2630804|WorldChampion=52,CupWinner=6,GermanChampion=3,EuropeanCupWinner=8|2682177,-4201644|R775878578 C1966541813";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
