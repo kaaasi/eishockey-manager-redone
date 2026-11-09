@@ -319,6 +319,7 @@ public sealed partial class GameState
         ApplyNationalSquad(save, clubOf, pool, squadPlayers); // Teil 4b (OriginalImport.National.cs)
         ApplyMessages(save, pool); // Teil 4b (OriginalImport.Messages.cs)
         ApplyCups(save, clubOf); // Teil 4c (OriginalImport.Cups.cs)
+        ApplyPostseason(save, clubOf); // Teil 4d (OriginalImport.Playoffs.cs, R14HI-01)
         // [ORIGINAL] Manager am Zug DGROUP 0xA70E (0–3; 5 = Bundestrainer). [APPROX] Der Zug des Bundestrainers beginnt im Remake
         // mit dem Tageslauf; der Import setzt dann Manager 0.
         var current = save.Block("A70E")[0];

@@ -71,10 +71,13 @@ public sealed class PlayoffSeries(int higherSeed, int lowerSeed)
 /// Play-Offs der Bundesliga um die Deutsche Meisterschaft.
 /// [ORIGINAL] Datei 0x31934 (Setzung aus 0x5CCB), 0x31BB0 (drei Runden 8 → 4 → 2), 0x31CBF (Meister); spielberechnung.md §14:
 /// die ersten acht der Hauptrunde, Viertelfinale 1–8, 2–7, 3–6, 4–5, Halbfinale, Finale.
-/// [APPROX] Welche Sieger im Halbfinale aufeinandertreffen (1–8 gegen 4–5, 2–7 gegen 3–6) ist nicht gesondert belegt. Je Runde fünf Termine
+/// [ORIGINAL] Halbfinale: Sieger 1–8 gegen Sieger 3–6, Sieger 2–7 gegen Sieger 4–5 – Tabelle DGROUP 0x144 beim Rundenwechsel
+/// (Datei 0x31BED–0x31C4D) führt die Sieger der Plätze 0/4 auf die Plätze 8/9 und die der Plätze 2/6 auf 10/11; im Endspiel die
+/// Sieger der Plätze 8/10 auf 12/13. Heimrecht im ersten Spiel der nächsten Runde hat der Sieger der Paarung mit dem kleineren
+/// Platz (FILE44: Halbfinale SB Rosenheim – ESV Kaufbeuren, Berichtigung des Imports Runde 14, R14HI-01). Je Runde fünf Termine
 /// (Texte im Original: „VIERTELFINALE“, „HALBFINALE“, „Play-Off Spiele“, „Deutsche Meisterschaft“).
 /// </summary>
-public sealed class Playoffs
+public sealed partial class Playoffs
 {
     public const int Teams = 8;
     public const int DatesPerRound = 5;
@@ -88,9 +91,10 @@ public sealed class Playoffs
         if (seeds.Count != Teams)
             throw new ArgumentException("Die Play-Offs brauchen acht Vereine.", nameof(seeds));
         Seeds = seeds;
+        // Reihenfolge der Serien = Reihenfolge der Sieger in der nächsten Runde (Tabelle DGROUP 0x144): 1–8, 3–6, 2–7, 4–5.
         _rounds.Add([
-            new(seeds[0], seeds[7]), new(seeds[3], seeds[4]),
-            new(seeds[1], seeds[6]), new(seeds[2], seeds[5]),
+            new(seeds[0], seeds[7]), new(seeds[2], seeds[5]),
+            new(seeds[1], seeds[6]), new(seeds[3], seeds[4]),
         ]);
     }
 
@@ -106,16 +110,10 @@ public sealed class Playoffs
             var winners = _rounds[^1].Select(s => s.Winner!.Value).ToList();
             var next = new List<PlayoffSeries>();
             for (var i = 0; i < winners.Count; i += 2)
-            {
-                // Besser platzierter Verein hat Heimrecht
-                var (a, b) = (winners[i], winners[i + 1]);
-                next.Add(SeedOf(a) < SeedOf(b) ? new(a, b) : new(b, a));
-            }
+                next.Add(new(winners[i], winners[i + 1])); // [ORIGINAL] Sieger der Paarung mit dem kleineren Platz zuerst (Heimrecht Spiel 1)
             _rounds.Add(next);
         }
     }
-
-    private int SeedOf(int club) => Seeds.ToList().IndexOf(club);
 
     /// <summary>Serie, in der ein Verein am Play-Off-Termin <paramref name="dateIndex"/> (0–14) spielt, oder null.</summary>
     public PlayoffSeries? SeriesOn(int dateIndex, int club)
@@ -154,7 +152,7 @@ public sealed class Playoffs
 /// und SC Memmingen ab; 1995/96 bleiben beide Zweitligisten). Die Saisonende-Bildschirme zeigen auch zwischen
 /// Bundesliga und 2. Liga mal zwei, mal einen Wechsel – daher hier dasselbe Verfahren.
 /// </summary>
-public sealed class RelegationGroup
+public sealed partial class RelegationGroup
 {
     /// <summary>
     /// [APPROX] Play-Off-Termine (Index 0–14) der sechs Gruppenspieltage. Belegt: Spiele am 6.2., 10.2., 20.2.,
@@ -181,7 +179,7 @@ public sealed class RelegationGroup
 
     /// <summary>Teilnehmer: zuerst die beiden Letzten der oberen Liga, dann die beiden Ersten der unteren.</summary>
     public IReadOnlyList<int> Clubs { get; }
-    public IReadOnlyList<MatchDay> Rounds { get; }
+    public IReadOnlyList<MatchDay> Rounds { get; private set; }
     public List<MatchResult> Results { get; } = [];
 
     public int PlayedRounds { get; private set; }
