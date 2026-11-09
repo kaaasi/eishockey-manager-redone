@@ -71,10 +71,14 @@ public sealed class PlayoffSeries(int higherSeed, int lowerSeed)
 /// Play-Offs der Bundesliga um die Deutsche Meisterschaft.
 /// [ORIGINAL] Datei 0x31934 (Setzung aus 0x5CCB), 0x31BB0 (drei Runden 8 → 4 → 2), 0x31CBF (Meister); spielberechnung.md §14:
 /// die ersten acht der Hauptrunde, Viertelfinale 1–8, 2–7, 3–6, 4–5, Halbfinale, Finale.
-/// [APPROX] Welche Sieger im Halbfinale aufeinandertreffen (1–8 gegen 4–5, 2–7 gegen 3–6) ist nicht gesondert belegt. Je Runde fünf Termine
+/// [APPROX] Welche Sieger im Halbfinale aufeinandertreffen (hier 1–8 gegen 4–5, 2–7 gegen 3–6, besser Platzierter mit Heimrecht) weicht vom
+/// Original ab: Tabelle DGROUP 0x144 beim Rundenwechsel (Datei 0x31BED–0x31C4D) führt die Sieger der Plätze 0/4 (1–8, 3–6) auf die
+/// Plätze 8/9 und die der Plätze 2/6 (2–7, 4–5) auf 10/11, Heimrecht in Spiel 1 beim kleineren Platz (FILE44: SB Rosenheim – ESV
+/// Kaufbeuren; Spur hok-import, R14HI-01). Der Import übernimmt die Paarungen des HOK (<c>OriginalImport.Playoffs.cs</c>); die Regel
+/// für eigene Spiele ändert die Fingerabdrücke der Mehrsaisonproben und bleibt der Spur saison. Je Runde fünf Termine
 /// (Texte im Original: „VIERTELFINALE“, „HALBFINALE“, „Play-Off Spiele“, „Deutsche Meisterschaft“).
 /// </summary>
-public sealed class Playoffs
+public sealed partial class Playoffs
 {
     public const int Teams = 8;
     public const int DatesPerRound = 5;
@@ -154,7 +158,7 @@ public sealed class Playoffs
 /// und SC Memmingen ab; 1995/96 bleiben beide Zweitligisten). Die Saisonende-Bildschirme zeigen auch zwischen
 /// Bundesliga und 2. Liga mal zwei, mal einen Wechsel – daher hier dasselbe Verfahren.
 /// </summary>
-public sealed class RelegationGroup
+public sealed partial class RelegationGroup
 {
     /// <summary>
     /// [APPROX] Play-Off-Termine (Index 0–14) der sechs Gruppenspieltage. Belegt: Spiele am 6.2., 10.2., 20.2.,
@@ -181,7 +185,7 @@ public sealed class RelegationGroup
 
     /// <summary>Teilnehmer: zuerst die beiden Letzten der oberen Liga, dann die beiden Ersten der unteren.</summary>
     public IReadOnlyList<int> Clubs { get; }
-    public IReadOnlyList<MatchDay> Rounds { get; }
+    public IReadOnlyList<MatchDay> Rounds { get; private set; }
     public List<MatchResult> Results { get; } = [];
 
     public int PlayedRounds { get; private set; }
