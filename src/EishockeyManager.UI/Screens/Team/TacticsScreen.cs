@@ -99,13 +99,13 @@ public sealed class TacticsScreen : Screen
                 _block = b;
 
         if (Step(GoalieArrows, x, y) is { } g)
-            t.Goalie = Cycle(t.Goalie, g);
+            t.Goalie = Next(t.Goalie, -g);
         if (Step(LineChangeArrows, x, y) is { } l)
-            t.LineChange = Cycle(t.LineChange, l);
+            t.LineChange = Next(t.LineChange, -l);
         if (Step(EffortArrows, x, y) is { } e)
-            t.EffortMode = Cycle(t.EffortMode, e);
+            t.EffortMode = Next(t.EffortMode, -e);
         if (Step(AttackArrows, x, y) is { } a)
-            t.AttackMode = Cycle(t.AttackMode, a);
+            t.AttackMode = Next(t.AttackMode, -a);
 
         if (t.MinutesActive)
         {
@@ -130,11 +130,17 @@ public sealed class TacticsScreen : Screen
     private static int? Step(Rect arrows, int x, int y) =>
         arrows.Contains(x, y) ? (y < arrows.Y + arrows.H / 2 ? 1 : -1) : null;
 
-    private static T Cycle<T>(T value, int delta) where T : struct, Enum
+    /// <summary>
+    /// Modusknöpfe: <paramref name="delta"/> = −1 für die obere Hälfte (voriger Wert), +1 für die untere (nächster Wert); an den
+    /// Enden bleibt der Wert stehen, kein Umlauf. [ORIGINAL] em.exe Datei 0x487A8–0x487B8 (untere Hälfte), 0x48BD2–0x48C25
+    /// (Schritt +1 bzw. −1, Grenzen 0 … Anzahl − 1); DOSBox-Sitzung 2 (A373, Review #643 R14RD1-01). Die Zahlenpfeile (Datei
+    /// 0x489AB ff.) zählen dagegen mit der oberen Hälfte hoch (flag = 0: +1 bis Maximum) – unverändert.
+    /// </summary>
+    internal static T Next<T>(T value, int delta) where T : struct, Enum
     {
         var values = Enum.GetValues<T>();
         var i = Array.IndexOf(values, value);
-        return values[(i + delta + values.Length) % values.Length];
+        return values[Math.Clamp(i + delta, 0, values.Length - 1)];
     }
 
     public override void Draw(Surface s)

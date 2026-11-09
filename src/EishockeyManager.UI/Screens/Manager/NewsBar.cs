@@ -1,4 +1,5 @@
 using EishockeyManager.Core;
+using EishockeyManager.Formats;
 
 namespace EishockeyManager.UI.Screens.ManagerArea;
 
@@ -86,7 +87,7 @@ public static class NewsBar
         var mini = assets.Mini;
         s.Blit(assets.Image(Graphic), new Rect(0, 0, Area.W, Area.H), Area.X, Area.Y);
         var inbox = game.Inbox(game.ActiveManager);
-        var center = Text.X + Text.W / 2;
+        const int center = 159; // [ORIGINAL] Mitte der Zeilen x ≈ 158 (`file37a_1`: Zeile 1 x 95–221, Zeile 2 x 133–183 → Mitte 159 bei zentrierter Abrundung), nicht die Mitte der Leiste
         if (inbox.Count == 0)
         {
             s.TextCentered(mini, center, 207, "Keine Nachricht für Sie vorhanden.", TextColor);
@@ -95,12 +96,54 @@ public static class NewsBar
         var index = Shown(game);
         var message = inbox[index];
         // Zeichnen und Öffnen des Posteingangs ändern nichts (AGENTS.md §4, E4 = B, D8 = A): kein Feld „gelesen“ im Original.
-        // [APPROX] Kopfzeile = erste Zeile, weißes Feld = weitere Zeilen; Inhalt einer Nachricht ist im Video nicht zu sehen.
-        s.TextCentered(mini, center, 207, ManagerText.ForFont(message.Lines[0]), TextColor);
-        for (var i = 1; i < Math.Min(3, message.Lines.Length); i++)
-            s.TextCentered(mini, center, 214 + 7 * i, ManagerText.ForFont(message.Lines[i]), TextColor);
+        // [ORIGINAL] Oberes Feld = Datum der Nachricht („6. Dez. 1993“), weißes Feld = Text in zwei zentrierten Zeilen (7 Zeilen
+        // Abstand); DOSBox-Sitzung 2, `file37a_1`, A321: Datum Zeilen 208–212, Text 220–224 und 227–231, Mitte x ≈ 158.
+        // [ORIGINAL] Datei 0x4B6F0–0x4B76D: Das Original bricht nicht um, sondern zeichnet die Zeilen der Nachricht (getrennt durch „^“)
+        // je zentriert im Bereich x 0x10 … 0x12F (Mitte 159), erste Zeile Grundlinie 212 (Datum), danach + 12, dann + 7. Die Leiste
+        // (Fläche bis y 236) fasst daher nur zwei Textzeilen (Grundlinien 224, 231).
+        // [APPROX] Die Nachrichten des Remakes stehen als Zeilen ohne „^“-Trennung: Sie werden mit Leerzeichen verbunden und auf
+        // die Breite des weißen Feldes umbrochen (im Bild bricht „EC HEDOS MÜNCHEN ist an SCHIFFL“ / „interessiert.“ so um). Ergeben
+        // sich mehr als zwei Zeilen, wird breiter umbrochen (bis zur Feldbreite) und, falls es dann noch zu viele sind, nach der
+        // zweiten Zeile abgeschnitten – eine dritte Zeile läge auf dem unteren Rand der Leiste (y 234); der volle Text steht im Posteingang.
+        s.TextCentered(mini, center, DateY, SeasonCalendar.FormatShort(message.Day, message.Season), TextColor);
+        var y = TextY;
+        var text = ManagerText.ForFont(string.Join(' ', message.Lines));
+        var lines = Wrap(mini, text, WrapWidth).ToList();
+        if (lines.Count > MaxTextLines)
+            lines = Wrap(mini, text, Text.W - 12).ToList();
+        foreach (var line in lines.Take(MaxTextLines))
+        {
+            s.TextCentered(mini, center, y, line, TextColor);
+            y += LineStep;
+        }
+        // [APPROX] Hinweis bei einer Frage und Zähler bei mehreren Nachrichten: im Bild nicht belegt (eine Nachricht ohne Zähler).
         if (message.IsQuestion)
             s.TextRight(mini, Text.Right - 4, 228, QuestionHint(game), Colors.Red);
-        s.TextRight(mini, Text.Right - 4, 221, $"{index + 1}/{inbox.Count}", TextColor);
+        if (inbox.Count > 1)
+            s.TextRight(mini, Text.Right - 4, 221, $"{index + 1}/{inbox.Count}", TextColor);
+    }
+
+    private const int DateY = 207;
+    private const int TextY = 220;
+    private const int LineStep = 7;
+    private const int WrapWidth = 128;
+    private const int MaxTextLines = 2;
+
+    internal static IEnumerable<string> Wrap(BitmapFont font, string text, int width)
+    {
+        var line = "";
+        foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var next = line.Length == 0 ? word : line + " " + word;
+            if (line.Length > 0 && font.Measure(next) > width)
+            {
+                yield return line;
+                line = word;
+            }
+            else
+                line = next;
+        }
+        if (line.Length > 0)
+            yield return line;
     }
 }

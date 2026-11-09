@@ -202,7 +202,7 @@ public sealed class ContractDialog
         if (!pressed)
             return;
         s.Blit(assets.Image(2), new Rect(17, 179 + 12, Widgets.ButtonWidth, Widgets.ButtonHeight), r.X, r.Y, transparent: 0);
-        var tx = r.X + Widgets.ButtonWidth / 2 + 2 - assets.Mini.Measure(text) / 2;
+        var tx = r.X + Widgets.ButtonWidth / 2 + 1 - assets.Mini.Measure(text) / 2; // wie TeamUi.DialogButton
         s.Text(assets.Mini, tx + 1, r.Y + 4, text, 1);
         s.Text(assets.Mini, tx, r.Y + 3, text, TeamUi.DialogDark);
     }

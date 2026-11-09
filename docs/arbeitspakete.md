@@ -90,12 +90,13 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
 
 ### Integration Runde 14
 
-Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nationalteam` 41 (vom Spurbranch mit 40 umnummeriert); die folgenden Spuren nummerieren ab 42.
+Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nationalteam` 41 (vom Spurbranch mit 40 umnummeriert); `ui-rest` ändert den Spielstand nicht (bleibt 41); die folgenden Spuren nummerieren ab 42.
 
 | Spur | Status | PR | Head-SHA |
 |---|---|---|---|
 | `saison` | integriert, Prüfung grün (2288 / 0 / 0 mit Daten), wartet auf Review | #652 (Branch `integration/runde-14-saison`, Base `b7e1eb2`) | im Übergabekommentar von #652 |
 | `nationalteam` | integriert (#630, #637, #653; Schema 41); Review #662 „Nein“ → Korrekturen R14NT-01–06 auf dem Branch (08.11.2026), wartet auf Nachprüfung | #661 (Branch `integration/runde-14-nationalteam`, Base `3e0cf69`) | im Übergabekommentar von #661 |
+| `ui-rest` | integriert (#634, #647, #657; Schema bleibt 41, Spur ändert den Spielstand nicht), Prüfung grün (2321 / 0 / 0 mit Daten), wartet auf Review | #666 (Branch `integration/runde-14-ui-rest`, Base `6e1bf44`) | im Übergabekommentar von #666 |
 
 Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 → `pruefung-karte`.
 
@@ -145,7 +146,7 @@ Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 �
   2. **Darstellung aus `re-dosbox`** (nach `re-dosbox`): A373 (Pfeilfolge Taktik), Taktik-Befund DGROUP 375h (falls Anzeige),
      A380, A382, A377, A374, A313, A321, A357 (A364 → `kader-start`, L3) – Pixeltests gegen die Bilder der Sitzung 2.
   3. **Stadion aus `re-dosbox` Teil 2** (A323, A325, A326), sobald Sitzung 3 ausgewertet ist. A338/A339 → `hok-import` (L6).
-- **Dateigrenzen:** wie oben `ui-rest`, eigene Tests; nach L7 zusätzlich `UI/Screens/Statistics/HistoryScreen.cs` (A357). **Modell:** Claude Sonnet 5.5. **Status:** Go 05.11.2026, Start offen.
+- **Dateigrenzen:** wie oben `ui-rest`, eigene Tests; nach L7 zusätzlich `UI/Screens/Statistics/HistoryScreen.cs` (A357). **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 (#597) umgesetzt, PR `paket/ui-rest-1` (05.11.2026); Teil 2 umgesetzt (A373, A374, A377, A382, A313, A321, A357), PR #647 `paket/ui-rest-2` (08.11.2026); offen daraus: Taktik-Knopf 375h, A380/A180-Anzeige (hängen am Kern von `kader-start`), A364 (`kader-start`); Teil 3 umgesetzt (A323, A325 Tabelle/Folge/Maske, A326 Bauanzeige und Ausbau-Frage), `paket/ui-rest-3` (08.11.2026); offen: Hotspot Kino/Gastronomie nach der neuen Lage nicht belegt (`[APPROX]`). Alle drei Teile integriert in PR #666 (`integration/runde-14-ui-rest`, 09.11.2026), wartet auf Review.
 
 ### Spur `hok-import` – Original-Spielstände `*.HOK` ins Remake (E14-1 C)
 

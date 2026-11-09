@@ -337,6 +337,10 @@ public sealed class FinanceScreen : Screen
 
         var regulator = input.LeftClick && RegulatorArea.Contains(input.MouseX, input.MouseY);
         UpdateRegulator(input);
+        // [ORIGINAL] Verlässt die Maus die Zeilen des Streifens samt Beschriftung (y 73–100), verschwinden Seite und Balken sofort,
+        // ohne Klick (Datei 0x59531–0x5955F → 0x59ADD; DOSBox-Sitzung 2, `file41_2…8`; A313).
+        if (_side is not null && !ActionBar.Contains(input.MouseX, input.MouseY))
+            Deactivate();
         if (!input.LeftClick)
             return;
         var (x, y) = (input.MouseX, input.MouseY);
@@ -445,7 +449,8 @@ public sealed class FinanceScreen : Screen
     }
 
     /// <summary>
-    /// [ORIGINAL] Klick außerhalb des Streifens (Datei 0x59ADD–0x59B28): Hinweis und Balken löschen, keine Seite.
+    /// [ORIGINAL] Maus außerhalb des Streifens y 73–100 (auch ohne Klick, Datei 0x59531–0x5955F) oder Klick außerhalb
+    /// (Datei 0x59ADD–0x59B28): Hinweis und Balken löschen, keine Seite.
     /// [APPROX] Der Betrag wird mit gelöscht; im Original bleibt er stehen, und ein späterer Klick in die Buchungszeile
     /// bucht ihn erneut mit der dann gültigen (auch leeren) Auswahl (Datei 0x5911D prüft weder Seite noch Auswahl).
     /// </summary>

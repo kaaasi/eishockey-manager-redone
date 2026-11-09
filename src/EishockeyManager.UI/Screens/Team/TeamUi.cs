@@ -62,26 +62,39 @@ public static class TeamUi
     /// <summary>Füllfarbe der Dialoge (Vertragsverhandlung).</summary>
     public const byte DialogFill = 4;
 
-    /// <summary>Untere und rechte Kante der Dialoge (Video: sehr dunkles Blau).</summary>
-    public const byte DialogDark = 200;
+    /// <summary>
+    /// Obere und linke Kante der Dialoge. [ORIGINAL] (36 | 44 | 48) = Index 1 (gleich 34), DOSBox `file40_08`, `file46_3`
+    /// (vorher Weiß, nach dem Video geschätzt, R14UR-04 / #663).
+    /// </summary>
+    public const byte DialogLight = 1;
+
+    /// <summary>
+    /// Untere und rechte Kante der Dialoge sowie Knopfschrift. [ORIGINAL] (8 | 12 | 20) = Index 29 (gleich 147), `file40_08`,
+    /// `file46_3` (vorher Index 200 = (8 | 12 | 16), nach dem Video geschätzt).
+    /// </summary>
+    public const byte DialogDark = 29;
 
     /// <summary>Schlagschatten der Dialoge, 2 px nach rechts und unten.</summary>
     public const byte DialogShadow = 6;
 
     /// <summary>
-    /// Dialogfenster wie die Vertragsverhandlung im Video (ca. 10:25): Füllung 4, oben und links eine weiße Linie,
-    /// unten und rechts eine dunkle, dazu 2 px Schlagschatten. Nicht der kb\2-Rahmen der großen Fenster.
-    /// [APPROX] Der Schatten ist einfarbig; das Original dunkelt den Hintergrund vermutlich ab (im Video nicht trennbar).
+    /// Dialogfenster wie die Vertragsverhandlung (ca. 10:25): Füllung 4, oben und links eine helle Linie (<see cref="DialogLight"/>),
+    /// unten und rechts eine dunkle (<see cref="DialogDark"/>), dazu 2 px Schlagschatten. Nicht der kb\2-Rahmen der großen Fenster.
+    /// [ORIGINAL] Die Ecken links oben, rechts oben und links unten haben die Füllfarbe, die Ecke rechts unten ist schwarz
+    /// (Index 0); Kauffenster (2 | 29)–(166 | 71) in `file40_08`, Vertragsfenster in `file46_3`.
+    /// [ORIGINAL] Der Schatten ist einfarbig Index 6, auch über Listentext und Linien, kein Abdunkeln (DOSBox-Sitzung 2,
+    /// `file40_12` gegen `file40_13`: 460 von 464 Pixeln Index 6; A374).
     /// </summary>
     public static void DialogFrame(Surface s, Rect r)
     {
         s.Fill(new Rect(r.X + 2, r.Y + r.H, r.W, 2), DialogShadow);
         s.Fill(new Rect(r.X + r.W, r.Y + 2, 2, r.H), DialogShadow);
         s.Fill(r, DialogFill);
-        s.HLine(r.X, r.Y, r.W - 1, Colors.White);
-        s.VLine(r.X, r.Y, r.H - 1, Colors.White);
-        s.HLine(r.X, r.Y + r.H - 1, r.W, DialogDark);
-        s.VLine(r.X + r.W - 1, r.Y, r.H, DialogDark);
+        s.HLine(r.X + 1, r.Y, r.W - 2, DialogLight);
+        s.VLine(r.X, r.Y + 1, r.H - 2, DialogLight);
+        s.HLine(r.X + 1, r.Y + r.H - 1, r.W - 2, DialogDark);
+        s.VLine(r.X + r.W - 1, r.Y + 1, r.H - 2, DialogDark);
+        s.Set(r.X + r.W - 1, r.Y + r.H - 1, 0);
     }
 
     /// <summary>Titel eines Dialogs (Video: beige, Index 10, mit dunklem Schatten).</summary>
@@ -95,7 +108,7 @@ public static class TeamUi
     public static void DialogButton(Surface s, Assets a, int x, int y, string text)
     {
         s.Blit(a.Image(2), new Rect(17, 179, Widgets.ButtonWidth, Widgets.ButtonHeight), x, y, transparent: 0);
-        var cx = x + Widgets.ButtonWidth / 2 + 2;
+        var cx = x + Widgets.ButtonWidth / 2 + 1; // [ORIGINAL] 1 Pixel weiter links als zuvor (`file46_3`: „Mach' ich!“/„Abbruch“, `file43_5`: „Ja.“/„Nein.“)
         var tx = cx - a.Mini.Measure(text) / 2;
         s.Text(a.Mini, tx + 1, y + 4, text, 1);
         s.Text(a.Mini, tx, y + 3, text, DialogDark);

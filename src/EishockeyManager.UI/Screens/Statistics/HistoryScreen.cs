@@ -147,27 +147,37 @@ public sealed class HistoryScreen : Screen
             CompetitionWidgets.Left(s, mini, 66, 211 + 8 * k, lines[k].Text, lines[k].Color);
     }
 
-    /// <summary>Rote Markierung der angezeigten Saison unter der Achse (Farbe 16, vermessen am Video 16:52).</summary>
+    /// <summary>
+    /// Markierung der angezeigten Saison unter der Achse (Farbe 16): drei Zeilen 2 / 4 / 6 Pixel breit, darunter ein Stiel
+    /// 2 Pixel × 3 Zeilen, ausgerichtet am Balken (x = linke Balkenkante). [ORIGINAL] DOSBox-Sitzung 2, `file14_5`: Liga y 174–179
+    /// bei Achse y 173, DEB y 77–82 bei Achse y 76 (A357); vorher 1 / 3 / 5 Pixel mit 1 Pixel Stiel.
+    /// </summary>
     private static void Marker(Surface s, int x, int y)
     {
-        s.Set(x, y, MarkerColor);
-        s.HLine(x - 1, y + 1, 3, MarkerColor);
-        s.HLine(x - 2, y + 2, 5, MarkerColor);
-        s.Set(x, y + 3, MarkerColor);
-        s.Set(x, y + 4, MarkerColor);
+        s.HLine(x, y, 2, MarkerColor);
+        s.HLine(x - 1, y + 1, 4, MarkerColor);
+        s.HLine(x - 2, y + 2, 6, MarkerColor);
+        s.Fill(new Rect(x, y + 3, 2, 3), MarkerColor);
     }
 
     public const byte MarkerColor = 16;
 
-    /// <summary>[APPROX] Balkenfarbe: im Video wegen der Unschärfe nicht sicher bestimmbar (dunkles Blaugrau).</summary>
-    public const byte BarColorNormal = 200;
+    /// <summary>
+    /// Balkenfarbe je Grafik: Liga Index 29 (32 | 48 | 81), DEB-Pokal Index 27 (97 | 65 | 48). [ORIGINAL] DOSBox-Sitzung 2,
+    /// `file14_5` (A357). Europapokal nicht belegt (nicht im Wettbewerb aufgenommen): [APPROX] wie der DEB-Pokal.
+    /// </summary>
+    public static byte BarColorNormal(int graph) => graph == 2 ? (byte)29 : (byte)27;
 
-    /// <summary>[APPROX] Balkenhöhe: Liga nach Gesamtplatz (36 Stufen à 2 Pixel), Pokale nach erreichter Runde.</summary>
+    /// <summary>
+    /// Balkenhöhe: Liga nach Gesamtplatz (2 · (37 − …) Pixel mit 1-basiertem Rang, wie ihn <c>StatisticsHistory</c> speichert; „12. Platz der Oberliga“ = 2 Pixel, [ORIGINAL] `file14_5`; R14UR-02),
+    /// Pokale nach erreichter Runde. [APPROX] DEB-Pokal 3 Pixel je Runde („Erste Runde“ = 3 Pixel, `file14_5`; Formel in em.exe
+    /// nicht gelesen, zweiter Messpunkt fehlt), Europapokal wie bisher geschätzt.
+    /// </summary>
     private static int BarHeight(int graph, ManagerSeasonHistory h, int range) => graph switch
     {
         0 => h.Europe switch { CupOutcome.Winner => range, CupOutcome.Eliminated => h.EuropeFinalRound ? range * 2 / 3 : range / 3, _ => 0 },
-        1 => h.Deb switch { CupOutcome.Winner => range, CupOutcome.Eliminated => Math.Min(range, 4 * (h.DebRound + 1)), _ => 0 },
-        _ => Math.Min(range, 2 * (37 - (h.Rank + 12 * (int)h.League))) + (h.LeagueOutcome == LeagueOutcome.Rank ? 0 : 0),
+        1 => h.Deb switch { CupOutcome.Winner => range, CupOutcome.Eliminated => Math.Min(range, 3 * (h.DebRound + 1)), _ => 0 },
+        _ => Math.Min(range, 2 * (37 - (h.Rank + 12 * (int)h.League))),
     };
 
     private static byte BarColor(int graph, ManagerSeasonHistory h) =>
@@ -176,6 +186,6 @@ public sealed class HistoryScreen : Screen
             0 when h.Europe == CupOutcome.Winner => 7,
             1 when h.Deb == CupOutcome.Winner => 7,
             2 when h.LeagueOutcome == LeagueOutcome.GermanChampion => 7,
-            _ => BarColorNormal,
+            _ => BarColorNormal(graph),
         };
 }
