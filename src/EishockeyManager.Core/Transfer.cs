@@ -233,14 +233,23 @@ public sealed partial class TransferMarket
     {
         if (ListChangeRoll(game.Managers.Count, random))
             ChangeList(game, random);
+        AdvanceBids(game, random, expire: true, null);
+    }
 
+    /// <summary>
+    /// Verfall (<paramref name="expire"/>, alle Gebote) und Wurf der Gebote; <paramref name="only"/> = Wurf nur für die Markt-Plätze
+    /// dieses Managers.
+    /// </summary>
+    private void AdvanceBids(GameState game, Random random, bool expire, Manager? only)
+    {
         // [ORIGINAL] Verfall offener Gebote an den Marktplätzen (Datei 0x07215–0x0726A): random(0, 3) = 0 löscht Bit 0x80 samt
         // Meldung (Spur kader-transfer, Runde 12, U4); der Wurf fällt nur bei einem offenen Gebot.
-        foreach (var bid in _bids.ToList())
-            if (TransferRules.Random16(random, 0, 3) == 0)
-                _bids.Remove(bid);
+        if (expire)
+            foreach (var bid in _bids.ToList())
+                if (TransferRules.Random16(random, 0, 3) == 0)
+                    _bids.Remove(bid);
 
-        foreach (var listing in _listings.Where(l => l.Seller is not null).ToList())
+        foreach (var listing in _listings.Where(l => l.Seller is not null && (only is null || l.Seller == only)).ToList())
         {
             var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, random);
             if (!TransferRules.BidRoll(value, random) || _bids.Any(b => b.Listing == listing))

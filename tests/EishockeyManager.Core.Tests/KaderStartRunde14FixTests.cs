@@ -142,6 +142,31 @@ public class KaderStartRunde14FixTests
         }
     }
 
+    /// <summary>
+    /// R14NT4-05: Markt-Teil des Tageslaufs 0x07169 für einen Manager ohne Listenwechsel (Datei 0x07169 ruft 0x494EF nicht auf);
+    /// Angebote nur auf die Markt-Plätze dieses Managers.
+    /// </summary>
+    [Fact]
+    public void CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings()
+    {
+        var (game, manager, club) = Create();
+        var p = ListableDefender(club);
+        Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, p));
+        var before = game.TransferMarket.Listings.Select(l => l.Player.Id).ToList();
+
+        for (var day = 0; day < 300; day++)
+            game.TransferMarket.CatchUpManagerDay(game, manager);
+
+        Assert.Equal(before, game.TransferMarket.Listings.Select(l => l.Player.Id));
+        Assert.Contains(game.TransferMarket.Bids, b => b.Listing.Player == p);
+        Assert.All(game.TransferMarket.Bids, b => Assert.Same(manager, b.Listing.Seller));
+
+        // Gegenprobe: der volle Tageslauf des Markts wechselt die Liste in dieser Zeit.
+        for (var day = 0; day < 300; day++)
+            game.TransferMarket.AdvanceDay(game, game.Random);
+        Assert.NotEqual(before, game.TransferMarket.Listings.Select(l => l.Player.Id));
+    }
+
     private static (GameState, Manager, Club) Reload(GameState game, int managerIndex)
     {
         var club = game.Clubs[game.Managers[managerIndex].ClubIndex];

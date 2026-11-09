@@ -25,19 +25,27 @@ public class TransferBuyWindowDosboxTests
         Assert.Equal(new Rect(2, 29, 165, 43), TransferDialog.BuyBox);
 
         byte At(int x, int y) => d.Surface.Pixels[y * Surface.Width + x];
-        // Füllung Index 4 innen, Schatten Index 6 rechts (x 166–167) und unten (y 71–72) bis (168 | 73)
+        // Füllung Index 4 innen, Schatten Index 6 rechts (x 167–168) und unten (y 72–73), äußere Ecken in Füllfarbe (R14N-01)
         Assert.Equal(4, At(100, 65));
         Assert.Equal(6, At(167, 40));
         Assert.Equal(6, At(60, 72));
         Assert.NotEqual(6, At(100, 74));
-        // R14UR-04: Kante x 166 / y 71 (dunkel, Index 29), Schatten bis (168 | 73); `file40_08`
+        // R14UR-04: Kante x 166 / y 71 (dunkel, Index 29), Schatten bis x 168 / y 73; `file40_08`
         Assert.Equal(29, At(166, 40));
         Assert.Equal(4, At(165, 40));
         Assert.Equal(6, At(167, 40));
         Assert.Equal(29, At(100, 71));
         Assert.Equal(4, At(100, 70));
         Assert.Equal(6, At(100, 72));
-        Assert.Equal(6, At(168, 73));
+        // R14N-01: die drei äußeren Schattenecken (168 | 31), (4 | 73), (168 | 73) in Füllfarbe Index 4 = (20 | 28 | 32), `file40_08`,
+        // `file40_09`; daneben Schatten.
+        Assert.Equal(4, At(168, 31));
+        Assert.Equal(4, At(4, 73));
+        Assert.Equal(4, At(168, 73));
+        Assert.Equal(6, At(168, 32));
+        Assert.Equal(6, At(5, 73));
+        Assert.Equal(6, At(167, 73));
+        Assert.Equal(6, At(168, 72));
         Assert.Equal(6, At(166, 73));
         Assert.Equal(6, At(168, 40));
         Assert.NotEqual(6, At(169, 40));

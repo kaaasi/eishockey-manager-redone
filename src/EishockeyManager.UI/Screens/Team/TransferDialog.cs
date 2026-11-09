@@ -19,7 +19,7 @@ public sealed class TransferDialog
     public static readonly Rect QuestionBox = OriginalDialog.Window;
 
     /// <summary>
-    /// Kauf- und Leihfenster: Rahmen (2 | 29)–(166 | 71), Schatten bis (168 | 73), also links über der Kaderliste, nicht mittig.
+    /// Kauf- und Leihfenster: Rahmen (2 | 29)–(166 | 71), Schatten bis x 168 / y 73 (äußere Ecken in Füllfarbe), also links über der Kaderliste, nicht mittig.
     /// [ORIGINAL] DOSBox-Sitzung 2, `file40_08` (VALLIERE kaufen), `file40_09` (leihen), `file35_2` (A377).
     /// </summary>
     public static readonly Rect BuyBox = new(2, 29, 165, 43);
