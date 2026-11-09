@@ -91,7 +91,7 @@ public sealed partial class GameState
                 if (listing.Player.Strain > MarketDecayAbove)
                     listing.Player.Strain = Math.Max(listing.Player.Strain - MarketDecay, TrainingRules.MinStrain);
         // #688 (R688-07): [ORIGINAL] Heilung je Markt-Platz mit Pool +0x1A = Manager vor dessen Angebotswurf (Datei 0x072A0–0x072CB).
-        if (!manager.Dismissed && PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
+        if (!manager.Dismissed && PlayerInjuries.IsHealingDay(Counter(day)))
             foreach (var listing in TransferMarket.OwnListingsOutsideSquad(Clubs[manager.ClubIndex]))
                 PlayerInjuries.Heal(listing.Player);
         TransferMarket.CatchUpManagerDay(this, manager);
@@ -107,7 +107,7 @@ public sealed partial class GameState
     private void ManagerSquadRun(int day, Manager manager)
     {
         var club = Clubs[manager.ClubIndex];
-        if (PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
+        if (PlayerInjuries.IsHealingDay(Counter(day)))
             HealSquad(club);
         TrainManager(manager);
         foreach (var p in club.Players)
@@ -130,7 +130,7 @@ public sealed partial class GameState
     /// </summary>
     private void HealManagerSquads(int day)
     {
-        if (!PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
+        if (!PlayerInjuries.IsHealingDay(Counter(day)))
             return;
         foreach (var club in ManagedClubs())
             HealSquad(club);
@@ -143,7 +143,7 @@ public sealed partial class GameState
     /// </summary>
     private void HealUnmanaged(int day)
     {
-        if (!PlayerInjuries.IsHealingDay(DayCounter.Of(day)))
+        if (!PlayerInjuries.IsHealingDay(Counter(day)))
             return;
         var managed = ManagedClubs().ToHashSet();
         foreach (var club in Clubs.Where(c => !managed.Contains(c)))
@@ -268,7 +268,7 @@ public sealed partial class GameState
     /// 603.307 DM unter FILE44 + Prämie) bucht den April nur, weil FILE44 im Menü des Markierungstags gesichert ist (Datei 0x55350,
     /// nach dem Tageswechsel 0x55204): Nach dem Laden läuft dieser Tageswechsel erneut (Datei 0x54D41 → 0x55073 → 0x55204, Zähler
     /// 218 = 15. April, Bild <c>file46_1</c>), die WM-Schleife steht dann einen Tag später und schließt zuletzt den 30. April ab.
-    /// [APPROX] Der Import spielt diese Eigenheit des Ladens nicht nach (OriginalImport, Tag 216 mit gerechnetem Tageswechsel).
+    /// Der HOK-Import spielt diese Eigenheit des Ladens nach (Entscheidung Nutzer 09.11.2026, C; <c>GameState.LoadQuirk.cs</c>).
     /// [APPROX] Ohne eigenen Kalendertag des Remakes (die Bücher führen die Beträge in der neuen Saison, Datei 0x56476 zählt die
     /// Saison vor der Schleife weiter); Bau, Tagesabschluss und Heilung je Tag für alle Manager nacheinander statt je Manager
     /// verschränkt (sie wirken je Manager getrennt; die Börse rechnet wie im Hauptweg einmal je Tag, Entscheidung #188). Im Modus

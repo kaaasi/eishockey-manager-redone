@@ -12,7 +12,7 @@ public class PruefungKarteRunde14Tests
     /// <summary>
     /// R688S2-03: Migration 45 → 46 (<c>SaveGame.Migration.Schulden.cs</c>). Ein Stand mit Schema 45, <c>DebtDays</c> und
     /// <c>Dismissed</c> lädt; das Kennzeichen bleibt, und mit dem einzigen Manager ausgeschieden endet das Spiel beim nächsten
-    /// Tag. Schema 46 mit <c>DebtDays</c> lehnt der strenge Leser ab. Rot ohne den Eintrag <c>[45] = MigrateSchulden</c>
+    /// Tag. Das aktuelle Schema mit <c>DebtDays</c> lehnt der strenge Leser ab. Rot ohne den Eintrag <c>[45] = MigrateSchulden</c>
     /// (unbekanntes Feld) bzw. ohne Erhalt von <c>Dismissed</c>.
     /// </summary>
     [Fact]
@@ -20,7 +20,7 @@ public class PruefungKarteRunde14Tests
     {
         var game = TestGames.Create(3);
         var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        Assert.Equal(46, (int)root["schema"]!);
+        Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
         var manager = root["manager"]!.AsArray()[0]!.AsObject();
         Assert.Null(manager["DebtDays"]);
         Assert.False((bool)manager["Dismissed"]!);
@@ -31,6 +31,7 @@ public class PruefungKarteRunde14Tests
         Assert.False(current.Success); // Schema 46 kennt DebtDays nicht mehr
         Assert.Contains("DebtDays", current.Error);
 
+        root["spiel"]!.AsObject().Remove("LoadCounterOffset"); // seit Schema 47 (Teil 5)
         root["schema"] = 45;
         var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
         Assert.True(result.Success, result.Error);

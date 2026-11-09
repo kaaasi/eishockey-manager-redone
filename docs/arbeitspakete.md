@@ -180,9 +180,9 @@ nicht übernommenen Felder noch in Runde 14. Fortsetzungen: höchstens 5 statt 3
   WM-Gruppenphase; Funktionskarte `--write` (zweiter Lauf ohne Diff); Freiprüfung der Bildschirme.
 - **Dateigrenzen:** `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`,
   die in den Issues genannten Test- und Kommentarstellen, `Core/GameState.MainMenu.cs` (nur Kommentar). **Modell:**
-  Claude Sonnet 5.5 (Lauf 09.11.2026: Claude Opus 5.5, Leitstelle). **Status:** Teil 1 (Inventur Runde 14, Funktionskarte,
-  Korrekturen `re-runde-14.md`, Doku-P3) in Arbeit; Teile 2 (P3 in Code und Tests, #603–#621), 3 (HOK-Import mit
-  Markierungstag, Entscheidung C) und 4 (Restlücken #688) folgen.
+  Claude Sonnet 5.5 (Lauf 09.11.2026: Claude Opus 5.5, Leitstelle). **Status:** Teile 1–4 fertig (#693 Inventur/Karte/Doku,
+  #694 P3 Leitstelle, #695 #603/#604/#619/#621, #696 #610/#611/#620 – #620 teilweise); Teil 5 (HOK-Import mit Ladeeigenheit
+  des Markierungstags, Entscheidung C, Schema 47) fertig #697; Teil 6 (Restlücken #688) in Arbeit.
 
 ### Gesamtreview am Rundenende (E14-3)
 

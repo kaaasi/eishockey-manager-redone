@@ -57,25 +57,26 @@ public class TagestaktSommerpauseReviewTests
     }
 
     /// <summary>
-    /// R688S-01 am Original-Stand: FILE44 (14.04.1994, 18.027.183 DM) bis zum Bildschirm „Saisonende“ ändert sich das Konto nur um die
-    /// Prämie (10. Platz, 100.000 DM): kein April-Monatsabschluss, weder vor dem Kaderwechsel noch danach (vorher rot: der 30. April
-    /// war der erste Tag der Sommerpause und buchte den April mit dem neuen Kader). Die Bücher der neuen Saison zeigen genau vier
+    /// R688S-01 und Ladeeigenheit (Spur pruefung-karte Teil 5, Entscheidung Nutzer 09.11.2026: C) am Original-Stand: FILE44
+    /// (14.04.1994, 18.027.183 DM) ist im Menü des Markierungstags gesichert (Datei 0x55350, nach dem Tageswechsel 0x55204). Nach dem
+    /// Laden läuft dieser Tageswechsel erneut (Zähler 218 = „Sonntag, 15. April“, Bild <c>file46_1</c>, Konto unverändert), die
+    /// WM-Schleife steht einen Zähler höher und schließt zuletzt den 30. April ab – mit dem April-Abschluss des 25er-Kaders, vor dem
+    /// Kaderwechsel. DOSBox-Bild <c>file46_2</c>: 17.523.876 DM am Bildschirm „Saisonende“ = FILE44 + Prämie (100.000) − 603.307 DM.
+    /// Regressionstest (vorher rot: kein Gehaltsabschluss zwischen 14. und 29. April, Konto 18.127.183 DM). [APPROX] Restabweichung:
+    /// Der April-Abschluss des Remakes beträgt −488.307 DM (Gehälter −319.899, Unterhalt −192.866, Grundeinnahmen/Werbung +24.458,
+    /// Saat 4711), das Original −603.307 DM; die 115.000 DM sind ohne Kategoriesummen im HOK nicht zuzuordnen (FILE46 führt nur die
+    /// Summen der neuen Saison). Spanne: file46_2 bis 130.000 DM darüber. Die Bücher der neuen Saison zeigen danach genau vier
     /// Gehaltsabschlüsse des Sommerkaders.
-    /// <para>
-    /// Zum DOSBox-Bild <c>file46_2</c> (17.523.876 DM, also 603.307 DM darunter): FILE44 ist im Menü des Markierungstags gesichert
-    /// (Datei 0x55350, nach dem Tageswechsel 0x55204); nach dem Laden läuft dieser Tageswechsel im Original erneut (Zähler 218 =
-    /// 15. April, Bild <c>file46_1</c>), die WM-Schleife steht einen Tag später und schließt zuletzt den 30. April ab – mit dem
-    /// April-Abschluss des 25er-Kaders. Diese Eigenheit des Ladens spielt der Import nicht nach ([APPROX], <c>RunSummerBreak</c>);
-    /// die Größenordnung des Unterschieds ist der Monatsabschluss des FILE44-Kaders (Gegenprobe unten).
-    /// </para>
     /// </summary>
     [GameDataFact]
-    public void File44_SeasonEndScreen_AccountIsFile44PlusPremium_NoAprilMonthEnd()
+    public void File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2()
     {
         var game = Import("FILE44.HOK");
         var me = game.Managers[0];
         var club = game.Clubs[me.ClubIndex];
         Assert.Equal(18_027_183, me.Money);
+        Assert.Equal(1, game.LoadCounterOffset);
+        Assert.StartsWith("Sonntag, 15.", game.DateText);
         var aprilWages = FinanceRules.MonthlyWages(game, club); // 25 Spieler, mit KJELLBERG und VALLIERE
         var oldBook = game.Finance(me).Book;
         var wagesBefore = oldBook.Current(FinanceCategory.Gehaelter);
@@ -84,16 +85,14 @@ public class TagestaktSommerpauseReviewTests
 
         Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
         Assert.Equal(100_000, oldBook.Current(FinanceCategory.Praemien));
-        Assert.Equal(wagesBefore, oldBook.Current(FinanceCategory.Gehaelter)); // kein Gehaltsabschluss zwischen 14. und 29. April
-        Assert.Equal(18_127_183, me.Money);
-        // Gegenprobe zur Abweichung von file46_2: ein Monatsabschluss des 25er-Kaders (Gehälter, Unterhalt, Grundeinnahmen) liegt in
-        // der Größenordnung der 603.307 DM, die das DOSBox-Bild tiefer steht ([APPROX] Rest: Posten ohne Kategoriesummen im HOK).
-        var aprilUpkeep = FinanceRules.ToMarks(FinanceRules.MonthlyBaseExpenseThirds(me.Level, game.Finance(me).CostLeague))
-                          + game.Finance(me).Stadium.MonthlyUpkeep;
-        Assert.InRange(aprilWages + aprilUpkeep, 603_307 * 7 / 10, 603_307);
+        Assert.Equal(wagesBefore - aprilWages, oldBook.Current(FinanceCategory.Gehaelter)); // ein Abschluss, am 30. April
+        Assert.StartsWith("Montag, 30.", game.DateText);
+        const long File46_2 = 17_523_876;
+        Assert.InRange(me.Money, File46_2, File46_2 + 130_000);
 
         game.StartNextSeason();
 
+        Assert.Equal(0, game.LoadCounterOffset);
         var summerWages = FinanceRules.MonthlyWages(game, club); // 24 Spieler, ohne KJELLBERG und VALLIERE
         Assert.True(summerWages < aprilWages);
         Assert.Equal(-4 * summerWages, game.Finance(me).Book.Current(FinanceCategory.Gehaelter));

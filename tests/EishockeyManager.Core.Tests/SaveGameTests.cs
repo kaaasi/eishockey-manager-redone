@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(46, SaveGame.SchemaVersion);
+        Assert.Equal(47, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -62,7 +62,8 @@ public class SaveGameTests
     // dazu Viertelfinale älterer Stände in Platzfolge (R683-01, Migration ohne neues Feld).
     // 45 GameState.DayOpened: Tageswechsel vor dem Halt (#688, R688-04).
     // 46 Manager.DebtDays entfällt: keine Entlassung wegen Schulden (#688, R688S-03; im Original nicht vorhanden).
-    private const string ExpectedSchemaFingerprint = "B29FEBF2CCC262FE";
+    // 47 GameState.LoadCounterOffset: Ladeeigenheit des Markierungstags beim HOK-Import (pruefung-karte Teil 5, Nutzer 09.11.2026 C).
+    private const string ExpectedSchemaFingerprint = "38C12552B42BF30F";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

@@ -85,6 +85,23 @@ public static partial class OriginalImport
     /// <summary>Regel 5: Remake-Tag = Tageszähler DGROUP 0x3B7 − 1 (10. September = Zähler 1 = Tag 0).</summary>
     public static int Day(OriginalSaveGame save) => BinaryPrimitives.ReadInt32LittleEndian(save.Block("03B7")) - 1;
 
+    /// <summary>
+    /// Im Menü des Markierungstags gesichert (Tagesindex DGROUP 0xA969 = Zähler 0x3B7 − 1, sonst gleich)? [ORIGINAL] Der Tageswechsel
+    /// 0x55204 läuft dort vor dem Menü 0x55350, der Index zählt erst danach (Datei 0x553A2); FILE22/FILE44 (14.04.1994): 217/216.
+    /// Nach dem Laden läuft dieser Tageswechsel erneut (GameState.LoadQuirk.cs). Unterstützt ist der 13. April (Markierung 255 am
+    /// Ende der Vereinssaison); einen anderen Stand dieser Art lehnt der Import ab.
+    /// </summary>
+    public static bool SavedOnMarkerDay(OriginalSaveGame save)
+    {
+        var counter = Day(save) + 1;
+        var index = BinaryPrimitives.ReadInt16LittleEndian(save.Block("A969"));
+        if (index != counter - 1)
+            return false;
+        if (Day(save) != SeasonCalendar.ClubSeasonEnd + 1)
+            throw new InvalidDataException($"Tagesindex {index} (DGROUP 0xA969) vor Zähler {counter} außerhalb des 13. April.");
+        return true;
+    }
+
     /// <summary>Regel 5: Saison = 1993 + Saisonzähler DGROUP 0x3BD.</summary>
     public static int Season(OriginalSaveGame save) =>
         GameState.FirstSeason + BinaryPrimitives.ReadInt16LittleEndian(save.Block("03BD"));
@@ -126,6 +143,8 @@ public sealed partial class GameState
         var game = CreateImported(save, database, clubOf, managerCount, seed);
         game.ReplayTo(save);
         game.ApplyOriginal(save, clubOf, database);
+        if (OriginalImport.SavedOnMarkerDay(save))
+            game.ReopenMarkerDayAfterLoad(); // Entscheidung Nutzer 09.11.2026 (C): Ladeeigenheit wie im Original
         return game;
     }
 
