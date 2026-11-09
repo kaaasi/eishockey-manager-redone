@@ -202,9 +202,13 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     /// Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     /// (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     /// Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).</summary>
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte.
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
     [GameDataTheory]
-    [InlineData(false, "D92E9F662A1522AB")]
-    [InlineData(true, "A8F64326846979F4")]
+    [InlineData(false, "7755FA3A80BEFFDE")]
+    [InlineData(true, "5F5FDF1472303164")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

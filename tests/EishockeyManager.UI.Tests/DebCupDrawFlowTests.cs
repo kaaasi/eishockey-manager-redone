@@ -269,6 +269,11 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Original noch den Takt des Hauptwegs (Wanderung, Talentsuche, Training/Markt/Verträge, Heilung), erst danach die Schleife;
     /// anderer Zufallsverbrauch ab dem 14. April 1994. Gegenprobe: nur die Core-Änderung zurück → alter Wert. Mit und ohne Anzeige
     /// weiter gleich.</summary>
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. 1993: Pokal und Tabelle gleich, nur der Meister (DM) neu; ab 1994 alles neu. Mit und ohne Anzeige weiter gleich.
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    // Gegenüber main: 1993 Meister und Tabelle gleich, Pokal neu (die Angaben der Zeile #676 galten für Base e5fe46f). Mit und ohne Anzeige gleich.
     private const string Reference =
-        "1993: DEB 9, DM 5, Tab 15381 | 1994: DEB 5, DM 2, Tab 15829 | 1995: DEB 5, DM 9, Tab 15756 | 1996: DEB 5, DM 5, Tab 16395";
+        "1993: DEB 8, DM 5, Tab 15381 | 1994: DEB 7, DM 8, Tab 15375 | 1995: DEB 5, DM 7, Tab 15397 | 1996: DEB 2, DM 2, Tab 15414";
 }

@@ -189,13 +189,17 @@ public class RngTwinProbeTests
     // kader-start Runde 14 Teil 2b (Herkunft berichtigt, Review R14KS-04): neu durch die neuen Spielerfelder im Abdruck (Zähler und
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte.
     [Theory]
     // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
     // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
-    [InlineData(false, 3, "201CE3A7E7AD2B69")]
-    [InlineData(true, 3, "FF77B9EAE4BFCB98")]
-    [InlineData(false, 11, "9D252484A6B094E2")]
-    [InlineData(true, 11, "60A237D8FFE61FFC")]
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    [InlineData(false, 3, "975D2A6C4C60BA51")]
+    [InlineData(true, 3, "973330F4EBB72702")]
+    [InlineData(false, 11, "F541B5175D1801F9")]
+    [InlineData(true, 11, "BFFCFD23EBA50AE0")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -205,10 +209,14 @@ public class RngTwinProbeTests
     // Integration Runde 12 (+ kader-transfer): Abdrücke auf dem integrierten Stand neu – U4 Angebotsverfall, U5 Laufbahnende, U9 fester Spielplan und U15 Europapokal-Filter ändern Spielverlauf und Zufallsverbrauch; synthetische und Originaldatenbank-Abdrücke betroffen.
     // R12I-01 (Integration Runde 12): Belastung neuer Kaderplätze random(80, 120) – beide Abdrücke neu (Begründung bei
     // SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason).
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte.
     [GameDataTheory]
     // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
-    [InlineData(false, "A34A978FEBB38BEF")]
-    [InlineData(true, "3FBDDC0C2796DD49")]
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    [InlineData(false, "717B7C3D66940E4D")]
+    [InlineData(true, "13BD58ED33F37DA9")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

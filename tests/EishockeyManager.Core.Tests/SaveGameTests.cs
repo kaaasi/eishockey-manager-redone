@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(43, SaveGame.SchemaVersion);
+        Assert.Equal(44, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -55,7 +55,9 @@ public class SaveGameTests
     // Integration Runde 14, Abdruck neu: Felder aus nationalteam kommen zu denen aus saison 40 hinzu).
     // 42 GameSetup._startLeague: Start-Liga ohne Manager (Spur kader-start Runde 14 Teil 1, R13KI-03/#605; vorläufig 40).
     // 43 Club._tableRank (A046) und Tore/Spiele je Wettbewerb am Player (A135), Spur kader-start Runde 14 Teil 2b (vorläufig 41).
-    private const string ExpectedSchemaFingerprint = "502E418048BEF58F";
+    // 44 PlayoffSeries.HomeClub/AwayClub statt HigherSeed/LowerSeed (Fixlauf #676, R683-04; Abdruck neu nur durch die Umbenennung),
+    // dazu Viertelfinale älterer Stände in Platzfolge (R683-01, Migration ohne neues Feld).
+    private const string ExpectedSchemaFingerprint = "C80E5F69D5D80155";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

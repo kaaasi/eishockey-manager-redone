@@ -483,7 +483,8 @@ sie aus den Spielern kommt.
   five“ (Spiel `[0xCCA3]` 0 … 4, Siege DGROUP 0xCCA4 + Paarung, nach drei Siegen Ergebnis 100 = nicht ausgetragen);
   nach jedem Spiel tauschen Heim und Gast (0x31505); drei Runden (8 → 4 → 2, Paarungszahl 8 − 4·(Runde > 0) − 2·(Runde > 1),
   0x31BB0); Ergebnisse ≥ 30 = Penaltysieg; Meister DGROUP 0xD0E6 (0x31CBF). Damit ist auch das Format keine Erklärung;
-  die Marke `[APPROX]` in `Playoffs.cs` kann die Spur `wettbewerbe-komplett` auf `[ORIGINAL]` stellen.
+  die Marke `[APPROX]` in `Playoffs.cs` kann die Spur `wettbewerbe-komplett` auf `[ORIGINAL]` stellen. Halbfinale und Endspiel
+  nach Tabelle DGROUP 0x144 (0x31BED–0x31C07: 1–8 gegen 3–6, 2–7 gegen 4–5, Heimrecht beim kleineren Platz) seit #676 `[ORIGINAL]`.
 
 **Stand #204:** Mit Lader, festen Teamwerten, Vereinstausch und Play-off-Format stimmt die Abbildung der Computervereine
 mit dem Original überein; die stärkere Streuung der Meister im Video (§13) bleibt unerklärt. Vor weiteren Änderungen die

@@ -48,34 +48,49 @@ public sealed record KnockoutMatch(int Day, int Home, int Away, int HomeGoals, i
     }
 }
 
-/// <summary>Play-Off-Serie zweier Vereine: wer zuerst <see cref="WinsNeeded"/> Spiele gewinnt.</summary>
-public sealed class PlayoffSeries(int higherSeed, int lowerSeed)
+/// <summary>
+/// Play-Off-Serie zweier Vereine: wer zuerst <see cref="WinsNeeded"/> Spiele gewinnt. <see cref="HomeClub"/> ist der erste
+/// Verein der Paarung (Platz 2k, Heimrecht in Spiel 1): im Viertelfinale der besser Platzierte, danach der Sieger der oberen
+/// Paarung der Vorrunde (<see cref="Playoffs"/>, Tabelle DGROUP 0x144) – er kann schlechter platziert sein.
+/// </summary>
+public sealed class PlayoffSeries(int homeClub, int awayClub)
 {
     /// <summary>„Best of five“: drei Siege entscheiden die Serie. [ORIGINAL] Datei 0x315E9 (Siege DGROUP 0xCCA4, nach drei Siegen Ergebnis 100 = nicht ausgetragen; spielberechnung.md §14). Die 15 Termine im Kalender sind drei Runden à höchstens fünf Spiele.</summary>
     public const int WinsNeeded = 3;
 
-    public int HigherSeed { get; } = higherSeed;
-    public int LowerSeed { get; } = lowerSeed;
+    /// <summary>Erster Verein der Paarung (Platz 2k), Heimrecht in Spiel 1, 3, 5. Bis Schema 43 <c>HigherSeed</c> (R683-04).</summary>
+    public int HomeClub { get; } = homeClub;
+
+    /// <summary>Zweiter Verein der Paarung (Platz 2k + 1), Heimrecht in Spiel 2 und 4. Bis Schema 43 <c>LowerSeed</c>.</summary>
+    public int AwayClub { get; } = awayClub;
     public List<KnockoutMatch> Games { get; } = [];
 
     public int Wins(int club) => Games.Count(g => g.Winner == club);
-    public bool IsDecided => Wins(HigherSeed) >= WinsNeeded || Wins(LowerSeed) >= WinsNeeded;
-    public int? Winner => Wins(HigherSeed) >= WinsNeeded ? HigherSeed : Wins(LowerSeed) >= WinsNeeded ? LowerSeed : null;
-    public bool Involves(int club) => HigherSeed == club || LowerSeed == club;
+    public bool IsDecided => Wins(HomeClub) >= WinsNeeded || Wins(AwayClub) >= WinsNeeded;
+    public int? Winner => Wins(HomeClub) >= WinsNeeded ? HomeClub : Wins(AwayClub) >= WinsNeeded ? AwayClub : null;
+    public bool Involves(int club) => HomeClub == club || AwayClub == club;
 
-    /// <summary>Heimrecht: Heim und Gast tauschen nach jedem Spiel. [ORIGINAL] Datei 0x31505 (spielberechnung.md §14). [APPROX] Spiel 1 beim besser platzierten Verein (erste Stelle der Paarung) ist nicht gesondert belegt.</summary>
-    public (int Home, int Away) NextPairing => Games.Count % 2 == 0 ? (HigherSeed, LowerSeed) : (LowerSeed, HigherSeed);
+    /// <summary>
+    /// Heimrecht: Heim und Gast tauschen nach jedem Spiel. [ORIGINAL] Datei 0x31505 (spielberechnung.md §14), Aufruf nach jedem der
+    /// ersten vier Spiele (0x316C9): Spiel 1, 3, 5 beim ersten Verein der Paarung (Platz 2k in DGROUP 0x5D3B; im Viertelfinale der
+    /// besser Platzierte, danach der Sieger der oberen Paarung, siehe <see cref="Playoffs"/>). Am HOK geprüft (FILE22/FILE44,
+    /// <c>OriginalImport.Playoffs.cs</c>).
+    /// </summary>
+    public (int Home, int Away) NextPairing => Games.Count % 2 == 0 ? (HomeClub, AwayClub) : (AwayClub, HomeClub);
 }
 
 /// <summary>
 /// Play-Offs der Bundesliga um die Deutsche Meisterschaft.
 /// [ORIGINAL] Datei 0x31934 (Setzung aus 0x5CCB), 0x31BB0 (drei Runden 8 → 4 → 2), 0x31CBF (Meister); spielberechnung.md §14:
 /// die ersten acht der Hauptrunde, Viertelfinale 1–8, 2–7, 3–6, 4–5, Halbfinale, Finale.
-/// [APPROX] Welche Sieger im Halbfinale aufeinandertreffen (hier 1–8 gegen 4–5, 2–7 gegen 3–6, besser Platzierter mit Heimrecht) weicht vom
-/// Original ab: Tabelle DGROUP 0x144 beim Rundenwechsel (Datei 0x31BED–0x31C4D) führt die Sieger der Plätze 0/4 (1–8, 3–6) auf die
-/// Plätze 8/9 und die der Plätze 2/6 (2–7, 4–5) auf 10/11, Heimrecht in Spiel 1 beim kleineren Platz (FILE44: SB Rosenheim – ESV
-/// Kaufbeuren; Spur hok-import, R14HI-01). Der Import übernimmt die Paarungen des HOK (<c>OriginalImport.Playoffs.cs</c>); die Regel
-/// für eigene Spiele ändert die Fingerabdrücke der Mehrsaisonproben und bleibt der Spur saison. Je Runde fünf Termine
+/// [ORIGINAL] Paarungen der nächsten Runde (#676): Die Setzung 0x319AC–0x319D4 legt die Viertelfinals auf die Plätze 0/1 (1–8),
+/// 2/3 (2–7), 4/5 (3–6), 6/7 (4–5) von DGROUP 0x5D3B; der Sieger steht nach dem fünften Spiel auf dem geraden Platz (0x316BF).
+/// Beim Rundenwechsel kopiert 0x31BED–0x31C07 jeden Platz i nach 0x5D3A + Tabelle DGROUP 0x144[i] (Datei 0x16DD0 + 0x144 =
+/// 09 18 0B 18 0A 18 0C 18 0D 18 0E 18): Sieger von Platz 0 → 8, 4 → 9, 2 → 10, 6 → 11, 8 → 12, 10 → 13, Verlierer → 23.
+/// Halbfinale also Sieger 1–8 gegen Sieger 3–6 und Sieger 2–7 gegen Sieger 4–5, Endspiel Sieger der Plätze 8/9 gegen 10/11.
+/// Heimrecht in Spiel 1 hat der kleinere Platz (2k, siehe <see cref="PlayoffSeries.NextPairing"/>), also der Sieger der oberen
+/// Paarung – nicht der besser Platzierte (FILE44: Halbfinale SB Rosenheim – ESV Kaufbeuren). <see cref="Rounds"/> führt die
+/// Serien in Platzfolge (Runde 0: Plätze 0, 2, 4, 6; Runde 1: 8, 10; Runde 2: 12). Je Runde fünf Termine
 /// (Texte im Original: „VIERTELFINALE“, „HALBFINALE“, „Play-Off Spiele“, „Deutsche Meisterschaft“).
 /// </summary>
 public sealed partial class Playoffs
@@ -92,9 +107,10 @@ public sealed partial class Playoffs
         if (seeds.Count != Teams)
             throw new ArgumentException("Die Play-Offs brauchen acht Vereine.", nameof(seeds));
         Seeds = seeds;
+        // [ORIGINAL] Platz 2i = 0x5CCB[i], 2i + 1 = 0x5CCB[7 − i] (0x319AC–0x319D4).
         _rounds.Add([
-            new(seeds[0], seeds[7]), new(seeds[3], seeds[4]),
-            new(seeds[1], seeds[6]), new(seeds[2], seeds[5]),
+            new(seeds[0], seeds[7]), new(seeds[1], seeds[6]),
+            new(seeds[2], seeds[5]), new(seeds[3], seeds[4]),
         ]);
     }
 
@@ -108,18 +124,12 @@ public sealed partial class Playoffs
         while (_rounds.Count <= round && _rounds[^1].All(s => s.IsDecided) && _rounds.Count < 3)
         {
             var winners = _rounds[^1].Select(s => s.Winner!.Value).ToList();
-            var next = new List<PlayoffSeries>();
-            for (var i = 0; i < winners.Count; i += 2)
-            {
-                // Besser platzierter Verein hat Heimrecht
-                var (a, b) = (winners[i], winners[i + 1]);
-                next.Add(SeedOf(a) < SeedOf(b) ? new(a, b) : new(b, a));
-            }
-            _rounds.Add(next);
+            // [ORIGINAL] Tabelle DGROUP 0x144: Serie k der nächsten Runde = Sieger der Serie k (kleinerer Platz, Heimrecht in Spiel 1)
+            // gegen Sieger der Serie k + Serienzahl / 2 (Viertelfinale: Plätze 0/4 → 8/9, 2/6 → 10/11; Halbfinale: 8/10 → 12/13).
+            var half = winners.Count / 2;
+            _rounds.Add(Enumerable.Range(0, half).Select(k => new PlayoffSeries(winners[k], winners[k + half])).ToList());
         }
     }
-
-    private int SeedOf(int club) => Seeds.ToList().IndexOf(club);
 
     /// <summary>Serie, in der ein Verein am Play-Off-Termin <paramref name="dateIndex"/> (0–14) spielt, oder null.</summary>
     public PlayoffSeries? SeriesOn(int dateIndex, int club)

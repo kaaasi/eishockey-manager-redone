@@ -390,8 +390,14 @@ public class GameModeTests
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
+    // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte. Meister und Pokalsieger der Saison 1 gleich; der Weltmeister 1993 (nach den Play-offs) und alles Weitere neu.
+    // Merge main (#672) in #683: neu ermittelt, beide Ursachen wirken – #672 (Tageszähler 0x3B7, WM-Schleife ohne Bundestrainer) und
+    // #676 (Halbfinale nach 0x144). Gegenproben: alte Paarung (Playoffs.cs von e5fe46f) → Wert von main; alter Tagesablauf
+    // (src-Änderungen von #672 zurück) → Wert von #683 am Head 84fe66c.
+    // Gegenüber main: Saison 1 Pokalsieger gleich, Meister und Weltmeister neu (die Angaben der Zeile #676 galten für Base e5fe46f); Manager 1
+    // ist in Saison 5 nicht mehr spielfähig (Konto −7.327.742), die Probe prüft weiter nur Manager 0.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=11,GermanChampion=0,EuropeanCupWinner=2|402643,400000|WorldChampion=63,CupWinner=11,GermanChampion=7,EuropeanCupWinner=0|1825857,400000|WorldChampion=54,CupWinner=11,GermanChampion=12,EuropeanCupWinner=7|2492942,400000|WorldChampion=52,CupWinner=1,GermanChampion=3,EuropeanCupWinner=12|3117742,400000|WorldChampion=63,CupWinner=21,GermanChampion=3,EuropeanCupWinner=3|3606406,400000|R1026447858 C18165625";
+        "WorldChampion=52,CupWinner=11,GermanChampion=11,EuropeanCupWinner=2|402268,400000|WorldChampion=53,CupWinner=0,GermanChampion=3,EuropeanCupWinner=11|1794272,400000|WorldChampion=52,CupWinner=0,GermanChampion=7,EuropeanCupWinner=11|2406786,400000|WorldChampion=54,CupWinner=7,GermanChampion=7,EuropeanCupWinner=7|3046744,400000|WorldChampion=52,CupWinner=7,GermanChampion=7,EuropeanCupWinner=7|3108982,-7327742|R1107079070 C1895578420";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
