@@ -160,6 +160,50 @@ public sealed class SaveLoadDialogOriginalTests : IDisposable
         Assert.DoesNotContain(SaveLoadScreen.MarkerColor, Crop(d.Surface, new Rect(43, 55, 3, 7 * 16)));
     }
 
+    /// <summary>
+    /// Review R14HI-06: Spaltenwahl wie Datei 0x5E252–0x5E264 (Spalte zählt hoch, solange 0x7A + 80 · k &lt; x): x = 122 ist noch Spalte
+    /// 0, x = 123 Spalte 1, x = 202 noch Spalte 1, x = 203 Spalte 2. Vorher rechnete das Remake (x − 42) / 80 und sprang an diesen
+    /// beiden x-Werten eine Spalte zu früh.
+    /// </summary>
+    [GameDataTheory]
+    [InlineData(122, 0)]
+    [InlineData(123, 1)]
+    [InlineData(202, 1)]
+    [InlineData(203, 2)]
+    [InlineData(43, 0)]
+    [InlineData(265, 2)]
+    public void Marker_ColumnBoundaries_LikeTheOriginal(int mouseX, int column)
+    {
+        Fill(40); // drei Spalten belegt
+        var d = NewDriver();
+        d.OpenTile("Sichern");
+        Assert.Equal(40, Assert.IsType<SaveLoadScreen>(d.Host.Current).Entries.Count);
+        d.Move(mouseX, 55 + 7 * 2 + 3);
+        for (var c = 0; c < SaveLoadScreen.Columns; c++)
+        {
+            var area = new Rect(43 + 80 * c, 55 + 7 * 2, 3, 6);
+            if (c == column)
+                Assert.Equal(SaveLoadScreen.MarkerColor, d.Surface.Pixels[(55 + 7 * 2 + 2) * Surface.Width + 43 + 80 * c + 1]);
+            else
+                Assert.DoesNotContain(SaveLoadScreen.MarkerColor, Crop(d.Surface, area));
+        }
+    }
+
+    /// <summary>[ORIGINAL] 0x5E2C7–0x5E2DD: kein Marker auf einer leeren Zeile (Spalte · 16 + Zeile + Seitenanfang ≥ Zahl der Einträge).</summary>
+    [GameDataFact]
+    public void Marker_NotOnEmptyRows()
+    {
+        Fill(5);
+        var d = NewDriver();
+        d.OpenTile("Sichern");
+        d.Move(100, 55 + 7 * 4 + 3); // Zeile 4 belegt
+        Assert.Equal(SaveLoadScreen.MarkerColor, d.Surface.Pixels[(55 + 7 * 4 + 2) * Surface.Width + 44]);
+        d.Move(100, 55 + 7 * 5 + 3); // Zeile 5 leer
+        Assert.DoesNotContain(SaveLoadScreen.MarkerColor, Crop(d.Surface, new Rect(43, 55, 3, 7 * 16)));
+        d.Move(130, 55 + 3); // Spalte 1 leer
+        Assert.DoesNotContain(SaveLoadScreen.MarkerColor, Crop(d.Surface, new Rect(123, 55, 3, 7 * 16)));
+    }
+
     private static byte[] Crop(Surface s, Rect r)
     {
         var data = new List<byte>();

@@ -609,8 +609,9 @@ public sealed class SaveLoadScreen : Screen
 
     /// <summary>
     /// Roter Marker links neben dem Eintrag unter der Maus. [ORIGINAL] Trefferfeld 42 &lt; x &lt; 266, 53 &lt; y &lt; 166, Zeile
-    /// (y − 54) / 7, Spalte über 0x7A + 80 · Spalte (Datei 0x5E221–0x5E266); Fläche (43 + 80 · Spalte | 55 + 7 · Zeile), 3 × 6
-    /// (0x5E2C7–0x5E329). [APPROX] Nur bei belegten Zeilen; ob das Original leere Zeilen auslässt, ist nicht gelesen.
+    /// (y − 54) / 7 (Datei 0x5E221–0x5E250); Spalte zählt hoch, solange 0x7A + 80 · Spalte &lt; x (0x5E252–0x5E264): x = 122 ist noch
+    /// Spalte 0, x = 202 noch Spalte 1 (Review R14HI-06). Gezeichnet wird nur bei einem belegten Eintrag: Spalte · 16 + Zeile +
+    /// Seitenanfang &lt; Zahl der Einträge (0x5E2C7–0x5E2DD); Fläche (43 + 80 · Spalte | 55 + 7 · Zeile), 3 × 6 (0x5E2E2–0x5E329).
     /// </summary>
     private void DrawMarker(Surface s)
     {
@@ -619,7 +620,9 @@ public sealed class SaveLoadScreen : Screen
         if (_mouseX <= 42 || _mouseX >= 266 || _mouseY <= 53 || _mouseY >= 166)
             return;
         var row = (_mouseY - 54) / RowPitch;
-        var column = Math.Clamp((_mouseX - 42) / BarPitch, 0, Columns - 1);
+        var column = 0;
+        while (column + 1 < Columns && 0x7A + BarPitch * column < _mouseX)
+            column++;
         if (row >= RowsPerColumn || EntryAt(column, row) is null)
             return;
         var (x, y) = (43 + BarPitch * column, 55 + RowPitch * row);
