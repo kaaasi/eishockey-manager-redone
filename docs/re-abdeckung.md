@@ -149,7 +149,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 6402 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 6463 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -157,9 +157,9 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 272 | 245784 | 79 % | 261 | 236028 | 90 % |
+| umgesetzt | 274 | 246062 | 79 % | 263 | 236306 | 91 % |
 | genähert | 3 | 896 | 0 % | 3 | 896 | 0 % |
-| dokumentiert | 147 | 30056 | 10 % | 99 | 23556 | 9 % |
+| dokumentiert | 145 | 29778 | 10 % | 97 | 23278 | 9 % |
 | unbekannt | 257 | 32789 | 11 % | 1 | 421 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
@@ -173,7 +173,7 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Basis 0x238 | 0x04180–0x064E9 | 9066 | 15 | 96 % | 0 % | 4 % | 0 % | Spiellogik Basis (Saisonende, Statistik) |
 | Basis 0x46e | 0x064E0–0x080CA | 7147 | 14 | 93 % | 0 % | 7 % | 0 % | Spiellogik Basis (Training, Spieler) |
 | Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 98 % | 0 % | 2 % | 0 % | Spiellogik Basis (Spielberechnung, Zufall) |
-| Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 49 % | 0 % | 51 % | 0 % | Fensterverwaltung („Zu viele Fenster auf !“) |
+| Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 52 % | 0 % | 48 % | 0 % | Fensterverwaltung („Zu viele Fenster auf !“) |
 | Basis 0x99f | 0x0B7F0–0x0C79E | 4015 | 23 | 33 % | 0 % | 67 % | 0 % | Bilder laden (kb\…vga), Texte, Geldausgabe |
 | Basis 0xa99 | 0x0C790–0x0D9F1 | 4706 | 34 | 0 % | 0 % | 25 % | 75 % | Speicher (EMS INT 67h, XMS INT 2Fh), Datei |
 | Basis 0xbbf | 0x0D9F0–0x12F58 | 21865 | 78 | 40 % | 0 % | 5 % | 55 % | Grafik und Maus (VGA-Ports, INT 10h, INT 33h) |
@@ -182,7 +182,7 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Basis 0x125b | 0x143B0–0x14D6C | 2493 | 21 | 0 % | 0 % | 9 % | 91 % | Sound Blaster digital (DMA-Ports 0x02–0x0C) |
 | Basis 0x12f7 | 0x14D70–0x1621B | 5292 | 19 | 0 % | 0 % | 44 % | 56 % | FM-Treiber SBFMDRV (CmfPlayer.cs), Tastatur (Port 0x60, INT 16h) |
 | Ov 0xc0 (337B) | 0x255C0–0x25DB0 | 2033 | 14 | 0 % | 30 % | 70 % | 0 % | „Alles klar!“ |
-| Ov 0xc8 (33FB) | 0x25E30–0x26E6A | 4155 | 2 | 95 % | 0 % | 5 % | 0 % | „Die besten“, „Ereignisse“ |
+| Ov 0xc8 (33FB) | 0x25E30–0x26E6A | 4155 | 2 | 100 % | 0 % | 0 % | 0 % | „Die besten“, „Ereignisse“ |
 | Ov 0xd0 (34FF) | 0x26F20–0x27F8A | 4203 | 1 | 100 % | 0 % | 0 % | 0 % | „Erhaltene Prämien:“ |
 | Ov 0xd8 (3606) | 0x28030–0x2A0C2 | 8339 | 4 | 98 % | 0 % | 2 % | 0 % | „Suchen Sie sich einen“ |
 | Ov 0xe0 (3810) | 0x2A1E0–0x2F1EE | 20495 | 18 | 96 % | 0 % | 4 % | 0 % | „JWE Service GmbH“, „(noch keine...)“, „Im ersten Jahr gibt's hi“ |

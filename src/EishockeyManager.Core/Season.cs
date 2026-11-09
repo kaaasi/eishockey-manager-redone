@@ -98,8 +98,13 @@ public static class SeasonCalendar
     public static string Format(int day, int season)
     {
         var d = LayoutDate(day);
-        // [APPROX] Ursache unbekannt: Das Original zeigt am Saisonende „Montag, 29. April“, obwohl der Kalender sonst einen Sonntag ergibt
-        // (beide Saisonenden im Video). Der Wochentag wird dort wie im Original um eins weitergezählt.
+        // [ORIGINAL] A158 (Spur pruefung-karte Teil 6): Am Saisonende „Montag, 29. April“ (beide Saisonenden im Video), obwohl der
+        // Kalender einen Sonntag ergibt. Der Datumstext 0x43B1F nimmt den Wochentag aus dem Zähler 0x3B7 ((Zähler + 5) mod 7, Datei
+        // 0x43B2E–0x43B48), Tag und Monat aber aus DGROUP 0x5A20/0x5A1C, die zuletzt 0x367B1 nach dem Weiterzählen der WM-Schleife
+        // gesetzt hat (Datei 0x5567D: Zähler 232 = 29. April). Das Saisonende 0x26F20 setzt den Zähler auf 233 (Datei 0x26F55) ohne
+        // 0x367B1 und zeichnet das Fenster danach (0x26D9A → 0x43E21): Wochentag von 233 = Montag, Datum 29. April. Nach dem Import
+        // eines am Markierungstag gesicherten Stands steht der Zähler einen höher (GameState.LoadQuirk.cs, DateText): „Montag,
+        // 30. April“ wie DOSBox-Bild file46_2.
         var weekday = ((int)d.DayOfWeek + (day == SeasonEnd ? 1 : 0)) % 7;
         return $"{Weekdays[weekday]}, {d.Day}. {Months[d.Month - 1]}  {Year(day, season)}";
     }

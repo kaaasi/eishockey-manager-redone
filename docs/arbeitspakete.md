@@ -182,7 +182,7 @@ nicht übernommenen Felder noch in Runde 14. Fortsetzungen: höchstens 5 statt 3
   die in den Issues genannten Test- und Kommentarstellen, `Core/GameState.MainMenu.cs` (nur Kommentar). **Modell:**
   Claude Sonnet 5.5 (Lauf 09.11.2026: Claude Opus 5.5, Leitstelle). **Status:** Teile 1–4 fertig (#693 Inventur/Karte/Doku,
   #694 P3 Leitstelle, #695 #603/#604/#619/#621, #696 #610/#611/#620 – #620 teilweise); Teil 5 (HOK-Import mit Ladeeigenheit
-  des Markierungstags, Entscheidung C, Schema 47) fertig #697; Teil 6 (Restlücken #688) in Arbeit.
+  des Markierungstags, Entscheidung C, Schema 47) fertig #697; Teil 6 (Restlücken #688: A158 `[ORIGINAL]`, übrige als Issue #699) fertig #700.
 
 ### Gesamtreview am Rundenende (E14-3)
 

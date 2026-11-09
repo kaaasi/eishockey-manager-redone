@@ -21,10 +21,12 @@ Die Zuordnung der Werte ist an den Videos belegt: DEB-Symbol in der Infoleiste a
 „Play-Off / Aufstiegsrunden“ nach dem 44. Spieltag; Europacupsieger zwischen 15.11. und 3.12.
 
 Das Original kennt **keinen 29. Februar** („Donnerstag, 22. März“, „Samstag, 14. April“ in allen Jahren).
-Am Saisonende steht „Montag, 29. April“, obwohl der Kalender einen Sonntag ergibt – wird so nachgebildet. Hinweis (#688,
-R688S-01): Das Saisonende 0x26F20 setzt den Tageszähler auf 233 (Datei 0x26F55), das ist der 30. April = Montag im Kalender
-1989/90; der DOSBox-Stand `file46_2` zeigt im Fenster „Saisonende“ „Montag, 30. April“. Ob das Video wirklich „29. April“ zeigt, ist
-offen (A158).
+Am Saisonende steht „Montag, 29. April“, obwohl der Kalender einen Sonntag ergibt – wird so nachgebildet. Ursache (A158, Spur
+`pruefung-karte` Teil 6, selbst nachgelesen): Der Datumstext 0x43B1F nimmt den Wochentag aus dem Tageszähler ((Zähler + 5) mod 7,
+Datei 0x43B2E), Tag und Monat aus DGROUP 0x5A20/0x5A1C, die 0x367B1 zuletzt in der WM-Schleife gesetzt hat (Datei 0x5567D, Zähler
+232 = 29. April). Das Saisonende 0x26F20 setzt den Zähler auf 233 (Datei 0x26F55) ohne 0x367B1 und zeichnet danach das Fenster
+(0x26D9A): Wochentag von 233 = Montag. Der DOSBox-Stand `file46_2` („Montag, 30. April“) kommt aus FILE44 mit der Ladeeigenheit
+des Markierungstags (Zähler einen höher, letzter Tag der Schleife 233 = 30. April; `GameState.LoadQuirk.cs`).
 
 ## Infoleiste
 
