@@ -117,8 +117,10 @@ public sealed partial class NationalCoach
     }
 
     /// <summary>
-    /// Status in der Liste; null = nicht eingesetzt (leer). [APPROX] Verletzte und Gesperrte zeigen „VERL.“/„GESP.“
-    /// auch, wenn sie nicht eingesetzt sind.
+    /// Status in der Liste; null = nicht eingesetzt (leer). [ORIGINAL] Verletzte und Gesperrte zeigen „VERL.“/„GESP.“
+    /// auch, wenn sie nicht eingesetzt sind (A012, L7; DOSBox `file36_1`/`file36_2`: MENDE nicht eingesetzt mit „VERL.“, HOCK im
+    /// Spiel ohne NR mit „GESP.(2)“; `file37_2`/`file39_3`: HEISS nicht eingesetzt mit „VERL.“). Vereins- und Nationalaufstellung
+    /// teilen den Code (Datei 0x40364).
     /// </summary>
     public PlayerStatus? StatusOf(Player player) =>
         player.InjuredGames > 0 ? PlayerStatus.Injured
@@ -127,11 +129,15 @@ public sealed partial class NationalCoach
         : Formation.Contains(player) ? PlayerStatus.InTeam
         : PlayerStatus.Reserve;
 
-    /// <summary>Spieler auf einen Platz setzen; er wird dabei eingesetzt (Datei 0x415B2).</summary>
+    /// <summary>
+    /// Spieler auf einen Platz setzen; er wird dabei eingesetzt (Datei 0x415B2). Eingriff von Hand: schaltet „automatisch
+    /// aufstellen“ ab (Datei 0x40DE4, wie beim Verein).
+    /// </summary>
     public LineupResult Assign(LineupSlot slot, Player player)
     {
         if (!Contains(player))
             return LineupResult.NotInSquad;
+        DisableAutoLineup();
         if (player.InjuredGames > 0)
             return LineupResult.Injured;
         if (player.SuspendedGames > 0)
@@ -146,11 +152,15 @@ public sealed partial class NationalCoach
         return LineupResult.Assigned;
     }
 
-    /// <summary>Platz leeren; der Spieler ist danach nicht mehr eingesetzt (Datei 0x40CF8–0x40D0D).</summary>
+    /// <summary>
+    /// Platz leeren; der Spieler ist danach nicht mehr eingesetzt (Datei 0x40CF8–0x40D0D). [ORIGINAL] Der Klick auf einen besetzten
+    /// Platz schaltet „automatisch aufstellen“ ab (Datei 0x40AC7–0x40ADE, A009); ein leerer Platz ändert nichts (Datei 0x40AC4).
+    /// </summary>
     public void ClearSlot(LineupSlot slot)
     {
         if (Formation[slot] is not { } player)
             return;
+        DisableAutoLineup();
         Formation.Clear(slot);
         _dressed.Remove(player);
     }
@@ -160,6 +170,7 @@ public sealed partial class NationalCoach
     {
         if (!Contains(player) || Formation.Contains(player) || !_dressed.Remove(player))
             return LineupResult.Unchanged;
+        DisableAutoLineup();
         return LineupResult.Undressed;
     }
 
@@ -171,6 +182,7 @@ public sealed partial class NationalCoach
         if (DressedCount >= MaxDressed)
             return LineupResult.RosterFull;
         _dressed.Add(player);
+        DisableAutoLineup();
         return LineupResult.Dressed;
     }
 
@@ -183,6 +195,7 @@ public sealed partial class NationalCoach
     /// <summary>
     /// Klick auf einen Spieler der Kaderliste im Aufstellungsbildschirm (Datei 0x40D8D–0x4120D, Menüaufruf mit Kennwert 0).
     /// <list type="bullet">
+    /// <item>[ORIGINAL] Jeder Klick schaltet zuerst „automatisch aufstellen“ ab (Datei 0x40DCD–0x40DE4, vor allen Prüfungen; A009).</item>
     /// <item>[ORIGINAL] Verletzte und Gesperrte (+0x09 &amp; 3 ≠ 0): nur die Meldung, keine Änderung (Datei 0x40E01–0x40E27,
     ///   für beide Maustasten). Danach ein nicht Eingesetzter bei 22 Eingesetzten: „Schon 22 Mann / im Team !“ (Datei
     ///   0x40E2A–0x40E61).</item>
@@ -207,6 +220,7 @@ public sealed partial class NationalCoach
     {
         if (!Contains(player))
             return LineupResult.NotInSquad;
+        DisableAutoLineup();
         if (player.InjuredGames > 0)
             return LineupResult.Injured;
         if (player.SuspendedGames > 0)
@@ -265,10 +279,18 @@ public sealed partial class NationalCoach
     /// nach Art sortiert wie Datei 0x42D46). Spur wettbewerbe-spiel, Runde 12, Teil 4 (U8); vorher Spielwert mit Energie
     /// (<see cref="Core.Lineup.AutoFill"/>) und Rest nach Kondition + Technik + Form.
     /// [APPROX] Innerhalb eines Blocks nach Rückennummer des Vereins sortiert (wie beim Verein,
-    /// <see cref="Core.Lineup.SortBlocksByNumber"/>). Die Einstellung „automatisch“ des Satzes 5 im Tageslauf führt das
-    /// Remake nicht; im Zug des Bundestrainers ist der Aufruf wirkungslos (Einstellung vorher 0, Datei 0x555B7–0x555D6).
+    /// <see cref="Core.Lineup.SortBlocksByNumber"/>). Wann die Einstellung wirkt, steht in <c>CupsNational.AutoLineup.cs</c> (A009).
+    /// [APPROX] Wie beim Verein (<see cref="Club.AutoLineup"/>) schaltet „A“ die Einstellung wieder ein; im Original kippt sie
+    /// der Taktikbildschirm (Datei 0x47F4E/0x49058 mit DGROUP 0xA70E).
     /// </summary>
     public void AutoFormation()
+    {
+        _autoLineup = true;
+        ApplyAutoFormation();
+    }
+
+    /// <summary>Datei 0x426BC/0x42838 für Satz 5 ohne Prüfung der Einstellung (siehe <see cref="AutoFormation"/>).</summary>
+    private void ApplyAutoFormation()
     {
         var dressed = AutoLineupRule.Apply(Formation, Rows);
         _dressed.Clear();
@@ -276,7 +298,10 @@ public sealed partial class NationalCoach
             _dressed.Add(p);
     }
 
-    /// <summary>Alle Plätze leeren („C“); wie beim Leeren einzelner Plätze sind die Aufgestellten danach nicht eingesetzt.</summary>
+    /// <summary>
+    /// Alle Plätze leeren („C“); wie beim Leeren einzelner Plätze sind die Aufgestellten danach nicht eingesetzt, die Reserve bleibt
+    /// eingesetzt, „automatisch aufstellen“ ist aus ([ORIGINAL] A009: FILE47 „Eingesetzt: 6“, `file47_3`; 0x37F 1 → 0).
+    /// </summary>
     public void ClearFormation()
     {
         foreach (var slot in LineupSlot.All)
@@ -301,13 +326,13 @@ public sealed partial class NationalCoach
 
     /// <summary>
     /// Aufstellung, aus der 0x952C mit Manager 5 die Länderwerte schreibt (<see cref="GameState.UpdateNationalTeamValues"/>):
-    /// die <see cref="Formation"/>, leere Plätze zählen 0. [APPROX] Ist die Formation ganz leer, gilt wie in
-    /// <see cref="Lineup"/> die Automatik des Remakes (passiver Bundestrainer); eine ganz leere Aufstellung des Originals ist
-    /// nicht aufgenommen (L7) und ergäbe nach dem Code 0.
+    /// die <see cref="Formation"/>, leere Plätze zählen 0. [ORIGINAL] Ohne Einstellung auch eine ganz leere Aufstellung (A009,
+    /// FILE47: 0x37F = 0, Felder 0x18–0x1D = 0). [APPROX] Mit Einstellung und leerer Formation die Ersatz-Automatik wie in
+    /// <see cref="Lineup"/>.
     /// </summary>
     internal Core.Lineup TeamValueFormation()
     {
-        if (Formation.Count > 0)
+        if (!UsesStandInLineup)
             return Formation;
         var auto = Lineup();
         var lineup = new Core.Lineup();

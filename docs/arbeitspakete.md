@@ -90,11 +90,12 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
 
 ### Integration Runde 14
 
-Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); die folgenden Spuren nummerieren ab 41.
+Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nationalteam` 41 (vom Spurbranch mit 40 umnummeriert); die folgenden Spuren nummerieren ab 42.
 
 | Spur | Status | PR | Head-SHA |
 |---|---|---|---|
 | `saison` | integriert, Prüfung grün (2288 / 0 / 0 mit Daten), wartet auf Review | #652 (Branch `integration/runde-14-saison`, Base `b7e1eb2`) | im Übergabekommentar von #652 |
+| `nationalteam` | integriert (#630, #637, #653; Schema 41); Review #662 „Nein“ → Korrekturen R14NT-01–06 auf dem Branch (08.11.2026), wartet auf Nachprüfung | #661 (Branch `integration/runde-14-nationalteam`, Base `3e0cf69`) | im Übergabekommentar von #661 |
 
 Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 → `pruefung-karte`.
 
@@ -113,7 +114,7 @@ Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 �
      Seite `[APPROX]`).
 - **Dateigrenzen:** wie oben „allein `nationalteam`“, eigene Tests; nach L8 zusätzlich `Core/GameState.MainMenu.cs` (ein Aufruf in
   `OnMainMenu` für A009), `Core/GameState.HotSeat.cs` (nur falls für A009 nötig), `UI/Screens/Competitions/WorldCupKnockoutScreen.cs`
-  und `CupPairingsScreen.cs` (A293). **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
+  und `CupPairingsScreen.cs` (A293). **Modell:** Claude Opus 5.5. **Status (08.11.2026):** Teil 1 (#594, #595) fertig, PR #630; Teil 2 (Sperre Transfer/Training ab dem ersten WM-Termin, WM-Kader nach Art) fertig, PR #637; Teil 3 (A012, A009, A085, A293) fertig, PR #653; alle drei integriert in `integration/runde-14-nationalteam` (Schema 41), wartet auf Review. Reihenlogik der Vereinsaufstellung (Teil 2, A010) liegt bei `kader-start` (L3).
 
 ### Spur `kader-start` – Spielstart, Kader, Aufstellung
 

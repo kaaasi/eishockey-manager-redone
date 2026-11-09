@@ -132,8 +132,16 @@ public sealed class WorldCupScreen : Screen
 /// </summary>
 internal static class WorldCupMenuEntries
 {
+    /// <summary>
+    /// „Paarungen → WM“. [ORIGINAL] A293 (Sitzung 5, Review #649 R14RD2-02): Im Zug des Bundestrainers setzt die Gegnersuche des
+    /// Hauptmenüs (Datei 0x44F9E/0x44FB7 → 0x44A48, nur für das Nationalteam, Argument 0x10) die gemerkte Seite DGROUP 0x5127 bei
+    /// WM-Stufe DGROUP 0x7AE = 5 auf 10 (Datei 0x44B15–0x44B1C) – die Kachel öffnet dann „WM-Endrundenspiele“ (DOSBox `file49_7`,
+    /// 24.04.1994), „Gruppe“ führt zu „Gruppe 1   5.Spieltag“ (`file49_8`). Nur beim ersten Aufbau eines Zugs (Rückkehr Datei
+    /// 0x45961 → 0x44FBD umgeht 0x44A48); sonst die gemerkte Seite (Datei 0x458A2–0x458BB). Review #662 R14NT-05, L11: gemerkte
+    /// Seite als Zustand der Oberfläche (<see cref="WorldCupPairingsPages"/>).
+    /// </summary>
     [MenuEntry("WM")]
-    private static Screen Pairings(ScreenHost host, Screen back) => new CupPairingsScreen(host, back);
+    private static Screen Pairings(ScreenHost host, Screen back) => WorldCupPairingsPages.FromTile(host, back);
 
     [MenuEntry("Tabelle WM")]
     private static Screen Table(ScreenHost host, Screen back) => new WorldCupScreen(host, back);
