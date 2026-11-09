@@ -42,7 +42,7 @@ public class TransferVertraegeKomplettTeil3ScreenTests
         Assert.Equal(TransferDialog.DialogKind.Offer, dialog.Kind);
         Assert.Same(buyer, dialog.Offer!.Buyer);
         Assert.Null(player.UnsolicitedOffer); // Bit 0x40 beim Anklicken gelöscht (0x46EB1)
-        Assert.Equal(TransferDialog.OfferBox.X + 10, dialog.CancelButton.X); // „Behalten“ links (0x0B | 0x53)
+        Assert.Equal(0x0B, dialog.CancelButton.X); // „Behalten“ fest aus dem Code (R14KS-08: nicht OfferBox.X + 10) links (0x0B | 0x53)
         Assert.Equal(90, dialog.ConfirmButton.X); // „Verkaufen“ rechts (0x5A | 0x53)
         var money = manager.Money;
         d.Click(dialog.ConfirmButton.X + 5, dialog.ConfirmButton.Y + 3);

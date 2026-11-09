@@ -43,7 +43,7 @@ public class TransferVertraegeKomplettTeil5ScreenTests
         Assert.Equal(TransferDialog.DialogKind.Bid, dialog.Kind);
         Assert.True(dialog.IsOfferWindow);
         Assert.False(dialog.IsQuestion);
-        Assert.Equal(TransferDialog.OfferBox.X + 10, dialog.CancelButton.X); // „Behalten“ (0x0B | 0x53)
+        Assert.Equal(0x0B, dialog.CancelButton.X); // „Behalten“ fest aus dem Code (R14KS-08: nicht OfferBox.X + 10) (0x0B | 0x53)
         Assert.Equal(90, dialog.ConfirmButton.X); // „Verkaufen“ (0x5A | 0x53)
         var fee = TransferMarket.TransferFee(bid);
         Assert.Equal((TransferRules.Thirds(bid.Amount) - TransferRules.Thirds(bid.Amount) / 7 * 2) / 3, fee);
