@@ -51,8 +51,32 @@ public class NewsBarDosboxTests
         Assert.Equal(212, Rows(s, 100, 220, 203, 216)!.Value.Last);
         Assert.Equal(224, Rows(s, 90, 225, 217, 226)!.Value.Last);
         Assert.Equal(231, Rows(s, 90, 225, 226, 234)!.Value.Last);
-        var l2 = Cols(s, 90, 225, 227, 232)!.Value;
-        Assert.InRange((l2.First + l2.Last) / 2, 156, 160);
+        // R14UR-07: Zeile 1 x 95–221, Zeile 2 x 133–183 (`file37a_1`), exakt
+        Assert.Equal((95, 221), Cols(s, 90, 225, 217, 226)!.Value);
+        Assert.Equal((133, 183), Cols(s, 90, 225, 227, 232)!.Value);
+        Assert.Null(Rows(s, 90, 225, 232, 237)); // keine dritte Zeile
         Assert.Null(Rows(s, 285, 299, 218, 224)); // kein Zähler „1/1“
+    }
+
+    [GameDataFact]
+    public void LongMessage_ShowsOnlyTwoLines_NothingOnTheBottomEdge()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var me = game.ActiveManager;
+        game.Finance(me).Inbox.Clear();
+        var empty = new Surface();
+        empty.Palette = d.Host.Assets.Palette;
+        NewsBar.Draw(empty, d.Host.Assets, game); // Leiste ohne Nachricht: Hintergrund der unteren Zeilen
+        game.Notify(me, "Ein Werbepartner mit Verlängerungsoption bittet Sie", "an den Verhandlungstisch, bevor die Saison beginnt und alles zu spät ist.");
+        var s = new Surface();
+        s.Palette = d.Host.Assets.Palette;
+        NewsBar.Draw(s, d.Host.Assets, game);
+        Assert.NotNull(Rows(s, 90, 225, 227, 232)); // zweite Zeile da
+        // dritte Zeile (Grundlinie 238, Rand der Leiste y 234–236) wird nicht gezeichnet: Zeilen 234–236 wie ohne Nachricht (232–233 können Unterlängen der zweiten Zeile tragen)
+        for (var y = 234; y <= 236; y++)
+            for (var x = 3; x < 317; x++)
+                Assert.True(empty.Pixels[y * Surface.Width + x] == s.Pixels[y * Surface.Width + x], $"Pixel ({x} | {y})");
     }
 }

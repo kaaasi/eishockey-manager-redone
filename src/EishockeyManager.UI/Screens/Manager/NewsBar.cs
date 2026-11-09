@@ -87,7 +87,7 @@ public static class NewsBar
         var mini = assets.Mini;
         s.Blit(assets.Image(Graphic), new Rect(0, 0, Area.W, Area.H), Area.X, Area.Y);
         var inbox = game.Inbox(game.ActiveManager);
-        const int center = 158; // [ORIGINAL] Mitte der Zeilen x ≈ 158 (`file37a_1`: 95–221), nicht die Mitte der Leiste
+        const int center = 159; // [ORIGINAL] Mitte der Zeilen x ≈ 158 (`file37a_1`: Zeile 1 x 95–221, Zeile 2 x 133–183 → Mitte 159 bei zentrierter Abrundung), nicht die Mitte der Leiste
         if (inbox.Count == 0)
         {
             s.TextCentered(mini, center, 207, "Keine Nachricht für Sie vorhanden.", TextColor);
@@ -98,12 +98,20 @@ public static class NewsBar
         // Zeichnen und Öffnen des Posteingangs ändern nichts (AGENTS.md §4, E4 = B, D8 = A): kein Feld „gelesen“ im Original.
         // [ORIGINAL] Oberes Feld = Datum der Nachricht („6. Dez. 1993“), weißes Feld = Text in zwei zentrierten Zeilen (7 Zeilen
         // Abstand); DOSBox-Sitzung 2, `file37a_1`, A321: Datum Zeilen 208–212, Text 220–224 und 227–231, Mitte x ≈ 158.
-        // [APPROX] Der Umbruch längerer Texte (mehr als zwei Zeilen) ist nicht aufgenommen: Die Zeilen der Nachricht werden mit
-        // Leerzeichen verbunden und auf die Breite des weißen Feldes umbrochen (im Bild bricht „EC HEDOS MÜNCHEN ist an SCHIFFL“
-        // / „interessiert.“ so um); weitere Zeilen laufen nach unten weiter.
+        // [ORIGINAL] Datei 0x4B6F0–0x4B76D: Das Original bricht nicht um, sondern zeichnet die Zeilen der Nachricht (getrennt durch „^“)
+        // je zentriert im Bereich x 0x10 … 0x12F (Mitte 159), erste Zeile Grundlinie 212 (Datum), danach + 12, dann + 7. Die Leiste
+        // (Fläche bis y 236) fasst daher nur zwei Textzeilen (Grundlinien 224, 231).
+        // [APPROX] Die Nachrichten des Remakes stehen als Zeilen ohne „^“-Trennung: Sie werden mit Leerzeichen verbunden und auf
+        // die Breite des weißen Feldes umbrochen (im Bild bricht „EC HEDOS MÜNCHEN ist an SCHIFFL“ / „interessiert.“ so um). Ergeben
+        // sich mehr als zwei Zeilen, wird breiter umbrochen (bis zur Feldbreite) und, falls es dann noch zu viele sind, nach der
+        // zweiten Zeile abgeschnitten – eine dritte Zeile läge auf dem unteren Rand der Leiste (y 234); der volle Text steht im Posteingang.
         s.TextCentered(mini, center, DateY, SeasonCalendar.FormatShort(message.Day, message.Season), TextColor);
         var y = TextY;
-        foreach (var line in Wrap(mini, ManagerText.ForFont(string.Join(' ', message.Lines)), WrapWidth))
+        var text = ManagerText.ForFont(string.Join(' ', message.Lines));
+        var lines = Wrap(mini, text, WrapWidth).ToList();
+        if (lines.Count > MaxTextLines)
+            lines = Wrap(mini, text, Text.W - 12).ToList();
+        foreach (var line in lines.Take(MaxTextLines))
         {
             s.TextCentered(mini, center, y, line, TextColor);
             y += LineStep;
@@ -119,6 +127,7 @@ public static class NewsBar
     private const int TextY = 220;
     private const int LineStep = 7;
     private const int WrapWidth = 128;
+    private const int MaxTextLines = 2;
 
     internal static IEnumerable<string> Wrap(BitmapFont font, string text, int width)
     {
