@@ -90,9 +90,9 @@ public class KaderStartRunde14Tests
         Assert.Fail("kein Torhüter oder Verteidiger unter 60 Talenten");
     }
 
-    /// <summary>Migration 39 → 40 (<c>SaveGame.Migration.KaderStart.cs</c>): ältere Stände übernehmen die Start-Liga von Manager 0.</summary>
+    /// <summary>Migration 41 → 42 (<c>SaveGame.Migration.KaderStart.cs</c>): ältere Stände übernehmen die Start-Liga von Manager 0.</summary>
     [Fact]
-    public void Migration_39To40_TakesStartLeagueOfFirstManager()
+    public void Migration_41To42_TakesStartLeagueOfFirstManager()
     {
         var setup = new GameSetup();
         setup.StartLeague = League.ZweiteLiga;
@@ -100,7 +100,7 @@ public class KaderStartRunde14Tests
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 1);
         var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
         Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
-        root["schema"] = 39;
+        root["schema"] = 41;
         Assert.True(root["spiel"]!["Setup"]!.AsObject().Remove("_startLeague"));
         root["spiel"]!["Setup"]!["Managers"]!["items"]![0]!["StartLeague"] = "Oberliga";
 

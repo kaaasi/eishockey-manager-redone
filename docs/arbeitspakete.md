@@ -90,12 +90,13 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
 
 ### Integration Runde 14
 
-Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nationalteam` 41 (vom Spurbranch mit 40 umnummeriert); die folgenden Spuren nummerieren ab 42.
+Schema-Nummern dieser Runde: `saison` behält 40 (erste integrierte Spur); `nationalteam` 41 (vom Spurbranch mit 40 umnummeriert); `kader-start` 42 (Start-Liga) und 43 (Tabellenfeld, Wettbewerbszähler); die folgenden Spuren nummerieren ab 44.
 
 | Spur | Status | PR | Head-SHA |
 |---|---|---|---|
 | `saison` | integriert, Prüfung grün (2288 / 0 / 0 mit Daten), wartet auf Review | #652 (Branch `integration/runde-14-saison`, Base `b7e1eb2`) | im Übergabekommentar von #652 |
 | `nationalteam` | integriert (#630, #637, #653; Schema 41); Review #662 „Nein“ → Korrekturen R14NT-01–06 auf dem Branch (08.11.2026), wartet auf Nachprüfung | #661 (Branch `integration/runde-14-nationalteam`, Base `3e0cf69`) | im Übergabekommentar von #661 |
+| `kader-start` | integriert (#631, #646, #655, #659, #663, #667; Schema 42 = Start-Liga, 43 = Tabellenfeld/Wettbewerbszähler), Prüfung grün (2374 / 0 / 0 mit Daten), wartet auf Review | #669 (Branch `integration/runde-14-kader-start`, Base `1e9a233`) | im Übergabekommentar von #669 |
 
 Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 → `pruefung-karte`.
 
@@ -135,7 +136,7 @@ Inventur-Zeilen (nur im PR): A112 (Kommentar `OutsidePlaces` berichtigt), #349 �
   `docs/transfer.md`. Dazu nach L4/L7 jeweils nur für den genannten Punkt: `Core/MatchEngine.Injuries.cs` (Taktik 375h),
   `Core/FinanceStadium.cs` (`TableRank`) und `Core/FinanceSponsorRating.cs` (Tabellenfeld, A046), `Core/MatchEngine.Live.cs`
   (Kommentar A082), `Core/StadiumStatistics.cs` (Kommentar A189), Buchung von Spielen und Toren je Wettbewerb in `Core/Cups*.cs`
-  außer `CupsNational*` und `Core/MatchEngine*.cs` (A135), `Core/Highscore.cs` (U15-c). **Modell:** Claude Opus 5.5. **Status:** Teil 1 PR #631 (Branch `paket/kader-start-r14-1`, da `paket/kader-start-1…4` aus Runde 13 noch bestehen); Teil 2 wartet auf `re-dosbox`, Teil 3 auf `nationalteam` Teil 2.
+  außer `CupsNational*` und `Core/MatchEngine*.cs` (A135), `Core/Highscore.cs` (U15-c). **Modell:** Claude Opus 5.5. **Status (09.11.2026):** Teile 1, 2a–2c, 4 und 6 fertig (PR #631, #646, #655, #659, #663, #667, Branches `paket/kader-start-r14-1…6`), integriert in #669 (`integration/runde-14-kader-start`, Schema 42/43), wartet auf Review. Offen für `nationalteam` (#664): Rechtsklick auf einen Platz in `NationalLineupScreen` verlässt im Original den Bildschirm, geleert wird per Linksklick.
 
 ### Spur `ui-rest` – Darstellung aus der Aufnahme, Stadionpfeile
 

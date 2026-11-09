@@ -207,7 +207,7 @@ public class KaderStartRunde14Teil2bTests
         Assert.Equal(5, game.History.Count);
     }
 
-    /// <summary>Schema 40 → 41: alte Stände zählen alles als Liga; Tabellenfeld aus dem letzten gespeicherten Platzfeld.</summary>
+    /// <summary>Schema 42 → 43: alte Stände zählen alles als Liga; Tabellenfeld aus dem letzten gespeicherten Platzfeld.</summary>
     [Fact]
     public void Migration_OldSave_LeagueOnlyAndTableRankFromRankSlots()
     {
@@ -216,7 +216,7 @@ public class KaderStartRunde14Teil2bTests
             TestSeason.PlayMatchDay(game);
         game.RecordRankSlots();
         var json = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game), documentOptions: new System.Text.Json.JsonDocumentOptions { MaxDepth = 1024 })!.AsObject();
-        json["schema"] = 40;
+        json["schema"] = 42;
         foreach (var club in json["vereine"]!.AsArray().OfType<System.Text.Json.Nodes.JsonObject>())
             club.Remove("_tableRank");
         foreach (var player in json["spieler"]!.AsArray().OfType<System.Text.Json.Nodes.JsonObject>())

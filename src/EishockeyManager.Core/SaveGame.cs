@@ -111,9 +111,9 @@ public static partial class SaveGame
     /// 40 → 41 (Runde 14, Integration): „automatisch aufstellen“ des Bundestrainers, Spur nationalteam Teil 3, A009
     /// (<c>SaveGame.Migration.Nationalteam3.cs</c>; auf dem Spurbranch vorläufig 40, wegen Kollision mit saison neu nummeriert).
     /// 41 → 42 (Runde 14): Start-Liga in GameSetup selbst, Spur kader-start Teil 1, R13KI-03/#605
-    /// (<c>SaveGame.Migration.KaderStart.cs</c>; auf dem Spurbranch vorläufig 39 → 40, nach Merge von main neu nummeriert).
+    /// (<c>SaveGame.Migration.KaderStart.cs</c>; 41 → 42; auf dem Spurbranch vorläufig 39 → 40, bei der Integration neu nummeriert).
     /// 42 → 43 (Runde 14): Tabellenfeld je Verein (A046) und Tore/Spiele je Wettbewerb (A135), Spur kader-start Teil 2b
-    /// (<c>SaveGame.Migration.KaderStart2.cs</c>; vorläufig 40 → 41).
+    /// (<c>SaveGame.Migration.KaderStart2.cs</c>; 42 → 43; vorläufig 40 → 41).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>

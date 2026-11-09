@@ -6,7 +6,7 @@ namespace EishockeyManager.Core;
 /// Migration Schema 41 → 42 (Runde 14, Spur kader-start Teil 1, R13KI-03/#605): Start-Liga in <see cref="GameSetup"/> selbst
 /// (Feld <c>_startLeague</c>, [ORIGINAL] ein Wert für alle Manager, DGROUP 0x11A, L1). Ältere Spielstände übernehmen die
 /// Start-Liga von Manager 0 (so las sie <see cref="GameSetup.StartLeague"/> bisher), ohne Manager Bundesliga ([ORIGINAL] Vorgabe 0).
-/// Die Leitstelle nummeriert das Schema bei der Integration. Unerwartete Formen bleiben unverändert; der Reader meldet sie.
+/// Auf dem Spurbranch vorläufig 39 → 40; bei der Integration Runde 14 neu nummeriert (main hat 40 und 41 belegt). Unerwartete Formen bleiben unverändert; der Reader meldet sie.
 /// </summary>
 public static partial class SaveGame
 {
