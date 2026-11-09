@@ -63,7 +63,7 @@ public static class NationalTeamRatings
 /// [ORIGINAL] Unentschieden im K.-o.: schneller Weg random(0, 2) je Seite bis ungleich, Endstand mit Marke + 30 (0x376F0;
 /// <see cref="CupMatch"/>, <see cref="MarksOf"/>). [APPROX] Plätze 9–12 nach Gruppenplatz (WM-Tabelle nicht gelesen).
 /// </remarks>
-public sealed class WorldCup : ISeasonCompetition
+public sealed partial class WorldCup : ISeasonCompetition
 {
     public const int Teams = 12;
     public const int GroupSize = 6;

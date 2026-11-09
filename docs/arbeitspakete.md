@@ -167,7 +167,8 @@ nicht übernommenen Felder noch in Runde 14. Fortsetzungen: höchstens 5 statt 3
      (4a/4b), Tests je Bereich mit Originaldaten.
   5. **Speichern-Dialog wie im Original (L6, nach `re-dosbox` Teil 2):** A338/A339 – Blättern nur über die zwei Pfeile, kein
      „SEITE:“, Infofeld nur bei gehaltener rechter Maustaste; Pixeltest gegen `a338_*`.
-- **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Go 05.11.2026, Start offen.
+
+- **Dateigrenzen:** wie oben „allein `hok-import`“, eigene Tests. **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Feldkarte) fertig, PR #633 (08.11.2026); Teil 2 (Import Spielkern) fertig, PR #638 (08.11.2026); Teil 3 (Zugang) fertig, PR #640 (08.11.2026); Teil 4a (Restfelder ohne Pokale, Pool/Markt, Nationalkader, Nachrichten) fertig, PR #648 (08.11.2026); Teil 4b (Pool/Transfermarkt, Nationalkader, Nachrichten) fertig, PR #651 (08.11.2026); Teil 4c (DEB-Pokal, Europapokal, WM aus em.exe zugeordnet) fertig, PR #654 (08.11.2026); Teil 5 (Speichern-Dialog A338/A339, L6; zusätzlicher Lauf E14-6 = A) fertig, PR #658 (08.11.2026).
 
 ### Spur `pruefung-karte` – Welle 2 (nach der Integration aller Spuren)
 
