@@ -180,11 +180,9 @@ public sealed partial class GameState
     /// <summary>
     /// Ist der Tageswechsel zu <see cref="CurrentDay"/> schon gerechnet (<see cref="OpenDay"/>)? Die Zeitleiste rechnet ihn vor dem
     /// Halt; Spielstände vor Schema 45, ein neues Spiel und der erste Tag einer Saison holen ihn vor den Spielen des Tages nach.
-    /// [APPROX] Tag 0 (Restlücke #688, Issue #699): Im Original beginnen Spiel und Saison mit Index und Zähler 0
+    /// [ORIGINAL] Tag 0 (#699 Punkt 2, Spur tagesablauf Runde 15): Spiel und Saison beginnen mit Index und Zähler 0
     /// (Datei 0x565A1–0x565B0, 0x43A93), der erste Tageswechsel läuft vor dem ersten Menü (Datei 0x54D41 → 0x55073 → 0x55204,
-    /// Zähler 1 = 10. September; FILE01: 1/1) mit Tagesabschluss 0x3ED01/0x3F833 je Manager. Das Remake rechnet an Tag 0 keinen
-    /// Tagesabschluss (<c>AdvanceFinance</c>: Finanztag &gt; 0) und den Tageswechsel erst nach dem ersten Menü (Spur tagesablauf
-    /// Teil 1, blockiert: fremde Testerwartungen).
+    /// Zähler 1 = 10. September; FILE01: 1/1) mit Tagesabschluss 0x3ED01/0x3F833 je Manager (<see cref="OpenStartDay"/>).
     /// </summary>
     public bool DayOpened { get; private set; }
 
@@ -194,6 +192,19 @@ public sealed partial class GameState
             return;
         DayOpened = true;
         OnDayOpen(day);
+    }
+
+    /// <summary>
+    /// Tageswechsel zu Tag 0 vor dem ersten Menü eines neuen Spiels bzw. einer neuen Saison (#699 Punkt 2). [ORIGINAL] Spiel- und
+    /// Saisonstart setzen Zähler DGROUP 0x3B7 und Index 0xA969 auf 0 (Datei 0x43A93, 0x565A7); das Tagesbyte des Index 0 ist 0, der
+    /// Hauptweg springt bei Datei 0x54D5C nach 0x55073 und von dort ohne Menü zum Tageswechsel Datei 0x55204 (Zähler 1, Tagesabschluss
+    /// je Manager, Takt nicht: Zähler 1 ≢ 0, 4), danach Neuaufstellungen und Listenwechsel-Wurf von Manager 0 vor dessen Menü.
+    /// Im Modus „nur Weltkugel“ nicht (Datei 0x54CEE: eigener Weg zur WM, <see cref="SkipToWorldCup"/>).
+    /// </summary>
+    internal void OpenStartDay()
+    {
+        if (!WorldOnly && CurrentDay == 0 && Phase == SeasonPhase.Running)
+            OpenDay(0);
     }
 
     /// <summary>Paket „manager“: neue Saison hat begonnen (Finanzbuch, Stadion …).</summary>
@@ -250,6 +261,10 @@ public sealed partial class GameState
             }
             return;
         }
+        // [ORIGINAL] Jugendteams von Tag 0 (Datei 0x55008–0x5502C, 0x39DEC) nach dem ersten Menü vor den Spielen (#699 Punkt 2):
+        // Der Tageswechsel zu Tag 0 vor dem Menü rechnet sie nicht (AdvanceFinance), die übrigen Tage dort ([APPROX]).
+        if (day == 0 && !WorldOnly)
+            DailyYouth(0);
         MarkShortHandedClubs(); // Spur heimspiel-statistik (#165): Wertung 0:2/2:0 vor den Spielen des Tages
         ManagerDayFlag = Options.ManagerDayMinuteLoop && ManagerPlaysOn(day); // Merker vor den ersten Spielen des Tages (R14S-01)
 
@@ -493,6 +508,10 @@ public sealed partial class GameState
             competition.StartSeason(this);
         OnNewSeasonManager();
         OnNewSeasonTeam();
+        // #699 Punkt 2: Tag 0 vor dem ersten Menü – mit Verhandlungen aus der Oberfläche erst nach diesen
+        // (StartNextSeasonWithRenewals, dann ReturnToFirstActiveManager), weil der Tageswechsel offene Verhandlungen beendet.
+        if (!s_deferRenewals)
+            OpenStartDay();
     }
 
     /// <summary>

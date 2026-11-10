@@ -191,15 +191,23 @@ public sealed partial class GameState
 
     /// <summary>
     /// Hauptweg, Tage mit Ereignis vor den Managerzügen: je Satz die Neuaufstellung (Datei 0x54D68–0x54DBA; 0x426BC bei 0x54D9E, nur
-    /// mit „automatisch aufstellen“, <see cref="Club.ApplyAutoLineup"/>). [APPROX] Satz 5 (Bundestrainer, nur bei 0x9EDA &lt; 0x3F:
-    /// Neuaufstellung mit der gesicherten Einstellung und 0x952C(5, 0) bei 0x54DAA) rechnet das Remake nach den Menüs vor 0x952C(5, 1)
-    /// (<c>OnDayManager</c>, A009 Runde 14 Teil 3): Einen Bundestrainer gibt es im Hauptweg nur in Tests (Ernennung erst am 13. April,
-    /// danach WM-Schleife).
+    /// mit „automatisch aufstellen“, <see cref="Club.ApplyAutoLineup"/>). [ORIGINAL] Satz 5 (Bundestrainer, nur bei 0x9EDA &lt; 0x3F,
+    /// Datei 0x54D76–0x54D82): Neuaufstellung mit der gesicherten Einstellung (Datei 0x54D8C–0x54D9E) und 0x952C(5, 0) (Datei 0x54DAA,
+    /// <see cref="UpdateNationalTeamValues"/>), ebenfalls vor den Menüs (#699 Punkt 3); nach den Menüs folgt nur 0x952C(5, 1)
+    /// (<c>OnDayNationalTeam</c>). Einen Bundestrainer gibt es im Hauptweg nur in Tests (Ernennung erst am 13. April, danach
+    /// WM-Schleife). [APPROX] 0x952C(Satz, 0) der Managersätze 0 … 4 (Datei 0x54DAA in derselben Schleife) bildet das Remake hier
+    /// nicht nach (Teamwerte der Managervereine bei den Spielen).
     /// </summary>
     private void MainPathEventDayLineups(int day)
     {
-        if (IsListChangeDay(day))
-            ApplyAutoLineups();
+        if (!IsListChangeDay(day))
+            return;
+        ApplyAutoLineups();
+        if (NationalCoach is { } coach)
+        {
+            coach.OnEventDay();
+            UpdateNationalTeamValues();
+        }
     }
 
     /// <summary>

@@ -157,12 +157,19 @@ public class KaderStartRunde14FixTests
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, p));
         var before = game.TransferMarket.Listings.Select(l => l.Player.Id).ToList();
 
+        // Spur tagesablauf (#699 Punkt 2, R15-E1 = A): Gebote verfallen je Aufruf mit 1/4 (Datei 0x07215–0x0726A); ob nach dem
+        // 300. Aufruf gerade eines offen ist, hängt von der Zufallsfolge ab, die Tag 0 vor dem ersten Menü verschiebt. Deshalb
+        // „mindestens einmal ein Gebot auf p“ und die Verkäuferprüfung nach jedem Aufruf statt nur am Ende.
+        var bidSeen = false;
         for (var day = 0; day < 300; day++)
+        {
             game.TransferMarket.CatchUpManagerDay(game, manager);
+            bidSeen |= game.TransferMarket.Bids.Any(b => b.Listing.Player == p);
+            Assert.All(game.TransferMarket.Bids, b => Assert.Same(manager, b.Listing.Seller));
+        }
 
         Assert.Equal(before, game.TransferMarket.Listings.Select(l => l.Player.Id));
-        Assert.Contains(game.TransferMarket.Bids, b => b.Listing.Player == p);
-        Assert.All(game.TransferMarket.Bids, b => Assert.Same(manager, b.Listing.Seller));
+        Assert.True(bidSeen, "kein Gebot auf den eigenen Markt-Platz");
 
         // Gegenprobe: der volle Tageslauf des Markts wechselt die Liste in dieser Zeit.
         for (var day = 0; day < 300; day++)

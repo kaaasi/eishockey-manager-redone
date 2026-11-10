@@ -82,12 +82,16 @@ public class SponsorTests
         // Spur finanzen-2/finanzen-werbung: Bei einem Spiel über eine Saison bekommt beim Spielstart jede Art und jeder
         // Partner ein Angebot ohne Würfeln (em.exe 0x2A051, #133); Beträge liegen zwischen den Grenzen der Angebotsformel
         // (0x3FC1A) für die beim Start gespeicherte Bewertung (0x97CE).
+        // Spur tagesablauf (#699 Punkt 2, R15-E1 = A): Im ersten Menü ist der Tageswechsel zu Tag 0 gerechnet; dessen Tagesabschluss
+        // bewertet neu (0x3F833, Datei 0x55230). Die Angebote tragen weiter die Startbewertung, die aktuelle Bewertung ist die von
+        // Tag 0 (vorher: beide gleich, weil Tag 0 erst nach dem ersten Menü lief).
         var setup = new GameSetup { Duration = GameDuration.EineSaison };
         setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = 2 });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
         var me = game.ActiveManager;
         var ads = game.Ads(me);
-        var rating = game.Finance(me).SponsorRating;
+        Assert.Equal(SponsorRating.Compute(game, me), game.Finance(me).SponsorRating);
+        var rating = ads.Offers.Values.First().Values.First().Rating;
         Assert.InRange(rating, 0, 100);
         Assert.Equal(Enum.GetValues<AdSlotKind>().Length, ads.Offers.Count);
         foreach (var kind in Enum.GetValues<AdSlotKind>())

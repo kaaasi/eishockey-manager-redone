@@ -12,6 +12,7 @@ Das Hauptmenü zeigt den Tag **T** des nächsten eigenen Spiels.
   `TrainedUntil == (Saison, T)`, `FinanceDay == T`): Tagesabschluss, Takt 0x07169 mit Training und Markt, Neuaufstellung und
   Listenwechsel der Tage mit Ereignis. `[ORIGINAL]` Datei 0x55204–0x552D3 (nach den Spielen von T − 1) und 0x54D68–0x54E7C liegen
   vor dem Menü 0x44E22 (Datei 0x54EB2); die Spielstände des Originals sind dort gesichert (Zähler 0x3B7 = T + 1).
+- Das gilt auch für Tag 0 eines neuen Spiels und jeder Saison (#699; FILE01: Zähler 1).
 - **Nicht** gerechnet sind 0x952C(5, 1) des Bundestrainers (Datei 0x54F9C, nach den Menüs), die Listenwechsel-Würfe der
   Manager nach dem ersten (je beim Weitergeben des Zugs), Schuldenprüfung und die Spiele von T.
 - Jetzt bedienen die Manager ihre Bildschirme. Öffnen und Schließen ändert nichts; nur ausdrückliche Handlungen
@@ -38,9 +39,14 @@ Tagesabschluss 0x3ED01 (Zinsen, Werbung, Börse, Monatsabschlüsse Ende Mai bis 
 danach die Werbeangebote des Saisonbeginns (0x56650). Gebucht wird im Buch der neuen Saison. Der 30. April hat im Original keinen
 Tagesabschluss (die WM-Schleife schließt zuletzt den 29. April ab, Zähler 232; R688S-01): elf Monatsabschlüsse je Jahr, kein April.
 
-Nach dem 13. April ersetzt die WM-Schleife die Schritte 5–7 (`CupsNational.WorldCupLoop.cs`: (c) des Vortags, (d)). Ein neues
-Spiel, der erste Tag einer Saison und Spielstände vor Schema 45 holen den Tageswechsel vor den Spielen des Tages nach (`[APPROX]`
-Tag 0, #699: im Original vor dem ersten Menü mit Tagesabschluss zum 10. September).
+Nach dem 13. April ersetzt die WM-Schleife die Schritte 5–7 (`CupsNational.WorldCupLoop.cs`: (c) des Vortags, (d)). **Tag 0**
+(#699, `[ORIGINAL]` Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Ein neues Spiel (`BeginFirstTurn`) und jeder
+Saisonwechsel (`StartNextSeason`, mit Verhandlungen nach diesen in `ReturnToFirstActiveManager`) öffnen Tag 0 vor dem ersten Menü
+(`OpenStartDay`: Zähler 1 = 10. September, Tagesabschluss je Manager, Neuaufstellung, Listenwechsel-Wurf von Manager 0). Die
+Jugendteams von Tag 0 (Datei 0x55008) rechnet das Remake nach dem Menü vor den Spielen (FILE01/FILE10/FILE27 zeigen im ersten
+Menü die Startwerte); an den übrigen Tagen `[APPROX]` im Tageswechsel davor. Nur Spielstände vor Schema 45 holen den Tageswechsel
+vor den Spielen des Tages nach. Satz 5 (Bundestrainer) wird an Tagen mit Ereignis ebenfalls vor den Menüs neu aufgestellt
+(0x952C(5, 0), Datei 0x54DAA); nach den Menüs folgt nur 0x952C(5, 1).
 
 Daraus folgt:
 

@@ -225,9 +225,13 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
     // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
     // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → beide alten Werte; nur Start 233 → andere Werte (Feld).
+    // Runde 15, Spur tagesablauf (#699 Punkt 2, Entscheidung Nutzer R15-E1 = A): neu – Tag 0 jeder Saison wird vor dem ersten Menü
+    // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
+    // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
+    // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
     [GameDataTheory]
-    [InlineData(false, "7643FD5C4D33C359")]
-    [InlineData(true, "3BFBFB82C212FDB8")]
+    [InlineData(false, "69FE76E9EAAC0AB6")]
+    [InlineData(true, "C0569EF9C1B17F34")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

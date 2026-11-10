@@ -62,7 +62,11 @@ public sealed partial class GameState
     /// <see cref="StartTurns"/> und <see cref="PassTurn"/>, der erste Tag eines neuen Spiels nutzte den abgeleiteten Ersatzwert.
     /// Zieht nur aus <see cref="TurnRandom"/> (keine andere Zufallsquelle, keine Aufstellung: die macht der erste Aufbau des Menüs).
     /// </summary>
-    internal void BeginFirstTurn() => DrawContractTurnFactor();
+    internal void BeginFirstTurn()
+    {
+        OpenStartDay(); // Spur tagesablauf (#699 Punkt 2): Tageswechsel zu Tag 0 vor dem ersten Menü (Datei 0x54D5C → 0x55204)
+        DrawContractTurnFactor();
+    }
 
     /// <summary>
     /// Das Hauptmenü wird für <paramref name="manager"/> aufgebaut (erster Aufbau eines Zugs, Rückkehr aus einem Unterbildschirm,
