@@ -228,8 +228,10 @@ v1.0 vorgemerkt (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C). Gegenpr
 - **Takt:** seit Spur `kader-transfer`, Teil 4 täglich wie im Original (unten); Zufall aus der Hauptquelle.
 - **Vertragslose** stehen nicht auf der Liste (R204, Runde 15 Spur kader Teil 3, R15-D4 = A): Vertragsende in einem Managerverein
   (Datei 0x27DE3–0x27E9D) gibt nur den Kaderplatz frei (0x425B6, ohne Pool +0x1A), der Listenwechsel zieht nur Besitzer 6 – Beleg
-  FILE44 → FILE46 KJELLBERG (Pool +0x1A bleibt 0). `[APPROX]` Im Remake bleiben sie vertragslos (Kader-KI der Computervereine).
-  Bis Runde 14 standen sie zusätzlich auf der Liste (höchstens 6).
+  FILE44 → FILE46 KJELLBERG (Pool +0x1A bleibt 0). Seit R15-E3 = C (Fixlauf Spur kader) ist der Spieler wie im Original ganz
+  verloren (weder vertragslos noch für Computervereine verfügbar); sein Poolplatz bleibt vergeben (`[APPROX]` ohne weiteres Altern).
+  Bis Runde 14 standen sie zusätzlich auf der Liste (höchstens 6), bis zum Fixlauf blieben sie vertragslos; dieses Verhalten ist
+  als Einstellung nach v1.0 vorgemerkt.
 - Sonderprüfung DGROUP 0x6AC (Startwert 56 = Deutschland) in 0x5ACA0 nicht abgebildet (FILE05 zeigt einen Poolspieler
   Deutschlands); Vereinsfelder aus Datenbankstärke und Abweichung des Laders, Nationalteams seit Teil 4 aus der Ländertabelle 0x4C4E (A209);
   Energie auf 99 begrenzt; 0x4907A (0x118:0x4D) seit Teil 4 abgebildet (Tendenz, Steuerbyte).

@@ -155,8 +155,8 @@ public sealed partial class TransferMarket
     /// Belege FILE44 (14.04.1994) → FILE46/FILE44A (10.09.1994) und FILE22 → FILE23: Liste gleich, Alter + 1, nur der eigene
     /// HOHENADL ist in den Kader zurückgekehrt (<see cref="ReturnListedPlayers"/>, vorher im Saisonhaken der Manager). Vorher
     /// [APPROX] neue Liste per <see cref="ChangeList"/>.
-    /// [ORIGINAL] Vertragslose stehen nicht auf der Liste (R204, siehe unten). [APPROX] Sie bleiben im Remake vertragslos
-    /// (<see cref="FreeAgents"/>, Kader-KI der Computervereine), statt wie im Original mit Pool +0x1A = Manager verloren zu sein.
+    /// [ORIGINAL] Vertragslose stehen nicht auf der Liste (R204, siehe unten); wer bei Vertragsende einen Managerverein verlässt,
+    /// ist ganz verloren (R15-E3 = C, <see cref="GameState"/> Leave in Transfer.SeasonEnd.cs; Pool +0x1A bleibt Manager).
     /// [APPROX] Neue Listing-Identitäten (eine noch gehaltene Referenz aus der Vorsaison ist ungültig), Spieltag des Eintrags 0;
     /// Sperren nach abgelehnten Geboten bleiben am Platz. Die Spieler der Markt-Plätze sind im Remake die Poolspieler selbst: Sie
     /// altern mit dem Pool, Umbenennen und Laufbahnende treffen nur freie Plätze.
@@ -184,10 +184,11 @@ public sealed partial class TransferMarket
                 FromPool = true,
                 RejectedBy = listing.RejectedBy,
             });
-        // [ORIGINAL] R204 (Spur kader, Teil 3; R15-D4 = A): Vertragslose kommen nicht auf die Liste. Vertragsende in einem
-        // Managerverein (Datei 0x27DE3–0x27E9D) gibt nur den Kaderplatz frei (0x108:0x48 = Datei 0x425B6, ohne Pool +0x1A); der
-        // Listenwechsel zieht nur Besitzer 6. Beleg FILE44 → FILE46: KJELLBERG weder im Kader noch auf der Liste, Pool +0x1A = 0.
-        // Bis Runde 15 setzte das Remake sie zusätzlich auf die freien der zehn Plätze ([APPROX], verpflichtbar zum Preis 0).
+        // [ORIGINAL] R204 (Spur kader, Teil 3; R15-D4 = A, R15-E3 = C): Vertragslose kommen nicht auf die Liste. Vertragsende in
+        // einem Managerverein (Datei 0x27DE3–0x27E9D) gibt nur den Kaderplatz frei (0x108:0x48 = Datei 0x425B6, ohne Pool +0x1A);
+        // der Spieler ist ganz verloren, der Listenwechsel zieht nur Besitzer 6. Beleg FILE44 → FILE46: KJELLBERG weder im Kader
+        // noch auf der Liste, Pool +0x1A = 0. Bis Runde 15 setzte das Remake sie zusätzlich auf die freien der zehn Plätze und
+        // ließ sie vertragslos ([APPROX]; Einstellung nach v1.0 vorgemerkt).
         StartPoolSeason(game, game.Random);
         // [ORIGINAL] 0x07C7E nach den neuen Namen (Spur kader-transfer, Teil 5); Teil des Tageslaufs 0x54C9F, den es im Modus
         // „nur Weltkugel“ nicht gibt (0x54CEE).

@@ -1,3 +1,4 @@
+using System.Text;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
@@ -11,6 +12,9 @@ namespace EishockeyManager.Core.Tests;
 /// 0x494EF zieht nur Poolplätze mit Besitzer 6. Beleg FILE44 → FILE46: KJELLBERG (Pool 196) ist in FILE46 weder im Kader noch auf
 /// der Liste, Pool +0x1A bleibt 0 (Manager). Vorher rot: Das Remake setzte solche Spieler beim Saisonwechsel zusätzlich auf die
 /// freien der zehn Listenplätze (Preis 0, „verpflichtbar“).
+/// Fixlauf nach Review #741 (R15-E3 = C, Nutzer 10.11.2026): Der Spieler ist wie im Original ganz verloren – weder im Kader noch
+/// vertragslos (vorher rot: <see cref="TransferMarket.FreeAgents"/> enthielt ihn, Computervereine konnten ihn ziehen); sein
+/// Poolplatz bleibt vergeben (Pool +0x1A = Manager, FILE46 KJELLBERG Pool 196).
 /// </summary>
 public class KaderVertragsloseTests
 {
@@ -49,7 +53,7 @@ public class KaderVertragsloseTests
         player.ContractYears = 1;
         game.StartNextSeason();
         Assert.DoesNotContain(player, club.Players);
-        Assert.Contains(player, game.TransferMarket.FreeAgents);
+        AssertLost(game, player);
         AssertNoFreeAgentListed(game);
         for (var i = 0; i < 50; i++)
         {
@@ -57,6 +61,22 @@ public class KaderVertragsloseTests
             Assert.DoesNotContain(game.TransferMarket.Listings, l => l.Player == player);
             Assert.All(game.TransferMarket.Listings, l => Assert.True(l.FromPool || l.Seller is not null, l.Player.Name));
         }
+        // Auch die Kader-KI der Computervereine findet ihn nicht mehr (R15-E3 = C).
+        for (var i = 0; i < 4; i++)
+        {
+            LifecycleRegressionTests.FinishSeason(game);
+            game.StartNextSeason();
+        }
+        AssertLost(game, player);
+    }
+
+    /// <summary>R15-E3 = C: weder in einem Kader noch vertragslos, im Ruhestand oder sonst im Spiel.</summary>
+    private static void AssertLost(GameState game, Player player)
+    {
+        Assert.DoesNotContain(player, game.TransferMarket.FreeAgents);
+        Assert.DoesNotContain(game.Clubs, c => c.Players.Contains(player));
+        Assert.DoesNotContain(player, game.RetiredPlayers);
+        Assert.DoesNotContain(player, game.AllPlayers);
     }
 
     /// <summary>
@@ -73,14 +93,41 @@ public class KaderVertragsloseTests
         var expected = Import("FILE46.HOK", 4711).TransferMarket.Listings.Select(l => l.Player.Name).Order().ToList();
         Assert.Equal(expected, game.TransferMarket.Listings.Select(l => l.Player.Name).Order());
         Assert.DoesNotContain(club.Players, p => p.Name == "KJELLBERG");
-        Assert.Contains(game.TransferMarket.FreeAgents, p => p.Name == "KJELLBERG");
         AssertNoFreeAgentListed(game);
+    }
+
+    /// <summary>
+    /// Regressionstest R15-E3 = C am Original-Stand FILE44 → FILE46: KJELLBERG ist nach dem Saisonwechsel ganz verloren (in FILE46
+    /// in keinem Kader, nicht vertragslos), sein Poolplatz 196 bleibt vergeben (Pool +0x1A = 0, Manager) mit Alter wie in FILE46
+    /// (32 → 33). Vorher rot: KJELLBERG vertragslos, Platz 196 frei und umbenannt.
+    /// </summary>
+    [GameDataFact]
+    public void File44_SeasonChange_Kjellberg_LostLikeFile46()
+    {
+        var game = Import("FILE44.HOK", 4711);
+        var kjellberg = game.Clubs[game.Managers[0].ClubIndex].Players.Single(p => p.Name == "KJELLBERG");
+        var slot = game.TransferMarket.Pool.Single(s => ReferenceEquals(s.Player, kjellberg));
+        Assert.Equal(196, slot.Index);
+        PlayToSeasonOver(game);
+        game.StartNextSeason();
+        AssertLost(game, kjellberg);
+        var raw46 = OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave("FILE46.HOK")));
+        var entry = OriginalImport.PoolEntry(raw46, 196);
+        Assert.Equal(0, entry[0x1A]); // Besitzer: Manager 0
+        Assert.Equal(kjellberg.Name, Encoding.Latin1.GetString(entry[..0x12]).TrimEnd('\0'));
+        var file46 = Import("FILE46.HOK", 4711);
+        Assert.DoesNotContain(file46.Clubs, c => c.Players.Any(p => p.Name == "KJELLBERG"));
+        Assert.DoesNotContain(file46.TransferMarket.FreeAgents, p => p.Name == "KJELLBERG");
+        Assert.Same(kjellberg, slot.Player);
+        Assert.Equal(PoolOwner.Taken, slot.Owner);
+        Assert.Equal(entry[0x14], slot.Player.Age);
     }
 
     /// <summary>
     /// Mehrsaisonprobe (AGENTS.md §5): vier Saisonwechsel ab FILE44, passiv („Abbruch“ in jeder Verhandlung, alle Spieler mit
     /// Vertragsende gehen) und aktiv (alle verlängert). An jedem Spieltag und nach jedem Wechsel steht kein Vertragsloser auf der
-    /// Liste; kein Spieler, der einen Managerverein vertragslos verlassen hat, kehrt in einen Managerkader zurück.
+    /// Liste; jeder Spieler, der den Managerverein bei Vertragsende verlassen hat, ist ganz verloren (R15-E3 = C) und taucht in
+    /// keinem Kader wieder auf.
     /// </summary>
     [GameDataTheory]
     [InlineData(false)]
@@ -101,7 +148,7 @@ public class KaderVertragsloseTests
                 game.Continue();
                 AssertNoFreeAgentListed(game);
             }
-            var before = club.Players.ToList();
+            var before = club.Players.Where(p => p.Loan is null).ToList(); // Leihe vom Markt endet frei (A115, VALLIERE)
             game.StartNextSeasonWithRenewals();
             foreach (var p in game.PendingRenewals(manager))
             {
@@ -116,8 +163,9 @@ public class KaderVertragsloseTests
             }
             Assert.Empty(game.PendingRenewals(manager));
             AssertNoFreeAgentListed(game);
-            departed.UnionWith(before.Where(p => game.TransferMarket.FreeAgents.Contains(p)));
-            Assert.DoesNotContain(club.Players, departed.Contains);
+            departed.UnionWith(before.Where(p => !club.Players.Contains(p) && !game.RetiredPlayers.Contains(p)));
+            foreach (var p in departed)
+                AssertLost(game, p);
             var all = game.AllPlayers.ToList();
             Assert.Equal(all.Count, all.Distinct().Count());
         }

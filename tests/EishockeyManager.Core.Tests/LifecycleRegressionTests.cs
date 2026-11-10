@@ -53,9 +53,10 @@ public class LifecycleRegressionTests
 
     // Spur kader Teil 3 (R204, R15-D4 = A): geändert – vorher „bleibt als Vertragsloser verpflichtbar“ (Remake-Ergänzung, Liste
     // zum Preis 0). Wie im Original (Datei 0x27DE3–0x27E9D, FILE44 → FILE46 KJELLBERG) steht er nicht auf der Liste; Belege und
-    // Mehrsaisonprobe in KaderVertragsloseTests.
+    // Mehrsaisonprobe in KaderVertragsloseTests. Fixlauf R15-E3 = C: geändert – vorher „wird vertragslos“; wie im Original ist er
+    // ganz verloren (weder vertragslos noch in einem Kader).
     [Fact]
-    public void R204_ExpiredPlayerBecomesFreeAgentButIsNotListed()
+    public void R204_ExpiredPlayerIsLostAndNotListed()
     {
         var game = TestGames.Create();
         FinishSeason(game);
@@ -63,7 +64,8 @@ public class LifecycleRegressionTests
         var player = club.Players.First(p => p.Role == PlayerRole.Forward);
         player.ContractYears = 1;
         game.StartNextSeason();
-        Assert.Contains(player, game.TransferMarket.FreeAgents);
+        Assert.DoesNotContain(player, game.TransferMarket.FreeAgents);
+        Assert.DoesNotContain(player, game.AllPlayers);
         Assert.DoesNotContain(player, club.Players);
         Assert.DoesNotContain(game.TransferMarket.Listings, l => l.Player == player);
     }

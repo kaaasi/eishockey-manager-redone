@@ -479,6 +479,7 @@ public class TransferVertraegeKomplettTeil5Tests
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];
         var market = game.TransferMarket;
+        var startSquad = club.Players.ToHashSet();
         int bought = 0, sold = 0;
         for (var change = 0; change < 4; change++)
         {
@@ -522,8 +523,10 @@ public class TransferVertraegeKomplettTeil5Tests
             }
             game.StartNextSeason();
             Assert.Empty(game.ValidatePlayerIdentity());
+            // Spur kader (R15-E3 = C): ein vergebener Platz gehört einem Spieler im Managerkader oder einem nach Vertragsende ganz
+            // verlorenen Spieler (Pool +0x1A bleibt Manager, FILE46 KJELLBERG).
             Assert.All(market.Pool.Where(s => s.Owner == PoolOwner.Taken),
-                s => Assert.Contains(s.Player, game.Clubs[manager.ClubIndex].Players));
+                s => Assert.True(club.Players.Contains(s.Player) || !game.AllPlayers.Contains(s.Player), s.Player.Name));
             var saved = SaveGame.Save(game);
             var loaded = SaveGame.Load(saved);
             Assert.True(loaded.Success, loaded.Error);
@@ -537,8 +540,10 @@ public class TransferVertraegeKomplettTeil5Tests
         else
         {
             Assert.Equal(0, bought + sold);
-            // Spur kader (#698): vergeben sind beim passiven Manager nur Junioren vom Saisonende (0x06D7F aus 0x26F20).
-            Assert.All(market.Pool.Where(s => s.Owner == PoolOwner.Taken), s => Assert.True(s.Player.Age <= PlayerFactory.ScoutedMaxAge + 4));
+            // Spur kader (#698, Review #741 P3-3): vergeben sind beim passiven Manager genau die Spieler im Kader, die nicht aus dem
+            // Startkader stammen – die Junioren vom Saisonende (0x06D7F aus 0x26F20).
+            Assert.Equal(club.Players.Where(p => !startSquad.Contains(p)).ToHashSet(),
+                market.Pool.Where(s => s.Owner == PoolOwner.Taken && club.Players.Contains(s.Player)).Select(s => s.Player).ToHashSet());
         }
     }
 }
