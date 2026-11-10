@@ -57,7 +57,7 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
 - **Abnahme:** Gegenliste im PR: jede Regel der alten Fassung → Fundstelle in Kern oder Anhang (keine fehlt, keine neu – außer
   den Klärungen aus #712, je mit Verweis); Zeilenzählung vorher/nachher. Dazu R719-02 aus `reviews/2026-11-10-plan-runde-15.md`
   (Reste des Stapelmodells), soweit nicht schon erledigt.
-- **Modell:** Claude Sonnet 5.5 (mechanisch). **Review:** Doku-Prüfung, Claude Sonnet 5.5. **Status:** offen.
+- **Modell:** Claude Sonnet 5.5 (mechanisch). **Review:** Doku-Prüfung, Claude Sonnet 5.5. **Status:** fertig, Review offen (PR #722).
 
 ### Spur `tagesablauf` – Restlücken Tagestakt (#699 Punkte 1–3)
 
