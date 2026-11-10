@@ -20,6 +20,18 @@ Die in den Vorberichten dokumentierten Befunde bestehen fort. R14G3-01 ist mit I
 
 **Gegenprobe S10:** `PartMask` in einer Prüfkopie auf `0x00` setzen. Der bestehende Test bleibt **grün**, obwohl der Produktcode dann andere Bildpunkte transparent behandelt. Eine zusätzliche Prüfung `Assert.Equal(0xC0, StadiumScreen.PartMask)` besteht am unveränderten Code und wird mit S10 **rot**. Die Originalinstruktion `0x3D92D` (`mov al, 0xC0`) wurde selbst nachgelesen. Der vorhandene Produktwert ist korrekt; der Befund betrifft die unabhängige Absicherung. Ein festes, aus der Originalstelle abgeleitetes Soll für die Maske und die Pixelprüfung würde die Lücke schließen.
 
+### R14G4-03 (P3): Gesamtstand-Prüfung erkennt das Auslassen des Nachsaisonimports nicht
+
+`Import_AllStands_PostseasonMatchesOriginal` ([OriginalImportPostseasonTests.cs:156](https://github.com/kaaasi/eishockey-manager-redone/blob/b13046422b285404ad6ddbe7b5f1b18e22069eea/tests/EishockeyManager.Core.Tests/OriginalImportPostseasonTests.cs#L156)) prüft über alle Originalstände nur die Zahl der Play-off-Runden und Aufstiegsrunden sowie deren Terminzahl. Diese Größen können bereits beim vorherigen Nachspielen übereinstimmen, ohne dass die importierten Teilnehmer und Ergebnisse aus dem HOK stammen.
+
+**Gegenprobe G05:** Den gesamten Aufruf `ApplyPostseason(save, clubOf)` in der Prüfkopie auslassen. Die Gesamtstand-Prüfung bleibt **grün**. Die konkreten Prüfungen für FILE22 und FILE44 zu Aufstiegsrunden, Play-offs und den folgenden Ligen werden dagegen jeweils **rot** (sechs Datenzeilen). Ein Vergleich der Teilnehmer und Ergebnisse pro Stand mit den HOK-Feldern würde die Aussage des Gesamtstandtests absichern. Im Produktcode ist der Importaufruf vorhanden; dies ist eine Testlücke.
+
+### R14G4-04 (P3): Vier-Saison-Probe aller Originalstände akzeptiert vorzeitiges Spielende
+
+`Import_AllStands_FourSeasonChanges` ([OriginalImportPostseasonTests.cs:194](https://github.com/kaaasi/eishockey-manager-redone/blob/b13046422b285404ad6ddbe7b5f1b18e22069eea/tests/EishockeyManager.Core.Tests/OriginalImportPostseasonTests.cs#L194)) akzeptiert am Ende für jeden Stand `Phase == GameOver`, ohne zu prüfen, ob die konfigurierte Spieldauer dieses Ende bereits rechtfertigt. Damit kann die angekündigte Mehrsaisonprüfung bei einem fehlerhaften vorzeitigen Ende bestehen.
+
+**Gegenprobe G06:** `StartNextSeason` bei `SeasonOver` sofort auf `GameOver` setzen und ohne Saisonwechsel zurückkehren lassen. Der Test über alle eingelesenen Originalstände bleibt **grün**. Eine zusätzliche Kontrolle für FILE05 fordert `game.Season == start + 4`: Sie besteht am unveränderten Produktcode und wird mit G06 **rot**. Dies erweitert den verwandten Befund R14G3-02 auf einen anderen, alle Stände umfassenden Test; ein vorzeitiges Ende im unveränderten Produkt ist dadurch nicht nachgewiesen. Der Test sollte zulässiges Ende anhand der tatsächlichen Spieldauer unterscheiden und sonst vier erfolgte Wechsel fordern.
+
 ## 3. Prüfungen und offene Prüfbereiche
 
 Testsaat-Rücksetzungen sind in der Regelspalte ausdrücklich als solche bezeichnet; sie sind keine Regelmutationen und zählen nicht als rote Gegenprobe in der Methodenliste. Die Prüfkopie liegt unter `/workspace/r14-review-teil4/copy`; Ausgangsstand ist der unveränderte lokale Head. Mutationen laufen einzeln mit Wiederherstellung, die vollständigen Ausgaben und Regeln werden unter `/workspace/r14-review-teil4/logs` gespeichert. Beim ersten abgebrochenen Versuch wurde eine überlagerte Mutation erkannt; diese Ergebnisse wurden verworfen und anschließend nach Wiederherstellung der Quelldatei erneut ausgeführt. .NET SDK 10.0.402, lokale Testhost-Sockets mit Umgebungsfreigabe, `NuGetAudit=false`.
@@ -35,6 +47,8 @@ Selbst in `em.exe` nachgelesen: `0x319AC–0x319DB` kopiert in einer Schleife di
 Zur Nutzerentscheidung C wurde `em.exe` Datei `0x54D41–0x54D65` erneut gelesen: Der Tagesindex adressiert ein Tagesbyte, Wert 9 wird auf 0 abgebildet, 0 und 255 springen nach `0x55073`. `0x55204–0x55230` erhöht DGROUP `0x3B7` mit Übertrag und ruft nach Setzen von Manager 0 zwei Funktionen je Manager auf. Die Verknüpfung des gesamten Ladewegs und die Zuordnung aller aufgerufenen Funktionen bleiben offen; isolierte Befehle belegen sie nicht allein.
 
 Stadionteile: In `em.exe` Datei `0x3D92D` steht `mov al, 0xC0`, gefolgt von `push ax` bei `0x3D92F`. Der übergebene Maskenwert des niederwertigen Bytes ist damit unmittelbar nachgelesen; die vollständige Kopierroutine und alle Stadionfundstellen sind damit noch nicht geprüft.
+
+Zu L1 selbst in `em.exe` gelesen: `0x29CFA–0x29D7F` prüft `[bp−0x64] = 0`, DGROUP `0x5A14 = 0x7CA` (1994) und Managerzahl `0x386 = 1`, schreibt 1 in das managerindizierte Feld und wiederholt einen Zufallsaufruf bis zur akzeptierten Rückgabe des Stubs `0x110:0x75`. Die Funktion des Stubs und die nachfolgende Tauschfunktion sind durch diese Stelle allein noch nicht zugeordnet; der vollständige Filterbeleg bleibt offen.
 
 ### Modus-4-Referenzwert: einzelne geänderte Bestandteile
 
@@ -123,6 +137,8 @@ Diese statische Zuordnung ergänzt die zwei dynamischen Sonderfallprüfungen und
 |---|---|
 | R14-D2 = B, HOK-Import jetzt, Export später | `SaveLoadScreen` ruft `OriginalImport.TryImport` beim Laden auf; HOK-Einträge werden beim Speichern grau angezeigt (`SaveLoadScreen.cs:329,453,472`). Feldkarte und vollständige Ausschlussprüfung sämtlicher Exportpfade bleiben offen. |
 | L1, U15-c | `NewGame.OneSeasonSingleManager` und die anschließende Umplatzierung setzen bei einem Manager und einer Saison den Verein auf Platz 0; `PlaceInStartLeague` schließt Platz 0 aus. Die vollständige Prüfung aller Auswahlpfade und des Originalfilters bleibt offen. |
+| L2, Schemafelder im Kader | `Player.Competitions.cs` führt die Wettbewerbszähler, `FinanceSponsorRating.cs` das Tabellenfeld und `Transfer.Listed.cs` eigene Marktspieler; `SaveGame.Migration.KaderStart2.cs` ergänzt alte Stände. B03–B09 und C01–C06 prüfen einzelne Wirkungen; vollständige Feld- und Migrationsprüfung offen. |
+| L3, Vereinsaufstellung und Reihenfolge | `Squad.AutoLineup.cs` und `Squad.Lineup.cs` führen die Regeln im Kern, `LineupScreen.cs` die Bildschirmsteuerung. B01/B02 prüfen automatische und manuelle Neuaufstellung, K04 die Sortierung eines Talents; die vollständige Prüfung aller Bedien- und Platzierungsfälle bleibt offen. |
 | L4, Taktik 375h im Kern | `Club.ApplyAutoLineup` prüft die Einstellung; `PlayerInjuries.AfterMatch` löst sie nach dem Spiel aus. B01 und B02 machen die automatischen und manuellen Fälle jeweils rot. Alle anderen Aufrufer und Zustände bleiben offen. |
 | L8, A009 im Nationalteam | `NationalCoach.BeginTurn`, `OnMenu`, `EndTurn` und `OnEventDay` liegen im Kern; Import übernimmt das gespeicherte Byte in `OriginalImport.National.cs`. Die vollständige Prüfung aller Zug- und Migrationspfade bleibt offen. |
 | L9, A362 als Abbild | `ContractsScreen` hält `_picture` und `_pictureManager` als private Bildschirmfelder und baut die Saisonende-Verhandlungen über `ForSeasonEnd` auf. Vollständiger Bild- und Ablaufvergleich sowie die Schemaabgrenzung bleiben offen. |
@@ -438,6 +454,16 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | F03 | ungültigen Feldkartenstatus setzen | `EishockeyManager.Core.Tests.OriginalImportFieldMapTests.FieldMap_RowsHaveValidStatusAndSource` | rot |
 | F04 | nicht gelesenen Feldversatz als Quelle behaupten | `EishockeyManager.Core.Tests.OriginalImportFieldMapTests.FieldMap_ImportedRows_HaveTheirBlocksAndOffsetsInTheImportCode` | rot |
 | F05 | Zeilenkommentare in der Testhilfe nicht entfernen | `EishockeyManager.Core.Tests.OriginalImportFieldMapTests.StripComments_RemovesLineAndBlockCommentsButKeepsStrings` | rot |
+| F06 | Vereinsnamen im eingelesenen HOK-Objekt verfälschen | `EishockeyManager.Core.Tests.OriginalImportFieldMapDataTests.ClubRecords_MapToDatabaseByName(file: "FILE11.HOK", onlyWorld: True)` | rot |
+| F06 | Vereinsnamen im eingelesenen HOK-Objekt verfälschen | `EishockeyManager.Core.Tests.OriginalImportFieldMapDataTests.ClubRecords_MapToDatabaseByName(file: "FILE29.HOK", onlyWorld: False)` | rot |
+| F06 | Vereinsnamen im eingelesenen HOK-Objekt verfälschen | `EishockeyManager.Core.Tests.OriginalImportFieldMapDataTests.ClubRecords_MapToDatabaseByName(file: "FILE16A.HOK", onlyWorld: False)` | rot |
+| F06 | Vereinsnamen im eingelesenen HOK-Objekt verfälschen | `EishockeyManager.Core.Tests.OriginalImportFieldMapDataTests.ClubRecords_MapToDatabaseByName(file: "FILE05.HOK", onlyWorld: False)` | rot |
+| F07 | Tabellenplätze im eingelesenen HOK-Objekt verdoppeln | `EishockeyManager.Core.Tests.OriginalImportFieldMapDataTests.LeagueTable_UsesSlotsOfItsLeague(file: "FILE05.HOK")` | rot |
+| F07 | Tabellenplätze im eingelesenen HOK-Objekt verdoppeln | `EishockeyManager.Core.Tests.OriginalImportFieldMapDataTests.LeagueTable_UsesSlotsOfItsLeague(file: "FILE29.HOK")` | rot |
+| F07 | Tabellenplätze im eingelesenen HOK-Objekt verdoppeln | `EishockeyManager.Core.Tests.OriginalImportFieldMapDataTests.LeagueTable_UsesSlotsOfItsLeague(file: "FILE16A.HOK")` | rot |
+| F08 | Konto im eingelesenen HOK-Objekt um ein Bit verändern | `EishockeyManager.Core.Tests.OriginalImportFieldMapDataTests.ManagerRecordOffsets_MatchDocumentedValues(file: "FILE08.HOK", account: 4315062, bankLoan: -2103000, ticket: 17, seats: 3000, standing: 4500)` | rot |
+| F08 | Konto im eingelesenen HOK-Objekt um ein Bit verändern | `EishockeyManager.Core.Tests.OriginalImportFieldMapDataTests.ManagerRecordOffsets_MatchDocumentedValues(file: "FILE09.HOK", account: 1200000, bankLoan: 0, ticket: 13, seats: 4200, standing: 7000)` | rot |
+| F08 | Konto im eingelesenen HOK-Objekt um ein Bit verändern | `EishockeyManager.Core.Tests.OriginalImportFieldMapDataTests.ManagerRecordOffsets_MatchDocumentedValues(file: "FILE01.HOK", account: 1500000, bankLoan: 0, ticket: 13, seats: 3000, standing: 4500)` | rot |
 | G01 | DEB-Pokal nicht importieren | `EishockeyManager.Core.Tests.OriginalImportCupTests.Import_DebCupFinalWithMarks` | rot |
 | G01 | DEB-Pokal nicht importieren | `EishockeyManager.Core.Tests.OriginalImportCupTests.Import_EuropeanCupFromOriginal` | grün |
 | G01 | DEB-Pokal nicht importieren | `EishockeyManager.Core.Tests.OriginalImportCupTests.Import_DebCupQuarterFinal` | rot |
@@ -464,6 +490,7 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | G05 | Nachsaison nicht aus HOK übernehmen | `EishockeyManager.Core.Tests.OriginalImportPostseasonTests.Import_SeasonChange_LeaguesLikeNextOriginalStand(file: "FILE44.HOK", next: "FILE46.HOK")` | rot |
 | G05 | Nachsaison nicht aus HOK übernehmen | `EishockeyManager.Core.Tests.OriginalImportPostseasonTests.Import_SeasonChange_LeaguesLikeNextOriginalStand(file: "FILE22.HOK", next: "FILE23.HOK")` | rot |
 | G05 | Nachsaison nicht aus HOK übernehmen | `EishockeyManager.Core.Tests.OriginalImportPostseasonTests.Import_AllStands_PostseasonMatchesOriginal` | grün |
+| G06 | Saisonwechsel endet sofort als GameOver | `EishockeyManager.Core.Tests.OriginalImportPostseasonTests.Import_AllStands_FourSeasonChanges` | grün |
 | H01 | Jahr um eins erhöhen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_ReturnsYearMatchDayAndManagers` | rot |
 | H02 | vollen Kopf ablehnen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_ReadsOnlyTheHeader_NoLengthOrChecksumCheck` | rot |
 | H03 | maximale Managerzahl auf drei setzen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_LimitsManagersToFour` | rot |
@@ -560,6 +587,66 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | K03 | Schritt am Reglerende als Änderung melden | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.StartLeague_WithoutManagers_StepReportsOnlyRealChanges` | rot |
 | K04 | Talente hinten anhängen | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.JoinScoutedTalent_GoalkeeperOrDefender_SortedIn` | rot |
 | K05 | alte Startliga nicht migrieren | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.Migration_41To42_TakesStartLeagueOfFirstManager` | rot |
+| N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: True)` | grün |
+| N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: False)` | rot |
+| N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | grün |
+| N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | rot |
+| N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FullSquad_ClickDoesNothing_KeeperSwapTakesRowThree` | rot |
+| N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | rot |
+| N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: False)` | rot |
+| N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: True)` | rot |
+| N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | rot |
+| N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | grün |
+| N12 | manueller Eingriff schaltet Automatik nicht ab | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: True)` | grün |
+| N12 | manueller Eingriff schaltet Automatik nicht ab | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: False)` | grün |
+| N12 | manueller Eingriff schaltet Automatik nicht ab | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | rot |
+| N12 | manueller Eingriff schaltet Automatik nicht ab | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | grün |
+| N12 | manueller Eingriff schaltet Automatik nicht ab | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FullSquad_ClickDoesNothing_KeeperSwapTakesRowThree` | grün |
+| N12 | manueller Eingriff schaltet Automatik nicht ab | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | grün |
+| N12 | manueller Eingriff schaltet Automatik nicht ab | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: False)` | grün |
+| N12 | manueller Eingriff schaltet Automatik nicht ab | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: True)` | rot |
+| N12 | manueller Eingriff schaltet Automatik nicht ab | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | rot |
+| N12 | manueller Eingriff schaltet Automatik nicht ab | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | grün |
+| N13 | beim Zuganfang immer Automatik anschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: True)` | rot |
+| N13 | beim Zuganfang immer Automatik anschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: False)` | grün |
+| N13 | beim Zuganfang immer Automatik anschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | grün |
+| N13 | beim Zuganfang immer Automatik anschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | grün |
+| N13 | beim Zuganfang immer Automatik anschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FullSquad_ClickDoesNothing_KeeperSwapTakesRowThree` | grün |
+| N13 | beim Zuganfang immer Automatik anschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | grün |
+| N13 | beim Zuganfang immer Automatik anschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: False)` | grün |
+| N13 | beim Zuganfang immer Automatik anschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: True)` | rot |
+| N13 | beim Zuganfang immer Automatik anschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | rot |
+| N13 | beim Zuganfang immer Automatik anschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | grün |
+| N14 | beim Zugende Automatik immer speichern | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: True)` | grün |
+| N14 | beim Zugende Automatik immer speichern | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: False)` | grün |
+| N14 | beim Zugende Automatik immer speichern | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | grün |
+| N14 | beim Zugende Automatik immer speichern | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | grün |
+| N14 | beim Zugende Automatik immer speichern | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FullSquad_ClickDoesNothing_KeeperSwapTakesRowThree` | grün |
+| N14 | beim Zugende Automatik immer speichern | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | grün |
+| N14 | beim Zugende Automatik immer speichern | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: False)` | grün |
+| N14 | beim Zugende Automatik immer speichern | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: True)` | rot |
+| N14 | beim Zugende Automatik immer speichern | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | rot |
+| N14 | beim Zugende Automatik immer speichern | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | grün |
+| N15 | Einstellung bei Migration immer einschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: True)` | rot |
+| N15 | Einstellung bei Migration immer einschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: False)` | grün |
+| N15 | Einstellung bei Migration immer einschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | grün |
+| N15 | Einstellung bei Migration immer einschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | grün |
+| N15 | Einstellung bei Migration immer einschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FullSquad_ClickDoesNothing_KeeperSwapTakesRowThree` | grün |
+| N15 | Einstellung bei Migration immer einschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | grün |
+| N15 | Einstellung bei Migration immer einschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: False)` | grün |
+| N15 | Einstellung bei Migration immer einschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: True)` | grün |
+| N15 | Einstellung bei Migration immer einschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | grün |
+| N15 | Einstellung bei Migration immer einschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | grün |
+| N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: True)` | grün |
+| N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: False)` | grün |
+| N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | grün |
+| N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | grün |
+| N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FullSquad_ClickDoesNothing_KeeperSwapTakesRowThree` | rot |
+| N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | grün |
+| N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: False)` | grün |
+| N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: True)` | grün |
+| N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | grün |
+| N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | grün |
 | P01 | Poolalter um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_PoolFromOriginal` | rot |
 | P02 | Marktpreis durch zwei statt drei | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_MarketFromOriginal` | rot |
 | P03 | Verkäufer nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_MarketListingOfManager` | rot |
@@ -804,14 +891,14 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach` | geändert | rot: T01 |
 | `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_NoManagerInTopFive_NoCoach` | geändert | offen |
 | `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_Appointment_BeforeReroll_GermanyKeepsBaseRatings` | geändert | offen |
-| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | neu | offen |
-| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | neu | offen |
-| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | neu | offen |
-| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | neu | offen |
-| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver` | neu | offen |
-| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation` | neu | offen |
+| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | neu | rot: N11 |
+| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | neu | rot: N11, N12, N13, N14 |
+| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | neu | rot: N11 |
+| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | neu | rot: N12 |
+| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver` | neu | rot: N11, N12, N13, N14 |
+| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation` | neu | rot: N11, N13, N15 |
 | `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | neu | offen |
-| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.FullSquad_ClickDoesNothing_KeeperSwapTakesRowThree` | neu | offen |
+| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.FullSquad_ClickDoesNothing_KeeperSwapTakesRowThree` | neu | rot: N11, N16 |
 | `NationalteamRunde14Teil4Tests.cs · NationalteamRunde14Teil4Tests.ClubOnly_WorldCupPeriod_NoTrainingNoMarketNoDrift` | neu | rot: W02, W04 |
 | `NationalteamRunde14Teil4Tests.cs · NationalteamRunde14Teil4Tests.Mode4_NoCoach_TrainingOnlyManagerZeroAfterWorldCupDriftDays` | neu | rot: W01 |
 | `NationalteamRunde14Teil4Tests.cs · NationalteamRunde14Teil4Tests.Mode4_Coach_TrainingOnlyAfterWorldCupDriftDays` | neu | rot: W01 |
@@ -841,9 +928,9 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `OriginalImportCupTests.cs · OriginalImportCupTests.Import_DebCupContinues` | neu | rot: G04 |
 | `OriginalImportCupTests.cs · OriginalImportCupTests.Import_EuropeanCupFromOriginal` | neu | rot: G02 |
 | `OriginalImportCupTests.cs · OriginalImportCupTests.Import_WorldCupFromOriginal` | neu | rot: G03 |
-| `OriginalImportFieldMapDataTests.cs · OriginalImportFieldMapDataTests.ClubRecords_MapToDatabaseByName` | neu | offen |
-| `OriginalImportFieldMapDataTests.cs · OriginalImportFieldMapDataTests.LeagueTable_UsesSlotsOfItsLeague` | neu | offen |
-| `OriginalImportFieldMapDataTests.cs · OriginalImportFieldMapDataTests.ManagerRecordOffsets_MatchDocumentedValues` | neu | offen |
+| `OriginalImportFieldMapDataTests.cs · OriginalImportFieldMapDataTests.ClubRecords_MapToDatabaseByName` | neu | rot: F06 |
+| `OriginalImportFieldMapDataTests.cs · OriginalImportFieldMapDataTests.LeagueTable_UsesSlotsOfItsLeague` | neu | rot: F07 |
+| `OriginalImportFieldMapDataTests.cs · OriginalImportFieldMapDataTests.ManagerRecordOffsets_MatchDocumentedValues` | neu | rot: F08 |
 | `OriginalImportFieldMapTests.cs · OriginalImportFieldMapTests.FieldMap_NamesSchemaVersion` | neu | rot: F01 |
 | `OriginalImportFieldMapTests.cs · OriginalImportFieldMapTests.FieldMap_CoversEverySchemaFieldExactlyOnce` | neu | rot: F02 |
 | `OriginalImportFieldMapTests.cs · OriginalImportFieldMapTests.FieldMap_RowsHaveValidStatusAndSource` | neu | rot: F03 |
