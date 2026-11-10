@@ -70,6 +70,8 @@ Die unveränderten Kontrollläufe bestehen: `OriginalSaveHeaderTests` 4/4, `Save
 
 ### Selbst nachgelesene Originalstellen
 
+Selbst angesehen und an Originalbildpunkten nachgemessen: `file14_5_statistiken_verein_historie_1993.png` (DOSBox-Fenster, Spielfläche ab Bildpixel 1/26, zweifache Skalierung). Liga bei Spielpixel (117,171) und (117,172) RGB `(32,48,81)`, (117,170) Hintergrund `(81,113,130)`; DEB bei (77,73) und (77,75) RGB `(97,65,48)`, (77,72) Hintergrund. Die Marke bei (117,174) und (115,176) ist `(97,0,16)`. Das belegt diese Bildpunkte und die im Test herangezogene Position; die unabhängige Zuordnung aller Palettenindizes ist damit nicht erledigt. Im selbst angesehenen `file37a_1` stehen Datum und Nachricht auf zwei Textzeilen; eine vollständige Pixel- und Ereignisprüfung der Nachrichtenleiste bleibt offen.
+
 Taktikpfeile: `em.exe` Datei `0x487A8–0x487B8` bildet aus einem Vergleich ein Kennzeichen 0/1; `0x48BD2–0x48C25` prüft für Kennzeichen 0 die Untergrenze 0 und für 1 die tabellierte Obergrenze minus 1 und bildet anschließend −1 beziehungsweise +1. Die Zuordnung der Vergleichsoperanden zu oberer und unterer Maushälfte ist mit diesem Ausschnitt allein noch nicht vollständig nachvollzogen und bleibt offen.
 
 Saisonende-Statusbit: `em.exe` Datei `0x553A6–0x553ED` ruft `0xE8:0x93` zuerst mit `0x7F`, dann pro Manager auf, setzt das Statusbyte zunächst auf 0 und OR-verknüpft es bei positivem Rückgabewert und Spielmodus ungleich 2 mit `0x40`. Die selbst gelesene Hilfsroutine `0x34769–0x347EE` liest die Einträge ab DGROUP `0x5CCB`, begrenzt die Schleife auf fünf und vergleicht die Managerzuordnung. Die Voraussetzungen des aufrufenden Tageszweigs wurden bei dieser Teilprüfung nicht erneut vollständig hergeleitet.
@@ -2002,11 +2004,11 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 
 ### Offene Prüfbereiche
 
-- Alle 334 inventarisierten Methoden haben mindestens eine rote Gegenprobe; die Vollständigkeit aller Theoriezeilen sowie geänderter Testhilfen, Datenquellen und entfernter Tests ist noch nicht nachgewiesen.
-- Geänderte Sollwerte, Fingerabdrücke und Saaten sind noch nicht vollständig einzeln auf ihre Regel zurückgeführt.
-- Die Entscheidungen der Runde einschließlich PR-Kommentaren und der Nutzerentscheidungen vom 09.11.2026 sind noch nicht vollständig einzeln gegen den Code geprüft.
-- Nicht alle neuen `[ORIGINAL]`-Fundstellen sind selbst in `em.exe` beziehungsweise den Originalständen nachgelesen.
-- Nicht jeder Bildschirm und jedes Hauptmenüereignis ist vollständig gegen AGENTS.md § 4 geprüft; die in Teil 2 genannten Lücken bleiben offen.
+- Alle 334 inventarisierten Methoden haben mindestens eine rote Gegenprobe; die Vollständigkeit aller Theoriezeilen sowie geänderter Testhilfen, Datenquellen und entfernter Tests ist noch nicht nachgewiesen. Grund: Die vollständige Gegeninventur dieser zusätzlichen Einheiten wurde noch nicht abgeschlossen.
+- Geänderte Sollwerte, Fingerabdrücke und Saaten sind noch nicht vollständig einzeln auf ihre Regel zurückgeführt. Grund: Die umfangreiche Kandidateninventur und die einzelnen Regelrückmutationen sind noch nicht abgearbeitet.
+- Die Entscheidungen der Runde einschließlich PR-Kommentaren und der Nutzerentscheidungen vom 09.11.2026 sind noch nicht vollständig einzeln gegen den Code geprüft. Grund: Für mehrere Entscheidungen fehlen noch vollständige Pfad- und Originalprüfungen.
+- Nicht alle neuen `[ORIGINAL]`-Fundstellen sind selbst in `em.exe` beziehungsweise den Originalständen nachgelesen. Grund: Die vollständige Inventur der Fundstellen ist noch nicht einzeln abgearbeitet.
+- Nicht jeder Bildschirm und jedes Hauptmenüereignis ist vollständig gegen AGENTS.md § 4 geprüft; die in Teil 2 genannten Lücken bleiben offen. Grund: Zustandsvergleiche sämtlicher Bildschirm- und Ereignispfade stehen noch aus.
 
 Jeder offene Prüfbereich bedeutet Merge-Empfehlung **Nein**.
 
