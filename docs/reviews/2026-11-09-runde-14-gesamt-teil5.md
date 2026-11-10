@@ -1125,6 +1125,12 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q36 | Nachrichtenzentrum um ein Pixel verschieben | `EishockeyManager.UI.Tests.NewsBarDosboxTests.Message_ShowsDateAndTwoCenteredLines` | rot |
 | Q37 | Drei Nachrichtenzeilen zulassen | `EishockeyManager.UI.Tests.NewsBarDosboxTests.LongMessage_ShowsOnlyTwoLines_NothingOnTheBottomEdge` | grün |
 | Q38 | Nach der zweiten Nachrichtenzeile eine dritte zeichnen | `EishockeyManager.UI.Tests.NewsBarDosboxTests.LongMessage_ShowsOnlyTwoLines_NothingOnTheBottomEdge` | rot |
+| Q39 | Marktleihspieler beim Saisonende ausmustern statt freigeben | `EishockeyManager.Core.Tests.LifecycleRegressionTests.R204_MarketLoanEndsFree_NotBackWithItsRemainingContract` | rot |
+| Q39 | Marktleihspieler beim Saisonende ausmustern statt freigeben | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.File44_Valliere_ImportedAsLoan_EndsFreeWithoutCompensation` | rot |
+| Q40 | Vorbereitung verbraucht Spielzufall | `EishockeyManager.Core.Tests.SaisonSatzfolgeSaisonendeTests.Preparing_NextSlots_DoesNotAdvanceGameRandom` | rot |
+| Q41 | Vorbereitete Satzfolge beim Übernehmen umkehren | `EishockeyManager.Core.Tests.SaisonSatzfolgeSaisonendeTests.MultiSeason_NextSlotsFormedOn29April_StartNextSeasonAdoptsThemUnchanged(active: True)` | rot |
+| Q41 | Vorbereitete Satzfolge beim Übernehmen umkehren | `EishockeyManager.Core.Tests.SaisonSatzfolgeSaisonendeTests.MultiSeason_NextSlotsFormedOn29April_StartNextSeasonAdoptsThemUnchanged(active: False)` | rot |
+| Q42 | Indexfolge des Fairplay-Rückfalls umkehren | `EishockeyManager.Core.Tests.SaisonSatzfolgeSaisonendeTests.FairPlayWinner_WithoutFormedSlots_FallsBackToIndexOrder` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1626,7 +1632,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.GamesForClub_AccumulateOverFourSeasonChanges` | geändert | offen |
 | `KaufEinsortierenTests.cs · KaufEinsortierenTests.Buy_Goalkeeper_FromTransferList_SortedIn` | geändert | rot: Q20 |
 | `KaufEinsortierenTests.cs · KaufEinsortierenTests.LoanReturn_ToManagerClub_SortedIn` | geändert | rot: Q20, Q21 |
-| `LifecycleRegressionTests.cs · LifecycleRegressionTests.R204_MarketLoanEndsFree_NotBackWithItsRemainingContract` | neu | offen |
+| `LifecycleRegressionTests.cs · LifecycleRegressionTests.R204_MarketLoanEndsFree_NotBackWithItsRemainingContract` | neu | rot: Q39 |
 | `LoadQuirkTests.cs · LoadQuirkTests.OnlyMarkerDaySaves_GetTheOffset` | neu | rot: E01 |
 | `LoadQuirkTests.cs · LoadQuirkTests.File44_AfterImport_SecondDayChange_FifteenthOfApril` | neu | rot: E02 |
 | `LoadQuirkTests.cs · LoadQuirkTests.File44_Offset_SurvivesSave_EndsAtSeasonChange_FourSeasons` | neu | rot: E03 |
@@ -1745,9 +1751,9 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SaisonManagerTagTests.cs · SaisonManagerTagTests.Default_IsOff_AndSaveRoundTripKeepsIt` | neu | rot: E08 |
 | `SaisonManagerTagTests.cs · SaisonManagerTagTests.Schema39Save_Migrates_OptionOff` | neu | rot: E09 |
 | `SaisonManagerTagTests.cs · SaisonManagerTagTests.MultiSeason_FourSeasonChanges_BothSettings` | neu | rot: E14 |
-| `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.MultiSeason_NextSlotsFormedOn29April_StartNextSeasonAdoptsThemUnchanged` | geändert | offen |
-| `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.Preparing_NextSlots_DoesNotAdvanceGameRandom` | geändert | offen |
-| `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.FairPlayWinner_WithoutFormedSlots_FallsBackToIndexOrder` | neu | offen |
+| `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.MultiSeason_NextSlotsFormedOn29April_StartNextSeasonAdoptsThemUnchanged` | geändert | rot: Q41 |
+| `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.Preparing_NextSlots_DoesNotAdvanceGameRandom` | geändert | rot: Q40 |
+| `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.FairPlayWinner_WithoutFormedSlots_FallsBackToIndexOrder` | neu | rot: Q42 |
 | `SaisonwechselEntlassungTests.cs · SaisonwechselEntlassungTests.OneManagerDismissed_OtherFinishesSeason_RecordWithoutDismissed` | neu | rot: Q29 |
 | `SaisonwechselEntlassungTests.cs · SaisonwechselEntlassungTests.AllManagersDismissed_GameOverAtNextDay` | neu | rot: Q30 |
 | `SaisonwechselOberligaTests.cs · SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague` | neu | offen |
@@ -1795,7 +1801,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.Construction_AdvancesOnCounterZeroDays` | neu | rot: D13 |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.SummerBreakCounters_FirstOfMayToNinthOfSeptember_FourMonthEnds` | neu | rot: D01 |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2` | neu | rot: D01, D03 |
-| `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.File44_Valliere_ImportedAsLoan_EndsFreeWithoutCompensation` | neu | offen |
+| `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.File44_Valliere_ImportedAsLoan_EndsFreeWithoutCompensation` | neu | rot: Q39 |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.PassiveBundesligaManager_NeverDismissed_ForcedRelegationInstead` | neu | rot: D07, D08 |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.DeepDebts_NoDismissal_GameContinues` | neu | rot: D08 |
 | `TaktikTeil5Tests.cs · TaktikTeil5Tests.Manual_KeepsEffortAndAttack_DuringMatch` | geändert | rot: Q33 |
