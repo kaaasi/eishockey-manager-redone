@@ -57,6 +57,9 @@ public static class HokCompareClasses
     private static readonly HokCompareRule NotInHok = new(HokCompareClass.NotInHok, "Feldkarte N/U");
     private static readonly HokCompareRule Unclassified = new(HokCompareClass.Unclassified, "nicht eingeordnet");
 
+    /// <summary>[APPROX] Mittelwerte des Pools (200 Spieler): ±5 Punkte.</summary>
+    private static readonly HokCompareRule PoolMean = new(HokCompareClass.Random, "Bereich", 5);
+
     private static HokCompareRule Range(double tolerance, double? relative = null) => new(HokCompareClass.Random, "Bereich", tolerance, relative);
 
     /// <summary>Regel des Schemafelds; Hilfsfelder ohne Eintrag erben nichts und gelten als nicht eingeordnet.</summary>
@@ -64,6 +67,8 @@ public static class HokCompareClasses
     {
         if (Rules.TryGetValue(field, out var rule))
             return rule;
+        if (field.StartsWith("Invariante.PoolMittel", StringComparison.Ordinal))
+            return PoolMean;
         if (field.StartsWith("Invariante.", StringComparison.Ordinal))
             return Exact;
         return Unclassified;
@@ -91,6 +96,8 @@ public static class HokCompareClasses
             "GameState._managerBalance", "GameState._managerHistory", "GameState._nationalForm", "GameState._nextLeagueSlots",
             "GameState._readyManagers", "GameState._trendRandom", "GameState._turnRandom", "GameState._worldCupRankings",
             "GameState.NextPlayerId",
+            // Merker des Remakes „Saisonstatistik schon gebucht“: das HOK führt keine Saisonhistorie (History N), der Import setzt −1.
+            "GameState.StatisticsRecordedSeason",
             "GameSetup.DebCup", "GameOptions.ManagerDayMinuteLoop", "ManagerSetup.Head",
             "Manager.Dismissed", "Manager.Head",
             "ManagerFinance.Book", "ManagerFinance.LastHomeGame", "ManagerFinance.ManagerLoanAccrualThirds",
@@ -123,7 +130,7 @@ public static class HokCompareClasses
             "GameState.Clubs", "GameState.Competitions", "GameState.Managers", "GameState.NationalCoach", "GameState.Setup",
             "GameState.TransferMarket", "GameState.CurrentDay", "GameState.CurrentManager", "GameState.DayOpened",
             "GameState.FinanceDay", "GameState.LoadCounterOffset", "GameState.ManagerLoans", "GameState.Phase",
-            "GameState.PlayedMatchDays", "GameState.RankSlotsRecorded", "GameState.Season", "GameState.StatisticsRecordedSeason",
+            "GameState.PlayedMatchDays", "GameState.RankSlotsRecorded", "GameState.Season",
             "GameState.TrainedUntil", "GameState._nationalAutoLineupSaved", "GameState._nationalTurn",
             "GameState._vacantNationalTactics", "GameState._stocks");
         Set(InSeason, "GameState.Schedules", "GameState._leagueSlots", "GameState.Results");
@@ -159,7 +166,7 @@ public static class HokCompareClasses
             "SponsorOffer.Boards", "SponsorOffer.Kind", "SponsorOffer.MonthlyAmount", "SponsorOffer.Months",
             "SponsorOffer.OptionMonths", "SponsorOffer.Rating", "SponsorOffer.Sponsor",
             "StockMarket.Stocks", "Stock.Base", "Stock.Countdown", "Stock.Direction", "Stock.History");
-        Set(Range(0, 0.5), "Stock.Price");
+        Set(Random, "Stock.Price");
 
         // ---- Nachrichten -------------------------------------------------------------------------------------------
         Set(Random, "Message.Day", "Message.DaysLeft", "Message.Kind", "Message.Lines", "Message.Player", "Message.Season");
@@ -168,7 +175,9 @@ public static class HokCompareClasses
         Set(Exact, "Club.Index", "Club.LogoGraphic", "Club.Name", "Club.Strength", "Club.Tactics", "Club._autoLineup",
             "Club._dressedByHand", "Club.Players", "Club.TeamValues",
             "Tactics.AttackMode", "Tactics.EffortMode", "Tactics.LineChange", "Tactics._attack", "Tactics._effort",
-            "Tactics._minutes", "Tactics._shownAutoAttack", "Tactics._shownAutoEffort");
+            "Tactics._minutes");
+        // Anzeige „AUTOM.“: Zeile der Automatik gegen den letzten Gegner (Stärken aus den zufallsabhängigen Teamwerten).
+        Set(Random, "Tactics._shownAutoAttack", "Tactics._shownAutoEffort");
         Set(InSeason, "Club.League");
         Set(Random, "Club.ForfeitsMatch", "Club.LeaguePenaltyMinutes", "Club.Lineup", "Club.SeriesCurrent", "Club._dressed",
             "Club._rankSlots", "Club._tableRank", "Lineup._defenders", "Lineup._forwards", "Lineup._goalkeeper");
@@ -188,7 +197,8 @@ public static class HokCompareClasses
             "Player.Trend", "Player.TrendControl", "Player.TrendScore", "Player.UnsolicitedOffer");
         Set(Range(15), "Player.Condition", "Player.Form");
         Set(Range(10), "Player.Technique");
-        Set(Range(2), "Player.Talent", "Player.HiddenSkill1", "Player.HiddenSkill2");
+        Set(Range(2), "Player.Talent");
+        Set(Range(5), "Player.HiddenSkill1", "Player.HiddenSkill2");
         Set(Range(20), "Player.Strain");
 
         // ---- Pool, Transfermarkt -----------------------------------------------------------------------------------
@@ -228,7 +238,8 @@ public static class HokCompareClasses
         // FILE46: „Saisonende und Vertragsverhandlung am 30.04.1994 mit Nichtverlängerung von KJELLBERG“.
         ["FILE44→FILE46"] = ["Clubs[*].Players[KJELLBERG]*", "Clubs[*].Players.Count", "Clubs[*].Lineup*"],
         // FILE48: „FILE18 geladen (nicht FILE47), Kader geleert, einen Tag weitergespielt“ (Block 0375 Byte 10/11 = 0).
-        ["FILE18→FILE48"] = ["NationalCoach._squad*", "NationalCoach._autoLineup*", "NationalCoach._dressed*", "_nationalAutoLineupSaved"],
+        ["FILE18→FILE48"] = ["NationalCoach._squad*", "NationalCoach._autoLineup*", "NationalCoach._dressed*", "_nationalAutoLineupSaved",
+            "Clubs[56 DEUTSCHLAND].TeamValues.*Form"], // leerer Kader: Länderwerte der Reihen 0 (0x952C mit Manager 5)
     };
 
     /// <summary>Trifft der Pfad eines der Muster (<c>*</c> = beliebig viele Zeichen)?</summary>

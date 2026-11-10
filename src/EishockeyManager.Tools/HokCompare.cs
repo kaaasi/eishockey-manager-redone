@@ -162,7 +162,7 @@ public static class HokCompare
             var rule = HokCompareClasses.Of(field);
             var kind = rule.ClassFor(crossesSeason);
             // Unter einem zufallsabhängigen Behälter (Markt, Pool, Liga nach dem Saisonwechsel) ist auch ein festes Feld zufallsabhängig.
-            if (kind == HokCompareClass.Exact && entry.Container is { } container && container != field
+            if (kind is HokCompareClass.Exact or HokCompareClass.Random && entry.Container is { } container && container != field
                 && HokCompareClasses.Of(container).ClassFor(crossesSeason) == HokCompareClass.Random)
                 (kind, rule) = (HokCompareClass.Random, HokCompareClasses.Of(container));
             if (HokCompareClasses.Matches(path, interventions))
@@ -213,6 +213,12 @@ public static class HokCompare
             yield return new HokCompareEntry($"Invariante.SpieleJeVerein[{league}]", "Invariante.SpieleJeVerein",
                 $"{games.Min()}–{games.Max()}");
         }
+        var pool = game.TransferMarket.PoolPlayers.ToList();
+        yield return new HokCompareEntry("Invariante.PoolSpieler", "Invariante.PoolSpieler", pool.Count.ToString(CultureInfo.InvariantCulture));
+        foreach (var (name, value) in new (string, Func<Player, int>)[]
+                 { ("Talent", p => p.Talent), ("Technique", p => p.Technique), ("Condition", p => p.Condition), ("Strain", p => p.Strain) })
+            yield return new HokCompareEntry($"Invariante.PoolMittel.{name}", "Invariante.PoolMittel",
+                (pool.Count == 0 ? 0 : pool.Average(value)).ToString("0.#", CultureInfo.InvariantCulture));
         yield return new HokCompareEntry("Invariante.Vereine", "Invariante.Vereine", game.Clubs.Count.ToString(CultureInfo.InvariantCulture));
         foreach (var (manager, index) in game.Managers.Select((m, i) => (m, i)))
         {
