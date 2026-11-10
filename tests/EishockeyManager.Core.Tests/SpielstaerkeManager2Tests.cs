@@ -399,12 +399,7 @@ public class SpielstaerkeManager2Tests
         long goals = 0, games = 0, maxGoals = 0;
         RngTwinProbeTests.Run(game, active, beforeChange: g =>
         {
-            // Spur kader (#698): Ab 1995 bringt die Jugend am Saisonende Feldspieler; ein Kader mit neun und mehr Spielern, aber ohne
-            // Torhüter spielt (nur „Weniger als neun Spieler“ wertet, 0x36DC5) und verliert hoch. Gezählt werden nur Spiele von
-            // Managervereinen mit Torhüter.
-            var keeper = g.Managers.Select(m => m.ClubIndex)
-                .Where(c => g.Clubs[c].Players.Any(p => p.Role == Formats.PlayerRole.Goalkeeper)).ToHashSet();
-            foreach (var r in g.Results.Where(r => keeper.Any(r.Involves)))
+            foreach (var r in g.Results.Where(r => g.Managers.Any(m => r.Involves(m.ClubIndex))))
             {
                 goals += r.HomeGoals + r.AwayGoals;
                 games++;
