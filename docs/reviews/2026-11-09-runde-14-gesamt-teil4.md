@@ -150,6 +150,102 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | C06 | Rückkehrer am Saisonwechsel nicht einsortieren | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.FourSeasonChanges_ListedPlayersReturn_NoDuplicates(active: False)` | grün |
 | C06 | Rückkehrer am Saisonwechsel nicht einsortieren | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.FourSeasonChanges_ListedPlayersReturn_NoDuplicates(active: True)` | rot |
 | C06 | Rückkehrer am Saisonwechsel nicht einsortieren | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.SeasonChange_UnsoldListedPlayerReturnsByRole_NotInLineup_ContractCountedDown` | rot |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_MarketDecay_OncePerTick(seed: 3)` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_MarketDecay_OncePerTick(seed: 7)` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.PassiveBundesligaManager_NeverDismissed_ForcedRelegationInstead(seed: 5)` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.PassiveBundesligaManager_NeverDismissed_ForcedRelegationInstead(seed: 41)` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.SummerBreakCounters_FirstOfMayToNinthOfSeptember_FourMonthEnds` | rot |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2` | rot |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.DeepDebts_NoDismissal_GameContinues` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.File44_Valliere_ImportedAsLoan_EndsFreeWithoutCompensation` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks(active: False)` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File44_SeasonChange_KeepsListLikeFile46` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SeasonChange_KeepsMarketList_PlayersAgeOneYear` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File44_ToNewSeason_AccountFollowsFile46` | rot |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_TwoManagers_NegotiationLockCountsOncePerTick` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File24_ToMenuOfDay17_MarketDecayedOnceLikeFile25` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SummerBreak_CountersFromSeasonEndToNinthOfSeptember` | rot |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_TrendControlCountsDownPerTick` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks(active: True)` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_TwoManagers_TrainOnlyOnTicks(seed: 11)` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_TwoManagers_TrainOnlyOnTicks(seed: 3)` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.TrainingDays_AreDayCounterTicks` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.WorldCupLoop_StepC_MarketAndContractsOnlyManagerZero` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.CatchUpManagerDay_TwoManagers_SecondNeitherExpiresNorBidsOnForeignListings` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.Construction_AdvancesOnCounterZeroDays` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.ListChangeDays_OnlyEventDaysOfMainPath` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.FourSeasonChanges_TwoManagers_MarketKeptAndSummerBreak(active: False)` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.FourSeasonChanges_TwoManagers_MarketKeptAndSummerBreak(active: True)` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SummerBreak_AdvancesConstructionAndHealsSquad` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.AdvanceTrend_ClampsAndRerollsAtZero` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File44_GastronomyOrderedOnFourteenthOfApril_Loses21WeeksUntilNewSeason` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_ManagerZeroDismissed_MarketStillDecaysPerTick` | grün |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SummerBreak_DayClose_FourMonthEndsBooked` | rot |
+| D01 | Sommerpause einen Tag zu früh beginnen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_TickOfHaltDay_RunsBeforeHalt` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_MarketDecay_OncePerTick(seed: 3)` | rot |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_MarketDecay_OncePerTick(seed: 7)` | rot |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.PassiveBundesligaManager_NeverDismissed_ForcedRelegationInstead(seed: 5)` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.PassiveBundesligaManager_NeverDismissed_ForcedRelegationInstead(seed: 41)` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.SummerBreakCounters_FirstOfMayToNinthOfSeptember_FourMonthEnds` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks(active: False)` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.DeepDebts_NoDismissal_GameContinues` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.File44_Valliere_ImportedAsLoan_EndsFreeWithoutCompensation` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File44_SeasonChange_KeepsListLikeFile46` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SeasonChange_KeepsMarketList_PlayersAgeOneYear` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File44_ToNewSeason_AccountFollowsFile46` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_TwoManagers_NegotiationLockCountsOncePerTick` | rot |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File24_ToMenuOfDay17_MarketDecayedOnceLikeFile25` | rot |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SummerBreak_CountersFromSeasonEndToNinthOfSeptember` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_TrendControlCountsDownPerTick` | rot |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks(active: True)` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_TwoManagers_TrainOnlyOnTicks(seed: 11)` | rot |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_TwoManagers_TrainOnlyOnTicks(seed: 3)` | rot |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.TrainingDays_AreDayCounterTicks` | rot |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.WorldCupLoop_StepC_MarketAndContractsOnlyManagerZero` | rot |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.CatchUpManagerDay_TwoManagers_SecondNeitherExpiresNorBidsOnForeignListings` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.Construction_AdvancesOnCounterZeroDays` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.ListChangeDays_OnlyEventDaysOfMainPath` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.FourSeasonChanges_TwoManagers_MarketKeptAndSummerBreak(active: False)` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.FourSeasonChanges_TwoManagers_MarketKeptAndSummerBreak(active: True)` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SummerBreak_AdvancesConstructionAndHealsSquad` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.AdvanceTrend_ClampsAndRerollsAtZero` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File44_GastronomyOrderedOnFourteenthOfApril_Loses21WeeksUntilNewSeason` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_ManagerZeroDismissed_MarketStillDecaysPerTick` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SummerBreak_DayClose_FourMonthEndsBooked` | grün |
+| D02 | Hauptwegtakt nach Tag statt Zähler | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_TickOfHaltDay_RunsBeforeHalt` | rot |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_MarketDecay_OncePerTick(seed: 3)` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_MarketDecay_OncePerTick(seed: 7)` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File44_SeasonChange_KeepsListLikeFile46` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SeasonChange_KeepsMarketList_PlayersAgeOneYear` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File44_ToNewSeason_AccountFollowsFile46` | rot |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_TwoManagers_NegotiationLockCountsOncePerTick` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File24_ToMenuOfDay17_MarketDecayedOnceLikeFile25` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SummerBreak_CountersFromSeasonEndToNinthOfSeptember` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_TrendControlCountsDownPerTick` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks(active: False)` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.FourSeasonChanges_TwoManagers_MarketKeptAndSummerBreak(active: False)` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks(active: True)` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_TwoManagers_TrainOnlyOnTicks(seed: 11)` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.MainPath_TwoManagers_TrainOnlyOnTicks(seed: 3)` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.TrainingDays_AreDayCounterTicks` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.WorldCupLoop_StepC_MarketAndContractsOnlyManagerZero` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.CatchUpManagerDay_TwoManagers_SecondNeitherExpiresNorBidsOnForeignListings` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.Construction_AdvancesOnCounterZeroDays` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.ListChangeDays_OnlyEventDaysOfMainPath` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.FourSeasonChanges_TwoManagers_MarketKeptAndSummerBreak(active: True)` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SummerBreak_AdvancesConstructionAndHealsSquad` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.AdvanceTrend_ClampsAndRerollsAtZero` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File44_GastronomyOrderedOnFourteenthOfApril_Loses21WeeksUntilNewSeason` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_ManagerZeroDismissed_MarketStillDecaysPerTick` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.PassiveBundesligaManager_NeverDismissed_ForcedRelegationInstead(seed: 5)` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SummerBreak_DayClose_FourMonthEndsBooked` | rot |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_TickOfHaltDay_RunsBeforeHalt` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.PassiveBundesligaManager_NeverDismissed_ForcedRelegationInstead(seed: 41)` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.SummerBreakCounters_FirstOfMayToNinthOfSeptember_FourMonthEnds` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2` | rot |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.DeepDebts_NoDismissal_GameContinues` | grün |
+| D03 | Tagesabschluss im Sommer auslassen | `EishockeyManager.Core.Tests.TagestaktSommerpauseReviewTests.File44_Valliere_ImportedAsLoan_EndsFreeWithoutCompensation` | grün |
 | H01 | Jahr um eins erhöhen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_ReturnsYearMatchDayAndManagers` | rot |
 | H02 | vollen Kopf ablehnen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_ReadsOnlyTheHeader_NoLengthOrChecksumCheck` | rot |
 | H03 | maximale Managerzahl auf drei setzen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_LimitsManagersToFour` | rot |
@@ -606,30 +702,30 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TacticsOriginalTests.cs · TacticsOriginalTests.EffortIsPercent_AttackUpToSeven_BaseAndSurchargeShareTheLimit` | geändert | offen |
 | `TacticsOriginalTests.cs · TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation` | geändert | offen |
 | `TacticsOriginalTests.cs · TacticsOriginalTests.EffectiveAttack_KeepsThreeBits` | geändert | offen |
-| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_TwoManagers_NegotiationLockCountsOncePerTick` | neu | offen |
-| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.SummerBreak_CountersFromSeasonEndToNinthOfSeptember` | neu | offen |
+| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_TwoManagers_NegotiationLockCountsOncePerTick` | neu | rot: D02 |
+| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.SummerBreak_CountersFromSeasonEndToNinthOfSeptember` | neu | rot: D01 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.SummerBreak_AdvancesConstructionAndHealsSquad` | neu | offen |
-| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.SummerBreak_DayClose_FourMonthEndsBooked` | neu | offen |
-| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.File44_ToNewSeason_AccountFollowsFile46` | neu | offen |
+| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.SummerBreak_DayClose_FourMonthEndsBooked` | neu | rot: D01, D03 |
+| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.File44_ToNewSeason_AccountFollowsFile46` | neu | rot: D01, D03 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.File44_GastronomyOrderedOnFourteenthOfApril_Loses21WeeksUntilNewSeason` | neu | offen |
-| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_TickOfHaltDay_RunsBeforeHalt` | neu | offen |
-| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.File24_ToMenuOfDay17_MarketDecayedOnceLikeFile25` | neu | offen |
+| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_TickOfHaltDay_RunsBeforeHalt` | neu | rot: D02 |
+| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.File24_ToMenuOfDay17_MarketDecayedOnceLikeFile25` | neu | rot: D02 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.SeasonChange_KeepsMarketList_PlayersAgeOneYear` | neu | offen |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.File44_SeasonChange_KeepsListLikeFile46` | neu | offen |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.FourSeasonChanges_TwoManagers_MarketKeptAndSummerBreak` | neu | offen |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_ManagerZeroDismissed_MarketStillDecaysPerTick` | neu | offen |
-| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_TrendControlCountsDownPerTick` | neu | offen |
+| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_TrendControlCountsDownPerTick` | neu | rot: D02 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.AdvanceTrend_ClampsAndRerollsAtZero` | neu | offen |
-| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.TrainingDays_AreDayCounterTicks` | neu | offen |
-| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.MainPath_TwoManagers_TrainOnlyOnTicks` | neu | offen |
-| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.MainPath_MarketDecay_OncePerTick` | neu | offen |
+| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.TrainingDays_AreDayCounterTicks` | neu | rot: D02 |
+| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.MainPath_TwoManagers_TrainOnlyOnTicks` | neu | rot: D02 |
+| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.MainPath_MarketDecay_OncePerTick` | neu | rot: D02 |
 | `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.ListChangeDays_OnlyEventDaysOfMainPath` | neu | offen |
 | `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.CatchUpManagerDay_TwoManagers_SecondNeitherExpiresNorBidsOnForeignListings` | neu | offen |
-| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.WorldCupLoop_StepC_MarketAndContractsOnlyManagerZero` | neu | offen |
+| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.WorldCupLoop_StepC_MarketAndContractsOnlyManagerZero` | neu | rot: D02 |
 | `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks` | neu | offen |
 | `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.Construction_AdvancesOnCounterZeroDays` | neu | offen |
-| `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.SummerBreakCounters_FirstOfMayToNinthOfSeptember_FourMonthEnds` | neu | offen |
-| `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2` | neu | offen |
+| `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.SummerBreakCounters_FirstOfMayToNinthOfSeptember_FourMonthEnds` | neu | rot: D01 |
+| `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2` | neu | rot: D01, D03 |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.File44_Valliere_ImportedAsLoan_EndsFreeWithoutCompensation` | neu | offen |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.PassiveBundesligaManager_NeverDismissed_ForcedRelegationInstead` | neu | offen |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.DeepDebts_NoDismissal_GameContinues` | neu | offen |
