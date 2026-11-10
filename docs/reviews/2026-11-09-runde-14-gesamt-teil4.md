@@ -32,6 +32,12 @@ Die in den Vorberichten dokumentierten Befunde bestehen fort. R14G3-01 ist mit I
 
 **Gegenprobe G06:** `StartNextSeason` bei `SeasonOver` sofort auf `GameOver` setzen und ohne Saisonwechsel zurückkehren lassen. Der Test über alle eingelesenen Originalstände bleibt **grün**. Eine zusätzliche Kontrolle für FILE05 fordert `game.Season == start + 4`: Sie besteht am unveränderten Produktcode und wird mit G06 **rot**. Dies erweitert den verwandten Befund R14G3-02 auf einen anderen, alle Stände umfassenden Test; ein vorzeitiges Ende im unveränderten Produkt ist dadurch nicht nachgewiesen. Der Test sollte zulässiges Ende anhand der tatsächlichen Spieldauer unterscheiden und sonst vier erfolgte Wechsel fordern.
 
+### R14G4-05 (P3): Leihende-Test prüft die versprochene Ablöse nicht
+
+`ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` ([KaderStartTeil4Tests.cs:128](https://github.com/kaaasi/eishockey-manager-redone/blob/b13046422b285404ad6ddbe7b5f1b18e22069eea/tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs#L128)) beschreibt eine Rückkehr zum verleihenden Manager mit anschließendem Abgang gegen Ablöse. Seine Assertions prüfen nur Kader, Leihflag und Restlaufzeit, nicht die Zahlung.
+
+**Gegenprobe L01:** Die Unterscheidung zwischen Computer- und Managerverleiher in `Player.Contract.cs` umkehren, sodass der Spieler im geprüften Fall ohne Verhandlung und ohne Ablöse freigegeben wird. Der bestehende Test bleibt **grün**; andere Leihende-Tests werden rot. Eine ergänzte Assertion auf eine positive Buchung `FinanceCategory.Transfers` im Finanzbuch des Verleihers besteht am unveränderten Produktcode und wird unter L01 **rot** mit „keine Ablöse an Verleiher gebucht“. Der Befund betrifft die eigenständige Absicherung der Ablöse, keine nachgewiesene Fehlbuchung im unveränderten Produktcode.
+
 ## 3. Prüfungen und offene Prüfbereiche
 
 Testsaat-Rücksetzungen sind in der Regelspalte ausdrücklich als solche bezeichnet; sie sind keine Regelmutationen und zählen nicht als rote Gegenprobe in der Methodenliste. Die Prüfkopie liegt unter `/workspace/r14-review-teil4/copy`; Ausgangsstand ist der unveränderte lokale Head. Mutationen laufen einzeln mit Wiederherstellung, die vollständigen Ausgaben und Regeln werden unter `/workspace/r14-review-teil4/logs` gespeichert. Beim ersten abgebrochenen Versuch wurde eine überlagerte Mutation erkannt; diese Ergebnisse wurden verworfen und anschließend nach Wiederherstellung der Quelldatei erneut ausgeführt. .NET SDK 10.0.402, lokale Testhost-Sockets mit Umgebungsfreigabe, `NuGetAudit=false`.
@@ -99,6 +105,17 @@ Der neue Test `TryRead_ReturnsYearMatchDayAndManagers` hat bei unverändertem Co
 | Manager 1: Name Bernd | H18 | rot |
 | Manager 1: Verein EV LANDSHUT | H19 | rot |
 
+### Einzelne Saisonende-Sollwerte
+
+Für `SeasonEndNumbers_File44To46` sind die vier Assertions am unveränderten Head im Gesamtlauf aus Teil 1 grün. Die jeweilige Regel wurde getrennt geändert; jede Tabellenzeile bezeichnet eine eigene rote Gegenprobe.
+
+| Sollwert | Verursachende Regel | Mutation |
+|---|---|---|
+| Verhandlungsgehalt 19.152 DM (im Test in Dritteln) | Faktor `147 − Alter` bei Alter 33 | L03: Faktor `146 − Alter` → rot |
+| Ablöse 155.500 DM | Preiswert in Dritteln halbieren und durch drei teilen | L04: statt Halbieren durch drei teilen → rot |
+| Tabellenprämie 0 DM | `Premium` gibt null zurück | L07: ein DM → rot |
+| Einzelprämie 100.000 DM | Konstante `SinglePremium` für Topscorer | L08: 100.001 DM → rot |
+
 ### Zusätzliche Bildschirmkontrollen
 
 In einer Prüfkopie wurde der Vergleich vor den Fabrikaufruf `NationalMenu.Open` verschoben, auch für Kacheln, die `null` liefern; Öffnen, Zeichnen und drei eingabelose Frames bestanden (1/1). Für `SeasonEndScreen` wurde nach Erreichen eines gültigen Saisonendzustands der Spielstand vor Konstruktion, `Host.Show`, Zeichnen und drei eingabelosen Frames gesichert und danach verglichen (1/1 bestanden). Die Testlücken R14G2-01 und R14G2-02 im unveränderten Testsatz bleiben bestehen; diese zusätzlichen Kontrollen belegen nur die ausgeführten Zustände.
@@ -118,6 +135,8 @@ T01 setzt den zentralen Tageszähler von `day + 1` auf `day` zurück. Jede Zeile
 | `SaveLoad_StatusBitIsDerivedFromSavedData` | 4 → 3 | grün |
 | `FourSeasonChanges_ManagedMatchesPlausible` | 3 → 4 | beide Aktivvarianten grün |
 | `OtherClubLeads_NoSinglePremium` | 4 → 13 | grün |
+
+Weitere im Diff sichtbare Saatänderungen sind noch offen: `FinanceCalibrationTests.PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation` 3 → 5 (die Testaussage wurde zugleich geändert); `IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported` 5 → 3; die gemeinsame Hilfe in `SaisonwechselProbenTests` 5 → 3; `WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore` in der passiven Zeile 4 → 5. Die vollständige Suche nach weiteren Saatänderungen, insbesondere in Hilfen und neuen Datenquellen, ist noch nicht abgeschlossen.
 
 ### Hauptmenü: Codepfade
 
@@ -491,6 +510,8 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | G05 | Nachsaison nicht aus HOK übernehmen | `EishockeyManager.Core.Tests.OriginalImportPostseasonTests.Import_SeasonChange_LeaguesLikeNextOriginalStand(file: "FILE22.HOK", next: "FILE23.HOK")` | rot |
 | G05 | Nachsaison nicht aus HOK übernehmen | `EishockeyManager.Core.Tests.OriginalImportPostseasonTests.Import_AllStands_PostseasonMatchesOriginal` | grün |
 | G06 | Saisonwechsel endet sofort als GameOver | `EishockeyManager.Core.Tests.OriginalImportPostseasonTests.Import_AllStands_FourSeasonChanges` | grün |
+| G07 | Zahl der importierten Aufstiegstermine erhöhen | `EishockeyManager.Core.Tests.OriginalImportPostseasonTests.Import_AllStands_PostseasonMatchesOriginal` | rot |
+| G08 | nach Saisonwechsel einen Verein aus der Liga nehmen | `EishockeyManager.Core.Tests.OriginalImportPostseasonTests.Import_AllStands_FourSeasonChanges` | rot |
 | H01 | Jahr um eins erhöhen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_ReturnsYearMatchDayAndManagers` | rot |
 | H02 | vollen Kopf ablehnen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_ReadsOnlyTheHeader_NoLengthOrChecksumCheck` | rot |
 | H03 | maximale Managerzahl auf drei setzen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_LimitsManagersToFour` | rot |
@@ -587,6 +608,91 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | K03 | Schritt am Reglerende als Änderung melden | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.StartLeague_WithoutManagers_StepReportsOnlyRealChanges` | rot |
 | K04 | Talente hinten anhängen | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.JoinScoutedTalent_GoalkeeperOrDefender_SortedIn` | rot |
 | K05 | alte Startliga nicht migrieren | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.Migration_41To42_TakesStartLeagueOfFirstManager` | rot |
+| L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: False)` | grün |
+| L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: True)` | rot |
+| L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | grün |
+| L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | rot |
+| L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | grün |
+| L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonEndNumbers_File44To46` | grün |
+| L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | rot |
+| L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | grün |
+| L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | rot |
+| L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.RenewalSalary_UsesAgeAfterAgeing` | grün |
+| L02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: False)` | grün |
+| L02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: True)` | grün |
+| L02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | grün |
+| L02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | grün |
+| L02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | grün |
+| L02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonEndNumbers_File44To46` | grün |
+| L02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | grün |
+| L02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | grün |
+| L02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | rot |
+| L02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.RenewalSalary_UsesAgeAfterAgeing` | grün |
+| L03 | Verhandlungsgehaltsfaktor um eins verringern | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: False)` | grün |
+| L03 | Verhandlungsgehaltsfaktor um eins verringern | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: True)` | grün |
+| L03 | Verhandlungsgehaltsfaktor um eins verringern | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | grün |
+| L03 | Verhandlungsgehaltsfaktor um eins verringern | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | grün |
+| L03 | Verhandlungsgehaltsfaktor um eins verringern | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | grün |
+| L03 | Verhandlungsgehaltsfaktor um eins verringern | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonEndNumbers_File44To46` | rot |
+| L03 | Verhandlungsgehaltsfaktor um eins verringern | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | grün |
+| L03 | Verhandlungsgehaltsfaktor um eins verringern | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | grün |
+| L03 | Verhandlungsgehaltsfaktor um eins verringern | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | grün |
+| L03 | Verhandlungsgehaltsfaktor um eins verringern | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.RenewalSalary_UsesAgeAfterAgeing` | rot |
+| L04 | Vertragsablöse durch drei statt zwei | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: False)` | grün |
+| L04 | Vertragsablöse durch drei statt zwei | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: True)` | grün |
+| L04 | Vertragsablöse durch drei statt zwei | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | grün |
+| L04 | Vertragsablöse durch drei statt zwei | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | grün |
+| L04 | Vertragsablöse durch drei statt zwei | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | grün |
+| L04 | Vertragsablöse durch drei statt zwei | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonEndNumbers_File44To46` | rot |
+| L04 | Vertragsablöse durch drei statt zwei | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | grün |
+| L04 | Vertragsablöse durch drei statt zwei | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | grün |
+| L04 | Vertragsablöse durch drei statt zwei | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | grün |
+| L04 | Vertragsablöse durch drei statt zwei | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.RenewalSalary_UsesAgeAfterAgeing` | grün |
+| L05 | Wettbewerbszähler nicht zurücksetzen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: False)` | grün |
+| L05 | Wettbewerbszähler nicht zurücksetzen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: True)` | grün |
+| L05 | Wettbewerbszähler nicht zurücksetzen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | grün |
+| L05 | Wettbewerbszähler nicht zurücksetzen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | grün |
+| L05 | Wettbewerbszähler nicht zurücksetzen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | grün |
+| L05 | Wettbewerbszähler nicht zurücksetzen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonEndNumbers_File44To46` | grün |
+| L05 | Wettbewerbszähler nicht zurücksetzen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | grün |
+| L05 | Wettbewerbszähler nicht zurücksetzen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | rot |
+| L05 | Wettbewerbszähler nicht zurücksetzen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | grün |
+| L05 | Wettbewerbszähler nicht zurücksetzen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.RenewalSalary_UsesAgeAfterAgeing` | grün |
+| L06 | Kaufpreis des Marktspielers ignorieren | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: False)` | grün |
+| L06 | Kaufpreis des Marktspielers ignorieren | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: True)` | grün |
+| L06 | Kaufpreis des Marktspielers ignorieren | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | grün |
+| L06 | Kaufpreis des Marktspielers ignorieren | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | grün |
+| L06 | Kaufpreis des Marktspielers ignorieren | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | rot |
+| L06 | Kaufpreis des Marktspielers ignorieren | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonEndNumbers_File44To46` | grün |
+| L06 | Kaufpreis des Marktspielers ignorieren | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | grün |
+| L06 | Kaufpreis des Marktspielers ignorieren | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | grün |
+| L06 | Kaufpreis des Marktspielers ignorieren | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | grün |
+| L06 | Kaufpreis des Marktspielers ignorieren | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.RenewalSalary_UsesAgeAfterAgeing` | grün |
+| L07 | Tabellenprämie statt null ein DM | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: False)` | grün |
+| L07 | Tabellenprämie statt null ein DM | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: True)` | grün |
+| L07 | Tabellenprämie statt null ein DM | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | grün |
+| L07 | Tabellenprämie statt null ein DM | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | grün |
+| L07 | Tabellenprämie statt null ein DM | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | grün |
+| L07 | Tabellenprämie statt null ein DM | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonEndNumbers_File44To46` | rot |
+| L07 | Tabellenprämie statt null ein DM | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | grün |
+| L07 | Tabellenprämie statt null ein DM | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | grün |
+| L07 | Tabellenprämie statt null ein DM | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | grün |
+| L07 | Tabellenprämie statt null ein DM | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.RenewalSalary_UsesAgeAfterAgeing` | grün |
+| L08 | Einzelprämie um einen DM erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: False)` | grün |
+| L08 | Einzelprämie um einen DM erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: True)` | grün |
+| L08 | Einzelprämie um einen DM erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | grün |
+| L08 | Einzelprämie um einen DM erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | grün |
+| L08 | Einzelprämie um einen DM erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | grün |
+| L08 | Einzelprämie um einen DM erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonEndNumbers_File44To46` | rot |
+| L08 | Einzelprämie um einen DM erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | grün |
+| L08 | Einzelprämie um einen DM erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | grün |
+| L08 | Einzelprämie um einen DM erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | grün |
+| L08 | Einzelprämie um einen DM erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.RenewalSalary_UsesAgeAfterAgeing` | grün |
+| L09 | Spieler nach Abbruch im Kader belassen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | rot |
+| L10 | Spieler beim Saisonwechsel doppelt in den Kader übernehmen | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.FourSeasonChanges_ListedPlayersReturn_NoDuplicates(active: False)` | rot |
+| L10 | Spieler beim Saisonwechsel doppelt in den Kader übernehmen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: False)` | rot |
+| L10 | Spieler beim Saisonwechsel doppelt in den Kader übernehmen | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.FourSeasonChanges_ListedPlayersReturn_NoDuplicates(active: True)` | rot |
+| L10 | Spieler beim Saisonwechsel doppelt in den Kader übernehmen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: True)` | rot |
 | N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: True)` | grün |
 | N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: False)` | rot |
 | N11 | Neuaufstellung des Bundestrainers auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | grün |
@@ -647,6 +753,16 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: True)` | grün |
 | N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | grün |
 | N16 | vollen Nationalkader nicht begrenzen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | grün |
+| N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: True)` | grün |
+| N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation(handMade: False)` | rot |
+| N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | grün |
+| N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | grün |
+| N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FullSquad_ClickDoesNothing_KeeperSwapTakesRowThree` | grün |
+| N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | grün |
+| N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: False)` | grün |
+| N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: True)` | grün |
+| N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | grün |
+| N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | rot |
 | P01 | Poolalter um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_PoolFromOriginal` | rot |
 | P02 | Marktpreis durch zwei statt drei | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_MarketFromOriginal` | rot |
 | P03 | Verkäufer nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_MarketListingOfManager` | rot |
@@ -710,6 +826,7 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | S13 | Hotspots in umgekehrter Reihenfolge prüfen | `EishockeyManager.UI.Tests.StadiumPartsTests.Hotspot_FirstHitWins_InOrderOfTheOriginal` | rot |
 | S14 | Bauzeittext ändern | `EishockeyManager.UI.Tests.StadiumPartsTests.ConstructionQuestion_TextRowsAndButtons_LikeDosbox` | rot |
 | S15 | Rechtsklick schließt Ausbaufrage | `EishockeyManager.UI.Tests.StadiumPartsTests.ProjectUnderConstructionShowsOnlyHintAndQuestionUsesOriginalDialog` | rot |
+| S16 | Stadionteil um einen Pixel verschieben | `EishockeyManager.UI.Tests.StadiumPartsTests.EveryPartIsDrawnFromItsTableEntryWithMask0xC0` | rot |
 | T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.NationalCoachMode4Tests.Mode4_NoManagerInTopFive_NoCoach` | grün |
 | T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.SeasonEndStatusTests.SaveLoad_StatusBitIsDerivedFromSavedData` | grün |
 | T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.NationalCoachMode4Tests.Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach` | rot |
@@ -816,6 +933,18 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | W04 | Heilung der Managerkader auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.MainPath_TalentSearchTicks_FollowDayCounter` | grün |
 | W05 | WM-Tagesabschluss mit Talentsuche rechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.Mode4_WorldCupLoop_TalentSearchStands(coach: False)` | rot |
 | W05 | WM-Tagesabschluss mit Talentsuche rechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.Mode4_WorldCupLoop_TalentSearchStands(coach: True)` | rot |
+| X01 | gelistete Spieler aus AllPlayers auslassen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOverSeasonEnd_ReturnsWithSeasonCountersReset_ClubGamesKept` | grün |
+| X01 | gelistete Spieler aus AllPlayers auslassen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(active: False)` | grün |
+| X01 | gelistete Spieler aus AllPlayers auslassen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(active: True)` | rot |
+| X01 | gelistete Spieler aus AllPlayers auslassen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | rot |
+| X01 | gelistete Spieler aus AllPlayers auslassen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | grün |
+| X01 | gelistete Spieler aus AllPlayers auslassen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | grün |
+| X02 | Rückkehr der Listenplätze überspringen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOverSeasonEnd_ReturnsWithSeasonCountersReset_ClubGamesKept` | rot |
+| X02 | Rückkehr der Listenplätze überspringen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(active: False)` | grün |
+| X02 | Rückkehr der Listenplätze überspringen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(active: True)` | grün |
+| X02 | Rückkehr der Listenplätze überspringen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | grün |
+| X02 | Rückkehr der Listenplätze überspringen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | grün |
+| X02 | Rückkehr der Listenplätze überspringen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | grün |
 
 ### Inventur je geändertem oder neuem Test
 
@@ -830,10 +959,10 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `HeimspielStatistikTests.cs · HeimspielStatistikTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | offen |
 | `HotSeatTests.cs · HotSeatTests.DismissalDuringDay_ExcludedFromNextDay` | geändert | offen |
 | `IntegrationRunde9Tests.cs · IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported` | geändert | offen |
-| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | neu | offen |
-| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOverSeasonEnd_ReturnsWithSeasonCountersReset_ClubGamesKept` | neu | offen |
+| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | neu | rot: X01 |
+| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOverSeasonEnd_ReturnsWithSeasonCountersReset_ClubGamesKept` | neu | rot: X02 |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | neu | offen |
-| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason` | neu | offen |
+| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason` | neu | rot: X01 |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | neu | offen |
 | `KaderStartRunde14ImportTests.cs · KaderStartRunde14ImportTests.Import_CountersPerCompetition_FromSquadSlots` | neu | offen |
 | `KaderStartRunde14ImportTests.cs · KaderStartRunde14ImportTests.Import_TableRankAndStartLeague` | neu | offen |
@@ -867,16 +996,16 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.ListedPlayer_KeepsCostingSalary` | neu | rot: C04 |
 | `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.SoldListedPlayer_GoesToBuyer_SellerPaid` | neu | rot: C05 |
 | `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.SeasonChange_UnsoldListedPlayerReturnsByRole_NotInLineup_ContractCountedDown` | neu | rot: C06 |
-| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.FourSeasonChanges_ListedPlayersReturn_NoDuplicates` | neu | rot: C06 |
-| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | neu | offen |
-| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | neu | offen |
-| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | neu | offen |
-| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | neu | offen |
-| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.SeasonEndNumbers_File44To46` | neu | offen |
-| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.RenewalSalary_UsesAgeAfterAgeing` | neu | offen |
-| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | neu | offen |
-| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | neu | offen |
-| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates` | neu | offen |
+| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.FourSeasonChanges_ListedPlayersReturn_NoDuplicates` | neu | rot: C06, L10 |
+| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | neu | rot: L01 |
+| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | neu | rot: L01, L02 |
+| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | neu | rot: L01 |
+| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | neu | rot: L09 |
+| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.SeasonEndNumbers_File44To46` | neu | rot: L03, L04, L07, L08 |
+| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.RenewalSalary_UsesAgeAfterAgeing` | neu | rot: L03 |
+| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | neu | rot: L05 |
+| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | neu | rot: L06 |
+| `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates` | neu | rot: L01, L10 |
 | `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.SeasonEnd_OfferSalary_KeepsGamesForClub` | geändert | offen |
 | `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.SeasonEnd_Compensation_KeepsGamesForClub` | geändert | offen |
 | `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.GamesForClub_AccumulateOverFourSeasonChanges` | geändert | offen |
@@ -896,8 +1025,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | neu | rot: N11 |
 | `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.Click_SwitchesOff_EmptySlotDoesNot` | neu | rot: N12 |
 | `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver` | neu | rot: N11, N12, N13, N14 |
-| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation` | neu | rot: N11, N13, N15 |
-| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | neu | offen |
+| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.Migration_SetsSettingFromFormation` | neu | rot: N11, N13, N15, N17 |
+| `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | neu | rot: N17 |
 | `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.FullSquad_ClickDoesNothing_KeeperSwapTakesRowThree` | neu | rot: N11, N16 |
 | `NationalteamRunde14Teil4Tests.cs · NationalteamRunde14Teil4Tests.ClubOnly_WorldCupPeriod_NoTrainingNoMarketNoDrift` | neu | rot: W02, W04 |
 | `NationalteamRunde14Teil4Tests.cs · NationalteamRunde14Teil4Tests.Mode4_NoCoach_TrainingOnlyManagerZeroAfterWorldCupDriftDays` | neu | rot: W01 |
@@ -947,8 +1076,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `OriginalImportPostseasonTests.cs · OriginalImportPostseasonTests.Import_RelegationGroups_FromOriginal` | neu | rot: G05 |
 | `OriginalImportPostseasonTests.cs · OriginalImportPostseasonTests.Import_Playoffs_FromOriginal` | neu | rot: G05 |
 | `OriginalImportPostseasonTests.cs · OriginalImportPostseasonTests.Import_SeasonChange_LeaguesLikeNextOriginalStand` | neu | rot: G05 |
-| `OriginalImportPostseasonTests.cs · OriginalImportPostseasonTests.Import_AllStands_PostseasonMatchesOriginal` | neu | offen |
-| `OriginalImportPostseasonTests.cs · OriginalImportPostseasonTests.Import_AllStands_FourSeasonChanges` | neu | offen |
+| `OriginalImportPostseasonTests.cs · OriginalImportPostseasonTests.Import_AllStands_PostseasonMatchesOriginal` | neu | rot: G07 |
+| `OriginalImportPostseasonTests.cs · OriginalImportPostseasonTests.Import_AllStands_FourSeasonChanges` | neu | rot: G08 |
 | `OriginalImportRestTests.cs · OriginalImportRestTests.Import_StocksFromOriginal` | neu | rot: I01 |
 | `OriginalImportRestTests.cs · OriginalImportRestTests.Import_StockHoldings` | neu | rot: I02 |
 | `OriginalImportRestTests.cs · OriginalImportRestTests.Import_TrainingPlan` | neu | rot: I03, I12 |
@@ -1138,7 +1267,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_OfAForeignFile_ShowsTheNoSaveGameMessage` | neu | rot: U11 |
 | `SeasonEndColorsTests.cs · SeasonEndColorsTests.Palette18_12_22_MatchDosBoxPictures` | geändert | offen |
 | `StadiumArrowTests.cs · StadiumArrowTests.TicketArrows_AreTenPixelsWide_FromKb4BaseGraphic` | neu | offen |
-| `StadiumPartsTests.cs · StadiumPartsTests.EveryPartIsDrawnFromItsTableEntryWithMask0xC0` | neu | offen |
+| `StadiumPartsTests.cs · StadiumPartsTests.EveryPartIsDrawnFromItsTableEntryWithMask0xC0` | neu | rot: S16 |
 | `StadiumPartsTests.cs · StadiumPartsTests.HallCoversRestaurantInDrawOrder` | neu | rot: S11 |
 | `StadiumPartsTests.cs · StadiumPartsTests.ProjectUnderConstructionShowsOnlyHintAndQuestionUsesOriginalDialog` | neu | rot: S15 |
 | `StadiumPartsTests.cs · StadiumPartsTests.ConstructionQuestion_TextRowsAndButtons_LikeDosbox` | neu | rot: S14 |
