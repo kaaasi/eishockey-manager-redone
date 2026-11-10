@@ -1151,6 +1151,8 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q50 | Meldung bei falscher Spielerrolle ändern | `EishockeyManager.UI.Tests.OriginalDialogCallersTests.Lineup_WrongRole_IsShortMessage_AndIgnoresClicks` | rot |
 | Q51 | Automatikmeldung 75 statt 45 Takte zeigen | `EishockeyManager.UI.Tests.OriginalDialogCallersTests.Lineup_AutoDisabledMessage_IsShortMessageWith45Ticks` | rot |
 | Q52 | Kurzmeldung durch Linksklick schließen | `EishockeyManager.UI.Tests.OriginalDialogCallersTests.Lineup_WrongRole_IsShortMessage_AndIgnoresClicks` | rot |
+| Q53 | Nur-Weltkugel-Klicks nicht auf Manager 0 umlenken | `EishockeyManager.UI.Tests.KaderStartTeil2SetupTests.WorldOnly_ClickOnSecondRow_EditsFirstManager_NoSecondManager` | rot |
+| Q54 | Manager übernimmt eingestellte Startliga nicht | `EishockeyManager.UI.Tests.KaderStartSetupScreenTests.StartLeague_BeforeFirstManager_IsAdopted` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1869,8 +1871,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | neu | rot: U26 |
 | `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | neu | rot: U28 |
 | `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | neu | rot: U27 |
-| `KaderStartSetupScreenTests.cs · KaderStartSetupScreenTests.StartLeague_BeforeFirstManager_IsAdopted` | neu | offen |
-| `KaderStartTeil2SetupTests.cs · KaderStartTeil2SetupTests.WorldOnly_ClickOnSecondRow_EditsFirstManager_NoSecondManager` | neu | offen |
+| `KaderStartSetupScreenTests.cs · KaderStartSetupScreenTests.StartLeague_BeforeFirstManager_IsAdopted` | neu | rot: Q54 |
+| `KaderStartTeil2SetupTests.cs · KaderStartTeil2SetupTests.WorldOnly_ClickOnSecondRow_EditsFirstManager_NoSecondManager` | neu | rot: Q53 |
 | `KaderStartTeil2cScreenTests.cs · KaderStartTeil2cScreenTests.OwnListingClick_WithoutBid_ReturnsPlayerToSquad` | neu | offen |
 | `KaderStartTeil2cScreenTests.cs · KaderStartTeil2cScreenTests.OwnListingClick_WithBid_OpensBidWindow` | neu | offen |
 | `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.SeasonEnd_ListIsPictureBeforeNegotiation_RedrawnAfterDeparture` | neu | offen |
