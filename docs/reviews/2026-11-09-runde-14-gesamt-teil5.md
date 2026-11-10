@@ -1215,6 +1215,14 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q89 | Penaltyschießen ohne Markierung speichern | `EishockeyManager.Core.Tests.WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore(seed: 5, minuteLoop: True)` | rot |
 | Q89 | Penaltyschießen ohne Markierung speichern | `EishockeyManager.Core.Tests.WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore(seed: 5, minuteLoop: False)` | rot |
 | Q89 | Penaltyschießen ohne Markierung speichern | `EishockeyManager.Core.Tests.WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore(seed: 11, minuteLoop: True)` | rot |
+| Q90 | Automatischen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 50, expectedBase: 60, expectedHighLead: 0)` | rot |
+| Q90 | Automatischen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 62, expectedBase: 60, expectedHighLead: 0)` | rot |
+| Q90 | Automatischen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 80, opponent: 50, expectedBase: 40, expectedHighLead: 20)` | rot |
+| Q90 | Automatischen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 63, expectedBase: 40, expectedHighLead: 20)` | rot |
+| Q91 | Beim Saisonstart einen Spielerplatz duplizieren | `EishockeyManager.Core.Tests.OriginalImportTests.Import_FourSeasonChanges(file: "FILE05.HOK", active: True)` | rot |
+| Q91 | Beim Saisonstart einen Spielerplatz duplizieren | `EishockeyManager.Core.Tests.OriginalImportTests.Import_FourSeasonChanges(file: "FILE16A.HOK", active: False)` | rot |
+| Q91 | Beim Saisonstart einen Spielerplatz duplizieren | `EishockeyManager.Core.Tests.OriginalImportTests.Import_FourSeasonChanges(file: "FILE05.HOK", active: False)` | rot |
+| Q91 | Beim Saisonstart einen Spielerplatz duplizieren | `EishockeyManager.Core.Tests.OriginalImportTests.Import_FourSeasonChanges(file: "FILE11.HOK", active: True)` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1816,7 +1824,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `OriginalImportTests.cs · OriginalImportTests.Import_AllOriginalStands_AreValid` | neu | rot: R01 |
 | `OriginalImportTests.cs · OriginalImportTests.Import_ManagerSquadFromSquadSlots` | neu | rot: R03 |
 | `OriginalImportTests.cs · OriginalImportTests.Import_RoundTripAndContinue` | neu | rot: R04 |
-| `OriginalImportTests.cs · OriginalImportTests.Import_FourSeasonChanges` | neu | rot: R05 |
+| `OriginalImportTests.cs · OriginalImportTests.Import_FourSeasonChanges` | neu | rot: Q91, R05 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Playoffs_NextRound_PairsByTable0x144_HomeAtSmallerSlot` | neu | rot: S01 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.MultiSeason_FourChanges_PlayoffsPairByTable0x144` | neu | rot: S01 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Playoffs_OwnRounds_PairLikeTheOriginal` | neu | rot: S01 |
@@ -1994,7 +2002,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 
 ### Offene Prüfbereiche
 
-- Die Inventur enthält noch `offen` markierte Testmethoden; alle Theoriezeilen, geänderten Testhilfen, Datenquellen und entfernten Tests bedürfen vollständiger Einzelprüfung.
+- Alle 334 inventarisierten Methoden haben mindestens eine rote Gegenprobe; die Vollständigkeit aller Theoriezeilen sowie geänderter Testhilfen, Datenquellen und entfernter Tests ist noch nicht nachgewiesen.
 - Geänderte Sollwerte, Fingerabdrücke und Saaten sind noch nicht vollständig einzeln auf ihre Regel zurückgeführt.
 - Die Entscheidungen der Runde einschließlich PR-Kommentaren und der Nutzerentscheidungen vom 09.11.2026 sind noch nicht vollständig einzeln gegen den Code geprüft.
 - Nicht alle neuen `[ORIGINAL]`-Fundstellen sind selbst in `em.exe` beziehungsweise den Originalständen nachgelesen.
