@@ -150,7 +150,12 @@ public sealed partial class GameState
         p.Notice = ContractNotice.None;
         p.NoticeYears = 0;
         p.NegotiationLock = 0;
-        TransferMarket.Release(club, p);
+        // [ORIGINAL] R15-E3 = C (Nutzer 10.11.2026): Der Spieler ist ganz verloren. Datei 0x27DE3–0x27E9D gibt nur den Kaderplatz
+        // frei (0x108:0x48 = Datei 0x425B6) und lässt Pool +0x1A beim Manager; kein Vertragsloser, kein Listenplatz, kein Zugriff
+        // der Computervereine. Beleg FILE44 → FILE46: KJELLBERG in keinem Kader, Pool 196 +0x1A = 0. Sein Poolplatz bleibt
+        // vergeben (TransferMarket.StartPoolSeason). Einstellung nach v1.0: das bisherige Remake-Verhalten (vertragslos, für
+        // Computervereine verfügbar) als Option.
+        p.UnsolicitedOffer = null;
         return new ContractRenewal(p, false, compensation);
     }
 

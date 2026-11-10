@@ -122,6 +122,9 @@ public sealed partial class GameState
         var before = Clubs.Where(c => c.Players.Count > 0 && !managed.Contains(c.Index)).ToDictionary(c => c,
             c => Enum.GetValues<Formats.PlayerRole>().ToDictionary(r => r, r => c.Players.Count(p => p.Role == r)));
 
+        // #698: Jugend am Saisonende vor dem Altern und Herunterzählen (0x26F20, FinanceTalent.cs). Season ist schon die neue
+        // Saison, also das Jahr des 29. April.
+        JoinSeasonEndYouth(Season);
         AgeFreeAgents();
         // A091/A380: Die nicht verkauften eigenen Spieler von der Transferliste sind schon zurück (OnNewSeasonManager, vor dem
         // Löschen der Saisonzähler; Review R14KS-02) und altern hier wie alle Kaderspieler.

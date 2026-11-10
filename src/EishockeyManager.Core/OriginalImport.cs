@@ -484,19 +484,20 @@ public sealed partial class GameState
 
         // Aufstellung: Reihe 1–3 (+0x15, Bit 0x80 Sturm), Torhüter mit Reihe 1; Plätze in Kaderfolge.
         var used = new Dictionary<(int Block, PlayerRole Role), int>();
-        foreach (var (player, line, _, _) in players)
+        // [ORIGINAL] +0x15 bestimmt den Platz, nicht die Rolle (Ausweichrollen der Automatik, Datei 0x42838; Lineup.Place): Sturm
+        // nach Bit 0x80, sonst Verteidigung – ein Torhüter mit Reihe 1 ohne Bit auf den freien Torhüterplatz. Spur hok-export
+        // (Rundreise, vier Saisonwechsel passiv: Stürmer M.RAUBAL in der Verteidigung).
+        foreach (var (player, line, forward, _) in players)
         {
-            if (line is < 1 or > 3)
+            if (line is < 1 or > 3 || !player.Available)
                 continue;
-            LineupSlot? target = player.Role switch
-            {
-                PlayerRole.Goalkeeper when line == 1 && club.Lineup.Goalkeeper is null => LineupSlot.Goalkeeper,
-                PlayerRole.Defender => NextSlot(line - 1, PlayerRole.Defender, Lineup.DefendersPerBlock),
-                PlayerRole.Forward => NextSlot(line - 1, PlayerRole.Forward, Lineup.ForwardsPerBlock),
-                _ => null,
-            };
-            if (target is { } t && player.Available)
-                club.Lineup.Assign(t, player);
+            LineupSlot? target = player.Role == PlayerRole.Goalkeeper && !forward && line == 1 && club.Lineup.Goalkeeper is null
+                ? LineupSlot.Goalkeeper
+                : forward
+                    ? NextSlot(line - 1, PlayerRole.Forward, Lineup.ForwardsPerBlock)
+                    : NextSlot(line - 1, PlayerRole.Defender, Lineup.DefendersPerBlock);
+            if (target is { } t)
+                club.Lineup.Place(t, player);
         }
         // Spur hok-export (Rundreise): Eingesetzte genau wie +0x0A – erst die von der Automatik zusätzlich Eingesetzten herausnehmen,
         // sonst ist die Zahl schon voll (22) und der Ersatz des HOK käme nicht hinein. Die Einstellung „automatisch aufstellen“

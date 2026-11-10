@@ -537,8 +537,9 @@ public sealed partial class TransferMarket
     /// (Entscheidung Nutzer 01.11.2026: Originaltreue; Verjüngung beim Umbenennen ist als Erweiterung nach v1.0 vorgemerkt,
     /// <c>docs/anforderungen/zusatzfunktionen.md</c>); Datei 0x56467/0x56470: neue Namen der freien Plätze (Art 0, dann Art 1).
     /// [APPROX] Vergebene Plätze, deren Spieler nicht mehr in einem Managerkader steht, bekommen einen neuen Spieler mit den
-    /// Werten des alten (im Original wird der Platz bei Verkauf oder Vertragsende wieder frei); der alte bleibt, wo er ist, und
-    /// behält seinen Namen – der neue Platz wird beim Umbenennen neu benannt oder heißt „POOLSPIELER n“.
+    /// Werten des alten (im Original wird der Platz beim Verkauf wieder frei); der alte bleibt, wo er ist, und behält seinen
+    /// Namen – der neue Platz wird beim Umbenennen neu benannt oder heißt „POOLSPIELER n“. [ORIGINAL] Ausnahme R15-E3 = C: ist
+    /// der Spieler nach Vertragsende ganz verloren, bleibt der Platz vergeben (Pool +0x1A = Manager, FILE46 KJELLBERG).
     /// </summary>
     internal void StartPoolSeason(GameState game, Random random)
     {
@@ -551,6 +552,14 @@ public sealed partial class TransferMarket
             {
                 if (managed.Any(c => c.Players.Contains(slot.Player)))
                     continue;
+                if (IsLost(game, slot.Player))
+                {
+                    // [ORIGINAL] R15-E3 = C: Vertragsende im Managerkader (Datei 0x27DE3–0x27E9D) lässt Pool +0x1A beim Manager;
+                    // der Platz bleibt vergeben und kommt nie wieder in den Listenwechsel (FILE46 Pool 196 KJELLBERG: +0x1A = 0,
+                    // Alter 32 → 33 wie im Kader). [APPROX] Das Original altert den Platz danach jede Saison weiter (0x274A7 alle
+                    // Poolplätze); das Remake lässt das Alter des unsichtbaren Spielers stehen.
+                    continue;
+                }
                 Rename(game, slot, $"POOLSPIELER {slot.Index}");
                 slot.Owner = PoolOwner.Free;
             }
@@ -560,6 +569,12 @@ public sealed partial class TransferMarket
         Rename(game, nationals: true, random, HeldNames(game), exchange: true);
         Rename(game, nationals: false, random, HeldNames(game), exchange: true); // nach dem Tausch neu bestimmt
     }
+
+    /// <summary>Spieler eines vergebenen Platzes ist nirgends mehr im Spiel (R15-E3 = C, Vertragsende im Managerkader).</summary>
+    private bool IsLost(GameState game, Player player) =>
+        !game.Clubs.Any(c => c.Players.Contains(player)) && !_freeAgents.Any(l => ReferenceEquals(l.Player, player))
+        && !game.RetiredPlayers.Contains(player) && game.NationalCoach?.Contains(player) != true
+        && !_listings.Any(l => ReferenceEquals(l.Player, player));
 
     /// <summary>
     /// Wechsel der Transferliste. [ORIGINAL] em.exe Datei 0x494EF (Stub 0x118:0x5C), gerufen beim Saisonstart (0x43A9F) und im
@@ -645,7 +660,8 @@ public sealed partial class TransferMarket
 
     /// <summary>
     /// Platz, den der Listenwechsel nicht räumt: eigener Spieler eines Managers ([ORIGINAL] Besitzer ≠ 4, 0x425F0) oder
-    /// [APPROX] ein Vertragsloser aus einem Managerverein (Remake-Ergänzung R204, <see cref="TransferMarket.StartSeason"/>).
+    /// [APPROX] ein Vertragsloser auf der Liste (nur Spielstände vor Runde 15: Remake-Ergänzung R204, seither entfernt,
+    /// <see cref="TransferMarket.StartSeason"/>; seit R15-E3 = C sind Vertragslose aus Managervereinen ganz verloren).
     /// </summary>
     private static bool IsHeld(TransferListing listing) => listing.Seller is not null || listing.IsFreeAgent;
 

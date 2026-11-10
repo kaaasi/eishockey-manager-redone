@@ -229,9 +229,17 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
     // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
     // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
+    // Runde 15, Spur kader (#698, A134, R204, R15-E3 = C; Fixlauf nach Rebase auf tagesablauf #725): neu – Jugend am Saisonende
+    // (0x26F20, Datei 0x2728C–0x27320: zwei Zufallszahlen je Manager und Saison, ab 1995 Junioren), Tendenz/Steuerbyte der
+    // Startkader (0x4907A aus 0x42CB1), Vertragslose aus Managervereinen weder auf der Liste noch vertragslos, sondern ganz verloren
+    // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
     [GameDataTheory]
-    [InlineData(false, "69FE76E9EAAC0AB6")]
-    [InlineData(true, "C0569EF9C1B17F34")]
+    // Runde 15, Spur kader (#698, A134, R204, R15-E3 = C; Fixlauf nach Rebase auf tagesablauf #725): neu – Jugend am Saisonende
+    // (0x26F20, Datei 0x2728C–0x27320: zwei Zufallszahlen je Manager und Saison, ab 1995 Junioren), Tendenz/Steuerbyte der
+    // Startkader (0x4907A aus 0x42CB1), Vertragslose aus Managervereinen weder auf der Liste noch vertragslos, sondern ganz verloren
+    // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
+    [InlineData(false, "06D3B05D238D9187")]
+    [InlineData(true, "FEB84A0C12F60441")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

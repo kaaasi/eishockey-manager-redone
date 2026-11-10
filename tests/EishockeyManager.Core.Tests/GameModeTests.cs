@@ -423,8 +423,12 @@ public class GameModeTests
     // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
     // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
     // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
+    // Runde 15, Spur kader (#698, A134, R204, R15-E3 = C; Fixlauf nach Rebase auf tagesablauf #725): neu – Jugend am Saisonende
+    // (0x26F20, Datei 0x2728C–0x27320: zwei Zufallszahlen je Manager und Saison, ab 1995 Junioren), Tendenz/Steuerbyte der
+    // Startkader (0x4907A aus 0x42CB1), Vertragslose aus Managervereinen weder auf der Liste noch vertragslos, sondern ganz verloren
+    // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=57,CupWinner=4,GermanChampion=1,EuropeanCupWinner=0|2466933,400000|WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2356882,400000|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2024688,500000|WorldChampion=52,CupWinner=18,GermanChampion=4,EuropeanCupWinner=0|1524564,400000|R776559153 C1809965060";
+        "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=57,CupWinner=4,GermanChampion=1,EuropeanCupWinner=0|2454700,400000|WorldChampion=63,CupWinner=12,GermanChampion=3,EuropeanCupWinner=0|2517595,500000|WorldChampion=53,CupWinner=12,GermanChampion=12,EuropeanCupWinner=3|2416912,400000|WorldChampion=53,CupWinner=20,GermanChampion=1,EuropeanCupWinner=12|1801973,500000|R1695781066 C794769235";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

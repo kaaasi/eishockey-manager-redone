@@ -323,13 +323,11 @@ public class TagestaktHauptwegReviewTests
         var game = GameState.ImportOriginal(OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave("FILE44.HOK"))),
             ClubDatabase.Load(TestGameData.Load()), seed);
         PlayToSeasonOver(game);
-        // [APPROX] R204: Vertragslose aus Managervereinen (hier KJELLBERG, VALLIERE …) setzt das Remake zusätzlich auf die Liste;
-        // verglichen werden die Markt-Plätze aus dem Pool.
-        var expected = Import("FILE46.HOK").TransferMarket.Listings.Select(l => l.Player.Name).Order().ToList();
-        Assert.Equal(expected, game.TransferMarket.Listings.Where(l => l.FromPool).Select(l => l.Player.Name).Order());
         game.StartNextSeasonWithRenewals();
+        // Spur kader Teil 3 (R204): Vertragslose stehen wie im Original nicht mehr auf der Liste, verglichen wird die ganze Liste.
+        var expected = Import("FILE46.HOK").TransferMarket.Listings.Select(l => l.Player.Name).Order().ToList();
         Assert.Equal(0, game.CurrentDay);
-        Assert.Equal(expected, game.TransferMarket.Listings.Where(l => l.FromPool).Select(l => l.Player.Name).Order());
+        Assert.Equal(expected, game.TransferMarket.Listings.Select(l => l.Player.Name).Order());
         Assert.DoesNotContain("HOHENADL", expected);
         Assert.Contains(game.Clubs[game.Managers[0].ClubIndex].Players, p => p.Name == "HOHENADL");
     }
