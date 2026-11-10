@@ -193,7 +193,10 @@ public class TransferVertraegeKomplettTests
                 break;
         }
         Assert.DoesNotContain(p, club.Players);
-        Assert.Contains(p, game.TransferMarket.FreeAgents);
+        // Spur kader (R15-E3 = C): geändert – vorher vertragslos (FreeAgents); wie im Original (Datei 0x27DE3–0x27E9D, FILE44 → FILE46
+        // KJELLBERG) ist der Spieler ganz verloren.
+        Assert.DoesNotContain(p, game.TransferMarket.FreeAgents);
+        Assert.DoesNotContain(p, game.AllPlayers);
         Assert.Equal(0, p.ContractYears);
         Assert.Equal(transfers + expected, game.Finance(manager).Book.Current(FinanceCategory.Transfers));
         if (outcome is not null)
@@ -214,7 +217,10 @@ public class TransferVertraegeKomplettTests
         var (game, manager, club, p) = SeasonEnd();
         game.StartNextSeason();
         Assert.DoesNotContain(p, club.Players);
-        Assert.Contains(p, game.TransferMarket.FreeAgents);
+        // Spur kader (R15-E3 = C): geändert – vorher vertragslos (FreeAgents); wie im Original (Datei 0x27DE3–0x27E9D, FILE44 → FILE46
+        // KJELLBERG) ist der Spieler ganz verloren.
+        Assert.DoesNotContain(p, game.TransferMarket.FreeAgents);
+        Assert.DoesNotContain(p, game.AllPlayers);
         Assert.True(game.Finance(manager).Book.Current(FinanceCategory.Transfers) > 0);
         Assert.False(game.HasPendingRenewals);
     }
@@ -256,6 +262,7 @@ public class TransferVertraegeKomplettTests
             PlaySeason(game);
             var before = game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).Concat(game.RetiredPlayers)
                 .ToHashSet();
+            var squadBefore = club.Players.Where(p => p.ContractYears <= 1 && p.Loan is null).ToHashSet();
             game.StartNextSeasonWithRenewals();
             foreach (var p in game.PendingRenewals(manager))
             {
@@ -279,7 +286,9 @@ public class TransferVertraegeKomplettTests
             var all = game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).Concat(game.RetiredPlayers)
                 .ToList();
             Assert.Equal(all.Count, all.Distinct().Count());
-            Assert.Empty(before.Except(all));
+            // Spur kader (R15-E3 = C): geändert – verloren gehen nur Spieler, die den eigenen Kader bei Vertragsende verlassen
+            // (wie im Original, Datei 0x27DE3–0x27E9D); vorher „kein Spieler verloren“.
+            Assert.All(before.Except(all), p => Assert.Contains(p, squadBefore));
         }
         if (active)
         {

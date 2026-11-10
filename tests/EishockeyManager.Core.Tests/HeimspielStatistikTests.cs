@@ -326,7 +326,8 @@ public class HeimspielStatistikTests
             }
             Assert.True(game.Finance(active).Book.Current(FinanceCategory.Strafen) <= -200_000L, "Strafe am 5. Spieltag fehlt");
             Assert.True(game.Finance(active).HomeStatistics.Games > 0);
-            if (passiveClub.Players.Count == 0)
+            // Spur kader (#698): Ab 1995 kann die Jugend am Saisonende einzelne Spieler bringen; spielunfähig ist der Kader dann trotzdem.
+            if (passiveClub.Players.Count < GameState.MinimumPlayers)
             {
                 passiveLostSquad = true;
                 Assert.Equal(0, game.Finance(passive).HomeStatistics.Games);
