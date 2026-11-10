@@ -991,6 +991,26 @@ liegt bei den genannten Spuren.
   Kopf mit Sonnenbrille) und bei FILE05 eine Nachricht aus dem Nachspielen („EC RATINGEN ist an J.SCHULZ interessiert.“),
   wo das Original keine zeigt (seit Teil 4b behoben: Nachrichten aus `D294`).
 
+## Export Remake → HOK (Spur `hok-export`, Runde 15)
+
+`OriginalExport.Export(spiel, kb23, saat)` in `Core/OriginalExport*.cs`, Schreiber `Formats/OriginalSaveWriter.cs` (alle Blöcke mit
+Nullbytes vorbelegt, Kopf, Verschlüsselung und Prüfsummen über `OriginalSavePatcher.Encode`). Umkehrung der Feldkarte (Regeln 1–6
+rückwärts); der Export ändert den Spielstand nicht (Test `OriginalExportTests.Export_IsPure`).
+
+- **Satzfolge:** Ligen in der Folge, deren Plan 0x4E7C7 dem Spielplan des Remakes gleicht (nach Import die HOK-Folge, im neuen
+  Remake-Spiel die Indexfolge), dann deutsche Vereine ohne Liga, Leerplätze, Länder in WM-Reihenfolge, übrige nach Index.
+- **Neu belegt beim Export** (an den Ständen geprüft): Vereinssatz +0x34 Logo (`LogoNumber`, Managerverein + 0x80), +0x3B/+0x3C
+  Farbcode (`kb\23`, niederes Byte zuerst), Namen als Rohbytes der Datenbank; Tabellensätze `8257` (Sicherung der Siege/Niederlagen
+  nur im Heimfeld), Bilanz „--------“ vor dem ersten Spiel; Paarungen des Spieltags `5D7B` (Satzplätze); Saisonjahr `03BB`;
+  Highscore-Schlüssel `0256`; Kosten der Freundschaftsspiele `026C` in Satzfolge; Gegner eines leeren Rekords = Satz des Vereins
+  mit Index 0; Managersatz +0xE6 Pokalrunde, +0xE9 (1 bei „eine Saison, ein Manager“); unbenutzte Managersätze wie FILE01.
+- **Vermutet, im Original zu prüfen** (`[APPROX]`): Managersatz +0x13 = Managerkopf (FILE09: zwei Manager mit 3 und 10), `A70D`
+  letzter Zugteilnehmer, `A8A0` Monat, `07A9`+4 laufende Pokalrunde.
+- **Vorgabe des Spielstarts** (an allen Ständen gleich): `0120`, `017C`, `D0E4`, `022D`, `0246`, `02C0`, `021D`+13.
+- **Zugang:** `emtool hok export <spielstand.ems> <ziel.hok> [--gamedata ordner] [--seed n] [--force]`; Prüfhilfe für die DOSBox-Probe:
+  `emtool hok export --neu <name> <vereinsindex> <ziel.hok> [--spieltage n] [--ems datei]` (neues Spiel, n Ligaspieltage über
+  `GameState.Continue`). Ergebnis mit `emtool hok dump` lesbar.
+
 ## Offene Punkte
 
 - **Pokale (nach Teil 4c):** Auslosung Europapokal `A763` (18 Byte) und `CFF8`, `5CF0` ungedeutet; Tore der WM-K.-o.-Spiele
