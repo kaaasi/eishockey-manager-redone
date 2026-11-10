@@ -64,6 +64,8 @@ Die unveränderten Kontrollläufe bestehen: `OriginalSaveHeaderTests` 4/4, `Save
 
 ### Selbst nachgelesene Originalstellen
 
+Taktikpfeile: `em.exe` Datei `0x487A8–0x487B8` bildet aus einem Vergleich ein Kennzeichen 0/1; `0x48BD2–0x48C25` prüft für Kennzeichen 0 die Untergrenze 0 und für 1 die tabellierte Obergrenze minus 1 und bildet anschließend −1 beziehungsweise +1. Die Zuordnung der Vergleichsoperanden zu oberer und unterer Maushälfte ist mit diesem Ausschnitt allein noch nicht vollständig nachvollzogen und bleibt offen.
+
 Saisonende-Statusbit: `em.exe` Datei `0x553A6–0x553ED` ruft `0xE8:0x93` zuerst mit `0x7F`, dann pro Manager auf, setzt das Statusbyte zunächst auf 0 und OR-verknüpft es bei positivem Rückgabewert und Spielmodus ungleich 2 mit `0x40`. Die selbst gelesene Hilfsroutine `0x34769–0x347EE` liest die Einträge ab DGROUP `0x5CCB`, begrenzt die Schleife auf fünf und vergleicht die Managerzuordnung. Die Voraussetzungen des aufrufenden Tageszweigs wurden bei dieser Teilprüfung nicht erneut vollständig hergeleitet.
 
 `em.exe` Datei `0x5B68E–0x5B732`: Der Code übergibt nacheinander die Längen 10, 4, 1, 1 und `0xA0` an denselben Leser; nach den ersten 10 Bytes erfolgt ein Vergleich gegen eine Zeichenkette bei DGROUP `0x55DF`. Damit ist die Struktur des Kopflesers im Originalcode nachvollzogen; die Bedeutung jeder Hilfsfunktion und das Verhalten bei verkürzter Datei bleiben gesondert offen. Selbst aus `FILE46.HOK` gelesen: Kennung `KRON_0.99` mit Nullbyte, Jahr 1994, Managerzahl 1, Spieltag 1, erster Eintrag Liga 0, WM-Flag 0, Name `Joerg` und Vereinsbytes `KLNER EC` (Originalkodierung).
@@ -1106,6 +1108,10 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q20 | Neue Spieler hinten anfügen statt nach Position einzusortieren | `EishockeyManager.Core.Tests.KaufEinsortierenTests.LoanReturn_ToManagerClub_SortedIn` | rot |
 | Q21 | Leihspieler bei Rückkehr hinten anfügen | `EishockeyManager.Core.Tests.KaufEinsortierenTests.LoanReturn_ToManagerClub_SortedIn` | rot |
 | Q22 | Form bei Teamwertewanderung außerhalb des gültigen Intervalls würfeln | `EishockeyManager.Core.Tests.TeamValueDriftTests.GameStart_DriftsIntoLeagueBounds` | rot |
+| Q23 | Alte Taktikwerte durch neue Nullwerte ersetzen | `EishockeyManager.Core.Tests.NationalteamTests.Club_AutoDisplay_Unchanged` | rot |
+| Q24 | Automatikwerte beim Spiel nicht speichern | `EishockeyManager.Core.Tests.NationalteamTests.Club_AutoDisplay_KeepsLastLine` | rot |
+| Q25 | Unbesetzte Nationalmannschaftstaktik mit nichtnull Angriffszeile migrieren | `EishockeyManager.Core.Tests.NationalteamTests.Schema11_WithoutCoach_IsMigrated` | rot |
+| Q26 | Importierten Automatikmerker des Bundestrainers umkehren | `EishockeyManager.Core.Tests.OriginalImportRunde14Tests.Import_TakesNationalCoachAutoLineupFromBlock0375` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1642,9 +1648,9 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.SeasonChange_GermanyConditionTechniqueKept_FormRolled` | neu | rot: N22 |
 | `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.HandNomination_InsertsByRole` | neu | rot: N23 |
 | `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.WorldCupStage_LocksNationalSquadFromFirstDate` | neu | rot: N24 |
-| `NationalteamTests.cs · NationalteamTests.Club_AutoDisplay_Unchanged` | geändert | offen |
-| `NationalteamTests.cs · NationalteamTests.Club_AutoDisplay_KeepsLastLine` | neu | offen |
-| `NationalteamTests.cs · NationalteamTests.Schema11_WithoutCoach_IsMigrated` | geändert | offen |
+| `NationalteamTests.cs · NationalteamTests.Club_AutoDisplay_Unchanged` | geändert | rot: Q23 |
+| `NationalteamTests.cs · NationalteamTests.Club_AutoDisplay_KeepsLastLine` | neu | rot: Q24 |
+| `NationalteamTests.cs · NationalteamTests.Schema11_WithoutCoach_IsMigrated` | geändert | rot: Q25 |
 | `NewGameTests.cs · NewGameTests.Create_RandomBundesligaClub_NeverTakesEuropeanCupParticipant` | geändert | offen |
 | `NummerierungMigrationTests.cs · NummerierungMigrationTests.CurrentSave_RoundTrip_Unchanged` | geändert | offen |
 | `OriginalImportCupTests.cs · OriginalImportCupTests.Import_DebCupQuarterFinal` | neu | rot: G01 |
@@ -1700,7 +1706,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal` | neu | rot: J13, J14, J15 |
 | `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.ClubIndices_WorldOnly_NationKeepsItsIndex_ManagerSlotGetsTheMissingClub` | neu | rot: J20 |
 | `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_AutoLineup_ReadsCurrentByteNotTheSavedOne` | neu | rot: J09 |
-| `OriginalImportRunde14Tests.cs · OriginalImportRunde14Tests.Import_TakesNationalCoachAutoLineupFromBlock0375` | neu | offen |
+| `OriginalImportRunde14Tests.cs · OriginalImportRunde14Tests.Import_TakesNationalCoachAutoLineupFromBlock0375` | neu | rot: Q26 |
 | `OriginalImportRunde14Tests.cs · OriginalImportRunde14Tests.Import_AllStands_RoundTripIsStable` | neu | offen |
 | `OriginalImportTests.cs · OriginalImportTests.Import_SetsDateManagersAndClubs` | neu | rot: R01 |
 | `OriginalImportTests.cs · OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords` | neu | rot: R02 |
