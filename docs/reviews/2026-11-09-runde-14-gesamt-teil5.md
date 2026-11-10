@@ -1675,6 +1675,8 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 
 ### Inventur je geändertem oder neuem Test
 
+Unter den bisher protokollierten Ausführungen sind 209 eindeutig bezeichnete Theoriezeilen; jede davon ist mindestens einmal rot geworden (ohne reine Testsaat-Rücksetzungen). Darunter sind auch Zeilen unveränderter Tests; eine vollständige Inventur aller parametrisierten Zeilen ist das nicht.
+
 Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet eine seit Teil 4 erneut ausgeführte gezielte Mutation einer Produktregel, Feldkarte, Testhilfe oder Eingabedaten, die mindestens eine Zeile der Methode rot macht; die vollständige Einzelzeilentabelle darüber ist maßgebend. `offen` bedeutet, dass diese erneute Gegenprobe weiterhin aussteht. Bereits in Teil 2 oder 3 dokumentierte Ergebnisse bleiben dort gültig, ersetzen aber nicht die hier neu ausstehende Protokollierung. Änderungen an Testhelfern, Datenquellen und gelöschte Tests bleiben zusätzlich zu prüfen.
 
 | Testdatei / Methode | Delta | Erneute Gegenprobe |
