@@ -11,7 +11,7 @@ namespace EishockeyManager.Core.Tests;
 /// <remarks>
 /// [ORIGINAL] Selbst nachgelesen (<c>tools/reverse-engineering/disasm.py gamedata/em.exe 0x54D38 0x54EF8</c>, <c>… 0x55073 0x55090</c>,
 /// <c>… 0x551F0 0x55240</c>): Der Hauptweg liest das Tagesbyte über DGROUP 0xA969 (Datei 0x54D41); Spiel- und Saisonstart lassen
-/// Zähler und Index auf 0 (Datei 0x43A93, 0x565A7), das Tagesbyte 0 springt bei Datei 0x54D5C nach 0x55073 und weiter zum
+/// Index 0 und Zähler [0x6AF] = 0 (Datei 0x43A93, 0x565A7), das Tagesbyte 0 springt bei Datei 0x54D5C nach 0x55073 und weiter zum
 /// Tageswechsel Datei 0x55204 (Zähler 1 = 10. September, je Manager 0x3ED01/0x3F833 bei Datei 0x5522B/0x55230), erst dann folgen
 /// die Neuaufstellungen (Datei 0x54D68–0x54DBA, je Satz 0x426BC und 0x952C(Satz, 0)) und je Manager der Wurf (Datei 0x54E65–0x54E7C)
 /// vor dessen Menü (Datei 0x54EB2), Schleife Datei 0x54E3F–0x54EF4.
@@ -65,7 +65,7 @@ public sealed class TagesablaufRunde15Tests
 
     /// <summary>
     /// Teil 1, Saisonwechsel: Nach <see cref="GameState.StartNextSeason"/> ist Tag 0 der neuen Saison geöffnet (Datei 0x565A7 setzt
-    /// den Zähler auf 0, der Hauptweg wechselt vor dem ersten Menü auf Zähler 1). Das Zinskonto enthält damit den 1. bis
+    /// den Zähler auf [0x6AF] = 0, der Hauptweg wechselt vor dem ersten Menü auf Zähler 1). Das Zinskonto enthält damit den 1. bis
     /// 10. September (Sommerpause 1.–9., Tag 0 = 10.). Vorher rot: neun Tage, Tag 0 nicht geöffnet.
     /// </summary>
     [Fact]
@@ -135,6 +135,72 @@ public sealed class TagesablaufRunde15Tests
             game = loaded;
 
             for (var guard = 0; game.CurrentDay == 0; guard++) // Hot-Seat: erst Weitergeben an Manager 1, dann Tag 0 spielen
+            {
+                Assert.True(guard < 4);
+                game.Continue();
+            }
+            Assert.True(game.DayOpened);
+            Assert.Equal(game.CurrentDay, game.FinanceDay);
+        }
+    }
+
+    /// <summary>
+    /// R725-01, Mehrsaisonprobe über den Weg der Oberfläche (SeasonEndSummaryScreen → ContractsScreen): Der Saisonwechsel mit
+    /// Verhandlungen (<see cref="GameState.StartNextSeasonWithRenewals"/>) lässt Tag 0 geschlossen, weil dessen Tageswechsel offene
+    /// Verhandlungen beendet; erst <see cref="GameState.ReturnToFirstActiveManager"/> nach den Verhandlungen öffnet ihn vor dem
+    /// ersten Menü (Zähler 1, Finanztag 0, Werbebewertung des Tagesabschlusses 0x3F833). 4 Saisonwechsel, passiv und aktiv.
+    /// Vorher rot (Mutant: <c>OpenStartDay()</c> in <c>ReturnToFirstActiveManager</c> entfernt): Tag 0 im ersten Menü nicht
+    /// geöffnet, Finanztag −1 – der Tageswechsel liefe erst nach dem ersten Menü (#699 Punkt 2).
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FourSeasonChanges_WithRenewals_DayZeroOpenedAfterNegotiations(bool active)
+    {
+        var game = TwoManagers(11);
+        for (var change = 0; change < 4; change++)
+        {
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                Assert.True(guard < 2000, "Saisonende nicht erreicht");
+                foreach (var m in game.Managers)
+                {
+                    m.Money = Math.Max(m.Money, 100_000_000);
+                    if (active)
+                        TestSeason.KeepSquad(game, m, extendExpired: true);
+                }
+                game.Continue();
+            }
+            Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+            game = Reload(game);
+
+            game.StartNextSeasonWithRenewals();
+
+            Assert.Equal(SeasonPhase.Running, game.Phase);
+            Assert.Equal(0, game.CurrentDay);
+            Assert.False(game.DayOpened);
+            Assert.Equal(-1, game.FinanceDay);
+            for (var i = 0; i < game.Managers.Count; i++)
+                game.SwitchToRenewalManager(i); // Verhandlungen je Manager; offene enden mit dem Tageswechsel wie „Abbruch“
+
+            game.ReturnToFirstActiveManager();
+
+            Assert.Equal(0, game.CurrentManager);
+            Assert.True(game.DayOpened);
+            Assert.Equal(0, game.FinanceDay);
+            foreach (var m in game.Managers)
+            {
+                Assert.Empty(game.PendingRenewals(m));
+                Assert.Equal(SponsorRating.Compute(game, m), game.Finance(m).SponsorRating);
+            }
+            var saved = SaveGame.Save(game);
+            var loaded = Reload(game);
+            Assert.True(loaded.DayOpened);
+            Assert.Equal(saved, SaveGame.Save(loaded));
+            Assert.Empty(loaded.ValidatePlayerIdentity());
+            game = loaded;
+
+            for (var guard = 0; game.CurrentDay == 0; guard++)
             {
                 Assert.True(guard < 4);
                 game.Continue();
@@ -228,6 +294,9 @@ public sealed class TagesablaufRunde15Tests
     /// Abnahme Teil 1 mit Originaldaten: Neustarts im ersten Menü (FILE01, FILE10, FILE27: Zähler 0x3B7 = 1) und der erste Tag einer
     /// Folgesaison (FILE14) importieren mit geöffnetem Tag 0 und Finanztag 0; die Werbebewertung des HOK (Managersatz +0x173) ist
     /// die des Tagesabschlusses 0x3F833 zu Tag 0 (Datei 0x55230).
+    /// R725-02: kein Regressionstest, sondern Beleg der Lesart des Zählers (0x3B7 = 1 im ersten Menü = Tag 0 geöffnet). Der Test ist
+    /// auch ohne Teil 1 grün (Rückschaltprobe im Review), weil der Import Zinskonto und Bewertung aus dem HOK setzt
+    /// (<c>ApplyOriginal</c> nach <c>BeginFirstTurn</c>). Den Code sichern die synthetischen Tests oben.
     /// </summary>
     [GameDataTheory]
     [InlineData("FILE01.HOK")]
@@ -251,6 +320,8 @@ public sealed class TagesablaufRunde15Tests
     /// reiner Eintritt (237.354 DM = 13.962 Zuschauer zu 17 DM; bis zum Monatsletzten bucht der Tagesabschluss kein Zinskonto,
     /// HOK 0x02A0 = 0). Das Remake bucht auf demselben Weg nur Eintritt und hält das Zinskonto auf 0. [APPROX] Die Zuschauerzahl
     /// hängt vom Zufall ab (FinanceRandom, R15-D2: kein bitgenauer Modus), deshalb kein exakter Kontovergleich.
+    /// R725-02: kein Regressionstest für Tag 0 – FILE02 hat Sparbuch 0, das Zinskonto bleibt auch ohne Tagesabschluss zu Tag 0 bei 0;
+    /// der Test belegt nur die Lesart (bis zum Monatsletzten nur Eintritt) und ist auch ohne Teil 1 grün.
     /// </summary>
     [GameDataFact]
     public void Original_File02ToFile03_OnlyGateReceipts()

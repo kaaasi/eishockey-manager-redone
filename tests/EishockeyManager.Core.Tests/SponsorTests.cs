@@ -85,13 +85,22 @@ public class SponsorTests
         // Spur tagesablauf (#699 Punkt 2, R15-E1 = A): Im ersten Menü ist der Tageswechsel zu Tag 0 gerechnet; dessen Tagesabschluss
         // bewertet neu (0x3F833, Datei 0x55230). Die Angebote tragen weiter die Startbewertung, die aktuelle Bewertung ist die von
         // Tag 0 (vorher: beide gleich, weil Tag 0 erst nach dem ersten Menü lief).
+        // R725-04: Die Startbewertung wird unabhängig von den Angeboten bestimmt – Bewertung des Startzustands, bevor die
+        // Wettbewerbe angemeldet sind (InitializeManagerSystems: RenewOffers vor InitializeCompetitions), an einer Kopie ohne
+        // Wettbewerbe; für diesen Start hängt sie nicht vom Zufall ab (MinRandom = MaxRandom). Tag 0 bewertet mit Pokal und
+        // Europapokal neu, deshalb weicht die aktuelle Bewertung hier ab (67 → 70). [APPROX] Ob das Original die Wettbewerbe
+        // ebenfalls erst nach 0x2A03B anmeldet, prüft der Test nicht; er sichert die Reihenfolge des Remakes.
         var setup = new GameSetup { Duration = GameDuration.EineSaison };
         setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = 2 });
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
         var me = game.ActiveManager;
         var ads = game.Ads(me);
         Assert.Equal(SponsorRating.Compute(game, me), game.Finance(me).SponsorRating);
-        var rating = ads.Offers.Values.First().Values.First().Rating;
+        var start = SaveGame.Load(SaveGame.Save(game)).Game!;
+        start.Competitions.Clear();
+        var rating = SponsorRating.Compute(start, start.ActiveManager, new MinRandom());
+        Assert.Equal(rating, SponsorRating.Compute(start, start.ActiveManager, new MaxRandom()));
+        Assert.NotEqual(rating, game.Finance(me).SponsorRating);
         Assert.InRange(rating, 0, 100);
         Assert.Equal(Enum.GetValues<AdSlotKind>().Length, ads.Offers.Count);
         foreach (var kind in Enum.GetValues<AdSlotKind>())

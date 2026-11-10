@@ -179,9 +179,9 @@ public sealed partial class GameState
 
     /// <summary>
     /// Ist der Tageswechsel zu <see cref="CurrentDay"/> schon gerechnet (<see cref="OpenDay"/>)? Die Zeitleiste rechnet ihn vor dem
-    /// Halt; Spielstände vor Schema 45, ein neues Spiel und der erste Tag einer Saison holen ihn vor den Spielen des Tages nach.
-    /// [ORIGINAL] Tag 0 (#699 Punkt 2, Spur tagesablauf Runde 15): Spiel und Saison beginnen mit Index und Zähler 0
-    /// (Datei 0x565A1–0x565B0, 0x43A93), der erste Tageswechsel läuft vor dem ersten Menü (Datei 0x54D41 → 0x55073 → 0x55204,
+    /// Halt; nur Spielstände vor Schema 45 holen ihn vor den Spielen des Tages nach (R725-05).
+    /// [ORIGINAL] Tag 0 (#699 Punkt 2, Spur tagesablauf Runde 15): Spiel und Saison beginnen mit Index 0 (Datei 0x565A1) und dem
+    /// Zähler aus DGROUP 0x6AF (Datei 0x565A7–0x565B0, 0x43A93; [0x6AF] = 0, Review #688, FILE14: Zähler 1), der erste Tageswechsel läuft vor dem ersten Menü (Datei 0x54D41 → 0x55073 → 0x55204,
     /// Zähler 1 = 10. September; FILE01: 1/1) mit Tagesabschluss 0x3ED01/0x3F833 je Manager (<see cref="OpenStartDay"/>).
     /// </summary>
     public bool DayOpened { get; private set; }
@@ -196,7 +196,8 @@ public sealed partial class GameState
 
     /// <summary>
     /// Tageswechsel zu Tag 0 vor dem ersten Menü eines neuen Spiels bzw. einer neuen Saison (#699 Punkt 2). [ORIGINAL] Spiel- und
-    /// Saisonstart setzen Zähler DGROUP 0x3B7 und Index 0xA969 auf 0 (Datei 0x43A93, 0x565A7); das Tagesbyte des Index 0 ist 0, der
+    /// Saisonstart setzen Index 0xA969 auf 0 und Zähler DGROUP 0x3B7 auf [0x6AF] (Datei 0x565A1, 0x565A7–0x565B0, 0x43A93; [0x6AF] = 0, also
+    /// Zähler 0; R725-05); das Tagesbyte des Index 0 ist 0, der
     /// Hauptweg springt bei Datei 0x54D5C nach 0x55073 und von dort ohne Menü zum Tageswechsel Datei 0x55204 (Zähler 1, Tagesabschluss
     /// je Manager, Takt nicht: Zähler 1 ≢ 0, 4), danach Neuaufstellungen und Listenwechsel-Wurf von Manager 0 vor dessen Menü.
     /// Im Modus „nur Weltkugel“ nicht (Datei 0x54CEE: eigener Weg zur WM, <see cref="SkipToWorldCup"/>).
