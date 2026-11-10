@@ -45,26 +45,11 @@ cd eishockey-manager-redone
 - Mergen (nur als Leitstelle, nach der Merge-Prüfung in `docs/prozess/zusammenarbeit.md`) immer mit dem geprüften
   Head-SHA: `gh api -X PUT repos/kaaasi/eishockey-manager-redone/pulls/<nr>/merge -f sha=<head> -f merge_method=merge`.
 - **Leitstelle:** immer Lese- und Schreibzugriff auf beide Repos (`add_repo` für `eishockey-manager-redone` und
-  `eishockey-manager-referenz`, jeweils access `push`; Vorgabe Nutzer 01.11.2026), z. B. um Spielstände und Bilder im
-  Referenz-Repo abzulegen (dort per PR, Branch `daten/…`).
-- **Geplante Läufe anlegen** (Leitstelle): vorher beide Repos per `add_repo` in der eigenen Sitzung einbinden – der Lauf
-  erbt nur diese; Ablauf `docs/vorlagen/leitstelle-start.md` Schritt 7. Im Lauf selbst ist `add_repo` meist nicht
-  verfügbar (auch nicht per `ToolSearch`); maßgeblich ist das Einbinden durch die anlegende Sitzung.
+  `eishockey-manager-referenz`, jeweils access `push`; Nutzer 01.11.2026), z. B. für Spielstände und Bilder im Referenz-Repo
+  (dort per PR, Branch `daten/…`).
 - Commit-Trailer für Claude: `Co-Authored-By: Claude <noreply@anthropic.com>` (bzw. die Zeilen aus der Sitzungsvorgabe).
-- **Git im flachen Klon (Erfahrung Leitstelle Runde 11):** Fetch-Regeln für einzelne Branches (`remote.origin.fetch`) brechen
-  `git fetch` ab, sobald der Branch auf GitHub gelöscht ist („couldn't find remote ref“) – dann
-  `git config --unset-all remote.origin.fetch 'refs/heads/<b>:'` (zweites Argument ist ein regulärer Ausdruck: ohne führendes `+`;
-  Treffer vorher mit `git config --get-all remote.origin.fetch` prüfen). Meldet der Stop-Hinweis „unpushed commits / no remote branch“, obwohl
-  gepusht ist, fehlt nur das Tracking: `git config branch.<b>.remote origin`, `branch.<b>.merge refs/heads/<b>` und eine
-  Fetch-Regel `+refs/heads/<b>:refs/remotes/origin/<b>` eintragen, dann `git fetch`.
-- **Ende geplanter Läufe (Erfahrung Leitstelle Runde 12):** Läufe melden ihr Ende nicht. Vor jeder Statusauskunft
-  `list_triggers` (Feld `last_run.status`/`finished_at`) prüfen, nicht nur den PR; ein Draft-PR heißt nicht „läuft noch“.
-  Reviews durch ChatGPT brauchen Codex mit Netzzugang; Titel und Head-SHA der Review-Datei vor der Auswertung prüfen.
-- **Auf geplante Läufe warten:** `send_later` stand nicht verlässlich bereit; bewährt hat sich eine Warteschleife im
-  Hintergrund (`run_in_background`), die per `gh api …/issues?labels=<label>&state=open` auf die Labels aus
-  `leitstelle-start.md` Schritt 10 wartet (je Label eine Abfrage; bei ChatGPT/Codex-Reviews auf den Review-PR `review/*`) – Intervall 60 s,
-  Obergrenze rund zwei Stunden (z. B. `for i in $(seq 1 115)`), danach abbrechen und den Lauf prüfen (`list_triggers`). Nach einem Neustart
-  der Arbeitsumgebung sind solche Schleifen verloren und neu anzulegen.
+- **Geplante Läufe** (Anlegen nur nach Einbinden beider Repos in der anlegenden Sitzung – der Lauf erbt nur diese, `add_repo`
+  fehlt dort meist; Warten, Laufende, Codex mit Netzzugang) und **Git im flachen Klon**: `docs/prozess/anhang.md` D, F, G.
 
 ## Rolle in diesem Projekt
 
