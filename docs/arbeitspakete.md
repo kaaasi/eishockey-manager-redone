@@ -8,11 +8,11 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 15 – Abgleich mit dem Original, Export `*.HOK`, Restpunkte (Plan 10.11.2026, wartet auf Go)
+## Aktuelle Runde: Runde 15 – Abgleich mit dem Original, Export `*.HOK`, Restpunkte (Plan 10.11.2026, Go 10.11.2026)
 
 Runde 14 abgeschlossen am 10.11.2026: [archiv/runde-14.md](archiv/runde-14.md). Grundlage: Vormerkungen des Nutzers vom
 10.11.2026 (Effizienz), R14-D2 = B (Export `*.HOK` in Runde 15), offene Issues #620 (Rest), #698, #699, #703, #712, #716,
-Restlücke A134. #639 (Ablage Aufnahme `runde-13`) ist mit Runde 14 ausgewertet und wird geschlossen.
+Restlücke A134. #639 (Ablage Aufnahme `runde-13`) ist mit Runde 14 ausgewertet und geschlossen.
 
 **Base für alle Spuren:** aktueller `main` (Planstand `892ca85`); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 14
 (Archiv): Befund reproduzieren, roter Regressionstest mit Fundstelle, dann grün; Mehrsaisonprobe (4 Wechsel, passiv und aktiv)
@@ -24,8 +24,9 @@ Fragen für den Nutzer. **Entwickler und Erstreviews sind Claude-Sitzungen** (ge
 **Spurmodell ab Runde 15 (Vormerkung Vorschlag 3, umgesetzt mit diesem Plan):** je Spur **ein** Branch `paket/<spur>` mit **einem**
 PR; Teile sind Commits, Fortsetzungen arbeiten nach dem Übergabekommentar auf demselben Branch weiter
 (`vorlagen/spur-start.md`, „Teile und Fortsetzung“). Der Spur-PR wird einmal reviewt (Erstreview Claude Opus 5.5) und in der
-Integrationsfolge gemergt; kein eigener Integrations-PR je Spur. **Folge:** `prozess-kern` → `tagesablauf` → `kader` →
-`hok-export` → `abgleich-original`; danach Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
+Integrationsfolge gemergt; kein eigener Integrations-PR je Spur. **Folge:** Welle 0 `prozess-kern` (R15-D3 = A; die übrigen
+Spuren starten nach dessen Merge) → Welle 1 parallel, Merge in der Folge `tagesablauf` → `kader` → `hok-export` →
+`abgleich-original`; danach Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
 
 ### Zuständigkeit für gemeinsame Dateien
 
@@ -42,7 +43,7 @@ Integrationsfolge gemergt; kein eigener Integrations-PR je Spur. **Folge:** `pro
 - `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`, fremde Testdateien:
   allein `pruefung-karte` (Welle 2); die anderen Spuren nennen ihre Inventurzeilen im PR.
 
-### Spur `prozess-kern` – Prozessdoku verdichten (Vormerkung Vorschlag 5)
+### Spur `prozess-kern` – Prozessdoku verdichten (Vormerkung Vorschlag 5, Welle 0)
 
 - **Inhalt:** `AGENTS.md`, `docs/prozess/zusammenarbeit.md`, `docs/vorlagen/*` (heute rund 1.200 Zeilen Pflichtlektüre je Lauf)
   auf einen Kern von etwa 300 Zeilen; Sonderfälle in `docs/prozess/anhang.md` (nur bei Bedarf gelesen). Regeln inhaltlich
@@ -69,7 +70,8 @@ Integrationsfolge gemergt; kein eigener Integrations-PR je Spur. **Folge:** `pro
      Kaderergänzung bzw. des Abgangs im Original (Jugend, Pool, Zwangsergänzung); wie im Original beheben oder belegt schließen.
   2. **A134:** Startwerte Tendenz und Steuerbyte je Kaderplatz beim Spielstart (Aufrufer von 4907Ah im Spielstart) übernehmen;
      Gegenprobe FILE01/FILE29 (Dump), Mehrsaisonprobe.
-  3. **R204 (#699 Punkt 4):** nach Entscheidung R15-D4.
+  3. **R204 (#699 Punkt 4, R15-D4 = A):** wie im Original – Vertragslose aus Managervereinen werden freie Poolspieler
+     (Besitzer 6) und kommen nur über den Listenwechsel zurück; keine Einstellung.
 - **Modell:** Claude Opus 5.5. **Status:** offen.
 
 ### Spur `hok-export` – Remake-Spielstand als `*.HOK` (R14-D2 = B)
@@ -79,15 +81,19 @@ Integrationsfolge gemergt; kein eigener Integrations-PR je Spur. **Folge:** `pro
      Klartext, Verschlüsselung, Prüfsummen, Spielstand-ID. Nicht abbildbare Felder nach Feldkarte, sonst `[APPROX]`.
   2. **Rundreise:** FILE01–49A importieren → exportieren → Klartext vergleichen; erlaubt sind nur Abweichungen in Feldern, die
      die Feldkarte als „neu berechnet“ führt (Liste im Test). Zweite Rundreise Remake → HOK → Remake ohne Abweichung.
-  3. **Zugang:** `emtool hok export <spielstand> <ziel.hok>` (und Umfang nach R15-D5); `hok dump` liest das Ergebnis.
-- **Abnahme zusätzlich:** zwei exportierte Stände (Spielstart, Saisonmitte) legt die Leitstelle ins Referenz-Repo; Probe im
-  Original durch den Nutzer freiwillig (DOSBox, nicht Abnahmebedingung).
+  3. **Zugang (R15-D5 = D):** nur `emtool hok export <spielstand> <ziel.hok>`, keine Option im Speichern-Dialog; `hok dump`
+     liest das Ergebnis.
+- **Abnahme zusätzlich (R15-D5 = D, Pflicht):** Die Spur legt im PR mindestens zwei exportierte Stände fest (Spielstart aus
+  einem neuen Remake-Spiel, Saisonmitte nach Remake-Spieltagen); die Leitstelle legt sie im Referenz-Repo ab
+  (`original/spielstaende/`, Branch `daten/…`), der Nutzer lädt sie im Original (DOSBox) und hält Hauptmenü, Kader und Finanzen
+  im Bild fest. Merge erst nach dieser Probe; Abweichungen werden Befunde des Spur-PR.
 - **Modell:** Claude Opus 5.5. **Status:** offen.
 
 ### Spur `abgleich-original` – Remake gegen Spielstandpaare des Originals (Vormerkung Vorschlag 1)
 
 - **Ziel:** Befunde entstehen im Test, nicht im Review. Das HOK hat keinen Zufallszustand (`formate/spielstand-original.md`,
-  „Zufallszustand“) – Vergleichsart nach R15-D2.
+  „Zufallszustand“) – Vergleichsart nach R15-D2 = A (deterministische Felder exakt, zufallsabhängige über Invarianten und
+  Bereiche).
 - **Teile:**
   1. **Werkzeug:** `emtool abgleich <a.hok> <b.hok>`: Stand a importieren, ohne Eingriff bis Datum/Zähler von b spielen
      (`Continue()`), je Feld mit dem Import von b vergleichen; Ausgabe als Tabelle (Feld, Original, Remake, Klasse). Feldklassen
@@ -111,7 +117,11 @@ Integrationsfolge gemergt; kein eigener Integrations-PR je Spur. **Folge:** `pro
 
 ChatGPT (Codex mit Netzzugang) nach `vorlagen/review-anfrage.md`, risikoorientiert (Nutzer 10.11.2026). **Modell:** GPT-6.1 Terra.
 
-### Entscheidungen zum Plan (offen, Nutzer)
+### Entscheidungen zum Plan (Nutzer, Go 10.11.2026, PR #719)
+
+**Ergebnis:** R15-D1 = A, R15-D2 = A, R15-D3 = A, R15-D4 = A, R15-D5 = D; Modelle wie in den Spurabschnitten. Vorgemerkt nach
+v1.0: bitgenauer Modus (eine Borland-`rand`-Quelle mit belegter Aufrufreihenfolge, Voraussetzung für einen exakten Abgleich;
+Rückfrage Nutzer zu R15-D2, 10.11.2026).
 
 **R15-D1 – Zuschnitt.** Problem: fünf Vormerkungen/Pflichten (Abgleich, Export, Doku, Restlücken, Issues) konkurrieren um
 Läufe; der Abgleich kann neue Arbeit erzeugen.
