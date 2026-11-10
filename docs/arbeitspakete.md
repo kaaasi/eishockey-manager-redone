@@ -78,7 +78,8 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
      Gegenprobe FILE01/FILE29 (Dump), Mehrsaisonprobe.
   3. **R204 (#699 Punkt 4, R15-D4 = A):** wie im Original – Vertragslose aus Managervereinen werden freie Poolspieler
      (Besitzer 6) und kommen nur über den Listenwechsel zurück; keine Einstellung.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** PR #726 (Draft); Teil 1 (Jugend am Saisonende 0x26F20, #698) und Teil 2
+  (Tendenz der Startkader 0x4907A, A134) fertig, Teil 3 (R204) offen.
 
 ### Spur `hok-export` – Remake-Spielstand als `*.HOK` (R14-D2 = B)
 
