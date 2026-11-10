@@ -56,6 +56,12 @@ Die in den Vorberichten dokumentierten Befunde bestehen fort. R14G3-01 ist mit I
 
 **Gegenprobe U54:** Die Konstante von 22 auf 23 ändern. Alle fünf Tests der Klasse bleiben **grün**, auch der geänderte Grenztest. Ersetzt man in der Prüfkopie seine Erwartung durch den festen Wert 22, besteht er am unveränderten Code und wird bei U54 **rot** (erwartet 22, tatsächlich 23). Der vorhandene Produktwert ist 22; der Befund betrifft die Absicherung der festen Grenze, nicht einen nachgewiesenen Produktfehler.
 
+### R14G5-01 (P3): Ablösetest erkennt den verlorenen Spielzähler nicht
+
+`SeasonEnd_Compensation_KeepsGamesForClub` ([KaderTransferTeil5Tests.cs:80](https://github.com/kaaasi/eishockey-manager-redone/blob/b13046422b285404ad6ddbe7b5f1b18e22069eea/tests/EishockeyManager.Core.Tests/KaderTransferTeil5Tests.cs#L80)) soll laut Beschreibung die beim Verein erhaltenen Spiele in der Ablöse absichern.
+
+**Gegenprobe Q43:** Den Übertrag der Vereinsspiele beim Saisonwechsel auslassen. Der Ablösetest bleibt **grün**, obwohl nach dem Wechsel 0 statt 47 Vereinsspiele gespeichert sind; der benachbarte Gehaltstest und beide Datenzeilen der Mehrsaisonprobe werden rot. Eine zusätzlich eingefügte unabhängige Assertion `Assert.Equal(games, p.GamesForClub)` besteht am unveränderten Code und wird bei Q43 **rot** (erwartet 47, tatsächlich 0). Der gewählte Ablösevergleich allein deckt diesen Fehler im vorliegenden Fall nicht auf; damit ist kein Fehler des unveränderten Produktcodes nachgewiesen.
+
 ## 3. Prüfungen und offene Prüfbereiche
 
 Testsaat-Rücksetzungen sind in der Regelspalte ausdrücklich als solche bezeichnet; sie sind keine Regelmutationen und zählen nicht als rote Gegenprobe in der Methodenliste. Die Prüfkopie liegt unter `/workspace/r14-review-teil4/copy`; Ausgangsstand ist der unveränderte lokale Head. Mutationen laufen einzeln mit Wiederherstellung, die vollständigen Ausgaben und Regeln werden unter `/workspace/r14-review-teil4/logs` gespeichert. Beim ersten abgebrochenen Versuch wurde eine überlagerte Mutation erkannt; diese Ergebnisse wurden verworfen und anschließend nach Wiederherstellung der Quelldatei erneut ausgeführt. .NET SDK 10.0.402, lokale Testhost-Sockets mit Umgebungsfreigabe, `NuGetAudit=false`.
@@ -1131,6 +1137,11 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q41 | Vorbereitete Satzfolge beim Übernehmen umkehren | `EishockeyManager.Core.Tests.SaisonSatzfolgeSaisonendeTests.MultiSeason_NextSlotsFormedOn29April_StartNextSeasonAdoptsThemUnchanged(active: True)` | rot |
 | Q41 | Vorbereitete Satzfolge beim Übernehmen umkehren | `EishockeyManager.Core.Tests.SaisonSatzfolgeSaisonendeTests.MultiSeason_NextSlotsFormedOn29April_StartNextSeasonAdoptsThemUnchanged(active: False)` | rot |
 | Q42 | Indexfolge des Fairplay-Rückfalls umkehren | `EishockeyManager.Core.Tests.SaisonSatzfolgeSaisonendeTests.FairPlayWinner_WithoutFormedSlots_FallsBackToIndexOrder` | rot |
+| Q43 | Übertrag der Vereinsspiele am Saisonende löschen | `EishockeyManager.Core.Tests.KaderTransferTeil5Tests.SeasonEnd_Compensation_KeepsGamesForClub` | grün |
+| Q43 | Übertrag der Vereinsspiele am Saisonende löschen | `EishockeyManager.Core.Tests.KaderTransferTeil5Tests.SeasonEnd_OfferSalary_KeepsGamesForClub` | rot |
+| Q43 | Übertrag der Vereinsspiele am Saisonende löschen | `EishockeyManager.Core.Tests.KaderTransferTeil5Tests.GamesForClub_AccumulateOverFourSeasonChanges(active: True)` | rot |
+| Q43 | Übertrag der Vereinsspiele am Saisonende löschen | `EishockeyManager.Core.Tests.KaderTransferTeil5Tests.GamesForClub_AccumulateOverFourSeasonChanges(active: False)` | rot |
+| Q44 | Ausgewiesene Ablöse um 1 DM erhöhen | `EishockeyManager.Core.Tests.KaderTransferTeil5Tests.SeasonEnd_Compensation_KeepsGamesForClub` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1627,9 +1638,9 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.SeasonChange_ResetsSeasonCounters_KeepsClubCounters` | neu | rot: L05 |
 | `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.Offer_ListPriceIsSlotPrice_LoanFeeThird` | neu | rot: L06 |
 | `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates` | neu | rot: L01, L10 |
-| `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.SeasonEnd_OfferSalary_KeepsGamesForClub` | geändert | offen |
-| `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.SeasonEnd_Compensation_KeepsGamesForClub` | geändert | offen |
-| `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.GamesForClub_AccumulateOverFourSeasonChanges` | geändert | offen |
+| `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.SeasonEnd_OfferSalary_KeepsGamesForClub` | geändert | rot: Q43 |
+| `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.SeasonEnd_Compensation_KeepsGamesForClub` | geändert | rot: Q44 |
+| `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.GamesForClub_AccumulateOverFourSeasonChanges` | geändert | rot: Q43 |
 | `KaufEinsortierenTests.cs · KaufEinsortierenTests.Buy_Goalkeeper_FromTransferList_SortedIn` | geändert | rot: Q20 |
 | `KaufEinsortierenTests.cs · KaufEinsortierenTests.LoanReturn_ToManagerClub_SortedIn` | geändert | rot: Q20, Q21 |
 | `LifecycleRegressionTests.cs · LifecycleRegressionTests.R204_MarketLoanEndsFree_NotBackWithItsRemainingContract` | neu | rot: Q39 |
