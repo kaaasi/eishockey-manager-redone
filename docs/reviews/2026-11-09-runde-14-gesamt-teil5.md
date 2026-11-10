@@ -1170,6 +1170,21 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q64 | Behalten-Knopf im Angebotsfenster verschieben | `EishockeyManager.UI.Tests.TransferVertraegeKomplettTeil3ScreenTests.ClickOnOfferedPlayer_OpensOfferWindow_SellMovesPlayer` | rot |
 | Q65 | Gebot beim Behalten nicht ablehnen | `EishockeyManager.UI.Tests.TransferVertraegeKomplettTeil5ScreenTests.MarketBid_KeepDeclines` | rot |
 | Q66 | Fremden Kaderplatz bei eigenem Angebot ignorieren | `EishockeyManager.UI.Tests.WaveBReviewScreenTests.PR3502_SecondBidBecameInvalid_ShowsMessageAndDoesNotReopenSameBid` | rot |
+| Q67 | Ausgeschiedene Manager weiterhin als aktiv zählen | `EishockeyManager.Core.Tests.SeasonFlowTests.Dismissal_OtherManagersContinue` | rot |
+| Q67 | Ausgeschiedene Manager weiterhin als aktiv zählen | `EishockeyManager.Core.Tests.HotSeatTests.DismissalDuringDay_ExcludedFromNextDay` | rot |
+| Q68 | Beim Starttausch Satzplätze nicht übernehmen | `EishockeyManager.Core.Tests.SaisonwechselOberligaTests.StartSwap_TwoChosenClubsWithoutLeague_BothDisplacedOutside_MultiSeason(active: True)` | grün |
+| Q68 | Beim Starttausch Satzplätze nicht übernehmen | `EishockeyManager.Core.Tests.SaisonwechselOberligaTests.StartSwap_TwoChosenClubsWithoutLeague_BothDisplacedOutside_MultiSeason(active: False)` | grün |
+| Q68 | Beim Starttausch Satzplätze nicht übernehmen | `EishockeyManager.Core.Tests.SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague(startLeague: Bundesliga)` | grün |
+| Q68 | Beim Starttausch Satzplätze nicht übernehmen | `EishockeyManager.Core.Tests.SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague(startLeague: ZweiteLiga)` | grün |
+| Q68 | Beim Starttausch Satzplätze nicht übernehmen | `EishockeyManager.Core.Tests.SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague(startLeague: Oberliga)` | grün |
+| Q69 | Verdrängte Vereine beim Zuordnen der Außenplätze ignorieren | `EishockeyManager.Core.Tests.SaisonwechselOberligaTests.StartSwap_TwoChosenClubsWithoutLeague_BothDisplacedOutside_MultiSeason(active: True)` | rot |
+| Q69 | Verdrängte Vereine beim Zuordnen der Außenplätze ignorieren | `EishockeyManager.Core.Tests.SaisonwechselOberligaTests.StartSwap_TwoChosenClubsWithoutLeague_BothDisplacedOutside_MultiSeason(active: False)` | rot |
+| Q69 | Verdrängte Vereine beim Zuordnen der Außenplätze ignorieren | `EishockeyManager.Core.Tests.SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague(startLeague: Bundesliga)` | rot |
+| Q69 | Verdrängte Vereine beim Zuordnen der Außenplätze ignorieren | `EishockeyManager.Core.Tests.SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague(startLeague: ZweiteLiga)` | rot |
+| Q69 | Verdrängte Vereine beim Zuordnen der Außenplätze ignorieren | `EishockeyManager.Core.Tests.SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague(startLeague: Oberliga)` | rot |
+| Q70 | Beim Öffnen der Nationalaufstellung Geld verändern | `EishockeyManager.UI.Tests.NationalLineupScreenTests.CoachMenu_OpensNationalLineupAndTactics_WithoutChangingState` | rot |
+| Q71 | Meldung für volle Reihe verändern | `EishockeyManager.UI.Tests.NationalLineupScreenTests.A010_FullLine_NoRoom_ClickOnPlacedTakesOut` | rot |
+| Q72 | Rechtsklick in Nationalaufstellung als Linksklick behandeln | `EishockeyManager.UI.Tests.NationalLineupScreenTests.Lineup_Clicks_FollowOriginalRules_AndTacticsBelongToNationalTeam` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1617,7 +1632,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `FinanceCalibrationTests.cs · FinanceCalibrationTests.PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation` | neu | rot: Q28 |
 | `GameModeTests.cs · GameModeTests.Mode4_ReferenceValues_Unchanged` | geändert | rot: V01, V02, V03, V04, V05, V06, V07, V08, V09 |
 | `HeimspielStatistikTests.cs · HeimspielStatistikTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | offen |
-| `HotSeatTests.cs · HotSeatTests.DismissalDuringDay_ExcludedFromNextDay` | geändert | offen |
+| `HotSeatTests.cs · HotSeatTests.DismissalDuringDay_ExcludedFromNextDay` | geändert | rot: Q67 |
 | `IntegrationRunde9Tests.cs · IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported` | geändert | offen |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | neu | rot: X01 |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOverSeasonEnd_ReturnsWithSeasonCountersReset_ClubGamesKept` | neu | rot: X02 |
@@ -1795,8 +1810,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.FairPlayWinner_WithoutFormedSlots_FallsBackToIndexOrder` | neu | rot: Q42 |
 | `SaisonwechselEntlassungTests.cs · SaisonwechselEntlassungTests.OneManagerDismissed_OtherFinishesSeason_RecordWithoutDismissed` | neu | rot: Q29 |
 | `SaisonwechselEntlassungTests.cs · SaisonwechselEntlassungTests.AllManagersDismissed_GameOverAtNextDay` | neu | rot: Q30 |
-| `SaisonwechselOberligaTests.cs · SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague` | neu | offen |
-| `SaisonwechselOberligaTests.cs · SaisonwechselOberligaTests.StartSwap_TwoChosenClubsWithoutLeague_BothDisplacedOutside_MultiSeason` | neu | offen |
+| `SaisonwechselOberligaTests.cs · SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague` | neu | rot: Q69 |
+| `SaisonwechselOberligaTests.cs · SaisonwechselOberligaTests.StartSwap_TwoChosenClubsWithoutLeague_BothDisplacedOutside_MultiSeason` | neu | rot: Q69 |
 | `SaisonwechselProbenTests.cs · SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop` | geändert | offen |
 | `SaveGameTests.cs · SaveGameTests.SchemaFingerprint_MatchesSchemaVersion` | geändert | rot: Q11 |
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.Full_ManagerInTopFive_GetsStatusBit_OtherNot` | geändert | rot: Q01 |
@@ -1804,7 +1819,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.StatusBit_DoesNotChangeStoredEventsOrPremium` | geändert | rot: Q02 |
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.SaveLoad_StatusBitIsDerivedFromSavedData` | geändert | rot: Q01 |
 | `SeasonFlowTests.cs · SeasonFlowTests.Debts_DoNotDismiss` | neu | rot: Q27 |
-| `SeasonFlowTests.cs · SeasonFlowTests.Dismissal_OtherManagersContinue` | geändert | offen |
+| `SeasonFlowTests.cs · SeasonFlowTests.Dismissal_OtherManagersContinue` | geändert | rot: Q67 |
 | `SpielberechnungAnschlussTests.cs · SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason` | geändert | rot: V10 |
 | `SpielberechnungKomplett3Tests.cs · SpielberechnungKomplett3Tests.Heal_Weekly_PermanentStays` | geändert | rot: Q06 |
 | `SpielstaerkeManager2Tests.cs · SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible` | geändert | rot: Q61 |
@@ -1898,9 +1913,9 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `LineupAutoDisabledMessageTests.cs · LineupAutoDisabledMessageTests.ManualChange_DisablesAutoLineup_AndShowsMessageOnce` | geändert | rot: Q47 |
 | `LineupShortMessagesE2Tests.cs · LineupShortMessagesE2Tests.List_Suspended_ShowsSpielerIstGesperrt` | geändert | rot: Q48 |
 | `LineupShortMessagesE2Tests.cs · LineupShortMessagesE2Tests.List_Injured_ShowsSpielerIstVerletzt` | geändert | rot: Q49 |
-| `NationalLineupScreenTests.cs · NationalLineupScreenTests.CoachMenu_OpensNationalLineupAndTactics_WithoutChangingState` | geändert | offen |
-| `NationalLineupScreenTests.cs · NationalLineupScreenTests.A010_FullLine_NoRoom_ClickOnPlacedTakesOut` | geändert | offen |
-| `NationalLineupScreenTests.cs · NationalLineupScreenTests.Lineup_Clicks_FollowOriginalRules_AndTacticsBelongToNationalTeam` | geändert | offen |
+| `NationalLineupScreenTests.cs · NationalLineupScreenTests.CoachMenu_OpensNationalLineupAndTactics_WithoutChangingState` | geändert | rot: Q70 |
+| `NationalLineupScreenTests.cs · NationalLineupScreenTests.A010_FullLine_NoRoom_ClickOnPlacedTakesOut` | geändert | rot: Q71 |
+| `NationalLineupScreenTests.cs · NationalLineupScreenTests.Lineup_Clicks_FollowOriginalRules_AndTacticsBelongToNationalTeam` | geändert | rot: Q72 |
 | `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | neu | rot: U31 |
 | `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | neu | rot: U32 |
 | `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_ReturnInSameTurn_KeepsRememberedGroup` | neu | rot: U33 |
