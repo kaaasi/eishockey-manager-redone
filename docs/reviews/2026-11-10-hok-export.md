@@ -111,14 +111,9 @@ Mein eigener Python-Decoder liest EXPORT01/02 identisch. Der Kopf entspricht der
 **Erwartet offen – bestätigt:** Die Probe ist inzwischen gelaufen und hat R727P-01…03 ergeben. Die Kopf-Vermutung `965B+0x13` ist
 widerlegt (B3). `A70D`, `A8A0`, `07A9+4` und `+0xE6` bleiben unbelegt, weil die Probe dazu nichts zeigt.
 
-**Akzeptierte `[APPROX]`:**
-- Stapelrest im Kopf als Nullbytes
-- ungedeutete Felder mit Spielstart-Vorgabe (`0120`, `017C`, `D0E4`, `022D`, `0246`, `021D+13`, Vereinssatz `+0x1E–0x25`, Kaderplatz `+0x1B`)
-- Rollenwert je Art
-- Drittel-DM-Rundung
+**Akzeptierte `[APPROX]`:** Stapelrest im Kopf als Nullbytes; ungedeutete Felder mit Spielstart-Vorgabe (`0120`, `017C`,
+`D0E4`, `022D`, `0246`, `021D+13`, Vereinssatz `+0x1E–0x25`, Kaderplatz `+0x1B`); Rollenwert je Art; Drittel-DM-Rundung. Nicht
+akzeptiert: Kopf `+0x13` (B3) und die ID aus der Saat (B4).
 
-Nicht akzeptiert: Kopf `+0x13` (B3) und die ID aus der Saat (B4).
-
-**Annahmen:**
-- Die Stärkeanzeige ist (K+T+F)/6 nach `docs/spielberechnung.md` §15; nicht selbst disassembliert.
-- Die Ablehnung gleicher IDs stammt aus der Doku bzw. der Bestätigung des Nutzers; nicht selbst in DOSBox geprüft.
+**Annahmen:** Stärkeanzeige (K+T+F)/6 nach `docs/spielberechnung.md` §15 (nicht selbst disassembliert); Ablehnung gleicher IDs nach
+Doku bzw. Bestätigung des Nutzers (nicht selbst in DOSBox geprüft).
