@@ -14,7 +14,9 @@
 1. Lies `AGENTS.md`, `docs/prozess/zusammenarbeit.md` (vollständig), in `docs/arbeitspakete.md` die aktuelle Runde,
    die offenen PRs (Titel, Bearbeiter, letzter Übergabekommentar) und die Reviews der aktuellen Runde in `docs/reviews/`.
    Kein Vorwissen aus früheren Chats nötig oder vorausgesetzt.
-2. **Integration:** Branch `integration/<runde>` von `main`, PRs zusammenführen, Konflikte lösen, `tools/pruefen.sh`
+2. **Integration:** Spur-PRs (ein PR je Spur, ab Runde 15) nach Erstreview und Merge-Prüfung in der Integrationsfolge des Plans
+   mergen; vor jedem Merge ist der PR auf aktuellem `main` (Rebase durch den Spurlauf bzw. Fixlauf). Ein Branch
+   `integration/<runde>` nur, wenn Konflikte zwischen Spuren zu lösen sind: dann von `main`, PRs zusammenführen, Konflikte lösen, `tools/pruefen.sh`
    (alle drei Läufe), Mehrsaisonprobe, Bildschirmfoto-Abläufe. Integrationsfehler mit rotem Regressionstest beheben.
    Integrations-PR nach Vorlage; Abschnitt „Integration …“ in `docs/arbeitspakete.md`.
 3. **Review anfordern:** dem Nutzer nur den Kurzaufruf aus `docs/vorlagen/review-anfrage.md` ausgefüllt geben.

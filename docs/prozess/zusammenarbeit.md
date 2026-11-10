@@ -65,8 +65,9 @@ schreibt zuerst einen Übernahmekommentar („übernommen ab SHA …, Tests …�
 
 ## 4. Parallele Arbeit ohne Überschreiben
 
-- **Ein Branch – ein Bearbeiter.** Zwei Agenten am selben Paket arbeiten auf getrennten Branches
-  (`paket/<spur>-<teil>`) mit getrennten PRs.
+- **Ein Branch – ein Bearbeiter.** Zwei Agenten, die **gleichzeitig** am selben Paket arbeiten, nutzen getrennte Branches
+  (`paket/<spur>-<teil>`) mit getrennten PRs. Fortsetzungen einer Spur arbeiten **nacheinander** auf demselben Branch
+  `paket/<spur>` mit einem PR (ab Runde 15, `docs/vorlagen/spur-start.md` „Teile und Fortsetzung“).
 - Kein `git push --force` auf fremde Branches; auf eigenen nur `--force-with-lease` nach Rebase.
 - Dateigrenzen der Spuren einhalten; Berührungen gemeinsamer Dateien im PR begründen.
 - `docs/arbeitspakete.md` nur im eigenen Statusabschnitt ändern; Planabschnitte ändert die Leitstelle.

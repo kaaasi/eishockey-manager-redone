@@ -1,12 +1,12 @@
 # Archiv: Runde 14 – Restpunkte, DOSBox-Auswertung `runde-13`, Import `*.HOK` (05.–10.11.2026)
 
-Aus `docs/arbeitspakete.md` ausgelagert am 10.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“ und „Abschluss“. Die
+Aus `docs/arbeitspakete.md` ausgelagert am 10.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“ und „Abschluss“, ohne „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die
 Statuszeilen der Spuren geben den Stand vor der jeweiligen Integration wieder. Reviews: `docs/reviews/` (Dateien vom 05.–10.11.2026).
 Nur bei Bedarf lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Spuren `re-dosbox`, `saison`, `nationalteam`, `kader-start`, `ui-rest`, `hok-import` und `pruefung-karte` integriert
 (#652, #661, #666, #669, #670, #672, #701), dazu #683 (Play-off-Halbfinale) und #688 (Tagestakt im Hauptweg, Sommerpause, keine
-Entlassung wegen Schulden). Spielstand-Schema 41 → 47. Gesamtreview in sechs Teilen (#704–#707, #710, #715): Teil 6 **Ja**
+Entlassung wegen Schulden). Spielstand-Schema 39 → 47. Gesamtreview in sechs Teilen (#704–#707, #710, #715): Teil 6 **Ja**
 (risikoorientiert, Entscheidung C 10.11.2026); keine P0–P2, Testlücken in #716.
 
 **Abschluss (10.11.2026):** offen für Runde 15: #620 (Rest), #698, #699, #703, #712, #716; Vormerkungen in `arbeitspakete.md`.
