@@ -50,6 +50,12 @@ Die in den Vorberichten dokumentierten Befunde bestehen fort. R14G3-01 ist mit I
 
 **Gegenprobe Y01:** `DialogFill` in der Prüfkopie von 4 auf 5 ändern. Alle sechs Tests der Klasse bleiben **grün**, einschließlich des Eckentests. Eine zusätzliche feste Prüfung `Assert.Equal((byte)4, TeamUi.DialogFill)` besteht am unveränderten Code und wird mit Y01 **rot**. Das Referenzbild `file46_3` wurde selbst angesehen und zeigt die Eckengestaltung; eine separate Zuordnung des Bildfarbwerts zum Palettenindex wurde dabei nicht durchgeführt. Der Produktwert ist unverändert 4; der Befund betrifft die unabhängige Prüfung des festgehaltenen Sollwerts.
 
+### R14G4-08 (P3): Aufstellungstest sichert die feste 22er-Grenze nicht ab
+
+`Lineup_RefusesTwentyThirdDressed` ([TacticsClubScreenTests.cs:51](https://github.com/kaaasi/eishockey-manager-redone/blob/b13046422b285404ad6ddbe7b5f1b18e22069eea/tests/EishockeyManager.UI.Tests/TacticsClubScreenTests.cs#L51)) beschreibt die Ablehnung eines 23. Spielers, vergleicht die Zahl der Eingesetzten aber mit der Produktkonstante `Club.MaxDressed`.
+
+**Gegenprobe U54:** Die Konstante von 22 auf 23 ändern. Alle fünf Tests der Klasse bleiben **grün**, auch der geänderte Grenztest. Ersetzt man in der Prüfkopie seine Erwartung durch den festen Wert 22, besteht er am unveränderten Code und wird bei U54 **rot** (erwartet 22, tatsächlich 23). Der vorhandene Produktwert ist 22; der Befund betrifft die Absicherung der festen Grenze, nicht einen nachgewiesenen Produktfehler.
+
 ## 3. Prüfungen und offene Prüfbereiche
 
 Testsaat-Rücksetzungen sind in der Regelspalte ausdrücklich als solche bezeichnet; sie sind keine Regelmutationen und zählen nicht als rote Gegenprobe in der Methodenliste. Die Prüfkopie liegt unter `/workspace/r14-review-teil4/copy`; Ausgangsstand ist der unveränderte lokale Head. Mutationen laufen einzeln mit Wiederherstellung, die vollständigen Ausgaben und Regeln werden unter `/workspace/r14-review-teil4/logs` gespeichert. Beim ersten abgebrochenen Versuch wurde eine überlagerte Mutation erkannt; diese Ergebnisse wurden verworfen und anschließend nach Wiederherstellung der Quelldatei erneut ausgeführt. .NET SDK 10.0.402, lokale Testhost-Sockets mit Umgebungsfreigabe, `NuGetAudit=false`.
@@ -1317,6 +1323,26 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | U41 | Stärkebildschirm ändert beim Zeichnen Geld | `EishockeyManager.UI.Tests.BildschirmeFreipruefungTests.AllScreens_OpeningAndDrawingDoNotChangeGameState(kind: Start)` | rot |
 | U41 | Stärkebildschirm ändert beim Zeichnen Geld | `EishockeyManager.UI.Tests.BildschirmeFreipruefungTests.AllScreens_OpeningAndDrawingDoNotChangeGameState(kind: MidSeason)` | rot |
 | U42 | Nationalaufstellung ändert beim Zeichnen Geld | `EishockeyManager.UI.Tests.BildschirmeFreipruefungTests.NationalMenu_Open_AllCoachTiles_DoNotChangeGameState` | rot |
+| U51 | Taktik auch außerhalb SEMI änderbar | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_OnlySemiEditable` | rot |
+| U51 | Taktik auch außerhalb SEMI änderbar | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_GoalieArrows_LowerHalfIsNext_NoWrap` | grün |
+| U51 | Taktik auch außerhalb SEMI änderbar | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Lineup_DressedCount_InColour16` | grün |
+| U51 | Taktik auch außerhalb SEMI änderbar | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_ModeArrows_LowerHalfIsNext_NoWrap` | grün |
+| U51 | Taktik auch außerhalb SEMI änderbar | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Lineup_RefusesTwentyThirdDressed` | grün |
+| U52 | Richtungen des Reihenwechselpfeils vertauschen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_OnlySemiEditable` | grün |
+| U52 | Richtungen des Reihenwechselpfeils vertauschen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_GoalieArrows_LowerHalfIsNext_NoWrap` | grün |
+| U52 | Richtungen des Reihenwechselpfeils vertauschen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Lineup_DressedCount_InColour16` | grün |
+| U52 | Richtungen des Reihenwechselpfeils vertauschen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_ModeArrows_LowerHalfIsNext_NoWrap` | rot |
+| U52 | Richtungen des Reihenwechselpfeils vertauschen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Lineup_RefusesTwentyThirdDressed` | grün |
+| U53 | Richtungen des Torwartpfeils vertauschen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_OnlySemiEditable` | grün |
+| U53 | Richtungen des Torwartpfeils vertauschen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_GoalieArrows_LowerHalfIsNext_NoWrap` | rot |
+| U53 | Richtungen des Torwartpfeils vertauschen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Lineup_DressedCount_InColour16` | grün |
+| U53 | Richtungen des Torwartpfeils vertauschen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_ModeArrows_LowerHalfIsNext_NoWrap` | grün |
+| U53 | Richtungen des Torwartpfeils vertauschen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Lineup_RefusesTwentyThirdDressed` | grün |
+| U54 | Grenze der eingesetzten Spieler auf 23 setzen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_OnlySemiEditable` | grün |
+| U54 | Grenze der eingesetzten Spieler auf 23 setzen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_GoalieArrows_LowerHalfIsNext_NoWrap` | grün |
+| U54 | Grenze der eingesetzten Spieler auf 23 setzen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Lineup_DressedCount_InColour16` | grün |
+| U54 | Grenze der eingesetzten Spieler auf 23 setzen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Tactics_ModeArrows_LowerHalfIsNext_NoWrap` | grün |
+| U54 | Grenze der eingesetzten Spieler auf 23 setzen | `EishockeyManager.UI.Tests.TacticsClubScreenTests.Lineup_RefusesTwentyThirdDressed` | grün |
 | V01 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V02 | alte Halbfinalpaarung | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V03 | WM-Tageslauf auslassen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
@@ -1776,9 +1802,9 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `StadiumPartsTests.cs · StadiumPartsTests.Hotspot_EdgesAreInclusive_LikeOriginal` | neu | rot: S12 |
 | `StadiumPartsTests.cs · StadiumPartsTests.Hotspot_FirstHitWins_InOrderOfTheOriginal` | neu | rot: S13 |
 | `TacticsClubScreenTests.cs · TacticsClubScreenTests.Lineup_RefusesTwentyThirdDressed` | geändert | offen |
-| `TacticsClubScreenTests.cs · TacticsClubScreenTests.Tactics_OnlySemiEditable` | geändert | offen |
-| `TacticsClubScreenTests.cs · TacticsClubScreenTests.Tactics_ModeArrows_LowerHalfIsNext_NoWrap` | neu | offen |
-| `TacticsClubScreenTests.cs · TacticsClubScreenTests.Tactics_GoalieArrows_LowerHalfIsNext_NoWrap` | neu | offen |
+| `TacticsClubScreenTests.cs · TacticsClubScreenTests.Tactics_OnlySemiEditable` | geändert | rot: U51 |
+| `TacticsClubScreenTests.cs · TacticsClubScreenTests.Tactics_ModeArrows_LowerHalfIsNext_NoWrap` | neu | rot: U52 |
+| `TacticsClubScreenTests.cs · TacticsClubScreenTests.Tactics_GoalieArrows_LowerHalfIsNext_NoWrap` | neu | rot: U53 |
 | `TeamScreenTests.cs · TeamScreenTests.Lineup_ClickPlayerThenSlot_ChangesGoalkeeper` | geändert | offen |
 | `TeamScreenTests.cs · TeamScreenTests.Tactics_ModesBlocksAndSwitchToLineup` | geändert | offen |
 | `TransferBuyWindowDosboxTests.cs · TransferBuyWindowDosboxTests.BuyWindow_IsLeftOverSquadList_WithoutButtons_AndSolidShadow` | neu | offen |
