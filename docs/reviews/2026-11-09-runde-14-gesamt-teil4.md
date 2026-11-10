@@ -44,6 +44,12 @@ Die in den Vorberichten dokumentierten Befunde bestehen fort. R14G3-01 ist mit I
 
 **Gegenprobe N25:** Den Aufruf `UpdateNationalTeamValues()` ausschließlich in `WorldCupLoopStepA` auslassen. Alle 14 ausgeführten Datenzeilen der Testklasse `NationalteamRunde14Tests` bleiben **grün**. Eine zusätzliche Kontrolle wartet auf einen späteren WM-Termin, setzt nach dem Menü die Form der aufgestellten Spieler auf 100 und vergleicht die Länderform nach dem Weiterschalten mit der Aufstellung. Sie besteht für Saat 3 und 11 am unveränderten Code; unter N25 wird sie für beide **rot**: erwartet `(100, 100)`, tatsächlich `(1, 1)`. Der Produktcode enthält den Aufruf; der Befund betrifft die Absicherung späterer Termine.
 
+### R14G4-07 (P3): Dialogeckentest prüft den geforderten Farbindex nicht unabhängig
+
+`DialogFrame_ContractWindow_OuterShadowCornersInFillColor` ([KaderStartRunde14FixUiTests.cs:23](https://github.com/kaaasi/eishockey-manager-redone/blob/b13046422b285404ad6ddbe7b5f1b18e22069eea/tests/EishockeyManager.UI.Tests/KaderStartRunde14FixUiTests.cs#L23)) verlangt laut Kommentar Füllfarbe Index 4, verwendet aber `TeamUi.DialogFill` sowohl beim Zeichnen als auch als erwarteten Farbwert der Ecken.
+
+**Gegenprobe Y01:** `DialogFill` in der Prüfkopie von 4 auf 5 ändern. Alle sechs Tests der Klasse bleiben **grün**, einschließlich des Eckentests. Eine zusätzliche feste Prüfung `Assert.Equal((byte)4, TeamUi.DialogFill)` besteht am unveränderten Code und wird mit Y01 **rot**. Das Referenzbild `file46_3` wurde selbst angesehen und zeigt die Eckengestaltung; eine separate Zuordnung des Bildfarbwerts zum Palettenindex wurde dabei nicht durchgeführt. Der Produktwert ist unverändert 4; der Befund betrifft die unabhängige Prüfung des festgehaltenen Sollwerts.
+
 ## 3. Prüfungen und offene Prüfbereiche
 
 Testsaat-Rücksetzungen sind in der Regelspalte ausdrücklich als solche bezeichnet; sie sind keine Regelmutationen und zählen nicht als rote Gegenprobe in der Methodenliste. Die Prüfkopie liegt unter `/workspace/r14-review-teil4/copy`; Ausgangsstand ist der unveränderte lokale Head. Mutationen laufen einzeln mit Wiederherstellung, die vollständigen Ausgaben und Regeln werden unter `/workspace/r14-review-teil4/logs` gespeichert. Beim ersten abgebrochenen Versuch wurde eine überlagerte Mutation erkannt; diese Ergebnisse wurden verworfen und anschließend nach Wiederherstellung der Quelldatei erneut ausgeführt. .NET SDK 10.0.402, lokale Testhost-Sockets mit Umgebungsfreigabe, `NuGetAudit=false`.
@@ -63,6 +69,10 @@ Stadionteile: In `em.exe` Datei `0x3D92D` steht `mov al, 0xC0`, gefolgt von `pus
 Zu L1 selbst in `em.exe` gelesen: `0x29CFA–0x29D7F` prüft `[bp−0x64] = 0`, DGROUP `0x5A14 = 0x7CA` (1994) und Managerzahl `0x386 = 1`, schreibt 1 in das managerindizierte Feld und wiederholt einen Zufallsaufruf bis zur akzeptierten Rückgabe des Stubs `0x110:0x75`. Die Funktion des Stubs und die nachfolgende Tauschfunktion sind durch diese Stelle allein noch nicht zugeordnet; der vollständige Filterbeleg bleibt offen.
 
 Für die Stadion-Hotspots wurde `em.exe` Datei `0x3DB83–0x3DC48` selbst gelesen: Die Grenzprüfung vergleicht die x-Position gegen das Tabellenbyte und dessen Summe mit der Breite; Gleichheit bleibt in beiden Fällen innerhalb. Für y geschieht Entsprechendes über die Bytes bei `0x4F3E` und `0x4F5C`; bei Treffer wird ein Byte aus `0x4F97` gelesen. Die Zuordnung der Tabelleneinträge zu sämtlichen konkreten Rechtecken und die restliche Schleifensteuerung sind damit noch nicht vollständig geprüft.
+
+Für A056 wurde `em.exe` `0x28AC7–0x28ADD` selbst gelesen: `di` wird oben auf 3 begrenzt, bei lokalem Byte `[bp−0x57] = 2` auf 0 gesetzt und unten auf 0 begrenzt. Der Ursprung des lokalen Modusbytes wurde in dieser Gegenprobe noch nicht separat verfolgt; die vollständige Moduszuordnung bleibt offen.
+
+Für die WM-Seitenerinnerung wurde `em.exe` `0x5649D–0x564BA` selbst gelesen: fünf Bytes werden von DGROUP `0x5128 + i` nach `0x5123 + i` kopiert. Das fünfte Startbyte bei Datei `0x16DD0 + 0x5128` hat den Wert 8. Die vollständige Zuordnung aller fünf Kacheln und die übrigen Menüpfade bleiben offen.
 
 ### Modus-4-Referenzwert: einzelne geänderte Bestandteile
 
@@ -640,6 +650,51 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | K39 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.Core.Tests.KaderStartRunde14Teil6Tests.LeftClick_WithoutLine_NoLineSelected_NothingChanges` | grün |
 | K39 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.Core.Tests.KaderStartRunde14Teil6Tests.LeftClick_FirstFreeSlotOfLine_FullLineNoRoom_GoalkeeperWrongLine` | grün |
 | K39 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.Core.Tests.KaderStartRunde14Teil6Tests.ClickOnPlaced_TakesOut_SelectsHisLine_LeftUndresses_RightKeeps` | grün |
+| K41 | Weltkugel-Managerzeile nicht umleiten | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 9, club: 40)` | grün |
+| K41 | Weltkugel-Managerzeile nicht umleiten | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 13, club: null)` | grün |
+| K41 | Weltkugel-Managerzeile nicht umleiten | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 4, club: 17)` | grün |
+| K41 | Weltkugel-Managerzeile nicht umleiten | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 1, club: 5)` | grün |
+| K41 | Weltkugel-Managerzeile nicht umleiten | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched(duration: DreiSaisons, managers: 1)` | grün |
+| K41 | Weltkugel-Managerzeile nicht umleiten | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched(duration: EineSaison, managers: 2)` | grün |
+| K41 | Weltkugel-Managerzeile nicht umleiten | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.ClubTactics_StartAtZero_AutoLineAfterFirstMatchDay` | grün |
+| K41 | Weltkugel-Managerzeile nicht umleiten | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.StartLeagueDraw_NeverPlaceZero_ChampionPossible` | grün |
+| K41 | Weltkugel-Managerzeile nicht umleiten | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.WorldOnly_EveryManagerRowMapsToRowZero` | rot |
+| K42 | Ein-Saison-Sonderfall unterdrücken | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 9, club: 40)` | rot |
+| K42 | Ein-Saison-Sonderfall unterdrücken | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 13, club: null)` | rot |
+| K42 | Ein-Saison-Sonderfall unterdrücken | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 4, club: 17)` | rot |
+| K42 | Ein-Saison-Sonderfall unterdrücken | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 1, club: 5)` | rot |
+| K42 | Ein-Saison-Sonderfall unterdrücken | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched(duration: DreiSaisons, managers: 1)` | grün |
+| K42 | Ein-Saison-Sonderfall unterdrücken | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched(duration: EineSaison, managers: 2)` | grün |
+| K42 | Ein-Saison-Sonderfall unterdrücken | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.ClubTactics_StartAtZero_AutoLineAfterFirstMatchDay` | grün |
+| K42 | Ein-Saison-Sonderfall unterdrücken | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.StartLeagueDraw_NeverPlaceZero_ChampionPossible` | grün |
+| K42 | Ein-Saison-Sonderfall unterdrücken | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.WorldOnly_EveryManagerRowMapsToRowZero` | grün |
+| K43 | Ein-Saison-Sonderfall bei allen Konfigurationen ausführen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 9, club: 40)` | grün |
+| K43 | Ein-Saison-Sonderfall bei allen Konfigurationen ausführen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 13, club: null)` | grün |
+| K43 | Ein-Saison-Sonderfall bei allen Konfigurationen ausführen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 4, club: 17)` | grün |
+| K43 | Ein-Saison-Sonderfall bei allen Konfigurationen ausführen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 1, club: 5)` | grün |
+| K43 | Ein-Saison-Sonderfall bei allen Konfigurationen ausführen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched(duration: DreiSaisons, managers: 1)` | rot |
+| K43 | Ein-Saison-Sonderfall bei allen Konfigurationen ausführen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched(duration: EineSaison, managers: 2)` | rot |
+| K43 | Ein-Saison-Sonderfall bei allen Konfigurationen ausführen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.ClubTactics_StartAtZero_AutoLineAfterFirstMatchDay` | grün |
+| K43 | Ein-Saison-Sonderfall bei allen Konfigurationen ausführen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.StartLeagueDraw_NeverPlaceZero_ChampionPossible` | rot |
+| K43 | Ein-Saison-Sonderfall bei allen Konfigurationen ausführen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.WorldOnly_EveryManagerRowMapsToRowZero` | grün |
+| K44 | Startplatz null nicht ausschließen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 9, club: 40)` | grün |
+| K44 | Startplatz null nicht ausschließen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 13, club: null)` | grün |
+| K44 | Startplatz null nicht ausschließen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 4, club: 17)` | grün |
+| K44 | Startplatz null nicht ausschließen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 1, club: 5)` | grün |
+| K44 | Startplatz null nicht ausschließen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched(duration: DreiSaisons, managers: 1)` | rot |
+| K44 | Startplatz null nicht ausschließen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched(duration: EineSaison, managers: 2)` | rot |
+| K44 | Startplatz null nicht ausschließen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.ClubTactics_StartAtZero_AutoLineAfterFirstMatchDay` | grün |
+| K44 | Startplatz null nicht ausschließen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.StartLeagueDraw_NeverPlaceZero_ChampionPossible` | rot |
+| K44 | Startplatz null nicht ausschließen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.WorldOnly_EveryManagerRowMapsToRowZero` | grün |
+| K45 | Vereinstaktik mit alter Einsatzzeile beginnen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 9, club: 40)` | grün |
+| K45 | Vereinstaktik mit alter Einsatzzeile beginnen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 13, club: null)` | grün |
+| K45 | Vereinstaktik mit alter Einsatzzeile beginnen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 4, club: 17)` | grün |
+| K45 | Vereinstaktik mit alter Einsatzzeile beginnen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero(seed: 1, club: 5)` | grün |
+| K45 | Vereinstaktik mit alter Einsatzzeile beginnen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched(duration: DreiSaisons, managers: 1)` | grün |
+| K45 | Vereinstaktik mit alter Einsatzzeile beginnen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched(duration: EineSaison, managers: 2)` | grün |
+| K45 | Vereinstaktik mit alter Einsatzzeile beginnen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.ClubTactics_StartAtZero_AutoLineAfterFirstMatchDay` | rot |
+| K45 | Vereinstaktik mit alter Einsatzzeile beginnen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.StartLeagueDraw_NeverPlaceZero_ChampionPossible` | grün |
+| K45 | Vereinstaktik mit alter Einsatzzeile beginnen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2Tests.WorldOnly_EveryManagerRowMapsToRowZero` | grün |
 | L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: False)` | grün |
 | L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.FourSeasonChanges_LoansEnd_NoDuplicates(active: True)` | rot |
 | L01 | Computer- und Managerverleiher vertauschen | `EishockeyManager.Core.Tests.KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_WithoutScreen_LeavesOrigin` | grün |
@@ -1127,6 +1182,55 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | grün |
 | U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | grün |
 | U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | grün |
+| U31 | Transfer und Training im Bundestrainermenü nicht sperren | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: False)` | grün |
+| U31 | Transfer und Training im Bundestrainermenü nicht sperren | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: True)` | grün |
+| U31 | Transfer und Training im Bundestrainermenü nicht sperren | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_ReturnInSameTurn_KeepsRememberedGroup` | grün |
+| U31 | Transfer und Training im Bundestrainermenü nicht sperren | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_RightClickOnSlotLeaves_LeftClickClears` | grün |
+| U31 | Transfer und Training im Bundestrainermenü nicht sperren | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | grün |
+| U31 | Transfer und Training im Bundestrainermenü nicht sperren | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | grün |
+| U31 | Transfer und Training im Bundestrainermenü nicht sperren | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | rot |
+| U32 | ab Stufe fünf immer die Endrunde öffnen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: False)` | grün |
+| U32 | ab Stufe fünf immer die Endrunde öffnen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: True)` | grün |
+| U32 | ab Stufe fünf immer die Endrunde öffnen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_ReturnInSameTurn_KeepsRememberedGroup` | grün |
+| U32 | ab Stufe fünf immer die Endrunde öffnen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_RightClickOnSlotLeaves_LeftClickClears` | grün |
+| U32 | ab Stufe fünf immer die Endrunde öffnen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | rot |
+| U32 | ab Stufe fünf immer die Endrunde öffnen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | grün |
+| U32 | ab Stufe fünf immer die Endrunde öffnen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | grün |
+| U33 | Rückkehr als neuen Bundestrainerzug behandeln | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: False)` | grün |
+| U33 | Rückkehr als neuen Bundestrainerzug behandeln | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: True)` | grün |
+| U33 | Rückkehr als neuen Bundestrainerzug behandeln | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_ReturnInSameTurn_KeepsRememberedGroup` | rot |
+| U33 | Rückkehr als neuen Bundestrainerzug behandeln | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_RightClickOnSlotLeaves_LeftClickClears` | grün |
+| U33 | Rückkehr als neuen Bundestrainerzug behandeln | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | grün |
+| U33 | Rückkehr als neuen Bundestrainerzug behandeln | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | grün |
+| U33 | Rückkehr als neuen Bundestrainerzug behandeln | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | grün |
+| U34 | gemerkte WM-Seite zum Saisonwechsel behalten | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: False)` | grün |
+| U34 | gemerkte WM-Seite zum Saisonwechsel behalten | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: True)` | grün |
+| U34 | gemerkte WM-Seite zum Saisonwechsel behalten | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_ReturnInSameTurn_KeepsRememberedGroup` | grün |
+| U34 | gemerkte WM-Seite zum Saisonwechsel behalten | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_RightClickOnSlotLeaves_LeftClickClears` | grün |
+| U34 | gemerkte WM-Seite zum Saisonwechsel behalten | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | grün |
+| U34 | gemerkte WM-Seite zum Saisonwechsel behalten | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | rot |
+| U34 | gemerkte WM-Seite zum Saisonwechsel behalten | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | grün |
+| U35 | Rechtsklick auf Aufstellungsplatz leert statt zu verlassen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: False)` | grün |
+| U35 | Rechtsklick auf Aufstellungsplatz leert statt zu verlassen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: True)` | grün |
+| U35 | Rechtsklick auf Aufstellungsplatz leert statt zu verlassen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_ReturnInSameTurn_KeepsRememberedGroup` | grün |
+| U35 | Rechtsklick auf Aufstellungsplatz leert statt zu verlassen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_RightClickOnSlotLeaves_LeftClickClears` | rot |
+| U35 | Rechtsklick auf Aufstellungsplatz leert statt zu verlassen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | grün |
+| U35 | Rechtsklick auf Aufstellungsplatz leert statt zu verlassen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | grün |
+| U35 | Rechtsklick auf Aufstellungsplatz leert statt zu verlassen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | grün |
+| U36 | Verletzte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: False)` | rot |
+| U36 | Verletzte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: True)` | grün |
+| U36 | Verletzte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_ReturnInSameTurn_KeepsRememberedGroup` | grün |
+| U36 | Verletzte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_RightClickOnSlotLeaves_LeftClickClears` | grün |
+| U36 | Verletzte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | grün |
+| U36 | Verletzte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | grün |
+| U36 | Verletzte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | grün |
+| U37 | Gesperrte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: False)` | grün |
+| U37 | Gesperrte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage(suspended: True)` | rot |
+| U37 | Gesperrte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_ReturnInSameTurn_KeepsRememberedGroup` | grün |
+| U37 | Gesperrte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.NationalLineup_RightClickOnSlotLeaves_LeftClickClears` | grün |
+| U37 | Gesperrte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | grün |
+| U37 | Gesperrte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | grün |
+| U37 | Gesperrte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | grün |
 | V01 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V02 | alte Halbfinalpaarung | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V03 | WM-Tageslauf auslassen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
@@ -1207,6 +1311,48 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | X05 | doppelten Spieler beim Saisonwechsel einführen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | grün |
 | X05 | doppelten Spieler beim Saisonwechsel einführen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | grün |
 | X05 | doppelten Spieler beim Saisonwechsel einführen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | grün |
+| Y01 | Dialogfüllfarbe von 4 auf 5 setzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_AccountBar_LikeDosBox` | grün |
+| Y01 | Dialogfüllfarbe von 4 auf 5 setzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | grün |
+| Y01 | Dialogfüllfarbe von 4 auf 5 setzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_PressedButton_LabelAtSamePlace` | grün |
+| Y01 | Dialogfüllfarbe von 4 auf 5 setzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_SeparatorSixTo163_ColonsAt76` | grün |
+| Y01 | Dialogfüllfarbe von 4 auf 5 setzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_SquadList_NoStarForListedPlayer_EvenInLegacyState` | grün |
+| Y01 | Dialogfüllfarbe von 4 auf 5 setzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.OfferWindow_AtXTwo_Width165_LineSixTo163` | grün |
+| Y02 | Trennlinie um einen Pixel verkürzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_AccountBar_LikeDosBox` | grün |
+| Y02 | Trennlinie um einen Pixel verkürzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | grün |
+| Y02 | Trennlinie um einen Pixel verkürzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_PressedButton_LabelAtSamePlace` | grün |
+| Y02 | Trennlinie um einen Pixel verkürzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_SeparatorSixTo163_ColonsAt76` | rot |
+| Y02 | Trennlinie um einen Pixel verkürzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_SquadList_NoStarForListedPlayer_EvenInLegacyState` | grün |
+| Y02 | Trennlinie um einen Pixel verkürzen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.OfferWindow_AtXTwo_Width165_LineSixTo163` | grün |
+| Y03 | gedrückte Knopfschrift nach rechts verschieben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_AccountBar_LikeDosBox` | grün |
+| Y03 | gedrückte Knopfschrift nach rechts verschieben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | grün |
+| Y03 | gedrückte Knopfschrift nach rechts verschieben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_PressedButton_LabelAtSamePlace` | rot |
+| Y03 | gedrückte Knopfschrift nach rechts verschieben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_SeparatorSixTo163_ColonsAt76` | grün |
+| Y03 | gedrückte Knopfschrift nach rechts verschieben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_SquadList_NoStarForListedPlayer_EvenInLegacyState` | grün |
+| Y03 | gedrückte Knopfschrift nach rechts verschieben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.OfferWindow_AtXTwo_Width165_LineSixTo163` | grün |
+| Y04 | Angebotsfenster um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_AccountBar_LikeDosBox` | grün |
+| Y04 | Angebotsfenster um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | grün |
+| Y04 | Angebotsfenster um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_PressedButton_LabelAtSamePlace` | grün |
+| Y04 | Angebotsfenster um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_SeparatorSixTo163_ColonsAt76` | grün |
+| Y04 | Angebotsfenster um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_SquadList_NoStarForListedPlayer_EvenInLegacyState` | grün |
+| Y04 | Angebotsfenster um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.OfferWindow_AtXTwo_Width165_LineSixTo163` | rot |
+| Y05 | Kontoleiste um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_AccountBar_LikeDosBox` | rot |
+| Y05 | Kontoleiste um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | grün |
+| Y05 | Kontoleiste um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_PressedButton_LabelAtSamePlace` | grün |
+| Y05 | Kontoleiste um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_SeparatorSixTo163_ColonsAt76` | grün |
+| Y05 | Kontoleiste um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_SquadList_NoStarForListedPlayer_EvenInLegacyState` | grün |
+| Y05 | Kontoleiste um einen Pixel verkleinern | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.OfferWindow_AtXTwo_Width165_LineSixTo163` | grün |
+| Y06 | Stern für gelistete Spieler erneut zeichnen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_AccountBar_LikeDosBox` | grün |
+| Y06 | Stern für gelistete Spieler erneut zeichnen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | grün |
+| Y06 | Stern für gelistete Spieler erneut zeichnen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_PressedButton_LabelAtSamePlace` | grün |
+| Y06 | Stern für gelistete Spieler erneut zeichnen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_SeparatorSixTo163_ColonsAt76` | grün |
+| Y06 | Stern für gelistete Spieler erneut zeichnen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_SquadList_NoStarForListedPlayer_EvenInLegacyState` | rot |
+| Y06 | Stern für gelistete Spieler erneut zeichnen | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.OfferWindow_AtXTwo_Width165_LineSixTo163` | grün |
+| Y07 | eine Schattenecke falsch färben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_AccountBar_LikeDosBox` | grün |
+| Y07 | eine Schattenecke falsch färben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | rot |
+| Y07 | eine Schattenecke falsch färben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_PressedButton_LabelAtSamePlace` | grün |
+| Y07 | eine Schattenecke falsch färben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.ContractDialog_SeparatorSixTo163_ColonsAt76` | grün |
+| Y07 | eine Schattenecke falsch färben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.TransferScreen_SquadList_NoStarForListedPlayer_EvenInLegacyState` | grün |
+| Y07 | eine Schattenecke falsch färben | `EishockeyManager.UI.Tests.KaderStartRunde14FixUiTests.OfferWindow_AtXTwo_Width165_LineSixTo163` | grün |
 
 ### Inventur je geändertem oder neuem Test
 
@@ -1228,11 +1374,11 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | neu | rot: X04 |
 | `KaderStartRunde14ImportTests.cs · KaderStartRunde14ImportTests.Import_CountersPerCompetition_FromSquadSlots` | neu | offen |
 | `KaderStartRunde14ImportTests.cs · KaderStartRunde14ImportTests.Import_TableRankAndStartLeague` | neu | offen |
-| `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.WorldOnly_EveryManagerRowMapsToRowZero` | neu | offen |
-| `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero` | neu | offen |
-| `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched` | neu | offen |
-| `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.StartLeagueDraw_NeverPlaceZero_ChampionPossible` | neu | offen |
-| `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.ClubTactics_StartAtZero_AutoLineAfterFirstMatchDay` | neu | offen |
+| `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.WorldOnly_EveryManagerRowMapsToRowZero` | neu | rot: K41 |
+| `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero` | neu | rot: K42 |
+| `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched` | neu | rot: K43, K44 |
+| `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.StartLeagueDraw_NeverPlaceZero_ChampionPossible` | neu | rot: K43, K44 |
+| `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.ClubTactics_StartAtZero_AutoLineAfterFirstMatchDay` | neu | rot: K45 |
 | `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.AutoLineup_AfterMatchWithoutInjury_LinesUpAgain` | neu | rot: B01 |
 | `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.ManualLineup_AfterMatchWithoutInjury_Unchanged` | neu | rot: B02 |
 | `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.CupMatch_CountsInCupFields` | neu | rot: B03 |
@@ -1476,12 +1622,12 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `HokImportAccessTests.cs · HokImportAccessTests.SaveDialog_DoesNotSelectHok` | neu | rot: A09 |
 | `IntegrationRunde4Tests.cs · IntegrationRunde4Tests.NationalLineup_SurvivesSaveLoadThroughDialog_InCoachMenu` | geändert | offen |
 | `IntegrationRunde6Tests.cs · IntegrationRunde6Tests.TwoSeasons_Mode4_StatisticsRatingStatusAndSaves` | geändert | offen |
-| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | neu | offen |
-| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.ContractDialog_SeparatorSixTo163_ColonsAt76` | neu | offen |
-| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.ContractDialog_PressedButton_LabelAtSamePlace` | neu | offen |
-| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.OfferWindow_AtXTwo_Width165_LineSixTo163` | neu | offen |
-| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.TransferScreen_AccountBar_LikeDosBox` | neu | offen |
-| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.TransferScreen_SquadList_NoStarForListedPlayer_EvenInLegacyState` | neu | offen |
+| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | neu | rot: Y07 |
+| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.ContractDialog_SeparatorSixTo163_ColonsAt76` | neu | rot: Y02 |
+| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.ContractDialog_PressedButton_LabelAtSamePlace` | neu | rot: Y03 |
+| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.OfferWindow_AtXTwo_Width165_LineSixTo163` | neu | rot: Y04 |
+| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.TransferScreen_AccountBar_LikeDosBox` | neu | rot: Y05 |
+| `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.TransferScreen_SquadList_NoStarForListedPlayer_EvenInLegacyState` | neu | rot: Y06 |
 | `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | neu | rot: U21 |
 | `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | neu | rot: U22 |
 | `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | neu | rot: U23 |
@@ -1503,12 +1649,12 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `NationalLineupScreenTests.cs · NationalLineupScreenTests.CoachMenu_OpensNationalLineupAndTactics_WithoutChangingState` | geändert | offen |
 | `NationalLineupScreenTests.cs · NationalLineupScreenTests.A010_FullLine_NoRoom_ClickOnPlacedTakesOut` | geändert | offen |
 | `NationalLineupScreenTests.cs · NationalLineupScreenTests.Lineup_Clicks_FollowOriginalRules_AndTacticsBelongToNationalTeam` | geändert | offen |
-| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | neu | offen |
-| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | neu | offen |
-| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_ReturnInSameTurn_KeepsRememberedGroup` | neu | offen |
-| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | neu | offen |
-| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.NationalLineup_RightClickOnSlotLeaves_LeftClickClears` | neu | offen |
-| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage` | neu | offen |
+| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | neu | rot: U31 |
+| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | neu | rot: U32 |
+| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_ReturnInSameTurn_KeepsRememberedGroup` | neu | rot: U33 |
+| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | neu | rot: U34 |
+| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.NationalLineup_RightClickOnSlotLeaves_LeftClickClears` | neu | rot: U35 |
+| `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage` | neu | rot: U36, U37 |
 | `NewsBarDosboxTests.cs · NewsBarDosboxTests.Message_ShowsDateAndTwoCenteredLines` | neu | offen |
 | `NewsBarDosboxTests.cs · NewsBarDosboxTests.LongMessage_ShowsOnlyTwoLines_NothingOnTheBottomEdge` | neu | offen |
 | `OriginalDialogCallersTests.cs · OriginalDialogCallersTests.Lineup_AutoDisabledMessage_IsShortMessageWith45Ticks` | geändert | offen |
