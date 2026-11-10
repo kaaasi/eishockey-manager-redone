@@ -367,11 +367,22 @@ public class TagestaktHauptwegReviewTests
             Assert.True(game.QuoteConstruction(me, StadiumProject.Feature, feature, game.Finance(me).Stadium.Level(feature) + 1) is { } quote
                 && game.AnswerConstruction(me, quote with { Weeks = 30 }, accept: true), $"kein Ausbau {feature}");
             var weeks = game.Finance(me).Stadium.WeeksLeft(StadiumProject.Feature, feature);
+            var beforeChange = SaveGame.Save(game);
             game.StartNextSeason();
-            Assert.Equal(market.Select(m => m.Player), game.TransferMarket.Listings.Where(l => l.FromPool).Select(l => l.Player));
-            Assert.Equal(market.Select(m => m.Age + 1), game.TransferMarket.Listings.Where(l => l.FromPool).Select(l => l.Player.Age));
+            // Spur tagesablauf (#699 Punkt 2, R15-E1 = A): StartNextSeason öffnet jetzt Tag 0, dessen Listenwechsel-Wurf (Datei
+            // 0x54E65, Tag mit Ereignis) die Liste vor dem ersten Menü wechseln kann. Dass der Saisonwechsel selbst die Markt-Plätze
+            // behält (R688-05), prüft deshalb eine Kopie desselben Stands über den Weg der Oberfläche, der Tag 0 erst nach den
+            // Verhandlungen öffnet (StartNextSeasonWithRenewals, dann ReturnToFirstActiveManager).
+            var copy = SaveGame.Load(beforeChange).Game!;
+            copy.StartNextSeasonWithRenewals();
+            Assert.False(copy.DayOpened);
+            Assert.Equal(market.Select(m => m.Player.Id), copy.TransferMarket.Listings.Where(l => l.FromPool).Select(l => l.Player.Id));
+            Assert.Equal(market.Select(m => m.Age + 1), copy.TransferMarket.Listings.Where(l => l.FromPool).Select(l => l.Player.Age));
             Assert.Equal(weeks - 19, game.Finance(me).Stadium.WeeksLeft(StadiumProject.Feature, feature));
-            Assert.False(game.DayOpened);
+            // Spur tagesablauf (#699 Punkt 2, R15-E1 = A): Der Saisonwechsel öffnet Tag 0 vor dem ersten Menü (Datei 0x565A7 →
+            // 0x54D5C → 0x55073 → 0x55204: Zähler 1, Tagesabschluss); vorher geschlossen, Tag 0 holte ihn vor den Spielen nach.
+            Assert.True(game.DayOpened);
+            Assert.Equal(0, game.FinanceDay);
         }
     }
 

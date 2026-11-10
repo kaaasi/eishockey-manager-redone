@@ -24,6 +24,12 @@ public class NationalteamRunde14Tests
     /// R688N-03 (Nachprüfung #688): Die Gegenprobe (Takt nach 0x952C desselben Tages) wird nur sichtbar, wenn das Training des
     /// Takts die Länderwerte ändert – mit Saat 3 nicht. Gegenprobe am Head mit den Saaten 3, 5, 7, 9, 11, 13, 17, 19, 23, 29, 31:
     /// rot für 7, 9, 11, 13, 17, 19, 23; daher vier rot werdende Saaten neben 3.
+    /// Spur tagesablauf (#699 Punkt 3, Entscheidung Nutzer R15-E1 = A): An Tagen mit Ereignis stellt der Tageswechsel vor den
+    /// Menüs Satz 5 neu auf und ruft 0x952C(5, 0) (Datei 0x54D76–0x54DAA, nach der Wanderung Datei 0x5525A–0x55292 des
+    /// Tageswechsels; 0x952C schreibt 0x18–0x1D mit beiden Merkern, Datei 0x09672 → 0x096E6 → 0x09749/0x09771). Ein Halttag ist ein
+    /// Spieltag des Managers und damit ein Tag mit Ereignis: Dort gilt jetzt die Form der Aufstellung, auch am Wandertag (vorher:
+    /// gewürfelte Form, weil die Neuaufstellung erst nach den Menüs lag). Die gewürfelte Form bleibt an Halttagen ohne Ereignis
+    /// (Tagesbyte 0 oder 9) sichtbar. Rückschaltprobe: Teil 3 zurück (alte Reihenfolge) → der alte Test grün, dieser rot.
     /// </summary>
     [Theory]
     [InlineData(3)]
@@ -31,7 +37,7 @@ public class NationalteamRunde14Tests
     [InlineData(11)]
     [InlineData(13)]
     [InlineData(17)]
-    public void Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(int seed)
+    public void Day_MainPathOnly_NationalValuesBeforeDrift_EventDayHaltShowsLineupForm(int seed)
     {
         var game = GameModeTests.Create(seed, true, true, 2);
         Assert.Equal(GameMode.Full, game.Mode);
@@ -42,8 +48,8 @@ public class NationalteamRunde14Tests
         coach.AutoFormation();
         var germany = game.Clubs[NationalTeams.Germany];
 
-        bool driftSeen = false, plainSeen = false;
-        for (var guard = 0; guard < 400 && !(driftSeen && plainSeen); guard++)
+        bool eventDriftSeen = false, plainSeen = false;
+        for (var guard = 0; guard < 400 && !(eventDriftSeen && plainSeen); guard++)
         {
             // Form der Aufgestellten weit unter 45: die Form der Aufstellung kann nicht mit einer gewürfelten zusammenfallen.
             foreach (var slot in LineupSlot.All)
@@ -60,6 +66,21 @@ public class NationalteamRunde14Tests
                 continue;
 
             var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
+            var values = germany.TeamValues!.Value;
+            if (game.IsListChangeDay(halt))
+            {
+                // #699 Punkt 3: Neuaufstellung und 0x952C(5, 0) nach Takt und Wanderung, vor dem Menü – Werte der Aufstellung des
+                // Halttags (Form 1 der gestörten Spieler ist durch die Neuaufstellung ersetzt).
+                Assert.Equal((defense.Condition, defense.Technique, attack.Condition, attack.Technique),
+                    game.NationalRatings(NationalTeams.Germany));
+                Assert.Equal((defense.Form, attack.Form), (values.DefenseForm, values.AttackForm));
+                if (GameState.IsDailyRunDay(halt))
+                    eventDriftSeen = true;
+                else
+                    plainSeen = true;
+                continue;
+            }
+
             Assert.InRange(defense.Form, 0, 44);
             Assert.InRange(attack.Form, 0, 44);
             // #688 (R688-08): [ORIGINAL] Training im Takt (0x07169, Datei 0x552A6) vor 0x952C desselben Tages (Datei 0x54FBF): Die
@@ -68,20 +89,15 @@ public class NationalteamRunde14Tests
             if (!GameState.IsDailyRunDay(halt))
                 Assert.Equal((defense.Condition, defense.Technique, attack.Condition, attack.Technique),
                     game.NationalRatings(NationalTeams.Germany));
-            var values = germany.TeamValues!.Value;
             if (GameState.IsDailyRunDay(halt)) // #675: Zähler 0x3B7 nach dem Weiterzählen = Tag + 1 (DayCounter), Datei 0x55204/0x55253
             {
-                driftSeen = true;
                 Assert.InRange(values.DefenseForm, 45, 55);
                 Assert.InRange(values.AttackForm, 45, 55);
             }
             else
-            {
-                plainSeen = true;
                 Assert.Equal((defense.Form, attack.Form), (values.DefenseForm, values.AttackForm));
-            }
         }
-        Assert.True(driftSeen && plainSeen, $"Wandertag {driftSeen}, Tag ohne Wanderung {plainSeen}");
+        Assert.True(eventDriftSeen && plainSeen, $"Wander-Halttag mit Ereignis {eventDriftSeen}, Halttag mit Ereignis ohne Wanderung {plainSeen}");
     }
 
     // ---- R14NT-01/02: WM-Schleife des Originals nach der Ernennung ------------------------------------------------

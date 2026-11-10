@@ -41,5 +41,6 @@ public sealed partial class GameState
     public void ReturnToFirstActiveManager()
     {
         CurrentManager = Managers.ToList().IndexOf(ActiveManagers.First());
+        OpenStartDay(); // Spur tagesablauf (#699 Punkt 2): Tag 0 der neuen Saison nach den Verhandlungen, vor dem ersten Menü
     }
 }

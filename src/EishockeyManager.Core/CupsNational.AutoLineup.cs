@@ -124,17 +124,11 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Tageslauf des Nationalteams in der Vereinssaison (aus <c>OnDayManager</c> nach den Menüs, #688): an Tagen mit Ereignis Neuaufstellung mit der
-    /// gesicherten Einstellung (Datei 0x54D41–0x54DAA), dann die Länderwerte (Datei 0x54F9C–0x54FBF, <see cref="UpdateNationalTeamValues"/>).
-    /// [ORIGINAL] Ereignis = Kalenderbyte ≠ 0, ≠ 0xFF (9 zählt wie 0, Datei 0x54D4C–0x54D65). Nur der Hauptweg: Nach dem
-    /// 13. April nimmt im Original die WM-Schleife den Tag (<see cref="OpenWorldCupLoopDay"/>, R14NT-01/02, #664); hier wirkt es nur
-    /// bei einem vor dem 13. April ernannten Bundestrainer (nur Tests).
+    /// Tageslauf des Nationalteams in der Vereinssaison (aus <c>OnDayManager</c> nach den Menüs, #688): die Länderwerte
+    /// 0x952C(5, 1) (Datei 0x54F9C–0x54FBF, <see cref="UpdateNationalTeamValues"/>). Die Neuaufstellung an Tagen mit Ereignis
+    /// (Datei 0x54D41–0x54DAA) liegt im Tageswechsel vor den Menüs (<c>MainPathEventDayLineups</c>, Spur tagesablauf, #699 Punkt 3).
+    /// Nur der Hauptweg: Nach dem 13. April nimmt im Original die WM-Schleife den Tag (<see cref="OpenWorldCupLoopDay"/>,
+    /// R14NT-01/02, #664).
     /// </summary>
-    private void OnDayNationalTeam(int day)
-    {
-        var events = SeasonCalendar.Events(day);
-        if (NationalCoach is { } coach && events is not (DayEvents.None or DayEvents.SeasonEnd) && (byte)events != 9)
-            coach.OnEventDay();
-        UpdateNationalTeamValues();
-    }
+    private void OnDayNationalTeam() => UpdateNationalTeamValues();
 }

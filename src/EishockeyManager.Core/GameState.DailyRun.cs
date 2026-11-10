@@ -191,28 +191,77 @@ public sealed partial class GameState
 
     /// <summary>
     /// Hauptweg, Tage mit Ereignis vor den Managerzügen: je Satz die Neuaufstellung (Datei 0x54D68–0x54DBA; 0x426BC bei 0x54D9E, nur
-    /// mit „automatisch aufstellen“, <see cref="Club.ApplyAutoLineup"/>). [APPROX] Satz 5 (Bundestrainer, nur bei 0x9EDA &lt; 0x3F:
-    /// Neuaufstellung mit der gesicherten Einstellung und 0x952C(5, 0) bei 0x54DAA) rechnet das Remake nach den Menüs vor 0x952C(5, 1)
-    /// (<c>OnDayManager</c>, A009 Runde 14 Teil 3): Einen Bundestrainer gibt es im Hauptweg nur in Tests (Ernennung erst am 13. April,
-    /// danach WM-Schleife).
+    /// mit „automatisch aufstellen“, <see cref="Club.ApplyAutoLineup"/>). [ORIGINAL] Satz 5 (Bundestrainer, nur bei 0x9EDA &lt; 0x3F,
+    /// Datei 0x54D76–0x54D82): Neuaufstellung mit der gesicherten Einstellung (Datei 0x54D8C–0x54D9E) und 0x952C(5, 0) (Datei 0x54DAA,
+    /// <see cref="UpdateNationalTeamValues"/>), ebenfalls vor den Menüs (#699 Punkt 3); nach den Menüs folgt nur 0x952C(5, 1)
+    /// (<c>OnDayNationalTeam</c>). Einen Bundestrainer gibt es im Hauptweg nur in Tests (Ernennung erst am 13. April, danach
+    /// WM-Schleife). [APPROX] 0x952C(Satz, 0) der Managersätze 0 … 4 (Datei 0x54DAA in derselben Schleife) bildet das Remake hier
+    /// nicht nach (Teamwerte der Managervereine bei den Spielen).
     /// </summary>
     private void MainPathEventDayLineups(int day)
     {
-        if (IsListChangeDay(day))
-            ApplyAutoLineups();
+        if (!IsListChangeDay(day))
+            return;
+        ApplyAutoLineups();
+        if (NationalCoach is { } coach)
+        {
+            coach.OnEventDay();
+            UpdateNationalTeamValues();
+        }
     }
 
     /// <summary>
-    /// Hauptweg: an Tagen mit Ereignis je Managerzug der Wurf des Listenwechsels (<see cref="IsListChangeDay"/>). [APPROX] Im
-    /// Hot-Seat rechnet das Remake die Würfe aller Manager vor dem ersten Menü des Tages; im Original fällt der Wurf von Manager i
-    /// erst nach dem Menü von Manager i − 1 (Datei 0x54E3F–0x54EF4).
+    /// Hauptweg: an Tagen mit Ereignis je Managerzug der Wurf des Listenwechsels (<see cref="IsListChangeDay"/>), hier im
+    /// Tageswechsel die Würfe bis zum Zug des ersten aktiven Managers. [ORIGINAL] Datei 0x54E3F–0x54EF4: je Platz 0 … [0x386] − 1
+    /// der Wurf (Datei 0x54E65–0x54E7C), dann dessen Menü (Datei 0x54EB2); der Wurf von Manager i fällt also nach dem Menü von
+    /// Manager i − 1 (#699 Punkt 1). Die übrigen Würfe: beim Weitergeben des Zugs (<see cref="RollListChangesThrough"/>, aus
+    /// <c>PassTurn</c>), nach dem letzten Zug bzw. an Tagen ohne Halt vor den Spielen (<see cref="MainPathRemainingListChanges"/>).
+    /// [APPROX] Entlassene Manager (nur ältere Spielstände) würfeln mit dem Zug des nächsten aktiven Managers bzw. vor den Spielen.
     /// </summary>
-    private void MainPathListChanges(int day)
+    private void MainPathListChanges(int day) => RollListChanges(day, 0, FirstActiveSlot);
+
+    /// <summary>
+    /// Zug geht von Platz <paramref name="from"/> an Platz <paramref name="to"/>: Würfe der Plätze dazwischen und des neuen Platzes
+    /// (Datei 0x54E3F–0x54EF4, siehe <see cref="MainPathListChanges"/>).
+    /// </summary>
+    private void RollListChangesThrough(int from, int to) => RollListChanges(CurrentDay, from + 1, to);
+
+    /// <summary>
+    /// Vor den Spielen eines Tages die Würfe, die noch fehlen: nach dem letzten Managerzug die Plätze dahinter
+    /// (<paramref name="turnsTaken"/>), an Tagen ohne Halt alle nach dem ersten aktiven Manager. Je Tag mit Ereignis würfelt so jeder
+    /// Platz genau einmal.
+    /// </summary>
+    private void MainPathRemainingListChanges(int day, bool turnsTaken) =>
+        RollListChanges(day, (turnsTaken ? LastActiveSlot : FirstActiveSlot) + 1, Managers.Count - 1);
+
+    private void RollListChanges(int day, int first, int last)
     {
-        if (!IsListChangeDay(day))
+        if (WorldOnly || InWorldCupLoop(day) || !IsListChangeDay(day))
             return;
-        for (var i = 0; i < Managers.Count; i++)
+        for (var i = first; i <= last; i++)
             TransferMarket.ListChangeTurn(this);
+    }
+
+    private int FirstActiveSlot
+    {
+        get
+        {
+            for (var i = 0; i < Managers.Count; i++)
+                if (!Managers[i].Dismissed)
+                    return i;
+            return 0;
+        }
+    }
+
+    private int LastActiveSlot
+    {
+        get
+        {
+            for (var i = Managers.Count - 1; i >= 0; i--)
+                if (!Managers[i].Dismissed)
+                    return i;
+            return Managers.Count - 1;
+        }
     }
 
     /// <summary>Datum, an dem die Sommerpause endet. [ORIGINAL] Datei 0x56570–0x56593: Tag DGROUP 0x5A20 = 9, Monat 0x5A1C = 8.</summary>

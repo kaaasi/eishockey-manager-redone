@@ -49,6 +49,9 @@ public sealed partial class GameState
             var next = (CurrentManager + step) % Managers.Count;
             if (!Managers[next].Dismissed && !_readyManagers.Contains(Managers[next]))
             {
+                // #699 Punkt 1: Wurf des Listenwechsels von Manager i nach dem Menü von Manager i − 1 (Datei 0x54E3F–0x54EF4)
+                if (next > CurrentManager)
+                    RollListChangesThrough(CurrentManager, next);
                 CurrentManager = next;
                 BeginManagerTurn();
                 return true;
