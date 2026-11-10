@@ -202,6 +202,18 @@ Diese statische Zuordnung ergänzt die zwei dynamischen Sonderfallprüfungen und
 | L10, A115 nach Code | `Player.Contract.cs` unterscheidet Leihrückkehr zu Computer- und Managervereinen; bei Rückkehr zum Manager bleiben die Leihvertragsfelder erhalten. Alle Originalzweige und die Kopierreihenfolge sind noch nicht vollständig nachgelesen. |
 | E14-6 = A, zusätzlicher Lauf Speicherdialog | `docs/arbeitspakete.md:174` ordnet A338/A339 und den zusätzlichen Lauf `hok-import` Teil 5 zu; der Dialogcode ist vorhanden, und 16/16 Kontrollfälle bestehen. Vollständiger Original- und Ereignisabgleich bleibt offen. |
 
+### Hauptmenüereignisse: bisherige Codeprüfung
+
+| Ereignis oder Wirkung | Codeabgleich und Prüfstand |
+|---|---|
+| Aufbau und Rückkehr | `MainMenuScreen.Enter` ruft `BuildMenu` und danach Autosave auf; `BuildMenu` vergleicht Spiel, Saison, Tag und Manager mit dem letzten Aufbau und ruft `OnMainMenu` einmal auf. Vollständiger Vergleich aller Rückkehr- und Wiederaufbaupfade offen. |
+| Managerwechsel ohne neuen Tag | `Continue_` ruft bei nicht letztem Zug `Game.Continue()`, `BuildMenu()` und Autosave auf. `PassTurn` setzt den nächsten nicht ausgeschiedenen, noch nicht bereiten Manager und startet dessen Zug. Q67 zeigt, dass die beiden betroffenen Tests die Aktivitätsfilterung erkennen; vollständige Ereignis- und Autosaveprüfung offen. |
+| Vereinsaufstellung beim Menüaufbau | `GameState.OnMainMenu` ruft `ApplyAutoLineup()` im Kern. B01/B02 und die Aufstellungs-Gegenproben belegen einzelne Wirkungen; sämtliche Aufrufkombinationen offen. |
+| Bundestraineraufstellung | `OnMainMenu` delegiert an `OnNationalCoachMenu`: bei Rückkehr `OnMenu`, sonst `BeginTurn`, nur im Bundestrainermenü. N31/N32 und Q70 prüfen einzelne Pfade beziehungsweise die Zustandsfreiheit eines Bildschirmablaufs; die vollständige Zug- und Rückkehrmatrix bleibt offen. |
+| Kennzeichen neue Nachricht | `OnMainMenu` gibt `manager.TakeNewMessage()` zurück; `BuildMenu` speichert die Rückgabe im UI-Feld `_newsBar`. Vollständige Prüfung von Mehrfachaufbau und Nachrichtenfolgen offen. |
+| Zuganfang | `BeginManagerTurn` zieht den Gehaltsfaktor, ruft Vereinsautomatik und `BeginNationalCoachTurn` auf. Abgrenzung zu jedem Menüaufbau und sämtliche Managerwechsel bleiben vollständig zu prüfen. |
+| Autosave | `Enter` und der explizite Managerwechsel rufen `SaveLoad.AutoSave.OnMainMenu` nach dem Aufbau auf. Vollständige Prüfung der übrigen Eintrittspfade und der Dateien offen. |
+
 Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten weiter; nicht aufgeführte Entscheidungen sind damit nicht als abgeschlossen bewertet.
 
 Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen rot, weil die Ligagröße 11 statt 12 beträgt. Das belegt nur diese Invariante. E06 unterdrückt dagegen den Spieltagsmerker selbst; der zielgerichtete Funktionstest wird rot, während alle vier Mehrsaisonvarianten grün bleiben. Sie weisen die Wirkung der Option also nicht selbst nach (bereits in Teil 2 festgestellt).
