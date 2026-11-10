@@ -188,6 +188,9 @@ nicht übernommenen Felder noch in Runde 14. Fortsetzungen: höchstens 5 statt 3
 
 Vollprüfung durch ChatGPT (Codex mit Netzzugang) nach `vorlagen/review-anfrage.md`, Abschnitt „Gesamtreview am Rundenende“;
 Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terra (Codex).
+**Stand 10.11.2026:** Teile 1–5 (#704–#707, #710) ohne P0–P2, 14 P3 (überwiegend Testlücken), Vollprüfung vom Nutzer abgebrochen.
+**Entscheidung Nutzer 10.11.2026 = C:** ein letzter, risikoorientierter Teil (Entscheidungen der Runde, neue `[ORIGINAL]`-Fundstellen in
+riskanten Übergängen), danach Rundenabschluss; künftig Gesamtreview risikoorientiert, Vollprüfung einmal als Abschlussprüfung.
 
 ### Entscheidungen zum Plan (Nutzer, Go 05.11.2026, PR #627)
 

@@ -56,23 +56,25 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
    Ohne Schreibzugriff setzt es die Leitstelle.
 7. Antwort an den Nutzer: Link zum Review-PR, Empfehlung in einem Satz.
 
-## Gesamtreview am Rundenende (Vollprüfung, Vorgabe Nutzer 05.11.2026)
+## Gesamtreview am Rundenende (risikoorientiert, Vorgabe Nutzer 10.11.2026)
 
-Das Gesamtreview prüft das ganze Delta der Runde **vollständig**, nicht in Stichproben. Damit entfällt die frühere Nachprüfung
-durch Claude. Nachgeprüft wird nur noch das Delta von Fixes, die aus dem Gesamtreview folgen (nur bei P0/P1, sonst prüft die Leitstelle
-nach `docs/prozess/zusammenarbeit.md` §5 „Sparsame Kette“). Die Leitstelle setzt
-im Kurzaufruf hinter „Besonders prüfen:“ diesen Absatz ein:
+Ziel: Entspricht das Remake dem Original hinreichend, und enthalten die Änderungen der Runde konkrete Fehler? Nachgeprüft wird nur
+das Delta von Fixes, die aus dem Gesamtreview folgen (nur bei P0/P1, sonst prüft die Leitstelle nach
+`docs/prozess/zusammenarbeit.md` §5 „Sparsame Kette“). Die Leitstelle setzt im Kurzaufruf hinter „Besonders prüfen:“ diesen Absatz
+ein und ergänzt die riskantesten Änderungen der Runde:
 
-> Vollprüfung, keine Stichproben: (1) jeder in der Runde neue oder geänderte Test wird per Gegenprobe rot gemacht (am Base oder per
-> gezielter Mutation in einer Kopie), Ergebnis je Test in einer Tabelle; (2) jeder neu eingetragene oder geänderte Sollwert,
-> Fingerabdruck und jede geänderte Saat wird einzeln auf die verursachende Regel zurückgeführt (Rückmutation der Regel → Wert
-> fällt); (3) jede Entscheidung der Runde (Liste im Abschnitt „Aktuelle Runde“ und in den genannten PR-Kommentaren) wird gegen den
-> Code geprüft, Ergebnis je Entscheidung; (4) jede neue `[ORIGINAL]`-Fundstelle wird in em.exe bzw. im Spielstand nachgelesen;
-> (5) jeder Bildschirm und jedes Hauptmenü-Ereignis gegen AGENTS.md §4. Was aus Zeit- oder Umgebungsgründen nicht geprüft
-> werden kann, steht als „offener Prüfbereich“ mit Grund im Bericht. Jeder offene Prüfbereich bedeutet Merge-Empfehlung „Nein“.
-> Reicht eine Sitzung nicht, zuerst den Bericht mit dem bisherigen Stand ablegen und im Bericht die verbleibenden Bereiche
-> nennen. Die Fortsetzung erfolgt in einem neuen Chat mit „Fortsetzung Gesamtreview, Bericht `<datei>`“ und schreibt eine
-> **neue** Datei `<datei>-teil<n>.md` auf einem neuen Branch (siehe „Aufrufe für ChatGPT/Codex“).
+> Risikoorientiert, keine Vollinventur: Prüfe bevorzugt riskante Änderungen und Übergänge – Laden und Speichern, Tages- und
+> Saisonwechsel, Finanzen, Wettbewerbe, Kader, Bedienung – und die Entscheidungen der Runde. Nutze Originalstände, Bildschirmfotos und
+> `em.exe` gezielt dort, wo sie eine relevante Frage klären. Führe die genannten Gegenbeispiele erneut aus. Tests und Mutationen dienen
+> der Untersuchung konkreter Risiken oder vermuteter Fehler; keine Mutation jedes Tests und keine Einzelrückführung jedes Sollwerts,
+> Fingerabdrucks oder jeder Saat. Melde Testlücken als solche (Kennzeichen „Testlücke“), getrennt von nachgewiesenen Produktfehlern.
+> Bekannte `[APPROX]`-Punkte und die erwartet offenen Issues nur bestätigen, nicht als neue Befunde melden. Die Merge-Empfehlung
+> richtet sich nach den konkreten Befunden, ihrer Auswirkung und den verbleibenden relevanten Unsicherheiten; nicht Geprüftes nennst
+> du kurz, es bedeutet nicht von selbst „Nein“. Höchstens 120 Zeilen; reicht eine Sitzung nicht, Bericht mit Stand ablegen, Fortsetzung
+> als neue Datei `<datei>-teil<n>.md` auf neuem Branch (siehe „Aufrufe für ChatGPT/Codex“).
+
+Die umfassende Prüfung aller Tests, Sollwerte, Originalfundstellen, Bildschirmzustände und Entscheidungen erfolgt einmal als
+gesonderte **Abschlussprüfung**, wenn alles umgesetzt ist (vor v1.0), nicht in den Runden.
 
 ## Aufrufe für ChatGPT/Codex (Erfahrung Leitstelle Runde 13, 05.11.2026)
 
