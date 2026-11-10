@@ -244,6 +244,9 @@ Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terr
 - **Spurmodell ohne Teil-PRs** (Vorschlag 3): Teile einer Spur sind Commits auf **einem** Branch `paket/<spur>` mit **einem** PR;
   Fortsetzungen arbeiten auf demselben Branch weiter. Kein eigener Integrations-PR je Spur, reviewt wird der Spur-PR.
   Umsetzung in `docs/vorlagen/spur-start.md` („Teile und Fortsetzung“) und `leitstelle-start.md` mit dem Plan der Runde 15.
+- **Prozessdoku verdichten** (Rest von Vorschlag 5): `AGENTS.md`, `zusammenarbeit.md`, `docs/vorlagen/*` (heute rund 1.200 Zeilen
+  Pflichtlektüre je Lauf) auf einen Kern von etwa 300 Zeilen; Sonderfälle in einen Anhang, der nur bei Bedarf gelesen wird.
+  Regeln inhaltlich unverändert. Modell: Claude Sonnet 5.5 (mechanisch), Review Doku-Prüfung.
 - Offene Issues aus Runde 14: #620 (Rest), #698, #699, #703.
 
 ## Paket `hok-format` – Original-Spielstände `*.HOK`
