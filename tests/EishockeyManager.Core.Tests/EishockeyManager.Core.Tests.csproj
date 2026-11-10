@@ -11,6 +11,8 @@
   <ItemGroup>
     <!-- Gemeinsames Attribut für Originaldaten-Tests (echtes Skip, Pflichtlauf EM_REQUIRE_GAMEDATA=1) -->
     <Compile Include="..\EishockeyManager.UI.Tests\Support\GameDataFact.cs" Link="Support\GameDataFact.cs" />
+    <!-- Spur abgleich-original: Abgleichwerkzeug (emtool abgleich) braucht nur Core und Formats, Tests AbgleichOriginal* -->
+    <Compile Include="..\..\src\EishockeyManager.Tools\HokCompare*.cs" Link="Abgleich\%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
     <!-- Spielstände älterer Schemata aus der synthetischen Datenbank (keine Originaldaten), für Migrationstests -->

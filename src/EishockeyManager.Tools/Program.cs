@@ -38,6 +38,7 @@ try
             return EishockeyManager.Tools.HokExport.Run(args.Skip(2).ToList());
         case "hok":
             return EishockeyManager.Tools.HokDump.Run(args.Skip(1).ToList());
+        case "abgleich": return EishockeyManager.Tools.HokCompare.Run(args.Skip(1).ToList()); // Spur abgleich-original
         default:
             Console.WriteLine("""
                 emtool – Werkzeug für die Originaldateien des Eishockey Managers
