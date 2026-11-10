@@ -1095,6 +1095,17 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q17 | Ungültige und bereits entfernte Gebote buchen fälschlich einen Betrag | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "ownership")` | grün |
 | Q17 | Ungültige und bereits entfernte Gebote buchen fälschlich einen Betrag | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "withdraw")` | rot |
 | Q17 | Ungültige und bereits entfernte Gebote buchen fälschlich einen Betrag | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "repeat")` | rot |
+| Q18 | Bundestrainer auch außerhalb der ersten fünf ernennen | `EishockeyManager.Core.Tests.NationalCoachMode4Tests.Mode4_NoManagerInTopFive_NoCoach` | rot |
+| Q19 | Länderwerte trotz Bundestrainer neu würfeln | `EishockeyManager.Core.Tests.NationalCoachMode4Tests.Mode4_Appointment_BeforeReroll_GermanyKeepsBaseRatings` | rot |
+| Q20 | Neue Spieler hinten anfügen statt nach Position einzusortieren | `EishockeyManager.Core.Tests.KaufEinsortierenTests.Join_UnsortedSquad_InsertsBeforeFirstGreaterRole` | rot |
+| Q20 | Neue Spieler hinten anfügen statt nach Position einzusortieren | `EishockeyManager.Core.Tests.KaufEinsortierenTests.Join_Goalkeeper_LandsBehindLastGoalkeeper` | rot |
+| Q20 | Neue Spieler hinten anfügen statt nach Position einzusortieren | `EishockeyManager.Core.Tests.KaufEinsortierenTests.Join_Defender_LandsBehindLastDefender` | rot |
+| Q20 | Neue Spieler hinten anfügen statt nach Position einzusortieren | `EishockeyManager.Core.Tests.KaufEinsortierenTests.Join_Forward_LandsLast` | grün |
+| Q20 | Neue Spieler hinten anfügen statt nach Position einzusortieren | `EishockeyManager.Core.Tests.KaufEinsortierenTests.Buy_Goalkeeper_FromTransferList_SortedIn` | rot |
+| Q20 | Neue Spieler hinten anfügen statt nach Position einzusortieren | `EishockeyManager.Core.Tests.KaufEinsortierenTests.AutoLineup_AfterGoalkeeperPurchase_TieWonByLaterSlot` | rot |
+| Q20 | Neue Spieler hinten anfügen statt nach Position einzusortieren | `EishockeyManager.Core.Tests.KaufEinsortierenTests.LoanReturn_ToManagerClub_SortedIn` | rot |
+| Q21 | Leihspieler bei Rückkehr hinten anfügen | `EishockeyManager.Core.Tests.KaufEinsortierenTests.LoanReturn_ToManagerClub_SortedIn` | rot |
+| Q22 | Form bei Teamwertewanderung außerhalb des gültigen Intervalls würfeln | `EishockeyManager.Core.Tests.TeamValueDriftTests.GameStart_DriftsIntoLeagueBounds` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1594,8 +1605,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.SeasonEnd_OfferSalary_KeepsGamesForClub` | geändert | offen |
 | `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.SeasonEnd_Compensation_KeepsGamesForClub` | geändert | offen |
 | `KaderTransferTeil5Tests.cs · KaderTransferTeil5Tests.GamesForClub_AccumulateOverFourSeasonChanges` | geändert | offen |
-| `KaufEinsortierenTests.cs · KaufEinsortierenTests.Buy_Goalkeeper_FromTransferList_SortedIn` | geändert | offen |
-| `KaufEinsortierenTests.cs · KaufEinsortierenTests.LoanReturn_ToManagerClub_SortedIn` | geändert | offen |
+| `KaufEinsortierenTests.cs · KaufEinsortierenTests.Buy_Goalkeeper_FromTransferList_SortedIn` | geändert | rot: Q20 |
+| `KaufEinsortierenTests.cs · KaufEinsortierenTests.LoanReturn_ToManagerClub_SortedIn` | geändert | rot: Q20, Q21 |
 | `LifecycleRegressionTests.cs · LifecycleRegressionTests.R204_MarketLoanEndsFree_NotBackWithItsRemainingContract` | neu | offen |
 | `LoadQuirkTests.cs · LoadQuirkTests.OnlyMarkerDaySaves_GetTheOffset` | neu | rot: E01 |
 | `LoadQuirkTests.cs · LoadQuirkTests.File44_AfterImport_SecondDayChange_FifteenthOfApril` | neu | rot: E02 |
@@ -1603,8 +1614,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `LoadQuirkTests.cs · LoadQuirkTests.NewGame_HasNoOffset` | neu | rot: E04 |
 | `LoadQuirkTests.cs · LoadQuirkTests.Schema46_WithoutOffset_LoadsWithZero` | neu | rot: E05 |
 | `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach` | geändert | rot: T01 |
-| `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_NoManagerInTopFive_NoCoach` | geändert | offen |
-| `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_Appointment_BeforeReroll_GermanyKeepsBaseRatings` | geändert | offen |
+| `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_NoManagerInTopFive_NoCoach` | geändert | rot: Q18 |
+| `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_Appointment_BeforeReroll_GermanyKeepsBaseRatings` | geändert | rot: Q19 |
 | `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | neu | rot: N11 |
 | `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | neu | rot: N11, N12, N13, N14 |
 | `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.ClearedLineup_SavedInTurn_LoadLinesUpAgain` | neu | rot: N11 |
@@ -1769,7 +1780,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.PassiveBundesligaManager_NeverDismissed_ForcedRelegationInstead` | neu | rot: D07, D08 |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.DeepDebts_NoDismissal_GameContinues` | neu | rot: D08 |
 | `TaktikTeil5Tests.cs · TaktikTeil5Tests.Manual_KeepsEffortAndAttack_DuringMatch` | geändert | offen |
-| `TeamValueDriftTests.cs · TeamValueDriftTests.GameStart_DriftsIntoLeagueBounds` | geändert | offen |
+| `TeamValueDriftTests.cs · TeamValueDriftTests.GameStart_DriftsIntoLeagueBounds` | geändert | rot: Q22 |
 | `TransferOriginalTests.cs · TransferOriginalTests.MultiSeason_Transfers_StayConsistent` | geändert | offen |
 | `TransferOriginalVertragTests.cs · TransferOriginalVertragTests.Lock_RefusesInput_AndCountsDownDaily` | geändert | offen |
 | `TransferTransactionRegressionTests.cs · TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove` | geändert | rot: Q13, Q17 |
