@@ -58,7 +58,7 @@ Befund mit eigenem Beleg: Label `beleg-strittig`, beide Belege im Übergabekomme
 ## Teile und Fortsetzung (geplante Läufe)
 
 Gilt, wenn die Spur in `docs/arbeitspakete.md` eine geordnete Liste von Teilen hat und der Startaufruf die Fortsetzung erlaubt
-oder einen einzelnen Folgeteil mit Base nennt (dann ohne Schritt 5).
+oder einen einzelnen Folgeteil nennt (dann ohne Schritt 5).
 
 1. **Stand ermitteln:** den offenen PR der Spur (Branch `paket/<spur>`) und den letzten Übergabekommentar lesen. Dort steht
    „Fortsetzungen verbraucht: n von 3“. Nennt der Startaufruf einen anderen Zähler, gilt der höhere. Steht im PR ein

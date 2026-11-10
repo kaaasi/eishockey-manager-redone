@@ -23,17 +23,22 @@ Fragen für den Nutzer. **Entwickler und Erstreviews sind Claude-Sitzungen** (ge
 
 **Spurmodell ab Runde 15 (Vormerkung Vorschlag 3, umgesetzt mit diesem Plan):** je Spur **ein** Branch `paket/<spur>` mit **einem**
 PR; Teile sind Commits, Fortsetzungen arbeiten nach dem Übergabekommentar auf demselben Branch weiter
-(`vorlagen/spur-start.md`, „Teile und Fortsetzung“). Der Spur-PR wird einmal reviewt (Erstreview Claude Opus 5.5) und in der
-Integrationsfolge gemergt; kein eigener Integrations-PR je Spur. **Folge:** Welle 0 `prozess-kern` (R15-D3 = A; die übrigen
+(`vorlagen/spur-start.md`, „Teile und Fortsetzung“). Der Spur-PR wird einmal reviewt (Erstreview Claude Opus 5.5; Doku-Spuren:
+Claude Sonnet 5.5 nach „Modellwahl“) und in der Integrationsfolge gemergt, ohne Rebase, wenn konfliktfrei
+(`vorlagen/leitstelle-start.md` Schritt 2); kein eigener Integrations-PR je Spur. **Folge:** Welle 0 `prozess-kern` (R15-D3 = A; die übrigen
 Spuren starten nach dessen Merge) → Welle 1 parallel, Merge in der Folge `tagesablauf` → `kader` → `hok-export` →
-`abgleich-original`; danach Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
+`abgleich-original` (steht die DOSBox-Probe von `hok-export` noch aus, darf `abgleich-original` vorher gemergt werden); danach
+Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
 
 ### Zuständigkeit für gemeinsame Dateien
 
 - `AGENTS.md`, `CLAUDE.md`, `docs/prozess/*`, `docs/vorlagen/*`, `docs/handoffs/VORLAGE.md`: allein `prozess-kern`.
-- `Core/GameState.DailyRun.cs`, `Core/GameState.HotSeat.cs`, `Core/SeasonFlow*.cs`, `Core/DayCounter.cs`, `Core/Finance*.cs`
-  (nur Tag 0, #699): allein `tagesablauf`.
-- `Core/NewGame.cs`, `Core/GameSetup.cs`, `Core/Transfer*.cs`, `Core/Player*.cs`, `Core/Squad*.cs`: allein `kader`.
+- `Core/GameState.DailyRun.cs`, `Core/GameState.HotSeat.cs`, `Core/SeasonFlow*.cs`, `Core/DayCounter.cs`; für Tag 0 (#699)
+  zusätzlich `Core/GameState.Manager.cs` (nur `AdvanceFinance`), `Core/Finance.cs`, `Core/FinanceBank.cs`,
+  `Core/FinanceInbox.cs`, `Core/FinanceSponsorRating.cs`: allein `tagesablauf`.
+- `Core/NewGame.cs`, `Core/GameSetup.cs`, `Core/Transfer*.cs`, `Core/Player*.cs`, `Core/Squad*.cs`, `Core/FinanceTalent.cs`,
+  `Core/FinanceYouth.cs`: allein `kader`. Braucht eine Spur eine weitere `Core/Finance*.cs`, nennt sie sie im PR; die Leitstelle
+  ordnet zu.
 - `src/EishockeyManager.Formats/OriginalSave*.cs`, neue Dateien `Core/OriginalExport*.cs`, `Tools/HokExport.cs`,
   `docs/formate/spielstand-original.md`: allein `hok-export`. `Core/OriginalImport*.cs`: `hok-export` (nur was die Rundreise
   verlangt, im PR genannt); `abgleich-original` liest nur und meldet Importlücken als Issue.
@@ -49,8 +54,9 @@ Spuren starten nach dessen Merge) → Welle 1 parallel, Merge in der Folge `tage
   auf einen Kern von etwa 300 Zeilen; Sonderfälle in `docs/prozess/anhang.md` (nur bei Bedarf gelesen). Regeln inhaltlich
   unverändert. Pfade und Namen der Kurzaufrufe bleiben (`spur-start.md`, `review-anfrage.md`, `leitstelle-start.md`), damit
   laufende Spuren nicht brechen. Dazu #712 (R-06, N-01, N-02, P3-1…3).
-- **Abnahme:** Gegenliste im PR: jede Regel der alten Fassung → Fundstelle in Kern oder Anhang (keine fehlt, keine neu);
-  Zeilenzählung vorher/nachher.
+- **Abnahme:** Gegenliste im PR: jede Regel der alten Fassung → Fundstelle in Kern oder Anhang (keine fehlt, keine neu – außer
+  den Klärungen aus #712, je mit Verweis); Zeilenzählung vorher/nachher. Dazu R719-02 aus `reviews/2026-11-10-plan-runde-15.md`
+  (Reste des Stapelmodells), soweit nicht schon erledigt.
 - **Modell:** Claude Sonnet 5.5 (mechanisch). **Review:** Doku-Prüfung, Claude Sonnet 5.5. **Status:** offen.
 
 ### Spur `tagesablauf` – Restlücken Tagestakt (#699 Punkte 1–3)
@@ -125,7 +131,7 @@ Rückfrage Nutzer zu R15-D2, 10.11.2026).
 
 **R15-D1 – Zuschnitt.** Problem: fünf Vormerkungen/Pflichten (Abgleich, Export, Doku, Restlücken, Issues) konkurrieren um
 Läufe; der Abgleich kann neue Arbeit erzeugen.
-- **A** Sechs Spuren wie oben, fünf parallel, `pruefung-karte` als Welle 2. + alle Vormerkungen in einer Runde; − Abgleich-Befunde
+- **A** Sechs Spuren wie oben, fünf parallel (nach R15-D3 = A: `prozess-kern` als Welle 0, vier parallel), `pruefung-karte` als Welle 2. + alle Vormerkungen in einer Runde; − Abgleich-Befunde
   werden erst in Welle 2/Runde 16 behoben.
 - **B** Wie A ohne `hok-export` (Runde 16). + weniger Läufe; − bricht R14-D2 = B.
 - **C** Erst `abgleich-original` allein, danach Fachspuren auf Basis seiner Befunde. + Fixes zielgerichtet; − Runde deutlich länger,

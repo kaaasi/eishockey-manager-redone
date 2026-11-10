@@ -54,8 +54,8 @@ geschrieben. So kann jede neue Sitzung ohne Chatverlauf weitermachen. Inhalt:
 **Länge (Nutzer 10.11.2026):** höchstens 15 Zeilen plus Testtabelle. Was in PR-Beschreibung oder Review steht, wird verlinkt,
 nicht wiederholt.
 
-Gestapelte oder zusammengehörige PRs einer Spur dürfen eine gemeinsame Übergabe im obersten PR haben; die übrigen PRs
-verweisen mit einem kurzen Kommentar (Head-SHA, `Bearbeiter: frei`) darauf.
+Ab Runde 15 hat jede Spur genau einen PR; die Übergabe steht dort. (Bis Runde 14 gestapelte PRs einer Spur hatten eine
+gemeinsame Übergabe im obersten PR.)
 
 Kommentare statt Dateien, weil sie nicht mit anderen Branches kollidieren und am PR hängen bleiben. Ohne PR (z. B. reine
 Analyse) wird die Übergabe als `docs/handoffs/<datum>-<thema>.md` auf einem eigenen Branch abgelegt.
@@ -130,7 +130,8 @@ GitHub Free erzwingt für private Repos **keine** dieser Regeln (Branch-Schutz u
 ist deshalb verbindlich und wird im Merge-Kommentar abgehakt:
 
 1. [ ] **Head-SHA** des PR = der SHA, den das Review freigegeben hat (bei Abweichung: Nachprüfung; behebt das Delta nur
-   P2/P3, genügt die Delta-Prüfung der Leitstelle nach §5 „Sparsame Kette“ Punkt 4).
+   P2/P3 oder ist es nur ein Rebase ohne Konflikt samt einer vom Plan verlangten Anpassung – `git range-diff` zeigt nichts
+   anderes –, genügt die Delta-Prüfung der Leitstelle nach §5 „Sparsame Kette“ Punkt 4).
 2. [ ] **Base aktuell:** PR ist gegen den aktuellen `main` gebaut bzw. ohne Konflikt; bei neuem `main` seit dem
    Review: Integrationstest lokal wiederholen.
 3. [ ] **CI grün auf genau diesem Head** (Check-Runs des Head-SHA, nicht eines älteren Laufs). Ändert der PR nur `docs/**`
