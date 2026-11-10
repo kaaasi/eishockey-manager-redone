@@ -1158,6 +1158,12 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q56 | Bundestrainer-Warngrenze von 10 auf 9 senken | `EishockeyManager.UI.Tests.WettbewerbeNationalteamTests.CoachWarning_Boundary(players: 10, warning: False)` | grün |
 | Q57 | Bundestrainer-Warngrenze von 10 auf 11 erhöhen | `EishockeyManager.UI.Tests.WettbewerbeNationalteamTests.CoachWarning_Boundary(players: 9, warning: True)` | grün |
 | Q57 | Bundestrainer-Warngrenze von 10 auf 11 erhöhen | `EishockeyManager.UI.Tests.WettbewerbeNationalteamTests.CoachWarning_Boundary(players: 10, warning: False)` | rot |
+| Q58 | Verhandlungssperre läuft nicht herunter | `EishockeyManager.Core.Tests.TransferOriginalVertragTests.Lock_RefusesInput_AndCountsDownDaily` | rot |
+| Q59 | Spielerwert für Starprüfung nicht erneut berechnen | `EishockeyManager.Core.Tests.TransferVertraegeKomplettTeil4Tests.SponsorRating_PlayerWithBid_DrawsValueAgainBeforeStarCheck` | rot |
+| Q60 | Grundsponsoreinnahme um 1 DM erhöhen | `EishockeyManager.Core.Tests.SponsorBewertungTests.FourSeasonChanges_RatingAndIncomeStayConsistent(active: False)` | rot |
+| Q60 | Grundsponsoreinnahme um 1 DM erhöhen | `EishockeyManager.Core.Tests.SponsorBewertungTests.FourSeasonChanges_RatingAndIncomeStayConsistent(active: True)` | rot |
+| Q61 | Manager-Heimspielen 20 Tore hinzufügen | `EishockeyManager.Core.Tests.SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible(active: True)` | rot |
+| Q61 | Manager-Heimspielen 20 Tore hinzufügen | `EishockeyManager.Core.Tests.SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible(active: False)` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1795,8 +1801,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SeasonFlowTests.cs · SeasonFlowTests.Dismissal_OtherManagersContinue` | geändert | offen |
 | `SpielberechnungAnschlussTests.cs · SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason` | geändert | rot: V10 |
 | `SpielberechnungKomplett3Tests.cs · SpielberechnungKomplett3Tests.Heal_Weekly_PermanentStays` | geändert | rot: Q06 |
-| `SpielstaerkeManager2Tests.cs · SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible` | geändert | offen |
-| `SponsorBewertungTests.cs · SponsorBewertungTests.FourSeasonChanges_RatingAndIncomeStayConsistent` | geändert | offen |
+| `SpielstaerkeManager2Tests.cs · SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible` | geändert | rot: Q61 |
+| `SponsorBewertungTests.cs · SponsorBewertungTests.FourSeasonChanges_RatingAndIncomeStayConsistent` | geändert | rot: Q60 |
 | `SquadLifecycleTests.cs · SquadLifecycleTests.R211_PassiveManager_IsWarnedOnceForEveryExpiringPlayer_BeforeTheDeadline` | geändert | offen |
 | `StatistikenPraemienTests.cs · StatistikenPraemienTests.OtherClubLeads_NoSinglePremium` | geändert | rot: Q12 |
 | `StatistikenPraemienTests.cs · StatistikenPraemienTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | rot: Q16 |
@@ -1834,9 +1840,9 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TaktikTeil5Tests.cs · TaktikTeil5Tests.Manual_KeepsEffortAndAttack_DuringMatch` | geändert | rot: Q33 |
 | `TeamValueDriftTests.cs · TeamValueDriftTests.GameStart_DriftsIntoLeagueBounds` | geändert | rot: Q22 |
 | `TransferOriginalTests.cs · TransferOriginalTests.MultiSeason_Transfers_StayConsistent` | geändert | offen |
-| `TransferOriginalVertragTests.cs · TransferOriginalVertragTests.Lock_RefusesInput_AndCountsDownDaily` | geändert | offen |
+| `TransferOriginalVertragTests.cs · TransferOriginalVertragTests.Lock_RefusesInput_AndCountsDownDaily` | geändert | rot: Q58 |
 | `TransferTransactionRegressionTests.cs · TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove` | geändert | rot: Q13, Q17 |
-| `TransferVertraegeKomplettTeil4Tests.cs · TransferVertraegeKomplettTeil4Tests.SponsorRating_PlayerWithBid_DrawsValueAgainBeforeStarCheck` | geändert | offen |
+| `TransferVertraegeKomplettTeil4Tests.cs · TransferVertraegeKomplettTeil4Tests.SponsorRating_PlayerWithBid_DrawsValueAgainBeforeStarCheck` | geändert | rot: Q59 |
 | `WaveBReviewRegressionTests.cs · WaveBReviewRegressionTests.PR3502_BidThatBecameInvalid_IsRejectedWithResultAndRemoved` | geändert | rot: Q14 |
 | `WettbewerbeSpiel12Teil3Tests.cs · WettbewerbeSpiel12Teil3Tests.MultiSeason_ComputerClubsPlayWithoutSquad` | geändert | offen |
 | `WettbewerbeSpiel1Tests.cs · WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore` | geändert | offen |
