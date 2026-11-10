@@ -10,7 +10,7 @@ namespace EishockeyManager.Tools;
 /// gegengelesen (Länge, Kennungen, Prüfsummen) und lässt sich mit <c>emtool hok dump</c> ansehen.
 /// <para>
 /// Prüfhilfe für die DOSBox-Probe (R15-D5 = D): <c>--neu &lt;name&gt; &lt;vereinsindex&gt;</c> statt des Spielstands legt ein neues
-/// Remake-Spiel an (Level 3, Dauer ∞, Mittelfeld; ein Manager), spielt mit <c>--spieltage n</c> n Ligaspieltage über
+/// Remake-Spiel an (Level 3, Dauer ∞, Mittelfeld; ein Manager, Kopf <c>--kopf n</c>), spielt mit <c>--spieltage n</c> n Ligaspieltage über
 /// <see cref="GameState.Continue"/> und exportiert dann; <c>--ems datei</c> schreibt den Remake-Stand daneben.
 /// </para>
 /// [APPROX] Spielstand-ID, Füllbyte und Startschlüssel aus der Saat (Vorgabe 1993), damit das Werkzeug wiederholbar ist.
@@ -21,7 +21,7 @@ internal static class HokExport
 
     private const string Usage =
         "Aufruf: emtool hok export <spielstand> <ziel.hok> [--gamedata ordner] [--seed n] [--force]\n" +
-        "        emtool hok export --neu <name> <vereinsindex> <ziel.hok> [--spieltage n] [--ems datei] [--gamedata ordner] [--seed n] [--force]";
+        "        emtool hok export --neu <name> <vereinsindex> <ziel.hok> [--spieltage n] [--kopf n] [--ems datei] [--gamedata ordner] [--seed n] [--force]";
 
     public static int Run(IReadOnlyList<string> args)
     {
@@ -29,6 +29,7 @@ internal static class HokExport
         {
             string? gameData = null, ems = null, newName = null;
             int? newClub = null;
+            var head = 0;
             var seed = DefaultSeed;
             var matchDays = 0;
             var force = false;
@@ -42,6 +43,7 @@ internal static class HokExport
                     case "--force": force = true; break;
                     case "--spieltage": matchDays = int.Parse(Next(args, ref i)); break;
                     case "--ems": ems = Next(args, ref i); break;
+                    case "--kopf": head = int.Parse(Next(args, ref i)); break;
                     case "--neu":
                         newName = Next(args, ref i);
                         newClub = int.Parse(Next(args, ref i));
@@ -71,7 +73,7 @@ internal static class HokExport
             if (newName is not null)
             {
                 var setup = new GameSetup();
-                setup.AddManager(new ManagerSetup { Name = newName, ClubIndex = newClub });
+                setup.AddManager(new ManagerSetup { Name = newName, ClubIndex = newClub, Head = head });
                 game = NewGame.Create(ClubDatabase.Parse(rawDatabase), setup, seed);
                 for (var d = 0; d < matchDays && !game.RegularSeasonOver; d++)
                 {

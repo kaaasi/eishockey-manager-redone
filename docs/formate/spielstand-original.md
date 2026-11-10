@@ -1017,7 +1017,7 @@ rückwärts); der Export ändert den Spielstand nicht (Test `OriginalExportTests
   wie +0x0A (zuerst die nur von der Automatik Eingesetzten herausnehmen). Play-off-Spiel mit Gleichstand und Penaltysieger: der
   Export zählt den Penaltytreffer zum Ergebnis (im Original kein Gleichstand).
 - **Zugang:** `emtool hok export <spielstand.ems> <ziel.hok> [--gamedata ordner] [--seed n] [--force]`; Prüfhilfe für die DOSBox-Probe:
-  `emtool hok export --neu <name> <vereinsindex> <ziel.hok> [--spieltage n] [--ems datei]` (neues Spiel, n Ligaspieltage über
+  `emtool hok export --neu <name> <vereinsindex> <ziel.hok> [--spieltage n] [--kopf n] [--ems datei]` (neues Spiel, n Ligaspieltage über
   `GameState.Continue`). Ergebnis mit `emtool hok dump` lesbar.
 
 ## Offene Punkte
