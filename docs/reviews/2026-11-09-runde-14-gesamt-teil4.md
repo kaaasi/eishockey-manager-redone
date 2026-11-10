@@ -38,6 +38,12 @@ Die in den Vorberichten dokumentierten Befunde bestehen fort. R14G3-01 ist mit I
 
 **Gegenprobe L01:** Die Unterscheidung zwischen Computer- und Managerverleiher in `Player.Contract.cs` umkehren, sodass der Spieler im geprüften Fall ohne Verhandlung und ohne Ablöse freigegeben wird. Der bestehende Test bleibt **grün**; andere Leihende-Tests werden rot. Eine ergänzte Assertion auf eine positive Buchung `FinanceCategory.Transfers` im Finanzbuch des Verleihers besteht am unveränderten Produktcode und wird unter L01 **rot** mit „keine Ablöse an Verleiher gebucht“. Der Befund betrifft die eigenständige Absicherung der Ablöse, keine nachgewiesene Fehlbuchung im unveränderten Produktcode.
 
+### R14G4-06 (P3): Spätere WM-Termine prüfen die Werteberechnung nicht unabhängig
+
+`Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn` ([NationalteamRunde14Tests.cs:233](https://github.com/kaaasi/eishockey-manager-redone/blob/b13046422b285404ad6ddbe7b5f1b18e22069eea/tests/EishockeyManager.Core.Tests/NationalteamRunde14Tests.cs#L233)) prüft den ersten WM-Termin nach der Ernennung. Dieser läuft im Remake über `OnDayWorldCupEntry`; spätere Termine verwenden `WorldCupLoopStepA`.
+
+**Gegenprobe N25:** Den Aufruf `UpdateNationalTeamValues()` ausschließlich in `WorldCupLoopStepA` auslassen. Alle 14 ausgeführten Datenzeilen der Testklasse `NationalteamRunde14Tests` bleiben **grün**. Eine zusätzliche Kontrolle wartet auf einen späteren WM-Termin, setzt nach dem Menü die Form der aufgestellten Spieler auf 100 und vergleicht die Länderform nach dem Weiterschalten mit der Aufstellung. Sie besteht für Saat 3 und 11 am unveränderten Code; unter N25 wird sie für beide **rot**: erwartet `(100, 100)`, tatsächlich `(1, 1)`. Der Produktcode enthält den Aufruf; der Befund betrifft die Absicherung späterer Termine.
+
 ## 3. Prüfungen und offene Prüfbereiche
 
 Testsaat-Rücksetzungen sind in der Regelspalte ausdrücklich als solche bezeichnet; sie sind keine Regelmutationen und zählen nicht als rote Gegenprobe in der Methodenliste. Die Prüfkopie liegt unter `/workspace/r14-review-teil4/copy`; Ausgangsstand ist der unveränderte lokale Head. Mutationen laufen einzeln mit Wiederherstellung, die vollständigen Ausgaben und Regeln werden unter `/workspace/r14-review-teil4/logs` gespeichert. Beim ersten abgebrochenen Versuch wurde eine überlagerte Mutation erkannt; diese Ergebnisse wurden verworfen und anschließend nach Wiederherstellung der Quelldatei erneut ausgeführt. .NET SDK 10.0.402, lokale Testhost-Sockets mit Umgebungsfreigabe, `NuGetAudit=false`.
@@ -55,6 +61,8 @@ Zur Nutzerentscheidung C wurde `em.exe` Datei `0x54D41–0x54D65` erneut gelesen
 Stadionteile: In `em.exe` Datei `0x3D92D` steht `mov al, 0xC0`, gefolgt von `push ax` bei `0x3D92F`. Der übergebene Maskenwert des niederwertigen Bytes ist damit unmittelbar nachgelesen; die vollständige Kopierroutine und alle Stadionfundstellen sind damit noch nicht geprüft.
 
 Zu L1 selbst in `em.exe` gelesen: `0x29CFA–0x29D7F` prüft `[bp−0x64] = 0`, DGROUP `0x5A14 = 0x7CA` (1994) und Managerzahl `0x386 = 1`, schreibt 1 in das managerindizierte Feld und wiederholt einen Zufallsaufruf bis zur akzeptierten Rückgabe des Stubs `0x110:0x75`. Die Funktion des Stubs und die nachfolgende Tauschfunktion sind durch diese Stelle allein noch nicht zugeordnet; der vollständige Filterbeleg bleibt offen.
+
+Für die Stadion-Hotspots wurde `em.exe` Datei `0x3DB83–0x3DC48` selbst gelesen: Die Grenzprüfung vergleicht die x-Position gegen das Tabellenbyte und dessen Summe mit der Breite; Gleichheit bleibt in beiden Fällen innerhalb. Für y geschieht Entsprechendes über die Bytes bei `0x4F3E` und `0x4F5C`; bei Treffer wird ein Byte aus `0x4F97` gelesen. Die Zuordnung der Tabelleneinträge zu sämtlichen konkreten Rechtecken und die restliche Schleifensteuerung sind damit noch nicht vollständig geprüft.
 
 ### Modus-4-Referenzwert: einzelne geänderte Bestandteile
 
@@ -763,6 +771,90 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.FourSeasons_SettingCarriesOver(active: True)` | grün |
 | N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.ClearedLineup_SwitchesOff_ValuesZero_PlaysEmpty` | grün |
 | N17 | Einstellung bei Migration immer ausschalten | `EishockeyManager.Core.Tests.NationalteamRunde14Teil3Tests.Migration_Chain39To41_AddsBothSettings` | rot |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 11)` | rot |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 3)` | rot |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: False)` | rot |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: True)` | grün |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 3)` | grün |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 7)` | grün |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 11)` | grün |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 17)` | grün |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 13)` | grün |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 11)` | grün |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 3)` | grün |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.HandNomination_InsertsByRole` | grün |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.WorldCupStage_LocksNationalSquadFromFirstDate` | grün |
+| N21 | während der WM-Wanderung ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.SeasonChange_GermanyConditionTechniqueKept_FormRolled` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 11)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 3)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: False)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: True)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 3)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 7)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 11)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 17)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 13)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 11)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 3)` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.HandNomination_InsertsByRole` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.WorldCupStage_LocksNationalSquadFromFirstDate` | grün |
+| N22 | Saisonwanderung auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.SeasonChange_GermanyConditionTechniqueKept_FormRolled` | rot |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 11)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 3)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: False)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: True)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 3)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 7)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 11)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 17)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 13)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 11)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 3)` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.HandNomination_InsertsByRole` | rot |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.WorldCupStage_LocksNationalSquadFromFirstDate` | grün |
+| N23 | Nationalkader nicht nach Rolle sortieren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.SeasonChange_GermanyConditionTechniqueKept_FormRolled` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 11)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 3)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: False)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: True)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 3)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 7)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 11)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 17)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 13)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 11)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 3)` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.HandNomination_InsertsByRole` | grün |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.WorldCupStage_LocksNationalSquadFromFirstDate` | rot |
+| N24 | Nationalkader schon vor dem ersten WM-Termin sperren | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.SeasonChange_GermanyConditionTechniqueKept_FormRolled` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 11)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 3)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: False)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: True)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 3)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 7)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 11)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 17)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 13)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 11)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 3)` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.HandNomination_InsertsByRole` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.WorldCupStage_LocksNationalSquadFromFirstDate` | grün |
+| N25 | vor WM-Spielen keine Werte aus der Aufstellung berechnen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.SeasonChange_GermanyConditionTechniqueKept_FormRolled` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 11)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn(seed: 3)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: False)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason(active: True)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 3)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 7)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 11)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 17)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm(seed: 13)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 11)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm(seed: 3)` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.HandNomination_InsertsByRole` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.WorldCupStage_LocksNationalSquadFromFirstDate` | grün |
+| N26 | Tageslauf vor Länderwerten nicht ausführen | `EishockeyManager.Core.Tests.NationalteamRunde14Tests.SeasonChange_GermanyConditionTechniqueKept_FormRolled` | grün |
 | P01 | Poolalter um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_PoolFromOriginal` | rot |
 | P02 | Marktpreis durch zwei statt drei | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_MarketFromOriginal` | rot |
 | P03 | Verkäufer nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_MarketListingOfManager` | rot |
@@ -883,6 +975,70 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | U14 | Pfeilgrafik nicht zeichnen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Arrows_AreTheKb4Graphics_AtTheOriginalCallSite` | rot |
 | U15 | seitenzahlabhängiges Label zeichnen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Panel_ShowsNoPageLabel` | rot |
 | U16 | konstantes Seitenlabel zeichnen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Panel_ShowsNoPageLabel` | grün |
+| U21 | Rückennummer immer anzeigen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.FullLine_ShowsNoRoom_AndChangesNothing` | grün |
+| U21 | Rückennummer immer anzeigen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | grün |
+| U21 | Rückennummer immer anzeigen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | grün |
+| U21 | Rückennummer immer anzeigen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.GoalkeeperIntoFieldLine_IsRejected` | grün |
+| U21 | Rückennummer immer anzeigen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | rot |
+| U21 | Rückennummer immer anzeigen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | grün |
+| U21 | Rückennummer immer anzeigen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | grün |
+| U21 | Rückennummer immer anzeigen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | grün |
+| U22 | fehlende Reihe als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.FullLine_ShowsNoRoom_AndChangesNothing` | grün |
+| U22 | fehlende Reihe als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | grün |
+| U22 | fehlende Reihe als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | grün |
+| U22 | fehlende Reihe als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.GoalkeeperIntoFieldLine_IsRejected` | grün |
+| U22 | fehlende Reihe als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | grün |
+| U22 | fehlende Reihe als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | grün |
+| U22 | fehlende Reihe als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | rot |
+| U22 | fehlende Reihe als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | grün |
+| U23 | freie Aufstellungsplätze nicht belegen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.FullLine_ShowsNoRoom_AndChangesNothing` | grün |
+| U23 | freie Aufstellungsplätze nicht belegen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | rot |
+| U23 | freie Aufstellungsplätze nicht belegen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | grün |
+| U23 | freie Aufstellungsplätze nicht belegen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.GoalkeeperIntoFieldLine_IsRejected` | grün |
+| U23 | freie Aufstellungsplätze nicht belegen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | grün |
+| U23 | freie Aufstellungsplätze nicht belegen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | grün |
+| U23 | freie Aufstellungsplätze nicht belegen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | grün |
+| U23 | freie Aufstellungsplätze nicht belegen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | grün |
+| U24 | volle Reihe als falsche Rolle melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.FullLine_ShowsNoRoom_AndChangesNothing` | rot |
+| U24 | volle Reihe als falsche Rolle melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | grün |
+| U24 | volle Reihe als falsche Rolle melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | grün |
+| U24 | volle Reihe als falsche Rolle melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.GoalkeeperIntoFieldLine_IsRejected` | grün |
+| U24 | volle Reihe als falsche Rolle melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | grün |
+| U24 | volle Reihe als falsche Rolle melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | grün |
+| U24 | volle Reihe als falsche Rolle melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | grün |
+| U24 | volle Reihe als falsche Rolle melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | grün |
+| U25 | falsche Rolle als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.FullLine_ShowsNoRoom_AndChangesNothing` | grün |
+| U25 | falsche Rolle als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | grün |
+| U25 | falsche Rolle als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | grün |
+| U25 | falsche Rolle als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.GoalkeeperIntoFieldLine_IsRejected` | rot |
+| U25 | falsche Rolle als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | grün |
+| U25 | falsche Rolle als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | grün |
+| U25 | falsche Rolle als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | grün |
+| U25 | falsche Rolle als Platzmangel melden | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | grün |
+| U26 | herausgenommenen Spieler immer eingesetzt lassen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.FullLine_ShowsNoRoom_AndChangesNothing` | grün |
+| U26 | herausgenommenen Spieler immer eingesetzt lassen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | grün |
+| U26 | herausgenommenen Spieler immer eingesetzt lassen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | grün |
+| U26 | herausgenommenen Spieler immer eingesetzt lassen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.GoalkeeperIntoFieldLine_IsRejected` | grün |
+| U26 | herausgenommenen Spieler immer eingesetzt lassen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | grün |
+| U26 | herausgenommenen Spieler immer eingesetzt lassen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | rot |
+| U26 | herausgenommenen Spieler immer eingesetzt lassen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | grün |
+| U26 | herausgenommenen Spieler immer eingesetzt lassen | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | grün |
+| U27 | Klick auf Platz leert diesen nicht | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.FullLine_ShowsNoRoom_AndChangesNothing` | grün |
+| U27 | Klick auf Platz leert diesen nicht | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | grün |
+| U27 | Klick auf Platz leert diesen nicht | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | grün |
+| U27 | Klick auf Platz leert diesen nicht | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.GoalkeeperIntoFieldLine_IsRejected` | grün |
+| U27 | Klick auf Platz leert diesen nicht | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | grün |
+| U27 | Klick auf Platz leert diesen nicht | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | grün |
+| U27 | Klick auf Platz leert diesen nicht | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | grün |
+| U27 | Klick auf Platz leert diesen nicht | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | rot |
+| U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.FullLine_ShowsNoRoom_AndChangesNothing` | grün |
+| U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | grün |
+| U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | rot |
+| U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.GoalkeeperIntoFieldLine_IsRejected` | grün |
+| U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | grün |
+| U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | grün |
+| U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | grün |
+| U28 | Rechtsklick setzt keine Reservisten ein | `EishockeyManager.UI.Tests.KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | grün |
 | V01 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V02 | alte Halbfinalpaarung | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V03 | WM-Tageslauf auslassen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
@@ -945,6 +1101,24 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | X02 | Rückkehr der Listenplätze überspringen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | grün |
 | X02 | Rückkehr der Listenplätze überspringen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | grün |
 | X02 | Rückkehr der Listenplätze überspringen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | grün |
+| X03 | Verletzte auf eigener Transferliste nicht heilen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOverSeasonEnd_ReturnsWithSeasonCountersReset_ClubGamesKept` | grün |
+| X03 | Verletzte auf eigener Transferliste nicht heilen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(active: False)` | grün |
+| X03 | Verletzte auf eigener Transferliste nicht heilen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(active: True)` | grün |
+| X03 | Verletzte auf eigener Transferliste nicht heilen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | grün |
+| X03 | Verletzte auf eigener Transferliste nicht heilen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | rot |
+| X03 | Verletzte auf eigener Transferliste nicht heilen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | grün |
+| X04 | Manager-Tageslauf führt Listenwechsel aus | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOverSeasonEnd_ReturnsWithSeasonCountersReset_ClubGamesKept` | grün |
+| X04 | Manager-Tageslauf führt Listenwechsel aus | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(active: False)` | grün |
+| X04 | Manager-Tageslauf führt Listenwechsel aus | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(active: True)` | grün |
+| X04 | Manager-Tageslauf führt Listenwechsel aus | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | grün |
+| X04 | Manager-Tageslauf führt Listenwechsel aus | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | grün |
+| X04 | Manager-Tageslauf führt Listenwechsel aus | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | rot |
+| X05 | doppelten Spieler beim Saisonwechsel einführen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOverSeasonEnd_ReturnsWithSeasonCountersReset_ClubGamesKept` | grün |
+| X05 | doppelten Spieler beim Saisonwechsel einführen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(active: False)` | rot |
+| X05 | doppelten Spieler beim Saisonwechsel einführen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(active: True)` | rot |
+| X05 | doppelten Spieler beim Saisonwechsel einführen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | grün |
+| X05 | doppelten Spieler beim Saisonwechsel einführen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | grün |
+| X05 | doppelten Spieler beim Saisonwechsel einführen | `EishockeyManager.Core.Tests.KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | grün |
 
 ### Inventur je geändertem oder neuem Test
 
@@ -961,9 +1135,9 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `IntegrationRunde9Tests.cs · IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported` | geändert | offen |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | neu | rot: X01 |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOverSeasonEnd_ReturnsWithSeasonCountersReset_ClubGamesKept` | neu | rot: X02 |
-| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | neu | offen |
-| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason` | neu | rot: X01 |
-| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | neu | offen |
+| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | neu | rot: X03 |
+| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason` | neu | rot: X01, X05 |
+| `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | neu | rot: X04 |
 | `KaderStartRunde14ImportTests.cs · KaderStartRunde14ImportTests.Import_CountersPerCompetition_FromSquadSlots` | neu | offen |
 | `KaderStartRunde14ImportTests.cs · KaderStartRunde14ImportTests.Import_TableRankAndStartLeague` | neu | offen |
 | `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.WorldOnly_EveryManagerRowMapsToRowZero` | neu | offen |
@@ -1041,11 +1215,11 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `NationalteamRunde14Teil4Tests.cs · NationalteamRunde14Teil4Tests.MainPath_TalentSearchTicks_FollowDayCounter` | neu | offen |
 | `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.Day_MainPathOnly_NationalValuesBeforeDrift_DriftDayShowsRolledForm` | neu | offen |
 | `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.Mode4_AfterRealAppointment_DriftDayWorldCupDate_UsesLineupForm` | neu | offen |
-| `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason` | neu | offen |
-| `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn` | neu | offen |
-| `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.SeasonChange_GermanyConditionTechniqueKept_FormRolled` | neu | offen |
-| `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.HandNomination_InsertsByRole` | neu | offen |
-| `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.WorldCupStage_LocksNationalSquadFromFirstDate` | neu | offen |
+| `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.Mode4_FourSeasonChanges_WorldCupLoopEverySeason` | neu | rot: N21 |
+| `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.Mode4_WorldCupDay_PlaysLineupSeenInCoachTurn` | neu | rot: N21 |
+| `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.SeasonChange_GermanyConditionTechniqueKept_FormRolled` | neu | rot: N22 |
+| `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.HandNomination_InsertsByRole` | neu | rot: N23 |
+| `NationalteamRunde14Tests.cs · NationalteamRunde14Tests.WorldCupStage_LocksNationalSquadFromFirstDate` | neu | rot: N24 |
 | `NationalteamTests.cs · NationalteamTests.Club_AutoDisplay_Unchanged` | geändert | offen |
 | `NationalteamTests.cs · NationalteamTests.Club_AutoDisplay_KeepsLastLine` | neu | offen |
 | `NationalteamTests.cs · NationalteamTests.Schema11_WithoutCoach_IsMigrated` | geändert | offen |
@@ -1220,14 +1394,14 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.OfferWindow_AtXTwo_Width165_LineSixTo163` | neu | offen |
 | `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.TransferScreen_AccountBar_LikeDosBox` | neu | offen |
 | `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.TransferScreen_SquadList_NoStarForListedPlayer_EvenInLegacyState` | neu | offen |
-| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | neu | offen |
-| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | neu | offen |
-| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | neu | offen |
-| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.FullLine_ShowsNoRoom_AndChangesNothing` | neu | offen |
-| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.GoalkeeperIntoFieldLine_IsRejected` | neu | offen |
-| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | neu | offen |
-| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | neu | offen |
-| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | neu | offen |
+| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.A364_NumberOnlyForDressedPlayers` | neu | rot: U21 |
+| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.LeftClickOnReserve_WithoutLine_ShowsNoLineSelected` | neu | rot: U22 |
+| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.SelectLine_ThenLeftClick_PlacesInFirstFreeSlotOfLine` | neu | rot: U23 |
+| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.FullLine_ShowsNoRoom_AndChangesNothing` | neu | rot: U24 |
+| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.GoalkeeperIntoFieldLine_IsRejected` | neu | rot: U25 |
+| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.ClickOnPlacedPlayer_TakesOut_LeftUndresses_RightKeepsDressed` | neu | rot: U26 |
+| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.RightClick_TogglesDressedForUnplaced` | neu | rot: U28 |
+| `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | neu | rot: U27 |
 | `KaderStartSetupScreenTests.cs · KaderStartSetupScreenTests.StartLeague_BeforeFirstManager_IsAdopted` | neu | offen |
 | `KaderStartTeil2SetupTests.cs · KaderStartTeil2SetupTests.WorldOnly_ClickOnSecondRow_EditsFirstManager_NoSecondManager` | neu | offen |
 | `KaderStartTeil2cScreenTests.cs · KaderStartTeil2cScreenTests.OwnListingClick_WithoutBid_ReturnsPlayerToSquad` | neu | offen |
