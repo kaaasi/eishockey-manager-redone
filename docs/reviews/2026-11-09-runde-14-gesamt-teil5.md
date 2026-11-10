@@ -1142,6 +1142,15 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q43 | Übertrag der Vereinsspiele am Saisonende löschen | `EishockeyManager.Core.Tests.KaderTransferTeil5Tests.GamesForClub_AccumulateOverFourSeasonChanges(active: True)` | rot |
 | Q43 | Übertrag der Vereinsspiele am Saisonende löschen | `EishockeyManager.Core.Tests.KaderTransferTeil5Tests.GamesForClub_AccumulateOverFourSeasonChanges(active: False)` | rot |
 | Q44 | Ausgewiesene Ablöse um 1 DM erhöhen | `EishockeyManager.Core.Tests.KaderTransferTeil5Tests.SeasonEnd_Compensation_KeepsGamesForClub` | rot |
+| Q45 | Linke Grenze der Transfertrennlinien verschieben | `EishockeyManager.UI.Tests.PruefungKarteRunde14UiTests.TransferList_Separators_181To313_LongerAfterHover` | rot |
+| Q46 | Anlagenbeschriftung ein Pixel nach links verschieben | `EishockeyManager.UI.Tests.PruefungKarteRunde14UiTests.TransferScreen_AccountLabels_TopRow225_AnlagenAt133` | rot |
+| Q47 | Meldung zur deaktivierten Automatik ändern | `EishockeyManager.UI.Tests.LineupAutoDisabledMessageTests.ManualChange_DisablesAutoLineup_AndShowsMessageOnce` | rot |
+| Q47 | Meldung zur deaktivierten Automatik ändern | `EishockeyManager.UI.Tests.OriginalDialogCallersTests.Lineup_AutoDisabledMessage_IsShortMessageWith45Ticks` | rot |
+| Q48 | Sperrmeldung ändern | `EishockeyManager.UI.Tests.LineupShortMessagesE2Tests.List_Suspended_ShowsSpielerIstGesperrt` | rot |
+| Q49 | Verletzungsmeldung ändern | `EishockeyManager.UI.Tests.LineupShortMessagesE2Tests.List_Injured_ShowsSpielerIstVerletzt` | rot |
+| Q50 | Meldung bei falscher Spielerrolle ändern | `EishockeyManager.UI.Tests.OriginalDialogCallersTests.Lineup_WrongRole_IsShortMessage_AndIgnoresClicks` | rot |
+| Q51 | Automatikmeldung 75 statt 45 Takte zeigen | `EishockeyManager.UI.Tests.OriginalDialogCallersTests.Lineup_AutoDisabledMessage_IsShortMessageWith45Ticks` | rot |
+| Q52 | Kurzmeldung durch Linksklick schließen | `EishockeyManager.UI.Tests.OriginalDialogCallersTests.Lineup_WrongRole_IsShortMessage_AndIgnoresClicks` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1867,9 +1876,9 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.SeasonEnd_ListIsPictureBeforeNegotiation_RedrawnAfterDeparture` | neu | offen |
 | `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.ContractsScreen_HeaderAndDialogFrame_MatchDosBoxPictures` | neu | offen |
 | `LifecycleScreenRegressionTests.cs · LifecycleScreenRegressionTests.R204_OriginalDataLoanAndContractEndAreConsistentAfterContinueThroughSeason` | geändert | offen |
-| `LineupAutoDisabledMessageTests.cs · LineupAutoDisabledMessageTests.ManualChange_DisablesAutoLineup_AndShowsMessageOnce` | geändert | offen |
-| `LineupShortMessagesE2Tests.cs · LineupShortMessagesE2Tests.List_Suspended_ShowsSpielerIstGesperrt` | geändert | offen |
-| `LineupShortMessagesE2Tests.cs · LineupShortMessagesE2Tests.List_Injured_ShowsSpielerIstVerletzt` | geändert | offen |
+| `LineupAutoDisabledMessageTests.cs · LineupAutoDisabledMessageTests.ManualChange_DisablesAutoLineup_AndShowsMessageOnce` | geändert | rot: Q47 |
+| `LineupShortMessagesE2Tests.cs · LineupShortMessagesE2Tests.List_Suspended_ShowsSpielerIstGesperrt` | geändert | rot: Q48 |
+| `LineupShortMessagesE2Tests.cs · LineupShortMessagesE2Tests.List_Injured_ShowsSpielerIstVerletzt` | geändert | rot: Q49 |
 | `NationalLineupScreenTests.cs · NationalLineupScreenTests.CoachMenu_OpensNationalLineupAndTactics_WithoutChangingState` | geändert | offen |
 | `NationalLineupScreenTests.cs · NationalLineupScreenTests.A010_FullLine_NoRoom_ClickOnPlacedTakesOut` | geändert | offen |
 | `NationalLineupScreenTests.cs · NationalLineupScreenTests.Lineup_Clicks_FollowOriginalRules_AndTacticsBelongToNationalTeam` | geändert | offen |
@@ -1881,11 +1890,11 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage` | neu | rot: U36, U37 |
 | `NewsBarDosboxTests.cs · NewsBarDosboxTests.Message_ShowsDateAndTwoCenteredLines` | neu | rot: Q36 |
 | `NewsBarDosboxTests.cs · NewsBarDosboxTests.LongMessage_ShowsOnlyTwoLines_NothingOnTheBottomEdge` | neu | rot: Q38 |
-| `OriginalDialogCallersTests.cs · OriginalDialogCallersTests.Lineup_AutoDisabledMessage_IsShortMessageWith45Ticks` | geändert | offen |
-| `OriginalDialogCallersTests.cs · OriginalDialogCallersTests.Lineup_WrongRole_IsShortMessage_AndIgnoresClicks` | geändert | offen |
+| `OriginalDialogCallersTests.cs · OriginalDialogCallersTests.Lineup_AutoDisabledMessage_IsShortMessageWith45Ticks` | geändert | rot: Q47, Q51 |
+| `OriginalDialogCallersTests.cs · OriginalDialogCallersTests.Lineup_WrongRole_IsShortMessage_AndIgnoresClicks` | geändert | rot: Q50, Q52 |
 | `PassiveScreenTests.cs · PassiveScreenTests.PlanChangedOnPausedTrainingDay_AppliesFromNextTick` | neu | offen |
-| `PruefungKarteRunde14UiTests.cs · PruefungKarteRunde14UiTests.TransferList_Separators_181To313_LongerAfterHover` | neu | offen |
-| `PruefungKarteRunde14UiTests.cs · PruefungKarteRunde14UiTests.TransferScreen_AccountLabels_TopRow225_AnlagenAt133` | neu | offen |
+| `PruefungKarteRunde14UiTests.cs · PruefungKarteRunde14UiTests.TransferList_Separators_181To313_LongerAfterHover` | neu | rot: Q45 |
+| `PruefungKarteRunde14UiTests.cs · PruefungKarteRunde14UiTests.TransferScreen_AccountLabels_TopRow225_AnlagenAt133` | neu | rot: Q46 |
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Paging_OnlyThroughArrowPair_InStepsOfFortyEight_NoEffectAtTheEnds` | neu | rot: U01 |
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Paging_WheelAndKeys_DoNothing` | neu | rot: U12 |
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Panel_ShowsNoPageLabel` | neu | rot: U15 |
