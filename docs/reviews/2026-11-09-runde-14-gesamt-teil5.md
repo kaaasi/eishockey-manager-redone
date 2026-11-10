@@ -1194,6 +1194,9 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q73 | Ergebnismeldungen schalten Playoffs nicht auf Minutenlauf | `EishockeyManager.Core.Tests.SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop(competition: Playoff, knockOut: True, league: ZweiteLiga)` | rot |
 | Q73 | Ergebnismeldungen schalten Playoffs nicht auf Minutenlauf | `EishockeyManager.Core.Tests.SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop(competition: Playoff, knockOut: True, league: Bundesliga)` | rot |
 | Q74 | Kreditanfrage erst nach statt am siebten Tag verfallen lassen | `EishockeyManager.Core.Tests.DeadlineRegressionTests.R208_AnswerChecksDeadlineAtPausedUnprocessedDay` | rot |
+| Q75 | Vertragsdialograhmen ein Pixel nach rechts verschieben | `EishockeyManager.UI.Tests.KaderStartTeil4ScreenTests.ContractsScreen_HeaderAndDialogFrame_MatchDosBoxPictures` | rot |
+| Q76 | Kauffenster ein Pixel nach rechts verschieben | `EishockeyManager.UI.Tests.TransferBuyWindowDosboxTests.BuyWindow_IsLeftOverSquadList_WithoutButtons_AndSolidShadow` | rot |
+| Q77 | Gehaltsabbild nach statt vor Verhandlung erstellen | `EishockeyManager.UI.Tests.KaderStartTeil4ScreenTests.SeasonEnd_ListIsPictureBeforeNegotiation_RedrawnAfterDeparture` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1916,8 +1919,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartTeil2SetupTests.cs · KaderStartTeil2SetupTests.WorldOnly_ClickOnSecondRow_EditsFirstManager_NoSecondManager` | neu | rot: Q53 |
 | `KaderStartTeil2cScreenTests.cs · KaderStartTeil2cScreenTests.OwnListingClick_WithoutBid_ReturnsPlayerToSquad` | neu | rot: Q62 |
 | `KaderStartTeil2cScreenTests.cs · KaderStartTeil2cScreenTests.OwnListingClick_WithBid_OpensBidWindow` | neu | rot: Q63 |
-| `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.SeasonEnd_ListIsPictureBeforeNegotiation_RedrawnAfterDeparture` | neu | offen |
-| `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.ContractsScreen_HeaderAndDialogFrame_MatchDosBoxPictures` | neu | offen |
+| `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.SeasonEnd_ListIsPictureBeforeNegotiation_RedrawnAfterDeparture` | neu | rot: Q77 |
+| `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.ContractsScreen_HeaderAndDialogFrame_MatchDosBoxPictures` | neu | rot: Q75 |
 | `LifecycleScreenRegressionTests.cs · LifecycleScreenRegressionTests.R204_OriginalDataLoanAndContractEndAreConsistentAfterContinueThroughSeason` | geändert | offen |
 | `LineupAutoDisabledMessageTests.cs · LineupAutoDisabledMessageTests.ManualChange_DisablesAutoLineup_AndShowsMessageOnce` | geändert | rot: Q47 |
 | `LineupShortMessagesE2Tests.cs · LineupShortMessagesE2Tests.List_Suspended_ShowsSpielerIstGesperrt` | geändert | rot: Q48 |
@@ -1963,7 +1966,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TacticsClubScreenTests.cs · TacticsClubScreenTests.Tactics_GoalieArrows_LowerHalfIsNext_NoWrap` | neu | rot: U53 |
 | `TeamScreenTests.cs · TeamScreenTests.Lineup_ClickPlayerThenSlot_ChangesGoalkeeper` | geändert | offen |
 | `TeamScreenTests.cs · TeamScreenTests.Tactics_ModesBlocksAndSwitchToLineup` | geändert | offen |
-| `TransferBuyWindowDosboxTests.cs · TransferBuyWindowDosboxTests.BuyWindow_IsLeftOverSquadList_WithoutButtons_AndSolidShadow` | neu | offen |
+| `TransferBuyWindowDosboxTests.cs · TransferBuyWindowDosboxTests.BuyWindow_IsLeftOverSquadList_WithoutButtons_AndSolidShadow` | neu | rot: Q76 |
 | `TransferVertraegeKomplettTeil3ScreenTests.cs · TransferVertraegeKomplettTeil3ScreenTests.ClickOnOfferedPlayer_OpensOfferWindow_SellMovesPlayer` | geändert | rot: Q64 |
 | `TransferVertraegeKomplettTeil4ScreenTests.cs · TransferVertraegeKomplettTeil4ScreenTests.HoveredEntry_RecolorsSeparatorsAboveAndBelow` | geändert | rot: Q55 |
 | `TransferVertraegeKomplettTeil5ScreenTests.cs · TransferVertraegeKomplettTeil5ScreenTests.MarketBid_OpensOfferWindow_SellCreditsFee` | geändert | rot: Q64 |
