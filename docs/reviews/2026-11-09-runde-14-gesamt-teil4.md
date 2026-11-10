@@ -74,6 +74,8 @@ Für A056 wurde `em.exe` `0x28AC7–0x28ADD` selbst gelesen: `di` wird oben auf 
 
 Für die WM-Seitenerinnerung wurde `em.exe` `0x5649D–0x564BA` selbst gelesen: fünf Bytes werden von DGROUP `0x5128 + i` nach `0x5123 + i` kopiert. Das fünfte Startbyte bei Datei `0x16DD0 + 0x5128` hat den Wert 8. Die vollständige Zuordnung aller fünf Kacheln und die übrigen Menüpfade bleiben offen.
 
+Für A115/L10 wurde `em.exe` `0x27547–0x27665` selbst gelesen: Das Besitzerbyte `+0x1A` wird mit dem laufenden Satz verglichen; bei Besitzer ab 4 schreibt der entsprechende Zweig den Wert 6 nach `+0x1A`. Für Besitzer unter 4 ruft der andere Zweig `0x108:0x5C` auf und übergibt später für `0x48:0x2BD4` eine Länge von `0x34` und zwei satzindizierte Adressen. Die Kopierrichtung des Hilfsaufrufs wurde hier nicht unabhängig aufgelöst; die volle Regelprüfung bleibt offen.
+
 ### Modus-4-Referenzwert: einzelne geänderte Bestandteile
 
 Die Tabelle vergleicht jedes seit Base geänderte Feld mit den vollständigen tatsächlichen Ausgaben einzelner Regelrückmutationen V01–V09. Ein abweichender Wert belegt die Abhängigkeit von der jeweils genannten Regel unter Head-Bedingungen; er beweist keine alleinige Ursache der Änderung. Die Konto-Vorbedingung des Tests wurde hierbei nicht zurückgesetzt. `offen` bedeutet, dass keine dieser Mutationen den Wert verändert hat.
@@ -183,6 +185,8 @@ Diese statische Zuordnung ergänzt die zwei dynamischen Sonderfallprüfungen und
 | E14-6 = A, zusätzlicher Lauf Speicherdialog | `docs/arbeitspakete.md:174` ordnet A338/A339 und den zusätzlichen Lauf `hok-import` Teil 5 zu; der Dialogcode ist vorhanden, und 16/16 Kontrollfälle bestehen. Vollständiger Original- und Ereignisabgleich bleibt offen. |
 
 Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten weiter; nicht aufgeführte Entscheidungen sind damit nicht als abgeschlossen bewertet.
+
+Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen rot, weil die Ligagröße 11 statt 12 beträgt. Das belegt nur diese Invariante. E06 unterdrückt dagegen den Spieltagsmerker selbst; der zielgerichtete Funktionstest wird rot, während alle vier Mehrsaisonvarianten grün bleiben. Sie weisen die Wirkung der Option also nicht selbst nach (bereits in Teil 2 festgestellt).
 
 ### Ergebnisse je Mutation und Theoriezeile
 
@@ -472,6 +476,14 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | D08 | Manager bei hohen Schulden entlassen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.MainPath_TickOfHaltDay_RunsBeforeHalt` | grün |
 | D08 | Manager bei hohen Schulden entlassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.Construction_AdvancesOnCounterZeroDays` | grün |
 | D08 | Manager bei hohen Schulden entlassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.ListChangeDays_OnlyEventDaysOfMainPath` | grün |
+| D11 | Listenwechsel auch an Tagen ohne Ereignis | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.ListChangeDays_OnlyEventDaysOfMainPath` | rot |
+| D12 | Gebote auch im zweiten Managerzug verfallen lassen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.CatchUpManagerDay_TwoManagers_SecondNeitherExpiresNorBidsOnForeignListings` | rot |
+| D13 | Stadionbau nach Tag statt Tageszähler | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.Construction_AdvancesOnCounterZeroDays` | rot |
+| D14 | Tendenzgrenzen aufweiten | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.AdvanceTrend_ClampsAndRerollsAtZero` | rot |
+| D15 | Training im Tageslauf überspringen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks(active: False)` | rot |
+| D15 | Training im Tageslauf überspringen | `EishockeyManager.Core.Tests.TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks(active: True)` | rot |
+| D16 | TransferMarket.StartSeason auf Base 401efa7 zurücksetzen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.File44_SeasonChange_KeepsListLikeFile46` | rot |
+| D16 | TransferMarket.StartSeason auf Base 401efa7 zurücksetzen | `EishockeyManager.Core.Tests.TagestaktHauptwegReviewTests.SeasonChange_KeepsMarketList_PlayersAgeOneYear` | rot |
 | E01 | auch bei ungleichem Index Markierung annehmen | `EishockeyManager.Core.Tests.LoadQuirkTests.OnlyMarkerDaySaves_GetTheOffset` | rot |
 | E02 | zweiten Tagesabschluss nach Laden auslassen | `EishockeyManager.Core.Tests.LoadQuirkTests.File44_AfterImport_SecondDayChange_FifteenthOfApril` | rot |
 | E03 | Ladeversatz am Saisonende nicht löschen | `EishockeyManager.Core.Tests.LoadQuirkTests.File44_Offset_SurvivesSave_EndsAtSeasonChange_FourSeasons(active: False)` | rot |
@@ -486,6 +498,13 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | E07 | Manager-Tagesmerker ohne Paarungsprüfung setzen | `EishockeyManager.Core.Tests.SaisonManagerTagTests.NoManagerInvolved_OptionDoesNothing_SameRandom` | rot |
 | E08 | Option standardmäßig aktivieren | `EishockeyManager.Core.Tests.SaisonManagerTagTests.Default_IsOff_AndSaveRoundTripKeepsIt` | rot |
 | E09 | Option bei Migration aktivieren | `EishockeyManager.Core.Tests.SaisonManagerTagTests.Schema39Save_Migrates_OptionOff` | rot |
+| E11 | Entlassungsflag alter Stände löschen | `EishockeyManager.Core.Tests.PruefungKarteRunde14Tests.Schema45_WithDebtDaysAndDismissed_LoadsKeepsDismissed_EndsGame` | rot |
+| E12 | verletzte Listenplätze im Tageslauf nicht heilen | `EishockeyManager.Core.Tests.PruefungKarteRunde14Tests.ListedInjuredOwnPlayer_HealsOnTheHealingTick` | rot |
+| E13 | Neuaufstellung an Ereignistagen auslassen | `EishockeyManager.Core.Tests.PruefungKarteRunde14Tests.AutoLineup_OnlyOnTickOrEventDays` | rot |
+| E14 | einen Bundesligaverein zusätzlich in die zweite Liga versetzen | `EishockeyManager.Core.Tests.SaisonManagerTagTests.MultiSeason_FourSeasonChanges_BothSettings(active: False, option: True)` | rot |
+| E14 | einen Bundesligaverein zusätzlich in die zweite Liga versetzen | `EishockeyManager.Core.Tests.SaisonManagerTagTests.MultiSeason_FourSeasonChanges_BothSettings(active: True, option: True)` | rot |
+| E14 | einen Bundesligaverein zusätzlich in die zweite Liga versetzen | `EishockeyManager.Core.Tests.SaisonManagerTagTests.MultiSeason_FourSeasonChanges_BothSettings(active: True, option: False)` | rot |
+| E14 | einen Bundesligaverein zusätzlich in die zweite Liga versetzen | `EishockeyManager.Core.Tests.SaisonManagerTagTests.MultiSeason_FourSeasonChanges_BothSettings(active: False, option: False)` | rot |
 | F01 | Feldkartenversion auf 46 setzen | `EishockeyManager.Core.Tests.OriginalImportFieldMapTests.FieldMap_NamesSchemaVersion` | rot |
 | F02 | ein Schemafeld aus der Karte entfernen | `EishockeyManager.Core.Tests.OriginalImportFieldMapTests.FieldMap_CoversEverySchemaFieldExactlyOnce` | rot |
 | F03 | ungültigen Feldkartenstatus setzen | `EishockeyManager.Core.Tests.OriginalImportFieldMapTests.FieldMap_RowsHaveValidStatusAndSource` | rot |
@@ -567,6 +586,9 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | I12 | Trainingseinheit um eins verschieben | `EishockeyManager.Core.Tests.OriginalImportRestTests.Import_TrainingPlan(file: "FILE09.HOK")` | rot |
 | I12 | Trainingseinheit um eins verschieben | `EishockeyManager.Core.Tests.OriginalImportRestTests.Import_TrainingPlan(file: "FILE08.HOK")` | rot |
 | I13 | Nationalkonto nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportRestTests.Import_NationalAccountAndTalentSearch` | rot |
+| I20 | importierte Pokalspiele um eins erhöhen | `EishockeyManager.Core.Tests.KaderStartRunde14ImportTests.Import_CountersPerCompetition_FromSquadSlots(file: "FILE40.HOK")` | rot |
+| I20 | importierte Pokalspiele um eins erhöhen | `EishockeyManager.Core.Tests.KaderStartRunde14ImportTests.Import_CountersPerCompetition_FromSquadSlots(file: "FILE39.HOK")` | rot |
+| I21 | importierten Tabellenplatz um eins erhöhen | `EishockeyManager.Core.Tests.KaderStartRunde14ImportTests.Import_TableRankAndStartLeague` | rot |
 | J01 | laufende Bauten nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_StadiumConstruction_File44A` | rot |
 | J01 | laufende Bauten nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_StadiumConstruction_File43` | rot |
 | J02 | Trendwert nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_PlayerTrendFromSlot` | rot |
@@ -1082,6 +1104,66 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | T09 | Testsaat auf Base zurücksetzen | `EishockeyManager.Core.Tests.SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible(active: True)` | grün |
 | T09 | Testsaat auf Base zurücksetzen | `EishockeyManager.Core.Tests.SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible(active: False)` | grün |
 | T10 | Testsaat auf Base zurücksetzen | `EishockeyManager.Core.Tests.StatistikenPraemienTests.OtherClubLeads_NoSinglePremium` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveAttack_KeepsThreeBits` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: -3, expected: 60)` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 0, expected: 80)` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 1, expected: 85)` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: -2, expected: 90)` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 4, expected: 60)` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 50, expectedBase: 60, expectedHighLead: 0)` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 62, expectedBase: 60, expectedHighLead: 0)` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 80, opponent: 50, expectedBase: 40, expectedHighLead: 20)` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 63, expectedBase: 40, expectedHighLead: 20)` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.Defaults_ShowEvenMatchRowOfOriginal` | rot |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoAttack_UnderdogAndFavourite` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffortIsPercent_AttackUpToSeven_BaseAndSurchargeShareTheLimit` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.BaseLimit_IgnoresHighDeficit_LikeOriginal` | grün |
+| T21 | Starttaktik mit alter Einsatzzeile initialisieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.OnlySemiIsEditable` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveAttack_KeepsThreeBits` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: -3, expected: 60)` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 0, expected: 80)` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 1, expected: 85)` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: -2, expected: 90)` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 4, expected: 60)` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 50, expectedBase: 60, expectedHighLead: 0)` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 62, expectedBase: 60, expectedHighLead: 0)` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 80, opponent: 50, expectedBase: 40, expectedHighLead: 20)` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 63, expectedBase: 40, expectedHighLead: 20)` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.Defaults_ShowEvenMatchRowOfOriginal` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoAttack_UnderdogAndFavourite` | grün |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffortIsPercent_AttackUpToSeven_BaseAndSurchargeShareTheLimit` | rot |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.BaseLimit_IgnoresHighDeficit_LikeOriginal` | rot |
+| T22 | Einsatzgrenze beim Setzen ignorieren | `EishockeyManager.Core.Tests.TacticsOriginalTests.OnlySemiIsEditable` | grün |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveAttack_KeepsThreeBits` | grün |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: -3, expected: 60)` | rot |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 0, expected: 80)` | rot |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 1, expected: 85)` | rot |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: -2, expected: 90)` | rot |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 4, expected: 60)` | rot |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 50, expectedBase: 60, expectedHighLead: 0)` | grün |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 62, expectedBase: 60, expectedHighLead: 0)` | grün |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 80, opponent: 50, expectedBase: 40, expectedHighLead: 20)` | grün |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 63, expectedBase: 40, expectedHighLead: 20)` | grün |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.Defaults_ShowEvenMatchRowOfOriginal` | grün |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoAttack_UnderdogAndFavourite` | grün |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffortIsPercent_AttackUpToSeven_BaseAndSurchargeShareTheLimit` | grün |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.BaseLimit_IgnoresHighDeficit_LikeOriginal` | rot |
+| T23 | wirksamen Einsatz um eins erhöhen | `EishockeyManager.Core.Tests.TacticsOriginalTests.OnlySemiIsEditable` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveAttack_KeepsThreeBits` | rot |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: -3, expected: 60)` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 0, expected: 80)` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 1, expected: 85)` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: -2, expected: 90)` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation(goalDifference: 4, expected: 60)` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 50, expectedBase: 60, expectedHighLead: 0)` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 62, expectedBase: 60, expectedHighLead: 0)` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 80, opponent: 50, expectedBase: 40, expectedHighLead: 20)` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoEffort_DependsOnStrengthGap(own: 50, opponent: 63, expectedBase: 40, expectedHighLead: 20)` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.Defaults_ShowEvenMatchRowOfOriginal` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.AutoAttack_UnderdogAndFavourite` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.EffortIsPercent_AttackUpToSeven_BaseAndSurchargeShareTheLimit` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.BaseLimit_IgnoresHighDeficit_LikeOriginal` | grün |
+| T24 | Angriffsmaske um ein Bit verdrehen | `EishockeyManager.Core.Tests.TacticsOriginalTests.OnlySemiIsEditable` | grün |
 | U01 | Blätterpfeil nicht auf Loslassen warten | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Paging_OnlyThroughArrowPair_InStepsOfFortyEight_NoEffectAtTheEnds` | rot |
 | U02 | Spaltenwechsel bei Grenzwert vorziehen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Marker_ColumnBoundaries_LikeTheOriginal(mouseX: 202, column: 1)` | rot |
 | U02 | Spaltenwechsel bei Grenzwert vorziehen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Marker_ColumnBoundaries_LikeTheOriginal(mouseX: 123, column: 1)` | grün |
@@ -1231,6 +1313,10 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | U37 | Gesperrte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_OpensKnockoutFromStageFive` | grün |
 | U37 | Gesperrte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | grün |
 | U37 | Gesperrte auf Aufstellungsplätzen nicht schützen | `EishockeyManager.UI.Tests.NationalteamRunde14UiTests.CoachMenu_TransferTraining_LockedFromFirstWorldCupDate` | grün |
+| U41 | Stärkebildschirm ändert beim Zeichnen Geld | `EishockeyManager.UI.Tests.BildschirmeFreipruefungTests.AllScreens_OpeningAndDrawingDoNotChangeGameState(kind: NationalCoach)` | rot |
+| U41 | Stärkebildschirm ändert beim Zeichnen Geld | `EishockeyManager.UI.Tests.BildschirmeFreipruefungTests.AllScreens_OpeningAndDrawingDoNotChangeGameState(kind: Start)` | rot |
+| U41 | Stärkebildschirm ändert beim Zeichnen Geld | `EishockeyManager.UI.Tests.BildschirmeFreipruefungTests.AllScreens_OpeningAndDrawingDoNotChangeGameState(kind: MidSeason)` | rot |
+| U42 | Nationalaufstellung ändert beim Zeichnen Geld | `EishockeyManager.UI.Tests.BildschirmeFreipruefungTests.NationalMenu_Open_AllCoachTiles_DoNotChangeGameState` | rot |
 | V01 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V02 | alte Halbfinalpaarung | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V03 | WM-Tageslauf auslassen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
@@ -1240,6 +1326,14 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | V07 | Listenwechsel im Hauptweg auslassen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V08 | Tageslauf jeden Tag ausführen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V09 | WM-Schleife einen Tag früher beginnen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
+| V10 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.RngTwinProbeTests.FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(active: False, expected: "8A64633B9AF694CD")` | rot |
+| V10 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason(active: True, expected: "3BFBFB82C212FDB8")` | rot |
+| V10 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason(active: False, expected: "7643FD5C4D33C359")` | rot |
+| V10 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.RngTwinProbeTests.FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(active: True, expected: "18C9B0A5398CF96B")` | rot |
+| V10 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.RngTwinProbeTests.FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(active: True, seed: 11, expected: "3705607C914AE2C0")` | rot |
+| V10 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.RngTwinProbeTests.FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(active: False, seed: 3, expected: "71C440ACDC165036")` | rot |
+| V10 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.RngTwinProbeTests.FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(active: True, seed: 3, expected: "F647215D0B088A26")` | rot |
+| V10 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.RngTwinProbeTests.FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(active: False, seed: 11, expected: "82605FA6E5525270")` | rot |
 | W01 | WM-Tageslauf nach WM-Spielen auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.Mode4_NoCoach_HealingFollowsDayCounter` | rot |
 | W01 | WM-Tageslauf nach WM-Spielen auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.ClubOnly_WorldCupPeriod_NoTrainingNoMarketNoDrift(seed: 3)` | grün |
 | W01 | WM-Tageslauf nach WM-Spielen auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.ClubOnly_WorldCupPeriod_NoTrainingNoMarketNoDrift(seed: 11)` | grün |
@@ -1372,8 +1466,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | neu | rot: X03 |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason` | neu | rot: X01, X05 |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.CatchUpManagerDay_NoListChange_BidsOnlyOnOwnListings` | neu | rot: X04 |
-| `KaderStartRunde14ImportTests.cs · KaderStartRunde14ImportTests.Import_CountersPerCompetition_FromSquadSlots` | neu | offen |
-| `KaderStartRunde14ImportTests.cs · KaderStartRunde14ImportTests.Import_TableRankAndStartLeague` | neu | offen |
+| `KaderStartRunde14ImportTests.cs · KaderStartRunde14ImportTests.Import_CountersPerCompetition_FromSquadSlots` | neu | rot: I20 |
+| `KaderStartRunde14ImportTests.cs · KaderStartRunde14ImportTests.Import_TableRankAndStartLeague` | neu | rot: I21 |
 | `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.WorldOnly_EveryManagerRowMapsToRowZero` | neu | rot: K41 |
 | `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.OneSeason_SingleManager_ClubOnPlaceZero` | neu | rot: K42 |
 | `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched` | neu | rot: K43, K44 |
@@ -1528,16 +1622,16 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Import_OwnListedPlayer_OnlyOnMarket` | neu | offen |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Import_CarriesPerCompetition_AllStands` | neu | rot: S04 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Load_Schema43_RunningQuarterFinal_SemifinalByTable0x144` | neu | rot: S01, S05 |
-| `PruefungKarteRunde14Tests.cs · PruefungKarteRunde14Tests.Schema45_WithDebtDaysAndDismissed_LoadsKeepsDismissed_EndsGame` | neu | offen |
-| `PruefungKarteRunde14Tests.cs · PruefungKarteRunde14Tests.ListedInjuredOwnPlayer_HealsOnTheHealingTick` | neu | offen |
-| `PruefungKarteRunde14Tests.cs · PruefungKarteRunde14Tests.AutoLineup_OnlyOnTickOrEventDays` | neu | offen |
-| `RngTwinProbeTests.cs · RngTwinProbeTests.FourSeasonChanges_FingerprintUnchangedBySerializableGenerator` | geändert | offen |
-| `RngTwinProbeTests.cs · RngTwinProbeTests.FourSeasonChanges_OriginalDatabase_FingerprintUnchanged` | geändert | offen |
+| `PruefungKarteRunde14Tests.cs · PruefungKarteRunde14Tests.Schema45_WithDebtDaysAndDismissed_LoadsKeepsDismissed_EndsGame` | neu | rot: E11 |
+| `PruefungKarteRunde14Tests.cs · PruefungKarteRunde14Tests.ListedInjuredOwnPlayer_HealsOnTheHealingTick` | neu | rot: E12 |
+| `PruefungKarteRunde14Tests.cs · PruefungKarteRunde14Tests.AutoLineup_OnlyOnTickOrEventDays` | neu | rot: E13 |
+| `RngTwinProbeTests.cs · RngTwinProbeTests.FourSeasonChanges_FingerprintUnchangedBySerializableGenerator` | geändert | rot: V10 |
+| `RngTwinProbeTests.cs · RngTwinProbeTests.FourSeasonChanges_OriginalDatabase_FingerprintUnchanged` | geändert | rot: V10 |
 | `SaisonManagerTagTests.cs · SaisonManagerTagTests.ManagerPlaysCupDay_OptionOn_AllPairingsUseMinuteLoop_RandomDiffers` | neu | rot: E06 |
 | `SaisonManagerTagTests.cs · SaisonManagerTagTests.NoManagerInvolved_OptionDoesNothing_SameRandom` | neu | rot: E07 |
 | `SaisonManagerTagTests.cs · SaisonManagerTagTests.Default_IsOff_AndSaveRoundTripKeepsIt` | neu | rot: E08 |
 | `SaisonManagerTagTests.cs · SaisonManagerTagTests.Schema39Save_Migrates_OptionOff` | neu | rot: E09 |
-| `SaisonManagerTagTests.cs · SaisonManagerTagTests.MultiSeason_FourSeasonChanges_BothSettings` | neu | offen |
+| `SaisonManagerTagTests.cs · SaisonManagerTagTests.MultiSeason_FourSeasonChanges_BothSettings` | neu | rot: E14 |
 | `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.MultiSeason_NextSlotsFormedOn29April_StartNextSeasonAdoptsThemUnchanged` | geändert | offen |
 | `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.Preparing_NextSlots_DoesNotAdvanceGameRandom` | geändert | offen |
 | `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.FairPlayWinner_WithoutFormedSlots_FallsBackToIndexOrder` | neu | offen |
@@ -1553,17 +1647,17 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.SaveLoad_StatusBitIsDerivedFromSavedData` | geändert | offen |
 | `SeasonFlowTests.cs · SeasonFlowTests.Debts_DoNotDismiss` | neu | offen |
 | `SeasonFlowTests.cs · SeasonFlowTests.Dismissal_OtherManagersContinue` | geändert | offen |
-| `SpielberechnungAnschlussTests.cs · SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason` | geändert | offen |
+| `SpielberechnungAnschlussTests.cs · SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason` | geändert | rot: V10 |
 | `SpielberechnungKomplett3Tests.cs · SpielberechnungKomplett3Tests.Heal_Weekly_PermanentStays` | geändert | offen |
 | `SpielstaerkeManager2Tests.cs · SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible` | geändert | offen |
 | `SponsorBewertungTests.cs · SponsorBewertungTests.FourSeasonChanges_RatingAndIncomeStayConsistent` | geändert | offen |
 | `SquadLifecycleTests.cs · SquadLifecycleTests.R211_PassiveManager_IsWarnedOnceForEveryExpiringPlayer_BeforeTheDeadline` | geändert | offen |
 | `StatistikenPraemienTests.cs · StatistikenPraemienTests.OtherClubLeads_NoSinglePremium` | geändert | offen |
 | `StatistikenPraemienTests.cs · StatistikenPraemienTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | offen |
-| `TacticsOriginalTests.cs · TacticsOriginalTests.Defaults_ShowEvenMatchRowOfOriginal` | geändert | offen |
-| `TacticsOriginalTests.cs · TacticsOriginalTests.EffortIsPercent_AttackUpToSeven_BaseAndSurchargeShareTheLimit` | geändert | offen |
-| `TacticsOriginalTests.cs · TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation` | geändert | offen |
-| `TacticsOriginalTests.cs · TacticsOriginalTests.EffectiveAttack_KeepsThreeBits` | geändert | offen |
+| `TacticsOriginalTests.cs · TacticsOriginalTests.Defaults_ShowEvenMatchRowOfOriginal` | geändert | rot: T21 |
+| `TacticsOriginalTests.cs · TacticsOriginalTests.EffortIsPercent_AttackUpToSeven_BaseAndSurchargeShareTheLimit` | geändert | rot: T22 |
+| `TacticsOriginalTests.cs · TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation` | geändert | rot: T23 |
+| `TacticsOriginalTests.cs · TacticsOriginalTests.EffectiveAttack_KeepsThreeBits` | geändert | rot: T24 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_TwoManagers_NegotiationLockCountsOncePerTick` | neu | rot: D02 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.SummerBreak_CountersFromSeasonEndToNinthOfSeptember` | neu | rot: D01 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.SummerBreak_AdvancesConstructionAndHealsSquad` | neu | rot: D04 |
@@ -1572,20 +1666,20 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.File44_GastronomyOrderedOnFourteenthOfApril_Loses21WeeksUntilNewSeason` | neu | rot: D04 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_TickOfHaltDay_RunsBeforeHalt` | neu | rot: D02, D05 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.File24_ToMenuOfDay17_MarketDecayedOnceLikeFile25` | neu | rot: D02, D05 |
-| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.SeasonChange_KeepsMarketList_PlayersAgeOneYear` | neu | offen |
-| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.File44_SeasonChange_KeepsListLikeFile46` | neu | offen |
+| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.SeasonChange_KeepsMarketList_PlayersAgeOneYear` | neu | rot: D16 |
+| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.File44_SeasonChange_KeepsListLikeFile46` | neu | rot: D16 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.FourSeasonChanges_TwoManagers_MarketKeptAndSummerBreak` | neu | rot: D04 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_ManagerZeroDismissed_MarketStillDecaysPerTick` | neu | rot: D05 |
 | `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.MainPath_TrendControlCountsDownPerTick` | neu | rot: D02, D06 |
-| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.AdvanceTrend_ClampsAndRerollsAtZero` | neu | offen |
+| `TagestaktHauptwegReviewTests.cs · TagestaktHauptwegReviewTests.AdvanceTrend_ClampsAndRerollsAtZero` | neu | rot: D14 |
 | `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.TrainingDays_AreDayCounterTicks` | neu | rot: D02 |
 | `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.MainPath_TwoManagers_TrainOnlyOnTicks` | neu | rot: D02 |
 | `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.MainPath_MarketDecay_OncePerTick` | neu | rot: D02, D05 |
-| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.ListChangeDays_OnlyEventDaysOfMainPath` | neu | offen |
-| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.CatchUpManagerDay_TwoManagers_SecondNeitherExpiresNorBidsOnForeignListings` | neu | offen |
+| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.ListChangeDays_OnlyEventDaysOfMainPath` | neu | rot: D11 |
+| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.CatchUpManagerDay_TwoManagers_SecondNeitherExpiresNorBidsOnForeignListings` | neu | rot: D12 |
 | `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.WorldCupLoop_StepC_MarketAndContractsOnlyManagerZero` | neu | rot: D02 |
-| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks` | neu | offen |
-| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.Construction_AdvancesOnCounterZeroDays` | neu | offen |
+| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.FourSeasonChanges_TwoManagers_TrainingOnTicks` | neu | rot: D15 |
+| `TagestaktHauptwegTests.cs · TagestaktHauptwegTests.Construction_AdvancesOnCounterZeroDays` | neu | rot: D13 |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.SummerBreakCounters_FirstOfMayToNinthOfSeptember_FourMonthEnds` | neu | rot: D01 |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2` | neu | rot: D01, D03 |
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.File44_Valliere_ImportedAsLoan_EndsFreeWithoutCompensation` | neu | offen |
@@ -1604,8 +1698,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `OriginalSaveHeaderTests.cs · OriginalSaveHeaderTests.TryRead_ReadsOnlyTheHeader_NoLengthOrChecksumCheck` | neu | rot: H02 |
 | `OriginalSaveHeaderTests.cs · OriginalSaveHeaderTests.TryRead_LimitsManagersToFour` | neu | rot: H03 |
 | `OriginalSaveHeaderTests.cs · OriginalSaveHeaderTests.TryRead_WrongMagicOrTooShort_ReturnsNull` | neu | rot: H04 |
-| `BildschirmeFreipruefungTests.cs · BildschirmeFreipruefungTests.AllScreens_OpeningAndDrawingDoNotChangeGameState` | geändert | offen |
-| `BildschirmeFreipruefungTests.cs · BildschirmeFreipruefungTests.NationalMenu_Open_AllCoachTiles_DoNotChangeGameState` | neu | offen |
+| `BildschirmeFreipruefungTests.cs · BildschirmeFreipruefungTests.AllScreens_OpeningAndDrawingDoNotChangeGameState` | geändert | rot: U41 |
+| `BildschirmeFreipruefungTests.cs · BildschirmeFreipruefungTests.NationalMenu_Open_AllCoachTiles_DoNotChangeGameState` | neu | rot: U42 |
 | `FinanceBedienungTests.cs · FinanceBedienungTests.HeldButton_Repeats_AndDrawsBar` | geändert | offen |
 | `FinanceBedienungTests.cs · FinanceBedienungTests.Hint_ShownForActiveSide` | geändert | offen |
 | `FinanceBedienungTests.cs · FinanceBedienungTests.AmountBar_DisappearsWhenMouseLeavesStrip` | neu | offen |
