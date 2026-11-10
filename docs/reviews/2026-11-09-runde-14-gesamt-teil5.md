@@ -1112,6 +1112,11 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q24 | Automatikwerte beim Spiel nicht speichern | `EishockeyManager.Core.Tests.NationalteamTests.Club_AutoDisplay_KeepsLastLine` | rot |
 | Q25 | Unbesetzte Nationalmannschaftstaktik mit nichtnull Angriffszeile migrieren | `EishockeyManager.Core.Tests.NationalteamTests.Schema11_WithoutCoach_IsMigrated` | rot |
 | Q26 | Importierten Automatikmerker des Bundestrainers umkehren | `EishockeyManager.Core.Tests.OriginalImportRunde14Tests.Import_TakesNationalCoachAutoLineupFromBlock0375` | rot |
+| Q27 | Entlassung wegen Schulden wieder einführen | `EishockeyManager.Core.Tests.SeasonFlowTests.Debts_DoNotDismiss` | rot |
+| Q28 | Zwangsabstieg wegen Schulden aussetzen | `EishockeyManager.Core.Tests.FinanceCalibrationTests.PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation(seed: 5)` | rot |
+| Q28 | Zwangsabstieg wegen Schulden aussetzen | `EishockeyManager.Core.Tests.FinanceCalibrationTests.PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation(seed: 41)` | rot |
+| Q29 | Ausgeschiedene Manager in Saisonprotokoll aufnehmen | `EishockeyManager.Core.Tests.SaisonwechselEntlassungTests.OneManagerDismissed_OtherFinishesSeason_RecordWithoutDismissed` | rot |
+| Q30 | Alle ausgeschiedenen Manager beenden Spiel nicht | `EishockeyManager.Core.Tests.SaisonwechselEntlassungTests.AllManagersDismissed_GameOverAtNextDay` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1556,7 +1561,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 |---|---|---|
 | `AutoLineupTeil8Tests.cs · AutoLineupTeil8Tests.Migration_31To32_KeepsHandMadeLineup` | geändert | rot: Q10 |
 | `DeadlineRegressionTests.cs · DeadlineRegressionTests.R208_AnswerChecksDeadlineAtPausedUnprocessedDay` | geändert | offen |
-| `FinanceCalibrationTests.cs · FinanceCalibrationTests.PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation` | neu | offen |
+| `FinanceCalibrationTests.cs · FinanceCalibrationTests.PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation` | neu | rot: Q28 |
 | `GameModeTests.cs · GameModeTests.Mode4_ReferenceValues_Unchanged` | geändert | rot: V01, V02, V03, V04, V05, V06, V07, V08, V09 |
 | `HeimspielStatistikTests.cs · HeimspielStatistikTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | offen |
 | `HotSeatTests.cs · HotSeatTests.DismissalDuringDay_ExcludedFromNextDay` | geändert | offen |
@@ -1735,8 +1740,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.MultiSeason_NextSlotsFormedOn29April_StartNextSeasonAdoptsThemUnchanged` | geändert | offen |
 | `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.Preparing_NextSlots_DoesNotAdvanceGameRandom` | geändert | offen |
 | `SaisonSatzfolgeSaisonendeTests.cs · SaisonSatzfolgeSaisonendeTests.FairPlayWinner_WithoutFormedSlots_FallsBackToIndexOrder` | neu | offen |
-| `SaisonwechselEntlassungTests.cs · SaisonwechselEntlassungTests.OneManagerDismissed_OtherFinishesSeason_RecordWithoutDismissed` | neu | offen |
-| `SaisonwechselEntlassungTests.cs · SaisonwechselEntlassungTests.AllManagersDismissed_GameOverAtNextDay` | neu | offen |
+| `SaisonwechselEntlassungTests.cs · SaisonwechselEntlassungTests.OneManagerDismissed_OtherFinishesSeason_RecordWithoutDismissed` | neu | rot: Q29 |
+| `SaisonwechselEntlassungTests.cs · SaisonwechselEntlassungTests.AllManagersDismissed_GameOverAtNextDay` | neu | rot: Q30 |
 | `SaisonwechselOberligaTests.cs · SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague` | neu | offen |
 | `SaisonwechselOberligaTests.cs · SaisonwechselOberligaTests.StartSwap_TwoChosenClubsWithoutLeague_BothDisplacedOutside_MultiSeason` | neu | offen |
 | `SaisonwechselProbenTests.cs · SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop` | geändert | offen |
@@ -1745,7 +1750,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.Full_EveryManagerInTopFive_GetsStatusBit` | geändert | rot: T01 |
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.StatusBit_DoesNotChangeStoredEventsOrPremium` | geändert | rot: Q02 |
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.SaveLoad_StatusBitIsDerivedFromSavedData` | geändert | rot: Q01 |
-| `SeasonFlowTests.cs · SeasonFlowTests.Debts_DoNotDismiss` | neu | offen |
+| `SeasonFlowTests.cs · SeasonFlowTests.Debts_DoNotDismiss` | neu | rot: Q27 |
 | `SeasonFlowTests.cs · SeasonFlowTests.Dismissal_OtherManagersContinue` | geändert | offen |
 | `SpielberechnungAnschlussTests.cs · SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason` | geändert | rot: V10 |
 | `SpielberechnungKomplett3Tests.cs · SpielberechnungKomplett3Tests.Heal_Weekly_PermanentStays` | geändert | rot: Q06 |
