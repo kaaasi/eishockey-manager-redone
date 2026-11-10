@@ -1200,6 +1200,21 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q78 | Vertragsangebotsmeldungen auslassen | `EishockeyManager.Core.Tests.SquadLifecycleTests.R211_PassiveManager_IsWarnedOnceForEveryExpiringPlayer_BeforeTheDeadline` | rot |
 | Q79 | Beim Laden Spielernummern überschreiben | `EishockeyManager.Core.Tests.OriginalImportRunde14Tests.Import_AllStands_RoundTripIsStable` | rot |
 | Q79 | Beim Laden Spielernummern überschreiben | `EishockeyManager.Core.Tests.NummerierungMigrationTests.CurrentSave_RoundTrip_Unchanged` | rot |
+| Q80 | Unterbesetzungsstrafe nicht buchen | `EishockeyManager.Core.Tests.HeimspielStatistikTests.MultiSeason_FourChanges_PassiveAndActiveManager` | rot |
+| Q81 | Teamwert von Computervereinen um eins erhöhen | `EishockeyManager.Core.Tests.WettbewerbeSpiel12Teil3Tests.MultiSeason_ComputerClubsPlayWithoutSquad(active: False)` | rot |
+| Q81 | Teamwert von Computervereinen um eins erhöhen | `EishockeyManager.Core.Tests.WettbewerbeSpiel12Teil3Tests.MultiSeason_ComputerClubsPlayWithoutSquad(active: True)` | rot |
+| Q82 | Computertransferpreis um eine DM erhöhen | `EishockeyManager.Core.Tests.TransferOriginalTests.MultiSeason_Transfers_StayConsistent(active: False)` | rot |
+| Q82 | Computertransferpreis um eine DM erhöhen | `EishockeyManager.Core.Tests.TransferOriginalTests.MultiSeason_Transfers_StayConsistent(active: True)` | rot |
+| Q83 | Breite Markenbasis einen Pixel verschieben | `EishockeyManager.UI.Tests.HistoryBarsDosboxTests.Bars_ColorsHeightsAndMarker_LikeOriginal` | rot |
+| Q84 | Spielerklick immer als Rechtsklick behandeln | `EishockeyManager.UI.Tests.TeamScreenTests.Lineup_ClickPlayerThenSlot_ChangesGoalkeeper` | rot |
+| Q85 | Taktik nur außerhalb SEMI änderbar | `EishockeyManager.UI.Tests.TeamScreenTests.Tactics_ModesBlocksAndSwitchToLineup` | rot |
+| Q86 | Beim Laden Spielernummern überschreiben | `EishockeyManager.UI.Tests.IntegrationRunde4Tests.NationalLineup_SurvivesSaveLoadThroughDialog_InCoachMenu` | rot |
+| Q86 | Beim Laden Spielernummern überschreiben | `EishockeyManager.UI.Tests.IntegrationRunde6Tests.TwoSeasons_Mode4_StatisticsRatingStatusAndSaves` | rot |
+| Q87 | Marktleihspieler beim Saisonende im Managerkader belassen | `EishockeyManager.UI.Tests.LifecycleScreenRegressionTests.R204_OriginalDataLoanAndContractEndAreConsistentAfterContinueThroughSeason` | rot |
+| Q88 | Trainingsbuchung um eine DM erhöhen | `EishockeyManager.UI.Tests.PassiveScreenTests.PlanChangedOnPausedTrainingDay_AppliesFromNextTick` | rot |
+| Q89 | Penaltyschießen ohne Markierung speichern | `EishockeyManager.Core.Tests.WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore(seed: 5, minuteLoop: True)` | rot |
+| Q89 | Penaltyschießen ohne Markierung speichern | `EishockeyManager.Core.Tests.WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore(seed: 5, minuteLoop: False)` | rot |
+| Q89 | Penaltyschießen ohne Markierung speichern | `EishockeyManager.Core.Tests.WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore(seed: 11, minuteLoop: True)` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1646,7 +1661,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `DeadlineRegressionTests.cs · DeadlineRegressionTests.R208_AnswerChecksDeadlineAtPausedUnprocessedDay` | geändert | rot: Q74 |
 | `FinanceCalibrationTests.cs · FinanceCalibrationTests.PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation` | neu | rot: Q28 |
 | `GameModeTests.cs · GameModeTests.Mode4_ReferenceValues_Unchanged` | geändert | rot: V01, V02, V03, V04, V05, V06, V07, V08, V09 |
-| `HeimspielStatistikTests.cs · HeimspielStatistikTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | offen |
+| `HeimspielStatistikTests.cs · HeimspielStatistikTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | rot: Q80 |
 | `HotSeatTests.cs · HotSeatTests.DismissalDuringDay_ExcludedFromNextDay` | geändert | rot: Q67 |
 | `IntegrationRunde9Tests.cs · IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported` | geändert | rot: Q73 |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | neu | rot: X01 |
@@ -1875,13 +1890,13 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TagestaktSommerpauseReviewTests.cs · TagestaktSommerpauseReviewTests.DeepDebts_NoDismissal_GameContinues` | neu | rot: D08 |
 | `TaktikTeil5Tests.cs · TaktikTeil5Tests.Manual_KeepsEffortAndAttack_DuringMatch` | geändert | rot: Q33 |
 | `TeamValueDriftTests.cs · TeamValueDriftTests.GameStart_DriftsIntoLeagueBounds` | geändert | rot: Q22 |
-| `TransferOriginalTests.cs · TransferOriginalTests.MultiSeason_Transfers_StayConsistent` | geändert | offen |
+| `TransferOriginalTests.cs · TransferOriginalTests.MultiSeason_Transfers_StayConsistent` | geändert | rot: Q82 |
 | `TransferOriginalVertragTests.cs · TransferOriginalVertragTests.Lock_RefusesInput_AndCountsDownDaily` | geändert | rot: Q58 |
 | `TransferTransactionRegressionTests.cs · TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove` | geändert | rot: Q13, Q17 |
 | `TransferVertraegeKomplettTeil4Tests.cs · TransferVertraegeKomplettTeil4Tests.SponsorRating_PlayerWithBid_DrawsValueAgainBeforeStarCheck` | geändert | rot: Q59 |
 | `WaveBReviewRegressionTests.cs · WaveBReviewRegressionTests.PR3502_BidThatBecameInvalid_IsRejectedWithResultAndRemoved` | geändert | rot: Q14 |
-| `WettbewerbeSpiel12Teil3Tests.cs · WettbewerbeSpiel12Teil3Tests.MultiSeason_ComputerClubsPlayWithoutSquad` | geändert | offen |
-| `WettbewerbeSpiel1Tests.cs · WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore` | geändert | offen |
+| `WettbewerbeSpiel12Teil3Tests.cs · WettbewerbeSpiel12Teil3Tests.MultiSeason_ComputerClubsPlayWithoutSquad` | geändert | rot: Q81 |
+| `WettbewerbeSpiel1Tests.cs · WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore` | geändert | rot: Q89 |
 | `OriginalSaveHeaderTests.cs · OriginalSaveHeaderTests.TryRead_ReturnsYearMatchDayAndManagers` | neu | rot: H01, H05, H06, H07, H08, H09, H11, H12, H13, H14, H15, H16, H17, H18, H19 |
 | `OriginalSaveHeaderTests.cs · OriginalSaveHeaderTests.TryRead_ReadsOnlyTheHeader_NoLengthOrChecksumCheck` | neu | rot: H02 |
 | `OriginalSaveHeaderTests.cs · OriginalSaveHeaderTests.TryRead_LimitsManagersToFour` | neu | rot: H03 |
@@ -1892,7 +1907,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `FinanceBedienungTests.cs · FinanceBedienungTests.Hint_ShownForActiveSide` | geändert | rot: Q09 |
 | `FinanceBedienungTests.cs · FinanceBedienungTests.AmountBar_DisappearsWhenMouseLeavesStrip` | neu | rot: Q07 |
 | `GameOptionsScreenTests.cs · GameOptionsScreenTests.ManagerDaySwitch_TogglesOption` | neu | rot: Q05 |
-| `HistoryBarsDosboxTests.cs · HistoryBarsDosboxTests.Bars_ColorsHeightsAndMarker_LikeOriginal` | neu | offen |
+| `HistoryBarsDosboxTests.cs · HistoryBarsDosboxTests.Bars_ColorsHeightsAndMarker_LikeOriginal` | neu | rot: Q83 |
 | `HokImportAccessTests.cs · HokImportAccessTests.List_MarksHokFilesAsOriginal` | neu | rot: A01 |
 | `HokImportAccessTests.cs · HokImportAccessTests.TryImport_RejectsNonOriginalData_WithoutChecksumFlag` | neu | rot: A02 |
 | `HokImportAccessTests.cs · HokImportAccessTests.LoadDialog_ImportsHok_ByTypedName` | neu | rot: A03 |
@@ -1902,8 +1917,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `HokImportAccessTests.cs · HokImportAccessTests.ChecksumError_ShowsMogelguru_AndKeepsRunningGame` | neu | rot: A07 |
 | `HokImportAccessTests.cs · HokImportAccessTests.TryImport_FlagsChecksumError_AndImportsValidSave` | neu | rot: A08 |
 | `HokImportAccessTests.cs · HokImportAccessTests.SaveDialog_DoesNotSelectHok` | neu | rot: A09 |
-| `IntegrationRunde4Tests.cs · IntegrationRunde4Tests.NationalLineup_SurvivesSaveLoadThroughDialog_InCoachMenu` | geändert | offen |
-| `IntegrationRunde6Tests.cs · IntegrationRunde6Tests.TwoSeasons_Mode4_StatisticsRatingStatusAndSaves` | geändert | offen |
+| `IntegrationRunde4Tests.cs · IntegrationRunde4Tests.NationalLineup_SurvivesSaveLoadThroughDialog_InCoachMenu` | geändert | rot: Q86 |
+| `IntegrationRunde6Tests.cs · IntegrationRunde6Tests.TwoSeasons_Mode4_StatisticsRatingStatusAndSaves` | geändert | rot: Q86 |
 | `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | neu | rot: Y07 |
 | `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.ContractDialog_SeparatorSixTo163_ColonsAt76` | neu | rot: Y02 |
 | `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.ContractDialog_PressedButton_LabelAtSamePlace` | neu | rot: Y03 |
@@ -1924,7 +1939,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartTeil2cScreenTests.cs · KaderStartTeil2cScreenTests.OwnListingClick_WithBid_OpensBidWindow` | neu | rot: Q63 |
 | `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.SeasonEnd_ListIsPictureBeforeNegotiation_RedrawnAfterDeparture` | neu | rot: Q77 |
 | `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.ContractsScreen_HeaderAndDialogFrame_MatchDosBoxPictures` | neu | rot: Q75 |
-| `LifecycleScreenRegressionTests.cs · LifecycleScreenRegressionTests.R204_OriginalDataLoanAndContractEndAreConsistentAfterContinueThroughSeason` | geändert | offen |
+| `LifecycleScreenRegressionTests.cs · LifecycleScreenRegressionTests.R204_OriginalDataLoanAndContractEndAreConsistentAfterContinueThroughSeason` | geändert | rot: Q87 |
 | `LineupAutoDisabledMessageTests.cs · LineupAutoDisabledMessageTests.ManualChange_DisablesAutoLineup_AndShowsMessageOnce` | geändert | rot: Q47 |
 | `LineupShortMessagesE2Tests.cs · LineupShortMessagesE2Tests.List_Suspended_ShowsSpielerIstGesperrt` | geändert | rot: Q48 |
 | `LineupShortMessagesE2Tests.cs · LineupShortMessagesE2Tests.List_Injured_ShowsSpielerIstVerletzt` | geändert | rot: Q49 |
@@ -1941,7 +1956,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `NewsBarDosboxTests.cs · NewsBarDosboxTests.LongMessage_ShowsOnlyTwoLines_NothingOnTheBottomEdge` | neu | rot: Q38 |
 | `OriginalDialogCallersTests.cs · OriginalDialogCallersTests.Lineup_AutoDisabledMessage_IsShortMessageWith45Ticks` | geändert | rot: Q47, Q51 |
 | `OriginalDialogCallersTests.cs · OriginalDialogCallersTests.Lineup_WrongRole_IsShortMessage_AndIgnoresClicks` | geändert | rot: Q50, Q52 |
-| `PassiveScreenTests.cs · PassiveScreenTests.PlanChangedOnPausedTrainingDay_AppliesFromNextTick` | neu | offen |
+| `PassiveScreenTests.cs · PassiveScreenTests.PlanChangedOnPausedTrainingDay_AppliesFromNextTick` | neu | rot: Q88 |
 | `PruefungKarteRunde14UiTests.cs · PruefungKarteRunde14UiTests.TransferList_Separators_181To313_LongerAfterHover` | neu | rot: Q45 |
 | `PruefungKarteRunde14UiTests.cs · PruefungKarteRunde14UiTests.TransferScreen_AccountLabels_TopRow225_AnlagenAt133` | neu | rot: Q46 |
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Paging_OnlyThroughArrowPair_InStepsOfFortyEight_NoEffectAtTheEnds` | neu | rot: U01 |
@@ -1967,8 +1982,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TacticsClubScreenTests.cs · TacticsClubScreenTests.Tactics_OnlySemiEditable` | geändert | rot: U51 |
 | `TacticsClubScreenTests.cs · TacticsClubScreenTests.Tactics_ModeArrows_LowerHalfIsNext_NoWrap` | neu | rot: U52 |
 | `TacticsClubScreenTests.cs · TacticsClubScreenTests.Tactics_GoalieArrows_LowerHalfIsNext_NoWrap` | neu | rot: U53 |
-| `TeamScreenTests.cs · TeamScreenTests.Lineup_ClickPlayerThenSlot_ChangesGoalkeeper` | geändert | offen |
-| `TeamScreenTests.cs · TeamScreenTests.Tactics_ModesBlocksAndSwitchToLineup` | geändert | offen |
+| `TeamScreenTests.cs · TeamScreenTests.Lineup_ClickPlayerThenSlot_ChangesGoalkeeper` | geändert | rot: Q84 |
+| `TeamScreenTests.cs · TeamScreenTests.Tactics_ModesBlocksAndSwitchToLineup` | geändert | rot: Q85 |
 | `TransferBuyWindowDosboxTests.cs · TransferBuyWindowDosboxTests.BuyWindow_IsLeftOverSquadList_WithoutButtons_AndSolidShadow` | neu | rot: Q76 |
 | `TransferVertraegeKomplettTeil3ScreenTests.cs · TransferVertraegeKomplettTeil3ScreenTests.ClickOnOfferedPlayer_OpensOfferWindow_SellMovesPlayer` | geändert | rot: Q64 |
 | `TransferVertraegeKomplettTeil4ScreenTests.cs · TransferVertraegeKomplettTeil4ScreenTests.HoveredEntry_RecolorsSeparatorsAboveAndBelow` | geändert | rot: Q55 |
