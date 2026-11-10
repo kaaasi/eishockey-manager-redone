@@ -6,7 +6,13 @@
 
 ## 2. Befunde
 
-Die in den Vorberichten dokumentierten Befunde bestehen fort. Die als R14G3-03 festgehaltene Testlücke ist erneut reproduziert: H10 senkt die Mindestlänge von `Length` auf `Length - 1`; der vorhandene Test bleibt grün, da der zu kurze Eingabepuffer zusätzlich eine falsche Kennung besitzt.
+Die in den Vorberichten dokumentierten Befunde bestehen fort. R14G3-01 ist mit I10 erneut bestätigt (`Import_RankSlotsMatchTable` bleibt grün, wenn nur `StoreRankSlot` entfällt). R14G3-02 ist mit R05 erneut bestätigt (beide passiven Datenzeilen bleiben bei einem sofortigen `GameOver` ohne Saisonwechsel grün; beide aktiven werden rot). Die als R14G3-03 festgehaltene Testlücke ist erneut reproduziert: H10 senkt die Mindestlänge von `Length` auf `Length - 1`; der vorhandene Test bleibt grün, da der zu kurze Eingabepuffer zusätzlich eine falsche Kennung besitzt.
+
+### R14G4-01 (P3): Vergleich zweier Seitenzahlen erkennt ein konstantes Seitenlabel nicht
+
+`Panel_ShowsNoPageLabel` ([SaveLoadDialogOriginalTests.cs:98](https://github.com/kaaasi/eishockey-manager-redone/blob/b13046422b285404ad6ddbe7b5f1b18e22069eea/tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs#L98)) vergleicht einen Bildausschnitt zwischen einem Verzeichnis mit einer Seite und einem mit zwei Seiten. Ein gleiches Label in beiden Bildern fällt dabei nicht auf.
+
+**Gegenproben:** U16 ergänzt in `DrawPanel` ein sichtbares konstantes `SEITE: 1` im untersuchten Ausschnitt; der bestehende Test bleibt **grün**. Ein zusätzlicher unveränderter und mutierter Kontrolllauf speicherte den Ausschnitt: 102 von 700 Pixeln unterscheiden sich, das Label wird tatsächlich gezeichnet. U15 zeichnet stattdessen eine von der Seitenzahl abhängige Zahl; der Test wird **rot**. Die Lücke betrifft die Aussagekraft des Tests, nicht ein Seitenlabel im unveränderten Produkt. Ein unabhängiger Vergleich mit einem belegten Hintergrund oder die gezielte Prüfung auf den Text würde auch ein konstantes Label erfassen.
 
 ## 3. Prüfungen und offene Prüfbereiche
 
@@ -21,6 +27,37 @@ Die unveränderten Kontrollläufe bestehen: `OriginalSaveHeaderTests` 4/4, `Save
 Selbst in `em.exe` nachgelesen: `0x319AC–0x319DB` kopiert in einer Schleife die Plätze `i` und `7 − i` von `0x5CCB` nach `0x5D3B + 2i` und `0x5D3C + 2i`, für vier Werte von `i`. Das bestätigt die Viertelfinalfolge 1–8, 2–7, 3–6, 4–5. Die anschließende Halbfinaltabelle wurde bereits in Teil 2 unabhängig gelesen. S01 setzt die alte Paarungsregel zurück; beide Originalstände FILE44/FILE22 und der Mehrsaisontest werden rot.
 
 Zur Nutzerentscheidung C wurde `em.exe` Datei `0x54D41–0x54D65` erneut gelesen: Der Tagesindex adressiert ein Tagesbyte, Wert 9 wird auf 0 abgebildet, 0 und 255 springen nach `0x55073`. `0x55204–0x55230` erhöht DGROUP `0x3B7` mit Übertrag und ruft nach Setzen von Manager 0 zwei Funktionen je Manager auf. Die Verknüpfung des gesamten Ladewegs und die Zuordnung aller aufgerufenen Funktionen bleiben offen; isolierte Befehle belegen sie nicht allein.
+
+### Modus-4-Referenzwert: einzelne geänderte Bestandteile
+
+Die Tabelle vergleicht jedes seit Base geänderte Feld mit den vollständigen tatsächlichen Ausgaben einzelner Regelrückmutationen V01–V06. Ein abweichender Wert belegt die Abhängigkeit von der jeweils genannten Regel unter Head-Bedingungen; er beweist keine alleinige Ursache der Änderung. Die Konto-Vorbedingung des Tests wurde hierbei nicht zurückgesetzt. `offen` bedeutet, dass keine dieser Mutationen den Wert verändert hat.
+
+| Bestandteil | Base | Head | Abweichender Wert unter Rückmutation |
+|---|---:|---:|---|
+| Saison 1 WorldChampion | 52 | 54 | **offen** |
+| Saison 1 CupWinner | 11 | 12 | V04: 0; V05: 15; V06: 16 |
+| Saison 1 GermanChampion | 1 | 0 | V02: 1; V05: 4; V06: 3 |
+| Saison 1 Konto 0 | 96040 | 1100000 | V04: 1168751 |
+| Saison 2 WorldChampion | 52 | 57 | V02: 52; V03: 52; V04: 63; V05: 52; V06: 53 |
+| Saison 2 EuropeanCupWinner | 1 | 0 | V02: 1; V05: 4; V06: 3 |
+| Saison 2 Konto 0 | 1402820 | 2429195 | V01: 2443220; V02: 2500446; V03: 2267967; V04: 2273847; V05: 2338465; V06: 2382267 |
+| Saison 3 WorldChampion | 52 | 63 | V02: 52; V03: 54; V04: 52; V06: 52 |
+| Saison 3 CupWinner | 3 | 0 | V02: 4; V03: 1; V04: 16; V05: 15; V06: 16 |
+| Saison 3 EuropeanCupWinner | 1 | 0 | V02: 11; V03: 1; V04: 1; V05: 4; V06: 3 |
+| Saison 3 Konto 0 | 2154396 | 2301516 | V01: 2151523; V02: 2564297; V03: 2107624; V04: 2153793; V05: 2412715; V06: 2397123 |
+| Saison 4 WorldChampion | 54 | 52 | V02: 54; V05: 54; V06: 54 |
+| Saison 4 CupWinner | 3 | 0 | V02: 4; V03: 18; V04: 14; V05: 7; V06: 11 |
+| Saison 4 GermanChampion | 13 | 0 | V02: 12; V03: 1; V04: 4; V05: 7; V06: 9 |
+| Saison 4 Konto 0 | 2718434 | 1969543 | V01: 1680547; V02: 2609090; V03: 1975466; V04: 2029069; V05: 2275209; V06: 2335622 |
+| Saison 4 Konto 1 | 400000 | 500000 | V02: 400000; V04: 400000; V05: 400000; V06: 400000 |
+| Saison 5 WorldChampion | 54 | 52 | V02: 63; V04: 54; V05: 63; V06: 53 |
+| Saison 5 CupWinner | 0 | 18 | V02: 4; V03: 10; V04: 8; V05: 1; V06: 0 |
+| Saison 5 GermanChampion | 9 | 4 | V02: 0; V03: 15; V04: 8; V05: 15; V06: 0 |
+| Saison 5 EuropeanCupWinner | 13 | 0 | V02: 11; V03: 1; V04: 4; V05: 7; V06: 9 |
+| Saison 5 Konto 0 | 2952676 | 1462802 | V01: 1033390; V02: 2102474; V03: 1760179; V04: 400000; V05: 1724952; V06: 400000 |
+| Saison 5 Konto 1 | -7124085 | 400000 | V02: 500000; V03: 500000; V04: 500000; V05: 500000; V06: 500000 |
+| Zufallszustand R | 677985496 | 1179893277 | V02: 1558375281; V03: 218696157; V04: 1047374504; V05: 1140664819; V06: 499199781 |
+| Zufallszustand C | 1798453752 | 1809965060 | V02: 893101215; V03: 836845586; V04: 406943591; V05: 1372752275; V06: 1028139438 |
 
 ### Einzelne Kopfleser-Sollwerte
 
@@ -43,6 +80,34 @@ Der neue Test `TryRead_ReturnsYearMatchDayAndManagers` hat bei unverändertem Co
 ### Zusätzliche Bildschirmkontrollen
 
 In einer Prüfkopie wurde der Vergleich vor den Fabrikaufruf `NationalMenu.Open` verschoben, auch für Kacheln, die `null` liefern; Öffnen, Zeichnen und drei eingabelose Frames bestanden (1/1). Für `SeasonEndScreen` wurde nach Erreichen eines gültigen Saisonendzustands der Spielstand vor Konstruktion, `Host.Show`, Zeichnen und drei eingabelosen Frames gesichert und danach verglichen (1/1 bestanden). Die Testlücken R14G2-01 und R14G2-02 im unveränderten Testsatz bleiben bestehen; diese zusätzlichen Kontrollen belegen nur die ausgeführten Zustände.
+
+### Geänderte Saaten: erste Regelgegenprobe
+
+T01 setzt den zentralen Tageszähler von `day + 1` auf `day` zurück. Jede Zeile nennt die Saatänderung seit Base und das tatsächlich beobachtete Ergebnis. Grün belegt hier keine Ursache; weitere gezielte Rückmutationen und weitere Saatänderungen bleiben offen. Bei rot ist erst die Abhängigkeit des Tests unter den aktuellen übrigen Regeln belegt, nicht allein die Notwendigkeit dieser Saatänderung.
+
+| Test | Saat Base → Head | T01 |
+|---|---|---|
+| `Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach` | 17 → 71 | rot |
+| `Mode4_NoManagerInTopFive_NoCoach` | 4 → 3 | grün |
+| `Mode4_Appointment_BeforeReroll_GermanyKeepsBaseRatings` | 2 → 22 | grün |
+| `Full_ManagerInTopFive_GetsStatusBit_OtherNot` | 4 → 3 | grün |
+| `Full_EveryManagerInTopFive_GetsStatusBit` | 17 → 71 | rot |
+| `StatusBit_DoesNotChangeStoredEventsOrPremium` | 3 → 5 | grün |
+| `SaveLoad_StatusBitIsDerivedFromSavedData` | 4 → 3 | grün |
+| `FourSeasonChanges_ManagedMatchesPlausible` | 3 → 4 | beide Aktivvarianten grün |
+| `OtherClubLeads_NoSinglePremium` | 4 → 13 | grün |
+
+### Hauptmenü: Codepfade
+
+| Ereignis | Geprüfter Anschluss | Rest |
+|---|---|---|
+| Nachrichtenflag | `MainMenuScreen.Enter → BuildMenu → GameState.OnMainMenu → Manager.TakeNewMessage`; der Kern löscht das Flag und liefert seinen alten Wert an den Bildschirm. | Jeden Aufbau- und Ladeweg sowie die Wirkungszahl einzeln gegenprüfen. |
+| Vereinsaufstellung | `OnMainMenu` ruft `Club.ApplyAutoLineup` auf; `BeginManagerTurn` ruft die Funktion ebenfalls beim Zugwechsel auf. | Semantik und Wirkungszahl bei Rückkehr, Laden und Hotseat einzeln prüfen. |
+| Bundestrainer | `OnMainMenu` gibt `isReturn` an `OnNationalCoachMenu` weiter; `BeginManagerTurn` ruft `BeginNationalCoachTurn`. | Alle Zustands- und Aufrufvarianten offen. |
+| Gehaltsfaktor | `BeginFirstTurn` und `BeginManagerTurn` rufen `DrawContractTurnFactor` im Kern auf; `OnMainMenu` selbst zieht ihn nicht. | Alle Einstiegspfade und RNG-Wirkungen offen. |
+| Automatisches Speichern | `MainMenuScreen.Enter` ruft nach `BuildMenu` `AutoSave.OnMainMenu`; diese Funktion wurde in dieser Teilprüfung nicht weiter verfolgt. | Datei- und Zustandseffekte sowie doppelte Aufrufe offen. |
+
+Diese statische Zuordnung ergänzt die zwei dynamischen Sonderfallprüfungen und ist keine vollständige Ereignisprüfung.
 
 ### Entscheidungen: ergänzende Prüfung
 
@@ -94,6 +159,65 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | I12 | Trainingseinheit um eins verschieben | `EishockeyManager.Core.Tests.OriginalImportRestTests.Import_TrainingPlan(file: "FILE09.HOK")` | rot |
 | I12 | Trainingseinheit um eins verschieben | `EishockeyManager.Core.Tests.OriginalImportRestTests.Import_TrainingPlan(file: "FILE08.HOK")` | rot |
 | I13 | Nationalkonto nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportRestTests.Import_NationalAccountAndTalentSearch` | rot |
+| J01 | laufende Bauten nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_StadiumConstruction_File44A` | rot |
+| J01 | laufende Bauten nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_StadiumConstruction_File43` | rot |
+| J02 | Trendwert nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_PlayerTrendFromSlot` | rot |
+| J03 | Vertragsstatus nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_ContractNoticeFromSlot` | rot |
+| J04 | Heimspielzahl erhöhen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_StadiumStatisticsFromOriginal(file: "FILE46.HOK")` | rot |
+| J04 | Heimspielzahl erhöhen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_StadiumStatisticsFromOriginal(file: "FILE44.HOK")` | grün |
+| J04 | Heimspielzahl erhöhen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_StadiumStatisticsFromOriginal(file: "FILE05.HOK")` | rot |
+| J05 | kein Freundschaftsspiel übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_FriendliesFromOriginal(file: "FILE18.HOK", count: 0)` | grün |
+| J05 | kein Freundschaftsspiel übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_FriendliesFromOriginal(file: "FILE19.HOK", count: 1)` | rot |
+| J05 | kein Freundschaftsspiel übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_FriendliesFromOriginal(file: "FILE20.HOK", count: 1)` | rot |
+| J06 | mindestens ein Freundschaftsspiel übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_FriendliesFromOriginal(file: "FILE18.HOK", count: 0)` | rot |
+| J06 | mindestens ein Freundschaftsspiel übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_FriendliesFromOriginal(file: "FILE19.HOK", count: 1)` | grün |
+| J06 | mindestens ein Freundschaftsspiel übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_FriendliesFromOriginal(file: "FILE20.HOK", count: 1)` | grün |
+| J07 | Bundestraineramt nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoach_WhenOnlyTheOriginalHasOne` | rot |
+| J08 | Bundestrainer-Amtsflag invertieren | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE11.HOK", inOffice: True)` | rot |
+| J08 | Bundestrainer-Amtsflag invertieren | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE47.HOK", inOffice: True)` | rot |
+| J08 | Bundestrainer-Amtsflag invertieren | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE18.HOK", inOffice: True)` | rot |
+| J08 | Bundestrainer-Amtsflag invertieren | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE05.HOK", inOffice: False)` | grün |
+| J09 | Automatikbyte umkehren | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_AutoLineup_ReadsCurrentByteNotTheSavedOne(file: "FILE32.HOK", enabled: False)` | rot |
+| J09 | Automatikbyte umkehren | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_AutoLineup_ReadsCurrentByteNotTheSavedOne(file: "FILE33.HOK", enabled: False)` | rot |
+| J09 | Automatikbyte umkehren | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_AutoLineup_ReadsCurrentByteNotTheSavedOne(file: "FILE05.HOK", enabled: True)` | rot |
+| J10 | Heimspielzahl um eins verringern | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_StadiumStatisticsFromOriginal(file: "FILE46.HOK")` | grün |
+| J10 | Heimspielzahl um eins verringern | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_StadiumStatisticsFromOriginal(file: "FILE44.HOK")` | rot |
+| J10 | Heimspielzahl um eins verringern | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_StadiumStatisticsFromOriginal(file: "FILE05.HOK")` | rot |
+| J11 | Bundestraineramt immer vorhanden | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE11.HOK", inOffice: True)` | grün |
+| J11 | Bundestraineramt immer vorhanden | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE47.HOK", inOffice: True)` | grün |
+| J11 | Bundestraineramt immer vorhanden | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE18.HOK", inOffice: True)` | grün |
+| J11 | Bundestraineramt immer vorhanden | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE05.HOK", inOffice: False)` | grün |
+| J12 | auch ohne Amtsflag einen Bundestrainer einsetzen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE11.HOK", inOffice: True)` | grün |
+| J12 | auch ohne Amtsflag einen Bundestrainer einsetzen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE47.HOK", inOffice: True)` | grün |
+| J12 | auch ohne Amtsflag einen Bundestrainer einsetzen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE18.HOK", inOffice: True)` | grün |
+| J12 | auch ohne Amtsflag einen Bundestrainer einsetzen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord(file: "FILE05.HOK", inOffice: False)` | rot |
+| J13 | DEB-Pokalsieger nie übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal(file: "FILE05.HOK", debFinished: False, europeFinished: False)` | grün |
+| J13 | DEB-Pokalsieger nie übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal(file: "FILE38.HOK", debFinished: False, europeFinished: True)` | grün |
+| J13 | DEB-Pokalsieger nie übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal(file: "FILE44.HOK", debFinished: True, europeFinished: True)` | rot |
+| J14 | Europapokalsieger nie übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal(file: "FILE05.HOK", debFinished: False, europeFinished: False)` | grün |
+| J14 | Europapokalsieger nie übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal(file: "FILE38.HOK", debFinished: False, europeFinished: True)` | rot |
+| J14 | Europapokalsieger nie übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal(file: "FILE44.HOK", debFinished: True, europeFinished: True)` | rot |
+| J15 | Vorjahressieger fälschlich als Sieger übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal(file: "FILE05.HOK", debFinished: False, europeFinished: False)` | rot |
+| J15 | Vorjahressieger fälschlich als Sieger übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal(file: "FILE38.HOK", debFinished: False, europeFinished: True)` | rot |
+| J15 | Vorjahressieger fälschlich als Sieger übernehmen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal(file: "FILE44.HOK", debFinished: True, europeFinished: True)` | grün |
+| J16 | Baustellen auch ohne Restwochen anlegen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NoConstruction_WhenOriginalHasNone(file: "FILE41.HOK")` | grün |
+| J16 | Baustellen auch ohne Restwochen anlegen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NoConstruction_WhenOriginalHasNone(file: "FILE44.HOK")` | grün |
+| J17 | monatlichen Werbebetrag um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.TryImport_SponsorContractAmountNotDivisibleByThree_Loads` | rot |
+| J18 | Importfehler als Prüfsummenfehler markieren | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.TryImport_ImportError_IsReportedWithoutChecksumFlag` | rot |
+| J19 | Anzeige für automatische Einsatzwerte verschieben | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalTacticsShownAutoLine(file: "FILE05.HOK")` | rot |
+| J19 | Anzeige für automatische Einsatzwerte verschieben | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalTacticsShownAutoLine(file: "FILE19.HOK")` | rot |
+| J19 | Anzeige für automatische Einsatzwerte verschieben | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NationalTacticsShownAutoLine(file: "FILE20.HOK")` | rot |
+| J20 | Landes- und Managersatz vertauschen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.ClubIndices_WorldOnly_NationKeepsItsIndex_ManagerSlotGetsTheMissingClub(file: "FILE11.HOK")` | rot |
+| J20 | Landes- und Managersatz vertauschen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.ClubIndices_WorldOnly_NationKeepsItsIndex_ManagerSlotGetsTheMissingClub(file: "FILE18.HOK")` | rot |
+| J21 | Baustelle auch bei Nullwert anlegen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NoConstruction_WhenOriginalHasNone(file: "FILE41.HOK")` | rot |
+| J21 | Baustelle auch bei Nullwert anlegen | `EishockeyManager.Core.Tests.OriginalImportReviewR14Tests.Import_NoConstruction_WhenOriginalHasNone(file: "FILE44.HOK")` | rot |
+| K01 | globale Liga ohne Manager nicht speichern | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.StartLeague_WithoutManagers_StepReportsOnlyRealChanges` | rot |
+| K01 | globale Liga ohne Manager nicht speichern | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.StartLeague_SurvivesRemovalOfLastManager` | rot |
+| K01 | globale Liga ohne Manager nicht speichern | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.StartLeague_WithoutManagers_IsKept_AndAdoptedByNewManager` | rot |
+| K02 | Manager übernimmt eingestellte Liga nicht | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.StartLeague_WithoutManagers_IsKept_AndAdoptedByNewManager` | rot |
+| K03 | Schritt am Reglerende als Änderung melden | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.StartLeague_WithoutManagers_StepReportsOnlyRealChanges` | rot |
+| K04 | Talente hinten anhängen | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.JoinScoutedTalent_GoalkeeperOrDefender_SortedIn` | rot |
+| K05 | alte Startliga nicht migrieren | `EishockeyManager.Core.Tests.KaderStartRunde14Tests.Migration_41To42_TakesStartLeagueOfFirstManager` | rot |
 | P01 | Poolalter um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_PoolFromOriginal` | rot |
 | P02 | Marktpreis durch zwei statt drei | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_MarketFromOriginal` | rot |
 | P03 | Verkäufer nicht übernehmen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_MarketListingOfManager` | rot |
@@ -106,6 +230,27 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | P08 | Preis erster Liste nach Laden erhöhen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_RoundTripWithPoolMarketNational(file: "FILE20.HOK")` | rot |
 | P08 | Preis erster Liste nach Laden erhöhen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_RoundTripWithPoolMarketNational(file: "FILE18.HOK")` | rot |
 | P08 | Preis erster Liste nach Laden erhöhen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_RoundTripWithPoolMarketNational(file: "FILE41.HOK")` | rot |
+| R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
+| R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
+| R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
+| R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE11.HOK")` | rot |
+| R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_AllOriginalStands_AreValid` | rot |
+| R02 | Heimtore aus dem Ergebnisblock um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords(file: "FILE31.HOK")` | rot |
+| R02 | Heimtore aus dem Ergebnisblock um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords(file: "FILE24.HOK")` | rot |
+| R02 | Heimtore aus dem Ergebnisblock um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords(file: "FILE40.HOK")` | rot |
+| R02 | Heimtore aus dem Ergebnisblock um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords(file: "FILE37A.HOK")` | rot |
+| R02 | Heimtore aus dem Ergebnisblock um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords(file: "FILE05.HOK")` | rot |
+| R02 | Heimtore aus dem Ergebnisblock um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords(file: "FILE16A.HOK")` | rot |
+| R02 | Heimtore aus dem Ergebnisblock um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords(file: "FILE36.HOK")` | rot |
+| R03 | importiertes Gehalt durch zwei statt drei teilen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_ManagerSquadFromSquadSlots` | rot |
+| R04 | Spieltag nach Speichern/Laden erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_RoundTripAndContinue(file: "FILE11.HOK")` | rot |
+| R04 | Spieltag nach Speichern/Laden erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_RoundTripAndContinue(file: "FILE29.HOK")` | rot |
+| R04 | Spieltag nach Speichern/Laden erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_RoundTripAndContinue(file: "FILE16A.HOK")` | rot |
+| R04 | Spieltag nach Speichern/Laden erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_RoundTripAndContinue(file: "FILE05.HOK")` | rot |
+| R05 | Saisonwechsel endet sofort als GameOver | `EishockeyManager.Core.Tests.OriginalImportTests.Import_FourSeasonChanges(file: "FILE05.HOK", active: True)` | rot |
+| R05 | Saisonwechsel endet sofort als GameOver | `EishockeyManager.Core.Tests.OriginalImportTests.Import_FourSeasonChanges(file: "FILE16A.HOK", active: False)` | grün |
+| R05 | Saisonwechsel endet sofort als GameOver | `EishockeyManager.Core.Tests.OriginalImportTests.Import_FourSeasonChanges(file: "FILE05.HOK", active: False)` | grün |
+| R05 | Saisonwechsel endet sofort als GameOver | `EishockeyManager.Core.Tests.OriginalImportTests.Import_FourSeasonChanges(file: "FILE11.HOK", active: True)` | rot |
 | S01 | alte Halbfinalpaarung | `EishockeyManager.Core.Tests.PlayoffSemifinalTests.Playoffs_OwnRounds_PairLikeTheOriginal(file: "FILE44.HOK")` | rot |
 | S01 | alte Halbfinalpaarung | `EishockeyManager.Core.Tests.PlayoffSemifinalTests.Playoffs_OwnRounds_PairLikeTheOriginal(file: "FILE22.HOK")` | rot |
 | S01 | alte Halbfinalpaarung | `EishockeyManager.Core.Tests.PlayoffSemifinalTests.MultiSeason_FourChanges_PlayoffsPairByTable0x144` | rot |
@@ -126,6 +271,16 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | S03 | einen Gruppentermin zusätzlich annehmen | `EishockeyManager.Core.Tests.PlayoffSemifinalTests.Import_RelegationGroup_ThreeOfSixDates` | rot |
 | S04 | Pokalspielübertrag weglassen | `EishockeyManager.Core.Tests.PlayoffSemifinalTests.Import_CarriesPerCompetition_AllStands` | rot |
 | S05 | alte Reihenfolge nicht sortieren | `EishockeyManager.Core.Tests.PlayoffSemifinalTests.Load_Schema43_RunningQuarterFinal_SemifinalByTable0x144` | rot |
+| T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.NationalCoachMode4Tests.Mode4_NoManagerInTopFive_NoCoach` | grün |
+| T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.SeasonEndStatusTests.SaveLoad_StatusBitIsDerivedFromSavedData` | grün |
+| T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.NationalCoachMode4Tests.Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach` | rot |
+| T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.SeasonEndStatusTests.Full_ManagerInTopFive_GetsStatusBit_OtherNot` | grün |
+| T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.NationalCoachMode4Tests.Mode4_Appointment_BeforeReroll_GermanyKeepsBaseRatings` | grün |
+| T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.SeasonEndStatusTests.StatusBit_DoesNotChangeStoredEventsOrPremium` | grün |
+| T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.SeasonEndStatusTests.Full_EveryManagerInTopFive_GetsStatusBit` | rot |
+| T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.StatistikenPraemienTests.OtherClubLeads_NoSinglePremium` | grün |
+| T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible(active: True)` | grün |
+| T01 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible(active: False)` | grün |
 | U01 | Blätterpfeil nicht auf Loslassen warten | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Paging_OnlyThroughArrowPair_InStepsOfFortyEight_NoEffectAtTheEnds` | rot |
 | U02 | Spaltenwechsel bei Grenzwert vorziehen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Marker_ColumnBoundaries_LikeTheOriginal(mouseX: 202, column: 1)` | rot |
 | U02 | Spaltenwechsel bei Grenzwert vorziehen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Marker_ColumnBoundaries_LikeTheOriginal(mouseX: 123, column: 1)` | grün |
@@ -152,6 +307,22 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | U05 | rechte Treffergrenze um eins senken | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Marker_ColumnBoundaries_LikeTheOriginal(mouseX: 203, column: 2)` | grün |
 | U05 | rechte Treffergrenze um eins senken | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Marker_ColumnBoundaries_LikeTheOriginal(mouseX: 43, column: 0)` | grün |
 | U06 | Marker nicht zeichnen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Marker_AppearsLeftOfTheEntryUnderTheMouse_AndIsRemovedWhenLeaving` | rot |
+| U07 | auch auf leeren Zeilen Marker anzeigen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Marker_NotOnEmptyRows` | rot |
+| U08 | Info bei Loslassen nicht schließen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Info_OfARemakeSave_ShowsOnlyWhileTheRightButtonIsHeld` | rot |
+| U09 | Spieltag des Originalkopfs erhöhen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Info_OfAnOriginalSave_ComesFromTheHeader_AsInFile46` | rot |
+| U10 | Liga im Weltkugelmodus anzeigen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Info_ShowsNoLeagueInWorldOnlyMode` | rot |
+| U11 | Warnung bei Fremddatei ändern | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Info_OfAForeignFile_ShowsTheNoSaveGameMessage` | rot |
+| U12 | Taste PageDown blättert | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Paging_WheelAndKeys_DoNothing` | rot |
+| U13 | Seitenzahl im Panel anzeigen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Panel_ShowsNoPageLabel` | grün |
+| U14 | Pfeilgrafik nicht zeichnen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Arrows_AreTheKb4Graphics_AtTheOriginalCallSite` | rot |
+| U15 | seitenzahlabhängiges Label zeichnen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Panel_ShowsNoPageLabel` | rot |
+| U16 | konstantes Seitenlabel zeichnen | `EishockeyManager.UI.Tests.SaveLoadDialogOriginalTests.Panel_ShowsNoPageLabel` | grün |
+| V01 | Sommerbeginn einen Tag vorziehen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
+| V02 | alte Halbfinalpaarung | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
+| V03 | WM-Tageslauf auslassen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
+| V04 | Hauptwegtakt mit Tag statt Zähler | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
+| V05 | Wanderung mit Tag statt Zähler | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
+| V06 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | W01 | WM-Tageslauf nach WM-Spielen auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.Mode4_NoCoach_HealingFollowsDayCounter` | rot |
 | W01 | WM-Tageslauf nach WM-Spielen auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.ClubOnly_WorldCupPeriod_NoTrainingNoMarketNoDrift(seed: 3)` | grün |
 | W01 | WM-Tageslauf nach WM-Spielen auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.ClubOnly_WorldCupPeriod_NoTrainingNoMarketNoDrift(seed: 11)` | grün |
@@ -203,7 +374,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `AutoLineupTeil8Tests.cs · AutoLineupTeil8Tests.Migration_31To32_KeepsHandMadeLineup` | geändert | offen |
 | `DeadlineRegressionTests.cs · DeadlineRegressionTests.R208_AnswerChecksDeadlineAtPausedUnprocessedDay` | geändert | offen |
 | `FinanceCalibrationTests.cs · FinanceCalibrationTests.PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation` | neu | offen |
-| `GameModeTests.cs · GameModeTests.Mode4_ReferenceValues_Unchanged` | geändert | offen |
+| `GameModeTests.cs · GameModeTests.Mode4_ReferenceValues_Unchanged` | geändert | rot: V01, V02, V03, V04, V05, V06 |
 | `HeimspielStatistikTests.cs · HeimspielStatistikTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | offen |
 | `HotSeatTests.cs · HotSeatTests.DismissalDuringDay_ExcludedFromNextDay` | geändert | offen |
 | `IntegrationRunde9Tests.cs · IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported` | geändert | offen |
@@ -232,11 +403,11 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartRunde14Teil6Tests.cs · KaderStartRunde14Teil6Tests.LeftClick_FirstFreeSlotOfLine_FullLineNoRoom_GoalkeeperWrongLine` | neu | offen |
 | `KaderStartRunde14Teil6Tests.cs · KaderStartRunde14Teil6Tests.ClickOnPlaced_TakesOut_SelectsHisLine_LeftUndresses_RightKeeps` | neu | offen |
 | `KaderStartRunde14Teil6Tests.cs · KaderStartRunde14Teil6Tests.RightClick_TogglesDressed_TwentyThirdRefused_AutoLineupOff` | neu | offen |
-| `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.StartLeague_WithoutManagers_IsKept_AndAdoptedByNewManager` | neu | offen |
-| `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.StartLeague_WithoutManagers_StepReportsOnlyRealChanges` | neu | offen |
-| `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.StartLeague_SurvivesRemovalOfLastManager` | neu | offen |
-| `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.JoinScoutedTalent_GoalkeeperOrDefender_SortedIn` | neu | offen |
-| `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.Migration_41To42_TakesStartLeagueOfFirstManager` | neu | offen |
+| `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.StartLeague_WithoutManagers_IsKept_AndAdoptedByNewManager` | neu | rot: K01, K02 |
+| `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.StartLeague_WithoutManagers_StepReportsOnlyRealChanges` | neu | rot: K01, K03 |
+| `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.StartLeague_SurvivesRemovalOfLastManager` | neu | rot: K01 |
+| `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.JoinScoutedTalent_GoalkeeperOrDefender_SortedIn` | neu | rot: K04 |
+| `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.Migration_41To42_TakesStartLeagueOfFirstManager` | neu | rot: K05 |
 | `KaderStartStartLigaTests.cs · KaderStartStartLigaTests.Bundesliga_AlwaysDraws_NeverTheEuropeanCupPlace` | geändert | offen |
 | `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.Offer_PlayerLeavesSquad_SlotsMoveUp_ListingWithSeller` | neu | offen |
 | `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.Withdraw_ReturnsPlayerByRole_NotInLineup_ContractUnchanged` | neu | offen |
@@ -265,7 +436,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `LoadQuirkTests.cs · LoadQuirkTests.File44_Offset_SurvivesSave_EndsAtSeasonChange_FourSeasons` | neu | offen |
 | `LoadQuirkTests.cs · LoadQuirkTests.NewGame_HasNoOffset` | neu | offen |
 | `LoadQuirkTests.cs · LoadQuirkTests.Schema46_WithoutOffset_LoadsWithZero` | neu | offen |
-| `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach` | geändert | offen |
+| `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach` | geändert | rot: T01 |
 | `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_NoManagerInTopFive_NoCoach` | geändert | offen |
 | `NationalCoachMode4Tests.cs · NationalCoachMode4Tests.Mode4_Appointment_BeforeReroll_GermanyKeepsBaseRatings` | geändert | offen |
 | `NationalteamRunde14Teil3Tests.cs · NationalteamRunde14Teil3Tests.MenuBuild_WithDefaultSetting_LinesUpTheSquad` | neu | offen |
@@ -337,29 +508,29 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `OriginalImportRestTests.cs · OriginalImportRestTests.Import_BankAndManagerLoans` | neu | rot: I04 |
 | `OriginalImportRestTests.cs · OriginalImportRestTests.Import_NationalAccountAndTalentSearch` | neu | rot: I13 |
 | `OriginalImportRestTests.cs · OriginalImportRestTests.Import_NewMessageFlag` | neu | rot: I07, I08 |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_StadiumConstruction_File43` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_StadiumConstruction_File44A` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_NoConstruction_WhenOriginalHasNone` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.TryImport_SponsorContractAmountNotDivisibleByThree_Loads` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.TryImport_ImportError_IsReportedWithoutChecksumFlag` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_FriendliesFromOriginal` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_StadiumStatisticsFromOriginal` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_PlayerTrendFromSlot` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_ContractNoticeFromSlot` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_NationalCoach_WhenOnlyTheOriginalHasOne` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_NationalTacticsShownAutoLine` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.ClubIndices_WorldOnly_NationKeepsItsIndex_ManagerSlotGetsTheMissingClub` | neu | offen |
-| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_AutoLineup_ReadsCurrentByteNotTheSavedOne` | neu | offen |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_StadiumConstruction_File43` | neu | rot: J01 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_StadiumConstruction_File44A` | neu | rot: J01 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_NoConstruction_WhenOriginalHasNone` | neu | rot: J21 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.TryImport_SponsorContractAmountNotDivisibleByThree_Loads` | neu | rot: J17 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.TryImport_ImportError_IsReportedWithoutChecksumFlag` | neu | rot: J18 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_FriendliesFromOriginal` | neu | rot: J05, J06 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_StadiumStatisticsFromOriginal` | neu | rot: J04, J10 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_PlayerTrendFromSlot` | neu | rot: J02 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_ContractNoticeFromSlot` | neu | rot: J03 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_NationalCoachFromClubRecord` | neu | rot: J08, J12 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_NationalCoach_WhenOnlyTheOriginalHasOne` | neu | rot: J07 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_NationalTacticsShownAutoLine` | neu | rot: J19 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_CupWinnersFromOriginal` | neu | rot: J13, J14, J15 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.ClubIndices_WorldOnly_NationKeepsItsIndex_ManagerSlotGetsTheMissingClub` | neu | rot: J20 |
+| `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_AutoLineup_ReadsCurrentByteNotTheSavedOne` | neu | rot: J09 |
 | `OriginalImportRunde14Tests.cs · OriginalImportRunde14Tests.Import_TakesNationalCoachAutoLineupFromBlock0375` | neu | offen |
 | `OriginalImportRunde14Tests.cs · OriginalImportRunde14Tests.Import_AllStands_RoundTripIsStable` | neu | offen |
-| `OriginalImportTests.cs · OriginalImportTests.Import_SetsDateManagersAndClubs` | neu | offen |
-| `OriginalImportTests.cs · OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords` | neu | offen |
-| `OriginalImportTests.cs · OriginalImportTests.Import_AllOriginalStands_AreValid` | neu | offen |
-| `OriginalImportTests.cs · OriginalImportTests.Import_ManagerSquadFromSquadSlots` | neu | offen |
-| `OriginalImportTests.cs · OriginalImportTests.Import_RoundTripAndContinue` | neu | offen |
-| `OriginalImportTests.cs · OriginalImportTests.Import_FourSeasonChanges` | neu | offen |
+| `OriginalImportTests.cs · OriginalImportTests.Import_SetsDateManagersAndClubs` | neu | rot: R01 |
+| `OriginalImportTests.cs · OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords` | neu | rot: R02 |
+| `OriginalImportTests.cs · OriginalImportTests.Import_AllOriginalStands_AreValid` | neu | rot: R01 |
+| `OriginalImportTests.cs · OriginalImportTests.Import_ManagerSquadFromSquadSlots` | neu | rot: R03 |
+| `OriginalImportTests.cs · OriginalImportTests.Import_RoundTripAndContinue` | neu | rot: R04 |
+| `OriginalImportTests.cs · OriginalImportTests.Import_FourSeasonChanges` | neu | rot: R05 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Playoffs_NextRound_PairsByTable0x144_HomeAtSmallerSlot` | neu | rot: S01 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.MultiSeason_FourChanges_PlayoffsPairByTable0x144` | neu | rot: S01 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Playoffs_OwnRounds_PairLikeTheOriginal` | neu | rot: S01 |
@@ -388,7 +559,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SaisonwechselProbenTests.cs · SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop` | geändert | offen |
 | `SaveGameTests.cs · SaveGameTests.SchemaFingerprint_MatchesSchemaVersion` | geändert | offen |
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.Full_ManagerInTopFive_GetsStatusBit_OtherNot` | geändert | offen |
-| `SeasonEndStatusTests.cs · SeasonEndStatusTests.Full_EveryManagerInTopFive_GetsStatusBit` | geändert | offen |
+| `SeasonEndStatusTests.cs · SeasonEndStatusTests.Full_EveryManagerInTopFive_GetsStatusBit` | geändert | rot: T01 |
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.StatusBit_DoesNotChangeStoredEventsOrPremium` | geändert | offen |
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.SaveLoad_StatusBitIsDerivedFromSavedData` | geändert | offen |
 | `SeasonFlowTests.cs · SeasonFlowTests.Debts_DoNotDismiss` | neu | offen |
@@ -503,16 +674,16 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `PruefungKarteRunde14UiTests.cs · PruefungKarteRunde14UiTests.TransferList_Separators_181To313_LongerAfterHover` | neu | offen |
 | `PruefungKarteRunde14UiTests.cs · PruefungKarteRunde14UiTests.TransferScreen_AccountLabels_TopRow225_AnlagenAt133` | neu | offen |
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Paging_OnlyThroughArrowPair_InStepsOfFortyEight_NoEffectAtTheEnds` | neu | rot: U01 |
-| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Paging_WheelAndKeys_DoNothing` | neu | offen |
-| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Panel_ShowsNoPageLabel` | neu | offen |
-| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Arrows_AreTheKb4Graphics_AtTheOriginalCallSite` | neu | offen |
+| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Paging_WheelAndKeys_DoNothing` | neu | rot: U12 |
+| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Panel_ShowsNoPageLabel` | neu | rot: U15 |
+| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Arrows_AreTheKb4Graphics_AtTheOriginalCallSite` | neu | rot: U14 |
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Marker_AppearsLeftOfTheEntryUnderTheMouse_AndIsRemovedWhenLeaving` | neu | rot: U06 |
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Marker_ColumnBoundaries_LikeTheOriginal` | neu | rot: U02, U03, U04, U05 |
-| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Marker_NotOnEmptyRows` | neu | offen |
-| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_OfARemakeSave_ShowsOnlyWhileTheRightButtonIsHeld` | neu | offen |
-| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_OfAnOriginalSave_ComesFromTheHeader_AsInFile46` | neu | offen |
-| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_ShowsNoLeagueInWorldOnlyMode` | neu | offen |
-| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_OfAForeignFile_ShowsTheNoSaveGameMessage` | neu | offen |
+| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Marker_NotOnEmptyRows` | neu | rot: U07 |
+| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_OfARemakeSave_ShowsOnlyWhileTheRightButtonIsHeld` | neu | rot: U08 |
+| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_OfAnOriginalSave_ComesFromTheHeader_AsInFile46` | neu | rot: U09 |
+| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_ShowsNoLeagueInWorldOnlyMode` | neu | rot: U10 |
+| `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_OfAForeignFile_ShowsTheNoSaveGameMessage` | neu | rot: U11 |
 | `SeasonEndColorsTests.cs · SeasonEndColorsTests.Palette18_12_22_MatchDosBoxPictures` | geändert | offen |
 | `StadiumArrowTests.cs · StadiumArrowTests.TicketArrows_AreTenPixelsWide_FromKb4BaseGraphic` | neu | offen |
 | `StadiumPartsTests.cs · StadiumPartsTests.EveryPartIsDrawnFromItsTableEntryWithMask0xC0` | neu | offen |
