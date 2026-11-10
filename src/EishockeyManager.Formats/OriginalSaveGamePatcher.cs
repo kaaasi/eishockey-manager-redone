@@ -168,7 +168,10 @@ public static class OriginalSavePatcher
     /// im letzten Kopfbyte), Blöcke mit <c>(klar XOR k) + k</c>, Prüfsumme (Startschlüssel + Summe der Klartextbytes)
     /// unverschlüsselt an den zwei Stellen des Layouts. Gegenstück zu <see cref="OriginalSaveGame.Read"/>.
     /// </summary>
-    public static byte[] Encode(ReadOnlySpan<byte> plainHeader, OriginalSaveGame save)
+    public static byte[] Encode(ReadOnlySpan<byte> plainHeader, OriginalSaveGame save) => Encode(plainHeader, save.Block);
+
+    /// <summary>Wie <see cref="Encode(ReadOnlySpan{byte}, OriginalSaveGame)"/>, Blöcke über ihren Namen (auch <see cref="OriginalSaveWriter"/>).</summary>
+    public static byte[] Encode(ReadOnlySpan<byte> plainHeader, Func<string, byte[]> block)
     {
         if (plainHeader.Length != OriginalSaveGame.PlainLength)
             throw new ArgumentException($"Kopf muss {OriginalSaveGame.PlainLength} Byte lang sein.", nameof(plainHeader));
@@ -178,15 +181,17 @@ public static class OriginalSavePatcher
         var k = plainHeader[OriginalSaveGame.KeyOffset];
         var sum = k;
         var pos = OriginalSaveGame.PlainLength;
-        foreach (var block in OriginalSaveGame.Layout)
+        foreach (var entry in OriginalSaveGame.Layout)
         {
-            if (block.IsChecksum)
+            if (entry.IsChecksum)
             {
                 file[pos++] = sum;
                 continue;
             }
-            var data = save.Block(block.Name);
-            for (var i = 0; i < block.Length; i++)
+            var data = block(entry.Name);
+            if (data.Length != entry.Length)
+                throw new ArgumentException($"Block „{entry.Name}“ hat {data.Length} statt {entry.Length} Byte.");
+            for (var i = 0; i < entry.Length; i++)
             {
                 file[pos++] = (byte)((data[i] ^ k) + k);
                 sum += data[i];

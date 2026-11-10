@@ -307,15 +307,26 @@ public class TagestaktHauptwegReviewTests
     /// R688-05 am Original-Stand: FILE44 (14.04.1994) → FILE46 (10.09.1994). Liste gleich bis auf den eigenen HOHENADL, der in den
     /// Kader zurückkehrt; die WM-Schleife wechselt die Liste ebenfalls nicht.
     /// </summary>
-    [GameDataFact]
-    public void File44_SeasonChange_KeepsListLikeFile46()
+    /// <remarks>
+    /// Saatunabhängig (PR #727, Nachprüfung 2026-11-10 N2, Nutzer R15-E2 = C): Geprüft wird der Saisonwechsel ohne Tag 0
+    /// (<see cref="GameState.StartNextSeasonWithRenewals"/>). Tag 0 würfelt im Zug jedes Managers den Listenwechsel
+    /// ([ORIGINAL] Datei 0x54E65, random(0, Manager + 2) = 0); ob der Wurf trifft, hängt am Spielverlauf und an der Saat
+    /// (FILE44, Saaten 4705–4720: getroffen bei 4705, 4711, 4718) und ist nicht Teil von R688-05. Die Saaten der Theorie
+    /// decken beide Fälle des Wurfs ab.
+    /// </remarks>
+    [GameDataTheory]
+    [InlineData(4705)]
+    [InlineData(4706)]
+    [InlineData(4711)]
+    public void File44_SeasonChange_KeepsListLikeFile46(int seed)
     {
-        var game = Import("FILE44.HOK");
+        var game = GameState.ImportOriginal(OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave("FILE44.HOK"))),
+            ClubDatabase.Load(TestGameData.Load()), seed);
         PlayToSeasonOver(game);
-        game.StartNextSeason();
-        // Spur kader Teil 3 (R204): geändert – Vertragslose stehen wie im Original nicht mehr auf der Liste, verglichen wird die ganze
-        // Liste (vorher nur die Markt-Plätze aus dem Pool).
+        game.StartNextSeasonWithRenewals();
+        // Spur kader Teil 3 (R204): Vertragslose stehen wie im Original nicht mehr auf der Liste, verglichen wird die ganze Liste.
         var expected = Import("FILE46.HOK").TransferMarket.Listings.Select(l => l.Player.Name).Order().ToList();
+        Assert.Equal(0, game.CurrentDay);
         Assert.Equal(expected, game.TransferMarket.Listings.Select(l => l.Player.Name).Order());
         Assert.DoesNotContain("HOHENADL", expected);
         Assert.Contains(game.Clubs[game.Managers[0].ClubIndex].Players, p => p.Name == "HOHENADL");

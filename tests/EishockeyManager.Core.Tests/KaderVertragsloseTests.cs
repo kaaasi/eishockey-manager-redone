@@ -83,13 +83,23 @@ public class KaderVertragsloseTests
     /// Regressionstest R204 am Original-Stand FILE44 (14.04.1994) → FILE46 (10.09.1994): Nach dem Saisonwechsel mit „Abbruch“ in
     /// der Verhandlung (KJELLBERG geht, Bild <c>file46_4</c>) ist die Liste genau die von FILE46 – kein Vertragsloser darauf.
     /// </summary>
+    /// <remarks>
+    /// Saatunabhängig (PR #727 beim Nachziehen von <c>main</c>, Nutzer R15-E2 = C, wie N2 in
+    /// <c>TagestaktHauptwegReviewTests.File44_SeasonChange_KeepsListLikeFile46</c>): Geprüft wird der Saisonwechsel ohne Tag 0.
+    /// Tag 0 würfelt den Listenwechsel ([ORIGINAL] Datei 0x54E65); ob der Wurf bei Saat 4711 trifft, hängt am Verbrauch des
+    /// Zufallsstroms und ist nicht Teil von R204. „Abbruch“ wie in der Oberfläche über <see cref="GameState.CancelRenewal"/>.
+    /// </remarks>
     [GameDataFact]
     public void File44_SeasonChange_ListEqualsFile46_WithoutFreeAgents()
     {
         var game = Import("FILE44.HOK", 4711);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         PlayToSeasonOver(game);
-        game.StartNextSeason(); // ohne Oberfläche: offene Verhandlungen enden wie „Abbruch“
+        game.StartNextSeasonWithRenewals();
+        foreach (var manager in game.Managers)
+            foreach (var p in game.PendingRenewals(manager).ToList())
+                game.CancelRenewal(manager, p);
+        Assert.Equal(0, game.CurrentDay);
         var expected = Import("FILE46.HOK", 4711).TransferMarket.Listings.Select(l => l.Player.Name).Order().ToList();
         Assert.Equal(expected, game.TransferMarket.Listings.Select(l => l.Player.Name).Order());
         Assert.DoesNotContain(club.Players, p => p.Name == "KJELLBERG");

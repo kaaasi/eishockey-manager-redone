@@ -10,6 +10,7 @@ using EishockeyManager.Formats;
 //   emtool hok dump <datei> [block …]           Original-Spielstand *.HOK entschlüsseln und prüfen
 //   emtool hok patch <vorlage> <ziel> feld=wert …   veränderten Spielstand fürs Original erzeugen
 //   emtool hok import <hok> <ziel>              Original-Spielstand als Remake-Spielstand (*.ems) importieren
+//   emtool hok export <spielstand> <ziel.hok>   Remake-Spielstand als Original-Spielstand *.HOK exportieren
 
 var command = args.Length > 0 ? args[0].ToLowerInvariant() : "help";
 
@@ -33,6 +34,8 @@ try
             EishockeyManager.Tools.Scenarios.ScenarioRunner.Run(
                 GameData.Locate(args.ElementAtOrDefault(1)), args.ElementAtOrDefault(2) ?? "screens", args.Skip(3).ToList());
             return 0;
+        case "hok" when args.ElementAtOrDefault(1) == "export": // Spur hok-export (Runde 15)
+            return EishockeyManager.Tools.HokExport.Run(args.Skip(2).ToList());
         case "hok":
             return EishockeyManager.Tools.HokDump.Run(args.Skip(1).ToList());
         default:
@@ -47,6 +50,7 @@ try
                   emtool hok dump <datei> [block …]
                   emtool hok patch <vorlage> <ziel> feld=wert …
                   emtool hok import <hok> <ziel> [--gamedata ordner] [--seed n] [--force]
+                  emtool hok export <spielstand> <ziel.hok> [--gamedata ordner] [--seed n] [--force]
 
                 Ohne Spielordner wird nach einem Ordner "gamedata" gesucht.
                 """);
