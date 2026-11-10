@@ -383,7 +383,8 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     Assert.Equal(-4 * summerFixed, finance.Current(FinanceCategory.Unterhalt));
                 Assert.Equal(0, finance.Current(FinanceCategory.Eintritt));
                 Assert.Equal(0, finance.Current(FinanceCategory.Praemien));
-                if (active) Assert.Equal(roster, club.Players.Count);
+                // Spur kader (#698): ab 1995 bis zu zwei Junioren je Saisonende (0x26F20).
+                if (active) Assert.InRange(club.Players.Count, roster, roster + SeasonEndYouth.MaxCount);
             }
             output.WriteLine($"seed={seed}; start={league}; active={active}; lowest={lowest}; highest={highest}; end={manager.Money}");
             Assert.False(manager.Dismissed, "Manager entlassen");

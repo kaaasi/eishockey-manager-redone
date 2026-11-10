@@ -423,6 +423,8 @@ public class GameModeTests
     // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
     // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
     // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
+    // Spur kader Teil 1 (#698): neu – Jugend am Saisonende (0x26F20, Datei 0x2728C–0x27320) zieht je Manager und Saison zwei Zufallszahlen
+    // und bringt ab 1995 Junioren in den Kader. Gegenprobe: Aufruf JoinSeasonEndYouth in StartSquadSeason entfernt → alter Wert.
     internal const string Mode4Reference =
         "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=57,CupWinner=4,GermanChampion=1,EuropeanCupWinner=0|2466933,400000|WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2356882,400000|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2024688,500000|WorldChampion=52,CupWinner=18,GermanChampion=4,EuropeanCupWinner=0|1524564,400000|R776559153 C1809965060";
 

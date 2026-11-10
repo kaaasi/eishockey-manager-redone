@@ -229,6 +229,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
     // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
     // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
+    // Spur kader Teil 1 (#698): neu – Jugend am Saisonende (0x26F20, Datei 0x2728C–0x27320) zieht je Manager und Saison zwei Zufallszahlen
+    // und bringt ab 1995 Junioren in den Kader. Gegenprobe: Aufruf JoinSeasonEndYouth in StartSquadSeason entfernt → alter Wert.
     [GameDataTheory]
     [InlineData(false, "69FE76E9EAAC0AB6")]
     [InlineData(true, "C0569EF9C1B17F34")]

@@ -537,7 +537,8 @@ public class TransferVertraegeKomplettTeil5Tests
         else
         {
             Assert.Equal(0, bought + sold);
-            Assert.DoesNotContain(market.Pool, s => s.Owner == PoolOwner.Taken);
+            // Spur kader (#698): vergeben sind beim passiven Manager nur Junioren vom Saisonende (0x06D7F aus 0x26F20).
+            Assert.All(market.Pool.Where(s => s.Owner == PoolOwner.Taken), s => Assert.True(s.Player.Age <= PlayerFactory.ScoutedMaxAge + 4));
         }
     }
 }

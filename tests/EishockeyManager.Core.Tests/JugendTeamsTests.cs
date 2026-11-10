@@ -223,6 +223,8 @@ public class JugendTeamsTests
     // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
     // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
     // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
+    // Spur kader Teil 1 (#698): neu – Jugend am Saisonende (0x26F20, Datei 0x2728C–0x27320) zieht je Manager und Saison zwei Zufallszahlen
+    // und bringt ab 1995 Junioren in den Kader. Gegenprobe: Aufruf JoinSeasonEndYouth in StartSquadSeason entfernt → alter Wert.
     private const string ExpectedActive =
         "0:Schueler:2/11/60;0:Jugend:2/11/60;0:Junioren:2/11/61;1:Schueler:1/11/75;1:Jugend:2/6/69;1:Junioren:1/12/69;2:Schueler:1/6/79;2:Jugend:1/11/79;2:Junioren:1/6/79;3:Schueler:1/6/81;3:Jugend:1/6/83;3:Junioren:1/6/81";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.

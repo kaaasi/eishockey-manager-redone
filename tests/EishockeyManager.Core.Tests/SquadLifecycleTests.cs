@@ -204,7 +204,8 @@ public class SquadLifecycleTests
             if (active)
                 SignFreeAgents(game);
             else if (change >= 2)
-                Assert.Empty(OwnClub(game).Players); // passiv: alle Startverträge enden nach zwei Jahren (angekündigt)
+                // passiv: alle Startverträge enden nach zwei Jahren (angekündigt); danach nur Junioren vom Saisonende (#698, 0x26F20).
+                Assert.DoesNotContain(OwnClub(game).Players, managerPlayers.Contains);
         }
 
         // Plausible Altersverteilung nach sechs Wechseln.

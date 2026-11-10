@@ -123,7 +123,13 @@ public sealed partial class GameState
     /// freien Platz; das Remake gibt nach <see cref="TalentPoolAttempts"/> Versuchen auf und erzeugt dann einen neuen Spieler
     /// (<see cref="PlayerFactory.TalentName"/>, Rolle zufällig) – ebenso ohne Spielerpool (Spielstände vor Schema 22).
     /// </summary>
-    public Player? JoinScoutedTalent(Manager manager, int s)
+    public Player? JoinScoutedTalent(Manager manager, int s) => JoinScoutedTalent(manager, s, TalentScout.SalaryPercent);
+
+    /// <summary>
+    /// Wie <see cref="JoinScoutedTalent(Manager, int)"/> mit dem dritten Argument von 0x06D7F: Gehalt = Wert(Gehalt) ·
+    /// <paramref name="salaryPercent"/> / 100 (Talentsuche 80, Jugend am Saisonende 60; Datei 0x06F27–0x06F5A).
+    /// </summary>
+    public Player? JoinScoutedTalent(Manager manager, int s, int salaryPercent)
     {
         if (OwnedPlayers(manager) >= TalentScout.MaxOwned)
             return null;
@@ -147,13 +153,48 @@ public sealed partial class GameState
         _ = TransferRules.Random16(random, 3, 12); // Kaderplatz +0x19 (Bedeutung offen, A185/A186), nur gezogen
         _ = TransferRules.Random16(random, 3, 12);
         p.MonthlySalary = Math.Max(Contracts.MinSalary,
-            Contracts.ValueSalary(this, manager, p) * TalentScout.SalaryPercent / 100);
+            Contracts.ValueSalary(this, manager, p) * salaryPercent / 100);
         p.ContractYears = TransferRules.Random16(random, 2, 3);
         return p;
     }
 
     /// <summary>[APPROX] Höchstzahl Versuche für einen freien Poolplatz (wie beim Listenwechsel, Datei 0x49566 ff.: 1.500).</summary>
     public const int TalentPoolAttempts = 1_500;
+
+    /// <summary>
+    /// Jugend rückt am Saisonende in den Kader (#698): je aktivem Manager n = random(0, 2), mit random(0, 1) ≠ 0 n = 0; ist das
+    /// Jahr des 29. April größer als 1994, kommen n Spieler nach <see cref="JoinScoutedTalent(Manager, int, int)"/> mit der
+    /// Stärke der Junioren als s und 60 % Gehalt (Grenze 28 eigene Spieler wie bei der Talentsuche).
+    /// [ORIGINAL] Fenster „Saisonende“ 0x26F20 in der Managerschleife, Datei 0x2728C–0x27320: Zufall Datei 0x27293/0x272A4,
+    /// Jahr DGROUP 0x5A18 (32 Bit) &gt; 0x7CA (Datei 0x272B4–0x272C3), Aufruf 0x20:0x89F = 0x06D7F(m, Junioren-Stärke DGROUP
+    /// 0xA077 + 0x15 · m, 60) (Datei 0x272D8–0x272F6), je Erfolg Ereignissymbol 9 (Datei 0x27302–0x2730F). Keine Modusprüfung.
+    /// Die Junioren-Stärke ist schon nach dem Saisonwechsel der Jugendteams (0x3A13B über Datei 0x55889, vor 0x5645D), und
+    /// der Neue altert und zählt seinen Vertrag mit allen Kaderplätzen in derselben Schleife herunter (Datei 0x274A7, 0x27500):
+    /// das Remake ruft dies deshalb vor dem Kaderübergang (<see cref="StartSquadSeason"/>) auf.
+    /// [APPROX] Ereignissymbol 9 im Fenster „Saisonende“ fehlt: Das Remake bildet die Ereignisse schon am 29. April
+    /// (<c>SeasonFlow.cs</c>, Spur tagesablauf), der Kaderübergang läuft erst nach dem Fenster. Das Original zieht die beiden
+    /// Zufallszahlen auch 1994; das Remake ebenso.
+    /// </summary>
+    /// <param name="aprilYear">Jahr des 29. April der abgelaufenen Saison (DGROUP 0x5A18).</param>
+    /// <returns>Die neuen Spieler in Managerreihenfolge.</returns>
+    public List<Player> JoinSeasonEndYouth(int aprilYear)
+    {
+        var joined = new List<Player>();
+        foreach (var manager in ActiveManagers)
+        {
+            var random = FinanceRandom;
+            var count = TransferRules.Random16(random, 0, SeasonEndYouth.MaxCount);
+            if (TransferRules.Random16(random, 0, 1) != 0)
+                count = 0;
+            if (aprilYear <= SeasonEndYouth.LastYearWithout)
+                continue;
+            var s = Finance(manager).Youth[(int)YouthTeamKind.Junioren].Strength;
+            for (var i = 0; i < count; i++)
+                if (JoinScoutedTalent(manager, s, SeasonEndYouth.SalaryPercent) is { } p)
+                    joined.Add(p);
+        }
+        return joined;
+    }
 
     private PoolSlot? DrawFreePoolSlot(Random random)
     {
@@ -178,4 +219,17 @@ public sealed partial class GameState
         AssignPlayerId(p);
         return p;
     }
+}
+
+/// <summary>Werte der Jugend am Saisonende (<see cref="GameState.JoinSeasonEndYouth"/>).</summary>
+public static class SeasonEndYouth
+{
+    /// <summary>Höchstzahl je Manager und Saison. [ORIGINAL] random(0, 2), Datei 0x2728C–0x27293.</summary>
+    public const int MaxCount = 2;
+
+    /// <summary>Bis zu diesem Jahr (einschließlich) kommt niemand. [ORIGINAL] Vergleich mit 0x7CA, Datei 0x272BD.</summary>
+    public const int LastYearWithout = 1994;
+
+    /// <summary>Gehalt in Prozent von Wert(Gehalt). [ORIGINAL] drittes Argument 60 an 0x06D7F, Datei 0x272D8–0x272DE.</summary>
+    public const int SalaryPercent = 60;
 }
