@@ -62,7 +62,7 @@ cd eishockey-manager-redone
   Reviews durch ChatGPT brauchen Codex mit Netzzugang; Titel und Head-SHA der Review-Datei vor der Auswertung prüfen.
 - **Auf geplante Läufe warten:** `send_later` stand nicht verlässlich bereit; bewährt hat sich eine Warteschleife im
   Hintergrund (`run_in_background`), die per `gh api …/issues?labels=<label>&state=open` auf die Labels aus
-  `leitstelle-start.md` Schritt 10 wartet (früher: auf den Review-Branch) – Intervall 60 s,
+  `leitstelle-start.md` Schritt 10 wartet (je Label eine Abfrage; bei ChatGPT/Codex-Reviews auf den Review-PR `review/*`) – Intervall 60 s,
   Obergrenze rund zwei Stunden (z. B. `for i in $(seq 1 115)`), danach abbrechen und den Lauf prüfen (`list_triggers`). Nach einem Neustart
   der Arbeitsumgebung sind solche Schleifen verloren und neu anzulegen.
 

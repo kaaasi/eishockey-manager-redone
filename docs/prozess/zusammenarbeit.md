@@ -11,7 +11,7 @@ dessen, was in GitHub steht**. Kein Schritt darf einen bestimmten Chatverlauf vo
 | **Nutzer** | Projektinhaber | Ziele, Freigaben, Ernennung der Leitstelle, letzte Entscheidung bei Uneinigkeit | – |
 | **Leitstelle** | ein vom Nutzer ernannter Agent (aktuell siehe unten) | Pakete schneiden und verteilen, PRs integrieren, Merge-Prüfung, Review-Anfragen formulieren, Plan pflegen | eigene Umsetzungen (auch Integrations-Commits) ohne unabhängiges Review mergen |
 | **Implementierer** | beliebiger Agent | ein Arbeitspaket auf **einem** Branch umsetzen, PR mit Pflichtangaben | eigenen PR freigeben oder mergen; fremde Branches ohne Übergabe ändern |
-| **Reviewer** | anderer Agent **oder** frische Sitzung ohne Implementierungskontext | unabhängiges Review mit festen SHAs, Ergebnis als Datei in `docs/reviews/` | Code oder den geprüften PR ändern |
+| **Reviewer** | anderer Agent **oder** frische Sitzung ohne Implementierungskontext | unabhängiges Review mit festen SHAs, Ergebnis als Datei in `docs/reviews/` | Code oder den geprüften PR ändern (außer Label `review-ja`/`review-nein`) |
 
 **Aktuelle Leitstelle:** Claude Code (seit 25.10.2026), **je Runde eine frische Sitzung** (Nutzer 10.11.2026); der Stand
 liegt nur in GitHub (`docs/arbeitspakete.md`, PRs, Labels). **Aktueller Standard-Reviewer:** ChatGPT.
@@ -101,9 +101,13 @@ schreibt zuerst einen Übernahmekommentar („übernommen ab SHA …, Tests …�
      Nachprüfung für diesen Punkt an; die Leitstelle führt beide Belege aus und entscheidet. Nur wenn das nicht gelingt, gibt es eine
      Nachprüfung allein dieses Punkts.
   8. **Verkettung (Nutzer 10.11.2026):** Der Fixlauf legt am Ende selbst die Nachprüfung als geplanten Lauf an (Kurzaufruf aus
-     `docs/vorlagen/review-anfrage.md`, Modell Claude Opus 5.5, etwa 5 Minuten später), wenn er P0/P1 behebt; behebt er nur
+     `docs/vorlagen/review-anfrage.md`, Modell nach „Modellwahl“ unten, etwa 5 Minuten später; vorher mit `list_triggers` prüfen, ob
+     für diesen PR schon eine Nachprüfung aussteht), wenn er P0/P1 behebt; behebt er nur
      P2/P3, setzt er das Label `leitstelle-delta`. Jedes Review setzt am geprüften PR das Label `review-ja` bzw. `review-nein`
-     (altes Label entfernen). Die Leitstelle wartet auf Labels, nicht auf Kommentare, und merged; sie legt Fixläufe nach
+     (altes Label entfernen). **Wer ein Label abarbeitet, entfernt es:** der Fixlauf `review-nein` mit dem Push des neuen Heads, die
+     Leitstelle `leitstelle-delta`, `beleg-strittig` und `spur-wartet` nach ihrer Entscheidung bzw. dem Anlegen des Laufs.
+     Reviews ohne Netz (ChatGPT/Codex) setzen kein Label; dort wartet die Leitstelle auf den Review-PR (`review/*`) und setzt das
+     Label beim Auswerten. Die Leitstelle wartet auf Labels bzw. Review-PRs, nicht auf Kommentare, und merged; sie legt Fixläufe nach
      `review-nein` an. Lehnt die Freigabe `create_trigger` ab, Label `spur-wartet` und Prompt im Übergabekommentar (wie bei
      Fortsetzungen).
   9. **Länge (Nutzer 10.11.2026):** Review-Bericht höchstens 120 Zeilen (Gesamtreview: je Teil), nur Urteil, Befunde mit Beleg,

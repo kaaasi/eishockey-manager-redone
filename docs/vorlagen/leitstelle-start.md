@@ -41,5 +41,7 @@
    Labels, Übergaben), nicht im Chat. Dem Nutzer meldet sie sich nur bei Entscheidungsbedarf, am Ende einer Spur (Merge) und am
    Rundenende – nicht nach jedem Teil oder Zwischenstand.
 10. **Warten über Labels:** Reviews setzen `review-ja`/`review-nein`, Fixläufe mit nur P2/P3 `leitstelle-delta`, strittige Belege
-   `beleg-strittig`, Läufe ohne Fortsetzung `spur-wartet` (`zusammenarbeit.md` §5 Punkte 7–8). Eine Warteschleife fragt nur
-   diese Labels ab (`gh api …/issues?labels=…&state=open`), Intervall 60 s.
+   `beleg-strittig`, Läufe ohne Fortsetzung `spur-wartet` (`zusammenarbeit.md` §5 Punkte 7–8). Eine Warteschleife fragt diese Labels ab,
+   **je Label eine Abfrage** (`gh api …/issues?labels=<label>&state=open`; mehrere Labels in einer Abfrage sind UND-verknüpft),
+   bei Reviews durch ChatGPT/Codex zusätzlich offene PRs mit Head `review/*`; Intervall 60 s. Erledigte Labels entfernt die
+   Leitstelle (`zusammenarbeit.md` §5 Punkt 8).

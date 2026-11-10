@@ -8,7 +8,8 @@
 > Erwartet offen (nur bestätigen): `<IDs | –>`
 > Besonders prüfen: `<1–3 Punkte | –>`
 > Erstelle im Repo einen neuen Remote-Branch `review/<thema>` auf Basis von `main`, committe dort ausschließlich
-> die Review-Datei mit Agenten-Trailer und öffne einen Review-PR gegen `main`. Diese GitHub-Schreibaktionen sind
+> die Review-Datei mit Agenten-Trailer und öffne einen Review-PR gegen `main`; setze am PR #`<nr>` das Label `review-ja` bzw.
+> `review-nein` (mit Netzzugang). Diese GitHub-Schreibaktionen sind
 > ausdrücklich autorisiert. Nicht mergen. Falls Schreiben nicht möglich ist, stelle die fertige Datei bereit.
 
 Als **geplanter Lauf** zusätzlich „Unbeaufsichtigt, keine Rückfragen.“ und – wenn Originaldaten, Spielstände oder Bilder nötig
@@ -49,7 +50,7 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
    Ohne nachgewiesenen Checkout (nur Codelesen oder unverifizierter Stand) liefert das Review keinen Testnachweis nach
    `zusammenarbeit.md` §6 Nr. 4; die Merge-Empfehlung sagt dann ausdrücklich „nur Codelesen“. Der
    Originaldaten-Nachweis muss dann im PR stehen (auch als Kommentar der Leitstelle).
-5. Ablage: nichts am Code oder am geprüften PR ändern, nichts ins Referenz-Repo schreiben. Datei auf neuem Branch `review/<thema>` (Basis `main`), PR mit
+5. Ablage: nichts am Code oder am geprüften PR ändern (außer dem Label in Schritt 6), nichts ins Referenz-Repo schreiben. Datei auf neuem Branch `review/<thema>` (Basis `main`), PR mit
    **nur dieser Datei**, Commit-Trailer mit deinem Agentennamen. Ohne Schreibzugriff: Datei an den Nutzer.
 6. Am geprüften PR das Label `review-ja` bzw. `review-nein` setzen (das jeweils andere entfernen), ohne den PR sonst zu ändern.
    Ohne Schreibzugriff setzt es die Leitstelle.
