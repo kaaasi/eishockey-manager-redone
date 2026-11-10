@@ -1164,6 +1164,12 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q60 | Grundsponsoreinnahme um 1 DM erhöhen | `EishockeyManager.Core.Tests.SponsorBewertungTests.FourSeasonChanges_RatingAndIncomeStayConsistent(active: True)` | rot |
 | Q61 | Manager-Heimspielen 20 Tore hinzufügen | `EishockeyManager.Core.Tests.SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible(active: True)` | rot |
 | Q61 | Manager-Heimspielen 20 Tore hinzufügen | `EishockeyManager.Core.Tests.SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible(active: False)` | rot |
+| Q62 | Eigenes Angebot ohne Gebot nicht in Kader zurückholen | `EishockeyManager.UI.Tests.KaderStartTeil2cScreenTests.OwnListingClick_WithoutBid_ReturnsPlayerToSquad` | rot |
+| Q63 | Kauffenster statt Gebotsfenster öffnen | `EishockeyManager.UI.Tests.KaderStartTeil2cScreenTests.OwnListingClick_WithBid_OpensBidWindow` | rot |
+| Q64 | Behalten-Knopf im Angebotsfenster verschieben | `EishockeyManager.UI.Tests.TransferVertraegeKomplettTeil5ScreenTests.MarketBid_OpensOfferWindow_SellCreditsFee` | rot |
+| Q64 | Behalten-Knopf im Angebotsfenster verschieben | `EishockeyManager.UI.Tests.TransferVertraegeKomplettTeil3ScreenTests.ClickOnOfferedPlayer_OpensOfferWindow_SellMovesPlayer` | rot |
+| Q65 | Gebot beim Behalten nicht ablehnen | `EishockeyManager.UI.Tests.TransferVertraegeKomplettTeil5ScreenTests.MarketBid_KeepDeclines` | rot |
+| Q66 | Fremden Kaderplatz bei eigenem Angebot ignorieren | `EishockeyManager.UI.Tests.WaveBReviewScreenTests.PR3502_SecondBidBecameInvalid_ShowsMessageAndDoesNotReopenSameBid` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1884,8 +1890,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartRunde14Teil6UiTests.cs · KaderStartRunde14Teil6UiTests.Slot_LeftClickClears_RightClickLeaves` | neu | rot: U27 |
 | `KaderStartSetupScreenTests.cs · KaderStartSetupScreenTests.StartLeague_BeforeFirstManager_IsAdopted` | neu | rot: Q54 |
 | `KaderStartTeil2SetupTests.cs · KaderStartTeil2SetupTests.WorldOnly_ClickOnSecondRow_EditsFirstManager_NoSecondManager` | neu | rot: Q53 |
-| `KaderStartTeil2cScreenTests.cs · KaderStartTeil2cScreenTests.OwnListingClick_WithoutBid_ReturnsPlayerToSquad` | neu | offen |
-| `KaderStartTeil2cScreenTests.cs · KaderStartTeil2cScreenTests.OwnListingClick_WithBid_OpensBidWindow` | neu | offen |
+| `KaderStartTeil2cScreenTests.cs · KaderStartTeil2cScreenTests.OwnListingClick_WithoutBid_ReturnsPlayerToSquad` | neu | rot: Q62 |
+| `KaderStartTeil2cScreenTests.cs · KaderStartTeil2cScreenTests.OwnListingClick_WithBid_OpensBidWindow` | neu | rot: Q63 |
 | `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.SeasonEnd_ListIsPictureBeforeNegotiation_RedrawnAfterDeparture` | neu | offen |
 | `KaderStartTeil4ScreenTests.cs · KaderStartTeil4ScreenTests.ContractsScreen_HeaderAndDialogFrame_MatchDosBoxPictures` | neu | offen |
 | `LifecycleScreenRegressionTests.cs · LifecycleScreenRegressionTests.R204_OriginalDataLoanAndContractEndAreConsistentAfterContinueThroughSeason` | geändert | offen |
@@ -1934,11 +1940,11 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TeamScreenTests.cs · TeamScreenTests.Lineup_ClickPlayerThenSlot_ChangesGoalkeeper` | geändert | offen |
 | `TeamScreenTests.cs · TeamScreenTests.Tactics_ModesBlocksAndSwitchToLineup` | geändert | offen |
 | `TransferBuyWindowDosboxTests.cs · TransferBuyWindowDosboxTests.BuyWindow_IsLeftOverSquadList_WithoutButtons_AndSolidShadow` | neu | offen |
-| `TransferVertraegeKomplettTeil3ScreenTests.cs · TransferVertraegeKomplettTeil3ScreenTests.ClickOnOfferedPlayer_OpensOfferWindow_SellMovesPlayer` | geändert | offen |
+| `TransferVertraegeKomplettTeil3ScreenTests.cs · TransferVertraegeKomplettTeil3ScreenTests.ClickOnOfferedPlayer_OpensOfferWindow_SellMovesPlayer` | geändert | rot: Q64 |
 | `TransferVertraegeKomplettTeil4ScreenTests.cs · TransferVertraegeKomplettTeil4ScreenTests.HoveredEntry_RecolorsSeparatorsAboveAndBelow` | geändert | rot: Q55 |
-| `TransferVertraegeKomplettTeil5ScreenTests.cs · TransferVertraegeKomplettTeil5ScreenTests.MarketBid_OpensOfferWindow_SellCreditsFee` | geändert | offen |
-| `TransferVertraegeKomplettTeil5ScreenTests.cs · TransferVertraegeKomplettTeil5ScreenTests.MarketBid_KeepDeclines` | geändert | offen |
-| `WaveBReviewScreenTests.cs · WaveBReviewScreenTests.PR3502_SecondBidBecameInvalid_ShowsMessageAndDoesNotReopenSameBid` | geändert | offen |
+| `TransferVertraegeKomplettTeil5ScreenTests.cs · TransferVertraegeKomplettTeil5ScreenTests.MarketBid_OpensOfferWindow_SellCreditsFee` | geändert | rot: Q64 |
+| `TransferVertraegeKomplettTeil5ScreenTests.cs · TransferVertraegeKomplettTeil5ScreenTests.MarketBid_KeepDeclines` | geändert | rot: Q65 |
+| `WaveBReviewScreenTests.cs · WaveBReviewScreenTests.PR3502_SecondBidBecameInvalid_ShowsMessageAndDoesNotReopenSameBid` | geändert | rot: Q66 |
 | `WettbewerbeNationalteamTests.cs · WettbewerbeNationalteamTests.CoachWarning_Boundary` | geändert | rot: Q56, Q57 |
 
 ### Offene Prüfbereiche
