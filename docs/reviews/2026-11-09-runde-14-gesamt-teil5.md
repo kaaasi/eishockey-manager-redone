@@ -1197,6 +1197,9 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q75 | Vertragsdialograhmen ein Pixel nach rechts verschieben | `EishockeyManager.UI.Tests.KaderStartTeil4ScreenTests.ContractsScreen_HeaderAndDialogFrame_MatchDosBoxPictures` | rot |
 | Q76 | Kauffenster ein Pixel nach rechts verschieben | `EishockeyManager.UI.Tests.TransferBuyWindowDosboxTests.BuyWindow_IsLeftOverSquadList_WithoutButtons_AndSolidShadow` | rot |
 | Q77 | Gehaltsabbild nach statt vor Verhandlung erstellen | `EishockeyManager.UI.Tests.KaderStartTeil4ScreenTests.SeasonEnd_ListIsPictureBeforeNegotiation_RedrawnAfterDeparture` | rot |
+| Q78 | Vertragsangebotsmeldungen auslassen | `EishockeyManager.Core.Tests.SquadLifecycleTests.R211_PassiveManager_IsWarnedOnceForEveryExpiringPlayer_BeforeTheDeadline` | rot |
+| Q79 | Beim Laden Spielernummern überschreiben | `EishockeyManager.Core.Tests.OriginalImportRunde14Tests.Import_AllStands_RoundTripIsStable` | rot |
+| Q79 | Beim Laden Spielernummern überschreiben | `EishockeyManager.Core.Tests.NummerierungMigrationTests.CurrentSave_RoundTrip_Unchanged` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1737,7 +1740,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `NationalteamTests.cs · NationalteamTests.Club_AutoDisplay_KeepsLastLine` | neu | rot: Q24 |
 | `NationalteamTests.cs · NationalteamTests.Schema11_WithoutCoach_IsMigrated` | geändert | rot: Q25 |
 | `NewGameTests.cs · NewGameTests.Create_RandomBundesligaClub_NeverTakesEuropeanCupParticipant` | geändert | rot: Q32 |
-| `NummerierungMigrationTests.cs · NummerierungMigrationTests.CurrentSave_RoundTrip_Unchanged` | geändert | offen |
+| `NummerierungMigrationTests.cs · NummerierungMigrationTests.CurrentSave_RoundTrip_Unchanged` | geändert | rot: Q79 |
 | `OriginalImportCupTests.cs · OriginalImportCupTests.Import_DebCupQuarterFinal` | neu | rot: G01 |
 | `OriginalImportCupTests.cs · OriginalImportCupTests.Import_DebCupFinalWithMarks` | neu | rot: G01 |
 | `OriginalImportCupTests.cs · OriginalImportCupTests.Import_DebCupAllStands` | neu | rot: G01 |
@@ -1792,7 +1795,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.ClubIndices_WorldOnly_NationKeepsItsIndex_ManagerSlotGetsTheMissingClub` | neu | rot: J20 |
 | `OriginalImportReviewR14Tests.cs · OriginalImportReviewR14Tests.Import_AutoLineup_ReadsCurrentByteNotTheSavedOne` | neu | rot: J09 |
 | `OriginalImportRunde14Tests.cs · OriginalImportRunde14Tests.Import_TakesNationalCoachAutoLineupFromBlock0375` | neu | rot: Q26 |
-| `OriginalImportRunde14Tests.cs · OriginalImportRunde14Tests.Import_AllStands_RoundTripIsStable` | neu | offen |
+| `OriginalImportRunde14Tests.cs · OriginalImportRunde14Tests.Import_AllStands_RoundTripIsStable` | neu | rot: Q79 |
 | `OriginalImportTests.cs · OriginalImportTests.Import_SetsDateManagersAndClubs` | neu | rot: R01 |
 | `OriginalImportTests.cs · OriginalImportTests.Import_LeagueTableMatchesOriginalTableRecords` | neu | rot: R02 |
 | `OriginalImportTests.cs · OriginalImportTests.Import_AllOriginalStands_AreValid` | neu | rot: R01 |
@@ -1836,7 +1839,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SpielberechnungKomplett3Tests.cs · SpielberechnungKomplett3Tests.Heal_Weekly_PermanentStays` | geändert | rot: Q06 |
 | `SpielstaerkeManager2Tests.cs · SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible` | geändert | rot: Q61 |
 | `SponsorBewertungTests.cs · SponsorBewertungTests.FourSeasonChanges_RatingAndIncomeStayConsistent` | geändert | rot: Q60 |
-| `SquadLifecycleTests.cs · SquadLifecycleTests.R211_PassiveManager_IsWarnedOnceForEveryExpiringPlayer_BeforeTheDeadline` | geändert | offen |
+| `SquadLifecycleTests.cs · SquadLifecycleTests.R211_PassiveManager_IsWarnedOnceForEveryExpiringPlayer_BeforeTheDeadline` | geändert | rot: Q78 |
 | `StatistikenPraemienTests.cs · StatistikenPraemienTests.OtherClubLeads_NoSinglePremium` | geändert | rot: Q12 |
 | `StatistikenPraemienTests.cs · StatistikenPraemienTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | rot: Q16 |
 | `TacticsOriginalTests.cs · TacticsOriginalTests.Defaults_ShowEvenMatchRowOfOriginal` | geändert | rot: T21 |
