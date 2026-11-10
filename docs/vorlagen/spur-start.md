@@ -26,6 +26,12 @@ schreiben dort trotzdem nie (nur lesen). Fehlen Daten oder Bilder, im PR melden 
 (höchstens 3 je Spur).“ der Satz „Teile nach Abschnitt ‚Teile und Fortsetzung‘; nur Teil <n>, keine Fortsetzung anlegen.“
 Es gilt der Abschnitt „Teile und Fortsetzung“ ohne Schritt 5 (R9F-02).
 
+**Fixlauf nach einem Review** (geplanter Lauf, Nutzer 10.11.2026): Startaufruf wie oben mit Auftrag „Befunde `<IDs>` aus
+`<review-datei>` zu PR #`<nr>` beheben, Head vorher `<sha>`“. Am Ende nach `docs/prozess/zusammenarbeit.md` §5 Punkt 8: bei
+behobenem P0/P1 die Nachprüfung selbst per `create_trigger` anlegen (Kurzaufruf aus `review-anfrage.md`, Delta alter..neuer Head,
+nur diese Befunde, Modell Claude Opus 5.5; das Anlegen ist autorisiert), sonst Label `leitstelle-delta`. Widerspricht der Lauf einem
+Befund mit eigenem Beleg: Label `beleg-strittig`, beide Belege im Übergabekommentar, für diesen Punkt keine Nachprüfung.
+
 ## Ablauf für den Agenten
 
 1. Lies `AGENTS.md`, `docs/prozess/zusammenarbeit.md` (Abschnitte 2–4) und in `docs/arbeitspakete.md` **nur** die aktuelle

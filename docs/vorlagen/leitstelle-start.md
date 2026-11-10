@@ -36,3 +36,10 @@
    Zähler und PR-Nummer (R9F-03). Draft-Status, den ein Lauf nicht aufheben konnte, hebt die Leitstelle
    selbst auf (`gh api -X POST …/pulls/<nr>/ccr/ready_for_review`), nicht der Nutzer.
 8. Antwort an den Nutzer **knapp** (`AGENTS.md` §7): Ergebnis, Entscheidungsbedarf, nächster Schritt, Kurzaufrufe.
+9. **Sitzung je Runde (Nutzer 10.11.2026):** Eine Leitstellen-Sitzung führt höchstens eine Runde; die nächste Runde beginnt in
+   einem neuen Chat mit dem Kurzaufruf oben. Den Stand hält die Leitstelle nur in GitHub fest (Status in `docs/arbeitspakete.md`,
+   Labels, Übergaben), nicht im Chat. Dem Nutzer meldet sie sich nur bei Entscheidungsbedarf, am Ende einer Spur (Merge) und am
+   Rundenende – nicht nach jedem Teil oder Zwischenstand.
+10. **Warten über Labels:** Reviews setzen `review-ja`/`review-nein`, Fixläufe mit nur P2/P3 `leitstelle-delta`, strittige Belege
+   `beleg-strittig`, Läufe ohne Fortsetzung `spur-wartet` (`zusammenarbeit.md` §5 Punkte 7–8). Eine Warteschleife fragt nur
+   diese Labels ab (`gh api …/issues?labels=…&state=open`), Intervall 60 s.

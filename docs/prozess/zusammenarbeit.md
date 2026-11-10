@@ -13,7 +13,8 @@ dessen, was in GitHub steht**. Kein Schritt darf einen bestimmten Chatverlauf vo
 | **Implementierer** | beliebiger Agent | ein Arbeitspaket auf **einem** Branch umsetzen, PR mit Pflichtangaben | eigenen PR freigeben oder mergen; fremde Branches ohne Übergabe ändern |
 | **Reviewer** | anderer Agent **oder** frische Sitzung ohne Implementierungskontext | unabhängiges Review mit festen SHAs, Ergebnis als Datei in `docs/reviews/` | Code oder den geprüften PR ändern |
 
-**Aktuelle Leitstelle:** Claude Code (seit 25.10.2026). **Aktueller Standard-Reviewer:** ChatGPT.
+**Aktuelle Leitstelle:** Claude Code (seit 25.10.2026), **je Runde eine frische Sitzung** (Nutzer 10.11.2026); der Stand
+liegt nur in GitHub (`docs/arbeitspakete.md`, PRs, Labels). **Aktueller Standard-Reviewer:** ChatGPT.
 Ein Wechsel wird vom Nutzer entschieden und hier per PR eingetragen (Datum, neue Leitstelle, Grund).
 
 ## 2. Arbeitspaket übernehmen oder beginnen
@@ -49,6 +50,9 @@ geschrieben. So kann jede neue Sitzung ohne Chatverlauf weitermachen. Inhalt:
 - Testtabelle aus `tools/pruefen.sh` zum genannten SHA
 - bekannte Risiken, Annahmen, neue `[APPROX]`-Stellen
 - `Bearbeiter: frei` (oder der vom Nutzer genannte Nachfolger)
+
+**Länge (Nutzer 10.11.2026):** höchstens 15 Zeilen plus Testtabelle. Was in PR-Beschreibung oder Review steht, wird verlinkt,
+nicht wiederholt.
 
 Gestapelte oder zusammengehörige PRs einer Spur dürfen eine gemeinsame Übergabe im obersten PR haben; die übrigen PRs
 verweisen mit einem kurzen Kommentar (Head-SHA, `Bearbeiter: frei`) darauf.
@@ -90,6 +94,20 @@ schreibt zuerst einen Übernahmekommentar („übernommen ab SHA …, Tests …�
   5. **P3-Befunde** bekommen keinen eigenen Lauf: Die Leitstelle legt sie als Issue (Label `P3`) an und gibt sie gesammelt
      an `pruefung-karte` bzw. den letzten Lauf der Runde. Ein Fixlauf, der ohnehin läuft, darf P3 mitnehmen.
   6. Das **Gesamtreview** am Rundenende (ChatGPT, Vollprüfung) bleibt unverändert das letzte Netz.
+  7. **Befund nur mit Beleg (Nutzer 10.11.2026):** Ein Befund, der eine Lesart von em.exe, einen Wert aus dem Original oder
+     „fehlt im Remake“ behauptet, nennt einen **ausführbaren Beleg**: roter Test oder Probe (Befehl, Spielstand, Ergebnis), bei
+     „fehlt“ zusätzlich die Codesuche (`grep`-Befehl ohne Treffer). Ohne Beleg höchstens P3 („Verdacht“).
+     Widerspricht ein Fixlauf einem Befund mit eigenem ausführbarem Beleg, setzt er das Label `beleg-strittig` und legt **keine**
+     Nachprüfung für diesen Punkt an; die Leitstelle führt beide Belege aus und entscheidet. Nur wenn das nicht gelingt, gibt es eine
+     Nachprüfung allein dieses Punkts.
+  8. **Verkettung (Nutzer 10.11.2026):** Der Fixlauf legt am Ende selbst die Nachprüfung als geplanten Lauf an (Kurzaufruf aus
+     `docs/vorlagen/review-anfrage.md`, Modell Claude Opus 5.5, etwa 5 Minuten später), wenn er P0/P1 behebt; behebt er nur
+     P2/P3, setzt er das Label `leitstelle-delta`. Jedes Review setzt am geprüften PR das Label `review-ja` bzw. `review-nein`
+     (altes Label entfernen). Die Leitstelle wartet auf Labels, nicht auf Kommentare, und merged; sie legt Fixläufe nach
+     `review-nein` an. Lehnt die Freigabe `create_trigger` ab, Label `spur-wartet` und Prompt im Übergabekommentar (wie bei
+     Fortsetzungen).
+  9. **Länge (Nutzer 10.11.2026):** Review-Bericht höchstens 120 Zeilen (Gesamtreview: je Teil), nur Urteil, Befunde mit Beleg,
+     Prüftabelle; keine Nacherzählung von PR oder Fundstellen, die schon im Code stehen. PR-Beschreibungen ebenso knapp.
 
   **Modellwahl (Ergänzung Nutzer 09.11.2026):** Claude Opus 5.5 bleibt überall, wo es Fehler und damit Nacharbeit
   vermeidet – Spielregeln, Spielkern, Disassembly, Import, Erstreviews und Nachprüfungen von Code. Claude Sonnet 5.5 nur für

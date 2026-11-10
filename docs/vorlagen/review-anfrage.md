@@ -43,13 +43,17 @@ Bei einer **Nachprüfung** zusätzlich: „Nachprüfung des Reviews `<datei>`, b
    1. **Merge-Empfehlung** ja/nein für genau diesen Head, mit Begründung
    2. **Befunde** mit Priorität P0–P3, Datei/Zeile (Link auf den Head), reproduzierbarem Gegenbeispiel
    3. **Ausgeführte Prüfungen** (Befehle, Tabelle aus `tools/pruefen.sh`) und **akzeptierte `[APPROX]`**, getrennt von Annahmen
-   Keine Freigabe anhand der Testanzahl. Knapp: keine Wiederholung der PR-Beschreibung.
+   Keine Freigabe anhand der Testanzahl. Knapp: keine Wiederholung der PR-Beschreibung, **höchstens 120 Zeilen**.
+   **Jeder Befund mit ausführbarem Beleg** (roter Test oder Probe mit Befehl und Ergebnis; „fehlt im Remake“ zusätzlich mit der
+   erfolglosen Codesuche). Ohne Beleg höchstens P3 „Verdacht“ (`zusammenarbeit.md` §5 Punkt 7).
    Ohne nachgewiesenen Checkout (nur Codelesen oder unverifizierter Stand) liefert das Review keinen Testnachweis nach
    `zusammenarbeit.md` §6 Nr. 4; die Merge-Empfehlung sagt dann ausdrücklich „nur Codelesen“. Der
    Originaldaten-Nachweis muss dann im PR stehen (auch als Kommentar der Leitstelle).
 5. Ablage: nichts am Code oder am geprüften PR ändern, nichts ins Referenz-Repo schreiben. Datei auf neuem Branch `review/<thema>` (Basis `main`), PR mit
    **nur dieser Datei**, Commit-Trailer mit deinem Agentennamen. Ohne Schreibzugriff: Datei an den Nutzer.
-6. Antwort an den Nutzer: Link zum Review-PR, Empfehlung in einem Satz.
+6. Am geprüften PR das Label `review-ja` bzw. `review-nein` setzen (das jeweils andere entfernen), ohne den PR sonst zu ändern.
+   Ohne Schreibzugriff setzt es die Leitstelle.
+7. Antwort an den Nutzer: Link zum Review-PR, Empfehlung in einem Satz.
 
 ## Gesamtreview am Rundenende (Vollprüfung, Vorgabe Nutzer 05.11.2026)
 
