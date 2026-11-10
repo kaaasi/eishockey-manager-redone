@@ -14,7 +14,13 @@
 1. Lies `AGENTS.md`, `docs/prozess/zusammenarbeit.md` (vollständig), in `docs/arbeitspakete.md` die aktuelle Runde,
    die offenen PRs (Titel, Bearbeiter, letzter Übergabekommentar) und die Reviews der aktuellen Runde in `docs/reviews/`.
    Kein Vorwissen aus früheren Chats nötig oder vorausgesetzt.
-2. **Integration:** Branch `integration/<runde>` von `main`, PRs zusammenführen, Konflikte lösen, `tools/pruefen.sh`
+2. **Integration:** Spur-PRs (ein PR je Spur, ab Runde 15) nach Erstreview und Merge-Prüfung in der Integrationsfolge des Plans
+   mergen. Ist `main` seit dem Review neu und der PR **ohne Konflikt**, wird **nicht** rebased (der freigegebene Head bleibt):
+   Merge nach `zusammenarbeit.md` §6 Nr. 2 – die Leitstelle wiederholt vorher lokal `tools/pruefen.sh --schnell` mit
+   Originaldaten auf `main` + PR (Merge-Ergebnis) und vermerkt die Tabelle im Merge-Kommentar. Muss sich der Head trotzdem ändern
+   (z. B. erwartete Listen von `abgleich-original` gegen den neuen `main` erneuern), legt die Leitstelle einen Fixlauf an; dessen
+   Delta prüft sie nach §5 Punkt 4, wenn es nur Rebase und diese Anpassung enthält (`git range-diff`). Ein Branch
+   `integration/<runde>` nur, wenn Konflikte zwischen Spuren zu lösen sind: dann von `main`, PRs zusammenführen, Konflikte lösen, `tools/pruefen.sh`
    (alle drei Läufe), Mehrsaisonprobe, Bildschirmfoto-Abläufe. Integrationsfehler mit rotem Regressionstest beheben.
    Integrations-PR nach Vorlage; Abschnitt „Integration …“ in `docs/arbeitspakete.md`.
 3. **Review anfordern:** dem Nutzer nur den Kurzaufruf aus `docs/vorlagen/review-anfrage.md` ausgefüllt geben.

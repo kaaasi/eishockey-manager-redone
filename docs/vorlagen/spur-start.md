@@ -40,7 +40,7 @@ Befund mit eigenem Beleg: Label `beleg-strittig`, beide Belege im Übergabekomme
    Runde und den Abschnitt deiner Spur. Archiv und alte Reviews nur bei konkretem Bedarf.
 2. Einrichten nach `AGENTS.md` Abschnitt 3 (Claude Code: zusätzlich `CLAUDE.md`). Originaldaten nach `gamedata/`.
 3. Gibt es für die Spur schon einen offenen PR mit Bearbeiter? Dann nur nach Übergabekommentar weiterarbeiten,
-   sonst den Nutzer fragen. Neu: Branch `paket/<spur>[-<teil>]` von aktuellem `main`, sofort Draft-PR mit
+   sonst den Nutzer fragen. Neu: Branch `paket/<spur>` von aktuellem `main`, sofort Draft-PR mit
    `Bearbeiter: <Agent>` und Base-SHA. **Geplante Läufe mit Teilen:** Für die Prüfung auf vorhandene PRs und die Wahl von
    Branch und PR-Base gilt der Abschnitt „Teile und Fortsetzung“ unten; den Draft-PR mit `Bearbeiter:` und Base-SHA legst du
    trotzdem sofort an.
@@ -58,29 +58,27 @@ Befund mit eigenem Beleg: Label `beleg-strittig`, beide Belege im Übergabekomme
 ## Teile und Fortsetzung (geplante Läufe)
 
 Gilt, wenn die Spur in `docs/arbeitspakete.md` eine geordnete Liste von Teilen hat und der Startaufruf die Fortsetzung erlaubt
-oder einen einzelnen Folgeteil mit Base nennt (dann ohne Schritt 5).
+oder einen einzelnen Folgeteil nennt (dann ohne Schritt 5).
 
-1. **Stand ermitteln:** offene PRs der Spur (`paket/<spur>-<n>`) und den letzten Übergabekommentar lesen. Dort steht
-   „Fortsetzungen verbraucht: n von 3“. Nennt der Startaufruf einen anderen Zähler, gilt der höhere. Steht in einem offenen
-   PR der Spur ein Bearbeiter ≠ `frei` ohne Übergabekommentar **nach** dessen letztem Bearbeiter- oder Übernahme-Eintrag
+1. **Stand ermitteln:** den offenen PR der Spur (Branch `paket/<spur>`) und den letzten Übergabekommentar lesen. Dort steht
+   „Fortsetzungen verbraucht: n von 3“. Nennt der Startaufruf einen anderen Zähler, gilt der höhere. Steht im PR ein
+   Bearbeiter ≠ `frei` ohne Übergabekommentar **nach** dessen letztem Bearbeiter- oder Übernahme-Eintrag
    (abgebrochener oder noch laufender Lauf): nichts am Branch ändern, nur Label `spur-wartet` und einen Hinweiskommentar setzen –
    **ohne** Übergabe und **ohne** `Bearbeiter: frei` – keine Fortsetzung anlegen und den Lauf beenden; der Hinweiskommentar
    ersetzt die Übergabe (Hauptablauf Schritt 7 entfällt).
-2. **Stapelregel:** Teil 1 von aktuellem `main`, PR-Base `main`. Teil n > 1: Ist der PR des vorigen Teils noch offen, Branch
-   von `paket/<spur>-<n-1>` und PR-Base = dieser Branch; ist er gemergt, von `main`. Rebase vor dem Push (Hauptablauf Schritt 5): nur der
-   unterste offene Teil auf `origin/main`, jeder höhere auf seinen Base-Branch (`git rebase origin/paket/<spur>-<n-1>`);
-   danach `git push --force-with-lease` nur auf eigene Branches.
-3. **Teil abschließen:** grünes `tools/pruefen.sh --schnell`, PR „Ready for review“ setzen:
-   `gh api -X POST repos/kaaasi/eishockey-manager-redone/pulls/<nr>/ccr/ready_for_review` (Antwort `{"draft":false}`; erprobt
-   04.11.2026). Scheitert der Aufruf, Fehlermeldung im Übergabekommentar vermerken; dann setzt es die Leitstelle mit demselben Aufruf,
-   Übergabekommentar mit „Fortsetzungen verbraucht: n von 3“. Dann den nächsten Teil im selben Lauf beginnen, solange Zeit bleibt.
-4. **Teil blockiert** (kein grünes `--schnell`, Beleg fehlt, Referenz-Repo unerreichbar, fremde Datei nötig): Teil als Draft-PR mit Übergabe lassen,
+2. **Ein Branch, ein PR (ab Runde 15):** Teil 1 legt `paket/<spur>` von aktuellem `main` an und öffnet den Draft-PR (Base `main`)
+   mit der Teilliste der Spur als Aufgabenliste. Jeder Teil sind ein oder mehrere Commits auf diesem Branch; eine Fortsetzung
+   übernimmt den Branch nach dem Übergabekommentar (Übernahmekommentar, `zusammenarbeit.md` §3) – nacheinander, nie gleichzeitig.
+   Rebase vor dem Push (Hauptablauf Schritt 5) auf `origin/main`, dann `git push --force-with-lease`.
+3. **Teil abschließen:** grünes `tools/pruefen.sh --schnell`, Commits gepusht, Teil in der Aufgabenliste des PR abgehakt,
+   Übergabekommentar mit „Fortsetzungen verbraucht: n von 3“. Der PR bleibt Draft, bis alle Teile fertig sind. Dann den nächsten Teil im selben Lauf beginnen, solange Zeit bleibt.
+4. **Teil blockiert** (kein grünes `--schnell`, Beleg fehlt, Referenz-Repo unerreichbar, fremde Datei nötig): PR als Draft mit Übergabe lassen,
    Label `spur-wartet` setzen, im Übergabekommentar „blockiert – Entscheidung Nutzer“ und den Grund. **Keine Fortsetzung**
    anlegen und den Teil nicht erneut versuchen.
 5. **Fortsetzung anlegen** (nur wenn Teile offen sind, nichts blockiert ist und n < 3):
    - vorher mit `list_triggers` prüfen, ob für diese Spur schon eine geplante Aufgabe aussteht; dann keine weitere anlegen;
    - `create_trigger` mit `run_once_at` etwa 10 Minuten später, Name `Spur <name> – Fortsetzung <n+1>`, Prompt = Startaufruf
-     oben mit `Fortsetzung <n+1> von 3, Übergabe in PR #<oberster PR>.`;
+     oben mit `Fortsetzung <n+1> von 3, Übergabe in PR #<nr>.`;
    - das Modell lässt sich beim Anlegen nicht wählen und darf vom Lauf nicht umgestellt werden: im Übergabekommentar
      „Modell der Fortsetzung prüfen (Soll: <modell>)“ vermerken – Leitstelle bzw. Nutzer stellen es um;
    - die Aufgabe (Name, Zeitpunkt) im Übergabekommentar nennen;
@@ -88,7 +86,10 @@ oder einen einzelnen Folgeteil mit Base nennt (dann ohne Schritt 5).
      „Fortsetzung anlegen – Leitstelle“ mit dem fertigen Prompt (Name, Startaufruf mit Zähler) vermerken; die Leitstelle legt
      die Aufgabe an und setzt das Modell laut vom Nutzer bestätigtem Plan bzw. nach `docs/prozess/zusammenarbeit.md` §5
      „Modellwahl“.
-6. **Kettenende:** Sind alle Teile fertig, oder ist n = 3 und Teile bleiben offen: keine Fortsetzung; Label `spur-wartet`
-   auf den obersten PR und im Übergabekommentar „Spur fertig – Integration“ bzw. „Fortsetzungen erschöpft – Entscheidung
-   Nutzer“. Die Leitstelle sieht offene PRs mit `spur-wartet` durch.
+6. **Kettenende:** Sind alle Teile fertig: PR-Beschreibung nach Vorlage vervollständigen, „Ready for review“ setzen
+   (`gh api -X POST repos/kaaasi/eishockey-manager-redone/pulls/<nr>/ccr/ready_for_review`, Antwort `{"draft":false}`; scheitert es,
+   Fehlermeldung im Übergabekommentar, die Leitstelle setzt es), Label `spur-wartet`, Übergabe „Spur fertig – Review“. Ist n = 3 und
+   Teile bleiben offen: Draft lassen, Label `spur-wartet`, „Fortsetzungen erschöpft – Entscheidung Nutzer“. Keine Fortsetzung.
+   Die Leitstelle legt das Erstreview des Spur-PR an und merged ihn nach der Merge-Prüfung in der Integrationsfolge; einen eigenen
+   Integrations-PR je Spur gibt es nicht.
 7. Nie eine fremde Spur fortsetzen oder starten.
