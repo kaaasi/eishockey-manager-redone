@@ -168,9 +168,11 @@ public class FinanceMonthlyTests
         while (!IsLastDayOfMonth(SeasonCalendar.LayoutDate(day)))
             day++;
         var last = SeasonCalendar.LayoutDate(day);
-        // Tag 0 (Spielbeginn) rechnet nichts ab; ab Tag 1 täglich bis einschließlich zum Monatsletzten (Tagesabschluss vor
-        // der Monatsbuchung).
-        var elapsedDays = last.Day - SeasonCalendar.LayoutDate(game.FinanceDay + 2).Day + 1;
+        // Ab dem Tag nach dem Finanztag täglich bis einschließlich zum Monatsletzten (Tagesabschluss vor der Monatsbuchung).
+        // Spur tagesablauf (#699 Punkt 2, R15-E1 = A): Der Tagesabschluss von Tag 0 lief schon vor dem ersten Menü (Finanztag 0,
+        // vor dem Kredit dieses Tests); vorher stand der Finanztag auf −1 und Tag 0 rechnete nichts ab (Formel FinanceDay + 2).
+        Assert.Equal(0, game.FinanceDay);
+        var elapsedDays = last.Day - SeasonCalendar.LayoutDate(game.FinanceDay + 1).Day + 1;
         game.AdvanceFinanceTo(day);
 
         var booked = zinsenBefore - book.Current(FinanceCategory.Zinsen);

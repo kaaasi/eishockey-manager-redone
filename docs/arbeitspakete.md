@@ -67,7 +67,7 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
      FILE01 (Zähler 1) und FILE02→FILE03 (Konto 737.354 DM), Mehrsaisonprobe.
   2. **Hot-Seat-Würfe:** Wurf von Manager i nach dem Menü von Manager i − 1 (0x54E3Fh–0x54EF4h); Test mit zwei Managern.
   3. **Bundestrainer am Ereignistag:** Neuaufstellung Satz 5 und 952Ch(5, 0) vor den Menüs (0x54DAAh); nur Testweg.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 fertig, Review offen (PR #725; R15-E1 = A: 29 fremde Tests angepasst, Rückschaltprobe im PR).
 
 ### Spur `kader` – Kader beim Spielstart und Saisonwechsel (#698, A134, #699 Punkt 4)
 

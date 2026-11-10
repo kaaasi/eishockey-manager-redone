@@ -217,10 +217,14 @@ public class RngTwinProbeTests
     // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
     // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
     // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → alle sechs alten Werte; nur Start 233 → andere Werte (Feld).
-    [InlineData(false, 3, "71C440ACDC165036")]
-    [InlineData(true, 3, "F647215D0B088A26")]
-    [InlineData(false, 11, "82605FA6E5525270")]
-    [InlineData(true, 11, "3705607C914AE2C0")]
+    // Runde 15, Spur tagesablauf (#699 Punkt 2, Entscheidung Nutzer R15-E1 = A): neu – Tag 0 jeder Saison wird vor dem ersten Menü
+    // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
+    // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
+    // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
+    [InlineData(false, 3, "9BA36EDBCC5D0132")]
+    [InlineData(true, 3, "6F42202F7300670F")]
+    [InlineData(false, 11, "35B638D5D567D08B")]
+    [InlineData(true, 11, "C785F764622AD633")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -255,8 +259,12 @@ public class RngTwinProbeTests
     // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
     // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
     // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → beide alten Werte; nur Start 233 → andere Werte (Feld).
-    [InlineData(false, "8A64633B9AF694CD")]
-    [InlineData(true, "18C9B0A5398CF96B")]
+    // Runde 15, Spur tagesablauf (#699 Punkt 2, Entscheidung Nutzer R15-E1 = A): neu – Tag 0 jeder Saison wird vor dem ersten Menü
+    // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
+    // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
+    // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
+    [InlineData(false, "F1CD6764556FD72F")]
+    [InlineData(true, "773C3AA4190559D0")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

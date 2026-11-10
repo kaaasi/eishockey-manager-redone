@@ -66,9 +66,9 @@ public sealed partial class GameState
         else if (IsWorldCupEntryDay(day))
             OnDayWorldCupEntry(day);
         else
-            // [ORIGINAL] 0x952C(5, 1) nach den Zügen, Datei 0x54F9C–0x54FBF (#594); davor an Tagen mit Ereignis die Neuaufstellung von
-            // Satz 5 mit der gesicherten Einstellung (A009, Datei 0x54D41–0x54DAA; [APPROX] nach den Menüs, siehe MainPathEventDayLineups).
-            OnDayNationalTeam(day);
+            // [ORIGINAL] 0x952C(5, 1) nach den Zügen, Datei 0x54F9C–0x54FBF (#594); die Neuaufstellung von Satz 5 an Tagen mit
+            // Ereignis liegt vor den Menüs (A009, Datei 0x54D41–0x54DAA; MainPathEventDayLineups, #699 Punkt 3).
+            OnDayNationalTeam();
 
         // Paket „wettbewerbe“: an den Tagen mit Markierung 255 im Modus 4 den Bundestrainer ernennen (Spur
         // bundestrainer-modus4), dann die Werte Deutschlands ohne Bundestrainer neu auswürfeln.

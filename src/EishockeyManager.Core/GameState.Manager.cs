@@ -135,7 +135,7 @@ public sealed partial class GameState
 
     /// <summary>
     /// Gemeinsamer Kern des Tageswechsels der Finanzen. <paramref name="clubDay"/>: Tageslauf des Hauptwegs mit Jugendteams
-    /// (0x39DEC, Datei 0x5501C) und Talentsuche (0x06FA5, Datei 0x5528A); false für die WM-Schleife (Datei 0x55570–0x55740 ruft
+    /// (0x39DEC, Datei 0x5501C; ab Tag 1, die von Tag 0 rechnet <c>ProcessDayCore</c> nach dem ersten Menü) und Talentsuche (0x06FA5, Datei 0x5528A); false für die WM-Schleife (Datei 0x55570–0x55740 ruft
     /// beide nicht; Spur nationalteam, Review #674 R14NT4-02/-07). Sonst gleich, damit beide Wege nicht auseinanderlaufen.
     /// </summary>
     internal void AdvanceFinance(int day, bool clubDay)
@@ -148,31 +148,33 @@ public sealed partial class GameState
             var date = SeasonCalendar.LayoutDate(FinanceDay);
             ExpireMessages();
             // [ORIGINAL] Tagesablauf 0x55008: an Ligaspieltagen die Jugendteams (0x39DEC) vor den Spielen (Spur geld Teil 3).
-            if (clubDay)
+            // [APPROX] Das Original rechnet sie nach den Menüs (Datei 0x55008 hinter 0x54EB2), das Remake im Tageswechsel davor.
+            // Tag 0 nicht hier (Spur tagesablauf, #699 Punkt 2): Sein Tageswechsel liegt vor dem ersten Menü, das im Original die
+            // Startwerte zeigt (FILE01, FILE10, FILE27: Stärke 80/66, Platz 6) – die Jugend von Tag 0 rechnet ProcessDayCore.
+            if (clubDay && FinanceDay > 0)
                 DailyYouth(FinanceDay);
             // [ORIGINAL] Tageslauf 0x54C9F, Datei 0x5528A: Talentsuche an Tagen mit Zähler 0x3B7 ≡ 0, 4 (mod 7) (Spur geld Teil 6).
-            if (clubDay && FinanceDay > 0)
+            if (clubDay)
                 DailyTalentSearch(FinanceDay);
-            if (FinanceDay > 0)
-            {
-                // [ORIGINAL] Tagesabschluss 0x3ED01: Zinskonto, Werbeangebote (Monatsletzter, Monatsmitte), am 1.
-                // Restlaufzeiten der Werbeverträge (0x3EF52), am Monatsletzten der Monatsabschluss (0x3F02C, #134);
-                // danach die Werbebewertung neu (0x5569F). Zuerst die „beleidigten“ Baufirmen (0x3ED19, Spur geld).
-                DailyStadium();
-                AccrueDailyInterest(date);
-                DailySponsorOffers(date);
-                if (date.Day == 1)
-                    foreach (var manager in Managers)
-                        CountDownSponsorContracts(manager);
-            }
+            // [ORIGINAL] Tagesabschluss 0x3ED01: Zinskonto, Werbeangebote (Monatsletzter, Monatsmitte), am 1.
+            // Restlaufzeiten der Werbeverträge (0x3EF52), am Monatsletzten der Monatsabschluss (0x3F02C, #134);
+            // danach die Werbebewertung neu (0x5569F). Zuerst die „beleidigten“ Baufirmen (0x3ED19, Spur geld).
+            // Spur tagesablauf (#699 Punkt 2): auch an Tag 0 (10. September, Zähler 1) – der erste Tageswechsel des Spiels und
+            // jeder Saison läuft vor dem ersten Menü (Datei 0x54D5C → 0x55073 → 0x55204, je Manager 0x3ED01/0x3F833 bei Datei
+            // 0x5522B/0x55230). Vorher [APPROX] erst ab Tag 1.
+            DailyStadium();
+            AccrueDailyInterest(date);
+            DailySponsorOffers(date);
+            if (date.Day == 1)
+                foreach (var manager in Managers)
+                    CountDownSponsorContracts(manager);
             // #679: [ORIGINAL] Stadionbau 0x3D316 am Tageszähler 0x3B7 ≡ 0 (mod 7) nach dem Weiterzählen (Hauptweg Datei 0x552AB–0x552C3,
             // WM-Schleife Datei 0x556B5–0x556CD), im Tageslauf also Zähler DayCounter.Of(Tag) – samstags, vorher montags.
-            if (FinanceDay > 0 && DayCounter.Of(FinanceDay) % 7 == 0)
+            if (DayCounter.Of(FinanceDay) % 7 == 0)
                 WeeklyFinances();
-            if (FinanceDay > 0 && date.Day == DateTime.DaysInMonth(date.Year, date.Month))
+            if (date.Day == DateTime.DaysInMonth(date.Year, date.Month))
                 MonthlyFinances();
-            if (FinanceDay > 0)
-                DailySponsorRatings();
+            DailySponsorRatings();
             // Börsentag (em.exe 0x3ED4A, Tagesrechnung 0x5784A). Das Original rechnet ihn im Tagesabschluss jedes
             // menschlichen Managers, also n-mal je Kalendertag. Entscheidung Nutzer (30.10.2026, #188): einmal je
             // Kalendertag, nach dem Tagesabschluss des letzten Managers – kein Manager hat einen Vorteil.
