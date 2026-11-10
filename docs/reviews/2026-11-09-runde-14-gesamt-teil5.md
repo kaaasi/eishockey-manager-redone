@@ -1077,6 +1077,24 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q09 | Hinweistext für Bankeinzahlung verändern | `EishockeyManager.UI.Tests.FinanceBedienungTests.BorrowFromPartner_BooksAtOnce` | grün |
 | Q10 | Migration aktiviert automatische Aufstellung trotz manueller Aufstellung | `EishockeyManager.Core.Tests.AutoLineupTeil8Tests.Migration_31To32_KeepsHandMadeLineup` | rot |
 | Q11 | Neues Zustandsfeld LoadCounterOffset aus dem Schemaabdruck auslassen | `EishockeyManager.Core.Tests.SaveGameTests.SchemaFingerprint_MatchesSchemaVersion` | rot |
+| Q12 | Torwartprämie auch für fremde Vereine vergeben | `EishockeyManager.Core.Tests.StatistikenPraemienTests.OtherClubLeads_NoSinglePremium` | rot |
+| Q12 | Torwartprämie auch für fremde Vereine vergeben | `EishockeyManager.Core.Tests.StatistikenPraemienTests.NewSeason_ResetsPenaltyMinutes` | grün |
+| Q12 | Torwartprämie auch für fremde Vereine vergeben | `EishockeyManager.Core.Tests.StatistikenPraemienTests.OwnTopScorerAndBestGoalie_EachEarn100000` | grün |
+| Q12 | Torwartprämie auch für fremde Vereine vergeben | `EishockeyManager.Core.Tests.StatistikenPraemienTests.MultiSeason_FourChanges_PassiveAndActiveManager` | grün |
+| Q12 | Torwartprämie auch für fremde Vereine vergeben | `EishockeyManager.Core.Tests.StatistikenPraemienTests.Premiums_Exact_WithEventsInOriginalOrder` | grün |
+| Q13 | Fremden Kaderplatz bei eigenem Angebot ignorieren | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "forged")` | grün |
+| Q13 | Fremden Kaderplatz bei eigenem Angebot ignorieren | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "decline")` | grün |
+| Q13 | Fremden Kaderplatz bei eigenem Angebot ignorieren | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "ownership")` | rot |
+| Q13 | Fremden Kaderplatz bei eigenem Angebot ignorieren | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "withdraw")` | grün |
+| Q13 | Fremden Kaderplatz bei eigenem Angebot ignorieren | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "repeat")` | grün |
+| Q14 | Vereinswechsel des Verkäufers nicht mehr prüfen | `EishockeyManager.Core.Tests.WaveBReviewRegressionTests.PR3502_BidThatBecameInvalid_IsRejectedWithResultAndRemoved` | rot |
+| Q15 | Gespeicherte Saisonprämie um 1 erhöhen | `EishockeyManager.Core.Tests.StatistikenPraemienTests.MultiSeason_FourChanges_PassiveAndActiveManager` | grün |
+| Q16 | Prämienbuchung um 1 erhöhen bei unverändertem Saisonprotokoll | `EishockeyManager.Core.Tests.StatistikenPraemienTests.MultiSeason_FourChanges_PassiveAndActiveManager` | rot |
+| Q17 | Ungültige und bereits entfernte Gebote buchen fälschlich einen Betrag | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "forged")` | rot |
+| Q17 | Ungültige und bereits entfernte Gebote buchen fälschlich einen Betrag | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "decline")` | rot |
+| Q17 | Ungültige und bereits entfernte Gebote buchen fälschlich einen Betrag | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "ownership")` | grün |
+| Q17 | Ungültige und bereits entfernte Gebote buchen fälschlich einen Betrag | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "withdraw")` | rot |
+| Q17 | Ungültige und bereits entfernte Gebote buchen fälschlich einen Betrag | `EishockeyManager.Core.Tests.TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove(action: "repeat")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1717,8 +1735,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SpielstaerkeManager2Tests.cs · SpielstaerkeManager2Tests.FourSeasonChanges_ManagedMatchesPlausible` | geändert | offen |
 | `SponsorBewertungTests.cs · SponsorBewertungTests.FourSeasonChanges_RatingAndIncomeStayConsistent` | geändert | offen |
 | `SquadLifecycleTests.cs · SquadLifecycleTests.R211_PassiveManager_IsWarnedOnceForEveryExpiringPlayer_BeforeTheDeadline` | geändert | offen |
-| `StatistikenPraemienTests.cs · StatistikenPraemienTests.OtherClubLeads_NoSinglePremium` | geändert | offen |
-| `StatistikenPraemienTests.cs · StatistikenPraemienTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | offen |
+| `StatistikenPraemienTests.cs · StatistikenPraemienTests.OtherClubLeads_NoSinglePremium` | geändert | rot: Q12 |
+| `StatistikenPraemienTests.cs · StatistikenPraemienTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | rot: Q16 |
 | `TacticsOriginalTests.cs · TacticsOriginalTests.Defaults_ShowEvenMatchRowOfOriginal` | geändert | rot: T21 |
 | `TacticsOriginalTests.cs · TacticsOriginalTests.EffortIsPercent_AttackUpToSeven_BaseAndSurchargeShareTheLimit` | geändert | rot: T22 |
 | `TacticsOriginalTests.cs · TacticsOriginalTests.EffectiveEffort_IsBasePlusSituation` | geändert | rot: T23 |
@@ -1754,9 +1772,9 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TeamValueDriftTests.cs · TeamValueDriftTests.GameStart_DriftsIntoLeagueBounds` | geändert | offen |
 | `TransferOriginalTests.cs · TransferOriginalTests.MultiSeason_Transfers_StayConsistent` | geändert | offen |
 | `TransferOriginalVertragTests.cs · TransferOriginalVertragTests.Lock_RefusesInput_AndCountsDownDaily` | geändert | offen |
-| `TransferTransactionRegressionTests.cs · TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove` | geändert | offen |
+| `TransferTransactionRegressionTests.cs · TransferTransactionRegressionTests.R209_InvalidBidCannotBookOrMove` | geändert | rot: Q13, Q17 |
 | `TransferVertraegeKomplettTeil4Tests.cs · TransferVertraegeKomplettTeil4Tests.SponsorRating_PlayerWithBid_DrawsValueAgainBeforeStarCheck` | geändert | offen |
-| `WaveBReviewRegressionTests.cs · WaveBReviewRegressionTests.PR3502_BidThatBecameInvalid_IsRejectedWithResultAndRemoved` | geändert | offen |
+| `WaveBReviewRegressionTests.cs · WaveBReviewRegressionTests.PR3502_BidThatBecameInvalid_IsRejectedWithResultAndRemoved` | geändert | rot: Q14 |
 | `WettbewerbeSpiel12Teil3Tests.cs · WettbewerbeSpiel12Teil3Tests.MultiSeason_ComputerClubsPlayWithoutSquad` | geändert | offen |
 | `WettbewerbeSpiel1Tests.cs · WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore` | geändert | offen |
 | `OriginalSaveHeaderTests.cs · OriginalSaveHeaderTests.TryRead_ReturnsYearMatchDayAndManagers` | neu | rot: H01, H05, H06, H07, H08, H09, H11, H12, H13, H14, H15, H16, H17, H18, H19 |
