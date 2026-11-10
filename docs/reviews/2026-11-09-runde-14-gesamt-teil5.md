@@ -1153,6 +1153,11 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q52 | Kurzmeldung durch Linksklick schließen | `EishockeyManager.UI.Tests.OriginalDialogCallersTests.Lineup_WrongRole_IsShortMessage_AndIgnoresClicks` | rot |
 | Q53 | Nur-Weltkugel-Klicks nicht auf Manager 0 umlenken | `EishockeyManager.UI.Tests.KaderStartTeil2SetupTests.WorldOnly_ClickOnSecondRow_EditsFirstManager_NoSecondManager` | rot |
 | Q54 | Manager übernimmt eingestellte Startliga nicht | `EishockeyManager.UI.Tests.KaderStartSetupScreenTests.StartLeague_BeforeFirstManager_IsAdopted` | rot |
+| Q55 | Farbindex der markierten Trennlinie verändern | `EishockeyManager.UI.Tests.TransferVertraegeKomplettTeil4ScreenTests.HoveredEntry_RecolorsSeparatorsAboveAndBelow` | rot |
+| Q56 | Bundestrainer-Warngrenze von 10 auf 9 senken | `EishockeyManager.UI.Tests.WettbewerbeNationalteamTests.CoachWarning_Boundary(players: 9, warning: True)` | rot |
+| Q56 | Bundestrainer-Warngrenze von 10 auf 9 senken | `EishockeyManager.UI.Tests.WettbewerbeNationalteamTests.CoachWarning_Boundary(players: 10, warning: False)` | grün |
+| Q57 | Bundestrainer-Warngrenze von 10 auf 11 erhöhen | `EishockeyManager.UI.Tests.WettbewerbeNationalteamTests.CoachWarning_Boundary(players: 9, warning: True)` | grün |
+| Q57 | Bundestrainer-Warngrenze von 10 auf 11 erhöhen | `EishockeyManager.UI.Tests.WettbewerbeNationalteamTests.CoachWarning_Boundary(players: 10, warning: False)` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1924,11 +1929,11 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `TeamScreenTests.cs · TeamScreenTests.Tactics_ModesBlocksAndSwitchToLineup` | geändert | offen |
 | `TransferBuyWindowDosboxTests.cs · TransferBuyWindowDosboxTests.BuyWindow_IsLeftOverSquadList_WithoutButtons_AndSolidShadow` | neu | offen |
 | `TransferVertraegeKomplettTeil3ScreenTests.cs · TransferVertraegeKomplettTeil3ScreenTests.ClickOnOfferedPlayer_OpensOfferWindow_SellMovesPlayer` | geändert | offen |
-| `TransferVertraegeKomplettTeil4ScreenTests.cs · TransferVertraegeKomplettTeil4ScreenTests.HoveredEntry_RecolorsSeparatorsAboveAndBelow` | geändert | offen |
+| `TransferVertraegeKomplettTeil4ScreenTests.cs · TransferVertraegeKomplettTeil4ScreenTests.HoveredEntry_RecolorsSeparatorsAboveAndBelow` | geändert | rot: Q55 |
 | `TransferVertraegeKomplettTeil5ScreenTests.cs · TransferVertraegeKomplettTeil5ScreenTests.MarketBid_OpensOfferWindow_SellCreditsFee` | geändert | offen |
 | `TransferVertraegeKomplettTeil5ScreenTests.cs · TransferVertraegeKomplettTeil5ScreenTests.MarketBid_KeepDeclines` | geändert | offen |
 | `WaveBReviewScreenTests.cs · WaveBReviewScreenTests.PR3502_SecondBidBecameInvalid_ShowsMessageAndDoesNotReopenSameBid` | geändert | offen |
-| `WettbewerbeNationalteamTests.cs · WettbewerbeNationalteamTests.CoachWarning_Boundary` | geändert | offen |
+| `WettbewerbeNationalteamTests.cs · WettbewerbeNationalteamTests.CoachWarning_Boundary` | geändert | rot: Q56, Q57 |
 
 ### Offene Prüfbereiche
 
