@@ -40,7 +40,7 @@ public class AbgleichOriginalWerkzeugTests
         Assert.Contains(rows, r => r.Path == $"Clubs[{mine.Index} {mine.Name}].Players[{mine.Players[0].Name}].Age");
     }
 
-    /// <summary>Feste Felder exakt, Geld im Bereich (±25 %), Eingriffe ausgenommen.</summary>
+    /// <summary>Feste Felder exakt, Geld im Bereich (ohne Stand a: ±50.000 DM), Eingriffe ausgenommen.</summary>
     [Fact]
     public void Rows_JudgeByClass()
     {
@@ -62,6 +62,33 @@ public class AbgleichOriginalWerkzeugTests
         Assert.Equal("Managers[0].Money", deviation.Path);
         Assert.Equal(HokCompareClass.Random, deviation.Class);
         Assert.Equal(HokCompareClass.Intervention, rows.Single(r => r.Path == "Managers[0].FinanceData.Stadium.TicketPrice").Class);
+    }
+
+    /// <summary>
+    /// Geld wird an der Veränderung seit Stand a gemessen (Review P2-1): ±10 % der Veränderung des Originals, mindestens 50.000 DM –
+    /// nicht ±25 % des Kontostands.
+    /// </summary>
+    [Fact]
+    public void Rows_MoneyJudgedByChangeSinceStart()
+    {
+        var original = TestGames.Create(seed: 13);
+        var remake = TestGames.Create(seed: 13);
+        original.ActiveManager.Money = 10_000_000;
+        var start = new Dictionary<string, string?> { ["Managers[0].Money"] = "12000000" };
+
+        HokCompareRow Money(long remakeMoney)
+        {
+            remake.ActiveManager.Money = remakeMoney;
+            return HokCompare.Rows(original, remake, crossesSeason: false, [], start).Single(r => r.Path == "Managers[0].Money");
+        }
+
+        Assert.False(Money(10_200_000).Deviation); // Original −2 Mio., Remake −1,8 Mio.: 10 % der Veränderung
+        var row = Money(10_300_000);              // ±25 % des Kontostands hätten 2,5 Mio. erlaubt
+        Assert.True(row.Deviation);
+        Assert.Contains("seit a: Original −2000000, Remake −1700000", row.Note);
+        start["Managers[0].Money"] = "10000000";  // keine Veränderung: fester Deckel 50.000 DM
+        Assert.False(Money(10_050_000).Deviation);
+        Assert.True(Money(10_050_001).Deviation);
     }
 
     /// <summary>Ein Spieler, den es nur auf einer Seite gibt: im Managerkader eine Abweichung, auf dem Markt (zufallsabhängig) nicht.</summary>

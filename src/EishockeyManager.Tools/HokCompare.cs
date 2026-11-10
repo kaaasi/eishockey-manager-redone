@@ -87,9 +87,10 @@ public static class HokCompare
         var target = Import(b, database, seed);
         var pair = PairName(a, b);
         var crossesSeason = start.Season != target.Season;
+        var before = Values(start);
         var error = PlayTo(start, target);
         var interventions = HokCompareClasses.Interventions.GetValueOrDefault(pair) ?? [];
-        return new HokCompareReport(pair, error, Rows(target, start, crossesSeason, interventions));
+        return new HokCompareReport(pair, error, Rows(target, start, crossesSeason, interventions, before));
     }
 
     public static GameState Import(string path, ClubDatabase database, int seed)
@@ -146,9 +147,16 @@ public static class HokCompare
 
     private static (int, int, int) Order(GameState g) => (g.Season, g.CurrentDay, g.Phase == SeasonPhase.SeasonOver ? 1 : 0);
 
-    /// <summary>Zeilen des Vergleichs Original (<paramref name="original"/>) ↔ Remake (<paramref name="remake"/>).</summary>
+    /// <summary>Werte aller Pfade eines Stands (Stand a vor dem Nachspielen, für Regeln mit <see cref="HokCompareRule.FromStart"/>).</summary>
+    public static IReadOnlyDictionary<string, string?> Values(GameState game) =>
+        Entries(game).ToDictionary(e => e.Key, e => (string?)e.Value.Value, StringComparer.Ordinal);
+
+    /// <summary>
+    /// Zeilen des Vergleichs Original (<paramref name="original"/>) ↔ Remake (<paramref name="remake"/>); <paramref name="start"/>:
+    /// Werte von Stand a (<see cref="Values"/>), ohne sie gilt für Regeln mit <see cref="HokCompareRule.FromStart"/> nur der feste Bereich.
+    /// </summary>
     public static IReadOnlyList<HokCompareRow> Rows(GameState original, GameState remake, bool crossesSeason,
-        IReadOnlyCollection<string> interventions)
+        IReadOnlyCollection<string> interventions, IReadOnlyDictionary<string, string?>? start = null)
     {
         var left = Entries(original);
         var right = Entries(remake);
@@ -167,13 +175,14 @@ public static class HokCompare
                 (kind, rule) = (HokCompareClass.Random, HokCompareClasses.Of(container));
             if (HokCompareClasses.Matches(path, interventions))
                 kind = HokCompareClass.Intervention;
-            var (deviation, note) = Judge(kind, rule, o?.Value, r?.Value);
+            var (deviation, note) = Judge(kind, rule, o?.Value, r?.Value, start?.GetValueOrDefault(path));
             rows.Add(new HokCompareRow(path, field, o?.Value, r?.Value, kind, deviation, note));
         }
         return rows;
     }
 
-    private static (bool Deviation, string Note) Judge(HokCompareClass kind, HokCompareRule rule, string? original, string? remake)
+    private static (bool Deviation, string Note) Judge(HokCompareClass kind, HokCompareRule rule, string? original, string? remake,
+        string? start)
     {
         switch (kind)
         {
@@ -190,8 +199,18 @@ public static class HokCompare
         if (!double.TryParse(original, NumberStyles.Float, CultureInfo.InvariantCulture, out var o)
             || !double.TryParse(remake, NumberStyles.Float, CultureInfo.InvariantCulture, out var r))
             return (original != remake, "Bereich: kein Zahlenwert");
-        var limit = Math.Max(rule.Tolerance ?? 0, (rule.Relative ?? 0) * Math.Abs(o));
-        return Math.Abs(r - o) <= limit ? (false, "") : (true, $"außerhalb ±{limit.ToString("0.##", CultureInfo.InvariantCulture)}");
+        // Veränderung seit a (Review P2-1): der Bereich wächst mit dem, was zwischen den Halten passiert, nicht mit dem Kontostand.
+        double? s = null;
+        if (rule.FromStart && double.TryParse(start, NumberStyles.Float, CultureInfo.InvariantCulture, out var sv))
+            s = sv;
+        var basis = rule.FromStart ? s is { } a ? Math.Abs(o - a) : 0 : Math.Abs(o);
+        var limit = Math.Max(rule.Tolerance ?? 0, (rule.Relative ?? 0) * basis);
+        if (Math.Abs(r - o) <= limit)
+            return (false, "");
+        var text = $"außerhalb ±{limit.ToString("0.##", CultureInfo.InvariantCulture)}";
+        if (s is { } from)
+            text += $" (seit a: Original {Signed(o - from)}, Remake {Signed(r - from)})";
+        return (true, text);
     }
 
     private static Dictionary<string, HokCompareEntry> Entries(GameState game) =>
@@ -251,6 +270,8 @@ public static class HokCompare
         HokCompareClass.NotInHok => "nicht im HOK",
         _ => "nicht eingeordnet",
     };
+
+    private static string Signed(double value) => value.ToString("+0.##;−0.##;0", CultureInfo.InvariantCulture);
 
     private static string Cut(string s, int n) => s.Length <= n ? s : s[..(n - 1)] + "…";
 }

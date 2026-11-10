@@ -111,7 +111,7 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
      Zufall / Eingriff); je Remake-Fehler ein Issue (Label `befund`, `P0`–`P3`). Behoben wird in Welle 2 bzw. Runde 16
      (Leitstelle bündelt), nicht in dieser Spur.
 - **Hinweis:** wird als letzte Spur gemergt; vor dem Merge erwartete Listen gegen den dann aktuellen `main` erneuern.
-- **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 fertig (PR #728, Review offen); Befunde #729–#734, Beleg zu #699; Bericht `analyse/abgleich-original.md`.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 fertig (PR #728), Fixlauf zum Review (#735: P2-1, P3-1, P3-2) fertig; Befunde #729–#734, #737, #738, Beleg zu #699; Bericht `analyse/abgleich-original.md`.
 
 ### Spur `pruefung-karte` – Welle 2 (nach dem Merge aller Spuren)
 

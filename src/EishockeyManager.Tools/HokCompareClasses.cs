@@ -23,10 +23,11 @@ public enum HokCompareClass
 /// Regel für ein Schemafeld. <paramref name="Tolerance"/>/<paramref name="Relative"/>: zulässiger Abstand zum Original
 /// (der größere zählt); ohne beide prüft <see cref="HokCompareClass.Random"/> nichts außer dem Vorhandensein.
 /// <paramref name="SeasonBound"/>: deterministisch innerhalb einer Saison, nach einem Saisonwechsel zufallsabhängig (Ligazusammensetzung
-/// folgt aus den Ergebnissen).
+/// folgt aus den Ergebnissen). <paramref name="FromStart"/>: <paramref name="Relative"/> bezieht sich auf die Veränderung des Originals
+/// seit Stand a (|b − a|), nicht auf den Stand b; ohne Wert von a gilt nur <paramref name="Tolerance"/>.
 /// </summary>
 public sealed record HokCompareRule(HokCompareClass Class, string Note = "", double? Tolerance = null, double? Relative = null,
-    bool SeasonBound = false)
+    bool SeasonBound = false, bool FromStart = false)
 {
     /// <summary>Klasse im Paar: <see cref="SeasonBound"/> wird nach einem Saisonwechsel zufallsabhängig.</summary>
     public HokCompareClass ClassFor(bool crossesSeason) =>
@@ -57,8 +58,18 @@ public static class HokCompareClasses
     private static readonly HokCompareRule NotInHok = new(HokCompareClass.NotInHok, "Feldkarte N/U");
     private static readonly HokCompareRule Unclassified = new(HokCompareClass.Unclassified, "nicht eingeordnet");
 
-    /// <summary>[APPROX] Mittelwerte des Pools (200 Spieler): ±5 Punkte.</summary>
-    private static readonly HokCompareRule PoolMean = new(HokCompareClass.Random, "Bereich", 5);
+    /// <summary>
+    /// [APPROX] Mittelwerte des Pools (200 Spieler): ±8 Punkte. Innerhalb einer Saison über die Saaten 1993, 4711, 1, 2, 3, 77 höchstens
+    /// 5,7 Punkte Abstand (FILE02→03 Saat 3, Belastung; Review P3-2); die Abweichungen nach dem Saisonwechsel (#731) liegen weit darüber.
+    /// </summary>
+    private static readonly HokCompareRule PoolMean = new(HokCompareClass.Random, "Bereich", 8);
+
+    /// <summary>
+    /// [APPROX] Kontostand: Abstand zum Original höchstens 50.000 DM oder 10 % der Veränderung des Originals seit Stand a (der größere
+    /// Wert). Gemessen über elf Paare und sechs Saaten: höchstens 33.000 DM bzw. 9 % (ohne die Befunde #732, #734, #737). Die Gegenprobe
+    /// „Gehälter fehlen“ (FILE22→23, rund 790.000 DM) ist rot (Review P2-1); der frühere Bereich ±25 % des Kontostands b war es nicht.
+    /// </summary>
+    private static readonly HokCompareRule Money = new(HokCompareClass.Random, "Bereich seit a", 50_000, 0.10, FromStart: true);
 
     private static HokCompareRule Range(double tolerance, double? relative = null) => new(HokCompareClass.Random, "Bereich", tolerance, relative);
 
@@ -156,7 +167,7 @@ public static class HokCompareClasses
             "SponsorContract.OptionMonths", "SponsorContract.SignedRating", "SponsorContract.Sponsor",
             "StockHolding.Count", "StockHolding.PurchaseCost", "Stock.Name");
         Set(InSeason, "ManagerFinance.CostLeague", "YouthTeam.League");
-        Set(Range(0, 0.25), "Manager.Money");
+        Set(Money, "Manager.Money");
         Set(Random, "Manager.PowerPlayCounts", "Manager.SeriesRecords", "Manager._newMessage",
             "ManagerFinance.Inbox", "ManagerFinance.InterestAccrualThirds", "ManagerFinance.SponsorRating",
             "ManagerFinance.TalentPrice", "ManagerFinance._homeStatistics",
