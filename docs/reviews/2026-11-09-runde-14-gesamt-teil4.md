@@ -64,6 +64,8 @@ Die unveränderten Kontrollläufe bestehen: `OriginalSaveHeaderTests` 4/4, `Save
 
 ### Selbst nachgelesene Originalstellen
 
+Saisonende-Statusbit: `em.exe` Datei `0x553A6–0x553ED` ruft `0xE8:0x93` zuerst mit `0x7F`, dann pro Manager auf, setzt das Statusbyte zunächst auf 0 und OR-verknüpft es bei positivem Rückgabewert und Spielmodus ungleich 2 mit `0x40`. Die selbst gelesene Hilfsroutine `0x34769–0x347EE` liest die Einträge ab DGROUP `0x5CCB`, begrenzt die Schleife auf fünf und vergleicht die Managerzuordnung. Die Voraussetzungen des aufrufenden Tageszweigs wurden bei dieser Teilprüfung nicht erneut vollständig hergeleitet.
+
 `em.exe` Datei `0x5B68E–0x5B732`: Der Code übergibt nacheinander die Längen 10, 4, 1, 1 und `0xA0` an denselben Leser; nach den ersten 10 Bytes erfolgt ein Vergleich gegen eine Zeichenkette bei DGROUP `0x55DF`. Damit ist die Struktur des Kopflesers im Originalcode nachvollzogen; die Bedeutung jeder Hilfsfunktion und das Verhalten bei verkürzter Datei bleiben gesondert offen. Selbst aus `FILE46.HOK` gelesen: Kennung `KRON_0.99` mit Nullbyte, Jahr 1994, Managerzahl 1, Spieltag 1, erster Eintrag Liga 0, WM-Flag 0, Name `Joerg` und Vereinsbytes `KLNER EC` (Originalkodierung).
 
 Selbst in `em.exe` nachgelesen: `0x319AC–0x319DB` kopiert in einer Schleife die Plätze `i` und `7 − i` von `0x5CCB` nach `0x5D3B + 2i` und `0x5D3C + 2i`, für vier Werte von `i`. Das bestätigt die Viertelfinalfolge 1–8, 2–7, 3–6, 4–5. Die anschließende Halbfinaltabelle wurde bereits in Teil 2 unabhängig gelesen. S01 setzt die alte Paarungsregel zurück; beide Originalstände FILE44/FILE22 und der Mehrsaisontest werden rot.
@@ -1038,6 +1040,14 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | P08 | Preis erster Liste nach Laden erhöhen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_RoundTripWithPoolMarketNational(file: "FILE20.HOK")` | rot |
 | P08 | Preis erster Liste nach Laden erhöhen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_RoundTripWithPoolMarketNational(file: "FILE18.HOK")` | rot |
 | P08 | Preis erster Liste nach Laden erhöhen | `EishockeyManager.Core.Tests.OriginalImportPoolTests.Import_RoundTripWithPoolMarketNational(file: "FILE41.HOK")` | rot |
+| Q01 | Top-Fünf-Status umkehren | `EishockeyManager.Core.Tests.SeasonEndStatusTests.SaveLoad_StatusBitIsDerivedFromSavedData` | rot |
+| Q01 | Top-Fünf-Status umkehren | `EishockeyManager.Core.Tests.SeasonEndStatusTests.Full_ManagerInTopFive_GetsStatusBit_OtherNot` | rot |
+| Q01 | Top-Fünf-Status umkehren | `EishockeyManager.Core.Tests.SeasonEndStatusTests.StatusBit_DoesNotChangeStoredEventsOrPremium` | grün |
+| Q02 | Gespeicherte Saisonprämie um 1 erhöhen | `EishockeyManager.Core.Tests.SeasonEndStatusTests.SaveLoad_StatusBitIsDerivedFromSavedData` | grün |
+| Q02 | Gespeicherte Saisonprämie um 1 erhöhen | `EishockeyManager.Core.Tests.SeasonEndStatusTests.Full_ManagerInTopFive_GetsStatusBit_OtherNot` | grün |
+| Q02 | Gespeicherte Saisonprämie um 1 erhöhen | `EishockeyManager.Core.Tests.SeasonEndStatusTests.StatusBit_DoesNotChangeStoredEventsOrPremium` | rot |
+| Q03 | Verkäuferzuordnung des eigenen Marktspielers auslassen | `EishockeyManager.Core.Tests.PlayoffSemifinalTests.Import_OwnListedPlayer_OnlyOnMarket(file: "FILE26.HOK", name: "HOCK")` | rot |
+| Q03 | Verkäuferzuordnung des eigenen Marktspielers auslassen | `EishockeyManager.Core.Tests.PlayoffSemifinalTests.Import_OwnListedPlayer_OnlyOnMarket(file: "FILE41.HOK", name: "HOHENADL")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1645,7 +1655,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Playoffs_OwnRounds_PairLikeTheOriginal` | neu | rot: S01 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Import_RunningQuarterFinal_SwapsAtOddGameCount` | neu | rot: S02 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Import_RelegationGroup_ThreeOfSixDates` | neu | rot: S03 |
-| `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Import_OwnListedPlayer_OnlyOnMarket` | neu | offen |
+| `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Import_OwnListedPlayer_OnlyOnMarket` | neu | rot: Q03 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Import_CarriesPerCompetition_AllStands` | neu | rot: S04 |
 | `PlayoffSemifinalTests.cs · PlayoffSemifinalTests.Load_Schema43_RunningQuarterFinal_SemifinalByTable0x144` | neu | rot: S01, S05 |
 | `PruefungKarteRunde14Tests.cs · PruefungKarteRunde14Tests.Schema45_WithDebtDaysAndDismissed_LoadsKeepsDismissed_EndsGame` | neu | rot: E11 |
@@ -1667,10 +1677,10 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SaisonwechselOberligaTests.cs · SaisonwechselOberligaTests.StartSwap_TwoChosenClubsWithoutLeague_BothDisplacedOutside_MultiSeason` | neu | offen |
 | `SaisonwechselProbenTests.cs · SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop` | geändert | offen |
 | `SaveGameTests.cs · SaveGameTests.SchemaFingerprint_MatchesSchemaVersion` | geändert | offen |
-| `SeasonEndStatusTests.cs · SeasonEndStatusTests.Full_ManagerInTopFive_GetsStatusBit_OtherNot` | geändert | offen |
+| `SeasonEndStatusTests.cs · SeasonEndStatusTests.Full_ManagerInTopFive_GetsStatusBit_OtherNot` | geändert | rot: Q01 |
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.Full_EveryManagerInTopFive_GetsStatusBit` | geändert | rot: T01 |
-| `SeasonEndStatusTests.cs · SeasonEndStatusTests.StatusBit_DoesNotChangeStoredEventsOrPremium` | geändert | offen |
-| `SeasonEndStatusTests.cs · SeasonEndStatusTests.SaveLoad_StatusBitIsDerivedFromSavedData` | geändert | offen |
+| `SeasonEndStatusTests.cs · SeasonEndStatusTests.StatusBit_DoesNotChangeStoredEventsOrPremium` | geändert | rot: Q02 |
+| `SeasonEndStatusTests.cs · SeasonEndStatusTests.SaveLoad_StatusBitIsDerivedFromSavedData` | geändert | rot: Q01 |
 | `SeasonFlowTests.cs · SeasonFlowTests.Debts_DoNotDismiss` | neu | offen |
 | `SeasonFlowTests.cs · SeasonFlowTests.Dismissal_OtherManagersContinue` | geändert | offen |
 | `SpielberechnungAnschlussTests.cs · SpielberechnungAnschlussTests.FourSeasonChanges_OriginalDatabase_CountersPerSeason` | geändert | rot: V10 |
