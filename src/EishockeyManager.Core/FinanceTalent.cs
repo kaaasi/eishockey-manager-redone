@@ -118,8 +118,8 @@ public sealed partial class GameState
     /// 0x42E4C; Kondition/Technik/Form aus Pool +0x15–0x17, Datei 0x42EC3–0x42F06); Besitzer = Manager; Kaderplatz +0x19 =
     /// random(3, 12) · 16 + random(3, 12); Gehalt +0x28 = Wert(Gehalt) · 80 / 100; Preis +0x2C = Wert(Preis); Laufzeit +0x0B =
     /// random(2, 3). Name, Talent (+0x12) und Rolle bleiben die des Poolspielers.
-    /// [APPROX] Die Nachbearbeitung 0x118:0x4D (Tendenz, 0x4907A) und der Preis +0x2C sind nicht abgebildet (wie beim Kauf,
-    /// <see cref="TransferPoolRules.RollSlotFields"/>); Energie auf 99 begrenzt. Das Original sucht ohne Grenze nach einem
+    /// Die Nachbearbeitung 0x118:0x4D (Tendenz, 0x4907A) zieht aus <see cref="TrendRandom"/> (A134). [APPROX] Der Preis +0x2C
+    /// ist nicht abgebildet (wie beim Kauf, <see cref="TransferPoolRules.RollSlotFields"/>); Energie auf 99 begrenzt. Das Original sucht ohne Grenze nach einem
     /// freien Platz; das Remake gibt nach <see cref="TalentPoolAttempts"/> Versuchen auf und erzeugt dann einen neuen Spieler
     /// (<see cref="PlayerFactory.TalentName"/>, Rolle zufällig) – ebenso ohne Spielerpool (Spielstände vor Schema 22).
     /// </summary>
@@ -150,6 +150,9 @@ public sealed partial class GameState
         // (managerSquad = Vorgabe true; Test KaderStartRunde14Tests, R623-01).
         // [ORIGINAL] Belastung des neuen Kaderplatzes random(80, 120) (Datei 0x42E4C–0x42E5E; A184, Integration Runde 12, R12I-01).
         p.Strain = TransferRules.Random16(random, 80, 120);
+        // A134 (Spur kader, Teil 2): [ORIGINAL] 0x42CB1 ruft nach der Energie 0x4907A (Datei 0x42E6B): Tendenz und Steuerbyte.
+        // [APPROX] Eigene Quelle TrendRandom wie beim Markt.
+        p.RollTrend(TrendRandom);
         _ = TransferRules.Random16(random, 3, 12); // Kaderplatz +0x19 (Bedeutung offen, A185/A186), nur gezogen
         _ = TransferRules.Random16(random, 3, 12);
         p.MonthlySalary = Math.Max(Contracts.MinSalary,

@@ -223,6 +223,8 @@ public class RngTwinProbeTests
     // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
     // Spur kader Teil 1 (#698): neu – Jugend am Saisonende (0x26F20, Datei 0x2728C–0x27320) zieht je Manager und Saison zwei Zufallszahlen
     // und bringt ab 1995 Junioren in den Kader. Gegenprobe: Aufruf JoinSeasonEndYouth in StartSquadSeason entfernt → alter Wert.
+    // Spur kader Teil 2 (A134): neu – Tendenz und Steuerbyte der Startkader (0x4907A aus 0x42CB1, Datei 0x29996) ändern Startgehälter,
+    // Spielerwerte und die Tendenz je Takt. Gegenprobe: RollTrend in ApplyStartSalaries entfernt → Wert von Teil 1.
     [InlineData(false, 3, "9BA36EDBCC5D0132")]
     [InlineData(true, 3, "6F42202F7300670F")]
     [InlineData(false, 11, "35B638D5D567D08B")]
@@ -267,6 +269,8 @@ public class RngTwinProbeTests
     // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
     // Spur kader Teil 1 (#698): neu – Jugend am Saisonende (0x26F20, Datei 0x2728C–0x27320) zieht je Manager und Saison zwei Zufallszahlen
     // und bringt ab 1995 Junioren in den Kader. Gegenprobe: Aufruf JoinSeasonEndYouth in StartSquadSeason entfernt → alter Wert.
+    // Spur kader Teil 2 (A134): neu – Tendenz und Steuerbyte der Startkader (0x4907A aus 0x42CB1, Datei 0x29996) ändern Startgehälter,
+    // Spielerwerte und die Tendenz je Takt. Gegenprobe: RollTrend in ApplyStartSalaries entfernt → Wert von Teil 1.
     [InlineData(false, "F1CD6764556FD72F")]
     [InlineData(true, "773C3AA4190559D0")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
