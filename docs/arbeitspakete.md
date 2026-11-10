@@ -67,7 +67,7 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
      FILE01 (Zähler 1) und FILE02→FILE03 (Konto 737.354 DM), Mehrsaisonprobe.
   2. **Hot-Seat-Würfe:** Wurf von Manager i nach dem Menü von Manager i − 1 (0x54E3Fh–0x54EF4h); Test mit zwei Managern.
   3. **Bundestrainer am Ereignistag:** Neuaufstellung Satz 5 und 952Ch(5, 0) vor den Menüs (0x54DAAh); nur Testweg.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 fertig, Review offen (PR #725; R15-E1 = A: 29 fremde Tests angepasst, Rückschaltprobe im PR).
 
 ### Spur `kader` – Kader beim Spielstart und Saisonwechsel (#698, A134, #699 Punkt 4)
 
@@ -78,7 +78,10 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
      Gegenprobe FILE01/FILE29 (Dump), Mehrsaisonprobe.
   3. **R204 (#699 Punkt 4, R15-D4 = A):** wie im Original – Vertragslose aus Managervereinen werden freie Poolspieler
      (Besitzer 6) und kommen nur über den Listenwechsel zurück; keine Einstellung.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** PR #726; Teil 1 (Jugend am Saisonende 0x26F20, #698) und Teil 2
+  (Tendenz der Startkader 0x4907A, A134) und Teil 3 (R204: Vertragslose nicht auf der Liste, Datei 0x27DE3–0x27E9D; FILE46
+  KJELLBERG Pool +0x1A = 0, also nicht „Besitzer 6“) fertig; Erstreview #741 (ja, P3-1…4). Fixlauf: Rebase auf #725, P3-1…4,
+  R15-E3 = C (Vertragslose aus Managervereinen ganz verloren); Nachprüfung ausstehend.
 
 ### Spur `hok-export` – Remake-Spielstand als `*.HOK` (R14-D2 = B)
 
@@ -93,7 +96,10 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
   einem neuen Remake-Spiel, Saisonmitte nach Remake-Spieltagen); die Leitstelle legt sie im Referenz-Repo ab
   (`original/spielstaende/`, Branch `daten/…`), der Nutzer lädt sie im Original (DOSBox) und hält Hauptmenü, Kader und Finanzen
   im Bild fest. Merge erst nach dieser Probe; Abweichungen werden Befunde des Spur-PR.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 umgesetzt (PR #727); Erstreview (#739) und DOSBox-Probe: B1–B5 im Fixlauf
+  10.11.2026 behoben (Teamwerte absolut, Umlaute, Kopf `0178`, ID aus Inhalt, gebundene Regeln); Nachprüfung N1 (= R727P-04,
+  Namensreste/doppelt belegte Poolplätze) und N2 (saatabhängiger Fremdtest, R15-E2 = C) im zweiten Fixlauf behoben; wartet auf
+  Nachprüfung und dritte Probe EXPORT1C/2C (nur Mannschaft).
 
 ### Spur `abgleich-original` – Remake gegen Spielstandpaare des Originals (Vormerkung Vorschlag 1)
 

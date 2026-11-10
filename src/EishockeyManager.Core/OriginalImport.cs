@@ -174,10 +174,15 @@ public sealed partial class GameState
             var record = managerRecords.AsSpan(m * OriginalSaveGame.ManagerRecordLength, OriginalSaveGame.ManagerRecordLength);
             var name = CName(record[..0x13]);
             var club = clubOf[record[0x14]];
+            // [ORIGINAL] Managerkopf DGROUP 0x178 + m (Block 0178, unbenutzte Plätze 0xFF): das Hauptmenü zeigt diesen Kopf (Bilder
+            // file01_2, file05_1, file09_2/3, file11_01, file15_1, file27_2, file28_2, file47_1, file49_1 gegen kb\0; EXPORT01 mit
+            // 0178 = 0 und +0x13 = 6 zeigt Kopf 0, export01_1). Managersatz +0x13 ist an allen Ständen eine Kopie (Review 2026-11-10 B3).
+            var heads = save.Block("0178");
+            var head = m < heads.Length && heads[m] < ManagerSetup.HeadCount ? heads[m] : 0;
             setup.Managers.Add(new ManagerSetup
             {
                 Name = name,
-                Head = 0, // [APPROX] Managerkopf: Ort im HOK nicht belegt (Feldkarte U)
+                Head = head,
                 ClubIndex = club,
                 Level = Math.Clamp((int)setupBlock[0], 0, ManagerSetup.LevelCount - 1),
                 StartLeague = (League)Math.Clamp((int)setupBlock[2], 0, 2),
@@ -185,7 +190,7 @@ public sealed partial class GameState
             });
             managers.Add(new Manager
             {
-                Name = name, Head = 0, ClubIndex = club, Level = setup.Managers[m].Level,
+                Name = name, Head = head, ClubIndex = club, Level = setup.Managers[m].Level,
                 Money = FinanceRules.StartMoney(setup.Managers[m].Level),
             });
         }
@@ -353,7 +358,11 @@ public sealed partial class GameState
         }
     }
 
-    /// <summary>Teamwerte far:9657 + 0x17 … 0x1D aller Vereinssätze (Feldkarte „ClubTeamValues“).</summary>
+    /// <summary>
+    /// Teamwerte far:9657 + 0x17 … 0x1D aller Vereinssätze (Feldkarte „ClubTeamValues“). Kondition und Technik 0x18–0x1B stehen im
+    /// Original absolut, das Remake führt die Abweichung vom Datenbankwert (<see cref="MatchEngine.ClubFieldValues"/>): Import
+    /// Originalwert − <see cref="MatchEngine.ComputerTeamValue"/> (#729; Gegenstück zum Export, Review 2026-11-10 B1).
+    /// </summary>
     private void ApplyTeamValues(OriginalSaveGame save, int[] clubOf)
     {
         var records = save.Block("far:9657");
@@ -362,7 +371,9 @@ public sealed partial class GameState
             var r = records.AsSpan(slot * OriginalSaveGame.ClubRecordLength, OriginalSaveGame.ClubRecordLength);
             if (WorldOnly && Managers.Any(m => m.ClubIndex == clubOf[slot]))
                 continue; // Satz des Managervereins trägt im Modus „nur Weltkugel“ das Land (Regel 1)
-            Clubs[clubOf[slot]].TeamValues = new ClubTeamValues(r[0x18], r[0x19], r[0x1A], r[0x1B], r[0x1C], r[0x1D], r[0x17]);
+            var club = Clubs[clubOf[slot]];
+            var value = MatchEngine.ComputerTeamValue(club);
+            club.TeamValues = new ClubTeamValues(r[0x18] - value, r[0x19] - value, r[0x1A] - value, r[0x1B] - value, r[0x1C], r[0x1D], r[0x17]);
         }
     }
 
@@ -473,20 +484,27 @@ public sealed partial class GameState
 
         // Aufstellung: Reihe 1–3 (+0x15, Bit 0x80 Sturm), Torhüter mit Reihe 1; Plätze in Kaderfolge.
         var used = new Dictionary<(int Block, PlayerRole Role), int>();
-        foreach (var (player, line, _, _) in players)
+        // [ORIGINAL] +0x15 bestimmt den Platz, nicht die Rolle (Ausweichrollen der Automatik, Datei 0x42838; Lineup.Place): Sturm
+        // nach Bit 0x80, sonst Verteidigung – ein Torhüter mit Reihe 1 ohne Bit auf den freien Torhüterplatz. Spur hok-export
+        // (Rundreise, vier Saisonwechsel passiv: Stürmer M.RAUBAL in der Verteidigung).
+        foreach (var (player, line, forward, _) in players)
         {
-            if (line is < 1 or > 3)
+            if (line is < 1 or > 3 || !player.Available)
                 continue;
-            LineupSlot? target = player.Role switch
-            {
-                PlayerRole.Goalkeeper when line == 1 && club.Lineup.Goalkeeper is null => LineupSlot.Goalkeeper,
-                PlayerRole.Defender => NextSlot(line - 1, PlayerRole.Defender, Lineup.DefendersPerBlock),
-                PlayerRole.Forward => NextSlot(line - 1, PlayerRole.Forward, Lineup.ForwardsPerBlock),
-                _ => null,
-            };
-            if (target is { } t && player.Available)
-                club.Lineup.Assign(t, player);
+            LineupSlot? target = player.Role == PlayerRole.Goalkeeper && !forward && line == 1 && club.Lineup.Goalkeeper is null
+                ? LineupSlot.Goalkeeper
+                : forward
+                    ? NextSlot(line - 1, PlayerRole.Forward, Lineup.ForwardsPerBlock)
+                    : NextSlot(line - 1, PlayerRole.Defender, Lineup.DefendersPerBlock);
+            if (target is { } t)
+                club.Lineup.Place(t, player);
         }
+        // Spur hok-export (Rundreise): Eingesetzte genau wie +0x0A – erst die von der Automatik zusätzlich Eingesetzten herausnehmen,
+        // sonst ist die Zahl schon voll (22) und der Ersatz des HOK käme nicht hinein. Die Einstellung „automatisch aufstellen“
+        // setzt danach ApplyTactics aus 0x375 (OriginalImport.Rest.cs).
+        foreach (var (player, _, _, dressed) in players)
+            if (!dressed && club.IsDressed(player) && !club.Lineup.Contains(player))
+                club.Undress(player);
         foreach (var (player, _, _, dressed) in players)
             if (dressed && !club.Lineup.Contains(player) && club.DressedCount < Club.MaxDressed)
                 club.Dress(player);

@@ -175,12 +175,17 @@ public class SquadLifecycleTests
                 Assert.True(ContractMessages(game, p).Count(m => !string.Join(" ", m.Lines).Contains("bietet Ihnen an", StringComparison.Ordinal)) <= 1,
                     $"Saison {game.Season}: mehrere Ankündigungen für {p.Name}");
 
+            var expiringManaged = game.Managers.SelectMany(m => game.Clubs[m.ClubIndex].Players)
+                .Where(p => p.ContractYears <= 1 && p.Loan is null).ToHashSet();
             game.StartNextSeason();
 
-            // Kein Spieler verloren oder doppelt: Kader, Pool und Laufbahnende zusammen.
+            // Kein Spieler verloren oder doppelt: Kader, Pool und Laufbahnende zusammen. Spur kader (R15-E3 = C): geändert – wer einen
+            // Managerkader bei Vertragsende verlässt, ist wie im Original ganz verloren (Datei 0x27DE3–0x27E9D); vorher vertragslos.
             var all = AllPlayers(game).ToArray();
             Assert.Equal(all.Length, all.Distinct().Count());
-            Assert.Empty(known.Except(all));
+            var lost = known.Except(all).ToArray();
+            Assert.All(lost, p => Assert.Contains(p, expiringManaged));
+            known.ExceptWith(lost);
             known.UnionWith(all);
 
             foreach (var club in computer)
@@ -204,7 +209,8 @@ public class SquadLifecycleTests
             if (active)
                 SignFreeAgents(game);
             else if (change >= 2)
-                Assert.Empty(OwnClub(game).Players); // passiv: alle Startverträge enden nach zwei Jahren (angekündigt)
+                // passiv: alle Startverträge enden nach zwei Jahren (angekündigt); danach nur Junioren vom Saisonende (#698, 0x26F20).
+                Assert.DoesNotContain(OwnClub(game).Players, managerPlayers.Contains);
         }
 
         // Plausible Altersverteilung nach sechs Wechseln.

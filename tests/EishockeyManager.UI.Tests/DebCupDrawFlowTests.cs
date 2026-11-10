@@ -282,6 +282,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // nach dem Halt (SeasonFlow.RunDays ohne OpenDay) → Wert des Merge-Stands 5245767. Ursache allein R688-05 (Saisonwechsel behält die Markt-Plätze, kein Listenwechsel 0x494EF; Gegenprobe nur alter StartSeason
     // → Wert 5245767). Tendenz je Takt (A134), Aufstellung am Takt und an Tagen mit Ereignis, Heilung je Manager, Sommerpause
     // und entlassene Manager einzeln zurück → gleicher Wert.
+    // Runde 15, Spur kader (Fixlauf nach Rebase auf tagesablauf #725): 1996 neu, erst im Zusammenwirken – kader allein (bebf704) und
+    // tagesablauf allein (main 2f9cc99) lassen den Wert unverändert. Jugend am Saisonende (#698, ab 1995 Junioren), Startkader-Tendenz
+    // (A134) und R15-E3 (Vertragslose aus Managervereinen ganz verloren) ändern mit Tag 0 die Zufallsfolge ab 1995.
+    // Rückschaltprobe: Quellen (src/) von main → Wert von main.
     private const string Reference =
-        "1993: DEB 8, DM 8, Tab 15392 | 1994: DEB 7, DM 8, Tab 15770 | 1995: DEB 3, DM 9, Tab 15843 | 1996: DEB 19, DM 4, Tab 15264";
+        "1993: DEB 8, DM 8, Tab 15392 | 1994: DEB 7, DM 8, Tab 15770 | 1995: DEB 3, DM 9, Tab 15843 | 1996: DEB 6, DM 6, Tab 15151";
 }

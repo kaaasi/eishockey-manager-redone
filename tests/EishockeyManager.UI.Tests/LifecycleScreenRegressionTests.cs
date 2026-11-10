@@ -52,7 +52,10 @@ public class LifecycleScreenRegressionTests
         // Runde 14, kader-start Teil 4 (A115, re-runde-14 FILE44 → FILE46 VALLIERE): Eine Leihe vom Markt endet am Saisonende frei
         // (Pool +0x1A = 6, Datei 0x275FF) – der Spieler kehrt nicht mehr mit seinem Vertrag zum Herkunftsverein zurück. Stimmig ist
         // damit nur noch: in keinem Kader mit dem alten Vertrag (3 → 2 Jahre), höchstens in einem Kader (neu verpflichtet).
-        Assert.Equal(59, origin.Index);
+        // Runde 15, Spur tagesablauf (#699 Punkt 2, R15-E1 = A): Tag 0 läuft vor dem ersten Menü, samt Listenwechsel-Wurf von
+        // Manager 0 (Datei 0x54E65–0x54E7C, Tag 0 hat Ereignis) und anderem Zufallsverlauf – der erste Markt-Platz kommt jetzt
+        // von Verein 24 (vorher 59); die Prüfungen danach unverändert.
+        Assert.Equal(24, origin.Index);
         Assert.False(origin.Players.Contains(player) && player.ContractYears == 2);
         Assert.True(game.Clubs.Count(c => c.Players.Contains(player)) <= 1);
         Assert.DoesNotContain(player, club.Players);

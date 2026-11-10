@@ -217,10 +217,18 @@ public class RngTwinProbeTests
     // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
     // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
     // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → alle sechs alten Werte; nur Start 233 → andere Werte (Feld).
-    [InlineData(false, 3, "71C440ACDC165036")]
-    [InlineData(true, 3, "F647215D0B088A26")]
-    [InlineData(false, 11, "82605FA6E5525270")]
-    [InlineData(true, 11, "3705607C914AE2C0")]
+    // Runde 15, Spur tagesablauf (#699 Punkt 2, Entscheidung Nutzer R15-E1 = A): neu – Tag 0 jeder Saison wird vor dem ersten Menü
+    // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
+    // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
+    // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
+    // Runde 15, Spur kader (#698, A134, R204, R15-E3 = C; Fixlauf nach Rebase auf tagesablauf #725): neu – Jugend am Saisonende
+    // (0x26F20, Datei 0x2728C–0x27320: zwei Zufallszahlen je Manager und Saison, ab 1995 Junioren), Tendenz/Steuerbyte der
+    // Startkader (0x4907A aus 0x42CB1), Vertragslose aus Managervereinen weder auf der Liste noch vertragslos, sondern ganz verloren
+    // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
+    [InlineData(false, 3, "EB27A065B5D115F3")]
+    [InlineData(true, 3, "3B31F7F53E2D78DA")]
+    [InlineData(false, 11, "E0974D442603E989")]
+    [InlineData(true, 11, "7CBB076389338DDD")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -255,8 +263,16 @@ public class RngTwinProbeTests
     // 0x3F02C, Börse) entfällt, ein Sommer-Monatsabschluss weniger und anderer Zufallsverbrauch ab dem 1. Mai jeder Saison.
     // (2) R688S-03: Der Abdruck enthält Manager.DebtDays nicht mehr (Feld entfernt, Schema 46); die Regel selbst wirkt hier nicht
     // (Konto gehalten). Gegenprobe: Start 233 und Feld DebtDays zurück → beide alten Werte; nur Start 233 → andere Werte (Feld).
-    [InlineData(false, "8A64633B9AF694CD")]
-    [InlineData(true, "18C9B0A5398CF96B")]
+    // Runde 15, Spur tagesablauf (#699 Punkt 2, Entscheidung Nutzer R15-E1 = A): neu – Tag 0 jeder Saison wird vor dem ersten Menü
+    // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
+    // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
+    // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
+    // Runde 15, Spur kader (#698, A134, R204, R15-E3 = C; Fixlauf nach Rebase auf tagesablauf #725): neu – Jugend am Saisonende
+    // (0x26F20, Datei 0x2728C–0x27320: zwei Zufallszahlen je Manager und Saison, ab 1995 Junioren), Tendenz/Steuerbyte der
+    // Startkader (0x4907A aus 0x42CB1), Vertragslose aus Managervereinen weder auf der Liste noch vertragslos, sondern ganz verloren
+    // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
+    [InlineData(false, "D849DB30B4C45BB3")]
+    [InlineData(true, "49FEF2709F4E76F7")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

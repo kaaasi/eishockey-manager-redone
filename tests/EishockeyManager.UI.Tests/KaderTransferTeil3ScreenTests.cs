@@ -12,10 +12,23 @@ namespace EishockeyManager.UI.Tests;
 /// </summary>
 public class KaderTransferTeil3ScreenTests
 {
+    /// <remarks>
+    /// Spur tagesablauf (#699 Punkt 2, R15-E1 = A): Der Zuschuss fällt nur bei random(0, 6) = 0 (Datei 0x063BE). Mit Tag 0 vor dem
+    /// ersten Menü (Listenwechsel-Wurf, anderer Zufallsverlauf) reichen die Einträge der ersten Liste mit Saat 1993 nicht mehr bis
+    /// zu einem Zuschuss; der Test probiert deshalb nacheinander mehrere Saaten und prüft den Ablauf beim ersten Zuschuss.
+    /// </remarks>
     [GameDataFact]
     public void ComputerMarketLoan_AsksForSubsidy_AcceptBooks()
     {
-        var d = FlowTests.CreateDriver();
+        foreach (var seed in new[] { 1993, 1994, 1995, 1996, 1997 })
+            if (TryLoanWithSubsidy(seed))
+                return;
+        Assert.Fail("kein Zuschuss angeboten");
+    }
+
+    private static bool TryLoanWithSubsidy(int seed)
+    {
+        var d = FlowTests.CreateDriver(seed);
         d.StartNewGame();
         var game = d.Host.Game!;
         var manager = game.ActiveManager;
@@ -28,7 +41,8 @@ public class KaderTransferTeil3ScreenTests
             var listings = game.TransferMarket.Listings;
             var i = Enumerable.Range(0, listings.Count).FirstOrDefault(k => listings[k].Seller is null
                 && !listings[k].IsFreeAgent && listings[k].LoanFee > 0 && !TransferMarket.IsLocked(game, manager, listings[k]), -1);
-            Assert.True(i >= 0, "kein Eintrag mehr");
+            if (i < 0)
+                return false; // kein Eintrag mehr
             var loan = TransferScreen.EntryLoan(i);
             d.Click(loan.X + 5, loan.Y + 2);
             Assert.Equal(TransferDialog.DialogKind.Loan, screen.Dialog?.Kind);
@@ -56,10 +70,10 @@ public class KaderTransferTeil3ScreenTests
                 Assert.Null(screen.Dialog);
                 Assert.Equal(money + subsidy.Amount, manager.Money);
                 Assert.Equal(TransferMarket.Message(TransferResult.Accepted), screen.Message.Lines);
-                return;
+                return true;
             }
             d.Click(10, 10); // Meldung schließen
         }
-        Assert.Fail("kein Zuschuss angeboten");
+        return false;
     }
 }
