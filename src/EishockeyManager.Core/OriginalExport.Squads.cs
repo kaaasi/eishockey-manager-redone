@@ -21,8 +21,8 @@ public sealed partial class GameState
     ///   4 Markt, 6 frei), +0x1D Verein (Satzplatz, 0xFF keiner), +0x1F Vorlagen bzw. beim Torhüter Spielminuten.</item>
     /// <item>[ORIGINAL] Kaderplatz: Felder wie <c>ApplySlot</c>; Platz = Kaderfolge (Nr. − 1), Angebote eines Managers stehen im Marktsatz
     ///   mit Pool-Besitzer = Manager (A380, FILE41).</item>
-    /// <item>[APPROX] Spieler eines Managerkaders ohne Poolplatz (im Remake nicht beobachtet) bekommen einen freien Poolplatz; ist keiner
-    ///   frei, entfallen sie. Pool +0x13, +0x19, +0x1B, +0x1C, +0x1E und Kaderplatz +0x02, +0x1B bleiben 0 (ungedeutet).</item>
+    /// <item>[APPROX] Spieler eines Managerkaders ohne Poolplatz (im neuen Spiel alle 25) bekommen einen freien Ligaplatz ihrer Art
+    ///   (<see cref="PoolIndices"/>), dessen Poolspieler entfällt; ist keiner frei, entfallen sie. Pool +0x13, +0x19, +0x1B, +0x1C, +0x1E und Kaderplatz +0x02, +0x1B bleiben 0 (ungedeutet).</item>
     /// </list>
     /// </summary>
     private void WriteSquadsAndPool(OriginalSaveWriter w, int[] slotOf, byte[]? clubDatabase)
@@ -49,6 +49,9 @@ public sealed partial class GameState
             WritePoolEntry(pool, slot.Index, slot.Player, owner, club >= 0 && club < slotOf.Length ? slotOf[club] : 0xFF);
         }
 
+        var marketTwins = TransferMarket.Pool
+            .Where(s => s.Owner == PoolOwner.Market && indexOf.Any(e => e.Value == s.Index && !ReferenceEquals(e.Key, s.Player)))
+            .Select(s => s.Index).ToHashSet();
         for (var m = 0; m < Managers.Count; m++)
         {
             if (WorldOnly)
@@ -60,7 +63,9 @@ public sealed partial class GameState
                 var p = players[i];
                 if (!indexOf.TryGetValue(p, out var index))
                     continue; // [APPROX] kein Poolplatz mehr frei
-                WritePoolEntry(pool, index, p, (byte)m, slotOf[club.Index]);
+                // Ein Marktsatz gleichen Namens bleibt Marktsatz (FILE41: Pool 179 Besitzer 4 zugleich Kaderplatz 24).
+                if (!marketTwins.Contains(index))
+                    WritePoolEntry(pool, index, p, (byte)m, slotOf[club.Index]);
                 var at = m * 0x618 + i * OriginalSaveGame.SquadSlotLength;
                 WriteSlot(squad.AsSpan(at, OriginalSaveGame.SquadSlotLength), p, index, slotOf, club);
                 var s = squad.AsSpan(at, OriginalSaveGame.SquadSlotLength);
@@ -93,7 +98,7 @@ public sealed partial class GameState
     /// (Besitzer = Manager, FILE05: 25 vergeben). Im Remake-Spiel führt der Pool für den Managerverein eigene Einträge gleichen
     /// Namens (<see cref="TransferMarket.ReservePool"/> nimmt sie nur den Computervereinen weg): Ein Kaderspieler ohne eigenen
     /// Poolplatz bekommt den Platz seines Namens beim eigenen Verein. [APPROX] Fehlt auch der, nimmt er den letzten freien Platz
-    /// eines Computervereins (dieser Poolspieler entfällt im Export).
+    /// eines Computervereins seiner Art (dieser Poolspieler entfällt im Export); jeder Index gehört genau einem Spieler (R727P-04).
     /// </summary>
     private Dictionary<Player, int> PoolIndices()
     {
@@ -124,13 +129,39 @@ public sealed partial class GameState
                 else
                     missing.Add(p);
             }
-        var spare = new Stack<int>(TransferMarket.Pool
-            .Where(s => s.Owner == PoolOwner.Free && !managed.Contains(s.Club) && !squadIndex.Contains(s.Index)
-                        && TransferMarket.Listings.All(l => l.Player != s.Player))
-            .Select(s => s.Index).Order());
+        // [ORIGINAL] Die Managerkader stehen im Pool je Art ab dem zweiten Ligaplatz (FILE01/05/09: Torhüter 2…, Verteidiger 22…,
+        // Stürmer 98…, mehrere Manager hintereinander). [APPROX] Der Platz muss frei sein (kein Markt, nicht vergeben, kein
+        // Managerverein); sein Poolspieler entfällt im Export. Das Remake führt die Managerkader neben 199 Poolspielern
+        // (BuildPool), das Original mit ihnen in denselben 199 Plätzen – mehr Spieler, als der Pool fassen kann.
+        var layout = TransferPoolLayout.Original;
+        var (defenders, forwards) = layout.LeagueRoleStarts;
+        var listed = TransferMarket.Listings.Select(l => l.Player).ToHashSet(ReferenceEqualityComparer.Instance);
+        var spare = TransferMarket.Pool
+            .Where(s => s.Owner == PoolOwner.Free && s.Index <= layout.LeagueLast && !managed.Contains(s.Club)
+                        && !squadIndex.Contains(s.Index) && !listed.Contains(s.Player))
+            .Select(s => s.Index)
+            .OrderBy(i => i is 1 || i == defenders || i == forwards ? 1 : 0).ThenBy(i => i)
+            .ToList();
         foreach (var p in missing)
-            if (spare.TryPop(out var index))
-                map[p] = index;
+        {
+            // Zweiter Poolsatz gleichen Namens und gleicher Art (Import: gekaufter Spieler, dessen Poolsatz im Original auf dem Markt
+            // blieb; FILE41 Kaderplatz 24 → Pool 179, Besitzer 4): derselbe Spieler, kein Platz wird verdrängt.
+            var twin = TransferMarket.Pool.FirstOrDefault(s => s.Owner != PoolOwner.Taken && s.Player.Name == p.Name
+                                                               && s.Player.Role == p.Role && !squadIndex.Contains(s.Index));
+            if (twin is not null)
+            {
+                map[p] = twin.Index;
+                squadIndex.Add(twin.Index);
+                spare.Remove(twin.Index);
+                continue;
+            }
+            var at = spare.FindIndex(i => layout.RoleOf(i) == p.Role);
+            if (at < 0)
+                continue; // [APPROX] kein freier Ligaplatz dieser Art: Spieler entfällt
+            map[p] = spare[at];
+            squadIndex.Add(spare[at]);
+            spare.RemoveAt(at);
+        }
         return map;
     }
 
@@ -151,6 +182,8 @@ public sealed partial class GameState
         var e = pool.AsSpan(index * OriginalSaveGame.PoolRecordLength, OriginalSaveGame.PoolRecordLength);
         // [ORIGINAL] Namen aus der Datenbank kopiert das Original roh (Ö meist 0x99, BRANNSTRÖM als 0x5C; FILE01); andere Namen in der
         // Schreibweise der Stände (OriginalSaveWriter.Encode). Review 2026-11-10 B2.
+        // Das ganze Feld schreiben (Name, Endnull, Rest 0), sonst bleibt ein vorher hier geschriebener Name stehen (R727P-04).
+        e[..0x12].Clear();
         if (names.TryGetValue(p.Name, out var raw))
             raw.AsSpan(0, Math.Min(raw.Length, 0x11)).CopyTo(e);
         else

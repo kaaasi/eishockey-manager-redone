@@ -50,17 +50,6 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         }
     }
 
-    /// <summary>
-    /// B2 (Review 2026-11-10): Name eines Poolsatzes als Text verschieden (der Import gibt einem Poolspieler, dessen Name im Remake schon
-    /// vergeben ist, einen anderen). Gleicher Text mit anderen Bytes (Umlaut-Kodierung) ist keine erlaubte Abweichung.
-    /// </summary>
-    private static bool PoolNameChanged(Stand stand, int record, int at)
-    {
-        static string Name(OriginalSaveGame save, int record) => GameText.Decode(
-            NameBytes(save.Block("far:8253").AsSpan(record * OriginalSaveGame.PoolRecordLength, 0x12)));
-        return Name(stand.Original, record) != Name(stand.Exported, record);
-    }
-
     /// <summary>Kaderplatz im Original mit Reihe (+0x15 ≠ 0), aber nicht eingesetzt (+0x0A = 0): FILE37A–FILE46.</summary>
     private static bool LinedUpNotDressed(Stand stand, int slot, int at)
     {
@@ -125,7 +114,8 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("far:8253", 33, 0x19, 0x1C, "ungedeutet (Statistik der Poolspieler?)"),
         new("far:8253", 33, 0x1D, 0x1D, "Verein eines Nominierten (Land) bzw. ohne übernommenen Kader"),
         new("far:8253", 33, 0x1E, 0x20, "offene Meldung, Vorlagen/Minuten der Poolspieler (Feldkarte: nur Kaderspieler)"),
-        new("far:8253", 33, 0x00, 0x11, "Name: Poolspieler, die beim Import einem Remake-Namen weichen (jeder Name nur einmal)", If: PoolNameChanged),
+        // R727P-04: Die Regel „Name: Poolspieler, die beim Import einem Remake-Namen weichen“ ist entfallen; ihre 24 Treffer kamen
+        // vom Verdrängen eines fremden Poolsatzes durch einen Kaderspieler, dessen zweiter Poolsatz gleichen Namens auf dem Markt steht.
         new("far:8253", 33, 0x00, 0x11, "Name: Reste eines früheren Namens hinter dem Nullbyte (Export schreibt Nullbytes)", If: BehindPoolName),
         new("5DC3", 0x34, 0x02, 0x02, "ungedeutet"),
         new("5DC3", 0x34, 0x1A, 0x1B, "ungedeutet (Kaderplatz; Markt: Sperre)"),

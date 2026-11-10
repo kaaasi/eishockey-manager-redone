@@ -1009,6 +1009,13 @@ rückwärts); der Export ändert den Spielstand nicht (Test `OriginalExportTests
   Stände (Ö = 0x99, Ä/Ü/ß = `[ ] ~`; Spielernamen der Datenbank roh, BRANNSTRÖM mit 0x5C; Nachrichten wie FILE44); Managerkopf
   `0178+m` und Kopie `965B+0x13`; Spielstand-ID, Füllbyte und Startschlüssel aus SHA-256 über Kopf und Klartext (gleicher Stand →
   gleiche Datei, verschiedene Stände → verschiedene IDs; das Original lehnt eine in der Sitzung schon geladene ID ab).
+- **Nach der zweiten DOSBox-Probe (R727P-04, Nachprüfung N1):** Jedes Poolnamensfeld wird ganz geschrieben (Name, Endnull, Rest 0).
+  Ursache der Namensreste: Das Remake führt die Managerkader neben 199 Poolspielern, das Original in denselben 199 Plätzen (FILE01:
+  25 Sätze mit Besitzer 0). Ein Kaderspieler ohne Poolplatz (im neuen Spiel alle 25) belegt deshalb einen fremden Platz; er bekommt
+  jetzt wie im Original einen freien Ligaplatz seiner Art ab dem zweiten (FILE01/05/09: 2…, 22…, 98…; bisher die höchsten Plätze,
+  also Nationalspieler 180–199) bzw. den Platz eines Poolsatzes gleichen Namens (FILE41: Kaderplatz 24 → Pool 179 auf dem Markt).
+  `[APPROX]` Der verdrängte freie Poolspieler fehlt im Export (der Pool fasst nicht mehr); Markt-, vergebene und Nationalspieler
+  bleiben (Test `PoolNames_WholeField_OnePlayerPerIndex`).
 - **Vermutet, im Original zu prüfen** (`[APPROX]`): `A70D` letzter Zugteilnehmer, `A8A0` Monat, `07A9`+4 laufende Pokalrunde.
 - **Vorgabe des Spielstarts** (an allen Ständen gleich): `0120`, `017C`, `D0E4`, `022D`, `0246`, `02C0`, `021D`+13.
 - **Regeln der Rundreise (B5):** jede Regel ist an Block, Satzbereich und – wo die Begründung es verlangt – an Merkmal, Satz oder

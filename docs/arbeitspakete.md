@@ -94,8 +94,9 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
   (`original/spielstaende/`, Branch `daten/…`), der Nutzer lädt sie im Original (DOSBox) und hält Hauptmenü, Kader und Finanzen
   im Bild fest. Merge erst nach dieser Probe; Abweichungen werden Befunde des Spur-PR.
 - **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 umgesetzt (PR #727); Erstreview (#739) und DOSBox-Probe: B1–B5 im Fixlauf
-  10.11.2026 behoben (Teamwerte absolut, Umlaute, Kopf `0178`, ID aus Inhalt, gebundene Regeln); wartet auf Nachprüfung und erneute
-  Probe EXPORT01/02.
+  10.11.2026 behoben (Teamwerte absolut, Umlaute, Kopf `0178`, ID aus Inhalt, gebundene Regeln); Nachprüfung N1 (= R727P-04,
+  Namensreste/doppelt belegte Poolplätze) und N2 (saatabhängiger Fremdtest, R15-E2 = C) im zweiten Fixlauf behoben; wartet auf
+  Nachprüfung und dritte Probe EXPORT1C/2C (nur Mannschaft).
 
 ### Spur `abgleich-original` – Remake gegen Spielstandpaare des Originals (Vormerkung Vorschlag 1)
 

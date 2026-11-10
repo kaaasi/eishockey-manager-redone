@@ -200,6 +200,81 @@ public sealed class OriginalExportTests
         Assert.True(wrong.Count == 0, string.Join("; ", wrong));
     }
 
+    /// <summary>
+    /// R727P-04 (Nachprüfung 2026-11-10 N1): Jedes Namensfeld im Pool (far:8253 +0x00–0x11) trägt bis zur Endnull genau den Namen
+    /// des Remake-Spielers an diesem Index und danach nur Nullbytes – für einen neuen Stand und nach n Spieltagen. Jeder Index gehört
+    /// genau einem Spieler: Die Kaderplätze des Managers (5DC3 +0x0F) sind verschieden; ein Kaderspieler ohne eigenen Poolplatz
+    /// verdrängt nur einen freien Ligaspieler seiner Art (nie Markt, vergeben oder Nationalspieler, Plätze 180–199), und zwar wie
+    /// im Original ab dem zweiten Platz der Art (FILE01/05/09: Managerspieler auf 2…, 22…, 98…).
+    /// </summary>
+    [GameDataTheory]
+    [InlineData(2, 0)]
+    [InlineData(5, 0)]
+    [InlineData(5, 22)]
+    public void PoolNames_WholeField_OnePlayerPerIndex(int clubIndex, int matchDays)
+    {
+        var raw = RawDatabase();
+        var setup = new GameSetup();
+        setup.AddManager(new ManagerSetup { Name = "Joerg", Head = 6, ClubIndex = clubIndex });
+        var game = NewGame.Create(ClubDatabase.Parse(raw), setup, Seed);
+        for (var d = 0; d < matchDays; d++)
+            TestSeason.PlayMatchDay(game);
+        Assert.Equal(matchDays, game.PlayedMatchDays);
+
+        var save = OriginalSaveGame.Read(OriginalExport.Export(game, raw));
+        var pool = save.Block("far:8253");
+        var squad = save.Block("5DC3");
+        var names = OriginalExport.DatabasePlayerNames(raw);
+        var layout = TransferPoolLayout.Original;
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        var expected = game.TransferMarket.Pool.ToDictionary(s => s.Index, s => s.Player);
+        var poolSlots = game.TransferMarket.Pool.ToDictionary(s => s.Index);
+        var squadIndices = new List<int>();
+        var players = club.Players.Take(OriginalSaveGame.SquadSlotsPerManager).ToList();
+        for (var k = 0; k < players.Count; k++)
+        {
+            int index = squad[k * OriginalSaveGame.SquadSlotLength + 0x0F];
+            squadIndices.Add(index);
+            expected[index] = players[k];
+        }
+        Assert.Equal(players.Count, squadIndices.Distinct().Count());
+        Assert.DoesNotContain(0, squadIndices);
+
+        var wrong = new List<string>();
+        for (var i = 1; i < layout.Size; i++)
+        {
+            var field = pool.AsSpan(i * OriginalSaveGame.PoolRecordLength, 0x12).ToArray();
+            var name = expected[i].Name;
+            var want = new byte[0x12];
+            var bytes = names.TryGetValue(name, out var dbBytes) ? dbBytes : OriginalSaveWriter.Encode(name);
+            bytes.AsSpan(0, Math.Min(bytes.Length, 0x11)).CopyTo(want);
+            if (!field.SequenceEqual(want))
+                wrong.Add($"{i} {name}: {Convert.ToHexString(field)}");
+        }
+        Assert.True(wrong.Count == 0, $"{wrong.Count} Namensfelder falsch: {string.Join("; ", wrong.Take(10))}");
+
+        // Verdrängt werden nur freie Ligaspieler gleicher Art; jeder andere Poolspieler bleibt an seinem Platz.
+        var own = players.Where(p => game.TransferMarket.Pool.Any(s => ReferenceEquals(s.Player, p))).ToHashSet();
+        var displaced = new List<string>();
+        for (var k = 0; k < players.Count; k++)
+        {
+            var index = squadIndices[k];
+            var slot = poolSlots[index];
+            if (ReferenceEquals(slot.Player, players[k]) || slot.Player.Name == players[k].Name)
+                continue;
+            Assert.DoesNotContain(players[k], own);
+            Assert.Equal(PoolOwner.Free, slot.Owner);
+            Assert.True(index <= layout.LeagueLast, $"{players[k].Name} verdrängt Nationalspieler {slot.Player.Name} auf {index}");
+            Assert.Equal(players[k].Role, layout.RoleOf(index));
+            Assert.DoesNotContain(game.TransferMarket.Listings, l => ReferenceEquals(l.Player, slot.Player));
+            displaced.Add(slot.Player.Name);
+        }
+        foreach (var listing in game.TransferMarket.Listings.Where(l => l.Seller is null))
+            Assert.Contains(listing.Player, expected.Values);
+        Assert.All(Enumerable.Range(layout.FirstNational, layout.Size - layout.FirstNational),
+            i => Assert.Same(poolSlots[i].Player, expected[i]));
+    }
+
     private static int LeagueStrength(ReadOnlySpan<byte> record) =>
         (record[0x18] + record[0x19] + record[0x1A] + record[0x1B] + record[0x1C] + record[0x1D]) / 6;
 
