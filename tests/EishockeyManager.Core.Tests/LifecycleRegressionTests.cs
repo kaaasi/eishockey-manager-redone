@@ -51,8 +51,11 @@ public class LifecycleRegressionTests
         Assert.Equal(players, game.Clubs[game.ActiveManager.ClubIndex].Players);
     }
 
+    // Spur kader Teil 3 (R204, R15-D4 = A): geändert – vorher „bleibt als Vertragsloser verpflichtbar“ (Remake-Ergänzung, Liste
+    // zum Preis 0). Wie im Original (Datei 0x27DE3–0x27E9D, FILE44 → FILE46 KJELLBERG) steht er nicht auf der Liste; Belege und
+    // Mehrsaisonprobe in KaderVertragsloseTests.
     [Fact]
-    public void R204_ExpiredPlayerRemainsAvailableAsFreeAgentAndCanJoinWithNewContract()
+    public void R204_ExpiredPlayerBecomesFreeAgentButIsNotListed()
     {
         var game = TestGames.Create();
         FinishSeason(game);
@@ -61,17 +64,8 @@ public class LifecycleRegressionTests
         player.ContractYears = 1;
         game.StartNextSeason();
         Assert.Contains(player, game.TransferMarket.FreeAgents);
-        var listing = Assert.Single(game.TransferMarket.Listings, l => l.Player == player);
-        Assert.Equal(0, listing.Price);
-        Assert.Equal(TransferResult.Impossible, game.TransferMarket.Buy(game, game.ActiveManager, listing, 1, true));
-        var lineup = club.Lineup.Players.ToArray();
-        Assert.Equal(TransferResult.Accepted, game.TransferMarket.Buy(game, game.ActiveManager, listing, 0, false));
-        Assert.Equal(lineup, club.Lineup.Players);
-        Assert.Contains(player, club.Players);
-        Assert.DoesNotContain(player, game.TransferMarket.FreeAgents);
-        Assert.Equal(Contracts.PurchaseYears, player.ContractYears); // 1 Jahr (0x42CB1, transfer-vertraege-komplett Teil 2)
-        Assert.True(player.MonthlySalary > 0);
-        Assert.Equal(TransferResult.Impossible, game.TransferMarket.Buy(game, game.ActiveManager, listing, 0, false));
+        Assert.DoesNotContain(player, club.Players);
+        Assert.DoesNotContain(game.TransferMarket.Listings, l => l.Player == player);
     }
 
     [Fact]

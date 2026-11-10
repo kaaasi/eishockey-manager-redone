@@ -426,6 +426,8 @@ public class GameModeTests
     // Spur kader Teil 1 (#698): neu – Jugend am Saisonende (0x26F20, Datei 0x2728C–0x27320) zieht je Manager und Saison zwei Zufallszahlen
     // und bringt ab 1995 Junioren in den Kader. Gegenprobe: Aufruf JoinSeasonEndYouth in StartSquadSeason entfernt → alter Wert.
     // Spur kader Teil 2 (A134): neu – Tendenz und Steuerbyte der Startkader (0x4907A, Datei 0x29996) ändern Startgehälter und Werte.
+    // Spur kader Teil 3 (R204): neu – Vertragslose aus Managervereinen kommen nicht mehr auf die Liste (Datei 0x27DE3–0x27E9D, 0x425B6;
+    // FILE44 → FILE46 KJELLBERG); andere Listenplätze, Käufe und Zufallsfolge. Gegenprobe: Ergänzung in StartSeason zurück → Wert von Teil 2.
     internal const string Mode4Reference =
         "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=57,CupWinner=4,GermanChampion=1,EuropeanCupWinner=0|2466933,400000|WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2356882,400000|WorldChampion=52,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2024688,500000|WorldChampion=52,CupWinner=18,GermanChampion=4,EuropeanCupWinner=0|1524564,400000|R776559153 C1809965060";
 

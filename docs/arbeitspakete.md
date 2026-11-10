@@ -79,7 +79,8 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
   3. **R204 (#699 Punkt 4, R15-D4 = A):** wie im Original – Vertragslose aus Managervereinen werden freie Poolspieler
      (Besitzer 6) und kommen nur über den Listenwechsel zurück; keine Einstellung.
 - **Modell:** Claude Opus 5.5. **Status:** PR #726 (Draft); Teil 1 (Jugend am Saisonende 0x26F20, #698) und Teil 2
-  (Tendenz der Startkader 0x4907A, A134) fertig, Teil 3 (R204) offen.
+  (Tendenz der Startkader 0x4907A, A134) und Teil 3 (R204: Vertragslose nicht auf der Liste, Datei 0x27DE3–0x27E9D; FILE46
+  KJELLBERG Pool +0x1A = 0, also nicht „Besitzer 6“) fertig; Review ausstehend.
 
 ### Spur `hok-export` – Remake-Spielstand als `*.HOK` (R14-D2 = B)
 

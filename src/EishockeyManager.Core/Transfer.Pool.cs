@@ -645,7 +645,8 @@ public sealed partial class TransferMarket
 
     /// <summary>
     /// Platz, den der Listenwechsel nicht räumt: eigener Spieler eines Managers ([ORIGINAL] Besitzer ≠ 4, 0x425F0) oder
-    /// [APPROX] ein Vertragsloser aus einem Managerverein (Remake-Ergänzung R204, <see cref="TransferMarket.StartSeason"/>).
+    /// [APPROX] ein Vertragsloser auf der Liste (nur Spielstände vor Runde 15: Remake-Ergänzung R204, seither entfernt,
+    /// <see cref="TransferMarket.StartSeason"/>).
     /// </summary>
     private static bool IsHeld(TransferListing listing) => listing.Seller is not null || listing.IsFreeAgent;
 

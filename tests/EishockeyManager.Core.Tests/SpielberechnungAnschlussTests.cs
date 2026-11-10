@@ -234,6 +234,8 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Spur kader Teil 2 (A134): neu – Tendenz und Steuerbyte der Startkader (0x4907A aus 0x42CB1, Datei 0x29996) ändern Startgehälter,
     // Spielerwerte und die Tendenz je Takt. Gegenprobe: RollTrend in ApplyStartSalaries entfernt → Wert von Teil 1.
     [GameDataTheory]
+    // Spur kader Teil 3 (R204): neu – Vertragslose aus Managervereinen kommen nicht mehr auf die Liste (Datei 0x27DE3–0x27E9D, 0x425B6;
+    // FILE44 → FILE46 KJELLBERG); andere Listenplätze, Käufe und Zufallsfolge. Gegenprobe: Ergänzung in StartSeason zurück → Wert von Teil 2.
     [InlineData(false, "69FE76E9EAAC0AB6")]
     [InlineData(true, "C0569EF9C1B17F34")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)

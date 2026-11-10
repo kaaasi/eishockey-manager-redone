@@ -263,6 +263,8 @@ public class JugendTeamsTests
     // geöffnet (Datei 0x565A7/0x43A93 → 0x54D5C → 0x55073 → 0x55204): Tagesabschluss 0x3ED01/0x3F833 je Manager auch für den
     // 10. September (Zinskonto, Werbeangebote, Bewertung, Börse), Listenwechsel-Wurf von Manager 0 vor dessen Menü; Jugend von Tag 0
     // weiter nach dem Menü. Anderer Zufallsverbrauch ab dem ersten Tag. Rückschaltprobe: Teil-1-Quellen von 4194e9d → alle alten Werte.
+    // Spur kader Teil 3 (R204): neu – Vertragslose aus Managervereinen kommen nicht mehr auf die Liste (Datei 0x27DE3–0x27E9D, 0x425B6;
+    // FILE44 → FILE46 KJELLBERG); andere Listenplätze, Käufe und Zufallsfolge. Gegenprobe: Ergänzung in StartSeason zurück → Wert von Teil 2.
     private const string ExpectedPassive =
         "0:Schueler:2/2/63;0:Jugend:2/2/65;0:Junioren:1/6/68;1:Schueler:3/2/52;1:Jugend:3/2/52;1:Junioren:2/2/52;2:Schueler:3/6/47;2:Jugend:3/6/44;2:Junioren:3/2/45;3:Schueler:3/6/42;3:Jugend:3/6/41;3:Junioren:3/6/41";
 }
