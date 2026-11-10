@@ -144,9 +144,11 @@ public sealed partial class GameState
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ springt der erste Tag der Saison zur WM.
         if (SkipToWorldCup())
             return steps;
+        var turnsTaken = true; // der erste Tag ist der des Halts: Seine Managerzüge sind gelaufen
         while (true)
         {
-            ProcessDay(CurrentDay, steps);
+            ProcessDay(CurrentDay, steps, turnsTaken);
+            turnsTaken = false;
             if (Phase is SeasonPhase.SeasonOver or SeasonPhase.GameOver)
                 return steps;
             CurrentDay++;
@@ -181,7 +183,8 @@ public sealed partial class GameState
     /// [APPROX] Tag 0 (Restlücke #688, Issue #699): Im Original beginnen Spiel und Saison mit Index und Zähler 0
     /// (Datei 0x565A1–0x565B0, 0x43A93), der erste Tageswechsel läuft vor dem ersten Menü (Datei 0x54D41 → 0x55073 → 0x55204,
     /// Zähler 1 = 10. September; FILE01: 1/1) mit Tagesabschluss 0x3ED01/0x3F833 je Manager. Das Remake rechnet an Tag 0 keinen
-    /// Tagesabschluss (<c>AdvanceFinance</c>: Finanztag &gt; 0) und den Listenwechsel-Wurf erst nach dem ersten Menü.
+    /// Tagesabschluss (<c>AdvanceFinance</c>: Finanztag &gt; 0) und den Tageswechsel erst nach dem ersten Menü (Spur tagesablauf
+    /// Teil 1, blockiert: fremde Testerwartungen).
     /// </summary>
     public bool DayOpened { get; private set; }
 
@@ -209,13 +212,18 @@ public sealed partial class GameState
     [ThreadStatic]
     internal static bool ManagerDayFlag;
 
-    private void ProcessDay(int day, List<SeasonStep> steps)
+    private void ProcessDay(int day, List<SeasonStep> steps) => ProcessDay(day, steps, turnsTaken: false);
+
+    /// <param name="turnsTaken">Hat die Zeitleiste an diesem Tag gehalten und sind die Managerzüge gelaufen (Würfe des
+    /// Listenwechsels bis zum letzten aktiven Manager schon beim Weitergeben, <see cref="RollListChangesThrough"/>)?</param>
+    private void ProcessDay(int day, List<SeasonStep> steps, bool turnsTaken)
     {
         ManagerDayFlag = false;
         try
         {
             OpenDay(day);
             DayOpened = false;
+            MainPathRemainingListChanges(day, turnsTaken);
             ProcessDayCore(day, steps);
         }
         finally

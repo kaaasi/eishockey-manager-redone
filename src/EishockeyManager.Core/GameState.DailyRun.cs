@@ -203,16 +203,57 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Hauptweg: an Tagen mit Ereignis je Managerzug der Wurf des Listenwechsels (<see cref="IsListChangeDay"/>). [APPROX] Im
-    /// Hot-Seat rechnet das Remake die Würfe aller Manager vor dem ersten Menü des Tages; im Original fällt der Wurf von Manager i
-    /// erst nach dem Menü von Manager i − 1 (Datei 0x54E3F–0x54EF4).
+    /// Hauptweg: an Tagen mit Ereignis je Managerzug der Wurf des Listenwechsels (<see cref="IsListChangeDay"/>), hier im
+    /// Tageswechsel die Würfe bis zum Zug des ersten aktiven Managers. [ORIGINAL] Datei 0x54E3F–0x54EF4: je Platz 0 … [0x386] − 1
+    /// der Wurf (Datei 0x54E65–0x54E7C), dann dessen Menü (Datei 0x54EB2); der Wurf von Manager i fällt also nach dem Menü von
+    /// Manager i − 1 (#699 Punkt 1). Die übrigen Würfe: beim Weitergeben des Zugs (<see cref="RollListChangesThrough"/>, aus
+    /// <c>PassTurn</c>), nach dem letzten Zug bzw. an Tagen ohne Halt vor den Spielen (<see cref="MainPathRemainingListChanges"/>).
+    /// [APPROX] Entlassene Manager (nur ältere Spielstände) würfeln mit dem Zug des nächsten aktiven Managers bzw. vor den Spielen.
     /// </summary>
-    private void MainPathListChanges(int day)
+    private void MainPathListChanges(int day) => RollListChanges(day, 0, FirstActiveSlot);
+
+    /// <summary>
+    /// Zug geht von Platz <paramref name="from"/> an Platz <paramref name="to"/>: Würfe der Plätze dazwischen und des neuen Platzes
+    /// (Datei 0x54E3F–0x54EF4, siehe <see cref="MainPathListChanges"/>).
+    /// </summary>
+    private void RollListChangesThrough(int from, int to) => RollListChanges(CurrentDay, from + 1, to);
+
+    /// <summary>
+    /// Vor den Spielen eines Tages die Würfe, die noch fehlen: nach dem letzten Managerzug die Plätze dahinter
+    /// (<paramref name="turnsTaken"/>), an Tagen ohne Halt alle nach dem ersten aktiven Manager. Je Tag mit Ereignis würfelt so jeder
+    /// Platz genau einmal.
+    /// </summary>
+    private void MainPathRemainingListChanges(int day, bool turnsTaken) =>
+        RollListChanges(day, (turnsTaken ? LastActiveSlot : FirstActiveSlot) + 1, Managers.Count - 1);
+
+    private void RollListChanges(int day, int first, int last)
     {
-        if (!IsListChangeDay(day))
+        if (WorldOnly || InWorldCupLoop(day) || !IsListChangeDay(day))
             return;
-        for (var i = 0; i < Managers.Count; i++)
+        for (var i = first; i <= last; i++)
             TransferMarket.ListChangeTurn(this);
+    }
+
+    private int FirstActiveSlot
+    {
+        get
+        {
+            for (var i = 0; i < Managers.Count; i++)
+                if (!Managers[i].Dismissed)
+                    return i;
+            return 0;
+        }
+    }
+
+    private int LastActiveSlot
+    {
+        get
+        {
+            for (var i = Managers.Count - 1; i >= 0; i--)
+                if (!Managers[i].Dismissed)
+                    return i;
+            return Managers.Count - 1;
+        }
     }
 
     /// <summary>Datum, an dem die Sommerpause endet. [ORIGINAL] Datei 0x56570–0x56593: Tag DGROUP 0x5A20 = 9, Monat 0x5A1C = 8.</summary>

@@ -12,7 +12,8 @@ Das Hauptmenü zeigt den Tag **T** des nächsten eigenen Spiels.
   `TrainedUntil == (Saison, T)`, `FinanceDay == T`): Tagesabschluss, Takt 0x07169 mit Training und Markt, Neuaufstellung und
   Listenwechsel der Tage mit Ereignis. `[ORIGINAL]` Datei 0x55204–0x552D3 (nach den Spielen von T − 1) und 0x54D68–0x54E7C liegen
   vor dem Menü 0x44E22 (Datei 0x54EB2); die Spielstände des Originals sind dort gesichert (Zähler 0x3B7 = T + 1).
-- **Nicht** gerechnet sind 0x952C des Bundestrainers (Datei 0x54F9C, nach den Menüs), Schuldenprüfung und die Spiele von T.
+- **Nicht** gerechnet sind 0x952C(5, 1) des Bundestrainers (Datei 0x54F9C, nach den Menüs), die Listenwechsel-Würfe der
+  Manager nach dem ersten (je beim Weitergeben des Zugs), Schuldenprüfung und die Spiele von T.
 - Jetzt bedienen die Manager ihre Bildschirme. Öffnen und Schließen ändert nichts; nur ausdrückliche Handlungen
   (Plan zeichnen, Kauf, Vertrag, Bank …) wirken – und zwar sofort.
 
@@ -29,7 +30,7 @@ Das Hauptmenü zeigt den Tag **T** des nächsten eigenen Spiels.
 | 4 | Spiele des Tages: Liga (mit Spieltagsabrechnung), Play-Offs/Aufstiegsrunde, weitere Wettbewerbe | `SeasonFlow.ProcessDay` |
 | 5 | Tageswechsel zum nächsten Tag: Finanzen (Tages-, Wochen-, Monatswechsel; Stadionbau am Zähler ≡ 0), Wanderung | `GameState.Integration.cs` → `OnDayOpen(day)` |
 | 6 | **Tagesablauf 0x07169** nur am Takttag (Zähler 0x3B7 ≡ 0/4 mod 7, Mittwoch und Samstag; #678) je Manager: Markt (Verfall, Gebote, Angebote), Verträge, Heilung, **Training**, Tendenz, Aufstellung | `MainPathDailyRun(day)` (`GameState.DailyRun.cs`) |
-| 7 | Tage mit Ereignis: Neuaufstellung je Satz (0x54D9E), Listenwechsel ein Wurf je Managerzug (0x54E71) | `MainPathEventDayLineups`, `MainPathListChanges` |
+| 7 | Tage mit Ereignis: Neuaufstellung je Satz (0x54D9E); Listenwechsel-Wurf bis zum ersten Managerzug (0x54E71), die weiteren beim Weitergeben des Zugs bzw. vor den Spielen (#699) | `MainPathEventDayLineups`, `MainPathListChanges`, `PassTurn` |
 
 **Sommerpause** (Saisonwechsel, `GameState.RunSummerBreak`; `[ORIGINAL]` Datei 0x564D2–0x56593, #688): nach dem Kaderwechsel je
 Kalendertag vom 1. Mai bis 9. September (Zähler 234–365: Datei 0x26F55 setzt 233, 0x564BC zählt weiter) Stadionbau (Zähler ≡ 0),
@@ -38,15 +39,16 @@ danach die Werbeangebote des Saisonbeginns (0x56650). Gebucht wird im Buch der n
 Tagesabschluss (die WM-Schleife schließt zuletzt den 29. April ab, Zähler 232; R688S-01): elf Monatsabschlüsse je Jahr, kein April.
 
 Nach dem 13. April ersetzt die WM-Schleife die Schritte 5–7 (`CupsNational.WorldCupLoop.cs`: (c) des Vortags, (d)). Ein neues
-Spiel, der erste Tag einer Saison und Spielstände vor Schema 45 holen den Tageswechsel vor den Spielen des Tages nach.
+Spiel, der erste Tag einer Saison und Spielstände vor Schema 45 holen den Tageswechsel vor den Spielen des Tages nach (`[APPROX]`
+Tag 0, #699: im Original vor dem ersten Menü mit Tagesabschluss zum 10. September).
 
 Daraus folgt:
 
 - **Training → Plan ändern:** Am angezeigten Takttag T ist dessen Training schon gerechnet; ein im Menü geänderter Plan gilt ab
   dem nächsten Takt (wie im Original). Test: `PassiveScreenTests.PlanChangedOnPausedTrainingDay_AppliesFromNextTick`.
 - Der Transfermarkt reagiert auf einen Ligaspieltag am **nächsten Takttag**, vor dessen Menü.
-- `[APPROX]` Im Hot-Seat rechnet das Remake die Listenwechsel-Würfe aller Manager vor dem ersten Menü des Tages (Original: Wurf
-  von Manager i nach dem Menü von Manager i − 1).
+- Im Hot-Seat fällt der Listenwechsel-Wurf von Manager i nach dem Menü von Manager i − 1 (`[ORIGINAL]` Datei 0x54E3F–0x54EF4,
+  #699); der Markt kann sich zwischen zwei Zügen ändern.
 - Der Tageslauf wird **nur** aus `GameState.Integration.cs` aufgerufen (Hauptweg) bzw. aus der WM-Schleife
   (`CupsNational.WorldCupLoop.cs`).
   Neue Tages-, Wochen- oder Saisonereignisse dort anschließen, nie in einem `Screen.Enter()`.
