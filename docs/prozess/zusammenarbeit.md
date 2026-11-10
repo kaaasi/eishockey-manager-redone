@@ -93,7 +93,8 @@ schreibt zuerst einen Übernahmekommentar („übernommen ab SHA …, Tests …�
      („Delta geprüft durch Leitstelle, nur P2/P3“).
   5. **P3-Befunde** bekommen keinen eigenen Lauf: Die Leitstelle legt sie als Issue (Label `P3`) an und gibt sie gesammelt
      an `pruefung-karte` bzw. den letzten Lauf der Runde. Ein Fixlauf, der ohnehin läuft, darf P3 mitnehmen.
-  6. Das **Gesamtreview** am Rundenende (ChatGPT, Vollprüfung) bleibt unverändert das letzte Netz.
+  6. Das **Gesamtreview** am Rundenende (ChatGPT) bleibt das letzte Netz, seit 10.11.2026 risikoorientiert (`review-anfrage.md`);
+     die Vollprüfung erfolgt einmal als Abschlussprüfung, wenn alles umgesetzt ist.
   7. **Befund nur mit Beleg (Nutzer 10.11.2026):** Ein Befund, der eine Lesart von em.exe, einen Wert aus dem Original oder
      „fehlt im Remake“ behauptet, nennt einen **ausführbaren Beleg**: roter Test oder Probe (Befehl, Spielstand, Ergebnis), bei
      „fehlt“ zusätzlich die Codesuche (`grep`-Befehl ohne Treffer). Ohne Beleg höchstens P3 („Verdacht“).
