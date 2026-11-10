@@ -30,34 +30,34 @@ Zur Nutzerentscheidung C wurde `em.exe` Datei `0x54D41–0x54D65` erneut gelesen
 
 ### Modus-4-Referenzwert: einzelne geänderte Bestandteile
 
-Die Tabelle vergleicht jedes seit Base geänderte Feld mit den vollständigen tatsächlichen Ausgaben einzelner Regelrückmutationen V01–V06. Ein abweichender Wert belegt die Abhängigkeit von der jeweils genannten Regel unter Head-Bedingungen; er beweist keine alleinige Ursache der Änderung. Die Konto-Vorbedingung des Tests wurde hierbei nicht zurückgesetzt. `offen` bedeutet, dass keine dieser Mutationen den Wert verändert hat.
+Die Tabelle vergleicht jedes seit Base geänderte Feld mit den vollständigen tatsächlichen Ausgaben einzelner Regelrückmutationen V01–V09. Ein abweichender Wert belegt die Abhängigkeit von der jeweils genannten Regel unter Head-Bedingungen; er beweist keine alleinige Ursache der Änderung. Die Konto-Vorbedingung des Tests wurde hierbei nicht zurückgesetzt. `offen` bedeutet, dass keine dieser Mutationen den Wert verändert hat.
 
 | Bestandteil | Base | Head | Abweichender Wert unter Rückmutation |
 |---|---:|---:|---|
-| Saison 1 WorldChampion | 52 | 54 | **offen** |
-| Saison 1 CupWinner | 11 | 12 | V04: 0; V05: 15; V06: 16 |
-| Saison 1 GermanChampion | 1 | 0 | V02: 1; V05: 4; V06: 3 |
-| Saison 1 Konto 0 | 96040 | 1100000 | V04: 1168751 |
-| Saison 2 WorldChampion | 52 | 57 | V02: 52; V03: 52; V04: 63; V05: 52; V06: 53 |
-| Saison 2 EuropeanCupWinner | 1 | 0 | V02: 1; V05: 4; V06: 3 |
-| Saison 2 Konto 0 | 1402820 | 2429195 | V01: 2443220; V02: 2500446; V03: 2267967; V04: 2273847; V05: 2338465; V06: 2382267 |
-| Saison 3 WorldChampion | 52 | 63 | V02: 52; V03: 54; V04: 52; V06: 52 |
-| Saison 3 CupWinner | 3 | 0 | V02: 4; V03: 1; V04: 16; V05: 15; V06: 16 |
-| Saison 3 EuropeanCupWinner | 1 | 0 | V02: 11; V03: 1; V04: 1; V05: 4; V06: 3 |
-| Saison 3 Konto 0 | 2154396 | 2301516 | V01: 2151523; V02: 2564297; V03: 2107624; V04: 2153793; V05: 2412715; V06: 2397123 |
-| Saison 4 WorldChampion | 54 | 52 | V02: 54; V05: 54; V06: 54 |
-| Saison 4 CupWinner | 3 | 0 | V02: 4; V03: 18; V04: 14; V05: 7; V06: 11 |
-| Saison 4 GermanChampion | 13 | 0 | V02: 12; V03: 1; V04: 4; V05: 7; V06: 9 |
-| Saison 4 Konto 0 | 2718434 | 1969543 | V01: 1680547; V02: 2609090; V03: 1975466; V04: 2029069; V05: 2275209; V06: 2335622 |
-| Saison 4 Konto 1 | 400000 | 500000 | V02: 400000; V04: 400000; V05: 400000; V06: 400000 |
-| Saison 5 WorldChampion | 54 | 52 | V02: 63; V04: 54; V05: 63; V06: 53 |
-| Saison 5 CupWinner | 0 | 18 | V02: 4; V03: 10; V04: 8; V05: 1; V06: 0 |
-| Saison 5 GermanChampion | 9 | 4 | V02: 0; V03: 15; V04: 8; V05: 15; V06: 0 |
-| Saison 5 EuropeanCupWinner | 13 | 0 | V02: 11; V03: 1; V04: 4; V05: 7; V06: 9 |
-| Saison 5 Konto 0 | 2952676 | 1462802 | V01: 1033390; V02: 2102474; V03: 1760179; V04: 400000; V05: 1724952; V06: 400000 |
+| Saison 1 WorldChampion | 52 | 54 | V08: 52; V09: 52 |
+| Saison 1 CupWinner | 11 | 12 | V04: 0; V05: 15; V06: 16; V07: 0; V08: 10 |
+| Saison 1 GermanChampion | 1 | 0 | V02: 1; V05: 4; V06: 3; V08: 1 |
+| Saison 1 Konto 0 | 96040 | 1100000 | V04: 1168751; V08: 1200000 |
+| Saison 2 WorldChampion | 52 | 57 | V02: 52; V03: 52; V04: 63; V05: 52; V06: 53; V07: 52; V09: 52 |
+| Saison 2 EuropeanCupWinner | 1 | 0 | V02: 1; V05: 4; V06: 3; V07: 2; V08: 1 |
+| Saison 2 Konto 0 | 1402820 | 2429195 | V01: 2443220; V02: 2500446; V03: 2267967; V04: 2273847; V05: 2338465; V06: 2382267; V07: 2357615; V08: 2120952; V09: 2343530 |
+| Saison 3 WorldChampion | 52 | 63 | V02: 52; V03: 54; V04: 52; V06: 52; V07: 52; V09: 53 |
+| Saison 3 CupWinner | 3 | 0 | V02: 4; V03: 1; V04: 16; V05: 15; V06: 16; V08: 5; V09: 11 |
+| Saison 3 EuropeanCupWinner | 1 | 0 | V02: 11; V03: 1; V04: 1; V05: 4; V06: 3; V08: 11 |
+| Saison 3 Konto 0 | 2154396 | 2301516 | V01: 2151523; V02: 2564297; V03: 2107624; V04: 2153793; V05: 2412715; V06: 2397123; V07: 3047963; V08: 1995725; V09: 2747853 |
+| Saison 4 WorldChampion | 54 | 52 | V02: 54; V05: 54; V06: 54; V07: 53; V08: 55 |
+| Saison 4 CupWinner | 3 | 0 | V02: 4; V03: 18; V04: 14; V05: 7; V06: 11; V07: 1; V08: 29; V09: 18 |
+| Saison 4 GermanChampion | 13 | 0 | V02: 12; V03: 1; V04: 4; V05: 7; V06: 9; V08: 5; V09: 9 |
+| Saison 4 Konto 0 | 2718434 | 1969543 | V01: 1680547; V02: 2609090; V03: 1975466; V04: 2029069; V05: 2275209; V06: 2335622; V07: 2787899; V08: 500000; V09: 2658866 |
+| Saison 4 Konto 1 | 400000 | 500000 | V02: 400000; V04: 400000; V05: 400000; V06: 400000; V07: 400000; V08: 400000; V09: 400000 |
+| Saison 5 WorldChampion | 54 | 52 | V02: 63; V04: 54; V05: 63; V06: 53; V07: 54; V08: 53; V09: 63 |
+| Saison 5 CupWinner | 0 | 18 | V02: 4; V03: 10; V04: 8; V05: 1; V06: 0; V07: 1; V09: 0 |
+| Saison 5 GermanChampion | 9 | 4 | V02: 0; V03: 15; V04: 8; V05: 15; V06: 0; V07: 12; V08: 10; V09: 11 |
+| Saison 5 EuropeanCupWinner | 13 | 0 | V02: 11; V03: 1; V04: 4; V05: 7; V06: 9; V08: 5; V09: 11 |
+| Saison 5 Konto 0 | 2952676 | 1462802 | V01: 1033390; V02: 2102474; V03: 1760179; V04: 400000; V05: 1724952; V06: 400000; V07: 2714316; V08: 400000; V09: 2161046 |
 | Saison 5 Konto 1 | -7124085 | 400000 | V02: 500000; V03: 500000; V04: 500000; V05: 500000; V06: 500000 |
-| Zufallszustand R | 677985496 | 1179893277 | V02: 1558375281; V03: 218696157; V04: 1047374504; V05: 1140664819; V06: 499199781 |
-| Zufallszustand C | 1798453752 | 1809965060 | V02: 893101215; V03: 836845586; V04: 406943591; V05: 1372752275; V06: 1028139438 |
+| Zufallszustand R | 677985496 | 1179893277 | V02: 1558375281; V03: 218696157; V04: 1047374504; V05: 1140664819; V06: 499199781; V07: 1530654188; V08: 1146779949; V09: 2063705941 |
+| Zufallszustand C | 1798453752 | 1809965060 | V02: 893101215; V03: 836845586; V04: 406943591; V05: 1372752275; V06: 1028139438; V07: 1237843630; V08: 167583934; V09: 1067210724 |
 
 ### Einzelne Kopfleser-Sollwerte
 
@@ -122,6 +122,34 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 
 | Mutation | Regeländerung | Ausgeführter Test beziehungsweise Datenzeile | Ergebnis |
 |---|---|---|---|
+| A01 | HOK-Endung nicht erkennen | `EishockeyManager.UI.Tests.HokImportAccessTests.List_MarksHokFilesAsOriginal` | rot |
+| A02 | fremdes Format als Prüfsummenfehler melden | `EishockeyManager.UI.Tests.HokImportAccessTests.TryImport_RejectsNonOriginalData_WithoutChecksumFlag` | rot |
+| A03 | getippten HOK nicht laden | `EishockeyManager.UI.Tests.HokImportAccessTests.LoadDialog_ImportsHok_ByTypedName` | rot |
+| A04 | wiederholten Klick ignorieren | `EishockeyManager.UI.Tests.HokImportAccessTests.LoadDialog_ImportsHok_ByClickTwice` | rot |
+| A05 | auch bei gleichem Namen HOK bevorzugen | `EishockeyManager.UI.Tests.HokImportAccessTests.SameName_TypedLoadsRemakeSave_ClickOnHokImports` | rot |
+| A06 | angeklickten Eintrag beim Ausführen vergessen | `EishockeyManager.UI.Tests.HokImportAccessTests.SameName_TypedThenSingleClickOnHok_Imports` | rot |
+| A07 | Prüfsummenfehler nicht als Mogelguru anzeigen | `EishockeyManager.UI.Tests.HokImportAccessTests.ChecksumError_ShowsMogelguru_AndKeepsRunningGame` | rot |
+| A08 | Prüfsummenfehler nicht kennzeichnen | `EishockeyManager.UI.Tests.HokImportAccessTests.TryImport_FlagsChecksumError_AndImportsValidSave` | rot |
+| A09 | HOK beim Speichern auswählbar machen | `EishockeyManager.UI.Tests.HokImportAccessTests.SaveDialog_DoesNotSelectHok` | rot |
+| B01 | Neuaufstellung nur bei Verletzung | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.AutoLineup_AfterMatchWithoutInjury_LinesUpAgain` | rot |
+| B02 | immer nach dem Spiel auffüllen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.ManualLineup_AfterMatchWithoutInjury_Unchanged` | rot |
+| B03 | DEB-Pokal zur Liga zählen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.CupMatch_CountsInCupFields` | rot |
+| B04 | Europapokal zur Liga zählen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.EuropeanCupMatch_CountsInEuropeFields` | rot |
+| B05 | Restwettbewerbe als Pokal zählen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.Postseason_CountsAsLeague(competition: Relegation)` | rot |
+| B05 | Restwettbewerbe als Pokal zählen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.Postseason_CountsAsLeague(competition: Playoff)` | rot |
+| B06 | Vereinszähler beim Wechsel behalten | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.Join_ResetsClubCountersOnly` | rot |
+| B07 | Starttabellenplatz auf eins setzen | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.FirstMatchDay_NewGame_UsesRankZero` | rot |
+| B08 | Tabellenplatz bei Speicherung um eins verschieben | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.MultiSeason_TableRankAndCompetitionCounters(active: True)` | rot |
+| B08 | Tabellenplatz bei Speicherung um eins verschieben | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.MultiSeason_TableRankAndCompetitionCounters(active: False)` | rot |
+| B09 | migrierten Tabellenplatz um eins verschieben | `EishockeyManager.Core.Tests.KaderStartRunde14Teil2bTests.Migration_OldSave_LeagueOnlyAndTableRankFromRankSlots` | rot |
+| C01 | angebotenen Spieler im Kader lassen | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.Offer_PlayerLeavesSquad_SlotsMoveUp_ListingWithSeller` | rot |
+| C02 | Rückkehrer hinten einordnen | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.Withdraw_ReturnsPlayerByRole_NotInLineup_ContractUnchanged` | rot |
+| C03 | Kadergrenze beim Rückzug erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.Withdraw_FullSquad_StaysOnMarket` | rot |
+| C04 | Gehalt gelisteter Spieler auslassen | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.ListedPlayer_KeepsCostingSalary` | rot |
+| C05 | Verkaufszahlung um eins erhöhen | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.SoldListedPlayer_GoesToBuyer_SellerPaid` | rot |
+| C06 | Rückkehrer am Saisonwechsel nicht einsortieren | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.FourSeasonChanges_ListedPlayersReturn_NoDuplicates(active: False)` | grün |
+| C06 | Rückkehrer am Saisonwechsel nicht einsortieren | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.FourSeasonChanges_ListedPlayersReturn_NoDuplicates(active: True)` | rot |
+| C06 | Rückkehrer am Saisonwechsel nicht einsortieren | `EishockeyManager.Core.Tests.KaderStartTeil2cTests.SeasonChange_UnsoldListedPlayerReturnsByRole_NotInLineup_ContractCountedDown` | rot |
 | H01 | Jahr um eins erhöhen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_ReturnsYearMatchDayAndManagers` | rot |
 | H02 | vollen Kopf ablehnen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_ReadsOnlyTheHeader_NoLengthOrChecksumCheck` | rot |
 | H03 | maximale Managerzahl auf drei setzen | `EishockeyManager.Formats.Tests.OriginalSaveHeaderTests.TryRead_LimitsManagersToFour` | rot |
@@ -323,6 +351,9 @@ Die Entscheidungsliste und die übrigen Einzelergebnisse aus Teil 1–3 gelten w
 | V04 | Hauptwegtakt mit Tag statt Zähler | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V05 | Wanderung mit Tag statt Zähler | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | V06 | zentralen Tageszähler auf Remake-Tag zurücksetzen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
+| V07 | Listenwechsel im Hauptweg auslassen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
+| V08 | Tageslauf jeden Tag ausführen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
+| V09 | WM-Schleife einen Tag früher beginnen | `EishockeyManager.Core.Tests.GameModeTests.Mode4_ReferenceValues_Unchanged` | rot |
 | W01 | WM-Tageslauf nach WM-Spielen auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.Mode4_NoCoach_HealingFollowsDayCounter` | rot |
 | W01 | WM-Tageslauf nach WM-Spielen auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.ClubOnly_WorldCupPeriod_NoTrainingNoMarketNoDrift(seed: 3)` | grün |
 | W01 | WM-Tageslauf nach WM-Spielen auslassen | `EishockeyManager.Core.Tests.NationalteamRunde14Teil4Tests.ClubOnly_WorldCupPeriod_NoTrainingNoMarketNoDrift(seed: 11)` | grün |
@@ -374,7 +405,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `AutoLineupTeil8Tests.cs · AutoLineupTeil8Tests.Migration_31To32_KeepsHandMadeLineup` | geändert | offen |
 | `DeadlineRegressionTests.cs · DeadlineRegressionTests.R208_AnswerChecksDeadlineAtPausedUnprocessedDay` | geändert | offen |
 | `FinanceCalibrationTests.cs · FinanceCalibrationTests.PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation` | neu | offen |
-| `GameModeTests.cs · GameModeTests.Mode4_ReferenceValues_Unchanged` | geändert | rot: V01, V02, V03, V04, V05, V06 |
+| `GameModeTests.cs · GameModeTests.Mode4_ReferenceValues_Unchanged` | geändert | rot: V01, V02, V03, V04, V05, V06, V07, V08, V09 |
 | `HeimspielStatistikTests.cs · HeimspielStatistikTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | offen |
 | `HotSeatTests.cs · HotSeatTests.DismissalDuringDay_ExcludedFromNextDay` | geändert | offen |
 | `IntegrationRunde9Tests.cs · IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported` | geändert | offen |
@@ -390,15 +421,15 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.NoSpecialCase_PlaceZeroUntouched` | neu | offen |
 | `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.StartLeagueDraw_NeverPlaceZero_ChampionPossible` | neu | offen |
 | `KaderStartRunde14Teil2Tests.cs · KaderStartRunde14Teil2Tests.ClubTactics_StartAtZero_AutoLineAfterFirstMatchDay` | neu | offen |
-| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.AutoLineup_AfterMatchWithoutInjury_LinesUpAgain` | neu | offen |
-| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.ManualLineup_AfterMatchWithoutInjury_Unchanged` | neu | offen |
-| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.CupMatch_CountsInCupFields` | neu | offen |
-| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.EuropeanCupMatch_CountsInEuropeFields` | neu | offen |
-| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.Postseason_CountsAsLeague` | neu | offen |
-| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.Join_ResetsClubCountersOnly` | neu | offen |
-| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.FirstMatchDay_NewGame_UsesRankZero` | neu | offen |
-| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.MultiSeason_TableRankAndCompetitionCounters` | neu | offen |
-| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.Migration_OldSave_LeagueOnlyAndTableRankFromRankSlots` | neu | offen |
+| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.AutoLineup_AfterMatchWithoutInjury_LinesUpAgain` | neu | rot: B01 |
+| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.ManualLineup_AfterMatchWithoutInjury_Unchanged` | neu | rot: B02 |
+| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.CupMatch_CountsInCupFields` | neu | rot: B03 |
+| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.EuropeanCupMatch_CountsInEuropeFields` | neu | rot: B04 |
+| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.Postseason_CountsAsLeague` | neu | rot: B05 |
+| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.Join_ResetsClubCountersOnly` | neu | rot: B06 |
+| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.FirstMatchDay_NewGame_UsesRankZero` | neu | rot: B07 |
+| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.MultiSeason_TableRankAndCompetitionCounters` | neu | rot: B08 |
+| `KaderStartRunde14Teil2bTests.cs · KaderStartRunde14Teil2bTests.Migration_OldSave_LeagueOnlyAndTableRankFromRankSlots` | neu | rot: B09 |
 | `KaderStartRunde14Teil6Tests.cs · KaderStartRunde14Teil6Tests.LeftClick_WithoutLine_NoLineSelected_NothingChanges` | neu | offen |
 | `KaderStartRunde14Teil6Tests.cs · KaderStartRunde14Teil6Tests.LeftClick_FirstFreeSlotOfLine_FullLineNoRoom_GoalkeeperWrongLine` | neu | offen |
 | `KaderStartRunde14Teil6Tests.cs · KaderStartRunde14Teil6Tests.ClickOnPlaced_TakesOut_SelectsHisLine_LeftUndresses_RightKeeps` | neu | offen |
@@ -409,13 +440,13 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.JoinScoutedTalent_GoalkeeperOrDefender_SortedIn` | neu | rot: K04 |
 | `KaderStartRunde14Tests.cs · KaderStartRunde14Tests.Migration_41To42_TakesStartLeagueOfFirstManager` | neu | rot: K05 |
 | `KaderStartStartLigaTests.cs · KaderStartStartLigaTests.Bundesliga_AlwaysDraws_NeverTheEuropeanCupPlace` | geändert | offen |
-| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.Offer_PlayerLeavesSquad_SlotsMoveUp_ListingWithSeller` | neu | offen |
-| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.Withdraw_ReturnsPlayerByRole_NotInLineup_ContractUnchanged` | neu | offen |
-| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.Withdraw_FullSquad_StaysOnMarket` | neu | offen |
-| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.ListedPlayer_KeepsCostingSalary` | neu | offen |
-| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.SoldListedPlayer_GoesToBuyer_SellerPaid` | neu | offen |
-| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.SeasonChange_UnsoldListedPlayerReturnsByRole_NotInLineup_ContractCountedDown` | neu | offen |
-| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.FourSeasonChanges_ListedPlayersReturn_NoDuplicates` | neu | offen |
+| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.Offer_PlayerLeavesSquad_SlotsMoveUp_ListingWithSeller` | neu | rot: C01 |
+| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.Withdraw_ReturnsPlayerByRole_NotInLineup_ContractUnchanged` | neu | rot: C02 |
+| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.Withdraw_FullSquad_StaysOnMarket` | neu | rot: C03 |
+| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.ListedPlayer_KeepsCostingSalary` | neu | rot: C04 |
+| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.SoldListedPlayer_GoesToBuyer_SellerPaid` | neu | rot: C05 |
+| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.SeasonChange_UnsoldListedPlayerReturnsByRole_NotInLineup_ContractCountedDown` | neu | rot: C06 |
+| `KaderStartTeil2cTests.cs · KaderStartTeil2cTests.FourSeasonChanges_ListedPlayersReturn_NoDuplicates` | neu | rot: C06 |
 | `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.MarketLoan_EndsFree_NotBackToComputerClub` | neu | offen |
 | `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.ManagerLoan_ReturnsWithLoanSlotContract_SortedIn` | neu | offen |
 | `KaderStartTeil4Tests.cs · KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_NegotiatedAtOrigin` | neu | offen |
@@ -622,15 +653,15 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `FinanceBedienungTests.cs · FinanceBedienungTests.AmountBar_DisappearsWhenMouseLeavesStrip` | neu | offen |
 | `GameOptionsScreenTests.cs · GameOptionsScreenTests.ManagerDaySwitch_TogglesOption` | neu | offen |
 | `HistoryBarsDosboxTests.cs · HistoryBarsDosboxTests.Bars_ColorsHeightsAndMarker_LikeOriginal` | neu | offen |
-| `HokImportAccessTests.cs · HokImportAccessTests.List_MarksHokFilesAsOriginal` | neu | offen |
-| `HokImportAccessTests.cs · HokImportAccessTests.TryImport_RejectsNonOriginalData_WithoutChecksumFlag` | neu | offen |
-| `HokImportAccessTests.cs · HokImportAccessTests.LoadDialog_ImportsHok_ByTypedName` | neu | offen |
-| `HokImportAccessTests.cs · HokImportAccessTests.LoadDialog_ImportsHok_ByClickTwice` | neu | offen |
-| `HokImportAccessTests.cs · HokImportAccessTests.SameName_TypedLoadsRemakeSave_ClickOnHokImports` | neu | offen |
-| `HokImportAccessTests.cs · HokImportAccessTests.SameName_TypedThenSingleClickOnHok_Imports` | neu | offen |
-| `HokImportAccessTests.cs · HokImportAccessTests.ChecksumError_ShowsMogelguru_AndKeepsRunningGame` | neu | offen |
-| `HokImportAccessTests.cs · HokImportAccessTests.TryImport_FlagsChecksumError_AndImportsValidSave` | neu | offen |
-| `HokImportAccessTests.cs · HokImportAccessTests.SaveDialog_DoesNotSelectHok` | neu | offen |
+| `HokImportAccessTests.cs · HokImportAccessTests.List_MarksHokFilesAsOriginal` | neu | rot: A01 |
+| `HokImportAccessTests.cs · HokImportAccessTests.TryImport_RejectsNonOriginalData_WithoutChecksumFlag` | neu | rot: A02 |
+| `HokImportAccessTests.cs · HokImportAccessTests.LoadDialog_ImportsHok_ByTypedName` | neu | rot: A03 |
+| `HokImportAccessTests.cs · HokImportAccessTests.LoadDialog_ImportsHok_ByClickTwice` | neu | rot: A04 |
+| `HokImportAccessTests.cs · HokImportAccessTests.SameName_TypedLoadsRemakeSave_ClickOnHokImports` | neu | rot: A05 |
+| `HokImportAccessTests.cs · HokImportAccessTests.SameName_TypedThenSingleClickOnHok_Imports` | neu | rot: A06 |
+| `HokImportAccessTests.cs · HokImportAccessTests.ChecksumError_ShowsMogelguru_AndKeepsRunningGame` | neu | rot: A07 |
+| `HokImportAccessTests.cs · HokImportAccessTests.TryImport_FlagsChecksumError_AndImportsValidSave` | neu | rot: A08 |
+| `HokImportAccessTests.cs · HokImportAccessTests.SaveDialog_DoesNotSelectHok` | neu | rot: A09 |
 | `IntegrationRunde4Tests.cs · IntegrationRunde4Tests.NationalLineup_SurvivesSaveLoadThroughDialog_InCoachMenu` | geändert | offen |
 | `IntegrationRunde6Tests.cs · IntegrationRunde6Tests.TwoSeasons_Mode4_StatisticsRatingStatusAndSaves` | geändert | offen |
 | `KaderStartRunde14FixUiTests.cs · KaderStartRunde14FixUiTests.DialogFrame_ContractWindow_OuterShadowCornersInFillColor` | neu | offen |
