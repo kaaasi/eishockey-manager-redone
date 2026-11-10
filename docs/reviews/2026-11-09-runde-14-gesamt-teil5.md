@@ -2030,6 +2030,59 @@ Die Saat wurde ausschließlich in der Testkopie auf den Base-Wert gesetzt; dies 
 
 T02 und T06 scheitern an der Vorbedingung, dass beide Managervereine in den ersten fünf stehen; T07 am erwarteten Statusbit. Die übrigen Base-Saaten bestanden unter dem heutigen Head, ohne dass damit ihre historischen Ursachen widerlegt sind.
 
+### Bildschirm-Inventur zu AGENTS.md § 4
+
+Statische Inventur aller im Quellbaum erkannten von `Screen` oder einer `*Screen`-Klasse abgeleiteten Klassen. Die Tabelle zählt Klassen und ihre lokal erkannten Overrides; sie ist keine vollständige Aufruf- oder Zustandsanalyse und erfasst keine eigenständigen Dialoge ohne Screen-Basisklasse. Für alle als offen bezeichneten Klassen fehlt insbesondere die vollständige Prüfung von Konstruktor, `Enter`, `Draw`, Unteraufrufen und Rückkehrereignissen.
+
+| Bildschirm | Datei | Statische Inventur | §-4-Abschluss |
+|---|---|---|---|
+| `AdvertisingScreen` | `src/EishockeyManager.UI/Screens/Manager/AdvertisingScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `ClubStatisticsScreen` | `src/EishockeyManager.UI/Screens/Statistics/ClubStatisticsScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `ContractsScreen` | `src/EishockeyManager.UI/Screens/Team/ContractsScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `CreditsScreen` | `src/EishockeyManager.UI/Screens/CreditsScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `CupPairingsScreen` | `src/EishockeyManager.UI/Screens/Competitions/CupPairingsScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `DebCupDrawLiveScreen` | `src/EishockeyManager.UI/Screens/Competitions/DebCupDrawLive.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `DebCupDrawScreen` | `src/EishockeyManager.UI/Screens/Competitions/DebCupDrawScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `DebCupGamesScreen` | `src/EishockeyManager.UI/Screens/Competitions/DebCupGamesScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `EternalTableScreen` | `src/EishockeyManager.UI/Screens/Statistics/EternalTableScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `EuropeanCupScreen` | `src/EishockeyManager.UI/Screens/Competitions/EuropeanCupScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `FairplayScreen` | `src/EishockeyManager.UI/Screens/Statistics/FairplayScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `FinanceBookScreen` | `src/EishockeyManager.UI/Screens/Manager/FinanceBookScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `FinanceScreen` | `src/EishockeyManager.UI/Screens/Manager/FinanceScreen.cs` | eigene Enter-Methode; eigenes Draw | teilweise: Enter weist bildschirmeigene Felder zu; aufgerufene Funktionen und Draw offen |
+| `FriendliesScreen` | `src/EishockeyManager.UI/Screens/Competitions/FriendliesScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `GameOptionsScreen` | `src/EishockeyManager.UI/Screens/GameOptionsScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `HighscoreScreen` | `src/EishockeyManager.UI/Screens/Statistics/HighscoreScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `HistoryScreen` | `src/EishockeyManager.UI/Screens/Statistics/HistoryScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `InboxScreen` | `src/EishockeyManager.UI/Screens/Manager/InboxScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `InfoFileScreen` | `src/EishockeyManager.UI/Screens/InfoFileScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `LeaguePairingsScreen` | `src/EishockeyManager.UI/Screens/Competitions/LeaguePairingsScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `LineupScreen` | `src/EishockeyManager.UI/Screens/Team/LineupScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `MainMenuScreen` | `src/EishockeyManager.UI/Screens/MainMenuScreen.cs` | eigene Enter-Methode; eigenes Draw | teilweise: `Enter` ruft `BuildMenu` und Autosave auf; alle Ereignispfade offen |
+| `MatchDayScreen` | `src/EishockeyManager.UI/Screens/MatchDayScreen.cs` | eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `MogelguruScreen` | `src/EishockeyManager.UI/Screens/SaveLoad/MogelguruScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `NationalLineupScreen` | `src/EishockeyManager.UI/Screens/Competitions/NationalLineupScreen.cs` | keine eigene Enter-Methode; eigenes Draw | teilweise: Q70 erkennt Zustandsänderung beim Öffnen; vollständige Zustandsprüfung offen |
+| `NationalSquadScreen` | `src/EishockeyManager.UI/Screens/Competitions/NationalSquadScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `PlaceholderScreen` | `src/EishockeyManager.UI/Screens/PlaceholderScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `PlayerStatisticsScreen` | `src/EishockeyManager.UI/Screens/Statistics/PlayerStatisticsScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `SaveLoadScreen` | `src/EishockeyManager.UI/Screens/SaveLoad/SaveLoadScreen.cs` | eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `SeasonEndGameOverScreen` | `src/EishockeyManager.UI/Screens/SeasonEndGameOverScreen.cs` | eigene Enter-Methode; eigenes Draw | teilweise: siehe R14G2-02; vollständiger Ablauf offen |
+| `SeasonEndScreen` | `src/EishockeyManager.UI/Screens/SeasonEndScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `SeasonEndSummaryScreen` | `src/EishockeyManager.UI/Screens/SeasonEndSummaryScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `SeasonEndTrophyScreen` | `src/EishockeyManager.UI/Screens/SeasonEndTrophyScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `SettingsScreen` | `src/EishockeyManager.UI/Screens/SettingsScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `SetupScreen` | `src/EishockeyManager.UI/Screens/SetupScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `StadiumScreen` | `src/EishockeyManager.UI/Screens/Manager/StadiumScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `StrengthScreen` | `src/EishockeyManager.UI/Screens/Statistics/StrengthScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `TableScreen` | `src/EishockeyManager.UI/Screens/TableScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `TacticsScreen` | `src/EishockeyManager.UI/Screens/Team/TacticsScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `TitleScreen` | `src/EishockeyManager.UI/Screens/TitleScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `TrainingScreen` | `src/EishockeyManager.UI/Screens/Team/TrainingScreen.cs` | eigene Enter-Methode; eigenes Draw | teilweise: Enter weist bildschirmeigene Felder zu; aufgerufene Funktionen und Draw offen |
+| `TransferScreen` | `src/EishockeyManager.UI/Screens/Team/TransferScreen.cs` | eigene Enter-Methode; eigenes Draw | teilweise: Enter ruft `ShowNextBid`; Zustandsfreiheit und sämtliche Pfade offen |
+| `WorldCupKnockoutScreen` | `src/EishockeyManager.UI/Screens/Competitions/WorldCupKnockoutScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `WorldCupScreen` | `src/EishockeyManager.UI/Screens/Competitions/WorldCupScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `WorldCupStatisticsScreen` | `src/EishockeyManager.UI/Screens/Competitions/WorldCupStatisticsScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+| `YouthScreen` | `src/EishockeyManager.UI/Screens/Manager/YouthScreen.cs` | keine eigene Enter-Methode; eigenes Draw | offen; Draw, aufgerufene Funktionen und Pfade nicht vollständig geprüft |
+
 ### Neue oder geänderte Testzeilen mit Fehlerstack
 
 Die folgende maschinelle Zuordnung enthält nur geänderte Zeilen mit `Assert.` oder `InlineData`, die im Stacktrace einer fehlgeschlagenen Einzelmutation genannt werden. Die Mutationsregel und das Ergebnis stehen in der vollständigen Ausführungstabelle oben. Eine Zeile kann mehrere Sollwerte oder Vorbedingungen enthalten; ein Stacktreffer belegt daher nicht automatisch jeden einzelnen Wert. Nicht aufgeführte Zeilen und eine bereinigte Inventur aller Sollwerte bleiben offen.
