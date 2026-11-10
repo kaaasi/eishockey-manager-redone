@@ -174,10 +174,14 @@ public sealed partial class GameState
             var record = managerRecords.AsSpan(m * OriginalSaveGame.ManagerRecordLength, OriginalSaveGame.ManagerRecordLength);
             var name = CName(record[..0x13]);
             var club = clubOf[record[0x14]];
+            // [APPROX] Managerkopf vermutlich Managersatz +0x13 (FILE05/FILE29: 6 = Kopf mit Sonnenbrille wie im Bild des Originals,
+            // FILE09: zwei Manager mit 3 und 10; Feldkarte U). Spur hok-export: Import und Export führen ihn, damit die Rundreise
+            // Remake → HOK → Remake den Kopf behält; Bestätigung in der DOSBox-Probe (R15-D5 = D).
+            var head = record[0x13] < ManagerSetup.HeadCount ? record[0x13] : 0;
             setup.Managers.Add(new ManagerSetup
             {
                 Name = name,
-                Head = 0, // [APPROX] Managerkopf: Ort im HOK nicht belegt (Feldkarte U)
+                Head = head,
                 ClubIndex = club,
                 Level = Math.Clamp((int)setupBlock[0], 0, ManagerSetup.LevelCount - 1),
                 StartLeague = (League)Math.Clamp((int)setupBlock[2], 0, 2),
@@ -185,7 +189,7 @@ public sealed partial class GameState
             });
             managers.Add(new Manager
             {
-                Name = name, Head = 0, ClubIndex = club, Level = setup.Managers[m].Level,
+                Name = name, Head = head, ClubIndex = club, Level = setup.Managers[m].Level,
                 Money = FinanceRules.StartMoney(setup.Managers[m].Level),
             });
         }
@@ -487,6 +491,12 @@ public sealed partial class GameState
             if (target is { } t && player.Available)
                 club.Lineup.Assign(t, player);
         }
+        // Spur hok-export (Rundreise): Eingesetzte genau wie +0x0A – erst die von der Automatik zusätzlich Eingesetzten herausnehmen,
+        // sonst ist die Zahl schon voll (22) und der Ersatz des HOK käme nicht hinein. Die Einstellung „automatisch aufstellen“
+        // setzt danach ApplyTactics aus 0x375 (OriginalImport.Rest.cs).
+        foreach (var (player, _, _, dressed) in players)
+            if (!dressed && club.IsDressed(player) && !club.Lineup.Contains(player))
+                club.Undress(player);
         foreach (var (player, _, _, dressed) in players)
             if (dressed && !club.Lineup.Contains(player) && club.DressedCount < Club.MaxDressed)
                 club.Dress(player);

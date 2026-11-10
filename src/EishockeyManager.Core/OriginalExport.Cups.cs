@@ -90,6 +90,9 @@ public sealed partial class GameState
         if (NationalCoach is not { } coach)
             return;
         rec[national + 0x14] = (byte)slotOf[coach.Nation];
+        // [ORIGINAL] Satz 5 +0x00: Name des Bundestrainers (FILE11, FILE18–FILE21, FILE47–FILE49A).
+        if (coach.Manager < Managers.Count)
+            OriginalSaveWriter.Name(Managers[coach.Manager].Name).CopyTo(rec, national);
         rec[national + 0xEB] = (byte)coach.Manager;
         w.Block("0375")[2 * OriginalImport.NationalRecord] = (byte)(coach.AutoLineupEnabled ? 1 : 0);
 
@@ -312,8 +315,13 @@ public sealed partial class Playoffs
                     }
                     var m = s.Games[g];
                     var homeFirst = m.Home == s.HomeClub;
-                    goals[OriginalImport.PlayoffSlotCount * g + a] = OriginalExport.Byte(homeFirst ? m.HomeGoals : m.AwayGoals);
-                    goals[OriginalImport.PlayoffSlotCount * g + b] = OriginalExport.Byte(homeFirst ? m.AwayGoals : m.HomeGoals);
+                    // [ORIGINAL] Im Original steht der Penaltytreffer im Ergebnis (kein Gleichstand, Import: „Gleichstand zählt für den
+                    // Gast“ nur zur Sicherheit). [APPROX] Ein Remake-Spiel mit Gleichstand und Penaltysieger bekommt dessen Treffer dazu.
+                    var (hg, ag) = (m.HomeGoals, m.AwayGoals);
+                    if (hg == ag && m.PenaltyWinner is { } pw)
+                        (hg, ag) = pw == m.Home ? (hg + 1, ag) : (hg, ag + 1);
+                    goals[OriginalImport.PlayoffSlotCount * g + a] = OriginalExport.Byte(homeFirst ? hg : ag);
+                    goals[OriginalImport.PlayoffSlotCount * g + b] = OriginalExport.Byte(homeFirst ? ag : hg);
                 }
             }
         }

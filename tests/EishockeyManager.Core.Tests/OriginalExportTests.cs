@@ -1,15 +1,14 @@
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
-using Xunit.Abstractions;
 
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur hok-export, Teil 1: Export eines Remake-Spielstands als Original-Spielstand <c>*.HOK</c> (<see cref="OriginalExport"/>).
 /// Prüft Aufbau (Länge, Kennungen, Prüfsummen), die Lesbarkeit mit <see cref="OriginalSaveGame.Read"/> und den Import des
-/// Ergebnisses; die Rundreise gegen die Stände des Originals folgt in Teil 2.
+/// Ergebnisses; die Rundreisen stehen in <see cref="OriginalExportRoundTripTests"/> (Teil 2).
 /// </summary>
-public sealed class OriginalExportTests(ITestOutputHelper output)
+public sealed class OriginalExportTests
 {
     private const int Seed = 4711;
 
@@ -46,32 +45,6 @@ public sealed class OriginalExportTests(ITestOutputHelper output)
 
         Assert.Equal(a, b);
         Assert.Equal(before, SaveGame.Save(game));
-    }
-
-    /// <summary>Diagnose: Original-Stand → Import → Export, Abweichungen je Block (für Teil 2).</summary>
-    [GameDataFact]
-    public void Diagnose_RoundTrip()
-    {
-        foreach (var path in Directory.GetFiles(Path.GetDirectoryName(OriginalImportTests.OriginalSave("FILE01.HOK"))!, "FILE*.HOK").Order())
-            Diagnose(Path.GetFileName(path));
-    }
-
-    private void Diagnose(string file)
-    {
-        var database = ClubDatabase.Load(TestGameData.Load());
-        var original = OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave(file)));
-        GameState game;
-        try { game = GameState.ImportOriginal(original, database, Seed); }
-        catch (InvalidDataException e) { output.WriteLine($"{file} Import: {e.Message}"); return; }
-        var exported = OriginalSaveGame.Read(OriginalExport.Export(game, RawDatabase(), Seed));
-        foreach (var (block, _, data) in original.Blocks)
-        {
-            var other = exported.Block(block.Name);
-            var diff = Enumerable.Range(0, data.Length).Where(i => data[i] != other[i]).ToList();
-            if (diff.Count > 0)
-                output.WriteLine($"{file} {block.Name,-9} {diff.Count,5}/{data.Length,-5} " +
-                                 string.Join(" ", diff.Take(12).Select(i => $"{i:X}:{data[i]:X2}/{other[i]:X2}")));
-        }
     }
 
     internal static byte[] RawDatabase() => File.ReadAllBytes(TestGameData.Load().GraphicsPath(23));

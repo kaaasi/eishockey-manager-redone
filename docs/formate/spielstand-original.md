@@ -446,7 +446,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameOptions.ShowEuropeanCup` | B | `021D+11` | DGROUP 0x228 |
 | `GameOptions.ShowWorldCup` | B | `021D+12` | DGROUP 0x229 |
 | `ManagerSetup.ClubIndex` | A | `965B+0x14` | Vereinsindex nach Regel 1 |
-| `ManagerSetup.Head` | U | – | Managerkopf: Ort im Managersatz nicht belegt; 0 |
+| `ManagerSetup.Head` | U | `965B+0x13`? | vermutlich Managerkopf (FILE05/FILE29: 6 = Kopf mit Sonnenbrille wie im Bild, FILE09: 3 und 10; unbenutzte Sätze 2/3/4); Import und Export übernehmen ihn (Spur `hok-export`), Bestätigung in der DOSBox-Probe |
 | `ManagerSetup.Level` | B | `0118+0` | ein Wert für alle (Gegenprobe `0ED8` = 5 − Level) |
 | `ManagerSetup.Name` | B | `965B+0x00` | Name (19 Byte), Gegenprobe `Kopf` |
 | `ManagerSetup.StartLeague` | B | `0118+2` | ein Wert für alle |
@@ -1007,6 +1007,15 @@ rückwärts); der Export ändert den Spielstand nicht (Test `OriginalExportTests
 - **Vermutet, im Original zu prüfen** (`[APPROX]`): Managersatz +0x13 = Managerkopf (FILE09: zwei Manager mit 3 und 10), `A70D`
   letzter Zugteilnehmer, `A8A0` Monat, `07A9`+4 laufende Pokalrunde.
 - **Vorgabe des Spielstarts** (an allen Ständen gleich): `0120`, `017C`, `D0E4`, `022D`, `0246`, `02C0`, `021D`+13.
+- **Rundreise (Teil 2, `OriginalExportRoundTripTests`):** (1) FILE01–FILE49A → Import → Export gleicht dem Klartext des Originals bis auf
+  die Felder der Liste im Test (je Zeile Grund: ungedeutet, Feldkarte N/U, Rundung Drittel-DM, Satzfolge außerhalb der Ligen,
+  Vorsaison, „nur Weltkugel“); FILE22/FILE44 (Ladeeigenheit des Markierungstags) prüft nur Lesbarkeit. (2) Remake → HOK → Remake →
+  HOK ohne Abweichung (Spielstart, 3/22/44 Spieltage, zwei Manager, vier Saisonwechsel passiv und aktiv mit Play-offs und WM); bekannt
+  verloren: erreichte Pokalrunde +0xE6 (frühere Pokalrunden aus dem Nachspielen), „eingesetzt“ bei gesperrtem Spieler (Sperre U),
+  ab Saison 2 Titel und Startordnung der Vorsaison (History N).
+- **Import, für die Rundreise angepasst:** Managerkopf aus +0x13 (`OriginalImport.cs`, Feldkarte U → vermutet); Eingesetzte genau
+  wie +0x0A (zuerst die nur von der Automatik Eingesetzten herausnehmen). Play-off-Spiel mit Gleichstand und Penaltysieger: der
+  Export zählt den Penaltytreffer zum Ergebnis (im Original kein Gleichstand).
 - **Zugang:** `emtool hok export <spielstand.ems> <ziel.hok> [--gamedata ordner] [--seed n] [--force]`; Prüfhilfe für die DOSBox-Probe:
   `emtool hok export --neu <name> <vereinsindex> <ziel.hok> [--spieltage n] [--ems datei]` (neues Spiel, n Ligaspieltage über
   `GameState.Continue`). Ergebnis mit `emtool hok dump` lesbar.

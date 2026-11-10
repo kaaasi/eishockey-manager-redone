@@ -9,7 +9,7 @@ public sealed partial class GameState
     /// <list type="bullet">
     /// <item>[ORIGINAL] +0x00 Name (0x16 Byte), +0x17 Tagesform, +0x18–0x1D Teamwerte (Import <c>ApplyTeamValues</c>); im Modus
     ///   „nur Weltkugel“ trägt der Satz des Managervereins den Namen des Landes (FILE11, Datei 0x5B556).</item>
-    /// <item>[ORIGINAL] +0x16: 1 Managerverein (FILE01: KÖLNER EC), 6 Land mit Bundestrainer im Amt (Datei 0x55494), sonst 0.</item>
+    /// <item>[ORIGINAL] +0x16: Manager + 1 beim Managerverein (FILE01: KÖLNER EC 1, FILE09: 1 und 2), 6 Land mit Bundestrainer im Amt (Datei 0x55494), sonst 0.</item>
     /// <item>[ORIGINAL] +0x26–0x2B/+0x35–0x3A: Anzeige „AUTOM.“ des Nationalteams (Spielvorbereitung 0x8365; FILE19).
     ///   [APPROX] Für die übrigen Vereine rechnet das Original die Werte vor jedem Spiel neu; der Export schreibt 0 (Stand FILE01).</item>
     /// <item>[ORIGINAL] +0x34 Logo (<see cref="DatabaseClub.LogoNumber"/>, beim Managerverein + 0x80; FILE01: KÖLNER EC 0x8C) und
@@ -21,6 +21,7 @@ public sealed partial class GameState
     {
         var records = w.Block("far:9657");
         var managerClubs = Managers.Select(m => m.ClubIndex).ToHashSet();
+        var managerOf = Managers.Select((m, i) => (m.ClubIndex, i)).GroupBy(x => x.ClubIndex).ToDictionary(g => g.Key, g => g.First().i);
         var nation = NationalCoach?.Nation ?? NationalTeams.Germany;
         foreach (var club in Clubs)
         {
@@ -31,7 +32,7 @@ public sealed partial class GameState
             (raw is not null && Clubs[nameIndex].Name == database?[nameIndex].Name
                 ? OriginalExport.DatabaseClubName(raw, nameIndex)
                 : OriginalSaveWriter.Name(name, OriginalImport.ClubNameLength)).CopyTo(r);
-            r[0x16] = (byte)(managerClubs.Contains(club.Index) && !WorldOnly ? 1
+            r[0x16] = (byte)(managerOf.TryGetValue(club.Index, out var m) ? m + 1
                 : NationalCoach is { } coach && coach.Nation == club.Index ? 6 : 0);
             if (club.TeamValues is { } v)
             {
@@ -156,7 +157,9 @@ public sealed partial class GameState
             var text = balance.PadLeft(LeagueTable.BalanceLength, '-');
             var raw = GameText.Encode(text);
             raw.AsSpan(0, LeagueTable.BalanceLength).CopyTo(table.AsSpan(at + 0x04));
-            if (club.League is not null)
+            // [ORIGINAL] Sicherung der Bilanz: im ersten Jahr nur bei Ligavereinen, nach dem ersten Saisonwechsel in allen 64 Sätzen
+            // (FILE01 gegen FILE44B).
+            if (club.League is not null || Season > FirstSeason)
                 raw.AsSpan(0, LeagueTable.BalanceLength).CopyTo(table.AsSpan(at + 0x0D));
             table[OriginalImport.TableField(0x8288, slot)] = OriginalExport.Byte(club.StoredTableRank);
             for (var i = 0; i < RankSlotCount; i++)
