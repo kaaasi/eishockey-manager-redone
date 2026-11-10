@@ -2029,3 +2029,309 @@ Die Saat wurde ausschließlich in der Testkopie auf den Base-Wert gesetzt; dies 
 | `OtherClubLeads_NoSinglePremium` | T10 | grün |
 
 T02 und T06 scheitern an der Vorbedingung, dass beide Managervereine in den ersten fünf stehen; T07 am erwarteten Statusbit. Die übrigen Base-Saaten bestanden unter dem heutigen Head, ohne dass damit ihre historischen Ursachen widerlegt sind.
+
+### Neue oder geänderte Testzeilen mit Fehlerstack
+
+Die folgende maschinelle Zuordnung enthält nur geänderte Zeilen mit `Assert.` oder `InlineData`, die im Stacktrace einer fehlgeschlagenen Einzelmutation genannt werden. Die Mutationsregel und das Ergebnis stehen in der vollständigen Ausführungstabelle oben. Eine Zeile kann mehrere Sollwerte oder Vorbedingungen enthalten; ein Stacktreffer belegt daher nicht automatisch jeden einzelnen Wert. Nicht aufgeführte Zeilen und eine bereinigte Inventur aller Sollwerte bleiben offen.
+
+| Neue/geänderte Testzeile | Zeileninhalt | Fehlgeschlagene Regelmutation |
+|---|---|---|
+| `tests/EishockeyManager.Core.Tests/DeadlineRegressionTests.cs:28` | `Assert.False(requestAtThree.IsQuestion);` | Q74 |
+| `tests/EishockeyManager.Core.Tests/FinanceCalibrationTests.cs:176` | `Assert.Contains(game.History, r => r.Managers.Any(m => m.Manager == 0 && m.Events.Contains(SeasonEvent.ForcedRelegation)));` | Q28 |
+| `tests/EishockeyManager.Core.Tests/IntegrationRunde9Tests.cs:101` | `Assert.Equal(0, on.Fast);` | Q73 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14FixTests.cs:40` | `Assert.Contains(p, game.AllPlayers);` | X01 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14FixTests.cs:80` | `Assert.Contains(p, club.Players);` | X02 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14FixTests.cs:101` | `Assert.Equal(1, p.InjuredGames);` | X03 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14FixTests.cs:143` | `Assert.Empty(game.ValidatePlayerIdentity());` | X05 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14FixTests.cs:163` | `Assert.Equal(before, game.TransferMarket.Listings.Select(l => l.Player.Id));` | X04 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14ImportTests.cs:34` | `Assert.Equal((slot[0x07], slot[0x08]), ((byte)p.CupGames, (byte)p.EuropeGames));` | I20 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14ImportTests.cs:65` | `Assert.Equal(value, game.Clubs[clubOf[slot]].StoredTableRank);` | I21 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2Tests.cs:31` | `Assert.All(Enumerable.Range(0, 4), row => Assert.Equal(0, setup.ManagerRowFor(row)));` | K41 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2Tests.cs:49` | `Assert.Equal(own, game.LeagueSlots(League.Bundesliga)[0]);` | K42 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2Tests.cs:66` | `Assert.Equal(placeZero, game.LeagueSlots(League.Bundesliga)[0]);` | K43, K44 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2Tests.cs:85` | `Assert.NotEqual(own, slots[0]);` | K43, K44 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2Tests.cs:105` | `Assert.All(Enumerable.Range(0, Tactics.Blocks), b => Assert.All(situations, r =>` | K45 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2bTests.cs:38` | `Assert.NotNull(own.Lineup[slot]);` | B01 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2bTests.cs:52` | `Assert.Null(own.Lineup[slot]);` | B02 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2bTests.cs:72` | `Assert.Equal(1, scorer.SeasonGames(CompetitionSlot.Cup));` | B03 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2bTests.cs:95` | `Assert.Equal((1, 1), (scorer.SeasonGames(CompetitionSlot.Europe), scorer.SeasonGoals(CompetitionSlot.Europe)));` | B04 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2bTests.cs:108` | `Assert.Equal(CompetitionSlot.League, CompetitionSlots.Of(competition));` | B05 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2bTests.cs:125` | `Assert.All(Enum.GetValues<CompetitionSlot>(), s => Assert.Equal((0, 0), (p.ClubGames(s), p.ClubGoals(s))));` | B06 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2bTests.cs:142` | `Assert.All(game.Clubs, c => Assert.Equal(0, c.StoredTableRank));` | B07 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2bTests.cs:201` | `Assert.Equal(finalRanks![club.Index], club.StoredTableRank);` | B08 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil2bTests.cs:231` | `Assert.All(loaded.Game!.Clubs, c => Assert.Equal(c.StoredRankSlot(slot), c.StoredTableRank));` | B09 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil6Tests.cs:43` | `Assert.Equal(LineupResult.NoLineSelected, club.ClickPlayer(p, ref line, right: false));` | K31 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil6Tests.cs:54` | `Assert.Equal(LineupResult.NoRoom, club.ClickPlayer(fwd, ref line, right: false));` | K33 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil6Tests.cs:56` | `Assert.Equal(LineupResult.Assigned, club.ClickPlayer(fwd, ref line, right: false));` | K32 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil6Tests.cs:59` | `Assert.Equal(LineupResult.WrongRole, club.ClickPlayer(gk, ref line, right: false));` | K34 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil6Tests.cs:73` | `Assert.False(club.IsDressed(a));` | K35 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Teil6Tests.cs:96` | `Assert.Equal(LineupResult.Dressed, club.ClickPlayer(extra, ref line, right: true));` | K39 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Tests.cs:24` | `Assert.Equal(League.ZweiteLiga, setup.StartLeague);` | K01 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Tests.cs:28` | `Assert.Equal(League.ZweiteLiga, m.StartLeague);` | K02 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Tests.cs:41` | `Assert.Equal(League.Oberliga, setup.StartLeague);` | K01 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Tests.cs:42` | `Assert.False(setup.Step(SetupSlider.StartLeague, +1, null));` | K03 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Tests.cs:59` | `Assert.Equal(League.Oberliga, setup.StartLeague);` | K01 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Tests.cs:85` | `Assert.All(club.Players.Take(at), q => Assert.True(q.Role <= talent.Role, $"{q.Name} ({q.Role}) vor {talent.Name}"));` | K04 |
+| `tests/EishockeyManager.Core.Tests/KaderStartRunde14Tests.cs:112` | `Assert.Equal(League.Oberliga, result.Game.Setup.StartLeague);` | K05 |
+| `tests/EishockeyManager.Core.Tests/KaderStartStartLigaTests.cs:109` | `Assert.Equal(DatabaseStrength(placeZero), game.Clubs[placeZero].Strength);` | Q31 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil2cTests.cs:41` | `Assert.DoesNotContain(p, club.Players);` | C01 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil2cTests.cs:70` | `Assert.Equal(club.Players.FindIndex(q => q.Role > PlayerRole.Defender), at + 1);` | C02 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil2cTests.cs:92` | `Assert.Equal(TransferResult.SquadFull, game.TransferMarket.Withdraw(listing));` | C03 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil2cTests.cs:109` | `Assert.Equal(wages, FinanceRules.MonthlyWages(game, club));` | C04 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil2cTests.cs:130` | `Assert.Equal(money + TransferMarket.TransferFee(bid), manager.Money);` | C05 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil2cTests.cs:148` | `Assert.Contains(p, club.Players);` | C06 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil2cTests.cs:193` | `Assert.True(club.Players.Contains(listed) // listed.ContractYears == 0, $"Saison {season}: {listed.Name} fehlt");` | C06 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil2cTests.cs:201` | `Assert.Equal(squads.Length, squads.Distinct().Count());` | L10 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:76` | `Assert.DoesNotContain(game.Clubs, c => c.Players.Contains(p));` | L01 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:94` | `Assert.Contains(p, origin.Players);` | L01 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:100` | `Assert.All(origin.Players.Take(at), q => Assert.True(q.Role <= PlayerRole.Defender));` | L02 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:118` | `Assert.Contains(p, origin.Players);` | L01 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:136` | `Assert.DoesNotContain(p, origin.Players);` | L09 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:150` | `Assert.Equal(3 * 19_152, GameState.RenewalSalaryThirds(3 * 16_800, 33));` | L03 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:151` | `Assert.Equal(155_500, GameState.RenewalCompensation(3 * 311_000L));` | L04 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:152` | `Assert.Equal(0, GameState.Premium(League.Bundesliga, 10));` | L07 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:153` | `Assert.Equal(100_000, GameState.SeasonPremium(League.Bundesliga, 10, [SeasonEvent.TopScorer]));` | L08 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:175` | `Assert.Equal(Math.Max(Contracts.MinSalary, value * 114 / 100 / 3), p.MonthlySalary);` | L03 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:203` | `Assert.Equal((0, 0), (p.SeasonGoals(CompetitionSlot.League), p.SeasonGoals(CompetitionSlot.Cup)));` | L05 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:228` | `Assert.Equal(316_000, listing.Price);` | L06 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:273` | `Assert.Equal(squads.Length, squads.Distinct().Count());` | L10 |
+| `tests/EishockeyManager.Core.Tests/KaderStartTeil4Tests.cs:278` | `Assert.True(origin.Players.Contains(p) // game.RetiredPlayers.Contains(p), $"Saison {season}: {p.Name} fehlt");` | L01 |
+| `tests/EishockeyManager.Core.Tests/LifecycleRegressionTests.cs:158` | `Assert.Single(game.TransferMarket.FreeAgents, q => q == player);` | Q39 |
+| `tests/EishockeyManager.Core.Tests/LoadQuirkTests.cs:30` | `Assert.Equal(["FILE22.HOK", "FILE44.HOK"], marked);` | E01 |
+| `tests/EishockeyManager.Core.Tests/LoadQuirkTests.cs:45` | `Assert.Equal(217, game.FinanceDay);` | E02 |
+| `tests/EishockeyManager.Core.Tests/LoadQuirkTests.cs:87` | `Assert.Equal(0, game.LoadCounterOffset);` | E03 |
+| `tests/EishockeyManager.Core.Tests/LoadQuirkTests.cs:97` | `Assert.Equal(0, game.LoadCounterOffset);` | E04 |
+| `tests/EishockeyManager.Core.Tests/LoadQuirkTests.cs:124` | `Assert.Equal(0, result.Game!.LoadCounterOffset);` | E05 |
+| `tests/EishockeyManager.Core.Tests/NationalCoachMode4Tests.cs:65` | `Assert.True(top.Contains(1) && top.Contains(2), $"Vorbedingung verletzt: erste fünf {string.Join(", ", top)}");` | T01 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:31` | `Assert.Equal(NationalCoach.MaxDressed, coach.DressedCount);` | N11 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:46` | `Assert.False(coach.AutoLineupEnabled);` | N11, N12 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:60` | `Assert.Equal(games, coach.Squad.Sum(m => m.Player.Games));` | N14 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:61` | `Assert.Empty(coach.Lineup().Players);` | N13 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:81` | `Assert.Equal(NationalCoach.MaxDressed, loaded.NationalCoach.DressedCount);` | N11 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:101` | `Assert.False(coach.AutoLineupEnabled);` | N12 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:123` | `Assert.Equal(!active // season == 0, coach.AutoLineupEnabled);` | N11 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:126` | `Assert.Equal(!active, coach.Formation.Count > 0);` | N11 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:134` | `Assert.Equal(!active, coach.Formation.Count > 0);` | N12, N13, N14 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:167` | `Assert.Equal(!handMade, loaded.NationalCoach!.AutoLineupEnabled);` | N15, N17 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:170` | `Assert.Equal(1, loaded.NationalCoach.Formation.Count);` | N13 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:172` | `Assert.Equal(NationalCoach.MaxDressed, loaded.NationalCoach.DressedCount);` | N11 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:194` | `Assert.True(result.Game.NationalCoach!.AutoLineupEnabled);` | N17 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:211` | `Assert.Equal(NominationResult.SquadFull, game.ToggleNomination(outsider));` | N16 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:224` | `Assert.Equal(NationalCoach.MaxDressed, coach.DressedCount);` | N11 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:150` | `Assert.All(before.TrainingDelta(game), d => Assert.Equal(0, d));` | W02 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:154` | `Assert.Equal(0, injured.InjuredGames);` | W04 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:185` | `Assert.Equal([-3 * before.TrainingCost[0], 0], before.TrainingDelta(game));` | W01 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:224` | `Assert.Equal([-3 * before.TrainingCost[0]], before.TrainingDelta(game)); // #688: Takt von Tag 216 vor dem Fenster` | W01 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:270` | `Assert.Equal([-3 * before.TrainingCost[0], 0], before.TrainingDelta(game));` | W01 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:313` | `Assert.Equal(auto, coach.AutoLineupEnabled);` | N31 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:390` | `Assert.Equal(Decayed(strains, 1), seen[218]); // FILE18 → FILE48` | W01 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:420` | `Assert.Equal([TrainingRules.MinStrain, TrainingRules.MinStrain, TrainingRules.MinStrain, 90],` | W01 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:448` | `Assert.Equal(2, injured.InjuredGames);` | W03 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:473` | `Assert.Equal(1, own.InjuredGames);` | W01, W04 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:507` | `Assert.All(game.Managers, m => Assert.Equal(3, game.Finance(m).TalentSearch?.TicksLeft));` | W05 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil4Tests.cs:521` | `Assert.Equal([3, 6, 10, 13, 17, 20, 24, 27], Enumerable.Range(0, 30).Where(TalentScout.IsTick));` | N32 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Tests.cs:75` | `Assert.InRange(values.DefenseForm, 45, 55);` | N33 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Tests.cs:139` | `Assert.All(probe.Seen, s =>` | N34 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Tests.cs:193` | `Assert.All(probe.Seen, v => Assert.InRange(Math.Max(v.DefenseForm, v.AttackForm), 0, 44));` | N34 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Tests.cs:195` | `Assert.Single(probe.Seen.Select(v => (v.DefenseForm, v.AttackForm)).Distinct());` | N21, N34 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Tests.cs:248` | `Assert.Equal((defense.Form, attack.Form), (germany.TeamValues!.Value.DefenseForm, germany.TeamValues.Value.AttackForm));` | N21 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Tests.cs:285` | `Assert.InRange(germany.TeamValues!.Value.DefenseForm, 45, 55);` | N22 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Tests.cs:322` | `Assert.Equal([g, d1, d2, f], coach.Squad.Select(m => m.Player));` | N23 |
+| `tests/EishockeyManager.Core.Tests/NationalteamRunde14Tests.cs:341` | `Assert.False(game.NationalSquadLocked);` | N24 |
+| `tests/EishockeyManager.Core.Tests/NationalteamTests.cs:145` | `Assert.Equal([40, 20, 20, 15, 20, 0], ShownEffort(tactics));` | Q24 |
+| `tests/EishockeyManager.Core.Tests/NationalteamTests.cs:361` | `Assert.Equal(WithoutClubAutoLines(SaveGame.Save(game)), WithoutClubAutoLines(SaveGame.Save(loaded)));` | Q25 |
+| `tests/EishockeyManager.Core.Tests/NewGameTests.cs:124` | `Assert.NotEqual(NewGame.StartOrder(seed)[0], game.ActiveManager.ClubIndex);` | Q32 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportCupTests.cs:25` | `Assert.Equal(Enumerable.Range(0, 4).Select(k => (clubOf[slots[2 * k]], clubOf[slots[2 * k + 1]])),` | G01 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportCupTests.cs:56` | `Assert.Equal(clubOf[save.Block("0387")[0]], cup.Winner);` | G01 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportCupTests.cs:83` | `Assert.Equal(slots[..teams].Select(s => clubOf[s]).Order(), cup.Rounds[^1].SelectMany(t => new[] { t.First, t.Second }).Order());` | G01 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportCupTests.cs:103` | `Assert.Equal(3, cup.CurrentRound);` | G04 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportCupTests.cs:118` | `Assert.Equal(teams.Select(t => clubOf[t]), cup.Draw);` | G02 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportCupTests.cs:146` | `Assert.Equal(Enumerable.Range(52, 12).Select(s => clubOf[s]), wm.Order);` | G03 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportFieldMapDataTests.cs:79` | `Assert.Equal(bankLoan, BinaryPrimitives.ReadInt32LittleEndian(managers[0x1AB..]));` | F08 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportFieldMapTests.cs:28` | `Assert.Equal(SaveGame.SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture), version);` | F01 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportFieldMapTests.cs:40` | `Assert.True(missing.Count == 0, "Fehlt in der Feldkarte: " + string.Join(", ", missing));` | F02 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportFieldMapTests.cs:51` | `Assert.True(Statuses.Contains(row.Status), $"Zeile {row.Line} ({row.Field}): Status „{row.Status}“.");` | F03 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportFieldMapTests.cs:92` | `Assert.True(problems.Count == 0, string.Join("\n", problems));` | F04 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportFieldMapTests.cs:110` | `Assert.Contains("\"965B\"", stripped);` | F05 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPoolTests.cs:32` | `Assert.Equal((e[0x14], e[0x12]), ((byte)slot.Player.Age, (byte)slot.Player.Talent));` | P01 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPoolTests.cs:69` | `Assert.Equal(BinaryPrimitives.ReadInt32LittleEndian(s[0x2C..]) / 3, l.Price);` | P02 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPoolTests.cs:94` | `Assert.Same(game.Managers[0], own.Seller);` | P03 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPoolTests.cs:118` | `Assert.DoesNotContain(club.Players, p => poolNames.Contains(p.Name));` | P04 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPoolTests.cs:144` | `Assert.Equal(slots.Select(s => Name(pool.AsSpan(s[0x0F] * OriginalSaveGame.PoolRecordLength, 0x12))),` | P05 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPoolTests.cs:178` | `Assert.Equal(2, inbox.Count);` | P06 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPoolTests.cs:203` | `Assert.Same(game.TransferMarket.Pool[90].Player, message.Player);` | P07 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPoolTests.cs:223` | `Assert.Equal(game.TransferMarket.Listings.Select(l => (l.Player.Id, l.Price, l.Seller?.Name)),` | P08 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPostseasonTests.cs:33` | `Assert.Equal(expectedClubs, group.Clubs);` | G05 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPostseasonTests.cs:69` | `Assert.Equal(clubOf[save.Block("D0E6")[0]], playoffs.Champion);` | G05 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPostseasonTests.cs:146` | `Assert.Equal(slots.Order(), remake.Order());` | G05 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPostseasonTests.cs:182` | `Assert.Equal(Enumerable.Range(0, 4).Sum(i => points[12 + 6 * g + i]) / 4, game.RelegationGroups[g].PlayedRounds);` | G07 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportPostseasonTests.cs:222` | `Assert.Equal(GameState.ClubsPerLeague, game.Clubs.Count(c => c.League == league));` | G08 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:21` | `Assert.Equal([84, 119, 135, 147], game.Stocks.Stocks.Select(s => s.Price));` | I01 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:41` | `Assert.Equal((75, 10_000L), (holding.Count, holding.PurchaseCost));` | I02 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:58` | `Assert.Equal((TrainingKind)units[4 * day + unit], plan[day, unit]);` | I03, I12 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:71` | `Assert.Equal([36, 21, 22, 18, 23, 4], Enumerable.Range(0, 6).Select(i => tactics.Effort(0, (ScoreSituation)i)));` | I06 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:93` | `Assert.Equal((TacticMode.Semi, TacticMode.Manual, LineChangeMode.MinutesPreset), (tactics.EffortMode, tactics.AttackMode, tactics.LineChange));` | I06 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:125` | `Assert.Equal([12, 1, 1, 24, 71, 81], game.Managers[0].PowerPlayCounts);` | I11 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:141` | `Assert.Equal(place, game.Clubs[clubOf[order[place]]].StoredRankSlot(2));` | I09 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:157` | `Assert.Equal(new SponsorOffer(AdSlotKind.Bande, 0, 12, 1, 51652 / 3, 0, 68), bande);` | I05 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:179` | `Assert.Equal((701_000L, 0L), (file08.Finance(file08.Managers[0]).Bank.Credit, file08.Finance(file08.Managers[0]).Bank.Savings));` | I04 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:199` | `Assert.Equal(1_000_000L, file18.NationalAccount);` | I13 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRestTests.cs:217` | `Assert.Equal(expected, game.Managers[0].HasNewMessage);` | I07, I08 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:22` | `var construction = Assert.Single(stadium.Constructions);` | J01 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:35` | `var construction = Assert.Single(stadium.Constructions);` | J01 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:49` | `Assert.Empty(game.Finance(game.Managers[0]).Stadium.Constructions);` | J21 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:73` | `Assert.Equal((AdSlotKind.Bande, 0, 333_333, 6), (contract.Kind, contract.Sponsor, contract.MonthlyAmount, contract.MonthsLeft));` | J17 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:88` | `Assert.False(result.ChecksumError);` | J18 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:107` | `Assert.Equal(count, coach.Friendlies.Count);` | J05, J06 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:135` | `Assert.Equal(games, stats.Games);` | J04, J10 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:160` | `Assert.Equal(slot[0x0E], club.Players[i].TrendScore);` | J02 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:187` | `Assert.Equal((ContractNotice.Offered, 2, 0), (players[0].Notice, players[0].NoticeYears, players[0].NegotiationLock));` | J03 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:211` | `Assert.Null(game.NationalCoach);` | J12 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:216` | `Assert.Equal((coachRecord[0xEB], clubOf[coachRecord[0x14]]), (coach.Manager, coach.Nation));` | J08 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:233` | `Assert.NotNull(game.NationalCoach);` | J07 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:257` | `Assert.Equal(record[0x26 + i], tactics.ShownEffort(0, (ScoreSituation)i));` | J19 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:276` | `Assert.Equal(debFinished ? clubOf[save.Block("0387")[0]] : null, game.DebCup!.Winner);` | J13, J15 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:277` | `Assert.Equal(europeFinished ? clubOf[save.Block("0388")[0]] : null, game.EuropeanCup!.Winner);` | J14 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:302` | `Assert.Equal(database.Clubs.Single(c => c.Name == "DEUTSCHLAND").Index, clubOf[nationSlot]);` | J20 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:323` | `Assert.Equal(enabled, game.Clubs[game.Managers[0].ClubIndex].AutoLineupEnabled);` | J09 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRunde14Tests.cs:37` | `Assert.True(saved == coach.AutoLineupEnabled, $"{name}: Bundestrainer „automatisch aufstellen“ {coach.AutoLineupEnabled}, HOK 0x380 = {saved}");` | Q26 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportRunde14Tests.cs:57` | `Assert.True(first.AsSpan().SequenceEqual(second), $"{Path.GetFileName(path)}: Rundreise verändert den Spielstand");` | Q79 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportTests.cs:27` | `Assert.Equal(OriginalImport.Day(save), game.CurrentDay);` | R01 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportTests.cs:81` | `Assert.Equal(table[o] + table[o + 1], row.PointsPlus);` | R02 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportTests.cs:82` | `Assert.Equal(table[o + 0x16] + table[o + 0x17], row.GoalsFor);` | R02 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportTests.cs:103` | `Assert.Equal(OriginalImport.Day(save), game.CurrentDay);` | R01 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportTests.cs:122` | `Assert.Equal((s.Age, s.Talent, s.ContractYears, s.SalaryThirds / 3), (p.Age, p.Talent, p.ContractYears, p.MonthlySalary));` | R03 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportTests.cs:146` | `Assert.Equal(game.PlayedMatchDays, copy.PlayedMatchDays);` | R04 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportTests.cs:192` | `Assert.Empty(game.ValidatePlayerIdentity());` | Q91 |
+| `tests/EishockeyManager.Core.Tests/OriginalImportTests.cs:196` | `Assert.Equal(start + 4, game.Season);` | R05 |
+| `tests/EishockeyManager.Core.Tests/PlayoffSemifinalTests.cs:50` | `Assert.Equal(new[] { (108, 103), (102, 105) }, playoffs.Rounds[1].Select(s => (s.HomeClub, s.AwayClub)));` | S01 |
+| `tests/EishockeyManager.Core.Tests/PlayoffSemifinalTests.cs:105` | `Assert.Equal((previous[k].Winner, previous[k + half].Winner), (series.HomeClub, series.AwayClub));` | S01 |
+| `tests/EishockeyManager.Core.Tests/PlayoffSemifinalTests.cs:141` | `Assert.Equal(imported.Rounds[round].Select(s => (s.HomeClub, s.AwayClub)),` | S01 |
+| `tests/EishockeyManager.Core.Tests/PlayoffSemifinalTests.cs:243` | `Assert.Equal(played, group.PlayedRounds);` | S03 |
+| `tests/EishockeyManager.Core.Tests/PlayoffSemifinalTests.cs:262` | `var own = Assert.Single(game.TransferMarket.Listings, l => l.Seller == game.Managers[0]);` | Q03 |
+| `tests/EishockeyManager.Core.Tests/PlayoffSemifinalTests.cs:303` | `Assert.True(Word(0x1E) - s[0x07] == p.ClubCupGamesCarry, where);` | S04 |
+| `tests/EishockeyManager.Core.Tests/PlayoffSemifinalTests.cs:342` | `Assert.Equal(new[] { (s[0], s[7]), (s[1], s[6]), (s[2], s[5]), (s[3], s[4]) },` | S05 |
+| `tests/EishockeyManager.Core.Tests/PlayoffSemifinalTests.cs:353` | `Assert.Equal(new[] { (quarter[0].Winner, quarter[2].Winner), (quarter[1].Winner, quarter[3].Winner) },` | S01 |
+| `tests/EishockeyManager.Core.Tests/PruefungKarteRunde14Tests.cs:40` | `Assert.True(loaded.Managers[0].Dismissed);` | E11 |
+| `tests/EishockeyManager.Core.Tests/PruefungKarteRunde14Tests.cs:76` | `Assert.Equal(3 - healingTicks, p.InjuredGames);` | E12 |
+| `tests/EishockeyManager.Core.Tests/PruefungKarteRunde14Tests.cs:104` | `Assert.NotNull(club.Lineup[LineupSlot.Goalkeeper]);` | E13 |
+| `tests/EishockeyManager.Core.Tests/SaisonManagerTagTests.cs:91` | `Assert.Equal(0, fastOn);              // an: KEINE Paarung im schnellen Weg` | E06 |
+| `tests/EishockeyManager.Core.Tests/SaisonManagerTagTests.cs:126` | `Assert.Equal(a.CaptureRng(), b.CaptureRng());` | E07 |
+| `tests/EishockeyManager.Core.Tests/SaisonManagerTagTests.cs:140` | `Assert.False(new GameOptions().ManagerDayMinuteLoop);` | E08 |
+| `tests/EishockeyManager.Core.Tests/SaisonManagerTagTests.cs:157` | `Assert.False(loaded.Game!.Options.ManagerDayMinuteLoop);` | E09 |
+| `tests/EishockeyManager.Core.Tests/SaisonManagerTagTests.cs:183` | `Assert.Equal(GameState.ClubsPerLeague, game.LeagueSlots(league).Count);` | E14 |
+| `tests/EishockeyManager.Core.Tests/SaisonSatzfolgeSaisonendeTests.cs:113` | `Assert.Equal(random, game.Random.Capture());` | Q40 |
+| `tests/EishockeyManager.Core.Tests/SaisonSatzfolgeSaisonendeTests.cs:292` | `Assert.Equal(Math.Min(club, other.Index), old.FairPlayPremiumWinner(record, club));` | Q42 |
+| `tests/EishockeyManager.Core.Tests/SaisonwechselEntlassungTests.cs:30` | `Assert.DoesNotContain(record.Managers, m => m.Manager == 0);` | Q29 |
+| `tests/EishockeyManager.Core.Tests/SaisonwechselEntlassungTests.cs:42` | `Assert.True(game.IsGameOver);` | Q30 |
+| `tests/EishockeyManager.Core.Tests/SaisonwechselOberligaTests.cs:251` | `Assert.Equal(displaced, game.OutsidePlaces()[44 - GameState.FirstOutsidePlace]);` | Q69 |
+| `tests/EishockeyManager.Core.Tests/SaisonwechselOberligaTests.cs:269` | `Assert.Equal(displaced.Order(), new[] { game.OutsidePlaces()[40 - 36], game.OutsidePlaces()[44 - 36] }.Order());` | Q69 |
+| `tests/EishockeyManager.Core.Tests/SaisonwechselProbenTests.cs:99` | `Assert.True(WithField(ReportKind.Results));` | Q73 |
+| `tests/EishockeyManager.Core.Tests/SeasonFlowTests.cs:207` | `Assert.False(game.Managers[0].Dismissed);` | Q27 |
+| `tests/EishockeyManager.Core.Tests/TacticsOriginalTests.cs:20` | `Assert.All(Enumerable.Range(0, Tactics.Blocks), b => Assert.All(Rows, r =>` | T21 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:92` | `Assert.All(counted, p => Assert.Equal(50 - ticks, p.NegotiationLock));` | D02 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:106` | `Assert.Equal(234, counters[0]);` | D01 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:135` | `Assert.Equal(weeks - 19, stadium.WeeksLeft(StadiumProject.Feature, StadiumFeature.Gastronomie));` | D04 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:158` | `Assert.Equal(-4 * FinanceRules.MonthlyWages(game, club), book.Current(FinanceCategory.Gehaelter));` | D01, D03 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:194` | `Assert.InRange(me.Money - start, original - start - 100_000, original - start + 100_000);` | D01, D03 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:219` | `Assert.Equal(weeks - 21, stadium.WeeksLeft(StadiumProject.Feature, StadiumFeature.Gastronomie));` | D04 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:250` | `Assert.All(listings, l => Assert.Equal(Math.Max(120 - 10 * Ticks(from, halt), 50), l.Player.Strain));` | D02, D05 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:280` | `Assert.Equal(expected[name], strain);` | D02, D05 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:301` | `Assert.Equal(market.Select(m => m.Player), listed.Select(l => l.Player));` | D16 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:319` | `Assert.Equal(expected, game.TransferMarket.Listings.Where(l => l.FromPool).Select(l => l.Player.Name).Order());` | D16 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:373` | `Assert.Equal(weeks - 19, game.Finance(me).Stadium.WeeksLeft(StadiumProject.Feature, feature));` | D04 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:403` | `Assert.All(listings, l => Assert.Equal(Math.Max(120 - 10 * Ticks(from, game.CurrentDay), 50), l.Player.Strain));` | D05 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:431` | `Assert.All(club.Players, p =>` | D02, D06 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:452` | `Assert.Equal(68, p.TrendScore);` | D14 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegTests.cs:66` | `Assert.Equal([3, 6, 10, 13, 17, 20, 24, 27], Enumerable.Range(0, 30).Where(GameState.IsTrainingDay));` | D02 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegTests.cs:95` | `Assert.Equal(books[i] - ticks * costs[i], game.Finance(game.Managers[i]).Book.Current(FinanceCategory.Training));` | D02 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegTests.cs:125` | `Assert.All(listings, l => Assert.Equal(Math.Max(120 - 10 * ticks, 50), l.Player.Strain));` | D02, D05 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegTests.cs:143` | `Assert.Equal(expected, game.IsListChangeDay(d));` | D11 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegTests.cs:170` | `Assert.Contains(bid0, game.TransferMarket.Bids);` | D12 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegTests.cs:233` | `Assert.True(bidSeen, "kein Angebot auf den Markt-Platz von Manager 0 in der WM-Schleife");` | D02 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegTests.cs:270` | `Assert.Equal(-ticks * costs[i], game.Finance(game.Managers[i]).Book.Current(FinanceCategory.Training));` | D15 |
+| `tests/EishockeyManager.Core.Tests/TagestaktHauptwegTests.cs:309` | `Assert.Equal(weeks - builds, stadium.WeeksLeft(StadiumProject.Feature, StadiumFeature.Verkehrsanbindung));` | D13 |
+| `tests/EishockeyManager.Core.Tests/TagestaktSommerpauseReviewTests.cs:49` | `Assert.Equal(234, counters[0]);` | D01 |
+| `tests/EishockeyManager.Core.Tests/TagestaktSommerpauseReviewTests.cs:98` | `Assert.Equal(-4 * summerWages, game.Finance(me).Book.Current(FinanceCategory.Gehaelter));` | D01, D03 |
+| `tests/EishockeyManager.Core.Tests/TagestaktSommerpauseReviewTests.cs:133` | `Assert.Contains(valliere, game.TransferMarket.FreeAgents);` | Q39 |
+| `tests/EishockeyManager.Core.Tests/TagestaktSommerpauseReviewTests.cs:166` | `Assert.False(manager.Dismissed, $"Saison {year + 1}, Tag {game.CurrentDay}: entlassen mit {manager.Money} DM");` | D08 |
+| `tests/EishockeyManager.Core.Tests/TagestaktSommerpauseReviewTests.cs:176` | `Assert.Contains(game.History, r => r.Managers.Any(m => m.Manager == 0 && m.Events.Contains(SeasonEvent.ForcedRelegation)));` | D07 |
+| `tests/EishockeyManager.Core.Tests/TagestaktSommerpauseReviewTests.cs:195` | `Assert.True(game.CurrentDay >= 120);` | D08 |
+| `tests/EishockeyManager.Core.Tests/TransferOriginalTests.cs:296` | `Assert.All(market.Listings.Where(l => !l.IsFreeAgent && l.Seller is null), l => Assert.Equal(0, l.Price % 1000));` | Q82 |
+| `tests/EishockeyManager.Core.Tests/WaveBReviewRegressionTests.cs:77` | `Assert.Equal(TransferResult.Impossible, market.Accept(game, bid));` | Q14 |
+| `tests/EishockeyManager.Formats.Tests/OriginalSaveHeaderTests.cs:35` | `Assert.Equal(1994, info.Year);` | H01 |
+| `tests/EishockeyManager.Formats.Tests/OriginalSaveHeaderTests.cs:36` | `Assert.Equal(7, info.MatchDay);` | H05 |
+| `tests/EishockeyManager.Formats.Tests/OriginalSaveHeaderTests.cs:37` | `Assert.Equal(` | H06, H07, H08, H09, H11, H12, H13, H14, H15, H16, H17, H18, H19 |
+| `tests/EishockeyManager.Formats.Tests/OriginalSaveHeaderTests.cs:46` | `Assert.NotNull(OriginalSaveHeader.TryRead(Header(1993, 1, 1, (0, 0, "X", "Y"))));` | H02 |
+| `tests/EishockeyManager.Formats.Tests/OriginalSaveHeaderTests.cs:53` | `Assert.Equal(4, OriginalSaveHeader.TryRead(Header(1993, 9, 1))!.Managers.Count);` | H03 |
+| `tests/EishockeyManager.Formats.Tests/OriginalSaveHeaderTests.cs:61` | `Assert.Null(OriginalSaveHeader.TryRead(wrong));` | H04 |
+| `tests/EishockeyManager.UI.Tests/BildschirmeFreipruefungTests.cs:238` | `Assert.True(bytes.AsSpan().SequenceEqual(SaveGame.Save(game)), $"Kachel {tile}: Bytes weichen ab");` | U42 |
+| `tests/EishockeyManager.UI.Tests/FinanceBedienungTests.cs:180` | `Assert.Null(screen.ActiveSide);` | Q07 |
+| `tests/EishockeyManager.UI.Tests/GameOptionsScreenTests.cs:181` | `Assert.True(game.Options.ManagerDayMinuteLoop);` | Q05 |
+| `tests/EishockeyManager.UI.Tests/HistoryBarsDosboxTests.cs:51` | `Assert.Equal(HistoryScreen.MarkerColor, At(120, 176));` | Q83 |
+| `tests/EishockeyManager.UI.Tests/HokImportAccessTests.cs:62` | `Assert.Equal([SaveEntryKind.Save, SaveEntryKind.Original, SaveEntryKind.Original, SaveEntryKind.Other], list.Select(e => e.Kind));` | A01 |
+| `tests/EishockeyManager.UI.Tests/HokImportAccessTests.cs:71` | `Assert.False(result.ChecksumError);` | A02 |
+| `tests/EishockeyManager.UI.Tests/HokImportAccessTests.cs:92` | `Assert.IsType<MainMenuScreen>(d.Host.Current);` | A03 |
+| `tests/EishockeyManager.UI.Tests/HokImportAccessTests.cs:108` | `Assert.IsType<MainMenuScreen>(d.Host.Current);` | A04 |
+| `tests/EishockeyManager.UI.Tests/HokImportAccessTests.cs:126` | `Assert.Equal(remake, Saved(d.Host.Game!));` | A05 |
+| `tests/EishockeyManager.UI.Tests/HokImportAccessTests.cs:156` | `Assert.NotEqual(remake, Saved(d.Host.Game!));` | A06 |
+| `tests/EishockeyManager.UI.Tests/HokImportAccessTests.cs:171` | `Assert.IsType<MogelguruScreen>(d.Host.Current);` | A07 |
+| `tests/EishockeyManager.UI.Tests/HokImportAccessTests.cs:184` | `Assert.True(broken.ChecksumError);` | A08 |
+| `tests/EishockeyManager.UI.Tests/HokImportAccessTests.cs:202` | `var screen = Assert.IsType<SaveLoadScreen>(d.Host.Current);` | A09 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14FixUiTests.cs:28` | `Assert.Equal(TeamUi.DialogFill, At(s, 168, 31));` | Y07 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14FixUiTests.cs:57` | `Assert.All(Enumerable.Range(6, 158), x => Assert.Equal(Colors.White, At(s, x, y)));` | Y02 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14FixUiTests.cs:92` | `Assert.All(label, i => Assert.Equal(TeamUi.DialogDark, down.Pixels[i])); // Schrift an derselben Stelle` | Y03 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14FixUiTests.cs:103` | `Assert.Equal(new Rect(2, 29, 165, 71), TransferDialog.OfferBox);` | Y04 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14FixUiTests.cs:146` | `Assert.Equal(new Rect(0, 223, 318, 15), TransferScreen.AccountBar);` | Y05 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14FixUiTests.cs:201` | `Assert.NotEqual(color, At(d.Surface, x, yy));` | Y06 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14Teil6UiTests.cs:79` | `Assert.Equal(0, NumberPixels(d, club, reserve));` | U21 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14Teil6UiTests.cs:94` | `Assert.Equal(["Keine Reihe", "ausgewählt !"], screen.MessageLines);` | U22 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14Teil6UiTests.cs:111` | `Assert.Same(p, club.Lineup[LineupSlot.Forward(3, 0)]);` | U23 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14Teil6UiTests.cs:124` | `Assert.Equal([ShortMessageTexts.NoRoom.Line1, ShortMessageTexts.NoRoom.Line2], screen.MessageLines);` | U24 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14Teil6UiTests.cs:137` | `Assert.Equal(["Der darf da", "nicht rein !"], screen.MessageLines);` | U25 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14Teil6UiTests.cs:152` | `Assert.False(club.IsDressed(left));` | U26 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14Teil6UiTests.cs:171` | `Assert.True(club.IsDressed(reserve));` | U28 |
+| `tests/EishockeyManager.UI.Tests/KaderStartRunde14Teil6UiTests.cs:185` | `Assert.Null(club.Lineup[slot]);` | U27 |
+| `tests/EishockeyManager.UI.Tests/KaderStartSetupScreenTests.cs:114` | `Assert.Equal(League.ZweiteLiga, Assert.Single(setup.Managers).StartLeague);` | Q54 |
+| `tests/EishockeyManager.UI.Tests/KaderStartTeil2SetupTests.cs:36` | `Assert.Equal("Erster", Assert.Single(setup.Managers).Name);` | Q53 |
+| `tests/EishockeyManager.UI.Tests/KaderStartTeil2cScreenTests.cs:49` | `Assert.Null(game.TransferMarket.ListingOf(player));` | Q62 |
+| `tests/EishockeyManager.UI.Tests/KaderStartTeil2cScreenTests.cs:66` | `Assert.Equal(TransferDialog.DialogKind.Bid, screen.Dialog?.Kind);` | Q63 |
+| `tests/EishockeyManager.UI.Tests/KaderStartTeil4ScreenTests.cs:117` | `Assert.Equal((2, 29, 166, 95), (frame.X, frame.Y, frame.X + frame.W - 1, frame.Y + frame.H - 1));` | Q75 |
+| `tests/EishockeyManager.UI.Tests/KaderStartTeil4ScreenTests.cs:124` | `Assert.Equal((contract, salary), (row.Contract, row.Salary));` | Q77 |
+| `tests/EishockeyManager.UI.Tests/NationalteamRunde14UiTests.cs:53` | `Assert.True(NationalMenu.IsLocked(game, Tile(name)), name);` | U31 |
+| `tests/EishockeyManager.UI.Tests/NationalteamRunde14UiTests.cs:101` | `var remembered = Assert.IsType<CupPairingsScreen>(open(host, menu)); // gemerkt: Gruppe 1 (vorher rot: Endrunde)` | U32 |
+| `tests/EishockeyManager.UI.Tests/NationalteamRunde14UiTests.cs:131` | `var again = Assert.IsType<CupPairingsScreen>(open(host, menu));` | U33 |
+| `tests/EishockeyManager.UI.Tests/NationalteamRunde14UiTests.cs:171` | `Assert.Equal(0, Assert.IsType<CupPairingsScreen>(open(host, menu)).Group);` | U34 |
+| `tests/EishockeyManager.UI.Tests/NationalteamRunde14UiTests.cs:196` | `Assert.IsType<MainMenuScreen>(d.Host.Current);` | U35 |
+| `tests/EishockeyManager.UI.Tests/NationalteamRunde14UiTests.cs:243` | `Assert.Same(placed, coach.Formation[slot]);` | U36, U37 |
+| `tests/EishockeyManager.UI.Tests/NewsBarDosboxTests.cs:55` | `Assert.Equal((95, 221), Cols(s, 90, 225, 217, 226)!.Value);` | Q36 |
+| `tests/EishockeyManager.UI.Tests/NewsBarDosboxTests.cs:80` | `Assert.True(empty.Pixels[y * Surface.Width + x] == s.Pixels[y * Surface.Width + x], $"Pixel ({x} / {y})");` | Q38 |
+| `tests/EishockeyManager.UI.Tests/PruefungKarteRunde14UiTests.cs:35` | `Assert.Equal(31, At(s, 181, y));` | Q45 |
+| `tests/EishockeyManager.UI.Tests/PruefungKarteRunde14UiTests.cs:72` | `Assert.Equal(x0 + 1, ink.Min(p => p.x));` | Q46 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:65` | `Assert.Equal(0, screen.Page); // Halten = 1: Wirkung erst beim Loslassen (0x4BA58)` | U01 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:88` | `Assert.Equal(0, screen.Page);` | U12 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:112` | `Assert.Equal(single, Crop(two.Surface, region));` | U15 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:132` | `Assert.Equal(expected, d.Surface.Pixels[(169 + 1 + py) * Surface.Width + x + 1 + px]);` | U14 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:149` | `Assert.Equal(` | U06 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:186` | `Assert.Equal(SaveLoadScreen.MarkerColor, d.Surface.Pixels[(55 + 7 * 2 + 2) * Surface.Width + 43 + 80 * c + 1]);` | U02, U04, U05 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:188` | `Assert.DoesNotContain(SaveLoadScreen.MarkerColor, Crop(d.Surface, area));` | U03 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:202` | `Assert.DoesNotContain(SaveLoadScreen.MarkerColor, Crop(d.Surface, new Rect(43, 55, 3, 7 * 16)));` | U07 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:255` | `Assert.Empty(screen.InfoLines);` | U08 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:270` | `Assert.Equal("Jahr 1994, 1.Spieltag", screen.InfoLines[1]);` | U09 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:289` | `Assert.DoesNotContain("liga", screen.InfoLines[2], StringComparison.OrdinalIgnoreCase);` | U10 |
+| `tests/EishockeyManager.UI.Tests/SaveLoadDialogOriginalTests.cs:302` | `Assert.Equal(["Kein", "Eishockey Manager", "Spielstand.", "!!!"], screen.MessageLines); // DGROUP 0x45D7–0x45FA` | U11 |
+| `tests/EishockeyManager.UI.Tests/SeasonEndColorsTests.cs:39` | `Assert.Contains((byte)18, used);` | Q35 |
+| `tests/EishockeyManager.UI.Tests/StadiumArrowTests.cs:60` | `Assert.True(baseValue == d.Surface.Pixels[screenY * 320 + screenX], $"Pfeil {j}: Pixel ({x}/{y}) ist nicht die Grundgrafik");` | Q34 |
+| `tests/EishockeyManager.UI.Tests/StadiumPartsTests.cs:48` | `Assert.True(differing == 0, $"{feature} Stufe {level}: {differing} abweichende Pixel");` | S16 |
+| `tests/EishockeyManager.UI.Tests/StadiumPartsTests.cs:77` | `Assert.Equal(h, d.Surface.Pixels[y * Surface.Width + x]);` | S11 |
+| `tests/EishockeyManager.UI.Tests/StadiumPartsTests.cs:115` | `Assert.True(screen.AsksConfirmation);` | S15 |
+| `tests/EishockeyManager.UI.Tests/StadiumPartsTests.cs:150` | `Assert.Equal([(112, 187, 10), (112, 199, 42), (112, 200, 55), (112, 201, 57), (112, 201, 55), (113, 201, 40)],` | S14 |
+| `tests/EishockeyManager.UI.Tests/StadiumPartsTests.cs:184` | `Assert.Equal(new Rect(x, y, w, h), area);` | S12 |
+| `tests/EishockeyManager.UI.Tests/StadiumPartsTests.cs:201` | `Assert.Equal(StadiumFeature.Ueberdachung, StadiumScreen.HotspotAt(80, 60));` | S13 |
+| `tests/EishockeyManager.UI.Tests/TacticsClubScreenTests.cs:113` | `Assert.Equal(0, t.Attack(0, ScoreSituation.Tied));` | U51 |
+| `tests/EishockeyManager.UI.Tests/TacticsClubScreenTests.cs:141` | `Assert.Equal(LineChangeMode.Automatic, t.LineChange);` | U52 |
+| `tests/EishockeyManager.UI.Tests/TacticsClubScreenTests.cs:165` | `Assert.Equal(values[0], t.Goalie);` | U53 |
+| `tests/EishockeyManager.UI.Tests/TeamScreenTests.cs:92` | `Assert.Equal(0, t.Effort(0, ScoreSituation.Base));` | Q85 |
+| `tests/EishockeyManager.UI.Tests/TransferBuyWindowDosboxTests.cs:25` | `Assert.Equal(new Rect(2, 29, 165, 43), TransferDialog.BuyBox);` | Q76 |
+| `tests/EishockeyManager.UI.Tests/TransferVertraegeKomplettTeil3ScreenTests.cs:45` | `Assert.Equal(0x0B, dialog.CancelButton.X); // „Behalten“ fest aus dem Code (R14KS-08: nicht OfferBox.X + 10) links (0x0B / 0x53)` | Q64 |
+| `tests/EishockeyManager.UI.Tests/TransferVertraegeKomplettTeil5ScreenTests.cs:46` | `Assert.Equal(0x0B, dialog.CancelButton.X); // „Behalten“ fest aus dem Code (R14KS-08: nicht OfferBox.X + 10) (0x0B / 0x53)` | Q64 |
