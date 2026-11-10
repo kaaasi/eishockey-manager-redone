@@ -167,12 +167,12 @@ public static class HokCompare
             right.TryGetValue(path, out var r);
             var entry = (o ?? r)!;
             var field = entry.Field;
-            var rule = HokCompareClasses.Of(field);
+            var rule = HokCompareClasses.Of(field).ForPair(crossesSeason);
             var kind = rule.ClassFor(crossesSeason);
             // Unter einem zufallsabhängigen Behälter (Markt, Pool, Liga nach dem Saisonwechsel) ist auch ein festes Feld zufallsabhängig.
             if (kind is HokCompareClass.Exact or HokCompareClass.Random && entry.Container is { } container && container != field
                 && HokCompareClasses.Of(container).ClassFor(crossesSeason) == HokCompareClass.Random)
-                (kind, rule) = (HokCompareClass.Random, HokCompareClasses.Of(container));
+                (kind, rule) = (HokCompareClass.Random, HokCompareClasses.Of(container).ForPair(crossesSeason));
             if (HokCompareClasses.Matches(path, interventions))
                 kind = HokCompareClass.Intervention;
             var (deviation, note) = Judge(kind, rule, o?.Value, r?.Value, start?.GetValueOrDefault(path));

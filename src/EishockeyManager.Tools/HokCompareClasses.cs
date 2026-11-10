@@ -25,13 +25,18 @@ public enum HokCompareClass
 /// <paramref name="SeasonBound"/>: deterministisch innerhalb einer Saison, nach einem Saisonwechsel zufallsabhängig (Ligazusammensetzung
 /// folgt aus den Ergebnissen). <paramref name="FromStart"/>: <paramref name="Relative"/> bezieht sich auf die Veränderung des Originals
 /// seit Stand a (|b − a|), nicht auf den Stand b; ohne Wert von a gilt nur <paramref name="Tolerance"/>.
+/// <paramref name="SeasonTolerance"/>: <paramref name="Tolerance"/> in Paaren über einen Saisonwechsel (größere Zufallsschritte).
 /// </summary>
 public sealed record HokCompareRule(HokCompareClass Class, string Note = "", double? Tolerance = null, double? Relative = null,
-    bool SeasonBound = false, bool FromStart = false)
+    bool SeasonBound = false, bool FromStart = false, double? SeasonTolerance = null)
 {
     /// <summary>Klasse im Paar: <see cref="SeasonBound"/> wird nach einem Saisonwechsel zufallsabhängig.</summary>
     public HokCompareClass ClassFor(bool crossesSeason) =>
         SeasonBound && crossesSeason && Class == HokCompareClass.Exact ? HokCompareClass.Random : Class;
+
+    /// <summary>Regel im Paar: über einen Saisonwechsel gilt <see cref="SeasonTolerance"/> statt <see cref="Tolerance"/>.</summary>
+    public HokCompareRule ForPair(bool crossesSeason) =>
+        crossesSeason && SeasonTolerance is { } season ? this with { Tolerance = season } : this;
 }
 
 /// <summary>
@@ -70,6 +75,14 @@ public static class HokCompareClasses
     /// „Gehälter fehlen“ (FILE22→23, rund 790.000 DM) ist rot (Review P2-1); der frühere Bereich ±25 % des Kontostands b war es nicht.
     /// </summary>
     private static readonly HokCompareRule Money = new(HokCompareClass.Random, "Bereich seit a", 50_000, 0.10, FromStart: true);
+
+    /// <summary>
+    /// [APPROX] Kondition/Technik der Teamwerte (Abweichung vom Datenbankwert): ±15 innerhalb einer Saison, ±35 über einen
+    /// Saisonwechsel. Die große Wanderung (<c>MatchEngine.DriftTeamValues</c>, Modus 10) zieht je Verein einen eigenen Schritt
+    /// (−6 … +12, je Wert ±1) und begrenzt auf die Liga, dazu die Wanderungen der Endrunde; zwei unabhängige Züge liegen bis 31
+    /// auseinander (FILE13→14, sechs Saaten, nach #729 sichtbar). Eine Verwechslung absolut/Abweichung (#729) liegt bei 40–100.
+    /// </summary>
+    private static readonly HokCompareRule TeamStrength = new(HokCompareClass.Random, "Bereich", 15, SeasonTolerance: 35);
 
     private static HokCompareRule Range(double tolerance, double? relative = null) => new(HokCompareClass.Random, "Bereich", tolerance, relative);
 
@@ -192,8 +205,8 @@ public static class HokCompareClasses
         Set(InSeason, "Club.League");
         Set(Random, "Club.ForfeitsMatch", "Club.LeaguePenaltyMinutes", "Club.Lineup", "Club.SeriesCurrent", "Club._dressed",
             "Club._rankSlots", "Club._tableRank", "Lineup._defenders", "Lineup._forwards", "Lineup._goalkeeper");
-        Set(Range(15), "ClubTeamValues.AttackCondition", "ClubTeamValues.AttackForm", "ClubTeamValues.AttackTechnique",
-            "ClubTeamValues.DayForm", "ClubTeamValues.DefenseCondition", "ClubTeamValues.DefenseForm",
+        Set(Range(15), "ClubTeamValues.AttackForm", "ClubTeamValues.DayForm", "ClubTeamValues.DefenseForm");
+        Set(TeamStrength, "ClubTeamValues.AttackCondition", "ClubTeamValues.AttackTechnique", "ClubTeamValues.DefenseCondition",
             "ClubTeamValues.DefenseTechnique");
 
         // ---- Spieler (nur Managerkader, Markt, Pool, Nationalkader) -------------------------------------------------
@@ -250,7 +263,7 @@ public static class HokCompareClasses
         ["FILE44→FILE46"] = ["Clubs[*].Players[KJELLBERG]*", "Clubs[*].Players.Count", "Clubs[*].Lineup*"],
         // FILE48: „FILE18 geladen (nicht FILE47), Kader geleert, einen Tag weitergespielt“ (Block 0375 Byte 10/11 = 0).
         ["FILE18→FILE48"] = ["NationalCoach._squad*", "NationalCoach._autoLineup*", "NationalCoach._dressed*", "_nationalAutoLineupSaved",
-            "Clubs[56 DEUTSCHLAND].TeamValues.*Form"], // leerer Kader: Länderwerte der Reihen 0 (0x952C mit Manager 5)
+            "Clubs[56 DEUTSCHLAND].TeamValues.*"], // leerer Kader: Länderwerte der Reihen 0 (0x952C mit Manager 5), alle sechs Werte
     };
 
     /// <summary>Trifft der Pfad eines der Muster (<c>*</c> = beliebig viele Zeichen)?</summary>

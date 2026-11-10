@@ -123,6 +123,30 @@ public class AbgleichOriginalWerkzeugTests
         Assert.Equal(HokCompareClass.Random, across.Class);
     }
 
+    /// <summary>
+    /// Teamwerte Kondition/Technik: ±15 innerhalb einer Saison, ±35 über einen Saisonwechsel (große Wanderung je Verein); eine
+    /// Verwechslung absolut/Abweichung (#729, 40–100) bleibt auch dann rot.
+    /// </summary>
+    [Theory]
+    [InlineData(20, false, true)]
+    [InlineData(20, true, false)]
+    [InlineData(35, true, false)]
+    [InlineData(36, true, true)]
+    [InlineData(60, true, true)]
+    public void Rows_TeamStrengthWiderAcrossSeasons(int shift, bool crossesSeason, bool deviation)
+    {
+        var original = TestGames.Create(seed: 11);
+        var remake = TestGames.Create(seed: 11);
+        MatchEngine.LoadTeamValues(original);
+        MatchEngine.LoadTeamValues(remake);
+        var club = remake.Clubs.First(c => c.League == League.Bundesliga);
+        club.TeamValues = club.TeamValues!.Value with { AttackCondition = original.Clubs[club.Index].TeamValues!.Value.AttackCondition + shift };
+        var path = $"Clubs[{club.Index} {club.Name}].TeamValues.AttackCondition";
+
+        var row = HokCompare.Rows(original, remake, crossesSeason, []).Single(r => r.Path == path);
+        Assert.Equal(deviation, row.Deviation);
+    }
+
     [Fact]
     public void PlayTo_ReachesLaterHalt_AndReportsSkippedHalt()
     {

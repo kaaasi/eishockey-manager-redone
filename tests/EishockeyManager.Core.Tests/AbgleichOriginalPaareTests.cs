@@ -17,8 +17,12 @@ namespace EishockeyManager.Core.Tests;
 /// </remarks>
 public class AbgleichOriginalPaareTests
 {
-    private const int TeamValuesImport = 729, Strain = 730, PoolSeasonChange = 731, WorldOnlyManagerSlot = 732, AutoLineupFlag = 733,
-        MoneyFile13 = 734, DayZero = 699, MoneyFile16A = 737, FormFile44 = 738;
+    private const int Strain = 730, PoolSeasonChange = 731, WorldOnlyManagerSlot = 732, AutoLineupFlag = 733, MoneyFile13 = 734,
+        DayZero = 699, MoneyFile16A = 737, FormFile44 = 738, WorldOnlyImportTeamValues = 747, ManagerTeamValues = 748,
+        LostPoolSlotImport = 749;
+
+    /// <summary>Zufall, kein Befund: Begründung am Eintrag (nur optionale Muster).</summary>
+    private const int Chance = 0;
 
     /// <summary>
     /// Erwartete Abweichung: Pfadmuster (<c>*</c> = beliebig) mit Issue. <paramref name="Delta"/>: jede Abweichung des Musters muss
@@ -27,52 +31,67 @@ public class AbgleichOriginalPaareTests
     /// </summary>
     public sealed record Known(string Pattern, int Issue, int? Delta = null, bool Optional = false);
 
-    /// <summary>Gemeinsame Muster: Teamwerte (Kondition/Technik) nach dem Import (#729), Tag 0 am Saisonanfang (#699 Punkt 2).</summary>
-    private static readonly Known[] TeamValues =
-    [
-        new("Clubs[*].TeamValues.*Condition", TeamValuesImport), new("Clubs[*].TeamValues.*Technique", TeamValuesImport),
-    ];
+    /// <summary>Saisonwechsel: Pool nach dem Saisonwechsel (#731). Tag 0 (#699 Punkt 2) behoben durch #725.</summary>
+    private static readonly Known[] SeasonStart = [new("Invariante.PoolMittel.*", PoolSeasonChange)];
 
-    private static readonly Known[] SeasonStart =
-    [
-        new("DayOpened", DayZero), new("FinanceDay", DayZero), new("TrainedUntil.*", DayZero), new("RankSlotsRecorded", DayZero),
-        new("Invariante.PoolMittel.*", PoolSeasonChange),
-    ];
-
-    /// <summary>Belastung #730: nur die Spieler, die über alle sechs Saaten abweichen (Original 50).</summary>
+    /// <summary>Belastung #730: Pflicht für die Spieler, die über alle sechs Saaten abweichen (Original 50), sonst optional.</summary>
     private static Known[] StrainOf(string club, params string[] players) =>
         [.. players.Select(p => new Known($"Clubs[{club}].Players[{p}].Strain", Strain))];
 
+    private static Known[] StrainOptional(string club, params string[] players) =>
+        [.. players.Select(p => new Known($"Clubs[{club}].Players[{p}].Strain", Strain, Optional: true))];
+
     private const string Landshut = "Clubs[7 EV LANDSHUT]";
 
+    /// <summary>
+    /// Erwartete Listen, erneuert gegen <c>main</c> 62e4927 (nach #725, #726, #727): Teamwerte #729 behoben durch #727, Tag 0
+    /// #699 (Punkt 2) behoben durch #725 außer im Modus „nur Weltkugel“ (FILE20→21).
+    /// </summary>
     public static readonly IReadOnlyDictionary<string, Known[]> Expected =
         new Dictionary<string, Known[]>
         {
-            ["FILE02→FILE03"] = [.. TeamValues, .. StrainOf("5 KÖLNER EC", "HOCK", "MENDE", "SIKORA")],
-            ["FILE13→FILE14"] = [.. TeamValues, .. SeasonStart, new("Managers[0].Money", MoneyFile13),
+            ["FILE02→FILE03"] = [.. StrainOf("5 KÖLNER EC", "HOCK", "MENDE", "SIKORA")],
+            ["FILE13→FILE14"] = [.. SeasonStart, new("Managers[0].Money", MoneyFile13),
                 new("Clubs[6 KREFELDER EV]._autoLineup", AutoLineupFlag), new("Clubs[6 KREFELDER EV].TeamValues.*Form", AutoLineupFlag),
                 // Andere Aufstellung (#733) → andere Einsätze → verdeckte Werte einzelner Spieler (Saaten 2, 3, 4711).
-                new("Clubs[6 KREFELDER EV].Players[*].HiddenSkill*", AutoLineupFlag, Optional: true)],
-            ["FILE16A→FILE17"] = [.. TeamValues, .. SeasonStart, new("Managers[0].Money", MoneyFile16A),
-                .. StrainOf("14 SV BAYREUTH", "A.RAUBAL", "BLAZYCEK", "DOLL", "HADRASCHEK", "HORSTMANN", "LANGLOIS", "M.SCHMIDT",
-                    "MEIXNER", "MORRISON", "NOACK", "PESKA", "PROKES", "PYLE", "TRAVNICEK", "ZIMMERMANN")],
-            // „nur Weltkugel“ (#732): Managerkader altert im Remake ein Jahr, Verträge ein Jahr kürzer; nur genau diese Werte.
-            ["FILE20→FILE21"] = [.. TeamValues, new("DayOpened", DayZero), new("Invariante.PoolMittel.*", PoolSeasonChange),
+                new("Clubs[6 KREFELDER EV].Players[*].HiddenSkill*", AutoLineupFlag, Optional: true),
+                // Kondition/Technik des Managervereins aus der Aufstellung (#748): 16–43 tiefer, über ±35 nur bei manchen Saaten.
+                new("Clubs[6 KREFELDER EV].TeamValues.*Condition", ManagerTeamValues, Optional: true),
+                new("Clubs[6 KREFELDER EV].TeamValues.*Technique", ManagerTeamValues, Optional: true),
+                // Zufall: Endrunde KREFELD mit 9 statt 3 Spielen (Saaten 1993, 77: ClubGamesCarry 9), Belastung 25–40 höher.
+                new("Clubs[6 KREFELDER EV].Players[*].Strain", Chance, Optional: true)],
+            ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", MoneyFile16A),
+                .. StrainOf("14 SV BAYREUTH", "A.RAUBAL", "BLAZYCEK", "DOLL", "HADRASCHEK", "HORSTMANN", "M.SCHMIDT", "NOACK",
+                    "TRAVNICEK", "ZIMMERMANN"),
+                // Saat 1993 seit #725 im Bereich ±20, die übrigen fünf Saaten nicht.
+                .. StrainOptional("14 SV BAYREUTH", "LANGLOIS", "MEIXNER", "MORRISON", "PESKA", "PROKES", "PYLE"),
+                // Zufall: LANDSHUT steigt im Original in die Oberliga ab (Teamwerte auf deren Obergrenze, alle −33), im Remake
+                // nicht (Liga über den Saisonwechsel zufallsabhängig); Abstand 21–51 je Saat.
+                new($"{Landshut}.TeamValues.*", Chance, Optional: true)],
+            // „nur Weltkugel“ (#732): Managerkader altert im Remake ein Jahr, Verträge ein Jahr kürzer; das Original bewertet Gehalt
+            // und Preis neu (neue Tendenz, Alter und Vertrag unverändert) – sichtbar seit dem Import der Tendenz (#726/#727).
+            ["FILE20→FILE21"] = [new("DayOpened", DayZero), new("Invariante.PoolMittel.*", PoolSeasonChange),
                 new($"{Landshut}.Players[*].Age", WorldOnlyManagerSlot, Delta: 1),
                 new($"{Landshut}.Players[*].ContractYears", WorldOnlyManagerSlot, Delta: -1),
+                new($"{Landshut}.Players[*].MonthlySalary", WorldOnlyManagerSlot),
+                new($"{Landshut}.Players[*].PurchasePrice", WorldOnlyManagerSlot),
                 // Form und Belastung einzelner Spieler (je nach Saat andere, Remake Belastung 70).
                 new($"{Landshut}.Players[*].Form", WorldOnlyManagerSlot, Optional: true),
                 new($"{Landshut}.Players[*].Strain", WorldOnlyManagerSlot, Optional: true),
                 new($"{Landshut}.TeamValues", WorldOnlyManagerSlot), new("Managers[0].Money", WorldOnlyManagerSlot)],
-            ["FILE22→FILE23"] = [.. TeamValues, .. SeasonStart],
-            ["FILE24→FILE25"] = [.. TeamValues, .. StrainOf("5 KÖLNER EC", "BRANDL", "KWASIGROCH"),
+            ["FILE22→FILE23"] = [.. SeasonStart],
+            ["FILE24→FILE25"] = [.. StrainOf("5 KÖLNER EC", "BRANDL", "KWASIGROCH"),
                 new("Clubs[5 KÖLNER EC]._autoLineup", AutoLineupFlag)],
-            ["FILE30→FILE31"] = [.. TeamValues],
-            ["FILE38→FILE39"] = [.. TeamValues, .. StrainOf("5 KÖLNER EC", "DOROCHIN", "LIEBSCH")],
-            ["FILE39→FILE40"] = [.. TeamValues],
+            ["FILE30→FILE31"] = [],
+            ["FILE38→FILE39"] = [.. StrainOf("5 KÖLNER EC", "DOROCHIN", "LIEBSCH")],
+            ["FILE39→FILE40"] = [],
             // Formwerte KÖLN im Remake bei allen Saaten 10–17 höher (#738), bei 1993 knapp im Bereich.
-            ["FILE44→FILE46"] = [.. TeamValues, .. SeasonStart, new("Clubs[5 KÖLNER EC].TeamValues.*Form", FormFile44, Optional: true)],
-            ["FILE18→FILE48"] = [.. TeamValues],
+            ["FILE44→FILE46"] = [.. SeasonStart, new("Clubs[5 KÖLNER EC].TeamValues.*Form", FormFile44, Optional: true),
+                // Platz 196 KJELLBERG: Import frei, Remake vergeben (#749); Zahl nur bei Saaten 1993 und 1 verschieden.
+                new("Invariante.PoolSpieler", LostPoolSlotImport, Delta: -1, Optional: true)],
+            // „nur Weltkugel“: fehlende Teamwerte des Managervereins → alle Teamwerte neu gewürfelt (#747).
+            ["FILE18→FILE48"] = [new("Clubs[*].TeamValues.*Condition", WorldOnlyImportTeamValues),
+                new("Clubs[*].TeamValues.*Technique", WorldOnlyImportTeamValues)],
         };
 
     public static TheoryData<string, string> Pairs()
