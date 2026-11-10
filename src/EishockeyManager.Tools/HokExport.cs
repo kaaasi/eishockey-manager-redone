@@ -4,23 +4,24 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Tools;
 
 /// <summary>
-/// <c>emtool hok export &lt;spielstand&gt; &lt;ziel.hok&gt; [--gamedata ordner] [--seed n] [--force]</c>: Remake-Spielstand (<c>*.ems</c>)
+/// <c>emtool hok export &lt;spielstand&gt; &lt;ziel.hok&gt; [--gamedata ordner] [--force]</c>: Remake-Spielstand (<c>*.ems</c>)
 /// als Original-Spielstand <c>*.HOK</c> schreiben (Spur hok-export, Teil 3, R15-D5 = D: nur über die Kommandozeile, keine Option im
 /// Speichern-Dialog). Export nach <see cref="OriginalExport.Export"/>; das Ergebnis wird mit <see cref="OriginalSaveGame.Read"/>
 /// gegengelesen (Länge, Kennungen, Prüfsummen) und lässt sich mit <c>emtool hok dump</c> ansehen.
 /// <para>
 /// Prüfhilfe für die DOSBox-Probe (R15-D5 = D): <c>--neu &lt;name&gt; &lt;vereinsindex&gt;</c> statt des Spielstands legt ein neues
 /// Remake-Spiel an (Level 3, Dauer ∞, Mittelfeld; ein Manager, Kopf <c>--kopf n</c>), spielt mit <c>--spieltage n</c> n Ligaspieltage über
-/// <see cref="GameState.Continue"/> und exportiert dann; <c>--ems datei</c> schreibt den Remake-Stand daneben.
+/// <see cref="GameState.Continue"/> und exportiert dann; <c>--ems datei</c> schreibt den Remake-Stand daneben; <c>--seed n</c> ist die Saat
+/// des neuen Spiels (Vorgabe 1993).
 /// </para>
-/// [APPROX] Spielstand-ID, Füllbyte und Startschlüssel aus der Saat (Vorgabe 1993), damit das Werkzeug wiederholbar ist.
+/// Spielstand-ID, Füllbyte und Startschlüssel folgen aus dem Inhalt (<see cref="OriginalSaveWriter.DeriveFromContent"/>).
 /// </summary>
 internal static class HokExport
 {
     public const int DefaultSeed = 1993;
 
     private const string Usage =
-        "Aufruf: emtool hok export <spielstand> <ziel.hok> [--gamedata ordner] [--seed n] [--force]\n" +
+        "Aufruf: emtool hok export <spielstand> <ziel.hok> [--gamedata ordner] [--force]\n" +
         "        emtool hok export --neu <name> <vereinsindex> <ziel.hok> [--spieltage n] [--kopf n] [--ems datei] [--gamedata ordner] [--seed n] [--force]";
 
     public static int Run(IReadOnlyList<string> args)
@@ -90,7 +91,7 @@ internal static class HokExport
                 game = loaded.Game ?? throw new ArgumentException($"{positional[0]}: {loaded.Error}");
             }
 
-            var bytes = OriginalExport.Export(game, rawDatabase, seed);
+            var bytes = OriginalExport.Export(game, rawDatabase);
             var check = OriginalSaveGame.Read(bytes);
             if (!check.ChecksumsValid)
                 throw new InvalidOperationException("Prüfsumme des Exports falsch (Fehler im Schreiber).");
@@ -98,7 +99,8 @@ internal static class HokExport
             var manager = game.Managers[0];
             Console.WriteLine($"Exportiert: → {target} ({bytes.Length} Byte, Prüfsummen gültig)");
             Console.WriteLine($"  {game.DateText}, Saison {game.Season}, Spieltag {game.PlayedMatchDays + 1}, Manager {game.Managers.Count}, " +
-                              $"„{manager.Name}“ ({game.Clubs[manager.ClubIndex].Name}), Konto {manager.Money} DM, Saat {seed}");
+                              $"„{manager.Name}“ ({game.Clubs[manager.ClubIndex].Name}), Konto {manager.Money} DM, " +
+                              $"Spielstand-ID {check.SaveId}" + (newName is null ? "" : $", Saat {seed}"));
             if (ems is not null)
                 Console.WriteLine($"  Remake-Stand: {ems}");
             return 0;

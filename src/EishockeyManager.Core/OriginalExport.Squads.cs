@@ -25,8 +25,11 @@ public sealed partial class GameState
     ///   frei, entfallen sie. Pool +0x13, +0x19, +0x1B, +0x1C, +0x1E und Kaderplatz +0x02, +0x1B bleiben 0 (ungedeutet).</item>
     /// </list>
     /// </summary>
-    private void WriteSquadsAndPool(OriginalSaveWriter w, int[] slotOf)
+    private void WriteSquadsAndPool(OriginalSaveWriter w, int[] slotOf, byte[]? clubDatabase)
     {
+        var names = clubDatabase is null ? [] : OriginalExport.DatabasePlayerNames(clubDatabase);
+        void WritePoolEntry(byte[] pool, int index, Player p, byte owner, int clubSlot) =>
+            GameState.WritePoolEntry(pool, index, p, owner, clubSlot, names);
         var pool = w.Block("far:8253");
         var squad = w.Block("5DC3");
         var indexOf = PoolIndices();
@@ -143,10 +146,15 @@ public sealed partial class GameState
     private Club? ClubOf(Player player) => Clubs.FirstOrDefault(c => c.Players.Contains(player))
         ?? TransferMarket.Listings.FirstOrDefault(l => l.Player == player && l.Seller is not null)?.From;
 
-    private static void WritePoolEntry(byte[] pool, int index, Player p, byte owner, int clubSlot)
+    private static void WritePoolEntry(byte[] pool, int index, Player p, byte owner, int clubSlot, Dictionary<string, byte[]> names)
     {
         var e = pool.AsSpan(index * OriginalSaveGame.PoolRecordLength, OriginalSaveGame.PoolRecordLength);
-        OriginalSaveWriter.Name(p.Name, 0x12).CopyTo(e);
+        // [ORIGINAL] Namen aus der Datenbank kopiert das Original roh (Ö meist 0x99, BRANNSTRÖM als 0x5C; FILE01); andere Namen in der
+        // Schreibweise der Stände (OriginalSaveWriter.Encode). Review 2026-11-10 B2.
+        if (names.TryGetValue(p.Name, out var raw))
+            raw.AsSpan(0, Math.Min(raw.Length, 0x11)).CopyTo(e);
+        else
+            OriginalSaveWriter.Name(p.Name, 0x12).CopyTo(e);
         e[0x12] = OriginalExport.Byte(p.Talent);
         e[0x14] = OriginalExport.Byte(p.Age);
         e[0x15] = OriginalExport.Byte(p.Condition);

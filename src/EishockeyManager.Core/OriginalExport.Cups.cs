@@ -149,7 +149,7 @@ public sealed partial class GameState
                 r[0] = (byte)(m | (withPlayer ? 0 : 8) | (Math.Clamp(message.DaysLeft, 1, 15) << 4));
                 r[1] = OriginalExport.Byte(message.Day + 1);
                 r[2] = (byte)(withPlayer ? indexOf[message.Player!] : 0);
-                var text = GameText.Encode(string.Join("^", message.Lines));
+                var text = OriginalSaveWriter.Encode(string.Join("^", message.Lines)); // Ö = 0x99 wie FILE44 (B2)
                 text.AsSpan(0, Math.Min(text.Length, OriginalImport.MessageRecordLength - 4)).CopyTo(r[3..]);
                 k++;
             }

@@ -26,17 +26,64 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         LaterSeason = 4,
     }
 
-    /// <summary>Erlaubte Abweichung: Block, Bereich im Satz (Versatz mod Satzlänge), Bedingung, Begründung.</summary>
-    private sealed record Rule(string Block, int Record, int From, int To, string Reason, When When = When.Always)
+    /// <summary>Was eine Regel über den Stand wissen darf: Original, Export und Merkmale.</summary>
+    private sealed record Stand(OriginalSaveGame Original, OriginalSaveGame Exported, When Flags);
+
+    /// <summary>
+    /// Erlaubte Abweichung: Block, Bereich im Satz (Versatz mod Satzlänge), Bedingung, Begründung. <paramref name="Records"/> bindet die
+    /// Regel an Satznummern (Versatz / Satzlänge), <paramref name="If"/> an eine Bedingung je Satz (Review 2026-11-10 B5: keine Regel
+    /// breiter als ihre Begründung).
+    /// </summary>
+    private sealed record Rule(string Block, int Record, int From, int To, string Reason, When When = When.Always,
+        int[]? Records = null, Func<Stand, int, int, bool>? If = null)
     {
-        public bool Covers(string block, int offset, When stand)
+        public bool Covers(string block, int offset, Stand stand)
         {
-            if (block != Block || (When != When.Always && (stand & When) == 0))
+            if (block != Block || (When != When.Always && (stand.Flags & When) == 0))
                 return false;
             // Tabellensätze beginnen bei DGROUP 0x825A, also 3 Byte hinter dem Blockanfang 0x8257.
             var at = Block == "8257" ? (offset - 3 + Record) % Record : Record > 0 ? offset % Record : offset;
-            return at >= From && at <= To;
+            if (at < From || at > To)
+                return false;
+            var record = Record > 0 ? (Block == "8257" ? (offset - 3) / Record : offset / Record) : 0;
+            return (Records is null || Records.Contains(record)) && (If is null || If(stand, record, at));
         }
+    }
+
+    /// <summary>
+    /// B2 (Review 2026-11-10): Name eines Poolsatzes als Text verschieden (der Import gibt einem Poolspieler, dessen Name im Remake schon
+    /// vergeben ist, einen anderen). Gleicher Text mit anderen Bytes (Umlaut-Kodierung) ist keine erlaubte Abweichung.
+    /// </summary>
+    private static bool PoolNameChanged(Stand stand, int record, int at)
+    {
+        static string Name(OriginalSaveGame save, int record) => GameText.Decode(
+            NameBytes(save.Block("far:8253").AsSpan(record * OriginalSaveGame.PoolRecordLength, 0x12)));
+        return Name(stand.Original, record) != Name(stand.Exported, record);
+    }
+
+    /// <summary>Kaderplatz im Original mit Reihe (+0x15 ≠ 0), aber nicht eingesetzt (+0x0A = 0): FILE37A–FILE46.</summary>
+    private static bool LinedUpNotDressed(Stand stand, int slot, int at)
+    {
+        var s = stand.Original.Block("5DC3").AsSpan(slot * OriginalSaveGame.SquadSlotLength, OriginalSaveGame.SquadSlotLength);
+        return s[0x15] != 0 && s[0x0A] == 0;
+    }
+
+    /// <summary>Kaderplatz ohne Spieler (Poolindex +0x0F = 0) im Original oder Export, oder Platz im Marktsatz (Satz 4).</summary>
+    private static bool UnusedSlotOrMarket(Stand stand, int slot, int at) =>
+        slot / SlotsPerRecord == OriginalImport.MarketRecord
+        || stand.Original.Block("5DC3")[slot * OriginalSaveGame.SquadSlotLength + 0x0F] == 0
+        || stand.Exported.Block("5DC3")[slot * OriginalSaveGame.SquadSlotLength + 0x0F] == 0;
+
+    private const int SlotsPerRecord = 0x618 / OriginalSaveGame.SquadSlotLength;
+
+    /// <summary>Byte hinter dem Nullbyte des Namens im Original: Rest eines früheren, längeren Namens („SPIELER 1136“ o. ä.).</summary>
+    private static bool BehindPoolName(Stand stand, int record, int at) =>
+        at > NameBytes(stand.Original.Block("far:8253").AsSpan(record * OriginalSaveGame.PoolRecordLength, 0x12)).Length;
+
+    private static ReadOnlySpan<byte> NameBytes(ReadOnlySpan<byte> field)
+    {
+        var end = field.IndexOf((byte)0);
+        return end < 0 ? field : field[..end];
     }
 
     /// <summary>
@@ -46,7 +93,6 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
     private static readonly Rule[] Allowed =
     [
         // Kopf und Zähler
-        new("0178", 0, 0, 0, "ungedeutet (Vereinssatz, FILE01 6)"),
         new("A88D", 0, 0, 3, "ungedeutet (ändert sich mit dem Spieltag)"),
         new("CAE3", 0, 0, 5, "ungedeutet"),
         new("CC73", 0, 0, 0x2F, "Minuten-Vorgabe umgerechnet: Umrechnung aus 0xCC43 nicht belegt"),
@@ -67,14 +113,11 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         // Managersatz
         new("965B", 0x1AF, 0xF0, 0xF0, "ungedeutet"),
         new("965B", 0x1AF, 0xF3, 0xF3, "ungedeutet"),
-        new("965B", 0x1AF, 0x13, 0x13, "Managerkopf im Modus „nur Weltkugel“ und Bundestrainer-Satz (Feldkarte U)"),
         new("965B", 0x1AF, 0x18F, 0x192, "Konto: Rundung Drittel-DM → DM (Regel 4)"),
         new("965B", 0x1AF, 0x197, 0x19A, "zuletzt berechnete Einnahmen (Feldkarte U, LastHomeGame)"),
-        new("965B", 0x1AF, 0x19B, 0x1AE, "Darlehen: Rundung Drittel-DM"),
         // Vereinssätze
         new("far:9657", 0x3D, 0x1E, 0x25, "ungedeutet (Zufallswert 45–55, Folgebytes)"),
         new("far:9657", 0x3D, 0x26, 0x3A, "Automatik-Anzeige der Computervereine (vor jedem Spiel neu, 0x8365) und ungedeutete Bytes"),
-        new("far:9657", 0x3D, 0x00, 0x15, "Name im Modus „nur Weltkugel“ (Land statt Verein, Regel 1)"),
         // Pool und Kaderplätze
         new("far:8253", 33, 0x13, 0x13, "ungedeutet"),
         new("far:8253", 33, 0x15, 0x17, "Grundwerte vergebener und gelisteter Poolspieler: das Remake führt einen Wertesatz je Spieler"),
@@ -82,12 +125,13 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("far:8253", 33, 0x19, 0x1C, "ungedeutet (Statistik der Poolspieler?)"),
         new("far:8253", 33, 0x1D, 0x1D, "Verein eines Nominierten (Land) bzw. ohne übernommenen Kader"),
         new("far:8253", 33, 0x1E, 0x20, "offene Meldung, Vorlagen/Minuten der Poolspieler (Feldkarte: nur Kaderspieler)"),
-        new("far:8253", 33, 0x00, 0x11, "Name: Poolspieler, die beim Import einem Remake-Namen weichen (jeder Name nur einmal)"),
+        new("far:8253", 33, 0x00, 0x11, "Name: Poolspieler, die beim Import einem Remake-Namen weichen (jeder Name nur einmal)", If: PoolNameChanged),
+        new("far:8253", 33, 0x00, 0x11, "Name: Reste eines früheren Namens hinter dem Nullbyte (Export schreibt Nullbytes)", If: BehindPoolName),
         new("5DC3", 0x34, 0x02, 0x02, "ungedeutet"),
         new("5DC3", 0x34, 0x1A, 0x1B, "ungedeutet (Kaderplatz; Markt: Sperre)"),
         new("5DC3", 0x34, 0x22, 0x27, "Torhüter: Vereinswert Gegentore (Feldkarte: Torhüter 0)"),
         new("5DC3", 0x34, 0x28, 0x2F, "Markt: Gehalt und Rundung Drittel-DM (Feldkarte TransferListing)"),
-        new("5DC3", 0x34, 0x0A, 0x0A, "eingesetzt: Automatik neu berechnet"),
+        new("5DC3", 0x34, 0x0A, 0x0A, "eingesetzt: aufgestellt (+0x15 ≠ 0), im Original aber nicht eingesetzt – das Remake setzt Aufgestellte ein", If: LinedUpNotDressed),
         new("5DC3", 0x34, 0x10, 0x14, "Werte im Nationalkader: ein Wertesatz je Spieler (Feldkarte, Teil 4b)"),
         new("5DC3", 0x34, 0x0E, 0x0E, "Tendenzwert 0 (nicht gesetzt) übernimmt die Stufe des Nachspielens"),
         // Pokale
@@ -100,26 +144,21 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("CD28", 0, 0, 0x2F, "Gruppentabelle je Platz/Teilnehmer nicht belegt"),
         new("CCF8", 0, 0, 0x2F, "Gruppentabelle je Platz/Teilnehmer nicht belegt"),
         new("CFFC", 0, 0, 0x17, "Teilnehmer abgeschlossener Gruppen"),
-        new("CCB2", 0, 0, 0x45, "Marken (+30) der Play-off-Spiele (R14HI-04)"),
         new("CCA4", 0, 0, 0x0D, "Siegbyte 0x14 und Siege abgeschlossener Runden"),
         new("CFF8", 0, 0, 3, "ungedeutet"),
         new("5C4B", 0, 0, 0x7F, "Pokaltore des laufenden Tages (Reste)"),
-        new("A776", 0, 0, 9, "Europapokal-Teilnehmer der Vorsaison"),
-        new("A763", 0, 0, 0x11, "Auslosung Europapokal (offen)"),
         // Rest
         new("C313", 10, 0, 3, "Werbeangebote: Rundung Drittel-DM"),
         new("C313", 10, 4, 9, "Werbeangebote mit Betrag 0 gelten als gelöscht (Import)"),
         new("D294", 0x71, 0, 0x70, "Reste gelöschter Nachrichten hinter freiem Satz"),
         new("AB7B", 0, 0, 0x1593, "Serien, Rekorde, Ewige Tabelle: Vorsaison und ungedeutete Teile"),
-        new("D0F4", 0, 0, 0x11F, "Kursverlauf: Rundung Drittel-DM"),
         new("D0DB", 0, 0, 7, "Freundschaftsspiele: Satzfolge der Länder"),
         new("D0D3", 0, 0, 7, "Freundschaftsspiele: Satzfolge der Länder"),
         new("D0CB", 0, 0, 7, "Freundschaftsspiele"),
         new("D0C3", 0, 0, 7, "Freundschaftsspiele"),
-        new("0178", 0, 0, 3, "ungedeutet (je Manager ein Satz? FILE09: 03 0A)"),
         new("0388", 0, 0, 0, "Vorjahressieger Europapokal nur in History (Feldkarte N)", When.LaterSeason),
         new("038B", 0, 0, 0, "ungedeutet (ab dem ersten Saisonende 1)"),
-        new("5DC3", 0x34, 0x03, 0x08, "ungenutzte Kadersätze und Marktplätze: Reste der Tor- und Spielzähler (Feldkarte: ein Wertesatz je Spieler)"),
+        new("5DC3", 0x34, 0x03, 0x08, "ungenutzte Kadersätze und Marktplätze: Reste der Tor- und Spielzähler (Feldkarte: ein Wertesatz je Spieler)", If: UnusedSlotOrMarket),
         new("5DC3", 0x34, 0x15, 0x15, "Reihe verletzter oder gelisteter Spieler: das Remake stellt sie nicht auf"),
         new("5DC3", 0x34, 0x16, 0x17, "Verletzungsart nach der Heilung, Anfrage-Verein ohne Kennzeichen (Import liest beide nur mit Kennzeichen)"),
         new("5DC3", 0x34, 0x19, 0x19, "verdeckte Werte der Marktplätze: ein Wertesatz je Spieler"),
@@ -136,9 +175,7 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("8257", 0x50, 0x00, 0x4F, "Tabellensätze der Vorsaison (Sicherung, Bilanz, Platzfelder, Tabellenfeld)", When.NewSeason),
         new("965B", 0x1AF, 0x18, 0xE3, "Saisonverlauf der Vorsaisons (Highscore, Feldkarte N History)", When.LaterSeason),
         new("965B", 0x1AF, 0xFE, 0x159, "Zuschauerkurve und ungedeutete Wörter der Vorsaison", When.LaterSeason),
-        new("965B", 0x1AF, 0x173, 0x173, "Werbebewertung am Saisonstart"),
         new("8257", 0x50, 0x4D, 0x4E, "ungedeutet (Wort hinter den Strafminuten)"),
-        new("965B", 0x1AF, 0xE6, 0xE6, "erreichte Pokalrunde: frühere DEB-Pokal-Runden nach dem Import aus dem Nachspielen (Teil 4c)"),
     ];
 
     /// <summary>
@@ -167,28 +204,65 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
     [MemberData(nameof(Saves))]
     public void OriginalStand_ExportMatchesOriginal_ExceptAllowedFields(string file)
     {
+        var hits = new Dictionary<Rule, int>();
+        var result = Compare(file, hits);
+        if (result is null)
+            return;
+        var (total, differing, uncovered) = result.Value;
+        output.WriteLine($"{file}: {total - differing} von {total} Byte gleich, {differing} in erlaubten Feldern");
+        foreach (var (rule, count) in hits.OrderByDescending(h => h.Value))
+            output.WriteLine($"  Regel {rule.Block} +0x{rule.From:X}–0x{rule.To:X} ({rule.Reason}): {count}");
+        foreach (var u in uncovered)
+            output.WriteLine($"UNCOVERED {file} {u}");
+        Assert.True(uncovered.Count == 0, $"{file}: {uncovered.Count} Abweichungen außerhalb der Liste, z. B. " +
+                                          string.Join("; ", uncovered.Take(12)));
+    }
+
+    /// <summary>
+    /// B5 (Review 2026-11-10): Trefferzahl je Regel über alle Stände; eine Regel ohne Treffer ist tot (zu breit gebunden oder überholt)
+    /// und macht den Test rot.
+    /// </summary>
+    [GameDataFact]
+    public void AllowedRules_EachCoversADifference()
+    {
+        var hits = Allowed.ToDictionary(r => r, _ => 0);
+        foreach (string file in Saves())
+        {
+            Compare(file, hits);
+        }
+        foreach (var (rule, count) in hits)
+            output.WriteLine($"{count,7}  {rule.Block} +0x{rule.From:X}–0x{rule.To:X} {rule.When} {rule.Reason}");
+        var dead = hits.Where(h => h.Value == 0).Select(h => $"{h.Key.Block} +0x{h.Key.From:X}–0x{h.Key.To:X} ({h.Key.Reason})").ToList();
+        Assert.True(dead.Count == 0, $"Regeln ohne Treffer: {string.Join("; ", dead)}");
+    }
+
+    /// <summary>Import und Export eines Original-Stands, Vergleich mit dem Klartext; <c>null</c> für <see cref="Skipped"/>.</summary>
+    private static (int Total, int Differing, List<string> Uncovered)? Compare(string file, Dictionary<Rule, int> hits)
+    {
         var raw = OriginalExportTests.RawDatabase();
         var database = ClubDatabase.Parse(raw);
-        var original = OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave(file)));
+        var originalFile = File.ReadAllBytes(OriginalImportTests.OriginalSave(file));
+        var original = OriginalSaveGame.Read(originalFile);
         var game = GameState.ImportOriginal(original, database, Seed);
-        var exported = OriginalSaveGame.Read(OriginalExport.Export(game, raw, Seed));
+        var exportedFile = OriginalExport.Export(game, raw);
+        var exported = OriginalSaveGame.Read(exportedFile);
+        Assert.True(exported.ChecksumsValid);
         if (Skipped.Contains(file))
         {
             Assert.True(OriginalImport.SavedOnMarkerDay(original));
-            Assert.True(exported.ChecksumsValid);
-            return;
+            return null;
         }
-        var stand = (OriginalImport.Mode(original) == GameMode.WorldOnly ? When.WorldOnly : When.Always)
+        var flags = (OriginalImport.Mode(original) == GameMode.WorldOnly ? When.WorldOnly : When.Always)
                     | (OriginalImport.Season(original) > GameState.FirstSeason && OriginalImport.NextMatchDay(original, League.Bundesliga) == 1
                         ? When.NewSeason : When.Always)
                     | (OriginalImport.Season(original) > GameState.FirstSeason ? When.LaterSeason : When.Always);
+        var stand = new Stand(original, exported, flags);
         // Sätze mit einem anderen Verein als im Original (Satzfolge der deutschen Vereine ohne Liga ab der zweiten Saison, der Länder
         // ohne WM): alle Felder dieser Sätze sind erlaubt (die Satzfolge außerhalb der Ligen führt das Remake nicht).
         var moved = Enumerable.Range(0, OriginalExport.ClubSlots)
             .Where(slot => OriginalImport.ClubName(original.Block("far:9657"), slot) != OriginalImport.ClubName(exported.Block("far:9657"), slot))
             .ToHashSet();
 
-        Assert.True(exported.ChecksumsValid);
         var uncovered = new List<string>();
         var differing = 0;
         foreach (var (block, _, data) in original.Blocks)
@@ -199,21 +273,29 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
                 if (data[i] == other[i])
                     continue;
                 differing++;
-                if (MovedSlotField(block.Name, i, moved) || Allowed.Any(r => r.Covers(block.Name, i, stand)))
+                if (MovedSlotField(block.Name, i, moved))
                     continue;
-                uncovered.Add($"{block.Name}+0x{i:X}: Original 0x{data[i]:X2}, Export 0x{other[i]:X2}");
+                var covered = false;
+                foreach (var rule in Allowed.Where(r => r.Covers(block.Name, i, stand)))
+                {
+                    covered = true;
+                    hits[rule] = hits.GetValueOrDefault(rule) + 1;
+                }
+                if (!covered)
+                    uncovered.Add($"{block.Name}+0x{i:X}: Original 0x{data[i]:X2}, Export 0x{other[i]:X2}");
             }
         }
-        var total = original.Blocks.Sum(b => b.Data.Length);
-        output.WriteLine($"{file}: {total - differing} von {total} Byte gleich, {differing} in erlaubten Feldern");
-        foreach (var u in uncovered)
-            output.WriteLine($"UNCOVERED {file} {u}");
-        Assert.True(uncovered.Count == 0, $"{file}: {uncovered.Count} Abweichungen außerhalb der Liste, z. B. " +
-                                          string.Join("; ", uncovered.Take(12)));
-        // Kopf: Managerzahl, Namen, Jahr, Spieltag wie im Original.
+        // Kopf: Managerzahl, Jahr, je Manager Liga-Stufe, Weltkugel-Kennzeichen, Name und Vereinsname byte-gleich (B2: Umlaute).
         Assert.Equal(original.HeaderManagerCount, exported.HeaderManagerCount);
         Assert.Equal(original.HeaderYear, exported.HeaderYear);
-        Assert.Equal(original.Managers.Select(m => m.Name), exported.Managers.Select(m => m.Name));
+        for (var m = 0; m < original.HeaderManagerCount; m++)
+        {
+            var at = 0x10 + 0x28 * m;
+            Assert.Equal(originalFile.AsSpan(at, 2).ToArray(), exportedFile.AsSpan(at, 2).ToArray());
+            Assert.Equal(NameBytes(originalFile.AsSpan(at + 2, 0x13)).ToArray(), NameBytes(exportedFile.AsSpan(at + 2, 0x13)).ToArray());
+            Assert.Equal(NameBytes(originalFile.AsSpan(at + 0x15, 0x13)).ToArray(), NameBytes(exportedFile.AsSpan(at + 0x15, 0x13)).ToArray());
+        }
+        return (original.Blocks.Sum(b => b.Data.Length), differing, uncovered);
     }
 
     private static bool MovedSlotField(string block, int offset, HashSet<int> moved) => block switch
@@ -304,10 +386,10 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
 
     private void AssertSecondRoundTrip(GameState game, byte[] raw, ClubDatabase database, string label)
     {
-        var first = OriginalSaveGame.Read(OriginalExport.Export(game, raw, Seed));
+        var first = OriginalSaveGame.Read(OriginalExport.Export(game, raw));
         Assert.True(first.ChecksumsValid);
         var again = GameState.ImportOriginal(first, database, Seed);
-        var second = OriginalSaveGame.Read(OriginalExport.Export(again, raw, Seed));
+        var second = OriginalSaveGame.Read(OriginalExport.Export(again, raw));
         var diff = new List<string>();
         foreach (var (block, _, data) in first.Blocks)
         {

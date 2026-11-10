@@ -48,13 +48,50 @@ public sealed class OriginalSaveWriterTests
         Assert.Equal(new byte[] { (byte)'[', 0 }, OriginalSaveWriter.Name("Ä", 2));
     }
 
+    /// <summary>
+    /// B4 (Review 2026-11-10): Spielstand-ID, Füllbyte und Startschlüssel folgen aus dem Inhalt – gleicher Inhalt gleiche Werte,
+    /// ein anderes Byte eine andere ID (das Original weist eine in der Sitzung schon geladene ID ab); ID im Bereich der Originale.
+    /// </summary>
     [Fact]
-    public void Randomize_KeepsIdInOriginalRange()
+    public void DeriveFromContent_IdFollowsContent()
     {
-        var writer = new OriginalSaveWriter();
-        writer.Randomize(new Random(1993));
-        Assert.InRange(writer.SaveId & 0xFFFF, OriginalSavePatcher.MinSaveId16, 0xFFFF);
-        Assert.True(writer.SaveId < 0);
+        static OriginalSaveWriter Make(byte day)
+        {
+            var w = new OriginalSaveWriter { HeaderYear = 1993 };
+            w.Managers.Add(new OriginalSaveManagerHeader(0, false, "Joerg", "KOELNER EC"));
+            w.Block("5A20")[0] = day;
+            w.DeriveFromContent();
+            return w;
+        }
+        var a = Make(10);
+        var again = Make(10);
+        var b = Make(11);
+        Assert.Equal((a.SaveId, a.Filler, a.Key), (again.SaveId, again.Filler, again.Key));
+        Assert.Equal(a.ToArray(), again.ToArray());
+        Assert.NotEqual(a.SaveId, b.SaveId);
+        foreach (var w in new[] { a, b })
+        {
+            Assert.InRange(w.SaveId & 0xFFFF, OriginalSavePatcher.MinSaveId16, 0xFFFF);
+            Assert.True(w.SaveId < 0);
+            Assert.True(OriginalSaveGame.Read(w.ToArray()).ChecksumsValid);
+        }
+    }
+
+    /// <summary>
+    /// B2 (Review 2026-11-10, R727P-02): Umlaute wie in Datenbank und Originalständen – Ö als CP437 0x99, Ä/Ü/ß als <c>[ ] ~</c>;
+    /// 0x5C (zeigt das Original als Rückstrich) kommt nie vor.
+    /// </summary>
+    [Theory]
+    [InlineData("Ä", (byte)'[')]
+    [InlineData("Ö", (byte)0x99)]
+    [InlineData("Ü", (byte)']')]
+    [InlineData("ß", (byte)'~')]
+    public void Encode_Umlauts_LikeOriginal(string text, byte expected)
+    {
+        Assert.Equal(new[] { expected }, OriginalSaveWriter.Encode(text));
+        Assert.Equal(new byte[] { (byte)'N', expected, (byte)'T', 0 }, OriginalSaveWriter.Name("N" + text + "T", 4));
+        Assert.DoesNotContain((byte)'\\', OriginalSaveWriter.Encode("NÖTZEL KÖLNER HÖLSCHER SÖDERSTRÖM"));
+        Assert.Equal(text, GameText.Decode(OriginalSaveWriter.Encode(text)));
     }
 
     [Fact]

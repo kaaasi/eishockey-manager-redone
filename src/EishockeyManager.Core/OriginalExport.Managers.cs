@@ -15,8 +15,8 @@ public sealed partial class GameState
     ///   +0xEB Liga-Stufe, +0xEC Talentsuche, +0xED/+0xFE/+0x114/+0x115/+0x183/+0x187/+0x18B Zuschauerstatistik, +0x116–0x13A Stadion,
     ///   +0x173 Werbebewertung, +0x177 Über-/Unterzahl, +0x18F Konto, +0x19B Darlehen (Eintrag 4 = Bank).</item>
     /// <item>[ORIGINAL] +0xE9: 1 bei „eine Saison, ein Manager“ (Datei 0x29CFA–0x29D23), sonst 30 (re-runde-14.md U15-c).</item>
-    /// <item>[APPROX] +0x13 vermutlich der Managerkopf (FILE09: zwei Manager mit 3 und 10; unbenutzte Sätze 2, 3, 4; Feldkarte U):
-    ///   der Export schreibt <see cref="Manager.Head"/>, unbenutzte Sätze wie FILE01. Ungedeutet und nach FILE01 vorbelegt: +0xE5 = 16,
+    /// <item>[ORIGINAL] Managerkopf DGROUP 0x178 + m (das zeigt das Hauptmenü) und als Kopie +0x13 (an allen Ständen gleich; unbenutzte
+    ///   Sätze 2, 3, 4, 0, 0 wie FILE01); Beleg Bilder gegen kb\0, Review 2026-11-10 B3. Ungedeutet und nach FILE01 vorbelegt: +0xE5 = 16,
     ///   +0xE6 = 1 (Stände 1–3), +0xE7/+0xE8/+0xEA = 30; Satz 4/5 +0x14 = 0xFD, Satz 5 +0xEB = 50 ohne Bundestrainer.</item>
     /// <item>[APPROX] Bankseite (Satz 4, Eintrag m) = Gegenbuchung des Bankeintrags von Manager m (FILE08: −2.103.000 / +2.103.000);
     ///   Managerdarlehen: Schuldner Eintrag Gläubiger negativ, Gläubiger Eintrag Schuldner positiv (an keinem Stand belegt).</item>
@@ -48,7 +48,8 @@ public sealed partial class GameState
             var f = Finance(manager);
             int F(int o) => ManagerField(m, o);
             OriginalSaveWriter.Name(manager.Name).CopyTo(rec, F(0));
-            rec[F(0x13)] = (byte)manager.Head;
+            rec[F(0x13)] = (byte)manager.Head; // [ORIGINAL] Kopie des Kopfs 0x178 + m (an allen Ständen gleich)
+            w.Block("0178")[m] = (byte)manager.Head; // [ORIGINAL] Kopf, den das Hauptmenü zeigt (Review 2026-11-10 B3)
             rec[F(0x14)] = (byte)slotOf[manager.ClubIndex];
             rec[F(0xE4)] = OriginalExport.Byte(f.Stadium.TicketPrice);
             rec[F(0xE5)] = 16;
@@ -58,7 +59,7 @@ public sealed partial class GameState
             rec[F(0xEC)] = OriginalExport.Byte(f.TalentSearch?.TicksLeft ?? 0);
 
             // Zuschauerstatistik (Datei 0x54664–0x54760); Gegner als Satzplatz, „noch keiner“ (−1) → Satz 0 wie beim Spielstart.
-            var stats = f.HomeStatistics;
+            var stats = f.HomeStatisticsForExport; // ohne die Statistik anzulegen (Export ändert den Spielstand nicht)
             rec[F(0xED)] = OriginalExport.Byte(stats.Games);
             for (var i = 0; i < Math.Min(stats.Curve.Count, 22); i++)
                 rec[F(0xFE) + i] = OriginalExport.Byte(stats.Curve[i]);
@@ -123,4 +124,10 @@ public sealed partial class GameState
         // [ORIGINAL] Konto des Nationalteams: Satz 5 +0x18F (DGROUP 0xA055), Drittel-DM.
         OriginalExport.Write32(rec, ManagerField(OriginalImport.NationalRecord, 0x18F), OriginalExport.Thirds(NationalAccount));
     }
+}
+
+public sealed partial class ManagerFinance
+{
+    /// <summary>Zuschauerstatistik für den Export, ohne sie anzulegen (<see cref="HomeStatistics"/> legt sie beim ersten Zugriff an).</summary>
+    internal StadiumStatistics HomeStatisticsForExport => _homeStatistics ?? new StadiumStatistics();
 }

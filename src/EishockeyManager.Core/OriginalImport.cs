@@ -174,10 +174,11 @@ public sealed partial class GameState
             var record = managerRecords.AsSpan(m * OriginalSaveGame.ManagerRecordLength, OriginalSaveGame.ManagerRecordLength);
             var name = CName(record[..0x13]);
             var club = clubOf[record[0x14]];
-            // [APPROX] Managerkopf vermutlich Managersatz +0x13 (FILE05/FILE29: 6 = Kopf mit Sonnenbrille wie im Bild des Originals,
-            // FILE09: zwei Manager mit 3 und 10; Feldkarte U). Spur hok-export: Import und Export führen ihn, damit die Rundreise
-            // Remake → HOK → Remake den Kopf behält; Bestätigung in der DOSBox-Probe (R15-D5 = D).
-            var head = record[0x13] < ManagerSetup.HeadCount ? record[0x13] : 0;
+            // [ORIGINAL] Managerkopf DGROUP 0x178 + m (Block 0178, unbenutzte Plätze 0xFF): das Hauptmenü zeigt diesen Kopf (Bilder
+            // file01_2, file05_1, file09_2/3, file11_01, file15_1, file27_2, file28_2, file47_1, file49_1 gegen kb\0; EXPORT01 mit
+            // 0178 = 0 und +0x13 = 6 zeigt Kopf 0, export01_1). Managersatz +0x13 ist an allen Ständen eine Kopie (Review 2026-11-10 B3).
+            var heads = save.Block("0178");
+            var head = m < heads.Length && heads[m] < ManagerSetup.HeadCount ? heads[m] : 0;
             setup.Managers.Add(new ManagerSetup
             {
                 Name = name,
@@ -357,7 +358,11 @@ public sealed partial class GameState
         }
     }
 
-    /// <summary>Teamwerte far:9657 + 0x17 … 0x1D aller Vereinssätze (Feldkarte „ClubTeamValues“).</summary>
+    /// <summary>
+    /// Teamwerte far:9657 + 0x17 … 0x1D aller Vereinssätze (Feldkarte „ClubTeamValues“). Kondition und Technik 0x18–0x1B stehen im
+    /// Original absolut, das Remake führt die Abweichung vom Datenbankwert (<see cref="MatchEngine.ClubFieldValues"/>): Import
+    /// Originalwert − <see cref="MatchEngine.ComputerTeamValue"/> (#729; Gegenstück zum Export, Review 2026-11-10 B1).
+    /// </summary>
     private void ApplyTeamValues(OriginalSaveGame save, int[] clubOf)
     {
         var records = save.Block("far:9657");
@@ -366,7 +371,9 @@ public sealed partial class GameState
             var r = records.AsSpan(slot * OriginalSaveGame.ClubRecordLength, OriginalSaveGame.ClubRecordLength);
             if (WorldOnly && Managers.Any(m => m.ClubIndex == clubOf[slot]))
                 continue; // Satz des Managervereins trägt im Modus „nur Weltkugel“ das Land (Regel 1)
-            Clubs[clubOf[slot]].TeamValues = new ClubTeamValues(r[0x18], r[0x19], r[0x1A], r[0x1B], r[0x1C], r[0x1D], r[0x17]);
+            var club = Clubs[clubOf[slot]];
+            var value = MatchEngine.ComputerTeamValue(club);
+            club.TeamValues = new ClubTeamValues(r[0x18] - value, r[0x19] - value, r[0x1A] - value, r[0x1B] - value, r[0x1C], r[0x1D], r[0x17]);
         }
     }
 

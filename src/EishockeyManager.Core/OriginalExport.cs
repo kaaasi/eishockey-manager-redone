@@ -30,19 +30,20 @@ public static partial class OriginalExport
     /// <param name="game">Spielstand (bleibt unverändert).</param>
     /// <param name="clubDatabase">Dateiinhalt der Vereinsdatenbank <c>kb\23</c> (Namen wie im Original, Farben und Logo der
     ///   Vereinssätze); null → Namen aus dem Spielstand, Farbe und Logo 0 <c>[APPROX]</c>.</param>
-    /// <param name="seed">Saat für Spielstand-ID, Füllbyte und Startschlüssel (das Original würfelt sie beim Sichern).</param>
-    public static byte[] Export(GameState game, byte[]? clubDatabase, int seed) =>
-        Build(game, clubDatabase, seed).ToArray();
+    /// <remarks>Spielstand-ID, Füllbyte und Startschlüssel folgen aus dem Inhalt (<see cref="OriginalSaveWriter.DeriveFromContent"/>):
+    ///   gleicher Spielstand → gleiche Datei, verschiedene Stände → verschiedene IDs.</remarks>
+    public static byte[] Export(GameState game, byte[]? clubDatabase) =>
+        Build(game, clubDatabase).ToArray();
 
     /// <summary>Wie <see cref="Export"/>, aber der Schreiber mit allen Blöcken im Klartext (Tests, Rundreise).</summary>
-    public static OriginalSaveWriter Build(GameState game, byte[]? clubDatabase, int seed)
+    public static OriginalSaveWriter Build(GameState game, byte[]? clubDatabase)
     {
         ArgumentNullException.ThrowIfNull(game);
         if (game.Managers.Count is < 1 or > GameSetup.MaxManagers)
             throw new InvalidOperationException($"Zahl der Manager {game.Managers.Count} lässt sich nicht exportieren.");
         var writer = new OriginalSaveWriter();
-        writer.Randomize(new Random(seed));
         game.WriteOriginal(writer, clubDatabase);
+        writer.DeriveFromContent();
         return writer;
     }
 
@@ -60,6 +61,37 @@ public static partial class OriginalExport
         var name = new byte[OriginalImport.ClubNameLength];
         raw[..Math.Min(end < 0 ? raw.Length : end, OriginalImport.ClubNameLength - 1)].CopyTo(name);
         return name;
+    }
+
+    /// <summary>
+    /// Spielernamen der Datenbank (Kader der Vereine 0–63) als Text → Rohbytes ohne Nullbyte. Das Original kopiert sie beim Spielstart
+    /// unverändert in den Pool (Ö meist 0x99, aber BRANNSTRÖM mit 0x5C; FILE01). Namen, deren Text mit verschiedenen Bytes vorkommt,
+    /// fehlen (dann gilt <see cref="OriginalSaveWriter.Encode"/>).
+    /// </summary>
+    public static Dictionary<string, byte[]> DatabasePlayerNames(byte[] clubDatabase)
+    {
+        var names = new Dictionary<string, byte[]>();
+        var ambiguous = new HashSet<string>();
+        for (var club = 0; club < ClubDatabase.ClubsWithSquad; club++)
+            for (var p = 0; p < ClubDatabase.SquadSize; p++)
+            {
+                var at = ClubDatabase.SquadOffset + club * ClubDatabase.SquadRecordLength + ClubDatabase.NameLength
+                         + p * ClubDatabase.PlayerRecordLength;
+                var field = clubDatabase.AsSpan(at, ClubDatabase.PlayerNameLength);
+                var end = field.IndexOf((byte)0);
+                var raw = (end < 0 ? field : field[..end]).ToArray();
+                var text = GameText.Decode(raw);
+                if (text.Length == 0 || ambiguous.Contains(text))
+                    continue;
+                if (names.TryGetValue(text, out var known) && !known.AsSpan().SequenceEqual(raw))
+                {
+                    names.Remove(text);
+                    ambiguous.Add(text);
+                }
+                else
+                    names[text] = raw;
+            }
+        return names;
     }
 
     /// <summary>
@@ -155,13 +187,38 @@ public sealed partial class GameState
     /// <summary>Alle Blöcke eines HOK aus dem Spielstand (siehe <see cref="OriginalExport"/>).</summary>
     internal void WriteOriginal(OriginalSaveWriter w, byte[]? clubDatabase)
     {
+        // Vor dem ersten Spiel sind die Teamwerte noch nicht gezogen (MatchEngine.LoadTeamValues [APPROX]: beim ersten Spiel); das
+        // Original hat sie schon beim Spielstart (FILE01). Der Export zieht sie wie das erste Spiel und stellt danach Teamwerte und
+        // Zufallszustand wieder her, damit der Spielstand unverändert bleibt (Review 2026-11-10 B1, Export_IsPure).
+        if (Clubs.Any(c => c.TeamValues is null))
+        {
+            var random = Random.Capture();
+            var before = Clubs.Select(c => c.TeamValues).ToArray();
+            try
+            {
+                MatchEngine.EnsureTeamValues(this);
+                WriteOriginalBlocks(w, clubDatabase);
+            }
+            finally
+            {
+                Random.Restore(random);
+                for (var i = 0; i < Clubs.Count; i++)
+                    Clubs[i].TeamValues = before[i];
+            }
+            return;
+        }
+        WriteOriginalBlocks(w, clubDatabase);
+    }
+
+    private void WriteOriginalBlocks(OriginalSaveWriter w, byte[]? clubDatabase)
+    {
         var database = clubDatabase is null ? null : ClubDatabase.Parse(clubDatabase);
         var slotOf = OriginalExport.Slots(this);
         WriteHeaderAndSetup(w);
         WriteClubRecords(w, slotOf, database, clubDatabase);
         WriteLeague(w, slotOf);
         WriteManagers(w, slotOf);
-        WriteSquadsAndPool(w, slotOf);
+        WriteSquadsAndPool(w, slotOf, clubDatabase);
         WriteOriginalRest(w, slotOf);
         WriteCupsAndPostseason(w, slotOf);
         WriteNational(w, slotOf);
@@ -233,8 +290,8 @@ public sealed partial class GameState
         OriginalExport.Write16(w.Block("0256"), 0, HighscoreRules.Key(Setup) ?? 0);
         // [ORIGINAL] Konjunkturfaktor DGROUP 0x2C0 (an allen Ständen 110); Preisindex 0x2BC unten (Training).
         OriginalExport.Write32(w.Block("02C0"), 0, 110);
-        // [APPROX] DGROUP 0x178: Byte 0 Vereinssatz (Bedeutung offen; FILE01 6), dahinter 0xFF.
-        new byte[] { 0, 0xFF, 0xFF, 0xFF }.CopyTo(w.Block("0178"), 0);
+        // [ORIGINAL] DGROUP 0x178 + m: Managerkopf (WriteManagers), unbenutzte Plätze 0xFF (FILE01 06 FF FF FF, FILE09 03 0A FF FF).
+        w.Block("0178").AsSpan().Fill(0xFF);
 
         // [ORIGINAL] Zahl der Manager DGROUP 0x386, Manager am Zug 0xA70E (5 = Bundestrainer), 0xA70D letzter Zugteilnehmer
         // [APPROX] (Stände: Managerzahl − 1, mit Bundestrainer 5).

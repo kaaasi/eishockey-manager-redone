@@ -7,7 +7,7 @@ public sealed partial class GameState
     /// <summary>
     /// Vereinssätze far:9657 + 0x3D · Satz (Feldkarte „Vereine, Teamwerte“).
     /// <list type="bullet">
-    /// <item>[ORIGINAL] +0x00 Name (0x16 Byte), +0x17 Tagesform, +0x18–0x1D Teamwerte (Import <c>ApplyTeamValues</c>); im Modus
+    /// <item>[ORIGINAL] +0x00 Name (0x16 Byte), +0x17 Tagesform, +0x18–0x1D Teamwerte absolut (Import <c>ApplyTeamValues</c>); im Modus
     ///   „nur Weltkugel“ trägt der Satz des Managervereins den Namen des Landes (FILE11, Datei 0x5B556).</item>
     /// <item>[ORIGINAL] +0x16: Manager + 1 beim Managerverein (FILE01: KÖLNER EC 1, FILE09: 1 und 2), 6 Land mit Bundestrainer im Amt (Datei 0x55494), sonst 0.</item>
     /// <item>[ORIGINAL] +0x26–0x2B/+0x35–0x3A: Anzeige „AUTOM.“ des Nationalteams (Spielvorbereitung 0x8365; FILE19).
@@ -34,13 +34,16 @@ public sealed partial class GameState
                 : OriginalSaveWriter.Name(name, OriginalImport.ClubNameLength)).CopyTo(r);
             r[0x16] = (byte)(managerOf.TryGetValue(club.Index, out var m) ? m + 1
                 : NationalCoach is { } coach && coach.Nation == club.Index ? 6 : 0);
+            // [ORIGINAL] 0x18–0x1B absolut (Lader 0x2EF1B, Wanderung 0x9D1B); das Remake führt die Abweichung vom Datenbankwert, der
+            // Export schreibt Datenbankwert + Abweichung wie MatchEngine.ClubFieldValues (Review 2026-11-10 B1, Gegenstück #729).
             if (club.TeamValues is { } v)
             {
+                var (defense, attack) = MatchEngine.ClubFieldValues(club);
                 r[0x17] = OriginalExport.Byte(v.DayForm);
-                r[0x18] = OriginalExport.Byte(v.DefenseCondition);
-                r[0x19] = OriginalExport.Byte(v.AttackCondition);
-                r[0x1A] = OriginalExport.Byte(v.DefenseTechnique);
-                r[0x1B] = OriginalExport.Byte(v.AttackTechnique);
+                r[0x18] = OriginalExport.Byte(defense.Condition);
+                r[0x19] = OriginalExport.Byte(attack.Condition);
+                r[0x1A] = OriginalExport.Byte(defense.Technique);
+                r[0x1B] = OriginalExport.Byte(attack.Technique);
                 r[0x1C] = OriginalExport.Byte(v.DefenseForm);
                 r[0x1D] = OriginalExport.Byte(v.AttackForm);
             }

@@ -93,7 +93,7 @@ Datei-Offsets gelten für jede Datei (feste Länge). Prüfsummen bei `0x08F09` (
 | `0x0029A` | `A89A` | 6 |  |
 | `0x002A0` | `A891` | 4 | Restdauer der Kurstendenz je Aktie |
 | `0x002A4` | `A895` | 4 | Kurstendenz je Aktie (0 fallend, 2 steigend) |
-| `0x002A8` | `0178` | 4 |  |
+| `0x002A8` | `0178` | 4 | Managerkopf je Manager (0–11, Bild `kb\0`), unbenutzt `0xFF`; das Hauptmenü zeigt diesen Kopf (Review 2026-11-10 B3) |
 | `0x002AC` | `017C` | 1 |  |
 | `0x002AD` | `A707` | 6 | Taktikmodus Angriff je Manager |
 | `0x002B3` | `A701` | 6 | Reihenwechsel-Modus je Manager (0–5) |
@@ -446,7 +446,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameOptions.ShowEuropeanCup` | B | `021D+11` | DGROUP 0x228 |
 | `GameOptions.ShowWorldCup` | B | `021D+12` | DGROUP 0x229 |
 | `ManagerSetup.ClubIndex` | A | `965B+0x14` | Vereinsindex nach Regel 1 |
-| `ManagerSetup.Head` | U | `965B+0x13`? | vermutlich Managerkopf (FILE05/FILE29: 6 = Kopf mit Sonnenbrille wie im Bild, FILE09: 3 und 10; unbenutzte Sätze 2/3/4); Import und Export übernehmen ihn (Spur `hok-export`), Bestätigung in der DOSBox-Probe |
+| `ManagerSetup.Head` | B | `0178+m` | Managerkopf: Bilder des Hauptmenüs gegen `kb\0` (file01_2, file05_1, file09_2/3, file11_01, file15_1, file27_2, file28_2, file47_1, file49_1) gleichen `0178+m`; EXPORT01 mit `0178` = 0 und `965B+0x13` = 6 zeigt Kopf 0 (`export01_1`). `965B+0x13` ist an allen Ständen eine Kopie (unbenutzte Sätze 2/3/4/0/0) |
 | `ManagerSetup.Level` | B | `0118+0` | ein Wert für alle (Gegenprobe `0ED8` = 5 − Level) |
 | `ManagerSetup.Name` | B | `965B+0x00` | Name (19 Byte), Gegenprobe `Kopf` |
 | `ManagerSetup.StartLeague` | B | `0118+2` | ein Wert für alle |
@@ -459,7 +459,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Manager.ClubIndex` | B | `965B+0x14` | Regel 1 |
 | `Manager.Dismissed` | U | `965B+0xF3` | Statusbyte, Bit für „entlassen“ nicht belegt; false (seit Schema 46 setzt es kein Weg des Spiels mehr, #688 R688S-03) |
 | `Manager.FinanceData` | B | `965B` | Zeilen `ManagerFinance` |
-| `Manager.Head` | U | – | wie `ManagerSetup.Head` |
+| `Manager.Head` | B | `0178+m` | wie `ManagerSetup.Head` |
 | `Manager.Level` | B | `0118+0` | Level |
 | `Manager.Money` | B | `965B+0x18F` | Konto / 3 |
 | `Manager.Name` | B | `965B+0x00` | Name |
@@ -583,7 +583,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Club._dressedByHand` | A | `0375` | nicht „automatisch aufstellen“ |
 | `Club._rankSlots` | B | `8257` | DGROUP 0x828B + 0x50 · Satz, 44 Halbbytes |
 | `Club._tableRank` | B | `8257` | DGROUP 0x8288 + 0x50 · Satz, Tabellenfeld der Zuschauerformel (A046, Schema 43; 0 = Platz 1) |
-| `ClubTeamValues.AttackCondition` | B | `far:9657+0x19` | Kondition Sturm |
+| `ClubTeamValues.AttackCondition` | B | `far:9657+0x19` | Kondition Sturm; im HOK absolut, im Remake Abweichung vom Datenbankwert (Import − / Export + `ComputerTeamValue`, #729) |
 | `ClubTeamValues.AttackForm` | B | `far:9657+0x1D` | Form Sturm |
 | `ClubTeamValues.AttackTechnique` | B | `far:9657+0x1B` | Technik Sturm |
 | `ClubTeamValues.DayForm` | B | `far:9657+0x17` | random(47, 53), nach jedem Ligaspiel nachgeführt |
@@ -993,7 +993,7 @@ liegt bei den genannten Spuren.
 
 ## Export Remake → HOK (Spur `hok-export`, Runde 15)
 
-`OriginalExport.Export(spiel, kb23, saat)` in `Core/OriginalExport*.cs`, Schreiber `Formats/OriginalSaveWriter.cs` (alle Blöcke mit
+`OriginalExport.Export(spiel, kb23)` in `Core/OriginalExport*.cs`, Schreiber `Formats/OriginalSaveWriter.cs` (alle Blöcke mit
 Nullbytes vorbelegt, Kopf, Verschlüsselung und Prüfsummen über `OriginalSavePatcher.Encode`). Umkehrung der Feldkarte (Regeln 1–6
 rückwärts); der Export ändert den Spielstand nicht (Test `OriginalExportTests.Export_IsPure`).
 
@@ -1004,20 +1004,29 @@ rückwärts); der Export ändert den Spielstand nicht (Test `OriginalExportTests
   nur im Heimfeld), Bilanz „--------“ vor dem ersten Spiel; Paarungen des Spieltags `5D7B` (Satzplätze); Saisonjahr `03BB`;
   Highscore-Schlüssel `0256`; Kosten der Freundschaftsspiele `026C` in Satzfolge; Gegner eines leeren Rekords = Satz des Vereins
   mit Index 0; Managersatz +0xE6 Pokalrunde, +0xE9 (1 bei „eine Saison, ein Manager“); unbenutzte Managersätze wie FILE01.
-- **Vermutet, im Original zu prüfen** (`[APPROX]`): Managersatz +0x13 = Managerkopf (FILE09: zwei Manager mit 3 und 10), `A70D`
-  letzter Zugteilnehmer, `A8A0` Monat, `07A9`+4 laufende Pokalrunde.
+- **Nach der DOSBox-Probe (Review 2026-11-10 B1–B4):** Teamwerte `far:9657+0x18–0x1B` absolut (Datenbankwert + Abweichung; vor dem
+  ersten Spiel zieht der Export sie wie das erste Spiel und stellt Zufall und Teamwerte danach zurück); Umlaute wie Datenbank und
+  Stände (Ö = 0x99, Ä/Ü/ß = `[ ] ~`; Spielernamen der Datenbank roh, BRANNSTRÖM mit 0x5C; Nachrichten wie FILE44); Managerkopf
+  `0178+m` und Kopie `965B+0x13`; Spielstand-ID, Füllbyte und Startschlüssel aus SHA-256 über Kopf und Klartext (gleicher Stand →
+  gleiche Datei, verschiedene Stände → verschiedene IDs; das Original lehnt eine in der Sitzung schon geladene ID ab).
+- **Vermutet, im Original zu prüfen** (`[APPROX]`): `A70D` letzter Zugteilnehmer, `A8A0` Monat, `07A9`+4 laufende Pokalrunde.
 - **Vorgabe des Spielstarts** (an allen Ständen gleich): `0120`, `017C`, `D0E4`, `022D`, `0246`, `02C0`, `021D`+13.
+- **Regeln der Rundreise (B5):** jede Regel ist an Block, Satzbereich und – wo die Begründung es verlangt – an Merkmal, Satz oder
+  Bedingung gebunden (Poolname nur bei anderem Text bzw. hinter dem Nullbyte, Kopf `+0x13` nur im Bundestrainer-Satz); der Test
+  `AllowedRules_EachCoversADifference` gibt die Treffer je Regel aus und wird rot bei einer Regel ohne Treffer. Der Kopf (Liga-Stufe,
+  Weltkugel, Name, Vereinsname) wird byte-gleich verglichen.
 - **Rundreise (Teil 2, `OriginalExportRoundTripTests`):** (1) FILE01–FILE49A → Import → Export gleicht dem Klartext des Originals bis auf
   die Felder der Liste im Test (je Zeile Grund: ungedeutet, Feldkarte N/U, Rundung Drittel-DM, Satzfolge außerhalb der Ligen,
   Vorsaison, „nur Weltkugel“); FILE22/FILE44 (Ladeeigenheit des Markierungstags) prüft nur Lesbarkeit. (2) Remake → HOK → Remake →
   HOK ohne Abweichung (Spielstart, 3/22/44 Spieltage, zwei Manager, vier Saisonwechsel passiv und aktiv mit Play-offs und WM); bekannt
   verloren: erreichte Pokalrunde +0xE6 (frühere Pokalrunden aus dem Nachspielen), „eingesetzt“ bei gesperrtem Spieler (Sperre U),
   ab Saison 2 Titel und Startordnung der Vorsaison (History N).
-- **Import, für die Rundreise angepasst:** Managerkopf aus +0x13 (`OriginalImport.cs`, Feldkarte U → vermutet); Eingesetzte genau
+- **Import, für die Rundreise angepasst:** Managerkopf aus `0178+m` (`OriginalImport.cs`); Teamwerte Originalwert − Datenbankwert
+  (#729); Eingesetzte genau
   wie +0x0A (zuerst die nur von der Automatik Eingesetzten herausnehmen). Play-off-Spiel mit Gleichstand und Penaltysieger: der
   Export zählt den Penaltytreffer zum Ergebnis (im Original kein Gleichstand).
-- **Zugang:** `emtool hok export <spielstand.ems> <ziel.hok> [--gamedata ordner] [--seed n] [--force]`; Prüfhilfe für die DOSBox-Probe:
-  `emtool hok export --neu <name> <vereinsindex> <ziel.hok> [--spieltage n] [--kopf n] [--ems datei]` (neues Spiel, n Ligaspieltage über
+- **Zugang:** `emtool hok export <spielstand.ems> <ziel.hok> [--gamedata ordner] [--force]`; Prüfhilfe für die DOSBox-Probe:
+  `emtool hok export --neu <name> <vereinsindex> <ziel.hok> [--spieltage n] [--kopf n] [--ems datei] [--seed n]` (neues Spiel mit Saat n, Vorgabe 1993, n Ligaspieltage über
   `GameState.Continue`). Ergebnis mit `emtool hok dump` lesbar.
 
 ## Offene Punkte

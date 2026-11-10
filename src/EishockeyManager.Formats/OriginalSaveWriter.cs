@@ -49,14 +49,25 @@ public sealed class OriginalSaveWriter
         : throw new KeyNotFoundException($"Block „{name}“ gibt es im Spielstand nicht.");
 
     /// <summary>
-    /// Würfelt Spielstand-ID, Füllbyte und Startschlüssel wie das Original beim Sichern (drei Zufallszahlen, Datei 0x5BB51,
-    /// 0x5BC07, 0x5BBF8). [APPROX] ID im Bereich der Original-Stände (<see cref="OriginalSavePatcher.NewId"/>).
+    /// Leitet Spielstand-ID, Füllbyte und Startschlüssel aus dem Inhalt ab (SHA-256 über Kopf ohne diese drei Felder und alle Blöcke
+    /// im Klartext). Das Original würfelt sie beim Sichern (Datei 0x5BB51, 0x5BC07, 0x5BBF8) und weist das Laden einer ID ab, die in
+    /// derselben Sitzung schon geladen oder gesichert wurde („Keinen heutigen Spielstand laden !“, Datei 0x5C572). [APPROX] Aus dem
+    /// Inhalt statt gewürfelt, damit der Export wiederholbar bleibt und verschiedene Stände verschiedene IDs tragen (Review
+    /// 2026-11-10 B4); ID im Bereich der Original-Stände (16 Bit 0x8000–0xFFFF, vorzeichenerweitert).
     /// </summary>
-    public void Randomize(Random random)
+    public void DeriveFromContent()
     {
-        SaveId = OriginalSavePatcher.NewId(0, random);
-        Filler = (byte)random.Next(256);
-        Key = (byte)(random.Next(256) + 0x6E);
+        SaveId = 0;
+        Filler = 0;
+        Key = 0;
+        using var hash = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256);
+        hash.AppendData(Header());
+        foreach (var block in OriginalSaveGame.Layout.Where(b => !b.IsChecksum))
+            hash.AppendData(_blocks[block.Name]);
+        var digest = hash.GetHashAndReset();
+        SaveId = (short)(OriginalSavePatcher.MinSaveId16 | (digest[0] | digest[1] << 8));
+        Filler = digest[2];
+        Key = (byte)(digest[3] + 0x6E);
     }
 
     /// <summary>Klartextkopf (0xBA Byte).</summary>
@@ -92,14 +103,36 @@ public sealed class OriginalSaveWriter
     public byte[] ToArray() => OriginalSavePatcher.Encode(Header(), Block);
 
     /// <summary>
-    /// Name als Feld fester Länge (<see cref="NameLength"/>, nullterminiert, Zeichensatz des Spiels über
-    /// <see cref="GameText.Encode"/>); zu lange Namen werden abgeschnitten.
+    /// Name als Feld fester Länge (<see cref="NameLength"/>, nullterminiert, Zeichensatz des Spielstands über <see cref="Encode"/>);
+    /// zu lange Namen werden abgeschnitten.
     /// </summary>
     public static byte[] Name(string text, int length = NameLength)
     {
         var field = new byte[length];
-        var raw = GameText.Encode(text);
+        var raw = Encode(text);
         raw.AsSpan(0, Math.Min(raw.Length, length - 1)).CopyTo(field);
         return field;
     }
+
+    /// <summary>
+    /// Text in der Schreibweise der Spielstände und der Datenbank <c>kb\23</c>: wie <see cref="GameText.Encode"/>, aber Ö als
+    /// CP437 0x99. [ORIGINAL] Datenbank und alle Stände FILE01–FILE49A schreiben Ö als 0x99 (N\x99TZEL, K\x99LNER EC; 0x5C kommt in
+    /// keinem Namen vor), Ä/Ü/ß als <c>[ ] ~</c>; das Original zeigt 0x5C als Rückstrich (Bild <c>export01_2</c>, Review 2026-11-10 B2).
+    /// [APPROX] Kleine Umlaute wie <see cref="GameText.Encode"/> (<c>{ | }</c>): in keinem Namen der Datenbank und der Stände belegt.
+    /// </summary>
+    public static byte[] Encode(string text)
+    {
+        var result = new List<byte>(text.Length);
+        foreach (var ch in text)
+        {
+            if (ch == 'Ö')
+                result.Add(CapitalOUmlaut);
+            else
+                result.AddRange(GameText.Encode(ch.ToString()));
+        }
+        return result.ToArray();
+    }
+
+    /// <summary>Ö in Namen der Spielstände und der Datenbank (CP437).</summary>
+    public const byte CapitalOUmlaut = 0x99;
 }

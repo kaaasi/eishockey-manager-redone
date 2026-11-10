@@ -93,7 +93,9 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
   einem neuen Remake-Spiel, Saisonmitte nach Remake-Spieltagen); die Leitstelle legt sie im Referenz-Repo ab
   (`original/spielstaende/`, Branch `daten/…`), der Nutzer lädt sie im Original (DOSBox) und hält Hauptmenü, Kader und Finanzen
   im Bild fest. Merge erst nach dieser Probe; Abweichungen werden Befunde des Spur-PR.
-- **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 umgesetzt (PR #727), wartet auf DOSBox-Probe des Nutzers und Erstreview.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 umgesetzt (PR #727); Erstreview (#739) und DOSBox-Probe: B1–B5 im Fixlauf
+  10.11.2026 behoben (Teamwerte absolut, Umlaute, Kopf `0178`, ID aus Inhalt, gebundene Regeln); wartet auf Nachprüfung und erneute
+  Probe EXPORT01/02.
 
 ### Spur `abgleich-original` – Remake gegen Spielstandpaare des Originals (Vormerkung Vorschlag 1)
 
