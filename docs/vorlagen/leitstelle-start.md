@@ -8,46 +8,31 @@
 
 ## Ablauf für die Leitstelle
 
-0. **Zugriff (Vorgabe Nutzer 01.11.2026):** Die Leitstelle hat immer Lese- und Schreibzugriff auf beide Repos. Zuerst
-   `add_repo` für `kaaasi/eishockey-manager-redone` und `kaaasi/eishockey-manager-referenz`, jeweils access `push` (ggf. erst
-   per `ToolSearch` mit `select:mcp__claude-code-remote__add_repo` laden). Lehnt die Freigabe das ab, dem Nutzer melden.
-1. Lies `AGENTS.md`, `docs/prozess/zusammenarbeit.md` (vollständig), in `docs/arbeitspakete.md` die aktuelle Runde,
-   die offenen PRs (Titel, Bearbeiter, letzter Übergabekommentar) und die Reviews der aktuellen Runde in `docs/reviews/`.
-   Kein Vorwissen aus früheren Chats nötig oder vorausgesetzt.
-2. **Integration:** Spur-PRs (ein PR je Spur, ab Runde 15) nach Erstreview und Merge-Prüfung in der Integrationsfolge des Plans
-   mergen. Ist `main` seit dem Review neu und der PR **ohne Konflikt**, wird **nicht** rebased (der freigegebene Head bleibt):
-   Merge nach `zusammenarbeit.md` §6 Nr. 2 – die Leitstelle wiederholt vorher lokal `tools/pruefen.sh --schnell` mit
-   Originaldaten auf `main` + PR (Merge-Ergebnis) und vermerkt die Tabelle im Merge-Kommentar. Muss sich der Head trotzdem ändern
-   (z. B. erwartete Listen von `abgleich-original` gegen den neuen `main` erneuern), legt die Leitstelle einen Fixlauf an; dessen
-   Delta prüft sie nach §5 Punkt 4, wenn es nur Rebase und diese Anpassung enthält (`git range-diff`). Ein Branch
-   `integration/<runde>` nur, wenn Konflikte zwischen Spuren zu lösen sind: dann von `main`, PRs zusammenführen, Konflikte lösen, `tools/pruefen.sh`
-   (alle drei Läufe), Mehrsaisonprobe, Bildschirmfoto-Abläufe. Integrationsfehler mit rotem Regressionstest beheben.
-   Integrations-PR nach Vorlage; Abschnitt „Integration …“ in `docs/arbeitspakete.md`.
-3. **Review anfordern:** dem Nutzer nur den Kurzaufruf aus `docs/vorlagen/review-anfrage.md` ausgefüllt geben.
-4. **Mergen:** nur nach der Merge-Prüfung (`zusammenarbeit.md` §6), mit SHA-Bindung. Eigene Integrations-Commits
-   brauchen das Review wie jede andere Änderung.
-5. **Planen:** neue Spuren in `docs/arbeitspakete.md` mit Ziel, Befunden, Branch, Base-SHA, Dateigrenzen, Abnahme;
-   Startaufrufe nur als Kurzaufruf aus `docs/vorlagen/spur-start.md`. Abgeschlossene Runden nach `docs/archiv/` verschieben.
+0. **Zugriff (Nutzer 01.11.2026):** immer Lese- und Schreibzugriff auf beide Repos: zuerst `add_repo` für
+   `kaaasi/eishockey-manager-redone` und `kaaasi/eishockey-manager-referenz`, jeweils access `push` (ggf. erst per `ToolSearch`
+   mit `select:mcp__claude-code-remote__add_repo` laden). Lehnt die Freigabe ab, dem Nutzer melden.
+1. Lies `AGENTS.md`, `docs/prozess/zusammenarbeit.md` und `docs/prozess/anhang.md` (vollständig), in `docs/arbeitspakete.md` die
+   aktuelle Runde, die offenen PRs (Titel, Bearbeiter, letzte Übergabe) und die Reviews der Runde. Kein Vorwissen aus Chats nötig.
+2. **Integration:** Spur-PRs (einer je Spur) nach Erstreview und Merge-Prüfung in der Integrationsfolge des Plans mergen. Ist
+   `main` seit dem Review neu und der PR **ohne Konflikt**, wird **nicht** rebased (der freigegebene Head bleibt): vorher lokal
+   `tools/pruefen.sh --schnell` mit Originaldaten auf `main` + PR (Merge-Ergebnis), Tabelle im Merge-Kommentar (`zusammenarbeit.md`
+   §6 Nr. 2). Muss sich der Head trotzdem ändern (z. B. erwartete Listen von `abgleich-original` gegen den neuen `main`), Fixlauf
+   ohne Befund anlegen (`spur-start.md` „Fixlauf“); sein Delta prüft die Leitstelle nach §5 Punkt 4, wenn es nur Rebase und diese
+   Anpassung enthält (`git range-diff`). `integration/<runde>` nur bei Konflikten zwischen Spuren: von `main`, PRs zusammenführen,
+   Konflikte lösen, `tools/pruefen.sh` (alle drei Läufe), Mehrsaisonprobe, Bildschirmfoto-Abläufe, Integrationsfehler mit rotem
+   Regressionstest beheben; Integrations-PR nach Vorlage, Abschnitt „Integration …“ in `docs/arbeitspakete.md`.
+3. **Review anfordern:** dem Nutzer nur den ausgefüllten Kurzaufruf aus `review-anfrage.md` geben (Gesamtreview, Codex:
+   `anhang.md` C, D).
+4. **Mergen:** nur nach der Merge-Prüfung (`zusammenarbeit.md` §6), mit SHA-Bindung. Eigene Integrations-Commits brauchen das
+   Review wie jede andere Änderung.
+5. **Planen:** neue Spuren in `docs/arbeitspakete.md` mit Ziel, Befunden, Branch, Base-SHA, Dateigrenzen, Abnahme; Startaufrufe nur
+   als Kurzaufruf aus `spur-start.md`. Abgeschlossene Runden nach `docs/archiv/`.
 6. **Immer zum Schluss:** Übergabekommentar nach `docs/handoffs/VORLAGE.md` in jedem PR, an dem die Sitzung gearbeitet hat
    (Integration, Plan); ohne PR als `docs/handoffs/<datum>-<thema>.md` auf eigenem Branch.
-7. **Geplante Läufe** (Spuren, Fortsetzungen, Reviews): Geplante Läufe erhalten nur die Repos, die die **anlegende Sitzung**
-   eingebunden hat (beobachtet 01.11.2026: zwei Spurläufe ohne Referenz-Repo blockiert, #291, #295); `add_repo` steht im Lauf nicht verlässlich bereit. Deshalb vor dem ersten `create_trigger` der Sitzung:
-   Schritt 0 erledigt (beide Repos `push`, belegt durch das `add_repo`-Ergebnis) und
-   `git ls-remote https://github.com/kaaasi/eishockey-manager-referenz HEAD` erfolgreich – sonst keinen Lauf anlegen und dem
-   Nutzer melden (Fehlermeldung von `add_repo` bzw. `ls-remote`). Jeder Startaufruf enthält den
-   Zugriffsabsatz aus `spur-start.md` (Kurzaufruf „Geplanter Lauf“). Modell nach dem Anlegen mit `update_trigger` setzen,
-   wenn es von Opus abweicht – nur auf ausdrücklichen Wunsch des Nutzers (z. B. vom Nutzer bestätigter Plan bzw. Go mit
-   Modell) oder für mechanische Arbeit nach `docs/prozess/zusammenarbeit.md` §5 „Modellwahl“ (Vorgabe Nutzer 09.11.2026). Offene PRs mit `spur-wartet` durchsehen: „Fortsetzung anlegen – Leitstelle“ heißt, die Aufgabe mit dem Prompt aus
-   der Übergabe anlegen – vorher gegen den Kurzaufruf „Geplanter Lauf mit Teilen“ prüfen; abweichen dürfen nur Spur, Modell,
-   Zähler und PR-Nummer (R9F-03). Draft-Status, den ein Lauf nicht aufheben konnte, hebt die Leitstelle
-   selbst auf (`gh api -X POST …/pulls/<nr>/ccr/ready_for_review`), nicht der Nutzer.
+7. **Geplante Läufe** (Spuren, Fortsetzungen, Fixläufe, Reviews): Zugriff, Modell, `spur-wartet`, Draft-Status nach `anhang.md` F.
 8. Antwort an den Nutzer **knapp** (`AGENTS.md` §7): Ergebnis, Entscheidungsbedarf, nächster Schritt, Kurzaufrufe.
-9. **Sitzung je Runde (Nutzer 10.11.2026):** Eine Leitstellen-Sitzung führt höchstens eine Runde; die nächste Runde beginnt in
-   einem neuen Chat mit dem Kurzaufruf oben. Den Stand hält die Leitstelle nur in GitHub fest (Status in `docs/arbeitspakete.md`,
-   Labels, Übergaben), nicht im Chat. Dem Nutzer meldet sie sich nur bei Entscheidungsbedarf, am Ende einer Spur (Merge) und am
-   Rundenende – nicht nach jedem Teil oder Zwischenstand.
-10. **Warten über Labels:** Reviews setzen `review-ja`/`review-nein`, Fixläufe mit nur P2/P3 `leitstelle-delta`, strittige Belege
-   `beleg-strittig`, Läufe ohne Fortsetzung `spur-wartet` (`zusammenarbeit.md` §5 Punkte 7–8). Eine Warteschleife fragt diese Labels ab,
-   **je Label eine Abfrage** (`gh api …/issues?labels=<label>&state=open`; mehrere Labels in einer Abfrage sind UND-verknüpft),
-   bei Reviews durch ChatGPT/Codex zusätzlich offene PRs mit Head `review/*`; Intervall 60 s. Erledigte Labels entfernt die
-   Leitstelle (`zusammenarbeit.md` §5 Punkt 8).
+9. **Sitzung je Runde (Nutzer 10.11.2026):** höchstens eine Runde je Sitzung; die nächste beginnt in einem neuen Chat mit dem
+   Kurzaufruf oben. Stand nur in GitHub (Status in `docs/arbeitspakete.md`, Labels, Übergaben). Dem Nutzer meldet sie sich nur bei
+   Entscheidungsbedarf, am Ende einer Spur (Merge) und am Rundenende – nicht nach jedem Teil.
+10. **Warten über Labels** (`zusammenarbeit.md` §5 Punkt 8, Tabelle): Warteschleife je Label eine Abfrage, bei ChatGPT/Codex
+    zusätzlich `review/*` (`anhang.md` F). Erledigte Labels entfernt die Leitstelle.

@@ -193,7 +193,7 @@ nicht übernommenen Felder noch in Runde 14. Fortsetzungen: höchstens 5 statt 3
 
 ### Gesamtreview am Rundenende (E14-3)
 
-Vollprüfung durch ChatGPT (Codex mit Netzzugang) nach `vorlagen/review-anfrage.md`, Abschnitt „Gesamtreview am Rundenende“;
+Ursprünglich Vollprüfung (E14-3) durch ChatGPT (Codex mit Netzzugang) nach `vorlagen/review-anfrage.md`, Abschnitt „Gesamtreview am Rundenende“;
 Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terra (Codex).
 **Stand 10.11.2026:** Teile 1–5 (#704–#707, #710) ohne P0–P2, 14 P3 (überwiegend Testlücken), Vollprüfung vom Nutzer abgebrochen.
 **Entscheidung Nutzer 10.11.2026 = C:** ein letzter, risikoorientierter Teil (Entscheidungen der Runde, neue `[ORIGINAL]`-Fundstellen in
@@ -225,5 +225,5 @@ riskanten Übergängen), danach Rundenabschluss; künftig Gesamtreview risikoori
   `formate/spielstand-original.md`). `livespiel` bleibt zurückgestellt.
 - **E14-2 = A:** Start ohne Warten auf alle Aufnahmen; bereits abgelegte Sitzungen der Aufnahme `runde-13` sofort auswerten,
   spätere in einem Folgeteil derselben Analysespur.
-- **E14-3 = A:** Gesamtreview durch ChatGPT als Vollprüfung (`vorlagen/review-anfrage.md`, #614/#617); keine Nachprüfung durch
+- **E14-3 = A** (abgelöst durch Entscheidung C, 10.11.2026)**:** Gesamtreview durch ChatGPT als Vollprüfung (`vorlagen/review-anfrage.md`, #614/#617); keine Nachprüfung durch
   Claude außer dem Delta von Fixes.
