@@ -1120,6 +1120,11 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q31 | Starttausch lässt verbotenen Europapokalplatz zu | `EishockeyManager.Core.Tests.KaderStartStartLigaTests.Bundesliga_AlwaysDraws_NeverTheEuropeanCupPlace` | rot |
 | Q32 | Zufallsverein darf Europapokalplatz sein | `EishockeyManager.Core.Tests.NewGameTests.Create_RandomBundesligaClub_NeverTakesEuropeanCupParticipant` | rot |
 | Q33 | Manuellen Einsatz während des Spiels überschreiben | `EishockeyManager.Core.Tests.TaktikTeil5Tests.Manual_KeepsEffortAndAttack_DuringMatch` | rot |
+| Q34 | Quellausschnitt der Pfeilgrundgrafik um ein Pixel verschieben | `EishockeyManager.UI.Tests.StadiumArrowTests.TicketArrows_AreTenPixelsWide_FromKb4BaseGraphic` | rot |
+| Q35 | Farbe des Abstiegszeichens von 18 auf 238 setzen | `EishockeyManager.UI.Tests.SeasonEndColorsTests.Palette18_12_22_MatchDosBoxPictures` | rot |
+| Q36 | Nachrichtenzentrum um ein Pixel verschieben | `EishockeyManager.UI.Tests.NewsBarDosboxTests.Message_ShowsDateAndTwoCenteredLines` | rot |
+| Q37 | Drei Nachrichtenzeilen zulassen | `EishockeyManager.UI.Tests.NewsBarDosboxTests.LongMessage_ShowsOnlyTwoLines_NothingOnTheBottomEdge` | grün |
+| Q38 | Nach der zweiten Nachrichtenzeile eine dritte zeichnen | `EishockeyManager.UI.Tests.NewsBarDosboxTests.LongMessage_ShowsOnlyTwoLines_NothingOnTheBottomEdge` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1857,8 +1862,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.CoachMenu_WorldCupPairings_SeasonChange_ResetsRememberedGroup` | neu | rot: U34 |
 | `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.NationalLineup_RightClickOnSlotLeaves_LeftClickClears` | neu | rot: U35 |
 | `NationalteamRunde14UiTests.cs · NationalteamRunde14UiTests.NationalLineup_LeftClickOnInjuredOrSuspended_StaysWithMessage` | neu | rot: U36, U37 |
-| `NewsBarDosboxTests.cs · NewsBarDosboxTests.Message_ShowsDateAndTwoCenteredLines` | neu | offen |
-| `NewsBarDosboxTests.cs · NewsBarDosboxTests.LongMessage_ShowsOnlyTwoLines_NothingOnTheBottomEdge` | neu | offen |
+| `NewsBarDosboxTests.cs · NewsBarDosboxTests.Message_ShowsDateAndTwoCenteredLines` | neu | rot: Q36 |
+| `NewsBarDosboxTests.cs · NewsBarDosboxTests.LongMessage_ShowsOnlyTwoLines_NothingOnTheBottomEdge` | neu | rot: Q38 |
 | `OriginalDialogCallersTests.cs · OriginalDialogCallersTests.Lineup_AutoDisabledMessage_IsShortMessageWith45Ticks` | geändert | offen |
 | `OriginalDialogCallersTests.cs · OriginalDialogCallersTests.Lineup_WrongRole_IsShortMessage_AndIgnoresClicks` | geändert | offen |
 | `PassiveScreenTests.cs · PassiveScreenTests.PlanChangedOnPausedTrainingDay_AppliesFromNextTick` | neu | offen |
@@ -1875,8 +1880,8 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_OfAnOriginalSave_ComesFromTheHeader_AsInFile46` | neu | rot: U09 |
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_ShowsNoLeagueInWorldOnlyMode` | neu | rot: U10 |
 | `SaveLoadDialogOriginalTests.cs · SaveLoadDialogOriginalTests.Info_OfAForeignFile_ShowsTheNoSaveGameMessage` | neu | rot: U11 |
-| `SeasonEndColorsTests.cs · SeasonEndColorsTests.Palette18_12_22_MatchDosBoxPictures` | geändert | offen |
-| `StadiumArrowTests.cs · StadiumArrowTests.TicketArrows_AreTenPixelsWide_FromKb4BaseGraphic` | neu | offen |
+| `SeasonEndColorsTests.cs · SeasonEndColorsTests.Palette18_12_22_MatchDosBoxPictures` | geändert | rot: Q35 |
+| `StadiumArrowTests.cs · StadiumArrowTests.TicketArrows_AreTenPixelsWide_FromKb4BaseGraphic` | neu | rot: Q34 |
 | `StadiumPartsTests.cs · StadiumPartsTests.EveryPartIsDrawnFromItsTableEntryWithMask0xC0` | neu | rot: S16 |
 | `StadiumPartsTests.cs · StadiumPartsTests.HallCoversRestaurantInDrawOrder` | neu | rot: S11 |
 | `StadiumPartsTests.cs · StadiumPartsTests.ProjectUnderConstructionShowsOnlyHintAndQuestionUsesOriginalDialog` | neu | rot: S15 |
