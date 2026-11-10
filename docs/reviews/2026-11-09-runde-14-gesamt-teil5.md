@@ -1185,6 +1185,15 @@ Zur Vier-Saison-Probe des Spieltagsmerkers: E14 macht alle vier Kombinationen ro
 | Q70 | Beim Öffnen der Nationalaufstellung Geld verändern | `EishockeyManager.UI.Tests.NationalLineupScreenTests.CoachMenu_OpensNationalLineupAndTactics_WithoutChangingState` | rot |
 | Q71 | Meldung für volle Reihe verändern | `EishockeyManager.UI.Tests.NationalLineupScreenTests.A010_FullLine_NoRoom_ClickOnPlacedTakesOut` | rot |
 | Q72 | Rechtsklick in Nationalaufstellung als Linksklick behandeln | `EishockeyManager.UI.Tests.NationalLineupScreenTests.Lineup_Clicks_FollowOriginalRules_AndTacticsBelongToNationalTeam` | rot |
+| Q73 | Ergebnismeldungen schalten Playoffs nicht auf Minutenlauf | `EishockeyManager.Core.Tests.IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported(competition: Relegation, knockOut: False)` | rot |
+| Q73 | Ergebnismeldungen schalten Playoffs nicht auf Minutenlauf | `EishockeyManager.Core.Tests.SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop(competition: Relegation, knockOut: False, league: Bundesliga)` | rot |
+| Q73 | Ergebnismeldungen schalten Playoffs nicht auf Minutenlauf | `EishockeyManager.Core.Tests.IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported(competition: Playoff, knockOut: True)` | rot |
+| Q73 | Ergebnismeldungen schalten Playoffs nicht auf Minutenlauf | `EishockeyManager.Core.Tests.SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop(competition: Relegation, knockOut: False, league: Oberliga)` | rot |
+| Q73 | Ergebnismeldungen schalten Playoffs nicht auf Minutenlauf | `EishockeyManager.Core.Tests.SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop(competition: Relegation, knockOut: False, league: ZweiteLiga)` | rot |
+| Q73 | Ergebnismeldungen schalten Playoffs nicht auf Minutenlauf | `EishockeyManager.Core.Tests.SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop(competition: Playoff, knockOut: True, league: Oberliga)` | rot |
+| Q73 | Ergebnismeldungen schalten Playoffs nicht auf Minutenlauf | `EishockeyManager.Core.Tests.SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop(competition: Playoff, knockOut: True, league: ZweiteLiga)` | rot |
+| Q73 | Ergebnismeldungen schalten Playoffs nicht auf Minutenlauf | `EishockeyManager.Core.Tests.SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop(competition: Playoff, knockOut: True, league: Bundesliga)` | rot |
+| Q74 | Kreditanfrage erst nach statt am siebten Tag verfallen lassen | `EishockeyManager.Core.Tests.DeadlineRegressionTests.R208_AnswerChecksDeadlineAtPausedUnprocessedDay` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE29.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE16A.HOK")` | rot |
 | R01 | Importdatum nach dem Einlesen um eins erhöhen | `EishockeyManager.Core.Tests.OriginalImportTests.Import_SetsDateManagersAndClubs(file: "FILE05.HOK")` | rot |
@@ -1628,12 +1637,12 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | Testdatei / Methode | Delta | Erneute Gegenprobe |
 |---|---|---|
 | `AutoLineupTeil8Tests.cs · AutoLineupTeil8Tests.Migration_31To32_KeepsHandMadeLineup` | geändert | rot: Q10 |
-| `DeadlineRegressionTests.cs · DeadlineRegressionTests.R208_AnswerChecksDeadlineAtPausedUnprocessedDay` | geändert | offen |
+| `DeadlineRegressionTests.cs · DeadlineRegressionTests.R208_AnswerChecksDeadlineAtPausedUnprocessedDay` | geändert | rot: Q74 |
 | `FinanceCalibrationTests.cs · FinanceCalibrationTests.PassiveBundesligaManager_WithoutCare_NotDismissed_ForcedRelegation` | neu | rot: Q28 |
 | `GameModeTests.cs · GameModeTests.Mode4_ReferenceValues_Unchanged` | geändert | rot: V01, V02, V03, V04, V05, V06, V07, V08, V09 |
 | `HeimspielStatistikTests.cs · HeimspielStatistikTests.MultiSeason_FourChanges_PassiveAndActiveManager` | geändert | offen |
 | `HotSeatTests.cs · HotSeatTests.DismissalDuringDay_ExcludedFromNextDay` | geändert | rot: Q67 |
-| `IntegrationRunde9Tests.cs · IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported` | geändert | offen |
+| `IntegrationRunde9Tests.cs · IntegrationRunde9Tests.PlayoffWithoutManager_FastUnlessResultsReported` | geändert | rot: Q73 |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_SaveLoad_ListingKept_WithdrawAfterLoad` | neu | rot: X01 |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOverSeasonEnd_ReturnsWithSeasonCountersReset_ClubGamesKept` | neu | rot: X02 |
 | `KaderStartRunde14FixTests.cs · KaderStartRunde14FixTests.ListedOwnPlayer_InjuryHealsLikeSquad` | neu | rot: X03 |
@@ -1812,7 +1821,7 @@ Grundlage ist die Roslyn-Inventur aus Teil 2 mit 334 Methoden. `rot` bedeutet ei
 | `SaisonwechselEntlassungTests.cs · SaisonwechselEntlassungTests.AllManagersDismissed_GameOverAtNextDay` | neu | rot: Q30 |
 | `SaisonwechselOberligaTests.cs · SaisonwechselOberligaTests.StartSwap_ChosenClubWithoutLeague_DisplacedIsFromStartLeague` | neu | rot: Q69 |
 | `SaisonwechselOberligaTests.cs · SaisonwechselOberligaTests.StartSwap_TwoChosenClubsWithoutLeague_BothDisplacedOutside_MultiSeason` | neu | rot: Q69 |
-| `SaisonwechselProbenTests.cs · SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop` | geändert | offen |
+| `SaisonwechselProbenTests.cs · SaisonwechselProbenTests.PlayoffWithoutManager_EachResultsFieldAloneSwitchesToMinuteLoop` | geändert | rot: Q73 |
 | `SaveGameTests.cs · SaveGameTests.SchemaFingerprint_MatchesSchemaVersion` | geändert | rot: Q11 |
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.Full_ManagerInTopFive_GetsStatusBit_OtherNot` | geändert | rot: Q01 |
 | `SeasonEndStatusTests.cs · SeasonEndStatusTests.Full_EveryManagerInTopFive_GetsStatusBit` | geändert | rot: T01 |
