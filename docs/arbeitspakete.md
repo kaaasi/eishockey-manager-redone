@@ -235,6 +235,20 @@ Nachprüfung durch Claude nur für das Delta von Fixes. **Modell:** GPT-6.1 Terr
   Plätze. Kandidat Runde 15: Startwerte des Kaders beim Spielstart nach em.exe (Aufrufer von 0x4907A im Spielstart) lesen und
   übernehmen (Dateien `kader-start`).
 
+### Vormerkungen Runde 15 (Nutzer 10.11.2026, Effizienz)
+
+- **Spur `abgleich-original`** (Vorschlag 1): Werkzeug in `emtool`, das alle Paare aufeinanderfolgender Original-Spielstände
+  (`*.HOK`, Referenz-Repo) durchläuft – Remake ab Stand n importieren, bis zum Zeitpunkt von Stand n+1 spielen, je Feld
+  vergleichen (Konto, Kader, Zähler, Tabellen) – und jede Abweichung als Tabellenzeile bzw. `[GameDataTheory]` ausgibt.
+  Ziel: Befunde entstehen im Test, nicht im Review. Modell: Claude Opus 5.5.
+- **Spurmodell ohne Teil-PRs** (Vorschlag 3): Teile einer Spur sind Commits auf **einem** Branch `paket/<spur>` mit **einem** PR;
+  Fortsetzungen arbeiten auf demselben Branch weiter. Kein eigener Integrations-PR je Spur, reviewt wird der Spur-PR.
+  Umsetzung in `docs/vorlagen/spur-start.md` („Teile und Fortsetzung“) und `leitstelle-start.md` mit dem Plan der Runde 15.
+- **Prozessdoku verdichten** (Rest von Vorschlag 5): `AGENTS.md`, `zusammenarbeit.md`, `docs/vorlagen/*` (heute rund 1.200 Zeilen
+  Pflichtlektüre je Lauf) auf einen Kern von etwa 300 Zeilen; Sonderfälle in einen Anhang, der nur bei Bedarf gelesen wird.
+  Regeln inhaltlich unverändert. Modell: Claude Sonnet 5.5 (mechanisch), Review Doku-Prüfung.
+- Offene Issues aus Runde 14: #620 (Rest), #698, #699, #703.
+
 ## Paket `hok-format` – Original-Spielstände `*.HOK`
 
 Branch: `paket/hok-format` · Status: Analyse gemergt (#176, Review #178): Verschlüsselung, Prüfsummen, Kopf und Blockfolge

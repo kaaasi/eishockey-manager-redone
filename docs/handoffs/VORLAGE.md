@@ -3,6 +3,8 @@
 Als **Kommentar im PR** des Branches einfügen – **am Ende jeder Arbeitssitzung**, nach erledigter Abarbeitung wie
 bei Abbruch (Regeln: `docs/prozess/zusammenarbeit.md`, Abschnitt 3).
 Ohne PR: als `docs/handoffs/<JJJJ-MM-TT>-<thema>.md` auf einem eigenen Branch ablegen.
+**Höchstens 15 Zeilen plus Testtabelle**; Details stehen im PR und werden nur verlinkt. Nicht ausgeführte Läufe der Tabelle
+weglassen.
 
 ```markdown
 ## Übergabe
