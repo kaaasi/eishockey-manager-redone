@@ -172,6 +172,10 @@ public sealed class OriginalImportTests(ITestOutputHelper output)
     {
         var (save, database) = Load(file);
         var game = GameState.ImportOriginal(save, database, Seed);
+        // #716 R14G3-02: Spieldauer aufheben und vier echte Wechsel auch passiv fordern; Gegenprobe StartNextSeason → GameOver
+        // ohne Wechsel → rot
+        output.WriteLine($"{file}: Spieldauer im Stand {game.Setup.Duration}");
+        game.Setup.Duration = GameDuration.Unbegrenzt;
         var start = game.Season;
         for (var change = 0; change < 4 && game.Phase != SeasonPhase.GameOver; change++)
         {
@@ -192,9 +196,8 @@ public sealed class OriginalImportTests(ITestOutputHelper output)
             Assert.Empty(game.ValidatePlayerIdentity());
         }
         output.WriteLine($"{file} aktiv={active}: Saison {start} → {game.Season}, Phase {game.Phase}");
-        if (active)
-            Assert.Equal(start + 4, game.Season);
-        Assert.True(game.Season > start || game.Phase == SeasonPhase.GameOver);
+        Assert.Equal(start + 4, game.Season);
+        Assert.NotEqual(SeasonPhase.GameOver, game.Phase);
     }
 
     private static (OriginalSaveGame Save, ClubDatabase Database) Load(string file) =>

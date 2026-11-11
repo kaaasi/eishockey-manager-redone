@@ -60,6 +60,8 @@ public class OriginalSaveHeaderTests
         wrong[0] = (byte)'X';
         Assert.Null(OriginalSaveHeader.TryRead(wrong));
         Assert.Null(OriginalSaveHeader.TryRead(new byte[OriginalSaveHeader.Length - 1]));
+        // #716 R14G3-03: gültig beginnender Kopf, ein Byte zu kurz; Gegenprobe Mindestlänge Length → Length - 1 → rot
+        Assert.Null(OriginalSaveHeader.TryRead(Header(1993, 0, 1).AsSpan(0, OriginalSaveHeader.Length - 1)));
         var noTerminator = Header(1993, 1, 1);
         noTerminator[OriginalSaveGame.Magic.Length] = (byte)'1';
         Assert.Null(OriginalSaveHeader.TryRead(noTerminator));

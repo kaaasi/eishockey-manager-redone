@@ -141,6 +141,24 @@ public sealed class OriginalImportRestTests
             Assert.Equal(place, game.Clubs[clubOf[order[place]]].StoredRankSlot(2));
     }
 
+    /// <summary>
+    /// Platzfeld 2 (Spieltag 3) des Satzes 0 an FILE03 im Speicher von 9 auf 10 gesetzt: Der Import übernimmt den HOK-Wert,
+    /// nicht den nachgespielten.
+    /// </summary>
+    // #716 R14G3-01: abweichender HOK-Wert; Gegenprobe StoreRankSlot im Import auslassen → 9 statt 10 → rot
+    [GameDataFact]
+    public void Import_RankSlotTakenFromHok()
+    {
+        var (save, database) = Load("FILE03.HOK");
+        var table = save.Block("8257");
+        var field = OriginalImport.TableField(0x828B, 0) + 2 / 2;
+        Assert.Equal(9, table[field] & 0x0F);
+        table[field] = (byte)((table[field] & 0xF0) | 10);
+        var game = GameState.ImportOriginal(save, database, Seed);
+        var clubOf = OriginalImport.ClubIndices(save, database);
+        Assert.Equal(10, game.Clubs[clubOf[0]].StoredRankSlot(2));
+    }
+
     /// <summary>Werbeangebote C313 an FILE05; ein Vertrag C15B über zwei Banden und einer fürs Trikot (gepatcht, an keinem Stand).</summary>
     [GameDataFact]
     public void Import_Sponsoring()
