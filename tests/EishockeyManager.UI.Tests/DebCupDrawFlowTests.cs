@@ -292,6 +292,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): ab 1993 neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei
     // 0x4BD56, cbw): ab 128 → 50 statt bis 150; andere Spielenergie und Ergebnisse ab dem ersten Training, mit und ohne Anzeige
     // weiter gleich. Rückschaltprobe: Squad.Training.cs von 18972c0 → alter Wert.
+    // Runde 16, Spur abgleich-rest (#772, R15-E2 = C): ab 1993 neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert
+    // 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel): andere Ergebnisse ab dem ersten Spieltag, mit und ohne
+    // Anzeige weiter gleich. Rückschaltprobe: ohne PrepareMatch → alter Wert.
     private const string Reference =
-        "1993: DEB 19, DM 8, Tab 15371 | 1994: DEB 3, DM 5, Tab 15528 | 1995: DEB 8, DM 5, Tab 15577 | 1996: DEB 21, DM 5, Tab 15054";
+        "1993: DEB 10, DM 8, Tab 15378 | 1994: DEB 8, DM 8, Tab 15908 | 1995: DEB 5, DM 1, Tab 16317 | 1996: DEB 2, DM 8, Tab 16139";
 }

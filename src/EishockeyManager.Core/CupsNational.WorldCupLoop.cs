@@ -110,12 +110,14 @@ public sealed partial class GameState
     /// <list type="bullet">
     /// <item>[ORIGINAL] Schritt (c) des Vortags mit dem Markt-Verfall wie in den übrigen Modi (<see cref="WorldCupLoopStepC"/>);
     ///   Beleg FILE18 → FILE48 und FILE19 → FILE20 (siehe dort).</item>
-    /// <item>[ORIGINAL] Schritt (d): Heilung 0x07C12 (Datei 0x556D2–0x55712; [APPROX] wie <see cref="HealInjuries"/> für alle
-    ///   Spieler, das Original für die Kaderplätze von Manager 0 – im Modus 1 die Spieler Deutschlands, FILE18 „Verein 7
-    ///   DEUTSCHLAND“). [APPROX] Ohne Tagesabschluss 0x3ED01/0x3F833 und Stadionbau 0x3D316: Das Remake hat in diesem Modus keine
-    ///   Vereinsfinanzen (Konto im Original FILE19 → FILE20 unverändert, 500.000 DM).</item>
+    /// <item>[ORIGINAL] Schritt (d): Tagesabschluss 0x3ED01/0x3F833 je Manager ohne Modusprüfung (Datei 0x5568B–0x5569F) samt
+    ///   Stadionbau 0x3D316 am Zähler ≡ 0 (<see cref="AdvanceFinance"/> mit <c>clubDay: false</c>; #732, abgleich-rest Teil 3,
+    ///   R16-D2 = A) – Satz 0 bucht also auch im Modus 1 (FILE19 → FILE20 ohne Monatsletzten: Konto 500.000 DM unverändert; FILE20 →
+    ///   FILE21 −2.030.327 DM). Heilung 0x07C12 (Datei 0x556D2–0x55712; [APPROX] wie <see cref="HealInjuries"/> für alle Spieler,
+    ///   das Original für die Kaderplätze von Manager 0).</item>
     /// <item>[ORIGINAL] Am ersten WM-Tag nichts: Der Sprung Datei 0x54CF7–0x54D38 zählt ohne Tageslauf bis zum ersten WM-Tag, die
-    ///   Schleife beginnt mit dessen Spielen; (c) und (d) gibt es erst danach.</item>
+    ///   Schleife beginnt mit dessen Spielen; (c) und (d) gibt es erst danach. Der Finanztag springt deshalb ohne Abrechnung auf den
+    ///   Vortag (die übersprungene Vereinssaison bucht nichts).</item>
     /// </list>
     /// </summary>
     private void OpenWorldOnlyLoopDay(int day)
@@ -123,6 +125,8 @@ public sealed partial class GameState
         if (day > FirstWorldCupDay)
         {
             WorldCupLoopStepC(day);
+            FinanceDay = Math.Max(FinanceDay, FinanceTarget(day) - 1); // Sprung ohne Tagesabschluss (Datei 0x54CF7–0x54D38)
+            AdvanceFinance(day, clubDay: false); // #732: Schritt (d), 0x3ED01/0x3F833 je Manager (Datei 0x5568B–0x5569F)
             HealInjuries(day);
         }
     }
@@ -175,8 +179,8 @@ public sealed partial class GameState
     ///   nur für Manager 0 (Kaderplätze 0x5DC3 + 0xA70E · 0x618, Datei 0x07402), Verfall offener Gebote (Datei 0x07215–0x0726A)
     ///   und Angebotswurf auf seine Markt-Plätze (Datei 0x072DD) über <see cref="TransferMarket.CatchUpManagerDay"/> (#678), in der
     ///   Reihenfolge des Originals: Markt, Verträge, Heilung und Training, Aufstellung.</item>
-    /// <item>[APPROX] Modus 1: nur der Markt. Die Kaderplätze von Manager 0 sind dort die Spieler Deutschlands (FILE18 „Verein 7
-    ///   DEUTSCHLAND“), das Remake führt keinen eigenen Kader des Managers in diesem Modus; Konto FILE19 → FILE20 unverändert.</item>
+    /// <item>[APPROX] Modus 1: nur der Markt. Verträge, Training und Aufstellung des Kaders von Satz 0 rechnet das Remake dort nicht
+    ///   (FILE19 → FILE20 und FILE20 → FILE21: Kader von Satz 0 bis auf Form und Belastung unverändert, #732).</item>
     /// </list>
     /// </summary>
     private void WorldCupLoopDailyRun(int day)

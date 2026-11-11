@@ -238,8 +238,7 @@ public class NationalLineupTests
     public void WorldOnly_MultiSeason_WithChangedFormation(bool active, int seed)
     {
         var game = GameModeTests.Create(seed, false, true, 5);
-        var manager = game.Managers[0];
-        var money = manager.Money;
+        var account = new ClubAccountProbe(game, game.Managers[0]); // #732: Vereinskonto nur über das Finanzbuch
         for (var change = 0; change <= 4; change++)
         {
             Assert.Null(game.NationalCoach);
@@ -285,9 +284,12 @@ public class NationalLineupTests
                         Assert.Equal(before, p.Caps);
             }
             Assert.Equal(game.NationalAccount, game.NationalBookings.Sum(b => b.Amount));
-            Assert.Equal(money, manager.Money);
+            account.SeasonEnd();
             if (change < 4)
+            {
                 game.StartNextSeason();
+                account.SeasonStart();
+            }
         }
         Assert.Equal(5, game.History.Count);
     }

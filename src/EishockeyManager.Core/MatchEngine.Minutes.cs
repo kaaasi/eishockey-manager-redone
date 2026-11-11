@@ -189,10 +189,13 @@ public sealed class LiveTeam
     /// </summary>
     public int TacticsParity { get; init; }
 
-    /// <summary>Eigene und gegnerische Stärke für die Automatik der Taktik (Datei 0x8365, doppelte Differenz).</summary>
-    public int TacticsStrength { get; init; }
+    /// <summary>
+    /// Eigene und gegnerische Stärke für die Automatik der Taktik (Datei 0x8365, doppelte Differenz; 0x939A liest die von
+    /// 0x8365 geschriebenen Zeilen). [ORIGINAL] Stärke 0x368B1 mit Gewichtung 1 zu Minute 0 (<see cref="MatchEngine.PrepareMatch"/>).
+    /// </summary>
+    public int TacticsStrength { get; set; }
 
-    public int TacticsOpponentStrength { get; init; }
+    public int TacticsOpponentStrength { get; set; }
 
     /// <summary>Reihe auf dem Eis 0–2 je Teil (Vereinsfelder 0x2E/0x30). Computervereine wechseln nur in Managerpaarungen.</summary>
     public int DefenseLine { get; set; }

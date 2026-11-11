@@ -356,8 +356,9 @@ public sealed partial class GameState
     /// Der HOK-Import spielt diese Eigenheit des Ladens nach (Entscheidung Nutzer 09.11.2026, C; <c>GameState.LoadQuirk.cs</c>).
     /// [APPROX] Ohne eigenen Kalendertag des Remakes (die Bücher führen die Beträge in der neuen Saison, Datei 0x56476 zählt die
     /// Saison vor der Schleife weiter); Bau, Tagesabschluss und Heilung je Tag für alle Manager nacheinander statt je Manager
-    /// verschränkt (sie wirken je Manager getrennt; die Börse rechnet wie im Hauptweg einmal je Tag, Entscheidung #188). Im Modus
-    /// „nur Weltkugel“ ohne Tagesabschluss: Das Remake führt dort keine Vereinsfinanzen (wie in der WM-Schleife).
+    /// verschränkt (sie wirken je Manager getrennt; die Börse rechnet wie im Hauptweg einmal je Tag, Entscheidung #188).
+    /// [ORIGINAL] Auch im Modus „nur Weltkugel“ (Schleife ohne Modusprüfung, Aufruf 0x56512; #732, abgleich-rest Teil 3):
+    /// Satz 0 bucht Gehälter, Unterhalt, Zinsen usw. (FILE20 → FILE21: 500.000 → −1.530.327 DM).
     /// </summary>
     private void RunSummerBreak()
     {
@@ -366,8 +367,7 @@ public sealed partial class GameState
             var date = SeasonCalendar.LayoutDate(counter - 1);
             if (counter % 7 == 0)
                 WeeklyFinances();
-            if (!WorldOnly)
-                SummerDayClose(date);
+            SummerDayClose(date);
             if (PlayerInjuries.IsHealingDay(counter))
                 foreach (var club in ManagedClubs())
                     HealSquad(club);

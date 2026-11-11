@@ -53,7 +53,9 @@ public class SaisonwechselSchema22Tests
                 Assert.True(guard < 3000, $"Saisonende {change + 1} nicht erreicht");
                 game.Managers[0].Money = Math.Max(game.Managers[0].Money, 5_000_000);
                 foreach (var m in game.Managers)
-                    TestSeason.KeepSquad(game, m);
+                    // #772 (R15-E2 = C): auch abgelaufene Verträge verlängern – mit der Spielvorbereitung 0x8365 verlieren beide Manager
+                    // in Saison 4 ihren Kader bis auf 0/1 Spieler (Verträge, Ruhestand), die Probe hält ihn wie die übrigen Mehrsaisonproben.
+                    TestSeason.KeepSquad(game, m, extendExpired: true);
                 game.Continue();
             }
             Assert.Equal(SeasonPhase.SeasonOver, game.Phase);

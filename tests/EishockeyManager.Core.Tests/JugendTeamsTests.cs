@@ -232,8 +232,9 @@ public class JugendTeamsTests
     // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
     // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
     // Squad.Training.cs von 18972c0 → alte Werte.
+    // #772 (Spur abgleich-rest, Runde 16): neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel); andere Ergebnisse ab dem ersten Spieltag. Gegenprobe: ohne PrepareMatch → alter Wert.
     private const string ExpectedActive =
-        "0:Schueler:2/11/60;0:Jugend:2/11/59;0:Junioren:2/11/61;1:Schueler:2/6/69;1:Jugend:1/12/70;1:Junioren:1/11/73;2:Schueler:1/11/77;2:Jugend:1/6/76;2:Junioren:1/6/76;3:Schueler:1/6/82;3:Jugend:1/6/80;3:Junioren:1/6/80";
+        "0:Schueler:2/11/66;0:Jugend:2/11/66;0:Junioren:2/11/61;1:Schueler:1/11/76;1:Jugend:1/11/74;1:Junioren:1/11/71;2:Schueler:1/6/80;2:Jugend:1/6/80;2:Junioren:1/6/78;3:Schueler:1/6/84;3:Jugend:1/6/83;3:Junioren:1/6/84";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -280,7 +281,7 @@ public class JugendTeamsTests
     // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
     // Squad.Training.cs von 18972c0 → alte Werte.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/63;0:Jugend:2/2/65;0:Junioren:1/6/68;1:Schueler:3/2/52;1:Jugend:3/2/52;1:Junioren:1/6/54;2:Schueler:3/6/47;2:Jugend:3/6/47;2:Junioren:2/2/45;3:Schueler:3/6/43;3:Jugend:3/6/43;3:Junioren:3/2/43";
+        "0:Schueler:2/2/66;0:Jugend:2/2/64;0:Junioren:2/2/69;1:Schueler:3/2/56;1:Jugend:3/2/54;1:Junioren:3/2/55;2:Schueler:3/6/48;2:Jugend:3/6/46;2:Junioren:3/6/45;3:Schueler:3/6/43;3:Jugend:3/6/43;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

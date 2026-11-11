@@ -71,6 +71,7 @@ public static partial class MatchEngine
             ManagerMatch: managerMatch);
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
+        PrepareMatch(game, home, away, homeTeam, awayTeam);
         MatchReport report;
         // [ORIGINAL] Datei 0x3702E–0x37085: Pokalspiel mit eingeschaltetem Anzeigeschalter (DGROUP 0x227 DEB-Pokal, Code 6;
         // 0x228 Europapokal, Code 3/5; 0x229 WM-Gruppe, Code 8; GameOptions.CupMatchUsesMinuteLoop) läuft durch die
@@ -125,6 +126,8 @@ public static partial class MatchEngine
                 report.ShootoutHomeWins = goals.Home > goals.Away;
             }
         }
+        KeepMatchFields(home, homeTeam);
+        KeepMatchFields(away, awayTeam);
         CreditPlayers(game, home, away, competition, report, random);
         AfterMatch(home, away, competition, report, random);
         return report;
@@ -154,8 +157,9 @@ public static partial class MatchEngine
     ///   der Startaufstellung wirkt wie bisher über <see cref="TeamValue"/>.</item>
     /// <item>Form 0x1C/0x1D: [ORIGINAL] random(45, 55), Europapokal-Gegner (Index &gt; 64) 5 weniger, aus dem Lader.
     ///   Tagesform 0x17: [ORIGINAL] random(47, 53) aus dem Lader, nach Ligaspielen nachgeführt (<see cref="UpdateDayForm"/>).</item>
-    /// <item>Einsatz 0x26 und Angriff 0x2C: Automatik bzw. eigene Taktik beim Stand 0:0 (Spielvorbereitung, Datei 0x8365;
-    ///   <see cref="Tactics.EffectiveEffort"/>). In Managerpaarungen führt der Minutenablauf sie nach dem Spielstand nach.</item>
+    /// <item>Einsatz 0x26 und Angriff 0x2C: hier vorläufig Automatik bzw. eigene Taktik beim Stand 0:0 gegen den Teamwert;
+    ///   die Spielvorbereitung 0x8365 (<see cref="PrepareMatch"/>, #772) setzt sie in <see cref="PlayWithEvents"/> wie im
+    ///   Original. In Managerpaarungen führt der Minutenablauf sie nach dem Spielstand nach.</item>
     /// <item>Energie 0x1E = <see cref="PreparedEnergy"/>. Reihe 0 bleibt auf dem Eis: [ORIGINAL] für Paarungen ohne
     ///   Manager; in Managerpaarungen Energie und Reihenwechsel je Minute (0x87F7, 0x8EF2, <c>docs/spielberechnung.md</c> §13).</item>
     /// <item>Managervereine in der Managerpaarung: [ORIGINAL] Reihenwerte aus den eingesetzten Spielern
@@ -207,9 +211,6 @@ public static partial class MatchEngine
                 : 0;
         }
         var fewFit = managed && club.Players.Count > 0 && club.Players.Count(p => p.Available) < MinimumFitForPenalties;
-        // A180: [ORIGINAL] Spielvorbereitung 0x8365 je Paarung (Datei 0x36D12) schreibt die Zeile der Automatik in den
-        // Vereinssatz – für die Anzeige „AUTOM.“ festgehalten; ohne Manager ohne Blick auf die Modi (Datei 0x842B).
-        club.Tactics.RecordAutoLine(value, opponentValue, unmanaged: manager is null);
         var team = new LiveTeam
         {
             Defense = defense,

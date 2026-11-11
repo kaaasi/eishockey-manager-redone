@@ -73,7 +73,9 @@ public sealed class PlayoffSemifinalTests
         // (A134) und R15-E3 ändern zusammen mit Tag 0 die Zufallsfolge; mit Saat 7 hat dann in fünf Saisons kein schlechter Platzierter
         // Heimrecht (die Probe deckt den Fall nicht mehr ab, die Paarungsregel bleibt grün). Rückschaltprobe: Quellen von main → Saat 7
         // und 8 grün.
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 8);
+        // Runde 16, Spur abgleich-rest (#772, R15-E2 = C): Saat 8 → 9. Mit der Spielvorbereitung 0x8365 hat bei Saat 8 in fünf Saisons
+        // kein schlechter Platzierter Heimrecht (gleicher Grund wie oben). Rückschaltprobe: siehe PR.
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 9);
         var active = game.Managers[1];
         var upsets = 0;
         var transfers = 0;

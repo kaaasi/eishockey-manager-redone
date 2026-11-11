@@ -12,7 +12,8 @@ Das Hauptmenü zeigt den Tag **T** des nächsten eigenen Spiels.
   `TrainedUntil == (Saison, T)`, `FinanceDay == T`): Tagesabschluss, Takt 0x07169 mit Training und Markt, Neuaufstellung und
   Listenwechsel der Tage mit Ereignis. `[ORIGINAL]` Datei 0x55204–0x552D3 (nach den Spielen von T − 1) und 0x54D68–0x54E7C liegen
   vor dem Menü 0x44E22 (Datei 0x54EB2); die Spielstände des Originals sind dort gesichert (Zähler 0x3B7 = T + 1).
-- Das gilt auch für Tag 0 eines neuen Spiels und jeder Saison (#699; FILE01: Zähler 1).
+- Das gilt auch für Tag 0 eines neuen Spiels und jeder Saison (#699; FILE01: Zähler 1). Im Modus „nur Weltkugel“ ist der erste Halt
+  der erste WM-Tag (Sprung Datei 0x54CEE–0x54D38 ohne Tageslauf); sein Tageswechsel gilt als gerechnet und rechnet nichts (FILE11, FILE21).
 - **Nicht** gerechnet sind 0x952C(5, 1) des Bundestrainers (Datei 0x54F9C, nach den Menüs), die Listenwechsel-Würfe der
   Manager nach dem ersten (je beim Weitergeben des Zugs), Schuldenprüfung und die Spiele von T.
 - Jetzt bedienen die Manager ihre Bildschirme. Öffnen und Schließen ändert nichts; nur ausdrückliche Handlungen

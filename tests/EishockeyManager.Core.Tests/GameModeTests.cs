@@ -175,7 +175,8 @@ public class GameModeTests
 
     /// <summary>
     /// Mehrsaisonprobe Modus 1, 4 Saisonwechsel, passiver und aktiver Bundestrainer: Ernennung in jeder Saison,
-    /// Nationalkonto = Summe seiner Buchungen, Vereinskonto unverändert, Etat aus dem WM-Platz der Vorsaison.
+    /// Nationalkonto = Summe seiner Buchungen, Vereinskonto nur über das Finanzbuch (#732: Tagesabschluss von Satz 0 wie im Original,
+    /// <see cref="ClubAccountProbe"/>), Etat aus dem WM-Platz der Vorsaison.
     /// </summary>
     [Theory]
     [InlineData(false, 7)]
@@ -184,8 +185,7 @@ public class GameModeTests
     public void WorldOnly_MultiSeason_AppointedEachSeason_NationalAccountIsSumOfBookings(bool active, int seed)
     {
         var game = Create(seed, false, true, 5);
-        var manager = game.Managers[0];
-        var money = manager.Money;
+        var account = new ClubAccountProbe(game, game.Managers[0]);
         var expectedBudget = NationalCoach.FirstBudget;
         for (var change = 0; change <= 4; change++)
         {
@@ -205,11 +205,14 @@ public class GameModeTests
             while (game.Phase == SeasonPhase.Running)
                 game.Continue();
             Assert.Equal(game.NationalAccount, game.NationalBookings.Sum(b => b.Amount));
-            Assert.Equal(money, manager.Money);
+            account.SeasonEnd();
             Assert.Equal(0, game.PlayedMatchDays);
             expectedBudget = NationalCoach.BudgetFor(game.WorldCup!.Ranking.ToList().IndexOf(NationalTeams.Germany) + 1);
             if (change < 4)
+            {
                 game.StartNextSeason();
+                account.SeasonStart();
+            }
         }
         Assert.Equal(5, game.History.Count);
         if (active)
@@ -433,8 +436,9 @@ public class GameModeTests
     // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
     // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer und Konten. Rückschaltprobe: GameState.DailyRun.cs und
     // CupsNational.AutoLineup.cs von 8711348 → alte Werte.
+    // #772 (Spur abgleich-rest, Runde 16): neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel); andere Ergebnisse ab dem ersten Spieltag. Gegenprobe: ohne PrepareMatch → alter Wert.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=17,GermanChampion=1,EuropeanCupWinner=2|1166907,400000|WorldChampion=53,CupWinner=17,GermanChampion=0,EuropeanCupWinner=1|2284812,400000|WorldChampion=63,CupWinner=0,GermanChampion=10,EuropeanCupWinner=0|2479122,400000|WorldChampion=54,CupWinner=18,GermanChampion=0,EuropeanCupWinner=0|2482793,400000|WorldChampion=63,CupWinner=18,GermanChampion=17,EuropeanCupWinner=0|2678183,500000|R332137697 C1450169878";
+        "WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=53,CupWinner=1,GermanChampion=7,EuropeanCupWinner=1|2341900,400000|WorldChampion=54,CupWinner=1,GermanChampion=12,EuropeanCupWinner=7|2710757,400000|WorldChampion=63,CupWinner=8,GermanChampion=8,EuropeanCupWinner=12|2819615,500000|WorldChampion=52,CupWinner=7,GermanChampion=22,EuropeanCupWinner=12|2843244,400000|R694389099 C1800667102";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
