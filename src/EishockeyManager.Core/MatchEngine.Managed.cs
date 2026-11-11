@@ -501,6 +501,11 @@ public static partial class OriginalMinutes
     ///   nächsten Reihe mit Vorgabe ≠ 0 (Ring über 3 bzw. 4 Reihen, höchstens 250 Schritte).</item>
     /// <item>Neue Reihe: Minuten auf dem Eis 0.</item>
     /// </list>
+    /// [APPROX] #730 zurückgestellt (R16-E2 = C): Im Original spielen die Sturmreihen 1/2 des Managervereins deutlich mehr
+    /// (Belastung der Vielspieler kippt über 127), im Remake verteilt sich die Eiszeit gleichmäßiger. Alle Schreiber von
+    /// Reihe und Modus sind nachgebaut außer dem Mausweg im Live-Spiel (Datei 0x38D96); die Ursache ist nicht belegt
+    /// (<c>docs/analyse/belastung-staerke.md</c> §7, DOSBox-Aufnahme §7.3). Die abweichenden Spieler stehen als Pflichteinträge
+    /// #730 in <c>AbgleichOriginalPaareTests</c>.
     /// </summary>
     public static void ChangeLines(LiveTeam team, LiveTeam opponent)
     {

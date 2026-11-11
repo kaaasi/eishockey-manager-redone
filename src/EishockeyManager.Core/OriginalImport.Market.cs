@@ -97,8 +97,8 @@ public sealed partial class GameState
                          ?? Clubs[Managers[owner].ClubIndex].Players.FirstOrDefault(p => p.Name == name && p.Role == role);
                 // [ORIGINAL] #749, R15-E3 = C: Besitzer 0–3 ohne Kader- und Marktplatz ist ein nach Vertragsende verlorener Spieler
                 // (Datei 0x27DE3–0x27E9D schreibt +0x1A nicht zurück); der Platz bleibt vergeben, 0x494EF zieht nur Besitzer 6
-                // (FILE46 Pool 196 KJELLBERG). [APPROX] „Nur Weltkugel“ (kein Managerkader übernommen) bleibt bei „frei“.
-                taken = player is not null || !WorldOnly;
+                // (FILE46 Pool 196 KJELLBERG). #732: auch im Modus „nur Weltkugel“ (Kader von Satz 0 übernommen, ApplySquad).
+                taken = true;
             }
             if (player is null)
             {

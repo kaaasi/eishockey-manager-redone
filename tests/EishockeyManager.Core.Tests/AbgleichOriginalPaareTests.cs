@@ -18,13 +18,14 @@ namespace EishockeyManager.Core.Tests;
 /// </remarks>
 public class AbgleichOriginalPaareTests
 {
-    private const int WorldOnlyManagerSlot = 732, DayZero = 699, Strain = 730;
+    private const int Strain = 730;
 
     /// <summary>
-    /// Kein Befund (#732): Im Modus „nur Weltkugel“ trägt Satz 0 das Land (Regel 1 der Feldkarte); der Import baut den Vereinskader
-    /// des Managers neu und bewertet ihn beim Laden, beide Seiten des Paars also unabhängig voneinander. Begründung am Eintrag.
+    /// Kein Befund (#732, abgleich-rest Teil 3): Im Modus „nur Weltkugel“ steht ein Spieler im Kader von Satz 0 und im Nationalkader
+    /// (Satz 5) mit je eigenen Werten; das Remake führt einen Wertesatz je Spieler und nimmt im Modus 1 die des Satzes 5
+    /// (<c>OriginalImport.National.cs</c>, [APPROX]). Begründung am Eintrag.
     /// </summary>
-    private const int WorldOnlySquadImport = 0;
+    private const int NationalValueSet = 0;
 
     /// <summary>Zufall, kein Befund: Begründung am Eintrag (nur optionale Muster).</summary>
     private const int Chance = 0;
@@ -78,7 +79,7 @@ public class AbgleichOriginalPaareTests
 
     /// <summary>
     /// Erwartete Listen, erneuert gegen <c>main</c> 62e4927 (nach #725, #726, #727): Teamwerte #729 behoben durch #727, Tag 0
-    /// #699 (Punkt 2) behoben durch #725 außer im Modus „nur Weltkugel“ (FILE20→21).
+    /// #699 (Punkt 2) behoben durch #725, im Modus „nur Weltkugel“ (FILE20→21) durch abgleich-rest Teil 4.
     /// </summary>
     public static readonly IReadOnlyDictionary<string, Known[]> Expected =
         new Dictionary<string, Known[]>
@@ -89,20 +90,19 @@ public class AbgleichOriginalPaareTests
                 new("Invariante.PoolMittel.Strain", Chance, Optional: true)],
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
-                // #730 Gegenrichtung: J.MEYER (Original 118, Remake 50–88) und KUHNEKATH (96, Remake 50–53) bei allen Prüfsaaten;
-                // Anteil der Handaufstellung (Eingriff) nicht getrennt.
-                .. StrainOf("6 KREFELDER EV", 50, 95, "J.MEYER", "KUHNEKATH"),
+                // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–57) bei allen Prüfsaaten; Anteil der Handaufstellung
+                // (Eingriff) nicht getrennt. J.MEYER (118, Remake 50–74) seit #772 nur bei 4 von 6 Saaten (nicht 2, 3) → Sägezahn.
+                .. StrainOf("6 KREFELDER EV", 50, 95, "KUHNEKATH"),
                 StrainSawtooth("6 KREFELDER EV"),
                 // Zufall: Wanderung über den Saisonwechsel, Sturm-Kondition WEIßWASSER über zehn Saaten −8 … 14, nur Saat 1 bei −19.
                 new("Clubs[23 ES WEIßWASSER].TeamValues.AttackCondition", Chance, Optional: true)],
             // Zufall (#737, abgleich-fix): 200.000 DM Einzelprämien im Original (file16_9), im Remake bei keiner Saat; mit ihnen
             // im Bereich (AbgleichFixMoneyTests.File16A_MoneyDeviation_ComesFromSinglePremiums).
             ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", Chance, Optional: true),
-                // #730: A.RAUBAL, ZIMMERMANN (Original 50, Remake 96–122) bei allen Prüfsaaten, Gegenrichtung PYLE (Original 120,
-                // Remake 50–88); TRAVNICEK (5 von 6, nicht 1993), NOACK (5 von 6, nicht 3), BLAZYCEK, DOLL, HORSTMANN, M.SCHMIDT
-                // (4 von 6) im Sägezahn.
-                .. StrainOf("14 SV BAYREUTH", 90, StrainSawtoothMax, "A.RAUBAL", "ZIMMERMANN"),
-                .. StrainOf("14 SV BAYREUTH", 50, 95, "PYLE"),
+                // #730: ZIMMERMANN (Original 50, Remake 97–122) bei allen Prüfsaaten; seit #772 A.RAUBAL (5 von 6, nicht 2) und
+                // Gegenrichtung PYLE (Original 120, Remake 87–115, 3 von 6) im Sägezahn, ebenso TRAVNICEK, NOACK, BLAZYCEK, DOLL,
+                // HORSTMANN, M.SCHMIDT (4–5 von 6).
+                .. StrainOf("14 SV BAYREUTH", 90, StrainSawtoothMax, "ZIMMERMANN"),
                 StrainSawtooth("14 SV BAYREUTH"),
                 // Zufall: Die Trainingswirkung auf die verdeckten Werte sinkt mit der Belastung über 125 (Sägezahn, #730), einzelne
                 // Spieler liegen über die Saison außerhalb des Bereichs (Saaten 1993, 3); Mittel wie im Original (H1 5,3–5,9 zu 5,7,
@@ -112,17 +112,13 @@ public class AbgleichOriginalPaareTests
                 // nicht (Liga über den Saisonwechsel zufallsabhängig); Abstand 21–51 je Saat.
                 new($"{Landshut}.TeamValues.*", Chance, Optional: true)],
             // „nur Weltkugel“ (#732): Alter und Laufzeit des Managerkaders behoben durch abgleich-fix (0x26F20 läuft im Modus 1 nicht,
-            // AbgleichFixWorldOnlyTests). Gehalt und Preis: kein Befund – der Import übernimmt im Modus 1 keinen Managerkader und
-            // bewertet den Vereinskader beim Laden neu (Wert nach Tendenz und Preisindex des Stands); im Remake wie im Original
-            // (Satz 0, `emtool hok dump` FILE20/FILE21) bleiben Gehalt und Preis über die Saison stehen.
-            ["FILE20→FILE21"] = [new("DayOpened", DayZero), .. SeasonStart,
-                new($"{Landshut}.Players[*].MonthlySalary", WorldOnlySquadImport),
-                new($"{Landshut}.Players[*].PurchasePrice", WorldOnlySquadImport),
-                // Form und Belastung einzelner Spieler (je nach Saat andere, Remake Belastung 70).
-                new($"{Landshut}.Players[*].Form", WorldOnlyManagerSlot, Optional: true),
-                new($"{Landshut}.Players[*].Strain", WorldOnlyManagerSlot, Optional: true),
-                // Teamwerte des Managervereins (Original leer) seit #747 (abgleich-fix) auch im Remake leer.
-                new("Managers[0].Money", WorldOnlyManagerSlot)],
+            // AbgleichFixWorldOnlyTests); Gehalt, Preis und Konto durch abgleich-rest Teil 3 (Import des Kaders von Satz 0,
+            // Tagesabschluss für Satz 0 in Sommerpause und WM-Schleife; AbgleichRestWorldOnlyTests). Teamwerte des Managervereins
+            // (Original leer) seit #747 (abgleich-fix) auch im Remake leer.
+            ["FILE20→FILE21"] = [.. SeasonStart,
+                // Form und Belastung der Spieler, die zugleich im Nationalkader stehen (je nach Saat andere, Remake Belastung 70).
+                new($"{Landshut}.Players[*].Form", NationalValueSet, Optional: true),
+                new($"{Landshut}.Players[*].Strain", NationalValueSet, Optional: true)],
             ["FILE22→FILE23"] = [.. SeasonStart],
             // „automatisch aufstellen“ (#733) behoben durch abgleich-fix: Der Import liest das gesicherte Byte 0x376 (FILE24 `00 01`).
             ["FILE24→FILE25"] = [StrainSawtooth("5 KÖLNER EC")],

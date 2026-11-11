@@ -73,7 +73,11 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
   4. **#699 Rest:** Tag 0 im Modus 1 wie im Original (FILE20→21, erwarteter Eintrag `DayZero = 699` entfällt).
 - **Lauf-Budget (R763-04):** ein Lauf darf mehrere Teile erledigen; reichen die vier Läufe nicht, bleibt Teil 4 offen
   (`spur-wartet`), die Leitstelle legt dem Nutzer einen Zusatzlauf oder Runde 17 vor.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** nicht gestartet.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** PR #766 (Ready for review, `spur-wartet`): Teile 1/2
+  zurückgestellt (R16-E2 = C: Ursache #730 nicht belegt, [analyse/belastung-staerke.md](analyse/belastung-staerke.md) §7,
+  `[APPROX]` an `OriginalMinutes.ChangeLines`, Pflichteinträge bleiben, DOSBox-Liste §7.3, #730 offen); Teil 3 fertig (#732);
+  Teil 4 fertig (#699); #772 fertig (Spielvorbereitung 0x8365, Schema 48); #773 kein Fehler (Strafrechnung wie im Original,
+  FILE02→03 Zufall, §8; Wächtertest FILE05→24).
 
 ### Spur `pruefung-karte`
 

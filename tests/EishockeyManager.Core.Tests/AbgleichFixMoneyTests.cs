@@ -13,7 +13,11 @@ namespace EishockeyManager.Core.Tests;
 public class AbgleichFixMoneyTests
 {
     /// <summary>Saaten der Bereichsprobe; seit #730 (Belastung als Sägezahn) streut das Konto je Saat um ±60.000 DM, daher Mittel.</summary>
-    private static readonly int[] Seeds = [HokCompare.DefaultSeed, 1, 2, 3, 77, 4711];
+    // Runde 16, Spur abgleich-rest (#772, R15-E2 = C): 30 statt 6 Saaten und Median statt Mittel. Die Konten sind je Saat zweigipflig
+    // (FILE13: Krefeld bei 3 von 30 Saaten nicht Letzter → kein Konto auf 400.000 DM; FILE16A: ±380.000 DM je nach Restsaison); mit
+    // sechs Saaten hing das Ergebnis an der Mischung – schon der alte Code scheitert mit 12 Saaten (101.828 bzw. 186.889 > Grenze).
+    // Gemessen mit #772 (30 Saaten): FILE13 Median ohne 169.147 / mit 49.400, FILE16A ohne 422.739 / mit 133.408.
+    private static readonly int[] Seeds = [HokCompare.DefaultSeed, 1, 2, 3, 77, 4711, .. Enumerable.Range(4, 24)];
 
     /// <summary>Bereich des Abgleichs für das Konto: Veränderung seit a ±10 %, mindestens 50.000 DM (<c>HokCompareClasses</c>).</summary>
     private static double Range(string a, string b) =>
@@ -29,10 +33,13 @@ public class AbgleichFixMoneyTests
         Assert.True(with <= without * 2 / 3 && with <= range * 1.25, $"mit Ursache {with:F0} (ohne {without:F0}, Bereich {range:F0})");
     }
 
-    /// <summary>Mittlerer Abstand Remake − Original des Kontos über <see cref="Seeds"/>.</summary>
-    private static double MeanDistance(string a, string b, Action<GameState>? prepare = null, Action<GameState>? atSeasonOver = null) =>
-        Seeds.Select(seed => MoneyRow(a, b, seed, prepare, atSeasonOver))
-            .Average(r => Math.Abs(long.Parse(r.Remake!) - long.Parse(r.Original!)));
+    /// <summary>Median des Abstands Remake − Original des Kontos über <see cref="Seeds"/> (Name aus der Zeit des Mittels).</summary>
+    private static double MeanDistance(string a, string b, Action<GameState>? prepare = null, Action<GameState>? atSeasonOver = null)
+    {
+        var d = Seeds.Select(seed => MoneyRow(a, b, seed, prepare, atSeasonOver))
+            .Select(r => (double)Math.Abs(long.Parse(r.Remake!) - long.Parse(r.Original!))).Order().ToArray();
+        return d.Length % 2 == 1 ? d[d.Length / 2] : (d[d.Length / 2 - 1] + d[d.Length / 2]) / 2;
+    }
 
     private static GameState Import(string file, int seed) =>
         HokCompare.Import(OriginalImportTests.OriginalSave(file + ".HOK"), ClubDatabase.Load(TestGameData.Load()), seed);

@@ -42,7 +42,10 @@ public class KaderTransferTeil4Tests
     [Fact]
     public void Season_MarketRunsEveryCalendarDay()
     {
-        var game = TestGames.Create(5);
+        // #772 (R15-E2 = C): Saat 21 statt 5 – die Zahl der Halte hängt am Spielverlauf; mit der Spielvorbereitung 0x8365 hält Saat 5
+        // nur 20 Wechsel. Schon der alte Code liegt bei Saat 3/8/9 unter der Grenze (15/13/20), Rückschaltprobe mit
+        // Saat 21 ebenfalls rot; die Probe hängt an der Saat, die Grenze bleibt.
+        var game = TestGames.Create(21);
         var market = game.TransferMarket;
         var changes = 0;
         for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)

@@ -1,0 +1,34 @@
+diff --git a/src/EishockeyManager.Core/MatchEngine.Minutes.cs b/src/EishockeyManager.Core/MatchEngine.Minutes.cs
+index 13493e5..b4f5c5c 100644
+--- a/src/EishockeyManager.Core/MatchEngine.Minutes.cs
++++ b/src/EishockeyManager.Core/MatchEngine.Minutes.cs
+@@ -446,6 +446,8 @@ public static partial class OriginalMinutes
+         }
+         report.HomePenaltyMinutes = home.PenaltyMinutes;
+         report.AwayPenaltyMinutes = away.PenaltyMinutes;
++        if (rules.ManagerMatch && Environment.GetEnvironmentVariable("EM_TRACE") is { } tr)
++            System.IO.File.AppendAllText(tr, $"END {report.HomeGoals}:{report.AwayGoals} hm={home.Managed} hDef={home.Defense} hAtt={home.Attack} aDef={away.Defense} aAtt={away.Attack} hEnergy={home.Energy} aEnergy={away.Energy}\n" + (Environment.GetEnvironmentVariable("EM_STACK") is null ? "" : Environment.StackTrace + "\n"));
+         return report;
+     }
+ 
+@@ -495,8 +497,20 @@ public static partial class OriginalMinutes
+             var gy = sx == 0 ? awayBefore : homeBefore;
+             if (minute % 2 != 0)
+                 ComputerLineModes(x, y, gx, gy, minute, sx == 0 ? h.Normal : a.Normal, sx == 0 ? a.Normal : h.Normal);
++            if (Environment.GetEnvironmentVariable("EM_FORCE_EFFORT") is { } fe)
++            {
++                home.Effort = int.Parse(fe);
++                away.Effort = int.Parse(fe);
++            }
++            if (Environment.GetEnvironmentVariable("EM_FORCE_MODE") is { } fm)
++            {
++                if (home.Managed) home.LineMode = int.Parse(fm);
++                if (away.Managed) away.LineMode = int.Parse(fm);
++            }
+             ChangeLines(x, y);
+             ChangeLines(y, x);
++            if (Environment.GetEnvironmentVariable("EM_TRACE") is { } tr)
++                System.IO.File.AppendAllText(tr, $"M {minute} hm={home.Managed} hS={h.Normal} aS={a.Normal} hD={h.Defensive} hO={h.Offensive} aD={a.Defensive} aO={a.Offensive} g={homeBefore}:{awayBefore} hMode={home.LineMode} aMode={away.LineMode} hL={home.DefenseLine}/{home.AttackLine} aL={away.DefenseLine}/{away.AttackLine} hE={home.LineEnergy(0,0)},{home.LineEnergy(0,1)},{home.LineEnergy(0,2)}|{home.LineEnergy(1,0)},{home.LineEnergy(1,1)},{home.LineEnergy(1,2)} aE={away.LineEnergy(0,0)},{away.LineEnergy(0,1)},{away.LineEnergy(0,2)}|{away.LineEnergy(1,0)},{away.LineEnergy(1,1)},{away.LineEnergy(1,2)} hF={home.ClubForm} aF={away.ClubForm} hEff={home.Effort} aEff={away.Effort} hSk={home.Box.Skaters} aSk={away.Box.Skaters}\n");
+             if (minute % 2 == 0)
+             {
+                 FollowTactics(x, gx - gy);

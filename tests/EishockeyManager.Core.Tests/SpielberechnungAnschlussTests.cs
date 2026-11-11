@@ -251,8 +251,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
     // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer, Konten und Zufallsverlauf. Rückschaltprobe:
     // GameState.DailyRun.cs und CupsNational.AutoLineup.cs von 8711348 → alte Werte.
-    [InlineData(false, "78AF9288A57B1CCF")]
-    [InlineData(true, "0C296F1190C3C1D8")]
+    // Runde 16, Spur abgleich-rest (#772, R15-E2 = C): neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert
+    // 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel). Rückschaltprobe: ohne PrepareMatch → alte Werte.
+    [InlineData(false, "EFC034F6A975A96B")]
+    [InlineData(true, "DCD26FCBEF8CF678")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -324,8 +326,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Review #688 (R688-05, Fixlauf Leitstelle Runde 14): Konten gleich; Weltmeister ab Saison 3 und Haupt-/Pokalquelle neu – der
     // Saisonwechsel behält die Markt-Plätze (kein Listenwechsel 0x494EF) und zieht dafür keine Zahlen. Gegenprobe: alter
     // TransferMarket.StartSeason → alter Wert; Takt vor dem Halt (R688-04) und Sommerpause (R688-03) einzeln zurück → gleicher Wert.
+    // abgleich-rest Teil 3 (#732, R16-D2 = A): Titel und Zufallsquellen gleich, nur das Konto von Satz 0 – der Tagesabschluss läuft
+    // im Modus 1 in Sommerpause und WM-Schleife wie im Original (Datei 0x56512, 0x5569A). Gegenprobe: RunSummerBreak und
+    // OpenWorldOnlyLoopDay ohne Tagesabschluss → alter Wert.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=54|500000|R1374974225 C782029941";
+        "WorldChampion=52|500000|WorldChampion=52|-1542821|WorldChampion=52|-4586841|WorldChampion=54|-9294877|WorldChampion=54|-16586608|R1374974225 C782029941";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

@@ -52,10 +52,9 @@ public sealed partial class GameState
         var marketTwins = TransferMarket.Pool
             .Where(s => s.Owner == PoolOwner.Market && indexOf.Any(e => e.Value == s.Index && !ReferenceEquals(e.Key, s.Player)))
             .Select(s => s.Index).ToHashSet();
+        // #732: Kader von Satz 0 auch im Modus „nur Weltkugel“ (Gegenstück zum Import, Rundreise FILE18–FILE20, FILE47–FILE49A).
         for (var m = 0; m < Managers.Count; m++)
         {
-            if (WorldOnly)
-                break;
             var club = Clubs[Managers[m].ClubIndex];
             var players = club.Players.ToList();
             for (var i = 0; i < Math.Min(players.Count, OriginalSaveGame.SquadSlotsPerManager); i++)
@@ -106,8 +105,6 @@ public sealed partial class GameState
         foreach (var slot in TransferMarket.Pool)
             if (slot.Index is >= 1 and < TransferPoolRules.Size)
                 map.TryAdd(slot.Player, slot.Index);
-        if (WorldOnly)
-            return map;
         var squadIndex = new HashSet<int>();
         var managed = Managers.Select(m => m.ClubIndex).ToHashSet();
         var missing = new List<Player>();
