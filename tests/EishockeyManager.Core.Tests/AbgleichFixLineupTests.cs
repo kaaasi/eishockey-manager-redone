@@ -1,5 +1,6 @@
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
+using EishockeyManager.Tools;
 
 namespace EishockeyManager.Core.Tests;
 
@@ -84,6 +85,56 @@ public class AbgleichFixLineupTests
             if (game.IsListChangeDay(game.Day))
                 Assert.Equal(Fields(MatchEngine.ClubLineupTeamValues(club)), Absolute(club));
         }
+    }
+
+    /// <summary>
+    /// #738 (Rest): Ohne „automatisch aufstellen“ rückt nach einer Verletzung niemand nach. [ORIGINAL] 0x426BC endet ohne die
+    /// Einstellung sofort (Datei 0x426C4–0x426E4); sonst schreibt im Verletzungsweg niemand +0x15. Beleg FILE44 → FILE46 (KÖLN im
+    /// Handbetrieb): Formwerte 0x952C aus der Aufstellung des Originals (Angriff 35, Abwehr 38), im Remake vorher 52/49, weil
+    /// <c>RefillLineup</c> die Lücken mit Reservisten füllte (16 statt 11 Aufgestellte).
+    /// </summary>
+    [GameDataTheory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(77)]
+    public void File44To46_HandLineup_KeepsGaps_FormLikeOriginal(int seed)
+    {
+        var game = HokCompare.Import(OriginalImportTests.OriginalSave("FILE44.HOK"), ClubDatabase.Load(TestGameData.Load()), seed);
+        var target = HokCompare.Import(OriginalImportTests.OriginalSave("FILE46.HOK"), ClubDatabase.Load(TestGameData.Load()), seed);
+        Assert.Null(HokCompare.PlayTo(game, target));
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        var original = target.Clubs[club.Index];
+        Assert.False(club.AutoLineupEnabled);
+        Assert.Equal(original.Lineup.Players.Count(), club.Lineup.Players.Count());
+        Assert.Equal((original.TeamValues!.Value.AttackForm, original.TeamValues.Value.DefenseForm),
+            (club.TeamValues!.Value.AttackForm, club.TeamValues.Value.DefenseForm));
+    }
+
+    /// <summary>#738, synthetisch: Handbetrieb, Verletzter in der Aufstellung → sein Platz bleibt leer, er ist nicht mehr eingesetzt.</summary>
+    [Fact]
+    public void Injury_WithoutAutoLineup_LeavesGap()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Trainer", Head = 0, ClubIndex = 2 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
+        var club = game.Clubs[2];
+        var injured = club.Lineup.Players.First(p => p.Role != PlayerRole.Goalkeeper);
+        var slot = club.Lineup.FindSlot(injured)!.Value;
+        var reserve = club.Players.First(p => !club.Lineup.Contains(p) && club.IsDressed(p) && p.Role == injured.Role);
+        // Änderung von Hand schaltet „automatisch aufstellen“ ab (Datei 0x40DCD–0x40DE4); der Reservist bleibt eingesetzt und
+        // stünde zum Nachrücken bereit.
+        Assert.Equal(LineupResult.Undressed, club.Undress(reserve));
+        Assert.Equal(LineupResult.Dressed, club.Dress(reserve));
+        Assert.False(club.AutoLineupEnabled);
+        var before = club.Lineup.Players.Count();
+
+        injured.InjuredGames = 3;
+        PlayerInjuries.RefillLineup(club);
+
+        Assert.Null(club.Lineup[slot]);
+        Assert.Equal(before - 1, club.Lineup.Players.Count());
+        Assert.False(club.IsDressed(injured));
     }
 
     private static (int, int, int, int, int, int) Fields((PartValues D, PartValues A, int) v) =>

@@ -18,7 +18,7 @@ namespace EishockeyManager.Core.Tests;
 public class AbgleichOriginalPaareTests
 {
     private const int WorldOnlyManagerSlot = 732, MoneyFile13 = 734,
-        DayZero = 699, FormFile44 = 738;
+        DayZero = 699;
 
     /// <summary>
     /// Kein Befund (#732): Im Modus „nur Weltkugel“ trägt Satz 0 das Land (Regel 1 der Feldkarte); der Import baut den Vereinskader
@@ -120,9 +120,9 @@ public class AbgleichOriginalPaareTests
             ["FILE30→FILE31"] = [],
             ["FILE38→FILE39"] = [StrainSawtooth("5 KÖLNER EC")],
             ["FILE39→FILE40"] = [StrainSawtooth("5 KÖLNER EC")],
-            // Formwerte KÖLN im Remake bei allen Saaten 10–17 höher (#738), bei 1993 knapp im Bereich.
-            // Platz 196 KJELLBERG (#749) behoben durch abgleich-fix (Import: Besitzer Manager ohne Kader = vergeben).
-            ["FILE44→FILE46"] = [.. SeasonStart, new("Clubs[5 KÖLNER EC].TeamValues.*Form", FormFile44, Optional: true)],
+            // Formwerte KÖLN (#738) behoben durch abgleich-fix (Handbetrieb ohne Nachrücken, Import ohne Reihenspieler ohne
+            // „eingesetzt“). Platz 196 KJELLBERG (#749) behoben durch abgleich-fix (Import: Besitzer Manager ohne Kader = vergeben).
+            ["FILE44→FILE46"] = [.. SeasonStart],
             // „nur Weltkugel“: Teamwerte nicht mehr neu gewürfelt (#747 behoben durch abgleich-fix).
             ["FILE18→FILE48"] = [],
         };

@@ -83,7 +83,7 @@ public static class PlayerInjuries
     /// für Verletzte und Gesperrte (0x7621) ruft das Original 0x426BC (Stub 0x14B7:0x4D): ist die Einstellung DGROUP 0x375 +
     /// 2 · Manager gesetzt, stellt es die Kaderplätze des Managers neu auf (+0x0A, +0x15 über 0x42838; Teil 8:
     /// <see cref="Club.ApplyAutoLineup"/>, <see cref="AutoLineupRule"/>). Ohne die Einstellung nimmt das Remake Verletzte
-    /// heraus und füllt Lücken mit eingesetzten Reservisten ([APPROX], das Original lässt sie). Eingesetzt (+0x0A) und die
+    /// heraus und lässt die Lücke wie das Original ([ORIGINAL] #738: 0x426BC endet sofort, Datei 0x426C4–0x426E4). Eingesetzt (+0x0A) und die
     /// Grenze von 22: <see cref="Club.RefillLineup"/>. Nach einem Spiel: <see cref="AfterMatch"/>.
     /// </summary>
     public static void RefillLineup(Club club) => club.RefillLineup();
