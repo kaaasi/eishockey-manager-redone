@@ -82,4 +82,49 @@ public class PruefungKarteRunde16Tests
         }
         Assert.True(lost >= 20, $"Probe ohne Kaderverlust ({lost})"); // sonst prüft der Test nichts
     }
+
+    /// <summary>
+    /// #776 (R765-02, <c>docs/reviews/2026-11-11-pool.md</c>): Leihe Manager → Manager mit einem Leihjahr. [ORIGINAL] Saisonende
+    /// 0x26F20: Laufzeit +0x0B heruntergezählt (Datei 0x27500), dann bei Besitzer &lt; 4 Kopie des Leih-Kaderplatzes (0x34 Byte,
+    /// 0x48:0x2BD4, Datei 0x27597–0x275D2) in den Kader des Stammmanagers – also mit Laufzeit 0; danach die Verhandlungen über alle
+    /// Kaderplätze (Schleife ab Datei 0x27B64). Der Spieler steht deshalb wieder beim Stammverein, Verhandlung offen, Poolplatz
+    /// vergeben. „In keinem Kader“ zeigt nur der Saisonwechsel ohne Oberfläche (<see cref="GameState.StartNextSeason"/> schließt die
+    /// Verhandlung wie „Abbruch“). Kein Fehler; ob das Original bei Leihe zwischen Managern ebenso verfährt, ist an keinem
+    /// Spielstand belegt ([APPROX] in <c>Player.Contract.cs</c>, nur nach dem Code).
+    /// </summary>
+    [Fact]
+    public void LoanBetweenManagers_LastLoanYear_ReturnsToOriginWithOpenRenewal()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "A", ClubIndex = 5, StartLeague = League.Bundesliga });
+        setup.Managers.Add(new ManagerSetup { Name = "B", ClubIndex = 7, StartLeague = League.Bundesliga });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 1);
+        var origin = game.Clubs[game.Managers[0].ClubIndex];
+        var borrower = game.Clubs[game.Managers[1].ClubIndex];
+        foreach (var p in origin.Players.Concat(borrower.Players))
+            (p.ContractYears, p.Age) = (3, 25);
+        var lent = origin.Players.Last(p => p.Role == PlayerRole.Forward);
+        var slot = game.TransferMarket.Pool.Single(s => ReferenceEquals(s.Player, lent));
+        origin.RemovePlayer(lent);
+        PlayerFactory.Join(borrower, lent, 1, loan: true, new PlayerLoan(origin, 3, lent.MonthlySalary, false), managerSquad: true);
+        Assert.Equal(1, lent.ContractYears);
+
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 20_000, "Saisonende nicht erreicht");
+            if (game.NationalTurn && game.NationalCoach!.Squad.Count == 0)
+                game.AutoNominate();
+            game.Continue();
+        }
+        game.StartNextSeasonWithRenewals();
+
+        Assert.Contains(lent, origin.Players);
+        Assert.DoesNotContain(lent, borrower.Players);
+        Assert.Null(lent.Loan);
+        Assert.Equal(0, lent.ContractYears); // Leih-Laufzeit, nicht der Stammvertrag (3)
+        Assert.Contains(lent, game.PendingRenewals(game.Managers[0]));
+        Assert.Same(lent, slot.Player);
+        Assert.Equal(PoolOwner.Taken, slot.Owner);
+        Assert.Equal(origin.Index, slot.Club);
+    }
 }
