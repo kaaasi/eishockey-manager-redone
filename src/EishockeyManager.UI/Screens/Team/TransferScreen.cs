@@ -415,7 +415,12 @@ public sealed class TransferScreen : Screen
         s.Text(mini, 201, ListHeaderY, "NAME", lh);
         s.Text(mini, 251, ListHeaderY, "STÄRKEN", lh);
         s.Text(mini, 292, ListHeaderY, "ALTER", lh);
-        EntryLine(s, 36, _repaintedLines.Contains(36));
+        // [ORIGINAL] Datei 0x46693: Kopflinie getrennt von den Eintragslinien, Linie 0x0B7B5 mit (0xB4 | 0x24)–(0x139 | 0x24), Farbe
+        // 0x1F, also x 180–313 (`file40_03`–`05`, R701-01); nach Markierung von Eintrag 0 wie dessen Linien 180–314 (Datei 0x46AFE).
+        if (_repaintedLines.Contains(36))
+            EntryLine(s, 36, repainted: true);
+        else
+            s.HLine(ListLeft - 1, 36, ListRight - ListLeft + 2, SeparatorColor);
 
         var listings = Market.Listings;
         var hoverEntry = HoveredEntry(listings);
