@@ -25,9 +25,10 @@ public class KaderStartRunde14FixUiTests
         var s = new Surface();
         s.Clear(200);
         TeamUi.DialogFrame(s, new Rect(2, 29, 165, 67));
-        Assert.Equal(TeamUi.DialogFill, At(s, 168, 31));
-        Assert.Equal(TeamUi.DialogFill, At(s, 4, 97));
-        Assert.Equal(TeamUi.DialogFill, At(s, 168, 97));
+        // #716 R14G4-07: fester Sollwert Index 4 (file46_3) statt TeamUi.DialogFill; Gegenprobe DialogFill 4 → 5 → rot.
+        Assert.Equal(4, At(s, 168, 31));
+        Assert.Equal(4, At(s, 4, 97));
+        Assert.Equal(4, At(s, 168, 97));
         Assert.Equal(TeamUi.DialogShadow, At(s, 168, 32));
         Assert.Equal(TeamUi.DialogShadow, At(s, 5, 97));
         Assert.Equal(TeamUi.DialogShadow, At(s, 167, 97));

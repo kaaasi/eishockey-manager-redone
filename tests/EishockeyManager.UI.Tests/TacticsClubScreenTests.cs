@@ -70,7 +70,8 @@ public class TacticsClubScreenTests
         int RowY(Player p) => LineupScreen.FirstRowY + rows.IndexOf(p) * LineupScreen.RowPitch + 2;
 
         // Ein Spieler außerhalb der 22 Eingesetzten der automatischen Aufstellung (0x426BC).
-        Assert.Equal(Club.MaxDressed, club.DressedCount);
+        // #716 R14G4-08: fester Sollwert 22 (Datei 0x40E4D, Vergleich mit 0x16) statt Club.MaxDressed; Gegenprobe Konstante 23 → rot.
+        Assert.Equal(22, club.DressedCount);
         var outside = club.Players.First(p => p.Available && !club.IsDressed(p) && p.Role != PlayerRole.Goalkeeper);
         var slot = outside.Role == PlayerRole.Forward ? LineupSlot.Forward(3, 0) : LineupSlot.Defender(3, 0);
         // Reihe 4 wählen (Klick in den Block, Datei 0x40890), dann den Spieler (Datei 0x40E2A vor der Reihenlogik).
@@ -90,7 +91,7 @@ public class TacticsClubScreenTests
         d.Frames(100);
         d.Click(60, RowY(outside)); // Reihe 4 bleibt gewählt: erster freier Platz seiner Art (Datei 0x412A1)
         Assert.Same(outside, club.Lineup[slot]);
-        Assert.Equal(Club.MaxDressed, club.DressedCount);
+        Assert.Equal(22, club.DressedCount);
 
         // Rechtsklick auf einen nicht Eingesetzten: wieder abgewiesen, Bildschirm bleibt.
         d.RightClick(150, RowY(reserve));

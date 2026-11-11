@@ -228,16 +228,19 @@ public class BildschirmeFreipruefungTests
         var opened = 0;
         foreach (var tile in EishockeyManager.UI.Screens.Competitions.NationalMenu.CoachTiles)
         {
-            if (EishockeyManager.UI.Screens.Competitions.NationalMenu.Open(game, tile, d.Host, menu) is not { } screen)
-                continue;
+            // #716 R14G2-01: Zustand vor dem Fabrikaufruf sichern und auch Kacheln prüfen, für die Open null liefert;
+            // Gegenprobe in NationalMenu.Open vor „return tile switch“ für „Aufstellung“ game.ActiveManager.Money++ → rot.
             var bytes = SaveGame.Save(game);
             var print = StateFingerprint.Of(game);
-            d.Host.Show(screen);
-            d.Host.Draw(d.Surface);
-            d.Frames(UpdateFrames);
+            if (EishockeyManager.UI.Screens.Competitions.NationalMenu.Open(game, tile, d.Host, menu) is { } screen)
+            {
+                d.Host.Show(screen);
+                d.Host.Draw(d.Surface);
+                d.Frames(UpdateFrames);
+                opened++;
+            }
             Assert.True(bytes.AsSpan().SequenceEqual(SaveGame.Save(game)), $"Kachel {tile}: Bytes weichen ab");
             Assert.Equal(print, StateFingerprint.Of(game));
-            opened++;
             d.Host.Show(menu);
         }
         Assert.True(opened >= 4, $"nur {opened} Kacheln geöffnet");
