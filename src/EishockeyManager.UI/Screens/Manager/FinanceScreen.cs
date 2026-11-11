@@ -520,8 +520,8 @@ public sealed class FinanceScreen : Screen
     {
         SelectionKind.Bank => Game.MaxWithdrawal(Me),
         SelectionKind.Manager => Game.MaxBorrowFromManager(Game.CurrentManager, _selection.Index),
-        // [ORIGINAL] Datei 0x596E7–0x59731: Konto / Kurs, 0 bei Konto ≤ 0.
-        SelectionKind.Stock => Math.Max(0, Me.Money) / Game.Stocks.Stocks[_selection.Index].Price,
+        // [ORIGINAL] Datei 0x596E7–0x59731: Konto / Kurs, 0 bei Konto ≤ 0; Kurs 0 [APPROX] 0 statt Absturz (#757).
+        SelectionKind.Stock => Game.MaxStockPurchase(Me, _selection.Index),
         _ => 0,
     };
 

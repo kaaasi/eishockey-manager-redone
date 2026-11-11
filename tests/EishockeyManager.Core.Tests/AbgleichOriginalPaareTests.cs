@@ -10,14 +10,15 @@ namespace EishockeyManager.Core.Tests;
 /// Fall rot, ebenso ein Muster, das nicht mehr trifft (behoben → Eintrag entfernen). Bericht: <c>docs/analyse/abgleich-original.md</c>.
 /// </summary>
 /// <remarks>
-/// Paare ohne Eingriff: FILE02→03, FILE13→14 (bis auf die Aufstellung von Hand, <see cref="HandLineupFile13"/>), FILE16A→17, FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
-/// Eingriff (nur übrige Felder, <see cref="HokCompareClasses.Interventions"/>): FILE44→46, FILE18→48. Saat 1993 (Werkzeugvorgabe);
+/// Paare ohne Eingriff: FILE02→03, FILE16A→17, FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
+/// Eingriff (nur übrige Felder, <see cref="HokCompareClasses.Interventions"/>): FILE13→14 (Sitzungszustand, Aufstellung von Hand;
+/// #733, #734), FILE44→46, FILE18→48. Saat 1993 (Werkzeugvorgabe);
 /// zufallsabhängige Felder sind mit Bereichen und Invarianten geprüft, ein anderer Zufall darf das Ergebnis nicht kippen
 /// (<see cref="Pair_OtherSeed_SameExpectedList"/>, alle Paare mit fünf weiteren Saaten).
 /// </remarks>
 public class AbgleichOriginalPaareTests
 {
-    private const int MoneyFile13 = 734, Strain = 730;
+    private const int Strain = 730;
 
     /// <summary>
     /// Kein Befund (#732, abgleich-rest Teil 3): Im Modus „nur Weltkugel“ steht ein Spieler im Kader von Satz 0 und im Nationalkader
@@ -28,17 +29,6 @@ public class AbgleichOriginalPaareTests
 
     /// <summary>Zufall, kein Befund: Begründung am Eintrag (nur optionale Muster).</summary>
     private const int Chance = 0;
-
-    /// <summary>
-    /// Eingriff, kein Befund (#733, abgleich-fix): FILE13→14 schaltet „automatisch aufstellen“ (DGROUP 0x375/0x376 `01 01` →
-    /// `00 00`) ab. [ORIGINAL] Ohne Nutzerhandlung schreibt em.exe dort keine 0: Schreiber sind nur die Aufstellung bei einer
-    /// Änderung von Hand (Datei 0x40ADE, 0x40DE4, Meldung „… ist deaktiviert“), der Taktikknopf (0x47F4E/0x49058) und der
-    /// Tageslauf, der 0x376 aus 0x375 sichert (0x54FDC) und 0x375 nur für die Spiele auf 0 setzt (0x54FE8, vor dem nächsten
-    /// Zug zurück, 0x54D9A/0x55307); Laden und Sichern kopieren den Block (0x5C3E3/0x5B9DD). Nach dem Laden zeigte die Aufstellung
-    /// 5 Eingesetzte (`file13_2`), im DEB-Pokal standen weniger als 9 Spieler (Angabe Nutzer) – mit der Einstellung hätte
-    /// 0x426BC voll aufgestellt. Folgen der Handaufstellung: Formwerte, verdeckte Werte einzelner Spieler.
-    /// </summary>
-    private const int HandLineupFile13 = 0;
 
     /// <summary>
     /// Erwartete Abweichung: Pfadmuster (<c>*</c> = beliebig) mit Issue. <paramref name="Delta"/>: jede Abweichung des Musters muss
@@ -98,15 +88,8 @@ public class AbgleichOriginalPaareTests
             ["FILE02→FILE03"] = [.. StrainOf("5 KÖLNER EC", 100, StrainSawtoothMax, "HOCK"), StrainSawtooth("5 KÖLNER EC"),
                 // Zufall: Pool-Mittel der Belastung über zehn Saaten 143–146, nur Saat 1 bei 136,7 (seit #748 anderer Zufallsverlauf).
                 new("Invariante.PoolMittel.Strain", Chance, Optional: true)],
-            ["FILE13→FILE14"] = [.. SeasonStart, new("Managers[0].Money", MoneyFile13),
-                new("Clubs[6 KREFELDER EV]._autoLineup", HandLineupFile13),
-                new("Clubs[6 KREFELDER EV].TeamValues.*Form", HandLineupFile13),
-                // Andere Aufstellung (Eingriff, #733) → andere Einsätze → verdeckte Werte einzelner Spieler (Saaten 2, 3, 4711).
-                new("Clubs[6 KREFELDER EV].Players[*].HiddenSkill*", HandLineupFile13, Optional: true),
-                // Kondition/Technik des Managervereins aus der Aufstellung (0x952C, #748 behoben durch abgleich-fix): Das Remake
-                // rechnet sie aus seiner automatischen Aufstellung, das Original aus der von Hand (Eingriff, Abwehr-Technik 37 tiefer).
-                new("Clubs[6 KREFELDER EV].TeamValues.*Condition", HandLineupFile13, Optional: true),
-                new("Clubs[6 KREFELDER EV].TeamValues.*Technique", HandLineupFile13, Optional: true),
+            // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
+            ["FILE13→FILE14"] = [.. SeasonStart,
                 // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–57) bei allen Prüfsaaten; Anteil der Handaufstellung
                 // (Eingriff) nicht getrennt. J.MEYER (118, Remake 50–74) seit #772 nur bei 4 von 6 Saaten (nicht 2, 3) → Sägezahn.
                 .. StrainOf("6 KREFELDER EV", 50, 95, "KUHNEKATH"),
