@@ -418,7 +418,8 @@ public sealed partial class TransferMarket
     /// [APPROX] Jeder Name nur einmal im Spiel (Entscheidung Nutzer 01.11.2026):
     /// <list type="bullet">
     /// <item>Steht der Datenbankspieler im Kader eines Computervereins und hat er die Art des Platzes, tauschen Pool und Kader:
-    ///   Er wird Poolspieler (mit seinen Werten statt denen des Platzes), der bisherige Poolspieler übernimmt seinen Kaderplatz;
+    ///   Er wird Poolspieler (mit den Werten des Platzes, #731; der bisherige bekommt die des Kaderplatzes), der bisherige
+    ///   Poolspieler übernimmt seinen Kaderplatz;
     ///   einer anderen Art (Torhütername mit random(0, 15) = 0) oder ein Poolspieler ab 37 Jahren (Laufbahnende der Kader-KI,
     ///   <see cref="SquadRules.RetireMaxAge"/>) verwirft den Versuch. Im Original hat der
     ///   Computerverein keine Spieler; so bleiben Kadergröße, Namen und IDs eindeutig.</item>
@@ -499,6 +500,15 @@ public sealed partial class TransferMarket
     private static void Exchange(PoolSlot slot, Club club, Player player)
     {
         var old = slot.Player;
+        // [ORIGINAL] #731: Das Umbenennen ändert nur den Namen, die Werte bleiben am Poolplatz (FILE13→14, FILE16A→17, FILE22→23,
+        // FILE44→46: 166–170 Plätze umbenannt, Alter + 1, Kondition/Technik ±3, Mittel des Pools unverändert). [APPROX] Der Tausch
+        // tauscht daher auch die Werte: der neue Poolspieler bekommt die des Platzes, der bisherige die seines Kaderplatzes – die
+        // Stärke des Computerkaders bleibt.
+        (old.Age, player.Age) = (player.Age, old.Age);
+        (old.Talent, player.Talent) = (player.Talent, old.Talent);
+        (old.Condition, player.Condition) = (player.Condition, old.Condition);
+        (old.Technique, player.Technique) = (player.Technique, old.Technique);
+        (old.Form, player.Form) = (player.Form, old.Form);
         var years = Math.Max(1, player.ContractYears);
         club.RemovePlayer(player);
         player.UnsolicitedOffer = null;

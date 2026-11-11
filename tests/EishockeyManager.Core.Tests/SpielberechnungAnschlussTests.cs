@@ -238,8 +238,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // (0x26F20, Datei 0x2728C–0x27320: zwei Zufallszahlen je Manager und Saison, ab 1995 Junioren), Tendenz/Steuerbyte der
     // Startkader (0x4907A aus 0x42CB1), Vertragslose aus Managervereinen weder auf der Liste noch vertragslos, sondern ganz verloren
     // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
-    [InlineData(false, "06D3B05D238D9187")]
-    [InlineData(true, "FEB84A0C12F60441")]
+    // Runde 15, Spur abgleich-fix (#731, R15-E2 = C): neu – beim Tausch Pool ↔ Computerkader (Umbenennen am Saisonwechsel) bleiben
+    // die Werte am Poolplatz (Original: nur der Name wechselt, FILE44 → FILE46); der Kaderspieler bekommt die des bisherigen
+    // Poolspielers. Andere Kaderwerte ab dem ersten Saisonwechsel. Rückschaltprobe: Transfer.Pool.cs von 85302f5 → alte Werte
+    // (tools/pruefen.sh --schnell auf 85302f5 grün).
+    [InlineData(false, "4E6B7ED95109ADE5")]
+    [InlineData(true, "4CD6AFDE25DD779E")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

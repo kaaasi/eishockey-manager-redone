@@ -271,8 +271,12 @@ public class RngTwinProbeTests
     // (0x26F20, Datei 0x2728C–0x27320: zwei Zufallszahlen je Manager und Saison, ab 1995 Junioren), Tendenz/Steuerbyte der
     // Startkader (0x4907A aus 0x42CB1), Vertragslose aus Managervereinen weder auf der Liste noch vertragslos, sondern ganz verloren
     // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
-    [InlineData(false, "D849DB30B4C45BB3")]
-    [InlineData(true, "49FEF2709F4E76F7")]
+    // Runde 15, Spur abgleich-fix (#731, R15-E2 = C): neu – beim Tausch Pool ↔ Computerkader (Umbenennen am Saisonwechsel) bleiben
+    // die Werte am Poolplatz (Original: nur der Name wechselt, FILE44 → FILE46); der Kaderspieler bekommt die des bisherigen
+    // Poolspielers. Andere Kaderwerte ab dem ersten Saisonwechsel. Rückschaltprobe: Transfer.Pool.cs von 85302f5 → alte Werte
+    // (tools/pruefen.sh --schnell auf 85302f5 grün).
+    [InlineData(false, "E81270B615020201")]
+    [InlineData(true, "9F9612B29AC7D1A0")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

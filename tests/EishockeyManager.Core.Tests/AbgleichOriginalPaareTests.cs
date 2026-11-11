@@ -17,7 +17,7 @@ namespace EishockeyManager.Core.Tests;
 /// </remarks>
 public class AbgleichOriginalPaareTests
 {
-    private const int Strain = 730, PoolSeasonChange = 731, WorldOnlyManagerSlot = 732, AutoLineupFlag = 733, MoneyFile13 = 734,
+    private const int Strain = 730, WorldOnlyManagerSlot = 732, AutoLineupFlag = 733, MoneyFile13 = 734,
         DayZero = 699, FormFile44 = 738, ManagerTeamValues = 748;
 
     /// <summary>Zufall, kein Befund: Begründung am Eintrag (nur optionale Muster).</summary>
@@ -30,8 +30,17 @@ public class AbgleichOriginalPaareTests
     /// </summary>
     public sealed record Known(string Pattern, int Issue, int? Delta = null, bool Optional = false);
 
-    /// <summary>Saisonwechsel: Pool nach dem Saisonwechsel (#731). Tag 0 (#699 Punkt 2) behoben durch #725.</summary>
-    private static readonly Known[] SeasonStart = [new("Invariante.PoolMittel.*", PoolSeasonChange)];
+    /// <summary>
+    /// Kein Originalfeld, kein Befund: Die Belastung steht im Original nur am Kaderplatz (+0x13), der Pool hat keine; der Import
+    /// setzt für Poolspieler die Vorgabe 150, das Remake zieht beim Saisonwechsel 80–120 (Begründung am Eintrag).
+    /// </summary>
+    private const int NoOriginalField = 0;
+
+    /// <summary>
+    /// Saisonwechsel: Pool-Mittel Kondition/Technik (#731) behoben durch abgleich-fix (Werte bleiben beim Umbenennen am Platz);
+    /// Belastung ohne Originalfeld. Tag 0 (#699 Punkt 2) behoben durch #725.
+    /// </summary>
+    private static readonly Known[] SeasonStart = [new("Invariante.PoolMittel.Strain", NoOriginalField)];
 
     /// <summary>Belastung #730: Pflicht für die Spieler, die über alle sechs Saaten abweichen (Original 50), sonst optional.</summary>
     private static Known[] StrainOf(string club, params string[] players) =>
@@ -71,7 +80,7 @@ public class AbgleichOriginalPaareTests
                 new($"{Landshut}.TeamValues.*", Chance, Optional: true)],
             // „nur Weltkugel“ (#732): Managerkader altert im Remake ein Jahr, Verträge ein Jahr kürzer; das Original bewertet Gehalt
             // und Preis neu (neue Tendenz, Alter und Vertrag unverändert) – sichtbar seit dem Import der Tendenz (#726/#727).
-            ["FILE20→FILE21"] = [new("DayOpened", DayZero), new("Invariante.PoolMittel.*", PoolSeasonChange),
+            ["FILE20→FILE21"] = [new("DayOpened", DayZero), .. SeasonStart,
                 new($"{Landshut}.Players[*].Age", WorldOnlyManagerSlot, Delta: 1),
                 new($"{Landshut}.Players[*].ContractYears", WorldOnlyManagerSlot, Delta: -1),
                 new($"{Landshut}.Players[*].MonthlySalary", WorldOnlyManagerSlot),
