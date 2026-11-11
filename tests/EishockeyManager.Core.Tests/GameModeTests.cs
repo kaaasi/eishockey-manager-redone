@@ -175,7 +175,8 @@ public class GameModeTests
 
     /// <summary>
     /// Mehrsaisonprobe Modus 1, 4 Saisonwechsel, passiver und aktiver Bundestrainer: Ernennung in jeder Saison,
-    /// Nationalkonto = Summe seiner Buchungen, Vereinskonto unverändert, Etat aus dem WM-Platz der Vorsaison.
+    /// Nationalkonto = Summe seiner Buchungen, Vereinskonto nur über das Finanzbuch (#732: Tagesabschluss von Satz 0 wie im Original,
+    /// <see cref="ClubAccountProbe"/>), Etat aus dem WM-Platz der Vorsaison.
     /// </summary>
     [Theory]
     [InlineData(false, 7)]
@@ -184,8 +185,7 @@ public class GameModeTests
     public void WorldOnly_MultiSeason_AppointedEachSeason_NationalAccountIsSumOfBookings(bool active, int seed)
     {
         var game = Create(seed, false, true, 5);
-        var manager = game.Managers[0];
-        var money = manager.Money;
+        var account = new ClubAccountProbe(game, game.Managers[0]);
         var expectedBudget = NationalCoach.FirstBudget;
         for (var change = 0; change <= 4; change++)
         {
@@ -205,11 +205,14 @@ public class GameModeTests
             while (game.Phase == SeasonPhase.Running)
                 game.Continue();
             Assert.Equal(game.NationalAccount, game.NationalBookings.Sum(b => b.Amount));
-            Assert.Equal(money, manager.Money);
+            account.SeasonEnd();
             Assert.Equal(0, game.PlayedMatchDays);
             expectedBudget = NationalCoach.BudgetFor(game.WorldCup!.Ranking.ToList().IndexOf(NationalTeams.Germany) + 1);
             if (change < 4)
+            {
                 game.StartNextSeason();
+                account.SeasonStart();
+            }
         }
         Assert.Equal(5, game.History.Count);
         if (active)

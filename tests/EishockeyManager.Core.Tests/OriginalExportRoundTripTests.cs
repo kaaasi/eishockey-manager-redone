@@ -58,6 +58,10 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
 
     private const int SlotsPerRecord = 0x618 / OriginalSaveGame.SquadSlotLength;
 
+    /// <summary>Kaderplätze des Nationalkaders (Satz 5) im Block 5DC3.</summary>
+    private static readonly int[] NationalSlots =
+        [.. Enumerable.Range(OriginalImport.NationalRecord * SlotsPerRecord, SlotsPerRecord)];
+
     /// <summary>Byte hinter dem Nullbyte des Namens im Original: Rest eines früheren, längeren Namens („SPIELER 1136“ o. ä.).</summary>
     private static bool BehindPoolName(Stand stand, int record, int at) =>
         at > NameBytes(stand.Original.Block("far:8253").AsSpan(record * OriginalSaveGame.PoolRecordLength, 0x12)).Length;
@@ -146,12 +150,14 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("5DC3", 0x34, 0x15, 0x15, "Reihe verletzter, gelisteter oder nicht eingesetzter Spieler: das Remake stellt sie nicht auf"),
         new("5DC3", 0x34, 0x16, 0x17, "Verletzungsart nach der Heilung, Anfrage-Verein ohne Kennzeichen (Import liest beide nur mit Kennzeichen)"),
         new("5DC3", 0x34, 0x19, 0x19, "verdeckte Werte der Marktplätze: ein Wertesatz je Spieler"),
-        new("5DC3", 0x34, 0x0F, 0x0F, "Poolplatz eines aus dem Pool gekauften Spielers mit zweitem Poolsatz gleichen Namens"),
-        new("far:8253", 33, 0x14, 0x14, "Alter eines Poolsatzes ohne Spieler im Remake (zweiter Satz gleichen Namens)"),
         new("5DC3", 0x34, 0x09, 0x0D, "Kadersatz des Managers bzw. Vertragslose (+0x0B = 0xFF) am Saisonstart", When.LaterSeason),
-        // Modus „nur Weltkugel“: Managerverein ohne Kader und Satz (Regel 1, OriginalImport.ApplyOriginal)
-        new("5DC3", 0x34, 0x00, 0x33, "Kader des Managervereins im Modus „nur Weltkugel“ (Import übernimmt ihn nicht)", When.WorldOnly),
-        new("far:8253", 33, 0x12, 0x14, "Poolsätze des Managervereins im Modus „nur Weltkugel“", When.WorldOnly),
+        // Modus „nur Weltkugel“: Satz 0 trägt das Land (Regel 1). #732 (abgleich-rest Teil 3): Kader von Satz 0 mit Import und Export
+        // wie in den übrigen Modi; die Regel „Kader des Managervereins“ (0x00–0x33 aller Kaderplätze) entfällt und mit ihr die beiden
+        // Regeln „zweiter Poolsatz gleichen Namens“ (trafen nur im Modus 1) und „Poolsätze des Managervereins“. Übrig bleibt, was
+        // sie am Nationalkader (Satz 5) mitgedeckt hat:
+        new("5DC3", 0x34, 0x0B, 0x0C, "Nationalkader im Modus „nur Weltkugel“: Vertrags- und Leihbyte des Satzes 5 schreibt der Export nicht (Restlücke)", When.WorldOnly, Records: NationalSlots),
+        new("5DC3", 0x34, 0x01, 0x08, "Nationalkader im Modus „nur Weltkugel“: Tor- und Spielzähler des Satzes 5 (WM-Spiele, Restlücke)", When.WorldOnly, Records: NationalSlots),
+        new("5DC3", 0x34, 0x20, 0x20, "Nationalkader im Modus „nur Weltkugel“: Spiele je Wettbewerb des Satzes 5 (WM-Spiele, Restlücke)", When.WorldOnly, Records: NationalSlots),
         new("far:9657", 0x3D, 0x16, 0x1D, "Satz des Managervereins im Modus „nur Weltkugel“ (trägt das Land, Regel 1)", When.WorldOnly),
         new("965B", 0x1AF, 0x177, 0x182, "Über-/Unterzahl des Nationalteams (Satz 5; Remake führt sie nur je Manager)", When.WorldOnly),
         new("8257", 0x50, 0x00, 0x2F, "WM-Gruppentabellen in den Ländersätzen: schreibt der Export nicht (Restlücke)", When.WorldOnly),

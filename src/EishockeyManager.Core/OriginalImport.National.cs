@@ -20,7 +20,8 @@ public sealed partial class GameState
     ///   Angriff, Spielvorbereitung 0x8365; FILE19), eigene Werte aus Satz 5 – ohne Bundestrainer in der Taktik des Landes
     ///   (<c>_vacantNationalTactics</c>).</item>
     /// <item>[APPROX] Das Remake führt einen Wertesatz je Spieler: Die Werte des Satzes 5 gelten für Pool- und Marktspieler; Spieler
-    ///   eines übernommenen Managerkaders behalten die Werte ihres Vereinsplatzes.</item>
+    ///   eines übernommenen Managerkaders behalten die Werte ihres Vereinsplatzes – außer im Modus „nur Weltkugel“ (#732): Dort
+    ///   zählen nur Länderspiele, die Werte des Satzes 5 gelten auch für Spieler des Kaders von Satz 0.</item>
     /// <item>[APPROX] Pool +0x1D eines Nominierten zeigt das Land (FILE18: alle 54); Verein des Mitglieds ist bei Kaderspielern
     ///   eines Managers dessen Verein, sonst der Poolverein.</item>
     /// </list>
@@ -60,7 +61,9 @@ public sealed partial class GameState
             var e = OriginalImport.PoolEntry(save, index);
             var club = Clubs.FirstOrDefault(c => c.Players.Contains(player))?.Index
                        ?? (e[0x1D] < clubOf.Length ? clubOf[e[0x1D]] : coach.Nation);
-            if (!squadPlayers.ContainsValue(player))
+            // #732: Im Modus „nur Weltkugel“ gelten die Werte des Satzes 5 auch für Spieler aus dem Kader von Satz 0 (dort gibt es
+            // keine Vereinsspiele; vor Teil 3 übernahm der Import diesen Kader nicht, FILE18).
+            if (WorldOnly || !squadPlayers.ContainsValue(player))
             {
                 player.Condition = s[0x10];
                 player.Technique = s[0x11];

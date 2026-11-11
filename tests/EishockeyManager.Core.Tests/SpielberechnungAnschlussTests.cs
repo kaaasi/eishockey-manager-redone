@@ -324,8 +324,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Review #688 (R688-05, Fixlauf Leitstelle Runde 14): Konten gleich; Weltmeister ab Saison 3 und Haupt-/Pokalquelle neu – der
     // Saisonwechsel behält die Markt-Plätze (kein Listenwechsel 0x494EF) und zieht dafür keine Zahlen. Gegenprobe: alter
     // TransferMarket.StartSeason → alter Wert; Takt vor dem Halt (R688-04) und Sommerpause (R688-03) einzeln zurück → gleicher Wert.
+    // abgleich-rest Teil 3 (#732, R16-D2 = A): Titel und Zufallsquellen gleich, nur das Konto von Satz 0 – der Tagesabschluss läuft
+    // im Modus 1 in Sommerpause und WM-Schleife wie im Original (Datei 0x56512, 0x5569A). Gegenprobe: RunSummerBreak und
+    // OpenWorldOnlyLoopDay ohne Tagesabschluss → alter Wert.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=52|500000|WorldChampion=54|500000|WorldChampion=54|500000|R1374974225 C782029941";
+        "WorldChampion=52|500000|WorldChampion=52|-1542821|WorldChampion=52|-4586841|WorldChampion=54|-9294877|WorldChampion=54|-16586608|R1374974225 C782029941";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem
