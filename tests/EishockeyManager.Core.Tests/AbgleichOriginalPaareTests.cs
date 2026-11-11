@@ -10,18 +10,29 @@ namespace EishockeyManager.Core.Tests;
 /// Fall rot, ebenso ein Muster, das nicht mehr trifft (behoben → Eintrag entfernen). Bericht: <c>docs/analyse/abgleich-original.md</c>.
 /// </summary>
 /// <remarks>
-/// Paare ohne Eingriff: FILE02→03, FILE13→14, FILE16A→17, FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
+/// Paare ohne Eingriff: FILE02→03, FILE13→14 (bis auf die Aufstellung von Hand, <see cref="HandLineupFile13"/>), FILE16A→17, FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
 /// Eingriff (nur übrige Felder, <see cref="HokCompareClasses.Interventions"/>): FILE44→46, FILE18→48. Saat 1993 (Werkzeugvorgabe);
 /// zufallsabhängige Felder sind mit Bereichen und Invarianten geprüft, ein anderer Zufall darf das Ergebnis nicht kippen
 /// (<see cref="Pair_OtherSeed_SameExpectedList"/>, alle Paare mit fünf weiteren Saaten).
 /// </remarks>
 public class AbgleichOriginalPaareTests
 {
-    private const int WorldOnlyManagerSlot = 732, AutoLineupFlag = 733, MoneyFile13 = 734,
+    private const int WorldOnlyManagerSlot = 732, MoneyFile13 = 734,
         DayZero = 699, FormFile44 = 738, ManagerTeamValues = 748;
 
     /// <summary>Zufall, kein Befund: Begründung am Eintrag (nur optionale Muster).</summary>
     private const int Chance = 0;
+
+    /// <summary>
+    /// Eingriff, kein Befund (#733, abgleich-fix): FILE13→14 schaltet „automatisch aufstellen“ (DGROUP 0x375/0x376 `01 01` →
+    /// `00 00`) ab. [ORIGINAL] Ohne Nutzerhandlung schreibt em.exe dort keine 0: Schreiber sind nur die Aufstellung bei einer
+    /// Änderung von Hand (Datei 0x40ADE, 0x40DE4, Meldung „… ist deaktiviert“), der Taktikknopf (0x47F4E/0x49058) und der
+    /// Tageslauf, der 0x376 aus 0x375 sichert (0x54FDC) und 0x375 nur für die Spiele auf 0 setzt (0x54FE8, vor dem nächsten
+    /// Zug zurück, 0x54D9A/0x55307); Laden und Sichern kopieren den Block (0x5C3E3/0x5B9DD). Nach dem Laden zeigte die Aufstellung
+    /// 5 Eingesetzte (`file13_2`), im DEB-Pokal standen weniger als 9 Spieler (Angabe Nutzer) – mit der Einstellung hätte
+    /// 0x426BC voll aufgestellt. Folgen der Handaufstellung: Formwerte, verdeckte Werte einzelner Spieler.
+    /// </summary>
+    private const int HandLineupFile13 = 0;
 
     /// <summary>
     /// Erwartete Abweichung: Pfadmuster (<c>*</c> = beliebig) mit Issue. <paramref name="Delta"/>: jede Abweichung des Musters muss
@@ -61,9 +72,10 @@ public class AbgleichOriginalPaareTests
         {
             ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC")],
             ["FILE13→FILE14"] = [.. SeasonStart, new("Managers[0].Money", MoneyFile13),
-                new("Clubs[6 KREFELDER EV]._autoLineup", AutoLineupFlag), new("Clubs[6 KREFELDER EV].TeamValues.*Form", AutoLineupFlag),
-                // Andere Aufstellung (#733) → andere Einsätze → verdeckte Werte einzelner Spieler (Saaten 2, 3, 4711).
-                new("Clubs[6 KREFELDER EV].Players[*].HiddenSkill*", AutoLineupFlag, Optional: true),
+                new("Clubs[6 KREFELDER EV]._autoLineup", HandLineupFile13),
+                new("Clubs[6 KREFELDER EV].TeamValues.*Form", HandLineupFile13),
+                // Andere Aufstellung (Eingriff, #733) → andere Einsätze → verdeckte Werte einzelner Spieler (Saaten 2, 3, 4711).
+                new("Clubs[6 KREFELDER EV].Players[*].HiddenSkill*", HandLineupFile13, Optional: true),
                 // Kondition/Technik des Managervereins aus der Aufstellung (#748): 16–43 tiefer, über ±35 nur bei manchen Saaten.
                 new("Clubs[6 KREFELDER EV].TeamValues.*Condition", ManagerTeamValues, Optional: true),
                 new("Clubs[6 KREFELDER EV].TeamValues.*Technique", ManagerTeamValues, Optional: true),
@@ -92,8 +104,8 @@ public class AbgleichOriginalPaareTests
                 // Teamwerte des Managervereins (Original leer) seit #747 (abgleich-fix) auch im Remake leer.
                 new("Managers[0].Money", WorldOnlyManagerSlot)],
             ["FILE22→FILE23"] = [.. SeasonStart],
-            ["FILE24→FILE25"] = [StrainSawtooth("5 KÖLNER EC"),
-                new("Clubs[5 KÖLNER EC]._autoLineup", AutoLineupFlag)],
+            // „automatisch aufstellen“ (#733) behoben durch abgleich-fix: Der Import liest das gesicherte Byte 0x376 (FILE24 `00 01`).
+            ["FILE24→FILE25"] = [StrainSawtooth("5 KÖLNER EC")],
             ["FILE30→FILE31"] = [],
             ["FILE38→FILE39"] = [StrainSawtooth("5 KÖLNER EC")],
             ["FILE39→FILE40"] = [StrainSawtooth("5 KÖLNER EC")],

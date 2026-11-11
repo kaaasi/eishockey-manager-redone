@@ -99,8 +99,9 @@ public static class PlayerInjuries
     /// (<see cref="Club.ApplyAutoLineup"/>); ohne sie nur nach einer Verletzung wie <see cref="RefillLineup"/>.
     /// [APPROX] Das Remake stellt direkt nach dem Spiel des Vereins statt nach allen Spielen des Tages auf; gleichwertig, weil
     /// ein Verein je Tag nur ein Spiel hat und die Regel <see cref="AutoLineupRule"/> ohne Zufall arbeitet. Das Remake führt
-    /// das gesicherte Byte 0x376 nicht: Es wird vor jedem Lesen aus 0x375 neu geschrieben und steht nur während der Spiele
-    /// anders (FILE32/33 0x375 = 0, 0x376 = 1 nach dem Umschalten im Taktikbildschirm ohne Spieltag; HOK 0x00844).
+    /// das gesicherte Byte 0x376 nicht: Im Spiel wird es nach den Managerzügen aus 0x375 geschrieben (Datei 0x54FDC) und steht
+    /// nur während der Spiele anders. Beim Laden gilt es dagegen (#733, Datei 0x54D84: FILE24 0x375 = 0, 0x376 = 1 → FILE25 an);
+    /// der Import liest deshalb 0x376 (<c>OriginalImport.ApplyTactics</c>, HOK 0x00844).
     /// Mit Live-Anzeige ruft das Original statt 0x426BC das Fenster 0x5434C (Datei 0x5416D–0x54192; Remake ohne Live-Anzeige).
     /// </summary>
     public static void AfterMatch(Club club, bool injured)

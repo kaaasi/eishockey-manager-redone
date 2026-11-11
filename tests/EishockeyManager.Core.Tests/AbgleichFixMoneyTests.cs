@@ -76,7 +76,8 @@ public class AbgleichFixMoneyTests
     /// 250.000 DM (Bild <c>file13_3</c>), Platz 12 → Konto am 29. April auf 400.000 DM gesetzt (+100.000 DM Fair-Play,
     /// <c>file13_15</c>). Mit dieser Aufstellung landet das Remake im Bereich; mit der Aufstellung aus dem HOK (16 Spieler in
     /// Reihen, alle 20 eingesetzt) nicht. Woher die fünf kommen, belegt der Stand nicht: Datei 0x426BC stellt aus FILE13 voll auf
-    /// (Nachrechnung im Bericht) – offen unter #733.
+    /// (Nachrechnung im Bericht). „Automatisch aufstellen“ aus ist ein Eingriff (#733: em.exe schreibt die 0 nur nach einer
+    /// Nutzerhandlung, <c>AbgleichOriginalPaareTests.HandLineupFile13</c>); die fünf nach dem Laden bleiben offen (#734).
     /// </summary>
     [GameDataFact]
     public void File13_MoneyDeviation_ComesFromShortHandedLineup()
