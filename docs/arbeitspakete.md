@@ -33,6 +33,7 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
   `src/EishockeyManager.Formats/OriginalSave*.cs`, `docs/formate/spielstand-original.md`,
   `tests/**/OriginalExportRoundTripTests.cs`: allein `pool`. Übrige `Core/OriginalImport*.cs`: `pool`, außer den
   Modus-1-Stellen (`WorldOnly`, Satz 0), die `abgleich-rest` braucht – beide nennen ihre Stellen im PR, `pool` löst beim Merge auf.
+  Dasselbe gilt für die Modus-1-Stellen in `Transfer*.cs`, `GameSetup.cs` und `OriginalImport.Market.cs` (R763-01).
 - `Core/Squad*.cs`, `Core/MatchEngine*.cs`, `Core/Player*.cs`, `Core/SeasonFlow*.cs`, `Core/GameState.DailyRun.cs`,
   `Core/GameState.Manager.cs`, `Core/Cups*National*.cs`, `Core/Finance*.cs` außer `FinanceStocks.cs`: allein `abgleich-rest`;
   braucht `pool` dort eine Zeile (Besitzer, Poolplatz), nennt es sie im PR. Satz 0 im Export (`OriginalExport*.cs`): Stellen
@@ -70,14 +71,18 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
      0x5568B–0x5569F), Export von Satz 0; Abnahme FILE20→21 Konto im Bereich des Abgleichs, Migration (neue Datei),
      Mehrsaisonprobe im Modus „nur Weltkugel“.
   4. **#699 Rest:** Tag 0 im Modus 1 wie im Original (FILE20→21, erwarteter Eintrag `DayZero = 699` entfällt).
+- **Lauf-Budget (R763-04):** ein Lauf darf mehrere Teile erledigen; reichen die vier Läufe nicht, bleibt Teil 4 offen
+  (`spur-wartet`), die Leitstelle legt dem Nutzer einen Zusatzlauf oder Runde 17 vor.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** nicht gestartet.
 
 ### Spur `pruefung-karte`
 
 - **Teil 1 (sofort):** #757 (Kurs 0: Verhalten des Originals 0x596C2h belegen, dann wie im Original absichern, `BuyStock` und
   Finanzbildschirm), #734 (FILE13→14 als „Eingriff/Sitzungszustand“ in `HokCompareClasses` und Bericht, dann schließen), #703
-  R701-06 (115.000 DM im April-Abschluss erklären oder als Testlücke belegen, dann schließen), P3 aus den Reviews dieser Runde.
-- **Teil 2 (nach dem Merge von `pool`):** Inventur und Funktionskarte nachziehen (`--write`, zweiter Lauf ohne Diff),
+  R701-06 (115.000 DM im April-Abschluss erklären oder als Testlücke belegen); vor dem Schließen im Issue belegen, wo
+  R701-01…05 erledigt sind (Runde 15 Teil 1, #753), sonst Reste auflisten (R763-02), P3 aus den Reviews dieser Runde.
+- **Teil 2 (nach dem Merge von `pool`, eigener Branch `paket/pruefung-karte-2` mit eigenem PR, weil Teil 1 vorher gemergt
+  wird; R763-03):** Inventur und Funktionskarte nachziehen (`--write`, zweiter Lauf ohne Diff),
   Inventurzeilen aller Spuren.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** nicht gestartet.
 
