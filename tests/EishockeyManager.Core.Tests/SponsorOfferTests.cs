@@ -67,6 +67,10 @@ public class SponsorOfferTests
         Assert.InRange(oberliga, 10, 45);
         Assert.True(bundesliga > oberliga, $"Bundesliga {bundesliga} ≤ Oberliga {oberliga}");
         Assert.InRange(bundesliga, 30, 100);
+        // #620 (R13GN-03): Die Bereiche allein ließen eine vertauschte Liga im Schlussterm 10 · (2 − Liga) (Datei 0x3FAC5–0x3FB2E)
+        // grün. Festgehaltene Werte des Heads für diesen Aufbau (Saat 3, Verein 24 Oberliga, Verein 2 Bundesliga); Gegenprobe
+        // `10 * (2 - tier)` → `10 * tier` in SponsorRating.Finish → rot. Die Herleitung je Summand prüft SponsorBewertungTests.
+        Assert.Equal((14, 69), (oberliga, bundesliga));
     }
 
     /// <summary>Oberliga-Verein 24, Level 3, Seed 3, ohne Kader und ohne Titel (Reproduktion aus Review F67-01, #75).</summary>

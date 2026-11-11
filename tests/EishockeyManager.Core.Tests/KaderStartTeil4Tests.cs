@@ -137,6 +137,9 @@ public class KaderStartTeil4Tests
         Assert.DoesNotContain(p, borrower.Players);
         Assert.False(p.OnLoan);
         Assert.Equal(0, p.ContractYears);
+        // #716 R14G4-05: Ablöse beim Verleiher gebucht; Gegenprobe Computer-/Managerverleiher in Player.Contract.cs umkehren
+        // (frei ohne Ablöse) → rot
+        Assert.True(game.Finance(game.Managers[0]).Book.Current(FinanceCategory.Transfers) > 0, "keine Ablöse an Verleiher gebucht");
     }
 
     /// <summary>

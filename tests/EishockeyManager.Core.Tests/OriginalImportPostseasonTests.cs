@@ -180,6 +180,7 @@ public sealed class OriginalImportPostseasonTests(ITestOutputHelper output)
             var points = save.Block("CD58");
             for (var g = 0; g < 2; g++)
                 Assert.Equal(Enumerable.Range(0, 4).Sum(i => points[12 + 6 * g + i]) / 4, game.RelegationGroups[g].PlayedRounds);
+            AssertPostseasonFromHok(save, game, OriginalImport.ClubIndices(save, database));
             output.WriteLine($"{Path.GetFileName(path)}: Runde {OriginalImport.PlayoffRound(save)}, Spiel {OriginalImport.PlayoffGame(save)}, Termine {game.RelegationGroups[0].PlayedRounds}/{game.RelegationGroups[1].PlayedRounds}");
         }
         Assert.True(checkedStands >= 2, $"nur {checkedStands} Stände nach der Hauptrunde");
@@ -221,8 +222,58 @@ public sealed class OriginalImportPostseasonTests(ITestOutputHelper output)
                     foreach (var league in Enum.GetValues<League>())
                         Assert.Equal(GameState.ClubsPerLeague, game.Clubs.Count(c => c.League == league));
             }
-            output.WriteLine($"{Path.GetFileName(path)}: {start} → {game.Season}, {changes} Wechsel, {game.Phase}");
-            Assert.True(game.Season == start + 4 || game.Phase == SeasonPhase.GameOver, $"{Path.GetFileName(path)}: nur bis {game.Season}");
+            output.WriteLine($"{Path.GetFileName(path)}: {start} → {game.Season}, {changes} Wechsel, {game.Phase}, Dauer {game.Setup.Duration}");
+            // #716 R14G4-04: GameOver nur, wenn die Spieldauer des Stands erreicht ist, sonst vier echte Wechsel; Gegenprobe
+            // StartNextSeason → GameOver ohne Wechsel → rot
+            if (game.Phase == SeasonPhase.GameOver)
+                Assert.True(game.SeasonLimit is { } limit && game.History.Count >= limit,
+                    $"{Path.GetFileName(path)}: vorzeitiges Spielende in {game.Season} (Dauer {game.Setup.Duration}, {game.History.Count} Saisons)");
+            else
+                Assert.Equal((start + 4, 4), (game.Season, changes));
+        }
+    }
+
+    /// <summary>
+    /// #716 R14G4-03: Teilnehmer und Ergebnisse je Stand gegen die HOK-Felder – Aufstiegsrunden (0xCFFC, gespielte Termine
+    /// 0xCED8/0xCDB8), Play-offs (Plätze 0x5D3B je Runde, Tore 0xCCB2 der laufenden Runde, Siege 0xCCA4). Gegenprobe Aufruf
+    /// ApplyPostseason(save, clubOf) auslassen → nachgespielte Teilnehmer/Ergebnisse → rot.
+    /// </summary>
+    private static void AssertPostseasonFromHok(OriginalSaveGame save, GameState game, int[] clubOf)
+    {
+        var teams = OriginalImport.GroupTeams(save, 1).ToArray();
+        for (var g = 0; g < 2; g++)
+        {
+            var group = game.RelegationGroups[g];
+            Assert.Equal(teams.Skip(4 * g).Take(4).Select(t => clubOf[t]), group.Clubs);
+            for (var d = 0; d < group.PlayedRounds; d++)
+                Assert.Equal(OriginalImport.GroupDate(save, 1, g, d, 2).Select(p => (clubOf[p.Home], clubOf[p.Away], p.HomeGoals, p.AwayGoals)),
+                    group.Results.Where(r => r.MatchDay == d + 1).Select(r => (r.Home, r.Away, r.HomeGoals, r.AwayGoals)));
+        }
+
+        var slots = OriginalImport.PlayoffSlots(save).ToArray();
+        var results = save.Block("CCB2");
+        var wins = save.Block("CCA4");
+        int[] firstSlot = [0, 8, 12];
+        var current = OriginalImport.PlayoffRound(save);
+        for (var round = 0; round <= current; round++)
+        {
+            var series = game.Playoffs!.Rounds[round];
+            Assert.Equal(4 >> round, series.Count);
+            for (var k = 0; k < series.Count; k++)
+            {
+                var p = firstSlot[round] + 2 * k;
+                var (first, second) = (clubOf[slots[p]], clubOf[slots[p + 1]]);
+                var s = series.Single(x => new[] { x.HomeClub, x.AwayClub }.Order().SequenceEqual(new[] { first, second }.Order()));
+                if (round != current)
+                    continue;
+                // Laufende Runde: Spielzahl, Tore je Verein und Siege wie im HOK (Reihenfolge der Paare unabhängig).
+                var played = Enumerable.Range(0, 5).Where(n => results[14 * n + p] != OriginalImport.CupNotPlayed).ToList();
+                Assert.Equal(played.Count, s.Games.Count);
+                int Goals(int club) => s.Games.Sum(m => m.Home == club ? m.HomeGoals : m.Away == club ? m.AwayGoals : 0);
+                Assert.Equal((played.Sum(n => results[14 * n + p] % 30), played.Sum(n => results[14 * n + p + 1] % 30)),
+                    (Goals(first), Goals(second)));
+                Assert.Equal((wins[p] == 0x14 ? 3 : wins[p], wins[p + 1] == 0x14 ? 3 : wins[p + 1]), (s.Wins(first), s.Wins(second)));
+            }
         }
     }
 

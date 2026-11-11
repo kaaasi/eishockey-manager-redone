@@ -82,6 +82,10 @@ public class KaderTransferTeil5Tests
         var (game, manager, club, p) = SeasonEnd();
         var games = p.SeasonGames(CompetitionSlot.League); // A135
         game.StartNextSeasonWithRenewals();
+        // #716 R14G5-01: Spielzähler unabhängig prüfen; Gegenprobe Q43 Übertrag der Vereinsspiele beim Saisonwechsel auslassen
+        // (CarryGamesForClub) → 0 statt der Ligaspiele → rot
+        Assert.True(games > 10, $"zu wenige Spiele: {games}");
+        Assert.Equal(games, p.GamesForClub);
         // Der Preis zieht nur bei einem Angebot Zufall (0x49E1B); hier ohne Angebot.
         var value = ValueAtSeasonEnd(game, manager, club, p, games, PlayerValueKind.Price, new Random(0));
         var outcome = game.CancelRenewal(manager, p)!;

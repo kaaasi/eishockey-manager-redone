@@ -248,7 +248,16 @@ public class SaisonSatzfolgeSaisonendeTests
         foreach (var league in Enum.GetValues<League>())
             Assert.Empty(old.NextLeagueSlots(league));
 
+        var before = Enum.GetValues<League>().ToDictionary(l => l, l => old.LeagueSlots(l).ToList());
         old.StartNextSeason();
+        // #620 (R13GN-03): Der Rückfallweg (AdvanceLeagueSlots ohne gebildete Folge) mischt nach dem Bilden neu (MixLeagueSlots).
+        // Ohne Mischen behielte jeder in seiner Liga gebliebene Verein seinen Satzplatz (Nachfolger übernehmen nur die Plätze ihrer
+        // Tauschpartner). Gegenprobe: MixLeagueSlots() im Rückfallweg ausgelassen → rot.
+        Assert.Contains(Enum.GetValues<League>(), l =>
+        {
+            var now = old.LeagueSlots(l).ToList();
+            return before[l].Where(now.Contains).Any(c => before[l].IndexOf(c) != now.IndexOf(c));
+        });
         foreach (var league in Enum.GetValues<League>())
         {
             Assert.Equal(GameState.ClubsPerLeague, old.LeagueSlots(league).Count);

@@ -105,6 +105,10 @@ public static class SeasonCalendar
         // 0x367B1 und zeichnet das Fenster danach (0x26D9A → 0x43E21): Wochentag von 233 = Montag, Datum 29. April. Nach dem Import
         // eines am Markierungstag gesicherten Stands steht der Zähler einen höher (GameState.LoadQuirk.cs, DateText): „Montag,
         // 30. April“ wie DOSBox-Bild file46_2.
+        // #703 (R701-04): [APPROX] Die Korrektur hängt am übergebenen Tag (day == SeasonEnd), nicht am Zähler: Mit Ladeversatz
+        // übergibt DateText Tag + 1, ein Halt am Tag 230 zeigte „Montag, 29. April“ statt „Sonntag“ (Zähler 232, (232 + 5) mod 7 = 6).
+        // Nicht erreichbar: FILE22 und FILE44 halten nach dem Import erst am Saisonende. Gilt der Versatz einmal für weitere Stände,
+        // den Wochentag aus GameState.Counter bilden wie Datei 0x43B2E.
         var weekday = ((int)d.DayOfWeek + (day == SeasonEnd ? 1 : 0)) % 7;
         return $"{Weekdays[weekday]}, {d.Day}. {Months[d.Month - 1]}  {Year(day, season)}";
     }
