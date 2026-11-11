@@ -225,10 +225,13 @@ public class RngTwinProbeTests
     // (0x26F20, Datei 0x2728C–0x27320: zwei Zufallszahlen je Manager und Saison, ab 1995 Junioren), Tendenz/Steuerbyte der
     // Startkader (0x4907A aus 0x42CB1), Vertragslose aus Managervereinen weder auf der Liste noch vertragslos, sondern ganz verloren
     // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
-    [InlineData(false, 3, "EB27A065B5D115F3")]
-    [InlineData(true, 3, "3B31F7F53E2D78DA")]
-    [InlineData(false, 11, "E0974D442603E989")]
-    [InlineData(true, 11, "7CBB076389338DDD")]
+    // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
+    // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
+    // Squad.Training.cs von 18972c0 → alte Werte.
+    [InlineData(false, 3, "6D0CC169B1EB7BFD")]
+    [InlineData(true, 3, "A2D525A903360DD5")]
+    [InlineData(false, 11, "F915001B9C294CD4")]
+    [InlineData(true, 11, "1E6B7B9374BFC721")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -275,8 +278,11 @@ public class RngTwinProbeTests
     // die Werte am Poolplatz (Original: nur der Name wechselt, FILE44 → FILE46); der Kaderspieler bekommt die des bisherigen
     // Poolspielers. Andere Kaderwerte ab dem ersten Saisonwechsel. Rückschaltprobe: Transfer.Pool.cs von 85302f5 → alte Werte
     // (tools/pruefen.sh --schnell auf 85302f5 grün).
-    [InlineData(false, "E81270B615020201")]
-    [InlineData(true, "9F9612B29AC7D1A0")]
+    // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
+    // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
+    // Squad.Training.cs von 18972c0 → alte Werte.
+    [InlineData(false, "F6400FF2323AF18D")]
+    [InlineData(true, "BBFCF3C2A1F8132C")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

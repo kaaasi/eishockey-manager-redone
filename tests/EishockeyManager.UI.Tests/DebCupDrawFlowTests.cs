@@ -289,6 +289,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Runde 15, Spur abgleich-fix (#731, R15-E2 = C): ab 1994 neu – beim Tausch Pool ↔ Computerkader am Saisonwechsel bleiben die
     // Werte am Poolplatz, der Kaderspieler bekommt die des bisherigen Poolspielers (andere Kader ab dem ersten Wechsel); 1993
     // unverändert, mit und ohne Anzeige weiter gleich. Rückschaltprobe: Transfer.Pool.cs von 85302f5 → alter Wert.
+    // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): ab 1993 neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei
+    // 0x4BD56, cbw): ab 128 → 50 statt bis 150; andere Spielenergie und Ergebnisse ab dem ersten Training, mit und ohne Anzeige
+    // weiter gleich. Rückschaltprobe: Squad.Training.cs von 18972c0 → alter Wert.
     private const string Reference =
-        "1993: DEB 8, DM 8, Tab 15392 | 1994: DEB 6, DM 6, Tab 15913 | 1995: DEB 4, DM 19, Tab 15903 | 1996: DEB 6, DM 9, Tab 15553";
+        "1993: DEB 19, DM 8, Tab 15371 | 1994: DEB 3, DM 5, Tab 15528 | 1995: DEB 8, DM 5, Tab 15577 | 1996: DEB 21, DM 5, Tab 15054";
 }

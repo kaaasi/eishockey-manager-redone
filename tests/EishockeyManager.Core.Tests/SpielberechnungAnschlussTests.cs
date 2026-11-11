@@ -242,8 +242,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // die Werte am Poolplatz (Original: nur der Name wechselt, FILE44 → FILE46); der Kaderspieler bekommt die des bisherigen
     // Poolspielers. Andere Kaderwerte ab dem ersten Saisonwechsel. Rückschaltprobe: Transfer.Pool.cs von 85302f5 → alte Werte
     // (tools/pruefen.sh --schnell auf 85302f5 grün).
-    [InlineData(false, "4E6B7ED95109ADE5")]
-    [InlineData(true, "4CD6AFDE25DD779E")]
+    // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
+    // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
+    // Squad.Training.cs von 18972c0 → alte Werte.
+    [InlineData(false, "150BFD6B08CA8951")]
+    [InlineData(true, "6450E53CE91EE004")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
