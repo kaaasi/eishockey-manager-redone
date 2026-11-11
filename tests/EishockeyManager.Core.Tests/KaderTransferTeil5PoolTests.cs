@@ -112,7 +112,9 @@ public class KaderTransferTeil5PoolTests
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "Joerg", ClubIndex = 2 });
         var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, 5);
-        AssertDoubledFirstFive(LeagueSlots(game).Where(s => s.Index < 179).Select(s => s.Club).ToList(), "Remake");
+        // Spur pool (#743, R15-E2 = C): wie beim Original nur freie und angebotene Plätze; die Managerkader stehen seit 0x5B0BB im Pool.
+        AssertDoubledFirstFive(LeagueSlots(game).Where(s => s.Index < 179 && s.Owner != PoolOwner.Taken).Select(s => s.Club).ToList(),
+            "Remake");
     }
 
     private static void AssertDoubledFirstFive(IReadOnlyList<int> clubs, string what)

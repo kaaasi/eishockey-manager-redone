@@ -401,7 +401,15 @@ Manager), Besitzer „vergeben“; die übrigen Plätze sind frei bzw. Markt. De
 Export braucht keine Ersatzregel. Vertragslose Managerspieler behalten ihren Platz (wie KJELLBERG), Verkauf an Computervereine
 und das Ende einer Leihe von Computervereinen geben ihn frei.
 
-## Feldkarte Remake-Spielstand (Schema 47) ↔ HOK
+**Umsetzung Teil 2** (`TransferMarket.BuildPool`, `ManagerSquadIndices`, `SeatManagerSquads`): Der Pool merkt die Plätze nach
+0x5B0BB vor (Zähler über alle Manager, Größe nach der Liga des Vereins), benennt nur die übrigen und setzt nach dem Kaderaufbau
+die Kaderspieler ein (Besitzer „vergeben“, Verein = Managerverein). [APPROX] Namen, Werte und Alter der Startkader kommen wie
+bisher aus `SquadSetup`; der Verkauf an einen Computerverein gibt den Platz erst beim Saisonwechsel frei (`StartPoolSeason`),
+weil der Spieler im Remake im Computerkader weiterlebt; verliehene und angebotene Spieler behalten ihn. Der Import baut den
+Pool des Nachspielens ohne vorgemerkte Plätze (er wird ohnehin aus dem Stand ersetzt). Ältere Remake-Spielstände (Schema
+< 48) setzen beim Laden jeden Kaderspieler ohne Platz auf den ersten freien Ligaplatz seiner Art (`SaveGame.Migration.Pool.cs`).
+
+## Feldkarte Remake-Spielstand (Schema 48) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -1041,6 +1049,9 @@ liegt bei den genannten Spuren.
 - Schema 47 (Spur `pruefung-karte` Teil 5, Entscheidung Nutzer 09.11.2026 C): `GameState.LoadCounterOffset` – Ladeeigenheit des
   Markierungstags (`GameState.LoadQuirk.cs`); FILE44 → Saisonende bucht wie `file46_2` den April-Abschluss am 30. April. Migration:
   ältere Stände 0.
+- Schema 48 (Spur `pool`, #743): keine neuen Felder; die Managerkader stehen im Spielerpool (`TransferMarket.SeatManagerSquads`,
+  Abschnitt „Managerkader im Spielerpool“). Migration nach dem Laden: Kaderspieler ohne Poolplatz bekommen einen freien Ligaplatz
+  ihrer Art (`SaveGame.Migration.Pool.cs`).
 
 ### Zugang (Teil 3)
 

@@ -152,6 +152,7 @@ public class WettbewerbeSpiel2Tests
         // Begegnungstabelle der Hauptrunde aus den umgeschriebenen Ergebnissen neu aufbauen ist nicht nötig: verglichen wird
         // unten nur die Nachsaison gegen den Stand vor ihr.
         var before = game.Managers.Select(m => game.MeetingTable(m).ToArray()).ToList();
+        var dayBefore = game.Day;
         for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
         {
             Assert.True(guard < 2000, "Saisonende nicht erreicht");
@@ -172,6 +173,9 @@ public class WettbewerbeSpiel2Tests
             var games = post;
             var table = game.MeetingTable(manager);
             var old = before[game.Managers.ToList().IndexOf(manager)];
+            // Spur pool (#743, R15-E2 = C): DEB-Pokalspiele nach der Hauptrunde trägt 0x34B76 ebenso ein (Datei 0x34C5C); ob ein
+            // Managerverein dann noch im Pokal steht, hängt vom Zufallsverlauf ab (mit den Managerkadern im Pool: Saat 3 ja).
+            var cup = game.DebCup?.Matches.Where(m => m.Day > dayBefore && (m.Home == club || m.Away == club)).ToList() ?? [];
             for (var opponent = 0; opponent < MeetingHistory.FirstNation; opponent++)
             {
                 if (opponent == club)
@@ -185,7 +189,8 @@ public class WettbewerbeSpiel2Tests
                     var actual = Enumerable.Range(0, MeetingHistory.Slots).Select(s => table[opponent * 10 + s * 2 + side])
                         .Where(v => v != MeetingHistory.Empty).ToList();
                     // Neue Einträge = Nachsaisonspiele dieser Seite (solange die Plätze reichen); die Werte stehen in der Tabelle.
-                    Assert.Equal(Math.Min(MeetingHistory.Slots, oldCount + expected.Count), actual.Count);
+                    var cupGames = cup.Count(g => side == 0 ? g.Home == club && g.Away == opponent : g.Away == club && g.Home == opponent);
+                    Assert.Equal(Math.Min(MeetingHistory.Slots, oldCount + expected.Count + cupGames), actual.Count);
                     Assert.All(expected, v => Assert.Contains(v, actual));
                 }
             }

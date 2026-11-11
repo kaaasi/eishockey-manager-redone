@@ -18,10 +18,12 @@ public class PlayerIdentityTests
         var players = game.Clubs.SelectMany(c => c.Players).ToArray();
         Assert.NotEmpty(players);
         Assert.Equal(Enumerable.Range(1, players.Length), players.Select(p => p.Id));
-        // Teil 5: danach die 199 Plätze des Spielerpools in Indexreihenfolge.
-        Assert.Equal(Enumerable.Range(players.Length + 1, TransferPoolRules.Size - 1),
-            game.TransferMarket.Pool.Select(s => s.Player.Id));
-        Assert.Equal(players.Length + TransferPoolRules.Size, game.NextPlayerId);
+        // Teil 5: danach die Plätze des Spielerpools in Indexreihenfolge. Spur pool (#743): ohne die Plätze des Managerkaders,
+        // deren Spieler schon eine ID aus dem Kader haben (Datei 0x5B0BB–0x5B2BE, Kader im Pool).
+        var own = game.TransferMarket.Pool.Where(s => s.Player.Id > players.Length).ToArray();
+        Assert.Equal(TransferPoolRules.Size - 1 - game.TransferMarket.Pool.Count(s => s.Owner == PoolOwner.Taken), own.Length);
+        Assert.Equal(Enumerable.Range(players.Length + 1, own.Length), own.Select(s => s.Player.Id));
+        Assert.Equal(players.Length + own.Length + 1, game.NextPlayerId);
         Assert.Empty(game.ValidatePlayerIdentity());
     }
 

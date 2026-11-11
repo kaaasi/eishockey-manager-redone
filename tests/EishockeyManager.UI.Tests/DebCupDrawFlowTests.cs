@@ -292,6 +292,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): ab 1993 neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei
     // 0x4BD56, cbw): ab 128 → 50 statt bis 150; andere Spielenergie und Ergebnisse ab dem ersten Training, mit und ohne Anzeige
     // weiter gleich. Rückschaltprobe: Squad.Training.cs von 18972c0 → alter Wert.
+    // Runde 16, Spur pool (#743, R15-E2 = C): ab 1993 neu – die Startkader stehen im Spielerpool (Datei 0x5B0BB–0x5B2BE), 25 Plätze
+    // weniger für Benennen, Umverteilung und Listenwechsel, anderer Zufallsverlauf; mit und ohne Anzeige weiter gleich.
+    // Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 148b02d → alter Wert.
     private const string Reference =
-        "1993: DEB 19, DM 8, Tab 15371 | 1994: DEB 3, DM 5, Tab 15528 | 1995: DEB 8, DM 5, Tab 15577 | 1996: DEB 21, DM 5, Tab 15054";
+        "1993: DEB 2, DM 5, Tab 15357 | 1994: DEB 8, DM 8, Tab 15914 | 1995: DEB 8, DM 6, Tab 15810 | 1996: DEB 6, DM 0, Tab 15749";
 }

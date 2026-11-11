@@ -45,7 +45,10 @@ public class StadiumAusbauTests
     [Fact]
     public void SeveralProjects_BuildInParallel()
     {
-        var game = TestGames.Create();
+        // Spur pool (#743, R15-E2 = C): Die Zeitleiste hält nicht an jedem Tag, und der Nachrichtenspeicher räumt nach drei Tagen;
+        // eine Meldung ohne Halt in diesem Fenster sammelt MessageLog nicht. Saat 3 hatte den Halt nur zufällig (mit den Managerkadern
+        // im Pool: Zustand am Tag 41 fertig, nächster Halt Tag 45). Saat 1 mit Halt nach jeder der drei Meldungen.
+        var game = TestGames.Create(1);
         var me = game.ActiveManager;
         me.Money = Rich;
         var stadium = game.Finance(me).Stadium;

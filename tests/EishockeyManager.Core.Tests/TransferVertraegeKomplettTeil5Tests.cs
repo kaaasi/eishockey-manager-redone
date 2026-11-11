@@ -79,8 +79,14 @@ public class TransferVertraegeKomplettTeil5Tests
         {
             Assert.Equal(TransferPoolRules.RoleOf(s.Index), s.Player.Role);
             Assert.InRange(s.Player.Age, 18, 33);
+            if (s.Owner == PoolOwner.Taken)
+            {
+                // Spur pool (#743, R15-E2 = C): [ORIGINAL] Die Startkader belegen ihre Plätze (Datei 0x5B0BB–0x5B2BE, FILE01).
+                Assert.Contains(s.Player, game.Clubs[game.ActiveManager.ClubIndex].Players);
+                Assert.Equal(game.ActiveManager.ClubIndex, s.Club);
+                return;
+            }
             Assert.InRange(s.Player.Talent, 0, 9);
-            Assert.NotEqual(PoolOwner.Taken, s.Owner);
             Assert.DoesNotContain(s.Player, game.Clubs.SelectMany(c => c.Players));
             if (s.Index < 179)
             {
@@ -126,13 +132,17 @@ public class TransferVertraegeKomplettTeil5Tests
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "Joerg", ClubIndex = 2 });
         var game = NewGame.Create(database, setup, 5);
-        var pool = game.TransferMarket.Pool;
+        // Spur pool (#743, R15-E2 = C): [ORIGINAL] Die Managerkader belegen 25 Plätze (Datei 0x5B0BB–0x5B2BE), nur die übrigen
+        // bekommen Namen – wie FILE05 (Besitzer 0 auf 2–3, 22–31, 98–110). Vorher benannte das Remake alle 178.
+        Assert.Equal(Enumerable.Range(1, 199).Where(i => original[i * OriginalSaveGame.PoolRecordLength + 0x1A] == 0 && i < 111),
+            game.TransferMarket.Pool.Where(s => s.Owner == PoolOwner.Taken).Select(s => s.Index));
+        var pool = game.TransferMarket.Pool.Where(s => s.Owner != PoolOwner.Taken).ToList();
         Assert.All(pool.Where(s => s.Index < 179), s => Assert.InRange(s.Club, 0, 35));
         Assert.All(pool.Where(s => s.Index < 179), s => Assert.NotEqual(2, s.Club));
         Assert.All(pool.Where(s => s.Index >= 179), s => Assert.InRange(s.Club, NationalTeams.First, NationalTeams.Last));
-        // [APPROX] Im Original belegen die Managerkader rund 25 Plätze (DGROUP 0x381), nur die übrigen bekommen Namen; das Remake
-        // benennt alle 178 und trifft öfter einen schon vergebenen Namen (dann 0–35). Mit Seed 5: 141 von 178.
-        Assert.True(pool.Count(s => s.Index < 179 && s.Club < 12) / 178.0 > 0.7, "Remake: Anteil 0–11");
+        // [APPROX] Das Remake trifft öfter einen schon vergebenen Namen (dann 0–35).
+        var league = pool.Count(s => s.Index < 179);
+        Assert.True(pool.Count(s => s.Index < 179 && s.Club < 12) / (double)league > 0.7, "Remake: Anteil 0–11");
         // Spur kader-transfer, Teil 5: Die Umverteilung beim Spielstart (0x057E3) hängt die Spieler an Vereine der Managerliga;
         // nur die Nationalspieler und die nicht umverteilten Plätze stehen noch beim Verein ihres Namens (FILE05: 8 von 154).
         Assert.All(pool, s => Assert.Contains(database.Clubs, c => c.Players.Any(d => d.Name == s.Player.Name)));
@@ -143,8 +153,9 @@ public class TransferVertraegeKomplettTeil5Tests
         Assert.Empty(pool.Select(s => s.Player.Name).Intersect(squadNames));
         Assert.Equal(squadNames.Count, squadNames.Distinct().Count());
         Assert.All(game.Clubs.Where(c => c.League is not null), c => Assert.InRange(c.Players.Count, 18, 25));
-        Assert.Equal(178, pool.Take(178).Select(s => s.Player.Name).Distinct().Count());
-        Assert.Equal(21, pool.Skip(178).Select(s => s.Player.Name).Distinct().Count());
+        var all = game.TransferMarket.Pool;
+        Assert.Equal(178, all.Take(178).Select(s => s.Player.Name).Distinct().Count());
+        Assert.Equal(21, all.Skip(178).Select(s => s.Player.Name).Distinct().Count());
     }
 
     /// <summary>
@@ -308,6 +319,8 @@ public class TransferVertraegeKomplettTeil5Tests
 
         var game = TestGames.Create(9);
         game.TransferMarket.ReservePool(game, 9, big);
+        // Spur pool (#743): Der Spielstart setzt die Kader nach ihrem Aufbau ein (TransferMarket.Initialize); hier stehen sie schon.
+        game.TransferMarket.SeatManagerSquads(game);
         Assert.Equal(399, game.TransferMarket.Pool.Count);
         Assert.Equal(big, game.TransferMarket.PoolLayout);
         Assert.All(game.TransferMarket.Pool, s => Assert.Equal(big.RoleOf(s.Index), s.Player.Role));
@@ -435,7 +448,10 @@ public class TransferVertraegeKomplettTeil5Tests
         var next = old.NextPlayerId;
         old.TransferMarket.ChangeList(old, old.Random);
         Assert.Equal(199, old.TransferMarket.Pool.Count);
-        Assert.All(old.TransferMarket.Pool, s => Assert.True(s.Player.Id >= next));
+        // Spur pool (#743, R15-E2 = C): Der Managerkader steht mit seinen Spielern (alten IDs) im Pool, die übrigen Plätze sind neu.
+        var squad = old.Clubs[old.ActiveManager.ClubIndex].Players;
+        Assert.All(old.TransferMarket.Pool, s => Assert.True(s.Owner == PoolOwner.Taken ? squad.Contains(s.Player) : s.Player.Id >= next));
+        Assert.All(squad, p => Assert.Contains(old.TransferMarket.Pool, s => ReferenceEquals(s.Player, p)));
         Assert.NotEmpty(old.TransferMarket.Listings);
         Assert.Empty(old.ValidatePlayerIdentity());
         var saved = SaveGame.Save(old);
@@ -540,9 +556,10 @@ public class TransferVertraegeKomplettTeil5Tests
         else
         {
             Assert.Equal(0, bought + sold);
-            // Spur kader (#698, Review #741 P3-3): vergeben sind beim passiven Manager genau die Spieler im Kader, die nicht aus dem
-            // Startkader stammen – die Junioren vom Saisonende (0x06D7F aus 0x26F20).
-            Assert.Equal(club.Players.Where(p => !startSquad.Contains(p)).ToHashSet(),
+            // Spur kader (#698, Review #741 P3-3): vergeben sind beim passiven Manager genau die Spieler im Kader – Startkader und
+            // Junioren vom Saisonende (0x06D7F aus 0x26F20). Spur pool (#743, R15-E2 = C): [ORIGINAL] auch der Startkader steht im
+            // Pool (Datei 0x5B0BB–0x5B2BE); vorher nur die Junioren.
+            Assert.Equal(club.Players.ToHashSet(),
                 market.Pool.Where(s => s.Owner == PoolOwner.Taken && club.Players.Contains(s.Player)).Select(s => s.Player).ToHashSet());
         }
     }

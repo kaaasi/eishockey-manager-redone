@@ -251,8 +251,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
     // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer, Konten und Zufallsverlauf. Rückschaltprobe:
     // GameState.DailyRun.cs und CupsNational.AutoLineup.cs von 8711348 → alte Werte.
-    [InlineData(false, "78AF9288A57B1CCF")]
-    [InlineData(true, "0C296F1190C3C1D8")]
+    // Runde 16, Spur pool (#743, R15-E2 = C): neu – die Startkader stehen im Spielerpool (Datei 0x5B0BB–0x5B2BE): 25 Plätze weniger
+    // für Benennen, Umverteilung und Listenwechsel, anderer Zufallsverlauf. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 148b02d
+    // → alte Werte.
+    [InlineData(false, "B7C383A4309AE15C")]
+    [InlineData(true, "43BB8A10A80FEFDB")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

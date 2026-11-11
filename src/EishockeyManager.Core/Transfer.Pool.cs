@@ -12,9 +12,11 @@ public enum PoolOwner
     Market,
 
     /// <summary>
-    /// Vergeben: gekauft oder geliehen. [APPROX] Das Original führt hier die Nummer des Managers (0–3) und gibt den Platz bei
-    /// Vertragsende oder Verkauf wieder frei (Besitzer 6); das Remake behält den Spieler in seinem Kader bzw. bei den
-    /// Vertragslosen und erneuert den Platz beim Saisonwechsel (<see cref="TransferMarket.StartPoolSeason"/>).
+    /// Vergeben: Spieler eines Managerkaders (Startkader, gekauft, geliehen, Talent) oder nach Vertragsende verloren.
+    /// [ORIGINAL] Besitzer = Nummer des Managers (0–3; Datei 0x5B1E9, 0x479DA, 0x06ED7). Spur pool (#743): auch die Startkader
+    /// stehen im Pool (<see cref="TransferMarket.SeatManagerSquads"/>). [APPROX] Das Original gibt den Platz beim Verkauf an
+    /// einen Computerverein sofort frei (Datei 0x46FCA); das Remake erst beim Saisonwechsel
+    /// (<see cref="TransferMarket.StartPoolSeason"/>), weil der Spieler im Kader des Computervereins weiterlebt.
     /// </summary>
     Taken,
 }
@@ -271,14 +273,18 @@ public sealed partial class TransferMarket
     /// damit der Kaderaufbau seine Zufallsfolge behält. Spieler werden über ihre ID unterschieden; gleiche Namen bleiben
     /// möglich, wenn eine geänderte Datenbank sie enthält.
     /// </summary>
-    public void ReservePool(GameState game, int seed, TransferPoolLayout? layout = null)
+    /// <param name="managerSlots">Spur pool (#743): Plätze der Managerkader vormerken (<see cref="BuildPool"/>). Der Import
+    /// (<see cref="SquadSetup.Initialize"/> mit <c>forImport</c>) ersetzt Pool und Managerkader aus dem Spielstand und baut den
+    /// Pool des Nachspielens ohne sie – wie vor dieser Spur, damit die Ersatzspieler der Computerkader gleich bleiben.</param>
+    public void ReservePool(GameState game, int seed, TransferPoolLayout? layout = null, bool managerSlots = true)
     {
         CaptureDatabaseNames(game);
-        BuildPool(game, new GameRandom(unchecked(seed * 7919 + 29)), layout ?? TransferPoolLayout.Original, new HashSet<string>());
+        BuildPool(game, new GameRandom(unchecked(seed * 7919 + 29)), layout ?? TransferPoolLayout.Original, new HashSet<string>(),
+            managerSlots);
         foreach (var slot in _pool)
         {
             var club = game.Clubs[slot.Club];
-            if (IsManaged(game, club))
+            if (slot.Owner != PoolOwner.Free || IsManaged(game, club))
                 continue;
             if (club.Players.FirstOrDefault(p => p.Name == slot.Player.Name) is { } taken)
             {
@@ -331,10 +337,14 @@ public sealed partial class TransferMarket
     /// dann je Index Talent +0x12 = random(0, 9) und für noch namenlose Plätze ein Datenbankname (0x5AAA0,
     /// <see cref="NameFromLeague"/>), dann die Rollenwerte (<see cref="TransferPoolRules.RollRoleValue"/>), zuletzt die
     /// Nationalspieler (0x2A0B5 → 0x5ACA0 mit Art 0, <see cref="Rename(GameState, bool, Random, HashSet{string}, bool)"/>).
-    /// [APPROX] Das Original zieht danach die Managerkader aus diesem Pool (DGROUP 0x381); das Remake baut sie wie bisher aus der
-    /// Datenbank, alle Plätze bleiben frei. Größe nach <paramref name="layout"/>.
+    /// Spur pool (#743): [ORIGINAL] Zwischen Startwerten und Talenten belegt 0x5AF50 je Manager und Art die Plätze der
+    /// Managerkader (Datei 0x5B0BB–0x5B2BE, <see cref="ManagerSquadIndices"/>); das Benennen (0x5AAA0, 0x5ACA0) überspringt sie, sie
+    /// gehören dem Manager. Hier werden sie als vergeben vorgemerkt (Platzhalter ohne Namen, Verein = Managerverein);
+    /// die Spieler setzt <see cref="SeatManagerSquads"/> nach dem Kaderaufbau ein. [APPROX] Das Remake baut die Kader wie bisher
+    /// aus der Datenbank (Namen, Werte, Alter aus <see cref="SquadSetup"/>); der Zufall des Alters random(19, 31) (Datei
+    /// 0x5B1F5–0x5B20C) wird hier nicht verbraucht. Größe nach <paramref name="layout"/>.
     /// </summary>
-    internal void BuildPool(GameState game, Random random, TransferPoolLayout layout, HashSet<string> held)
+    internal void BuildPool(GameState game, Random random, TransferPoolLayout layout, HashSet<string> held, bool managerSlots = true)
     {
         _pool.Clear();
         for (var i = 1; i < layout.Size; i++)
@@ -342,6 +352,12 @@ public sealed partial class TransferMarket
             var p = new Player { Name = "", Role = layout.RoleOf(i), ContractYears = 0 };
             TransferPoolRules.RollStartValues(p, random);
             _pool.Add(new PoolSlot { Index = i, Player = p, Club = 0, Owner = PoolOwner.Free });
+        }
+        foreach (var (manager, _, index) in managerSlots ? ManagerSquadIndices(game, layout) : [])
+        {
+            var slot = _pool[index - 1];
+            slot.Owner = PoolOwner.Taken; // Platzhalter: Name leer bis zum Einsetzen
+            slot.Club = game.Managers[manager].ClubIndex;
         }
         var names = NameMap();
         var (defenders, forwards) = layout.LeagueRoleStarts;
@@ -351,14 +367,124 @@ public sealed partial class TransferMarket
             if (slot.Index == defenders || slot.Index == forwards) // [ORIGINAL] Grenzen DGROUP 0x382: 21, 97, 200
                 role++;
             slot.Player.Talent = TransferRules.Random16(random, 0, 9);
-            if (slot.Player.Name.Length == 0)
+            if (slot.Player.Name.Length == 0 && slot.Owner == PoolOwner.Free)
                 NameFromLeague(game, slot, role, random, names, held);
         }
         foreach (var slot in _pool)
             TransferPoolRules.RollRoleValue(layout, slot.Index, random);
         Rename(game, nationals: true, random, held, exchange: false);
-        foreach (var slot in _pool.Where(s => s.Player.Id == 0 && game.NextPlayerId > 1))
+        foreach (var slot in _pool.Where(s => s.Player.Id == 0 && game.NextPlayerId > 1 && !IsPlaceholder(s)))
             game.AssignPlayerId(slot.Player);
+    }
+
+    /// <summary>Vorgemerkter Platz eines Managerkaders, dessen Spieler noch nicht eingesetzt ist (<see cref="BuildPool"/>).</summary>
+    private static bool IsPlaceholder(PoolSlot slot) => slot.Owner == PoolOwner.Taken && slot.Player.Name.Length == 0;
+
+    /// <summary>
+    /// Poolplätze der Startkader. [ORIGINAL] Datei 0x5B0BB–0x5B2BE: je Manager m (Reihenfolge der Manager) und Art a (Torhüter,
+    /// Verteidiger, Stürmer) so viele Plätze wie <see cref="SquadSetup.ManagedSquadSize"/>; Index = DGROUP 0x382[a] − Zähler[a] + 1,
+    /// danach Zähler − 1 (Datei 0x5B0E1–0x5B107), Zähler DGROUP 0x15C (Start 20, 76, 103) laufen über alle Manager weiter: Manager 0
+    /// in der Bundesliga Torhüter 2–3, Verteidiger 22–31, Stürmer 98–110, Manager 1 schließt an (FILE01, FILE09, FILE12). Die
+    /// Größe richtet sich nach der Liga des Vereins (wie <c>SquadSetup.StartLeagues</c>). Bei anderer Poolgröße beginnt jede Art
+    /// beim zweiten Platz ihres Bereichs (<see cref="TransferPoolLayout.LeagueRoleStarts"/>); Plätze jenseits des Pools entfallen.
+    /// </summary>
+    internal static IEnumerable<(int Manager, PlayerRole Role, int Index)> ManagerSquadIndices(GameState game, TransferPoolLayout layout)
+    {
+        var (defenders, forwards) = layout.LeagueRoleStarts;
+        var next = new[] { 2, defenders + 1, forwards + 1 };
+        var seen = new HashSet<int>();
+        for (var m = 0; m < game.Managers.Count; m++)
+        {
+            var club = game.Clubs[game.Managers[m].ClubIndex];
+            if (!seen.Add(club.Index))
+                continue;
+            var setup = m < game.Setup.Managers.Count ? game.Setup.Managers[m] : new ManagerSetup();
+            var (g, d, f) = SquadSetup.ManagedSquadSize(club.League ?? setup.StartLeague);
+            var counts = new[] { g, d, f };
+            for (var a = 0; a < 3; a++)
+                for (var k = 0; k < counts[a]; k++, next[a]++)
+                    if (next[a] < layout.Size)
+                        yield return (m, a switch { 0 => PlayerRole.Goalkeeper, 1 => PlayerRole.Defender, _ => PlayerRole.Forward }, next[a]);
+        }
+    }
+
+    /// <summary>
+    /// Spur pool (#743): Spieler der Managerkader in ihre Poolplätze einsetzen, Besitzer „vergeben“; danach steht jeder Spieler
+    /// mit Kaderplatz in einem der Plätze 1–199 (<c>docs/formate/spielstand-original.md</c>, „Managerkader im Spielerpool“).
+    /// <list type="number">
+    /// <item>[ORIGINAL] Startkader: der k-te Spieler einer Art im Kader auf den k-ten Platz dieser Art (<see cref="ManagerSquadIndices"/>,
+    ///   Datei 0x5B0BB–0x5B2BE; FILE01: Satz 0 verweist in Platzfolge auf diese Indizes).</item>
+    /// <item>[APPROX] Übrige Platzhalter (kleinerer Kader) werden freie Plätze „POOLSPIELER n“, die das Umbenennen neu benennt.</item>
+    /// <item>[APPROX] Kaderspieler ohne Platz (Spielstände vor dieser Spur, Managerwechsel zu einem Computerverein, dessen Kader im
+    ///   Remake Spieler hat) bekommen den ersten freien Ligaplatz ihrer Art (nicht auf dem Markt, nicht der erste Platz der Art);
+    ///   dessen Poolspieler entfällt. Ist keiner frei, bleibt der Spieler ohne Platz.</item>
+    /// </list>
+    /// Spieler unterscheidet das Remake über ihre ID; der Platz übernimmt den Kaderspieler selbst (Werte, Alter, Name).
+    /// </summary>
+    public void SeatManagerSquads(GameState game)
+    {
+        if (_pool.Count == 0 || game.WorldOnly)
+            return;
+        var seated = SeatStartSquads(game);
+        SeatLoosePlayers(game, seated);
+    }
+
+    /// <summary>Punkte 1 und 2 von <see cref="SeatManagerSquads"/>: nur die vorgemerkten Plätze (Spielstart).</summary>
+    private HashSet<Player> SeatStartSquads(GameState game)
+    {
+        var layout = PoolLayout;
+        var seated = new HashSet<Player>(_pool.Select(s => s.Player), ReferenceEqualityComparer.Instance);
+        var queues = new Dictionary<(int Club, PlayerRole Role), Queue<Player>>();
+        Queue<Player> QueueOf(int club, PlayerRole role)
+        {
+            if (!queues.TryGetValue((club, role), out var q))
+                queues[(club, role)] = q = new Queue<Player>(game.Clubs[club].Players.Where(p => p.Role == role && !seated.Contains(p)));
+            return q;
+        }
+        foreach (var (manager, role, index) in ManagerSquadIndices(game, layout))
+        {
+            var slot = _pool[index - 1];
+            if (!IsPlaceholder(slot))
+                continue;
+            var club = game.Managers[manager].ClubIndex;
+            if (QueueOf(club, role).TryDequeue(out var player))
+                Seat(slot, player, club, seated);
+        }
+        foreach (var slot in _pool.Where(IsPlaceholder))
+        {
+            Rename(game, slot, $"POOLSPIELER {slot.Index}");
+            if (slot.Player.Id == 0 && game.NextPlayerId > 1)
+                game.AssignPlayerId(slot.Player);
+            slot.Owner = PoolOwner.Free;
+        }
+        return seated;
+    }
+
+    /// <summary>Punkt 3 von <see cref="SeatManagerSquads"/>: Kaderspieler ohne Platz auf freie Ligaplätze ihrer Art.</summary>
+    private void SeatLoosePlayers(GameState game, HashSet<Player> seated)
+    {
+        var layout = PoolLayout;
+        var listed = _listings.Select(l => l.Player).ToHashSet(ReferenceEqualityComparer.Instance);
+        var (defenders, forwards) = layout.LeagueRoleStarts;
+        var spare = _pool.Where(s => s.Owner == PoolOwner.Free && s.Index <= layout.LeagueLast && !listed.Contains(s.Player))
+            .OrderBy(s => s.Index == 1 || s.Index == defenders || s.Index == forwards ? 1 : 0).ThenBy(s => s.Index).ToList();
+        foreach (var club in game.Managers.Where(m => !m.Dismissed).Select(m => m.ClubIndex).Distinct())
+            foreach (var player in game.Clubs[club].Players.Where(p => !seated.Contains(p)).ToList())
+            {
+                var at = spare.FindIndex(s => s.Player.Role == player.Role);
+                if (at < 0)
+                    continue; // [APPROX] kein freier Ligaplatz dieser Art
+                Seat(spare[at], player, club, seated);
+                spare.RemoveAt(at);
+            }
+    }
+
+    private static void Seat(PoolSlot slot, Player player, int club, HashSet<Player> seated)
+    {
+        slot.Player = player;
+        slot.Club = club;
+        slot.Owner = PoolOwner.Taken;
+        seated.Add(player);
     }
 
     /// <summary>
@@ -560,7 +686,10 @@ public sealed partial class TransferMarket
         {
             if (slot.Owner == PoolOwner.Taken)
             {
-                if (managed.Any(c => c.Players.Contains(slot.Player)))
+                // Spur pool: auch an einen anderen Verein verliehen oder vom Manager angeboten bleibt der Platz beim Manager
+                // ([ORIGINAL] Datei 0x27547–0x275D2: Besitzer 0–3 → Kaderplatz zurück in dessen Kader, Besitzer bleibt).
+                if (managed.Any(c => c.Players.Contains(slot.Player)) || slot.Player.Loan?.Origin is { } origin && managed.Contains(origin)
+                    || _listings.Any(l => ReferenceEquals(l.Player, slot.Player) && l.Seller is not null))
                     continue;
                 if (IsLost(game, slot.Player))
                 {
@@ -616,6 +745,7 @@ public sealed partial class TransferMarket
             if (_databaseNames.Count == 0)
                 CaptureDatabaseNames(game);
             BuildPool(game, random, TransferPoolLayout.Original, HeldNames(game));
+            SeatManagerSquads(game);
         }
         var layout = PoolLayout;
 
