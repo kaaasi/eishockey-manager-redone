@@ -84,7 +84,7 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
 - **Teil 2 (nach dem Merge von `pool`, eigener Branch `paket/pruefung-karte-2` mit eigenem PR, weil Teil 1 vorher gemergt
   wird; R763-03):** Inventur und Funktionskarte nachziehen (`--write`, zweiter Lauf ohne Diff),
   Inventurzeilen aller Spuren.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** nicht gestartet.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teil 1 fertig, Review offen (PR #767: #757, #734, #703 R701-06; neu #768). Teil 2 nicht gestartet.
 
 ### Gesamtreview am Rundenende
 
