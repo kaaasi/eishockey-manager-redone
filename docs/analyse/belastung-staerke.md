@@ -215,3 +215,42 @@ Managerzeile (Einsatz, Angriff, Modus, Reihe), stellt das Original Reihen und Mo
 geschah, belegt nur eine Aufnahme. **Teil 2 bleibt blockiert; Fallback R16-E2: C** (#730 als `[APPROX]` zurückstellen,
 Pflichteinträge bleiben, DOSBox-Liste: FILE02 laden, 1. Spieltag ohne Mausklick im Live-Spiel, je Minute ein Bild der Reihen
 beider Teile, danach sichern – zeigt die Verteilung ohne Eingriff; dieselbe Aufnahme mit Klicks auf die Reihenknöpfe als Gegenprobe).
+
+### 7.4 Abschluss (Fortsetzung 3, R16-E2 = C)
+
+#730 zurückgestellt: `[APPROX]` an der Reihenwahl (`OriginalMinutes.ChangeLines`, Verweis auf §7), die Pflichteinträge #730 in
+`AbgleichOriginalPaareTests` bleiben, Issue #730 bleibt offen bis zur DOSBox-Aufnahme nach §7.3. Keine weitere Ursachensuche.
+
+## 8. #773 – Liga-Strafminuten nach #772 (Fortsetzung 3)
+
+**Befund:** FILE02→03 Summe `LeaguePenaltyMinutes` aller Vereine Original 1447, Remake (Saaten 1–16) 1218–1377, Mittel 1302.
+
+**Code (ndisasm, Datei 0x35818–0x35CBD, Aufrufe 0x3808E/0x3809E bzw. 0x3850E/0x3851E):** Strafbank 0x35540(Verein, 1), bei zwei
+belegten Plätzen keine Strafe; Einsatz = Vereinsfeld 0x26 (Datei 0x3586A), bei Managervereinen + Managerwert − 20 und auf
+0 … 100 begrenzt (0x35873–0x358B4); Strafe, wenn lrandom(0, 12) = 0 oder lrandom(0, 110 − Einsatz) = 0 (0x358B7–0x358E9);
+5 Minuten (Code 13) nur auf Platz 0 mit lrandom(0, 15) = 0; Ligazähler + (Code & 7) nur bei Wettbewerb 7 (0x35967–0x35986);
+Kettenstrafe des Gegners mit lrandom(0, 3) = 0 bei leerem Platz 0, Folgeaufruf mit Verein = zweitem Argument (keine weitere
+Kette). Alles wie `OriginalMinutes.Penalty` / `OriginalMatch.PenaltyMinutes` / `PenaltyBox.Tick`.
+
+**Einsatz im Spiel:** Schreiber von 0x26 in em.exe nur 0x8479 (0x8365, vor jedem Spiel), 0x9523 (0x939A, nur Managerpaarung,
+Aufruf hinter `[bp-0xf]` = Live-Paarung, Datei 0x37E03/0x37F9B), 0x38EFE (Mausweg) und die Taktik-Bildschirme 0x48007/0x48ED1/
+0x4903E. Computerpaarungen spielen also mit dem Grundwert 40/60; FILE03 (`clubs.py`): 40 × 25, 60 × 9, 0 × 16 (kein Spiel) –
+wie das Remake nach #772. Erwartung aus der Regel bei Einsatz 40–60: 11,7–12,1 Strafminuten je Verein und Spiel; Remake 12,1,
+Original FILE02→03 13,4.
+
+**Weitere Paare (Zuwachs der Summe, Original-Ausgangswert aus dem Vorpaar):**
+
+| Paar | Spieltage | Original | Remake (Saaten) | Mittel |
+|---|---|---:|---|---:|
+| FILE02→03 | 1.–3. | 1447 | 1218–1377 (1–16) | 1302 |
+| FILE05→24 (FILE05 = FILE03) | 4. | +441 | +390 … +497 (1–8) | +445 |
+| FILE16A→22 (FILE16A Original 894) | Rest der Saison | +430 | +399 … +467 (1–6) | +437 |
+
+**Ergebnis:** kein Fehler der Strafrechnung. Die Regel und der Einsatz entsprechen dem Original; zwei unabhängige Paare liegen
+genau im Bereich, nur die ersten drei Spieltage FILE02→03 darüber (Original-Streuung je Verein 12,6 zu 8,4 im Remake – Zufall
+der einen Aufnahme bzw. der Zufallsquelle lrandom, deren Folge nicht nachbildbar ist, `MatchEngine.Original.cs` `[APPROX]`).
+Vor #772 glich der zu hohe Einsatz (80/55) diese eine Abweichung zufällig aus. Probe: lrandom (16 · x + 167 mod 4.000.000)
+statt `Random` in `OriginalMatch.Rnd` ändert FILE02→03 nicht (Saaten 1–12: 1233–1363, Mittel 1286) – das Remake spielt die
+Paarungen nacheinander, das Original minutenweise verschränkt (0x37DCF), daher keine zugexakte Probe.
+Wächtertest `AbgleichRestPenaltyTests` (FILE05→24, Mittel über vier Saaten ±8 % um +441; mit Einsatz + 20/15 wie vor #772 rot:
+Mittel 482,5).
