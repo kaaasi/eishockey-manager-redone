@@ -54,27 +54,32 @@ public static class SquadSetup
     /// <summary>Basis der Startwerte nach Liga und Start-Stärke, siehe <see cref="StartBaseTable"/>.</summary>
     public static int StartBase(League league, StartStrength strength) => StartBaseTable[(int)league, (int)strength];
 
-    /// <summary>Erzeugt die Kader aller Vereine. Nutzt einen eigenen Zufallsgenerator, damit der Spielablauf unverändert bleibt.</summary>
-    public static void Initialize(GameState game, int seed)
+    /// <summary>
+    /// Erzeugt die Kader aller Vereine. Nutzt einen eigenen Zufallsgenerator, damit der Spielablauf unverändert bleibt.
+    /// <paramref name="forImport"/>: Der Import ersetzt die Managerkader danach aus dem Spielstand; ergänzte Plätze ziehen dann
+    /// keine Spieler aus Computervereinen (Platzhalter, wie vor #736).
+    /// </summary>
+    public static void Initialize(GameState game, int seed, bool forImport = false)
     {
         var random = new Random(unchecked(seed * 7919 + 17));
         // Spur transfer-vertraege-komplett, Teil 5: Spielerpool vor den Kadern; seine Datenbankspieler fehlen dann den
         // Computervereinen (jeder Name nur einmal, Entscheidung Nutzer 01.11.2026). Eigene Zufallsquelle.
         game.TransferMarket.ReservePool(game, seed);
-        var usedNames = new HashSet<string>(game.Clubs.SelectMany(c => c.Players).Select(p => p.Name));
-        var namePool = usedNames.ToList();
         var startLeague = StartLeagues(game);
         var startBase = startLeague.ToDictionary(e => e.Key, e => StartBase(e.Value.League, e.Value.Strength));
+        // #736: Ergänzte Plätze bekommen Datenbanknamen anderer Vereine (eigene Zufallsquelle, damit die Folge der Werte bleibt).
+        var names = new NameDraw(game, startLeague.Keys.ToHashSet(), new Random(unchecked(seed * 7919 + 31)), forImport);
+        foreach (var club in game.Clubs.Where(c => startLeague.ContainsKey(c.Index)))
+            BuildManagedSquad(club, ManagedSquadSize(startLeague[club.Index].League), names);
 
         foreach (var club in game.Clubs)
         {
             if (club.Players.Count == 0 && club.League is null && !startLeague.ContainsKey(club.Index))
                 continue; // Europapokalgegner und leere Einträge spielen ohne Kader
 
-            if (startLeague.TryGetValue(club.Index, out var start))
-                BuildManagedSquad(club, ManagedSquadSize(start.League), namePool, usedNames, random);
-            else
-                BuildComputerSquad(club, namePool, usedNames, random);
+            names.MarkBuilt(club);
+            if (!startLeague.ContainsKey(club.Index))
+                BuildComputerSquad(club, names);
 
             club.RenumberPlayers(); // A091: Nr. = Kaderplatz + 1
             RollValues(club, startBase.TryGetValue(club.Index, out var b) ? b : null, random);
@@ -86,31 +91,55 @@ public static class SquadSetup
     }
 
     /// <summary>
-    /// Kader eines Manager-Vereins: die Datenbankspieler der Reihe nach, die ersten als Torhüter,
-    /// dann Verteidiger, dann Stürmer. [ORIGINAL] Im Video werden bei 2/8/10 die Datenbank-Verteidiger
-    /// auf Platz 11 und 12 (LANGHOFF, RIEMER) zu Stürmern.
+    /// Kader eines Manager-Vereins. [ORIGINAL] Datei 0x5B0CC–0x5B2BE: je Art (Torhüter, Verteidiger, Stürmer) so viele Plätze wie
+    /// <see cref="ManagedSquadSize"/>, Name vom Datenbankplatz des Vereins (0x5AA34), der Datenbankplatz läuft über alle Arten weiter
+    /// (bei 2/8/10 werden die Datenbank-Verteidiger auf Platz 11 und 12, im Video LANGHOFF und RIEMER, zu Stürmern); ein leerer
+    /// Datenbankplatz bekommt einen Namen der Art aus einem anderen Verein (0x5AAA0, <see cref="NameDraw"/>; FILE01 KÖLNER EC:
+    /// Platz 12 UVIRA, Platz 25 LALA). [APPROX] Die Datenbank liefert nur die belegten Plätze; ihr Platz ist Anfang der Art +
+    /// laufende Nummer (wie <c>TransferMarket.CaptureDatabaseNames</c>), leere Plätze stehen also am Ende der Art.
     /// </summary>
-    private static void BuildManagedSquad(Club club, (int G, int D, int F) size, List<string> pool,
-        HashSet<string> used, Random random)
+    private static void BuildManagedSquad(Club club, (int G, int D, int F) size, NameDraw names)
     {
-        var goalies = club.Players.Where(p => p.Role == PlayerRole.Goalkeeper).Select(p => p.Name).ToList();
-        var skaters = club.Players.Where(p => p.Role != PlayerRole.Goalkeeper).Select(p => p.Name).ToList();
-        var foreigners = club.Players.Where(p => p.IsForeigner).Select(p => p.Name).ToHashSet();
+        var database = new Dictionary<int, Player>();
+        foreach (var role in Enum.GetValues<PlayerRole>())
+        {
+            var (first, end) = DatabaseSlots(role);
+            var players = club.Players.Where(p => p.Role == role).ToList();
+            for (var j = 0; j < players.Count && first + j < end; j++)
+                database[first + j] = players[j];
+        }
         club.Players.Clear();
 
-        for (var i = 0; i < size.G; i++)
-            club.Players.Add(NewPlayer(Take(goalies, i), PlayerRole.Goalkeeper));
-        for (var i = 0; i < size.D; i++)
-            club.Players.Add(NewPlayer(Take(skaters, i), PlayerRole.Defender));
-        for (var i = 0; i < size.F; i++)
-            club.Players.Add(NewPlayer(Take(skaters, size.D + i), PlayerRole.Forward));
+        var slot = 0;
+        Add(PlayerRole.Goalkeeper, size.G);
+        Add(PlayerRole.Defender, size.D);
+        Add(PlayerRole.Forward, size.F);
 
-        string Take(List<string> names, int index) => index < names.Count ? names[index] : RandomName(pool, used, random);
-        Player NewPlayer(string name, PlayerRole role) => new() { Name = name, Role = role, IsForeigner = foreigners.Contains(name) };
+        void Add(PlayerRole role, int count)
+        {
+            for (var i = 0; i < count; i++, slot++)
+            {
+                club.Players.Add(database.TryGetValue(slot, out var p)
+                    ? new Player { Name = p.Name, Role = role, IsForeigner = p.IsForeigner }
+                    : names.Take(role));
+            }
+        }
     }
 
-    /// <summary>Computerverein: alle Datenbankspieler; fehlende Torhüter, Verteidiger, Stürmer werden ergänzt.</summary>
-    private static void BuildComputerSquad(Club club, List<string> pool, HashSet<string> used, Random random)
+    /// <summary>Kaderplätze der Datenbank je Art: Torhüter 0–1, Verteidiger 2–11, Stürmer 12–24. [ORIGINAL] DGROUP 0x164.</summary>
+    private static (int First, int End) DatabaseSlots(PlayerRole role) => role switch
+    {
+        PlayerRole.Goalkeeper => (0, 2),
+        PlayerRole.Defender => (2, 12),
+        _ => (12, ClubDatabase.SquadSize),
+    };
+
+    /// <summary>
+    /// Computerverein: alle Datenbankspieler; fehlende Torhüter, Verteidiger, Stürmer werden ergänzt. [APPROX] Im Original hat ein
+    /// Computerverein keine Spieler; der Pool nimmt den Vereinen 0–11 die meisten Datenbankspieler (jeder Name nur einmal), daher
+    /// heißen die Ergänzungen „SPIELER n“ (<see cref="NameDraw.Placeholder"/>).
+    /// </summary>
+    private static void BuildComputerSquad(Club club, NameDraw names)
     {
         var (g, d, f) = ManagedSquadSize(League.Bundesliga);
         Fill(PlayerRole.Goalkeeper, g);
@@ -120,7 +149,7 @@ public static class SquadSetup
         void Fill(PlayerRole role, int minimum)
         {
             while (club.Players.Count(p => p.Role == role) < minimum)
-                club.Players.Add(new Player { Name = RandomName(pool, used, random), Role = role });
+                club.Players.Add(names.Placeholder(role));
         }
 
         var sorted = club.Players.OrderBy(p => p.Role).ToList();
@@ -128,16 +157,60 @@ public static class SquadSetup
         club.Players.AddRange(sorted);
     }
 
-    /// <summary>
-    /// Freier Platz bekommt einen zufälligen, noch nicht vergebenen Datenbanknamen. [ORIGINAL] 66C3:0280.
-    /// Sind alle vergeben (z. B. Testdatenbank ohne Spieler), entsteht „SPIELER n“.
-    /// </summary>
-    private static string RandomName(List<string> pool, HashSet<string> used, Random random)
+    /// <summary>Mindestzahl je Art im Kader eines Computervereins (<see cref="BuildComputerSquad"/>).</summary>
+    private static int ComputerMinimum(PlayerRole role) => role switch
     {
-        var free = pool.Where(n => !used.Contains(n)).ToList();
-        var name = free.Count > 0 ? free[random.Next(free.Count)] : $"SPIELER {used.Count + 1}";
-        used.Add(name);
-        return name;
+        PlayerRole.Goalkeeper => 2,
+        PlayerRole.Defender => 8,
+        _ => 10,
+    };
+
+    /// <summary>
+    /// Namen für ergänzte Kaderplätze. [ORIGINAL] Datei 0x5AAA0 (66C3:0280): Name eines Datenbankplatzes der Art aus Verein
+    /// random(0, 11), Managerverein verworfen, nach einem doppelten Namen einmal random(0, 35); jeder Name nur einmal im Pool (FILE01:
+    /// 199 verschiedene Poolnamen). [APPROX] Im Original haben Computervereine keine Spieler; hier steht der Datenbankspieler im Kader
+    /// seines Computervereins und wechselt von dort (jeder Name nur einmal im Spiel, Entscheidung Nutzer 01.11.2026). Gezogen wird
+    /// gleichverteilt unter den Spielern dieser Art der Vereine 0–11 (sonst 0–35) ohne Manager, deren Verein danach noch die
+    /// Mindestzahl (<see cref="ComputerMinimum"/>) hat; Vereine, die schon aufgebaut sind (auch der anfragende), sind
+    /// ausgenommen. Gibt es keinen (Testdatenbank ohne Spieler), heißt der Platz „SPIELER n“ (<see cref="Placeholder"/>).
+    /// </summary>
+    private sealed class NameDraw(GameState game, HashSet<int> managed, Random random, bool placeholdersOnly)
+    {
+        private readonly HashSet<int> _built = [];
+        private int _placeholders;
+
+        /// <summary>Verein ist aufgebaut (Werte, Aufstellung): gibt keine Spieler mehr ab.</summary>
+        public void MarkBuilt(Club club) => _built.Add(club.Index);
+
+        public Player Take(PlayerRole role)
+        {
+            if (placeholdersOnly)
+                return Placeholder(role);
+            foreach (var last in new[] { 11, 35 })
+            {
+                var candidates = game.Clubs.Where(c => c.Index <= last && !managed.Contains(c.Index) && !_built.Contains(c.Index)
+                        && c.Players.Count(p => p.Role == role) > ComputerMinimum(role))
+                    .SelectMany(c => c.Players.Where(p => p.Role == role).Select(p => (Club: c, Player: p)))
+                    .ToList();
+                if (candidates.Count == 0)
+                    continue;
+                var (club, player) = candidates[random.Next(candidates.Count)];
+                club.RemovePlayer(player); // auch aus der Aufstellung, die ReservePool schon gefüllt hat
+                return player;
+            }
+            return Placeholder(role);
+        }
+
+        /// <summary>Platzhalter „SPIELER n“ mit einer im Spiel noch freien Nummer.</summary>
+        public Player Placeholder(PlayerRole role)
+        {
+            var used = game.Clubs.SelectMany(c => c.Players).Select(p => p.Name).ToHashSet();
+            string name;
+            do
+                name = $"SPIELER {++_placeholders}";
+            while (used.Contains(name));
+            return new Player { Name = name, Role = role };
+        }
     }
 
     /// <summary>

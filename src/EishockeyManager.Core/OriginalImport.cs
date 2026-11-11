@@ -237,7 +237,7 @@ public sealed partial class GameState
             Random = random,
         };
         game.Season = OriginalImport.Season(save);
-        SquadSetup.Initialize(game, seed);
+        SquadSetup.Initialize(game, seed, forImport: true);
         game.AssignStartPlayerIds();
         game.InitializeManagerSystems();
         game.InitializeLeagueSlots(clubOf.Take(4 * ClubsPerLeague).ToList());

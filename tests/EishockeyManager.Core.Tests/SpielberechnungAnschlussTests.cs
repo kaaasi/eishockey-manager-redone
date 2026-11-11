@@ -245,8 +245,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
     // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
     // Squad.Training.cs von 18972c0 → alte Werte.
-    [InlineData(false, "150BFD6B08CA8951")]
-    [InlineData(true, "6450E53CE91EE004")]
+    // Runde 15, Spur abgleich-fix (#736, R15-E2 = C): neu – Managerkader nach Datenbankplätzen (Datei 0x5B0CC–0x5B2BE: Platz läuft
+    // über die Arten weiter), ergänzte Plätze mit Datenbanknamen anderer Vereine statt „SPIELER n“ (0x5AAA0), die dem
+    // Computerverein fehlen; andere Kader ab Spielbeginn. Rückschaltprobe: Squad.Setup.cs von bd4206b → Werte davor.
+    [InlineData(false, "5DD1AFA7AB559969")]
+    [InlineData(true, "B8AC36CA0BD7D359")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

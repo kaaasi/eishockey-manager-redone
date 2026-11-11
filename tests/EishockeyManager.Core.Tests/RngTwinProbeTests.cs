@@ -228,10 +228,13 @@ public class RngTwinProbeTests
     // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
     // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
     // Squad.Training.cs von 18972c0 → alte Werte.
-    [InlineData(false, 3, "6D0CC169B1EB7BFD")]
-    [InlineData(true, 3, "A2D525A903360DD5")]
-    [InlineData(false, 11, "F915001B9C294CD4")]
-    [InlineData(true, 11, "1E6B7B9374BFC721")]
+    // Runde 15, Spur abgleich-fix (#736, R15-E2 = C): neu – Managerkader nach Datenbankplätzen (Datei 0x5B0CC–0x5B2BE: Platz läuft
+    // über die Arten weiter), ergänzte Plätze mit Datenbanknamen anderer Vereine statt „SPIELER n“ (0x5AAA0), die dem
+    // Computerverein fehlen; andere Kader ab Spielbeginn. Rückschaltprobe: Squad.Setup.cs von bd4206b → Werte davor.
+    [InlineData(false, 3, "2E7E123D924696C3")]
+    [InlineData(true, 3, "B73B1CD7C65BBD91")]
+    [InlineData(false, 11, "B60B23E0CA650878")]
+    [InlineData(true, 11, "6F310CC0DD5B2E7C")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -281,8 +284,11 @@ public class RngTwinProbeTests
     // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
     // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
     // Squad.Training.cs von 18972c0 → alte Werte.
-    [InlineData(false, "F6400FF2323AF18D")]
-    [InlineData(true, "BBFCF3C2A1F8132C")]
+    // Runde 15, Spur abgleich-fix (#736, R15-E2 = C): neu – Managerkader nach Datenbankplätzen (Datei 0x5B0CC–0x5B2BE: Platz läuft
+    // über die Arten weiter), ergänzte Plätze mit Datenbanknamen anderer Vereine statt „SPIELER n“ (0x5AAA0), die dem
+    // Computerverein fehlen; andere Kader ab Spielbeginn. Rückschaltprobe: Squad.Setup.cs von bd4206b → Werte davor.
+    [InlineData(false, "72CBDDF32635C241")]
+    [InlineData(true, "7CB38DCA1E28EE54")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
