@@ -41,4 +41,45 @@ public class PruefungKarteRunde16Tests
         Assert.Empty(roundTrip.ValidatePlayerIdentity());
         Assert.Equal(squad.Select(p => p.Role).Order(), roundTrip.Clubs[roundTrip.Managers[0].ClubIndex].Players.Select(p => p.Role).Order());
     }
+
+    /// <summary>
+    /// #778 (R766-P3-3, <c>docs/reviews/2026-11-11-abgleich-rest.md</c>): Der Kaderverlust in <see cref="SaisonwechselSchema22Tests"/>
+    /// ohne <c>extendExpired</c> ist kein Fehler. Es gehen nur Spieler, deren Vertrag am Saisonende ausläuft: Verlängert wird im Lauf
+    /// der Saison nur, wer sich meldet ([ORIGINAL] Datei 0x076FA–0x07951, je Takt random(0, Grenze) = 0 und random(0, 3) = 0); die
+    /// übrigen kommen in die Verhandlung am Saisonende (Datei 0x27B64/0x27D05), die <see cref="GameState.StartNextSeason"/> ohne
+    /// Oberfläche wie „Abbruch“ abschließt (Spieler geht). Die Manager der Probe kaufen nicht nach, also schrumpft der Kader
+    /// (Fixture, Saat 22: 20 → 10 → 6/5 → 5); die Probe hält ihn deshalb mit <c>extendExpired</c> wie die übrigen Mehrsaisonproben.
+    /// </summary>
+    [Fact]
+    public void Schema22Fixture_SquadLoss_OnlyExpiringContracts()
+    {
+        var loaded = SaveGame.Load(SaisonwechselSchema22Tests.LoadFixture());
+        Assert.True(loaded.Success, loaded.Error);
+        var game = loaded.Game!;
+        var lost = 0;
+        for (var change = 0; change < 4; change++)
+        {
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                Assert.True(guard < 3000, $"Saisonende {change + 1} nicht erreicht");
+                foreach (var m in game.Managers)
+                    TestSeason.KeepSquad(game, m);
+                game.Continue();
+            }
+            var before = game.Managers.ToDictionary(m => m, m => game.Clubs[m.ClubIndex].Players.ToList());
+            var expiring = before.Values.SelectMany(l => l).Where(p => p.ContractYears <= 1)
+                .ToHashSet(ReferenceEqualityComparer.Instance);
+            game.StartNextSeason();
+            foreach (var (m, players) in before)
+            {
+                var after = game.Clubs[m.ClubIndex].Players.ToHashSet(ReferenceEqualityComparer.Instance);
+                foreach (var gone in players.Where(p => !after.Contains(p)))
+                {
+                    Assert.True(expiring.Contains(gone), $"Saisonwechsel {change + 1}: {gone.Name} ging mit Laufzeit {gone.ContractYears}");
+                    lost++;
+                }
+            }
+        }
+        Assert.True(lost >= 20, $"Probe ohne Kaderverlust ({lost})"); // sonst prüft der Test nichts
+    }
 }
