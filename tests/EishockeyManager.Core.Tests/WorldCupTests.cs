@@ -103,7 +103,10 @@ public class WorldCupTests
     [Fact]
     public void Continue_AfterClubSeason_RunsThroughWorldCupToSeasonEnd()
     {
-        var game = Create(3, true, 30);
+        // Fixlauf pool auf main 846e515 (R15-E2 = C): Saat 4 statt 3 – mit Spur pool und #772 wird der Manager bei Saat 3 (und 1)
+        // Bundestrainer und spielt die WM, der Zug des Bundestrainers hält dann vor dem Saisonende (PassNationalTurn). Die Probe
+        // hängt an der Saat, nicht an der Änderung; Saaten 2, 4–10 ohne Ernennung.
+        var game = Create(4, true, 30);
         while (game.Phase == SeasonPhase.Running)
             game.Continue();
         Assert.Equal(SeasonCalendar.ClubSeasonEnd + 1, game.CurrentDay);

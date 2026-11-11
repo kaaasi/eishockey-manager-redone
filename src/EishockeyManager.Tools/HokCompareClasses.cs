@@ -230,7 +230,7 @@ public static class HokCompareClasses
         // ---- Pool, Transfermarkt -----------------------------------------------------------------------------------
         Set(Exact, "TransferMarket.UpdatedDay");
         Set(Random, "TransferMarket._listings", "TransferMarket._pool", "PoolSlot.Club", "PoolSlot.Index", "PoolSlot.Owner",
-            "PoolSlot.Player", "TransferListing.From", "TransferListing.FromPool", "TransferListing.IsFreeAgent",
+            "PoolSlot.Manager", "PoolSlot.Player", "TransferListing.From", "TransferListing.FromPool", "TransferListing.IsFreeAgent",
             "TransferListing.Player", "TransferListing.Price", "TransferListing.RejectedBy");
 
         // ---- Liga, Pokale, Nationalteam ----------------------------------------------------------------------------

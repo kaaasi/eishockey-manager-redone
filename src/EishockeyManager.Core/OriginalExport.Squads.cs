@@ -21,8 +21,9 @@ public sealed partial class GameState
     ///   4 Markt, 6 frei), +0x1D Verein (Satzplatz, 0xFF keiner), +0x1F Vorlagen bzw. beim Torhüter Spielminuten.</item>
     /// <item>[ORIGINAL] Kaderplatz: Felder wie <c>ApplySlot</c>; Platz = Kaderfolge (Nr. − 1), Angebote eines Managers stehen im Marktsatz
     ///   mit Pool-Besitzer = Manager (A380, FILE41).</item>
-    /// <item>[APPROX] Spieler eines Managerkaders ohne Poolplatz (im neuen Spiel alle 25) bekommen einen freien Ligaplatz ihrer Art
-    ///   (<see cref="PoolIndices"/>), dessen Poolspieler entfällt; ist keiner frei, entfallen sie. Pool +0x13, +0x19, +0x1B, +0x1C, +0x1E und Kaderplatz +0x02, +0x1B bleiben 0 (ungedeutet).</item>
+    /// <item>[ORIGINAL] Spur pool (#743): Jeder Spieler eines Managerkaders steht auf seinem Poolplatz (<see cref="TransferMarket.SeatManagerSquads"/>);
+    ///   die frühere Ersatzregel (freier Ligaplatz, dessen Poolspieler entfällt) gibt es nicht mehr. Pool +0x13, +0x19, +0x1B, +0x1C,
+    ///   +0x1E und Kaderplatz +0x02, +0x1B bleiben 0 (ungedeutet).</item>
     /// </list>
     /// </summary>
     private void WriteSquadsAndPool(OriginalSaveWriter w, int[] slotOf, byte[]? clubDatabase)
@@ -42,7 +43,8 @@ public sealed partial class GameState
             var owner = slot.Owner switch
             {
                 PoolOwner.Market => OriginalImport.PoolOwnerMarket,
-                PoolOwner.Taken => (byte)(ManagerOf(slot.Player) ?? 6),
+                // Spur pool, Teil 3: ohne Spieler im Managerkader der gemerkte Manager (verloren, „nur Weltkugel“), sonst 6.
+                PoolOwner.Taken => (byte)(ManagerOf(slot.Player) ?? (slot.Manager is >= 0 and < 4 ? slot.Manager : 6)),
                 _ => (byte)6,
             };
             var club = slot.Owner == PoolOwner.Taken && ClubOf(slot.Player) is { } c ? c.Index : slot.Club;
@@ -93,11 +95,12 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Poolindex je Spieler (Pool des Transfermarkts, Satz 1–199). Im Original stehen die Spieler der Managervereine im Pool
-    /// (Besitzer = Manager, FILE05: 25 vergeben). Im Remake-Spiel führt der Pool für den Managerverein eigene Einträge gleichen
-    /// Namens (<see cref="TransferMarket.ReservePool"/> nimmt sie nur den Computervereinen weg): Ein Kaderspieler ohne eigenen
-    /// Poolplatz bekommt den Platz seines Namens beim eigenen Verein. [APPROX] Fehlt auch der, nimmt er den letzten freien Platz
-    /// eines Computervereins seiner Art (dieser Poolspieler entfällt im Export); jeder Index gehört genau einem Spieler (R727P-04).
+    /// Poolindex je Spieler (Pool des Transfermarkts, Satz 1–199). [ORIGINAL] Die Spieler der Managervereine stehen im Pool (Besitzer =
+    /// Manager, FILE01/05: 25 vergeben); im Remake seit Spur pool (#743) ebenso (<see cref="TransferMarket.SeatManagerSquads"/>), jeder
+    /// Index gehört genau einem Spieler (R727P-04). Einzige Ausnahme: ein Kaderspieler, dessen Poolsatz gleichen Namens und gleicher Art
+    /// im Original auf dem Markt blieb (Import, FILE41 Kaderplatz 24 → Pool 179, Besitzer 4) – derselbe Spieler, der Kaderplatz verweist
+    /// auf diesen Satz, der Satz bleibt Marktsatz. [APPROX] Ein Kaderspieler ohne Platz (nur denkbar, wenn beim Laden eines Altstands
+    /// kein Ligaplatz seiner Art frei war) entfällt im Export.
     /// </summary>
     private Dictionary<Player, int> PoolIndices()
     {
@@ -105,61 +108,70 @@ public sealed partial class GameState
         foreach (var slot in TransferMarket.Pool)
             if (slot.Index is >= 1 and < TransferPoolRules.Size)
                 map.TryAdd(slot.Player, slot.Index);
-        var squadIndex = new HashSet<int>();
         var managed = Managers.Select(m => m.ClubIndex).ToHashSet();
         var missing = new List<Player>();
         foreach (var club in managed.Select(i => Clubs[i]))
-            foreach (var p in club.Players)
+            foreach (var p in club.Players.Where(p => !map.ContainsKey(p)))
             {
-                if (map.TryGetValue(p, out var own))
-                {
-                    squadIndex.Add(own);
-                    continue;
-                }
-                var named = TransferMarket.Pool.FirstOrDefault(s => s.Club == club.Index && s.Owner != PoolOwner.Market
-                    && s.Player.Name == p.Name && s.Player.Role == p.Role && !squadIndex.Contains(s.Index));
-                if (named is not null)
-                {
-                    map[p] = named.Index;
-                    squadIndex.Add(named.Index);
-                }
+                var twin = TransferMarket.Pool.FirstOrDefault(s => s.Owner != PoolOwner.Taken && s.Player.Name == p.Name
+                                                                   && s.Player.Role == p.Role && s.Index < TransferPoolRules.Size);
+                if (twin is not null && !map.Any(e => e.Value == twin.Index && club.Players.Contains(e.Key)))
+                    map[p] = twin.Index;
                 else
                     missing.Add(p);
             }
-        // [ORIGINAL] Die Managerkader stehen im Pool je Art ab dem zweiten Ligaplatz (FILE01/05/09: Torhüter 2…, Verteidiger 22…,
-        // Stürmer 98…, mehrere Manager hintereinander). [APPROX] Der Platz muss frei sein (kein Markt, nicht vergeben, kein
-        // Managerverein); sein Poolspieler entfällt im Export. Das Remake führt die Managerkader neben 199 Poolspielern
-        // (BuildPool), das Original mit ihnen in denselben 199 Plätzen – mehr Spieler, als der Pool fassen kann.
+        if (missing.Count > 0)
+            AddUnseatedSquadPlayers(map, managed, missing);
+        return map;
+    }
+
+    /// <summary>
+    /// [APPROX] Kaderspieler ohne Poolplatz: Im Modus „nur Weltkugel“ setzt das Remake den Kader von Satz 0 nicht in den Pool
+    /// (<see cref="TransferMarket.SeatManagerSquads"/>), der Export schreibt ihn aber (#732). Wie vor Spur pool bekommt ein solcher
+    /// Spieler den Platz seines Namens beim eigenen Verein, sonst den ersten freien Ligaplatz seiner Art (kein Markt, nicht vergeben,
+    /// kein Managerverein, nicht der erste Platz der Art; FILE01/05/09: Managerkader ab Torhüter 2, Verteidiger 22, Stürmer 98) –
+    /// dessen Poolspieler entfällt im Export. Ist keiner frei, entfällt der Spieler. Jeder Index gehört genau einem Spieler (R727P-04).
+    /// </summary>
+    private void AddUnseatedSquadPlayers(Dictionary<Player, int> map, HashSet<int> managed, List<Player> missing)
+    {
         var layout = TransferPoolLayout.Original;
         var (defenders, forwards) = layout.LeagueRoleStarts;
         var listed = TransferMarket.Listings.Select(l => l.Player).ToHashSet(ReferenceEqualityComparer.Instance);
+        var used = managed.SelectMany(i => Clubs[i].Players).Where(map.ContainsKey).Select(p => map[p]).ToHashSet();
+        bool Free(PoolSlot s) => !used.Contains(s.Index);
+        var rest = new List<Player>();
+        foreach (var p in missing)
+        {
+            var club = Clubs.First(c => managed.Contains(c.Index) && c.Players.Contains(p));
+            var named = TransferMarket.Pool.FirstOrDefault(s => s.Club == club.Index && s.Owner != PoolOwner.Market
+                && s.Player.Name == p.Name && s.Player.Role == p.Role && s.Index < TransferPoolRules.Size && Free(s));
+            if (named is null)
+            {
+                rest.Add(p);
+                continue;
+            }
+            map.Remove(named.Player); // sein Poolspieler entfällt im Export
+            map[p] = named.Index;
+            used.Add(named.Index);
+        }
         var spare = TransferMarket.Pool
-            .Where(s => s.Owner == PoolOwner.Free && s.Index <= layout.LeagueLast && !managed.Contains(s.Club)
-                        && !squadIndex.Contains(s.Index) && !listed.Contains(s.Player))
+            .Where(s => s.Owner == PoolOwner.Free && s.Index <= layout.LeagueLast && !managed.Contains(s.Club) && Free(s)
+                        && !listed.Contains(s.Player))
             .Select(s => s.Index)
             .OrderBy(i => i is 1 || i == defenders || i == forwards ? 1 : 0).ThenBy(i => i)
             .ToList();
-        foreach (var p in missing)
+        foreach (var p in rest)
         {
-            // Zweiter Poolsatz gleichen Namens und gleicher Art (Import: gekaufter Spieler, dessen Poolsatz im Original auf dem Markt
-            // blieb; FILE41 Kaderplatz 24 → Pool 179, Besitzer 4): derselbe Spieler, kein Platz wird verdrängt.
-            var twin = TransferMarket.Pool.FirstOrDefault(s => s.Owner != PoolOwner.Taken && s.Player.Name == p.Name
-                                                               && s.Player.Role == p.Role && !squadIndex.Contains(s.Index));
-            if (twin is not null)
-            {
-                map[p] = twin.Index;
-                squadIndex.Add(twin.Index);
-                spare.Remove(twin.Index);
-                continue;
-            }
             var at = spare.FindIndex(i => layout.RoleOf(i) == p.Role);
             if (at < 0)
-                continue; // [APPROX] kein freier Ligaplatz dieser Art: Spieler entfällt
-            map[p] = spare[at];
-            squadIndex.Add(spare[at]);
+                continue;
+            var index = spare[at];
             spare.RemoveAt(at);
+            foreach (var e in map.Where(e => e.Value == index).ToList())
+                map.Remove(e.Key);
+            map[p] = index;
+            used.Add(index);
         }
-        return map;
     }
 
     private int? ManagerOf(Player player)

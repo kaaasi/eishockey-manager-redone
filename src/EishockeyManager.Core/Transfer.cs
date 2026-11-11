@@ -214,7 +214,8 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>
-    /// Füllt den Markt zu Spielbeginn: Pool (schon vor den Kadern gebaut, <see cref="ReservePool"/>), Umverteilung auf die Ligen
+    /// Füllt den Markt zu Spielbeginn: Pool (schon vor den Kadern gebaut, <see cref="ReservePool"/>), Startkader in ihre Poolplätze
+    /// (<see cref="SeatManagerSquads"/>, nur die vorgemerkten), Umverteilung auf die Ligen
     /// (<see cref="DistributePoolAtStart"/>), dann der Listenwechsel des ersten Saisonstarts
     /// (<see cref="ChangeList"/>; im Mittel 6–7 Spieler, Video 6, FILE05 7).
     /// </summary>
@@ -225,6 +226,8 @@ public sealed partial class TransferMarket
         UpdatedDay = game.PlayedMatchDays;
         if (_pool.Count == 0)
             BuildPool(game, random, TransferPoolLayout.Original, new HashSet<string>());
+        if (!game.WorldOnly)
+            SeatStartSquads(game); // Spur pool (#743): Startkader in ihre Poolplätze (Datei 0x5B0BB–0x5B2BE); Import: keine vorgemerkt
         DistributePoolAtStart(game, random); // [ORIGINAL] 0x057E3 vor dem ersten Listenwechsel (Spur kader-transfer, Teil 5)
         ChangeList(game, random);
     }

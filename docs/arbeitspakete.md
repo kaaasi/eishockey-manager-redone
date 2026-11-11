@@ -56,7 +56,11 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
   3. **Export verlustfrei:** Ersatzregel „freier Ligaspieler weicht“ (`[APPROX]`) entfällt; Rundreise FILE01–49A ohne diese
      Ausnahme; **R727N2-01:** Rundreisetest prüft den exportierten Besitzer des Marktzwillings (Mutation `marketTwins` → rot).
 - **Abnahme:** FILE41/43/43A/44 behalten Markt-Poolplatz 179 im Export; kein Spieler mehr außerhalb der 199 Plätze; `Fixes #743`.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** nicht gestartet.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teile 1–3 fertig, Review offen (PR #765; Lesart in
+  `formate/spielstand-original.md`, Abschnitt „Managerkader im Spielerpool“; Startkader auf den Poolplätzen nach 0x5AF50; Export
+  ohne Ersatzregel, `PoolSlot.Manager`, Rundreise prüft `+0x1A`; Migration Schema 48 → 49). Fixlauf 11.11.2026: `main` 846e515
+  (abgleich-rest #766) eingebunden, Modus 1 mit Satz 0 zusammengeführt (Export: Ersatzregel nur noch für den nicht eingesetzten
+  Kader von Satz 0 im Modus 1, `[APPROX]`), Abdrücke erneuert; R765-01 (#775) behoben, R765-02 (#776) geprüft.
 
 ### Spur `abgleich-rest` – Belastung, Modus „nur Weltkugel“ (#730 Rest, #732, #699 Rest; R16-D1 = B)
 

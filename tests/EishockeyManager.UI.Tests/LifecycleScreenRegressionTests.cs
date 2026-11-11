@@ -55,7 +55,10 @@ public class LifecycleScreenRegressionTests
         // Runde 15, Spur tagesablauf (#699 Punkt 2, R15-E1 = A): Tag 0 läuft vor dem ersten Menü, samt Listenwechsel-Wurf von
         // Manager 0 (Datei 0x54E65–0x54E7C, Tag 0 hat Ereignis) und anderem Zufallsverlauf – der erste Markt-Platz kommt jetzt
         // von Verein 24 (vorher 59); die Prüfungen danach unverändert.
-        Assert.Equal(24, origin.Index);
+        // Runde 16, Spur pool (#743, R15-E2 = C): Die Startkader stehen im Pool (Datei 0x5B0BB–0x5B2BE), 25 Plätze weniger für
+        // Benennen und Umverteilung – der erste Markt-Platz kommt von Verein 35; Prüfungen unverändert. Rückschaltprobe:
+        // Transfer.Pool.cs/Transfer.cs von 148b02d → 24.
+        Assert.Equal(35, origin.Index);
         Assert.False(origin.Players.Contains(player) && player.ContractYears == 2);
         Assert.True(game.Clubs.Count(c => c.Players.Contains(player)) <= 1);
         Assert.DoesNotContain(player, club.Players);

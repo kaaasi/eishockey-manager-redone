@@ -33,7 +33,7 @@ public sealed partial class GameState
         foreach (var club in Clubs)
             foreach (var player in club.Players)
                 AssignPlayerId(player);
-        foreach (var slot in TransferMarket.Pool) // Spur transfer-vertraege-komplett, Teil 5: Spielerpool
+        foreach (var slot in TransferMarket.Pool.Where(s => s.Player.Id == 0)) // Teil 5: Spielerpool; Spur pool: ohne Managerkader
             AssignPlayerId(slot.Player);
     }
 

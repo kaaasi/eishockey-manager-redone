@@ -437,8 +437,11 @@ public class GameModeTests
     // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer und Konten. Rückschaltprobe: GameState.DailyRun.cs und
     // CupsNational.AutoLineup.cs von 8711348 → alte Werte.
     // #772 (Spur abgleich-rest, Runde 16): neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel); andere Ergebnisse ab dem ersten Spieltag. Gegenprobe: ohne PrepareMatch → alter Wert.
+    // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
+    // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
+    // → Wert nach #772.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=53,CupWinner=1,GermanChampion=7,EuropeanCupWinner=1|2341900,400000|WorldChampion=54,CupWinner=1,GermanChampion=12,EuropeanCupWinner=7|2710757,400000|WorldChampion=63,CupWinner=8,GermanChampion=8,EuropeanCupWinner=12|2819615,500000|WorldChampion=52,CupWinner=7,GermanChampion=22,EuropeanCupWinner=12|2843244,400000|R694389099 C1800667102";
+        "WorldChampion=52,CupWinner=14,GermanChampion=4,EuropeanCupWinner=2|1100000,400000|WorldChampion=54,CupWinner=4,GermanChampion=4,EuropeanCupWinner=4|2303367,400000|WorldChampion=63,CupWinner=17,GermanChampion=9,EuropeanCupWinner=4|2151251,400000|WorldChampion=54,CupWinner=1,GermanChampion=9,EuropeanCupWinner=9|2255276,400000|WorldChampion=63,CupWinner=3,GermanChampion=11,EuropeanCupWinner=9|2087384,500000|R261884958 C1534700797";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

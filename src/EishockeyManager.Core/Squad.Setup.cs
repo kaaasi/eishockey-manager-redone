@@ -64,7 +64,7 @@ public static class SquadSetup
         var random = new Random(unchecked(seed * 7919 + 17));
         // Spur transfer-vertraege-komplett, Teil 5: Spielerpool vor den Kadern; seine Datenbankspieler fehlen dann den
         // Computervereinen (jeder Name nur einmal, Entscheidung Nutzer 01.11.2026). Eigene Zufallsquelle.
-        game.TransferMarket.ReservePool(game, seed);
+        game.TransferMarket.ReservePool(game, seed, managerSlots: !forImport); // Spur pool (#743): Import ohne Managerplätze
         var startLeague = StartLeagues(game);
         var startBase = startLeague.ToDictionary(e => e.Key, e => StartBase(e.Value.League, e.Value.Strength));
         // #736: Ergänzte Plätze bekommen Datenbanknamen anderer Vereine (eigene Zufallsquelle, damit die Folge der Werte bleibt).

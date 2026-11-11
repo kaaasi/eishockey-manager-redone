@@ -295,6 +295,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Runde 16, Spur abgleich-rest (#772, R15-E2 = C): ab 1993 neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert
     // 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel): andere Ergebnisse ab dem ersten Spieltag, mit und ohne
     // Anzeige weiter gleich. Rückschaltprobe: ohne PrepareMatch → alter Wert.
+    // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
+    // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
+    // → Wert nach #772.
     private const string Reference =
-        "1993: DEB 10, DM 8, Tab 15378 | 1994: DEB 8, DM 8, Tab 15908 | 1995: DEB 5, DM 1, Tab 16317 | 1996: DEB 2, DM 8, Tab 16139";
+        "1993: DEB 2, DM 5, Tab 15349 | 1994: DEB 2, DM 2, Tab 15668 | 1995: DEB 1, DM 4, Tab 16017 | 1996: DEB 8, DM 6, Tab 15853";
 }

@@ -150,6 +150,9 @@ Spur `kader-start` (#168). Geprüft an `em.exe` (`ndisasm`), Overlay „Spielsta
   Kadertabelle DGROUP `0x169` nach Start-Liga angibt, jeweils ein zufälliger Spieler des Pools (Besitzer `0x1A` = 6) aus
   dem Indexbereich DGROUP `0x381` ff. (`1, 21, 97, 200`); Besitzer = Manager, Verein `0x1D` = Managerverein, Alter
   `0x14` = random(19, 31).
+  **Nur für Manager, die zu einem laufenden Spiel hinzukommen** (Spielvorbereitung mit `[0x386]` > 0); im neuen Spiel belegt
+  Datei 0x5AF50 die Plätze der Reihe nach mit den Datenbankspielern des Managervereins (Spur `pool`, Runde 16:
+  `formate/spielstand-original.md`, Abschnitt „Managerkader im Spielerpool“).
 * **Startwerte** (Datei `0x29DA4–0x29EF7`): Basis = Byte DGROUP `0x4B42` [Start-Liga · 3 + Start-Stärke]
   (Setup-Werte `0x11A`/`0x11B`). Für jeden Kaderplatz: Technik `0x15` = random(Basis − 2, Basis + 2), Kondition `0x16`
   = random(Basis − 2, Basis + 2), Form `0x17` = random(40, 60) – für alle Arten gleich, Torhüter eingeschlossen.

@@ -332,7 +332,92 @@ FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die S
 | Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf wird der Spieler nach Spielerart einsortiert (vor dem ersten leeren Platz oder dem ersten Platz größerer Art; ein Stürmer kommt damit hinten an) | FILE05 → FILE07 (Kauf eines Stürmers) und FILE26 (Verkauf), em.exe Datei `0x42D55`–`0x42DA1` mit memmove ab `0x42DC3` (Kauf, R13GN-01/#622), `0x425B6` (Verkauf); Remake `KaderStartRunde13Teil4Tests` (PR #599), `KaufEinsortierenTests` (PR #623) |
 | HOK `0x08EED` / `0x08EF7` | DGROUP `0xA776` (Teilnehmerliste Europapokal, deutsche Teilnehmer; die Mischung 0x35EDD führt Meister und Titelverteidiger über 0x36146 mit) bzw. DGROUP `0xA763` | FILE22 → FILE23: Kölner EC Satz 4 → 8, Liste = 8 (PR #579, 0x346D5 nach L8) |
 
-## Feldkarte Remake-Spielstand (Schema 48) ↔ HOK
+## Managerkader im Spielerpool (Spur `pool`, Runde 16, #743)
+
+Lesart aus `em.exe` (Disassembly mit `tools/reverse-engineering/disasm.py`, Dateiadressen) und Gegenprobe an den Ständen
+(Pool `far:8253` + 33 · i, Besitzer `+0x1A`; Kaderplatz `5DC3` + 0x618 · Satz + 0x34 · Platz, Poolindex `+0x0F`). Das
+Original führt **jeden** Spieler mit Kaderplatz – Managerkader (Satz 0–3), Transfermarkt (Satz 4), Leihe, Talent – in einem
+der 199 Poolplätze; die Kaderplätze verweisen nur auf ihn. Computervereine haben keine eigenen Spieler.
+
+**Spielstart** (Spielvorbereitung Datei 0x28165, `[bp-0x64]` = Managerzahl DGROUP `0x386` beim Aufruf, Datei 0x281A1):
+
+- **Neues Spiel** (`[bp-0x64]` = 0, Datei 0x2982F → Aufruf 0x29896): Datei 0x5AF50 legt erst alle Plätze 1–199 mit Startwerten
+  und Besitzer 6 an (Datei 0x5AFB2–0x5B0B1, `+0x1A` = 6 bei Datei 0x5B0A9), dann je Manager m (Schleife Datei 0x5B0BB–0x5B2BE)
+  und je Art a (0 Torhüter, 1 Verteidiger, 2 Stürmer) so viele Plätze wie die Kadertabelle DGROUP `0x169` [Start-Liga · 4 + a]
+  (Bundesliga 2/10/13, 2. Liga 2/9/11, Oberliga 2/8/10): Poolindex = DGROUP `0x382`[a] − Zähler[a] + 1 mit dem Zähler DGROUP
+  `0x15C`[a] (Start 20, 76, 103), danach Zähler − 1 (Datei 0x5B0E1–0x5B107). Die Zähler laufen über alle Manager weiter: Manager 0
+  bekommt die Torhüter 2–3, Verteidiger 22–31, Stürmer 98–110 (Bundesliga), Manager 1 schließt an (4–5, 32–41, 111–123). Name =
+  k-ter Datenbankspieler dieser Art im Managerverein (Datei 0x5AA34 über 0x5B129, Kopie 0x14 Byte Datei 0x5B155), ohne Namen
+  ein erzeugter (Datei 0x5AAA0 über 0x5B190); Kaderplatz über Datei 0x42CB1 (Aufruf 0x5B1CD), Besitzer `+0x1A` = m (Datei
+  0x5B1E9), Alter random(19, 31) (Datei 0x5B1F5–0x5B20C), Verein `+0x1D` = Managerverein (Datei 0x5B285). Erst danach benennt
+  Datei 0x5ACA0 (Aufruf Datei 0x2A0B5, nur bei `[bp-0x64]` = 0) die Plätze mit Besitzer 6 (Prüfung Datei 0x5AD22).
+- **Weitere Manager in einem laufenden Spiel** (`[bp-0x64]` > 0, Datei 0x298BF ff., ab Manager `[bp-0x64]`): Kaderauswahl Datei
+  0x2993A–0x29A5E zieht je Platz einen zufälligen Poolindex random(DGROUP `0x381`[a], `0x382`[a] − 1) mit Index ≤ 179 und
+  Besitzer 6 (höchstens 1000 Versuche, Datei 0x2997B), Name bleibt der des Poolplatzes, Besitzer = m (Datei 0x299B3), Verein und
+  Alter wie oben. Diese Ziehung beschreibt `reverse-engineering.md` („Kaderauswahl“) – für ein neues Spiel gilt 0x5AF50.
+
+**Gegenprobe** (FILE01, FILE09, FILE12; alle übrigen Stände gleich bis auf die Wechsel unten):
+
+| Stand | Manager | Besitzer 0 | Besitzer 1 | Markt (4) | frei (6) |
+|---|---|---|---|---:|---:|
+| FILE01 | 1, Bundesliga | 2–3, 22–31, 98–110 (25) | – | 7 | 167 |
+| FILE09 | 2, Bundesliga | 2–3, 22–31, 98–110 | 4–5, 32–41, 111–123 | 7 | 142 |
+| FILE12 | 1, Oberliga | 2–3, 22–29, 98–107 (20) | – | 7 | 172 |
+
+Satz 0 (bzw. 1) verweist in Platzfolge genau auf diese Indizes; kein Kaderplatz zeigt auf einen Platz mit Besitzer 6.
+
+**Saisonwechsel** (Saisonende Datei 0x26F20): **keine neue Ziehung** – die Managerkader behalten ihre Plätze (FILE13 → FILE14,
+FILE22 → FILE23: Besitzer unverändert). In der Schleife über die Plätze 1–199 (Datei 0x2743B–0x27674, Kaderplatz zum Index über
+Datei 0x4C6B6) altert jeder Platz um ein Jahr (Datei 0x274A7, nur beim ersten Manager); steht der Kaderplatz in einem anderen
+Satz als dem des Besitzers (Datei 0x27547–0x27550), endet die Zuordnung: Besitzer 0–3 → Kaderplatz zurück in dessen Kader (Kopie
+Datei 0x275D2, Besitzer bleibt; Angebot des Managers auf dem Markt, Leihe an einen anderen Manager), sonst Besitzer 6 (Datei
+0x275FF; Leihe von einem Computerverein), Kaderplatz entfernt (Datei 0x27628). In der zweiten Schleife je Manager (Datei
+0x2769E–0x279EA) werden frei: Sportinvalide (Kaderplatz `+0x0D` = 0xFF, Datei 0x2772B) und Laufbahnende (Alter > random(37, 42),
+Datei 0x2788F–0x278A1; im Kader nur bei Vertrag `+0x0B` = 0 und `+0x18` & 0x80) – jeweils Meldung, Kaderplatz entfernt (Datei
+0x2792C), Besitzer 6 (Datei 0x27942) und neue Startwerte im selben Platz (Datei 0x27947–0x279D6). Die neuen Namen vergibt
+danach 0x5ACA0 nur an Plätze mit Besitzer 6.
+
+**Rückgabe in den Pool** (Besitzer → 6) und Fälle, in denen der Platz vergeben bleibt:
+
+| Ereignis | Besitzer `+0x1A` | Fundstelle | Beleg |
+|---|---|---|---|
+| Verkauf an einen Computerverein (unaufgefordertes Angebot) | 6 | Datei 0x46F5E (Abgang), 0x46FCA | FILE37 → FILE37A: SCHIFFL, Platz 26, 0 → 6 |
+| Verkauf vom Markt an einen Computerverein (Angebot auf eigenen Spieler) | 6 | Datei 0x474B1, 0x474C9 | – |
+| Leihe von einem Computerverein endet (Saisonende) | 6 | Datei 0x275FF | FILE44 → FILE46: VALLIERE, Platz 179, 4 → 6 |
+| Sportinvalidität, Laufbahnende (Saisonende) | 6, neue Startwerte | Datei 0x27942 | – |
+| Vertragsende ohne Verlängerung | **bleibt m** (nur Kaderplatz frei) | Datei 0x27DE3–0x27E9D (0x425B6 ohne `+0x1A`) | FILE44 → FILE46: KJELLBERG, Platz 196, bleibt 0 |
+| Angebot auf dem Markt | bleibt m (Kaderplatz in Satz 4) | Datei 0x46FDD–0x470DE | FILE40 → FILE41: HOHENADL, Platz 28 |
+| Angebot zurückgezogen, Saisonende | bleibt m, Kaderplatz zurück | Datei 0x47907–0x47954, 0x275D2 | FILE44 → FILE46: HOHENADL wieder in Satz 0 |
+| Kauf, Leihe vom Markt | 4 bzw. Verkäufer → m (nicht beim Zurückziehen des eigenen Angebots) | Datei 0x479C1–0x479DA | FILE05 → FILE07: DAFFNER, Platz 158 |
+| Talent | 6 → m (Ziehung random(1, 179) bis Besitzer 6) | Datei 0x06D7F, 0x06ED7 | – |
+
+Eine eigene Entlassung von Spielern gibt es in `em.exe` nicht (kein Text, kein weiterer Schreiber von `+0x1A`); „entlassen“ im
+WM-Kader (Datei 0x3C928) betrifft nur Satz 5. Schreiber von Pool `+0x1A` (Suche nach `mov [es:…+0x1A]` hinter `les …,[0x8253]`;
+Datei 0x47941 schreibt den Kaderplatz): Datei 0x06ED7, 0x275EB, 0x275FF, 0x27942, 0x299B3, 0x46FCA, 0x474C9, 0x479DA,
+0x4953D, 0x495D1, 0x49723 (Listenwechsel), 0x5B0A9, 0x5B1E9.
+
+**Folgen für das Remake (Teile 2 und 3):** Die Managerkader des neuen Spiels belegen die Plätze nach 0x5AF50 (Zähler über alle
+Manager), Besitzer „vergeben“; die übrigen Plätze sind frei bzw. Markt. Der Pool fasst damit alle Kader- und Marktspieler, der
+Export braucht keine Ersatzregel. Vertragslose Managerspieler behalten ihren Platz (wie KJELLBERG), Verkauf an Computervereine
+und das Ende einer Leihe von Computervereinen geben ihn frei.
+
+**Umsetzung Teil 2** (`TransferMarket.BuildPool`, `ManagerSquadIndices`, `SeatManagerSquads`): Der Pool merkt die Plätze nach
+0x5B0BB vor (Zähler über alle Manager, Größe nach der Liga des Vereins), benennt nur die übrigen und setzt nach dem Kaderaufbau
+die Kaderspieler ein (Besitzer „vergeben“, Verein = Managerverein). [APPROX] Namen, Werte und Alter der Startkader kommen wie
+bisher aus `SquadSetup`; der Verkauf an einen Computerverein gibt den Platz erst beim Saisonwechsel frei (`StartPoolSeason`),
+weil der Spieler im Remake im Computerkader weiterlebt; verliehene und angebotene Spieler behalten ihn. Der Import baut den
+Pool des Nachspielens ohne vorgemerkte Plätze (er wird ohnehin aus dem Stand ersetzt). Ältere Remake-Spielstände (Schema
+< 49) setzen beim Laden jeden Kaderspieler ohne Platz auf den ersten freien Ligaplatz seiner Art (`SaveGame.Migration.Pool.cs`).
+
+**Umsetzung Teil 3** (Export `GameState.WriteSquadsAndPool`, `PoolIndices`): Die Ersatzregel („freier Ligaspieler weicht“) entfällt
+– jeder Kaderplatz verweist auf den Poolsatz seines Spielers (Ausnahme Modus „nur Weltkugel“, siehe unten). Besitzer eines vergebenen Platzes = Manager des Kaders bzw. der
+gemerkte Manager (`PoolSlot.Manager`: Vertragsende `Leave` → `KeepLostSlot`, Import Besitzer 0–3 ohne Kaderplatz); der Marktzwilling (FILE41/43/43A/44, Pool 179 Besitzer 4, Kaderplatz 24) bleibt. Die Rundreise prüft `+0x1A`
+jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus „nur Weltkugel“ übernimmt der Import seit #732
+(abgleich-rest Teil 3) den Kader von Satz 0, Plätze mit Besitzer 0 sind vergeben; der Export schreibt ihn. [APPROX] Ein neues
+Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
+(`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
+
+## Feldkarte Remake-Spielstand (Schema 49) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -663,6 +748,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `PlayerLoan.Origin` | U | – | wie `Player.Loan` |
 | `PoolSlot.Club` | B | `far:8253+0x1D` | Regel 1; 0xFF = keiner |
 | `PoolSlot.Index` | B | `far:8253` | Satznummer 1–199 |
+| `PoolSlot.Manager` | B | `far:8253+0x1A` | 0–3 bei vergebenem Platz ohne Spieler im Managerkader (nach Vertragsende verloren), sonst −1 (Spur pool) |
 | `PoolSlot.Owner` | B | `far:8253+0x1A` | 0–3 Manager → Taken, 4 → Market, sonst Free |
 | `PoolSlot.Player` | B | `far:8253` | Spieler mit Pool-Grundwerten (`+0x15`–`+0x17`) |
 | `PoolDatabaseName.Club` | N | – | Remake-Zuordnung Datenbankname ↔ Pool: aus den Poolnamen neu bilden |
@@ -977,6 +1063,10 @@ liegt bei den genannten Spuren.
 - Schema 48 (Spur `abgleich-rest`, #772): `Tactics._matchEffort`/`_matchAttack` – Vereinsfelder 0x26 und 0x2C Bits 4–6 nach dem
   letzten Spiel (Spielvorbereitung 0x8365 liest 0x26 über 0x368B1 und schreibt die Angriffsbits nicht). Migration: 0 wie FILE02;
   der Import liest sie nicht (U, Stelle für `pool`).
+- Schema 49 (Spur `pool`, #743): `PoolSlot.Manager` – Besitzer `+0x1A` eines vergebenen Platzes ohne Spieler im Managerkader
+  (Teil 3); die Managerkader stehen im Spielerpool (`TransferMarket.SeatManagerSquads`, Abschnitt „Managerkader im
+  Spielerpool“). Migration: Feld −1; nach dem Laden bekommen Kaderspieler ohne Poolplatz einen freien Ligaplatz ihrer Art, ein
+  verlorener Platz bei einem Manager dessen Nummer (`SaveGame.Migration.Pool.cs`).
 
 ### Zugang (Teil 3)
 

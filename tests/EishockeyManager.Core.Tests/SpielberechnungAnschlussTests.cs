@@ -253,8 +253,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // GameState.DailyRun.cs und CupsNational.AutoLineup.cs von 8711348 → alte Werte.
     // Runde 16, Spur abgleich-rest (#772, R15-E2 = C): neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert
     // 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel). Rückschaltprobe: ohne PrepareMatch → alte Werte.
-    [InlineData(false, "EFC034F6A975A96B")]
-    [InlineData(true, "DCD26FCBEF8CF678")]
+    // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
+    // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
+    // → Wert nach #772.
+    [InlineData(false, "7649090D885C0D7F")]
+    [InlineData(true, "0E1CDDF9FD72333E")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
