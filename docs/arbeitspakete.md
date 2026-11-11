@@ -142,7 +142,9 @@ anpassen, wenn ihre eigene Verhaltensänderung sie bricht – je Test Begründun
   `Fixes #<nr>` je behobenem Issue; was sich nicht belegen lässt, bleibt offen mit Begründung im Issue.
 - **Dateigrenzen:** `src/EishockeyManager.Core/**` außer `GameState.Integration.cs` (höchstens minimal), eigene Testdateien,
   `AbgleichOriginalPaareTests.cs` (nur erwartete Listen), `docs/analyse/abgleich-original.md` (Spalte „behoben durch“).
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** Lauf 1 (PR #752, Draft): #747, #749, #731 (Kondition/Technik) behoben; #737 Zufall
+  (Einzelprämien, Beleg-Test); #734 kein Finanzfehler (Aufstellung des Originals nach dem Laden, offen unter #733); offen #730,
+  #736, #748, Teil 4 (#732, #733, #738) – Fortsetzung 1 von 3.
 
 ### Spur `pruefung-karte` – Welle 2
 
