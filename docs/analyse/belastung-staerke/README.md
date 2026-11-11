@@ -14,3 +14,4 @@ und schreiben nach `$OUT` (Vorgabe `/tmp/belastung-staerke`, nie ins Repo). Vora
 | `trace.patch` | **temporäre** Ausgabe je Minute der Managerpaarung (`EM_TRACE=<datei>`), Zwangsmodus `EM_FORCE_MODE=1…3`; nur lokal anwenden (`git apply`), nie committen |
 | `run.sh A B tag <saaten>` | Läufe mit `trace.patch` nach `$OUT/tr/<tag>_<saat>.txt` |
 | `res.py tag HAH` / `lines.py tag HAH 3` | Ergebnisse bzw. Eiszeit je Reihe und Modus der letzten drei Managerspiele (H/A = Managerverein Heim/Gast) |
+| `writers.sh` | Teil 1c: schreibende Befehle auf Reihe/Modus/Minuten (0x2C, 0x2E–0x31) und Kaderplatz +0x15 in em.exe (ndisasm), Blöcke A701/CC43 der Stände (`FILES="…"`) |

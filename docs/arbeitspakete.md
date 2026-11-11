@@ -74,9 +74,10 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
 - **Lauf-Budget (R763-04):** ein Lauf darf mehrere Teile erledigen; reichen die vier Läufe nicht, bleibt Teil 4 offen
   (`spur-wartet`), die Leitstelle legt dem Nutzer einen Zusatzlauf oder Runde 17 vor.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** PR #766 (Draft, `spur-wartet`): Teil 1 blockiert
-  (Ursache nicht belegt, [analyse/belastung.md](analyse/belastung.md)), Teil 2 hängt daran; Teil 4 fertig (#699); Teil 3 fertig
-  (#732: Kader von Satz 0 in Import/Export, Tagesabschluss in Sommerpause und WM-Schleife; FILE20→21 Konto −1.532.012 zu
-  −1.530.327 DM).
+  (Ursache nicht belegt, [analyse/belastung.md](analyse/belastung.md), Prüfaufträge 1b/1c in
+  [analyse/belastung-staerke.md](analyse/belastung-staerke.md) ohne Beleg; Fallback R16-E2: C), Teil 2 hängt daran; Teil 4 fertig
+  (#699); Teil 3 fertig (#732: Kader von Satz 0 in Import/Export, Tagesabschluss in Sommerpause und WM-Schleife; FILE20→21 Konto
+  −1.532.012 zu −1.530.327 DM); #772 fertig (Spielvorbereitung 0x8365, Schema 48).
 
 ### Spur `pruefung-karte`
 

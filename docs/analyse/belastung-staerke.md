@@ -7,6 +7,10 @@ mit jedem Modus und mit festem Einsatz erzeugen das Muster des Originals nicht. 
 Remakes. Neu gefunden und als #772 (P2) gemeldet: Einsatz und Angriff der Spielvorbereitung 0x8365 (wirkt auf Computerspiele,
 nicht auf #730). **Teil 2 startbar: nein** (Abschnitt 6).
 
+**Nachtrag Fortsetzung 2 (R16-E2 = B):** #772 behoben (§7.1, Belastungsmuster unverändert); Teil 1c (§7.2) findet keinen weiteren
+Schreiber der Reihenwahl im Spiel, die Minuten-Vorgabe ist in FILE02/FILE16A nicht aktiv. **Ursache #730 weiter nicht belegt,
+Teil 2 blockiert** (Fallback R16-E2: C).
+
 ## 0. Vorbereitung (alle Befehle aus dem Repo-Wurzelordner)
 
 ```bash
@@ -146,3 +150,68 @@ umstellt oder festhält. Vorschlag für die Entscheidung:
 - **C – #730 als `[APPROX]` zurückstellen** und die Pflichteinträge belassen, bis A oder B vorliegt.
 
 Empfehlung: A (ein Spiel genügt, liefert den direkten Beleg).
+
+## 7. Fortsetzung 2 (R16-E2 = B, 11.11.2026)
+
+### 7.1 #772 behoben – Wirkung auf #730
+
+`MatchEngine.PrepareMatch` (Spielvorbereitung 0x8365 wie in §5), Regressionstest `AbgleichRestPreparationTests`. Danach
+`emtool abgleich` erneut (Skripte wie oben; `mean.sh`-Rechnung = Mittel von `strain.sh` je Saat):
+
+| Paar | Größe | vor #772 | nach #772 | Original |
+|---|---|---:|---:|---:|
+| FILE02→03 (24 Saaten, `pair.py … b`) | Σ A1 / A2 / A3 | 25,8 / 13,2 / 19,2 | 26,5 / 12,4 / 20,5 | +18 / +20 / +19 |
+| | Σ S1 / S2 (gekippt) / S3 | 28,0 / 21,9 (0,4) / 12,8 | 28,6 / 19,0 (0,38) / 10,0 | +39 / +5 (2) / +4 |
+| FILE02→03 (Saaten 1993, 1, 2, 3, 77) | Mittel Belastung Köln | 100,3 … 104,8 | 100,8 … 104,1 | 97,2 |
+| FILE16A→17 (Saaten 4–15) | Mittel Belastung Bayreuth | 91,7 | 90,5 | 83,9 |
+
+**Das Belastungsmuster ändert sich nicht** (Abwehr ausgeglichen, S2 kippt kaum, S3 zu viel). Pflichteinträge #730 neu eingeordnet:
+PYLE, A.RAUBAL (FILE16A→17) und J.MEYER (FILE13→14) weichen nicht mehr bei allen Prüfsaaten ab → Sägezahn.
+
+Nebenbefund (kein Fix in diesem Lauf): Liga-Strafminuten aller Vereine FILE02→03 (`emtool abgleich --alle`, Zeilen
+`LeaguePenaltyMinutes`, Saaten 1–15): Original 1447; vor #772 Mittel 1454 (1324–1583), nach #772 1308 (1218–1377). Die Strafen
+lesen Vereinsfeld 0x26 (Datei 0x3586A); mit dem Einsatz des Originals (40/60) liegt das Remake also rund 10 % unter dem Original –
+vorher glich der zu hohe Einsatz (55/80) eine andere Abweichung der Strafrechnung aus (0x35818/0x35540 nicht neu geprüft).
+
+### 7.2 Teil 1c – Schreiber der Reihenwahl und Minuten-Vorgabe
+
+`OUT=… docs/analyse/belastung-staerke/writers.sh` (ndisasm über die ganze em.exe, schreibende Befehle auf die Vereinsfelder
+0x2C/0x2E–0x31 und Kaderplatz +0x15, dazu die Blöcke A701/CC43 der Stände). Zuordnung (Spalte „Funktion“ des Skripts an
+Regionsgrenzen unzuverlässig, hier von Hand):
+
+| Schreiber | Funktion | im Spiel? | Remake |
+|---|---|---|---|
+| 0x8272/0x8305 (Modus), 0x82AF–0x8358 (Bit 3 = Torhüter raus, nur Computer, Min. 58/59/68/69) | 0x80CB | ja, ungerade Minuten | `ComputerLineModes`, `GoaliePulled` |
+| 0x83DD/0x83EC (Bit 7), 0x844E/0x84C7 (Bit 3) | 0x8365 | Vorbereitung | §7.1 |
+| 0x8521 (Modus 0), 0x853F (Min. 0), 0x857D (Abwehrreihe 2 bei Bit 3) | 0x84D7 | Spielbeginn | §2.2 |
+| 0x8924/0x8C3C (Minuten 0x2F/0x31) | 0x87F7 | ja | `DrainEnergy` |
+| 0x8F7F (Modus = A701 bei 1–4), 0x91CF/0x91E3 (Reihe, Minuten) | 0x8EF2 | ja | `ChangeLines` |
+| 0x9506 (Angriffsbits) | 0x939A | ja, gerade Minuten | `FollowTactics` |
+| 0x38A2A (Abwehrreihe 0) | 0x388F6 | ja (aus 0x38A36) | `RecountSkaters` |
+| 0x38B6F/0x38B86 (Bit 3) | 0x38A36 | ja (0x35691, 0x38B8F) | `RecountSkaters` |
+| **0x38F40 (Modus), 0x38FAA (Reihe), 0x38EFE (Einsatz)** | **0x38D96** | **nur bei Mausklick im Live-Spiel** (`[0x5A16]`, Felder der Managerzeile über 0x534BC) | **fehlt** (kein Live-Spiel, Taktik-Klasse `[APPROX]`) |
+| 0x6F70/0x6F74, 0x29EBF/0x29EC3, 0x4781E–0x47833, 0x4AABF–0x4AD61 | 0x6D7F (Tageslauf/Saisonwechsel), Spielstart, andere Sätze | nein | – |
+| Kaderplatz +0x15: 0x6E7D, 0x2799C, 0x29E5B, 0x40CF8, 0x41210, 0x4158A/0x415AB, 0x4776B, 0x4988F, 0x5B084 | Kaderaufbau, Aufstellung, Markt, Laden | nein (keiner im Spiel) | – |
+
+0x38B8F (Verletzungen) schreibt weder Reihe noch +0x15; es ruft nur 0x38A36 (Neuzählung). Außer dem Mausweg 0x38D96 setzt also
+keine Stelle die Reihen anders als das Remake.
+
+**Minuten-Vorgabe (Hinweis Nutzer):** Reihenwechsel-Modus DGROUP 0xA701 + Manager und Minutenfelder 0xCC43 + 8 · Manager:
+
+| Stand | A701 (Manager 0–5) | CC43 Manager 0 (Abwehr 1–4, Sturm 1–4) |
+|---|---|---|
+| FILE02, FILE03, FILE16A, FILE17 (auch FILE01/05/13/24) | 0 0 0 0 0 0 = „Automatisch“ | 0 0 0 0 / 0 0 0 0 |
+| FILE38, FILE39, FILE40, FILE44 | 0 0 0 0 0 0 = „Automatisch“ | 2 1 3 1 / 1 4 2 2 (Vorgabe aus einer früheren Einstellung) |
+
+Mit Modus 0 schreibt 0x8EF2 keinen Modus (Datei 0x8F60–0x8F65), der Modus kommt aus 0x80CB wie beim Computerverein (Datei
+0x8255–0x8264: nur bei A700 + Vereinsfeld 0x16 = 0); die Minutenfelder liest nur Modus 4 (0x9140/0x91AE, DGROUP 0xCC73). Die
+Minuten-Vorgabe ist also in keinem der Belastungspaare aktiv; wie das Original Vorgabe 0 im Modus 4 behandelt, ist für #730 ohne
+Belang (Remake: `Tactics.MinuteQuotas`, Ringausgleich auf Summe 8 wie Datei 0x48EEA–0x4901D).
+
+### 7.3 Folgerung
+
+Kein Beleg für die Ursache. Einziger nicht nachgebauter Schreiber ist der Mausweg 0x38D96: Klickt der Spieler im Live-Spiel in die
+Managerzeile (Einsatz, Angriff, Modus, Reihe), stellt das Original Reihen und Modus um; ob das bei FILE02→03 / FILE16A→17
+geschah, belegt nur eine Aufnahme. **Teil 2 bleibt blockiert; Fallback R16-E2: C** (#730 als `[APPROX]` zurückstellen,
+Pflichteinträge bleiben, DOSBox-Liste: FILE02 laden, 1. Spieltag ohne Mausklick im Live-Spiel, je Minute ein Bild der Reihen
+beider Teile, danach sichern – zeigt die Verteilung ohne Eingriff; dieselbe Aufnahme mit Klicks auf die Reihenknöpfe als Gegenprobe).
