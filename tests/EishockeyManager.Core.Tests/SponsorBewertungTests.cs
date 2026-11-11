@@ -41,6 +41,38 @@ public class SponsorBewertungTests
         Assert.Equal(3, SponsorRating.AverageRank(2, _ => 5));
     }
 
+    // ---------- Schlussterm (R753-01, #755) ----------
+
+    /// <summary>
+    /// #755 (R753-01): Schlussterm mit Hand-Sollwerten je Liga (0 = 1. Liga, 1 = 2. Liga, 2 = Oberliga). [ORIGINAL] em.exe
+    /// Datei 0x3FAC5–0x3FB2E: S als Wort ohne Vorzeichen / 12 (0x3FADF), + 10 · (2 − Liga) (0x3FAFE–0x3FB0E), · 85 im unteren
+    /// Wort, / 100, oben auf 100 gekappt. Hergeleitet von Hand, nicht aus <see cref="SponsorRating.Finish"/>:
+    /// S = 120: 10 + 20 = 30 → 2550 / 100 = 25; 10 + 10 = 20 → 17; 10 + 0 = 10 → 8.
+    /// S = 600: 50 + 20 = 70 → 5950 / 100 = 59; 60 → 51; 50 → 42.
+    /// S = 1200: 100 + 20 = 120 → 10200 / 100 = 102 → Kappe 100; 110 → 93; 100 → 85.
+    /// S = −12: 65524 / 12 = 5460; + 20 = 5480 · 85 = 465800 − 7 · 65536 = 7048 → 70; 5470 → 6198 → 61; 5460 → 5348 → 53.
+    /// S = 0: 20 → 1700 / 100 = 17; 10 → 8; 0 → 0.
+    /// Die Mutante 10 · Liga statt 10 · (2 − Liga) wird an Liga 0 und 2 rot.
+    /// </summary>
+    [Theory]
+    [InlineData(120, 0, 25)]
+    [InlineData(120, 1, 17)]
+    [InlineData(120, 2, 8)]
+    [InlineData(600, 0, 59)]
+    [InlineData(600, 1, 51)]
+    [InlineData(600, 2, 42)]
+    [InlineData(1200, 0, 100)]
+    [InlineData(1200, 1, 93)]
+    [InlineData(1200, 2, 85)]
+    [InlineData(-12, 0, 70)]
+    [InlineData(-12, 1, 61)]
+    [InlineData(-12, 2, 53)]
+    [InlineData(0, 0, 17)]
+    [InlineData(0, 1, 8)]
+    [InlineData(0, 2, 0)]
+    public void Finish_HandValuesPerLeague(long score, int tier, int expected) =>
+        Assert.Equal(expected, SponsorRating.Finish(score, tier));
+
     // ---------- A036: im Spiel ----------
 
     /// <summary>

@@ -141,6 +141,65 @@ public class NationalteamRunde14Tests
         Assert.True(driftSeen && plainSeen, $"Halt nach Wandertag {driftSeen}, Halt ohne Wandertag {plainSeen}");
     }
 
+    // ---- R688-08 (#755): Takt vor 0x952C ---------------------------------------------------------------------------
+
+    /// <summary>
+    /// #755 (R688-08, Hinweis R753): [ORIGINAL] Im Tageswechsel des Hauptwegs läuft der Takt 0x07169 mit dem Training 0x0659C
+    /// (Datei 0x552A6, 0x07B5E) vor der Neuaufstellung und 0x952C(Satz, 0) der Tage mit Ereignis (Datei 0x54D41–0x54DAA, nach
+    /// 0x55204–0x552D3). Am Halt (Spieltag, also Tag mit Ereignis) stehen die Felder 0x18–0x1D des Managervereins und Deutschlands
+    /// deshalb auf den Werten der Aufstellung nach dem Training desselben Tags. Der frühere Prüfzweig in
+    /// <see cref="Day_MainPathOnly_NationalValuesBeforeDrift_EventDayHaltShowsLineupForm"/> war tot (R725-03); dieser Test prüft
+    /// nur Halte, an denen der Takt die Werte der Aufgestellten geändert hat (sonst wäre er leer). Gegenprobe: Takt hinter die
+    /// Neuaufstellung (<c>MainPathDailyRun</c> nach <c>MainPathEventDayLineups</c> in <c>OpenClubSeasonDay</c>) → rot.
+    /// </summary>
+    [Theory]
+    [InlineData(3)]
+    [InlineData(11)]
+    public void Day_MainPath_TickTrainingBeforeEventDay952C(int seed)
+    {
+        var game = GameModeTests.Create(seed, true, true, 2);
+        Assert.Equal(GameMode.Full, game.Mode);
+        game.AppointNationalCoach(game.Managers[0]);
+        game.AutoNominate();
+        var coach = game.NationalCoach!;
+        coach.AutoFormation();
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        var germany = game.Clubs[NationalTeams.Germany];
+
+        static int[] Snapshot(IEnumerable<Player> players) =>
+            players.SelectMany(p => new[] { p.Condition, p.Technique }).ToArray();
+
+        int clubChecked = 0, nationChecked = 0;
+        for (var guard = 0; guard < 400 && game.Phase == SeasonPhase.Running && (clubChecked < 3 || nationChecked < 3); guard++)
+        {
+            var clubBefore = Snapshot(club.Players);
+            var nationPlayers = LineupSlot.All.Select(s => coach.Formation[s]).OfType<Player>().ToList();
+            var nationBefore = Snapshot(nationPlayers);
+            game.Continue();
+            var halt = game.CurrentDay;
+            if (game.Phase != SeasonPhase.Running || halt > SeasonCalendar.ClubSeasonEnd || !GameState.IsDailyRunDay(halt))
+                continue;
+            Assert.True(game.IsListChangeDay(halt));
+
+            if (club.TeamValues is { } v && !clubBefore.SequenceEqual(Snapshot(club.Players)))
+            {
+                var (d, a, _) = MatchEngine.ClubLineupTeamValues(club);
+                var b = MatchEngine.ComputerTeamValue(club);
+                Assert.Equal((d.Condition, a.Condition, d.Technique, a.Technique),
+                    (b + v.DefenseCondition, b + v.AttackCondition, b + v.DefenseTechnique, b + v.AttackTechnique));
+                clubChecked++;
+            }
+            if (!nationBefore.SequenceEqual(Snapshot(nationPlayers)))
+            {
+                var (d, a, _) = MatchEngine.LineupTeamValues(coach.Formation);
+                Assert.Equal((d.Condition, d.Technique, a.Condition, a.Technique), game.NationalRatings(NationalTeams.Germany));
+                Assert.NotNull(germany.TeamValues);
+                nationChecked++;
+            }
+        }
+        Assert.True(clubChecked >= 3 && nationChecked >= 3, $"Halte mit Training: Verein {clubChecked}, Nationalteam {nationChecked}");
+    }
+
     // ---- R14NT-01/02: WM-Schleife des Originals nach der Ernennung ------------------------------------------------
 
     /// <summary>
