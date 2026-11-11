@@ -83,8 +83,21 @@ public class BildschirmeOeffnenZustandTests
         game.CurrentManager = 1;
         var menu = new MainMenuScreen(d.Host);
 
-        // Fenster „Saisonende“ je Manager: Öffnen und Zeichnen ändern nichts.
+        // #716 R14G2-02: der Bildschirm „Saisonende“ selbst im gültigen Saisonendzustand (Saisonrückblick vorhanden) – Zustand
+        // vor dem Konstruktor sichern, dann Konstruktor, Host.Show, Zeichnen und Frames ohne Eingabe. Gegenprobe in
+        // SeasonEndScreen (Konstruktor, Enter oder Draw) bei vorhandenem Saisonrückblick game.Managers[0].Money++ → rot.
+        Assert.NotEmpty(game.History);
         var before = SaveGame.Save(game);
+        var print = StateFingerprint.Of(game);
+        var reopened = new SeasonEndScreen(d.Host, menu);
+        ShowAndDraw(d, reopened);
+        d.Frames(3);
+        Assert.Same(reopened, d.Host.Current);
+        Assert.True(before.AsSpan().SequenceEqual(SaveGame.Save(game)), "SeasonEndScreen ändert beim Öffnen den Spielzustand");
+        Assert.Equal(print, StateFingerprint.Of(game));
+
+        // Fenster „Saisonende“ je Manager: Öffnen und Zeichnen ändern nichts.
+        before = SaveGame.Save(game);
         ShowAndDraw(d, new SeasonEndSummaryScreen(d.Host, menu));
         Assert.True(before.AsSpan().SequenceEqual(SaveGame.Save(game)), "SeasonEndSummaryScreen ändert beim Öffnen den Spielzustand");
 

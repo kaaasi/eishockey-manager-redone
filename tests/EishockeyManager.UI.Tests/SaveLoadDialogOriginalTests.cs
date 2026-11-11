@@ -110,6 +110,19 @@ public sealed class SaveLoadDialogOriginalTests : IDisposable
         two.OpenTile("Sichern");
         Assert.Equal(2, Assert.IsType<SaveLoadScreen>(two.Host.Current).PageCount);
         Assert.Equal(single, Crop(two.Surface, region));
+
+        // #716 R14G4-01: der Vergleich zweier Seitenzahlen sieht ein konstantes Label („SEITE: 1“) nicht. Unabhängig davon muss
+        // der Ausschnitt rechts vom Ende der Verzeichniszeile (Text + 1 Pixel Schatten) leere Panelfläche sein: eine einzige
+        // Farbe bis vor den rechten Rahmen (ab x 308, Panel 24 + 288 − 4). Gegenprobe: in DrawPanel konstant „SEITE: 1“ im
+        // Ausschnitt zeichnen → rot.
+        const int frameX = 308;
+        var mini = two.Host.Assets.Mini;
+        var textEnd = 35 + mini.Measure("VERZEICHNIS: " + SaveFiles.DisplayPath(_directory, 38)) + 1;
+        Assert.True(textEnd < frameX - 30, $"Verzeichniszeile reicht bis x {textEnd}");
+        var left = Math.Max(region.X, textEnd + 1);
+        var free = new Rect(left, region.Y, frameX - left, region.H);
+        foreach (var surface in new[] { one.Surface, two.Surface })
+            Assert.Single(Crop(surface, free).Distinct());
     }
 
     [GameDataFact]

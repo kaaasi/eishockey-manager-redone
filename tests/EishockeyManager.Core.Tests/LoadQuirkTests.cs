@@ -89,6 +89,39 @@ public class LoadQuirkTests
         Assert.Equal(1997, game.Season);
     }
 
+    /// <summary>
+    /// #703 (R701-03, Gegenproben M07–M09): Nach dem Import von FILE44 (Versatz 1) rechnet die WM-Schleife mit dem Zähler mit Versatz
+    /// (<see cref="GameState.Counter"/>(d) = d + 2). FILE44 hält danach erst am Saisonende (ein Halt 216 → 231), sichtbar ist also
+    /// nur die Summe: Schritt (c) (0x07169 nach den WM-Spielen der Tage mit Zähler ≡ 0/4, Datei 0x5561A–0x5565C) läuft zweimal –
+    /// Marktverfall 99 → 79 (Datei 0x071BB) und einmal die Heilung im Kaderteil (Zähler 224, Datei 0x07C12) –, Schritt (d)
+    /// (Datei 0x556D2–0x55712) heilt an den Zählern 224 und 231: 20 → 17. Gegenproben am Head: M07 (Schritt (c) mit
+    /// <c>DayCounter.Of</c>) → 69 und 18, rot; M09 (<c>ManagerSquadRun</c>) → 18, rot. M08 (<c>HealManagerSquads</c>) verschiebt
+    /// beide Heiltage nur um einen Tag (223, 230) und ist ohne Halt dazwischen nicht sichtbar (Hinweis aus dem Review).
+    /// </summary>
+    [GameDataFact]
+    public void File44_WorldCupLoop_TickAndHealing_FollowCounterWithOffset()
+    {
+        var game = Import("FILE44.HOK");
+        Assert.Equal(1, game.LoadCounterOffset);
+        var national = game.NationalCoach?.Squad.Select(m => m.Player).ToHashSet() ?? [];
+        var player = game.Clubs[game.Managers[0].ClubIndex].Players.First(p => p.InjuredGames == 0 && !national.Contains(p));
+        player.InjuredGames = 20;
+        var listed = game.TransferMarket.Listings.Select(l => l.Player).ToList();
+        Assert.NotEmpty(listed);
+        foreach (var p in listed)
+            p.Strain = 99;
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 500, "Saisonende nicht erreicht");
+            if (game.NationalTurn && game.NationalCoach!.Squad.Count == 0)
+                game.AutoNominate();
+            game.Continue();
+        }
+        Assert.Equal(2, Enumerable.Range(217, 15).Count(d => game.Counter(d) % 7 == 0)); // Zähler 224 und 231
+        Assert.Equal(17, player.InjuredGames);
+        Assert.All(listed, p => Assert.Equal(79, p.Strain));
+    }
+
     /// <summary>Remake-Spielstände haben keinen Versatz: Neues Spiel, Zähler wie <see cref="DayCounter.Of"/>, Datum vom Tag.</summary>
     [Fact]
     public void NewGame_HasNoOffset()

@@ -155,7 +155,7 @@ anpassen, wenn ihre eigene Verhaltensänderung sie bricht – je Test Begründun
   Funktionskarte nachziehen (`--write`, zweiter Lauf ohne Diff), Inventurzeilen aller Spuren dieser Runde.
 - **Dateigrenzen:** `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`, die in den
   Issues genannten Test- und Kommentarstellen. Prozessdoku (#724, #744) macht die Leitstelle beim Rundenabschluss.
-- **Modell:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Status:** Teil 1 fertig zum Review (PR #753); #699 bleibt offen (FILE20→21 „nur Weltkugel“), #703 R701-06 offen; Teil 2 offen.
 
 ### Gesamtreview am Rundenende
 

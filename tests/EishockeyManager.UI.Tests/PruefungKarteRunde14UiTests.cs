@@ -53,6 +53,37 @@ public class PruefungKarteRunde14UiTests
     }
 
     /// <summary>
+    /// #703 R701-01: Die Kopflinie unter dem Listenkopf (y 36) zieht das Original getrennt von x 180 bis 313 (Datei 0x46693–0x466AC:
+    /// Linie 0x0B7B5 mit (0xB4 | 0x24)–(0x139 | 0x24), Farbe 0x1F; `file40_03`–`05`: Zeile 36 Index 31 ab x 180). Nach der
+    /// Markierung von Eintrag 0 und dem Verlassen gilt 180–314 (Datei 0x46AFE). Vorher rot: Das Remake zog sie wie die
+    /// Eintragslinien von 181 bis 313.
+    /// </summary>
+    [GameDataFact]
+    public void TransferList_HeaderLine_180To313_To314AfterHoverOfFirstEntry()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        d.OpenTile("Transfer");
+        Assert.IsType<TransferScreen>(d.Host.Current);
+        Assert.NotEmpty(d.Host.Game!.TransferMarket.Listings);
+        d.Move(100, 100); // Maus im Kader, kein Eintrag markiert
+        var s = d.Surface;
+        const int y = 36;
+        Assert.Equal(31, At(s, 180, y));
+        Assert.Equal(31, At(s, 313, y));
+        Assert.NotEqual(31, At(s, 179, y));
+        Assert.NotEqual(31, At(s, 314, y));
+
+        d.Move(250, 40 + 6); // Eintrag 0 markieren …
+        Assert.Equal(16, At(s, 180, y));
+        Assert.Equal(16, At(s, 314, y));
+        d.Move(100, 100); // … und verlassen
+        Assert.Equal(31, At(s, 180, y));
+        Assert.Equal(31, At(s, 314, y));
+        Assert.NotEqual(31, At(s, 179, y));
+    }
+
+    /// <summary>
     /// R14KS9-03: Beschriftung der Kontoleiste auf Grundlinie 0xE5 = 229 (oberste Zeile y 225) bei x = 3 + 65 · k (Datei
     /// 0x46533–0x4657A; `file40_03`/`file40_04`: „Anlagen“ ab x 133). Vorher rot: oberste Zeile y 226, „Anlagen“ ab x 132.
     /// </summary>

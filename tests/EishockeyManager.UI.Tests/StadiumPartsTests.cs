@@ -41,7 +41,9 @@ public class StadiumPartsTests
                         var dy = e.DestY + y;
                         if (dx >= Surface.Width || dy >= StadiumScreen.ImageHeight)
                             continue;
-                        var expected = src == StadiumScreen.PartMask ? back.Pixels[dy * back.Width + dx] : src;
+                        // #716 R14G4-02: fester Sollwert 0xC0 (Datei 0x3D92D, mov al, 0xC0) statt StadiumScreen.PartMask;
+                        // Gegenprobe PartMask = 0x00 → rot.
+                        var expected = src == 0xC0 ? back.Pixels[dy * back.Width + dx] : src;
                         if (d.Surface.Pixels[dy * Surface.Width + dx] != expected)
                             differing++;
                     }
