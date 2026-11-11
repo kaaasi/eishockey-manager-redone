@@ -28,8 +28,9 @@ public class NationalteamRunde14Tests
     /// Menüs Satz 5 neu auf und ruft 0x952C(5, 0) (Datei 0x54D76–0x54DAA, nach der Wanderung Datei 0x5525A–0x55292 des
     /// Tageswechsels; 0x952C schreibt 0x18–0x1D mit beiden Merkern, Datei 0x09672 → 0x096E6 → 0x09749/0x09771). Ein Halttag ist ein
     /// Spieltag des Managers und damit ein Tag mit Ereignis: Dort gilt jetzt die Form der Aufstellung, auch am Wandertag (vorher:
-    /// gewürfelte Form, weil die Neuaufstellung erst nach den Menüs lag). Die gewürfelte Form bleibt an Halttagen ohne Ereignis
-    /// (Tagesbyte 0 oder 9) sichtbar. Rückschaltprobe: Teil 3 zurück (alte Reihenfolge) → der alte Test grün, dieser rot.
+    /// gewürfelte Form, weil die Neuaufstellung erst nach den Menüs lag). Rückschaltprobe: Teil 3 zurück (alte Reihenfolge) → der
+    /// alte Test grün, dieser rot. #725 R725-03: Halttage ohne Ereignis gibt es im Hauptweg nicht (Halt = Spieltag des Managers);
+    /// die gewürfelte Form der Wanderung zwischen zwei Halten sichert <see cref="Day_MainPath_SmallDrift_RollsFormOfAllSlotsBetweenHalts"/>.
     /// </summary>
     [Theory]
     [InlineData(3)]
@@ -81,23 +82,63 @@ public class NationalteamRunde14Tests
                 continue;
             }
 
-            Assert.InRange(defense.Form, 0, 44);
-            Assert.InRange(attack.Form, 0, 44);
-            // #688 (R688-08): [ORIGINAL] Training im Takt (0x07169, Datei 0x552A6) vor 0x952C desselben Tages (Datei 0x54FBF): Die
-            // Länderwerte des Vortags enthalten dessen Training. Abweichen dürfen sie nur, wenn der Takt des Halttags schon wieder
-            // trainiert hat. Gegenprobe: Reihenfolge von #678 (0x952C vor dem Takt) → rot an Halttagen nach einem Takttag.
-            if (!GameState.IsDailyRunDay(halt))
-                Assert.Equal((defense.Condition, defense.Technique, attack.Condition, attack.Technique),
-                    game.NationalRatings(NationalTeams.Germany));
-            if (GameState.IsDailyRunDay(halt)) // #675: Zähler 0x3B7 nach dem Weiterzählen = Tag + 1 (DayCounter), Datei 0x55204/0x55253
-            {
-                Assert.InRange(values.DefenseForm, 45, 55);
-                Assert.InRange(values.AttackForm, 45, 55);
-            }
-            else
-                Assert.Equal((defense.Form, attack.Form), (values.DefenseForm, values.AttackForm));
+            // #725 R725-03: Ein Halttag ist ein Spieltag des Managers und damit immer ein Tag mit Ereignis (Tagesbyte ∉ {0, 9, 255},
+            // Datei 0x54D4C–0x54D65); der frühere Zweig „Halttag ohne Ereignis“ war tot (Assert.Fail dort → grün). Die kleine
+            // Wanderung des Hauptwegs prüft Day_MainPath_SmallDrift_RollsFormOfAllSlotsBetweenHalts (Mutante N33).
+            Assert.Fail($"Halttag {halt} ohne Ereignis – im Hauptweg nicht erwartet");
         }
         Assert.True(eventDriftSeen && plainSeen, $"Wander-Halttag mit Ereignis {eventDriftSeen}, Halttag mit Ereignis ohne Wanderung {plainSeen}");
+    }
+
+    /// <summary>
+    /// #725 R725-03, Mutante N33 (kleine Wanderung im Hauptweg auslassen): [ORIGINAL] Der Tageswechsel des Hauptwegs würfelt an Tagen
+    /// mit Zähler ≡ 0 oder 4 (mod 7) die Form 0x1C/0x1D aller Plätze einschließlich der Nationalteams neu (0x9D1B(1), Datei
+    /// 0x5525A–0x55292; MatchEngine.DriftTeamValues). Ein Nationalteam ohne Bundestrainer (Index 52) und ein Computerverein
+    /// bekommen vor jedem Weiterschalten die Form 1; nach dem Halt ist sie genau dann gewürfelt (45 … 55), wenn zwischen den
+    /// beiden Halten ein Wandertag lag, sonst unverändert 1. Gegenprobe N33 (Aufruf in OpenClubSeasonDay ausgelassen) → rot.
+    /// </summary>
+    [Theory]
+    [InlineData(3)]
+    [InlineData(11)]
+    public void Day_MainPath_SmallDrift_RollsFormOfAllSlotsBetweenHalts(int seed)
+    {
+        var game = GameModeTests.Create(seed, true, true, 2);
+        Assert.Equal(GameMode.Full, game.Mode);
+        var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
+        var nation = game.Clubs[NationalTeams.First];
+        Assert.NotEqual(NationalTeams.Germany, nation.Index);
+        var computer = game.Clubs.First(c => c.Index < NationalTeams.First && !managed.Contains(c.Index));
+
+        bool driftSeen = false, plainSeen = false;
+        for (var guard = 0; guard < 400 && game.Phase == SeasonPhase.Running && !(driftSeen && plainSeen); guard++)
+        {
+            var previous = game.CurrentDay;
+            var sentinels = new[] { nation, computer }.Where(c => c.TeamValues is not null).ToList();
+            foreach (var club in sentinels)
+                club.TeamValues = club.TeamValues!.Value with { DefenseForm = 1, AttackForm = 1 };
+            game.Continue();
+            var halt = game.CurrentDay;
+            if (game.Phase != SeasonPhase.Running || halt > SeasonCalendar.ClubSeasonEnd || sentinels.Count < 2)
+                continue;
+            // Tageswechsel previous + 1 … halt laufen vor dem Halt (OpenDay, #688 R688-04).
+            var drift = Enumerable.Range(previous + 1, halt - previous).Any(GameState.IsDailyRunDay);
+            foreach (var club in sentinels)
+            {
+                var v = club.TeamValues!.Value;
+                if (drift)
+                {
+                    Assert.InRange(v.DefenseForm, 45, 55);
+                    Assert.InRange(v.AttackForm, 45, 55);
+                }
+                else
+                    Assert.Equal((1, 1), (v.DefenseForm, v.AttackForm));
+            }
+            if (drift)
+                driftSeen = true;
+            else
+                plainSeen = true;
+        }
+        Assert.True(driftSeen && plainSeen, $"Halt nach Wandertag {driftSeen}, Halt ohne Wandertag {plainSeen}");
     }
 
     // ---- R14NT-01/02: WM-Schleife des Originals nach der Ernennung ------------------------------------------------
@@ -261,6 +302,39 @@ public class NationalteamRunde14Tests
         Assert.True(game.CurrentDay > day);
         Assert.Equal(seen, LineupSlot.All.Select(s => coach.Formation[s]).ToList());
         var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
+        Assert.Equal((defense.Form, attack.Form), (germany.TeamValues!.Value.DefenseForm, germany.TeamValues.Value.AttackForm));
+    }
+
+    /// <summary>
+    /// #716 R14G4-06 (Gegenprobe N25): Spätere WM-Termine laufen über Schritt (a) der WM-Schleife (<c>WorldCupLoopStepA</c>,
+    /// 0x952C(5, 1) nach dem Menü, Datei 0x555D6), nicht über den Eintrittstag. Am zweiten Zug des Bundestrainers nach dem Menü
+    /// die Form der Aufgestellten auf 100 setzen: Nach dem Weiterschalten trägt Deutschland die Form dieser Aufstellung.
+    /// Gegenprobe: <c>UpdateNationalTeamValues()</c> nur in <c>WorldCupLoopStepA</c> ausgelassen → rot.
+    /// </summary>
+    [Theory]
+    [InlineData(3)]
+    [InlineData(11)]
+    public void Mode4_LaterWorldCupDay_StepA_UsesLineupForm(int seed)
+    {
+        var (game, coach) = AppointedAfterClubSeason(seed);
+        var germany = game.Clubs[NationalTeams.Germany];
+        game.Continue(); // erster Zug des Bundestrainers (Tag 216, Eintrittstag der Schleife)
+        Assert.True(game.NationalTurn);
+        var first = game.CurrentDay;
+        game.Continue();
+        for (var guard = 0; !(game.NationalTurn && game.CurrentDay > first); guard++)
+        {
+            Assert.True(guard < 50 && game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver, "kein späterer Zug des Bundestrainers");
+            game.Continue();
+        }
+        var day = game.CurrentDay;
+        Assert.True(SeasonCalendar.Events(day).HasFlag(DayEvents.WorldCup));
+        foreach (var p in LineupSlot.All.Select(s => coach.Formation[s]).OfType<Player>())
+            p.Form = 100;
+        game.Continue();
+        Assert.True(game.CurrentDay > day);
+        var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
+        Assert.Equal((100, 100), (defense.Form, attack.Form));
         Assert.Equal((defense.Form, attack.Form), (germany.TeamValues!.Value.DefenseForm, germany.TeamValues.Value.AttackForm));
     }
 
