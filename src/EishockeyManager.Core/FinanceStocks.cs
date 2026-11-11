@@ -179,12 +179,6 @@ public sealed partial class GameState
         });
 
     /// <summary>
-    /// Kauft Aktien. [ORIGINAL] em.exe Datei 0x596C2 ff. (Höchstwert links = Konto / Kurs, 0 bei Konto ≤ 0) und
-    /// Buchung Datei 0x5915F–0x5952D: w = Stückzahl · Kurs, Kosten w + 1,5 % Gebühr; Konto −= Kosten, Kaufpreis += Kosten.
-    /// Der Höchstwert rechnet die Gebühr nicht ein, das Konto kann dadurch knapp ins Minus gehen.
-    /// Liefert die Zahl der gekauften Stücke.
-    /// </summary>
-    /// <summary>
     /// Höchstwert „kaufen“: [ORIGINAL] em.exe Datei 0x596F2–0x5972E: Konto / Kurs, 0 bei Konto ≤ 0 (Datei 0x59737).
     /// [APPROX] Kurs 0 (#757): Das Original teilt auch dann (Laufzeit-Division Datei 0x0227C, `div bx` Datei 0x0231A); INT 0
     /// endet im Handler Datei 0x01F74 mit „Divide error“ (DGROUP 0x2F) und Programmende (Rückgabe 3, Datei 0x02088). Ein
@@ -196,6 +190,12 @@ public sealed partial class GameState
         return price == 0 ? 0 : Math.Max(0, manager.Money) / price;
     }
 
+    /// <summary>
+    /// Kauft Aktien. [ORIGINAL] em.exe Datei 0x596C2 ff. (Höchstwert links = Konto / Kurs, 0 bei Konto ≤ 0) und
+    /// Buchung Datei 0x5915F–0x5952D: w = Stückzahl · Kurs, Kosten w + 1,5 % Gebühr; Konto −= Kosten, Kaufpreis += Kosten.
+    /// Der Höchstwert rechnet die Gebühr nicht ein, das Konto kann dadurch knapp ins Minus gehen.
+    /// Liefert die Zahl der gekauften Stücke.
+    /// </summary>
     public int BuyStock(Manager manager, int stockIndex, int count)
     {
         var stock = Stocks.Stocks[stockIndex];
