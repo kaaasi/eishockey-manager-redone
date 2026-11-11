@@ -73,7 +73,7 @@ nichts aus dem Original; die CSV gehört nicht ins Repo. Nach jeder Spur mit neu
 
 ## Ergebnis in Kürze
 
-* Spielcode (ohne Systemsegmente), Stand nach Runde 14: **90 % der Bytes umgesetzt** (261 statt 257 Funktionen), 0 % genähert, 9 % dokumentiert (nach Runde 12/13: 90 / 1 / 10; nach Runde 11: 88 / 1 / 11; nach Runde 10: 82 / 2 / 16),
+* Spielcode (ohne Systemsegmente), Stand nach Runde 15: **91 % der Bytes umgesetzt** (264 Funktionen; neu 0x5AA34 Namensziehung, #736), 0 % genähert, 9 % dokumentiert (nach Runde 14: 90 / 0 / 9 mit 261 Funktionen, nach dessen Teil 6 263; nach Runde 12/13: 90 / 1 / 10; nach Runde 11: 88 / 1 / 11; nach Runde 10: 82 / 2 / 16),
   unbekannt nur noch eine Funktion (0x575C3, 421 Byte, bei `livespiel` zurückgestellt). Maßgeblich sind die Zahlen im
   erzeugten Teil. Wegen der Körnung ist „umgesetzt“ eine Obergrenze; was die Funktionskarte als „dokumentiert“ führt, ordnet
   `docs/analyse/inventur.md` ein (fehlt im Remake, vorhanden ohne `[ORIGINAL]`, nicht nötig).
@@ -149,7 +149,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 6463 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 6598 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -157,9 +157,9 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 274 | 246062 | 79 % | 263 | 236306 | 91 % |
+| umgesetzt | 275 | 246170 | 80 % | 264 | 236414 | 91 % |
 | genähert | 3 | 896 | 0 % | 3 | 896 | 0 % |
-| dokumentiert | 145 | 29778 | 10 % | 97 | 23278 | 9 % |
+| dokumentiert | 144 | 29670 | 10 % | 96 | 23170 | 9 % |
 | unbekannt | 257 | 32789 | 11 % | 1 | 421 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
@@ -197,7 +197,7 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Ov 0x128 (59E3) | 0x4D2F0–0x51BED | 18686 | 18 | 96 % | 0 % | 4 % | 0 % | „Bundesliga“, „PL. TD      VEREIN      “, „Play-Off“ |
 | Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 69 % | 1 % | 30 % | 0 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
 | Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 84 % | 0 % | 13 % | 3 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |
-| Ov 0x140 (66C3) | 0x5A820–0x5E932 | 16659 | 21 | 97 % | 0 % | 3 % | 0 % | „VERZEICHNIS:“, „Spielstand aus“, „Speichern“ |
+| Ov 0x140 (66C3) | 0x5A820–0x5E932 | 16659 | 21 | 98 % | 0 % | 2 % | 0 % | „VERZEICHNIS:“, „Spielstand aus“, „Speichern“ |
 
 ### Dünn belegte große Funktionen (> 2048 Byte, höchstens zwei Fundstellen)
 
