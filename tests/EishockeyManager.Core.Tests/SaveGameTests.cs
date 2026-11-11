@@ -63,8 +63,8 @@ public class SaveGameTests
     // 45 GameState.DayOpened: Tageswechsel vor dem Halt (#688, R688-04).
     // 46 Manager.DebtDays entfällt: keine Entlassung wegen Schulden (#688, R688S-03; im Original nicht vorhanden).
     // 47 GameState.LoadCounterOffset: Ladeeigenheit des Markierungstags beim HOK-Import (pruefung-karte Teil 5, Nutzer 09.11.2026 C).
-    // 48 ohne neue Felder: Managerkader im Spielerpool, Schritt nach dem Laden (Spur pool, Runde 16, #743).
-    private const string ExpectedSchemaFingerprint = "38C12552B42BF30F";
+    // 48 PoolSlot.Manager (Besitzer verlorener Plätze) und Managerkader im Spielerpool, Schritt nach dem Laden (Spur pool, Runde 16, #743).
+    private const string ExpectedSchemaFingerprint = "1EC49F1D526A259C";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

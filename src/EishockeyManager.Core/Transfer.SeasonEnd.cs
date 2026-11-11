@@ -143,6 +143,7 @@ public sealed partial class GameState
         club.RemovePlayer(p);
         if (TransferMarket.ListingOf(p) is { } listing)
             TransferMarket.Unlist(listing); // Altstand vor A380: Spieler noch im Kader
+        TransferMarket.KeepLostSlot(p, Managers.ToList().IndexOf(manager)); // Spur pool, Teil 3: Pool +0x1A bleibt beim Manager
         p.ContractYears = 0;
         p.MonthlySalary = 0;
         p.Insured = false;

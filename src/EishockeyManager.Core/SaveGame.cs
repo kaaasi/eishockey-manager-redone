@@ -121,7 +121,7 @@ public static partial class SaveGame
     /// (<c>SaveGame.Migration.Schulden.cs</c>).
     /// 46 → 47 (Runde 14, pruefung-karte Teil 5): Ladeversatz des Markierungstags, <c>GameState.LoadCounterOffset</c>
     /// (<c>SaveGame.Migration.Ladeeigenheit.cs</c>).
-    /// 47 → 48 (Runde 16, Spur pool #743): Managerkader im Spielerpool, Schritt nach dem Laden (<c>SaveGame.Migration.Pool.cs</c>).
+    /// 47 → 48 (Runde 16, Spur pool #743): <c>PoolSlot.Manager</c>, Managerkader im Spielerpool nach dem Laden (<c>SaveGame.Migration.Pool.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>

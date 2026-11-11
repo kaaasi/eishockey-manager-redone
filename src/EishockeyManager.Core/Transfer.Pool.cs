@@ -35,6 +35,14 @@ public sealed class PoolSlot
 
     /// <summary>Besitzer (+0x1A).</summary>
     public PoolOwner Owner { get; set; }
+
+    /// <summary>
+    /// Spur pool (#743, Teil 3): Nummer des Managers (Pool +0x1A = 0–3) eines vergebenen Platzes, dessen Spieler in keinem
+    /// Managerkader steht – nach Vertragsende ganz verloren ([ORIGINAL] R15-E3 = C, Datei 0x27DE3–0x27E9D lässt +0x1A stehen; FILE46
+    /// Pool 196 KJELLBERG). Sonst −1: Für Spieler eines Managerkaders oder Angebote eines Managers bestimmt der Kader den Besitzer (Export
+    /// <c>GameState.WriteSquadsAndPool</c>).
+    /// </summary>
+    public int Manager { get; set; } = -1;
 }
 
 /// <summary>
@@ -353,7 +361,7 @@ public sealed partial class TransferMarket
             TransferPoolRules.RollStartValues(p, random);
             _pool.Add(new PoolSlot { Index = i, Player = p, Club = 0, Owner = PoolOwner.Free });
         }
-        foreach (var (manager, _, index) in managerSlots ? ManagerSquadIndices(game, layout) : [])
+        foreach (var (manager, _, index) in managerSlots && !game.WorldOnly ? ManagerSquadIndices(game, layout) : [])
         {
             var slot = _pool[index - 1];
             slot.Owner = PoolOwner.Taken; // Platzhalter: Name leer bis zum Einsetzen
@@ -701,6 +709,7 @@ public sealed partial class TransferMarket
                 }
                 Rename(game, slot, $"POOLSPIELER {slot.Index}");
                 slot.Owner = PoolOwner.Free;
+                slot.Manager = -1;
             }
             // #732: [ORIGINAL] 0x274A7 liegt in der Managerschleife von 0x26F20, die im Modus „nur Weltkugel“ nicht läuft
             // (FILE20 → FILE21: Alter aller Poolplätze unverändert); umbenannt wird trotzdem (0x56467/0x56470).
@@ -711,6 +720,19 @@ public sealed partial class TransferMarket
         }
         Rename(game, nationals: true, random, HeldNames(game), exchange: true);
         Rename(game, nationals: false, random, HeldNames(game), exchange: true); // nach dem Tausch neu bestimmt
+    }
+
+    /// <summary>
+    /// Vertragsende im Managerkader (R15-E3 = C): Der Platz des Spielers bleibt vergeben und merkt sich den Manager.
+    /// [ORIGINAL] Datei 0x27DE3–0x27E9D gibt nur den Kaderplatz frei (0x425B6), Pool +0x1A bleibt (FILE44 → FILE46 KJELLBERG).
+    /// </summary>
+    internal void KeepLostSlot(Player player, int manager)
+    {
+        if (SlotOf(player) is { } slot && manager >= 0)
+        {
+            slot.Owner = PoolOwner.Taken;
+            slot.Manager = manager;
+        }
     }
 
     /// <summary>Spieler eines vergebenen Platzes ist nirgends mehr im Spiel (R15-E3 = C, Vertragsende im Managerkader).</summary>

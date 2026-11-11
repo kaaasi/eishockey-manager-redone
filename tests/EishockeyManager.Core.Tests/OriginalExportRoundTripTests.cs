@@ -104,7 +104,10 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("far:8253", 33, 0x13, 0x13, "ungedeutet"),
         new("far:8253", 33, 0x15, 0x17, "Grundwerte vergebener und gelisteter Poolspieler: das Remake führt einen Wertesatz je Spieler"),
         new("far:8253", 33, 0x18, 0x18, "Rollenwert: das Remake führt nur die Art (Feldkarte Player.Role)"),
-        new("far:8253", 33, 0x19, 0x1C, "ungedeutet (Statistik der Poolspieler?)"),
+        // Spur pool (#743, Teil 3, R727N2-01): Besitzer +0x1A nicht mehr in der Regel – vorher deckte 0x19–0x1C ihn mit ab, ein falscher
+        // Besitzer (Marktzwilling, verlorener Spieler, „nur Weltkugel“) blieb unbemerkt.
+        new("far:8253", 33, 0x19, 0x19, "ungedeutet (Statistik der Poolspieler?)"),
+        new("far:8253", 33, 0x1B, 0x1C, "ungedeutet (Statistik der Poolspieler?)"),
         new("far:8253", 33, 0x1D, 0x1D, "Verein eines Nominierten (Land) bzw. ohne übernommenen Kader"),
         new("far:8253", 33, 0x1E, 0x20, "offene Meldung, Vorlagen/Minuten der Poolspieler (Feldkarte: nur Kaderspieler)"),
         // R727P-04: Die Regel „Name: Poolspieler, die beim Import einem Remake-Namen weichen“ ist entfallen; ihre 24 Treffer kamen
@@ -152,6 +155,9 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         // Modus „nur Weltkugel“: Managerverein ohne Kader und Satz (Regel 1, OriginalImport.ApplyOriginal)
         new("5DC3", 0x34, 0x00, 0x33, "Kader des Managervereins im Modus „nur Weltkugel“ (Import übernimmt ihn nicht)", When.WorldOnly),
         new("far:8253", 33, 0x12, 0x14, "Poolsätze des Managervereins im Modus „nur Weltkugel“", When.WorldOnly),
+        // Spur pool (#743, Teil 3): seit +0x1A nicht mehr unter 0x19–0x1C fällt – Plätze mit Besitzer 0 ohne Kaderplatz (FILE11/18/19/20/
+        // 47/49: 29–31, 110, Nominierte des Nationalkaders) importiert das Remake im Modus 1 als frei (Restlücke für abgleich-rest, #732).
+        new("far:8253", 33, 0x1A, 0x1A, "Besitzer 0 ohne übernommenen Kader im Modus „nur Weltkugel“ (Import: frei)", When.WorldOnly),
         new("far:9657", 0x3D, 0x16, 0x1D, "Satz des Managervereins im Modus „nur Weltkugel“ (trägt das Land, Regel 1)", When.WorldOnly),
         new("965B", 0x1AF, 0x177, 0x182, "Über-/Unterzahl des Nationalteams (Satz 5; Remake führt sie nur je Manager)", When.WorldOnly),
         new("8257", 0x50, 0x00, 0x2F, "WM-Gruppentabellen in den Ländersätzen: schreibt der Export nicht (Restlücke)", When.WorldOnly),
@@ -200,6 +206,32 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
             output.WriteLine($"UNCOVERED {file} {u}");
         Assert.True(uncovered.Count == 0, $"{file}: {uncovered.Count} Abweichungen außerhalb der Liste, z. B. " +
                                           string.Join("; ", uncovered.Take(12)));
+    }
+
+    /// <summary>
+    /// R727N2-01 (Spur pool, Teil 3, #743): Der gekaufte VALLIERE steht in FILE41/43/43A/44 auf Kaderplatz 24 mit Poolindex 179, der
+    /// Poolsatz 179 bleibt Marktsatz (Besitzer 4). Der Export behält beides; ohne die Marktzwilling-Regel in
+    /// <c>GameState.WriteSquadsAndPool</c> schrieb er Besitzer 0 (Mutation `marketTwins` → rot, vorher von der Regel 0x19–0x1C
+    /// verdeckt).
+    /// </summary>
+    [GameDataTheory]
+    [InlineData("FILE41.HOK")]
+    [InlineData("FILE43.HOK")]
+    [InlineData("FILE43A.HOK")]
+    [InlineData("FILE44.HOK")]
+    public void MarketTwin_KeepsPoolSlot179AndMarketOwner(string file)
+    {
+        var raw = OriginalExportTests.RawDatabase();
+        var original = OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave(file)));
+        var game = GameState.ImportOriginal(original, ClubDatabase.Parse(raw), Seed);
+        var exported = OriginalSaveGame.Read(OriginalExport.Export(game, raw));
+        Assert.Equal(OriginalImport.PoolOwnerMarket, OriginalImport.PoolEntry(original, 179)[0x1A]);
+        Assert.Equal(OriginalImport.PoolOwnerMarket, OriginalImport.PoolEntry(exported, 179)[0x1A]);
+        Assert.Equal(179, OriginalImport.SquadSlot(original, 0, 24)[0x0F]);
+        Assert.Equal(179, OriginalImport.SquadSlot(exported, 0, 24)[0x0F]);
+        // Kein Spieler außerhalb der 199 Plätze: jeder Kaderplatz des Managers verweist im Export auf denselben Poolindex wie im Original.
+        for (var k = 0; k < OriginalSaveGame.SquadSlotsPerManager; k++)
+            Assert.Equal(OriginalImport.SquadSlot(original, 0, k)[0x0F], OriginalImport.SquadSlot(exported, 0, k)[0x0F]);
     }
 
     /// <summary>

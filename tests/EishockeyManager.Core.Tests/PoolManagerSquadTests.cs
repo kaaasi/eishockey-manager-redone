@@ -82,6 +82,60 @@ public class PoolManagerSquadTests
         Assert.Equal(expected, game.TransferMarket.Pool.Where(s => s.Owner == PoolOwner.Taken).Select(s => s.Index).ToArray());
     }
 
+    /// <summary>
+    /// Teil 3 (#743): Export eines Remake-Spiels ohne Ersatzregel – jeder Kaderplatz eines Managers verweist auf den Poolsatz seines
+    /// Spielers (Name, Besitzer = Manager), kein freier Poolspieler weicht. Vorher bekamen alle 25 Startkaderspieler einen freien
+    /// Ligaplatz, dessen Poolspieler im Export entfiel.
+    /// </summary>
+    [GameDataFact]
+    public void Export_RemakeGame_SquadSlotsPointToOwnPoolSlots()
+    {
+        var raw = OriginalExportTests.RawDatabase();
+        var game = OriginalExportTests.NewGameForExport(ClubDatabase.Parse(raw));
+        var exported = OriginalSaveGame.Read(OriginalExport.Export(game, raw));
+        for (var m = 0; m < game.Managers.Count; m++)
+        {
+            var club = game.Clubs[game.Managers[m].ClubIndex];
+            var expected = IndicesOf(game, club);
+            Assert.DoesNotContain(-1, expected);
+            for (var k = 0; k < club.Players.Count; k++)
+            {
+                var index = OriginalImport.SquadSlot(exported, m, k)[0x0F];
+                Assert.Equal(expected[k], index);
+                Assert.Equal(m, OriginalImport.PoolEntry(exported, index)[0x1A]);
+            }
+            Assert.Equal(club.Players.Count, Enumerable.Range(1, TransferPoolRules.Size - 1)
+                .Count(i => OriginalImport.PoolEntry(exported, i)[0x1A] == m));
+        }
+    }
+
+    /// <summary>
+    /// Teil 3: Vertragsende im Managerkader (R15-E3 = C) – der Spieler ist verloren, sein Platz bleibt vergeben und gehört dem Manager
+    /// ([ORIGINAL] Datei 0x27DE3–0x27E9D lässt Pool +0x1A stehen, FILE44 → FILE46 KJELLBERG Pool 196 +0x1A = 0); Sichern/Laden behält
+    /// ihn. Vorher schrieb der Export für einen solchen Platz 6.
+    /// </summary>
+    [Fact]
+    public void ContractEnd_LostPlayer_SlotKeepsManager()
+    {
+        var game = Create((5, League.Bundesliga));
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        foreach (var p in club.Players)
+            p.ContractYears = 3;
+        var lost = club.Players[3];
+        var index = IndicesOf(game, club)[3];
+        lost.ContractYears = 1;
+        PlayToSeasonOver(game);
+        game.StartNextSeason();
+
+        Assert.DoesNotContain(lost, club.Players);
+        var slot = game.TransferMarket.Pool[index - 1];
+        Assert.Same(lost, slot.Player);
+        Assert.Equal(PoolOwner.Taken, slot.Owner);
+        Assert.Equal(0, slot.Manager);
+        var loaded = SaveGame.Load(SaveGame.Save(game)).Game!;
+        Assert.Equal(0, loaded.TransferMarket.Pool[index - 1].Manager);
+    }
+
     /// <summary>Speichern und Laden behalten die Plätze (derselbe Spieler im Kader und im Pool).</summary>
     [Fact]
     public void SaveAndLoad_KeepsSeatedSquad()

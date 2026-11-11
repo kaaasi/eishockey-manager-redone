@@ -59,7 +59,8 @@ public sealed partial class GameState
     /// <list type="bullet">
     /// <item>Besitzer 0–3 mit Platz in einem übernommenen Managerkader: derselbe Spieler, vergeben. [APPROX] Ohne übernommenen
     ///   Kader („nur Weltkugel“) der gleichnamige Spieler des Managervereins, sonst frei. Besitzer 0–3 ohne Kaderplatz (mit
-    ///   übernommenem Kader): nach Vertragsende verlorener Spieler, Platz bleibt vergeben (#749, R15-E3 = C, FILE46 KJELLBERG).</item>
+    ///   übernommenem Kader): nach Vertragsende verlorener Spieler, Platz bleibt vergeben (#749, R15-E3 = C, FILE46 KJELLBERG) und
+    ///   merkt sich den Manager (<see cref="PoolSlot.Manager"/>, Spur pool Teil 3).</item>
     /// <item>Marktplatz mit Besitzer 4: Angebot aus dem Pool (<see cref="TransferListing.FromPool"/>); mit Besitzer 0–3: Angebot
     ///   dieses Managers, der Spieler steht nur auf dem Markt-Platz, nicht im Kader (Feldbelege L7; A380 wie
     ///   <see cref="TransferMarket.Offer"/>, #676). [APPROX] Ein Platz mit Poolindex 0 ist der Rest des
@@ -97,7 +98,8 @@ public sealed partial class GameState
                          ?? Clubs[Managers[owner].ClubIndex].Players.FirstOrDefault(p => p.Name == name && p.Role == role);
                 // [ORIGINAL] #749, R15-E3 = C: Besitzer 0–3 ohne Kader- und Marktplatz ist ein nach Vertragsende verlorener Spieler
                 // (Datei 0x27DE3–0x27E9D schreibt +0x1A nicht zurück); der Platz bleibt vergeben, 0x494EF zieht nur Besitzer 6
-                // (FILE46 Pool 196 KJELLBERG). [APPROX] „Nur Weltkugel“ (kein Managerkader übernommen) bleibt bei „frei“.
+                // (FILE46 Pool 196 KJELLBERG). [APPROX] „Nur Weltkugel“ (kein Managerkader übernommen) bleibt bei „frei“ – die
+                // Plätze mit +0x1A = 0 (FILE11/18/19/20/47/49: 29–31, 110) tragen dort Nominierte des Nationalkaders (Restlücke).
                 taken = player is not null || !WorldOnly;
             }
             if (player is null)
@@ -124,6 +126,7 @@ public sealed partial class GameState
                 Player = player,
                 Club = club,
                 Owner = taken ? PoolOwner.Taken : owner == OriginalImport.PoolOwnerMarket ? PoolOwner.Market : PoolOwner.Free,
+                Manager = taken ? owner : -1, // Spur pool, Teil 3: Besitzer +0x1A (bestimmend nur ohne Spieler im Managerkader)
             });
         }
 
