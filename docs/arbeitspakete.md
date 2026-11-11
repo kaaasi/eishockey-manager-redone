@@ -142,12 +142,14 @@ anpassen, wenn ihre eigene Verhaltensänderung sie bricht – je Test Begründun
   `Fixes #<nr>` je behobenem Issue; was sich nicht belegen lässt, bleibt offen mit Begründung im Issue.
 - **Dateigrenzen:** `src/EishockeyManager.Core/**` außer `GameState.Integration.cs` (höchstens minimal), eigene Testdateien,
   `AbgleichOriginalPaareTests.cs` (nur erwartete Listen), `docs/analyse/abgleich-original.md` (Spalte „behoben durch“).
-- **Modell:** Claude Opus 5.5. **Status:** PR #752 (Draft). Lauf 1: #747, #749, #731 (Kondition/Technik) behoben; #737 Zufall
+- **Modell:** Claude Opus 5.5. **Status:** PR #752 (Review). Lauf 1: #747, #749, #731 (Kondition/Technik) behoben; #737 Zufall
   (Einzelprämien, Beleg-Test); #734 kein Finanzfehler (Aufstellung des Originals nach dem Laden, offen unter #733). Fortsetzung 1:
   #730 behoben (Training begrenzt die Belastung vorzeichenbehaftet, 0x4BD56), #736 behoben (Managerkader nach Datenbankplätzen,
   ergänzte Plätze mit Datenbanknamen, 0x5B0CC/0x5AAA0). Fortsetzung 2: #733 behoben (Import liest das gesicherte Byte 0x376,
   Laden holt es zurück; FILE13→14 Eingriff), #748 behoben (0x952C für die Managervereine), #738 eingegrenzt (Reihen ohne
-  „eingesetzt“ nicht aufgestellt; Rest `RefillLineup` im Handbetrieb); offen #732, #738 (Rest) – Fortsetzung 3 von 3.
+  „eingesetzt“ nicht aufgestellt; Rest `RefillLineup` im Handbetrieb). Fortsetzung 3: #738 behoben (Handbetrieb ohne Nachrücken,
+  0x426C4), #732 teilweise (0x26F20 läuft im Modus 1 nicht: kein Altern, keine Laufzeit; Konto offen: Tagesabschluss für Satz 0).
+  Offen mit Begründung im Issue: #732 (Konto), #734 (fünf Eingesetzte nach dem Laden). **Spur fertig – Review.**
 
 ### Spur `pruefung-karte` – Welle 2
 
