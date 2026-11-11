@@ -30,6 +30,7 @@
 6. **Immer zum Schluss:** Übergabekommentar nach `docs/handoffs/VORLAGE.md` in jedem PR, an dem die Sitzung gearbeitet hat
    (Integration, Plan); ohne PR als `docs/handoffs/<datum>-<thema>.md` auf eigenem Branch.
 7. **Geplante Läufe** (Spuren, Fortsetzungen, Fixläufe, Reviews): Zugriff, Modell, `spur-wartet`, Draft-Status nach `anhang.md` F.
+   Läufe legen selbst keine Aufgaben an (R15-E4); Fortsetzungen und Nachprüfungen legt die Leitstelle aus dem Übergabekommentar an.
 8. Antwort an den Nutzer **knapp** (`AGENTS.md` §7): Ergebnis, Entscheidungsbedarf, nächster Schritt, Kurzaufrufe.
 9. **Sitzung je Runde (Nutzer 10.11.2026):** höchstens eine Runde je Sitzung; die nächste beginnt in einem neuen Chat mit dem
    Kurzaufruf oben. Stand nur in GitHub (Status in `docs/arbeitspakete.md`, Labels, Übergaben). Dem Nutzer meldet sie sich nur bei

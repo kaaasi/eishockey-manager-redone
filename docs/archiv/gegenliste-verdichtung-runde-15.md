@@ -3,6 +3,8 @@
 Prüfhilfe für das Review von PR #722; nach dem Merge entbehrlich (die Leitstelle verschiebt sie mit der Runde ins Archiv).
 Alte Fassung = `main` @ `7ea49a5`. Jede Regel der alten Fassung → Fundstelle neu (Datei, Abschnitt/Punkt). „Wortlaut“ = Text
 unverändert übernommen, „gekürzt“ = gleiche Regel, kürzere Formulierung. Neu sind nur die Klärungen aus #712 (letzter Abschnitt).
+**Archiviert beim Abschluss Runde 15 (#724):** Zeichenzahl neu gemessen 43.092 statt 43.057 (N1, −24 % bleibt); nicht verzeichnet
+war der Eintrag „DOSBox-Aufnahme“ in `AGENTS.md` §8, Zeile „Kurzaufrufe“ (N3, nur Auffindbarkeit).
 Abkürzungen: A = `AGENTS.md`, Z = `docs/prozess/zusammenarbeit.md`, H = `docs/prozess/anhang.md`, S = `spur-start.md`,
 R = `review-anfrage.md`, L = `leitstelle-start.md`, V = `docs/handoffs/VORLAGE.md`, C = `CLAUDE.md`.
 
