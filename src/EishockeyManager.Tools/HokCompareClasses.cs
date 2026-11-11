@@ -259,6 +259,16 @@ public static class HokCompareClasses
     /// </summary>
     public static IReadOnlyDictionary<string, string[]> Interventions { get; } = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
     {
+        // FILE13→14 (#734, R15-E6 = A): Sitzungszustand. Nach dem Laden zeigte die Aufstellung der damaligen DOSBox-Sitzung
+        // (Runde 10) nur 5 Eingesetzte (`file13_2`), im DEB-Pokal standen weniger als 9 Spieler (README); frisch geladen stellt
+        // das Original voll auf (Probe Nutzer 11.11.2026, `file13_r15_1…3`, `file12_r15_1…3`: „Eingesetzt: 20“, AUTOM.), wie
+        // 0x426BC mit den Daten von FILE13. [ORIGINAL] Ohne Nutzerhandlung schreibt em.exe in DGROUP 0x375/0x376 keine 0
+        // (Aufstellung von Hand Datei 0x40ADE/0x40DE4, Taktikknopf 0x47F4E/0x49058; Laden/Sichern kopieren den Block
+        // 0x5C3E3/0x5B9DD; #733). Folgen der Handaufstellung: Konto (Strafen 0:2 und 200.000 DM je Spiel mit weniger als neun,
+        // Platz 12; mit dieser Aufstellung im Bereich, AbgleichFixMoneyTests), Automatik, Teamwerte und verdeckte Werte des
+        // Managervereins. Die Belastung der Spieler bleibt verglichen (#730, Spur abgleich-rest).
+        ["FILE13→FILE14"] = ["Managers[0].Money", "Clubs[6 KREFELDER EV]._autoLineup", "Clubs[6 KREFELDER EV].TeamValues.*",
+            "Clubs[6 KREFELDER EV].Players[*].HiddenSkill*"],
         // FILE46: „Saisonende und Vertragsverhandlung am 30.04.1994 mit Nichtverlängerung von KJELLBERG“.
         ["FILE44→FILE46"] = ["Clubs[*].Players[KJELLBERG]*", "Clubs[*].Players.Count", "Clubs[*].Lineup*"],
         // FILE48: „FILE18 geladen (nicht FILE47), Kader geleert, einen Tag weitergespielt“ (Block 0375 Byte 10/11 = 0).

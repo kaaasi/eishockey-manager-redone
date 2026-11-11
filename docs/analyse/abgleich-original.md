@@ -34,7 +34,7 @@ Alle elf Paare erreichen den Halt von b. Zahlen: Abweichungen bei Saat 1993 vor 
 | Paar | Art | vorher | nachher | nachher erwartet |
 |---|---|---:|---:|---|
 | FILE02→03 | 3 Spieltage | 74 (71) | 3 | Belastung 3 Spieler #730 |
-| FILE13→14 | Saisonwechsel, Oberliga | 129 (119) | 22 | Pool #731, Konto #734, Aufstellung #733, Teamwerte Managerverein #748 (optional), Belastung (Zufall, optional) |
+| FILE13→14 | Saisonwechsel, Oberliga, Eingriff Sitzungszustand (#734) | 129 (119) | 22 | Runde 16: 5 – Belastung #730 (4 Spieler, Pool-Mittel); Konto, Automatik, Teamwerte und verdeckte Werte KREFELD = Eingriff |
 | FILE16A→17 | Saisonwechsel (Doppelwechsel) | 162 (140) | 16 | Pool #731, Belastung 9 (+6 optional) #730, Konto #737, Teamwerte LANDSHUT (Zufall, optional) |
 | FILE20→21 | Saisonwechsel „nur Weltkugel“ | 178 (121) | 83 | Managersatz #732 (jetzt auch Gehalt/Preis), Tag 0 #699, Pool #731 |
 | FILE22→23 | Saisonwechsel | 128 (122) | 1 | Pool #731 |
@@ -53,7 +53,7 @@ Alle elf Paare erreichen den Halt von b. Zahlen: Abweichungen bei Saat 1993 vor 
 | #699 | P3 | **behoben durch #725** (Punkt 2 Tag 0), außer „nur Weltkugel“ (FILE20→21: `DayOpened`) | erstes Menü der Saison: `DayOpened`, `FinanceDay`, `TrainedUntil`, `RankSlotsRecorded` | `SeasonFlow.cs` `OpenStartDay` (ohne `WorldOnly`) |
 | #730 | P2 | **teilweise behoben durch #752** (Training begrenzt die Belastung wie Datei 0x4BD56 vorzeichenbehaftet: ab 128 → 50); offen: Spieler, die bei allen Prüfsaaten abweichen (FILE02→03 HOCK, FILE13→14 J.MEYER/KUHNEKATH, FILE16A→17 A.RAUBAL/ZIMMERMANN/PYLE) – im Original kippen die Vielspieler der Reihen 1/2 vor dem Training über 127, im Remake fast nie (Verdacht Belastungszuwachs je Reihe/Einsatz); übrige Spieler Sägezahn ≤ 127, Vereinsmittel ±10 | `Player.Strain` der Managerkader (Original 50) | `Squad.Training.cs` Erholung (Datei 0x6B08–0x6B1A) |
 | #731 | P2 | Kondition/Technik **behoben durch #752** (Tausch Pool ↔ Kader lässt die Werte am Platz); Belastung kein Befund (Pool hat im Original keine, Import setzt 150) | Pool nach Saisonwechsel: Belastung ≈ 87 statt ≈ 146, Technik/Kondition 5–16 tiefer | `Transfer.Pool.cs` `Random16(80, 120)` |
-| #734 | P2 | offen, **kein Finanzfehler** (#752): Original nach dem Laden mit 5 Eingesetzten (`file13_2`) → Strafen, Platz 12, Konto auf 400.000 DM; mit dieser Aufstellung im Bereich (`AbgleichFixMoneyTests`); Ursache der Aufstellung offen (#733) | Konto FILE13→14: 364.736 statt 183.787 DM | Finanzbuch Restsaison/Saisonwechsel |
+| #734 | P2 | **Eingriff/Sitzungszustand** (Runde 16, `pruefung-karte`), **kein Finanzfehler** (#752): Original nach dem Laden mit 5 Eingesetzten (`file13_2`) → Strafen, Platz 12, Konto auf 400.000 DM; mit dieser Aufstellung im Bereich (`AbgleichFixMoneyTests`). Frisch geladen stellt das Original voll auf (Probe Nutzer 11.11.2026, `file13_r15_1…3`, `file12_r15_1…3`) – die fünf stammen aus der damaligen DOSBox-Sitzung. `HokCompareClasses.Interventions` (Konto, Automatik, Teamwerte, verdeckte Werte KREFELD; Belastung bleibt verglichen, #730), Test `AbgleichFile13InterventionTests` | Konto FILE13→14: 364.736 statt 183.787 DM | Finanzbuch Restsaison/Saisonwechsel |
 | #737 | P2 | **Zufall** (#752): 200.000 DM Einzelprämien im Original (`file16_9`; gleicher Start ohne Prämien: `file23_1`), mit ihnen im Bereich; Muster jetzt `Chance` | Konto FILE16A→17: Veränderung −2,33 Mio. statt −1,92 Mio. DM, über sechs Saaten ±1.000 DM | Finanzbuch, negativer Kontostand |
 | #747 | P2 | **behoben durch #752** (`EnsureTeamValues` übergeht den Managerverein „nur Weltkugel“, Import leert ihn) | „nur Weltkugel“: alle Teamwerte nach dem Import neu gewürfelt (FILE18→48 16–20, Nationalteams 0) | `OriginalImport.cs` `ApplyTeamValues` (Managerverein `null`) → `MatchEngine.EnsureTeamValues`/`LoadTeamValues` (alle Vereine) |
 | #732 | P3 | **teilweise behoben durch #752**: Teamwerte (#747); Alter, Laufzeit, Pool-Alter (0x26F20 läuft im Modus 1 nicht, `AbgleichFixWorldOnlyTests`); Gehalt/Preis kein Befund (Importbewertung). Offen: Konto (−2.030.327 DM; Original ruft den Tagesabschluss 0x100:0x4D für Satz 0 in Sommerpause 0x56512 und WM-Schleife 0x5569A, Remake im Modus 1 ohne Vereinsfinanzen) | „nur Weltkugel“: Managersatz 0 altert, Konto, Teamwerte; Original bewertet Gehalt/Preis neu (neue Tendenz) | Regel 1 der Feldkarte, Saisonwechsel |
@@ -66,7 +66,7 @@ Alle elf Paare erreichen den Halt von b. Zahlen: Abweichungen bei Saat 1993 vor 
 Kondition/Technik über einen Saisonwechsel bis ±31 (große Wanderung je Verein, Bereich ±35); LANDSHUT FILE16A→17 (Original in die
 Oberliga abgestiegen, Werte auf deren Obergrenze −33, Remake nicht; Liga über den Saisonwechsel zufallsabhängig); Belastung KREFELD
 FILE13→14 bei Saaten 1993 und 77 (Endrunde mit 9 statt 3 Spielen). Im Test als optionale Muster mit „Zufall“ (`Chance`).
-**Eingriff:** FILE44→46 (KJELLBERG, Kadergröße, Aufstellung), FILE18→48 (Nationalkader, Automatik, Länderwerte der Reihen:
+**Eingriff:** FILE13→14 (Sitzungszustand der DOSBox-Sitzung aus Runde 10, #734: Konto, Automatik, Teamwerte und verdeckte Werte KREFELD), FILE44→46 (KJELLBERG, Kadergröße, Aufstellung), FILE18→48 (Nationalkader, Automatik, Länderwerte der Reihen:
 DEUTSCHLAND alle sechs Teamwerte, Original 0 absolut bei leerem Kader, Remake `[APPROX]` unverändert).
 **Nicht in den Listen:** #698 (behoben durch #726) betrifft vier Saisonwechsel nach FILE44, kein Paar.
 
@@ -78,7 +78,7 @@ DEUTSCHLAND alle sechs Teamwerte, Original 0 absolut bei leerem Kader, Remake `[
   (#738), Teamwerte KREFELD (#748), Poolzahl FILE44→46 (#749), Belastung BAYREUTH (6 Spieler, #730) und die Zufallsfälle oben. Eine neue Zufallsreihenfolge kann weitere Grenzfälle kippen; dann an allen sechs Saaten nachziehen.
 - Gegenproben (Basis 3af4ec9; Mutation in einer Kopie, Testlauf `AbgleichOriginalPaareTests`): „Gehälter fehlen“ (`Book` bucht `Gehaelter` nicht)
   → rot in FILE22→23 und FILE44→46 (je sechs Saaten) und im Test `Money_WithoutSalaries_IsDeviation`, der die Mutation nachbildet;
-  in FILE13→14 und FILE16A→17 verdeckt das erwartete Muster `Managers[0].Money` (#734, #737) sie. „Alter +2 am Saisonwechsel“ → rot
+  in FILE13→14 (Konto als Eingriff, #734) und FILE16A→17 (Muster `Managers[0].Money`, #737) bleibt sie verdeckt. „Alter +2 am Saisonwechsel“ → rot
   in allen fünf Saisonwechsel-Paaren einschließlich FILE20→21. „Erholung halbiert“ → rot in FILE13→14 und FILE16A→17; in den Paaren
   mit 1–3 Tagen bleibt die Belastung innerhalb ±20, und in FILE44→46 verdeckt das optionale Muster #738 die Formänderung.
 - Ein Bereich kann einen Fehler verdecken (R15-D2, Option C bitgenau nach v1.0 vorgemerkt).
