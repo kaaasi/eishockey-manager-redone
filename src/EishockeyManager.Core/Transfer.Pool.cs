@@ -573,6 +573,10 @@ public sealed partial class TransferMarket
                 Rename(game, slot, $"POOLSPIELER {slot.Index}");
                 slot.Owner = PoolOwner.Free;
             }
+            // #732: [ORIGINAL] 0x274A7 liegt in der Managerschleife von 0x26F20, die im Modus „nur Weltkugel“ nicht läuft
+            // (FILE20 → FILE21: Alter aller Poolplätze unverändert); umbenannt wird trotzdem (0x56467/0x56470).
+            if (game.WorldOnly)
+                continue;
             slot.Player.Age++;
             game.RenewAgedPoolPlayer(slot); // [ORIGINAL] Laufbahnende und Neuanlage im Poolplatz (Datei 0x2787A, Spur kader-transfer, U5)
         }

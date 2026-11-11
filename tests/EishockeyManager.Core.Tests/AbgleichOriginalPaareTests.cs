@@ -20,6 +20,12 @@ public class AbgleichOriginalPaareTests
     private const int WorldOnlyManagerSlot = 732, MoneyFile13 = 734,
         DayZero = 699, FormFile44 = 738;
 
+    /// <summary>
+    /// Kein Befund (#732): Im Modus „nur Weltkugel“ trägt Satz 0 das Land (Regel 1 der Feldkarte); der Import baut den Vereinskader
+    /// des Managers neu und bewertet ihn beim Laden, beide Seiten des Paars also unabhängig voneinander. Begründung am Eintrag.
+    /// </summary>
+    private const int WorldOnlySquadImport = 0;
+
     /// <summary>Zufall, kein Befund: Begründung am Eintrag (nur optionale Muster).</summary>
     private const int Chance = 0;
 
@@ -96,13 +102,13 @@ public class AbgleichOriginalPaareTests
                 // Zufall: LANDSHUT steigt im Original in die Oberliga ab (Teamwerte auf deren Obergrenze, alle −33), im Remake
                 // nicht (Liga über den Saisonwechsel zufallsabhängig); Abstand 21–51 je Saat.
                 new($"{Landshut}.TeamValues.*", Chance, Optional: true)],
-            // „nur Weltkugel“ (#732): Managerkader altert im Remake ein Jahr, Verträge ein Jahr kürzer; das Original bewertet Gehalt
-            // und Preis neu (neue Tendenz, Alter und Vertrag unverändert) – sichtbar seit dem Import der Tendenz (#726/#727).
+            // „nur Weltkugel“ (#732): Alter und Laufzeit des Managerkaders behoben durch abgleich-fix (0x26F20 läuft im Modus 1 nicht,
+            // AbgleichFixWorldOnlyTests). Gehalt und Preis: kein Befund – der Import übernimmt im Modus 1 keinen Managerkader und
+            // bewertet den Vereinskader beim Laden neu (Wert nach Tendenz und Preisindex des Stands); im Remake wie im Original
+            // (Satz 0, `emtool hok dump` FILE20/FILE21) bleiben Gehalt und Preis über die Saison stehen.
             ["FILE20→FILE21"] = [new("DayOpened", DayZero), .. SeasonStart,
-                new($"{Landshut}.Players[*].Age", WorldOnlyManagerSlot, Delta: 1),
-                new($"{Landshut}.Players[*].ContractYears", WorldOnlyManagerSlot, Delta: -1),
-                new($"{Landshut}.Players[*].MonthlySalary", WorldOnlyManagerSlot),
-                new($"{Landshut}.Players[*].PurchasePrice", WorldOnlyManagerSlot),
+                new($"{Landshut}.Players[*].MonthlySalary", WorldOnlySquadImport),
+                new($"{Landshut}.Players[*].PurchasePrice", WorldOnlySquadImport),
                 // Form und Belastung einzelner Spieler (je nach Saat andere, Remake Belastung 70).
                 new($"{Landshut}.Players[*].Form", WorldOnlyManagerSlot, Optional: true),
                 new($"{Landshut}.Players[*].Strain", WorldOnlyManagerSlot, Optional: true),

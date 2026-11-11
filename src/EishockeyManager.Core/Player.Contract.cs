@@ -124,12 +124,18 @@ public sealed partial class GameState
 
         // #698: Jugend am Saisonende vor dem Altern und Herunterzählen (0x26F20, FinanceTalent.cs). Season ist schon die neue
         // Saison, also das Jahr des 29. April.
-        JoinSeasonEndYouth(Season);
+        // #732: [ORIGINAL] Im Modus „nur Weltkugel“ (DGROUP 0xD0B9 = 1) beginnt die Managerschleife von 0x26F20 bei [0x386]
+        // (Datei 0x26F2F–0x26F4C, 0x26FAD → 0x279F1) und läuft damit nie: keine Jugend (0x2728C), kein Altern der Poolplätze
+        // (0x274A7), kein Herunterzählen der Laufzeit (0x27500) und keine Leihrückgabe im Managersatz. Beleg FILE20 → FILE21:
+        // Kader des Managersatzes 0 mit Alter und Laufzeit unverändert, alle 199 Poolplätze mit gleichem Alter +0x14.
+        if (!WorldOnly)
+            JoinSeasonEndYouth(Season);
         AgeFreeAgents();
         // A091/A380: Die nicht verkauften eigenen Spieler von der Transferliste sind schon zurück (OnNewSeasonManager, vor dem
         // Löschen der Saisonzähler; Review R14KS-02) und altern hier wie alle Kaderspieler.
         // Snapshot vor Rückgaben: Vereinsreihenfolge darf keinen Spieler zweimal altern lassen.
-        var players = Clubs.SelectMany(c => c.Players.Select(p => (Club: c, Player: p))).ToArray();
+        var players = Clubs.Where(c => !WorldOnly || !managed.Contains(c.Index))
+            .SelectMany(c => c.Players.Select(p => (Club: c, Player: p))).ToArray();
         // Spur transfer-vertraege-komplett: ausgelaufene Verträge im Kader eines Managers werden am Saisonende verhandelt
         // (0x27D05). Im Modus „nur Weltkugel“ gibt es keine Vereinssaison und damit keine Verhandlung.
         var renewers = WorldOnly ? new Dictionary<int, Manager>() : ActiveManagers.ToDictionary(m => m.ClubIndex);
