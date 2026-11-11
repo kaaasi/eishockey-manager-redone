@@ -167,11 +167,10 @@ public class TagestaktHauptwegReviewTests
     /// Restsaison und Sommerpause. Spur pruefung-karte Teil 5 (Entscheidung Nutzer 09.11.2026, C): Der Import spielt die
     /// Ladeeigenheit des Markierungstags nach (GameState.LoadQuirk.cs), der Original-Lauf bucht deshalb auch im Remake den
     /// April-Abschluss des 25er-Kaders (<c>file46_2</c>, Test <c>File44_SeasonEndScreen_LoadQuirkBooksAprilMonthEnd_LikeFile46_2</c>).
-    /// Vorher verglich der Test Original + 603.307 DM (vorher rot gegen den Originalwert: −1.617.704 DM). Begründete Restabweichung
-    /// (Saat 4711: −2.106.011 DM, 33.503 DM über dem Original): April-Abschluss 115.000 DM unter dem Original, die vier Sommermonate
-    /// zusammen rund 81.000 DM teurer (FILE44-Kader: Gehälter 291.100, Unterhalt 192.866, Grundeinnahmen +15.040, also −468.926 DM je
-    /// Monat gegen im Mittel rund −448.000 DM; Review #692), Ablöse KJELLBERG 2.500 DM über <c>file46_5</c> (Zufall). Kategoriesummen
-    /// fehlen im HOK. Spanne: ±100.000 DM um den Originalwert.
+    /// Vorher verglich der Test Original + 603.307 DM (vorher rot gegen den Originalwert: −1.617.704 DM). Stand Runde 16 (#703
+    /// R701-06): Saat 4711 −2.144.691 DM, 5.177 DM unter dem Original (Saat 1993: 2.997 DM); der April-Abschluss trifft das Original
+    /// genau (<c>file46_2</c> zeigt das Konto vor der Prämie, siehe <c>TagestaktSommerpauseReviewTests</c>), der Rest liegt in den
+    /// Sommermonaten und der Ablöse KJELLBERG (Zufall). Kategoriesummen fehlen im HOK. Spanne: ±100.000 DM um den Originalwert.
     /// </summary>
     [GameDataFact]
     public void File44_ToNewSeason_AccountFollowsFile46()

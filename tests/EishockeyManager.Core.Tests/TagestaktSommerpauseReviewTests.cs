@@ -61,11 +61,13 @@ public class TagestaktSommerpauseReviewTests
     /// (14.04.1994, 18.027.183 DM) ist im Menü des Markierungstags gesichert (Datei 0x55350, nach dem Tageswechsel 0x55204). Nach dem
     /// Laden läuft dieser Tageswechsel erneut (Zähler 218 = „Sonntag, 15. April“, Bild <c>file46_1</c>, Konto unverändert), die
     /// WM-Schleife steht einen Zähler höher und schließt zuletzt den 30. April ab – mit dem April-Abschluss des 25er-Kaders, vor dem
-    /// Kaderwechsel. DOSBox-Bild <c>file46_2</c>: 17.523.876 DM am Bildschirm „Saisonende“ = FILE44 + Prämie (100.000) − 603.307 DM.
-    /// Regressionstest (vorher rot: kein Gehaltsabschluss zwischen 14. und 29. April, Konto 18.127.183 DM). [APPROX] Restabweichung:
-    /// Der April-Abschluss des Remakes beträgt −488.307 DM (Gehälter −319.899, Unterhalt −192.866, Grundeinnahmen/Werbung +24.458,
-    /// Saat 4711), das Original −603.307 DM; die 115.000 DM sind ohne Kategoriesummen im HOK nicht zuzuordnen (FILE46 führt nur die
-    /// Summen der neuen Saison). Spanne: file46_2 bis 130.000 DM darüber. Die Bücher der neuen Saison zeigen danach genau vier
+    /// Kaderwechsel. Regressionstest (vorher rot: kein Gehaltsabschluss zwischen 14. und 29. April, Konto 18.127.183 DM).
+    /// R701-06 (#703, Runde 16): DOSBox-Bild <c>file46_2</c> zeigt 17.523.876 DM = FILE44 − 503.307 DM, also das Konto
+    /// **vor** der Prämie. [ORIGINAL] 0x26F20 zeichnet je Manager zuerst das Fenster „Ereignisse“ mit Infoleiste (Aufruf 0x26D9A,
+    /// Datei 0x2700A) und bucht danach die Prämien aufs Konto (Datei 0x270DB–0x27258, je Einzelprämie 0x493E0 Drittel = 100.000 DM).
+    /// Der April-Abschluss des Remakes (Gehälter −319.899, Unterhalt −192.866, Grundeinnahmen/Werbung +9.458 DM, jede Saat) trifft
+    /// damit das Original auf die Mark; die frühere „Restabweichung 115.000 DM“ (Review #702) war die Prämie plus 15.000 DM
+    /// Grundeinnahmen/Werbung, die seither nicht mehr abweichen. Die Bücher der neuen Saison zeigen danach genau vier
     /// Gehaltsabschlüsse des Sommerkaders.
     /// </summary>
     [GameDataFact]
@@ -87,8 +89,8 @@ public class TagestaktSommerpauseReviewTests
         Assert.Equal(100_000, oldBook.Current(FinanceCategory.Praemien));
         Assert.Equal(wagesBefore - aprilWages, oldBook.Current(FinanceCategory.Gehaelter)); // ein Abschluss, am 30. April
         Assert.StartsWith("Montag, 30.", game.DateText);
-        const long File46_2 = 17_523_876;
-        Assert.InRange(me.Money, File46_2, File46_2 + 130_000);
+        const long File46_2 = 17_523_876; // Infoleiste vor der Prämienbuchung (Datei 0x2700A vor 0x270DB)
+        Assert.Equal(File46_2, me.Money - oldBook.Current(FinanceCategory.Praemien));
 
         game.StartNextSeason();
 
