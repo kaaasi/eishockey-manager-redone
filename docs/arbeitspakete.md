@@ -56,7 +56,8 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
   3. **Export verlustfrei:** Ersatzregel „freier Ligaspieler weicht“ (`[APPROX]`) entfällt; Rundreise FILE01–49A ohne diese
      Ausnahme; **R727N2-01:** Rundreisetest prüft den exportierten Besitzer des Marktzwillings (Mutation `marketTwins` → rot).
 - **Abnahme:** FILE41/43/43A/44 behalten Markt-Poolplatz 179 im Export; kein Spieler mehr außerhalb der 199 Plätze; `Fixes #743`.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** nicht gestartet.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teil 1 fertig (PR #765, Lesart in
+  `formate/spielstand-original.md`, Abschnitt „Managerkader im Spielerpool“); Teile 2–3 offen.
 
 ### Spur `abgleich-rest` – Belastung, Modus „nur Weltkugel“ (#730 Rest, #732, #699 Rest; R16-D1 = B)
 
