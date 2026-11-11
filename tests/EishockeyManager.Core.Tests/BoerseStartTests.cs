@@ -243,7 +243,9 @@ public class BoerseStartTests
                 {
                     Assert.Equal(Stock.HistoryLength, s.History.Count);
                     Assert.Equal(s.Price, s.History[^1]);
-                    Assert.InRange(s.Price, 1, StockMarket.SplitAbove);
+                    // Kurs 0 ist möglich: der Tag beginnt mit mindestens 10, Ereignisse ziehen bis zu v/2 + 10 + 1 ab
+                    // (FinanceStocks.Advance, wie 0x5799F–0x57C50); seit #730 (abgleich-fix, anderer Zufallsverbrauch) bei Saat 8.
+                    Assert.InRange(s.Price, 0, StockMarket.SplitAbove);
                     Assert.True(s.Base > 0);
                 });
             }

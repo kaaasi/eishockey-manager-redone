@@ -10,36 +10,80 @@ namespace EishockeyManager.Core.Tests;
 /// Fall rot, ebenso ein Muster, das nicht mehr trifft (behoben → Eintrag entfernen). Bericht: <c>docs/analyse/abgleich-original.md</c>.
 /// </summary>
 /// <remarks>
-/// Paare ohne Eingriff: FILE02→03, FILE13→14, FILE16A→17, FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
+/// Paare ohne Eingriff: FILE02→03, FILE13→14 (bis auf die Aufstellung von Hand, <see cref="HandLineupFile13"/>), FILE16A→17, FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
 /// Eingriff (nur übrige Felder, <see cref="HokCompareClasses.Interventions"/>): FILE44→46, FILE18→48. Saat 1993 (Werkzeugvorgabe);
 /// zufallsabhängige Felder sind mit Bereichen und Invarianten geprüft, ein anderer Zufall darf das Ergebnis nicht kippen
 /// (<see cref="Pair_OtherSeed_SameExpectedList"/>, alle Paare mit fünf weiteren Saaten).
 /// </remarks>
 public class AbgleichOriginalPaareTests
 {
-    private const int Strain = 730, PoolSeasonChange = 731, WorldOnlyManagerSlot = 732, AutoLineupFlag = 733, MoneyFile13 = 734,
-        DayZero = 699, MoneyFile16A = 737, FormFile44 = 738, WorldOnlyImportTeamValues = 747, ManagerTeamValues = 748,
-        LostPoolSlotImport = 749;
+    private const int WorldOnlyManagerSlot = 732, MoneyFile13 = 734,
+        DayZero = 699, Strain = 730;
+
+    /// <summary>
+    /// Kein Befund (#732): Im Modus „nur Weltkugel“ trägt Satz 0 das Land (Regel 1 der Feldkarte); der Import baut den Vereinskader
+    /// des Managers neu und bewertet ihn beim Laden, beide Seiten des Paars also unabhängig voneinander. Begründung am Eintrag.
+    /// </summary>
+    private const int WorldOnlySquadImport = 0;
 
     /// <summary>Zufall, kein Befund: Begründung am Eintrag (nur optionale Muster).</summary>
     private const int Chance = 0;
 
     /// <summary>
+    /// Eingriff, kein Befund (#733, abgleich-fix): FILE13→14 schaltet „automatisch aufstellen“ (DGROUP 0x375/0x376 `01 01` →
+    /// `00 00`) ab. [ORIGINAL] Ohne Nutzerhandlung schreibt em.exe dort keine 0: Schreiber sind nur die Aufstellung bei einer
+    /// Änderung von Hand (Datei 0x40ADE, 0x40DE4, Meldung „… ist deaktiviert“), der Taktikknopf (0x47F4E/0x49058) und der
+    /// Tageslauf, der 0x376 aus 0x375 sichert (0x54FDC) und 0x375 nur für die Spiele auf 0 setzt (0x54FE8, vor dem nächsten
+    /// Zug zurück, 0x54D9A/0x55307); Laden und Sichern kopieren den Block (0x5C3E3/0x5B9DD). Nach dem Laden zeigte die Aufstellung
+    /// 5 Eingesetzte (`file13_2`), im DEB-Pokal standen weniger als 9 Spieler (Angabe Nutzer) – mit der Einstellung hätte
+    /// 0x426BC voll aufgestellt. Folgen der Handaufstellung: Formwerte, verdeckte Werte einzelner Spieler.
+    /// </summary>
+    private const int HandLineupFile13 = 0;
+
+    /// <summary>
     /// Erwartete Abweichung: Pfadmuster (<c>*</c> = beliebig) mit Issue. <paramref name="Delta"/>: jede Abweichung des Musters muss
     /// genau Remake − Original = Delta haben (sonst neu). <paramref name="Optional"/>: tritt nur bei manchen Saaten auf, kein Fehler,
     /// wenn das Muster nicht trifft. Muster nennen das belegte Feld, nicht den ganzen Kader (Review P3-1).
+    /// <paramref name="RemakeMin"/>/<paramref name="RemakeMax"/>: der Remake-Wert der Abweichung muss im Bereich liegen (sonst neu).
     /// </summary>
-    public sealed record Known(string Pattern, int Issue, int? Delta = null, bool Optional = false);
+    public sealed record Known(string Pattern, int Issue, int? Delta = null, bool Optional = false, int? RemakeMin = null,
+        int? RemakeMax = null);
 
-    /// <summary>Saisonwechsel: Pool nach dem Saisonwechsel (#731). Tag 0 (#699 Punkt 2) behoben durch #725.</summary>
-    private static readonly Known[] SeasonStart = [new("Invariante.PoolMittel.*", PoolSeasonChange)];
+    /// <summary>
+    /// Kein Originalfeld, kein Befund: Die Belastung steht im Original nur am Kaderplatz (+0x13), der Pool hat keine; der Import
+    /// setzt für Poolspieler die Vorgabe 150, das Remake zieht beim Saisonwechsel 80–120 (Begründung am Eintrag).
+    /// </summary>
+    private const int NoOriginalField = 0;
 
-    /// <summary>Belastung #730: Pflicht für die Spieler, die über alle sechs Saaten abweichen (Original 50), sonst optional.</summary>
-    private static Known[] StrainOf(string club, params string[] players) =>
-        [.. players.Select(p => new Known($"Clubs[{club}].Players[{p}].Strain", Strain))];
+    /// <summary>
+    /// Saisonwechsel: Pool-Mittel Kondition/Technik (#731) behoben durch abgleich-fix (Werte bleiben beim Umbenennen am Platz);
+    /// Belastung ohne Originalfeld. Tag 0 (#699 Punkt 2) behoben durch #725.
+    /// </summary>
+    private static readonly Known[] SeasonStart = [new("Invariante.PoolMittel.Strain", NoOriginalField)];
 
-    private static Known[] StrainOptional(string club, params string[] players) =>
-        [.. players.Select(p => new Known($"Clubs[{club}].Players[{p}].Strain", Strain, Optional: true))];
+    /// <summary>
+    /// Obergrenze der Belastung am Spielstand: Seit #730 (abgleich-fix, Training begrenzt vorzeichenbehaftet, 0x4BD56 `cbw`) steigt
+    /// sie mit den Einsätzen bis über 127 und fällt beim nächsten Training auf 50; an allen Paaren und Prüfsaaten liegt das Remake
+    /// bei höchstens 127. Ein Remake, in dem die Belastung nicht mehr auf 50 fällt, läuft bis 150 und wird rot (Review B1).
+    /// </summary>
+    private const int StrainSawtoothMax = 127;
+
+    /// <summary>
+    /// Zufall, kein Befund: Belastung der übrigen Spieler des Managervereins (Sägezahn, Phase je Spieler vom Zufall der Spiele
+    /// abhängig, nur bei manchen Saaten außerhalb ±20). Spieler, die bei allen Prüfsaaten abweichen, stehen als Pflichteinträge in
+    /// <see cref="StrainOf"/>. Zusätzlich geprüft: das Vereinsmittel (<c>AbgleichFixStrainTests.Pairs_ManagerClubStrainMean_LikeOriginal</c>).
+    /// </summary>
+    private static Known StrainSawtooth(string club) =>
+        new($"Clubs[{club}].Players[*].Strain", Chance, Optional: true, RemakeMax: StrainSawtoothMax);
+
+    /// <summary>
+    /// Befund #730 (Restursache offen, Review B1): Pflicht für die Spieler, deren Belastung bei allen sechs Prüfsaaten (1993, 4711,
+    /// 1, 2, 3, 77) außerhalb ±20 liegt. Im Original kippen die Vielspieler der Reihen 1/2 vor dem Training über 127 und stehen
+    /// danach bei 50, im Remake fast nie (Verdacht: Belastungszuwachs je Reihe/Einsatz); <paramref name="min"/>–<paramref name="max"/>
+    /// ist der Remake-Bereich über die Prüfsaaten (mit Rand).
+    /// </summary>
+    private static Known[] StrainOf(string club, int min, int max, params string[] players) =>
+        [.. players.Select(p => new Known($"Clubs[{club}].Players[{p}].Strain", Strain, RemakeMin: min, RemakeMax: max))];
 
     private const string Landshut = "Clubs[7 EV LANDSHUT]";
 
@@ -50,48 +94,64 @@ public class AbgleichOriginalPaareTests
     public static readonly IReadOnlyDictionary<string, Known[]> Expected =
         new Dictionary<string, Known[]>
         {
-            ["FILE02→FILE03"] = [.. StrainOf("5 KÖLNER EC", "HOCK", "MENDE", "SIKORA")],
+            // #730: HOCK Original 50, Remake 119–126 (alle Prüfsaaten); SIKORA (4 von 6, nicht 1993 und 3) und BRANDL im Sägezahn.
+            ["FILE02→FILE03"] = [.. StrainOf("5 KÖLNER EC", 100, StrainSawtoothMax, "HOCK"), StrainSawtooth("5 KÖLNER EC"),
+                // Zufall: Pool-Mittel der Belastung über zehn Saaten 143–146, nur Saat 1 bei 136,7 (seit #748 anderer Zufallsverlauf).
+                new("Invariante.PoolMittel.Strain", Chance, Optional: true)],
             ["FILE13→FILE14"] = [.. SeasonStart, new("Managers[0].Money", MoneyFile13),
-                new("Clubs[6 KREFELDER EV]._autoLineup", AutoLineupFlag), new("Clubs[6 KREFELDER EV].TeamValues.*Form", AutoLineupFlag),
-                // Andere Aufstellung (#733) → andere Einsätze → verdeckte Werte einzelner Spieler (Saaten 2, 3, 4711).
-                new("Clubs[6 KREFELDER EV].Players[*].HiddenSkill*", AutoLineupFlag, Optional: true),
-                // Kondition/Technik des Managervereins aus der Aufstellung (#748): 16–43 tiefer, über ±35 nur bei manchen Saaten.
-                new("Clubs[6 KREFELDER EV].TeamValues.*Condition", ManagerTeamValues, Optional: true),
-                new("Clubs[6 KREFELDER EV].TeamValues.*Technique", ManagerTeamValues, Optional: true),
-                // Zufall: Endrunde KREFELD mit 9 statt 3 Spielen (Saaten 1993, 77: ClubGamesCarry 9), Belastung 25–40 höher.
-                new("Clubs[6 KREFELDER EV].Players[*].Strain", Chance, Optional: true)],
-            ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", MoneyFile16A),
-                .. StrainOf("14 SV BAYREUTH", "A.RAUBAL", "BLAZYCEK", "DOLL", "HADRASCHEK", "HORSTMANN", "M.SCHMIDT", "NOACK",
-                    "TRAVNICEK", "ZIMMERMANN"),
-                // Saat 1993 seit #725 im Bereich ±20, die übrigen fünf Saaten nicht.
-                .. StrainOptional("14 SV BAYREUTH", "LANGLOIS", "MEIXNER", "MORRISON", "PESKA", "PROKES", "PYLE"),
+                new("Clubs[6 KREFELDER EV]._autoLineup", HandLineupFile13),
+                new("Clubs[6 KREFELDER EV].TeamValues.*Form", HandLineupFile13),
+                // Andere Aufstellung (Eingriff, #733) → andere Einsätze → verdeckte Werte einzelner Spieler (Saaten 2, 3, 4711).
+                new("Clubs[6 KREFELDER EV].Players[*].HiddenSkill*", HandLineupFile13, Optional: true),
+                // Kondition/Technik des Managervereins aus der Aufstellung (0x952C, #748 behoben durch abgleich-fix): Das Remake
+                // rechnet sie aus seiner automatischen Aufstellung, das Original aus der von Hand (Eingriff, Abwehr-Technik 37 tiefer).
+                new("Clubs[6 KREFELDER EV].TeamValues.*Condition", HandLineupFile13, Optional: true),
+                new("Clubs[6 KREFELDER EV].TeamValues.*Technique", HandLineupFile13, Optional: true),
+                // #730 Gegenrichtung: J.MEYER (Original 118, Remake 50–88) und KUHNEKATH (96, Remake 50–53) bei allen Prüfsaaten;
+                // Anteil der Handaufstellung (Eingriff) nicht getrennt.
+                .. StrainOf("6 KREFELDER EV", 50, 95, "J.MEYER", "KUHNEKATH"),
+                StrainSawtooth("6 KREFELDER EV"),
+                // Zufall: Wanderung über den Saisonwechsel, Sturm-Kondition WEIßWASSER über zehn Saaten −8 … 14, nur Saat 1 bei −19.
+                new("Clubs[23 ES WEIßWASSER].TeamValues.AttackCondition", Chance, Optional: true)],
+            // Zufall (#737, abgleich-fix): 200.000 DM Einzelprämien im Original (file16_9), im Remake bei keiner Saat; mit ihnen
+            // im Bereich (AbgleichFixMoneyTests.File16A_MoneyDeviation_ComesFromSinglePremiums).
+            ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", Chance, Optional: true),
+                // #730: A.RAUBAL, ZIMMERMANN (Original 50, Remake 96–122) bei allen Prüfsaaten, Gegenrichtung PYLE (Original 120,
+                // Remake 50–88); TRAVNICEK (5 von 6, nicht 1993), NOACK (5 von 6, nicht 3), BLAZYCEK, DOLL, HORSTMANN, M.SCHMIDT
+                // (4 von 6) im Sägezahn.
+                .. StrainOf("14 SV BAYREUTH", 90, StrainSawtoothMax, "A.RAUBAL", "ZIMMERMANN"),
+                .. StrainOf("14 SV BAYREUTH", 50, 95, "PYLE"),
+                StrainSawtooth("14 SV BAYREUTH"),
+                // Zufall: Die Trainingswirkung auf die verdeckten Werte sinkt mit der Belastung über 125 (Sägezahn, #730), einzelne
+                // Spieler liegen über die Saison außerhalb des Bereichs (Saaten 1993, 3); Mittel wie im Original (H1 5,3–5,9 zu 5,7,
+                // H2 4,7–5,3 zu 5,5).
+                new("Clubs[14 SV BAYREUTH].Players[*].HiddenSkill*", Chance, Optional: true),
                 // Zufall: LANDSHUT steigt im Original in die Oberliga ab (Teamwerte auf deren Obergrenze, alle −33), im Remake
                 // nicht (Liga über den Saisonwechsel zufallsabhängig); Abstand 21–51 je Saat.
                 new($"{Landshut}.TeamValues.*", Chance, Optional: true)],
-            // „nur Weltkugel“ (#732): Managerkader altert im Remake ein Jahr, Verträge ein Jahr kürzer; das Original bewertet Gehalt
-            // und Preis neu (neue Tendenz, Alter und Vertrag unverändert) – sichtbar seit dem Import der Tendenz (#726/#727).
-            ["FILE20→FILE21"] = [new("DayOpened", DayZero), new("Invariante.PoolMittel.*", PoolSeasonChange),
-                new($"{Landshut}.Players[*].Age", WorldOnlyManagerSlot, Delta: 1),
-                new($"{Landshut}.Players[*].ContractYears", WorldOnlyManagerSlot, Delta: -1),
-                new($"{Landshut}.Players[*].MonthlySalary", WorldOnlyManagerSlot),
-                new($"{Landshut}.Players[*].PurchasePrice", WorldOnlyManagerSlot),
+            // „nur Weltkugel“ (#732): Alter und Laufzeit des Managerkaders behoben durch abgleich-fix (0x26F20 läuft im Modus 1 nicht,
+            // AbgleichFixWorldOnlyTests). Gehalt und Preis: kein Befund – der Import übernimmt im Modus 1 keinen Managerkader und
+            // bewertet den Vereinskader beim Laden neu (Wert nach Tendenz und Preisindex des Stands); im Remake wie im Original
+            // (Satz 0, `emtool hok dump` FILE20/FILE21) bleiben Gehalt und Preis über die Saison stehen.
+            ["FILE20→FILE21"] = [new("DayOpened", DayZero), .. SeasonStart,
+                new($"{Landshut}.Players[*].MonthlySalary", WorldOnlySquadImport),
+                new($"{Landshut}.Players[*].PurchasePrice", WorldOnlySquadImport),
                 // Form und Belastung einzelner Spieler (je nach Saat andere, Remake Belastung 70).
                 new($"{Landshut}.Players[*].Form", WorldOnlyManagerSlot, Optional: true),
                 new($"{Landshut}.Players[*].Strain", WorldOnlyManagerSlot, Optional: true),
-                new($"{Landshut}.TeamValues", WorldOnlyManagerSlot), new("Managers[0].Money", WorldOnlyManagerSlot)],
+                // Teamwerte des Managervereins (Original leer) seit #747 (abgleich-fix) auch im Remake leer.
+                new("Managers[0].Money", WorldOnlyManagerSlot)],
             ["FILE22→FILE23"] = [.. SeasonStart],
-            ["FILE24→FILE25"] = [.. StrainOf("5 KÖLNER EC", "BRANDL", "KWASIGROCH"),
-                new("Clubs[5 KÖLNER EC]._autoLineup", AutoLineupFlag)],
+            // „automatisch aufstellen“ (#733) behoben durch abgleich-fix: Der Import liest das gesicherte Byte 0x376 (FILE24 `00 01`).
+            ["FILE24→FILE25"] = [StrainSawtooth("5 KÖLNER EC")],
             ["FILE30→FILE31"] = [],
-            ["FILE38→FILE39"] = [.. StrainOf("5 KÖLNER EC", "DOROCHIN", "LIEBSCH")],
-            ["FILE39→FILE40"] = [],
-            // Formwerte KÖLN im Remake bei allen Saaten 10–17 höher (#738), bei 1993 knapp im Bereich.
-            ["FILE44→FILE46"] = [.. SeasonStart, new("Clubs[5 KÖLNER EC].TeamValues.*Form", FormFile44, Optional: true),
-                // Platz 196 KJELLBERG: Import frei, Remake vergeben (#749); Zahl nur bei Saaten 1993 und 1 verschieden.
-                new("Invariante.PoolSpieler", LostPoolSlotImport, Delta: -1, Optional: true)],
-            // „nur Weltkugel“: fehlende Teamwerte des Managervereins → alle Teamwerte neu gewürfelt (#747).
-            ["FILE18→FILE48"] = [new("Clubs[*].TeamValues.*Condition", WorldOnlyImportTeamValues),
-                new("Clubs[*].TeamValues.*Technique", WorldOnlyImportTeamValues)],
+            ["FILE38→FILE39"] = [StrainSawtooth("5 KÖLNER EC")],
+            ["FILE39→FILE40"] = [StrainSawtooth("5 KÖLNER EC")],
+            // Formwerte KÖLN (#738) behoben durch abgleich-fix (Handbetrieb ohne Nachrücken, Import ohne Reihenspieler ohne
+            // „eingesetzt“). Platz 196 KJELLBERG (#749) behoben durch abgleich-fix (Import: Besitzer Manager ohne Kader = vergeben).
+            ["FILE44→FILE46"] = [.. SeasonStart],
+            // „nur Weltkugel“: Teamwerte nicht mehr neu gewürfelt (#747 behoben durch abgleich-fix).
+            ["FILE18→FILE48"] = [],
         };
 
     public static TheoryData<string, string> Pairs()
@@ -171,9 +231,12 @@ public class AbgleichOriginalPaareTests
     {
         if (!HokCompareClasses.Matches(row.Path, [known.Pattern]))
             return false;
-        if (known.Delta is not { } delta)
+        if (known.Delta is null && known.RemakeMin is null && known.RemakeMax is null)
             return true;
-        return int.TryParse(row.Original, out var o) && int.TryParse(row.Remake, out var r) && r - o == delta;
+        if (!int.TryParse(row.Original, out var o) || !int.TryParse(row.Remake, out var r))
+            return false;
+        return (known.Delta is not { } delta || r - o == delta) && r >= (known.RemakeMin ?? int.MinValue)
+            && r <= (known.RemakeMax ?? int.MaxValue);
     }
 
     private static void AssertExpected(HokCompareReport report)

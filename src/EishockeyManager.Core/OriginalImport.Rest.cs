@@ -244,7 +244,12 @@ public sealed partial class GameState
     private void ApplyTactics(OriginalSaveGame save, Club club, int m)
     {
         ApplyTacticValues(save, club.Tactics, m);
-        club.AutoLineupEnabled = save.Block("0375")[2 * m] != 0;
+        // [ORIGINAL] #733: nach dem Laden gilt das gesicherte Byte 0x376 + 2 · m. Laden setzt den Tageslauf 0x54C9F am Schleifenkopf
+        // fort (Datei 0x54CC2 → 0x54CEE), der am Ereignistag vor den Managerzügen 0x375 := 0x376 zurückholt und mit 0x426BC neu
+        // aufstellt (Datei 0x54D84–0x54D9E). Ein Umschalten im gesicherten Zug (0x375 ≠ 0x376: FILE06, FILE24, FILE32) ist damit
+        // verworfen (FILE24 → FILE25, FILE47 „beim erneuten Laden wieder eingesetzt“). [APPROX] Lädt der Stand an einem Tag ohne
+        // Ereignis mit Menü (0x54EA0, [bp-0x1A]), zeigt das Original bis zum nächsten Ereignistag noch 0x375; nicht nachgebildet.
+        club.AutoLineupEnabled = save.Block("0375")[2 * m + 1] != 0;
     }
 
     /// <summary>Modi, Werte und Minuten des Satzes <paramref name="m"/> (0–3 Manager, 5 Bundestrainer; Teil 4b).</summary>

@@ -177,6 +177,12 @@ public class SquadLifecycleTests
 
             var expiringManaged = game.Managers.SelectMany(m => game.Clubs[m.ClubIndex].Players)
                 .Where(p => p.ContractYears <= 1 && p.Loan is null).ToHashSet();
+            // Spur abgleich-fix (#736, R15-E2 = C): Ein freier Poolspieler ohne Spiel, dessen Platz beim Umbenennen einen freien
+            // Datenbanknamen bekommt, entfällt (TransferMarket.Rename, [APPROX] „der alte Spieler entfällt“). Seit die Managerkader
+            // ergänzte Plätze mit Datenbanknamen der Vereine 0–35 füllen, werden solche Namen frei, wenn ein passiver Manager seine
+            // Spieler bei Vertragsende verliert (R15-E3); vorher hießen die Ergänzungen „SPIELER n“.
+            var renamable = game.TransferMarket.Pool.Where(s => s.Owner == PoolOwner.Free && s.Player.Games == 0)
+                .Select(s => s.Player).ToHashSet();
             game.StartNextSeason();
 
             // Kein Spieler verloren oder doppelt: Kader, Pool und Laufbahnende zusammen. Spur kader (R15-E3 = C): geändert – wer einen
@@ -184,7 +190,7 @@ public class SquadLifecycleTests
             var all = AllPlayers(game).ToArray();
             Assert.Equal(all.Length, all.Distinct().Count());
             var lost = known.Except(all).ToArray();
-            Assert.All(lost, p => Assert.Contains(p, expiringManaged));
+            Assert.All(lost, p => Assert.True(expiringManaged.Contains(p) || renamable.Contains(p), $"{p.Name} verloren"));
             known.ExceptWith(lost);
             known.UnionWith(all);
 

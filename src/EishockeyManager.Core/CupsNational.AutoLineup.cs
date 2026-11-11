@@ -130,5 +130,12 @@ public sealed partial class GameState
     /// Nur der Hauptweg: Nach dem 13. April nimmt im Original die WM-Schleife den Tag (<see cref="OpenWorldCupLoopDay"/>,
     /// R14NT-01/02, #664).
     /// </summary>
-    private void OnDayNationalTeam() => UpdateNationalTeamValues();
+    private void OnDayNationalTeam()
+    {
+        // [ORIGINAL] #748: dieselbe Schleife Datei 0x54FA1–0x54FC4 ruft 0x952C(m, 1) erst für die Managersätze, dann für Satz 5;
+        // nur an Tagen mit Ereignis (sonst Sprung Datei 0x54D5C an der Schleife vorbei).
+        if (IsListChangeDay(Day))
+            UpdateManagerTeamValues();
+        UpdateNationalTeamValues();
+    }
 }

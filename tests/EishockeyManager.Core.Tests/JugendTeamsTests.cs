@@ -229,8 +229,11 @@ public class JugendTeamsTests
     // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
     // Ursache (Review #741 P3-2): allein Teil 1 – nur JoinSeasonEndYouth zurück → Wert von main, passiv und aktiv; Teil 2, Teil 3
     // und R15-E3 wirken nur zusammen mit den Junioren.
+    // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
+    // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
+    // Squad.Training.cs von 18972c0 → alte Werte.
     private const string ExpectedActive =
-        "0:Schueler:2/11/60;0:Jugend:2/11/60;0:Junioren:2/11/61;1:Schueler:2/6/72;1:Jugend:1/11/72;1:Junioren:1/11/71;2:Schueler:1/11/80;2:Jugend:1/6/79;2:Junioren:1/6/79;3:Schueler:1/6/83;3:Jugend:1/6/83;3:Junioren:1/6/81";
+        "0:Schueler:2/11/60;0:Jugend:2/11/59;0:Junioren:2/11/61;1:Schueler:2/6/69;1:Jugend:1/12/70;1:Junioren:1/11/73;2:Schueler:1/11/77;2:Jugend:1/6/76;2:Junioren:1/6/76;3:Schueler:1/6/82;3:Jugend:1/6/80;3:Junioren:1/6/80";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -273,8 +276,11 @@ public class JugendTeamsTests
     // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
     // Ursache (Review #741 P3-2): allein Teil 1 – nur JoinSeasonEndYouth zurück → Wert von main, passiv und aktiv; Teil 2, Teil 3
     // und R15-E3 wirken nur zusammen mit den Junioren.
+    // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
+    // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
+    // Squad.Training.cs von 18972c0 → alte Werte.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/63;0:Jugend:2/2/65;0:Junioren:1/6/68;1:Schueler:3/2/55;1:Jugend:3/2/55;1:Junioren:2/2/56;2:Schueler:3/6/51;2:Jugend:3/6/47;2:Junioren:3/2/45;3:Schueler:3/6/44;3:Jugend:3/6/42;3:Junioren:3/6/42";
+        "0:Schueler:2/2/63;0:Jugend:2/2/65;0:Junioren:1/6/68;1:Schueler:3/2/52;1:Jugend:3/2/52;1:Junioren:1/6/54;2:Schueler:3/6/47;2:Jugend:3/6/47;2:Junioren:2/2/45;3:Schueler:3/6/43;3:Jugend:3/6/43;3:Junioren:3/2/43";
 }
 
 public class JugendTeamsMigrationTests

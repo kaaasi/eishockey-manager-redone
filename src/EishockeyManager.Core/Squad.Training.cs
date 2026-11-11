@@ -341,8 +341,9 @@ public static class TrainingRules
         }
 
         var recovery = Round((int)(energy * 100 / EnergyNorm[group]) * 2, true, random);
-        // [ORIGINAL] Datei 0x6B08–0x6B1A: Belastung − Erholung (Byte), dann 50 … 150.
-        p.Strain = Math.Clamp((fatigue - recovery) & 0xFF, MinStrain, MaxStrain);
+        // [ORIGINAL] Datei 0x6B08–0x6B1A: Belastung − Erholung (Byte), dann 50 … 150 über Datei 0x4BD56, die das Byte mit cbw
+        // vorzeichenbehaftet liest: ein Ergebnis ab 128 wird 50 (#730, FILE02→FILE03: MENDE, HOCK, SIKORA 115–120 → 50).
+        p.Strain = Math.Clamp((int)(sbyte)(byte)(fatigue - recovery), MinStrain, MaxStrain);
 
         return new TrainingOutcome(changes[0], changes[1], changes[2], changes[3], recovery, bonus);
     }

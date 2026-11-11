@@ -27,6 +27,10 @@ public class KaderStartRunde13Tests
             slot.Player.Age = 60;
 
         SquadLifecycleTests.PlaySeason(game);
+        // Nur Plätze, die am Saisonende noch frei sind: Ein Platz kann in der Saison an den Markt und in einen Kader gehen
+        // (seit #730, abgleich-fix, anderer Zufallsverbrauch: einer von zehn bei Saat 11).
+        slots = slots.Where(s => s.Owner == PoolOwner.Free && s.Player == before[s].Old && !InAnySquad(s.Player)).ToList();
+        Assert.True(slots.Count >= 8, $"nur {slots.Count} Plätze frei");
         game.StartNextSeason();
 
         foreach (var slot in slots)

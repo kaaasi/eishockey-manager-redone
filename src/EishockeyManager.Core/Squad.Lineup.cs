@@ -395,10 +395,11 @@ public sealed partial class Club
     /// (Verletzung 0x05B1A): der Verletzte verliert +0x0A (nicht mehr eingesetzt). Datei 0x426BC setzt höchstens 22 ein
     /// (Zähler [bp-9] ab 1, Vergleich mit 0x17 bei 0x427C0/0x4282C). [ORIGINAL] A189: Mit der Einstellung „automatisch
     /// aufstellen“ stellt 0x426BC nach dem Spieltag ganz neu auf (Datei 0x54D8C–0x54D9E, 0x552F9–0x5530B; FILE24
-    /// „Eingesetzt: 22“, <see cref="ApplyAutoLineup"/>). [APPROX] Ohne die Einstellung schreibt im Original im Verletzungsweg
-    /// niemand +0x15 (Schreiber nur 0x426BC, Oberfläche, Transfer, Saisonwechsel) – keine Neuaufstellung, die Lücke bliebe
-    /// vermutlich; kein Stand im Handmodus belegt das. Das Remake füllt dann zuerst mit eingesetzten Reservisten, andere nur,
-    /// solange weniger als 22 eingesetzt sind.
+    /// „Eingesetzt: 22“, <see cref="ApplyAutoLineup"/>). [ORIGINAL] #738 (abgleich-fix): Ohne die Einstellung endet 0x426BC sofort
+    /// (Datei 0x426C4–0x426E4), und im Verletzungsweg schreibt sonst niemand +0x15 (Schreiber nur 0x426BC, Oberfläche, Transfer,
+    /// Saisonwechsel): Die Lücke bleibt, niemand rückt nach. Beleg FILE44 → FILE46 (KÖLN, Handbetrieb): 11 Aufgestellte im
+    /// Original. Der Verletzte verliert „eingesetzt“ (Datei 0x5C50); das Remake nimmt ihn zudem aus seinem Platz (Modellabweichung
+    /// der Klassenbemerkung). Bis Fortsetzung 3 füllte das Remake die Lücke mit Reservisten ([APPROX]).
     /// </summary>
     public void RefillLineup()
     {
@@ -406,25 +407,8 @@ public sealed partial class Club
         Lineup.RemoveUnavailable(Players);
         if (ApplyAutoLineup())
             return;
-        if (!_dressedByHand)
-        {
-            Lineup.FillGaps(Players);
-            return;
-        }
         foreach (var p in removed)
             _dressed.Remove(p.Id);
-        var before = Dressed.ToHashSet();
-        Lineup.FillGaps(Players.Where(before.Contains));
-        var room = MaxDressed - before.Count;
-        if (room <= 0)
-            return;
-        Lineup.FillGaps(Players);
-        var added = Lineup.Players.Where(p => !before.Contains(p))
-            .OrderByDescending(TeamStrength.PlayerValue).ThenBy(p => p.Number).ToList();
-        foreach (var p in added.Skip(room))
-            Lineup.Clear(Lineup.FindSlot(p)!.Value);
-        foreach (var p in added.Take(room))
-            _dressed.Add(p.Id);
     }
 
     /// <summary>Rechtsklick in der Kaderliste: nicht eingesetzten Spieler einsetzen (Datei 0x40E2A, 0x41208).</summary>

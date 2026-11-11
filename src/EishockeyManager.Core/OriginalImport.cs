@@ -237,7 +237,7 @@ public sealed partial class GameState
             Random = random,
         };
         game.Season = OriginalImport.Season(save);
-        SquadSetup.Initialize(game, seed);
+        SquadSetup.Initialize(game, seed, forImport: true);
         game.AssignStartPlayerIds();
         game.InitializeManagerSystems();
         game.InitializeLeagueSlots(clubOf.Take(4 * ClubsPerLeague).ToList());
@@ -369,9 +369,14 @@ public sealed partial class GameState
         for (var slot = 0; slot < clubOf.Length; slot++)
         {
             var r = records.AsSpan(slot * OriginalSaveGame.ClubRecordLength, OriginalSaveGame.ClubRecordLength);
-            if (WorldOnly && Managers.Any(m => m.ClubIndex == clubOf[slot]))
-                continue; // Satz des Managervereins trägt im Modus „nur Weltkugel“ das Land (Regel 1)
             var club = Clubs[clubOf[slot]];
+            if (WorldOnly && Managers.Any(m => m.ClubIndex == club.Index))
+            {
+                // Satz des Managervereins trägt im Modus „nur Weltkugel“ das Land (Regel 1): keine Vereinswerte, auch nicht die
+                // des Nachspielens (#747; sonst hinge der Wert vom Tag des Stands ab: FILE18 leer, FILE48 gezogen).
+                club.TeamValues = null;
+                continue;
+            }
             var value = MatchEngine.ComputerTeamValue(club);
             club.TeamValues = new ClubTeamValues(r[0x18] - value, r[0x19] - value, r[0x1A] - value, r[0x1B] - value, r[0x1C], r[0x1D], r[0x17]);
         }
@@ -487,9 +492,12 @@ public sealed partial class GameState
         // [ORIGINAL] +0x15 bestimmt den Platz, nicht die Rolle (Ausweichrollen der Automatik, Datei 0x42838; Lineup.Place): Sturm
         // nach Bit 0x80, sonst Verteidigung – ein Torhüter mit Reihe 1 ohne Bit auf den freien Torhüterplatz. Spur hok-export
         // (Rundreise, vier Saisonwechsel passiv: Stürmer M.RAUBAL in der Verteidigung).
-        foreach (var (player, line, forward, _) in players)
+        foreach (var (player, line, forward, dressed) in players)
         {
-            if (line is < 1 or > 3 || !player.Available)
+            // [ORIGINAL] #738: Eine Reihe ohne eingesetzt (+0x0A = 0, Handbetrieb nach Verletzung oder Abgang) zählt weder im Spiel
+            // (0x120:0x66 Modus 1: +0x0A ≠ 0 und +0x15 ≠ 0) noch für die Teamwerte 0x952C, und die Aufstellung zeigt den Spieler
+            // in keiner Reihe (FILE24 STEFAN/CHAIDAROV); FILE38–46 KÖLN: Felder 0x18–0x1D = Werte ohne diese Spieler.
+            if (line is < 1 or > 3 || !player.Available || !dressed)
                 continue;
             LineupSlot? target = player.Role == PlayerRole.Goalkeeper && !forward && line == 1 && club.Lineup.Goalkeeper is null
                 ? LineupSlot.Goalkeeper

@@ -29,11 +29,13 @@ public class WettbewerbeSpiel12Teil2Tests
 
     /// <summary>
     /// [ORIGINAL] Trainingswirkung 0x659C liest +0x13 ohne Grenzen (Datei 0x6623) und schreibt Belastung − Erholung, danach
-    /// 50 … 150 (Datei 0x6B08–0x6B2A). Standardplan: Erholung 0 → eine Belastung von 30 wird 50, eine von 140 bleibt.
+    /// 50 … 150 (Datei 0x6B08–0x6B2A). Standardplan: Erholung 0 → eine Belastung von 30 wird 50, eine von 127 bleibt. Die Grenze
+    /// 0x4BD56 liest das Byte vorzeichenbehaftet (<c>cbw</c>, #730, abgleich-fix): 140 gilt als −116 und wird 50 (vorher 140).
     /// </summary>
     [Theory]
     [InlineData(30, 50)]
-    [InlineData(140, 140)]
+    [InlineData(127, 127)]
+    [InlineData(140, 50)]
     public void Training_StandardPlan_ClampsStrain(int before, int after)
     {
         var p = P(PlayerRole.Defender, before);
@@ -60,7 +62,8 @@ public class WettbewerbeSpiel12Teil2Tests
     /// <summary>
     /// Regressionstest (vorher rot): In den Spielen des Managervereins steigt die Belastung der Eingesetzten (Datei 0x8C82),
     /// nach jedem Spiel liegt sie für alle Spieler des Vereins in 50 … 150 (Datei 0x549A2–0x549BB) – auch für einen nicht
-    /// eingesetzten Spieler, der vorher außerhalb lag. Computervereine bleiben unberührt.
+    /// eingesetzten Spieler, der vorher außerhalb lag. Computervereine bleiben unberührt. Der Bankspieler (220) steht nach dem
+    /// Spiel auf 150 und fällt beim folgenden Training auf 50 (150 vorzeichenbehaftet −106, #730, abgleich-fix; vorher 150).
     /// </summary>
     [Fact]
     public void ManagedMatches_RaiseStrain_ClampAfterMatch()
@@ -78,7 +81,7 @@ public class WettbewerbeSpiel12Teil2Tests
             TestSeason.PlayMatchDay(game);
 
         Assert.All(club.Players, p => Assert.InRange(p.Strain, TrainingRules.MinStrain, TrainingRules.MaxStrain));
-        Assert.Equal(150, bench.Strain);
+        Assert.Equal(TrainingRules.MinStrain, bench.Strain);
         Assert.Contains(club.Lineup.Players, p => p.Strain > before[p]);
         Assert.Equal(computerBefore, computer.Players.Select(p => p.Strain).ToArray());
     }

@@ -144,10 +144,14 @@ public static partial class MatchEngine
     /// <summary>
     /// Zieht die Teamwerte, falls ein Verein des Spielstands noch keine hat (siehe <see cref="LoadTeamValues"/>), und
     /// wendet die Wanderung des Spielstarts an (<see cref="DriftTeamValues"/>).
+    /// [ORIGINAL] #747: Im Modus „nur Weltkugel“ trägt der Vereinssatz des Managervereins das Land (Regel 1 der Feldkarte); der
+    /// Import lässt seine Teamwerte leer. Das zählt nicht als „noch nicht gezogen“ – sonst würfelte das erste Spiel alle
+    /// importierten Teamwerte neu (FILE18 → FILE48: Teamwerte unverändert, gleicher Tag 218). Der Verein spielt in diesem Modus
+    /// nicht; Anzeigen nutzen <see cref="TeamValuesOf"/>.
     /// </summary>
     public static void EnsureTeamValues(GameState game)
     {
-        if (!game.Clubs.Any(c => c.TeamValues is null))
+        if (!game.Clubs.Any(c => c.TeamValues is null && !(game.WorldOnly && game.Managers.Any(m => m.ClubIndex == c.Index))))
             return;
         LoadTeamValues(game);
         // [ORIGINAL] Wanderung des Spielstarts (0x43A73, Modus 10); [APPROX] beim ersten Spiel (siehe LoadTeamValues).

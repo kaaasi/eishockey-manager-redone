@@ -72,8 +72,10 @@ public class RefillLineupDressedTests
         Assert.False(club.IsDressed(injured));
         Assert.True(club.DressedCount <= Club.MaxDressed, $"{club.DressedCount} Eingesetzte");
         Assert.All(club.Lineup.Players, p => Assert.True(club.IsDressed(p)));
-        // Die Lücke schließt ein eingesetzter Reservist derselben Spielerart, kein nicht Eingesetzter.
-        Assert.Contains(club.Lineup[slot], reserves);
+        // #738 (abgleich-fix, R15-E2 = C): Ohne „automatisch aufstellen“ rückt niemand nach – auch kein eingesetzter Reservist
+        // ([ORIGINAL] 0x426BC endet ohne Einstellung sofort, Datei 0x426C4–0x426E4; FILE44 → FILE46 KÖLN 11 Aufgestellte).
+        Assert.Null(club.Lineup[slot]);
+        Assert.All(reserves, r => Assert.False(club.Lineup.Contains(r)));
     }
 
     [Fact]

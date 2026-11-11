@@ -238,8 +238,21 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // (0x26F20, Datei 0x2728C–0x27320: zwei Zufallszahlen je Manager und Saison, ab 1995 Junioren), Tendenz/Steuerbyte der
     // Startkader (0x4907A aus 0x42CB1), Vertragslose aus Managervereinen weder auf der Liste noch vertragslos, sondern ganz verloren
     // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
-    [InlineData(false, "06D3B05D238D9187")]
-    [InlineData(true, "FEB84A0C12F60441")]
+    // Runde 15, Spur abgleich-fix (#731, R15-E2 = C): neu – beim Tausch Pool ↔ Computerkader (Umbenennen am Saisonwechsel) bleiben
+    // die Werte am Poolplatz (Original: nur der Name wechselt, FILE44 → FILE46); der Kaderspieler bekommt die des bisherigen
+    // Poolspielers. Andere Kaderwerte ab dem ersten Saisonwechsel. Rückschaltprobe: Transfer.Pool.cs von 85302f5 → alte Werte
+    // (tools/pruefen.sh --schnell auf 85302f5 grün).
+    // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
+    // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
+    // Squad.Training.cs von 18972c0 → alte Werte.
+    // Runde 15, Spur abgleich-fix (#736, R15-E2 = C): neu – Managerkader nach Datenbankplätzen (Datei 0x5B0CC–0x5B2BE: Platz läuft
+    // über die Arten weiter), ergänzte Plätze mit Datenbanknamen anderer Vereine statt „SPIELER n“ (0x5AAA0), die dem
+    // Computerverein fehlen; andere Kader ab Spielbeginn. Rückschaltprobe: Squad.Setup.cs von bd4206b → Werte davor.
+    // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
+    // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer, Konten und Zufallsverlauf. Rückschaltprobe:
+    // GameState.DailyRun.cs und CupsNational.AutoLineup.cs von 8711348 → alte Werte.
+    [InlineData(false, "78AF9288A57B1CCF")]
+    [InlineData(true, "0C296F1190C3C1D8")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

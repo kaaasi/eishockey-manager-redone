@@ -427,8 +427,14 @@ public class GameModeTests
     // (0x26F20, Datei 0x2728C–0x27320: zwei Zufallszahlen je Manager und Saison, ab 1995 Junioren), Tendenz/Steuerbyte der
     // Startkader (0x4907A aus 0x42CB1), Vertragslose aus Managervereinen weder auf der Liste noch vertragslos, sondern ganz verloren
     // (Datei 0x27DE3–0x27E9D, 0x425B6; FILE44 → FILE46 KJELLBERG). Rückschaltprobe: Quellen (src/) von main 2f9cc99 → Wert von main.
+    // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
+    // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
+    // Squad.Training.cs von 18972c0 → alte Werte.
+    // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
+    // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer und Konten. Rückschaltprobe: GameState.DailyRun.cs und
+    // CupsNational.AutoLineup.cs von 8711348 → alte Werte.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=57,CupWinner=4,GermanChampion=1,EuropeanCupWinner=0|2454700,400000|WorldChampion=63,CupWinner=12,GermanChampion=3,EuropeanCupWinner=0|2517595,500000|WorldChampion=53,CupWinner=12,GermanChampion=12,EuropeanCupWinner=3|2416912,400000|WorldChampion=53,CupWinner=20,GermanChampion=1,EuropeanCupWinner=12|1801973,500000|R1695781066 C794769235";
+        "WorldChampion=52,CupWinner=17,GermanChampion=1,EuropeanCupWinner=2|1166907,400000|WorldChampion=53,CupWinner=17,GermanChampion=0,EuropeanCupWinner=1|2284812,400000|WorldChampion=63,CupWinner=0,GermanChampion=10,EuropeanCupWinner=0|2479122,400000|WorldChampion=54,CupWinner=18,GermanChampion=0,EuropeanCupWinner=0|2482793,400000|WorldChampion=63,CupWinner=18,GermanChampion=17,EuropeanCupWinner=0|2678183,500000|R332137697 C1450169878";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

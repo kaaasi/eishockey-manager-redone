@@ -308,19 +308,22 @@ public sealed class OriginalImportReviewR14Tests
     }
 
     /// <summary>
-    /// „automatisch aufstellen“ (M09): aktueller Wert DGROUP 0x375 + 2 · m, nicht der gesicherte 0x376. FILE32/FILE33 haben 0/1
-    /// (Handbetrieb, Sicherung noch 1), FILE05 1/1.
+    /// „automatisch aufstellen“ (M09, berichtigt durch #733, abgleich-fix, R15-E2 = C): nach dem Laden gilt der gesicherte Wert
+    /// DGROUP 0x376 + 2 · m. FILE32/FILE33 haben 0/1 (im gesicherten Zug auf Handbetrieb geschaltet, Sicherung noch 1), FILE05 1/1.
+    /// [ORIGINAL] Nach dem Laden von FILE32 zeigt die Taktik oben links „AUTOM.“ (Bild <c>file33_01</c>; vor dem Sichern
+    /// „MANUELL“, <c>file32_1</c>): Laden setzt den Tageslauf am Schleifenkopf fort und holt 0x375 := 0x376 zurück (Datei 0x54CC2,
+    /// 0x54D84–0x54D9E).
     /// </summary>
     [GameDataTheory]
     [InlineData("FILE32.HOK", false)]
     [InlineData("FILE33.HOK", false)]
     [InlineData("FILE05.HOK", true)]
-    public void Import_AutoLineup_ReadsCurrentByteNotTheSavedOne(string file, bool enabled)
+    public void Import_AutoLineup_ReadsSavedByteNotTheCurrentOne(string file, bool currentEnabled)
     {
         var (save, game, _) = Import(file);
-        Assert.Equal(enabled ? 1 : 0, save.Block("0375")[0]);
+        Assert.Equal(currentEnabled ? 1 : 0, save.Block("0375")[0]);
         Assert.Equal(1, save.Block("0375")[1]);
-        Assert.Equal(enabled, game.Clubs[game.Managers[0].ClubIndex].AutoLineupEnabled);
+        Assert.True(game.Clubs[game.Managers[0].ClubIndex].AutoLineupEnabled);
     }
 
     internal static (OriginalSaveGame Save, GameState Game, int[] ClubOf) Import(string file)

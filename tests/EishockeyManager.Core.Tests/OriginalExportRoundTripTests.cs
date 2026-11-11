@@ -50,13 +50,6 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         }
     }
 
-    /// <summary>Kaderplatz im Original mit Reihe (+0x15 ≠ 0), aber nicht eingesetzt (+0x0A = 0): FILE37A–FILE46.</summary>
-    private static bool LinedUpNotDressed(Stand stand, int slot, int at)
-    {
-        var s = stand.Original.Block("5DC3").AsSpan(slot * OriginalSaveGame.SquadSlotLength, OriginalSaveGame.SquadSlotLength);
-        return s[0x15] != 0 && s[0x0A] == 0;
-    }
-
     /// <summary>Kaderplatz ohne Spieler (Poolindex +0x0F = 0) im Original oder Export, oder Platz im Marktsatz (Satz 4).</summary>
     private static bool UnusedSlotOrMarket(Stand stand, int slot, int at) =>
         slot / SlotsPerRecord == OriginalImport.MarketRecord
@@ -121,7 +114,8 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("5DC3", 0x34, 0x1A, 0x1B, "ungedeutet (Kaderplatz; Markt: Sperre)"),
         new("5DC3", 0x34, 0x22, 0x27, "Torhüter: Vereinswert Gegentore (Feldkarte: Torhüter 0)"),
         new("5DC3", 0x34, 0x28, 0x2F, "Markt: Gehalt und Rundung Drittel-DM (Feldkarte TransferListing)"),
-        new("5DC3", 0x34, 0x0A, 0x0A, "eingesetzt: aufgestellt (+0x15 ≠ 0), im Original aber nicht eingesetzt – das Remake setzt Aufgestellte ein", If: LinedUpNotDressed),
+        // #738 (abgleich-fix, R15-E2 = C): Regel „+0x0A, aufgestellt, aber nicht eingesetzt“ entfällt – der Import stellt solche
+        // Spieler nicht mehr auf (Reihe ohne eingesetzt zählt im Original weder im Spiel noch für 0x952C); ihre Reihe deckt +0x15 unten.
         new("5DC3", 0x34, 0x10, 0x14, "Werte im Nationalkader: ein Wertesatz je Spieler (Feldkarte, Teil 4b)"),
         new("5DC3", 0x34, 0x0E, 0x0E, "Tendenzwert 0 (nicht gesetzt) übernimmt die Stufe des Nachspielens"),
         // Pokale
@@ -149,7 +143,7 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("0388", 0, 0, 0, "Vorjahressieger Europapokal nur in History (Feldkarte N)", When.LaterSeason),
         new("038B", 0, 0, 0, "ungedeutet (ab dem ersten Saisonende 1)"),
         new("5DC3", 0x34, 0x03, 0x08, "ungenutzte Kadersätze und Marktplätze: Reste der Tor- und Spielzähler (Feldkarte: ein Wertesatz je Spieler)", If: UnusedSlotOrMarket),
-        new("5DC3", 0x34, 0x15, 0x15, "Reihe verletzter oder gelisteter Spieler: das Remake stellt sie nicht auf"),
+        new("5DC3", 0x34, 0x15, 0x15, "Reihe verletzter, gelisteter oder nicht eingesetzter Spieler: das Remake stellt sie nicht auf"),
         new("5DC3", 0x34, 0x16, 0x17, "Verletzungsart nach der Heilung, Anfrage-Verein ohne Kennzeichen (Import liest beide nur mit Kennzeichen)"),
         new("5DC3", 0x34, 0x19, 0x19, "verdeckte Werte der Marktplätze: ein Wertesatz je Spieler"),
         new("5DC3", 0x34, 0x0F, 0x0F, "Poolplatz eines aus dem Pool gekauften Spielers mit zweitem Poolsatz gleichen Namens"),
