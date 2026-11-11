@@ -17,7 +17,7 @@ namespace EishockeyManager.Core.Tests;
 /// </remarks>
 public class AbgleichOriginalPaareTests
 {
-    private const int Strain = 730, WorldOnlyManagerSlot = 732, AutoLineupFlag = 733, MoneyFile13 = 734,
+    private const int WorldOnlyManagerSlot = 732, AutoLineupFlag = 733, MoneyFile13 = 734,
         DayZero = 699, FormFile44 = 738, ManagerTeamValues = 748;
 
     /// <summary>Zufall, kein Befund: Begründung am Eintrag (nur optionale Muster).</summary>
@@ -42,12 +42,13 @@ public class AbgleichOriginalPaareTests
     /// </summary>
     private static readonly Known[] SeasonStart = [new("Invariante.PoolMittel.Strain", NoOriginalField)];
 
-    /// <summary>Belastung #730: Pflicht für die Spieler, die über alle sechs Saaten abweichen (Original 50), sonst optional.</summary>
-    private static Known[] StrainOf(string club, params string[] players) =>
-        [.. players.Select(p => new Known($"Clubs[{club}].Players[{p}].Strain", Strain))];
-
-    private static Known[] StrainOptional(string club, params string[] players) =>
-        [.. players.Select(p => new Known($"Clubs[{club}].Players[{p}].Strain", Strain, Optional: true))];
+    /// <summary>
+    /// Zufall, kein Befund: Belastung je Spieler des Managervereins. Seit #730 (abgleich-fix, Training begrenzt vorzeichenbehaftet)
+    /// steigt sie mit den Einsätzen bis über 127 und fällt beim nächsten Training auf 50 – ein Sägezahn, dessen Phase je Spieler
+    /// vom Zufall der Spiele abhängt (FILE02→03: HOCK im Original 50, im Remake je Saat 50 oder 119–126). Geprüft wird stattdessen
+    /// das Vereinsmittel (<c>AbgleichFixStrainTests.Pairs_ManagerClubStrainMean_LikeOriginal</c>).
+    /// </summary>
+    private static Known StrainSawtooth(string club) => new($"Clubs[{club}].Players[*].Strain", Chance, Optional: true);
 
     private const string Landshut = "Clubs[7 EV LANDSHUT]";
 
@@ -58,7 +59,7 @@ public class AbgleichOriginalPaareTests
     public static readonly IReadOnlyDictionary<string, Known[]> Expected =
         new Dictionary<string, Known[]>
         {
-            ["FILE02→FILE03"] = [.. StrainOf("5 KÖLNER EC", "HOCK", "MENDE", "SIKORA")],
+            ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC")],
             ["FILE13→FILE14"] = [.. SeasonStart, new("Managers[0].Money", MoneyFile13),
                 new("Clubs[6 KREFELDER EV]._autoLineup", AutoLineupFlag), new("Clubs[6 KREFELDER EV].TeamValues.*Form", AutoLineupFlag),
                 // Andere Aufstellung (#733) → andere Einsätze → verdeckte Werte einzelner Spieler (Saaten 2, 3, 4711).
@@ -66,15 +67,15 @@ public class AbgleichOriginalPaareTests
                 // Kondition/Technik des Managervereins aus der Aufstellung (#748): 16–43 tiefer, über ±35 nur bei manchen Saaten.
                 new("Clubs[6 KREFELDER EV].TeamValues.*Condition", ManagerTeamValues, Optional: true),
                 new("Clubs[6 KREFELDER EV].TeamValues.*Technique", ManagerTeamValues, Optional: true),
-                // Zufall: Endrunde KREFELD mit 9 statt 3 Spielen (Saaten 1993, 77: ClubGamesCarry 9), Belastung 25–40 höher.
-                new("Clubs[6 KREFELDER EV].Players[*].Strain", Chance, Optional: true)],
+                StrainSawtooth("6 KREFELDER EV")],
             // Zufall (#737, abgleich-fix): 200.000 DM Einzelprämien im Original (file16_9), im Remake bei keiner Saat; mit ihnen
             // im Bereich (AbgleichFixMoneyTests.File16A_MoneyDeviation_ComesFromSinglePremiums).
             ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", Chance, Optional: true),
-                .. StrainOf("14 SV BAYREUTH", "A.RAUBAL", "BLAZYCEK", "DOLL", "HADRASCHEK", "HORSTMANN", "M.SCHMIDT", "NOACK",
-                    "TRAVNICEK", "ZIMMERMANN"),
-                // Saat 1993 seit #725 im Bereich ±20, die übrigen fünf Saaten nicht.
-                .. StrainOptional("14 SV BAYREUTH", "LANGLOIS", "MEIXNER", "MORRISON", "PESKA", "PROKES", "PYLE"),
+                StrainSawtooth("14 SV BAYREUTH"),
+                // Zufall: Die Trainingswirkung auf die verdeckten Werte sinkt mit der Belastung über 125 (Sägezahn, #730), einzelne
+                // Spieler liegen über die Saison außerhalb des Bereichs (Saaten 1993, 3); Mittel wie im Original (H1 5,3–5,9 zu 5,7,
+                // H2 4,7–5,3 zu 5,5).
+                new("Clubs[14 SV BAYREUTH].Players[*].HiddenSkill*", Chance, Optional: true),
                 // Zufall: LANDSHUT steigt im Original in die Oberliga ab (Teamwerte auf deren Obergrenze, alle −33), im Remake
                 // nicht (Liga über den Saisonwechsel zufallsabhängig); Abstand 21–51 je Saat.
                 new($"{Landshut}.TeamValues.*", Chance, Optional: true)],
@@ -91,11 +92,11 @@ public class AbgleichOriginalPaareTests
                 // Teamwerte des Managervereins (Original leer) seit #747 (abgleich-fix) auch im Remake leer.
                 new("Managers[0].Money", WorldOnlyManagerSlot)],
             ["FILE22→FILE23"] = [.. SeasonStart],
-            ["FILE24→FILE25"] = [.. StrainOf("5 KÖLNER EC", "BRANDL", "KWASIGROCH"),
+            ["FILE24→FILE25"] = [StrainSawtooth("5 KÖLNER EC"),
                 new("Clubs[5 KÖLNER EC]._autoLineup", AutoLineupFlag)],
             ["FILE30→FILE31"] = [],
-            ["FILE38→FILE39"] = [.. StrainOf("5 KÖLNER EC", "DOROCHIN", "LIEBSCH")],
-            ["FILE39→FILE40"] = [],
+            ["FILE38→FILE39"] = [StrainSawtooth("5 KÖLNER EC")],
+            ["FILE39→FILE40"] = [StrainSawtooth("5 KÖLNER EC")],
             // Formwerte KÖLN im Remake bei allen Saaten 10–17 höher (#738), bei 1993 knapp im Bereich.
             // Platz 196 KJELLBERG (#749) behoben durch abgleich-fix (Import: Besitzer Manager ohne Kader = vergeben).
             ["FILE44→FILE46"] = [.. SeasonStart, new("Clubs[5 KÖLNER EC].TeamValues.*Form", FormFile44, Optional: true)],
