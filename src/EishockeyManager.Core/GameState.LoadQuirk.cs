@@ -52,7 +52,8 @@ public sealed partial class GameState
         AdvanceFinance(day, clubDay: true); // Finanztag + 1: Zähler 218, 15. April
         if (MatchEngine.IsDriftDay(Counter(day)))
         {
-            // Nicht beim Zähler 218 (FILE22/FILE44); für andere Markierungstage wie im Hauptweg (Datei 0x5525A–0x552D3).
+            // Wie im Hauptweg (Datei 0x5525A–0x552D3). #703 (R701-03): nicht erreichbar – der Import lässt nur den 13. April mit
+            // Zähler 218 zu (OriginalImport, SavedOnMarkerDay), 218 mod 7 = 1; der Zweig steht nur für die Vollständigkeit der Regel.
             MatchEngine.DriftTeamValues(this, TeamValueDrift.Weekly);
             foreach (var manager in Managers.ToList())
                 ManagerDailyRun(day, manager);
