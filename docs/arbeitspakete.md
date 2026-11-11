@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 16 – Pool wie im Original, Restbefunde des Abgleichs (Plan 11.11.2026, Go offen)
+## Aktuelle Runde: Runde 16 – Pool wie im Original, Restbefunde des Abgleichs (Plan 11.11.2026, Go 11.11.2026)
 
 Runde 15 abgeschlossen am 11.11.2026: [archiv/runde-15.md](archiv/runde-15.md). Grundlage: Vormerkungen R15-E6 = A und R15-E5 = A
 (Pool-Umbau #743 in Runde 16), offene Issues #699 (Rest), #703 (R701-06), #730 (Rest), #732, #734, #743, #757, Testlücke
@@ -22,8 +22,8 @@ nummeriert beim Merge); `[ORIGINAL]`/`[APPROX]` mit `Datei 0x…`; `Fixes #<nr>`
 Aufgaben aus Läufen (R15-E4). Bei Unklarheit „wie im Original“; bleibt es unklar, Teil blockiert lassen, die Leitstelle bündelt
 die Fragen. **Entwickler und Erstreviews sind Claude-Sitzungen** (geplante Läufe); ChatGPT nur für das Gesamtreview.
 
-**Folge:** Welle 1 parallel `belastung`, `weltkugel`, `pool`, `pruefung-karte` Teil 1; Merge in der Folge `belastung` →
-`weltkugel` → `pruefung-karte` Teil 1 → `pool` (breiteste Spur, Import/Export und erwartete Listen zuletzt; vor dem Merge
+**Folge:** Welle 1 parallel `abgleich-rest`, `pool`, `pruefung-karte` Teil 1; Merge in der Folge `abgleich-rest` →
+`pruefung-karte` Teil 1 → `pool` (breiteste Spur, Import/Export und erwartete Listen zuletzt; vor dem Merge
 Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); danach Welle 2 `pruefung-karte` Teil 2
 (Fortsetzung durch die Leitstelle), am Rundenende Gesamtreview.
 
@@ -32,11 +32,11 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
 - `Core/Transfer*.cs`, `Core/NewGame.cs`, `Core/GameSetup.cs`, `Core/OriginalExport*.cs`, `Core/OriginalImport.Market.cs`,
   `src/EishockeyManager.Formats/OriginalSave*.cs`, `docs/formate/spielstand-original.md`,
   `tests/**/OriginalExportRoundTripTests.cs`: allein `pool`. Übrige `Core/OriginalImport*.cs`: `pool`, außer den
-  Modus-1-Stellen (`WorldOnly`), die `weltkugel` braucht – beide nennen ihre Stellen im PR, `pool` löst beim Merge auf.
-- `Core/Squad*.cs`, `Core/MatchEngine*.cs`, `Core/Player*.cs`: allein `belastung`; braucht `pool` dort eine Zeile (Besitzer,
-  Poolplatz), nennt es sie im PR.
-- `Core/SeasonFlow*.cs`, `Core/GameState.DailyRun.cs`, `Core/GameState.Manager.cs`, `Core/Cups*National*.cs`, `Core/Finance*.cs`
-  außer `FinanceStocks.cs`: allein `weltkugel`.
+  Modus-1-Stellen (`WorldOnly`, Satz 0), die `abgleich-rest` braucht – beide nennen ihre Stellen im PR, `pool` löst beim Merge auf.
+- `Core/Squad*.cs`, `Core/MatchEngine*.cs`, `Core/Player*.cs`, `Core/SeasonFlow*.cs`, `Core/GameState.DailyRun.cs`,
+  `Core/GameState.Manager.cs`, `Core/Cups*National*.cs`, `Core/Finance*.cs` außer `FinanceStocks.cs`: allein `abgleich-rest`;
+  braucht `pool` dort eine Zeile (Besitzer, Poolplatz), nennt es sie im PR. Satz 0 im Export (`OriginalExport*.cs`): Stellen
+  nennt `abgleich-rest` im PR, `pool` löst beim Merge auf.
 - `Core/FinanceStocks.cs`, `UI/Screens/**/Finance*Screen*.cs` (nur Kurs 0), `Tools/HokCompare*.cs`,
   `docs/analyse/abgleich-original.md`: allein `pruefung-karte`.
 - `tests/**/AbgleichOriginalPaareTests.cs`: jede Spur nur die erwarteten Einträge ihrer Issues.
@@ -57,23 +57,19 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
 - **Abnahme:** FILE41/43/43A/44 behalten Markt-Poolplatz 179 im Export; kein Spieler mehr außerhalb der 199 Plätze; `Fixes #743`.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** nicht gestartet.
 
-### Spur `belastung` – Belastungszuwachs der Managerspieler (#730 Rest)
+### Spur `abgleich-rest` – Belastung, Modus „nur Weltkugel“ (#730 Rest, #732, #699 Rest; R16-D1 = B)
 
 - **Teile:**
-  1. **Ursache belegen:** Zuwachs der Belastung je Reihe/Einsatz im Original (Minutenrechnung, Reihenwechsel, Training vor dem
-     Tagesabschluss), warum Vielspieler der Reihen 1/2 im Original vor dem Training über 127 kippen (`reviews/2026-11-11-abgleich-fix.md`
-     B1; FILE02→03 HOCK/SIKORA, FILE16A→17).
-  2. **Umsetzen:** wie im Original; Regressionstest FILE02 → 3 Spieltage (HOCK ≤ 70), Pflichteinträge unter #730 aus
+  1. **Belastung – Ursache belegen (#730):** Zuwachs je Reihe/Einsatz im Original (Minutenrechnung, Reihenwechsel, Training vor
+     dem Tagesabschluss), warum Vielspieler der Reihen 1/2 im Original vor dem Training über 127 kippen
+     (`reviews/2026-11-11-abgleich-fix.md` B1; FILE02→03 HOCK/SIKORA, FILE16A→17).
+  2. **Belastung – umsetzen:** wie im Original; Regressionstest FILE02 → 3 Spieltage (HOCK ≤ 70), Pflichteinträge unter #730 aus
      `AbgleichOriginalPaareTests` entfernen, Mehrsaisonprobe.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** nicht gestartet.
-
-### Spur `weltkugel` – Modus „nur Weltkugel“: Satz 0 und Tag 0 (#732, #699 Rest)
-
-- **Teile:**
-  1. **#732 nach R16-D2:** prüfen, ob Konto oder Kader des Satzes 0 im Modus 1 irgendwo sichtbar oder spielwirksam sind
-     (Leser in em.exe, Highscore, Export); Ergebnis mit Beleg im Issue; dann je nach Entscheidung umsetzen bzw. als
-     `[APPROX]` mit Begründung abschließen.
-  2. **#699 Rest:** Tag 0 im Modus 1 wie im Original (FILE20→21, erwarteter Eintrag `DayZero = 699` entfällt).
+  3. **#732 (R16-D2 = A):** Kader und Finanzen des Satzes 0 im Modus 1 wie im Original führen – Import des Kaders von Satz 0,
+     Tagesabschluss je Manager ohne Modusprüfung (Sommerpause Datei 0x564E1–0x56564, Aufruf 0x56512; WM-Schleife
+     0x5568B–0x5569F), Export von Satz 0; Abnahme FILE20→21 Konto im Bereich des Abgleichs, Migration (neue Datei),
+     Mehrsaisonprobe im Modus „nur Weltkugel“.
+  4. **#699 Rest:** Tag 0 im Modus 1 wie im Original (FILE20→21, erwarteter Eintrag `DayZero = 699` entfällt).
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** nicht gestartet.
 
 ### Spur `pruefung-karte`
@@ -89,7 +85,10 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
 
 ChatGPT (Codex mit Netzzugang) nach `vorlagen/review-anfrage.md`, risikoorientiert (`prozess/anhang.md` C). **Modell:** GPT-6.1 Terra.
 
-### Entscheidungen zum Plan (offen)
+### Entscheidungen zum Plan (Nutzer, Go 11.11.2026, PR #763)
+
+**Ergebnis:** R16-D1 = B (`belastung` und `weltkugel` als eine Spur `abgleich-rest`), R16-D2 = A (Satz 0 im Modus „nur
+Weltkugel“ wie im Original); Modelle wie in den Spurabschnitten.
 
 **R16-D1 – Zuschnitt.** Problem: sieben Restpunkte, davon ein großer Umbau (#743) und zwei Spielkern-Befunde (#730, #732);
 Import/Export und erwartete Listen werden von mehreren Spuren berührt.
