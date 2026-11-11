@@ -251,8 +251,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
     // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer, Konten und Zufallsverlauf. Rückschaltprobe:
     // GameState.DailyRun.cs und CupsNational.AutoLineup.cs von 8711348 → alte Werte.
-    [InlineData(false, "78AF9288A57B1CCF")]
-    [InlineData(true, "0C296F1190C3C1D8")]
+    // Runde 16, Spur abgleich-rest (#772, R15-E2 = C): neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert
+    // 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel). Rückschaltprobe: ohne PrepareMatch → alte Werte.
+    [InlineData(false, "EFC034F6A975A96B")]
+    [InlineData(true, "DCD26FCBEF8CF678")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -142,7 +142,7 @@ public class LoadQuirkTests
     {
         var game = TestGames.Create(3);
         var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        Assert.Equal(47, (int)root["schema"]!);
+        Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
         var state = root["spiel"]!.AsObject();
         Assert.Equal(0, (int)state["LoadCounterOffset"]!);
         Assert.True(state.Remove("LoadCounterOffset"));

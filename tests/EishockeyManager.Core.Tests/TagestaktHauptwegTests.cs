@@ -190,7 +190,9 @@ public class TagestaktHauptwegTests
     public void WorldCupLoop_StepC_MarketAndContractsOnlyManagerZero()
     {
         var bidSeen = false;
-        foreach (var seed in new[] { 3, 11 })
+        // #772 (R15-E2 = C): Saaten 5/7 statt 3/11 – mit der Spielvorbereitung 0x8365 ist bei 3 und 11 der Transfermarkt nach der
+        // Vereinssaison voll (Offer → MarketFull), die Vorbedingung der Probe fehlt. Rückschaltprobe: alter Code mit 5/7 grün (nur Saatwechsel).
+        foreach (var seed in new[] { 5, 7 })
         {
             var second = Enumerable.Range(0, 200).First(i => NewGame.DatabaseLeague(i) == League.ZweiteLiga);
             var game = GameModeTests.Create(seed, true, true, 2, second);

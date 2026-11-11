@@ -107,20 +107,19 @@ public class AbgleichOriginalPaareTests
                 // rechnet sie aus seiner automatischen Aufstellung, das Original aus der von Hand (Eingriff, Abwehr-Technik 37 tiefer).
                 new("Clubs[6 KREFELDER EV].TeamValues.*Condition", HandLineupFile13, Optional: true),
                 new("Clubs[6 KREFELDER EV].TeamValues.*Technique", HandLineupFile13, Optional: true),
-                // #730 Gegenrichtung: J.MEYER (Original 118, Remake 50–88) und KUHNEKATH (96, Remake 50–53) bei allen Prüfsaaten;
-                // Anteil der Handaufstellung (Eingriff) nicht getrennt.
-                .. StrainOf("6 KREFELDER EV", 50, 95, "J.MEYER", "KUHNEKATH"),
+                // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–57) bei allen Prüfsaaten; Anteil der Handaufstellung
+                // (Eingriff) nicht getrennt. J.MEYER (118, Remake 50–74) seit #772 nur bei 4 von 6 Saaten (nicht 2, 3) → Sägezahn.
+                .. StrainOf("6 KREFELDER EV", 50, 95, "KUHNEKATH"),
                 StrainSawtooth("6 KREFELDER EV"),
                 // Zufall: Wanderung über den Saisonwechsel, Sturm-Kondition WEIßWASSER über zehn Saaten −8 … 14, nur Saat 1 bei −19.
                 new("Clubs[23 ES WEIßWASSER].TeamValues.AttackCondition", Chance, Optional: true)],
             // Zufall (#737, abgleich-fix): 200.000 DM Einzelprämien im Original (file16_9), im Remake bei keiner Saat; mit ihnen
             // im Bereich (AbgleichFixMoneyTests.File16A_MoneyDeviation_ComesFromSinglePremiums).
             ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", Chance, Optional: true),
-                // #730: A.RAUBAL, ZIMMERMANN (Original 50, Remake 96–122) bei allen Prüfsaaten, Gegenrichtung PYLE (Original 120,
-                // Remake 50–88); TRAVNICEK (5 von 6, nicht 1993), NOACK (5 von 6, nicht 3), BLAZYCEK, DOLL, HORSTMANN, M.SCHMIDT
-                // (4 von 6) im Sägezahn.
-                .. StrainOf("14 SV BAYREUTH", 90, StrainSawtoothMax, "A.RAUBAL", "ZIMMERMANN"),
-                .. StrainOf("14 SV BAYREUTH", 50, 95, "PYLE"),
+                // #730: ZIMMERMANN (Original 50, Remake 97–122) bei allen Prüfsaaten; seit #772 A.RAUBAL (5 von 6, nicht 2) und
+                // Gegenrichtung PYLE (Original 120, Remake 87–115, 3 von 6) im Sägezahn, ebenso TRAVNICEK, NOACK, BLAZYCEK, DOLL,
+                // HORSTMANN, M.SCHMIDT (4–5 von 6).
+                .. StrainOf("14 SV BAYREUTH", 90, StrainSawtoothMax, "ZIMMERMANN"),
                 StrainSawtooth("14 SV BAYREUTH"),
                 // Zufall: Die Trainingswirkung auf die verdeckten Werte sinkt mit der Belastung über 125 (Sägezahn, #730), einzelne
                 // Spieler liegen über die Saison außerhalb des Bereichs (Saaten 1993, 3); Mittel wie im Original (H1 5,3–5,9 zu 5,7,
