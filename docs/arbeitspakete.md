@@ -119,11 +119,41 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
 - **Hinweis:** wird als letzte Spur gemergt; vor dem Merge erwartete Listen gegen den dann aktuellen `main` erneuern.
 - **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 fertig (PR #728), Fixlauf zum Review (#735: P2-1, P3-1, P3-2) fertig; Listen gegen `main` 62e4927 erneuert (#729 durch #727, #699 Tag 0 durch #725 behoben); Befunde #729–#734, #737, #738, #747–#749, Beleg zu #699; Bericht `analyse/abgleich-original.md`.
 
-### Spur `pruefung-karte` – Welle 2 (nach dem Merge aller Spuren)
+### Welle 2 (R15-E5 = A, Nutzer 11.11.2026)
 
-- **Inhalt:** #620 (Rest), #703, #716 (Testlücken), P3 aus den Reviews dieser Runde, Abgleich-Befunde P3 (nach Zuweisung der
-  Leitstelle); Inventur und Funktionskarte nachziehen (`--write`, zweiter Lauf ohne Diff).
-- **Modell:** Claude Opus 5.5 (Testlücken in riskanten Übergängen; Sonnet nur, wenn der Nutzer es wählt). **Status:** offen.
+Welle 1 ist gemergt (#722, #725, #726, #727, #728; `main` `80b41e9`). Welle 2 läuft mit zwei Spuren parallel; Merge-Folge
+`pruefung-karte` Teil 1 → `abgleich-fix` → `pruefung-karte` Teil 2 (Inventur/Karte über alles). #743 (Pool-Ziehung) → Runde 16.
+**Für alle Läufe ab hier (R15-E4):** keine geplanten Aufgaben selbst anlegen; Fortsetzung oder Nachprüfung als fertiger
+Startaufruf im Übergabekommentar plus Label `spur-wartet`, die Leitstelle legt sie an. **R15-E2 = C:** fremde Tests darf eine Spur
+anpassen, wenn ihre eigene Verhaltensänderung sie bricht – je Test Begründung und Rückschaltprobe im PR.
+
+### Spur `abgleich-fix` – Befunde aus Abgleich und Export-Probe (Welle 2)
+
+- **Teile:**
+  1. **Geld beim Saisonwechsel:** #734 (FILE13→14 Konto doppelt so hoch), #737 (FILE16A→17 Kontoveränderung zu niedrig).
+  2. **Belastung und Pool:** #730 (Belastung der Managerspieler, Original 50), #731 (Pool nach dem Saisonwechsel: Belastung,
+     Technik, Kondition).
+  3. **Start und Import:** #736 („SPIELER n“ statt Datenbanknamen), #747 (Import „nur Weltkugel“ würfelt Teamwerte neu), #748
+     (Teamwerte des Managervereins, 0x952Ch), #749 (Poolplatz eines verlorenen Spielers im Import).
+  4. **P3:** #732 („nur Weltkugel“, Managersatz beim Saisonwechsel), #733 („automatisch aufstellen“ kippt), #738 (Teamform nach
+     Saisonwechsel).
+- **Abnahme:** je Issue roter Regressionstest mit Fundstelle, dann grün; die betroffene Zeile verschwindet aus der erwarteten Liste
+  in `AbgleichOriginalPaareTests` (die Spur darf diese Listen ändern, nur für ihre Issues); Mehrsaisonprobe bei Geld/Kader;
+  `Fixes #<nr>` je behobenem Issue; was sich nicht belegen lässt, bleibt offen mit Begründung im Issue.
+- **Dateigrenzen:** `src/EishockeyManager.Core/**` außer `GameState.Integration.cs` (höchstens minimal), eigene Testdateien,
+  `AbgleichOriginalPaareTests.cs` (nur erwartete Listen), `docs/analyse/abgleich-original.md` (Spalte „behoben durch“).
+- **Modell:** Claude Opus 5.5. **Status:** offen.
+
+### Spur `pruefung-karte` – Welle 2
+
+- **Teil 1 (sofort):** #620 (Rest), #703, #716 (Testlücken), R725-03 und Mutante N33 (#725), P3 aus den Reviews dieser Runde
+  (#735, #739, #740, #741, #742, #745, #746 – nur Testlücken und Kommentare), #699 prüfen und schließen, soweit durch #725/#726
+  erledigt.
+- **Teil 2 (nach dem Merge von `abgleich-fix`, Fortsetzung durch die Leitstelle):** Inventur (`docs/analyse/inventur.md`) und
+  Funktionskarte nachziehen (`--write`, zweiter Lauf ohne Diff), Inventurzeilen aller Spuren dieser Runde.
+- **Dateigrenzen:** `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`, die in den
+  Issues genannten Test- und Kommentarstellen. Prozessdoku (#724, #744) macht die Leitstelle beim Rundenabschluss.
+- **Modell:** Claude Opus 5.5. **Status:** offen.
 
 ### Gesamtreview am Rundenende
 
@@ -134,6 +164,10 @@ ChatGPT (Codex mit Netzzugang) nach `vorlagen/review-anfrage.md`, risikoorientie
 **Ergebnis:** R15-D1 = A, R15-D2 = A, R15-D3 = A, R15-D4 = A, R15-D5 = D; Modelle wie in den Spurabschnitten. Vorgemerkt nach
 v1.0: bitgenauer Modus (eine Borland-`rand`-Quelle mit belegter Aufrufreihenfolge, Voraussetzung für einen exakten Abgleich;
 Rückfrage Nutzer zu R15-D2, 10.11.2026).
+**Entscheidungen während der Runde (Nutzer):** R15-E1 = A (`tagesablauf` darf 29 fremde Tests anpassen, Rückschaltprobe);
+R15-E2 = C (allgemein: fremde Tests bei eigener Verhaltensänderung, Rückschaltprobe); R15-E3 = C (Vertragslose aus Managervereinen
+wie im Original verloren, Remake-Verhalten nach v1.0 als Einstellung); R15-E4 (Läufe legen keine geplanten Aufgaben selbst an,
+die Leitstelle übernimmt); R15-E5 = A (Welle 2 mit `abgleich-fix`, #743 → Runde 16). Nachtrag in die Prozessdoku: #744.
 
 **R15-D1 – Zuschnitt.** Problem: fünf Vormerkungen/Pflichten (Abgleich, Export, Doku, Restlücken, Issues) konkurrieren um
 Läufe; der Abgleich kann neue Arbeit erzeugen.
