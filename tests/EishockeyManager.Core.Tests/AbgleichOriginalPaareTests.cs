@@ -18,7 +18,7 @@ namespace EishockeyManager.Core.Tests;
 public class AbgleichOriginalPaareTests
 {
     private const int WorldOnlyManagerSlot = 732, MoneyFile13 = 734,
-        DayZero = 699;
+        DayZero = 699, Strain = 730;
 
     /// <summary>
     /// Kein Befund (#732): Im Modus „nur Weltkugel“ trägt Satz 0 das Land (Regel 1 der Feldkarte); der Import baut den Vereinskader
@@ -44,8 +44,10 @@ public class AbgleichOriginalPaareTests
     /// Erwartete Abweichung: Pfadmuster (<c>*</c> = beliebig) mit Issue. <paramref name="Delta"/>: jede Abweichung des Musters muss
     /// genau Remake − Original = Delta haben (sonst neu). <paramref name="Optional"/>: tritt nur bei manchen Saaten auf, kein Fehler,
     /// wenn das Muster nicht trifft. Muster nennen das belegte Feld, nicht den ganzen Kader (Review P3-1).
+    /// <paramref name="RemakeMin"/>/<paramref name="RemakeMax"/>: der Remake-Wert der Abweichung muss im Bereich liegen (sonst neu).
     /// </summary>
-    public sealed record Known(string Pattern, int Issue, int? Delta = null, bool Optional = false);
+    public sealed record Known(string Pattern, int Issue, int? Delta = null, bool Optional = false, int? RemakeMin = null,
+        int? RemakeMax = null);
 
     /// <summary>
     /// Kein Originalfeld, kein Befund: Die Belastung steht im Original nur am Kaderplatz (+0x13), der Pool hat keine; der Import
@@ -60,12 +62,28 @@ public class AbgleichOriginalPaareTests
     private static readonly Known[] SeasonStart = [new("Invariante.PoolMittel.Strain", NoOriginalField)];
 
     /// <summary>
-    /// Zufall, kein Befund: Belastung je Spieler des Managervereins. Seit #730 (abgleich-fix, Training begrenzt vorzeichenbehaftet)
-    /// steigt sie mit den Einsätzen bis über 127 und fällt beim nächsten Training auf 50 – ein Sägezahn, dessen Phase je Spieler
-    /// vom Zufall der Spiele abhängt (FILE02→03: HOCK im Original 50, im Remake je Saat 50 oder 119–126). Geprüft wird stattdessen
-    /// das Vereinsmittel (<c>AbgleichFixStrainTests.Pairs_ManagerClubStrainMean_LikeOriginal</c>).
+    /// Obergrenze der Belastung am Spielstand: Seit #730 (abgleich-fix, Training begrenzt vorzeichenbehaftet, 0x4BD56 `cbw`) steigt
+    /// sie mit den Einsätzen bis über 127 und fällt beim nächsten Training auf 50; an allen Paaren und Prüfsaaten liegt das Remake
+    /// bei höchstens 127. Ein Remake, in dem die Belastung nicht mehr auf 50 fällt, läuft bis 150 und wird rot (Review B1).
     /// </summary>
-    private static Known StrainSawtooth(string club) => new($"Clubs[{club}].Players[*].Strain", Chance, Optional: true);
+    private const int StrainSawtoothMax = 127;
+
+    /// <summary>
+    /// Zufall, kein Befund: Belastung der übrigen Spieler des Managervereins (Sägezahn, Phase je Spieler vom Zufall der Spiele
+    /// abhängig, nur bei manchen Saaten außerhalb ±20). Spieler, die bei allen Prüfsaaten abweichen, stehen als Pflichteinträge in
+    /// <see cref="StrainOf"/>. Zusätzlich geprüft: das Vereinsmittel (<c>AbgleichFixStrainTests.Pairs_ManagerClubStrainMean_LikeOriginal</c>).
+    /// </summary>
+    private static Known StrainSawtooth(string club) =>
+        new($"Clubs[{club}].Players[*].Strain", Chance, Optional: true, RemakeMax: StrainSawtoothMax);
+
+    /// <summary>
+    /// Befund #730 (Restursache offen, Review B1): Pflicht für die Spieler, deren Belastung bei allen sechs Prüfsaaten (1993, 4711,
+    /// 1, 2, 3, 77) außerhalb ±20 liegt. Im Original kippen die Vielspieler der Reihen 1/2 vor dem Training über 127 und stehen
+    /// danach bei 50, im Remake fast nie (Verdacht: Belastungszuwachs je Reihe/Einsatz); <paramref name="min"/>–<paramref name="max"/>
+    /// ist der Remake-Bereich über die Prüfsaaten (mit Rand).
+    /// </summary>
+    private static Known[] StrainOf(string club, int min, int max, params string[] players) =>
+        [.. players.Select(p => new Known($"Clubs[{club}].Players[{p}].Strain", Strain, RemakeMin: min, RemakeMax: max))];
 
     private const string Landshut = "Clubs[7 EV LANDSHUT]";
 
@@ -76,7 +94,8 @@ public class AbgleichOriginalPaareTests
     public static readonly IReadOnlyDictionary<string, Known[]> Expected =
         new Dictionary<string, Known[]>
         {
-            ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC"),
+            // #730: HOCK Original 50, Remake 119–126 (alle Prüfsaaten); SIKORA (4 von 6, nicht 1993 und 3) und BRANDL im Sägezahn.
+            ["FILE02→FILE03"] = [.. StrainOf("5 KÖLNER EC", 100, StrainSawtoothMax, "HOCK"), StrainSawtooth("5 KÖLNER EC"),
                 // Zufall: Pool-Mittel der Belastung über zehn Saaten 143–146, nur Saat 1 bei 136,7 (seit #748 anderer Zufallsverlauf).
                 new("Invariante.PoolMittel.Strain", Chance, Optional: true)],
             ["FILE13→FILE14"] = [.. SeasonStart, new("Managers[0].Money", MoneyFile13),
@@ -88,12 +107,20 @@ public class AbgleichOriginalPaareTests
                 // rechnet sie aus seiner automatischen Aufstellung, das Original aus der von Hand (Eingriff, Abwehr-Technik 37 tiefer).
                 new("Clubs[6 KREFELDER EV].TeamValues.*Condition", HandLineupFile13, Optional: true),
                 new("Clubs[6 KREFELDER EV].TeamValues.*Technique", HandLineupFile13, Optional: true),
+                // #730 Gegenrichtung: J.MEYER (Original 118, Remake 50–88) und KUHNEKATH (96, Remake 50–53) bei allen Prüfsaaten;
+                // Anteil der Handaufstellung (Eingriff) nicht getrennt.
+                .. StrainOf("6 KREFELDER EV", 50, 95, "J.MEYER", "KUHNEKATH"),
                 StrainSawtooth("6 KREFELDER EV"),
                 // Zufall: Wanderung über den Saisonwechsel, Sturm-Kondition WEIßWASSER über zehn Saaten −8 … 14, nur Saat 1 bei −19.
                 new("Clubs[23 ES WEIßWASSER].TeamValues.AttackCondition", Chance, Optional: true)],
             // Zufall (#737, abgleich-fix): 200.000 DM Einzelprämien im Original (file16_9), im Remake bei keiner Saat; mit ihnen
             // im Bereich (AbgleichFixMoneyTests.File16A_MoneyDeviation_ComesFromSinglePremiums).
             ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", Chance, Optional: true),
+                // #730: A.RAUBAL, ZIMMERMANN (Original 50, Remake 96–122) bei allen Prüfsaaten, Gegenrichtung PYLE (Original 120,
+                // Remake 50–88); TRAVNICEK (5 von 6, nicht 1993), NOACK (5 von 6, nicht 3), BLAZYCEK, DOLL, HORSTMANN, M.SCHMIDT
+                // (4 von 6) im Sägezahn.
+                .. StrainOf("14 SV BAYREUTH", 90, StrainSawtoothMax, "A.RAUBAL", "ZIMMERMANN"),
+                .. StrainOf("14 SV BAYREUTH", 50, 95, "PYLE"),
                 StrainSawtooth("14 SV BAYREUTH"),
                 // Zufall: Die Trainingswirkung auf die verdeckten Werte sinkt mit der Belastung über 125 (Sägezahn, #730), einzelne
                 // Spieler liegen über die Saison außerhalb des Bereichs (Saaten 1993, 3); Mittel wie im Original (H1 5,3–5,9 zu 5,7,
@@ -204,9 +231,12 @@ public class AbgleichOriginalPaareTests
     {
         if (!HokCompareClasses.Matches(row.Path, [known.Pattern]))
             return false;
-        if (known.Delta is not { } delta)
+        if (known.Delta is null && known.RemakeMin is null && known.RemakeMax is null)
             return true;
-        return int.TryParse(row.Original, out var o) && int.TryParse(row.Remake, out var r) && r - o == delta;
+        if (!int.TryParse(row.Original, out var o) || !int.TryParse(row.Remake, out var r))
+            return false;
+        return (known.Delta is not { } delta || r - o == delta) && r >= (known.RemakeMin ?? int.MinValue)
+            && r <= (known.RemakeMax ?? int.MaxValue);
     }
 
     private static void AssertExpected(HokCompareReport report)

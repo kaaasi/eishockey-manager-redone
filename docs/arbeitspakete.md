@@ -149,7 +149,9 @@ anpassen, wenn ihre eigene Verhaltensänderung sie bricht – je Test Begründun
   Laden holt es zurück; FILE13→14 Eingriff), #748 behoben (0x952C für die Managervereine), #738 eingegrenzt (Reihen ohne
   „eingesetzt“ nicht aufgestellt; Rest `RefillLineup` im Handbetrieb). Fortsetzung 3: #738 behoben (Handbetrieb ohne Nachrücken,
   0x426C4), #732 teilweise (0x26F20 läuft im Modus 1 nicht: kein Altern, keine Laufzeit; Konto offen: Tagesabschluss für Satz 0).
-  Offen mit Begründung im Issue: #732 (Konto), #734 (fünf Eingesetzte nach dem Laden). **Spur fertig – Review.**
+  Offen mit Begründung im Issue: #732 (Konto), #734 (fünf Eingesetzte nach dem Laden). Fixlauf B1 (Review 2026-11-11): #730 nur
+  teilweise behoben (`cbw`, 0x4BD56) – systematisch abweichende Spieler wieder Pflichteinträge, Sägezahn nur für die übrigen mit
+  Obergrenze 127; Restursache (Belastungszuwachs je Reihe/Einsatz) offen in #730. **Spur fertig – Nachprüfung durch die Leitstelle.**
 
 ### Spur `pruefung-karte` – Welle 2
 
