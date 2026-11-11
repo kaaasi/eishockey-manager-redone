@@ -111,8 +111,11 @@ public class AbgleichFixMoneyTests
         var withPremiums = MeanDistance("FILE16A", "FILE17", atSeasonOver: game =>
         {
             var manager = game.Managers[0];
-            Assert.Equal(0, game.Finance(manager).Book.Current(FinanceCategory.Praemien));
-            game.Book(manager, FinanceCategory.Praemien, 2 * GameState.SinglePremium);
+            // Je Saat zahlt auch das Remake manchmal eine Einzelprämie (Zufall der Restsaison, seit #748 bei einer der Saaten):
+            // auf die 200.000 DM des Originals auffüllen.
+            var paid = game.Finance(manager).Book.Current(FinanceCategory.Praemien);
+            Assert.InRange(paid, 0, 2 * GameState.SinglePremium);
+            game.Book(manager, FinanceCategory.Praemien, 2 * GameState.SinglePremium - paid);
         });
         Assert.True(asPlayed > Range("FILE16A", "FILE17"), $"wie gespielt: {asPlayed:F0}");
         AssertExplained(asPlayed, withPremiums, Range("FILE16A", "FILE17"));

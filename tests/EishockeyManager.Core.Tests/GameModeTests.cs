@@ -430,8 +430,11 @@ public class GameModeTests
     // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
     // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
     // Squad.Training.cs von 18972c0 → alte Werte.
+    // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
+    // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer und Konten. Rückschaltprobe: GameState.DailyRun.cs und
+    // CupsNational.AutoLineup.cs von 8711348 → alte Werte.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=17,GermanChampion=1,EuropeanCupWinner=2|1159990,400000|WorldChampion=53,CupWinner=17,GermanChampion=0,EuropeanCupWinner=1|2284234,400000|WorldChampion=63,CupWinner=0,GermanChampion=10,EuropeanCupWinner=0|2487542,400000|WorldChampion=54,CupWinner=18,GermanChampion=0,EuropeanCupWinner=0|2506588,400000|WorldChampion=63,CupWinner=18,GermanChampion=17,EuropeanCupWinner=0|2702393,500000|R332137697 C1450169878";
+        "WorldChampion=52,CupWinner=17,GermanChampion=1,EuropeanCupWinner=2|1166907,400000|WorldChampion=53,CupWinner=17,GermanChampion=0,EuropeanCupWinner=1|2284812,400000|WorldChampion=63,CupWinner=0,GermanChampion=10,EuropeanCupWinner=0|2479122,400000|WorldChampion=54,CupWinner=18,GermanChampion=0,EuropeanCupWinner=0|2482793,400000|WorldChampion=63,CupWinner=18,GermanChampion=17,EuropeanCupWinner=0|2678183,500000|R332137697 C1450169878";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

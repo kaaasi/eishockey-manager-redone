@@ -231,10 +231,13 @@ public class RngTwinProbeTests
     // Runde 15, Spur abgleich-fix (#736, R15-E2 = C): neu – Managerkader nach Datenbankplätzen (Datei 0x5B0CC–0x5B2BE: Platz läuft
     // über die Arten weiter), ergänzte Plätze mit Datenbanknamen anderer Vereine statt „SPIELER n“ (0x5AAA0), die dem
     // Computerverein fehlen; andere Kader ab Spielbeginn. Rückschaltprobe: Squad.Setup.cs von bd4206b → Werte davor.
+    // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
+    // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer, Konten und Zufallsverlauf. Rückschaltprobe:
+    // GameState.DailyRun.cs und CupsNational.AutoLineup.cs von 8711348 → alte Werte.
     [InlineData(false, 3, "2E7E123D924696C3")]
-    [InlineData(true, 3, "B73B1CD7C65BBD91")]
+    [InlineData(true, 3, "3ED584E829A74147")]
     [InlineData(false, 11, "B60B23E0CA650878")]
-    [InlineData(true, 11, "6F310CC0DD5B2E7C")]
+    [InlineData(true, 11, "0F2CA3E888285B3D")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -287,8 +290,11 @@ public class RngTwinProbeTests
     // Runde 15, Spur abgleich-fix (#736, R15-E2 = C): neu – Managerkader nach Datenbankplätzen (Datei 0x5B0CC–0x5B2BE: Platz läuft
     // über die Arten weiter), ergänzte Plätze mit Datenbanknamen anderer Vereine statt „SPIELER n“ (0x5AAA0), die dem
     // Computerverein fehlen; andere Kader ab Spielbeginn. Rückschaltprobe: Squad.Setup.cs von bd4206b → Werte davor.
+    // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
+    // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer, Konten und Zufallsverlauf. Rückschaltprobe:
+    // GameState.DailyRun.cs und CupsNational.AutoLineup.cs von 8711348 → alte Werte.
     [InlineData(false, "72CBDDF32635C241")]
-    [InlineData(true, "7CB38DCA1E28EE54")]
+    [InlineData(true, "E8F8553B7D6ACF69")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

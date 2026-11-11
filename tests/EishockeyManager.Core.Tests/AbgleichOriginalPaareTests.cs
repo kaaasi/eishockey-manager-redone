@@ -18,7 +18,7 @@ namespace EishockeyManager.Core.Tests;
 public class AbgleichOriginalPaareTests
 {
     private const int WorldOnlyManagerSlot = 732, MoneyFile13 = 734,
-        DayZero = 699, FormFile44 = 738, ManagerTeamValues = 748;
+        DayZero = 699, FormFile44 = 738;
 
     /// <summary>Zufall, kein Befund: Begründung am Eintrag (nur optionale Muster).</summary>
     private const int Chance = 0;
@@ -70,16 +70,21 @@ public class AbgleichOriginalPaareTests
     public static readonly IReadOnlyDictionary<string, Known[]> Expected =
         new Dictionary<string, Known[]>
         {
-            ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC")],
+            ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC"),
+                // Zufall: Pool-Mittel der Belastung über zehn Saaten 143–146, nur Saat 1 bei 136,7 (seit #748 anderer Zufallsverlauf).
+                new("Invariante.PoolMittel.Strain", Chance, Optional: true)],
             ["FILE13→FILE14"] = [.. SeasonStart, new("Managers[0].Money", MoneyFile13),
                 new("Clubs[6 KREFELDER EV]._autoLineup", HandLineupFile13),
                 new("Clubs[6 KREFELDER EV].TeamValues.*Form", HandLineupFile13),
                 // Andere Aufstellung (Eingriff, #733) → andere Einsätze → verdeckte Werte einzelner Spieler (Saaten 2, 3, 4711).
                 new("Clubs[6 KREFELDER EV].Players[*].HiddenSkill*", HandLineupFile13, Optional: true),
-                // Kondition/Technik des Managervereins aus der Aufstellung (#748): 16–43 tiefer, über ±35 nur bei manchen Saaten.
-                new("Clubs[6 KREFELDER EV].TeamValues.*Condition", ManagerTeamValues, Optional: true),
-                new("Clubs[6 KREFELDER EV].TeamValues.*Technique", ManagerTeamValues, Optional: true),
-                StrainSawtooth("6 KREFELDER EV")],
+                // Kondition/Technik des Managervereins aus der Aufstellung (0x952C, #748 behoben durch abgleich-fix): Das Remake
+                // rechnet sie aus seiner automatischen Aufstellung, das Original aus der von Hand (Eingriff, Abwehr-Technik 37 tiefer).
+                new("Clubs[6 KREFELDER EV].TeamValues.*Condition", HandLineupFile13, Optional: true),
+                new("Clubs[6 KREFELDER EV].TeamValues.*Technique", HandLineupFile13, Optional: true),
+                StrainSawtooth("6 KREFELDER EV"),
+                // Zufall: Wanderung über den Saisonwechsel, Sturm-Kondition WEIßWASSER über zehn Saaten −8 … 14, nur Saat 1 bei −19.
+                new("Clubs[23 ES WEIßWASSER].TeamValues.AttackCondition", Chance, Optional: true)],
             // Zufall (#737, abgleich-fix): 200.000 DM Einzelprämien im Original (file16_9), im Remake bei keiner Saat; mit ihnen
             // im Bereich (AbgleichFixMoneyTests.File16A_MoneyDeviation_ComesFromSinglePremiums).
             ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", Chance, Optional: true),

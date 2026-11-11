@@ -248,8 +248,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 15, Spur abgleich-fix (#736, R15-E2 = C): neu – Managerkader nach Datenbankplätzen (Datei 0x5B0CC–0x5B2BE: Platz läuft
     // über die Arten weiter), ergänzte Plätze mit Datenbanknamen anderer Vereine statt „SPIELER n“ (0x5AAA0), die dem
     // Computerverein fehlen; andere Kader ab Spielbeginn. Rückschaltprobe: Squad.Setup.cs von bd4206b → Werte davor.
-    [InlineData(false, "5DD1AFA7AB559969")]
-    [InlineData(true, "B8AC36CA0BD7D359")]
+    // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
+    // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer, Konten und Zufallsverlauf. Rückschaltprobe:
+    // GameState.DailyRun.cs und CupsNational.AutoLineup.cs von 8711348 → alte Werte.
+    [InlineData(false, "78AF9288A57B1CCF")]
+    [InlineData(true, "0C296F1190C3C1D8")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

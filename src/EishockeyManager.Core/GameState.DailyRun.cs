@@ -195,18 +195,53 @@ public sealed partial class GameState
     /// Datei 0x54D76–0x54D82): Neuaufstellung mit der gesicherten Einstellung (Datei 0x54D8C–0x54D9E) und 0x952C(5, 0) (Datei 0x54DAA,
     /// <see cref="UpdateNationalTeamValues"/>), ebenfalls vor den Menüs (#699 Punkt 3); nach den Menüs folgt nur 0x952C(5, 1)
     /// (<c>OnDayNationalTeam</c>). Einen Bundestrainer gibt es im Hauptweg nur in Tests (Ernennung erst am 13. April, danach
-    /// WM-Schleife). [APPROX] 0x952C(Satz, 0) der Managersätze 0 … 4 (Datei 0x54DAA in derselben Schleife) bildet das Remake hier
-    /// nicht nach (Teamwerte der Managervereine bei den Spielen).
+    /// WM-Schleife). [ORIGINAL] #748: 0x952C(Satz, 0) der Managersätze (Datei 0x54DAA in derselben Schleife) schreibt die Felder
+    /// 0x18–0x1D der Managervereine aus der Aufstellung (<see cref="UpdateManagerTeamValues"/>).
     /// </summary>
     private void MainPathEventDayLineups(int day)
     {
         if (!IsListChangeDay(day))
             return;
         ApplyAutoLineups();
+        UpdateManagerTeamValues();
         if (NationalCoach is { } coach)
         {
             coach.OnEventDay();
             UpdateNationalTeamValues();
+        }
+    }
+
+    /// <summary>
+    /// Teamwerte der Managervereine aus ihrer Aufstellung (#748). [ORIGINAL] 0x952C(m, Modus) für m &lt; [0x386] (Managersatz mit
+    /// Verein, Vereinsbyte ≤ 0x95, Datei 0x0954C) schreibt die Vereinsfelder 0x18–0x1D ohne weitere Bedingung aus Reihe 0–2 der
+    /// Aufstellung, leere Plätze zählen 0 (<see cref="MatchEngine.LineupTeamValues"/>); der Modus wirkt nur auf den Managerwert, den
+    /// das Remake im Spiel rechnet. Aufrufe im Hauptweg an Tagen mit Ereignis: vor den Zügen nach der Neuaufstellung (Datei
+    /// 0x54DAA) und nach den Zügen vor den Spielen (Datei 0x54FBF, <see cref="OnDayNationalTeam"/>). Beleg: In allen Ständen mit
+    /// „automatisch aufstellen“ stehen die Felder genau auf diesen Werten (FILE02/03/05/13/14/16A/17/24/25/36/37,
+    /// <c>AbgleichFixLineupTests</c>). Die Wanderung (Datei 0x55292) bewegt sie bis zum nächsten Tag mit Ereignis wie bei allen Vereinen.
+    /// [APPROX] Das Verlassen der Aufstellung (Datei 0x41506) rechnet im Remake erst am nächsten Tag mit Ereignis; die Felder lesen
+    /// außer den Spielen (die den Kader selbst rechnen) nur Zuschauer und Anzeigen. Nicht im Modus „nur Weltkugel“ (#747: dort trägt
+    /// der Satz des Managervereins das Land).
+    /// </summary>
+    internal void UpdateManagerTeamValues()
+    {
+        if (WorldOnly)
+            return;
+        foreach (var manager in ActiveManagers)
+        {
+            if (manager.ClubIndex is < 0 or >= NationalTeams.First)
+                continue;
+            var club = Clubs[manager.ClubIndex];
+            if (club.TeamValues is null)
+                continue; // [APPROX] noch nicht gezogen (Lader beim ersten Spiel, MatchEngine.EnsureTeamValues): nicht vorziehen
+            var (defense, attack, _) = MatchEngine.LineupTeamValues(club.Lineup);
+            var b = MatchEngine.ComputerTeamValue(club);
+            club.TeamValues = MatchEngine.TeamValuesOf(club) with
+            {
+                DefenseCondition = defense.Condition - b, AttackCondition = attack.Condition - b,
+                DefenseTechnique = defense.Technique - b, AttackTechnique = attack.Technique - b,
+                DefenseForm = defense.Form, AttackForm = attack.Form,
+            };
         }
     }
 

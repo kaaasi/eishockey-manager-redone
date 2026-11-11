@@ -204,6 +204,10 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
                     Assert.Equal(first[c.Index], v with { DayForm = 0 });
                     continue;
                 }
+                // #748 (abgleich-fix, R15-E2 = C): Die Felder der Managervereine schreibt 0x952C an Tagen mit Ereignis aus der
+                // Aufstellung (Form und Werte der Spieler, z. B. FILE14 KREFELD Form 19/12) – keine Grenzen der Wanderung.
+                if (g.Managers.Any(m => m.ClubIndex == c.Index) && !g.WorldOnly)
+                    continue;
                 Assert.InRange(v.DefenseForm, 45, 55);
                 Assert.InRange(v.AttackForm, 45, 55);
                 if (c.Index >= NationalTeams.First || c.Players.Count == 0)
