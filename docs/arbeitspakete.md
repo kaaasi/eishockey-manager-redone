@@ -145,8 +145,9 @@ anpassen, wenn ihre eigene Verhaltensänderung sie bricht – je Test Begründun
 - **Modell:** Claude Opus 5.5. **Status:** PR #752 (Draft). Lauf 1: #747, #749, #731 (Kondition/Technik) behoben; #737 Zufall
   (Einzelprämien, Beleg-Test); #734 kein Finanzfehler (Aufstellung des Originals nach dem Laden, offen unter #733). Fortsetzung 1:
   #730 behoben (Training begrenzt die Belastung vorzeichenbehaftet, 0x4BD56), #736 behoben (Managerkader nach Datenbankplätzen,
-  ergänzte Plätze mit Datenbanknamen, 0x5B0CC/0x5AAA0); offen #733 (Befund 0x375/0x376 in der Übergabe), #732, #738, #748 –
-  Fortsetzung 2 von 3.
+  ergänzte Plätze mit Datenbanknamen, 0x5B0CC/0x5AAA0). Fortsetzung 2: #733 behoben (Import liest das gesicherte Byte 0x376,
+  Laden holt es zurück; FILE13→14 Eingriff), #748 behoben (0x952C für die Managervereine), #738 eingegrenzt (Reihen ohne
+  „eingesetzt“ nicht aufgestellt; Rest `RefillLineup` im Handbetrieb); offen #732, #738 (Rest) – Fortsetzung 3 von 3.
 
 ### Spur `pruefung-karte` – Welle 2
 
