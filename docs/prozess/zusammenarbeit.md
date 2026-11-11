@@ -44,7 +44,10 @@ gepushte Stand; der Nachfolger schreibt zuerst einen Übernahmekommentar („üb
 
 - **Ein Branch – ein Bearbeiter.** Gleichzeitig am selben Paket: getrennte Branches `paket/<spur>-<teil>` mit getrennten PRs.
   Fortsetzungen einer Spur arbeiten **nacheinander** auf `paket/<spur>` mit einem PR (`spur-start.md` „Teile und Fortsetzung“).
-- Kein `git push --force` auf fremde Branches; auf eigenen nur `--force-with-lease` nach Rebase.
+- Kein `git push --force` auf fremde Branches; auf eigenen nur `--force-with-lease` nach Rebase (abgelehnt: Merge-Commit,
+  `spur-start.md` „Teile und Fortsetzung“ Schritt 2).
+- **Fremde Tests (R15-E2 = C, Nutzer 10.11.2026):** Bricht die eigene Verhaltensänderung einer Spur einen fremden Test, darf sie
+  ihn anpassen – je Test Begründung mit Fundstelle und Rückschaltprobe im PR; das Erstreview prüft genau das.
 - Dateigrenzen einhalten; Berührungen gemeinsamer Dateien im PR begründen.
 - `docs/arbeitspakete.md` nur im eigenen Statusabschnitt; Planabschnitte ändert die Leitstelle.
 
@@ -75,10 +78,9 @@ gepushte Stand; der Nachfolger schreibt zuerst einen Übernahmekommentar („üb
      die erfolglose Codesuche). Ohne Beleg höchstens P3 „Verdacht“. Widerspricht ein Fixlauf mit eigenem Beleg: Label
      `beleg-strittig`, **keine** Nachprüfung für diesen Punkt; die Leitstelle führt beide Belege aus und entscheidet, nur wenn das
      nicht gelingt, gibt es eine Nachprüfung allein dieses Punkts.
-  8. **Verkettung und Labels (Nutzer 10.11.2026):** Der Fixlauf legt bei behobenem P0/P1 selbst die Nachprüfung als geplanten
-     Lauf an (Kurzaufruf aus `review-anfrage.md`, Modell nach „Modellwahl“, etwa 5 Minuten später, vorher `list_triggers` auf
-     eine ausstehende Nachprüfung dieses PRs). Lehnt die Freigabe `create_trigger` ab: `spur-wartet`, Prompt im
-     Übergabekommentar (wie bei Fortsetzungen). Die Leitstelle wartet auf Labels bzw. Review-PRs, nicht auf Kommentare, legt
+  8. **Verkettung und Labels (Nutzer 10.11.2026; R15-E4):** Läufe legen keine geplanten Aufgaben an. Der Fixlauf setzt bei
+     behobenem P0/P1 `spur-wartet` und schreibt den Startaufruf der Nachprüfung in den Übergabekommentar (Kurzaufruf aus
+     `review-anfrage.md`, Modell nach „Modellwahl“); die Leitstelle legt sie an (etwa 5 Minuten später). Die Leitstelle wartet auf Labels bzw. Review-PRs, nicht auf Kommentare, legt
      nach `review-nein` Fixläufe an und merged nach §6 (#712/R-06). **Wer ein Label abarbeitet, entfernt es:**
 
      | Label | gesetzt von, wann | entfernt von, wann |
@@ -86,7 +88,7 @@ gepushte Stand; der Nachfolger schreibt zuerst einen Übernahmekommentar („üb
      | `review-ja` / `review-nein` | jedes Review am geprüften PR (das andere entfernen) | gegenseitig durch das nächste Review; `review-nein` der Fixlauf mit dem Push des neuen Heads |
      | `leitstelle-delta` | Fixlauf, der nur P2/P3 behebt, und Fixlauf ohne Befund (nur Rebase/Planpflicht) (#712/N3) | Leitstelle nach der Delta-Prüfung |
      | `beleg-strittig` | Fixlauf, der einem belegten Befund mit eigenem Beleg widerspricht | Leitstelle nach ihrer Entscheidung |
-     | `spur-wartet` | Lauf ohne Fortsetzung (Zugriff oder Teil blockiert, Kettenende, Freigabe `create_trigger` abgelehnt, laufender Fremdlauf) | Leitstelle nach Anlegen des Laufs bzw. Entscheidung; wartet der Punkt auf den Nutzer, sobald sie ihn dem Nutzer vorgelegt und das im PR vermerkt hat (#712/N-01) |
+     | `spur-wartet` | Lauf, nach dem die Leitstelle handeln muss (Fortsetzung oder Nachprüfung anzulegen, Zugriff oder Teil blockiert, Kettenende, laufender Fremdlauf) | Leitstelle nach Anlegen des Laufs bzw. Entscheidung; wartet der Punkt auf den Nutzer, sobald sie ihn dem Nutzer vorgelegt und das im PR vermerkt hat (#712/N-01) |
 
      Reviews ohne Netz (ChatGPT/Codex) setzen kein Label; dann wartet die Leitstelle auf den Review-PR (`review/*`) und setzt das
      Label beim Auswerten ([anhang.md](anhang.md) D).

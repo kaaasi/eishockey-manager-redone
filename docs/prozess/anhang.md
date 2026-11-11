@@ -63,7 +63,8 @@ Leitstelle wartet auf den Review-PR `review/*` und setzt das Label beim Auswerte
    liegt er auf einem anderen Branch (z. B. Fix-PR), nennt die Leitstelle diesen Branch. Base und ältere Stände liegen in dessen Historie.
 2. **Ablage immer neu:** neuer Branch `review/<thema>`, neue Datei, neuer PR; nie einen bestehenden Branch fortschreiben, auch
    nicht bei einer Fortsetzung (dann `…-teil<n>.md`).
-3. **Keine Netzbefehle im Aufruf:** keine Vorprüfung mit `git fetch`, `git ls-remote` oder `add_repo`. Originaldaten und Spielstände
+3. **Keine Netzbefehle im Aufruf:** keine Vorprüfung mit `git fetch`, `git ls-remote` oder `add_repo`, weil nach dem Klonen nicht
+   sicher Netz besteht (#724/N5). Originaldaten und Spielstände
    kommen über den GitHub-Connector oder das Setup der Codex-Umgebung; fehlen sie, gehört das als offener Prüfbereich in den Bericht.
 4. Der Zugriffsabsatz aus `spur-start.md` gilt nur für Claude-Läufe.
 
@@ -86,8 +87,10 @@ Dokumentieren, ob nur Codelesen oder auch Ausführung am nachgewiesenen Checkout
   melden (Fehlermeldung von `add_repo` bzw. `ls-remote`). Jeder Startaufruf enthält den Zugriffsabsatz aus `spur-start.md`.
 - **Modell:** nach dem Anlegen mit `update_trigger` setzen, wenn es von Opus abweicht – nur auf ausdrücklichen Wunsch des Nutzers
   (z. B. bestätigter Plan bzw. Go mit Modell) oder für Mechanisches nach `zusammenarbeit.md` §5 „Modellwahl“ (Nutzer 09.11.2026).
-- **`spur-wartet` durchsehen:** „Fortsetzung anlegen – Leitstelle“ heißt, die Aufgabe mit dem Prompt aus der Übergabe anlegen –
-  vorher gegen den Kurzaufruf „Geplanter Lauf mit Teilen“ prüfen; abweichen dürfen nur Spur, Modell, Zähler und PR-Nummer (R9F-03).
+- **`spur-wartet` durchsehen:** Läufe legen keine Aufgaben an (R15-E4). „Fortsetzung anlegen – Leitstelle“ heißt, die Aufgabe mit
+  dem Prompt aus der Übergabe anlegen – vorher gegen den Kurzaufruf „Geplanter Lauf mit Teilen“ prüfen; abweichen dürfen nur
+  Spur, Modell, Zähler und PR-Nummer (R9F-03). Ebenso die Nachprüfung nach einem Fixlauf mit P0/P1 (Kurzaufruf aus
+  `review-anfrage.md`, Delta und Befunde aus der Übergabe).
   Draft-Status, den ein Lauf nicht aufheben konnte, hebt die Leitstelle selbst auf (`…/pulls/<nr>/ccr/ready_for_review`), nicht der
   Nutzer. Wartet ein Punkt auf den Nutzer, entfernt sie `spur-wartet`, sobald sie ihn vorgelegt und das im PR vermerkt hat (#712/N-01).
 - **Warten über Labels** (`zusammenarbeit.md` §5 Punkt 8): eine Warteschleife fragt **je Label eine Abfrage**

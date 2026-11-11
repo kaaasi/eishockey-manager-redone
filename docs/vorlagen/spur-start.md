@@ -8,8 +8,8 @@
 **Geplanter Lauf mit Teilen** (Startaufruf der Leitstelle; die Fortsetzung hängt `Fortsetzung <n> von 3, Übergabe in PR #<nr>.` an):
 
 > Repo kaaasi/eishockey-manager-redone. Arbeite nach `docs/vorlagen/spur-start.md`. Spur: `<name>`. Agent: Claude Code.
-> Unbeaufsichtigt, keine Rückfragen. Teile und Selbstfortsetzung nach Abschnitt „Teile und Fortsetzung“; das Anlegen
-> einer Fortsetzung per `create_trigger` ist autorisiert (höchstens 3 je Spur). Modell der Spur: `<modell>`.
+> Unbeaufsichtigt, keine Rückfragen. Teile und Fortsetzung nach Abschnitt „Teile und Fortsetzung“ (höchstens 3 je Spur);
+> keine geplanten Aufgaben anlegen. Modell der Spur: `<modell>`.
 > Zugriff zuerst prüfen: `git ls-remote https://github.com/kaaasi/eishockey-manager-referenz HEAD`. Scheitert das,
 > `add_repo` (ggf. erst per `ToolSearch` mit `select:mcp__claude-code-remote__add_repo` laden; meist nicht vorhanden) für
 > `kaaasi/eishockey-manager-referenz` (access read) und erneut prüfen; bleibt es unerreichbar, sofort blockiert melden (genaue
@@ -21,16 +21,20 @@ Der Zugriffsabsatz steht in **jedem** Startaufruf eines geplanten Spurlaufs (Spu
 `docs/prozess/anhang.md` F. Geplante Läufe erben Schreibrecht auf das Referenz-Repo, Spuren und Reviews schreiben dort trotzdem
 nie; fehlen Daten oder Bilder, im PR melden – ablegen nur Leitstelle oder Nutzer.
 
-**Einzelner Folgeteil ohne Fortsetzung:** wie oben, aber statt „Teile und Selbstfortsetzung … (höchstens 3 je Spur).“ der Satz
-„Teile nach Abschnitt ‚Teile und Fortsetzung‘; nur Teil <n>, keine Fortsetzung anlegen.“ – es gilt „Teile und Fortsetzung“ ohne
-Schritt 5 (R9F-02).
+**Einzelner Folgeteil ohne Fortsetzung:** wie „Geplanter Lauf mit Teilen“, aber statt „Teile und Fortsetzung … (höchstens 3 je
+Spur);“ der Satz „Teile nach Abschnitt ‚Teile und Fortsetzung‘; nur Teil <n>, keine Fortsetzung;“ – es gilt „Teile und
+Fortsetzung“ ohne Schritt 5 (R9F-02).
 
-**Fixlauf** (geplanter Lauf, Nutzer 10.11.2026): Startaufruf wie oben mit Auftrag „Befunde `<IDs>` aus `<review-datei>` zu PR
+**Keine geplanten Aufgaben aus Läufen (R15-E4, Nutzer 10.11.2026):** Das Anlegen aus einem Lauf heraus verlangt eine Bestätigung
+des Nutzers im Chat des Laufs. Läufe rufen deshalb nie `create_trigger` auf; Fortsetzung und Nachprüfung stehen als fertiger
+Startaufruf (Name, Prompt, Soll-Modell) im Übergabekommentar, dazu Label `spur-wartet`. Die Leitstelle legt sie an
+(`docs/prozess/anhang.md` F).
+
+**Fixlauf** (geplanter Lauf, Nutzer 10.11.2026): Startaufruf wie „Geplanter Lauf mit Teilen“ mit Auftrag „Befunde `<IDs>` aus `<review-datei>` zu PR
 #`<nr>` beheben, Head vorher `<sha>`“ – ohne Befund (nur Rebase/Planpflicht): „PR #`<nr>` auf `main` rebasen, `<Anpassung laut
-Plan>`, Head vorher `<sha>`“ (#712/N3). Am Ende (`zusammenarbeit.md` §5 Punkt 8): bei behobenem P0/P1 die Nachprüfung selbst per
-`create_trigger` anlegen (Kurzaufruf aus `review-anfrage.md`, Delta alter..neuer Head, nur diese Befunde; vorher `list_triggers`
-auf eine ausstehende Nachprüfung dieses PRs; autorisiert; das Modell lässt sich nicht wählen → im Übergabekommentar „Modell
-prüfen (Soll: …)“ nach „Modellwahl“), sonst – nur P2/P3 oder ohne Befund – Label `leitstelle-delta`. Mit dem Push des neuen
+Plan>`, Head vorher `<sha>`“ (#712/N3). Am Ende (`zusammenarbeit.md` §5 Punkt 8): bei behobenem P0/P1 Label `spur-wartet` und im
+Übergabekommentar der fertige Startaufruf der Nachprüfung (Kurzaufruf aus `review-anfrage.md`, Delta alter..neuer Head, nur diese
+Befunde, Soll-Modell nach „Modellwahl“), sonst – nur P2/P3 oder ohne Befund – Label `leitstelle-delta`. Mit dem Push des neuen
 Heads `review-nein` entfernen. Widerspricht der Lauf einem Befund mit eigenem Beleg: `beleg-strittig`, beide Belege in der
 Übergabe, für diesen Punkt keine Nachprüfung.
 
@@ -43,7 +47,8 @@ Heads `review-nein` entfernen. Widerspricht der Lauf einem Befund mit eigenem Be
    Nutzer fragen (geplante Läufe: „Teile und Fortsetzung“ Schritt 1). Neu: Branch `paket/<spur>` von aktuellem `main`, sofort
    Draft-PR mit `Bearbeiter: <Agent>` und Base-SHA.
 4. Harte Regeln: reproduzieren → roter Regressionstest → Fix; Dateigrenzen; `[APPROX]`/`[ORIGINAL]`; Mehrsaisonprobe, wenn Kader,
-   Geld oder Saisonwechsel berührt sind.
+   Geld oder Saisonwechsel berührt sind. **Fremde Tests (R15-E2 = C):** bricht die eigene Verhaltensänderung einen fremden Test,
+   darf die Spur ihn anpassen – je Test Begründung (Fundstelle) und Rückschaltprobe im PR (alter Code + neuer Test → rot).
 5. Vor jedem Push: `git fetch origin && git rebase origin/main`, `tools/pruefen.sh --schnell` (`AGENTS.md` §5).
 6. Fertig: Beschreibung nach `.github/pull_request_template.md`, Draft aufheben, Status im eigenen Abschnitt von
    `docs/arbeitspakete.md`. Mehrere kleine PRs sind besser als ein großer.
@@ -63,19 +68,17 @@ oder einen einzelnen Folgeteil nennt (dann ohne Schritt 5).
 2. **Ein Branch, ein PR (ab Runde 15):** Teil 1 legt `paket/<spur>` von aktuellem `main` an und öffnet den Draft-PR (Base `main`)
    mit der Teilliste als Aufgabenliste. Jeder Teil sind Commits auf diesem Branch; eine Fortsetzung übernimmt ihn nach der
    Übergabe (Übernahmekommentar, `zusammenarbeit.md` §3) – nacheinander, nie gleichzeitig. Vor dem Push auf `origin/main`
-   rebasen, dann `git push --force-with-lease`.
+   rebasen, dann `git push --force-with-lease`; wird der Force-Push abgelehnt (geplante Läufe, beobachtet Runde 15), `origin/main`
+   per Merge-Commit einbringen und normal pushen.
 3. **Teil abschließen:** grünes `--schnell`, gepusht, Teil im PR abgehakt, Übergabe mit „Fortsetzungen verbraucht: n von 3“.
    Der PR bleibt Draft, bis alle Teile fertig sind; dann den nächsten Teil im selben Lauf beginnen, solange Zeit bleibt.
 4. **Teil blockiert** (kein grünes `--schnell`, Beleg fehlt, Referenz-Repo unerreichbar, fremde Datei nötig): Draft mit
    Übergabe, Label `spur-wartet`, in der Übergabe „blockiert – Entscheidung Nutzer“ und Grund. **Keine Fortsetzung**, den Teil
    nicht erneut versuchen.
-5. **Fortsetzung anlegen** (nur wenn Teile offen sind, nichts blockiert und n < 3): vorher `list_triggers` – steht für die Spur
-   schon eine Aufgabe aus, keine weitere; `create_trigger` mit `run_once_at` etwa 10 Minuten später, Name
-   `Spur <name> – Fortsetzung <n+1>`, Prompt = Startaufruf oben mit `Fortsetzung <n+1> von 3, Übergabe in PR #<nr>.`; das Modell
-   lässt sich nicht wählen und darf vom Lauf nicht umgestellt werden → in der Übergabe „Modell der Fortsetzung prüfen (Soll:
-   <modell>)“ sowie Name und Zeitpunkt der Aufgabe. Lehnt die Freigabe `create_trigger` ab (beobachtet 01.11.2026, häufig):
-   `spur-wartet`, in der Übergabe „Fortsetzung anlegen – Leitstelle“ mit fertigem Prompt (Name, Startaufruf mit Zähler); die
-   Leitstelle legt an und setzt das Modell (`docs/prozess/anhang.md` F).
+5. **Fortsetzung anfordern** (nur wenn Teile offen sind, nichts blockiert und n < 3; R15-E4): `spur-wartet`, in der Übergabe
+   „Fortsetzung anlegen – Leitstelle“ mit fertigem Prompt – Name `Spur <name> – Fortsetzung <n+1>`, Startaufruf „Geplanter Lauf
+   mit Teilen“ mit `Fortsetzung <n+1> von 3, Übergabe in PR #<nr>.`, Soll-Modell. Die Leitstelle legt an und setzt das Modell
+   (`docs/prozess/anhang.md` F).
 6. **Kettenende:** Alle Teile fertig → Beschreibung vervollständigen, „Ready for review“
    (`gh api -X POST repos/kaaasi/eishockey-manager-redone/pulls/<nr>/ccr/ready_for_review`, Antwort `{"draft":false}`; scheitert es,
    Fehlermeldung in der Übergabe, die Leitstelle setzt es), `spur-wartet`, Übergabe „Spur fertig – Review“. n = 3 und Teile offen:

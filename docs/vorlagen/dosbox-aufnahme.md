@@ -24,6 +24,8 @@ vom Nutzer.
    Bilder unverändert übernehmen (DOSBox-Fenster, ungeschnitten).
 5. **Ablage:** Branch `daten/<aufnahme>-<sitzung>` vom aktuellen `main` des Referenz-Repos (Sparse-Klon `original/` reicht);
    Spielstände nach `original/spielstaende/`, Bilder nach `original/spielstaende/bilder/` (Namen `fileNN_<k>_<inhalt>.png`).
+   Spielstände immer mit DOS-8.3-Namen (höchstens 8 Zeichen vor `.HOK`, z. B. `EXPORT1B.HOK`); längere zeigt das Original als
+   `EXPORT~1.HOK` (Runde 15, #744).
    README: je Spielstand eine Tabellenzeile (Herkunft, Stand, Beobachtungen des Nutzers wörtlich knapp, Bilder), SHA-256 in den
    Block, Bildliste ergänzen; Zweck je Datei mit der Inventur-ID (A…) nennen. Commit mit Agenten-Trailer, PR gegen `main` des
    Referenz-Repos; **nicht mergen**. Ein PR je Sitzung (oder einer am Ende, wenn der Nutzer es so will).

@@ -57,6 +57,13 @@ entschlüsselt sind, ist das im Code mit [APPROX] markiert.
 Vom Nutzer vorgemerkt, Umsetzung erst nach Erreichen der Parität (v1.0); als abschaltbare Zusatzanzeige, die
 Originaldarstellung bleibt unverändert.
 
+- **Vertragslose aus Managervereinen bleiben verfügbar (10.11.2026, R15-E3 = C):** Im Original gehen Spieler, deren Vertrag in
+  einem Managerverein ausläuft, beim Saisonwechsel ganz verloren (Datei 0x27DE3–0x27E9D; Runde 15, Spur `kader`). Erweiterung
+  als Einstellung: sie kommen als freie Spieler auf die Transferliste (früheres Remake-Verhalten).
+- **Bitgenauer Zufallsmodus (10.11.2026, Rückfrage zu R15-D2):** eine einzige Borland-`rand`-Quelle mit belegter
+  Aufrufreihenfolge (Original `srand(time(0))`, Datei 0x25B31). Voraussetzung für einen exakten Abgleich mit Originalständen;
+  bis dahin vergleicht `emtool abgleich` zufallsabhängige Felder über Invarianten und Bereiche (R15-D2 = A).
+
 - **Verjüngung des Spielerpools (01.11.2026):** Im Original altern die 200 Poolspieler jede Saison um ein Jahr (em.exe 0x274A7)
   und bekommen beim Saisonwechsel nur neue Namen (0x5ACA0); ein Laufbahnende gibt es nicht, die Transferliste wird über die
   Jahre älter. Das Remake bleibt bis v1.0 originaltreu ([docs/transfer.md](../transfer.md), Teil 5). Erweiterung: Ein Platz, der
