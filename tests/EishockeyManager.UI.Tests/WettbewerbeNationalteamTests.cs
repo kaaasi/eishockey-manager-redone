@@ -82,6 +82,36 @@ public class WettbewerbeNationalteamTests
             var next = Enumerable.Range(day + 1, SeasonCalendar.SeasonEnd - day)
                 .First(t => SeasonCalendar.Events(t).HasFlag(DayEvents.WorldCup));
             Assert.Equal(next, game.CurrentDay);
+
+            // #703 R701-02: Der nächste WM-Tag ist hier ein Spieltag Deutschlands; die Zeile darüber bliebe auch mit der alten
+            // Regel grün. Deshalb den Zug des Bundestrainers selbst prüfen: am Spieltag Deutschlands und am ersten WM-Tag, an dem
+            // Deutschland spielfrei ist (nach dem Ausscheiden). Gegenprobe NationalCoachPlaysOn „… && MatchOn(day,
+            // NationalCoach.Nation) is not null“ → rot (die Zeitleiste läuft über die spielfreien WM-Tage bis zum Saisonende);
+            // ebenso die Umkehrung „… is null“ (kein Zug am Spieltag Deutschlands). A028 deckt auch
+            // NationalteamRunde13Teil2Tests.A028_CoachHaltsOnEveryWorldCupDay.
+            var nation = coach.Nation;
+            bool FreeWorldCupDay(int t) => SeasonCalendar.Events(t).HasFlag(DayEvents.WorldCup) && game.MatchOn(t, nation) is null;
+            void AssertCoachTurnToday()
+            {
+                var today = game.CurrentDay;
+                for (var guard = 0; !game.NationalTurn && game.CurrentDay == today; guard++)
+                {
+                    Assert.True(guard < 10, "Zug des Bundestrainers bleibt aus");
+                    game.Continue(); // Züge der Vereinsmanager an diesem Tag
+                }
+                Assert.True(game.NationalTurn, $"Bundestrainer am WM-Tag {today} nicht am Zug");
+                Assert.Equal(today, game.CurrentDay);
+            }
+            Assert.NotNull(game.MatchOn(next, nation));
+            AssertCoachTurnToday();
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver && !FreeWorldCupDay(game.CurrentDay); guard++)
+            {
+                Assert.True(guard < 200, "kein spielfreier WM-Tag erreicht");
+                game.Continue();
+            }
+            Assert.Equal(SeasonPhase.ClubSeasonOver, game.Phase); // WM nach der Vereinssaison
+            Assert.True(FreeWorldCupDay(game.CurrentDay), $"Tag {game.CurrentDay} ist kein spielfreier WM-Tag");
+            AssertCoachTurnToday();
         }
     }
 }
