@@ -18,8 +18,7 @@ namespace EishockeyManager.Core.Tests;
 public class AbgleichOriginalPaareTests
 {
     private const int Strain = 730, PoolSeasonChange = 731, WorldOnlyManagerSlot = 732, AutoLineupFlag = 733, MoneyFile13 = 734,
-        DayZero = 699, MoneyFile16A = 737, FormFile44 = 738, WorldOnlyImportTeamValues = 747, ManagerTeamValues = 748,
-        LostPoolSlotImport = 749;
+        DayZero = 699, FormFile44 = 738, ManagerTeamValues = 748;
 
     /// <summary>Zufall, kein Befund: Begründung am Eintrag (nur optionale Muster).</summary>
     private const int Chance = 0;
@@ -60,7 +59,9 @@ public class AbgleichOriginalPaareTests
                 new("Clubs[6 KREFELDER EV].TeamValues.*Technique", ManagerTeamValues, Optional: true),
                 // Zufall: Endrunde KREFELD mit 9 statt 3 Spielen (Saaten 1993, 77: ClubGamesCarry 9), Belastung 25–40 höher.
                 new("Clubs[6 KREFELDER EV].Players[*].Strain", Chance, Optional: true)],
-            ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", MoneyFile16A),
+            // Zufall (#737, abgleich-fix): 200.000 DM Einzelprämien im Original (file16_9), im Remake bei keiner Saat; mit ihnen
+            // im Bereich (AbgleichFixMoneyTests.File16A_MoneyDeviation_ComesFromSinglePremiums).
+            ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", Chance, Optional: true),
                 .. StrainOf("14 SV BAYREUTH", "A.RAUBAL", "BLAZYCEK", "DOLL", "HADRASCHEK", "HORSTMANN", "M.SCHMIDT", "NOACK",
                     "TRAVNICEK", "ZIMMERMANN"),
                 // Saat 1993 seit #725 im Bereich ±20, die übrigen fünf Saaten nicht.
@@ -78,7 +79,8 @@ public class AbgleichOriginalPaareTests
                 // Form und Belastung einzelner Spieler (je nach Saat andere, Remake Belastung 70).
                 new($"{Landshut}.Players[*].Form", WorldOnlyManagerSlot, Optional: true),
                 new($"{Landshut}.Players[*].Strain", WorldOnlyManagerSlot, Optional: true),
-                new($"{Landshut}.TeamValues", WorldOnlyManagerSlot), new("Managers[0].Money", WorldOnlyManagerSlot)],
+                // Teamwerte des Managervereins (Original leer) seit #747 (abgleich-fix) auch im Remake leer.
+                new("Managers[0].Money", WorldOnlyManagerSlot)],
             ["FILE22→FILE23"] = [.. SeasonStart],
             ["FILE24→FILE25"] = [.. StrainOf("5 KÖLNER EC", "BRANDL", "KWASIGROCH"),
                 new("Clubs[5 KÖLNER EC]._autoLineup", AutoLineupFlag)],
@@ -86,12 +88,10 @@ public class AbgleichOriginalPaareTests
             ["FILE38→FILE39"] = [.. StrainOf("5 KÖLNER EC", "DOROCHIN", "LIEBSCH")],
             ["FILE39→FILE40"] = [],
             // Formwerte KÖLN im Remake bei allen Saaten 10–17 höher (#738), bei 1993 knapp im Bereich.
-            ["FILE44→FILE46"] = [.. SeasonStart, new("Clubs[5 KÖLNER EC].TeamValues.*Form", FormFile44, Optional: true),
-                // Platz 196 KJELLBERG: Import frei, Remake vergeben (#749); Zahl nur bei Saaten 1993 und 1 verschieden.
-                new("Invariante.PoolSpieler", LostPoolSlotImport, Delta: -1, Optional: true)],
-            // „nur Weltkugel“: fehlende Teamwerte des Managervereins → alle Teamwerte neu gewürfelt (#747).
-            ["FILE18→FILE48"] = [new("Clubs[*].TeamValues.*Condition", WorldOnlyImportTeamValues),
-                new("Clubs[*].TeamValues.*Technique", WorldOnlyImportTeamValues)],
+            // Platz 196 KJELLBERG (#749) behoben durch abgleich-fix (Import: Besitzer Manager ohne Kader = vergeben).
+            ["FILE44→FILE46"] = [.. SeasonStart, new("Clubs[5 KÖLNER EC].TeamValues.*Form", FormFile44, Optional: true)],
+            // „nur Weltkugel“: Teamwerte nicht mehr neu gewürfelt (#747 behoben durch abgleich-fix).
+            ["FILE18→FILE48"] = [],
         };
 
     public static TheoryData<string, string> Pairs()

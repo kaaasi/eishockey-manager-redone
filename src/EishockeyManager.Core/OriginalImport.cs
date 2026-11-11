@@ -369,9 +369,14 @@ public sealed partial class GameState
         for (var slot = 0; slot < clubOf.Length; slot++)
         {
             var r = records.AsSpan(slot * OriginalSaveGame.ClubRecordLength, OriginalSaveGame.ClubRecordLength);
-            if (WorldOnly && Managers.Any(m => m.ClubIndex == clubOf[slot]))
-                continue; // Satz des Managervereins trägt im Modus „nur Weltkugel“ das Land (Regel 1)
             var club = Clubs[clubOf[slot]];
+            if (WorldOnly && Managers.Any(m => m.ClubIndex == club.Index))
+            {
+                // Satz des Managervereins trägt im Modus „nur Weltkugel“ das Land (Regel 1): keine Vereinswerte, auch nicht die
+                // des Nachspielens (#747; sonst hinge der Wert vom Tag des Stands ab: FILE18 leer, FILE48 gezogen).
+                club.TeamValues = null;
+                continue;
+            }
             var value = MatchEngine.ComputerTeamValue(club);
             club.TeamValues = new ClubTeamValues(r[0x18] - value, r[0x19] - value, r[0x1A] - value, r[0x1B] - value, r[0x1C], r[0x1D], r[0x17]);
         }

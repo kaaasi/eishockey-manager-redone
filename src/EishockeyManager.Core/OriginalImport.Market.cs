@@ -58,7 +58,8 @@ public sealed partial class GameState
     /// Platzfolge, +0x0F Poolindex, +0x10–0x14 Werte, +0x19 verdeckte Werte, +0x1A Sperre, +0x2C Preis (Drittel-DM).
     /// <list type="bullet">
     /// <item>Besitzer 0–3 mit Platz in einem übernommenen Managerkader: derselbe Spieler, vergeben. [APPROX] Ohne übernommenen
-    ///   Kader („nur Weltkugel“) der gleichnamige Spieler des Managervereins, sonst frei.</item>
+    ///   Kader („nur Weltkugel“) der gleichnamige Spieler des Managervereins, sonst frei. Besitzer 0–3 ohne Kaderplatz (mit
+    ///   übernommenem Kader): nach Vertragsende verlorener Spieler, Platz bleibt vergeben (#749, R15-E3 = C, FILE46 KJELLBERG).</item>
     /// <item>Marktplatz mit Besitzer 4: Angebot aus dem Pool (<see cref="TransferListing.FromPool"/>); mit Besitzer 0–3: Angebot
     ///   dieses Managers, der Spieler steht nur auf dem Markt-Platz, nicht im Kader (Feldbelege L7; A380 wie
     ///   <see cref="TransferMarket.Offer"/>, #676). [APPROX] Ein Platz mit Poolindex 0 ist der Rest des
@@ -94,7 +95,10 @@ public sealed partial class GameState
             {
                 player = squadPlayers.GetValueOrDefault(i)
                          ?? Clubs[Managers[owner].ClubIndex].Players.FirstOrDefault(p => p.Name == name && p.Role == role);
-                taken = player is not null;
+                // [ORIGINAL] #749, R15-E3 = C: Besitzer 0–3 ohne Kader- und Marktplatz ist ein nach Vertragsende verlorener Spieler
+                // (Datei 0x27DE3–0x27E9D schreibt +0x1A nicht zurück); der Platz bleibt vergeben, 0x494EF zieht nur Besitzer 6
+                // (FILE46 Pool 196 KJELLBERG). [APPROX] „Nur Weltkugel“ (kein Managerkader übernommen) bleibt bei „frei“.
+                taken = player is not null || !WorldOnly;
             }
             if (player is null)
             {
@@ -160,7 +164,10 @@ public sealed partial class GameState
         // Jeder Name nur einmal: Poolnamen aus den Computerkadern nehmen, Ersatz aus den übrigen Poolspielern des Nachspielens.
         var names = slots.Select(s => s.Player.Name)
             .Concat(Managers.SelectMany(m => Clubs[m.ClubIndex].Players).Select(p => p.Name)).ToHashSet(StringComparer.Ordinal);
-        var poolNames = slots.Where(s => s.Owner != PoolOwner.Taken).Select(s => s.Player.Name).ToHashSet(StringComparer.Ordinal);
+        // Vergebene Plätze ohne Managerkader (verlorene Spieler, #749) zählen mit: ihr Name gehört dem Platz.
+        var managerPlayers = Managers.SelectMany(m => Clubs[m.ClubIndex].Players).ToHashSet(ReferenceEqualityComparer.Instance);
+        var poolNames = slots.Where(s => s.Owner != PoolOwner.Taken || !managerPlayers.Contains(s.Player))
+            .Select(s => s.Player.Name).ToHashSet(StringComparer.Ordinal);
         var used = players.Values.ToHashSet(ReferenceEqualityComparer.Instance);
         var replacements = spare.Where(p => !used.Contains(p) && !names.Contains(p.Name)).ToList();
         var inUse = Clubs.SelectMany(c => c.Players).Concat(RetiredPlayers).Select(p => p.Name).Concat(names)
