@@ -287,6 +287,15 @@ public static partial class MatchEngine
     }
 
     /// <summary>
+    /// Teamwerte eines Managervereins aus seinem Kader wie für das Spiel (<see cref="LiveSquad.Create"/>: Platz in Reihe 0 … 2 und
+    /// eingesetzt +0x0A). [ORIGINAL] 0x952C zählt nur eingesetzte Spieler der Reihen (#738/#748: im Handbetrieb stehen Spieler in
+    /// einer Reihe, ohne eingesetzt zu sein; FILE38–40, FILE44, FILE46 Abwehr bzw. Sturm 7–27 tiefer als mit allen Reihenspielern,
+    /// <c>AbgleichFixLineupTests</c>).
+    /// </summary>
+    public static (PartValues Defense, PartValues Attack, int ManagerValue) ClubLineupTeamValues(Club club) =>
+        ManagedTeamValues(LiveSquad.Create(club, 0, null));
+
+    /// <summary>
     /// Teamwerte aus einer Aufstellung (z. B. Nationalteam des Bundestrainers, #193): wie <see cref="ManagedTeamValues"/>
     /// über einen Kader aus den Spielern der Aufstellung. [ORIGINAL] 0x952C mit Manager 5 (Bundestrainer) schreibt die
     /// Vereinsfelder 0x18–0x1D des Nationalteams; Aufruf nach Freundschaftsspielen (0x555D6) – den Anschluss in

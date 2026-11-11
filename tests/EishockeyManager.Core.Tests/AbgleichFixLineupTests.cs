@@ -54,11 +54,16 @@ public class AbgleichFixLineupTests
     [InlineData("FILE25.HOK")]
     [InlineData("FILE36.HOK")]
     [InlineData("FILE37.HOK")]
+    [InlineData("FILE38.HOK")]
+    [InlineData("FILE39.HOK")]
+    [InlineData("FILE40.HOK")]
+    [InlineData("FILE44.HOK")]
+    [InlineData("FILE46.HOK")]
     public void Original_ManagerClubFields_ComeFromLineup(string file)
     {
         var game = Import(file);
         var club = game.Clubs[game.Managers[0].ClubIndex];
-        Assert.Equal(Fields(MatchEngine.LineupTeamValues(club.Lineup)), Absolute(club));
+        Assert.Equal(Fields(MatchEngine.ClubLineupTeamValues(club)), Absolute(club));
     }
 
     /// <summary>
@@ -77,7 +82,7 @@ public class AbgleichFixLineupTests
         {
             TestSeason.PlayMatchDay(game);
             if (game.IsListChangeDay(game.Day))
-                Assert.Equal(Fields(MatchEngine.LineupTeamValues(club.Lineup)), Absolute(club));
+                Assert.Equal(Fields(MatchEngine.ClubLineupTeamValues(club)), Absolute(club));
         }
     }
 

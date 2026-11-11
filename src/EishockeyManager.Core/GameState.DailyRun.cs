@@ -214,7 +214,8 @@ public sealed partial class GameState
     /// <summary>
     /// Teamwerte der Managervereine aus ihrer Aufstellung (#748). [ORIGINAL] 0x952C(m, Modus) für m &lt; [0x386] (Managersatz mit
     /// Verein, Vereinsbyte ≤ 0x95, Datei 0x0954C) schreibt die Vereinsfelder 0x18–0x1D ohne weitere Bedingung aus Reihe 0–2 der
-    /// Aufstellung, leere Plätze zählen 0 (<see cref="MatchEngine.LineupTeamValues"/>); der Modus wirkt nur auf den Managerwert, den
+    /// Aufstellung, leere und nicht eingesetzte Plätze zählen 0 (<see cref="MatchEngine.ClubLineupTeamValues"/>); der Modus wirkt nur
+    /// auf den Managerwert, den
     /// das Remake im Spiel rechnet. Aufrufe im Hauptweg an Tagen mit Ereignis: vor den Zügen nach der Neuaufstellung (Datei
     /// 0x54DAA) und nach den Zügen vor den Spielen (Datei 0x54FBF, <see cref="OnDayNationalTeam"/>). Beleg: In allen Ständen mit
     /// „automatisch aufstellen“ stehen die Felder genau auf diesen Werten (FILE02/03/05/13/14/16A/17/24/25/36/37,
@@ -234,7 +235,7 @@ public sealed partial class GameState
             var club = Clubs[manager.ClubIndex];
             if (club.TeamValues is null)
                 continue; // [APPROX] noch nicht gezogen (Lader beim ersten Spiel, MatchEngine.EnsureTeamValues): nicht vorziehen
-            var (defense, attack, _) = MatchEngine.LineupTeamValues(club.Lineup);
+            var (defense, attack, _) = MatchEngine.ClubLineupTeamValues(club);
             var b = MatchEngine.ComputerTeamValue(club);
             club.TeamValues = MatchEngine.TeamValuesOf(club) with
             {

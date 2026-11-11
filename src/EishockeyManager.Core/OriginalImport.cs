@@ -492,9 +492,12 @@ public sealed partial class GameState
         // [ORIGINAL] +0x15 bestimmt den Platz, nicht die Rolle (Ausweichrollen der Automatik, Datei 0x42838; Lineup.Place): Sturm
         // nach Bit 0x80, sonst Verteidigung – ein Torhüter mit Reihe 1 ohne Bit auf den freien Torhüterplatz. Spur hok-export
         // (Rundreise, vier Saisonwechsel passiv: Stürmer M.RAUBAL in der Verteidigung).
-        foreach (var (player, line, forward, _) in players)
+        foreach (var (player, line, forward, dressed) in players)
         {
-            if (line is < 1 or > 3 || !player.Available)
+            // [ORIGINAL] #738: Eine Reihe ohne eingesetzt (+0x0A = 0, Handbetrieb nach Verletzung oder Abgang) zählt weder im Spiel
+            // (0x120:0x66 Modus 1: +0x0A ≠ 0 und +0x15 ≠ 0) noch für die Teamwerte 0x952C, und die Aufstellung zeigt den Spieler
+            // in keiner Reihe (FILE24 STEFAN/CHAIDAROV); FILE38–46 KÖLN: Felder 0x18–0x1D = Werte ohne diese Spieler.
+            if (line is < 1 or > 3 || !player.Available || !dressed)
                 continue;
             LineupSlot? target = player.Role == PlayerRole.Goalkeeper && !forward && line == 1 && club.Lineup.Goalkeeper is null
                 ? LineupSlot.Goalkeeper
