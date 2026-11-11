@@ -1,0 +1,22 @@
+# Gesamtreview Runde 15
+
+## 1. Merge-Empfehlung
+
+**Ja** für `98e59265906ac7f57150c56db239917105f46bac` (Base `892ca856cd3f140f03c23c6a20a1888b89866e61`): keine neuen nachgewiesenen Produktfehler in den geprüften Risiken; die unten genannte bestehende Testlücke ist P3. Erwartet offene Punkte bleiben bestehen. Unabhängige Sitzung; Head und sauberer Arbeitsbaum vor der Prüfung nachgewiesen.
+
+## 2. Befunde
+
+Keine neuen nachgewiesenen Produktfehler. **Testlücke (P3, bereits R727N2-01):** Die Rundreiseregel in [`OriginalExportRoundTripTests.cs:107`](https://github.com/kaaasi/eishockey-manager-redone/blob/98e59265906ac7f57150c56db239917105f46bac/tests/EishockeyManager.Core.Tests/OriginalExportRoundTripTests.cs#L107) lässt auch das Besitzerbyte +0x1A zu; der Test der Poolplätze prüft nicht den exportierten Besitzer des Marktzwillings. Die frühere [Nachprüfung](2026-11-10-hok-export-nachpruefung-2.md) belegt mit Mutation `if (!marketTwins.Contains(index))` → `if (true)`: Exporttests grün, FILE41/43/43A/44 verlieren Markt-Poolplatz 179. Code und Regel sind am Head weiterhin vorhanden; diese Mutation wurde hier nicht wiederholt. Kein Nachweis eines Produktfehlers am Head.
+
+Erwartet offen: #699, #724, #730 (Rest), #732, #734, #743, #744, #757 sind auf GitHub offen; R758-01 steht weiterhin in der Inventur. FILE13→14: Das Referenzbild `file13_2` zeigt fünf Eingesetzte ohne Torwart, das HOK dagegen eine größere Aufstellung. Das Konto ist deshalb als Folge von Eingriff/Sitzungszustand eingeordnet; woher die fünf nach dem Laden kommen, bleibt #734 offen. Die Einordnung ist keine Aussage, dass dieser Zustand reproduziert wurde.
+
+## 3. Ausgeführte Prüfungen und Grenzen
+
+- `git rev-parse HEAD`, `git status --porcelain`, SDK `10.0.402`; Originaldaten und Spielstände aus dem Referenz-Checkout. `tools/pruefen.sh --schnell`: bestanden: 2920 bestanden, 0 fehlgeschlagen, 0 übersprungen (mit Originaldaten).
+- `EM_REQUIRE_GAMEDATA=1 dotnet test tests/EishockeyManager.Core.Tests --no-restore --filter 'FullyQualifiedName~AbgleichOriginalPaareTests|FullyQualifiedName~Finish_HandValuesPerLeague|FullyQualifiedName~Day_MainPath_TickTrainingBeforeEventDay952C|FullyQualifiedName~OriginalExportTests'`: 98 bestanden, 0 fehlgeschlagen, 0 übersprungen. Originalpaare mit Standardsaat und fünf weiteren Saaten; exakte Felder, Bereiche/Invarianten und dokumentierte Eingriffe geprüft. Zufall nicht bitgenau nachgebildet (R15-D2); Bereiche können Fehler verdecken.
+- R727P-04: `dotnet run --project src/EishockeyManager.Tools -- hok export --neu 'Jörg Müller' 5 /tmp/r15-export.hok --kopf 6 --force`, danach `… -- hok dump /tmp/r15-export.hok`: Name korrekt, beide Prüfsummen gültig. Eigenständige Entschlüsselung des im Dump ausgewiesenen Poolblocks `0x505f`, 200 × 33 Byte: 0 Namensfelder mit Restbytes nach Endnull, 0 doppelte Namen; u. a. NÖTZEL. Der Exporttest prüft außerdem eindeutige Kaderindizes und Schutz von Markt/Nationalspielern. Spielstand-ID −21764; Inhaltsableitung und Grenzen im Code gelesen, keine neue DOSBox-Ladeprobe.
+- #755: temporärer Klon, `FinanceSponsorRating.cs` `10 * (2 - tier)` → `10 * tier`, `MainPathDailyRun(day)` hinter `MainPathEventDayLineups(day)`; `dotnet test tests/EishockeyManager.Core.Tests --filter 'FullyQualifiedName~Finish_HandValuesPerLeague|FullyQualifiedName~Day_MainPath_TickTrainingBeforeEventDay952C'`: 10 Sponsor-Fälle und beide Tagesablaufsaaten rot; 5 übrige Fälle grün. Unverändert im gezielten Lauf grün.
+- R15-E2 stichprobenweise: `RefillLineupDressedTests.Injury_UndressesInjured_AndKeepsAtMostTwentyTwo` begründet #738; alter `RefillLineup`-Methodenkörper aus Base in temporärem Klon mit angepasstem Test: rot (`Assert.Null`, Reservist rückt nach). Mit altem Test und altem Methodenkörper: 1/1 grün.
+- Gelesen: Export-Pool und ID, Tageslauf-Reihenfolge, Kaderaufbau/Pooltausch, Vergleichsklassen und erwartete Listen; Referenzbild FILE13. Vorherige Reviews zu Export, Abgleich und #755 als Hinweise herangezogen, nicht als eigener Test ausgegeben.
+
+**Akzeptierte `[APPROX]`:** inhaltsbasierte 16-Bit-Spielstand-ID, Pool-/Computerkadermodell und Bereichstoleranzen im Abgleich; bekannte Punkte und offene Issues nicht neu bewertet. **Annahmen/Grenzen:** keine umfassende Prüfung aller Bildschirmzustände, em.exe-Fundstellen, fremden Teständerungen oder Finanz- und Wettbewerbsvarianten; keine neue Originalausführung des Exports. Der Schnelllauf ersetzt diese Prüfungen nicht.
