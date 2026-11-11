@@ -407,15 +407,17 @@ die Kaderspieler ein (Besitzer „vergeben“, Verein = Managerverein). [APPROX]
 bisher aus `SquadSetup`; der Verkauf an einen Computerverein gibt den Platz erst beim Saisonwechsel frei (`StartPoolSeason`),
 weil der Spieler im Remake im Computerkader weiterlebt; verliehene und angebotene Spieler behalten ihn. Der Import baut den
 Pool des Nachspielens ohne vorgemerkte Plätze (er wird ohnehin aus dem Stand ersetzt). Ältere Remake-Spielstände (Schema
-< 48) setzen beim Laden jeden Kaderspieler ohne Platz auf den ersten freien Ligaplatz seiner Art (`SaveGame.Migration.Pool.cs`).
+< 49) setzen beim Laden jeden Kaderspieler ohne Platz auf den ersten freien Ligaplatz seiner Art (`SaveGame.Migration.Pool.cs`).
 
 **Umsetzung Teil 3** (Export `GameState.WriteSquadsAndPool`, `PoolIndices`): Die Ersatzregel („freier Ligaspieler weicht“) entfällt
-– jeder Kaderplatz verweist auf den Poolsatz seines Spielers. Besitzer eines vergebenen Platzes = Manager des Kaders bzw. der
+– jeder Kaderplatz verweist auf den Poolsatz seines Spielers (Ausnahme Modus „nur Weltkugel“, siehe unten). Besitzer eines vergebenen Platzes = Manager des Kaders bzw. der
 gemerkte Manager (`PoolSlot.Manager`: Vertragsende `Leave` → `KeepLostSlot`, Import Besitzer 0–3 ohne Kaderplatz); der Marktzwilling (FILE41/43/43A/44, Pool 179 Besitzer 4, Kaderplatz 24) bleibt. Die Rundreise prüft `+0x1A`
-jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01); einzige Ausnahme sind die Plätze mit Besitzer 0 im Modus
-„nur Weltkugel“ (FILE11/18/19/20/47/49: 29–31, 110 mit Nominierten), die der Import dort als frei führt (Restlücke, #732).
+jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus „nur Weltkugel“ übernimmt der Import seit #732
+(abgleich-rest Teil 3) den Kader von Satz 0, Plätze mit Besitzer 0 sind vergeben; der Export schreibt ihn. [APPROX] Ein neues
+Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
+(`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 48) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 49) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -680,6 +682,8 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Tactics._attack` | B | `CAE9` | 0x30 je Manager, Angriffshälfte |
 | `Tactics._effort` | B | `CAE9` | 0x30 je Manager, Einsatzhälfte |
 | `Tactics._minutes` | B | `CC43` | 8 · m + 4 · Teil + Block |
+| `Tactics._matchAttack` | U | `far:9657+0x2C` | Bits 4–6 nach dem letzten Spiel (#772); Ort belegt, Import liest ihn noch nicht (Stelle für `pool`), Vorgabe 0 |
+| `Tactics._matchEffort` | U | `far:9657+0x26` | Einsatz nach dem letzten Spiel (#772); Ort belegt, Import liest ihn noch nicht (Stelle für `pool`), Vorgabe 0 |
 | `Tactics._shownAutoAttack` | A | `far:9657+0x35` | nur Nationalteam: Vereinssatz +0x35–0x3A |
 | `Tactics._shownAutoEffort` | A | `far:9657+0x26` | nur Nationalteam: Vereinssatz +0x26–0x2B |
 | `Lineup._defenders` | A | `5DC3+0x15` | Reihe 1–3 ohne Sturm-Bit, Nationalteam Satz 5 |
@@ -1056,7 +1060,10 @@ liegt bei den genannten Spuren.
 - Schema 47 (Spur `pruefung-karte` Teil 5, Entscheidung Nutzer 09.11.2026 C): `GameState.LoadCounterOffset` – Ladeeigenheit des
   Markierungstags (`GameState.LoadQuirk.cs`); FILE44 → Saisonende bucht wie `file46_2` den April-Abschluss am 30. April. Migration:
   ältere Stände 0.
-- Schema 48 (Spur `pool`, #743): `PoolSlot.Manager` – Besitzer `+0x1A` eines vergebenen Platzes ohne Spieler im Managerkader
+- Schema 48 (Spur `abgleich-rest`, #772): `Tactics._matchEffort`/`_matchAttack` – Vereinsfelder 0x26 und 0x2C Bits 4–6 nach dem
+  letzten Spiel (Spielvorbereitung 0x8365 liest 0x26 über 0x368B1 und schreibt die Angriffsbits nicht). Migration: 0 wie FILE02;
+  der Import liest sie nicht (U, Stelle für `pool`).
+- Schema 49 (Spur `pool`, #743): `PoolSlot.Manager` – Besitzer `+0x1A` eines vergebenen Platzes ohne Spieler im Managerkader
   (Teil 3); die Managerkader stehen im Spielerpool (`TransferMarket.SeatManagerSquads`, Abschnitt „Managerkader im
   Spielerpool“). Migration: Feld −1; nach dem Laden bekommen Kaderspieler ohne Poolplatz einen freien Ligaplatz ihrer Art, ein
   verlorener Platz bei einem Manager dessen Nummer (`SaveGame.Migration.Pool.cs`).

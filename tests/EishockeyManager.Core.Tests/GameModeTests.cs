@@ -175,7 +175,8 @@ public class GameModeTests
 
     /// <summary>
     /// Mehrsaisonprobe Modus 1, 4 Saisonwechsel, passiver und aktiver Bundestrainer: Ernennung in jeder Saison,
-    /// Nationalkonto = Summe seiner Buchungen, Vereinskonto unverändert, Etat aus dem WM-Platz der Vorsaison.
+    /// Nationalkonto = Summe seiner Buchungen, Vereinskonto nur über das Finanzbuch (#732: Tagesabschluss von Satz 0 wie im Original,
+    /// <see cref="ClubAccountProbe"/>), Etat aus dem WM-Platz der Vorsaison.
     /// </summary>
     [Theory]
     [InlineData(false, 7)]
@@ -184,8 +185,7 @@ public class GameModeTests
     public void WorldOnly_MultiSeason_AppointedEachSeason_NationalAccountIsSumOfBookings(bool active, int seed)
     {
         var game = Create(seed, false, true, 5);
-        var manager = game.Managers[0];
-        var money = manager.Money;
+        var account = new ClubAccountProbe(game, game.Managers[0]);
         var expectedBudget = NationalCoach.FirstBudget;
         for (var change = 0; change <= 4; change++)
         {
@@ -205,11 +205,14 @@ public class GameModeTests
             while (game.Phase == SeasonPhase.Running)
                 game.Continue();
             Assert.Equal(game.NationalAccount, game.NationalBookings.Sum(b => b.Amount));
-            Assert.Equal(money, manager.Money);
+            account.SeasonEnd();
             Assert.Equal(0, game.PlayedMatchDays);
             expectedBudget = NationalCoach.BudgetFor(game.WorldCup!.Ranking.ToList().IndexOf(NationalTeams.Germany) + 1);
             if (change < 4)
+            {
                 game.StartNextSeason();
+                account.SeasonStart();
+            }
         }
         Assert.Equal(5, game.History.Count);
         if (active)
@@ -433,11 +436,12 @@ public class GameModeTests
     // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
     // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer und Konten. Rückschaltprobe: GameState.DailyRun.cs und
     // CupsNational.AutoLineup.cs von 8711348 → alte Werte.
-    // Runde 16, Spur pool (#743, R15-E2 = C): neu – die Startkader stehen im Spielerpool (Datei 0x5B0BB–0x5B2BE): 25 Plätze weniger
-    // für Benennen, Umverteilung und Listenwechsel, anderer Zufallsverlauf. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 148b02d
-    // → alte Werte.
+    // #772 (Spur abgleich-rest, Runde 16): neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel); andere Ergebnisse ab dem ersten Spieltag. Gegenprobe: ohne PrepareMatch → alter Wert.
+    // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
+    // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
+    // → Wert nach #772.
     internal const string Mode4Reference =
-        "WorldChampion=55,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|1100000,400000|WorldChampion=53,CupWinner=1,GermanChampion=14,EuropeanCupWinner=3|2523312,400000|WorldChampion=52,CupWinner=1,GermanChampion=0,EuropeanCupWinner=14|2993270,400000|WorldChampion=52,CupWinner=8,GermanChampion=3,EuropeanCupWinner=0|3167286,400000|WorldChampion=52,CupWinner=18,GermanChampion=18,EuropeanCupWinner=0|3079170,400000|R875018392 C702123800";
+        "WorldChampion=52,CupWinner=14,GermanChampion=4,EuropeanCupWinner=2|1100000,400000|WorldChampion=54,CupWinner=4,GermanChampion=4,EuropeanCupWinner=4|2303367,400000|WorldChampion=63,CupWinner=17,GermanChampion=9,EuropeanCupWinner=4|2151251,400000|WorldChampion=54,CupWinner=1,GermanChampion=9,EuropeanCupWinner=9|2255276,400000|WorldChampion=63,CupWinner=3,GermanChampion=11,EuropeanCupWinner=9|2087384,500000|R261884958 C1534700797";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

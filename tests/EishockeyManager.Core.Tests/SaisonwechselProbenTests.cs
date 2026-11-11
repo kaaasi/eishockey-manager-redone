@@ -104,7 +104,7 @@ public class SaisonwechselProbenTests
     /// <summary>
     /// Abnahme der Spur, Mehrsaisonprobe Modus 1 („nur Weltkugel“, 20 Saisonwechsel, passiver und aktiver Bundestrainer):
     /// Ohne Vereinssaison steigt niemand zwischen den Ligen auf oder ab, kein Zwangsabstieg, kein Saisonende-Ereignis, das
-    /// Vereinskonto bleibt unverändert. Die Oberliga tauscht wie in den anderen Modi ihre letzten beiden der Platzliste gegen
+    /// Vereinskonto ändert sich nur über das Finanzbuch (#732, <see cref="ClubAccountProbe"/>), keine Entlassung. Die Oberliga tauscht wie in den anderen Modi ihre letzten beiden der Platzliste gegen
     /// zwei Vereine ohne Liga ([ORIGINAL] A163, Spur saison Teil 4: Datei 0x56238 ohne Modusprüfung, FILE20 → FILE21;
     /// <see cref="SaisonWeltkugelTests"/>). Modus 2 und 4: <see cref="SaisonwechselOberligaTests"/>,
     /// <see cref="SaisonwechselZwangsabstiegTests"/>.
@@ -117,7 +117,7 @@ public class SaisonwechselProbenTests
         var game = GameModeTests.Create(7, false, true, 5);
         Assert.Equal(GameMode.WorldOnly, game.Mode);
         var manager = game.Managers[0];
-        var money = manager.Money;
+        var account = new ClubAccountProbe(game, manager);
         var leagues = game.Clubs.Select(c => c.League).ToList();
         for (var change = 0; change < 20; change++)
         {
@@ -141,13 +141,14 @@ public class SaisonwechselProbenTests
             Assert.Empty(record.PromotedInto[League.Bundesliga]);
             Assert.Empty(record.PromotedInto[League.ZweiteLiga]);
             Assert.All(Enum.GetValues<League>(), l => Assert.Empty(record.RelegatedInto[l]));
+            account.SeasonEnd();
             game.StartNextSeason();
+            account.SeasonStart();
             for (var c = 0; c < leagues.Count; c++)
                 if (leagues[c] is League.Bundesliga or League.ZweiteLiga)
                     Assert.Equal(leagues[c], game.Clubs[c].League);
             Assert.Equal(GameState.ClubsPerLeague, game.LeagueClubs(League.Oberliga).Count());
             Assert.All(record.LeftOberliga, c => Assert.Contains(c, game.OutsidePlaces()));
-            Assert.Equal(money, manager.Money);
             Assert.False(manager.Dismissed);
         }
         Assert.Equal(20, game.History.Count);

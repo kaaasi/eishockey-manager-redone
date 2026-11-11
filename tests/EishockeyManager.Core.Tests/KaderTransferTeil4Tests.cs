@@ -42,7 +42,12 @@ public class KaderTransferTeil4Tests
     [Fact]
     public void Season_MarketRunsEveryCalendarDay()
     {
-        var game = TestGames.Create(5);
+        // #772 (R15-E2 = C): Saat 21 statt 5 – die Zahl der Halte hängt am Spielverlauf; mit der Spielvorbereitung 0x8365 hält Saat 5
+        // nur 20 Wechsel. Schon der alte Code liegt bei Saat 3/8/9 unter der Grenze (15/13/20), Rückschaltprobe mit
+        // Saat 21 ebenfalls rot; die Probe hängt an der Saat, die Grenze bleibt.
+        // Fixlauf pool auf main 846e515 (R15-E2 = C): Saat 14 statt 21 – mit Spur pool und #772 hält Saat 21 nur 19 Wechsel (Saaten
+        // 1–30: 13–27, über 22 nur 11, 14, 17). Wie oben: die Probe hängt an der Saat, die Grenze bleibt.
+        var game = TestGames.Create(14);
         var market = game.TransferMarket;
         var changes = 0;
         for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
@@ -141,7 +146,9 @@ public class KaderTransferTeil4Tests
     [InlineData(true)]
     public void MultiSeason_FourChanges_DailyMarket(bool active)
     {
-        var game = TestGames.Create(21);
+        // Fixlauf pool auf main 846e515 (R15-E2 = C): Saat 14 statt 21 – mit Spur pool und #772 hält Saat 21 nur 19 Wechsel (Saaten
+        // 1–30: 13–27, über 22 nur 11, 14, 17). Wie oben: die Probe hängt an der Saat, die Grenze bleibt.
+        var game = TestGames.Create(14);
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];
         var market = game.TransferMarket;

@@ -694,10 +694,11 @@ public sealed partial class TransferMarket
         {
             if (slot.Owner == PoolOwner.Taken)
             {
-                // Spur pool: auch an einen anderen Verein verliehen oder vom Manager angeboten bleibt der Platz beim Manager
-                // ([ORIGINAL] Datei 0x27547–0x275D2: Besitzer 0–3 → Kaderplatz zurück in dessen Kader, Besitzer bleibt).
-                if (managed.Any(c => c.Players.Contains(slot.Player)) || slot.Player.Loan?.Origin is { } origin && managed.Contains(origin)
-                    || _listings.Any(l => ReferenceEquals(l.Player, slot.Player) && l.Seller is not null))
+                // Spur pool: auch an einen anderen Verein verliehen bleibt der Platz beim Manager ([ORIGINAL] Datei 0x27547–0x275D2:
+                // Besitzer 0–3 → Kaderplatz zurück in dessen Kader, Besitzer bleibt). Beim Aufruf aus StartSeason sind Leihen schon
+                // beendet (Player.Contract.cs, Rückkehr zum Managerverein) und angebotene Spieler zurück im Kader; die Liste ist
+                // geleert, eine Listenklausel griffe nie (R765-01). Die Leihklausel bleibt als Schutz für Aufrufe ohne Vertragslauf.
+                if (managed.Any(c => c.Players.Contains(slot.Player)) || slot.Player.Loan?.Origin is { } origin && managed.Contains(origin))
                     continue;
                 if (IsLost(game, slot.Player))
                 {

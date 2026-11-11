@@ -136,6 +136,40 @@ public class PoolManagerSquadTests
         Assert.Equal(0, loaded.TransferMarket.Pool[index - 1].Manager);
     }
 
+    /// <summary>
+    /// R765-01 (#775): Leihe Manager → Manager über den Saisonwechsel. Der Spieler kehrt in den Kader des Stammvereins zurück
+    /// ([ORIGINAL] Datei 0x27547–0x275D2, Rückkehr zum Managerverein mit der Leih-Laufzeit, Player.Contract.cs) und behält seinen
+    /// Poolplatz: vergeben, nicht umbenannt, kein gemerkter Manager. Rückschaltprobe: Ohne die Kaderklausel in StartPoolSeason
+    /// würde der Platz frei und „POOLSPIELER n“.
+    /// </summary>
+    [Fact]
+    public void LoanBetweenManagers_OverSeasonChange_KeepsPoolSlot()
+    {
+        var game = Create((5, League.Bundesliga), (7, League.Bundesliga));
+        var origin = game.Clubs[game.Managers[0].ClubIndex];
+        var borrower = game.Clubs[game.Managers[1].ClubIndex];
+        foreach (var p in origin.Players.Concat(borrower.Players))
+            (p.ContractYears, p.Age) = (3, 25);
+        var lent = origin.Players.Last(p => p.Role == PlayerRole.Forward);
+        var index = IndicesOf(game, origin)[origin.Players.IndexOf(lent)];
+        origin.RemovePlayer(lent);
+        PlayerFactory.Join(borrower, lent, 2, loan: true, new PlayerLoan(origin, 3, lent.MonthlySalary, false), managerSquad: true);
+        Assert.Equal(index, IndicesOf(game, borrower)[borrower.Players.IndexOf(lent)]);
+
+        PlayToSeasonOver(game);
+        game.StartNextSeason();
+
+        Assert.Contains(lent, origin.Players);
+        Assert.DoesNotContain(lent, borrower.Players);
+        Assert.Null(lent.Loan);
+        var slot = game.TransferMarket.Pool[index - 1];
+        Assert.Same(lent, slot.Player);
+        Assert.Equal(PoolOwner.Taken, slot.Owner);
+        Assert.Equal(-1, slot.Manager);
+        Assert.Equal(origin.Index, slot.Club);
+        AssertSeated(game);
+    }
+
     /// <summary>Speichern und Laden behalten die Plätze (derselbe Spieler im Kader und im Pool).</summary>
     [Fact]
     public void SaveAndLoad_KeepsSeatedSquad()
@@ -148,7 +182,7 @@ public class PoolManagerSquadTests
     }
 
     /// <summary>
-    /// Migration 47 → 48 (<c>SaveGame.Migration.Pool.cs</c>): Ein Spielstand, dessen Startkader außerhalb des Pools steht (wie vor
+    /// Migration 48 → 49 (<c>SaveGame.Migration.Pool.cs</c>): Ein Spielstand, dessen Startkader außerhalb des Pools steht (wie vor
     /// dieser Spur: eigene Poolspieler auf allen 199 Plätzen), bekommt beim Laden die freien Ligaplätze seiner Art.
     /// </summary>
     [Fact]
@@ -162,13 +196,13 @@ public class PoolManagerSquadTests
         Assert.Equal([.. Range(2, 2), .. Range(22, 10), .. Range(98, 13)], IndicesOf(loaded.Game, club));
         Assert.Empty(loaded.Game.ValidatePlayerIdentity());
 
-        // Ohne Migration (Schema 48) bleibt der Stand, wie er ist.
+        // Ohne Migration (Schema 49) bleibt der Stand, wie er ist.
         root["schema"] = SaveGame.SchemaVersion;
         var current = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString())).Game!;
         Assert.All(IndicesOf(current, current.Clubs[club.Index]), i => Assert.Equal(-1, i));
     }
 
-    /// <summary>Stand wie vor der Spur: Die Plätze der Managerkader tragen eigene, freie Poolspieler; Schema 47.</summary>
+    /// <summary>Stand wie vor der Spur: Die Plätze der Managerkader tragen eigene, freie Poolspieler; Schema 48.</summary>
     private static JsonObject OldSave(GameState game)
     {
         var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
@@ -188,7 +222,7 @@ public class PoolManagerSquadTests
             slot["Club"] = 0;
         }
         root["spiel"]!["NextPlayerId"] = next;
-        root["schema"] = 47;
+        root["schema"] = 48;
         return root;
     }
 

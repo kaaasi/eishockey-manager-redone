@@ -58,7 +58,9 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
 - **Abnahme:** FILE41/43/43A/44 behalten Markt-Poolplatz 179 im Export; kein Spieler mehr außerhalb der 199 Plätze; `Fixes #743`.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teile 1–3 fertig, Review offen (PR #765; Lesart in
   `formate/spielstand-original.md`, Abschnitt „Managerkader im Spielerpool“; Startkader auf den Poolplätzen nach 0x5AF50; Export
-  ohne Ersatzregel, `PoolSlot.Manager`, Rundreise prüft `+0x1A`; Migration Schema 47 → 48).
+  ohne Ersatzregel, `PoolSlot.Manager`, Rundreise prüft `+0x1A`; Migration Schema 48 → 49). Fixlauf 11.11.2026: `main` 846e515
+  (abgleich-rest #766) eingebunden, Modus 1 mit Satz 0 zusammengeführt (Export: Ersatzregel nur noch für den nicht eingesetzten
+  Kader von Satz 0 im Modus 1, `[APPROX]`), Abdrücke erneuert; R765-01 (#775) behoben, R765-02 (#776) geprüft.
 
 ### Spur `abgleich-rest` – Belastung, Modus „nur Weltkugel“ (#730 Rest, #732, #699 Rest; R16-D1 = B)
 
@@ -75,7 +77,11 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
   4. **#699 Rest:** Tag 0 im Modus 1 wie im Original (FILE20→21, erwarteter Eintrag `DayZero = 699` entfällt).
 - **Lauf-Budget (R763-04):** ein Lauf darf mehrere Teile erledigen; reichen die vier Läufe nicht, bleibt Teil 4 offen
   (`spur-wartet`), die Leitstelle legt dem Nutzer einen Zusatzlauf oder Runde 17 vor.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** nicht gestartet.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** PR #766 (Ready for review, `spur-wartet`): Teile 1/2
+  zurückgestellt (R16-E2 = C: Ursache #730 nicht belegt, [analyse/belastung-staerke.md](analyse/belastung-staerke.md) §7,
+  `[APPROX]` an `OriginalMinutes.ChangeLines`, Pflichteinträge bleiben, DOSBox-Liste §7.3, #730 offen); Teil 3 fertig (#732);
+  Teil 4 fertig (#699); #772 fertig (Spielvorbereitung 0x8365, Schema 48); #773 kein Fehler (Strafrechnung wie im Original,
+  FILE02→03 Zufall, §8; Wächtertest FILE05→24).
 
 ### Spur `pruefung-karte`
 

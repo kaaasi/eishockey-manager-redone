@@ -234,13 +234,15 @@ public class RngTwinProbeTests
     // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
     // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer, Konten und Zufallsverlauf. Rückschaltprobe:
     // GameState.DailyRun.cs und CupsNational.AutoLineup.cs von 8711348 → alte Werte.
-    // Runde 16, Spur pool (#743, R15-E2 = C): neu – die Startkader stehen im Spielerpool (Datei 0x5B0BB–0x5B2BE): 25 Plätze weniger
-    // für Benennen, Umverteilung und Listenwechsel, anderer Zufallsverlauf. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 148b02d
-    // → alte Werte.
-    [InlineData(false, 3, "7C9F74EC2BFD7782")]
-    [InlineData(true, 3, "A0725EA6778E5D4F")]
-    [InlineData(false, 11, "E7A3E90BF1C7C869")]
-    [InlineData(true, 11, "82F33E3B25383A7C")]
+    // Runde 16, Spur abgleich-rest (#772, R15-E2 = C): neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert
+    // 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel). Rückschaltprobe: ohne PrepareMatch → alte Werte.
+    // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
+    // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
+    // → Wert nach #772.
+    [InlineData(false, 3, "A4B48D437620E510")]
+    [InlineData(true, 3, "CEF8F66D84C8D8A5")]
+    [InlineData(false, 11, "107B16BA8C383F48")]
+    [InlineData(true, 11, "62F453313F73A524")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -296,11 +298,13 @@ public class RngTwinProbeTests
     // Runde 15, Spur abgleich-fix (#748, R15-E2 = C): neu – 0x952C schreibt die Felder 0x18–0x1D der Managervereine an Tagen mit
     // Ereignis aus der Aufstellung (Datei 0x54DAA/0x54FBF): andere Zuschauer, Konten und Zufallsverlauf. Rückschaltprobe:
     // GameState.DailyRun.cs und CupsNational.AutoLineup.cs von 8711348 → alte Werte.
-    // Runde 16, Spur pool (#743, R15-E2 = C): neu – die Startkader stehen im Spielerpool (Datei 0x5B0BB–0x5B2BE): 25 Plätze weniger
-    // für Benennen, Umverteilung und Listenwechsel, anderer Zufallsverlauf. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 148b02d
-    // → alte Werte.
-    [InlineData(false, "D575D617812875F5")]
-    [InlineData(true, "CCE5A32226649DAB")]
+    // Runde 16, Spur abgleich-rest (#772, R15-E2 = C): neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert
+    // 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel). Rückschaltprobe: ohne PrepareMatch → alte Werte.
+    // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
+    // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
+    // → Wert nach #772.
+    [InlineData(false, "3FFEF2FE55308180")]
+    [InlineData(true, "35A071A2973C3F74")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

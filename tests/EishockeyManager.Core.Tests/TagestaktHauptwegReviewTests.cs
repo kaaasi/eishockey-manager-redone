@@ -287,6 +287,11 @@ public class TagestaktHauptwegReviewTests
     /// R688-05: Regressionstest (vorher rot: der Saisonwechsel würfelte eine neue Liste). [ORIGINAL] Der Saisonwechsel ruft 0x494EF
     /// nicht (Aufrufer nur Datei 0x43A9F und 0x54E7C): Die Markt-Plätze bleiben, ihre Spieler altern um ein Jahr.
     /// </summary>
+    /// <remarks>
+    /// Fixlauf pool auf main 846e515 (R15-E2 = C): saatunabhängig wie <see cref="File44_SeasonChange_KeepsListLikeFile46"/> – geprüft
+    /// wird der Saisonwechsel ohne Tag 0 (<see cref="GameState.StartNextSeasonWithRenewals"/>); der Wurf des Listenwechsels an Tag 0
+    /// (Datei 0x54E65) traf mit Spur pool und #772 bei Saat 5 (ebenso 6, 7, 10, 12) und gehört nicht zu R688-05.
+    /// </remarks>
     [Fact]
     public void SeasonChange_KeepsMarketList_PlayersAgeOneYear()
     {
@@ -295,7 +300,7 @@ public class TagestaktHauptwegReviewTests
         var market = game.TransferMarket.Listings.Where(l => l.FromPool).Select(l => (l.Player, l.Player.Age, l.Price)).ToList();
         Assert.NotEmpty(market);
 
-        game.StartNextSeason();
+        game.StartNextSeasonWithRenewals();
 
         var listed = game.TransferMarket.Listings.Where(l => l.FromPool).ToList();
         Assert.Equal(market.Select(m => m.Player), listed.Select(l => l.Player));

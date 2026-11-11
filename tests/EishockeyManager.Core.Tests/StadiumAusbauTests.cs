@@ -45,10 +45,10 @@ public class StadiumAusbauTests
     [Fact]
     public void SeveralProjects_BuildInParallel()
     {
-        // Spur pool (#743, R15-E2 = C): Die Zeitleiste hält nicht an jedem Tag, und der Nachrichtenspeicher räumt nach drei Tagen;
-        // eine Meldung ohne Halt in diesem Fenster sammelt MessageLog nicht. Saat 3 hatte den Halt nur zufällig (mit den Managerkadern
-        // im Pool: Zustand am Tag 41 fertig, nächster Halt Tag 45). Saat 1 mit Halt nach jeder der drei Meldungen.
-        var game = TestGames.Create(1);
+        // #772 (R15-E2 = C): Saat 4 statt 3 – mit der Spielvorbereitung 0x8365 ist bei Saat 3 der Nachrichtenspeicher (24 Plätze,
+        // [ORIGINAL] FinanceInbox.Post) voll, als der Zustand fertig wird; die Meldung fällt wie im Original weg. Rückschaltprobe:
+        // alter Code mit Saat 4 rot (dort ist der Speicher voll) – die Probe hängt an der Saat, nicht an #772.
+        var game = TestGames.Create(4);
         var me = game.ActiveManager;
         me.Money = Rich;
         var stadium = game.Finance(me).Stadium;

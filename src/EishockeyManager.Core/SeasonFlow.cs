@@ -143,7 +143,13 @@ public sealed partial class GameState
         var steps = new List<SeasonStep>();
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ springt der erste Tag der Saison zur WM.
         if (SkipToWorldCup())
+        {
+            // [ORIGINAL] #699 Rest (abgleich-rest Teil 4): Datei 0x54CEE–0x54D38 zählt ohne Tageslauf bis zum ersten WM-Tag; der Halt
+            // dort ist der gesicherte Stand (FILE11, FILE21), sein Tageswechsel gilt als gerechnet. OpenWorldOnlyLoopDay rechnet an
+            // diesem Tag nichts (Schritte (c)/(d) erst ab dem Tag danach).
+            OpenDay(CurrentDay);
             return steps;
+        }
         var turnsTaken = true; // der erste Tag ist der des Halts: Seine Managerzüge sind gelaufen
         while (true)
         {

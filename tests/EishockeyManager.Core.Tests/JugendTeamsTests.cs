@@ -232,11 +232,12 @@ public class JugendTeamsTests
     // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
     // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
     // Squad.Training.cs von 18972c0 → alte Werte.
-    // Runde 16, Spur pool (#743, R15-E2 = C): neu – die Startkader stehen im Spielerpool (Datei 0x5B0BB–0x5B2BE): 25 Plätze weniger
-    // für Benennen, Umverteilung und Listenwechsel, anderer Zufallsverlauf. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 148b02d
-    // → alte Werte.
+    // #772 (Spur abgleich-rest, Runde 16): neu – Spielvorbereitung 0x8365 wie im Original (Einsatz = Grundwert 60/40 über die Stärke 0x368B1, Angriffsbits aus dem letzten Spiel); andere Ergebnisse ab dem ersten Spieltag. Gegenprobe: ohne PrepareMatch → alter Wert.
+    // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
+    // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
+    // → Wert nach #772.
     private const string ExpectedActive =
-        "0:Schueler:2/11/58;0:Jugend:2/11/59;0:Junioren:2/11/60;1:Schueler:1/11/75;1:Jugend:2/6/72;1:Junioren:1/11/71;2:Schueler:1/6/84;2:Jugend:1/11/81;2:Junioren:1/6/82;3:Schueler:1/6/85;3:Jugend:1/6/85;3:Junioren:1/6/83";
+        "0:Schueler:2/12/59;0:Jugend:2/11/63;0:Junioren:2/11/63;1:Schueler:1/11/71;1:Jugend:1/11/70;1:Junioren:1/11/72;2:Schueler:1/6/75;2:Jugend:1/6/75;2:Junioren:1/6/75;3:Schueler:1/6/80;3:Jugend:1/6/80;3:Junioren:1/6/81";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -282,11 +283,11 @@ public class JugendTeamsTests
     // Runde 15, Spur abgleich-fix (#730, R15-E2 = C): neu – das Training begrenzt die Belastung vorzeichenbehaftet (Datei 0x4BD56,
     // cbw): ab 128 → 50 statt bis 150; andere Belastung, Spielenergie und Ergebnisse ab dem ersten Training. Rückschaltprobe:
     // Squad.Training.cs von 18972c0 → alte Werte.
-    // Runde 16, Spur pool (#743, R15-E2 = C): neu – die Startkader stehen im Spielerpool (Datei 0x5B0BB–0x5B2BE): 25 Plätze weniger
-    // für Benennen, Umverteilung und Listenwechsel, anderer Zufallsverlauf. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 148b02d
-    // → alte Werte.
+    // #772 (Spur abgleich-rest, Runde 16): neu – Spielvorbereitung 0x8365 wie im Original; danach Spur pool (#743, Fixlauf auf main
+    // 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE), 25 Plätze weniger für Benennen, Umverteilung
+    // und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515 → Wert nach #772.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/66;0:Jugend:2/2/67;0:Junioren:2/2/68;1:Schueler:3/2/54;1:Jugend:3/2/52;1:Junioren:3/2/54;2:Schueler:3/6/47;2:Jugend:3/6/45;2:Junioren:3/6/43;3:Schueler:3/6/43;3:Jugend:3/6/41;3:Junioren:3/6/40";
+        "0:Schueler:2/2/66;0:Jugend:2/2/66;0:Junioren:2/2/70;1:Schueler:3/2/54;1:Jugend:3/2/54;1:Junioren:2/6/57;2:Schueler:3/6/47;2:Jugend:3/6/45;2:Junioren:3/2/46;3:Schueler:3/6/44;3:Jugend:3/6/42;3:Junioren:3/6/41";
 }
 
 public class JugendTeamsMigrationTests

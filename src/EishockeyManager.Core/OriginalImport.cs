@@ -339,8 +339,9 @@ public sealed partial class GameState
         {
             var record = records.AsSpan(m * OriginalSaveGame.ManagerRecordLength, OriginalSaveGame.ManagerRecordLength);
             ApplyManager(save, m, record, clubOf);
-            if (!WorldOnly)
-                ApplySquad(save, Clubs[Managers[m].ClubIndex], m, clubOf, foreigners, squadPlayers);
+            // #732 (abgleich-rest Teil 3, R16-D2 = A): [ORIGINAL] auch im Modus „nur Weltkugel“ – Satz 0 führt dort seinen Kader mit
+            // Gehalt und Preis (FILE20/FILE21 `emtool hok dump`: 25 Plätze, Werte über den Saisonwechsel unverändert).
+            ApplySquad(save, Clubs[Managers[m].ClubIndex], m, clubOf, foreigners, squadPlayers);
         }
         ApplyOriginalRest(save, clubOf); // Teil 4a (OriginalImport.Rest.cs)
         var pool = ApplyPoolAndMarket(save, clubOf, squadPlayers, foreigners); // Teil 4b (OriginalImport.Market.cs)

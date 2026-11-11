@@ -54,10 +54,9 @@ public sealed partial class GameState
         var marketTwins = TransferMarket.Pool
             .Where(s => s.Owner == PoolOwner.Market && indexOf.Any(e => e.Value == s.Index && !ReferenceEquals(e.Key, s.Player)))
             .Select(s => s.Index).ToHashSet();
+        // #732: Kader von Satz 0 auch im Modus „nur Weltkugel“ (Gegenstück zum Import, Rundreise FILE18–FILE20, FILE47–FILE49A).
         for (var m = 0; m < Managers.Count; m++)
         {
-            if (WorldOnly)
-                break;
             var club = Clubs[Managers[m].ClubIndex];
             var players = club.Players.ToList();
             for (var i = 0; i < Math.Min(players.Count, OriginalSaveGame.SquadSlotsPerManager); i++)
@@ -109,17 +108,70 @@ public sealed partial class GameState
         foreach (var slot in TransferMarket.Pool)
             if (slot.Index is >= 1 and < TransferPoolRules.Size)
                 map.TryAdd(slot.Player, slot.Index);
-        if (WorldOnly)
-            return map;
-        foreach (var club in Managers.Select(m => m.ClubIndex).Distinct().Select(i => Clubs[i]))
+        var managed = Managers.Select(m => m.ClubIndex).ToHashSet();
+        var missing = new List<Player>();
+        foreach (var club in managed.Select(i => Clubs[i]))
             foreach (var p in club.Players.Where(p => !map.ContainsKey(p)))
             {
                 var twin = TransferMarket.Pool.FirstOrDefault(s => s.Owner != PoolOwner.Taken && s.Player.Name == p.Name
                                                                    && s.Player.Role == p.Role && s.Index < TransferPoolRules.Size);
                 if (twin is not null && !map.Any(e => e.Value == twin.Index && club.Players.Contains(e.Key)))
                     map[p] = twin.Index;
+                else
+                    missing.Add(p);
             }
+        if (missing.Count > 0)
+            AddUnseatedSquadPlayers(map, managed, missing);
         return map;
+    }
+
+    /// <summary>
+    /// [APPROX] Kaderspieler ohne Poolplatz: Im Modus „nur Weltkugel“ setzt das Remake den Kader von Satz 0 nicht in den Pool
+    /// (<see cref="TransferMarket.SeatManagerSquads"/>), der Export schreibt ihn aber (#732). Wie vor Spur pool bekommt ein solcher
+    /// Spieler den Platz seines Namens beim eigenen Verein, sonst den ersten freien Ligaplatz seiner Art (kein Markt, nicht vergeben,
+    /// kein Managerverein, nicht der erste Platz der Art; FILE01/05/09: Managerkader ab Torhüter 2, Verteidiger 22, Stürmer 98) –
+    /// dessen Poolspieler entfällt im Export. Ist keiner frei, entfällt der Spieler. Jeder Index gehört genau einem Spieler (R727P-04).
+    /// </summary>
+    private void AddUnseatedSquadPlayers(Dictionary<Player, int> map, HashSet<int> managed, List<Player> missing)
+    {
+        var layout = TransferPoolLayout.Original;
+        var (defenders, forwards) = layout.LeagueRoleStarts;
+        var listed = TransferMarket.Listings.Select(l => l.Player).ToHashSet(ReferenceEqualityComparer.Instance);
+        var used = managed.SelectMany(i => Clubs[i].Players).Where(map.ContainsKey).Select(p => map[p]).ToHashSet();
+        bool Free(PoolSlot s) => !used.Contains(s.Index);
+        var rest = new List<Player>();
+        foreach (var p in missing)
+        {
+            var club = Clubs.First(c => managed.Contains(c.Index) && c.Players.Contains(p));
+            var named = TransferMarket.Pool.FirstOrDefault(s => s.Club == club.Index && s.Owner != PoolOwner.Market
+                && s.Player.Name == p.Name && s.Player.Role == p.Role && s.Index < TransferPoolRules.Size && Free(s));
+            if (named is null)
+            {
+                rest.Add(p);
+                continue;
+            }
+            map.Remove(named.Player); // sein Poolspieler entfällt im Export
+            map[p] = named.Index;
+            used.Add(named.Index);
+        }
+        var spare = TransferMarket.Pool
+            .Where(s => s.Owner == PoolOwner.Free && s.Index <= layout.LeagueLast && !managed.Contains(s.Club) && Free(s)
+                        && !listed.Contains(s.Player))
+            .Select(s => s.Index)
+            .OrderBy(i => i is 1 || i == defenders || i == forwards ? 1 : 0).ThenBy(i => i)
+            .ToList();
+        foreach (var p in rest)
+        {
+            var at = spare.FindIndex(i => layout.RoleOf(i) == p.Role);
+            if (at < 0)
+                continue;
+            var index = spare[at];
+            spare.RemoveAt(at);
+            foreach (var e in map.Where(e => e.Value == index).ToList())
+                map.Remove(e.Key);
+            map[p] = index;
+            used.Add(index);
+        }
     }
 
     private int? ManagerOf(Player player)

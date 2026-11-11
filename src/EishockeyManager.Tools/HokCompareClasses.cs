@@ -202,6 +202,8 @@ public static class HokCompareClasses
             "Tactics._minutes");
         // Anzeige „AUTOM.“: Zeile der Automatik gegen den letzten Gegner (Stärken aus den zufallsabhängigen Teamwerten).
         Set(Random, "Tactics._shownAutoAttack", "Tactics._shownAutoEffort");
+        // #772 (Spur abgleich-rest): Vereinsfelder 0x26 und 0x2C Bits 4–6 nach dem letzten Spiel; der Import liest sie nicht.
+        Set(Random, "Tactics._matchAttack", "Tactics._matchEffort");
         Set(InSeason, "Club.League");
         Set(Random, "Club.ForfeitsMatch", "Club.LeaguePenaltyMinutes", "Club.Lineup", "Club.SeriesCurrent", "Club._dressed",
             "Club._rankSlots", "Club._tableRank", "Lineup._defenders", "Lineup._forwards", "Lineup._goalkeeper");

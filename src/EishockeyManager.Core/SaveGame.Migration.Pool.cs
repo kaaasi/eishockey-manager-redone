@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Migration der Spur pool (Runde 16, #743; Schema 47 → 48, die Leitstelle nummeriert beim Merge): Managerkader im Spielerpool.
+/// Migration der Spur pool (Runde 16, #743; Schema 48 → 49): Managerkader im Spielerpool.
 /// <list type="number">
 /// <item>Feld <see cref="PoolSlot.Manager"/> (Teil 3): −1 an jedem Poolplatz; nach dem Laden bekommt ein vergebener Platz ohne Spieler
 ///   im Spiel (nach Vertragsende verloren) den einzigen Manager, bei mehreren bleibt er unbekannt ([APPROX], Export dann 6).</item>
@@ -16,7 +16,7 @@ namespace EishockeyManager.Core;
 public static partial class SaveGame
 {
     /// <summary>Erste Schemaversion, in der die Managerkader im Pool stehen.</summary>
-    private const int PoolSeatedSchema = 48;
+    private const int PoolSeatedSchema = 49;
 
     private static JsonObject MigratePool(JsonObject root)
     {
