@@ -17,8 +17,7 @@ namespace EishockeyManager.Core.Tests;
 /// </remarks>
 public class AbgleichOriginalPaareTests
 {
-    private const int WorldOnlyManagerSlot = 732, MoneyFile13 = 734,
-        DayZero = 699, Strain = 730;
+    private const int WorldOnlyManagerSlot = 732, MoneyFile13 = 734, Strain = 730;
 
     /// <summary>
     /// Kein Befund (#732): Im Modus „nur Weltkugel“ trägt Satz 0 das Land (Regel 1 der Feldkarte); der Import baut den Vereinskader
@@ -89,7 +88,7 @@ public class AbgleichOriginalPaareTests
 
     /// <summary>
     /// Erwartete Listen, erneuert gegen <c>main</c> 62e4927 (nach #725, #726, #727): Teamwerte #729 behoben durch #727, Tag 0
-    /// #699 (Punkt 2) behoben durch #725 außer im Modus „nur Weltkugel“ (FILE20→21).
+    /// #699 (Punkt 2) behoben durch #725, im Modus „nur Weltkugel“ (FILE20→21) durch abgleich-rest Teil 4.
     /// </summary>
     public static readonly IReadOnlyDictionary<string, Known[]> Expected =
         new Dictionary<string, Known[]>
@@ -133,7 +132,7 @@ public class AbgleichOriginalPaareTests
             // AbgleichFixWorldOnlyTests). Gehalt und Preis: kein Befund – der Import übernimmt im Modus 1 keinen Managerkader und
             // bewertet den Vereinskader beim Laden neu (Wert nach Tendenz und Preisindex des Stands); im Remake wie im Original
             // (Satz 0, `emtool hok dump` FILE20/FILE21) bleiben Gehalt und Preis über die Saison stehen.
-            ["FILE20→FILE21"] = [new("DayOpened", DayZero), .. SeasonStart,
+            ["FILE20→FILE21"] = [.. SeasonStart,
                 new($"{Landshut}.Players[*].MonthlySalary", WorldOnlySquadImport),
                 new($"{Landshut}.Players[*].PurchasePrice", WorldOnlySquadImport),
                 // Form und Belastung einzelner Spieler (je nach Saat andere, Remake Belastung 70).
