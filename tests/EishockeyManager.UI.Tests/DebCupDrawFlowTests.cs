@@ -301,6 +301,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Runde 17, Spur wettbewerbe-rest Teil 2 (A004, R15-E2 = C): ab 1994 neu – Auslosung Europapokal mit 0x4D316 (Mittel der
     // sechs Vereinsfelder, Datei 0x34401–0x3440A) statt der Datenbankstärke: andere Gegner und anderer Verbrauch von CupRandom
     // ab der zweiten Auslosung (1993 unverändert). Rückschaltprobe: CupsEurope.cs mit Club.Strength → Wert nach #743.
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
     private const string Reference =
-        "1993: DEB 2, DM 5, Tab 15349 | 1994: DEB 4, DM 4, Tab 15892 | 1995: DEB 6, DM 4, Tab 15403 | 1996: DEB 6, DM 12, Tab 15257";
+        "1993: DEB 10, DM 8, Tab 15378 | 1994: DEB 6, DM 8, Tab 15416 | 1995: DEB 8, DM 6, Tab 15900 | 1996: DEB 7, DM 8, Tab 15864";
 }

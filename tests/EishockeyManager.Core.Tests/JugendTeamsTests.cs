@@ -236,8 +236,12 @@ public class JugendTeamsTests
     // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
     // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
     // → Wert nach #772.
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
     private const string ExpectedActive =
-        "0:Schueler:2/12/59;0:Jugend:2/11/63;0:Junioren:2/11/63;1:Schueler:1/11/71;1:Jugend:1/11/70;1:Junioren:1/11/72;2:Schueler:1/6/75;2:Jugend:1/6/75;2:Junioren:1/6/75;3:Schueler:1/6/80;3:Jugend:1/6/80;3:Junioren:1/6/81";
+        "0:Schueler:2/12/57;0:Jugend:2/11/59;0:Junioren:2/11/60;1:Schueler:1/12/69;1:Jugend:2/6/69;1:Junioren:1/11/72;2:Schueler:1/6/78;2:Jugend:1/11/79;2:Junioren:1/6/79;3:Schueler:1/6/79;3:Jugend:1/6/81;3:Junioren:1/6/81";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -286,8 +290,12 @@ public class JugendTeamsTests
     // #772 (Spur abgleich-rest, Runde 16): neu – Spielvorbereitung 0x8365 wie im Original; danach Spur pool (#743, Fixlauf auf main
     // 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE), 25 Plätze weniger für Benennen, Umverteilung
     // und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515 → Wert nach #772.
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/66;0:Jugend:2/2/66;0:Junioren:2/2/70;1:Schueler:3/2/54;1:Jugend:3/2/54;1:Junioren:2/6/57;2:Schueler:3/6/47;2:Jugend:3/6/45;2:Junioren:3/2/46;3:Schueler:3/6/44;3:Jugend:3/6/42;3:Junioren:3/6/41";
+        "0:Schueler:2/2/67;0:Jugend:2/2/69;0:Junioren:2/2/72;1:Schueler:3/2/52;1:Jugend:2/6/58;1:Junioren:2/6/61;2:Schueler:3/6/47;2:Jugend:2/6/46;2:Junioren:3/2/47;3:Schueler:3/6/42;3:Jugend:3/2/43;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

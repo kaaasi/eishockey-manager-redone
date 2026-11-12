@@ -1014,3 +1014,21 @@ Teil 2 – Europapokal und Liga-Code:
   `docs/spielberechnung.md` §19.
 * **Teilnahme für die Werbebewertung (A037):** 0x44A48 liest Paarungslisten statt Bits (Masken 0x10 WM, 0x40 Meisterrunde, 0x20
   Europapokal, 0x08 DEB-Pokal); Einzelheiten in `GameState.CurrentParticipation`.
+
+Teil 3 – Spielplan und Start:
+
+* **Liga-Spielplan (A113):** 0x4E7C7 (Tabelle DGROUP 0x2DC, `docs/analyse/re-nachtrag.md` §4) schreibt Satzplätze
+  (Buchstabe − 'a' + Basis); die Paarungen folgen also der Satzfolge der Liga (Startmischung 0x43A17, Saisonwechsel 0x5644E,
+  Tausch 0x36169), nicht dem Rang des Vereinsindex. Andere Ligagrößen gibt es nicht (DGROUP 0x7B1 + Liga = 12). Remake:
+  `Schedule.ForSlots` beim Spielstart (`NewGame.Create`) und im Saisonwechsel (`GameState.BuildLeagueSchedules`).
+* **Gruppenpläne:** 0x30427 ruft 0x4E7C7 (Datei 0x3068B) mit Tabelle DGROUP 0x324 bzw. 0x30C, n = [DGROUP 0x4DD8 + 2 · Wettbewerb]
+  + 1, Spieltag 1 … [0x4DD8 + 2 · Wettbewerb] + 3 · (Wettbewerb > 0) (Datei 0x3071D–0x3074C): Vierergruppen sechs Spieltage, ab
+  Spieltag 4 mit getauschtem Heimrecht – auch die Aufstiegsrunde (Wettbewerb 1, Plätze DGROUP 0xCFF4 + 8 + 4 · Gruppe). Remake:
+  `RelegationGroup` über `CupGroup.Pairings`; Video `folge07_03307` (Berliner SC, EA Kempten, ECD Sauerland, SC Riessersee).
+* **Termine der Aufstiegsrunde (A142):** Der Play-Off-Tag 0x31A0A (Kalendermarke 0x40, Datei 0x55063) baut die Paarungen der
+  Aufstiegsrunde nur bei DGROUP 0xCCA3 ∈ {0, 2} (Datei 0x31A2C–0x31A3A, Maske 0xC), Gruppenspieltag 2 · DGROUP 0x7B0 +
+  (0xCCA3 = 2) (Datei 0x31A44–0x31A5A); 0xCCA3 zählt die fünf Spiele jeder Play-Off-Runde, auch nicht ausgetragene. Die Infoleiste
+  0x44A48 rechnet ebenso (Datei 0x44B91–0x44BC2). Play-Off-Termine 0, 2, 5, 7, 10, 12 = 6.2., 10.2., 20.2., 25.2., 22.3., 29.3.;
+  dieselben Daten zeigt „Aufstieg 2.Liga“ in `folge07_03307`. Remake: `RelegationGroup.DateIndices`.
+* **A112/F107:** schon umgesetzt (Runde 13/14, U15-a/U15-c: `NewGame.PlaceInStartLeague`, Filter 0x45CD0(r, 1) trifft beim Start
+  nur Platz 0); keine Änderung.

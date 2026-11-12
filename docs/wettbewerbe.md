@@ -567,7 +567,8 @@ Abschnitt [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-pixel-wettbewerb
 
 **[APPROX]:** Mittlerer Knopf („Play-Off“ bei der Bundesliga, sonst „Aufstieg“) ohne Wirkung, da die Zielseiten fehlen;
 Klick auf eine Zeile (Original: Vereinsinfo) ohne Wirkung; die zuletzt gewählte Seite (DGROUP 0x5125) wird nicht gemerkt;
-Spielplan (`Schedule.DoubleRoundRobin`) und Stärkewerte (`StrengthTable`) sind Näherungen des Remakes. Die Trefferfläche der
+Stärkewerte (`StrengthTable`) sind eine Näherung des Remakes. Der Spielplan folgt seit Runde 17 dem Original (`Schedule.ForSlots`,
+Datei 0x4E7C7 über die Satzfolge; A113). Die Trefferfläche der
 Pfeilknöpfe ist der Rahmen (48 × 38).
 
 ## Pixelvergleich Runde 6 (Spur `pixel-wettbewerbe`)

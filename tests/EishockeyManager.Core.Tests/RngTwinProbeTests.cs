@@ -239,10 +239,14 @@ public class RngTwinProbeTests
     // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
     // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
     // → Wert nach #772.
-    [InlineData(false, 3, "A4B48D437620E510")]
-    [InlineData(true, 3, "CEF8F66D84C8D8A5")]
-    [InlineData(false, 11, "107B16BA8C383F48")]
-    [InlineData(true, 11, "62F453313F73A524")]
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    [InlineData(false, 3, "94B6D396661645FB")]
+    [InlineData(true, 3, "D87A4CC443239D43")]
+    [InlineData(false, 11, "E93366DEBA5D5077")]
+    [InlineData(true, 11, "17D14F0C87DF644F")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -306,8 +310,12 @@ public class RngTwinProbeTests
     // Runde 17, Spur wettbewerbe-rest Teil 2 (A004, R15-E2 = C): neu – Auslosung Europapokal vergleicht 0x4D316 (Mittel der
     // sechs Vereinsfelder, Datei 0x34401–0x3440A) statt der Datenbankstärke; andere Gegner und anderer Verbrauch von CupRandom
     // ab der ersten Auslosung. Rückschaltprobe: CupsEurope.cs mit Club.Strength → Wert nach #743.
-    [InlineData(false, "315F96E62CEC43FD")]
-    [InlineData(true, "4A0590993476CB54")]
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    [InlineData(false, "500F3B70A2D643B2")]
+    [InlineData(true, "B0C7A0EC1DED516A")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

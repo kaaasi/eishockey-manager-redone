@@ -47,7 +47,8 @@ spielfreie Tage –, bis wieder ein Verein eines Managers spielt. Belegt: 1995/9
      zweimal gegeneinander; die beiden Ersten spielen oben. Belegt für 2. Liga/Oberliga (1994/95 steigen
      BK Oldenburg und EC Harz Braunlage auf, SC Riessersee und SC Memmingen ab). Zwischen Bundesliga und
      2. Liga wechseln laut Saisonende-Bildschirmen mal zwei, mal ein Verein – daher dasselbe Verfahren.
-     Gruppenspieltage `[APPROX]`: Play-Off-Termine 1, 3, 6, 8, 10, 11 (belegt: 6.2., 10.2., 20.2., 25.2., …, nach 22.3.).
+     Gruppenspieltage `[ORIGINAL]` (A142, Datei 0x31A2C): Play-Off-Termine 1, 3, 6, 8, 11, 13 = 6.2., 10.2., 20.2., 25.2., 22.3.,
+     29.3. (Spiele 1 und 3 jeder Play-Off-Runde; Übersicht „Aufstieg 2.Liga“ in `folge07_03307`), Paarungen nach Tabelle DGROUP 0x324.
 3. **13. April**: Ende der Vereinssaison, Auf- und Abstieg stehen fest. Die beiden Letzten der Oberliga
    verlassen die Liga, zwei Vereine ohne Liga (Datenbank 36–47) rücken nach `[APPROX]` (Manager-Vereine ausgenommen).
 4. **14.–28. April**: WM-Termine (Paket `wettbewerbe`).
@@ -144,7 +145,7 @@ Die Pfeile vor den Vereinsnamen sind Zeichen des Mini-Fonts: `&` = Pfeil nach un
   zusammen; hier bleibt der Pokal des Fotos.
 - Ereignissymbole: Bit 2 (Symbol 0) fehlt; Meister (Bit 3) zeigt im Original das Symbol 5, das Remake den Puck (siehe Tabelle oben).
   Prämien außer 1. Platz Oberliga.
-- Play-Off-Format und Termine der Aufstiegsrunden genauer am Disassembly prüfen.
+- Play-Off-Format genauer am Disassembly prüfen (Termine der Aufstiegsrunden: A142, `reverse-engineering.md` Spur `wettbewerbe-rest`).
 - Bisherige Begegnungen in der Infoleiste reichen im Original über Saisongrenzen hinweg (nicht Teil dieses Pakets).
 
 ## Spielstand-Optionen und Kalenderfunktionen (Spur `optionen-kalender-2`)

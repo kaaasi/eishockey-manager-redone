@@ -57,7 +57,9 @@ public class NationalCoachMode4Tests
     [Fact]
     public void Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach()
     {
-        var game = GameModeTests.Create(71, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71, Vorbedingung beide unter den ersten fünf
+        var game = GameModeTests.Create(14, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71, Vorbedingung beide unter den ersten fünf
+        // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): 71 → 14 – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7) ändert alle Paarungen; unter den Saaten 1–40 hat
+        // nur 14 beide Vereine unter den ersten fünf. Rückschaltprobe: alter Code mit Saat 14 ebenfalls grün – die Probe hängt an der Saat.
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         var top = game.FinalTables()[League.Bundesliga].Take(5).ToList();

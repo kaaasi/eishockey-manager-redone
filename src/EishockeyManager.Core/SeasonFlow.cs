@@ -490,16 +490,7 @@ public sealed partial class GameState
                 club.League = record.NextLeague(club.Index, club.League);
         AdvanceLeagueSlots(record); // S-K6: am 29. April gebildete Satzfolge übernehmen, Datei 0x5644E (SeasonFlow.LeagueSlots.cs)
 
-        foreach (var league in Enum.GetValues<League>())
-        {
-            var members = LeagueClubs(league).Select(c => c.Index).ToList();
-            for (var i = members.Count - 1; i > 0; i--)
-            {
-                var j = Random.Next(i + 1);
-                (members[i], members[j]) = (members[j], members[i]);
-            }
-            Schedules[league] = Schedule.Rounds(members, rounds: 4);
-        }
+        BuildLeagueSchedules(); // A113: Spielplan über die neue Satzfolge (GameState.Spielplan.cs)
 
         Season++;
         ClearNationalForm(); // Bilanzzeichen leeren, em.exe 0x55EBA (CupsNational.TeamInfo.cs)

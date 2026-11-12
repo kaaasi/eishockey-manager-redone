@@ -259,8 +259,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 17, Spur wettbewerbe-rest Teil 2 (A004, R15-E2 = C): neu – Auslosung Europapokal vergleicht 0x4D316 (Mittel der
     // sechs Vereinsfelder, Datei 0x34401–0x3440A) statt der Datenbankstärke; andere Gegner und anderer Verbrauch von CupRandom
     // ab der ersten Auslosung. Rückschaltprobe: CupsEurope.cs mit Club.Strength → Wert nach #743.
-    [InlineData(false, "B0CB30C16946F939")]
-    [InlineData(true, "08646625D3964153")]
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    [InlineData(false, "D0EE977A53C2530C")]
+    [InlineData(true, "F12F6DB291E7B313")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

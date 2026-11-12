@@ -61,7 +61,8 @@ public class SeasonEndStatusTests
     [Fact]
     public void Full_EveryManagerInTopFive_GetsStatusBit()
     {
-        var game = GameModeTests.Create(71, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71, Vorbedingung beide unter den ersten fünf
+        var game = GameModeTests.Create(14, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71, Vorbedingung beide unter den ersten fünf
+        // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): 71 → 14 wie NationalCoachMode4Tests (Liga-Spielplan über die Satzfolge, Datei 0x4E7C7).
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];
