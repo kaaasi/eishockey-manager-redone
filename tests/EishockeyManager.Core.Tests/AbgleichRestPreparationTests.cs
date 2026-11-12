@@ -166,28 +166,49 @@ public class AbgleichRestPreparationTests(ITestOutputHelper output)
 
     /// <summary>
     /// Ein Spiel ohne Manager hält Einsatz und Angriff fest (Vereinsfelder 0x26/0x2C bleiben stehen): Grundwert 40/60, Angriff
-    /// unverändert aus dem letzten Spiel; Speichern und Laden behält beide Werte.
+    /// unverändert aus dem letzten Spiel; Speichern und Laden behält beide Werte. Der Gast hat den exakten Wert aus dem Vergleich
+    /// mit dem schon geschriebenen Grundwert des Heimvereins (#784, Datei 0x36D12/0x36D49); die Paarung ist so gewählt, dass die
+    /// alte Regel (beide aus den alten Stärken) einen anderen Gastwert gäbe (Review R17 P3-3: vorher nur „40 oder 60“).
     /// </summary>
     [Fact]
     public void ComputerMatch_KeepsFieldsAcrossSaveAndLoad()
     {
         var game = TestGames.Create(5);
         var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
-        var (home, away) = game.Clubs.Where(c => c.Index < 52 && !managed.Contains(c.Index) && c.Players.Count > 0)
-            .Take(2).ToArray() switch { var p => (p[0], p[1]) };
-        home.Tactics.RecordMatchFields(0, 5);
-        MatchEngine.PlayWithEvents(game, home, away, MatchCompetition.League, knockOut: false, new Random(3));
-        Assert.Contains(home.Tactics.MatchEffort, new[] { 40, 60 });
-        Assert.Contains(away.Tactics.MatchEffort, new[] { 40, 60 }); // #784: Gast eigener Vergleich, nicht gleich dem Heimwert
-        Assert.Equal((5, 0), (home.Tactics.MatchAttack, away.Tactics.MatchAttack));
+        var clubs = game.Clubs.Where(c => c.Index < 52 && !managed.Contains(c.Index) && c.Players.Count > 0).ToList();
+        int Strength(LiveTeam t, int fieldEffort) => OriginalMatch.TeamStrength(
+            OriginalMatch.LineValues(t.Defense, 0, false, 0, t.LineEnergy(0, 0), fieldEffort, inMatch: true),
+            OriginalMatch.LineValues(t.Attack, 0, true, 0, t.LineEnergy(1, 0), fieldEffort, inMatch: true), 1, 0, t.ClubForm);
+        foreach (var c in clubs)
+            c.Tactics.RecordMatchFields(0, 5);
+        var pair = clubs.SelectMany(h => clubs.Where(a => a != h).Select(a => (Home: h, Away: a)))
+            .Select(p =>
+            {
+                var h = MatchEngine.LiveTeamOf(game, p.Home, p.Away, managed: false, managerMatch: false);
+                var a = MatchEngine.LiveTeamOf(game, p.Away, p.Home, managed: false, managerMatch: false);
+                var hs = Strength(h, 0);
+                var @as = Strength(a, 0);
+                var home = Math.Abs(2 * hs - 2 * @as) < Tactics.EvenMatchLimit ? 60 : 40;
+                var away = Math.Abs(2 * @as - 2 * Strength(h, home)) < Tactics.EvenMatchLimit ? 60 : 40;
+                return (p.Home, p.Away, Expected: (home, away), Old: (home, home));
+            })
+            .First(p => p.Expected != p.Old);
+        MatchEngine.PlayWithEvents(game, pair.Home, pair.Away, MatchCompetition.League, knockOut: false, new Random(3));
+        Assert.Equal(pair.Expected, (pair.Home.Tactics.MatchEffort, pair.Away.Tactics.MatchEffort));
+        Assert.Equal((5, 5), (pair.Home.Tactics.MatchAttack, pair.Away.Tactics.MatchAttack));
 
         var loaded = SaveGame.Load(SaveGame.Save(game)).Game!;
-        Assert.Equal((home.Tactics.MatchEffort, 5), (loaded.Clubs[home.Index].Tactics.MatchEffort, loaded.Clubs[home.Index].Tactics.MatchAttack));
+        Assert.Equal((pair.Expected.home, 5), (loaded.Clubs[pair.Home.Index].Tactics.MatchEffort, loaded.Clubs[pair.Home.Index].Tactics.MatchAttack));
+        Assert.Equal((pair.Expected.away, 5), (loaded.Clubs[pair.Away.Index].Tactics.MatchEffort, loaded.Clubs[pair.Away.Index].Tactics.MatchAttack));
     }
 
     /// <summary>
     /// Mehrsaisonprobe (AGENTS.md §5): vier Saisonwechsel, passiver und aktiver Manager (eigener Einsatz/Angriff „SEMI“). Nach jeder
     /// Saison stehen die Computervereine der Ligen auf Grundwert 40/60 (bis auf die Gegner im letzten Managerspiel), die Werte der Managervereine bleiben in den Grenzen.
+    /// Nur eine Bereichsprobe: Sie bleibt auch mit der Spielvorbereitung vor #784 grün (Review R17 P3-2). Die Reihenfolge Heim vor Gast
+    /// über vier Saisonwechsel (passiv und aktiv) sichern die Abdrücke <c>RngTwinProbeTests</c>,
+    /// <c>SpielberechnungAnschlussTests.FourSeasonChanges_…</c>, <c>JugendTeamsTests.FourSeasonChanges_…</c> und
+    /// <c>DebCupDrawFlowTests.MultiSeason_…</c> ab (bei Rückschaltung alle rot).
     /// </summary>
     [Theory]
     [InlineData(false)]
