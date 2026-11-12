@@ -143,6 +143,7 @@ laut README bestimmen, die Nummern rücken auf). Auswertung erst in der Runde na
    Managerteile (Bildschirmfoto-Taste reicht). Danach im Hauptmenü sichern als **FILE50**.
 2. Gegenprobe: FILE02 erneut laden, denselben Spieltag mit einigen Klicks auf die Reihenknöpfe der Managerzeile spielen (Klicks
    kurz notieren), sichern als **FILE51**.
+   Dieselben Bilder belegen auch A093 (Technik −10 außerhalb der eigenen Reihe, R788-02).
 
 ### Sitzung 2 – Strafminuten #773, neues Spiel
 

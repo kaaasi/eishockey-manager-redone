@@ -32,16 +32,17 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 
 ### Zuständigkeit für gemeinsame Dateien
 
-- `Core/Cups*.cs`, `Core/MatchEngine.cs`, `Core/MatchEngine.Live.cs` (nur Nationalteam/Freundschaftsspiel),
+- `Core/Cups*.cs`, `Core/MatchEngine.cs`, `Core/MatchEngine.Live.cs` (nur Nationalteam/Freundschaftsspiel und A077),
   `Core/NewGame.cs`, `Core/Season.cs`/Spielplan, `Core/Playoffs.cs`, `Core/FinanceSponsorRating.cs`,
   `Core/FinanceStadium.cs` (nur Liga-Code A045): allein `wettbewerbe-rest`.
-- `Core/Transfer*.cs`, `Core/Player*.cs`, `Core/MatchEngine.Injuries.cs`, `Core/StatisticsClub.cs`, `Core/FinanceTalent.cs`:
-  allein `kader-rest`.
+- `Core/Transfer*.cs`, `Core/Player*.cs`, `Core/MatchEngine.Injuries.cs`, `Core/StatisticsClub.cs`, `Core/FinanceTalent.cs`,
+  für das Ereignissymbol 9 auch `Core/SeasonFlow*.cs`/`GameState.SeasonEndTurn.cs`: allein `kader-rest` (R788-03).
 - `UI/Screens/**`: allein `ui-rest`; braucht `ui-rest` einen Core-Wert, den eine andere Spur ändert, nennt es die Stelle im PR,
   die Leitstelle löst beim Merge auf. Umgekehrt nennen Core-Spuren Bildschirmfolgen im PR statt den Bildschirm zu ändern.
 - `Core/OriginalImport*.cs`, `Core/OriginalExport*.cs`, `tests/**/AbgleichOriginalPaareTests.cs`: jede Spur nur die Stellen
   bzw. erwarteten Einträge ihrer IDs, im PR genannt.
 - `Core/GameState.Integration.cs`, `GameState.cs`: höchstens minimal, im PR begründet.
+- `docs/reverse-engineering.md`: je Spur ein eigener Abschnitt, die Leitstelle löst beim Merge auf (R788-04).
 - `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`: allein
   `pruefung-karte` (Teil 2); die anderen Spuren nennen ihre Inventurzeilen im PR.
 
@@ -52,7 +53,8 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
      Freundschaftsspiel 0x30365), A084 (Reihenwerte/Energie und Strafen-Managerwert 20 des Nationalteams), A024 (Automatik bei
      leerer Formation).
   2. **Europapokal und Liga-Code:** A004 (Gegnerstärke: Sturmwert, Formabschlag −5), A045 (Liga-Code ausländischer Vereine),
-     A037 (Teilnahmebits Masken 0x40/0x08/0x20, Rücksetzen nach Ausscheiden; Leser 0x44A48).
+     A037 (Teilnahmebits Masken 0x40/0x08/0x20, Rücksetzen nach Ausscheiden; Leser 0x44A48), A077 (Penaltyschießen im
+     Minutenweg je Wettbewerb, Zeilen DGROUP 0x5C4B; R788-01).
   3. **Spielplan und Start:** A113 (Spielplanfunktion 0x4E7C7 lesen, Spielplan aller Ligagrößen wie im Original), A112/F107
      (Verein ohne Liga, Filter DEB-Paarungen 0x45CD0 beim Zufallsverein, R-K7), A142 (Termine der Aufstiegsrunde aus den
      Kalendermarken, sonst Video `folge06_01257`/`folge07_03307`).
@@ -80,7 +82,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
      zuletzt gewählte Seite (DGROUP 0x5125); Bildschirmfoto gegen Referenzbilder.
   2. **Einzelstellen:** A332 (Lampe 1, Spielerfeld 0x1E), A360 (Spielerstatistik: Kaufpreis statt Spielerwert), A363 (Absage
      der Vertragsverhandlung), Hintergrund des Vertragsbildschirms (`file46_3`, `ContractsScreen.cs:81`), Ereignissymbol 9 im
-     Fenster „Saisonende“ (`FinanceTalent.cs:177`; Core-Stelle über `kader-rest` bzw. im PR genannt).
+     Fenster „Saisonende“ (nur Zeichnen; den Core-Teil macht `kader-rest`, R788-03).
 - **Abnahme:** Bildschirmfoto-Abläufe je Bildschirm, Pixelvergleich mit Fundstelle des Referenzbilds, Bedienweg per Test.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
 
@@ -101,7 +103,8 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 - **Teil 1 (sofort, kleiner PR):** #784 (exakter Einsatz 40/60 je Computerverein im #772-Test, Managergegner), #785 (Kontoanzeige
   #768 für weitere Manager und Bundestrainer); Rückmutation je Test.
 - **Teil 2 (nach dem Merge von `ui-rest`, Branch `paket/pruefung-karte-2`):** Inventur „Stand Runde 17“ und Funktionskarte
-  (`--write`, zweiter Lauf ohne Diff), Inventurzeilen aller Spuren, gesammelte P3 der Runde.
+  (`--write`, zweiter Lauf ohne Diff), Inventurzeilen aller Spuren, veraltete Zeilen A092/A370 nachziehen (R788-02),
+  gesammelte P3 der Runde.
 - **Modell:** Claude Opus 5.5 (Teil 1 Claude Sonnet 5.5 möglich: reine Testergänzung). **Erstreview:** Claude Opus 5.5.
   **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
 
