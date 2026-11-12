@@ -307,7 +307,7 @@ in A408–A417, dazu die umgeschriebene Fortsetzung `Core/OriginalImport.Nationa
 Infoleiste „Saisonende – Ereignisse“ vor der Prämie (Datei 0x2700A, 0x270DB–0x27258; #768, dieser PR). **Gesammelte P3**
 (dieser PR): #780 (R765N-01) Test `PruefungKarteRunde16Tests.WorldOnly_NewGame_Export_SquadOfRecord0OnFile01Slots` (Mutation
 `if (false)` → rot); #778 und #776 kein Fehler, Wächtertests (Kaderverlust nur durch auslaufende Verträge; Rückkehr der Leihe
-mit Leih-Laufzeit, Datei 0x27500 vor der Kopie 0x27597–0x275D2); #773 offen (Befund im Issue). **Funktionskarte:** 6598 → 6826
+mit Leih-Laufzeit, Datei 0x27500 vor der Kopie 0x27597–0x275D2); #773 offen (Befund im Issue). **Funktionskarte:** 6598 → 6821
 Zuordnungen; Statuswechsel nur durch Erwähnungen: 0x38D96 (F084) dokumentiert → umgesetzt (Nennung als Schreiber von 0x26/0x2C in
 `Squad.Tactics.Match.cs`, der Mausweg selbst fehlt weiter, A409), 0x5353C (F149) dokumentiert → genähert (Nennung in A410),
 Laufzeit 0x01E00/0x02293 unbekannt → genähert (Kurs 0, A417; C-Laufzeit, kein Spielcode).
