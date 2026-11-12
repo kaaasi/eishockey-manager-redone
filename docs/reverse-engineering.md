@@ -1078,3 +1078,16 @@ Teil 2 (Transfermarkt):
   den Knopf nicht (0x46704) und wertet keinen Klick aus (0x468C1 → 0x46A65): keine Meldung „läuft schon“.
 * **Unverändert offen:** Höhe des Gebots für einen eigenen Markt-Platz wird im Original erst beim Anklicken gewürfelt (0x47347),
   im Remake beim Gebot (`[APPROX]`, A251-Rest); Ablöse am Saisonende über `Book` (A226, Architekturregel).
+
+Teil 3 (Geld und Saisonende):
+
+* **Schulden gesamt (A196):** 0x57768 (Datei 0x5777F–0x57834, Modus 0, Partner 0x63) summiert die negativen Darlehensfelder des
+  eigenen Satzes (`+0x19B + 4 · i`, i < Managerzahl oder i = 4); die Kontoleiste 0x463CC (Datei 0x46464–0x46500) zählt als
+  Anlagen −Feld(i, ich), wenn negativ. Die Buchung (Datei 0x591E2–0x5932B) ändert das eigene Feld um ±v und das des anderen um
+  ∓v: je Paar **ein** gespiegelter Saldo (Bank: FILE08 Manager 0 Eintrag 4 = −2.103.000, Satz 4 Eintrag 0 = +2.103.000). Das
+  entspricht dem Saldo des Remakes (`ManagerLoanNet`, `BankAccount.Balance`); `[APPROX]` aufgehoben. Der Export schreibt seither
+  den Saldo je Paar statt je Kredit (Kredite in beide Richtungen überschrieben einander).
+* **Ereignissymbol 9 (offen):** Die Jugend am Saisonende (Datei 0x2728C–0x2730F) läuft im Original im Fenster selbst, vor der
+  Seite des Managers; das Remake zieht sie erst nach dem Fenster (`StartSquadSeason` aus `StartNextSeason`), die Seiten zeigen
+  das Ergebnis von `FinishSeason`. Umsetzung braucht die Jugend (samt `YouthSeasonChange`, Datei 0x55889 vor 0x5645D) vor den
+  Seiten; Fortsetzung.

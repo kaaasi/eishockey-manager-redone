@@ -343,9 +343,12 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// „SCHULDEN GESAMT“ in DM. [ORIGINAL] 0x57768 mit (0, 0x63): Summe der negativen Salden gegenüber allen anderen
-    /// Managern und der Bank (Partner 4). [APPROX] Saldo je Partner im Remake: Kredite zwischen zwei Managern verrechnet,
-    /// bei der Bank Kredit minus Sparbuch.
+    /// „SCHULDEN GESAMT“ in DM. [ORIGINAL] 0x57768 mit (0, 0x63) (Datei 0x5777F–0x57834): Summe der negativen Darlehensfelder
+    /// des eigenen Satzes (+0x19B + 4 · i) gegenüber allen anderen Managern (i &lt; Managerzahl) und der Bank (i = 4). Das Original
+    /// führt je Partner ein Feld, gespiegelt im Satz des anderen (Buchung Datei 0x591E2–0x5932B; Bank: FILE08 Manager 0 Eintrag 4
+    /// = −2.103.000, Satz 4 Eintrag 0 = +2.103.000) – also schon den Saldo: im Remake <see cref="ManagerLoanNet"/> (Kredite
+    /// zwischen zwei Managern verrechnet, <c>ShiftLoan</c> hält nur eine Richtung) und <see cref="BankAccount.Balance"/>
+    /// (Sparbuch − Kredit). Spur kader-rest, Teil 3 (A196); bis dahin als [APPROX] geführt.
     /// </summary>
     public long TotalDebts(Manager manager)
     {
