@@ -134,6 +134,7 @@ public static class PlayerFactory
         ArgumentNullException.ThrowIfNull(p);
         p.Age = TransferRules.Random16(random, ScoutedMinAge, ScoutedMaxAge);
         p.Form = TransferRules.Random16(random, 45, 55);
+        p.PoolForm = null; // Review #799 P3-1: Pool +0x17 ist die gewürfelte Form (0x42CB1 kopiert sie), eine alte Poolform verfällt
         p.Technique = Player.Clamp(TransferRules.Random16(random, s - 5, s + 1));
         p.Condition = Player.Clamp(TransferRules.Random16(random, s - 5, s + 1));
         p.InjuredGames = p.SuspendedGames = 0;

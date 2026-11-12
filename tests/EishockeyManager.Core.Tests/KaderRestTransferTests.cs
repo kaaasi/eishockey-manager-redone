@@ -127,6 +127,58 @@ public class KaderRestTransferTests
         Assert.False(TransferMarket.IsSquadFull(game, manager, club));
     }
 
+    /// <summary>Eigenen Spieler auf den Markt stellen und den Kader bis MaxSquad − 1 füllen: 29 Besitz bei 28 Kaderplätzen.</summary>
+    private static void FillOwnedToLimit(GameState game, Manager manager, Club club)
+    {
+        var sold = club.Players.First(q => q.Role == PlayerRole.Forward && !q.OnLoan);
+        Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, sold));
+        while (club.Players.Count < TransferMarket.MaxSquad - 1)
+            club.Players.Add(new Player { Name = "X", Role = PlayerRole.Forward });
+        Assert.True(club.Players.Count < TransferMarket.MaxSquad);
+        Assert.Equal(TransferMarket.MaxSquad, game.OwnedPlayers(manager));
+    }
+
+    /// <summary>
+    /// Review #799 P3-2 (F089): Auch der Vertrag nach angenommenem Gebot prüft die Besitzgrenze (0x42CB1 sucht einen freien Platz
+    /// unter den 29 Besitzplätzen, eigene Markt-Plätze zählen mit). Rückmutation in Transfer.Purchase.cs auf
+    /// <c>Players.Count &gt;= MaxSquad</c> → Vertrag kommt zustande → rot.
+    /// </summary>
+    [Fact]
+    public void Sign_SquadFull_CountsOwnListings()
+    {
+        var (game, manager, club, market) = NewGame();
+        manager.Money = 100_000_000;
+        var listing = market.Listings.First(l => l.Seller is null && l.From != club && !l.IsFreeAgent);
+        Assert.Equal(TransferResult.Accepted, market.Bid(game, manager, listing, listing.Price * 2, loan: false, out var purchase));
+        FillOwnedToLimit(game, manager, club);
+
+        Assert.Equal(NegotiationResult.Unfair, market.Sign(game, purchase!, 0, 0, insured: false, demandFilled: false));
+        Assert.DoesNotContain(listing.Player, club.Players);
+        Assert.Contains(listing, market.Listings);
+        Assert.Equal(100_000_000, manager.Money);
+    }
+
+    /// <summary>
+    /// Review #799 P3-2 (F089): Die Antwort „Na gut.“ des verkaufenden Managers prüft die Besitzgrenze des Bieters erneut
+    /// (<c>[APPROX]</c> Zwischenprüfung, siehe <see cref="TransferMarket.AnswerSeller"/>). Rückmutation in
+    /// Transfer.SellerQuestion.cs auf <c>Players.Count &gt;= MaxSquad</c> → Transfer schließt ab → rot.
+    /// </summary>
+    [Fact]
+    public void AnswerSeller_SquadFull_CountsOwnListings()
+    {
+        var (game, buyer, seller, listing) = KaderTransferTeil4Tests.TwoManagers();
+        var market = game.TransferMarket;
+        var club = game.Clubs[buyer.ClubIndex];
+        Assert.Equal(TransferResult.SellerAsked, market.Bid(game, buyer, listing, listing.Price, loan: false, out _, out _, out var question));
+        FillOwnedToLimit(game, buyer, club);
+        var (money, sellerMoney) = (buyer.Money, seller.Money);
+
+        Assert.Equal(TransferResult.SquadFull, market.AnswerSeller(game, question!, accept: true, out var purchase, out _));
+        Assert.Null(purchase);
+        Assert.Contains(listing, market.Listings);
+        Assert.Equal((money, sellerMoney), (buyer.Money, seller.Money));
+    }
+
     /// <summary>
     /// [ORIGINAL] Datei 0x46A14–0x46A38: Nach dem Start der Talentsuche zeigt das Original keine Meldung. Vorher „Ihr 'Spion' geht
     /// auf Talentsuche.“

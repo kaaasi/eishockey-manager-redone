@@ -71,6 +71,40 @@ public class KaderRestTests
         Assert.Null(player.PoolForm);
     }
 
+    /// <summary>
+    /// Review #799 P3-1: Die frisch gewürfelte Form der Talentsuche (Datei 0x06DE1–0x06E7D: Pool +0x17 = random(45, 55)) ist die
+    /// Poolform; der neue Kaderplatz (0x42CB1) kopiert sie. Vorher überschrieb eine alte abweichende Poolform die neue Form.
+    /// </summary>
+    [Fact]
+    public void ScoutedTalent_RolledFormIsPoolForm_JoinKeepsIt()
+    {
+        var game = TestGames.Create(3);
+        var buyer = game.Clubs.First(c => c.Players.Count > 0 && c.Index != game.ActiveManager.ClubIndex);
+        var player = P(55);
+        player.PoolForm = 21;
+        PlayerFactory.ApplyScoutedTalentValues(player, 50, new ScriptedRandom(19, 46, 50, 50));
+        Assert.Equal(46, player.Form);
+        Assert.Null(player.PoolForm);
+        PlayerFactory.Join(buyer, player, contractYears: 1, loan: false);
+        Assert.Equal(46, player.Form);
+    }
+
+    /// <summary>
+    /// Review #799 P3-1: Listenwechsel (Füllen, Transfer.Pool) würfelt Pool +0x17 = random(45, 55); <see
+    /// cref="TransferPoolRules.RollSlotFields"/> (0x42CB1, Datei 0x42EFF–0x42F06) übernimmt sie, nicht eine alte Poolform.
+    /// </summary>
+    [Fact]
+    public void ListChange_RolledFormIsPoolForm_RollSlotFieldsKeepsIt()
+    {
+        var player = P(55);
+        player.PoolForm = 21;
+        TransferPoolRules.RollPoolForm(player, new ScriptedRandom(47));
+        Assert.Equal(47, player.Form);
+        Assert.Null(player.PoolForm);
+        TransferPoolRules.RollSlotFields(player, new Random(1));
+        Assert.Equal(47, player.Form);
+    }
+
     /// <summary>Import und Export: FILE24 STEFAN (Platz 52, Pool 42, verletzt) und CHAIDAROV (55 / 40) bleiben getrennt.</summary>
     [GameDataFact]
     public void File24_PoolFormImportedAndExported()

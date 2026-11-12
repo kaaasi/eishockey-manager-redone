@@ -223,6 +223,18 @@ public static class TransferPoolRules
     }
 
     /// <summary>
+    /// Form des Poolspielers beim Listenwechsel (Füllen). [ORIGINAL] Pool +0x17 = random(45, 55); der neue Kaderplatz übernimmt sie
+    /// (<see cref="RollSlotFields"/>, Datei 0x42EFF–0x42F06). Eine abweichende Poolform nach einer Verletzung
+    /// (<see cref="Player.PoolForm"/>) wird dabei überschrieben.
+    /// </summary>
+    public static void RollPoolForm(Player p, Random random)
+    {
+        ArgumentNullException.ThrowIfNull(p);
+        p.Form = TransferRules.Random16(random, 45, 55);
+        p.PoolForm = null; // Review #799 P3-1: die gewürfelte Form ist die Poolform, eine alte abweichende verfällt
+    }
+
+    /// <summary>
     /// Index eines Poolspielers für den Listenwechsel. [ORIGINAL] Datei 0x495D8–0x9628: random(1, 179), mit random(0, 5) = 0
     /// stattdessen random(180, 199) (Nationalspieler); bei anderer Poolgröße die Bereiche von <paramref name="layout"/>.
     /// </summary>
@@ -806,7 +818,7 @@ public sealed partial class TransferMarket
                 return; // [ORIGINAL] 0x4962A: nach 1500 Versuchen endet der Wechsel
 
             var p = slot.Player;
-            p.Form = TransferRules.Random16(random, 45, 55);
+            TransferPoolRules.RollPoolForm(p, random);
             var stand = IsManaged(game, game.Clubs[slot.Club])
                 ? TransferPoolRules.StandIn(slot.Club, c => IsManaged(game, game.Clubs[c]), random)
                 : slot.Club;
