@@ -119,7 +119,8 @@ public class AbgleichRestPreparationTests(ITestOutputHelper output)
     /// <summary>
     /// Vergleich über die Stärke 0x368B1 mit dem Einsatz des letzten Spiels (Datei 0x9C66), nicht über den Teamwert: Zwei
     /// Computervereine, Grundwert 60 genau dann, wenn die doppelten Stärken weniger als 25 auseinanderliegen; der Angriff kommt
-    /// aus dem letzten Spiel und bleibt im Spiel ohne Manager stehen.
+    /// aus dem letzten Spiel und bleibt im Spiel ohne Manager stehen. Der Gast vergleicht mit der Stärke des Heimvereins beim
+    /// schon geschriebenen Grundwert (#784, angepasst Runde 17: vorher gleicher Grundwert für beide).
     /// </summary>
     [Fact]
     public void Prepare_ComputerClubs_BaseEffortFromStrengthAndStoredAttack()
@@ -128,6 +129,7 @@ public class AbgleichRestPreparationTests(ITestOutputHelper output)
         var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
         var clubs = game.Clubs.Where(c => c.Index < 52 && !managed.Contains(c.Index) && c.Players.Count > 0).Take(12).ToList();
         var seen = new HashSet<int>();
+        var asymmetric = 0;
         foreach (var home in clubs)
         {
             foreach (var away in clubs.Where(c => c != home))
@@ -137,24 +139,29 @@ public class AbgleichRestPreparationTests(ITestOutputHelper output)
                 var h = MatchEngine.LiveTeamOf(game, home, away, managed: false, managerMatch: false);
                 var a = MatchEngine.LiveTeamOf(game, away, home, managed: false, managerMatch: false);
                 h.Effort = 99; // darf die Stärke nicht beeinflussen: 0x368B1 liest 0x26 des letzten Spiels
-                var hs = OriginalMatch.TeamStrength(
-                    OriginalMatch.LineValues(h.Defense, 0, false, 0, h.LineEnergy(0, 0), 70, inMatch: true),
-                    OriginalMatch.LineValues(h.Attack, 0, true, 0, h.LineEnergy(1, 0), 70, inMatch: true), 1, 0, h.ClubForm);
-                var @as = OriginalMatch.TeamStrength(
-                    OriginalMatch.LineValues(a.Defense, 0, false, 0, a.LineEnergy(0, 0), 30, inMatch: true),
-                    OriginalMatch.LineValues(a.Attack, 0, true, 0, a.LineEnergy(1, 0), 30, inMatch: true), 1, 0, a.ClubForm);
+                int Strength(LiveTeam t, int fieldEffort) => OriginalMatch.TeamStrength(
+                    OriginalMatch.LineValues(t.Defense, 0, false, 0, t.LineEnergy(0, 0), fieldEffort, inMatch: true),
+                    OriginalMatch.LineValues(t.Attack, 0, true, 0, t.LineEnergy(1, 0), fieldEffort, inMatch: true), 1, 0, t.ClubForm);
+                var hs = Strength(h, 70);
+                var @as = Strength(a, 30);
 
                 MatchEngine.PrepareMatch(game, home, away, h, a);
 
-                var expected = Math.Abs(2 * hs - 2 * @as) < Tactics.EvenMatchLimit ? 60 : 40;
-                seen.Add(expected);
-                Assert.Equal((expected, expected), (h.Effort, a.Effort));
+                // #784: zuerst Heim (Datei 0x36D12), dann Gast (Datei 0x36D49) gegen 0x26 des Heimvereins mit dessen neuem Grundwert.
+                var expectedHome = Math.Abs(2 * hs - 2 * @as) < Tactics.EvenMatchLimit ? 60 : 40;
+                var hsNew = Strength(h, expectedHome);
+                var expectedAway = Math.Abs(2 * @as - 2 * hsNew) < Tactics.EvenMatchLimit ? 60 : 40;
+                seen.Add(expectedHome);
+                if (expectedAway != expectedHome)
+                    asymmetric++;
+                Assert.Equal((expectedHome, expectedAway), (h.Effort, a.Effort));
                 Assert.Equal((6, 0), (h.AttackLevel, a.AttackLevel));
                 Assert.Equal((hs, @as), (h.TacticsStrength, h.TacticsOpponentStrength));
-                Assert.Equal((@as, hs), (a.TacticsStrength, a.TacticsOpponentStrength));
+                Assert.Equal((@as, hsNew), (a.TacticsStrength, a.TacticsOpponentStrength));
             }
         }
         Assert.Equal(new HashSet<int> { 40, 60 }, seen);
+        Assert.True(asymmetric > 0, "Probe ohne Paarung, in der der neue Grundwert des Heimvereins den Gast umschaltet");
     }
 
     /// <summary>
@@ -171,7 +178,7 @@ public class AbgleichRestPreparationTests(ITestOutputHelper output)
         home.Tactics.RecordMatchFields(0, 5);
         MatchEngine.PlayWithEvents(game, home, away, MatchCompetition.League, knockOut: false, new Random(3));
         Assert.Contains(home.Tactics.MatchEffort, new[] { 40, 60 });
-        Assert.Equal(home.Tactics.MatchEffort, away.Tactics.MatchEffort);
+        Assert.Contains(away.Tactics.MatchEffort, new[] { 40, 60 }); // #784: Gast eigener Vergleich, nicht gleich dem Heimwert
         Assert.Equal((5, 0), (home.Tactics.MatchAttack, away.Tactics.MatchAttack));
 
         var loaded = SaveGame.Load(SaveGame.Save(game)).Game!;

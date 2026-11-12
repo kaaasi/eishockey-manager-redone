@@ -332,7 +332,9 @@ public sealed class PlayoffSemifinalTests
     [Fact]
     public void Load_Schema43_RunningQuarterFinal_SemifinalByTable0x144()
     {
-        var game = TestGames.Create(3);
+        // #784 (Runde 17, Gast nach dem Heimverein): Saat 3 → 4 – mit 3 erreicht der Managerverein die Play-offs nicht mehr,
+        // der Halt nach vier Viertelfinalspielen entfällt (12 gespielt); Vorbedingung unten unverändert.
+        var game = TestGames.Create(4);
         for (var guard = 0; game.Playoffs is not { } p || p.Rounds[0].Sum(x => x.Games.Count) < 4; guard++)
         {
             Assert.True(guard < 5000, "Viertelfinale nicht erreicht");

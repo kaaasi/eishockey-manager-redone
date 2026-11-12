@@ -84,15 +84,17 @@ public class AbgleichOriginalPaareTests
     public static readonly IReadOnlyDictionary<string, Known[]> Expected =
         new Dictionary<string, Known[]>
         {
-            // #730: HOCK Original 50, Remake 119–126 (alle Prüfsaaten); SIKORA (4 von 6, nicht 1993 und 3) und BRANDL im Sägezahn.
-            ["FILE02→FILE03"] = [.. StrainOf("5 KÖLNER EC", 100, StrainSawtoothMax, "HOCK"), StrainSawtooth("5 KÖLNER EC"),
+            // #730: HOCK Original 50, Remake 116–127, seit #784 (Gast der Spielvorbereitung nach dem Heimverein, Runde 17) nur bei
+            // 5 von 6 Saaten (nicht 2) → Sägezahn wie SIKORA und BRANDL.
+            ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC"),
                 // Zufall: Pool-Mittel der Belastung über zehn Saaten 143–146, nur Saat 1 bei 136,7 (seit #748 anderer Zufallsverlauf).
-                new("Invariante.PoolMittel.Strain", Chance, Optional: true)],
+                new("Invariante.PoolMittel.Strain", Chance, Optional: true),
+                // Zufall: Wanderung der Teamwerte des Leerplatzes, seit #784 nur Saat 3 (12 → −4).
+                new("Clubs[51 LEER4].TeamValues.AttackCondition", Chance, Optional: true)],
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
-                // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–57) bei allen Prüfsaaten; Anteil der Handaufstellung
-                // (Eingriff) nicht getrennt. J.MEYER (118, Remake 50–74) seit #772 nur bei 4 von 6 Saaten (nicht 2, 3) → Sägezahn.
-                .. StrainOf("6 KREFELDER EV", 50, 95, "KUHNEKATH"),
+                // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1), J.MEYER
+                // (118, Remake 50–77) seit #772 nicht bei allen → beide Sägezahn; Anteil der Handaufstellung (Eingriff) nicht getrennt.
                 StrainSawtooth("6 KREFELDER EV"),
                 // Zufall: Wanderung über den Saisonwechsel, Sturm-Kondition WEIßWASSER über zehn Saaten −8 … 14, nur Saat 1 bei −19.
                 new("Clubs[23 ES WEIßWASSER].TeamValues.AttackCondition", Chance, Optional: true)],
