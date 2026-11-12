@@ -239,8 +239,14 @@ public class JugendTeamsTests
     // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den Gast
     // gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49); andere Gast-Einsätze, Ergebnisse und
     // Zufallsverbrauch. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alte Werte.
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
     private const string ExpectedActive =
-        "0:Schueler:2/11/65;0:Jugend:2/11/65;0:Junioren:3/6/59;1:Schueler:1/11/78;1:Jugend:1/11/78;1:Junioren:2/11/71;2:Schueler:1/6/83;2:Jugend:1/6/82;2:Junioren:1/11/82;3:Schueler:1/6/85;3:Jugend:1/6/85;3:Junioren:1/6/83";
+        "0:Schueler:2/12/55;0:Jugend:2/11/59;0:Junioren:2/11/61;1:Schueler:2/6/61;1:Jugend:1/11/67;1:Junioren:2/6/69;2:Schueler:1/11/74;2:Jugend:2/2/76;2:Junioren:1/11/76;3:Schueler:1/6/78;3:Jugend:1/11/80;3:Junioren:1/6/80";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -292,8 +298,14 @@ public class JugendTeamsTests
     // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den Gast
     // gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49); andere Gast-Einsätze, Ergebnisse und
     // Zufallsverbrauch. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alte Werte.
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/70;0:Jugend:2/2/66;0:Junioren:1/6/67;1:Schueler:2/6/58;1:Jugend:3/2/55;1:Junioren:2/2/56;2:Schueler:3/2/49;2:Jugend:3/6/47;2:Junioren:3/2/46;3:Schueler:3/6/44;3:Jugend:3/6/43;3:Junioren:3/6/43";
+        "0:Schueler:2/2/70;0:Jugend:2/2/68;0:Junioren:2/2/70;1:Schueler:2/6/58;1:Jugend:3/2/57;1:Junioren:3/2/57;2:Schueler:3/2/43;2:Jugend:3/6/45;2:Junioren:3/6/48;3:Schueler:3/6/42;3:Jugend:3/6/41;3:Junioren:3/6/43";
 }
 
 public class JugendTeamsMigrationTests

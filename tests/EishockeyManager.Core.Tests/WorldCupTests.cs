@@ -106,7 +106,10 @@ public class WorldCupTests
         // Fixlauf pool auf main 846e515 (R15-E2 = C): Saat 4 statt 3 – mit Spur pool und #772 wird der Manager bei Saat 3 (und 1)
         // Bundestrainer und spielt die WM, der Zug des Bundestrainers hält dann vor dem Saisonende (PassNationalTurn). Die Probe
         // hängt an der Saat, nicht an der Änderung; Saaten 2, 4–10 ohne Ernennung.
-        var game = Create(4, true, 30);
+        // Fixlauf wettbewerbe-rest nach Rebase auf main 3cd9169 (R15-E2 = C): Saat 6 statt 4 – mit #784 und dem Spielplan über die
+        // Satzfolge (A113, Datei 0x4E7C7) wird der Manager bei 4 Bundestrainer (Phase bleibt ClubSeasonOver); Saaten 1, 6, 8, 9 ohne
+        // Ernennung. Rückschaltprobe: alter Code mit Saat 6 ebenfalls grün – die Probe hängt an der Saat.
+        var game = Create(6, true, 30);
         while (game.Phase == SeasonPhase.Running)
             game.Continue();
         Assert.Equal(SeasonCalendar.ClubSeasonEnd + 1, game.CurrentDay);

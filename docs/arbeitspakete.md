@@ -60,7 +60,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
      Kalendermarken, sonst Video `folge06_01257`/`folge07_03307`).
 - **Abnahme:** je ID roter Test → grün mit Fundstelle oder begründetes `[APPROX]`; Mehrsaisonprobe (4 Wechsel) für Teil 3;
   Abgleich FILE-Paare unverändert oder erwartete Einträge begründet angepasst.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teil 1–3 fertig (PR #790), Review offen, 12.11.2026.
 
 ### Spur `kader-rest` – Spieler, Transfer, Verletzungen
 

@@ -14,9 +14,9 @@ public static partial class MatchEngine
     /// <item>[ORIGINAL] Land des Bundestrainers (0x16 = 6): Managerverein mit Kader (<see cref="NationalSquad"/>), Taktik
     ///   des Nationalteams (<see cref="GameState.NationalTactics"/>; Einsatz 0x977F/0x98F8, Taktik 0x939A, Reihenwechsel
     ///   0x8EF2), Strafspieler aus dem Kader (0x378C5, R8W3I-06), unter 8 fitten Kaderspielern keine Strafen (0x358FF).
-    ///   [APPROX] Managerwert der Strafen und eigener Managerwert 20: das Original liest DGROUP 0x974B + 6 · 0x1AF hinter
-    ///   den sechs Managersätzen (nicht geprüft, A084); keine Verletzungen und keine Über-/Unterzahl-Zähler (Satz des
-    ///   Bundestrainers nicht geführt).</item>
+    ///   [ORIGINAL] Managerwert der Strafen (A084, Spur wettbewerbe-rest): <see cref="NationalPenaltyManagerValue"/>.
+    ///   [APPROX] Eigener Managerwert 20 (wirkt nur bei Verletzungen, die das Nationalteam nicht hat); keine Verletzungen und
+    ///   keine Über-/Unterzahl-Zähler (Satz des Bundestrainers nicht geführt).</item>
     /// </list>
     /// </summary>
     /// <param name="ownStrength">Stärke 0x368B1 des Landes für die Automatik (0x8365, doppelt verglichen).</param>
@@ -41,7 +41,7 @@ public static partial class MatchEngine
             Managed = managed,
             LineChange = managed ? tactics.LineChange : null,
             Squad = squad,
-            PenaltyManagerValue = 20,
+            PenaltyManagerValue = managed ? NationalPenaltyManagerValue(game) : 20,
             TacticsStrength = ownStrength,
             TacticsOpponentStrength = opponentStrength,
             FewFitPlayers = managed && coach!.Squad.Count(m => m.Player.Available) < MinimumFitForPenalties,
@@ -50,12 +50,36 @@ public static partial class MatchEngine
     }
 
     /// <summary>
+    /// Managerwert der Strafen des Bundestrainer-Teams. [ORIGINAL] Die Strafen lesen den Wert über Vereinsfeld 0x16
+    /// (Datei 0x35883–0x358A0: DGROUP 0x974B + 0x1AF · Feld 0x16, dazu −20, begrenzt auf 0 … 100 mit 0x4BD35). Das Land des
+    /// Bundestrainers hat 0x16 = 6 (Manager 5 + 1, wie bei den Vereinen der „nächste“ Satz), gelesen wird also
+    /// DGROUP 0x974B + 6 · 0x1AF = 0xA165 – hinter den sechs Managersätzen (0x965B + 6 · 0x1AF = 0xA075) und den
+    /// Jugendteams (0xA075, 84 Byte) im Ergebnisblock 0xA0CB: 0xA165 − 0xA0CB = 0x9A = 12 · (13 − 1) + 2 · 5, also die
+    /// <b>Heimtore der sechsten Paarung des 13. Bundesliga-Spieltags</b> (Schreiber 0x369C7, Datei 0x36A54; Lage wie
+    /// <c>OriginalExport.WriteLeague</c>). Ein Querverweis auf 0xA160–0xA170 fehlt im ganzen Programm (disasm.py --xref),
+    /// der Wert entsteht nur über diese Adressrechnung. Nicht gespielt (oder nach dem Saisonwechsel geleert, Datei 0x565C2):
+    /// 0. [APPROX] Ergebnismarken des Originals (z. B. 0x5A bei Wertung, 0x36A05) führt das Remake nicht; es nimmt die Tore
+    /// aus <see cref="GameState.Results"/>, begrenzt auf ein Byte.
+    /// </summary>
+    public static int NationalPenaltyManagerValue(GameState game)
+    {
+        const int matchDay = 13, pairing = 5;
+        if (!game.Schedules.TryGetValue(League.Bundesliga, out var plan) || plan.Count < matchDay
+            || plan[matchDay - 1].Matches.Count <= pairing)
+            return 0;
+        var (home, away) = plan[matchDay - 1].Matches[pairing];
+        var result = game.Results.FirstOrDefault(r =>
+            r.League == League.Bundesliga && r.MatchDay == plan[matchDay - 1].Number && r.Home == home && r.Away == away);
+        return result is null ? 0 : Math.Clamp(result.HomeGoals, 0, 255);
+    }
+
+    /// <summary>
     /// Kader des Nationalteams für die Minutenrechnung. [ORIGINAL] Kaderplätze des Bundestrainers (Manager 5): Platz +0x15
     /// aus der Aufstellung (alle vier Blöcke, Block b = Reihe b; 0x8E5F/0x91FF zählen eine vierte Reihe, A022), eingesetzt
     /// +0x0A wie im Aufstellungsbildschirm (<see cref="NationalCoach.IsDressed"/>), Technik + Länderspiele / 8 im Spiel
     /// (0x98F8, <see cref="LiveSquad.NationalCoach"/>). [ORIGINAL] Ohne „automatisch aufstellen“ spielt eine leere Aufstellung leer
-    /// (A009, FILE48 0:17). [APPROX] Mit der Einstellung und leerer Aufstellung die Ersatz-Automatik
-    /// <see cref="NationalCoach.Lineup"/> mit drei Reihen, alle verfügbaren eingesetzt; „5 − Level“ (DGROUP 0xED8)
+    /// (A009, FILE48 0:17). Mit der Einstellung und leerer Aufstellung die Aufstellung der Neuaufstellung 0x426BC
+    /// (<see cref="NationalCoach.StandInFormation"/>, A024); „5 − Level“ (DGROUP 0xED8)
     /// aus dem Level des Managers, der Bundestrainer ist. [ORIGINAL] Reihenfolge der Kaderplätze wie der WM-Kader: nach „auto“
     /// Plätze 0–2 Torhüter, 3–12 Verteidiger, 13–28 Stürmer, je Art absteigend nach Summe (A085, DOSBox FILE18 Satz 5;
     /// <see cref="GameState.AutoNominate"/>).
@@ -70,25 +94,12 @@ public static partial class MatchEngine
             NationalCoach = true,
         };
         var positions = new Dictionary<Player, int>();
-        var own = !coach.UsesStandInLineup;
-        if (own)
-        {
-            foreach (var slot in LineupSlot.All)
-                if (coach.Formation[slot] is { } p && coach.Contains(p))
-                    positions[p] = LiveSquad.PositionOf(slot);
-        }
-        else
-        {
-            var lineup = coach.Lineup();
-            if (lineup.Goalkeeper is { } g)
-                positions[g] = 1;
-            for (var i = 0; i < lineup.Defenders.Count; i++)
-                if (lineup.Defenders[i] is { } d)
-                    positions[d] = i / Lineup.DefendersPerBlock + 1;
-            for (var i = 0; i < lineup.Forwards.Count; i++)
-                if (lineup.Forwards[i] is { } f)
-                    positions[f] = 0x80 | (i / Lineup.ForwardsPerBlock + 1);
-        }
+        // A024: leere Formation mit Einstellung → Aufstellung der Neuaufstellung 0x426BC (Plätze und eingesetzt wie dort).
+        var standIn = coach.UsesStandInLineup ? coach.StandInFormation() : default;
+        var formation = standIn.Formation ?? coach.Formation;
+        foreach (var slot in LineupSlot.All)
+            if (formation[slot] is { } p && coach.Contains(p))
+                positions[p] = LiveSquad.PositionOf(slot);
         foreach (var member in coach.Squad)
         {
             var p = member.Player;
@@ -96,7 +107,7 @@ public static partial class MatchEngine
             {
                 Player = p,
                 Position = positions.GetValueOrDefault(p),
-                Dressed = p.Available && (!own || coach.IsDressed(p)),
+                Dressed = p.Available && (standIn.Dressed is { } dressed ? dressed.Contains(p) : coach.IsDressed(p)),
                 Energy = PreparedPlayerEnergy(p),
             });
         }

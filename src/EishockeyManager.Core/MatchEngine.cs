@@ -5,11 +5,12 @@ namespace EishockeyManager.Core;
 /// <list type="bullet">
 /// <item><see cref="PlayWithEvents"/> – Berechnung des Originals Minute für Minute mit Ereignissen und Spielerzählern
 ///   (Spur spielberechnung, <c>MatchEngine.Live.cs</c>); Liga, Play-offs, Aufstiegsrunde, DEB-Pokal, Europapokal und WM.</item>
-/// <item><see cref="Play"/> – nur Ergebnis, bisherige Näherung. Bleibt mit unveränderter Signatur für die
-///   Freundschaftsspiele des Nationalteams (<c>CupsNational*.cs</c>, Spur weltkugel-dosbox); die Leitstelle stellt sie
-///   in der Integration um (<c>docs/arbeitspakete.md</c>, Runde 7).</item>
+/// <item><see cref="Play"/> – nur Ergebnis, bisherige Näherung ohne Aufrufer im Spielablauf (nur
+///   <see cref="KnockoutMatch.Play(int, Club, Club, Random)"/> und Tests). Die Länder-Freundschaftsspiele rechnen seit der
+///   Integration Runde 7 mit <see cref="PlayWithEvents"/>, ab Runde 17 mit Wettbewerbscode 0xD
+///   (<see cref="MatchCompetition.Friendly"/>, A008/A110).</item>
 /// </list>
-/// [APPROX] <see cref="Play"/>: Torerwartung aus der Stärkedifferenz, leichter Heimvorteil, Tore poissonverteilt;
+/// [APPROX] <see cref="Play"/> (im Spiel nicht mehr benutzt): Torerwartung aus der Stärkedifferenz, leichter Heimvorteil, Tore poissonverteilt;
 /// kalibriert auf rund 6,5 Tore je Spiel.
 /// </summary>
 public static partial class MatchEngine

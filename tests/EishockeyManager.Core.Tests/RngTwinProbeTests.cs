@@ -242,10 +242,16 @@ public class RngTwinProbeTests
     // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den Gast
     // gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49); andere Gast-Einsätze, Ergebnisse und
     // Zufallsverbrauch. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alte Werte.
-    [InlineData(false, 3, "E876C34ECA7C215E")]
-    [InlineData(true, 3, "C37FC708DB4C2D84")]
-    [InlineData(false, 11, "CC7F49CDE01C0B9E")]
-    [InlineData(true, 11, "5197FE0EAEF10821")]
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    [InlineData(false, 3, "680B224DD13F2389")]
+    [InlineData(true, 3, "21C89ED27132119C")]
+    [InlineData(false, 11, "4BFB27959624DEF4")]
+    [InlineData(true, 11, "E0D535FB887EC67E")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -309,8 +315,17 @@ public class RngTwinProbeTests
     // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den Gast
     // gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49); andere Gast-Einsätze, Ergebnisse und
     // Zufallsverbrauch. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alte Werte.
-    [InlineData(false, "7C26AF0543F95DCB")]
-    [InlineData(true, "724A3FFA549BFF18")]
+    // Runde 17, Spur wettbewerbe-rest Teil 2 (A004, R15-E2 = C): neu – Auslosung Europapokal vergleicht 0x4D316 (Mittel der
+    // sechs Vereinsfelder, Datei 0x34401–0x3440A) statt der Datenbankstärke; andere Gegner und anderer Verbrauch von CupRandom
+    // ab der ersten Auslosung. Rückschaltprobe: CupsEurope.cs mit Club.Strength → Wert nach #743.
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    [InlineData(false, "20371CB447D2096A")]
+    [InlineData(true, "9EC7B81059D7EC59")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

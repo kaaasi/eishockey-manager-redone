@@ -36,7 +36,10 @@ public class WettbewerbeSpiel1Tests
     /// g + random(0, 2), bis ungleich; Minutenweg 0x39789/0x397B3: Gleichstand + Penaltytore 2 … 5.
     /// </summary>
     [Theory]
-    [InlineData(5, true)]
+    // Fixlauf wettbewerbe-rest nach Rebase auf main 3cd9169 (R15-E2 = C): Minutenweg mit Saat 4 statt 5 – mit #784 und dem Spielplan
+    // über die Satzfolge (A113, Datei 0x4E7C7) gibt es bei 5 kein Penaltyschießen (Vorbedingung); 1, 4, 7–10, 12 grün.
+    // Rückschaltprobe: alter Code mit Saat 4 ebenfalls grün – die Probe hängt an der Saat.
+    [InlineData(4, true)]
     [InlineData(11, true)]
     [InlineData(5, false)] // #621 (R13GN-04): Saat wieder 5 – die Änderung 5 → 4 (L13) war nicht nötig
     public void DebCup_NoMatchEndsLevel_ShootoutInFinalScore(int seed, bool minuteLoop)

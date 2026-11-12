@@ -10,8 +10,8 @@ namespace EishockeyManager.Core;
 /// ganzen Vereinssatz; die Platzliste DGROUP 0x5CCB (Tabellenfolge) behält dabei ihre Vereine. Die Vereine bleiben in ihrer
 /// Liga, nur ihre Satzplätze wechseln. Beleg FILE13 → FILE14: Indizes in allen drei Ligen permutiert.
 /// Das Remake behält feste Vereinsindizes und führt die Satzfolge als eigene Liste (<see cref="LeagueSlots"/>); was im
-/// Original nach Satzplatz innerhalb der Liga geht (Fair-Play-Folge 0x2A1E0, A194), richtet sich danach. Der Spielplan
-/// wird wie bisher je Saison eigens gewürfelt (re-runde-12.md: dafür genügt das).
+/// Original nach Satzplatz innerhalb der Liga geht (Fair-Play-Folge 0x2A1E0, A194), richtet sich danach – seit Runde 17 auch
+/// der Liga-Spielplan (Datei 0x4E7C7, A113; GameState.Spielplan.cs).
 /// [APPROX] Zufallsquelle: Das Original zieht aus lrandom (Datei 0xBFD5, <c>0x38:0x7E5</c>; Datei 0x36013/0x3602E:
 /// lrandom(b, b + 11)), einem eigenen Generator x = (16 · x + 167) mod 4.000.000, dessen Zustand (DGROUP 0xE017) nicht im
 /// Spielstand steht und den sich die Mischung mit Spielberechnung und Teamwert-Wanderung (Datei 0x56448, unmittelbar davor)

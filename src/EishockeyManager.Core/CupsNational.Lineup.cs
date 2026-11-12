@@ -310,10 +310,21 @@ public sealed partial class NationalCoach
             ClearSlot(slot);
     }
 
-    /// <summary>Wirksame Aufstellung aus der Formation (Reihen 1–3 und Torhüter, nur einsatzfähige Spieler).</summary>
-    private NationalLineup FormationLineup()
+    /// <summary>
+    /// Aufstellung, die die Neuaufstellung 0x426BC für Satz 5 jetzt setzen würde (A024): Regel wie <see cref="ApplyAutoFormation"/>
+    /// auf einer Kopie, der Zustand bleibt unverändert. Liefert die Plätze und die eingesetzten Spieler (+0x0A).
+    /// </summary>
+    internal (Core.Lineup Formation, IReadOnlyCollection<Player> Dressed) StandInFormation()
     {
-        Player? Playing(LineupSlot slot) => Formation[slot] is { Available: true } p && Contains(p) ? p : null;
+        var formation = new Core.Lineup();
+        var dressed = AutoLineupRule.Apply(formation, Rows);
+        return (formation, dressed);
+    }
+
+    /// <summary>Wirksame Aufstellung aus einer Formation (Reihen 1–3 und Torhüter, nur einsatzfähige Spieler).</summary>
+    private NationalLineup FormationLineup(Core.Lineup formation)
+    {
+        Player? Playing(LineupSlot slot) => formation[slot] is { Available: true } p && Contains(p) ? p : null;
         var defenders = new List<Player?>();
         var forwards = new List<Player?>();
         for (var b = 0; b < Lines; b++)
@@ -329,25 +340,10 @@ public sealed partial class NationalCoach
     /// <summary>
     /// Aufstellung, aus der 0x952C mit Manager 5 die Länderwerte schreibt (<see cref="GameState.UpdateNationalTeamValues"/>):
     /// die <see cref="Formation"/>, leere Plätze zählen 0. [ORIGINAL] Ohne Einstellung auch eine ganz leere Aufstellung (A009,
-    /// FILE47: 0x37F = 0, Felder 0x18–0x1D = 0). [APPROX] Mit Einstellung und leerer Formation die Ersatz-Automatik wie in
-    /// <see cref="Lineup"/>.
+    /// FILE47: 0x37F = 0, Felder 0x18–0x1D = 0). Mit Einstellung und leerer Formation die Aufstellung der Neuaufstellung
+    /// (<see cref="StandInFormation"/>, A024).
     /// </summary>
-    internal Core.Lineup TeamValueFormation()
-    {
-        if (!UsesStandInLineup)
-            return Formation;
-        var auto = Lineup();
-        var lineup = new Core.Lineup();
-        if (auto.Goalkeeper is { } g)
-            lineup.Assign(LineupSlot.Goalkeeper, g);
-        for (var i = 0; i < auto.Defenders.Count; i++)
-            if (auto.Defenders[i] is { } d)
-                lineup.Assign(LineupSlot.Defender(i / Core.Lineup.DefendersPerBlock, i % Core.Lineup.DefendersPerBlock), d);
-        for (var i = 0; i < auto.Forwards.Count; i++)
-            if (auto.Forwards[i] is { } f)
-                lineup.Assign(LineupSlot.Forward(i / Core.Lineup.ForwardsPerBlock, i % Core.Lineup.ForwardsPerBlock), f);
-        return lineup;
-    }
+    internal Core.Lineup TeamValueFormation() => UsesStandInLineup ? StandInFormation().Formation : Formation;
 
     private void ReleaseFromFormation(Player player)
     {

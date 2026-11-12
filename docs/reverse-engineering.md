@@ -988,3 +988,55 @@ Angriff, Reihe auf dem Eis, Lampe „Schnelldurchlauf“, Klick auf Kopf/Logo �
 Lader `tore\` (Ov 0x138 `0x138:0x25`), Dateiformat der Torszenen und der Umsetzungsplan L1–L8 für Runde 18. Berichtigt
 nebenbei: Datei 0x38F40 schreibt die Angriffsbits (Vereinsfeld 0x2C Bits 4–6), nicht den Modus
 (`analyse/belastung-staerke.md` §7); der Lader wählt nach `(Art, Penalty, Seite, sechs Feldspieler)`.
+
+## Spur `wettbewerbe-rest` (Runde 17)
+
+Teil 1 – Nationalteam/Länder (`ndisasm -b 16`, `tools/reverse-engineering/disasm.py`; Dateiadressen):
+
+* **Freundschaftsspiel (A008/A110):** Datei 0x30365 setzt Code DGROUP 0xD0C2 = 0xD (0x30390) und ruft 0x36B5D mit denselben
+  Argumenten wie das WM-Gruppenspiel (0, 8, 0, 0, 3; 0x30395–0x303A2 gegen 0x30F58–0x30F65), aber ohne den WM-Merker DGROUP
+  0x12B (Schreiber nur 0x30F4E/0x30F6D und 0x31012/0x31033, Anfangswert 0; Leser 0xA086/0xA1A1/0xA1FB im Torbudget 0x9F5C,
+  0xA7A7/0xA7C7 im Abschluss 0xA484, 0x374EF im schnellen Weg, 0x53A93 Anzeige). Code 0xD ist in 0x3702E–0x37085 keinem
+  Schalter zugeordnet (→ 0x3731F); die Gruppenschleife 0x36E1B–0x36FE5 ruft für jede Paarung 0x544C0 (0x36F9C), das für
+  Manager m < [0x386] und m = 5 (Schleife 0x54BDE–0x54BF4) bei Verein DGROUP 0x966F + 0x1AF · m = Heim oder Gast den Satz
+  aktiv setzt (DGROUP 0xA729 + m, Datei 0x545A6). Mit dem Bundestrainer (m = 5, Verein 0x9EDA = Land) ist der Merker 0x36FEA
+  also gesetzt: Minutenschleife 0x37088. Remake: `MatchCompetition.Friendly`.
+* **Managerwert der Strafen des Nationalteams (A084):** 0x35883–0x358A0 liest DGROUP 0x974B + 0x1AF · Vereinsfeld 0x16; das
+  Land des Bundestrainers hat 0x16 = 6, also 0xA165. Managersätze 0x965B + 6 · 0x1AF = 0xA075, Jugendteams 0xA075 (84 Byte),
+  Ligaergebnisse ab 0xA0CB (Schreiber 0x369C7, Datei 0x36A54: Liga · 0x210 + 12 · (Spieltag − 1) + Paarungsplatz + Seite):
+  0xA165 = Heimtore der sechsten Paarung des 13. Bundesliga-Spieltags. Kein direkter Zugriff auf 0xA160–0xA170 im Programm
+  (`disasm.py --xref`). Remake: `MatchEngine.NationalPenaltyManagerValue`.
+* **Reihenwerte „WM Vorbereitung“ (A024):** 0x3B5F5–0x3B6C4 ruft 0x977F(Verein, Reihe, Teil, 0, 0) und zeigt (Byte 2 + Byte 1) / 2
+  = (Kondition + Technik) / 2 (Packung 0x9CDE–0x9D13: Kondition [bp−4], Technik [bp−6], Form [bp−8]); mit Vereinsfeld 0x16 ≠ 0
+  und Schalter 0 Spielerweg 0x98F8 (0x97D6–0x97E2). Remake: `GameState.NationalPanelLineValue`. Leere Formation mit Einstellung
+  „automatisch aufstellen“: Aufstellung der Neuaufstellung 0x426BC (`NationalCoach.StandInFormation`).
+
+
+Teil 2 – Europapokal und Liga-Code:
+
+* **Auslosung Europapokal (A004):** 0x341AB vergleicht 0x4D316(Gegner) mit 0x46 (Datei 0x34401–0x3440A), dann random(0, 3)
+  (0x3440C–0x3441C); 0x4D316 = Mittel der Vereinsfelder 0x18–0x1D. Remake: `SpectatorRules.Strength` in `EuropeanCup.StartSeason`.
+* **Liga-Code der Zuschauerformel (A045):** 0x544C0 übergibt 0x34FD5(Heim) / 2 und 0x34FD5(Gast) / 2 (Datei 0x54515–0x54534) an
+  0x3F185 (Vergleich 0x3F1AF); 0x34FD5: Index < [0x7C1] = 12 → 1, < [0x7C2] = 24 → 2, > [0x6AD] = 52 → 1, sonst 4.
+* **Penaltyschießen im Minutenweg (A077):** 0x36B5D ruft 0x32AA3 nur mit K.-o.-Merker (Datei 0x371F0); Masken und Zeilen siehe
+  `docs/spielberechnung.md` §19.
+* **Teilnahme für die Werbebewertung (A037):** 0x44A48 liest Paarungslisten statt Bits (Masken 0x10 WM, 0x40 Meisterrunde, 0x20
+  Europapokal, 0x08 DEB-Pokal); Einzelheiten in `GameState.CurrentParticipation`.
+
+Teil 3 – Spielplan und Start:
+
+* **Liga-Spielplan (A113):** 0x4E7C7 (Tabelle DGROUP 0x2DC, `docs/analyse/re-nachtrag.md` §4) schreibt Satzplätze
+  (Buchstabe − 'a' + Basis); die Paarungen folgen also der Satzfolge der Liga (Startmischung 0x43A17, Saisonwechsel 0x5644E,
+  Tausch 0x36169), nicht dem Rang des Vereinsindex. Andere Ligagrößen gibt es nicht (DGROUP 0x7B1 + Liga = 12). Remake:
+  `Schedule.ForSlots` beim Spielstart (`NewGame.Create`) und im Saisonwechsel (`GameState.BuildLeagueSchedules`).
+* **Gruppenpläne:** 0x30427 ruft 0x4E7C7 (Datei 0x3068B) mit Tabelle DGROUP 0x324 bzw. 0x30C, n = [DGROUP 0x4DD8 + 2 · Wettbewerb]
+  + 1, Spieltag 1 … [0x4DD8 + 2 · Wettbewerb] + 3 · (Wettbewerb > 0) (Datei 0x3071D–0x3074C): Vierergruppen sechs Spieltage, ab
+  Spieltag 4 mit getauschtem Heimrecht – auch die Aufstiegsrunde (Wettbewerb 1, Plätze DGROUP 0xCFF4 + 8 + 4 · Gruppe). Remake:
+  `RelegationGroup` über `CupGroup.Pairings`; Video `folge07_03307` (Berliner SC, EA Kempten, ECD Sauerland, SC Riessersee).
+* **Termine der Aufstiegsrunde (A142):** Der Play-Off-Tag 0x31A0A (Kalendermarke 0x40, Datei 0x55063) baut die Paarungen der
+  Aufstiegsrunde nur bei DGROUP 0xCCA3 ∈ {0, 2} (Datei 0x31A2C–0x31A3A, Maske 0xC), Gruppenspieltag 2 · DGROUP 0x7B0 +
+  (0xCCA3 = 2) (Datei 0x31A44–0x31A5A); 0xCCA3 zählt die fünf Spiele jeder Play-Off-Runde, auch nicht ausgetragene. Die Infoleiste
+  0x44A48 rechnet ebenso (Datei 0x44B91–0x44BC2). Play-Off-Termine 0, 2, 5, 7, 10, 12 = 6.2., 10.2., 20.2., 25.2., 22.3., 29.3.;
+  dieselben Daten zeigt „Aufstieg 2.Liga“ in `folge07_03307`. Remake: `RelegationGroup.DateIndices`.
+* **A112/F107:** schon umgesetzt (Runde 13/14, U15-a/U15-c: `NewGame.PlaceInStartLeague`, Filter 0x45CD0(r, 1) trifft beim Start
+  nur Platz 0); keine Änderung.

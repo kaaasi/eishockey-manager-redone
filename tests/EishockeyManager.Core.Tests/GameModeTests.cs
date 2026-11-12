@@ -443,8 +443,14 @@ public class GameModeTests
     // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den Gast
     // gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49); andere Gast-Einsätze, Ergebnisse und
     // Zufallsverbrauch. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alte Werte.
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=3,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=53,CupWinner=1,GermanChampion=11,EuropeanCupWinner=1|2556265,400000|WorldChampion=54,CupWinner=17,GermanChampion=4,EuropeanCupWinner=11|2608039,500000|WorldChampion=54,CupWinner=11,GermanChampion=8,EuropeanCupWinner=11|2605552,400000|WorldChampion=53,CupWinner=8,GermanChampion=8,EuropeanCupWinner=8|2601802,400000|R1992073082 C984280617";
+        "WorldChampion=63,CupWinner=1,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2329696,400000|WorldChampion=54,CupWinner=14,GermanChampion=19,EuropeanCupWinner=1|2409093,400000|WorldChampion=54,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2420709,400000|WorldChampion=52,CupWinner=5,GermanChampion=1,EuropeanCupWinner=1|2220776,500000|R1757978480 C55311177";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -3,6 +3,9 @@
     <RootNamespace>EishockeyManager.Core</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="EishockeyManager.Core.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\EishockeyManager.Formats\EishockeyManager.Formats.csproj" />
   </ItemGroup>
 </Project>

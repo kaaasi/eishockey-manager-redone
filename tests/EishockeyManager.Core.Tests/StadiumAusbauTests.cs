@@ -48,7 +48,10 @@ public class StadiumAusbauTests
         // #772 (R15-E2 = C): Saat 4 statt 3 – mit der Spielvorbereitung 0x8365 ist bei Saat 3 der Nachrichtenspeicher (24 Plätze,
         // [ORIGINAL] FinanceInbox.Post) voll, als der Zustand fertig wird; die Meldung fällt wie im Original weg. Rückschaltprobe:
         // alter Code mit Saat 4 rot (dort ist der Speicher voll) – die Probe hängt an der Saat, nicht an #772.
-        var game = TestGames.Create(4);
+        // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): Saat 3 statt 4 – mit dem Spielplan über die Satzfolge (Datei 0x4E7C7) ist bei Saat 4 der Speicher
+        // wieder voll (zwei Meldungen); Saaten 1–24: 2 oder 3 Meldungen. Rückschaltprobe: alter Code mit Saat 3 rot (dort ist
+        // der Speicher voll, siehe oben) – die Probe hängt an der Saat.
+        var game = TestGames.Create(3);
         var me = game.ActiveManager;
         me.Money = Rich;
         var stadium = game.Finance(me).Stadium;

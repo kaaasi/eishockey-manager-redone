@@ -138,8 +138,8 @@ public static partial class OriginalExport
     /// <summary>
     /// Satzfolge einer Liga für den Export. Das Original rechnet den Spielplan aus der festen Tabelle 0x4E7C7 über die Satzfolge
     /// (re-nachtrag.md §4); das Remake bildet ihn je Saison aus <see cref="Schedule.Rounds"/> über die Platznummern 0–11 (nach einem
-    /// Import: Satzfolge des HOK, sonst: Rang des Vereinsindex). Damit Spielplan, Ergebnisse 0xA0CB und Tabelle im Original zusammen
-    /// passen, gilt die Folge, deren Plan dem des Remakes gleicht: zuerst <see cref="GameState.LeagueSlots"/>, sonst die Indexfolge.
+    /// Import und in neuen Spielen ab Runde 17, A113: Satzfolge; ältere Spielstände: Rang des Vereinsindex). Damit Spielplan,
+    /// Ergebnisse 0xA0CB und Tabelle im Original zusammen passen, gilt die Folge, deren Plan dem des Remakes gleicht: zuerst <see cref="GameState.LeagueSlots"/>, sonst die Indexfolge.
     /// [APPROX] Passt keine (nur synthetische Spielstände), gilt <see cref="GameState.LeagueSlots"/>.
     /// </summary>
     public static IReadOnlyList<int> LeagueOrder(GameState game, League league)
