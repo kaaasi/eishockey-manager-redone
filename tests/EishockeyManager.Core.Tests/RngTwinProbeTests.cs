@@ -239,10 +239,13 @@ public class RngTwinProbeTests
     // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
     // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
     // → Wert nach #772.
-    [InlineData(false, 3, "A4B48D437620E510")]
-    [InlineData(true, 3, "CEF8F66D84C8D8A5")]
-    [InlineData(false, 11, "107B16BA8C383F48")]
-    [InlineData(true, 11, "62F453313F73A524")]
+    // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den Gast
+    // gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49); andere Gast-Einsätze, Ergebnisse und
+    // Zufallsverbrauch. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alte Werte.
+    [InlineData(false, 3, "E876C34ECA7C215E")]
+    [InlineData(true, 3, "C37FC708DB4C2D84")]
+    [InlineData(false, 11, "CC7F49CDE01C0B9E")]
+    [InlineData(true, 11, "5197FE0EAEF10821")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -303,8 +306,11 @@ public class RngTwinProbeTests
     // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
     // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
     // → Wert nach #772.
-    [InlineData(false, "3FFEF2FE55308180")]
-    [InlineData(true, "35A071A2973C3F74")]
+    // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den Gast
+    // gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49); andere Gast-Einsätze, Ergebnisse und
+    // Zufallsverbrauch. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alte Werte.
+    [InlineData(false, "7C26AF0543F95DCB")]
+    [InlineData(true, "724A3FFA549BFF18")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

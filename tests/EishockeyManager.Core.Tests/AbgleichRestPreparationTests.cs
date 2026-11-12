@@ -62,9 +62,65 @@ public class AbgleichRestPreparationTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// #784 (R783-T1, Spur pruefung-karte Runde 17): exakter Grundwert 40/60 je Computerverein wie im Original. FILE02→03 hängt am
+    /// Zufall der Spieltage 1–2 (Belastung, Form), deshalb das Paar FILE30→31 (erster Spieltag; in FILE30 stehen 0x26 aller Vereine
+    /// auf 0, der Import setzt 0 – die Stärken vor dem Spiel sind ohne Zufall). [ORIGINAL] 0x8365 schreibt nur den Satz des
+    /// ersten Arguments (Datei 0x83DA–0x847D, <c>[bp-0x8]</c>) und wird je Paarung zweimal gerufen: zuerst für den Heimverein
+    /// (Datei 0x36D12, Paarungsbyte DGROUP 0x5D7B), dann für den Gast (Datei 0x36D49); dessen Stärkevergleich 0x368B1 liest
+    /// 0x26 des Heimvereins schon mit dem neuen Grundwert. Beleg FILE31: Rosenheim 40 / Eisbären 60, Ratingen 60 / HEDOS 40.
+    /// Vorher rot: Das Remake gab beiden Vereinen den Grundwert aus den alten Stärken (sechs Gäste falsch, bei jeder Saat).
+    /// Managergegner (0x939A am Spielende, <see cref="OriginalMinutes.FollowTactics"/>): Angriff aus der Zeile der Automatik, Einsatz
+    /// höchstens deren Wert in derselben Situation (Abzug bei Energie unter 50).
+    /// </summary>
+    [GameDataTheory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void File30To31_ComputerClubs_ExactBaseEffortLikeOriginal(int seed)
+    {
+        var game = Import("FILE30", seed);
+        var target = Import("FILE31", seed);
+        var before = game.Results.Count;
+        Assert.Null(HokCompare.PlayTo(game, target));
+        var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
+        var played = game.Results.Skip(before).ToList();
+        var opponents = played.Where(r => managed.Contains(r.Home) || managed.Contains(r.Away))
+            .Select(r => managed.Contains(r.Home) ? r.Away : r.Home).ToHashSet();
+        Assert.Equal(managed.Count, opponents.Count);
+
+        var records = OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave("FILE31.HOK"))).Block("far:9657");
+        var compared = 0;
+        var wrong = new List<string>();
+        for (var slot = 0; slot < 52; slot++)
+        {
+            var r = records.AsSpan(slot * OriginalSaveGame.ClubRecordLength, OriginalSaveGame.ClubRecordLength);
+            var club = game.Clubs.Single(c => c.Name == OriginalImport.ClubName(records, slot));
+            if (r[0x16] != 0 || !played.Any(m => m.Involves(club.Index)))
+                continue;
+            var tactics = club.Tactics;
+            if (opponents.Contains(club.Index))
+            {
+                // 0x939A: Angriff = Zeile zum Spielstand, Einsatz = Grundwert + Zuschlag derselben Situation, bei Energie unter
+                // 50 vermindert.
+                var baseEffort = tactics.ShownEffort(0, ScoreSituation.Base);
+                Assert.Contains(Enum.GetValues<ScoreSituation>().Skip(1), s => tactics.ShownAttack(0, s) == tactics.MatchAttack
+                    && tactics.MatchEffort <= Math.Min(100, baseEffort + tactics.ShownEffort(0, s)));
+                continue;
+            }
+            compared++;
+            if (tactics.MatchEffort != r[0x26])
+                wrong.Add($"{club.Name}: Original {r[0x26]}, Remake {tactics.MatchEffort}");
+        }
+        output.WriteLine($"Saat {seed}: {compared} Computervereine, abweichend {wrong.Count}: {string.Join("; ", wrong)}");
+        Assert.Equal(34, compared);
+        Assert.Empty(wrong);
+    }
+
+    /// <summary>
     /// Vergleich über die Stärke 0x368B1 mit dem Einsatz des letzten Spiels (Datei 0x9C66), nicht über den Teamwert: Zwei
     /// Computervereine, Grundwert 60 genau dann, wenn die doppelten Stärken weniger als 25 auseinanderliegen; der Angriff kommt
-    /// aus dem letzten Spiel und bleibt im Spiel ohne Manager stehen.
+    /// aus dem letzten Spiel und bleibt im Spiel ohne Manager stehen. Der Gast vergleicht mit der Stärke des Heimvereins beim
+    /// schon geschriebenen Grundwert (#784, angepasst Runde 17: vorher gleicher Grundwert für beide).
     /// </summary>
     [Fact]
     public void Prepare_ComputerClubs_BaseEffortFromStrengthAndStoredAttack()
@@ -73,6 +129,7 @@ public class AbgleichRestPreparationTests(ITestOutputHelper output)
         var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
         var clubs = game.Clubs.Where(c => c.Index < 52 && !managed.Contains(c.Index) && c.Players.Count > 0).Take(12).ToList();
         var seen = new HashSet<int>();
+        var asymmetric = 0;
         foreach (var home in clubs)
         {
             foreach (var away in clubs.Where(c => c != home))
@@ -82,24 +139,29 @@ public class AbgleichRestPreparationTests(ITestOutputHelper output)
                 var h = MatchEngine.LiveTeamOf(game, home, away, managed: false, managerMatch: false);
                 var a = MatchEngine.LiveTeamOf(game, away, home, managed: false, managerMatch: false);
                 h.Effort = 99; // darf die Stärke nicht beeinflussen: 0x368B1 liest 0x26 des letzten Spiels
-                var hs = OriginalMatch.TeamStrength(
-                    OriginalMatch.LineValues(h.Defense, 0, false, 0, h.LineEnergy(0, 0), 70, inMatch: true),
-                    OriginalMatch.LineValues(h.Attack, 0, true, 0, h.LineEnergy(1, 0), 70, inMatch: true), 1, 0, h.ClubForm);
-                var @as = OriginalMatch.TeamStrength(
-                    OriginalMatch.LineValues(a.Defense, 0, false, 0, a.LineEnergy(0, 0), 30, inMatch: true),
-                    OriginalMatch.LineValues(a.Attack, 0, true, 0, a.LineEnergy(1, 0), 30, inMatch: true), 1, 0, a.ClubForm);
+                int Strength(LiveTeam t, int fieldEffort) => OriginalMatch.TeamStrength(
+                    OriginalMatch.LineValues(t.Defense, 0, false, 0, t.LineEnergy(0, 0), fieldEffort, inMatch: true),
+                    OriginalMatch.LineValues(t.Attack, 0, true, 0, t.LineEnergy(1, 0), fieldEffort, inMatch: true), 1, 0, t.ClubForm);
+                var hs = Strength(h, 70);
+                var @as = Strength(a, 30);
 
                 MatchEngine.PrepareMatch(game, home, away, h, a);
 
-                var expected = Math.Abs(2 * hs - 2 * @as) < Tactics.EvenMatchLimit ? 60 : 40;
-                seen.Add(expected);
-                Assert.Equal((expected, expected), (h.Effort, a.Effort));
+                // #784: zuerst Heim (Datei 0x36D12), dann Gast (Datei 0x36D49) gegen 0x26 des Heimvereins mit dessen neuem Grundwert.
+                var expectedHome = Math.Abs(2 * hs - 2 * @as) < Tactics.EvenMatchLimit ? 60 : 40;
+                var hsNew = Strength(h, expectedHome);
+                var expectedAway = Math.Abs(2 * @as - 2 * hsNew) < Tactics.EvenMatchLimit ? 60 : 40;
+                seen.Add(expectedHome);
+                if (expectedAway != expectedHome)
+                    asymmetric++;
+                Assert.Equal((expectedHome, expectedAway), (h.Effort, a.Effort));
                 Assert.Equal((6, 0), (h.AttackLevel, a.AttackLevel));
                 Assert.Equal((hs, @as), (h.TacticsStrength, h.TacticsOpponentStrength));
-                Assert.Equal((@as, hs), (a.TacticsStrength, a.TacticsOpponentStrength));
+                Assert.Equal((@as, hsNew), (a.TacticsStrength, a.TacticsOpponentStrength));
             }
         }
         Assert.Equal(new HashSet<int> { 40, 60 }, seen);
+        Assert.True(asymmetric > 0, "Probe ohne Paarung, in der der neue Grundwert des Heimvereins den Gast umschaltet");
     }
 
     /// <summary>
@@ -116,7 +178,7 @@ public class AbgleichRestPreparationTests(ITestOutputHelper output)
         home.Tactics.RecordMatchFields(0, 5);
         MatchEngine.PlayWithEvents(game, home, away, MatchCompetition.League, knockOut: false, new Random(3));
         Assert.Contains(home.Tactics.MatchEffort, new[] { 40, 60 });
-        Assert.Equal(home.Tactics.MatchEffort, away.Tactics.MatchEffort);
+        Assert.Contains(away.Tactics.MatchEffort, new[] { 40, 60 }); // #784: Gast eigener Vergleich, nicht gleich dem Heimwert
         Assert.Equal((5, 0), (home.Tactics.MatchAttack, away.Tactics.MatchAttack));
 
         var loaded = SaveGame.Load(SaveGame.Save(game)).Game!;

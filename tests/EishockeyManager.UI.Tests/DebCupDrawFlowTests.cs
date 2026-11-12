@@ -298,6 +298,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
     // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
     // → Wert nach #772.
+    // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): ab 1993 neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den
+    // Gast gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49): andere Ergebnisse ab dem ersten
+    // Spieltag, mit und ohne Anzeige weiter gleich. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alter Wert.
     private const string Reference =
-        "1993: DEB 2, DM 5, Tab 15349 | 1994: DEB 2, DM 2, Tab 15668 | 1995: DEB 1, DM 4, Tab 16017 | 1996: DEB 8, DM 6, Tab 15853";
+        "1993: DEB 11, DM 6, Tab 15425 | 1994: DEB 2, DM 2, Tab 15934 | 1995: DEB 1, DM 2, Tab 15741 | 1996: DEB 2, DM 2, Tab 15576";
 }
