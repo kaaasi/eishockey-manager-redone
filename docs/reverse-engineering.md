@@ -1003,3 +1003,14 @@ Teil 1 – Nationalteam/Länder (`ndisasm -b 16`, `tools/reverse-engineering/dis
   und Schalter 0 Spielerweg 0x98F8 (0x97D6–0x97E2). Remake: `GameState.NationalPanelLineValue`. Leere Formation mit Einstellung
   „automatisch aufstellen“: Aufstellung der Neuaufstellung 0x426BC (`NationalCoach.StandInFormation`).
 
+
+Teil 2 – Europapokal und Liga-Code:
+
+* **Auslosung Europapokal (A004):** 0x341AB vergleicht 0x4D316(Gegner) mit 0x46 (Datei 0x34401–0x3440A), dann random(0, 3)
+  (0x3440C–0x3441C); 0x4D316 = Mittel der Vereinsfelder 0x18–0x1D. Remake: `SpectatorRules.Strength` in `EuropeanCup.StartSeason`.
+* **Liga-Code der Zuschauerformel (A045):** 0x544C0 übergibt 0x34FD5(Heim) / 2 und 0x34FD5(Gast) / 2 (Datei 0x54515–0x54534) an
+  0x3F185 (Vergleich 0x3F1AF); 0x34FD5: Index < [0x7C1] = 12 → 1, < [0x7C2] = 24 → 2, > [0x6AD] = 52 → 1, sonst 4.
+* **Penaltyschießen im Minutenweg (A077):** 0x36B5D ruft 0x32AA3 nur mit K.-o.-Merker (Datei 0x371F0); Masken und Zeilen siehe
+  `docs/spielberechnung.md` §19.
+* **Teilnahme für die Werbebewertung (A037):** 0x44A48 liest Paarungslisten statt Bits (Masken 0x10 WM, 0x40 Meisterrunde, 0x20
+  Europapokal, 0x08 DEB-Pokal); Einzelheiten in `GameState.CurrentParticipation`.

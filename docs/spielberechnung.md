@@ -707,9 +707,12 @@ Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Shootout.
   der Verlängerung unentschieden ist, und setzt `MatchReport.ShootoutGoals`/`ShootoutHomeWins`; `KnockoutMatch.Play`
   übernimmt den Sieger (vorher `[APPROX]` `NextDouble` nach Vereinsstärke). Der schnelle Weg der Pokale bleibt bei
   0x376F0 (§3, random(0, 2) je Seite).
-- `[APPROX]` Keine Live-Anzeige (Zweig mit Bit 7 nicht umgesetzt); Zuordnung der Zeilen 0x5C4B zu den Wettbewerben nicht
-  gelesen – das Remake schießt in jedem K.-o.-Spiel des Minutenwegs (Pokale mit Manager, Play-offs); der Spielstand bleibt
-  der Gleichstand, die Penaltytore stehen getrennt im Bericht.
+- `[APPROX]` Keine Live-Anzeige (Zweig mit Bit 7 nicht umgesetzt); der Spielstand bleibt der Gleichstand, die Penaltytore
+  stehen getrennt im Bericht.
+- **Zeilen 0x5C4B (A077, Runde 17):** 0x32AA3 läuft nur mit dem K.-o.-Merker von 0x36B5D (Argument 3, Datei 0x371F0); Maske 1 =
+  Zeile 0 DEB-Pokal (Datei 0x5504A), Maske 4/0xC = Zeile 2 Play-offs (0x31A28/0x31A3C; Zeile 3 der Aufstiegsrunde in Maske 0xC
+  übersprungen, 0x32D13), Maske 8 = Zeile 3 WM-Endrunde (0x3101C). Europapokal, WM-Gruppe und Freundschaftsspiel rufen ohne
+  K.-o.-Merker – `[ORIGINAL]` wie `knockOut` im Remake (`WettbewerbeRestTests`).
 - **Endstand und Marken (Runde 11, Spur wettbewerbe-spiel Teil 1):** 0x39088 nimmt die Marke ab (Heimbyte − 30), 0x39789
   setzt sie wieder – Endstand Gleichstand + Treffer mit **einer** Marke. Ein Tor in der Verlängerung schreibt 0x38402 Heim + 30
   auf den Stand; im Video stehen danach **zwei** Punkte (`eisbaeren_f44_01330` „4: 3..“ neben „4: 3.“). Die Anzeige 0x32E23 zieht

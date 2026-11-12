@@ -95,7 +95,11 @@ public class AbgleichOriginalPaareTests
                 .. StrainOf("6 KREFELDER EV", 50, 95, "KUHNEKATH"),
                 StrainSawtooth("6 KREFELDER EV"),
                 // Zufall: Wanderung über den Saisonwechsel, Sturm-Kondition WEIßWASSER über zehn Saaten −8 … 14, nur Saat 1 bei −19.
-                new("Clubs[23 ES WEIßWASSER].TeamValues.AttackCondition", Chance, Optional: true)],
+                new("Clubs[23 ES WEIßWASSER].TeamValues.AttackCondition", Chance, Optional: true),
+                // Zufall (Runde 17, wettbewerbe-rest Teil 2, A004): Die Auslosung des Europapokals am Saisonwechsel zieht mit 0x4D316
+                // andere Gegner (andere Spiele, anderer Zufallsverlauf); danach Sturm-Kondition RATINGEN nur bei der Standardsaat außerhalb
+                // (Original 10, Remake −26), die fünf Prüfsaaten treffen nicht.
+                new("Clubs[10 EC RATINGEN].TeamValues.AttackCondition", Chance, Optional: true)],
             // Zufall (#737, abgleich-fix): 200.000 DM Einzelprämien im Original (file16_9), im Remake bei keiner Saat; mit ihnen
             // im Bereich (AbgleichFixMoneyTests.File16A_MoneyDeviation_ComesFromSinglePremiums).
             ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", Chance, Optional: true),

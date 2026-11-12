@@ -176,4 +176,89 @@ public class WettbewerbeRestTests
         Assert.Equal((v.Condition + v.Technique) / 2, game.NationalPanelLineValue(coach.Nation, 1, attack: false));
         Assert.True(game.NationalPanelLineValue(coach.Nation, 1, attack: false) > 0);
     }
+
+    // ---- Teil 2: Europapokal und Liga-Code --------------------------------------------------------------------------
+
+    /// <summary>
+    /// A077: [ORIGINAL] Penaltyschießen im Minutenweg nur mit K.-o.-Merker (Datei 0x371F0 → 0x32AA3, Zeilen 0/2/3 der Masken
+    /// 1/4/8): Gruppenspiele (Europapokal 0x314A4, WM-Gruppe, Freundschaftsspiel) und Aufstiegsrunde bleiben unentschieden,
+    /// K.-o.-Spiele schießen nach Gleichstand immer (Minutenweg nach der Verlängerung, schneller Weg 0x376F0).
+    /// </summary>
+    [Theory]
+    [InlineData(MatchCompetition.EuropeanCup, false)]
+    [InlineData(MatchCompetition.Relegation, false)]
+    [InlineData(MatchCompetition.Friendly, false)]
+    [InlineData(MatchCompetition.DebCup, true)]
+    [InlineData(MatchCompetition.Playoff, true)]
+    public void MinuteLoop_ShootoutOnlyWithKnockOutFlag(MatchCompetition competition, bool knockOut)
+    {
+        var game = Create();
+        game.Options.ShowDebCup = game.Options.ShowEuropeanCup = true;
+        var ties = 0;
+        for (var seed = 0; seed < 300 && ties < 5; seed++)
+        {
+            OriginalMinutes.MinuteLoopCalls = 0;
+            var report = MatchEngine.PlayWithEvents(game, game.Clubs[3], game.Clubs[4], competition, knockOut, new Random(seed));
+            if (report.HomeGoals != report.AwayGoals)
+                continue;
+            ties++;
+            Assert.Equal(knockOut, report.ShootoutGoals is not null);
+        }
+        Assert.True(ties > 0);
+    }
+
+    /// <summary>
+    /// A004: [ORIGINAL] Die Auslosung 0x341AB vergleicht 0x4D316 (Mittel der Vereinsfelder 0x18–0x1D, Datei 0x34401–0x3440A)
+    /// mit 70, nicht die Datenbankstärke. Gleiche Datenbankstärke, aber hohe Vereinsfelder bei jedem achten Gegner: diese
+    /// werden immer angenommen, die anderen nur zu einem Viertel – sie stehen viel öfter in der Auslosung als ihr Anteil (1/8).
+    /// Vorher (Datenbankstärke) gleich oft.
+    /// </summary>
+    [Fact]
+    public void EuropeanCupDraw_ComparesMeanOfClubFields()
+    {
+        var strong = 0;
+        var foreign = 0;
+        for (var seed = 1; seed <= 20; seed++)
+        {
+            var game = Create(seed);
+            for (var c = EuropeanCup.FirstOpponent; c <= Math.Min(EuropeanCup.LastOpponent, game.Clubs.Count - 1); c++)
+            {
+                var d = (c % 8 == 0 ? 95 : 40) - MatchEngine.ComputerTeamValue(game.Clubs[c]); // Felder 95 bzw. 40
+                game.Clubs[c].TeamValues = new ClubTeamValues(d, d, d, d, 50, 50, 50);
+            }
+            var cup = game.EuropeanCup!;
+            cup.StartSeason(game);
+            foreach (var club in cup.Draw.Where(c => c >= EuropeanCup.FirstOpponent))
+            {
+                foreign++;
+                Assert.Equal(SpectatorRules.Strength(game, game.Clubs[club]) >= EuropeanCup.WeakOpponent, club % 8 == 0);
+                if (club % 8 == 0)
+                    strong++;
+            }
+        }
+        Assert.True(strong * 4 > foreign, $"{strong} von {foreign}"); // erwartet rund 1/3, ohne Wirkung rund 1/8
+    }
+
+    /// <summary>
+    /// A045: [ORIGINAL] Liga-Code der Zuschauerformel = 0x34FD5(Verein) / 2 (Datei 0x54515–0x54534): Europapokal-Gegner
+    /// (Index 64–149) wie die Bundesliga, ein Verein ohne Liga mit Index bis 52 (DGROUP 0x6AD) wie die Oberliga.
+    /// </summary>
+    [Theory]
+    [InlineData(70, 0)]
+    [InlineData(149, 0)]
+    [InlineData(53, 0)]
+    [InlineData(40, 2)]
+    [InlineData(52, 2)]
+    public void SpectatorLeagueCode_OfClubWithoutLeague(int index, int expectedCode)
+    {
+        var game = TestGames.Create();
+        var home = game.LeagueClubs(League.Bundesliga).First();
+        var away = new Club { Index = index, Name = "GAST", Strength = 70, TeamValues = new ClubTeamValues(0, 0, 0, 0, 50, 50, 50) };
+        Assert.Null(away.League);
+        var stadium = new Stadium { Seats = 15_000, Standing = 15_000, TicketPrice = 12 };
+        var actual = game.Spectators(home, away, stadium, 1, new Random(7));
+        var expected = SpectatorRules.Compute(stadium, SpectatorRules.Strength(game, home), SpectatorRules.Strength(game, away),
+            0, 0, 0, expectedCode, 0, ManagerSetup.LevelCount - 1 - 3, new Random(7));
+        Assert.Equal(expected, actual);
+    }
 }

@@ -444,8 +444,14 @@ public static class SpectatorRules
 
 public sealed partial class GameState
 {
-    /// <summary>Liga-Code des Originals (0 = Bundesliga). [APPROX] Vereine ohne Liga (Europapokal) wie Bundesliga.</summary>
-    private static int LeagueCode(Club club) => club.League is { } l ? (int)l : 0;
+    /// <summary>
+    /// Liga-Code des Originals (0 = Bundesliga, 1 = 2. Liga, 2 = Oberliga). A045 (Spur wettbewerbe-rest, Teil 2): [ORIGINAL] Die
+    /// Spielabrechnung übergibt 0x34FD5(Verein) / 2 (Datei 0x54515–0x54534 → 0x3F185, Argumente 2/3, Vergleich Datei 0x3F1AF):
+    /// Index &lt; 12 → 1, &lt; 24 → 2, bis DGROUP 0x6AD = 52 → 4, darüber 1 (<see cref="CupClass.Of"/>). Europapokal-Gegner (64–149)
+    /// und Nationalteams ab 53 zählen also wie die Bundesliga, Vereine ohne Liga bis 52 wie die Oberliga (bis Runde 16 alle
+    /// ligalosen wie die Bundesliga).
+    /// </summary>
+    private static int LeagueCode(Club club) => CupClass.Of(club) >> 1;
 
     /// <summary>
     /// Tabellenplatz 0–11 vor dem Spieltag. [ORIGINAL] A046 (Runde 14): Die Zuschauerformel liest das Tabellenfeld DGROUP

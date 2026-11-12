@@ -303,8 +303,11 @@ public class RngTwinProbeTests
     // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
     // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
     // → Wert nach #772.
-    [InlineData(false, "3FFEF2FE55308180")]
-    [InlineData(true, "35A071A2973C3F74")]
+    // Runde 17, Spur wettbewerbe-rest Teil 2 (A004, R15-E2 = C): neu – Auslosung Europapokal vergleicht 0x4D316 (Mittel der
+    // sechs Vereinsfelder, Datei 0x34401–0x3440A) statt der Datenbankstärke; andere Gegner und anderer Verbrauch von CupRandom
+    // ab der ersten Auslosung. Rückschaltprobe: CupsEurope.cs mit Club.Strength → Wert nach #743.
+    [InlineData(false, "315F96E62CEC43FD")]
+    [InlineData(true, "4A0590993476CB54")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
