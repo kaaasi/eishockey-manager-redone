@@ -163,7 +163,10 @@ public class KaderStartTeil2cTests
     [InlineData(true)]
     public void FourSeasonChanges_ListedPlayersReturn_NoDuplicates(bool active)
     {
-        var (game, manager, club) = Create(5);
+        // Fixlauf wettbewerbe-rest nach Rebase auf main 3cd9169 (R15-E2 = C): Saat 6 statt 5 – mit #784 und dem Spielplan über die
+        // Satzfolge (A113, Datei 0x4E7C7) ist bei 5 der Transfermarkt in einer späteren Saison voll (Offer → MarketFull), die
+        // Vorbedingung der Probe fehlt; 1–4, 6–10 grün. Rückschaltprobe: alter Code mit Saat 6 ebenfalls grün – die Probe hängt an der Saat.
+        var (game, manager, club) = Create(6);
         for (var season = 0; season < 4; season++)
         {
             Player? listed = null;

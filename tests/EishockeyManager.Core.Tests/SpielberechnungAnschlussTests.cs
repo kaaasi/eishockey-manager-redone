@@ -266,8 +266,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
     // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
     // → Wert von Teil 2.
-    [InlineData(false, "D0EE977A53C2530C")]
-    [InlineData(true, "F12F6DB291E7B313")]
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    [InlineData(false, "256FDCA8196DDA35")]
+    [InlineData(true, "A9441567EB172CEF")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

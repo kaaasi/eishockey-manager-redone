@@ -447,8 +447,10 @@ public class GameModeTests
     // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
     // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
     // → Wert von Teil 2.
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=53,CupWinner=9,GermanChampion=0,EuropeanCupWinner=1|2403490,400000|WorldChampion=52,CupWinner=16,GermanChampion=0,EuropeanCupWinner=0|2336689,500000|WorldChampion=63,CupWinner=5,GermanChampion=13,EuropeanCupWinner=0|2416027,500000|WorldChampion=63,CupWinner=4,GermanChampion=9,EuropeanCupWinner=13|2273062,500000|R984610344 C575623475";
+        "WorldChampion=63,CupWinner=1,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2329696,400000|WorldChampion=54,CupWinner=14,GermanChampion=19,EuropeanCupWinner=1|2409093,400000|WorldChampion=54,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2420709,400000|WorldChampion=52,CupWinner=5,GermanChampion=1,EuropeanCupWinner=1|2220776,500000|R1757978480 C55311177";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

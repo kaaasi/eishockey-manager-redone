@@ -18,10 +18,7 @@ public class PruefungKarteRunde16UiTests
     [GameDataFact]
     public void SeasonEndEvents_InfoBar_ShowsMoneyBeforePremium()
     {
-        // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): Saat 1994 statt 1993 – mit dem Spielplan über die Satzfolge (Datei 0x4E7C7) bekommt der Manager bei
-        // 1993 keine Prämie (Vorbedingung); 1994–1998, 2000 je 100.000 DM. Rückschaltprobe: alter Code mit Saat 1994 rot (keine
-        // Prämie) – die Probe hängt an der Saat.
-        var d = FlowTests.CreateDriver(1994);
+        var d = FlowTests.CreateDriver();
         d.StartNewGame();
         var game = d.Host.Game!;
         for (var guard = 0; d.Host.Current is not SeasonEndSummaryScreen && guard++ < 20000;)

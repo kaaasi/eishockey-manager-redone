@@ -114,7 +114,9 @@ public class KaderStartRunde14FixTests
     [InlineData(true)]
     public void FourSeasonChanges_WithListedPlayers_SaveAndLoadEachSeason(bool active)
     {
-        var (game, manager, club) = Create(5);
+        // Fixlauf wettbewerbe-rest nach Rebase auf main 3cd9169 (R15-E2 = C): Saat 6 statt 5 wie KaderStartTeil2cTests (Markt voll
+        // bei 5, MarketFull). Rückschaltprobe: alter Code mit Saat 6 ebenfalls grün – die Probe hängt an der Saat.
+        var (game, manager, club) = Create(6);
         var index = game.Managers.ToList().IndexOf(manager);
         for (var season = 0; season < 4; season++)
         {

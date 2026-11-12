@@ -308,6 +308,8 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
     // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
     // → Wert von Teil 2.
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
     private const string Reference =
-        "1993: DEB 10, DM 8, Tab 15378 | 1994: DEB 6, DM 8, Tab 15416 | 1995: DEB 8, DM 6, Tab 15900 | 1996: DEB 7, DM 8, Tab 15864";
+        "1993: DEB 23, DM 9, Tab 15411 | 1994: DEB 9, DM 9, Tab 15618 | 1995: DEB 2, DM 5, Tab 15364 | 1996: DEB 8, DM 8, Tab 15362";
 }

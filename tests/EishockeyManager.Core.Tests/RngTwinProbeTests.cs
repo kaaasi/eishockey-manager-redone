@@ -246,10 +246,12 @@ public class RngTwinProbeTests
     // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
     // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
     // → Wert von Teil 2.
-    [InlineData(false, 3, "94B6D396661645FB")]
-    [InlineData(true, 3, "D87A4CC443239D43")]
-    [InlineData(false, 11, "E93366DEBA5D5077")]
-    [InlineData(true, 11, "17D14F0C87DF644F")]
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    [InlineData(false, 3, "680B224DD13F2389")]
+    [InlineData(true, 3, "21C89ED27132119C")]
+    [InlineData(false, 11, "4BFB27959624DEF4")]
+    [InlineData(true, 11, "E0D535FB887EC67E")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -320,8 +322,10 @@ public class RngTwinProbeTests
     // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
     // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
     // → Wert von Teil 2.
-    [InlineData(false, "500F3B70A2D643B2")]
-    [InlineData(true, "B0C7A0EC1DED516A")]
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    [InlineData(false, "20371CB447D2096A")]
+    [InlineData(true, "9EC7B81059D7EC59")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
