@@ -504,6 +504,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._nationalTurn` | A | `A70E` | `A70E` = 5 |
 | `GameState._nextLeagueSlots` | N | – | leer (wird am 29. April gebildet) |
 | `GameState._readyManagers` | N | – | leer |
+| `GameState._seasonEndYouthPending` | N | – | false (nur Migration vor Schema 50 vom Bildschirm „Saisonende“, Spur kader-rest Teil 3) |
 | `GameState._stocks` | B | `D0F4`, `01FD`, `A891`, `A895` | Zeilen `Stock` |
 | `GameState._teamRecordOpponents` | B | `AB7B+0xF94` | DGROUP 0xBB0F + 8 · Verein + Art (64 Vereine) |
 | `GameState._teamRecords` | B | `AB7B+0x1194` | DGROUP 0xBD0F + 0x10 · Verein + 2 · Art |

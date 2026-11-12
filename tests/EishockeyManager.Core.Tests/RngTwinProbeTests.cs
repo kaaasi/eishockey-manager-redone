@@ -252,6 +252,10 @@ public class RngTwinProbeTests
     // Kaderplatz (Datei 0x42E4C–0x42E5E) statt Energie 50–80, und die Verletzung senkt die Poolform statt der Form des Kaderplatzes
     // (Datei 0x05B34); andere Spielstärke, Ergebnisse und Zufallsverlauf ab dem ersten Spiel bzw. der ersten Verletzung.
     // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
+    // Merge main → paket/kader-rest (12.11.2026): beide Änderungen zusammen, Werte neu ermittelt (jede allein → Wert von main bzw. des Branches).
+    // Spur kader-rest Teil 3 (Ereignissymbol 9, R15-E2 = C): neu nur aktiv Saat 3 – die Jugend am Saisonende rückt am 29. April vor der
+    // Rückkehr der eigenen Markt-Plätze in den Kader (Datei 0x2728C vor 0x27547 in 0x26F20; vorher nach ReturnListedPlayers), andere
+    // Kaderfolge. Rückschaltprobe: Quellen von Teil 3b (git diff 1b63121 759b124 -- src) zurück → D064B357E8496E7E.
     [InlineData(false, 3, "680B224DD13F2389")]
     [InlineData(true, 3, "21C89ED27132119C")]
     [InlineData(false, 11, "4BFB27959624DEF4")]

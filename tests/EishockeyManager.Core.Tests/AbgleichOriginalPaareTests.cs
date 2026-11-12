@@ -95,10 +95,8 @@ public class AbgleichOriginalPaareTests
             ["FILE13→FILE14"] = [.. SeasonStart,
                 // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1), J.MEYER
                 // (118, Remake 50–77) seit #772 nicht bei allen → beide Sägezahn; Anteil der Handaufstellung (Eingriff) nicht getrennt.
-                // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–57) seit kader-rest (A130) nur bei 5 von 6 Prüfsaaten (nicht
-                // 1993) → Sägezahn; Anteil der Handaufstellung (Eingriff) nicht getrennt. J.MEYER (118, Remake 50–74) seit #772 nur bei
-                // 4 von 6 Saaten (nicht 2, 3) → Sägezahn. Vermutete Ursache (nicht getrennt): Der Import behält die Bezugsstärke
-                // (Club.ReferenceRating) des verworfenen erzeugten Managerkaders, dessen Startbelastung A130 ändert.
+                // kader-rest (A130, Merge mit main 12.11.2026), vermutete Ursache bei KUHNEKATH (nicht getrennt): Der Import behält die
+                // Bezugsstärke (Club.ReferenceRating) des verworfenen erzeugten Managerkaders, dessen Startbelastung A130 ändert.
                 StrainSawtooth("6 KREFELDER EV"),
                 // Zufall: Wanderung über den Saisonwechsel, Sturm-Kondition WEIßWASSER über zehn Saaten −8 … 14, nur Saat 1 bei −19.
                 new("Clubs[23 ES WEIßWASSER].TeamValues.AttackCondition", Chance, Optional: true),

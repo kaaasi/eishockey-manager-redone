@@ -61,7 +61,13 @@ public class JugendTeamsTests
             me.Money = Math.Max(me.Money, 1_000_000);
             game.Continue();
         }
-        Assert.Equal((2, 2), (youth[0].League, youth[0].Rank)); // vor dem Saisonwechsel unverändert
+        // Spur kader-rest Teil 3 (R15-E2 = C): [ORIGINAL] Der Jugendwechsel 0x3A13B läuft am 29. April (Datei 0x55889, Saisonwechsel
+        // Schritt 3) vor dem Fenster „Saisonende“ (Datei 0x5645D), das die Junioren-Stärke für die Jugend am Saisonende liest – auf dem
+        // Bildschirm „Saisonende“ also schon gewechselt, beim Saisonwechsel nicht noch einmal. Vorher hier „vor dem Saisonwechsel
+        // unverändert“ (2/2) und Wechsel erst in StartNextSeason. Rückschaltprobe: Quellen von 1b63121 + dieser Test → rot (2, 2).
+        Assert.Equal((1, 12), (youth[0].League, youth[0].Rank));
+        Assert.Equal((3, 2), (youth[1].League, youth[1].Rank));
+        Assert.Equal((1, 6), (youth[2].League, youth[2].Rank));
         game.StartNextSeason();
         Assert.Equal((1, 12), (youth[0].League, youth[0].Rank));
         Assert.Equal((3, 2), (youth[1].League, youth[1].Rank));
