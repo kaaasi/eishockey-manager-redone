@@ -16,7 +16,7 @@ namespace EishockeyManager.Core.Tests;
 /// </remarks>
 public class SaisonwechselSchema22Tests
 {
-    private static byte[] LoadFixture()
+    internal static byte[] LoadFixture()
     {
         using var stream = typeof(SaisonwechselSchema22Tests).Assembly
             .GetManifestResourceStream("Fixtures.schema22-synthetisch.ems.gz")!;
@@ -54,7 +54,9 @@ public class SaisonwechselSchema22Tests
                 game.Managers[0].Money = Math.Max(game.Managers[0].Money, 5_000_000);
                 foreach (var m in game.Managers)
                     // #772 (R15-E2 = C): auch abgelaufene Verträge verlängern – mit der Spielvorbereitung 0x8365 verlieren beide Manager
-                    // in Saison 4 ihren Kader bis auf 0/1 Spieler (Verträge, Ruhestand), die Probe hält ihn wie die übrigen Mehrsaisonproben.
+                    // in Saison 4 ihren Kader bis auf 0/1 Spieler, die Probe hält ihn wie die übrigen Mehrsaisonproben. Kein Fehler (#778):
+                    // es gehen nur auslaufende Verträge, StartNextSeason ohne Oberfläche bricht die Verhandlung am Saisonende ab
+                    // (PruefungKarteRunde16Tests.Schema22Fixture_SquadLoss_OnlyExpiringContracts).
                     TestSeason.KeepSquad(game, m, extendExpired: true);
                 game.Continue();
             }

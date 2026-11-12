@@ -116,6 +116,12 @@ public sealed class MainMenuScreen : Screen
 
     private GameState Game => Host.Game ?? throw new InvalidOperationException("Kein Spiel geladen.");
 
+    /// <summary>
+    /// Kontostand der Infoleiste anstelle des Kontos (<c>null</c>: Konto bzw. Nationalkonto). Nur das Fenster „Saisonende –
+    /// Ereignisse“ setzt ihn für die Dauer eines Zeichnens (#768, <see cref="SeasonEndSummaryScreen"/>).
+    /// </summary>
+    public long? InfoMoney { get; set; }
+
     public int SelectedBigTile
     {
         get => _selectedBig;
@@ -340,7 +346,7 @@ public sealed class MainMenuScreen : Screen
         // Gegner und bisherige Begegnungen: Spur optionen-wirkung, Teil 3 (InfoBarTexts.cs, em.exe 0x43E21).
         s.TextCentered(mini, 184, 38, next?.Opponent.Name ?? InfoBarTexts.NoMatchText(game), Colors.White);
         s.TextCentered(mini, 184, 51, InfoBarTexts.MeetingsText(game, next?.Opponent.Index, mini), Colors.White);
-        s.TextCentered(mini, 184, 64, GameState.FormatMoney(NationalMenu.Money(game)), Colors.White);
+        s.TextCentered(mini, 184, 64, GameState.FormatMoney(InfoMoney ?? NationalMenu.Money(game)), Colors.White);
 
         // Warnlampen des Managers am Zug (Spur pixel-verein, PV-03; Regeln und Belege in MenuLamps).
         var lamps = MenuLamps.Red(game);

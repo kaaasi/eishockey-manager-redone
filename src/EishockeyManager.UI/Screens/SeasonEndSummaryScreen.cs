@@ -107,8 +107,23 @@ public sealed class SeasonEndSummaryScreen : Screen
 
     public override void Draw(Surface s)
     {
+        var result = Record.Managers.Count == 0 ? null : Record.Managers[Math.Min(_index, Record.Managers.Count - 1)];
         _menu.SelectedBigTile = -1;
-        _menu.Draw(s);
+        // #768: [ORIGINAL] 0x26F20 zeigt je Manager zuerst das Fenster 0x26D9A (Aufruf Datei 0x2700A) und bucht danach die Prämien
+        // (Datei 0x270DB–0x27258); die Infoleiste zeigt also das Konto vor der Prämie (`file46_2`: FILE44 − April-Abschluss
+        // 503.307 DM = 17.523.876 DM bei 100.000 DM Prämie). Das Remake bucht im Spielkern vorher und zieht sie hier für die
+        // Anzeige ab.
+        _menu.InfoMoney = result is not null && !Game.NationalCoachMenu && Game.CurrentManager == result.Manager
+            ? Game.ActiveManager.Money - result.Premium
+            : null;
+        try
+        {
+            _menu.Draw(s);
+        }
+        finally
+        {
+            _menu.InfoMoney = null;
+        }
 
         // Titelleiste durch „Saisonende“ ersetzen, Kacheln ausblenden (nur Sternenhintergrund)
         var background = Assets.Image(MainMenuScreen.Background);
@@ -121,9 +136,8 @@ public sealed class SeasonEndSummaryScreen : Screen
         Widgets.ShadowText(s, flow, 160, 84, "Ereignisse", 11, 198);
         s.HLine(10, 91, 300, 1);
 
-        if (Record.Managers.Count == 0)
+        if (result is null)
             return;
-        var result = Record.Managers[Math.Min(_index, Record.Managers.Count - 1)];
         var icons = result.Events.Where(e => !IsSinglePremium(e)).Select(EventIcon).ToList();
         if (Game.HasTopFiveStatus(Record, result))
             icons.Add(TopFiveIcon);
