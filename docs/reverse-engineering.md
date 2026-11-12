@@ -980,3 +980,11 @@ für Runde 11); die Funktionskarte zählt sie mit ([re-abdeckung.md](re-abdeckun
 | `re-saisonwechsel` | [analyse/re-saisonwechsel.md](analyse/re-saisonwechsel.md) | Saisonende, Oberliga-Austausch mit Managervereinen (#166, berichtigt Teil 4 oben), DOSBox-Beleg |
 | `re-livespiel` | [analyse/re-livespiel.md](analyse/re-livespiel.md) | Livespiel: Spieluhr, Anzeigetafel, Reporter, Torszenen, Spielende (Grundlage für `livespiel`) |
 | `re-rest` | [analyse/re-rest.md](analyse/re-rest.md) | übrige Funktionen des Spielcodes (u. a. Talentsuche, Hilfen der Spieltage, Nachrichten) |
+
+## Live-Spiel: Eingriff und Torszenen-Lader (Spur `re-livespiel-2`, Runde 17)
+
+Nachtrag zu [analyse/re-livespiel.md](analyse/re-livespiel.md) §10–§12: Eingriffsmenü der Managerzeile (Einsatz,
+Angriff, Reihe auf dem Eis, Lampe „Schnelldurchlauf“, Klick auf Kopf/Logo → Aufstellung bzw. Taktik), Szenenwahl und
+Lader `tore\` (Ov 0x138 `0x138:0x25`), Dateiformat der Torszenen und der Umsetzungsplan L1–L8 für Runde 18. Berichtigt
+nebenbei: Datei 0x38F40 schreibt die Angriffsbits (Vereinsfeld 0x2C Bits 4–6), nicht den Modus
+(`analyse/belastung-staerke.md` §7); der Lader wählt nach `(Art, Penalty, Seite, sechs Feldspieler)`.
