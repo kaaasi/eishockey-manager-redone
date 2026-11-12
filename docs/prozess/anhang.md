@@ -85,6 +85,8 @@ Dokumentieren, ob nur Codelesen oder auch Ausführung am nachgewiesenen Checkout
   bereit. Deshalb vorher `leitstelle-start.md` Schritt 0 erledigt (beide Repos `push`, belegt durch das `add_repo`-Ergebnis) und
   `git ls-remote https://github.com/kaaasi/eishockey-manager-referenz HEAD` erfolgreich – sonst keinen Lauf anlegen und dem Nutzer
   melden (Fehlermeldung von `add_repo` bzw. `ls-remote`). Jeder Startaufruf enthält den Zugriffsabsatz aus `spur-start.md`.
+- **Name (Nutzer 11.11.2026):** jeder geplante Lauf heißt `EM R<runde> <Name>`, z. B. `EM R16 Spur pool – Fortsetzung 1`,
+  `EM R16 Erstreview #765 pool` – auch Reviews, Fixläufe und Nachprüfungen.
 - **Modell:** nach dem Anlegen mit `update_trigger` setzen, wenn es von Opus abweicht – nur auf ausdrücklichen Wunsch des Nutzers
   (z. B. bestätigter Plan bzw. Go mit Modell) oder für Mechanisches nach `zusammenarbeit.md` §5 „Modellwahl“ (Nutzer 09.11.2026).
 - **`spur-wartet` durchsehen:** Läufe legen keine Aufgaben an (R15-E4). „Fortsetzung anlegen – Leitstelle“ heißt, die Aufgabe mit
@@ -98,6 +100,9 @@ Dokumentieren, ob nur Codelesen oder auch Ausführung am nachgewiesenen Checkout
   zusätzlich offene PRs mit Head `review/*`; Intervall 60 s. Claude: Schleife im Hintergrund (`run_in_background`), Obergrenze
   rund zwei Stunden (z. B. `for i in $(seq 1 115)`), danach abbrechen und den Lauf prüfen; `send_later` stand nicht verlässlich
   bereit; nach einem Neustart der Arbeitsumgebung Schleifen neu anlegen.
+- **CI hängt (Erfahrung Runde 16):** Stehen `pull_request`-Läufe ohne Job auf `queued` (z. B. Actions-Budget), lassen sie sich
+  weder abbrechen noch neu starten; Ersatz ist ein Lauf per `workflow_dispatch` auf dem Branch (`gh workflow run build.yml --ref
+  <branch>`), der denselben Head baut und für §6 Nr. 3 zählt. Seit R16-E3 (12.11.2026) ist das Code-Repo öffentlich.
 - **Ende eines Laufs (Erfahrung Runde 12):** Läufe melden ihr Ende nicht. Vor jeder Statusauskunft `list_triggers`
   (`last_run.status`/`finished_at`) prüfen, nicht nur den PR; ein Draft-PR heißt nicht „läuft noch“. Bei ChatGPT/Codex-Reviews Titel
   und Head-SHA der Review-Datei vor der Auswertung prüfen.
