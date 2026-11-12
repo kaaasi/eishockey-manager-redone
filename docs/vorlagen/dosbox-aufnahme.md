@@ -131,3 +131,37 @@ Bilder heißen `fileNN_<k>_<inhalt>.png`, Notizen des Nutzers kommen wörtlich i
 ### Sitzung 6 (optional) – Speichern-Dialog
 
 1. Mehr als 48 Spielstände anlegen (Kopien reichen), Speichern-Dialog mit Seitenwechsel fotografieren (A338).
+
+## Aufnahme `runde-17` (Plan Leitstelle 12.11.2026, R17-D3 = A; nach Lust des Nutzers)
+
+Gebündelt aus `docs/arbeitspakete.md` „Zurückgestellt“ und „Vormerkungen“. Nummern ab **FILE50** (Vorschlag; höchste vorhandene
+laut README bestimmen, die Nummern rücken auf). Auswertung erst in der Runde nach Eintreffen (Analysespur, nicht hier).
+
+### Sitzung 1 – Belastung #730 (`analyse/belastung-staerke.md` §7.3), Start FILE02
+
+1. FILE02 laden, den 1. Spieltag **ohne** Mausklick im Live-Spiel spielen; je Spielminute ein Bild der Reihenanzeige beider
+   Managerteile (Bildschirmfoto-Taste reicht). Danach im Hauptmenü sichern als **FILE50**.
+2. Gegenprobe: FILE02 erneut laden, denselben Spieltag mit einigen Klicks auf die Reihenknöpfe der Managerzeile spielen (Klicks
+   kurz notieren), sichern als **FILE51**.
+
+### Sitzung 2 – Strafminuten #773, neues Spiel
+
+1. Neues Spiel (ein Manager, Verein frei), im ersten Hauptmenü sichern als **FILE52**.
+2. Genau den **ersten Spieltag** spielen, im Hauptmenü danach sichern als **FILE53** (Vereinsfelder 0x26 und Strafminuten je Verein).
+
+### Sitzung 3 – Modus „nur Weltkugel“: Highscore
+
+1. Ein Spiel im Modus „nur Weltkugel“ bis zum Saisonende spielen bzw. einen per `hok-patch` vorbereiteten Stand kurz davor
+   (Leitstelle legt ihn auf Wunsch ab); Highscore am Saisonende und am Spielende fotografieren, vorher sichern als **FILE54**.
+
+### Sitzung 4 – Einzelpunkte (aus `runde-13`, noch offen)
+
+1. A115: einen Spieler verleihen, Stand vor und nach dem Leihende sichern (**FILE55/FILE56**).
+2. A189: einen verletzten oder gesperrten Spieler aufgestellt lassen, sichern, einen Tag weiter, sichern (**FILE57/FILE58**).
+3. A321: eine Nachricht öffnen, Nachrichtenleiste fotografieren. A357: Historie fotografieren.
+4. A364: in der Aufstellung links auf nicht eingesetzte und auf aufgestellte Spieler klicken, je ein Bild der STATUS-Spalte.
+
+### Sitzung 5 – Exportprobe (Restlücke R758-01)
+
+1. `EXPORT2C.HOK` und die mit `emtool` am aktuellen `main` neu erzeugten Exportstände im Original laden; Kopf, Konto und Kader
+   fotografieren (wie EXPORT1C, Referenz-PR #27). Die Leitstelle erzeugt die Stände vorher und nennt ihre SHA-256.

@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 17 – Restlücken außerhalb des Live-Spiels (Plan 12.11.2026, Go offen)
+## Aktuelle Runde: Runde 17 – Restlücken außerhalb des Live-Spiels (Plan 12.11.2026, Entscheidungen 12.11.2026)
 
 Runde 16 abgeschlossen am 12.11.2026: [archiv/runde-16.md](archiv/runde-16.md). Grundlage: offene Issues #730, #773 (P2/P3,
 DOSBox nötig), #784, #785 (Testlücken), Inventur `analyse/inventur.md` (offene `[APPROX]` der Gruppen a/c/d mit Prio P2) und
@@ -26,8 +26,8 @@ unklar, Punkt als `[APPROX]` mit Begründung belassen, die Leitstelle bündelt d
 diese Runde (Stellen mit „Spur livespiel“ bleiben). **Entwickler und Erstreviews sind Claude-Sitzungen**; ChatGPT nur fürs
 Gesamtreview.
 
-**Folge:** Welle 1 parallel `wettbewerbe-rest`, `kader-rest`, `ui-rest`, `pruefung-karte` Teil 1; Merge in der Folge
-`pruefung-karte` Teil 1 → `wettbewerbe-rest` → `kader-rest` → `ui-rest` (Bildschirme zuletzt, weil sie Core-Werte zeigen);
+**Folge:** Welle 1 parallel `wettbewerbe-rest`, `kader-rest`, `ui-rest`, `pruefung-karte` Teil 1, `re-livespiel-2`; Merge in der Folge
+`pruefung-karte` Teil 1 → `re-livespiel-2` (nur Doku) → `wettbewerbe-rest` → `kader-rest` → `ui-rest` (Bildschirme zuletzt, weil sie Core-Werte zeigen);
 danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`), am Rundenende Gesamtreview.
 
 ### Zuständigkeit für gemeinsame Dateien
@@ -84,6 +84,18 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 - **Abnahme:** Bildschirmfoto-Abläufe je Bildschirm, Pixelvergleich mit Fundstelle des Referenzbilds, Bedienweg per Test.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** wartet auf Go.
 
+### Spur `re-livespiel-2` – Analyse-Nachtrag Live-Spiel (R17-D2 = B)
+
+- **Teile:**
+  1. **Eingriff (L6):** Eingriffsmenü Datei 0x38D96 (Mausweg in der Managerzeile: Einsatz, Angriff, Modus, Reihe), Treffer-Tests
+     0x534BC/0x53508, Neuaufbau 0x5434C; Ergebnis als Abschnitt in `analyse/re-livespiel.md`.
+  2. **Torszenen-Lader (L7):** 575C3h (Ov 138h, einziger Aufrufer 567C8h), Szenenwahl `138h:25h`, Format `tore\` so weit
+     lesbar; Umsetzungsplan L1–L8 für Runde 18 (Teile, Dateien, Abnahme) am Ende von `analyse/re-livespiel.md`.
+- **Dateigrenzen:** nur `docs/analyse/re-livespiel.md`, `docs/reverse-engineering.md` (eigener Abschnitt); kein Code.
+- **Abnahme:** jede Lesart mit Fundstelle und ausführbarem Beleg (`ndisasm`-Befehl, Bytes), Funktionskarte führt 575C3h danach
+  nicht mehr als „unbekannt“ (Probe mit `funktionskarte.py`, Schreiben macht `pruefung-karte` Teil 2).
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5 (Disassembly). **Status:** wartet auf Go.
+
 ### Spur `pruefung-karte`
 
 - **Teil 1 (sofort, kleiner PR):** #784 (exakter Einsatz 40/60 je Computerverein im #772-Test, Managergegner), #785 (Kontoanzeige
@@ -97,7 +109,10 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 
 ChatGPT (Codex mit Netzzugang) nach `vorlagen/review-anfrage.md`, risikoorientiert (`prozess/anhang.md` C). **Modell:** GPT-6.1 Terra.
 
-### Entscheidungen zum Plan (offen, Plan-PR)
+### Entscheidungen zum Plan (Nutzer 12.11.2026, PR #788)
+
+**Ergebnis:** R17-D1 = A (vier Spuren), R17-D2 = B (zusätzlich `re-livespiel-2`, Umsetzung ab Runde 18), R17-D3 = A
+(Aufnahmeliste `runde-17` in `vorlagen/dosbox-aufnahme.md`); Modelle wie in den Spurabschnitten.
 
 **R17-D1 – Zuschnitt.** Problem: Außer dem Live-Spiel bleiben rund 25 offene P2-Stellen in Core und UI (Wettbewerbe,
 Nationalteam, Spielplan, Kader, Transfer, Bildschirme) und zwei Testlücken; Core und Bildschirme berühren teils dieselben Werte.
@@ -134,7 +149,8 @@ Spielcode nahezu vollständig. Offen ist, wann es beginnt.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
-- DOSBox-Nachaufnahme für A115, A189, A321, A357, A364 (E14-5 = C): später, wenn der Nutzer Lust hat.
+- DOSBox-Aufnahme `runde-17` (`vorlagen/dosbox-aufnahme.md`, R17-D3 = A): #730, #773, Highscore „nur Weltkugel“, A115, A189,
+  A321, A357, A364, EXPORT2C – wenn der Nutzer Lust hat.
 - `livespiel` (Torszenen, Anzeigetafel, Reporter; Nr. 14/16): Umsetzung als letzter Schritt vor v1.0; Analyse in
   `re-livespiel`. Noch unbekannt und bei der Umsetzung von `livespiel` mitzuanalysieren (zusammen mit L7, `tore\`-Format):
   575C3h (Ov 138h, Lader `tore\`, einziger Aufrufer 567C8h; R10R-01 #387).
