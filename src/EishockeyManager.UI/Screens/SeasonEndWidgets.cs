@@ -64,11 +64,15 @@ public static class SeasonInfo
         return space < 0 ? (name, "") : (name[..space], name[(space + 1)..]);
     }
 
-    /// <summary>Liga im Satz „4. Platz der Oberliga“. [APPROX] Belegt ist nur „der Oberliga“.</summary>
+    /// <summary>
+    /// Liga im Satz „4. Platz der Oberliga“. [ORIGINAL] Tabelle DGROUP 0x9EC + 4 · Liga (Datei 0x2C163 in 0x2C099): „Bundesliga“,
+    /// „Zweite Liga“, „Oberliga“ – nicht die Tabelle 0x9E0 („Zweiten Liga“) des Vereinsfensters. DOSBox-Bild <c>file16_9</c>
+    /// „1. Platz der Zweite Liga“; ebenso das Karriere-Video (<c>FinanceCalibrationTests</c>).
+    /// </summary>
     public static string LeagueGenitive(League league) => league switch
     {
         League.Bundesliga => "Bundesliga",
-        League.ZweiteLiga => "Zweiten Liga",
+        League.ZweiteLiga => "Zweite Liga",
         _ => "Oberliga",
     };
 

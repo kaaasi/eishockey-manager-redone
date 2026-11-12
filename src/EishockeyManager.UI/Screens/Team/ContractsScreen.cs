@@ -78,8 +78,7 @@ public sealed class ContractsScreen : Screen
     /// bei einem offenen Vertrag „kein V.“ und das alte Gehalt (<c>file46_3</c>: KJELLBERG 18.800 DM, im Fenster 19.152 DM). Das
     /// Remake hält dieses Abbild im Bildschirm (<see cref="SeasonEndRows"/>; altes Gehalt aus <see cref="GameState.SalaryBeforeRenewal"/>)
     /// und baut es nach einem Abgang und je Manager neu auf.
-    /// [APPROX] Der Hintergrund des Originals (Vereinsname oben, Kachel rechts unten in <c>file46_3</c>) fehlt; das Remake zeigt
-    /// den Hintergrund von „Verträge“.
+    /// Hintergrund: <see cref="DrawSeasonEndBackground"/> (Vereinsname oben, Kachel mit Symbol 10 rechts unten).
     /// </summary>
     public static Screen ForSeasonEnd(ScreenHost host, Func<Screen> next)
     {
@@ -284,6 +283,8 @@ public sealed class ContractsScreen : Screen
         var club = Club;
         s.Palette = Assets.Palette;
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
+        if (SeasonEnd)
+            DrawSeasonEndBackground(s, club);
         Widgets.Frame(s, Assets, Window, FrameStyle.Orange);
 
         const byte h = TeamUi.HeaderColor;
@@ -326,6 +327,27 @@ public sealed class ContractsScreen : Screen
         _dialog?.Draw(s, Assets);
         TeamUi.StatusLine(s, Assets, 131, StatusY, _status);
         _message.Draw(s, Assets);
+    }
+
+    /// <summary>Kachel rechts unten hinter den Verhandlungen am Saisonende (Fenster 2 × 2 Teile).</summary>
+    public static readonly Rect SeasonEndTile = new(265, 195, 48, 38);
+
+    /// <summary>Lage des Symbols 10 samt Rahmen in der Kachel <see cref="SeasonEndTile"/>.</summary>
+    public const int SeasonEndSymbolX = 274, SeasonEndSymbolY = 200;
+
+    /// <summary>
+    /// Hintergrund der Verhandlungen am Saisonende (vor der Liste, Datei 0x27BDB–0x27CBD).
+    /// [ORIGINAL] Hintergrund kb\22 (0x110:0x7A = Datei 0x45D46), Schrift 2 (0x0BECD), Vereinsname des Managers zentriert
+    /// zwischen x 0 und 319 auf der Grundlinie 10, Farbe 0x1E, Schatten 0 (0x0B6A5, Datei 0x27BF3–0x27C2D); Fenster der Liste
+    /// 0x0B155 bei (1 | 14) mit 11 × 11 Teilen (Datei 0x27C35–0x27C50) und Kachel 0x0B155 bei (265 | 195) mit 2 × 2 Teilen
+    /// (Datei 0x27C58–0x27C73); nach der Liste Symbol 10 (Vertrag) mit Rahmen bei (274 | 200) (0x06CDF, Datei 0x27CA7–0x27CB8).
+    /// DOSBox-Bild <c>file46_3</c> (KÖLNER EC): Zeile y 0–12 und Kachel (265 | 195)–(319 | 239) pixelgleich.
+    /// </summary>
+    private void DrawSeasonEndBackground(Surface s, Club club)
+    {
+        Competitions.CompetitionWidgets.Centered(s, Assets.Flow, 0, 319, 10, club.Name, 0x1E, 0);
+        Widgets.Frame(s, Assets, SeasonEndTile, FrameStyle.Orange);
+        EventSymbols.Draw(s, Assets, EventSymbols.Source(EventSymbols.Contract), SeasonEndSymbolX, SeasonEndSymbolY);
     }
 
     /// <summary>„kein V.“ (DGROUP 0x510E).</summary>

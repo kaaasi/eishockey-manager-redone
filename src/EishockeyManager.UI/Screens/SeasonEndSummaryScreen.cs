@@ -9,10 +9,12 @@ namespace EishockeyManager.UI.Screens;
 /// </summary>
 public sealed class SeasonEndSummaryScreen : Screen
 {
-    public static readonly Rect Window = new(3, 80, 314, 113);
+    /// <summary>
+    /// [ORIGINAL] Fenster 0x0B155 bei (4 | 80) mit 13 × 6 Teilen (Datei 0x26DE6–0x26E04 in 0x26D9A); vorher (3 | 80), 314 × 113.
+    /// </summary>
+    public static readonly Rect Window = new(4, 80, 13 * 24, 6 * 19);
     public const int IconWidth = 24;
     public const int IconHeight = 21;
-    public const int IconPitch = 35;
 
     private readonly MainMenuScreen _menu;
     private int _index;
@@ -69,6 +71,44 @@ public sealed class SeasonEndSummaryScreen : Screen
 
     /// <summary>Zelle der Symbolnummer <paramref name="n"/> im Raster mit sechs Zellen je Zeile.</summary>
     public static Rect Symbol(int n) => Cell(n % 6, n / 6);
+
+    /// <summary>
+    /// Symbole des Fensters in der Folge des Originals: Statusbits 0–6 (Datei 0x2714F–0x2717D), Einzelprämien Torhüter, Topscorer,
+    /// Fair-Play (Datei 0x2717F–0x2725D), dann je Jugendspieler, der in den Kader rückt, Symbol 9 (Datei 0x272D8–0x27320).
+    /// </summary>
+    /// <param name="youthJoined">Zahl der Jugendspieler, die am Saisonende in den Kader rücken (je ein Symbol 9).</param>
+    public static List<Rect> Icons(GameState game, SeasonRecord record, ManagerSeasonResult result, int youthJoined)
+    {
+        var icons = result.Events.Where(e => !IsSinglePremium(e)).Select(EventIcon).ToList();
+        if (game.HasTopFiveStatus(record, result))
+            icons.Add(TopFiveIcon);
+        // [ORIGINAL] Datei 0x2717F–0x2725D: nach den Statusbits 0–6 die Einzelprämien in der Folge Torhüter, Topscorer, Fair-Play.
+        icons.AddRange(result.Events.Where(IsSinglePremium).Select(EventIcon));
+        // [ORIGINAL] Datei 0x27302–0x2730F: je erfolgreichem Aufruf 0x20:0x89F (Jugend in den Kader) Symbol 9 an der nächsten Stelle.
+        for (var i = 0; i < youthJoined; i++)
+            icons.Add(Symbol(EventSymbols.Youth));
+        return icons;
+    }
+
+    /// <summary>
+    /// Zahl der Jugendspieler, die im Fenster dieses Managers in den Kader rücken (Symbol 9).
+    /// [APPROX] Der Spielkern lässt die Jugend erst nach dem Fenster nachrücken (<c>GameState.JoinSeasonEndYouth</c>, Kaderübergang);
+    /// die Zahl je Manager zum Zeitpunkt des Fensters liefert der Core-Teil der Spur <c>kader-rest</c> (R788-03). Bis dahin 0 –
+    /// angeschlossen wird beim Merge (Leitstelle), gezeichnet wird über <see cref="Icons"/>.
+    /// </summary>
+    private static int YouthJoined(ManagerSeasonResult result) => 0;
+
+    /// <summary>Mindestbreite der Platzzahl (DGROUP 0x374) in der Zeile „n. Platz der …“.</summary>
+    public const int PlaceWidth = 5;
+
+    /// <summary>
+    /// Zeile „n. Platz der …“: Die Platzzahl kommt aus der Zahlenausgabe 0x38:0x2C2 (Datei 0x2C10B in 0x2C099) mit der Mindestbreite
+    /// DGROUP 0x374; fehlende Stellen zählen beim Zentrieren mit der Breite der Ziffer 0 (<see cref="Competitions.CompetitionWidgets.Number"/>).
+    /// [APPROX] 0x26F20 setzt 0x374 nicht selbst; die Breite 5 ist der Wert, mit dem alle vier DOSBox-Bilder übereinstimmen
+    /// (<c>file46_2</c> „10.“ pixelgleich, <c>file16_9</c>, <c>file13_15</c>, <c>file23_1</c>: Mitte der Zeile 11,5–15,5 Pixel rechts von 160).
+    /// </summary>
+    public static string PlaceText(ManagerSeasonResult result) =>
+        $"{Competitions.CompetitionWidgets.Number(result.Rank, PlaceWidth)}. Platz der {SeasonInfo.LeagueGenitive(result.League)}";
 
     private static Rect Cell(int column, int row) => new(column * IconWidth, row * IconHeight, IconWidth, IconHeight);
 
@@ -131,34 +171,28 @@ public sealed class SeasonEndSummaryScreen : Screen
         s.Blit(background, new Rect(0, 77, Surface.Width, Surface.Height - 77), 0, 77);
         Widgets.ShadowText(s, Assets.Bold, 160, 4, "Saisonende", Colors.White, 0);
 
+        // [ORIGINAL] 0x26D9A (Datei 0x26DE6–0x26E66): Fenster, Schrift 2, „Ereignisse“ zentriert x 0–321 auf der Grundlinie 89,
+        // Farbe 0x0A, Schatten 0x1C; Linie (13 | 91)–(306 | 91) Farbe 7 (0x0B7B5).
         Widgets.Frame(s, Assets, Window, FrameStyle.Orange, SeasonEndScreen.WindowFill);
         var flow = Assets.Flow;
-        Widgets.ShadowText(s, flow, 160, 84, "Ereignisse", 11, 198);
-        s.HLine(10, 91, 300, 1);
+        Competitions.CompetitionWidgets.Centered(s, flow, 0, 321, 89, "Ereignisse", 0x0A, 0x1C);
+        s.HLine(13, 91, 294, Colors.White);
 
         if (result is null)
             return;
-        var icons = result.Events.Where(e => !IsSinglePremium(e)).Select(EventIcon).ToList();
-        if (Game.HasTopFiveStatus(Record, result))
-            icons.Add(TopFiveIcon);
-        // [ORIGINAL] Datei 0x2717F–0x2725D: nach den Statusbits 0–6 die Einzelprämien in der Folge Torhüter, Topscorer, Fair-Play.
-        icons.AddRange(result.Events.Where(IsSinglePremium).Select(EventIcon));
+        var icons = Icons(Game, Record, result, YouthJoined(result));
         if (icons.Count == 0)
-            Widgets.ShadowText(s, flow, 160, 97, "Keine besonderen Ereignisse...", Colors.White, 0);
-        else
+            // [ORIGINAL] Datei 0x27326–0x27348: zentriert x 10–305, Grundlinie 100, Farbe 7, Schatten 0.
+            Competitions.CompetitionWidgets.Centered(s, flow, 10, 305, 100, "Keine besonderen Ereignisse...", Colors.White, 0);
+        for (var i = 0; i < icons.Count; i++)
         {
-            var sheet = Assets.Image(13);
-            var x = 160 - (icons.Count * IconPitch - (IconPitch - IconWidth)) / 2;
-            foreach (var icon in icons)
-            {
-                s.Outline(new Rect(x - 1, 102, IconWidth + 2, IconHeight + 2), 0);
-                s.Blit(sheet, icon, x, 103);
-                x += IconPitch;
-            }
+            var (x, y) = EventSymbols.Position(i);
+            EventSymbols.Draw(s, Assets, icons[i], x, y);
         }
 
-        Widgets.ShadowText(s, flow, 160, 164, $"{result.Rank}. Platz der {SeasonInfo.LeagueGenitive(result.League)}", Colors.White, 0);
+        // [ORIGINAL] Datei 0x2705F–0x2707D bzw. 0x273D1–0x273EF: zentriert x 0–320, Grundlinie 170 bzw. 180, Farbe 7, Schatten 0.
+        Competitions.CompetitionWidgets.Centered(s, flow, 0, 320, 170, PlaceText(result), Colors.White, 0);
         var premium = result.Premium > 0 ? GameState.FormatMoney(result.Premium) : "keine";
-        Widgets.ShadowText(s, flow, 160, 175, $"Erhaltene Prämien: {premium}", Colors.White, 0);
+        Competitions.CompetitionWidgets.Centered(s, flow, 0, 320, 180, $"Erhaltene Prämien: {premium}", Colors.White, 0);
     }
 }

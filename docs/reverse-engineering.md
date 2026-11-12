@@ -1004,3 +1004,24 @@ deren Klassenkommentaren; Videovergleich in [wettbewerbe.md](wettbewerbe.md), Ab
   29.3.; `folge07_03307`). `RelegationGroup.DateIndices` (`Core/Playoffs.cs`) hat 0, 2, 5, 7, 9, 10 – offen für die
   Spur `wettbewerbe-rest`. Die Einschränkung in `EuropeanCupScreen` („Termine nur ohne Ergebnisse“) ist mit demselben Vergleich
   (Spiel g ≥ Argument 3 + Argument 6, Datei 0x3229F–0x322C6) auflösbar; nicht Teil dieser Spur.
+
+**Teil 2 – Fenster „Saisonende“ und Verhandlungen am Saisonende** (Umsetzung `EventSymbols`, `SeasonEndSummaryScreen`,
+`ContractsScreen.DrawSeasonEndBackground`; Tests `UiRestTeil2Tests`):
+
+* **Symbole 0x06CA6/0x06CDF:** Lage des i-ten Symbols ab (76 | 101), x + 35, über 230 neue Zeile (x = 76, y + 30) – fünf je
+  Zeile, linksbündig (vorher im Remake mittig). Je Symbol zuerst der Rahmen kb\13 (144 | 0) 30 × 27, dann das Symbol bei
+  (x + 3 | y + 3), beides deckend (0x139C9, Maske 0xC0). Folge: Statusbits, Einzelprämien, Symbol 7 (Datei 0x2726D, Verein in
+  der Liste der deutschen EC-Teilnehmer 0x34872), je Jugendspieler Symbol 9 (Datei 0x27302). Symbol 7 und die Zahl für Symbol 9
+  liefert der Spielkern noch nicht (`kader-rest`, R788-03).
+* **Fenster 0x26D9A:** 0x0B155 bei (4 | 80) mit 13 × 6 Teilen; „Ereignisse“ Schrift 2, x 0–321, Grundlinie 89, Farbe 0x0A,
+  Schatten 0x1C; Linie (13 | 91)–(306 | 91) Farbe 7. Platzzeile x 0–320, Grundlinie 170; Prämie Grundlinie 180; „Keine
+  besonderen Ereignisse...“ x 10–305, Grundlinie 100 (alle Farbe 7, Schatten 0).
+* **Platzzeile 0x2C099:** Zahl über 0x0BAB2 mit Mindestbreite DGROUP 0x374 (Bilder passen zu 5), Liga aus DGROUP 0x9EC
+  („Zweite Liga“, nicht 0x9E0 „Zweiten Liga“).
+* **Zentrieren 0x0B6A5** (Datei 0x0B6D9–0x0B6EF): x = x1 + (x2 − x1) / 2 − Breite / 2, Hälften einzeln abgerundet.
+* **Verhandlungen am Saisonende** (Datei 0x27BDB–0x27CBD): Hintergrund kb\22 (0x45D46), Vereinsname Schrift 2 zentriert x 0–319,
+  Grundlinie 10, Farbe 0x1E; Liste 0x0B155 (1 | 14) 11 × 11 Teile; Kachel 0x0B155 (265 | 195) 2 × 2 Teile; Symbol 10 mit Rahmen
+  bei (274 | 200).
+* **Vergleich:** `file46_2` Fenster (4 | 80)–(315 | 193) 0 von 35.568 Pixeln verschieden; `file13_15` Platzzeile 0 von 4.200;
+  `file46_3` Zeile y 0–12 0 von 4.160, Kachel (265 | 195)–(318 | 237) gleich (2 Randpixel x = 319 wie bei `file40_11`).
+  Ablauf `pixel-saisonende-symbole`.

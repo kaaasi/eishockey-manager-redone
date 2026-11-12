@@ -66,11 +66,12 @@ public class SeasonEndStatusUiTests
         // Einzelprämien (Torhüter, Topscorer, Fair-Play) stehen nach dem Weltkugel-Symbol ([ORIGINAL] 0x2717F) – das Symbol
         // ist also das letzte vor ihnen, nicht unbedingt das letzte überhaupt (spielstaerke-manager-2: der Managerverein
         // bekam in diesem Lauf die Fair-Play-Prämie).
-        var first = 160 - (count * SeasonEndSummaryScreen.IconPitch - (SeasonEndSummaryScreen.IconPitch - SeasonEndSummaryScreen.IconWidth)) / 2;
-        var x = Enumerable.Range(0, count).Select(i => first + i * SeasonEndSummaryScreen.IconPitch)
-            .FirstOrDefault(px => Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, px) == 0, first + (count - 1) * SeasonEndSummaryScreen.IconPitch);
+        // Ui-rest Runde 17, Teil 2 (R15-E2 = C): Lage nach dem Raster 0x06CA6 (linksbündig ab 76, fünf je Zeile) statt mittig;
+        // das Symbol steht 3 Pixel im Rahmen aus kb\13 (144 | 0) (0x06CDF).
+        var x = Enumerable.Range(0, count).Select(SymbolX)
+            .FirstOrDefault(px => Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, px) == 0, SymbolX(count - 1));
         Assert.Equal(0, Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, x));
-        Assert.Equal(0, d.Surface.Pixels[102 * Surface.Width + x - 1]); // Rahmen (Palettenindex 0)
+        Assert.Equal(icons.Pixels[EventSymbols.Frame.X], d.Surface.Pixels[101 * Surface.Width + x - EventSymbols.Inset]); // Rahmen
 
         // Außerhalb der ersten fünf: kein Weltkugel-Symbol an dieser Stelle (letztes Symbol ist ein anderes oder fehlt).
         tables[League.Bundesliga] = [.. others, result.Club];
@@ -79,15 +80,17 @@ public class SeasonEndStatusUiTests
         var countWithout = result.Events.Count;
         if (countWithout > 0)
         {
-            var firstWithout = 160 - (countWithout * SeasonEndSummaryScreen.IconPitch - (SeasonEndSummaryScreen.IconPitch - SeasonEndSummaryScreen.IconWidth)) / 2;
             for (var i = 0; i < countWithout; i++)
-                Assert.NotEqual(0, Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, firstWithout + i * SeasonEndSummaryScreen.IconPitch));
+                Assert.NotEqual(0, Differing(d, icons, SeasonEndSummaryScreen.TopFiveIcon, SymbolX(i)));
         }
     }
 
+    /// <summary>x des Symbols Nummer <paramref name="index"/> (Rahmen + 3); alle Testfälle haben höchstens fünf Symbole (eine Zeile).</summary>
+    private static int SymbolX(int index) => EventSymbols.Position(index).X + EventSymbols.Inset;
+
     private static int Differing(ScreenDriver d, VgaImage icons, Rect source, int x)
     {
-        const int y = 103;
+        const int y = 101 + EventSymbols.Inset;
         var differing = 0;
         for (var yy = 0; yy < source.H; yy++)
             for (var xx = 0; xx < source.W; xx++)
