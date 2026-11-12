@@ -151,9 +151,12 @@ public static partial class MatchEngine
         return report;
     }
 
-    /// <summary>Testhaken: Regeln des letzten <see cref="PlayWithEvents"/> je Thread (kein Spielzustand, nicht gespeichert).</summary>
+    /// <summary>
+    /// Testhaken: Regeln des letzten <see cref="PlayWithEvents"/> je Thread (kein Spielzustand, nicht gespeichert). Nur für
+    /// <c>EishockeyManager.Core.Tests</c> sichtbar (InternalsVisibleTo), Review #797 P3.
+    /// </summary>
     [ThreadStatic]
-    public static MatchRules? LastRules;
+    internal static MatchRules? LastRules;
 
     /// <summary>[ORIGINAL] Tabellenrechnung 0x50283 → 0x4F527: Tagesform beider Vereine nach einem Ligaspiel.</summary>
     private static void AfterMatch(Club home, Club away, MatchCompetition competition, MatchReport report, Random random)
