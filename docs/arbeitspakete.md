@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 17 – Restlücken außerhalb des Live-Spiels (Plan 12.11.2026, Entscheidungen 12.11.2026)
+## Aktuelle Runde: Runde 17 – Restlücken außerhalb des Live-Spiels (Plan 12.11.2026, Go 12.11.2026)
 
 Runde 16 abgeschlossen am 12.11.2026: [archiv/runde-16.md](archiv/runde-16.md). Grundlage: offene Issues #730, #773 (P2/P3,
 DOSBox nötig), #784, #785 (Testlücken), Inventur `analyse/inventur.md` (offene `[APPROX]` der Gruppen a/c/d mit Prio P2) und
@@ -58,7 +58,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
      Kalendermarken, sonst Video `folge06_01257`/`folge07_03307`).
 - **Abnahme:** je ID roter Test → grün mit Fundstelle oder begründetes `[APPROX]`; Mehrsaisonprobe (4 Wechsel) für Teil 3;
   Abgleich FILE-Paare unverändert oder erwartete Einträge begründet angepasst.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** wartet auf Go.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
 
 ### Spur `kader-rest` – Spieler, Transfer, Verletzungen
 
@@ -71,7 +71,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
   3. **Geld und Saisonende:** A196 (Schulden gesamt je Partner, 0x463CC/0x57768); Ereignissymbol 9 im Fenster „Saisonende“
      (`FinanceTalent.cs:177`, Core-Teil; die Anzeige macht `ui-rest`).
 - **Abnahme:** wie oben; Mehrsaisonprobe passiv und aktiv für Teile 1–2.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** wartet auf Go.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
 
 ### Spur `ui-rest` – Bildschirmlücken ohne Live-Anzeige
 
@@ -82,7 +82,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
      der Vertragsverhandlung), Hintergrund des Vertragsbildschirms (`file46_3`, `ContractsScreen.cs:81`), Ereignissymbol 9 im
      Fenster „Saisonende“ (`FinanceTalent.cs:177`; Core-Stelle über `kader-rest` bzw. im PR genannt).
 - **Abnahme:** Bildschirmfoto-Abläufe je Bildschirm, Pixelvergleich mit Fundstelle des Referenzbilds, Bedienweg per Test.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** wartet auf Go.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
 
 ### Spur `re-livespiel-2` – Analyse-Nachtrag Live-Spiel (R17-D2 = B)
 
@@ -94,7 +94,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 - **Dateigrenzen:** nur `docs/analyse/re-livespiel.md`, `docs/reverse-engineering.md` (eigener Abschnitt); kein Code.
 - **Abnahme:** jede Lesart mit Fundstelle und ausführbarem Beleg (`ndisasm`-Befehl, Bytes), Funktionskarte führt 575C3h danach
   nicht mehr als „unbekannt“ (Probe mit `funktionskarte.py`, Schreiben macht `pruefung-karte` Teil 2).
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5 (Disassembly). **Status:** wartet auf Go.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5 (Disassembly). **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
 
 ### Spur `pruefung-karte`
 
@@ -103,7 +103,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 - **Teil 2 (nach dem Merge von `ui-rest`, Branch `paket/pruefung-karte-2`):** Inventur „Stand Runde 17“ und Funktionskarte
   (`--write`, zweiter Lauf ohne Diff), Inventurzeilen aller Spuren, gesammelte P3 der Runde.
 - **Modell:** Claude Opus 5.5 (Teil 1 Claude Sonnet 5.5 möglich: reine Testergänzung). **Erstreview:** Claude Opus 5.5.
-  **Status:** wartet auf Go.
+  **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
 
 ### Gesamtreview am Rundenende
 
