@@ -171,7 +171,10 @@ public sealed partial class NationalCoach
         player.Form = Math.Min(Player.MaxValue, player.Form + Delta(2));
     }
 
-    /// <summary>Spielwert eines Spielers für das Nationalteam (Mittel aus Kondition und Technik wie bei den Länderwerten).</summary>
+    /// <summary>
+    /// Mittel aus Kondition und Technik eines Spielers (nur <see cref="NationalLineup.LineValue"/>). [APPROX] Die Reihenwerte der
+    /// Anzeige bildet das Original aus 0x977F (Datei 0x3B65C); den Wert liefert <see cref="GameState.NationalPanelLineValue"/>.
+    /// </summary>
     public static int Value(Player p) => (p.Condition + p.Technique) / 2;
 
     /// <summary>
@@ -181,23 +184,17 @@ public sealed partial class NationalCoach
     /// [ORIGINAL] Ohne die Einstellung „automatisch aufstellen“ spielt eine leere Formation leer (A009, DOSBox FILE48: Einstellung
     /// 0x37F = 0x380 = 0, 0:17 gegen TSCHECHEI, kein Spieler bekommt ein Spiel). Aufgestellt wird über die Einstellung
     /// (<c>CupsNational.AutoLineup.cs</c>).
-    /// [APPROX] Mit der Einstellung, aber leerer Formation (Kader gewählt, das Menü seitdem nicht neu aufgebaut und kein Tag mit
-    /// Ereignis gelaufen – nur in Abläufen ohne Oberfläche) gilt die bisherige Automatik des Remakes als Ersatz für die Neuaufstellung,
-    /// die das Original beim nächsten Menüaufbau macht: bester unverletzter Torhüter, je Reihe die zwei besten Verteidiger und drei
-    /// besten Stürmer (nach Kondition + Technik + Form).
+    /// A024 (Spur wettbewerbe-rest, Teil 1): Mit der Einstellung, aber leerer Formation (Kader gewählt, das Menü seitdem nicht neu
+    /// aufgebaut und kein Tag mit Ereignis gelaufen – nur in Abläufen ohne Oberfläche; im Original folgt auf „Spieler in WM-Kader“
+    /// immer der Menüaufbau mit Neuaufstellung, Datei 0x450C6 → 0x426BC) gilt die Aufstellung, die diese Neuaufstellung setzen
+    /// würde: [ORIGINAL] Regel 0x426BC/0x42838 für Satz 5 (<see cref="StandInFormation"/>, <see cref="AutoLineupRule.Apply"/>:
+    /// Torhüter, drei Abwehr- und drei Sturmreihen nach (Kondition + Technik + Form) / 3, Ersatz bis 22 eingesetzt).
+    /// [APPROX] Nur der Zeitpunkt: das Remake wendet die Regel beim Lesen an, ohne die Formation zu schreiben (bis Runde 16
+    /// eine eigene Automatik nach Kondition + Technik + Form ohne Ersatz und alle Verfügbaren eingesetzt).
     /// </summary>
-    public NationalLineup Lineup()
-    {
-        if (!UsesStandInLineup)
-            return FormationLineup();
-        List<Player?> Best(PlayerRole role, int count) => _squad.Select(m => m.Player)
-            .Where(p => p.Role == role && p.Available)
-            .OrderByDescending(p => p.Condition + p.Technique + p.Form).Take(count).Cast<Player?>().ToList();
-        return new NationalLineup(Best(PlayerRole.Goalkeeper, 1).FirstOrDefault(),
-            Best(PlayerRole.Defender, 2 * Lines), Best(PlayerRole.Forward, 3 * Lines));
-    }
+    public NationalLineup Lineup() => FormationLineup(UsesStandInLineup ? StandInFormation().Formation : Formation);
 
-    /// <summary>Ersatz-Automatik von <see cref="Lineup"/>: leere Formation mit Einstellung „automatisch aufstellen“ ([APPROX]).</summary>
+    /// <summary>Ersatz von <see cref="Lineup"/>: leere Formation mit Einstellung „automatisch aufstellen“ (A024).</summary>
     internal bool UsesStandInLineup => Formation.Count == 0 && AutoLineupEnabled;
 
     /// <summary>

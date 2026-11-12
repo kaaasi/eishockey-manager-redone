@@ -246,8 +246,9 @@ Videos prüfen (Tore je Spiel, Strafminuten).
 `MatchEngine.PlayWithEvents(game, heim, gast, Wettbewerb, K.-o., Zufall)` ersetzt `MatchEngine.Play` in der Liga
 (`GameState.PlayNextMatchDay`), den Play-offs und der Aufstiegsrunde (`Playoffs.cs`), im DEB-Pokal (`CupsDeb.cs`), im
 Europapokal (`CupsGroup.cs`/`CupsEurope.cs`) und in der WM (`CupsWorld.cs`, Nationalteams über `RatedNation`).
-`MatchEngine.Play(Club, Club, Random)` bleibt unverändert für die Freundschaftsspiele in `CupsNational*.cs` (Spur
-weltkugel-dosbox; Umstellung durch die Leitstelle in der Integration).
+`MatchEngine.Play(Club, Club, Random)` hat keinen Aufrufer im Spielablauf mehr: Die Freundschaftsspiele rechnen seit der
+Integration Runde 7 mit `PlayWithEvents`, ab Runde 17 mit Wettbewerbscode 0xD (`MatchCompetition.Friendly`: Regeln ohne WM,
+Minutenschleife über den Bundestrainer; A008/A110, `docs/reverse-engineering.md` „Spur wettbewerbe-rest“).
 
 Das Nationalteam des Bundestrainers (`RatedNation`, ohne eigenen Kader) zählt in Freundschafts- und WM-Spielen über
 die Aufstellung des Bundestrainers (`NationalCoach.Lineup()`) wie ein Managerverein: Spiele, Tore/Vorlagen, Strafen,

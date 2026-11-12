@@ -11,6 +11,17 @@ public enum MatchCompetition
     DebCup,
     EuropeanCup,
     WorldCup,
+
+    /// <summary>
+    /// Länder-Freundschaftsspiel des Bundestrainers. [ORIGINAL] Datei 0x30365: Wettbewerbscode DGROUP 0xD0C2 = 0xD (0x30390),
+    /// Spieltagsablauf 0x36B5D mit denselben Argumenten wie das WM-Gruppenspiel (Liste 3, Gruppenmaske 8, kein K.-o.;
+    /// 0x30395–0x303A2 gegen 0x30F58–0x30F65), aber ohne WM-Merker DGROUP 0x12B (den setzen nur 0x30F4E/0x31012, Anfangswert 0).
+    /// Es gelten also die Regeln ohne WM (Torbudget 0x9F5C, Abschluss 0xA484, schneller Weg 0x374EF). Code 0xD prüft keinen
+    /// Anzeigeschalter (0x3702E–0x37085 → 0x3731F); weil der Bundestrainer (Manager 5, Verein DGROUP 0x9EDA) mitspielt, setzt
+    /// 0x544C0 (aus 0x36F9C) seinen Satz aktiv (DGROUP 0xA729 + 5, Datei 0x545A6) und das Spiel läuft über den Merker
+    /// 0x36FEA/0x37028 durch die Minutenschleife 0x37088.
+    /// </summary>
+    Friendly,
 }
 
 /// <summary>
@@ -65,7 +76,7 @@ public static partial class MatchEngine
         var awayManaged = IsManaged(game, away);
         var managerMatch = homeManaged || awayManaged;
         var rules = new MatchRules(
-            WorldCup: competition == MatchCompetition.WorldCup,
+            WorldCup: competition == MatchCompetition.WorldCup, // [ORIGINAL] DGROUP 0x12B nur in der WM (A008: nicht im Freundschaftsspiel)
             Playoff: competition is MatchCompetition.Playoff or MatchCompetition.Relegation,
             KnockOut: knockOut,
             ManagerMatch: managerMatch);
@@ -91,8 +102,9 @@ public static partial class MatchEngine
             : game.Options.CupMatchUsesMinuteLoop(competition);
         if (GameState.ManagerDayFlag)
             minuteLoop = true; // [ORIGINAL] Merker 0x36FEA: Managerverein spielt an diesem Tag → alle Paarungen Minute für Minute
+        LastRules = rules;
         if (!managerMatch && competition is MatchCompetition.DebCup or MatchCompetition.EuropeanCup or MatchCompetition.WorldCup
-                or MatchCompetition.Playoff or MatchCompetition.Relegation
+                or MatchCompetition.Playoff or MatchCompetition.Relegation or MatchCompetition.Friendly
             && !minuteLoop)
         {
             var h = OriginalMinutes.Strengths(homeTeam, awayTeam, 0);
@@ -132,6 +144,10 @@ public static partial class MatchEngine
         AfterMatch(home, away, competition, report, random);
         return report;
     }
+
+    /// <summary>Testhaken: Regeln des letzten <see cref="PlayWithEvents"/> je Thread (kein Spielzustand, nicht gespeichert).</summary>
+    [ThreadStatic]
+    public static MatchRules? LastRules;
 
     /// <summary>[ORIGINAL] Tabellenrechnung 0x50283 → 0x4F527: Tagesform beider Vereine nach einem Ligaspiel.</summary>
     private static void AfterMatch(Club home, Club away, MatchCompetition competition, MatchReport report, Random random)

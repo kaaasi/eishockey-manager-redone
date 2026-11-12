@@ -980,3 +980,26 @@ für Runde 11); die Funktionskarte zählt sie mit ([re-abdeckung.md](re-abdeckun
 | `re-saisonwechsel` | [analyse/re-saisonwechsel.md](analyse/re-saisonwechsel.md) | Saisonende, Oberliga-Austausch mit Managervereinen (#166, berichtigt Teil 4 oben), DOSBox-Beleg |
 | `re-livespiel` | [analyse/re-livespiel.md](analyse/re-livespiel.md) | Livespiel: Spieluhr, Anzeigetafel, Reporter, Torszenen, Spielende (Grundlage für `livespiel`) |
 | `re-rest` | [analyse/re-rest.md](analyse/re-rest.md) | übrige Funktionen des Spielcodes (u. a. Talentsuche, Hilfen der Spieltage, Nachrichten) |
+
+## Spur `wettbewerbe-rest` (Runde 17)
+
+Teil 1 – Nationalteam/Länder (`ndisasm -b 16`, `tools/reverse-engineering/disasm.py`; Dateiadressen):
+
+* **Freundschaftsspiel (A008/A110):** Datei 0x30365 setzt Code DGROUP 0xD0C2 = 0xD (0x30390) und ruft 0x36B5D mit denselben
+  Argumenten wie das WM-Gruppenspiel (0, 8, 0, 0, 3; 0x30395–0x303A2 gegen 0x30F58–0x30F65), aber ohne den WM-Merker DGROUP
+  0x12B (Schreiber nur 0x30F4E/0x30F6D und 0x31012/0x31033, Anfangswert 0; Leser 0xA086/0xA1A1/0xA1FB im Torbudget 0x9F5C,
+  0xA7A7/0xA7C7 im Abschluss 0xA484, 0x374EF im schnellen Weg, 0x53A93 Anzeige). Code 0xD ist in 0x3702E–0x37085 keinem
+  Schalter zugeordnet (→ 0x3731F); die Gruppenschleife 0x36E1B–0x36FE5 ruft für jede Paarung 0x544C0 (0x36F9C), das für
+  Manager m < [0x386] und m = 5 (Schleife 0x54BDE–0x54BF4) bei Verein DGROUP 0x966F + 0x1AF · m = Heim oder Gast den Satz
+  aktiv setzt (DGROUP 0xA729 + m, Datei 0x545A6). Mit dem Bundestrainer (m = 5, Verein 0x9EDA = Land) ist der Merker 0x36FEA
+  also gesetzt: Minutenschleife 0x37088. Remake: `MatchCompetition.Friendly`.
+* **Managerwert der Strafen des Nationalteams (A084):** 0x35883–0x358A0 liest DGROUP 0x974B + 0x1AF · Vereinsfeld 0x16; das
+  Land des Bundestrainers hat 0x16 = 6, also 0xA165. Managersätze 0x965B + 6 · 0x1AF = 0xA075, Jugendteams 0xA075 (84 Byte),
+  Ligaergebnisse ab 0xA0CB (Schreiber 0x369C7, Datei 0x36A54: Liga · 0x210 + 12 · (Spieltag − 1) + Paarungsplatz + Seite):
+  0xA165 = Heimtore der sechsten Paarung des 13. Bundesliga-Spieltags. Kein direkter Zugriff auf 0xA160–0xA170 im Programm
+  (`disasm.py --xref`). Remake: `MatchEngine.NationalPenaltyManagerValue`.
+* **Reihenwerte „WM Vorbereitung“ (A024):** 0x3B5F5–0x3B6C4 ruft 0x977F(Verein, Reihe, Teil, 0, 0) und zeigt (Byte 2 + Byte 1) / 2
+  = (Kondition + Technik) / 2 (Packung 0x9CDE–0x9D13: Kondition [bp−4], Technik [bp−6], Form [bp−8]); mit Vereinsfeld 0x16 ≠ 0
+  und Schalter 0 Spielerweg 0x98F8 (0x97D6–0x97E2). Remake: `GameState.NationalPanelLineValue`. Leere Formation mit Einstellung
+  „automatisch aufstellen“: Aufstellung der Neuaufstellung 0x426BC (`NationalCoach.StandInFormation`).
+
