@@ -8,10 +8,129 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 17 – Planung offen (neue Leitstellen-Sitzung, `docs/vorlagen/leitstelle-start.md`)
+## Aktuelle Runde: Runde 17 – Restlücken außerhalb des Live-Spiels (Plan 12.11.2026, Go offen)
 
-Runde 16 abgeschlossen am 12.11.2026: [archiv/runde-16.md](archiv/runde-16.md). Grundlage für den Plan: Vormerkungen unten,
-offene Issues #730, #773, #776 (falls wieder geöffnet), #784, #785.
+Runde 16 abgeschlossen am 12.11.2026: [archiv/runde-16.md](archiv/runde-16.md). Grundlage: offene Issues #730, #773 (P2/P3,
+DOSBox nötig), #784, #785 (Testlücken), Inventur `analyse/inventur.md` (offene `[APPROX]` der Gruppen a/c/d mit Prio P2) und
+Funktionskarte `re-abdeckung.md`: Spielcode zu 91 % umgesetzt; fehlende Funktionen gehören bis auf F107 (R-K7) alle zum
+Live-Spiel (L1–L8, `analyse/re-livespiel.md`). Diese Runde schließt die übrigen P2-Lücken, damit danach das Live-Spiel und die
+Abschlussprüfung folgen können.
+
+**Base für alle Spuren:** aktueller `main` (Planstand `3a8070c`); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 16
+(Archiv): ein Branch `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; **je Inventur-ID zuerst prüfen,
+ob die Zeile noch offen ist** (Stand-Vermerke, Code), erledigte IDs nur im PR nennen; Befund reproduzieren, roter
+Regressionstest mit Fundstelle, dann grün; Mehrsaisonprobe bei Saisonwechsel, Kader oder Geld; Schema-Änderung mit Migration in
+neuer Datei `Core/SaveGame.Migration.<Spur>.cs` (Leitstelle nummeriert beim Merge); `[ORIGINAL]`/`[APPROX]` mit `Datei 0x…`;
+fremde Tests nach R15-E2 = C; keine geplanten Aufgaben aus Läufen (R15-E4). Bei Unklarheit „wie im Original“; bleibt es
+unklar, Punkt als `[APPROX]` mit Begründung belassen, die Leitstelle bündelt die Fragen. Live-Anzeige gehört **nicht** in
+diese Runde (Stellen mit „Spur livespiel“ bleiben). **Entwickler und Erstreviews sind Claude-Sitzungen**; ChatGPT nur fürs
+Gesamtreview.
+
+**Folge:** Welle 1 parallel `wettbewerbe-rest`, `kader-rest`, `ui-rest`, `pruefung-karte` Teil 1; Merge in der Folge
+`pruefung-karte` Teil 1 → `wettbewerbe-rest` → `kader-rest` → `ui-rest` (Bildschirme zuletzt, weil sie Core-Werte zeigen);
+danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`), am Rundenende Gesamtreview.
+
+### Zuständigkeit für gemeinsame Dateien
+
+- `Core/Cups*.cs`, `Core/MatchEngine.cs`, `Core/MatchEngine.Live.cs` (nur Nationalteam/Freundschaftsspiel),
+  `Core/NewGame.cs`, `Core/Season.cs`/Spielplan, `Core/Playoffs.cs`, `Core/FinanceSponsorRating.cs`,
+  `Core/FinanceStadium.cs` (nur Liga-Code A045): allein `wettbewerbe-rest`.
+- `Core/Transfer*.cs`, `Core/Player*.cs`, `Core/MatchEngine.Injuries.cs`, `Core/StatisticsClub.cs`, `Core/FinanceTalent.cs`:
+  allein `kader-rest`.
+- `UI/Screens/**`: allein `ui-rest`; braucht `ui-rest` einen Core-Wert, den eine andere Spur ändert, nennt es die Stelle im PR,
+  die Leitstelle löst beim Merge auf. Umgekehrt nennen Core-Spuren Bildschirmfolgen im PR statt den Bildschirm zu ändern.
+- `Core/OriginalImport*.cs`, `Core/OriginalExport*.cs`, `tests/**/AbgleichOriginalPaareTests.cs`: jede Spur nur die Stellen
+  bzw. erwarteten Einträge ihrer IDs, im PR genannt.
+- `Core/GameState.Integration.cs`, `GameState.cs`: höchstens minimal, im PR begründet.
+- `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`: allein
+  `pruefung-karte` (Teil 2); die anderen Spuren nennen ihre Inventurzeilen im PR.
+
+### Spur `wettbewerbe-rest` – Wettbewerbe, Nationalteam, Spielplan
+
+- **Teile:**
+  1. **Nationalteam/Länder:** A008/A110 (Länder-Freundschaftsspiele: Rechenweg des Originals statt Poisson bzw. WM-Gruppenspiel,
+     Freundschaftsspiel 0x30365), A084 (Reihenwerte/Energie und Strafen-Managerwert 20 des Nationalteams), A024 (Automatik bei
+     leerer Formation).
+  2. **Europapokal und Liga-Code:** A004 (Gegnerstärke: Sturmwert, Formabschlag −5), A045 (Liga-Code ausländischer Vereine),
+     A037 (Teilnahmebits Masken 0x40/0x08/0x20, Rücksetzen nach Ausscheiden; Leser 0x44A48).
+  3. **Spielplan und Start:** A113 (Spielplanfunktion 0x4E7C7 lesen, Spielplan aller Ligagrößen wie im Original), A112/F107
+     (Verein ohne Liga, Filter DEB-Paarungen 0x45CD0 beim Zufallsverein, R-K7), A142 (Termine der Aufstiegsrunde aus den
+     Kalendermarken, sonst Video `folge06_01257`/`folge07_03307`).
+- **Abnahme:** je ID roter Test → grün mit Fundstelle oder begründetes `[APPROX]`; Mehrsaisonprobe (4 Wechsel) für Teil 3;
+  Abgleich FILE-Paare unverändert oder erwartete Einträge begründet angepasst.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** wartet auf Go.
+
+### Spur `kader-rest` – Spieler, Transfer, Verletzungen
+
+- **Teile:**
+  1. **Spielerwerte und Laufbahn:** A130 (Startwerte ±2, Form, Energie, Gehalt), A232/A238 (Höchstalter, Rücktritt je Alter),
+     A066 (Verletzungsart, Wochen, Form vom Pool).
+  2. **Transfermarkt:** A251 (Takt des Listenwechsels, bietender Verein, Antwort menschlicher Verkäufer 0x47655–0x47743), A253
+     (Mindestbestand je Art, Verkaufszweig 0x46E04–0x46FCF), A226 (Verhandlung am Saisonende, Rest), F089 (Grenze 28 der
+     Talentsuche inkl. verliehener, 0x3CCEB), A244/A245 (Starttext und laufende Suche, 0x465F1).
+  3. **Geld und Saisonende:** A196 (Schulden gesamt je Partner, 0x463CC/0x57768); Ereignissymbol 9 im Fenster „Saisonende“
+     (`FinanceTalent.cs:177`, Core-Teil; die Anzeige macht `ui-rest`).
+- **Abnahme:** wie oben; Mehrsaisonprobe passiv und aktiv für Teile 1–2.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** wartet auf Go.
+
+### Spur `ui-rest` – Bildschirmlücken ohne Live-Anzeige
+
+- **Teile:**
+  1. **Ligapaarungen (A280/A282):** Seiten „Play-Off“ und „Aufstieg“ am mittleren Knopf, Klick auf eine Zeile → Vereinsinfo,
+     zuletzt gewählte Seite (DGROUP 0x5125); Bildschirmfoto gegen Referenzbilder.
+  2. **Einzelstellen:** A332 (Lampe 1, Spielerfeld 0x1E), A360 (Spielerstatistik: Kaufpreis statt Spielerwert), A363 (Absage
+     der Vertragsverhandlung), Hintergrund des Vertragsbildschirms (`file46_3`, `ContractsScreen.cs:81`), Ereignissymbol 9 im
+     Fenster „Saisonende“ (`FinanceTalent.cs:177`; Core-Stelle über `kader-rest` bzw. im PR genannt).
+- **Abnahme:** Bildschirmfoto-Abläufe je Bildschirm, Pixelvergleich mit Fundstelle des Referenzbilds, Bedienweg per Test.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** wartet auf Go.
+
+### Spur `pruefung-karte`
+
+- **Teil 1 (sofort, kleiner PR):** #784 (exakter Einsatz 40/60 je Computerverein im #772-Test, Managergegner), #785 (Kontoanzeige
+  #768 für weitere Manager und Bundestrainer); Rückmutation je Test.
+- **Teil 2 (nach dem Merge von `ui-rest`, Branch `paket/pruefung-karte-2`):** Inventur „Stand Runde 17“ und Funktionskarte
+  (`--write`, zweiter Lauf ohne Diff), Inventurzeilen aller Spuren, gesammelte P3 der Runde.
+- **Modell:** Claude Opus 5.5 (Teil 1 Claude Sonnet 5.5 möglich: reine Testergänzung). **Erstreview:** Claude Opus 5.5.
+  **Status:** wartet auf Go.
+
+### Gesamtreview am Rundenende
+
+ChatGPT (Codex mit Netzzugang) nach `vorlagen/review-anfrage.md`, risikoorientiert (`prozess/anhang.md` C). **Modell:** GPT-6.1 Terra.
+
+### Entscheidungen zum Plan (offen, Plan-PR)
+
+**R17-D1 – Zuschnitt.** Problem: Außer dem Live-Spiel bleiben rund 25 offene P2-Stellen in Core und UI (Wettbewerbe,
+Nationalteam, Spielplan, Kader, Transfer, Bildschirme) und zwei Testlücken; Core und Bildschirme berühren teils dieselben Werte.
+- **A** Drei Fachspuren und `pruefung-karte` wie oben. + parallel, Dateien getrennt, eine Runde; − Merge-Folge nötig (UI zuletzt).
+- **B** Eine Core-Spur `kern-rest` (Wettbewerbe und Kader) und `ui-rest`. + weniger Läufe; − lange Spur, Fortsetzungen reichen
+  evtl. nicht.
+- **C** Nur Core-Spuren, `ui-rest` mit dem Live-Spiel zusammen in Runde 18. + Bildschirmarbeit gebündelt; − Ligapaarungen bleiben
+  unvollständig.
+- **D** Nur Wettbewerbe/Nationalteam und `pruefung-karte`, Kader/UI in Runde 18. + kleinste Runde; − zwei Runden statt einer.
+- **Empfehlung A:** bewährter Zuschnitt (Runden 13–16), Lücken in einer Runde geschlossen.
+
+**R17-D2 – Live-Spiel (L1–L8).** Problem: Das Live-Spiel ist als letzter Schritt vor v1.0 vorgesehen; außer ihm ist der
+Spielcode nahezu vollständig. Offen ist, wann es beginnt.
+- **A** Start in Runde 18 nach Abschluss dieser Runde (L1–L5 zuerst, L6–L8 danach). + klare Reihenfolge, keine Konflikte mit
+  `MatchEngine.Live.cs`/`MatchDayScreen`; − eine Runde später.
+- **B** In dieser Runde zusätzlich Analysespur für L6 (Eingriffsmenü 0x38D96, Treffer-Tests 0x534BC/0x53508) und 575C3h
+  (`tore\`) als Spur `re-livespiel-2` (Doku-Nachtrag zu `analyse/re-livespiel.md`, kein Code; Claude Opus 5.5, Erstreview
+  Claude Opus 5.5, weil Disassembly). + Runde 18 startet mit vollständiger Analyse; − ein Lauf mehr.
+- **C** In dieser Runde schon L1 (Drittelzähler im Core) als fünfte Spur. + früher Fortschritt; − Konflikt mit
+  `wettbewerbe-rest` an `MatchEngine.Live.cs`.
+- **D** Live-Spiel erst nach der Abschlussprüfung. + Prüfung am stabilen Kern; − Abschlussprüfung müsste danach erneut laufen.
+- **Empfehlung B:** kostet wenig, beseitigt die letzte unbekannte Funktion und macht Runde 18 planbar.
+
+**R17-D3 – #730/#773 (DOSBox nötig).** Problem: Beide Befunde lassen sich ohne Aufnahme im Original nicht belegen
+(R16-E2 = C); weitere Prüfaufträge haben in Runde 16 nichts ergeben.
+- **A** Die Leitstelle legt eine gebündelte Aufnahmeliste `runde-17` in `vorlagen/dosbox-aufnahme.md` an (#730 nach
+  `analyse/belastung-staerke.md` §7.3, #773, Highscore „nur Weltkugel“, A115/A189/A321/A357/A364, EXPORT2C); Aufnahme nach Lust,
+  Auswertung in der Runde nach Eintreffen. + kein Druck, Liste fertig; − Issues bleiben offen.
+- **B** Weiter zurückgestellt, keine Liste. + kein Aufwand; − Vorbereitung später nötig.
+- **C** #730 als Remake-Verhalten mit `[APPROX]` annehmen und schließen, #773 ebenso. + Issues weg; − Abweichung bleibt
+  unbelegt.
+- **D** Dritter Prüfauftrag im Disassembly (Reihenwahl). + ohne Nutzerarbeit; − zweimal ohne Ergebnis.
+- **Empfehlung A.**
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
