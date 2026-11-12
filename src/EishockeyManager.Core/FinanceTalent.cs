@@ -149,7 +149,7 @@ public sealed partial class GameState
         // [ORIGINAL] Talentsuche ruft 0x42CB1 für den Managerkader (Datei 0x06EB9 in 0x06D7F): einsortiert nach Spielerart
         // (managerSquad = Vorgabe true; Test KaderStartRunde14Tests, R623-01).
         // [ORIGINAL] Belastung des neuen Kaderplatzes random(80, 120) (Datei 0x42E4C–0x42E5E; A184, Integration Runde 12, R12I-01).
-        p.Strain = TransferRules.Random16(random, 80, 120);
+        p.Strain = TransferRules.Random16(random, PlayerFactory.StartStrainMin, PlayerFactory.StartStrainMax);
         // A134 (Spur kader, Teil 2): [ORIGINAL] 0x42CB1 ruft nach der Energie 0x4907A (Datei 0x42E6B): Tendenz und Steuerbyte.
         // [APPROX] Eigene Quelle TrendRandom wie beim Markt.
         p.RollTrend(TrendRandom);

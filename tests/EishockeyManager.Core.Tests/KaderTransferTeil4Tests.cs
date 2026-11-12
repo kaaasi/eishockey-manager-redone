@@ -50,6 +50,8 @@ public class KaderTransferTeil4Tests
         // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): Saat 22 statt 14 – mit dem Spielplan über die Satzfolge (Datei 0x4E7C7) hält Saat 14 nur 18 Wechsel
         // (Saaten 1–40: 12–26, über 22 nur 1, 2, 7, 19, 22, 39). Rückschaltprobe: alter Code mit Saat 22 rot; die Probe hängt an der
         // Saat, die Grenze bleibt.
+        // Spur kader-rest (A130, R15-E2 = C): Saat 3 statt 14 – mit der Startbelastung 80–120 (Datei 0x42E4C) hält Saat 14 nur 15
+        // Wechsel (Saaten 1–20: 11–24, über 22 nur 3 und 6). Die Probe hängt an der Saat, die Grenze bleibt.
         var game = TestGames.Create(22);
         var market = game.TransferMarket;
         var changes = 0;

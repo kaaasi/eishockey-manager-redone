@@ -1040,3 +1040,21 @@ Teil 3 – Spielplan und Start:
   dieselben Daten zeigt „Aufstieg 2.Liga“ in `folge07_03307`. Remake: `RelegationGroup.DateIndices`.
 * **A112/F107:** schon umgesetzt (Runde 13/14, U15-a/U15-c: `NewGame.PlaceInStartLeague`, Filter 0x45CD0(r, 1) trifft beim Start
   nur Platz 0); keine Änderung.
+
+## Spieler, Transfer, Verletzungen (Spur `kader-rest`, Runde 17)
+
+Teil 1 (#791), Disassembly mit `tools/reverse-engineering/disasm.py`, Gegenprobe an den Ständen im Referenz-Repo.
+
+* **Startbelastung (A130):** Jeder neue Kaderplatz bekommt in 0x42CB1 die Belastung `+0x13` = random(80, 120) (Datei
+  0x42E4C–0x42E5E); die Startwerte Datei 0x29DA4–0x29EF7 schreiben `+0x13` nicht (nur `+0x10`–`+0x12`, Pool `+0x15`–`+0x17`,
+  Gehalt `+0x28` und Preis `+0x2C` über 0x49D36). Belege: FILE01/02/09/10/11/12 – alle 25 bzw. 20 Plätze 80–120. Im Remake
+  `PlayerFactory.RollSquadValues` (Managerkader); Computervereine haben keine Kaderplätze und behalten Energie 50–80 (`[APPROX]`).
+* **Laufbahnende (A232/A238):** Saisonende Datei 0x2787A–0x278A1: Alter (Pool `+0x14`) > random(37, 42), frühestens mit 38,
+  sicher ab 43 (`SquadRules.CareerEnds`, `CareerEndMin`/`CareerEndMax`). Die frühere Kader-KI-Regel 33–37 Jahre war seit U5 ohne
+  Aufrufer und ist entfernt.
+* **Verletzung und Form (A066):** Datei 0x05B34–0x05B7C liest und schreibt die Form im **Pool** (`far:8253 + 0x21 · Index +
+  0x17`): > 20 → − random(10, 15). Die Form des Kaderplatzes `+0x12` bleibt; erst ein neuer Kaderplatz übernimmt die Poolwerte
+  (0x42CB1, Datei 0x42EC3–0x42F06: `+0x10`/`+0x11`/`+0x12` = Pool `+0x15`/`+0x16`/`+0x17`). Belege: FILE20 ABSTREITER 48/34,
+  PURVES 58/44; FILE22 PESKA 58/48; FILE24 STEFAN 52/42, CHAIDAROV 55/40; MENDE FILE36 60/45 → FILE44 60/34 (zweite Verletzung),
+  HEISS FILE37 46/34 bis FILE46 unverändert nach der Heilung. Restdauer `+0x0D` in Wochen (Heilung je 7. Tag), Art `+0x17`.
+  Im Remake `Player.PoolForm` (null = gleich der Form, Schema 50).

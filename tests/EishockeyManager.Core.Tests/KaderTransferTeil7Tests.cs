@@ -140,6 +140,8 @@ public class KaderTransferTeil7Tests
         // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): Saat 1 statt 3 – mit dem Spielplan über die Satzfolge (Datei 0x4E7C7) melden sich bei Saat 3 nur
         // zwei Spieler (Grenze 3); Saaten 1–40: 2–4. Rückschaltprobe: alter Code mit Saat 1 ebenfalls grün – die Probe hängt an der
         // Saat, die Grenzen bleiben.
+        // Spur kader-rest (A130, R15-E2 = C): Saat 2 statt 3 – mit der Startbelastung 80–120 (Datei 0x42E4C) melden sich bei Saat 3
+        // nur 2 von 22 (Saaten 1–12: 2–4). Die Probe hängt an der Saat, die Grenze bleibt.
         var game = TestGames.Create(1);
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var twoYears = club.Players.Where(p => p.Role == PlayerRole.Forward).Take(3).ToList();

@@ -27,22 +27,33 @@ public static class PlayerFactory
     /// <summary>Plausibilitätsgrenzen für das Alter in <see cref="Validate"/> (kein Spielregelwert).</summary>
     public const int MinPlausibleAge = 15, MaxPlausibleAge = 45;
 
+    /// <summary>Belastung (+0x13) eines neuen Kaderplatzes. [ORIGINAL] random(80, 120), Datei 0x42E4C–0x42E5E (A130).</summary>
+    public const int StartStrainMin = 80, StartStrainMax = 120;
+
     /// <summary>Höchste Rückennummer.</summary>
     public const int MaxNumber = 99;
 
     /// <summary>
     /// Werte eines Kaderspielers zu Spielbeginn aus den Teamwerten seiner Art (siehe <see cref="SquadSetup"/>).
-    /// [ORIGINAL] Alter 19–31, Talent 0–9. [APPROX] ±2 um den Teamwert, Form 40–60, Energie 50–80, Gehalt aus der Stärke.
-    /// Die Reihenfolge der Zufallszahlen ist festgelegt (Alter, Talent, Kondition, Technik, Form, Energie).
+    /// [ORIGINAL] Alter 19–31 (Datei 0x5B1F5–0x5B20C), Talent 0–9; Kaderplätze der Manager (<paramref name="managed"/>):
+    /// Kondition und Technik random(Basis − 2, Basis + 2), Form random(40, 60) (Datei 0x29DA4–0x29EF7), Belastung +0x13 =
+    /// random(80, 120) wie jeder neue Kaderplatz (Datei 0x42E4C–0x42E5E; A130, Gegenprobe FILE01/FILE09/FILE12: alle 80–120);
+    /// das Gehalt setzt danach <see cref="GameState.ApplyStartSalaries"/> (Datei 0x29EE4).
+    /// [APPROX] Computervereine haben im Original keine Kaderplätze (Spieler nur im Pool, Teamwerte aus der Datenbank): ±2 um
+    /// den Teamwert, Form 40–60, Energie 50–80, Gehalt aus der Stärke bleiben dort Remake-Werte.
+    /// Die Reihenfolge der Zufallszahlen ist festgelegt (Alter, Talent, Kondition, Technik, Form, Energie bzw. Belastung).
     /// </summary>
-    public static void RollSquadValues(Player p, int teamCondition, int teamTechnique, Random random)
+    public static void RollSquadValues(Player p, int teamCondition, int teamTechnique, Random random, bool managed = false)
     {
         p.Age = SquadSetup.Between(random, SquadSetup.MinAge, SquadSetup.MaxAge);
         p.Talent = SquadSetup.Between(random, 0, 9);
         p.Condition = Player.Clamp(teamCondition + SquadSetup.Between(random, -2, 2));
         p.Technique = Player.Clamp(teamTechnique + SquadSetup.Between(random, -2, 2));
         p.Form = SquadSetup.Between(random, 40, 60);
-        p.Energy = SquadSetup.Between(random, 50, 80);
+        if (managed)
+            p.Strain = SquadSetup.Between(random, StartStrainMin, StartStrainMax);
+        else
+            p.Energy = SquadSetup.Between(random, 50, 80);
         p.ContractYears = SquadSetup.StartContractYears;
         p.MonthlySalary = Contracts.BaseSalary(p, random);
     }
@@ -177,6 +188,9 @@ public static class PlayerFactory
         // [ORIGINAL] neuer Kaderplatz (Datei 0x42CB1): Spiele für den Verein +0x1C = 0; die Saisonspiele (+0x06) bleiben (FILE07).
         // A135: alle Vereinszähler +0x1C–+0x26 je Wettbewerb.
         p.StartClubCounters();
+        // [ORIGINAL] A066: Form aus dem Pool (Datei 0x42EFF–0x42F06). [APPROX] Computervereine haben keine Kaderplätze; ihr Spieler
+        // trägt im Remake ebenfalls die Poolwerte.
+        p.AdoptPoolForm();
         if (!club.Players.Contains(p))
             InsertSlot(club, p, managerSquad);
         club.RenumberPlayers();

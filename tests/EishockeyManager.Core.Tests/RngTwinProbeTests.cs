@@ -248,6 +248,10 @@ public class RngTwinProbeTests
     // → Wert von Teil 2.
     // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
     // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    // Runde 17, Spur kader-rest (A130, A066, R15-E2 = C): neu – Startbelastung der Managerkader random(80, 120) wie jeder neue
+    // Kaderplatz (Datei 0x42E4C–0x42E5E) statt Energie 50–80, und die Verletzung senkt die Poolform statt der Form des Kaderplatzes
+    // (Datei 0x05B34); andere Spielstärke, Ergebnisse und Zufallsverlauf ab dem ersten Spiel bzw. der ersten Verletzung.
+    // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
     [InlineData(false, 3, "680B224DD13F2389")]
     [InlineData(true, 3, "21C89ED27132119C")]
     [InlineData(false, 11, "4BFB27959624DEF4")]
@@ -324,6 +328,10 @@ public class RngTwinProbeTests
     // → Wert von Teil 2.
     // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
     // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    // Runde 17, Spur kader-rest (A130, A066, R15-E2 = C): neu – Startbelastung der Managerkader random(80, 120) wie jeder neue
+    // Kaderplatz (Datei 0x42E4C–0x42E5E) statt Energie 50–80, und die Verletzung senkt die Poolform statt der Form des Kaderplatzes
+    // (Datei 0x05B34); andere Spielstärke, Ergebnisse und Zufallsverlauf ab dem ersten Spiel bzw. der ersten Verletzung.
+    // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
     [InlineData(false, "20371CB447D2096A")]
     [InlineData(true, "9EC7B81059D7EC59")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)

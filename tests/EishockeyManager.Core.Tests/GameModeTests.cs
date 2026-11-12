@@ -449,6 +449,10 @@ public class GameModeTests
     // → Wert von Teil 2.
     // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
     // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    // Runde 17, Spur kader-rest (A130, A066, R15-E2 = C): neu – Startbelastung der Managerkader random(80, 120) wie jeder neue
+    // Kaderplatz (Datei 0x42E4C–0x42E5E) statt Energie 50–80, und die Verletzung senkt die Poolform statt der Form des Kaderplatzes
+    // (Datei 0x05B34); andere Spielstärke, Ergebnisse und Zufallsverlauf ab dem ersten Spiel bzw. der ersten Verletzung.
+    // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
     internal const string Mode4Reference =
         "WorldChampion=63,CupWinner=1,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2329696,400000|WorldChampion=54,CupWinner=14,GermanChampion=19,EuropeanCupWinner=1|2409093,400000|WorldChampion=54,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2420709,400000|WorldChampion=52,CupWinner=5,GermanChampion=1,EuropeanCupWinner=1|2220776,500000|R1757978480 C55311177";
 

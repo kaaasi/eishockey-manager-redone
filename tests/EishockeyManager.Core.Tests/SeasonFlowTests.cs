@@ -42,7 +42,9 @@ public class SeasonFlowTests
     {
         // Verein 15 (2. Liga, Mittelfeld): weder Play-Offs noch Aufstiegsrunde → wie im Video vom 44. Spieltag
         // direkt zum „Samstag, 14. April“ mit „Saisonende“.
-        var game = Create(clubIndex: 17);
+        // Spur kader-rest (A066, R15-E2 = C): Saat 1 statt 3 – mit der Poolform (Verletzung senkt die angezeigte Form nicht mehr)
+        // wird Verein 17 bei Saat 3 Zweiter (Saaten 1–8: Platz 2–7, Platz 2 nur bei 3 und 7). Die Probe hängt an der Saat.
+        var game = Create(clubIndex: 17, seed: 1);
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         while (!game.RegularSeasonOver)
             game.Continue();

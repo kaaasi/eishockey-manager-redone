@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 49) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 50) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -709,7 +709,8 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Player.EuropeGoals` | B | `5DC3+0x05` | Saisontore Europapokal (Feldspieler; Torhüter 0), Teil von `Goals`; Europapokal: nur aus Datei 0x5494C–0x5499E belegt, kein Original-Stand hat Europapokalspiele oder -tore (R14KS9-01) |
 | `Player.Condition` | B | `5DC3+0x10` | Kader; Pool `+0x15` |
 | `Player.ContractYears` | B | `5DC3+0x0B` | 0 = „kein V.“ |
-| `Player.Form` | B | `5DC3+0x12` | Kader; Pool `+0x17` |
+| `Player.Form` | B | `5DC3+0x12` | Kader; Pool `+0x17`, solange `PoolForm` null ist |
+| `Player.PoolForm` | B | `far:8253+0x17` | nur wenn ≠ Kader `+0x12` (Verletzung senkt nur den Pool, em.exe Datei 0x05B34–0x05B7C; neuer Kaderplatz übernimmt ihn, Datei 0x42EFF; A066, Schema 50) |
 | `Player.Games` | B | `5DC3+0x06` | Summe `+0x06` … `+0x08` |
 | `Player.GoalieMinutes` | B | `far:8253+0x1F` | Torhüter |
 | `Player.Goals` | B | `5DC3+0x03` | Summe `+0x03` … `+0x05` (Feldspieler) |
