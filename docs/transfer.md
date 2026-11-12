@@ -242,7 +242,7 @@ v1.0 vorgemerkt (`docs/anforderungen/zusatzfunktionen.md`, Abschnitt C). Gegenpr
 | Regel | Fundstelle em.exe | Umsetzung |
 |---|---|---|
 | Kader der Managervereine zu Spielbeginn nach **Start-Liga** (`[0x11A] · 4 + Gruppe`), nicht nach Level: Bundesliga 2/10/13, 2. Liga 2/9/11, Oberliga 2/8/10 (Tabelle DGROUP 0x169, Datei 0x16F39) | 0x29A3F | `SquadSetup.ManagedSquadSize(League)`; Liga des Vereins wie bei der Startbasis (`[APPROX]` je Manager) |
-| Kauf und Leihe: „Kaderplatz anlegen“ (0x108:0x5C = 0x42CB1) mit Grenze 0x1D; bei mehr als 28 Spielern des Managers (Zählung 0xF8:0x75) „Schon 29 Mann / im Team.“ (DGROUP 0x127D) | 0x477CD, 0x42D1E–0x42D44 | `TransferMarket.MaxSquad` = 29 (vorher 22 aus der Meldung der Aufstellung); `[APPROX]` gezählt wird nur der eigene Kader (F089 offen) |
+| Kauf und Leihe: „Kaderplatz anlegen“ (0x108:0x5C = 0x42CB1) mit Grenze 0x1D; bei mehr als 28 Spielern des Managers (Zählung 0xF8:0x75) „Schon 29 Mann / im Team.“ (DGROUP 0x127D) | 0x477CD, 0x42D1E–0x42D44 | `TransferMarket.MaxSquad` = 29 (vorher 22 aus der Meldung der Aufstellung); Besitz nach 0x3CCEB ohne Prüfung beim Spieler des eigenen Vereins (0x42CF7–0x42D1C), `TransferMarket.IsSquadFull` (F089, kader-rest Teil 2) |
 | Beleg Spielstände | FILE01/09/10 (Bundesliga) 25 Plätze, FILE12 (Oberliga) 20; FILE05 → FILE07 Kauf als 26. Spieler | `KaderLigaGroesseTests` |
 
 ## Belegt und umgesetzt (Spur `kader-transfer`, Teil 2: Spielerdaten im Modell)
@@ -388,7 +388,7 @@ Regeln und Fundstellen: `docs/analyse/re-nachtrag.md`, Abschnitt 1 (Tagesablauf 
 | Gehalt | 0x3E8DC–0x3E99F | Monatssumme +0x28/+0x30 über die Kaderplätze **und** die Markt-Plätze mit Pool +0x1A = Manager: der Spieler auf der Liste kostet weiter (`FinanceRules.MonthlyWages(game, club)`) |
 | Saisonende | 0x27547–0x27665 | nicht verkaufte eigene Spieler kehren in den Kader zurück, nach Art einsortiert, nicht eingesetzt (FILE44 → FILE46); das Remake gibt sie vor Altern und Herunterzählen zurück (`TransferMarket.ReturnListedPlayers`) |
 
-`[APPROX]`: Mindestbesetzung je Art beim Aufsetzen (wie bisher, im Original nicht gefunden), Listenpreis aus dem Spielerwert nur
+`[APPROX]`: (Mindestbesetzung je Art beim Aufsetzen entfällt seit kader-rest Teil 2: Datei 0x46FD4–0x470DE prüft keine, A253), Listenpreis aus dem Spielerwert nur
 noch ohne Kaufpreis (Altstände; seit Teil 4 `[ORIGINAL]`, siehe unten), Klickfläche des eigenen Markt-Platzes wie Kauf/Leihe,
 voller Kader am Saisonende (Spieler wird vertragslos). Altstände (Spieler vor A380 noch im Kader) verlieren beim Zurückziehen nur
 den Markt-Platz. Anzeige (blauer Art-Buchstabe, Statuszeile „von <Manager>“) → `ui-rest`.

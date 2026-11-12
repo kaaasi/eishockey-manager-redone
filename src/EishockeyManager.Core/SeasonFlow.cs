@@ -396,6 +396,10 @@ public sealed partial class GameState
         foreach (var competition in Competitions)
             if (competition is { Title: { } title, Winner: { } winner })
                 record.Titles[title] = winner;
+        // Spur kader-rest Teil 3: [ORIGINAL] Saisonwechsel der Jugendteams je Manager (0x3A13B, Datei 0x55889 in der Managerschleife
+        // Datei 0x55861–0x55DC1) vor dem Zwangsabstieg und vor dem Fenster (Datei 0x5645D), das die Junioren-Stärke für die Jugend
+        // am Saisonende liest (SeasonFlow.SeasonEndYouth.cs). Vorher erst im Saisonwechsel (StartFinanceSeason).
+        SeasonEndYouthTeams();
         var forced = ApplyForcedRelegation(record); // Spur saisonwechsel Teil 2 (S-K3): Statusbit 0x04, nach den Titelbits
         // [ORIGINAL] Ewige Tabelle nach dem Austausch (Datei 0x563AF ruft 0x5667A), mit der Liga der nächsten Saison
         // (Spur saisonwechsel Teil 3, S-K4; StatisticsHistory.cs). Ewige Bilanz und „Früher“ hängen nicht am Austausch.
@@ -452,6 +456,8 @@ public sealed partial class GameState
             var premium = SeasonPremium(league, rank, PremiumEvents(record, club.Index, events)); // ohne Aufstieg beim Doppeltausch
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
+            // Spur kader-rest Teil 3: Jugend am Saisonende mit Ereignissymbol 9 je Neuzugang, nach den Prämien (Datei 0x2728C–0x2730F).
+            events.AddRange(SeasonEndYouthEvents(manager));
             record.Managers.Add(new ManagerSeasonResult(i, club.Index, league, rank, premium, events));
         }
 
@@ -484,6 +490,7 @@ public sealed partial class GameState
             throw new InvalidOperationException("Die Saison ist noch nicht zu Ende.");
 
         ValidateSeasonSquads();
+        CatchUpSeasonEndYouth(); // nur Spielstände vor Schema 50 vom Bildschirm „Saisonende“ (SeasonFlow.SeasonEndYouth.cs)
 
         foreach (var club in Clubs)
             if (club.Index < NewGame.SelectableClubs)

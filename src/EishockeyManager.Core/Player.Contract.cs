@@ -122,14 +122,8 @@ public sealed partial class GameState
         var before = Clubs.Where(c => c.Players.Count > 0 && !managed.Contains(c.Index)).ToDictionary(c => c,
             c => Enum.GetValues<Formats.PlayerRole>().ToDictionary(r => r, r => c.Players.Count(p => p.Role == r)));
 
-        // #698: Jugend am Saisonende vor dem Altern und Herunterzählen (0x26F20, FinanceTalent.cs). Season ist schon die neue
-        // Saison, also das Jahr des 29. April.
-        // #732: [ORIGINAL] Im Modus „nur Weltkugel“ (DGROUP 0xD0B9 = 1) beginnt die Managerschleife von 0x26F20 bei [0x386]
-        // (Datei 0x26F2F–0x26F4C, 0x26FAD → 0x279F1) und läuft damit nie: keine Jugend (0x2728C), kein Altern der Poolplätze
-        // (0x274A7), kein Herunterzählen der Laufzeit (0x27500) und keine Leihrückgabe im Managersatz. Beleg FILE20 → FILE21:
-        // Kader des Managersatzes 0 mit Alter und Laufzeit unverändert, alle 199 Poolplätze mit gleichem Alter +0x14.
-        if (!WorldOnly)
-            JoinSeasonEndYouth(Season);
+        // #698: Die Jugend am Saisonende ist schon im Kader (seit Spur kader-rest Teil 3 am 29. April in FinishSeason, Ereignissymbol 9;
+        // SeasonFlow.SeasonEndYouth.cs) und altert und zählt hier mit allen Kaderplätzen herunter (Datei 0x274A7, 0x27500).
         AgeFreeAgents();
         // A091/A380: Die nicht verkauften eigenen Spieler von der Transferliste sind schon zurück (OnNewSeasonManager, vor dem
         // Löschen der Saisonzähler; Review R14KS-02) und altern hier wie alle Kaderspieler.

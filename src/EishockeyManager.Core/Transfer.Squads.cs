@@ -14,21 +14,19 @@ namespace EishockeyManager.Core;
 /// endgültig auf.“, die Verhandlung „… wird sich mit Ablauf des Vertrages zur Ruhe setzen.“ bzw.
 /// „… ist im Moment nicht verhandlungsbereit.“
 /// Ruhestand und Verlängerungsangebote der Managerkader nach dem Tagesablauf 0x07169 (Spur kader-transfer, Teil 7:
-/// <see cref="RetirementRoll"/>, <see cref="OfferLimit"/>, <see cref="OfferedYears"/>). [APPROX] Wahrscheinlichkeiten und
-/// Altersgrenzen der Kader-KI: Das Original verwaltet Computervereine nur über Teamwerte (siehe <see cref="SquadSetup"/>), die
-/// Kader-KI ist eine Ergänzung des Remakes.
+/// <see cref="RetirementRoll"/>, <see cref="OfferLimit"/>, <see cref="OfferedYears"/>). Laufbahnende der Computerkader
+/// wie das der Poolplätze (<see cref="CareerEnds"/>, A232/A238). [APPROX] Verlängerungschance, Laufzeiten und Nachbesetzung der
+/// Kader-KI: Das Original verwaltet Computervereine nur über Teamwerte (siehe <see cref="SquadSetup"/>), die Kader-KI ist eine
+/// Ergänzung des Remakes.
 /// </remarks>
 public static class SquadRules
 {
     /// <summary>
-    /// Ab diesem Alter kann ein Spieler eines Computervereins aufhören. [APPROX] Nur Kader-KI der Computervereine (im Original ohne
-    /// Kader; Laufbahnende dort im Saisonende 0x2787A mit Alter &gt; random(37, 42), noch nicht umgesetzt). Managerkader:
-    /// <see cref="RetirementRoll"/>.
+    /// Grenzen des Laufbahnendes außerhalb der Managerkader: Alter &gt; random(<see cref="CareerEndMin"/>, <see cref="CareerEndMax"/>).
+    /// [ORIGINAL] Saisonende Datei 0x2788F–0x278A1 (A232/A238): frühestens mit 38, sicher ab 43. Gilt im Remake auch für die
+    /// Computerkader (<see cref="CareerEnds"/>, Saisonwechsel); die frühere Kader-KI-Regel 33–37 Jahre ist entfallen.
     /// </summary>
-    public const int RetireMinAge = 33;
-
-    /// <summary>Ab diesem Alter hört jeder Spieler eines Computervereins auf. [APPROX] wie <see cref="RetireMinAge"/>.</summary>
-    public const int RetireMaxAge = 37;
+    public const int CareerEndMin = 37, CareerEndMax = 42;
 
     /// <summary>Computervereine verlängern einen auslaufenden Vertrag mit dieser Chance. [APPROX]</summary>
     public const double ComputerExtendChance = 0.75;
@@ -53,17 +51,12 @@ public static class SquadRules
         _ => 10,
     };
 
-    /// <summary>Chance eines Spielers eines Computervereins, nach Erreichen dieses Alters die Laufbahn zu beenden: 33 → 20 %, …
-    /// 37 → 100 %. [APPROX] Kader-KI (siehe <see cref="RetireMinAge"/>).</summary>
-    public static double RetirementChance(int age) =>
-        age < RetireMinAge ? 0 : Math.Min(1.0, (age - RetireMinAge + 1) / (double)(RetireMaxAge - RetireMinAge + 1));
-
     /// <summary>
     /// Laufbahnende ohne Managerkader im Saisonende. [ORIGINAL] Datei 0x2787A–0x279DA (Saisonende 0x26F20, Pool-Schleife 1–199):
     /// Alter &gt; random(37, 42) (<c>docs/analyse/re-nachtrag.md</c>, Abschnitt 1). Gilt für Computerspieler und Vertragslose;
     /// der Managerkader folgt der Ruhestandsmeldung (<see cref="RetirementRoll"/>).
     /// </summary>
-    public static bool CareerEnds(int age, Random random) => age > TransferRules.Random16(random, 37, 42);
+    public static bool CareerEnds(int age, Random random) => age > TransferRules.Random16(random, CareerEndMin, CareerEndMax);
 
     /// <summary>
     /// Wurf je Takt „kündigt an, daß er seinen Vertrag nicht mehr verlängern wird“ (Kaderplatz +0x18 Bit 0x80). [ORIGINAL]

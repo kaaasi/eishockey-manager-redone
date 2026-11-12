@@ -72,9 +72,18 @@ public class InboxYouthTests
         var stadium = game.Finance(me).Stadium;
         game.StartConstruction(me, StadiumProject.Feature, StadiumFeature.Anzeigetafel, stadium.Level(StadiumFeature.Anzeigetafel) + 1);
         // Bauzeit nach em.exe 10–19 Wochen (Spur geld, Teil 1; vorher 2 Wochen fest).
-        for (var i = 0; i < 60 && game.Finance(me).Stadium.Constructions.Any(); i++)
-            TestSeason.PlayMatchDay(game);
-        Assert.Contains(game.Inbox(me), m => m.Lines[0] == "Der Stadion-Ausbau (Anzeigetafel)");
+        // Spur kader-rest (A130, R15-E2 = C): Halt für Halt über die Zeitleiste statt Spieltag für Spieltag. Meldungen ohne Spieler
+        // zählen täglich herunter (Datei 0x54F07–0x54F87); fällt das Bauende in eine Lücke zwischen zwei Spieltagen, ist die
+        // Meldung beim nächsten Spieltag schon fort (mit der Startbelastung 80–120 Bauende Tag 104, Spieltage 103/108).
+        var seen = false;
+        for (var guard = 0; guard < 2000 && game.Finance(me).Stadium.Constructions.Any(); guard++)
+        {
+            TestSeason.KeepSquad(game, game.ActiveManager);
+            game.Continue();
+            seen |= game.Inbox(me).Any(m => m.Lines[0] == "Der Stadion-Ausbau (Anzeigetafel)");
+        }
+        Assert.Empty(game.Finance(me).Stadium.Constructions);
+        Assert.True(seen, "Meldung zum Bauende fehlt");
     }
 
     [Fact]

@@ -118,7 +118,8 @@ public static class HokCompareClasses
             "GameState.Random", "GameState.RetiredPlayers", "GameState._contractRandom", "GameState._contractTurnFactor",
             "GameState._cupRandom", "GameState._eternal", "GameState._financeRandom", "GameState._germanyRatings",
             "GameState._managerBalance", "GameState._managerHistory", "GameState._nationalForm", "GameState._nextLeagueSlots",
-            "GameState._readyManagers", "GameState._trendRandom", "GameState._turnRandom", "GameState._worldCupRankings",
+            "GameState._readyManagers", "GameState._seasonEndYouthPending", "GameState._trendRandom", "GameState._turnRandom",
+            "GameState._worldCupRankings",
             "GameState.NextPlayerId",
             // Merker des Remakes „Saisonstatistik schon gebucht“: das HOK führt keine Saisonhistorie (History N), der Import setzt −1.
             "GameState.StatisticsRecordedSeason",
@@ -219,7 +220,7 @@ public static class HokCompareClasses
         Set(Random, "Player.Assists", "Player.ClubGamesCarry", "Player.ClubCupGamesCarry", "Player.ClubEuropeGamesCarry",
             "Player.ClubGoalsCarry", "Player.ClubCupGoalsCarry", "Player.ClubEuropeGoalsCarry", "Player.CupGames",
             "Player.EuropeGames", "Player.CupGoals", "Player.EuropeGoals", "Player.Games", "Player.GoalieMinutes", "Player.Goals",
-            "Player.GoalsAgainst", "Player.InjuredGames", "Player.InjuryKind", "Player.Penalties2", "Player.Penalties5",
+            "Player.GoalsAgainst", "Player.InjuredGames", "Player.InjuryKind", "Player.Penalties2", "Player.Penalties5", "Player.PoolForm",
             "Player.Trend", "Player.TrendControl", "Player.TrendScore", "Player.UnsolicitedOffer");
         Set(Range(15), "Player.Condition", "Player.Form");
         Set(Range(10), "Player.Technique");

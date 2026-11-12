@@ -48,6 +48,13 @@ public enum SeasonEvent
     /// <see cref="GameState.InsertForcedRelegation"/>). Steht anstelle der Pfeile.
     /// </summary>
     ForcedRelegation,
+
+    /// <summary>
+    /// Ein Junior rückt am Saisonende in den Kader (Symbol 9, je Neuzugang einmal; Spur kader-rest Teil 3). [ORIGINAL] Fenster
+    /// „Saisonende“ 0x26F20, Datei 0x27302–0x2730F, nach den Einzelprämien; <see cref="GameState.JoinSeasonEndYouth(Manager, int)"/>.
+    /// Ohne Prämie.
+    /// </summary>
+    YouthJoined,
 }
 
 /// <summary>Abschneiden eines Managers in einer Saison (Fenster „Saisonende“).</summary>

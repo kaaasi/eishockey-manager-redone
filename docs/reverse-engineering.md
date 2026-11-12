@@ -1040,3 +1040,60 @@ Teil 3 – Spielplan und Start:
   dieselben Daten zeigt „Aufstieg 2.Liga“ in `folge07_03307`. Remake: `RelegationGroup.DateIndices`.
 * **A112/F107:** schon umgesetzt (Runde 13/14, U15-a/U15-c: `NewGame.PlaceInStartLeague`, Filter 0x45CD0(r, 1) trifft beim Start
   nur Platz 0); keine Änderung.
+
+## Spieler, Transfer, Verletzungen (Spur `kader-rest`, Runde 17)
+
+Teil 1 (#791), Disassembly mit `tools/reverse-engineering/disasm.py`, Gegenprobe an den Ständen im Referenz-Repo.
+
+* **Startbelastung (A130):** Jeder neue Kaderplatz bekommt in 0x42CB1 die Belastung `+0x13` = random(80, 120) (Datei
+  0x42E4C–0x42E5E); die Startwerte Datei 0x29DA4–0x29EF7 schreiben `+0x13` nicht (nur `+0x10`–`+0x12`, Pool `+0x15`–`+0x17`,
+  Gehalt `+0x28` und Preis `+0x2C` über 0x49D36). Belege: FILE01/02/09/10/11/12 – alle 25 bzw. 20 Plätze 80–120. Im Remake
+  `PlayerFactory.RollSquadValues` (Managerkader); Computervereine haben keine Kaderplätze und behalten Energie 50–80 (`[APPROX]`).
+* **Laufbahnende (A232/A238):** Saisonende Datei 0x2787A–0x278A1: Alter (Pool `+0x14`) > random(37, 42), frühestens mit 38,
+  sicher ab 43 (`SquadRules.CareerEnds`, `CareerEndMin`/`CareerEndMax`). Die frühere Kader-KI-Regel 33–37 Jahre war seit U5 ohne
+  Aufrufer und ist entfernt.
+* **Verletzung und Form (A066):** Datei 0x05B34–0x05B7C liest und schreibt die Form im **Pool** (`far:8253 + 0x21 · Index +
+  0x17`): > 20 → − random(10, 15). Die Form des Kaderplatzes `+0x12` bleibt; erst ein neuer Kaderplatz übernimmt die Poolwerte
+  (0x42CB1, Datei 0x42EC3–0x42F06: `+0x10`/`+0x11`/`+0x12` = Pool `+0x15`/`+0x16`/`+0x17`). Belege: FILE20 ABSTREITER 48/34,
+  PURVES 58/44; FILE22 PESKA 58/48; FILE24 STEFAN 52/42, CHAIDAROV 55/40; MENDE FILE36 60/45 → FILE44 60/34 (zweite Verletzung),
+  HEISS FILE37 46/34 bis FILE46 unverändert nach der Heilung. Restdauer `+0x0D` in Wochen (Heilung je 7. Tag), Art `+0x17`.
+  Im Remake `Player.PoolForm` (null = gleich der Form, Schema 50).
+
+Teil 2 (Transfermarkt):
+
+* **Verkaufen (A253):** Klick auf einen eigenen Kaderplatz in der Transferliste (Datei 0x46DB6): Kaderplatz `+0x18` Bit 0x80
+  → „Dieser Spieler hört / am Saisonende auf.“ (DGROUP 0x12BD, 0x46DD8); `+0x09` Bit 0x40 → Angebotsfenster (0x46E04, Zweig der
+  Angebote für eigene Spieler); sonst 0x46FD4–0x470DE: höchstens 3 Markt-Plätze mit Pool `+0x1A` = Manager (0x47027, DGROUP
+  0x11F9), Pool `+0x1A` = Manager (0x47040, sonst „Dieser Spieler ist / nur ausgeliehen.“, DGROUP 0x11F1), Markt-Platz anlegen
+  (0x42CB1 mit Grenze 0x0A, „Schon 11 Mann …“). **Keine Mindestbesetzung je Art** – die frühere Grenze 2/4/6 gilt im Remake nur
+  noch für Computervereine (`[APPROX]`). Alle drei Meldungen sind Kurzmeldungen (0x0C0B8).
+* **„Schon 29 Mann“ (F089):** 0x42CB1 (Datei 0x42CF0–0x42D44): außer im Markt-Satz 4 und wenn der Verein des Spielers (Pool
+  `+0x1D`) der des Managers ist (Managersatz `+0x14`), bricht ein Besitz > Grenze − 1 = 28 ab; Zählung 0xF8:0x75 = Datei 0x3CCEB
+  (eigener Satz, dazu Plätze der anderen Manager und des Markts mit Pool `+0x1A` = Manager – also verliehene **und** eigene
+  Spieler auf dem Markt). Im Remake `TransferMarket.IsSquadFull`, `GameState.OwnedPlayers` (zählt seit Teil 2 die eigenen
+  Markt-Plätze außerhalb des Kaders, A380).
+* **Talentsuche (A244/A245):** Die Rückfrage („Möchten Sie, daß Ihr 'Spion' / für Sie auf Talentsuche geht?“, Datei
+  0x1B121/0x1B13E über DGROUP 0x1339/0x133D, „Preis:“ 0x1341) steht im Remake schon so. Nach dem Start (Datei 0x46A14–0x46A38)
+  übermalt das Original nur den Knopf und zeichnet die Kontozeile (0x463CC) – keine Meldung. Bei Zähler `+0xEC` ≠ 0 zeichnet es
+  den Knopf nicht (0x46704) und wertet keinen Klick aus (0x468C1 → 0x46A65): keine Meldung „läuft schon“.
+* **Unverändert offen:** Höhe des Gebots für einen eigenen Markt-Platz wird im Original erst beim Anklicken gewürfelt (0x47347),
+  im Remake beim Gebot (`[APPROX]`, A251-Rest); Ablöse am Saisonende über `Book` (A226, Architekturregel).
+
+Teil 3 (Geld und Saisonende):
+
+* **Schulden gesamt (A196):** 0x57768 (Datei 0x5777F–0x57834, Modus 0, Partner 0x63) summiert die negativen Darlehensfelder des
+  eigenen Satzes (`+0x19B + 4 · i`, i < Managerzahl oder i = 4); die Kontoleiste 0x463CC (Datei 0x46464–0x46500) zählt als
+  Anlagen −Feld(i, ich), wenn negativ. Die Buchung (Datei 0x591E2–0x5932B) ändert das eigene Feld um ±v und das des anderen um
+  ∓v: je Paar **ein** gespiegelter Saldo (Bank: FILE08 Manager 0 Eintrag 4 = −2.103.000, Satz 4 Eintrag 0 = +2.103.000). Das
+  entspricht dem Saldo des Remakes (`ManagerLoanNet`, `BankAccount.Balance`); `[APPROX]` aufgehoben. Der Export schreibt seither
+  den Saldo je Paar statt je Kredit (Kredite in beide Richtungen überschrieben einander).
+* **Ereignissymbol 9:** Am 29. April (Saisonwechsel ab Datei 0x55743, `analyse/re-saisonwechsel.md` Abschnitt 1) läuft je
+  Manager zuerst der Jugendwechsel 0x3A13B (Datei 0x55889, Schritt 3), danach das Fenster 0x26F20 (Datei 0x5645D). Dessen
+  Managerschleife zieht nach den Einzelprämien die Jugend (Datei 0x2728C–0x27320: n = random(0, 2), random(0, 1) ≠ 0 → 0, Jahr
+  DGROUP 0x5A18 > 0x7CA) und setzt je erfolgreichem 0x06D7F das Symbol 9 an die nächste Stelle `di` (0x06CA6, Datei
+  0x27302–0x2730F); ohne Symbol (`di` = 0) folgt Datei 0x27326. Rückkehr der Markt-Plätze, Altern und Herunterzählen (Datei
+  0x27547, 0x274A7, 0x27500) kommen danach in derselben Schleife. Im Remake rechnet `FinishSeason` Jugendwechsel und Jugend
+  (`SeasonFlow.SeasonEndYouth.cs`) und vermerkt je Neuzugang `SeasonEvent.YouthJoined`; der Kaderübergang lässt die Neuen
+  nach dem Fenster altern. Spielstände vor Schema 50 vom Bildschirm „Saisonende“ holen beides beim Saisonwechsel nach
+  (`[APPROX]`, ohne Symbol). Nebenbefund: Kostenstufe (Datei 0x563C0) und große Wanderung (Datei 0x56448) laufen im Original
+  ebenfalls vor dem Fenster, im Remake erst im Saisonwechsel (andere Zufallsquelle bzw. ohne Zufall; nicht Teil der Spur).

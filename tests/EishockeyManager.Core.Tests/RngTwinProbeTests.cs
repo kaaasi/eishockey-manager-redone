@@ -248,10 +248,20 @@ public class RngTwinProbeTests
     // → Wert von Teil 2.
     // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
     // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
-    [InlineData(false, 3, "680B224DD13F2389")]
-    [InlineData(true, 3, "21C89ED27132119C")]
-    [InlineData(false, 11, "4BFB27959624DEF4")]
-    [InlineData(true, 11, "E0D535FB887EC67E")]
+    // Runde 17, Spur kader-rest (A130, A066, R15-E2 = C): neu – Startbelastung der Managerkader random(80, 120) wie jeder neue
+    // Kaderplatz (Datei 0x42E4C–0x42E5E) statt Energie 50–80, und die Verletzung senkt die Poolform statt der Form des Kaderplatzes
+    // (Datei 0x05B34); andere Spielstärke, Ergebnisse und Zufallsverlauf ab dem ersten Spiel bzw. der ersten Verletzung.
+    // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
+    // Merge main → paket/kader-rest (12.11.2026): beide Änderungen zusammen, Werte neu ermittelt (jede allein → Wert von main bzw. des Branches).
+    // Spur kader-rest Teil 3 (Ereignissymbol 9, R15-E2 = C): neu nur aktiv Saat 3 – die Jugend am Saisonende rückt am 29. April vor der
+    // Rückkehr der eigenen Markt-Plätze in den Kader (Datei 0x2728C vor 0x27547 in 0x26F20; vorher nach ReturnListedPlayers), andere
+    // Kaderfolge. Rückschaltprobe: Quellen von Teil 3b (git diff 1b63121 759b124 -- src) zurück → D064B357E8496E7E.
+    // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
+    // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
+    [InlineData(false, 3, "DD2D7DEAF636F7CB")]
+    [InlineData(true, 3, "F53B2899E188BF9D")]
+    [InlineData(false, 11, "97C22A0BE23178C6")]
+    [InlineData(true, 11, "450478C6FAD7E9AD")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -324,8 +334,14 @@ public class RngTwinProbeTests
     // → Wert von Teil 2.
     // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
     // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
-    [InlineData(false, "20371CB447D2096A")]
-    [InlineData(true, "9EC7B81059D7EC59")]
+    // Runde 17, Spur kader-rest (A130, A066, R15-E2 = C): neu – Startbelastung der Managerkader random(80, 120) wie jeder neue
+    // Kaderplatz (Datei 0x42E4C–0x42E5E) statt Energie 50–80, und die Verletzung senkt die Poolform statt der Form des Kaderplatzes
+    // (Datei 0x05B34); andere Spielstärke, Ergebnisse und Zufallsverlauf ab dem ersten Spiel bzw. der ersten Verletzung.
+    // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
+    // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
+    // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
+    [InlineData(false, "866314D612009C85")]
+    [InlineData(true, "EFC65C03FDCD6029")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

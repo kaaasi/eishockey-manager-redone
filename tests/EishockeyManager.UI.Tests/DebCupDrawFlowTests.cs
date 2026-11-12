@@ -310,6 +310,11 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // → Wert von Teil 2.
     // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
     // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    // Runde 17, Spur kader-rest (A130, A066, R15-E2 = C): ab 1993 neu – Startbelastung der Managerkader random(80, 120) (Datei
+    // 0x42E4C) und Verletzung senkt die Poolform statt der Form des Kaderplatzes (Datei 0x05B34); mit und ohne Anzeige weiter
+    // gleich. Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → alter Wert.
+    // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
+    // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
     private const string Reference =
-        "1993: DEB 23, DM 9, Tab 15411 | 1994: DEB 9, DM 9, Tab 15618 | 1995: DEB 2, DM 5, Tab 15364 | 1996: DEB 8, DM 8, Tab 15362";
+        "1993: DEB 4, DM 8, Tab 15415 | 1994: DEB 10, DM 2, Tab 15350 | 1995: DEB 9, DM 8, Tab 15387 | 1996: DEB 8, DM 31, Tab 15379";
 }

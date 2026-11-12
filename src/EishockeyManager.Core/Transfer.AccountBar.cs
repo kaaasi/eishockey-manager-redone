@@ -14,8 +14,9 @@ public sealed partial class GameState
     /// Kontostand; Schulden = 0x57768 (Modus 0) Σ der eigenen negativen Darlehen bei Managern und Bank
     /// (<see cref="TotalDebts"/>); Anlagen = Σ Stückzahl · Kurs (<see cref="DepotValue"/>) + Σ der positiven Salden gegenüber
     /// jedem anderen Manager und der Bank (Forderungen samt Sparbuch); Saldo = Konto + Anlagen − Schulden.
-    /// [APPROX] Saldo je Partner wie bei <see cref="TotalDebts"/>: Kredite zwischen zwei Managern verrechnet, bei der Bank
-    /// Sparbuch minus Kredit.
+    /// [ORIGINAL] Anlagen Datei 0x46464–0x46500: Σ Stückzahl · Kurs, dazu für jeden Satz i = 0–4 außer dem eigenen −Feld(i, ich),
+    /// wenn negativ – das gespiegelte Darlehensfeld, also der positive Saldo je Partner wie bei <see cref="TotalDebts"/>
+    /// (Spur kader-rest, Teil 3, A196).
     /// </summary>
     public TransferAccountBar TransferAccount(Manager manager)
     {
