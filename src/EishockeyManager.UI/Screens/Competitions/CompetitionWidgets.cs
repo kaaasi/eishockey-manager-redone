@@ -18,8 +18,9 @@ public static class CompetitionWidgets
     /// </summary>
     public static void Centered(Surface s, BitmapFont font, int x1, int x2, int baseline, string text, byte color, byte? shadow, bool left = false)
     {
-        // x2 = 0xFFFF im Original: linksbündig ab x1
-        var x = left ? x1 : x1 + (x2 - x1 - Width(font, text)) / 2;
+        // x2 = 0xFFFF im Original: linksbündig ab x1. [ORIGINAL] Datei 0x0B6D9–0x0B6EF: x = x1 + (x2 − x1) / 2 − Breite / 2, beide
+        // Hälften einzeln abgerundet (Spur ui-rest, Runde 17: „Erhaltene Prämien“ in file46_2 bei ungerader Breite 1 Pixel weiter rechts).
+        var x = left ? x1 : x1 + (x2 - x1) / 2 - Width(font, text) / 2;
         var y = Top(font, baseline);
         if (shadow is { } dark) // Schattenfarbe 0xFF im Original = ohne Schatten
             Draw(s, font, x + 1, y + 1, text, dark);

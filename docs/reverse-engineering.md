@@ -1097,3 +1097,54 @@ Teil 3 (Geld und Saisonende):
   nach dem Fenster altern. Spielstände vor Schema 50 vom Bildschirm „Saisonende“ holen beides beim Saisonwechsel nach
   (`[APPROX]`, ohne Symbol). Nebenbefund: Kostenstufe (Datei 0x563C0) und große Wanderung (Datei 0x56448) laufen im Original
   ebenfalls vor dem Fenster, im Remake erst im Saisonwechsel (andere Zufallsquelle bzw. ohne Zufall; nicht Teil der Spur).
+
+## Ligapaarungen: Seiten „Play-Off“ und „Aufstieg“ (Spur `ui-rest`, Runde 17, Teil 1)
+
+A280/A282 (UI-Teil). Umsetzung: `LeaguePairingsPages`, `PlayoffGamesScreen`, `PromotionRoundScreen`, Aufbau und Fundstellen in
+deren Klassenkommentaren; Videovergleich in [wettbewerbe.md](wettbewerbe.md), Abschnitt „Paarungen Liga“.
+
+* **Seitenwähler 0x3A88A, Seite 1** (Sprungtabelle cs:0x12FB, Datei 0x3AA21): Wettbewerb = Liga der Kachel. Liga 0 →
+  0x32E23(2, Minute) „Play-Off Spiele“; sonst 0x31CD5(1, Liga − 1, …) „Aufstieg  n.Liga“ mit Argument 3 = 2 · DGROUP 0x7B0 +
+  (0xCCA3 > 0) + (0xCCA3 > 2), höchstens 7 (gespielte Gruppentermine, Datei 0x3AAA4–0x3AAD5). Seite 7 (Datei 0x3ABEA) ruft
+  0x128:0x39 mit (Liga, Minute ≠ 0 ? 2 : 0, Minute, 1).
+* **Rückgaben:** 0x4E8A3 gibt 1 nach dem mittleren Knopf (Knopf 3, Datei 0x4F059–0x4F06A), sonst 0; 0x32E23 gibt nach dem Knopf
+  (1 << 2) + 3 = 7 bei Wettbewerb 2 bzw. 3 bei Wettbewerb 3 (Datei 0x33A99–0x33AAC); 0x31CD5 gibt das Wort DGROUP 0x4DF0 + 4 ·
+  Wettbewerb + 2 · Knopf zurück (Wettbewerb 1: 7, 7; Wettbewerb 2: 0x4DF8 = 4 − Gruppe, 5; Wettbewerb 3: 4, 3), nach Rechtsklick
+  0x4DF0 = 0. Kacheln „Paarungen 1./2. Liga/Oberliga“ teilen DGROUP 0x5125 (Startwert 7, Datei 0x4587E–0x45891).
+* **Play-Off-Plätze:** 0x31505 tauscht die beiden Plätze einer Serie in DGROUP 0x5D3B samt allen Ergebnissen der Runde
+  (DGROUP 0xCCB2 + 14 · Spiel) und den Siegen (0xCCA4); 0x315E9 ruft es nach jedem der ersten vier Termine einer Runde für jede
+  Serie (auch entschiedene), am fünften nur, wenn der Verein auf dem ungeraden Platz gewonnen hat (Siege := 0x14). Der
+  Rundenwechsel (Datei 0x31B9C–0x31C88) kopiert die Plätze über DGROUP 0x144, tauscht Serien mit 0x14 zurück und erhöht 0x7B0;
+  nach dem Endspiel gibt es keinen Rundenwechsel (0x7B0 = 2).
+* **Termine der Aufstiegsrunde** (0x31CD5, Datei 0x322F4–0x32324): Termin n der Gruppe ist der n-te Play-Off-Tag (Bit 0x40 in
+  DGROUP 0x828) mit Rest 0 oder 2 im Fünferblock, also Play-Off-Termine 0, 2, 5, 7, 10, 12 (6.2., 10.2., 20.2., 25.2., 22.3.,
+  29.3.; `folge07_03307`). `RelegationGroup.DateIndices` (`Core/Playoffs.cs`) folgt dem seit
+  `wettbewerbe-rest` (#790, A142). Die Einschränkung in `EuropeanCupScreen` („Termine nur ohne Ergebnisse“) ist mit demselben Vergleich
+  (Spiel g ≥ Argument 3 + Argument 6, Datei 0x3229F–0x322C6) auflösbar; nicht Teil dieser Spur.
+
+**Teil 2 – Fenster „Saisonende“ und Verhandlungen am Saisonende** (Umsetzung `EventSymbols`, `SeasonEndSummaryScreen`,
+`ContractsScreen.DrawSeasonEndBackground`; Tests `UiRestTeil2Tests`):
+
+* **Symbole 0x06CA6/0x06CDF:** Lage des i-ten Symbols ab (76 | 101), x + 35, über 230 neue Zeile (x = 76, y + 30) – fünf je
+  Zeile, linksbündig (vorher im Remake mittig). Je Symbol zuerst der Rahmen kb\13 (144 | 0) 30 × 27, dann das Symbol bei
+  (x + 3 | y + 3), beides deckend (0x139C9, Maske 0xC0). Folge: Statusbits, Einzelprämien, Symbol 7 (Datei 0x2726D, Verein in
+  der Liste der deutschen EC-Teilnehmer 0x34872), je Jugendspieler Symbol 9 (Datei 0x27302). Symbol 7 und die Zahl für Symbol 9
+  liefert der Spielkern noch nicht (`kader-rest`, R788-03).
+* **Fenster 0x26D9A:** 0x0B155 bei (4 | 80) mit 13 × 6 Teilen; „Ereignisse“ Schrift 2, x 0–321, Grundlinie 89, Farbe 0x0A,
+  Schatten 0x1C; Linie (13 | 91)–(306 | 91) Farbe 7. Platzzeile x 0–320, Grundlinie 170; Prämie Grundlinie 180; „Keine
+  besonderen Ereignisse...“ x 10–305, Grundlinie 100 (alle Farbe 7, Schatten 0).
+* **Platzzeile 0x2C099:** Zahl über 0x0BAB2 mit Mindestbreite DGROUP 0x374 (Bilder passen zu 5), Liga aus DGROUP 0x9EC
+  („Zweite Liga“, nicht 0x9E0 „Zweiten Liga“).
+* **Zentrieren 0x0B6A5** (Datei 0x0B6D9–0x0B6EF): x = x1 + (x2 − x1) / 2 − Breite / 2, Hälften einzeln abgerundet.
+* **Verhandlungen am Saisonende** (Datei 0x27BDB–0x27CBD): Hintergrund kb\22 (0x45D46), Vereinsname Schrift 2 zentriert x 0–319,
+  Grundlinie 10, Farbe 0x1E; Liste 0x0B155 (1 | 14) 11 × 11 Teile; Kachel 0x0B155 (265 | 195) 2 × 2 Teile; Symbol 10 mit Rahmen
+  bei (274 | 200).
+* **Vergleich:** `file46_2` Fenster (4 | 80)–(315 | 193) 0 von 35.568 Pixeln verschieden; `file13_15` Platzzeile 0 von 4.200;
+  `file46_3` Zeile y 0–12 0 von 4.160, Kachel (265 | 195)–(318 | 237) gleich (2 Randpixel x = 319 wie bei `file40_11`).
+  Ablauf `pixel-saisonende-symbole`.
+* **Lampe 1 (A332)** (Datei 0x42AC9–0x42BD2): Feld +0x1E gehört nicht zum Kaderplatz, sondern zum Pooleintrag (far DGROUP
+  0x8253 + 0x21 · Kaderplatz +0x0F): Nummer + 1 der offenen Meldung zum Spieler (0x4B2F6/0x4B270). Rot, wenn ein Spieler des
+  Kaders oder ein Marktplatz (DGROUP 0x7623, Pool +0x1A = Manager) eine offene Meldung hat (`MenuLamps.OpenMessage`).
+* **Absage beim Anklicken (A363)** (Datei 0x4015D–0x401D3): Der Bildschirm „Verträge“ meldet nur Leihe (+0x0C) und Ruhestand
+  (+0x18 Bit 0x80, Meldung 4 „kündigt an …“); alles andere öffnet den Dialog 0x4A1DB, der die Sperre erst an den Feldern meldet
+  (0x4A692). Eine eigene „Absage“ ohne Bit 0x80 gibt es im Original nicht.
