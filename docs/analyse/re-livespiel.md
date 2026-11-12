@@ -486,6 +486,8 @@ Spur).
   Spiel also eingesetzt; 0x40E2A die Grenze „22 eingesetzte Spieler“ (`120h:66h(Manager, 3)` = 0x16 → Meldung
   `DGROUP 0x11D5`) gilt nur außerhalb des Spiels; 0x40F35 im Spiel nur mit der linken Taste. Die übrigen drei
   (0x41298, 0x4135E, 0x413E8) sind nicht gelesen – `[APPROX]` für die Umsetzung (Runde 18 L6: dort zuerst lesen).
+- Vorher (0x5434C, vor `118h:43h` Datei 0x54385): `110h:7Ah` (Datei 0x5435E; Deutung „Hintergrund“ aus Review #795,
+  `[APPROX]`) und `38h:8A7h` (Datei 0x54363) – für B3 in dieser Reihenfolge übernehmen (Review #795 P3-3).
 - Danach (Datei 0x5438D–0x54419): ausblenden, Fenster schließen, Bildschirm schwarz (0\|0)–(319\|239), Feldspieler des
   Managervereins (`DGROUP 0x966F + 0x1AF · Manager`) neu zählen `0xF0:0x8E` = Datei 0x38A36, Live-Bildschirm
   `0x5353C(Pokal, 1)` (Nahaufruf `E8 53 F1`), Schrift 3, Maus leeren, einblenden, `0xA70E` zurück.
@@ -525,7 +527,10 @@ ersetzt.
    0x575E9–0x5761A, `BF FF 00` / `BF D2 00`): auch ohne Penalty kommt also mit 1/256 (vergeben) bzw. 1/211 (Tor) eine
    Penalty-Szene. Penalty ≠ 0 → n = `random(2, [0xE2F2])`; sonst sechs ≠ 0 → n = `random(2, [0xE2F4])` und
    Merker `[bp-2]` = 1 (Datei 0x5761E–0x57643). `38h:847h` ist `random(a, b)` mit beiden Grenzen; es zieht aus dem
-   **Spielzufall** – jede gezeigte Torszene verschiebt also die Zufallsfolge der Spielrechnung.
+   **Spielzufall** – jede gezeigte Torszene verschiebt also die Zufallsfolge der Spielrechnung. `random` hat keinen
+   Sonderfall a = b (Datei 0xC037: Grenzentausch, dann immer `call 0x0:0x6df`): mit `MAXSZENE:11|2|2` ergibt die
+   Penalty- bzw. Sechser-Wahl stets n = 2, verbraucht aber trotzdem einen Zug – je Szene also drei Züge mit Penalty oder
+   sechs, sonst zwei (Review #795 P3-2).
 3. Dateiname (`0:1B0Bh` kopieren, `0:1A9Ch` anhängen): `DGROUP 0x5556` „tore\“ + n (`38h:2C2h`) + „.h“/„.a“ (Seite 0/1,
    `0x555C`/`0x555F`) + „v“/„t“ (Art 0/1, `0x5562`/`0x5564`) + „e“, wenn Penalty und nicht `[bp-2]` (`0x5566`) +
    „j“, wenn `[bp-2]` (`0x5568`). Beispiele: Heim vergibt `tore\7.hv`, Gast trifft per Penalty
@@ -559,8 +564,11 @@ Bit 7 Vorzeichen y, Bit 6 Vorzeichen x, Bits 5–3 |dx|, Bits 2–0 |dy| (also h
 ersetzen eine Geschwindigkeit (`cs:0x1A`/`0x1C`; `[APPROX]` Deutung als Kamera aus dem Kopf +0x04), Puck und Objekte: Werte werden addiert. Figurnummern in den Dateien
 0 … 93; welche Bildtafel sie zeichnet (`kb\246`/`kb\247` oder die Halle `kb\241…244`, Zeichnen `48h:4ECFh` ff.) ist
 nicht gelesen – `[APPROX]` offen für L7 (Kandidat: die 92 Figuren 32 × 32 in `kb\233`/`kb\234`/`kb\235`,
-`SpriteSheet.cs`, über eine Tabelle in `kb\246`). Koordinaten bis rund 540 × 320: das Eisfeld ist größer als der Bildschirm und
-scrollt.
+`SpriteSheet.cs`, über eine Tabelle in `kb\246`). Koordinaten (Startwerte aus dem Kopf, alle 48 Dateien): Kamera bis
+(304\|880), Puck bis (639\|1 051), Objekte bis (791\|1 205), also etwa 800 × 1 210 – das Eisfeld ist **hoch**, nicht breit,
+größer als der Bildschirm und scrollt; Heimszenen (`.h*`) liegen oben (Objekt-y 158 … 905), Gastszenen (`.a*`) reichen
+bis unten (y bis 1 205, z. B. `6.at`; Kamera-y 880 in `8.at`). Die Bewegungen kommen noch hinzu. Größe der Eisfläche und
+Zuordnung zur Halle `kb\241…244` in Spur C prüfen (Review #795 P2-1).
 
 Ablauf je Bild im Abspieler (Datei 0x56CEA–0x56DC3): Ende bei 0xAAAA; `48h:2C08h(1)`, Bild anwenden, warten, solange
 `48h:4884h` ≠ 0 (dabei Publikum `kb\237` neu, wenn Ton an `DGROUP 0x4A44` und die Ausgabe frei `0x59E4` = 0 ist);
@@ -572,10 +580,14 @@ Modus = `2 · [0x5A55]` (Dauer-Eisfeld, Datei 0x53FCE): bei 2 springt der Abspie
 
 Vorschlag der Spur `re-livespiel-2`; Zuschnitt und Reihenfolge entscheidet die Leitstelle im Rundenplan. Grundsätze:
 der Spielkern bleibt ohne Bildschirm vollständig (Live-Anzeige ist nur Darstellung, `spielberechnung.md` §1), **außer**
-den Zufallszügen, die das Original nur mit Anzeige macht (Strafgrund §5, Szenenwahl §11 Schritt 2, dazu die
-Zwinker-Züge `lrandom` aus §1/§5 – ob `38h:7E5h` denselben Generator wie `38h:847h` nutzt, in A4 prüfen) – sie gehören in
-den Kern, geschaltet über „Live-Anzeige an“, sonst verschiebt sich die Zufallsfolge. Zeit vergeht weiter nur über
-`GameState.Continue()`; der Live-Bildschirm treibt die Minuten, ändert aber keinen Zustand außer über Kern-Befehle.
+den Zufallszügen, die das Original nur mit Anzeige macht (Strafgrund §5, Szenenwahl §11 Schritt 2) – sie gehören in
+den Kern, geschaltet über „Live-Anzeige an“, sonst verschiebt sich die Zufallsfolge. Die Zwinker-Züge `lrandom`
+(`38h:7E5h`, Datei 0xBFD5) verschieben sie **nicht**: eigener Generator mit Zustand `DGROUP 0xE017/0xE019` (Langwort),
+`x = ((x << 4) + 0xA7)` mit `0:48Bh` (Langwort-Rest) gegen 0x3D0900 (4 000 000), danach Skalierung auf `(b − a + 1)`;
+`random` (`38h:847h`, Datei 0xC037) ruft dagegen `0:6DFh` = Datei 0x24DF (Borland-`rand`, Zustand `DGROUP 0x5984/0x5986`,
+Faktor 0x015A4E35). Für A4/A2: `lrandom` als eigener Generator (Kern bzw. `LiveClock`), getrennt vom Spielzufall
+(Review #795 P3-1). Zeit vergeht weiter nur
+über `GameState.Continue()`; der Live-Bildschirm treibt die Minuten, ändert aber keinen Zustand außer über Kern-Befehle.
 
 **Spur A `livespiel-kern`** (Core und Formats; zuerst, weil B die Werte zeigt)
 
@@ -584,7 +596,7 @@ den Kern, geschaltet über „Live-Anzeige an“, sonst verschiebt sich die Zufa
 | A1 | L1 Anzeigezähler: Reihenliste (bis 4 Paarungen, §2 `0xA75C`/`0x233`), Chancen/Tore je Drittel und Seite (`0xA839`/`0xA83F`, nur Minute ≤ 60), Strafminuten (`0xA845`) | neu `Core/MatchEngine.Scoreboard.cs`; Anschluss in `MatchEngine.Live.cs` (Absprache mit dem Besitzer) | Spieltag mit Managerpaarung: Summe der Drittelzähler = Ereignisliste; Strafminuten = Vereinsminuten; Reihenfolge der Reihen wie 0x5353C |
 | A2 | L5 Ablaufmodell: Geschwindigkeit 0–80, Pausen je Minute `(45 − g/2)` bzw. `(30 − g/2)` mit Zwinkern 1/5, Schnelldurchlauf ≥ 70, Warten nach Minute 60/70, Spieltagssicherung `0xE19B`/`0xE19C`, Lampe §10 Schritt 1; nur als Modell (Bilder je Minute), keine Wanduhr | neu `Core/LiveClock.cs` | Ablauftest: Bilder je Minute bei g = 0/60/70; Lampe an → g = 70 und Torszenen aus, aus → Sicherung zurück; Leertaste-Optionen setzen Lampe = 0 |
 | A3 | L6 Eingriff als Befehle: Einsatz (0, 4 … 100), Angriff (0–7), Reihe auf dem Eis je Teil mit Prüfung 4. Reihe (0x08E5F), Eingriff öffnen (Modus 1/2) mit „im Spiel“-Kennzeichen; danach `RecountSkaters` | neu `Core/MatchEngine.Intervention.cs` | Rechnung je Minute mit geändertem Einsatz/Angriff/Reihe; Nachführen 0x939A überschreibt in gerader Minute (A176); 4. Reihe ohne Spieler → keine Änderung |
-| A4 | L4/L7 Zufall im Kern: Strafgrund `random(0, 12)` bzw. Index 5; Szenenwahl §11 (Züge in genau dieser Reihenfolge, Dateiname); Format-Leser `tore\` (Kopf, Bilder, Bewegungsbyte) | neu `Formats/GoalScene.cs`, `Core/MatchEngine.GoalScene.cs` | `[GameDataFact]`: alle 48 Dateien lesbar, Bildzahl = (Länge − 86) / 28, Effektzählung 149/53/25, Byte 2 = 0; Szenenwahl mit festem Zufall ergibt den erwarteten Namen; Zufallsfolge mit/ohne Anzeige getrennt geprüft |
+| A4 | L4/L7 Zufall im Kern: Strafgrund `random(0, 12)` bzw. Index 5; Szenenwahl §11 (Züge in genau dieser Reihenfolge, auch `random(2, 2)` zieht – mit Penalty oder sechs **drei** Züge, sonst zwei; Dateiname); Format-Leser `tore\` (Kopf, Bilder, Bewegungsbyte) | neu `Formats/GoalScene.cs`, `Core/MatchEngine.GoalScene.cs` | `[GameDataFact]`: alle 48 Dateien lesbar, Bildzahl = (Länge − 86) / 28, Effektzählung 149/53/25, Byte 2 = 0; Szenenwahl mit festem Zufall ergibt den erwarteten Namen; Zufallsfolge mit/ohne Anzeige getrennt geprüft |
 
 **Spur B `livespiel-ui`** (nach A1; Bildschirme, Szenario `Tools/Scenarios/Live.cs`)
 
