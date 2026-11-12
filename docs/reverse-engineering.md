@@ -1058,3 +1058,23 @@ Teil 1 (#791), Disassembly mit `tools/reverse-engineering/disasm.py`, Gegenprobe
   PURVES 58/44; FILE22 PESKA 58/48; FILE24 STEFAN 52/42, CHAIDAROV 55/40; MENDE FILE36 60/45 → FILE44 60/34 (zweite Verletzung),
   HEISS FILE37 46/34 bis FILE46 unverändert nach der Heilung. Restdauer `+0x0D` in Wochen (Heilung je 7. Tag), Art `+0x17`.
   Im Remake `Player.PoolForm` (null = gleich der Form, Schema 50).
+
+Teil 2 (Transfermarkt):
+
+* **Verkaufen (A253):** Klick auf einen eigenen Kaderplatz in der Transferliste (Datei 0x46DB6): Kaderplatz `+0x18` Bit 0x80
+  → „Dieser Spieler hört / am Saisonende auf.“ (DGROUP 0x12BD, 0x46DD8); `+0x09` Bit 0x40 → Angebotsfenster (0x46E04, Zweig der
+  Angebote für eigene Spieler); sonst 0x46FD4–0x470DE: höchstens 3 Markt-Plätze mit Pool `+0x1A` = Manager (0x47027, DGROUP
+  0x11F9), Pool `+0x1A` = Manager (0x47040, sonst „Dieser Spieler ist / nur ausgeliehen.“, DGROUP 0x11F1), Markt-Platz anlegen
+  (0x42CB1 mit Grenze 0x0A, „Schon 11 Mann …“). **Keine Mindestbesetzung je Art** – die frühere Grenze 2/4/6 gilt im Remake nur
+  noch für Computervereine (`[APPROX]`). Alle drei Meldungen sind Kurzmeldungen (0x0C0B8).
+* **„Schon 29 Mann“ (F089):** 0x42CB1 (Datei 0x42CF0–0x42D44): außer im Markt-Satz 4 und wenn der Verein des Spielers (Pool
+  `+0x1D`) der des Managers ist (Managersatz `+0x14`), bricht ein Besitz > Grenze − 1 = 28 ab; Zählung 0xF8:0x75 = Datei 0x3CCEB
+  (eigener Satz, dazu Plätze der anderen Manager und des Markts mit Pool `+0x1A` = Manager – also verliehene **und** eigene
+  Spieler auf dem Markt). Im Remake `TransferMarket.IsSquadFull`, `GameState.OwnedPlayers` (zählt seit Teil 2 die eigenen
+  Markt-Plätze außerhalb des Kaders, A380).
+* **Talentsuche (A244/A245):** Die Rückfrage („Möchten Sie, daß Ihr 'Spion' / für Sie auf Talentsuche geht?“, Datei
+  0x1B121/0x1B13E über DGROUP 0x1339/0x133D, „Preis:“ 0x1341) steht im Remake schon so. Nach dem Start (Datei 0x46A14–0x46A38)
+  übermalt das Original nur den Knopf und zeichnet die Kontozeile (0x463CC) – keine Meldung. Bei Zähler `+0xEC` ≠ 0 zeichnet es
+  den Knopf nicht (0x46704) und wertet keinen Klick aus (0x468C1 → 0x46A65): keine Meldung „läuft schon“.
+* **Unverändert offen:** Höhe des Gebots für einen eigenen Markt-Platz wird im Original erst beim Anklicken gewürfelt (0x47347),
+  im Remake beim Gebot (`[APPROX]`, A251-Rest); Ablöse am Saisonende über `Book` (A226, Architekturregel).

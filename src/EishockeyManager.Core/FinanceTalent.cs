@@ -98,16 +98,19 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Spieler im Besitz des Managers: der eigene Kader ganz, dazu die an andere Vereine verliehenen eigenen Spieler.
-    /// [ORIGINAL] Datei 0x3CCEB: alle belegten Plätze des eigenen Satzes, aus den Sätzen der anderen Manager und des Markts
-    /// (Satz 4) die Plätze mit Poolbesitzer +0x1A = Manager. [APPROX] Im Remake steht ein verliehener Spieler mit
-    /// <see cref="PlayerLoan.Origin"/> = eigener Verein im fremden Kader; Angebote auf dem Markt bleiben im eigenen Kader.
+    /// Spieler im Besitz des Managers: der eigene Kader ganz, dazu die an andere Vereine verliehenen und die eigenen Spieler auf
+    /// dem Markt. [ORIGINAL] Datei 0x3CCEB: alle belegten Plätze des eigenen Satzes, aus den Sätzen der anderen Manager und des
+    /// Markts (Satz 4) die Plätze mit Poolbesitzer +0x1A = Manager. Im Remake steht ein verliehener Spieler mit
+    /// <see cref="PlayerLoan.Origin"/> = eigener Verein im fremden Kader; ein eigener Spieler auf dem Markt steht seit A380 außerhalb
+    /// des Kaders (<see cref="TransferMarket.OwnListingsOutsideSquad"/>, Pool +0x1A bleibt Manager, Datei 0x470C4) und zählt
+    /// mit (Spur kader-rest, Teil 2, F089; bis dahin fehlte er).
     /// </summary>
     public int OwnedPlayers(Manager manager)
     {
         var club = Clubs[manager.ClubIndex];
         return club.Players.Count
-            + Clubs.Where(c => c != club).Sum(c => c.Players.Count(p => p.Loan?.Origin == club));
+            + Clubs.Where(c => c != club).Sum(c => c.Players.Count(p => p.Loan?.Origin == club))
+            + TransferMarket.OwnListingsOutsideSquad(club).Count();
     }
 
     /// <summary>

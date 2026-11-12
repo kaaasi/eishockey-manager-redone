@@ -34,7 +34,7 @@ public sealed partial class TransferMarket
             Lock(game, listing, buyer);
             return TransferResult.Rejected;
         }
-        if (game.Clubs[buyer.ClubIndex].Players.Count >= MaxSquad)
+        if (IsSquadFull(game, buyer, listing.From))
             return TransferResult.SquadFull;
         if (question.Offer > buyer.Money)
             return TransferResult.NotEnoughMoney;

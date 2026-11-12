@@ -80,6 +80,18 @@ public enum TransferResult
     /// <see cref="TransferMarket.AnswerSeller"/>. Spur kader-transfer, Teil 4 (A258).
     /// </summary>
     SellerAsked,
+
+    /// <summary>
+    /// „Dieser Spieler hört / am Saisonende auf.“ (DGROUP 0x12BD, Kurzmeldung 0x0C0B8). [ORIGINAL] Datei 0x46DD8: „Verkaufen“ eines
+    /// Spielers mit Kaderplatz +0x18 Bit 0x80 (<see cref="ContractNotice.Retiring"/>). Spur kader-rest, Teil 2 (A253).
+    /// </summary>
+    Retiring,
+
+    /// <summary>
+    /// „Dieser Spieler ist / nur ausgeliehen.“ (DGROUP 0x11F1, Kurzmeldung 0x0C0B8). [ORIGINAL] Datei 0x47040–0x470E4: Pool +0x1A
+    /// ist nicht der Manager (geliehener Spieler). Spur kader-rest, Teil 2 (A253).
+    /// </summary>
+    OnlyLoaned,
 }
 
 /// <summary>
@@ -101,8 +113,10 @@ public sealed partial class TransferMarket
     /// anlegen“ (0x108:0x5C = Datei 0x42CB1) mit Grenze 0x1D; dort wird bei mehr als 28 Spielern des Managers (Zählung
     /// 0xF8:0x75) mit „Schon 29 Mann / im Team.“ (DGROUP 0x127D) abgebrochen. Beleg FILE05 → FILE07: Kölner EC kauft als
     /// 26. Spieler. Die frühere Grenze 22 stammte aus „Schon 22 Mann / im Team !“, der Meldung der Aufstellung
-    /// (<see cref="Club.MaxDressed"/>). [APPROX] Das Remake zählt nur den eigenen Kader; ob 0xF8:0x75 verliehene Spieler
-    /// mitzählt (Inventur F089), ist offen.
+    /// (<see cref="Club.MaxDressed"/>). [ORIGINAL] 0xF8:0x75 ist die Besitzzählung Datei 0x3CCEB (<see cref="GameState.OwnedPlayers"/>:
+    /// eigener Kader, verliehene und eigene Spieler auf dem Markt); sie entfällt, wenn der Verein des Spielers (Pool +0x1D) der
+    /// des Managers (Managersatz +0x14) ist (Datei 0x42CF7–0x42D1C). Ohne freien der 29 Plätze bricht 0x42CB1 ebenfalls ab
+    /// (0x7F). Spur kader-rest, Teil 2 (F089); <see cref="IsSquadFull"/>.
     /// </summary>
     public const int MaxSquad = 29;
     public const int MaxOwnListings = 3;
@@ -120,7 +134,11 @@ public sealed partial class TransferMarket
     /// </summary>
     public const int MaxFreeAgents = 60;
 
-    /// <summary>Mindestbestand je Art im Kader, damit ein Verkauf möglich ist. [APPROX]</summary>
+    /// <summary>
+    /// Mindestbestand je Art, den ein Computerverein für einen Verkauf behält. [APPROX] Nur für Computervereine (im Original ohne
+    /// Kaderplätze). Für Managervereine gibt es keine Grenze: Der Verkaufszweig Datei 0x46FD4–0x470DE prüft nur Ruhestand
+    /// (0x46DD8), drei eigene Markt-Plätze (0x47027), Besitz (0x47040) und den vollen Markt (0x42CB1); Spur kader-rest, Teil 2 (A253).
+    /// </summary>
     public const int MinGoalkeepers = 2, MinDefenders = 4, MinForwards = 6;
 
     private readonly List<TransferListing> _listings = [];
@@ -289,6 +307,18 @@ public sealed partial class TransferMarket
 
     private static bool IsManaged(GameState game, Club club) => game.Managers.Any(m => m.ClubIndex == club.Index);
 
+    /// <summary>
+    /// „Schon 29 Mann / im Team.“ beim Kauf oder bei der Leihe eines Spielers aus <paramref name="playerClub"/>. [ORIGINAL]
+    /// „Kaderplatz anlegen“ Datei 0x42CB1 mit Grenze 0x1D: Ist der Verein des Spielers (Pool +0x1D) nicht der des Managers
+    /// (Datei 0x42CF7–0x42D1C), bricht ein Besitz von mehr als 28 Spielern ab (0xF8:0x75 = 0x3CCEB, Datei 0x42D1E–0x42D44,
+    /// <see cref="GameState.OwnedPlayers"/>); sonst nur, wenn keiner der 29 Plätze frei ist. Spur kader-rest, Teil 2 (F089).
+    /// </summary>
+    public static bool IsSquadFull(GameState game, Manager manager, Club playerClub)
+    {
+        var club = game.Clubs[manager.ClubIndex];
+        return club.Players.Count >= MaxSquad || playerClub != club && game.OwnedPlayers(manager) >= MaxSquad;
+    }
+
     /// <summary>Bleiben nach dem Abgang genug Spieler der Art?</summary>
     public static bool CanLeave(Club club, Player player)
     {
@@ -390,7 +420,7 @@ public sealed partial class TransferMarket
         var club = game.Clubs[manager.ClubIndex];
         if (offer < 0 || offer == 0 && !listing.IsFreeAgent)
             return TransferResult.Unfair;
-        if (club.Players.Count >= MaxSquad)
+        if (IsSquadFull(game, manager, listing.From))
             return TransferResult.SquadFull;
         if (!_listings.Contains(listing) || listing.Seller == manager)
             return TransferResult.Impossible;
@@ -497,17 +527,26 @@ public sealed partial class TransferMarket
     /// [ORIGINAL] Listenpreis = +0x2C des Kaderplatzes (<see cref="Player.PurchasePrice"/>, mit dem Platz kopiert, Datei 0x470C4):
     /// HOHENADL FILE40 Kaderplatz +0x2C = 316.000 DM → FILE41 Markt-Platz 316.000 DM, Bild <c>file40_04</c> „316.000 DM (K)“,
     /// Leihgebühr „105.333 DM (L)“ = Preis / 3. [APPROX] Ohne Kaufpreis (0, Altstände vor kader-transfer) der Preis aus dem
-    /// Spielerwert (<see cref="Price"/>); Mindestbesetzung je Art (<see cref="CanLeave"/>) wie bisher.
+    /// Spielerwert (<see cref="Price"/>).
+    /// [ORIGINAL] Reihenfolge der Prüfungen (Spur kader-rest, Teil 2, A253): Ruhestand +0x18 Bit 0x80 (Datei 0x46DD8,
+    /// <see cref="TransferResult.Retiring"/>), drei eigene Markt-Plätze (0x47027), Besitz Pool +0x1A (0x47040,
+    /// <see cref="TransferResult.OnlyLoaned"/>), voller Markt (0x42CB1). Eine Mindestbesetzung je Art gibt es nicht (bis Runde 17
+    /// [APPROX] 2/4/6 wie <see cref="CanLeave"/>). Der Zweig mit Kaderplatz +0x09 Bit 0x40 (Datei 0x46E04, Angebot für den
+    /// Spieler) gehört zu <c>Transfer.Unsolicited.cs</c>.
     /// </summary>
     public TransferResult Offer(GameState game, Manager manager, Player player)
     {
         var club = game.Clubs[manager.ClubIndex];
-        if (!club.Players.Contains(player) || player.OnLoan || !CanLeave(club, player))
+        if (!club.Players.Contains(player))
             return TransferResult.Impossible;
+        if (player.Notice == ContractNotice.Retiring)
+            return TransferResult.Retiring;
         if (_listings.Any(l => l.Player == player))
             return TransferResult.Impossible;
         if (_listings.Count(l => l.Seller == manager) >= MaxOwnListings)
             return TransferResult.TooManyOwnListings;
+        if (player.OnLoan)
+            return TransferResult.OnlyLoaned;
         if (_listings.Count >= MaxListings)
             return TransferResult.MarketFull;
         _listings.Add(new TransferListing
@@ -604,9 +643,8 @@ public sealed partial class TransferMarket
         if (listing.FromPool)
             return SlotOf(listing.Player) is { Owner: PoolOwner.Market } && !game.Clubs.Any(c => c.Players.Contains(listing.Player));
         if (listing.Seller is { } seller)
-            // A380: Der eigene Markt-Platz steht außerhalb des Kaders (Altstände: noch im Kader, dann mit Mindestbesetzung).
+            // A380: Der eigene Markt-Platz steht außerhalb des Kaders (Altstände: noch im Kader). A253: keine Mindestbesetzung.
             return game.Managers.Contains(seller) && seller.ClubIndex == listing.From.Index
-                && (!listing.From.Players.Contains(listing.Player) || CanLeave(listing.From, listing.Player))
                 && game.Clubs.Where(c => c != listing.From).All(c => !c.Players.Contains(listing.Player));
         return listing.From.Players.Contains(listing.Player) && CanLeave(listing.From, listing.Player)
             && game.Clubs.Where(c => c != listing.From).All(c => !c.Players.Contains(listing.Player))
@@ -627,6 +665,8 @@ public sealed partial class TransferMarket
         TransferResult.MarketFull => ["Schon 11 Mann auf", "dem Transfermarkt."],
         TransferResult.Unfair => ["Dieser Betrag ist", "nicht erlaubt (unfair) !"],
         TransferResult.AlreadyRejected => ["Angebot wurde", "bereits abgelehnt."],
+        TransferResult.Retiring => ["Dieser Spieler hört", "am Saisonende auf."],
+        TransferResult.OnlyLoaned => ["Dieser Spieler ist", "nur ausgeliehen."],
         _ => ["Der Transfer", "findet nicht statt."],
     };
 }

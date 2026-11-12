@@ -117,7 +117,9 @@ public class TransferTests
         Assert.Null(market.ListingOf(forwards[0]));
 
         var goalie = club.Players.First(p => p.Role == PlayerRole.Goalkeeper);
-        Assert.Equal(TransferResult.Impossible, market.Offer(game, manager, goalie)); // nur 2 Torhüter
+        // A253 (kader-rest Teil 2): keine Mindestbesetzung je Art beim Verkauf (Datei 0x46FD4–0x470DE); bis Runde 17 Impossible
+        // bei nur 2 Torhütern.
+        Assert.Equal(TransferResult.Accepted, market.Offer(game, manager, goalie));
     }
 
     [Fact]
