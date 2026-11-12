@@ -980,3 +980,27 @@ für Runde 11); die Funktionskarte zählt sie mit ([re-abdeckung.md](re-abdeckun
 | `re-saisonwechsel` | [analyse/re-saisonwechsel.md](analyse/re-saisonwechsel.md) | Saisonende, Oberliga-Austausch mit Managervereinen (#166, berichtigt Teil 4 oben), DOSBox-Beleg |
 | `re-livespiel` | [analyse/re-livespiel.md](analyse/re-livespiel.md) | Livespiel: Spieluhr, Anzeigetafel, Reporter, Torszenen, Spielende (Grundlage für `livespiel`) |
 | `re-rest` | [analyse/re-rest.md](analyse/re-rest.md) | übrige Funktionen des Spielcodes (u. a. Talentsuche, Hilfen der Spieltage, Nachrichten) |
+
+## Ligapaarungen: Seiten „Play-Off“ und „Aufstieg“ (Spur `ui-rest`, Runde 17, Teil 1)
+
+A280/A282 (UI-Teil). Umsetzung: `LeaguePairingsPages`, `PlayoffGamesScreen`, `PromotionRoundScreen`, Aufbau und Fundstellen in
+deren Klassenkommentaren; Videovergleich in [wettbewerbe.md](wettbewerbe.md), Abschnitt „Paarungen Liga“.
+
+* **Seitenwähler 0x3A88A, Seite 1** (Sprungtabelle cs:0x12FB, Datei 0x3AA21): Wettbewerb = Liga der Kachel. Liga 0 →
+  0x32E23(2, Minute) „Play-Off Spiele“; sonst 0x31CD5(1, Liga − 1, …) „Aufstieg  n.Liga“ mit Argument 3 = 2 · DGROUP 0x7B0 +
+  (0xCCA3 > 0) + (0xCCA3 > 2), höchstens 7 (gespielte Gruppentermine, Datei 0x3AAA4–0x3AAD5). Seite 7 (Datei 0x3ABEA) ruft
+  0x128:0x39 mit (Liga, Minute ≠ 0 ? 2 : 0, Minute, 1).
+* **Rückgaben:** 0x4E8A3 gibt 1 nach dem mittleren Knopf (Knopf 3, Datei 0x4F059–0x4F06A), sonst 0; 0x32E23 gibt nach dem Knopf
+  (1 << 2) + 3 = 7 bei Wettbewerb 2 bzw. 3 bei Wettbewerb 3 (Datei 0x33A99–0x33AAC); 0x31CD5 gibt das Wort DGROUP 0x4DF0 + 4 ·
+  Wettbewerb + 2 · Knopf zurück (Wettbewerb 1: 7, 7; Wettbewerb 2: 0x4DF8 = 4 − Gruppe, 5; Wettbewerb 3: 4, 3), nach Rechtsklick
+  0x4DF0 = 0. Kacheln „Paarungen 1./2. Liga/Oberliga“ teilen DGROUP 0x5125 (Startwert 7, Datei 0x4587E–0x45891).
+* **Play-Off-Plätze:** 0x31505 tauscht die beiden Plätze einer Serie in DGROUP 0x5D3B samt allen Ergebnissen der Runde
+  (DGROUP 0xCCB2 + 14 · Spiel) und den Siegen (0xCCA4); 0x315E9 ruft es nach jedem der ersten vier Termine einer Runde für jede
+  Serie (auch entschiedene), am fünften nur, wenn der Verein auf dem ungeraden Platz gewonnen hat (Siege := 0x14). Der
+  Rundenwechsel (Datei 0x31B9C–0x31C88) kopiert die Plätze über DGROUP 0x144, tauscht Serien mit 0x14 zurück und erhöht 0x7B0;
+  nach dem Endspiel gibt es keinen Rundenwechsel (0x7B0 = 2).
+* **Termine der Aufstiegsrunde** (0x31CD5, Datei 0x322F4–0x32324): Termin n der Gruppe ist der n-te Play-Off-Tag (Bit 0x40 in
+  DGROUP 0x828) mit Rest 0 oder 2 im Fünferblock, also Play-Off-Termine 0, 2, 5, 7, 10, 12 (6.2., 10.2., 20.2., 25.2., 22.3.,
+  29.3.; `folge07_03307`). `RelegationGroup.DateIndices` (`Core/Playoffs.cs`) hat 0, 2, 5, 7, 9, 10 – offen für die
+  Spur `wettbewerbe-rest`. Die Einschränkung in `EuropeanCupScreen` („Termine nur ohne Ergebnisse“) ist mit demselben Vergleich
+  (Spiel g ≥ Argument 3 + Argument 6, Datei 0x3229F–0x322C6) auflösbar; nicht Teil dieser Spur.

@@ -25,8 +25,12 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   „n. Platz, Stärke m“ des Heimvereins und des Gasts; Ergebnis (Flow, Grundlinie y + 9, Farbe 7, zentriert) „g:g“ oder „--:--“.</item>
 /// <item>[ORIGINAL] Startspieltag = gespielte + 1 (über das Ende hinaus: 1); links zurück (vor 1 → letzter), rechts vor (nach dem
 ///   letzten → 1). Rechtsklick und Esc kehren zurück.</item>
-/// <item>[APPROX] Mittlerer Knopf: Die Seiten „Play-Off“ und „Aufstieg“ gibt es noch nicht – der Klick tut nichts.</item>
-/// <item>[APPROX] Klick auf eine Zeile (Original: Vereinsinfo) tut nichts; die zuletzt gewählte Seite (DGROUP 0x5125) wird nicht gemerkt.</item>
+/// <item>[ORIGINAL] Mittlerer Knopf (Knopf 3, Datei 0x4F059–0x4F06A) beendet die Seite mit Rückgabe 1: Seite „Play-Off Spiele“
+///   (<see cref="PlayoffGamesScreen"/>) bzw. „Aufstieg“ (<see cref="PromotionRoundScreen"/>); die zuletzt gezeigte Seite merkt
+///   DGROUP 0x5125 (<see cref="LeaguePairingsPages"/>).</item>
+/// <item>[ORIGINAL] Klick ins Fenster unterhalb y = 34 (Datei 0x4F079–0x4F164): Begegnung k = (y − 40) / 20 (ganzzahlig, gegen 0
+///   gerundet), rechts von x = 160 der Gast; gibt es sie, öffnet das Vereinsfenster 0x128:0x2A (<see cref="ClubInfoWindow"/>).
+///   [APPROX] Die weiteren Argumente (Lage y &gt; 140, Wert 1) wertet das Fenster des Remakes nicht aus.</item>
 /// <item>[APPROX] Spielplan und Stärkewerte stammen aus dem Remake (<see cref="Schedule.DoubleRoundRobin"/>, <see cref="StrengthTable"/>).</item>
 /// </list>
 /// </remarks>
@@ -100,9 +104,21 @@ public sealed class LeaguePairingsScreen : Screen
 
     public override void Update(InputState input)
     {
+        if (InfoWindows.Nation.Update(input) | InfoWindows.Club.Update(input))
+            return;
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
             Host.Show(_back);
+            return;
+        }
+        if (input.Clicked(Buttons[1]))
+        {
+            Host.Show(LeaguePairingsPages.Open(Host, _back, League, LeaguePairingsPages.Final));
+            return;
+        }
+        if (input.LeftClick && ClubAt(input.MouseX, input.MouseY) is { } club)
+        {
+            InfoWindows.Show(club);
             return;
         }
         if (Count == 0)
@@ -111,6 +127,24 @@ public sealed class LeaguePairingsScreen : Screen
             Day = Day <= 1 ? Count : Day - 1;
         else if (input.Clicked(Buttons[2]))
             Day = Day >= Count ? 1 : Day + 1;
+    }
+
+    /// <summary>Vereinsfenster nach Klick auf eine Begegnung.</summary>
+    public InfoBarWindows InfoWindows { get; } = new();
+
+    /// <summary>
+    /// [ORIGINAL] Verein unter der Maus (Datei 0x4F079–0x4F132): nur im Fenster und unterhalb y = 34; Begegnung (y − 40) / 20,
+    /// Platz 2k + (x &gt; 160) der Paarungstabelle DGROUP 0x5D7B, gültig unterhalb der Vereinszahl der Liga (DGROUP 0x7B1).
+    /// </summary>
+    public int? ClubAt(int x, int y)
+    {
+        if (!Window.Contains(x, y) || y <= 34)
+            return null;
+        var k = (y - 40) / 20;
+        var rows = Page?.Rows;
+        if (rows is null || k < 0 || k >= rows.Count)
+            return null;
+        return x > 160 ? rows[k].Away : rows[k].Home;
     }
 
     public override void Draw(Surface s)
@@ -152,6 +186,7 @@ public sealed class LeaguePairingsScreen : Screen
                 : NoResult;
             CompetitionWidgets.Centered(s, Assets.Flow, 0, 319, y + 9, text, 7, null);
         }
+        InfoWindows.Draw(s, Assets, game);
     }
 
     /// <summary>Inhalt der angezeigten Seite aus dem Spielstand (oder die feste Seite); ändert nichts.</summary>
@@ -179,11 +214,11 @@ public sealed class LeaguePairingsScreen : Screen
 internal static class LeaguePairingsMenuEntries
 {
     [MenuEntry("Paarungen 1. Liga")]
-    private static Screen First(ScreenHost host, Screen back) => new LeaguePairingsScreen(host, back, League.Bundesliga);
+    private static Screen First(ScreenHost host, Screen back) => LeaguePairingsPages.FromTile(host, back, League.Bundesliga);
 
     [MenuEntry("Paarungen 2. Liga")]
-    private static Screen Second(ScreenHost host, Screen back) => new LeaguePairingsScreen(host, back, League.ZweiteLiga);
+    private static Screen Second(ScreenHost host, Screen back) => LeaguePairingsPages.FromTile(host, back, League.ZweiteLiga);
 
     [MenuEntry("Paarungen Oberliga")]
-    private static Screen Third(ScreenHost host, Screen back) => new LeaguePairingsScreen(host, back, League.Oberliga);
+    private static Screen Third(ScreenHost host, Screen back) => LeaguePairingsPages.FromTile(host, back, League.Oberliga);
 }

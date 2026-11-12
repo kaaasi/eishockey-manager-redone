@@ -564,11 +564,24 @@ Abschnitt [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-pixel-wettbewerb
 | Kopfzeile „Liga   n.Spieltag  t.m.“ (Flow, Farbe 10, Schatten 28); n hat Mindestbreite 2, wenn der zuvor gezeichnete Tag gespielt war | 0x4E8A3 ff. |
 | sechs Zeilen y = 48 + 20 k: Namen, „n. Platz, Stärke m“ (Mini), Ergebnis „g:g“ bzw. „--:--“ | 0x4E8A3 ff. |
 | Start: gespielte Tage + 1 (nach dem Ende: 1); Pfeile blättern mit Umlauf; Rechtsklick/Esc zurück | 0x4E8A3 ff. |
+| Mittlerer Knopf → Seite 1: Bundesliga „Play-Off Spiele“ (0x32E23, Wettbewerb 2), sonst „Aufstieg  n.Liga“ (0x31CD5, Wettbewerb 1); deren Knopf „Liga“ zurück (Spur `ui-rest`, A280) | Datei 0x4F059, 0x3AA21, 0x33A99, 0x32A85 |
+| Klick auf eine Begegnung (k = (y − 40) / 20, Gast ab x = 161) → Vereinsfenster; ebenso auf den Seiten „Play-Off Spiele“ und „Aufstieg“ | Datei 0x4F079, 0x33AAF, 0x32944 |
+| Zuletzt gezeigte Seite DGROUP 0x5125 für alle drei Kacheln, Startwert 7, Saisonwechsel setzt zurück | Datei 0x4587E, 0x564AF |
 
-**[APPROX]:** Mittlerer Knopf („Play-Off“ bei der Bundesliga, sonst „Aufstieg“) ohne Wirkung, da die Zielseiten fehlen;
-Klick auf eine Zeile (Original: Vereinsinfo) ohne Wirkung; die zuletzt gewählte Seite (DGROUP 0x5125) wird nicht gemerkt;
-Spielplan (`Schedule.DoubleRoundRobin`) und Stärkewerte (`StrengthTable`) sind Näherungen des Remakes. Die Trefferfläche der
-Pfeilknöpfe ist der Rahmen (48 × 38).
+**[APPROX]:** Spielplan (`Schedule.DoubleRoundRobin`) und Stärkewerte (`StrengthTable`) sind Näherungen des Remakes (A282, Core:
+Spur `wettbewerbe-rest`). Die Trefferfläche der Pfeilknöpfe ist der Rahmen (48 × 38). Termine der Aufstiegsrunde folgen den
+Spieltagen des Remakes (`RelegationGroup.DateIndices`, Original 0, 2, 5, 7, 10, 12, [reverse-engineering.md](reverse-engineering.md)
+Abschnitt Spur `ui-rest`); Play-Offs kennen keine Verlängerungsmarke (zwei Punkte).
+
+**Pixelvergleich (Spur `ui-rest`, Runde 17)** – Verfahren wie unten (Runde 6), Mauszeiger maskiert; Abläufe `pixel-playoff`,
+`pixel-aufstieg` (`Tools/Scenarios/UiRestVideo.cs`):
+
+| Bildschirm | Vorlage | Abweichung / > 40 | pegelbereinigt |
+|---|---|---|---|
+| Play-Off Spiele, alle drei Runden | `folge21_02150` | 4,1 / 0,5 % | 3,4 / 0,5 % |
+| Play-Off Spiele, alle drei Runden | `folge23_02017` | 4,2 / 0,5 % | 3,5 / 0,5 % |
+| Aufstieg 2.Liga, vier Termine gespielt | `folge06_01257` | 3,7 / 0,3 % | 2,8 / 0,3 % |
+| Aufstieg 2.Liga, vor dem ersten Spiel | `folge07_03307` | 3,6 / 0,3 % | 2,8 / 0,3 % |
 
 ## Pixelvergleich Runde 6 (Spur `pixel-wettbewerbe`)
 
