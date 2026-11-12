@@ -66,9 +66,9 @@ public sealed record PromotionRoundPage(IReadOnlyList<PromotionPairing> Pairings
 /// <item>[ORIGINAL] Bedienung (Datei 0x32944–0x32A62): Knopf → Ligapaarungen; Klick auf einen Verein der Paarungen
 ///   (y − 5 &lt; Maus-y &lt; y + 2, Gast ab x = 121) oder der Tabelle (y − 8 &lt; Maus-y &lt; y + 2) → Vereinsfenster
 ///   0x128:0x2A; Rechtsklick oder Taste → Hauptmenü; andere Linksklicks bewirken nichts.</item>
-/// <item>[APPROX] Termine: die Tage des Remakes (<see cref="RelegationGroup.DateIndices"/>). Das Original zählt die Gruppentage
-///   als Play-Off-Termine mit Rest 0 oder 2 je Fünferblock (Datei 0x322F4–0x32324: 0, 2, 5, 7, 10, 12 → 6.2., 10.2., 20.2.,
-///   25.2., 22.3., 29.3. wie in <c>folge07_03307</c>); <c>Core/Playoffs.cs</c> hat 0, 2, 5, 7, 9, 10 (Spur wettbewerbe-rest).</item>
+/// <item>[ORIGINAL] Termine: <see cref="RelegationGroup.DateIndices"/>. Das Original zählt die Gruppentage als Play-Off-Termine
+///   mit Rest 0 oder 2 je Fünferblock (Datei 0x322F4–0x32324: 0, 2, 5, 7, 10, 12 → 6.2., 10.2., 20.2., 25.2., 22.3., 29.3. wie in
+///   <c>folge07_03307</c>); der Spielkern folgt dem seit Spur wettbewerbe-rest (#790, A142).</item>
 /// </list>
 /// </remarks>
 public sealed class PromotionRoundScreen : Screen

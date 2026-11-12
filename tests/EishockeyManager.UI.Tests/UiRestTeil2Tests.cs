@@ -128,20 +128,46 @@ public class UiRestTeil2Tests
     }
 
     /// <summary>
-    /// Je Jugendspieler ein Symbol 9 nach allen übrigen Symbolen ([ORIGINAL] Datei 0x27302–0x2730F nach den Einzelprämien
-    /// 0x2717F–0x2725D). Gegenprobe: ohne Jugend bleibt die Liste wie vorher.
+    /// Je <see cref="SeasonEvent.YouthJoined"/> des Spielkerns (Spur kader-rest #791) ein Symbol 9 nach allen übrigen Symbolen
+    /// ([ORIGINAL] Datei 0x27302–0x2730F nach den Einzelprämien 0x2717F–0x2725D), auch wenn die Ereignisse vorn stehen; nie das
+    /// Ersatzsymbol 6 der Statusbit-Auswahl. Gegenprobe: ohne Jugend bleibt die Liste wie vorher.
     /// </summary>
     [GameDataFact]
-    public void Icons_YouthSymbolsComeLast()
+    public void Icons_YouthJoinedEvents_Symbol9Last()
     {
         var (_, game) = AtSeasonEndSummary();
         var record = game.History[^1];
-        var result = record.Managers[0];
-        var without = SeasonEndSummaryScreen.Icons(game, record, result, 0);
-        var with = SeasonEndSummaryScreen.Icons(game, record, result, 2);
+        var plain = record.Managers[0] with
+        {
+            Events = record.Managers[0].Events.Where(e => e != SeasonEvent.YouthJoined).ToList(),
+        };
+        var youth = plain with { Events = [SeasonEvent.YouthJoined, .. plain.Events, SeasonEvent.YouthJoined] };
+        Assert.Equal(0, SeasonEndSummaryScreen.YouthJoined(plain));
+        Assert.Equal(2, SeasonEndSummaryScreen.YouthJoined(youth));
+        var without = SeasonEndSummaryScreen.Icons(game, record, plain);
+        var with = SeasonEndSummaryScreen.Icons(game, record, youth);
         Assert.Equal(without.Count + 2, with.Count);
         Assert.Equal(without, with.Take(without.Count));
         Assert.All(with.Skip(without.Count), r => Assert.Equal(EventSymbols.Source(EventSymbols.Youth), r));
+    }
+
+    /// <summary>
+    /// Ende zu Ende: Die Neuzugänge, die der Spielkern am Saisonende vermerkt, zeichnet das Fenster als Symbol 9 an den letzten
+    /// Rasterstellen (<see cref="EventSymbols.Position"/>).
+    /// </summary>
+    [GameDataFact]
+    public void SummaryWindow_DrawsYouthJoinedFromCore()
+    {
+        var (d, game) = AtSeasonEndSummary();
+        var record = game.History[^1];
+        var result = record.Managers[0];
+        var managers = (IList<ManagerSeasonResult>)record.Managers;
+        managers[0] = result with { Events = [.. result.Events.Where(e => e != SeasonEvent.YouthJoined), SeasonEvent.YouthJoined] };
+        d.Frame();
+        var icons = SeasonEndSummaryScreen.Icons(game, record, managers[0]);
+        var sheet = d.Host.Assets.Image(EventSymbols.Sheet);
+        var (x, y) = EventSymbols.Position(icons.Count - 1);
+        Assert.Equal(0, Differing(d.Surface, sheet, EventSymbols.Source(EventSymbols.Youth), x + EventSymbols.Inset, y + EventSymbols.Inset));
     }
 
     /// <summary>
@@ -158,7 +184,7 @@ public class UiRestTeil2Tests
         var tables = (IDictionary<League, IReadOnlyList<int>>)record.FinalTables;
         tables[League.Bundesliga] = [result.Club, .. tables[League.Bundesliga].Where(c => c != result.Club)];
         d.Frame();
-        var icons = SeasonEndSummaryScreen.Icons(game, record, result, 0);
+        var icons = SeasonEndSummaryScreen.Icons(game, record, result);
         Assert.NotEmpty(icons);
         var sheet = d.Host.Assets.Image(EventSymbols.Sheet);
         var inner = new Rect(EventSymbols.Inset, EventSymbols.Inset, EventSymbols.SymbolWidth, EventSymbols.SymbolHeight);

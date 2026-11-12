@@ -31,7 +31,9 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// <item>[ORIGINAL] Klick ins Fenster unterhalb y = 34 (Datei 0x4F079–0x4F164): Begegnung k = (y − 40) / 20 (ganzzahlig, gegen 0
 ///   gerundet), rechts von x = 160 der Gast; gibt es sie, öffnet das Vereinsfenster 0x128:0x2A (<see cref="ClubInfoWindow"/>).
 ///   [APPROX] Die weiteren Argumente (Lage y &gt; 140, Wert 1) wertet das Fenster des Remakes nicht aus.</item>
-/// <item>[APPROX] Spielplan und Stärkewerte stammen aus dem Remake (<see cref="Schedule.DoubleRoundRobin"/>, <see cref="StrengthTable"/>).</item>
+/// <item>[ORIGINAL] Spielplan aus dem Spielkern nach der Satzfolge der Liga (<see cref="Schedule.ForSlots"/>, Datei 0x4E7C7, Tabelle
+///   DGROUP 0x2DC; A113, Spur wettbewerbe-rest #790).</item>
+/// <item>[APPROX] Die Stärkewerte stammen aus dem Remake (<see cref="StrengthTable"/>).</item>
 /// </list>
 /// </remarks>
 /// <summary>Eine Begegnung der Seite: Vereine, Platz und Stärke beider, Ergebnis (null = nicht gespielt).</summary>

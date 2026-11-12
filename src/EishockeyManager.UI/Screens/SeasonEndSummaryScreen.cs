@@ -76,27 +76,26 @@ public sealed class SeasonEndSummaryScreen : Screen
     /// Symbole des Fensters in der Folge des Originals: Statusbits 0–6 (Datei 0x2714F–0x2717D), Einzelprämien Torhüter, Topscorer,
     /// Fair-Play (Datei 0x2717F–0x2725D), dann je Jugendspieler, der in den Kader rückt, Symbol 9 (Datei 0x272D8–0x27320).
     /// </summary>
-    /// <param name="youthJoined">Zahl der Jugendspieler, die am Saisonende in den Kader rücken (je ein Symbol 9).</param>
-    public static List<Rect> Icons(GameState game, SeasonRecord record, ManagerSeasonResult result, int youthJoined)
+    public static List<Rect> Icons(GameState game, SeasonRecord record, ManagerSeasonResult result)
     {
-        var icons = result.Events.Where(e => !IsSinglePremium(e)).Select(EventIcon).ToList();
+        // Symbol 9 kommt nicht aus den Statusbits, sondern zählt je Neuzugang am Ende (sonst fiele es auf Symbol 6).
+        var icons = result.Events.Where(e => !IsSinglePremium(e) && e != SeasonEvent.YouthJoined).Select(EventIcon).ToList();
         if (game.HasTopFiveStatus(record, result))
             icons.Add(TopFiveIcon);
         // [ORIGINAL] Datei 0x2717F–0x2725D: nach den Statusbits 0–6 die Einzelprämien in der Folge Torhüter, Topscorer, Fair-Play.
         icons.AddRange(result.Events.Where(IsSinglePremium).Select(EventIcon));
         // [ORIGINAL] Datei 0x27302–0x2730F: je erfolgreichem Aufruf 0x20:0x89F (Jugend in den Kader) Symbol 9 an der nächsten Stelle.
-        for (var i = 0; i < youthJoined; i++)
+        for (var i = 0; i < YouthJoined(result); i++)
             icons.Add(Symbol(EventSymbols.Youth));
         return icons;
     }
 
     /// <summary>
-    /// Zahl der Jugendspieler, die im Fenster dieses Managers in den Kader rücken (Symbol 9).
-    /// [APPROX] Der Spielkern lässt die Jugend erst nach dem Fenster nachrücken (<c>GameState.JoinSeasonEndYouth</c>, Kaderübergang);
-    /// die Zahl je Manager zum Zeitpunkt des Fensters liefert der Core-Teil der Spur <c>kader-rest</c> (R788-03). Bis dahin 0 –
-    /// angeschlossen wird beim Merge (Leitstelle), gezeichnet wird über <see cref="Icons"/>.
+    /// Zahl der Jugendspieler, die im Fenster dieses Managers in den Kader rücken (Symbol 9): je Neuzugang ein
+    /// <see cref="SeasonEvent.YouthJoined"/>, das der Spielkern vor dem Fenster vermerkt ([ORIGINAL] Jugend in der Managerschleife
+    /// von 0x26F20, Datei 0x2728C–0x27320; <c>GameState.SeasonEndYouthEvents</c>, Spur <c>kader-rest</c> #791).
     /// </summary>
-    private static int YouthJoined(ManagerSeasonResult result) => 0;
+    public static int YouthJoined(ManagerSeasonResult result) => result.Events.Count(e => e == SeasonEvent.YouthJoined);
 
     /// <summary>Mindestbreite der Platzzahl (DGROUP 0x374) in der Zeile „n. Platz der …“.</summary>
     public const int PlaceWidth = 5;
@@ -180,7 +179,7 @@ public sealed class SeasonEndSummaryScreen : Screen
 
         if (result is null)
             return;
-        var icons = Icons(Game, Record, result, YouthJoined(result));
+        var icons = Icons(Game, Record, result);
         if (icons.Count == 0)
             // [ORIGINAL] Datei 0x27326–0x27348: zentriert x 10–305, Grundlinie 100, Farbe 7, Schatten 0.
             Competitions.CompetitionWidgets.Centered(s, flow, 10, 305, 100, "Keine besonderen Ereignisse...", Colors.White, 0);
