@@ -189,7 +189,7 @@ Regionsgrenzen unzuverlässig, hier von Hand):
 | 0x9506 (Angriffsbits) | 0x939A | ja, gerade Minuten | `FollowTactics` |
 | 0x38A2A (Abwehrreihe 0) | 0x388F6 | ja (aus 0x38A36) | `RecountSkaters` |
 | 0x38B6F/0x38B86 (Bit 3) | 0x38A36 | ja (0x35691, 0x38B8F) | `RecountSkaters` |
-| **0x38F40 (Modus), 0x38FAA (Reihe), 0x38EFE (Einsatz)** | **0x38D96** | **nur bei Mausklick im Live-Spiel** (`[0x5A16]`, Felder der Managerzeile über 0x534BC) | **fehlt** (kein Live-Spiel, Taktik-Klasse `[APPROX]`) |
+| **0x38F40 (Angriffsbits 4–6; berichtigt Runde 17, `re-livespiel.md` §10, vorher „Modus“), 0x38FAA (Reihe), 0x38EFE (Einsatz)** | **0x38D96** | **nur bei Mausklick im Live-Spiel** (`[0x5A16]`, Felder der Managerzeile über 0x534BC) | **fehlt** (kein Live-Spiel, Taktik-Klasse `[APPROX]`) |
 | 0x6F70/0x6F74, 0x29EBF/0x29EC3, 0x4781E–0x47833, 0x4AABF–0x4AD61 | 0x6D7F (Tageslauf/Saisonwechsel), Spielstart, andere Sätze | nein | – |
 | Kaderplatz +0x15: 0x6E7D, 0x2799C, 0x29E5B, 0x40CF8, 0x41210, 0x4158A/0x415AB, 0x4776B, 0x4988F, 0x5B084 | Kaderaufbau, Aufstellung, Markt, Laden | nein (keiner im Spiel) | – |
 
