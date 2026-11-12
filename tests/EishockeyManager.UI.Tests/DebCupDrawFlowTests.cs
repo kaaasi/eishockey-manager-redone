@@ -298,6 +298,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
     // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
     // → Wert nach #772.
+    // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): ab 1993 neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den
+    // Gast gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49): andere Ergebnisse ab dem ersten
+    // Spieltag, mit und ohne Anzeige weiter gleich. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alter Wert.
     // Runde 17, Spur wettbewerbe-rest Teil 2 (A004, R15-E2 = C): ab 1994 neu – Auslosung Europapokal mit 0x4D316 (Mittel der
     // sechs Vereinsfelder, Datei 0x34401–0x3440A) statt der Datenbankstärke: andere Gegner und anderer Verbrauch von CupRandom
     // ab der zweiten Auslosung (1993 unverändert). Rückschaltprobe: CupsEurope.cs mit Club.Strength → Wert nach #743.

@@ -96,7 +96,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 - **Dateigrenzen:** nur `docs/analyse/re-livespiel.md`, `docs/reverse-engineering.md` (eigener Abschnitt); kein Code.
 - **Abnahme:** jede Lesart mit Fundstelle und ausführbarem Beleg (`ndisasm`-Befehl, Bytes), Funktionskarte führt 575C3h danach
   nicht mehr als „unbekannt“ (Probe mit `funktionskarte.py`, Schreiben macht `pruefung-karte` Teil 2).
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5 (Disassembly). **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5 (Disassembly). **Status:** Go 12.11.2026; Teile 1 und 2 fertig (PR #793, 12.11.2026); Erstreview #795 „nein“ (P2-1), Fixlauf P2-1, P3-1…3 behoben 12.11.2026, wartet auf Delta-Prüfung der Leitstelle.
 
 ### Spur `pruefung-karte`
 
@@ -106,7 +106,9 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
   (`--write`, zweiter Lauf ohne Diff), Inventurzeilen aller Spuren, veraltete Zeilen A092/A370 nachziehen (R788-02),
   gesammelte P3 der Runde.
 - **Modell:** Claude Opus 5.5 (Teil 1 Claude Sonnet 5.5 möglich: reine Testergänzung). **Erstreview:** Claude Opus 5.5.
-  **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
+  **Status:** Go 12.11.2026, Start nach Merge des Plans (#788). Teil 1 fertig (PR #794, Review offen): #784 mit Fund
+  „Gast der Spielvorbereitung nach dem Heimverein“ (0x8365, Datei 0x36D12/0x36D49) behoben, #785 belegt (`duell_s2c`,
+  `eisbaeren_f02`).
 
 ### Gesamtreview am Rundenende
 
