@@ -76,7 +76,7 @@ oder einen einzelnen Folgeteil nennt (dann ohne Schritt 5).
    Übergabe, Label `spur-wartet`, in der Übergabe „blockiert – Entscheidung Nutzer“ und Grund. **Keine Fortsetzung**, den Teil
    nicht erneut versuchen.
 5. **Fortsetzung anfordern** (nur wenn Teile offen sind, nichts blockiert und n < 3; R15-E4): `spur-wartet`, in der Übergabe
-   „Fortsetzung anlegen – Leitstelle“ mit fertigem Prompt – Name `Spur <name> – Fortsetzung <n+1>`, Startaufruf „Geplanter Lauf
+   „Fortsetzung anlegen – Leitstelle“ mit fertigem Prompt – Name `EM R<runde> Spur <name> – Fortsetzung <n+1>` (`docs/prozess/anhang.md` F), Startaufruf „Geplanter Lauf
    mit Teilen“ mit `Fortsetzung <n+1> von 3, Übergabe in PR #<nr>.`, Soll-Modell. Die Leitstelle legt an und setzt das Modell
    (`docs/prozess/anhang.md` F).
 6. **Kettenende:** Alle Teile fertig → Beschreibung vervollständigen, „Ready for review“
