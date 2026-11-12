@@ -84,8 +84,8 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
      der Vertragsverhandlung), Hintergrund des Vertragsbildschirms (`file46_3`, `ContractsScreen.cs:81`), Ereignissymbol 9 im
      Fenster „Saisonende“ (nur Zeichnen; den Core-Teil macht `kader-rest`, R788-03).
 - **Abnahme:** Bildschirmfoto-Abläufe je Bildschirm, Pixelvergleich mit Fundstelle des Referenzbilds, Bedienweg per Test.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teil 1 fertig (Draft-PR #792, Claude Code, 12.11.2026),
-  Teil 2 offen.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teile 1 und 2 fertig (PR #792, Claude Code, 12.11.2026);
+  Anschluss Symbol 9/7 an den Core-Teil von `kader-rest` beim Merge.
 
 ### Spur `re-livespiel-2` – Analyse-Nachtrag Live-Spiel (R17-D2 = B)
 

@@ -50,13 +50,16 @@ public class HotSeatUiTests
         Assert.IsType<MainMenuScreen>(d.Host.Current);
         Assert.Equal(1, game.PlayedMatchDays);
         Assert.Equal(0, game.CurrentManager);
-        AssertStartLamps(d);
+        // Spur ui-rest, Runde 17, Teil 2 (A332, R15-E2 = C): Nach dem ersten Tag kann eine offene Meldung zu einem eigenen Spieler
+        // (Angebot, Verlängerung) Lampe 1 rot schalten ([ORIGINAL] Pool +0x1E, Datei 0x42AC9–0x42BD2); sie folgt dieser Meldung.
+        var manager = game.ActiveManager;
+        AssertStartLamps(d, MenuLamps.OpenMessage(game, manager, game.Clubs[manager.ClubIndex]));
     }
 
-    /// <summary>Warnlampen des Managers am Zug: Aufstellung vollständig, nur Werbeflächen frei.</summary>
-    private static void AssertStartLamps(ScreenDriver d)
+    /// <summary>Warnlampen des Managers am Zug: Aufstellung vollständig, nur Werbeflächen frei (Lampe 1 nach <paramref name="message"/>).</summary>
+    private static void AssertStartLamps(ScreenDriver d, bool message = false)
     {
         for (var i = 0; i < Screens.MenuLamps.Count; i++)
-            Assert.Equal(i == 4, PixelVereinTests.LampRed(d, i));
+            Assert.Equal(i == 4 || i == 1 && message, PixelVereinTests.LampRed(d, i));
     }
 }

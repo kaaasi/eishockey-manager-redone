@@ -163,10 +163,12 @@ public sealed class ContractsScreen : Screen
         var row = RowAt(input.MouseY);
         if (row < 0 || row >= rows.Count)
             return;
-        // [ORIGINAL] Bildschirm 0x3FFE0 (Datei 0x4015D–0x401D3): ausgeliehen bzw. Ruhestand angekündigt → Meldung statt
-        // Verhandlung. [APPROX] Die Absage der Spur „kader“ (R2-11) ebenso. Die Sperre meldet erst der Dialog (0x4A704).
+        // [ORIGINAL] Bildschirm 0x3FFE0 (Datei 0x4015D–0x401D3): nur ausgeliehen (+0x0C) bzw. Ruhestand angekündigt (+0x18 Bit 0x80)
+        // → Meldung statt Verhandlung; sonst öffnet 0x4A1DB (Aufruf 0x40208). Die Sperre und die Absage (Refused, nur alte
+        // Spielstände; das Original kennt außer Bit 0x80 keine) meldet erst der Dialog beim Anklicken der Felder (0x4A692–0x4A770,
+        // A363).
         var p = rows[row];
-        if (p.OnLoan || p.Notice is ContractNotice.Refused or ContractNotice.Retiring)
+        if (p.OnLoan || p.Notice is ContractNotice.Retiring)
         {
             _message.Show(Contracts.Message(Contracts.Availability(Host.Game!, p)!.Value, p));
             return;

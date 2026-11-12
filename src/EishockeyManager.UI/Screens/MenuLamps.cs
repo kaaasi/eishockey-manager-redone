@@ -12,7 +12,8 @@ namespace EishockeyManager.UI.Screens;
 /// <list type="number">
 /// <item>Lampe 0: kein Torhüter aufgestellt ist oder eine der Reihen 1–3 nicht genau fünf eingesetzte Spieler hat
 ///   (Kaderplätze 0x5DC3 + 0x618 · Manager + 0x34 · Platz, Felder 0x0F, 0x0A, 0x15; Rollenwert 0x18 = 0 → Torhüter);</item>
-/// <item>Lampe 1: ein eigener Spieler – im Kader oder auf dem Transfermarkt – Feld 0x1E ≠ 0 hat;</item>
+/// <item>Lampe 1: zu einem eigenen Spieler – im Kader oder auf dem Transfermarkt – eine offene Meldung vorliegt
+///   (<see cref="OpenMessage"/>);</item>
 /// <item>Lampe 2: der Kontostand (0x97EA) negativ ist und noch Geld auf dem Sparbuch (Bank-Saldo 0x9806 &gt; 0) oder
 ///   Aktien im Depot liegen;</item>
 /// <item>Lampe 3: Trainingskosten je Woche (0x97EE) anfallen;</item>
@@ -48,13 +49,31 @@ public static class MenuLamps
         var club = game.Clubs[manager.ClubIndex];
         var finance = manager.FinanceData;
         red[0] = !Complete(club.Lineup);
-        // [APPROX] Lampe 1: Bedeutung von Spielerfeld 0x1E nicht geklärt (nicht Verletzung oder Sperre, die stehen im
-        // Kaderplatz) – bleibt grün.
+        red[1] = OpenMessage(game, manager, club);
         red[2] = manager.Money < 0 && finance is { } f2 && (f2.Bank.Balance > 0 || f2.Holdings.Any(h => h.Count != 0));
         red[3] = manager.Training.RawCostPerTrainingDay != 0;
         red[4] = finance is { } f4 && FreeAdSpace(f4);
         red[5] = finance is { } f5 && DepotValue(game, f5) < f5.Holdings.Sum(h => h.PurchaseCost);
         return red;
+    }
+
+    /// <summary>
+    /// Lampe 1 (A332): Zu einem Spieler im Kader des Managers oder zu einem seiner Spieler auf dem Transfermarkt liegt eine offene
+    /// Meldung vor (Angebot, Verlängerungswunsch, Interesse – Nachricht mit Spieler, <see cref="Message.Player"/>).
+    /// [ORIGINAL] Datei 0x42AC9–0x42B6C: je Kaderplatz (0x5DC3 + 0x618 · Manager + 0x34 · Platz, Anzahl 0x120:0x66(Manager, 0))
+    /// Pooleintrag far DGROUP 0x8253 + 0x21 · Kaderplatz +0x0F, Feld +0x1E ≠ 0 → rot; Datei 0x42B73–0x42BD2: je Marktplatz
+    /// (DGROUP 0x7623 + 0x34 · Platz, Anzahl 0x120:0x66(4, 0)) mit Pool +0x1A = Manager ebenso. Pool +0x1E ist die Nummer + 1 des
+    /// Nachrichtensatzes, der den Spieler nennt (gesetzt in 0x4B2F6, gelöscht in 0x4B270; <c>docs/analyse/re-rest.md</c> H).
+    /// Das Remake liest die Nachrichten aller Manager, ohne Finanzdaten anzulegen (Öffnen ändert nichts).
+    /// </summary>
+    public static bool OpenMessage(GameState game, Manager manager, Club club)
+    {
+        var linked = new HashSet<Player>(game.Managers.SelectMany(m => m.FinanceData?.Inbox ?? []).Select(m => m.Player).OfType<Player>(),
+            ReferenceEqualityComparer.Instance);
+        if (linked.Count == 0)
+            return false;
+        return club.Players.Any(linked.Contains)
+            || game.TransferMarket.Listings.Any(l => ReferenceEquals(l.Seller, manager) && linked.Contains(l.Player));
     }
 
     /// <summary>Torhüter aufgestellt und die Reihen 1–3 mit je fünf Spielern besetzt (Reihe 4 zählt nicht).</summary>

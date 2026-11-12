@@ -84,6 +84,39 @@ public class UiRestTeil2Tests
         Assert.True(s.Pixels.AsSpan().SequenceEqual(expected.Pixels));
     }
 
+    /// <summary>
+    /// A332, Lampe 1: rot, solange zu einem eigenen Spieler eine offene Meldung vorliegt ([ORIGINAL] Pool +0x1E, Datei 0x42AC9–0x42BD2);
+    /// grün nach dem Löschen (0x4B270) und bei einer Meldung zu einem fremden Spieler. Das Prüfen legt keine Finanzdaten an.
+    /// </summary>
+    [GameDataFact]
+    public void Lamp1_RedWhileOwnPlayerHasOpenMessage()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var manager = game.ActiveManager;
+        var club = game.Clubs[manager.ClubIndex];
+        Assert.False(MenuLamps.Red(game)[1]);
+
+        var foreign = game.Clubs.First(c => c != club && c.Players.Count > 0).Players[0];
+        Assert.NotNull(game.NotifyAbout(manager, foreign, "fremd"));
+        Assert.False(MenuLamps.Red(game)[1]);
+
+        var own = club.Players[0];
+        Assert.NotNull(game.NotifyAbout(manager, own, "eigen"));
+        Assert.True(MenuLamps.Red(game)[1]);
+        game.RemoveMessagesOf(own);
+        Assert.False(MenuLamps.Red(game)[1]);
+
+        // Ohne Finanzdaten eines Managers: Prüfen legt sie nicht an.
+        var other = game.Managers.FirstOrDefault(m => m != manager && m.FinanceData is null);
+        if (other is not null)
+        {
+            MenuLamps.OpenMessage(game, other, game.Clubs[other.ClubIndex]);
+            Assert.Null(other.FinanceData);
+        }
+    }
+
     private static (ScreenDriver Driver, GameState Game) AtSeasonEndSummary()
     {
         var d = FlowTests.CreateDriver();

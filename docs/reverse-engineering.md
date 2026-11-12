@@ -1025,3 +1025,9 @@ deren Klassenkommentaren; Videovergleich in [wettbewerbe.md](wettbewerbe.md), Ab
 * **Vergleich:** `file46_2` Fenster (4 | 80)–(315 | 193) 0 von 35.568 Pixeln verschieden; `file13_15` Platzzeile 0 von 4.200;
   `file46_3` Zeile y 0–12 0 von 4.160, Kachel (265 | 195)–(318 | 237) gleich (2 Randpixel x = 319 wie bei `file40_11`).
   Ablauf `pixel-saisonende-symbole`.
+* **Lampe 1 (A332)** (Datei 0x42AC9–0x42BD2): Feld +0x1E gehört nicht zum Kaderplatz, sondern zum Pooleintrag (far DGROUP
+  0x8253 + 0x21 · Kaderplatz +0x0F): Nummer + 1 der offenen Meldung zum Spieler (0x4B2F6/0x4B270). Rot, wenn ein Spieler des
+  Kaders oder ein Marktplatz (DGROUP 0x7623, Pool +0x1A = Manager) eine offene Meldung hat (`MenuLamps.OpenMessage`).
+* **Absage beim Anklicken (A363)** (Datei 0x4015D–0x401D3): Der Bildschirm „Verträge“ meldet nur Leihe (+0x0C) und Ruhestand
+  (+0x18 Bit 0x80, Meldung 4 „kündigt an …“); alles andere öffnet den Dialog 0x4A1DB, der die Sperre erst an den Feldern meldet
+  (0x4A692). Eine eigene „Absage“ ohne Bit 0x80 gibt es im Original nicht.
