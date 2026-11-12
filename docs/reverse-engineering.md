@@ -1087,7 +1087,13 @@ Teil 3 (Geld und Saisonende):
   ∓v: je Paar **ein** gespiegelter Saldo (Bank: FILE08 Manager 0 Eintrag 4 = −2.103.000, Satz 4 Eintrag 0 = +2.103.000). Das
   entspricht dem Saldo des Remakes (`ManagerLoanNet`, `BankAccount.Balance`); `[APPROX]` aufgehoben. Der Export schreibt seither
   den Saldo je Paar statt je Kredit (Kredite in beide Richtungen überschrieben einander).
-* **Ereignissymbol 9 (offen):** Die Jugend am Saisonende (Datei 0x2728C–0x2730F) läuft im Original im Fenster selbst, vor der
-  Seite des Managers; das Remake zieht sie erst nach dem Fenster (`StartSquadSeason` aus `StartNextSeason`), die Seiten zeigen
-  das Ergebnis von `FinishSeason`. Umsetzung braucht die Jugend (samt `YouthSeasonChange`, Datei 0x55889 vor 0x5645D) vor den
-  Seiten; Fortsetzung.
+* **Ereignissymbol 9:** Am 29. April (Saisonwechsel ab Datei 0x55743, `analyse/re-saisonwechsel.md` Abschnitt 1) läuft je
+  Manager zuerst der Jugendwechsel 0x3A13B (Datei 0x55889, Schritt 3), danach das Fenster 0x26F20 (Datei 0x5645D). Dessen
+  Managerschleife zieht nach den Einzelprämien die Jugend (Datei 0x2728C–0x27320: n = random(0, 2), random(0, 1) ≠ 0 → 0, Jahr
+  DGROUP 0x5A18 > 0x7CA) und setzt je erfolgreichem 0x06D7F das Symbol 9 an die nächste Stelle `di` (0x06CA6, Datei
+  0x27302–0x2730F); ohne Symbol (`di` = 0) folgt Datei 0x27326. Rückkehr der Markt-Plätze, Altern und Herunterzählen (Datei
+  0x27547, 0x274A7, 0x27500) kommen danach in derselben Schleife. Im Remake rechnet `FinishSeason` Jugendwechsel und Jugend
+  (`SeasonFlow.SeasonEndYouth.cs`) und vermerkt je Neuzugang `SeasonEvent.YouthJoined`; der Kaderübergang lässt die Neuen
+  nach dem Fenster altern. Spielstände vor Schema 50 vom Bildschirm „Saisonende“ holen beides beim Saisonwechsel nach
+  (`[APPROX]`, ohne Symbol). Nebenbefund: Kostenstufe (Datei 0x563C0) und große Wanderung (Datei 0x56448) laufen im Original
+  ebenfalls vor dem Fenster, im Remake erst im Saisonwechsel (andere Zufallsquelle bzw. ohne Zufall; nicht Teil der Spur).

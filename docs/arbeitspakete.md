@@ -73,7 +73,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
   3. **Geld und Saisonende:** A196 (Schulden gesamt je Partner, 0x463CC/0x57768); Ereignissymbol 9 im Fenster „Saisonende“
      (`FinanceTalent.cs:177`, Core-Teil; die Anzeige macht `ui-rest`).
 - **Abnahme:** wie oben; Mehrsaisonprobe passiv und aktiv für Teile 1–2.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teil 1 fertig (#791, 12.11.2026: A130, A066; A232/A238 seit U5 erledigt, aufgeräumt), Teile 2–3 offen.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teile 1–3 fertig (#791, 12.11.2026; Teil 1: A130, A066, A232/A238 seit U5 erledigt; Teil 2: A253, F089, A244/A245, A251/A226 belegt mit Restpunkten; Teil 3: A196, Ereignissymbol 9 Core-Teil), Review offen.
 
 ### Spur `ui-rest` – Bildschirmlücken ohne Live-Anzeige
 
