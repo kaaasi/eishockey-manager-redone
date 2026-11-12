@@ -65,8 +65,10 @@ public class WaveBReviewRegressionTests
             club.RemovePlayer(extra);
         var defenders = club.Players.Where(p => p.Role == PlayerRole.Defender).Take(2).ToArray();
         Assert.Equal(TransferResult.Accepted, market.Offer(game, manager, defenders[0]));
-        Assert.Equal(TransferResult.Impossible, market.Offer(game, manager, defenders[1]));
-        Assert.Equal(TransferMarket.MinDefenders, club.Players.Count(p => p.Role == PlayerRole.Defender));
+        // A253 (kader-rest Teil 2): keine Mindestbesetzung beim Verkauf (Datei 0x46FD4–0x470DE); bis Runde 17 Impossible.
+        Assert.Equal(TransferResult.Accepted, market.Offer(game, manager, defenders[1]));
+        Assert.Equal(TransferResult.Accepted, market.Withdraw(market.ListingOf(defenders[1])!));
+        Assert.Equal(4, club.Players.Count(p => p.Role == PlayerRole.Defender));
         for (var i = 0; market.Bids.Count(b => b.Listing.Seller == manager) < 1 && i < 500; i++)
             market.AdvanceDay(game, game.Random);
         var bid = Assert.Single(market.Bids, b => b.Listing.Seller == manager);

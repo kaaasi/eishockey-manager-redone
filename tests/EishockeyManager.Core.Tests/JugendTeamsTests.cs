@@ -61,7 +61,13 @@ public class JugendTeamsTests
             me.Money = Math.Max(me.Money, 1_000_000);
             game.Continue();
         }
-        Assert.Equal((2, 2), (youth[0].League, youth[0].Rank)); // vor dem Saisonwechsel unverändert
+        // Spur kader-rest Teil 3 (R15-E2 = C): [ORIGINAL] Der Jugendwechsel 0x3A13B läuft am 29. April (Datei 0x55889, Saisonwechsel
+        // Schritt 3) vor dem Fenster „Saisonende“ (Datei 0x5645D), das die Junioren-Stärke für die Jugend am Saisonende liest – auf dem
+        // Bildschirm „Saisonende“ also schon gewechselt, beim Saisonwechsel nicht noch einmal. Vorher hier „vor dem Saisonwechsel
+        // unverändert“ (2/2) und Wechsel erst in StartNextSeason. Rückschaltprobe: Quellen von 1b63121 + dieser Test → rot (2, 2).
+        Assert.Equal((1, 12), (youth[0].League, youth[0].Rank));
+        Assert.Equal((3, 2), (youth[1].League, youth[1].Rank));
+        Assert.Equal((1, 6), (youth[2].League, youth[2].Rank));
         game.StartNextSeason();
         Assert.Equal((1, 12), (youth[0].League, youth[0].Rank));
         Assert.Equal((3, 2), (youth[1].League, youth[1].Rank));
@@ -236,8 +242,23 @@ public class JugendTeamsTests
     // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
     // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
     // → Wert nach #772.
+    // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den Gast
+    // gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49); andere Gast-Einsätze, Ergebnisse und
+    // Zufallsverbrauch. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alte Werte.
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    // Runde 17, Spur kader-rest (A130, A066, R15-E2 = C): neu – Startbelastung der Managerkader random(80, 120) wie jeder neue
+    // Kaderplatz (Datei 0x42E4C–0x42E5E) statt Energie 50–80, und die Verletzung senkt die Poolform statt der Form des Kaderplatzes
+    // (Datei 0x05B34); andere Spielstärke, Ergebnisse und Zufallsverlauf ab dem ersten Spiel bzw. der ersten Verletzung.
+    // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
+    // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
+    // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
     private const string ExpectedActive =
-        "0:Schueler:2/12/59;0:Jugend:2/11/63;0:Junioren:2/11/63;1:Schueler:1/11/71;1:Jugend:1/11/70;1:Junioren:1/11/72;2:Schueler:1/6/75;2:Jugend:1/6/75;2:Junioren:1/6/75;3:Schueler:1/6/80;3:Jugend:1/6/80;3:Junioren:1/6/81";
+        "0:Schueler:2/11/60;0:Jugend:2/11/62;0:Junioren:2/11/61;1:Schueler:1/11/70;1:Jugend:1/11/71;1:Junioren:1/11/72;2:Schueler:1/6/78;2:Jugend:1/6/78;2:Junioren:1/6/79;3:Schueler:1/6/77;3:Jugend:1/6/81;3:Junioren:1/6/81";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -286,8 +307,23 @@ public class JugendTeamsTests
     // #772 (Spur abgleich-rest, Runde 16): neu – Spielvorbereitung 0x8365 wie im Original; danach Spur pool (#743, Fixlauf auf main
     // 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE), 25 Plätze weniger für Benennen, Umverteilung
     // und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515 → Wert nach #772.
+    // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den Gast
+    // gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49); andere Gast-Einsätze, Ergebnisse und
+    // Zufallsverbrauch. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alte Werte.
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    // Runde 17, Spur kader-rest (A130, A066, R15-E2 = C): neu – Startbelastung der Managerkader random(80, 120) wie jeder neue
+    // Kaderplatz (Datei 0x42E4C–0x42E5E) statt Energie 50–80, und die Verletzung senkt die Poolform statt der Form des Kaderplatzes
+    // (Datei 0x05B34); andere Spielstärke, Ergebnisse und Zufallsverlauf ab dem ersten Spiel bzw. der ersten Verletzung.
+    // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
+    // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
+    // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/66;0:Jugend:2/2/66;0:Junioren:2/2/70;1:Schueler:3/2/54;1:Jugend:3/2/54;1:Junioren:2/6/57;2:Schueler:3/6/47;2:Jugend:3/6/45;2:Junioren:3/2/46;3:Schueler:3/6/44;3:Jugend:3/6/42;3:Junioren:3/6/41";
+        "0:Schueler:2/2/69;0:Jugend:2/2/68;0:Junioren:2/2/70;1:Schueler:2/6/57;1:Jugend:3/2/53;1:Junioren:2/6/55;2:Schueler:3/2/46;2:Jugend:3/6/46;2:Junioren:3/2/51;3:Schueler:3/6/43;3:Jugend:3/6/43;3:Junioren:3/6/44";
 }
 
 public class JugendTeamsMigrationTests

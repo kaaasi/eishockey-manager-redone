@@ -538,6 +538,7 @@ public sealed partial class GameState
         p.Condition = slot[0x10];
         p.Technique = slot[0x11];
         p.Form = slot[0x12];
+        p.PoolForm = entry[0x17] != slot[0x12] ? entry[0x17] : null; // A066 (kader-rest): Poolform nach einer Verletzung
         p.Strain = slot[0x13];
         p.TrendControl = slot[0x14];
         // [ORIGINAL] Tendenzwert Kaderplatz +0x0E (30 … 68, Start random(35, 65) Datei 0x4907A; Anzeige (Wert − 30) / 13, 0x41AE0 –

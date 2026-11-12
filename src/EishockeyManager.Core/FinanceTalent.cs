@@ -98,16 +98,19 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Spieler im Besitz des Managers: der eigene Kader ganz, dazu die an andere Vereine verliehenen eigenen Spieler.
-    /// [ORIGINAL] Datei 0x3CCEB: alle belegten Plätze des eigenen Satzes, aus den Sätzen der anderen Manager und des Markts
-    /// (Satz 4) die Plätze mit Poolbesitzer +0x1A = Manager. [APPROX] Im Remake steht ein verliehener Spieler mit
-    /// <see cref="PlayerLoan.Origin"/> = eigener Verein im fremden Kader; Angebote auf dem Markt bleiben im eigenen Kader.
+    /// Spieler im Besitz des Managers: der eigene Kader ganz, dazu die an andere Vereine verliehenen und die eigenen Spieler auf
+    /// dem Markt. [ORIGINAL] Datei 0x3CCEB: alle belegten Plätze des eigenen Satzes, aus den Sätzen der anderen Manager und des
+    /// Markts (Satz 4) die Plätze mit Poolbesitzer +0x1A = Manager. Im Remake steht ein verliehener Spieler mit
+    /// <see cref="PlayerLoan.Origin"/> = eigener Verein im fremden Kader; ein eigener Spieler auf dem Markt steht seit A380 außerhalb
+    /// des Kaders (<see cref="TransferMarket.OwnListingsOutsideSquad"/>, Pool +0x1A bleibt Manager, Datei 0x470C4) und zählt
+    /// mit (Spur kader-rest, Teil 2, F089; bis dahin fehlte er).
     /// </summary>
     public int OwnedPlayers(Manager manager)
     {
         var club = Clubs[manager.ClubIndex];
         return club.Players.Count
-            + Clubs.Where(c => c != club).Sum(c => c.Players.Count(p => p.Loan?.Origin == club));
+            + Clubs.Where(c => c != club).Sum(c => c.Players.Count(p => p.Loan?.Origin == club))
+            + TransferMarket.OwnListingsOutsideSquad(club).Count();
     }
 
     /// <summary>
@@ -149,7 +152,7 @@ public sealed partial class GameState
         // [ORIGINAL] Talentsuche ruft 0x42CB1 für den Managerkader (Datei 0x06EB9 in 0x06D7F): einsortiert nach Spielerart
         // (managerSquad = Vorgabe true; Test KaderStartRunde14Tests, R623-01).
         // [ORIGINAL] Belastung des neuen Kaderplatzes random(80, 120) (Datei 0x42E4C–0x42E5E; A184, Integration Runde 12, R12I-01).
-        p.Strain = TransferRules.Random16(random, 80, 120);
+        p.Strain = TransferRules.Random16(random, PlayerFactory.StartStrainMin, PlayerFactory.StartStrainMax);
         // A134 (Spur kader, Teil 2): [ORIGINAL] 0x42CB1 ruft nach der Energie 0x4907A (Datei 0x42E6B): Tendenz und Steuerbyte.
         // [APPROX] Eigene Quelle TrendRandom wie beim Markt.
         p.RollTrend(TrendRandom);
@@ -170,34 +173,38 @@ public sealed partial class GameState
     /// Stärke der Junioren als s und 60 % Gehalt (Grenze 28 eigene Spieler wie bei der Talentsuche).
     /// [ORIGINAL] Fenster „Saisonende“ 0x26F20 in der Managerschleife, Datei 0x2728C–0x27320: Zufall Datei 0x27293/0x272A4,
     /// Jahr DGROUP 0x5A18 (32 Bit) &gt; 0x7CA (Datei 0x272B4–0x272C3), Aufruf 0x20:0x89F = 0x06D7F(m, Junioren-Stärke DGROUP
-    /// 0xA077 + 0x15 · m, 60) (Datei 0x272D8–0x272F6), je Erfolg Ereignissymbol 9 (Datei 0x27302–0x2730F). Keine Modusprüfung.
-    /// Die Junioren-Stärke ist schon nach dem Saisonwechsel der Jugendteams (0x3A13B über Datei 0x55889, vor 0x5645D), und
-    /// der Neue altert und zählt seinen Vertrag mit allen Kaderplätzen in derselben Schleife herunter (Datei 0x274A7, 0x27500):
-    /// das Remake ruft dies deshalb vor dem Kaderübergang (<see cref="StartSquadSeason"/>) auf.
-    /// [APPROX] Ereignissymbol 9 im Fenster „Saisonende“ fehlt: Das Remake bildet die Ereignisse schon am 29. April
-    /// (<c>SeasonFlow.cs</c>, Spur tagesablauf), der Kaderübergang läuft erst nach dem Fenster. Das Original zieht die beiden
-    /// Zufallszahlen auch 1994; das Remake ebenso.
+    /// 0xA077 + 0x15 · m, 60) (Datei 0x272D8–0x272F6), je Erfolg Ereignissymbol 9 (Datei 0x27302–0x2730F: 0x06CA6 mit Symbol 9
+    /// an der nächsten Stelle di). Keine Modusprüfung. Die Junioren-Stärke ist schon nach dem Saisonwechsel der Jugendteams
+    /// (0x3A13B über Datei 0x55889, vor 0x5645D). Der Neue altert und zählt seinen Vertrag mit allen Kaderplätzen in derselben
+    /// Schleife herunter (Datei 0x274A7, 0x27500).
+    /// Spur kader-rest Teil 3 (Ereignissymbol 9): Das Remake ruft dies am 29. April aus <see cref="FinishSeason"/> je Manager nach
+    /// den Prämien und vermerkt je Neuzugang <see cref="SeasonEvent.YouthJoined"/>; Altern und Herunterzählen folgen wie bisher im
+    /// Kaderübergang (<see cref="StartSquadSeason"/>). Das Original zieht die beiden Zufallszahlen auch 1994; das Remake ebenso.
     /// </summary>
+    /// <param name="manager">Manager, dessen Kader die Jugend bekommt.</param>
     /// <param name="aprilYear">Jahr des 29. April der abgelaufenen Saison (DGROUP 0x5A18).</param>
-    /// <returns>Die neuen Spieler in Managerreihenfolge.</returns>
-    public List<Player> JoinSeasonEndYouth(int aprilYear)
+    /// <returns>Die neuen Spieler.</returns>
+    public List<Player> JoinSeasonEndYouth(Manager manager, int aprilYear)
     {
         var joined = new List<Player>();
-        foreach (var manager in ActiveManagers)
-        {
-            var random = FinanceRandom;
-            var count = TransferRules.Random16(random, 0, SeasonEndYouth.MaxCount);
-            if (TransferRules.Random16(random, 0, 1) != 0)
-                count = 0;
-            if (aprilYear <= SeasonEndYouth.LastYearWithout)
-                continue;
-            var s = Finance(manager).Youth[(int)YouthTeamKind.Junioren].Strength;
-            for (var i = 0; i < count; i++)
-                if (JoinScoutedTalent(manager, s, SeasonEndYouth.SalaryPercent) is { } p)
-                    joined.Add(p);
-        }
+        var random = FinanceRandom;
+        var count = TransferRules.Random16(random, 0, SeasonEndYouth.MaxCount);
+        if (TransferRules.Random16(random, 0, 1) != 0)
+            count = 0;
+        if (aprilYear <= SeasonEndYouth.LastYearWithout)
+            return joined;
+        var s = Finance(manager).Youth[(int)YouthTeamKind.Junioren].Strength;
+        for (var i = 0; i < count; i++)
+            if (JoinScoutedTalent(manager, s, SeasonEndYouth.SalaryPercent) is { } p)
+                joined.Add(p);
         return joined;
     }
+
+    /// <summary>Jugend am Saisonende für alle aktiven Manager in Managerreihenfolge (<see cref="JoinSeasonEndYouth(Manager, int)"/>).</summary>
+    /// <param name="aprilYear">Jahr des 29. April der abgelaufenen Saison (DGROUP 0x5A18).</param>
+    /// <returns>Die neuen Spieler in Managerreihenfolge.</returns>
+    public List<Player> JoinSeasonEndYouth(int aprilYear) =>
+        ActiveManagers.SelectMany(m => JoinSeasonEndYouth(m, aprilYear)).ToList();
 
     private PoolSlot? DrawFreePoolSlot(Random random)
     {

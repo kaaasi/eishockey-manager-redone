@@ -981,6 +981,123 @@ für Runde 11); die Funktionskarte zählt sie mit ([re-abdeckung.md](re-abdeckun
 | `re-livespiel` | [analyse/re-livespiel.md](analyse/re-livespiel.md) | Livespiel: Spieluhr, Anzeigetafel, Reporter, Torszenen, Spielende (Grundlage für `livespiel`) |
 | `re-rest` | [analyse/re-rest.md](analyse/re-rest.md) | übrige Funktionen des Spielcodes (u. a. Talentsuche, Hilfen der Spieltage, Nachrichten) |
 
+## Live-Spiel: Eingriff und Torszenen-Lader (Spur `re-livespiel-2`, Runde 17)
+
+Nachtrag zu [analyse/re-livespiel.md](analyse/re-livespiel.md) §10–§12: Eingriffsmenü der Managerzeile (Einsatz,
+Angriff, Reihe auf dem Eis, Lampe „Schnelldurchlauf“, Klick auf Kopf/Logo → Aufstellung bzw. Taktik), Szenenwahl und
+Lader `tore\` (Ov 0x138 `0x138:0x25`), Dateiformat der Torszenen und der Umsetzungsplan L1–L8 für Runde 18. Berichtigt
+nebenbei: Datei 0x38F40 schreibt die Angriffsbits (Vereinsfeld 0x2C Bits 4–6), nicht den Modus
+(`analyse/belastung-staerke.md` §7); der Lader wählt nach `(Art, Penalty, Seite, sechs Feldspieler)`.
+
+## Spur `wettbewerbe-rest` (Runde 17)
+
+Teil 1 – Nationalteam/Länder (`ndisasm -b 16`, `tools/reverse-engineering/disasm.py`; Dateiadressen):
+
+* **Freundschaftsspiel (A008/A110):** Datei 0x30365 setzt Code DGROUP 0xD0C2 = 0xD (0x30390) und ruft 0x36B5D mit denselben
+  Argumenten wie das WM-Gruppenspiel (0, 8, 0, 0, 3; 0x30395–0x303A2 gegen 0x30F58–0x30F65), aber ohne den WM-Merker DGROUP
+  0x12B (Schreiber nur 0x30F4E/0x30F6D und 0x31012/0x31033, Anfangswert 0; Leser 0xA086/0xA1A1/0xA1FB im Torbudget 0x9F5C,
+  0xA7A7/0xA7C7 im Abschluss 0xA484, 0x374EF im schnellen Weg, 0x53A93 Anzeige). Code 0xD ist in 0x3702E–0x37085 keinem
+  Schalter zugeordnet (→ 0x3731F); die Gruppenschleife 0x36E1B–0x36FE5 ruft für jede Paarung 0x544C0 (0x36F9C), das für
+  Manager m < [0x386] und m = 5 (Schleife 0x54BDE–0x54BF4) bei Verein DGROUP 0x966F + 0x1AF · m = Heim oder Gast den Satz
+  aktiv setzt (DGROUP 0xA729 + m, Datei 0x545A6). Mit dem Bundestrainer (m = 5, Verein 0x9EDA = Land) ist der Merker 0x36FEA
+  also gesetzt: Minutenschleife 0x37088. Remake: `MatchCompetition.Friendly`.
+* **Managerwert der Strafen des Nationalteams (A084):** 0x35883–0x358A0 liest DGROUP 0x974B + 0x1AF · Vereinsfeld 0x16; das
+  Land des Bundestrainers hat 0x16 = 6, also 0xA165. Managersätze 0x965B + 6 · 0x1AF = 0xA075, Jugendteams 0xA075 (84 Byte),
+  Ligaergebnisse ab 0xA0CB (Schreiber 0x369C7, Datei 0x36A54: Liga · 0x210 + 12 · (Spieltag − 1) + Paarungsplatz + Seite):
+  0xA165 = Heimtore der sechsten Paarung des 13. Bundesliga-Spieltags. Kein direkter Zugriff auf 0xA160–0xA170 im Programm
+  (`disasm.py --xref`). Remake: `MatchEngine.NationalPenaltyManagerValue`.
+* **Reihenwerte „WM Vorbereitung“ (A024):** 0x3B5F5–0x3B6C4 ruft 0x977F(Verein, Reihe, Teil, 0, 0) und zeigt (Byte 2 + Byte 1) / 2
+  = (Kondition + Technik) / 2 (Packung 0x9CDE–0x9D13: Kondition [bp−4], Technik [bp−6], Form [bp−8]); mit Vereinsfeld 0x16 ≠ 0
+  und Schalter 0 Spielerweg 0x98F8 (0x97D6–0x97E2). Remake: `GameState.NationalPanelLineValue`. Leere Formation mit Einstellung
+  „automatisch aufstellen“: Aufstellung der Neuaufstellung 0x426BC (`NationalCoach.StandInFormation`).
+
+
+Teil 2 – Europapokal und Liga-Code:
+
+* **Auslosung Europapokal (A004):** 0x341AB vergleicht 0x4D316(Gegner) mit 0x46 (Datei 0x34401–0x3440A), dann random(0, 3)
+  (0x3440C–0x3441C); 0x4D316 = Mittel der Vereinsfelder 0x18–0x1D. Remake: `SpectatorRules.Strength` in `EuropeanCup.StartSeason`.
+* **Liga-Code der Zuschauerformel (A045):** 0x544C0 übergibt 0x34FD5(Heim) / 2 und 0x34FD5(Gast) / 2 (Datei 0x54515–0x54534) an
+  0x3F185 (Vergleich 0x3F1AF); 0x34FD5: Index < [0x7C1] = 12 → 1, < [0x7C2] = 24 → 2, > [0x6AD] = 52 → 1, sonst 4.
+* **Penaltyschießen im Minutenweg (A077):** 0x36B5D ruft 0x32AA3 nur mit K.-o.-Merker (Datei 0x371F0); Masken und Zeilen siehe
+  `docs/spielberechnung.md` §19.
+* **Teilnahme für die Werbebewertung (A037):** 0x44A48 liest Paarungslisten statt Bits (Masken 0x10 WM, 0x40 Meisterrunde, 0x20
+  Europapokal, 0x08 DEB-Pokal); Einzelheiten in `GameState.CurrentParticipation`.
+
+Teil 3 – Spielplan und Start:
+
+* **Liga-Spielplan (A113):** 0x4E7C7 (Tabelle DGROUP 0x2DC, `docs/analyse/re-nachtrag.md` §4) schreibt Satzplätze
+  (Buchstabe − 'a' + Basis); die Paarungen folgen also der Satzfolge der Liga (Startmischung 0x43A17, Saisonwechsel 0x5644E,
+  Tausch 0x36169), nicht dem Rang des Vereinsindex. Andere Ligagrößen gibt es nicht (DGROUP 0x7B1 + Liga = 12). Remake:
+  `Schedule.ForSlots` beim Spielstart (`NewGame.Create`) und im Saisonwechsel (`GameState.BuildLeagueSchedules`).
+* **Gruppenpläne:** 0x30427 ruft 0x4E7C7 (Datei 0x3068B) mit Tabelle DGROUP 0x324 bzw. 0x30C, n = [DGROUP 0x4DD8 + 2 · Wettbewerb]
+  + 1, Spieltag 1 … [0x4DD8 + 2 · Wettbewerb] + 3 · (Wettbewerb > 0) (Datei 0x3071D–0x3074C): Vierergruppen sechs Spieltage, ab
+  Spieltag 4 mit getauschtem Heimrecht – auch die Aufstiegsrunde (Wettbewerb 1, Plätze DGROUP 0xCFF4 + 8 + 4 · Gruppe). Remake:
+  `RelegationGroup` über `CupGroup.Pairings`; Video `folge07_03307` (Berliner SC, EA Kempten, ECD Sauerland, SC Riessersee).
+* **Termine der Aufstiegsrunde (A142):** Der Play-Off-Tag 0x31A0A (Kalendermarke 0x40, Datei 0x55063) baut die Paarungen der
+  Aufstiegsrunde nur bei DGROUP 0xCCA3 ∈ {0, 2} (Datei 0x31A2C–0x31A3A, Maske 0xC), Gruppenspieltag 2 · DGROUP 0x7B0 +
+  (0xCCA3 = 2) (Datei 0x31A44–0x31A5A); 0xCCA3 zählt die fünf Spiele jeder Play-Off-Runde, auch nicht ausgetragene. Die Infoleiste
+  0x44A48 rechnet ebenso (Datei 0x44B91–0x44BC2). Play-Off-Termine 0, 2, 5, 7, 10, 12 = 6.2., 10.2., 20.2., 25.2., 22.3., 29.3.;
+  dieselben Daten zeigt „Aufstieg 2.Liga“ in `folge07_03307`. Remake: `RelegationGroup.DateIndices`.
+* **A112/F107:** schon umgesetzt (Runde 13/14, U15-a/U15-c: `NewGame.PlaceInStartLeague`, Filter 0x45CD0(r, 1) trifft beim Start
+  nur Platz 0); keine Änderung.
+
+## Spieler, Transfer, Verletzungen (Spur `kader-rest`, Runde 17)
+
+Teil 1 (#791), Disassembly mit `tools/reverse-engineering/disasm.py`, Gegenprobe an den Ständen im Referenz-Repo.
+
+* **Startbelastung (A130):** Jeder neue Kaderplatz bekommt in 0x42CB1 die Belastung `+0x13` = random(80, 120) (Datei
+  0x42E4C–0x42E5E); die Startwerte Datei 0x29DA4–0x29EF7 schreiben `+0x13` nicht (nur `+0x10`–`+0x12`, Pool `+0x15`–`+0x17`,
+  Gehalt `+0x28` und Preis `+0x2C` über 0x49D36). Belege: FILE01/02/09/10/11/12 – alle 25 bzw. 20 Plätze 80–120. Im Remake
+  `PlayerFactory.RollSquadValues` (Managerkader); Computervereine haben keine Kaderplätze und behalten Energie 50–80 (`[APPROX]`).
+* **Laufbahnende (A232/A238):** Saisonende Datei 0x2787A–0x278A1: Alter (Pool `+0x14`) > random(37, 42), frühestens mit 38,
+  sicher ab 43 (`SquadRules.CareerEnds`, `CareerEndMin`/`CareerEndMax`). Die frühere Kader-KI-Regel 33–37 Jahre war seit U5 ohne
+  Aufrufer und ist entfernt.
+* **Verletzung und Form (A066):** Datei 0x05B34–0x05B7C liest und schreibt die Form im **Pool** (`far:8253 + 0x21 · Index +
+  0x17`): > 20 → − random(10, 15). Die Form des Kaderplatzes `+0x12` bleibt; erst ein neuer Kaderplatz übernimmt die Poolwerte
+  (0x42CB1, Datei 0x42EC3–0x42F06: `+0x10`/`+0x11`/`+0x12` = Pool `+0x15`/`+0x16`/`+0x17`). Belege: FILE20 ABSTREITER 48/34,
+  PURVES 58/44; FILE22 PESKA 58/48; FILE24 STEFAN 52/42, CHAIDAROV 55/40; MENDE FILE36 60/45 → FILE44 60/34 (zweite Verletzung),
+  HEISS FILE37 46/34 bis FILE46 unverändert nach der Heilung. Restdauer `+0x0D` in Wochen (Heilung je 7. Tag), Art `+0x17`.
+  Im Remake `Player.PoolForm` (null = gleich der Form, Schema 50).
+
+Teil 2 (Transfermarkt):
+
+* **Verkaufen (A253):** Klick auf einen eigenen Kaderplatz in der Transferliste (Datei 0x46DB6): Kaderplatz `+0x18` Bit 0x80
+  → „Dieser Spieler hört / am Saisonende auf.“ (DGROUP 0x12BD, 0x46DD8); `+0x09` Bit 0x40 → Angebotsfenster (0x46E04, Zweig der
+  Angebote für eigene Spieler); sonst 0x46FD4–0x470DE: höchstens 3 Markt-Plätze mit Pool `+0x1A` = Manager (0x47027, DGROUP
+  0x11F9), Pool `+0x1A` = Manager (0x47040, sonst „Dieser Spieler ist / nur ausgeliehen.“, DGROUP 0x11F1), Markt-Platz anlegen
+  (0x42CB1 mit Grenze 0x0A, „Schon 11 Mann …“). **Keine Mindestbesetzung je Art** – die frühere Grenze 2/4/6 gilt im Remake nur
+  noch für Computervereine (`[APPROX]`). Alle drei Meldungen sind Kurzmeldungen (0x0C0B8).
+* **„Schon 29 Mann“ (F089):** 0x42CB1 (Datei 0x42CF0–0x42D44): außer im Markt-Satz 4 und wenn der Verein des Spielers (Pool
+  `+0x1D`) der des Managers ist (Managersatz `+0x14`), bricht ein Besitz > Grenze − 1 = 28 ab; Zählung 0xF8:0x75 = Datei 0x3CCEB
+  (eigener Satz, dazu Plätze der anderen Manager und des Markts mit Pool `+0x1A` = Manager – also verliehene **und** eigene
+  Spieler auf dem Markt). Im Remake `TransferMarket.IsSquadFull`, `GameState.OwnedPlayers` (zählt seit Teil 2 die eigenen
+  Markt-Plätze außerhalb des Kaders, A380).
+* **Talentsuche (A244/A245):** Die Rückfrage („Möchten Sie, daß Ihr 'Spion' / für Sie auf Talentsuche geht?“, Datei
+  0x1B121/0x1B13E über DGROUP 0x1339/0x133D, „Preis:“ 0x1341) steht im Remake schon so. Nach dem Start (Datei 0x46A14–0x46A38)
+  übermalt das Original nur den Knopf und zeichnet die Kontozeile (0x463CC) – keine Meldung. Bei Zähler `+0xEC` ≠ 0 zeichnet es
+  den Knopf nicht (0x46704) und wertet keinen Klick aus (0x468C1 → 0x46A65): keine Meldung „läuft schon“.
+* **Unverändert offen:** Höhe des Gebots für einen eigenen Markt-Platz wird im Original erst beim Anklicken gewürfelt (0x47347),
+  im Remake beim Gebot (`[APPROX]`, A251-Rest); Ablöse am Saisonende über `Book` (A226, Architekturregel).
+
+Teil 3 (Geld und Saisonende):
+
+* **Schulden gesamt (A196):** 0x57768 (Datei 0x5777F–0x57834, Modus 0, Partner 0x63) summiert die negativen Darlehensfelder des
+  eigenen Satzes (`+0x19B + 4 · i`, i < Managerzahl oder i = 4); die Kontoleiste 0x463CC (Datei 0x46464–0x46500) zählt als
+  Anlagen −Feld(i, ich), wenn negativ. Die Buchung (Datei 0x591E2–0x5932B) ändert das eigene Feld um ±v und das des anderen um
+  ∓v: je Paar **ein** gespiegelter Saldo (Bank: FILE08 Manager 0 Eintrag 4 = −2.103.000, Satz 4 Eintrag 0 = +2.103.000). Das
+  entspricht dem Saldo des Remakes (`ManagerLoanNet`, `BankAccount.Balance`); `[APPROX]` aufgehoben. Der Export schreibt seither
+  den Saldo je Paar statt je Kredit (Kredite in beide Richtungen überschrieben einander).
+* **Ereignissymbol 9:** Am 29. April (Saisonwechsel ab Datei 0x55743, `analyse/re-saisonwechsel.md` Abschnitt 1) läuft je
+  Manager zuerst der Jugendwechsel 0x3A13B (Datei 0x55889, Schritt 3), danach das Fenster 0x26F20 (Datei 0x5645D). Dessen
+  Managerschleife zieht nach den Einzelprämien die Jugend (Datei 0x2728C–0x27320: n = random(0, 2), random(0, 1) ≠ 0 → 0, Jahr
+  DGROUP 0x5A18 > 0x7CA) und setzt je erfolgreichem 0x06D7F das Symbol 9 an die nächste Stelle `di` (0x06CA6, Datei
+  0x27302–0x2730F); ohne Symbol (`di` = 0) folgt Datei 0x27326. Rückkehr der Markt-Plätze, Altern und Herunterzählen (Datei
+  0x27547, 0x274A7, 0x27500) kommen danach in derselben Schleife. Im Remake rechnet `FinishSeason` Jugendwechsel und Jugend
+  (`SeasonFlow.SeasonEndYouth.cs`) und vermerkt je Neuzugang `SeasonEvent.YouthJoined`; der Kaderübergang lässt die Neuen
+  nach dem Fenster altern. Spielstände vor Schema 50 vom Bildschirm „Saisonende“ holen beides beim Saisonwechsel nach
+  (`[APPROX]`, ohne Symbol). Nebenbefund: Kostenstufe (Datei 0x563C0) und große Wanderung (Datei 0x56448) laufen im Original
+  ebenfalls vor dem Fenster, im Remake erst im Saisonwechsel (andere Zufallsquelle bzw. ohne Zufall; nicht Teil der Spur).
+
 ## Ligapaarungen: Seiten „Play-Off“ und „Aufstieg“ (Spur `ui-rest`, Runde 17, Teil 1)
 
 A280/A282 (UI-Teil). Umsetzung: `LeaguePairingsPages`, `PlayoffGamesScreen`, `PromotionRoundScreen`, Aufbau und Fundstellen in
@@ -1001,8 +1118,8 @@ deren Klassenkommentaren; Videovergleich in [wettbewerbe.md](wettbewerbe.md), Ab
   nach dem Endspiel gibt es keinen Rundenwechsel (0x7B0 = 2).
 * **Termine der Aufstiegsrunde** (0x31CD5, Datei 0x322F4–0x32324): Termin n der Gruppe ist der n-te Play-Off-Tag (Bit 0x40 in
   DGROUP 0x828) mit Rest 0 oder 2 im Fünferblock, also Play-Off-Termine 0, 2, 5, 7, 10, 12 (6.2., 10.2., 20.2., 25.2., 22.3.,
-  29.3.; `folge07_03307`). `RelegationGroup.DateIndices` (`Core/Playoffs.cs`) hat 0, 2, 5, 7, 9, 10 – offen für die
-  Spur `wettbewerbe-rest`. Die Einschränkung in `EuropeanCupScreen` („Termine nur ohne Ergebnisse“) ist mit demselben Vergleich
+  29.3.; `folge07_03307`). `RelegationGroup.DateIndices` (`Core/Playoffs.cs`) folgt dem seit
+  `wettbewerbe-rest` (#790, A142). Die Einschränkung in `EuropeanCupScreen` („Termine nur ohne Ergebnisse“) ist mit demselben Vergleich
   (Spiel g ≥ Argument 3 + Argument 6, Datei 0x3229F–0x322C6) auflösbar; nicht Teil dieser Spur.
 
 **Teil 2 – Fenster „Saisonende“ und Verhandlungen am Saisonende** (Umsetzung `EventSymbols`, `SeasonEndSummaryScreen`,

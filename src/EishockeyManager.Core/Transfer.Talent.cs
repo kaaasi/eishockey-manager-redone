@@ -82,8 +82,10 @@ public static class TalentScout
     /// <summary>Meldung zum Start.</summary>
     public static string[] Message(TalentSearchStart result) => result switch
     {
-        // [APPROX] Das Original zeigt nach dem Start keinen Text; es zeichnet die Stelle des Knopfs neu (Datei 0x46A14–0x46A38).
-        TalentSearchStart.Started => ["Ihr 'Spion' geht", "auf Talentsuche."],
+        // [ORIGINAL] Nach dem Start keine Meldung: Datei 0x46A14–0x46A38 übermalt nur die Stelle des Knopfs (0x30:0x800) und
+        // zeichnet die Kontozeile neu (0x463CC); Spur kader-rest, Teil 2 (A244). Bis Runde 17 [APPROX] „Ihr 'Spion' geht auf
+        // Talentsuche.“ Eine leere Meldung öffnet kein Fenster (MessageBox.Visible).
+        TalentSearchStart.Started => [],
         // [APPROX] Nur für den Anschluss im Remake; das Original zeigt den Knopf bei laufender Suche nicht (siehe Enum).
         TalentSearchStart.AlreadyRunning => ["Ihr 'Spion' ist schon", "auf Talentsuche."],
         _ => TransferMarket.Message(TransferResult.NotEnoughMoney),

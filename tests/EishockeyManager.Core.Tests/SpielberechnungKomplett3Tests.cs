@@ -61,7 +61,10 @@ public class SpielberechnungKomplett3Tests
         var random = new ScriptedRandom(12, 5, 3, 2, 6, 3);
         var kind = PlayerInjuries.Inflict(player, inMatch: true, difficulty: 2, random);
         Assert.Equal(2, kind);
-        Assert.Equal(38, player.Form);
+        // Spur kader-rest (A066, R15-E2 = C): 0x05B34–0x05B7C senkt die Form im Pool (+0x17), nicht die des Kaderplatzes (FILE24
+        // STEFAN 52 / 42). Rückschaltprobe: MatchEngine.Injuries.cs von e1476e6 → Form 38, PoolForm null (rot).
+        Assert.Equal(50, player.Form);
+        Assert.Equal(38, player.PoolForm);
         Assert.Equal(3, player.InjuredGames);
         Assert.False(player.Available);
         Assert.Equal([(10, 15), (0, 21), (0, 15), (0, 21), (0, 15), (2, 4)], random.Calls);

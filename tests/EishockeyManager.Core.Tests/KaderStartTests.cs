@@ -143,6 +143,35 @@ public class KaderStartTests
         });
     }
 
+    /// <summary>
+    /// A130 (Runde 17): Belastung (Kaderplatz +0x13) der Startkader. [ORIGINAL] Jeder neue Kaderplatz bekommt random(80, 120)
+    /// (Datei 0x42E4C–0x42E5E in 0x42CB1; Aufruf beim neuen Spiel Datei 0x5B1CD, beim Hinzukommen Datei 0x29996); die Startwerte
+    /// Datei 0x29DA4–0x29EF7 schreiben +0x13 nicht. Gegenprobe FILE01/FILE02/FILE09/FILE10/FILE11/FILE12: alle 25 bzw. 20
+    /// Plätze 80–120 (FILE12 80 und 120). Vorher zog das Remake die Energie 50–80 (Belastung 70–100).
+    /// </summary>
+    [Theory]
+    [InlineData(League.Bundesliga, StartStrength.OberesDrittel)]
+    [InlineData(League.Oberliga, StartStrength.Abstiegskampf)]
+    public void StartStrain_Random80To120(League league, StartStrength strength)
+    {
+        var game = SyntheticGame(3, league, strength);
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        Assert.All(club.Players, p => Assert.InRange(p.Strain, 80, 120));
+        Assert.Contains(club.Players, p => p.Strain > 100);
+    }
+
+    /// <summary>A130: wie <see cref="StartStrain_Random80To120"/> mit der Originaldatenbank (FILE01: Kölner EC, Bundesliga, Mittelfeld).</summary>
+    [GameDataFact]
+    public void File01_KoelnerEc_StartStrain80To120()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "T", ClubIndex = 0, StartLeague = League.Bundesliga, StartStrength = StartStrength.Mittelfeld });
+        var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, seed: 3);
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        Assert.Equal(25, club.Players.Count);
+        Assert.All(club.Players, p => Assert.InRange(p.Strain, 80, 120));
+    }
+
     private static GameState SyntheticGame(int level, League league, StartStrength strength)
     {
         var setup = new GameSetup();

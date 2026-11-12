@@ -20,8 +20,12 @@ namespace EishockeyManager.Core;
 ///   Europacupsieger (DGROUP 0x388), das Meisterfoto erscheint nur für einen deutschen Sieger (Index &lt; 64).
 ///   Video (Karriere 29:41): „Europacupsieger SC Preussen Berlin“ zwischen dem 20. und 22. Spieltag.</item>
 /// </list>
-/// [APPROX] „Stärke“ der Gegner = erster Datenbankwert (Abwehr); der zweite Wert (Sturm) wird im Remake nicht
-/// geführt (Befund A01). Die Formabschläge der Europapokal-Gegner (−5) wirken nicht, weil das Remake ohne Formwerte rechnet.
+/// A004 (Spur wettbewerbe-rest, Teil 2): [ORIGINAL] „Stärke“ der Auslosung ist 0x4D316 (Datei 0x34401–0x3440A, Vergleich
+/// mit 0x46): Mittel der sechs Vereinsfelder 0x18–0x1D (Kondition, Technik, Form von Abwehr und Sturm,
+/// <see cref="SpectatorRules.Strength"/>) – mit der Form der Europapokal-Gegner random(45, 55) − 5 (Lader, Index &gt; 64), nicht
+/// der Datenbankwert allein (bis Runde 16). [APPROX] Vor dem ersten Spiel hat das Remake noch keine geladenen Teamwerte (Lader
+/// beim ersten Spiel, <see cref="MatchEngine.EnsureTeamValues"/>); dann gelten Datenbankstärke ohne Streuung und Form 45
+/// (<see cref="MatchEngine.TeamValuesOf"/>). Der zweite Datenbankwert (Sturm) wird nicht geführt (A078).
 /// </remarks>
 public sealed partial class EuropeanCup : ISeasonCompetition
 {
@@ -30,7 +34,7 @@ public sealed partial class EuropeanCup : ISeasonCompetition
     public const int FirstOpponent = 64;
     public const int LastOpponent = 149;
 
-    /// <summary>[ORIGINAL] Gegner unter dieser Stärke werden nur mit Wahrscheinlichkeit 1/4 angenommen.</summary>
+    /// <summary>[ORIGINAL] Gegner unter dieser Stärke (0x4D316, Datei 0x34407) werden nur mit Wahrscheinlichkeit 1/4 angenommen.</summary>
     public const int WeakOpponent = 70;
 
     /// <summary>[ORIGINAL] Deutscher Meister zu Spielbeginn (DGROUP 0xD0E6 = 2, Düsseldorfer EG).</summary>
@@ -102,7 +106,8 @@ public sealed partial class EuropeanCup : ISeasonCompetition
                 club = random.Next(FirstOpponent, Math.Min(LastOpponent, game.Clubs.Count - 1) + 1); // random(64, 149)
                 if (_draw.Contains(club))
                     continue;
-                if (game.Clubs[club].Strength < WeakOpponent && random.Next(0, 4) != 0) // random(0, 3) ≠ 0 → neu ziehen
+                // [ORIGINAL] 0x4D316 < 0x46 und random(0, 3) ≠ 0 → neu ziehen (Datei 0x34401–0x3441C).
+                if (SpectatorRules.Strength(game, game.Clubs[club]) < WeakOpponent && random.Next(0, 4) != 0)
                     continue;
                 break;
             }

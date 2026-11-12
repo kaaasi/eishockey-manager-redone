@@ -255,7 +255,7 @@ public static class SquadSetup
         foreach (var p in club.Players)
         {
             if (managedBase is { } start)
-                PlayerFactory.RollSquadValues(p, start, start, random);
+                PlayerFactory.RollSquadValues(p, start, start, random, managed: true);
             else
                 PlayerFactory.RollSquadValues(p, condition[p.Role], technique[p.Role], random);
         }

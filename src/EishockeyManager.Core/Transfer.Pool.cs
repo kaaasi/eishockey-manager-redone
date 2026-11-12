@@ -216,9 +216,22 @@ public static class TransferPoolRules
     public static void RollSlotFields(Player p, Random random, Random? trendRandom = null)
     {
         // [ORIGINAL] Belastung des neuen Kaderplatzes random(80, 120) (Datei 0x42E4C–0x42E5E; A184, Integration Runde 12, R12I-01).
-        p.Strain = TransferRules.Random16(random, 80, 120);
+        p.Strain = TransferRules.Random16(random, PlayerFactory.StartStrainMin, PlayerFactory.StartStrainMax);
+        p.AdoptPoolForm(); // [ORIGINAL] A066: Kaderplatz +0x12 = Pool +0x17 (Datei 0x42EFF–0x42F06)
         p.RollTrend(trendRandom ?? random);
         HiddenSkills.Roll(p, random); // Spur wettbewerbe-spiel, Teil 7: +0x19 wie gezogen (A185, A186)
+    }
+
+    /// <summary>
+    /// Form des Poolspielers beim Listenwechsel (Füllen). [ORIGINAL] Pool +0x17 = random(45, 55); der neue Kaderplatz übernimmt sie
+    /// (<see cref="RollSlotFields"/>, Datei 0x42EFF–0x42F06). Eine abweichende Poolform nach einer Verletzung
+    /// (<see cref="Player.PoolForm"/>) wird dabei überschrieben.
+    /// </summary>
+    public static void RollPoolForm(Player p, Random random)
+    {
+        ArgumentNullException.ThrowIfNull(p);
+        p.Form = TransferRules.Random16(random, 45, 55);
+        p.PoolForm = null; // Review #799 P3-1: die gewürfelte Form ist die Poolform, eine alte abweichende verfällt
     }
 
     /// <summary>
@@ -554,8 +567,8 @@ public sealed partial class TransferMarket
     /// <item>Steht der Datenbankspieler im Kader eines Computervereins und hat er die Art des Platzes, tauschen Pool und Kader:
     ///   Er wird Poolspieler (mit den Werten des Platzes, #731; der bisherige bekommt die des Kaderplatzes), der bisherige
     ///   Poolspieler übernimmt seinen Kaderplatz;
-    ///   einer anderen Art (Torhütername mit random(0, 15) = 0) oder ein Poolspieler ab 37 Jahren (Laufbahnende der Kader-KI,
-    ///   <see cref="SquadRules.RetireMaxAge"/>) verwirft den Versuch. Im Original hat der
+    ///   einer anderen Art (Torhütername mit random(0, 15) = 0) oder ein Poolspieler, dessen Laufbahn am nächsten Saisonwechsel enden kann (ab
+    ///   <see cref="SquadRules.CareerEndMin"/> Jahren: erst altern, dann Alter &gt; random(37, 42), Datei 0x274A7/0x2788F), verwirft den Versuch. Im Original hat der
     ///   Computerverein keine Spieler; so bleiben Kadergröße, Namen und IDs eindeutig.</item>
     /// <item>Steht er in einem Managerkader, bei den Vertragslosen, im Ruhestand, ist er geliehen oder nominiert, gilt der Platz
     ///   als leer.</item>
@@ -605,9 +618,9 @@ public sealed partial class TransferMarket
                     continue;
                 var old = slot.Player;
                 // Der Kader behält seine Besetzung je Art: getauscht wird nur innerhalb der Art.
-                // Ein Poolspieler im Alter des sicheren Laufbahnendes (SquadRules.RetireMaxAge) kommt in keinen Kader.
+                // Ein Poolspieler, dessen Laufbahn am nächsten Saisonwechsel enden kann (A232), kommt in keinen Kader.
                 if (squads.TryGetValue(name, out var same)
-                    && (same.Player.Role != old.Role || old.Age >= SquadRules.RetireMaxAge))
+                    && (same.Player.Role != old.Role || old.Age >= SquadRules.CareerEndMin))
                     continue;
                 if (squads.Remove(name, out var holder))
                 {
@@ -805,7 +818,7 @@ public sealed partial class TransferMarket
                 return; // [ORIGINAL] 0x4962A: nach 1500 Versuchen endet der Wechsel
 
             var p = slot.Player;
-            p.Form = TransferRules.Random16(random, 45, 55);
+            TransferPoolRules.RollPoolForm(p, random);
             var stand = IsManaged(game, game.Clubs[slot.Club])
                 ? TransferPoolRules.StandIn(slot.Club, c => IsManaged(game, game.Clubs[c]), random)
                 : slot.Club;

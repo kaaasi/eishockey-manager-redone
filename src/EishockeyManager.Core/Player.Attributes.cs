@@ -47,8 +47,26 @@ public sealed partial class Player
     /// <summary>Technik (TE) – zweite Zahl unter STÄRKEN.</summary>
     public int Technique { get; set; }
 
-    /// <summary>Form (FO) – dritte Zahl unter STÄRKEN.</summary>
+    /// <summary>Form (FO) – dritte Zahl unter STÄRKEN (Kaderplatz +0x12).</summary>
     public int Form { get; set; }
+
+    /// <summary>
+    /// Form im Spielerpool (Pool +0x17), solange sie von <see cref="Form"/> abweicht; null = gleich. [ORIGINAL] Die Verletzung senkt
+    /// nur die Poolform (Datei 0x05B1A–0x05B7C, <see cref="PlayerInjuries.Inflict"/>), die Form des Kaderplatzes bleibt; ein neuer
+    /// Kaderplatz übernimmt die Poolwerte (Datei 0x42EFF–0x42F06, <see cref="AdoptPoolForm"/>). Beleg A066: FILE24 STEFAN Platz 52 /
+    /// Pool 42, CHAIDAROV 55 / 40; FILE36 → FILE44 MENDE Platz 60, Pool 45 → 34 nach zwei Verletzungen, nach der Heilung unverändert.
+    /// </summary>
+    public int? PoolForm { get; set; }
+
+    /// <summary>
+    /// Neuer Kaderplatz: Form aus dem Pool. [ORIGINAL] Datei 0x42EFF–0x42F06 (in 0x42CB1): Kaderplatz +0x12 = Pool +0x17 (A066).
+    /// </summary>
+    public void AdoptPoolForm()
+    {
+        if (PoolForm is { } form)
+            Form = form;
+        PoolForm = null;
+    }
 
     /// <summary>
     /// Belastung (Kaderplatz +0x13, ein Byte; 50 = frisch … 150 = erschöpft). [ORIGINAL] Schreiber in em.exe: neuer

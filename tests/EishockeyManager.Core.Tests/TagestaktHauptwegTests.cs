@@ -192,7 +192,12 @@ public class TagestaktHauptwegTests
         var bidSeen = false;
         // #772 (R15-E2 = C): Saaten 5/7 statt 3/11 – mit der Spielvorbereitung 0x8365 ist bei 3 und 11 der Transfermarkt nach der
         // Vereinssaison voll (Offer → MarketFull), die Vorbedingung der Probe fehlt. Rückschaltprobe: alter Code mit 5/7 grün (nur Saatwechsel).
-        foreach (var seed in new[] { 5, 7 })
+        // Fixlauf wettbewerbe-rest nach Rebase auf main 3cd9169 (R15-E2 = C): Saaten 2/4 statt 5/7 – mit #784 und dem Spielplan über
+        // die Satzfolge (A113, Datei 0x4E7C7) fehlt bei 5 und 7 die Vorbedingung (kein Angebot auf den Markt-Platz von Manager 0 in
+        // der WM-Schleife); unter 1–12 erfüllen 2, 4, 6, 8, 10, 12. Rückschaltprobe: alter Code mit 2/4 ebenfalls grün – die Probe hängt an der Saat.
+        // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (A130, R15-E2 = C): Saaten 8/10 statt 2/4 – mit der Startbelastung 80–120
+        // (Datei 0x42E4C) fehlt bei 2 und 4 dieselbe Vorbedingung; unter 1–16 erfüllen 7, 8, 10–14. Die Probe hängt an der Saat.
+        foreach (var seed in new[] { 8, 10 })
         {
             var second = Enumerable.Range(0, 200).First(i => NewGame.DatabaseLeague(i) == League.ZweiteLiga);
             var game = GameModeTests.Create(seed, true, true, 2, second);

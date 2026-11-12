@@ -171,22 +171,32 @@ public sealed partial class Playoffs
 public sealed partial class RelegationGroup
 {
     /// <summary>
-    /// [APPROX] Play-Off-Termine (Index 0–14) der sechs Gruppenspieltage. Belegt: Spiele am 6.2., 10.2., 20.2.,
-    /// 25.2. und eines zwischen 25.2. und 22.3., das letzte nach dem 22.3. (Infoleiste im Video).
+    /// Play-Off-Termine (Index 0–14) der sechs Gruppenspieltage (A142). [ORIGINAL] Der Play-Off-Tag Datei 0x31A0A (Kalendermarke
+    /// 0x40, Datei 0x55063) spielt die Aufstiegsrunde nur bei Spiel DGROUP 0xCCA3 ∈ {0, 2} der laufenden Play-Off-Runde
+    /// (Datei 0x31A2C–0x31A3A, Maske 0xC statt 4), Gruppenspieltag 2 · DGROUP 0x7B0 + (0xCCA3 = 2) (Datei 0x31A44–0x31A5A);
+    /// jede Play-Off-Runde belegt fünf Termine, auch nach entschiedenen Serien (Ergebnis 100). Ebenso die Infoleiste
+    /// (Datei 0x44B91–0x44BC2). Termine: 6.2., 10.2., 20.2., 25.2., 22.3., 29.3. – wie die Übersicht „Aufstieg 2.Liga“
+    /// im Video (<c>folge07_03307</c>).
     /// </summary>
-    public static readonly int[] DateIndices = [0, 2, 5, 7, 9, 10];
+    public static readonly int[] DateIndices = [0, 2, 5, 7, 10, 12];
 
+    /// <summary>
+    /// [ORIGINAL] Paarungen: Vierergruppen-Tabelle DGROUP 0x324 („abcd“, „dabc“, „acbd“) über Datei 0x4E7C7 (Aufruf Datei
+    /// 0x3068B: n = [DGROUP 0x4DD8 + 2 · Wettbewerb] + 1 = 4, Spieltag 1 … 6, Schleife Datei 0x3071D–0x3074C; ab Spieltag 4
+    /// dieselben Zeilen mit getauschtem Heimrecht), Buchstabe = Platz in <see cref="Clubs"/> (DGROUP 0xCFF4 + 8 + 4 · Gruppe, Datei 0x30511). Video
+    /// <c>folge07_03307</c>: Berliner SC – EA Kempten, ECD Sauerland – SC Riessersee (6.2.), SC Riessersee – Berliner SC,
+    /// EA Kempten – ECD Sauerland (10.2.), Berliner SC – ECD Sauerland (20.2.).
+    /// [APPROX] Der Zufallszug des früheren Kreisverfahrens bleibt, damit die übrigen Spielverläufe unverändert bleiben;
+    /// das Original würfelt hier nichts.
+    /// </summary>
     public RelegationGroup(League upper, IReadOnlyList<int> clubs, Random random)
     {
         Upper = upper;
         Clubs = clubs;
-        var order = clubs.ToList();
-        for (var i = order.Count - 1; i > 0; i--)
-        {
-            var j = random.Next(i + 1);
-            (order[i], order[j]) = (order[j], order[i]);
-        }
-        Rounds = Schedule.DoubleRoundRobin(order);
+        for (var i = clubs.Count - 1; i > 0; i--)
+            random.Next(i + 1);
+        var group = new CupGroup(0, clubs);
+        Rounds = Enumerable.Range(0, group.RoundCount).Select(r => new MatchDay(r + 1, group.Pairings(r).ToList())).ToList();
     }
 
     /// <summary>Obere Liga (Bundesliga oder 2. Liga).</summary>

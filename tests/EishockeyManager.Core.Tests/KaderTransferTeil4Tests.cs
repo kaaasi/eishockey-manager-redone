@@ -47,7 +47,13 @@ public class KaderTransferTeil4Tests
         // Saat 21 ebenfalls rot; die Probe hängt an der Saat, die Grenze bleibt.
         // Fixlauf pool auf main 846e515 (R15-E2 = C): Saat 14 statt 21 – mit Spur pool und #772 hält Saat 21 nur 19 Wechsel (Saaten
         // 1–30: 13–27, über 22 nur 11, 14, 17). Wie oben: die Probe hängt an der Saat, die Grenze bleibt.
-        var game = TestGames.Create(14);
+        // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): Saat 22 statt 14 – mit dem Spielplan über die Satzfolge (Datei 0x4E7C7) hält Saat 14 nur 18 Wechsel
+        // (Saaten 1–40: 12–26, über 22 nur 1, 2, 7, 19, 22, 39). Rückschaltprobe: alter Code mit Saat 22 rot; die Probe hängt an der
+        // Saat, die Grenze bleibt.
+        // Spur kader-rest (A130, R15-E2 = C; Fixlauf nach Rebase auf main 1d83cc0): Saat 3 statt 22 – mit der Startbelastung 80–120
+        // (Datei 0x42E4C) und dem Spielplan über die Satzfolge zusammen hält Saat 22 nur 22 Wechsel (Saaten 1–40: 12–22, über 22 nur 3,
+        // 15, 24). Rückschaltprobe: src/ von 1d83cc0 mit Saat 3 ebenfalls rot; die Probe hängt an der Saat, die Grenze bleibt.
+        var game = TestGames.Create(3);
         var market = game.TransferMarket;
         var changes = 0;
         for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)

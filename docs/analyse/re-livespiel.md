@@ -248,7 +248,7 @@ Minute mod 10 bei (106\|196). Beleg `karriere_02315`: zwei volle Balken, dritter
 
 ### Datei 0x534BC, 0x53508 – Treffer-Tests des Eingriffsmenüs
 
-Beide nur aus dem Eingriffsmenü Datei 0x38D96 (Ov 0xF0, nicht Teil dieser Spur). `0x534BC(mx, my, x, y, breite, n)`:
+Beide nur aus dem Eingriffsmenü Datei 0x38D96 (Ov 0xF0, Nachtrag in §10). `0x534BC(mx, my, x, y, breite, n)`:
 liegt (mx, my) in x…x + breite, y…y + 6, Rückgabe `(mx − x) · n / breite + 1`, sonst 0 (Schieberegler, 1…n).
 `0x53508(mx, my, x, y)`: 1, wenn (mx, my) in x…x + 5, y…y + 5 (Lampenfeld).
 
@@ -335,7 +335,7 @@ Modus 0 (Datei 0x56816–0x56AA7): freier Speicher `50h:D4h` < 0x412F8 → Torsz
 Live-Bildschirm neu und Meldung „Sie haben zu wenig Speicher …“ (`DGROUP 0x13E5` ff.); sonst 14 Bilder `kb\231 + i`
 laden, i = 5 durch die Hallenstufe ersetzt (`kb\241 … 244`), i = 12 → `kb\246`, i = 13 → `kb\247`, nur wenn
 `DGROUP 0x5400[2i]` ≠ 0 (Größentabelle), Zeiger in `0xE2B9 + 4i`. Modus 1: Kopfzeile `0x56EDD(0, …)` und Eisfeld
-einblenden. Modus 2 (Datei 0x56B4D–0x56E41): Szene über `138h:25h(Art, Seite, Flag, Unterzahl)` aus `tore\` wählen
+einblenden. Modus 2 (Datei 0x56B4D–0x56E41): Szene über `138h:25h(Art, Penalty, Seite, sechs Feldspieler)` (§11) aus `tore\` wählen
 (−1 = keine), Trikotfarben als Palettenindizes 0xFE/0xFD (`50h:63Fh`, Komponenten `(c >> 6) & 63`, `(c >> 2) & 63`,
 `(c << 2) & 63` des 16-Bit-Farbcodes), Kopfzeile, Bilder zu 28 Byte ab `0xE2E5 + 0x54` bis 0xAAAA abspielen
 (Zeichnen `48h:2C08h`/`48h:5316h`, Warten `48h:4884h`, Töne `38h:Ah`, `dateiformate.md` „Verwendung“), bei einem
@@ -374,8 +374,8 @@ Remake zeigt stattdessen eine Zusammenfassung (`SeasonEndGameOverScreen`, `[APPR
 | „Spiele laufen“ 0x37B82–0x37C5C mit Uhr 0x51E90 | `MatchDayScreen`: Kasten (3\|183) 121 × 36 richtig; Text Grundlinie 65 statt 80, Balken 1 Zeile einfarbig und nur je Drittel, Ziffernabstand 8 statt 10 | `[APPROX]`-Abweichungen |
 | Geschwindigkeit `DGROUP 0x262`, Pausen, Klick nach Minute 60/70 | `FramesPerMinute` = 3 fest | `[APPROX]` |
 | Spielende 0x51F3D | `SeasonEndGameOverScreen` (eigener Wortlaut) | `[APPROX]` |
-| Torszenen 0x567C8 | nur Töne (`SoundEffect.cs`), `tore\`-Format offen | fehlt (zuletzt) |
-| Eingriff 0x5434C, Treffer-Tests | Eingriffsmenü 0x38D96 nicht analysiert (Ov 0xF0) | offen |
+| Torszenen 0x567C8, Lader 0x575C3 | nur Töne (`SoundEffect.cs`); Szenenwahl und `tore\`-Format in §11 | fehlt (L7, zuletzt) |
+| Eingriff 0x5434C, Treffer-Tests | Eingriffsmenü 0x38D96 analysiert (§10, Runde 17), kein Bildschirm | fehlt (Runde 18 L6) |
 
 ## 8. Kandidaten Runde 11
 
@@ -394,9 +394,224 @@ Remake zeigt stattdessen eine Zusammenfassung (`SeasonEndGameOverScreen`, `[APPR
 
 - `38h:DDEh` (Aus-/Einblenden, 347 B) und die Seitenkopien `48h:…` sind Mechanik der Grafikbasis und nicht gelesen;
   für das Remake genügt „Bild steht / Bild weg“.
-- Das Eingriffsmenü Datei 0x38D96 (Ov 0xF0, Klick in der Managerpaarung, Regler für Einsatz/Angriff) gehört nicht zu
-  dieser Spur und ist nicht gelesen; es ruft 0x534BC, 0x53508, 0x53453 und 0x5434C.
+- Das Eingriffsmenü Datei 0x38D96 (Ov 0xF0, Klick in der Managerpaarung, Regler für Einsatz/Angriff) ist in §10
+  nachgetragen (Runde 17); offen bleiben dort nur drei Stellen der Aufstellung im Spiel.
 - `50h:443h(…, 137, 42)` = 0x11 in 0x5353C ist als Pixelabfrage gedeutet, nicht belegt.
-- Die Szenenwahl `138h:25h` (Ov 0x138, „tore\“) und das Bildformat in `tore\*` bleiben offen (Kandidat L7).
+- Szenenwahl `138h:25h` und Format `tore\*` sind in §11 nachgetragen (Runde 17); offen bleiben dort die Bildtafel der
+  Figurnummern und das Zeichnen in der Grafikbasis (`48h:4ECFh` ff.).
 - Im Spielstand-Original ist keine der Anzeigetabellen enthalten (sie werden je Spieltag neu aufgebaut); die
   Schreibstelle von `DGROUP 0xA838` (Drittelzähler) wurde nicht gesucht.
+
+## 10. Eingriff im Spiel (L6; Spur `re-livespiel-2`, Runde 17, Teil 1)
+
+Nachtrag zu §4 (Treffer-Tests, 0x5434C) und §9 (Eingriffsmenü offen). Belege: `ndisasm -b16 -e <von> -o <von>
+~/referenz/original/gamedata/em.exe | head -n 200` bzw. annotiert `python3 tools/reverse-engineering/disasm.py
+~/referenz/original/gamedata/em.exe 0x38D96 0x3901B --cache <scratch>/an.pickle`; Bytes in Klammern zum Nachprüfen mit
+`xxd -s <adresse> -l <n> em.exe`. Mauskoordinaten: Fensterobjekt `DGROUP 0xC147` (Fernzeiger) **+0 = Zeile y, +2 = Spalte x**
+(abgeleitet aus dem Lampenfeld: x 3 … 20, y 226 … 238 passt nur so zu (3\|226) 21 × 12, §3); Maustaste `DGROUP 0x5A16`
+1 = links, 3 = rechts (`finanzen-rekonstruktion.md`).
+
+### Datei 0x38D96 – Eingriffsmenü (Ov 0xF0 `0xF0:0x98`, 645 B)
+
+**Aufruf:** nur aus der Minutenschleife 0x37A62, je Paarung, wenn sie eine Managerpaarung ist (`0x130:0x4D` = Datei
+0x52B91 ≠ 0) und `[0x5A16]` = 1 oder 3: Liga-Paarungen (Tabelle `DGROUP 0xA0BF`) Datei 0x37E77–0x37EB5, Pokal-Paarungen
+(`DGROUP 0x5C4C`) Datei 0x38273–0x382B3 (Nahaufruf `0E E8 …`). Erstes Argument = Pokal-Schalter der
+Schleife (`[bp+8]` von 0x37A62), nur er wird gelesen (`[bp+6]` bei Datei 0x38FE5); die übrigen sieben Bytes nicht.
+Rückgabe immer 0 (`[bp-0xD]`, Datei 0x38D9E/0x39012). Ohne Live-Anzeige (`[0x5A56]` = 0) sofort zurück (Datei 0x38DA2).
+
+1. **Lampe „Schnelldurchlauf“** (Datei 0x38DBB–0x38E19): 2 < x < 21 und 225 < y < 239, also x 3 … 20, y 226 … 238 (`83 FE 02`,
+   `83 FE 15`, `81 7E FC E1 00`, `81 7E FC EF 00`) → `DGROUP 0xE19A` ^= 1 (`80 36 9A E1 01`), Maus leeren
+   (`38h:8A7h`), Lampe `0x53453(10, 228, [0xE19A])`. An: Geschwindigkeit `[0x262]` = 70 (`C7 06 62 02 46 00`, also
+   Schnelldurchlauf ≥ 70, §1) und Darstellung `[0x226]` = 0 (Torszenen aus); aus: beide aus der Sicherung `0xE19B`/`0xE19C`
+   zurück. Die Sicherung schreibt der Spieltagsanfang Datei 0x36B65–0x36B77 (dort auch Lampe = 0), zurückgeschrieben
+   wird sie am Spieltagsende Datei 0x37833–0x3783E und vor den Spielmodus-Optionen (Leertaste, Datei 0x37D29–0x37D34;
+   danach neue Sicherung und Lampe = 0, Datei 0x37D41–0x37D5B). Danach läuft die Reihenschleife trotzdem weiter (keine
+   Reihe reicht bis y = 225).
+2. **Reihenschleife** p = 0 … 4, solange `0x233[2p]` ≠ 0xFF (Datei 0x38E1C–0x3900F): Zeile trifft, wenn
+   45p < y < 45p + 43 (`[bp-2]` += 0x2D, Datei 0x38FFB). Mindestens einer der beiden Vereine muss einen Manager haben
+   (Vereinsfeld 0x16 ≠ 0, Datei 0x38E5F/0x38E7B). Seite: x > 160 (`81 FE A0 00`) → Gast, Basis x0 = 13 + 227 = 240 und
+   Kopf-/Logospalte xk = 182 (`81 46 FA E3 00`, `C7 46 F8 B6 00`); sonst Heim, x0 = 13, xk = 96. Hat der Verein der
+   angeklickten Seite keinen Manager (`[bp-0xB]` = Feld 0x16 = 0), nichts. Alle Felder dieses Vereinssatzes
+   (`far:9657 + 0x3D · Verein`):
+   - **Einsatz** `0x534BC(x, y, x0 + 39, 45p + 22, 25, 100)` = r ≠ 0 → Vereinsfeld 0x26 = r − 1 (Datei 0x38ECD–0x38EFE,
+     `26 88 47 26`). Wertebereich 0, 4, 8 … 100 (Breite 25 inklusive beider Ränder, s. u.).
+   - **Angriff** `0x534BC(x, y, x0 + 39, 45p + 29, 25, 7)` = r ≠ 0 → Vereinsfeld 0x2C = (0x2C & 0x8F) | ((r − 1) << 4)
+     (Datei 0x38F02–0x38F40, `24 8F`, `D2 E2` mit cl = 4): Bits 4–6, Modus (Bits 0–2) und Bit 3 (Torhüter draußen) bleiben.
+     r − 1 = 0 … 7; 7 nur am rechten Randpixel x = x0 + 64 ((25 · 7) / 25 + 1 = 8).
+   - **Reihe auf dem Eis** je Teil t = 0 (Abwehr), 1 (Sturm) und Reihe j = 0 … 3: `0x53508(x, y, x0 + 8 + 8t, 45p + 14 +
+     7j)` = 1 (Datei 0x38F44–0x38FBE, `BA 07 00`, `83 C2 0E`, `B1 03`, `83 C2 08`) → Vereinsfeld 0x2E + 2t = j
+     (`26 88 47 2E`); für j = 3 (vierte Reihe) nur, wenn `0x28:0xD9F` = Datei 0x08E5F (Manager, t) ≠ 0 („vierte Reihe des
+     Teils besetzt“, `LiveSquad.HasFourthLine`). Keine Neuzählung der Feldspieler (0x38A36) und kein Neuzeichnen hier; die
+     Anzeigetafel zeigt den neuen Stand am Minutenende (§4, Lampen k = Reihe).
+   - **Kopf/Logo** xk ≤ x ≤ xk + 39 (Datei 0x38FC0–0x38FCD) → Eingriff `0x130:0x89` = Datei 0x5434C(Manager = Feld 0x16 − 1,
+     Pokal, 0, `[0x5A16]` = 3 ? 2 : 1) (Datei 0x38FCF–0x38FED), danach Maus leeren. Linke Taste öffnet also die
+     Aufstellung, rechte die Taktik (s. 0x48E28).
+
+   Die Felder decken sich mit der Anzeigetafel 0x52BD6 (§4: y0 = 15 + 45p, Lampen (x0 + 8 + 8t \| y0 + 7k − 1), Balken
+   Einsatz/Angriff bei (x0 + 39 \| y0 + 9) und (x0 + 39 \| y0 + 16)), Kopf/Logo mit 0x5353C ((96\|y) bzw. (182\|y), 38 × 38).
+   Nach Slider- und Lampenklick wird die Maus **nicht** geleert; ruft die Schleife das Menü in derselben Minute für eine
+   weitere Managerpaarung erneut, wirkt derselbe Klick ein zweites Mal (gleiches Ergebnis).
+
+**Wirkung im Spielkern:** Einsatz und Angriff gelten ab sofort für die Minutenrechnung (`spielberechnung.md` §5–§7), bis
+das Nachführen 0x939A sie in einer geraden Minute der Managerpaarung überschreibt (Einsatz nur bei Modus ≠ 2, Angriff
+nur bei Modus < 2; A176 „MANUELL“). Die Reihe auf dem Eis gilt bis zum nächsten Reihenwechsel 0x8EF2 (`ChangeLines`).
+Damit ist die Lesart in `analyse/belastung-staerke.md` §7 („0x38F40 (Modus)“) zu berichtigen: Datei 0x38F40 schreibt die
+**Angriffsbits** 4–6, einen Modus schreibt das Eingriffsmenü nicht (Hinweis für `pruefung-karte`, Datei außerhalb der
+Spur).
+
+### Datei 0x534BC, 0x53508 – Treffer-Tests (Nachtrag zu §4)
+
+- `0x534BC(mx, my, x, y, breite, n)` (Datei 0x534D7–0x534FC): Treffer, wenn x ≤ mx ≤ x + breite **und** y ≤ my ≤ y + 6
+  (`3B D3`/`7C`, `03 C7`, `05 06 00`, alle Grenzen einschließend); Rückgabe (Byte) `(mx − x) · n / breite + 1`
+  (`F7 6E 10`, `F7 FF` vorzeichenbehaftet, `FE C0`), sonst 0. Für breite 25 also 26 Pixelspalten, Werte 1 … n + 1.
+- `0x53508(mx, my, x, y)` (Datei 0x53518–0x53535): 1, wenn x ≤ mx ≤ x + 5 und y ≤ my ≤ y + 5 (`05 05 00` zweimal), sonst 0
+  – 6 × 6 Pixel, also einen Pixel größer als die gezeichnete Lampe (x \| y + 1)–(x + 4 \| y + 5).
+
+### Datei 0x5434C, 0x48E28 – Neuaufbau nach dem Eingriff (Nachtrag zu §4)
+
+- Argumente `(Manager, Pokal, unbenutzt, Modus)`: `[bp+0xA]` wird nie gelesen (0x38D96 übergibt 0, die Torszene
+  Datei 0x54181 ihr `[bp-2]`); Modus (Wort `[bp+0xC]`) 1 = Aufstellung zuerst (linke Taste, Torszene nach Verletzung), 2 = Taktik zuerst
+  (rechte Taste).
+- `118h:43h` = Datei 0x48E28(Modus, `DGROUP 0x2D6[Manager]`, 1) als Langwörter (Datei 0x54368–0x54385): Schleife
+  „Modus = 1 → Aufstellung 0x108:0x2A (Datei 0x40364) mit dem zweiten Argument, sonst Taktik Datei 0x47F2B mit dem
+  dritten; deren Rückgabe (Byte, vorzeichenbehaftet) = nächster Modus; Hintergrund `110h:7Ah`; bis Modus 0“ (Datei
+  0x48E2B–0x48E5E). Aus dem Hauptmenü (Datei 0x4578D–0x4579C) sind zweites und drittes Argument 0. Im Spiel bekommt die
+  Taktik 1 (Kopfzeile Datei 0x40290 mit Vereins- und Managername, `re-rest.md`; bei Datei 0x47F5E für den ersten
+  Eintrag der Schleife `[bp-6]` = 0 der Wert 7 statt 0x1E – `[APPROX]` vermutlich Farbe; Datei 0x486F1 nicht gelesen),
+  die Aufstellung `DGROUP 0x2D6[Manager]` (einziger direkter Schreiber laut `--xref`: Spielabrechnung Datei 0x54821, Wert 5;
+  Rücksetzen nicht gefunden – `[APPROX]`, für die Umsetzung genügt „≠ 0 = im Spiel“).
+- Die Aufstellung prüft das Argument an acht Stellen (Datei 0x40529, 0x40CFD, 0x40E2A, 0x40F35, 0x4115F, 0x41298,
+  0x4135E, 0x413E8). Gelesen: 0x40529 Kopfzeile 0x40290; 0x40CFD (nach Kaderplatz +0x15 = 0, Datei 0x40CF8) und
+  0x4115F setzen „eingesetzt“ (Kaderplatz +0x0A) = 1 im Spiel, sonst 0 – ein aus der Reihe genommener Spieler bleibt im
+  Spiel also eingesetzt; 0x40E2A die Grenze „22 eingesetzte Spieler“ (`120h:66h(Manager, 3)` = 0x16 → Meldung
+  `DGROUP 0x11D5`) gilt nur außerhalb des Spiels; 0x40F35 im Spiel nur mit der linken Taste. Die übrigen drei
+  (0x41298, 0x4135E, 0x413E8) sind nicht gelesen – `[APPROX]` für die Umsetzung (Runde 18 L6: dort zuerst lesen).
+- Vorher (0x5434C, vor `118h:43h` Datei 0x54385): `110h:7Ah` (Datei 0x5435E; Deutung „Hintergrund“ aus Review #795,
+  `[APPROX]`) und `38h:8A7h` (Datei 0x54363) – für B3 in dieser Reihenfolge übernehmen (Review #795 P3-3).
+- Danach (Datei 0x5438D–0x54419): ausblenden, Fenster schließen, Bildschirm schwarz (0\|0)–(319\|239), Feldspieler des
+  Managervereins (`DGROUP 0x966F + 0x1AF · Manager`) neu zählen `0xF0:0x8E` = Datei 0x38A36, Live-Bildschirm
+  `0x5353C(Pokal, 1)` (Nahaufruf `E8 53 F1`), Schrift 3, Maus leeren, einblenden, `0xA70E` zurück.
+
+**Remake-Zuordnung (für Runde 18):** Treffer-Tests und Schleife → `LiveMatchScreen` (Klick → Befehl), die Wirkung als
+Spielkern-Befehle auf `LiveTeam` (`Effort` = 0x26, `AttackLevel` = 0x2C Bits 4–6, `DefenseLine`/Sturmreihe = 0x2E/0x30,
+`LiveSquad.HasFourthLine`), die Lampe als Schalter im Live-Ablauf (Geschwindigkeit 70, Torszenen aus, Rücknahme aus
+der Spieltagssicherung). Der Eingriff öffnet die vorhandenen Bildschirme Aufstellung/Taktik mit „im Spiel“-Kennzeichen;
+danach `RecountSkaters` und Neuaufbau. Testideen in §12.
+
+## 11. Torszenen-Lader und Format `tore\` (L7; Spur `re-livespiel-2`, Runde 17, Teil 2)
+
+Ov 0x138 (Stub-Segment 63A2) beginnt mit zwei Funktionen für die Torszenen; der Rest des Overlays ist Finanzen/Aktien.
+Belege wie §10 (`disasm.py … 0x57480 0x57768`); DGROUP liegt ab Datei 0x16DD0, Texte also bei Datei 0x16DD0 + Adresse.
+
+### Datei 0x57480 – Szenenzahl lesen (`0x138:0x20`, 323 B, Programmstart 0x437D5)
+
+`DGROUP 0x554A` „tore\anzahl“ öffnen (`50h:17h`), bis 200 Byte lesen (`50h:5Ah`), schließen. Von hinten: Nichtziffern
+überspringen, dann drei Dezimalzahlen rückwärts lesen (Ziffer · 1, 10, 100 …, zwischen zwei Zahlen genau **ein**
+Trennzeichen, Datei 0x574FC–0x5759E): letzte Zahl → `DGROUP 0xE2F4`, vorletzte → `0xE2F2`, drittletzte → `0xE2F6`.
+Ist `0xE2F6` < 1 oder `0xE2F2` < 1 → Fehler 2 (`C0h:61h(2)`, „DISK-Error“). Mit `MAXSZENE:11|2|2` (`dateiformate.md`):
+`0xE2F6` = 11 (normale Szenen), `0xE2F2` = 2 (Penalty), `0xE2F4` = 2 (sechs Feldspieler). Der Text vor der ersten Zahl
+wird nicht geprüft.
+
+### Datei 0x575C3 – Szene wählen und laden (`0x138:0x25`, 421 B, einziger Aufrufer 0x567C8)
+
+Argumente `(Art, Penalty, Seite, sechs)` (Datei 0x56BAC–0x56BBC): Art = 0 vergeben / 1 Tor (`[bp+0x18]` des Abspielers,
+dort auch „Tor → Torzahl + 1“, Datei 0x56DD9), Penalty = Kennzeichen der Torszene 0x53C57 (`[bp+0x18]` dort, derselbe
+Wert wie in „Art + 5 · Penalty“ für den Reporter, Datei 0x53DD2), Seite = 0 Heim / 1 Gast (Seite der Chance), sechs = 1,
+wenn der Verein dieser Seite Feldspieler (Vereinsfeld 0x32) + belegte Strafbankplätze (`F0h:20h`, Datei 0x35540) = 6 hat,
+also ohne Torhüter spielt (Datei 0x56B4D–0x56BA8). Die frühere Lesart „(Art, Seite, Flag, Unterzahl)“ in §6 ist damit
+ersetzt.
+
+1. `DGROUP 0x38D` = 1 und `0x374` = 1 (Zahl ohne Tausenderpunkt, Mindestbreite 1; Datei 0x575D3/0x575D8), Fehlversuche
+   `[bp-1]` = 0.
+2. n = `random(2, [0xE2F6])` (Datei 0x575FA–0x57609). Danach `random(0, Art ? 210 : 255)` = 0 → Penalty = 1 (Datei
+   0x575E9–0x5761A, `BF FF 00` / `BF D2 00`): auch ohne Penalty kommt also mit 1/256 (vergeben) bzw. 1/211 (Tor) eine
+   Penalty-Szene. Penalty ≠ 0 → n = `random(2, [0xE2F2])`; sonst sechs ≠ 0 → n = `random(2, [0xE2F4])` und
+   Merker `[bp-2]` = 1 (Datei 0x5761E–0x57643). `38h:847h` ist `random(a, b)` mit beiden Grenzen; es zieht aus dem
+   **Spielzufall** – jede gezeigte Torszene verschiebt also die Zufallsfolge der Spielrechnung. `random` hat keinen
+   Sonderfall a = b (Datei 0xC037: Grenzentausch, dann immer `call 0x0:0x6df`): mit `MAXSZENE:11|2|2` ergibt die
+   Penalty- bzw. Sechser-Wahl stets n = 2, verbraucht aber trotzdem einen Zug – je Szene also drei Züge mit Penalty oder
+   sechs, sonst zwei (Review #795 P3-2).
+3. Dateiname (`0:1B0Bh` kopieren, `0:1A9Ch` anhängen): `DGROUP 0x5556` „tore\“ + n (`38h:2C2h`) + „.h“/„.a“ (Seite 0/1,
+   `0x555C`/`0x555F`) + „v“/„t“ (Art 0/1, `0x5562`/`0x5564`) + „e“, wenn Penalty und nicht `[bp-2]` (`0x5566`) +
+   „j“, wenn `[bp-2]` (`0x5568`). Beispiele: Heim vergibt `tore\7.hv`, Gast trifft per Penalty
+   `tore\2.ate`, Heim trifft ohne Torhüter `tore\2.htj`.
+4. Öffnen (`50h:17h`); misslingt es, `[bp-1]` + 1 und mit neuem Zug ab Schritt 2, nach 50 Fehlversuchen Rückgabe −1
+   (Datei 0x575DD–0x575E6, 0x576FC–0x57709). Länge `0:131Ah`, Puffer `38h:F39h(Länge, 0)` in
+   `DGROUP 0xE2E5` (Fernzeiger; null → Fehler 4 „SPEICHER-Error“), ganze Datei lesen, schließen.
+5. Rückgabe 1 bei Penalty-Szene, sonst 0 (Datei 0x57755–0x57762). Der Abspieler wertet nur −1 aus (Datei 0x56BC7: dann
+   keine Szene, Bilder freigeben, Live-Bildschirm neu).
+
+Alle 48 Szenendateien sind vorhanden (`ls tore`: n = 2 … 11 je `.ht .hv .at .av`, dazu `2.hte 2.hve 2.ate 2.ave 2.htj 2.hvj
+2.atj 2.avj`), Fehlversuche kommen mit den Originaldateien also nicht vor.
+
+### Format `tore\*` (gelesen aus `48h:5250h` Szene starten und `48h:5316h` Bild anwenden)
+
+Alle Wörter **Big-Endian** (`86 E0` = `xchg ah,al` nach jedem Lesen). Probe über alle 48 Dateien (Skript im Scratch,
+Ergebnis hier): Länge = 0x54 + 28 · Bilder + 2, letztes Wort 0xAAAA, sonst nirgends am Bildanfang.
+
+| Bereich | Inhalt | Fundstelle |
+|---|---|---|
+| +0x00 | „TOR!“ (nicht geprüft) | – |
+| +0x04, +0x06 | Kamera x, y; beim Start x − 16, y − 32, jeweils ≥ 0 (Grafikbasis `cs:0x30`/`0x32`) | `48h:5250h` +0x1F–0x45 |
+| +0x08, +0x0A | Puck x, y (`cs:0x34`/`0x36`); der Puck ist ein dreizehntes Objekt mit Figur 1 | `48h:5250h` +0x49–0x59; Figur 1 setzt `48h:51EBh` |
+| +0x0C + 6k, k = 0 … 11 | Objekt k: Byte +1 = Figur (Byte +0 in allen Dateien 0), Wort +2 = x, Wort +4 = y | `48h:5250h` +0x60–0x80 |
+| +0x54 + 28i | Bild i, bis zum Wort 0xAAAA | 0x567C8 Datei 0x56CDA–0x56DC3 |
+
+Bild (28 Byte): Byte 0 = Kamerabewegung, Byte 1 = Puckbewegung (addiert auf x/y), Byte 2 = 0 in allen 6 600 Bildern
+(unbenutzt), Byte 3 = Toneffekt s (0 keiner; 1 Jubel, 3 Puck, 4 Check, `dateiformate.md` „Verwendung“), dann je Objekt k
+zwei Byte: Figur (immer übernommen) und Bewegung (nur wenn Figur oder Bewegung ≠ 0). **Bewegungsbyte** (`48h:51ADh`):
+Bit 7 Vorzeichen y, Bit 6 Vorzeichen x, Bits 5–3 |dx|, Bits 2–0 |dy| (also höchstens ±7 Pixel je Bild); Kamera: Werte
+ersetzen eine Geschwindigkeit (`cs:0x1A`/`0x1C`; `[APPROX]` Deutung als Kamera aus dem Kopf +0x04), Puck und Objekte: Werte werden addiert. Figurnummern in den Dateien
+0 … 93; welche Bildtafel sie zeichnet (`kb\246`/`kb\247` oder die Halle `kb\241…244`, Zeichnen `48h:4ECFh` ff.) ist
+nicht gelesen – `[APPROX]` offen für L7 (Kandidat: die 92 Figuren 32 × 32 in `kb\233`/`kb\234`/`kb\235`,
+`SpriteSheet.cs`, über eine Tabelle in `kb\246`). Koordinaten (Startwerte aus dem Kopf, alle 48 Dateien): Kamera bis
+(304\|880), Puck bis (639\|1 051), Objekte bis (791\|1 205), also etwa 800 × 1 210 – das Eisfeld ist **hoch**, nicht breit,
+größer als der Bildschirm und scrollt; Heimszenen (`.h*`) liegen oben (Objekt-y 158 … 905), Gastszenen (`.a*`) reichen
+bis unten (y bis 1 205, z. B. `6.at`; Kamera-y 880 in `8.at`). Die Bewegungen kommen noch hinzu. Größe der Eisfläche und
+Zuordnung zur Halle `kb\241…244` in Spur C prüfen (Review #795 P2-1).
+
+Ablauf je Bild im Abspieler (Datei 0x56CEA–0x56DC3): Ende bei 0xAAAA; `48h:2C08h(1)`, Bild anwenden, warten, solange
+`48h:4884h` ≠ 0 (dabei Publikum `kb\237` neu, wenn Ton an `DGROUP 0x4A44` und die Ausgabe frei `0x59E4` = 0 ist);
+Toneffekt s ≠ 0 → laufenden Ton stoppen, `0xE2D1 + 4s` spielen; dann `48h:2C4Eh` abwarten, nächstes Bild. Danach Puffer
+freigeben, bei einem Tor Torzahl + 1 und Kopfzeile `0x56EDD(2, …)`, Pause 6 (nur Modus 0, Datei 0x56E14–0x56E29).
+Modus = `2 · [0x5A55]` (Dauer-Eisfeld, Datei 0x53FCE): bei 2 springt der Abspieler gleich zur Szenenwahl (Datei 0x56804).
+
+## 12. Umsetzungsplan Live-Spiel für Runde 18 (L1–L8)
+
+Vorschlag der Spur `re-livespiel-2`; Zuschnitt und Reihenfolge entscheidet die Leitstelle im Rundenplan. Grundsätze:
+der Spielkern bleibt ohne Bildschirm vollständig (Live-Anzeige ist nur Darstellung, `spielberechnung.md` §1), **außer**
+den Zufallszügen, die das Original nur mit Anzeige macht (Strafgrund §5, Szenenwahl §11 Schritt 2) – sie gehören in
+den Kern, geschaltet über „Live-Anzeige an“, sonst verschiebt sich die Zufallsfolge. Die Zwinker-Züge `lrandom`
+(`38h:7E5h`, Datei 0xBFD5) verschieben sie **nicht**: eigener Generator mit Zustand `DGROUP 0xE017/0xE019` (Langwort),
+`x = ((x << 4) + 0xA7)` mit `0:48Bh` (Langwort-Rest) gegen 0x3D0900 (4 000 000), danach Skalierung auf `(b − a + 1)`;
+`random` (`38h:847h`, Datei 0xC037) ruft dagegen `0:6DFh` = Datei 0x24DF (Borland-`rand`, Zustand `DGROUP 0x5984/0x5986`,
+Faktor 0x015A4E35). Für A4/A2: `lrandom` als eigener Generator (Kern bzw. `LiveClock`), getrennt vom Spielzufall
+(Review #795 P3-1). Zeit vergeht weiter nur
+über `GameState.Continue()`; der Live-Bildschirm treibt die Minuten, ändert aber keinen Zustand außer über Kern-Befehle.
+
+**Spur A `livespiel-kern`** (Core und Formats; zuerst, weil B die Werte zeigt)
+
+| Teil | Inhalt | Dateien | Abnahme |
+|---|---|---|---|
+| A1 | L1 Anzeigezähler: Reihenliste (bis 4 Paarungen, §2 `0xA75C`/`0x233`), Chancen/Tore je Drittel und Seite (`0xA839`/`0xA83F`, nur Minute ≤ 60), Strafminuten (`0xA845`) | neu `Core/MatchEngine.Scoreboard.cs`; Anschluss in `MatchEngine.Live.cs` (Absprache mit dem Besitzer) | Spieltag mit Managerpaarung: Summe der Drittelzähler = Ereignisliste; Strafminuten = Vereinsminuten; Reihenfolge der Reihen wie 0x5353C |
+| A2 | L5 Ablaufmodell: Geschwindigkeit 0–80, Pausen je Minute `(45 − g/2)` bzw. `(30 − g/2)` mit Zwinkern 1/5, Schnelldurchlauf ≥ 70, Warten nach Minute 60/70, Spieltagssicherung `0xE19B`/`0xE19C`, Lampe §10 Schritt 1; nur als Modell (Bilder je Minute), keine Wanduhr | neu `Core/LiveClock.cs` | Ablauftest: Bilder je Minute bei g = 0/60/70; Lampe an → g = 70 und Torszenen aus, aus → Sicherung zurück; Leertaste-Optionen setzen Lampe = 0 |
+| A3 | L6 Eingriff als Befehle: Einsatz (0, 4 … 100), Angriff (0–7), Reihe auf dem Eis je Teil mit Prüfung 4. Reihe (0x08E5F), Eingriff öffnen (Modus 1/2) mit „im Spiel“-Kennzeichen; danach `RecountSkaters` | neu `Core/MatchEngine.Intervention.cs` | Rechnung je Minute mit geändertem Einsatz/Angriff/Reihe; Nachführen 0x939A überschreibt in gerader Minute (A176); 4. Reihe ohne Spieler → keine Änderung |
+| A4 | L4/L7 Zufall im Kern: Strafgrund `random(0, 12)` bzw. Index 5; Szenenwahl §11 (Züge in genau dieser Reihenfolge, auch `random(2, 2)` zieht – mit Penalty oder sechs **drei** Züge, sonst zwei; Dateiname); Format-Leser `tore\` (Kopf, Bilder, Bewegungsbyte) | neu `Formats/GoalScene.cs`, `Core/MatchEngine.GoalScene.cs` | `[GameDataFact]`: alle 48 Dateien lesbar, Bildzahl = (Länge − 86) / 28, Effektzählung 149/53/25, Byte 2 = 0; Szenenwahl mit festem Zufall ergibt den erwarteten Namen; Zufallsfolge mit/ohne Anzeige getrennt geprüft |
+
+**Spur B `livespiel-ui`** (nach A1; Bildschirme, Szenario `Tools/Scenarios/Live.cs`)
+
+| Teil | Inhalt | Dateien | Abnahme |
+|---|---|---|---|
+| B1 | L3 Bausteine (Spieluhr 0x51E90, Balken 0x53307/0x533D0, Lampe 0x53453, Ziffern 0x53234) und „Spiele laufen“ in `MatchDayScreen` darauf umstellen | neu `UI/LiveWidgets.cs`; `Screens/MatchDayScreen.cs` | `karriere_02315`: zwei volle Balken, dritter 32 px, „08“ ab x = 96, Text Grundlinie 80 |
+| B2 | L2 Live-Bildschirm (Aufbau 0x5353C, Anzeigetafel 0x52BD6) und L4 Reporter (Meldung 0x52520, Mund/Augen) | neu `Screens/Live/LiveMatchScreen.cs`, `Screens/Live/LiveReporter.cs` | Bildschirmfoto gegen `bundestrainer_00200` und `duell_s2a_01126`; Mundfolge „Chance:“ = [0, 9 × 8, 0xFF] |
+| B3 | L6 Klickwege §10 (Treffer-Tests 0x534BC/0x53508, Lampe, Kopf/Logo links = Aufstellung, rechts = Taktik), Neuaufbau 0x5434C; Aufstellung/Taktik mit „im Spiel“ (die drei offenen Stellen §10 vorher lesen) | `LiveMatchScreen.cs`; Lineup-/Tactics-Bildschirm nur mit Kennzeichen-Parameter (Absprache) | Klick (52 + d \| 45p + 22), d = 0 … 25, setzt Einsatz 4d; Randpixel x0 + 64 ergibt Angriff 7; Lampenklick (21 + 8t \| 45p + 14 + 7j) setzt Reihe j |
+| B4 | L8 Spielende 0x51F3D (schwarz, „Das wars...“ 100, „Carpe diem !“ 140, Klick) | `Screens/SeasonEndGameOverScreen.cs` | Bildschirmfoto, Textpositionen |
+
+**Spur C `torszenen`** (L7 Anzeige, nach A4, P3 – kann nach Runde 19 rutschen): Abspieler 0x567C8 (Laden `kb\231…247`,
+Kopfzeile 0x56EDD/0x570E8, Trikotfarben 0x53BF9 und Palette 0xFE/0xFD, Bildschleife §11), vorher Analyse der
+Figurzuordnung und des Zeichnens (`48h:4ECFh`, `kb\246`). Dateien: neu `Screens/Live/GoalSceneScreen.cs`. Abnahme: Szene
+`2.ht` abspielen, Bild gegen `eisbaeren_f01_01150`; Töne je Bild wie Byte 3.
+
+Abhängigkeiten: B2 braucht A1, B3 braucht A3, C braucht A4. A2 und B1 sind unabhängig. Gemeinsame Dateien:
+`MatchEngine.Live.cs` (A1–A4 nur Anschlüsse), `MatchDayScreen.cs` (B1), `GameOptionsScreen.cs` (Regler der
+Geschwindigkeit, nur falls A2 es braucht).

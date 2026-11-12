@@ -298,6 +298,23 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Danach Spur pool (#743, Fixlauf auf main 846e515, R15-E2 = C): neu – Startkader im Spielerpool (Datei 0x5B0BB–0x5B2BE),
     // 25 Plätze weniger für Benennen, Umverteilung und Listenwechsel. Rückschaltprobe: Transfer.Pool.cs/Transfer.cs von 846e515
     // → Wert nach #772.
+    // Runde 17, Spur pruefung-karte (#784, R15-E2 = C): ab 1993 neu – 0x8365 je Paarung zuerst für den Heimverein, dann für den
+    // Gast gegen den schon geschriebenen Grundwert des Heimvereins (Datei 0x36D12/0x36D49): andere Ergebnisse ab dem ersten
+    // Spieltag, mit und ohne Anzeige weiter gleich. Rückschaltprobe: MatchEngine.Preparation.cs von e1476e6 → alter Wert.
+    // Runde 17, Spur wettbewerbe-rest Teil 2 (A004, R15-E2 = C): ab 1994 neu – Auslosung Europapokal mit 0x4D316 (Mittel der
+    // sechs Vereinsfelder, Datei 0x34401–0x3440A) statt der Datenbankstärke: andere Gegner und anderer Verbrauch von CupRandom
+    // ab der zweiten Auslosung (1993 unverändert). Rückschaltprobe: CupsEurope.cs mit Club.Strength → Wert nach #743.
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): neu – Liga-Spielplan über die Satzfolge (Datei 0x4E7C7:
+    // Buchstabe = Satzplatz, nicht Rang des Vereinsindex) und Aufstiegsrunde nach Tabelle DGROUP 0x324 an den Play-Off-
+    // Terminen 0, 2, 5, 7, 10, 12 (Datei 0x31A2C); andere Paarungen ab dem ersten Spieltag. Rückschaltprobe: src/ von 8e49168
+    // → Wert von Teil 2.
+    // Fixlauf nach Rebase auf main 3cd9169 (#784 und wettbewerbe-rest zusammen, R15-E2 = C): auf dem gemeinsamen Stand neu
+    // gezogen. Rückschaltprobe: src/ von 3cd9169 (ohne wettbewerbe-rest) + dieser Test → rot.
+    // Runde 17, Spur kader-rest (A130, A066, R15-E2 = C): ab 1993 neu – Startbelastung der Managerkader random(80, 120) (Datei
+    // 0x42E4C) und Verletzung senkt die Poolform statt der Form des Kaderplatzes (Datei 0x05B34); mit und ohne Anzeige weiter
+    // gleich. Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → alter Wert.
+    // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
+    // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
     private const string Reference =
-        "1993: DEB 2, DM 5, Tab 15349 | 1994: DEB 2, DM 2, Tab 15668 | 1995: DEB 1, DM 4, Tab 16017 | 1996: DEB 8, DM 6, Tab 15853";
+        "1993: DEB 4, DM 8, Tab 15415 | 1994: DEB 10, DM 2, Tab 15350 | 1995: DEB 9, DM 8, Tab 15387 | 1996: DEB 8, DM 31, Tab 15379";
 }

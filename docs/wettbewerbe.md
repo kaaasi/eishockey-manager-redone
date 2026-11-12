@@ -568,10 +568,10 @@ Abschnitt [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-pixel-wettbewerb
 | Klick auf eine Begegnung (k = (y − 40) / 20, Gast ab x = 161) → Vereinsfenster; ebenso auf den Seiten „Play-Off Spiele“ und „Aufstieg“ | Datei 0x4F079, 0x33AAF, 0x32944 |
 | Zuletzt gezeigte Seite DGROUP 0x5125 für alle drei Kacheln, Startwert 7, Saisonwechsel setzt zurück | Datei 0x4587E, 0x564AF |
 
-**[APPROX]:** Spielplan (`Schedule.DoubleRoundRobin`) und Stärkewerte (`StrengthTable`) sind Näherungen des Remakes (A282, Core:
-Spur `wettbewerbe-rest`). Die Trefferfläche der Pfeilknöpfe ist der Rahmen (48 × 38). Termine der Aufstiegsrunde folgen den
-Spieltagen des Remakes (`RelegationGroup.DateIndices`, Original 0, 2, 5, 7, 10, 12, [reverse-engineering.md](reverse-engineering.md)
-Abschnitt Spur `ui-rest`); Play-Offs kennen keine Verlängerungsmarke (zwei Punkte).
+**[APPROX]:** Stärkewerte (`StrengthTable`) sind eine Näherung des Remakes. Der Spielplan folgt seit Runde 17 dem Original
+(`Schedule.ForSlots`, Datei 0x4E7C7 über die Satzfolge; A113, Spur `wettbewerbe-rest`), ebenso die Termine der Aufstiegsrunde
+(`RelegationGroup.DateIndices`, A142). Die Trefferfläche der Pfeilknöpfe ist der Rahmen (48 × 38). Play-Offs kennen keine
+Verlängerungsmarke (zwei Punkte).
 
 **Pixelvergleich (Spur `ui-rest`, Runde 17)** – Verfahren wie unten (Runde 6), Mauszeiger maskiert; Abläufe `pixel-playoff`,
 `pixel-aufstieg` (`Tools/Scenarios/UiRestVideo.cs`):

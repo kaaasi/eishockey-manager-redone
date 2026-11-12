@@ -9,7 +9,8 @@ public static partial class MatchEngine
     /// <item>Stärke 0x368B1(Verein, Gewichtung 1, Minute 0, Differenz 0, neu) beider Vereine, doppelt verglichen (Datei
     ///   0x839D–0x83D6, <c>shl ax,1</c>); 0x368B1 ruft 0x977F mit „im Spiel“ = 1, also mit Energie der Reihe und mit dem
     ///   Einsatz 0x26 des letzten Spiels (<see cref="Tactics.MatchEffort"/>, Datei 0x9C66). Eigene Stärke ≥ gegnerische →
-    ///   Favorit (0x2C Bit 7, Zeile DGROUP 0x491C + 5).</item>
+    ///   Favorit (0x2C Bit 7, Zeile DGROUP 0x491C + 5). Je Aufruf nur der Satz des ersten Vereins; zuerst Heim, dann Gast –
+    ///   der Gast vergleicht mit dem schon geschriebenen Grundwert des Heimvereins (#784).</item>
     /// <item>|Differenz| &lt; 25 → Grundwert 60, sonst 40 (Datei 0x8400–0x841C). Ohne Manager (Vereinsfeld 0x16 = 0) oder
     ///   bei Einsatz „AUTOM.“ (DGROUP 0xA6FA + Manager = 0): Zuschläge 0x27–0x2B und 0x26 = 0x2D = Grundwert, ohne Zuschlag
     ///   „Unentschieden“ (Datei 0x8443–0x847D).</item>
@@ -29,23 +30,28 @@ public static partial class MatchEngine
     {
         if (IsNation(home) || IsNation(away))
             return;
-        var homeStrength = PreparedStrength(home, homeTeam, awayTeam);
-        var awayStrength = PreparedStrength(away, awayTeam, homeTeam);
-        Prepare(game, home, homeTeam, homeStrength, awayStrength);
-        Prepare(game, away, awayTeam, awayStrength, homeStrength);
+        // [ORIGINAL] 0x8365 schreibt nur den Satz des ersten Arguments (Datei 0x83DA–0x847D über [bp-0x8]) und läuft je Paarung
+        // zweimal: zuerst für den Heimverein (Datei 0x36D12, Paarungsbyte DGROUP 0x5D7B), dann für den Gast (Datei 0x36D49).
+        // Der zweite Stärkevergleich liest 0x26 des Heimvereins schon mit dessen neuem Grundwert (#784, Beleg FILE30→31).
+        var awayStrength = PreparedStrength(away, awayTeam, homeTeam, away.Tactics.MatchEffort);
+        var homeWritten = Prepare(game, home, homeTeam,
+            PreparedStrength(home, homeTeam, awayTeam, home.Tactics.MatchEffort), awayStrength);
+        var homeField = homeWritten ? homeTeam.Effort : home.Tactics.MatchEffort;
+        Prepare(game, away, awayTeam, awayStrength, PreparedStrength(home, homeTeam, awayTeam, homeField));
     }
 
-    /// <summary>Stärke 0x368B1 eines Vereins vor dem Spiel (Gewichtung 1, Minute 0) mit dem Einsatz des letzten Spiels.</summary>
-    internal static int PreparedStrength(Club club, LiveTeam team, LiveTeam opponent)
+    /// <summary>Stärke 0x368B1 eines Vereins vor dem Spiel (Gewichtung 1, Minute 0) mit dem Einsatz im Vereinsfeld 0x26.</summary>
+    internal static int PreparedStrength(Club club, LiveTeam team, LiveTeam opponent, int fieldEffort)
     {
         var effort = team.Effort;
-        team.Effort = club.Tactics.MatchEffort;
+        team.Effort = fieldEffort;
         var strength = OriginalMinutes.Strengths(team, opponent, 0).Normal;
         team.Effort = effort;
         return strength;
     }
 
-    private static void Prepare(GameState game, Club club, LiveTeam team, int own, int opponent)
+    /// <summary>Vorbereitung eines Vereins; true, wenn 0x8365 den Grundwert in 0x26 schreibt (ohne Manager oder „AUTOM.“).</summary>
+    private static bool Prepare(GameState game, Club club, LiveTeam team, int own, int opponent)
     {
         var tactics = club.Tactics;
         var unmanaged = !game.ActiveManagers.Any(m => m.ClubIndex == club.Index);
@@ -54,10 +60,12 @@ public static partial class MatchEngine
         tactics.RecordAutoLine(own, opponent, unmanaged);
         team.TacticsStrength = own;
         team.TacticsOpponentStrength = opponent;
-        if (unmanaged || tactics.EffortMode == TacticMode.Auto)
+        var writesEffort = unmanaged || tactics.EffortMode == TacticMode.Auto;
+        if (writesEffort)
             team.Effort = Tactics.PreparedEffort(own, opponent);
         if (unmanaged || tactics.AttackMode == TacticMode.Auto)
             team.AttackLevel = tactics.MatchAttack;
+        return writesEffort;
     }
 
     /// <summary>[ORIGINAL] Vereinsfelder 0x26 und 0x2C (Bits 4–6) bleiben nach dem Spiel stehen (<see cref="Tactics.MatchEffort"/>).</summary>

@@ -38,15 +38,17 @@ public static class PlayerInjuries
     /// <item>Status verletzt (+0x09 | 2), Art (+0x17), nicht eingesetzt (+0x0A = 0).</item>
     /// </list>
     /// [ORIGINAL] Datei 0x05B1A schreibt die Art in den Kaderplatz (+0x17, <see cref="Player.InjuryKind"/>; Anschluss aus
-    /// kader-transfer Teil 2, Integration Runde 11). [APPROX] Das Remake zählt die Wochen in <see cref="Player.InjuredGames"/>;
-    /// die Form des Kaderplatzes steht für die Form des Pools.
+    /// kader-transfer Teil 2, Integration Runde 11) und die Restdauer in Wochen nach +0x0D (<see cref="Player.InjuredGames"/>,
+    /// trotz des Namens Wochen: Heilung je 7. Tag, <see cref="IsHealingDay"/>). Die Form ist die des Pools (+0x17,
+    /// <see cref="Player.PoolForm"/>), nicht die des Kaderplatzes (A066, Runde 17; vorher sank die angezeigte Form).
     /// </summary>
     /// <param name="difficulty">„5 − Level“ des Managers (DGROUP 0xED8).</param>
     /// <returns>Gezogene Art 0 … 27.</returns>
     public static int Inflict(Player player, bool inMatch, int difficulty, Random random)
     {
-        if (player.Form > 20)
-            player.Form -= OriginalMatch.Rnd(random, 10, 15);
+        var poolForm = player.PoolForm ?? player.Form;
+        if (poolForm > 20)
+            player.PoolForm = poolForm - OriginalMatch.Rnd(random, 10, 15);
         int kind;
         do
             kind = OriginalMatch.Rnd(random, 0, 27 - 6 * (inMatch ? 1 : 0));

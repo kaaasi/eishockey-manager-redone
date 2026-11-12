@@ -1,0 +1,264 @@
+using EishockeyManager.Core;
+
+namespace EishockeyManager.Core.Tests;
+
+/// <summary>
+/// Spur wettbewerbe-rest (Runde 17). Teil 1: Nationalteam/Länder (A008/A110, A084, A024).
+/// </summary>
+public class WettbewerbeRestTests
+{
+    private static GameState Create(int seed = 3, int club = 2)
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Trainer", Head = 0, ClubIndex = club, StartLeague = NewGame.DatabaseLeague(club) ?? League.Oberliga });
+        return NewGame.Create(TestGames.CreateDatabase(), setup, seed);
+    }
+
+    /// <summary>Länderplatz ohne Kader wie <c>GameState.RatedNation</c>.</summary>
+    private static Club Nation(GameState game, int index) =>
+        new() { Index = index, Name = game.Clubs[index].Name, Strength = game.Clubs[index].Strength };
+
+    private static GameState WithCoach()
+    {
+        var game = Create();
+        game.AppointNationalCoach(game.Managers[0]);
+        game.AutoNominate();
+        game.NationalAccount = 10_000_000;
+        return game;
+    }
+
+    /// <summary>
+    /// A008: [ORIGINAL] Das Freundschaftsspiel (Datei 0x30365, Code 0xD) setzt den WM-Merker DGROUP 0x12B nicht – nur die
+    /// WM-Gruppe 0x30F4E und die Endrunde 0x31012 tun das. Vorher rechnete das Remake es mit den WM-Regeln.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Friendly_UsesRulesWithoutWorldCupFlag(bool home)
+    {
+        var game = WithCoach();
+        MatchEngine.LastRules = null;
+        Assert.Equal(FriendlyResult.Played, game.PlayFriendly(54, home));
+        var rules = Assert.IsType<MatchRules>(MatchEngine.LastRules);
+        Assert.False(rules.WorldCup);
+        Assert.False(rules.Playoff);
+        Assert.False(rules.KnockOut);
+    }
+
+    /// <summary>
+    /// A008: [ORIGINAL] Mit dem Bundestrainer setzt 0x544C0 dessen Satz aktiv (DGROUP 0xA729 + 5, Datei 0x545A6), der Merker
+    /// 0x36FEA führt in die Minutenschleife 0x37088 – kein schneller Weg (Code 0xD hätte keinen Schalter, 0x3707B).
+    /// </summary>
+    [Fact]
+    public void Friendly_WithCoach_RunsMinuteLoop()
+    {
+        var game = WithCoach();
+        OriginalMinutes.FastCupCalls = 0;
+        OriginalMinutes.MinuteLoopCalls = 0;
+        Assert.Equal(FriendlyResult.Played, game.PlayFriendly(55, true));
+        Assert.Equal(0, OriginalMinutes.FastCupCalls);
+        Assert.Equal(1, OriginalMinutes.MinuteLoopCalls);
+        Assert.True(MatchEngine.LastRules!.Value.ManagerMatch);
+    }
+
+    /// <summary>
+    /// A008: Länderpaarung ohne Bundestrainer mit Code 0xD nimmt den schnellen Weg ohne Anzeigeschalter (Datei 0x3707B →
+    /// 0x3731F) und ohne WM-Glättung (0x374EF, DGROUP 0x12B = 0) – auch bei eingeschaltetem WM-Schalter.
+    /// </summary>
+    [Fact]
+    public void FriendlyWithoutCoach_TakesFastWay_EvenWithWorldCupSwitch()
+    {
+        var game = Create();
+        game.Options.ShowWorldCup = true;
+        OriginalMinutes.FastCupCalls = 0;
+        OriginalMinutes.MinuteLoopCalls = 0;
+        MatchEngine.PlayWithEvents(game, Nation(game, 54), Nation(game, 55), MatchCompetition.Friendly, knockOut: false,
+            new Random(5));
+        Assert.Equal(1, OriginalMinutes.FastCupCalls);
+        Assert.Equal(0, OriginalMinutes.MinuteLoopCalls);
+        Assert.False(MatchEngine.LastRules!.Value.WorldCup);
+    }
+
+    /// <summary>
+    /// A084: [ORIGINAL] Die Strafen des Bundestrainer-Teams lesen DGROUP 0x974B + 6 · 0x1AF = 0xA165 (Datei 0x35890, Feld
+    /// 0x16 = 6) – im Ergebnisblock 0xA0CB die Heimtore der sechsten Paarung des 13. Bundesliga-Spieltags. Vorher 20.
+    /// </summary>
+    [Fact]
+    public void NationalPenaltyManagerValue_IsHomeGoalsOfBundesligaDay13Pairing6()
+    {
+        var game = Create();
+        game.AppointNationalCoach(game.Managers[0]);
+        game.AutoNominate();
+        var nation = game.NationalCoach!.Nation;
+        var club = new Club { Index = nation, Name = game.Clubs[nation].Name, Strength = game.Clubs[nation].Strength };
+        Assert.Equal(0, MatchEngine.NationalPenaltyManagerValue(game)); // Spieltag 13 nicht gespielt: Byte 0
+        Assert.Equal(0, MatchEngine.LiveTeamOf(game, club, Nation(game, 54), managed: true, managerMatch: true).PenaltyManagerValue);
+
+        while (game.PlayedMatchDays < 13)
+            TestSeason.PlayMatchDay(game);
+        var day = game.Schedules[League.Bundesliga][12];
+        var (home, away) = day.Matches[5];
+        var expected = game.Results.Single(r => r.League == League.Bundesliga && r.MatchDay == day.Number
+            && r.Home == home && r.Away == away).HomeGoals;
+        Assert.Equal(expected, MatchEngine.NationalPenaltyManagerValue(game));
+        Assert.Equal(expected,
+            MatchEngine.LiveTeamOf(game, club, Nation(game, 54), managed: true, managerMatch: true).PenaltyManagerValue);
+    }
+
+    /// <summary>A084: Länder ohne Bundestrainer (Vereinsfeld 0x16 = 0) lesen keinen Managerwert (Datei 0x3588C).</summary>
+    [Fact]
+    public void NationWithoutCoach_KeepsNeutralPenaltyValue()
+    {
+        var game = Create();
+        var team = MatchEngine.LiveTeamOf(game, Nation(game, 54), Nation(game, 55), managed: false, managerMatch: false);
+        Assert.False(team.Managed);
+        Assert.Equal(20, team.PenaltyManagerValue);
+    }
+
+    /// <summary>
+    /// A024: [ORIGINAL] Leere Formation mit „automatisch aufstellen“ spielt mit der Aufstellung, die die Neuaufstellung 0x426BC
+    /// für Satz 5 beim nächsten Menüaufbau setzt (Datei 0x450C6 → 0x426BC, Regel 0x42838) – gleiche Plätze, 22 eingesetzt.
+    /// Vorher eine eigene Automatik nach Kondition + Technik + Form, alle Verfügbaren eingesetzt.
+    /// </summary>
+    [Fact]
+    public void EmptyFormationWithAutoLineup_PlaysLineupOfMenuRebuild()
+    {
+        var game = WithCoach();
+        var coach = game.NationalCoach!;
+        Assert.True(coach.AutoLineupEnabled);
+        Assert.Equal(0, coach.Formation.Count);
+        var standIn = coach.Lineup();
+        var standInSquad = MatchEngine.NationalSquad(game, coach);
+        var standInValues = game.NationalPanelLineValue(coach.Nation, 0, attack: true);
+
+        coach.AutoFormation(); // was das Original beim Menüaufbau macht
+        var rebuilt = coach.Lineup();
+        Assert.Equal(rebuilt.Goalkeeper, standIn.Goalkeeper);
+        Assert.Equal(rebuilt.Defenders, standIn.Defenders);
+        Assert.Equal(rebuilt.Forwards, standIn.Forwards);
+        var squad = MatchEngine.NationalSquad(game, coach);
+        Assert.Equal(squad.Players.Select(p => (p.Player, p.Position, p.Dressed)),
+            standInSquad.Players.Select(p => (p.Player, p.Position, p.Dressed)));
+        Assert.Equal(22, standInSquad.Players.Count(p => p.Dressed)); // [ORIGINAL] Ersatz reihum bis 22 (Datei 0x427C0)
+        Assert.Equal(game.NationalPanelLineValue(coach.Nation, 0, attack: true), standInValues);
+    }
+
+    /// <summary>
+    /// A024: [ORIGINAL] Reihenwerte der Mannschaftsfelder (Datei 0x3B65C): (Kondition + Technik) / 2 aus 0x977F ohne Spiel –
+    /// für Länder ohne Bundestrainer Teamwerte + 4 − 4 · Reihe, begrenzt auf 0 … 100.
+    /// </summary>
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    [InlineData(2, true)]
+    public void PanelLineValue_OtherNation_IsTeamValuePlusLineShift(int line, bool attack)
+    {
+        var game = Create();
+        var (defense, attackValues, _) = game.NationalTeamValues(55);
+        var part = attack ? attackValues : defense;
+        var shift = 4 - 4 * line;
+        var expected = (Math.Clamp(part.Condition + shift, 0, 100) + Math.Clamp(part.Technique + shift, 0, 100)) / 2;
+        Assert.Equal(expected, game.NationalPanelLineValue(55, line, attack));
+    }
+
+    /// <summary>
+    /// A024: [ORIGINAL] Land des Bundestrainers: Spielerweg 0x98F8 (Vereinsfeld 0x16 = 6, Datei 0x97DC–0x97E2) aus den
+    /// eingesetzten Spielern der Reihe.
+    /// </summary>
+    [Fact]
+    public void PanelLineValue_CoachNation_FromSquad()
+    {
+        var game = WithCoach();
+        var coach = game.NationalCoach!;
+        coach.AutoFormation();
+        var squad = MatchEngine.NationalSquad(game, coach);
+        var v = MatchEngine.ManagedLineValues(squad, 1, 0, 0, 0, 0, inMatch: false);
+        Assert.Equal((v.Condition + v.Technique) / 2, game.NationalPanelLineValue(coach.Nation, 1, attack: false));
+        Assert.True(game.NationalPanelLineValue(coach.Nation, 1, attack: false) > 0);
+    }
+
+    // ---- Teil 2: Europapokal und Liga-Code --------------------------------------------------------------------------
+
+    /// <summary>
+    /// A077: [ORIGINAL] Penaltyschießen im Minutenweg nur mit K.-o.-Merker (Datei 0x371F0 → 0x32AA3, Zeilen 0/2/3 der Masken
+    /// 1/4/8): Gruppenspiele (Europapokal 0x314A4, WM-Gruppe, Freundschaftsspiel) und Aufstiegsrunde bleiben unentschieden,
+    /// K.-o.-Spiele schießen nach Gleichstand immer (Minutenweg nach der Verlängerung, schneller Weg 0x376F0).
+    /// </summary>
+    [Theory]
+    [InlineData(MatchCompetition.EuropeanCup, false)]
+    [InlineData(MatchCompetition.Relegation, false)]
+    [InlineData(MatchCompetition.Friendly, false)]
+    [InlineData(MatchCompetition.DebCup, true)]
+    [InlineData(MatchCompetition.Playoff, true)]
+    public void MinuteLoop_ShootoutOnlyWithKnockOutFlag(MatchCompetition competition, bool knockOut)
+    {
+        var game = Create();
+        game.Options.ShowDebCup = game.Options.ShowEuropeanCup = true;
+        var ties = 0;
+        for (var seed = 0; seed < 300 && ties < 5; seed++)
+        {
+            OriginalMinutes.MinuteLoopCalls = 0;
+            var report = MatchEngine.PlayWithEvents(game, game.Clubs[3], game.Clubs[4], competition, knockOut, new Random(seed));
+            if (report.HomeGoals != report.AwayGoals)
+                continue;
+            ties++;
+            Assert.Equal(knockOut, report.ShootoutGoals is not null);
+        }
+        Assert.True(ties > 0);
+    }
+
+    /// <summary>
+    /// A004: [ORIGINAL] Die Auslosung 0x341AB vergleicht 0x4D316 (Mittel der Vereinsfelder 0x18–0x1D, Datei 0x34401–0x3440A)
+    /// mit 70, nicht die Datenbankstärke. Gleiche Datenbankstärke, aber hohe Vereinsfelder bei jedem achten Gegner: diese
+    /// werden immer angenommen, die anderen nur zu einem Viertel – sie stehen viel öfter in der Auslosung als ihr Anteil (1/8).
+    /// Vorher (Datenbankstärke) gleich oft.
+    /// </summary>
+    [Fact]
+    public void EuropeanCupDraw_ComparesMeanOfClubFields()
+    {
+        var strong = 0;
+        var foreign = 0;
+        for (var seed = 1; seed <= 20; seed++)
+        {
+            var game = Create(seed);
+            for (var c = EuropeanCup.FirstOpponent; c <= Math.Min(EuropeanCup.LastOpponent, game.Clubs.Count - 1); c++)
+            {
+                var d = (c % 8 == 0 ? 95 : 40) - MatchEngine.ComputerTeamValue(game.Clubs[c]); // Felder 95 bzw. 40
+                game.Clubs[c].TeamValues = new ClubTeamValues(d, d, d, d, 50, 50, 50);
+            }
+            var cup = game.EuropeanCup!;
+            cup.StartSeason(game);
+            foreach (var club in cup.Draw.Where(c => c >= EuropeanCup.FirstOpponent))
+            {
+                foreign++;
+                Assert.Equal(SpectatorRules.Strength(game, game.Clubs[club]) >= EuropeanCup.WeakOpponent, club % 8 == 0);
+                if (club % 8 == 0)
+                    strong++;
+            }
+        }
+        Assert.True(strong * 4 > foreign, $"{strong} von {foreign}"); // erwartet rund 1/3, ohne Wirkung rund 1/8
+    }
+
+    /// <summary>
+    /// A045: [ORIGINAL] Liga-Code der Zuschauerformel = 0x34FD5(Verein) / 2 (Datei 0x54515–0x54534): Europapokal-Gegner
+    /// (Index 64–149) wie die Bundesliga, ein Verein ohne Liga mit Index bis 52 (DGROUP 0x6AD) wie die Oberliga.
+    /// </summary>
+    [Theory]
+    [InlineData(70, 0)]
+    [InlineData(149, 0)]
+    [InlineData(53, 0)]
+    [InlineData(40, 2)]
+    [InlineData(52, 2)]
+    public void SpectatorLeagueCode_OfClubWithoutLeague(int index, int expectedCode)
+    {
+        var game = TestGames.Create();
+        var home = game.LeagueClubs(League.Bundesliga).First();
+        var away = new Club { Index = index, Name = "GAST", Strength = 70, TeamValues = new ClubTeamValues(0, 0, 0, 0, 50, 50, 50) };
+        Assert.Null(away.League);
+        var stadium = new Stadium { Seats = 15_000, Standing = 15_000, TicketPrice = 12 };
+        var actual = game.Spectators(home, away, stadium, 1, new Random(7));
+        var expected = SpectatorRules.Compute(stadium, SpectatorRules.Strength(game, home), SpectatorRules.Strength(game, away),
+            0, 0, 0, expectedCode, 0, ManagerSetup.LevelCount - 1 - 3, new Random(7));
+        Assert.Equal(expected, actual);
+    }
+}

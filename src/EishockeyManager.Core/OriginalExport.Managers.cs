@@ -114,13 +114,13 @@ public sealed partial class GameState
                 OriginalExport.Write32(youth, 0x15 * m + 9 + 4 * k, OriginalExport.Thirds(team.Funding));
             }
         }
-        foreach (var loan in ManagerLoans)
-        {
-            if (loan.Lender >= Managers.Count || loan.Borrower >= Managers.Count)
-                continue;
-            OriginalExport.Write32(rec, ManagerField(loan.Borrower, 0x19B + 4 * loan.Lender), -OriginalExport.Thirds(loan.Amount));
-            OriginalExport.Write32(rec, ManagerField(loan.Lender, 0x19B + 4 * loan.Borrower), OriginalExport.Thirds(loan.Amount));
-        }
+        // [ORIGINAL] Ein Darlehensfeld je Paar, gespiegelt (Buchung Datei 0x591E2–0x5932B: eigenes Feld ± v, das des anderen ∓ v):
+        // der Saldo je Partner (ManagerLoanNet). Spur kader-rest, Teil 3 (A196); vorher je Kredit geschrieben, Kredite in beide
+        // Richtungen überschrieben einander.
+        for (var a = 0; a < Managers.Count && a < OriginalImport.MarketRecord; a++)
+            for (var b = 0; b < Managers.Count && b < OriginalImport.MarketRecord; b++)
+                if (a != b)
+                    OriginalExport.Write32(rec, ManagerField(a, 0x19B + 4 * b), OriginalExport.Thirds(ManagerLoanNet(a, b)));
         // [ORIGINAL] Konto des Nationalteams: Satz 5 +0x18F (DGROUP 0xA055), Drittel-DM.
         OriginalExport.Write32(rec, ManagerField(OriginalImport.NationalRecord, 0x18F), OriginalExport.Thirds(NationalAccount));
     }

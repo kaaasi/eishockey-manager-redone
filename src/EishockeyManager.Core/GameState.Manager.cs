@@ -190,8 +190,7 @@ public sealed partial class GameState
             Finance(manager).Book.NewSeason();
             // [ORIGINAL] 0x563C0: Kostenstufe = Liga der neuen Saison (Spur finanzen-2).
             Finance(manager).CostLeague = Clubs[manager.ClubIndex].League ?? League.Oberliga;
-            // [ORIGINAL] Saisonwechsel 0x55889: Auf-/Abstieg und Neustart der Jugendteams (0x3A13B, Spur geld Teil 3).
-            YouthSeasonChange(manager);
+            // Saisonwechsel der Jugendteams (0x3A13B, Datei 0x55889) seit Spur kader-rest Teil 3 am 29. April in FinishSeason.
         }
         FinanceDay = -1;
     }

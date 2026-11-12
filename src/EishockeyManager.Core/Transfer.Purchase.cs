@@ -41,7 +41,7 @@ public sealed partial class TransferMarket
         var manager = purchase.Buyer;
         var listing = purchase.Listing;
         if (!game.Managers.Contains(manager) || !_listings.Contains(listing) || !IsCurrentListing(game, listing)
-            || purchase.Offer > manager.Money || game.Clubs[manager.ClubIndex].Players.Count >= MaxSquad)
+            || purchase.Offer > manager.Money || IsSquadFull(game, manager, listing.From))
             return NegotiationResult.Unfair;
         var (result, newYears, newSalary) = Contracts.NegotiateTerms(game, manager, listing.Player, purchase.Years,
             purchase.Salary, years, salary, demandFilled);

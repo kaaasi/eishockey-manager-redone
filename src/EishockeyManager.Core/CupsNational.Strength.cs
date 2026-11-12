@@ -46,6 +46,28 @@ public sealed partial class GameState
     }
 
     /// <summary>
+    /// Reihenwert der Mannschaftsfelder in „WM Vorbereitung“ (A024, Spur wettbewerbe-rest). [ORIGINAL] Datei 0x3B5F5–0x3B6C4
+    /// (aus 0x3B4C6): 0x977F(Verein, Reihe, Teil, 0, 0) ohne Spiel, angezeigt (Kondition + Technik) / 2 (Byte 2 + Byte 1 der
+    /// Rückgabe, Datei 0x3B664–0x3B691; Packung Datei 0x9CDE–0x9D13: Kondition, Technik, Form). Land des Bundestrainers
+    /// (Vereinsfeld 0x16 = 6, Datei 0x97D6–0x97E2): Spielerweg 0x98F8 mit Manager 5 (<see cref="MatchEngine.ManagedLineValues"/>
+    /// über <see cref="MatchEngine.NationalSquad"/>); sonst Teamwerte + 4 − 4 · Reihe (<see cref="OriginalMatch.LineValues"/>
+    /// über <see cref="NationalTeamValues"/>). Reihe 0–2, Abwehr bzw. Sturm.
+    /// </summary>
+    public int NationalPanelLineValue(int nation, int line, bool attack)
+    {
+        var part = attack ? 1 : 0;
+        PartValues v;
+        if (NationalCoach is { } coach && coach.Nation == nation)
+            v = MatchEngine.ManagedLineValues(MatchEngine.NationalSquad(this, coach), line, part, 0, 0, 0, inMatch: false);
+        else
+        {
+            var (defense, attackValues, _) = NationalTeamValues(nation);
+            v = OriginalMatch.LineValues(attack ? attackValues : defense, line, attack, 0, 0, 0, inMatch: false);
+        }
+        return (v.Condition + v.Technique) / 2;
+    }
+
+    /// <summary>
     /// Spielstärke eines Nationalteams vor dem Spiel. [ORIGINAL] 0x368B1(Verein, 1, 0, 0, 1) wie in der Spielvorbereitung
     /// 0x8365 (Datei 0x83AD/0x83CA): Gewichtung 1, Minute 0, gleich viele Feldspieler, Reihe 0 auf dem Eis, Energie der
     /// Spielvorbereitung; beim Land des Bundestrainers aus dessen Kader (0x98F8 mit Manager 5, + Länderspiele / 8).

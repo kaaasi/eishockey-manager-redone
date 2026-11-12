@@ -267,11 +267,14 @@ public class NationalteamRunde14Tests
     /// unter 45. Speichern/Laden bleibt stabil.
     /// </summary>
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void Mode4_FourSeasonChanges_WorldCupLoopEverySeason(bool active)
+    [InlineData(false, 3)]
+    // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): aktiv Saat 4 statt 3 – mit dem Spielplan über die Satzfolge (Datei 0x4E7C7) landet Verein 2 bei Saat 3
+    // in Saison 2 trotz Höchstwerten nicht unter den ersten fünf (keine Ernennung, Vorbedingung). Saaten 1–24: nur 3, 7, 9
+    // scheitern. Rückschaltprobe: alter Code mit Saat 4 ebenfalls grün – die Probe hängt an der Saat, die Prüfung bleibt.
+    [InlineData(true, 4)]
+    public void Mode4_FourSeasonChanges_WorldCupLoopEverySeason(bool active, int seed)
     {
-        var game = GameModeTests.Create(3, true, true, 2);
+        var game = GameModeTests.Create(seed, true, true, 2);
         var probe = new FormProbe(NationalTeams.Germany);
         game.Competitions.Insert(0, probe);
         for (var season = 0; season < 5; season++)

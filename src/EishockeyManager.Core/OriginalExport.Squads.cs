@@ -201,7 +201,7 @@ public sealed partial class GameState
         e[0x14] = OriginalExport.Byte(p.Age);
         e[0x15] = OriginalExport.Byte(p.Condition);
         e[0x16] = OriginalExport.Byte(p.Technique);
-        e[0x17] = OriginalExport.Byte(p.Form);
+        e[0x17] = OriginalExport.Byte(p.PoolForm ?? p.Form); // A066 (kader-rest)
         e[0x18] = RoleValue(p.Role);
         e[0x1A] = owner;
         e[0x1D] = (byte)clubSlot;

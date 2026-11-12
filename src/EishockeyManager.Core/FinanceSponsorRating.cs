@@ -168,8 +168,16 @@ public sealed partial class GameState
     /// Runde [0x5CF3], Europapokal 0x20 mit Termin [0x7AF]).
     /// [APPROX] Abbildung auf das Remake: Meisterrunde = Paarungen der laufenden Playoff-Runde oder eine Relegationsrunde
     /// des Vereins (Liste 0x5D3B); Pokal = Paarungen der zuletzt ausgelosten Runde; Europapokal = Gruppe bzw. Endrunde,
-    /// Termin = Zahl der schon gespielten Europapokaltermine. Wann das Original die Teilnahme nach dem Ausscheiden bzw.
-    /// nach dem Finale zurücksetzt, ist nicht geprüft.
+    /// Termin = Zahl der schon gespielten Europapokaltermine.
+    /// A037 (Spur wettbewerbe-rest, Teil 2): [ORIGINAL] Es gibt keine Teilnahmebits, die nach dem Ausscheiden zurückgesetzt würden –
+    /// 0x44A48 sucht den Managerverein (Vereinsfeld 0x16 = DGROUP 0xA70E + 1) jedes Mal in den Paarungslisten: DEB-Pokal (Maske
+    /// 0x08, Datei 0x44D75–0x44E17) in DGROUP 0x5CFB, Plätze 0 … 2 · [0x3B1 + Runde 0x5CF3] − 1, mit Flag 1 auch bei
+    /// entschiedener Paarung (Ergebnis DGROUP 0xD054 = 100, Datei 0x44DC9) – also bis zur nächsten Auslosung wie im Remake;
+    /// Meisterrunde (0x40, Datei 0x44B9A–0x44CDF) zuerst die Aufstiegsgruppen über 0x31CD5 zur Runde 2 · [0x7B0] + ([0xCCA3] &gt; 0)
+    /// + ([0xCCA3] &gt; 2), sonst die Play-off-Liste DGROUP 0x5D3B (mit Flag 1 auch bei entschiedener Serie 0xCCDC/0xCCEA = 100);
+    /// Europapokal (0x20, Datei 0x44CEB–0x44D63) über 0x31CD5 zum Termin [0x7AF] (Gruppen 2/3, ab Termin 6 die Endrunde).
+    /// [APPROX] Was 0x31CD5 (Datei 0x31CD5, 3,5 KB, zugleich Anzeige) nach dem letzten Termin bzw. der letzten Runde liefert,
+    /// ist nicht gelesen; das Remake zählt Gruppe, Endrunde und Aufstiegsgruppe bis zum Saisonwechsel.
     /// </summary>
     public CompetitionParticipation CurrentParticipation(int club)
     {

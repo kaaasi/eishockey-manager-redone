@@ -9,7 +9,10 @@ namespace EishockeyManager.Core;
 /// „acbd“ – belegt im Video (Europacup Gruppe 1: JYP–DEG, Vitkovice–Lion am 4.11.; Lion–JYP, DEG–Vitkovice am
 /// 7.11.; JYP–Vitkovice, DEG–Lion am 9.11.). Sechs Vereine: „abcdef“, „dafcbe“, „afcebd“, „cafbed“, „eabcdf“.
 /// Rundenzahl je Wettbewerb DGROUP 0x4DD8 (5 bzw. 3), bei Vierergruppen doppelt (Hin- und Rückrunde).
-/// [APPROX] Rückrunde: gleiche Paarungen mit getauschtem Heimrecht (Video: zweiter Termin in derselben Zeile).
+/// [ORIGINAL] Rückrunde: gleiche Paarungen mit getauschtem Heimrecht. Die Gruppenpläne entstehen in Datei 0x30427 über die
+/// Spielplanfunktion Datei 0x4E7C7 (Aufruf Datei 0x3068B mit n = 4 bzw. 6, Spieltag 1 … DGROUP 0x4DD8 + 3 · (Wettbewerb > 0),
+/// Schleife Datei 0x3071D–0x30744); für Spieltag d ≥ n zieht sie n − 1 ab und tauscht das Heimrecht (re-nachtrag.md §4,
+/// Spur wettbewerbe-rest Teil 3). Video: zweiter Termin in derselben Zeile.
 /// </remarks>
 public sealed class CupGroup(int number, IReadOnlyList<int> teams)
 {

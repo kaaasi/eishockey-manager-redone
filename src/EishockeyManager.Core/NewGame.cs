@@ -43,10 +43,10 @@ public static class NewGame
         foreach (var league in Enum.GetValues<League>())
         {
             var members = clubs.Where(c => c.League == league).Select(c => c.Index).ToList();
-            // [APPROX] Die Reihenfolge der Vereine spielt für den festen Spielplan keine Rolle (Schedule.Rounds sortiert nach
-            // Vereinsindex); die Mischung bleibt, damit der Zufallsverbrauch des Spielstarts unverändert bleibt.
+            // [APPROX] Das Original mischt hier nicht; die Mischung bleibt nur, damit der Zufallsverbrauch des Spielstarts
+            // unverändert bleibt. Der Plan richtet sich nach der Satzfolge (A113, Schedule.ForSlots).
             Shuffle(members, random);
-            schedules[league] = Schedule.Rounds(members, rounds: 4);
+            schedules[league] = Schedule.ForSlots(StartSlots(clubs, places, league), rounds: 4);
         }
 
         var game = new GameState
@@ -196,6 +196,18 @@ public static class NewGame
     internal static bool OneSeasonSingleManager(GameSetup setup) =>
         setup.Managers.Count == 1 && setup.Duration == GameDuration.EineSaison;
 
+    /// <summary>
+    /// Satzfolge einer Liga beim Spielstart: Startmischung mit den Plätzen nach dem Managertausch (wie
+    /// <see cref="GameState.InitializeLeagueSlots"/>). Passt die Folge nicht zu den Mitgliedern (synthetische Aufbauten), gilt
+    /// die Indexfolge.
+    /// </summary>
+    private static IReadOnlyList<int> StartSlots(IReadOnlyList<Club> clubs, int[] places, League league)
+    {
+        var members = clubs.Where(c => c.League == league).Select(c => c.Index).Order().ToList();
+        var segment = places.Skip((int)league * LeagueSize).Take(LeagueSize).ToList();
+        return segment.Order().SequenceEqual(members) ? segment : members;
+    }
+
     /// <summary>Plätze je Liga. [ORIGINAL] DGROUP 0x7B1 + Liga = 12.</summary>
     private const int LeagueSize = 12;
 
@@ -322,6 +334,23 @@ public static class Schedule
         if (rounds % 2 == 1)
             all.AddRange(two.Take(two.Count / 2).Select(d => new MatchDay(all.Count + 1, d.Matches)));
         return all;
+    }
+
+    /// <summary>
+    /// Liga-Spielplan über die Satzfolge (A113). [ORIGINAL] em.exe Datei 0x4E7C7 schreibt die Paarungen als Satzplatz
+    /// <c>Buchstabe − 'a' + Basis</c> (DGROUP 0x5D7B/0x5D7C); Buchstabe a … l ist also der Platz des Vereins in der Satzfolge
+    /// der Liga (<see cref="GameState.LeagueSlots"/>: Startmischung Datei 0x43A17, Mischung im Saisonwechsel Datei 0x5644E,
+    /// Tausch 0x36169), nicht der Rang seines Vereinsindex. Aufrufer mit der Liga-Tabelle DGROUP 0x2DC: Datei 0x05CA0,
+    /// 0x36B5D, 0x44E22, 0x4E8A3, 0x50B45 (je Spieltag neu berechnet; die Satzfolge ändert sich nur beim Spielstart und im
+    /// Saisonwechsel, das Remake legt den Plan deshalb dann an). Andere Ligagrößen gibt es im Original nicht (DGROUP 0x7B1
+    /// + Liga = 12); für sie gilt wie bisher <see cref="Rounds"/>.
+    /// </summary>
+    /// <param name="slots">Vereine der Liga in Satzfolge (Platz 0 = Buchstabe a).</param>
+    public static IReadOnlyList<MatchDay> ForSlots(IReadOnlyList<int> slots, int rounds)
+    {
+        if (slots.Count != 12 || rounds % 2 != 0)
+            return Rounds(slots, rounds);
+        return OriginalRounds(slots, rounds);
     }
 
     private static IReadOnlyList<MatchDay> OriginalRounds(IReadOnlyList<int> sorted, int rounds)

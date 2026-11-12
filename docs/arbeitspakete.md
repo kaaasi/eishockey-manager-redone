@@ -60,7 +60,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
      Kalendermarken, sonst Video `folge06_01257`/`folge07_03307`).
 - **Abnahme:** je ID roter Test → grün mit Fundstelle oder begründetes `[APPROX]`; Mehrsaisonprobe (4 Wechsel) für Teil 3;
   Abgleich FILE-Paare unverändert oder erwartete Einträge begründet angepasst.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teil 1–3 fertig (PR #790), Review offen, 12.11.2026.
 
 ### Spur `kader-rest` – Spieler, Transfer, Verletzungen
 
@@ -73,7 +73,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
   3. **Geld und Saisonende:** A196 (Schulden gesamt je Partner, 0x463CC/0x57768); Ereignissymbol 9 im Fenster „Saisonende“
      (`FinanceTalent.cs:177`, Core-Teil; die Anzeige macht `ui-rest`).
 - **Abnahme:** wie oben; Mehrsaisonprobe passiv und aktiv für Teile 1–2.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teile 1–3 fertig (#791, 12.11.2026; Teil 1: A130, A066, A232/A238 seit U5 erledigt; Teil 2: A253, F089, A244/A245, A251/A226 belegt mit Restpunkten; Teil 3: A196, Ereignissymbol 9 Core-Teil), Review offen.
 
 ### Spur `ui-rest` – Bildschirmlücken ohne Live-Anzeige
 
@@ -97,7 +97,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 - **Dateigrenzen:** nur `docs/analyse/re-livespiel.md`, `docs/reverse-engineering.md` (eigener Abschnitt); kein Code.
 - **Abnahme:** jede Lesart mit Fundstelle und ausführbarem Beleg (`ndisasm`-Befehl, Bytes), Funktionskarte führt 575C3h danach
   nicht mehr als „unbekannt“ (Probe mit `funktionskarte.py`, Schreiben macht `pruefung-karte` Teil 2).
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5 (Disassembly). **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5 (Disassembly). **Status:** Go 12.11.2026; Teile 1 und 2 fertig (PR #793, 12.11.2026); Erstreview #795 „nein“ (P2-1), Fixlauf P2-1, P3-1…3 behoben 12.11.2026, wartet auf Delta-Prüfung der Leitstelle.
 
 ### Spur `pruefung-karte`
 
@@ -107,7 +107,9 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
   (`--write`, zweiter Lauf ohne Diff), Inventurzeilen aller Spuren, veraltete Zeilen A092/A370 nachziehen (R788-02),
   gesammelte P3 der Runde.
 - **Modell:** Claude Opus 5.5 (Teil 1 Claude Sonnet 5.5 möglich: reine Testergänzung). **Erstreview:** Claude Opus 5.5.
-  **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
+  **Status:** Go 12.11.2026, Start nach Merge des Plans (#788). Teil 1 fertig (PR #794, Review offen): #784 mit Fund
+  „Gast der Spielvorbereitung nach dem Heimverein“ (0x8365, Datei 0x36D12/0x36D49) behoben, #785 belegt (`duell_s2c`,
+  `eisbaeren_f02`).
 
 ### Gesamtreview am Rundenende
 
