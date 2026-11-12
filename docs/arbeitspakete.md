@@ -96,7 +96,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 - **Dateigrenzen:** nur `docs/analyse/re-livespiel.md`, `docs/reverse-engineering.md` (eigener Abschnitt); kein Code.
 - **Abnahme:** jede Lesart mit Fundstelle und ausführbarem Beleg (`ndisasm`-Befehl, Bytes), Funktionskarte führt 575C3h danach
   nicht mehr als „unbekannt“ (Probe mit `funktionskarte.py`, Schreiben macht `pruefung-karte` Teil 2).
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5 (Disassembly). **Status:** Go 12.11.2026, Start nach Merge des Plans (#788).
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5 (Disassembly). **Status:** Go 12.11.2026; in Arbeit (Claude Code, geplanter Lauf 12.11.2026), Teil 1 begonnen.
 
 ### Spur `pruefung-karte`
 
