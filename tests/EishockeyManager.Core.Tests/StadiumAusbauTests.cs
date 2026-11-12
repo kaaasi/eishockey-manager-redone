@@ -51,7 +51,10 @@ public class StadiumAusbauTests
         // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): Saat 3 statt 4 – mit dem Spielplan über die Satzfolge (Datei 0x4E7C7) ist bei Saat 4 der Speicher
         // wieder voll (zwei Meldungen); Saaten 1–24: 2 oder 3 Meldungen. Rückschaltprobe: alter Code mit Saat 3 rot (dort ist
         // der Speicher voll, siehe oben) – die Probe hängt an der Saat.
-        var game = TestGames.Create(3);
+        // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (A130, R15-E2 = C): Saat 2 statt 3 – mit der Startbelastung 80–120 (Datei
+        // 0x42E4C) ist bei Saat 3 der Speicher wieder voll (zwei Meldungen); Saaten 1–24: 13 von 24 mit drei Meldungen. Die Probe hängt
+        // an der Saat.
+        var game = TestGames.Create(2);
         var me = game.ActiveManager;
         me.Money = Rich;
         var stadium = game.Finance(me).Stadium;

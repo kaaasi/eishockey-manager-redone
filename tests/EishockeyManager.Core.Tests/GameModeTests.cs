@@ -453,8 +453,10 @@ public class GameModeTests
     // Kaderplatz (Datei 0x42E4C–0x42E5E) statt Energie 50–80, und die Verletzung senkt die Poolform statt der Form des Kaderplatzes
     // (Datei 0x05B34); andere Spielstärke, Ergebnisse und Zufallsverlauf ab dem ersten Spiel bzw. der ersten Verletzung.
     // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
+    // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
+    // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
     internal const string Mode4Reference =
-        "WorldChampion=63,CupWinner=1,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2329696,400000|WorldChampion=54,CupWinner=14,GermanChampion=19,EuropeanCupWinner=1|2409093,400000|WorldChampion=54,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|2420709,400000|WorldChampion=52,CupWinner=5,GermanChampion=1,EuropeanCupWinner=1|2220776,500000|R1757978480 C55311177";
+        "WorldChampion=55,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=54,CupWinner=16,GermanChampion=1,EuropeanCupWinner=2|2215583,400000|WorldChampion=52,CupWinner=10,GermanChampion=10,EuropeanCupWinner=1|2939679,500000|WorldChampion=54,CupWinner=14,GermanChampion=10,EuropeanCupWinner=1|2915303,500000|WorldChampion=55,CupWinner=5,GermanChampion=4,EuropeanCupWinner=10|2473513,500000|R338253751 C926013504";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

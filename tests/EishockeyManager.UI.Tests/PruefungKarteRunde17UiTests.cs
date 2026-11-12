@@ -24,7 +24,10 @@ public class PruefungKarteRunde17UiTests
     [GameDataFact]
     public void SeasonEndEvents_SecondManager_ShowsOwnMoneyBeforePremium()
     {
-        var (d, game) = StartAtSeasonEnd(nationalCoach: false);
+        // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (A130, R15-E2 = C): Saat 4 statt 5 – mit der Startbelastung 80–120 (Datei
+        // 0x42E4C) und dem Spielplan über die Satzfolge bekommt Manager 1 bei Saat 5 keine Prämie (Rang 3); unter 1–16 haben beide
+        // Manager nur bei 4, 10, 16 eine Prämie. Die Probe hängt an der Saat.
+        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 4);
         var records = game.History[^1].Managers;
         Assert.Equal(2, records.Count);
         Assert.All(records, r => Assert.True(r.Premium > 0, "Probe ohne Prämie prüft nichts"));
@@ -57,14 +60,14 @@ public class PruefungKarteRunde17UiTests
         AssertWindowShowsMoneyBeforePremium(d, game, result.Premium);
     }
 
-    private static (ScreenDriver Driver, GameState Game) StartAtSeasonEnd(bool nationalCoach)
+    private static (ScreenDriver Driver, GameState Game) StartAtSeasonEnd(bool nationalCoach, int seed = 5)
     {
         var d = FlowTests.CreateDriver();
         var setup = new GameSetup();
         int[] clubs = nationalCoach ? [2] : [2, 14];
         for (var i = 0; i < clubs.Length; i++)
             setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = clubs[i] });
-        var game = NewGame.Create(d.Host.Assets.Database, setup, 5);
+        var game = NewGame.Create(d.Host.Assets.Database, setup, seed);
         ManagedSquadsUi.PlayAtTopStrength(game);
         d.Host.Game = game;
         d.Host.Show(new MainMenuScreen(d.Host));

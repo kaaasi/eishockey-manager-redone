@@ -272,8 +272,10 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Kaderplatz (Datei 0x42E4C–0x42E5E) statt Energie 50–80, und die Verletzung senkt die Poolform statt der Form des Kaderplatzes
     // (Datei 0x05B34); andere Spielstärke, Ergebnisse und Zufallsverlauf ab dem ersten Spiel bzw. der ersten Verletzung.
     // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
-    [InlineData(false, "256FDCA8196DDA35")]
-    [InlineData(true, "A9441567EB172CEF")]
+    // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
+    // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
+    [InlineData(false, "6BBABDA99624A671")]
+    [InlineData(true, "91DB01ED23489BC3")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
