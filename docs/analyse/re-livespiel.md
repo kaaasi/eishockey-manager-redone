@@ -703,7 +703,7 @@ Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
   verteilt, legt der Anschluss fest (B2/B3) – Abnahme dort „Spieltag über den Live-Bildschirm = Ergebnis ohne Anzeige“;
   der Minutenschritt selbst ändert keinen Spieltag.
 
-## 13. Umsetzung Spur `livespiel-ui` (Runde 18, B1 und B4)
+## 14. Umsetzung Spur `livespiel-ui` (Runde 18, B1 und B4)
 
 - **B1:** Bausteine in `src/EishockeyManager.UI/LiveWidgets.cs` (Spieluhr 0x51E90, Balken 0x533D0/0x53307, Lampe 0x53453,
   Ziffer 0x53234); „Spiele laufen“ in `MatchDayScreen.DrawRunning` nach Datei 0x37B82–0x37C5C (Text 0x30:0x885 zentriert
@@ -715,7 +715,39 @@ Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
   Minute 48 (Szenario-Bild `02_spiele_laufen_minute_48`). Der Text stand im Remake schon auf Grundlinie 80 (Oberkante 65);
   abweichend waren die Mitte (160 statt 159 − Breite/2), Schatten 53 statt 0, Rahmen 241 statt 0, Füllung 2 statt 3,
   Balken und Ziffern.
-- **0x53234:** Die Ziffern in kb\38 haben Farbe 0 als Grund; `karriere_02315` zeigt das Innere der „0“ in Farbe 3, also
-  lässt 0x50:0xBD3 Farbe 0 durch (`[APPROX]`, aus dem Video geschlossen; 0x13B23 nicht gelesen).
+- **0x53234:** Die Ziffern in kb\38 haben Farbe 0 als Grund; `karriere_02315` zeigt das Innere der „0“ in Farbe 3: 0x50:0xBD3
+  lässt Farbe 0 durch (`[ORIGINAL]` Datei 0x1134C, Fixlauf #820 wie `LiveWidgets.Digit`).
 - **B4:** Spielende 0x51F3D war bereits umgesetzt (`SeasonEndGameOverScreen.DrawGameEnd`, Tests `SpielendeOriginalTests`);
   neu nur das Szenario `live-spielende`. Ein Videobild des Spielendes gibt es in den Reihen nicht.
+
+## 15. Umsetzung Spur `livespiel-ui-2` (Runde 18, B2 und B3)
+
+- **Anschluss (B2, `Core/MatchEngine.LiveDriver.cs`):** Mit eingesetztem `ILiveMatchDriver` (je Thread) läuft jede Paarung mit
+  Anzeigereihe in `PlayWithEvents` über `LiveMatchDay` mit derselben Vorgabe und demselben Zufall; der Treiber rechnet die
+  Minuten. `[APPROX]` Das Remake behält die Reihenfolge „Paarung für Paarung“: Ohne Eingriff ist der Spieltag über den
+  Live-Bildschirm damit genau der ohne Anzeige (Tests `LivespielUi2DriverTests`, `LivespielUi2Tests`); mehrere
+  Managerpaarungen eines Tages laufen nacheinander statt gleichzeitig (Original 0x37A62: alle Paarungen je Minute).
+- **Oberfläche:** `LiveSession` führt `GameState.Continue()` auf eigenem Thread; es rechnet immer nur ein Thread (Übergabe per
+  Semaphore). `MatchDayScreen.Start` zeigt je Halt Banner und `LiveMatchScreen`; „Spiele laufen“ entfällt für live gezeigte
+  Spiele (§1 Schritt 1/2).
+- **Textargumente 0x30:0x885:** Reihenfolge auf dem Stapel Schatten, Farbe, Grundlinie, x2, x1 (Vergleich Datei 0x37BAA
+  „Spiele laufen“). Damit berichtigt sich §5: Kopftext x 0–111, Grundlinie 20, Farbe 0x18 (Datei 0x525F3); Ereignistext
+  Grundlinie 22 (Datei 0x52871); Zusammenfassung in Schrift 3 auf den Grundlinien 10/18/26, Farbe 0x18 (Datei 0x529BC,
+  0x52AD4, 0x52B00). Strafminuten „n min.“ ohne Schatten (0xFF), Farbe 0x10, x 40–74, Grundlinie 5 (Datei 0x52F2F). Videobild
+  `bundestrainer_00247/00248`: drei gelbe Zeilen.
+- **Mundfolge 0x5224E:** aufgefüllt wird mit 9 nur **bis Eintrag 8** (Datei 0x522C2–0x522D5), nicht acht Einträge angehängt;
+  „Chance:“ = [0, 0, 9 × 6, 0xFF] (A und E öffnen den Mund, je das folgende Zeichen übersprungen). Die Abnahme aus §12
+  ([0, 9 × 8, 0xFF]) ist damit berichtigt.
+- **Pause ≤ 0 (#823):** 0x130EE teilt n mit Vorzeichen durch 3 und übergibt das Wort an 0xBBF:0x2C08 (Ziel = BIOS-Ticks
+  0040:006C + Wort, vorzeichenlos); 0xBBF:0x2C4E wartet bis zum Ziel. n = −1/−2 → keine Pause, n = −3/−4 → 0xFFFF Ticks
+  (≈ 1 h). Geschwindigkeiten 62–69 kommen im Original nicht vor (Regler in Zehnern, Lampe 70); das Remake nimmt `[APPROX]`
+  „≤ 0 = keine Pause“.
+- **Abgleich:** Szenario `live-spiel` gegen `duell_s2a_01126` (erste Reihe): Kästen, Reihenhintergrund, Ziffern, Spalten,
+  „0 min.“, Namen und Uhr deckungsgleich (Sichtvergleich); Reporter gegen `bundestrainer_00200/00247/00248`.
+  `[APPROX]` Durchsichtigkeit des Reporterbilds (Farbe 0) aus dem Video; Zuschauerzahl im Heimspiel leer (Remake rechnet sie
+  erst nach dem Spieltag); vergebene Chancen ohne Schützen; Reihenfolge der Meldungen einer Minute Chancen, Strafen,
+  Verletzungen.
+- **B3 Klickwege:** Treffer-Tests 0x534BC/0x53508 und Lampe „Schnelldurchlauf“ wie §10 (`LiveMatchScreen.SliderHit`,
+  `LampHit`, `FastLampHit`), Befehle über `MatchIntervention`. Offen: Kopf/Logo → Aufstellung/Taktik im Spiel mit Neuaufbau
+  0x5434C (die drei Stellen 0x41298, 0x4135E, 0x413E8) und der Regler (Teil 3).
+

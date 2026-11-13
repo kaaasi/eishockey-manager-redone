@@ -108,15 +108,25 @@ public sealed class LivespielUi2Tests
         Assert.True(match.Session.Completed);
     }
 
-    /// <summary>Mit der Vorgabe (Geschwindigkeit 70, Schnelldurchlauf) und Enter kehrt „Tag weiter“ ins Hauptmenü zurück.</summary>
+    /// <summary>
+    /// Mit Enter (Überspringen) kehrt „Tag weiter“ ins Hauptmenü zurück, Spielstand gleich ohne Anzeige; Geschwindigkeit und
+    /// Darstellung bleiben (Sicherung 0xE19B/0xE19C vor dem ersten Bild; vorher setzte ein sofortiges Enter sie auf 0).
+    /// </summary>
     [GameDataFact]
-    public void PlayMatchDay_ReturnsToMenu()
+    public void PlayMatchDay_ReturnsToMenu_EqualsWithoutDisplay()
     {
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
-        for (var i = 0; i < 3; i++)
+        var game = d.Host.Game!;
+        var reference = SaveGame.Load(SaveGame.Save(game)).Game!;
+        for (var i = 0; i < 5; i++)
+        {
             d.PlayMatchDay();
-        Assert.IsType<MainMenuScreen>(d.Host.Current);
+            reference.Continue();
+            Assert.IsType<MainMenuScreen>(d.Host.Current);
+            Assert.Equal(GameOptions.DefaultMatchSpeed, game.Options.MatchSpeed);
+            Assert.Equal(SaveGame.Save(reference), SaveGame.Save(game));
+        }
     }
 
     /// <summary>Darstellung und Spielzustand: Zeichnen des Live-Bildschirms ändert nichts; Spielstand und Reihe stehen in der Tafel.</summary>
@@ -133,5 +143,58 @@ public sealed class LivespielUi2Tests
         for (var i = 0; i < 3; i++)
             live.Draw(d.Surface);
         Assert.Equal(before, SaveGame.Save(d.Host.Game!));
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Treffer-Tests 0x534BC/0x53508 (§10, Abnahme B3): Einsatz über 26 Pixelspalten (52 + d → 4d), Angriff 7 nur am
+    /// Randpixel x0 + 64, Lampe 6 × 6, Lampe „Schnelldurchlauf“ x 3 … 20, y 226 … 238.
+    /// </summary>
+    [Fact]
+    public void HitTests_AsInOriginal()
+    {
+        for (var d = 0; d <= 25; d++)
+            Assert.Equal(4 * d + 1, LiveMatchScreen.SliderHit(52 + d, 22, 52, 22, 25, 100));
+        Assert.Equal(0, LiveMatchScreen.SliderHit(51, 22, 52, 22, 25, 100));
+        Assert.Equal(0, LiveMatchScreen.SliderHit(78, 22, 52, 22, 25, 100));
+        Assert.Equal(0, LiveMatchScreen.SliderHit(60, 29, 52, 22, 25, 100));
+        Assert.Equal(8, LiveMatchScreen.SliderHit(13 + 64, 29, 52, 29, 25, 7));
+        Assert.Equal(7, LiveMatchScreen.SliderHit(13 + 63, 29, 52, 29, 25, 7));
+        Assert.True(LiveMatchScreen.LampHit(26, 19, 21, 14));
+        Assert.False(LiveMatchScreen.LampHit(27, 14, 21, 14));
+        Assert.True(LiveMatchScreen.FastLampHit(3, 226) && LiveMatchScreen.FastLampHit(20, 238));
+        Assert.False(LiveMatchScreen.FastLampHit(2, 230) || LiveMatchScreen.FastLampHit(21, 230) || LiveMatchScreen.FastLampHit(10, 239));
+    }
+
+    /// <summary>
+    /// Klickproben B3 im laufenden Spiel: Einsatz (x0 + 39 + d | 22) → 4d, Angriff am Randpixel → 7, Lampe (x0 + 8 + 8t | 14 + 7j)
+    /// → Reihe j, Lampe „Schnelldurchlauf“ → Geschwindigkeit 70 und zurück.
+    /// </summary>
+    [GameDataFact]
+    public void Clicks_SetCommands()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        d.Host.Game!.Options.MatchSpeed = 0;
+        d.NextDay();
+        while (d.Host.Current is MatchDayScreen)
+            d.Frame();
+        var live = Assert.IsType<LiveMatchScreen>(d.Host.Current);
+        var shown = Assert.Single(live.Session.Shown);
+        var side = shown.HomeTeam!.Managed ? 0 : 1;
+        var team = side == 0 ? shown.HomeTeam! : shown.AwayTeam!;
+        var x0 = LiveMatchScreen.BoardX(side);
+        d.Click(x0 + 39 + 5, 22);
+        Assert.Equal(LiveMatchScreen.ClickResult.Effort, live.LastClick);
+        Assert.Equal(20, team.Effort);
+        d.Click(x0 + 39 + 25, 30);
+        Assert.Equal(7, team.AttackLevel);
+        d.Click(x0 + 8 + 8 + 2, 14 + 7 * 2 + 2);
+        Assert.Equal(2, team.AttackLine);
+        d.Click(10, 230);
+        Assert.True(live.Clock.Lamp);
+        Assert.Equal(LiveClock.FastSpeed, d.Host.Game!.Options.MatchSpeed);
+        d.Click(10, 230);
+        Assert.False(live.Clock.Lamp);
+        Assert.Equal(0, d.Host.Game!.Options.MatchSpeed);
     }
 }

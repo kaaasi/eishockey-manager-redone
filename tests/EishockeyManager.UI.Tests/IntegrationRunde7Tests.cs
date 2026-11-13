@@ -67,7 +67,9 @@ public class IntegrationRunde7Tests : IDisposable
         var game = d.Host.Game!;
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var before = game.Results.Count;
-        for (var guard = 0; game.Results.Count == before && guard < 2000; guard++)
+        // Spur livespiel-ui-2 (B2): Mit dem Live-Spiel stehen die Ergebnisse früherer Paarungen schon vor dem Ende des Tages in
+        // Results; erst nach der Rückkehr ins Hauptmenü ist der Spieltag samt eigener Paarung gerechnet.
+        for (var guard = 0; (game.Results.Count == before || d.Host.Current is not MainMenuScreen) && guard < 2000; guard++)
             d.Advance();
         var own = game.Results.Skip(before).Single(r => r.Home == club.Index || r.Away == club.Index);
         var goals = own.Home == club.Index ? own.HomeGoals : own.AwayGoals;

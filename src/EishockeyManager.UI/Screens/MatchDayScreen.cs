@@ -13,7 +13,7 @@ namespace EishockeyManager.UI.Screens;
 /// 4. zurück ins Hauptmenü – oder am 29. April der Bildschirm „Saisonende“.
 /// Klick, Enter oder die Vorspultaste oben rechts überspringen (keine Leertaste, Entscheidung Nutzer 31.10.2026, #205).
 /// <para>
-/// Live-Spiel (Spur livespiel-ui-2, B2): Über <see cref="Start"/> läuft „Tag weiter“ als <see cref="LiveSession"/>. Hält der
+/// Live-Spiel (Spur livespiel-ui-2, B2): Mit einer <see cref="LiveSession"/> läuft „Tag weiter“ als <see cref="LiveSession"/>. Hält der
 /// Spielkern an einer Managerpaarung mit Anzeigereihe, zeigt der Bildschirm das Banner ihres Wettbewerbs und dann den
 /// Live-Bildschirm (<see cref="LiveMatchScreen"/>), der die Minuten treibt; danach geht es mit dem nächsten Halt bzw. den
 /// übrigen Schritten weiter. „Spiele laufen“ und das Banner entfallen für die live gezeigten Spiele ([ORIGINAL] §1 Schritt 1/2:
@@ -61,19 +61,17 @@ public sealed class MatchDayScreen : Screen
         _steps = steps ?? [];
     }
 
-    private MatchDayScreen(ScreenHost host, MainMenuScreen menu, LiveSession session) : base(host)
+    /// <summary>
+    /// „Tag weiter“ mit Live-Spiel: <paramref name="session"/> ist das schon gestartete <see cref="GameState.Continue"/>
+    /// (<see cref="LiveSession.Start"/> in der Eingabe des Hauptmenüs); die Zeit vergeht dort und in den Minuten, die der
+    /// Live-Bildschirm anstößt – nicht beim Öffnen dieses Bildschirms.
+    /// </summary>
+    public MatchDayScreen(ScreenHost host, MainMenuScreen menu, LiveSession session) : base(host)
     {
         _menu = menu;
         _session = session;
         _steps = [];
     }
-
-    /// <summary>
-    /// „Tag weiter“ mit Live-Spiel: startet <see cref="GameState.Continue"/> als <see cref="LiveSession"/> (die Zeit vergeht in
-    /// diesem Aufruf, also in der Eingabe des Hauptmenüs, und in den Minuten, die der Live-Bildschirm anstößt).
-    /// </summary>
-    public static MatchDayScreen Start(ScreenHost host, MainMenuScreen menu) =>
-        new(host, menu, LiveSession.Start(host.Game!));
 
     /// <summary>Die Schritte des letzten „Tag weiter“ (für Tests); mit Live-Spiel erst, wenn der Tag fertig ist.</summary>
     public IReadOnlyList<SeasonStep> Steps => _session?.Steps ?? _steps;

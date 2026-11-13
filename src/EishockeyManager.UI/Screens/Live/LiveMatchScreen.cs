@@ -13,11 +13,11 @@ namespace EishockeyManager.UI.Screens.Live;
 /// <item>[ORIGINAL] Ablauf je Minute (Datei 0x37C6B–0x37CBD, <see cref="LiveClock.Minute"/>): Uhr auf die Minute, Zwinkern
 ///   und Pause, dann die Rechnung der Minute (Reporter-Meldungen der Chancen und Strafen), am Minutenende die Anzeigetafel.
 ///   Nach Minute 60 bzw. 70 unter Geschwindigkeit 70 auf einen Mausklick warten (Datei 0x3855F–0x38587).</item>
-/// <item>[APPROX] Pause n ≤ 0 (Geschwindigkeit 62 … 69 mit Zwinkern: 30 − 31 … 30 − 34, #823) = keine Pause:
-///   <c>50h:19Eh</c> teilt n (Langwort mit Vorzeichen, 0x227C) durch 3 und wartet auf den Tickzähler (0xBBF:0x2C08); ein
-///   negativer Wert wäre im Original eine sehr lange Wartezeit oder sofort vorbei – nicht nachgeprüft, die Geschwindigkeit
-///   steht im Original ohnehin nur auf Zehnern (Regler 0x2CD1C, <see cref="GameOptions.SetMatchSpeed"/>), 62 … 69 kommen
-///   also nicht vor.</item>
+/// <item>[APPROX] Pause n ≤ 0 (Geschwindigkeit 62 … 69 mit Zwinkern: 30 − 31 … 30 − 34, #823) = keine Pause. [ORIGINAL]
+///   <c>50h:19Eh</c> (Datei 0x130EE) teilt n mit Vorzeichen durch 3 (0x0:0x47C) und übergibt das Wort an 0xBBF:0x2C08: Ziel =
+///   BIOS-Tickzähler 0040:006C + Wort (vorzeichenlos, <c>adc dx, 0</c>); 0xBBF:0x2C4E meldet fertig, sobald der Zähler das Ziel
+///   erreicht. n = −1, −2 ergeben 0 (keine Pause), n = −3, −4 ergeben 0xFFFF Ticks (≈ 1 Stunde). Solche Werte kommen im
+///   Original nicht vor: Der Regler setzt nur Zehner (Datei 0x2CD1C, <see cref="GameOptions.SetMatchSpeed"/>), die Lampe 70.</item>
 /// <item>[APPROX] Enter oder Escape rechnen die restlichen Minuten ohne Anzeige (wie die Vorspultaste in
 ///   <see cref="MatchDayScreen"/>, Entscheidung Nutzer 31.10.2026, #205); die Leertaste (Spielmodus-Optionen 0x2CD1C) ist
 ///   nicht angeschlossen.</item>
@@ -80,6 +80,7 @@ public sealed class LiveMatchScreen : Screen
         var wink = WinkRandoms.GetValue(host.Game!, _ => new LRandom());
         _clock = new LiveClock(host.Game!.Options, wink);
         _reporter = new LiveReporter(host.Game!.Options, wink);
+        _clock.BeginMatchDay(); // [ORIGINAL] Datei 0x36B65–0x36B77 (vor dem ersten Bild, auch wenn sofort übersprungen wird)
     }
 
     private GameState Game => Host.Game!;
@@ -95,6 +96,8 @@ public sealed class LiveMatchScreen : Screen
 
     public LiveClock Clock => _clock;
 
+    public LiveSession Session => _session;
+
     public LiveReporter ReporterState => _reporter;
 
     public override void Enter() => _script ??= Script().GetEnumerator();
@@ -106,6 +109,8 @@ public sealed class LiveMatchScreen : Screen
             return;
         if (input.Pressed(Key.Enter) || input.Pressed(Key.Escape))
             _skip = true;
+        if (!WaitingForClick && (input.LeftClick || input.RightClick))
+            Click(input.MouseX, input.MouseY, input.RightClick);
         _script ??= Script().GetEnumerator();
         if (_skip || !_script.MoveNext())
             Finish();
@@ -127,7 +132,6 @@ public sealed class LiveMatchScreen : Screen
 
     private IEnumerable<bool> Script()
     {
-        _clock.BeginMatchDay();
         yield return true; // [ORIGINAL] 0x5353C: Bild steht (einblenden)
         while (_session.Day is { } day && day.Running && day.Minute < LiveMatchDay.LastMinute)
         {
@@ -155,6 +159,80 @@ public sealed class LiveMatchScreen : Screen
             }
         }
     }
+
+    /// <summary>
+    /// [ORIGINAL] Treffer-Test Schieber 0x534BC (Datei 0x534D7–0x534FC): x ≤ mx ≤ x + Breite und y ≤ my ≤ y + 6 →
+    /// (mx − x) · n / Breite + 1, sonst 0.
+    /// </summary>
+    public static int SliderHit(int mx, int my, int x, int y, int width, int n) =>
+        mx >= x && mx <= x + width && my >= y && my <= y + 6 ? (mx - x) * n / width + 1 : 0;
+
+    /// <summary>[ORIGINAL] Treffer-Test Lampe 0x53508 (Datei 0x53518–0x53535): x ≤ mx ≤ x + 5 und y ≤ my ≤ y + 5.</summary>
+    public static bool LampHit(int mx, int my, int x, int y) => mx >= x && mx <= x + 5 && my >= y && my <= y + 5;
+
+    /// <summary>[ORIGINAL] Lampe „Schnelldurchlauf“ (Datei 0x38DBB–0x38DD9): 2 &lt; x &lt; 21 und 225 &lt; y &lt; 239.</summary>
+    public static bool FastLampHit(int mx, int my) => mx is > 2 and < 21 && my is > 225 and < 239;
+
+    /// <summary>Was ein Klick im Eingriffsmenü auslöst (für Tests und den Kopf/Logo-Weg).</summary>
+    public enum ClickResult { None, Lamp, Effort, Attack, Line, Crest }
+
+    /// <summary>Letzter Klick im Eingriffsmenü.</summary>
+    public ClickResult LastClick { get; private set; }
+
+    /// <summary>
+    /// Eingriffsmenü Datei 0x38D96 (§10, B3): Lampe „Schnelldurchlauf“, dann je Reihe p (45p &lt; y &lt; 45p + 43) mit
+    /// Managerverein auf der angeklickten Seite (x &gt; 160 Gast) Einsatz, Angriff, Reihe auf dem Eis und Kopf/Logo.
+    /// [APPROX] Das Original fragt die Maus in der Minutenschleife je Managerpaarung ab, das Remake je Bild; die Befehle wirken
+    /// in beiden Fällen ab der nächsten Rechnung (<see cref="MatchIntervention"/>).
+    /// </summary>
+    private void Click(int mx, int my, bool right)
+    {
+        LastClick = ClickResult.None;
+        if (FastLampHit(mx, my))
+        {
+            _clock.ToggleLamp(); // [ORIGINAL] Datei 0x38DE1–0x38E19
+            LastClick = ClickResult.Lamp;
+        }
+        for (var p = 0; p < Math.Min(_session.Shown.Count, LiveScoreboard.MaxRows); p++)
+        {
+            if (my <= RowStep * p || my >= RowStep * p + 43)
+                continue;
+            var match = _session.Shown[p];
+            if (!match.Running)
+                continue; // [APPROX] fertige Paarung des Remakes (nacheinander gerechnet) nimmt keine Befehle mehr
+            var side = mx > 160 ? 1 : 0;
+            if ((side == 0 ? match.HomeTeam : match.AwayTeam) is not { Managed: true } team)
+                continue;
+            var x0 = BoardX(side);
+            var xk = CrestX(side);
+            if (SliderHit(mx, my, x0 + 39, RowStep * p + 22, 25, MatchIntervention.MaxEffort) is > 0 and var e)
+            {
+                MatchIntervention.SetEffort(team, e - 1);
+                LastClick = ClickResult.Effort;
+            }
+            if (SliderHit(mx, my, x0 + 39, RowStep * p + 29, 25, MatchIntervention.MaxAttack) is > 0 and var a)
+            {
+                MatchIntervention.SetAttack(team, a - 1);
+                LastClick = ClickResult.Attack;
+            }
+            for (var t = 0; t < 2; t++)
+            for (var j = 0; j < MatchIntervention.LineCount; j++)
+            {
+                if (LampHit(mx, my, x0 + 8 + 8 * t, RowStep * p + 14 + 7 * j) && MatchIntervention.SetLine(team, t, j))
+                    LastClick = ClickResult.Line;
+            }
+            if (mx >= xk && mx <= xk + 39)
+            {
+                // [ORIGINAL] Datei 0x38FC0–0x38FED → 0x5434C: Aufstellung (links) bzw. Taktik (rechts) im Spiel.
+                // Offen (Fortsetzung B3): Bildschirme mit Kennzeichen „im Spiel“ und Neuaufbau.
+                LastMode = MatchIntervention.ModeFor(right);
+                LastClick = ClickResult.Crest;
+            }
+        }
+    }
+
+    /// <summary>Modus des letzten Klicks auf Kopf/Logo (Aufstellung/Taktik).</summary>
+    public InterventionMode? LastMode { get; private set; }
 
     /// <summary>
     /// Meldungen einer Minute (§5): Chancen der Reihe (Torszene 0x53C57 → 0x52520 Ereignis 0/1), Strafen (0x35818 → Ereignis
