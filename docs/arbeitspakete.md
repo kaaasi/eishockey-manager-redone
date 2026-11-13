@@ -75,7 +75,7 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
      `Formats/GoalScene.cs`, `Core/MatchEngine.GoalScene.cs`).
 - **Abnahme:** wie §12; zusätzlich Mehrsaisonprobe unverändert grün und Abgleich-Paare unverändert (die Anzeige ändert ohne
   Eingriff keinen Spielwert außer den Zügen nach R18-D3; dafür erwartete Einträge begründet).
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 13.11.2026.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** A1–A4 fertig in #814 (13.11.2026), wartet auf Erstreview.
 
 ### Spur `livespiel-ui` – Bausteine und Spielende (Spur B, Teile B1, B4)
 
