@@ -34,7 +34,8 @@ public class FinanceWerbungScreenTests
         game.Ads(me).Offers[AdSlotKind.Eisflaeche2][0] = new SponsorOffer(AdSlotKind.Eisflaeche2, 0, 12, 1, 2_500);
 
         Click(d, AdvertisingScreen.IceBoardRect(0));
-        Assert.Equal(new AdSlot(AdSlotKind.Eisflaeche), screen.SelectedSlot);
+        // #834 (R15-E2 = C): gesperrte Tafel bleibt ohne Auswahl, em.exe 0x2B56A–0x2B5D3 und 0x2B6D6–0x2B70E.
+        Assert.Null(screen.SelectedSlot);
         Click(d, AdvertisingScreen.ArrowDown);
         Assert.Null(screen.CurrentOffer());
 

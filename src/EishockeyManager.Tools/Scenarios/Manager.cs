@@ -54,7 +54,7 @@ internal static class ManagerScenarios
         d.Click(10, 10);
         Click(d, AdvertisingScreen.JerseyPanel); AcceptFirstOffer(d, screen); d.Save("06_trikot");
         Click(d, AdvertisingScreen.TvPanel); AcceptFirstOffer(d, screen); d.Save("07_fernsehen");
-        Click(d, AdvertisingScreen.IcePanel); AcceptFirstOffer(d, screen); d.Save("08_eisflaeche");
+        Click(d, AdvertisingScreen.IceBoardHit(0)); AcceptFirstOffer(d, screen); d.Save("08_eisflaeche");
         Click(d, AdvertisingScreen.BoardRect(2)); AcceptFirstOffer(d, screen); d.Save("09_zweite_bande");
     }
 
