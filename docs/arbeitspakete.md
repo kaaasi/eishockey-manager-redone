@@ -86,7 +86,7 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
   1. **B1 Bausteine (L3):** Spieluhr 0x51E90, Balken 0x53307/0x533D0, Lampe 0x53453, Ziffern 0x53234 in neu `UI/LiveWidgets.cs`;
      „Spiele laufen“ in `MatchDayScreen` darauf umstellen (Balken zweizeilig, 4 px je Minute, Ziffernabstand 10, Grundlinie 80).
   2. **B4 Spielende (L8):** 0x51F3D in `SeasonEndGameOverScreen` (schwarz, „Das wars...“ 100, „Carpe diem !“ 140, Klick).
-- **Abnahme:** `karriere_02315` (zwei volle Balken, dritter 32 px, „08“ ab x = 96), Bildschirmfoto-Abläufe, Pixelvergleich mit
+- **Abnahme:** `karriere_02315` (Minute 08: oberer Balken 32 px gelb, die anderen rot, „08“ ab x = 96), Bildschirmfoto-Abläufe, Pixelvergleich mit
   Fundstelle; Textpositionen Spielende.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** B1 und B4 fertig (PR #811, 13.11.2026), wartet
   auf Erstreview; Abnahme `karriere_02315` korrigiert (Minute 08, `re-livespiel.md` §13).

@@ -115,9 +115,10 @@ public static class LiveWidgets
     /// Ziffer lässt die Zelle stehen), Zelle mit Durchsichtigkeit 0xC0 ans Ziel.
     /// </summary>
     /// <remarks>
+    /// [ORIGINAL] Dass 0x50:0xBD3 Farbe 0 durchlässt, belegt Datei 0x1134C (zusätzlich `karriere_02315`: Inneres der „0“ in
+    /// Farbe 3, nicht schwarz).
     /// [APPROX] Stil 0 kopiert im Original aus dem Hintergrundpuffer (Fläche DGROUP 0xC12B), das Remake aus dem Ziel selbst:
-    /// Bildschirme zeichnen in jedem Bild den Hintergrund neu, die Stelle enthält also keine alte Ziffer. Dass 0x50:0xBD3
-    /// Farbe 0 durchlässt, ist aus dem Video geschlossen (`karriere_02315`: Inneres der „0“ in Farbe 3, nicht schwarz).
+    /// Bildschirme zeichnen in jedem Bild den Hintergrund neu, die Stelle enthält also keine alte Ziffer.
     /// </remarks>
     public static void Digit(Surface s, Assets assets, int style, int digit, int x, int y)
     {

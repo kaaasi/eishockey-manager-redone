@@ -59,13 +59,13 @@ public class SpieleLaufenOriginalTests
         var s = d.Surface;
         var digits = d.Host.Assets.Image(LiveWidgets.DigitsGraphic);
 
-        // [ORIGINAL] 0x51EE9–0x51F33: „0“ bei (96 | 196), „8“ bei (106 | 196); Stil 1: Zellgrund Farbe 3.
+        // [ORIGINAL] 0x51EE9–0x51F33: „0“ bei (96 | 196), „8“ bei (106 | 196); Stil 1: Zellgrund Farbe 3 (Datei 0x53245).
         foreach (var (digit, x0) in new[] { (0, 96), (8, 106) })
             for (var y = 0; y < 10; y++)
                 for (var x = 0; x < 8; x++)
                 {
                     var p = digits.Pixels[y * digits.Width + digit * 8 + x];
-                    Assert.Equal(p == 0 ? LiveWidgets.DigitCellFill : p, At(s, x0 + x, 196 + y));
+                    Assert.Equal(p == 0 ? (byte)3 : p, At(s, x0 + x, 196 + y)); // 3: [ORIGINAL] 0x53245
                 }
         // zwischen den Ziffern (x 104, 105) und davor (x 95) bleibt die Füllung des Kastens
         Assert.Equal((byte)3, At(s, 95, 200));
