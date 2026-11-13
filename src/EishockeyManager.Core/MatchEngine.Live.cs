@@ -62,15 +62,54 @@ public static partial class MatchEngine
     public static MatchReport PlayWithEvents(GameState game, Club home, Club away, MatchCompetition competition,
         bool knockOut, Random random)
     {
+        // Spur livespiel-kern A5: Vorbereitung und Abschluss gemeinsam mit dem Minutenschritt (MatchEngine.LiveStep.cs),
+        // herausgelöst ohne Verhaltensänderung (gleiche Züge in gleicher Reihenfolge).
+        var match = BeginMatch(game, home, away, competition, knockOut, random);
+        if (match.Report is null)
+            FinishMinuteLoop(match, PlayWithScoreboard(match.Row,
+                () => OriginalMinutes.Play(match.HomeTeam, match.AwayTeam, match.Rules, random), game.Options, match.DayActive));
+        return EndMatch(match);
+    }
+
+    /// <summary>
+    /// Vorbereitete Paarung (Spur livespiel-kern A5): Ergebnis der Vorbereitung von <see cref="PlayWithEvents"/> bis vor die
+    /// Minutenschleife. <see cref="Report"/> ist bei Spielwertung und schnellem Weg schon gesetzt, sonst null.
+    /// </summary>
+    internal sealed class MatchSetup
+    {
+        public required GameState Game { get; init; }
+        public required Club Home { get; init; }
+        public required Club Away { get; init; }
+        public required MatchCompetition Competition { get; init; }
+        public required bool KnockOut { get; init; }
+        public required Random Random { get; init; }
+        public LiveTeam HomeTeam { get; init; } = null!;
+        public LiveTeam AwayTeam { get; init; } = null!;
+        public MatchRules Rules { get; init; }
+        public LiveScoreboardRow? Row { get; init; }
+
+        /// <summary>Live-Anzeige am Spieltag (DGROUP 0x5A56) beim Anlegen dieser Paarung.</summary>
+        public bool DayActive { get; init; }
+
+        public bool Forfeit { get; init; }
+        public MatchReport? Report { get; set; }
+    }
+
+    /// <summary>Gemeinsame Vorbereitung von <see cref="PlayWithEvents"/> und Minutenschritt (bis vor die Minutenschleife).</summary>
+    internal static MatchSetup BeginMatch(GameState game, Club home, Club away, MatchCompetition competition, bool knockOut,
+        Random random)
+    {
         EnsureTeamValues(game);
         if (home.ForfeitsMatch || away.ForfeitsMatch)
         {
             var forfeit = home.ForfeitsMatch
                 ? new MatchReport { HomeGoals = 0, AwayGoals = 2, Forfeit = true }
                 : new MatchReport { HomeGoals = 2, AwayGoals = 0, Forfeit = true };
-            CreditPlayers(game, home, away, competition, forfeit, random);
-            AfterMatch(home, away, competition, forfeit, random);
-            return forfeit;
+            return new MatchSetup
+            {
+                Game = game, Home = home, Away = away, Competition = competition, KnockOut = knockOut, Random = random,
+                Forfeit = true, Report = forfeit,
+            };
         }
         var homeManaged = IsManaged(game, home);
         var awayManaged = IsManaged(game, away);
@@ -80,10 +119,12 @@ public static partial class MatchEngine
             Playoff: competition is MatchCompetition.Playoff or MatchCompetition.Relegation,
             KnockOut: knockOut,
             ManagerMatch: managerMatch);
+        // Spur livespiel-kern A1: [ORIGINAL] Anzeigereihe aus der Spielabrechnung 0x544C0 (nach der Spielwertung, vor dem Spiel).
+        var scoreboardRow = ScoreboardRow(game, home, away, competition);
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
         PrepareMatch(game, home, away, homeTeam, awayTeam);
-        MatchReport report;
+        MatchReport? report = null;
         // [ORIGINAL] Datei 0x3702E–0x37085: Pokalspiel mit eingeschaltetem Anzeigeschalter (DGROUP 0x227 DEB-Pokal, Code 6;
         // 0x228 Europapokal, Code 3/5; 0x229 WM-Gruppe, Code 8; GameOptions.CupMatchUsesMinuteLoop) läuft durch die
         // Minutenschleife 0x37088, sonst der schnelle Weg 0x3731F. Die WM-Endrunde (Code 10, 0x31017) prüft keinen Schalter
@@ -125,29 +166,46 @@ public static partial class MatchEngine
                 report.HomeGoals = report.AwayGoals = tie;
             }
         }
-        else
+        return new MatchSetup
         {
-            report = OriginalMinutes.Play(homeTeam, awayTeam, rules, random);
-            if (knockOut && report.HomeGoals == report.AwayGoals)
-            {
-                // Teil 5: [ORIGINAL] nach der Verlängerung noch unentschieden → Penaltyschießen 0x3901B (aus 0x32AA3).
-                // A077 (Spur wettbewerbe-rest, Teil 2): [ORIGINAL] Zuordnung der Zeilen DGROUP 0x5C4B + 32 · Zeile: 0x36B5D ruft
-                // 0x32AA3 nur mit K.-o.-Merker (Argument 3, Datei 0x371F0) – erst ohne Schalter (Gleichstand + 30 markieren,
-                // 0x37211), nach der Verlängerung 61–70 mit Schalter 1 (0x3728B → 0x32DE3–0x32DF5). Mit K.-o.-Merker rufen nur
-                // DEB-Pokal (Maske 1 = Zeile 0, Datei 0x5504A/0x35E81), Play-offs (Maske 4 bzw. 0xC = Zeile 2, Datei
-                // 0x31A28/0x31A3C/0x31ABC) und WM-Endrunde (Maske 8 = Zeile 3, Datei 0x3101C); Zeile 3 in Maske 0xC (Aufstiegsrunde)
-                // überspringt 0x32D13–0x32D1F, Europapokal (0x314A4), WM-Gruppe (0x30F58) und Freundschaftsspiel (0x30395)
-                // haben keinen K.-o.-Merker. Das ist genau knockOut des Remakes (Liga, Aufstiegsrunde, Gruppen: false).
-                // [APPROX] Plätze mit Ergebnisbyte > 0x63 (DGROUP 0xD014/0xCCB2, Paarung ohne Spiel) führt das Remake nicht.
-                var goals = OriginalMinutes.Shootout(random);
-                report.ShootoutGoals = goals;
-                report.ShootoutHomeWins = goals.Home > goals.Away;
-            }
+            Game = game, Home = home, Away = away, Competition = competition, KnockOut = knockOut, Random = random,
+            HomeTeam = homeTeam, AwayTeam = awayTeam, Rules = rules, Row = scoreboardRow,
+            DayActive = game.LiveScoreboard?.Active ?? false, Report = report,
+        };
+    }
+
+    /// <summary>Nach der Minutenschleife: Bericht übernehmen, bei Gleichstand im K.-o.-Spiel Penaltyschießen.</summary>
+    internal static void FinishMinuteLoop(MatchSetup match, MatchReport report)
+    {
+        match.Report = report;
+        if (match.KnockOut && report.HomeGoals == report.AwayGoals)
+        {
+            // Teil 5: [ORIGINAL] nach der Verlängerung noch unentschieden → Penaltyschießen 0x3901B (aus 0x32AA3).
+            // A077 (Spur wettbewerbe-rest, Teil 2): [ORIGINAL] Zuordnung der Zeilen DGROUP 0x5C4B + 32 · Zeile: 0x36B5D ruft
+            // 0x32AA3 nur mit K.-o.-Merker (Argument 3, Datei 0x371F0) – erst ohne Schalter (Gleichstand + 30 markieren,
+            // 0x37211), nach der Verlängerung 61–70 mit Schalter 1 (0x3728B → 0x32DE3–0x32DF5). Mit K.-o.-Merker rufen nur
+            // DEB-Pokal (Maske 1 = Zeile 0, Datei 0x5504A/0x35E81), Play-offs (Maske 4 bzw. 0xC = Zeile 2, Datei
+            // 0x31A28/0x31A3C/0x31ABC) und WM-Endrunde (Maske 8 = Zeile 3, Datei 0x3101C); Zeile 3 in Maske 0xC (Aufstiegsrunde)
+            // überspringt 0x32D13–0x32D1F, Europapokal (0x314A4), WM-Gruppe (0x30F58) und Freundschaftsspiel (0x30395)
+            // haben keinen K.-o.-Merker. Das ist genau knockOut des Remakes (Liga, Aufstiegsrunde, Gruppen: false).
+            // [APPROX] Plätze mit Ergebnisbyte > 0x63 (DGROUP 0xD014/0xCCB2, Paarung ohne Spiel) führt das Remake nicht.
+            var goals = OriginalMinutes.Shootout(match.Random);
+            report.ShootoutGoals = goals;
+            report.ShootoutHomeWins = goals.Home > goals.Away;
         }
-        KeepMatchFields(home, homeTeam);
-        KeepMatchFields(away, awayTeam);
-        CreditPlayers(game, home, away, competition, report, random);
-        AfterMatch(home, away, competition, report, random);
+    }
+
+    /// <summary>Gemeinsamer Abschluss: Vereinsfelder halten, Spielerzähler, Tagesform (Spielwertung ohne Vereinsfelder).</summary>
+    internal static MatchReport EndMatch(MatchSetup match)
+    {
+        var report = match.Report ?? throw new InvalidOperationException("Paarung ist noch nicht fertig gerechnet.");
+        if (!match.Forfeit)
+        {
+            KeepMatchFields(match.Home, match.HomeTeam);
+            KeepMatchFields(match.Away, match.AwayTeam);
+        }
+        CreditPlayers(match.Game, match.Home, match.Away, match.Competition, report, match.Random);
+        AfterMatch(match.Home, match.Away, match.Competition, report, match.Random);
         return report;
     }
 

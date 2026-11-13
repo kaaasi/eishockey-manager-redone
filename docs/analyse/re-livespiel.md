@@ -615,3 +615,90 @@ Figurzuordnung und des Zeichnens (`48h:4ECFh`, `kb\246`). Dateien: neu `Screens/
 Abhängigkeiten: B2 braucht A1, B3 braucht A3, C braucht A4. A2 und B1 sind unabhängig. Gemeinsame Dateien:
 `MatchEngine.Live.cs` (A1–A4 nur Anschlüsse), `MatchDayScreen.cs` (B1), `GameOptionsScreen.cs` (Regler der
 Geschwindigkeit, nur falls A2 es braucht).
+
+## 13. Spur `livespiel-kern` (Runde 18)
+
+Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
+
+### A1 Anzeigezähler (`Core/MatchEngine.Scoreboard.cs`)
+
+- **Reihenliste:** 0x36B5D löscht vor den Spielen `0x233` (0xFF), `0xA88D` (0xFF), `0xA75C` (0), `0xA762` und `0x5A56`
+  (Datei 0x36B8E–0x36BC9) sowie 0x54 Byte ab `0xA839` (Datei 0x36BCC–0x36BDB). Die Spielabrechnung 0x544C0 (je Paarung vor
+  dem Spiel, Datei 0x36DBD/0x36F9C) hängt nach der Managerschleife eine Reihe an, wenn Heim- oder Gastverein Vereinsfeld
+  0x34 Bit 7 hat (Datei 0x54BF7–0x54C23), und setzt `0x5A56` = 1 (Datei 0x54C63–0x54C94); Spielwertungen kehren vorher
+  zurück (Datei 0x54599, 0x547BA). Keine Grenze bei vier.
+- **Markierung (Vereinsfeld 0x34 Bits 6–7):** 0xAE2B setzt den Modus 0/1/2; im Modus 2 höchstens vier Vereine (getrennt für
+  Vereine 0 … 0x95 und Länderteams ab `DGROUP 0x6AD`), mit Verdrängen (Argument 2 ≠ 0) wird ein markierter Verein ohne
+  Manager auf Modus 1 gesetzt, sonst abgelehnt (Datei 0xAE5F–0xAF4C). Aufrufer: Spielstart 0x28165 je Manager Modus 2 mit
+  Verdrängen (Datei 0x298EA, 0x29C1C), Vereinsfenster dritter Knopf (Datei 0x4E46A, Verdrängen nur für Managervereine),
+  WM-Option 12 für das eigene Land (Datei 0x2D3FD), Ernennung zum Bundestrainer (Datei 0x55457). Der Lader setzt die Bits
+  auf 0 (Datei 0x2EFA8). `[APPROX]` Remake: markiert = `MatchEngine.IsManaged` (Umschalter fehlen).
+- **Zähler:** Torszene 0x53C57 sucht die Reihe in `0xA88D` und zählt nur für p < 4, Minute ≤ 60 und Art < 2 (Datei
+  0x53C9F–0x53D1D); Drittel `0xA838` = 0/1/2 aus 0x36B5D (Datei 0x37023, 0x3719D, 0x371C4). Der Abschluss 0xA484 ruft die
+  Szene mit Art = Tor/vergeben, wenn die Paarung eine Reihe hat (Datei 0xAB47–0xAB90). Strafminuten: 0x35818 addiert
+  Belegung & 7 für jede Reihe mit dem Verein in `0x233` (Datei 0x3598A–0x359EE), vor der Spielerwahl.
+- **Anschluss:** `MatchEngine.PlayWithEvents` legt die Reihe nach der Spielwertung an; der einzige Haken in
+  `MatchEngine.Minutes.cs` ist `OriginalMinutes.GoalScene` an der Stelle 0xAB90 (Teil A4 wählt dort die Szene).
+
+### A2 Ablaufmodell (`Core/LiveClock.cs`)
+
+- **Minute** (Datei 0x37C6B–0x37CBD): nur mit Anzeige (Argument der Drittelschleife), `[0x1DB]` = 0 und Wort `[0x262]` < 0x46:
+  `lrandom(0, 4)` (Langwort, Ergebnis `dx:ax` = 0) → Zwinkern 0x522EC und Pause 30 − `[0x262]` sar 1, sonst Pause 45 − … .
+  Pause 0x130EE: Argument (Langwort) / 3 per 0x227C, dann `0xBBF:0x2C08`/`0xBBF:0x2C4E` (Ticks abwarten). `DGROUP 0x1DB`
+  wird im Spielcode nur gelesen (`--xref`, zehn Leser, kein Schreiber), Anfangswert 0.
+- **Drittelende** (Datei 0x3855F–0x3858C): mit Anzeige und Drittelende 60 oder 70: unter 70 Klick `38h:118h`, dann immer
+  `110h:7Ah`.
+- **Sicherung:** Spieltagsanfang Datei 0x36B65–0x36B77 (Lampe 0, `0xE19B` = `[0x262]`, `0xE19C` = `[0x226]`), vor den
+  Optionen zurück und danach neu gesichert, Lampe 0 (Datei 0x37D29–0x37D5B).
+- **lrandom** (Datei 0xBFD5): Zustand `DGROUP 0xE017/0xE019` (Anfangswert 0 in em.exe), `x = (x << 4) + 0xA7`, Rest
+  `0:48Bh` gegen 0x3D0900, Ergebnis `x · (b − a + 1)` (`0:3CAh`) / 0x3D0900 (`0:47Ch`) + a. **Berichtigung zu §12:** lrandom
+  ist zwar vom Borland-`random` getrennt, aber **nicht** von der Spielrechnung – die Funktionskarte nennt als Aufrufer u. a.
+  0x87F7 (Energie), 0x9F5C (Torchancen), 0xA484 (Abschluss) und 0x35818 (Strafen). Im Original verschiebt jedes Zwinkern
+  also die lrandom-Folge der Spielrechnung. `[APPROX]` Das Remake hält den Zwinkerzufall getrennt (Rundenplan 18, Review
+  #795 P3-1); die Spielrechnung zieht ohnehin aus `GameState.Random`, eine zuggenaue Folge gibt es dort nicht.
+
+### A3 Eingriff als Befehle (`Core/MatchEngine.Intervention.cs`)
+
+- `MatchIntervention.SetEffort`/`SetAttack`/`SetLine` schreiben `LiveTeam.Effort` (Vereinsfeld 0x26), `AttackLevel` (0x2C
+  Bits 4–6) und `DefenseLine`/`AttackLine` (0x2E/0x30) wie Datei 0x38ECD–0x38FBE, nur für Vereine mit Manager; die vierte
+  Reihe nur mit eingesetztem Spieler (0x08E5F, Datei 0x38F80–0x38F99). Kein Neuzählen nach Schieber und Lampen.
+- `MatchIntervention.AfterLineup` = Neuzählung 0x38A36 nach Aufstellung/Taktik im Spiel (Datei 0x5438D–0x54419);
+  `ModeFor` = Modus 1/2 aus der Maustaste (Datei 0x38FCF–0x38FED); Kennzeichen „im Spiel“ `DGROUP 0x2D6` = 5 (Datei 0x54821).
+- **Offen für B2/B3:** Das Remake rechnet eine Paarung in `MatchEngine.PlayWithEvents` am Stück; das Original rechnet je
+  Minute alle Paarungen des Spieltags (0x37A62). Damit Eingriffe während des Spiels wirken, braucht der Live-Bildschirm einen
+  Minutenschritt im Kern (Paarungen vorbereiten, je Minute `OriginalMinutes.PlayMinute`, Abschluss wie `PlayWithEvents`);
+  nicht Teil von A1–A4 laut Plan – Entscheidung Leitstelle. **Entschieden:** R18-E1 = A (Nutzer 13.11.2026) → Teil A5.
+
+### A4 Zufall der Anzeige und Format (`Core/MatchEngine.GoalScene.cs`, `Formats/GoalScene.cs`)
+
+- **Szenenwahl:** Die Torszene 0x53C57 ruft den Abspieler 0x567C8 (Datei 0x5402A) nur für Art 0/1 und mit `[0x226]` ≠ 0
+  (Datei 0x53DB1–0x53DE3, 0x53E02), dort mit `[0x5A56]` oder `[0x5A55]` (Datei 0x53F75–0x53F83). Der Abspieler zieht vor
+  0x575C3 nichts; 0x575C3 zieht in dieser Reihenfolge (Datei 0x575E9–0x57643): `random(2, [0xE2F6])`, `random(0, Art ? 0xD2 :
+  0xFF)`, dann bei Penalty `random(2, [0xE2F2])`, sonst bei sechs `random(2, [0xE2F4])`. Das Kennzeichen Penalty kommt aus dem
+  Abschluss immer als 0 (Datei 0xAB69). Der Kern zieht das an der Szenenstelle 0xAB90 (`OriginalMinutes.GoalScene`), also
+  nach `GoalScored` und vor dem Torschützen 0x541D9 (Datei 0x5407F).
+- **Strafgrund:** 0x35818 ruft den Reporter nach der Spielerwahl, wenn Verein oder Gegner einen Manager hat (Datei
+  0x35C1C–0x35C73); 0x52520 kehrt ohne `[0x5A56]` oder bei `[0x262]` ≥ 70 zurück (Datei 0x5252A–0x5253B), sonst
+  `random(0, 12)` nur für Ereignis 2 (Datei 0x52A9A), Ereignis 3 Index 5 (Datei 0x52A94). Der Kern zieht das in `Penalty` nach
+  dem Ereignis, vor dem Kettenzug (`OriginalMinutes.PenaltyReason`).
+- **Format:** Effektzählung über alle 6 600 Bilder: Ton 3 = 149, Ton 4 = 53, Ton 1 = 25 (andere Töne kommen nicht vor).
+- **Wirkung auf die Zufallsfolge:** Mit den Anfangswerten (Geschwindigkeit 70, Darstellung 0) zieht der Kern nichts zusätzlich;
+  Darstellung ≠ 0 bzw. Geschwindigkeit < 70 verschieben die Folge der Managerpaarung wie im Original.
+
+### A5 Minutenschritt im Kern (`Core/MatchEngine.LiveStep.cs`, R18-E1 = A)
+
+- **Ablauf:** `LiveMatchDay.Begin` bereitet alle Paarungen in ihrer Reihenfolge vor wie 0x36B5D (Spielabrechnung 0x544C0 je
+  Paarung vor den Minuten, Datei 0x36DBD/0x36F9C); `Step` rechnet je Minute alle laufenden Paarungen über
+  `OriginalMinutes.PlayMinute` wie die Minutenschleife 0x37A62 (Drittelpausen 0x84D7 bei 21/41/61/66, Verlängerung 61–70 nur
+  im K.-o.-Spiel bei Gleichstand); `Finish` rechnet den Rest und schließt je Paarung ab wie `PlayWithEvents`.
+- **Gemeinsamer Teil:** Vorbereitung (`BeginMatch`: Spielwertung 0x36DC5, Anzeigereihe 0x544C0, Mannschaften, 0x8365,
+  schneller Weg 0x3731F), Ende der Minutenschleife (`FinishMinuteLoop`: Penaltyschießen 0x3901B) und Abschluss (`EndMatch`:
+  Vereinsfelder, Spielerzähler, Tagesform 0x50283) aus `PlayWithEvents` (`MatchEngine.Live.cs`) herausgelöst, Züge und
+  Reihenfolge unverändert.
+- **Eingriff:** Befehle aus A3 zwischen zwei Schritten schreiben die `LiveTeam`; die nächste Minute liest sie (Datei
+  0x38ECD–0x38FBE schreibt die Vereinsfelder, gelesen wird in der nächsten Rechnung, §10).
+- **Zufall:** Jede Paarung zieht aus dem Generator ihrer Vorgabe. Mit einem Generator je Paarung ist das Ergebnis gleich
+  `PlayWithEvents`; mit einem gemeinsamen Generator ziehen die Paarungen verschränkt wie im Original (0x37A62), also anders
+  als die Spieltage des Remakes (Paarung für Paarung). `[APPROX]` Wie ein Spieltag über den Minutenschritt den Zufall
+  verteilt, legt der Anschluss fest (B2/B3) – Abnahme dort „Spieltag über den Live-Bildschirm = Ergebnis ohne Anzeige“;
+  der Minutenschritt selbst ändert keinen Spieltag.

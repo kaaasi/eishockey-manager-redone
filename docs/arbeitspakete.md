@@ -73,9 +73,12 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
      Kennzeichen „im Spiel“, danach `RecountSkaters`; neu `Core/MatchEngine.Intervention.cs`.
   4. **A4 Zufall und Format (L4/L7-Kern):** Strafgrund, Szenenwahl §11 (Zugfolge exakt) nach R18-D3; Leser `tore\` (neu
      `Formats/GoalScene.cs`, `Core/MatchEngine.GoalScene.cs`).
+  5. **A5 Minutenschritt im Kern (R18-E1 = A):** Paarungen des Spieltags vorbereiten, je Minute alle Paarungen (0x37A62),
+     Abschluss wie `PlayWithEvents`, Eingriff ab der nächsten Minute; neu `Core/MatchEngine.LiveStep.cs`, Herauslösung in
+     `MatchEngine.Live.cs` ohne Verhaltensänderung.
 - **Abnahme:** wie §12; zusätzlich Mehrsaisonprobe unverändert grün und Abgleich-Paare unverändert (die Anzeige ändert ohne
   Eingriff keinen Spielwert außer den Zügen nach R18-D3; dafür erwartete Einträge begründet).
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 13.11.2026.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** A1–A4 fertig in #814 (13.11.2026); A5 Minutenschritt im Kern (R18-E1 = A, Nutzer 13.11.2026) fertig in #814 (13.11.2026), wartet auf Erstreview über A1–A5.
 
 ### Spur `livespiel-ui` – Bausteine und Spielende (Spur B, Teile B1, B4)
 
