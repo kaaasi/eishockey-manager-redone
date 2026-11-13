@@ -667,7 +667,7 @@ Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
 - **Offen für B2/B3:** Das Remake rechnet eine Paarung in `MatchEngine.PlayWithEvents` am Stück; das Original rechnet je
   Minute alle Paarungen des Spieltags (0x37A62). Damit Eingriffe während des Spiels wirken, braucht der Live-Bildschirm einen
   Minutenschritt im Kern (Paarungen vorbereiten, je Minute `OriginalMinutes.PlayMinute`, Abschluss wie `PlayWithEvents`);
-  nicht Teil von A1–A4 laut Plan – Entscheidung Leitstelle.
+  nicht Teil von A1–A4 laut Plan – Entscheidung Leitstelle. **Entschieden:** R18-E1 = A (Nutzer 13.11.2026) → Teil A5.
 
 ### A4 Zufall der Anzeige und Format (`Core/MatchEngine.GoalScene.cs`, `Formats/GoalScene.cs`)
 
@@ -684,3 +684,21 @@ Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
 - **Format:** Effektzählung über alle 6 600 Bilder: Ton 3 = 149, Ton 4 = 53, Ton 1 = 25 (andere Töne kommen nicht vor).
 - **Wirkung auf die Zufallsfolge:** Mit den Anfangswerten (Geschwindigkeit 70, Darstellung 0) zieht der Kern nichts zusätzlich;
   Darstellung ≠ 0 bzw. Geschwindigkeit < 70 verschieben die Folge der Managerpaarung wie im Original.
+
+### A5 Minutenschritt im Kern (`Core/MatchEngine.LiveStep.cs`, R18-E1 = A)
+
+- **Ablauf:** `LiveMatchDay.Begin` bereitet alle Paarungen in ihrer Reihenfolge vor wie 0x36B5D (Spielabrechnung 0x544C0 je
+  Paarung vor den Minuten, Datei 0x36DBD/0x36F9C); `Step` rechnet je Minute alle laufenden Paarungen über
+  `OriginalMinutes.PlayMinute` wie die Minutenschleife 0x37A62 (Drittelpausen 0x84D7 bei 21/41/61/66, Verlängerung 61–70 nur
+  im K.-o.-Spiel bei Gleichstand); `Finish` rechnet den Rest und schließt je Paarung ab wie `PlayWithEvents`.
+- **Gemeinsamer Teil:** Vorbereitung (`BeginMatch`: Spielwertung 0x36DC5, Anzeigereihe 0x544C0, Mannschaften, 0x8365,
+  schneller Weg 0x3731F), Ende der Minutenschleife (`FinishMinuteLoop`: Penaltyschießen 0x3901B) und Abschluss (`EndMatch`:
+  Vereinsfelder, Spielerzähler, Tagesform 0x50283) aus `PlayWithEvents` (`MatchEngine.Live.cs`) herausgelöst, Züge und
+  Reihenfolge unverändert.
+- **Eingriff:** Befehle aus A3 zwischen zwei Schritten schreiben die `LiveTeam`; die nächste Minute liest sie (Datei
+  0x38ECD–0x38FBE schreibt die Vereinsfelder, gelesen wird in der nächsten Rechnung, §10).
+- **Zufall:** Jede Paarung zieht aus dem Generator ihrer Vorgabe. Mit einem Generator je Paarung ist das Ergebnis gleich
+  `PlayWithEvents`; mit einem gemeinsamen Generator ziehen die Paarungen verschränkt wie im Original (0x37A62), also anders
+  als die Spieltage des Remakes (Paarung für Paarung). `[APPROX]` Wie ein Spieltag über den Minutenschritt den Zufall
+  verteilt, legt der Anschluss fest (B2/B3) – Abnahme dort „Spieltag über den Live-Bildschirm = Ergebnis ohne Anzeige“;
+  der Minutenschritt selbst ändert keinen Spieltag.
