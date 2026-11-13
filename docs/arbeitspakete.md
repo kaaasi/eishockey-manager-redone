@@ -13,8 +13,9 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 Runde 17 abgeschlossen am 13.11.2026: [archiv/runde-17.md](archiv/runde-17.md). Grundlage: Umsetzungsplan Live-Spiel L1–L8 in
 [analyse/re-livespiel.md](analyse/re-livespiel.md) §12 (Spuren A/B/C), DOSBox-Aufnahme `runde-17` (Referenz-Repo #29–#34) für
 #730 und #773, offene P3 #803, #804, #805. Ziel: Live-Spiel ohne Torszenen spielbar (L1–L6, L8), offene Abgleich-Issues belegt
-geschlossen oder mit Beleg zurückgestellt. **Entscheidungen offen:** R18-D1 (Zuschnitt), R18-D2 (DOSBox-Auswertung), R18-D3
-(Zufallszüge der Anzeige) – siehe PR des Plans; Spuren starten erst nach Go.
+geschlossen oder mit Beleg zurückgestellt. **Entscheidungen Nutzer 13.11.2026** (Optionen im Plan-PR #809): R18-D1 = A
+(Zuschnitt zwei Wellen, Torszenen Runde 19), R18-D2 = A (eigene Spur `abgleich-dosbox`), R18-D3 = A (Zufallszüge der Anzeige im
+Kern wie im Original, Bedingung des Originals, unabhängig vom Remake-Bildschirm). Spuren starten erst nach Go.
 
 **Base für alle Spuren:** aktueller `main` (Planstand `81a358c`); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 17
 (Archiv): ein Branch `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; je ID zuerst prüfen, ob sie noch
@@ -26,10 +27,11 @@ sind Claude-Sitzungen;** ChatGPT nur fürs Gesamtreview.
 
 **Grundsätze Live-Spiel** (`re-livespiel.md` §12): Der Spielkern bleibt ohne Bildschirm vollständig; der Live-Bildschirm treibt
 die Minuten nur über Kern-Befehle, Zeit vergeht weiter nur über `GameState.Continue()`, Bildschirme ändern durch Öffnen nichts
-(`AGENTS.md` §4). Zufallszüge, die das Original nur mit Anzeige macht (Strafgrund, Szenenwahl), nach R18-D3. `lrandom` (Zwinkern)
+(`AGENTS.md` §4). Zufallszüge, die das Original nur mit Anzeige macht (Strafgrund, Szenenwahl), zieht nach R18-D3 = A der Kern unter der
+Bedingung des Originals (Managerpaarung, Live-Modus der Optionen), auch ohne offenen Bildschirm. `lrandom` (Zwinkern)
 ist ein eigener Generator getrennt vom Spielzufall (Review #795 P3-1).
 
-**Folge (Vorschlag R18-D1 = A):** Welle 1 parallel `livespiel-kern`, `livespiel-ui` (Teile B1, B4), `abgleich-dosbox`,
+**Folge (R18-D1 = A):** Welle 1 parallel `livespiel-kern`, `livespiel-ui` (Teile B1, B4), `abgleich-dosbox`,
 `pruefung-karte` Teil 1. Merge `pruefung-karte` Teil 1 → `abgleich-dosbox` → `livespiel-kern` → `livespiel-ui`. Welle 2 nach dem
 Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/livespiel-ui-2`); zuletzt `pruefung-karte` Teil 2
 (`paket/pruefung-karte-2`), am Rundenende Gesamtreview (ChatGPT). Torszenen (L7-Anzeige, Spur C `torszenen`) in Runde 19.
@@ -92,7 +94,7 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
   Klickproben wie §12 B3; Ablauftest eines ganzen Spieltags mit Managerpaarung über den Live-Bildschirm = Ergebnis ohne Anzeige.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** wartet auf Welle 2.
 
-### Spur `abgleich-dosbox` – Auswertung Aufnahme `runde-17` (R18-D2)
+### Spur `abgleich-dosbox` – Auswertung Aufnahme `runde-17` (R18-D2 = A)
 
 - **Teile:**
   1. **#730 Belastung:** FILE50 (ohne Klick) und FILE51 (mit Klicks) gegen das Remake ab FILE02, Reihenbilder je Minute gegen
