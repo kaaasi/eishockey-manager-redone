@@ -256,10 +256,10 @@ public class PlayerInfoWindowTests
     public void Hint_Trend_ListsExhaustionOnlyInLineup()
     {
         var p = Skater();
-        p.Energy = 70; // Belastung 30 → 30 · 10 / 15 = 20
+        p.Energy = 70; // Belastung +0x13 = 80 → 80 · 10 / 15 = 53 (Datei 0x41B29–0x41B38, #805)
         p.Trend = PlayerTrend.Rising;
         Assert.Equal("Tendenz des Spielers: Steigend.", PlayerHintLine.Text(p, 15, InLine2, false));
-        Assert.Equal("Tendenz des Spielers: Steigend. (Erschöpfung:20)", PlayerHintLine.Text(p, 15, InLine2, true));
+        Assert.Equal("Tendenz des Spielers: Steigend. (Erschöpfung:53)", PlayerHintLine.Text(p, 15, InLine2, true));
         p.Trend = PlayerTrend.Falling;
         Assert.StartsWith("Tendenz des Spielers: Fallend.", PlayerHintLine.Text(p, 15, InLine2, false));
     }
