@@ -136,22 +136,3 @@ public sealed class LiveClock
         options.LiveMode = SavedLiveMode;
     }
 }
-
-/// <summary>
-/// [ORIGINAL] lrandom des Originals (Datei 0xBFD5, <c>38h:7E5h</c>): Langwort-Zustand x (DGROUP 0xE017/0xE019, Anfangswert 0),
-/// x = ((x &lt;&lt; 4) + 0xA7) mod 0x3D0900 (Rest 0x228B), Ergebnis x · (b − a + 1) / 0x3D0900 + a (Multiplikation 0x21CA,
-/// Division 0x227C), beide Grenzen eingeschlossen.
-/// </summary>
-public sealed class LRandom(int state = 0)
-{
-    /// <summary>[ORIGINAL] Modul 0x3D0900 = 4 000 000.</summary>
-    public const int Modulus = 0x3D0900;
-
-    public int State { get; private set; } = state;
-
-    public int Next(int min, int max)
-    {
-        State = (int)(((long)State * 16 + 0xA7) % Modulus);
-        return (int)((long)State * (max - min + 1) / Modulus) + min;
-    }
-}

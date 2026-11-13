@@ -93,6 +93,70 @@ public sealed class LivespielKernLiveStepTests
         }
     }
 
+    private static GameState NewGame(int seed, int[] managedClubs, int liveMode, int speed)
+    {
+        var setup = new GameSetup();
+        foreach (var club in managedClubs)
+            setup.Managers.Add(new ManagerSetup { Name = $"M{club}", Head = 0, ClubIndex = club });
+        var game = Core.NewGame.Create(TestGames.CreateDatabase(), setup, seed);
+        game.Options.LiveMode = liveMode;
+        game.Options.MatchSpeed = speed;
+        return game;
+    }
+
+    private static string RowFingerprint(LiveScoreboardRow r) =>
+        $"{r.HomeClub}-{r.AwayClub} c=[{string.Join(",", r.ChanceList)}] p=[{string.Join(",", r.PenaltyList)}] " +
+        $"s=[{string.Join(",", r.Scenes)}] g=[{string.Join(",", r.PenaltyReasons)}] f={r.Finished}";
+
+    /// <summary>
+    /// #825 (R814 P3-3, Probe P-1 des Reviews #822): ganzer Spieltag verschränkt = Paarung für Paarung über
+    /// <see cref="MatchEngine.PlayWithEvents"/> auch mit mehreren Managern, im K.-o. (Play-off, DEB-Pokal: Verlängerung,
+    /// Penaltyschießen) und mit Anzeigezügen (Darstellung 1, Geschwindigkeit 40: Szenenwahl und Strafgrund im Kern, R18-D3).
+    /// Verglichen: Berichte, ganzer Spielstand, alle Anzeigereihen mit Szenen und Strafgründen.
+    /// </summary>
+    [Theory]
+    [InlineData(new[] { 2 }, MatchCompetition.Playoff, true, 1, 40)]
+    [InlineData(new[] { 2, 3 }, MatchCompetition.League, false, 0, 70)]
+    [InlineData(new[] { 2, 3 }, MatchCompetition.DebCup, true, 1, 40)]
+    [InlineData(new[] { 2, 5, 7 }, MatchCompetition.League, false, 1, 40)]
+    [InlineData(new[] { 2, 5, 7 }, MatchCompetition.Playoff, true, 0, 70)]
+    [InlineData(new[] { 2, 5, 7 }, MatchCompetition.DebCup, true, 1, 40)]
+    public void WholeDay_SeveralManagers_KnockOutAndDisplay_EqualsSequential(int[] managedClubs,
+        MatchCompetition competition, bool knockOut, int liveMode, int speed)
+    {
+        var scenes = 0;
+        var reasons = 0;
+        var overtime = 0;
+        for (var seed = 0; seed < 12; seed++)
+        {
+            var a = NewGame(seed, managedClubs, liveMode, speed);
+            var b = NewGame(seed, managedClubs, liveMode, speed);
+            var pairs = FirstDay(a);
+            Assert.Contains(pairs, p => managedClubs.Contains(p.Home) || managedClubs.Contains(p.Away));
+            var expected = pairs.Select((p, i) => MatchEngine.PlayWithEvents(a, a.Clubs[p.Home], a.Clubs[p.Away],
+                competition, knockOut, new GameRandom(100 * seed + i))).ToList();
+            var day = LiveMatchDay.Begin(b, pairs.Select((p, i) => new LiveFixture(b.Clubs[p.Home], b.Clubs[p.Away],
+                competition, knockOut, new GameRandom(100 * seed + i))));
+            var actual = day.Finish();
+            Assert.Equal(expected.Select(Fingerprint), actual.Select(Fingerprint));
+            Assert.Equal(SaveGame.Save(a), SaveGame.Save(b));
+            Assert.Equal(a.LiveScoreboard!.Rows.Select(RowFingerprint), b.LiveScoreboard!.Rows.Select(RowFingerprint));
+            foreach (var row in b.LiveScoreboard!.Rows)
+            {
+                scenes += row.Scenes.Count;
+                reasons += row.PenaltyReasons.Count;
+            }
+            overtime += expected.Count(r => r.Overtime);
+        }
+        if (liveMode != 0)
+        {
+            Assert.True(scenes > 0, "keine Szenen in der Probe");
+            Assert.True(reasons > 0, "keine Strafgründe in der Probe");
+        }
+        if (knockOut)
+            Assert.True(overtime > 0, "keine Verlängerung in der Probe");
+    }
+
     /// <summary>
     /// [ORIGINAL] 0x37A62: Minute für Minute alle Paarungen – nach Schritt m hat jede laufende Paarung genau Minute m gerechnet,
     /// ihr Bericht enthält keine späteren Ereignisse; Spielwertung und schneller Weg laufen nicht durch die Schleife.

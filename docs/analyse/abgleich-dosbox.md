@@ -118,8 +118,27 @@ Regressionstests `PenaltyMinutes_FiveMinuteShare_LikeLrandomCycle` (rot vorher: 
 (Liste mit Rückschaltprobe im PR). Nebenwirkung für #730: REZNICEK (FILE52→53) kippt jetzt bei Saat 2 wie im Original,
 KUHNEKATH (FILE13→14) weicht nur noch bei 3 von 6 Saaten ab.
 
-**Weitere aufeinanderfolgende lrandom-Züge** (Chancen 0x9F5C, Abschluss, Strafe/Kette) sind nicht geprüft; dieselbe Kopplung
+**Weitere aufeinanderfolgende lrandom-Züge** (Chancen 0x9F5C, Abschluss, Strafe/Kette) waren hier nicht geprüft; dieselbe Kopplung
 kann dort wirken. Vorschlag: eigene Analyse (`LRandomCycle` liefert den Zyklus).
+
+### 2.5 Weitere aufeinanderfolgende lrandom-Züge (#829, Spur `pruefung-karte` Teil 2, Runde 18)
+
+Geprüft mit `LRandomCycle` (Lage beim ersten Zug gleichverteilt über die 15.625 Zustände, wie §2.4); Züge zwischen den
+Aufrufen nach `ndisasm`/`disasm.py` (nur `0x99F:0x7E5` bzw. `0x38:0x7E5` → 0xBFD5 zählt, `random` ist ein anderer Generator).
+
+| Stelle | Züge ohne lrandom dazwischen | Zyklus gegen unabhängig |
+|---|---|---|
+| Chancen 0x9F5C (Datei 0xA387–0xA3EC) | je Punkt von tH, dann von tG lrandom(1, 20) = 1 | Heim-/Gastchance für tH = tG = 1 … 10 höchstens −1,1 % (relativ); beide Chancen in einer Minute ±2 % |
+| Abschluss 0xA484 (Datei 0xA58B–0xA82D) | Schwäche lrandom(550, 850), Tür lrandom(0, 2w + 4) bzw. lrandom(0, 3 · WM + 2w + 1), dann lrandom(0, d/4 + w + 2) bzw. lrandom(0, −d/4 + 1), lrandom(0, 6 − w) | Heim: d < 0 −3 … −5 %, d = 0 +1 … +3 %, d > 0 bis +1,5 %; Gast: −3 … +0,3 % (Summe der Stärken 600/700/800, d = −20 … 20) |
+| Kette 0x35818 (Datei 0x35921, 0x35A0D, Aufruf 0x35C8B) | d3 = lrandom(0, 15), Kettenzug lrandom(0, 3) = 0, beim Gegner wieder d1/d2 | Kettenzug = 0: 25,8 % statt 25 %; danach Strafe 11,4 % statt 9,0 % (Einsatz 40: 41 von 360) → je Strafe 2,9 statt 2,25 % Kettenstrafen, insgesamt etwa +0,7 % Strafen |
+
+**Folgerung:** Keine der drei Stellen verschiebt eine Häufigkeit annähernd so stark wie der 5-Minuten-Zug (doppelt). Die
+Chancen sind praktisch unabhängig. Beim Abschluss wechselt das Vorzeichen mit dem Stärkeabstand (höchstens 5 % je Abschluss; die Wirkung auf
+Tore je Spiel ist nicht gemessen, `[APPROX]` bleibt). Die Kette erhöht die Strafminuten im Original um etwa 0,6–0,7 %. Übernähme das Remake sie, läge
+FILE05→24 bei etwa +8,3 % statt +7,6 % (Grenze 8 %); FILE02→03 (−3,7 %) und FILE52→53 (+3,7 %) blieben in der Streuung. Das
+Remake zieht dort weiter unabhängig (`[APPROX]`, wie §2.4 nur der 5-Minuten-Zug nach dem Zyklus). Vor einer Lockerung der
+Grenze in `AbgleichRestPenaltyTests` ist damit keine weitere Kopplung nachzuziehen. Tests: `PruefungKarteRunde18Tests`
+(`Chain_PenaltyAfterChainDraw_OverCycle`, `ChanceLoop_CouplingBelowOnePointTwoPercent`).
 
 ## 3. Export/Import (Teil 3)
 

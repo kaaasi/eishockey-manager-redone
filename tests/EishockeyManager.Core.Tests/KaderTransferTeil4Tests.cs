@@ -37,41 +37,41 @@ public class KaderTransferTeil4Tests
 
     /// <summary>
     /// Über eine ganze Saison läuft der Markt an jedem Tag der Zeitleiste: Die Zahl der Listenwechsel liegt bei einem Manager
-    /// nahe Tage / 4 und damit deutlich über der Zahl der Ligaspieltage / 4.
+    /// nahe Halte / 4 (random(0, Managerzahl + 2) = 0, Datei 0x54E65–0x54E7C) und damit deutlich über der Zahl der
+    /// Ligaspieltage / 4 (alter Takt: 44 Würfe, im Mittel 11 Wechsel).
     /// </summary>
+    /// <remarks>
+    /// #828 (R812 P3-2, R15-E2 = C): Bis Runde 18 prüfte der Test eine einzelne Saat gegen die Grenze 22 und musste in fünf
+    /// Runden die Saat wechseln (5 → 21 → 14 → 22 → 3 → 26), weil die Zahl der Halte am Spielverlauf hängt (Saaten 1–40: 11–27).
+    /// Jetzt Mittel über zwölf Saaten (13.11.2026 gemessen: Saaten 1–12 je 14–23, Mittel 18,7; Anteil Wechsel je Halt 0,27)
+    /// gegen die Regel: Mittel über 15 und Anteil je Halt nahe 1/4. Rückschaltprobe: Wurf nur an jedem zweiten Wechseltag → Mittel 10,4, rot.
+    /// </remarks>
     [Fact]
     public void Season_MarketRunsEveryCalendarDay()
     {
-        // #772 (R15-E2 = C): Saat 21 statt 5 – die Zahl der Halte hängt am Spielverlauf; mit der Spielvorbereitung 0x8365 hält Saat 5
-        // nur 20 Wechsel. Schon der alte Code liegt bei Saat 3/8/9 unter der Grenze (15/13/20), Rückschaltprobe mit
-        // Saat 21 ebenfalls rot; die Probe hängt an der Saat, die Grenze bleibt.
-        // Fixlauf pool auf main 846e515 (R15-E2 = C): Saat 14 statt 21 – mit Spur pool und #772 hält Saat 21 nur 19 Wechsel (Saaten
-        // 1–30: 13–27, über 22 nur 11, 14, 17). Wie oben: die Probe hängt an der Saat, die Grenze bleibt.
-        // Runde 17, Spur wettbewerbe-rest Teil 3 (A113/A142, R15-E2 = C): Saat 22 statt 14 – mit dem Spielplan über die Satzfolge (Datei 0x4E7C7) hält Saat 14 nur 18 Wechsel
-        // (Saaten 1–40: 12–26, über 22 nur 1, 2, 7, 19, 22, 39). Rückschaltprobe: alter Code mit Saat 22 rot; die Probe hängt an der
-        // Saat, die Grenze bleibt.
-        // Spur kader-rest (A130, R15-E2 = C; Fixlauf nach Rebase auf main 1d83cc0): Saat 3 statt 22 – mit der Startbelastung 80–120
-        // (Datei 0x42E4C) und dem Spielplan über die Satzfolge zusammen hält Saat 22 nur 22 Wechsel (Saaten 1–40: 12–22, über 22 nur 3,
-        // 15, 24). Rückschaltprobe: src/ von 1d83cc0 mit Saat 3 ebenfalls rot; die Probe hängt an der Saat, die Grenze bleibt.
-        // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): Saat 26 statt 3 – mit den 5-Minuten-Strafen nach dem lrandom-Zyklus
-        // (LRandomCycle) hält Saat 3 nur 21 Wechsel (Saaten 1–40: 11–27, über 22 nur 8, 24, 26). Rückschaltprobe:
-        // MatchEngine.Original.cs von 5367ba8 mit Saat 26 ebenfalls rot; die Probe hängt an der Saat, die Grenze bleibt.
-        var game = TestGames.Create(26);
-        var market = game.TransferMarket;
+        const int seeds = 12;
         var changes = 0;
-        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        var stops = 0;
+        for (var seed = 1; seed <= seeds; seed++)
         {
-            Assert.True(guard < 1000, "Saisonende nicht erreicht");
-            TestSeason.KeepSquad(game, game.ActiveManager);
-            var previous = market.Listings.Select(l => l.Player.Id).ToArray();
-            game.Continue();
-            if (!previous.SequenceEqual(market.Listings.Select(l => l.Player.Id)))
-                changes++;
+            var game = TestGames.Create(seed);
+            var market = game.TransferMarket;
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                Assert.True(guard < 1000, "Saisonende nicht erreicht");
+                TestSeason.KeepSquad(game, game.ActiveManager);
+                var previous = market.Listings.Select(l => l.Player.Id).ToArray();
+                game.Continue();
+                stops++;
+                if (!previous.SequenceEqual(market.Listings.Select(l => l.Player.Id)))
+                    changes++;
+            }
+            Assert.Equal(44, game.PlayedMatchDays);
         }
-        // Ligaspieltage 44 → früher höchstens 44 Würfe, also im Mittel 11 Wechsel; täglich (> 200 Tage) gibt es fast an jedem
-        // Halt einen Wechsel. Integration Runde 11 (+ wettbewerbe-spiel): Grenze doppelt so hoch wie das Mittel des alten Takts
-        // (vorher 30; Seed 5 hält jetzt mit 30 Wechseln, weil sich die Zahl der Halte mit dem Spielverlauf ändert).
-        Assert.True(changes > 22, $"nur {changes} Halte mit Listenwechsel");
+        var mean = (double)changes / seeds;
+        var share = (double)changes / stops;
+        Assert.True(mean > 15, $"im Mittel nur {mean:F1} Halte mit Listenwechsel (alter Takt: 11)");
+        Assert.InRange(share, 0.20, 0.32);
     }
 
     /// <summary>

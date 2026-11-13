@@ -14,13 +14,16 @@ namespace EishockeyManager.Core;
 /// </remarks>
 public static class LRandomCycle
 {
-    /// <summary>[ORIGINAL] Modul der Folge (Datei 0xBFD8/0xBFDB: 0x3D0900).</summary>
+    /// <summary>[ORIGINAL] Modul der Folge (Datei 0xBFD8/0xBFDB: 0x3D0900, Rest 0x228B).</summary>
     public const int Modulus = 4_000_000;
 
-    /// <summary>[ORIGINAL] Ein Schritt der Folge (Datei 0xBFE0–0xBFFF).</summary>
+    /// <summary>[ORIGINAL] Ein Schritt der Folge (Datei 0xBFE0–0xBFFF): x = ((x &lt;&lt; 4) + 0xA7) mod 0x3D0900.</summary>
     public static int Step(int x) => (int)((16L * x + 167) % Modulus);
 
-    /// <summary>[ORIGINAL] Ergebnis eines Zugs aus dem neuen Zustand (Datei 0xC002–0xC036), a … b einschließlich.</summary>
+    /// <summary>
+    /// [ORIGINAL] Ergebnis eines Zugs aus dem neuen Zustand (Datei 0xC002–0xC036, Multiplikation 0x21CA, Division 0x227C),
+    /// a … b einschließlich.
+    /// </summary>
     public static int Value(int x, int min, int max) => min + (int)((long)x * (max - min + 1) / Modulus);
 
     private static readonly Lazy<int[]> CycleStates = new(() =>
@@ -76,4 +79,23 @@ public static class LRandomCycle
     /// </summary>
     public static (int Total, int Five) FiveMinuteOdds(int effort, bool firstDraw) =>
         PenaltyOdds.Value[Math.Clamp(effort, 0, 100), firstDraw ? 0 : 1];
+}
+
+/// <summary>
+/// [ORIGINAL] lrandom des Originals als fortlaufender Generator (Datei 0xBFD5, <c>38h:7E5h</c>): Langwort-Zustand x (DGROUP
+/// 0xE017/0xE019, Anfangswert 0). Schritt und Ergebnis kommen aus <see cref="LRandomCycle"/> – die Folge ist nur dort
+/// nachgebaut (#824, R814 P3-2). Eigener Generator getrennt vom Spielzufall (Zwinkern der Live-Anzeige, Review #795 P3-1).
+/// </summary>
+public sealed class LRandom(int state = 0)
+{
+    /// <summary>[ORIGINAL] Modul 0x3D0900 = 4 000 000 (<see cref="LRandomCycle.Modulus"/>).</summary>
+    public const int Modulus = LRandomCycle.Modulus;
+
+    public int State { get; private set; } = state;
+
+    public int Next(int min, int max)
+    {
+        State = LRandomCycle.Step(State);
+        return LRandomCycle.Value(State, min, max);
+    }
 }
