@@ -28,7 +28,17 @@ public sealed class MatchDayScreen : Screen
     /// `_00157`, `_00246`: Banner auf genau einem Bild (1 Bild/s).
     /// </summary>
     public static readonly int BannerFrames = ShortMessage.FramesFor(60);
-    public const int FramesPerMinute = 3;
+    /// <summary>
+    /// Bilder je Spielminute bei „Spiele laufen“ (#838). [ORIGINAL] Ohne Live-Anzeige wartet die Minutenschleife Datei
+    /// 0x37A62–0x3858C nicht: die einzige Pause 0x50:0x19E (Datei 0x37CB7) liegt im Zweig mit Anzeige, die Spieluhr 0x51E90
+    /// wartet ebenfalls nicht. Die Dauer ist also die Rechenzeit aller Spiele des Tages je Minute. [APPROX] Das Remake setzt
+    /// sie fest auf 1/3 s (20 Bilder bei 60 Hz, ≈ 6 BIOS-Takte), ein Spieltag damit ≈ 20 s wie in der Nutzerprobe 13.11.2026
+    /// geschätzt (Original ≈ 20 s, Remake vorher 3 Bilder ≈ 3 s); Messung in DOSBox offen. Klick, Enter oder Esc überspringen.
+    /// </summary>
+    public const int FramesPerMinute = 20;
+
+    /// <summary>Dauer von „Spiele laufen“ in Sekunden bei <see cref="ShortMessage.FramesPerSecond"/> (#838).</summary>
+    public static double RunningSeconds => (Minutes * FramesPerMinute + 21) / (double)ShortMessage.FramesPerSecond;
     public const int Minutes = 60;
 
     public static Rect Banner => SeasonInfo.Banner;
