@@ -555,6 +555,9 @@ public static partial class OriginalMinutes
                 report.AwayGoals++;
             GoalScored(home, away, side, homeSkaters, awaySkaters);
         }
+        // Spur livespiel-kern (A1/A4): [ORIGINAL] Torszene 0x53C57 bei Paarung mit Anzeigereihe (Datei 0xAB47–0xAB90).
+        if (!aborted)
+            GoalScene(minute, side, goal);
         // [ORIGINAL] 0xAB47–0xAB90: in der Managerpaarung nach jedem Abschluss Szene/Torschütze 0x541D9 (ScoringPlayers).
         var players = rules.ManagerMatch && !aborted ? ScoringPlayers(shooter, goal, random) : null;
         if (!goal)

@@ -80,6 +80,8 @@ public static partial class MatchEngine
             Playoff: competition is MatchCompetition.Playoff or MatchCompetition.Relegation,
             KnockOut: knockOut,
             ManagerMatch: managerMatch);
+        // Spur livespiel-kern A1: [ORIGINAL] Anzeigereihe aus der Spielabrechnung 0x544C0 (nach der Spielwertung, vor dem Spiel).
+        var scoreboardRow = ScoreboardRow(game, home, away, competition);
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
         PrepareMatch(game, home, away, homeTeam, awayTeam);
@@ -127,7 +129,7 @@ public static partial class MatchEngine
         }
         else
         {
-            report = OriginalMinutes.Play(homeTeam, awayTeam, rules, random);
+            report = PlayWithScoreboard(scoreboardRow, () => OriginalMinutes.Play(homeTeam, awayTeam, rules, random));
             if (knockOut && report.HomeGoals == report.AwayGoals)
             {
                 // Teil 5: [ORIGINAL] nach der Verlängerung noch unentschieden → Penaltyschießen 0x3901B (aus 0x32AA3).

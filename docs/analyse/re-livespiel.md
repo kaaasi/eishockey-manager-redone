@@ -615,3 +615,27 @@ Figurzuordnung und des Zeichnens (`48h:4ECFh`, `kb\246`). Dateien: neu `Screens/
 Abhängigkeiten: B2 braucht A1, B3 braucht A3, C braucht A4. A2 und B1 sind unabhängig. Gemeinsame Dateien:
 `MatchEngine.Live.cs` (A1–A4 nur Anschlüsse), `MatchDayScreen.cs` (B1), `GameOptionsScreen.cs` (Regler der
 Geschwindigkeit, nur falls A2 es braucht).
+
+## 13. Spur `livespiel-kern` (Runde 18)
+
+Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
+
+### A1 Anzeigezähler (`Core/MatchEngine.Scoreboard.cs`)
+
+- **Reihenliste:** 0x36B5D löscht vor den Spielen `0x233` (0xFF), `0xA88D` (0xFF), `0xA75C` (0), `0xA762` und `0x5A56`
+  (Datei 0x36B8E–0x36BC9) sowie 0x54 Byte ab `0xA839` (Datei 0x36BCC–0x36BDB). Die Spielabrechnung 0x544C0 (je Paarung vor
+  dem Spiel, Datei 0x36DBD/0x36F9C) hängt nach der Managerschleife eine Reihe an, wenn Heim- oder Gastverein Vereinsfeld
+  0x34 Bit 7 hat (Datei 0x54BF7–0x54C23), und setzt `0x5A56` = 1 (Datei 0x54C63–0x54C94); Spielwertungen kehren vorher
+  zurück (Datei 0x54599, 0x547BA). Keine Grenze bei vier.
+- **Markierung (Vereinsfeld 0x34 Bits 6–7):** 0xAE2B setzt den Modus 0/1/2; im Modus 2 höchstens vier Vereine (getrennt für
+  Vereine 0 … 0x95 und Länderteams ab `DGROUP 0x6AD`), mit Verdrängen (Argument 2 ≠ 0) wird ein markierter Verein ohne
+  Manager auf Modus 1 gesetzt, sonst abgelehnt (Datei 0xAE5F–0xAF4C). Aufrufer: Spielstart 0x28165 je Manager Modus 2 mit
+  Verdrängen (Datei 0x298EA, 0x29C1C), Vereinsfenster dritter Knopf (Datei 0x4E46A, Verdrängen nur für Managervereine),
+  WM-Option 12 für das eigene Land (Datei 0x2D3FD), Ernennung zum Bundestrainer (Datei 0x55457). Der Lader setzt die Bits
+  auf 0 (Datei 0x2EFA8). `[APPROX]` Remake: markiert = `MatchEngine.IsManaged` (Umschalter fehlen).
+- **Zähler:** Torszene 0x53C57 sucht die Reihe in `0xA88D` und zählt nur für p < 4, Minute ≤ 60 und Art < 2 (Datei
+  0x53C9F–0x53D1D); Drittel `0xA838` = 0/1/2 aus 0x36B5D (Datei 0x37023, 0x3719D, 0x371C4). Der Abschluss 0xA484 ruft die
+  Szene mit Art = Tor/vergeben, wenn die Paarung eine Reihe hat (Datei 0xAB47–0xAB90). Strafminuten: 0x35818 addiert
+  Belegung & 7 für jede Reihe mit dem Verein in `0x233` (Datei 0x3598A–0x359EE), vor der Spielerwahl.
+- **Anschluss:** `MatchEngine.PlayWithEvents` legt die Reihe nach der Spielwertung an; der einzige Haken in
+  `MatchEngine.Minutes.cs` ist `OriginalMinutes.GoalScene` an der Stelle 0xAB90 (Teil A4 wählt dort die Szene).
