@@ -656,3 +656,15 @@ Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
   0x87F7 (Energie), 0x9F5C (Torchancen), 0xA484 (Abschluss) und 0x35818 (Strafen). Im Original verschiebt jedes Zwinkern
   also die lrandom-Folge der Spielrechnung. `[APPROX]` Das Remake hält den Zwinkerzufall getrennt (Rundenplan 18, Review
   #795 P3-1); die Spielrechnung zieht ohnehin aus `GameState.Random`, eine zuggenaue Folge gibt es dort nicht.
+
+### A3 Eingriff als Befehle (`Core/MatchEngine.Intervention.cs`)
+
+- `MatchIntervention.SetEffort`/`SetAttack`/`SetLine` schreiben `LiveTeam.Effort` (Vereinsfeld 0x26), `AttackLevel` (0x2C
+  Bits 4–6) und `DefenseLine`/`AttackLine` (0x2E/0x30) wie Datei 0x38ECD–0x38FBE, nur für Vereine mit Manager; die vierte
+  Reihe nur mit eingesetztem Spieler (0x08E5F, Datei 0x38F80–0x38F99). Kein Neuzählen nach Schieber und Lampen.
+- `MatchIntervention.AfterLineup` = Neuzählung 0x38A36 nach Aufstellung/Taktik im Spiel (Datei 0x5438D–0x54419);
+  `ModeFor` = Modus 1/2 aus der Maustaste (Datei 0x38FCF–0x38FED); Kennzeichen „im Spiel“ `DGROUP 0x2D6` = 5 (Datei 0x54821).
+- **Offen für B2/B3:** Das Remake rechnet eine Paarung in `MatchEngine.PlayWithEvents` am Stück; das Original rechnet je
+  Minute alle Paarungen des Spieltags (0x37A62). Damit Eingriffe während des Spiels wirken, braucht der Live-Bildschirm einen
+  Minutenschritt im Kern (Paarungen vorbereiten, je Minute `OriginalMinutes.PlayMinute`, Abschluss wie `PlayWithEvents`);
+  nicht Teil von A1–A4 laut Plan – Entscheidung Leitstelle.
