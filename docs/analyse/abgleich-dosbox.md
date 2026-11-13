@@ -63,3 +63,40 @@ Verteilung des Remakes (Test: mindestens 1 % der Saaten auf jeder Seite). Gegenp
   damit wird FILE50→… ein echtes Paar mit Reihen je Minute.
 - **A093** (Technik −10 außerhalb der eigenen Reihe, +0x02): In FILE50/FILE51 spielt kein Spieler außerhalb seiner Reihe (keine
   Umstellung, Klicks ohne Wirkung) – mit `runde-17` nicht belegbar, bleibt `[APPROX]` (Inventur P2).
+
+## 2. #773 Strafminuten – FILE52→FILE53 (Teil 2)
+
+### 2.1 Einsatz nach dem ersten Spieltag
+
+Vereinsfeld 0x26 der Vereinssätze 0–51 (`emtool hok dump … far:9657`, `belastung-staerke/clubs.py`): FILE52 alle 0; FILE53
+40 × 20, 60 × 14, 0 × 16 (kein Spiel), Gegner des Managers EC HEDOS MÜNCHEN 0x26 = 60, Grundwert 0x2D = 40, Angriff 4. Das
+Remake (`Tactics.MatchEffort` nach `HokCompare.PlayTo`) trifft die Verteilung bei allen Saaten genau; den Gegner setzt 0x939A je
+Minute nach dem Spielstand (Remake 55 oder 60). **Der Einsatz ist nicht die Ursache** (`AbgleichDosboxPenaltyTests`).
+
+### 2.2 Strafminuten
+
+| Paar (Spieltage) | Original | Remake (Saaten 1–20) | Mittel | ungerade Summen je Verein (5-Minuten-Strafe) Original / Remake-Mittel |
+|---|---:|---|---:|---|
+| FILE52→53 (1., neues Spiel) | 456 | 367–483 | 432 | 12 / 8,4 (4–13) |
+| FILE02→50 (1.) | 500 | 382–464 | 428 | 12 / 9,6 (5–15) |
+| FILE02→51 (1.) | 411 | 382–464 | 428 | 13 / 9,6 |
+| FILE02→03 (1.–3.) | 1447 | 1218–1377 | 1302 | – |
+
+Drei unabhängige erste Spieltage liegen alle im oberen Fünftel der ungeraden Summen – das Original verteilt mehr
+5-Minuten-Strafen (Ligazähler + Code & 7: 2 bzw. 5).
+
+### 2.3 Ursache: Zusammenhang aufeinanderfolgender lrandom-Züge
+
+`lrandom` (Datei 0xBFD5, ndisasm): x = (16 · x + 167) mod 4.000.000 (0x3D0900), Ergebnis a + x · (b − a + 1) / 4.000.000. Weil
+der Faktor 16 gerade ist, stehen die unteren 8 Bit nach zwei Schritten fest; modulo 5^6 ist der Schritt umkehrbar → Zyklus von
+**15.625 Zuständen**, und x' ≈ 16 · x. Der Strafwurf Datei 0x358B7–0x3592D zieht d1 = lrandom(0, 12), nur bei d1 ≠ 0 d2 =
+lrandom(0, 110 − Einsatz), dann (Platz 0 frei, Computerverein ohne Zug dazwischen) d3 = lrandom(0, 15). Über den ganzen Zyklus:
+
+| Einsatz | Strafe je Wurf (Zyklus / unabhängig) | davon 5 Minuten (Zyklus / unabhängig) | Weg d1 = 0 | Weg d2 = 0 |
+|---|---|---|---|---|
+| 40 | 8,92 % / 8,99 % | **12,55 %** / 6,25 % | 122 von 1.202 (10,1 %) | 53 von 192 (27,6 %) |
+| 60 | 9,41 % / 9,50 % | **11,90 %** / 6,25 % | 122 von 1.202 | 53 von 268 (19,8 %) |
+
+Die Strafwahrscheinlichkeit stimmt, der Anteil der 5-Minuten-Strafen ist im Original doppelt so hoch: Minuten je Strafe 2,38
+statt 2,19 (+8,6 %), passend zum Abstand FILE02→03 (+11 %) und zu den ungeraden Summen. Die frühere Probe „lrandom statt
+`Random`“ (§8 in `belastung-staerke.md`) ist damit überholt.

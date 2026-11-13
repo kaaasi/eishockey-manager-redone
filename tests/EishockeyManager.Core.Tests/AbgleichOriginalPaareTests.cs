@@ -150,6 +150,10 @@ public class AbgleichOriginalPaareTests
             // Prüfsaaten); Reihen je Minute: AbgleichDosboxLinesTests.
             ["FILE02→FILE50"] = [],
             ["FILE02→FILE51"] = [],
+            // DOSBox `runde-17` (#773, Teil 2): erster Spieltag eines neuen Spiels (ES WEIßWASSER). #730 auch hier: REZNICEK
+            // (Abwehr 2, FILE52 Belastung 119) kippt im Original über 127 (→ 50), im Remake bei allen Prüfsaaten 120–125 (über
+            // 60 Saaten 1-mal gekippt); Einsatz und Strafminuten wie im Original (AbgleichDosboxPenaltyTests).
+            ["FILE52→FILE53"] = [.. StrainOf("23 ES WEIßWASSER", 110, StrainSawtoothMax, "REZNICEK")],
         };
 
     public static TheoryData<string, string> Pairs()
