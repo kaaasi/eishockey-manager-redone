@@ -158,7 +158,9 @@ public class SpielberechnungTests
     public void PenaltyMinutes_FollowsTheOriginalRoll()
     {
         Assert.Equal(0, OriginalMatch.PenaltyMinutes(60, true, new ScriptedRandom(3, 7)));
-        Assert.Equal(2, OriginalMatch.PenaltyMinutes(60, true, new ScriptedRandom(3, 0, 4)));
+        // #773 (abgleich-dosbox): der 5-Minuten-Zug ist ein Zug über die Häufigkeiten des lrandom-Zyklus
+        // (LRandomCycle.FiveMinuteOdds, Weg d2 bei Einsatz 60: 53 von 268) – 200 ≥ 53 → 2 Minuten.
+        Assert.Equal(2, OriginalMatch.PenaltyMinutes(60, true, new ScriptedRandom(3, 0, 200)));
         Assert.Equal(5, OriginalMatch.PenaltyMinutes(60, true, new ScriptedRandom(0, 0)));
         Assert.Equal(2, OriginalMatch.PenaltyMinutes(60, false, new ScriptedRandom(0)));
         var calls = new ScriptedRandom(1, 1);

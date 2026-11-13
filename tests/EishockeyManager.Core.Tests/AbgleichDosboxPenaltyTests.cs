@@ -60,6 +60,56 @@ public class AbgleichDosboxPenaltyTests(ITestOutputHelper output)
             $"Original {OriginalPenaltyMinutes}, Remake {sums[0]}…{sums[^1]}");
     }
 
+    /// <summary>
+    /// Regressionstest #773 (rot vor dem Fix: Anteil 6,25 %): Die 5-Minuten-Strafe zieht lrandom(0, 15) direkt nach dem
+    /// Strafwurf (Datei 0x358B7–0x3592D, keine Züge dazwischen). [ORIGINAL] lrandom (Datei 0xBFD5) läuft auf einem Zyklus von
+    /// 15.625 Zuständen (x = (16 · x + 167) mod 4.000.000); aufeinanderfolgende Züge hängen zusammen. Über den Zyklus ist jede
+    /// Strafe bei Einsatz 40 mit 12,55 %, bei 60 mit 11,90 % eine 5-Minuten-Strafe (Strafwahrscheinlichkeit 8,92 % bzw. 9,41 %
+    /// wie mit unabhängigen Zügen).
+    /// </summary>
+    [Theory]
+    [InlineData(40, 0.1255)]
+    [InlineData(60, 0.1190)]
+    public void PenaltyMinutes_FiveMinuteShare_LikeLrandomCycle(int effort, double expected)
+    {
+        var random = new Random(773);
+        int penalties = 0, five = 0;
+        for (var i = 0; i < 2_000_000; i++)
+        {
+            var minutes = OriginalMatch.PenaltyMinutes(effort, firstBoxSlotFree: true, random);
+            if (minutes > 0)
+                penalties++;
+            if (minutes == 5)
+                five++;
+        }
+        output.WriteLine($"Einsatz {effort}: Strafen {penalties / 2e6:P2}, davon 5 Minuten {(double)five / penalties:P2}");
+        Assert.InRange((double)five / penalties, expected - 0.004, expected + 0.004);
+        Assert.InRange(penalties / 2e6, effort == 40 ? 0.0880 : 0.0930, effort == 40 ? 0.0905 : 0.0955);
+    }
+
+    /// <summary>
+    /// Regressionstest #773 (rot vor dem Fix: Original 1447 über allen Saaten, Remake 1218–1377): Liga-Strafminuten aller Vereine
+    /// FILE02 → FILE03 (drei Spieltage) liegen in der Verteilung des Remakes über 12 Saaten.
+    /// </summary>
+    [GameDataFact]
+    public void File02To03_LeaguePenaltyMinutes_WithinRemakeSpread()
+    {
+        const int original = 1447; // [ORIGINAL] FILE03, Summe LeaguePenaltyMinutes (docs/analyse/belastung-staerke.md §8)
+        var database = ClubDatabase.Load(TestGameData.Load());
+        var sums = new List<int>();
+        for (var seed = 1; seed <= 12; seed++)
+        {
+            var game = HokCompare.Import(OriginalImportTests.OriginalSave("FILE02.HOK"), database, seed);
+            var target = HokCompare.Import(OriginalImportTests.OriginalSave("FILE03.HOK"), database, seed);
+            Assert.Null(HokCompare.PlayTo(game, target));
+            sums.Add(game.Clubs.Sum(c => c.LeaguePenaltyMinutes));
+        }
+        sums.Sort();
+        output.WriteLine($"Original {original}, Remake {string.Join(" ", sums)}, Mittel {sums.Average():F1}");
+        Assert.True(sums.Count(s => s <= original) >= 1 && sums.Count(s => s >= original) >= 1,
+            $"Original {original}, Remake {sums[0]}…{sums[^1]}");
+    }
+
     private static GameState PlayFirstMatchDay(int seed)
     {
         var database = ClubDatabase.Load(TestGameData.Load());

@@ -213,15 +213,23 @@ public static class OriginalMatch
     /// <summary>
     /// Strafe in dieser Minute? [ORIGINAL] Datei 0x358B7–0x3592D (Aufruf jede Minute für jede Mannschaft, 0x3808E):
     /// Strafe, wenn lrandom(0, 12) = 0 oder lrandom(0, 110 − Einsatz) = 0 (der zweite Zug nur, wenn der erste nicht 0 ist).
-    /// Ist der erste Platz der Strafbank frei, wird es mit 1/16 (lrandom(0, 15) = 0) eine 5-Minuten-Strafe.
+    /// Ist der erste Platz der Strafbank frei, wird es bei lrandom(0, 15) = 0 eine 5-Minuten-Strafe.
     /// Einsatz = Vereinsfeld 0x26, beim Managerverein + Managerwert 0x974B − 20, begrenzt auf 0 … 100.
+    /// [ORIGINAL] Die drei lrandom-Züge folgen unmittelbar aufeinander und hängen über den Zyklus der Folge zusammen
+    /// (<see cref="LRandomCycle"/>, #773, Beleg DOSBox `runde-17`, <c>docs/analyse/abgleich-dosbox.md</c> §2): die 5 Minuten kommen
+    /// mit der Häufigkeit des Zyklus je Weg (Einsatz 40: 12,55 % aller Strafen statt 1/16). Der Zug bleibt einer aus
+    /// <paramref name="random"/> (gleiche Zahl von Zügen wie vorher); [APPROX] Lage im Zyklus gleichverteilt.
     /// </summary>
     /// <returns>0 (keine Strafe), 2 oder 5 Minuten.</returns>
     public static int PenaltyMinutes(int effort, bool firstBoxSlotFree, Random random)
     {
         effort = Math.Clamp(effort, 0, 100);
-        if (Rnd(random, 0, 12) != 0 && Rnd(random, 0, 110 - effort) != 0)
+        var firstDraw = Rnd(random, 0, 12) == 0;
+        if (!firstDraw && Rnd(random, 0, 110 - effort) != 0)
             return 0;
-        return firstBoxSlotFree && Rnd(random, 0, 15) == 0 ? 5 : 2;
+        if (!firstBoxSlotFree)
+            return 2;
+        var (total, five) = LRandomCycle.FiveMinuteOdds(effort, firstDraw);
+        return Rnd(random, 0, total - 1) < five ? 5 : 2;
     }
 }

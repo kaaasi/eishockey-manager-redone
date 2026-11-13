@@ -100,3 +100,23 @@ lrandom(0, 110 − Einsatz), dann (Platz 0 frei, Computerverein ohne Zug dazwisc
 Die Strafwahrscheinlichkeit stimmt, der Anteil der 5-Minuten-Strafen ist im Original doppelt so hoch: Minuten je Strafe 2,38
 statt 2,19 (+8,6 %), passend zum Abstand FILE02→03 (+11 %) und zu den ungeraden Summen. Die frühere Probe „lrandom statt
 `Random`“ (§8 in `belastung-staerke.md`) ist damit überholt.
+
+### 2.4 Fix
+
+`OriginalMatch.PenaltyMinutes` zieht d1/d2 wie bisher; der 5-Minuten-Zug bleibt **ein** Zug aus `Random` (gleiche Zugzahl), trifft
+aber mit der Häufigkeit des Zyklus je Weg (`LRandomCycle.FiveMinuteOdds`, neue Datei `MatchEngine.LRandom.cs`; `[APPROX]` nur die
+Lage im Zyklus, gleichverteilt). Ergebnis (Saaten wie oben):
+
+| Paar | Original | vorher | nachher |
+|---|---:|---|---|
+| FILE02→03 (Saaten 1–12) | 1447 | 1232–1368, Mittel 1301 | 1336–1458, Mittel 1394 |
+| FILE52→53 (1–20) | 456 | 367–483, Mittel 432 | 411–542, Mittel 473 |
+| FILE05→24 (`AbgleichRestPenaltyTests`, 4 Saaten, ±8 %) | +441 | Mittel ≈ 445 | Mittel 472,5 |
+
+Regressionstests `PenaltyMinutes_FiveMinuteShare_LikeLrandomCycle` (rot vorher: 6,25 %) und
+`File02To03_LeaguePenaltyMinutes_WithinRemakeSpread` (rot vorher: 1447 über allen Saaten). Fremde Tests nach R15-E2 = C angepasst
+(Liste mit Rückschaltprobe im PR). Nebenwirkung für #730: REZNICEK (FILE52→53) kippt jetzt bei Saat 2 wie im Original,
+KUHNEKATH (FILE13→14) weicht nur noch bei 3 von 6 Saaten ab.
+
+**Weitere aufeinanderfolgende lrandom-Züge** (Chancen 0x9F5C, Abschluss, Strafe/Kette) sind nicht geprüft; dieselbe Kopplung
+kann dort wirken. Vorschlag: eigene Analyse (`LRandomCycle` liefert den Zyklus).

@@ -27,7 +27,11 @@ public class PruefungKarteRunde17UiTests
         // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (A130, R15-E2 = C): Saat 4 statt 5 – mit der Startbelastung 80–120 (Datei
         // 0x42E4C) und dem Spielplan über die Satzfolge bekommt Manager 1 bei Saat 5 keine Prämie (Rang 3); unter 1–16 haben beide
         // Manager nur bei 4, 10, 16 eine Prämie. Die Probe hängt an der Saat.
-        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 4);
+        // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): Saat 10 statt 4 – mit den 5-Minuten-Strafen nach dem
+        // lrandom-Zyklus (LRandomCycle) bekommt Manager 1 bei Saat 4 keine Prämie; unter 1–16 haben beide Manager bei 2, 7, 9–13
+        // und 15 eine Prämie. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 mit Saat 10 ebenfalls grün – die Probe hängt an
+        // der Saat.
+        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 10);
         var records = game.History[^1].Managers;
         Assert.Equal(2, records.Count);
         Assert.All(records, r => Assert.True(r.Premium > 0, "Probe ohne Prämie prüft nichts"));

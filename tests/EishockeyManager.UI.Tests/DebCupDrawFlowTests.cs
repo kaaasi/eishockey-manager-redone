@@ -315,6 +315,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // gleich. Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → alter Wert.
     // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
     // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
+    // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu ab 1993 – 5-Minuten-Strafe mit der Häufigkeit des
+    // lrandom-Zyklus (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander); andere Strafen, Tore und
+    // Ergebnisse, mit und ohne Anzeige weiter gleich. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alter Wert.
     private const string Reference =
-        "1993: DEB 4, DM 8, Tab 15415 | 1994: DEB 10, DM 2, Tab 15350 | 1995: DEB 9, DM 8, Tab 15387 | 1996: DEB 8, DM 31, Tab 15379";
+        "1993: DEB 2, DM 6, Tab 15406 | 1994: DEB 6, DM 1, Tab 15786 | 1995: DEB 7, DM 6, Tab 16081 | 1996: DEB 18, DM 21, Tab 15910";
 }

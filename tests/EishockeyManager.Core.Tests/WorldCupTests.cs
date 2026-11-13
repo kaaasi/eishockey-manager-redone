@@ -109,7 +109,10 @@ public class WorldCupTests
         // Fixlauf wettbewerbe-rest nach Rebase auf main 3cd9169 (R15-E2 = C): Saat 6 statt 4 – mit #784 und dem Spielplan über die
         // Satzfolge (A113, Datei 0x4E7C7) wird der Manager bei 4 Bundestrainer (Phase bleibt ClubSeasonOver); Saaten 1, 6, 8, 9 ohne
         // Ernennung. Rückschaltprobe: alter Code mit Saat 6 ebenfalls grün – die Probe hängt an der Saat.
-        var game = Create(6, true, 30);
+        // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): Saat 8 statt 6 – mit den 5-Minuten-Strafen nach dem
+        // lrandom-Zyklus (LRandomCycle) wird der Manager bei 6 (und 2) Bundestrainer; Saaten 1, 3–5, 7–12 ohne Ernennung.
+        // Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 mit Saat 8 ebenfalls grün – die Probe hängt an der Saat.
+        var game = Create(8, true, 30);
         while (game.Phase == SeasonPhase.Running)
             game.Continue();
         Assert.Equal(SeasonCalendar.ClubSeasonEnd + 1, game.CurrentDay);

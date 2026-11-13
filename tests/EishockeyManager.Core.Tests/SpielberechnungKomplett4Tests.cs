@@ -36,7 +36,8 @@ public class SpielberechnungKomplett4Tests
     /// <summary>
     /// [ORIGINAL] 0x35A26–0x35B22: Nach der Strafe |eigene − gegnerische Feldspieler| = 1 → Gegnermanager +0x177 + 8
     /// (Überzahlspiele), eigener Manager 0x97DC (Unterzahlspiele). Züge: Strafe (lrandom(0, 12) = 0), zwei Minuten
-    /// (lrandom(0, 15) = 1), keine Kette (lrandom(0, 3) = 1). Vorher: kein Zähler.
+    /// (5-Minuten-Zug 1000 ≥ 122 von 1.202, <see cref="LRandomCycle"/>, #773), keine Kette (lrandom(0, 3) = 1). Vorher: kein
+    /// Zähler.
     /// </summary>
     [Fact]
     public void Penalty_StartingPowerPlay_CountsBothManagers()
@@ -44,7 +45,7 @@ public class SpielberechnungKomplett4Tests
         var (own, other) = (Counts(), Counts());
         var club = Managed(own);
         var opponent = Managed(other);
-        Assert.Equal(2, OriginalMinutes.Penalty(club, opponent, 0, 10, chained: false, [], new ScriptedRandom(0, 1, 1)));
+        Assert.Equal(2, OriginalMinutes.Penalty(club, opponent, 0, 10, chained: false, [], new ScriptedRandom(0, 1000, 1)));
         Assert.Equal(1, own[(int)PowerPlayCounter.ShortHanded]);
         Assert.Equal(0, own[(int)PowerPlayCounter.PowerPlays]);
         Assert.Equal(1, other[(int)PowerPlayCounter.PowerPlays]);
@@ -64,8 +65,8 @@ public class SpielberechnungKomplett4Tests
         var club = Managed(own);
         var opponent = Managed(other);
         Occupy(opponent, opponentPenalties);
-        // Strafe, zwei Minuten, keine Kette.
-        OriginalMinutes.Penalty(club, opponent, 0, 10, chained: false, [], new ScriptedRandom(0, 1, 1));
+        // Strafe, zwei Minuten (5-Minuten-Zug 1000, #773), keine Kette.
+        OriginalMinutes.Penalty(club, opponent, 0, 10, chained: false, [], new ScriptedRandom(0, 1000, 1));
         Assert.Equal(expected, own[(int)PowerPlayCounter.ShortHanded]);
         Assert.Equal(expected, other[(int)PowerPlayCounter.PowerPlays]);
     }
@@ -78,14 +79,14 @@ public class SpielberechnungKomplett4Tests
     public void Penalty_ChainWithoutPenalty_RollsBackLastCounter()
     {
         var (own, other) = (Counts(), Counts());
-        // Strafe, zwei Minuten, Kette (lrandom(0, 3) = 0); Kette: lrandom(0, 12) = 1, lrandom(0, 110 − E) = 1 → keine Strafe.
-        OriginalMinutes.Penalty(Managed(own), Managed(other), 0, 10, chained: false, [], new ScriptedRandom(0, 1, 0, 1, 1));
+        // Strafe, zwei Minuten (5-Minuten-Zug 1000, #773), Kette (lrandom(0, 3) = 0); Kette: lrandom(0, 12) = 1, lrandom(0, 110 − E) = 1 → keine Strafe.
+        OriginalMinutes.Penalty(Managed(own), Managed(other), 0, 10, chained: false, [], new ScriptedRandom(0, 1000, 0, 1, 1));
         Assert.Equal(0, own[(int)PowerPlayCounter.ShortHanded]);
         Assert.Equal(1, other[(int)PowerPlayCounter.PowerPlays]);
 
         // Gegner ohne Manager: zuletzt gezählt ist die eigene Unterzahl, sie wird zurückgenommen.
         var alone = Counts();
-        OriginalMinutes.Penalty(Managed(alone), new LiveTeam(), 0, 10, chained: false, [], new ScriptedRandom(0, 1, 0, 1, 1));
+        OriginalMinutes.Penalty(Managed(alone), new LiveTeam(), 0, 10, chained: false, [], new ScriptedRandom(0, 1000, 0, 1, 1));
         Assert.Equal(0, alone[(int)PowerPlayCounter.ShortHanded]);
     }
 
@@ -96,8 +97,8 @@ public class SpielberechnungKomplett4Tests
         var (own, other) = (Counts(), Counts());
         var club = Managed(own);
         var opponent = Managed(other);
-        // Strafe, zwei Minuten, Kette; Kette: Strafe, zwei Minuten (Platz 0 frei, lrandom(0, 15) = 1).
-        OriginalMinutes.Penalty(club, opponent, 0, 10, chained: false, [], new ScriptedRandom(0, 1, 0, 0, 1));
+        // Strafe, zwei Minuten, Kette; Kette: Strafe, zwei Minuten (Platz 0 frei, 5-Minuten-Zug 1000 ≥ 122 von 1.202, #773).
+        OriginalMinutes.Penalty(club, opponent, 0, 10, chained: false, [], new ScriptedRandom(0, 1000, 0, 0, 1000));
         Assert.Equal((4, 4), (club.Box.Skaters, opponent.Box.Skaters));
         Assert.Equal([0, 0, 0, 0, 0, 1], own);
         Assert.Equal([0, 0, 0, 0, 1, 0], other);

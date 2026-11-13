@@ -258,10 +258,13 @@ public class RngTwinProbeTests
     // Kaderfolge. Rückschaltprobe: Quellen von Teil 3b (git diff 1b63121 759b124 -- src) zurück → D064B357E8496E7E.
     // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
     // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
-    [InlineData(false, 3, "DD2D7DEAF636F7CB")]
-    [InlineData(true, 3, "F53B2899E188BF9D")]
-    [InlineData(false, 11, "97C22A0BE23178C6")]
-    [InlineData(true, 11, "450478C6FAD7E9AD")]
+    // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu – 5-Minuten-Strafe mit der Häufigkeit des lrandom-Zyklus
+    // (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander: 12,55 % statt 1/16 bei Einsatz 40); andere
+    // Strafen, Ergebnisse und Zufallsverlauf ab dem ersten Spiel. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alte Werte.
+    [InlineData(false, 3, "54BA9AA5ECAAEDA8")]
+    [InlineData(true, 3, "F72B4E377F52B12D")]
+    [InlineData(false, 11, "522205D210E15803")]
+    [InlineData(true, 11, "3CDAFB4E0B2F3061")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -340,8 +343,11 @@ public class RngTwinProbeTests
     // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
     // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
     // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
-    [InlineData(false, "866314D612009C85")]
-    [InlineData(true, "EFC65C03FDCD6029")]
+    // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu – 5-Minuten-Strafe mit der Häufigkeit des lrandom-Zyklus
+    // (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander: 12,55 % statt 1/16 bei Einsatz 40); andere
+    // Strafen, Ergebnisse und Zufallsverlauf ab dem ersten Spiel. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alte Werte.
+    [InlineData(false, "0A6DB7826EA09AC8")]
+    [InlineData(true, "54E8A8D99DDD7431")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

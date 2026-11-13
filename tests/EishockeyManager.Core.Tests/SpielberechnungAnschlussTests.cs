@@ -274,8 +274,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
     // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
     // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
-    [InlineData(false, "6BBABDA99624A671")]
-    [InlineData(true, "91DB01ED23489BC3")]
+    // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu – 5-Minuten-Strafe mit der Häufigkeit des lrandom-Zyklus
+    // (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander: 12,55 % statt 1/16 bei Einsatz 40); andere
+    // Strafen, Ergebnisse und Zufallsverlauf ab dem ersten Spiel. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alte Werte.
+    [InlineData(false, "AE2951A985F29E9C")]
+    [InlineData(true, "1E65651D17926CB6")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -350,8 +353,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // abgleich-rest Teil 3 (#732, R16-D2 = A): Titel und Zufallsquellen gleich, nur das Konto von Satz 0 – der Tagesabschluss läuft
     // im Modus 1 in Sommerpause und WM-Schleife wie im Original (Datei 0x56512, 0x5569A). Gegenprobe: RunSummerBreak und
     // OpenWorldOnlyLoopDay ohne Tagesabschluss → alter Wert.
+    // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu – 5-Minuten-Strafe mit der Häufigkeit des lrandom-Zyklus
+    // (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander: 12,55 % statt 1/16 bei Einsatz 40); andere
+    // Strafen, Ergebnisse und Zufallsverlauf ab dem ersten Spiel. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alte Werte.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|-1542821|WorldChampion=52|-4586841|WorldChampion=54|-9294877|WorldChampion=54|-16586608|R1374974225 C782029941";
+        "WorldChampion=63|500000|WorldChampion=55|-1542821|WorldChampion=63|-4586841|WorldChampion=53|-9294877|WorldChampion=53|-16586608|R1374974225 C745240846";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

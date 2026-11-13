@@ -151,9 +151,11 @@ public class AbgleichOriginalPaareTests
             ["FILE02→FILE50"] = [],
             ["FILE02→FILE51"] = [],
             // DOSBox `runde-17` (#773, Teil 2): erster Spieltag eines neuen Spiels (ES WEIßWASSER). #730 auch hier: REZNICEK
-            // (Abwehr 2, FILE52 Belastung 119) kippt im Original über 127 (→ 50), im Remake bei allen Prüfsaaten 120–125 (über
-            // 60 Saaten 1-mal gekippt); Einsatz und Strafminuten wie im Original (AbgleichDosboxPenaltyTests).
-            ["FILE52→FILE53"] = [.. StrainOf("23 ES WEIßWASSER", 110, StrainSawtoothMax, "REZNICEK")],
+            // (Abwehr 2, FILE52 Belastung 119) kippt im Original über 127 (→ 50), im Remake bei 5 von 6 Prüfsaaten 120–125;
+            // Einsatz und Strafminuten wie im Original (AbgleichDosboxPenaltyTests).
+            // Mit den 5-Minuten-Strafen nach dem lrandom-Zyklus (#773) kippt REZNICEK bei Saat 2 wie im Original → Sägezahn, Pflicht über
+            // die Saaten in Strain730_DeviatesAtMostSeeds.
+            ["FILE52→FILE53"] = [StrainSawtooth("23 ES WEIßWASSER")],
         };
 
     public static TheoryData<string, string> Pairs()
@@ -203,7 +205,11 @@ public class AbgleichOriginalPaareTests
     /// </summary>
     [GameDataTheory]
     [InlineData("FILE02", "FILE03", "5 KÖLNER EC", "HOCK", 90, StrainSawtoothMax, 5)]
-    [InlineData("FILE13", "FILE14", "6 KREFELDER EV", "KUHNEKATH", 40, 75, 5)]
+    // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): KUHNEKATH nur noch bei 3 von 6 Saaten (1993, 3, 77) – mit den
+    // 5-Minuten-Strafen nach dem lrandom-Zyklus anderer Spielverlauf über den Saisonwechsel; Richtung und Bereich unverändert.
+    [InlineData("FILE13", "FILE14", "6 KREFELDER EV", "KUHNEKATH", 40, 75, 3)]
+    // DOSBox `runde-17` (abgleich-dosbox Teil 2): REZNICEK (Original 50) im Remake 120–125 bei 5 von 6 Saaten (nicht 2).
+    [InlineData("FILE52", "FILE53", "23 ES WEIßWASSER", "REZNICEK", 110, StrainSawtoothMax, 5)]
     public void Strain730_DeviatesAtMostSeeds(string a, string b, string club, string player, int min, int max, int minSeeds)
     {
         var known = StrainOf(club, min, max, player).Single();
