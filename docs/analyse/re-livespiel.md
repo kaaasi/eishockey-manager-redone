@@ -702,3 +702,20 @@ Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
   als die Spieltage des Remakes (Paarung für Paarung). `[APPROX]` Wie ein Spieltag über den Minutenschritt den Zufall
   verteilt, legt der Anschluss fest (B2/B3) – Abnahme dort „Spieltag über den Live-Bildschirm = Ergebnis ohne Anzeige“;
   der Minutenschritt selbst ändert keinen Spieltag.
+
+## 13. Umsetzung Spur `livespiel-ui` (Runde 18, B1 und B4)
+
+- **B1:** Bausteine in `src/EishockeyManager.UI/LiveWidgets.cs` (Spieluhr 0x51E90, Balken 0x533D0/0x53307, Lampe 0x53453,
+  Ziffer 0x53234); „Spiele laufen“ in `MatchDayScreen.DrawRunning` nach Datei 0x37B82–0x37C5C (Text 0x30:0x885 zentriert
+  x 0–319, Grundlinie 80, Farbe 30, Schatten 0; Rahmen Farbe 0, Füllung Farbe 3; Uhr Stil 1). Die Farben der Balken
+  stehen in DGROUP 0x5425 und 0x5427 je als 0x18, 0x13. Pixelvergleich mit `karriere_02315` (Szenario `live-bausteine`):
+  Text, Kasten, Balken und Ziffern je bei Versatz (0 | 0) am besten.
+- **Korrektur der Abnahme:** `karriere_02315` zeigt Minute **08**: oberer Balken 32 Pixel gelb (x 9–41, Linie mit beiden
+  Enden), die anderen beiden rot – wie 0x51E90 mit Minute 8 rechnet. „Zwei volle Balken, dritter 32 px“ gilt erst bei
+  Minute 48 (Szenario-Bild `02_spiele_laufen_minute_48`). Der Text stand im Remake schon auf Grundlinie 80 (Oberkante 65);
+  abweichend waren die Mitte (160 statt 159 − Breite/2), Schatten 53 statt 0, Rahmen 241 statt 0, Füllung 2 statt 3,
+  Balken und Ziffern.
+- **0x53234:** Die Ziffern in kb\38 haben Farbe 0 als Grund; `karriere_02315` zeigt das Innere der „0“ in Farbe 3, also
+  lässt 0x50:0xBD3 Farbe 0 durch (`[APPROX]`, aus dem Video geschlossen; 0x13B23 nicht gelesen).
+- **B4:** Spielende 0x51F3D war bereits umgesetzt (`SeasonEndGameOverScreen.DrawGameEnd`, Tests `SpielendeOriginalTests`);
+  neu nur das Szenario `live-spielende`. Ein Videobild des Spielendes gibt es in den Reihen nicht.
