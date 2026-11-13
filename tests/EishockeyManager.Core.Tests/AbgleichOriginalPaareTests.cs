@@ -10,7 +10,8 @@ namespace EishockeyManager.Core.Tests;
 /// Fall rot, ebenso ein Muster, das nicht mehr trifft (behoben → Eintrag entfernen). Bericht: <c>docs/analyse/abgleich-original.md</c>.
 /// </summary>
 /// <remarks>
-/// Paare ohne Eingriff: FILE02→03, FILE16A→17, FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
+/// Paare ohne Eingriff: FILE02→03, FILE02→50 und FILE02→51 (DOSBox `runde-17`, FILE51 mit Torwartwechsel im Spiel), FILE16A→17,
+/// FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
 /// Eingriff (nur übrige Felder, <see cref="HokCompareClasses.Interventions"/>): FILE13→14 (Sitzungszustand, Aufstellung von Hand;
 /// #733, #734), FILE44→46, FILE18→48. Saat 1993 (Werkzeugvorgabe);
 /// zufallsabhängige Felder sind mit Bereichen und Invarianten geprüft, ein anderer Zufall darf das Ergebnis nicht kippen
@@ -143,6 +144,12 @@ public class AbgleichOriginalPaareTests
             ["FILE44→FILE46"] = [.. SeasonStart],
             // „nur Weltkugel“: Teamwerte nicht mehr neu gewürfelt (#747 behoben durch abgleich-fix).
             ["FILE18→FILE48"] = [],
+            // DOSBox-Aufnahme `runde-17` (#730, Spur abgleich-dosbox Teil 1): 1. Spieltag aus FILE02 im Live-Spiel ohne Mausklick
+            // (FILE50) bzw. mit Klicks auf die Reihenknöpfe und Torwartwechsel CISSEWSKI → HEISS in Minute 26 (FILE51, Klicks laut
+            // Nutzer ohne Wirkung). Nach einem Spieltag keine Abweichung, auch nicht in der Belastung (alle Kölner ±7 bei allen
+            // Prüfsaaten); Reihen je Minute: AbgleichDosboxLinesTests.
+            ["FILE02→FILE50"] = [],
+            ["FILE02→FILE51"] = [],
         };
 
     public static TheoryData<string, string> Pairs()
