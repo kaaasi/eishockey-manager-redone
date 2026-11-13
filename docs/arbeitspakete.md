@@ -131,7 +131,7 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
 - **Teil 2 (Welle 2, `paket/pruefung-karte-2`):** Inventur „Stand Runde 18“, Funktionskarte (L-Funktionen umgesetzt), gesammelte
   P3 der Runde. Modell Claude Opus 5.5, Erstreview Claude Opus 5.5.
 - **Status:** Go 13.11.2026 (Teil 1 Welle 1, Teil 2 Welle 2). Teil 1 fertig 13.11.2026, PR #813 (#803, #805), wartet auf
-  Erstreview; Inventurzeile A370 und `reverse-engineering.md` (Hinweiszeile/0x041AC, [APPROX] Belastung) für Teil 2.
+  Erstreview; Inventurzeile A370 und `reverse-engineering.md` (Hinweiszeile/0x041AC, [APPROX] Belastung) für Teil 2. Teil 2 in Arbeit 13.11.2026 (geplanter Lauf, Branch `paket/pruefung-karte-2`).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
