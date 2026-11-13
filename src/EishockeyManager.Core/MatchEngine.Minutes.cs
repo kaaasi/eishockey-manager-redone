@@ -420,6 +420,8 @@ public static partial class OriginalMinutes
         }
         events.Add(new MatchEvent(minute, side, MatchEventKind.Penalty, minutes,
             player is { Goalie: false } ? player.Player : null));
+        // Spur livespiel-kern A4: [ORIGINAL] Reporter 0x52520 (Datei 0x35C1C–0x35C73) zieht den Strafgrund vor dem Kettenzug.
+        PenaltyReason(club, opponent, side, minute, minutes, random);
         // [ORIGINAL] 0x35C7B–0x35CB2: bleibt die Kettenstrafe aus (Rückgabe 0), wird der zuletzt gezählte Wert zurückgenommen.
         if (chain && Penalty(opponent, club, 1 - side, minute, chained: true, events, random) == 0 && counted is { } last)
             CountPowerPlay(last.Team, last.Counter, -1);
@@ -557,7 +559,7 @@ public static partial class OriginalMinutes
         }
         // Spur livespiel-kern (A1/A4): [ORIGINAL] Torszene 0x53C57 bei Paarung mit Anzeigereihe (Datei 0xAB47–0xAB90).
         if (!aborted)
-            GoalScene(minute, side, goal);
+            GoalScene(minute, side, goal, shooter, random);
         // [ORIGINAL] 0xAB47–0xAB90: in der Managerpaarung nach jedem Abschluss Szene/Torschütze 0x541D9 (ScoringPlayers).
         var players = rules.ManagerMatch && !aborted ? ScoringPlayers(shooter, goal, random) : null;
         if (!goal)

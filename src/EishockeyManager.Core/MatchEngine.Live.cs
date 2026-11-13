@@ -129,7 +129,8 @@ public static partial class MatchEngine
         }
         else
         {
-            report = PlayWithScoreboard(scoreboardRow, () => OriginalMinutes.Play(homeTeam, awayTeam, rules, random));
+            report = PlayWithScoreboard(scoreboardRow, () => OriginalMinutes.Play(homeTeam, awayTeam, rules, random),
+                game.Options, game.LiveScoreboard?.Active ?? false);
             if (knockOut && report.HomeGoals == report.AwayGoals)
             {
                 // Teil 5: [ORIGINAL] nach der Verlängerung noch unentschieden → Penaltyschießen 0x3901B (aus 0x32AA3).

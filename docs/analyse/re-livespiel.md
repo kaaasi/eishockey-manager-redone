@@ -668,3 +668,19 @@ Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
   Minute alle Paarungen des Spieltags (0x37A62). Damit Eingriffe während des Spiels wirken, braucht der Live-Bildschirm einen
   Minutenschritt im Kern (Paarungen vorbereiten, je Minute `OriginalMinutes.PlayMinute`, Abschluss wie `PlayWithEvents`);
   nicht Teil von A1–A4 laut Plan – Entscheidung Leitstelle.
+
+### A4 Zufall der Anzeige und Format (`Core/MatchEngine.GoalScene.cs`, `Formats/GoalScene.cs`)
+
+- **Szenenwahl:** Die Torszene 0x53C57 ruft den Abspieler 0x567C8 (Datei 0x5402A) nur für Art 0/1 und mit `[0x226]` ≠ 0
+  (Datei 0x53DB1–0x53DE3, 0x53E02), dort mit `[0x5A56]` oder `[0x5A55]` (Datei 0x53F75–0x53F83). Der Abspieler zieht vor
+  0x575C3 nichts; 0x575C3 zieht in dieser Reihenfolge (Datei 0x575E9–0x57643): `random(2, [0xE2F6])`, `random(0, Art ? 0xD2 :
+  0xFF)`, dann bei Penalty `random(2, [0xE2F2])`, sonst bei sechs `random(2, [0xE2F4])`. Das Kennzeichen Penalty kommt aus dem
+  Abschluss immer als 0 (Datei 0xAB69). Der Kern zieht das an der Szenenstelle 0xAB90 (`OriginalMinutes.GoalScene`), also
+  nach `GoalScored` und vor dem Torschützen 0x541D9 (Datei 0x5407F).
+- **Strafgrund:** 0x35818 ruft den Reporter nach der Spielerwahl, wenn Verein oder Gegner einen Manager hat (Datei
+  0x35C1C–0x35C73); 0x52520 kehrt ohne `[0x5A56]` oder bei `[0x262]` ≥ 70 zurück (Datei 0x5252A–0x5253B), sonst
+  `random(0, 12)` nur für Ereignis 2 (Datei 0x52A9A), Ereignis 3 Index 5 (Datei 0x52A94). Der Kern zieht das in `Penalty` nach
+  dem Ereignis, vor dem Kettenzug (`OriginalMinutes.PenaltyReason`).
+- **Format:** Effektzählung über alle 6 600 Bilder: Ton 3 = 149, Ton 4 = 53, Ton 1 = 25 (andere Töne kommen nicht vor).
+- **Wirkung auf die Zufallsfolge:** Mit den Anfangswerten (Geschwindigkeit 70, Darstellung 0) zieht der Kern nichts zusätzlich;
+  Darstellung ≠ 0 bzw. Geschwindigkeit < 70 verschieben die Folge der Managerpaarung wie im Original.

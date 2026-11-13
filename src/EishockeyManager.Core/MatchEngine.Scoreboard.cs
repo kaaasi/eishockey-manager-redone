@@ -23,7 +23,7 @@ public readonly record struct ScoreboardPenalty(int Minute, int Side, int Minute
 /// </list>
 /// Die Zähler werden je Spieltagsablauf auf 0 gelöscht (Datei 0x36BCC–0x36BDB: 0x54 Byte ab DGROUP 0xA839).
 /// </summary>
-public sealed class LiveScoreboardRow
+public sealed partial class LiveScoreboardRow
 {
     /// <summary>[ORIGINAL] Datei 0x53CCE: Chancen und Tore zählen nur bis Minute 60 (keine Verlängerung).</summary>
     public const int LastCountedMinute = 60;
@@ -186,11 +186,15 @@ public static partial class MatchEngine
         return board.Add(home.Index, away.Index);
     }
 
-    /// <summary>Spiel mit Reihe: Chancen über <see cref="OriginalMinutes.GoalScene"/> zählen, am Ende Strafminuten übernehmen.</summary>
-    internal static MatchReport PlayWithScoreboard(LiveScoreboardRow? row, Func<MatchReport> play)
+    /// <summary>
+    /// Spiel mit Anzeigezustand: Chancen über <see cref="OriginalMinutes.GoalScene"/> zählen, Züge der Anzeige nach R18-D3
+    /// (<c>MatchEngine.GoalScene.cs</c>), am Ende Strafminuten übernehmen.
+    /// </summary>
+    internal static MatchReport PlayWithScoreboard(LiveScoreboardRow? row, Func<MatchReport> play, GameOptions? options = null,
+        bool dayActive = false)
     {
-        var previous = OriginalMinutes.CurrentRow;
-        OriginalMinutes.CurrentRow = row;
+        var previous = OriginalMinutes.Display;
+        OriginalMinutes.Display = new LiveDisplay(row, dayActive || row is not null, options);
         try
         {
             var report = play();
@@ -199,23 +203,25 @@ public static partial class MatchEngine
         }
         finally
         {
-            OriginalMinutes.CurrentRow = previous;
+            OriginalMinutes.Display = previous;
         }
     }
 }
 
+/// <summary>
+/// Anzeigezustand der laufenden Paarung für den Spielkern: Reihe (oder null), Live-Anzeige am Spieltag (DGROUP 0x5A56) und
+/// die Optionen (Geschwindigkeit DGROUP 0x262, Darstellung 0x226).
+/// </summary>
+internal sealed record LiveDisplay(LiveScoreboardRow? Row, bool DayActive, GameOptions? Options);
+
 public static partial class OriginalMinutes
 {
-    /// <summary>Reihe der Live-Anzeige der laufenden Paarung (nur während <see cref="MatchEngine.PlayWithScoreboard"/>).</summary>
+    /// <summary>Anzeigezustand der laufenden Paarung (nur während <see cref="MatchEngine.PlayWithScoreboard"/>).</summary>
     [ThreadStatic]
-    internal static LiveScoreboardRow? CurrentRow;
+    internal static LiveDisplay? Display;
 
-    /// <summary>
-    /// [ORIGINAL] Aufruf der Torszene 0x53C57 aus dem Abschluss 0xA484 (Datei 0xAB90) für eine Paarung mit Anzeigereihe, nach
-    /// jedem Abschluss mit Art = Tor (1) bzw. vergeben (0), vor dem Torschützen 0x541D9; nicht nach dem Abbruch in der
-    /// Verlängerung (0xA642–0xA650). Teil A1: Drittelzähler (<see cref="LiveScoreboardRow.Chances"/>).
-    /// </summary>
-    internal static void GoalScene(int minute, int side, bool goal) => CurrentRow?.AddChance(minute, side, goal);
+    /// <summary>Reihe der Live-Anzeige der laufenden Paarung oder null.</summary>
+    internal static LiveScoreboardRow? CurrentRow => Display?.Row;
 }
 
 public sealed partial class GameState
