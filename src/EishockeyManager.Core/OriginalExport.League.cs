@@ -11,7 +11,10 @@ public sealed partial class GameState
     ///   „nur Weltkugel“ trägt der Satz des Managervereins den Namen des Landes (FILE11, Datei 0x5B556).</item>
     /// <item>[ORIGINAL] +0x16: Manager + 1 beim Managerverein (FILE01: KÖLNER EC 1, FILE09: 1 und 2), 6 Land mit Bundestrainer im Amt (Datei 0x55494), sonst 0.</item>
     /// <item>[ORIGINAL] +0x26–0x2B/+0x35–0x3A: Anzeige „AUTOM.“ des Nationalteams (Spielvorbereitung 0x8365; FILE19).
-    ///   [APPROX] Für die übrigen Vereine rechnet das Original die Werte vor jedem Spiel neu; der Export schreibt 0 (Stand FILE01).</item>
+    ///   [APPROX] Für die übrigen Vereine rechnet das Original die Zuschläge +0x27–0x2B/+0x35–0x3A vor jedem Spiel neu; der Export
+    ///   schreibt 0 (Stand FILE01).</item>
+    /// <item>[ORIGINAL] +0x26 Einsatz und +0x2C Bits 4–6 Angriff des letzten Spiels der Vereine mit Kader (#804, <see cref="Tactics.MatchEffort"/>);
+    ///   [APPROX] +0x2D = +0x26.</item>
     /// <item>[ORIGINAL] +0x34 Logo (<see cref="DatabaseClub.LogoNumber"/>, beim Managerverein + 0x80; FILE01: KÖLNER EC 0x8C) und
     ///   +0x3B/+0x3C Farbcode (<c>kb\23</c> 0x0000, niederes Byte zuerst), an FILE01–FILE41 gegen die Datenbank geprüft.
     ///   [APPROX] +0x1E (45–55, ab Satz 64 nach dem ersten Tag 90) und +0x1F–0x25 (ab dem ersten Tag 90) ungedeutet.</item>
@@ -46,6 +49,15 @@ public sealed partial class GameState
                 r[0x1B] = OriginalExport.Byte(attack.Technique);
                 r[0x1C] = OriginalExport.Byte(v.DefenseForm);
                 r[0x1D] = OriginalExport.Byte(v.AttackForm);
+            }
+            if (!TransferMarket.IsNationalTeam(club) && !(WorldOnly && club.Index == Managers[0].ClubIndex))
+            {
+                // #804: [ORIGINAL] Einsatz 0x26 und Angriff 0x2C Bits 4–6 des letzten Spiels (Gegenstück zu ApplyTeamValues).
+                // [APPROX] 0x2D (Grundwert der Automatik, 0x8365) führt das Remake nicht; der Export schreibt 0x26 – im Original gleich,
+                // außer beim Gegner einer Managerpaarung (0x939A ändert 0x26 je Minute; FILE03 55/40, FILE53 60/40). Die übrigen
+                // Bits von 0x2C (Modus 0–2, Bit 3, Favorit Bit 7) schreibt die Spielvorbereitung vor jedem Spiel neu (Datei 0x84EB).
+                r[0x26] = r[0x2D] = OriginalExport.Byte(club.Tactics.MatchEffort);
+                r[0x2C] = (byte)(club.Tactics.MatchAttack << 4);
             }
             r[0x1E] = 50; // [APPROX] ungedeutet (FILE01: 45–55)
             if (CurrentDay > 0 || Season > FirstSeason)

@@ -455,8 +455,11 @@ public class GameModeTests
     // Rückschaltprobe: Player.Factory.cs/Squad.Setup.cs/MatchEngine.Injuries.cs von e1476e6 → Werte davor.
     // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (#790 wettbewerbe-rest, #793 re-livespiel-2 und kader-rest zusammen, R15-E2 = C):
     // auf dem gemeinsamen Stand neu gezogen. Rückschaltprobe: src/ von 1d83cc0 (ohne kader-rest) + dieser Test → rot.
+    // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu – 5-Minuten-Strafe mit der Häufigkeit des lrandom-Zyklus
+    // (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander: 12,55 % statt 1/16 bei Einsatz 40); andere
+    // Strafen, Ergebnisse und Zufallsverlauf ab dem ersten Spiel. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alte Werte.
     internal const string Mode4Reference =
-        "WorldChampion=55,CupWinner=3,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=54,CupWinner=16,GermanChampion=1,EuropeanCupWinner=2|2215583,400000|WorldChampion=52,CupWinner=10,GermanChampion=10,EuropeanCupWinner=1|2939679,500000|WorldChampion=54,CupWinner=14,GermanChampion=10,EuropeanCupWinner=1|2915303,500000|WorldChampion=55,CupWinner=5,GermanChampion=4,EuropeanCupWinner=10|2473513,500000|R338253751 C926013504";
+        "WorldChampion=52,CupWinner=16,GermanChampion=4,EuropeanCupWinner=2|1100000,400000|WorldChampion=57,CupWinner=0,GermanChampion=3,EuropeanCupWinner=4|2303083,400000|WorldChampion=63,CupWinner=17,GermanChampion=0,EuropeanCupWinner=4|2279180,400000|WorldChampion=54,CupWinner=20,GermanChampion=19,EuropeanCupWinner=0|2383337,500000|WorldChampion=54,CupWinner=3,GermanChampion=19,EuropeanCupWinner=0|2258046,500000|R1154905471 C2105873178";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

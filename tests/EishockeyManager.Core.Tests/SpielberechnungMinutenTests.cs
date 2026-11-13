@@ -139,9 +139,10 @@ public class SpielberechnungMinutenTests
         var club = Team();
         var opponent = Team();
         var events = new List<MatchEvent>();
-        // Eigene Strafe: lrandom(0, 12) = 0, Platz 0 frei: lrandom(0, 15) = 3 → 2 Minuten; Kette lrandom(0, 3) = 0;
-        // Gegner: lrandom(0, 12) = 5, lrandom(0, 50) = 0 → Strafe, lrandom(0, 15) = 0 → 5 Minuten (kein weiteres Glied).
-        var random = new ScriptedRandom(0, 3, 0, 5, 0, 0);
+        // Eigene Strafe: lrandom(0, 12) = 0, Platz 0 frei: 5-Minuten-Zug 1000 (≥ 122 von 1.202, LRandomCycle, #773) → 2 Minuten;
+        // Kette lrandom(0, 3) = 0; Gegner: lrandom(0, 12) = 5, lrandom(0, 50) = 0 → Strafe, 5-Minuten-Zug 0 → 5 Minuten (kein
+        // weiteres Glied).
+        var random = new ScriptedRandom(0, 1000, 0, 5, 0, 0);
         Assert.Equal(2, OriginalMinutes.Penalty(club, opponent, 0, 7, chained: false, events, random));
         Assert.True(random.Exhausted);
         Assert.Equal([new MatchEvent(7, 0, MatchEventKind.Penalty, 2), new MatchEvent(7, 1, MatchEventKind.Penalty, 5)], events);

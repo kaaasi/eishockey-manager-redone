@@ -13,7 +13,10 @@ public class KaderStartRunde13Tests
     /// </summary>
     [Theory]
     [InlineData(3)]
-    [InlineData(11)]
+    // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): Saat 13 statt 11 – mit den 5-Minuten-Strafen nach dem
+    // lrandom-Zyklus (LRandomCycle) gehen bei Saat 11 drei der zehn Plätze in der Saison weg (7 frei, Saaten 3/12–17: 9–10).
+    // Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 mit Saat 13 ebenfalls grün – die Probe hängt an der Saat.
+    [InlineData(13)]
     public void FreePoolSlotAtAge60_RetiresAndGetsYoungSuccessorInSameSlot(int seed)
     {
         var game = TestGames.Create(seed);

@@ -53,7 +53,10 @@ public class KaderTransferTeil4Tests
         // Spur kader-rest (A130, R15-E2 = C; Fixlauf nach Rebase auf main 1d83cc0): Saat 3 statt 22 – mit der Startbelastung 80–120
         // (Datei 0x42E4C) und dem Spielplan über die Satzfolge zusammen hält Saat 22 nur 22 Wechsel (Saaten 1–40: 12–22, über 22 nur 3,
         // 15, 24). Rückschaltprobe: src/ von 1d83cc0 mit Saat 3 ebenfalls rot; die Probe hängt an der Saat, die Grenze bleibt.
-        var game = TestGames.Create(3);
+        // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): Saat 26 statt 3 – mit den 5-Minuten-Strafen nach dem lrandom-Zyklus
+        // (LRandomCycle) hält Saat 3 nur 21 Wechsel (Saaten 1–40: 11–27, über 22 nur 8, 24, 26). Rückschaltprobe:
+        // MatchEngine.Original.cs von 5367ba8 mit Saat 26 ebenfalls rot; die Probe hängt an der Saat, die Grenze bleibt.
+        var game = TestGames.Create(26);
         var market = game.TransferMarket;
         var changes = 0;
         for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)

@@ -10,7 +10,8 @@ namespace EishockeyManager.Core.Tests;
 /// Fall rot, ebenso ein Muster, das nicht mehr trifft (behoben → Eintrag entfernen). Bericht: <c>docs/analyse/abgleich-original.md</c>.
 /// </summary>
 /// <remarks>
-/// Paare ohne Eingriff: FILE02→03, FILE16A→17, FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
+/// Paare ohne Eingriff: FILE02→03, FILE02→50 und FILE02→51 (DOSBox `runde-17`, FILE51 mit Torwartwechsel im Spiel), FILE16A→17,
+/// FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
 /// Eingriff (nur übrige Felder, <see cref="HokCompareClasses.Interventions"/>): FILE13→14 (Sitzungszustand, Aufstellung von Hand;
 /// #733, #734), FILE44→46, FILE18→48. Saat 1993 (Werkzeugvorgabe);
 /// zufallsabhängige Felder sind mit Bereichen und Invarianten geprüft, ein anderer Zufall darf das Ergebnis nicht kippen
@@ -143,6 +144,18 @@ public class AbgleichOriginalPaareTests
             ["FILE44→FILE46"] = [.. SeasonStart],
             // „nur Weltkugel“: Teamwerte nicht mehr neu gewürfelt (#747 behoben durch abgleich-fix).
             ["FILE18→FILE48"] = [],
+            // DOSBox-Aufnahme `runde-17` (#730, Spur abgleich-dosbox Teil 1): 1. Spieltag aus FILE02 im Live-Spiel ohne Mausklick
+            // (FILE50) bzw. mit Klicks auf die Reihenknöpfe und Torwartwechsel CISSEWSKI → HEISS in Minute 26 (FILE51, Klicks laut
+            // Nutzer ohne Wirkung). Nach einem Spieltag keine Abweichung, auch nicht in der Belastung (alle Kölner ±7 bei allen
+            // Prüfsaaten); Reihen je Minute: AbgleichDosboxLinesTests.
+            ["FILE02→FILE50"] = [],
+            ["FILE02→FILE51"] = [],
+            // DOSBox `runde-17` (#773, Teil 2): erster Spieltag eines neuen Spiels (ES WEIßWASSER). #730 auch hier: REZNICEK
+            // (Abwehr 2, FILE52 Belastung 119) kippt im Original über 127 (→ 50), im Remake bei 5 von 6 Prüfsaaten 120–125;
+            // Einsatz und Strafminuten wie im Original (AbgleichDosboxPenaltyTests).
+            // Mit den 5-Minuten-Strafen nach dem lrandom-Zyklus (#773) kippt REZNICEK bei Saat 2 wie im Original → Sägezahn, Pflicht über
+            // die Saaten in Strain730_DeviatesAtMostSeeds.
+            ["FILE52→FILE53"] = [StrainSawtooth("23 ES WEIßWASSER")],
         };
 
     public static TheoryData<string, string> Pairs()
@@ -192,7 +205,11 @@ public class AbgleichOriginalPaareTests
     /// </summary>
     [GameDataTheory]
     [InlineData("FILE02", "FILE03", "5 KÖLNER EC", "HOCK", 90, StrainSawtoothMax, 5)]
-    [InlineData("FILE13", "FILE14", "6 KREFELDER EV", "KUHNEKATH", 40, 75, 5)]
+    // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): KUHNEKATH nur noch bei 3 von 6 Saaten (1993, 3, 77) – mit den
+    // 5-Minuten-Strafen nach dem lrandom-Zyklus anderer Spielverlauf über den Saisonwechsel; Richtung und Bereich unverändert.
+    [InlineData("FILE13", "FILE14", "6 KREFELDER EV", "KUHNEKATH", 40, 75, 3)]
+    // DOSBox `runde-17` (abgleich-dosbox Teil 2): REZNICEK (Original 50) im Remake 120–125 bei 5 von 6 Saaten (nicht 2).
+    [InlineData("FILE52", "FILE53", "23 ES WEIßWASSER", "REZNICEK", 110, StrainSawtoothMax, 5)]
     public void Strain730_DeviatesAtMostSeeds(string a, string b, string club, string player, int min, int max, int minSeeds)
     {
         var known = StrainOf(club, min, max, player).Single();
