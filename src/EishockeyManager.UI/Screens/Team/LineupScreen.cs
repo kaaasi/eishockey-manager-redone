@@ -70,6 +70,17 @@ public sealed class LineupScreen : Screen
         _message = new(() => host.Game?.ActiveManager.Name ?? "");
     }
 
+    /// <summary>Aufstellung mit eigenem Weg zur Taktik (Eingriff im Spiel, <see cref="Live.LiveIntervention"/>).</summary>
+    public LineupScreen(ScreenHost host, Screen back, Func<Screen> tactics) : this(host, back) => _tactics = tactics;
+
+    private readonly Func<Screen>? _tactics;
+
+    /// <summary>
+    /// Kennwert „im Spiel“ (DGROUP 0x2D6 + Manager über 0x48E28; Spur livespiel-ui-2 B3): Regeln aus
+    /// <see cref="Club.ClickPlayerInMatch"/> und <see cref="Club.ClearLineupSlotInMatch"/>, Kopfzeile 0x40290.
+    /// </summary>
+    public bool InMatch { get; init; }
+
     private Club Club => TeamUi.OwnClub(Host);
 
     /// <summary>Gewählte Reihe 0–3 bzw. <see cref="Lineup.GoalkeeperLine"/>, null = keine (DGROUP [bp−9] = 0xFF beim Aufbau).</summary>
@@ -130,7 +141,8 @@ public sealed class LineupScreen : Screen
             return;
         }
 
-        switch (input.Text.ToUpperInvariant())
+        // [APPROX] Die Remake-Tasten A und C gibt es im Spiel nicht (sie würden die Regeln „im Spiel“ umgehen).
+        switch (InMatch ? "" : input.Text.ToUpperInvariant())
         {
             case "A":
                 Club.AutoLineup();
@@ -142,7 +154,9 @@ public sealed class LineupScreen : Screen
 
         if (input.LeftClick && TeamUi.SwitchButton.Contains(input.MouseX, input.MouseY))
         {
-            if (MenuEntries.TryCreate("Taktik", Host, _back, out var tactics))
+            if (_tactics is not null)
+                Leave(_tactics());
+            else if (MenuEntries.TryCreate("Taktik", Host, _back, out var tactics))
                 Leave(tactics!);
             return;
         }
@@ -162,7 +176,9 @@ public sealed class LineupScreen : Screen
         if (!input.LeftClick && !input.RightClick)
             return;
         var line = _selectedLine;
-        var result = Club.ClickPlayer(player, ref line, right: input.RightClick);
+        var result = InMatch
+            ? Club.ClickPlayerInMatch(player, ref line, right: input.RightClick)
+            : Club.ClickPlayer(player, ref line, right: input.RightClick);
         _selectedLine = line;
         Report(result);
     }
@@ -187,7 +203,10 @@ public sealed class LineupScreen : Screen
             _message.ShowShort("Spieler ist", "noch gesperrt !");
             return;
         }
-        Club.ClearLineupSlot(slot);
+        if (InMatch)
+            Club.ClearLineupSlotInMatch(slot);
+        else
+            Club.ClearLineupSlot(slot);
     }
 
     /// <summary>Reihe unter der Maus: Block 0–3 oder Torhüterkasten (<see cref="Lineup.GoalkeeperLine"/>).</summary>
@@ -258,6 +277,8 @@ public sealed class LineupScreen : Screen
         var club = Club;
         s.Palette = Assets.Palette;
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
+        if (InMatch && Host.Game is { } game)
+            Live.LiveIntervention.DrawHeader(s, Assets, game);
         Widgets.Frame(s, Assets, Window, FrameStyle.Orange);
 
         const byte h = TeamUi.HeaderColor;

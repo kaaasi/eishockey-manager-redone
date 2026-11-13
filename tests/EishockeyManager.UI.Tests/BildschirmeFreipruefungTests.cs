@@ -26,8 +26,17 @@ public class BildschirmeFreipruefungTests
     /// <summary>Bekannte Abweichungen: „Typ(Konstruktor)@Zustand“ → Issue.</summary>
     private static readonly Dictionary<string, string> Known = new(StringComparer.Ordinal);
 
-    /// <summary>Nicht erzeugbare Konstruktoren „Signatur: Parameter“ (heute keine; #610).</summary>
-    private static readonly HashSet<string> NotConstructible = new(StringComparer.Ordinal);
+    /// <summary>
+    /// Nicht erzeugbare Konstruktoren „Signatur: Parameter“ (#610). Spur livespiel-ui-2 (B2): Eine <c>LiveSession</c> ist ein schon
+    /// gestartetes <see cref="GameState.Continue"/> (Eingabe „Tag weiter“, nicht Öffnen eines Bildschirms); Zeichnen und Öffnen
+    /// des Live-Bildschirms ohne Zustandsänderung prüft <c>LivespielUi2Tests.Drawing_DoesNotChangeState</c>, den Ablauf
+    /// <c>LivespielUi2Tests.MatchDayThroughLiveScreen_EqualsWithoutDisplay</c>.
+    /// </summary>
+    private static readonly HashSet<string> NotConstructible = new(StringComparer.Ordinal)
+    {
+        "EishockeyManager.UI.Screens.Live.LiveMatchScreen.ctor(ScreenHost, LiveSession, Screen): LiveSession session",
+        "EishockeyManager.UI.Screens.MatchDayScreen.ctor(ScreenHost, MainMenuScreen, LiveSession): LiveSession session",
+    };
 
     /// <summary>Frames ohne Eingabe nach dem ersten Zeichnen (#620, R13GN-03).</summary>
     private const int UpdateFrames = 3;

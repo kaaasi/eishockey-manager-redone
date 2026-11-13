@@ -12,9 +12,10 @@ public sealed class LivePlayer
 
     /// <summary>
     /// Aufstellungsplatz (Kaderplatz +0x15): 0 Reserve, sonst Bit 7 Teil (0 Abwehr, 1 Sturm) und Bits 0–6 Reihe + 1;
-    /// der Torhüter steht auf 1 (Abwehr, Reihe 0).
+    /// der Torhüter steht auf 1 (Abwehr, Reihe 0). Ändert sich im Spiel nur durch den Eingriff über Kopf/Logo
+    /// (<see cref="LiveLineup.Apply"/>, Datei 0x41533).
     /// </summary>
-    public int Position { get; init; }
+    public int Position { get; set; }
 
     /// <summary>Eingesetzt (Kaderplatz +0x0A ≠ 0); auf der Strafbank 0.</summary>
     public bool Dressed { get; set; }

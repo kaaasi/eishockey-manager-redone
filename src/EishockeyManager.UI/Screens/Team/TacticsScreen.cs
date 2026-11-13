@@ -68,6 +68,9 @@ public sealed class TacticsScreen : Screen
 
     private Tactics Tactics => _tactics?.Invoke() ?? TeamUi.OwnClub(Host).Tactics;
 
+    /// <summary>Kennwert „im Spiel“ (Eingriff über Kopf/Logo, Spur livespiel-ui-2 B3): Kopfzeile 0x40290.</summary>
+    public bool InMatch { get; init; }
+
     /// <summary>Gewählter Block (0–3).</summary>
     public int Block => _block;
 
@@ -148,6 +151,8 @@ public sealed class TacticsScreen : Screen
         var t = Tactics;
         s.Palette = Assets.Palette;
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
+        if (InMatch && Host.Game is { } game)
+            Live.LiveIntervention.DrawHeader(s, Assets, game);
 
         // Torwartwechsel
         Widgets.Frame(s, Assets, GoaliePanel, FrameStyle.Orange);

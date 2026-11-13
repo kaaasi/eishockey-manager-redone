@@ -1,5 +1,7 @@
 using EishockeyManager.Core;
+using EishockeyManager.UI;
 using EishockeyManager.UI.Screens;
+using EishockeyManager.UI.Screens.Live;
 using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.Tools.Scenarios;
@@ -21,6 +23,64 @@ internal static class Live
         d.Move(283, 62); d.Save("01_spiele_laufen_minute_08");
         d.Frames(40 * MatchDayScreen.FramesPerMinute);
         d.Move(283, 62); d.Save("02_spiele_laufen_minute_48");
+    }
+
+    /// <summary>
+    /// Spur livespiel-ui-2 (B2): erster Ligaspieltag über den Live-Bildschirm mit Geschwindigkeit 0 (Reporter, Pausen); Bilder
+    /// zu Minute 2 (Vergleich <c>bundestrainer_00200</c>, <c>duell_s2a_01126</c>), zur ersten Reporter-Meldung und nach Minute 60.
+    /// </summary>
+    [Scenario("live-spiel")]
+    private static void LiveSpiel(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.Host.Game!.Options.MatchSpeed = 0;
+        d.NextDay();
+        while (d.Host.Current is MatchDayScreen)
+            d.Frame();
+        var live = (LiveMatchScreen)d.Host.Current!;
+        while (live.DisplayMinute < 2)
+            d.Frame();
+        d.Move(319, 239); d.Save("01_minute_02");
+        for (var i = 0; i < 20000 && !live.ReporterState.Busy; i++)
+            d.Frame();
+        while (live.ReporterState.Busy && live.ReporterState.Lines.Count == 0)
+            d.Frame();
+        d.Save("02_reporter_kopf");
+        while (live.ReporterState.Busy && !live.ReporterState.Lines.Any(l => !l.Large))
+            d.Frame();
+        d.Save("03_reporter_verein");
+        while (live.ReporterState.Busy && live.ReporterState.Lines.All(l => l.Baseline != 10))
+            d.Frame();
+        d.Frame();
+        d.Save("04_reporter_zusammenfassung");
+        while (!live.WaitingForClick && !live.Done)
+            d.Frame();
+        d.Save("05_minute_60");
+    }
+
+    /// <summary>
+    /// Spur livespiel-ui-2 (B3, Fortsetzung 1): Eingriff über Kopf/Logo in Minute 2 – Aufstellung (linke Taste) und Taktik
+    /// (rechte Taste) mit Kopfzeile 0x40290, danach wieder der Live-Bildschirm.
+    /// </summary>
+    [Scenario("live-eingriff")]
+    private static void Eingriff(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.Host.Game!.Options.MatchSpeed = 0;
+        d.NextDay();
+        while (d.Host.Current is MatchDayScreen)
+            d.Frame();
+        var live = (LiveMatchScreen)d.Host.Current!;
+        while (live.DisplayMinute < 2)
+            d.Frame();
+        var side = live.Session.Shown[0].HomeTeam!.Managed ? 0 : 1;
+        d.Click(LiveMatchScreen.CrestX(side) + 10, 20);
+        d.Move(319, 239); d.Save("01_aufstellung_im_spiel");
+        d.Press(Key.Escape);
+        d.RightClick(LiveMatchScreen.CrestX(side) + 10, 20);
+        d.Move(319, 239); d.Save("02_taktik_im_spiel");
+        d.Press(Key.Escape);
+        d.Move(319, 239); d.Save("03_zurueck_live");
     }
 
     [Scenario("live-spielende")]

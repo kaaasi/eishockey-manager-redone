@@ -251,7 +251,7 @@ public sealed class MainMenuScreen : Screen
             return;
         }
         // Die Zeit vergeht hier, in der Eingabe – nicht beim Öffnen des Spieltag-Bildschirms (#558, AGENTS.md §4).
-        Host.Show(new MatchDayScreen(Host, this, Game.Continue()));
+        Host.Show(new MatchDayScreen(Host, this, Live.LiveSession.Start(Game))); // Spur livespiel-ui-2: mit Live-Spiel (LiveSession)
     }
 
     /// <summary>Bildschirm zu einer kleinen Kachel – angemeldet per <see cref="MenuEntryAttribute"/>, sonst Platzhalter.</summary>
