@@ -74,7 +74,7 @@ public sealed class PlayerInfoPopup
     }
 
     /// <summary>
-    /// Zeigerlänge der Erschöpfung in Pixeln. [ORIGINAL] em.exe Datei 0x041AC, Versätze 0xA1C–0xA60 (Aufruf 0xA5B):
+    /// Zeigerlänge der Erschöpfung in Pixeln. [ORIGINAL] em.exe Datei 0x041AC, Versätze 0xA1C–0xA60 (Aufruf der Balkenroutine 0xAC9 bei 0xA63):
     /// (100 − Belastung +0x13) · 94 / 100, im Balken auf 1 … 94 begrenzt (0xBBA–0xBC7); frisch (50) → 47, ab 99 → 1 (#805).
     /// </summary>
     public static int ExhaustionBarPixels(Player p) => PlayerDataWindow.BarPixels((100 - p.Strain) * 94 / 100);

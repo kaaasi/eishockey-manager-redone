@@ -522,8 +522,9 @@ Aufstellung 0x3FFE0/0x40364 und Transferliste 0x465F1 gerufen; im Remake öffnet
 * **Bisher falsch im Remake:** Spaltengrenzen um 1–4 Pixel verschoben (Aufstellung jetzt 18, 36, 93, 107, 143, 156, 183, 223, 233);
   „Art des Spielers: “ vor der Rolle; „Verletzt. (Noch n Spiele)“; „Fallend./…“ ohne Erschöpfung; Spalte 7 ohne Durchschnitt;
   Spalte 0 ohne Reihe.
-* **[APPROX]:** Sperre in Minuten (+0x0D; das Remake zählt Spiele), Belastung +0x13 (seit Runde 12 eigenes Feld `Player.Strain`,
-  A184; die Hinweiszeile liest noch die abgeleitete Energie, Anschluss offen) und die
+* **[APPROX]:** Sperre in Minuten (+0x0D; das Remake zählt Spiele), Belastung +0x13 nur im Modell (eigenes Feld `Player.Strain` seit
+  Runde 12, A184; Fortschreibung #730 offen) – die Anzeige „ (Erschöpfung:n)“ mit n = +0x13 · 10 / 15 (Datei 0x41B29–0x41B38) ist seit
+  Runde 18 `[ORIGINAL]` (#805, `PlayerHintLine.cs`) – und die
   Zeilenschritte der Aufstellung (`LineupScreen.RowAt` klickt bei y = 28 + 6 k, die Hinweiszeile wie das Original bei 29 + 6 k;
   Klickfläche nicht Teil dieser Spur). Die Verletzungsart (+0x17) zieht seit der Integration Runde 11 die Verletzung
   selbst (Datei 0x05B1A, `PlayerInjuries.Inflict`).
@@ -550,7 +551,10 @@ Aufstellung 0x3FFE0/0x40364 und Transferliste 0x465F1 gerufen; im Remake öffnet
   Abschnitten à 12 Pixel (Farben 16–19, 15–12, DGROUP 0x482A), **Zeiger** senkrecht über die ganze Innenhöhe (Oberkante + 4 bis
   + 12) bei Balkenanfang + 1 + Länge in der Farbe des Abschnitts (Beleg: Zeilen 177 und 184 in `oberflaeche_1115`). Position links
   Ursprung + 7, rechts **+ 0x6C** (bisher + 110), Zeilenabstand 0x13.
-* **[APPROX]:** Unterzahl/Überzahl (Kaderplatz-Halbbytes +0x19, im Remake nicht geführt), Belastung, Tendenz auf drei Stufen
+* **Erschöpfung (vierter Balken, seit Runde 18 `[ORIGINAL]`, #805):** Länge = (100 − Belastung +0x13) · 94 / 100 (Datei 0x041AC, Versätze
+  0xA1C–0xA60, Aufruf der Balkenroutine 0xAC9 bei 0xA63), im Balken auf 1 … 94 begrenzt (0xBBA–0xBC7); frisch (50) → 47, ab 99 → 1
+  (`PlayerInfoPopup.ExhaustionBarPixels`).
+* **[APPROX]:** Unterzahl/Überzahl (Kaderplatz-Halbbytes +0x19, im Remake nicht geführt), Tendenz auf drei Stufen
   (15 / 50 / 84 statt 30 … 68 → 0 … 100), Versicherung („ja“ statt der versicherten Summe, +0x30), Zähler in Klammern bei Tore/Spiele.
   Das Remake zeigt den Marktwert nur mit Zusammenhang (`PlayerInfoPopup.Show(Player, long, PlayerDataContext)`); der alte Aufruf
   `Show(Player, long)` bleibt (Marktwert „-“, Gehalt sichtbar).
