@@ -66,7 +66,7 @@ public static partial class MatchEngine
         // herausgelöst ohne Verhaltensänderung (gleiche Züge in gleicher Reihenfolge).
         if (PlayWithDriver(game, home, away, competition, knockOut, random) is { } live)
             return live; // Spur livespiel-ui-2 B2: Managerpaarung über den Live-Bildschirm (MatchEngine.LiveDriver.cs)
-        var match =BeginMatch(game, home, away, competition, knockOut, random);
+        var match = BeginMatch(game, home, away, competition, knockOut, random);
         if (match.Report is null)
             FinishMinuteLoop(match, PlayWithScoreboard(match.Row,
                 () => OriginalMinutes.Play(match.HomeTeam, match.AwayTeam, match.Rules, random), game.Options, match.DayActive));

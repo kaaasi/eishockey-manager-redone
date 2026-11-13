@@ -49,6 +49,7 @@ public sealed class MatchDayScreen : Screen
     private readonly LiveSession? _session;
     private readonly IReadOnlyList<SeasonStep> _steps;
     private bool _expanded;
+    private int _enqueuedSteps; // mit Live-Spiel schon eingereihte Schritte von Continue (R830-01)
 
     /// <summary>
     /// <paramref name="steps"/> sind die Ergebnisse von <see cref="GameState.Continue"/>, das der Aufrufer (Eingabe „Tag weiter“ im
@@ -111,13 +112,17 @@ public sealed class MatchDayScreen : Screen
         Next();
     }
 
-    /// <summary>Nächster Halt der Live-Sitzung: Banner und Live-Bildschirm; ist der Tag fertig, die übrigen Schritte.</summary>
+    /// <summary>
+    /// Nächster Halt der Live-Sitzung: die Schritte, die in der Liste von <see cref="GameState.Continue"/> davor stehen
+    /// (R830-01, Reihenfolge wie ohne Live-Spiel), dann Banner und Live-Bildschirm; ist der Tag fertig, die übrigen Schritte.
+    /// </summary>
     private bool EnqueueSession()
     {
         if (_session is null)
             return false;
         if (_session.Day is { } day)
         {
+            EnqueueFrom(_session.StepsBeforeDay);
             if (BannerCompetition(day.Matches[0].Competition) is { } competition)
                 _items.Enqueue(new BannerItem(SeasonInfo.BannerText(competition)));
             _items.Enqueue(new LiveItem());
@@ -126,8 +131,17 @@ public sealed class MatchDayScreen : Screen
         if (_expanded || _session.Steps is not { } steps)
             return false;
         _expanded = true;
-        Enqueue(steps);
+        EnqueueFrom(steps);
         return true;
+    }
+
+    /// <summary>Reiht die Schritte ab dem ersten noch nicht eingereihten ein (Liste wächst nur, Continue hängt an).</summary>
+    private void EnqueueFrom(IReadOnlyList<SeasonStep> steps)
+    {
+        if (steps.Count <= _enqueuedSteps)
+            return;
+        Enqueue(steps.Skip(_enqueuedSteps).ToList());
+        _enqueuedSteps = steps.Count;
     }
 
     private void Enqueue(IReadOnlyList<SeasonStep> steps)

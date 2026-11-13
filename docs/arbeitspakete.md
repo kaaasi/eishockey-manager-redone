@@ -103,7 +103,7 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
   3. **Regler** der Geschwindigkeit in `GameOptionsScreen`, nur falls nach A2 nötig (aus `livespiel-ui` verlegt, R809 P3-3).
 - **Abnahme:** Bildschirmfoto gegen `bundestrainer_00200` und `duell_s2a_01126`; Mundfolge „Chance:“ = [0, 9 × 8, 0xFF];
   Klickproben wie §12 B3; Ablauftest eines ganzen Spieltags mit Managerpaarung über den Live-Bildschirm = Ergebnis ohne Anzeige.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** PR #830 (Draft): B2 fertig (13.11.2026); B3 fertig (Treffer-Tests, Schieber, Reihenlampen, Lampe; Kopf/Logo → Aufstellung/Taktik im Spiel mit Neuaufbau in Fortsetzung 1, 13.11.2026); Regler nicht nötig (`GameOptionsScreen` hat ihn). Alle Teile fertig, wartet auf Erstreview.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** PR #830 (Draft): B2 fertig (13.11.2026); B3 fertig (Treffer-Tests, Schieber, Reihenlampen, Lampe; Kopf/Logo → Aufstellung/Taktik im Spiel mit Neuaufbau in Fortsetzung 1, 13.11.2026); Regler nicht nötig (`GameOptionsScreen` hat ihn). Erstreview #831: Nein (R830-01 P2, R830-02/-03 P3); Fixlauf 13.11.2026 behebt alle drei, wartet auf Delta-Prüfung der Leitstelle.
 
 ### Spur `abgleich-dosbox` – Auswertung Aufnahme `runde-17` (R18-D2 = A)
 

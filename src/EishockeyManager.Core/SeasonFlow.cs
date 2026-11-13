@@ -133,7 +133,15 @@ public sealed partial class GameState
         if (PassTurn() || PassNationalTurn()) // Zug des Bundestrainers im Modus 4: Spur bundestrainer-modus4
             return [];
 
-        var steps = RunDays();
+        List<SeasonStep> steps;
+        try
+        {
+            steps = RunDays();
+        }
+        finally
+        {
+            runningSteps = null; // Spur livespiel-ui-2 (R830-01): MatchEngine.LiveDriver.cs
+        }
         StartTurns();
         return steps;
     }
@@ -141,6 +149,7 @@ public sealed partial class GameState
     private List<SeasonStep> RunDays()
     {
         var steps = new List<SeasonStep>();
+        runningSteps = steps; // Spur livespiel-ui-2 (R830-01): Schritte vor einem Live-Halt, MatchEngine.LiveDriver.cs
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ springt der erste Tag der Saison zur WM.
         if (SkipToWorldCup())
         {

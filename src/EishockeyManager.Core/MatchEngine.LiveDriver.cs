@@ -83,3 +83,18 @@ public static partial class MatchEngine
         }
     }
 }
+
+public sealed partial class GameState
+{
+    // Statisch je Thread, kein Instanzfeld: Instanzfelder gehören zum Spielstand (SaveGame.Fields, Schema-Abdruck).
+    [ThreadStatic]
+    private static List<SeasonStep>? runningSteps;
+
+    /// <summary>
+    /// Schritte, die der auf diesem Thread laufende <see cref="Continue"/>-Aufruf bisher gesammelt hat (Spur livespiel-ui-2,
+    /// R830-01); außerhalb des Aufrufs leer. Hält der Spielkern an einer Managerpaarung (<see cref="ILiveMatchDriver.Run"/>, auf
+    /// demselben Thread), zeigt die Oberfläche diese Schritte vor dem Live-Bildschirm – in derselben Reihenfolge wie ohne
+    /// Live-Spiel (z. B. das Banner „Play-Off / Aufstiegsrunden“ vor dem ersten Play-off-Spiel). Kein Spielzustand.
+    /// </summary>
+    public static IReadOnlyList<SeasonStep> StepsSoFar => runningSteps ?? [];
+}

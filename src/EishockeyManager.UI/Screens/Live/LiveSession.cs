@@ -46,6 +46,12 @@ public sealed class LiveSession : ILiveMatchDriver
     /// <summary>Spieltage (<see cref="GameState.Day"/>) und Wettbewerbe, in denen eine Paarung live lief.</summary>
     public HashSet<(int Day, MatchCompetition Competition)> LiveDays { get; } = [];
 
+    /// <summary>
+    /// Schritte von <see cref="GameState.Continue"/> vor dem wartenden Halt (<see cref="GameState.StepsSoFar"/>, Kopie beim Halt;
+    /// R830-01); ohne Halt leer.
+    /// </summary>
+    public IReadOnlyList<SeasonStep> StepsBeforeDay { get; private set; } = [];
+
     /// <summary>Ist <see cref="GameState.Continue"/> fertig?</summary>
     public bool Completed => Steps is not null;
 
@@ -83,6 +89,7 @@ public sealed class LiveSession : ILiveMatchDriver
 
     void ILiveMatchDriver.Run(LiveMatchDay day)
     {
+        StepsBeforeDay = [.. GameState.StepsSoFar]; // Thread des Spielkerns
         Day = day;
         var key = (_game.Day, day.Matches[0].Competition);
         LiveDays.Add(key);

@@ -272,4 +272,122 @@ public sealed class LivespielUi2Tests
             d.Press(Key.Enter);
         Assert.True(live.Done);
     }
+
+    /// <summary>
+    /// R830-01 (Review #831): Schritte, die vor der Managerpaarung in der Liste von <see cref="GameState.Continue"/> stehen
+    /// (hier <c>BannerStep(149, "Play-Off / Aufstiegsrunden")</c> aus <c>PlayPlayoffDay</c>), erscheinen auch mit Live-Spiel
+    /// vor dem Live-Bildschirm – wie ohne Live-Spiel vor „Spiele laufen“. Vor dem Fix rot: die Folge war
+    /// Banner → Live → MatchDay → Banner (Ankündigung der Play-offs nach deren erstem Spiel).
+    /// </summary>
+    [GameDataFact]
+    public void PlayoffBanner_BeforeFirstLiveMatch()
+    {
+        var d = FlowTests.CreateDriver();
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "LIVE", Head = 0, ClubIndex = 42 });
+        var game = NewGame.Create(d.Host.Assets.Database, setup, 1993);
+        d.Host.Game = game;
+        d.Host.Show(new MainMenuScreen(d.Host));
+        d.Frame();
+        for (var i = 0; game.Day < 149; i++)
+        {
+            Assert.True(i < 200);
+            d.PlayMatchDay();
+        }
+        Assert.Equal(149, game.Day); // Fundort des Reviews: Continue Nr. 55, erster Play-off-Tag
+
+        var sequence = new List<string>();
+        string? last = null;
+        d.NextDay();
+        for (var frames = 0; d.Host.Current is not MainMenuScreen; frames++)
+        {
+            Assert.True(frames < 200_000, "Spieltag endet nicht");
+            var now = d.Host.Current switch
+            {
+                MatchDayScreen m => m.CurrentBanner is { } b ? "Banner:" + b : "MatchDay",
+                LiveMatchScreen => "Live",
+                var x => x!.GetType().Name,
+            };
+            if (now != last)
+                sequence.Add(now);
+            last = now;
+            if (d.Host.Current is LiveMatchScreen live)
+            {
+                if (live.WaitingForClick)
+                    d.Click(160, 120);
+                else
+                    d.Frame();
+            }
+            else
+                d.Press(Key.Enter);
+        }
+        var banner = "Banner:" + SeasonInfo.BannerText(Competition.Playoffs);
+        Assert.Equal("Banner:Play-Off / Aufstiegsrunden", banner);
+        var firstLive = sequence.IndexOf("Live");
+        Assert.True(firstLive > 0, string.Join(" -> ", sequence));
+        Assert.Equal(banner, sequence[firstLive - 1]);
+        Assert.DoesNotContain(banner, sequence.Skip(firstLive));
+    }
+
+    /// <summary>
+    /// R830-02 (Review #831): Mit zwei Managern stellt der Klick auf Kopf/Logo des Managers, der nicht am Zug ist, während des
+    /// Eingriffs <see cref="GameState.CurrentManager"/> auf ihn um und bei der Rückkehr zurück ([ORIGINAL] DGROUP 0xA70E, Datei
+    /// 0x5434C/0x5438D–0x54419). Mit einem Manager ändert sich der Wert nie; die Rückstellung war deshalb ungetestet.
+    /// </summary>
+    [GameDataFact]
+    public void CrestClick_OtherManager_RestoresCurrentManager()
+    {
+        var d = FlowTests.CreateDriver();
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "ERSTER", Head = 0, ClubIndex = 42 });
+        setup.Managers.Add(new ManagerSetup { Name = "ZWEITER", Head = 1, ClubIndex = 43 });
+        var game = NewGame.Create(d.Host.Assets.Database, setup, 3);
+        game.Options.MatchSpeed = 0;
+        d.Host.Game = game;
+        d.Host.Show(new MainMenuScreen(d.Host));
+        d.Frame();
+
+        for (var frames = 0; ; frames++)
+        {
+            Assert.True(frames < 500_000, "kein Live-Spiel eines Managers, der nicht am Zug ist");
+            if (d.Host.Current is MainMenuScreen)
+            {
+                d.NextDay();
+                continue;
+            }
+            if (d.Host.Current is not LiveMatchScreen live)
+            {
+                d.Press(Key.Enter);
+                continue;
+            }
+            if (live.WaitingForClick)
+            {
+                d.Click(160, 120);
+                continue;
+            }
+            var match = live.Session.Shown[^1];
+            var side = match.HomeTeam is { Managed: true } && game.Managers[game.CurrentManager].ClubIndex != match.Home.Index ? 0
+                : match.AwayTeam is { Managed: true } && game.Managers[game.CurrentManager].ClubIndex != match.Away.Index ? 1
+                : -1;
+            if (live.Session.Shown.Count != 1 || !match.Running || live.DisplayMinute < 5 || side < 0)
+            {
+                d.Frame();
+                continue;
+            }
+
+            var before = game.CurrentManager;
+            var club = side == 0 ? match.Home : match.Away;
+            var other = game.Managers.ToList().FindIndex(m => m.ClubIndex == club.Index);
+            Assert.NotEqual(before, other);
+            d.Click(LiveMatchScreen.CrestX(side) + 10, 20);
+            Assert.Equal(LiveMatchScreen.ClickResult.Crest, live.LastClick);
+            Assert.IsType<LineupScreen>(d.Host.Current);
+            Assert.Equal(other, game.CurrentManager);
+            d.Press(Key.Escape);
+            Assert.Same(live, d.Host.Current);
+            Assert.Equal(1, live.Interventions);
+            Assert.Equal(before, game.CurrentManager);
+            return;
+        }
+    }
 }
