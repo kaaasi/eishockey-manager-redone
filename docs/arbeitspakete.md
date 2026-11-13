@@ -16,8 +16,9 @@ Issues #730, #773, #803, #804, #805.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
-- DOSBox-Aufnahme `runde-17` (`vorlagen/dosbox-aufnahme.md`, R17-D3 = A): #730, #773, Highscore „nur Weltkugel“, A115, A189,
-  A321, A357, A364, EXPORT2C – wenn der Nutzer Lust hat.
+- DOSBox-Aufnahme `runde-17` **liegt vor** (13.11.2026, Referenz-Repo PRs #29–#34): FILE50/FILE51 (#730, Sitzung 1),
+  FILE52/FILE53 (#773), FILE54 (Highscore „nur Weltkugel“), Exportprobe EXPORT1D/2D und EXPORT2C (R758-01); A189 „Gesperrte“
+  trat in einer ganzen Saison nicht auf, A115/A321/A357/A364 aus Runde 13 belegt. **Auswertung in Runde 18.**
 - #730 (Belastung der Managerspieler, R16-E2 = C) und #773 (Strafminuten der ersten Spieltage): DOSBox-Aufnahmen nach
   `analyse/belastung-staerke.md` §7.3 bzw. Stand nach Spieltag 1 eines neuen Spiels (Befund im Issue).
 - Highscore am Spielende und Saisonende im Modus „nur Weltkugel“ (Kandidat für eine DOSBox-Aufnahme mit `hok-patch`).
@@ -27,6 +28,7 @@ Issues #730, #773, #803, #804, #805.
 
 - **Live-Spiel (Runde 18):** L1–L8 nach `analyse/re-livespiel.md` (Analyse vollständig, 0x575C3 dokumentiert).
 - **P3 aus Runde 17:** #803 (Börsentest-Fenster), #804 (Import/Export 0x26/0x2C), #805 (Belastungsanzeige A370).
+  Übrige Restzeilen der Runde (u. a. A390 Symbol 7, A251 Gebotshöhe 0x47347, A226, A418–A437): Inventur „Stand Runde 17“ (R807-01).
 - **DOSBox-Aufnahme** (nach Lust des Nutzers, `vorlagen/dosbox-aufnahme.md`): Punkte unter „Zurückgestellt“, dazu EXPORT2C und
   die Exportstände ab Head `97c372a` (Restlücke R758-01).
 - **Nach v1.0:** Einstellungen aus R15-E3 und bitgenauer Zufallsmodus (`anforderungen/zusatzfunktionen.md` C).

@@ -14,7 +14,8 @@ Umsetzungsplan L1–L8 (`analyse/re-livespiel.md` §10–§12), 0x575C3 nicht me
 ChatGPT GPT-6.1 Terra) **Ja** für `20e739c`: keine neuen Befunde.
 
 **Abschluss (13.11.2026):** offen #730 (P2), #773 (P3) – DOSBox-Aufnahme `runde-17`; #803, #804, #805 (P3); A037 bleibt
-`[APPROX]`. Nächste Runde: Live-Spiel L1–L8 nach dem Plan in `analyse/re-livespiel.md`.
+`[APPROX]`; übrige Restzeilen in der Inventur „Stand Runde 17“. DOSBox-Aufnahme `runde-17` am 13.11.2026 abgelegt
+(Referenz-Repo #29–#34), Auswertung in Runde 18. Nächste Runde: Live-Spiel L1–L8 nach dem Plan in `analyse/re-livespiel.md`.
 
 **Entscheidungen während der Runde (Leitstelle, nach Prozess):** Auflagen R788-01…04 aus dem Plan-Review eingearbeitet;
 Rebase-Fixläufe ohne Befund vor dem Merge von `wettbewerbe-rest`, `kader-rest`, `ui-rest` (Abdrücke neu, Delta-Prüfung der
