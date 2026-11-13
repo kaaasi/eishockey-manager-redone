@@ -85,7 +85,7 @@ public class AbgleichOriginalPaareTests
         new Dictionary<string, Known[]>
         {
             // #730: HOCK Original 50, Remake 116–127, seit #784 (Gast der Spielvorbereitung nach dem Heimverein, Runde 17) nur bei
-            // 5 von 6 Saaten (nicht 2) → Sägezahn wie SIKORA und BRANDL.
+            // 5 von 6 Saaten (nicht 2) → Sägezahn wie SIKORA und BRANDL; Pflicht über die Saaten in Strain730_DeviatesAtMostSeeds.
             ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC"),
                 // Zufall: Pool-Mittel der Belastung über zehn Saaten 143–146, nur Saat 1 bei 136,7 (seit #748 anderer Zufallsverlauf).
                 new("Invariante.PoolMittel.Strain", Chance, Optional: true),
@@ -93,7 +93,8 @@ public class AbgleichOriginalPaareTests
                 new("Clubs[51 LEER4].TeamValues.AttackCondition", Chance, Optional: true)],
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
-                // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1), J.MEYER
+                // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1; Pflicht über
+                // die Saaten in Strain730_DeviatesAtMostSeeds), J.MEYER
                 // (118, Remake 50–77) seit #772 nicht bei allen → beide Sägezahn; Anteil der Handaufstellung (Eingriff) nicht getrennt.
                 // kader-rest (A130, Merge mit main 12.11.2026), vermutete Ursache bei KUHNEKATH (nicht getrennt): Der Import behält die
                 // Bezugsstärke (Club.ReferenceRating) des verworfenen erzeugten Managerkaders, dessen Startbelastung A130 ändert.
@@ -181,6 +182,31 @@ public class AbgleichOriginalPaareTests
     [GameDataTheory]
     [MemberData(nameof(PairsOtherSeeds))]
     public void Pair_OtherSeed_SameExpectedList(string a, string b, int seed) => AssertExpected(Compare(a, b, seed));
+
+    /// <summary>
+    /// #730 (Review R17 P3-1, <c>docs/reviews/2026-11-12-pruefung-karte-r17.md</c>): Seit #784 weichen HOCK (FILE02→03, Original 50)
+    /// und KUHNEKATH (FILE13→14, Original 96) nicht mehr bei allen sechs Prüfsaaten ab und stehen deshalb in
+    /// <see cref="Expected"/> nur im Sägezahn (optional). Pflicht bleibt der Bereich über die Saaten: bei mindestens
+    /// <paramref name="minSeeds"/> der sechs Saaten (1993, 4711, 1, 2, 3, 77) liegt die Abweichung im Remake-Bereich. Ein weiteres
+    /// Abdriften (andere Richtung, anderer Bereich) oder ein Beheben von #730 macht den Fall rot.
+    /// </summary>
+    [GameDataTheory]
+    [InlineData("FILE02", "FILE03", "5 KÖLNER EC", "HOCK", 90, StrainSawtoothMax, 5)]
+    [InlineData("FILE13", "FILE14", "6 KREFELDER EV", "KUHNEKATH", 40, 75, 5)]
+    public void Strain730_DeviatesAtMostSeeds(string a, string b, string club, string player, int min, int max, int minSeeds)
+    {
+        var known = StrainOf(club, min, max, player).Single();
+        var hits = new List<int>();
+        foreach (var seed in OtherSeeds.Prepend(HokCompare.DefaultSeed))
+        {
+            var report = Compare(a, b, seed);
+            Assert.True(report.PlayError is null, report.PlayError);
+            if (report.Deviations.Any(d => Covers(known, d)))
+                hits.Add(seed);
+        }
+        Assert.True(hits.Count >= minSeeds,
+            $"{a}→{b} {player}: Abweichung #730 nur bei {hits.Count} von 6 Saaten ({string.Join(", ", hits)})");
+    }
 
     /// <summary>
     /// Gegenprobe Geld (Review P2-1): FILE22→23 nachspielen und die in der Zeit gebuchten Gehälter wieder herausrechnen (wie

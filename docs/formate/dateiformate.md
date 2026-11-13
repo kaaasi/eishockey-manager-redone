@@ -174,7 +174,8 @@ Die Breite enthält den Zeichenabstand bereits – Text wird **ohne** zusätzlic
 ## Offen
 
 - `kb\246`: vermutlich Animationstabelle.
-- `tore\*`: Kopf `TOR!`, Big-Endian-`u16`, Rahmen zu 28 Bytes – Bedeutung offen.
+- `tore\*`: Kopf `TOR!`, Big-Endian-`u16`, Rahmen zu 28 Bytes – Lader 0x575C3 und Format so weit gelesen in
+  [re-livespiel.md](../analyse/re-livespiel.md) §11 (Runde 17, `re-livespiel-2`); offen nur die dort genannten Restpunkte.
 - ✓ Spielstände `*.HOK`: Klartextkopf (0xBA Byte), dann 94 Blöcke mit `verschlüsselt = (klar XOR k) + k`, `k -= 0x29`;
   Startschlüssel `random(0..255) + 0x6E` (8 Bit) bei 0xB9, 8-Bit-Prüfsumme (Start = Schlüssel) zweimal im Strom.
   An drei Original-Spielständen belegt; Aufbau und Fundstellen: [spielstand-original.md](spielstand-original.md).

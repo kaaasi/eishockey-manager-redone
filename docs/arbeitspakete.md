@@ -110,7 +110,7 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 - **Modell:** Claude Opus 5.5 (Teil 1 Claude Sonnet 5.5 möglich: reine Testergänzung). **Erstreview:** Claude Opus 5.5.
   **Status:** Go 12.11.2026, Start nach Merge des Plans (#788). Teil 1 fertig (PR #794, Review offen): #784 mit Fund
   „Gast der Spielvorbereitung nach dem Heimverein“ (0x8365, Datei 0x36D12/0x36D49) behoben, #785 belegt (`duell_s2c`,
-  `eisbaeren_f02`).
+  `eisbaeren_f02`). Teil 2 fertig (PR #801, 12.11.2026): Inventur „Stand Runde 17“ (A418–A437), Funktionskarte, A092/A370, P3 #800, R17 P3-1…3, Hinweise #793; Import 0x26/0x2C offen (eigenes Paket), Review offen.
 
 ### Gesamtreview am Rundenende
 
