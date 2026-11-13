@@ -37,6 +37,11 @@ public sealed class MainMenuScreen : Screen
     /// </summary>
     public static readonly Rect ManagerHead = new(233, 34, 39, 38);
 
+    /// <summary>[ORIGINAL] Lage und Größe des Managerkopfs in der Infoleiste (Datei 0x44431–0x4445F, #835).</summary>
+    public static readonly (int X, int Y) HeadPosition = (233, 34);
+    /// <inheritdoc cref="HeadPosition"/>
+    public const int HeadSize = 38;
+
     /// <summary>
     /// Warnung des Bundestrainers beim Klick aufs Logo (#217). [ORIGINAL] Datei 0x454C2–0x454F2: Ist der Manager am Zug der
     /// Bundestrainer (DGROUP 0xA70E = 5) und zählt 0x120:0x66 (Modus 0, Datei 0x4BE17: Kaderplätze mit Feld 0x0F ≠ 0)
@@ -354,7 +359,9 @@ public sealed class MainMenuScreen : Screen
             Widgets.Lamp(s, Assets, MenuLamps.X, MenuLamps.Y(i), red: lamps[i]);
 
         Raised(s, new Rect(231, 32, 42, 42));
-        Widgets.Head(s, Assets, manager.Head, 232, 33);
+        // [ORIGINAL] Datei 0x44431–0x4445F: Kopf 38 × 38 nach (233 | 34), ohne den dunklen Zellrand aus kb\0 (#835).
+        var head = Widgets.HeadSource(manager.Head);
+        s.Blit(Assets.Image(0), new Rect(head.X + 1, head.Y + 1, HeadSize, HeadSize), HeadPosition.X, HeadPosition.Y);
         Raised(s, new Rect(274, 32, 41, 42));
         Widgets.Logo(s, Assets, club.LogoGraphic, 275, 34);
     }
