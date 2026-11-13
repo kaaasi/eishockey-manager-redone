@@ -99,7 +99,7 @@ public sealed class LivespielUi2DriverTests
             using (MatchEngine.UseLiveDriver(driver))
                 b.Continue();
             Assert.NotEmpty(driver.Runs);
-            differs = SaveGame.Save(a) != SaveGame.Save(b);
+            differs = !SaveGame.Save(a).AsSpan().SequenceEqual(SaveGame.Save(b));
         }
         Assert.True(differs);
     }

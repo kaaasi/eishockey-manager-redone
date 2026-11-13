@@ -1,4 +1,5 @@
 using EishockeyManager.Core;
+using EishockeyManager.UI.Screens.Live;
 
 namespace EishockeyManager.UI.Screens;
 
@@ -11,6 +12,13 @@ namespace EishockeyManager.UI.Screens;
 ///    Termin einer Runde (<see cref="Competitions.DebCupDrawFlow"/>),
 /// 4. zurück ins Hauptmenü – oder am 29. April der Bildschirm „Saisonende“.
 /// Klick, Enter oder die Vorspultaste oben rechts überspringen (keine Leertaste, Entscheidung Nutzer 31.10.2026, #205).
+/// <para>
+/// Live-Spiel (Spur livespiel-ui-2, B2): Über <see cref="Start"/> läuft „Tag weiter“ als <see cref="LiveSession"/>. Hält der
+/// Spielkern an einer Managerpaarung mit Anzeigereihe, zeigt der Bildschirm das Banner ihres Wettbewerbs und dann den
+/// Live-Bildschirm (<see cref="LiveMatchScreen"/>), der die Minuten treibt; danach geht es mit dem nächsten Halt bzw. den
+/// übrigen Schritten weiter. „Spiele laufen“ und das Banner entfallen für die live gezeigten Spiele ([ORIGINAL] §1 Schritt 1/2:
+/// mit Anzeige baut die Minutenschleife den Live-Bildschirm statt „Spiele laufen“).
+/// </para>
 /// </summary>
 public sealed class MatchDayScreen : Screen
 {
@@ -31,12 +39,16 @@ public sealed class MatchDayScreen : Screen
     private sealed record BannerItem(string Text) : Item;
     private sealed record RunningItem : Item;
     private sealed record ScreenItem(Func<Screen> Create) : Item;
+    private sealed record LiveItem : Item;
 
     private readonly MainMenuScreen _menu;
     private readonly Queue<Item> _items = new();
     private Item? _current;
     private int _frame;
     private bool _started;
+    private readonly LiveSession? _session;
+    private readonly IReadOnlyList<SeasonStep> _steps;
+    private bool _expanded;
 
     /// <summary>
     /// <paramref name="steps"/> sind die Ergebnisse von <see cref="GameState.Continue"/>, das der Aufrufer (Eingabe „Tag weiter“ im
@@ -46,11 +58,43 @@ public sealed class MatchDayScreen : Screen
     public MatchDayScreen(ScreenHost host, MainMenuScreen menu, IReadOnlyList<SeasonStep>? steps = null) : base(host)
     {
         _menu = menu;
-        Steps = steps ?? [];
+        _steps = steps ?? [];
     }
 
-    /// <summary>Die Schritte des letzten „Tag weiter“ (für Tests).</summary>
-    public IReadOnlyList<SeasonStep> Steps { get; }
+    private MatchDayScreen(ScreenHost host, MainMenuScreen menu, LiveSession session) : base(host)
+    {
+        _menu = menu;
+        _session = session;
+        _steps = [];
+    }
+
+    /// <summary>
+    /// „Tag weiter“ mit Live-Spiel: startet <see cref="GameState.Continue"/> als <see cref="LiveSession"/> (die Zeit vergeht in
+    /// diesem Aufruf, also in der Eingabe des Hauptmenüs, und in den Minuten, die der Live-Bildschirm anstößt).
+    /// </summary>
+    public static MatchDayScreen Start(ScreenHost host, MainMenuScreen menu) =>
+        new(host, menu, LiveSession.Start(host.Game!));
+
+    /// <summary>Die Schritte des letzten „Tag weiter“ (für Tests); mit Live-Spiel erst, wenn der Tag fertig ist.</summary>
+    public IReadOnlyList<SeasonStep> Steps => _session?.Steps ?? _steps;
+
+    /// <summary>Sitzung des Live-Spiels oder null.</summary>
+    public LiveSession? Session => _session;
+
+    /// <summary>
+    /// Wettbewerb des Banners zu einer Paarung ([APPROX] Länder-Freundschaftsspiel ohne Banner: <see cref="SeasonInfo.BannerText"/>
+    /// kennt keines).
+    /// </summary>
+    public static Competition? BannerCompetition(MatchCompetition competition) => competition switch
+    {
+        MatchCompetition.League => Competition.League,
+        MatchCompetition.Playoff => Competition.Playoffs,
+        MatchCompetition.Relegation => Competition.Relegation,
+        MatchCompetition.DebCup => Competition.DebCup,
+        MatchCompetition.EuropeanCup => Competition.EuropeanCup,
+        MatchCompetition.WorldCup => Competition.WorldCup,
+        _ => null,
+    };
 
     /// <summary>Text des gerade gezeigten Banners oder null.</summary>
     public string? CurrentBanner => (_current as BannerItem)?.Text;
@@ -62,10 +106,40 @@ public sealed class MatchDayScreen : Screen
         if (_started)
             return;
         _started = true;
-        foreach (var step in Steps)
+        if (_session is null)
+            Enqueue(_steps);
+        else
+            EnqueueSession();
+        Next();
+    }
+
+    /// <summary>Nächster Halt der Live-Sitzung: Banner und Live-Bildschirm; ist der Tag fertig, die übrigen Schritte.</summary>
+    private bool EnqueueSession()
+    {
+        if (_session is null)
+            return false;
+        if (_session.Day is { } day)
+        {
+            if (BannerCompetition(day.Matches[0].Competition) is { } competition)
+                _items.Enqueue(new BannerItem(SeasonInfo.BannerText(competition)));
+            _items.Enqueue(new LiveItem());
+            return true;
+        }
+        if (_expanded || _session.Steps is not { } steps)
+            return false;
+        _expanded = true;
+        Enqueue(steps);
+        return true;
+    }
+
+    private void Enqueue(IReadOnlyList<SeasonStep> steps)
+    {
+        foreach (var step in steps)
         {
             switch (step)
             {
+                case MatchesStep { ManagerInvolved: true } m when LiveShown(m):
+                    break;
                 case MatchesStep { ManagerInvolved: true } m:
                     _items.Enqueue(new BannerItem(SeasonInfo.BannerText(m.Competition)));
                     _items.Enqueue(new RunningItem());
@@ -84,17 +158,23 @@ public sealed class MatchDayScreen : Screen
                     break;
             }
         }
-        Next();
     }
+
+    private bool LiveShown(MatchesStep step) =>
+        _session is not null && _session.LiveDays.Any(l => l.Day == step.Day && BannerCompetition(l.Competition) == step.Competition);
 
     private void Next()
     {
         _frame = 0;
+        if (_items.Count == 0)
+            EnqueueSession();
         if (_items.TryDequeue(out var item))
         {
             _current = item;
             if (item is ScreenItem screen)
                 Host.Show(screen.Create());
+            else if (item is LiveItem)
+                Host.Show(new LiveMatchScreen(Host, _session!, this));
             return;
         }
 
@@ -113,8 +193,8 @@ public sealed class MatchDayScreen : Screen
     {
         switch (_current)
         {
-            case ScreenItem:
-                // zurück vom Meisterfoto o. Ä.
+            case ScreenItem or LiveItem:
+                // zurück vom Meisterfoto, Live-Bildschirm o. Ä.
                 Next();
                 return;
             case null:
