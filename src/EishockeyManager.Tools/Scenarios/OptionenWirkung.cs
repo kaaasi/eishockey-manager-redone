@@ -17,7 +17,6 @@ internal static class OptionenWirkungScenarios
         GameSettings.Current = new GameSettings();
         d.StartNewGame();
         d.OpenTile("Einstellungen");
-        d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5);
         // Bild 48: DEB-Pokal und WM-Spiele an (Modus „nur Weltkugel“, Bundestrainer-Abschnitt), Torszenen aus
         Click(d, 12);
         d.Move(319, 239); d.Save("48_anfang");

@@ -7,7 +7,8 @@ namespace EishockeyManager.UI.Screens;
 
 /// <summary>
 /// Optionsbildschirm des Originals (em.exe Datei 0x2CD1C; DOSBox-Bilder 48–51, <c>docs/dosbox-befunde.md</c>): schaltet die
-/// Spielstand-Optionen <see cref="GameOptions"/>. Geöffnet über den Knopf „Spielstand“ der Einstellungen.
+/// Spielstand-Optionen <see cref="GameOptions"/>. Geöffnet über die Kachel „Einstellungen“ wie im Original (#836, R18-E4); die
+/// Geräteeinstellungen des Remakes (<see cref="SettingsScreen"/>) öffnet der Zusatzknopf <see cref="DeviceButton"/>.
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Aufbau (Datei 0x2CD1C–0x2D292): Hintergrund kb\22, drei Fenster 0x30:0x335 aus Rahmenteilen 24 × 19
@@ -71,6 +72,13 @@ public sealed class GameOptionsScreen : Screen
     private const int SpeedPitch = 12;
     private const int SpeedSlots = 8;
 
+    /// <summary>
+    /// Zusatzknopf „Gerät“ zu den Geräteeinstellungen des Remakes (Lautstärke, Vollbild, automatisch speichern; #836). [APPROX]
+    /// Kein Knopf des Originals: freie Fläche links unten neben dem Pokalfenster, Baustein <see cref="SmallButton"/>; ohne
+    /// Knopf gelten F8 (Ton) und F11 (Vollbild).
+    /// </summary>
+    public static readonly Rect DeviceButton = new(4, 222, 38, Widgets.ButtonHeight);
+
     /// <summary>[ORIGINAL] Klickfläche des Reglers „Spielgeschwindigkeit“: x 191–285, y 84–96 (0x2D51B–0x2D52F).</summary>
     public static readonly Rect SpeedArea = new(191, 84, 95, 13);
 
@@ -123,6 +131,11 @@ public sealed class GameOptionsScreen : Screen
         if (!input.LeftClick)
             return;
 
+        if (input.Clicked(DeviceButton))
+        {
+            Host.Show(new SettingsScreen(Host, this));
+            return;
+        }
         if (input.Clicked(SpeedArea))
         {
             Options.SetMatchSpeed((input.MouseX - SpeedX) / SpeedPitch * 10);
@@ -198,6 +211,7 @@ public sealed class GameOptionsScreen : Screen
 
         for (var i = 0; i < SwitchCount; i++)
             DrawSwitch(s, i, SwitchValue(i));
+        SmallButton.Draw(s, Assets, DeviceButton, "Gerät");
         if (Options.LiveMode == GameOptions.PermanentRinkLiveMode)
             DrawRedDot(s);
         DrawSpeed(s, Options.MatchSpeed);
@@ -264,4 +278,14 @@ public sealed class GameOptionsScreen : Screen
             s.Blit(Assets.Image(33), source, SpeedX + SpeedPitch * i, SpeedY, Transparent);
         }
     }
+}
+
+/// <summary>
+/// Anmeldung der Kachel „Einstellungen“ (Gemischtes). [ORIGINAL] Die Kachel öffnet das Optionsfenster Datei 0x2CD1C (#836,
+/// Entscheidung Nutzer R18-E4 = wie im Original).
+/// </summary>
+internal static class GameOptionsMenuEntries
+{
+    [MenuEntry("Einstellungen")]
+    private static Screen Open(ScreenHost host, Screen back) => new GameOptionsScreen(host, back);
 }

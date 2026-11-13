@@ -4,12 +4,12 @@ using EishockeyManager.UI.Screens.Team;
 namespace EishockeyManager.UI.Screens;
 
 /// <summary>
-/// Bildschirm „Einstellungen“ (Kachel unter „Gemischtes“): Lautstärke Effekte,
-/// Vollbild, automatisch speichern. Jede Änderung gilt sofort und wird gespeichert.
+/// Geräteeinstellungen des Remakes: Lautstärke Effekte, Vollbild, automatisch speichern. Jede Änderung gilt sofort und wird
+/// gespeichert. Geöffnet über den Zusatzknopf „Gerät“ im Optionsfenster (<see cref="GameOptionsScreen.DeviceButton"/>, #836).
 /// </summary>
 /// <remarks>
-/// Der Einstellungsbildschirm des Originals (em.exe 0x2CD1C, DOSBox-Bilder 48–51) ist <see cref="GameOptionsScreen"/>; der
-/// Knopf „Spielstand“ öffnet ihn, solange ein Spiel läuft. Die Torszenen (Index 9) schaltet nur dieser Bildschirm. [APPROX] Die Geräteeinstellungen (Lautstärke, Vollbild,
+/// Der Einstellungsbildschirm des Originals (em.exe 0x2CD1C, DOSBox-Bilder 48–51) ist <see cref="GameOptionsScreen"/>; ihn
+/// öffnet die Kachel „Einstellungen“ (#836). Die Torszenen (Index 9) schaltet nur dieser Bildschirm. [APPROX] Die Geräteeinstellungen (Lautstärke, Vollbild,
 /// automatisch speichern) gibt es im Original nicht; ihr Layout ist neu, aber aus den Bausteinen des Originals gebaut:
 /// Fenster wie die Hinweise (Rahmen kb\2 orange auf Hintergrund kb\22), Pfeile ▲▼ aus kb\4 wie bei der Taktik,
 /// Lampen aus kb\3 (grün = an, rot = aus), Knopf aus kb\2.
@@ -50,15 +50,9 @@ public sealed class SettingsScreen : Screen
     public static Rect CellRect(Row row, int level) =>
         new(BarX + (level - 1) * CellPitch, FirstRowY + RowPitch * (int)row - 1, CellWidth, CellHeight);
 
-    public static readonly Rect BackButton = Widgets.ButtonRect(160 - Widgets.ButtonWidth / 2 + 36, 171);
-
-    /// <summary>Öffnet den Optionsbildschirm des Originals (<see cref="GameOptionsScreen"/>); nur mit laufendem Spiel.</summary>
-    public static readonly Rect OptionsButton = Widgets.ButtonRect(160 - Widgets.ButtonWidth / 2 - 36, 171);
+    public static readonly Rect BackButton = Widgets.ButtonRect(160 - Widgets.ButtonWidth / 2, 171);
 
     private readonly Screen _back;
-
-    /// <summary>Knopf „Spielstand“ sichtbar (nur mit laufendem Spiel; die Optionen gehören zum Spielstand).</summary>
-    public bool ShowsOptionsButton => Host.Game is not null;
 
     public SettingsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
@@ -69,11 +63,6 @@ public sealed class SettingsScreen : Screen
         if (input.Pressed(Key.Escape) || input.Pressed(Key.Enter) || input.RightClick || input.Clicked(BackButton))
         {
             Host.Show(_back);
-            return;
-        }
-        if (ShowsOptionsButton && input.Clicked(OptionsButton))
-        {
-            Host.Show(new GameOptionsScreen(Host, this));
             return;
         }
         if (!input.LeftClick)
@@ -129,8 +118,6 @@ public sealed class SettingsScreen : Screen
         Widgets.Frame(s, Assets, Window, FrameStyle.Orange, Colors.PanelFill);
         Widgets.ShadowText(s, Assets.Bold, 160, Window.Y + 10, "Einstellungen", Colors.White, Colors.Black);
         DrawDeviceSettings(s);
-        if (ShowsOptionsButton)
-            Widgets.Button(s, Assets, OptionsButton.X, OptionsButton.Y, "Spielstand");
         Widgets.Button(s, Assets, BackButton.X, BackButton.Y, "Zurück");
     }
 
@@ -165,11 +152,4 @@ public sealed class SettingsScreen : Screen
 
         s.TextCentered(Assets.Mini, 160, 160, "F8 = Ton aus/an    F11 = Vollbild", Colors.White);
     }
-}
-
-/// <summary>Meldet den Bildschirm unter „Gemischtes“ an.</summary>
-internal static class SettingsMenuEntries
-{
-    [MenuEntry("Einstellungen")]
-    private static Screen Open(ScreenHost host, Screen back) => new SettingsScreen(host, back);
 }
