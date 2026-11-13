@@ -120,3 +120,59 @@ KUHNEKATH (FILE13→14) weicht nur noch bei 3 von 6 Saaten ab.
 
 **Weitere aufeinanderfolgende lrandom-Züge** (Chancen 0x9F5C, Abschluss, Strafe/Kette) sind nicht geprüft; dieselbe Kopplung
 kann dort wirken. Vorschlag: eigene Analyse (`LRandomCycle` liefert den Zyklus).
+
+## 3. Export/Import (Teil 3)
+
+### 3.1 #804 Vereinsfelder 0x26/0x2C
+
+`OUT=… docs/analyse/belastung-staerke/dump.sh FILE03 FILE16A FILE44 FILE53 EXPORT2D && python3 …/clubs.py …` (Computervereine
+0–51, Tripel 0x26/0x2D/Angriff 0x2C Bits 4–6):
+
+| Stand | Verteilung |
+|---|---|
+| FILE03 | 40/40/0 × 23, 60/60/0 × 9, 0 × 16, 40/40/5, 40/40/4, 55/40/6 (Gegner der Managerspiele) |
+| FILE16A | 40/40/0 × 23, 60/60/0 × 12, 0 × 16 |
+| FILE44 | 40/40/0 × 17, 60/60/4 × 7, 60/60/0 × 7, 40/40/4 × 2, 40/40/5 × 2, 0 × 16 |
+| FILE53 | 40/40/0 × 20, 60/60/0 × 14, 60/40/4 (Gegner), 0 × 16 |
+| EXPORT2D (Remake, 22 Spieltage) | 0/0/0 × 51 |
+
+Vorher las der Import die Felder nicht (Werte aus dem Nachspielen, je Saat verschieden: FILE03 17–19, FILE16A 33, FILE44 29
+Abweichungen) und der Export schrieb 0. **Fix:** `ApplyTeamValues` übernimmt +0x26 und +0x2C Bits 4–6 der Vereine mit Kader
+(`Tactics.RecordMatchFields`), `WriteClubRecords` schreibt sie zurück, +0x2D = +0x26 `[APPROX]` (das Remake führt den Grundwert
+nicht; im Original nur beim Gegner einer Managerpaarung verschieden). Die übrigen Bits von 0x2C (Modus, Bit 3, Favorit) setzt
+0x8365/0x84D7 vor jedem Spiel neu und bleiben 0. Keine Schema-Änderung (die Felder führt der Spielstand seit Schema 48,
+`SaveGame.Migration.AbgleichRest.cs`), daher keine Migration. Tests: `AbgleichDosboxExportTests` (Import, Export, Mehrsaisonprobe
+Remake → HOK → Remake über vier Saisonwechsel, passiv und aktiv; alle vorher rot).
+
+### 3.2 Exportprobe EXPORT1D/EXPORT2D/EXPORT2C (R758-01)
+
+EXPORT1D/2D sind am `main` 6805ebf erzeugt (nach `97c372a`), EXPORT2C am Fixstand `c09cd45`. Alle drei lädt das Original ohne
+Fehler (Bilder `export1d_1…3`, `export2c_1…3`, `export2d_1…3`). Abgleich Bild ↔ `emtool hok dump`:
+
+- Hauptmenü: Datum, Spieltag, Konto (500.000 / 331.691 / 339.011 DM), Kopf mit Sonnenbrille (Kopf 6) wie im Dump.
+- Mannschaft EXPORT2D: Namen, Stärken, TO/2m/5m und Energie wie im Dump; die Spalte SP zeigt den Vereinswert (Liga + Pokal +
+  Europapokal: HEISS 26 = 22 Liga + 4), wie bei Original-Ständen. Kein „SPIELER 117x“ mehr (EXPORT2C noch mit zwei solchen Namen
+  und Energie 100 an allen Stammspielern – beides am Stand `c09cd45`, an 6805ebf behoben).
+- Spieler ohne „eingesetzt“ (EXPORT1D STEFAN, DOROCHIN; EXPORT2D STEFAN) zeigen leere Statusspalte, „Eingesetzt: 22“ wie im Dump.
+
+**Ergebnis:** R758-01 erledigt – die Exportstände ab `97c372a` laden im Original und zeigen den Inhalt des Exports. Offen bleibt
+nur, was die Probe nicht prüft (Vereinsfelder 0x26/0x2C: §3.1, jetzt exportiert, nicht erneut im Original geladen).
+
+### 3.3 Highscore „nur Weltkugel“ (FILE54, `highscore-weltkugel_1…4`)
+
+- **Saisonwechsel** (Start FILE20, Manager „fsdfsd“, Deutschland in der WM-Gruppe ausgeschieden): Die Liste zeigt vor und nach dem
+  Saisonwechsel nur „fsdfsd – DEUTSCHLAND – 1“ (Bilder `_2`, `_4`); der Saisonwechsel trägt denselben Manager nicht doppelt ein.
+  Das Remake (`HighscoreTable.Insert` ersetzt den Eintrag mit gleichem Namen und Verein) und `HighscoreRules.Entry` (1 ohne Weltmeistertitel) stimmen
+  damit überein.
+- **Spielende** (FILE54, Dauer „eine Saison“, Manager „Spieler“): Deutschland steht im Halbfinale (Schweden – Deutschland 5:4,
+  Bild `file54_3`), das Spiel um Platz 3 gegen Finnland spielt der Spielende-Lauf. Die Liste zeigt danach „Spieler – DEUTSCHLAND – 5“
+  (Bild `file54_4`). Das passt zu „Σ 9 − Platz“ (Platz 4 → 5; Platz 3 gäbe 6), nicht zur Näherung des Remakes
+  („Weltmeistertitel + 1“ → 1). **Neuer Befund (Vorschlag P3, Datei `Core/Highscore.cs`, nicht in dieser Spur):** Punkte im Modus
+  „nur Weltkugel“ nach der WM-Platzierung; Beleg FILE54/`file54_4`, Fundstelle laut `Highscore.cs`-Kommentar. Die Vereinsspalte
+  „DEUTSCHLAND“ stimmt mit dem Remake überein.
+- Nach der Liste folgen Schlussbild „Das wars… Carpe diem !“ und das Programmende (`file54_5`, `file54_6`).
+
+### 3.4 A189 „Gesperrte“
+
+Laut Nutzer trat in einer ganzen Saison ab FILE37 kein gesperrter Spieler nach einem Spiel auf (README Runde 17, Sitzung 4); FILE55/56
+gibt es nicht. A189 „Gesperrte“ bleibt `[APPROX]` und offen (Inventurzeile für `pruefung-karte`: unverändert, nur Vermerk).

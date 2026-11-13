@@ -362,7 +362,8 @@ public sealed partial class GameState
     /// <summary>
     /// Teamwerte far:9657 + 0x17 … 0x1D aller Vereinssätze (Feldkarte „ClubTeamValues“). Kondition und Technik 0x18–0x1B stehen im
     /// Original absolut, das Remake führt die Abweichung vom Datenbankwert (<see cref="MatchEngine.ClubFieldValues"/>): Import
-    /// Originalwert − <see cref="MatchEngine.ComputerTeamValue"/> (#729; Gegenstück zum Export, Review 2026-11-10 B1).
+    /// Originalwert − <see cref="MatchEngine.ComputerTeamValue"/> (#729; Gegenstück zum Export, Review 2026-11-10 B1). Dazu Einsatz und
+    /// Angriff des letzten Spiels (+0x26, +0x2C Bits 4–6; #804).
     /// </summary>
     private void ApplyTeamValues(OriginalSaveGame save, int[] clubOf)
     {
@@ -380,6 +381,11 @@ public sealed partial class GameState
             }
             var value = MatchEngine.ComputerTeamValue(club);
             club.TeamValues = new ClubTeamValues(r[0x18] - value, r[0x19] - value, r[0x1A] - value, r[0x1B] - value, r[0x1C], r[0x1D], r[0x17]);
+            // #804: [ORIGINAL] Einsatz 0x26 und Angriff 0x2C Bits 4–6 des letzten Spiels (Tactics.MatchEffort/MatchAttack; Schreiber
+            // 0x8365, 0x939A, 0x38D96) stehen im Vereinssatz zwischen den Spielen; ohne sie hinge die nächste Spielvorbereitung vom
+            // Nachspielen ab (FILE03/FILE16A/FILE44/FILE53). Die Sätze der Nationalteams führen dort die Anzeige „AUTOM.“ (National.cs).
+            if (!TransferMarket.IsNationalTeam(club))
+                club.Tactics.RecordMatchFields(r[0x26], (r[0x2C] >> 4) & 7);
         }
     }
 

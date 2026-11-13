@@ -116,8 +116,8 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
      und gehören nicht in diese Spur.
 - **Abnahme:** je Issue roter Test → grün mit Fundstelle oder begründetes `[APPROX]` mit Beleg aus den neuen Ständen;
   `AbgleichOriginalPaareTests` um die Paare FILE02→50/51 und FILE52→53 erweitert; Mehrsaisonprobe (4 Wechsel) für Teile 1–3.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 13.11.2026; Teile 1–2 fertig (PR #812, Draft),
-  Teil 3 offen – Fortsetzung 1 angefordert.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 13.11.2026; Teile 1–3 fertig (PR #812): #804 behoben,
+  R758-01 erledigt, Highscore „nur Weltkugel“ ausgewertet (neuer Befund Punkte nach WM-Platz), A189 vermerkt.
 
 ### Spur `pruefung-karte`
 
