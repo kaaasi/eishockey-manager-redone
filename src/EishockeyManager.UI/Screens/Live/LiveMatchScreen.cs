@@ -24,8 +24,6 @@ namespace EishockeyManager.UI.Screens.Live;
 /// <item>[APPROX] Reihen: die Paarungen mit Anzeigereihe des Spieltags, die schon begonnen haben (<see cref="LiveSession.Shown"/>);
 ///   das Remake rechnet sie nacheinander (<c>MatchEngine.LiveDriver.cs</c>), spätere Managerpaarungen erscheinen erst mit
 ///   ihrem Spiel.</item>
-/// <item>[APPROX] Zuschauerzahl: Das Remake rechnet die Zuschauer erst nach dem Spieltag (Finanzen); im Heimspiel steht die
-///   Zeile deshalb leer, sonst „(ausw.)“ wie im Original ohne Heimspiel bzw. in der WM (Datei 0x53A11–0x53B37).</item>
 /// </list>
 /// </summary>
 public sealed class LiveMatchScreen : Screen
@@ -349,12 +347,29 @@ public sealed class LiveMatchScreen : Screen
                 var (x1, x2) = side == 0 ? (5, 96) : (224, 317);
                 CompetitionWidgets.Centered(s, a.Mini, x1, x2, y + 4, club.Name, Colors.White, 0);
             }
-            // [ORIGINAL] Datei 0x53A11–0x53B37: Zuschauer des Heimspiels eines Managers, sonst bzw. in der WM „(ausw.)“.
-            if (!MatchEngine.IsManaged(game, match.Home) || match.Competition == MatchCompetition.WorldCup)
-                CompetitionWidgets.Centered(s, a.Mini, 48, 82, y + 38, "(ausw.)", 0, null);
+            var (text, color) = SpectatorLine(game, match.Home, match.Away, match.Competition);
+            CompetitionWidgets.Centered(s, a.Mini, 48, 82, y + 38, text, color, null);
         }
         s.Blit(frame, LampFieldSource, LampField.X, LampField.Y);
         LiveWidgets.Lamp(s, a, FastLamp.X, FastLamp.Y, lamp);
+    }
+
+    /// <summary>Farbe der Zuschauerzahl bei ausverkauftem Stadion ([ORIGINAL] Datei 0x53AF5: 0x10, sonst 0).</summary>
+    public const byte SoldOutColor = 0x10;
+
+    /// <summary>
+    /// Zuschauerzeile einer Reihe. [ORIGINAL] Datei 0x53A11–0x53B37: Zuschauer aus der Spielabrechnung vor dem Spiel
+    /// (<see cref="GameState.HomeGate"/>, #837), Farbe <see cref="SoldOutColor"/> bei ausverkauft, sonst 0; ohne Heimspiel
+    /// eines Managers oder in der WM (DGROUP 0x12B) „(ausw.)“ (DGROUP 0xD08) in Farbe 0. Zahl über 0x0BAB2 mit DGROUP
+    /// 0x38D = 0, also mit Tausenderpunkt (wie <see cref="Statistics.ClubStatisticsScreen.Number"/>; Videobild folge01_00615
+    /// „4.335“, gegen die Vermutung „ohne“ in <c>re-livespiel.md</c> §4 Punkt 5); [APPROX] Mindestbreite
+    /// DGROUP 0x374 zur Zeit des Aufbaus nicht verfolgt, hier 1. Zentriert 48–82, Grundlinie y + 38, ohne Schatten.
+    /// </summary>
+    public static (string Text, byte Color) SpectatorLine(GameState game, Club home, Club away, MatchCompetition competition)
+    {
+        if (competition == MatchCompetition.WorldCup || game.HomeGate(home, away) is not { } gate)
+            return ("(ausw.)", 0);
+        return (Statistics.ClubStatisticsScreen.Number(gate.Spectators, 1, true), gate.SoldOut ? SoldOutColor : (byte)0);
     }
 
     /// <summary>

@@ -122,6 +122,7 @@ public static partial class MatchEngine
             KnockOut: knockOut,
             ManagerMatch: managerMatch);
         // Spur livespiel-kern A1: [ORIGINAL] Anzeigereihe aus der Spielabrechnung 0x544C0 (nach der Spielwertung, vor dem Spiel).
+        game.PrepareMatchGate(home, away, competition); // #837: [ORIGINAL] Zuschauer aus 0x544C0 vor dem Spiel (MatchGate.cs)
         var scoreboardRow = ScoreboardRow(game, home, away, competition);
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);

@@ -148,7 +148,8 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
 - **Teile:** 1. #834, #839, #840, #835, #836, #838 (Bildschirme); 2. #837 (Zuschauer vor dem Spiel im Kern, neue Kern-Datei,
   Mehrsaisonprobe); 3. #841 (Kachel „Neuer“ = Spielvorbereitung für weitere Manager im laufenden Spiel).
 - **Modell:** Claude Opus 5.5. **Status:** PR #842 (Draft, Base `01ed8a5`, rebased auf `4e55e07`): Teil 1 fertig
-  (13.11.2026); Teile 2 und 3 offen, Fortsetzung 1 angefordert.
+  (13.11.2026); Teil 2 fertig (14.11.2026, Fortsetzung 1: Zuschauer aus der Vorbereitung vor dem Spiel, `Core/MatchGate.cs`);
+  Teil 3 offen.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
