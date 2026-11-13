@@ -100,7 +100,11 @@ public sealed class LiveMatchScreen : Screen
 
     public LiveReporter ReporterState => _reporter;
 
-    public override void Enter() => _script ??= Script().GetEnumerator();
+    public override void Enter()
+    {
+        EndIntervention();
+        _script ??= Script().GetEnumerator();
+    }
 
     public override void Update(InputState input)
     {
@@ -110,7 +114,11 @@ public sealed class LiveMatchScreen : Screen
         if (input.Pressed(Key.Enter) || input.Pressed(Key.Escape))
             _skip = true;
         if (!WaitingForClick && (input.LeftClick || input.RightClick))
+        {
             Click(input.MouseX, input.MouseY, input.RightClick);
+            if (_intervention is not null)
+                return; // Aufstellung bzw. Taktik ist offen; die Minute läuft erst nach der Rückkehr weiter.
+        }
         _script ??= Script().GetEnumerator();
         if (_skip || !_script.MoveNext())
             Finish();
@@ -224,12 +232,51 @@ public sealed class LiveMatchScreen : Screen
             if (mx >= xk && mx <= xk + 39)
             {
                 // [ORIGINAL] Datei 0x38FC0–0x38FED → 0x5434C: Aufstellung (links) bzw. Taktik (rechts) im Spiel.
-                // Offen (Fortsetzung B3): Bildschirme mit Kennzeichen „im Spiel“ und Neuaufbau.
                 LastMode = MatchIntervention.ModeFor(right);
                 LastClick = ClickResult.Crest;
+                BeginIntervention(team, side == 0 ? match.Home : match.Away, LastMode.Value);
+                return;
             }
         }
     }
+
+    private (LiveTeam Team, Club Club, int Manager)? _intervention;
+
+    /// <summary>
+    /// [ORIGINAL] Datei 0x5434C (§4, §10, §15): DGROUP 0xA70E = Manager des angeklickten Vereins (alter Wert gesichert), dann
+    /// Aufstellung bzw. Taktik mit Kennwert „im Spiel“ (0x48E28). Das Remake setzt dafür <see cref="GameState.CurrentManager"/>
+    /// und stellt ihn bei der Rückkehr zurück (<see cref="EndIntervention"/>). [APPROX] Das Nationalteam des Bundestrainers
+    /// (kein Vereinsmanager) öffnet nichts.
+    /// </summary>
+    private void BeginIntervention(LiveTeam team, Club club, InterventionMode mode)
+    {
+        var managers = Game.Managers.ToList();
+        var manager = managers.FindIndex(m => Game.ActiveManagers.Contains(m) && m.ClubIndex == club.Index);
+        if (manager < 0)
+            return;
+        _intervention = (team, club, Game.CurrentManager);
+        Game.CurrentManager = manager;
+        Host.Show(LiveIntervention.Open(Host, this, mode));
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Datei 0x5438D–0x54419 nach Aufstellung/Taktik: Feldspieler des Managervereins neu zählen (0x38A36), Live-Bildschirm
+    /// neu aufbauen 0x5353C(Pokal, 1), DGROUP 0xA70E zurück. Die Aufstellung übernimmt <see cref="LiveLineup.Apply"/> in den
+    /// Spielkader (das Original schreibt dieselben Kaderplätze); der Neuaufbau ist das nächste Bild.
+    /// </summary>
+    private void EndIntervention()
+    {
+        if (_intervention is not { } open)
+            return;
+        _intervention = null;
+        LiveLineup.Apply(open.Team, open.Club);
+        Game.CurrentManager = open.Manager;
+        _input = new InputState(); // [ORIGINAL] Maus leeren (38h:8A7h vor dem Einblenden, Datei 0x5438D–0x54419)
+        Interventions++;
+    }
+
+    /// <summary>Anzahl der abgeschlossenen Eingriffe über Kopf/Logo (für Tests).</summary>
+    public int Interventions { get; private set; }
 
     /// <summary>Modus des letzten Klicks auf Kopf/Logo (Aufstellung/Taktik).</summary>
     public InterventionMode? LastMode { get; private set; }

@@ -748,6 +748,28 @@ Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
   erst nach dem Spieltag); vergebene Chancen ohne Schützen; Reihenfolge der Meldungen einer Minute Chancen, Strafen,
   Verletzungen.
 - **B3 Klickwege:** Treffer-Tests 0x534BC/0x53508 und Lampe „Schnelldurchlauf“ wie §10 (`LiveMatchScreen.SliderHit`,
-  `LampHit`, `FastLampHit`), Befehle über `MatchIntervention`. Offen: Kopf/Logo → Aufstellung/Taktik im Spiel mit Neuaufbau
-  0x5434C (die drei Stellen 0x41298, 0x4135E, 0x413E8) und der Regler (Teil 3).
+  `LampHit`, `FastLampHit`), Befehle über `MatchIntervention`. Regler (Teil 3) nicht nötig (`GameOptionsScreen` hat ihn).
+- **B3 Kopf/Logo (Fortsetzung 1):** die drei offenen Stellen aus §10 gelesen (`python3 tools/reverse-engineering/disasm.py
+  em.exe 0x40D80 0x41440`, `0x41533 0x41683`):
+  - **Datei 0x41298** (Aufstellweg 0x41273, erreicht von Linksklick auf einen Nicht-Aufgestellten bzw. Nicht-Eingesetzten,
+    Datei 0x40F1E–0x40F32, und im Spiel von **jedem Rechtsklick**, Datei 0x40F35–0x40F42): ist der Spieler eingesetzt und
+    aufgestellt (+0x0A ≠ 0, +0x15 ≠ 0) und der Kennwert ≠ 0, endet der Klick ohne Wirkung. Im Spiel nimmt die rechte Taste also
+    keinen Aufgestellten heraus und setzt niemanden ein oder aus; sie stellt wie die linke in die gewählte Reihe (Meldung
+    „Keine Reihe“ nur für die linke Taste, Datei 0x40E63).
+  - **Datei 0x4135E** und **0x413E8** (erster freier Platz bzw. sechster Feldspielerplatz) reichen den Kennwert als letztes
+    Argument an das Aufstellen **0x41533** weiter: Platz +0x15, eingesetzt +0x0A = 1 (Datei 0x41569–0x415B2); mit Kennwert ≠ 0
+    und ohne Spielerfeld +0x1A Bit 7 wird Bit 7 gesetzt und sofort ein Spiel gezählt (+0x06 + k und Wort +0x1C + 2k, k nach
+    DGROUP 0xD0C2: 6 → 1, 7 → 0 und Zähler `far:0x8253 + 0x21 · Verein +0x1C`, sonst 2; Datei 0x415B7–0x41622).
+  - Zusammen mit §10: Grenze 22 nur ohne Spiel (0x40E2A), Herausgenommene bleiben eingesetzt (0x40CFD, 0x4115F).
+  - **Umsetzung:** `Club.ClickPlayerInMatch`/`ClearLineupSlotInMatch` (neu `Core/Squad.Lineup.InMatch.cs`), Übernahme in den
+    Spielkader `LiveLineup.Apply` (neu `Core/MatchEngine.LiveLineup.cs`: Platz +0x15, eingesetzt, Energie und Tore bleiben,
+    danach `MatchIntervention.AfterLineup` = 0x38A36). `LiveMatchScreen`: Kopf/Logo → `LiveIntervention.Open` (Aufstellung bzw.
+    Taktik mit `InMatch`, Wechsel über den Knopf unten rechts wie die Schleife 0x48E28), `GameState.CurrentManager` = Manager
+    des Vereins und zurück (DGROUP 0xA70E), Kopfzeile 0x40290 (Schrift 2, Farbe 30, Verein ab x 1, Manager bis x 317,
+    Grundlinie 10). Szenario `live-eingriff`.
+  - `[APPROX]`: Spiele zählt das Remake am Spielende aus der Aufstellung (0x5494C) statt beim Aufstellen im Spiel; Linienwechsel-
+    Einstellung (DGROUP 0xA700) aus der Taktik im Spiel wirkt erst im nächsten Spiel (`LiveTeam.LineChange` beim Anpfiff
+    kopiert), Einsatz-/Angriffsmodi und Spielstandswerte sofort (gleiche `Tactics`); Bestrafte bleiben bis zum Freiwerden
+    draußen, auch wenn die Aufstellung sie neu setzt; Tasten A/C im Spiel aus; Nationalteam des Bundestrainers ohne Eingriff;
+    Farbe 7 statt 0x1E beim ersten Eintrag der Taktik im Spiel (Datei 0x47F5E) nicht übernommen.
 

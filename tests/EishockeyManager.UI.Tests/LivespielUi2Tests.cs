@@ -2,6 +2,7 @@ using EishockeyManager.Core;
 using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.Live;
+using EishockeyManager.UI.Screens.Team;
 using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.UI.Tests;
@@ -196,5 +197,79 @@ public sealed class LivespielUi2Tests
         d.Click(10, 230);
         Assert.False(live.Clock.Lamp);
         Assert.Equal(0, d.Host.Game!.Options.MatchSpeed);
+    }
+    /// <summary>
+    /// B3 Kopf/Logo (Fortsetzung 1; [ORIGINAL] Datei 0x38FC0–0x38FED → 0x5434C → 0x48E28, §15): Linksklick öffnet die Aufstellung,
+    /// Rechtsklick die Taktik, beide mit Kennwert „im Spiel“ und Kopfzeile 0x40290 (Farbe 30). Ein im Spiel geleerter Platz
+    /// lässt den Spieler eingesetzt (Datei 0x40CFD); zurück im Live-Bildschirm steht der neue Platz im Spielkader, die Feldspieler
+    /// sind neu gezählt (0x38A36) und der aktive Manager ist wieder der alte (DGROUP 0xA70E). Vor dem Teil rot: der Klick setzte nur
+    /// <see cref="LiveMatchScreen.LastMode"/>.
+    /// </summary>
+    [GameDataFact]
+    public void CrestClick_OpensLineupAndTactics_InMatch_AppliesOnReturn()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        game.Options.MatchSpeed = 0;
+        d.NextDay();
+        while (d.Host.Current is MatchDayScreen)
+            d.Frame();
+        var live = Assert.IsType<LiveMatchScreen>(d.Host.Current);
+        var shown = Assert.Single(live.Session.Shown);
+        var side = shown.HomeTeam!.Managed ? 0 : 1;
+        var team = side == 0 ? shown.HomeTeam! : shown.AwayTeam!;
+        var club = side == 0 ? shown.Home : shown.Away;
+        var managerBefore = game.CurrentManager;
+        var minute = live.DisplayMinute;
+
+        d.Click(LiveMatchScreen.CrestX(side) + 10, 20);
+        Assert.Equal(LiveMatchScreen.ClickResult.Crest, live.LastClick);
+        var lineup = Assert.IsType<LineupScreen>(d.Host.Current);
+        Assert.True(lineup.InMatch);
+        Assert.Equal(club.Index, game.ActiveManager.ClubIndex);
+        int HeaderPixels(Screen screen)
+        {
+            screen.Draw(d.Surface);
+            return d.Surface.Pixels.Take(320 * 11).Count(b => b == LiveIntervention.HeaderColor);
+        }
+        Assert.True(HeaderPixels(lineup) > HeaderPixels(new LineupScreen(d.Host, live)) + 20);
+
+        var slot = LineupSlot.Forward(team.AttackLine, 0);
+        var taken = club.Lineup[slot]!;
+        var livePlayer = team.Squad!.Players.Single(p => p.Player == taken);
+        var r = LineupScreen.SlotButton(slot);
+        d.Click(r.X + 2, r.Y + 2);
+        Assert.Null(club.Lineup[slot]);
+        Assert.True(club.IsDressed(taken)); // [ORIGINAL] Datei 0x40CFD
+        Assert.NotEqual(0, livePlayer.Position); // erst nach der Rückkehr abgeglichen
+        for (var i = 0; lineup.MessageLines.Count > 0; i++) // „Auto-Aufstellung / ist deaktiviert !“ schließt von selbst
+        {
+            Assert.True(i < 2000);
+            d.Frame();
+        }
+
+        d.Click(TeamUi.SwitchButton.X + 2, TeamUi.SwitchButton.Y + 2);
+        var tactics = Assert.IsType<TacticsScreen>(d.Host.Current);
+        Assert.True(tactics.InMatch);
+        d.Press(Key.Escape);
+        Assert.Same(live, d.Host.Current);
+        Assert.Equal(1, live.Interventions);
+        Assert.Equal(managerBefore, game.CurrentManager);
+        Assert.Equal(0, livePlayer.Position);
+        Assert.True(livePlayer.Dressed);
+        Assert.Equal(2, team.Squad.SkatersPerPart[1]);
+        Assert.Equal(minute, live.DisplayMinute); // Während des Eingriffs läuft keine Minute.
+
+        d.RightClick(LiveMatchScreen.CrestX(side) + 10, 20);
+        Assert.Equal(InterventionMode.Tactics, live.LastMode);
+        Assert.True(Assert.IsType<TacticsScreen>(d.Host.Current).InMatch);
+        d.RightClick(5, 5);
+        Assert.Same(live, d.Host.Current);
+        Assert.Equal(2, live.Interventions);
+
+        while (d.Host.Current is not MainMenuScreen)
+            d.Press(Key.Enter);
+        Assert.True(live.Done);
     }
 }

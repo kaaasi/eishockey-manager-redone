@@ -1,4 +1,5 @@
 using EishockeyManager.Core;
+using EishockeyManager.UI;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.Live;
 using EishockeyManager.UI.Testing;
@@ -55,6 +56,31 @@ internal static class Live
         while (!live.WaitingForClick && !live.Done)
             d.Frame();
         d.Save("05_minute_60");
+    }
+
+    /// <summary>
+    /// Spur livespiel-ui-2 (B3, Fortsetzung 1): Eingriff über Kopf/Logo in Minute 2 – Aufstellung (linke Taste) und Taktik
+    /// (rechte Taste) mit Kopfzeile 0x40290, danach wieder der Live-Bildschirm.
+    /// </summary>
+    [Scenario("live-eingriff")]
+    private static void Eingriff(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.Host.Game!.Options.MatchSpeed = 0;
+        d.NextDay();
+        while (d.Host.Current is MatchDayScreen)
+            d.Frame();
+        var live = (LiveMatchScreen)d.Host.Current!;
+        while (live.DisplayMinute < 2)
+            d.Frame();
+        var side = live.Session.Shown[0].HomeTeam!.Managed ? 0 : 1;
+        d.Click(LiveMatchScreen.CrestX(side) + 10, 20);
+        d.Move(319, 239); d.Save("01_aufstellung_im_spiel");
+        d.Press(Key.Escape);
+        d.RightClick(LiveMatchScreen.CrestX(side) + 10, 20);
+        d.Move(319, 239); d.Save("02_taktik_im_spiel");
+        d.Press(Key.Escape);
+        d.Move(319, 239); d.Save("03_zurueck_live");
     }
 
     [Scenario("live-spielende")]
