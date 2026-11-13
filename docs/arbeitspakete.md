@@ -88,7 +88,8 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
   2. **B4 Spielende (L8):** 0x51F3D in `SeasonEndGameOverScreen` (schwarz, „Das wars...“ 100, „Carpe diem !“ 140, Klick).
 - **Abnahme:** `karriere_02315` (zwei volle Balken, dritter 32 px, „08“ ab x = 96), Bildschirmfoto-Abläufe, Pixelvergleich mit
   Fundstelle; Textpositionen Spielende.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 13.11.2026.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** B1 und B4 fertig (PR #811, 13.11.2026), wartet
+  auf Erstreview; Abnahme `karriere_02315` korrigiert (Minute 08, `re-livespiel.md` §13).
 
 ### Spur `livespiel-ui-2` – Live-Bildschirm, Reporter, Klickwege (Welle 2, Teile B2, B3)
 

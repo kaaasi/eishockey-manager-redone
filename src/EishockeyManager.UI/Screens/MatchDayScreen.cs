@@ -6,7 +6,7 @@ namespace EishockeyManager.UI.Screens;
 /// „Tag weiter“ (Klick aufs Vereinslogo, früher „und tschüß…“) ohne Live-Spiel, wie im Original:
 /// <see cref="GameState.Continue"/> spielt bis zum nächsten eigenen Spiel; angezeigt werden der Reihe nach
 /// 1. Banner („Ligaspiel“, „Play-Off / Aufstiegsrunden“ …), wenn ein Manager-Verein spielt,
-/// 2. „Spiele laufen“ mit Spielminute und drei Balken (je Drittel: gelb = gespielt, rot = offen),
+/// 2. „Spiele laufen“ mit der Spieluhr des Originals (<see cref="LiveWidgets.Clock"/>: drei Balken zu 4 Pixel je Minute, Minute),
 /// 3. Banner und Meisterfotos der übrigen Tage (z. B. „Deutscher Meister“), die DEB-Pokal-Auslosung nach dem dritten
 ///    Termin einer Runde (<see cref="Competitions.DebCupDrawFlow"/>),
 /// 4. zurück ins Hauptmenü – oder am 29. April der Bildschirm „Saisonende“.
@@ -150,29 +150,31 @@ public sealed class MatchDayScreen : Screen
             return;
 
         DrawFastForward(s);
-        Widgets.ShadowText(s, Assets.Bold, 160, 65, "Spiele laufen", Colors.TileBackground, 53);
-
-        var box = ProgressBox;
-        s.Fill(box, Colors.PanelFill);
-        s.Outline(box, 241);
-        for (var third = 0; third < 3; third++)
-        {
-            var color = Minute >= (third + 1) * 20 ? Colors.Yellow : Colors.Red;
-            s.Fill(new Rect(9, 192 + third * 8, 80, 1), color);
-        }
-        DrawNumber(s, Minute, 95, 196);
+        DrawRunning(s, Assets, Minute);
     }
 
-    /// <summary>Spielminute mit den Ziffern aus kb\38 (8 × 10), zweistellig.</summary>
-    private void DrawNumber(Surface s, int value, int x, int y)
+    /// <summary>[ORIGINAL] Datei 0x37BAA–0x37BCB: Text zentriert x 0–319 (0x13F), Grundlinie 80, Farbe 30, Schatten 0.</summary>
+    public const int RunningBaseline = 80;
+    public const byte RunningTextColor = 30;
+    public const byte RunningShadow = 0;
+
+    /// <summary>[ORIGINAL] Datei 0x37BD3–0x37C16: Rahmen 0x0B5A7 Farbe 0, Füllung (4 | 184)–(122 | 217) 0x0B620 Farbe 3.</summary>
+    public const byte ProgressFrameColor = 0;
+    public const byte ProgressFill = 3;
+
+    /// <summary>
+    /// „Spiele laufen“ ohne Live-Anzeige (em.exe Datei 0x37B82–0x37C5C, <c>docs/analyse/re-livespiel.md</c> §1 Schritt 2): Text,
+    /// Kasten (3 | 183)–(123 | 218) und die Spieluhr 0x51E90 mit Stil 1 (Datei 0x37C44–0x37C56: Stil 1 ohne Anzeige); am
+    /// Minutenende zeichnet 0x52BD6 ohne Anzeige nur die Uhr neu (§1 Schritt 5).
+    /// </summary>
+    public static void DrawRunning(Surface s, Assets assets, int minute)
     {
-        var digits = Assets.Image(38);
-        var text = value.ToString("00");
-        foreach (var ch in text)
-        {
-            s.Blit(digits, new Rect((ch - '0') * 8, 0, 8, 10), x, y, transparent: 0);
-            x += 8;
-        }
+        Competitions.CompetitionWidgets.Centered(s, assets.Bold, 0, 0x13F, RunningBaseline, "Spiele laufen", RunningTextColor,
+            RunningShadow);
+        var box = ProgressBox;
+        s.Outline(box, ProgressFrameColor);
+        s.Fill(box.Inflate(-1), ProgressFill);
+        LiveWidgets.Clock(s, assets, 1, minute);
     }
 
     /// <summary>Vorspultaste: zwei schwarze Dreiecke.</summary>
