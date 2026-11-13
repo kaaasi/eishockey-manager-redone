@@ -11,7 +11,8 @@ namespace EishockeyManager.UI.Screens.ManagerArea;
 ///   abheben/leihen (4%).“, „Aktien von … kaufen.“). Linke Hälfte = holen/leihen/kaufen, rechte = einzahlen/verleihen/verkaufen.</item>
 /// <item>Unten die vier Aktien (Kurs, Zahl, Kauf, Wert), der Kursverlauf und rechts die Übersicht.</item>
 /// </list>
-/// Klick auf das Bankbild oder den Kontostand öffnet das Finanzbuch.
+/// Das Finanzbuch (Remake-Erweiterung A311) öffnet der Knopf <see cref="BookButton"/> (#840); Bankbild und Kontostand wählen
+/// wie im Original nur die Bank bzw. tun nichts.
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Bank, Mitmanager und Aktie werden erst per Klick gewählt (em.exe 0x59B2D, Befund NB-02 #206; Klickfelder
@@ -30,8 +31,14 @@ public sealed class FinanceScreen : Screen
     /// <summary>Kasten 0 = Bank, 1–3 = Mitmanager.</summary>
     public static Rect PartnerBox(int i) => i == 0 ? new Rect(3, 2, 101, 53) : new Rect(118 + (i - 1) * 71, 2, 57, 53);
 
-    /// <summary>Bankbild (Klick = Finanzbuch).</summary>
+    /// <summary>Bankbild; ein Klick wählt nur die Bank (<see cref="BankSelectArea"/>, #840).</summary>
     public static readonly Rect BankPicture = new(21, 4, 66, 49);
+
+    /// <summary>
+    /// Knopf „Buch“ zum Finanzbuch (#840, Nutzerwunsch 13.11.2026). [APPROX] Remake-Erweiterung ohne Vorbild: freie Fläche links
+    /// unter dem Bankkasten, außerhalb von Bank-Klickfeld (y &lt; 54) und Streifen (y 73–100), Baustein <see cref="SmallButton"/>.
+    /// </summary>
+    public static readonly Rect BookButton = new(4, 58, 30, Widgets.ButtonHeight);
 
     /// <summary>Schwarze Fläche für den Managerkopf (37 × 38).</summary>
     public static Rect HeadArea(int i) => new(128 + (i - 1) * 71, 10, 37, 38);
@@ -81,8 +88,7 @@ public sealed class FinanceScreen : Screen
     private const int AmountY = 90; // [ORIGINAL] Grundlinie 95 (Datei 0x58589)
 
     /// <summary>
-    /// [ORIGINAL] Klickfeld der Bank (em.exe 0x59BB8–0x59BCB: x &lt; 106, y &lt; 54). Das Bankbild darin öffnet zusätzlich
-    /// das Finanzbuch (<see cref="BankPicture"/>).
+    /// [ORIGINAL] Klickfeld der Bank (em.exe 0x59BB8–0x59BCB: x &lt; 106, y &lt; 54); sonst ohne Wirkung (#840).
     /// </summary>
     public static readonly Rect BankSelectArea = new(0, 0, 106, 54);
 
@@ -122,7 +128,6 @@ public sealed class FinanceScreen : Screen
     /// </summary>
     public const int ChartScale = 2;
 
-    public static readonly Rect AccountField = new(246, 103, 70, 17);
     private const int LabelX = 249;
     private const int ValueRight = 304;
 
@@ -134,9 +139,6 @@ public sealed class FinanceScreen : Screen
     /// </summary>
     public static readonly byte[] StockColors = [14, 22, 17, 9];
     private const byte TextColor = 212;
-    private const byte LabelTop = 212;
-    private const byte LabelBottom = 50;
-    private const byte AccountColor = 12;
 
     /// <summary>[ORIGINAL] Farbe von Hinweis und Betrag (Datei 0x58586, 0x59A91: 0x1E).</summary>
     public const byte BarTextColor = 30;
@@ -376,12 +378,15 @@ public sealed class FinanceScreen : Screen
                 Activate(x > 159);
             return;
         }
+        if (BookButton.Contains(x, y))
+        {
+            Host.Show(new FinanceBookScreen(Host, this));
+            return;
+        }
 
         Deactivate();
         if (SelectAt(x, y) && _selection.Kind == SelectionKind.Stock)
             _offset = StockOffset(_selection.Index);
-        if (input.Clicked(BankPicture) || input.Clicked(AccountField))
-            Host.Show(new FinanceBookScreen(Host, this));
     }
 
     /// <summary>[ORIGINAL] Klickfeld der Knöpfe einer Seite (Datei 0x59050–0x590A1).</summary>
@@ -613,6 +618,7 @@ public sealed class FinanceScreen : Screen
         DrawChart(s);
         DrawRegulator(s);
         DrawSummary(s);
+        SmallButton.Draw(s, Assets, BookButton, "Buch");
     }
 
     private void DrawPartners(Surface s)
@@ -769,30 +775,46 @@ public sealed class FinanceScreen : Screen
         }
     }
 
+    /// <summary>[ORIGINAL] Beschriftung der rechten Spalte (Datei 0x580AE–0x580DE): Farbe 0x1E, Schatten 6, einfarbig (#839).</summary>
+    public const byte SummaryLabelColor = 0x1E;
+    /// <inheritdoc cref="SummaryLabelColor"/>
+    public const byte SummaryLabelShadow = 6;
+
+    /// <summary>
+    /// [ORIGINAL] Farbe eines Betrags der rechten Spalte nach Vorzeichen (Datei 0x5811F–0x5815B): 0x1E − 0x12 = 12 bei
+    /// positivem, 0x1E − 0x0E = 16 bei negativem Betrag, sonst 0x1E; ohne Schatten (0xFF).
+    /// </summary>
+    public static byte SummaryValueColor(long amount) => amount > 0 ? (byte)12 : amount < 0 ? (byte)16 : SummaryLabelColor;
+
     private void DrawSummary(Surface s)
     {
         var mini = Assets.Mini;
-        void Label(int y, string text) => ManagerText.TwoTone(s, mini, LabelX, y, text, LabelTop, LabelBottom);
-        void Value(int y, long amount) => s.TextRight(mini, ValueRight, y, ManagerText.Money(amount), TextColor);
+        // [ORIGINAL] Datei 0x57ED6–0x5818D: 15 Zeilen aus der Tabelle DGROUP 0xDF0, Beschriftung auf Grundlinie y + 2 (danach
+        // y + 10), Betrag auf Grundlinie y (danach y + 8), Start y = 0x6B. Grundlinien damit 109, 117, 127, … 233.
+        void Label(int baseline, string text) => Competitions.CompetitionWidgets.Centered(s, mini, LabelX, LabelX, baseline, text,
+            SummaryLabelColor, SummaryLabelShadow, left: true);
+        void Value(int baseline, long amount) =>
+            s.TextRight(mini, ValueRight, Competitions.CompetitionWidgets.Top(mini, baseline), ManagerText.Money(amount), SummaryValueColor(amount));
 
         var finance = Game.Finance(Me);
-        Label(105, "Kontostand:");
-        s.TextCentered(mini, 278, 113, ManagerText.Money(Me.Money), Me.Money < 0 ? Colors.Red : AccountColor);
-        Label(123, "Untereinander:");
-        Value(131, Game.ManagerReceivables(Me));
-        Value(139, -Game.ManagerDebts(Me));
-        Label(149, "Bank:");
-        Value(157, finance.Bank.Savings);
-        Value(165, -finance.Bank.Credit);
-        Label(175, "Aktien:");
-        Label(183, "Kaufpreis:");
+        Label(109, "Kontostand:");
+        // [APPROX] Lage des Kontostands zentriert wie im Video (5:40–6:20); das Original füllt die Zahl auf (DGROUP 0x374 = 9).
+        s.TextCentered(mini, 278, Competitions.CompetitionWidgets.Top(mini, 117), ManagerText.Money(Me.Money), SummaryValueColor(Me.Money));
+        Label(127, "Untereinander:");
+        Value(135, Game.ManagerReceivables(Me));
+        Value(143, -Game.ManagerDebts(Me));
+        Label(153, "Bank:");
+        Value(161, finance.Bank.Savings);
+        Value(169, -finance.Bank.Credit);
+        Label(179, "Aktien:");
+        Label(189, "Kaufpreis:");
         var cost = Game.DepotPurchaseCost(Me);
         var value = Game.DepotValue(Me);
-        Value(192, cost);
-        Label(202, "Depot-Wert:");
-        Value(211, value);
-        Label(221, "Depot-Saldo:");
-        Value(230, value - cost);
+        Value(197, cost);
+        Label(207, "Depot-Wert:");
+        Value(215, value);
+        Label(225, "Depot-Saldo:");
+        Value(233, value - cost);
     }
 }
 

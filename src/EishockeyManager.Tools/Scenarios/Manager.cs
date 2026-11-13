@@ -37,7 +37,7 @@ internal static class ManagerScenarios
             d.PlayMatchDay();
         }
         d.OpenTile("Finanzen"); d.Move(1, 239); d.Save("08_nach_8_spieltagen");
-        d.Click(FinanceScreen.BankPicture.X + 10, FinanceScreen.BankPicture.Y + 10); d.Save("09_finanzbuch");
+        d.Click(FinanceScreen.BookButton.X + 5, FinanceScreen.BookButton.Y + 5); d.Save("09_finanzbuch");
     }
 
     [Scenario("werbung")]
