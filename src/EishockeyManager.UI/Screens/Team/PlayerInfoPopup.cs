@@ -73,7 +73,26 @@ public sealed class PlayerInfoPopup
         return true;
     }
 
-    /// <summary>Werte der vier Balken (0–99).</summary>
+    /// <summary>
+    /// Zeigerlänge der Erschöpfung in Pixeln. [ORIGINAL] em.exe Datei 0x041AC, Versätze 0xA1C–0xA60 (Aufruf 0xA5B):
+    /// (100 − Belastung +0x13) · 94 / 100, im Balken auf 1 … 94 begrenzt (0xBBA–0xBC7); frisch (50) → 47, ab 99 → 1 (#805).
+    /// </summary>
+    public static int ExhaustionBarPixels(Player p) => PlayerDataWindow.BarPixels((100 - p.Strain) * 94 / 100);
+
+    /// <summary>Zeigerlängen der vier Balken in Pixeln (1–94).</summary>
+    public static int[] BarPixelLengths(Player p)
+    {
+        var values = BarValues(p);
+        return
+        [
+            PlayerDataWindow.BarPixelsFromPercent(values[0]),
+            PlayerDataWindow.BarPixelsFromPercent(values[1]),
+            PlayerDataWindow.BarPixelsFromPercent(values[2]),
+            ExhaustionBarPixels(p),
+        ];
+    }
+
+    /// <summary>Werte der Balken Unterzahl, Überzahl und Tendenz (0–99) auf der Skala des Remakes.</summary>
     public static int[] BarValues(Player p) =>
     [
         p.Technique,
@@ -82,7 +101,6 @@ public sealed class PlayerInfoPopup
         p.TrendScore != 0
             ? Math.Clamp((p.TrendScore - 30) * 100 / 38, 0, 99)
             : p.Trend switch { PlayerTrend.Rising => 84, PlayerTrend.Falling => 15, _ => 50 },
-        Math.Clamp(p.Strain - 50, 0, 100), // [APPROX] wie bisher 100 − Energie, aus der Belastung (R12I-01)
     ];
 
     public void Draw(Surface s, Assets a)
@@ -132,12 +150,12 @@ public sealed class PlayerInfoPopup
         }
 
         // Balken
-        var values = BarValues(p);
+        var lengths = BarPixelLengths(p);
         for (var i = 0; i < 4; i++)
         {
             var r = Bar(i);
             s.TextCentered(mini, r.X + r.W / 2, r.Y - 6, BarLabels[i], 35);
-            DrawBar(s, r, values[i]);
+            DrawBarPixels(s, r, lengths[i]);
         }
 
         TeamUi.DialogButton(s, a, AhaButton.X, AhaButton.Y, "Aha !");
@@ -149,7 +167,10 @@ public sealed class PlayerInfoPopup
     /// Balkenanfang + 1 + Länge (1–94 px, Wert 0–99 → · 94 / 99). [ORIGINAL] em.exe Datei 0x041AC, Adressen 0xBBA–0xBFC;
     /// Maße des Rahmens am Videobild oberflaeche_1115 gemessen ([APPROX]: Rahmenfarben 2/3 und 197).
     /// </summary>
-    public static void DrawBar(Surface s, Rect r, int value)
+    public static void DrawBar(Surface s, Rect r, int value) => DrawBarPixels(s, r, PlayerDataWindow.BarPixelsFromPercent(value));
+
+    /// <summary>Balken wie <see cref="DrawBar"/> mit der Zeigerlänge in Pixeln (auf 1–94 begrenzt, 0xBBA–0xBC7).</summary>
+    public static void DrawBarPixels(Surface s, Rect r, int pixels)
     {
         s.Fill(r, Colors.Black);
         s.HLine(r.X, r.Y, r.W, 2);
@@ -162,7 +183,7 @@ public sealed class PlayerInfoPopup
         var x0 = r.X + 2;
         for (var i = 0; i < BarColors.Length; i++)
             s.Fill(new Rect(x0 + step * i, r.Y + 3, step, 6), BarColors[i]);
-        var px = PlayerDataWindow.BarPixelsFromPercent(value);
+        var px = PlayerDataWindow.BarPixels(pixels);
         s.VLine(r.X + 1 + px, r.Y + 2, 8, BarColors[px / step]);
     }
 

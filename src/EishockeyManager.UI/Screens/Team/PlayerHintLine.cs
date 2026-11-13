@@ -78,12 +78,11 @@ public static class PlayerHintLine
     /// <summary>
     /// Text der Hinweiszeile für Spalte <paramref name="column"/> (aus <see cref="Column"/>) oder null (leer). Mit
     /// <paramref name="showExhaustion"/> hängt die Tendenz „ (Erschöpfung: n)“ an – nur in der Aufstellung (Rand 0xE9,
-    /// Adresse 0x487). <paramref name="exhaustion"/> ist der Wert Kaderplatz +0x13.
+    /// Adresse 0x487); n = Belastung +0x13 (<see cref="Player.Strain"/>) · 10 / 15 wie Spalte E (#805).
     /// Die Verletzungsart (Kaderplatz +0x17) steht in <see cref="Player.InjuryKind"/> (Spur kader-transfer, Teil 2).
     /// [APPROX] Die Sperre in Minuten (+0x0D mit +0x09 Bit 0) ist im Original die Strafbank im laufenden Spiel (Strafe 0x35C02:
     /// +0x0D = 2 bzw. 5, je Minute −1 an 0x5488C/0x5490C, Ende 0x35795, nach dem Spiel gelöscht 0x551E0); das Remake zeigt die
-    /// verbleibenden Spiele aus <see cref="Player.SuspendedGames"/>. Die Belastung (+0x13) kommt aus <see cref="Player.Energy"/>
-    /// (100 − Energie). Unbekannte Art (ältere Spielstände): „Verletzt.“ ohne Klammer.
+    /// verbleibenden Spiele aus <see cref="Player.SuspendedGames"/>. Unbekannte Art (ältere Spielstände): „Verletzt.“ ohne Klammer.
     /// </summary>
     public static string? Text(Player p, int column, PlayerHintInfo info, bool showExhaustion)
     {
@@ -105,7 +104,7 @@ public static class PlayerHintLine
             case 15:
                 text = FixedTexts[15] + Trends[(int)p.Trend];
                 if (showExhaustion)
-                    text += $" (Erschöpfung:{Exhaustion(p) * 10 / 15})";
+                    text += $" (Erschöpfung:{TrainingRules.ExhaustionDisplay(p)})"; // [ORIGINAL] +0x13 · 10 / 15, Datei 0x41B29–0x41B38 (#805)
                 break;
             default:
                 if (column < 0 || column >= FixedTexts.Length)
@@ -126,9 +125,6 @@ public static class PlayerHintLine
     };
 
     private enum PlayerRoleIndex { Goalkeeper, Defender, Forward }
-
-    /// <summary>Belastung (Kaderplatz +0x13) – [APPROX] aus der Energie des Remakes.</summary>
-    private static int Exhaustion(Player p) => Math.Clamp(p.Strain - 50, 0, 100); // [APPROX] wie bisher 100 − Energie, aus der Belastung (R12I-01)
 
     /// <summary>
     /// Statustext nach 0x41683, Adressen 0x308–0x42F: eingesetzt ohne Reihe → „RESERVE“; sonst nach Kaderplatz +0x09 &amp; 3:
