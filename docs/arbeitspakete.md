@@ -145,7 +145,10 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
 - **Dateigrenzen:** betroffene Bildschirme unter `src/EishockeyManager.UI/Screens/**` (Werbung, Finanzen,
   Einstellungen/Optionen, Posteingang, Spielvorbereitung, Live); `LiveClock.cs`/Desktop-Bildtakt nur für #838; für #837 eine
   neue Kern-Datei; `MenuTiles.cs`/`MainMenuScreen.cs` minimal mit Begründung; `docs/analyse/inventur.md` nicht (Zeilen im PR).
-- **Modell:** Claude Opus 5.5. **Status:** Branch `paket/nutzer-befunde` (Base `01ed8a5`), in Arbeit.
+- **Teile:** 1. #834, #839, #840, #835, #836, #838 (Bildschirme); 2. #837 (Zuschauer vor dem Spiel im Kern, neue Kern-Datei,
+  Mehrsaisonprobe); 3. #841 (Kachel „Neuer“ = Spielvorbereitung für weitere Manager im laufenden Spiel).
+- **Modell:** Claude Opus 5.5. **Status:** PR #842 (Draft, Base `01ed8a5`, rebased auf `4e55e07`): Teil 1 fertig
+  (13.11.2026); Teile 2 und 3 offen, Fortsetzung 1 angefordert.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
