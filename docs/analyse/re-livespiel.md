@@ -639,3 +639,20 @@ Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
   Belegung & 7 für jede Reihe mit dem Verein in `0x233` (Datei 0x3598A–0x359EE), vor der Spielerwahl.
 - **Anschluss:** `MatchEngine.PlayWithEvents` legt die Reihe nach der Spielwertung an; der einzige Haken in
   `MatchEngine.Minutes.cs` ist `OriginalMinutes.GoalScene` an der Stelle 0xAB90 (Teil A4 wählt dort die Szene).
+
+### A2 Ablaufmodell (`Core/LiveClock.cs`)
+
+- **Minute** (Datei 0x37C6B–0x37CBD): nur mit Anzeige (Argument der Drittelschleife), `[0x1DB]` = 0 und Wort `[0x262]` < 0x46:
+  `lrandom(0, 4)` (Langwort, Ergebnis `dx:ax` = 0) → Zwinkern 0x522EC und Pause 30 − `[0x262]` sar 1, sonst Pause 45 − … .
+  Pause 0x130EE: Argument (Langwort) / 3 per 0x227C, dann `0xBBF:0x2C08`/`0xBBF:0x2C4E` (Ticks abwarten). `DGROUP 0x1DB`
+  wird im Spielcode nur gelesen (`--xref`, zehn Leser, kein Schreiber), Anfangswert 0.
+- **Drittelende** (Datei 0x3855F–0x3858C): mit Anzeige und Drittelende 60 oder 70: unter 70 Klick `38h:118h`, dann immer
+  `110h:7Ah`.
+- **Sicherung:** Spieltagsanfang Datei 0x36B65–0x36B77 (Lampe 0, `0xE19B` = `[0x262]`, `0xE19C` = `[0x226]`), vor den
+  Optionen zurück und danach neu gesichert, Lampe 0 (Datei 0x37D29–0x37D5B).
+- **lrandom** (Datei 0xBFD5): Zustand `DGROUP 0xE017/0xE019` (Anfangswert 0 in em.exe), `x = (x << 4) + 0xA7`, Rest
+  `0:48Bh` gegen 0x3D0900, Ergebnis `x · (b − a + 1)` (`0:3CAh`) / 0x3D0900 (`0:47Ch`) + a. **Berichtigung zu §12:** lrandom
+  ist zwar vom Borland-`random` getrennt, aber **nicht** von der Spielrechnung – die Funktionskarte nennt als Aufrufer u. a.
+  0x87F7 (Energie), 0x9F5C (Torchancen), 0xA484 (Abschluss) und 0x35818 (Strafen). Im Original verschiebt jedes Zwinkern
+  also die lrandom-Folge der Spielrechnung. `[APPROX]` Das Remake hält den Zwinkerzufall getrennt (Rundenplan 18, Review
+  #795 P3-1); die Spielrechnung zieht ohnehin aus `GameState.Random`, eine zuggenaue Folge gibt es dort nicht.
