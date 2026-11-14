@@ -166,3 +166,29 @@ laut README bestimmen, die Nummern rücken auf). Auswertung erst in der Runde na
 
 1. `EXPORT2C.HOK` und die mit `emtool` am aktuellen `main` neu erzeugten Exportstände im Original laden; Kopf, Konto und Kader
    fotografieren (wie EXPORT1C, Referenz-PR #27). Die Leitstelle erzeugt die Stände vorher und nennt ihre SHA-256.
+
+## Aufnahme `runde-19` (Plan Leitstelle 14.11.2026; Sitzung 1 nur, falls Spur `re-belastung` die Ursache von #730 nicht findet – R19-D3 = B, bei Fehlschlag A; Sitzungen 2/3 nach Lust)
+
+Gebündelt aus `docs/arbeitspakete.md` „Zurückgestellt“ (#730 Rest, A093, #838) und zur Gegenprobe für #847. Nummern: nächste
+freie laut README (Vorschlag ab **FILE60**; FILE59 frei lassen, falls belegt – README entscheidet, R852 P3-5). Auswertung erst in der Runde nach Eintreffen (Analysespur, nicht hier).
+
+### Sitzung 1 – Belastung #730 Spieltag 2/3 (`analyse/abgleich-dosbox.md` §1.3), Start FILE50
+
+1. FILE50 laden (Stand nach Spieltag 1). Bis vor den 2. Spieltag spielen (Training wie eingestellt, nichts ändern), im Hauptmenü
+   sichern als **FILE60**.
+2. Den 2. Spieltag (Auswärtsspiel) **ohne** Mausklick spielen; je Spielminute ein Bild der Reihenanzeige; danach sichern als
+   **FILE61**.
+3. Bis vor den 3. Spieltag weiterspielen, sichern als **FILE62**; den 3. Spieltag ohne Klick spielen, sichern als **FILE63**.
+   Dieselben Bilder belegen A093 (Technik −10 außerhalb der eigenen Reihe).
+
+### Sitzung 2 – Echtzeit „Spiele laufen“ #838
+
+1. Einen Spieltag ohne Managerpaarung im Bild (oder mit Live-Spiel aus) laufen lassen und die Dauer von Minute 1 bis 60 mit der
+   Stoppuhr messen; DOSBox-Zyklen (`cycles`) und die Geschwindigkeit aus den Optionen notieren. Am besten zweimal (Geschwindigkeit
+   0 und 60).
+
+### Sitzung 3 (optional) – Neuer Manager mitten in der Saison #847
+
+1. Einen Vereinsstand mitten in der Saison laden (z. B. FILE05), sichern als **FILE64** (vorher).
+2. Über „Neuer“ einen Manager mit einem Verein aus einer anderen Liga als der gewählten Start-Liga hinzufügen; Tabelle der
+   Start-Liga und der Herkunftsliga fotografieren, sichern als **FILE65**.
