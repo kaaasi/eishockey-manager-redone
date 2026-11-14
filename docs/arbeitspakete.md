@@ -16,7 +16,7 @@ vorhanden, §11 Format, §6 Anzeigeteil), offene Issues #847 (P2), #826 (P3), #7
 #847, #826 und #730 belegt geschlossen. **Entscheidungen Nutzer 14.11.2026** (Optionen im Plan-PR #851): R19-D1 = A (eine Spur
 `torszenen`, C1 → C2 → C3), R19-D2 = C (#847 eigene Spur, #826 an `pruefung-karte`), R19-D3 = B mit Claude Fable 5.2, bei
 Fehlschlag A (Prüfauftrag `re-belastung` in em.exe; findet er die Ursache nicht, DOSBox-Liste `runde-19`). **Go Nutzer 14.11.2026**
-(alle Spuren und Folgeläufe, Modelle wie unten). Plan-Review #852 Ja (P2-1 → R19-E1 offen, P2-2 und P3-1…5 eingearbeitet).
+(alle Spuren und Folgeläufe, Modelle wie unten). Plan-Review #852 Ja (P2-1 → R19-E1 = A, P2-2 und P3-1…5 eingearbeitet).
 
 **Base für alle Spuren:** aktueller `main` (Planstand `926aeab`); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 18
 (Archiv): ein Branch `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; je ID zuerst prüfen, ob sie noch
@@ -69,7 +69,8 @@ macht nur der Bildschirm.
   3. **C3 Einbindung Anzeigeteil 0x53C57 (Datei 0x53DCA–0x5406A):** Aufruf nur für Art 0/1 und Torszenen an (`[0x226]`),
      Dauer-Eisfeld `0x5A55` (Modus 2), Lampe/Schnelldurchlauf schaltet Torszenen aus (A2); Pause 30/20, Zuschauerzeile
      („ZUSCHAUER“/„AUSWÄRTS“/Länderteam leer), Spielstand aus dem Ergebnisbyte (bei Tor − 1), Wiederholung `r`/`w` bis dreimal
-     (`DGROUP 0xCC35`; die Wiederholung zieht im Original neu – Umsetzung nach Entscheidung R19-E1, bis dahin nicht anfangen),
+     (`DGROUP 0xCC35`; R19-E1 = A, Nutzer 14.11.2026: die Wiederholung zeigt dieselbe Szene noch einmal ohne neuen Zug, `[APPROX]`
+     mit Fundstelle – das Original zieht neu; originalgetreu erst mit dem bitgenauen Zufallsmodus nach v1.0),
      danach Torschütze, Reporter und Anzeigetafel wie bisher. Abnahme: Ablauftest ganzer Spieltag mit Managerpaarung, Torszenen
      an gegen Torszenen aus bei gleicher Darstellung ≠ 0 (der Kern zieht nur bei `LiveMode ≠ 0`) = gleiches Ergebnis; Bildschirmfoto-Ablauf `live-torszene`;
      Mehrsaisonprobe unverändert grün.
