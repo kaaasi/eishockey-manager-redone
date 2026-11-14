@@ -242,6 +242,95 @@ public class NeuerManagerTests
         Assert.Equal(SaveGame.Save(game), SaveGame.Save(Reload(game)));
     }
 
+    /// <summary>
+    /// Mehrsaisonprobe (AGENTS.md §5, Teil 3): Der neue Manager kommt in Saison 1 mit Platztausch hinzu, dann vier Saisonwechsel
+    /// mit Sichern/Laden nach jedem; Manager 0 passiv, der neue aktiv (verlängert). Kennung, Platz und Pool bleiben stimmig.
+    /// </summary>
+    [Fact]
+    public void AddManager_WithSwap_MultiSeason_FourSeasonChanges_PassiveAndActive()
+    {
+        var (game, _) = FirstSwappingGame();
+        var name = game.Clubs[Chosen].Name;
+        var own = game.Clubs[game.Managers[0].ClubIndex].Name;
+        var added = game.AddManager(Newcomer());
+        Assert.NotEqual(Chosen, added.ClubIndex);
+
+        for (var change = 0; change < 4; change++)
+        {
+            PlayToSeasonEnd(game, money: true);
+            game.StartNextSeason();
+            game = Reload(game);
+            AssertConsistent(game, own, name);
+        }
+
+        Assert.Equal(GameState.FirstSeason + 4, game.Season);
+        Assert.All(game.Managers, m => Assert.False(m.Dismissed));
+        var club = game.Clubs[game.Managers[1].ClubIndex];
+        Assert.InRange(club.Players.Count, 18, 29);
+        Assert.All(club.Players, p => Assert.Empty(PlayerFactory.Validate(club, p)));
+        Assert.Equal(2, game.History[^1].Managers.Count);
+    }
+
+    /// <summary>Wie oben mit Originaldaten, ohne Geldfixierung: SV BAYREUTH (2. Liga) kommt an Spieltag 3 in die Bundesliga.</summary>
+    [GameDataFact]
+    public void AddManager_WithSwap_MultiSeason_OriginalData_WithoutMoneyFixing()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2 });
+        var game = Reload(NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, 5));
+        for (var i = 0; i < 3; i++)
+            TestSeason.PlayMatchDay(game);
+        var name = game.Clubs[23].Name;
+        var own = game.Clubs[2].Name;
+        var added = game.AddManager(new ManagerSetup { Name = "N", Head = 3, ClubIndex = 23 });
+        Assert.Equal(League.Bundesliga, game.Clubs[added.ClubIndex].League);
+
+        for (var change = 0; change < 4; change++)
+        {
+            PlayToSeasonEnd(game, money: false);
+            game.StartNextSeason();
+            var saved = SaveGame.Save(game);
+            game = Reload(game);
+            Assert.Equal(saved, SaveGame.Save(game));
+            AssertConsistent(game, own, name);
+        }
+
+        Assert.All(game.Managers, m => Assert.False(m.Dismissed));
+        Assert.Equal(2, game.History[^1].Managers.Count);
+    }
+
+    private static void PlayToSeasonEnd(GameState game, bool money)
+    {
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 5000, "Saisonende nicht erreicht");
+            if (money)
+                foreach (var manager in game.Managers)
+                    manager.Money = 10_000_000; // keine Entlassung
+            TestSeason.KeepSquad(game, game.Managers[1], extendExpired: true);
+            game.Continue();
+        }
+        Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+        TestSeason.KeepSquad(game, game.Managers[0]);
+        TestSeason.KeepSquad(game, game.Managers[1], extendExpired: true);
+    }
+
+    /// <summary>Platz = Index, Kennungen eindeutig, Ligen voll, Managervereine tragen ihre Kennung, Pool zeigt auf den Platz.</summary>
+    private static void AssertConsistent(GameState game, string own, string added)
+    {
+        Assert.All(game.Clubs.Select((c, i) => (c, i)), x => Assert.Equal(x.i, x.c.Index));
+        Assert.Equal(NewGame.SelectableClubs, game.Clubs.Take(NewGame.SelectableClubs).Select(c => c.Name).Distinct().Count());
+        foreach (var league in Enum.GetValues<League>())
+            Assert.Equal(12, game.LeagueSlots(league).Count);
+        Assert.Equal(own, game.Clubs[game.Managers[0].ClubIndex].Name);
+        Assert.Equal(added, game.Clubs[game.Managers[1].ClubIndex].Name);
+        Assert.Equal(game.Managers.Select(m => m.ClubIndex), game.Setup.Managers.Select(m => m.ClubIndex!.Value));
+        var pool = game.TransferMarket.Pool;
+        foreach (var manager in game.Managers)
+            foreach (var p in game.Clubs[manager.ClubIndex].Players.Where(p => !p.OnLoan))
+                Assert.Equal(manager.ClubIndex, Assert.Single(pool, s => ReferenceEquals(s.Player, p)).Club);
+    }
+
     private static GameState Reload(GameState game)
     {
         var loaded = SaveGame.Load(SaveGame.Save(game));
