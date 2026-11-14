@@ -170,7 +170,7 @@ laut README bestimmen, die Nummern rücken auf). Auswertung erst in der Runde na
 ## Aufnahme `runde-19` (Plan Leitstelle 14.11.2026; Sitzung 1 nur, falls Spur `re-belastung` die Ursache von #730 nicht findet – R19-D3 = B, bei Fehlschlag A; Sitzungen 2/3 nach Lust)
 
 Gebündelt aus `docs/arbeitspakete.md` „Zurückgestellt“ (#730 Rest, A093, #838) und zur Gegenprobe für #847. Nummern: nächste
-freie laut README (Vorschlag ab **FILE60**). Auswertung erst in der Runde nach Eintreffen (Analysespur, nicht hier).
+freie laut README (Vorschlag ab **FILE60**; FILE59 frei lassen, falls belegt – README entscheidet, R852 P3-5). Auswertung erst in der Runde nach Eintreffen (Analysespur, nicht hier).
 
 ### Sitzung 1 – Belastung #730 Spieltag 2/3 (`analyse/abgleich-dosbox.md` §1.3), Start FILE50
 
