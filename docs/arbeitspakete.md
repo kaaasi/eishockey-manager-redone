@@ -8,13 +8,15 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 19 – Torszenen, neuer Manager mitten in der Saison (Plan 14.11.2026, Go offen)
+## Aktuelle Runde: Runde 19 – Torszenen, neuer Manager, Belastung (Plan 14.11.2026, Go offen)
 
 Runde 18 abgeschlossen am 14.11.2026: [archiv/runde-18.md](archiv/runde-18.md). Grundlage: Spur C `torszenen` nach
 [analyse/re-livespiel.md](analyse/re-livespiel.md) §12 (L7-Anzeige; Kern-Zug 0x575C3 und Leser `tore\` aus `livespiel-kern` A4
 vorhanden, §11 Format, §6 Anzeigeteil), offene Issues #847 (P2), #826 (P3), #730 (P2, Rest). Ziel: Live-Spiel vollständig (L1–L8),
-#847 und #826 belegt geschlossen. **Entscheidungen Nutzer** (Optionen im Plan-PR): R19-D1 = `<offen>`, R19-D2 = `<offen>`,
-R19-D3 = `<offen>`. Der Plan unten folgt den Empfehlungen (D1 = A, D2 = C, D3 = A). **Spuren starten erst nach Go.**
+#847, #826 und #730 belegt geschlossen. **Entscheidungen Nutzer 14.11.2026** (Optionen im Plan-PR #851): R19-D1 = A (eine Spur
+`torszenen`, C1 → C2 → C3), R19-D2 = C (#847 eigene Spur, #826 an `pruefung-karte`), R19-D3 = B mit Claude Fable 5.2, bei
+Fehlschlag A (Prüfauftrag `re-belastung` in em.exe; findet er die Ursache nicht, DOSBox-Liste `runde-19`). **Spuren starten erst
+nach Go.**
 
 **Base für alle Spuren:** aktueller `main` (Planstand `926aeab`); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 18
 (Archiv): ein Branch `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; je ID zuerst prüfen, ob sie noch
@@ -29,8 +31,8 @@ R18-D3 = A; der Abspieler zieht nichts und ändert keinen Spielwert (`AGENTS.md`
 wie ohne. Zeit vergeht weiter nur über `GameState.Continue()`; Bilder je Szene sind ein Modell (wie `LiveClock`), die Wanduhr
 macht nur der Bildschirm.
 
-**Folge (R19-D1 = A, R19-D2 = C):** Welle 1 parallel `torszenen` (C1 → C2 → C3 nacheinander) und `neuer-manager`. Merge
-`neuer-manager` → `torszenen`. Welle 2: `pruefung-karte` (`paket/pruefung-karte`), am Rundenende Gesamtreview (ChatGPT).
+**Folge (R19-D1 = A, R19-D2 = C, R19-D3 = B):** Welle 1 parallel `torszenen` (C1 → C2 → C3 nacheinander), `neuer-manager` und
+`re-belastung`. Merge `neuer-manager` → `re-belastung` → `torszenen`. Welle 2: `pruefung-karte` (`paket/pruefung-karte`), am Rundenende Gesamtreview (ChatGPT).
 
 ### Zuständigkeit für gemeinsame Dateien
 
@@ -41,6 +43,8 @@ macht nur der Bildschirm.
 - `Audio/**`: nur `torszenen`, nur Abspielen der Effekte je Bild (Byte 3), keine Änderung bestehender Töne.
 - `Core/GameState.AddManager.cs`, neu `Core/GameState.AddManager.Swap.cs` (o. ä.), Spielplan-/Tabellentausch (Datei 0x36169):
   allein `neuer-manager`; `GameState.Integration.cs`, `GameState.cs` höchstens minimal, im PR begründet.
+- `Core/Squad.Training*.cs`, `Core/MatchEngine.Managed.cs`, Reihenwechsel in `Core/MatchEngine.Minutes.cs`/`OriginalMinutes`,
+  `tests/**/AbgleichOriginalPaareTests.cs`, `docs/analyse/belastung*.md`: allein `re-belastung`.
 - `Core/Highscore.cs` (#826), `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`,
   `tests/**/Support/`: allein `pruefung-karte`; die anderen Spuren nennen ihre Inventurzeilen im PR.
 - `docs/analyse/re-livespiel.md`: neuer Abschnitt §16 nur `torszenen`; `docs/reverse-engineering.md`: je Spur ein eigener
@@ -79,17 +83,30 @@ macht nur der Bildschirm.
   (4 Saisonwechsel, passiver und aktiver Manager, mit einem mitten in Saison 1 hinzugefügten Manager).
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
 
+### Spur `re-belastung` – Ursache #730 Spieltag 2/3 in em.exe (R19-D3 = B)
+
+- **Ziel:** Ursache der Belastung an Spieltag 2/3 (`analyse/abgleich-dosbox.md` §1.3: im Original wachsen Sturm 1/2 stark,
+  Sturm 3 nicht; Remake gleichmäßig) in em.exe finden und beheben. Kandidaten: Eiszeit/Reihenwahl je Minute bei Auswärts- und
+  Heimspiel, Training und Erholung zwischen den Spieltagen (Datei 0x6B08–0x6B1A, `EnergyNorm`), Torwart/Reihen nach
+  Taktik-Minutenvorgabe; Vorarbeit `analyse/belastung-staerke.md`, `belastung.md` (Runde 16) nicht wiederholen.
+- **Teile:** 1. Analyse mit ausführbarem Beleg (Quasi-Paar FILE50→FILE03, Reihensummen wie Bericht §1.3; roter Test oder Probe
+  mit Fundstelle), Abschnitt in `belastung-staerke.md`; 2. Fix mit Regressionstest (Abnahme #730: FILE02 → 3 Spieltage, HOCK ≤ 70,
+  Eintrag aus der erwarteten Liste entfernen), Abgleich-Paare und Mehrsaisonprobe (4 Wechsel) grün.
+- **Fehlschlag (R19-D3 → A):** findet Teil 1 keine belegte Ursache, Bericht mit geprüften Stellen, Label `spur-wartet`, kein
+  Teil 2; die Leitstelle gibt dann die DOSBox-Liste `runde-19` (`vorlagen/dosbox-aufnahme.md`) frei.
+- **Modell:** Claude Fable 5.2 (Nutzer 14.11.2026). **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
+
 ### Spur `pruefung-karte` (Welle 2)
 
 - **Inhalt:** #826 (Highscore „nur Weltkugel“: Punkte Σ 9 − Platz nach FILE54, roter Test mit Beleg aus dem Bericht
   `abgleich-dosbox` §3); Inventur „Stand Runde 19“, Funktionskarte (L7 umgesetzt), gesammelte P3 der Runde.
-- **Voraussetzung:** `neuer-manager` und `torszenen` gemergt.
+- **Voraussetzung:** `neuer-manager`, `re-belastung` und `torszenen` gemergt.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
 
 ### Gesamtreview am Rundenende
 
 ChatGPT GPT-6.1 Terra (Codex, mit Netzzugang) nach `anhang.md` C; besonders: Torszenen ändern keinen Spielwert, Platztausch
-mitten in der Saison (Tabelle, Spielplan, Laden/Speichern).
+mitten in der Saison (Tabelle, Spielplan, Laden/Speichern), Belastung (#730).
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - DOSBox-Aufnahme `runde-17` ausgewertet in Runde 18 (`abgleich-dosbox`, #812). Offen daraus: #730 Spieltag 2/3 und A093
@@ -100,7 +117,7 @@ mitten in der Saison (Tabelle, Spielplan, Laden/Speichern).
 ### Vormerkungen (nach Runde 18)
 
 - Torszenen, #847, #826: in Runde 19 eingeplant (Spuren oben).
-- **DOSBox-Aufnahme `runde-19`** (R19-D3 = A, nach Lust des Nutzers): #730 Spieltag 2/3, A093, #838 Echtzeit;
+- **DOSBox-Aufnahme `runde-19`** (R19-D3: nur falls `re-belastung` die Ursache nicht findet; #838 auch sonst, nach Lust): #730 Spieltag 2/3, A093, #838 Echtzeit;
   Liste in `vorlagen/dosbox-aufnahme.md`, Auswertung in der Runde nach Eintreffen.
 - **Testlücke Gesamtreview #848:** Speichern/Laden mitten in einer angehaltenen Live-Paarung (über die Oberfläche nicht
   erreichbar; prüfen, sobald ein Speicherweg im Live-Spiel dazukommt).

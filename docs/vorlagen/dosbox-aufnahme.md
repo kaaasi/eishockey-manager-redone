@@ -167,7 +167,7 @@ laut README bestimmen, die Nummern rücken auf). Auswertung erst in der Runde na
 1. `EXPORT2C.HOK` und die mit `emtool` am aktuellen `main` neu erzeugten Exportstände im Original laden; Kopf, Konto und Kader
    fotografieren (wie EXPORT1C, Referenz-PR #27). Die Leitstelle erzeugt die Stände vorher und nennt ihre SHA-256.
 
-## Aufnahme `runde-19` (Plan Leitstelle 14.11.2026, R19-D3 = A; nach Lust des Nutzers)
+## Aufnahme `runde-19` (Plan Leitstelle 14.11.2026; Sitzung 1 nur, falls Spur `re-belastung` die Ursache von #730 nicht findet – R19-D3 = B, bei Fehlschlag A; Sitzungen 2/3 nach Lust)
 
 Gebündelt aus `docs/arbeitspakete.md` „Zurückgestellt“ (#730 Rest, A093, #838) und zur Gegenprobe für #847. Nummern: nächste
 freie laut README (Vorschlag ab **FILE60**). Auswertung erst in der Runde nach Eintreffen (Analysespur, nicht hier).
