@@ -8,12 +8,88 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 19 – Planung offen (neue Leitstellen-Sitzung, `docs/vorlagen/leitstelle-start.md`)
+## Aktuelle Runde: Runde 19 – Torszenen, neuer Manager mitten in der Saison (Plan 14.11.2026, Go offen)
 
-Runde 18 abgeschlossen am 14.11.2026: [archiv/runde-18.md](archiv/runde-18.md). Grundlage für den Plan: Torszenen (L7-Anzeige,
-Spur C `torszenen` nach [analyse/re-livespiel.md](analyse/re-livespiel.md) §12), Vormerkungen unten, offene Issues #730, #826,
-#847.
+Runde 18 abgeschlossen am 14.11.2026: [archiv/runde-18.md](archiv/runde-18.md). Grundlage: Spur C `torszenen` nach
+[analyse/re-livespiel.md](analyse/re-livespiel.md) §12 (L7-Anzeige; Kern-Zug 0x575C3 und Leser `tore\` aus `livespiel-kern` A4
+vorhanden, §11 Format, §6 Anzeigeteil), offene Issues #847 (P2), #826 (P3), #730 (P2, Rest). Ziel: Live-Spiel vollständig (L1–L8),
+#847 und #826 belegt geschlossen. **Entscheidungen Nutzer** (Optionen im Plan-PR): R19-D1 = `<offen>`, R19-D2 = `<offen>`,
+R19-D3 = `<offen>`. Der Plan unten folgt den Empfehlungen (D1 = A, D2 = C, D3 = A). **Spuren starten erst nach Go.**
 
+**Base für alle Spuren:** aktueller `main` (Planstand `926aeab`); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 18
+(Archiv): ein Branch `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; je ID zuerst prüfen, ob sie noch
+offen ist; Befund reproduzieren, roter Regressionstest mit Fundstelle, dann grün; Mehrsaisonprobe bei Saisonwechsel, Kader oder
+Geld; Schema-Änderung mit Migration in neuer Datei `Core/SaveGame.Migration.<Spur>.cs` (Leitstelle nummeriert beim Merge);
+`[ORIGINAL]`/`[APPROX]` mit `Datei 0x…`; fremde Tests nach R15-E2 = C; keine geplanten Aufgaben aus Läufen (R15-E4). Bei
+Unklarheit „wie im Original“, sonst `[APPROX]` mit Begründung, die Leitstelle bündelt die Fragen. **Entwickler und Erstreviews
+sind Claude-Sitzungen;** ChatGPT nur fürs Gesamtreview.
+
+**Grundsätze Torszenen:** Die Szene ist reine Anzeige. Alle Zufallszüge (Szenenwahl 0x575C3) zieht weiter der Kern nach
+R18-D3 = A; der Abspieler zieht nichts und ändert keinen Spielwert (`AGENTS.md` §4). Ein Spieltag mit Torszenen ergibt dasselbe
+wie ohne. Zeit vergeht weiter nur über `GameState.Continue()`; Bilder je Szene sind ein Modell (wie `LiveClock`), die Wanduhr
+macht nur der Bildschirm.
+
+**Folge (R19-D1 = A, R19-D2 = C):** Welle 1 parallel `torszenen` (C1 → C2 → C3 nacheinander) und `neuer-manager`. Merge
+`neuer-manager` → `torszenen`. Welle 2: `pruefung-karte` (`paket/pruefung-karte`), am Rundenende Gesamtreview (ChatGPT).
+
+### Zuständigkeit für gemeinsame Dateien
+
+- `Formats/GoalScene.cs`, `Core/MatchEngine.GoalScene.cs`, neu `UI/Screens/Live/GoalScene*.cs`, `UI/LiveWidgets.cs`,
+  `UI/Screens/Live/LiveMatchScreen.cs`, `UI/Screens/Live/LiveSession.cs`, `Tools/Scenarios/Live.cs`: allein `torszenen`.
+  `Core/MatchEngine.Minutes.cs`, `MatchEngine.Live*.cs`, `LiveClock.cs`: nur lesen; braucht C3 dort einen Anschluss
+  (z. B. Kennzeichen „Szene anzeigen“ am Torereignis), minimal und im PR mit Fundstelle begründet.
+- `Audio/**`: nur `torszenen`, nur Abspielen der Effekte je Bild (Byte 3), keine Änderung bestehender Töne.
+- `Core/GameState.AddManager.cs`, neu `Core/GameState.AddManager.Swap.cs` (o. ä.), Spielplan-/Tabellentausch (Datei 0x36169):
+  allein `neuer-manager`; `GameState.Integration.cs`, `GameState.cs` höchstens minimal, im PR begründet.
+- `Core/Highscore.cs` (#826), `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`,
+  `tests/**/Support/`: allein `pruefung-karte`; die anderen Spuren nennen ihre Inventurzeilen im PR.
+- `docs/analyse/re-livespiel.md`: neuer Abschnitt §16 nur `torszenen`; `docs/reverse-engineering.md`: je Spur ein eigener
+  Abschnitt, die Leitstelle löst beim Merge auf.
+
+### Spur `torszenen` – Abspieler und Anzeigeteil der Torszene (Spur C, L7)
+
+- **Teile:**
+  1. **C1 Figuren und Eisfläche (Analyse + Leser):** Zeichnen `48h:4ECFh` ff. und Bildtafel der Figurnummern 0 … 93 lesen
+     (Kandidat `kb\233…235` 32 × 32 über eine Tabelle in `kb\246`, `re-livespiel.md` §11); Größe und Aufbau der Eisfläche,
+     Zuordnung zur Halle `kb\241…244` (Review #795 P2-1), Scrollen der Kamera. Ergebnis in `re-livespiel.md` §16 und im Leser
+     (`Formats/GoalScene.cs`: Figur → Bildquelle). Abnahme: `[GameDataFact]` Figur → Bild für alle in den 48 Dateien
+     vorkommenden Nummern; Eisfläche als Bild gerendert, Ausschnitt gegen `eisbaeren_f01_01150` vermessen.
+  2. **C2 Abspieler 0x567C8 (Modus 0–3):** Bilder `kb\231 + i` mit Hallenstufe (i = 5 → `kb\241…244`, 12 → `kb\246`, 13 →
+     `kb\247`), Kopfzeile 0x56EDD/Minutenzeile 0x570E8, Trikotfarben 0x53BF9 und Palette 0xFE/0xFD, Bildschleife (Kamera,
+     Puck, 12 Objekte, Bewegungsbyte), Töne je Bild (Byte 3), Torzahl + 1 und Kopfzeile Modus 2, Pause 6; neu
+     `UI/Screens/Live/GoalSceneScreen.cs` (bzw. `GoalScenePlayer.cs`). Speichermangel-Zweig (Modus 0) entfällt mit Begründung
+     `[APPROX]`. Abnahme: Szene `2.ht` abspielen, Bild gegen `eisbaeren_f01_01150` (Pixelvergleich mit Fundstelle); Kopfzeile
+     pixelgenau (Textpositionen §6); Einheitstest Entzerrung (Summe < 6 → XOR 0xFFF); Ton je Bild wie Byte 3.
+  3. **C3 Einbindung Anzeigeteil 0x53C57 (Datei 0x53DCA–0x5406A):** Aufruf nur für Art 0/1 und Torszenen an (`[0x226]`),
+     Dauer-Eisfeld `0x5A55` (Modus 2), Lampe/Schnelldurchlauf schaltet Torszenen aus (A2); Pause 30/20, Zuschauerzeile
+     („ZUSCHAUER“/„AUSWÄRTS“/Länderteam leer), Spielstand aus dem Ergebnisbyte (bei Tor − 1), Wiederholung `r`/`w` bis dreimal
+     (`DGROUP 0xCC35`), danach Torschütze, Reporter und Anzeigetafel wie bisher. Abnahme: Ablauftest ganzer Spieltag mit
+     Managerpaarung und Torszenen = Ergebnis ohne Anzeige (gleiche Zufallsfolge); Bildschirmfoto-Ablauf `live-torszene`;
+     Mehrsaisonprobe unverändert grün.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
+
+### Spur `neuer-manager` – Platztausch in die Start-Liga mitten in der Saison (#847, R18-E5 = A)
+
+- **Ziel:** Beim Hinzufügen eines Managers über „Neuer“ mitten in der Saison den Verein wie im Original in die gewählte Start-Liga
+  tauschen (Datei 0x29C3B–0x29CF2, Tausch 0x36169): Liga, Tabellenplatz, Spielplan und Ergebnisse, Pokale, Kader/Finanzen des
+  getauschten Vereins; `[APPROX]` in `GameState.AddManager.cs` entfernen.
+- **Teile:** 1. Lesen 0x29C3B–0x29CF2 und 0x36169 (was wird getauscht, Bedingungen, Gleichstand), Doku-Abschnitt in
+  `reverse-engineering.md`; 2. Umsetzung im Kern mit Regressionstest (rot vor Fix) und Proben: Tausch in jede Start-Liga, Verein
+  schon in der Start-Liga (kein Tausch), Bundesliga/2. Liga/Oberliga, nach dem Laden (atomar wie #842 P1-1); 3. Mehrsaisonprobe
+  (4 Saisonwechsel, passiver und aktiver Manager, mit einem mitten in Saison 1 hinzugefügten Manager).
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
+
+### Spur `pruefung-karte` (Welle 2)
+
+- **Inhalt:** #826 (Highscore „nur Weltkugel“: Punkte Σ 9 − Platz nach FILE54, roter Test mit Beleg aus dem Bericht
+  `abgleich-dosbox` §3); Inventur „Stand Runde 19“, Funktionskarte (L7 umgesetzt), gesammelte P3 der Runde.
+- **Voraussetzung:** `neuer-manager` und `torszenen` gemergt.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
+
+### Gesamtreview am Rundenende
+
+ChatGPT GPT-6.1 Terra (Codex, mit Netzzugang) nach `anhang.md` C; besonders: Torszenen ändern keinen Spielwert, Platztausch
+mitten in der Saison (Tabelle, Spielplan, Laden/Speichern).
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - DOSBox-Aufnahme `runde-17` ausgewertet in Runde 18 (`abgleich-dosbox`, #812). Offen daraus: #730 Spieltag 2/3 und A093
@@ -23,10 +99,9 @@ Spur C `torszenen` nach [analyse/re-livespiel.md](analyse/re-livespiel.md) §12)
 
 ### Vormerkungen (nach Runde 18)
 
-- **Torszenen (Runde 19):** L7-Anzeige, Spur C `torszenen` nach `analyse/re-livespiel.md` §12 (Kern-Zug 0x575C3 und Leser
-  `tore\` aus `livespiel-kern` A4 vorhanden).
-- **#847 (R18-E5 = A):** Platztausch eines neu hinzugefügten Managers in die Start-Liga mitten in der Saison (0x29C3B–0x29CF2).
-- **#826:** Highscore „nur Weltkugel“ – Punkte nach WM-Platz (FILE54).
+- Torszenen, #847, #826: in Runde 19 eingeplant (Spuren oben).
+- **DOSBox-Aufnahme `runde-19`** (R19-D3 = A, nach Lust des Nutzers): #730 Spieltag 2/3, A093, #838 Echtzeit;
+  Liste in `vorlagen/dosbox-aufnahme.md`, Auswertung in der Runde nach Eintreffen.
 - **Testlücke Gesamtreview #848:** Speichern/Laden mitten in einer angehaltenen Live-Paarung (über die Oberfläche nicht
   erreichbar; prüfen, sobald ein Speicherweg im Live-Spiel dazukommt).
 - **Nach v1.0:** Einstellungen aus R15-E3 und bitgenauer Zufallsmodus (`anforderungen/zusatzfunktionen.md` C).
