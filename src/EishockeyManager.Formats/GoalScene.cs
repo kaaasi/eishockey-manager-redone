@@ -143,3 +143,59 @@ public readonly record struct GoalSceneCounts(int Normal, int Penalty, int SixSk
 
     private static bool IsDigit(byte b) => b is >= (byte)'0' and <= (byte)'9';
 }
+
+/// <summary>Bildquelle einer Figur der Torszene (Spur torszenen, Teil C1).</summary>
+/// <param name="Graphic">Grafiknummer <c>kb\233 … 235</c>, 0 für die beiden eingebauten Figuren aus em.exe.</param>
+/// <param name="Index">Bild in der Quelle (Figurtafel: 32 × 32 Byte je Bild; eingebaut: Figur 0 oder 1).</param>
+/// <param name="Size">Kantenlänge in Pixeln (32 bzw. 5).</param>
+public readonly record struct GoalSceneFigureSource(int Graphic, int Index, int Size);
+
+/// <summary>
+/// Figuren der Torszene (Spur torszenen, Teil C1; <c>docs/analyse/re-livespiel.md</c> §16).
+/// [ORIGINAL] Zeichnen eines Objekts <c>48h:4FE7h</c> = Datei 0x129D7–0x12AA8 (Grafiksegment 0BBF): Figur 0/1 → 5 × 5 Pixel aus
+/// dem Code-Segment (<c>cs:0x54</c> bzw. <c>cs:0x6D</c>, Zeilenlänge 5); Figur 2 … 41 → Zeiger <c>cs:0x44</c>, 42 … 81 →
+/// <c>cs:0x48</c>, 82 … 93 → <c>cs:0x4C</c>, je Bild 1 024 Byte (Index · 0x400, Zeilenlänge 0x20); Figur ≥ 94 zeichnet nichts.
+/// Die drei Zeiger kopiert <c>48h:538Ch</c> (Datei 0x12D95–0x12DA1) aus <c>DGROUP 0xE2B9 + 8 … 0x13</c>, also die Bilder
+/// i = 2, 3, 4 des Abspielers = <c>kb\233</c>, <c>kb\234</c>, <c>kb\235</c> (Datei 0x568BF–0x568C4: <c>kb\231 + i</c>,
+/// Größen <c>DGROUP 0x5404 … 0x5409</c> = 0xA000, 0xA000, 0x3000). Farbindex 0 ist durchsichtig (Datei 0x12A84).
+/// </summary>
+public static class GoalSceneFigures
+{
+    /// <summary>[ORIGINAL] Höchste Figurnummer, die gezeichnet wird (Datei 0x12A2F: <c>cmp al,0x5D</c>).</summary>
+    public const int MaxFigure = 0x5D;
+
+    /// <summary>[ORIGINAL] Kantenlänge der eingebauten Figuren 0 und 1 (Datei 0x128E0).</summary>
+    public const int BuiltInSize = 5;
+
+    /// <summary>[ORIGINAL] Kantenlänge der Figuren aus den Tafeln (Datei 0x128EE).</summary>
+    public const int SheetSize = 32;
+
+    /// <summary>[ORIGINAL] Offsets der eingebauten Figuren im Grafiksegment 0BBF (Datei 0x129F3, 0x129F9).</summary>
+    public const int BuiltInOffset0 = 0x54, BuiltInOffset1 = 0x6D;
+
+    /// <summary>Bildquelle einer Figurnummer; null, wenn das Original nichts zeichnet (Figur &gt; 93).</summary>
+    public static GoalSceneFigureSource? Resolve(int figure) => figure switch
+    {
+        < 0 => null,
+        < 2 => new GoalSceneFigureSource(0, figure, BuiltInSize),
+        <= 0x29 => new GoalSceneFigureSource(233, figure - 2, SheetSize),
+        <= 0x51 => new GoalSceneFigureSource(234, figure - 0x2A, SheetSize),
+        <= MaxFigure => new GoalSceneFigureSource(235, figure - 0x52, SheetSize),
+        _ => null,
+    };
+
+    /// <summary>
+    /// Liest die beiden eingebauten Figuren (je 25 Byte, zeilenweise) aus em.exe, Grafiksegment 0BBF wie
+    /// <see cref="BitmapFont.LoadFromExe"/>. Figur 0 ist eine graue Scheibe (Farben 0xC6/0xC7, der Puck im Video), Figur 1
+    /// eine Scheibe in Farbe 0xFB.
+    /// </summary>
+    public static byte[][] LoadBuiltIn(string exePath)
+    {
+        var exe = File.ReadAllBytes(exePath);
+        if (exe.Length < 0x20 || exe[0] != 'M' || exe[1] != 'Z')
+            throw new InvalidDataException("Keine gültige DOS-EXE.");
+        var segment = BinaryPrimitives.ReadUInt16LittleEndian(exe.AsSpan(8)) * 16 + BitmapFont.GraphicsSegment * 16;
+        const int bytes = BuiltInSize * BuiltInSize;
+        return [exe.AsSpan(segment + BuiltInOffset0, bytes).ToArray(), exe.AsSpan(segment + BuiltInOffset1, bytes).ToArray()];
+    }
+}
