@@ -4,7 +4,7 @@ using EishockeyManager.UI.Screens.ManagerArea;
 
 namespace EishockeyManager.UI.Tests;
 
-/// <summary>R4-02 (#109): Der Hinweis bei einer Frage darf nicht auf die gesperrte Kachel „Neuer“ verweisen.</summary>
+/// <summary>R4-02 (#109), #841: Der Hinweis bei einer Frage verweist auf die Nachricht, nicht auf die Kachel „Neuer“.</summary>
 public class NewsBarHintTests
 {
     private static GameState Synthetic(int managers)
@@ -23,21 +23,18 @@ public class NewsBarHintTests
 
     private static MenuTile Tile(string name) => MenuTiles.Small.SelectMany(t => t).First(t => t.Name == name);
 
+    /// <summary>
+    /// #841: Die Kachel „Neuer“ öffnet die Spielvorbereitung für weitere Manager (Datei 0x45755 → 0x28165), der Posteingang
+    /// ist nur über die Nachricht erreichbar – der Hinweis verweist daher immer auf den Klick (vorher „(Neuer)“ bei freier Kachel).
+    /// </summary>
     [Theory]
     [InlineData(1)]
     [InlineData(3)]
-    public void QuestionHint_PointsToNewTile_WhileItIsFree(int managers)
+    [InlineData(4)]
+    public void QuestionHint_PointsToClick_NotToNewTile(int managers)
     {
         var game = Synthetic(managers);
-        Assert.False(TileLocks.IsLocked(game, Tile("Neuer")));
-        Assert.Equal("(Neuer)", NewsBar.QuestionHint(game));
-    }
-
-    [Fact]
-    public void QuestionHint_DoesNotPointToLockedNewTile_WithFourManagers()
-    {
-        var game = Synthetic(4);
-        Assert.True(TileLocks.IsLocked(game, Tile("Neuer")));
-        Assert.NotEqual("(Neuer)", NewsBar.QuestionHint(game));
+        Assert.Equal(managers >= GameSetup.MaxManagers, TileLocks.IsLocked(game, Tile("Neuer")));
+        Assert.Equal("(Klicken)", NewsBar.QuestionHint(game));
     }
 }

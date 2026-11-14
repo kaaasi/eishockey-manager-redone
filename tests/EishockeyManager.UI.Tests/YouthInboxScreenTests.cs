@@ -72,7 +72,8 @@ public class YouthInboxScreenTests
         var question = new Message { Kind = MessageKind.SponsorRenewal, Day = game.Day, Lines = ["Möchten Sie den Vertrag mit", "4 SAT verlängern ?"], Contract = contract };
         game.Finance(me).Inbox.Add(question);
 
-        d.OpenTile("Neuer");
+        // #841: Die Kachel „Neuer“ öffnet die Spielvorbereitung; der Posteingang kommt über die Nachrichtenleiste (oben belegt).
+        d.Host.Show(new InboxScreen(d.Host, d.Host.Current!));
         Assert.IsType<InboxScreen>(d.Host.Current);
         var yes = InboxScreen.YesButton(0);
         d.Click(yes.X + 5, yes.Y + 5);

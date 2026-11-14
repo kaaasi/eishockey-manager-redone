@@ -142,10 +142,11 @@ public class FinanceScreenTests
     }
 
     [GameDataFact]
-    public void FinanceBook_OpensFromBankPictureAndCloses()
+    public void FinanceBook_OpensFromBookButtonAndCloses()
     {
         var (d, screen) = Open();
-        d.Click(FinanceScreen.BankPicture.X + 10, FinanceScreen.BankPicture.Y + 10);
+        // #840 (R15-E2 = C): das Finanzbuch öffnet der eigene Knopf, nicht mehr das Bankbild (Original: Klick wählt nur die Bank).
+        d.Click(FinanceScreen.BookButton.X + 5, FinanceScreen.BookButton.Y + 5);
         Assert.IsType<FinanceBookScreen>(d.Host.Current);
         d.Click(10, 10);
         Assert.Same(screen, d.Host.Current);

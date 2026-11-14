@@ -136,12 +136,14 @@ public sealed partial class GameState
     /// (0x38B8F, danach <see cref="PlayerInjuries.AfterMatch"/>; [ORIGINAL] während der Spiele ist die Einstellung
     /// „automatisch aufstellen“ aus, der Aufruf 0x426BC aus 0x53C57 wirkt nicht – neu aufgestellt wird erst nach den Spielen,
     /// Taktik-Befund 375h, Runde 14; berichtigt A190 aus Integration Runde 11);
-    /// [APPROX] die Abrechnung prüft dann den Stand nach dem Spiel.
+    /// gespielte Paarungen rechnet seit #837 die Vorbereitung vor dem Spiel ab (<c>MatchGate.cs</c>, [ORIGINAL] wie 0x544C0), die
+    /// Abrechnung danach prüft nur noch gewertete oder nicht vorbereitete Spiele (Stand nach dem Spiel, [APPROX]).
     /// [APPROX] Sind beide Vereine Managervereine und beide nicht spielfähig, prüft das Original die Manager in
     /// Indexreihenfolge; das Remake wertet dann immer 0:2 (Heimverein zuerst).
     /// </summary>
     internal void MarkShortHandedClubs()
     {
+        ClearPreparedGates(); // #837: Vorbereitungen des Vortags verfallen (MatchGate.cs)
         foreach (var club in Clubs)
             club.ForfeitsMatch = false;
         foreach (var manager in ActiveManagers)
@@ -165,6 +167,8 @@ public sealed partial class GameState
     /// </summary>
     internal void SettleMatchGate(int home, int away, int tableMatchDay, int importance, bool leagueMatch)
     {
+        if (SettlePreparedGate(home, away, tableMatchDay, importance, leagueMatch)) // #837: Zuschauer vor dem Spiel (MatchGate.cs)
+            return;
         foreach (var manager in Managers)
         {
             if (manager.ClubIndex == home)
@@ -174,14 +178,8 @@ public sealed partial class GameState
                     PenalizeShortHanded(manager);
                     return;
                 }
-                var finance = Finance(manager);
-                var stadium = finance.Stadium;
-                var spectators = Spectators(Clubs[home], Clubs[away], stadium, tableMatchDay, FinanceRandom, importance, manager.Level);
-                var tickets = (long)spectators * stadium.TicketPrice;
-                Book(manager, FinanceCategory.Eintritt, tickets);
-                finance.LastHomeGame = (spectators, tickets);
-                if (leagueMatch)
-                    finance.HomeStatistics.Add(spectators, away);
+                var spectators = Spectators(Clubs[home], Clubs[away], Finance(manager).Stadium, tableMatchDay, FinanceRandom, importance, manager.Level);
+                BookGate(manager, spectators, away, leagueMatch);
             }
             if (manager.ClubIndex == away && !manager.Dismissed && IsShortHanded(Clubs[away]))
             {

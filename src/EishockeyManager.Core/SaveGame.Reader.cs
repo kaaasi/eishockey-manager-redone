@@ -252,7 +252,7 @@ public static partial class SaveGame
                     var seed = Property(element, "seed").EnumerateArray().Select(e => e.GetInt32()).ToArray();
                     return Register(GameRandom.FromState(new RngState(seed, Property(element, "next").GetInt32(),
                         Property(element, "nextP").GetInt32())));
-                case Kind.Array or Kind.ReadOnlySequence when declared.IsArray || IsReadOnly(declared):
+                case Kind.Array or Kind.ReadOnlySequence when declared.IsArray || IsReadOnly(declared) && !Growable(declared):
                 {
                     var elementType = Arguments(declared)[0];
                     var items = Property(element, "items");
@@ -333,6 +333,12 @@ public static partial class SaveGame
                     throw Error($"{TypeName(declared)} wird nicht unterstützt.");
             }
         }
+
+        /// <summary>
+        /// Lesbare Liste, die im laufenden Spiel wächst: die Managerliste (<see cref="GameState.AddManager"/>, Kachel „Neuer“).
+        /// Sie wird wie beim Spielstart als <see cref="List{T}"/> angelegt; die Datei bleibt gleich (Review P1-1, #842).
+        /// </summary>
+        private static bool Growable(Type declared) => declared == typeof(IReadOnlyList<Manager>);
 
         private static bool IsReadOnly(Type declared)
         {

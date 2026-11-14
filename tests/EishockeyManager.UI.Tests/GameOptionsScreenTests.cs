@@ -15,8 +15,7 @@ public class GameOptionsScreenTests
     {
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
-        d.OpenTile("Einstellungen");
-        d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5);
+        d.OpenTile("Einstellungen"); // #836 (R15-E2 = C): Kachel öffnet das Optionsfenster direkt (Original 0x2CD1C)
         return (d, Assert.IsType<GameOptionsScreen>(d.Host.Current), d.Host.Game!);
     }
 
@@ -168,7 +167,7 @@ public class GameOptionsScreenTests
     {
         var (d, _, _) = Open();
         d.RightClick(100, 100);
-        Assert.IsType<SettingsScreen>(d.Host.Current);
+        Assert.IsType<MainMenuScreen>(d.Host.Current); // #836: zurück ins Hauptmenü wie im Original
     }
 
     /// <summary>Zusatzschalter „Ganzer Tag“ (#349): Vorgabe aus, Klick schaltet die Einstellung um.</summary>

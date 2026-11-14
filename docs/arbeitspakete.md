@@ -133,6 +133,25 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
 - **Status:** Go 13.11.2026 (Teil 1 Welle 1, Teil 2 Welle 2). Teil 1 fertig 13.11.2026, PR #813 (#803, #805), wartet auf
   Erstreview; Inventurzeile A370 und `reverse-engineering.md` (Hinweiszeile/0x041AC, [APPROX] Belastung) für Teil 2. Teil 2 fertig 13.11.2026, PR #833 (Inventur „Stand Runde 18“, Funktionskarte 268 → 288 umgesetzt, `reverse-engineering.md` Belastung, P3 #817–#819, #824, #825, #828, #829), wartet auf Erstreview.
 
+### Spur `nutzer-befunde` – Befunde der Nutzerprobe `01ed8a5` (Welle 3)
+
+- **Ziel:** Befunde der Nutzerprobe 13.11.2026 (main `01ed8a5`) wie im Original beheben; Entscheidungen Nutzer 13.11.2026:
+  R18-E2 = A, R18-E3 = A, R18-E4 = wie im Original.
+- **Befunde:** #834 (P1) Werbung Eisfläche: Anbieterwahl, Logo, Angebotstext; #838 (P2) Echtzeit „Spiele laufen“ (0x130EE,
+  Bildtakt); #837 (P2) Zuschauer im Live-Heimspiel (0x53A11–0x53B37, Kern rechnet vor dem Spiel); #841 (P2) Kachel „Neuer“ =
+  Spielvorbereitung, Posteingang über die Nachrichtenleiste; #836 (P3) Kachel „Einstellungen“ = Optionsfenster 0x2CD1C,
+  Geräteeinstellungen über Zusatzknopf/F8/F11; #840 (P3) Finanzbuch über eigenen Knopf, Bank-Klick ohne Wirkung; #839 (P3)
+  Schrift rechte Spalte Finanzfenster; #835 (P3) Rand um das Managerbild im Hauptmenü.
+- **Dateigrenzen:** betroffene Bildschirme unter `src/EishockeyManager.UI/Screens/**` (Werbung, Finanzen,
+  Einstellungen/Optionen, Posteingang, Spielvorbereitung, Live); `LiveClock.cs`/Desktop-Bildtakt nur für #838; für #837 eine
+  neue Kern-Datei; `MenuTiles.cs`/`MainMenuScreen.cs` minimal mit Begründung; `docs/analyse/inventur.md` nicht (Zeilen im PR).
+- **Teile:** 1. #834, #839, #840, #835, #836, #838 (Bildschirme); 2. #837 (Zuschauer vor dem Spiel im Kern, neue Kern-Datei,
+  Mehrsaisonprobe); 3. #841 (Kachel „Neuer“ = Spielvorbereitung für weitere Manager im laufenden Spiel).
+- **Modell:** Claude Opus 5.5. **Status:** PR #842 (Draft, Base `01ed8a5`, rebased auf `4e55e07`): Teil 1 fertig
+  (13.11.2026); Teil 2 fertig (14.11.2026, Fortsetzung 1: Zuschauer aus der Vorbereitung vor dem Spiel, `Core/MatchGate.cs`);
+  Teil 3 fertig (14.11.2026, Fortsetzung 2: `GameState.AddManager.cs`, Spielvorbereitung im Hinzufügen-Modus); Spur fertig – Review (`b41507d`: Nein, P1-1). Fixlauf 14.11.2026: P1-1
+  (Hinzufügen nach dem Laden, atomar), P3-1 (`[APPROX]` Zufall), P3-2 (Proben geschärft) behoben – Nachprüfung.
+
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - DOSBox-Aufnahme `runde-17` **liegt vor** (13.11.2026, Referenz-Repo PRs #29–#34): FILE50/FILE51 (#730, Sitzung 1),

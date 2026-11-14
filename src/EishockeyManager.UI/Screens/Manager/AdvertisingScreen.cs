@@ -34,6 +34,12 @@ public sealed class AdvertisingScreen : Screen
     public static Rect IceBoardRect(int i) => new(267, 91 + 36 * i, 35, 25);
 
     /// <summary>
+    /// Trefferfläche der Eistafel 0/1 (#834). [ORIGINAL] 0x2B3C9–0x2B3F3 (und 0x2BA17 beim Blättern): 0x10C &lt; x &lt; 0x130,
+    /// 0x5A + 0x23 · i &lt; y &lt; 0x7E + 0x23 · i – nur die Tafel, nicht die Zuschauer in der Mitte.
+    /// </summary>
+    public static Rect IceBoardHit(int i) => new(269, 91 + 35 * i, 35, 35);
+
+    /// <summary>
     /// Ja/Nein der Verlängerungsfrage. [ORIGINAL] Lage der Knöpfe der Frage 0x4C246 (Integration Runde 11, ui-meldungen, A304, A308);
     /// [APPROX] Beschriftung „Ja“/„Nein“ (die Texte, die der Aufrufer als Zeile 4/5 übergibt, sind nicht belegt).
     /// </summary>
@@ -185,16 +191,22 @@ public sealed class AdvertisingScreen : Screen
                 clicked = new AdSlot(AdSlotKind.Bande, i);
         if (JerseyPanel.Contains(x, y))
             clicked = new AdSlot(AdSlotKind.Trikot);
-        else if (IcePanel.Contains(x, y))
-            // [APPROX] Trefferfläche: obere Hälfte der Mitte = Tafel 1, untere = Tafel 2.
-            clicked = new AdSlot(y < IcePanel.Y + IcePanel.H / 2 ? AdSlotKind.Eisflaeche : AdSlotKind.Eisflaeche2);
+        else if (IceBoardHit(0).Contains(x, y))
+            clicked = new AdSlot(AdSlotKind.Eisflaeche);
+        else if (IceBoardHit(1).Contains(x, y))
+            clicked = new AdSlot(AdSlotKind.Eisflaeche2);
         else if (TvPanel.Contains(x, y))
             clicked = new AdSlot(AdSlotKind.Fernsehen);
         if (clicked is { } chosen)
         {
             // [ORIGINAL] 0x2B633: Klick auf eine Fläche zeigt deren Vertrag (Modus 0), nicht das zuletzt geblätterte Angebot.
-            _slot = chosen;
+            // [ORIGINAL] 0x2B56A–0x2B5D3 / 0x2B6D6–0x2B70E (#834): eine gesperrte Eistafel (Stadionstufe DGROUP 0x9771 + 0x1AF ·
+            // Manager, Überdachung bzw. Kühlanlage ≠ 2) bekommt keinen Rahmen, das Feld wird geleert, und die Blätter-, Info- und
+            // Annehmen-Schleife ab 0x2B711 läuft nicht – wie ein Klick neben die Flächen.
+            _slot = Game.IsAdSlotAvailable(Me, chosen) ? chosen : null;
             _companyCursor = _stationCursor = -1;
+            if (_slot is null)
+                return;
             if (Ads.ContractAt(chosen) is { } contract && Game.AwaitsRenewal(contract))
             {
                 Negotiate(contract);

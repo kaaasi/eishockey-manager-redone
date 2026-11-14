@@ -121,6 +121,9 @@ public class SettingsScreenTests : IDisposable
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
         d.OpenTile("Einstellungen");
+        // #836 (R15-E2 = C): die Kachel öffnet das Optionsfenster, die Geräteeinstellungen der Knopf „Gerät“.
+        Assert.IsType<GameOptionsScreen>(d.Host.Current);
+        d.Click(GameOptionsScreen.DeviceButton.X + 5, GameOptionsScreen.DeviceButton.Y + 5);
         Assert.IsType<SettingsScreen>(d.Host.Current);
         return d;
     }
@@ -131,13 +134,15 @@ public class SettingsScreenTests : IDisposable
         var d = Open();
         var money = d.Host.Game!.ActiveManager.Money;
         d.Press(Key.Escape);
+        Assert.IsType<GameOptionsScreen>(d.Host.Current); // #836: zurück ins Optionsfenster
+        d.Press(Key.Escape);
         Assert.IsType<MainMenuScreen>(d.Host.Current);
         Assert.Equal(money, d.Host.Game.ActiveManager.Money); // Öffnen ändert keinen Spielzustand
 
-        d.OpenTile("Einstellungen");
+        d = Open();
         var back = SettingsScreen.BackButton;
         d.Click(back.X + 5, back.Y + 5);
-        Assert.IsType<MainMenuScreen>(d.Host.Current);
+        Assert.IsType<GameOptionsScreen>(d.Host.Current);
     }
 
     /// <summary>#228 MT-02: Zeilenlage (Beginn 90, Abstand 17; drei Zeilen seit Teil 4 der Spur optionen-wirkung) ist festgelegt, nicht nur per Bildschirmfoto belegt.</summary>
@@ -160,22 +165,6 @@ public class SettingsScreenTests : IDisposable
         Assert.False(GameSettings.Load(GameSettings.StorePath).AutoSave);
         d.Click(row.X + 10, row.Y + 5);
         Assert.True(GameSettings.Current.AutoSave);
-    }
-
-    /// <summary>Knopf „Spielstand“ öffnet den Optionsbildschirm des Originals; das Öffnen ändert nichts.</summary>
-    [GameDataFact]
-    public void OptionsButton_OpensGameOptionsScreen()
-    {
-        var d = Open();
-        var screen = (SettingsScreen)d.Host.Current!;
-        var game = d.Host.Game!;
-        var money = game.ActiveManager.Money;
-        Assert.True(screen.ShowsOptionsButton);
-        d.Click(SettingsScreen.OptionsButton.X + 5, SettingsScreen.OptionsButton.Y + 5);
-        Assert.IsType<GameOptionsScreen>(d.Host.Current);
-        Assert.Equal(money, game.ActiveManager.Money);
-        d.RightClick(10, 230);
-        Assert.Same(screen, d.Host.Current);
     }
 
     [GameDataFact]
