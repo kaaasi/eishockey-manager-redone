@@ -1152,3 +1152,41 @@ deren Klassenkommentaren; Videovergleich in [wettbewerbe.md](wettbewerbe.md), Ab
 * **Absage beim Anklicken (A363)** (Datei 0x4015D–0x401D3): Der Bildschirm „Verträge“ meldet nur Leihe (+0x0C) und Ruhestand
   (+0x18 Bit 0x80, Meldung 4 „kündigt an …“); alles andere öffnet den Dialog 0x4A1DB, der die Sperre erst an den Feldern meldet
   (0x4A692). Eine eigene „Absage“ ohne Bit 0x80 gibt es im Original nicht.
+
+## Neuer Manager mitten in der Saison: Platztausch (Spur `neuer-manager`, Runde 19, #847)
+
+Teil 1 (Umfang belegt, `ndisasm`/`disasm.py` an `em.exe`). Ausgangslage `spielberechnung.md` §14 „Vereinstausch 0x36169“ geprüft
+und bestätigt; ergänzt um den Hinzufügen-Modus (Kachel „Neuer“, 0x28165 mit `[bp−0x64]` = alte Managerzahl > 0).
+
+- **Ablauf je neuem Manager** (Schleife ab Datei 0x29B57, `[0xA70E]` = `[bp−0x64]` … `[0x386]` − 1): Startkader und Markt
+  (Datei 0x298BF–0x29B54) laufen **vor** dem Tausch; dann Konto (Datei 0x29BD5), Markierung zum Zusehen 0x0AE2B(v, 1, 2)
+  (Datei 0x29C1C, Vereinsfeld 0x34 Bits 6–7), Platztausch Datei 0x29C3B–0x29CF7, danach springt Datei 0x29CFA bei
+  `[bp−0x64]` ≠ 0 über den Sonderfall „eine Saison, ein Manager“ (0x29D03–0x29D9C) direkt zu den Startwerten Datei 0x29DA4
+  (Technik/Kondition/Form, Preis und Gehalt 0x29EB4–0x29EF3), Werbung Datei 0x2A03B–0x2A061 und Aufstellung. Preis, Gehalt
+  und Werbung rechnen also schon mit dem getauschten Platz.
+- **Bedingung** (dieselbe wie beim Spielstart, kein eigener Zweig für den Hinzufügen-Modus): L = DGROUP 0x11A (Start-Liga des
+  Spiels, Datei 0x29BCE). Behalten (Datei 0x29C3B–0x29C75), wenn L ≠ Bundesliga, 0x34FD5(v) / 2 = L und v ≤ DGROUP 0x7CB (35).
+  Sonst Zufallsplatz r = `random([0x7C0 + L], [0x7C0 + L] + [0x7B1 + L] − 1)` (Datei 0x29C78–0x29C98; Tabellen 0x7C0 = 0/12/24,
+  0x7B1 = 12), neu gezogen, solange r der Verein eines Managers mit kleinerer Nummer ist (Datei 0x29C9B–0x29CC3, Schleife
+  `si < [0xA70E]` – im Hinzufügen-Modus **alle vorhandenen** und die zuvor angelegten neuen Manager) oder 0x45CD0(r, 1) ≠ 0
+  (Datei 0x29CCC). Bei L = Bundesliga ist r = v möglich.
+- **0x45CD0(r, Maske 1) mitten in der Saison** (Datei 0x45CD0–0x45D45): sucht r in Zeile 1 der Tabelle DGROUP 0x5CFB (+ 0x20)
+  unter 2 · `[0x3B1 + [0x5CF4]]` Einträgen (Tabelle 0x3B1 = 32, 16, 8, 4, 2, 1). Nach der Europapokal-Auslosung 0x341AB ist
+  `[0x5CF4]` = 1 → 32 Einträge: die 8 Plätze der Auslosung, dahinter 0 (`re-runde-14.md` U15-c, FILE29). Ausgeschlossen sind
+  also die **deutschen Europapokal-Teilnehmer** der Saison und **Platz 0** (Satz 0 = erster Bundesliga-Satz der Satzfolge).
+- **Tausch 0x36169(v, r, 0x80)** (Datei 0x36169–0x3672C): alle Poolspieler 1–199 mit Verein +0x1D = v bzw. r tauschen den Verein
+  (Datei 0x36173–0x361E2), ebenso jeder Manager mit Verein DGROUP 0x966F + 0x1AF · m (Datei 0x361E4–0x3624B); die Titel
+  0x387/0xD0E6/0x388 nur bei Schalter & 0x7F (hier nicht, Datei 0x3624D). Schalter 0x80 (Datei 0x3628F–0x363F6): im
+  Vereinssatz (0x3D Byte ab DGROUP 0x9657) nur Name 0x00–0x15, Manager 0x16, Logo/Markierung 0x34 und Farbcode 0x3B;
+  Datei 0x364AE–0x364B4 springt danach ans Ende – Tabellensatz DGROUP 0x8257 (0x50 Byte: Punkte, Tore, Platzverlauf 0x828B,
+  Tabellenfeld 0x8288, Strafminuten) und Serien DGROUP 0xB57B bleiben am Platz. Spielplan, Ergebnisse, Pokale und Titel führt
+  das Original je Satz, sie bleiben also ebenfalls am Platz. **Gleichstand r = v:** der Tausch ist wirkungslos.
+- **Folge mitten in der Saison:** Der Managerverein übernimmt Platz r mit Liga, Tabellenstand, Ergebnissen, Spielplan,
+  Pokalteilnahmen, Teamwerten 0x17–0x33 und Taktikfeldern 0x26–0x2B/0x35–0x3A; der verdrängte Verein übernimmt Platz v. Die
+  eigenen Taktikwerte und Modi (DGROUP 0xCAE9/0xCB01 + 0x30 · m, 0xA6FB) stehen im Managersatz und wandern mit. Der Kader des
+  WM-Bundestrainers (Verein im Kaderplatz +0x0C, nicht +0x1D) bleibt unberührt.
+- **Remake (Teil 2):** Vereine sind Objekte mit festem Index = Satz. Der Tausch vertauscht die beiden Objekte in
+  `GameState.Clubs` (Name, Logo, Spieler, Aufstellung, Taktik und alle Verweise auf das Objekt – Markt, Gebote, Leihen – wandern)
+  und tauscht die Satzfelder zurück (Index, Datenbankstärke, Liga, Teamwerte, Platzverlauf, Tabellenfeld, Strafminuten, Serien).
+  Alles, was über den Index läuft (Ergebnisse, Spielpläne, Satzfolge, Pokale, Titel, Ewige Tabelle), bleibt am Platz; Poolplätze
+  (+0x1D) und Manager tauschen den Index.
