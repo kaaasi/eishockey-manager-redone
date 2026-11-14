@@ -64,7 +64,7 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 * Kleine Kacheln 47 × 41 bei x = 5, 57, 110, 162, 215, 268 und y = 199 – je nach großer Kachel:
 | Große Kachel | Kleine Kacheln |
 |---|---|
-| Manager | Finanzen, Werbung, Stadion, Jugend, Neuer (Posteingang) |
+| Manager | Finanzen, Werbung, Stadion, Jugend, Neuer (Spielvorbereitung: weiterer Manager; Posteingang über die Nachrichtenleiste) |
 | Mannschaft | Aufstellung, Taktik, Verträge, Transfer, Training |
 | Statistiken | Früher, Verein, Spieler, Fairplay, Totale |
 | Tabellen | 1. Liga, 2. Liga, Oberliga, WM, Highscore |
@@ -97,7 +97,8 @@ Alle Bildschirme lassen sich ohne Fenster als PNG erzeugen: `ehm-tools screensho
 * **Stadion** (`kb\14`): Ausbaustufen (Zeile anklicken = Ausbau), Sitz-/Stehplätze anklicken = Plätze bauen,
   Eintritt mit ▲▼.
 * **Jugend:** Talentsuche („Spion“) und junge Spieler bis 21 Jahre.
-* **Neuer:** Posteingang mit Angeboten (Transfer, Werbung) und Meldungen.
+* **Neuer:** Spielvorbereitung im Hinzufügen-Modus wie im Original (Datei 0x45755 → 0x28165, R18-E3 = A, #841). Der
+  Posteingang mit Angeboten (Transfer, Werbung) und Meldungen öffnet über die Nachrichtenleiste.
 ### Statistiken, Tabellen, Paarungen, Stärken
 * **Tabelle:** Fenster (5,38,309×150), „TABELLE Gesamt 38.Spieltag“, Spalten PL. TD VEREIN BILANZ S-U-N PUNKTE TORE
   TORDIFF.; Knöpfe Heim / Gesamt / Auswärts bei y = 162. Punkte nach der 2-Punkte-Regel als Plus:Minus („65:11“),
