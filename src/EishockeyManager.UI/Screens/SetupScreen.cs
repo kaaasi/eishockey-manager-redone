@@ -9,6 +9,13 @@ namespace EishockeyManager.UI.Screens;
 /// Links bis zu vier Manager: Kopf → Kopfauswahl, Namensfeld → Name tippen, Logo → Vereinsauswahl.
 /// Rechts Spielmodus (Fahne = Liga und DEB-Pokal, Weltkugel = Europapokal und WM), Spiel-Level, Spiel-Dauer, Start-Liga, Start-Stärke,
 /// unten Notizbuch (Laden) und „Los jetzt!“.
+/// <para>
+/// Hinzufügen-Modus (Kachel „Neuer“ im laufenden Spiel, #841; Kern <see cref="GameState.AddManager"/>): oben die Manager des
+/// Spiels (ohne Wirkung beim Klick), darunter die neuen. [ORIGINAL] em.exe 0x28165 mit DGROUP 0x386 &gt; 0, Aufruf aus dem
+/// Hauptmenü Datei 0x45755: Klicks auf die vorhandenen Manager führen nach Datei 0x297D0 zurück in die Schleife
+/// (Datei 0x286AD–0x286D7), die rechte Seite nimmt keinen Klick an (Datei 0x286DA–0x286E0), „Los jetzt!“ richtet nur die neuen
+/// Manager ein (Datei 0x29B57: Schleife ab dem alten Zähler). Die Regler zeigen die gemeinsamen Werte des Spiels.
+/// </para>
 /// </summary>
 public sealed class SetupScreen : Screen
 {
@@ -56,6 +63,10 @@ public sealed class SetupScreen : Screen
     private enum Mode { Normal, HeadPicker, NameEntry, ClubPicker }
 
     private readonly GameSetup _setup = new();
+
+    /// <summary>Laufendes Spiel im Hinzufügen-Modus, sonst null (neues Spiel).</summary>
+    private readonly GameState? _game;
+    private readonly Screen? _back;
     private Mode _mode = Mode.Normal;
     private int _selected = -1;
     private int _clubPage;
@@ -76,7 +87,28 @@ public sealed class SetupScreen : Screen
         _places = NewGame.StartOrder(_seed);
     }
 
+    /// <summary>
+    /// Hinzufügen-Modus: weitere Manager für das laufende Spiel <paramref name="game"/>; „Los jetzt!“ kehrt nach
+    /// <paramref name="back"/> zurück (Hauptmenü, das sich neu aufbaut; [ORIGINAL] Sprung Datei 0x4576D nach 0x44E6D).
+    /// Das Öffnen ändert nichts am Spielstand (AGENTS.md §4).
+    /// </summary>
+    public SetupScreen(ScreenHost host, GameState game, Screen back) : base(host)
+    {
+        _game = game;
+        _back = back;
+        _places = game.ClubRecordOrder().ToArray();
+    }
+
     public GameSetup Setup => _setup;
+
+    /// <summary>Hinzufügen-Modus (Kachel „Neuer“)?</summary>
+    public bool AddsToRunningGame => _game is not null;
+
+    /// <summary>Zahl der Manager, die schon im Spiel sind (Zeilen oben, ohne Wirkung beim Klick).</summary>
+    private int Existing => _game?.Managers.Count ?? 0;
+
+    private bool IsClubTaken(int clubIndex, ManagerSetup? except) =>
+        _setup.IsClubTaken(clubIndex, except) || _game?.IsClubManaged(clubIndex) == true;
 
     private ManagerSetup? Selected => _selected >= 0 && _selected < _setup.Managers.Count ? _setup.Managers[_selected] : null;
 
@@ -101,15 +133,17 @@ public sealed class SetupScreen : Screen
     {
         if (input.Pressed(Key.Escape))
         {
-            Host.Show(new TitleScreen(Host));
+            // [APPROX] Im Hinzufügen-Modus verlässt das Original die Vorbereitung nur über „Los jetzt!“ (ohne neue Manager ohne
+            // Wirkung, Datei 0x297CA); Escape führt hier ohne Änderung ins Hauptmenü zurück.
+            Host.Show(_back ?? new TitleScreen(Host));
             return;
         }
 
-        for (var row = 0; row < GameSetup.MaxManagers; row++)
+        for (var row = Existing; row < GameSetup.MaxManagers; row++)
         {
             var slot = new Rect(3, 38 + row * SlotPitch, 175, 44);
             // [ORIGINAL] A056, Datei 0x28ACF: bei „nur Weltkugel“ wirkt jeder Klick in die Managerzeilen auf Zeile 0.
-            var i = _setup.ManagerRowFor(row);
+            var i = _game is null ? _setup.ManagerRowFor(row) : row - Existing;
             if (i < _setup.Managers.Count)
             {
                 if (input.RightClicked(NameArea(row)))
@@ -130,6 +164,14 @@ public sealed class SetupScreen : Screen
                 _mode = Mode.HeadPicker;
                 return;
             }
+        }
+
+        if (_game is not null)
+        {
+            // [ORIGINAL] Datei 0x286DA–0x286E0: im laufenden Spiel keine Auswertung von Spielmodus, Reglern und Laden.
+            if (input.Clicked(StartButton) || input.Pressed(Key.Enter))
+                TryAdd(_game);
+            return;
         }
 
         // Spielmodus (Spur wettbewerbe-weltkugel): Die Fahne bleibt bei mehreren Managern gesperrt (GameSetup).
@@ -165,9 +207,26 @@ public sealed class SetupScreen : Screen
     private int FirstFreeHead()
     {
         for (var h = 0; h < ManagerSetup.HeadCount; h++)
-            if (_setup.Managers.All(m => m.Head != h))
+            if (_setup.Managers.All(m => m.Head != h) && _game?.Managers.Any(m => m.Head == h) != true)
                 return h;
         return 0;
+    }
+
+    /// <summary>
+    /// „Los jetzt!“ im Hinzufügen-Modus. [ORIGINAL] Datei 0x29617–0x29693: Jede Zeile braucht Kopf und Verein oder keins von
+    /// beiden, eine Zeile ohne Namen keins von beiden; sonst bleibt der Klick ohne Wirkung (keine Meldung). Danach richtet
+    /// 0x28165 nur die neuen Manager ein (Datei 0x29B57) und kehrt ins Hauptmenü zurück. [APPROX] Das Remake verlangt für eine
+    /// Zeile mit Namen Kopf und Verein (im Original legte ein Name ohne beides einen Manager ohne Verein an); leere Zeilen
+    /// (weder Name noch Kopf noch Verein) entfallen.
+    /// </summary>
+    private void TryAdd(GameState game)
+    {
+        var rows = _setup.Managers.Where(m => m.Name.Length > 0 || m.Head >= 0 || m.ClubIndex is not null).ToList();
+        if (rows.Any(m => m.Name.Length == 0 || m.Head < 0 || m.ClubIndex is null))
+            return;
+        foreach (var m in rows)
+            game.AddManager(new ManagerSetup { Name = m.Name, Head = m.Head, ClubIndex = m.ClubIndex });
+        Host.Show(_back!);
     }
 
     private void TryStart()
@@ -234,7 +293,7 @@ public sealed class SetupScreen : Screen
         }
         if (input.Pressed(Key.Backspace) && m.Name.Length > 0)
             m.Name = m.Name[..^1];
-        if (input.Pressed(Key.Enter) || input.Pressed(Key.Escape) || (input.LeftClick && !input.Hover(NameInput(_selected))))
+        if (input.Pressed(Key.Enter) || input.Pressed(Key.Escape) || (input.LeftClick && !input.Hover(NameInput(Existing + _selected))))
             _mode = Mode.Normal;
     }
 
@@ -273,7 +332,7 @@ public sealed class SetupScreen : Screen
             if (!input.Clicked(ClubCell(k)) || Selected is not { } m)
                 continue;
             var index = ClubAt(k);
-            if (_setup.IsClubTaken(index, m))
+            if (IsClubTaken(index, m))
                 return;
             m.ClubIndex = index;
             _mode = Mode.Normal;
@@ -326,10 +385,21 @@ public sealed class SetupScreen : Screen
     private void DrawManagers(Surface s)
     {
         var db = Assets.Database;
+        // Hinzufügen-Modus: die Manager des Spiels mit ihrem heutigen Verein (Name und Logo aus dem Spielstand).
+        for (var row = 0; row < Existing; row++)
+        {
+            var m = _game!.Managers[row];
+            var club = _game.Clubs[m.ClubIndex];
+            var y = 40 + row * SlotPitch;
+            Widgets.Head(s, Assets, m.Head, 5, y);
+            s.TextCentered(Assets.Mini, 90, y + 4, m.Name, Colors.White);
+            s.TextCentered(Assets.Mini, 90, y + 12, club.Name, Colors.White);
+            Widgets.Logo(s, Assets, club.LogoGraphic, 138, y + 1);
+        }
         for (var i = 0; i < _setup.Managers.Count; i++)
         {
             var m = _setup.Managers[i];
-            var y = 40 + i * SlotPitch;
+            var y = 40 + (Existing + i) * SlotPitch;
             if (m.Head >= 0)
                 Widgets.Head(s, Assets, m.Head, 5, y);
             if (i == _selected && _mode != Mode.Normal)
@@ -351,11 +421,14 @@ public sealed class SetupScreen : Screen
     {
         var elements = Assets.Image(Elements);
         // [ORIGINAL] Datei 0x28506/0x28543: Quelle y = 76 + 13 · Bit 0 bzw. 102 + 13 · Bit 1.
-        s.Blit(elements, new Rect(113, _setup.ClubCompetitions ? 89 : 76, 57, 13), ModeFlag.X, ModeFlag.Y);
-        s.Blit(elements, new Rect(113, _setup.EuropeAndWorldCup ? 115 : 102, 57, 13), ModeGlobe.X, ModeGlobe.Y);
+        var mode = _game?.Setup ?? _setup;
+        s.Blit(elements, new Rect(113, mode.ClubCompetitions ? 89 : 76, 57, 13), ModeFlag.X, ModeFlag.Y);
+        s.Blit(elements, new Rect(113, mode.EuropeAndWorldCup ? 115 : 102, 57, 13), ModeGlobe.X, ModeGlobe.Y);
 
-        var m = Selected ?? new ManagerSetup();
-        int[] values = [m.Level, (int)_setup.Duration, (int)_setup.StartLeague, (int)m.StartStrength];
+        // Hinzufügen-Modus: gemeinsame Werte des Spiels (Level und Start-Stärke von Manager 0, GameState.AddManager).
+        var setup = _game?.Setup ?? _setup;
+        var m = _game is not null ? setup.Managers.FirstOrDefault() ?? new ManagerSetup() : Selected ?? new ManagerSetup();
+        int[] values = [m.Level, (int)setup.Duration, (int)setup.StartLeague, (int)m.StartStrength];
         for (var row = 0; row < values.Length; row++)
         {
             var strip = SetupSliders.Strip((SetupSlider)row, values[row]);
@@ -369,7 +442,7 @@ public sealed class SetupScreen : Screen
     {
         if (Selected is not { } m)
             return;
-        var r = NameInput(_selected);
+        var r = NameInput(Existing + _selected);
         s.Fill(r, 6);
         s.HLine(r.X, r.Y, r.W, 241);
         s.VLine(r.X, r.Y, r.H, 241);
@@ -403,7 +476,7 @@ public sealed class SetupScreen : Screen
             var club = db[ClubAt(k)];
             var cell = ClubCell(k);
             Widgets.Logo(s, Assets, club.LogoGraphic, cell.X, cell.Y);
-            if (Selected is { } m && _setup.IsClubTaken(club.Index, m))
+            if (Selected is { } m && IsClubTaken(club.Index, m))
                 s.Outline(cell, Colors.Black);
             if (cell.Contains(_mouseX, _mouseY))
             {
@@ -416,4 +489,15 @@ public sealed class SetupScreen : Screen
         if (hover is not null)
             s.TextCentered(Assets.Mini, PickerTextCenter, 220, hover, Colors.Black);
     }
+}
+
+/// <summary>
+/// Anmeldung im Hauptmenü (Manager → Neuer): Spielvorbereitung im Hinzufügen-Modus. [ORIGINAL] Datei 0x4574B–0x4576D
+/// (Aufruf 0x28165 mit Argument 0); vorher öffnete die Kachel den Posteingang (A319, #841), der jetzt über die
+/// Nachrichtenleiste erreichbar ist.
+/// </summary>
+internal static class SetupMenuEntries
+{
+    [MenuEntry("Neuer")]
+    private static Screen Open(ScreenHost host, Screen back) => new SetupScreen(host, host.Game!, back);
 }

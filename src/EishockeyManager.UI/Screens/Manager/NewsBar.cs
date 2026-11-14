@@ -7,7 +7,7 @@ namespace EishockeyManager.UI.Screens.ManagerArea;
 /// Nachrichtenleiste (kb\6) unten im Hauptmenü, solange keine große Kachel gewählt ist und eine neue Nachricht da ist
 /// (Bedingung: <see cref="MainMenuScreen"/>, #170; Aussehen UI-Video 15:10):
 /// Kopfzeile mit „Keine Nachricht für Sie vorhanden.“ bzw. der Nachricht, darunter das weiße Textfeld,
-/// rechts ▲▼ zum Blättern. Klick auf die Nachricht öffnet den Posteingang („Neuer“).
+/// rechts ▲▼ zum Blättern. Klick auf die Nachricht öffnet den Posteingang (die Kachel „Neuer“ dagegen die Spielvorbereitung, #841).
 /// </summary>
 public static class NewsBar
 {
@@ -19,12 +19,11 @@ public static class NewsBar
     private const byte TextColor = 0;
 
     /// <summary>
-    /// Hinweis bei einer Frage rechts unten. [APPROX] „(Neuer)“ verweist auf die Kachel „Neuer“, die den Posteingang
-    /// öffnet (<see cref="InboxScreen"/>); ist sie gesperrt (vier Manager, <see cref="TileLocks"/>), bleibt als Zugang
-    /// nur der Klick auf die Nachricht – dann steht dort „(Klicken)“ (R4-02, #109).
+    /// Hinweis bei einer Frage rechts unten. [APPROX] Im Bild nicht belegt. Der Posteingang ist nur über den Klick auf die
+    /// Nachricht erreichbar (<see cref="Update"/>); die Kachel „Neuer“ öffnet die Spielvorbereitung für weitere Manager (#841,
+    /// <see cref="SetupScreen"/>). Früher verwies „(Neuer)“ auf die Kachel (R4-02, #109).
     /// </summary>
-    public static string QuestionHint(GameState game) =>
-        game.Managers.Count >= GameSetup.MaxManagers ? "(Klicken)" : "(Neuer)";
+    public static string QuestionHint(GameState game) => "(Klicken)";
 
     /// <summary>Gezeigte Nachricht (Index im Posteingang) je Manager.</summary>
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ManagerFinance, StrongBox> Cursor = new();

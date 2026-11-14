@@ -3,13 +3,13 @@ using EishockeyManager.Core;
 namespace EishockeyManager.UI.Screens.ManagerArea;
 
 /// <summary>
-/// Posteingang (Manager → Neuer): alle Nachrichten, neueste oben; Fragen (Vertragsverlängerung, Kreditanfrage)
+/// Posteingang (Klick auf die Nachrichtenleiste): alle Nachrichten, neueste oben; Fragen (Vertragsverlängerung, Kreditanfrage)
 /// mit „Ja“ / „Nein“. [APPROX] Im UI-Video gibt es zu diesem Zeitpunkt keine Nachrichten – Layout im Stil der
 /// übrigen Fenster (oranger Rahmen, Knöpfe aus kb\2).
 /// </summary>
 /// <remarks>
-/// [APPROX] Dass die Kachel „Neuer“ den Posteingang öffnet, ist nicht belegt: Im Video (8:41) zeigt sie einen
-/// Managerkopf und wird nur überfahren; die Nachrichtentexte von em.exe gehören zur Nachrichtenleiste.
+/// [APPROX] Ein eigenes Posteingangsfenster hat das Original nicht belegt; die Nachrichtentexte von em.exe gehören zur
+/// Nachrichtenleiste. Die Kachel „Neuer“ öffnet wie im Original die Spielvorbereitung (#841, Datei 0x45755 → 0x28165).
 /// </remarks>
 public sealed class InboxScreen : Screen
 {
@@ -92,11 +92,4 @@ public sealed class InboxScreen : Screen
                 s.HLine(TextX - 4, y + Pitch - 3, Window.W - 2 * (TextX - Window.X - 4), 1);
         }
     }
-}
-
-/// <summary>Anmeldung im Hauptmenü (Manager → Neuer).</summary>
-internal static class InboxMenuEntries
-{
-    [MenuEntry("Neuer")]
-    private static Screen Open(ScreenHost host, Screen back) => new InboxScreen(host, back);
 }
