@@ -74,7 +74,7 @@ macht nur der Bildschirm.
      danach Torschütze, Reporter und Anzeigetafel wie bisher. Abnahme: Ablauftest ganzer Spieltag mit Managerpaarung, Torszenen
      an gegen Torszenen aus bei gleicher Darstellung ≠ 0 (der Kern zieht nur bei `LiveMode ≠ 0`) = gleiches Ergebnis; Bildschirmfoto-Ablauf `live-torszene`;
      Mehrsaisonprobe unverändert grün.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** C1 und C2 fertig (PR #856, 14.11.2026), C3 offen.
 
 ### Spur `neuer-manager` – Platztausch in die Start-Liga mitten in der Saison (#847, R18-E5 = A)
 
