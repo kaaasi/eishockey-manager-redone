@@ -102,7 +102,7 @@ macht nur der Bildschirm.
 - **Fehlschlag (R19-D3 → A):** findet Teil 1 keine belegte Ursache, Bericht mit geprüften Stellen, Label `spur-wartet`, kein
   Teil 2; Bericht-PR wird nach Erstreview gemergt, #730 bleibt offen, die Leitstelle gibt die DOSBox-Liste `runde-19`
   (`vorlagen/dosbox-aufnahme.md`) frei (R852 P3-4).
-- **Modell:** Claude Fable 5.2 (Nutzer 14.11.2026). **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
+- **Modell:** Claude Fable 5.2 (Nutzer 14.11.2026). **Erstreview:** Claude Opus 5.5. **Status:** Teil 1 fertig ohne belegte Ursache (PR #855, `analyse/belastung-staerke.md` §9: Auswertefehler der Tabelle, alle Reihen im Bereich des Remakes), kein Teil 2 – Entscheidung Nutzer (§9.5).
 
 ### Spur `pruefung-karte` (Welle 2)
 

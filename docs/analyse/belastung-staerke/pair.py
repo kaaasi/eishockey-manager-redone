@@ -7,7 +7,7 @@ def m(bl):
   d={}
   for s in hok.slots(bl):
     if s[0x10]==0: continue
-    n=hok.pool(bl,s[0xf])[:12].split(b'\0')[0].decode('cp850')
+    n=hok.name(bl,s)
     d[n]=s
   return d
 SA=m(a); SB=m(b)

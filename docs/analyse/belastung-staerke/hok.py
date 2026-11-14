@@ -15,3 +15,7 @@ def slots(b, mgr=0):
     return [s[i*0x34:(i+1)*0x34] for i in range(30)]
 def club(b, i): return b['far:9657'][i*0x3D:(i+1)*0x3D]
 def pool(b,i): return b['far:8253'][i*33:(i+1)*33]
+def name(bl, slot):
+    """Spielername wie in `emtool abgleich` (Umlaute statt der DOS-Zeichen ] [ \\; Runde 19: ohne das fiel KÜHN aus pair.py)."""
+    n = pool(bl, slot[0xf])[:12].split(b'\0')[0].decode('cp850')
+    return n.replace(']', 'Ü').replace('[', 'Ä').replace(chr(92), 'Ö')
