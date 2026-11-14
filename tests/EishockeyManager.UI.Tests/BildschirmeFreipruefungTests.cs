@@ -30,10 +30,13 @@ public class BildschirmeFreipruefungTests
     /// Nicht erzeugbare Konstruktoren „Signatur: Parameter“ (#610). Spur livespiel-ui-2 (B2): Eine <c>LiveSession</c> ist ein schon
     /// gestartetes <see cref="GameState.Continue"/> (Eingabe „Tag weiter“, nicht Öffnen eines Bildschirms); Zeichnen und Öffnen
     /// des Live-Bildschirms ohne Zustandsänderung prüft <c>LivespielUi2Tests.Drawing_DoesNotChangeState</c>, den Ablauf
-    /// <c>LivespielUi2Tests.MatchDayThroughLiveScreen_EqualsWithoutDisplay</c>.
+    /// <c>LivespielUi2Tests.MatchDayThroughLiveScreen_EqualsWithoutDisplay</c>. Spur torszenen (C2): ein <c>GoalSceneRequest</c>
+    /// ist die vom Spielkern gezogene Szene eines Torereignisses (0x575C3 aus 0x53C57, Datei 0x5402A), kein Öffnen eines
+    /// Bildschirms; der Abspieler hat keinen Zugriff auf den Spielstand (<c>GoalScenePlayerTests</c>).
     /// </summary>
     private static readonly HashSet<string> NotConstructible = new(StringComparer.Ordinal)
     {
+        "EishockeyManager.UI.Screens.Live.GoalSceneScreen.ctor(ScreenHost, GoalSceneRequest, GoalSceneGraphics, Action): GoalSceneRequest request",
         "EishockeyManager.UI.Screens.Live.LiveMatchScreen.ctor(ScreenHost, LiveSession, Screen): LiveSession session",
         "EishockeyManager.UI.Screens.MatchDayScreen.ctor(ScreenHost, MainMenuScreen, LiveSession): LiveSession session",
     };
