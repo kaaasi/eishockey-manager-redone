@@ -77,6 +77,7 @@ public class AddManagerScreenTests
         d.Click(150, Row(1) + 5); // Logo → Vereinsauswahl in Satzfolge des Spiels
         var club = game.ClubRecordOrder()[1];
         Assert.NotEqual(own, club);
+        var name = game.Clubs[club].Name;
         var cell = SetupScreen.ClubCell(1);
         d.Click(cell.X + 5, cell.Y + 5);
         d.Click(SetupScreen.StartButton.X + 10, SetupScreen.StartButton.Y + 10);
@@ -85,9 +86,14 @@ public class AddManagerScreenTests
         Assert.Equal(2, game.Managers.Count);
         Assert.Equal("Zweiter", game.Managers[1].Name);
         Assert.Equal(5, game.Managers[1].Head);
-        Assert.Equal(club, game.Managers[1].ClubIndex);
+        // Spur neuer-manager (#847): [ORIGINAL] Platztausch in die Start-Liga (Datei 0x29C3B–0x29CF7, 0x36169 Schalter 0x80) –
+        // der gewählte Verein (Kennung) steht danach auf dem gezogenen Platz; diese Saat zieht einen anderen als den eigenen.
+        var placed = game.Managers[1].ClubIndex;
+        Assert.NotEqual(club, placed);
+        Assert.Equal(name, game.Clubs[placed].Name);
+        Assert.Equal(game.Setup.StartLeague, game.Clubs[placed].League);
         Assert.Equal(0, game.CurrentManager);
-        Assert.NotEmpty(game.Clubs[club].Players);
+        Assert.NotEmpty(game.Clubs[placed].Players);
         Assert.Equal(2, game.Setup.Managers.Count);
         var saved = SaveGame.Save(game);
         Assert.Equal(saved, SaveGame.Save(SaveGame.Load(saved).Game!));

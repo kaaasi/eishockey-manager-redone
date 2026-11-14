@@ -458,9 +458,10 @@ Seeds 1–12, Hauptrunde, passiver Manager), mittlerer Platz / Tordifferenz:
 Die Datenbankstärke spielt keine Rolle (Abstand je Spalte < 1), die Start-Stärke ordnet die Plätze.
 Im Original wählt die Spielvorbereitung außerdem bei einem Verein außerhalb der Start-Liga einen zufälligen Platz der
 Start-Liga (`random([0x7C0 + Liga], …)`, Datei 0x29C78) und tauscht nur die Kennung (0x36169 mit Schalter 0x80, Datei
-0x29CF2/0x29D9C, unten) – die Teamwerte bleiben am Platz. Das Remake lässt einen fest gewählten Verein in seiner Liga
-(`[APPROX]` in `NewGame`, Spur `optionen-wirkung`/`GameSetup.cs`); für die Spielstärke des Managervereins ist das gleich, weil
-sie aus den Spielern kommt.
+0x29CF2/0x29D9C, unten) – die Teamwerte bleiben am Platz. Das Remake bildet das beim Spielstart nach (`NewGame.PlaceInStartLeague`,
+U15-a) und seit Runde 19 auch beim Hinzufügen eines Managers mitten in der Saison (`GameState.SwapClubPlaces`, Spur
+`neuer-manager`, #847; Belege `reverse-engineering.md` „Neuer Manager mitten in der Saison“): dann bleiben auch Tabellenstand,
+Spielplan und Ergebnisse am Platz.
 
 **Kandidaten für die Meisterstreuung (#204), geprüft:**
 

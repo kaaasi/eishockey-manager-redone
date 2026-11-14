@@ -54,11 +54,12 @@ public sealed partial class GameState
     /// <item>Gemeinsame Werte: Level und Start-Stärke von Manager 0, Start-Liga des Spiels ([ORIGINAL] ein Wert für alle,
     ///   DGROUP 0x118/0x11A/0x11B; im Hinzufügen-Modus nicht verstellbar, Datei 0x286DA). [APPROX] Das Remake führt Level und
     ///   Start-Stärke je Manager; der neue übernimmt die von Manager 0.</item>
-    /// <item>Verein: der gewählte, ohne Wahl ein zufälliger der Start-Liga ohne Manager (<see cref="NewGame.PickRandomClub"/>).
-    ///   [APPROX] Kein Platztausch in die Start-Liga (Datei 0x29C3B–0x29CF2, Tausch 0x36169 mitten in der Saison): Das Remake
-    ///   führt feste Vereinsindizes mit Tabellen, Ergebnissen und Spielplan je Verein; ein Tausch im laufenden Spiel ist nicht
-    ///   nachgebildet, der Verein bleibt in seiner Liga.</item>
-    /// <item>Startkader aus dem Pool (<see cref="SeatAddedSquad"/>), Startwerte, Gehälter, Aufstellung.</item>
+    /// <item>Verein: der gewählte, ohne Wahl ein zufälliger der Start-Liga ohne Manager (<see cref="NewGame.PickRandomClub"/>).</item>
+    /// <item>Startkader aus dem Pool (<see cref="SeatAddedSquad"/>) und Markt, dann [ORIGINAL] Platztausch des gewählten Vereins in
+    ///   die Start-Liga (Datei 0x29C3B–0x29CF7, <see cref="DrawStartLeaguePlace"/>, <see cref="SwapClubPlaces"/>): Der Manager
+    ///   übernimmt den gezogenen Platz mit Liga, Tabellenstand, Spielplan und Teamwerten, der Verdrängte seinen alten Platz.
+    ///   [APPROX] Ein zufällig zugeteilter Verein (ohne Wahl) tauscht nicht, wie beim Spielstart.</item>
+    /// <item>Startwerte, Gehälter ([ORIGINAL] nach dem Tausch, Datei 0x29DA4–0x29EF7), Aufstellung.</item>
     /// <item>Konto <see cref="FinanceRules.StartMoney"/> ([ORIGINAL] Datei 0x29BD5), Werbeangebote ([ORIGINAL] 0x3F833/0x3FB47,
     ///   Datei 0x2A03B–0x2A061), Trainingsplan; Stadion und Jugend legt <see cref="Finance"/> beim ersten Zugriff an.</item>
     /// </list>
@@ -92,6 +93,8 @@ public sealed partial class GameState
             throw new InvalidOperationException("Kein weiterer Manager möglich.");
         if (Setup.Managers.Count > Managers.Count)
             throw new InvalidOperationException("Spielvorbereitung und Managerliste passen nicht zusammen.");
+        if (!ClubsSwappable)
+            throw new InvalidOperationException("Die Vereinsliste dieses Spielstands ist nicht veränderbar.");
         var chosen = new HashSet<int>(Managers.Select(m => m.ClubIndex));
         foreach (var setup in setups)
         {
@@ -110,18 +113,20 @@ public sealed partial class GameState
         for (var i = 0; i < setups.Count; i++)
         {
             // Gewählte Vereine noch nicht angelegter Zeilen bleiben für die Zufallswahl gesperrt.
-            var reserved = setups.Skip(i + 1).Where(s => s.ClubIndex is not null).Select(s => s.ClubIndex!.Value);
-            added.Add(Seat(managers, setups[i], reserved));
+            var pending = setups.Skip(i + 1).ToList();
+            var reserved = pending.Where(s => s.ClubIndex is not null).Select(s => s.ClubIndex!.Value);
+            added.Add(Seat(managers, setups[i], reserved, pending));
         }
         return added;
     }
 
-    private Manager Seat(List<Manager> managers, ManagerSetup setup, IEnumerable<int> reserved)
+    private Manager Seat(List<Manager> managers, ManagerSetup setup, IEnumerable<int> reserved, IReadOnlyList<ManagerSetup> pending)
     {
         var first = Setup.Managers.Count > 0 ? Setup.Managers[0] : null;
         setup.Level = first?.Level ?? setup.Level;
         setup.StartStrength = first?.StartStrength ?? setup.StartStrength;
         var random = HiddenSkills.SourceFor(this, AddManagerSalt + Managers.Count);
+        var randomPick = setup.ClubIndex is null;
         var clubIndex = setup.ClubIndex ?? NewGame.PickRandomClub(Clubs, Setup.StartLeague, setup.StartStrength,
             Managers.Select(m => m.ClubIndex).Concat(reserved).ToHashSet(), random);
         setup.ClubIndex = clubIndex;
@@ -134,9 +139,21 @@ public sealed partial class GameState
         };
         managers.Add(manager);
 
-        var club = Clubs[clubIndex];
-        SeatAddedSquad(manager, club, setup, random);
-        TransferMarket.RemoveListingsOfAddedClub(club);
+        SeatAddedSquad(Clubs[clubIndex], setup, random);
+        TransferMarket.RemoveListingsOfAddedClub(Clubs[clubIndex]);
+
+        // [ORIGINAL] Datei 0x29C3B–0x29CF7 nach Kader und Markt, vor den Startwerten. Ausgeschlossen sind nur die Vereine der
+        // Manager mit kleinerer Nummer (Datei 0x29C9B–0x29CC3); ein gewählter Verein einer späteren Zeile kann getroffen werden,
+        // dessen Kennung wandert dann mit (Managerschleife Datei 0x361E4 über alle gezählten Manager).
+        if (!randomPick)
+        {
+            var earlier = managers.Take(managers.Count - 1).Select(m => m.ClubIndex).ToHashSet();
+            if (DrawStartLeaguePlace(clubIndex, earlier, random) is { } partner)
+                SwapClubPlaces(clubIndex, partner, pending);
+        }
+
+        var club = Clubs[manager.ClubIndex];
+        RollAddedStartValues(manager, club, setup, random);
 
         RenewOffers(manager);
         PrepareTraining(manager);
@@ -165,13 +182,12 @@ public sealed partial class GameState
     /// gezogenen, auch einen vergebenen); ist keiner frei, bleibt der Platz leer. Die Spieler des bisherigen Computerkaders
     /// verlassen das Spiel (im Original hat ein Computerverein keine Spieler). Eigene Zufallsquelle statt des gemeinsamen Zufalls.
     /// </summary>
-    private void SeatAddedSquad(Manager manager, Club club, ManagerSetup setup, Random random)
+    private void SeatAddedSquad(Club club, ManagerSetup setup, Random random)
     {
         foreach (var old in club.Players.ToList())
             club.RemovePlayer(old);
 
         var pool = TransferMarket.Pool;
-        var start = SquadSetup.StartBase(Setup.StartLeague, setup.StartStrength);
         var (g, d, f) = SquadSetup.ManagedSquadSize(Setup.StartLeague);
         foreach (var (role, count, low, high) in new[]
                  {
@@ -197,6 +213,15 @@ public sealed partial class GameState
             }
         }
 
+    }
+
+    /// <summary>
+    /// Startwerte, Preis und Gehalt des Startkaders ([ORIGINAL] Datei 0x29DA4–0x29EF7, nach dem Platztausch; siehe
+    /// <see cref="SeatAddedSquad"/>), dann Rückennummern und Aufstellung.
+    /// </summary>
+    private void RollAddedStartValues(Manager manager, Club club, ManagerSetup setup, Random random)
+    {
+        var start = SquadSetup.StartBase(Setup.StartLeague, setup.StartStrength);
         foreach (var p in club.Players)
         {
             p.Technique = Player.Clamp(TransferRules.Random16(random, start - 2, start + 2));
