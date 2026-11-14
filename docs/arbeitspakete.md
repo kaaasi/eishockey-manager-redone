@@ -87,7 +87,7 @@ macht nur der Bildschirm.
   aus `spielberechnung.md` nur prüfen und ergänzen; 2. Umsetzung im Kern mit Regressionstest (rot vor Fix) und Proben: Tausch in jede Start-Liga, Verein
   schon in der Start-Liga (kein Tausch), Bundesliga/2. Liga/Oberliga, nach dem Laden (atomar wie #842 P1-1); 3. Mehrsaisonprobe
   (4 Saisonwechsel, passiver und aktiver Manager, mit einem mitten in Saison 1 hinzugefügten Manager).
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** C1 fertig (PR #856, 14.11.2026), C2 als Nächstes.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
 
 ### Spur `re-belastung` – Ursache #730 Spieltag 2/3 in em.exe (R19-D3 = B)
 
@@ -109,7 +109,7 @@ macht nur der Bildschirm.
 - **Inhalt:** #826 (Highscore „nur Weltkugel“: Punkte Σ 9 − Platz nach FILE54, roter Test mit Beleg aus dem Bericht
   `abgleich-dosbox` §3); Inventur „Stand Runde 19“, Funktionskarte (L7 umgesetzt), gesammelte P3 der Runde.
 - **Voraussetzung:** `neuer-manager`, `re-belastung` (auch als Bericht im Fehlschlag) und `torszenen` gemergt.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** C1 fertig (PR #856, 14.11.2026), C2 als Nächstes.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
 
 ### Gesamtreview am Rundenende
 
