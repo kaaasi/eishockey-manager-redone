@@ -41,10 +41,24 @@ public class AddManagerScreenTests
     }
 
     [GameDataFact]
-    public void NewTile_AddsManager_WhoTakesTheNextTurn()
+    public void NewTile_AddsManager_WhoTakesTheNextTurn() => AddsManagerViaSetup(reload: false);
+
+    /// <summary>
+    /// Review P1-1 (2026-11-14): nach dem Laden eines Spielstands warf „Los jetzt!“ (Managerliste des Lesers war ein Array).
+    /// </summary>
+    [GameDataFact]
+    public void NewTile_AfterLoad_AddsManager() => AddsManagerViaSetup(reload: true);
+
+    private static void AddsManagerViaSetup(bool reload)
     {
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
+        if (reload)
+        {
+            var loaded = SaveGame.Load(SaveGame.Save(d.Host.Game!));
+            Assert.True(loaded.Success, loaded.Error);
+            d.Host.Game = loaded.Game!;
+        }
         var game = d.Host.Game!;
         var own = game.Managers[0].ClubIndex;
 
@@ -74,6 +88,9 @@ public class AddManagerScreenTests
         Assert.Equal(club, game.Managers[1].ClubIndex);
         Assert.Equal(0, game.CurrentManager);
         Assert.NotEmpty(game.Clubs[club].Players);
+        Assert.Equal(2, game.Setup.Managers.Count);
+        var saved = SaveGame.Save(game);
+        Assert.Equal(saved, SaveGame.Save(SaveGame.Load(saved).Game!));
     }
 
     [GameDataFact]

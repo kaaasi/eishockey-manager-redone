@@ -38,6 +38,25 @@ public sealed partial class GameState
 
     private List<PreparedGate> Prepared => PreparedGates.GetValue(this, _ => []);
 
+    /// <summary>Zähler für Proben (Review P3-2): vorbereitete und vorbereitet abgerechnete Paarungen seit dem Aufbau.</summary>
+    private sealed class GateCounter
+    {
+        public int Prepared;
+        public int Settled;
+    }
+
+    private static readonly ConditionalWeakTable<GameState, GateCounter> GateCounters = new();
+
+    /// <summary>Vorbereitete und vorbereitet abgerechnete Paarungen dieses Objekts (kein Spielstand; Proben: beide gleich, &gt; 0).</summary>
+    internal (int Prepared, int Settled) GateCounts
+    {
+        get
+        {
+            var c = GateCounters.GetValue(this, _ => new GateCounter());
+            return (c.Prepared, c.Settled);
+        }
+    }
+
     /// <summary>
     /// Spielbedeutung der Zuschauerformel nach Wettbewerb (wie die Aufrufer von <see cref="SettleHomeMatch"/>): Liga 0,
     /// Play-Off/Aufstiegsrunde und DEB-Pokal 1, Europapokal nach Termin (<see cref="SpectatorRules.EuropeanCupImportance"/>),
@@ -66,6 +85,7 @@ public sealed partial class GameState
                 spectators.Add((manager, Spectators(home, away, Finance(manager).Stadium, tableMatchDay, FinanceRandom, importance,
                     manager.Level)));
         Prepared.Add(new PreparedGate(home.Index, away.Index, tableMatchDay, importance, spectators));
+        GateCounters.GetValue(this, _ => new GateCounter()).Prepared++;
     }
 
     /// <summary>
@@ -100,6 +120,7 @@ public sealed partial class GameState
         if (gate is null)
             return false;
         gate.Settled = true;
+        GateCounters.GetValue(this, _ => new GateCounter()).Settled++;
         if (gate.TableMatchDay != tableMatchDay || gate.Importance != importance)
             throw new InvalidOperationException(
                 $"Spielabrechnung {home}–{away}: vorbereitet Spieltag {gate.TableMatchDay}/Bedeutung {gate.Importance}, " +

@@ -1,4 +1,6 @@
 using EishockeyManager.Core;
+using EishockeyManager.Formats;
+using EishockeyManager.Tests.Support;
 
 namespace EishockeyManager.Core.Tests;
 
@@ -33,9 +35,9 @@ public class AddManagerTests
         Assert.Equal(FinanceRules.StartMoney(level), manager.Money); // [ORIGINAL] Datei 0x29BD5
         var club = game.Clubs[7];
         // [ORIGINAL] Kadertabelle DGROUP 0x169 nach Start-Liga Bundesliga: 2/10/13
-        Assert.Equal(2, club.Players.Count(p => p.Role == Formats.PlayerRole.Goalkeeper));
-        Assert.Equal(10, club.Players.Count(p => p.Role == Formats.PlayerRole.Defender));
-        Assert.Equal(13, club.Players.Count(p => p.Role == Formats.PlayerRole.Forward));
+        Assert.Equal(2, club.Players.Count(p => p.Role == PlayerRole.Goalkeeper));
+        Assert.Equal(10, club.Players.Count(p => p.Role == PlayerRole.Defender));
+        Assert.Equal(13, club.Players.Count(p => p.Role == PlayerRole.Forward));
         var start = SquadSetup.StartBase(League.Bundesliga, StartStrength.Mittelfeld);
         var pool = game.TransferMarket.Pool;
         foreach (var p in club.Players)
@@ -176,6 +178,167 @@ public class AddManagerTests
         Assert.All(squad, p => Assert.Empty(PlayerFactory.Validate(game.Clubs[added.ClubIndex], p)));
         var pooled = game.TransferMarket.Pool.Select(s => s.Player).ToHashSet(ReferenceEqualityComparer.Instance);
         Assert.All(squad.Where(p => !p.OnLoan), p => Assert.Contains(p, pooled));
+        Assert.Equal(2, game.History[^1].Managers.Count);
+    }
+
+    private static GameState Reload(GameState game)
+    {
+        var loaded = SaveGame.Load(SaveGame.Save(game));
+        Assert.True(loaded.Success, loaded.Error);
+        return loaded.Game!;
+    }
+
+    /// <summary>
+    /// Review P1-1 (2026-11-14): neues Spiel → sichern → laden → Manager hinzufügen → Spieltage → sichern/laden bytegleich.
+    /// Der Spielstandleser legte die Managerliste als Array an; <see cref="GameState.AddManager"/> warf danach und hatte
+    /// <c>Setup.Managers</c> schon verlängert.
+    /// </summary>
+    [Fact]
+    public void AddManager_AfterLoad_ThenMatchDays_SaveLoadIsByteIdentical()
+    {
+        var game = Reload(MidSeason());
+
+        var added = game.AddManager(Newcomer());
+        for (var i = 0; i < 6; i++)
+            game.Continue();
+
+        Assert.Equal(2, game.Managers.Count);
+        Assert.Equal(game.Managers.Count, game.Setup.Managers.Count);
+        Assert.Same(added, game.Managers[1]);
+        var saved = SaveGame.Save(game);
+        var loaded = Reload(game);
+        Assert.Equal(saved, SaveGame.Save(loaded));
+        Assert.Equal("Neu", loaded.Managers[1].Name);
+        // Auch das geladene Spiel nimmt weitere Manager an (bis vier).
+        loaded.AddManager(new ManagerSetup { Name = "Drei", Head = 5, ClubIndex = 8 });
+        Assert.Equal(3, loaded.Managers.Count);
+        Assert.Equal(3, loaded.Setup.Managers.Count);
+    }
+
+    /// <summary>Wie oben mit Originaldaten (Probe des Reviews: 1 Manager, Verein 2, Seed 5; Neuer Verein 7).</summary>
+    [GameDataFact]
+    public void AddManager_AfterLoad_OriginalData_SaveLoadIsByteIdentical()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2 });
+        var game = Reload(NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, 5));
+
+        game.AddManager(new ManagerSetup { Name = "N", Head = 3, ClubIndex = 7 });
+        for (var i = 0; i < 3; i++)
+            TestSeason.PlayMatchDay(game);
+
+        Assert.Equal(2, game.Managers.Count);
+        Assert.Equal(2, game.Setup.Managers.Count);
+        Assert.NotEmpty(game.Clubs[7].Players);
+        var saved = SaveGame.Save(game);
+        Assert.Equal(saved, SaveGame.Save(Reload(game)));
+    }
+
+    /// <summary>
+    /// Review P1-1: Abgelehntes Hinzufügen ändert nichts (alle Prüfungen vor der ersten Änderung); <c>Setup.Managers</c> und
+    /// <c>Managers</c> bleiben gleich lang, auch im geladenen Spiel.
+    /// </summary>
+    [Fact]
+    public void AddManager_Rejected_LeavesGameUnchanged()
+    {
+        var game = Reload(MidSeason());
+        var before = SaveGame.Save(game);
+
+        Assert.Throws<ArgumentException>(() => game.AddManager(Newcomer(game.Managers[0].ClubIndex)));
+        Assert.Throws<ArgumentException>(() => game.AddManager(new ManagerSetup { Name = "", ClubIndex = 8 }));
+        Assert.Throws<ArgumentException>(() => game.AddManager(Newcomer(NewGame.SelectableClubs)));
+
+        Assert.Single(game.Managers);
+        Assert.Single(game.Setup.Managers);
+        Assert.Equal(before, SaveGame.Save(game));
+    }
+
+    /// <summary>
+    /// Review P1-1: Mehrere Zeilen der Spielvorbereitung („Los jetzt!“) werden erst alle geprüft, dann alle angelegt;
+    /// scheitert eine, bleibt das Spiel unverändert.
+    /// </summary>
+    [Fact]
+    public void AddManagers_ChecksAllRowsBeforeAddingAny()
+    {
+        var game = Reload(MidSeason());
+        var before = SaveGame.Save(game);
+
+        Assert.Throws<ArgumentException>(() => game.AddManagers([Newcomer(7), new ManagerSetup { Name = "B", ClubIndex = 7 }]));
+        Assert.Throws<InvalidOperationException>(() => game.AddManagers(
+        [
+            Newcomer(7), new ManagerSetup { Name = "B", ClubIndex = 8 }, new ManagerSetup { Name = "C", ClubIndex = 9 },
+            new ManagerSetup { Name = "D", ClubIndex = 10 },
+        ]));
+        Assert.Equal(before, SaveGame.Save(game));
+
+        game.AddManagers([Newcomer(7), new ManagerSetup { Name = "B", ClubIndex = 8 }]);
+        Assert.Equal(3, game.Managers.Count);
+        Assert.Equal(3, game.Setup.Managers.Count);
+    }
+
+    /// <summary>
+    /// Review P3-1: Werbeangebote und Tendenz des Neuen ziehen aus <see cref="GameState.FinanceRandom"/> und
+    /// <see cref="GameState.TrendRandom"/> ([APPROX] in <see cref="GameState.AddManager"/>); gleiche Spiele bleiben nach dem
+    /// Hinzufügen gleich, auch über weitere Tage.
+    /// </summary>
+    [Fact]
+    public void AddManager_IsDeterministic_ForEqualGames()
+    {
+        var a = MidSeason();
+        var b = Reload(MidSeason());
+
+        a.AddManager(Newcomer());
+        b.AddManager(Newcomer());
+        for (var i = 0; i < 4; i++)
+        {
+            a.Continue();
+            b.Continue();
+        }
+
+        Assert.Equal(SaveGame.Save(a), SaveGame.Save(b));
+        Assert.NotEmpty(a.Finance(a.Managers[1]).Sponsoring.Offers);
+    }
+
+    /// <summary>
+    /// Mehrsaisonprobe mit Laden (Review P3-2), Originaldaten, ohne Geldfixierung: Manager 0 passiv, der neue kommt nach dem
+    /// Laden an Spieltag 3 hinzu und hält seinen Kader. Nach jedem der vier Saisonwechsel sichern und mit dem geladenen Spiel
+    /// weiter; Sichern/Laden bleibt bytegleich, keiner wird entlassen, das Geld bleibt ganzzahlig im Buch erklärt.
+    /// </summary>
+    [GameDataFact]
+    public void AddManager_AfterLoad_MultiSeason_OriginalData_WithoutMoneyFixing()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2 });
+        var game = NewGame.Create(ClubDatabase.Load(TestGameData.Load()), setup, 5);
+        for (var i = 0; i < 3; i++)
+            TestSeason.PlayMatchDay(game);
+        game = Reload(game);
+        game.AddManager(new ManagerSetup { Name = "N", Head = 3, ClubIndex = 7 });
+        var firstSeason = game.Season;
+
+        for (var change = 0; change < 4; change++)
+        {
+            for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+            {
+                Assert.True(guard < 5000, "Saisonende nicht erreicht");
+                TestSeason.KeepSquad(game, game.Managers[1], extendExpired: true);
+                game.Continue();
+            }
+            TestSeason.KeepSquad(game, game.Managers[0]);
+            TestSeason.KeepSquad(game, game.Managers[1], extendExpired: true);
+            game.StartNextSeason();
+            var saved = SaveGame.Save(game);
+            game = Reload(game);
+            Assert.Equal(saved, SaveGame.Save(game));
+        }
+
+        Assert.Equal(firstSeason + 4, game.Season);
+        Assert.Equal(2, game.Managers.Count);
+        Assert.Equal(2, game.Setup.Managers.Count);
+        Assert.All(game.Managers, m => Assert.False(m.Dismissed));
+        var club = game.Clubs[game.Managers[1].ClubIndex];
+        Assert.InRange(club.Players.Count, 18, 29);
+        Assert.All(club.Players, p => Assert.Empty(PlayerFactory.Validate(club, p)));
         Assert.Equal(2, game.History[^1].Managers.Count);
     }
 }

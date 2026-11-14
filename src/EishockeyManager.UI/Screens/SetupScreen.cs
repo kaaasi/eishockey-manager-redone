@@ -224,8 +224,16 @@ public sealed class SetupScreen : Screen
         var rows = _setup.Managers.Where(m => m.Name.Length > 0 || m.Head >= 0 || m.ClubIndex is not null).ToList();
         if (rows.Any(m => m.Name.Length == 0 || m.Head < 0 || m.ClubIndex is null))
             return;
-        foreach (var m in rows)
-            game.AddManager(new ManagerSetup { Name = m.Name, Head = m.Head, ClubIndex = m.ClubIndex });
+        // Alle Zeilen zusammen: der Kern prüft alle vor der ersten Änderung (Review P1-1). Lehnt er ab, bleibt der Klick wie
+        // im Original ohne Wirkung (kein Absturz, Spiel unverändert).
+        try
+        {
+            game.AddManagers(rows.Select(m => new ManagerSetup { Name = m.Name, Head = m.Head, ClubIndex = m.ClubIndex }).ToList());
+        }
+        catch (Exception e) when (e is InvalidOperationException or ArgumentException)
+        {
+            return;
+        }
         Host.Show(_back!);
     }
 

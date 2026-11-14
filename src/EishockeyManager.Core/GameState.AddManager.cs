@@ -63,32 +63,68 @@ public sealed partial class GameState
     ///   Datei 0x2A03B–0x2A061), Trainingsplan; Stadion und Jugend legt <see cref="Finance"/> beim ersten Zugriff an.</item>
     /// </list>
     /// Der neue Manager ist am selben Tag noch am Zug (Hot-Seat: nicht bereit); der Manager am Zug bleibt ([ORIGINAL] Datei
-    /// 0x4575B–0x45761). Verbraucht keinen Zufall aus <see cref="Random"/>: eigene Quelle (<see cref="HiddenSkills.SourceFor"/>),
-    /// Tendenz aus <see cref="TrendRandom"/> wie beim Spielstart.
+    /// 0x4575B–0x45761). Alle Prüfungen laufen vor der ersten Änderung; <c>Setup.Managers</c> und <see cref="Managers"/>
+    /// bleiben gleich lang (Review P1-1).
+    /// <para>Zufall: Vereinswahl, Kader und Startwerte ziehen aus einer eigenen Quelle (<see cref="HiddenSkills.SourceFor"/>),
+    /// die Hauptquelle <see cref="Random"/> bleibt unberührt. [APPROX] Die Werbeangebote des Neuen (<see cref="RenewOffers"/>)
+    /// ziehen aus <see cref="FinanceRandom"/>, die Tendenzen seiner Spieler aus <see cref="TrendRandom"/> wie beim Spielstart;
+    /// beide Quellen teilt er mit den vorhandenen Managern, deren Zuschauer, Werbung und Tendenzen danach einer anderen Folge
+    /// folgen. Im Original zieht alles aus einem Generator, dort verschiebt das Hinzufügen ebenso alle späteren Würfe
+    /// (Review P3-1); die Folge selbst ist nicht nachgebildet.</para>
     /// </summary>
     /// <exception cref="InvalidOperationException">Kein Platz für einen weiteren Manager oder Modus „nur Weltkugel“.</exception>
     /// <exception cref="ArgumentException">Name leer, Verein nicht wählbar oder schon vergeben.</exception>
-    public Manager AddManager(ManagerSetup setup)
-    {
-        ArgumentNullException.ThrowIfNull(setup);
-        if (!CanAddManager)
-            throw new InvalidOperationException("Kein weiterer Manager möglich.");
-        if (setup.Name.Length == 0)
-            throw new ArgumentException("Der Manager braucht einen Namen.", nameof(setup));
-        if (setup.ClubIndex is { } chosen && (chosen < 0 || chosen >= NewGame.SelectableClubs || IsClubManaged(chosen)))
-            throw new ArgumentException($"Verein {chosen} ist nicht wählbar.", nameof(setup));
+    public Manager AddManager(ManagerSetup setup) => AddManagers([setup])[0];
 
+    /// <summary>
+    /// Mehrere Manager auf einmal („Los jetzt!“ mit mehreren neuen Zeilen, [ORIGINAL] Datei 0x29696–0x297BA zählt alle neu):
+    /// erst alle Zeilen prüfen (Platz, Name, Verein, kein Verein doppelt), dann alle anlegen wie <see cref="AddManager"/>.
+    /// Scheitert eine Prüfung, bleibt das Spiel unverändert.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Kein Platz für alle oder Modus „nur Weltkugel“.</exception>
+    /// <exception cref="ArgumentException">Name leer, Verein nicht wählbar, vergeben oder doppelt gewählt.</exception>
+    public IReadOnlyList<Manager> AddManagers(IReadOnlyList<ManagerSetup> setups)
+    {
+        ArgumentNullException.ThrowIfNull(setups);
+        var managers = Managers as List<Manager>
+            ?? throw new InvalidOperationException("Die Managerliste dieses Spielstands ist nicht erweiterbar.");
+        if (WorldOnly || Managers.Count + setups.Count > GameSetup.MaxManagers)
+            throw new InvalidOperationException("Kein weiterer Manager möglich.");
+        if (Setup.Managers.Count > Managers.Count)
+            throw new InvalidOperationException("Spielvorbereitung und Managerliste passen nicht zusammen.");
+        var chosen = new HashSet<int>(Managers.Select(m => m.ClubIndex));
+        foreach (var setup in setups)
+        {
+            ArgumentNullException.ThrowIfNull(setup, nameof(setups));
+            if (setup.Name.Length == 0)
+                throw new ArgumentException("Der Manager braucht einen Namen.", nameof(setups));
+            if (setup.ClubIndex is { } club && (club < 0 || club >= NewGame.SelectableClubs || !chosen.Add(club)))
+                throw new ArgumentException($"Verein {club} ist nicht wählbar.", nameof(setups));
+        }
+
+        // Ab hier keine Prüfung mehr: Die Spielvorbereitung des Spiels führt die Einträge parallel zu Managers
+        // (StartLeagueOf, Kadergröße, Export); ältere Spielstände können dort weniger Einträge haben.
+        while (Setup.Managers.Count < Managers.Count)
+            Setup.Managers.Add(new ManagerSetup { Name = Managers[Setup.Managers.Count].Name, StartLeague = Setup.StartLeague });
+        var added = new List<Manager>(setups.Count);
+        for (var i = 0; i < setups.Count; i++)
+        {
+            // Gewählte Vereine noch nicht angelegter Zeilen bleiben für die Zufallswahl gesperrt.
+            var reserved = setups.Skip(i + 1).Where(s => s.ClubIndex is not null).Select(s => s.ClubIndex!.Value);
+            added.Add(Seat(managers, setups[i], reserved));
+        }
+        return added;
+    }
+
+    private Manager Seat(List<Manager> managers, ManagerSetup setup, IEnumerable<int> reserved)
+    {
         var first = Setup.Managers.Count > 0 ? Setup.Managers[0] : null;
         setup.Level = first?.Level ?? setup.Level;
         setup.StartStrength = first?.StartStrength ?? setup.StartStrength;
         var random = HiddenSkills.SourceFor(this, AddManagerSalt + Managers.Count);
         var clubIndex = setup.ClubIndex ?? NewGame.PickRandomClub(Clubs, Setup.StartLeague, setup.StartStrength,
-            Managers.Select(m => m.ClubIndex).ToHashSet(), random);
+            Managers.Select(m => m.ClubIndex).Concat(reserved).ToHashSet(), random);
         setup.ClubIndex = clubIndex;
-
-        // Die Spielvorbereitung des Spiels führt die Einträge parallel zu Managers (StartLeagueOf, Kadergröße, Export).
-        while (Setup.Managers.Count < Managers.Count)
-            Setup.Managers.Add(new ManagerSetup { Name = Managers[Setup.Managers.Count].Name, StartLeague = Setup.StartLeague });
         Setup.AddManager(setup);
 
         var manager = new Manager
@@ -96,7 +132,7 @@ public sealed partial class GameState
             Name = setup.Name, Head = Math.Max(0, setup.Head), ClubIndex = clubIndex, Level = setup.Level,
             Money = FinanceRules.StartMoney(setup.Level), // [ORIGINAL] Datei 0x29BD5
         };
-        ManagerList.Add(manager);
+        managers.Add(manager);
 
         var club = Clubs[clubIndex];
         SeatAddedSquad(manager, club, setup, random);
@@ -111,10 +147,6 @@ public sealed partial class GameState
 
     /// <summary>Salz der eigenen Zufallsquelle (Datei 0x2993A, Kaderwahl im Hinzufügen-Modus).</summary>
     private const int AddManagerSalt = 0x2993A;
-
-    /// <summary>Managerliste zum Anfügen; Spielstart (<see cref="NewGame"/>) und Laden legen eine <see cref="List{T}"/> an.</summary>
-    private List<Manager> ManagerList => Managers as List<Manager>
-        ?? throw new InvalidOperationException("Die Managerliste dieses Spielstands ist nicht erweiterbar.");
 
     /// <summary>
     /// Startkader eines hinzukommenden Managers.

@@ -68,40 +68,46 @@ public class NutzerBefundeMatchGateTests
     }
 
     /// <summary>
-    /// Mehrsaisonprobe (vier Saisonwechsel, passiver Manager A, aktiver Manager B): jede vorbereitete Paarung wird am selben Tag
-    /// abgerechnet (Tabellenspieltag und Spielbedeutung stimmen, sonst Ausnahme), der aktive Manager nimmt Eintritt ein, und
-    /// Sichern/Laden ändert nichts (die Vorbereitung ist kein Spielstand).
+    /// Mehrsaisonprobe (vier Saisonwechsel, passiver Manager A, aktiver Manager B, ohne Geldfixierung): jede vorbereitete Paarung
+    /// wird am selben Tag abgerechnet (Tabellenspieltag und Spielbedeutung stimmen, sonst Ausnahme), je Saison gibt es
+    /// Vorbereitungen (vorbereitet = abgerechnet &gt; 0, Review P3-2), der aktive Manager nimmt Eintritt ein, und nach jedem
+    /// Saisonwechsel läuft das geladene Spiel weiter (Sichern/Laden bytegleich, die Vorbereitung ist kein Spielstand).
     /// </summary>
     [GameDataFact]
     public void MultiSeason_FourChanges_EveryPreparedGateIsSettled()
     {
         var game = TwoManagers(5, ClubDatabase.Load(TestGameData.Load()));
-        var active = game.Managers[1];
         var firstSeason = game.Season;
         for (var change = 0; change < 4; change++)
         {
             var income = 0L;
+            var (preparedBefore, settledBefore) = game.GateCounts;
+            var active = game.Managers[1];
             for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
             {
                 Assert.True(guard < 2000, "Saisonende nicht erreicht");
-                foreach (var m in game.Managers)
-                    m.Money = 10_000_000;
                 TestSeason.KeepSquad(game, active, extendExpired: true);
                 game.Continue();
                 Assert.Equal(0, game.UnsettledGates);
                 income = Math.Max(income, game.Finance(active).Book.Current(FinanceCategory.Eintritt)); // Saisonende leert das Buch
             }
             // Der passive Manager verlängert keinen Vertrag: später nicht spielfähig, Spiele gewertet (keine Vorbereitung).
+            var prepared = game.GateCounts.Prepared - preparedBefore;
+            var settled = game.GateCounts.Settled - settledBefore;
+            Assert.True(prepared > 0, $"keine vorbereitete Paarung in Saison {game.Season}");
+            Assert.Equal(prepared, settled);
             Assert.True(income > 0, $"kein Eintritt in Saison {game.Season}");
+            Assert.All(game.Managers, m => Assert.False(m.Dismissed));
             TestSeason.KeepSquad(game, game.Managers[0]);
             TestSeason.KeepSquad(game, active, extendExpired: true);
             game.StartNextSeason();
+
+            var saved = SaveGame.Save(game);
+            var loaded = SaveGame.Load(saved);
+            Assert.True(loaded.Success, loaded.Error);
+            Assert.Equal(saved, SaveGame.Save(loaded.Game!));
+            game = loaded.Game!;
         }
         Assert.Equal(firstSeason + 4, game.Season);
-
-        var saved = SaveGame.Save(game);
-        var loaded = SaveGame.Load(saved);
-        Assert.True(loaded.Success, loaded.Error);
-        Assert.Equal(saved, SaveGame.Save(loaded.Game!));
     }
 }
