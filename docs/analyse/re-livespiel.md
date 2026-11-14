@@ -773,3 +773,51 @@ Umsetzung des Plans §12 Spur A; Belege mit `disasm.py` (Dateiadressen).
     draußen, auch wenn die Aufstellung sie neu setzt; Tasten A/C im Spiel aus; Nationalteam des Bundestrainers ohne Eingriff;
     Farbe 7 statt 0x1E beim ersten Eintrag der Taktik im Spiel (Datei 0x47F5E) nicht übernommen.
 
+
+## 16. Spur `torszenen` (Runde 19)
+
+### C1 Figuren und Eisfläche (`Formats/GoalScene.cs` `GoalSceneFigures`, neu `Formats/GoalSceneRink.cs`)
+
+Grafiksegment 0BBF (Fernaufrufe `48h:…`, Segmenttabelle Eintrag 0x48 → Datei 0xD9F0 + Offset), handgeschriebener Mode-X-Code
+mit Variablen im Code-Segment (`cs:…`). Belege `disasm.py … 0x12100 0x12F59` (Ausgabe nur im Scratch).
+
+- **Bilder des Abspielers** (Datei 0x568BA–0x56A9C, Größentabelle `DGROUP 0x5400`, 14 Wörter): i = 0 … 4 `kb\231 … 235`
+  gepackt (`48h:2CB6h` entpackt, Größen 0xFA00, 0xFA00, 0xA000, 0xA000, 0x3000), i = 5 Kachelkarte (0x17A0 = 6 048 Byte,
+  roh), i = 6 … 10 Töne `kb\237 … 241` (0x23E5, 0x134F, 0x240B, 0x3AB, 0xA2F; bei wenig Speicher und Ton an genullt, Datei
+  0x5688E–0x568A7), i = 11 (`kb\242`) Größe 0 → nicht geladen, i = 12 `kb\246` (0x276, Kopfbild, lauflängenkodiert – Bit 7 = Wiederholung –,
+  von `48h:54BFh` = Datei 0x12EAF ab Bildschirmspeicher 0 entpackt, im Video unten), i = 13 `kb\247` (0x2FD = 255 Farben, Palette über `48h:47F0h`
+  = Datei 0x121E0, Aufruf Datei 0x56B12–0x56B2C). Korrektur zu §3/§6: die Halle ist `kb\236` bzw. `kb\242 … 245`, nicht
+  `kb\241 … 244`; `kb\241` ist ein Ton.
+- **Hallenstufe** (Datei 0x568C2–0x568DE): i = 5 → `kb\236`; Argument `[bp+0x22]` = 1 … 4 → `kb\(0xF1 + Stufe)` =
+  `kb\242 … 245`; bei mehr als einem Manager (`[0x386]` > 1) und Modus ≠ 0 Stufe 2 (Datei 0x568A9–0x568B6). Der Aufrufer
+  0x53C57 übergibt das Kennbyte (Datei 0x53FCA): `DGROUP 0x5D99 + 6 · m` mit m = Vereinsfeld 0x16 des Heimvereins (Datei
+  0x53EFC–0x53F14), ohne Manager („AUSWÄRTS“) oder Länderteam 2 (Datei 0x53F55, 0x53F5F). Die Spielabrechnung legt es als
+  ⌊4 · Zuschauer / Plätze⌋ ab (`0:52Ah` Verschiebung um 2, `0:47Ch` LDIV, Datei 0x54AE8–0x54B12), ohne Plätze 2 (Datei
+  0x54B24) – also der **Füllgrad der Halle**. Die fünf Karten unterscheiden sich in der Füllung der Ränge und in einzelnen
+  Eiskacheln; Linien, Kreise und Tore sind gleich.
+- **Eisfläche** (Datei 0x122B8–0x124CC): Karte `cs:0x50`, 42 Spalten zu je 72 Big-Endian-Wörtern, spaltenweise (Index
+  (x / 16) · 0x48 + y / 16, Datei 0x124CD–0x124E9). Wort: Bit 15 = Kachel senkrecht gespiegelt (Quelle + 0xF0, je Zeile
+  − 0x10, Datei 0x1233F–0x123B5), n = Rest < 0xFA → `cs:0x3C` = `kb\231`, sonst `cs:0x40` = `kb\232` mit n − 0xFA; Kachel
+  16 × 16 Byte ab n · 0x100. Fläche 672 × 1 152 (Spielfeld hochkant mit Rängen links/rechts und an den Enden, Tore oben und
+  unten). Bildschirm Mode X mit 0x54 Byte je Zeile (336 Pixel), Ringpuffer 0xD8 Zeilen für das senkrechte Scrollen.
+- **Kamera** (Datei 0x12788–0x128BE): Start Kopf +0x04 − 16, +0x06 − 32, je ≥ 0 (Datei 0x12C62–0x12C85); je Bild setzt
+  `48h:5316h` die Bewegung aus Byte 0 (`cs:0x1A`/`0x1C`, Datei 0x12D2B), die Kamera rückt um sie weiter und wird auf
+  x 0 … 0x160, y 0 … 0x3B8 begrenzt (Datei 0x127E7, 0x12845). Sichtfenster 0x140 × 0xC8 = 320 × 200 (Datei 0x12800,
+  0x12865); damit ist die frühere `[APPROX]`-Deutung „Byte 0 = Kamera“ (§11) belegt: die Bewegung gilt je Bild, keine
+  bleibende Geschwindigkeit. Das Kopfbild `kb\246` steht im Video **unter** dem Eis (Zeilen 200 … 239).
+- **Objekte** (Satz zu 0x14 Byte ab `cs:0x92`, 13 Stück, Datei 0x12BDB–0x12C3F): Objekt 0 = Kopf +0x08/+0x0A mit Figur 1,
+  Objekte 1 … 12 aus der Tabelle `cs:0x29A` (5 Byte: Figur, x, y). Je Bild: Hintergrund aller 13 sichern (Datei 0x12AA9),
+  dann in der Reihenfolge 0 … 12 zeichnen – spätere Objekte liegen oben. Linke obere Ecke (x − 0x50 | y − 0x60) der Fläche
+  (Datei 0x128CB–0x128D4), außerhalb des Sichtfensters abgeschnitten; Farbe 0 durchsichtig (Datei 0x12A84).
+- **Figur → Bild** (Datei 0x129E7–0x12A50): 0 und 1 eingebaut, 5 × 5 Byte im Code-Segment ab `cs:0x54` bzw. `cs:0x6D`
+  (Figur 0 graue Scheibe Farben 0xC6/0xC7 – der Puck im Video, Figur 1 Scheibe Farbe 0xFB); 2 … 41 → `cs:0x44` =
+  `kb\233` Bild f − 2; 42 … 81 → `cs:0x48` = `kb\234` Bild f − 42; 82 … 93 → `cs:0x4C` = `kb\235` Bild f − 82; je Bild
+  32 × 32 Byte (Index · 0x400); ≥ 94 nichts. Die drei Zeiger setzt `48h:538Ch` (Datei 0x12D95–0x12DA1) aus `DGROUP 0xE2B9`
+  (i = 2 … 4). In den 48 Dateien kommen 86 Nummern vor (0 … 93 ohne 1, 35 … 37, 66, 69, 80, 81); Figur 0 steht in
+  260 Kopfeinträgen bei (0 | 0), also außerhalb der Fläche. Welche Rolle Objekt 0 (Figur 1) hat – Puckschatten oder
+  Markierung –, klärt C2 beim Abspielen; die Benennung „Puck“ in §11 ist bis dahin offen.
+- **Vermessung** gegen `eisbaeren_f01_01150` (Template-Matching der Zeilen 0 … 199 über alle Kamerapositionen, Summe der
+  quadrierten Abweichungen): beste Kamera (112 | 528), mittlere Abweichung 18,9 je Pixel (Median 4, 92 % unter 40; Rest:
+  Figuren und Unschärfe), alle fünf Hallenstufen gleich (Ausschnitt ohne Ränge). Anstoßpunkt im Video x 219 … 228,
+  y 41 … 54, gerendert x 219 … 229, y 41 … 54; Mittellinie Zeilen 46/47. Weitere Bilder derselben Szene: 01153 → (144 | 664),
+  01156 → (144 | 872), 01159 → (48 | 800) (neue Szene, Kopfzeile im Aufbau).
