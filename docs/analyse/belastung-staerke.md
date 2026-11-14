@@ -254,3 +254,97 @@ statt `Random` in `OriginalMatch.Rnd` ändert FILE02→03 nicht (Saaten 1–12: 
 Paarungen nacheinander, das Original minutenweise verschränkt (0x37DCF), daher keine zugexakte Probe.
 Wächtertest `AbgleichRestPenaltyTests` (FILE05→24, Mittel über vier Saaten ±8 % um +441; mit Einsatz + 20/15 wie vor #772 rot:
 Mittel 482,5).
+
+## 9. Prüfauftrag `re-belastung` (Runde 19, R19-D3 = B, 14.11.2026)
+
+Base `main` 9f1994e. **Ergebnis: keine Ursache in em.exe belegt – und kein belegter Unterschied mehr.** Die Tabelle in
+`abgleich-dosbox.md` §1.3 (und §2.4/§4 oben) beruht zum Teil auf einem Auswertefehler; mit berichtigter Auswertung und 40–200
+Saaten liegen alle Reihensummen des Originals in der Verteilung des Remakes. Die geprüften Stellen (§9.3) stimmen überein. Kein
+Teil 2 (Fehlschlag-Zweig R19-D3 → A); Vorschlag zur Entscheidung in §9.5.
+
+### 9.1 Auswertefehler der bisherigen Tabellen
+
+`strain.sh` schnitt Namen mit `]` ab bzw. `pair.py` verglich den Namen aus dem Dump im DOS-Zeichensatz (`K]HN`) mit dem Namen
+aus `emtool abgleich` (`KÜHN`); nicht gefundene Spieler fielen stillschweigend aus der Remake-Summe. Betroffen war KÜHN, also
+**Abwehr 2 von Köln in allen Tabellen** (Remake-Summe nur UVIRA). Probe (vorher/nachher, Saaten 1993, 4711, 1, 2, 3, 77):
+`$W/strain.sh FILE50 FILE03 "KÖLNER EC" … > $OUT/x.txt && python3 $W/pair.py FILE50 FILE03 $OUT/x.txt b` – Zeile A2 vorher
+„Remake Σ mittel 7,0“, nachher 12,7 (Original +15, 5 von 6 Saaten darunter). Damit entfallen: „Abwehr 2 +15 gegen +8,8“ (`abgleich-dosbox.md` §1.3),
+„FILE38→39 A2 +13 (24/24)“ und „FILE05→24 A2 +14 (24/24)“ (§4 oben), „A2 13,2 ± 2,9 gegen +20“ (§2.4). Behoben in `hok.py`
+(`name()`), `pair.py`, `strain.sh`; `hits.py` bricht ab, wenn ein Spieler im Remake fehlt.
+
+Zweiter Fehler der Lesart: Die Tabellen zählen den Zuwachs netto. Stürmer ohne Einsatz verlieren je Training 1 (FILE02→03: −3),
+Abwehrspieler 0; `hits.py` rechnet deshalb in **Treffern** (Zuwachs + Erholung; gekippte Spieler mit der Mindestzahl bis 128, „k“)
+und nimmt die Reihen aus Stand B (LALA statt HANEMANN).
+
+### 9.2 Proben (ausführbar)
+
+Vorbereitung wie §0, dann je Paar `$W/strain.sh A B "<Verein>" $(seq 1 n) > $OUT/s_A_B.txt` und `python3 $W/hits.py "A B" …`.
+
+**Ein Spieltag je Paar** (FILE02→50, 02→51, 38→39, 39→40, 05→24, 24→25 je 40 Saaten, FILE52→53 200 Saaten; 42 Reihen):
+Σ z² = 50,6 bei 42 Reihen (erwartet 42 ± 9); größte Abweichungen FILE52→53 Abwehr 2 (z +2,67, REZNICEK ≥ 9, GUDAS 7) und
+FILE05→24 Sturm 1 (−1,84). Je Spieler Σ z² = 140,0 bei 110; ohne die drei Spieler, die im Original anders aufgestellt waren
+(FILE05→24 HANEMANN +4,0 und LIEBSCH −3,2, FILE39→40 LALA +3,1 – Einsatz, nicht Belastungsregel), 104,6 bei 107. Summe der
+Treffer je Paar (Reihenfolge wie oben, FILE52→53 zuletzt): Original 44 / 57 / 61 / 49 / 105 / 45 / 71, Remake 60,9 / 60,9 / 56,9 / 55,0 / 104,7 / 58,1 / 58,1
+(± 5–8).
+
+**FILE02→03 (drei Spieltage, 200 Saaten, Treffer):**
+
+| Reihe | Original | Remake Mittel ± s (Bereich) | Saaten ≤ / ≥ Original | z |
+|---|---:|---|---|---:|
+| Abwehr 1 CISSEWSKI, SCHIFFL, MENDE | 26 (1 k) | 33,1 ± 5,2 (20–46) | 24 / 182 | −1,38 |
+| Abwehr 2 KÜHN, UVIRA | 20 | 22,0 ± 4,4 (12–33) | 76 / 136 | −0,44 |
+| Abwehr 3 KWASIGROCH, NÖTZEL | 19 | 19,8 ± 4,5 (8–32) | 96 / 115 | −0,19 |
+| Sturm 1 DOROCHIN, LIEBSCH, CHAIDAROV | 48 | 37,4 ± 5,5 (21–55) | 194 / 6 | +1,92 |
+| Sturm 2 HOCK, SIKORA, LUPZIG | 38 (2 k) | 33,1 ± 5,2 (17–45) | 164 / 40 | +0,93 |
+| Sturm 3 BRANDL, STEFAN, LALA | 13 | 21,9 ± 4,6 (11–34) | 9 / 198 | −1,94 |
+
+Σ z² = 10,4 bei 6 Reihen (p ≈ 0,11), Summe 164 gegen 167,4 ± 12,7. Sturm 1 und Sturm 3 liegen am Rand (3 % bzw. 4,5 % der
+Saaten), aber innerhalb. Das Quasi-Paar FILE50→03 (40 Saaten) zeigt dasselbe schärfer (S1 38 gegen 25,4 ± 5,6, keine Saat
+erreicht es; S2 z +2,23; S3 7 gegen 13,7 ± 4,6; Σ z² = 13,2, p ≈ 0,04), ist aber kein Paar: FILE50 ist ein anderer Durchlauf des ersten Spieltags als der von FILE03 (HOCK dort 116,
+im Lauf von FILE03 unbekannt).
+
+**Kippen der Pflichtspieler** (Anteil der Saaten mit Belastung ≤ 60 wie im Original): HOCK 5 von 200, SIKORA 68, MENDE 194
+(FILE02→03); REZNICEK 6 von 200 (FILE52→53); ZIMMERMANN 1, A.RAUBAL 3, TRAVNICEK 7 von 30 (FILE16A→17). Die drei
+Pflichtfälle sind also je ein Ereignis von etwa 3 % – ausgewählt, **weil** sie abweichen, aus rund 150 Spieler-Paar-Werten.
+Gegenrichtung im selben Paar: BRANDL kippt im Remake bei 47 von 200 Saaten, im Original nicht.
+
+**lrandom-Kopplung** (Kandidat aus `abgleich-dosbox.md` §2.3): `python3 $W/lrsim.py` spielt den Managerteil von 0x87F7 mit der
+echten Folge (x = 16x + 167 mod 4.000.000) und mit unabhängigen Zügen, je 400 Spiele: Treffer je Spiel 60,9 ± 7,45 gegen
+61,8 ± 7,44, je Spieler gleich. Gegenprobe im Remake (temporär alle Züge von `OriginalMatch.Rnd` aus einer `LRandom`-Folge,
+FILE50→03, 12 Saaten): Reihensummen unverändert (S1 20,8, S2 13,4, S3 6,5). Die Kopplung verschiebt die Belastung nicht.
+
+### 9.3 Geprüfte Stellen in em.exe (`python3 tools/reverse-engineering/disasm.py gamedata/em.exe <von> <bis>`)
+
+| Datei | Befund | Remake |
+|---|---|---|
+| 0x87F7–0x8E5E | Computer: je Teil und Reihe, Bonus mit Vereinsfeld 0x18 + Teil; Manager: Kaderplätze in Reihenfolge, auf dem Eis Züge Belastung, Einsatz, (0, 5), (5, 15); Bank mit Energie < 90 Zug (0, 4), bei 0 Zug (0, 100); Reihensumme mit 90 je fehlendem Platz, Torhüter (Pool +0x18 = 0) nicht | `DrainEnergy` ✓ |
+| 0x8EF2–0x91F6, 0x91FF–0x9399 | Modus 1/2: Wechsel nur bei Minuten > 3 (Vergleich Energie + 4 mit der Reihennummer tot), beste bzw. zweite Reihe; Modus 1 sortiert nur die Reihen 0 und 1 (`[bp-4]` = 2); Modus 3: Reihe des anderen Teils des Gegners, Reihe 3 → beste; Tausch nur bei kleinerer Energie | `ChangeLines`, `LinesByEnergy` ✓ |
+| 0x80CB–0x8364 | a führt nach Minute 40 → (2, 1), danach Stärkevergleich (kann (3, 2)/(2, 3) setzen); a liegt zurück → (1, 2) ohne Stärkevergleich (Sprung 0x81A5) – die Seite a/b wechselt je Minute zufällig (0x37FB8) | `ComputerLineModes` ✓ (Trace: Folgen 1/3 im Schlussdrittel) |
+| 0x84D7–0x874C | Spielbeginn 91, Pause + 20, dann Schleife „herunterzählen, solange > 91“ → 90 bzw. Wert + 19; Kaderplätze 101 − Belastung ≫ 3 | `RecoveredEnergy` ✓ |
+| 0x388F6–0x38B8E | Neuzählung; Abwehrreihe 0 nur beim Managerverein ohne Torhüter auf dem Eis (0x38A2A) | `RecountSkaters` ✓ |
+| 0x37E77–0x380A1 | Reihenfolge der Minute, Seitentausch samt Toren, 0x80CB nur ungerade, 0x939A nur gerade Minuten | `PlayMinute` ✓ |
+| 0x52B91, 0x5353C, 0x36B99 | „Managerpaarung“ = Paarung steht in der Liste DGROUP 0x233, die der Aufbau des Live-Bildschirms füllt (nur mit Live-Anzeige `[0x5A56]`); ohne Eintrag läuft 0x87F7 nicht, also auch keine Belastung im Spiel | Remake: jede Managerpaarung; für die Paare ohne Belang (überall Zuwachs im Spiel) – nicht weiter geprüft |
+| 0x54840–0x549CD | Spielabrechnung schreibt die Belastung nur begrenzt (50 … 150), kein Zuwachs | ✓ |
+
+### 9.4 Was das Remake zeigt (Trace, FILE02→03, 16 Saaten)
+
+`git apply $W/trace.patch`, `$W/run.sh FILE02 FILE03 f02 $(seq 1 16)`, `python3 $W/lines.py f02 HAH 3`: Sturm 22,2 / 21,0 / 16,8
+und Abwehr 22,4 / 20,5 / 17,1 Minuten in Spiel 3. Liegt Köln im Schlussdrittel zurück, spielt es Modus 1 und die dritte Reihe
+ruht (Saat 6: Reihenenergie 90 / 90 am Ende; Saaten 14, 15: 90 bzw. 84) – wie FILE03 (Abwehr 3 = 89, Sturm 3 = 87). Die
+Aussage in §4 „in keiner der 16 Saaten eine Kölner Reihe über 81“ gilt für den heutigen Stand nicht mehr.
+
+### 9.5 Folgerung und Vorschlag
+
+- Für eine abweichende Regel der Belastung an den Spieltagen 2/3 gibt es nach der Berichtigung keinen Beleg mehr: 48 Reihen
+  in 8 Paaren liegen in der Streuung des Remakes, die gelesenen Stellen stimmen überein. Übrig bleiben die Randlage von
+  FILE02→03 (Sturm 1 hoch, Sturm 3 niedrig, je 3–5 % der Saaten) und drei einzelne Kipp-Ereignisse von je etwa 3 % (HOCK,
+  REZNICEK, ZIMMERMANN), die als Auswahl aus vielen Werten nicht tragen. Ausgeschlossen ist ein Unterschied damit nicht –
+  er wäre aber kleiner als die Streuung eines Spieltags.
+- **Entscheidung Nutzer:** (A) wie geplant DOSBox-Liste `runde-19` (FILE50 laden, Spieltage 2 und 3 mit Bild je Minute, nach jedem
+  Spieltag sichern) – bringt ein echtes Paar, kann aber ebenso im Bereich liegen; (B) #730 als „im Bereich des Remakes, kein
+  Befund“ schließen: Pflichteinträge (`StrainOf` ZIMMERMANN, `Strain730_DeviatesAtMostSeeds`) in den Sägezahn überführen,
+  `[APPROX]` an `ChangeLines` und die Abnahme „HOCK ≤ 70“ streichen. Empfehlung: B, wenn ohne weitere Aufnahme abgeschlossen werden soll; nur A kann die Randlage von FILE02→03 zum Beleg machen
+  oder entkräften.
+- Für die Leitstelle: `abgleich-dosbox.md` §1.3 (Tabelle, Zeile Abwehr 2) verweist auf die alte Auswertung; Datei liegt außerhalb
+  der Spur.
+
