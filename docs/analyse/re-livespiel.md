@@ -821,3 +821,36 @@ mit Variablen im Code-Segment (`cs:…`). Belege `disasm.py … 0x12100 0x12F59`
   Figuren und Unschärfe), alle fünf Hallenstufen gleich (Ausschnitt ohne Ränge). Anstoßpunkt im Video x 219 … 228,
   y 41 … 54, gerendert x 219 … 229, y 41 … 54; Mittellinie Zeilen 46/47. Weitere Bilder derselben Szene: 01153 → (144 | 664),
   01156 → (144 | 872), 01159 → (48 | 800) (neue Szene, Kopfzeile im Aufbau).
+- Hinweis: `Formats/Rink.cs` (`RinkTileSet`/`RinkMap`, `emtool`, aus dem früheren Portierungsversuch) liest dieselben Dateien
+  **quer** (Kacheln spaltenweise, Karte 72 × 42 zeilenweise, Spiegelung waagerecht) – das ergibt die um 90° gedrehte
+  Fläche. Das Original zeichnet hochkant (oben), der Abspieler nutzt `GoalSceneRink`.
+
+### C2 Abspieler 0x567C8 (neu `UI/Screens/Live/GoalScenePlayer.cs`, `GoalSceneScreen.cs`)
+
+- **Modus** (Datei 0x56804–0x56813, 0x56ABC, 0x56E14–0x56E3F): 0 = Einzelszene (Bilder laden, `48h:538Ch`, Palette, Szene,
+  Pause 6, Bilder freigeben, Live-Bildschirm neu 0x5353C, Rückgabe Penalty-Argument); 1 = Dauer-Eisfeld aufbauen (laden,
+  Kopfzeile Modus 0, Eis, Rückgabe 1); 2 = Szene im Dauer-Eisfeld (ohne Laden und Freigeben, **ohne** Pause 6, Rückgabe 0);
+  3 = abbauen (freigeben, `DGROUP 0x49A9` = 1, Hintergrund `110h:7Ah`). Die Torszene ruft nur 0 oder 2 (`2 · [0x5A55]`, Datei
+  0x53FCE); 1 und 3 kommen aus dem Spieltagsablauf (Aufrufer 0x36B5D, 0x3901B). Widerspruch §6/§11 aufgelöst: „Pause 6“ nur in
+  Modus 0 (Datei 0x56E14–0x56E29, `50h:19Eh(6)` = 2 Takte). Speichermangel-Zweig (Modus 0, Datei 0x56816–0x56871) im Remake
+  `[APPROX]` entfallen.
+- **Argumente** (Aufruf Datei 0x53FC5–0x5402A, `[bp+…]` im Abspieler): +6 Verein, +8 Gegner, +0xA/+0xC Tore Heim/Gast, +0xE/+0x10
+  Feldspieler, +0x12/+0x14 Farben (entzerrt), +0x16 Seite, +0x18 Art, +0x1A Minute `[0xE19E]`, +0x1C Reihe, +0x1E Penalty,
+  +0x20 Modus, +0x22 Hallenstufe, +0x24 Zuschauertext.
+- **Kopfzeile** 0x56EDD wie §6, Modus-Argument = (Modus = 2): 0 entpackt erst das Kopfbild `kb\246`; die Palette setzt
+  der Abspieler selbst (`48h:47F0h`, `kb\247`, Farben 0 … 254). Kasten der Tore: 0x47 − w/2 + 9 bzw. + 0xA9 = 80 bzw. 240 − w/2
+  (Datei 0x5701E, 0x57081). Gegen `eisbaeren_f01_01150` gerendert: helle Pixel von Heimname (35 … 124), Gastname (206 … 273),
+  Toren (80 … 85, 240 … 245), „6.MINUTE“ (240 … 287) und dem Strich (157 … 162) **pixelgleich** mit dem Video; beste
+  Verschiebung des Kopfes (0 | 0). Offen für C3: im Video steht „ZUSCHAUER“ ab x 44 ohne sichtbare Zahl (Zuschauertext aus
+  Datei 0x53F22–0x53F4E).
+- **Szene des Videos** (R852 P3-2): `eisbaeren_f01_01150` ist **nicht** `2.ht`, sondern `7.at` bzw. `7.av` (gleiche Bilder bis
+  zum Ende) nach 33 Bildern: Kamera (112 | 528), alle Figuren an ihrer Stelle (mittlere Abweichung 15,0 je Pixel gegen 18,9
+  für das leere Eis). 01153 = nach 88 Bildern, 01156 ≈ Bild 140–144 – etwa 18 Bilder je Sekunde, also ein Bild je BIOS-Takt
+  (`48h:2C08h(1)`/`48h:2C4Eh`, Datei 0x56CFD, 0x56DB4).
+- **Objekt 0** ist der **Puckschatten**: Figur 1 (Farbe 0xFB) bei Kopf +0x08 liegt ein Pixel unter dem grauen Puck (Figur 0
+  eines der zwölf Objekte, im Video (84 … 88 | 87 … 91)); er wird zuerst gezeichnet.
+- **Trikotfarben:** 0xFE = Heim, 0xFD = Gast; `kb\233` (Figuren 2 … 41) trägt im Video die Gastfarbe (gelb, EC Ratingen
+  0xFFF0), `kb\234` (42 … 81) die Heimfarbe (rot, Eisbären Berlin 0xF00). 0x53BF9 rechnet mit `sar` und `& 0xF`, also nur
+  Bits 0–11; XOR 0xFFF lässt Bits 12–15 der Heimfarbe stehen.
+- **Töne** (Datei 0x56D10–0x56D86): Byte 3 = s ≠ 0 → laufenden Ton stoppen (`38h:2Eh`), `DGROUP 0xE2D1 + 4s` = `kb\(237 + s)`
+  spielen; in jedem Warten bei freier Ausgabe (`0x59E4` = 0) Publikum `kb\237` neu – nur mit Ton an (`DGROUP 0x4A44`).

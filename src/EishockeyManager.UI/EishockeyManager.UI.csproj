@@ -5,5 +5,6 @@
   <ItemGroup>
     <ProjectReference Include="..\EishockeyManager.Formats\EishockeyManager.Formats.csproj" />
     <ProjectReference Include="..\EishockeyManager.Core\EishockeyManager.Core.csproj" />
+    <ProjectReference Include="..\EishockeyManager.Audio\EishockeyManager.Audio.csproj" />
   </ItemGroup>
 </Project>

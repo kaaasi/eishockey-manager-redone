@@ -101,6 +101,27 @@ public sealed class GoalSceneRink
         return new GoalSceneRink(hallLevel, new VgaImage(Width, Height, pixels, palette));
     }
 
+    /// <summary>[ORIGINAL] Kopfbild der Torszene <c>kb\246</c> (Bild i = 12, roh geladen): 320 × 40.</summary>
+    public const int HeaderGraphic = 246, HeaderWidth = 320, HeaderHeight = 40;
+
+    /// <summary>[ORIGINAL] Palette der Torszene <c>kb\247</c> (Bild i = 13, 255 Farben, Datei 0x56B12–0x56B2C).</summary>
+    public const int PaletteGraphic = 247;
+
+    /// <summary>
+    /// [ORIGINAL] Kopfbild entpacken wie <c>48h:54BFh</c> (Datei 0x12EAF–0x12F48): Steuerbyte b, Bit 7 frei → b + 1 Byte
+    /// übernehmen, sonst (b &amp; 0x7F) + 1 Mal das folgende Byte, 0x80 = Ende; Pixel zeilenweise ab Bildschirmspeicher 0
+    /// (80 Byte je Ebenenzeile, dann + 4 = Zeilenlänge 0x54). Das ist PackBits (<see cref="PackBits"/>).
+    /// </summary>
+    public static VgaImage DecodeHeader(ReadOnlySpan<byte> data)
+    {
+        var pixels = new byte[HeaderWidth * HeaderHeight];
+        var position = 0;
+        var written = PackBits.Decode(data, ref position, pixels);
+        if (written != pixels.Length)
+            throw new InvalidDataException($"Kopfbild der Torszene: {written} statt {pixels.Length} Pixel.");
+        return new VgaImage(HeaderWidth, HeaderHeight, pixels);
+    }
+
     /// <summary>[ORIGINAL] Startkamera einer Szene (Kopf +0x04/+0x06).</summary>
     public static (int X, int Y) StartCamera(GoalScene scene) =>
         (Math.Max(0, scene.CameraX - StartOffsetX), Math.Max(0, scene.CameraY - StartOffsetY));
