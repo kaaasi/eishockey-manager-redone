@@ -176,8 +176,8 @@ Torszenen-Abspieler 0x567C8. Argumente `(Pokal, erster Aufbau)`.
    Farbe 7, Schatten 0, zentriert zwischen 5 und 96 bzw. 224 und 317 auf Grundlinie y + 4.
 5. Zuschauerzeile (Datei 0x53A11–0x53B37): Manager-Flag (Vereinsfeld 0x16, Manager + 1) des Heim-, sonst des
    Gastvereins → Zuschauer `DGROUP 0x5D99 + 6 · Flag + 2` (long; über 200 000 minus 200 000). Zahl ≠ 0 und keine WM
-   (`DGROUP 0x12B` = 0): Zahl als Text (`DGROUP 0x38D` während der Umwandlung 0, `[APPROX]` vermutlich ohne
-   Tausenderpunkt), Farbe 0x10, wenn sie gleich Sitz- + Stehplätzen des Managers ist (`DGROUP 0x94AC + 0x137 + 0x1AF · m`
+   (`DGROUP 0x12B` = 0): Zahl als Text (`DGROUP 0x38D` während der Umwandlung 0, mit Tausenderpunkt – belegt
+   durch `folge01_00615` „4.335“, Spur `nutzer-befunde` #837), Farbe 0x10, wenn sie gleich Sitz- + Stehplätzen des Managers ist (`DGROUP 0x94AC + 0x137 + 0x1AF · m`
    + `0x95DF + 0x1AF · m`, ausverkauft), sonst Farbe 0; andernfalls „(ausw.)“. Zentriert 48–82, Grundlinie y + 38, ohne
    Schatten. Haben beide Vereine einen Manager (`0xE2A1` = 2) → `0xE2A2 + p` = 1.
 6. Lampenfeld, `kb\19` freigeben, Bildschirm als Hintergrundkopie sichern (`48h:2EF4h(0, 0x4B00)`), Anzeigetafel aller
