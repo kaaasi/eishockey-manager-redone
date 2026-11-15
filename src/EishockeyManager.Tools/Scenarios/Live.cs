@@ -110,7 +110,9 @@ internal static class Live
             d.Frame();
         d.Save("01_szene_bild_33");
         d.Type("r");
-        while (!scene.Animation.Finished)
+        // Bei einem Tor steigt die Torzahl der Kopfzeile erst im Takt nach dem letzten Bild (GoalSceneScreen.Tick, #862 P3-4).
+        var header = scene.Header;
+        while (d.Host.Current == scene && (!scene.Animation.Finished || (scene.Request.Goal && scene.Header == header)))
             d.Frame();
         d.Save("02_szene_ende");
         while (d.Host.Current == scene)

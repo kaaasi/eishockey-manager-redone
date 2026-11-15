@@ -16,7 +16,8 @@ public sealed partial class GameState
     /// <item>[ORIGINAL] +0x26 Einsatz und +0x2C Bits 4–6 Angriff des letzten Spiels der Vereine mit Kader (#804, <see cref="Tactics.MatchEffort"/>);
     ///   [APPROX] +0x2D = +0x26.</item>
     /// <item>[ORIGINAL] +0x34 Logo (<see cref="DatabaseClub.LogoNumber"/>, beim Managerverein + 0x80; FILE01: KÖLNER EC 0x8C) und
-    ///   +0x3B/+0x3C Farbcode (<c>kb\23</c> 0x0000, niederes Byte zuerst), an FILE01–FILE41 gegen die Datenbank geprüft.
+    ///   +0x3B/+0x3C Farbcode (<c>kb\23</c> 0x0000, niederes Byte zuerst), an FILE01–FILE41 gegen die Datenbank geprüft; Name, Logo
+    ///   und Farbcode aus dem Satz der Kennung (<see cref="ClubIdentity"/>, nach einem Platztausch der eingetauschte Verein, #857).
     ///   [APPROX] +0x1E (45–55, ab Satz 64 nach dem ersten Tag 90) und +0x1F–0x25 (ab dem ersten Tag 90) ungedeutet.</item>
     /// </list>
     /// </summary>
@@ -30,9 +31,12 @@ public sealed partial class GameState
         {
             var at = slotOf[club.Index] * OriginalSaveGame.ClubRecordLength;
             var r = records.AsSpan(at, OriginalSaveGame.ClubRecordLength);
-            var name = WorldOnly && club.Index == Managers[0].ClubIndex ? Clubs[nation].Name : club.Name;
-            var nameIndex = WorldOnly && club.Index == Managers[0].ClubIndex ? nation : club.Index;
-            (raw is not null && Clubs[nameIndex].Name == database?[nameIndex].Name
+            // #857: nach einem Platztausch (neuer Manager) trägt der Satz die Kennung des eingetauschten Vereins.
+            var identity = database is null ? club.Index : ClubIdentity.Of(database, club);
+            var worldName = WorldOnly && club.Index == Managers[0].ClubIndex;
+            var name = worldName ? Clubs[nation].Name : club.Name;
+            var nameIndex = worldName ? nation : identity;
+            (raw is not null && database is not null && nameIndex < database.Clubs.Count && name == database[nameIndex].Name
                 ? OriginalExport.DatabaseClubName(raw, nameIndex)
                 : OriginalSaveWriter.Name(name, OriginalImport.ClubNameLength)).CopyTo(r);
             r[0x16] = (byte)(managerOf.TryGetValue(club.Index, out var m) ? m + 1
@@ -62,10 +66,10 @@ public sealed partial class GameState
             r[0x1E] = 50; // [APPROX] ungedeutet (FILE01: 45–55)
             if (CurrentDay > 0 || Season > FirstSeason)
                 r.Slice(0x1F, 7).Fill(90); // [APPROX] ungedeutet, ab dem ersten Tag an fast allen Sätzen 90
-            if (database is not null && club.Index < database.Clubs.Count)
+            if (database is not null && identity < database.Clubs.Count)
             {
-                var db = database[club.Index];
-                if (club.Index < ClubDatabase.ClubsWithSquad && db.LogoNumber >= 0)
+                var db = database[identity];
+                if (identity < ClubDatabase.ClubsWithSquad && db.LogoNumber >= 0)
                     r[0x34] = (byte)(db.LogoNumber | (managerClubs.Contains(club.Index) ? 0x80 : 0));
                 r[0x3B] = (byte)db.ColorCode;
                 r[0x3C] = (byte)(db.ColorCode >> 8);
