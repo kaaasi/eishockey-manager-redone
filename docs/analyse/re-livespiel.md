@@ -854,3 +854,32 @@ mit Variablen im Code-Segment (`cs:…`). Belege `disasm.py … 0x12100 0x12F59`
   Bits 0–11; XOR 0xFFF lässt Bits 12–15 der Heimfarbe stehen.
 - **Töne** (Datei 0x56D10–0x56D86): Byte 3 = s ≠ 0 → laufenden Ton stoppen (`38h:2Eh`), `DGROUP 0xE2D1 + 4s` = `kb\(237 + s)`
   spielen; in jedem Warten bei freier Ausgabe (`0x59E4` = 0) Publikum `kb\237` neu – nur mit Ton an (`DGROUP 0x4A44`).
+
+### C3 Einbindung Anzeigeteil 0x53C57 (neu `UI/Screens/Live/GoalSceneCall.cs`, Anschluss in `LiveMatchScreen`)
+
+Belege `disasm.py … 0x53C57 0x541D9` (Ausgabe nur im Scratch).
+
+- **Ablauf** (Datei 0x53DCA–0x5406A, nur Art 0/1): `[0x226]` = 0 → gleich weiter zum Torschützen 0x541D9 (Datei 0x53DDC–0x53DE3;
+  die Lampe „Schnelldurchlauf“ setzt `[0x226]` = 0). Sonst ohne Durchlauf (`[0x1DB]` = 0) Pause 30 = 10 Takte (Datei
+  0x53DEF–0x53DFB), `DGROUP 0xCC35` = 0; ab Datei 0x53E02 je Ablauf Spielstand, Zuschauerzeile, Farben, Abspieler (nur mit
+  `[0x5A56]` oder `[0x5A55]`, Datei 0x53F75), dann `0xCC35` + 1, Pause 20 = 6 Takte, eine Taste (`48h:2E1Eh`, Datei 0x5404E);
+  `0xCC35` < 3 und Taste 0x72 „r“ oder 0x77 „w“ → zurück nach 0x53E02 (ohne Pause 30). Also höchstens **drei** Abläufe je Chance.
+- **Spielstand** (Datei 0x53E0C–0x53EE3): Liga aus `DGROUP 0xA0BF` (Paarungstabelle), Pokal aus `DGROUP 0x5B0B`
+  (Wettbewerb · 32 + Paarung, Werte über 0x1D um 0x1E vermindert); bei Art 1 die Seite der Chance − 1. Das Remake rechnet die
+  Minute vor der Anzeige; der Stand vor der Chance (Tore früherer Minuten und früherer Chancen der Minute) ist derselbe Wert.
+- **Zuschauerzeile** (Datei 0x53EE6–0x53F72): maßgeblich ist immer der **Heimverein** (`[bp+0xC]`): Index ≥ `DGROUP 0x6AD`
+  → 15 Leerzeichen (`DGROUP 0x54D9`), Stufe 2; Vereinsfeld 0x16 = m ≠ 0 → Zahl `DGROUP 0x5D99 + 6m + 2` (long) über
+  0x0BAB2 + „ ZUSCHAUER“ (`DGROUP 0x54BE`), Stufe = Kennbyte `0x5D99 + 6m`; sonst „AUSWÄRTS“ + 7 Leerzeichen (`DGROUP 0x54C9`),
+  Stufe 2. **Offener Punkt aus C2 geklärt:** 0x0BAB2 ruft 0x0B954, das `DGROUP 0x38D` liest (Datei 0x0B98D); der Grundzustand
+  ist 1 (alle Schreiber setzen nach Gebrauch 1 zurück, z. B. Datei 0x53ABD, 0x575D3), nur die Live-Zeile setzt vorher 0
+  (Datei 0x53A9C). Die Zahl steht hier also **ohne** Tausenderpunkt. Im Video `eisbaeren_f01_01150` verdeckt die Einblendung
+  des Aufnehmenden x < 40; „ZUSCHAUER“ ab x 44 = 8 + Breite „dddd “ (36 Pixel, mit Punkt wären es 39) – passt zu einer
+  vierstelligen Zahl ohne Punkt.
+- **Farben und Modus** (Datei 0x53F86–0x53FCE): Vereinsfeld 0x3B beider Vereine, 0x53BF9; Modus `2 · [0x5A55]`, also
+  Darstellung 2 → Modus 2 (ohne Pause 6).
+- **Remake** (`GoalSceneCall`, `LiveMatchScreen.GoalScene`): Szene je Chance aus `LiveScoreboardRow.Scenes` (der Kern zieht sie
+  bei Darstellung ≠ 0 zusammen mit der Chance, R18-D3 = A), vor der Reporter-Meldung. Abläufe mit „r“/„w“ zeigen dieselbe Szene
+  `[APPROX]` (R19-E1 = A; das Original zieht im Abspieler neu). Taste: erstes während Szene oder Pause 20 getipptes Zeichen
+  `[APPROX]`. Dauer-Eisfeld zwischen den Szenen (Modus 1/3 aus 0x36B5D/0x3901B, Minutenzeile `0x130:0xAC`) nicht nachgebaut
+  `[APPROX]`: nach der Szene wieder der Live-Bildschirm. Nicht nachgebaut bleibt auch der Rücksprung 0 bei zu wenigen fitten
+  Spielern (`120h:66h`, Datei 0x53D73–0x53D89, schon in `GoalSceneSelection` vermerkt).

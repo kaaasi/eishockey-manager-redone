@@ -24,6 +24,9 @@ namespace EishockeyManager.UI.Screens.Live;
 /// <item>[APPROX] Reihen: die Paarungen mit Anzeigereihe des Spieltags, die schon begonnen haben (<see cref="LiveSession.Shown"/>);
 ///   das Remake rechnet sie nacheinander (<c>MatchEngine.LiveDriver.cs</c>), spätere Managerpaarungen erscheinen erst mit
 ///   ihrem Spiel.</item>
+/// <item>[ORIGINAL] Torszene je Chance vor der Reporter-Meldung (0x53C57 → 0x567C8 vor 0x541D9/0x52520, Spur torszenen C3,
+///   <see cref="GoalSceneCall"/>): Pause 30, Abspieler <see cref="GoalSceneScreen"/> mit der Szene des Spielkerns, Pause 20,
+///   „r“/„w“ wiederholt bis zu dreimal.</item>
 /// </list>
 /// </summary>
 public sealed class LiveMatchScreen : Screen
@@ -290,8 +293,17 @@ public sealed class LiveMatchScreen : Screen
             yield break;
         var events = match.Report.Events.Where(e => e.Minute == minute).ToList();
         var goals = new Queue<MatchEvent>(events.Where(e => e.Kind == MatchEventKind.Goal));
+        // Torszene 0x53C57 (Spur torszenen, C3): Szenen der Minute in der Reihenfolge der Chancen (der Kern legt sie zusammen
+        // ab), Spielstand vor der Chance aus den Toren der früheren Minuten und Chancen.
+        var scenes = new Queue<ScoreboardScene>(row.Scenes.Where(c => c.Minute == minute));
+        var earlier = match.Report.Events.Where(e => e.Kind == MatchEventKind.Goal && e.Minute < minute).ToList();
+        var score = (Home: earlier.Count(e => e.Side == 0), Away: earlier.Count(e => e.Side == 1));
         foreach (var c in row.ChanceList.Where(c => c.Minute == minute))
         {
+            if (scenes.Count > 0 && scenes.Peek() is var scene && scene.Side == c.Side && scene.Goal == c.Goal)
+                yield return GoalScene(match, scenes.Dequeue(), score, minute);
+            if (c.Goal)
+                score = c.Side == 0 ? (score.Home + 1, score.Away) : (score.Home, score.Away + 1);
             MatchEvent? goal = null;
             if (c.Goal && goals.Count > 0)
                 goal = goals.Dequeue();
@@ -307,6 +319,42 @@ public sealed class LiveMatchScreen : Screen
         }
         foreach (var e in events.Where(e => e.Kind == MatchEventKind.Injury))
             yield return _reporter.Message(ClubName(match, e.Side), ReporterEvent.Injury, e.Player?.Name, null, null);
+    }
+
+    /// <summary>Aufträge an den Abspieler in der Reihenfolge der Abläufe (Wiederholungen eingeschlossen); für Proben.</summary>
+    public List<GoalSceneRequest> ScenesShown { get; } = [];
+
+    /// <summary>
+    /// [ORIGINAL] Anzeigeteil der Torszene 0x53C57 (Datei 0x53DCA–0x5406A, <see cref="GoalSceneCall"/>): mit Darstellung ≠ 0
+    /// Pause 30, Abspieler, Pause 20, Taste „r“/„w“ wiederholt bis zu dreimal; danach Reporter wie bisher.
+    /// </summary>
+    private IEnumerable<bool> GoalScene(LiveMatch match, ScoreboardScene scene, (int Home, int Away) score, int minute)
+    {
+        if (Game.Options.LiveMode == 0 || !GoalSceneCall.Available(Assets))
+            yield break;
+        for (var i = 0; i < LiveReporter.PauseFrames(GoalSceneCall.PauseBefore); i++)
+            yield return true;
+        for (var plays = 1; ; plays++)
+        {
+            var request = GoalSceneCall.Request(Assets, Game, match, scene, score, minute);
+            var player = new GoalSceneScreen(Host, request, GoalSceneCall.GraphicsFor(Assets), () => Host.Show(this));
+            ScenesShown.Add(request);
+            Host.Show(player);
+            do
+                yield return true; // weiter erst, wenn der Abspieler fertig ist und den Live-Bildschirm wieder zeigt
+            while (!player.Done);
+            var key = player.FirstKey;
+            for (var i = 0; i < LiveReporter.PauseFrames(GoalSceneCall.PauseAfter); i++)
+            {
+                if (key is null && _input.Text.Length > 0)
+                    key = _input.Text[0];
+                yield return true;
+            }
+            if (key is null && _input.Text.Length > 0)
+                key = _input.Text[0];
+            if (plays >= GoalSceneCall.MaxPlays || !GoalSceneCall.IsReplayKey(key))
+                yield break;
+        }
     }
 
     private string ClubName(LiveMatch match, int side) => (side == 0 ? match.Home : match.Away).Name;

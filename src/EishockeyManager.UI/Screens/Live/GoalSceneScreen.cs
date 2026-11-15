@@ -70,10 +70,18 @@ public sealed class GoalSceneScreen : Screen
     /// <summary>Bildschirmbilder (60 Hz) je Szenenbild im Mittel.</summary>
     public static double FramesPerTick => ShortMessage.FramesPerSecond / TicksPerSecond;
 
+    /// <summary>
+    /// Erstes während der Szene getipptes Zeichen (Tastaturpuffer). Der Abspieler wertet es nicht aus; die Torszene 0x53C57
+    /// liest es nach der Pause 20 (<see cref="GoalSceneCall"/>).
+    /// </summary>
+    public char? FirstKey { get; private set; }
+
     public override void Update(InputState input)
     {
         if (Done)
             return;
+        if (FirstKey is null && input.Text.Length > 0)
+            FirstKey = input.Text[0];
         _ticks += TicksPerSecond / ShortMessage.FramesPerSecond;
         while (_ticks >= 1 && !Done)
         {
