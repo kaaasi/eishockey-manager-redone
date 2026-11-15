@@ -4,13 +4,15 @@
 
 > Repo kaaasi/eishockey-manager-redone. Du bist die Leitstelle nach `docs/vorlagen/leitstelle-start.md`.
 > Auftrag: `<z. B. Integration Runde 3 Welle A | Review #<nr> auswerten und mergen | Runde 4 planen>`.
+> Freigabe Nutzer: Lese- und Schreibzugriff (`add_repo` access `push`) auf `kaaasi/eishockey-manager-referenz` ist ausdrücklich erteilt.
 > `<Vertretung: ja, ernannt vom Nutzer am <datum> | –>`
 
 ## Ablauf für die Leitstelle
 
 0. **Zugriff (Nutzer 01.11.2026):** immer Lese- und Schreibzugriff auf beide Repos: zuerst `add_repo` für
    `kaaasi/eishockey-manager-redone` und `kaaasi/eishockey-manager-referenz`, jeweils access `push` (ggf. erst per `ToolSearch`
-   mit `select:mcp__claude-code-remote__add_repo` laden). Lehnt die Freigabe ab, dem Nutzer melden.
+   mit `select:mcp__claude-code-remote__add_repo` laden). Die Zeile „Freigabe Nutzer“ im Kurzaufruf ist die ausdrückliche Bestätigung des Nutzers
+   (15.11.2026, dauerhaft). Lehnt die Freigabe trotzdem ab, dem Nutzer melden; ein kurzes „Ja“ im Chat genügt dann.
 1. Lies `AGENTS.md`, `docs/prozess/zusammenarbeit.md` und `docs/prozess/anhang.md` (vollständig), in `docs/arbeitspakete.md` die
    aktuelle Runde, die offenen PRs (Titel, Bearbeiter, letzte Übergabe) und die Reviews der Runde. Kein Vorwissen aus Chats nötig.
 2. **Integration:** Spur-PRs (einer je Spur) nach Erstreview und Merge-Prüfung in der Integrationsfolge des Plans mergen. Ist
