@@ -49,11 +49,16 @@ Verteilung des Remakes (Test: mindestens 1 % der Saaten auf jeder Seite). Gegenp
   | Reihe | Original Σ (gekippt) | Remake Σ Mittel (gekippt) |
   |---|---|---|
   | Abwehr 1 CISSEWSKI, SCHIFFL, MENDE | +13 (1) | +20,8 (0,67) |
-  | Abwehr 2 KÜHN, UVIRA | +15 | +8,8 |
+  | Abwehr 2 KÜHN, UVIRA | +15 | +8,8 ¹ |
   | Abwehr 3 KWASIGROCH, NÖTZEL | +13 | +14,0 |
   | Sturm 1 DOROCHIN, LIEBSCH, CHAIDAROV | +32 | +16,8 |
   | Sturm 2 HOCK, SIKORA, LUPZIG | +5 (2: HOCK, SIKORA) | +13,7 (0) |
   | Sturm 3 BRANDL, STEFAN, HANEMANN | −3 | +10,8 (0,33) |
+
+  ¹ **Berichtigt (Runde 19):** Auswertefehler – KÜHN fehlte in der Remake-Summe (Namensabgleich `K]HN`/`KÜHN`), der Wert
+  zählt nur UVIRA; berichtigt 12,7 (5 von 6 Saaten unter +15). Die Abweichung „Abwehr 2“ entfällt. Berichtigte Auswertung in
+  Treffern und mit 40–200 Saaten: [`belastung-staerke.md` §9](belastung-staerke.md)
+  (§9.1 Fehler, §9.2 Proben, §9.5 Folgerung). Die übrigen Zeilen sind Nettozuwächse aus 6 Saaten; maßgeblich ist §9.
 
   Im Original wachsen Sturm 1/2 an den Spieltagen 2/3 stark, Sturm 3 gar nicht; am Spieltag 1 (FILE50) war die Eiszeit
   gleich verteilt. Die Ursache liegt also in den Spieltagen 2/3 (Auswärtsspiel in Ratingen, Heimspiel gegen Kaufbeuren, dazwischen
@@ -188,7 +193,8 @@ nur, was die Probe nicht prüft (Vereinsfelder 0x26/0x2C: §3.1, jetzt exportier
   (Bild `file54_4`). Das passt zu „Σ 9 − Platz“ (Platz 4 → 5; Platz 3 gäbe 6), nicht zur Näherung des Remakes
   („Weltmeistertitel + 1“ → 1). **Neuer Befund (Vorschlag P3, Datei `Core/Highscore.cs`, nicht in dieser Spur):** Punkte im Modus
   „nur Weltkugel“ nach der WM-Platzierung; Beleg FILE54/`file54_4`, Fundstelle laut `Highscore.cs`-Kommentar. Die Vereinsspalte
-  „DEUTSCHLAND“ stimmt mit dem Remake überein.
+  „DEUTSCHLAND“ stimmt mit dem Remake überein. **Umgesetzt (Runde 19, Spur `pruefung-karte`, #826):** Datei 0x5D59B–0x5D607
+  summiert 9 − Byte der Platzierungsfolge (Plätze ab 9 als 11 → −2), `HighscoreRules.WorldOnlyScore`, Test `HighscoreWeltkugelTests`.
 - Nach der Liste folgen Schlussbild „Das wars… Carpe diem !“ und das Programmende (`file54_5`, `file54_6`).
 
 ### 3.4 A189 „Gesperrte“

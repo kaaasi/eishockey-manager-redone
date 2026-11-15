@@ -73,9 +73,10 @@ nichts aus dem Original; die CSV gehört nicht ins Repo. Nach jeder Spur mit neu
 
 ## Ergebnis in Kürze
 
-* Spielcode (ohne Systemsegmente), Stand nach Runde 18: **94 % der Bytes umgesetzt** (288 Funktionen; neu mit dem Live-Spiel
-  F094, F134, F136–F149, F151, F154 und der Torszenen-Lader 0x575C3, `docs/analyse/inventur.md` „Stand Runde 18“; F025 0x0B620
-  nur durch eine Nennung), unter 1 % genähert (3 Funktionen, u. a. 0x0AE2B Markierung zum Zusehen, F018), 6 % dokumentiert;
+* Spielcode (ohne Systemsegmente), Stand nach Runde 19: **94 % der Bytes umgesetzt** (293 Funktionen; neu mit den Torszenen
+  F031 0x0BAB2, F150, F152, F153 und F156 0x57ECF aus Runde 18 #842, `docs/analyse/inventur.md` „Stand Runde 19“; vorher mit dem
+  Live-Spiel F094, F134, F136–F149, F151, F154 und 0x575C3), unter 1 % genähert (3 Funktionen, u. a. 0x0AE2B Markierung zum
+  Zusehen, F018), 5 % dokumentiert; Overlay 0x130 (Live-Spiel, Torszene) vollständig umgesetzt;
   unbekannt keine Funktion. Maßgeblich sind die Zahlen im
   erzeugten Teil. Wegen der Körnung ist „umgesetzt“ eine Obergrenze; was die Funktionskarte als „dokumentiert“ führt, ordnet
   `docs/analyse/inventur.md` ein (fehlt im Remake, vorhanden ohne `[ORIGINAL]`, nicht nötig).
@@ -151,7 +152,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 7686 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 7988 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -159,10 +160,10 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 303 | 255200 | 82 % | 288 | 244346 | 94 % |
+| umgesetzt | 318 | 259856 | 84 % | 293 | 245877 | 94 % |
 | genähert | 5 | 1900 | 1 % | 3 | 1038 | 0 % |
-| dokumentiert | 120 | 21975 | 7 % | 73 | 15517 | 6 % |
-| unbekannt | 251 | 30450 | 10 % | 0 | 0 | 0 % |
+| dokumentiert | 119 | 21491 | 7 % | 68 | 13986 | 5 % |
+| unbekannt | 237 | 26278 | 8 % | 0 | 0 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
 ### Übersicht je Bereich
@@ -171,14 +172,14 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 
 | Bereich | Datei | Größe | Funktionen | umgesetzt | genähert | dokumentiert | unbekannt | Rolle / Texte |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| Basis 0x0 | 0x01E00–0x0417F | 9088 | 93 | 6 % | 9 % | 4 % | 80 % | C-Laufzeit (Borland C++ 1991: Copyright, INT 21h, rand/LXMUL/LDIV) |
+| Basis 0x0 | 0x01E00–0x0417F | 9088 | 93 | 6 % | 9 % | 8 % | 76 % | C-Laufzeit (Borland C++ 1991: Copyright, INT 21h, rand/LXMUL/LDIV) |
 | Basis 0x238 | 0x04180–0x064E9 | 9066 | 15 | 96 % | 0 % | 4 % | 0 % | Spiellogik Basis (Saisonende, Statistik) |
 | Basis 0x46e | 0x064E0–0x080CA | 7147 | 14 | 95 % | 0 % | 5 % | 0 % | Spiellogik Basis (Training, Spieler) |
 | Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 98 % | 0 % | 2 % | 0 % | Spiellogik Basis (Spielberechnung, Zufall) |
 | Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 54 % | 14 % | 32 % | 0 % | Fensterverwaltung („Zu viele Fenster auf !“) |
 | Basis 0x99f | 0x0B7F0–0x0C79E | 4015 | 23 | 34 % | 0 % | 66 % | 0 % | Bilder laden (kb\…vga), Texte, Geldausgabe |
-| Basis 0xa99 | 0x0C790–0x0D9F1 | 4706 | 34 | 0 % | 0 % | 25 % | 75 % | Speicher (EMS INT 67h, XMS INT 2Fh), Datei |
-| Basis 0xbbf | 0x0D9F0–0x12F58 | 21865 | 78 | 45 % | 0 % | 5 % | 50 % | Grafik und Maus (VGA-Ports, INT 10h, INT 33h) |
+| Basis 0xa99 | 0x0C790–0x0D9F1 | 4706 | 34 | 4 % | 0 % | 29 % | 67 % | Speicher (EMS INT 67h, XMS INT 2Fh), Datei |
+| Basis 0xbbf | 0x0D9F0–0x12F58 | 21865 | 78 | 59 % | 0 % | 7 % | 35 % | Grafik und Maus (VGA-Ports, INT 10h, INT 33h) |
 | Basis 0x1115 | 0x12F50–0x13DD0 | 3713 | 37 | 11 % | 0 % | 20 % | 69 % | Dateizugriff (Hüllen um die C-Laufzeit) |
 | Basis 0x11fd | 0x13DD0–0x143A5 | 1494 | 33 | 0 % | 0 % | 44 % | 56 % | Timer und Interrupts (PIC 0x20/0x21, PIT 0x40/0x43) |
 | Basis 0x125b | 0x143B0–0x14D6C | 2493 | 21 | 0 % | 0 % | 9 % | 91 % | Sound Blaster digital (DMA-Ports 0x02–0x0C) |
@@ -197,8 +198,8 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Ov 0x118 (52F7) | 0x46000–0x4ADE1 | 19938 | 18 | 99 % | 0 % | 1 % | 0 % | „ART   NAME              “, „Grundwert“, „Vertragsverhandlung“ |
 | Ov 0x120 (57D6) | 0x4B0F0–0x4D1B6 | 8391 | 23 | 64 % | 0 % | 36 % | 0 % | „Wer weiß...“, „An Alle:“, „Keine Nachricht für Sie “ |
 | Ov 0x128 (59E3) | 0x4D2F0–0x51BED | 18686 | 18 | 96 % | 0 % | 4 % | 0 % | „Bundesliga“, „PL. TD      VEREIN      “, „Play-Off“ |
-| Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 96 % | 0 % | 4 % | 0 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
-| Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 90 % | 0 % | 10 % | 0 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |
+| Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 100 % | 0 % | 0 % | 0 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
+| Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 96 % | 0 % | 4 % | 0 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |
 | Ov 0x140 (66C3) | 0x5A820–0x5E932 | 16659 | 21 | 98 % | 0 % | 2 % | 0 % | „VERZEICHNIS:“, „Spielstand aus“, „Speichern“ |
 
 ### Dünn belegte große Funktionen (> 2048 Byte, höchstens zwei Fundstellen)

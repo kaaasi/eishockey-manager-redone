@@ -41,6 +41,10 @@ Belege aus `em.exe` (Datei-Offsets; Overlay-Stub Highscore = 0x140:0x7A).
   ((36−Ligacode)·7, DEB-Code: Sieger 80 sonst 10·(Code&7); Europa nur bei DEB-Sieger: Sieger 130 sonst 20·(Code&7); ein
   Zweig „≥ 8“ ist nach der Maskierung `& 7` bei 0x5D41D unerreichbar),
   dazu 8·Meister + 6·Pokal + 10·Europa.
+- **Nur Weltkugel** (DGROUP 0xD0B9 = 1, Datei 0x5D59B–0x5D607, `HighscoreRules.WorldOnlyScore`, #826): statt der Formel
+  Σ (9 − Byte) über die Platzierungsfolge des Landes DGROUP 0x828B + 0x50 · Land (Plätze 1 … 8, sonst 11 → −2 je WM),
+  mindestens 1; Titel 0/0/0, Verein = Land. Beleg DOSBox FILE54 (Platz 4 → 5) und FILE20 (Gruppe → 1),
+  `analyse/abgleich-dosbox.md` §3.3; Test `HighscoreWeltkugelTests`.
 - **Beleg:** eigener 8086-Emulator lief die Originalfunktion gegen das Modell, 14 Fälle als Goldtest
   (`HighscoreTests.Points_MatchOriginalFunction`), 500 Zufallsfälle zusätzlich gleich. Die Emulator-Skripte liegen nicht im Repo.
 
@@ -50,7 +54,6 @@ Belege aus `em.exe` (Datei-Offsets; Overlay-Stub Highscore = 0x140:0x7A).
   Transferliste; eigener fester Zufallsstrom für Spieler mit Angebot.
 - Europapokal-Stufe auf Pokalbyte 1 abgebildet, Pokalbytes 2–3 und Meisterschafts-Bracketcode 0x35 nicht belegt.
 - Stempel = Sitzungsstempel; Level/Liga/Stärke des Schlüssels vom ersten Manager.
-- Nur Weltkugel (Schlüssel 30000) wird mit den vereinfachten Werten gewertet.
 - Speicherort: Ordner „Bestenliste“ neben dem Benutzerordner der Speicherstände.
 - Titel „Highscore“: Der Originalaufruf (0x5D9B8–0x5D9D6) zentriert zwischen 0 und 0x140 = 320. `CompetitionWidgets.Centered` setzt
   den Titel damit 1 Pixel zu weit links (x = 116 … 201 statt 117 … 202). Korrektur nur für diesen Aufruf mit rechter Grenze 321

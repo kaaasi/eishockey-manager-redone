@@ -31,7 +31,9 @@ namespace EishockeyManager.UI.Screens.Live;
 ///   während der Szene oder der Pause 20 getippt wurde.</item>
 /// <item>[APPROX] Dauer-Eisfeld: Das Original zeigt bei Darstellung 2 den ganzen Spieltag das Eis (Modus 1/3 aus dem
 ///   Spieltagsablauf 0x36B5D/0x3901B, Minutenzeile <c>0x130:0xAC</c>); das Remake spielt die Szene in Modus 2 (ohne Pause 6)
-///   und zeigt danach wieder den Live-Bildschirm.</item>
+///   und zeigt danach wieder den Live-Bildschirm. Damit entfällt auch die Hallenstufe 2 bei mehreren Managern
+///   (Datei 0x568A9–0x568B6: <c>[0x386]</c> &gt; 1 und <c>[bp+0x20]</c> ≠ 0 → Stufe 2), die nur der Aufbau in Modus 1 setzt
+///   (Modus 2 springt bei Datei 0x5680A am Laden vorbei); hier gilt immer der Füllgrad (<see cref="Spectators"/>, #862 P3-3).</item>
 /// </list>
 /// </summary>
 public static class GoalSceneCall
@@ -99,7 +101,10 @@ public static class GoalSceneCall
             ColorCode(assets, match.Away), header, game.Options.LiveMode == GameOptions.PermanentRinkLiveMode);
     }
 
-    /// <summary>[ORIGINAL] Vereinsfeld 0x3B (Farbcode der Datenbank, <c>OriginalExport.League.cs</c>).</summary>
+    /// <summary>
+    /// [ORIGINAL] Vereinsfeld 0x3B (Farbcode der Datenbank, <c>OriginalExport.League.cs</c>); nach einem Platztausch der Farbcode
+    /// des eingetauschten Vereins (0x36169 tauscht +0x3B mit, <see cref="ClubIdentity"/>, #857).
+    /// </summary>
     public static int ColorCode(Assets assets, Club club) =>
-        club.Index < assets.Database.Clubs.Count ? assets.Database[club.Index].ColorCode : 0;
+        ClubIdentity.Of(assets.Database, club) is var i && i < assets.Database.Clubs.Count ? assets.Database[i].ColorCode : 0;
 }
