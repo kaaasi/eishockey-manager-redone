@@ -25,7 +25,7 @@ Aus `…offen.**` (Stand Runde 18) wurde `…offen. **Stand Runde 19 …offen.**
 Hervorhebung bricht in der Darstellung. Beleg: `git diff cde015c 2f04db7 -- docs/analyse/inventur.md` (Zeile 495; Vergleich A409 Z. 685,
 dort korrekt `.** **Stand …`). Inhalt stimmt mit `abgleich-dosbox.md` §4.4/§4.5 („auch in `runde-19` … nicht belegbar, bleibt offen“) überein.
 
-**P3-3 – #847 steht auf GitHub noch offen, das Archiv nennt es „behoben bzw. geschlossen“** ([`docs/archiv/runde-19.md` Z. 13–14](https://github.com/kaaasi/eishockey-manager-redone/blob/2f04db7fe5a6f17f0f69deefd5c1f8902ad35c45/docs/archiv/runde-19.md#L13)).
+**P3-3 – #847 steht auf GitHub noch offen, das Archiv nennt es „behoben bzw. geschlossen“** ([`docs/archiv/runde-19.md` Z. 11](https://github.com/kaaasi/eishockey-manager-redone/blob/2f04db7fe5a6f17f0f69deefd5c1f8902ad35c45/docs/archiv/runde-19.md#L11)).
 Beleg: GitHub `list_issues`: #847 OPEN (zuletzt 14.11.2026); #826, #838, #857, #859, #862, #730 CLOSED. Kopf Runde 20 und
 „Vormerkungen“ nennen #847 korrekt nicht als offen. Vorschlag: #847 mit Verweis auf #854/#866 schließen (Leitstelle). Die
 Bewertung „behoben“ trägt die Gesamtreview (#873: FILE64→65 unter `AbgleichDosboxNeuerManagerTests`).
