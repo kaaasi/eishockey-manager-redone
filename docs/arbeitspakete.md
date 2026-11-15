@@ -109,7 +109,7 @@ macht nur der Bildschirm.
 - **Inhalt:** #826 (Highscore „nur Weltkugel“: Punkte Σ 9 − Platz nach FILE54, roter Test mit Beleg aus dem Bericht
   `abgleich-dosbox` §3); Inventur „Stand Runde 19“, Funktionskarte (L7 umgesetzt), gesammelte P3 der Runde.
 - **Voraussetzung:** `neuer-manager`, `re-belastung` (auch als Bericht im Fehlschlag) und `torszenen` gemergt.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teile 1–3 fertig (PR #863): #826 Highscore „nur Weltkugel“ (Datei 0x5D59B), #857 Kennung nach Platztausch (`ClubIdentity`, Export und Trikotfarbe), #859/#862 Tests, `abgleich-dosbox.md` §1.3 → §9; Inventur „Stand Runde 19“ (A460–A481), Funktionskarte 7988 Zuordnungen. Wartet auf Erstreview.
 
 ### Gesamtreview am Rundenende
 
