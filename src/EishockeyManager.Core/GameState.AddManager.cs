@@ -169,8 +169,11 @@ public sealed partial class GameState
     /// 0x426BC ruft die Managerschleife 0x952C([0xA70E], 0) – dieselbe Rechnung wie <see cref="UpdateManagerTeamValues"/>, nur
     /// für diesen Manager. Mitten in der Saison stehen am Platz sonst die Teamwerte des verdrängten Vereins (#847, Gegenprobe
     /// DOSBox `runde-19` FILE64 → FILE65: EC HANNOVER auf Satz 4 mit 81/81/79/80/56/51 aus der Aufstellung statt 75/71/71/75/54/47
-    /// der EISBÄREN BERLIN; <c>docs/analyse/abgleich-dosbox.md</c> §6). Vor dem ersten Spiel (Teamwerte noch nicht gezogen)
-    /// nichts, wie dort.
+    /// der EISBÄREN BERLIN; <c>docs/analyse/abgleich-dosbox.md</c> §6). Auch der Weg der Tage mit Ereignis
+    /// (<see cref="UpdateManagerTeamValues"/>) rechnet hierüber (Review #870 P3-3).
+    /// [APPROX] Vor dem ersten Spiel (Teamwerte noch nicht gezogen; Lader beim ersten Spiel, <c>MatchEngine.EnsureTeamValues</c>)
+    /// nichts, um den Zug der Teamwerte nicht vorzuziehen; das Original ruft 0x952C hier (Datei 0x2A073) und an den Tagen mit
+    /// Ereignis (Datei 0x54DAA) ohne diese Bedingung.
     /// </summary>
     private void WriteLineupTeamValues(Club club)
     {
