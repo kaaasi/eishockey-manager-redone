@@ -67,6 +67,7 @@ public class NeuerManagerTests
         var names = game.Clubs.Select(c => c.Name).ToList();
         var objects = game.Clubs.ToList();
         var places = Enumerable.Range(0, game.Clubs.Count).Select(i => PlaceState(game, i)).ToList();
+        var before = game.Clubs.Select(c => c.TeamValues).ToList();
         var results = game.Results.ToList();
         var oldPlayers = game.Clubs.Select(c => c.Players.ToList()).ToList();
 
@@ -82,8 +83,16 @@ public class NeuerManagerTests
         Assert.Equal(r, game.Clubs[r].Index);
         Assert.Equal(Chosen, game.Clubs[Chosen].Index);
         Assert.Equal(r, game.Setup.Managers[1].ClubIndex);
+        // Spur abgleich-dosbox-19 (R15-E2 = C): Die Teamwerte 0x18–0x1D des Managerplatzes r schreibt danach 0x952C(m, 0) aus der
+        // Aufstellung ([ORIGINAL] Datei 0x2A073, Gegenprobe FILE64 → FILE65); alles andere bleibt am Platz.
+        var teamValues = game.Clubs[r].TeamValues;
+        game.Clubs[r].TeamValues = before[r];
         for (var i = 0; i < game.Clubs.Count; i++)
             Assert.Equal(places[i], PlaceState(game, i));
+        game.Clubs[r].TeamValues = teamValues;
+        var (defense, attack, _) = MatchEngine.ClubLineupTeamValues(game.Clubs[r]);
+        Assert.Equal(defense.Condition, MatchEngine.ComputerTeamValue(game.Clubs[r]) + teamValues!.Value.DefenseCondition);
+        Assert.Equal(attack.Form, teamValues.Value.AttackForm);
         Assert.Equal(results, game.Results);
         // Der Verdrängte behält seine Spieler, der Manager hat den Startkader aus dem Pool.
         Assert.Equal(oldPlayers[r], game.Clubs[Chosen].Players);

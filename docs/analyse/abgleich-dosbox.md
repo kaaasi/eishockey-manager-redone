@@ -322,3 +322,27 @@ Wege rechnen dieselbe Minutenschleife 0x37A62 (ohne Anzeige ohne Tafel und Repor
 Live-Bildschirm des Remakes kennt keine Rechenzeit je Minute. Im Schnelldurchlauf (Lampe oder Geschwindigkeit 70) läuft ein Spiel
 damit in rund 60–120 Bildern (1–2 s) statt 16–20 s, bei Geschwindigkeit 0 eine Minute in ≈ 0,77 s statt ≈ 1,1 s. Vorschlag: je
 Minute zusätzlich `MatchDayScreen.FramesPerMinute` Bilder (wie „Spiele laufen“).
+
+## 6. Runde 19: #847 Gegenprobe Neuer Manager (Teil 3)
+
+Grundlage: README Referenz-Repo „Runde 19, Sitzung 3“: FILE64 (Stand FILE05, 20.09.1993, ein Manager) → „Neuer“: „Spieler2“ mit
+EC HANNOVER (2. Liga), Start-Liga Bundesliga → FILE65 (Hauptmenü von Spieler2). Bilder `file65_1/2` (vorher) und `file65_5/6`
+(nachher). Test: `AbgleichDosboxNeuerManagerTests` (Remake ab FILE64 mit dem Platz, den das Original gezogen hat, gegen FILE65 je
+Vereinsname).
+
+- **Satzvergleich FILE64 → FILE65** (`dump.sh`, Vereinssätze far:9657): nur Satz 4 und Satz 18 ändern sich. Satz 4 (Bundesliga,
+  vorher EISBÄREN BERLIN) heißt jetzt EC HANNOVER, Satz 18 (2. Liga, vorher EC HANNOVER) EISBÄREN BERLIN; mit dem Namen wandern
+  Manager 0x16 (Satz 4 = 2), 0x34 (Logo/Markierung, Satz 4 mit Bit 7) und Farbcode 0x3B/0x3C – wie 0x36169(v, r, 0x80) aus #854.
+  Tabellensatz, Liga und Teamwerte von Satz 18 bleiben am Platz. **Satz 4 bekommt neue Teamwerte** 0x18–0x1D = 81/81/79/80/56/51
+  (vorher 75/71/71/75/54/47).
+- **Remake vorher:** Tabellen (Platz, Spiele, Punkte, Tore), Ligen, Vereine der Manager, Konto (500.000 DM), Eintritt und Kadergröße
+  wie im Original; abweichend nur die Teamwerte des neuen Managerplatzes (blieben 75/71/71/75/54/47).
+- **Ursache:** Die Managerschleife der Spielvorbereitung ruft nach der Aufstellung 0x426BC die Teamwerte aus der Aufstellung
+  0x952C([0xA70E], 0) (Datei 0x2A067–0x2A078) – auch im Hinzufügen-Modus. Im Original stehen die Werte von Satz 4 genau auf
+  `ClubLineupTeamValues` des FILE65-Kaders (Test „Aufstellung“). Das Remake rief die Rechnung in `AddManager` nicht.
+- **Fix:** `GameState.WriteLineupTeamValues` nach der Aufstellung des Neuen (`GameState.AddManager.cs`). Regressionstest
+  `File64ToFile65_SwapLikeOriginal` rot → grün; fremder Test `NeuerManagerTests.AddManager_BundesligaStart_…` angepasst (R15-E2 = C:
+  Teamwerte des Platzes r jetzt aus der Aufstellung, Rest unverändert am Platz; Rückschaltprobe alter Code + neue Tests → beide rot).
+  Die Spieler des Neuen zieht der Zufall (im Original andere Namen), sie sind nicht verglichen.
+- Für die Leitstelle: `docs/reverse-engineering.md` Abschnitt „Neuer Manager mitten in der Saison“, Punkt „Folge mitten in der
+  Saison“ nennt „Teamwerten 0x17–0x33“ am Platz – 0x18–0x1D schreibt danach 0x952C neu (Datei außerhalb der Spur).
