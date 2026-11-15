@@ -83,6 +83,52 @@ internal static class Live
         d.Move(319, 239); d.Save("03_zurueck_live");
     }
 
+    /// <summary>
+    /// Spur torszenen (C3): erster Ligaspieltag mit Torszenen (Darstellung 1, Geschwindigkeit 60). Bilder: erste Szene nach
+    /// 33 Takten (Vergleich mit <c>eisbaeren_f01_01150</c>: Kopfzeile, Eis, Figuren), Szenenende (Kopfzeile nach dem Tor),
+    /// Wiederholung mit „r“, danach wieder der Live-Bildschirm mit der Reporter-Meldung.
+    /// </summary>
+    [Scenario("live-torszene")]
+    private static void Torszene(ScreenDriver d)
+    {
+        d.StartNewGame();
+        d.Host.Game!.Options.MatchSpeed = 60;
+        d.Host.Game!.Options.LiveMode = 1;
+        d.NextDay();
+        for (var i = 0; i < 200_000 && d.Host.Current is not GoalSceneScreen; i++)
+        {
+            if (d.Host.Current is LiveMatchScreen { WaitingForClick: true })
+                d.Click(160, 120);
+            else if (d.Host.Current is LiveMatchScreen)
+                d.Frame();
+            else
+                d.Press(Key.Enter);
+        }
+        if (d.Host.Current is not GoalSceneScreen scene)
+            return;
+        while (scene.Animation.FramesApplied < 33 && !scene.Animation.Finished)
+            d.Frame();
+        d.Save("01_szene_bild_33");
+        d.Type("r");
+        while (!scene.Animation.Finished)
+            d.Frame();
+        d.Save("02_szene_ende");
+        while (d.Host.Current == scene)
+            d.Frame();
+        d.Save("03_pause_20");
+        while (d.Host.Current is not GoalSceneScreen)
+            d.Frame();
+        d.Frame();
+        d.Save("04_wiederholung");
+        while (d.Host.Current is GoalSceneScreen)
+            d.Frame();
+        var live = (LiveMatchScreen)d.Host.Current!;
+        while (!live.ReporterState.Busy || live.ReporterState.Lines.Count == 0)
+            d.Frame();
+        d.Frames(60);
+        d.Save("05_reporter");
+    }
+
     [Scenario("live-spielende")]
     private static void Spielende(ScreenDriver d)
     {
