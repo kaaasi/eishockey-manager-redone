@@ -277,8 +277,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu – 5-Minuten-Strafe mit der Häufigkeit des lrandom-Zyklus
     // (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander: 12,55 % statt 1/16 bei Einsatz 40); andere
     // Strafen, Ergebnisse und Zufallsverlauf ab dem ersten Spiel. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alte Werte.
-    [InlineData(false, "AE2951A985F29E9C")]
-    [InlineData(true, "1E65651D17926CB6")]
+    // Runde 20, Spur pruefung-karte Teil 2 (#872, R15-E2 = C): neu – die Reihen auf dem Eis bleiben aus dem Vorspiel stehen
+    // (Vereinsfelder 0x2E/0x30, Spielvorbereitung 0x84D7 setzt sie nicht zurück, Datei 0x84EB–0x857D); andere Reihenstärken,
+    // Ergebnisse und Zufallsverlauf ab dem zweiten Managerspiel. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung
+    // DefenseLine/AttackLine → alte Werte.
+    [InlineData(false, "CCFCAE63E4AAB2C1")]
+    [InlineData(true, "9BD46BA8B1371654")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

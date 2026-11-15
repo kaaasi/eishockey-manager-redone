@@ -222,7 +222,8 @@ public sealed partial class GameState
     /// <c>AbgleichFixLineupTests</c>). Die Wanderung (Datei 0x55292) bewegt sie bis zum nächsten Tag mit Ereignis wie bei allen Vereinen.
     /// [APPROX] Das Verlassen der Aufstellung (Datei 0x41506) rechnet im Remake erst am nächsten Tag mit Ereignis; die Felder lesen
     /// außer den Spielen (die den Kader selbst rechnen) nur Zuschauer und Anzeigen. Nicht im Modus „nur Weltkugel“ (#747: dort trägt
-    /// der Satz des Managervereins das Land).
+    /// der Satz des Managervereins das Land). Je Manager <see cref="WriteLineupTeamValues"/> (dort das [APPROX] für noch nicht
+    /// gezogene Teamwerte).
     /// </summary>
     internal void UpdateManagerTeamValues()
     {
@@ -230,19 +231,8 @@ public sealed partial class GameState
             return;
         foreach (var manager in ActiveManagers)
         {
-            if (manager.ClubIndex is < 0 or >= NationalTeams.First)
-                continue;
-            var club = Clubs[manager.ClubIndex];
-            if (club.TeamValues is null)
-                continue; // [APPROX] noch nicht gezogen (Lader beim ersten Spiel, MatchEngine.EnsureTeamValues): nicht vorziehen
-            var (defense, attack, _) = MatchEngine.ClubLineupTeamValues(club);
-            var b = MatchEngine.ComputerTeamValue(club);
-            club.TeamValues = MatchEngine.TeamValuesOf(club) with
-            {
-                DefenseCondition = defense.Condition - b, AttackCondition = attack.Condition - b,
-                DefenseTechnique = defense.Technique - b, AttackTechnique = attack.Technique - b,
-                DefenseForm = defense.Form, AttackForm = attack.Form,
-            };
+            if (manager.ClubIndex is >= 0 and < NationalTeams.First)
+                WriteLineupTeamValues(Clubs[manager.ClubIndex]); // eine Rechnung mit dem Hinzufügen (Review #870 P3-3)
         }
     }
 

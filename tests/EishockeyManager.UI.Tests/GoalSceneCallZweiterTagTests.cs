@@ -14,7 +14,7 @@ namespace EishockeyManager.UI.Tests;
 /// </summary>
 public sealed class GoalSceneCallZweiterTagTests
 {
-    private static List<GoalSceneRequest> PlayTwoMatchDays()
+    private static List<GoalSceneRequest> PlayMatchDays(int count)
     {
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
@@ -23,9 +23,9 @@ public sealed class GoalSceneCallZweiterTagTests
         game.Options.LiveMode = 1;
         var requests = new List<GoalSceneRequest>();
         var days = 0;
-        for (var guard = 0; days < 2; guard++)
+        for (var guard = 0; days < count; guard++)
         {
-            Assert.True(guard < 20, "Zwei Spieltage nicht erreicht");
+            Assert.True(guard < 20, $"{count} Spieltage nicht erreicht");
             d.NextDay();
             LiveMatchScreen? live = null;
             var frames = 0;
@@ -72,11 +72,13 @@ public sealed class GoalSceneCallZweiterTagTests
     /// P3-1: Heimspiel des Managers mit mindestens 1000 Zuschauern → Zahl ohne Tausenderpunkt ([ORIGINAL] 0x0BAB2 mit
     /// <c>DGROUP 0x38D</c> = 0, Datei 0x53A9C; Video <c>eisbaeren_f01_01150</c>, siehe <see cref="GoalSceneCall.Spectators"/>).
     /// P3-2: mindestens eine Chance in derselben Minute nach einem Tor, deren Kopfzeile das Tor schon zählt.
+    /// Runde 20, Spur pruefung-karte Teil 2 (#872, R15-E2 = C): drei statt zwei Spieltage – mit den Reihen aus dem Vorspiel
+    /// (0x2E/0x30, Datei 0x84EB–0x857D) verläuft Spieltag 2 anders und enthält keinen solchen Fall mehr; der Name bleibt.
     /// </summary>
     [GameDataFact]
     public void TwoMatchDays_SpectatorsWithoutThousandsDot_ScoreWithinMinute()
     {
-        var requests = PlayTwoMatchDays();
+        var requests = PlayMatchDays(3);
 
         var spectators = requests.Select(r => r.Header.SpectatorText).Where(t => t.EndsWith(GoalSceneCall.SpectatorSuffix)).ToList();
         Assert.Contains(spectators, t => int.TryParse(t[..^GoalSceneCall.SpectatorSuffix.Length], out var n) && n >= 1000);
@@ -85,7 +87,7 @@ public sealed class GoalSceneCallZweiterTagTests
         var withinMinute = requests.Zip(requests.Skip(1)).Count(p =>
             p.First.Goal && p.First.Header.Minute == p.Second.Header.Minute
             && (p.First.Header.HomeName, p.First.Header.AwayName) == (p.Second.Header.HomeName, p.Second.Header.AwayName));
-        Assert.True(withinMinute > 0, "Kein Fall „Chance nach Tor in derselben Minute“ in zwei Spieltagen");
+        Assert.True(withinMinute > 0, "Kein Fall „Chance nach Tor in derselben Minute“ in drei Spieltagen");
     }
 }
 

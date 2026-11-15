@@ -97,7 +97,7 @@ Danach Gesamtreview nach R20-D4 = C.
      Name, Punkte; Bildschirmfoto-Ablauf oder Zustandstest), Mutation zeigt rot.
   4. **Abschluss:** Funktionskarte neu (`funktionskarte.py --write`), Markerzeilen der Spur im PR für `inventur-v1`.
 - **Tests:** `--schnell` mit Originaldaten (Abgleich-Paare, FILE54), Mehrsaisonprobe für #872.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 15.11.2026, Lauf angelegt.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teile 1–4 fertig in PR #880 (15.11.2026), wartet auf Erstreview.
 
 ### Gesamtreview Runde 20 (R20-D4 = C)
 

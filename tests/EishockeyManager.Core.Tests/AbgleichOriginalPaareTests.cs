@@ -69,8 +69,9 @@ public class AbgleichOriginalPaareTests
         new($"Clubs[{club}].Players[*].Strain", Chance, Optional: true, RemakeMax: StrainSawtoothMax);
 
     /// <summary>
-    /// Befund #730 (Restursache offen, Review B1): Pflicht für die Spieler, deren Belastung bei allen sechs Prüfsaaten (1993, 4711,
-    /// 1, 2, 3, 77) außerhalb ±20 liegt. Im Original kippen die Vielspieler der Reihen 1/2 vor dem Training über 127 und stehen
+    /// Ehemals Befund #730, im Bereich geschlossen R19 (Review #870 P3-2): Remake-Bereich einzelner Spieler, deren Belastung bei den
+    /// meisten der sechs Prüfsaaten (1993, 4711, 1, 2, 3, 77) außerhalb ±20 liegt; nur noch im Drift-Wächter
+    /// <see cref="Strain_DeviatesAtMostSeeds_DriftGuard"/>, nicht als Pflichteintrag in <see cref="Expected"/>. Im Original kippen die Vielspieler der Reihen 1/2 vor dem Training über 127 und stehen
     /// danach bei 50, im Remake fast nie (Verdacht: Belastungszuwachs je Reihe/Einsatz); <paramref name="min"/>–<paramref name="max"/>
     /// ist der Remake-Bereich über die Prüfsaaten (mit Rand).
     /// </summary>
@@ -87,7 +88,7 @@ public class AbgleichOriginalPaareTests
         new Dictionary<string, Known[]>
         {
             // #730: HOCK Original 50, Remake 116–127, seit #784 (Gast der Spielvorbereitung nach dem Heimverein, Runde 17) nur bei
-            // 5 von 6 Saaten (nicht 2) → Sägezahn wie SIKORA und BRANDL; Pflicht über die Saaten in Strain730_DeviatesAtMostSeeds.
+            // 5 von 6 Saaten (nicht 2) → Sägezahn wie SIKORA und BRANDL; Pflicht über die Saaten in Strain_DeviatesAtMostSeeds_DriftGuard.
             ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC"),
                 // Zufall: Pool-Mittel der Belastung über zehn Saaten 143–146, nur Saat 1 bei 136,7 (seit #748 anderer Zufallsverlauf).
                 new("Invariante.PoolMittel.Strain", Chance, Optional: true),
@@ -96,7 +97,7 @@ public class AbgleichOriginalPaareTests
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
                 // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1; Pflicht über
-                // die Saaten in Strain730_DeviatesAtMostSeeds), J.MEYER
+                // die Saaten in Strain_DeviatesAtMostSeeds_DriftGuard), J.MEYER
                 // (118, Remake 50–77) seit #772 nicht bei allen → beide Sägezahn; Anteil der Handaufstellung (Eingriff) nicht getrennt.
                 // kader-rest (A130, Merge mit main 12.11.2026), vermutete Ursache bei KUHNEKATH (nicht getrennt): Der Import behält die
                 // Bezugsstärke (Club.ReferenceRating) des verworfenen erzeugten Managerkaders, dessen Startbelastung A130 ändert.
@@ -114,10 +115,10 @@ public class AbgleichOriginalPaareTests
             // Zufall (#737, abgleich-fix): 200.000 DM Einzelprämien im Original (file16_9), im Remake bei keiner Saat; mit ihnen
             // im Bereich (AbgleichFixMoneyTests.File16A_MoneyDeviation_ComesFromSinglePremiums).
             ["FILE16A→FILE17"] = [.. SeasonStart, new("Managers[0].Money", Chance, Optional: true),
-                // #730: ZIMMERMANN (Original 50, Remake 97–122) bei allen Prüfsaaten; seit #772 A.RAUBAL (5 von 6, nicht 2) und
+                // Ehemals #730 (im Bereich geschlossen R19, Review #870 P3-2): ZIMMERMANN (Original 50, Remake 97–122, 39 von 40 Saaten)
+                // nur Sägezahn, der Bereich über die Saaten im Drift-Wächter Strain_DeviatesAtMostSeeds_DriftGuard; seit #772 A.RAUBAL (5 von 6, nicht 2) und
                 // Gegenrichtung PYLE (Original 120, Remake 87–115, 3 von 6) im Sägezahn, ebenso TRAVNICEK, NOACK, BLAZYCEK, DOLL,
                 // HORSTMANN, M.SCHMIDT (4–5 von 6).
-                .. StrainOf("14 SV BAYREUTH", 90, StrainSawtoothMax, "ZIMMERMANN"),
                 StrainSawtooth("14 SV BAYREUTH"),
                 // Zufall: Die Trainingswirkung auf die verdeckten Werte sinkt mit der Belastung über 125 (Sägezahn, #730), einzelne
                 // Spieler liegen über die Saison außerhalb des Bereichs (Saaten 1993, 3); Mittel wie im Original (H1 5,3–5,9 zu 5,7,
@@ -169,7 +170,7 @@ public class AbgleichOriginalPaareTests
             // (Abwehr 2, FILE52 Belastung 119) kippt im Original über 127 (→ 50), im Remake bei 5 von 6 Prüfsaaten 120–125;
             // Einsatz und Strafminuten wie im Original (AbgleichDosboxPenaltyTests).
             // Mit den 5-Minuten-Strafen nach dem lrandom-Zyklus (#773) kippt REZNICEK bei Saat 2 wie im Original → Sägezahn, Pflicht über
-            // die Saaten in Strain730_DeviatesAtMostSeeds.
+            // die Saaten in Strain_DeviatesAtMostSeeds_DriftGuard.
             ["FILE52→FILE53"] = [StrainSawtooth("23 ES WEIßWASSER")],
         };
 
@@ -216,7 +217,8 @@ public class AbgleichOriginalPaareTests
     /// und KUHNEKATH (FILE13→14, Original 96) nicht mehr bei allen sechs Prüfsaaten ab und stehen deshalb in
     /// <see cref="Expected"/> nur im Sägezahn (optional). Pflicht bleibt der Bereich über die Saaten: bei mindestens
     /// <paramref name="minSeeds"/> der sechs Saaten (1993, 4711, 1, 2, 3, 77) liegt die Abweichung im Remake-Bereich. Ein weiteres
-    /// Abdriften (andere Richtung, anderer Bereich) oder ein Beheben von #730 macht den Fall rot.
+    /// Abdriften (andere Richtung, anderer Bereich) oder ein Beheben von #730 macht den Fall rot. Drift-Wächter, ehemals #730, im
+    /// Bereich geschlossen R19 (Review #870 P3-2); ZIMMERMANN (FILE16A→17) seit Runde 20 nur noch hier statt als Pflichteintrag.
     /// </summary>
     [GameDataTheory]
     [InlineData("FILE02", "FILE03", "5 KÖLNER EC", "HOCK", 90, StrainSawtoothMax, 5)]
@@ -225,7 +227,10 @@ public class AbgleichOriginalPaareTests
     [InlineData("FILE13", "FILE14", "6 KREFELDER EV", "KUHNEKATH", 40, 75, 3)]
     // DOSBox `runde-17` (abgleich-dosbox Teil 2): REZNICEK (Original 50) im Remake 120–125 bei 5 von 6 Saaten (nicht 2).
     [InlineData("FILE52", "FILE53", "23 ES WEIßWASSER", "REZNICEK", 110, StrainSawtoothMax, 5)]
-    public void Strain730_DeviatesAtMostSeeds(string a, string b, string club, string player, int min, int max, int minSeeds)
+    // Ehemals Pflichteintrag in Expected (Review #870 P3-2): ZIMMERMANN (Original 50) im Remake 97–122 bei 39 von 40 Saaten; seit
+    // #872 (Reihen aus dem Vorspiel, Runde 20 Teil 2) bei 5 von 6 Prüfsaaten (nicht 77), wie HOCK und REZNICEK.
+    [InlineData("FILE16A", "FILE17", "14 SV BAYREUTH", "ZIMMERMANN", 90, StrainSawtoothMax, 5)]
+    public void Strain_DeviatesAtMostSeeds_DriftGuard(string a, string b, string club, string player, int min, int max, int minSeeds)
     {
         var known = StrainOf(club, min, max, player).Single();
         var hits = new List<int>();
@@ -237,7 +242,7 @@ public class AbgleichOriginalPaareTests
                 hits.Add(seed);
         }
         Assert.True(hits.Count >= minSeeds,
-            $"{a}→{b} {player}: Abweichung #730 nur bei {hits.Count} von 6 Saaten ({string.Join(", ", hits)})");
+            $"{a}→{b} {player}: Abweichung (ehemals #730) nur bei {hits.Count} von 6 Saaten ({string.Join(", ", hits)})");
     }
 
     /// <summary>

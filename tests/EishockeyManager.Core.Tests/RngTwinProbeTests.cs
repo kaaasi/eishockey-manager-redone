@@ -261,10 +261,14 @@ public class RngTwinProbeTests
     // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu – 5-Minuten-Strafe mit der Häufigkeit des lrandom-Zyklus
     // (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander: 12,55 % statt 1/16 bei Einsatz 40); andere
     // Strafen, Ergebnisse und Zufallsverlauf ab dem ersten Spiel. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alte Werte.
-    [InlineData(false, 3, "54BA9AA5ECAAEDA8")]
-    [InlineData(true, 3, "F72B4E377F52B12D")]
-    [InlineData(false, 11, "522205D210E15803")]
-    [InlineData(true, 11, "3CDAFB4E0B2F3061")]
+    // Runde 20, Spur pruefung-karte Teil 2 (#872, R15-E2 = C): neu – die Reihen auf dem Eis bleiben aus dem Vorspiel stehen
+    // (Vereinsfelder 0x2E/0x30, Spielvorbereitung 0x84D7 setzt sie nicht zurück, Datei 0x84EB–0x857D); andere Reihenstärken,
+    // Ergebnisse und Zufallsverlauf ab dem zweiten Managerspiel. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung
+    // DefenseLine/AttackLine → alte Werte.
+    [InlineData(false, 3, "3B70267EA673059D")]
+    [InlineData(true, 3, "458B234AFBF20DB7")]
+    [InlineData(false, 11, "4F4A6706EB968D5C")]
+    [InlineData(true, 11, "F05F315ECA396091")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -346,8 +350,12 @@ public class RngTwinProbeTests
     // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu – 5-Minuten-Strafe mit der Häufigkeit des lrandom-Zyklus
     // (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander: 12,55 % statt 1/16 bei Einsatz 40); andere
     // Strafen, Ergebnisse und Zufallsverlauf ab dem ersten Spiel. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alte Werte.
-    [InlineData(false, "0A6DB7826EA09AC8")]
-    [InlineData(true, "54E8A8D99DDD7431")]
+    // Runde 20, Spur pruefung-karte Teil 2 (#872, R15-E2 = C): neu – die Reihen auf dem Eis bleiben aus dem Vorspiel stehen
+    // (Vereinsfelder 0x2E/0x30, Spielvorbereitung 0x84D7 setzt sie nicht zurück, Datei 0x84EB–0x857D); andere Reihenstärken,
+    // Ergebnisse und Zufallsverlauf ab dem zweiten Managerspiel. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung
+    // DefenseLine/AttackLine → alte Werte.
+    [InlineData(false, "D53ECEB985069CC8")]
+    [InlineData(true, "1BE12B3C5EAAE6F0")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

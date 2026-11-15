@@ -205,6 +205,8 @@ public static class HokCompareClasses
         Set(Random, "Tactics._shownAutoAttack", "Tactics._shownAutoEffort");
         // #772 (Spur abgleich-rest): Vereinsfelder 0x26 und 0x2C Bits 4–6 nach dem letzten Spiel; der Import liest sie nicht.
         Set(Random, "Tactics._matchAttack", "Tactics._matchEffort");
+        // #872 (Runde 20, pruefung-karte): Reihen auf dem Eis 0x2E/0x30 nach dem letzten Spiel (Reihenwechsel je Minute, Zufall).
+        Set(Random, "Tactics._matchAttackLine", "Tactics._matchDefenseLine");
         Set(InSeason, "Club.League");
         Set(Random, "Club.ForfeitsMatch", "Club.LeaguePenaltyMinutes", "Club.Lineup", "Club.SeriesCurrent", "Club._dressed",
             "Club._rankSlots", "Club._tableRank", "Lineup._defenders", "Lineup._forwards", "Lineup._goalkeeper");

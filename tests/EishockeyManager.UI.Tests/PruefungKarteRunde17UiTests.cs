@@ -31,7 +31,10 @@ public class PruefungKarteRunde17UiTests
         // lrandom-Zyklus (LRandomCycle) bekommt Manager 1 bei Saat 4 keine Prämie; unter 1–16 haben beide Manager bei 2, 7, 9–13
         // und 15 eine Prämie. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 mit Saat 10 ebenfalls grün – die Probe hängt an
         // der Saat.
-        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 10);
+        // Runde 20, Spur pruefung-karte Teil 2 (#872, R15-E2 = C): Saat 11 statt 10 – mit den Reihen aus dem Vorspiel (0x2E/0x30,
+        // Datei 0x84EB–0x857D) wird Manager 0 bei Saat 10 Fünfter ohne Prämie; unter 1–16 haben beide Manager bei 1, 4, 5, 7–9, 11,
+        // 13 und 15 eine Prämie. Mit altem Code ist Saat 11 ebenfalls grün – die Probe hängt an der Saat.
+        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 11);
         var records = game.History[^1].Managers;
         Assert.Equal(2, records.Count);
         Assert.All(records, r => Assert.True(r.Premium > 0, "Probe ohne Prämie prüft nichts"));

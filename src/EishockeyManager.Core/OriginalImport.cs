@@ -385,7 +385,11 @@ public sealed partial class GameState
             // 0x8365, 0x939A, 0x38D96) stehen im Vereinssatz zwischen den Spielen; ohne sie hinge die nächste Spielvorbereitung vom
             // Nachspielen ab (FILE03/FILE16A/FILE44/FILE53). Die Sätze der Nationalteams führen dort die Anzeige „AUTOM.“ (National.cs).
             if (!TransferMarket.IsNationalTeam(club))
+            {
                 club.Tactics.RecordMatchFields(r[0x26], (r[0x2C] >> 4) & 7);
+                // #872: [ORIGINAL] Reihen auf dem Eis 0x2E/0x30 bleiben zwischen den Spielen stehen (Squad.Tactics.Lines.cs).
+                club.Tactics.RecordMatchLines(r[0x2E], r[0x30]);
+            }
         }
     }
 

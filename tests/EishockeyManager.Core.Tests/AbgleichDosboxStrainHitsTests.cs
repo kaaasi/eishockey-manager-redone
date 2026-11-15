@@ -15,7 +15,8 @@ namespace EishockeyManager.Core.Tests;
 /// kippt (danach ≤ 60, vorher &gt; 60, Sägezahn 0x4BD56), zählt mit der Mindestzahl bis 128. Die Erholung im Training ist für
 /// Original und Remake gleich (Stürmer 1 je Training, Abwehr 0) und fällt im Vergleich heraus. Gemessen (400 Saaten,
 /// <c>belastung-staerke/hits.py</c>, mit Erholung): Original 64, 58, 57, 60, 53 (Mittel 58,4), FILE61 aus Sitzung 1 49; Remake
-/// 60,9 ± 6,7.
+/// 60,9 ± 6,7. Dieser Test misst und gibt aus **ohne** Erholung (die fällt im Vergleich heraus): Original 51, 45, 44, 47, 40
+/// (Mittel 45,4) gegen das Remake 47,8 ± 6,6 (Review #870 P3-4).
 /// </remarks>
 public class AbgleichDosboxStrainHitsTests(ITestOutputHelper output)
 {

@@ -458,8 +458,12 @@ public class GameModeTests
     // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu – 5-Minuten-Strafe mit der Häufigkeit des lrandom-Zyklus
     // (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander: 12,55 % statt 1/16 bei Einsatz 40); andere
     // Strafen, Ergebnisse und Zufallsverlauf ab dem ersten Spiel. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alte Werte.
+    // Runde 20, Spur pruefung-karte Teil 2 (#872, R15-E2 = C): neu – die Reihen auf dem Eis bleiben aus dem Vorspiel stehen
+    // (Vereinsfelder 0x2E/0x30, Spielvorbereitung 0x84D7 setzt sie nicht zurück, Datei 0x84EB–0x857D); andere Reihenstärken,
+    // Ergebnisse und Zufallsverlauf ab dem zweiten Managerspiel. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung
+    // DefenseLine/AttackLine → alte Werte.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=16,GermanChampion=4,EuropeanCupWinner=2|1100000,400000|WorldChampion=57,CupWinner=0,GermanChampion=3,EuropeanCupWinner=4|2303083,400000|WorldChampion=63,CupWinner=17,GermanChampion=0,EuropeanCupWinner=4|2279180,400000|WorldChampion=54,CupWinner=20,GermanChampion=19,EuropeanCupWinner=0|2383337,500000|WorldChampion=54,CupWinner=3,GermanChampion=19,EuropeanCupWinner=0|2258046,500000|R1154905471 C2105873178";
+        "WorldChampion=52,CupWinner=15,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=54,CupWinner=0,GermanChampion=11,EuropeanCupWinner=0|2429996,400000|WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2359155,500000|WorldChampion=54,CupWinner=14,GermanChampion=1,EuropeanCupWinner=0|2320030,400000|WorldChampion=52,CupWinner=0,GermanChampion=13,EuropeanCupWinner=0|2230390,400000|R764938763 C581404210";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
