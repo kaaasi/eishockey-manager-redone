@@ -296,3 +296,29 @@ Alles wie im Remake (`OriginalMinutes.DrainEnergy`). Ein Mechanismus, der die Tr
   (`AbgleichDosboxLinesTests`), Sturm 1/3 aus FILE02→03 nicht wiederholt; offen nur die Trefferrate (§4.2), #730 offen.“ A093 „Stand
   Runde 19: mit `runde-19` nicht belegbar, offen.“ Neu (P3): Reihe auf dem Eis bei Spielbeginn (Sturm aus dem Vorspiel, Abwehr
   Reihe 1), Remake beginnt mit Reihe 1 (§4.1).
+
+## 5. Runde 19: #838 Echtzeit „Spiele laufen“ (Teil 2)
+
+Grundlage: README Referenz-Repo „Runde 19, Sitzung 2“ (DOSBox 0.74-3, `dosbox-0.74-3.conf`: `cycles=fixed 3000`, `core=auto`,
+`frameskip=0`; FILE05 geladen, Spieltag im Live-Spiel, Minute 1 bis 60 handgestoppt; Bilder `file05_r19_01…15`). Die
+Geschwindigkeit setzt der Regler in Zehnern, Pinguine = Wert / 9 + 1 (`GameOptionsScreen`): ein Pinguin = 0, acht Pinguine = 70.
+
+| Einstellung | Messung Nutzer | Pfad im Original | Remake |
+|---|---|---|---|
+| acht Pinguine (70) | 15,9 s für 60 Minuten | Schnelldurchlauf (≥ 70, Datei 0x37C7A): keine Pause, kein Reporter – reine Rechen-/Zeichenzeit | „Spiele laufen“ 20 s (20 Bilder je Minute) |
+| ein Pinguin + Lampe (Lampe setzt 70) | 20 s | wie oben | wie oben |
+| ein Pinguin (0) | 3:20 min mit Reporter-Unterbrechungen; dazwischen 1 s je Minute | Pause 45 bzw. 30 (Zwinkern) / 3 Ticks ≈ 0,77 s im Mittel + Rechenzeit | Live-Bildschirm: nur die Pause (≈ 0,77 s) |
+
+**Ergebnis:** Ohne Pause braucht das Original bei 3000 Zyklen 0,27–0,33 s je Minute; die bisherige Näherung des Remakes für
+„Spiele laufen“ (1/3 s je Minute, `MatchDayScreen.FramesPerMinute`, 20,35 s je Spieltag) liegt am oberen Rand und bleibt
+(`[APPROX]` mit Messwert; im Original hängt die Dauer von der Rechenleistung ab). Bei Geschwindigkeit 0 erklärt Pause des Modells
+(`LiveClock`, 0,77 s) plus diese Rechenzeit (0,33 s) die gemessene Sekunde je Minute; das Pausenmodell ist damit bestätigt. Tests:
+`AbgleichDosboxEchtzeitTests` (Bereich 15,4–20,5 s, Geschwindigkeit 70 ohne Pause, Pause + Rechenzeit = 1 s ± 0,15).
+
+Einschränkung: Gemessen wurde der Live-Bildschirm ohne Pause (Lampe bzw. 70), nicht „Spiele laufen“ ohne Live-Anzeige; beide
+Wege rechnen dieselbe Minutenschleife 0x37A62 (ohne Anzeige ohne Tafel und Reporter), die Rechenzeit ist also eine obere Schranke.
+
+**Neuer Befund (Vorschlag P2, Datei `UI/Screens/Live/LiveMatchScreen.cs`, Spur `torszenen`, nicht in dieser Spur):** Der
+Live-Bildschirm des Remakes kennt keine Rechenzeit je Minute. Im Schnelldurchlauf (Lampe oder Geschwindigkeit 70) läuft ein Spiel
+damit in rund 60–120 Bildern (1–2 s) statt 16–20 s, bei Geschwindigkeit 0 eine Minute in ≈ 0,77 s statt ≈ 1,1 s. Vorschlag: je
+Minute zusätzlich `MatchDayScreen.FramesPerMinute` Bilder (wie „Spiele laufen“).

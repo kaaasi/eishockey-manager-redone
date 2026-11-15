@@ -32,8 +32,11 @@ public sealed class MatchDayScreen : Screen
     /// Bilder je Spielminute bei „Spiele laufen“ (#838). [ORIGINAL] Ohne Live-Anzeige wartet die Minutenschleife Datei
     /// 0x37A62–0x3858C nicht: die einzige Pause 0x50:0x19E (Datei 0x37CB7) liegt im Zweig mit Anzeige, die Spieluhr 0x51E90
     /// wartet ebenfalls nicht. Die Dauer ist also die Rechenzeit aller Spiele des Tages je Minute. [APPROX] Das Remake setzt
-    /// sie fest auf 1/3 s (20 Bilder bei 60 Hz, ≈ 6 BIOS-Takte), ein Spieltag damit ≈ 20 s wie in der Nutzerprobe 13.11.2026
-    /// geschätzt (Original ≈ 20 s, Remake vorher 3 Bilder ≈ 3 s); Messung in DOSBox offen. Klick, Enter oder Esc überspringen.
+    /// sie fest auf 1/3 s (20 Bilder bei 60 Hz, ≈ 6 BIOS-Takte), ein Spieltag damit ≈ 20 s. Messwert DOSBox `runde-19`
+    /// (Sitzung 2, DOSBox 0.74-3, `cycles=fixed 3000`, FILE05, Spieltag ohne Pause von Minute 1 bis 60 handgestoppt): 15,9 s
+    /// bei Geschwindigkeit 70 (acht Pinguine), 20 s mit der Lampe „Schnelldurchlauf“ (ebenfalls 70), also 0,27–0,33 s je Minute
+    /// (<c>docs/analyse/abgleich-dosbox.md</c> §5). Im Original hängt der Wert von der Rechenleistung (Zyklen) ab; 1/3 s
+    /// entspricht der gemessenen Obergrenze. Klick, Enter oder Esc überspringen.
     /// </summary>
     public const int FramesPerMinute = 20;
 
