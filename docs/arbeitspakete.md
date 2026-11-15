@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 20 – Restliste bis v1.0, P3 aus Runde 19 (Plan 15.11.2026, Go offen)
+## Aktuelle Runde: Runde 20 – Restliste bis v1.0, P3 aus Runde 19 (Plan 15.11.2026, Entscheidungen 15.11.2026, Go offen)
 
 Runde 19 abgeschlossen am 15.11.2026: [archiv/runde-19.md](archiv/runde-19.md). Live-Spiel vollständig (L1–L8); offen nur
 #871, #872, #874 (P3/Testlücke) und A093. **Lage:** Die Inventur (`analyse/inventur.md`, Runde 10) ist der einzige Überblick
@@ -16,8 +16,13 @@ Runde 19 abgeschlossen am 15.11.2026: [archiv/runde-19.md](archiv/runde-19.md). 
 (Stand `482d2db`), Nachträge nur angehängt („Stand Runde n“), Prio-Spalte veraltet (z. B. A033, A041, A162 als P1 geführt,
 aber seit Runde 11 umgesetzt). Ohne verlässliche Restliste lässt sich weder der Weg zu v1.0 schneiden noch der Umfang der
 Abschlussprüfung (`prozess/anhang.md` C) festlegen. **Ziel der Runde:** belegte Restliste bis v1.0 als Grundlage für Runde 21 ff.
-und die Abschlussprüfung; #871, #872, #874 geschlossen. Entscheidungen R20-D1…D4 im Plan-PR (Vorschlag: D1 = A, D2 = A, D3 = A,
-D4 = C; unten so eingeplant).
+und die Abschlussprüfung; #871, #872, #874 geschlossen. **Entscheidungen Nutzer 15.11.2026** (Optionen im Plan-PR #878): R20-D1 = A, R20-D2 = B
+(`pruefung-karte` zuerst, `inventur-v1` danach), R20-D3 = A mit Zusatz (unten), R20-D4 = C. **Go offen.**
+
+**R20-D3 Zusatz (Nutzer 15.11.2026):** Unmittelbar vor v1.0 bekommt der Nutzer eine Liste, welche Bereiche und Funktionen
+noch vom Original abweichen (alle Klassen außer „belegt gleich“, also auch K und E); er entscheidet dann, was doch noch
+geändert wird. `restliste-v1.md` ist so aufzubauen, dass diese Liste daraus erzeugt werden kann (Bereich, Funktion bzw.
+Bildschirm, Abweichung in einem Satz, Klasse).
 
 **Base für alle Spuren:** aktueller `main` (Planstand); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 19 (Archiv): ein
 Branch `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; Befund reproduzieren, roter Regressionstest mit
@@ -25,8 +30,8 @@ Fundstelle, dann grün; Mehrsaisonprobe bei Saisonwechsel, Kader oder Geld; `[OR
 nach R15-E2 = C; keine geplanten Aufgaben aus Läufen (R15-E4). Bei Unklarheit „wie im Original“, sonst `[APPROX]` mit Begründung,
 die Leitstelle bündelt die Fragen. **Entwickler und Erstreviews sind Claude-Sitzungen;** ChatGPT nur fürs Gesamtreview.
 
-**Folge (R20-D1 = A, R20-D2 = A):** Welle 1 parallel `inventur-v1` (Teile 1–2) und `pruefung-karte`. Merge `pruefung-karte` →
-`inventur-v1` (Teil 3 erzeugt die Liste nach diesem Merge neu). Danach Gesamtreview nach R20-D4.
+**Folge (R20-D1 = A, R20-D2 = B):** Welle 1 `pruefung-karte`; nach deren Merge Welle 2 `inventur-v1` auf festem Stand.
+Danach Gesamtreview nach R20-D4 = C.
 
 ### Zuständigkeit für gemeinsame Dateien
 
@@ -36,9 +41,9 @@ die Leitstelle bündelt die Fragen. **Entwickler und Erstreviews sind Claude-Sit
 - `Core/MatchEngine.Minutes.cs`/`OriginalMinutes` (Reihe bei Spielbeginn, #872), `Core/Highscore*.cs` und Tests der Bestenliste
   (#874), `tests/**/AbgleichOriginalPaareTests.cs`, `AbgleichDosboxStrainHitsTests`, `docs/analyse/abgleich-dosbox.md`,
   `docs/analyse/belastung-staerke/`, `.gitignore` (#871), `docs/re-abdeckung.md`, `tests/**/Support/`: allein `pruefung-karte`.
-  `pruefung-karte` nennt die geänderten Markerzeilen im PR (Eingabe für `inventur-v1` Teil 3), trägt aber nichts in `inventur.md` ein.
+  `pruefung-karte` nennt die geänderten Markerzeilen im PR (Eingabe für `inventur-v1`), trägt aber nichts in `inventur.md` ein.
 
-### Spur `inventur-v1` – Restliste bis v1.0 (R20-D1 = A, R20-D3 = A)
+### Spur `inventur-v1` – Restliste bis v1.0 (Welle 2, R20-D1 = A, R20-D3 = A)
 
 - **Teile:**
   1. **Generator:** `tools/reverse-engineering/markerliste.py` liest alle `[APPROX]`-Zeilen aus `src/` und ordnet sie den IDs
@@ -54,17 +59,20 @@ die Leitstelle bündelt die Fragen. **Entwickler und Erstreviews sind Claude-Sit
      Funktionen „dokumentiert“ und „genähert“ der Funktionskarte (5 % bzw. 3 Funktionen): je Funktion „fehlt im Remake“
      (→ V/D), „vorhanden ohne Marker“ (→ X) oder „nicht nötig“ mit Grund. Klasse V und „fehlt“ nur mit ausführbarem Beleg
      (`zusammenarbeit.md` §5 Punkt 7: Fundstelle und erfolglose Codesuche), sonst höchstens „Verdacht“ (eigene Spalte).
-  3. **Restliste (nach Merge `pruefung-karte`):** Liste neu erzeugen, `restliste-v1.md` mit Zusammenfassung je Bereich
+  3. **Restliste:** `restliste-v1.md` mit Zusammenfassung je Bereich
      (Laden/Speichern, Tages-/Saisonwechsel, Finanzen, Wettbewerbe, Kader/Transfer, Bedienung/Pixel, Live-Spiel) und Klasse,
      Aufwand je V-Eintrag (S/M/L), **Vorschlag Zuschnitt Runde 21 ff.** (Spuren nach Bereichen), DOSBox-Sammelliste (Klasse D,
      Vorlage `vorlagen/dosbox-aufnahme.md`), **Vorschlag Umfang der Abschlussprüfung** (was dort geprüft wird, was Klasse K/E
-     bewusst offen lässt). Kopf in `inventur.md`, Fahrplan `README.md` (v0.9 erledigt; v0.4 „Spielerstatistiken“ prüfen).
+     bewusst offen lässt). Abweichungsliste vor v1.0
+     nach R20-D3-Zusatz (Erzeugung beschrieben, Probelauf am Stand der Spur). Kopf in `inventur.md`, Fahrplan `README.md`
+     (v0.9 erledigt; v0.4 „Spielerstatistiken“ prüfen).
   Abnahme gesamt: jede der Stellen genau eine Klasse (Gegenprobe im PR per Skript), je Klasse mindestens drei Einträge mit
   nachvollziehbarem Beleg als Stichprobe im PR; keine Änderung unter `src/`, `tests/`.
+- **Voraussetzung:** `pruefung-karte` gemergt.
 - **Modell:** Claude Opus 5.5 (Alternative: Claude Fable 5.2 für Teil 2). **Erstreview:** Claude Opus 5.5 (Einordnung gegen
   Code und em.exe, keine reine Doku-Prüfung). **Status:** wartet auf Go.
 
-### Spur `pruefung-karte` – P3 und Testlücke aus Runde 19 (R20-D2 = A)
+### Spur `pruefung-karte` – P3 und Testlücke aus Runde 19 (Welle 1, R20-D2 = B)
 
 - **Teile:**
   1. **#871 (P3-1…4):** `__pycache__/hok.cpython-313.pyc` löschen, `__pycache__/` in `.gitignore`; ZIMMERMANN in den Sägezahn
@@ -84,7 +92,7 @@ die Leitstelle bündelt die Fragen. **Entwickler und Erstreviews sind Claude-Sit
 
 ### Gesamtreview Runde 20 (R20-D4 = C)
 
-ChatGPT (Codex, GPT-6.1 Terra) nach Merge beider Spuren, eng: Stichprobe der Einordnung in `restliste-v1.md` (je Klasse, besonders
+ChatGPT (Codex, GPT-6.1 Terra) nach Merge von `inventur-v1`, eng: Stichprobe der Einordnung in `restliste-v1.md` (je Klasse, besonders
 V gegen K/E und „nicht nötig“) und der Fix #872; Absatz `anhang.md` C mit diesen beiden Punkten.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
@@ -98,6 +106,8 @@ V gegen K/E und „nicht nötig“) und der Fix #872; Absatz `anhang.md` C mit d
 - **#871, #872, #874:** P3 und Testlücke aus Runde 19 → Runde 20 `pruefung-karte`.
 - **Testlücke Gesamtreview #848:** Speichern/Laden mitten in einer angehaltenen Live-Paarung (über die Oberfläche nicht
   erreichbar; prüfen, sobald ein Speicherweg im Live-Spiel dazukommt).
+- **Vor v1.0 (R20-D3-Zusatz, Nutzer 15.11.2026):** Liste aller noch abweichenden Bereiche und Funktionen an den Nutzer,
+  der entscheidet, was noch geändert wird (Grundlage `analyse/restliste-v1.md`).
 - **Nach v1.0:** Einstellungen aus R15-E3 und bitgenauer Zufallsmodus (`anforderungen/zusatzfunktionen.md` C).
 
 ## Paket `hok-format` – Original-Spielstände `*.HOK`
