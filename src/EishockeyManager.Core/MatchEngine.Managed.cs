@@ -334,6 +334,12 @@ public static partial class OriginalMinutes
     ///   dritten Platz) / 3 (Vereinsfeld 0x1E + 4 · Teil + Reihe).</item>
     /// </list>
     /// </summary>
+    /// <remarks>
+    /// #730 offen (Runde 19, <c>docs/analyse/abgleich-dosbox.md</c> §4.2): Im DOSBox-Lauf FILE02 → FILE63 liegen die Treffer
+    /// „Belastung + 1“ bei bekannter Eiszeit (Reihen je Minute aus den Bildern) in allen drei Spielen unter dieser Regel (139 gegen
+    /// 182 ± 12); die gelesenen Stellen (Datei 0x8B31–0x8C82, 0x8DF8, 0x37E03–0x37FB7, lrandom 0xBFD5) stimmen überein, eine
+    /// Ursache ist nicht gefunden.
+    /// </remarks>
     public static void DrainEnergy(LiveTeam team, Random random)
     {
         if (team.Squad is not { } squad)
@@ -502,14 +508,12 @@ public static partial class OriginalMinutes
     ///   nächsten Reihe mit Vorgabe ≠ 0 (Ring über 3 bzw. 4 Reihen, höchstens 250 Schritte).</item>
     /// <item>Neue Reihe: Minuten auf dem Eis 0.</item>
     /// </list>
-    /// Beleg DOSBox `runde-17` (FILE02 → FILE50, Live-Spiel ohne Mausklick, Anzeigetafel je Minute): Eisminuten je Reihe, Wechsel
-    /// und getrennte Abwehr-/Sturmreihen beider Vereine liegen in der Verteilung des Remakes (<c>AbgleichDosboxLinesTests</c>,
-    /// <c>docs/analyse/abgleich-dosbox.md</c> §1).
-    /// [APPROX] #730 offen (R16-E2 = C): Bis FILE03 (drei Spieltage) gewinnen im Original die Reihen 1/2 des Managervereins
-    /// deutlich mehr Belastung (Vielspieler kippen über 127), im Remake verteilt sich der Zuwachs gleichmäßiger. Am ersten
-    /// Spieltag stimmen Reihenwahl und Belastung (FILE50), Klicks auf die Reihenknöpfe wirken laut Nutzer nicht (FILE51) – der
-    /// Unterschied entsteht an den Spieltagen 2/3 und ist nicht belegt (<c>docs/analyse/abgleich-dosbox.md</c> §1,
-    /// <c>belastung-staerke.md</c> §7). Die abweichenden Spieler stehen als Pflichteinträge #730 in <c>AbgleichOriginalPaareTests</c>.
+    /// [ORIGINAL] Beleg DOSBox `runde-17` und `runde-19` (FILE02 → FILE50 → FILE61 → FILE63, Spieltage 1–3 im Live-Spiel ohne
+    /// Mausklick, Anzeigetafel je Minute): Eisminuten je Reihe, Wechsel und getrennte Abwehr-/Sturmreihen beider Vereine liegen in
+    /// der Verteilung des Remakes (<c>AbgleichDosboxLinesTests</c>, <c>docs/analyse/abgleich-dosbox.md</c> §1, §4.1); Sturm 1 und
+    /// Sturm 3 spielen im Original gleich lang – die Ungleichverteilung aus FILE02→03 (#730) wiederholt sich nicht.
+    /// [APPROX] Bei Spielbeginn kann im Original die Sturmreihe aus dem Vorspiel stehen bleiben (Spieltag 2: Reihe 3 bis Minute 4;
+    /// Spieltag 3 und die Abwehr nicht, Regel nicht gelesen); das Remake beginnt mit Reihe 1 (Wirkung höchstens drei Minuten, §4.1).
     /// </summary>
     public static void ChangeLines(LiveTeam team, LiveTeam opponent)
     {

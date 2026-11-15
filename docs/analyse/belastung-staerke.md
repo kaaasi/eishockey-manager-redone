@@ -380,3 +380,12 @@ Aussage in §4 „in keiner der 16 Saaten eine Kölner Reihe über 81“ gilt f�
   Aufnahme. Pflichteinträge, `[APPROX]` an `ChangeLines` und die Abnahme „HOCK ≤ 70“ bleiben unverändert.
 - Für die Leitstelle: `abgleich-dosbox.md` §1.3 (Tabelle, Zeile Abwehr 2) verweist auf die alte Auswertung; Datei liegt außerhalb
   der Spur.
+
+## 10. Aufnahme `runde-19` (Spur `abgleich-dosbox-19`, Teil 1, 15.11.2026)
+
+Auswertung in `abgleich-dosbox.md` §4. Kurz: Der zweite Original-Lauf aus FILE02 (FILE02→50→61→63, Reihen je Minute aus den
+Bildern) verteilt die Eiszeit gleichmäßig (Sturm 1 − Sturm 3 = 0 Treffer statt 35 in FILE02→03); die Reihenwahl ist für drei
+Spieltage belegt. Neu und offen: Bei bekannter Eiszeit liegen die Treffer „Belastung + 1“ in allen drei Spielen unter der Regel
+0x8C53 (139 gegen 181,8 ± 12,2, z −3,5), Abwehr allein 58 gegen 82; über alle Läufe aus FILE02 z ≈ −2,7. Zusätzlich gelesene Stellen
+(Kaderplatz-Adresse, Schleifengrenze, Merker je Minute, lrandom ohne Neusetzen, Training ohne Spielerenergie) stimmen überein.
+Entscheidungsvorschlag dort §4.4.

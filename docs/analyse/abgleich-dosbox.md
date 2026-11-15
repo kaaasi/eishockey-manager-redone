@@ -1,4 +1,4 @@
-# Auswertung DOSBox-Aufnahme `runde-17` (Spur `abgleich-dosbox`, Runde 18)
+# Auswertung DOSBox-Aufnahmen `runde-17` (Spur `abgleich-dosbox`, Runde 18) und `runde-19` (Spur `abgleich-dosbox-19`, §4 ff.)
 
 Grundlage: Spielstände und Bilder im Referenz-Repo (`original/spielstaende/README.md`, Abschnitte „Runde 17, Sitzung 1–3“),
 Werkzeuge `emtool abgleich`, `docs/analyse/belastung-staerke/*.sh|py` (Skripte und `trace.patch` wie dort, `trace.patch` nur
@@ -201,3 +201,98 @@ nur, was die Probe nicht prüft (Vereinsfelder 0x26/0x2C: §3.1, jetzt exportier
 
 Laut Nutzer trat in einer ganzen Saison ab FILE37 kein gesperrter Spieler nach einem Spiel auf (README Runde 17, Sitzung 4); FILE55/56
 gibt es nicht. A189 „Gesperrte“ bleibt `[APPROX]` und offen (Inventurzeile für `pruefung-karte`: unverändert, nur Vermerk).
+
+## 4. Runde 19: #730 Spieltag 2/3 und A093 (Spur `abgleich-dosbox-19`, Teil 1)
+
+Grundlage: Aufnahme `runde-19` Sitzung 1 (README Referenz-Repo „Runde 19, Sitzung 1“): FILE50 → Spieltag 2 (EC RATINGEN –
+KÖLNER EC) → FILE61 → Spieltag 3 (KÖLNER EC – ESV KAUFBEUREN) → FILE63, beide ohne Mausklick, Bilder `file61_03…77` und
+`file63_009…104`. Werkzeuge: `abgleich-dosbox/reihen19.py` (Lampen wie `lampen.py`, Minute jetzt per Siebensegment-Leser aus dem
+Managerkasten, an `file50` gegen die Handlesung 84/84 gleich), `abgleich-dosbox/treffer19.py`, `belastung-staerke/hits.py`.
+Zusammen mit FILE02→50 (§1) ist der Lauf FILE02→50→61→63 ein Original-Lauf über drei Spieltage mit Reihen je Minute.
+
+### 4.1 Reihen je Minute (Eiszeit)
+
+`AbgleichDosboxLinesTests.File61_…`/`File63_…` (Kennzahlen wie §1.2, je 1000 Saaten, Grenze eine Saat je Seite): alle 32
+Kennzahlen in der Verteilung des Remakes. Am Rand: Spieltag 2 Köln Abwehr R2 27 Minuten (3 von 1000 ≥), Ratingen Abwehr ≠ Sturm
+50 Minuten (5 von 1000 ≥; Ratingen spielt Modus 3 und folgt den Kölner Reihen); Spieltag 3 Kaufbeuren Sturm R1 24 (19 von 2000 ≥),
+Kaufbeuren Abwehr ≠ Sturm 0 (150 von 2000 ≤). Bei 48 Kennzahlen aus drei Spielen ist das Zufall in erwartbarem Umfang; mit 200
+Saaten und Grenze 1 % (wie §1.2) fiele Spieltag 2 durch, deshalb die feinere Grenze (Begründung am Test).
+
+**Eiszeit Köln (Minuten je Reihe, Abwehr / Sturm):** Spieltag 1 19-22-19 / 18-23-19, Spieltag 2 21-27-12 / 23-21-16, Spieltag 3
+21-18-21 / 23-16-21. Sturm 1 und Sturm 3 spielen zusammen 59 bzw. 56 Minuten. Die Auffälligkeit aus FILE02→03 (`belastung-staerke.md`
+§9.2: Sturm 1 − Sturm 3 = 35 Treffer, keine von 200 Saaten) **wiederholt sich im zweiten Original-Lauf nicht**: dort 27 − 27 = 0
+(Remake 15,5 ± 7,5 für FILE02→03). Eine Regel „Sturm 3 ruht“ gibt es damit nicht; `ChangeLines` ist für drei Spieltage belegt.
+
+Nebenbefund (ohne Wirkung auf #730): Köln beginnt Spieltag 2 im Sturm mit Reihe 3 aus dem Vorspiel und wechselt erst in Minute 4
+(Datei 0x84D7 setzt nur die Minuten auf dem Eis zurück, `belastung.md` §2); das Remake beginnt jedes Spiel mit Reihe 1. Die Abwehr
+beginnt dagegen mit Reihe 1, ebenso beide Teile an Spieltag 3 (erstes Bild noch Reihe 2/2 aus dem Vorspiel, im selben
+Minutenbild Reihe 1/1). Warum die Abwehr zurückgesetzt wird, ist nicht gelesen; Vorschlag Inventur P3 (Wirkung: höchstens drei
+Minuten einer Reihe je Spiel).
+
+### 4.2 Belastung: Paare und Treffer je Spiel
+
+`emtool abgleich FILE50 FILE61` und `FILE61 FILE63` (Saaten 1993, 4711, 1, 2, 3, 77): nur Sägezahn (MENDE 123 → 127 im Original,
+im Remake bei 3 von 6 Saaten über 127 → 50; SIKORA, BRANDL je einmal) – beide Paare stehen mit `StrainSawtooth` in
+`AbgleichOriginalPaareTests`. `hits.py` (140 Saaten):
+
+| Paar | Original Treffer | Remake Mittel ± s (Bereich) | z |
+|---|---:|---|---:|
+| FILE50→61 (Spieltag 2) | 49 | 60,4 ± 6,4 (49–75) | −1,78 |
+| FILE61→63 (Spieltag 3) | 46 (MENDE gekippt, untere Schranke) | 57,4 ± 6,2 (43–73) | −1,84 |
+| FILE02→63 (Spieltage 1–3) | 139 | 173,6 ± 13,1 (145–200), **keine Saat ≤ 139** | −2,64 |
+
+Jede einzelne Reihe liegt in der Streuung (|z| ≤ 1,9, Σ z² = 25,9 bei 24 Reihen). Zu niedrig ist die Summe – in allen drei
+Spielen dieses Laufs.
+
+**Eiszeit oder Trefferrate?** `treffer19.py` rechnet mit den Minuten auf dem Eis aus den Bildern die nach em.exe erwarteten Treffer
+(Datei 0x8C53–0x8C82: `lrandom(0, 4 + (Kondition > Technik)) = 0` je Spieler und Minute; Simulation des Managerteils von 0x87F7 mit
+den Reihen der Bilder, unabhängige Züge bzw. echte lrandom-Folge):
+
+| Spiel | Original (Abwehr + Sturm) | erwartet aus den Bildern (Abwehr + Sturm) | Simulation lrandom-Folge | z |
+|---|---:|---:|---:|---:|
+| 1 (FILE02→50) | 44 (19 + 25) | 62,3 (27,1 + 35,2) | 60,0 ± 6,8 | −2,36 |
+| 2 (FILE50→61) | 49 (23 + 26) | 62,6 (27,3 + 35,3) | 60,9 ± 7,0 | −1,69 |
+| 3 (FILE61→63) | 46 (16 + 30) | 63,1 (27,6 + 35,5) | 60,9 ± 7,3 | −2,04 |
+| Lauf | 139 | 188,0 | 181,8 ± 12,2 | **−3,51** |
+
+Die Eiszeit ist also nicht die Ursache (jeder Spieler stand rund ein Drittel der Minuten auf dem Eis), sondern die Zahl der Treffer
+je Minute auf dem Eis: im Lauf etwa 0,15 statt 0,19. Die Abwehr ist von der Erholungsannahme frei (Erholung 0 im Training, alle
+Abwehrspieler ohne Einsatz ±0): 58 gegen 82,0 erwartet. Eine Verschiebung um eine Minute (0x87F7 läuft vor dem Reihenwechsel) ändert
+die Erwartung um höchstens 0,3.
+
+**Gegenrechnung mit den anderen Läufen aus FILE02** (gleicher Start, gleiche Gegner): FILE02→03 (drei Spieltage, anderer Lauf)
+164 Treffer gegen Remake 167,4 ± 12,7, FILE02→51 (Spieltag 1, mit Klicks) 57 gegen 60,9 ± 6,0. Zusammen mit dem Lauf oben 360
+gegen 410 ± 19 (z ≈ −2,7); alle Ein-Spieltag-Paare anderer Vereine (`belastung-staerke.md` §9.2) gemischt (FILE38→39 +0,6, FILE52→53
++1,7, FILE24→25 −1,9). Der Unterschied zwischen dem Lauf hier und FILE03 (139 gegen 164) liegt bei 1,4 s.
+
+### 4.3 Geprüft in em.exe (zusätzlich zu `belastung-staerke.md` §9.3)
+
+| Datei | Befund |
+|---|---|
+| 0x8B31–0x8C82 | Kaderplatz = DGROUP 0x5DC3 + 0x618 · (Vereinsfeld 0x16 − 1) + 0x34 · Platz; „auf dem Eis“ = (+0x15 & 0x7F) − 1 gleich Vereinsfeld 0x2E + 2 · (+0x15 ≫ 7); Zug `lrandom(0L, 4 + (+0x10 > +0x11))` (Argumente als `long`, Reihenfolge geprüft), Ergebnis 0 → `inc byte [es:bx+0x13]` auf denselben Kaderplatz |
+| 0x8DF8–0x8E04 | Schleife über alle Kaderplätze bis zur Kadergröße (0x4BE17), keine Grenze bei 20 o. ä. |
+| 0x37E03–0x37FB7 | Merker `[bp-0xF]` je Paarung neu, gesetzt über 0x52B91 (Liste 0x233, beide Vereine der Paarung); 0x87F7 für a und b in **jeder** Minute der Managerpaarung |
+| 0xBFD5–0xC036 | lrandom: x = (x ≪ 4) + 0xA7 mod 0x3D0900, Wert = a + x · (b − a + 1) / 0x3D0900; einziger Schreiber von 0xE017/0xE019 (kein Neusetzen) |
+| lrandom-Folge | ein einziger Zyklus (15.625 Zustände, alle ≡ 7 mod 16), Anteil Wert 0 bei `(0, 4)` genau 0,2, bei `(0, 5)` 0,1667 |
+| 0x659C–0x6B2A | Training liest von den Spielerfeldern nur +0x13 (Belastung), weder Energie +0x1B noch Einsatz – die Erholung hängt nicht vom Spiel ab |
+
+Alles wie im Remake (`OriginalMinutes.DrainEnergy`). Ein Mechanismus, der die Trefferrate im Original senkt, ist nicht gefunden.
+
+### 4.4 Folgerung für #730 und A093
+
+- **Erledigt:** Die Auffälligkeit „Sturm 1 gegen Sturm 3“ (FILE02→03) ist kein Muster des Originals (§4.1); die Reihenwahl ist für
+  drei Spieltage belegt (Marker an `ChangeLines` neu gefasst: Beleg statt `[APPROX]`).
+- **Offen:** Die Belastungstreffer je Minute auf dem Eis liegen im Lauf FILE02→63 bei allen drei Spielen unter der Regel aus
+  em.exe (z −3,5 gegen die Simulation mit den echten Reihen; über alle Läufe aus FILE02 z ≈ −2,7). Weder „im Bereich“ (der Lauf
+  allein liegt außerhalb jeder Saat) noch eine Ursache ist belegt. Hinweis an `DrainEnergy`; Pflichteinträge #730 unverändert.
+- **Entscheidung Nutzer (Vorschlag):** (A) Gegenprobe DOSBox: FILE50 fünfmal laden, Spieltag 2 ohne Klick spielen (ohne Bilder),
+  jeweils im Hauptmenü sichern (FILE66–70) – fünf unabhängige Treffersummen desselben Spiels: Mittel um 49 belegt eine
+  systematisch kleinere Rate (dann Suche im Live-Ablauf), um 60 macht den Lauf zum Zufall (#730 „im Bereich“ schließen);
+  (B) #730 schließen „Code wie em.exe, Restabweichung eines Laufs“ und die Pflichteinträge in den Sägezahn überführen;
+  (C) offen lassen.
+- **A093** (Technik −10 außerhalb der eigenen Reihe): auch in `runde-19` spielt kein Spieler außerhalb seiner Reihe (ohne Klick, keine
+  Umstellung) – nicht belegbar, bleibt offen.
+- **Inventur (Leitstelle trägt nach):** A409 „Stand Runde 19 (Spur `abgleich-dosbox-19`, Teil 1): Reihenwahl für Spieltag 1–3 belegt
+  (`AbgleichDosboxLinesTests`), Sturm 1/3 aus FILE02→03 nicht wiederholt; offen nur die Trefferrate (§4.2), #730 offen.“ A093 „Stand
+  Runde 19: mit `runde-19` nicht belegbar, offen.“ Neu (P3): Reihe auf dem Eis bei Spielbeginn (Sturm aus dem Vorspiel, Abwehr
+  Reihe 1), Remake beginnt mit Reihe 1 (§4.1).
