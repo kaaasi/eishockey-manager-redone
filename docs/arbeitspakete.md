@@ -132,6 +132,11 @@ macht nur der Bildschirm.
 - **R19-E4 = A (Nutzer 15.11.2026):** Teil 1 (#730) wartet auf die DOSBox-Gegenprobe `runde-19` Sitzung 4 (FILE66–70); danach
   Auswertung als Fortsetzung der Spur, Erstreview erst danach.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 15.11.2026.
+  **Stand 15.11.2026 (PR #866, Draft):** Teil 2 (#838: ⅓ s je Minute mit Messwert 15,9–20 s belegt, `[APPROX]`) und Teil 3
+  (#847: Gegenprobe FILE64→65, Teamwerte des Neuen aus der Aufstellung 0x952C, Datei 0x2A073, behoben) fertig. Teil 1 (#730)
+  nach R19-E4 = A (Fortsetzung 1): Reihenwahl für Spieltag 1–3 belegt; fünf Läufe von Spieltag 2 (FILE66–70) im
+  Mittel 58,4 gegen 60,9 ± 6,7 im Remake → #730 im Bereich geschlossen (`analyse/abgleich-dosbox.md` §4.5); A093 nicht belegbar.
+  Alle Teile fertig, wartet auf Erstreview.
 
 ### Gesamtreview am Rundenende
 

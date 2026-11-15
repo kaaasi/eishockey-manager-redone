@@ -59,7 +59,8 @@ public sealed partial class GameState
     ///   die Start-Liga (Datei 0x29C3B–0x29CF7, <see cref="DrawStartLeaguePlace"/>, <see cref="SwapClubPlaces"/>): Der Manager
     ///   übernimmt den gezogenen Platz mit Liga, Tabellenstand, Spielplan und Teamwerten, der Verdrängte seinen alten Platz.
     ///   [APPROX] Ein zufällig zugeteilter Verein (ohne Wahl) tauscht nicht, wie beim Spielstart.</item>
-    /// <item>Startwerte, Gehälter ([ORIGINAL] nach dem Tausch, Datei 0x29DA4–0x29EF7), Aufstellung.</item>
+    /// <item>Startwerte, Gehälter ([ORIGINAL] nach dem Tausch, Datei 0x29DA4–0x29EF7), Aufstellung, danach die Teamwerte des Platzes
+    ///   aus der Aufstellung ([ORIGINAL] 0x952C(m, 0), Datei 0x2A073; <see cref="WriteLineupTeamValues"/>).</item>
     /// <item>Konto <see cref="FinanceRules.StartMoney"/> ([ORIGINAL] Datei 0x29BD5), Werbeangebote ([ORIGINAL] 0x3F833/0x3FB47,
     ///   Datei 0x2A03B–0x2A061), Trainingsplan; Stadion und Jugend legt <see cref="Finance"/> beim ersten Zugriff an.</item>
     /// </list>
@@ -159,7 +160,30 @@ public sealed partial class GameState
         PrepareTraining(manager);
         club.ApplyAutoLineup();
         club.ReferenceRating = TeamStrength.Rating(club.Lineup);
+        WriteLineupTeamValues(club);
         return manager;
+    }
+
+    /// <summary>
+    /// Teamwerte des neuen Managervereins aus seiner Aufstellung. [ORIGINAL] Datei 0x2A067–0x2A078: nach der Aufstellung
+    /// 0x426BC ruft die Managerschleife 0x952C([0xA70E], 0) – dieselbe Rechnung wie <see cref="UpdateManagerTeamValues"/>, nur
+    /// für diesen Manager. Mitten in der Saison stehen am Platz sonst die Teamwerte des verdrängten Vereins (#847, Gegenprobe
+    /// DOSBox `runde-19` FILE64 → FILE65: EC HANNOVER auf Satz 4 mit 81/81/79/80/56/51 aus der Aufstellung statt 75/71/71/75/54/47
+    /// der EISBÄREN BERLIN; <c>docs/analyse/abgleich-dosbox.md</c> §6). Vor dem ersten Spiel (Teamwerte noch nicht gezogen)
+    /// nichts, wie dort.
+    /// </summary>
+    private void WriteLineupTeamValues(Club club)
+    {
+        if (club.TeamValues is null || club.Index >= NationalTeams.First)
+            return;
+        var (defense, attack, _) = MatchEngine.ClubLineupTeamValues(club);
+        var b = MatchEngine.ComputerTeamValue(club);
+        club.TeamValues = MatchEngine.TeamValuesOf(club) with
+        {
+            DefenseCondition = defense.Condition - b, AttackCondition = attack.Condition - b,
+            DefenseTechnique = defense.Technique - b, AttackTechnique = attack.Technique - b,
+            DefenseForm = defense.Form, AttackForm = attack.Form,
+        };
     }
 
     /// <summary>Salz der eigenen Zufallsquelle (Datei 0x2993A, Kaderwahl im Hinzufügen-Modus).</summary>

@@ -8,6 +8,8 @@ namespace EishockeyManager.Core.Tests;
 /// <summary>
 /// #730 (Spur abgleich-dosbox, Teil 1): Reihenwahl der Managerpaarung ohne Mausklick gegen die DOSBox-Aufnahme `runde-17`
 /// (FILE02 → FILE50, 1. Spieltag KÖLNER EC – SC PREUSSEN BERLIN). Bericht: <c>docs/analyse/abgleich-dosbox.md</c> §1.
+/// Runde 19 (Spur abgleich-dosbox-19, Teil 1): dazu Spieltag 2 (FILE50 → FILE61, EC RATINGEN – KÖLNER EC) und Spieltag 3
+/// (FILE61 → FILE63, KÖLNER EC – ESV KAUFBEUREN) aus der Aufnahme `runde-19`, Bericht dort §4.
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Bilder <c>file50_02…85</c> (Referenz-Repo, je Spielminute die Anzeigetafel 0x52BD6): Lampe k = Reihe auf dem Eis
@@ -29,7 +31,38 @@ public class AbgleichDosboxLinesTests(ITestOutputHelper output)
     /// <summary>[ORIGINAL] SC PREUSSEN BERLIN Sturm.</summary>
     public const string AwayAttack = "000111112222000002222221110000111122200001122211111000011111";
 
+    /// <summary>
+    /// [ORIGINAL] Spieltag 2, Bilder <c>file61_03…77</c> (Spieluhr per Siebensegment-Leser, fehlende Minuten 8, 31, 51, 54, 56
+    /// vom Vorgänger): EC RATINGEN (Heim, Computerverein) Abwehr, Sturm; KÖLNER EC (Gast, Managerverein) Abwehr, Sturm.
+    /// Köln beginnt im Sturm mit Reihe 3 aus dem Vorspiel (siehe <see cref="File61_LinesWithoutClick_WithinRemakeSpread"/>).
+    /// </summary>
+    public static readonly string[] File61 =
+    [
+        "000100001111222222000001111222211110000211112222000222221111",
+        "000111112220000101111222202111100002222111100002222111222220",
+        "000111112220000011111222221111100002222111100000111100001111",
+        "222000001110122220000011112222200010000111102222111100001111",
+    ];
+
+    /// <summary>
+    /// [ORIGINAL] Spieltag 3, Bilder <c>file63_009…104</c> (fehlende Minuten 13, 15, 30, 38, 42, 53, 60 vom Vorgänger): KÖLNER EC
+    /// (Heim, Managerverein) Abwehr, Sturm; ESV KAUFBEUREN (Gast) Abwehr, Sturm.
+    /// </summary>
+    public static readonly string[] File63 =
+    [
+        "000111122220000111222220000011112220000011112222111222220000",
+        "000111122220000111222220000011112220000022221111001222220000",
+        "000111122220000111122220000111122220000111100001111222200000",
+        "000111122220000111122220000111122220000111100001111222200000",
+    ];
+
     private const int Seeds = 200;
+
+    /// <summary>
+    /// Spieltage 2 und 3: 1000 Saaten, Grenze eine Saat (0,1 %) je Seite. Bei 48 Kennzahlen aus drei Spielen hielte die Grenze
+    /// von 1 % je Seite (200 Saaten) auch ein unverändertes Remake nicht zuverlässig (Spieltag 2 „Gast Abwehr R2“ 7 von 2000).
+    /// </summary>
+    private const int SeedsRunde19 = 1000;
 
     /// <summary>
     /// Kennzahlen eines Spiels: Eisminuten je Seite, Teil und Reihe 0…2 (12 Werte), Minuten mit Abwehrreihe ≠ Sturmreihe je
@@ -64,14 +97,31 @@ public class AbgleichDosboxLinesTests(ITestOutputHelper output)
     /// (Verdacht aus FILE02→03: Reihen 1/2 kippen über 127), oder ein anderer Wechselrhythmus macht den Fall rot.
     /// </summary>
     [GameDataFact]
-    public void File50_LinesWithoutClick_WithinRemakeSpread()
+    public void File50_LinesWithoutClick_WithinRemakeSpread() =>
+        AssertWithinSpread([HomeDefense, HomeAttack, AwayDefense, AwayAttack], "FILE02.HOK", "KÖLNER EC", "SC PREUSSEN BERLIN", Seeds, 2);
+
+    /// <summary>
+    /// Wie <see cref="File50_LinesWithoutClick_WithinRemakeSpread"/> für Spieltag 2 (Köln auswärts). Die drei Anfangsminuten
+    /// Köln Sturm Reihe 3 (Reihe auf dem Eis bleibt aus dem Vorspiel stehen, belastung.md §2, Datei 0x84D7) spielt das Remake
+    /// nicht nach; sie verschieben „Gast Sturm R1/R3“ um höchstens 3 Minuten und liegen in der Streuung.
+    /// </summary>
+    [GameDataFact]
+    public void File61_LinesWithoutClick_WithinRemakeSpread() =>
+        AssertWithinSpread(File61, "FILE50.HOK", "EC RATINGEN", "KÖLNER EC", SeedsRunde19, 1);
+
+    /// <summary>Wie <see cref="File50_LinesWithoutClick_WithinRemakeSpread"/> für Spieltag 3 (Köln zu Hause).</summary>
+    [GameDataFact]
+    public void File63_LinesWithoutClick_WithinRemakeSpread() =>
+        AssertWithinSpread(File63, "FILE61.HOK", "KÖLNER EC", "ESV KAUFBEUREN", SeedsRunde19, 1);
+
+    private void AssertWithinSpread(string[] sides, string saveName, string homeName, string awayName, int seeds, int minimum)
     {
-        var original = Figures([HomeDefense, HomeAttack, AwayDefense, AwayAttack]);
-        var save = OriginalImportTests.OriginalSave("FILE02.HOK");
+        var original = Figures(sides);
+        var save = OriginalImportTests.OriginalSave(saveName);
         var database = ClubDatabase.Load(TestGameData.Load());
         var runs = new List<int[]>();
-        for (var seed = 1; seed <= Seeds; seed++)
-            runs.Add(Figures(PlayFirstMatch(HokCompare.Import(save, database, seed), seed)));
+        for (var seed = 1; seed <= seeds; seed++)
+            runs.Add(Figures(PlayMatch(HokCompare.Import(save, database, seed), homeName, awayName, seed)));
 
         var failures = new List<string>();
         for (var i = 0; i < original.Length; i++)
@@ -81,23 +131,24 @@ public class AbgleichDosboxLinesTests(ITestOutputHelper output)
             var values = runs.Select(r => r[i]).Order().ToList();
             output.WriteLine($"{FigureNames[i],-16} Original {original[i],2}  Remake {values[0]}…{values[^1]} " +
                 $"Median {values[values.Count / 2]}  ≤ {below}, ≥ {above}");
-            if (below < 2 || above < 2)
+            if (below < minimum || above < minimum)
                 failures.Add($"{FigureNames[i]}: Original {original[i]}, Remake {values[0]}…{values[^1]}");
         }
         Assert.True(failures.Count == 0, string.Join("\n", failures));
     }
 
     /// <summary>
-    /// Das erste Managerspiel aus FILE02 (KÖLNER EC – SC PREUSSEN BERLIN) Minute für Minute wie <see cref="OriginalMinutes.Play"/>,
-    /// Reihen je Minute nach dem Reihenwechsel (Stand der Anzeigetafel am Minutenende).
+    /// Das nächste Managerspiel des Stands (Heim gegen Gast) Minute für Minute wie <see cref="OriginalMinutes.Play"/>, Reihen je
+    /// Minute nach dem Reihenwechsel (Stand der Anzeigetafel am Minutenende).
     /// </summary>
-    private static List<string> PlayFirstMatch(GameState game, int seed)
+    private static List<string> PlayMatch(GameState game, string homeName, string awayName, int seed)
     {
-        var home = game.Clubs[game.Managers[0].ClubIndex];
-        var away = game.Clubs.Single(c => c.Name == "SC PREUSSEN BERLIN");
-        Assert.Equal("KÖLNER EC", home.Name);
-        var homeTeam = MatchEngine.LiveTeamOf(game, home, away, managed: true, managerMatch: true);
-        var awayTeam = MatchEngine.LiveTeamOf(game, away, home, managed: false, managerMatch: true);
+        var managerClub = game.Clubs[game.Managers[0].ClubIndex];
+        Assert.Equal("KÖLNER EC", managerClub.Name);
+        var home = game.Clubs.Single(c => c.Name == homeName);
+        var away = game.Clubs.Single(c => c.Name == awayName);
+        var homeTeam = MatchEngine.LiveTeamOf(game, home, away, managed: home == managerClub, managerMatch: true);
+        var awayTeam = MatchEngine.LiveTeamOf(game, away, home, managed: away == managerClub, managerMatch: true);
         MatchEngine.PrepareMatch(game, home, away, homeTeam, awayTeam);
         var rules = new MatchRules(ManagerMatch: true);
         var report = new MatchReport();
