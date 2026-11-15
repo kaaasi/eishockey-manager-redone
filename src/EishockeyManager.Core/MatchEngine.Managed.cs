@@ -335,10 +335,11 @@ public static partial class OriginalMinutes
     /// </list>
     /// </summary>
     /// <remarks>
-    /// #730 offen (Runde 19, <c>docs/analyse/abgleich-dosbox.md</c> §4.2): Im DOSBox-Lauf FILE02 → FILE63 liegen die Treffer
-    /// „Belastung + 1“ bei bekannter Eiszeit (Reihen je Minute aus den Bildern) in allen drei Spielen unter dieser Regel (139 gegen
-    /// 182 ± 12); die gelesenen Stellen (Datei 0x8B31–0x8C82, 0x8DF8, 0x37E03–0x37FB7, lrandom 0xBFD5) stimmen überein, eine
-    /// Ursache ist nicht gefunden.
+    /// #730 im Bereich (Runde 19, <c>docs/analyse/abgleich-dosbox.md</c> §4.2, §4.5): Der DOSBox-Lauf FILE02 → FILE63 lag mit den
+    /// Treffern „Belastung + 1“ unter dieser Regel (139 gegen 182 ± 12); fünf weitere Läufe von Spieltag 2 aus FILE50 (FILE66–70)
+    /// liegen im Mittel bei 58,4 Treffern gegen 60,9 ± 6,7 im Remake (FILE61 dieses Laufs: 49) – Zufall eines Laufs, keine
+    /// kleinere Rate (<c>AbgleichDosboxStrainHitsTests</c>). Gelesene Stellen wie hier (Datei 0x8B31–0x8C82, 0x8DF8,
+    /// 0x37E03–0x37FB7, lrandom 0xBFD5).
     /// </remarks>
     public static void DrainEnergy(LiveTeam team, Random random)
     {

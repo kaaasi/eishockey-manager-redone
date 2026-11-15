@@ -285,6 +285,7 @@ Alles wie im Remake (`OriginalMinutes.DrainEnergy`). Ein Mechanismus, der die Tr
 - **Offen:** Die Belastungstreffer je Minute auf dem Eis liegen im Lauf FILE02→63 bei allen drei Spielen unter der Regel aus
   em.exe (z −3,5 gegen die Simulation mit den echten Reihen; über alle Läufe aus FILE02 z ≈ −2,7). Weder „im Bereich“ (der Lauf
   allein liegt außerhalb jeder Saat) noch eine Ursache ist belegt. Hinweis an `DrainEnergy`; Pflichteinträge #730 unverändert.
+  **Nachtrag (§4.5):** Gegenprobe nach A ausgewertet, #730 im Bereich geschlossen.
 - **Entscheidung Nutzer (Vorschlag):** (A) Gegenprobe DOSBox: FILE50 fünfmal laden, Spieltag 2 ohne Klick spielen (ohne Bilder),
   jeweils im Hauptmenü sichern (FILE66–70) – fünf unabhängige Treffersummen desselben Spiels: Mittel um 49 belegt eine
   systematisch kleinere Rate (dann Suche im Live-Ablauf), um 60 macht den Lauf zum Zufall (#730 „im Bereich“ schließen);
@@ -296,6 +297,42 @@ Alles wie im Remake (`OriginalMinutes.DrainEnergy`). Ein Mechanismus, der die Tr
   (`AbgleichDosboxLinesTests`), Sturm 1/3 aus FILE02→03 nicht wiederholt; offen nur die Trefferrate (§4.2), #730 offen.“ A093 „Stand
   Runde 19: mit `runde-19` nicht belegbar, offen.“ Neu (P3): Reihe auf dem Eis bei Spielbeginn (Sturm aus dem Vorspiel, Abwehr
   Reihe 1), Remake beginnt mit Reihe 1 (§4.1).
+
+### 4.5 Gegenprobe Sitzung 4: fünf Läufe von Spieltag 2 (Fortsetzung 1, R19-E4 = A)
+
+Grundlage: Aufnahme `runde-19` Sitzung 4 (README Referenz-Repo „Runde 19, Sitzung 4“): FILE50 fünfmal geladen, Spieltag 2 (EC
+RATINGEN – KÖLNER EC) ohne Mausklick gespielt, im Hauptmenü gesichert als FILE66 … FILE70 (keine Bilder). Zusammen mit FILE61
+(Sitzung 1) sechs unabhängige Läufe desselben Spiels.
+
+**Paare:** `emtool abgleich FILE50 FILE66…70` (Saaten 1993, 4711, 1, 2, 3, 77): nur Sägezahn (MENDE 123 kippt in FILE66–68 auf
+50, in FILE69/70 nicht; im Remake je nach Saat; SIKORA bei Saat 2) – alle fünf Paare mit `StrainSawtooth` in
+`AbgleichOriginalPaareTests`.
+
+**Treffer „Belastung + 1“** (`hits.py`, 400 Saaten des Remakes ab FILE50; gekippte Spieler mit der Mindestzahl bis 128, „k“):
+
+| Lauf | Original | A1 | A2 | A3 | S1 | S2 | S3 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| FILE61 (Sitzung 1) | 49 | 11 | 6 | 6 | 10 | 8 | 8 |
+| FILE66 | 64 (k) | 19 | 6 | 3 | 14 | 14 | 8 |
+| FILE67 | 58 (k) | 16 | 6 | 3 | 17 | 6 | 10 |
+| FILE68 | 57 (k) | 15 | 5 | 3 | 14 | 8 | 12 |
+| FILE69 | 60 | 11 | 9 | 5 | 15 | 13 | 7 |
+| FILE70 | 53 | 11 | 3 | 5 | 9 | 8 | 17 |
+| Remake (400 Saaten) | 60,9 ± 6,7 (40–84) | 12,3 | 7,5 | 6,6 | 12,8 | 11,5 | 10,2 |
+
+- **FILE66–70:** Mittel 58,4 (s 4,0), Abstand zum Remake −2,5 bei einem Standardfehler von 3,0 (z −0,8); jeder Lauf in der
+  Streuung (z −1,2 … +0,5), je Reihe Σ z² = 38,6 bei 36 Reihen. Mit FILE61: sechs Läufe 56,8 (s 5,2), z −1,5.
+- **Folgerung:** Das Mittel liegt um 60, nicht um 49 (Kriterium §4.4 A). Eine systematisch kleinere Trefferrate des Originals
+  ist damit nicht belegt; FILE61 (49) ist ein Lauf am unteren Rand, die Spannweite der sechs Läufe (49–64) entspricht der des
+  Remakes. **#730 im Bereich geschlossen** (Code wie em.exe, §4.3). Abnahme: `AbgleichDosboxStrainHitsTests` (Mittel der fünf
+  Läufe gegen 30 Saaten des Remakes, Grenze zwei Standardfehler; Gegenprobe Trefferrate · ¾ im Remake → rot, 30,0 gegen 45,4
+  ohne Erholung).
+- **Rest (zur Einordnung):** Über alle Läufe aus FILE02/FILE50 (FILE02→03, →51, →50→61→63 und FILE50→66…70) liegt die Summe bei
+  652 gegen 714,5 ± 24,2 (z −2,6); getragen wird das vom Lauf FILE02→50→61→63 (z −3,5), nicht von der
+  Gegenprobe. Ein weiterer Mechanismus ist aus em.exe nicht gelesen; ohne neuen Beleg kein Anlass für eine Änderung.
+- **Pflichteinträge #730** (`StrainOf` ZIMMERMANN FILE16A→17, `Strain730_DeviatesAtMostSeeds`) bleiben als Drift-Wächter
+  unverändert; ob sie in den Sägezahn übergehen, entscheidet das Erstreview bzw. die Leitstelle.
+- **A093** weiter nicht belegbar (kein Spieler außerhalb seiner Reihe).
 
 ## 5. Runde 19: #838 Echtzeit „Spiele laufen“ (Teil 2)
 

@@ -11,7 +11,7 @@ namespace EishockeyManager.Core.Tests;
 /// </summary>
 /// <remarks>
 /// Paare ohne Eingriff: FILE02→03, FILE02→50 und FILE02→51 (DOSBox `runde-17`, FILE51 mit Torwartwechsel im Spiel), FILE50→61→63
-/// (DOSBox `runde-19`), FILE16A→17,
+/// und FILE50→66…70 (DOSBox `runde-19`), FILE16A→17,
 /// FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40; mit bekanntem
 /// Eingriff (nur übrige Felder, <see cref="HokCompareClasses.Interventions"/>): FILE13→14 (Sitzungszustand, Aufstellung von Hand;
 /// #733, #734), FILE44→46, FILE18→48. Saat 1993 (Werkzeugvorgabe);
@@ -157,6 +157,14 @@ public class AbgleichOriginalPaareTests
             // AbgleichDosboxLinesTests, Treffer je Spiel: docs/analyse/abgleich-dosbox.md §4.
             ["FILE50→FILE61"] = [StrainSawtooth("5 KÖLNER EC")],
             ["FILE61→FILE63"] = [StrainSawtooth("5 KÖLNER EC")],
+            // DOSBox `runde-19` Sitzung 4 (#730, Fortsetzung 1, R19-E4 = A): Spieltag 2 aus FILE50 in fünf weiteren Läufen ohne
+            // Mausklick (FILE66–70). Nur der Sägezahn weicht ab (MENDE kippt in FILE66–68 auf 50, SIKORA im Remake je Saat);
+            // Treffer je Lauf: AbgleichDosboxStrainHitsTests.
+            ["FILE50→FILE66"] = [StrainSawtooth("5 KÖLNER EC")],
+            ["FILE50→FILE67"] = [StrainSawtooth("5 KÖLNER EC")],
+            ["FILE50→FILE68"] = [StrainSawtooth("5 KÖLNER EC")],
+            ["FILE50→FILE69"] = [StrainSawtooth("5 KÖLNER EC")],
+            ["FILE50→FILE70"] = [StrainSawtooth("5 KÖLNER EC")],
             // DOSBox `runde-17` (#773, Teil 2): erster Spieltag eines neuen Spiels (ES WEIßWASSER). #730 auch hier: REZNICEK
             // (Abwehr 2, FILE52 Belastung 119) kippt im Original über 127 (→ 50), im Remake bei 5 von 6 Prüfsaaten 120–125;
             // Einsatz und Strafminuten wie im Original (AbgleichDosboxPenaltyTests).
