@@ -305,6 +305,12 @@ public static partial class MatchEngine
             Effort = club.Tactics.EffectiveEffort(0, 0, value, opponentValue),
             AttackLevel = club.Tactics.EffectiveAttack(0, 0, value, opponentValue),
             Energy = PreparedEnergy,
+            // #872: [ORIGINAL] Die Spielvorbereitung 0x84D7 lässt die Reihen 0x2E/0x30 aus dem Vorspiel stehen (Datei 0x84EB–0x857D,
+            // nur die Minuten 0x2F/0x31 auf 0); Squad.Tactics.Lines.cs. [APPROX] 0x2C Bit 3 (Torhüter draußen am Ende des Vorspiels,
+            // nur Computervereine) führt das Remake zwischen den Spielen nicht; im Original beginnt ein solcher Verein mit Abwehrreihe
+            // 2 (Datei 0x857D), im Remake mit der gespeicherten.
+            DefenseLine = club.Tactics.MatchDefenseLine,
+            AttackLine = club.Tactics.MatchAttackLine,
             Tactics = managerMatch ? club.Tactics : null,
             Managed = managed,
             LineChange = managed ? club.Tactics.LineChange : null,

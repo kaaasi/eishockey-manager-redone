@@ -513,8 +513,10 @@ public static partial class OriginalMinutes
     /// Mausklick, Anzeigetafel je Minute): Eisminuten je Reihe, Wechsel und getrennte Abwehr-/Sturmreihen beider Vereine liegen in
     /// der Verteilung des Remakes (<c>AbgleichDosboxLinesTests</c>, <c>docs/analyse/abgleich-dosbox.md</c> §1, §4.1); Sturm 1 und
     /// Sturm 3 spielen im Original gleich lang – die Ungleichverteilung aus FILE02→03 (#730) wiederholt sich nicht.
-    /// [APPROX] Bei Spielbeginn kann im Original die Sturmreihe aus dem Vorspiel stehen bleiben (Spieltag 2: Reihe 3 bis Minute 4;
-    /// Spieltag 3 und die Abwehr nicht, Regel nicht gelesen); das Remake beginnt mit Reihe 1 (Wirkung höchstens drei Minuten, §4.1).
+    /// [ORIGINAL] Bei Spielbeginn stehen die Reihen aus dem Vorspiel (Vereinsfelder 0x2E/0x30, von 0x84D7 nicht zurückgesetzt,
+    /// Datei 0x84EB–0x857D; <see cref="Tactics.MatchDefenseLine"/>, #872), die Minuten auf dem Eis bei 0: im Modus 1/2 wechselt die
+    /// Reihe also erst in Minute 4, im Modus 3 sofort (DOSBox `runde-19`: Spieltag 2 Köln aus FILE50 Abwehr 0, Sturm 2 bis
+    /// Minute 3; Spieltag 3 Modus 3 gegen Kaufbeuren 0/0 ab Minute 1; <c>ReiheBeiSpielbeginnTests</c>).
     /// </summary>
     public static void ChangeLines(LiveTeam team, LiveTeam opponent)
     {

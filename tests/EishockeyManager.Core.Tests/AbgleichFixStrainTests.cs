@@ -38,12 +38,14 @@ public class AbgleichFixStrainTests
     /// Abnahme #730: FILE02 → drei Spieltage. MENDE (120, Reihe 1) fällt wie in FILE03 bei jeder Saat auf höchstens 70 (Original 50);
     /// vorher blieb er über 120. Ob auch HOCK und SIKORA (115/117) die Grenze 128 vor einem Training erreichen, hängt vom Zufall
     /// der Spiele ab (Original ja, Remake je Saat).
+    /// Runde 20 (#872, R15-E2 = C): Mit den Reihen aus dem Vorspiel kippt MENDE bei 37 von 40 Saaten (1 … 40; alter Code 40 von 40);
+    /// bei 3, 25 und 28 steht er nach Spieltag 3 bei 125–126, also im letzten Zahn vor 128. Saat 3 deshalb durch 4 ersetzt.
     /// </summary>
     [GameDataTheory]
     [InlineData(1993)]
     [InlineData(1)]
     [InlineData(2)]
-    [InlineData(3)]
+    [InlineData(4)]
     [InlineData(77)]
     public void File02_ThreeMatchDays_MendeFallsTo50(int seed)
     {

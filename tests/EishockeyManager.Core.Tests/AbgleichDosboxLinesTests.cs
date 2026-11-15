@@ -102,8 +102,8 @@ public class AbgleichDosboxLinesTests(ITestOutputHelper output)
 
     /// <summary>
     /// Wie <see cref="File50_LinesWithoutClick_WithinRemakeSpread"/> für Spieltag 2 (Köln auswärts). Die drei Anfangsminuten
-    /// Köln Sturm Reihe 3 (Reihe auf dem Eis bleibt aus dem Vorspiel stehen, belastung.md §2, Datei 0x84D7) spielt das Remake
-    /// nicht nach; sie verschieben „Gast Sturm R1/R3“ um höchstens 3 Minuten und liegen in der Streuung.
+    /// Köln Sturm Reihe 3 (Reihe auf dem Eis bleibt aus dem Vorspiel stehen, belastung.md §2, Datei 0x84D7) spielt das Remake seit
+    /// #872 (Runde 20) nach: Reihen 0x2E/0x30 aus FILE50 (<see cref="ReiheBeiSpielbeginnTests"/>).
     /// </summary>
     [GameDataFact]
     public void File61_LinesWithoutClick_WithinRemakeSpread() =>

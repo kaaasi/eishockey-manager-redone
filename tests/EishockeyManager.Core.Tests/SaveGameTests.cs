@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(50, SaveGame.SchemaVersion);
+        Assert.Equal(51, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -67,7 +67,8 @@ public class SaveGameTests
     // 49 PoolSlot.Manager (Besitzer verlorener Plätze) und Managerkader im Spielerpool, Schritt nach dem Laden (Spur pool, Runde 16, #743).
     // 50 Player.PoolForm: Form im Spielerpool nach einer Verletzung (Spur kader-rest Runde 17, A066; vorläufig, Leitstelle nummeriert);
     //    GameState._seasonEndYouthPending: Jugend am Saisonende nachholen (kader-rest Teil 3, Ereignissymbol 9).
-    private const string ExpectedSchemaFingerprint = "95F69A3A8311144D";
+    // 51 Tactics._matchDefenseLine/_matchAttackLine: Reihen auf dem Eis 0x2E/0x30 nach dem letzten Spiel (pruefung-karte Runde 20, #872).
+    private const string ExpectedSchemaFingerprint = "F65DADBA6846FCD1";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

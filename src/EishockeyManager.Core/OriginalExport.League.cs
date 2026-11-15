@@ -62,6 +62,10 @@ public sealed partial class GameState
                 // Bits von 0x2C (Modus 0–2, Bit 3, Favorit Bit 7) schreibt die Spielvorbereitung vor jedem Spiel neu (Datei 0x84EB).
                 r[0x26] = r[0x2D] = OriginalExport.Byte(club.Tactics.MatchEffort);
                 r[0x2C] = (byte)(club.Tactics.MatchAttack << 4);
+                // #872: [ORIGINAL] Reihen auf dem Eis 0x2E/0x30 des letzten Spiels (Squad.Tactics.Lines.cs); Minuten 0x2F/0x31 setzt
+                // die Spielvorbereitung 0x84D7 auf 0 (Datei 0x853F), der Export lässt sie 0.
+                r[0x2E] = (byte)club.Tactics.MatchDefenseLine;
+                r[0x30] = (byte)club.Tactics.MatchAttackLine;
             }
             r[0x1E] = 50; // [APPROX] ungedeutet (FILE01: 45–55)
             if (CurrentDay > 0 || Season > FirstSeason)

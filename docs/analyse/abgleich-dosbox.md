@@ -229,6 +229,14 @@ beginnt dagegen mit Reihe 1, ebenso beide Teile an Spieltag 3 (erstes Bild noch 
 Minutenbild Reihe 1/1). Warum die Abwehr zurückgesetzt wird, ist nicht gelesen; Vorschlag Inventur P3 (Wirkung: höchstens drei
 Minuten einer Reihe je Spiel).
 
+**Aufgelöst Runde 20 (#872, Spur `pruefung-karte` Teil 2):** Die Abwehr wird nicht zurückgesetzt. Der Spielstand hält die Reihen
+im Vereinssatz (far:9657 + 0x3D · Verein, Felder 0x2E/0x30): Köln steht in FILE50 bei Abwehr 0 / Sturm 2 (der Wechsel der Abwehr
+fiel in die fehlende Minute 60 von Spieltag 1), in FILE61 bei 1/1, in FILE63 bei 0/0; Kaufbeuren nach Spieltag 3 bei 1/1, alle
+Vereine ohne Managerspiel bei 0/0. 0x84D7 setzt nur die Minuten 0x2F/0x31 (Datei 0x853F) und den Modus der Computervereine
+(Datei 0x8521). Spieltag 2 beginnt also mit 0/2, der Sturm wechselt im Modus 1/2 in Minute 4; an Spieltag 3 folgt Köln im Modus 3
+sofort den Reihen Kaufbeurens (0/0). Das Remake übernimmt die Reihen seither aus dem Vorspiel (`Tactics.MatchDefenseLine`,
+Import/Export 0x2E/0x30, Schema 51; `ReiheBeiSpielbeginnTests`).
+
 ### 4.2 Belastung: Paare und Treffer je Spiel
 
 `emtool abgleich FILE50 FILE61` und `FILE61 FILE63` (Saaten 1993, 4711, 1, 2, 3, 77): nur Sägezahn (MENDE 123 → 127 im Original,
@@ -296,7 +304,7 @@ Alles wie im Remake (`OriginalMinutes.DrainEnergy`). Ein Mechanismus, der die Tr
 - **Inventur (Leitstelle trägt nach):** A409 „Stand Runde 19 (Spur `abgleich-dosbox-19`, Teil 1): Reihenwahl für Spieltag 1–3 belegt
   (`AbgleichDosboxLinesTests`), Sturm 1/3 aus FILE02→03 nicht wiederholt; offen nur die Trefferrate (§4.2), #730 offen.“ A093 „Stand
   Runde 19: mit `runde-19` nicht belegbar, offen.“ Neu (P3): Reihe auf dem Eis bei Spielbeginn (Sturm aus dem Vorspiel, Abwehr
-  Reihe 1), Remake beginnt mit Reihe 1 (§4.1).
+  Reihe 1), Remake beginnt mit Reihe 1 (§4.1). Runde 20: aufgelöst, beide Reihen aus dem Vorspiel (§4.1, #872).
 
 ### 4.5 Gegenprobe Sitzung 4: fünf Läufe von Spieltag 2 (Fortsetzung 1, R19-E4 = A)
 

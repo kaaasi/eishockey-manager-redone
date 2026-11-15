@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 50) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 51) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -685,6 +685,8 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Tactics._minutes` | B | `CC43` | 8 · m + 4 · Teil + Block |
 | `Tactics._matchAttack` | U | `far:9657+0x2C` | Bits 4–6 nach dem letzten Spiel (#772); Ort belegt, Import liest ihn noch nicht (Stelle für `pool`), Vorgabe 0 |
 | `Tactics._matchEffort` | U | `far:9657+0x26` | Einsatz nach dem letzten Spiel (#772); Ort belegt, Import liest ihn noch nicht (Stelle für `pool`), Vorgabe 0 |
+| `Tactics._matchAttackLine` | B | `far:9657+0x30` | Sturmreihe auf dem Eis nach dem letzten Spiel (#872, Schema 51); 0x84D7 setzt sie nicht zurück |
+| `Tactics._matchDefenseLine` | B | `far:9657+0x2E` | Abwehrreihe auf dem Eis nach dem letzten Spiel (#872, Schema 51) |
 | `Tactics._shownAutoAttack` | A | `far:9657+0x35` | nur Nationalteam: Vereinssatz +0x35–0x3A |
 | `Tactics._shownAutoEffort` | A | `far:9657+0x26` | nur Nationalteam: Vereinssatz +0x26–0x2B |
 | `Lineup._defenders` | A | `5DC3+0x15` | Reihe 1–3 ohne Sturm-Bit, Nationalteam Satz 5 |
@@ -1069,6 +1071,10 @@ liegt bei den genannten Spuren.
   (Teil 3); die Managerkader stehen im Spielerpool (`TransferMarket.SeatManagerSquads`, Abschnitt „Managerkader im
   Spielerpool“). Migration: Feld −1; nach dem Laden bekommen Kaderspieler ohne Poolplatz einen freien Ligaplatz ihrer Art, ein
   verlorener Platz bei einem Manager dessen Nummer (`SaveGame.Migration.Pool.cs`).
+- Schema 51 (Runde 20, Spur `pruefung-karte` Teil 2, #872): `Tactics._matchDefenseLine`/`_matchAttackLine` – Reihen auf dem Eis
+  0x2E/0x30 nach dem letzten Spiel; die Spielvorbereitung 0x84D7 setzt nur die Minuten 0x2F/0x31 zurück (Datei 0x853F). Import und
+  Export lesen/schreiben sie (`OriginalImport.ApplyTeamValues`, `OriginalExport.League.cs`). Migration: 0 wie FILE02
+  (`SaveGame.Migration.PruefungKarte.cs`).
 
 ### Zugang (Teil 3)
 

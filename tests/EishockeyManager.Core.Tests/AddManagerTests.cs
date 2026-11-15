@@ -25,15 +25,18 @@ public class AddManagerTests
     {
         var game = MidSeason();
         var level = game.Setup.Managers[0].Level;
+        var chosen = game.Clubs[7].Name;
 
         var manager = game.AddManager(Newcomer());
 
         Assert.Equal(2, game.Managers.Count);
         Assert.Same(manager, game.Managers[1]);
-        Assert.Equal(7, manager.ClubIndex);
+        // Runde 20 (#872, R15-E2 = C): Der Platztausch (Datei 0x29C3B) zieht aus dem Spielzufall; der gewählte Verein kann den Platz
+        // wechseln, deshalb über den Namen statt über Platz 7.
+        Assert.Equal(chosen, game.Clubs[manager.ClubIndex].Name);
         Assert.Equal(level, manager.Level);
         Assert.Equal(FinanceRules.StartMoney(level), manager.Money); // [ORIGINAL] Datei 0x29BD5
-        var club = game.Clubs[7];
+        var club = game.Clubs[manager.ClubIndex];
         // [ORIGINAL] Kadertabelle DGROUP 0x169 nach Start-Liga Bundesliga: 2/10/13
         Assert.Equal(2, club.Players.Count(p => p.Role == PlayerRole.Goalkeeper));
         Assert.Equal(10, club.Players.Count(p => p.Role == PlayerRole.Defender));
@@ -44,7 +47,7 @@ public class AddManagerTests
         {
             var slot = Assert.Single(pool, s => ReferenceEquals(s.Player, p));
             Assert.Equal(PoolOwner.Taken, slot.Owner);
-            Assert.Equal(7, slot.Club);
+            Assert.Equal(manager.ClubIndex, slot.Club);
             Assert.InRange(slot.Index, 1, 179); // keine Nationalspieler (Datei 0x29962)
             Assert.InRange(p.Age, 19, 31);
             Assert.InRange(p.Technique, start - 2, start + 2);

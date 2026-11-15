@@ -68,10 +68,15 @@ public static partial class MatchEngine
         return writesEffort;
     }
 
-    /// <summary>[ORIGINAL] Vereinsfelder 0x26 und 0x2C (Bits 4–6) bleiben nach dem Spiel stehen (<see cref="Tactics.MatchEffort"/>).</summary>
+    /// <summary>
+    /// [ORIGINAL] Vereinsfelder 0x26 und 0x2C (Bits 4–6) bleiben nach dem Spiel stehen (<see cref="Tactics.MatchEffort"/>), ebenso
+    /// die Reihen auf dem Eis 0x2E/0x30 (<see cref="Tactics.MatchDefenseLine"/>, #872).
+    /// </summary>
     private static void KeepMatchFields(Club club, LiveTeam team)
     {
-        if (!IsNation(club))
-            club.Tactics.RecordMatchFields(team.Effort, team.AttackLevel);
+        if (IsNation(club))
+            return;
+        club.Tactics.RecordMatchFields(team.Effort, team.AttackLevel);
+        club.Tactics.RecordMatchLines(team.DefenseLine, team.AttackLine);
     }
 }

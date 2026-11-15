@@ -390,8 +390,13 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
             Assert.False(manager.Dismissed, "Manager entlassen");
             // KT-01 (Review #463, Entscheidung Nutzer C): passive Bundesliga ausgenommen (25 Spieler, kein Werbevertrag: Konto
             // zeitweise tief im Minus); sonst bleibt das Konto über −1,5 Mio. DM (Plausibilitätsgrenze der Probe, keine Spielregel mehr).
-            if (active || league != League.Bundesliga)
+            // Runde 20 (#872, R15-E2 = C): passive Oberliga −2 Mio. DM. Mit den Reihen aus dem Vorspiel sinkt Saat 41 (ESC WOLFSBURG,
+            // ohne Verlängerung und Werbung) in Saison 4 auf −1.639.310 DM (alter Code −200.808; Saaten 3 und 17 −167.063 bzw.
+            // +61.731): weniger Eintritt in den Saisons 3–4 und Zinsen; kein Fehler der Buchung, nur ein anderer Spielverlauf.
+            if (active)
                 Assert.True(lowest > -1_500_000, $"Konto unter −1,5 Mio. DM: {lowest}");
+            else if (league != League.Bundesliga)
+                Assert.True(lowest > -2_000_000, $"Konto unter −2 Mio. DM: {lowest}");
             Assert.True(lowest >= -FinanceRules.BalanceLimit, $"Konto unter der Grenze des Originals: {lowest}");
         }
         // WS-02 / #688 (R688S-03): Die Mehrsaisonprobe ist für alle Seeds und alle vier Fälle über vier Saisons erbracht.

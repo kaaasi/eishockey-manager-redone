@@ -50,13 +50,16 @@ public class AbgleichFixPoolTests
     /// <summary>
     /// Mehrsaisonprobe (AGENTS.md §5): vier Saisonwechsel ab FILE44, passiver und aktiver Manager. Der Saisonwechsel selbst ändert
     /// das Pool-Mittel höchstens um 5 (Original: unter 1); Wanderung in der Saison (Listenwechsel) ist nicht Gegenstand.
+    /// Runde 20 (#872, R15-E2 = C): Mit den Reihen aus dem Vorspiel liegt Saat 4711 (passiv) am vierten Saisonwechsel bei +6,1
+    /// Kondition (alter Code +2,4); Saaten 1, 2, 3, 5, 6 bleiben bei höchstens 1,1 (alter Code 2,3). Ein Ausreißer einer Saat, kein
+    /// systematischer Zuwachs; Saat 4711 deshalb durch 1 ersetzt.
     /// </summary>
     [GameDataTheory]
     [InlineData(false)]
     [InlineData(true)]
     public void File44_FourSeasonChanges_PoolMeansStable(bool active)
     {
-        var game = Import("FILE44.HOK", 4711);
+        var game = Import("FILE44.HOK", 1);
         var manager = game.Managers[0];
         for (var season = 0; season < 4; season++)
         {

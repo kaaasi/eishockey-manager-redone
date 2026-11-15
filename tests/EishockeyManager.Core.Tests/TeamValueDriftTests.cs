@@ -61,7 +61,11 @@ public sealed class TeamValueDriftTests(ITestOutputHelper output)
         TestSeason.PlayMatchDay(game);
         var before = game.Clubs.ToDictionary(c => c.Index, c => c.TeamValues!.Value);
         RngTwinProbeTests.Run(game, active: false, changes: 1);
-        foreach (var club in game.Clubs.Where(c => c.Index < NationalTeams.First && c.Players.Count > 0))
+        // Runde 20 (#872, R15-E2 = C): ohne Managerverein. Dessen Felder 0x18–0x1D schreibt 0x952C aus der Aufstellung (#748,
+        // GameState.UpdateManagerTeamValues, Datei 0x54DAA), nicht die Wanderung; mit den Reihen aus dem Vorspiel lag VEREIN 2 bei
+        // Saat 3 mit Sturm-Kondition 68 knapp unter der Bundesliga-Grenze 69 (vorher zufällig darin).
+        var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
+        foreach (var club in game.Clubs.Where(c => c.Index < NationalTeams.First && c.Players.Count > 0 && !managed.Contains(c.Index)))
         {
             var (min, max) = Bounds(club.League);
             Assert.All(ConditionAndTechnique(club), x => Assert.InRange(x, min, max));

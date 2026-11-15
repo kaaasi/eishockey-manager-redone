@@ -227,8 +227,9 @@ public class AbgleichOriginalPaareTests
     [InlineData("FILE13", "FILE14", "6 KREFELDER EV", "KUHNEKATH", 40, 75, 3)]
     // DOSBox `runde-17` (abgleich-dosbox Teil 2): REZNICEK (Original 50) im Remake 120–125 bei 5 von 6 Saaten (nicht 2).
     [InlineData("FILE52", "FILE53", "23 ES WEIßWASSER", "REZNICEK", 110, StrainSawtoothMax, 5)]
-    // Ehemals Pflichteintrag in Expected (Review #870 P3-2): ZIMMERMANN (Original 50) im Remake 97–122 bei 39 von 40 Saaten.
-    [InlineData("FILE16A", "FILE17", "14 SV BAYREUTH", "ZIMMERMANN", 90, StrainSawtoothMax, 6)]
+    // Ehemals Pflichteintrag in Expected (Review #870 P3-2): ZIMMERMANN (Original 50) im Remake 97–122 bei 39 von 40 Saaten; seit
+    // #872 (Reihen aus dem Vorspiel, Runde 20 Teil 2) bei 5 von 6 Prüfsaaten (nicht 77), wie HOCK und REZNICEK.
+    [InlineData("FILE16A", "FILE17", "14 SV BAYREUTH", "ZIMMERMANN", 90, StrainSawtoothMax, 5)]
     public void Strain_DeviatesAtMostSeeds_DriftGuard(string a, string b, string club, string player, int min, int max, int minSeeds)
     {
         var known = StrainOf(club, min, max, player).Single();

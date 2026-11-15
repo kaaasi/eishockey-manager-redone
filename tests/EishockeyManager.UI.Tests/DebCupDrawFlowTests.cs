@@ -318,6 +318,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu ab 1993 – 5-Minuten-Strafe mit der Häufigkeit des
     // lrandom-Zyklus (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander); andere Strafen, Tore und
     // Ergebnisse, mit und ohne Anzeige weiter gleich. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alter Wert.
+    // Runde 20, Spur pruefung-karte Teil 2 (#872, R15-E2 = C): neu ab 1993 – die Reihen auf dem Eis bleiben aus dem Vorspiel stehen
+    // (Vereinsfelder 0x2E/0x30, Datei 0x84EB–0x857D); andere Ergebnisse ab dem zweiten Managerspiel, mit und ohne Anzeige weiter
+    // gleich. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung DefenseLine/AttackLine → alter Wert.
     private const string Reference =
-        "1993: DEB 2, DM 6, Tab 15406 | 1994: DEB 6, DM 1, Tab 15786 | 1995: DEB 7, DM 6, Tab 16081 | 1996: DEB 18, DM 21, Tab 15910";
+        "1993: DEB 6, DM 5, Tab 15397 | 1994: DEB 9, DM 9, Tab 15987 | 1995: DEB 5, DM 6, Tab 15655 | 1996: DEB 4, DM 5, Tab 15955";
 }
