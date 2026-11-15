@@ -129,6 +129,8 @@ macht nur der Bildschirm.
   `docs/analyse/belastung-staerke.md`; `docs/analyse/inventur.md` nicht (Zeilen im PR, Leitstelle trägt nach). Mehrsaisonprobe,
   wenn Kader oder Saisonwechsel berührt sind.
 - **Voraussetzung:** keine (parallel zum Erstreview von `pruefung-karte`); Merge nach `pruefung-karte`.
+- **R19-E4 = A (Nutzer 15.11.2026):** Teil 1 (#730) wartet auf die DOSBox-Gegenprobe `runde-19` Sitzung 4 (FILE66–70); danach
+  Auswertung als Fortsetzung der Spur, Erstreview erst danach.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 15.11.2026.
 
 ### Gesamtreview am Rundenende
