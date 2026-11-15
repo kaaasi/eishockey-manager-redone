@@ -209,6 +209,7 @@ public sealed class HighscoreInputs
 /// „Highscore“ ist gesperrt, Datei 0x44FCE); Spielmodus „nur Weltkugel“ (Knopfbits = 2) → 30000;
 /// sonst, wenn Level &gt; 2 und (Startstärke = Mittelfeld oder (Dauer = eine Saison und Startliga = Bundesliga)):
 /// <c>Level + 4 · Dauer + 32 · Startliga + 128 · Startstärke − 2</c>.
+/// Im Spielmodus „nur Weltkugel“ statt der Formel: <see cref="WorldOnlyScore"/> (Datei 0x5D59B).
 /// Punkte (Datei 0x5D04F, im Emulator gegen <see cref="Points"/> geprüft, 500 Zufallsfälle): Summe / 20 (mindestens 1 bei der
 /// Eintragung); dazu <c>8 · Meisterschaften + 6 · Pokalsiege + 10 · Europapokalsiege</c> (Datei 0x5D579 ff.).
 /// <list type="bullet">
@@ -232,8 +233,6 @@ public sealed class HighscoreInputs
 /// <item>Der Europapokal-Stand (Gruppe 1, Endrunde 2) und die weiteren Pokalbytes (nur 0x9744 = 1 bei einem Manager im Spieljahr 1994
 ///   ist belegt) sind nicht abgebildet; Meister-Kennzahl 0x80 | 0x35 statt der Play-Off-Stufe des Brackets.</item>
 /// <item>Das Remake führt Level, Startliga und Startstärke je Manager; für den Schlüssel gelten die des ersten Managers.</item>
-/// <item>Im Spielmodus „nur Weltkugel“ zählt das Original die Platzierungen der Nationalmannschaft (Σ 9 − Platz) – hier die
-///   Weltmeistertitel + 1.</item>
 /// </list>
 /// Die Formel enthält Eigenheiten, die wie im Original übernommen sind: Der Meister erhält durch die Kennzahl 0x80 + … einen
 /// <i>negativen</i> Ligaterm (36 − 181) · 7, und die Europapokal-Wertung entfällt für ausgeschiedene DEB-Teilnehmer.
@@ -275,8 +274,7 @@ public static class HighscoreRules
         var m = game.Managers[manager];
         if (game.WorldOnly)
         {
-            var worldTitles = (byte)Math.Min(255, game.History.Count(r => r.Titles.TryGetValue(Title.WorldChampion, out _)));
-            return new HighscoreEntry(m.Name, game.Clubs[NationalTeams.Germany].Name, 0, 0, 0, (short)Math.Max(1, 1 + worldTitles), stamp);
+            return new HighscoreEntry(m.Name, game.Clubs[NationalTeams.Germany].Name, 0, 0, 0, (short)Math.Max(1, WorldOnlyScore(game)), stamp);
         }
 
         var history = game.ManagerHistory(manager);
@@ -287,6 +285,27 @@ public static class HighscoreRules
         var score = Score(game, manager) + 8 * a + 6 * b + 10 * c;
         // [APPROX] Begrenzung auf 1 … 32767; das Original rechnet die Gesamtpunkte als 16-Bit-Wert und läuft über.
         return new HighscoreEntry(m.Name, game.Clubs[m.ClubIndex].Name, a, b, c, (short)Math.Clamp(score, 1, short.MaxValue), stamp);
+    }
+
+    /// <summary>
+    /// Punkte im Spielmodus „nur Weltkugel“ vor der Untergrenze 1 (#826). [ORIGINAL] Datei 0x5D59B–0x5D5FE: Σ (9 − Byte) über
+    /// die Platzierungsfolge des Landes DGROUP 0x828B + 0x50 · DGROUP 0x6AC bis zur ersten 0. Die Folge trägt je WM die Plätze
+    /// 1 … 8 und für alle übrigen Teilnehmer 11 (Datei 0x31266–0x31291), also zählt Platz 9 … 12 je WM −2 – anders als die
+    /// WM-Statistik (<see cref="GameState.WorldCupPoints"/>), die nur Platz 1 … 8 zählt. Höchstens 16 WMs (Datei 0x311F8).
+    /// Belegt mit FILE54 (Platz 4 → 5) und FILE20 (Gruppe → 1), <c>docs/analyse/abgleich-dosbox.md</c> §3.3.
+    /// [APPROX] Land DGROUP 0x6AC ist hier immer Deutschland (Verein der Zeile wie bisher).
+    /// </summary>
+    public static int WorldOnlyScore(GameState game)
+    {
+        var score = 0;
+        for (var i = 0; i < game.WorldCupRankings.Count; i++)
+            score += game.WorldCupPlace(i, NationalTeams.Germany) switch
+            {
+                0 => 0,
+                <= 8 and var p => 9 - p,
+                _ => 9 - 11,
+            };
+        return score;
     }
 
     /// <summary>
