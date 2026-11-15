@@ -111,6 +111,26 @@ macht nur der Bildschirm.
 - **Voraussetzung:** `neuer-manager`, `re-belastung` (auch als Bericht im Fehlschlag) und `torszenen` gemergt.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Plan, Start nach Go.
 
+### Spur `abgleich-dosbox-19` – Auswertung Aufnahme `runde-19` (Welle 3, R19-E3 = A)
+
+- **Entscheidung Nutzer 15.11.2026:** R19-E3 = A – Aufnahme `runde-19` liegt vor (Referenz-Repo #35–#38), Auswertung noch in
+  Runde 19, Gesamtreview danach.
+- **Teile:**
+  1. **#730 und A093:** FILE50 → FILE61 (Spieltag 2) → FILE63 (Spieltag 3) mit Reihenbildern je Minute gegen das Remake
+     (`hits.py`, Kontrast Sturm 1/3 und Paarsumme nach `belastung-staerke.md` §9); Ursache mit ausführbarem Beleg finden und
+     beheben (roter Test → grün, Abnahme #730) oder mit Beleg „im Bereich“ schließen; A093 (Technik −10) mitbelegen.
+  2. **#838 Echtzeit „Spiele laufen“:** Messwert der Aufnahme (Geschwindigkeit 0/60, DOSBox-Zyklen) statt ⅓ s je Minute; Takt
+     belegt oder `[APPROX]` mit Messwert.
+  3. **#847 Gegenprobe:** FILE64 → FILE65 gegen den Platztausch aus #854 (Tabellen, Kennung, Spieler); Abweichung → roter Test
+     und Fix, sonst Abgleich-Paar ergänzen.
+- **Dateigrenzen:** `Core/Squad.Training*.cs`, `Core/MatchEngine.Managed.cs`, Reihenwechsel in `MatchEngine.Minutes.cs`/
+  `OriginalMinutes`, `Core/LiveClock.cs` und Desktop-Bildtakt (nur #838), `Core/GameState.AddManager*.cs` (nur #847),
+  `tests/**/AbgleichOriginalPaareTests.cs`, `docs/analyse/abgleich-dosbox.md` (neuer Abschnitt Runde 19),
+  `docs/analyse/belastung-staerke.md`; `docs/analyse/inventur.md` nicht (Zeilen im PR, Leitstelle trägt nach). Mehrsaisonprobe,
+  wenn Kader oder Saisonwechsel berührt sind.
+- **Voraussetzung:** keine (parallel zum Erstreview von `pruefung-karte`); Merge nach `pruefung-karte`.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Go 15.11.2026.
+
 ### Gesamtreview am Rundenende
 
 ChatGPT GPT-6.1 Terra (Codex, mit Netzzugang) nach `anhang.md` C; besonders: Torszenen ändern keinen Spielwert, Platztausch
