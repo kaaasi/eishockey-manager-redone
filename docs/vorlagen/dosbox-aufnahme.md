@@ -192,3 +192,11 @@ freie laut README (Vorschlag ab **FILE60**; FILE59 frei lassen, falls belegt –
 1. Einen Vereinsstand mitten in der Saison laden (z. B. FILE05), sichern als **FILE64** (vorher).
 2. Über „Neuer“ einen Manager mit einem Verein aus einer anderen Liga als der gewählten Start-Liga hinzufügen; Tabelle der
    Start-Liga und der Herkunftsliga fotografieren, sichern als **FILE65**.
+
+### Sitzung 4 – Gegenprobe Belastung #730 (R19-E4 = A, Nutzer 15.11.2026), Start FILE50
+
+Zweck: fünf unabhängige Läufe desselben Spiels (`abgleich-dosbox.md` §4.4). Keine Bilder nötig.
+
+1. FILE50 laden, bis vor den 2. Spieltag spielen (nichts ändern), den 2. Spieltag **ohne** Mausklick spielen, im Hauptmenü danach
+   sichern als **FILE66**.
+2. Schritt 1 noch viermal wiederholen, jeweils neu aus FILE50: **FILE67**, **FILE68**, **FILE69**, **FILE70**.
