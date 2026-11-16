@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 21 – Umsetzung Restliste: Lader, Zufallsstrom, HOK-Werte, Finanzübersicht, Zusehen, RE vor DOSBox (Plan 16.11.2026, Entscheidungen 16.11.2026, Go offen)
+## Aktuelle Runde: Runde 21 – Umsetzung Restliste: Lader, Zufallsstrom, HOK-Werte, Finanzübersicht, Zusehen, RE vor DOSBox (Plan 16.11.2026, Go 16.11.2026)
 
 Runde 20 abgeschlossen am 16.11.2026: [archiv/runde-20.md](archiv/runde-20.md). Grundlage: Restliste
 [analyse/restliste-v1.md](analyse/restliste-v1.md) (V 85, D 45; Entscheidungen N1–N6, „Vorschlag Zuschnitt Runde 21 ff.“), #882,
@@ -17,7 +17,7 @@ gemeinsamer Ursache im Spielkern (Lader beim Programmstart, gemeinsamer Zufallss
 V-Themen (HOK-Werte, Finanzübersicht, Zusehen) umsetzen; die 22 D „RE zuerst“ und A093 als V/X/K einordnen. Übrige V-Themen
 (`bundestrainer-satz`, `kaderplatz-werte`, `kader-regeln`, `transfer-pool`, `wettbewerbe-regeln`, `einzelpunkte`) und neue V aus
 `re-vor-dosbox` → Runde 22; `marker-x` und Abschlussprüfung danach (Vorschlag). **Entscheidungen Nutzer 16.11.2026** (Optionen
-im Plan-PR #889): R21-D1 = A, R21-D2 = A, R21-D3 = A, R21-D4 = A; Modell `re-vor-dosbox` Claude Fable 5.2, übrige wie unten.
+im Plan-PR #889): R21-D1 = A, R21-D2 = A, R21-D3 = A, R21-D4 = A; Modell `re-vor-dosbox` Claude Fable 5.2, übrige wie unten. **Go Nutzer 16.11.2026** (alle Spuren samt Folgeläufen). Plan-Review #890 Ja (P3-1…4 eingearbeitet).
 
 **Base:** aktueller `main` beim Start der Spur (Welle 2 nach Merge von `start-lader`, Welle 3 nach Merge von `zufallsstrom`);
 tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 20 (Archiv): ein Branch `paket/<spur>`, ein PR, Teile als Commits,
@@ -45,7 +45,7 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
   Befund (roter Test bleibt, `spur-wartet`).
 - `Core/MatchEngine.TeamValues.cs`: `start-lader` (Welle 1), danach `zufallsstrom` nur A107. `Core/MatchEngine.Live.cs`: `zusehen`
   nur A541, `start-lader` nur A080, `teamwert-aufstellung` nur A544. `Core/Transfer.ComputerClub.cs`: `start-lader` nur A704,
-  `finanzuebersicht` nur A703. `Core/FinanceStadium.cs`, `Core/FinanceTalent.cs`: `finanzuebersicht` nur die Buchungsstellen
+  `finanzuebersicht` nur A703. `Core/FinanceMonthly.cs`: allein `start-lader`. `Core/FinanceStadium.cs`, `Core/FinanceTalent.cs`: `finanzuebersicht` nur die Buchungsstellen
   (A511, A513), `zufallsstrom` nur die Zufallsstellen (A510, A388). `Core/GameState.AddManager.cs`: `start-lader` nur A519,
   `zufallsstrom` nur A464. Spielstandfelder neu: Migration je Spur in eigener Datei `Core/SaveGame.Migration.<Spur>.cs`.
 
@@ -80,8 +80,8 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
      feststellen, ob das Original den Betrag in der Übersicht zeigt (Fundstelle), Remake-Kategorie dagegen.
   2. **Umsetzen:** wo die Übersicht abweicht, zeigt sie diese Posten nicht (nur das Finanzbuch, Wunsch 13.11.2026); Buchung über
      `GameState.Book` bleibt (N5); roter Test je Posten (Übersicht vor/nach Buchung). A703: ggf. neutrale Kategorie.
-- **Dateien:** `UI/Screens/Manager/FinanceScreen.cs`, Kategorien in `Core/Finance*.cs` (nur Übersichtszuordnung), die sechs
-  Buchungsstellen nur Markerzeile/Kategorie. **Tests:** `--schnell`, Mehrsaisonprobe nur, wenn sich Beträge ändern.
+- **Dateien:** `UI/Screens/Manager/FinanceScreen.cs`, Kategorien der Übersicht (`Core/Finance.cs`;
+  nicht `Core/FinanceMonthly.cs`, das gehört `start-lader`), die sechs Buchungsstellen nur Markerzeile/Kategorie. **Tests:** `--schnell`, Mehrsaisonprobe nur, wenn sich Beträge ändern.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** offen.
 
 ### Spur `zusehen` – Verein zum Zusehen markieren (Welle 1)
@@ -107,7 +107,8 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
      `re-vor-dosbox` abstimmen, Ergebnis im PR).
   3. **Abschluss:** Mehrsaisonprobe, erwartete Werte nach R21-D2, Markerzeilen im PR.
 - **Dateien:** `Core/MatchEngine.TeamValues.cs`, `Core/CupsEurope.cs`, `Core/CupsNational.GameState.cs` (nur A485),
-  `Core/FinanceMonthly.cs`, `Core/Transfer.ComputerClub.cs` (nur A704), `Core/GameState.AddManager.cs` (nur A519), Aufrufstelle in
+  `Core/FinanceMonthly.cs`, `Core/Transfer.ComputerClub.cs` (nur A704), `Core/GameState.AddManager.cs` (nur A519),
+  `Core/MatchEngine.Live.cs` (nur A080), Aufrufstelle in
   `Core/NewGame.cs`/`Core/GameSetup.cs` minimal, ggf. Migration.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** offen.
 
