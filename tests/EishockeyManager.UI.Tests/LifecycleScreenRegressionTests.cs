@@ -61,7 +61,9 @@ public class LifecycleScreenRegressionTests
         // Runde 21, Spur start-lader (R21-D2 = A): Lader 0x2EF1B beim Spielstart als erste Züge der Hauptquelle (Datei 0x439BB) –
         // anderer Zufallsverlauf, der erste Markt-Platz kommt von Verein 28; Prüfungen unverändert. Rückschaltprobe: src/ von
         // 40f67fc → 35.
-        Assert.Equal(28, origin.Index);
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Pool des Spielstarts aus dem gemeinsamen Strom (Datei 0x29896) – der erste
+        // Markt-Platz kommt von Verein 25; Prüfungen unverändert. Rückschaltprobe: src/ von f3490bd → 28.
+        Assert.Equal(25, origin.Index);
         Assert.False(origin.Players.Contains(player) && player.ContractYears == 2);
         Assert.True(game.Clubs.Count(c => c.Players.Contains(player)) <= 1);
         Assert.DoesNotContain(player, club.Players);

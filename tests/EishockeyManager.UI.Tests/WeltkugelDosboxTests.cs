@@ -34,7 +34,9 @@ public class WeltkugelDosboxTests
         // (R21-D2 = A): 22 → 24 – mit dem Lader beim Spielstart (Datei 0x439BB, anderer Zufallsverlauf) wird der Manager bei Saat 22
         // und 23 im Modus 4 in vier Saisons nie Bundestrainer (MultiSeason_ActiveCoach_FirstFriendlySetsEnergy). Die Probe hängt an
         // der Saat.
-        var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 24);
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): 24 → 25 – Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und der Tageslauf 0x07169 (Datei 0x07402–0x07AEF) ziehen aus dem gemeinsamen Strom, anderer Zufallsverlauf;
+        // bei Saat 24 wird der Manager im Modus 4 in vier Saisons nie Bundestrainer (25, 26, 28 erfüllen die Vorbedingung, 27 nicht).
+        var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 25);
         Assert.Equal(mode, game.Mode);
         // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „Verein 2, stark“ wie NationalCoachMode4MenuTests
         // (spielstaerke-manager-2, 0x98F8: Managerverein spielt sonst mit den Werten seiner Spieler).

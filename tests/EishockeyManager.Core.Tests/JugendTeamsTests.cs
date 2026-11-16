@@ -272,8 +272,9 @@ public class JugendTeamsTests
     // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
+    // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Tageslauf 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) im gemeinsamen Strom.
     private const string ExpectedActive =
-        "0:Schueler:2/11/67;0:Jugend:2/11/67;0:Junioren:2/11/62;1:Schueler:1/11/78;1:Jugend:1/11/76;1:Junioren:1/11/72;2:Schueler:1/6/81;2:Jugend:1/6/81;2:Junioren:1/6/80;3:Schueler:1/6/84;3:Jugend:1/6/84;3:Junioren:1/6/84";
+        "0:Schueler:2/12/59;0:Jugend:2/11/65;0:Junioren:3/6/60;1:Schueler:2/6/69;1:Jugend:1/11/73;1:Junioren:2/11/71;2:Schueler:1/11/75;2:Jugend:1/6/79;2:Junioren:1/11/79;3:Schueler:1/6/81;3:Jugend:1/6/81;3:Junioren:1/6/82";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -352,8 +353,9 @@ public class JugendTeamsTests
     // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
+    // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Tageslauf 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) im gemeinsamen Strom.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/70;0:Jugend:2/2/71;0:Junioren:2/2/70;1:Schueler:2/6/60;1:Jugend:3/2/56;1:Junioren:2/6/61;2:Schueler:2/6/51;2:Jugend:3/6/48;2:Junioren:3/2/47;3:Schueler:3/2/48;3:Jugend:3/6/44;3:Junioren:3/6/43";
+        "0:Schueler:2/2/70;0:Jugend:2/2/71;0:Junioren:2/2/70;1:Schueler:2/6/58;1:Jugend:2/6/60;1:Junioren:2/6/62;2:Schueler:3/2/50;2:Jugend:3/2/51;2:Junioren:3/2/51;3:Schueler:3/6/42;3:Jugend:3/6/44;3:Junioren:3/6/44";
 }
 
 public class JugendTeamsMigrationTests

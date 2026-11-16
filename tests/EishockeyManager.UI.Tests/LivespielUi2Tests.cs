@@ -290,6 +290,8 @@ public sealed class LivespielUi2Tests
         // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): Saat 1995 statt 1994 – mit der Spielvorbereitung aus den
         // Vereinsfeldern (Datei 0x097F3–0x0984F, anderer Zufallsverlauf) erreicht Verein 42 bei 1994 (und 1996, 1998) die Play-offs
         // nicht (nächster Spieltag 216); 1995, 1997, 1999–2002 haben den Play-off-Tag 149. Die Probe hängt an der Saat.
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 1995 statt 1994 – Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und der Tageslauf 0x07169 (Datei 0x07402–0x07AEF) ziehen aus dem gemeinsamen Strom, anderer Zufallsverlauf;
+        // bei Saat 1994 erreicht Verein 42 die Play-offs nicht (nächster Spieltag 216); 1993, 1995, 1997 erfüllen die Vorbedingung.
         var game = NewGame.Create(d.Host.Assets.Database, setup, 1995);
         d.Host.Game = game;
         d.Host.Show(new MainMenuScreen(d.Host));

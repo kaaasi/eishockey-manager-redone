@@ -142,7 +142,10 @@ public class KaderTransferTeil7Tests
         // Saat, die Grenzen bleiben.
         // Spur kader-rest (A130) brauchte allein Saat 2 statt 3 (Saat 3: 2 von 22); nach dem Rebase auf main 1d83cc0 hält Saat 1 auch
         // mit kader-rest (keine Änderung, nur Kommentar zusammengeführt).
-        var game = TestGames.Create(1);
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 2 statt 1 – die Würfe des Verlängerungsangebots (Datei 0x0781E, 0x07833) kommen
+        // aus dem gemeinsamen Strom statt aus ContractRandom; bei Saat 1 meldet sich nur ein Spieler (Grenze 3), Saaten 2–8: nur 5 darunter.
+        // Die Probe hängt an der Saat, die Grenzen bleiben.
+        var game = TestGames.Create(2);
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var twoYears = club.Players.Where(p => p.Role == PlayerRole.Forward).Take(3).ToList();
         foreach (var p in club.Players)

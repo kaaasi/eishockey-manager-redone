@@ -27,7 +27,9 @@ public class PruefungKarteRunde16Tests
         // Saat 2 (bis Spur start-lader 5): Mit dem Lader beim Spielstart (Datei 0x439BB) verschiebt sich der Zufall; bei Saat 5 steht
         // dann Poolplatz 27 auf dem Markt, den AddUnseatedSquadPlayers ([APPROX]) überspringt (22–26, 28–32). Etwa jede zweite Saat
         // trifft das – Restlücke im PR der Spur, nicht Gegenstand dieses Tests.
-        var game = NewGame.Create(ClubDatabase.Parse(raw), setup, 2);
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 1 statt 2 – der Pool des Spielstarts zieht aus dem gemeinsamen Strom (Datei 0x29896);
+        // bei Saat 2 steht dann Poolplatz 3 auf dem Markt (dieselbe Restlücke wie oben), Saaten 1, 5, 6 treffen nicht.
+        var game = NewGame.Create(ClubDatabase.Parse(raw), setup, 1);
         Assert.Equal(GameMode.WorldOnly, game.Mode);
         var squad = game.Clubs[game.Managers[0].ClubIndex].Players;
         Assert.Equal(25, squad.Count);

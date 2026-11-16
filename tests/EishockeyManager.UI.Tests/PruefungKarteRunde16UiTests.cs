@@ -20,7 +20,9 @@ public class PruefungKarteRunde16UiTests
     {
         // Saat 1994 (bis Spur start-lader 1993): Mit dem Lader beim Spielstart (Datei 0x439BB, anderer Zufallsverlauf) bekommt der
         // Manager bei Saat 1993 keine Prämie. Die Probe hängt an der Saat.
-        var d = FlowTests.CreateDriver(1994);
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 1995 statt 1994 – Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und der Tageslauf 0x07169 (Datei 0x07402–0x07AEF) ziehen aus dem gemeinsamen Strom, anderer Zufallsverlauf;
+        // bei Saat 1994 bekommt der Manager keine Prämie, 1993, 1995, 1996 erfüllen die Vorbedingung.
+        var d = FlowTests.CreateDriver(1995);
         d.StartNewGame();
         var game = d.Host.Game!;
         for (var guard = 0; d.Host.Current is not SeasonEndSummaryScreen && guard++ < 20000;)

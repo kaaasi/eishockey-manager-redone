@@ -289,8 +289,9 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
-    [InlineData(false, "016999E95215A9F1")]
-    [InlineData(true, "67DE0322E2E09FAE")]
+    // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Verträge und Angebote des Tageslaufs 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Kaderplatzfelder des Markts und Starttendenz (Datei 0x42E6B), Laufbahnende freier Poolplätze (Datei 0x27897) ziehen aus dem gemeinsamen Strom.
+    [InlineData(false, "FDBA2A5C4CDAC152")]
+    [InlineData(true, "36CDD08E48A979E2")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -376,8 +377,9 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Pokalquelle (C…) neu – die Ernennung schaltet „WM-Spiele“ ein (Datei 0x54D38 → 0x553FF, 0x5545F), die WM-Gruppenspiele der
     // anderen Länder laufen durch die Minutenschleife (Datei 0x3702E). Rückschaltprobe: ohne „Options.ShowWorldCup = true“ in
     // GameState.ShowWorldCupForNationalCoach → alter Wert (…C908745551).
+    // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Verträge und Angebote des Tageslaufs 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Kaderplatzfelder des Markts und Starttendenz (Datei 0x42E6B), Laufbahnende freier Poolplätze (Datei 0x27897) ziehen aus dem gemeinsamen Strom.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=53|-1527054|WorldChampion=52|-4549921|WorldChampion=54|-9234027|WorldChampion=53|-16492322|R1374974225 C1503666360";
+        "WorldChampion=52|500000|WorldChampion=63|-1511739|WorldChampion=52|-4510467|WorldChampion=52|-9157756|WorldChampion=54|-16358428|R1079612249 C1767196361";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

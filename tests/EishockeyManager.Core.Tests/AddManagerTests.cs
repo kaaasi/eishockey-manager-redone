@@ -115,7 +115,10 @@ public class AddManagerTests
 
         game.AddManager(Newcomer(7));
         game.AddManager(new ManagerSetup { Name = "Drei", ClubIndex = 8 });
-        game.AddManager(new ManagerSetup { Name = "Vier", ClubIndex = 9 });
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Verein 10 statt 9 – der Platztausch der beiden Neuen davor (Datei 0x29C3B) zieht aus dem
+        // Spielzufall, der nach dem Spielstart anders steht (Pool Datei 0x29896, Starttendenz Datei 0x42E6B); Verein 9 verliert dabei seinen
+        // Ligaplatz („nicht wählbar“). Geprüft wird die Sperre bei vier Managern, nicht der Verein.
+        game.AddManager(new ManagerSetup { Name = "Vier", ClubIndex = 10 });
 
         Assert.False(game.CanAddManager); // [ORIGINAL] Datei 0x45057: Sperre bei vier Managern
         Assert.Throws<InvalidOperationException>(() => game.AddManager(new ManagerSetup { Name = "Fünf", ClubIndex = 10 }));

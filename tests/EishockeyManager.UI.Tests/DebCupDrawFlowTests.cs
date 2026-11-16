@@ -329,6 +329,8 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
+    // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und der Tageslauf 0x07169 (Datei 0x07402–0x07AEF) ziehen aus dem gemeinsamen Strom, anderer Zufallsverlauf
+    // ab dem Spielstart; mit und ohne Anzeige weiter gleich. Rückschaltprobe: src/ von f3490bd + dieser Test → rot (alte Werte).
     private const string Reference =
-        "1993: DEB 6, DM 2, Tab 15496 | 1994: DEB 8, DM 6, Tab 16005 | 1995: DEB 2, DM 2, Tab 15914 | 1996: DEB 1, DM 6, Tab 15929";
+        "1993: DEB 8, DM 8, Tab 15539 | 1994: DEB 3, DM 8, Tab 15720 | 1995: DEB 8, DM 3, Tab 16401 | 1996: DEB 19, DM 11, Tab 15890";
 }

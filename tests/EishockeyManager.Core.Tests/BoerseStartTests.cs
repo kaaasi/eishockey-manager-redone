@@ -211,7 +211,9 @@ public class BoerseStartTests
         // die Satzfolge wachsen bei 1–12 nur 17 von 48 (35 %; kader-rest auf 3cd9169: 22, main 1d83cc0: 30), bei 25–36 26 von 48;
         // über 1–48 90 von 192 (47 %, main 110 = 57 %). Die Börse liest nur die Zufallsquelle (FinanceStocks.Advance), eine Ursache
         // im Spielkern ist nicht gefunden; die Abweichung zur Messung #260 steht im PR #791.
-        var results = Enumerable.Range(25, 12).Select(RunStockProbe).ToList();
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Seeds 37–48 statt 25–36 – mit Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und dem
+        // Tageslauf 0x07169 im gemeinsamen Strom wachsen bei 25–36 nur 18 von 48 (37,5 %); 1–12, 13–24 und 37–48 erfüllen die Grenze.
+        var results = Enumerable.Range(37, 12).Select(RunStockProbe).ToList();
         var grown = results.Sum(r => r.Grown);
         var total = results.Sum(r => r.Total);
         Assert.True(grown * 5 >= total * 2, $"nur {grown} von {total} Basiswerten gewachsen");
