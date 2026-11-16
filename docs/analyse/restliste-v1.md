@@ -116,23 +116,24 @@ Markerzeile bleibt in ihrer Klasse (E/K), der genannte Teil ist Auftrag der Spur
 Je Spur roter Regressionstest mit Fundstelle; Stellen mit Verdacht vorher lesen (Feld „Verdacht“). Die frühere Spur
 `drittel-dm` entfällt (N1 = B).
 
-## DOSBox-Sammelliste (Klasse D, 45 Einträge)
+## DOSBox-Sammelliste (Klasse D, 22 Einträge nach `re-vor-dosbox`)
 
 Aufnahme nach [`vorlagen/dosbox-aufnahme.md`](../vorlagen/dosbox-aufnahme.md); was je Eintrag aufzunehmen ist, steht im Feld
 „Beleg“ der Markerliste. Gebündelt:
 
-- **Highscore und Saisonende:** A059, A065, A698, A801.
-- **Spielberechnung:** A080 (Teamwerte der Managervereine), A093 (Technikabzug außerhalb der eigenen Reihe), A095, A410, A425, A494, A553, A628.
-- **WM und „nur Weltkugel“:** A408, A497, A500, A671, A411.
-- **Kader, Talente, Transfer:** A117, A128, A131, A132, A259, A427, A480, A492, A629, A630, A672, A694, A707.
-- **Saisonwechsel:** A057, A206, A667, A670, A706.
+- **Highscore:** A065.
+- **Spielberechnung:** A095, A410.
+- **WM und „nur Weltkugel“:** A408, A411.
+- **Kader, Talente, Transfer:** A117, A128, A131, A132, A259, A427, A629, A630, A707.
+- **Saisonwechsel:** A057, A667, A706.
 - **Spielstände HOK:** A402, A599, A613, A614, A625.
-- **Live-Spiel, Finanzen, Ton/Bild:** A101, A455, A421, A002, A038.
 
-**RE zuerst** (Review #884 P2-3; Feld „Beleg“ beginnt mit „RE zuerst“): 22 D sind nach eigener Angabe aus em.exe lesbar bzw.
-aus dem Code klärbar und werden vor der Aufnahme gelesen (Spur `re-vor-dosbox`), dann V, X oder K: A002, A038, A059, A080,
-A101, A206, A421, A425, A455, A480, A492, A494, A497, A500, A553, A628, A670, A671, A672, A694, A698, A801. A713 war aus
-em.exe beschrieben und im Code eingeräumt und ist jetzt V (`transfer-pool`). Übrig für die reine Aufnahme: 23.
+**RE zuerst erledigt** (Spur `re-vor-dosbox`, Runde 21; [re-vor-dosbox.md](re-vor-dosbox.md)): Die 22 D mit „RE zuerst“ und A093
+(Aufnahme `a093`) sind gelesen und in `restliste-v1-klassen.csv` eingeordnet, keiner bleibt D – V: A080, A093, A101, A206,
+A421, A455, A492, A494, A497, A553, A628, A670, A671, A672, A698; X: A038, A425, A500, A694, A801; K: A002; E als Vorschlag
+mit Kennung N2 (Bestätigung Nutzer): A059, A480. Die Zusammenfassung oben, „Klasse V nach Themen“ und der erzeugte Block
+zeigen bis zum Generatorlauf der Spur `pruefung-karte` (R21-D3) noch den Stand davor (D 45, V 85). A713 war aus em.exe
+beschrieben und im Code eingeräumt und ist V (`transfer-pool`).
 
 ## Vorschlag Umfang der Abschlussprüfung
 

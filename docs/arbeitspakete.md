@@ -62,7 +62,8 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
      Liste der neuen V als Zuschnittsvorschlag für Runde 22.
 - **Abgrenzung:** keine Änderung unter `src/`, `tests/`; kein `markerliste.py --write`.
 - **Modell:** Claude Fable 5.2 (Nutzer 16.11.2026). **Erstreview:** Claude Opus 5.5 (Stichprobe je neuer Klasse gegen
-  em.exe). **Status:** in Arbeit (Claude Code, geplanter Lauf 16.11.2026).
+  em.exe). **Status:** fertig – Review (PR #891, 16.11.2026): Teile 1–3 erledigt, [analyse/re-vor-dosbox.md](analyse/re-vor-dosbox.md);
+  V 15, X 5, K 1, E-Vorschlag 2 (A059, A480), kein D mehr.
 
 ### Spur `hok-import-werte` – im HOK geführte Werte übernehmen (Welle 1, N4 = C)
 
