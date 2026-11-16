@@ -446,13 +446,21 @@ def render(markers: list[Marker], gone: list[Gone], classes: dict, problems: lis
 
 
 def render_deviations(markers: list[Marker], classes: dict) -> str:
-    """List for the user before v1.0 (R20-D3 addition): every entry except class X, by area."""
+    """List for the user before v1.0 (R20-D3 addition): every entry except class X, by area.
+
+    Functions without a marker whose reason is "nicht nötig" (runtime/platform routines, storage helpers without
+    game effect) are no deviation for the user and are only counted (review #884 P3-3).
+    """
     by_area: dict[str, list[tuple[str, str, str, str]]] = defaultdict(list)
     items = [(m.ident, m.path) for m in markers] + [(i, "") for i in classes if i.startswith("F")]
+    skipped = 0
     for ident, path in items:
         c = classes.get(ident, {})
         k = c.get("Klasse", "")
         if k in ("", "X"):
+            continue
+        if ident.startswith("F") and c.get("Abweichung") == "kein Marker" and c.get("Beleg", "").startswith("nicht nötig"):
+            skipped += 1
             continue
         by_area[c.get("Bereich") or "(ohne Bereich)"].append(
             (c.get("Funktion/Bildschirm") or path, c.get("Abweichung", ""), k, ident))
@@ -465,6 +473,7 @@ def render_deviations(markers: list[Marker], classes: dict) -> str:
         for fn, dev, k, ident in sorted(by_area[area], key=lambda t: ("VDEK".find(t[2]), t[0], id_num(t[3]))):
             out.append(f"| {md_cell(fn)} | {md_cell(dev)} | {k} | {ident} |")
         out.append("")
+    out.append(f"Nicht aufgeführt: {skipped} Funktionen ohne Marker mit Grund „nicht nötig“ (keine Spielwirkung).")
     return "\n".join(out)
 
 
