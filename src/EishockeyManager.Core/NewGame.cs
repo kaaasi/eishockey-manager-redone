@@ -31,13 +31,14 @@ public static class NewGame
             club.Players.AddRange(c.Players.Select(p => new Player { Name = p.Name, Role = p.Role, IsForeigner = p.IsForeigner }));
             return club;
         }).ToList();
+        // Spur start-lader (A106): [ORIGINAL] Lader 0x2EF1B beim Programmstart vor der Spielvorbereitung (Datei 0x439BB).
+        MatchEngine.LoadTeamValues(clubs, random);
 
         var places = StartOrder(seed); // R-K5: Ligamischung vor der Spielvorbereitung (Datei 0x43A17)
         var swaps = new List<(int Club, int Partner)>();
         var managers = AssignClubs(clubs, setup, random, swaps, places);
         foreach (var (club, partner) in swaps)
-            (clubs[club], clubs[partner]) = (WithStrength(clubs[club], clubs[partner].Strength),
-                WithStrength(clubs[partner], clubs[club].Strength));
+            (clubs[club], clubs[partner]) = (WithSlot(clubs[club], clubs[partner]), WithSlot(clubs[partner], clubs[club]));
 
         var schedules = new Dictionary<League, IReadOnlyList<MatchDay>>();
         foreach (var league in Enum.GetValues<League>())
@@ -61,6 +62,7 @@ public static class NewGame
         game.AssignStartPlayerIds(); // Spur „speichern“: dauerhafte Spieler-IDs, verbraucht keinen Zufall
         game.InitializeManagerSystems();
         game.InitializeLeagueSlots(places); // S-K6/R-K5: Satzfolge = Startmischung mit den Plätzen nach dem Managertausch
+        MatchEngine.StartGame(game); // Spur start-lader: Teamwerte der Managervereine (0x2A073), Wanderung des Spielstarts (0x43A73)
         game.BeginFirstTurn(); // ui-rest Teil 4 (R12U-04): Faktor des ersten Managerzugs (0x44E3F), eigene Zufallsquelle
         return game;
     }
@@ -273,14 +275,17 @@ public static class NewGame
     }
 
     /// <summary>
-    /// Kopie eines Vereins mit anderer Stärke (Teamwerte bleiben beim Platztausch am Platz, U15-a). Zu diesem Zeitpunkt trägt
-    /// der Verein nur die Felder aus <see cref="Create"/> (Index, Name, Stärke, Logo, Liga, Datenbankspieler).
+    /// Kopie eines Vereins mit Stärke und Teamwerten des Platzes <paramref name="slot"/> (Teamwerte bleiben beim Platztausch am
+    /// Platz, U15-a; Spur start-lader: auch die Werte des Laders, die beim Tausch 0x36169 schon im Vereinssatz stehen). Zu diesem
+    /// Zeitpunkt trägt der Verein nur die Felder aus <see cref="Create"/> (Index, Name, Stärke, Logo, Liga, Datenbankspieler,
+    /// Teamwerte).
     /// </summary>
-    private static Club WithStrength(Club club, int strength)
+    private static Club WithSlot(Club club, Club slot)
     {
         var copy = new Club
         {
-            Index = club.Index, Name = club.Name, Strength = strength, LogoGraphic = club.LogoGraphic, League = club.League,
+            Index = club.Index, Name = club.Name, Strength = slot.Strength, LogoGraphic = club.LogoGraphic, League = club.League,
+            TeamValues = slot.TeamValues,
         };
         copy.Players.AddRange(club.Players);
         return copy;

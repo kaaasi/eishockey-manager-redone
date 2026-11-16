@@ -28,8 +28,9 @@ public readonly record struct ClubTeamValues(
 public sealed partial class Club
 {
     /// <summary>
-    /// Teamwerte aus dem Lader 0x2EF1B (<see cref="MatchEngine.LoadTeamValues"/>); <c>null</c>, solange sie noch nicht
-    /// gezogen sind (neues Spiel vor dem ersten Spiel, Spielstand vor Schema 12).
+    /// Teamwerte aus dem Lader 0x2EF1B (<see cref="MatchEngine.LoadTeamValues(GameState)"/>, beim Spielstart in
+    /// <see cref="NewGame.Create"/>); <c>null</c> nur in Spielständen vor Schema 12, in Aufbauten ohne <see cref="NewGame.Create"/>
+    /// und beim Managerverein im Modus „nur Weltkugel“ nach dem HOK-Import (#747).
     /// </summary>
     public ClubTeamValues? TeamValues { get; set; }
 }
@@ -49,16 +50,24 @@ public static partial class MatchEngine
     ///   Remake über <c>RatedNation</c>, hier Abweichung 0.</item>
     /// </list>
     /// [APPROX] Für Byte 1 (Sturm) nimmt das Remake wie bisher die Vereinsstärke (Byte 0; bei den Vereinen 0 … 63 sind
-    /// beide gleich). Zeitpunkt: das Original lädt einmal beim Programmstart (0x437D5 → 0x2EF1B vor der
-    /// Spielvorbereitung); danach wandern Kondition, Technik und Form mit <see cref="DriftTeamValues"/> (Spielstart,
-    /// Saisonwechsel, zweimal je Woche; <c>docs/spielberechnung.md</c> §15). [APPROX] Das Remake zieht sie beim ersten
-    /// Spiel eines Spielstands aus <see cref="GameState.Random"/>, damit Spielstart und Kaderaufbau unverändert bleiben,
-    /// und wendet dort gleich die Wanderung des Spielstarts an (0x43A73); ältere Spielstände ebenso beim nächsten Spiel.
+    /// beide gleich).
+    /// [ORIGINAL] Zeitpunkt (Spur start-lader, A106): einmal beim Programmstart, Datei 0x439BB <c>call 0xE0:0x75</c> in 0x437D5,
+    /// vor der Spielvorbereitung 0x28165 (Datei 0x43A61); danach wandern Kondition, Technik und Form mit
+    /// <see cref="DriftTeamValues"/> (Spielstart, Saisonwechsel, zweimal je Woche; <c>docs/spielberechnung.md</c> §15). Das
+    /// Remake zieht sie deshalb in <see cref="NewGame.Create"/> als erste Züge aus <see cref="GameState.Random"/>, vor der
+    /// Vereinswahl (<see cref="StartGame"/> schließt den Spielstart ab). Beim Laden eines Spielstands gibt 0x28165 AL ≠ 0 zurück,
+    /// Datei 0x43A6E springt über die Wanderung des Spielstarts nach 0x43AE2: die Werte des Laders werden durch die gesicherten
+    /// Vereinssätze ersetzt (Spielstände des Remakes ab Schema 12 führen <see cref="Club.TeamValues"/>; HOK-Import 0x18–0x1D).
+    /// [APPROX] Ältere Spielstände ohne Teamwerte (vor Schema 12) und Aufbauten ohne <see cref="NewGame.Create"/> ziehen sie
+    /// weiterhin beim ersten Bedarf (<see cref="EnsureTeamValues"/>).
     /// </summary>
-    public static void LoadTeamValues(GameState game)
+    public static void LoadTeamValues(GameState game) => LoadTeamValues(game.Clubs, game.Random);
+
+    /// <summary>Lader 0x2EF1B über eine Vereinsliste (siehe <see cref="LoadTeamValues(GameState)"/>), für den Programmstart vor
+    /// dem Aufbau des Spielstands (<see cref="NewGame.Create"/>).</summary>
+    public static void LoadTeamValues(IEnumerable<Club> clubs, Random random)
     {
-        var random = game.Random;
-        foreach (var club in game.Clubs.OrderBy(c => c.Index))
+        foreach (var club in clubs.OrderBy(c => c.Index))
         {
             var dayForm = OriginalMatch.Rnd(random, DayFormMin, DayFormMax);
             var v = club.Strength;
@@ -142,8 +151,28 @@ public static partial class MatchEngine
     public static bool IsDriftDay(int day) => day % 7 is 0 or 4;
 
     /// <summary>
-    /// Zieht die Teamwerte, falls ein Verein des Spielstands noch keine hat (siehe <see cref="LoadTeamValues"/>), und
-    /// wendet die Wanderung des Spielstarts an (<see cref="DriftTeamValues"/>).
+    /// Abschluss des Spielstarts nach der Spielvorbereitung (<see cref="NewGame.Create"/>):
+    /// <list type="number">
+    /// <item>[ORIGINAL] Teamwerte der Managervereine aus der Aufstellung: in der Managerschleife der Spielvorbereitung nach der
+    ///   Aufstellung 0x426BC <c>0x952C(m, 0)</c> (Datei 0x2A067–0x2A078, Schleife ab Manager <c>[bp−0x64]</c> = 0 beim neuen
+    ///   Spiel bis DGROUP 0x386, Datei 0x29B57–0x2A0A3; A519/A080). Im Modus „nur Weltkugel“ nicht (#747, wie
+    ///   <see cref="GameState.UpdateManagerTeamValues"/>).</item>
+    /// <item>[ORIGINAL] Wanderung des Spielstarts Modus 10 (Datei 0x43A73, nach 0x28165 und vor der Europapokal-Tabelle 0x341AB
+    ///   bei Datei 0x43A8C; A108).</item>
+    /// </list>
+    /// [APPROX] Das Remake lost den Europapokal schon in <see cref="GameState.InitializeCompetitions"/> vor diesem Schritt aus;
+    /// die Auslosung liest nur die Gegner (Index &gt; 64), die nicht wandern, und zieht aus <see cref="GameState.CupRandom"/>.
+    /// </summary>
+    internal static void StartGame(GameState game)
+    {
+        game.UpdateManagerTeamValues();
+        DriftTeamValues(game, TeamValueDrift.Season);
+    }
+
+    /// <summary>
+    /// [APPROX] Rückfall für Spielstände ohne Teamwerte (vor Schema 12) und Aufbauten ohne <see cref="NewGame.Create"/>: zieht
+    /// die Teamwerte, falls ein Verein des Spielstands noch keine hat (siehe <see cref="LoadTeamValues(GameState)"/>), und
+    /// wendet die Wanderung des Spielstarts an (<see cref="DriftTeamValues"/>). Neue Spiele haben sie ab dem Spielstart.
     /// [ORIGINAL] #747: Im Modus „nur Weltkugel“ trägt der Vereinssatz des Managervereins das Land (Regel 1 der Feldkarte); der
     /// Import lässt seine Teamwerte leer. Das zählt nicht als „noch nicht gezogen“ – sonst würfelte das erste Spiel alle
     /// importierten Teamwerte neu (FILE18 → FILE48: Teamwerte unverändert, gleicher Tag 218). Der Verein spielt in diesem Modus
@@ -154,7 +183,7 @@ public static partial class MatchEngine
         if (!game.Clubs.Any(c => c.TeamValues is null && !(game.WorldOnly && game.Managers.Any(m => m.ClubIndex == c.Index))))
             return;
         LoadTeamValues(game);
-        // [ORIGINAL] Wanderung des Spielstarts (0x43A73, Modus 10); [APPROX] beim ersten Spiel (siehe LoadTeamValues).
+        // [ORIGINAL] Wanderung des Spielstarts (0x43A73, Modus 10); [APPROX] hier erst beim ersten Bedarf (siehe oben).
         DriftTeamValues(game, TeamValueDrift.Season);
     }
 

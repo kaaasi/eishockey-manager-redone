@@ -12,7 +12,7 @@ public class KaderRestTransferTests
 {
     private static (GameState Game, Manager Manager, Club Club, TransferMarket Market) NewGame()
     {
-        var game = TestGames.Create();
+        var game = TestGames.Create(4); // Saat 4: mit dem Lader beim Spielstart (Spur start-lader, Datei 0x439BB) stehen bei Saat 3 schon 10 Spieler auf dem Markt.
         var manager = game.ActiveManager;
         return (game, manager, game.Clubs[manager.ClubIndex], game.TransferMarket);
     }

@@ -217,7 +217,7 @@ public class KaderStartTeil4Tests
     [Fact]
     public void Offer_ListPriceIsSlotPrice_LoanFeeThird()
     {
-        var game = TestGames.Create(3);
+        var game = TestGames.Create(4); // Saat 4: mit dem Lader beim Spielstart (Spur start-lader, Datei 0x439BB) stehen bei Saat 3 schon 10 Spieler auf dem Markt.
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];
         var defenders = club.Players.Where(q => q.Role == PlayerRole.Defender && !q.OnLoan).ToArray();
