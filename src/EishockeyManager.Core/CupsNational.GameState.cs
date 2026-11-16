@@ -145,6 +145,7 @@ public sealed partial class GameState
         NationalCoach = new NationalCoach(index, NationalTeams.Germany);
         if (NationalTeams.Germany < Clubs.Count)
             SetWatchMode(Clubs[NationalTeams.Germany], evict: true, WatchLive); // Spur zusehen: [ORIGINAL] Datei 0x55457
+        ShowWorldCupForNationalCoach(); // Spur zusehen Teil 2 (A541): [ORIGINAL] Datei 0x5541F/0x5545F
         NationalCoach.TakeOverAutoLineup(_nationalAutoLineupSaved); // A009: DGROUP 0x37F/0x380 überdauern das Amt
         HandNationalTacticsToCoach(NationalCoach);
         BookNational(NationalBookingKind.Budget, NationalBudget);
@@ -299,6 +300,7 @@ public sealed partial class GameState
     internal void StartNationalSeason()
     {
         TakeNationalTacticsFromCoach();
+        RestoreWorldCupOption(); // Spur zusehen Teil 2 (A541): [ORIGINAL] Datei 0x55757–0x5575A vor dem Amtsende 0x5580E
         if (NationalCoach is { } coach)
             _nationalAutoLineupSaved = coach.SavedAutoLineup;
         NationalCoach = null;

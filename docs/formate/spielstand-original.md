@@ -512,6 +512,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._turnRandom` | N | – | null |
 | `GameState._vacantNationalTactics` | A | `far:9657+0x26`, `A6FB+5`, `CAE9` (+0x30 · 5) | ohne Bundestrainer: Modi und Werte des Satzes 5, Anzeige „AUTOM.“ aus dem Vereinssatz des Landes (+0x26–0x2B, +0x35–0x3A) |
 | `GameState._worldCupRankings` | U | – | leer |
+| `GameState._worldCupOptionBackup` | U | `021D+15` | DGROUP 0x22C: Sicherung des Schalters „WM-Spiele“ während der WM des Bundestrainers (Spur `zusehen` Teil 2, Schema 52; Datei 0x5541F/0x5575A). Ort belegt, der Import liest ihn nicht: null |
 
 ### GameSetup, GameOptions, ManagerSetup
 
@@ -1078,7 +1079,8 @@ liegt bei den genannten Spuren.
   (`SaveGame.Migration.PruefungKarte.cs`).
 - Schema 52 (Runde 21, Spur `zusehen` Teil 1): `Club.WatchMode` – Markierung zum Zusehen, Vereinsfeld 0x34 Bits 6–7 (0x0AE2B).
   Migration: Modus 2 für die Vereine nicht entlassener Manager und das Land des Bundestrainers, sonst 0
-  (`SaveGame.Migration.Zusehen.cs`); Import siehe Zeile `Club.WatchMode` (U).
+  (`SaveGame.Migration.Zusehen.cs`); Import siehe Zeile `Club.WatchMode` (U). Teil 2: `GameState._worldCupOptionBackup`
+  (Sicherung 0x22C des Schalters „WM-Spiele“), Migration null.
 
 ### Zugang (Teil 3)
 

@@ -18,7 +18,7 @@ namespace EishockeyManager.Core;
 /// <item>[ORIGINAL] Aufrufer von 0x0AE2B: Spielstart und neuer Manager 0x28165 je Manager (Verein, 1, 2) (Datei 0x298EA,
 ///   0x29C1C; <see cref="MarkStartWatches"/>, <see cref="AddManager"/>), Ernennung zum Bundestrainer (Deutschland, 1, 2) (Datei
 ///   0x55457; <see cref="AppointNationalCoach"/>), dritter Knopf des Gegner-/Vereinsfensters (Datei 0x4E440–0x4E46A;
-///   <see cref="ToggleWatch"/>) und WM-Option 12 (Datei 0x2D3FD, Teil 2 der Spur). Kein Aufrufer nimmt eine Markierung
+///   <see cref="ToggleWatch"/>) und WM-Option 12 (Datei 0x2D3FD, <see cref="ToggleWorldCupOption"/>). Kein Aufrufer nimmt eine Markierung
 ///   wieder weg, wenn ein Manager entlassen wird oder das Amt des Bundestrainers endet (Datei 0x5574A–0x5575A löscht nur
 ///   Vereinsfeld 0x16 Deutschlands).</item>
 /// </list>
@@ -121,5 +121,50 @@ public sealed partial class GameState
                 SetWatchMode(Clubs[manager.ClubIndex], evict: true, WatchLive);
         if (NationalCoach is { } coach && coach.Nation < Clubs.Count)
             SetWatchMode(Clubs[coach.Nation], evict: true, WatchLive);
+    }
+    /// <summary>
+    /// Sicherung des Schalters „WM-Spiele“ (Option 12, DGROUP 0x229) während der WM mit Bundestrainer: DGROUP 0x22C (Spur
+    /// zusehen, Teil 2, A541); null = keine Sicherung offen.
+    /// </summary>
+    /// <remarks>
+    /// [ORIGINAL] Tagesfunktion 0x54C9F, Eintritt in die WM-Schleife Datei 0x553FF (13. April bzw. Modus 1 über 0x54D38): Datei
+    /// 0x5541F sichert 0x229 nach 0x22C vor der Ernennungsschleife, jede Ernennung setzt nach 0x0AE2B(Deutschland, 1, 2) den
+    /// Schalter auf 1 (Datei 0x5545F); nach dem letzten Schleifentag stellt Datei 0x55757–0x5575A ihn zurück, bevor das Amt endet
+    /// (0x5580E). Die Schleife 0x55570–0x55740 springt nur nach 0x55570 zurück, nie vor 0x5541F: die Sicherung läuft je Saison
+    /// genau einmal, die Rückstellung wirkt. Der HOK-Block 0x0A5D7 (16 Byte ab 0x21D) enthält 0x22C.
+    /// [APPROX] Das Remake sichert erst bei der Ernennung (<see cref="AppointNationalCoach"/>): Ohne Ernennung gibt es in der
+    /// Schleife kein Menü, in dem der Schalter sich ändern könnte – Sicherung und Rückstellung sind dann wirkungslos.
+    /// </remarks>
+    private bool? _worldCupOptionBackup;
+
+    /// <summary>[ORIGINAL] Datei 0x5541F + 0x5545F: Schalter sichern und für die WM des Bundestrainers einschalten.</summary>
+    internal void ShowWorldCupForNationalCoach()
+    {
+        _worldCupOptionBackup ??= Options.ShowWorldCup;
+        Options.ShowWorldCup = true;
+    }
+
+    /// <summary>[ORIGINAL] Datei 0x55757–0x5575A: Schalter nach der WM zurückstellen (vor dem Amtsende 0x5580E).</summary>
+    internal void RestoreWorldCupOption()
+    {
+        if (_worldCupOptionBackup is { } saved)
+            Options.ShowWorldCup = saved;
+        _worldCupOptionBackup = null;
+    }
+
+    /// <summary>
+    /// Schalter „WM-Spiele“ (Option 12) im Optionsbildschirm umschalten (Spur zusehen, Teil 2, A295). [ORIGINAL] Datei
+    /// 0x2D3CA–0x2D402: nach dem <c>xor 1</c> ruft das Original, wenn der Verein des Managers am Zug (Managersatz +0x14, DGROUP
+    /// 0x966F + 0x1AF · m) nicht Deutschland (DGROUP 0x6AC = 56) ist, 0x0AE2B(Deutschland, 1, 2 · neuer Wert): Einschalten markiert
+    /// Deutschland für die Live-Anzeige (mit Verdrängen), Ausschalten nimmt die Markierung weg. Der Bundestrainer an seinem Zug
+    /// (Verein = Deutschland) schaltet nur den Schalter. Rückgabe ist der neue Wert.
+    /// </summary>
+    public bool ToggleWorldCupOption()
+    {
+        Options.ShowWorldCup = !Options.ShowWorldCup;
+        var turn = NationalCoachMenu ? NationalCoach?.Nation ?? NationalTeams.Germany : ActiveManager.ClubIndex;
+        if (turn != NationalTeams.Germany && NationalTeams.Germany < Clubs.Count)
+            SetWatchMode(Clubs[NationalTeams.Germany], evict: true, Options.ShowWorldCup ? WatchLive : WatchOff);
+        return Options.ShowWorldCup;
     }
 }

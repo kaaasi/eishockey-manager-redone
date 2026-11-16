@@ -139,8 +139,8 @@ public static partial class MatchEngine
         // den Codeprüfungen liegt, auch die WM-Endrunde – [APPROX], denn dass die WM-Endrunde 0x36B5D überhaupt erreicht, ist
         // nur aus dem Aufrufmuster geschlossen, R9S-07, #358), das Remake
         // je Paarung (Vorgabe, Entscheidung Nutzer 01.11.2026); das Verhalten des Originals gibt es als Einstellung
-        // GameOptions.ManagerDayMinuteLoop (R14-D4 = A, #349). Das Setzen des WM-Schalters im Bundestrainer-Abschnitt
-        // (0x5541F/0x5575A, Sicherung 0x22C) ist nicht nachgebaut.
+        // GameOptions.ManagerDayMinuteLoop (R14-D4 = A, #349). Den WM-Schalter setzt im Bundestrainer-Abschnitt
+        // die Ernennung (0x5541F/0x5545F, Sicherung 0x22C) und stellt das Saisonende zurück (0x5575A; GameState.Watch.cs, A541).
         var minuteLoop = competition == MatchCompetition.WorldCup && knockOut
             ? false
             : game.Options.CupMatchUsesMinuteLoop(competition);
