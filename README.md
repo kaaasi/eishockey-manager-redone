@@ -61,9 +61,9 @@ dotnet run --project src/EishockeyManager.Tools -- screens gamedata screens setu
 - [x] **v0.1 – Asset-Viewer:** Grafiken mit originalgetreuen Farben, Datenbank, Fonts, Halle, Figuren
 - [x] **v0.2 – Rahmen:** Titel, Spielvorbereitung, Hauptmenü
 - [x] **v0.3 – Manager & Mannschaft:** Finanzen, Werbung, Stadion, Jugend, Posteingang, Aufstellung, Taktik, Verträge, Transfer, Training (Formeln teils angenähert)
-- [ ] **v0.4 – Saison:** Spieltage, Tabellen, Play-Offs, Aufstiegsrunden, Auf-/Abstieg, Saisonende, Spielende, Stärken, DEB-Pokal, Europapokal, WM, Spielmodus „nur Weltkugel“, Pokaltabellen, Highscore, Paarungen Liga ✔ – offen: Spielerstatistiken (nach dem Live-Spiel)
+- [x] **v0.4 – Saison:** Spieltage, Tabellen, Play-Offs, Aufstiegsrunden, Auf-/Abstieg, Saisonende, Spielende, Stärken, DEB-Pokal, Europapokal, WM, Spielmodus „nur Weltkugel“, Pokaltabellen, Highscore, Paarungen Liga, Spielerstatistiken ✔ (Restpunkte: [restliste-v1.md](docs/analyse/restliste-v1.md))
 - [x] **v0.5 – Laden/Sichern, Einstellungen, Sound und Musik** (Import `*.HOK` zurückgestellt)
-- [ ] **v0.9 – Live-Spiel (optional abschaltbar):** Anzeigetafel, Reporter, Torszenen – bewusst als letzter Schritt vor v1.0
+- [x] **v0.9 – Live-Spiel (optional abschaltbar):** Anzeigetafel, Reporter, Torszenen – bewusst als letzter Schritt vor v1.0
 - [ ] **v1.0 – Parität:** verhält sich wie das Original
 - [ ] **ab v1.0 – Unabhängig von Originaldateien zur Laufzeit:** eigene Grafiken, Fonts, Daten, Musik und Klänge, sodass
   das Remake ohne DOS-Kopie spielbar ist; die Originaldateien bleiben Beleg und Testgrundlage
