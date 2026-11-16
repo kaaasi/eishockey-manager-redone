@@ -152,7 +152,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 8012 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 8614 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -162,8 +162,8 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 |---|---:|---:|---:|---:|---:|---:|
 | umgesetzt | 318 | 259856 | 84 % | 293 | 245877 | 94 % |
 | genähert | 5 | 1900 | 1 % | 3 | 1038 | 0 % |
-| dokumentiert | 119 | 21491 | 7 % | 68 | 13986 | 5 % |
-| unbekannt | 237 | 26278 | 8 % | 0 | 0 | 0 % |
+| dokumentiert | 121 | 22088 | 7 % | 68 | 13986 | 5 % |
+| unbekannt | 235 | 25681 | 8 % | 0 | 0 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
 ### Übersicht je Bereich
@@ -172,7 +172,7 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 
 | Bereich | Datei | Größe | Funktionen | umgesetzt | genähert | dokumentiert | unbekannt | Rolle / Texte |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| Basis 0x0 | 0x01E00–0x0417F | 9088 | 93 | 6 % | 9 % | 8 % | 76 % | C-Laufzeit (Borland C++ 1991: Copyright, INT 21h, rand/LXMUL/LDIV) |
+| Basis 0x0 | 0x01E00–0x0417F | 9088 | 93 | 6 % | 9 % | 14 % | 70 % | C-Laufzeit (Borland C++ 1991: Copyright, INT 21h, rand/LXMUL/LDIV) |
 | Basis 0x238 | 0x04180–0x064E9 | 9066 | 15 | 96 % | 0 % | 4 % | 0 % | Spiellogik Basis (Saisonende, Statistik) |
 | Basis 0x46e | 0x064E0–0x080CA | 7147 | 14 | 95 % | 0 % | 5 % | 0 % | Spiellogik Basis (Training, Spieler) |
 | Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 98 % | 0 % | 2 % | 0 % | Spiellogik Basis (Spielberechnung, Zufall) |

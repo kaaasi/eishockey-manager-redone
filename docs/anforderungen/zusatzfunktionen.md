@@ -16,6 +16,10 @@ entschlüsselt sind, ist das im Code mit [APPROX] markiert.
 - **Anforderung:** das Spiel in anderen Sprachen als Deutsch spielbar.
 - **Einschränkung:** Die Originalfonts kennen nur ASCII und deutsche Umlaute. Andere Zeichen werden ersetzt
   (z. B. é → e). Sprachen mit anderen Schriftzeichen brauchen später eigene Fonts.
+- **Währungen (Nutzer 16.11.2026, N1 = B):** nach v1.0 mit der Sprache auch die Währung umschaltbar. Das Original rechnet intern
+  in einer Spieleinheit (Drittel-DM) und rechnet erst bei der Ausgabe um: Betrag × DGROUP [0x7A1] / [0x79D] (deutsch 1/3,
+  `docs/reverse-engineering.md` „Geldbeträge“); die Zahlenausgabe Datei 0x0B954 kennt einen zweiten Zweig mit Komma als
+  Tausendertrenner bei [0x79D] = 4. Das Remake führt bis v1.0 ganze DM (bewusste Abweichung, A040, A122, A124, A227, A501).
 
 ### 3. Cheatmenü
 - **Anforderung:** Cheatmenü zusätzlich zum Original.
