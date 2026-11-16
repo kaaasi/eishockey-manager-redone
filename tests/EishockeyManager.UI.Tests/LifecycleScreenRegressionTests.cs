@@ -64,7 +64,8 @@ public class LifecycleScreenRegressionTests
         // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Pool des Spielstarts aus dem gemeinsamen Strom (Datei 0x29896) – der erste
         // Markt-Platz kommt von Verein 25; Prüfungen unverändert. Rückschaltprobe: src/ von f3490bd → 28.
         // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
-        Assert.Equal(29, origin.Index);
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Verein 27 statt 29 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; der erste Listenwechsel (Datei 0x43A9F) zieht jetzt aus dem Strom, der erste Leihspieler der Liste kommt von einem anderen Verein. Die Probe hängt an der Saat.
+        Assert.Equal(27, origin.Index);
         Assert.False(origin.Players.Contains(player) && player.ContractYears == 2);
         Assert.True(game.Clubs.Count(c => c.Players.Contains(player)) <= 1);
         Assert.DoesNotContain(player, club.Players);

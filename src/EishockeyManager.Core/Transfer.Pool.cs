@@ -303,7 +303,7 @@ public sealed partial class TransferMarket
         ArgumentNullException.ThrowIfNull(game);
         CaptureDatabaseNames(game);
         BuildPool(game, game.Random, layout ?? TransferPoolLayout.Original, new HashSet<string>(), managerSlots);
-        RemovePoolNamesFromSquads(game);
+        RemovePoolNamesFromSquads(game, _ => true);
     }
 
     /// <summary>
@@ -319,7 +319,10 @@ public sealed partial class TransferMarket
         CaptureDatabaseNames(game);
         var held = new HashSet<string>();
         BuildPool(game, game.Random, TransferPoolLayout.Original, held, managerSlots: true, start: true);
-        RemovePoolNamesFromSquads(game);
+        // Die Plätze der Nationalspieler tragen bis zum Benennen (RenameStartNationals) vorläufige Liganamen: deren Spieler
+        // bleiben in ihren Kadern.
+        var nationals = PoolLayout.NationalNaming.Start;
+        RemovePoolNamesFromSquads(game, s => s.Index < nationals);
         return held;
     }
 
@@ -331,6 +334,8 @@ public sealed partial class TransferMarket
     {
         Rename(game, nationals: true, game.Random, held, exchange: false);
         AssignPoolIds(game);
+        var nationals = PoolLayout.NationalNaming.Start;
+        RemovePoolNamesFromSquads(game, s => s.Index >= nationals);
     }
 
     private void AssignPoolIds(GameState game)
@@ -340,9 +345,9 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>Die vom Pool vergebenen Datenbankspieler aus den Kadern der Computervereine nehmen (jeder Name nur einmal).</summary>
-    private void RemovePoolNamesFromSquads(GameState game)
+    private void RemovePoolNamesFromSquads(GameState game, Func<PoolSlot, bool> filter)
     {
-        foreach (var slot in _pool)
+        foreach (var slot in _pool.Where(filter))
         {
             var club = game.Clubs[slot.Club];
             if (slot.Owner != PoolOwner.Free || IsManaged(game, club))

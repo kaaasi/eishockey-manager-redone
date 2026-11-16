@@ -36,7 +36,8 @@ public class WeltkugelDosboxTests
         // der Saat.
         // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): 24 → 25 – Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und der Tageslauf 0x07169 (Datei 0x07402–0x07AEF) ziehen aus dem gemeinsamen Strom, anderer Zufallsverlauf;
         // bei Saat 24 wird der Manager im Modus 4 in vier Saisons nie Bundestrainer (25, 26, 28 erfüllen die Vorbedingung, 27 nicht).
-        var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 25);
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): 25 → 26 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 25, 27, 29 wird der Manager im Modus 4 in vier Saisons nie Bundestrainer; 26 und 28 erfüllen die Vorbedingung. Die Probe hängt an der Saat.
+        var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 26);
         Assert.Equal(mode, game.Mode);
         // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „Verein 2, stark“ wie NationalCoachMode4MenuTests
         // (spielstaerke-manager-2, 0x98F8: Managerverein spielt sonst mit den Werten seiner Spieler).

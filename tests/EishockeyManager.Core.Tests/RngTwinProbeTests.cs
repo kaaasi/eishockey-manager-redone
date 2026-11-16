@@ -284,10 +284,11 @@ public class RngTwinProbeTests
     // E5239927CC142252.
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Verträge und Angebote des Tageslaufs 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Kaderplatzfelder des Markts und Starttendenz (Datei 0x42E6B), Laufbahnende freier Poolplätze (Datei 0x27897) ziehen aus dem gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
-    [InlineData(false, 3, "8651005EE96E199D")]
-    [InlineData(true, 3, "A437FD3DF38455AC")]
-    [InlineData(false, 11, "9BCCA8F2B87DDE05")]
-    [InlineData(true, 11, "41F65141969ABB16")]
+    // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
+    [InlineData(false, 3, "4489A8687A3AFF49")]
+    [InlineData(true, 3, "C56702A1DC836BF5")]
+    [InlineData(false, 11, "A120AE3D661A579E")]
+    [InlineData(true, 11, "03822BEF380BEBDF")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -379,8 +380,9 @@ public class RngTwinProbeTests
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Verträge und Angebote des Tageslaufs 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Kaderplatzfelder des Markts und Starttendenz (Datei 0x42E6B), Laufbahnende freier Poolplätze (Datei 0x27897) ziehen aus dem gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
-    [InlineData(false, "B06B813909FB6999")]
-    [InlineData(true, "8413069DB85B4866")]
+    // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – Spielstart in der Reihenfolge des Originals aus dem gemeinsamen Strom (siehe oben).
+    [InlineData(false, "521372EA6EC50EB8")]
+    [InlineData(true, "0DB9738A6DAAE3DB")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

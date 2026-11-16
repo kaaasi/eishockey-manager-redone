@@ -43,7 +43,8 @@ public class SeasonEndStatusTests
     [Fact]
     public void Full_ManagerInTopFive_GetsStatusBit_OtherNot()
     {
-        var game = GameModeTests.Create(3, true, true, 8, 2); // #621 (R13GN-04): Saat wieder 3 – die Änderung 3 → 4 (L13) war nicht nötig
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 4 statt 3 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 3 steht Verein 8 unter den ersten fünf und Verein 2 nicht (Vorbedingung); 4–10 erfüllen sie. Die Probe hängt an der Saat.
+        var game = GameModeTests.Create(4, true, true, 8, 2); // #621 (R13GN-04): Saat wieder 3 – die Änderung 3 → 4 (L13) war nicht nötig
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         // Spielberechnung Teil 3 (Verletzungen 0x38B8F) schwächt die Kader: Verein 2 mit Spielerwerten 99 (wie PlayAtTopStrength).
         foreach (var p in game.Clubs[2].Players)
@@ -61,7 +62,8 @@ public class SeasonEndStatusTests
     [Fact]
     public void Full_EveryManagerInTopFive_GetsStatusBit()
     {
-        var game = GameModeTests.Create(24, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 69 statt 24 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4), anderer Zufallsverlauf; unter 24–90 stehen nur bei 69, 83 und 86 beide Managervereine unter den ersten fünf. Die Probe hängt an der Saat.
+        var game = GameModeTests.Create(69, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];
@@ -164,7 +166,8 @@ public class SeasonEndStatusTests
     [Fact]
     public void SaveLoad_StatusBitIsDerivedFromSavedData()
     {
-        var game = GameModeTests.Create(3, true, true, 8, 2); // #621 (R13GN-04): Saat wieder 3 – die Änderung 3 → 4 (L13) war nicht nötig
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 4 statt 3 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 3 steht Verein 8 unter den ersten fünf und Verein 2 nicht (Vorbedingung); 4–10 erfüllen sie. Die Probe hängt an der Saat.
+        var game = GameModeTests.Create(4, true, true, 8, 2); // #621 (R13GN-04): Saat wieder 3 – die Änderung 3 → 4 (L13) war nicht nötig
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         // Spielberechnung Teil 3 (Verletzungen 0x38B8F) schwächt die Kader: Verein 2 mit Spielerwerten 99 (wie PlayAtTopStrength).
         foreach (var p in game.Clubs[2].Players)

@@ -29,7 +29,8 @@ public class PruefungKarteRunde16Tests
         // trifft das – Restlücke im PR der Spur, nicht Gegenstand dieses Tests.
         // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 1 statt 2 – der Pool des Spielstarts zieht aus dem gemeinsamen Strom (Datei 0x29896);
         // bei Saat 2 steht dann Poolplatz 3 auf dem Markt (dieselbe Restlücke wie oben), Saaten 1, 5, 6 treffen nicht.
-        var game = NewGame.Create(ClubDatabase.Parse(raw), setup, 1);
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 2 statt 1 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 1, 4, 7 steht einer der Poolplätze des Kaders auf dem Markt (dieselbe Restlücke wie oben), 2, 3, 5, 6 treffen nicht. Die Probe hängt an der Saat.
+        var game = NewGame.Create(ClubDatabase.Parse(raw), setup, 2);
         Assert.Equal(GameMode.WorldOnly, game.Mode);
         var squad = game.Clubs[game.Managers[0].ClubIndex].Players;
         Assert.Equal(25, squad.Count);

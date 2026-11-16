@@ -135,10 +135,13 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
   3. **Tag und Start:** A464 (`GameState.AddManager.cs`), A521, A524 (`GameState.DailyRun.cs`), A533 (`GameState.MainMenu.cs`,
      nur im Ereignis `OnMainMenu`), A558 (`NewGame.cs`); Probe: Öffnen aller Bildschirme zieht nichts aus dem Strom (`AGENTS.md`
      §4, N6). Mehrsaisonprobe; erwartete Werte nach R21-D2 (nach Rebase auf `teamwert-aufstellung`).
+  4. **Übrige eigene Quellen** (Leitstelle 16.11.2026, N3 = B „alle Stellen“): `FinanceRandom`, `ContractRandom`, `CupRandom`
+     samt A464 Rest (Werbeangebote des Neuen) – je Stelle Fundstelle, roter Test, Marker; Migration im Spielstand wie bei
+     `TrendRandom`.
 - **Voraussetzung:** `start-lader` gemergt; Integration nach `teamwert-aufstellung`. **Modell:** Claude Opus 5.5. **Erstreview:**
-  Claude Opus 5.5. **Status:** in Arbeit (Draft-PR #905 `paket/zufallsstrom`, Claude Code, 16.11.2026): Teile 1 und 2 fertig,
-  Teil 3 Tageslauf und Managerzug fertig (A464 Kader/Tendenz, A521, A524, A533, Rest A725, Schema 52); offen Spielstart (A558,
-  `Squad.Setup.cs`), Bildschirmprobe, Mehrsaisonprobe, Rebase nach `teamwert-aufstellung`/`zusehen`.
+  Claude Opus 5.5. **Status:** in Arbeit (Draft-PR #905 `paket/zufallsstrom`, Claude Code, 16.11.2026): Teile 1–3 fertig
+  (Teil 3 mit Spielstart A558 in der Reihenfolge des Originals, Schema 53 nach Rebase auf `zusehen`, Mehrsaisonprobe
+  `ZufallsstromMehrsaisonTests`); offen Teil 4.
 
 ### Spur `pruefung-karte` – P3 und Markerliste (Welle 3, R21-D3 = A)
 

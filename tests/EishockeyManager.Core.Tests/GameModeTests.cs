@@ -472,8 +472,9 @@ public class GameModeTests
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Tageslauf 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
+    // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
     internal const string Mode4Reference =
-        "WorldChampion=60,CupWinner=13,GermanChampion=4,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=5,GermanChampion=4,EuropeanCupWinner=4|2543169,400000|WorldChampion=56,CupWinner=4,GermanChampion=4,EuropeanCupWinner=4|2325902,400000|WorldChampion=54,CupWinner=4,GermanChampion=12,EuropeanCupWinner=4|2448852,500000|WorldChampion=53,CupWinner=3,GermanChampion=3,EuropeanCupWinner=4|2413106,400000|R1710144211 C271999363";
+        "WorldChampion=52,CupWinner=15,GermanChampion=1,EuropeanCupWinner=2|1144216,400000|WorldChampion=58,CupWinner=15,GermanChampion=15,EuropeanCupWinner=1|2371757,400000|WorldChampion=52,CupWinner=7,GermanChampion=15,EuropeanCupWinner=15|2677209,500000|WorldChampion=52,CupWinner=10,GermanChampion=3,EuropeanCupWinner=15|3038420,400000|WorldChampion=57,CupWinner=6,GermanChampion=6,EuropeanCupWinner=3|3099684,400000|R82747972 C783911961";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
