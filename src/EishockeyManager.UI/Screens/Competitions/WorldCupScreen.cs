@@ -72,7 +72,7 @@ public sealed class WorldCupScreen : Screen
 
     public override void Update(InputState input)
     {
-        if (_info.Update(input))
+        if (_info.Update(input, Host.Game))
             return;
         if (input.LeftClick && RowAt(input.MouseY) is { } row && Host.Game is { } game && Group is { } g
             && g.Table(game.Clubs).ElementAtOrDefault(row) is { } clicked)

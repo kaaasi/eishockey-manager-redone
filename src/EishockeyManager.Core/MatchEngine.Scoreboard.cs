@@ -110,10 +110,13 @@ public sealed partial class LiveScoreboardRow
 ///   setzt dann DGROUP 0x5A56 = 1 (Live-Anzeige an diesem Spieltag, Datei 0x54C63–0x54C94). Eine Spielwertung 0:2/2:0 kehrt
 ///   vorher zurück (Datei 0x54599, 0x547BA) und bekommt keine Reihe. Die Reihenfolge der Reihen ist also die der Paarungen
 ///   im Spieltagsablauf; 0x5353C zeichnet sie in dieser Reihenfolge (y = 4 + 45p, Datei 0x536A9).</item>
-/// <item>[APPROX] Zum Zusehen markiert sind im Remake genau die Vereine mit Manager und das Land des Bundestrainers
-///   (<see cref="MatchEngine.IsManaged"/>). Im Original markiert der Spielstart 0x28165 (Aufrufe Datei 0x298EA, 0x29C1C) je Manager
-///   den Managerverein (Modus 2, mit Verdrängen), die Ernennung zum Bundestrainer das eigene Land (Datei 0x55457); Klicks im Vereinsfenster (Datei 0x4E46A)
-///   und die WM-Option 12 (Datei 0x2D3FD) schalten Vereine um (0xAE2B, höchstens vier im Modus 2). Diese Schalter hat das Remake nicht.</item>
+/// <item>[ORIGINAL] Zum Zusehen markiert (Bit 7) ist ein Verein im Modus 2 der Markierung <see cref="Club.WatchMode"/>
+///   (Schalter 0x0AE2B, <see cref="GameState.SetWatchMode"/>): Spielstart und neuer Manager markieren den Managerverein, die
+///   Ernennung zum Bundestrainer das eigene Land, der dritte Knopf des Vereinsfensters schaltet um (Spur zusehen, Teil 1).</item>
+/// <item>[APPROX] Die Regeln der Managerpaarung (<see cref="MatchRules.ManagerMatch"/>: Energie 0x87F7, Eingriff, Torschützen)
+///   hängen im Remake weiter an <see cref="MatchEngine.IsManaged"/>; im Original prüft 0x52B91 die Reihenliste (F167). Ein
+///   markierter Verein ohne Manager bekommt also die Reihe und die Anzeige, aber keine Managerregeln; ein Managerverein ohne
+///   Reihe (abgelehnt, mehr als vier Reihen) behält sie.</item>
 /// <item>[APPROX] Höchstens <see cref="MaxRows"/> Reihen: 0x544C0 prüft die Grenze nicht, die Anzeige (0x233, fünf Wörter mit
 ///   Endmarke DGROUP 0x23B) und die Zähler (Datei 0x53CC8) kennen nur vier; mehr markierte Paarungen verhindert im Original
 ///   die Grenze in 0xAE2B.</item>
@@ -181,7 +184,7 @@ public static partial class MatchEngine
             board = new LiveScoreboard(game.Season, game.Day, competition);
             Scoreboards.AddOrUpdate(game, board);
         }
-        if (!IsManaged(game, home) && !IsManaged(game, away))
+        if (!home.WatchedLive && !away.WatchedLive)
             return null;
         return board.Add(home.Index, away.Index);
     }

@@ -45,7 +45,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 51;
+    public const int SchemaVersion = 52;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -127,6 +127,7 @@ public static partial class SaveGame
     /// 49 → 50 (Runde 17, Spur kader-rest Teil 1, vorläufig): <c>Player.PoolForm</c>, A066 (<c>SaveGame.Migration.KaderRest.cs</c>).
     /// 50 → 51 (Runde 20, Spur pruefung-karte Teil 2, #872): Reihen auf dem Eis nach dem letzten Spiel je Taktik
     /// (<c>SaveGame.Migration.PruefungKarte.cs</c>).
+    /// 51 → 52 (Runde 21, Spur zusehen Teil 1): Markierung zum Zusehen je Verein (<c>SaveGame.Migration.Zusehen.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
@@ -181,6 +182,7 @@ public static partial class SaveGame
             [48] = MigratePool,
             [49] = MigrateKaderRest,
             [50] = MigratePruefungKarte,
+            [51] = MigrateZusehen,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

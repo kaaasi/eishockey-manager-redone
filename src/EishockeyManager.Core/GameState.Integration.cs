@@ -27,6 +27,9 @@ public sealed partial class GameState
         // Paket „wettbewerbe“: DEB-Pokal (später Europapokal, WM) nach dem Spielmodus anmelden und auslosen.
         InitializeCompetitions();
 
+        // Spur zusehen: Managervereine zum Zusehen markieren (Datei 0x298EA, GameState.Watch.cs).
+        MarkStartWatches();
+
         // Spur wettbewerbe-spiel, Teil 8: automatische Aufstellung der Managervereine beim Spielstart (Datei 0x28165).
         ApplyAutoLineups();
         // Integration Runde 11: Bezugspunkt der Spielstärke ist die Aufstellung beim Spielstart (Club.ReferenceRating) –

@@ -133,7 +133,7 @@ public sealed class PromotionRoundScreen : Screen
 
     public override void Update(InputState input)
     {
-        if (InfoWindows.Nation.Update(input) | InfoWindows.Club.Update(input))
+        if (InfoWindows.Nation.Update(input, Host.Game) | InfoWindows.Club.Update(input, Host.Game))
             return;
         if (input.RightClick || input.Keys.Count > 0)
             Host.Show(_back);

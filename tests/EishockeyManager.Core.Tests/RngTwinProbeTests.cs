@@ -277,8 +277,13 @@ public class RngTwinProbeTests
     // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
-    [InlineData(false, 3, "084B6E6CE8B76C22")]
-    [InlineData(true, 3, "E5239927CC142252")]
+    // Runde 21, Spur zusehen Teil 2 (A541, R21-D2 = A, Rebase auf teamwert-aufstellung): neu nur Saat 3 (Bundestrainer) – die
+    // Ernennung schaltet „WM-Spiele“ ein (Datei 0x5545F, DGROUP 0x229 = 1 bis 0x5575A); die WM-Gruppenspiele anderer Länder laufen
+    // dann durch die Minutenschleife (Datei 0x3702E) statt den schnellen Weg; andere WM-Ergebnisse und Zufallsverlauf ab dem ersten
+    // WM-Tag. Rückschaltprobe: GameState.ShowWorldCupForNationalCoach ohne „Options.ShowWorldCup = true“ → 084B6E6CE8B76C22 /
+    // E5239927CC142252.
+    [InlineData(false, 3, "5FF3A7BAF1B48D37")]
+    [InlineData(true, 3, "7D49BE62CD29FA10")]
     [InlineData(false, 11, "E4B8D9CC73FB4913")]
     [InlineData(true, 11, "9DB92E386EF0B35C")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
@@ -475,9 +480,11 @@ public class RngTwinProbeTests
     /// der Nachrichtenleiste im Hauptmenü, ohne Wirkung auf den Spielverlauf – mit dieser Ausnahme stimmen alle Abdrücke unverändert
     /// (auch der Gehaltsfaktor je Managerzug verschiebt sie nicht).
     /// </summary>
+    // Spur zusehen (Runde 21): Club.WatchMode/WatchedLive (Markierung zum Zusehen, neu im Zustand) stehen nicht im Abdruck, damit
+    // die Abdrücke vergleichbar bleiben; die Spielwirkung (Reihen der Live-Anzeige) prüft ZusehenWatchTests.
     private static readonly HashSet<string> Excluded =
         ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked", "PurchasePrice", "InjuryKind",
-         "InjuryName", "HasNewMessage"];
+         "InjuryName", "HasNewMessage", "WatchMode", "WatchedLive"];
 
     /// <summary>
     /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:

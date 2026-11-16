@@ -141,6 +141,7 @@ public sealed partial class GameState
         managers.Add(manager);
 
         SeatAddedSquad(Clubs[clubIndex], setup, random);
+        SetWatchMode(Clubs[clubIndex], evict: true, WatchLive); // Spur zusehen: [ORIGINAL] Datei 0x29C1C vor dem Platztausch
         TransferMarket.RemoveListingsOfAddedClub(Clubs[clubIndex]);
 
         // [ORIGINAL] Datei 0x29C3B–0x29CF7 nach Kader und Markt, vor den Startwerten. Ausgeschlossen sind nur die Vereine der

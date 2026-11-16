@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 51) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 52) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -512,6 +512,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._turnRandom` | N | – | null |
 | `GameState._vacantNationalTactics` | A | `far:9657+0x26`, `A6FB+5`, `CAE9` (+0x30 · 5) | ohne Bundestrainer: Modi und Werte des Satzes 5, Anzeige „AUTOM.“ aus dem Vereinssatz des Landes (+0x26–0x2B, +0x35–0x3A) |
 | `GameState._worldCupRankings` | U | – | leer |
+| `GameState._worldCupOptionBackup` | U | `021D+15` | DGROUP 0x22C: Sicherung des Schalters „WM-Spiele“ während der WM des Bundestrainers (Spur `zusehen` Teil 2, Schema 52; Datei 0x5541F/0x5575A). Ort belegt, der Import liest ihn nicht: null |
 
 ### GameSetup, GameOptions, ManagerSetup
 
@@ -662,6 +663,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Club.ReferenceRating` | N | – | neu aus der Auto-Aufstellung |
 | `Club.SeriesCurrent` | B | `AB7B+0xA00` | DGROUP 0xB57B + 0x15 · Satz (64 Sätze) |
 | `Club.Strength` | A | `far:9657` | Datenbankstärke `kb\23` |
+| `Club.WatchMode` | U | `far:9657+0x34` Bits 6–7 | Markierung zum Zusehen (Spur `zusehen`, Schema 52; Schreiber 0x0AE2B). Ort belegt, der Import liest die Bits noch nicht: setzt `[APPROX]` die Managervereine und das Land des Bundestrainers auf Modus 2 (`GameState.MarkStartWatches`) |
 | `Club.Tactics` | B | `A6FB`, `A707`, `A701`, `CAE9` | Zeilen `Tactics` (Managervereine); sonst Automatik |
 | `Club.TeamValues` | B | `far:9657+0x17` | Zeilen `ClubTeamValues` |
 | `Club._autoLineup` | B | `0375+0` | 0x375 + 2 · m (aktuell); 0x376 + 2 · m sichert den Wert über die Spiele des Tages (re-runde-14.md, Taktik 375h) |
@@ -1075,6 +1077,10 @@ liegt bei den genannten Spuren.
   0x2E/0x30 nach dem letzten Spiel; die Spielvorbereitung 0x84D7 setzt nur die Minuten 0x2F/0x31 zurück (Datei 0x853F). Import und
   Export lesen/schreiben sie (`OriginalImport.ApplyTeamValues`, `OriginalExport.League.cs`). Migration: 0 wie FILE02
   (`SaveGame.Migration.PruefungKarte.cs`).
+- Schema 52 (Runde 21, Spur `zusehen` Teil 1): `Club.WatchMode` – Markierung zum Zusehen, Vereinsfeld 0x34 Bits 6–7 (0x0AE2B).
+  Migration: Modus 2 für die Vereine nicht entlassener Manager und das Land des Bundestrainers, sonst 0
+  (`SaveGame.Migration.Zusehen.cs`); Import siehe Zeile `Club.WatchMode` (U). Teil 2: `GameState._worldCupOptionBackup`
+  (Sicherung 0x22C des Schalters „WM-Spiele“), Migration null.
 
 ### Zugang (Teil 3)
 

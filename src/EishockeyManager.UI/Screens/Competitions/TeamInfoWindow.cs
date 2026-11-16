@@ -31,10 +31,15 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// <item>[ORIGINAL] Die Ergebnisse stehen nur, wenn das Land nicht Deutschland und nicht der Verein des Managers ist; Platz der
 ///   Liste: Bundestrainer am Zug → 0, sonst die Managernummer. Reihenfolge: ungerade Plätze, dann gerade, je bis zum ersten
 ///   leeren; „hi:lo“, durch „,“ getrennt.</item>
+/// <item>[ORIGINAL] Dritter Knopf (Markierung zum Zusehen, Spur zusehen; Datei 0x4D78A–0x4D7D8): Knopfbild bei (243 | 215), statt
+///   Text das Zeichen Modus + 1, das 0x4BFF2 als Symbol 12 × 10 aus kb\4 (19 | 36 + 11 · Modus) nach (x + 23 | y + 1) setzt
+///   (Datei 0x4C10A–0x4C14A; Bild DGROUP 0xC12F = kb\4, geladen Datei 0x438B5). Klick schaltet 0 → 1 → 2 → 0 über 0x0AE2B
+///   (<see cref="GameState.ToggleWatch"/>, Datei 0x4E440–0x4E46F). Belegt an <c>eisbaeren_f24_00046</c> (Modus 0) und
+///   <c>_00122</c> (Deutschland mit Bundestrainer, Modus 2).</item>
 /// <item>[APPROX] Zeile und dritter Knopf hängen im Original am Wettbewerbscode DGROUP 0xD0C2 = 0 (Hauptmenü; nach
 ///   Freundschaftsspielen bleibt der Code bis zum nächsten Tag stehen, daher fehlen sie in DOSBox 44 und
-///   <c>bundestrainer_00417</c>). Das Remake zeigt die Zeile immer und den dritten Knopf (Einschätzung des Gegners, Vereinsfeld
-///   0x34 Bits 6–7 und DGROUP 0xE1B6, Symbole aus einem nicht zugeordneten Bild) nie.</item>
+///   <c>bundestrainer_00417</c>). Das Remake führt den Code nicht und zeigt beide immer. Die Liste der Knopfplätze DGROUP 0xE1B6
+///   (Zeichen 1–3 nach dem Klick) ist Darstellung und entfällt.</item>
 /// <item>[APPROX] Das Gesicht neben der Flagge (0x110:0x5C, Quelle nicht gelesen) bleibt gelb; Lage vermessen.</item>
 /// <item>[APPROX] „Tore / Spiel“ kommt im Original aus 0xE0:0x70 (nicht gelesen): hier Tore · 10 / Spiele je Seite, „a.b:c.d“.</item>
 /// </list>
@@ -45,6 +50,9 @@ public sealed class TeamInfoWindow
     public const int Top = 44;
     public static readonly Rect Box = new(Left, Top, 9 * 24, 10 * 19);
     public static readonly Rect CloseButton = Widgets.ButtonRect(Left + 0x0A, Top + 0xAB);
+
+    /// <summary>[ORIGINAL] Dritter Knopf (x + 150 | y + 171), Datei 0x4D7C6–0x4D7D3.</summary>
+    public static readonly Rect WatchButton = Widgets.ButtonRect(Left + 0x96, Top + 0xAB);
     public const int LabelX = Left + 5;
     public const int ValueX = Left + 0x66;
     public const int RecordValueX = Left + 0x5A;
@@ -76,15 +84,40 @@ public sealed class TeamInfoWindow
 
     public void Close() => _club = null;
 
-    /// <summary>Liefert true, solange das Fenster offen ist (Eingaben verbraucht).</summary>
-    public bool Update(InputState input)
+    /// <summary>
+    /// Liefert true, solange das Fenster offen ist (Eingaben verbraucht). Mit <paramref name="game"/> schaltet ein Klick auf den
+    /// dritten Knopf die Markierung zum Zusehen um (<see cref="WatchClick"/>).
+    /// </summary>
+    public bool Update(InputState input, GameState? game = null)
     {
-        if (_club is null)
+        if (_club is not { } club)
             return false;
         if (input.Clicked(CloseButton) || input.RightClick || input.Pressed(Key.Escape) || input.Pressed(Key.Enter))
             Close();
+        else
+            WatchClick(input, game, club);
         return true;
     }
+
+    /// <summary>[ORIGINAL] Klick auf den dritten Knopf (nur linke Taste, Datei 0x4E42A–0x4E46A): Markierung umschalten.</summary>
+    internal static void WatchClick(InputState input, GameState? game, int club)
+    {
+        if (game is not null && club < game.Clubs.Count && input.Clicked(WatchButton))
+            game.ToggleWatch(game.Clubs[club]);
+    }
+
+    /// <summary>[ORIGINAL] Dritter Knopf mit dem Symbol der Markierung (Datei 0x4BFF2, Zweig Datei 0x4C10A–0x4C14A).</summary>
+    internal static void DrawWatchButton(Surface s, Assets a, int mode)
+    {
+        s.Blit(a.Image(2), new Rect(17, 179, Widgets.ButtonWidth, Widgets.ButtonHeight), WatchButton.X, WatchButton.Y, transparent: 0);
+        s.Blit(a.Image(WatchSymbolImage), WatchSymbol(mode), WatchButton.X + 23, WatchButton.Y + 1);
+    }
+
+    /// <summary>[ORIGINAL] Bild der Symbole: kb\4 (DGROUP 0xC12F, Datei 0x438B5).</summary>
+    public const int WatchSymbolImage = 4;
+
+    /// <summary>[ORIGINAL] Symbol des Modus: (19 | 36 + 11 · Modus), 12 × 10 (Datei 0x4C110–0x4C13A).</summary>
+    public static Rect WatchSymbol(int mode) => new(19, 36 + 11 * mode, 12, 10);
 
     /// <summary>Ein gezeichneter Text des Zeilenlaufs (Mini).</summary>
     public sealed record Line(string Text, int X, int Baseline, byte Color);
@@ -258,6 +291,7 @@ public sealed class TeamInfoWindow
         s.Blit(a.Image(2), new Rect(17, 179, Widgets.ButtonWidth, Widgets.ButtonHeight), CloseButton.X, CloseButton.Y,
             transparent: 0);
         CompetitionWidgets.Centered(s, mini, CloseButton.X, CloseButton.X + 59, CloseButton.Y + 7, "Reicht mir", 29, 1);
+        DrawWatchButton(s, a, game.Clubs[club].WatchMode);
         CompetitionWidgets.Centered(s, mini, Left, Left + 0xD8, Top + 0x3A, "Stärke:" + game.NationalInfoStrength(club), TextColor, null);
         foreach (var line in Lines(game, club))
             CompetitionWidgets.Left(s, mini, line.X, line.Baseline, line.Text, line.Color);

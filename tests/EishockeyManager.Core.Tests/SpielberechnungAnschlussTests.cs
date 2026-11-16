@@ -372,8 +372,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // (Datei 0x439BB vor der Spielvorbereitung 0x43A61), Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073) und
     // Wanderung des Spielstarts (Datei 0x43A73) in NewGame.Create statt beim ersten Spiel; anderer Zufallsverlauf ab dem
     // Spielstart. Rückschaltprobe: src/ von 40f67fc (ohne start-lader) + dieser Test → rot (alte Werte).
+    // Runde 21, Spur zusehen Teil 2 (A541, R21-D2 = A, Rebase auf start-lader): Konten und Hauptquelle gleich; Weltmeister und
+    // Pokalquelle (C…) neu – die Ernennung schaltet „WM-Spiele“ ein (Datei 0x54D38 → 0x553FF, 0x5545F), die WM-Gruppenspiele der
+    // anderen Länder laufen durch die Minutenschleife (Datei 0x3702E). Rückschaltprobe: ohne „Options.ShowWorldCup = true“ in
+    // GameState.ShowWorldCupForNationalCoach → alter Wert (…C908745551).
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=63|-1527054|WorldChampion=55|-4549921|WorldChampion=54|-9234027|WorldChampion=53|-16492322|R1374974225 C908745551";
+        "WorldChampion=52|500000|WorldChampion=53|-1527054|WorldChampion=52|-4549921|WorldChampion=54|-9234027|WorldChampion=53|-16492322|R1374974225 C1503666360";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

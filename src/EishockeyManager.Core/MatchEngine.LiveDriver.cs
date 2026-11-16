@@ -51,7 +51,7 @@ public static partial class MatchEngine
     private static MatchReport? PlayWithDriver(GameState game, Club home, Club away, MatchCompetition competition, bool knockOut,
         Random random)
     {
-        if (liveDriver is not { } driver || (!IsManaged(game, home) && !IsManaged(game, away)))
+        if (liveDriver is not { } driver || (!home.WatchedLive && !away.WatchedLive))
             return null;
         var day = LiveMatchDay.Begin(game, [new LiveFixture(home, away, competition, knockOut, random)]);
         var match = day.Matches[0];

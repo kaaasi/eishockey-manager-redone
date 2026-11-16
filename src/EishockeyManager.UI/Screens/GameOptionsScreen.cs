@@ -19,12 +19,12 @@ namespace EishockeyManager.UI.Screens;
 /// setzt <c>(x − 190) / 12 · 10</c> (0x2D51B). Torszenen (Index 9) = 2 zeichnet einen roten Punkt auf den Pinguin
 /// (0x2D048) und zeigt beim ersten Mal die Meldung „Neuer Spielmodus:“ (0x2D4EE, Merker DGROUP 0xE044).
 /// Kopfzeile Schrift Mini Farbe 1: „V1.00 - Ende: “ + Endjahr bzw. „ Nie.“ (DGROUP 0x5A14 ≥ 2000) + „ (Level n)“ mit
-/// n = 6 − DGROUP 0xED8 = Level + 1. Rechtsklick (Mausereignis 3) verlässt den Bildschirm.
+/// n = 6 − DGROUP 0xED8 = Level + 1. Rechtsklick (Mausereignis 3) verlässt den Bildschirm. Schalter 12 „WM-Spiele“ markiert
+/// Deutschland zum Zusehen (0x2D3D5, 0x30:0xB; <see cref="GameState.ToggleWorldCupOption"/>, Spur zusehen Teil 2).
 /// <para>
 /// [APPROX] Nicht nachgebaut: die zweite Kopfzeile „RAM: … Bytes frei.“ (DOS-Speicher, im Remake ohne Bedeutung); die
-/// Speicherprüfung vor Torszenen-Stufe 2 (0x2D362: unter 200.000 Bytes frei → Stufe 0); die Folge des WM-Schalters über
-/// das Manager-Statusbyte (0x2D3D5, 0x30:0xB). Hintergrundgrafik (Index 13, DGROUP 0x22A) und Scrolling (Index 14, je
-/// Manager) sind im Remake ohne Bedeutung und werden fest als „an“ gezeigt (wie Bild 48), Klicks darauf wirken nicht.
+/// Speicherprüfung vor Torszenen-Stufe 2 (0x2D362: unter 200.000 Bytes frei → Stufe 0). Hintergrundgrafik (Index 13, DGROUP 0x22A) und Scrolling
+/// (Index 14, je Manager) sind im Remake ohne Bedeutung und werden fest als „an“ gezeigt (wie Bild 48), Klicks darauf wirken nicht.
 /// Die Meldung „Neuer Spielmodus:“ erscheint einmal je geöffnetem Bildschirm statt einmal je Programmlauf. Level der
 /// Kopfzeile: aktiver Manager (DGROUP 0xED8 ist ein einzelner Wert).
 /// </para>
@@ -175,7 +175,7 @@ public sealed class GameOptionsScreen : Screen
                 options.ShowEuropeanCup = !options.ShowEuropeanCup;
                 break;
             case 12:
-                options.ShowWorldCup = !options.ShowWorldCup;
+                Host.Game!.ToggleWorldCupOption(); // [ORIGINAL] Datei 0x2D3D5–0x2D402: markiert Deutschland zum Zusehen (A295)
                 break;
             case ManagerDaySwitch:
                 options.ManagerDayMinuteLoop = !options.ManagerDayMinuteLoop;

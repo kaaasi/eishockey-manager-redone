@@ -106,7 +106,7 @@ public sealed class LeaguePairingsScreen : Screen
 
     public override void Update(InputState input)
     {
-        if (InfoWindows.Nation.Update(input) | InfoWindows.Club.Update(input))
+        if (InfoWindows.Nation.Update(input, Host.Game) | InfoWindows.Club.Update(input, Host.Game))
             return;
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
