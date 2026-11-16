@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Migration Schema 51 → 52 (Runde 21, Spur zufallsstrom, N3 = B): Die eigenen Zufallsquellen der Tendenz
+/// Migration Schema 52 → 53 (Runde 21, Spur zufallsstrom, N3 = B): Die eigenen Zufallsquellen der Tendenz
 /// (<c>GameState._trendRandom</c>, A725) und des Faktors je Managerzug (<c>GameState._turnRandom</c>, A533) entfallen; beide
 /// Stellen ziehen aus dem gemeinsamen Strom <c>GameState.Random</c>, der schon im Spielstand steht. [APPROX] Ein älterer Stand
 /// setzt seine Folge deshalb mit anderen Würfen fort als vor der Migration (der Zustand der entfallenen Quellen wird verworfen);

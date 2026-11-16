@@ -308,7 +308,7 @@ am Zug (Datei 0x7B29–0x7C04, nach der Heilung 0x7C12): t = +0x0E; mit random(0
 
 Seit Runde 21 (Spur `zufallsstrom`, N3 = B) zieht die Tendenz überall aus dem gemeinsamen Strom `GameState.Random` an der Stelle
 des Originals (Spielstart, neuer Manager, Markt, Talent, Tageslauf je Kaderplatz nach dem Training); die eigene Quelle
-`GameState.TrendRandom` ist entfallen (Spielstand Schema 52). `[APPROX]`: ein Kauf übernimmt Tendenz und Steuerbyte vom Markt-Platz (das Original legt
+`GameState.TrendRandom` ist entfallen (Spielstand Schema 53). `[APPROX]`: ein Kauf übernimmt Tendenz und Steuerbyte vom Markt-Platz (das Original legt
 beim Kauf 0x477E7 einen neuen Kaderplatz an, würfelt also neu, und kopiert den Markt-Platz darüber nur bei [bp−0x11] ≠ 0 oder
 einer Leihe, Datei 0x478CF–0x47907; Bedeutung von [bp−0x11] nicht geprüft), Startkader und ältere Spielstände ohne Wert (0 → Mitte der Stufe);
 die Änderung je Takt (A134, seit #688) überspringt Plätze ohne Wert oder Steuerbyte (0). Die Frage an den Verkäufer zeigt das Fragefenster des Transferbildschirms mit dem Namen des

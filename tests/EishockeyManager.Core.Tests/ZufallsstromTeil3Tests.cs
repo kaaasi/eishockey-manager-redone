@@ -8,7 +8,7 @@ namespace EishockeyManager.Core.Tests;
 /// <summary>
 /// Spur zufallsstrom, Teil 3 (N3 = B), Tageslauf und Managerzug: Lösen der Transfersperre (A521), Tendenz im Tageslauf (A524),
 /// Faktor je Managerzug (A533) ziehen aus dem gemeinsamen Strom <see cref="GameState.Random"/>, an der Stelle des Originals; die
-/// Quellen <c>TrendRandom</c> und <c>TurnRandom</c> entfallen (Rest von A725, Spielstand Schema 52). Vor der Spur rot: gezogen
+/// Quellen <c>TrendRandom</c> und <c>TurnRandom</c> entfallen (Rest von A725, Spielstand Schema 53). Vor der Spur rot: gezogen
 /// wurde aus <c>ContractRandom</c>, <c>TrendRandom</c> und <c>TurnRandom</c>.
 /// </summary>
 public class ZufallsstromTeil3Tests
@@ -109,21 +109,21 @@ public class ZufallsstromTeil3Tests
     }
 
     /// <summary>
-    /// Rest von A725, A533: Spielstand Schema 51 mit den entfallenen Quellen <c>_trendRandom</c> und <c>_turnRandom</c> lädt nach
-    /// der Migration 51 → 52; der gemeinsame Strom und der Faktor des laufenden Zugs bleiben.
+    /// Rest von A725, A533: Spielstand Schema 52 mit den entfallenen Quellen <c>_trendRandom</c> und <c>_turnRandom</c> lädt nach
+    /// der Migration 52 → 53; der gemeinsame Strom und der Faktor des laufenden Zugs bleiben.
     /// </summary>
     [Fact]
     public void SaveGame_Schema51_DropsOwnSources()
     {
         var game = Create(3);
         var root = JsonNode.Parse(Encoding.UTF8.GetString(SaveGame.Save(game)))!.AsObject();
-        Assert.Equal(52, SaveGame.SchemaVersion);
+        Assert.Equal(53, SaveGame.SchemaVersion);
         var state = root["spiel"]!.AsObject();
         Assert.False(state.ContainsKey("_trendRandom"));
         Assert.False(state.ContainsKey("_turnRandom"));
-        // Stand „Schema 51“ nachbauen: beide Quellen als eigene Objekte an ihrem Platz in der Feldfolge, Objektnummern fortlaufend
-        // in Dateireihenfolge (wie der Schreiber von Schema 51), Verweise umgeschrieben.
-        root["schema"] = 51;
+        // Stand „Schema 52“ nachbauen: beide Quellen als eigene Objekte an ihrem Platz in der Feldfolge, Objektnummern fortlaufend
+        // in Dateireihenfolge (wie der Schreiber von Schema 52), Verweise umgeschrieben.
+        root["schema"] = 52;
         var trendSource = state["Random"]!.DeepClone().AsObject();
         var turnSource = state["Random"]!.DeepClone().AsObject();
         trendSource["$id"] = -1;
