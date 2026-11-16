@@ -213,7 +213,7 @@ public sealed class TagesablaufRunde15Tests
     /// <summary>
     /// Teil 2: Im Hot-Seat würfelt das Original den Listenwechsel von Manager 1 erst nach dem Menü von Manager 0 (Datei
     /// 0x54E3F–0x54EF4: Wurf 0x54E65–0x54E7C, dann Menü 0x54EB2, dann der nächste Manager). Das Weitergeben des Zugs zieht also
-    /// genau einen Wurf aus der Hauptquelle. Prüfung: Stand im Menü von Manager 0 sichern, Zug weitergeben; der geladene Stand mit
+    /// genau diesen Wurf und den Faktor des neuen Zugs (Datei 0x44E3F, seit Spur zufallsstrom A533) aus der Hauptquelle. Prüfung: Stand im Menü von Manager 0 sichern, Zug weitergeben; der geladene Stand mit
     /// einem Wurf von Hand muss dieselbe Hauptquelle und dieselbe Transferliste haben. Vorher rot: alle Würfe vor dem ersten Menü,
     /// das Weitergeben zieht nichts.
     /// </summary>
@@ -233,6 +233,10 @@ public sealed class TagesablaufRunde15Tests
         Assert.Empty(game.Continue()); // Zug an Manager 1
         Assert.Equal(1, game.CurrentManager);
         probe.TransferMarket.ListChangeTurn(probe);
+        // Runde 21, Spur zufallsstrom (A533, R21-D2 = A): Nach dem Wurf des Listenwechsels (Datei 0x54E65) beginnt das Menü von
+        // Manager 1 (Datei 0x54EB2 → 0x44E22) und zieht den Faktor seines Zugs aus demselben Strom (Datei 0x44E3F) – vorher aus der
+        // eigenen Quelle TurnRandom. Das Weitergeben zieht also zwei Würfe in dieser Reihenfolge.
+        probe.DrawContractTurnFactor();
 
         Assert.Equal(probe.Random.Next(), game.Random.Next());
         Assert.Equal(probe.TransferMarket.Listings.Select(l => l.Player.Id), game.TransferMarket.Listings.Select(l => l.Player.Id));

@@ -273,8 +273,9 @@ public class JugendTeamsTests
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Tageslauf 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) im gemeinsamen Strom.
+    // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     private const string ExpectedActive =
-        "0:Schueler:2/12/59;0:Jugend:2/11/65;0:Junioren:3/6/60;1:Schueler:2/6/69;1:Jugend:1/11/73;1:Junioren:2/11/71;2:Schueler:1/11/75;2:Jugend:1/6/79;2:Junioren:1/11/79;3:Schueler:1/6/81;3:Jugend:1/6/81;3:Junioren:1/6/82";
+        "0:Schueler:2/11/66;0:Jugend:2/11/64;0:Junioren:2/11/60;1:Schueler:1/11/80;1:Jugend:1/11/76;1:Junioren:1/11/75;2:Schueler:1/6/82;2:Jugend:1/6/79;2:Junioren:1/6/80;3:Schueler:1/6/85;3:Jugend:1/6/83;3:Junioren:1/6/83";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -354,8 +355,9 @@ public class JugendTeamsTests
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Tageslauf 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) im gemeinsamen Strom.
+    // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/70;0:Jugend:2/2/71;0:Junioren:2/2/70;1:Schueler:2/6/58;1:Jugend:2/6/60;1:Junioren:2/6/62;2:Schueler:3/2/50;2:Jugend:3/2/51;2:Junioren:3/2/51;3:Schueler:3/6/42;3:Jugend:3/6/44;3:Junioren:3/6/44";
+        "0:Schueler:2/2/63;0:Jugend:2/2/68;0:Junioren:2/2/67;1:Schueler:3/2/51;1:Jugend:3/2/53;1:Junioren:3/2/52;2:Schueler:3/6/44;2:Jugend:3/6/44;2:Junioren:3/6/45;3:Schueler:3/6/42;3:Jugend:3/6/41;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

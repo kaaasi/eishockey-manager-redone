@@ -283,10 +283,11 @@ public class RngTwinProbeTests
     // WM-Tag. Rückschaltprobe: GameState.ShowWorldCupForNationalCoach ohne „Options.ShowWorldCup = true“ → 084B6E6CE8B76C22 /
     // E5239927CC142252.
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Verträge und Angebote des Tageslaufs 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Kaderplatzfelder des Markts und Starttendenz (Datei 0x42E6B), Laufbahnende freier Poolplätze (Datei 0x27897) ziehen aus dem gemeinsamen Strom.
-    [InlineData(false, 3, "3475A8C38974A540")]
-    [InlineData(true, 3, "C4CCF6E3B3104AD6")]
-    [InlineData(false, 11, "EEE3C194B6E059A9")]
-    [InlineData(true, 11, "6F7E220D3A99A5D7")]
+    // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
+    [InlineData(false, 3, "6934F0FB621E478C")]
+    [InlineData(true, 3, "D79061CFD39B1D36")]
+    [InlineData(false, 11, "5417AE63AD29AD49")]
+    [InlineData(true, 11, "FAC7112960E4A546")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -377,8 +378,9 @@ public class RngTwinProbeTests
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Verträge und Angebote des Tageslaufs 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Kaderplatzfelder des Markts und Starttendenz (Datei 0x42E6B), Laufbahnende freier Poolplätze (Datei 0x27897) ziehen aus dem gemeinsamen Strom.
-    [InlineData(false, "A5041E782A708B43")]
-    [InlineData(true, "36196F073E01A975")]
+    // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
+    [InlineData(false, "D768715FEC72BA1A")]
+    [InlineData(true, "4A78E2E6FF1E84A5")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

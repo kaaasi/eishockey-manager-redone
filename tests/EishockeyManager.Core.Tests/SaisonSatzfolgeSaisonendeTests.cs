@@ -105,11 +105,17 @@ public class SaisonSatzfolgeSaisonendeTests
         var game = Create(seed: 9, 5);
         PlayToSeasonEnd(game);
         var random = game.Random.Capture();
+        var prepare = typeof(GameState).GetMethod("PrepareNextLeagueSlots",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        // Runde 21, Spur zufallsstrom (A533, R21-D2 = A): Nach der Bildung am 29. April zieht der nächste Managerzug seinen Faktor
+        // aus dem gemeinsamen Strom (Datei 0x44E3F, vorher eigene Quelle TurnRandom); der Startwert der Mischung leitet sich aus
+        // dem Stand des Stroms ab, eine erneute Bildung ergibt deshalb eine andere Folge als die vom 29. April. Geprüft wird
+        // unverändert, dass die Bildung nichts zieht: zweimal direkt aufgerufen, gleicher Zufallszustand, gleiche Folge.
+        prepare.Invoke(game, [game.History[^1]]);
         var slots = Enum.GetValues<League>().ToDictionary(l => l, l => game.NextLeagueSlots(l).ToArray());
         Assert.All(slots.Values, s => Assert.Equal(GameState.ClubsPerLeague, s.Length));
-        typeof(GameState).GetMethod("PrepareNextLeagueSlots",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-            .Invoke(game, [game.History[^1]]);
+        Assert.Equal(random, game.Random.Capture());
+        prepare.Invoke(game, [game.History[^1]]);
         Assert.Equal(random, game.Random.Capture());
         foreach (var league in Enum.GetValues<League>())
             Assert.Equal(slots[league], game.NextLeagueSlots(league));

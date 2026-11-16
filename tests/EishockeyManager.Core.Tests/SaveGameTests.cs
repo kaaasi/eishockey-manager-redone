@@ -70,7 +70,8 @@ public class SaveGameTests
     // 51 Tactics._matchDefenseLine/_matchAttackLine: Reihen auf dem Eis 0x2E/0x30 nach dem letzten Spiel (pruefung-karte Runde 20, #872).
     // 52 Club.WatchMode: Markierung zum Zusehen, Vereinsfeld 0x34 Bits 6–7 (Spur zusehen Runde 21, Teil 1).
     //    GameState._worldCupOptionBackup: Sicherung 0x22C des Schalters „WM-Spiele“ (Spur zusehen Teil 2, A541).
-    private const string ExpectedSchemaFingerprint = "08420D676E023E8F";
+    // 52 GameState._trendRandom und _turnRandom entfallen: gemeinsamer Zufallsstrom (Spur zufallsstrom Runde 21, N3 = B; A725, A533).
+    private const string ExpectedSchemaFingerprint = "26146F700F092E2E";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

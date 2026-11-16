@@ -77,7 +77,10 @@ public sealed class PlayoffSemifinalTests
         // kein schlechter Platzierter Heimrecht (gleicher Grund wie oben). Rückschaltprobe: siehe PR.
         // Runde 21, Spur start-lader (R21-D2 = A): Saat 9 → 11. Mit dem Lader beim Spielstart (Datei 0x439BB) hat bei Saat 9 in fünf
         // Saisons kein schlechter Platzierter Heimrecht (gleicher Grund wie oben; Saat 10: 1 Fall, 11: 4 Fälle).
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 11);
+        // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): Saat 11 → 13. Mit Wanderung in Satzfolge (Datei 0x9D1B), Tendenz im
+        // Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom hat bei Saat 11, 12 und 14 in fünf
+        // Saisons kein schlechter Platzierter Heimrecht (gleicher Grund wie oben; 13, 15–18 grün). Rückschaltprobe: siehe PR.
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 13);
         var active = game.Managers[1];
         var upsets = 0;
         var transfers = 0;

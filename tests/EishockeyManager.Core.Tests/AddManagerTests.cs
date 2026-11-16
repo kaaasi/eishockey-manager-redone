@@ -80,18 +80,20 @@ public class AddManagerTests
         Assert.Equal(played, game.PlayedMatchDays);
     }
 
+    /// <summary>
+    /// Runde 21, Spur zufallsstrom (A464, N3 = B; R15-E2 = C): Kader, Platztausch und Startwerte des Neuen ziehen aus dem gemeinsamen
+    /// Strom (Spielvorbereitung im Hinzufügen-Modus, Datei 0x2993A–0x29EF7, alle Würfe über 0x38:0x847). Vorher prüfte der Test das
+    /// Gegenteil (eigene Quelle, Hauptquelle unberührt); die Folge der Würfe rechnet ZufallsstromTeil2Tests nach.
+    /// </summary>
     [Fact]
-    public void AddManager_DoesNotConsumeMainRandom()
+    public void AddManager_DrawsFromSharedStream()
     {
         var game = MidSeason();
         var before = game.Random.Capture();
 
         game.AddManager(Newcomer());
 
-        var after = game.Random.Capture();
-        Assert.Equal(before.Next, after.Next);
-        Assert.Equal(before.NextP, after.NextP);
-        Assert.Equal(before.SeedArray, after.SeedArray);
+        Assert.NotEqual(before, game.Random.Capture());
     }
 
     [Fact]
@@ -113,15 +115,17 @@ public class AddManagerTests
         Assert.Throws<ArgumentException>(() => game.AddManager(new ManagerSetup { Name = "", ClubIndex = 8 }));
         Assert.Single(game.Managers);
 
-        game.AddManager(Newcomer(7));
-        game.AddManager(new ManagerSetup { Name = "Drei", ClubIndex = 8 });
-        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Verein 10 statt 9 – der Platztausch der beiden Neuen davor (Datei 0x29C3B) zieht aus dem
-        // Spielzufall, der nach dem Spielstart anders steht (Pool Datei 0x29896, Starttendenz Datei 0x42E6B); Verein 9 verliert dabei seinen
-        // Ligaplatz („nicht wählbar“). Geprüft wird die Sperre bei vier Managern, nicht der Verein.
-        game.AddManager(new ManagerSetup { Name = "Vier", ClubIndex = 10 });
+        // Runde 21, Spur zufallsstrom (R21-D2 = A; Teil 1 und A464 in Teil 2): Der Platztausch der Neuen (Datei 0x29C3B) zieht aus dem
+        // gemeinsamen Strom; welchen Platz ein Neuer übernimmt, hängt damit vom Stand des Stroms ab (mit festen Vereinen 8, 9, 10 war
+        // je nach Stand einer schon vergeben, „nicht wählbar“). Die Neuen nehmen deshalb den jeweils ersten freien Verein. Geprüft
+        // wird die Sperre bei vier Managern, nicht der Verein.
+        int Free() => Enumerable.Range(0, NewGame.SelectableClubs).First(c => !game.IsClubManaged(c));
+        game.AddManager(Newcomer(Free()));
+        game.AddManager(new ManagerSetup { Name = "Drei", ClubIndex = Free() });
+        game.AddManager(new ManagerSetup { Name = "Vier", ClubIndex = Free() });
 
         Assert.False(game.CanAddManager); // [ORIGINAL] Datei 0x45057: Sperre bei vier Managern
-        Assert.Throws<InvalidOperationException>(() => game.AddManager(new ManagerSetup { Name = "Fünf", ClubIndex = 10 }));
+        Assert.Throws<InvalidOperationException>(() => game.AddManager(new ManagerSetup { Name = "Fünf", ClubIndex = Free() }));
         Assert.Equal(4, game.Managers.Count);
     }
 

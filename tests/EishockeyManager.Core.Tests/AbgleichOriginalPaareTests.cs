@@ -93,7 +93,13 @@ public class AbgleichOriginalPaareTests
                 // Zufall: Pool-Mittel der Belastung über zehn Saaten 143–146, nur Saat 1 bei 136,7 (seit #748 anderer Zufallsverlauf).
                 new("Invariante.PoolMittel.Strain", Chance, Optional: true),
                 // Zufall: Wanderung der Teamwerte des Leerplatzes, seit #784 nur Saat 3 (12 → −4).
-                new("Clubs[51 LEER4].TeamValues.AttackCondition", Chance, Optional: true)],
+                new("Clubs[51 LEER4].TeamValues.AttackCondition", Chance, Optional: true),
+                // Runde 21, Spur zufallsstrom Teil 2 (A107, R21-D2 = A): Die kleine Wanderung geht in der Satzfolge des Originals
+                // (Datei 0x09D23–0x09D33) statt nach Vereinsindex; je Verein fallen damit andere Würfe. Abwehr-Kondition FRANKFURT
+                // nur bei der Standardsaat außerhalb (Original −9, Remake 8), Leerplatz LEER3 nur bei Saat 77 (18 zu 2) – Werte der
+                // Wanderung wie LEER4 oben, die übrigen Prüfsaaten treffen.
+                new("Clubs[13 ESC FRANKFURT].TeamValues.DefenseCondition", Chance, Optional: true),
+                new("Clubs[50 LEER3].TeamValues.DefenseCondition", Chance, Optional: true)],
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
                 // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1; Pflicht über

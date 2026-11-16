@@ -211,9 +211,12 @@ public class NeuerManagerTests
         Assert.Equal(again.Managers[1].ClubIndex, again.Clubs[again.Managers[1].ClubIndex].Index);
     }
 
-    /// <summary>Gleicher Spielstand, gleicher Platz (eigene Zufallsquelle, die Hauptquelle bleibt unberührt).</summary>
+    /// <summary>
+    /// Gleicher Spielstand, gleicher Platz. Runde 21, Spur zufallsstrom (A464, N3 = B; R15-E2 = C): Der Platz wird aus dem
+    /// gemeinsamen Strom gezogen (Datei 0x29C78), der danach weitergezählt ist – vorher eigene Quelle, Hauptquelle unberührt.
+    /// </summary>
     [Fact]
-    public void AddManager_Swap_IsDeterministic_AndKeepsMainRandom()
+    public void AddManager_Swap_IsDeterministic_AndAdvancesSharedStream()
     {
         var (a, seed) = FirstSwappingGame();
         var b = MidSeason(seed, 3);
@@ -221,7 +224,8 @@ public class NeuerManagerTests
 
         Assert.Equal(a.AddManager(Newcomer()).ClubIndex, b.AddManager(Newcomer()).ClubIndex);
         Assert.Equal(SaveGame.Save(a), SaveGame.Save(b));
-        Assert.Equal(c.Random.Next(), a.Random.Next());
+        Assert.NotEqual(c.Random.Capture(), a.Random.Capture());
+        Assert.Equal(b.Random.Next(), a.Random.Next());
     }
 
     /// <summary>Originaldaten: Verein der 2. Liga (SV BAYREUTH, 23) kommt in Saison 1 dazu und spielt in der Bundesliga.</summary>

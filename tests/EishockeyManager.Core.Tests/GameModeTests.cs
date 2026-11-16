@@ -471,8 +471,9 @@ public class GameModeTests
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Tageslauf 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) im gemeinsamen Strom.
+    // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     internal const string Mode4Reference =
-        "WorldChampion=55,CupWinner=14,GermanChampion=3,EuropeanCupWinner=2|1190868,400000|WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|2425354,400000|WorldChampion=63,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|2350396,400000|WorldChampion=52,CupWinner=13,GermanChampion=3,EuropeanCupWinner=3|2178623,400000|WorldChampion=63,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|2124288,400000|R1405288137 C2035153543";
+        "WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|1183253,400000|WorldChampion=63,CupWinner=12,GermanChampion=6,EuropeanCupWinner=3|2141186,400000|WorldChampion=63,CupWinner=3,GermanChampion=6,EuropeanCupWinner=3|2173295,400000|WorldChampion=52,CupWinner=5,GermanChampion=6,EuropeanCupWinner=6|2436923,500000|WorldChampion=52,CupWinner=3,GermanChampion=16,EuropeanCupWinner=6|2289334,400000|R473376893 C566416686";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
