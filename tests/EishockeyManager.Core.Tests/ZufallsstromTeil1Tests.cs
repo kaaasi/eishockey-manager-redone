@@ -119,12 +119,10 @@ public class ZufallsstromTeil1Tests
         Assert.Equal((strain, twin.TrendScore, twin.TrendControl), (p.Strain, p.TrendScore, p.TrendControl));
 
         var game = Create(3);
-        var trend = game.TrendRandom.Capture();
         var before = game.TransferMarket.Listings.Select(l => l.Player).ToHashSet();
         for (var i = 0; i < 20 && game.TransferMarket.Listings.All(l => before.Contains(l.Player)); i++)
             game.TransferMarket.ChangeList(game, game.Random);
         Assert.Contains(game.TransferMarket.Listings, l => !before.Contains(l.Player) && l.Player.TrendScore != 0);
-        Assert.Equal(trend, game.TrendRandom.Capture());
     }
 
     /// <summary>
@@ -136,7 +134,6 @@ public class ZufallsstromTeil1Tests
     public void GameStart_SquadTrend_FromSharedStreamInSlotOrder()
     {
         var game = Create(3, 2, 14);
-        var trend = game.TrendRandom.Capture();
         var sim = Copy(game.Random);
         var expected = new List<(int, int)>();
         var hidden = new List<(int, int)>();
@@ -159,7 +156,6 @@ public class ZufallsstromTeil1Tests
         Assert.Equal(hidden,
             game.Managers.SelectMany(m => game.Clubs[m.ClubIndex].Players).Select(p => (p.HiddenSkill2, p.HiddenSkill1)).ToList());
         Assert.Equal(sim.Capture(), game.Random.Capture());
-        Assert.Equal(trend, game.TrendRandom.Capture());
     }
 
     /// <summary>

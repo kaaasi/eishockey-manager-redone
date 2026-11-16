@@ -44,7 +44,7 @@ public class ZufallsstromTeil2Tests
     {
         var game = Create(3);
         var manager = game.Managers[0];
-        var (finance, trend) = (game.FinanceRandom.Capture(), game.TrendRandom.Capture());
+        var finance = game.FinanceRandom.Capture();
         var sim = Copy(game.Random);
         const int s = 60;
         var last = game.TransferMarket.PoolLayout.LeagueLast;
@@ -74,7 +74,6 @@ public class ZufallsstromTeil2Tests
         Assert.Equal(years, p.ContractYears);
         Assert.Equal(sim.Capture(), game.Random.Capture());
         Assert.Equal(finance, game.FinanceRandom.Capture());
-        Assert.Equal(trend, game.TrendRandom.Capture());
     }
 
     /// <summary>
@@ -153,13 +152,12 @@ public class ZufallsstromTeil2Tests
     /// A464 (Kader und Tendenz): Spielvorbereitung im Hinzufügen-Modus, Datei 0x2993A–0x29A5E – je Kaderplatz Poolindex
     /// random(1, 20) für den ersten Torhüter, bis der Platz frei ist, dann 0x42CB1 mit Energie random(80, 120) und Tendenz
     /// (0x42E4C, 0x42E6B → 0x4907A), +0x19 (0x299BF, 0x299D3), Alter random(19, 31) (0x29A1B) – aus dem gemeinsamen Strom.
-    /// Die Probe rechnet den ersten Platz nach und prüft, dass der Strom weiterzählt und <c>TrendRandom</c> ruht.
+    /// Die Probe rechnet den ersten Platz nach und prüft, dass der Strom weiterzählt.
     /// </summary>
     [Fact]
     public void AddManager_SquadDrawsFromSharedStream()
     {
         var game = Create(3);
-        var trend = game.TrendRandom.Capture();
         var before = game.Random.Capture();
         var sim = Copy(game.Random);
         PoolSlot? slot = null;
@@ -183,7 +181,6 @@ public class ZufallsstromTeil2Tests
         Assert.Equal((score, control), (first.TrendScore, first.TrendControl));
         Assert.Equal((over, under, age), (first.HiddenSkill2, first.HiddenSkill1, first.Age));
         Assert.NotEqual(before, game.Random.Capture());
-        Assert.Equal(trend, game.TrendRandom.Capture());
     }
 
     /// <summary>

@@ -508,8 +508,6 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._stocks` | B | `D0F4`, `01FD`, `A891`, `A895` | Zeilen `Stock` |
 | `GameState._teamRecordOpponents` | B | `AB7B+0xF94` | DGROUP 0xBB0F + 8 · Verein + Art (64 Vereine) |
 | `GameState._teamRecords` | B | `AB7B+0x1194` | DGROUP 0xBD0F + 0x10 · Verein + 2 · Art |
-| `GameState._trendRandom` | N | – | null |
-| `GameState._turnRandom` | N | – | null |
 | `GameState._vacantNationalTactics` | A | `far:9657+0x26`, `A6FB+5`, `CAE9` (+0x30 · 5) | ohne Bundestrainer: Modi und Werte des Satzes 5, Anzeige „AUTOM.“ aus dem Vereinssatz des Landes (+0x26–0x2B, +0x35–0x3A) |
 | `GameState._worldCupRankings` | U | – | leer |
 | `GameState._worldCupOptionBackup` | U | `021D+15` | DGROUP 0x22C: Sicherung des Schalters „WM-Spiele“ während der WM des Bundestrainers (Spur `zusehen` Teil 2, Schema 52; Datei 0x5541F/0x5575A). Ort belegt, der Import liest ihn nicht: null |
