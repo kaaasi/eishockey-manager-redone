@@ -56,6 +56,11 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         || stand.Original.Block("5DC3")[slot * OriginalSaveGame.SquadSlotLength + 0x0F] == 0
         || stand.Exported.Block("5DC3")[slot * OriginalSaveGame.SquadSlotLength + 0x0F] == 0;
 
+    /// <summary>Kaderplatz ohne Spieler (Poolindex +0x0F = 0) im Original oder Export.</summary>
+    private static bool UnusedSlot(Stand stand, int slot, int at) =>
+        stand.Original.Block("5DC3")[slot * OriginalSaveGame.SquadSlotLength + 0x0F] == 0
+        || stand.Exported.Block("5DC3")[slot * OriginalSaveGame.SquadSlotLength + 0x0F] == 0;
+
     private const int SlotsPerRecord = 0x618 / OriginalSaveGame.SquadSlotLength;
 
     /// <summary>Kaderplätze des Nationalkaders (Satz 5) im Block 5DC3.</summary>
@@ -119,8 +124,13 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("far:8253", 33, 0x00, 0x11, "Name: Reste eines früheren Namens hinter dem Nullbyte (Export schreibt Nullbytes)", If: BehindPoolName),
         new("5DC3", 0x34, 0x02, 0x02, "ungedeutet"),
         new("5DC3", 0x34, 0x1A, 0x1B, "ungedeutet (Kaderplatz; Markt: Sperre)"),
-        new("5DC3", 0x34, 0x22, 0x27, "Torhüter: Vereinswert Gegentore (Feldkarte: Torhüter 0)"),
-        new("5DC3", 0x34, 0x28, 0x2F, "Markt: Gehalt und Rundung Drittel-DM (Feldkarte TransferListing)"),
+        // Spur hok-import-werte: Torhüter haben dort an keinem Stand Werte (A624, Datei 0xA3F7 zählt nur +0x03); Reste stehen nur
+        // in ungenutzten Plätzen, der Vereinswert der Tore im Nationalkader.
+        new("5DC3", 0x34, 0x22, 0x27, "ungenutzte Kaderplätze: Reste der Vereinszähler (Feldkarte: ein Wertesatz je Spieler)", If: UnusedSlot),
+        new("5DC3", 0x34, 0x22, 0x27, "Nationalkader: Vereinswert der Tore (Satz 5) schreibt der Export nicht (Restlücke)", Records: NationalSlots),
+        // A607 (Spur hok-import-werte): Gehalt der Marktplätze übernimmt der Import; offen bleiben Satz 5 und ungenutzte Marktplätze.
+        new("5DC3", 0x34, 0x28, 0x2F, "Nationalkader: Gehalt; Rundung Drittel-DM; ungenutzte Marktplätze (Reste)",
+            If: (stand, slot, at) => slot / SlotsPerRecord != OriginalImport.MarketRecord || UnusedSlot(stand, slot, at)),
         // #738 (abgleich-fix, R15-E2 = C): Regel „+0x0A, aufgestellt, aber nicht eingesetzt“ entfällt – der Import stellt solche
         // Spieler nicht mehr auf (Reihe ohne eingesetzt zählt im Original weder im Spiel noch für 0x952C); ihre Reihe deckt +0x15 unten.
         new("5DC3", 0x34, 0x10, 0x14, "Werte im Nationalkader: ein Wertesatz je Spieler (Feldkarte, Teil 4b)"),
