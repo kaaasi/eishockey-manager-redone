@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 21 – Umsetzung Restliste: Lader, Zufallsstrom, HOK-Werte, Finanzübersicht, Zusehen, RE vor DOSBox (Plan 16.11.2026, Go offen)
+## Aktuelle Runde: Runde 21 – Umsetzung Restliste: Lader, Zufallsstrom, HOK-Werte, Finanzübersicht, Zusehen, RE vor DOSBox (Plan 16.11.2026, Entscheidungen 16.11.2026, Go offen)
 
 Runde 20 abgeschlossen am 16.11.2026: [archiv/runde-20.md](archiv/runde-20.md). Grundlage: Restliste
 [analyse/restliste-v1.md](analyse/restliste-v1.md) (V 85, D 45; Entscheidungen N1–N6, „Vorschlag Zuschnitt Runde 21 ff.“), #882,
@@ -16,8 +16,8 @@ DOSBox-Aufnahme `a093` (#888, Referenz-PR kaaasi/eishockey-manager-referenz#40 g
 gemeinsamer Ursache im Spielkern (Lader beim Programmstart, gemeinsamer Zufallsstrom, Teamwert) und die kleinen, unabhängigen
 V-Themen (HOK-Werte, Finanzübersicht, Zusehen) umsetzen; die 22 D „RE zuerst“ und A093 als V/X/K einordnen. Übrige V-Themen
 (`bundestrainer-satz`, `kaderplatz-werte`, `kader-regeln`, `transfer-pool`, `wettbewerbe-regeln`, `einzelpunkte`) und neue V aus
-`re-vor-dosbox` → Runde 22; `marker-x` und Abschlussprüfung danach (Vorschlag). **Entscheidungen R21-D1…D4:** Optionen im
-Plan-PR; Vorbelegung hier = Empfehlung, bis der Nutzer entscheidet.
+`re-vor-dosbox` → Runde 22; `marker-x` und Abschlussprüfung danach (Vorschlag). **Entscheidungen Nutzer 16.11.2026** (Optionen
+im Plan-PR #889): R21-D1 = A, R21-D2 = A, R21-D3 = A, R21-D4 = A; Modell `re-vor-dosbox` Claude Fable 5.2, übrige wie unten.
 
 **Base:** aktueller `main` beim Start der Spur (Welle 2 nach Merge von `start-lader`, Welle 3 nach Merge von `zufallsstrom`);
 tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 20 (Archiv): ein Branch `paket/<spur>`, ein PR, Teile als Commits,
@@ -61,7 +61,7 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
      Klassen in `restliste-v1-klassen.csv` (nur diese 23 Zeilen), Handtext der DOSBox-Sammelliste in `restliste-v1.md` (übrige D),
      Liste der neuen V als Zuschnittsvorschlag für Runde 22.
 - **Abgrenzung:** keine Änderung unter `src/`, `tests/`; kein `markerliste.py --write`.
-- **Modell:** Claude Opus 5.5 (Alternative: Claude Fable 5.2). **Erstreview:** Claude Opus 5.5 (Stichprobe je neuer Klasse gegen
+- **Modell:** Claude Fable 5.2 (Nutzer 16.11.2026). **Erstreview:** Claude Opus 5.5 (Stichprobe je neuer Klasse gegen
   em.exe). **Status:** offen.
 
 ### Spur `hok-import-werte` – im HOK geführte Werte übernehmen (Welle 1, N4 = C)
