@@ -143,6 +143,8 @@ public sealed partial class GameState
                 ? current
                 : throw new InvalidOperationException("In dieser Saison ist bereits ein anderer Manager Bundestrainer.");
         NationalCoach = new NationalCoach(index, NationalTeams.Germany);
+        if (NationalTeams.Germany < Clubs.Count)
+            SetWatchMode(Clubs[NationalTeams.Germany], evict: true, WatchLive); // Spur zusehen: [ORIGINAL] Datei 0x55457
         NationalCoach.TakeOverAutoLineup(_nationalAutoLineupSaved); // A009: DGROUP 0x37F/0x380 überdauern das Amt
         HandNationalTacticsToCoach(NationalCoach);
         BookNational(NationalBookingKind.Budget, NationalBudget);

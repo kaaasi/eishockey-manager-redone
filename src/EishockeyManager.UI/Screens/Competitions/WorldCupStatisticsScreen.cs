@@ -86,7 +86,7 @@ public sealed class WorldCupStatisticsScreen : Screen
 
     public override void Update(InputState input)
     {
-        if (_info.Update(input))
+        if (_info.Update(input, Host.Game))
             return;
         if (input.Pressed(Key.Escape) || input.RightClick)
             Host.Show(_back);

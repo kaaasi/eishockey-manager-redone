@@ -135,7 +135,7 @@ public sealed class CupPairingsScreen : Screen
                 Host.Show(_back);
             return;
         }
-        if (_info.Update(input))
+        if (_info.Update(input, Host.Game))
             return;
         if (input.Clicked(Buttons[0]))
             Day = Day == 0 ? Days - 1 : Day - 1;

@@ -85,7 +85,7 @@ public sealed class StrengthScreen : Screen
 
     public override void Update(InputState input)
     {
-        if (InfoWindows.Nation.Update(input) | InfoWindows.Club.Update(input))
+        if (InfoWindows.Nation.Update(input, Host.Game) | InfoWindows.Club.Update(input, Host.Game))
             return;
         if (input.LeftClick && RowAt(input.MouseY, Rows.Count) is { } clicked)
         {

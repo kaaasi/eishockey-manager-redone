@@ -475,9 +475,11 @@ public class RngTwinProbeTests
     /// der Nachrichtenleiste im Hauptmenü, ohne Wirkung auf den Spielverlauf – mit dieser Ausnahme stimmen alle Abdrücke unverändert
     /// (auch der Gehaltsfaktor je Managerzug verschiebt sie nicht).
     /// </summary>
+    // Spur zusehen (Runde 21): Club.WatchMode/WatchedLive (Markierung zum Zusehen, neu im Zustand) stehen nicht im Abdruck, damit
+    // die Abdrücke vergleichbar bleiben; die Spielwirkung (Reihen der Live-Anzeige) prüft ZusehenWatchTests.
     private static readonly HashSet<string> Excluded =
         ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked", "PurchasePrice", "InjuryKind",
-         "InjuryName", "HasNewMessage"];
+         "InjuryName", "HasNewMessage", "WatchMode", "WatchedLive"];
 
     /// <summary>
     /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:

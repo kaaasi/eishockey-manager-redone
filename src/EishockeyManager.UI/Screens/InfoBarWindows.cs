@@ -16,7 +16,7 @@ namespace EishockeyManager.UI.Screens;
 ///   Nationalteam) – das ist der Vereinsname oben rechts, nicht das Logo („Tag weiter“, <see cref="MainMenuScreen.ContinueLogo"/>).</item>
 /// </list>
 /// Länder zeigt <see cref="TeamInfoWindow"/>, Vereine und Europapokal-Gegner <see cref="ClubInfoWindow"/>. Öffnen und Schließen
-/// ändern keinen Spielzustand.
+/// ändern keinen Spielzustand; nur der Klick auf den dritten Knopf schaltet die Markierung zum Zusehen um (Spur zusehen).
 /// </remarks>
 public sealed class InfoBarWindows
 {
@@ -39,7 +39,7 @@ public sealed class InfoBarWindows
     /// <summary>Öffnet oder bedient ein Fenster; true, wenn die Eingabe verbraucht ist.</summary>
     public bool Update(GameState game, InputState input)
     {
-        if (Nation.Update(input) | Club.Update(input))
+        if (Nation.Update(input, game) | Club.Update(input, game))
             return true;
         if (input.Clicked(OpponentName) && game.UpcomingMatch(NationalMenu.Team(game)) is { } next)
         {
