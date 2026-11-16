@@ -98,8 +98,8 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
      `MatchEngine.Live.cs` nur diese Stelle).
 - **Dateien:** wie oben, neu `Core/GameState.Watch.cs`, `Core/SaveGame.Migration.Zusehen.cs`; Bildschirmfoto-Ablauf in
   `src/EishockeyManager.Tools/Scenarios/`. **Tests:** `--schnell`, Pixelvergleich der Knöpfe gegen Videobild, Laden/Speichern.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** in Arbeit (#894). Teil 1 ohne „Spielplan des
-  Gegners“ fertig (Schalter 0x0AE2B, Knöpfe, Anzeige, Migration 51 → 52); offen: Spielplan des Gegners 0x05CA0, Teil 2.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** fertig, Review (#894). Teil 1 (Schalter 0x0AE2B,
+  Knöpfe, Anzeige, Spielplan des Gegners 0x05CA0, Migration 51 → 52) und Teil 2 (Option 12, Sicherung 0x22C) umgesetzt.
 
 ### Spur `start-lader` – Lader 0x2EF1B beim Programmstart (Welle 1)
 
