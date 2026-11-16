@@ -18,7 +18,9 @@ public class PruefungKarteRunde16UiTests
     [GameDataFact]
     public void SeasonEndEvents_InfoBar_ShowsMoneyBeforePremium()
     {
-        var d = FlowTests.CreateDriver();
+        // Saat 1994 (bis Spur start-lader 1993): Mit dem Lader beim Spielstart (Datei 0x439BB, anderer Zufallsverlauf) bekommt der
+        // Manager bei Saat 1993 keine Prämie. Die Probe hängt an der Saat.
+        var d = FlowTests.CreateDriver(1994);
         d.StartNewGame();
         var game = d.Host.Game!;
         for (var guard = 0; d.Host.Current is not SeasonEndSummaryScreen && guard++ < 20000;)

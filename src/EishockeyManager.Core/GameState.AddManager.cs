@@ -171,9 +171,10 @@ public sealed partial class GameState
     /// DOSBox `runde-19` FILE64 → FILE65: EC HANNOVER auf Satz 4 mit 81/81/79/80/56/51 aus der Aufstellung statt 75/71/71/75/54/47
     /// der EISBÄREN BERLIN; <c>docs/analyse/abgleich-dosbox.md</c> §6). Auch der Weg der Tage mit Ereignis
     /// (<see cref="UpdateManagerTeamValues"/>) rechnet hierüber (Review #870 P3-3).
-    /// [APPROX] Vor dem ersten Spiel (Teamwerte noch nicht gezogen; Lader beim ersten Spiel, <c>MatchEngine.EnsureTeamValues</c>)
-    /// nichts, um den Zug der Teamwerte nicht vorzuziehen; das Original ruft 0x952C hier (Datei 0x2A073) und an den Tagen mit
-    /// Ereignis (Datei 0x54DAA) ohne diese Bedingung.
+    /// Seit Spur start-lader (A519) stehen die Teamwerte ab dem Spielstart (Lader Datei 0x439BB), die Rechnung läuft also wie im
+    /// Original (Datei 0x2A073, 0x54DAA) auch vor dem ersten Spiel; beim Spielstart ruft sie <c>MatchEngine.StartGame</c>.
+    /// [APPROX] Ohne Teamwerte (nur Spielstände vor Schema 12, <c>MatchEngine.EnsureTeamValues</c>) nichts, um den Zug der
+    /// Teamwerte nicht vorzuziehen.
     /// </summary>
     private void WriteLineupTeamValues(Club club)
     {

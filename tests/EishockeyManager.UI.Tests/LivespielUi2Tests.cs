@@ -285,7 +285,9 @@ public sealed class LivespielUi2Tests
         var d = FlowTests.CreateDriver();
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "LIVE", Head = 0, ClubIndex = 42 });
-        var game = NewGame.Create(d.Host.Assets.Database, setup, 1993);
+        // Saat 1994 (bis Spur start-lader 1993): Mit dem Lader beim Spielstart (Datei 0x439BB) erreicht Verein 42 bei Saat 1993 die
+        // Play-offs nicht (nächster Spieltag 216); die Probe braucht einen Play-off-Tag 149 mit Managerspiel.
+        var game = NewGame.Create(d.Host.Assets.Database, setup, 1994);
         d.Host.Game = game;
         d.Host.Show(new MainMenuScreen(d.Host));
         d.Frame();

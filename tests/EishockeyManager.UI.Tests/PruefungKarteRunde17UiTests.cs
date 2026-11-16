@@ -34,7 +34,9 @@ public class PruefungKarteRunde17UiTests
         // Runde 20, Spur pruefung-karte Teil 2 (#872, R15-E2 = C): Saat 11 statt 10 – mit den Reihen aus dem Vorspiel (0x2E/0x30,
         // Datei 0x84EB–0x857D) wird Manager 0 bei Saat 10 Fünfter ohne Prämie; unter 1–16 haben beide Manager bei 1, 4, 5, 7–9, 11,
         // 13 und 15 eine Prämie. Mit altem Code ist Saat 11 ebenfalls grün – die Probe hängt an der Saat.
-        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 11);
+        // Runde 21, Spur start-lader (R21-D2 = A): Saat 8 statt 11 – mit dem Lader beim Spielstart (Datei 0x439BB, anderer
+        // Zufallsverlauf) hat unter 1–5, 7–16 nur bei Saat 8 auch Manager 1 eine Prämie. Die Probe hängt an der Saat.
+        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 8);
         var records = game.History[^1].Managers;
         Assert.Equal(2, records.Count);
         Assert.All(records, r => Assert.True(r.Premium > 0, "Probe ohne Prämie prüft nichts"));

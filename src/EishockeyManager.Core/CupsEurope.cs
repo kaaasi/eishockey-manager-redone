@@ -23,9 +23,9 @@ namespace EishockeyManager.Core;
 /// A004 (Spur wettbewerbe-rest, Teil 2): [ORIGINAL] „Stärke“ der Auslosung ist 0x4D316 (Datei 0x34401–0x3440A, Vergleich
 /// mit 0x46): Mittel der sechs Vereinsfelder 0x18–0x1D (Kondition, Technik, Form von Abwehr und Sturm,
 /// <see cref="SpectatorRules.Strength"/>) – mit der Form der Europapokal-Gegner random(45, 55) − 5 (Lader, Index &gt; 64), nicht
-/// der Datenbankwert allein (bis Runde 16). [APPROX] Vor dem ersten Spiel hat das Remake noch keine geladenen Teamwerte (Lader
-/// beim ersten Spiel, <see cref="MatchEngine.EnsureTeamValues"/>); dann gelten Datenbankstärke ohne Streuung und Form 45
-/// (<see cref="MatchEngine.TeamValuesOf"/>). Der zweite Datenbankwert (Sturm) wird nicht geführt (A078).
+/// der Datenbankwert allein (bis Runde 16). [ORIGINAL] Auch die erste Auslosung beim Spielstart liest die gewürfelten Werte:
+/// Lader Datei 0x439BB vor der Spielvorbereitung, Tabelle 0x341AB erst Datei 0x43A8C (Spur start-lader, A418; bis dahin
+/// Datenbankstärke ohne Streuung und Form 45). [APPROX] Der zweite Datenbankwert (Sturm) wird nicht geführt (A078).
 /// </remarks>
 public sealed partial class EuropeanCup : ISeasonCompetition
 {

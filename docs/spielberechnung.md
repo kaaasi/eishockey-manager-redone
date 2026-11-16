@@ -343,8 +343,11 @@ Wettbewerbscode `[0xD0C2]` = 7 Liga bzw. 8 WM-Gruppe): r = random(0, 2 · |d|) (
 nach Vorzeichen, begrenzt auf 47 … 53 (`0x120:0x52`). Sie wirkt in 0x368B1 mit (0x17 − 44) / 2 = 1 … 4 auf die Stärke.
 
 **Remake** (`MatchEngine.TeamValues.cs`): `Club.TeamValues` (Abweichung von Kondition/Technik, Form, Tagesform; Schema
-12, Migration `SaveGame.Migration.SpielstaerkeManager.cs`). `[APPROX]` gezogen beim ersten Spiel eines Spielstands aus
-`GameState.Random` (Spielstart und Kaderaufbau bleiben unverändert; ältere Spielstände ebenso beim nächsten Spiel).
+12, Migration `SaveGame.Migration.SpielstaerkeManager.cs`). Gezogen beim Spielstart als erste Züge aus `GameState.Random`
+(`NewGame.Create`, Datei 0x439BB vor der Spielvorbereitung; danach Teamwerte der Managervereine aus der Aufstellung, Datei
+0x2A073, und Wanderung des Spielstarts, Datei 0x43A73; Spur start-lader, Runde 21 – bis dahin `[APPROX]` beim ersten Spiel).
+Beim Laden gelten die gesicherten Werte (Datei 0x43A6E überspringt die Wanderung). `[APPROX]` Spielstände vor Schema 12 ziehen
+weiter beim nächsten Spiel (`MatchEngine.EnsureTeamValues`).
 Computervereine spielen mit Teamwert + Streuung und Form des Laders, alle Vereine mit der Tagesform; Managervereine
 ohne Streuung und mit Form 50 (im Original aus den Spielern, 0x98F8, noch `[APPROX]`). Tagesform nach jedem Ligaspiel,
 WM ohne Nachführung (`RatedNation` hat keine eigenen Werte).

@@ -126,7 +126,10 @@ public class TeamScreenTests
     [GameDataFact]
     public void Transfer_InfoBuySellAndTalent()
     {
-        var d = FlowTests.CreateDriver();
+        // Saat 1994 (bis Spur start-lader 1993): Mit dem Lader beim Spielstart (Datei 0x439BB, anderer Zufallsverlauf) bietet der
+        // Sponsor bei Saat 1993 nach dem Kauf einen Zuschuss an (0x063BE, etwa jeder siebte Kauf) – das Fenster stünde vor dem
+        // Verkauf. Die Probe hängt an der Saat.
+        var d = FlowTests.CreateDriver(1994);
         d.StartNewGame();
         d.OpenTile("Transfer");
         var screen = Assert.IsType<TransferScreen>(d.Host.Current);

@@ -50,9 +50,9 @@ public static partial class FinanceRules
     /// <summary>
     /// Summe der vier Teamwerte eines Vereins. [ORIGINAL] 0x3E657 liest die Vereinsfelder 0x18–0x1B (Kondition und
     /// Technik je Abwehr und Sturm), nicht die Spieler (Spur geld Teil 2, A035); im Remake Datenbankstärke + Abweichung
-    /// (<see cref="MatchEngine.TeamValuesOf"/>, Lader 0x2EF1B, Wanderung 0x9D1B). [APPROX] Vor dem ersten Spiel eines
-    /// Spielstands sind die Abweichungen noch nicht gezogen (siehe <see cref="MatchEngine.LoadTeamValues"/>) und zählen 0;
-    /// für den Sturm gilt wie dort die Vereinsstärke (Datenbankbyte 0).
+    /// (<see cref="MatchEngine.TeamValuesOf"/>, Lader 0x2EF1B beim Spielstart Datei 0x439BB, Wanderung 0x9D1B; Spur start-lader,
+    /// A505). [APPROX] Für den Sturm gilt wie im Lader die Vereinsstärke (Datenbankbyte 0); ohne Teamwerte (nur Spielstände vor
+    /// Schema 12) zählen die Abweichungen 0.
     /// </summary>
     public static int TeamValueSum(GameState game, Club club)
     {
