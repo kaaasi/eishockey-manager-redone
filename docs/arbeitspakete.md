@@ -121,7 +121,7 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
 - **Teile:** A174 (`Core/Squad.Strength.cs`), A544 (`Core/MatchEngine.Live.cs` nur diese Stelle): Formel Datei 0x368B1/0x977F
   lesen, Teamwert aus der Aufstellung wie im Original, auch für die Automatik des Gegners; `UpdateManagerTeamValues`
   (`GameState.DailyRun.cs`) minimal. Abgleich-Paare und Mehrsaisonprobe; erwartete Werte nach R21-D2.
-- **Voraussetzung:** `start-lader` gemergt. **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** offen.
+- **Voraussetzung:** `start-lader` gemergt. **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** in Arbeit (Claude Code, Draft-PR).
 
 ### Spur `zufallsstrom` – gemeinsamer Zufallsstrom `GameState.Random` (Welle 2, N3 = B)
 
