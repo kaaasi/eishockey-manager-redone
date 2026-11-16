@@ -209,16 +209,15 @@ public static class TransferPoolRules
     /// Kaderplatz-Felder des neuen Markt-Platzes, soweit das Remake sie führt. [ORIGINAL] 0x42E4C: Energie +0x13 =
     /// random(80, 120); 0x42E6B: Nachbearbeitung 0x118:0x4D = Datei 0x4907A (Tendenz und Steuerbyte, <see cref="Player.RollTrend"/>);
     /// Datei 0x497C7–0x49803: +0x19 = random(3, 12) · 16 + random(3, 12) (Über-/Unterzahl, <see cref="HiddenSkills"/>).
-    /// [APPROX] Energie auf 99 begrenzt (Remake-Skala). Die Tendenz zieht das Remake aus <paramref name="trendRandom"/>, sonst aus
-    /// <paramref name="random"/> (siehe <see cref="GameState.TrendRandom"/>). Integration Runde 11: Tendenz (kader-transfer Teil 4)
-    /// und +0x19 (wettbewerbe-spiel Teil 7) zusammen, in der Reihenfolge des Originals.
+    /// Spur zufallsstrom (A708, N3 = B): Energie, Tendenz und +0x19 ziehen in dieser Reihenfolge aus derselben Quelle
+    /// <paramref name="random"/> – im Spiel der gemeinsame Strom <see cref="GameState.Random"/> (Listenwechsel 0x494EF).
     /// </summary>
-    public static void RollSlotFields(Player p, Random random, Random? trendRandom = null)
+    public static void RollSlotFields(Player p, Random random)
     {
         // [ORIGINAL] Belastung des neuen Kaderplatzes random(80, 120) (Datei 0x42E4C–0x42E5E; A184, Integration Runde 12, R12I-01).
         p.Strain = TransferRules.Random16(random, PlayerFactory.StartStrainMin, PlayerFactory.StartStrainMax);
         p.AdoptPoolForm(); // [ORIGINAL] A066: Kaderplatz +0x12 = Pool +0x17 (Datei 0x42EFF–0x42F06)
-        p.RollTrend(trendRandom ?? random);
+        p.RollTrend(random); // [ORIGINAL] Datei 0x42E6B → 0x4907A direkt nach der Energie
         HiddenSkills.Roll(p, random); // Spur wettbewerbe-spiel, Teil 7: +0x19 wie gezogen (A185, A186)
     }
 
@@ -290,18 +289,20 @@ public sealed partial class TransferMarket
     /// Spielstart, vor dem Aufbau der Kader (<see cref="SquadSetup.Initialize"/>): Datenbankspieler festhalten, den Pool
     /// bauen (<see cref="BuildPool"/>) und die so vergebenen Datenbankspieler aus den Kadern der Computervereine nehmen.
     /// Entscheidung Nutzer 01.11.2026 (Vorschlag 1): jeder Name steht nur einmal im Spiel, wie im Original, wo Computervereine
-    /// keine Spieler haben. Fehlende Plätze ergänzt der Kaderaufbau wie bisher. [APPROX] Eigene Zufallsquelle aus dem Startwert,
-    /// damit der Kaderaufbau seine Zufallsfolge behält. Spieler werden über ihre ID unterschieden; gleiche Namen bleiben
-    /// möglich, wenn eine geänderte Datenbank sie enthält.
+    /// keine Spieler haben. Fehlende Plätze ergänzt der Kaderaufbau wie bisher. [ORIGINAL] Spur zufallsstrom (A212, N3 = B): Der Pool
+    /// zieht aus dem gemeinsamen Strom <see cref="GameState.Random"/> (Poolaufbau 0x5AF50, Aufruf Datei 0x29896 in der
+    /// Spielvorbereitung 0x28165 vor den Kaderplätzen der Manager, Datei 0x29996). [APPROX] Die Platzwahl der Start-Liga (Datei
+    /// 0x29C91) zieht das Remake noch vor dem Pool (<see cref="NewGame.AssignClubs"/>), das Original danach. Spieler werden über
+    /// ihre ID unterschieden; gleiche Namen bleiben möglich, wenn eine geänderte Datenbank sie enthält.
     /// </summary>
     /// <param name="managerSlots">Spur pool (#743): Plätze der Managerkader vormerken (<see cref="BuildPool"/>). Der Import
     /// (<see cref="SquadSetup.Initialize"/> mit <c>forImport</c>) ersetzt Pool und Managerkader aus dem Spielstand und baut den
     /// Pool des Nachspielens ohne sie – wie vor dieser Spur, damit die Ersatzspieler der Computerkader gleich bleiben.</param>
-    public void ReservePool(GameState game, int seed, TransferPoolLayout? layout = null, bool managerSlots = true)
+    public void ReservePool(GameState game, TransferPoolLayout? layout = null, bool managerSlots = true)
     {
+        ArgumentNullException.ThrowIfNull(game);
         CaptureDatabaseNames(game);
-        BuildPool(game, new GameRandom(unchecked(seed * 7919 + 29)), layout ?? TransferPoolLayout.Original, new HashSet<string>(),
-            managerSlots);
+        BuildPool(game, game.Random, layout ?? TransferPoolLayout.Original, new HashSet<string>(), managerSlots);
         foreach (var slot in _pool)
         {
             var club = game.Clubs[slot.Club];
@@ -823,7 +824,7 @@ public sealed partial class TransferMarket
                 ? TransferPoolRules.StandIn(slot.Club, c => IsManaged(game, game.Clubs[c]), random)
                 : slot.Club;
             TransferPoolRules.RollMarketStrengths(p, game.Clubs[stand], random, game);
-            TransferPoolRules.RollSlotFields(p, random, game.TrendRandom);
+            TransferPoolRules.RollSlotFields(p, random);
             p.ContractYears = 0;
             p.MonthlySalary = 0;
             slot.Owner = PoolOwner.Market;

@@ -318,7 +318,7 @@ public class TransferVertraegeKomplettTeil5Tests
             big.NationalGoalkeepers, big.NationalDefenders, big.NationalForwards));
 
         var game = TestGames.Create(9);
-        game.TransferMarket.ReservePool(game, 9, big);
+        game.TransferMarket.ReservePool(game, big);
         // Spur pool (#743): Der Spielstart setzt die Kader nach ihrem Aufbau ein (TransferMarket.Initialize); hier stehen sie schon.
         game.TransferMarket.SeatManagerSquads(game);
         Assert.Equal(399, game.TransferMarket.Pool.Count);

@@ -7,9 +7,10 @@ public sealed partial class GameState
 
     /// <summary>
     /// Eigene Zufallsquelle für die Nachbearbeitung neuer Kaderplätze (Datei 0x4907A, <see cref="Player.RollTrend"/>).
-    /// [APPROX] Das Original zieht aus demselben Generator wie alles andere; das Remake hält die Züge aus der Hauptquelle
-    /// heraus, damit Markt, Spiele und Proben ihre Folgen behalten (wie <see cref="ContractRandom"/>). Ältere Spielstände
-    /// beginnen die Quelle beim ersten Zug.
+    /// [APPROX] Das Original zieht aus demselben Generator wie alles andere. Spur zufallsstrom (A725, N3 = B): Markt
+    /// (<see cref="TransferPoolRules.RollSlotFields"/>) und Spielstart (<see cref="ApplyStartSalaries"/>) ziehen seit Teil 1 aus
+    /// <see cref="Random"/>; die Quelle bleibt nur noch für Talent (A388), neuen Manager (A464) und Tagesablauf (A524), bis die
+    /// Teile 2 und 3 sie umstellen, und entfällt danach. Ältere Spielstände beginnen die Quelle beim ersten Zug.
     /// </summary>
     public GameRandom TrendRandom
     {
