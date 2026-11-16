@@ -112,7 +112,10 @@ public class WorldCupTests
         // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): Saat 8 statt 6 – mit den 5-Minuten-Strafen nach dem
         // lrandom-Zyklus (LRandomCycle) wird der Manager bei 6 (und 2) Bundestrainer; Saaten 1, 3–5, 7–12 ohne Ernennung.
         // Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 mit Saat 8 ebenfalls grün – die Probe hängt an der Saat.
-        var game = Create(8, true, 30);
+        // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): Saat 4 statt 8 – mit der Spielvorbereitung aus den Vereinsfeldern
+        // des Managervereins (Datei 0x097F3–0x0984F, anderer Einsatz der Automatik, anderer Zufallsverlauf) wird der Manager bei 8
+        // (und 2, 10, 11, 15) Bundestrainer; Saaten 1, 3–7, 9, 12–14, 16 ohne Ernennung. Die Probe hängt an der Saat.
+        var game = Create(4, true, 30);
         while (game.Phase == SeasonPhase.Running)
             game.Continue();
         Assert.Equal(SeasonCalendar.ClubSeasonEnd + 1, game.CurrentDay);

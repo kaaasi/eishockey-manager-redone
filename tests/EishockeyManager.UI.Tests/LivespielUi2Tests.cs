@@ -287,7 +287,10 @@ public sealed class LivespielUi2Tests
         setup.Managers.Add(new ManagerSetup { Name = "LIVE", Head = 0, ClubIndex = 42 });
         // Saat 1994 (bis Spur start-lader 1993): Mit dem Lader beim Spielstart (Datei 0x439BB) erreicht Verein 42 bei Saat 1993 die
         // Play-offs nicht (nächster Spieltag 216); die Probe braucht einen Play-off-Tag 149 mit Managerspiel.
-        var game = NewGame.Create(d.Host.Assets.Database, setup, 1994);
+        // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): Saat 1995 statt 1994 – mit der Spielvorbereitung aus den
+        // Vereinsfeldern (Datei 0x097F3–0x0984F, anderer Zufallsverlauf) erreicht Verein 42 bei 1994 (und 1996, 1998) die Play-offs
+        // nicht (nächster Spieltag 216); 1995, 1997, 1999–2002 haben den Play-off-Tag 149. Die Probe hängt an der Saat.
+        var game = NewGame.Create(d.Host.Assets.Database, setup, 1995);
         d.Host.Game = game;
         d.Host.Show(new MainMenuScreen(d.Host));
         d.Frame();

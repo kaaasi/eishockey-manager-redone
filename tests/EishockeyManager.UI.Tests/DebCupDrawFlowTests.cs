@@ -325,6 +325,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // (Datei 0x439BB vor der Spielvorbereitung 0x43A61), Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073) und
     // Wanderung des Spielstarts (Datei 0x43A73) in NewGame.Create statt beim ersten Spiel; anderer Zufallsverlauf ab dem
     // Spielstart. Rückschaltprobe: src/ von 40f67fc (ohne start-lader) + dieser Test → rot (alte Werte).
+    // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): neu – die Spielvorbereitung 0x8365 vergleicht beim Managerverein die
+    // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
+    // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
+    // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
     private const string Reference =
-        "1993: DEB 9, DM 6, Tab 15487 | 1994: DEB 2, DM 5, Tab 15939 | 1995: DEB 4, DM 5, Tab 15455 | 1996: DEB 5, DM 8, Tab 15352";
+        "1993: DEB 6, DM 2, Tab 15496 | 1994: DEB 8, DM 6, Tab 16005 | 1995: DEB 2, DM 2, Tab 15914 | 1996: DEB 1, DM 6, Tab 15929";
 }

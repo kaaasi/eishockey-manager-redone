@@ -285,8 +285,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // (Datei 0x439BB vor der Spielvorbereitung 0x43A61), Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073) und
     // Wanderung des Spielstarts (Datei 0x43A73) in NewGame.Create statt beim ersten Spiel; anderer Zufallsverlauf ab dem
     // Spielstart. Rückschaltprobe: src/ von 40f67fc (ohne start-lader) + dieser Test → rot (alte Werte).
-    [InlineData(false, "BFD1FF9B7EB217DA")]
-    [InlineData(true, "A6C4EC705A012367")]
+    // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): neu – die Spielvorbereitung 0x8365 vergleicht beim Managerverein die
+    // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
+    // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
+    // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
+    [InlineData(false, "016999E95215A9F1")]
+    [InlineData(true, "67DE0322E2E09FAE")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -96,7 +96,13 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
         Assert.Equal(52, team.ClubForm);
     }
 
-    /// <summary>Managervereine: Reihenwerte im Original aus den Spielern (0x98F8) – keine Streuung, aber Tagesform.</summary>
+    /// <summary>
+    /// Managervereine: Reihenwerte im Original aus den Spielern (0x98F8); die Vereinsfelder 0x18–0x1D trägt die Mannschaft wie jeder
+    /// Verein, dazu die Tagesform.
+    /// Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): vorher (Teamwert, Teamwert, 50). [ORIGINAL] 0x977F liest für einen
+    /// Managerverein ohne Eintrag in DGROUP 0x233 die Vereinsfelder 0x18/0x1A/0x1C + Teil (Datei 0x097FD–0x0983D), also mit
+    /// Abweichung und Form. Rückschaltprobe: MatchEngine.Live.cs von f3490bd mit diesen Werten rot (69/69/50 statt 67/71/46).
+    /// </summary>
     [Fact]
     public void LiveTeam_ManagedClub_OnlyDayForm()
     {
@@ -104,10 +110,10 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
         var club = game.Clubs[game.Managers[0].ClubIndex];
         var opponent = game.Clubs.First(c => c != club && c.Players.Count > 0);
         club.TeamValues = new ClubTeamValues(-3, 2, 1, -4, 46, 54, 52);
-        var value = MatchEngine.TeamValue(game, club);
+        var value = MatchEngine.ComputerTeamValue(club);
         var team = MatchEngine.LiveTeamOf(game, club, opponent, managed: true, managerMatch: true);
-        Assert.Equal(new PartValues(value, value, 50), team.Defense);
-        Assert.Equal(new PartValues(value, value, 50), team.Attack);
+        Assert.Equal(new PartValues(value - 3, value + 1, 46), team.Defense);
+        Assert.Equal(new PartValues(value + 2, value - 4, 54), team.Attack);
         Assert.Equal(52, team.ClubForm);
     }
 

@@ -207,10 +207,14 @@ public class SpielberechnungKomplett3Tests
         var game = TestGames.Create(3);
         MatchEngine.EnsureTeamValues(game);
         var club = game.Clubs[game.Managers[0].ClubIndex];
-        var lineup = club.Lineup.Players.ToHashSet();
         var goals = 0;
         for (var round = 0; round < 6; round++)
         {
+            // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): Aufstellung je Spiel statt einmal vor allen sechs – mit der
+            // Spielvorbereitung aus den Vereinsfeldern (Datei 0x097F3, anderer Einsatz, anderer Zufallsverlauf) ändert sich die
+            // Aufstellung bei Saat 3 zwischen den Spielen (Torschütze der Runde 5 steht in Block 2, eingesetzt). Die Probe hing an
+            // der Saat; mit MatchEngine.Live.cs von f3490bd ist sie so ebenfalls grün.
+            var lineup = club.Lineup.Players.ToHashSet();
             var opponent = game.Clubs[(club.Index + 1 + round) % 12];
             var before = club.Players.Sum(p => p.Goals);
             var assists = club.Players.Sum(p => p.Assists);
