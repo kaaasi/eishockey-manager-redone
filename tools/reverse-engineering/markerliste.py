@@ -116,6 +116,7 @@ class PrevRow:
     key: str
     origin: str = ""
     inventur: str = ""
+    stelle: str = ""
 
 
 def short_path(rel: Path) -> str:
@@ -192,8 +193,8 @@ def read_previous(doc: Path) -> tuple[list[PrevRow], list[Gone]]:
         c = split_row(line)
         if section.startswith("### Marker"):
             # | ID | Stelle | Schlüssel | Wortlaut | Herkunft | Inventur | ...
-            path = c[1].strip("`").rsplit(":", 1)[0]
-            rows.append(PrevRow(c[0], path, c[2].strip("`"), c[4], c[5]))
+            stelle = c[1].strip("`")
+            rows.append(PrevRow(c[0], stelle.rsplit(":", 1)[0], c[2].strip("`"), c[4], c[5], stelle))
         elif section.startswith("### Entfallen"):
             # | ID | zuletzt | Schlüssel | Hinweis | Klasse |
             gone.append(Gone(c[0], c[1].strip("`"), c[2].strip("`"), c[3]))
@@ -319,7 +320,8 @@ def build(repo: Path):
     gone: list[Gone] = list(gone_by_id.values())
     for c in unpaired_prev:
         r = prev_by_id[c[0]]
-        gone.append(Gone(r.ident, f"{r.path} (zuletzt im Block)", r.key, r.inventur))
+        gone.append(Gone(r.ident, f"{r.stelle} (zuletzt im Block)", r.key,
+                         r.inventur or f"Wortlaut geändert oder entfernt (Herkunft {r.origin})"))
 
     # 2) seeds from inventur.md for IDs the block does not know yet
     seeds = [s for s in read_inventur(repo) if s.ident not in known]
