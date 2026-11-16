@@ -31,8 +31,8 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   0x4E348–0x4E3CE).</item>
 /// <item>[ORIGINAL] Knöpfe auf y 215: „Reicht mir“ (103) und „Spielplan“ (173), dieser nur bei Tageszähler DGROUP 0x3B7 ≠ 0 und
 ///   Team &lt; 52 (Datei 0x4D752–0x4D787).</item>
-/// <item>[APPROX] „Spielplan“ öffnet im Original den Spielplan des Gegners 0x05CA0 (<c>re-abdeckung.md</c> Nr. 12); den
-///   Bildschirm gibt es im Remake nicht, der Knopf steht ohne Wirkung.</item>
+/// <item>[ORIGINAL] „Spielplan“ öffnet den Spielplan des Gegners 0x05CA0 (<see cref="ClubScheduleWindow"/>; Klick Datei
+///   0x4E505–0x4E539, nur Vereine 0x4D2F0); dessen „Info“ kehrt zurück, „Reicht mir“ und Rechtsklick schließen das Fenster.</item>
 /// <item>[ORIGINAL] Dritter Knopf (Markierung zum Zusehen) wie im Länderzweig (<see cref="TeamInfoWindow"/>), auch für Teams ab
 ///   0x40 (Datei 0x4D750 springt nach 0x4D78A); Wettbewerbscode DGROUP 0xD0C2 ebenso [APPROX] nicht geführt.</item>
 /// <item>[APPROX] Bilanz, Bilanzzeichen und „Tore / Spiel“ aus den Ligaergebnissen der Saison (<see cref="GameState.Results"/>,
@@ -77,9 +77,20 @@ public sealed class ClubInfoWindow
     public bool Visible => _club is not null;
     public int? Club => _club;
 
-    public void Show(int club) => _club = club;
+    /// <summary>Spielplan des Gegners (Knopf „Spielplan“, Datei 0x05CA0).</summary>
+    public ClubScheduleWindow Schedule { get; } = new();
 
-    public void Close() => _club = null;
+    public void Show(int club)
+    {
+        _club = club;
+        Schedule.Close();
+    }
+
+    public void Close()
+    {
+        _club = null;
+        Schedule.Close();
+    }
 
     /// <summary>Teams ab 0x40: Europapokal-Gegner ohne Statistik.</summary>
     public static bool IsForeign(int club) => club >= EuropeanCup.FirstOpponent;
@@ -95,8 +106,16 @@ public sealed class ClubInfoWindow
     {
         if (_club is not { } club)
             return false;
+        if (Schedule.Visible)
+        {
+            if (Schedule.Update(input) == ClubScheduleWindow.Outcome.Close)
+                Close();
+            return true;
+        }
         if (input.Clicked(CloseButton) || input.RightClick || input.Pressed(Key.Escape) || input.Pressed(Key.Enter))
             Close();
+        else if (game is not null && HasSchedule(game, club) && input.Clicked(ScheduleButton))
+            Schedule.Show(game, club);
         else
             TeamInfoWindow.WatchClick(input, game, club);
         return true;
@@ -296,6 +315,11 @@ public sealed class ClubInfoWindow
             DrawButton(s, a, ScheduleButton, "Spielplan");
         TeamInfoWindow.DrawWatchButton(s, a, game.Clubs[club].WatchMode);
         CompetitionWidgets.Centered(s, mini, Left, Left + 0xD8, Top + 0x3A, HeadLine(game, club), TeamInfoWindow.TextColor, null);
+        if (Schedule.Visible)
+        {
+            Schedule.Draw(s, a, game);
+            return;
+        }
         if (foreign)
         {
             int[] baselines = [Top + 0x4C, Top + 0x54, Top + 0x5E];
@@ -311,7 +335,7 @@ public sealed class ClubInfoWindow
     public const int ForeignLogo = 0x8F;
 
     // [ORIGINAL] Knopf 0x120:0x75 wie in TeamInfoWindow: kb\2 (17 | 179), Text zentriert x … x + 59, Grundlinie y + 7.
-    private static void DrawButton(Surface s, Assets a, Rect r, string text)
+    internal static void DrawButton(Surface s, Assets a, Rect r, string text)
     {
         s.Blit(a.Image(2), new Rect(17, 179, Widgets.ButtonWidth, Widgets.ButtonHeight), r.X, r.Y, transparent: 0);
         CompetitionWidgets.Centered(s, a.Mini, r.X, r.X + 59, r.Y + 7, text, 29, 1);

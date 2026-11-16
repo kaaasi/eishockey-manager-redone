@@ -4,7 +4,8 @@ namespace EishockeyManager.Tools.Scenarios;
 
 /// <summary>
 /// Spur zusehen, Teil 1: dritter Knopf des Gegner-/Vereinsfensters (Markierung zum Zusehen, em.exe Datei 0x4D78A, 0x4E440).
-/// Vergleich mit <c>eisbaeren_f24_00046</c> (Modus 0) und <c>eisbaeren_f24_00122</c> (Modus 2).
+/// Vergleich mit <c>eisbaeren_f24_00046</c> (Modus 0) und <c>eisbaeren_f24_00122</c> (Modus 2). Teil 1b: Spielplan des Gegners
+/// (Datei 0x05CA0), beide Hälften.
 /// </summary>
 internal static class Zusehen
 {
@@ -27,5 +28,14 @@ internal static class Zusehen
         d.Click(272, 26); // eigener Verein: Modus 2 seit dem Spielstart (Datei 0x298EA)
         d.Move(0, 230);
         d.Save("04_eigener_verein");
+        d.RightClick(160, 120);
+        // Teil 1b: Spielplan des Gegners (Datei 0x05CA0)
+        d.Click(184, 39);
+        d.Click(180, 220); // „Spielplan“
+        d.Move(0, 230);
+        d.Save("05_spielplan_runde1");
+        d.Click(250, 220); // „2.Runde “
+        d.Move(0, 230);
+        d.Save("06_spielplan_runde2");
     }
 }
