@@ -8,7 +8,30 @@ public static class NewGame
     /// <summary>Vereine 0–47 können in der Spielvorbereitung gewählt werden (4 Seiten à 12).</summary>
     public const int SelectableClubs = 48;
 
-    public static GameState Create(ClubDatabase database, GameSetup setup, int seed)
+    public static GameState Create(ClubDatabase database, GameSetup setup, int seed) => Create(database, setup, seed, null);
+
+    /// <summary>
+    /// Spielstart in der Reihenfolge des Originals (Spur zufallsstrom, Teil 3; N3 = B) – alle Würfe mit Gegenstück im Original aus
+    /// dem gemeinsamen Strom <see cref="GameState.Random"/>:
+    /// <list type="number">
+    /// <item>[ORIGINAL] Lader 0x2EF1B (Datei 0x439BB), Ligamischung (Datei 0x43A17, <see cref="StartOrder"/>).</item>
+    /// <item>[ORIGINAL] Spielvorbereitung 0x28165, neues Spiel: Poolaufbau 0x5AF50 (Aufruf Datei 0x29896) samt den Kaderplätzen der
+    ///   Manager (Datei 0x5B0BB–0x5B2BE; <see cref="TransferMarket.ReserveStartPool"/>).</item>
+    /// <item>[ORIGINAL] Managerschleife Datei 0x29B57–0x2A0A3, je Manager: Platz in der Start-Liga (Wurf Datei 0x29C91, Tausch
+    ///   0x29CF2; A558), Sonderfall „eine Saison, ein Manager“ (Datei 0x29CFA–0x29D9C), Startwerte, Preis und Gehalt je Kaderplatz
+    ///   (Datei 0x29DA4–0x29EF7; <see cref="GameState.RollStartValues"/>).</item>
+    /// <item>[ORIGINAL] Nationalspieler des Pools benennen (Datei 0x2A0B5 → 0x5ACA0).</item>
+    /// <item>[ORIGINAL] Nach der Spielvorbereitung: Wanderung (Datei 0x43A73), Pool auf die Ligen verteilen (Datei 0x43A83 →
+    ///   0x057E3), erster Listenwechsel (Datei 0x43A9F → 0x494EF; <see cref="TransferMarket.OpenStartMarket"/>).</item>
+    /// </list>
+    /// [APPROX] Ohne Gegenstück im Original und deshalb außerhalb des Stroms: die Kader der Computervereine (eigene Quelle aus der
+    /// Saat, <see cref="SquadSetup.FinishStartSquads"/>) und die Ligamischung vor der Spielvorbereitung (aus der Saat abgeleitet, weil
+    /// die Vereinsauswahl sie vor dem Spielstart zeigt, <see cref="StartOrder"/>). Die Zufallswahl eines Vereins (ohne Gegenstück)
+    /// zieht vor dem Pool aus dem Strom (<see cref="AssignClubs"/>). Werbeangebote, Pokalauslosung: eigene Quellen
+    /// (<see cref="GameState.InitializeManagerSystems"/>).
+    /// </summary>
+    /// <param name="observer">Nur Tests: wird an den Grenzen der Schritte gerufen (Strom und Zustand dort).</param>
+    internal static GameState Create(ClubDatabase database, GameSetup setup, int seed, Action<StartStep, GameState>? observer)
     {
         var random = new GameRandom(seed);
 
@@ -35,21 +58,8 @@ public static class NewGame
         MatchEngine.LoadTeamValues(clubs, random);
 
         var places = StartOrder(seed); // R-K5: Ligamischung vor der Spielvorbereitung (Datei 0x43A17)
-        var swaps = new List<(int Club, int Partner)>();
-        var managers = AssignClubs(clubs, setup, random, swaps, places);
-        foreach (var (club, partner) in swaps)
-            (clubs[club], clubs[partner]) = (WithSlot(clubs[club], clubs[partner]), WithSlot(clubs[partner], clubs[club]));
-
+        var managers = AssignClubs(clubs, setup, random, places);
         var schedules = new Dictionary<League, IReadOnlyList<MatchDay>>();
-        foreach (var league in Enum.GetValues<League>())
-        {
-            var members = clubs.Where(c => c.League == league).Select(c => c.Index).ToList();
-            // [APPROX] Das Original mischt hier nicht; die Mischung bleibt nur, damit der Zufallsverbrauch des Spielstarts
-            // unverändert bleibt. Der Plan richtet sich nach der Satzfolge (A113, Schedule.ForSlots).
-            Shuffle(members, random);
-            schedules[league] = Schedule.ForSlots(StartSlots(clubs, places, league), rounds: 4);
-        }
-
         var game = new GameState
         {
             Setup = setup,
@@ -58,27 +68,93 @@ public static class NewGame
             Schedules = schedules,
             Random = random,
         };
-        SquadSetup.Initialize(game, seed); // Paket „mannschaft“: Kader, Spielerwerte, Aufstellung
+
+        observer?.Invoke(StartStep.Pool, game);
+        var held = SquadSetup.BuildStartPool(game); // Datei 0x29896: Pool mit den Kaderplätzen der Manager
+
+        observer?.Invoke(StartStep.Managers, game);
+        // Zufällig zugeteilte Vereine (ohne Gegenstück im Original) verdrängt kein Platztausch.
+        var earlier = managers.Where((_, i) => setup.Managers[i].ClubIndex is null).Select(m => m.ClubIndex).ToHashSet();
+        for (var i = 0; i < managers.Count; i++)
+        {
+            var m = setup.Managers[i];
+            if (m.ClubIndex is { } chosen)
+            {
+                // A558 (N3 = B): [ORIGINAL] Platzwahl in der Managerschleife nach dem Pool (Datei 0x29C3B–0x29CF7).
+                if (PlaceInStartLeague(clubs, chosen, m.StartLeague, earlier, random, places) is { } partner && partner != chosen)
+                    Club.SwapStartSlot(clubs[chosen], clubs[partner]);
+                earlier.Add(chosen);
+            }
+            if (OneSeasonSingleManager(setup) && clubs[managers[i].ClubIndex].League == League.Bundesliga)
+            {
+                // U15-c: ein Manager, eine Saison → Managerverein auf Platz 0 (Teamwerte bleiben am Platz). [ORIGINAL] Datei
+                // 0x29D28–0x29D7F: Zufallsplatz der Bundesliga, neu gezogen, bis 0x45CD0(r, 1) ≠ 0 – also bis Platz 0 fällt.
+                while (random.Next(LeagueSize) != 0)
+                {
+                }
+                var own = Array.IndexOf(places, managers[i].ClubIndex);
+                var partner = places[0];
+                if (own > 0)
+                {
+                    (places[own], places[0]) = (partner, managers[i].ClubIndex);
+                    Club.SwapStartSlot(clubs[managers[i].ClubIndex], clubs[partner]);
+                }
+            }
+            if (!game.WorldOnly)
+                game.RollStartValues(managers[i], SquadSetup.StartBase(clubs[managers[i].ClubIndex].League ?? m.StartLeague, m.StartStrength));
+        }
+
+        observer?.Invoke(StartStep.Nationals, game);
+        game.TransferMarket.RenameStartNationals(game, held); // Datei 0x2A0B5 → 0x5ACA0, nach der Managerschleife
+
+        observer?.Invoke(StartStep.Rest, game);
+        // Der Plan richtet sich nach der Satzfolge (A113, Schedule.ForSlots); das Original mischt hier nicht.
+        foreach (var league in Enum.GetValues<League>())
+            schedules[league] = Schedule.ForSlots(StartSlots(clubs, places, league), rounds: 4);
+
+        SquadSetup.FinishStartSquads(game, seed); // Paket „mannschaft“: Computerkader, Rückennummern, Aufstellung
         game.AssignStartPlayerIds(); // Spur „speichern“: dauerhafte Spieler-IDs, verbraucht keinen Zufall
         game.InitializeManagerSystems();
         game.InitializeLeagueSlots(places); // S-K6/R-K5: Satzfolge = Startmischung mit den Plätzen nach dem Managertausch
+        observer?.Invoke(StartStep.Drift, game);
         MatchEngine.StartGame(game); // Spur start-lader: Teamwerte der Managervereine (0x2A073), Wanderung des Spielstarts (0x43A73)
-        game.BeginFirstTurn(); // ui-rest Teil 4 (R12U-04): Faktor des ersten Managerzugs (0x44E3F), eigene Zufallsquelle
+        observer?.Invoke(StartStep.Market, game);
+        game.TransferMarket.OpenStartMarket(game); // Datei 0x43A83 (0x057E3), 0x43A9F (0x494EF)
+        observer?.Invoke(StartStep.Turn, game);
+        game.BeginFirstTurn(); // ui-rest Teil 4 (R12U-04): Faktor des ersten Managerzugs (0x44E3F)
+        observer?.Invoke(StartStep.Done, game);
         return game;
     }
 
+    /// <summary>Schritte des Spielstarts für den Beobachter von <see cref="Create(ClubDatabase, GameSetup, int, Action{StartStep, GameState}?)"/>.</summary>
+    internal enum StartStep
+    {
+        /// <summary>Vor dem Poolaufbau (Datei 0x29896).</summary>
+        Pool,
+        /// <summary>Vor der Managerschleife (Datei 0x29B57).</summary>
+        Managers,
+        /// <summary>Vor dem Benennen der Nationalspieler (Datei 0x2A0B5).</summary>
+        Nationals,
+        /// <summary>Nach der Spielvorbereitung, vor Computerkadern und Wanderung.</summary>
+        Rest,
+        /// <summary>Vor Teamwerten der Managervereine und Wanderung (Datei 0x43A73).</summary>
+        Drift,
+        /// <summary>Vor dem Verteilen des Pools (Datei 0x43A83).</summary>
+        Market,
+        /// <summary>Vor dem Faktor des ersten Managerzugs (Datei 0x44E3F).</summary>
+        Turn,
+        /// <summary>Spielstart abgeschlossen.</summary>
+        Done,
+    }
+
     /// <summary>
-    /// Vereinsvergabe beim Spielstart (Befund R2-07, U15-a): Erst werden die festen Wahlen aller Manager geprüft und der
-    /// Reihe nach in die Start-Liga gesetzt (<see cref="PlaceInStartLeague"/>), zuletzt folgen die Zufallswahlen unter
-    /// Ausschluss aller bereits vergebenen Vereine. Die Reihenfolge der Manager bleibt erhalten.
+    /// Vereinsvergabe beim Spielstart (Befund R2-07, U15-a): prüft die festen Wahlen aller Manager und teilt Managern ohne Wahl
+    /// einen Verein zu (unter Ausschluss aller gewählten Vereine). Die Reihenfolge der Manager bleibt erhalten. Den Platz in der
+    /// Start-Liga zieht erst die Managerschleife nach dem Pool (<see cref="PlaceInStartLeague"/>, A558).
     /// </summary>
-    /// <param name="swaps">Erhält je Platztausch das Paar (Managerverein, Tauschpartner); die Teamwerte bleiben am Platz
-    /// (<see cref="Create"/> tauscht dafür die Stärke).</param>
-    /// <param name="places">Satzfolge Platz → Verein (48 Einträge, <see cref="StartOrder"/>); der Zufallsplatz wird darin
-    /// gezogen, der Tausch tauscht die Plätze. Ohne Angabe gilt die Indexfolge.</param>
+    /// <param name="places">Satzfolge Platz → Verein (48 Einträge, <see cref="StartOrder"/>). Ohne Angabe gilt die Indexfolge.</param>
     /// <exception cref="ArgumentException">Fester Verein außerhalb 0–47 oder von zwei Managern gewählt.</exception>
-    public static List<Manager> AssignClubs(IReadOnlyList<Club> clubs, GameSetup setup, Random random,
-        List<(int Club, int Partner)>? swaps = null, int[]? places = null)
+    public static List<Manager> AssignClubs(IReadOnlyList<Club> clubs, GameSetup setup, Random random, int[]? places = null)
     {
         places ??= Enumerable.Range(0, SelectableClubs).ToArray();
         var reserved = new HashSet<int>();
@@ -92,19 +168,6 @@ public static class NewGame
                 throw new ArgumentException($"Verein {chosen} wurde von mehreren Managern gewählt.", nameof(setup));
         }
 
-        // [ORIGINAL] Die Start-Liga ist ein Wert für alle Manager (DGROUP 0x11A, L1); die Spielvorbereitung setzt sie über
-        // GameSetup.StartLeague für alle gleich. Gelesen wird sie je Manager, damit Aufbauten im Code (Tests, ältere
-        // Spielstände) Manager verschiedener Ligen anlegen können; bei gleicher Liga ist das Ergebnis dasselbe.
-        var earlier = new HashSet<int>();
-        foreach (var m in setup.Managers)
-        {
-            if (m.ClubIndex is not { } chosen)
-                continue;
-            if (PlaceInStartLeague(clubs, chosen, m.StartLeague, earlier, random, places) is { } partner && partner != chosen)
-                swaps?.Add((chosen, partner));
-            earlier.Add(chosen);
-        }
-
         var assigned = new int[setup.Managers.Count];
         for (var i = 0; i < setup.Managers.Count; i++)
         {
@@ -116,24 +179,13 @@ public static class NewGame
             }
             // [APPROX] Zufallswahl nach Start-Stärke gibt es im Original nicht (jeder Manager wählt einen Verein, Datei
             // 0x2964C); das Remake zieht aus dem Drittel der Start-Liga ohne den Verein auf Platz 0 – wie der Filter
-            // 0x45CD0(r, 1) beim Spielstart (leere Tabelle DGROUP 0x5CFB, U15-c in re-runde-14.md). Kein Platztausch.
+            // 0x45CD0(r, 1) beim Spielstart (leere Tabelle DGROUP 0x5CFB, U15-c in re-runde-14.md). Kein Platztausch. Der Wurf
+            // kommt vor dem Pool aus dem gemeinsamen Strom (der Pool braucht die Vereine der Manager).
             var excluded = new HashSet<int>(reserved);
             if (m.StartLeague == League.Bundesliga)
                 excluded.Add(places[0]);
             assigned[i] = PickRandomClub(clubs, m.StartLeague, m.StartStrength, excluded, random);
             reserved.Add(assigned[i]);
-        }
-
-        if (OneSeasonSingleManager(setup) && clubs[assigned[0]].League == League.Bundesliga)
-        {
-            // U15-c: ein Manager, eine Saison → Managerverein auf Platz 0 (Teamwerte bleiben am Platz).
-            var own = Array.IndexOf(places, assigned[0]);
-            var partner = places[0];
-            if (own > 0)
-            {
-                (places[own], places[0]) = (partner, assigned[0]);
-                swaps?.Add((assigned[0], partner));
-            }
         }
 
         return setup.Managers
@@ -160,7 +212,8 @@ public static class NewGame
     /// [ORIGINAL] Europapokal-Zeile 1 beim Spielstart: Die Tabelle DGROUP 0x5CFB ist noch leer (Startwert 0, DGROUP 0x5CF4 = 0
     /// → 64 Einträge 0), gefüllt wird sie erst nach der Spielvorbereitung (0x341AB über Datei 0x43A8C). Der Filter trifft
     /// also genau **Platz 0**, nicht den Deutschen Meister (U15-c, <c>docs/analyse/re-runde-14.md</c>; FILE01/09/10: kein
-    /// Managerverein auf Platz 0). [APPROX] Zufallsquelle: <see cref="GameState.Random"/> statt des gemeinsamen Zufalls.
+    /// Managerverein auf Platz 0). Spur zufallsstrom (A558, N3 = B): Der Wurf kommt aus dem gemeinsamen Strom
+    /// <see cref="GameState.Random"/> an der Stelle des Originals – in der Managerschleife nach dem Pool (Datei 0x29C91).
     /// </summary>
     /// <returns>Tauschpartner (auch der Verein selbst bei r = v) oder null, wenn der Verein bleibt.</returns>
     internal static int? PlaceInStartLeague(IReadOnlyList<Club> clubs, int club, League league,
@@ -192,8 +245,9 @@ public static class NewGame
     /// Spielende DGROUP 0x5A14 = 1994 und DGROUP 0x386 = 1 Manager → Managerfeld DGROUP 0x9744 + 0x1AF · m = 1, dann Zufallsplatz r
     /// der Bundesliga, bis 0x45CD0(r, 1) ≠ 0, und Tausch 0x36169(v, r, 0x80). Beim Spielstart ist die Europapokal-Tabelle leer,
     /// der Filter trifft nur Platz 0: Der Managerverein landet immer auf Platz 0 (FILE29: ESV KAUFBEUREN auf Platz 0,
-    /// HOK 0x00F70 = 1; <c>docs/analyse/re-runde-14.md</c>, U15-c). [APPROX] Das Remake tauscht direkt, ohne die Zufallszüge der
-    /// Schleife; das Feld 0x9744 bildet es nicht ab (Wirkung außer im Highscore nicht gelesen, <see cref="HighscoreRules"/>).
+    /// HOK 0x00F70 = 1; <c>docs/analyse/re-runde-14.md</c>, U15-c). Spur zufallsstrom (N3 = B): Die Würfe der Schleife kommen aus dem
+    /// gemeinsamen Strom, bis Platz 0 fällt. [APPROX] Das Feld 0x9744 bildet das Remake nicht ab (Wirkung außer im Highscore nicht
+    /// gelesen, <see cref="HighscoreRules"/>); der Sonderfall greift im Remake nur, wenn der Verein in der Bundesliga steht.
     /// </summary>
     internal static bool OneSeasonSingleManager(GameSetup setup) =>
         setup.Managers.Count == 1 && setup.Duration == GameDuration.EineSaison;
@@ -273,31 +327,19 @@ public static class NewGame
             band = sorted.Where(c => !taken.Contains(c.Index)).ToList();
         return band[random.Next(band.Count)].Index;
     }
+}
 
+public sealed partial class Club
+{
     /// <summary>
-    /// Kopie eines Vereins mit Stärke und Teamwerten des Platzes <paramref name="slot"/> (Teamwerte bleiben beim Platztausch am
-    /// Platz, U15-a; Spur start-lader: auch die Werte des Laders, die beim Tausch 0x36169 schon im Vereinssatz stehen). Zu diesem
-    /// Zeitpunkt trägt der Verein nur die Felder aus <see cref="Create"/> (Index, Name, Stärke, Logo, Liga, Datenbankspieler,
-    /// Teamwerte).
+    /// Platztausch beim Spielstart (U15-a): Stärke und Teamwerte bleiben am Platz, also tauschen die beiden Vereine sie (Spur
+    /// start-lader: auch die Werte des Laders, die beim Tausch 0x36169 schon im Vereinssatz stehen). Name, Logo und Spieler
+    /// bleiben beim Verein; die Liga tauscht <see cref="NewGame.PlaceInStartLeague"/>.
     /// </summary>
-    private static Club WithSlot(Club club, Club slot)
+    internal static void SwapStartSlot(Club a, Club b)
     {
-        var copy = new Club
-        {
-            Index = club.Index, Name = club.Name, Strength = slot.Strength, LogoGraphic = club.LogoGraphic, League = club.League,
-            TeamValues = slot.TeamValues,
-        };
-        copy.Players.AddRange(club.Players);
-        return copy;
-    }
-
-    private static void Shuffle<T>(IList<T> list, Random random)
-    {
-        for (var i = list.Count - 1; i > 0; i--)
-        {
-            var j = random.Next(i + 1);
-            (list[i], list[j]) = (list[j], list[i]);
-        }
+        (StrengthField(a), StrengthField(b)) = (b.Strength, a.Strength);
+        (a.TeamValues, b.TeamValues) = (b.TeamValues, a.TeamValues);
     }
 }
 

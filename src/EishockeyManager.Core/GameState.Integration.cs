@@ -13,8 +13,9 @@ public sealed partial class GameState
     /// </summary>
     internal void InitializeManagerSystems()
     {
-        // Spur transfer-vertraege-komplett: Startgehalt der Kaderplätze der Manager = Wert(Gehalt) (0x29EE4); davor je Platz
-        // Tendenz und +0x19 (Datei 0x29996, 0x299F4) aus dem gemeinsamen Strom (Spur zufallsstrom A722, A676).
+        // Spur transfer-vertraege-komplett: Startgehalt der Kaderplätze der Manager = Wert(Gehalt) (0x29EE4). Spur zufallsstrom
+        // (Teil 3): Tendenz und +0x19 würfelt der Spielstart schon im Poolaufbau (Datei 0x5B1CD–0x5B245); hier nur noch für Plätze
+        // ohne Steuerbyte (Import, „nur Weltkugel“).
         ApplyStartSalaries();
         _ = Stocks;
         foreach (var manager in Managers)

@@ -126,14 +126,21 @@ public class ZufallsstromTeil1Tests
     }
 
     /// <summary>
-    /// A722: Tendenz der Startkader (0x42CB1 → 0x4907A, Datei 0x29996/0x42E6B) je Manager und Kaderplatz in Platzfolge aus dem
+    /// A722: Tendenz der Kaderplätze (0x42CB1 → 0x4907A, Datei 0x42E6B) je Manager und Kaderplatz in Platzfolge aus dem
     /// gemeinsamen Strom: random(35, 65), random(1, 13), random(1, 3), random(0, 1). A676 (Teil 2): direkt danach je Platz +0x19 =
-    /// random(3, 12) · 16 + random(3, 12) (Datei 0x299BF, 0x299D3), oberes Halbbyte zuerst, aus demselben Strom.
+    /// random(3, 12) · 16 + random(3, 12), oberes Halbbyte zuerst, aus demselben Strom. Rest von Teil 3: Der Spielstart würfelt
+    /// beides schon im Poolaufbau (Datei 0x5B1CD–0x5B245, <c>ZufallsstromSpielstartTests</c>); <c>ApplyStartSalaries</c> zieht nur
+    /// noch für Plätze ohne Steuerbyte nach (Import, „nur Weltkugel“) und sonst nichts.
     /// </summary>
     [Fact]
     public void GameStart_SquadTrend_FromSharedStreamInSlotOrder()
     {
         var game = Create(3, 2, 14);
+        var untouched = game.Random.Capture();
+        game.ApplyStartSalaries();
+        Assert.Equal(untouched, game.Random.Capture());
+        foreach (var p in game.Managers.SelectMany(m => game.Clubs[m.ClubIndex].Players))
+            p.TrendControl = 0;
         var sim = Copy(game.Random);
         var expected = new List<(int, int)>();
         var hidden = new List<(int, int)>();

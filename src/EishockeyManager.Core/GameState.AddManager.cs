@@ -69,7 +69,7 @@ public sealed partial class GameState
     /// bleiben gleich lang (Review P1-1).
     /// <para>Zufall (Spur zufallsstrom, A464, N3 = B): Vereinswahl, Kader, Platztausch und Startwerte ziehen aus dem gemeinsamen
     /// Strom <see cref="Random"/>, in der Reihenfolge der Spielvorbereitung im Hinzufügen-Modus ([ORIGINAL] Datei 0x2993A–0x29EF7:
-    /// je Kaderplatz Poolindex, 0x42CB1 mit Energie und Tendenz, +0x19, Alter; dann Platztausch; dann je Platz Technik, Kondition,
+    /// je Kaderplatz Poolindex, 0x42CB1 mit Energie und Tendenz, +0x19, Alter; dann Platztausch; dann je Platz Kondition, Technik,
     /// dritter Wurf, Form). Wie im Original verschiebt das Hinzufügen damit alle späteren Würfe. [APPROX] Die Werbeangebote des
     /// Neuen (<see cref="RenewOffers"/>) ziehen wie alle Werbeangebote aus <see cref="FinanceRandom"/>.</para>
     /// </summary>
@@ -200,7 +200,7 @@ public sealed partial class GameState
     /// +0x19 = random(3, 12) · 16 + random(3, 12) (Datei 0x299B7–0x299F4), Verein +0x1D = Managerverein (Datei 0x29A17),
     /// Alter random(19, 31) (Datei 0x29A1B–0x29A3A).
     /// [ORIGINAL] Startwerte Datei 0x29DA4–0x29EF7 mit Basis DGROUP 0x4B42 [Start-Liga · 3 + Start-Stärke]
-    /// (<see cref="SquadSetup.StartBase"/>): je Platz Technik, Kondition = random(Basis − 2, Basis + 2), ein dritter Wurf derselben
+    /// (<see cref="SquadSetup.StartBase"/>): je Platz Kondition, Technik = random(Basis − 2, Basis + 2), ein dritter Wurf derselben
     /// Spanne (verworfen, Datei 0x29DF2 zieht vor der Unterscheidung), Form random(40, 60); dann +0x2C = Wert(Preis),
     /// +0x28 = Wert(Gehalt) (Datei 0x29EB4–0x29EF3). Talent (+0x12) und Name bleiben die des Poolspielers.
     /// [APPROX] Nach 1000 Fehlversuchen nimmt das Remake den ersten freien Platz der Art (das Original nähme den letzten
@@ -247,16 +247,9 @@ public sealed partial class GameState
     /// </summary>
     private void RollAddedStartValues(Manager manager, Club club, ManagerSetup setup, Random random)
     {
-        var start = SquadSetup.StartBase(Setup.StartLeague, setup.StartStrength);
-        foreach (var p in club.Players)
-        {
-            p.Technique = Player.Clamp(TransferRules.Random16(random, start - 2, start + 2));
-            p.Condition = Player.Clamp(TransferRules.Random16(random, start - 2, start + 2));
-            _ = TransferRules.Random16(random, start - 2, start + 2);
-            p.Form = TransferRules.Random16(random, 40, 60);
-            p.PurchasePrice = Contracts.ValuePrice(this, manager, p);
-            p.MonthlySalary = Contracts.ValueSalary(this, manager, p);
-        }
+        // Spur zufallsstrom, Teil 3: dieselbe Schleife wie beim Spielstart (Datei 0x29DA4–0x29EF7); der erste Wurf ist die
+        // Kondition (+0x10), der zweite die Technik (+0x11) – vorher vertauscht.
+        RollStartValues(manager, SquadSetup.StartBase(Setup.StartLeague, setup.StartStrength), random);
         club.RenumberPlayers();
         club.Lineup.AutoFill(club.Players);
     }

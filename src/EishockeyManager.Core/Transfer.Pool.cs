@@ -291,8 +291,8 @@ public sealed partial class TransferMarket
     /// Entscheidung Nutzer 01.11.2026 (Vorschlag 1): jeder Name steht nur einmal im Spiel, wie im Original, wo Computervereine
     /// keine Spieler haben. Fehlende Plätze ergänzt der Kaderaufbau wie bisher. [ORIGINAL] Spur zufallsstrom (A212, N3 = B): Der Pool
     /// zieht aus dem gemeinsamen Strom <see cref="GameState.Random"/> (Poolaufbau 0x5AF50, Aufruf Datei 0x29896 in der
-    /// Spielvorbereitung 0x28165 vor den Kaderplätzen der Manager, Datei 0x29996). [APPROX] Die Platzwahl der Start-Liga (Datei
-    /// 0x29C91) zieht das Remake noch vor dem Pool (<see cref="NewGame.AssignClubs"/>), das Original danach. Spieler werden über
+    /// Spielvorbereitung 0x28165). Der Spielstart selbst nutzt <see cref="ReserveStartPool"/> (Kaderplätze der Manager im
+    /// Poolaufbau, Nationalspieler erst nach der Managerschleife). Spieler werden über
     /// ihre ID unterschieden; gleiche Namen bleiben möglich, wenn eine geänderte Datenbank sie enthält.
     /// </summary>
     /// <param name="managerSlots">Spur pool (#743): Plätze der Managerkader vormerken (<see cref="BuildPool"/>). Der Import
@@ -303,6 +303,45 @@ public sealed partial class TransferMarket
         ArgumentNullException.ThrowIfNull(game);
         CaptureDatabaseNames(game);
         BuildPool(game, game.Random, layout ?? TransferPoolLayout.Original, new HashSet<string>(), managerSlots);
+        RemovePoolNamesFromSquads(game);
+    }
+
+    /// <summary>
+    /// Spielstart (Spur zufallsstrom, Teil 3; N3 = B): Pool wie <see cref="ReservePool"/>, aber in der Reihenfolge des Originals –
+    /// [ORIGINAL] 0x5AF50 legt zwischen den Startwerten und den Talenten die Kaderplätze der Manager an (Datei 0x5B0BB–0x5B2BE,
+    /// <see cref="RollStartSquads"/>); die Nationalspieler benennt erst <see cref="RenameStartNationals"/> nach der Managerschleife
+    /// (Datei 0x2A0B5). Alle Würfe aus dem gemeinsamen Strom <see cref="GameState.Random"/>.
+    /// </summary>
+    /// <returns>Namen, die außerhalb des Pools vergeben sind (gezogene Namen leerer Kaderplätze).</returns>
+    internal HashSet<string> ReserveStartPool(GameState game)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        CaptureDatabaseNames(game);
+        var held = new HashSet<string>();
+        BuildPool(game, game.Random, TransferPoolLayout.Original, held, managerSlots: true, start: true);
+        RemovePoolNamesFromSquads(game);
+        return held;
+    }
+
+    /// <summary>
+    /// Spielstart nach der Managerschleife: Nationalspieler des Pools benennen. [ORIGINAL] Datei 0x2A0B5 → 0x5ACA0 mit Art 0, nach
+    /// Platzwahl und Startwerten aller Manager (Datei 0x29B57–0x2A0A3); aus dem gemeinsamen Strom.
+    /// </summary>
+    internal void RenameStartNationals(GameState game, HashSet<string> held)
+    {
+        Rename(game, nationals: true, game.Random, held, exchange: false);
+        AssignPoolIds(game);
+    }
+
+    private void AssignPoolIds(GameState game)
+    {
+        foreach (var slot in _pool.Where(s => s.Player.Id == 0 && game.NextPlayerId > 1 && !IsPlaceholder(s)))
+            game.AssignPlayerId(slot.Player);
+    }
+
+    /// <summary>Die vom Pool vergebenen Datenbankspieler aus den Kadern der Computervereine nehmen (jeder Name nur einmal).</summary>
+    private void RemovePoolNamesFromSquads(GameState game)
+    {
         foreach (var slot in _pool)
         {
             var club = game.Clubs[slot.Club];
@@ -366,7 +405,10 @@ public sealed partial class TransferMarket
     /// aus der Datenbank (Namen, Werte, Alter aus <see cref="SquadSetup"/>); der Zufall des Alters random(19, 31) (Datei
     /// 0x5B1F5–0x5B20C) wird hier nicht verbraucht. Größe nach <paramref name="layout"/>.
     /// </summary>
-    internal void BuildPool(GameState game, Random random, TransferPoolLayout layout, HashSet<string> held, bool managerSlots = true)
+    /// <param name="start">Spielstart (<see cref="ReserveStartPool"/>): Kaderplätze der Manager an der Stelle des Originals
+    /// anlegen und würfeln (<see cref="RollStartSquads"/>), Nationalspieler nicht benennen.</param>
+    internal void BuildPool(GameState game, Random random, TransferPoolLayout layout, HashSet<string> held, bool managerSlots = true,
+        bool start = false)
     {
         _pool.Clear();
         for (var i = 1; i < layout.Size; i++)
@@ -375,13 +417,15 @@ public sealed partial class TransferMarket
             TransferPoolRules.RollStartValues(p, random);
             _pool.Add(new PoolSlot { Index = i, Player = p, Club = 0, Owner = PoolOwner.Free });
         }
-        foreach (var (manager, _, index) in managerSlots && !game.WorldOnly ? ManagerSquadIndices(game, layout) : [])
+        foreach (var (manager, _, index) in managerSlots && !game.WorldOnly ? ManagerSquadIndices(game, layout, start) : [])
         {
             var slot = _pool[index - 1];
             slot.Owner = PoolOwner.Taken; // Platzhalter: Name leer bis zum Einsetzen
             slot.Club = game.Managers[manager].ClubIndex;
         }
         var names = NameMap();
+        if (start && !game.WorldOnly)
+            RollStartSquads(game, random, layout, names, held);
         var (defenders, forwards) = layout.LeagueRoleStarts;
         var role = 0;
         foreach (var slot in _pool)
@@ -394,9 +438,53 @@ public sealed partial class TransferMarket
         }
         foreach (var slot in _pool)
             TransferPoolRules.RollRoleValue(layout, slot.Index, random);
-        Rename(game, nationals: true, random, held, exchange: false);
-        foreach (var slot in _pool.Where(s => s.Player.Id == 0 && game.NextPlayerId > 1 && !IsPlaceholder(s)))
-            game.AssignPlayerId(slot.Player);
+        if (!start)
+            Rename(game, nationals: true, random, held, exchange: false);
+        AssignPoolIds(game);
+    }
+
+    /// <summary>
+    /// Kaderplätze der Manager beim Spielstart (Spur zufallsstrom, Teil 3; N3 = B). [ORIGINAL] Datei 0x5B0BB–0x5B2BE im Poolaufbau
+    /// 0x5AF50, je Manager, Art und Platz aus dem gemeinsamen Strom: Name vom Datenbankplatz des Vereins (0x5AA34, Datei 0x5B129)
+    /// oder für einen leeren Platz ein gezogener Name (0x5AAA0, Datei 0x5B190; <see cref="DrawLeagueName"/>); Kaderplatz
+    /// 0x42CB1 mit Laufzeit 2 (Datei 0x5B1CD: Belastung random(80, 120) Datei 0x42E4C, Tendenz und Steuerbyte Datei 0x42E6B →
+    /// 0x4907A); Alter random(19, 31) (Datei 0x5B1F5); +0x19 = random(3, 12) · 16 + random(3, 12) (Datei 0x5B218, 0x5B245).
+    /// [APPROX] Der gezogene Datenbankspieler verlässt den Kader seines Computervereins (im Original hat der keine Spieler; jeder
+    /// Name nur einmal im Spiel, Entscheidung Nutzer 01.11.2026); ohne freien Namen heißt der Platz „SPIELER n“.
+    /// </summary>
+    private void RollStartSquads(GameState game, Random random, TransferPoolLayout layout,
+        Dictionary<(int Club, int Slot), string> names, HashSet<string> held)
+    {
+        var placeholders = new SquadSetup.NameDraw(game);
+        foreach (var squad in ManagerSquadIndices(game, layout, beforePlacement: true).GroupBy(x => x.Manager))
+        {
+            var manager = squad.Key;
+            var club = game.Clubs[game.Managers[manager].ClubIndex];
+            var setup = manager < game.Setup.Managers.Count ? game.Setup.Managers[manager] : new ManagerSetup();
+            SquadSetup.BuildManagedSquad(club, SquadSetup.ManagedSquadSize(SquadLeague(club, setup, beforePlacement: true)),
+                role =>
+                {
+                    if (DrawLeagueName(game, RoleIndex(role), random, names, held) is not { } drawn)
+                        return placeholders.Placeholder(role);
+                    held.Add(drawn.Name);
+                    var from = game.Clubs[drawn.Club];
+                    var taken = from.Players.FirstOrDefault(p => p.Name == drawn.Name);
+                    if (taken is not null)
+                    {
+                        from.RemovePlayer(taken);
+                        from.Lineup.FillGaps(from.Players);
+                    }
+                    return new Player { Name = drawn.Name, Role = role, IsForeigner = taken?.IsForeigner ?? false };
+                },
+                p =>
+                {
+                    p.ContractYears = SquadSetup.StartContractYears;
+                    p.Strain = TransferRules.Random16(random, PlayerFactory.StartStrainMin, PlayerFactory.StartStrainMax);
+                    p.RollTrend(random);
+                    p.Age = TransferRules.Random16(random, SquadSetup.MinAge, SquadSetup.MaxAge);
+                    HiddenSkills.Roll(p, random);
+                });
+        }
     }
 
     /// <summary>Vorgemerkter Platz eines Managerkaders, dessen Spieler noch nicht eingesetzt ist (<see cref="BuildPool"/>).</summary>
@@ -410,7 +498,11 @@ public sealed partial class TransferMarket
     /// Größe richtet sich nach der Liga des Vereins (wie <c>SquadSetup.StartLeagues</c>). Bei anderer Poolgröße beginnt jede Art
     /// beim zweiten Platz ihres Bereichs (<see cref="TransferPoolLayout.LeagueRoleStarts"/>); Plätze jenseits des Pools entfallen.
     /// </summary>
-    internal static IEnumerable<(int Manager, PlayerRole Role, int Index)> ManagerSquadIndices(GameState game, TransferPoolLayout layout)
+    /// <param name="beforePlacement">Spielstart vor der Platzwahl (Datei 0x29C91 liegt nach dem Pool): Ein fest gewählter Verein
+    /// steht dann noch nicht in der Start-Liga; es gilt die Start-Liga der Spielvorbereitung ([ORIGINAL] DGROUP 0x11A, Datei
+    /// 0x5B289).</param>
+    internal static IEnumerable<(int Manager, PlayerRole Role, int Index)> ManagerSquadIndices(GameState game, TransferPoolLayout layout,
+        bool beforePlacement = false)
     {
         var (defenders, forwards) = layout.LeagueRoleStarts;
         var next = new[] { 2, defenders + 1, forwards + 1 };
@@ -421,7 +513,7 @@ public sealed partial class TransferMarket
             if (!seen.Add(club.Index))
                 continue;
             var setup = m < game.Setup.Managers.Count ? game.Setup.Managers[m] : new ManagerSetup();
-            var (g, d, f) = SquadSetup.ManagedSquadSize(club.League ?? setup.StartLeague);
+            var (g, d, f) = SquadSetup.ManagedSquadSize(SquadLeague(club, setup, beforePlacement));
             var counts = new[] { g, d, f };
             for (var a = 0; a < 3; a++)
                 for (var k = 0; k < counts[a]; k++, next[a]++)
@@ -429,6 +521,9 @@ public sealed partial class TransferMarket
                         yield return (m, a switch { 0 => PlayerRole.Goalkeeper, 1 => PlayerRole.Defender, _ => PlayerRole.Forward }, next[a]);
         }
     }
+
+    private static League SquadLeague(Club club, ManagerSetup setup, bool beforePlacement) =>
+        beforePlacement && setup.ClubIndex is not null ? setup.StartLeague : club.League ?? setup.StartLeague;
 
     /// <summary>
     /// Spur pool (#743): Spieler der Managerkader in ihre Poolplätze einsetzen, Besitzer „vergeben“; danach steht jeder Spieler
@@ -452,7 +547,7 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>Punkte 1 und 2 von <see cref="SeatManagerSquads"/>: nur die vorgemerkten Plätze (Spielstart).</summary>
-    private HashSet<Player> SeatStartSquads(GameState game)
+    internal HashSet<Player> SeatStartSquads(GameState game)
     {
         var layout = PoolLayout;
         var seated = new HashSet<Player>(_pool.Select(s => s.Player), ReferenceEqualityComparer.Instance);
@@ -470,7 +565,12 @@ public sealed partial class TransferMarket
                 continue;
             var club = game.Managers[manager].ClubIndex;
             if (QueueOf(club, role).TryDequeue(out var player))
+            {
+                // [ORIGINAL] Der Kaderplatz ist der Poolplatz: Talent +0x12 = random(0, 9) aus dem Poolaufbau (Datei 0x5B2E8) gilt
+                // auch für die Plätze der Manager (Spur zufallsstrom, Teil 3; vorher eigene Quelle).
+                player.Talent = slot.Player.Talent;
                 Seat(slot, player, club, seated);
+            }
         }
         foreach (var slot in _pool.Where(IsPlaceholder))
         {
@@ -519,37 +619,50 @@ public sealed partial class TransferMarket
     private void NameFromLeague(GameState game, PoolSlot slot, int role, Random random,
         Dictionary<(int Club, int Slot), string> names, HashSet<string> held)
     {
-        bool Available(int c, int s) => NameAt(names, held, c, s) is { } n && _pool.All(o => o.Player.Name != n);
-        var possible = Enumerable.Range(0, 36).Where(c => !IsManaged(game, game.Clubs[c]))
-            .Any(c => Enumerable.Range(SlotBounds[role], SlotBounds[role + 1] - SlotBounds[role]).Any(s => Available(c, s)));
-        if (possible)
+        if (DrawLeagueName(game, role, random, names, held) is { } drawn)
         {
-            var wide = false;
-            for (var attempt = 0; attempt < 100_000; attempt++)
-            {
-                var s = TransferRules.Random16(random, SlotBounds[role], SlotBounds[role + 1] - 1);
-                int c;
-                do
-                    c = TransferRules.Random16(random, 0, wide ? 35 : 11);
-                while (IsManaged(game, game.Clubs[c]));
-                var name = NameAt(names, held, c, s);
-                if (name is null)
-                    continue;
-                if (_pool.Any(o => o.Player.Name == name))
-                {
-                    wide = true;
-                    continue;
-                }
-                Rename(game, slot, name);
-                slot.Club = c;
-                return;
-            }
+            Rename(game, slot, drawn.Name);
+            slot.Club = drawn.Club;
+            return;
         }
         Rename(game, slot, $"POOLSPIELER {slot.Index}");
         var club = (slot.Index - 1) % 12;
         for (var k = 0; k < 36 && IsManaged(game, game.Clubs[club]); k++)
             club = (club + 1) % 36;
         slot.Club = club;
+    }
+
+    /// <summary>
+    /// Würfe von 0x5AAA0 (siehe <see cref="NameFromLeague"/>): freier Datenbankname der Art und sein Verein; null, wenn es keinen
+    /// gibt (dann ohne Wurf).
+    /// </summary>
+    private (string Name, int Club)? DrawLeagueName(GameState game, int role, Random random,
+        Dictionary<(int Club, int Slot), string> names, HashSet<string> held)
+    {
+        bool Available(int c, int s) => NameAt(names, held, c, s) is { } n && _pool.All(o => o.Player.Name != n);
+        var possible = Enumerable.Range(0, 36).Where(c => !IsManaged(game, game.Clubs[c]))
+            .Any(c => Enumerable.Range(SlotBounds[role], SlotBounds[role + 1] - SlotBounds[role]).Any(s => Available(c, s)));
+        if (!possible)
+            return null;
+        var wide = false;
+        for (var attempt = 0; attempt < 100_000; attempt++)
+        {
+            var s = TransferRules.Random16(random, SlotBounds[role], SlotBounds[role + 1] - 1);
+            int c;
+            do
+                c = TransferRules.Random16(random, 0, wide ? 35 : 11);
+            while (IsManaged(game, game.Clubs[c]));
+            var name = NameAt(names, held, c, s);
+            if (name is null)
+                continue;
+            if (_pool.Any(o => o.Player.Name == name))
+            {
+                wide = true;
+                continue;
+            }
+            return (name, c);
+        }
+        return null;
     }
 
     /// <summary>Grenzen der Kaderplätze je Art in der Datenbank. [ORIGINAL] DGROUP 0x164 bzw. 0x55F0: 0, 2, 12, 25.</summary>
