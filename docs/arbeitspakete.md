@@ -78,7 +78,7 @@ Danach Gesamtreview nach R20-D4 = C.
   (aus verschiedenen Bereichen, soweit vorhanden) mit Beleg nach §5 Punkt 7 als Stichprobe im PR; keine Änderung unter `src/`, `tests/`.
 - **Voraussetzung:** `pruefung-karte` gemergt.
 - **Modell:** Claude Opus 5.5 (Alternative: Claude Fable 5.2 für Teil 2). **Erstreview:** Claude Opus 5.5 (Einordnung gegen
-  Code und em.exe, keine reine Doku-Prüfung). **Status:** Go 15.11.2026, startet nach Merge von `pruefung-karte`.
+  Code und em.exe, keine reine Doku-Prüfung). **Status:** Teile 1–3 fertig in PR #883 (16.11.2026), wartet auf Erstreview; Fragen N1–N5 an den Nutzer in `analyse/restliste-v1.md`.
 
 ### Spur `pruefung-karte` – P3 und Testlücke aus Runde 19 (Welle 1, R20-D2 = B)
 

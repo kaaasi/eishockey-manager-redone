@@ -1,5 +1,9 @@
 # Inventur: Annahmen und Umsetzungslücken (Runde 10, Spur `inventur`)
 
+> **Abgelöst durch [restliste-v1.md](restliste-v1.md)** (Runde 20, Spur `inventur-v1`): Markerliste mit stabilen IDs
+> (`tools/reverse-engineering/markerliste.py`) und Einordnung je Stelle. Die Tabellen unten bleiben als Archiv; die IDs A001–A481
+> und F001–F166 leben dort weiter (entfallene IDs mit letztem Stand).
+
 Grundlage für die Planung von Runde 11: alle Stellen, an denen das Remake nicht aus em.exe belegt ist. Stand `main`
 2d0b081 (nach Integration #380). Adressen sind **Dateioffsets** in `em.exe` (Schreibweise wie in
 [re-abdeckung.md](../re-abdeckung.md)); DGROUP-Werte sind als solche bezeichnet. Kandidaten-Kürzel: G1–G8

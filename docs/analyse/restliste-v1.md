@@ -1,9 +1,8 @@
 # Restliste bis v1.0 (Runde 20, Spur `inventur-v1`)
 
 Löst die Tabellen 1 und 2 von [inventur.md](inventur.md) ab (dort bleiben sie als Archiv). Grundlage für Runde 21 ff. und den
-Umfang der Abschlussprüfung (`docs/prozess/anhang.md` C).
-
-**Stand:** Teil 1 (Generator) fertig; Einordnung (Teil 2) und Zusammenfassung (Teil 3) folgen.
+Umfang der Abschlussprüfung (`docs/prozess/anhang.md` C). **Stand:** `main` 159bff6 (nach `pruefung-karte` #880): 618
+`[APPROX]`-Zeilen in 216 Dateien und 71 Funktionen der Funktionskarte („dokumentiert“ 68, „genähert“ 3), alle eingeordnet.
 
 ## Erzeugung
 
@@ -19,6 +18,103 @@ Umfang der Abschlussprüfung (`docs/prozess/anhang.md` C).
 - Abweichungsliste für den Nutzer vor v1.0 (R20-D3 Zusatz): `python3 tools/reverse-engineering/markerliste.py --abweichungen`
   (alle Einträge außer Klasse X, nach Bereich).
 - Gegenprobe der Zählung: `grep -rc '\[APPROX\]' src/ | awk -F: '$2>0{n++;s+=$2}END{print n,s}'`.
+
+## Zusammenfassung je Bereich und Klasse
+
+| Bereich | V | D | E | K | X | Summe | V-Aufwand S/M/L |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Laden/Speichern | 0 | 6 | 136 | 6 | 5 | 153 | – |
+| Tages-/Saisonwechsel | 5 | 9 | 23 | 2 | 14 | 53 | 3/2/0 |
+| Finanzen | 8 | 1 | 16 | 6 | 4 | 35 | 3/2/3 |
+| Wettbewerbe | 12 | 12 | 41 | 24 | 17 | 106 | 7/5/0 |
+| Kader/Transfer | 17 | 14 | 59 | 20 | 15 | 125 | 9/7/1 |
+| Bedienung/Pixel | 0 | 2 | 48 | 99 | 18 | 167 | – |
+| Live-Spiel | 6 | 2 | 9 | 17 | 7 | 41 | 3/3/0 |
+| Werkzeuge | 0 | 0 | 6 | 1 | 2 | 9 | – |
+| **Summe** | 48 | 46 | 338 | 175 | 82 | 689 | 25/19/4 |
+
+Lesart: **E** ist so groß, weil Import/Export `*.HOK` (Remake-Erweiterung, E14-1 C, R14-D2 = B), Migrationen älterer
+Remake-Spielstände und das Speicherformat des Remakes dort stehen. **K** liegt fast ganz bei Pixel, Farbe und Lage.
+**X** (82) sind veraltete Marker und Nicht-Marker (Rückblicke „vorher `[APPROX]`“, Verweise „siehe Klasse“).
+
+## Klasse V nach Themen (48 Einträge)
+
+| Thema | IDs | Aufwand |
+|---|---|---|
+| Drittel-DM statt ganzer DM (Gehalt, Versicherung, Werbung, Börse) | A040, A122, A124, A227, A501 | L (Datenmodell; **Frage N1**) |
+| Lader 0x2EF1B beim Programmstart statt beim ersten Spiel (Teamwerte, Auslosung, Grundeinnahme) | A418, A485, A505, A704, (A080 D) | M |
+| Verein zum Zusehen markieren (Schalter 0x0AE2B, Knopf „Einschätzung“, Spielplan des Gegners) | F018, A445, A286, A752 | M |
+| Spiel-Level und Start-Stärke je Spiel statt je Manager | A054, A518 | M |
+| Gehalt geliehener Spieler, Forderung aus Spielerwert | A118, A120 | M |
+| Aufstellen: andere Hälfte bzw. sechster Feldspieler bei voller Reihe | A490, A683 | M–L |
+| Transfer und Pool (Bieter, Angebotshöhe, Zielverein, Poolplatz, Nachfolger, Preis) | A247, A391, A389, A631, A701, A715, A731 | S–M |
+| Live-Spiel-Einzelregeln (Strafbank, Schütze bei vergebener Chance, Spiele beim Einsetzen) | A443, A456, A677 | S |
+| WM/Nationalteam (Kandidaten, Gleichstand „auto“, Form Deutschlands, Belastung, Strafe am WM-Tag) | A020, A487, A493, A498, A499 | S–M |
+| Spielberechnung und Wertung (Sturmbyte, Wertung zweier Managervereine, Startreihe, Minutenzähler, Verletzungswurf) | A071, A078, A105, A191, A543, A549 | S–M |
+| Tages-/Saisonablauf (Jugend nach den Menüs, Startordnung nach doppeltem Zwangsabstieg) | A384, A665 | M |
+| Einzelpunkte (Highscore 0x9744, Spielerdatenfenster, Balken Über-/Unterzahl, Werbung „Kündbar.“, Buchungsstreifen, Kaderlücken) | A559, A367, A371, A582, A775, A394 | S–M |
+
+Jede V-Zeile in der Markerliste unten nennt die selbst gelesene Fundstelle `Datei 0x…` und die abweichende Remake-Stelle bzw.
+die erfolglose Codesuche (`zusammenarbeit.md` §5 Punkt 7); Rückfragen im Feld „Verdacht“.
+
+## Fragen an den Nutzer (vor Runde 21)
+
+- **N1 Drittel-DM:** Gehälter und Beträge in Drittel-DM wie das Original (V, Datenmodell und Migration, Aufwand L) oder ganze DM
+  als bewusste Abweichung (→ E)? R8W3I-08 war ein Review-Befund, keine Entscheidung. Betroffen: A040, A122, A124, A227, A501.
+- **N2 Fehler des Originals:** nachbilden oder bewusst abweichen (→ E)? A701 (ungesetztes Register, zufälliger Vereinsteil),
+  A247 (Kaderplatz- statt Poolnummer), A715 (Teil „Verein 150“), A775 (Betrag bleibt nach Verlassen des Buchungsstreifens stehen).
+- **N3 Eigene Zufallsquellen:** Stellen, an denen das Remake aus einem eigenen Strom zieht statt aus `GameState.Random`
+  (A212, A248, A720–A722, A725, A726; Anzeige A271, A274), sind als E bzw. K geführt (Zugfolge des Originals wird nie
+  getroffen). Bestätigen oder je Stelle V?
+- **N4 HOK-Import/-Export:** zählt der Import zu v1.0? Dann wird u. a. A397 (Schalter „automatisch aufstellen“ nach dem Laden) V.
+- **N5 Buchung statt direkter Gutschrift:** A207, A703, A716 buchen über `GameState.Book` (AGENTS.md §4), das Original schreibt
+  direkt aufs Konto; mögliche Abweichung der Finanzübersicht. Bleibt E?
+
+## Vorschlag Zuschnitt Runde 21 ff.
+
+| Spur | Inhalt | Voraussetzung |
+|---|---|---|
+| `start-lader` | Lader beim Programmstart (A418, A485, A505, A704), Folge A080 prüfen; Mehrsaisonprobe | – |
+| `zusehen` | Schalter 0x0AE2B mit Knöpfen im Gegner-/Vereinsfenster und Spielplan des Gegners (F018, A445, A286, A752), Liste DGROUP 0x233 | – |
+| `kader-regeln` | A054/A518, A118/A120, A490/A683, A389, A394, A631; Mehrsaisonprobe | – |
+| `transfer-pool` | A247, A391, A701, A715, A731 | N2 |
+| `wettbewerbe-regeln` | A020, A487, A493, A498, A499, A071, A078/A105, A191, A543, A549, A559, A384, A665, A443, A456, A677 | – |
+| `einzelpunkte` | A367, A371, A582, A775 | N2 (A775) |
+| `drittel-dm` | A040, A122, A124, A227, A501 mit Migration | N1 = V |
+| `marker-x` | 82 Einträge der Klasse X auf `[ORIGINAL]` (bzw. Nicht-Marker umformulieren); danach Generatorlauf | zuletzt in der Runde (Wortlaut ändert die IDs) |
+
+Je Spur roter Regressionstest mit Fundstelle; Stellen mit Verdacht vorher lesen (Feld „Verdacht“).
+
+## DOSBox-Sammelliste (Klasse D, 46 Einträge)
+
+Aufnahme nach [`vorlagen/dosbox-aufnahme.md`](../vorlagen/dosbox-aufnahme.md); was je Eintrag aufzunehmen ist, steht im Feld
+„Beleg“ der Markerliste. Gebündelt:
+
+- **Highscore und Saisonende:** A059, A065, A698, A801.
+- **Spielberechnung:** A080 (Teamwerte der Managervereine), A093 (Technikabzug außerhalb der eigenen Reihe), A095, A410, A425, A494, A553, A628.
+- **WM und „nur Weltkugel“:** A408, A497, A500, A671, A411.
+- **Kader, Talente, Transfer:** A117, A128, A131, A132, A259, A427, A480, A492, A629, A630, A672, A694, A707.
+- **Saisonwechsel:** A057, A206, A667, A670, A706, A713.
+- **Spielstände HOK:** A402, A599, A613, A614, A625.
+- **Live-Spiel, Finanzen, Ton/Bild:** A101, A455, A421, A002, A038.
+
+Mehrere D wären aus em.exe lesbar, sind aber nicht gelesen (A421, A492, A494, A497, A500, A628, A670, A671, A707, A713):
+vor der Aufnahme zuerst lesen, dann V oder X.
+
+## Vorschlag Umfang der Abschlussprüfung
+
+- **Geprüft:** alle V erledigt (Generatorlauf: V = 0) bzw. vom Nutzer nach E verschoben; D aufgenommen und als V/X/K
+  entschieden; X auf `[ORIGINAL]` umgestellt; Stichprobe von je fünf K (Pixel gegen Videobild) und fünf E (Quelle der
+  Entscheidung vorhanden); Mehrsaisonprobe über 4 Saisonwechsel mit Originaldaten; Funktionskarte ohne „dokumentiert“ im
+  Spielcode außer „nicht nötig“.
+- **Bewusst offen:** K (Darstellung ohne Spielwert, bleibt `[APPROX]`), E (Nutzerentscheidung, Plattformersatz, Erweiterungen
+  wie HOK-Import/-Export, Migrationen) – beide stehen in der Abweichungsliste für den Nutzer.
+
+## Abweichungsliste vor v1.0 (R20-D3 Zusatz)
+
+`python3 tools/reverse-engineering/markerliste.py --abweichungen` gibt alle Einträge außer Klasse X nach Bereich aus
+(Funktion bzw. Bildschirm, Abweichung in einem Satz, Klasse, ID). Probelauf am Stand der Spur: 607 Einträge in 8 Bereichen
+(V 48, D 46, E 338, K 175), Rückgabe 0. Vor v1.0 neu erzeugen und dem Nutzer geben; er entscheidet, was noch geändert wird.
 
 ## Markerliste (erzeugt)
 
