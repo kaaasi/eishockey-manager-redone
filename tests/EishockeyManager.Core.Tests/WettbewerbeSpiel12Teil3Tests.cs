@@ -59,8 +59,11 @@ public class WettbewerbeSpiel12Teil3Tests
     }
 
     /// <summary>
-    /// Managervereine behalten ihren Bezug zur Aufstellung ([APPROX] wie bisher, im Original Reihenwerte aus den Spielern
-    /// 0x98F8): Gegenprobe, dass die Unterscheidung nicht alle Vereine trifft.
+    /// Managervereine behalten ihren Bezug zur Aufstellung: Gegenprobe, dass die Unterscheidung nicht alle Vereine trifft.
+    /// Runde 21, Spur teamwert-aufstellung (A544, R21-D2 = A): Der Teamwert folgt der Aufstellung über die Vereinsfelder 0x18–0x1B,
+    /// die 0x952C an Tagen mit Ereignis schreibt (Datei 0x54DAA/0x54FBF, <c>GameState.UpdateManagerTeamValues</c>), nicht mehr
+    /// sofort über eine eigene Bewertung. Rückschaltprobe: MatchEngine.Live.cs von f3490bd mit der Zeile „unverändert bis zum
+    /// Schreiben“ rot (dort sinkt der Wert sofort).
     /// </summary>
     [Fact]
     public void ManagedClub_TeamValue_FollowsLineup()
@@ -69,6 +72,8 @@ public class WettbewerbeSpiel12Teil3Tests
         var club = game.Clubs[game.Managers[0].ClubIndex];
         var before = MatchEngine.TeamValue(game, club);
         WeakenLineup(club);
+        Assert.Equal(before, MatchEngine.TeamValue(game, club)); // unverändert bis zum Schreiben der Felder
+        game.UpdateManagerTeamValues();
         Assert.True(MatchEngine.TeamValue(game, club) < before);
     }
 

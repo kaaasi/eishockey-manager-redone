@@ -126,7 +126,7 @@ public static partial class MatchEngine
         var scoreboardRow = ScoreboardRow(game, home, away, competition);
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
-        PrepareMatch(game, home, away, homeTeam, awayTeam);
+        PrepareFromClubFields(game, home, away, homeTeam, awayTeam, homeManaged, awayManaged);
         MatchReport? report = null;
         // [ORIGINAL] Datei 0x3702E–0x37085: Pokalspiel mit eingeschaltetem Anzeigeschalter (DGROUP 0x227 DEB-Pokal, Code 6;
         // 0x228 Europapokal, Code 3/5; 0x229 WM-Gruppe, Code 8; GameOptions.CupMatchUsesMinuteLoop) läuft durch die
@@ -175,6 +175,44 @@ public static partial class MatchEngine
             HomeTeam = homeTeam, AwayTeam = awayTeam, Rules = rules, Row = scoreboardRow,
             DayActive = game.LiveScoreboard?.Active ?? false, Report = report,
         };
+    }
+
+    /// <summary>
+    /// Spielvorbereitung 0x8365 (<see cref="PrepareMatch"/>) mit den Stärken, die das Original zu diesem Zeitpunkt liest (A080,
+    /// Spur teamwert-aufstellung). [ORIGINAL] 0x977F bildet die Reihenwerte eines Managervereins (Vereinsfeld 0x16 ≠ 0) im Spiel nur
+    /// dann aus den Spielern (0x98F8), wenn der Verein in der Liste DGROUP 0x233 steht (Datei 0x097DC–0x097F0, 0x52B91), sonst aus
+    /// den Vereinsfeldern 0x18–0x1D (Datei 0x097F3–0x0984F). Der Spieltagsablauf 0x36B5D leert die Liste (Datei 0x36B8E–0x36BBF)
+    /// und ruft 0x8365 für alle Paarungen (Datei 0x36D12/0x36D49), bevor der Live-Bildschirm 0x5353C sie in der Minutenschleife
+    /// 0x37A62 füllt – die Vorbereitung vergleicht also die Stärke 0x368B1 aus den Vereinsfeldern, die 0x952C im Tageslauf vor den
+    /// Spielen aus der Aufstellung schreibt (Datei 0x54FBF, <see cref="GameState.UpdateManagerTeamValues"/>). Beleg: Zeile der
+    /// Automatik (Vereinsfelder 0x27–0x2B, 0x2D, 0x35–0x3A) von Managerverein und Gegner in FILE31, FILE66, FILE67, FILE61 und
+    /// FILE73 (<c>TeamwertAufstellungTests</c>). Die Minutenrechnung nimmt danach wie bisher die Spieler (<see cref="LiveSquad"/>).
+    /// Das Nationalteam des Bundestrainers bleibt wie bisher (<see cref="PrepareMatch"/> rechnet Länderspiele nicht).
+    /// </summary>
+    private static void PrepareFromClubFields(GameState game, Club home, Club away, LiveTeam homeTeam, LiveTeam awayTeam,
+        bool homeManaged, bool awayManaged)
+    {
+        if (IsNation(home) || IsNation(away) || (homeTeam.Squad is null && awayTeam.Squad is null))
+        {
+            PrepareMatch(game, home, away, homeTeam, awayTeam);
+            return;
+        }
+        // Same teams without the squads: 0x977F reads the club fields while DGROUP 0x233 is still empty.
+        var homeFields = homeTeam.Squad is null ? homeTeam : LiveTeamOf(game, home, away, homeManaged, managerMatch: false);
+        var awayFields = awayTeam.Squad is null ? awayTeam : LiveTeamOf(game, away, home, awayManaged, managerMatch: false);
+        PrepareMatch(game, home, away, homeFields, awayFields);
+        CopyPreparation(homeFields, homeTeam);
+        CopyPreparation(awayFields, awayTeam);
+    }
+
+    private static void CopyPreparation(LiveTeam from, LiveTeam to)
+    {
+        if (ReferenceEquals(from, to))
+            return;
+        to.Effort = from.Effort;
+        to.AttackLevel = from.AttackLevel;
+        to.TacticsStrength = from.TacticsStrength;
+        to.TacticsOpponentStrength = from.TacticsOpponentStrength;
     }
 
     /// <summary>Nach der Minutenschleife: Bericht übernehmen, bei Gleichstand im K.-o.-Spiel Penaltyschießen.</summary>
@@ -236,11 +274,11 @@ public static partial class MatchEngine
     /// <summary>
     /// Mannschaft eines Vereins für die Minutenrechnung.
     /// <list type="bullet">
-    /// <item>Teamwerte: Kondition und Technik je Teil = <see cref="TeamValue"/> + Streuung des Laders. [ORIGINAL] Der
-    ///   Lader 0x2EF1B setzt die Vereinsfelder 0x18–0x1B einmal je Spiel aus den Stärkebytes der Datenbank
-    ///   (v − random(0, v/10) + random(0, v/10), <see cref="LoadTeamValues"/>). [APPROX] Byte 0 auch für den Sturm (Byte 1
-    ///   weicht nur bei den Europapokal-Gegnern ab und wird im Remake nicht geführt); die Abweichung der Aufstellung von
-    ///   der Startaufstellung wirkt wie bisher über <see cref="TeamValue"/>.</item>
+    /// <item>Teamwerte: Kondition und Technik je Teil aus den Vereinsfeldern 0x18–0x1B (<see cref="ClubFieldValues"/>).
+    ///   [ORIGINAL] Der Lader 0x2EF1B setzt sie beim Programmstart aus den Stärkebytes der Datenbank
+    ///   (v − random(0, v/10) + random(0, v/10), <see cref="LoadTeamValues(GameState)"/>), danach wandern sie
+    ///   (<see cref="DriftTeamValues"/>). [APPROX] Byte 0 auch für den Sturm (Byte 1 weicht nur bei den Europapokal-Gegnern ab
+    ///   und wird im Remake nicht geführt).</item>
     /// <item>Form 0x1C/0x1D: [ORIGINAL] random(45, 55), Europapokal-Gegner (Index &gt; 64) 5 weniger, aus dem Lader.
     ///   Tagesform 0x17: [ORIGINAL] random(47, 53) aus dem Lader, nach Ligaspielen nachgeführt (<see cref="UpdateDayForm"/>).</item>
     /// <item>Einsatz 0x26 und Angriff 0x2C: hier vorläufig Automatik bzw. eigene Taktik beim Stand 0:0 gegen den Teamwert;
@@ -248,10 +286,13 @@ public static partial class MatchEngine
     ///   Original. In Managerpaarungen führt der Minutenablauf sie nach dem Spielstand nach.</item>
     /// <item>Energie 0x1E = <see cref="PreparedEnergy"/>. Reihe 0 bleibt auf dem Eis: [ORIGINAL] für Paarungen ohne
     ///   Manager; in Managerpaarungen Energie und Reihenwechsel je Minute (0x87F7, 0x8EF2, <c>docs/spielberechnung.md</c> §13).</item>
-    /// <item>Managervereine in der Managerpaarung: [ORIGINAL] Reihenwerte aus den eingesetzten Spielern
-    ///   (<see cref="LiveSquad"/>, <see cref="ManagedLineValues"/>, 0x98F8); Strafen mit dem Managerwert des nächsten
-    ///   Managersatzes (0x35890, <see cref="ManagedTeamValues"/>). Defense/Attack bleiben die Teamwerte (für die Automatik
-    ///   der Taktik).</item>
+    /// <item>Managervereine: [ORIGINAL] Vereinsfelder 0x18–0x1D aus der Aufstellung (0x952C, A080) – sie gelten, solange der
+    ///   Verein nicht in der Liste DGROUP 0x233 steht, also in der Spielvorbereitung (<see cref="PrepareFromClubFields"/>). In der
+    ///   Managerpaarung Reihenwerte aus den eingesetzten Spielern (<see cref="LiveSquad"/>, <see cref="ManagedLineValues"/>,
+    ///   0x98F8); Strafen mit dem Managerwert des nächsten Managersatzes (0x35890, <see cref="ManagedTeamValues"/>).
+    ///   [APPROX] Im Remake ist jedes Spiel eines Managervereins eine Managerpaarung; im Original nur mit Live-Anzeige (Verein
+    ///   zum Zusehen markiert, Liste 0x233 aus 0x5353C) – ohne sie spielt der Managerverein auch die Minuten mit den
+    ///   Vereinsfeldern.</item>
     /// <item>Nationalteams (Vereinsplätze 52–63 ohne Kader, auch das Land des Bundestrainers): [ORIGINAL] eigene Teamwerte,
     ///   beim Bundestrainer Kader, Taktik und Strafspieler – <see cref="NationalLiveTeam"/> (Spur wettbewerbe-spiel, Teil 3).</item>
     /// </list>
@@ -264,12 +305,13 @@ public static partial class MatchEngine
         var value = TeamValue(game, club);
         var opponentValue = TeamValue(game, opponent);
         var loaded = TeamValuesOf(club);
-        // Managervereine bilden ihre Reihenwerte im Original aus den Spielern (0x98F8); die Streuung und Form des Laders
-        // wirken dort nicht ([APPROX] Teamwert ohne Streuung, Form 50). Die Tagesform 0x17 gilt für alle Vereine.
-        var spread = !managed;
+        // A080: [ORIGINAL] Vereinsfelder 0x18–0x1D für alle Vereine. Bei Managervereinen schreibt sie 0x952C aus der Aufstellung
+        // (Datei 0x09721–0x09771, im Tageslauf vor den Spielen Datei 0x54FBF, GameState.UpdateManagerTeamValues); 0x977F liest
+        // sie, solange der Verein nicht in der Liste DGROUP 0x233 steht (Datei 0x097F3–0x0984F), sonst die Spieler (0x98F8,
+        // LiveSquad). Die Tagesform 0x17 gilt für alle Vereine.
         // [ORIGINAL] Der Lader begrenzt nicht (Byte bis v + v/10, also bis 101); begrenzt wird erst in 0x977F
         // (OriginalMatch.LineValues). Untergrenze: Streuung ≥ −v/10, also nie negativ (Review R8-A03).
-        var (defense, attack) = spread ? ClubFieldValues(club) : (new PartValues(value, value, 50), new PartValues(value, value, 50));
+        var (defense, attack) = ClubFieldValues(club);
         var manager = game.ActiveManagers.FirstOrDefault(m => m.ClubIndex == club.Index);
         LiveSquad? squad = null;
         var penaltyValue = 20;
@@ -341,7 +383,7 @@ public static partial class MatchEngine
     ///   0x9C63 ff., docs/spielberechnung.md §7); die Felder wandern über 0x9D1B/0x58DC (<see cref="DriftTeamValues"/>,
     ///   Streuung in <see cref="ClubFieldValues"/>). Spur wettbewerbe-spiel, Runde 12, Teil 3 (A174; Entscheidung Nutzer
     ///   02.11.2026): vorher verschob die Remake-Aufstellung auch diese Stärke.</item>
-    /// <item>Managervereine (<see cref="IsManaged"/>): <see cref="ManagedClubValue"/>.</item>
+    /// <item>Managervereine (<see cref="IsManaged"/>): <see cref="ManagedClubValue"/> – Vereinsfelder aus der Aufstellung.</item>
     /// </list>
     /// </summary>
     public static int TeamValue(GameState game, Club club) =>
@@ -351,19 +393,15 @@ public static partial class MatchEngine
     public static int ComputerTeamValue(Club club) => Math.Clamp(club.Strength, 0, 100);
 
     /// <summary>
-    /// Teamwert eines Managervereins: Stärke aus der Datenbank, verschoben um die Veränderung der Aufstellung gegenüber dem
-    /// Spielbeginn wie <see cref="TeamStrength.MatchStrength"/>, aber ohne dessen Einsatzzuschlag (der Einsatz wirkt in der
-    /// Rechnung des Originals selbst). Ohne Kader die Stärke. Begrenzt auf 0 … 100.
-    /// [APPROX] Abbildung der Remake-Kader auf die Teamwerte; im Original bilden Managervereine ihre Werte aus den Spielern
-    /// (0x98F8, in der Managerpaarung über <see cref="LiveSquad"/>).
+    /// Teamwert eines Managervereins (A544, Spur teamwert-aufstellung): aus den Vereinsfeldern 0x18–0x1B, die 0x952C aus der
+    /// Aufstellung schreibt (<see cref="TeamStrength.FieldValue"/>, dort Fundstellen und das [APPROX] der einen Zahl). Vorher
+    /// Datenbankstärke plus Veränderung der Aufstellung nach einer eigenen Gewichtung; die Datenbankstärke geht bei
+    /// Managervereinen nicht mehr ein (im Original spielt sie für sie keine Rolle, <c>docs/spielberechnung.md</c> §14).
     /// </summary>
-    public static int ManagedClubValue(Club club)
-    {
-        if (club.Players.Count == 0)
-            return ComputerTeamValue(club);
-        var delta = (TeamStrength.Rating(club.Lineup) - club.ReferenceRating) * TeamStrength.StrengthPerRatingPoint;
-        return Math.Clamp((int)Math.Round(club.Strength + delta), 0, 100);
-    }
+    public static int ManagedClubValue(Club club) =>
+        club.Players.Count == 0
+            ? ComputerTeamValue(club) // Vereinsplatz ohne Kader (Land des Bundestrainers, IsManaged): wie bisher
+            : TeamStrength.FieldValue(club);
 
     /// <summary>
     /// Zähler der Spieler nach einem Spiel.

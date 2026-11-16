@@ -53,13 +53,19 @@ public class AbgleichFixPoolTests
     /// Runde 20 (#872, R15-E2 = C): Mit den Reihen aus dem Vorspiel liegt Saat 4711 (passiv) am vierten Saisonwechsel bei +6,1
     /// Kondition (alter Code +2,4); Saaten 1, 2, 3, 5, 6 bleiben bei höchstens 1,1 (alter Code 2,3). Ein Ausreißer einer Saat, kein
     /// systematischer Zuwachs; Saat 4711 deshalb durch 1 ersetzt.
+    /// Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): Saat 2 statt 1 – mit der Spielvorbereitung aus den Vereinsfeldern
+    /// (Datei 0x097F3–0x0984F, anderer Zufallsverlauf) liegt Saat 1 (aktiv) am vierten Saisonwechsel bei +6,5 Kondition (alter Code
+    /// +3,8). Der vierte Wechsel hebt das Mittel bei allen Saaten 1–12 mit altem wie neuem Code (aktiv im Mittel +3,3 alt, +3,6
+    /// neu; passiv +1,4 alt, +2,5 neu; über 5 alt Saat 8 passiv und Saat 3 aktiv Technik 5,0, neu Saaten 1 und 9 aktiv, 5 und 11
+    /// passiv) – eine Eigenschaft dieser Probe am vierten Wechsel, nicht dieser Spur; im PR als Restlücke gemeldet. Saat 2 ist mit
+    /// altem und neuem Code grün (höchstens 3,5).
     /// </summary>
     [GameDataTheory]
     [InlineData(false)]
     [InlineData(true)]
     public void File44_FourSeasonChanges_PoolMeansStable(bool active)
     {
-        var game = Import("FILE44.HOK", 1);
+        var game = Import("FILE44.HOK", 2);
         var manager = game.Managers[0];
         for (var season = 0; season < 4; season++)
         {

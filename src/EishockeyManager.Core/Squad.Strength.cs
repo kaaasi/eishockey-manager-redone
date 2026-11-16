@@ -6,15 +6,12 @@ public sealed partial class Club
     public Lineup Lineup { get; } = new();
 
     /// <summary>
-    /// Bewertung der Auto-Aufstellung bei Spielbeginn. Bezugspunkt für <see cref="MatchStrength"/>:
-    /// eine gleich gute Aufstellung ergibt genau die Stärke aus der Datenbank.
+    /// Teamwert der Auto-Aufstellung bei Spielbeginn (<see cref="TeamStrength.Rating"/>). Bezugspunkt nur für
+    /// <see cref="MatchStrength"/> (alter Ergebnisweg); die Spielberechnung liest ihn nicht.
     /// </summary>
     public double ReferenceRating { get; set; }
 
-    /// <summary>
-    /// Stärke im Spiel: Datenbankstärke, verschoben um die Veränderung der Aufstellung gegenüber dem
-    /// Spielbeginn (Spielerwerte, Energie, Lücken). Wird von <see cref="MatchEngine"/> verwendet.
-    /// </summary>
+    /// <summary>Stärke für den alten Ergebnisweg <see cref="MatchEngine.Play"/> (<see cref="TeamStrength.MatchStrength"/>).</summary>
     public int MatchStrength => TeamStrength.MatchStrength(this);
 
     /// <summary>Status-Spalte eines Kaderspielers.</summary>
@@ -55,56 +52,64 @@ public sealed partial class Club
 }
 
 /// <summary>
-/// Spielstärke aus der Aufstellung.
-/// [APPROX] Die Formel des Originals (Overlay 5E73) ist nicht rekonstruiert. Gewichtung: Torhüter 25 %,
-/// Blöcke 1–4 mit 35/30/25/10 % der Feldspieler; leere Plätze zählen 0. Energie wirkt zu 25 % auf den Spielwert.
+/// Teamwert aus der Aufstellung (A174, Spur teamwert-aufstellung).
+/// <list type="bullet">
+/// <item>[ORIGINAL] Das Original kennt keine eigene Stärkeformel der Aufstellung: 0x952C bildet aus den eingesetzten Spielern der
+///   Reihen 0–2 je Teil (Abwehr, Sturm) Kondition, Technik und Form (Reihenwerte 0x98F8 ohne Spiel, Summe der drei Reihen / 3,
+///   Datei 0x095A0–0x09666) und schreibt sie in die Vereinsfelder 0x18–0x1D (Datei 0x09721–0x09771); die Stärke 0x368B1 liest
+///   über 0x977F diese Felder (Datei 0x097F3–0x0984F) bzw. in der Managerpaarung die Spieler auf dem Eis (0x98F8,
+///   <see cref="LiveSquad"/>). Rechnung: <see cref="MatchEngine.LineupTeamValues"/>, <see cref="MatchEngine.ClubLineupTeamValues"/>.</item>
+/// <item><see cref="FieldValue"/>: eine Zahl im Maßstab der Datenbankstärke aus den vier Feldern Kondition und Technik – für die
+///   Stellen, an denen das Remake Vereine über einen Teamwert vergleicht (<see cref="MatchEngine.TeamValue"/>).</item>
+/// </list>
+/// Vorher (bis Runde 20) eine eigene Gewichtung: Torhüter 25 %, Blöcke 35/30/25/10 %, Energie zu 25 %.
 /// </summary>
 public static class TeamStrength
 {
-    public const double GoalkeeperWeight = 0.25;
-    public static readonly double[] BlockWeights = [0.35, 0.30, 0.25, 0.10];
-
-    /// <summary>Umrechnung Spielerwerte → Vereinsstärke (Generierung: Basis = 20 + Stärke/2).</summary>
-    public const double StrengthPerRatingPoint = 2.0;
-
-    /// <summary>Spielwert eines Spielers: Stärke, gemindert bei wenig Energie.</summary>
+    /// <summary>
+    /// Spielwert eines Spielers: Stärke, gemindert bei wenig Energie. [APPROX] Nur Reihenfolge beim Auffüllen freier Plätze
+    /// (<see cref="Lineup.FillGaps"/>); in keinen Teamwert geht er ein.
+    /// </summary>
     public static double PlayerValue(Player p) => p.Strength * (0.75 + 0.25 * Math.Clamp(p.Energy, 0, 100) / 100.0);
 
-    /// <summary>Bewertung der Aufstellung (Größenordnung wie die Spielerstärken).</summary>
+    /// <summary>
+    /// Teamwert einer Aufstellung im Maßstab der Vereinsfelder: Mittel aus Kondition und Technik von Abwehr und Sturm, wie 0x952C
+    /// sie aus den Reihen 0–2 bildet (siehe Klasse). Leere Plätze zählen 0.
+    /// </summary>
     public static double Rating(Lineup lineup)
     {
-        var goalie = lineup.Goalkeeper is { } g ? PlayerValue(g) : 0;
-        double skaters = 0;
-        for (var b = 0; b < Lineup.Blocks; b++)
-        {
-            double sum = 0;
-            for (var i = 0; i < Lineup.ForwardsPerBlock; i++)
-                sum += lineup[LineupSlot.Forward(b, i)] is { } f ? PlayerValue(f) : 0;
-            for (var i = 0; i < Lineup.DefendersPerBlock; i++)
-                sum += lineup[LineupSlot.Defender(b, i)] is { } d ? PlayerValue(d) : 0;
-            var average = sum / (Lineup.ForwardsPerBlock + Lineup.DefendersPerBlock);
-            // Ein vierter Block entlastet nur: fehlt er (ganz oder teilweise), zählt sein Anteil wie 90 % von Block 3.
-            if (b == 3)
-                average = Math.Max(average, BlockAverage(lineup, 2) * 0.9);
-            skaters += BlockWeights[b] * average;
-        }
-        return GoalkeeperWeight * goalie + (1 - GoalkeeperWeight) * skaters;
+        var (defense, attack, _) = MatchEngine.LineupTeamValues(lineup);
+        return Mean(defense, attack);
     }
 
-    private static double BlockAverage(Lineup lineup, int block)
+    /// <summary>
+    /// Teamwert eines Vereins aus seinen Vereinsfeldern 0x18–0x1B (Kondition und Technik von Abwehr und Sturm,
+    /// <see cref="MatchEngine.ClubFieldValues"/>), begrenzt auf 0 … 100. [ORIGINAL] Die Felder: bei Managervereinen von 0x952C aus
+    /// der Aufstellung geschrieben (Tage mit Ereignis, Datei 0x54DAA und 0x54FBF, <see cref="GameState.UpdateManagerTeamValues"/>),
+    /// dazwischen bewegt von der Wanderung 0x9D1B. [APPROX] Das Mittel der vier Felder als eine Zahl gibt es im Original nicht;
+    /// das Remake braucht sie nur, wo es Vereine im Maßstab der Datenbankstärke vergleicht (Spiele gegen Nationalteams ohne
+    /// Spielvorbereitung 0x8365, siehe <see cref="MatchEngine.TeamValue"/>).
+    /// </summary>
+    public static int FieldValue(Club club)
     {
-        double sum = 0;
-        foreach (var p in lineup.Block(block))
-            sum += PlayerValue(p);
-        return sum / (Lineup.ForwardsPerBlock + Lineup.DefendersPerBlock);
+        var (defense, attack) = MatchEngine.ClubFieldValues(club);
+        return Math.Clamp((int)Math.Round(Mean(defense, attack)), 0, 100);
     }
 
+    private static double Mean(PartValues defense, PartValues attack) =>
+        (defense.Condition + defense.Technique + attack.Condition + attack.Technique) / 4.0;
+
+    /// <summary>
+    /// Stärke für den alten Ergebnisweg <see cref="MatchEngine.Play"/> (ohne Aufrufer im Spielablauf): Datenbankstärke, verschoben
+    /// um die Veränderung des Teamwerts der Aufstellung (<see cref="Rating"/>) gegenüber dem Spielbeginn
+    /// (<see cref="Club.ReferenceRating"/>). [APPROX] Diesen Weg und diese Verschiebung gibt es im Original nicht; die
+    /// Spielberechnung (<see cref="MatchEngine.PlayWithEvents"/>) benutzt sie nicht.
+    /// </summary>
     public static int MatchStrength(Club club)
     {
         if (club.Players.Count == 0)
             return club.Strength;
-        var delta = (Rating(club.Lineup) - club.ReferenceRating) * StrengthPerRatingPoint;
-        return Math.Clamp((int)Math.Round(club.Strength + delta), 1, 150);
+        return Math.Clamp((int)Math.Round(club.Strength + Rating(club.Lineup) - club.ReferenceRating), 1, 150);
     }
 
     /// <summary>Durchschnittsstärke eines Kaders (Statuszeile „Durchschnittsstärke“).</summary>

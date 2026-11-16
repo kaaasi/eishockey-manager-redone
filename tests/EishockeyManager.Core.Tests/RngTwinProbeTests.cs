@@ -273,10 +273,14 @@ public class RngTwinProbeTests
     // (Vereinsfelder 0x2E/0x30, Spielvorbereitung 0x84D7 setzt sie nicht zurück, Datei 0x84EB–0x857D); andere Reihenstärken,
     // Ergebnisse und Zufallsverlauf ab dem zweiten Managerspiel. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung
     // DefenseLine/AttackLine → alte Werte.
-    [InlineData(false, 3, "575DF456A043C7FF")]
-    [InlineData(true, 3, "8BEB93BECACC800C")]
-    [InlineData(false, 11, "4A6177B02F6969AC")]
-    [InlineData(true, 11, "F2FF0B663060033F")]
+    // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): neu – die Spielvorbereitung 0x8365 vergleicht beim Managerverein die
+    // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
+    // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
+    // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
+    [InlineData(false, 3, "084B6E6CE8B76C22")]
+    [InlineData(true, 3, "E5239927CC142252")]
+    [InlineData(false, 11, "E4B8D9CC73FB4913")]
+    [InlineData(true, 11, "9DB92E386EF0B35C")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -362,8 +366,12 @@ public class RngTwinProbeTests
     // (Vereinsfelder 0x2E/0x30, Spielvorbereitung 0x84D7 setzt sie nicht zurück, Datei 0x84EB–0x857D); andere Reihenstärken,
     // Ergebnisse und Zufallsverlauf ab dem zweiten Managerspiel. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung
     // DefenseLine/AttackLine → alte Werte.
-    [InlineData(false, "B69B56D5E32D5D09")]
-    [InlineData(true, "5DC2A571A3B3F7BE")]
+    // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): neu – die Spielvorbereitung 0x8365 vergleicht beim Managerverein die
+    // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
+    // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
+    // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
+    [InlineData(false, "969EEC426A91D5F1")]
+    [InlineData(true, "BC1AD9D7828DD167")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
