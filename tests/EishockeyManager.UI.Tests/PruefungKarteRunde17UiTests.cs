@@ -40,7 +40,13 @@ public class PruefungKarteRunde17UiTests
         // des Managervereins (Datei 0x097F3–0x0984F, anderer Einsatz der Automatik, anderer Zufallsverlauf) bekommt Manager 0 bei
         // Saat 8 keine Prämie (Rang 4); unter 1–16 haben beide Manager bei 4, 6, 7, 9, 14 und 16 eine Prämie. Die Probe hängt an
         // der Saat.
-        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 4);
+        // Runde 21, Spur zusehen Teil 2 (A541, R21-D2 = A, Rebase auf teamwert-aufstellung): Saat 6 statt 4 – die Ernennung zum
+        // Bundestrainer im Saisonverlauf schaltet „WM-Spiele“ ein (Datei 0x5545F), die WM-Gruppenspiele laufen durch die
+        // Minutenschleife (Datei 0x3702E, anderer Zufallsverlauf); bei Saat 4 bekommt Manager 1 keine Prämie. Unter 1–16 haben
+        // beide Manager bei 6, 7, 14 und 16 eine Prämie. Rückschaltprobe: ohne „Options.ShowWorldCup = true“ in
+        // GameState.ShowWorldCupForNationalCoach hat Saat 4 wieder beide Prämien; Saat 6 ist auch dort grün – die Probe hängt an
+        // der Saat.
+        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 6);
         var records = game.History[^1].Managers;
         Assert.Equal(2, records.Count);
         Assert.All(records, r => Assert.True(r.Premium > 0, "Probe ohne Prämie prüft nichts"));
