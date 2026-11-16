@@ -11,9 +11,15 @@ namespace EishockeyManager.Core;
 /// (0 … 15, <see cref="TrainingRules.Apply"/>). Der Kauf vom Markt kopiert den ganzen Kaderplatz (Datei 0x478DB–0x47907):
 /// der Wert wandert mit. Beleg Spielstände: FILE01/09/10/12 alle Plätze 3 … 12.
 /// [APPROX] Im Original gehört der Wert zum Kaderplatz, im Remake zum Spieler. Gewürfelt wird deshalb beim Eintritt in
-/// einen Managerkader (Spielstart, Talent) bzw. in den Markt; Länderspiele rechnen mit 7/7 (<see cref="ForMatch"/>), ohne
-/// den Vereinswert zu ändern. Computerspieler haben im Original keinen Wert; im Remake behalten sie den Vorgabewert 7, der
-/// nur in Spielen von Managervereinen wirkt.
+/// einen Managerkader (Spielstart, neuer Manager, Talent) bzw. in den Markt; Länderspiele rechnen mit 7/7
+/// (<see cref="ForMatch"/>), ohne den Vereinswert zu ändern. Computerspieler haben im Original keinen Wert; im Remake behalten
+/// sie den Vorgabewert 7, der nur in Spielen von Managervereinen wirkt.
+/// Spur zufallsstrom (A675, A676; N3 = B): Jeder Startwurf zieht an der Stelle des Originals aus dem gemeinsamen Strom
+/// <see cref="GameState.Random"/> – Spielstart je Kaderplatz nach 0x42CB1 (Datei 0x299BF, 0x299D3;
+/// <see cref="GameState.ApplyStartSalaries"/>), Talent Datei 0x06F02/0x06F16 (<see cref="GameState.JoinScoutedTalent(Manager, int, int)"/>),
+/// Markt Datei 0x497C7 (<see cref="TransferPoolRules.RollSlotFields"/>). Die frühere eigene Quelle (aus dem Zustand des Stroms
+/// abgeleitet) entfällt; neue Spieler ohne Kaderplatz eines Managers (Nachwuchs der Computervereine, Neuanlage im Pool) würfeln
+/// nicht mehr und behalten den Vorgabewert, bis sie einen Kaderplatz bekommen.
 /// </remarks>
 public static class HiddenSkills
 {
@@ -42,33 +48,4 @@ public static class HiddenSkills
     /// </summary>
     public static (int Overplay, int Underplay) ForMatch(Player p, bool nationalTeam) =>
         nationalTeam ? (NationalTeam, NationalTeam) : (p.HiddenSkill2, p.HiddenSkill1);
-
-    /// <summary>
-    /// Zufallsquelle für die Startwürfe, abgeleitet aus dem Zustand von <see cref="GameState.Random"/>, ohne ihn zu verbrauchen.
-    /// [APPROX] Das Original zieht aus seinem einzigen Generator; eine eigene Quelle hält die Zufallsfolgen von Kaderaufbau,
-    /// Finanzen und Verträgen unverändert (wie <see cref="TransferMarket.ReservePool"/>).
-    /// </summary>
-    public static GameRandom SourceFor(GameState game, int salt)
-    {
-        var state = game.Random.Capture();
-        var hash = unchecked(state.Next * 31 + state.NextP);
-        foreach (var value in state.SeedArray)
-            hash = unchecked(hash * 16_777_619 ^ value);
-        return new GameRandom(unchecked(hash * 7_919 + salt) & int.MaxValue);
-    }
-}
-
-public sealed partial class GameState
-{
-    /// <summary>
-    /// Spielstart: Startwürfe +0x19 für alle Spieler der Managerkader in Kaderreihenfolge. [ORIGINAL] Datei 0x299F4 (Managerkader
-    /// beim Spielstart). [APPROX] Eigene Zufallsquelle (<see cref="HiddenSkills.SourceFor"/>).
-    /// </summary>
-    internal void RollStartHiddenSkills()
-    {
-        var random = HiddenSkills.SourceFor(this, 0x19);
-        foreach (var index in Managers.Select(m => m.ClubIndex).Distinct())
-            foreach (var p in Clubs[index].Players)
-                HiddenSkills.Roll(p, random);
-    }
 }

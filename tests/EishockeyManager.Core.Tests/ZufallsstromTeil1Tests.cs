@@ -129,7 +129,8 @@ public class ZufallsstromTeil1Tests
 
     /// <summary>
     /// A722: Tendenz der Startkader (0x42CB1 → 0x4907A, Datei 0x29996/0x42E6B) je Manager und Kaderplatz in Platzfolge aus dem
-    /// gemeinsamen Strom: random(35, 65), random(1, 13), random(1, 3), random(0, 1).
+    /// gemeinsamen Strom: random(35, 65), random(1, 13), random(1, 3), random(0, 1). A676 (Teil 2): direkt danach je Platz +0x19 =
+    /// random(3, 12) · 16 + random(3, 12) (Datei 0x299BF, 0x299D3), oberes Halbbyte zuerst, aus demselben Strom.
     /// </summary>
     [Fact]
     public void GameStart_SquadTrend_FromSharedStreamInSlotOrder()
@@ -138,6 +139,7 @@ public class ZufallsstromTeil1Tests
         var trend = game.TrendRandom.Capture();
         var sim = Copy(game.Random);
         var expected = new List<(int, int)>();
+        var hidden = new List<(int, int)>();
         foreach (var manager in game.Managers)
             foreach (var _ in game.Clubs[manager.ClubIndex].Players)
             {
@@ -146,12 +148,16 @@ public class ZufallsstromTeil1Tests
                 control |= R(sim, 1, 3) << 4;
                 control |= R(sim, 0, 1) << 7;
                 expected.Add((score, control));
+                var over = R(sim, 3, 12);
+                hidden.Add((over, R(sim, 3, 12)));
             }
 
         game.ApplyStartSalaries();
 
         Assert.Equal(expected,
             game.Managers.SelectMany(m => game.Clubs[m.ClubIndex].Players).Select(p => (p.TrendScore, p.TrendControl)).ToList());
+        Assert.Equal(hidden,
+            game.Managers.SelectMany(m => game.Clubs[m.ClubIndex].Players).Select(p => (p.HiddenSkill2, p.HiddenSkill1)).ToList());
         Assert.Equal(sim.Capture(), game.Random.Capture());
         Assert.Equal(trend, game.TrendRandom.Capture());
     }

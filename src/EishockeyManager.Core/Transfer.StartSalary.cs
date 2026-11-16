@@ -24,6 +24,9 @@ public sealed partial class GameState
                 // gemeinsamen Strom, je Manager und Kaderplatz in Platzfolge, nach dem Pool (Datei 0x29896) und vor der Wanderung
                 // des Spielstarts (Datei 0x43A73).
                 p.RollTrend(Random);
+                // Spur zufallsstrom (A676, N3 = B): [ORIGINAL] direkt nach 0x42CB1 je Platz +0x19 = random(3, 12) · 16 +
+                // random(3, 12) (Datei 0x299B7–0x299F4), aus demselben Strom; vorher eigene Quelle nach allen Plätzen.
+                HiddenSkills.Roll(p, Random);
                 // [ORIGINAL] 0x29EB4 vor 0x29EE4: erst +0x2C = Wert(Preis), dann +0x28 = Wert(Gehalt).
                 p.PurchasePrice = Contracts.ValuePrice(this, manager, p);
                 p.MonthlySalary = Contracts.ValueSalary(this, manager, p);

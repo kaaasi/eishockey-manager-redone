@@ -89,8 +89,7 @@ public static class PlayerFactory
         p.Energy = TalentEnergy;
         p.Trend = PlayerTrend.Rising;
         game.AssignPlayerId(p);
-        HiddenSkills.Roll(p, HiddenSkills.SourceFor(game, p.Id));
-        return p;
+        return p; // +0x19 gehört zum Kaderplatz: Wurf erst dort (Spur zufallsstrom A675, HiddenSkills)
     }
 
     /// <summary>Neues Talent für den laufenden Spielstand: wie oben, zusätzlich mit neuer Spieler-ID (Spur „speichern“).</summary>
@@ -99,8 +98,7 @@ public static class PlayerFactory
         ArgumentNullException.ThrowIfNull(game);
         var p = CreateTalent(name, role, clubStrength, random);
         game.AssignPlayerId(p);
-        HiddenSkills.Roll(p, HiddenSkills.SourceFor(game, p.Id)); // Spur wettbewerbe-spiel, Teil 7: +0x19 (Datei 0x06F23)
-        return p;
+        return p; // +0x19 (Datei 0x06F23) würfelt der Kaderplatz der Talentsuche (JoinScoutedTalent; Spur zufallsstrom A675)
     }
 
     /// <summary>
