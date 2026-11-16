@@ -136,7 +136,7 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
      nur im Ereignis `OnMainMenu`), A558 (`NewGame.cs`); Probe: Öffnen aller Bildschirme zieht nichts aus dem Strom (`AGENTS.md`
      §4, N6). Mehrsaisonprobe; erwartete Werte nach R21-D2 (nach Rebase auf `teamwert-aufstellung`).
 - **Voraussetzung:** `start-lader` gemergt; Integration nach `teamwert-aufstellung`. **Modell:** Claude Opus 5.5. **Erstreview:**
-  Claude Opus 5.5. **Status:** offen.
+  Claude Opus 5.5. **Status:** in Arbeit (Draft-PR `paket/zufallsstrom`, Claude Code, 16.11.2026).
 
 ### Spur `pruefung-karte` – P3 und Markerliste (Welle 3, R21-D3 = A)
 
