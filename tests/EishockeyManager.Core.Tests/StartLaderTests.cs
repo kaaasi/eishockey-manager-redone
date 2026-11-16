@@ -175,4 +175,45 @@ public class StartLaderTests
         Assert.All(loaded.Clubs.Where(c => c.Index > NationalTeams.Last),
             c => Assert.Equal(game.Clubs[c.Index].TeamValues!.Value with { DayForm = 0 }, c.TeamValues!.Value with { DayForm = 0 }));
     }
+
+    /// <summary>
+    /// Mehrsaisonprobe (AGENTS.md §5, vier Saisonwechsel, passiver und aktiver Manager): Die Teamwerte vom Spielstart bleiben
+    /// das ganze Spiel über gesetzt und werden nie neu geladen – die Gegner des Europapokals (Index &gt; 64, wandern nicht) behalten
+    /// sie bis auf die Tagesform; nach jedem Saisonwechsel (Wanderung Modus 10, Datei 0x56448) liegen die Computervereine in den
+    /// Grenzen ihrer Liga.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MultiSeason_FourChanges_TeamValuesFromStartKept(bool active)
+    {
+        var game = TestGames.Create(5);
+        var start = game.Clubs.Where(c => c.Index > NationalTeams.Last)
+            .ToDictionary(c => c.Index, c => c.TeamValues!.Value with { DayForm = 0 });
+        var changes = 0;
+        var checkBounds = false;
+        var first = game.Season;
+        RngTwinProbeTests.Run(game, active, afterStep: g =>
+        {
+            Assert.All(g.Clubs, c => Assert.NotNull(c.TeamValues));
+            Assert.All(g.Clubs.Where(c => c.Index > NationalTeams.Last),
+                c => Assert.Equal(start[c.Index], c.TeamValues!.Value with { DayForm = 0 }));
+            if (!checkBounds)
+                return;
+            checkBounds = false; // direkt nach StartNextSeason
+            foreach (var club in NonManagedClubs(g, c => c.Index < NationalTeams.First && c.League is not null))
+            {
+                var (min, max) = MatchEngine.DriftBounds(club.League);
+                var v = club.TeamValues!.Value;
+                foreach (var d in new[] { v.DefenseCondition, v.AttackCondition, v.DefenseTechnique, v.AttackTechnique })
+                    Assert.InRange(club.Strength + d, min, max);
+            }
+        }, beforeChange: _ =>
+        {
+            changes++;
+            checkBounds = true;
+        });
+        Assert.Equal(4, changes);
+        Assert.Equal(first + 4, game.Season);
+    }
 }
