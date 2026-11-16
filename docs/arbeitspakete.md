@@ -72,7 +72,7 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
   Übernahme; Ablauf-Feinheiten bleiben E (N4).
 - **Dateien:** `Core/OriginalImport*.cs`, zugehörige Tests. **Tests:** `--schnell` mit Originaldaten; Abgleich gegen die
   Original-Stände, deren Werte betroffen sind.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** A607, A624 fertig (#892); A612 blockiert – Entscheidung Nutzer (Modell der Play-off-Spiele ohne Marken, fremde Dateien).
 
 ### Spur `finanzuebersicht` – Prüfauftrag Finanzübersicht (Welle 1, N5 = C)
 

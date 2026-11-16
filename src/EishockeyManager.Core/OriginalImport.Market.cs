@@ -70,8 +70,13 @@ public sealed partial class GameState
     ///   einmal im Spiel (Entscheidung Nutzer 01.11.2026): ein Poolname im Kader eines Computervereins weicht dort einem nicht
     ///   mehr gebrauchten Poolspieler des Nachspielens gleicher Art (wie der Tausch beim Umbenennen), sonst einem neuen Spieler mit
     ///   seinen Werten und einem freien Datenbanknamen; die Kader behalten ihre Größe.</item>
-    /// <item>[APPROX] Marktwerte wie beim Listenwechsel des Remakes: Vertrag und Gehalt 0 (<see cref="TransferMarket.ChangeList"/>),
-    ///   Verein +0x1D außerhalb der 150 Sätze → Verein 0 (an keinem Stand beobachtet).</item>
+    /// <item>[ORIGINAL] A607 (Spur hok-import-werte, N4 = C): Gehalt +0x28 (Drittel-DM) des Marktplatzes übernimmt der Import wie
+    ///   jeden Kaderplatz (<c>ApplySlot</c>): Der Listenwechsel schreibt +0x28 = Wert(Gehalt) des neuen Platzes (Datei 0x497A1 in
+    ///   0x494EF, <c>docs/transfer.md</c>); an allen Ständen FILE01–FILE49A ist +0x28 jedes Poolangebots ≠ 0. Der Vertrag bleibt 0:
+    ///   Der neue Platz hat +0x0B = 0 (0x42CB1), 0xFF steht nur nach dem Herunterzählen aller Plätze am Saisonende (Datei 0x27500;
+    ///   FILE14, FILE23, FILE44A, FILE46), ein Vertrag ist das nicht. Preis +0x2C steht im Angebot
+    ///   (<see cref="TransferListing.Price"/>), nicht im Spieler.</item>
+    /// <item>[APPROX] Verein +0x1D außerhalb der 150 Sätze → Verein 0 (an keinem Stand beobachtet).</item>
     /// </list>
     /// </summary>
     /// <returns>Spieler je Poolindex 1–199.</returns>
@@ -142,9 +147,8 @@ public sealed partial class GameState
             if (slot.Owner == PoolOwner.Market)
             {
                 var p = slot.Player;
-                ApplySlot(p, s, e, clubOf, club: null);
-                p.ContractYears = 0;
-                p.MonthlySalary = 0;
+                ApplySlot(p, s, e, clubOf, club: null); // A607: Gehalt +0x28 aus dem Marktplatz
+                p.ContractYears = 0; // +0x0B = 0 bzw. 0xFF nach dem Saisonende (0x27500), kein Vertrag
                 p.PurchasePrice = 0;
                 p.InsurancePremium = 0;
                 p.InsuranceLocked = false;

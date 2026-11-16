@@ -569,12 +569,15 @@ public sealed partial class GameState
         p.ClubEuropeGamesCarry = BinaryPrimitives.ReadInt16LittleEndian(slot[0x20..]) - slot[0x08];
         if (p.Role == PlayerRole.Goalkeeper)
         {
-            // [APPROX] Beim Torhüter zählen +0x03–0x05 und +0x22–0x26 die Gegentore; das Remake führt Gegentore ohne Wettbewerb und
-            // ohne Vereinswert (Tore je Wettbewerb und Überträge 0).
+            // [ORIGINAL] A624 (Spur hok-import-werte, N4 = C): Gegentore des Torhüters stehen nur in +0x03. Der einzige Schreiber
+            // (Datei 0xA3F7, Torhüter auf dem Eis: Rollenwert 0, +0x0A und +0x15 ≠ 0) zählt nur bei Wettbewerbscode DGROUP 0xD0C2 = 7
+            // (Liga) und nur +0x03 hoch (Grenze 0xFF); +0x04/+0x05 und die Vereinswerte +0x22–0x27 schreibt nur der Torschütze
+            // (Datei 0x542F4–0x54333, Feldspieler). An allen Ständen FILE01–FILE49A sind sie bei jedem Torhüter 0 – das HOK führt
+            // keine Gegentore je Wettbewerb und keinen Vereinswert, der Import verliert nichts. Tore je Wettbewerb und Überträge 0.
             p.CupGoals = p.EuropeGoals = 0;
             p.ClubGoalsCarry = p.ClubCupGoalsCarry = p.ClubEuropeGoalsCarry = 0;
             p.Goals = 0;
-            p.GoalsAgainst = goals;
+            p.GoalsAgainst = slot[0x03];
             p.GoalieMinutes = BinaryPrimitives.ReadUInt16LittleEndian(entry[0x1F..]);
             p.Assists = 0;
         }
