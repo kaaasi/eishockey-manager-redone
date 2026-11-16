@@ -30,7 +30,11 @@ public class WeltkugelDosboxTests
             setup.ToggleClubCompetitions();
         if (mode == GameMode.ClubOnly)
             setup.ToggleEuropeAndWorldCup();
-        var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 22); // kader-start U15-a/R-K5 (L13): Saat 3 → 22, Vorbedingung „Verein 2, stark“ nach dem Starttausch
+        // kader-start U15-a/R-K5 (L13): Saat 3 → 22, Vorbedingung „Verein 2, stark“ nach dem Starttausch. Runde 21, Spur start-lader
+        // (R21-D2 = A): 22 → 24 – mit dem Lader beim Spielstart (Datei 0x439BB, anderer Zufallsverlauf) wird der Manager bei Saat 22
+        // und 23 im Modus 4 in vier Saisons nie Bundestrainer (MultiSeason_ActiveCoach_FirstFriendlySetsEnergy). Die Probe hängt an
+        // der Saat.
+        var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 24);
         Assert.Equal(mode, game.Mode);
         // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „Verein 2, stark“ wie NationalCoachMode4MenuTests
         // (spielstaerke-manager-2, 0x98F8: Managerverein spielt sonst mit den Werten seiner Spieler).

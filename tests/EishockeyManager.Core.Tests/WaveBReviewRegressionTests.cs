@@ -57,7 +57,7 @@ public class WaveBReviewRegressionTests
     {
         // A380 (kader-start Teil 2c): Der Spieler auf der Liste verlässt den Kader, die Mindestbesetzung greift schon beim
         // Aufsetzen. Ungültig wird ein Gebot nun, wenn der verkaufende Manager den Verein gewechselt hat.
-        var game = TestGames.Create();
+        var game = TestGames.Create(4); // Saat 4: mit dem Lader beim Spielstart (Spur start-lader, Datei 0x439BB) stehen bei Saat 3 schon 10 Spieler auf dem Markt.
         var market = game.TransferMarket;
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];

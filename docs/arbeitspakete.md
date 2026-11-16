@@ -114,7 +114,7 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
   `Core/FinanceMonthly.cs`, `Core/Transfer.ComputerClub.cs` (nur A704), `Core/GameState.AddManager.cs` (nur A519),
   `Core/MatchEngine.Live.cs` (nur A080), Aufrufstelle in
   `Core/NewGame.cs`/`Core/GameSetup.cs` minimal, ggf. Migration.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teile 1–3 fertig, wartet auf Erstreview (#895).
 
 ### Spur `teamwert-aufstellung` – Teamwert der Managervereine aus den Spielern (Welle 2)
 

@@ -321,6 +321,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Runde 20, Spur pruefung-karte Teil 2 (#872, R15-E2 = C): neu ab 1993 – die Reihen auf dem Eis bleiben aus dem Vorspiel stehen
     // (Vereinsfelder 0x2E/0x30, Datei 0x84EB–0x857D); andere Ergebnisse ab dem zweiten Managerspiel, mit und ohne Anzeige weiter
     // gleich. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung DefenseLine/AttackLine → alter Wert.
+    // Runde 21, Spur start-lader (A106/A108, R21-D2 = A): neu – Lader 0x2EF1B beim Spielstart als erste Züge der Hauptquelle
+    // (Datei 0x439BB vor der Spielvorbereitung 0x43A61), Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073) und
+    // Wanderung des Spielstarts (Datei 0x43A73) in NewGame.Create statt beim ersten Spiel; anderer Zufallsverlauf ab dem
+    // Spielstart. Rückschaltprobe: src/ von 40f67fc (ohne start-lader) + dieser Test → rot (alte Werte).
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15397 | 1994: DEB 9, DM 9, Tab 15987 | 1995: DEB 5, DM 6, Tab 15655 | 1996: DEB 4, DM 5, Tab 15955";
+        "1993: DEB 9, DM 6, Tab 15487 | 1994: DEB 2, DM 5, Tab 15939 | 1995: DEB 4, DM 5, Tab 15455 | 1996: DEB 5, DM 8, Tab 15352";
 }

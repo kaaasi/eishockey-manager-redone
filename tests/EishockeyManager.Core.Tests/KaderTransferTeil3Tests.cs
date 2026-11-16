@@ -107,7 +107,10 @@ public class KaderTransferTeil3Tests
         Assert.Equal(state, game.Random.Capture());
     }
 
-    /// <summary>Vor dem Ziehen der Teamwerte (neues Spiel ohne Spiel) bleibt der Käufer ohne Werte und kein Zufall fällt.</summary>
+    /// <summary>
+    /// Ohne Teamwerte (nur noch Spielstände vor Schema 12; seit Spur start-lader zieht <see cref="NewGame.Create"/> sie beim
+    /// Spielstart, Datei 0x439BB, A704) bleibt der Käufer ohne Werte und kein Zufall fällt.
+    /// </summary>
     [Fact]
     public void WithoutTeamValues_NothingChanges()
     {
@@ -116,7 +119,7 @@ public class KaderTransferTeil3Tests
         var club = game.Clubs[manager.ClubIndex];
         var buyer = game.Clubs.First(c => c.Index != manager.ClubIndex && c.Index < NationalTeams.First
             && game.Managers.All(m => m.ClubIndex != c.Index));
-        Assert.Null(buyer.TeamValues);
+        buyer.TeamValues = null; // Altstand (vor Schema 12)
         var state = game.Random.Capture();
         var player = club.Players.First(p => p.Role == PlayerRole.Forward);
         Assert.Equal(TransferResult.Accepted, game.AcceptUnsolicitedOffer(new UnsolicitedOffer(manager, player, buyer, 10_000)));

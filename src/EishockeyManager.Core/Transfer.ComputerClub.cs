@@ -105,7 +105,8 @@ public sealed partial class GameState
     /// Verkauf eines Managerspielers an einen Verein: Teamwerte des Käufers steigen
     /// (<see cref="ComputerClubTransferRules.StrengthenBuyer"/>). [ORIGINAL] Aufrufe Datei 0x46FB3 (unaufgefordertes Angebot,
     /// nur Verein &lt; 0x40) und 0x47483 (Gebot auf einen eigenen Spieler am Markt, ohne Prüfung).
-    /// [APPROX] Ohne gezogene Teamwerte (vor dem ersten Spiel, <see cref="MatchEngine.LoadTeamValues"/>) entfällt die Wirkung.
+    /// [ORIGINAL] Ab dem Spielstart hat der Käufer Teamwerte (Lader Datei 0x439BB, Spur start-lader, A704).
+    /// [APPROX] Ohne Teamwerte (nur Spielstände vor Schema 12, <see cref="MatchEngine.EnsureTeamValues"/>) entfällt die Wirkung.
     /// </summary>
     internal void StrengthenBuyer(Club buyer, Player player)
     {

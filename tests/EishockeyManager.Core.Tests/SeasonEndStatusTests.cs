@@ -61,7 +61,7 @@ public class SeasonEndStatusTests
     [Fact]
     public void Full_EveryManagerInTopFive_GetsStatusBit()
     {
-        var game = GameModeTests.Create(84, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf
+        var game = GameModeTests.Create(24, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];
@@ -78,7 +78,7 @@ public class SeasonEndStatusTests
     [Fact]
     public void ClubOnly_ManagerInTopFive_NoStatusBit()
     {
-        var game = GameModeTests.Create(22, true, false, 2); // kader-start U15-a/R-K5 (L13): Saat 3 → 22, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz)
+        var game = GameModeTests.Create(9, true, false, 2); // kader-start U15-a/R-K5 (L13): Saat 3 → 22, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz); Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 22 → 9
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];

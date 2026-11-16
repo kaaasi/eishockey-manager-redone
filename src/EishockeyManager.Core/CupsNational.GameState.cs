@@ -81,8 +81,9 @@ public sealed partial class GameState
     /// <item>[APPROX] Mit leerem WM-Kader schreibt das Remake nichts. Das Original schriebe auch dann 0; einen leeren Kader am
     ///   Spieltag schließt dort die Warnung vor dem Weiterschalten aus (A300, DOSBox `file11_11`), und 0x555D6 rechnet nach dem Menü
     ///   neu. Ohne die Ausnahme fiele Deutschland bei einem Bundestrainer ohne Kader (passiver Manager, Proben) auf 0.</item>
-    /// <item>[APPROX] Vor dem ersten Spiel eines Spielstands zieht der Aufruf die Teamwerte (<see cref="MatchEngine.EnsureTeamValues"/>),
-    ///   damit der Lader die Form nicht überschreibt; das Original lädt sie beim Spielstart.</item>
+    /// <item>[ORIGINAL] Die Teamwerte stehen ab dem Spielstart (Lader Datei 0x439BB, Spur start-lader, A485). [APPROX] Nur in
+    ///   Spielständen ohne Teamwerte (vor Schema 12) zieht der Aufruf sie vorher (<see cref="MatchEngine.EnsureTeamValues"/>), damit
+    ///   der Lader die Form nicht überschreibt.</item>
     /// </list>
     /// </summary>
     internal void UpdateNationalTeamValues()

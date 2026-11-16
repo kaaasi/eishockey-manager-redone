@@ -60,15 +60,19 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
     /// <summary>
     /// Das Original lädt einmal (Lader 0x2EF1B); danach wandern Kondition, Technik und Form (0x9D1B, Spur
     /// spielberechnung-komplett, #204 – vorher hieß der Test „…KeptAcrossSeasons“ und prüfte feste Werte). Die Werte werden
-    /// beim ersten Spiel gezogen, nicht neu geladen: Der Lader läuft nur einmal.
+    /// beim Spielstart gezogen (Spur start-lader, Datei 0x439BB; bis dahin beim ersten Spiel), nicht neu geladen: Der Lader
+    /// läuft nur einmal.
     /// </summary>
     [Fact]
     public void TeamValues_DrawnOnceThenDrift()
     {
         var game = Game();
-        Assert.All(game.Clubs, c => Assert.Null(c.TeamValues));
-        TestSeason.PlayMatchDay(game);
         Assert.All(game.Clubs, c => Assert.NotNull(c.TeamValues));
+        var start = game.Clubs.ToDictionary(c => c.Index, c => c.TeamValues!.Value with { DayForm = 0 });
+        TestSeason.PlayMatchDay(game);
+        // das erste Spiel lädt nicht neu: die Europapokal-Gegner (wandern nicht) behalten ihre Werte vom Spielstart
+        Assert.All(game.Clubs.Where(c => c.Index > NationalTeams.Last),
+            c => Assert.Equal(start[c.Index], c.TeamValues!.Value with { DayForm = 0 }));
         var first = game.Clubs.ToDictionary(c => c.Index, c => c.TeamValues!.Value with { DayForm = 0 });
         RngTwinProbeTests.Run(game, active: false, changes: 1);
         Assert.Contains(game.Clubs, c => c.Index < NationalTeams.First && first[c.Index] != (c.TeamValues!.Value with { DayForm = 0 }));

@@ -79,7 +79,7 @@ public class KaderTransferTeil4Tests
     /// Spielerstärke (|Δ| &lt; random(2, 10) in den ersten 100 Versuchen).
     /// </summary>
     [Theory]
-    [InlineData(3)]
+    [InlineData(4)] // bis Spur start-lader 3: mit dem Lader beim Spielstart (Datei 0x439BB) stehen dort schon 10 Spieler auf dem Markt
     [InlineData(7)]
     [InlineData(11)]
     public void MarketBidder_FollowsOriginal(int seed)

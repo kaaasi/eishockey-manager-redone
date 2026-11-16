@@ -75,7 +75,9 @@ public sealed class PlayoffSemifinalTests
         // und 8 grün.
         // Runde 16, Spur abgleich-rest (#772, R15-E2 = C): Saat 8 → 9. Mit der Spielvorbereitung 0x8365 hat bei Saat 8 in fünf Saisons
         // kein schlechter Platzierter Heimrecht (gleicher Grund wie oben). Rückschaltprobe: siehe PR.
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 9);
+        // Runde 21, Spur start-lader (R21-D2 = A): Saat 9 → 11. Mit dem Lader beim Spielstart (Datei 0x439BB) hat bei Saat 9 in fünf
+        // Saisons kein schlechter Platzierter Heimrecht (gleicher Grund wie oben; Saat 10: 1 Fall, 11: 4 Fälle).
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 11);
         var active = game.Managers[1];
         var upsets = 0;
         var transfers = 0;

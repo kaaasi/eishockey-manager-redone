@@ -462,8 +462,12 @@ public class GameModeTests
     // (Vereinsfelder 0x2E/0x30, Spielvorbereitung 0x84D7 setzt sie nicht zurück, Datei 0x84EB–0x857D); andere Reihenstärken,
     // Ergebnisse und Zufallsverlauf ab dem zweiten Managerspiel. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung
     // DefenseLine/AttackLine → alte Werte.
+    // Runde 21, Spur start-lader (A106/A108, R21-D2 = A): neu – Lader 0x2EF1B beim Spielstart als erste Züge der Hauptquelle
+    // (Datei 0x439BB vor der Spielvorbereitung 0x43A61), Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073) und
+    // Wanderung des Spielstarts (Datei 0x43A73) in NewGame.Create statt beim ersten Spiel; anderer Zufallsverlauf ab dem
+    // Spielstart. Rückschaltprobe: src/ von 40f67fc (ohne start-lader) + dieser Test → rot (alte Werte).
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=15,GermanChampion=0,EuropeanCupWinner=2|1100000,400000|WorldChampion=54,CupWinner=0,GermanChampion=11,EuropeanCupWinner=0|2429996,400000|WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2359155,500000|WorldChampion=54,CupWinner=14,GermanChampion=1,EuropeanCupWinner=0|2320030,400000|WorldChampion=52,CupWinner=0,GermanChampion=13,EuropeanCupWinner=0|2230390,400000|R764938763 C581404210";
+        "WorldChampion=63,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=3,GermanChampion=5,EuropeanCupWinner=3|2811840,400000|WorldChampion=53,CupWinner=11,GermanChampion=1,EuropeanCupWinner=5|3053832,500000|WorldChampion=55,CupWinner=11,GermanChampion=11,EuropeanCupWinner=5|2934851,400000|WorldChampion=52,CupWinner=11,GermanChampion=18,EuropeanCupWinner=11|2763342,400000|R1841873999 C83782955";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
