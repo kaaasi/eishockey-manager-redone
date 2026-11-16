@@ -333,5 +333,5 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // ab dem Spielstart; mit und ohne Anzeige weiter gleich. Rückschaltprobe: src/ von f3490bd + dieser Test → rot (alte Werte).
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     private const string Reference =
-        "1993: DEB 1, DM 2, Tab 15648 | 1994: DEB 10, DM 9, Tab 15594 | 1995: DEB 10, DM 21, Tab 14981 | 1996: DEB 9, DM 9, Tab 15465";
+        "1993: DEB 9, DM 9, Tab 15624 | 1994: DEB 2, DM 9, Tab 15526 | 1995: DEB 9, DM 9, Tab 15379 | 1996: DEB 21, DM 21, Tab 15176";
 }
