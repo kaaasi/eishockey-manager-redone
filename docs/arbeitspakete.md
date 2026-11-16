@@ -82,7 +82,10 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
      `GameState.Book` bleibt (N5); roter Test je Posten (Übersicht vor/nach Buchung). A703: ggf. neutrale Kategorie.
 - **Dateien:** `UI/Screens/Manager/FinanceScreen.cs`, Kategorien der Übersicht (`Core/Finance.cs`;
   nicht `Core/FinanceMonthly.cs`, das gehört `start-lader`), die sechs Buchungsstellen nur Markerzeile/Kategorie. **Tests:** `--schnell`, Mehrsaisonprobe nur, wenn sich Beträge ändern.
-- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** offen.
+- **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** Teile 1–2 fertig, Review (#893): Die
+  Original-Übersicht (Datei 0x57ECF) zeigt keine Kategorie, nur Konto, Darlehen, Zinsen, Depot – keiner der sechs Posten weicht
+  dort ab (nur Kontostand, wie im Original); Anzeige unverändert, Prüftest je Posten. A703 bleibt „Transfers“. Neuer Befund:
+  Zeilen 3/4 und 6/7 der Übersicht (Original Saldo und Monatszins, Remake Forderung/Schuld bzw. Sparbuch/Kredit) → Leitstelle.
 
 ### Spur `zusehen` – Verein zum Zusehen markieren (Welle 1)
 

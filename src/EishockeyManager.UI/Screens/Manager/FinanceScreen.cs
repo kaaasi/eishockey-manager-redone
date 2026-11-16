@@ -786,6 +786,13 @@ public sealed class FinanceScreen : Screen
     /// </summary>
     public static byte SummaryValueColor(long amount) => amount > 0 ? (byte)12 : amount < 0 ? (byte)16 : SummaryLabelColor;
 
+    /// <summary>
+    /// Übersicht rechts. [ORIGINAL] Datei 0x57ECF (Sprungtabelle 0x581A6) liest nur Konto (DGROUP 0x97EA), Darlehen
+    /// (0x97F6 + 4 · i), Monatszinsen (0x57C64) und Depot (0xD214), keine Einnahme- oder Ausgabekategorie. Posten, die das
+    /// Remake über <see cref="GameState.Book"/> statt direkt aufs Konto bucht (A192, A207, A511, A513, A703, A716; N5 = C),
+    /// zeigt die Übersicht deshalb wie das Original nur im Kontostand; die Kategorie steht allein im Finanzbuch
+    /// (<see cref="FinanceBookScreen"/>). Prüfung: <c>FinanzuebersichtBuchungTests</c> (Spur finanzuebersicht).
+    /// </summary>
     private void DrawSummary(Surface s)
     {
         var mini = Assets.Mini;
