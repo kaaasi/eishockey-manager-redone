@@ -193,6 +193,14 @@ public class RngTwinProbeTests
     // Überträge je Wettbewerb, StoredTableRank), den Spielerwert je Wettbewerb (A135) und das Tabellenfeld der Zuschauerformel
     // (A046, aktive Läufe). Taktik 375h ändert keinen Abdruck (Rückmutation im Review).
     // Fixlauf #676: neu durch die Play-off-Paarung nach Tabelle DGROUP 0x144 (Halbfinale 1–8 gegen 3–6, Heimrecht beim kleineren Platz; Serien in Platzfolge des Originals, auch die Spielreihenfolge im Viertelfinale) – andere Play-off-Spiele, danach anderer Zufallsverbrauch. Gegenprobe: alter Playoffs.cs → alle alten Werte.
+    // Runde 21, Spur start-lader (A106/A108, R21-D2 = A): neu – Lader 0x2EF1B beim Spielstart als erste Züge der Hauptquelle
+    // (Datei 0x439BB vor der Spielvorbereitung 0x43A61), Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073) und
+    // Wanderung des Spielstarts (Datei 0x43A73) in NewGame.Create statt beim ersten Spiel; anderer Zufallsverlauf ab dem
+    // Spielstart. Rückschaltprobe: src/ von 40f67fc (ohne start-lader) + dieser Test → rot (alte Werte).
+    // Runde 21, Spur start-lader (A106/A108, R21-D2 = A): neu – Lader 0x2EF1B beim Spielstart als erste Züge der Hauptquelle
+    // (Datei 0x439BB vor der Spielvorbereitung 0x43A61), Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073) und
+    // Wanderung des Spielstarts (Datei 0x43A73) in NewGame.Create statt beim ersten Spiel; anderer Zufallsverlauf ab dem
+    // Spielstart. Rückschaltprobe: src/ von 40f67fc (ohne start-lader) + dieser Test → rot (alte Werte).
     [Theory]
     // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
     // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
@@ -265,10 +273,10 @@ public class RngTwinProbeTests
     // (Vereinsfelder 0x2E/0x30, Spielvorbereitung 0x84D7 setzt sie nicht zurück, Datei 0x84EB–0x857D); andere Reihenstärken,
     // Ergebnisse und Zufallsverlauf ab dem zweiten Managerspiel. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung
     // DefenseLine/AttackLine → alte Werte.
-    [InlineData(false, 3, "3B70267EA673059D")]
-    [InlineData(true, 3, "458B234AFBF20DB7")]
-    [InlineData(false, 11, "4F4A6706EB968D5C")]
-    [InlineData(true, 11, "F05F315ECA396091")]
+    [InlineData(false, 3, "575DF456A043C7FF")]
+    [InlineData(true, 3, "8BEB93BECACC800C")]
+    [InlineData(false, 11, "4A6177B02F6969AC")]
+    [InlineData(true, 11, "F2FF0B663060033F")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -354,8 +362,8 @@ public class RngTwinProbeTests
     // (Vereinsfelder 0x2E/0x30, Spielvorbereitung 0x84D7 setzt sie nicht zurück, Datei 0x84EB–0x857D); andere Reihenstärken,
     // Ergebnisse und Zufallsverlauf ab dem zweiten Managerspiel. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung
     // DefenseLine/AttackLine → alte Werte.
-    [InlineData(false, "D53ECEB985069CC8")]
-    [InlineData(true, "1BE12B3C5EAAE6F0")]
+    [InlineData(false, "B69B56D5E32D5D09")]
+    [InlineData(true, "5DC2A571A3B3F7BE")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

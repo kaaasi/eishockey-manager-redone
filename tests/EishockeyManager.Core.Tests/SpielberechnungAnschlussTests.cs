@@ -281,8 +281,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // (Vereinsfelder 0x2E/0x30, Spielvorbereitung 0x84D7 setzt sie nicht zurück, Datei 0x84EB–0x857D); andere Reihenstärken,
     // Ergebnisse und Zufallsverlauf ab dem zweiten Managerspiel. Rückschaltprobe: MatchEngine.Live.cs ohne die Zuweisung
     // DefenseLine/AttackLine → alte Werte.
-    [InlineData(false, "CCFCAE63E4AAB2C1")]
-    [InlineData(true, "9BD46BA8B1371654")]
+    // Runde 21, Spur start-lader (A106/A108, R21-D2 = A): neu – Lader 0x2EF1B beim Spielstart als erste Züge der Hauptquelle
+    // (Datei 0x439BB vor der Spielvorbereitung 0x43A61), Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073) und
+    // Wanderung des Spielstarts (Datei 0x43A73) in NewGame.Create statt beim ersten Spiel; anderer Zufallsverlauf ab dem
+    // Spielstart. Rückschaltprobe: src/ von 40f67fc (ohne start-lader) + dieser Test → rot (alte Werte).
+    [InlineData(false, "BFD1FF9B7EB217DA")]
+    [InlineData(true, "A6C4EC705A012367")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -360,8 +364,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): neu – 5-Minuten-Strafe mit der Häufigkeit des lrandom-Zyklus
     // (LRandomCycle; Datei 0xBFD5, Züge 0x358B7–0x3592D unmittelbar hintereinander: 12,55 % statt 1/16 bei Einsatz 40); andere
     // Strafen, Ergebnisse und Zufallsverlauf ab dem ersten Spiel. Rückschaltprobe: MatchEngine.Original.cs von 5367ba8 → alte Werte.
+    // Runde 21, Spur start-lader (A106/A108, R21-D2 = A): neu – Lader 0x2EF1B beim Spielstart als erste Züge der Hauptquelle
+    // (Datei 0x439BB vor der Spielvorbereitung 0x43A61), Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073) und
+    // Wanderung des Spielstarts (Datei 0x43A73) in NewGame.Create statt beim ersten Spiel; anderer Zufallsverlauf ab dem
+    // Spielstart. Rückschaltprobe: src/ von 40f67fc (ohne start-lader) + dieser Test → rot (alte Werte).
     private const string WorldOnlyReference =
-        "WorldChampion=63|500000|WorldChampion=55|-1542821|WorldChampion=63|-4586841|WorldChampion=53|-9294877|WorldChampion=53|-16586608|R1374974225 C745240846";
+        "WorldChampion=52|500000|WorldChampion=63|-1527054|WorldChampion=55|-4549921|WorldChampion=54|-9234027|WorldChampion=53|-16492322|R1374974225 C908745551";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

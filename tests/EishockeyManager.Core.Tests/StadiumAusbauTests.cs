@@ -54,7 +54,9 @@ public class StadiumAusbauTests
         // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (A130, R15-E2 = C): Saat 2 statt 3 – mit der Startbelastung 80–120 (Datei
         // 0x42E4C) ist bei Saat 3 der Speicher wieder voll (zwei Meldungen); Saaten 1–24: 13 von 24 mit drei Meldungen. Die Probe hängt
         // an der Saat.
-        var game = TestGames.Create(2);
+        // Runde 21, Spur start-lader (R21-D2 = A): Saat 1 statt 2 – mit dem Lader beim Spielstart (Datei 0x439BB) ist bei Saat 2 der
+        // Speicher wieder voll (zwei Meldungen); Saaten 1–12: 9 von 12 mit drei Meldungen. Die Probe hängt an der Saat.
+        var game = TestGames.Create(1);
         var me = game.ActiveManager;
         me.Money = Rich;
         var stadium = game.Finance(me).Stadium;
