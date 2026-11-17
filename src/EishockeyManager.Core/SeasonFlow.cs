@@ -426,6 +426,11 @@ public sealed partial class GameState
 
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –
         // kein Platz, keine Prämie (Prämien gibt es nur aus der Vereinssaison).
+        // [ORIGINAL] A671: Das Konto von Satz 0 setzt Datei 0x56287–0x56334 trotzdem auf 400.000 DM, wenn sein Verein in der Oberliga
+        // Letzter oder Vorletzter ist – die Prüfung (Vereinsfeld 0x16, Datei 0x296EC) kennt den Modus nicht. Ohne Spiele (Modus ohne
+        // Vereinssaison) gilt die Startordnung der Tabelle; der Doppeltausch des Vereins (KeptInOberliga) braucht eine Vereinssaison.
+        if (WorldOnly && Managers.Count > 0 && record.LeftOberliga.Contains(Managers[0].ClubIndex))
+            Managers[0].Money = OberligaKeptMoney;
         for (var i = 0; i < Managers.Count && !WorldOnly; i++)
         {
             var manager = Managers[i];
