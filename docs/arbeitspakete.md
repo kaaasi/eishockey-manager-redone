@@ -120,7 +120,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
   Forderung (A118, A120); 3. Aufstellen andere Hälfte/sechster Feldspieler (A683, A490); 4. A827, A394, A631. Mehrsaisonprobe.
 - **Dateien:** `Core/GameSetup.cs`, `Core/GameState.AddManager.cs`, `Core/Highscore.cs`, `Core/Player.Contract.cs`,
   `Core/Player.Factory.cs`, `Core/FinanceTalent.cs`, `Core/Squad.Setup.cs`, Stellen oben. **Erstreview:** Opus 5.5.
-  **Status:** in Arbeit (Claude Code, Teil 1; Draft-PR folgt).
+  **Status:** Teile 1–3 fertig (Draft #932, sechster Feldspielerplatz bleibt [APPROX]); Teil 4 offen, Fortsetzung 1 angefordert.
 
 ### Spur `wettbewerbe-regeln` – Spielrechnung, Wertung, Live-Einzelregeln (Welle 2)
 
