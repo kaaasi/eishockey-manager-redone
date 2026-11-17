@@ -212,9 +212,11 @@ Sitzungen sind unabhängig und einzeln aufnehmbar; Reihenfolge nach Lust.
 1. Neues Spiel, zwei Manager in Vereinen derselben Liga. Im ersten Hauptmenü sichern als **FILE75** (A427 Startwerte der
    Computervereinsspieler). Vor dem ersten Spieltag die Bestenliste öffnen und fotografieren (A065).
 2. An drei Tagen hintereinander notieren, welcher Manager zuerst am Zug ist (A057).
-3. Manager 1: Sparbuch anlegen, Manager 2 ein Darlehen geben, einen Spieler an Manager 2 verleihen; mehrere Werbeverträge mit
+3. Manager 1: Sparbuch anlegen, Manager 2 ein Darlehen geben, einen Spieler an Manager 2 verleihen (Laufzeit bis über den
+   Saisonwechsel, Review #920 P3-4); mehrere Werbeverträge mit
    Banden abschließen. Danach sichern als **FILE76** (A402, A613, A614, A629).
-4. Vertragsverhandlung mit einem Spieler: einmal Gehalt 0, einmal ein sehr hohes Gehalt eingeben, Meldung je fotografieren (A117).
+4. Vertragsverhandlung mit einem Spieler: einmal Gehalt 0, einmal ein sehr hohes Gehalt eingeben, Meldung je fotografieren, dann
+   abbrechen ohne Abschluss (A117; Sitzung 2 setzt FILE76 fort, P3-3).
 
 ### Sitzung 2 – Saisonwechsel mit Pool und Leihe, Fortsetzung von FILE76
 
@@ -225,15 +227,16 @@ Sitzungen sind unabhängig und einzeln aufnehmbar; Reihenfolge nach Lust.
 ### Sitzung 3 – Spiel und Sperre
 
 1. Managerpaarung mit vierter Reihe und Reihenmodus 2 bzw. 3 spielen, Reihenwechsel im Live-Spiel fotografieren (A095).
-2. Nach einer Matchstrafe (gesperrter Spieler) im Hauptmenü sichern als **FILE79** (A625).
+2. Nach einer Matchstrafe (gesperrter Spieler; tritt zufällig auf, ggf. mehrere Spieltage spielen oder Stand per `hok-patch`
+   von der Leitstelle) im Hauptmenü sichern als **FILE79** (A625).
 3. Optional (A259, im Original evtl. nicht erreichbar): Gebot eines Computervereins offen lassen, bis dessen Kader voll ist, dann
    annehmen; Meldung fotografieren.
 
 ### Sitzung 4 – Modus „nur Weltkugel“, Start FILE18
 
-1. FILE18 laden, über einen Trainingstag bzw. einen Vertragsablauf spielen, davor/danach sichern als **FILE80/FILE81** (A408,
-   Pool belegt: A411).
-2. Einen Listenwechsel mit einem Poolspieler eines Nationalteams abwarten, davor/danach sichern als **FILE82/FILE83** (A707).
+1. FILE18 laden, über einen Trainingstag bzw. einen Vertragsablauf spielen, davor/danach sichern als **FILE80/FILE81** (A408;
+   A411 nur, wenn der Pool vor dem Sichern belegt ist – im Transfermarkt prüfen, P3-2).
+2. Aus FILE81 weiter (P3-1): einen Listenwechsel mit einem Poolspieler eines Nationalteams abwarten, davor/danach sichern als **FILE82/FILE83** (A707).
 
 ### Sitzung 5 – Doppelter Zwangsabstieg (A667)
 
