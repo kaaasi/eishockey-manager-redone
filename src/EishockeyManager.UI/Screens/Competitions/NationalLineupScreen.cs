@@ -82,10 +82,6 @@ public sealed class NationalLineupScreen : Screen
         // [APPROX] Wie beim Verein (LineupScreen) gibt es die Remake-Tasten A und C im Spiel nicht.
         switch (InMatch ? "" : input.Text.ToUpperInvariant())
         {
-            case "A":
-                coach.AutoFormation();
-                _changed = true;
-                return;
             case "C":
                 coach.ClearFormation();
                 _changed = true;
@@ -155,7 +151,9 @@ public sealed class NationalLineupScreen : Screen
 
     /// <summary>Taktik des Nationalteams (gleicher Bildschirm wie beim Verein), Umschalter zurück zur Aufstellung.</summary>
     public static Screen Tactics(ScreenHost host, Screen back) =>
-        new TacticsScreen(host, back, () => host.Game!.NationalCoach!.Tactics, () => new NationalLineupScreen(host, back));
+        new TacticsScreen(host, back, () => host.Game!.NationalCoach!.Tactics, () => new NationalLineupScreen(host, back),
+            new AutoLineupSwitch(() => host.Game!.NationalCoach!.AutoLineupEnabled, on => host.Game!.NationalCoach!.SetAutoLineup(on),
+                was => host.Game!.NationalCoach!.CloseTactics(was))); // A492: Schalter im Taktikbildschirm
 
     /// <summary>
     /// Verlassen (Datei 0x41506–0x4151A): 0x952C schreibt die Länderwerte aus der Aufstellung
