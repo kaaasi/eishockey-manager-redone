@@ -113,4 +113,30 @@ public class WettbewerbeRegelnTests
         Assert.InRange(attack.Condition, 40 - 4, 40 + 4);
         Assert.InRange(attack.Technique, 40 - 4, 40 + 4);
     }
+
+    /// <summary>
+    /// A838: [ORIGINAL] Endete das letzte Spiel mit herausgenommenem Torhüter (Vereinsfeld 0x2C Bit 3), setzt 0x84D7(0) zu
+    /// Spieltagsbeginn Abwehrreihe 2 (Datei 0x855D–0x857D), danach löscht 0x8365 das Bit (Datei 0x84C7). Vorher begann der Verein
+    /// mit der gespeicherten Reihe.
+    /// </summary>
+    [Fact]
+    public void PulledGoalieAtEnd_NextMatchStartsWithDefenseLineTwo()
+    {
+        var game = TestGames.Create(3);
+        MatchEngine.EnsureTeamValues(game);
+        var (club, other) = (game.Clubs[4], game.Clubs[5]);
+        club.Tactics.RecordMatchLines(0, 1);
+        club.Tactics.RecordGoaliePulled(true);
+        other.Tactics.RecordMatchLines(0, 1);
+        MatchEngine.PlayWithEvents(game, club, other, MatchCompetition.League, knockOut: false, new Random(2));
+        // Paarung ohne Manager: Reihen bleiben stehen, also steht die Startreihe am Ende noch da.
+        Assert.Equal(2, club.Tactics.MatchDefenseLine);
+        Assert.False(club.Tactics.GoaliePulledAtEnd);
+        Assert.Equal(0, other.Tactics.MatchDefenseLine);
+
+        var loaded = SaveGame.Load(SaveGame.Save(game)).Game!;
+        Assert.False(loaded.Clubs[4].Tactics.GoaliePulledAtEnd);
+        club.Tactics.RecordGoaliePulled(true);
+        Assert.True(SaveGame.Load(SaveGame.Save(game)).Game!.Clubs[4].Tactics.GoaliePulledAtEnd);
+    }
 }

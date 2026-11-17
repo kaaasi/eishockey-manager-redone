@@ -103,6 +103,12 @@ public static partial class MatchEngine
         Random random)
     {
         EnsureTeamValues(game);
+        // A838: [ORIGINAL] 0x84D7(0) zu Spieltagsbeginn (Datei 0x36C4F) vor der Vorbereitung 0x8365 (Datei 0x36D12, auch vor
+        // der Spielwertung 0x544C0): Abwehrreihe 2 nach einem Spielende ohne Torhüter (Squad.Tactics.GoaliePulled.cs).
+        if (!IsNation(home))
+            home.Tactics.StartMatchAfterPulledGoalie();
+        if (!IsNation(away))
+            away.Tactics.StartMatchAfterPulledGoalie();
         if (home.ForfeitsMatch || away.ForfeitsMatch)
         {
             var forfeit = game.HomeForfeits(home, away) // A191: Manager in Indexreihenfolge (0x544C0)
@@ -357,11 +363,8 @@ public static partial class MatchEngine
             AttackLevel = club.Tactics.EffectiveAttack(0, 0, value, opponentValue),
             Energy = PreparedEnergy,
             // #872: [ORIGINAL] Die Spielvorbereitung 0x84D7 lässt die Reihen 0x2E/0x30 aus dem Vorspiel stehen (Datei 0x84EB–0x857D,
-            // nur die Minuten 0x2F/0x31 auf 0); Squad.Tactics.Lines.cs. [APPROX] 0x2C Bit 3 (Torhüter draußen am Ende des Vorspiels)
-            // führt das Remake zwischen den Spielen nicht. Es gilt für jeden Verein mit gesetztem Bit 3: Die Abfrage 0x855D–0x857D
-            // ist nicht an 0x16 gebunden (nur das `and 0xf8` bei 0x8521 ist es), und Bit 3 setzt auch die Neuzählung der
-            // Managervereine (0x38A36, RecountSkaters). Im Original beginnt ein solcher Verein mit Abwehrreihe 2 (Datei 0x857D), im
-            // Remake mit der gespeicherten (Review #881 P3-3b, #882).
+            // nur die Minuten 0x2F/0x31 auf 0); Squad.Tactics.Lines.cs. A838: 0x2C Bit 3 (Torhüter draußen am Ende des
+            // Vorspiels) setzt vorher Abwehrreihe 2 (BeginMatch, Squad.Tactics.GoaliePulled.cs; Review #881 P3-3b, #882).
             DefenseLine = club.Tactics.MatchDefenseLine,
             AttackLine = club.Tactics.MatchAttackLine,
             Tactics = managerMatch ? club.Tactics : null,
