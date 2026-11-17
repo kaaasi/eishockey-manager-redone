@@ -363,8 +363,10 @@ public static partial class MatchEngine
             Defense = defense,
             Attack = attack,
             ClubForm = loaded.DayForm,
-            Effort = club.Tactics.EffectiveEffort(0, 0, value, opponentValue),
-            AttackLevel = club.Tactics.EffectiveAttack(0, 0, value, opponentValue),
+            // A553: [ORIGINAL] Vereine beginnen mit den Feldern 0x26/0x2C aus dem Vorspiel bzw. vom Verlassen des Taktikbildschirms
+            // (GameState.OnTacticsLeft); 0x8365 überschreibt 0x26 nur ohne Manager oder bei „AUTOM.“, 0x2C nie (PrepareMatch).
+            Effort = IsNation(club) ? club.Tactics.EffectiveEffort(0, 0, value, opponentValue) : club.Tactics.MatchEffort,
+            AttackLevel = IsNation(club) ? club.Tactics.EffectiveAttack(0, 0, value, opponentValue) : club.Tactics.MatchAttack,
             Energy = PreparedEnergy,
             // #872: [ORIGINAL] Die Spielvorbereitung 0x84D7 lässt die Reihen 0x2E/0x30 aus dem Vorspiel stehen (Datei 0x84EB–0x857D,
             // nur die Minuten 0x2F/0x31 auf 0); Squad.Tactics.Lines.cs. A838: 0x2C Bit 3 (Torhüter draußen am Ende des

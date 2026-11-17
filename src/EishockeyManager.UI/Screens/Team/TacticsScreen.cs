@@ -71,6 +71,17 @@ public sealed class TacticsScreen : Screen
     /// <summary>Kennwert „im Spiel“ (Eingriff über Kopf/Logo, Spur livespiel-ui-2 B3): Kopfzeile 0x40290.</summary>
     public bool InMatch { get; init; }
 
+    /// <summary>
+    /// Verlassen (A553, Spur wettbewerbe-regeln): [ORIGINAL] 0x48E62 beim Verlassen (Aufruf Datei 0x48E19) schreibt Vereinsfeld
+    /// 0x26 (<see cref="GameState.OnTacticsLeft"/>); nur der Vereinsbildschirm außerhalb des Spiels.
+    /// </summary>
+    private void Leave(Screen next)
+    {
+        if (_tactics is null && !InMatch && Host.Game is { } game)
+            game.OnTacticsLeft(TeamUi.OwnClub(Host));
+        Host.Show(next);
+    }
+
     /// <summary>Gewählter Block (0–3).</summary>
     public int Block => _block;
 
@@ -78,7 +89,7 @@ public sealed class TacticsScreen : Screen
     {
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
-            Host.Show(_back);
+            Leave(_back);
             return;
         }
         if (!input.LeftClick)
@@ -93,7 +104,7 @@ public sealed class TacticsScreen : Screen
             if (_lineup is not null)
                 Host.Show(_lineup());
             else if (MenuEntries.TryCreate("Aufstellung", Host, _back, out var lineup))
-                Host.Show(lineup!);
+                Leave(lineup!);
             return;
         }
 
