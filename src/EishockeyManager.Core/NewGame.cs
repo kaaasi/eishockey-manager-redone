@@ -61,6 +61,8 @@ public static class NewGame
 
         var places = StartOrder(seed); // R-K5: Ligamischung vor der Spielvorbereitung (Datei 0x43A17)
         var managers = AssignClubs(clubs, setup, random, places);
+        foreach (var manager in managers)
+            manager.OneSeasonFlag = OneSeasonSingleManager(setup); // [ORIGINAL] A847: Datei 0x29D23
         var schedules = new Dictionary<League, IReadOnlyList<MatchDay>>();
         var game = new GameState
         {
@@ -284,8 +286,8 @@ public static class NewGame
     /// der Bundesliga, bis 0x45CD0(r, 1) ≠ 0, und Tausch 0x36169(v, r, 0x80). Beim Spielstart ist die Europapokal-Tabelle leer,
     /// der Filter trifft nur Platz 0: Der Managerverein landet immer auf Platz 0 (FILE29: ESV KAUFBEUREN auf Platz 0,
     /// HOK 0x00F70 = 1; <c>docs/analyse/re-runde-14.md</c>, U15-c). Spur zufallsstrom (N3 = B): Die Würfe der Schleife kommen aus dem
-    /// gemeinsamen Strom, bis Platz 0 fällt. [APPROX] Das Feld 0x9744 bildet das Remake nicht ab (Wirkung außer im Highscore nicht
-    /// gelesen, <see cref="HighscoreRules"/>); der Sonderfall greift im Remake nur, wenn der Verein in der Bundesliga steht.
+    /// gemeinsamen Strom, bis Platz 0 fällt. Das Feld 0x9744 führt <see cref="Manager.OneSeasonFlag"/> (A847; Wirkung außer im Highscore nicht
+    /// gelesen, <see cref="HighscoreRules"/>). [APPROX] Der Platztausch greift im Remake nur, wenn der Verein in der Bundesliga steht.
     /// </summary>
     internal static bool OneSeasonSingleManager(GameSetup setup) =>
         setup.Managers.Count == 1 && setup.Duration == GameDuration.EineSaison;

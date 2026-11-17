@@ -22,8 +22,8 @@ namespace EishockeyManager.Core;
 ///   Kauf nach Spielerart einsortiert (R13GN-01), Verkauf rückt auf, Saisonwechsel unverändert (Datei 0x42D55, 0x425B6; FILE05/FILE07/FILE26,
 ///   FILE22/FILE23). Die Platzfolge entscheidet den Gleichstand in Datei 0x42838 (FILE05 Reihe 3: LALA vor HANEMANN und
 ///   H.STEIGER, alle Wert 68; FILE07: DAFFNER auf Platz 25 verdrängt LALA).</item>
-/// <item>[APPROX] Ein Feldspieler aus der Torhütersuche (kein Torhüter frei) bekommt im Original +0x15 = 1 und steht damit
-///   in der ersten Abwehrreihe; das Remake setzt ihn nur ein (der Torhüterplatz nimmt nur Torhüter).</item>
+/// <item>[ORIGINAL] A672: Ein Feldspieler aus der Torhütersuche (kein Torhüter frei) bekommt +0x15 = 1 und steht damit in der
+///   ersten Abwehrreihe (Datei 0x42718–0x42777): <see cref="Lineup.GoalieStandIn"/>; der Torhüterplatz nimmt nur Torhüter.</item>
 /// </list>
 /// </remarks>
 public static class AutoLineupRule
@@ -106,6 +106,8 @@ public static class AutoLineupRule
                         case 0:
                             if (p.Role == PlayerRole.Goalkeeper)
                                 lineup.Place(LineupSlot.Goalkeeper, p);
+                            else
+                                lineup.PlaceGoalieStandIn(p); // [ORIGINAL] A672: +0x15 = 1, Datei 0x42718–0x42777
                             break;
                         case 1:
                             lineup.Place(LineupSlot.Defender(block, k), p);
