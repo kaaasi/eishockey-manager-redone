@@ -20,8 +20,9 @@ public static partial class MatchEngine
     /// Die Zeilen der Automatik nimmt 0x939A in den geraden Minuten der Managerpaarung (<see cref="OriginalMinutes.FollowTactics"/>
     /// mit <see cref="LiveTeam.TacticsStrength"/>); die Anzeige „AUTOM.“ hält <see cref="Tactics.RecordAutoLine"/> fest (A180).
     /// [ORIGINAL] Das Original ruft 0x368B1 mit den Reihen 0x2E/0x30 aus dem Vorspiel; das Remake mit den gespeicherten Reihen
-    /// (<see cref="Tactics.MatchDefenseLine"/>, #872; Computervereine wechseln Reihen nur in Managerpaarungen). Ob 0x977F den Managerverein dabei aus den Spielern bildet, hängt an der Liste
-    /// DGROUP 0x233 (0x52B91), die erst die Live-Anzeige 0x5353C füllt; das Remake nimmt in der Managerpaarung die Spieler.
+    /// (<see cref="Tactics.MatchDefenseLine"/>, #872; Computervereine wechseln Reihen nur in Managerpaarungen). 0x977F bildet den
+    /// Managerverein dabei aus den Vereinsfeldern 0x18–0x1D, weil die Liste DGROUP 0x233 (0x52B91) erst die Live-Anzeige 0x5353C
+    /// füllt; das Remake rechnet die Vorbereitung ebenso (<c>MatchEngine.PrepareFromClubFields</c>, Spur teamwert-aufstellung, A080).
     /// [APPROX] Managervereine mit „SEMI“/„MANUELL“ behalten Einsatz und Angriff der eigenen Werte beim Stand 0:0
     /// (Taktikbildschirm Datei 0x48E62 für 0x26; ob er die Angriffsbits schreibt, ist nicht gelesen). Nationalteams wie
     /// bisher (<see cref="NationalLiveTeam"/>).
