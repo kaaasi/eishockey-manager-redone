@@ -13,14 +13,18 @@ public sealed partial class GameState
     /// </summary>
     internal void InitializeManagerSystems()
     {
-        // Spur transfer-vertraege-komplett: Startgehalt der Kaderplätze der Manager = Wert(Gehalt) (0x29EE4), ohne Zufall.
+        // Spur transfer-vertraege-komplett: Startgehalt der Kaderplätze der Manager = Wert(Gehalt) (0x29EE4). Spur zufallsstrom
+        // (Teil 3): Tendenz und +0x19 würfelt der Spielstart schon im Poolaufbau (Datei 0x5B1CD–0x5B245); hier nur noch für Plätze
+        // ohne Steuerbyte (Import, „nur Weltkugel“).
         ApplyStartSalaries();
-        // Spur wettbewerbe-spiel, Teil 7: Kaderplatz +0x19 der Managerkader (Datei 0x299F4), eigene Zufallsquelle.
-        RollStartHiddenSkills();
-        _ = Stocks;
+        // Spur zufallsstrom, Teil 4: Das neue Spiel würfelt Werbeangebote (Datei 0x2A03B–0x2A061) und Börse (Datei 0x43AD5) an den
+        // Stellen des Originals (NewGame.Create); hier nur noch für den Import eines Originalspielstands.
+        if (!s_startDrawsAtOriginalPlace)
+            _ = Stocks;
         foreach (var manager in Managers)
         {
-            RenewOffers(manager);
+            if (!s_startDrawsAtOriginalPlace)
+                RenewOffers(manager);
             PrepareTraining(manager);
         }
 

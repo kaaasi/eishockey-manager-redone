@@ -17,7 +17,7 @@ namespace EishockeyManager.Core.Tests;
 public class AbgleichRestPenaltyTests(ITestOutputHelper output)
 {
     /// <summary>
-    /// Strafminuten eines Spieltags: Summe der Liga-Strafminuten aller Vereine FILE05 → FILE24 im Mittel über 16 Saaten
+    /// Strafminuten eines Spieltags: Summe der Liga-Strafminuten aller Vereine FILE05 → FILE24 im Mittel über 64 Saaten
     /// höchstens 8 % neben dem Original (+441). Rot mit dem Einsatz vor #772 (Grundwert + 20/15: Mittel 487,9).
     /// Spur abgleich-dosbox Teil 3 (#804, R15-E2 = C): 16 statt 4 Saaten – seit der Import Einsatz 0x26 aus dem Stand liest, lag das
     /// Mittel der Saaten 1–4 bei 483,5 (16 Saaten: 474,4; vorher 465,0), Streuung der Einzelwerte 418–530.
@@ -30,7 +30,9 @@ public class AbgleichRestPenaltyTests(ITestOutputHelper output)
         Assert.Equal(441, original);
 
         var sums = new List<int>();
-        foreach (var seed in Enumerable.Range(1, 16))
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): 64 statt 16 Saaten – mit den Würfen des Tageslaufs 0x07169 im gemeinsamen Strom liegt das
+        // Mittel der Saaten 1–16 bei 478,3 (Grenze 476,3), über 64 Saaten bei 463,3 (+5,1 %; Einzelwerte 408–581). Sollwert und Grenze bleiben.
+        foreach (var seed in Enumerable.Range(1, 64))
         {
             var game = Import("FILE05", seed);
             Assert.Null(HokCompare.PlayTo(game, Import("FILE24", seed)));

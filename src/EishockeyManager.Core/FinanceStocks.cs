@@ -172,7 +172,7 @@ public sealed partial class GameState
     /// Stückzahlen aller Manager (0x57BD7–0x57C2E, Kaufpreise bleiben).
     /// </summary>
     public void AdvanceStocks() =>
-        Stocks.Advance(FinanceRandom, i =>
+        Stocks.Advance(Random, i =>
         {
             foreach (var manager in Managers)
                 Finance(manager).Holdings[i].Count *= 2;

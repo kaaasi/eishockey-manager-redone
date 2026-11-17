@@ -145,7 +145,8 @@ public sealed partial class GameState
 
     /// <summary>
     /// Je Lauf von 0x07169 am Takttag (Datei 0x76E5–0x76F6; #678, R688-09): Verhandlungssperren der Spieler des Managers zählen um eins
-    /// herunter; Sperren nach abgelehnten Geboten lösen. Gerufen aus <see cref="AnnounceContractEnds"/>.
+    /// herunter. Gerufen aus <see cref="AnnounceContractEnds"/>. Die Sperren nach abgelehnten Geboten löst seit Spur zufallsstrom
+    /// (A521) der Markt-Teil des Laufs an der Stelle des Originals (<see cref="DailyRunMarket"/>, Datei 0x071CC).
     /// </summary>
     private void AdvanceNegotiationLocks(Manager? only = null)
     {
@@ -153,11 +154,5 @@ public sealed partial class GameState
             foreach (var p in club.Players)
                 if (p.NegotiationLock > 0)
                     p.NegotiationLock--;
-        // Sperren nach abgelehntem Gebot (Tagesablauf 0x071CC); Zufall der Verträge, damit Spielergebnisse unberührt bleiben.
-        // Die Quelle erst anfassen, wenn eine Sperre besteht: Ihr Startwert hängt vom Zeitpunkt der ersten Nutzung ab.
-        // #678: [ORIGINAL] nur im Lauf von Manager 0 (Datei 0x0718F–0x07197).
-        if ((only is null || (Managers.Count > 0 && Managers[0] == only))
-            && TransferMarket.Listings.Any(l => (l.RejectedBy & 0x7F) == 1))
-            TransferMarket.ReleaseBidLocks(ContractRandom);
     }
 }

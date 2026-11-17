@@ -174,7 +174,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     [InlineData(true)]
     public void MultiSeason_FourChanges_ManagerTeamValueFollowsClubFields(bool active)
     {
-        var game = TestGames.Create(5);
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 8 statt 5 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 3, 5, 7 rückt beim passiven Manager keine Jugend nach (FinanceRandom, Datei 0x27293), sein Kader ist nach zwei Saisons leer und die Probe zählt zu wenige Schritte; 8 erfüllt die Vorbedingung. Die Probe hängt an der Saat.
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 10 statt 8 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; unter 5–12 erreicht nur Saat 10 passiv und aktiv mehr als 200 Schritte mit Kader. Die Probe hängt an der Saat.
+        var game = TestGames.Create(10);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();

@@ -121,7 +121,7 @@ public sealed class DebCupDrawLiveScreen : Screen
 
     /// <summary>
     /// [APPROX] Reihenfolge des Aufdeckens: Mischung aus einer eigenen Quelle, die nur von Runde und Ziehung abhängt
-    /// (gleiche Bildschirmfotos bei gleicher Ziehung, kein Eingriff in <see cref="GameState.CupRandom"/>).
+    /// (gleiche Bildschirmfotos bei gleicher Ziehung, kein Eingriff in den gemeinsamen Strom <see cref="GameState.Random"/>).
     /// </summary>
     public static int[] RevealOrder(int round, IReadOnlyList<int> slots)
     {

@@ -91,38 +91,29 @@ public sealed partial class GameState
     /// je Kaderplatz ohne Leihe (+0x0C) und ohne Rücktritt (+0x18 Bit 0x80) der Wurf <see cref="UnsolicitedOfferRules.Roll"/>;
     /// ohne offene Meldung des Spielers (Pool +0x1E) → +0x09 |= 0x40, Verein nach <see cref="UnsolicitedOfferRules.Bidder"/>
     /// und die Meldung „… ist an … interessiert.“ (0x14CF:0x39, Vorlage DGROUP 0x29B7).
-    /// [APPROX] Zufall: eigene, je Saison und Tag abgeleitete Quelle wie <see cref="ContractTurnFactor"/>, damit Spielergebnisse
-    /// und Markt ihre Folgen behalten; „offene Meldung“ = noch nicht angeklicktes Angebot; Rücktritt = Ankündigung
-    /// <see cref="ContractNotice.Retiring"/>.
-    /// #678: mit <paramref name="only"/> nur die Kaderplätze dieses Managers (0x07169 je Manager); [APPROX] Quelle zusätzlich je
-    /// Managernummer abgeleitet (Manager 0 wie bisher), damit die Läufe eines Tages nicht dieselbe Folge ziehen.
+    /// [APPROX] „Offene Meldung“ = noch nicht angeklicktes Angebot; Rücktritt = Ankündigung <see cref="ContractNotice.Retiring"/>.
+    /// [ORIGINAL] Spur zufallsstrom (A248, A726; N3 = B): Würfe aus dem gemeinsamen Strom <see cref="Random"/> – zweite Schleife
+    /// über die Kaderplätze des Managers nach den Verträgen (Datei 0x07996–0x07AEF: Wert 0x079EC, random 0x07A1E, 0x07A34, 0x07A6E,
+    /// Verein 0x07A85), gerufen aus <see cref="AnnounceContractEnds"/>. Der Verfall offener Angebote liegt in der ersten Schleife
+    /// (<see cref="ExpireUnsolicitedOffer"/>).
+    /// #678: mit <paramref name="only"/> nur die Kaderplätze dieses Managers (0x07169 je Manager).
     /// </summary>
     internal void RollUnsolicitedOffers(Manager? only = null)
     {
         if (AfterSeasonEnd)
             return;
-        var index = only is null ? 0 : Math.Max(0, Managers.ToList().IndexOf(only));
-        var random = new GameRandom(unchecked(Season * 1_000_033 + CurrentDay * 6_151
-            + Managers.Sum(m => m.ClubIndex * 43 + m.Head) + 29 + index * 7_919));
         foreach (var manager in ActiveManagers.Where(m => only is null || m == only))
         {
             var club = Clubs[manager.ClubIndex];
             foreach (var p in club.Players.ToArray())
             {
-                // [ORIGINAL] Verfall offener Angebote (Datei 0x07626–0x07673): random(0, 3) = 0 löscht +0x09 Bit 0x40 und die Meldung.
-                // Der Wurf fällt nur bei einem offenen Angebot (Spur kader-transfer, Runde 12, U4).
-                if (p.UnsolicitedOffer is not null && TransferRules.Random16(random, 0, 3) == 0)
-                {
-                    p.UnsolicitedOffer = null;
-                    RemoveMessagesOf(p); // [ORIGINAL] Datei 0x07626–0x07673 → 0x4B270
-                }
                 if (p.OnLoan || p.Notice == ContractNotice.Retiring)
                     continue;
-                var value = PlayerValueOf(p, club, PlayerValueKind.Price, random, manager.Level);
-                if (!UnsolicitedOfferRules.Roll(value, random) || p.UnsolicitedOffer is not null)
+                var value = PlayerValueOf(p, club, PlayerValueKind.Price, Random, manager.Level);
+                if (!UnsolicitedOfferRules.Roll(value, Random) || p.UnsolicitedOffer is not null)
                     continue;
-                var foreign = UnsolicitedOfferRules.Foreign(value, random);
-                var buyer = UnsolicitedOfferRules.Bidder(p.Strength, foreign, BidderStrength, random);
+                var foreign = UnsolicitedOfferRules.Foreign(value, Random);
+                var buyer = UnsolicitedOfferRules.Bidder(p.Strength, foreign, BidderStrength, Random);
                 if (buyer < 0)
                     continue;
                 p.UnsolicitedOffer = Clubs.First(c => c.Index == buyer);
@@ -130,6 +121,19 @@ public sealed partial class GameState
                     NotifyAbout(m, p, $"{p.UnsolicitedOffer.Name} ist an", $"{p.Name} interessiert.");
             }
         }
+    }
+
+    /// <summary>
+    /// Verfall eines offenen unaufgeforderten Angebots im Tagesablauf. [ORIGINAL] Datei 0x07626–0x07673: random(0, 3) fällt für
+    /// jeden Kaderplatz (0x0762D); nur bei 0 und offenem Angebot (+0x09 &gt; 0x1F, Meldung Pool +0x1E) werden +0x09 Bit 0x40 und
+    /// die Meldung gelöscht (0x4B270). Spur zufallsstrom (A248): Wurf aus <see cref="Random"/>, auch ohne offenes Angebot.
+    /// </summary>
+    private void ExpireUnsolicitedOffer(Player p)
+    {
+        if (TransferRules.Random16(Random, 0, 3) != 0 || p.UnsolicitedOffer is null)
+            return;
+        p.UnsolicitedOffer = null;
+        RemoveMessagesOf(p);
     }
 
     /// <summary>Stärke eines Vereins für <see cref="UnsolicitedOfferRules.Bidder"/>; null = Managerverein bzw. unbekannt.</summary>
@@ -141,7 +145,8 @@ public sealed partial class GameState
     /// <summary>
     /// Anklicken eines Spielers mit Angebot im eigenen Kader der Transferliste. [ORIGINAL] Datei 0x46E04–0x46ED2: Höhe nach
     /// <see cref="UnsolicitedOfferRules.AmountThirds"/>, Bit 0x40 und die Meldung werden vor der Antwort gelöscht – das Angebot
-    /// verfällt also auch bei „Behalten“. Liefert null ohne Angebot. Zufall der Verträge (<see cref="ContractRandom"/>).
+    /// verfällt also auch bei „Behalten“. Liefert null ohne Angebot. [ORIGINAL] Spur zufallsstrom, Teil 4 (N3 = B): Wert(Preis) und
+    /// Faktor (Datei 0x46E0E–0x46E84) aus dem gemeinsamen Strom <see cref="Random"/> (vorher ContractRandom).
     /// </summary>
     public UnsolicitedOffer? OpenUnsolicitedOffer(Manager manager, Player player)
     {
@@ -149,9 +154,9 @@ public sealed partial class GameState
         if (player.UnsolicitedOffer is not { } buyer || !club.Players.Contains(player))
             return null;
         player.UnsolicitedOffer = null;
-        var value = PlayerValueOf(player, club, PlayerValueKind.Price, ContractRandom, manager.Level);
+        var value = PlayerValueOf(player, club, PlayerValueKind.Price, Random, manager.Level);
         var amount = UnsolicitedOfferRules.AmountThirds(value, buyer.Index >= UnsolicitedOfferRules.FirstForeignClub,
-            ContractRandom) / 3;
+            Random) / 3;
         return new UnsolicitedOffer(manager, player, buyer, amount);
     }
 

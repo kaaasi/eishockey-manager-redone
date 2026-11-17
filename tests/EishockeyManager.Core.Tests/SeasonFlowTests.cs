@@ -106,7 +106,9 @@ public class SeasonFlowTests
     [Fact]
     public void ThreeSeasons_WithPromotionAndRelegation()
     {
-        var game = Create(clubIndex: 30, duration: GameDuration.DreiSaisons, seed: 11);
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 1 statt 11 – Verträge und Angebote des Tageslaufs 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896) und Starttendenz (Datei 0x42E6B) ziehen aus dem gemeinsamen Strom;
+        // bei Saat 11 steigt in drei Saisons niemand in die Bundesliga auf (Schlussprobe „Bewegung zwischen allen Ligen“), Saaten 1–5 erfüllen sie.
+        var game = Create(clubIndex: 30, duration: GameDuration.DreiSaisons, seed: 1);
         var leaguesOfManager = new List<League?>();
 
         for (var season = 0; season < 3; season++)

@@ -23,7 +23,8 @@ public class LigapaarungenSeitenTests
         }
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2 });
-        return NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 3);
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 2 statt 3 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; bei Saat 3 (und 1) läuft der Schritt nach der Hauptrunde bis hinter das erste Spiel der Aufstiegsrunde, 2 und 4–8 nicht. Die Probe hängt an der Saat.
+        return NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 2);
     }
 
     private static InputState Click(int x, int y) => new() { MouseX = x, MouseY = y, LeftClick = true };

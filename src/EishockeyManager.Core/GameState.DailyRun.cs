@@ -81,15 +81,21 @@ public sealed partial class GameState
     /// <summary>
     /// Markt-Teil von 0x07169: für Manager 0 der Markt-Verfall (Datei 0x071BB, <see cref="MarketDecayAbove"/>), dann Heilung der
     /// eigenen Markt-Plätze (Datei 0x072CB), Gebotsverfall und Angebotswurf (<see cref="TransferMarket.CatchUpManagerDay"/>: Verfall
-    /// nur Manager 0, Wurf nur auf seine Plätze). [APPROX] Das Lösen der Sperre (0x071CC) liegt im Remake bei den Verträgen
-    /// (<see cref="AnnounceContractEnds"/>, eigene Zufallsquelle). Untergrenze 50 des Verfalls wie in der WM-Schleife (R14NT4N-03).
+    /// nur Manager 0, Wurf nur auf seine Plätze). [ORIGINAL] Spur zufallsstrom (A521, N3 = B): Das Lösen der Sperre nach
+    /// abgelehntem Gebot steht hier, im Lauf von Manager 0 direkt nach dem Verfall je Markt-Platz, und zieht random(0, 2) nur für
+    /// gesperrte Plätze aus dem gemeinsamen Strom <see cref="Random"/> (Datei 0x071CC–0x07202, Aufruf 0x071EC). [APPROX] Das
+    /// Original rechnet Verfall, Sperre und Gebotsverfall je Markt-Platz in einer Schleife (Datei 0x0719F–0x0727C, ein weiterer
+    /// Wurf im Gebotsverfall Datei 0x07215 ff.); das Remake rechnet erst Verfall und Sperren aller Plätze, dann die Gebote
+    /// (<see cref="TransferMarket.CatchUpManagerDay"/>). Untergrenze 50 des Verfalls wie in der WM-Schleife (R14NT4N-03).
     /// </summary>
-    private void DailyRunMarket(int day, Manager manager)
+    internal void DailyRunMarket(int day, Manager manager)
     {
         if (Managers.Count > 0 && Managers[0] == manager)
             foreach (var listing in TransferMarket.Listings)
                 if (listing.Player.Strain > MarketDecayAbove)
                     listing.Player.Strain = Math.Max(listing.Player.Strain - MarketDecay, TrainingRules.MinStrain);
+        if (Managers.Count > 0 && Managers[0] == manager)
+            TransferMarket.ReleaseBidLocks(Random);
         // #688 (R688-07): [ORIGINAL] Heilung je Markt-Platz mit Pool +0x1A = Manager vor dessen Angebotswurf (Datei 0x072A0–0x072CB).
         if (!manager.Dismissed && PlayerInjuries.IsHealingDay(Counter(day)))
             foreach (var listing in TransferMarket.OwnListingsOutsideSquad(Clubs[manager.ClubIndex]))
@@ -100,18 +106,27 @@ public sealed partial class GameState
     /// <summary>
     /// Kaderteil von 0x07169 (Datei 0x07AF2–0x07C07) für einen Manager im Verein: Heilung je Kaderplatz (0x07C12 an Tagen mit Zähler
     /// ≡ 0 mod 7, danach die Neuaufstellung, Datei 0x07C77), Training mit Kosten (<see cref="TrainManager"/>), Tendenz
-    /// (<see cref="AdvanceTrend"/>), am Ende die Aufstellungsautomatik (Datei 0x07C07). [APPROX] Heilung, Training und Tendenz je Platz
-    /// nacheinander statt verschränkt: Sie wirken nur auf den eigenen Platz, das Training zieht aus der Hauptquelle, die Tendenz aus
-    /// <see cref="TrendRandom"/>.
+    /// (<see cref="AdvanceTrend"/>), am Ende die Aufstellungsautomatik (Datei 0x07C07). [ORIGINAL] Spur zufallsstrom (A524, N3 = B):
+    /// je Kaderplatz verschränkt Heilung (Datei 0x07B4E), Training (Datei 0x07B5E → 0x0659C) und Tendenz (Datei 0x07B64–0x07BFC,
+    /// Wurf 0x07B77), Training und Tendenz aus dem gemeinsamen Strom <see cref="Random"/>; Kosten des Trainings einmal je Lauf wie
+    /// <see cref="TrainManager"/>. Die Neuaufstellung nach einer Heilung folgt wie bisher nach der Schleife.
     /// </summary>
-    private void ManagerSquadRun(int day, Manager manager)
+    internal void ManagerSquadRun(int day, Manager manager)
     {
         var club = Clubs[manager.ClubIndex];
-        if (PlayerInjuries.IsHealingDay(Counter(day)))
-            HealSquad(club);
-        TrainManager(manager);
+        var healing = PlayerInjuries.IsHealingDay(Counter(day));
+        var plan = PrepareTraining(manager);
+        Book(manager, FinanceCategory.Training, -plan.CostPerTrainingDay);
+        var healed = false;
         foreach (var p in club.Players)
-            AdvanceTrend(p, TrendRandom);
+        {
+            if (healing)
+                healed |= PlayerInjuries.Heal(p);
+            TrainingRules.Apply(p, plan, manager.Level, Random);
+            AdvanceTrend(p, Random);
+        }
+        if (healed)
+            PlayerInjuries.RefillLineup(club);
         club.ApplyAutoLineup();
     }
 
@@ -165,8 +180,9 @@ public sealed partial class GameState
     /// random(0, 3) ≠ 0 (0x07B77) wird t um (+0x14 &gt;&gt; 4) &amp; 7 erhöht (Bit 7 gesetzt) bzw. erniedrigt; das untere Halbbyte von
     /// +0x14 zählt um eins herunter (Bytearithmetik, Datei 0x07BB1–0x07BC8). Erreicht es 0, zieht 0x4907A Wert und Steuerbyte neu
     /// (Datei 0x07BD4, <see cref="Player.RollTrend"/>); sonst wird t auf 30 … 68 begrenzt (0x4BD35, Datei 0x07BEA) und geschrieben.
-    /// [APPROX] Zufall aus <see cref="TrendRandom"/> wie beim Ziehen (Spur kader-transfer Teil 4); Plätze ohne bekannten Wert oder ohne
-    /// Steuerbyte (0: Startkader, ältere Spielstände) behalten ihre Stufe – im Original hat jeder Kaderplatz beide Werte (0x4907A).
+    /// Zufall im Tageslauf aus dem gemeinsamen Strom (Spur zufallsstrom A524, <see cref="ManagerSquadRun"/>). [APPROX] Plätze ohne
+    /// bekannten Wert oder ohne Steuerbyte (0: ältere Spielstände) behalten ihre Stufe und ziehen nicht – im Original hat jeder
+    /// Kaderplatz beide Werte (0x4907A).
     /// </summary>
     public static void AdvanceTrend(Player p, Random random)
     {

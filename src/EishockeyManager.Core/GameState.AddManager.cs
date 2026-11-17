@@ -67,12 +67,12 @@ public sealed partial class GameState
     /// Der neue Manager ist am selben Tag noch am Zug (Hot-Seat: nicht bereit); der Manager am Zug bleibt ([ORIGINAL] Datei
     /// 0x4575B–0x45761). Alle Prüfungen laufen vor der ersten Änderung; <c>Setup.Managers</c> und <see cref="Managers"/>
     /// bleiben gleich lang (Review P1-1).
-    /// <para>Zufall: Vereinswahl, Kader und Startwerte ziehen aus einer eigenen Quelle (<see cref="HiddenSkills.SourceFor"/>),
-    /// die Hauptquelle <see cref="Random"/> bleibt unberührt. [APPROX] Die Werbeangebote des Neuen (<see cref="RenewOffers"/>)
-    /// ziehen aus <see cref="FinanceRandom"/>, die Tendenzen seiner Spieler aus <see cref="TrendRandom"/> wie beim Spielstart;
-    /// beide Quellen teilt er mit den vorhandenen Managern, deren Zuschauer, Werbung und Tendenzen danach einer anderen Folge
-    /// folgen. Im Original zieht alles aus einem Generator, dort verschiebt das Hinzufügen ebenso alle späteren Würfe
-    /// (Review P3-1); die Folge selbst ist nicht nachgebildet.</para>
+    /// <para>Zufall (Spur zufallsstrom, A464, N3 = B): Vereinswahl, Kader, Platztausch und Startwerte ziehen aus dem gemeinsamen
+    /// Strom <see cref="Random"/>, in der Reihenfolge der Spielvorbereitung im Hinzufügen-Modus ([ORIGINAL] Datei 0x2993A–0x29EF7:
+    /// je Kaderplatz Poolindex, 0x42CB1 mit Energie und Tendenz, +0x19, Alter; dann Platztausch; dann je Platz Kondition, Technik,
+    /// dritter Wurf, Form). Wie im Original verschiebt das Hinzufügen damit alle späteren Würfe. Teil 4 (A464 Rest): Die
+    /// Werbeangebote des Neuen (<see cref="RenewOffers"/>; [ORIGINAL] Bewertung 0x3F833 Datei 0x2A03B, Angebote 0x3FB47 Datei
+    /// 0x2A061, nach Preis und Gehalt und vor den Teamwerten Datei 0x2A073) ziehen aus demselben Strom.</para>
     /// </summary>
     /// <exception cref="InvalidOperationException">Kein Platz für einen weiteren Manager oder Modus „nur Weltkugel“.</exception>
     /// <exception cref="ArgumentException">Name leer, Verein nicht wählbar oder schon vergeben.</exception>
@@ -126,7 +126,7 @@ public sealed partial class GameState
         var first = Setup.Managers.Count > 0 ? Setup.Managers[0] : null;
         setup.Level = first?.Level ?? setup.Level;
         setup.StartStrength = first?.StartStrength ?? setup.StartStrength;
-        var random = HiddenSkills.SourceFor(this, AddManagerSalt + Managers.Count);
+        var random = Random; // Spur zufallsstrom (A464): gemeinsamer Strom, siehe AddManager
         var randomPick = setup.ClubIndex is null;
         var clubIndex = setup.ClubIndex ?? NewGame.PickRandomClub(Clubs, Setup.StartLeague, setup.StartStrength,
             Managers.Select(m => m.ClubIndex).Concat(reserved).ToHashSet(), random);
@@ -191,9 +191,6 @@ public sealed partial class GameState
         };
     }
 
-    /// <summary>Salz der eigenen Zufallsquelle (Datei 0x2993A, Kaderwahl im Hinzufügen-Modus).</summary>
-    private const int AddManagerSalt = 0x2993A;
-
     /// <summary>
     /// Startkader eines hinzukommenden Managers.
     /// [ORIGINAL] Datei 0x2993A–0x29A5E: je Art (Torhüter, Verteidiger, Stürmer) so viele Plätze wie die Kadertabelle DGROUP 0x169
@@ -204,12 +201,12 @@ public sealed partial class GameState
     /// +0x19 = random(3, 12) · 16 + random(3, 12) (Datei 0x299B7–0x299F4), Verein +0x1D = Managerverein (Datei 0x29A17),
     /// Alter random(19, 31) (Datei 0x29A1B–0x29A3A).
     /// [ORIGINAL] Startwerte Datei 0x29DA4–0x29EF7 mit Basis DGROUP 0x4B42 [Start-Liga · 3 + Start-Stärke]
-    /// (<see cref="SquadSetup.StartBase"/>): je Platz Technik, Kondition = random(Basis − 2, Basis + 2), ein dritter Wurf derselben
+    /// (<see cref="SquadSetup.StartBase"/>): je Platz Kondition, Technik = random(Basis − 2, Basis + 2), ein dritter Wurf derselben
     /// Spanne (verworfen, Datei 0x29DF2 zieht vor der Unterscheidung), Form random(40, 60); dann +0x2C = Wert(Preis),
     /// +0x28 = Wert(Gehalt) (Datei 0x29EB4–0x29EF3). Talent (+0x12) und Name bleiben die des Poolspielers.
     /// [APPROX] Nach 1000 Fehlversuchen nimmt das Remake den ersten freien Platz der Art (das Original nähme den letzten
     /// gezogenen, auch einen vergebenen); ist keiner frei, bleibt der Platz leer. Die Spieler des bisherigen Computerkaders
-    /// verlassen das Spiel (im Original hat ein Computerverein keine Spieler). Eigene Zufallsquelle statt des gemeinsamen Zufalls.
+    /// verlassen das Spiel (im Original hat ein Computerverein keine Spieler).
     /// </summary>
     private void SeatAddedSquad(Club club, ManagerSetup setup, Random random)
     {
@@ -229,6 +226,7 @@ public sealed partial class GameState
                     continue;
                 var p = slot.Player;
                 p.Strain = TransferRules.Random16(random, PlayerFactory.StartStrainMin, PlayerFactory.StartStrainMax);
+                p.RollTrend(random); // [ORIGINAL] 0x42CB1 ruft nach der Energie 0x4907A (Datei 0x42E6B), vor +0x19 und Alter
                 p.ContractYears = 1;
                 slot.Owner = PoolOwner.Taken;
                 slot.Manager = -1; // Besitzer ergibt sich aus dem Kader (wie beim Spielstart, SeatManagerSquads)
@@ -250,17 +248,9 @@ public sealed partial class GameState
     /// </summary>
     private void RollAddedStartValues(Manager manager, Club club, ManagerSetup setup, Random random)
     {
-        var start = SquadSetup.StartBase(Setup.StartLeague, setup.StartStrength);
-        foreach (var p in club.Players)
-        {
-            p.Technique = Player.Clamp(TransferRules.Random16(random, start - 2, start + 2));
-            p.Condition = Player.Clamp(TransferRules.Random16(random, start - 2, start + 2));
-            _ = TransferRules.Random16(random, start - 2, start + 2);
-            p.Form = TransferRules.Random16(random, 40, 60);
-            p.RollTrend(TrendRandom);
-            p.PurchasePrice = Contracts.ValuePrice(this, manager, p);
-            p.MonthlySalary = Contracts.ValueSalary(this, manager, p);
-        }
+        // Spur zufallsstrom, Teil 3: dieselbe Schleife wie beim Spielstart (Datei 0x29DA4–0x29EF7); der erste Wurf ist die
+        // Kondition (+0x10), der zweite die Technik (+0x11) – vorher vertauscht.
+        RollStartValues(manager, SquadSetup.StartBase(Setup.StartLeague, setup.StartStrength), random);
         club.RenumberPlayers();
         club.Lineup.AutoFill(club.Players);
     }

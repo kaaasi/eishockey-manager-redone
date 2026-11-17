@@ -56,7 +56,9 @@ public class StadiumAusbauTests
         // an der Saat.
         // Runde 21, Spur start-lader (R21-D2 = A): Saat 1 statt 2 – mit dem Lader beim Spielstart (Datei 0x439BB) ist bei Saat 2 der
         // Speicher wieder voll (zwei Meldungen); Saaten 1–12: 9 von 12 mit drei Meldungen. Die Probe hängt an der Saat.
-        var game = TestGames.Create(1);
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 2 statt 1 – Verträge und Angebote des Tageslaufs 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896) und Starttendenz (Datei 0x42E6B) ziehen aus dem gemeinsamen Strom;
+        // bei Saat 1 ist der Speicher wieder voll (zwei Meldungen), Saaten 2–6 mit drei Meldungen. Die Probe hängt an der Saat.
+        var game = TestGames.Create(2);
         var me = game.ActiveManager;
         me.Money = Rich;
         var stadium = game.Finance(me).Stadium;
@@ -222,10 +224,10 @@ public class StadiumAusbauTests
         var me = game.ActiveManager;
         var stadium = game.Finance(me).Stadium;
         me.Money = 519_999;
-        var rng = game.FinanceRandom.Capture();
+        var rng = game.Random.Capture(); // Spur zufallsstrom Teil 4: gemeinsamer Strom
         Assert.Null(game.QuoteConstruction(me, StadiumProject.Feature, StadiumFeature.Kino, 1));
         Assert.False(stadium.IsOffended(StadiumProject.Feature, StadiumFeature.Kino));
-        Assert.Equal(rng, game.FinanceRandom.Capture());
+        Assert.Equal(rng, game.Random.Capture());
         me.Money = 520_000;
         Assert.NotNull(game.QuoteConstruction(me, StadiumProject.Feature, StadiumFeature.Kino, 1));
     }

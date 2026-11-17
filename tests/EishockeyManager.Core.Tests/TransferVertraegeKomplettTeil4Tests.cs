@@ -51,14 +51,14 @@ public class TransferVertraegeKomplettTeil4Tests
         var manager = game.Managers[0];
         var p = game.Clubs[manager.ClubIndex].Players.First(x => Contracts.Availability(game, x) is null);
         (p.ContractYears, p.MonthlySalary, p.NegotiationLock) = (2, 4_000, 0);
-        var state = game.ContractRandom.Capture();
+        var state = game.Random.Capture();
         var money = manager.Money;
 
         Assert.Equal(NegotiationResult.Unfair, Contracts.Negotiate(game, manager, p, years, salary, p.Insured, demandFilled: false));
 
         Assert.Equal((2, 4_000, 0), (p.ContractYears, p.MonthlySalary, p.NegotiationLock));
         Assert.Equal(money, manager.Money);
-        Assert.Equal(GameRandom.FromState(state).Next(), game.ContractRandom.Next()); // kein Zug verbraucht
+        Assert.Equal(GameRandom.FromState(state).Next(), game.Random.Next()); // kein Zug verbraucht
         Assert.Equal(["Dieser Betrag ist", "nicht erlaubt (unfair) !"], Contracts.Message(NegotiationResult.Unfair, p));
     }
 

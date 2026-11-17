@@ -456,7 +456,9 @@ public static class Contracts
     /// und ohne spätere Gehaltseingabe) → angenommen; ebenso ohne Eingaben bzw. bei gleicher Laufzeit und mindestens gleichem
     /// Gehalt; kürzere Laufzeit → <see cref="NegotiationResult.TooShort"/>; sonst entscheidet 0x49A3B
     /// (<see cref="ContractRules.Accepts"/>), abgelehnt → <see cref="NegotiationResult.NotInterested"/>. Scheitert die
-    /// Verhandlung, ist der Spieler random(10, 18) Tage gesperrt (0x4AD3E). Zufall aus <see cref="GameState.ContractRandom"/>.
+    /// Verhandlung, ist der Spieler random(10, 18) Tage gesperrt (0x4AD3E). [ORIGINAL] Spur zufallsstrom, Teil 4 (N3 = B): Würfe der
+    /// Annahme (Datei 0x49A3B–0x49D35) und der Sperre (Datei 0x4AD3E) aus dem gemeinsamen Strom <see cref="GameState.Random"/>
+    /// (vorher ContractRandom).
     /// </summary>
     /// <param name="years">eingegebene Laufzeit, 0 = nicht eingegeben.</param>
     /// <param name="salary">Gehalt im Feld in DM, 0 = nicht eingegeben.</param>
@@ -481,7 +483,7 @@ public static class Contracts
             p.MonthlySalary = newSalary;
         }
         else
-            p.NegotiationLock = ContractRules.LockDays(game.ContractRandom);
+            p.NegotiationLock = ContractRules.LockDays(game.Random);
         return result;
     }
 
@@ -533,7 +535,7 @@ public static class Contracts
         var club = game.Clubs[manager.ClubIndex];
         var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
         return ContractRules.Accepts(current, currentSalary * 3, y, s * 3, value, game.ContractSeasonRemaining,
-            game.AfterSeasonEnd, p.Age, game.ContractRandom)
+            game.AfterSeasonEnd, p.Age, game.Random)
             ? NegotiationResult.Accepted
             : NegotiationResult.NotInterested;
     }

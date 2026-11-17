@@ -55,29 +55,29 @@ public static class SquadSetup
     public static int StartBase(League league, StartStrength strength) => StartBaseTable[(int)league, (int)strength];
 
     /// <summary>
-    /// Erzeugt die Kader aller Vereine. Nutzt einen eigenen Zufallsgenerator, damit der Spielablauf unverändert bleibt.
-    /// <paramref name="forImport"/>: Der Import ersetzt die Managerkader danach aus dem Spielstand; ergänzte Plätze ziehen dann
-    /// keine Spieler aus Computervereinen (Platzhalter, wie vor #736).
+    /// Kader aller Vereine für den Import eines Originalspielstands (<paramref name="forImport"/>; der Import ersetzt Pool und
+    /// Managerkader danach aus dem Spielstand) und für Aufbauten ohne <see cref="NewGame.Create"/>. [APPROX] Werte und Markt
+    /// kommen hier aus einer eigenen Quelle aus der Saat; der Spielstart selbst zieht in der Reihenfolge des Originals aus dem
+    /// gemeinsamen Strom (<see cref="BuildStartPool"/>, <see cref="FinishStartSquads"/>; Spur zufallsstrom, Teil 3).
+    /// Ergänzte Plätze ziehen beim Import keine Spieler aus Computervereinen (Platzhalter, wie vor #736).
     /// </summary>
     public static void Initialize(GameState game, int seed, bool forImport = false)
     {
-        var random = new Random(unchecked(seed * 7919 + 17));
+        var random = ComputerSquadSource(seed);
         // Spur transfer-vertraege-komplett, Teil 5: Spielerpool vor den Kadern; seine Datenbankspieler fehlen dann den
-        // Computervereinen (jeder Name nur einmal, Entscheidung Nutzer 01.11.2026). Eigene Zufallsquelle.
-        game.TransferMarket.ReservePool(game, seed, managerSlots: !forImport); // Spur pool (#743): Import ohne Managerplätze
+        // Computervereinen (jeder Name nur einmal, Entscheidung Nutzer 01.11.2026). Spur zufallsstrom (A212): gemeinsamer Strom.
+        game.TransferMarket.ReservePool(game, managerSlots: !forImport); // Spur pool (#743): Import ohne Managerplätze
         var startLeague = StartLeagues(game);
         var startBase = startLeague.ToDictionary(e => e.Key, e => StartBase(e.Value.League, e.Value.Strength));
-        // #736: Ergänzte Plätze bekommen Datenbanknamen anderer Vereine (eigene Zufallsquelle, damit die Folge der Werte bleibt).
-        var names = new NameDraw(game, startLeague.Keys.ToHashSet(), new Random(unchecked(seed * 7919 + 31)), forImport);
+        var names = new NameDraw(game);
         foreach (var club in game.Clubs.Where(c => startLeague.ContainsKey(c.Index)))
-            BuildManagedSquad(club, ManagedSquadSize(startLeague[club.Index].League), names);
+            BuildManagedSquad(club, ManagedSquadSize(startLeague[club.Index].League), names.Placeholder, null);
 
         foreach (var club in game.Clubs)
         {
             if (club.Players.Count == 0 && club.League is null && !startLeague.ContainsKey(club.Index))
                 continue; // Europapokalgegner und leere Einträge spielen ohne Kader
 
-            names.MarkBuilt(club);
             if (!startLeague.ContainsKey(club.Index))
                 BuildComputerSquad(club, names);
 
@@ -91,6 +91,50 @@ public static class SquadSetup
     }
 
     /// <summary>
+    /// [APPROX] Eigene Zufallsquelle der Computerkader (aus der Saat abgeleitet): Im Original hat ein Computerverein keine
+    /// Spieler, ihre Werte haben kein Gegenstück im gemeinsamen Strom und würden dessen Folge gegenüber dem Original verschieben.
+    /// </summary>
+    private static Random ComputerSquadSource(int seed) => new(unchecked(seed * 7919 + 17));
+
+    /// <summary>
+    /// Spielstart, Schritt „Pool“ (Spur zufallsstrom, Teil 3): Poolaufbau mit den Kaderplätzen der Manager aus dem gemeinsamen
+    /// Strom (<see cref="TransferMarket.ReserveStartPool"/>; [ORIGINAL] Datei 0x29896 → 0x5AF50, Kaderplätze Datei 0x5B0BB–0x5B2BE).
+    /// </summary>
+    /// <returns>Namen, die der Poolaufbau außerhalb des Pools vergeben hat (für <see cref="TransferMarket.RenameStartNationals"/>).</returns>
+    internal static HashSet<string> BuildStartPool(GameState game) => game.TransferMarket.ReserveStartPool(game);
+
+    /// <summary>
+    /// Spielstart nach der Spielvorbereitung: Kader der Computervereine, Rückennummern, Aufstellung und Bezugsstärke aller
+    /// Vereine, Startkader in ihre Poolplätze. Verbraucht den gemeinsamen Strom nicht. [APPROX] Die Werte der Computerkader
+    /// kommen aus <see cref="ComputerSquadSource"/> (ohne Gegenstück im Original); Stärke und Liga gelten nach dem Platztausch.
+    /// </summary>
+    internal static void FinishStartSquads(GameState game, int seed)
+    {
+        var random = ComputerSquadSource(seed);
+        var managed = StartLeagues(game);
+        var names = new NameDraw(game);
+        foreach (var club in game.Clubs)
+        {
+            var own = managed.TryGetValue(club.Index, out var start);
+            if (club.Players.Count == 0 && club.League is null && !own)
+                continue; // Europapokalgegner und leere Einträge spielen ohne Kader
+
+            if (!own)
+                BuildComputerSquad(club, names);
+            else if (game.WorldOnly) // „nur Weltkugel“: kein Poolplatz der Manager (BuildPool), Kader wie bisher aus der eigenen Quelle
+                BuildManagedSquad(club, ManagedSquadSize(start.League), names.Placeholder, null);
+            club.RenumberPlayers(); // A091: Nr. = Kaderplatz + 1
+            if (!own)
+                RollValues(club, null, random);
+            else if (game.WorldOnly)
+                RollValues(club, StartBase(start.League, start.Strength), random);
+            club.Lineup.AutoFill(club.Players);
+            club.ReferenceRating = TeamStrength.Rating(club.Lineup);
+        }
+        game.TransferMarket.SeatStartSquads(game);
+    }
+
+    /// <summary>
     /// Kader eines Manager-Vereins. [ORIGINAL] Datei 0x5B0CC–0x5B2BE: je Art (Torhüter, Verteidiger, Stürmer) so viele Plätze wie
     /// <see cref="ManagedSquadSize"/>, Name vom Datenbankplatz des Vereins (0x5AA34), der Datenbankplatz läuft über alle Arten weiter
     /// (bei 2/8/10 werden die Datenbank-Verteidiger auf Platz 11 und 12, im Video LANGHOFF und RIEMER, zu Stürmern); ein leerer
@@ -98,7 +142,9 @@ public static class SquadSetup
     /// Platz 12 UVIRA, Platz 25 LALA). [APPROX] Die Datenbank liefert nur die belegten Plätze; ihr Platz ist Anfang der Art +
     /// laufende Nummer (wie <c>TransferMarket.CaptureDatabaseNames</c>), leere Plätze stehen also am Ende der Art.
     /// </summary>
-    private static void BuildManagedSquad(Club club, (int G, int D, int F) size, NameDraw names)
+    /// <param name="name">Name für einen leeren Datenbankplatz der Art.</param>
+    /// <param name="seated">Je angelegtem Kaderplatz in Platzfolge (Würfe des Kaderplatzes beim Spielstart).</param>
+    internal static void BuildManagedSquad(Club club, (int G, int D, int F) size, Func<PlayerRole, Player> name, Action<Player>? seated)
     {
         var database = new Dictionary<int, Player>();
         foreach (var role in Enum.GetValues<PlayerRole>())
@@ -119,9 +165,11 @@ public static class SquadSetup
         {
             for (var i = 0; i < count; i++, slot++)
             {
-                club.Players.Add(database.TryGetValue(slot, out var p)
+                var player = database.TryGetValue(slot, out var p)
                     ? new Player { Name = p.Name, Role = role, IsForeigner = p.IsForeigner }
-                    : names.Take(role));
+                    : name(role);
+                club.Players.Add(player);
+                seated?.Invoke(player);
             }
         }
     }
@@ -157,49 +205,13 @@ public static class SquadSetup
         club.Players.AddRange(sorted);
     }
 
-    /// <summary>Mindestzahl je Art im Kader eines Computervereins (<see cref="BuildComputerSquad"/>).</summary>
-    private static int ComputerMinimum(PlayerRole role) => role switch
-    {
-        PlayerRole.Goalkeeper => 2,
-        PlayerRole.Defender => 8,
-        _ => 10,
-    };
-
     /// <summary>
-    /// Namen für ergänzte Kaderplätze. [ORIGINAL] Datei 0x5AAA0 (66C3:0280): Name eines Datenbankplatzes der Art aus Verein
-    /// random(0, 11), Managerverein verworfen, nach einem doppelten Namen einmal random(0, 35); jeder Name nur einmal im Pool (FILE01:
-    /// 199 verschiedene Poolnamen). [APPROX] Im Original haben Computervereine keine Spieler; hier steht der Datenbankspieler im Kader
-    /// seines Computervereins und wechselt von dort (jeder Name nur einmal im Spiel, Entscheidung Nutzer 01.11.2026). Gezogen wird
-    /// gleichverteilt unter den Spielern dieser Art der Vereine 0–11 (sonst 0–35) ohne Manager, deren Verein danach noch die
-    /// Mindestzahl (<see cref="ComputerMinimum"/>) hat; Vereine, die schon aufgebaut sind (auch der anfragende), sind
-    /// ausgenommen. Gibt es keinen (Testdatenbank ohne Spieler), heißt der Platz „SPIELER n“ (<see cref="Placeholder"/>).
+    /// Platzhalter „SPIELER n“ für ergänzte Kaderplätze. [APPROX] Im Original haben Computervereine keine Spieler; die Namen
+    /// leerer Datenbankplätze der Managerkader zieht der Poolaufbau (<see cref="TransferMarket.ReserveStartPool"/>, Datei 0x5AAA0).
     /// </summary>
-    private sealed class NameDraw(GameState game, HashSet<int> managed, Random random, bool placeholdersOnly)
+    internal sealed class NameDraw(GameState game)
     {
-        private readonly HashSet<int> _built = [];
         private int _placeholders;
-
-        /// <summary>Verein ist aufgebaut (Werte, Aufstellung): gibt keine Spieler mehr ab.</summary>
-        public void MarkBuilt(Club club) => _built.Add(club.Index);
-
-        public Player Take(PlayerRole role)
-        {
-            if (placeholdersOnly)
-                return Placeholder(role);
-            foreach (var last in new[] { 11, 35 })
-            {
-                var candidates = game.Clubs.Where(c => c.Index <= last && !managed.Contains(c.Index) && !_built.Contains(c.Index)
-                        && c.Players.Count(p => p.Role == role) > ComputerMinimum(role))
-                    .SelectMany(c => c.Players.Where(p => p.Role == role).Select(p => (Club: c, Player: p)))
-                    .ToList();
-                if (candidates.Count == 0)
-                    continue;
-                var (club, player) = candidates[random.Next(candidates.Count)];
-                club.RemovePlayer(player); // auch aus der Aufstellung, die ReservePool schon gefüllt hat
-                return player;
-            }
-            return Placeholder(role);
-        }
 
         /// <summary>Platzhalter „SPIELER n“ mit einer im Spiel noch freien Nummer.</summary>
         public Player Placeholder(PlayerRole role)

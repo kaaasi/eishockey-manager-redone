@@ -251,6 +251,24 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>
+    /// Markt des Spielstarts (Spur zufallsstrom, Teil 3; N3 = B) aus dem gemeinsamen Strom <see cref="GameState.Random"/>, an der
+    /// Stelle des Originals nach Spielvorbereitung und Wanderung: [ORIGINAL] Datei 0x43A83 → 0x057E3
+    /// (<see cref="DistributePoolAtStart"/>), Datei 0x43A9F → 0x494EF (<see cref="ChangeList"/>). Vorher eigene Quelle vor der
+    /// Wanderung. [ORIGINAL] Zwischen beiden liegt die Auslosung des DEB-Pokals 0x341AB(0, 0) (Datei 0x43A8C; Teil 4:
+    /// <see cref="GameState.DrawStartDebCup"/> über <paramref name="afterDistribution"/>).
+    /// </summary>
+    /// <param name="afterDistribution">Schritt zwischen Verteilen und erstem Listenwechsel (Spielstart: DEB-Pokal auslosen).</param>
+    internal void OpenStartMarket(GameState game, Action? afterDistribution = null)
+    {
+        _listings.Clear();
+        _bids.Clear();
+        UpdatedDay = game.PlayedMatchDays;
+        DistributePoolAtStart(game, game.Random);
+        afterDistribution?.Invoke();
+        ChangeList(game, game.Random);
+    }
+
+    /// <summary>
     /// Markttag in einem Zug (<see cref="AdvanceDay"/>) mit <see cref="UpdatedDay"/> = gespielte Ligaspieltage. Nur Tests und
     /// Werkzeuge (R688-09); die Zeitleiste ruft ihn seit #678 nicht mehr: Listenwechsel je Managerzug an Tagen mit Ereignis (<see cref="ListChangeTurn"/>, Datei
     /// 0x54E65–0x54E7C), Angebotswurf und Gebotsverfall nur im Tagesablauf 0x07169 am Takttag (<see cref="CatchUpManagerDay"/>).

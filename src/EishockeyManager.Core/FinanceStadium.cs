@@ -485,14 +485,15 @@ public sealed partial class GameState
     /// jetzigen Stand und Konto ≥ Kosten; sonst null ohne Zufall. Setzt „beleidigt“, bis die Antwort „Ja“ lautet.
     /// [ORIGINAL] Datei 0x3E1FE ff.: w = random(lo, hi) einmal (nicht je Stufe), Merker DGROUP 0xCC09 = 1, Rabatt
     /// r = random(0, 10), danach mit random(0, 2) = 0 dagegen 0 – Reihenfolge der Ziehungen so.
-    /// [APPROX] Zufallsquelle ist <see cref="FinanceRandom"/>; das Original hat einen gemeinsamen Generator.
+    /// Spur zufallsstrom (A510, N3 = B): Angebot (Datei 0x3E1FE ff.) und Restwochen der Antwort „Ja“ (Datei 0x3E389 ff.) ziehen
+    /// aus dem gemeinsamen Strom <see cref="Random"/>. Beides sind Klicks im Bildschirm, kein bloßes Öffnen.
     /// </summary>
     public StadiumQuote? QuoteConstruction(Manager manager, StadiumProject project, StadiumFeature feature, int target)
     {
         var stadium = Finance(manager).Stadium;
         if (!stadium.CanSelect(project, feature) || stadium.Cost(project, feature, target) is not { } cost || manager.Money < cost)
             return null;
-        var (weeks, discount) = Stadium.DrawOffer(FinanceRandom, project, feature);
+        var (weeks, discount) = Stadium.DrawOffer(Random, project, feature);
         stadium.SetOffended(Stadium.ProjectIndex(project, feature), true);
         return new StadiumQuote(project, feature, target, cost, weeks, discount);
     }
@@ -516,7 +517,7 @@ public sealed partial class GameState
             return false;
         stadium.SetOffended(project, false);
         Book(manager, FinanceCategory.Bau, -quote.DiscountedCost);
-        stadium.Begin(quote.Project, quote.Feature, quote.Target, Stadium.DrawWeeksLeft(FinanceRandom, quote.Weeks));
+        stadium.Begin(quote.Project, quote.Feature, quote.Target, Stadium.DrawWeeksLeft(Random, quote.Weeks));
         return true;
     }
 
@@ -540,7 +541,7 @@ public sealed partial class GameState
                 Stadium.StandingProject => (StadiumProject.Stehplaetze, default),
                 _ => (StadiumProject.Feature, (StadiumFeature)p),
             };
-            if (stadium.IsOffended(project, feature) && SquadSetup.Between(FinanceRandom, 0, 10) == 0)
+            if (stadium.IsOffended(project, feature) && SquadSetup.Between(Random, 0, 10) == 0)
                 stadium.SetOffended(p, false);
         }
     }

@@ -197,7 +197,7 @@ public sealed partial class GameState
     /// <param name="nextMatchDay">DGROUP 0x7A9: Nummer des anstehenden Bundesliga-Spieltags (1 am ersten).</param>
     public void YouthMatchDay(Manager manager, int nextMatchDay)
     {
-        var random = FinanceRandom;
+        var random = Random;
         int R(int lo, int hi) => TransferRules.Random16(random, lo, hi);
 
         var steps = new int[YouthStepSlots + 1];

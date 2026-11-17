@@ -134,7 +134,7 @@ public static class SponsorRating
         var club = game.Clubs[manager.ClubIndex];
         var finance = game.Finance(manager);
         var tier = (int)finance.CostLeague;
-        var random = randomSource ?? game.FinanceRandom;
+        var random = randomSource ?? game.Random;
 
         var p = game.CurrentParticipation(club.Index);
         var s = CompetitionScore(tier, p.Championship, p.Cup, p.CupRound, p.Europe, p.EuropeRound);

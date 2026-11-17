@@ -49,7 +49,7 @@ Stubeinträge Ov 0x118 (Stub-Segment 0x14C7, Datei 0x16A70): 0x2A → 0x465F1 Tr
 | Wechsel der Liste | 0x494EF (Stub 0x5C) | gerufen beim Saisonstart (0x43A9F) und täglich mit random(0, Managerzahl + 2) = 0 (0x54E71); Ablauf und Umsetzung in Teil 5 (unten) |
 
 Abbildung im Remake: Tageszähler &gt; 232 = Phase `SeasonOver`; [0xE1A4] je Saison und Tag aus eigenem Startwert
-(`GameState.ContractTurnFactor`, `[APPROX]`); Zufall der Verhandlung aus `ContractRandom`; Kaderplatz 3 = vierter Spieler
+(`GameState.ContractTurnFactor`, `[APPROX]`); Zufall der Verhandlung aus dem gemeinsamen Strom `GameState.Random` (Runde 21, Spur `zufallsstrom` Teil 4; vorher `ContractRandom`); Kaderplatz 3 = vierter Spieler
 in `Club.Players` (`[APPROX]`).
 
 ## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 1: Kauf und Saisonende)
@@ -171,7 +171,7 @@ Damit ist die offene Frage zum Verhandlungsfenster geklärt: Der hellere „Mach
 kein anderes Argument. Das Remake zeichnet Knöpfe der Verhandlungs- und Angebotsfenster unter gedrückter Maustaste ebenso.
 
 `[APPROX]`: Zufall des Tageswurfs aus einer je Saison und Tag abgeleiteten Quelle (wie `ContractTurnFactor`), Höhe beim Anklicken aus
-`ContractRandom`; „offene Meldung“ = noch nicht angeklicktes Angebot; Rücktritt = Ankündigung `Retiring`. Das Original übergibt
+dem gemeinsamen Strom (Runde 21, Spur `zufallsstrom`: Tageswurf Teil 1, Höhe Teil 4); „offene Meldung“ = noch nicht angeklicktes Angebot; Rücktritt = Ankündigung `Retiring`. Das Original übergibt
 dem Bieter die **Nummer des Kaderplatzes** statt der Poolnummer (0x07A81), misst also die Grundstärken eines fremden
 Pooleintrags; das Remake nimmt die Stärke des Spielers. Vereinsstärke aus Stärke und Teamwerten des Laders (`ClubTeamValues`).
 Ein voller Computerkader, ein Nationalteam oder ein Europapokal-Gegner gibt den Spieler in den Pool der Vertragslosen. Das
@@ -306,8 +306,9 @@ am Zug (Datei 0x7B29–0x7C04, nach der Heilung 0x7C12): t = +0x0E; mit random(0
 (Bit 7 gesetzt) bzw. erniedrigt; dann zählt +0x14 & 0xF um eins herunter. Erreicht der Zähler 0, ruft 0x7BD4 erneut 0x4907A
 (neuer Wert und neues Steuerbyte, t verfällt); sonst wird t auf 30 … 68 begrenzt (0x7BEA) und nach +0x0E geschrieben.
 
-`[APPROX]`: Tendenz aus eigener Zufallsquelle `GameState.TrendRandom` (das Original nutzt seinen einzigen Generator; so behalten
-Markt, Spiele und Mehrsaisonproben ihre Folgen); ein Kauf übernimmt Tendenz und Steuerbyte vom Markt-Platz (das Original legt
+Seit Runde 21 (Spur `zufallsstrom`, N3 = B) zieht die Tendenz überall aus dem gemeinsamen Strom `GameState.Random` an der Stelle
+des Originals (Spielstart, neuer Manager, Markt, Talent, Tageslauf je Kaderplatz nach dem Training); die eigene Quelle
+`GameState.TrendRandom` ist entfallen (Spielstand Schema 53). `[APPROX]`: ein Kauf übernimmt Tendenz und Steuerbyte vom Markt-Platz (das Original legt
 beim Kauf 0x477E7 einen neuen Kaderplatz an, würfelt also neu, und kopiert den Markt-Platz darüber nur bei [bp−0x11] ≠ 0 oder
 einer Leihe, Datei 0x478CF–0x47907; Bedeutung von [bp−0x11] nicht geprüft), Startkader und ältere Spielstände ohne Wert (0 → Mitte der Stufe);
 die Änderung je Takt (A134, seit #688) überspringt Plätze ohne Wert oder Steuerbyte (0). Die Frage an den Verkäufer zeigt das Fragefenster des Transferbildschirms mit dem Namen des

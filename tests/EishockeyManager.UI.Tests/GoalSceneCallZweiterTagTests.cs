@@ -16,7 +16,8 @@ public sealed class GoalSceneCallZweiterTagTests
 {
     private static List<GoalSceneRequest> PlayMatchDays(int count)
     {
-        var d = FlowTests.CreateDriver();
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1994 statt 1993 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; bei Saat 1993 gibt es in sechs (und bis zu zehn) Spieltagen keinen Fall „Chance nach Tor in derselben Minute“, 1994–1999 erfüllen alle Proben der Klasse.
+        var d = FlowTests.CreateDriver(1994);
         d.StartNewGame();
         var game = d.Host.Game!;
         game.Options.MatchSpeed = 60;
@@ -78,7 +79,9 @@ public sealed class GoalSceneCallZweiterTagTests
     [GameDataFact]
     public void TwoMatchDays_SpectatorsWithoutThousandsDot_ScoreWithinMinute()
     {
-        var requests = PlayMatchDays(3);
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): sechs statt drei Spieltage – Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und der Tageslauf 0x07169 (Datei 0x07402–0x07AEF) ziehen aus dem gemeinsamen Strom, anderer Zufallsverlauf;
+        // der erste Fall „Chance nach Tor in derselben Minute“ fällt jetzt am sechsten Spieltag (3–5: keiner).
+        var requests = PlayMatchDays(6);
 
         var spectators = requests.Select(r => r.Header.SpectatorText).Where(t => t.EndsWith(GoalSceneCall.SpectatorSuffix)).ToList();
         Assert.Contains(spectators, t => int.TryParse(t[..^GoalSceneCall.SpectatorSuffix.Length], out var n) && n >= 1000);
@@ -87,7 +90,7 @@ public sealed class GoalSceneCallZweiterTagTests
         var withinMinute = requests.Zip(requests.Skip(1)).Count(p =>
             p.First.Goal && p.First.Header.Minute == p.Second.Header.Minute
             && (p.First.Header.HomeName, p.First.Header.AwayName) == (p.Second.Header.HomeName, p.Second.Header.AwayName));
-        Assert.True(withinMinute > 0, "Kein Fall „Chance nach Tor in derselben Minute“ in drei Spieltagen");
+        Assert.True(withinMinute > 0, "Kein Fall „Chance nach Tor in derselben Minute“ in sechs Spieltagen");
     }
 }
 

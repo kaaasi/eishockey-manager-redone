@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 52) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 54) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -489,11 +489,9 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState.StatisticsRecordedSeason` | A | `03BD` | Saison − 1 (Statistik der laufenden Saison noch offen) |
 | `GameState.TrainedUntil` | A | `03B7`, `03BD` | (Saison, `CurrentDay`) |
 | `GameState.TransferMarket` | B | `5DC3` Satz 4, `far:8253` | Zeilen `TransferMarket` |
-| `GameState._contractRandom` | N | – | null (wird bei Bedarf aus `Random` gebildet) |
+| `GameState._contractRandom` | N | – | null (Quelle der Computerkader `ComputerSquadRandom`, wird bei Bedarf gebildet) |
 | `GameState._contractTurnFactor` | N | – | 0 = im Zug neu ziehen |
-| `GameState._cupRandom` | N | – | null |
 | `GameState._eternal` | U | `AB7B`? | Ewige Tabelle: Ort nicht belegt; leer |
-| `GameState._financeRandom` | N | – | null |
 | `GameState._germanyRatings` | U | – | null (neu berechnet beim nächsten Länderspiel) |
 | `GameState._headToHead` | B | `AB7B+0x000` | DGROUP 0xAB7B + 0x280 · m + 10 · Verein: im Original **4** Manager-Plätze (0xA00 Byte), im Remake 6; Plätze 4–5 leer |
 | `GameState._leagueSlots` | A | `far:9657` | Regel 2 |
@@ -508,8 +506,6 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._stocks` | B | `D0F4`, `01FD`, `A891`, `A895` | Zeilen `Stock` |
 | `GameState._teamRecordOpponents` | B | `AB7B+0xF94` | DGROUP 0xBB0F + 8 · Verein + Art (64 Vereine) |
 | `GameState._teamRecords` | B | `AB7B+0x1194` | DGROUP 0xBD0F + 0x10 · Verein + 2 · Art |
-| `GameState._trendRandom` | N | – | null |
-| `GameState._turnRandom` | N | – | null |
 | `GameState._vacantNationalTactics` | A | `far:9657+0x26`, `A6FB+5`, `CAE9` (+0x30 · 5) | ohne Bundestrainer: Modi und Werte des Satzes 5, Anzeige „AUTOM.“ aus dem Vereinssatz des Landes (+0x26–0x2B, +0x35–0x3A) |
 | `GameState._worldCupRankings` | U | – | leer |
 | `GameState._worldCupOptionBackup` | U | `021D+15` | DGROUP 0x22C: Sicherung des Schalters „WM-Spiele“ während der WM des Bundestrainers (Spur `zusehen` Teil 2, Schema 52; Datei 0x5541F/0x5575A). Ort belegt, der Import liest ihn nicht: null |
@@ -1081,6 +1077,12 @@ liegt bei den genannten Spuren.
   Migration: Modus 2 für die Vereine nicht entlassener Manager und das Land des Bundestrainers, sonst 0
   (`SaveGame.Migration.Zusehen.cs`); Import siehe Zeile `Club.WatchMode` (U). Teil 2: `GameState._worldCupOptionBackup`
   (Sicherung 0x22C des Schalters „WM-Spiele“), Migration null.
+- Schema 53 (Runde 21, Spur `zufallsstrom`, N3 = B): `GameState._trendRandom` und `_turnRandom` entfallen (gemeinsamer Strom
+  `GameState.Random`). Migration: beide Objekte entfernen, Objektnummern neu (`SaveGame.Migration.Zufallsstrom.cs`).
+- Schema 54 (Runde 21, Spur `zufallsstrom` Teil 4): übrige eigene Zufallsquellen entfallen – `GameState._cupRandom`
+  (Pokalauslosungen und Pokalspiele) und `GameState._financeRandom` (Werbung, Börse, Zuschauer, Talentsuche, Jugend, Baufirmen)
+  ziehen aus `GameState.Random`. Migration wie Schema 53 (dieselbe Datei). `GameState._contractRandom` bleibt als Quelle der
+  Computerkader (`ComputerSquadRandom`, ohne Gegenstück im Original).
 
 ### Zugang (Teil 3)
 

@@ -32,35 +32,24 @@ public sealed partial class Manager
 /// </summary>
 public sealed partial class GameState
 {
-    private GameRandom? _turnRandom;
-
     /// <summary>Gezogener Faktor der Gehaltsforderung des laufenden Managerzugs (85–115); 0 = noch nicht gezogen.</summary>
     private int _contractTurnFactor;
 
     /// <summary>
-    /// Zufallsquelle des Faktors je Managerzug (<see cref="ContractRules.TurnFactor"/>). [APPROX] Das Original zieht aus demselben
-    /// Generator wie alles andere (0x0C037); das Remake hält den Zug aus der Hauptquelle heraus, damit Spiele, Markt und Proben
-    /// ihre Folgen behalten (wie <see cref="TrendRandom"/>). Ältere Spielstände beginnen die Quelle beim ersten Zug.
-    /// </summary>
-    public GameRandom TurnRandom
-    {
-        get => _turnRandom ??= new GameRandom(unchecked(Season * 1_000_003 + Managers.Sum(m => m.ClubIndex * 41 + m.Head) + 29));
-        init => _turnRandom = value;
-    }
-
-    /// <summary>
     /// [ORIGINAL] Am Funktionsanfang des Hauptmenüs (Datei 0x44E22; Zufallsaufruf 0x44E3F, Schreiben 0x44E46), einmal je
     /// Managerzug: DGROUP 0xE1A4 = random(0x55, 0x73).
-    /// Nach dem Laden (Einstieg Datei 0x44E6D) wird nicht neu gezogen.
+    /// Nach dem Laden (Einstieg Datei 0x44E6D) wird nicht neu gezogen. Spur zufallsstrom (A533, N3 = B): Der Wurf kommt aus dem
+    /// gemeinsamen Strom <see cref="Random"/> (0x0C037 über 0x38:0x847), nur am Zuganfang (<see cref="BeginManagerTurn"/>,
+    /// <see cref="BeginFirstTurn"/>) – nie beim Aufbau oder Zeichnen des Menüs (<see cref="OnMainMenu"/> zieht nichts).
     /// </summary>
-    private void DrawContractTurnFactor() => _contractTurnFactor = ContractRules.TurnFactor(TurnRandom);
+    internal void DrawContractTurnFactor() => _contractTurnFactor = ContractRules.TurnFactor(Random);
 
     /// <summary>
     /// Erster Managerzug eines neuen Spiels. [ORIGINAL] Der erste Menüaufbau beginnt am Funktionsanfang 0x44E22 und zieht
     /// (Aufruf 0x38:0x847 bei 0x44E3F) den Faktor der Gehaltsforderung wie jeder Zug (R12U-04, #540); im Remake lief bisher nur
     /// <see cref="BeginManagerTurn"/> aus
     /// <see cref="StartTurns"/> und <see cref="PassTurn"/>, der erste Tag eines neuen Spiels nutzte den abgeleiteten Ersatzwert.
-    /// Zieht nur aus <see cref="TurnRandom"/> (keine andere Zufallsquelle, keine Aufstellung: die macht der erste Aufbau des Menüs).
+    /// Zieht nur diesen einen Wurf aus <see cref="Random"/> (keine Aufstellung: die macht der erste Aufbau des Menüs).
     /// </summary>
     internal void BeginFirstTurn()
     {

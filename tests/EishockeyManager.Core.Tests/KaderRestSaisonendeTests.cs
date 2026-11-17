@@ -54,7 +54,8 @@ public class KaderRestSaisonendeTests
     public void SeasonEnd_YouthJoinedBeforeWindow_Symbol9PerNewcomer(bool active)
     {
         var total = 0;
-        foreach (var seed in new[] { 3, 5, 7 })
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saaten 3, 5, 8 statt 3, 5, 7 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei 3, 5, 7 rückt beim passiven Manager in vier Saisons keine Jugend nach (Vorbedingung „Jugend am Saisonende“); 8 hat zwei Zugänge. Die Probe hängt an der Saat.
+        foreach (var seed in new[] { 3, 5, 8 })
         {
             var game = TestGames.Create(seed);
             var manager = game.Managers[0];

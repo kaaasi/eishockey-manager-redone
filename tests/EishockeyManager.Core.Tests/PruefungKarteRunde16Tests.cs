@@ -27,7 +27,11 @@ public class PruefungKarteRunde16Tests
         // Saat 2 (bis Spur start-lader 5): Mit dem Lader beim Spielstart (Datei 0x439BB) verschiebt sich der Zufall; bei Saat 5 steht
         // dann Poolplatz 27 auf dem Markt, den AddUnseatedSquadPlayers ([APPROX]) überspringt (22–26, 28–32). Etwa jede zweite Saat
         // trifft das – Restlücke im PR der Spur, nicht Gegenstand dieses Tests.
-        var game = NewGame.Create(ClubDatabase.Parse(raw), setup, 2);
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 1 statt 2 – der Pool des Spielstarts zieht aus dem gemeinsamen Strom (Datei 0x29896);
+        // bei Saat 2 steht dann Poolplatz 3 auf dem Markt (dieselbe Restlücke wie oben), Saaten 1, 5, 6 treffen nicht.
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 2 statt 1 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 1, 4, 7 steht einer der Poolplätze des Kaders auf dem Markt (dieselbe Restlücke wie oben), 2, 3, 5, 6 treffen nicht. Die Probe hängt an der Saat.
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 3 statt 2 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 2 steht Poolplatz 3 auf dem Markt (dieselbe Restlücke wie oben), 3, 4, 6, 8 treffen nicht.
+        var game = NewGame.Create(ClubDatabase.Parse(raw), setup, 3);
         Assert.Equal(GameMode.WorldOnly, game.Mode);
         var squad = game.Clubs[game.Managers[0].ClubIndex].Players;
         Assert.Equal(25, squad.Count);

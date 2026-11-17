@@ -329,6 +329,11 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
+    // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und der Tageslauf 0x07169 (Datei 0x07402–0x07AEF) ziehen aus dem gemeinsamen Strom, anderer Zufallsverlauf
+    // ab dem Spielstart; mit und ohne Anzeige weiter gleich. Rückschaltprobe: src/ von f3490bd + dieser Test → rot (alte Werte).
+    // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
+    // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
+    // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
     private const string Reference =
-        "1993: DEB 6, DM 2, Tab 15496 | 1994: DEB 8, DM 6, Tab 16005 | 1995: DEB 2, DM 2, Tab 15914 | 1996: DEB 1, DM 6, Tab 15929";
+        "1993: DEB 6, DM 6, Tab 15564 | 1994: DEB 8, DM 0, Tab 16143 | 1995: DEB 2, DM 0, Tab 15560 | 1996: DEB 1, DM 0, Tab 15821";
 }

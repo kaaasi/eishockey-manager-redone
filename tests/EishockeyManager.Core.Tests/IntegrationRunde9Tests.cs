@@ -19,13 +19,16 @@ public class IntegrationRunde9Tests
     [InlineData(MatchCompetition.WorldCup)]
     public void CupMatchWithoutManager_FollowsDisplaySwitch(MatchCompetition competition)
     {
-        var game = TestGames.Create(3);
-        MatchEngine.EnsureTeamValues(game);
-        var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
-        var clubs = game.Clubs.Where(c => c.Index < 12 && !managed.Contains(c.Index)).Take(2).ToList();
-
+        // Runde 21, Spur zufallsstrom (A107, R21-D2 = A): jeder Lauf auf einem frischen Spielstand. Das Spiel schreibt in den
+        // Spielstand (Tagesform, Zähler); der zweite Lauf auf demselben Stand las bisher zufällig Werte, mit denen er gleich viele
+        // Würfe verbrauchte. Mit der Wanderung in Satzfolge (Datei 0x9D1B) haben die beiden Vereine andere Teamwerte, und der
+        // Vergleich „gleicher Schalter, gleiche Folge“ gilt nur noch für gleiche Ausgangsstände.
         int NextAfterMatch(bool display)
         {
+            var game = TestGames.Create(3);
+            MatchEngine.EnsureTeamValues(game);
+            var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
+            var clubs = game.Clubs.Where(c => c.Index < 12 && !managed.Contains(c.Index)).Take(2).ToList();
             switch (competition)
             {
                 case MatchCompetition.DebCup: game.Options.ShowDebCup = display; break;
@@ -49,13 +52,13 @@ public class IntegrationRunde9Tests
     [Fact]
     public void WorldCupKnockoutWithoutManager_AlwaysFastPath()
     {
-        var game = TestGames.Create(3);
-        MatchEngine.EnsureTeamValues(game);
-        var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
-        var clubs = game.Clubs.Where(c => c.Index < 12 && !managed.Contains(c.Index)).Take(2).ToList();
-
+        // Runde 21, Spur zufallsstrom (A107, R21-D2 = A): jeder Lauf auf einem frischen Spielstand, Begründung wie oben.
         int NextAfterMatch(bool display)
         {
+            var game = TestGames.Create(3);
+            MatchEngine.EnsureTeamValues(game);
+            var managed = game.Managers.Select(m => m.ClubIndex).ToHashSet();
+            var clubs = game.Clubs.Where(c => c.Index < 12 && !managed.Contains(c.Index)).Take(2).ToList();
             game.Options.ShowWorldCup = display;
             var random = new Random(7);
             MatchEngine.PlayWithEvents(game, clubs[0], clubs[1], MatchCompetition.WorldCup, knockOut: true, random);

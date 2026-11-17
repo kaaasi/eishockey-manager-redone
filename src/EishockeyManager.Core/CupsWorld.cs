@@ -117,7 +117,15 @@ public sealed partial class WorldCup : ISeasonCompetition
 
     public static int DateIndex(int day) => SeasonCalendar.DaysOf(DayEvents.WorldCup).ToList().IndexOf(day);
 
-    public void StartSeason(GameState game)
+    /// <summary>
+    /// Saisonwechsel. Spur zufallsstrom, Teil 4 (N3 = B): Länderreihenfolge aus <see cref="GameState.Random"/> (vorher CupRandom).
+    /// [APPROX] Das Original mischt am 29. April in 0x35EDD (Datei 0x5644E, lrandom 0xBFD5) nach der Ligamischung; das Remake zieht
+    /// die 40 Würfe beim Saisonstart der WM (Datei 0x565F6) – die Ligamischung selbst leitet <c>GameState.SlotSeed</c> ab.
+    /// </summary>
+    public void StartSeason(GameState game) => StartSeason(game, game.Random);
+
+    /// <param name="mix">Quelle der Länderreihenfolge (<see cref="Mix"/>).</param>
+    internal void StartSeason(GameState game, Random mix)
     {
         _groups.Clear();
         _knockout.Clear();
@@ -125,7 +133,7 @@ public sealed partial class WorldCup : ISeasonCompetition
         Array.Fill(_slots, null);
         Winner = null;
         Ranking = [];
-        Mix(_order, game.CupRandom);
+        Mix(_order, mix);
         _groups.Add(new CupGroup(1, _order.Take(GroupSize).ToList()));
         _groups.Add(new CupGroup(2, _order.Skip(GroupSize).ToList()));
         game.StartNationalSeason();
@@ -178,7 +186,7 @@ public sealed partial class WorldCup : ISeasonCompetition
         var date = DateIndex(day);
         if (date < 0 || Winner is not null)
             return;
-        var random = game.CupRandom;
+        var random = game.Random; // Spur zufallsstrom Teil 4 (N3 = B): gemeinsamer Strom
         List<KnockoutMatch> played;
         if (date < GroupDates)
         {

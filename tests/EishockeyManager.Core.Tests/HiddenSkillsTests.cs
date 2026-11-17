@@ -44,26 +44,23 @@ public class HiddenSkillsTests
     }
 
     /// <summary>
-    /// [APPROX] Eigene Zufallsquelle: Der Startwurf verbraucht <see cref="GameState.Random"/> nicht.
+    /// [ORIGINAL] Datei 0x06F02–0x06F23: Das Talent bekommt den Startwurf an seinem Kaderplatz in 0x06D7F. Spur zufallsstrom
+    /// (A675, R15-E2 = C): vorher würfelte schon die Anlage des Spielers (<c>PlayerFactory.CreateTalent</c>) aus einer eigenen
+    /// Quelle; jetzt würfelt die Talentsuche selbst (<see cref="GameState.JoinScoutedTalent(Manager, int)"/>) aus dem gemeinsamen
+    /// Strom, ein Spieler ohne Kaderplatz eines Managers behält den Vorgabewert.
     /// </summary>
-    [Fact]
-    public void NewGame_StartValues_DoNotConsumeGameRandom()
-    {
-        var game = TestGames.Create(3);
-        var before = game.Random.Capture();
-        var a = HiddenSkills.SourceFor(game, 0x19).Next();
-        Assert.Equal(before, game.Random.Capture());
-        Assert.Equal(a, HiddenSkills.SourceFor(game, 0x19).Next());
-    }
-
-    /// <summary>[ORIGINAL] Datei 0x06F23: Talent bekommt den Startwurf.</summary>
     [Fact]
     public void Talent_GetsStartValues()
     {
-        var game = TestGames.Create(3);
-        var random = new Random(5);
-        var talents = Enumerable.Range(0, 40)
-            .Select(i => PlayerFactory.CreateTalent(game, $"T{i}", PlayerRole.Forward, 50, random)).ToList();
+        var talents = new List<Player>();
+        foreach (var seed in Enumerable.Range(1, 14))
+        {
+            var game = TestGames.Create(seed);
+            for (var i = 0; i < 3; i++) // Grenze 28 eigene Spieler (TalentScout.MaxOwned)
+                talents.Add(game.JoinScoutedTalent(game.Managers[0], 50)!);
+        }
+        Assert.Equal((HiddenSkills.NationalTeam, HiddenSkills.NationalTeam), HiddenSkills.ForMatch(
+            PlayerFactory.CreateTalent(TestGames.Create(3), "T", PlayerRole.Forward, 50, new Random(5)), nationalTeam: false));
         Assert.All(talents, p =>
         {
             Assert.InRange(p.HiddenSkill1, HiddenSkills.StartMin, HiddenSkills.StartMax);

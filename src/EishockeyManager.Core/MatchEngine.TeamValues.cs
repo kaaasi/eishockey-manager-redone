@@ -113,16 +113,19 @@ public static partial class MatchEngine
     /// Aufrufe: Spielstart Modus 10 (0x43A73, nach der Ligamischung und der Spielvorbereitung), Saisonwechsel Modus 10
     /// (0x56448, nach Auf- und Abstieg), Tageslauf 0x54C9F Modus 1 an Tagen mit Tageszähler 0x3B7 ≡ 0 oder 4 (mod 7)
     /// (0x5525A–0x55292). Die Europapokal-Gegner (Index &gt; 64) wandern nicht.
-    /// [APPROX] Reihenfolge nach Vereinsindex statt nach Tabellenplatz des Originals; Kondition und Technik als Abweichung
-    /// vom Datenbankwert (<see cref="Club.Strength"/>) gespeichert, die Liga-Grenzen gelten für Datenbankwert + Abweichung.
-    /// Nationalteams spielen als <c>RatedNation</c> mit eigenen Werten; ihre Form wird nur gezogen und gesetzt.
+    /// [ORIGINAL] Spur zufallsstrom (A107, N3 = B): Reihenfolge = Satzfolge des Originals (<see cref="DriftOrder"/>), nicht der
+    /// Vereinsindex des Remakes – der Satz i liegt im Original am Ligaplatz (0x34FD5(i): Sätze 0–11 Bundesliga, 12–23 2. Liga,
+    /// 24–35 Oberliga, danach die übrigen Vereine, ab [0x6AD] die Nationalteams).
+    /// [APPROX] Kondition und Technik als Abweichung vom Datenbankwert (<see cref="Club.Strength"/>) gespeichert, die Liga-Grenzen
+    /// gelten für Datenbankwert + Abweichung. Nationalteams spielen als <c>RatedNation</c> mit eigenen Werten; ihre Form wird nur
+    /// gezogen und gesetzt.
     /// </summary>
     public static void DriftTeamValues(GameState game, TeamValueDrift drift)
     {
         var random = game.Random;
         var mode = (int)drift;
         var b = drift == TeamValueDrift.Season ? 3 : 1;
-        foreach (var club in game.Clubs.Where(c => c.Index <= NationalTeams.Last).OrderBy(c => c.Index))
+        foreach (var club in DriftOrder(game))
         {
             if (club.TeamValues is not { } v)
                 continue;
@@ -147,6 +150,24 @@ public static partial class MatchEngine
         }
     }
 
+    /// <summary>
+    /// Vereine in der Reihenfolge der Wanderung: Satzfolge der drei Ligen und der Plätze ohne Liga
+    /// (<see cref="GameState.ClubRecordOrder"/>), dann die übrigen Sätze bis zu den Nationalteams nach Index. [ORIGINAL] 0x9D1B
+    /// zählt die Vereinssätze i = 0 … [0x6AD] + 11 (Datei 0x09D23–0x09D33, 0x09F41); die Sätze stehen in der Folge der letzten
+    /// Ligamischung (Datei 0x35EDD). [APPROX] Saisonwechsel: Das Original wandert am 29. April nach dem Platztausch von Auf- und
+    /// Absteigern und vor der Mischung der neuen Saison (Datei 0x56448 vor 0x5644E); das Remake wandert in
+    /// <see cref="GameState.StartNextSeason"/> und geht dort schon nach der gemischten Folge der neuen Saison. Vereine ohne Liga
+    /// außerhalb der Auswahl (Index 48–51) und Vereine, die in keiner geführten Folge stehen, folgen nach Index.
+    /// </summary>
+    public static IReadOnlyList<Club> DriftOrder(GameState game)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        var order = game.ClubRecordOrder().Where(i => i < game.Clubs.Count && i < NationalTeams.First).Distinct().ToList();
+        var seen = order.ToHashSet();
+        order.AddRange(game.Clubs.Where(c => c.Index <= NationalTeams.Last && !seen.Contains(c.Index)).Select(c => c.Index).Order());
+        return order.Select(i => game.Clubs[i]).ToList();
+    }
+
     /// <summary>[ORIGINAL] Tage der kleinen Wanderung im Tageslauf 0x54C9F: Tageszähler ≡ 0 oder 4 (mod 7).</summary>
     public static bool IsDriftDay(int day) => day % 7 is 0 or 4;
 
@@ -157,11 +178,10 @@ public static partial class MatchEngine
     ///   Aufstellung 0x426BC <c>0x952C(m, 0)</c> (Datei 0x2A067–0x2A078, Schleife ab Manager <c>[bp−0x64]</c> = 0 beim neuen
     ///   Spiel bis DGROUP 0x386, Datei 0x29B57–0x2A0A3; A519/A080). Im Modus „nur Weltkugel“ nicht (#747, wie
     ///   <see cref="GameState.UpdateManagerTeamValues"/>).</item>
-    /// <item>[ORIGINAL] Wanderung des Spielstarts Modus 10 (Datei 0x43A73, nach 0x28165 und vor der Europapokal-Tabelle 0x341AB
-    ///   bei Datei 0x43A8C; A108).</item>
+    /// <item>[ORIGINAL] Wanderung des Spielstarts Modus 10 (Datei 0x43A73, nach 0x28165 und vor der Auslosung des DEB-Pokals
+    ///   0x341AB(0, 0) bei Datei 0x43A8C; A108). Der Europapokal ist dann schon ausgelost (Datei 0x298B1 in 0x28165; Spur
+    ///   zufallsstrom, Teil 4).</item>
     /// </list>
-    /// [APPROX] Das Remake lost den Europapokal schon in <see cref="GameState.InitializeCompetitions"/> vor diesem Schritt aus;
-    /// die Auslosung liest nur die Gegner (Index &gt; 64), die nicht wandern, und zieht aus <see cref="GameState.CupRandom"/>.
     /// </summary>
     internal static void StartGame(GameState game)
     {

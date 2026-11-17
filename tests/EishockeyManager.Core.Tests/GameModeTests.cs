@@ -43,7 +43,7 @@ public class GameModeTests
                 break;
             game.StartNextSeason();
         }
-        parts.Add($"R{game.Random.Next()} C{game.CupRandom.Next()}");
+        parts.Add($"R{game.Random.Next()}"); // Spur zufallsstrom Teil 4: CupRandom entfällt
         return string.Join("|", parts);
     }
 
@@ -470,8 +470,12 @@ public class GameModeTests
     // Stärke aus den Vereinsfeldern 0x18–0x1D (0x977F ohne Eintrag in DGROUP 0x233, Datei 0x097F3–0x0984F) statt aus den Spielern
     // auf dem Eis; anderer Einsatz und Angriff der Automatik beider Vereine, andere Ergebnisse und Zufallsverlauf ab dem ersten
     // Managerspiel. Rückschaltprobe: MatchEngine.Live.cs von f3490bd + dieser Test → rot (alte Werte).
+    // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Tageslauf 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) im gemeinsamen Strom.
+    // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
+    // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
+    // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=3,GermanChampion=3,EuropeanCupWinner=2|1100000,400000|WorldChampion=63,CupWinner=4,GermanChampion=3,EuropeanCupWinner=3|2187969,400000|WorldChampion=54,CupWinner=10,GermanChampion=10,EuropeanCupWinner=3|1971958,400000|WorldChampion=54,CupWinner=3,GermanChampion=10,EuropeanCupWinner=3|1875145,400000|WorldChampion=63,CupWinner=1,GermanChampion=1,EuropeanCupWinner=3|1944471,400000|R1278022603 C775042305";
+        "WorldChampion=54,CupWinner=16,GermanChampion=3,EuropeanCupWinner=2|1298378,400000|WorldChampion=53,CupWinner=18,GermanChampion=3,EuropeanCupWinner=3|2611572,400000|WorldChampion=63,CupWinner=3,GermanChampion=4,EuropeanCupWinner=3|2428166,400000|WorldChampion=59,CupWinner=0,GermanChampion=18,EuropeanCupWinner=4|2071466,500000|WorldChampion=55,CupWinner=4,GermanChampion=4,EuropeanCupWinner=4|1891941,500000|R1298966566";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -253,18 +253,18 @@ public sealed partial class GameState
             {
                 if (!noDice)
                 {
-                    if (SquadSetup.Between(FinanceRandom, 0, 2 * p / 3) != 0)
+                    if (SquadSetup.Between(Random, 0, 2 * p / 3) != 0)
                         continue;
-                    if (SquadSetup.Between(FinanceRandom, 0, 5 - w / 200) != 0 && SquadSetup.Between(FinanceRandom, 0, 4) <= p)
+                    if (SquadSetup.Between(Random, 0, 5 - w / 200) != 0 && SquadSetup.Between(Random, 0, 4) <= p)
                     {
                         offers.Remove(p);
                         continue;
                     }
                 }
-                var m = SquadSetup.Between(FinanceRandom, 20, 22);
-                var amount = SponsorRules.OfferAmountThirds(rating, kind, p, m, FinanceRandom);
-                var boards = kind == AdSlotKind.Bande ? SponsorRules.Boards(m, FinanceRandom) : 1;
-                var (months, option) = SponsorRules.Duration(FinanceRandom);
+                var m = SquadSetup.Between(Random, 20, 22);
+                var amount = SponsorRules.OfferAmountThirds(rating, kind, p, m, Random);
+                var boards = kind == AdSlotKind.Bande ? SponsorRules.Boards(m, Random) : 1;
+                var (months, option) = SponsorRules.Duration(Random);
                 offers[p] = new SponsorOffer(kind, p, months, boards, FinanceRules.ToMarks(amount), option, rating);
             }
             // Nach Partner geordnet neu aufbauen: Die Reihenfolge eines Dictionary hängt sonst von früheren
@@ -399,7 +399,7 @@ public sealed partial class GameState
         var sponsoring = Finance(manager).Sponsoring;
         if (!sponsoring.Contracts.Contains(contract) || !AwaitsRenewal(contract))
             return RenewalOutcome.None;
-        var factor = SquadSetup.Between(FinanceRandom, 90, 120);
+        var factor = SquadSetup.Between(Random, 90, 120);
         var current = UpdateSponsorRating(manager);
         if ((long)factor * contract.SignedRating / 100 < current)
             return RenewalOutcome.Question;

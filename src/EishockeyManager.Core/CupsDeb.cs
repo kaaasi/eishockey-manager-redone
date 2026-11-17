@@ -67,6 +67,9 @@ public sealed partial class DebCup : ISeasonCompetition
         return index < 0 ? null : (index / DatesPerRound, index % DatesPerRound);
     }
 
+    /// <summary>Genug Ligavereine für eine Auslosung (synthetische Spielstände mit weniger Vereinen losen nicht).</summary>
+    internal static bool CanDraw(GameState game) => game.Clubs.Count(c => c.League is not null) >= Teams;
+
     public void StartSeason(GameState game)
     {
         _rounds.Clear();
@@ -78,7 +81,7 @@ public sealed partial class DebCup : ISeasonCompetition
     /// <summary>Erste Runde: Manager-Vereine auf zufällige Plätze, Rest zufällig aus den Ligavereinen.</summary>
     private void DrawFirstRound(GameState game)
     {
-        var random = game.CupRandom;
+        var random = game.Random;
         var slots = new int?[Teams];
         var managerClubs = game.ActiveManagers.Select(m => m.ClubIndex).Distinct().ToList();
         foreach (var club in managerClubs.Take(Teams))
@@ -107,7 +110,7 @@ public sealed partial class DebCup : ISeasonCompetition
     private void DrawNextRound(GameState game)
     {
         var winners = _rounds[^1].Select(t => t.Winner!.Value).ToList();
-        var random = game.CupRandom;
+        var random = game.Random;
         for (var i = 0; i < DrawSwaps; i++)
         {
             var a = random.Next(1, winners.Count + 1) - 1; // random(1, n) − 1
@@ -163,7 +166,7 @@ public sealed partial class DebCup : ISeasonCompetition
             if (!tie.PlaysGame(number))
                 continue;
             var (home, away) = CupTie.Pairing(tie, number);
-            var (match, marks) = CupMatch.Play(game, day, game.Clubs[home], game.Clubs[away], MatchCompetition.DebCup, game.CupRandom);
+            var (match, marks) = CupMatch.Play(game, day, game.Clubs[home], game.Clubs[away], MatchCompetition.DebCup, game.Random);
             tie.Add(match, marks);
             played.Add(match);
         }

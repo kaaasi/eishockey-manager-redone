@@ -105,7 +105,7 @@ public class TransferOriginalVertragTests
     public void Negotiate_TooLongAndTooShort_FailAndLock()
     {
         var (game, manager, _, p) = Setup();
-        var twin = GameRandom.FromState(game.ContractRandom.Capture());
+        var twin = GameRandom.FromState(game.Random.Capture());
 
         Assert.Equal(NegotiationResult.TooLong, Contracts.Negotiate(game, manager, p, 5, 0, false, false));
         Assert.Equal(R(twin, 10, 18), p.NegotiationLock);
@@ -188,9 +188,9 @@ public class TransferOriginalVertragTests
         Assert.InRange(game.ContractTurnFactor, 85, 115);
         Assert.Equal(game.ContractTurnFactor, game.ContractTurnFactor); // rein
 
-        var state = game.ContractRandom.Capture();
+        var state = game.Random.Capture();
         Assert.Equal(NegotiationResult.Accepted, Contracts.Negotiate(game, manager, p, 3, demand!.Value, false, demandFilled: true));
-        Assert.Equal(state, game.ContractRandom.Capture());
+        Assert.Equal(state, game.Random.Capture());
         Assert.Equal((3, demand.Value), (p.ContractYears, p.MonthlySalary));
 
         var setup = new GameSetup();
@@ -213,14 +213,14 @@ public class TransferOriginalVertragTests
             var (game, manager, club, p) = Setup(seed);
             var value = SalaryValue(game, club, p, manager.Level);
             var offer = value * (100 + seed * 2) / 300; // 102–180 % des Werts um die Grenze (Rest 98 %, 3 Jahre: W = 127)
-            var twin = GameRandom.FromState(game.ContractRandom.Capture());
+            var twin = GameRandom.FromState(game.Random.Capture());
             var expected = ContractRules.Accepts(2, p.MonthlySalary * 3, 3, offer * 3, value, game.ContractSeasonRemaining, false,
                 p.Age, twin);
             var result = Contracts.Negotiate(game, manager, p, 3, offer, false, demandFilled: false);
             if (!expected)
                 Assert.Equal(R(twin, 10, 18), p.NegotiationLock);
             Assert.Equal(expected ? NegotiationResult.Accepted : NegotiationResult.NotInterested, result);
-            Assert.Equal(twin.Capture(), game.ContractRandom.Capture());
+            Assert.Equal(twin.Capture(), game.Random.Capture());
             results.Add(result);
         }
         Assert.Equal(2, results.Count);

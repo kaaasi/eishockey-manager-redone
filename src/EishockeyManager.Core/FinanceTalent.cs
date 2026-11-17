@@ -48,8 +48,8 @@ public sealed partial class GameState
         if (manager.Money <= price)
             return TalentSearchStart.NotEnoughMoney;
         Book(manager, FinanceCategory.Talentsuche, -price);
-        var ticks = TransferRules.Random16(FinanceRandom, TalentScout.MinTicks, TalentScout.MaxTicks);
-        if (TransferRules.Random16(FinanceRandom, 0, 3) == 0)
+        var ticks = TransferRules.Random16(Random, TalentScout.MinTicks, TalentScout.MaxTicks);
+        if (TransferRules.Random16(Random, 0, 3) == 0)
             ticks += TalentScout.ExtraTicks;
         finance.TalentSearch = new TalentSearch { TicksLeft = ticks };
         return TalentSearchStart.Started;
@@ -62,10 +62,10 @@ public sealed partial class GameState
     /// </summary>
     private void RollTalentSearchPrice(Manager manager)
     {
-        if (TransferRules.Random16(FinanceRandom, 0, 1) == 0)
+        if (TransferRules.Random16(Random, 0, 1) == 0)
             return;
         Finance(manager).TalentPrice = TalentScout.PriceBase
-            + TalentScout.PriceStep * TransferRules.Random16(FinanceRandom, 0, TalentScout.PriceSteps);
+            + TalentScout.PriceStep * TransferRules.Random16(Random, 0, TalentScout.PriceSteps);
     }
 
     /// <summary>
@@ -86,12 +86,12 @@ public sealed partial class GameState
             if (finance.TalentSearch is not { } search || --search.TicksLeft > 0)
                 continue;
             finance.TalentSearch = null;
-            if (TransferRules.Random16(FinanceRandom, 0, TalentScout.SuccessDie(manager.Level)) != 0)
+            if (TransferRules.Random16(Random, 0, TalentScout.SuccessDie(manager.Level)) != 0)
             {
                 Notify(manager, "Ihr Talentspäher gibt die", "Suche ohne Erfolg auf... Pech...");
                 continue;
             }
-            var s = TransferRules.Random16(FinanceRandom, TalentScout.MinStrength, TalentScout.MaxStrength);
+            var s = TransferRules.Random16(Random, TalentScout.MinStrength, TalentScout.MaxStrength);
             if (JoinScoutedTalent(manager, s) is not null)
                 Notify(manager, "Ihre Talentsuche war ein Erfolg.", "Ein junger Spieler stößt zu Ihrem Kader.");
         }
@@ -121,8 +121,10 @@ public sealed partial class GameState
     /// 0x42E4C; Kondition/Technik/Form aus Pool +0x15–0x17, Datei 0x42EC3–0x42F06); Besitzer = Manager; Kaderplatz +0x19 =
     /// random(3, 12) · 16 + random(3, 12); Gehalt +0x28 = Wert(Gehalt) · 80 / 100; Preis +0x2C = Wert(Preis); Laufzeit +0x0B =
     /// random(2, 3). Name, Talent (+0x12) und Rolle bleiben die des Poolspielers.
-    /// Die Nachbearbeitung 0x118:0x4D (Tendenz, 0x4907A) zieht aus <see cref="TrendRandom"/> (A134). [APPROX] Der Preis +0x2C
-    /// ist nicht abgebildet (wie beim Kauf, <see cref="TransferPoolRules.RollSlotFields"/>); Energie auf 99 begrenzt. Das Original sucht ohne Grenze nach einem
+    /// Spur zufallsstrom (A388, A675; N3 = B): Alle Würfe der Funktion ziehen in dieser Reihenfolge aus dem gemeinsamen Strom
+    /// <see cref="Random"/> – Poolindex (Datei 0x06DAE), Alter, Form, Technik, Kondition (0x06DE9–0x06E62), Energie und
+    /// Tendenz in 0x42CB1 (Aufruf Datei 0x06EB9; 0x42E4C, 0x42E6B → 0x4907A), +0x19 (0x06F02, 0x06F16), Laufzeit (0x06F80).
+    /// [APPROX] Der Preis +0x2C ist nicht abgebildet (wie beim Kauf, <see cref="TransferPoolRules.RollSlotFields"/>); Energie auf 99 begrenzt. Das Original sucht ohne Grenze nach einem
     /// freien Platz; das Remake gibt nach <see cref="TalentPoolAttempts"/> Versuchen auf und erzeugt dann einen neuen Spieler
     /// (<see cref="PlayerFactory.TalentName"/>, Rolle zufällig) – ebenso ohne Spielerpool (Spielstände vor Schema 22).
     /// </summary>
@@ -136,7 +138,7 @@ public sealed partial class GameState
     {
         if (OwnedPlayers(manager) >= TalentScout.MaxOwned)
             return null;
-        var random = FinanceRandom;
+        var random = Random; // [ORIGINAL] ein Generator (0x99F:0x847) für alle Würfe von 0x06D7F, siehe oben
         var club = Clubs[manager.ClubIndex];
         var slot = DrawFreePoolSlot(random);
         var p = slot?.Player ?? NewTalent(random);
@@ -154,10 +156,9 @@ public sealed partial class GameState
         // [ORIGINAL] Belastung des neuen Kaderplatzes random(80, 120) (Datei 0x42E4C–0x42E5E; A184, Integration Runde 12, R12I-01).
         p.Strain = TransferRules.Random16(random, PlayerFactory.StartStrainMin, PlayerFactory.StartStrainMax);
         // A134 (Spur kader, Teil 2): [ORIGINAL] 0x42CB1 ruft nach der Energie 0x4907A (Datei 0x42E6B): Tendenz und Steuerbyte.
-        // [APPROX] Eigene Quelle TrendRandom wie beim Markt.
-        p.RollTrend(TrendRandom);
-        _ = TransferRules.Random16(random, 3, 12); // Kaderplatz +0x19 (Bedeutung offen, A185/A186), nur gezogen
-        _ = TransferRules.Random16(random, 3, 12);
+        p.RollTrend(random);
+        // [ORIGINAL] Kaderplatz +0x19 = random(3, 12) · 16 + random(3, 12) (Datei 0x06F02–0x06F23), oberes Halbbyte zuerst.
+        HiddenSkills.Roll(p, random);
         p.MonthlySalary = Math.Max(Contracts.MinSalary,
             Contracts.ValueSalary(this, manager, p) * salaryPercent / 100);
         p.ContractYears = TransferRules.Random16(random, 2, 3);
@@ -187,7 +188,7 @@ public sealed partial class GameState
     public List<Player> JoinSeasonEndYouth(Manager manager, int aprilYear)
     {
         var joined = new List<Player>();
-        var random = FinanceRandom;
+        var random = Random;
         var count = TransferRules.Random16(random, 0, SeasonEndYouth.MaxCount);
         if (TransferRules.Random16(random, 0, 1) != 0)
             count = 0;

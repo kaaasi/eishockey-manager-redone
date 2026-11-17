@@ -57,7 +57,10 @@ public class NationalCoachMode4Tests
     [Fact]
     public void Mode4_TwoManagersInTopFive_HigherPlacedBecomesCoach()
     {
-        var game = GameModeTests.Create(24, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 69 statt 24 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4), anderer Zufallsverlauf; unter 24–90 stehen nur bei 69, 83 und 86 beide Managervereine unter den ersten fünf. Die Probe hängt an der Saat.
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 72 statt 69 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; unter 60–72 stehen nur bei 72 beide Managervereine unter den ersten fünf. Die Probe hängt an der Saat.
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 77 statt 72 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; unter 60–77 stehen nur bei 77 beide Managervereine unter den ersten fünf.
+        var game = GameModeTests.Create(77, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         var top = game.FinalTables()[League.Bundesliga].Take(5).ToList();
@@ -81,7 +84,8 @@ public class NationalCoachMode4Tests
     [Fact]
     public void Mode2_ManagerInTopFive_NeverCoach()
     {
-        var game = GameModeTests.Create(9, true, false, 2); // kader-start U15-a/R-K5 (L13): Saat 3 → 22, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz); Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 22 → 9
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 10 statt 9 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 9 ist Verein 2 nicht unter den ersten fünf, unter 7–16 bei 10, 11, 16. Die Probe hängt an der Saat.
+        var game = GameModeTests.Create(10, true, false, 2); // kader-start U15-a/R-K5 (L13): Saat 3 → 22, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz); Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 22 → 9
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         Assert.NotNull(ExpectedCoach(game));
@@ -92,7 +96,8 @@ public class NationalCoachMode4Tests
     public void Mode4_Appointment_BeforeReroll_GermanyKeepsBaseRatings()
     {
         // [ORIGINAL] Datei 0x554CF: Ausgewürfelt wird nur, wenn nach der Ernennung kein Bundestrainer da ist.
-        var game = GameModeTests.Create(9, true, true, 2); // kader-start U15-a/R-K5 (L13): Saat 3 → 2; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 2 → 22, Vorbedingung Verein 2 unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 22 → 9
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 11 statt 9 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 9 steht Verein 2 nicht unter den ersten fünf (kein Bundestrainer); 11 und 14 erfüllen die Vorbedingung, 10, 12, 13 nicht. Die Probe hängt an der Saat.
+        var game = GameModeTests.Create(11, true, true, 2); // kader-start U15-a/R-K5 (L13): Saat 3 → 2; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 2 → 22, Vorbedingung Verein 2 unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 22 → 9
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         Assert.NotNull(game.NationalCoach);

@@ -126,10 +126,10 @@ public class MainMenuEventTests
         Assert.Equal(factor, loaded.Game.ContractTurnFactor);
         Assert.Equal(saved, SaveGame.Save(loaded.Game));
 
-        // Stand „vor Teil 4“: Seit R12U-04 zieht schon das neue Spiel einen Faktor (eigene Zufallsquelle als Objekt im Spielstand);
-        // ein echter alter Stand hat beides nicht – also beides zurücksetzen, bevor gesichert wird (sonst fehlte eine Objektnummer).
+        // Stand „vor Teil 4“: Seit R12U-04 zieht schon das neue Spiel einen Faktor; ein echter alter Stand hat ihn nicht – also
+        // zurücksetzen, bevor gesichert wird. Spur zufallsstrom (A533, Schema 52; R15-E2 = C): Die eigene Zufallsquelle
+        // _turnRandom gibt es nicht mehr (der Faktor zieht aus GameState.Random, Datei 0x44E3F), ihr Zurücksetzen entfällt.
         var type = typeof(GameState);
-        type.GetField("_turnRandom", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(game, null);
         type.GetField("_contractTurnFactor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(game, 0);
         var legacy = SaveGame.Save(game);
         var root = JsonNode.Parse(legacy)!.AsObject();
@@ -151,18 +151,24 @@ public class MainMenuEventTests
 /// <summary>ui-rest Teil 4 (R12U-04, #540): Der erste Managerzug eines neuen Spiels zieht den Faktor (Datei 0x44E3F).</summary>
 public class FirstTurnFactorTests
 {
-    [Theory]
-    [InlineData(3)]
-    [InlineData(4)]
-    [InlineData(5)]
-    public void NewGame_DrawsFactorFromTurnRandom_NotTheDerivedFallback(int seed)
+    /// <summary>
+    /// Spur zufallsstrom (A533, N3 = B; R15-E2 = C): Der Faktor des ersten Zugs kommt aus dem gemeinsamen Strom (Datei 0x44E3F →
+    /// 0x0C037) und folgt damit der Saat des Spiels. Vorher zog er aus der eigenen Quelle <c>TurnRandom</c>, deren Startwert nur
+    /// von Saison und Managern abhing – jede Saat ergab denselben Faktor (99), ebenso der abgeleitete Ersatzwert.
+    /// </summary>
+    [Fact]
+    public void NewGame_DrawsFactorFromSharedStream_NotTheDerivedFallback()
     {
-        var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2 });
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, seed);
+        static int Factor(int seed)
+        {
+            var setup = new GameSetup();
+            setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2 });
+            return NewGame.Create(TestGames.CreateDatabase(), setup, seed).ContractTurnFactor;
+        }
 
-        // erste Ziehung aus der Zufallsquelle des Faktors (GameState.MainMenu.cs: Seed aus Saison, Manager)
-        var expected = ContractRules.TurnFactor(new GameRandom(unchecked(game.Season * 1_000_003 + game.Managers.Sum(m => m.ClubIndex * 41 + m.Head) + 29)));
-        Assert.Equal(expected, game.ContractTurnFactor);
+        var factors = new[] { 3, 4, 5 }.Select(Factor).ToList();
+        Assert.All(factors, f => Assert.InRange(f, 85, 115));
+        Assert.Equal(factors, new[] { 3, 4, 5 }.Select(Factor).ToList()); // je Saat fest
+        Assert.True(factors.Distinct().Count() > 1, "Der Faktor hängt nicht von der Saat ab: " + string.Join(", ", factors));
     }
 }

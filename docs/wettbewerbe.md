@@ -4,8 +4,13 @@ Quellen: Disassembly von `em.exe` (Dateioffsets, DGROUP = Datei 0x16DD0), Videos
 13:08–13:20) und „MEISTER werden in 75 Minuten“ (Infoleisten 12:42–21:48).
 
 Alle Pokalwettbewerbe melden sich über `ISeasonCompetition` in `GameState.Competitions` an
-(`Core/Cups.GameState.cs`, aufgerufen aus `GameState.InitializeManagerSystems`). Sie haben eine eigene Zufallsquelle
-`GameState.CupRandom`; Liga, Play-Offs und Aufstiegsrunden laufen deshalb mit und ohne Pokal gleich.
+(`Core/Cups.GameState.cs`, aufgerufen aus `GameState.InitializeManagerSystems`). Seit Runde 21 (Spur `zufallsstrom`, Teil 4,
+N3 = B) ziehen Auslosungen und Pokalspiele aus dem gemeinsamen Strom `GameState.Random` (vorher eigene Quelle `CupRandom`):
+Europapokal 0x341AB(1, 0) beim Spielstart nach dem Poolaufbau (Datei 0x298B1), zum Saisonwechsel Datei 0x565FF; DEB-Pokal
+0x341AB(0, 0) beim Spielstart zwischen 0x057E3 und 0x494EF (Datei 0x43A8C), zum Saisonwechsel Datei 0x56609. Die Auslosungen
+prüfen den Spielmodus nicht – ohne angemeldeten Wettbewerb zieht das Remake dieselben Würfe in ein verworfenes Objekt.
+`[APPROX]` Länderreihenfolge der WM: beim Spielstart aus dem Zustand des Stroms abgeleitet (0x35EDD läuft vor der
+Spielvorbereitung, Datei 0x43A17), zum Saisonwechsel beim Saisonstart der WM statt am 29. April (Datei 0x5644E).
 Heimspiele gehen über die gemeinsame Spielabrechnung `SettleHomeMatch` (genau einmal je ausgetragenem Spiel).
 
 ## DEB-Pokal (`Core/CupsDeb.cs`, `Core/Cups.cs`)

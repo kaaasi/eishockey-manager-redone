@@ -127,7 +127,10 @@ public sealed class LivespielKernLiveStepTests
         var scenes = 0;
         var reasons = 0;
         var overtime = 0;
-        for (var seed = 0; seed < 12; seed++)
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): 40 statt 12 Saaten – Pool (Datei 0x29896) und Starttendenz (Datei 0x42E6B) ziehen aus dem
+        // gemeinsamen Strom, die Startwerte der Kader stehen anders; mit einem Manager im Play-off fällt die erste Verlängerung erst bei
+        // Saat 32–39 (Vorbedingung der Probe). Die Vergleiche je Saat bleiben.
+        for (var seed = 0; seed < 40; seed++)
         {
             var a = NewGame(seed, managedClubs, liveMode, speed);
             var b = NewGame(seed, managedClubs, liveMode, speed);

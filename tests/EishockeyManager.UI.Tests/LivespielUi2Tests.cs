@@ -125,6 +125,11 @@ public sealed class LivespielUi2Tests
             d.PlayMatchDay();
             reference.Continue();
             Assert.IsType<MainMenuScreen>(d.Host.Current);
+            // Runde 21, Spur zufallsstrom Teil 4 (R15-E2 = C): Mit den Finanzwürfen im gemeinsamen Strom (anderer Zufallsverlauf) kommt
+            // bei dieser Saat am ersten Tag eine Nachricht; der Aufbau des Hauptmenüs nimmt das Kennzeichen „neue Nachricht“ zurück
+            // (GameState.OnMainMenu, Datei 0x44E22). Der Vergleichsstand ohne Anzeige ruft dasselbe Ereignis – vorher fiel der
+            // Unterschied nicht auf, weil keine Nachricht kam. Rückschaltprobe: alter Code + dieser Test → grün (Aussage unverändert).
+            reference.OnMainMenu(reference.ActiveManager, isReturn: true);
             Assert.Equal(GameOptions.DefaultMatchSpeed, game.Options.MatchSpeed);
             Assert.Equal(SaveGame.Save(reference), SaveGame.Save(game));
         }
@@ -290,7 +295,12 @@ public sealed class LivespielUi2Tests
         // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): Saat 1995 statt 1994 – mit der Spielvorbereitung aus den
         // Vereinsfeldern (Datei 0x097F3–0x0984F, anderer Zufallsverlauf) erreicht Verein 42 bei 1994 (und 1996, 1998) die Play-offs
         // nicht (nächster Spieltag 216); 1995, 1997, 1999–2002 haben den Play-off-Tag 149. Die Probe hängt an der Saat.
-        var game = NewGame.Create(d.Host.Assets.Database, setup, 1995);
+        // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 1995 statt 1994 – Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und der Tageslauf 0x07169 (Datei 0x07402–0x07AEF) ziehen aus dem gemeinsamen Strom, anderer Zufallsverlauf;
+        // bei Saat 1994 erreicht Verein 42 die Play-offs nicht (nächster Spieltag 216); 1993, 1995, 1997 erfüllen die Vorbedingung.
+        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 1996 statt 1995 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 1995 und 1999 erreicht Verein 42 die Play-offs nicht (nächster Spieltag 216); 1996–1998 erfüllen die Vorbedingung. Die Probe hängt an der Saat.
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1997 statt 1996 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 1996 erreicht Verein 42 die Play-offs nicht (nächster Spieltag 216), 1994, 1995, 1997, 1999, 2000 erfüllen die Vorbedingung.
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1996 statt 1997 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; bei Saat 1997 erreicht Verein 42 die Play-offs nicht, unter 1993–2000 erfüllen 1996, 1998, 1999 die Vorbedingung.
+        var game = NewGame.Create(d.Host.Assets.Database, setup, 1996);
         d.Host.Game = game;
         d.Host.Show(new MainMenuScreen(d.Host));
         d.Frame();

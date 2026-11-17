@@ -46,7 +46,12 @@ public class PruefungKarteRunde17UiTests
         // beide Manager bei 6, 7, 14 und 16 eine Prämie. Rückschaltprobe: ohne „Options.ShowWorldCup = true“ in
         // GameState.ShowWorldCupForNationalCoach hat Saat 4 wieder beide Prämien; Saat 6 ist auch dort grün – die Probe hängt an
         // der Saat.
-        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 6);
+        // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A, nach Rebase auf teamwert-aufstellung): Saat 5 statt 4 – mit Wanderung
+        // in Satzfolge (Datei 0x9D1B), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen
+        // Strom wird Manager 1 bei Saat 4 Fünfter ohne Prämie; unter 1–16 haben beide Manager bei 5, 8 und 15 eine Prämie. Die Probe
+        // hängt an der Saat.
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 2 statt 5 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 5 bekommt Manager 1 keine Prämie, unter 1–10 haben beide Manager bei 2 und 8 eine Prämie. Die Probe hängt an der Saat.
+        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 2);
         var records = game.History[^1].Managers;
         Assert.Equal(2, records.Count);
         Assert.All(records, r => Assert.True(r.Premium > 0, "Probe ohne Prämie prüft nichts"));

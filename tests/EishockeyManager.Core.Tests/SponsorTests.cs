@@ -97,10 +97,15 @@ public class SponsorTests
         var ads = game.Ads(me);
         Assert.Equal(SponsorRating.Compute(game, me), game.Finance(me).SponsorRating);
         var start = SaveGame.Load(SaveGame.Save(game)).Game!;
-        start.Competitions.Clear();
+        // Spur zufallsstrom Teil 4 (R15-E2 = C): Der Europapokal ist bei den Werbeangeboten schon ausgelost ([ORIGINAL] Datei 0x298B1 vor
+        // der Managerschleife mit 0x2A03B), der DEB-Pokal noch nicht (Datei 0x43A8C) – Kopie nur ohne DEB-Pokal (vorher ohne alle
+        // Wettbewerbe: 67; Rückschaltprobe: alter Code + dieser Test → rot, 67 ≠ 70).
+        start.Competitions.RemoveAll(c => c is DebCup);
         var rating = SponsorRating.Compute(start, start.ActiveManager, new MinRandom());
         Assert.Equal(rating, SponsorRating.Compute(start, start.ActiveManager, new MaxRandom()));
-        Assert.NotEqual(rating, game.Finance(me).SponsorRating);
+        // Vorher wich die Bewertung von Tag 0 ab (67 → 70), weil erst sie den Europapokal sah; jetzt sieht ihn schon die
+        // Startbewertung (Verein 2 = deutscher Meister im Europapokal), der DEB-Pokal ändert sie bei diesem Start nicht.
+        Assert.Equal(rating, game.Finance(me).SponsorRating);
         Assert.InRange(rating, 0, 100);
         Assert.Equal(Enum.GetValues<AdSlotKind>().Length, ads.Offers.Count);
         foreach (var kind in Enum.GetValues<AdSlotKind>())
