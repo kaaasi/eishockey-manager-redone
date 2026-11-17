@@ -286,8 +286,12 @@ public class JugendTeamsTests
     // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
+    // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
+    // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
+    // Rückschaltprobe: beide zurückgeschaltet → alte Werte (jede allein nicht); src/ von ce658d4 + dieser Test → rot.
     private const string ExpectedActive =
-        "0:Schueler:2/11/61;0:Jugend:2/11/65;0:Junioren:2/11/66;1:Schueler:1/11/73;1:Jugend:1/11/75;1:Junioren:1/11/78;2:Schueler:1/6/80;2:Jugend:1/6/78;2:Junioren:1/6/80;3:Schueler:1/6/85;3:Jugend:1/6/83;3:Junioren:1/6/84";
+        "0:Schueler:2/11/64;0:Jugend:2/11/60;0:Junioren:2/11/65;1:Schueler:1/11/77;1:Jugend:1/12/75;1:Junioren:1/11/73;2:Schueler:1/6/81;2:Jugend:1/6/83;2:Junioren:1/6/81;3:Schueler:1/6/85;3:Jugend:1/6/85;3:Junioren:1/6/85";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -374,8 +378,12 @@ public class JugendTeamsTests
     // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
+    // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
+    // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
+    // Rückschaltprobe: beide zurückgeschaltet → alte Werte (jede allein nicht); src/ von ce658d4 + dieser Test → rot.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/65;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:3/2/57;1:Jugend:2/6/55;1:Junioren:2/6/57;2:Schueler:3/6/41;2:Jugend:3/2/43;2:Junioren:3/2/45;3:Schueler:3/6/40;3:Jugend:3/6/40;3:Junioren:3/6/42";
+        "0:Schueler:1/6/74;0:Jugend:2/2/72;0:Junioren:2/2/70;1:Schueler:2/2/59;1:Jugend:2/6/59;1:Junioren:2/6/57;2:Schueler:3/2/49;2:Jugend:3/2/49;2:Junioren:3/2/48;3:Schueler:3/6/43;3:Jugend:3/6/43;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

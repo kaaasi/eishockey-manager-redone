@@ -299,10 +299,14 @@ public class RngTwinProbeTests
     // Runde 22, Spur kaderplatz-werte Fixlauf (Review #927 R923-01; R21-D2 = A, R15-E2 = C): neu (nur aktiv) – das Training schreibt
     // nur den Kaderplatz, der Poolwert (+0x15/+0x16) folgt ihm nicht mehr (Player.SetSlotStrengths); Drift am Saisonwechsel und
     // Abgabe an Computervereine (Join → AdoptPoolValues) starten von anderen Werten. Rückschaltprobe: src/ von c3ea6c2 → alte Werte.
-    [InlineData(false, 3, "B6296599EBB5B5B2")]
-    [InlineData(true, 3, "B9023E2696F368A3")]
-    [InlineData(false, 11, "983C068DD087CED3")]
-    [InlineData(true, 11, "9CF9A9F4BC859BBF")]
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
+    // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
+    // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
+    // Rückschaltprobe: beide zurückgeschaltet → alte Werte (jede allein nicht); src/ von ce658d4 + dieser Test → rot.
+    [InlineData(false, 3, "EC748908824D980A")]
+    [InlineData(true, 3, "853C924DD82024E9")]
+    [InlineData(false, 11, "874622D5CD50643F")]
+    [InlineData(true, 11, "A61688DE6A532AFA")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -400,8 +404,12 @@ public class RngTwinProbeTests
     // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
-    [InlineData(false, "61146221ECB71E0B")]
-    [InlineData(true, "D7448847F41D85D6")]
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
+    // Datei 0x376E1–0x377A3), Abwehrreihe 2 nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D) und mit der
+    // Originaldatenbank der Sturm der Europapokal-Gegner aus Datenbankbyte 1 (A105/A836, Datei 0x2F004–0x2F009); andere Ergebnisse
+    // und anderer Zufallsverlauf. Rückschaltprobe: alle drei zurückgeschaltet → alte Werte; src/ von ce658d4 + dieser Test → rot.
+    [InlineData(false, "537EEE14227FC7E8")]
+    [InlineData(true, "C9E4F8E4C3BAC1BE")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

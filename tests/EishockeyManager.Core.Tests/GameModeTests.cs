@@ -478,8 +478,12 @@ public class GameModeTests
     // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
+    // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
+    // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
+    // Rückschaltprobe: beide zurückgeschaltet → alte Werte (jede allein nicht); src/ von ce658d4 + dieser Test → rot.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=18,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=1|2465982,400000|WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=1|2789644,400000|WorldChampion=59,CupWinner=3,GermanChampion=3,EuropeanCupWinner=0|3130052,400000|WorldChampion=63,CupWinner=3,GermanChampion=3,EuropeanCupWinner=0|3006730,500000|R1995853440";
+        "WorldChampion=52,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|1200000,400000|WorldChampion=60,CupWinner=11,GermanChampion=9,EuropeanCupWinner=0|2282204,400000|WorldChampion=53,CupWinner=9,GermanChampion=9,EuropeanCupWinner=9|2198401,500000|WorldChampion=52,CupWinner=9,GermanChampion=17,EuropeanCupWinner=9|2110154,500000|WorldChampion=52,CupWinner=0,GermanChampion=18,EuropeanCupWinner=9|2207768,500000|R3864491";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

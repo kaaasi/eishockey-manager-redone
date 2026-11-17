@@ -338,6 +338,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel; mit und ohne Anzeige weiter gleich. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – Zusatzwurf des schnellen Wegs der Play-offs (#925/A873,
+    // Datei 0x376E1–0x377A3), Abwehrreihe 2 nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D) und Sturm der
+    // Europapokal-Gegner aus Datenbankbyte 1 (A105/A836, Datei 0x2F004–0x2F009); andere Ergebnisse und Zufallsverlauf, mit und ohne
+    // Anzeige weiter gleich. Rückschaltprobe: src/ von ce658d4 + dieser Test → rot (alte Werte).
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15597 | 1994: DEB 9, DM 1, Tab 15690 | 1995: DEB 5, DM 1, Tab 16090 | 1996: DEB 12, DM 12, Tab 15936";
+        "1993: DEB 5, DM 1, Tab 15587 | 1994: DEB 19, DM 1, Tab 15500 | 1995: DEB 17, DM 9, Tab 15106 | 1996: DEB 5, DM 9, Tab 15259";
 }

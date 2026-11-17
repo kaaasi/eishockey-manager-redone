@@ -110,6 +110,12 @@ public class KaderplatzWerteFixTests
         var game = OriginalExportTests.NewGameForExport(database);
         RngTwinProbeTests.Run(game, active);
         var club = game.Clubs[game.Managers[0].ClubIndex];
+        // Spur wettbewerbe-regeln Teil 1 (R15-E2 = C): Ob nach vier Saisons ein Managerspieler abweichende Poolwerte trägt, hängt vom
+        // Spielverlauf ab (#925/A838/A105 ändern ihn; passiv dann keiner). Damit die Probe den Fall immer prüft, bekommt ein Spieler
+        // ohne Abweichung eine (Pool = Kaderplatz + 1, Pool +0x15/+0x16 neben Kader +0x10/+0x11). Rückschaltprobe: alter Code +
+        // dieser Test → grün (die Probe wird nicht schwächer).
+        if (!club.Players.Any(p => p.PoolCondition is not null || p.PoolTechnique is not null))
+            club.Players[0].SetPoolStrengths(club.Players[0].Condition + 1, club.Players[0].Technique + 1, hasSlot: true);
         Assert.Contains(club.Players, p => p.PoolCondition is not null || p.PoolTechnique is not null);
 
         var again = GameState.ImportOriginal(OriginalSaveGame.Read(OriginalExport.Export(game, raw)), database, 1);
