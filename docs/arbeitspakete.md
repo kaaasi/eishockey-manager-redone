@@ -89,7 +89,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
   Nationalteam im Live-Spiel (A455; 0x48E28 für Manager 5 zuerst lesen). Mehrsaisonprobe.
 - **Dateien:** `Core/CupsNational*.cs` (ohne A490/A492), `Core/CupsWorld.cs`, `Core/MatchEngine.National.cs`,
   `Core/MatchEngine.Minutes.cs` (A097), `Core/Player.Competitions.cs`, `Core/OriginalImport.National.cs`, Stellen oben.
-  **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+  **Erstreview:** Opus 5.5. **Status:** in Arbeit (Claude Code, Branch `paket/national`), Teil 1.
 
 ### Spur `zusehen-rest` – Zusehen und Aufstellung beim Import (Welle 1)
 
