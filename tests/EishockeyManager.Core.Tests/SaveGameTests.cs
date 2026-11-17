@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(57, SaveGame.SchemaVersion);
+        Assert.Equal(58, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -79,7 +79,9 @@ public class SaveGameTests
     //    GameState._worldCupLastPenaltyCoachDay: WM-Tag der letzten Strafe beim Land des Bundestrainers (Teil 2, A498),
     //    WorldCup._nextOrder: am 29. April gemischte Länderreihenfolge (Teil 2, A825),
     //    NationalSquadMember.Source: Spieler im Verein/Pool zum eigenen Kaderplatz des Satzes 5 (Teil 3, A412).
-    private const string ExpectedSchemaFingerprint = "A1DA2BF16367126A";
+    // 58 Tactics._goaliePulledAtEnd: Vereinsfeld 0x2C Bit 3 nach dem letzten Spiel (Spur wettbewerbe-regeln Runde 22, A838; vorläufig, nach national).
+    //    GameState._youthOfDayDone: Jugend des Tages im alten Stand schon gerechnet (Teil 2, A384/A670; dieselbe Migration).
+    private const string ExpectedSchemaFingerprint = "9E4768CB7E35455D";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

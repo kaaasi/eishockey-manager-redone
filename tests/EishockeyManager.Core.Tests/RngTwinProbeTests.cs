@@ -302,10 +302,19 @@ public class RngTwinProbeTests
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
     // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
     // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
-    [InlineData(false, 3, "69A0E2ADAA1ABA2A")]
-    [InlineData(true, 3, "BF64AD7B4F78A84A")]
-    [InlineData(false, 11, "A3A036D2D712FEF4")]
-    [InlineData(true, 11, "5DBC028EC7A06953")]
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
+    // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
+    // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
+    // Rückschaltprobe: beide zurückgeschaltet → alte Werte (jede allein nicht); src/ von ce658d4 + dieser Test → rot.
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
+    // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
+    // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
+    [InlineData(false, 3, "BE8FEF3CC00F2782")]
+    [InlineData(true, 3, "41CF28A3DDC2E95E")]
+    [InlineData(false, 11, "8C78E87A00D50711")]
+    [InlineData(true, 11, "B52677EE16B7FE09")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -406,8 +415,17 @@ public class RngTwinProbeTests
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
     // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
     // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
-    [InlineData(false, "FF39B78F56FB89AF")]
-    [InlineData(true, "D6B147FE3DC24932")]
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
+    // Datei 0x376E1–0x377A3), Abwehrreihe 2 nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D) und mit der
+    // Originaldatenbank der Sturm der Europapokal-Gegner aus Datenbankbyte 1 (A105/A836, Datei 0x2F004–0x2F009); andere Ergebnisse
+    // und anderer Zufallsverlauf. Rückschaltprobe: alle drei zurückgeschaltet → alte Werte; src/ von ce658d4 + dieser Test → rot.
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
+    // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
+    // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
+    [InlineData(false, "764F9B2FCE509AAC")]
+    [InlineData(true, "BAE86BAD03B83EA1")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

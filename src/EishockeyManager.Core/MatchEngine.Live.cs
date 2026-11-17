@@ -103,9 +103,15 @@ public static partial class MatchEngine
         Random random)
     {
         EnsureTeamValues(game);
+        // A838: [ORIGINAL] 0x84D7(0) zu Spieltagsbeginn (Datei 0x36C4F) vor der Vorbereitung 0x8365 (Datei 0x36D12, auch vor
+        // der Spielwertung 0x544C0): Abwehrreihe 2 nach einem Spielende ohne Torhüter (Squad.Tactics.GoaliePulled.cs).
+        if (!IsNation(home))
+            home.Tactics.StartMatchAfterPulledGoalie();
+        if (!IsNation(away))
+            away.Tactics.StartMatchAfterPulledGoalie();
         if (home.ForfeitsMatch || away.ForfeitsMatch)
         {
-            var forfeit = home.ForfeitsMatch
+            var forfeit = game.HomeForfeits(home, away) // A191: Manager in Indexreihenfolge (0x544C0)
                 ? new MatchReport { HomeGoals = 0, AwayGoals = 2, Forfeit = true }
                 : new MatchReport { HomeGoals = 2, AwayGoals = 0, Forfeit = true };
             return new MatchSetup
@@ -133,6 +139,8 @@ public static partial class MatchEngine
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
         PrepareFromClubFields(game, home, away, homeTeam, awayTeam, homeManaged, awayManaged);
+        // A071: Merker [0xA70E] des Spieltagsablaufs für die Minutenschleife (MatchEngine.TurnManager.cs).
+        homeTeam.TurnManager = awayTeam.TurnManager = TurnManagerOf(game, competition, game.LiveScoreboard?.Active ?? false);
         MatchReport? report = null;
         // [ORIGINAL] Datei 0x3702E–0x37085: Pokalspiel mit eingeschaltetem Anzeigeschalter (DGROUP 0x227 DEB-Pokal, Code 6;
         // 0x228 Europapokal, Code 3/5; 0x229 WM-Gruppe, Code 8; GameOptions.CupMatchUsesMinuteLoop) läuft durch die
@@ -165,11 +173,13 @@ public static partial class MatchEngine
                 new MatchSide(h.Normal, homeTeam.Box.Skaters, homeTeam.AttackLevel),
                 new MatchSide(a.Normal, awayTeam.Box.Skaters, awayTeam.AttackLevel),
                 home.Index < FirstForeignClub, away.Index < FirstForeignClub,
-                rules.WorldCup, rules.Playoff, knockOut, random);
+                rules.WorldCup, rules.Playoff, knockOut, random,
+                playoffExtraRoll: competition == MatchCompetition.Playoff && knockOut && FirstPlayoffPairingOfDate(game, home, away));
             report = new MatchReport { HomeGoals = hg, AwayGoals = ag };
             if (shootout)
             {
-                // [ORIGINAL] 0x376F0–0x377A3: random(0, 2) je Seite bis ungleich, Heim + 30 als Penaltymarke.
+                // [ORIGINAL] 0x376F0–0x377A3: random(0, 2) je Seite bis ungleich, Heim + 30 als Penaltymarke (Play-offs: ein
+                // Wurf, Gleichstand bleibt und zählt für den Gast, #925).
                 // Der Bericht hält den Gleichstand (Spielerzähler nur für echte Tore) und die Zusatztore getrennt; den
                 // Endstand mit Marke bildet CupMatch.FromReport (Spur wettbewerbe-spiel, Teil 1).
                 report.ShootoutHomeWins = hg > ag;
@@ -285,8 +295,8 @@ public static partial class MatchEngine
     /// <item>Teamwerte: Kondition und Technik je Teil aus den Vereinsfeldern 0x18–0x1B (<see cref="ClubFieldValues"/>).
     ///   [ORIGINAL] Der Lader 0x2EF1B setzt sie beim Programmstart aus den Stärkebytes der Datenbank
     ///   (v − random(0, v/10) + random(0, v/10), <see cref="LoadTeamValues(GameState)"/>), danach wandern sie
-    ///   (<see cref="DriftTeamValues"/>). [APPROX] Byte 0 auch für den Sturm (Byte 1 weicht nur bei den Europapokal-Gegnern ab
-    ///   und wird im Remake nicht geführt).</item>
+    ///   (<see cref="DriftTeamValues"/>). [ORIGINAL] A836: der Sturm aus Byte 1 (weicht nur bei den Europapokal-Gegnern ab; im
+    ///   Lader als Abweichung von Byte 0 gezogen, <see cref="LoadTeamValues(IEnumerable{Club}, Random, IReadOnlyDictionary{int, int})"/>).</item>
     /// <item>Form 0x1C/0x1D: [ORIGINAL] random(45, 55), Europapokal-Gegner (Index &gt; 64) 5 weniger, aus dem Lader.
     ///   Tagesform 0x17: [ORIGINAL] random(47, 53) aus dem Lader, nach Ligaspielen nachgeführt (<see cref="UpdateDayForm"/>).</item>
     /// <item>Einsatz 0x26 und Angriff 0x2C: hier vorläufig Automatik bzw. eigene Taktik beim Stand 0:0 gegen den Teamwert;
@@ -328,7 +338,7 @@ public static partial class MatchEngine
         int? injuryManager = null;
         if (managed && manager is not null && club.Players.Count > 0)
         {
-            squad = LiveSquad.Create(club, TrainingRules.LevelValue(manager.Level), club.Tactics);
+            squad = LiveSquad.Create(club, TrainingRules.LevelValue(manager.Level), club.Tactics, MinuteCountersOf(manager)); // A549
             // Teil 3: eigener Managerwert und Managersatz für die Verletzungen 0x38B8F ([APPROX] aus demselben Stand wie
             // der Wert der Strafen, R8W3I-05).
             ownValue = ManagedTeamValues(squad, nineOrMore: !game.IsShortHanded(club)).ManagerValue;
@@ -357,11 +367,8 @@ public static partial class MatchEngine
             AttackLevel = club.Tactics.EffectiveAttack(0, 0, value, opponentValue),
             Energy = PreparedEnergy,
             // #872: [ORIGINAL] Die Spielvorbereitung 0x84D7 lässt die Reihen 0x2E/0x30 aus dem Vorspiel stehen (Datei 0x84EB–0x857D,
-            // nur die Minuten 0x2F/0x31 auf 0); Squad.Tactics.Lines.cs. [APPROX] 0x2C Bit 3 (Torhüter draußen am Ende des Vorspiels)
-            // führt das Remake zwischen den Spielen nicht. Es gilt für jeden Verein mit gesetztem Bit 3: Die Abfrage 0x855D–0x857D
-            // ist nicht an 0x16 gebunden (nur das `and 0xf8` bei 0x8521 ist es), und Bit 3 setzt auch die Neuzählung der
-            // Managervereine (0x38A36, RecountSkaters). Im Original beginnt ein solcher Verein mit Abwehrreihe 2 (Datei 0x857D), im
-            // Remake mit der gespeicherten (Review #881 P3-3b, #882).
+            // nur die Minuten 0x2F/0x31 auf 0); Squad.Tactics.Lines.cs. A838: 0x2C Bit 3 (Torhüter draußen am Ende des
+            // Vorspiels) setzt vorher Abwehrreihe 2 (BeginMatch, Squad.Tactics.GoaliePulled.cs; Review #881 P3-3b, #882).
             DefenseLine = club.Tactics.MatchDefenseLine,
             AttackLine = club.Tactics.MatchAttackLine,
             Tactics = managerMatch ? club.Tactics : null,
@@ -377,6 +384,7 @@ public static partial class MatchEngine
             // [bp-0xF] geht als Argument mit, 0x38B8F liest ihn nicht.
             InjuryManager = squad is not null ? injuryManager : null,
             ManagerValue = ownValue,
+            ManagerSlot = managed && manager is not null ? game.Managers.ToList().IndexOf(manager) : null, // A071: 0x16 − 1
             // Teil 4: [ORIGINAL] Zähler des Managers (Vereinsfeld 0x16 = Manager + 1 → DGROUP 0x97D2 + 0x1AF · Manager).
             PowerPlayCounts = managed ? manager?.PowerPlayCounts : null,
         };
@@ -424,7 +432,7 @@ public static partial class MatchEngine
     /// <item>Vereine ohne Manager: [ORIGINAL] 0x5028 aus dem Endstand (Tore, Vorlagen, Spiele), in der Liga Torhüter
     ///   0x4DB6 (<see cref="MatchStatistics"/>); keine Strafen je Spieler. Gilt auch für eine Spielwertung 0:2 (das
     ///   Original wertet das gespeicherte Ergebnis).</item>
-    /// <item>Managervereine: Spiele + 1 für die Aufstellung; Torhüter der Aufstellung bekommt die Gegentore
+    /// <item>Managervereine: Spiele + 1 für die Aufstellung; Torhüter der Aufstellung bekommt die Gegentore (nur Liga, #897)
     ///   ([ORIGINAL] 0xA3F7: Torhüter auf dem Eis) und die Spielminuten 60/70 ([ORIGINAL] 0x874D zählt je Minute).
     ///   [ORIGINAL] Torschütze und Vorlage aus 0x541D9/0x386D1 im Spiel (<see cref="OriginalMinutes.ScoringPlayers"/>,
     ///   Teil 3); die Strafe bekommt der Spieler aus 0x378C5 (Managerverein und Nationalteam des Bundestrainers).
@@ -454,7 +462,7 @@ public static partial class MatchEngine
                 return;
             }
             // R8W3I-06: Die Strafe zählt beim Spieler aus 0x378C5 (wie beim Managerverein), kein eigener Zufallszug mehr.
-            CreditLineup(national.Players.ToList(), national.Goalkeeper, against, side, report);
+            CreditLineup(national.Players.ToList(), national.Goalkeeper, against, side, report, league: false);
             return;
         }
         if (club.Index >= FirstForeignClub || club.Players.Count == 0)
@@ -471,20 +479,24 @@ public static partial class MatchEngine
         // [ORIGINAL] Spielabrechnung 0x544C0, Kaderplatzschleife ab Datei 0x548A8: Belastung aller Spieler 50 … 150
         // (Datei 0x549A2–0x549BB; A184, Runde 12). Bei „nicht spielfähig“ endet die Abrechnung vorher.
         TrainingRules.ClampStrain(club.Players);
-        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report, CompetitionSlots.Of(competition));
+        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report,
+            competition == MatchCompetition.League, CompetitionSlots.Of(competition));
         PlayerInjuries.AfterMatch(club, injured: report.Events.Any(e => e.Kind == MatchEventKind.Injury && e.Side == side));
     }
 
     /// <summary>Zähler einer gemanagten Mannschaft aus ihrer Aufstellung (Managerverein oder Nationalteam des Bundestrainers).</summary>
+    /// <param name="league">#897: [ORIGINAL] Gegentore nur im Ligaspiel – 0xA3F7 (je Tor aus 0xA484) bricht bei Wettbewerbscode
+    /// DGROUP 0xD0C2 ≠ 7 ab (Datei 0x0A3FD–0x0A402); Pokal, Europapokal, Play-offs und Länderspiele zählen keine.</param>
     private static void CreditLineup(List<Player> lineup, Player? keeper, int against, int side, MatchReport report,
-        CompetitionSlot slot = CompetitionSlot.League)
+        bool league, CompetitionSlot slot = CompetitionSlot.League)
     {
         // [ORIGINAL] A135: Spiele je Wettbewerb (+0x06/+0x1C + Wettbewerb, Datei 0x5494C–0x5499E), Tore +0x03/+0x22 + Wettbewerb.
         foreach (var p in lineup)
             p.CountGame(slot);
         if (keeper is { } goalie)
         {
-            goalie.GoalsAgainst += against;
+            if (league)
+                goalie.GoalsAgainst += against;
             goalie.GoalieMinutes += report.Overtime ? 70 : 60;
         }
         foreach (var e in report.Events)

@@ -122,15 +122,13 @@ public class JugendTeamsTests
             Assert.True(guard < 1000);
             me.Money = Math.Max(me.Money, 1_000_000);
             var before = youth.Select(t => (t.Strength, t.Position)).ToArray();
-            var from = game.FinanceDay;
+            var from = game.CurrentDay;
             game.Continue();
-            var days = Enumerable.Range(from + 1, game.FinanceDay - from).Count(leagueDays.Contains);
-            // Runde 21, Spur zufallsstrom Teil 4 (R15-E2 = C): Der erste Schritt rechnet auch den Ligaspieltag von Tag 0
-            // (DailyYouth(0), SeasonFlow.cs) – zwei Jugendrechnungen bei einem gezählten Tag. Bisher fiel das nicht auf, weil
-            // FinanceRandom nicht von der Saat abhing (Saaten 1–16 gleich); mit den Würfen aus dem gemeinsamen Strom (Datei 0x39DEC)
-            // ändert sich die Stärke bei Saat 5 in beiden Rechnungen. Rückschaltprobe: alter Code + dieser Test → grün.
-            if (guard == 0 && leagueDays.Contains(0))
-                days++;
+            // Runde 22, Spur wettbewerbe-regeln Teil 2 (A384/A670, R15-E2 = C): Die Jugend eines Tages läuft nach dessen Menüs
+            // (Datei 0x55003–0x5502C), ein Fortsetzen rechnet also die Ligaspieltage vom Halt (einschließlich) bis zum nächsten
+            // Halt (ausschließlich); vorher die Tage nach dem Halt bis einschließlich des nächsten (Finanztag), dazu Tag 0 im ersten
+            // Schritt. Rückschaltprobe: alter Code + dieser Test → rot (Stärke ändert sich an einem Halt ohne gezählten Tag).
+            var days = Enumerable.Range(from, game.CurrentDay - from).Count(leagueDays.Contains);
             for (var t = 0; t < youth.Length; t++)
             {
                 Assert.InRange(youth[t].Strength, YouthTeam.MinStrength, YouthTeam.MaxStrength);
@@ -287,8 +285,17 @@ public class JugendTeamsTests
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e. Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
+    // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
+    // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
+    // Rückschaltprobe: beide zurückgeschaltet → alte Werte (jede allein nicht); src/ von ce658d4 + dieser Test → rot.
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
+    // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
+    // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
     private const string ExpectedActive =
-        "0:Schueler:2/11/61;0:Jugend:2/11/65;0:Junioren:2/11/66;1:Schueler:1/11/74;1:Jugend:1/11/74;1:Junioren:1/11/74;2:Schueler:1/6/79;2:Jugend:1/6/81;2:Junioren:1/6/81;3:Schueler:1/6/83;3:Jugend:1/6/84;3:Junioren:1/6/85";
+        "0:Schueler:2/11/67;0:Jugend:2/11/63;0:Junioren:2/11/61;1:Schueler:1/11/75;1:Jugend:1/11/71;1:Junioren:2/6/66;2:Schueler:1/6/81;2:Jugend:1/6/77;2:Junioren:1/11/74;3:Schueler:1/6/85;3:Jugend:1/6/82;3:Junioren:1/6/81";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -376,8 +383,17 @@ public class JugendTeamsTests
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e. Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
+    // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
+    // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
+    // Rückschaltprobe: beide zurückgeschaltet → alte Werte (jede allein nicht); src/ von ce658d4 + dieser Test → rot.
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
+    // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
+    // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/65;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:3/2/52;1:Jugend:3/2/56;1:Junioren:3/2/55;2:Schueler:3/6/47;2:Jugend:3/6/47;2:Junioren:3/6/46;3:Schueler:3/6/42;3:Jugend:3/6/42;3:Junioren:3/6/42";
+        "0:Schueler:1/6/66;0:Jugend:1/6/68;0:Junioren:2/2/66;1:Schueler:2/2/56;1:Jugend:2/2/53;1:Junioren:3/2/55;2:Schueler:2/6/47;2:Jugend:3/2/45;2:Junioren:3/6/43;3:Schueler:3/2/43;3:Jugend:3/6/42;3:Junioren:3/6/40";
 }
 
 public class JugendTeamsMigrationTests

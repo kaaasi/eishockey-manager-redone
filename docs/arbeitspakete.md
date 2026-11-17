@@ -129,7 +129,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
   Einzelregeln (A443, A456, A677, Teil-V A808) und A101 Penaltyschießen (Rechnung, Anzeige mit Markierung aus `zusehen`).
 - **Dateien:** `Core/MatchEngine.*.cs` (Stellen oben, ohne `MatchEngine.Statistics.cs`), `Core/SeasonFlow.LeagueSlots.cs`, `Core/GameState.Manager.cs`,
   `Core/StadiumStatistics.cs`, `Core/Squad.Lineup.InMatch.cs`, `UI/Screens/Team/PlayerHintLine.cs` (A808), Tests.
-  **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+  **Erstreview:** Opus 5.5. **Status:** Teile 1 und 2 fertig, PR #933 Draft; offen A553 (Entscheidung Leitstelle 17.11.: Aufruf beim Verlassen in `TacticsScreen.cs`) und Teil 3 (Fortsetzung 2 angefordert).
 
 ### Spur `einzelpunkte` – kleine V (Welle 2)
 

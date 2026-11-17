@@ -261,6 +261,7 @@ public sealed partial class GameState
 
     private void ProcessDayCore(int day, List<SeasonStep> steps)
     {
+        var youthDone = TakeYouthOfDayDone();
         OnDayManager(day);
         CleanLineups();
         CheckDismissed();
@@ -277,10 +278,7 @@ public sealed partial class GameState
             }
             return;
         }
-        // [ORIGINAL] Jugendteams von Tag 0 (Datei 0x55008–0x5502C, 0x39DEC) nach dem ersten Menü vor den Spielen (#699 Punkt 2):
-        // Der Tageswechsel zu Tag 0 vor dem Menü rechnet sie nicht (AdvanceFinance), die übrigen Tage dort ([APPROX]).
-        if (day == 0 && !WorldOnly)
-            DailyYouth(0);
+        YouthAfterMenus(day, youthDone); // Spur wettbewerbe-regeln Teil 2 (A384/A670): nach den Menüs, vor den Spielen
         MarkShortHandedClubs(); // Spur heimspiel-statistik (#165): Wertung 0:2/2:0 vor den Spielen des Tages
         ManagerDayFlag = Options.ManagerDayMinuteLoop && ManagerPlaysOn(day); // Merker vor den ersten Spielen des Tages (R14S-01)
 
@@ -413,16 +411,17 @@ public sealed partial class GameState
         // [ORIGINAL] Ewige Tabelle nach dem Austausch (Datei 0x563AF ruft 0x5667A), mit der Liga der nächsten Saison
         // (Spur saisonwechsel Teil 3, S-K4; StatisticsHistory.cs). Ewige Bilanz und „Früher“ hängen nicht am Austausch.
         RecordSeasonStatistics();
-        // [ORIGINAL] Ligamischung am 29. April nach Austausch und Ewiger Tabelle, vor dem Fenster mit den Prämien (Datei 0x5644E vor
-        // 0x5645D; Spur saison Teil 3, S-K6-a, SeasonFlow.LeagueSlots.cs). Verbraucht keinen Zufall.
-        PrepareNextLeagueSlots(record);
-        // A825 (Spur national Teil 2): [ORIGINAL] 0x35EDD mischt am 29. April auch die Länder (Datei 0x5644E, 40 Würfe aus dem
-        // gemeinsamen Strom, ohne Modusprüfung; CupsWorld.cs). Die Ligamischung zieht im Remake nicht aus dem Strom (SlotSeed), die
-        // Länder deshalb hinter ihr, damit ihr Startwert gleich bleibt.
+        // A825 (Spur national Teil 2): [ORIGINAL] 0x35EDD mischt am 29. April zuerst die Länder (Datei 0x5644E, 0x35EE3–0x35FC9: 40 Würfe
+        // aus dem gemeinsamen Strom, ohne Modusprüfung; CupsWorld.cs), danach die Ligen (Datei 0x36013 ff.).
         if (WorldCup is { } worldCup)
             worldCup.MixForNextSeason(Random);
         else
             Core.WorldCup.MixThrows(Random);
+        // [ORIGINAL] Ligamischung am 29. April nach Austausch und Ewiger Tabelle, vor dem Fenster mit den Prämien (Datei 0x5644E vor
+        // 0x5645D; Spur saison Teil 3, S-K6-a, SeasonFlow.LeagueSlots.cs), im selben Aufruf 0x35EDD hinter den Ländern. Zieht seit Spur
+        // wettbewerbe-regeln Teil 2 (#897, N3 = B) 3 · 55 · 2 Würfe aus dem gemeinsamen Strom (vorher abgeleitete Quelle SlotSeed, die
+        // Länder standen deshalb dahinter).
+        PrepareNextLeagueSlots(record);
 
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –
         // kein Platz, keine Prämie (Prämien gibt es nur aus der Vereinssaison).

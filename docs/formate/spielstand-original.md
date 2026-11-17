@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 57) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 58) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -503,6 +503,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._nextLeagueSlots` | N | – | leer (wird am 29. April gebildet) |
 | `GameState._readyManagers` | N | – | leer |
 | `GameState._seasonEndYouthPending` | N | – | false (nur Migration vor Schema 50 vom Bildschirm „Saisonende“, Spur kader-rest Teil 3) |
+| `GameState._youthOfDayDone` | N | – | false (nur Migration vor Schema 58 nach dem Tageswechsel eines Tages ab 1: Jugend des Tages schon gerechnet, Spur `wettbewerbe-regeln` Teil 2, A384/A670) |
 | `GameState._stocks` | B | `D0F4`, `01FD`, `A891`, `A895` | Zeilen `Stock` |
 | `GameState._teamRecordOpponents` | B | `AB7B+0xF94` | DGROUP 0xBB0F + 8 · Verein + Art (64 Vereine) |
 | `GameState._teamRecords` | B | `AB7B+0x1194` | DGROUP 0xBD0F + 0x10 · Verein + 2 · Art |
@@ -686,6 +687,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Tactics._matchEffort` | U | `far:9657+0x26` | Einsatz nach dem letzten Spiel (#772); Ort belegt, Import liest ihn noch nicht (Stelle für `pool`), Vorgabe 0 |
 | `Tactics._matchAttackLine` | B | `far:9657+0x30` | Sturmreihe auf dem Eis nach dem letzten Spiel (#872, Schema 51); 0x84D7 setzt sie nicht zurück |
 | `Tactics._matchDefenseLine` | B | `far:9657+0x2E` | Abwehrreihe auf dem Eis nach dem letzten Spiel (#872, Schema 51) |
+| `Tactics._goaliePulledAtEnd` | U | `far:9657+0x2C` Bit 3 | Torhüter draußen am Ende des letzten Spiels (A838, Spur `wettbewerbe-regeln`, Schema 58; 0x84D7(0) setzt danach Abwehrreihe 2, Datei 0x857D). Ort belegt, der Import liest das Bit nicht: false |
 | `Tactics._shownAutoAttack` | A | `far:9657+0x35` | nur Nationalteam: Vereinssatz +0x35–0x3A |
 | `Tactics._shownAutoEffort` | A | `far:9657+0x26` | nur Nationalteam: Vereinssatz +0x26–0x2B |
 | `Lineup._defenders` | A | `5DC3+0x15` | Reihe 1–3 ohne Sturm-Bit, Nationalteam Satz 5 |
@@ -1127,6 +1129,10 @@ liegt bei den genannten Spuren.
 - Schema 56 (Runde 22, Spur `hok-play-off-marken`, A612; nach `kaderplatz-werte`): `PlayoffSeries.Marks` (Marken der Play-off-Spiele,
   Abschnitt „Marken der Play-off-Spiele“). Migration: je Spiel 2 bei Penaltysieger, sonst 0
   (`SaveGame.Migration.HokPlayOffMarken.cs`).
+- Schema 58 (Runde 22, Spur `wettbewerbe-regeln` Teile 1–2, vorläufig, nach `national` 57): `Tactics._goaliePulledAtEnd` – Vereinsfeld 0x2C Bit 3 nach
+  dem letzten Spiel (A838). Migration: false (`SaveGame.Migration.WettbewerbeRegeln.cs`).
+  Teil 2: `GameState._youthOfDayDone` (Jugendteams nach den Menüs, A384/A670). Migration: true bei `DayOpened` und Tag ab 1, sonst
+  false.
 
 ### Zugang (Teil 3)
 

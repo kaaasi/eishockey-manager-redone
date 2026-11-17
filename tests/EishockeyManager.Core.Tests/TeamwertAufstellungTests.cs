@@ -205,7 +205,16 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): Saat 16 statt 10 – die Spielabrechnung 0x544C0 würfelt vor jedem Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7) aus dem gemeinsamen Strom, anderer Zufallsverlauf ab dem ersten Managerspiel; bei Saat 10 zählt der passive Lauf nur 141 Schritte mit Kader, unter 5–24
         // erreichen nur 16, 17, 20 und 22 passiv und aktiv mehr als 200. Rückschaltprobe: src/ von faa64d2 mit
         // Saat 16 passiv rot (alter Zufallsverlauf, dort hielt Saat 10) – die Probe hängt an der Saat.
-        var game = TestGames.Create(16);
+        // Runde 22, Spur wettbewerbe-regeln Teil 1 (R15-E2 = C): Saat 20 statt 16 – mit #925/A838 anderer Zufallsverlauf, Saat 16 passiv
+        // 186 Schritte; von 16–30 erreichen nur 20, 22, 24, 27, 29 passiv und aktiv mehr als 200. Die Probe hängt an der Saat.
+        // Rückschaltprobe: alter Code mit Saat 20 ebenfalls grün.
+        // Runde 22, Spur wettbewerbe-regeln Teil 2 (R15-E2 = C): Saat 36 statt 20 – Jugend nach den Menüs (A384/A670) und
+        // Ligamischung aus dem gemeinsamen Strom (#897 `SlotSeed`), anderer Zufallsverlauf; von 20–50 erreichen 31, 34, 36, 40, 42, 43
+        // und 48 passiv und aktiv mehr als 200 Schritte, mit altem Code davon nur 36. Die Probe hängt an der Saat. Rückschaltprobe:
+        // alter Code mit Saat 36 ebenfalls grün.
+        // Nach Merge von national (41ad124b): Saat 55 statt 36 – Saat 36 passiv 147 Schritte; von 31–75 erreichen 31, 44, 51, 55,
+        // 58, 66, 73 passiv und aktiv mehr als 200, mit main 41ad124b davon nur 55 und 66. Rückschaltprobe: main mit Saat 55 grün.
+        var game = TestGames.Create(55);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();

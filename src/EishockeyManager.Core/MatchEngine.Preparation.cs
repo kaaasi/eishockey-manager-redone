@@ -86,5 +86,6 @@ public static partial class MatchEngine
         }
         club.Tactics.RecordMatchFields(team.Effort, team.AttackLevel);
         club.Tactics.RecordMatchLines(team.DefenseLine, team.AttackLine);
+        club.Tactics.RecordGoaliePulled(team.GoaliePulled); // A838: 0x2C Bit 3 bleibt stehen (Squad.Tactics.GoaliePulled.cs)
     }
 }

@@ -308,8 +308,17 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
     // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
     // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
-    [InlineData(false, "0552878CD8AB9728")]
-    [InlineData(true, "85481C6B7583D617")]
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
+    // Datei 0x376E1–0x377A3), Abwehrreihe 2 nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D) und mit der
+    // Originaldatenbank der Sturm der Europapokal-Gegner aus Datenbankbyte 1 (A105/A836, Datei 0x2F004–0x2F009); andere Ergebnisse
+    // und anderer Zufallsverlauf. Rückschaltprobe: alle drei zurückgeschaltet → alte Werte; src/ von ce658d4 + dieser Test → rot.
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
+    // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
+    // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
+    [InlineData(false, "9DCFA6DA424C2156")]
+    [InlineData(true, "F01D47A55FBEF437")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -401,8 +410,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
     // Spur national Runde 22 Teil 1 (A109, A424, A494, A551): neu – Länderspiele mit Spielvorbereitung 0x8365 und stehendem Einsatz 0x26, Tagesform nach WM-Gruppenterminen, Verletzungen und Belastung im Satz 5; anderer Zufallsverbrauch ab der ersten WM. Rückschaltprobe: Core-Änderung zurück → alter Wert.
     // Runde 22, Spur national Teil 2 (A498, A825; R21-D2 = A): neu – die Länder mischt 0x35EDD am 29. April aus dem gemeinsamen Strom (Datei 0x5644E, auch ohne WM 40 Würfe), Schritt (c) der WM-Schleife entfällt nach der letzten Strafe beim Land des Bundestrainers (Datei 0x35AB8 → 0xA70E = 5); anderer Zufallsverbrauch ab dem ersten 29. April bzw. der ersten WM. Rückschaltprobe: SeasonFlow.cs/CupsWorld.cs/CupsNational.WorldCupLoop.cs von fbdc326 → alte Werte.
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Ligamischung am 29. April aus dem gemeinsamen Strom
+    // (#897 `SlotSeed`, N3 = B; Datei 0x5644E, 0x36013/0x3602E); die Jugend (A384/A670) läuft im Modus „nur Weltkugel“ nicht.
+    // Rückschaltprobe: nur die Mischung zurückgeschaltet → Wert von Teil 1.
+    // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
     private const string WorldOnlyReference =
-        "WorldChampion=55|500000|WorldChampion=52|-1524166|WorldChampion=54|-4543621|WorldChampion=52|-9222640|WorldChampion=52|-16470944|R1556152998";
+        "WorldChampion=55|500000|WorldChampion=53|-1521730|WorldChampion=52|-4539081|WorldChampion=52|-9211561|WorldChampion=52|-16453791|R594569882";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

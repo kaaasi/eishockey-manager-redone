@@ -341,6 +341,15 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
     // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
     // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
+    // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – Zusatzwurf des schnellen Wegs der Play-offs (#925/A873,
+    // Datei 0x376E1–0x377A3), Abwehrreihe 2 nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D) und Sturm der
+    // Europapokal-Gegner aus Datenbankbyte 1 (A105/A836, Datei 0x2F004–0x2F009); andere Ergebnisse und Zufallsverlauf, mit und ohne
+    // Anzeige weiter gleich. Rückschaltprobe: src/ von ce658d4 + dieser Test → rot (alte Werte).
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C; ändert schon 1993) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`,
+    // N3 = B; Datei 0x5644E; ab 1994); mit und ohne Anzeige weiter gleich. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
+    // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15597 | 1994: DEB 8, DM 6, Tab 15707 | 1995: DEB 6, DM 0, Tab 15763 | 1996: DEB 10, DM 1, Tab 15982";
+        "1993: DEB 5, DM 1, Tab 15582 | 1994: DEB 9, DM 5, Tab 15890 | 1995: DEB 9, DM 1, Tab 15296 | 1996: DEB 8, DM 8, Tab 15098";
 }
