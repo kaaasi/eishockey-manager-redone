@@ -326,7 +326,7 @@ FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die S
 | Kaderplatz `+0x1C`/`+0x1E`/`+0x20` (Wörter) | Spiele beim jetzigen Verein je Wettbewerb 0/1/2; gleich `+0x06`/`+0x07`/`+0x08` bis zum Saisonwechsel, danach **nicht** zurückgesetzt | FILE16A/FILE22/FILE05/FILE24 Spiegel ohne Ausnahme (außer dem gekauften DAFFNER, FILE07 Platz 25); FILE23 `+0x1C` = 3, `+0x1E` = 2 bei `+0x06`/`+0x07` = 0 |
 | Kaderplatz `+0x22`/`+0x24`/`+0x26` (Wörter) | Tore beim jetzigen Verein je Wettbewerb; gleich `+0x03`/`+0x04`/`+0x05` (Feldspieler), beim Saisonwechsel **nicht** zurückgesetzt; Torhüter 0 (sein `+0x03` sind Gegentore) | wie oben, z. B. HADRASCHEK FILE22 `+0x04` = 4, `+0x24` = 4 → FILE23 `+0x04` = 0, `+0x24` = 4; em.exe Datei `0x54300`/`0x54314` (`cmp word [+0x22],0xFF`, `inc word`) |
 | Kaderplatz `+0x09` Bit 0x02, `+0x0D`, `+0x17` | verletzt, Restdauer, Verletzungsart | em.exe Datei `0x5C44` (`or +0x09,2`), `0x5BE5` (`+0x0D`), `0x5C4C` (`+0x17`), `0x5C50` (`+0x0A = 0`); FILE24 STEFAN `+0x09` 00→02, `+0x0D` 0→10, `+0x17` 00→10 |
-| Kaderplatz `+0x02` | offen; steigt in der Saison (TRAVNICEK, MORRISON, LANGLOIS 0→2 von FILE16A nach FILE22), wird beim Saisonwechsel **nicht** zurückgesetzt | FILE22→FILE23 unverändert |
+| Kaderplatz `+0x02` | eingespielte Reihe (A093): vor jedem Spiel je Platz random(0, 4), bei 0 = `+0x15` & 0x7F (em.exe Datei `0x548A8`–`0x548E7`); Leser Technik − 10 bei Level 4/5 (Datei `0x09A65`–`0x09A8A`); neuer Platz 0, Kauf vom Manager kopiert ihn (`0x478C4`); beim Saisonwechsel **nicht** zurückgesetzt | FILE16A→FILE22 (0→2), FILE22→FILE23 unverändert; Stand `a093` FILE71/72 alle 0, FILE73/74 fünf bzw. drei Plätze gleich der Reihe |
 | Pool `+0x1C` | Ligaspiele der Saison (gleich Kaderplatz `+0x06`), Saisonwechsel → 0 | FILE22→FILE23, 16 von 16 → 0 |
 | DGROUP `0x375 + 2 · m` | „automatisch aufstellen“ liegt in HOK `0x00844` | FILE05 01, FILE06 00, FILE24 00 (Byte `0x376` = 01), FILE25 01 |
 | Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf wird der Spieler nach Spielerart einsortiert (vor dem ersten leeren Platz oder dem ersten Platz größerer Art; ein Stürmer kommt damit hinten an) | FILE05 → FILE07 (Kauf eines Stürmers) und FILE26 (Verkauf), em.exe Datei `0x42D55`–`0x42DA1` mit memmove ab `0x42DC3` (Kauf, R13GN-01/#622), `0x425B6` (Verkauf); Remake `KaderStartRunde13Teil4Tests` (PR #599), `KaufEinsortierenTests` (PR #623) |
@@ -714,6 +714,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Player.PoolForm` | B | `far:8253+0x17` | nur wenn ≠ Kader `+0x12` (Verletzung senkt nur den Pool, em.exe Datei 0x05B34–0x05B7C; neuer Kaderplatz übernimmt ihn, Datei 0x42EFF; A066, Schema 50) |
 | `Player.PoolCondition` | B | `far:8253+0x15` | nur wenn ≠ Kader `+0x10` (Drift 0x054D9 auch bei Spielern mit Kaderplatz, A714; neuer Kaderplatz übernimmt ihn, Datei 0x42EC9; Spur `kaderplatz-werte`, Schema 55) |
 | `Player.PoolTechnique` | B | `far:8253+0x16` | nur wenn ≠ Kader `+0x11` (wie `PoolCondition`; Datei 0x42EE4) |
+| `Player.PlayedLine` | B | `5DC3+0x02` | eingespielte Reihe (A093; Spur `kaderplatz-werte` Teil 2, Schema 55); Satz 5 (Nationalkader) nicht geführt |
 | `Player.Games` | B | `5DC3+0x06` | Summe `+0x06` … `+0x08` |
 | `Player.GoalieMinutes` | B | `far:8253+0x1F` | Torhüter |
 | `Player.Goals` | B | `5DC3+0x03` | Summe `+0x03` … `+0x05` (Feldspieler) |
@@ -1086,7 +1087,8 @@ liegt bei den genannten Spuren.
   ziehen aus `GameState.Random`. Migration wie Schema 53 (dieselbe Datei). `GameState._contractRandom` bleibt als Quelle der
   Computerkader (`ComputerSquadRandom`, ohne Gegenstück im Original).
 - Schema 55 (Runde 22, Spur `kaderplatz-werte` Teil 1, vorläufig): `Player.PoolCondition`/`PoolTechnique` – Poolwerte
-  +0x15/+0x16 neben dem Kaderplatz (Drift A714). Migration: null (`SaveGame.Migration.KaderplatzWerte.cs`).
+  +0x15/+0x16 neben dem Kaderplatz (Drift A714); Teil 2 `Player.PlayedLine` (Kaderplatz +0x02, A093). Migration: null bzw. 0
+  (`SaveGame.Migration.KaderplatzWerte.cs`).
 
 ### Zugang (Teil 3)
 

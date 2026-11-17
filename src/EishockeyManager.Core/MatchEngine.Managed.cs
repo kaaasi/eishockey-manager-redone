@@ -186,9 +186,11 @@ public static partial class MatchEngine
     ///   <see cref="LiveSquad.SkatersPerPart"/> (nur im Spiel); in der Abwehr zählt der Torhüter (+0x15 = 1) immer mit.</item>
     /// <item>Energiefaktor e/2 + 50 % (+0x1B; ohne Spiel und beim Torhüter 100 %) auf die Technik; Kondition (+0x10) und
     ///   Form (+0x12) unverändert; Halbbytes Unterzahl/Überzahl (+0x19) aufsummiert.</item>
-    /// <item>Im Spiel: Level 4/5 (0xED8 &lt; 2) Technik − 10 außerhalb der eigenen Reihe (+0x02; [APPROX] im Remake ist die
-    ///   Reihe die aufgestellte, der Abzug entfällt); 0xED8 &lt; 5 Technik − 15 auf fremder Position (Gruppe 0x238:0 ≠
-    ///   Teil); Bundestrainer (Manager 5) + Länderspiele / 8, höchstens 99.</item>
+    /// <item>Im Spiel: Level 4/5 (0xED8 &lt; 2) Technik − 10 außerhalb der eingespielten Reihe (A093, Datei 0x09A65–0x09A8A:
+    ///   (+0x02) − 1 ≠ Reihe und Technik nach dem Energiefaktor &gt; 12, auch bei +0x02 = 0 und beim Torhüter;
+    ///   <see cref="Player.PlayedLine"/>, gewürfelt vor dem Spiel in <see cref="SquadSlotRules.RollPlayedLines"/>; [APPROX] nicht
+    ///   beim Bundestrainer, dessen Satz 5 ein eigenes +0x02 hat, das das Remake nicht führt); 0xED8 &lt; 5 Technik − 15 auf
+    ///   fremder Position (Gruppe 0x238:0 ≠ Teil); Bundestrainer (Manager 5) + Länderspiele / 8, höchstens 99.</item>
     /// <item>Abwehr: Technik · 80 % (Feldspieler) bzw. 140 % (Torhüter) – DGROUP 0x4946.</item>
     /// <item>Summen / 3 (auch bei weniger Spielern). Abwehr in Unterzahl oder ohne Torhüter: Technik − (45 − Unterzahl +
     ///   16 · (−1 − Feldspielerdifferenz)), ohne Torhüter zusätzlich / 3, nicht unter 0. Ohne Torhüter im Spiel (Abwehr,
@@ -224,6 +226,8 @@ public static partial class MatchEngine
             underplay += under;
             condition += p.Player.Condition;
             var t = p.Player.Technique * factor / 100;
+            if (squad.Difficulty < 2 && inMatch && !squad.NationalCoach && p.Player.PlayedLine - 1 != line && t > 12)
+                t -= 10;
             if (squad.Difficulty < 5 && inMatch && !goalie && TrainingRules.Group(p.Player.Role) - 1 != part && t > 15)
                 t -= 15;
             if (nationalCoach && inMatch)

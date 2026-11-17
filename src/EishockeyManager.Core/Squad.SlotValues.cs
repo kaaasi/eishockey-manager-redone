@@ -47,6 +47,29 @@ public static class SquadSlotRules
     /// Markt-Platz samt Gehalt über den neuen Platz (0x47907, 0x47929), der Wert geht verloren; nur der Zufall wird verbraucht.
     /// </summary>
     public static void ConsumeLoanSalary(Random random) => _ = TransferRules.Random16(random, 90, 115);
+
+    /// <summary>
+    /// Eingespielte Reihe (Kaderplatz +0x02, A093) aller Kaderplätze eines Managers vor dem Spiel. [ORIGINAL] Spielabrechnung 0x544C0
+    /// (läuft vor den Minuten, <c>MatchGate.cs</c>), Kaderplatzschleife Datei 0x548A8–0x548E7: je Kaderplatz in Kaderfolge (Anzahl
+    /// 0x120:0x66 Modus 0, Datei 0x5482D) random(0, 4); bei 0 wird +0x02 = +0x15 &amp; 0x7F (Reihe der Aufstellung ohne Sturmbit, 0 =
+    /// nicht aufgestellt, Torhüter 1). Jeder Platz würfelt, auch nicht eingesetzte. Beleg <c>a093</c>: FILE71/72 alle +0x02 = 0, nach
+    /// einem Spieltag FILE73 Berlin Plätze 1, 4, 6, 19 und München 14, FILE74 München 2, 14, 18 – jeweils gleich der Reihe, rund ein
+    /// Fünftel der Plätze. [APPROX] Ein Verletzter steht im Remake nicht mehr in der Aufstellung (im Original behält er +0x15,
+    /// <c>Squad.Lineup.cs</c>) und spielt deshalb Reihe 0 ein.
+    /// </summary>
+    public static void RollPlayedLines(Club club, Random random)
+    {
+        ArgumentNullException.ThrowIfNull(club);
+        ArgumentNullException.ThrowIfNull(random);
+        var players = club.Players.ToList();
+        for (var i = 0; i < Math.Min(players.Count, OriginalSaveGame.SquadSlotsPerManager); i++)
+        {
+            if (TransferRules.Random16(random, 0, 4) != 0)
+                continue;
+            var place = club.Lineup.FindSlot(players[i]);
+            players[i].PlayedLine = place is { } s ? LiveSquad.PositionOf(s) & 0x7F : 0;
+        }
+    }
 }
 
 public sealed partial class Player
@@ -61,6 +84,14 @@ public sealed partial class Player
 
     /// <summary>Technik im Poolsatz (Pool +0x16), wenn sie von der des Kaderplatzes (+0x11) abweicht; sonst null (wie <see cref="PoolCondition"/>).</summary>
     public int? PoolTechnique { get; set; }
+
+    /// <summary>
+    /// Eingespielte Reihe am Kaderplatz (+0x02, A093): 1 … 4 wie die Reihe der Aufstellung (+0x15 ohne Sturmbit), 0 = keine. Gewürfelt
+    /// vor jedem Spiel (<see cref="SquadSlotRules.RollPlayedLines"/>), gelesen im Spiel bei Level 4/5 (<c>MatchEngine.ManagedLineValues</c>,
+    /// Datei 0x09A65–0x09A8A). [ORIGINAL] Ein neuer Kaderplatz beginnt mit 0 (memset 0x42E3A), der Kauf von einem Manager übernimmt den
+    /// Wert (Datei 0x478C4); der Saisonwechsel lässt ihn stehen (Datei 0x27A0C–0x27AA8, A088).
+    /// </summary>
+    public int PlayedLine { get; set; }
 
     /// <summary>Kondition und Technik des Poolsatzes (Pool +0x15/+0x16).</summary>
     public (int Condition, int Technique) PoolStrengths => (PoolCondition ?? Condition, PoolTechnique ?? Technique);
@@ -98,8 +129,8 @@ public sealed partial class Player
     /// Felder eines neu angelegten Kaderplatzes (Datei 0x42CB1, siehe <see cref="SquadSlotRules"/>): Belastung und Tendenz aus
     /// <paramref name="start"/>, Über-/Unterzahl 0 (memset; A674), Liga-Tore und -Spiele aus dem Pool (+0x1B/+0x1C, höchstens 255;
     /// A545), Pokal- und Europapokalzähler 0, beim Torhüter keine Gegentore (Pool +0x1B hat für ihn keinen Schreiber), Ankündigung und
-    /// Sperre +0x18 = 0, Stärken aus dem Pool (<see cref="AdoptPoolValues"/>). Strafen und Verletzung (+0x00, +0x01, +0x09, +0x0D,
-    /// +0x17) übernimmt nur der Kauf von einem Manager (<paramref name="fromManager"/>, Datei 0x4787D–0x478CB).
+    /// Sperre +0x18 = 0, Stärken aus dem Pool (<see cref="AdoptPoolValues"/>). Strafen, Verletzung und eingespielte Reihe (+0x00, +0x01, +0x09, +0x0D,
+    /// +0x17, +0x02) übernimmt nur der Kauf von einem Manager (<paramref name="fromManager"/>, Datei 0x4787D–0x478CB).
     /// </summary>
     public void ApplyNewSlot(SlotStart start, bool fromManager)
     {
@@ -113,6 +144,7 @@ public sealed partial class Player
         if (!fromManager)
         {
             Penalties2 = Penalties5 = 0;
+            PlayedLine = 0;
             InjuredGames = 0;
             InjuryKind = InjuryKinds.Unknown;
         }

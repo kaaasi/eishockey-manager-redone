@@ -254,6 +254,7 @@ public sealed partial class GameState
         if (club is not null && p.OnLoan && p.Loan is { } loan)
             s[0x0C] = (byte)(0x80 | (slotOf[loan.Origin.Index] & 0x7F));
         s[0x0E] = OriginalExport.Byte(p.TrendScore);
+        s[0x02] = OriginalExport.Byte(p.PlayedLine); // A093: eingespielte Reihe (Squad.SlotValues.cs)
         s[0x0F] = (byte)poolIndex;
         s[0x10] = OriginalExport.Byte(p.Condition);
         s[0x11] = OriginalExport.Byte(p.Technique);

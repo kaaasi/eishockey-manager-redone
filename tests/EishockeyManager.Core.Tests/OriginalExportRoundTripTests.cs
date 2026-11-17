@@ -122,7 +122,9 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         // R727P-04: Die Regel „Name: Poolspieler, die beim Import einem Remake-Namen weichen“ ist entfallen; ihre 24 Treffer kamen
         // vom Verdrängen eines fremden Poolsatzes durch einen Kaderspieler, dessen zweiter Poolsatz gleichen Namens auf dem Markt steht.
         new("far:8253", 33, 0x00, 0x11, "Name: Reste eines früheren Namens hinter dem Nullbyte (Export schreibt Nullbytes)", If: BehindPoolName),
-        new("5DC3", 0x34, 0x02, 0x02, "ungedeutet"),
+        // A093 (kaderplatz-werte, Teil 2): +0x02 = eingespielte Reihe (Player.PlayedLine); Satz 5 schreibt der Export nicht.
+        new("5DC3", 0x34, 0x02, 0x02, "Nationalkader: eingespielte Reihe des Satzes 5 (Restlücke) und ungenutzte Plätze",
+            If: (stand, slot, at) => NationalSlots.Contains(slot) || UnusedSlot(stand, slot, at)),
         new("5DC3", 0x34, 0x1A, 0x1B, "ungedeutet (Kaderplatz; Markt: Sperre)"),
         // Spur hok-import-werte: Torhüter haben dort an keinem Stand Werte (A624, Datei 0xA3F7 zählt nur +0x03); Reste stehen nur
         // in ungenutzten Plätzen, der Vereinswert der Tore im Nationalkader.
