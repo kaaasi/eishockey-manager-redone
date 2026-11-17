@@ -27,4 +27,27 @@ public class EinzelpunkteBedienungTests
         Assert.Equal(under, lengths[0]);
         Assert.Equal(over, lengths[1]);
     }
+
+    /// <summary>
+    /// A367, em.exe Datei 0x4651–0x469B (Tore: Byte +0x03 + i, Klammer Wort +0x22 + 2 i) und 0x4753/0x4793 (Spiele: +0x06 + i,
+    /// +0x1C + 2 i): je Spalte Liga/DEB-Pokal/Europapokal „Zahl( n)“, 0 als „-“. Vorher: Pokalspalten immer „-( -)“, Klammer fest „( -)“.
+    /// </summary>
+    [Fact]
+    public void DataWindow_GoalsAndGames_PerCompetitionWithClubCounters()
+    {
+        var p = new Player
+        {
+            Name = "TEST", Role = PlayerRole.Forward,
+            Games = 30, CupGames = 3, EuropeGames = 2, Goals = 12, CupGoals = 2, EuropeGoals = 1,
+            ClubGamesCarry = 40, ClubCupGamesCarry = 6, ClubGoalsCarry = 9,
+        };
+        // Liga: 25 Spiele (30 − 3 − 2), 9 Tore (12 − 2 − 1); beim Verein 25 + 40 und 9 + 9; Pokal 3 + 6 Spiele, 2 + 0 Tore.
+        Assert.Equal("9( 18)", PlayerDataWindow.CompetitionCell(p, 0, goals: true));
+        Assert.Equal("25( 65)", PlayerDataWindow.CompetitionCell(p, 0, goals: false));
+        Assert.Equal("2( 2)", PlayerDataWindow.CompetitionCell(p, 1, goals: true));
+        Assert.Equal("3( 9)", PlayerDataWindow.CompetitionCell(p, 1, goals: false));
+        Assert.Equal("1( 1)", PlayerDataWindow.CompetitionCell(p, 2, goals: true));
+        Assert.Equal("2( 2)", PlayerDataWindow.CompetitionCell(p, 2, goals: false));
+        Assert.Equal("-( -)", PlayerDataWindow.CompetitionCell(new Player { Name = "N", Role = PlayerRole.Forward }, 1, goals: true));
+    }
 }
