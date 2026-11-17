@@ -50,13 +50,14 @@ public sealed partial class Club
             return right ? LineupResult.Unchanged : LineupResult.NoLineSelected;
         if ((player.Role == PlayerRole.Goalkeeper) != (l == Lineup.GoalkeeperLine))
             return LineupResult.WrongRole;
-        foreach (var slot in Lineup.SlotsOfLine(l, player.Role))
+        foreach (var slot in Lineup.SearchSlots(l, player.Role))
         {
             if (Lineup[slot] is not null)
                 continue;
-            // [ORIGINAL] Datei 0x41533: Platz +0x15 und eingesetzt +0x0A = 1, ohne Grenze 22 (Datei 0x40E2A).
+            // [ORIGINAL] Datei 0x41533: Platz +0x15 und eingesetzt +0x0A = 1, ohne Grenze 22 (Datei 0x40E2A); andere Hälfte der
+            // Reihe wie beim Linksklick (Datei 0x414D3, A683).
             TakeOverDressed();
-            if (!Lineup.Assign(slot, player))
+            if (!(slot.Role == player.Role ? Lineup.Assign(slot, player) : Lineup.PlaceSkater(slot, player)))
                 return LineupResult.WrongRole;
             _dressed.Add(player.Id);
             return LineupResult.Assigned;

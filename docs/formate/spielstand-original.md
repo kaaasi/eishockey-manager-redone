@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 57) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 58) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -519,6 +519,8 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameSetup.DebCup` | N | – | true (kein Schalter des Originals) |
 | `GameSetup.Duration` | B | `0118+1` | Regler Dauer 0–3; Gegenprobe `5A14` (Dauer 0 → 1994, 3 → 22222) |
 | `GameSetup._startLeague` | B | `0118+2` | Regler Start-Liga (DGROUP 0x11A), ein Wert für alle Manager (Schema 42) |
+| `GameSetup._level` | B | `0118+0` | Regler Level (DGROUP 0x118), ein Wert für alle Manager (Spur `kader-regeln`, Schema 58) |
+| `GameSetup._startStrength` | B | `0118+3` | Regler Start-Stärke (DGROUP 0x11B), ein Wert für alle Manager (Schema 58) |
 | `GameSetup.EuropeAndWorldCup` | B | `D0B9` | Wert 1/4 (Weltkugel) |
 | `GameSetup.Managers` | B | `Kopf`, `965B` | je Manager eine `ManagerSetup` |
 | `GameSetup.Options` | B | `021D`, `0262` | Zeilen `GameOptions` |
@@ -1127,6 +1129,9 @@ liegt bei den genannten Spuren.
 - Schema 56 (Runde 22, Spur `hok-play-off-marken`, A612; nach `kaderplatz-werte`): `PlayoffSeries.Marks` (Marken der Play-off-Spiele,
   Abschnitt „Marken der Play-off-Spiele“). Migration: je Spiel 2 bei Penaltysieger, sonst 0
   (`SaveGame.Migration.HokPlayOffMarken.cs`).
+- Schema 58 (Runde 22, Spur `kader-regeln` Teil 1, nach `national`): `GameSetup._level`/`_startStrength` – Level und Start-Stärke ein
+  Wert je Spiel (DGROUP 0x118/0x11B, A054/A518). Migration: Werte von Manager 0 für alle Manager, auch `Manager.Level`
+  (`SaveGame.Migration.KaderRegeln.cs`).
 
 ### Zugang (Teil 3)
 

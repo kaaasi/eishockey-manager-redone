@@ -232,7 +232,6 @@ public sealed class HighscoreInputs
 ///   Bewertung und die Spielerwerte rechnen mit festen Zufallsströmen, damit das Öffnen des Bildschirms nichts verändert.</item>
 /// <item>Der Europapokal-Stand (Gruppe 1, Endrunde 2) und die weiteren Pokalbytes (nur 0x9744 = 1 bei einem Manager im Spieljahr 1994
 ///   ist belegt) sind nicht abgebildet; Meister-Kennzahl 0x80 | 0x35 statt der Play-Off-Stufe des Brackets.</item>
-/// <item>Das Remake führt Level, Startliga und Startstärke je Manager; für den Schlüssel gelten die des ersten Managers.</item>
 /// </list>
 /// Die Formel enthält Eigenheiten, die wie im Original übernommen sind: Der Meister erhält durch die Kennzahl 0x80 + … einen
 /// <i>negativen</i> Ligaterm (36 − 181) · 7, und die Europapokal-Wertung entfällt für ausgeschiedene DEB-Teilnehmer.
@@ -246,7 +245,11 @@ public static class HighscoreRules
 
     private static readonly long[] StadiumPrices = [3_600_000, 1_350_000, 1_920_000, 1_110_000, 990_000, 3_900_000, 1_740_000, 1_560_000, 1_350_000];
 
-    /// <summary>Schlüssel der Bestenliste dieser Spielvorbereitung oder null, wenn es keine gibt.</summary>
+    /// <summary>
+    /// Schlüssel der Bestenliste dieser Spielvorbereitung oder null, wenn es keine gibt. [ORIGINAL] Level, Dauer, Start-Liga und
+    /// Start-Stärke sind ein Wert für das ganze Spiel (DGROUP 0x118–0x11B, A060): <see cref="GameSetup.Level"/>,
+    /// <see cref="GameSetup.StartLeague"/>, <see cref="GameSetup.StartStrength"/>.
+    /// </summary>
     public static int? Key(GameSetup setup)
     {
         var bits = setup.ModeBits;
@@ -254,15 +257,15 @@ public static class HighscoreRules
             return WorldOnlyKey;
         if ((bits & 1) == 0 || setup.Managers.Count == 0)
             return null;
-        var first = setup.Managers[0];
+        var level = setup.Level;
         var duration = (int)setup.Duration;
-        var league = (int)first.StartLeague;
-        var strength = (int)first.StartStrength;
-        if (first.Level <= 2)
+        var league = (int)setup.StartLeague;
+        var strength = (int)setup.StartStrength;
+        if (level <= 2)
             return null;
         if (strength != (int)StartStrength.Mittelfeld && !(duration == 0 && league == 0))
             return null;
-        return first.Level + 4 * duration + 32 * league + 128 * strength - 2;
+        return level + 4 * duration + 32 * league + 128 * strength - 2;
     }
 
     /// <summary>Dateiname der Liste (ohne Ordner): <c>h.&lt;Schlüssel&gt;</c>.</summary>

@@ -43,8 +43,9 @@ public static class SquadSlotRules
     }
 
     /// <summary>
-    /// Zug des Leihgehalts in 0x42CB1 (Datei 0x42F1F–0x42F34: · random(90, 115) / 100 bei +0x0C = 99). Die Leihe kopiert danach den
-    /// Markt-Platz samt Gehalt über den neuen Platz (0x47907, 0x47929), der Wert geht verloren; nur der Zufall wird verbraucht.
+    /// Zug des Leihgehalts in 0x42CB1 (Datei 0x42F1F–0x42F34: · random(90, 115) / 100 bei Argument 99), ohne das Gehalt zu bilden
+    /// (Zwillingsströme in Tests). Das Gehalt selbst bleibt nach der Kopie des Markt-Platzes erhalten (Datei 0x4783A, 0x47929) und
+    /// entsteht in <see cref="Contracts.LoanSalary"/> (Spur kader-regeln, A118).
     /// </summary>
     public static void ConsumeLoanSalary(Random random) => _ = TransferRules.Random16(random, 90, 115);
 

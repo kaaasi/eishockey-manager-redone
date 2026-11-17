@@ -72,20 +72,23 @@ public static class PlayerFactory
     /// Nachfolger eines Spielers, der die Laufbahn beendet hat (noch in keinem Kader). [ORIGINAL] Neuanlage im selben Pooleintrag,
     /// Datei 0x2787A–0x279DA: Alter random(18, 25), s = random(40, 92), die Grundstärken (Pool +0x15, +0x16) je
     /// random(s − 5, s + 5), Länderspiele (+0x19) 0; der Verein bleibt. Im Remake sind das Kondition und Technik.
-    /// [APPROX] Das Original behält den Namen des Pooleintrags; das Remake legt einen neuen Spieler an (neuer Name, neue ID), damit
-    /// der Ruheständler mit seiner Laufbahn erhalten bleibt. Form random(45, 60), Talent random(0, 9) und Energie
-    /// <see cref="TalentEnergy"/> sind ergänzt (im Original nicht belegt).
+    /// A631 (Spur kader-regeln): [ORIGINAL] Datei 0x27947–0x279D6 schreibt nur +0x14, +0x15, +0x19, +0x16 – Name (+0x00), Talent
+    /// (+0x12), Form (+0x17, <see cref="Player.PoolForm"/>) und Rolle bleiben die des Pooleintrags (<paramref name="old"/>).
+    /// [APPROX] Das Remake legt einen neuen Spieler an (neue ID), damit der Ruheständler mit seiner Laufbahn erhalten bleibt;
+    /// Energie <see cref="TalentEnergy"/> und Tendenz steigend sind ergänzt (gehören im Original zum Kaderplatz).
     /// </summary>
-    public static Player CreateRenewal(GameState game, string name, PlayerRole role, Random random)
+    /// <param name="name">Name des Nachfolgers: im Pool der des Eintrags; Computerkader des Remakes ziehen einen neuen.</param>
+    public static Player CreateRenewal(GameState game, Player old, string name, Random random)
     {
         ArgumentNullException.ThrowIfNull(game);
-        var p = new Player { Name = name, Role = role };
+        ArgumentNullException.ThrowIfNull(old);
+        var p = new Player { Name = name, Role = old.Role, IsForeigner = old.IsForeigner };
         p.Age = TransferRules.Random16(random, 18, 25);
         var s = TransferRules.Random16(random, 40, 92);
         p.Condition = Player.Clamp(TransferRules.Random16(random, s - 5, s + 5));
         p.Technique = Player.Clamp(TransferRules.Random16(random, s - 5, s + 5));
-        p.Form = TransferRules.Random16(random, 45, 60);
-        p.Talent = TransferRules.Random16(random, 0, 9);
+        p.Form = old.PoolForm ?? old.Form;
+        p.Talent = old.Talent;
         p.Energy = TalentEnergy;
         p.Trend = PlayerTrend.Rising;
         game.AssignPlayerId(p);
@@ -170,7 +173,9 @@ public static class PlayerFactory
 
     /// <summary>
     /// Nimmt einen Spieler in einen Kader auf: nach Spielerart einsortiert (<see cref="InsertSlot"/>), Nr. = Kaderplatz + 1 (<see cref="Club.RenumberPlayers"/>), neuer Vertrag zur Gehaltsforderung,
-    /// ohne Versicherung und ohne abgelehntes Angebot. Gemeinsamer Abschluss für Transfer, Leihe und Talentsuche.
+    /// ohne Versicherung und ohne abgelehntes Angebot. Gemeinsamer Abschluss für Transfer, Leihe und Talentsuche. Das Gehalt
+    /// <see cref="Contracts.Demand"/> bleibt nur bei Computervereinen; Kaderplätze der Manager setzen die Aufrufer danach auf
+    /// Wert(Gehalt) (Kauf <c>Transfer.Purchase.cs</c>, Leihe <see cref="Contracts.LoanSalary"/>, Talentsuche; A118/A120).
     /// </summary>
     /// <param name="managerSquad">Kader eines Managervereins (Kaderplätze des Originals, <see cref="InsertSlot"/>); <c>false</c> für
     /// Computervereine.</param>

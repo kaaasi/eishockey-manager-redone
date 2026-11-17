@@ -433,10 +433,9 @@ public sealed class SetupScreen : Screen
         s.Blit(elements, new Rect(113, mode.ClubCompetitions ? 89 : 76, 57, 13), ModeFlag.X, ModeFlag.Y);
         s.Blit(elements, new Rect(113, mode.EuropeAndWorldCup ? 115 : 102, 57, 13), ModeGlobe.X, ModeGlobe.Y);
 
-        // Hinzufügen-Modus: gemeinsame Werte des Spiels (Level und Start-Stärke von Manager 0, GameState.AddManager).
+        // [ORIGINAL] Alle vier Regler sind ein Wert für das ganze Spiel (DGROUP 0x118–0x11B, A054/A518), auch im Hinzufügen-Modus.
         var setup = _game?.Setup ?? _setup;
-        var m = _game is not null ? setup.Managers.FirstOrDefault() ?? new ManagerSetup() : Selected ?? new ManagerSetup();
-        int[] values = [m.Level, (int)setup.Duration, (int)setup.StartLeague, (int)m.StartStrength];
+        int[] values = [setup.Level, (int)setup.Duration, (int)setup.StartLeague, (int)setup.StartStrength];
         for (var row = 0; row < values.Length; row++)
         {
             var strip = SetupSliders.Strip((SetupSlider)row, values[row]);

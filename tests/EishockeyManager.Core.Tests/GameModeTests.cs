@@ -334,6 +334,9 @@ public class GameModeTests
     /// Saison 1: Konten 309.266/500.000, Weltmeister 53, Meister 1.
     /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): ab Saison 3 neu – Computervereine spielen ohne Bezug zur Remake-Aufstellung
     /// (0x977F, Vereinsfelder); Saisons 1–2 unverändert.
+    /// Runde 22, Spur kader-regeln Teil 4 (A631): nur der Zufallszustand am Ende neu – der Nachfolger eines Ruheständlers im Pool
+    /// behält Name, Talent und Form (Datei 0x27947–0x279D6), Namenswurf, Form- und Talentwurf im gemeinsamen Strom entfallen;
+    /// Titel und Konten aller fünf Saisons unverändert.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -479,8 +482,9 @@ public class GameModeTests
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e. Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
+    // Spur kader-regeln Rebase auf Schema 58 (Runde 22, R21-D2 = A, R15-E2 = C): nur der Zufallszustand am Ende ändert sich (R1917147897 → R1698558007), Titel und Konten aller Saisons gleich wie auf main 41ad124 (Ursache A631: Nachfolger im Pool ohne Namens-, Form-, Talentwurf; Level/Gehalt Leihe A118). Rückschaltprobe: src/ von 41ad124 + dieser Test → rot (alter Zufallszustand).
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=18,GermanChampion=1,EuropeanCupWinner=2|1200000,400000|WorldChampion=54,CupWinner=3,GermanChampion=1,EuropeanCupWinner=1|2483412,400000|WorldChampion=52,CupWinner=3,GermanChampion=1,EuropeanCupWinner=1|2333008,500000|WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=1|2253696,500000|WorldChampion=53,CupWinner=5,GermanChampion=12,EuropeanCupWinner=3|2112037,400000|R1917147897";
+        "WorldChampion=53,CupWinner=18,GermanChampion=1,EuropeanCupWinner=2|1200000,400000|WorldChampion=54,CupWinner=3,GermanChampion=1,EuropeanCupWinner=1|2483412,400000|WorldChampion=52,CupWinner=3,GermanChampion=1,EuropeanCupWinner=1|2333008,500000|WorldChampion=52,CupWinner=3,GermanChampion=3,EuropeanCupWinner=1|2253696,500000|WorldChampion=53,CupWinner=5,GermanChampion=12,EuropeanCupWinner=3|2112037,400000|R1698558007";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

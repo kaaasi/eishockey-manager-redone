@@ -506,16 +506,18 @@ public sealed partial class TransferMarket
     {
         // [ORIGINAL] Spur kaderplatz-werte (A674, A545): Kauf 0x477E7 legt einen neuen Kaderplatz an (0x42CB1). Ohne Leihe bleibt er
         // (Über-/Unterzahl 0, Belastung und Tendenz neu, Zähler aus dem Pool; vom Manager mit Strafen und Verletzung, 0x4787D–0x478CB);
-        // bei der Leihe kopiert 0x47907 den Markt-Platz darüber, verbraucht ist nur der Zufall (Belastung, Tendenz, Leihgehalt).
+        // bei der Leihe kopiert 0x47907 den Markt-Platz darüber, verbraucht ist der Zufall (Belastung, Tendenz); das Leihgehalt des
+        // neuen Platzes bleibt (Datei 0x4783A, 0x47929; Spur kader-regeln A118, Contracts.LoanSalary).
         var start = newSlot ?? SquadSlotRules.Roll(game.Random);
-        if (loan)
-            SquadSlotRules.ConsumeLoanSalary(game.Random);
-        else
+        var loanSalary = loan ? Contracts.LoanSalary(game, manager, listing.Player, game.Random) : 0;
+        if (!loan)
             listing.Player.ApplyNewSlot(start, fromManager: listing.Seller is not null);
         game.Book(manager, FinanceCategory.Transfers, -offer);
         if (listing.Seller is { } seller)
             game.Book(seller, FinanceCategory.Transfers, offer);
         Move(listing, game.Clubs[manager.ClubIndex], loan, managerSquad: true);
+        if (loan)
+            listing.Player.MonthlySalary = loanSalary;
         // [ORIGINAL] Datei 0x4781B–0x47833: +0x2C des neuen Kaderplatzes = Gebot (Kauf und Leihe), Bit 31 bleibt.
         listing.Player.PurchasePrice = offer;
         // [ORIGINAL] Datei 0x47A18–0x47A34: nach dem Abzug Frage nach dem Sponsorzuschuss (nur Computermarkt).

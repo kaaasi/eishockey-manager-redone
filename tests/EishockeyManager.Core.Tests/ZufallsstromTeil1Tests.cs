@@ -192,7 +192,8 @@ public class ZufallsstromTeil1Tests
     /// <summary>
     /// A721: Laufbahnende eines freien Poolplatzes beim Saisonwechsel (Datei 0x2787A–0x279DA) aus dem gemeinsamen Strom: Wurf
     /// random(37, 42) (0x27897), Alter random(18, 25) (0x2794F), s = random(40, 92) (0x27972), Grundstärken random(s − 5, s + 5)
-    /// (0x27985, 0x279BF). [APPROX] Davor der Namenswurf des Remakes, danach Form und Talent.
+    /// (0x27985, 0x279BF). A631 (kader-regeln): Name, Talent und Form bleiben die des Platzes, kein weiterer Wurf (Datei
+    /// 0x27947–0x279D6 schreibt nur +0x14, +0x15, +0x19, +0x16).
     /// </summary>
     [Fact]
     public void PoolSeason_CareerEndOfFreeSlot_DrawsFromSharedStream()
@@ -205,14 +206,11 @@ public class ZufallsstromTeil1Tests
         var contract = game.ComputerSquadRandom.Capture();
         var sim = Copy(game.Random);
         R(sim, 37, 42);
-        var names = game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).ToList();
-        var name = PlayerFactory.TalentName(names, sim);
+        var (name, form, talent) = (old.Name, old.PoolForm ?? old.Form, old.Talent);
         var age = R(sim, 18, 25);
         var s = R(sim, 40, 92);
         var condition = Player.Clamp(R(sim, s - 5, s + 5));
         var technique = Player.Clamp(R(sim, s - 5, s + 5));
-        var form = R(sim, 45, 60);
-        var talent = R(sim, 0, 9);
 
         game.RenewAgedPoolPlayer(slot);
 

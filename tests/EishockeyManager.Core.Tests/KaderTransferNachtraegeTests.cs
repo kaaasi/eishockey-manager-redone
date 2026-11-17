@@ -119,13 +119,13 @@ public class KaderTransferNachtraegeTests
     public void CreateRenewal_FollowsOriginalRanges()
     {
         var game = TestGames.Create();
-        var low = PlayerFactory.CreateRenewal(game, "NEU", PlayerRole.Defender, new Lowest());
+        var low = PlayerFactory.CreateRenewal(game, new Player { Name = "ALT", Role = PlayerRole.Defender }, "NEU", new Lowest());
         Assert.Equal(PlayerRole.Defender, low.Role);
         Assert.Equal(18, low.Age);
         Assert.Equal(35, low.Condition);
         Assert.Equal(35, low.Technique);
         Assert.Equal(0, low.Caps);
-        var high = PlayerFactory.CreateRenewal(game, "NEU", PlayerRole.Forward, new Highest());
+        var high = PlayerFactory.CreateRenewal(game, new Player { Name = "ALT", Role = PlayerRole.Forward }, "NEU", new Highest());
         Assert.Equal(25, high.Age);
         Assert.Equal(97, high.Condition); // s = 92, random(87, 97)
         Assert.Equal(97, high.Technique);
