@@ -141,7 +141,7 @@ public static class HokCompareClasses
             "WorldCup.Winner", "WorldCup._knockoutMarks", "WorldCup._order", "WorldCup._slots",
             "NationalCoach._turnOpen", "FriendlyMatch.Bonus",
             "NationalBooking.Amount", "NationalBooking.Kind", "NationalBooking.Season",
-            "SeasonRecord.FinalTables", "SeasonRecord.LeftOberliga", "SeasonRecord.Managers", "SeasonRecord.PromotedInto",
+            "SeasonRecord.FinalTables", "SeasonRecord.InnerMoves", "InnerMove.Club", "InnerMove.Lower", "InnerMove.Slot", "SeasonRecord.LeftOberliga", "SeasonRecord.Managers", "SeasonRecord.PromotedInto",
             "SeasonRecord.RelegatedInto", "SeasonRecord.Season", "SeasonRecord.Titles",
             "ManagerSeasonResult.Club", "ManagerSeasonResult.Events", "ManagerSeasonResult.League", "ManagerSeasonResult.Manager",
             "ManagerSeasonResult.Premium", "ManagerSeasonResult.Rank",

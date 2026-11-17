@@ -304,6 +304,10 @@ public static class LeagueTable
         else
             Pair(previous.LeftOberliga, previous.PromotedInto[League.Oberliga]);
 
+        // [ORIGINAL] A665: Platztausch innerhalb der unteren Liga (Datei 0x5636D, 0x36169) – der Verein nimmt den Listenplatz des anderen ein.
+        foreach (var move in previous.InnerMoves.Where(m => m.Lower == league))
+            partner[move.Slot] = move.Club;
+
         var inLeague = members.ToHashSet();
         var order = final.Select(c => partner.TryGetValue(c, out var p) ? p : c).Where(inLeague.Contains).Distinct().ToList();
         order.AddRange(members.Where(c => !order.Contains(c)));
