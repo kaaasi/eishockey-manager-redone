@@ -8,14 +8,14 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 22 – Restliste Klasse V: Kaderplatz, Nationalteam, Kader, Transfer, Wettbewerbe, Einzelpunkte (Plan 17.11.2026, Go offen)
+## Aktuelle Runde: Runde 22 – Restliste Klasse V: Kaderplatz, Nationalteam, Kader, Transfer, Wettbewerbe, Einzelpunkte (Plan 17.11.2026, Entscheidungen 17.11.2026, Go offen)
 
 Runde 21 abgeschlossen am 17.11.2026: [archiv/runde-21.md](archiv/runde-21.md). Grundlage: Restliste
 [analyse/restliste-v1.md](analyse/restliste-v1.md) (V 67, D 21; „Klasse V nach Themen“, „Zuschnitt Runde 21 ff.“), neue V aus
 [analyse/re-vor-dosbox.md](analyse/re-vor-dosbox.md), Issues #896, #897, #899, #908, #912, #914. **Ziel der Runde:** alle 67 V
 umsetzen (Zuordnung je ID unten, vollständig geprüft), dazu die neuen Befunde aus #897/#908; X auf `[ORIGINAL]` (`marker-x`), danach
 Generatorlauf. Danach bleiben bis zur Abschlussprüfung nur D (DOSBox, R22-D4) und die Abweichungsliste an den Nutzer.
-**Entscheidungen** R22-D1…D5 im Plan-PR (offen). **Spuren starten erst nach Go des Nutzers.**
+**Entscheidungen Nutzer 17.11.2026** (Optionen im Plan-PR #917): R22-D1 = A, R22-D2 = A, R22-D3 = B, R22-D4 = A, R22-D5 = A. **Spuren starten erst nach Go des Nutzers.**
 
 **Regeln wie Runde 21** (Archiv): Base = aktueller `main` beim Start der Spur, tatsächlicher Base-SHA in den Draft-PR; ein Branch
 `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; Befund reproduzieren, roter Regressionstest mit Fundstelle
@@ -27,15 +27,17 @@ nennt im PR die geänderten, neuen und entfallenen Markerzeilen (Datei, alte ID,
 Spur in eigener Datei `Core/SaveGame.Migration.<Spur>.cs`. **Entwickler und Erstreviews sind Claude-Sitzungen;** ChatGPT nur fürs
 Gesamtreview.
 
-**Folge (R22-D1 = A, Vorschlag):** Welle 1 parallel `kaderplatz-werte`, `national`, `zusehen-rest`, `hok-play-off-marken`
+**Folge (R22-D1 = A, R22-D3 = B):** Welle 1 parallel `kaderplatz-werte`, `national`, `zusehen-rest`, `hok-play-off-marken`
 (Integration in dieser Folge). Welle 2 nach Merge von `kaderplatz-werte` parallel `transfer-pool`, `kader-regeln`,
 `wettbewerbe-regeln`, `einzelpunkte` (Integration in dieser Folge, Spätere rebasen und ziehen erwartete Werte nach). Welle 3
-`pruefung-karte` nach Merge aller übrigen. Danach Gesamtreview (R22-D5).
+`pruefung-karte` nach Merge aller übrigen, Welle 4 `marker-x` nach Merge von `pruefung-karte`. Danach Gesamtreview (R22-D5).
+**DOSBox (R22-D4 = A):** Die Leitstelle legt nach dem Go die Aufnahmeliste `runde-22` (21 D) an; Aufnahme nach Lust des Nutzers,
+Auswertung in Runde 23.
 
-**Modelle (R22-D2 = A, Vorschlag; Nutzer 17.11.2026 „wenig Tokens für brauchbares Ergebnis“):** Opus 5.5, wo Spielregeln aus
+**Modelle (R22-D2 = A; Nutzer 17.11.2026 „wenig Tokens für brauchbares Ergebnis“):** Opus 5.5, wo Spielregeln aus
 em.exe, Datenmodell oder Zufallsfolge geändert werden (Sonnet provoziert dort Nacharbeit, Nutzer 09.11.2026); Sonnet 5.5, wo die
 Fundstellen schon gelesen sind und die Änderungen klein und einzeln sind; Haiku nicht vorgesehen (jeder Lauf baut, testet und liest
-Fundstellen nach). Erstreviews von Code Opus 5.5, von `pruefung-karte` Sonnet 5.5. Fixläufe im Modell der Spur, Fixläufe ohne
+Fundstellen nach). Erstreviews von Code Opus 5.5, von `pruefung-karte` und `marker-x` Sonnet 5.5. Fixläufe im Modell der Spur, Fixläufe ohne
 Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtreview ChatGPT GPT-6.1 Terra (Codex).
 
 | Spur | Welle | IDs | Modell | Grund |
@@ -48,7 +50,8 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
 | `kader-regeln` | 2 | A054, A518, A060, A462, A118, A120, A490, A683, A827, A394, A631 | Opus 5.5 | M–L, Level je Spiel, Gehalt, Aufstellen, Mehrsaison |
 | `wettbewerbe-regeln` | 2 | A071, A105, A191, A549, A553, A670, A384, A101, A443, A456, A677, A836, A838; #897 Gegentore, `SlotSeed`; Teil-V A808 | Opus 5.5 | Spielrechnung und Zufallsfolge |
 | `einzelpunkte` | 2 | A367, A371, A582, A104, A847, A206, A421, A671, A698, A672, A665, A492; Teil-V A673/A681; #897 Finanzübersicht | Sonnet 5.5 | je S, Fundstellen gelesen (`re-vor-dosbox`, Inventur) |
-| `pruefung-karte` | 3 | #912, #914, X → `[ORIGINAL]` (R22-D3), Markerliste, Funktionskarte | Sonnet 5.5 | mechanisch, Einordnung nach PR-Angaben |
+| `pruefung-karte` | 3 | #912, #914, Markerliste, Funktionskarte | Sonnet 5.5 | mechanisch, Einordnung nach PR-Angaben |
+| `marker-x` | 4 | Klasse X → `[ORIGINAL]` (R22-D3 = B), zweiter Generatorlauf | Sonnet 5.5 | mechanisch, Fundstellen im Feld „Beleg“ |
 
 ### Zuständigkeit für gemeinsame Dateien
 
@@ -61,7 +64,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
   `wettbewerbe-regeln` A456), `Core/OriginalImport.Rest.cs` nur `zusehen-rest` (#908), `Core/OriginalImport.Playoffs.cs`,
   `Core/OriginalExport.Cups.cs`, `Core/Playoffs.cs` nur `hok-play-off-marken`.
 - `docs/analyse/restliste-v1.md` (generierter Block, Zahlen), `restliste-v1-klassen.csv`, `markerliste.py --write`,
-  `funktionskarte.py --write` allein `pruefung-karte`.
+  `funktionskarte.py --write` allein `pruefung-karte` (Welle 3) und danach `marker-x` (Welle 4, R22-D3 = B).
 
 ### Spur `kaderplatz-werte` – Werte am Pool-/Kaderplatz statt am Spieler (Welle 1)
 
@@ -129,17 +132,24 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
   `Core/FinanceSponsorRating.cs`, `Core/StatisticsHistory.cs`, `Core/SeasonFlow.Zwangsabstieg.cs`, `Core/Squad.AutoLineup.cs`,
   Stellen oben. **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
 
-### Spur `pruefung-karte` – P3, X-Marker und Markerliste (Welle 3)
+### Spur `pruefung-karte` – P3 und Markerliste (Welle 3)
 
 - **Teile:** 1. #912 (Sollwert aus Vorbereitung ohne Squad), #914 (je Schema 51–53 eine echte Spielstanddatei als Testdatei, ohne
-  Originaldaten), übrige P3 der Runde; 2. X auf `[ORIGINAL]` mit Fundstelle bzw. Nicht-Marker umformulieren (R22-D3); A059
-  Folgeverdacht (#897, #899 P3-3) als E nach R21-E1 = A vermerken; 3. einziger Lauf `markerliste.py --write` (alle neuen Marker
-  nach PR-Angaben einordnen, Ziel V = 0) und `funktionskarte.py --write`.
-- **Erstreview:** Sonnet 5.5. **Status:** wartet auf Go.
+  Originaldaten), übrige P3 der Runde; A059 Folgeverdacht (#897, #899 P3-3) als E nach R21-E1 = A vermerken; 2. Lauf
+  `markerliste.py --write` (alle neuen Marker nach PR-Angaben einordnen, Ziel V = 0) und `funktionskarte.py --write`.
+- **Voraussetzung:** Welle 2 gemergt. **Erstreview:** Sonnet 5.5. **Status:** wartet auf Go.
+
+### Spur `marker-x` – X-Marker auf `[ORIGINAL]` (Welle 4, R22-D3 = B)
+
+- **Teile:** 1. alle Markerzeilen der Klasse X (nach dem Generatorlauf von `pruefung-karte`) auf `[ORIGINAL]` mit Fundstelle aus dem
+  Feld „Beleg“ bzw. Nicht-Marker (Rückblicke, Verweise) ohne `[APPROX]` umformulieren; nur Kommentare, kein Verhalten;
+  2. zweiter Lauf `markerliste.py --write` (X = 0, entfallene IDs) und `funktionskarte.py --write`.
+- **Dateien:** Kommentarzeilen unter `src/`, `docs/analyse/restliste-v1*.{md,csv}`. **Tests:** `--schnell` (nur Kommentare).
+- **Voraussetzung:** `pruefung-karte` gemergt. **Erstreview:** Sonnet 5.5. **Status:** wartet auf Go.
 
 ### Gesamtreview Runde 22 (R22-D5)
 
-ChatGPT (Codex, GPT-6.1 Terra) nach Merge von `pruefung-karte`, risikoorientiert (`anhang.md` C), besonders: neue Felder am
+ChatGPT (Codex, GPT-6.1 Terra) nach Merge von `marker-x`, risikoorientiert (`anhang.md` C), besonders: neue Felder am
 Kaderplatz (Migration, Laden/Speichern, Import), Satz des Bundestrainers über mehrere Saisons, Zufallsfolge nach den Welle-2-Spuren.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
