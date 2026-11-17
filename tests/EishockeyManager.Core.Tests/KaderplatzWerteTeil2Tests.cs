@@ -163,4 +163,49 @@ public class KaderplatzWerteTeil2Tests
         }
         Assert.Equal(nonZero, count);
     }
+
+    /// <summary>
+    /// Mehrsaisonprobe (4 Saisonwechsel, passiver und aktiver Manager, Level 5): Die eingespielte Reihe bleibt über den Saisonwechsel
+    /// stehen ([ORIGINAL] Datei 0x27A0C–0x27AA8 setzt +0x02 nicht zurück, A088), neu verpflichtete Vertragslose beginnen mit 0
+    /// (neuer Kaderplatz, memset 0x42E3A), jeder Wert ist eine Reihe 0 … 4, und der Spielstand trägt sie (Schema 55).
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MultiSeason_FourChanges_PlayedLineKeptOverSeasonChange(bool active)
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Probe", Head = 0, ClubIndex = 2, Level = 5 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, seed: 7);
+        var club = game.Clubs[game.ActiveManager.ClubIndex];
+        Dictionary<Player, int>? before = null;
+        var changes = 0;
+        var nonZero = 0;
+        RngTwinProbeTests.Run(game, active, afterStep: g =>
+        {
+            Assert.All(club.Players, p => Assert.InRange(p.PlayedLine, 0, 4));
+            nonZero = Math.Max(nonZero, club.Players.Count(p => p.PlayedLine != 0));
+            if (before is null)
+                return;
+            foreach (var p in club.Players)
+            {
+                if (before.TryGetValue(p, out var line))
+                    Assert.Equal(line, p.PlayedLine);
+                else
+                    Assert.Equal(0, p.PlayedLine); // neu verpflichtet (nur unter 20 Spielern, RngTwinProbeTests.SignFreeAgents)
+            }
+            before = null;
+        }, beforeChange: _ =>
+        {
+            changes++;
+            before = new Dictionary<Player, int>(ReferenceEqualityComparer.Instance);
+            foreach (var p in club.Players)
+                before[p] = p.PlayedLine;
+        });
+        Assert.Equal(4, changes);
+        Assert.True(nonZero > 3, $"eingespielte Reihen: höchstens {nonZero}");
+        var loaded = SaveGameTests.AssertRoundTrip(game);
+        Assert.Equal(club.Players.Select(p => p.PlayedLine),
+            loaded.Clubs[club.Index].Players.Select(p => p.PlayedLine));
+    }
 }

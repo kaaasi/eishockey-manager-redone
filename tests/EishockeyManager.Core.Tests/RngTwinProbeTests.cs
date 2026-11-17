@@ -292,10 +292,14 @@ public class RngTwinProbeTests
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
     // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
-    [InlineData(false, 3, "40005082A668682A")]
-    [InlineData(true, 3, "DDC893CF0E580CD3")]
-    [InlineData(false, 11, "EC254D3811A79407")]
-    [InlineData(true, 11, "F68F99246F023979")]
+    // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): neu – die Spielabrechnung 0x544C0 würfelt vor jedem
+    // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
+    // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
+    // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    [InlineData(false, 3, "B6296599EBB5B5B2")]
+    [InlineData(true, 3, "A9300571BC617566")]
+    [InlineData(false, 11, "983C068DD087CED3")]
+    [InlineData(true, 11, "6A8AFAF3CB656ACE")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -389,8 +393,12 @@ public class RngTwinProbeTests
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – Spielstart in der Reihenfolge des Originals aus dem gemeinsamen Strom (siehe oben).
     // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
-    [InlineData(false, "95A62F878A2B3032")]
-    [InlineData(true, "B0897DAACA4092D6")]
+    // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): neu – die Spielabrechnung 0x544C0 würfelt vor jedem
+    // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
+    // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
+    // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    [InlineData(false, "61146221ECB71E0B")]
+    [InlineData(true, "D7448847F41D85D6")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -73,7 +73,8 @@ public class SaveGameTests
     // 53 GameState._trendRandom und _turnRandom entfallen: gemeinsamer Zufallsstrom (Spur zufallsstrom Runde 21, N3 = B; A725, A533).
     // 54 GameState._cupRandom und _financeRandom entfallen (Spur zufallsstrom Teil 4).
     // 55 Player.PoolCondition/PoolTechnique: Poolwerte +0x15/+0x16 neben dem Kaderplatz (Spur kaderplatz-werte Runde 22, A714; vorläufig).
-    private const string ExpectedSchemaFingerprint = "E64BECE2D49513D7";
+    //    Player.PlayedLine: eingespielte Reihe, Kaderplatz +0x02 (Spur kaderplatz-werte Teil 2, A093; dieselbe Migration).
+    private const string ExpectedSchemaFingerprint = "23EEF9A925B15E06";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

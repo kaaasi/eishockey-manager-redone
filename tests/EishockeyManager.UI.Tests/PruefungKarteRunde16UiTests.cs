@@ -23,7 +23,10 @@ public class PruefungKarteRunde16UiTests
         // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 1995 statt 1994 – Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und der Tageslauf 0x07169 (Datei 0x07402–0x07AEF) ziehen aus dem gemeinsamen Strom, anderer Zufallsverlauf;
         // bei Saat 1994 bekommt der Manager keine Prämie, 1993, 1995, 1996 erfüllen die Vorbedingung.
         // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1994 statt 1995 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; bei Saat 1995 bekommt der Manager keine Prämie, unter 1993–1998 erfüllen 1994 und 1998 die Vorbedingung.
-        var d = FlowTests.CreateDriver(1994);
+        // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): Saat 1995 statt 1994 – die Spielabrechnung 0x544C0 würfelt vor jedem Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7) aus dem gemeinsamen Strom, anderer Zufallsverlauf ab dem ersten Managerspiel; bei Saat 1994 bekommt der Manager keine Prämie, unter 1990–2005 erfüllen alle außer 1992–1994,
+        // 2003 und 2004 die Vorbedingung. Rückschaltprobe: src/ von faa64d2 mit Saat 1995 rot (keine Prämie) – die Probe
+        // hängt an der Saat.
+        var d = FlowTests.CreateDriver(1995);
         d.StartNewGame();
         var game = d.Host.Game!;
         for (var guard = 0; d.Host.Current is not SeasonEndSummaryScreen && guard++ < 20000;)
