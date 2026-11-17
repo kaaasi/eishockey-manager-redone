@@ -1,7 +1,8 @@
 namespace EishockeyManager.Formats;
 
 /// <summary>Spieler aus der Datenbank (nur Name und Ausländer-Kennzeichen).</summary>
-public sealed record DatabasePlayer(string Name, bool IsForeigner, PlayerRole Role);
+/// <param name="Slot">Kaderplatz 0–24 in der Datenbank (leere Plätze dazwischen fehlen in der Liste); −1 = unbekannt.</param>
+public sealed record DatabasePlayer(string Name, bool IsForeigner, PlayerRole Role, int Slot = -1);
 
 public enum PlayerRole
 {
@@ -131,7 +132,8 @@ public sealed class ClubDatabase
                     players.Add(new DatabasePlayer(
                         GameText.Decode(p[..PlayerNameLength]),
                         p[PlayerNameLength] != 0,
-                        RoleForSlot(slot)));
+                        RoleForSlot(slot),
+                        slot));
                 }
             }
             else

@@ -191,11 +191,9 @@ public class ZufallsstromTeil2Tests
         _ = R(sim, 18, 25);
         var s = R(sim, 40, 92);
         _ = R(sim, s - 5, s + 5);
-        _ = R(sim, s - 5, s + 5);
-        _ = R(sim, 45, 60);
-        _ = R(sim, 0, 9);
+        _ = R(sim, s - 5, s + 5); // A631 (kader-regeln): Form und Talent bleiben die des Pooleintrags (Datei 0x27947–0x279D6)
 
-        var p = PlayerFactory.CreateRenewal(game, "NEU", PlayerRole.Forward, game.Random);
+        var p = PlayerFactory.CreateRenewal(game, new Player { Name = "NEU", Role = PlayerRole.Forward }, "NEU", game.Random);
 
         Assert.Equal((HiddenSkills.NationalTeam, HiddenSkills.NationalTeam), (p.HiddenSkill2, p.HiddenSkill1));
         Assert.Equal(sim.Capture(), game.Random.Capture());

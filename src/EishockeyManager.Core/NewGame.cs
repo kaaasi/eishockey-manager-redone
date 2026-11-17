@@ -53,7 +53,7 @@ public static class NewGame
                     _ => null,
                 },
             };
-            club.Players.AddRange(c.Players.Select(p => new Player { Name = p.Name, Role = p.Role, IsForeigner = p.IsForeigner }));
+            club.Players.AddRange(c.Players.Select(SquadSetup.FromDatabase)); // A394: Datenbankplatz merken
             return club;
         }).ToList();
         // Spur start-lader (A106): [ORIGINAL] Lader 0x2EF1B beim Programmstart vor der Spielvorbereitung (Datei 0x439BB).

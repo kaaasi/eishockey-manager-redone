@@ -233,7 +233,7 @@ public sealed partial class GameState
             if (owner.Players.Count < PlayerFactory.MaxNumber)
             {
                 var names = Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents).ToList();
-                var successor = PlayerFactory.CreateRenewal(this, PlayerFactory.TalentName(names, ComputerSquadRandom), p.Role,
+                var successor = PlayerFactory.CreateRenewal(this, p, PlayerFactory.TalentName(names, ComputerSquadRandom),
                     ComputerSquadRandom);
                 PlayerFactory.Join(owner, successor, SquadSetup.Between(ComputerSquadRandom, SquadRules.ComputerMinYears,
                     SquadRules.ComputerMaxYears), loan: false, managerSquad: false);
@@ -319,8 +319,8 @@ public sealed partial class GameState
     /// <see cref="TransferMarket.StartPoolSeason"/> nach dem Altern des Platzes. Spieler in einem Kader, bei den Vertragslosen
     /// (<see cref="AgeFreeAgents"/>) oder beim Bundestrainer überspringt das Remake. [ORIGINAL] Spur zufallsstrom (A721, N3 = B):
     /// Wurf random(37, 42) (Datei 0x27897) und Neuanlage (Alter 0x2794F, s 0x27972, Grundstärken 0x27985/0x279BF) aus dem
-    /// gemeinsamen Strom <see cref="Random"/>, je Platz in Poolfolge nach dem Altern. [APPROX] Der Namenswurf davor ist eine
-    /// Ergänzung des Remakes (das Original behält den Namen des Platzes, <see cref="PlayerFactory.CreateRenewal"/>).
+    /// gemeinsamen Strom <see cref="Random"/>, je Platz in Poolfolge nach dem Altern. A631 (Spur kader-regeln): [ORIGINAL] Name,
+    /// Talent und Form bleiben die des Platzes, kein weiterer Wurf (Datei 0x27947–0x279D6, <see cref="PlayerFactory.CreateRenewal"/>).
     /// </summary>
     internal void RenewAgedPoolPlayer(PoolSlot slot)
     {
@@ -329,8 +329,7 @@ public sealed partial class GameState
             || Clubs.Any(c => c.Players.Contains(old)) || TransferMarket.FreeAgents.Contains(old)
             || NationalCoach?.Contains(old) == true)
             return;
-        var names = Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents).ToList();
-        var successor = PlayerFactory.CreateRenewal(this, PlayerFactory.TalentName(names, Random), old.Role, Random);
+        var successor = PlayerFactory.CreateRenewal(this, old, old.Name, Random);
         Retire(null, old);
         slot.Player = successor;
     }

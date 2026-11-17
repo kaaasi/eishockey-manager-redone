@@ -124,9 +124,12 @@ public sealed partial class GameState
     /// Spur zufallsstrom (A388, A675; N3 = B): Alle Würfe der Funktion ziehen in dieser Reihenfolge aus dem gemeinsamen Strom
     /// <see cref="Random"/> – Poolindex (Datei 0x06DAE), Alter, Form, Technik, Kondition (0x06DE9–0x06E62), Energie und
     /// Tendenz in 0x42CB1 (Aufruf Datei 0x06EB9; 0x42E4C, 0x42E6B → 0x4907A), +0x19 (0x06F02, 0x06F16), Laufzeit (0x06F80).
-    /// [APPROX] Der Preis +0x2C ist nicht abgebildet (wie beim Kauf, <see cref="TransferPoolRules.RollSlotFields"/>); Energie auf 99 begrenzt. Das Original sucht ohne Grenze nach einem
-    /// freien Platz; das Remake gibt nach <see cref="TalentPoolAttempts"/> Versuchen auf und erzeugt dann einen neuen Spieler
-    /// (<see cref="PlayerFactory.TalentName"/>, Rolle zufällig) – ebenso ohne Spielerpool (Spielstände vor Schema 22).
+    /// A827 (Spur kader-regeln): [ORIGINAL] +0x28 = Wert(Gehalt) · Prozent / 100 (Datei 0x06F27–0x06F5A, 0x14C7:0x70 Art 1), dann
+    /// +0x2C = Wert(Preis) (Datei 0x06F5E–0x06F74, Art 0; <see cref="Player.PurchasePrice"/>, Listenpreis beim Verkauf); beide
+    /// ohne Zufall. Die Belastung random(80, 120) ist nicht begrenzt (<see cref="Player.Strain"/>). Die Platzsuche (Datei 0x06DAE)
+    /// wiederholt ohne Grenze, bis ein freier Platz fällt. [APPROX] Hat der Pool keinen freien Platz (Original: Endlosschleife) oder
+    /// keinen Pool (Spielstände vor Schema 22), erzeugt das Remake einen neuen Spieler (<see cref="PlayerFactory.TalentName"/>,
+    /// Rolle zufällig).
     /// </summary>
     public Player? JoinScoutedTalent(Manager manager, int s) => JoinScoutedTalent(manager, s, TalentScout.SalaryPercent);
 
@@ -161,12 +164,10 @@ public sealed partial class GameState
         HiddenSkills.Roll(p, random);
         p.MonthlySalary = Math.Max(Contracts.MinSalary,
             Contracts.ValueSalary(this, manager, p) * salaryPercent / 100);
+        p.PurchasePrice = Contracts.ValuePrice(this, manager, p); // A827: [ORIGINAL] +0x2C = Wert(Preis), Datei 0x06F5E–0x06F74
         p.ContractYears = TransferRules.Random16(random, 2, 3);
         return p;
     }
-
-    /// <summary>[APPROX] Höchstzahl Versuche für einen freien Poolplatz (wie beim Listenwechsel, Datei 0x49566 ff.: 1.500).</summary>
-    public const int TalentPoolAttempts = 1_500;
 
     /// <summary>
     /// Jugend rückt am Saisonende in den Kader (#698): je aktivem Manager n = random(0, 2), mit random(0, 1) ≠ 0 n = 0; ist das
@@ -213,13 +214,17 @@ public sealed partial class GameState
         if (pool.Count == 0)
             return null;
         var last = TransferMarket.PoolLayout.LeagueLast;
-        for (var attempt = 0; attempt < TalentPoolAttempts; attempt++)
+        // A827: [ORIGINAL] Datei 0x06DAE: random(1, 179), bis der Platz frei ist – ohne Grenze. [APPROX] Ohne freien Platz
+        // zieht das Remake nicht (das Original hinge).
+        var free = pool.Where(s => s.Index >= 1 && s.Index <= last).GroupBy(s => s.Index).Select(g => g.First())
+            .Where(s => s.Owner == PoolOwner.Free).ToDictionary(s => s.Index);
+        if (free.Count == 0)
+            return null;
+        while (true)
         {
-            var index = TransferRules.Random16(random, 1, last);
-            if (pool.FirstOrDefault(s => s.Index == index) is { Owner: PoolOwner.Free } slot)
+            if (free.TryGetValue(TransferRules.Random16(random, 1, last), out var slot))
                 return slot;
         }
-        return null;
     }
 
     private Player NewTalent(Random random)

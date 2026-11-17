@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core;
@@ -139,8 +140,10 @@ public static class SquadSetup
     /// <see cref="ManagedSquadSize"/>, Name vom Datenbankplatz des Vereins (0x5AA34), der Datenbankplatz läuft über alle Arten weiter
     /// (bei 2/8/10 werden die Datenbank-Verteidiger auf Platz 11 und 12, im Video LANGHOFF und RIEMER, zu Stürmern); ein leerer
     /// Datenbankplatz bekommt einen Namen der Art aus einem anderen Verein (0x5AAA0, <see cref="NameDraw"/>; FILE01 KÖLNER EC:
-    /// Platz 12 UVIRA, Platz 25 LALA). [APPROX] Die Datenbank liefert nur die belegten Plätze; ihr Platz ist Anfang der Art +
-    /// laufende Nummer (wie <c>TransferMarket.CaptureDatabaseNames</c>), leere Plätze stehen also am Ende der Art.
+    /// Platz 12 UVIRA, Platz 25 LALA). A394 (Spur kader-regeln): [ORIGINAL] ein leerer Datenbankplatz bleibt an seiner Stelle
+    /// (kb\23.vga: EC HARZ BRAUNLAGE Platz 8, EHC STRAUBING Platz 10, 1.EV WEIDEN Platz 8 leer, dahinter Verteidiger), der Platz
+    /// kommt aus <see cref="FromDatabase"/>. [APPROX] Spieler ohne gemerkten Platz (Aufbauten ohne <see cref="NewGame.Create"/>,
+    /// Import) zählen wie bisher ab Anfang der Art.
     /// </summary>
     /// <param name="name">Name für einen leeren Datenbankplatz der Art.</param>
     /// <param name="seated">Je angelegtem Kaderplatz in Platzfolge (Würfe des Kaderplatzes beim Spielstart).</param>
@@ -151,8 +154,12 @@ public static class SquadSetup
         {
             var (first, end) = DatabaseSlots(role);
             var players = club.Players.Where(p => p.Role == role).ToList();
-            for (var j = 0; j < players.Count && first + j < end; j++)
-                database[first + j] = players[j];
+            for (var j = 0; j < players.Count; j++)
+            {
+                var at = DatabaseSlotOf(players[j]) ?? first + j;
+                if (at >= first && at < end)
+                    database.TryAdd(at, players[j]);
+            }
         }
         club.Players.Clear();
 
@@ -173,6 +180,23 @@ public static class SquadSetup
             }
         }
     }
+
+    /// <summary>
+    /// Kaderspieler aus der Datenbank; merkt den Datenbankplatz für <see cref="BuildManagedSquad"/> (A394). Der Platz ist kein
+    /// Spielzustand: Er gilt nur für die Spieler dieses Aufbaus und wird nicht gespeichert.
+    /// </summary>
+    internal static Player FromDatabase(DatabasePlayer source)
+    {
+        var p = new Player { Name = source.Name, Role = source.Role, IsForeigner = source.IsForeigner };
+        if (source.Slot >= 0)
+            DatabaseSlotTable.AddOrUpdate(p, new StrongBox<int>(source.Slot));
+        return p;
+    }
+
+    private static readonly ConditionalWeakTable<Player, StrongBox<int>> DatabaseSlotTable = new();
+
+    /// <summary>Datenbankplatz eines Spielers aus <see cref="FromDatabase"/>, sonst null.</summary>
+    internal static int? DatabaseSlotOf(Player p) => DatabaseSlotTable.TryGetValue(p, out var slot) ? slot.Value : null;
 
     /// <summary>Kaderplätze der Datenbank je Art: Torhüter 0–1, Verteidiger 2–11, Stürmer 12–24. [ORIGINAL] DGROUP 0x164.</summary>
     private static (int First, int End) DatabaseSlots(PlayerRole role) => role switch

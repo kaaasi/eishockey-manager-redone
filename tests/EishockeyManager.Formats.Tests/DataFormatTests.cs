@@ -87,8 +87,8 @@ public class ClubDatabaseTests
         Assert.Equal(-256 + 16, club.ColorCode);
         Assert.Equal(ClubCategory.FirstLeague, club.Category);
         Assert.Equal(2, club.Players.Count);
-        Assert.Equal(new DatabasePlayer("HEISS", false, PlayerRole.Goalkeeper), club.Players[0]);
-        Assert.Equal(new DatabasePlayer("TRUNTSCHKA", true, PlayerRole.Forward), club.Players[1]);
+        Assert.Equal(new DatabasePlayer("HEISS", false, PlayerRole.Goalkeeper, 0), club.Players[0]);
+        Assert.Equal(new DatabasePlayer("TRUNTSCHKA", true, PlayerRole.Forward, 12), club.Players[1]);
     }
 
     [Fact]

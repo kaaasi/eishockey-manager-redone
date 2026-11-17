@@ -334,6 +334,9 @@ public class GameModeTests
     /// Saison 1: Konten 309.266/500.000, Weltmeister 53, Meister 1.
     /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): ab Saison 3 neu – Computervereine spielen ohne Bezug zur Remake-Aufstellung
     /// (0x977F, Vereinsfelder); Saisons 1–2 unverändert.
+    /// Runde 22, Spur kader-regeln Teil 4 (A631): nur der Zufallszustand am Ende neu – der Nachfolger eines Ruheständlers im Pool
+    /// behält Name, Talent und Form (Datei 0x27947–0x279D6), Namenswurf, Form- und Talentwurf im gemeinsamen Strom entfallen;
+    /// Titel und Konten aller fünf Saisons unverändert.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
