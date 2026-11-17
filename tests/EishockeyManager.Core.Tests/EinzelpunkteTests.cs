@@ -108,4 +108,22 @@ public class EinzelpunkteTests
         coach.CloseTactics(autoAtOpen: false); // im Bildschirm eingeschaltet: Neuaufstellung
         Assert.NotNull(coach.Formation[slot]);
     }
+
+    /// <summary>
+    /// A421, Datei 0x32650–0x3266B, 0x44CEB–0x44D63: Nach dem letzten Europapokal-Termin (Termin 12) findet die Suche des Originals keinen
+    /// Treffer mehr, die Werbebewertung zählt keine Europapokal-Teilnahme. Vorher zählte das Remake Gruppe und Endrunde bis zum
+    /// Saisonwechsel.
+    /// </summary>
+    [Fact]
+    public void Participation_Europe_EndsAfterLastDate()
+    {
+        var game = TestGames.Create();
+        var dates = SeasonCalendar.DaysOf(DayEvents.EuropeanCup).ToList();
+        var inCup = game.EuropeanCup!.Draw.ToList();
+        Assert.NotEmpty(inCup);
+        Assert.Contains(inCup, c => game.CurrentParticipation(c).Europe); // vor dem ersten Termin: Gruppe zählt
+        TestSeason.PlayRegularSeason(game);
+        Assert.True(game.Day > dates[^1]);
+        Assert.All(game.Clubs, c => Assert.False(game.CurrentParticipation(c.Index).Europe));
+    }
 }
