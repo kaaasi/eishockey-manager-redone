@@ -139,7 +139,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
 - **Dateien:** `UI/Screens/Team/PlayerDataWindow.cs`, `PlayerInfoPopup.cs`, `UI/Screens/Manager/FinanceScreen.cs`,
   `Core/OriginalExport.Rest.cs`, `Core/MatchEngine.Statistics.cs`, `Core/NewGame.cs`, `Core/Transfer.Contract.cs`,
   `Core/FinanceSponsorRating.cs`, `Core/StatisticsHistory.cs`, `Core/SeasonFlow.Zwangsabstieg.cs`, `Core/Squad.AutoLineup.cs`,
-  Stellen oben. **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+  Stellen oben. **Erstreview:** Opus 5.5. **Status:** in Arbeit (Claude Code, Draft-PR, Teil 1).
 
 ### Spur `pruefung-karte` – P3 und Markerliste (Welle 3)
 
