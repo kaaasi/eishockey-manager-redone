@@ -151,9 +151,13 @@ public sealed partial class GameState
             // Ligapunkte hängen am neuen Vereinsplatz (Index < 12 → 40, < 24 → 20, > 35 → 0, Datei 0x566B8–0x56718), der Platz am
             // Tabellensatz, der mit dem Verein getauscht wurde (gespielte Saison). DOSBox-Beleg `file14_3`: ES Weißwasser,
             // Aufsteiger als Zweiter der 2. Liga, 51 = 40 + 12 − 1; Krefelder EV (Letzter, in der Oberliga geblieben) 1.
-            // [APPROX] Nachrücker in die Oberliga (vorher ohne Liga): Ihr Platzfeld ist nicht gelesen; 0 Punkte wie bisher
-            // (`file14_3`: TEV Miesbach höchstens 1 Punkt, hinter Krefeld auf Platz 35).
-            var league = rank0 < 0 ? null : record.NextLeague(club, played);
+            // [ORIGINAL] A698: Nachrücker in die Oberliga (vorher ohne Liga) bekommen 12 − Platzfeld des mitgewanderten Tabellensatzes,
+            // bei Platzfeld 0 dazu 3 (Datei 0x566E4–0x56718, 0x5677A–0x56793, 0x364B7–0x3653A, 0x51115): ohne Ligavergangenheit
+            // 12 − 0 + 3 = 15 (Probe FILE14: TEV Miesbach Platzfeld 0, 15 Punkte; FILE13: 0); Rückkehrer behalten ihr altes Platzfeld
+            // (<see cref="Club.StoredTableRank"/>, 0 = Platz 1).
+            var league = record.NextLeague(club, played);
+            if (rank0 < 0)
+                rank0 = league is null ? -1 : Clubs[club].StoredTableRank;
             var points = EternalPoints(league, Math.Max(0, rank0), champion == club, cupWinner == club, europeWinner == club);
             if (points == 0 && champion != club && cupWinner != club && europeWinner != club)
                 continue;

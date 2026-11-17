@@ -148,4 +148,25 @@ public class EinzelpunkteTests
         Assert.Contains(club, game.History[^1].LeftOberliga);
         Assert.Equal(GameState.OberligaKeptMoney, game.Managers[0].Money);
     }
+
+    /// <summary>
+    /// A698, Datei 0x566E4–0x56718, 0x5677A–0x56793, 0x364B7–0x3653A, 0x51115 (Probe FILE14 8257: TEV MIESBACH Platzfeld 0, Ewige Punkte
+    /// 15; FILE13: 0): Ein Nachrücker in die Oberliga ohne Ligavergangenheit bekommt 12 − 0 + 3 = 15 Punkte. Vorher 0.
+    /// </summary>
+    [Fact]
+    public void EternalTable_OberligaReplacement_GetsFifteenPoints()
+    {
+        var game = TestGames.Create();
+        TestSeason.PlayRegularSeason(game);
+        for (var guard = 0; game.History.Count == 0; guard++)
+        {
+            Assert.True(guard < 1000, "Saisonende nicht erreicht");
+            game.Continue();
+        }
+        var record = game.History[0];
+        var replacements = record.PromotedInto[League.Oberliga].Where(c => game.Clubs[c].StoredTableRank == 0 && !record.LeftOberliga.Contains(c)).ToList();
+        var newcomers = replacements.Where(c => c >= 36).ToList();
+        Assert.NotEmpty(newcomers); // Nachrücker aus den Vereinen ohne Liga (Plätze 36–41)
+        Assert.All(newcomers, c => Assert.Equal(15, game.Eternal(c).Points));
+    }
 }
