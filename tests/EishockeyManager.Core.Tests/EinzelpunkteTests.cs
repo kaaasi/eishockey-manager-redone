@@ -126,4 +126,26 @@ public class EinzelpunkteTests
         Assert.True(game.Day > dates[^1]);
         Assert.All(game.Clubs, c => Assert.False(game.CurrentParticipation(c.Index).Europe));
     }
+
+    /// <summary>
+    /// A671, Datei 0x56287–0x56334 (Prüfung Vereinsfeld 0x16 ohne Modusprüfung, Datei 0x296EC; Probe FILE20 Verein 7): Im Modus „nur
+    /// Weltkugel“ setzt der Saisonwechsel das Konto von Satz 0 auf 400.000 DM, wenn sein Verein in der Oberliga Letzter bleibt.
+    /// Vorher blieb das Konto stehen.
+    /// </summary>
+    [Fact]
+    public void WorldOnly_ManagerClubKeptInOberliga_AccountSetTo400k()
+    {
+        const int club = 35; // letzter Platz der Oberliga in der Startordnung (im Modus ohne Vereinssaison werden keine Spiele gerechnet)
+        var game = GameModeTests.Create(41, flag: false, globe: true, club);
+        Assert.True(game.WorldOnly);
+        game.Managers[0].Money = 5_000_000;
+        for (var guard = 0; game.History.Count == 0; guard++)
+        {
+            Assert.True(guard < 3000, "Saisonende nicht erreicht");
+            game.Managers[0].Money = 5_000_000;
+            game.Continue();
+        }
+        Assert.Contains(club, game.History[^1].LeftOberliga);
+        Assert.Equal(GameState.OberligaKeptMoney, game.Managers[0].Money);
+    }
 }
