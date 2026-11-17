@@ -179,7 +179,7 @@ public static class HokCompareClasses
             "Stadium.Seats", "Stadium.SeatsTarget", "Stadium.Standing", "Stadium.StandingTarget", "Stadium.TicketPrice",
             "Stadium._levels", "Stadium._targets", "Stadium._weeksLeft",
             "YouthTeam.Funding", "YouthTeam.Kind", "TrainingPlan.PriceIndex", "TrainingPlan._units", "TalentSearch.TicksLeft",
-            "SponsorContract.Boards", "SponsorContract.Kind", "SponsorContract.MonthlyAmount", "SponsorContract.MonthsLeft",
+            "SponsorContract.Boards", "SponsorContract.Cancellable", "SponsorContract.Kind", "SponsorContract.MonthlyAmount", "SponsorContract.MonthsLeft",
             "SponsorContract.OptionMonths", "SponsorContract.SignedRating", "SponsorContract.Sponsor",
             "StockHolding.Count", "StockHolding.PurchaseCost", "Stock.Name");
         Set(InSeason, "ManagerFinance.CostLeague", "YouthTeam.League");

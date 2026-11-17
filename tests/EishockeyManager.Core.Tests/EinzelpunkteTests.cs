@@ -169,4 +169,90 @@ public class EinzelpunkteTests
         Assert.NotEmpty(newcomers); // Nachrücker aus den Vereinen ohne Liga (Plätze 36–41)
         Assert.All(newcomers, c => Assert.Equal(15, game.Eternal(c).Points));
     }
+
+    private static SponsorContract Contract(AdSlotKind kind, int sponsor, int[] boards, bool cancellable = false) => new()
+    {
+        Kind = kind, Sponsor = sponsor, Boards = boards, MonthlyAmount = 1_000, MonthsLeft = 6, Cancellable = cancellable,
+    };
+
+    /// <summary>
+    /// A582, Datei 0x2BAF3/0x2BECD/0x2BB3E: Ein „Kündbar.“-Vertrag (Bit 0x80 der Option) zählt als freie Fläche bzw. freie Bande und wird
+    /// beim Annehmen eines Angebots überschrieben. Vorher kannte das Remake das Bit nicht: die Fläche blieb belegt.
+    /// </summary>
+    [Fact]
+    public void CancellableContract_CountsAsFree_AndIsOverwrittenByAcceptedOffer()
+    {
+        var game = TestGames.Create();
+        var manager = game.Managers[0];
+        var ads = game.Ads(manager);
+        ads.Contracts.Clear();
+        ads.Contracts.Add(Contract(AdSlotKind.Trikot, 1, [], cancellable: true));
+        ads.Contracts.Add(Contract(AdSlotKind.Bande, 2, [0, 1], cancellable: true));
+        ads.Contracts.Add(Contract(AdSlotKind.Bande, 3, [2], cancellable: false));
+
+        Assert.True(ads.IsFree(new AdSlot(AdSlotKind.Trikot)));
+        Assert.True(ads.IsFree(new AdSlot(AdSlotKind.Bande, 0)));
+        Assert.False(ads.IsFree(new AdSlot(AdSlotKind.Bande, 2)));
+        Assert.Equal([0, 1, 3, 4, 5, 6], ads.FreeBoards().ToArray());
+
+        ads.Offers[AdSlotKind.Trikot] = new() { [4] = new SponsorOffer(AdSlotKind.Trikot, 4, 12, 0, 5_000) };
+        var accepted = game.AcceptOffer(manager, new AdSlot(AdSlotKind.Trikot), 4);
+        Assert.NotNull(accepted);
+        Assert.False(accepted!.Cancellable);
+        Assert.Single(ads.Contracts, c => c.Kind == AdSlotKind.Trikot);
+        Assert.Equal(4, ads.ContractAt(new AdSlot(AdSlotKind.Trikot))!.Sponsor);
+
+        ads.Offers[AdSlotKind.Bande] = new() { [5] = new SponsorOffer(AdSlotKind.Bande, 5, 12, 1, 700) };
+        Assert.NotNull(game.AcceptOffer(manager, new AdSlot(AdSlotKind.Bande, 1), 5));
+        // Feld 1 ist überschrieben, Feld 0 gehört weiter dem kündbaren Vertrag, Feld 2 dem festen.
+        Assert.Equal(5, ads.ContractAt(new AdSlot(AdSlotKind.Bande, 1))!.Sponsor);
+        Assert.Equal(2, ads.ContractAt(new AdSlot(AdSlotKind.Bande, 0))!.Sponsor);
+        Assert.Equal(3, ads.ContractAt(new AdSlot(AdSlotKind.Bande, 2))!.Sponsor);
+    }
+
+    /// <summary>
+    /// A582, Datei 0x2713F: Beim Aufstieg (Zweig der Aufstiegsprämie 0x270A8) setzt das Original in allen elf Verträgen Bit 0x80; ohne
+    /// Aufstieg bleibt es aus. Testaufbau wie SaisonSatzfolgeSaisonendeTests (Verein 12 gewinnt jedes Spiel 9:0).
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Promotion_MarksAllSponsorContractsCancellable(bool promote)
+    {
+        const int club = 12;
+        var setup = new GameSetup { Duration = GameDuration.Unbegrenzt, EuropeAndWorldCup = true };
+        setup.Managers.Add(new ManagerSetup { Name = "M0", Head = 0, ClubIndex = club, StartLeague = (League)(club / 12) });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 4);
+        var ads = game.Ads(game.Managers[0]);
+        ads.Contracts.Clear();
+        ads.Contracts.Add(Contract(AdSlotKind.Trikot, 1, []));
+        ads.Contracts.Add(Contract(AdSlotKind.Bande, 2, [0, 1]));
+
+        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
+        {
+            Assert.True(guard < 5000, "Saisonende nicht erreicht");
+            foreach (var m in game.Managers)
+            {
+                m.Money = 10_000_000;
+                TestSeason.KeepSquad(game, m);
+            }
+            if (game.RegularSeasonOver)
+                game.Continue();
+            else
+                TestSeason.PlayMatchDay(game);
+            if (!promote)
+                continue;
+            for (var i = 0; i < game.Results.Count; i++)
+                if (game.Results[i] is var r && r.Involves(club))
+                    game.Results[i] = r.Home == club ? r with { HomeGoals = 9, AwayGoals = 0 } : r with { HomeGoals = 0, AwayGoals = 9 };
+            foreach (var group in game.RelegationGroups.Where(g => g.Upper == League.Bundesliga))
+                for (var i = 0; i < group.Results.Count; i++)
+                    if (group.Results[i] is var r && r.Involves(club))
+                        group.Results[i] = r.Home == club ? r with { HomeGoals = 9, AwayGoals = 0 } : r with { HomeGoals = 0, AwayGoals = 9 };
+        }
+
+        var events = game.History[^1].Managers.Single().Events;
+        Assert.Equal(promote, events.Contains(SeasonEvent.Promotion));
+        Assert.All(ads.Contracts, c => Assert.Equal(promote, c.Cancellable));
+    }
 }
