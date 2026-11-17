@@ -209,8 +209,13 @@ public class NationalteamRunde14Teil4Tests
         NationalCoachMode4Tests.PlayToClubSeasonEnd(game);
         Assert.Equal(0, game.NationalCoach?.Manager);
         var before = Window.Take(game);
+        var skipped = new HashSet<int>();
         Action<GameState> nominate = g =>
         {
+            // Spur national Teil 2/3 (A498, R15-E2 = C): wie in den Mehrsaisonproben unten – Tage, an denen Schritt (c) wegen der letzten
+            // Strafe beim Land des Bundestrainers entfällt; seit den Zufallswürfen von 0x42CB1 (Spur kaderplatz-werte) trifft das hier ein.
+            if (g.WorldCupLastPenaltyCoachDay is > 0 and var d && g.CurrentDay > d && MatchEngine.IsDriftDay(g.Counter(d)))
+                skipped.Add(d);
             if (g.NationalTurn && g.NationalCoach!.Squad.Count == 0)
                 g.AutoNominate();
         };
@@ -220,8 +225,10 @@ public class NationalteamRunde14Teil4Tests
         var afterEntry = PlayEntryDay(game, nominate);
         Assert.Equal(before.TeamValues, afterEntry);
         PlayToSeasonOver(game, nominate);
+        if (game.WorldCupLastPenaltyCoachDay is > 0 and var last && MatchEngine.IsDriftDay(game.Counter(last)))
+            skipped.Add(last); // A498: letzter WM-Tag, sein Schritt (c) liegt im Tageswechsel zum 29. April
 
-        Assert.Equal([-3 * before.TrainingCost[0]], before.TrainingDelta(game)); // #688: Takt von Tag 216 vor dem Fenster
+        Assert.Equal([-(3 - skipped.Count) * before.TrainingCost[0]], before.TrainingDelta(game)); // #688: Takt von Tag 216 vor dem Fenster
         Assert.Equal(afterEntry, LeagueTeamValues(game));
         Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
     }
@@ -384,22 +391,32 @@ public class NationalteamRunde14Teil4Tests
         var players = game.TransferMarket.Listings.Select(l => l.Player).ToList();
         var strains = SetListingStrains(game);
         var seen = new Dictionary<int, int[]>();
+        var skippedBefore = new Dictionary<int, int>();
+        var skipped = new HashSet<int>();
         for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
         {
             Assert.True(guard < 200, "Saisonende nicht erreicht");
             TopUp(game);
+            // Spur national Teil 2/3 (A498, R15-E2 = C): Tage, an denen Schritt (c) wegen der letzten Strafe beim Land des Bundestrainers
+            // entfällt (Datei 0x35AB8 → 0xA70E = 5, 0x07172); seit den Zufallswürfen von 0x42CB1 (Spur kaderplatz-werte) trifft das hier ein.
+            if (game.WorldCupLastPenaltyCoachDay is > 0 and var lastPenaltyDay && game.CurrentDay > lastPenaltyDay
+                && MatchEngine.IsDriftDay(game.Counter(lastPenaltyDay)))
+                skipped.Add(lastPenaltyDay);
             if (game.NationalTurn && game.NationalCoach!.Squad.Count == 0)
                 game.AutoNominate();
             seen[game.CurrentDay] = ListingStrains(game);
+            skippedBefore[game.CurrentDay] = skipped.Count;
             game.Continue();
         }
+        if (game.WorldCupLastPenaltyCoachDay is > 0 and var finalPenaltyDay && MatchEngine.IsDriftDay(game.Counter(finalPenaltyDay)))
+            skipped.Add(finalPenaltyDay); // A498: letzter WM-Tag, sein Schritt (c) liegt im Tageswechsel zum 29. April
 
         // #688 (R688-04): Ohne „nur Weltkugel“ läuft der Hauptweg-Takt zu Tag 216 (Zähler 217 ≡ 0, Verfall von Manager 0, Datei
         // 0x552A6) wie im Original vor dem Menü des 14.04., in dem FILE18 gesichert ist – der Halt hier entspricht FILE18 in beiden
         // Modi. Gegenprobe: Takt nach dem Halt (Stand #678) → ohne „nur Weltkugel“ 2, 3, 4.
-        Assert.Equal(Decayed(strains, 1), seen[218]); // FILE18 → FILE48
-        Assert.Equal(Decayed(strains, 2), seen[230]); // FILE19 → FILE20
-        Assert.Equal(Decayed(strains, 3), ListingStrains(game));
+        Assert.Equal(Decayed(strains, 1 - skippedBefore[218]), seen[218]); // FILE18 → FILE48
+        Assert.Equal(Decayed(strains, 2 - skippedBefore[230]), seen[230]); // FILE19 → FILE20
+        Assert.Equal(Decayed(strains, 3 - skipped.Count), ListingStrains(game));
         Assert.Equal(players, game.TransferMarket.Listings.Select(l => l.Player)); // kein Listenwechsel 0x494EF (R14NT4-05)
     }
 

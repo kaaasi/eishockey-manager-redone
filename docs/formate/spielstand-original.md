@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 56) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 57) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -846,13 +846,13 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `NationalCoach._turnOpen` | N | – | Zugzustand des Bundestrainers liegt nicht im Spielstand; Import `false`, der nächste Menüaufbau beginnt den Zug |
 | `NationalCoach.Manager` | B | `965B+0xEB` | Satz 5 (0x554B1); `D0BA` ist an allen Ständen 0 (Kennzeichen, siehe `GameState.NationalCoach`) |
 | `NationalCoach.Nation` | B | `06AC` | Land (Regel 1) |
-| `NationalCoach.PowerPlayCounts` | B | `965B+0x177` | Satz 5: sechs Wörter (DGROUP 0x97D2 + 5 · 0x1AF + 2 · k), Zähler des Landes mit Vereinsfeld 0x16 = 6 (A097, Schema 55) |
+| `NationalCoach.PowerPlayCounts` | B | `965B+0x177` | Satz 5: sechs Wörter (DGROUP 0x97D2 + 5 · 0x1AF + 2 · k), Zähler des Landes mit Vereinsfeld 0x16 = 6 (A097, Schema 57) |
 | `NationalCoach.Tactics` | B | `A6FB+5` | Modi und Werte des Satzes 5 (`A707+5`, `CAE9+0xF0`) |
 | `NationalCoach._dressed` | A | `5DC3+0x0A` | Satz 5 |
 | `NationalCoach._friendlies` | B | `D0C1`, `D0DB`, `D0D3`, `D0CB`, `D0C3` | Zahl, je Spiel Heim, Gast, Heimtore, Gasttore (0x3C248–0x3C288; FILE19 Deutschland – Schweden 2:1) |
 | `NationalCoach._squad` | B | `5DC3` | Satz 5 |
 | `NationalSquadMember.Club` | B | `far:8253+0x1D` | Verein des Spielers |
-| `NationalSquadMember.Player` | B | `5DC3` | Satz 5: eigener Kaderplatz (Werte `+0x10`–`+0x13`, Zähler, Verletzung; A412, Schema 55) |
+| `NationalSquadMember.Player` | B | `5DC3` | Satz 5: eigener Kaderplatz (Werte `+0x10`–`+0x13`, Zähler, Verletzung; A412, Schema 57) |
 | `NationalSquadMember.Source` | B | `5DC3+0x0F` | Satz 5, Poolindex → Spieler im Verein bzw. Pool (A412) |
 | `FriendlyMatch.Away` | B | `D0D3` | Gast (Satzplatz, Regel 1; 0x3C260) |
 | `FriendlyMatch.AwayGoals` | B | `D0C3` | Gasttore (0x3C284, unteres Byte des Ergebnisses von 0x30365) |

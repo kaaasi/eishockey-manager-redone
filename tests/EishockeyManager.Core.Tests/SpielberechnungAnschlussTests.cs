@@ -305,8 +305,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 22, Spur kaderplatz-werte Fixlauf (Review #927 R923-01; R21-D2 = A, R15-E2 = C): neu (nur aktiv) – das Training schreibt
     // nur den Kaderplatz, der Poolwert (+0x15/+0x16) folgt ihm nicht mehr (Player.SetSlotStrengths); Drift am Saisonwechsel und
     // Abgabe an Computervereine (Join → AdoptPoolValues) starten von anderen Werten. Rückschaltprobe: src/ von c3ea6c2 → alte Werte.
-    [InlineData(false, "2EA53A1F1C98A9D3")]
-    [InlineData(true, "1FA484C83034BA37")]
+    // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
+    // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
+    // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
+    [InlineData(false, "0552878CD8AB9728")]
+    [InlineData(true, "85481C6B7583D617")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

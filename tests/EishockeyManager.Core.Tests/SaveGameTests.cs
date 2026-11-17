@@ -79,7 +79,7 @@ public class SaveGameTests
     //    GameState._worldCupLastPenaltyCoachDay: WM-Tag der letzten Strafe beim Land des Bundestrainers (Teil 2, A498),
     //    WorldCup._nextOrder: am 29. April gemischte Länderreihenfolge (Teil 2, A825),
     //    NationalSquadMember.Source: Spieler im Verein/Pool zum eigenen Kaderplatz des Satzes 5 (Teil 3, A412).
-    private const string ExpectedSchemaFingerprint = "9FBAC9A191BA23F2"; // TODO Fingerprint nachziehen
+    private const string ExpectedSchemaFingerprint = "A1DA2BF16367126A";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

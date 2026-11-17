@@ -299,10 +299,13 @@ public class RngTwinProbeTests
     // Runde 22, Spur kaderplatz-werte Fixlauf (Review #927 R923-01; R21-D2 = A, R15-E2 = C): neu (nur aktiv) – das Training schreibt
     // nur den Kaderplatz, der Poolwert (+0x15/+0x16) folgt ihm nicht mehr (Player.SetSlotStrengths); Drift am Saisonwechsel und
     // Abgabe an Computervereine (Join → AdoptPoolValues) starten von anderen Werten. Rückschaltprobe: src/ von c3ea6c2 → alte Werte.
-    [InlineData(false, 3, "B6296599EBB5B5B2")]
-    [InlineData(true, 3, "B9023E2696F368A3")]
-    [InlineData(false, 11, "983C068DD087CED3")]
-    [InlineData(true, 11, "9CF9A9F4BC859BBF")]
+    // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
+    // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
+    // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
+    [InlineData(false, 3, "69A0E2ADAA1ABA2A")]
+    [InlineData(true, 3, "BF64AD7B4F78A84A")]
+    [InlineData(false, 11, "A3A036D2D712FEF4")]
+    [InlineData(true, 11, "5DBC028EC7A06953")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -400,8 +403,11 @@ public class RngTwinProbeTests
     // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
-    [InlineData(false, "61146221ECB71E0B")]
-    [InlineData(true, "D7448847F41D85D6")]
+    // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
+    // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
+    // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
+    [InlineData(false, "FF39B78F56FB89AF")]
+    [InlineData(true, "D6B147FE3DC24932")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
