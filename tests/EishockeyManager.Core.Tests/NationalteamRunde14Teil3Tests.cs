@@ -205,20 +205,23 @@ public class NationalteamRunde14Teil3Tests
     {
         var (game, coach) = CoachWithSquad();
         Assert.Equal(NationalCoach.MaxSquad, coach.Squad.Count);
-        var squad = coach.Squad.Select(m => m.Player).ToList();
+        // A412 (Spur national Teil 3): Der Kader führt eigene Kaderplätze des Satzes 5; verglichen wird über den Spieler im Verein/Pool
+        // (NationalSquadMember.Source), die Reihenfolge prüft der Test unverändert.
+        var squad = coach.Squad.Select(m => m.Source).ToList();
         var outsider = game.NationalCandidates().Select(c => c.Player)
             .First(p => !coach.Contains(p) && p.InjuredGames == 0 && p.Role == Formats.PlayerRole.Goalkeeper);
         Assert.Equal(NominationResult.SquadFull, game.ToggleNomination(outsider));
-        Assert.Equal(squad, coach.Squad.Select(m => m.Player));
+        Assert.Equal(squad, coach.Squad.Select(m => m.Source));
 
         var third = coach.Rows[2];
+        var thirdSource = coach.SourceOf(third);
         Assert.Equal(Formats.PlayerRole.Goalkeeper, third.Role);
         Assert.Equal(NominationResult.Removed, game.ToggleNomination(third));
         Assert.Equal(NominationResult.Added, game.ToggleNomination(outsider));
-        Assert.Same(outsider, coach.Rows[2]);
+        Assert.Same(outsider, coach.SourceOf(coach.Rows[2]));
         // R14NT-06: Reihenfolge des Kaders (nicht nur der nach Art geordneten Zeilen): Der Neue steht an der Stelle des
         // Herausgenommenen, vor dem ersten Verteidiger (0x42CB1, wie FILE49A ENGLBRECHT auf Platz 3); hinten anhängen wäre rot.
-        Assert.Equal(squad.Select(p => p == third ? outsider : p), coach.Squad.Select(m => m.Player));
+        Assert.Equal(squad.Select(p => p == thirdSource ? outsider : p), coach.Squad.Select(m => m.Source));
         Assert.False(coach.IsDressed(outsider));
         game.OnMainMenu(game.ActiveManager, isReturn: true);
         Assert.Equal(NationalCoach.MaxDressed, coach.DressedCount);

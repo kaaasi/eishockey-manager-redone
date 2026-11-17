@@ -182,13 +182,12 @@ public sealed partial class GameState
     /// <summary>
     /// Behält der Spieler seine Verletzung (A497, Spur national Teil 2)? [ORIGINAL] Die Heilung 0x07C12 hat nur die Aufrufer 0x07169
     /// und die WM-Schleife (Datei 0x55683–0x5571F), beide je Manager m &lt; DGROUP [0x386] (Datei 0x07172) – den Satz 5 des
-    /// Bundestrainers (WM-Kader) heilt nie jemand, seine Verletzungen aus den WM-Spielen bleiben. [APPROX] Das Remake führt den
-    /// Satz 5 noch nicht als eigene Kaderplätze (Teil 3): Der Spieler im WM-Kader heilt deshalb nach dem 13. April (Tag
-    /// <see cref="SeasonCalendar.ClubSeasonEnd"/>) bis zum Saisonwechsel auch an seinem Vereinsplatz nicht; in der Sommerpause
-    /// (Tag 0) heilt er wieder.
+    /// Bundestrainers (WM-Kader) heilt nie jemand, seine Verletzungen aus den WM-Spielen bleiben. [ORIGINAL] Seit Teil 3 (A412) ist
+    /// der Satz 5 ein eigener Kaderplatz, den keine Heilschleife erreicht; der Spieler im Verein heilt wie jeder Kaderplatz. Die
+    /// Prüfung trifft nur noch einen Kaderplatz des Satzes 5 (Schutz, falls ein Ablauf ihn heilen will).
     /// </summary>
     internal bool HoldsWorldCupInjury(Player player) =>
-        NationalCoach is { } coach && CurrentDay > SeasonCalendar.ClubSeasonEnd && coach.Contains(player);
+        NationalCoach is { } coach && coach.Squad.Any(m => m.Player == player && m.Player != m.Source);
 
     /// <summary>Heilung eines Kaderplatzes (<see cref="PlayerInjuries.Heal"/>) außer im WM-Kader (<see cref="HoldsWorldCupInjury"/>).</summary>
     private bool HealSlot(Player player) => !HoldsWorldCupInjury(player) && PlayerInjuries.Heal(player);

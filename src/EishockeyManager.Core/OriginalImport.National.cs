@@ -19,9 +19,8 @@ public sealed partial class GameState
     /// <item>[ORIGINAL] Anzeige unter „AUTOM.“ der Nationalteam-Taktik aus dem Vereinssatz des Landes (+0x26–0x2B Einsatz, +0x35–0x3A
     ///   Angriff, Spielvorbereitung 0x8365; FILE19), eigene Werte aus Satz 5 – ohne Bundestrainer in der Taktik des Landes
     ///   (<c>_vacantNationalTactics</c>).</item>
-    /// <item>[APPROX] Das Remake führt einen Wertesatz je Spieler: Die Werte des Satzes 5 gelten für Pool- und Marktspieler; Spieler
-    ///   eines übernommenen Managerkaders behalten die Werte ihres Vereinsplatzes – außer im Modus „nur Weltkugel“ (#732): Dort
-    ///   zählen nur Länderspiele, die Werte des Satzes 5 gelten auch für Spieler des Kaders von Satz 0.</item>
+    /// <item>[ORIGINAL] Jeder Platz des Satzes 5 wird ein eigener Kaderplatz (<see cref="NationalSquadMember"/>, A412): Werte,
+    ///   Belastung, Zähler und Verletzung aus Satz 5; der Spieler im Verein bzw. Pool behält seine eigenen (Satz 0–4, Pool).</item>
     /// <item>[APPROX] Pool +0x1D eines Nominierten zeigt das Land (FILE18: alle 54); Verein des Mitglieds ist bei Kaderspielern
     ///   eines Managers dessen Verein, sonst der Poolverein.</item>
     /// </list>
@@ -61,16 +60,15 @@ public sealed partial class GameState
             var e = OriginalImport.PoolEntry(save, index);
             var club = Clubs.FirstOrDefault(c => c.Players.Contains(player))?.Index
                        ?? (e[0x1D] < clubOf.Length ? clubOf[e[0x1D]] : coach.Nation);
-            // #732: Im Modus „nur Weltkugel“ gelten die Werte des Satzes 5 auch für Spieler aus dem Kader von Satz 0 (dort gibt es
-            // keine Vereinsspiele; vor Teil 3 übernahm der Import diesen Kader nicht, FILE18).
-            if (WorldOnly || !squadPlayers.ContainsValue(player))
-            {
-                player.Condition = s[0x10];
-                player.Technique = s[0x11];
-                player.Form = s[0x12];
-                player.Strain = s[0x13];
-            }
-            coach.Add(player, club);
+            // A412 (Spur national Teil 3): [ORIGINAL] Satz 5 ist ein eigener Kaderplatz (Werte, Belastung, Zähler, Verletzung); der
+            // Spieler im Verein bzw. Pool behält seine Werte. Bis Runde 22 schrieb der Import die Werte des Satzes 5 in den Spieler
+            // (Pool- und Marktspieler; im Modus „nur Weltkugel“ auch Spieler aus dem Kader von Satz 0, #732).
+            var slot = player.CopyForNationalSlot();
+            ApplySlot(slot, s, e, clubOf, club: null);
+            slot.PoolForm = null;
+            AssignPlayerId(slot);
+            coach.Add(player, club, slot);
+            player = slot;
             lines.Add((player, s[0x15] & 0x0F, s[0x0A] != 0));
         }
 

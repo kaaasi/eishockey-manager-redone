@@ -260,7 +260,9 @@ public class NationalteamRunde14Teil4Tests
             Action<GameState> nominate = g =>
             {
                 // A498 (Spur national Teil 2): Tage, an denen Schritt (c) wegen der letzten Strafe beim Land des Bundestrainers entfällt.
-                if (g.WorldCupLastPenaltyCoachDay is > 0 and var d && g.CurrentDay == d + 1 && MatchEngine.IsDriftDay(g.Counter(d)))
+                // Spur national Teil 3: „CurrentDay > d“ statt „== d + 1“ – nicht an jedem Folgetag liegt ein Halt (andere Würfe seit
+                // 0x42CB1); ein Wert der Vorsaison (vor dem ersten WM-Tag) zählt nicht.
+                if (g.WorldCupLastPenaltyCoachDay is > 0 and var d && g.CurrentDay > d && MatchEngine.IsDriftDay(g.Counter(d)))
                     skipped.Add(d);
                 if (active && g.NationalTurn && g.NationalCoach!.Squad.Count == 0)
                     g.AutoNominate();

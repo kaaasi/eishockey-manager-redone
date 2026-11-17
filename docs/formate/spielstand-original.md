@@ -852,7 +852,8 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `NationalCoach._friendlies` | B | `D0C1`, `D0DB`, `D0D3`, `D0CB`, `D0C3` | Zahl, je Spiel Heim, Gast, Heimtore, Gasttore (0x3C248–0x3C288; FILE19 Deutschland – Schweden 2:1) |
 | `NationalCoach._squad` | B | `5DC3` | Satz 5 |
 | `NationalSquadMember.Club` | B | `far:8253+0x1D` | Verein des Spielers |
-| `NationalSquadMember.Player` | B | `5DC3+0x0F` | Satz 5, Poolindex |
+| `NationalSquadMember.Player` | B | `5DC3` | Satz 5: eigener Kaderplatz (Werte `+0x10`–`+0x13`, Zähler, Verletzung; A412, Schema 55) |
+| `NationalSquadMember.Source` | B | `5DC3+0x0F` | Satz 5, Poolindex → Spieler im Verein bzw. Pool (A412) |
 | `FriendlyMatch.Away` | B | `D0D3` | Gast (Satzplatz, Regel 1; 0x3C260) |
 | `FriendlyMatch.AwayGoals` | B | `D0C3` | Gasttore (0x3C284, unteres Byte des Ergebnisses von 0x30365) |
 | `FriendlyMatch.Bonus` | U | – | Wertebonus des Spiels nicht im HOK: 0 `[APPROX]` (`026C` sind die Kosten je Nationalteam, im Remake Formel) |
@@ -956,7 +957,7 @@ unteren Halbbyte (FILE03: Feld 2 = Platz in der Tabelle `5CCB` nach dem 3. Spiel
 | Pool | `far:8253` + 33 · i, i = 1–199 | Name, Talent, Alter, Grundwerte `+0x15`–`+0x17`, Art aus `+0x18`, Verein `+0x1D` (Regel 1); Besitzer `+0x1A` 0–3 → vergeben (derselbe Spieler wie im Managerkader), 4 → Markt, sonst frei | FILE05: 25 vergeben, 7 Markt; Besitzer an allen Ständen nur 0, 1, 4, 6 |
 | Transferliste | `5DC3` Satz 4 in Platzfolge | `+0x0F` Poolindex, Preis `+0x2C` / 3, Sperre `+0x1A`, Werte `+0x10`–`+0x14`, `+0x19`; Besitzer 4 → Poolangebot (Herkunft = Poolverein), 0–3 → Angebot des Managers, Spieler nur auf dem Markt-Platz, nicht im Kader (A380, #676); Poolindex 0 = Rest des aufgerückten Satzes, kein Eintrag `[APPROX]` | FILE05 (KÜNAST 435.000 DM … D.HEGEN), FILE41 (HOHENADL Platz 7, Besitzer 0, 316.000 DM; Platz 11 mit Index 0) |
 | Managerkader | `5DC3` Satz m + Marktplätze mit Besitzer m | Angebote des Managers folgen hinter den eigenen Plätzen | FILE40 → FILE41 (L7) |
-| Nationalkader | `5DC3` Satz 5 (29 Plätze) | Poolindex → Spieler; Werte `+0x10`–`+0x13` für Pool- und Marktspieler `[APPROX]` (ein Wertesatz je Spieler); Reihe `+0x15` (Bit 0x80 Sturm), eingesetzt `+0x0A`; Bundestrainer aus dem Nachspielen `[APPROX]` (`D0BA` an allen Ständen 0) | FILE18–FILE20, FILE47–FILE49A (Pool `+0x1D` der Nominierten = Land 54) |
+| Nationalkader | `5DC3` Satz 5 (29 Plätze) | Poolindex → Spieler; eigener Kaderplatz mit Werten `+0x10`–`+0x13`, Zählern und Verletzung (A412); Reihe `+0x15` (Bit 0x80 Sturm), eingesetzt `+0x0A`; Bundestrainer aus dem Nachspielen `[APPROX]` (`D0BA` an allen Ständen 0) | FILE18–FILE20, FILE47–FILE49A (Pool `+0x1D` der Nominierten = Land 54) |
 | Taktik Bundestrainer | `A6FB`/`A707`/`A701` + 5, `CAE9` + 0xF0, `CC43` + 0x28 | wie Teil 4a | FILE18 |
 | Nachrichten | `D294` + 0x71 · k, k < 24 | `+0` Bits 0–2 Manager, Bit 3 ohne Spieler, oberes Halbbyte Restlaufzeit; `+1` Schlüssel = Tag + 1; `+2` Poolspieler; ab `+3` Text („^“ trennt Zeilen); Nachrichten des Nachspielens entfallen | FILE20 (zwei Verletzungsmeldungen), FILE48; Satz mit Spieler an keinem Stand |
 

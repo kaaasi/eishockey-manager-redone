@@ -19,9 +19,8 @@ public static partial class MatchEngine
     ///   Verletzungen 0x38B8F mit Satz 5 (Datei 0x38BE3–0x38BF0: nur mit Verein DGROUP 0x9EDA ≤ 0x3F, also im Amt; nach den
     ///   Vereinsmanagern), eigener Managerwert DGROUP 0x974B + 5 · 0x1AF aus 0x952C mit Manager 5 (<see cref="NationalManagerValue"/>)
     ///   und die Zähler der Über-/Unterzahl im Satz 5 (<see cref="NationalCoach.PowerPlayCounts"/>, Vereinsfeld 0x16 = 6).
-    ///   [APPROX] Verletzt wird der Spieler selbst; das Original verletzt den Kaderplatz in Satz 5 (DGROUP 0x5DC3 + 5 · 0x618,
-    ///   Datei 0x38D18–0x38D2C), der beim Saisonwechsel entfällt (Datei 0x557B0) – das Remake führt den WM-Kader als Verweis auf
-    ///   die Spieler (Teil 3 der Spur, A020/A487/A493).</item>
+    ///   [ORIGINAL] Verletzt wird der Kaderplatz in Satz 5 (DGROUP 0x5DC3 + 5 · 0x618, Datei 0x38D18–0x38D2C), der beim
+    ///   Saisonwechsel entfällt (Datei 0x557B0; eigener Platz seit Teil 3, A412).</item>
     /// <item>[ORIGINAL] Einsatz 0x26 und Angriff 0x2C setzt die Spielvorbereitung 0x8365 auch für Länder (A494,
     ///   <see cref="PrepareNationalMatch"/>); hier stehen die eigenen Werte beim Stand 0:0.</item>
     /// </list>
@@ -188,23 +187,43 @@ public static partial class MatchEngine
     /// Poolfeld Spiele +0x1C nur bei Wettbewerb 0 (Datei 0x5492E–0x54948), Tore in +0x03/+0x22 (Datei 0x542F4–0x54333), Strafen in +0
     /// bzw. +1 des Platzes aus 0x378C5 (Datei 0x35B7D–0x35B8E). Die Vereinsplätze der Spieler bleiben unberührt; am Spieler selbst
     /// (Poolfelder) zählen nur Tore +0x1B (Datei 0x542C1–0x542F0) und Vorlagen +0x1F (Datei 0x5424E–0x5427A).
-    /// [APPROX] Das Remake führt den Satz 5 noch nicht als eigene Kaderplätze (Teil 3): Spiele, Tore je Wettbewerb und Strafen der WM
-    /// zählt es deshalb nirgends statt am Vereinsplatz (vorher Liga am Spieler); Vorlagen wie bisher am Spieler, ebenso Gegentore und
-    /// Minuten des Torhüters (Poolfelder +0x1B/+0x1F, für Länderspiele nicht gelesen). Das Spielerfeld Tore +0x1B führt das Remake
-    /// nicht getrennt (siehe <c>CreditLineup</c>). Wie jede Abrechnung 0x544C0 begrenzt sie danach die Belastung der Plätze.
+    /// [ORIGINAL] Seit Teil 3 (A412) führt das Remake den Satz 5 als eigene Kaderplätze (<see cref="NationalSquadMember"/>): Spiele
+    /// zählen dort im Europapokal-Feld (+0x08/+0x20), Tore in der Liga (+0x03/+0x22), Strafen am Platz; Vorlagen, Gegentore und
+    /// Minuten des Torhüters am Spieler im Verein/Pool (Poolfelder +0x1F). [APPROX] Das Spielerfeld Tore +0x1B führt das Remake nicht
+    /// getrennt (siehe <c>CreditLineup</c>); Gegentore stehen im Remake am Spieler (Poolfeld +0x1B des Torhüters nicht gelesen).
+    /// Wie jede Abrechnung 0x544C0 begrenzt sie danach die Belastung der Plätze.
     /// </summary>
     internal static void CreditWorldCupSquad(NationalCoach coach, int against, int side, MatchReport report)
     {
         // [ORIGINAL] Kaderplatzschleife Datei 0x548A8–0x549BB über alle Plätze des Satzes 5: Belastung auf 50 … 150 (0x549A2).
         TrainingRules.ClampStrain(coach.Squad.Select(m => m.Player));
         var national = coach.Lineup();
+        foreach (var p in national.Players)
+            p.CountGame(CompetitionSlot.Europe); // +0x08/+0x20 (Datei 0x5494C–0x5499E, Wettbewerb 8)
         if (national.Goalkeeper is { } goalie)
         {
-            goalie.GoalsAgainst += against;
-            goalie.GoalieMinutes += report.Overtime ? 70 : 60;
+            var keeper = coach.SourceOf(goalie);
+            keeper.GoalsAgainst += against;
+            keeper.GoalieMinutes += report.Overtime ? 70 : 60;
         }
         foreach (var e in report.Events)
-            if (e is { Kind: MatchEventKind.Goal, Player: not null, Assist: { } assist } && e.Side == side)
-                assist.Assists++;
+        {
+            if (e.Side != side)
+                continue;
+            if (e is { Kind: MatchEventKind.Goal, Player: { } scorer })
+            {
+                scorer.CountGoal(CompetitionSlot.League); // Torindex 0 (Datei 0x30EA6): +0x03/+0x22 (Datei 0x542F4–0x54333)
+                if (e.Assist is { } assist)
+                    coach.SourceOf(assist).Assists++; // Poolfeld +0x1F (Datei 0x5424E–0x5427A)
+            }
+            else if (e is { Kind: MatchEventKind.Penalty, Player: { } penalized })
+            {
+                // [ORIGINAL] Datei 0x35B7D–0x35B8E: +0 (5 Minuten) bzw. +1 (2 Minuten) des Platzes aus 0x378C5.
+                if (e.PenaltyMinutes == 5)
+                    penalized.Penalties5++;
+                else
+                    penalized.Penalties2++;
+            }
+        }
     }
 }

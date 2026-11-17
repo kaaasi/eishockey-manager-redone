@@ -178,7 +178,7 @@ public class NationalTeil2Tests
     {
         var game = CreateWorldOnly(seed: 11);
         var coach = Appoint(game);
-        var counters = coach.Squad.ToDictionary(m => m.Player, m => Counters(m.Player));
+        var counters = coach.Squad.ToDictionary(m => m.Source, m => Counters(m.Source)); // A412: Vereinsplatz = Source
         ContinueToSeasonOver(game);
         Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
         Assert.Contains(game.WorldCup!.Matches, m => m.Home == coach.Nation || m.Away == coach.Nation);
@@ -247,7 +247,7 @@ public class NationalTeil2Tests
                     ManagedSquads.PlayAtTopStrength(g, 0);
                 }
                 if (squad is null && g.NationalCoach is { Squad.Count: > 0 } c && g.CurrentDay > SeasonCalendar.ClubSeasonEnd)
-                    squad = c.Squad.ToDictionary(m => m.Player, m => Counters(m.Player));
+                    squad = c.Squad.ToDictionary(m => m.Source, m => Counters(m.Source)); // A412: Vereinsplatz = Source
             });
             if (squad is not null)
                 foreach (var (player, before) in squad)

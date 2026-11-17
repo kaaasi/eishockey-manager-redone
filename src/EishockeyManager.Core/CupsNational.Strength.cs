@@ -34,8 +34,8 @@ public sealed partial class GameState
     ///   (<see cref="UpdateNationalTeamValues"/>: Verlassen der Aufstellung, Tageslauf, nach dem Menü an WM-Tagen) – der Stand
     ///   der letzten Rechnung, nicht die aktuelle Aufstellung (A009, Spur nationalteam Runde 13; bis dahin rechnete das Remake
     ///   bei jedem Lesen aus der Aufstellung).</item>
-    /// <item>[APPROX] Die Form, die 0x554CF für Deutschland ohne Bundestrainer mit auswürfelt, verwirft das Remake; die
-    ///   Wanderung 0x9D1B zieht sie zweimal je Woche ohnehin neu.</item>
+    /// <item>[ORIGINAL] Die Form, die 0x554CF für Deutschland ohne Bundestrainer mit auswürfelt (Datei 0x55557–0x55560), steht bis
+    ///   zur nächsten Wanderung 0x9D1B im Vereinsplatz (<see cref="RerollNationalRatings"/>, A493, Spur national Teil 3).</item>
     /// </list>
     /// </summary>
     public (PartValues Defense, PartValues Attack, int DayForm) NationalTeamValues(int nation)

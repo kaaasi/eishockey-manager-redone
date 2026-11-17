@@ -102,7 +102,7 @@ public sealed partial class NationalCoach
     public int DressedCount => _dressed.Count;
 
     /// <summary>Ist der Spieler eingesetzt (Kaderfeld 0x0A)?</summary>
-    public bool IsDressed(Player player) => _dressed.Contains(player);
+    public bool IsDressed(Player player) => _dressed.Contains(SlotOf(player));
 
     /// <summary>Kader in der Reihenfolge des Originals: nach Art (Torhüter, Abwehr, Sturm), je Art in Aufnahmefolge.</summary>
     public IReadOnlyList<Player> Rows => _squad.Select(m => m.Player).OrderBy(p => p.Role).ToList();
@@ -110,6 +110,7 @@ public sealed partial class NationalCoach
     /// <summary>Nummer in der Liste und auf den Platzknöpfen: Zeile 1–29, nur für eingesetzte Spieler.</summary>
     public int? NumberOf(Player player)
     {
+        player = SlotOf(player); // A412: Spieler im Verein/Pool → Kaderplatz des Satzes 5
         if (!IsDressed(player))
             return null;
         var row = Rows.ToList().IndexOf(player);
@@ -122,7 +123,9 @@ public sealed partial class NationalCoach
     /// Spiel ohne NR mit „GESP.(2)“; `file37_2`/`file39_3`: HEISS nicht eingesetzt mit „VERL.“). Vereins- und Nationalaufstellung
     /// teilen den Code (Datei 0x40364).
     /// </summary>
-    public PlayerStatus? StatusOf(Player player) =>
+    public PlayerStatus? StatusOf(Player player) => StatusOfSlot(SlotOf(player));
+
+    private PlayerStatus? StatusOfSlot(Player player) =>
         player.InjuredGames > 0 ? PlayerStatus.Injured
         : player.SuspendedGames > 0 ? PlayerStatus.Suspended
         : !IsDressed(player) ? null
@@ -135,6 +138,7 @@ public sealed partial class NationalCoach
     /// </summary>
     public LineupResult Assign(LineupSlot slot, Player player)
     {
+        player = SlotOf(player);
         if (!Contains(player))
             return LineupResult.NotInSquad;
         DisableAutoLineup();
@@ -168,6 +172,7 @@ public sealed partial class NationalCoach
     /// <summary>Linksklick in der Kaderliste: eingesetzten, nicht aufgestellten Spieler herausnehmen (Datei 0x40F59).</summary>
     public LineupResult Undress(Player player)
     {
+        player = SlotOf(player);
         if (!Contains(player) || Formation.Contains(player) || !_dressed.Remove(player))
             return LineupResult.Unchanged;
         DisableAutoLineup();
@@ -177,6 +182,7 @@ public sealed partial class NationalCoach
     /// <summary>Rechtsklick in der Kaderliste: nicht eingesetzten Spieler einsetzen (Datei 0x40E2A, 0x41208).</summary>
     public LineupResult Dress(Player player)
     {
+        player = SlotOf(player);
         if (!Contains(player) || IsDressed(player))
             return LineupResult.Unchanged;
         if (DressedCount >= MaxDressed)
@@ -220,6 +226,7 @@ public sealed partial class NationalCoach
     /// <param name="right">Rechtsklick (Ereignis 3) statt Linksklick (Ereignis 1).</param>
     public LineupResult ClickPlayer(Player player, ref int? line, bool right)
     {
+        player = SlotOf(player);
         if (!Contains(player))
             return LineupResult.NotInSquad;
         DisableAutoLineup();

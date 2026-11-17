@@ -258,7 +258,7 @@ public static class HokCompareClasses
         Set(InSeason, "EuropeanCup.GermanEntrants");
         Set(Exact, "NationalCoach.Formation", "NationalCoach._autoLineup", "NationalCoach._autoLineupSaved", "NationalCoach.Manager",
             "NationalCoach.Nation", "NationalCoach.Tactics", "NationalCoach._squad", "NationalSquadMember.Club",
-            "NationalSquadMember.Player");
+            "NationalSquadMember.Player", "NationalSquadMember.Source");
         return rules;
     }
 
