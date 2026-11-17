@@ -346,6 +346,9 @@ public static partial class OriginalMinutes
     /// </remarks>
     public static void DrainEnergy(LiveTeam team, Random random)
     {
+        // A071: [ORIGINAL] Datei 0x08830–0x08A3E: [0xA70E] = Vereinsfeld 0x16 (− 1 bei einem Manager).
+        if (team.TurnManager is { } turn)
+            turn.Manager = team.ManagerSlot ?? 0;
         if (team.Squad is not { } squad)
         {
             for (var part = 0; part < 2; part++)

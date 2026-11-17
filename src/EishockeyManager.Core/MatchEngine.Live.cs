@@ -139,6 +139,8 @@ public static partial class MatchEngine
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
         PrepareFromClubFields(game, home, away, homeTeam, awayTeam, homeManaged, awayManaged);
+        // A071: Merker [0xA70E] des Spieltagsablaufs für die Minutenschleife (MatchEngine.TurnManager.cs).
+        homeTeam.TurnManager = awayTeam.TurnManager = TurnManagerOf(game, competition, game.LiveScoreboard?.Active ?? false);
         MatchReport? report = null;
         // [ORIGINAL] Datei 0x3702E–0x37085: Pokalspiel mit eingeschaltetem Anzeigeschalter (DGROUP 0x227 DEB-Pokal, Code 6;
         // 0x228 Europapokal, Code 3/5; 0x229 WM-Gruppe, Code 8; GameOptions.CupMatchUsesMinuteLoop) läuft durch die
@@ -382,6 +384,7 @@ public static partial class MatchEngine
             // [bp-0xF] geht als Argument mit, 0x38B8F liest ihn nicht.
             InjuryManager = squad is not null ? injuryManager : null,
             ManagerValue = ownValue,
+            ManagerSlot = managed && manager is not null ? game.Managers.ToList().IndexOf(manager) : null, // A071: 0x16 − 1
             // Teil 4: [ORIGINAL] Zähler des Managers (Vereinsfeld 0x16 = Manager + 1 → DGROUP 0x97D2 + 0x1AF · Manager).
             PowerPlayCounts = managed ? manager?.PowerPlayCounts : null,
         };

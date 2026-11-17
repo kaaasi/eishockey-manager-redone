@@ -213,4 +213,78 @@ public class WettbewerbeRegelnTests
             s.Games.Add(new KnockoutMatch(1, s.HomeClub, s.AwayClub, 2, 1));
         Assert.True(MatchEngine.FirstPlayoffPairingOfDate(game, game.Clubs[17], game.Clubs[10]));
     }
+
+    private static int InjuriesOfSecondManager(bool firstManagerShortHanded)
+    {
+        var game = TwoManagers(2, 3);
+        MatchEngine.EnsureTeamValues(game);
+        if (firstManagerShortHanded)
+            game.Clubs[2].Lineup.ClearAll();
+        Assert.Equal(firstManagerShortHanded, game.IsShortHanded(game.Clubs[2]));
+        var (own, opponent) = (game.Clubs[3], game.Clubs[6]);
+        var injuries = 0;
+        for (var seed = 0; seed < 150; seed++)
+        {
+            foreach (var p in own.Players)
+                p.InjuredGames = 0;
+            own.AutoLineup();
+            var report = MatchEngine.PlayWithEvents(game, own, opponent, MatchCompetition.League, knockOut: false, new Random(seed));
+            injuries += report.Events.Count(e => e.Kind == MatchEventKind.Injury);
+        }
+        return injuries;
+    }
+
+    /// <summary>
+    /// A071: [ORIGINAL] 0x38B8F prüft den Managerwert des Managers am Zug [0xA70E] (Datei 0x38C1C–0x38C2E), nicht den des
+    /// geprüften Managers. Nach einer Minute mit einem Gast ohne Manager steht [0xA70E] auf 0 (0x87F7, Datei 0x08834); ist
+    /// Manager 0 heute nicht spielfähig (Managerwert 100), verletzt sich bei Manager 1 nur noch in Minuten direkt nach einer
+    /// eigenen Strafe (0x35ABC setzt [0xA70E] = Manager 1). Vorher prüfte das Remake den eigenen Wert (gleiche Rate).
+    /// </summary>
+    [Fact]
+    public void Injuries_UseTurnManagerValue()
+    {
+        var normal = InjuriesOfSecondManager(firstManagerShortHanded: false);
+        var blocked = InjuriesOfSecondManager(firstManagerShortHanded: true);
+        Assert.True(normal >= 6, $"{normal}");
+        Assert.True(blocked * 3 < normal, $"{blocked} gegen {normal}");
+    }
+
+    /// <summary>
+    /// A071: Schreiber von [0xA70E] – 0x87F7 (Datei 0x08834: Vereinsfeld 0x16, beim Manager − 1) und jede gegebene Strafe
+    /// (Datei 0x35ABC, vor der Spielerwahl).
+    /// </summary>
+    [Fact]
+    public void TurnManager_WrittenByEnergyAndPenalty()
+    {
+        var game = TwoManagers(2, 3);
+        MatchEngine.EnsureTeamValues(game);
+        var (home, away) = (game.Clubs[3], game.Clubs[6]);
+        var h = MatchEngine.LiveTeamOf(game, home, away, managed: true, managerMatch: true);
+        var a = MatchEngine.LiveTeamOf(game, away, home, managed: false, managerMatch: true);
+        Assert.Equal(1, h.ManagerSlot);
+        Assert.Null(a.ManagerSlot);
+        var register = MatchEngine.TurnManagerOf(game, MatchCompetition.League, liveDisplay: false);
+        h.TurnManager = a.TurnManager = register;
+        register.Manager = 5;
+        OriginalMinutes.DrainEnergy(h, new Random(1));
+        Assert.Equal(1, register.Manager);
+        OriginalMinutes.DrainEnergy(a, new Random(1));
+        Assert.Equal(0, register.Manager);
+        var penalties = 0;
+        for (var seed = 0; seed < 400 && penalties == 0; seed++)
+        {
+            register.Manager = 0;
+            var events = new List<MatchEvent>();
+            if (OriginalMinutes.Penalty(h, a, 0, 5, chained: true, events, new Random(seed)) > 0)
+            {
+                penalties++;
+                Assert.Equal(1, register.Manager);
+            }
+            else
+            {
+                Assert.Equal(0, register.Manager);
+            }
+        }
+        Assert.Equal(1, penalties);
+    }
 }

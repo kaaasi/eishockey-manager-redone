@@ -289,6 +289,12 @@ public sealed class LiveTeam
     /// <summary>Managerwert des eigenen Managers (DGROUP 0x974B + 0x1AF · Manager, 0x952C) für die Verletzungen.</summary>
     public int ManagerValue { get; init; } = 20;
 
+    /// <summary>Vereinsfeld 0x16 − 1: Managersatz des Vereins, null ohne Manager (A071, <see cref="TurnManagerRegister"/>).</summary>
+    public int? ManagerSlot { get; init; }
+
+    /// <summary>Merker „Manager am Zug“ DGROUP 0xA70E des Spieltagsablaufs (A071); null außerhalb der Minutenschleife.</summary>
+    public TurnManagerRegister? TurnManager { get; set; }
+
     /// <summary>
     /// Über-/Unterzahl-Zähler des Managers (DGROUP 0x97D2 + 0x1AF · Manager, <see cref="Manager.PowerPlayCounts"/>), die
     /// die Minutenrechnung fortschreibt (<see cref="OriginalMinutes.GoalScored"/>, <see cref="OriginalMinutes.Penalty"/>);
@@ -397,6 +403,9 @@ public static partial class OriginalMinutes
         var minutes = OriginalMatch.PenaltyMinutes(effort, count == 0, random);
         if (minutes == 0 || club.FewFitPlayers)
             return 0;
+        // A071: [ORIGINAL] Datei 0x35ABC–0x35AC6: [0xA70E] = Vereinsfeld 0x16 des bestraften Vereins (− 1 bei einem Manager).
+        if (club.TurnManager is { } turn)
+            turn.Manager = club.ManagerSlot ?? 0;
         club.Box.Add(count, minutes == 5 ? 13 : 2);
         club.PenaltyMinutes += minutes;
         var chain = !chained && OriginalMatch.Rnd(random, 0, 3) == 0 && count == 0;

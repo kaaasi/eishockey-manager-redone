@@ -68,7 +68,8 @@ public static partial class MatchEngine
 
     /// <summary>Lader 0x2EF1B über eine Vereinsliste (siehe <see cref="LoadTeamValues(GameState)"/>), für den Programmstart vor
     /// dem Aufbau des Spielstands (<see cref="NewGame.Create"/>).</summary>
-    /// <param name="attackBytes">Datenbankbyte 1 (Sturm) je Vereinsindex (A105/A836); ohne Eintrag Byte 0.</param>
+    /// <param name="attackBytes">Datenbankbyte 1 (Sturm) je Vereinsindex (A105/A836); ohne Eintrag Byte 0 (auch bei Byte 1 = 0, das
+    /// in kb\23.vga bei keinem Verein vorkommt – nur in Testdatenbanken ohne Byte 1).</param>
     public static void LoadTeamValues(IEnumerable<Club> clubs, Random random, IReadOnlyDictionary<int, int>? attackBytes = null)
     {
         foreach (var club in clubs.OrderBy(c => c.Index))
