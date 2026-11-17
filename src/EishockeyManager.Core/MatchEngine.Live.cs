@@ -328,7 +328,7 @@ public static partial class MatchEngine
         int? injuryManager = null;
         if (managed && manager is not null && club.Players.Count > 0)
         {
-            squad = LiveSquad.Create(club, TrainingRules.LevelValue(manager.Level), club.Tactics);
+            squad = LiveSquad.Create(club, TrainingRules.LevelValue(manager.Level), club.Tactics, MinuteCountersOf(manager)); // A549
             // Teil 3: eigener Managerwert und Managersatz für die Verletzungen 0x38B8F ([APPROX] aus demselben Stand wie
             // der Wert der Strafen, R8W3I-05).
             ownValue = ManagedTeamValues(squad, nineOrMore: !game.IsShortHanded(club)).ManagerValue;

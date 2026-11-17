@@ -33,4 +33,24 @@ public class WettbewerbeRegelnTests
         Assert.Equal(competition == MatchCompetition.League ? conceded : 0, keeper.GoalsAgainst);
         Assert.True(keeper.GoalieMinutes >= 20 * 60); // Torhüterminuten zählen weiter in jedem Wettbewerb (0x874D)
     }
+
+    /// <summary>
+    /// A549: [ORIGINAL] Der Minutenzähler der Minuten-Vorgabe (DGROUP 0x4926 + 8 · Manager, nur 0x8EF2 schreibt: Datei 0x911C,
+    /// 0x9166) läuft ins nächste Spiel weiter. Vorher begann jedes Spiel mit einem neuen Zähler (Stand 0).
+    /// </summary>
+    [Fact]
+    public void MinuteCounters_CarryIntoNextMatch()
+    {
+        var game = TestGames.Create(3);
+        MatchEngine.EnsureTeamValues(game);
+        var manager = game.Managers[0];
+        var own = game.Clubs[manager.ClubIndex];
+        own.Tactics.LineChange = LineChangeMode.MinutesPreset;
+        var opponent = game.Clubs[own.Index == 4 ? 5 : 4];
+        MatchEngine.PlayWithEvents(game, own, opponent, MatchCompetition.League, knockOut: false, new Random(1));
+        var team = MatchEngine.LiveTeamOf(game, own, opponent, managed: true, managerMatch: true);
+        var counters = team.Squad!.MinuteCounters;
+        Assert.Same(MatchEngine.MinuteCountersOf(manager), counters);
+        Assert.Contains(counters.Cast<int>(), c => c != 0);
+    }
 }
