@@ -165,7 +165,8 @@ public static class HokCompareClasses
         Set(Range(50_000, 0.5), "GameState.NationalAccount");
 
         // ---- GameSetup, GameOptions, ManagerSetup ------------------------------------------------------------------
-        Set(Exact, "GameSetup.ClubCompetitions", "GameSetup.Duration", "GameSetup._startLeague", "GameSetup.EuropeAndWorldCup",
+        Set(Exact, "GameSetup.ClubCompetitions", "GameSetup.Duration", "GameSetup._startLeague", "GameSetup._level",
+            "GameSetup._startStrength", "GameSetup.EuropeAndWorldCup",
             "GameSetup.Managers", "GameSetup.Options", "GameOptions.LiveMode", "GameOptions.MatchSpeed", "GameOptions.Reports",
             "GameOptions.ShowDebCup", "GameOptions.ShowEuropeanCup", "GameOptions.ShowWorldCup", "ManagerSetup.ClubIndex",
             "ManagerSetup.Level", "ManagerSetup.Name", "ManagerSetup.StartLeague", "ManagerSetup.StartStrength");

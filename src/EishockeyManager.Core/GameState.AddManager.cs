@@ -51,9 +51,9 @@ public sealed partial class GameState
     /// <summary>
     /// Nimmt einen Manager in das laufende Spiel auf (Kachel „Neuer“, „Los jetzt!“) und richtet ihn wie beim Spielstart ein.
     /// <list type="number">
-    /// <item>Gemeinsame Werte: Level und Start-Stärke von Manager 0, Start-Liga des Spiels ([ORIGINAL] ein Wert für alle,
-    ///   DGROUP 0x118/0x11A/0x11B; im Hinzufügen-Modus nicht verstellbar, Datei 0x286DA). [APPROX] Das Remake führt Level und
-    ///   Start-Stärke je Manager; der neue übernimmt die von Manager 0.</item>
+    /// <item>Gemeinsame Werte: Level, Start-Liga und Start-Stärke des Spiels ([ORIGINAL] ein Wert für alle,
+    ///   DGROUP 0x118/0x11A/0x11B; im Hinzufügen-Modus nicht verstellbar, Datei 0x286DA; A462): <see cref="GameSetup.Level"/>,
+    ///   <see cref="GameSetup.StartLeague"/>, <see cref="GameSetup.StartStrength"/>.</item>
     /// <item>Verein: der gewählte, ohne Wahl ein zufälliger der Start-Liga ohne Manager (<see cref="NewGame.PickRandomClub"/>).</item>
     /// <item>Startkader aus dem Pool (<see cref="SeatAddedSquad"/>) und Markt, dann [ORIGINAL] Platztausch des gewählten Vereins in
     ///   die Start-Liga (Datei 0x29C3B–0x29CF7, <see cref="DrawStartLeaguePlace"/>, <see cref="SwapClubPlaces"/>): Der Manager
@@ -123,9 +123,8 @@ public sealed partial class GameState
 
     private Manager Seat(List<Manager> managers, ManagerSetup setup, IEnumerable<int> reserved, IReadOnlyList<ManagerSetup> pending)
     {
-        var first = Setup.Managers.Count > 0 ? Setup.Managers[0] : null;
-        setup.Level = first?.Level ?? setup.Level;
-        setup.StartStrength = first?.StartStrength ?? setup.StartStrength;
+        setup.Level = Setup.Level;
+        setup.StartStrength = Setup.StartStrength;
         var random = Random; // Spur zufallsstrom (A464): gemeinsamer Strom, siehe AddManager
         var randomPick = setup.ClubIndex is null;
         var clubIndex = setup.ClubIndex ?? NewGame.PickRandomClub(Clubs, Setup.StartLeague, setup.StartStrength,

@@ -519,6 +519,8 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameSetup.DebCup` | N | – | true (kein Schalter des Originals) |
 | `GameSetup.Duration` | B | `0118+1` | Regler Dauer 0–3; Gegenprobe `5A14` (Dauer 0 → 1994, 3 → 22222) |
 | `GameSetup._startLeague` | B | `0118+2` | Regler Start-Liga (DGROUP 0x11A), ein Wert für alle Manager (Schema 42) |
+| `GameSetup._level` | B | `0118+0` | Regler Level (DGROUP 0x118), ein Wert für alle Manager (Spur `kader-regeln`, Schema 57) |
+| `GameSetup._startStrength` | B | `0118+3` | Regler Start-Stärke (DGROUP 0x11B), ein Wert für alle Manager (Schema 57) |
 | `GameSetup.EuropeAndWorldCup` | B | `D0B9` | Wert 1/4 (Weltkugel) |
 | `GameSetup.Managers` | B | `Kopf`, `965B` | je Manager eine `ManagerSetup` |
 | `GameSetup.Options` | B | `021D`, `0262` | Zeilen `GameOptions` |
@@ -1127,6 +1129,9 @@ liegt bei den genannten Spuren.
 - Schema 56 (Runde 22, Spur `hok-play-off-marken`, A612; nach `kaderplatz-werte`): `PlayoffSeries.Marks` (Marken der Play-off-Spiele,
   Abschnitt „Marken der Play-off-Spiele“). Migration: je Spiel 2 bei Penaltysieger, sonst 0
   (`SaveGame.Migration.HokPlayOffMarken.cs`).
+- Schema 57 (Runde 22, Spur `kader-regeln` Teil 1, vorläufig): `GameSetup._level`/`_startStrength` – Level und Start-Stärke ein
+  Wert je Spiel (DGROUP 0x118/0x11B, A054/A518). Migration: Werte von Manager 0 für alle Manager, auch `Manager.Level`
+  (`SaveGame.Migration.KaderRegeln.cs`).
 
 ### Zugang (Teil 3)
 

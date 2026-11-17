@@ -45,8 +45,10 @@ public sealed class ManagerSetup
 
     /// <summary>
     /// Spiel-Level 0–5, Vorgabe 3 ([ORIGINAL] DGROUP 0x118). Das Spiel rechnet mit „5 − Level“ (DGROUP 0xED8),
-    /// Level 5 heißt z. B. Training immer frei. [APPROX] Im Original ist der Level ein einziger Wert für alle
-    /// Manager; das Remake führt ihn je Manager.
+    /// Level 5 heißt z. B. Training immer frei. [ORIGINAL] Ein Wert für alle Manager (DGROUP 0x118, em.exe Datei
+    /// 0x2890A <c>add [bx+0x118], al</c>, Datei 0x2988D–0x29893 <c>0xED8 = 5 − [0x118]</c>; A054): Die Spielvorbereitung setzt
+    /// ihn über <see cref="GameSetup.Level"/> für alle gleich. Je Manager geführt bleibt er wie <see cref="StartLeague"/> für
+    /// Spielstände und Tests, die Manager einzeln anlegen (dort gilt der eingetragene Wert).
     /// </summary>
     public int Level { get; set; } = 3;
 
@@ -57,6 +59,11 @@ public sealed class ManagerSetup
     /// <see cref="NewGame.PlaceInStartLeague"/>; Zufallsverein; Kadergröße) – bei gleichem Wert für alle wie im Original.
     /// </summary>
     public League StartLeague { get; set; } = League.Bundesliga;
+
+    /// <summary>
+    /// Start-Stärke. [ORIGINAL] Ein Wert für alle Manager (DGROUP 0x11B, A518); gesetzt über
+    /// <see cref="GameSetup.StartStrength"/>, je Manager geführt wie <see cref="StartLeague"/>.
+    /// </summary>
     public StartStrength StartStrength { get; set; } = StartStrength.Mittelfeld;
 }
 
@@ -143,6 +150,41 @@ public sealed class GameSetup
     private League _startLeague = League.Bundesliga;
 
     /// <summary>
+    /// Spiel-Level, ein Wert für alle Manager. [ORIGINAL] DGROUP 0x118 (Regler 0, Vorgabe 3; em.exe Datei 0x2890A, A054/A518).
+    /// Gelesen wird der Wert von Manager 0, das Setzen gilt für alle; ohne Manager gilt der hier geführte Wert, den
+    /// <see cref="AddManager"/> übernimmt (wie <see cref="StartLeague"/>).
+    /// </summary>
+    public int Level
+    {
+        get => Managers.Count > 0 ? Managers[0].Level : _level;
+        set
+        {
+            _level = value;
+            foreach (var m in Managers)
+                m.Level = value;
+        }
+    }
+
+    private int _level = 3;
+
+    /// <summary>
+    /// Start-Stärke, ein Wert für alle Manager. [ORIGINAL] DGROUP 0x11B (Regler 3, Vorgabe 1 = Mittelfeld; A518). Lesen und
+    /// Setzen wie <see cref="Level"/>.
+    /// </summary>
+    public StartStrength StartStrength
+    {
+        get => Managers.Count > 0 ? Managers[0].StartStrength : _startStrength;
+        set
+        {
+            _startStrength = value;
+            foreach (var m in Managers)
+                m.StartStrength = value;
+        }
+    }
+
+    private StartStrength _startStrength = StartStrength.Mittelfeld;
+
+    /// <summary>
     /// Spielstand-Optionen des Originals (Optionsbildschirm 0x2CD1C, Spur optionen-wirkung). Gehören zum Spielstand; die
     /// Anfangswerte stammen aus em.exe (<see cref="GameOptions"/>).
     /// </summary>
@@ -199,20 +241,20 @@ public sealed class GameSetup
     /// läuft vor der Begrenzung (Datei 0x28925–0x28944, <see cref="SetupSliders.Step"/>) und nach jedem der vier Regler.
     /// Folge: Mit „eine Saison“ bleibt die Start-Liga auf Bundesliga stehen, mit 2. Liga oder Oberliga bleibt die Dauer
     /// auf „drei Saisons“. Belege <c>file28_3</c>–<c>file28_5</c> (<c>docs/analyse/re-runde-13.md</c>, U15-b).
-    /// Level und Start-Stärke gelten für <paramref name="manager"/> (ohne Manager: kein Schritt); [APPROX] im Original
-    /// sind auch sie ein Wert für alle Manager (DGROUP 0x118/0x11B).
+    /// [ORIGINAL] Alle vier Regler sind ein Wert für alle Manager (DGROUP 0x118–0x11B, derselbe Befehl Datei 0x2890A für jeden
+    /// Regler; A054, A518): Der Schritt gilt unabhängig vom gewählten Manager für alle, auch ohne Manager.
+    /// <paramref name="manager"/> bleibt für die Aufrufer der Spielvorbereitung und wird nicht ausgewertet.
     /// </summary>
     /// <returns>true, wenn sich ein Wert geändert hat.</returns>
     public bool Step(SetupSlider slider, int delta, ManagerSetup? manager)
     {
-        if (manager is null && slider is SetupSlider.Level or SetupSlider.StartStrength)
-            return false;
+        _ = manager;
         var value = slider switch
         {
-            SetupSlider.Level => manager!.Level,
+            SetupSlider.Level => Level,
             SetupSlider.Duration => (int)Duration,
             SetupSlider.StartLeague => (int)StartLeague,
-            _ => (int)manager!.StartStrength,
+            _ => (int)StartStrength,
         };
         var duration = slider == SetupSlider.Duration ? value + delta : (int)Duration;
         var league = slider == SetupSlider.StartLeague ? value + delta : (int)StartLeague;
@@ -223,22 +265,25 @@ public sealed class GameSetup
             return false;
         switch (slider)
         {
-            case SetupSlider.Level: manager!.Level = next; break;
+            case SetupSlider.Level: Level = next; break;
             case SetupSlider.Duration: Duration = (GameDuration)next; break;
             case SetupSlider.StartLeague: StartLeague = (League)next; break;
-            default: manager!.StartStrength = (StartStrength)next; break;
+            default: StartStrength = (StartStrength)next; break;
         }
         return true;
     }
 
     /// <summary>
-    /// Einen Manager anlegen; er übernimmt die eingestellte <see cref="StartLeague"/> (ein Wert für alle, L1, R13KI-03 #605).
-    /// Die Spielvorbereitung legt Manager nur hierüber an. Direktes <c>Managers.Add</c> (Tests, Aufbauten im Code) behält den
-    /// Wert des <see cref="ManagerSetup"/>.
+    /// Einen Manager anlegen; er übernimmt die eingestellten <see cref="Level"/>, <see cref="StartLeague"/> und
+    /// <see cref="StartStrength"/> ([ORIGINAL] ein Wert für alle, DGROUP 0x118/0x11A/0x11B; L1, R13KI-03 #605, A054/A518).
+    /// Die Spielvorbereitung legt Manager nur hierüber an. Direktes <c>Managers.Add</c> (Tests, Aufbauten im Code) behält die
+    /// Werte des <see cref="ManagerSetup"/>.
     /// </summary>
     public ManagerSetup AddManager(ManagerSetup m)
     {
+        m.Level = Level;
         m.StartLeague = StartLeague;
+        m.StartStrength = StartStrength;
         Managers.Add(m);
         return m;
     }

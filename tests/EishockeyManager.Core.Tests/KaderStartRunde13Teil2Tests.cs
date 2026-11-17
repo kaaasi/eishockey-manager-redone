@@ -67,7 +67,11 @@ public class KaderStartRunde13Teil2Tests
         Assert.Equal(GameDuration.DreiSaisons, setup.Duration);
     }
 
-    /// <summary>Level und Start-Stärke sind von der Sperre nicht betroffen und brauchen einen Manager.</summary>
+    /// <summary>
+    /// Level und Start-Stärke sind von der Sperre nicht betroffen. Angepasst in Spur kader-regeln (R15-E2 = C, A054/A518): Sie sind
+    /// ein Wert für das Spiel ([ORIGINAL] DGROUP 0x118/0x11B, Datei 0x2890A) und lassen sich wie die Start-Liga auch ohne Manager
+    /// verstellen (vorher: ohne Manager kein Schritt).
+    /// </summary>
     [Fact]
     public void LevelAndStrength_UnaffectedByLock_NeedManager()
     {
@@ -79,7 +83,8 @@ public class KaderStartRunde13Teil2Tests
         Assert.True(setup.Step(SetupSlider.StartStrength, +1, m));
         Assert.Equal(4, m.Level);
         Assert.Equal(StartStrength.Abstiegskampf, m.StartStrength);
-        Assert.False(setup.Step(SetupSlider.Level, +1, null));
+        Assert.True(setup.Step(SetupSlider.Level, +1, null));
+        Assert.Equal(5, m.Level);
     }
 
     /// <summary>
