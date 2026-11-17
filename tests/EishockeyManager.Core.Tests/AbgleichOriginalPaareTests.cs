@@ -131,7 +131,12 @@ public class AbgleichOriginalPaareTests
                 new("Clubs[14 SV BAYREUTH].Players[*].HiddenSkill*", Chance, Optional: true),
                 // Zufall: LANDSHUT steigt im Original in die Oberliga ab (Teamwerte auf deren Obergrenze, alle −33), im Remake
                 // nicht (Liga über den Saisonwechsel zufallsabhängig); Abstand 21–51 je Saat.
-                new($"{Landshut}.TeamValues.*", Chance, Optional: true)],
+                new($"{Landshut}.TeamValues.*", Chance, Optional: true),
+                // Zufall (Runde 22, Spur transfer-pool, A864/A391, R21-D2 = A): Nur mit der Saat 1993 weicht ein Teamwert von MEMMINGEN
+                // ab (Angriff Kondition −11 im Original, 27 im Remake); mit den fünf weiteren Saaten (Pair_OtherSeed_SameExpectedList)
+                // nicht. Die Wanderung der Teamwerte zieht aus dem gemeinsamen Strom, den die Verletzung außerhalb des Spiels
+                // (Datei 0x07462–0x07548) verschiebt; wie LANDSHUT ein Zufallsfeld, kein fester Befund.
+                new("Clubs[18 SC MEMMINGEN].TeamValues.AttackCondition", Chance, Optional: true)],
             // „nur Weltkugel“ (#732): Alter und Laufzeit des Managerkaders behoben durch abgleich-fix (0x26F20 läuft im Modus 1 nicht,
             // AbgleichFixWorldOnlyTests); Gehalt, Preis und Konto durch abgleich-rest Teil 3 (Import des Kaders von Satz 0,
             // Tagesabschluss für Satz 0 in Sommerpause und WM-Schleife; AbgleichRestWorldOnlyTests). Teamwerte des Managervereins

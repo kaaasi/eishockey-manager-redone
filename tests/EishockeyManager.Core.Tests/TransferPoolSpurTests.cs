@@ -87,4 +87,174 @@ public class TransferPoolSpurTests
         }
         Assert.True(hit179, "Platz 179 wird von der Soll-Rechnung getroffen (random(1, 0xB3))");
     }
+
+    /// <summary>
+    /// A713: Die vierte Gruppe der Verteilung am Saisonwechsel sind die Vereine 36 … 42 ohne Liga, nicht alle Vereine ohne Liga
+    /// unter 48. [ORIGINAL] Datei 0x07C7E, Indexbereiche DGROUP 0x7C6/0x7C7 (0 … 11, 12 … 23, 24 … 35, 36 … 42;
+    /// <c>docs/transfer.md</c> „Saisonwechsel“). Vereine 43 … 47 und Nationalteams gehören zu keiner Gruppe (−1).
+    /// Rot vorher: Verein 44 lag in Gruppe 3.
+    /// </summary>
+    [Fact]
+    public void A713_FourthGroup_IsClubs36To42WithoutLeague()
+    {
+        var game = Create();
+        foreach (var club in game.Clubs.Where(c => c.League is null && c.Index < NewGame.SelectableClubs))
+            Assert.Equal(club.Index <= 42 ? 3 : -1, TransferMarket.PoolGroup(game, club.Index));
+        foreach (var club in game.Clubs.Where(c => c.League is { } l))
+            Assert.Equal((int)club.League!.Value, TransferMarket.PoolGroup(game, club.Index));
+        Assert.Equal(-1, TransferMarket.PoolGroup(game, NationalTeams.First));
+        // Es gibt Vereine ohne Liga hinter 42, sonst prüfte der Test nichts.
+        Assert.Contains(game.Clubs, c => c.League is null && c.Index is > 42 and < NewGame.SelectableClubs);
+    }
+
+    /// <summary>
+    /// #897 <c>ChangeList</c>: Der Listenwechsel schreibt in den neuen Markt-Platz +0x28 = Wert(Gehalt), nicht 0. [ORIGINAL] Datei
+    /// 0x497A1 (<c>call 0x118:0x70</c> mit Art 1 auf den Kaderplatz [0xA70E]/di, Ergebnis nach +0x28/+0x2A, 0x497BE/0x497C3), danach
+    /// ohne Zufall; Gegenprobe an den Originalständen (<c>HokImportWerteTests</c>: an allen Ständen +0x28 jedes Poolangebots ≠ 0,
+    /// Wert(Gehalt) mit dem Verein des Platzes und dem Level des ziehenden Managers). Der Vertrag bleibt 0 (0x4970A).
+    /// Rot vorher: Gehalt 0.
+    /// </summary>
+    [Fact]
+    public void ChangeList_NewMarketSlot_GetsSalaryValue()
+    {
+        var game = Create(3);
+        var level = game.ActiveManager.Level;
+        for (var round = 0; round < 6; round++)
+            game.TransferMarket.ChangeList(game, game.Random);
+        var listings = game.TransferMarket.Listings.Where(l => l.FromPool).ToList();
+        Assert.NotEmpty(listings);
+        foreach (var l in listings)
+        {
+            var expected = Math.Max(Contracts.MinSalary,
+                game.PlayerValueOf(l.Player, l.From, PlayerValueKind.Salary, new Random(1), level) / 3);
+            Assert.Equal(expected, l.Player.MonthlySalary);
+            Assert.True(l.Player.MonthlySalary > 0);
+            Assert.Equal(0, l.Player.ContractYears);
+        }
+    }
+
+    /// <summary>
+    /// A864: Der Tageslauf 0x07169 würfelt je Kaderplatz eines Managers eine Verletzung außerhalb des Spiels. [ORIGINAL] Datei
+    /// 0x07462–0x07548: Platz mit +0x0D = 0 (nicht verletzt) und +0x09 = 0 (kein Angebot), x = max(0x28, 0x140 − 2 · Belastung +
+    /// 0x32 an Tagen ohne Ereignis), Wurf random(0, 30 · (5 − Level) + x + 100) = 0 (0x7479–0x7495) → Verletzung 0x05B1A mit
+    /// Schalter 0 (alle 28 Arten, 0x74A9), Meldung „Verletzung außerhalb des Spieles:“ / Name + Art (DGROUP 0xD30, 0x490F), bei
+    /// Versicherung 0x07089 (0x752D–0x7542), vor dem Ruhestandswurf. Rot vorher: keine Verletzung, kein Wurf im Strom.
+    /// </summary>
+    [Fact]
+    public void A864_InjuryOutsideMatch_RollsPerSlot()
+    {
+        var game = Create(2);
+        var manager = game.Managers[0];
+        var club = game.Clubs[manager.ClubIndex];
+        foreach (var p in club.Players)
+        {
+            p.InsurancePremium = 100;
+            p.Strain = 100;
+        }
+        var kinds = new HashSet<int>();
+        var injuries = 0;
+        var day = 10; // Tag ohne Ereignis liegt in der Saison; der Wurf hängt nur an x
+        var money = manager.Money;
+        var lines = 0;
+        for (var run = 0; run < 3000; run++)
+        {
+            game.AnnounceContractEnds(day, manager);
+            lines += game.Inbox(manager).Count(m => m.Lines.Length > 0 && m.Lines[0] == "Verletzung außerhalb des Spieles:");
+            game.Finance(manager).Inbox.Clear();
+            foreach (var p in club.Players)
+            {
+                if (p.InjuredGames == 0)
+                    continue;
+                injuries++;
+                kinds.Add(p.InjuryKind);
+                Assert.InRange(p.InjuryKind, 0, 27);
+                p.InjuredGames = 0; // geheilt, damit der nächste Lauf wieder würfelt
+                p.InjuryKind = InjuryKinds.Unknown;
+            }
+        }
+        Assert.InRange(injuries, 100, 700); // 25 Plätze · 3000 Läufe / ~300
+        Assert.True(kinds.Count > 5, "mehrere Arten");
+        Assert.Equal(injuries, lines);
+        Assert.True(manager.Money > money - 10_000_000); // Zahlungen der Versicherung gebucht (Einnahme)
+    }
+
+    /// <summary>
+    /// A864: Verletzte Plätze und Plätze mit einem unaufgeforderten Angebot (+0x09 ≠ 0) würfeln nicht (Datei 0x7462–0x7476).
+    /// </summary>
+    [Fact]
+    public void A864_InjuredOrOfferedSlots_DoNotRoll()
+    {
+        var game = Create(2);
+        var manager = game.Managers[0];
+        var club = game.Clubs[manager.ClubIndex];
+        var other = game.Clubs.First(c => c.Index != club.Index && c.League is not null);
+        foreach (var (p, i) in club.Players.Select((p, i) => (p, i)))
+        {
+            p.Strain = 100;
+            if (i % 2 == 0)
+                (p.InjuredGames, p.InjuryKind) = (1_000, 5);
+            else
+                p.UnsolicitedOffer = other;
+        }
+        for (var run = 0; run < 3000; run++)
+        {
+            // Der Verfall des Angebots (Datei 0x0762D) folgt im selben Lauf auf den Verletzungswurf: neu setzen.
+            foreach (var p in club.Players.Where((p, i) => i % 2 == 1))
+                p.UnsolicitedOffer = other;
+            game.AnnounceContractEnds(10, manager);
+        }
+        Assert.All(club.Players.Where((p, i) => i % 2 == 0), p => Assert.Equal((1_000, 5), (p.InjuredGames, p.InjuryKind)));
+        Assert.All(club.Players.Where((p, i) => i % 2 == 1), p => Assert.Equal(0, p.InjuredGames));
+    }
+
+    /// <summary>
+    /// Mehrsaisonprobe (AGENTS.md §5, vier Saisonwechsel, passiver und aktiver Manager): Verlorene Pool-Spieler (Besitzer „vergeben“,
+    /// in keinem Verein) altern in jedem Saisonwechsel genau um ein Jahr (A391, Datei 0x274A7), die Verletzung außerhalb des Spiels
+    /// (A864) tritt im Tageslauf auf, der Pool behält über alle Wechsel seine Plätze ohne doppelte Spieler.
+    /// Rückschaltprobe: src/ von ce658d4 → rot (Alter bleibt stehen, keine Meldung „Verletzung außerhalb des Spieles:“).
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MultiSeason_FourChanges_LostPlayersAgeAndInjuriesOutsideMatchOccur(bool active)
+    {
+        var game = TestGames.Create(3);
+        var before = new Dictionary<Player, int>();
+        var poolSize = game.TransferMarket.Pool.Count;
+        var season = game.Season;
+        var changes = 0;
+        var compared = 0;
+        var outside = 0;
+        RngTwinProbeTests.Run(game, active,
+            afterStep: g =>
+            {
+                foreach (var m in g.Managers)
+                {
+                    outside += g.Inbox(m).Count(x => x.Lines.Length > 0 && x.Lines[0] == "Verletzung außerhalb des Spieles:");
+                    g.Finance(m).Inbox.Clear();
+                }
+                if (g.Season == season)
+                    return;
+                season = g.Season;
+                var pool = g.TransferMarket.Pool;
+                Assert.Equal(poolSize, pool.Count);
+                Assert.Equal(pool.Count, pool.Select(x => x.Player).Distinct().Count());
+                foreach (var slot in pool.Where(x => x.Owner == PoolOwner.Taken && before.ContainsKey(x.Player)
+                                                     && !g.Clubs.Any(c => c.Players.Contains(x.Player))))
+                {
+                    Assert.Equal(before[slot.Player] + 1, slot.Player.Age);
+                    compared++;
+                }
+            },
+            beforeChange: g =>
+            {
+                changes++;
+                before.Clear();
+                foreach (var slot in g.TransferMarket.Pool.Where(x => x.Owner == PoolOwner.Taken && !g.Clubs.Any(c => c.Players.Contains(x.Player))))
+                    before[slot.Player] = slot.Player.Age;
+            });
+        Assert.Equal(4, changes);
+        Assert.True(compared > 0, "Kein verlorener Pool-Spieler verglichen");
+        Assert.True(outside > 0, "Keine Verletzung außerhalb des Spieles in vier Saisons");
+    }
 }

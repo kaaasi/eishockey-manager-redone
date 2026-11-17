@@ -20,6 +20,12 @@ public static class PoolDistributionRules
     /// </summary>
     public static readonly IReadOnlyList<int> ClubTurns = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8, 9, 10, 11];
 
+    /// <summary>Vierte Gruppe von 0x07C7E: Vereine ohne Liga. [ORIGINAL] DGROUP 0x7C6/0x7C7: 36 … 42 (A713).</summary>
+    public const int NoLeagueFirst = 36;
+
+    /// <inheritdoc cref="NoLeagueFirst"/>
+    public const int NoLeagueLast = 42;
+
     /// <summary>Erster und letzter Verein für einen Spieler „im Ausland“ (Datei 0x07EF1: random(64, 150)).</summary>
     public const int FirstForeign = 64;
 
@@ -93,7 +99,7 @@ public sealed partial class TransferMarket
     ///   <see cref="NextPoolClub"/>(l); Rest q − 1, s[l] − 1 (Datei 0x07DEB–0x07E93).</item>
     /// </list>
     /// [APPROX] Gruppe einer Liga = Vereine mit dieser Liga (im Original Indexbereiche DGROUP 0x7C6/0x7C7 nach der Ligamischung),
-    /// Gruppe 3 = Vereine ohne Liga (Index &lt; 48; im Original 36 … 42). Vergebene Plätze (Besitzer 0–3) sind Spieler im Kader eines
+    /// Gruppe 3 = Vereine 36 … 42 ohne Liga (<see cref="PoolGroup"/>). Vergebene Plätze (Besitzer 0–3) sind Spieler im Kader eines
     /// Managers.
     /// </summary>
     internal void DistributePoolAtSeasonChange(GameState game, Random random)
@@ -244,9 +250,16 @@ public sealed partial class TransferMarket
         return set;
     }
 
-    /// <summary>Gruppe eines Vereins für 0x07C7E: Liga 0 … 2, 3 = ohne Liga (unter 48), sonst −1 (Nationalteams, Ausland).</summary>
-    private static int PoolGroup(GameState game, int club) =>
-        game.Clubs[club].League is { } league ? (int)league : club < NewGame.SelectableClubs ? 3 : -1;
+    /// <summary>
+    /// Gruppe eines Vereins für 0x07C7E: Liga 0 … 2, 3 = Vereine 36 … 42 ohne Liga, sonst −1 (Vereine 43 … 47, Nationalteams,
+    /// Ausland). [ORIGINAL] A713: Die Gruppen sind die Indexbereiche DGROUP 0x7C6/0x7C7 je Gruppe (0 … 11, 12 … 23, 24 … 35,
+    /// 36 … 42; Datei 0x07C7E, <c>docs/transfer.md</c>); die vierte Gruppe endet bei 42 wie der Bieterbereich 0 … 42 von 0x059B8
+    /// (<see cref="UnsolicitedOfferRules.Bidder"/>). [APPROX] Gruppe 0 … 2 = Vereine mit dieser Liga statt Indexbereich: Das
+    /// Original ordnet die Vereinssätze beim Ligawechsel um (0x35EDD), das Remake führt Ligen über <see cref="Club.League"/> (A715).
+    /// </summary>
+    internal static int PoolGroup(GameState game, int club) =>
+        game.Clubs[club].League is { } league ? (int)league
+            : club is >= PoolDistributionRules.NoLeagueFirst and <= PoolDistributionRules.NoLeagueLast ? 3 : -1;
 
     private static bool IsForeignPoolClub(int club) => club >= PoolDistributionRules.FirstForeign;
 

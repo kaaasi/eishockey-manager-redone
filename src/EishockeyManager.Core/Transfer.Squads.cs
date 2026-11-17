@@ -163,6 +163,7 @@ public sealed partial class GameState
             var club = Clubs[manager.ClubIndex];
             foreach (var p in club.Players.ToArray())
             {
+                RollInjuryOutsideMatch(day, manager, club, p); // A864: Datei 0x07462–0x07548, vor dem Ruhestandswurf
                 if (SquadRules.RetirementRoll(p, Random) && p.Notice is not (ContractNotice.Retiring or ContractNotice.Offered))
                 {
                     p.Notice = ContractNotice.Retiring;
@@ -192,6 +193,31 @@ public sealed partial class GameState
             }
             RollUnsolicitedOffers(manager); // Spur transfer-vertraege-komplett, Teil 3: +0x09 Bit 0x40 (zweite Schleife, Datei 0x07996)
         }
+    }
+
+    /// <summary>
+    /// A864: Verletzung außerhalb des Spiels, je Kaderplatz im Lauf von 0x07169 vor dem Ruhestandswurf. [ORIGINAL] Datei
+    /// 0x07462–0x07548: Der Platz würfelt nur mit +0x0D = 0 (nicht verletzt, 0xFF zählt als verletzt) und +0x09 = 0 (kein
+    /// unaufgefordertes Angebot Bit 0x40); x = 0x140 − 2 · Belastung (+0x13) + 0x32 an Tagen ohne Ereignis (DGROUP 0x828 =
+    /// 0), mindestens 0x28 (0x7437–0x745D); Wurf random(0, 30 · (5 − Level) + x + 100) = 0 (0x7479–0x7495, DGROUP 0xED8 =
+    /// 5 − Level). Treffer: Verletzung 0x05B1A mit Schalter 0, also alle 28 Arten (<see cref="PlayerInjuries.Inflict"/>, 0x74A9),
+    /// Meldung „Verletzung außerhalb des Spieles:“ (DGROUP 0xD30) / Name, Leerzeichen (0x490F) und Art (0x74BE–0x7522), bei
+    /// Versicherung (+0x30/+0x32 ≠ 0) die Leistung 0x07089 (0x752D–0x7542), dann Neuaufstellung 0x426BC (0x7548).
+    /// [APPROX] Der Text der Art in Zeile 2 ist der Name der Art (Ausgabe von 0x05B1A in [bp−0xDA] nicht gelesen); das Remake
+    /// führt im Modus „nur Weltkugel“ keine Vereinssaison, dort läuft der Tageslauf nicht.
+    /// </summary>
+    private void RollInjuryOutsideMatch(int day, Manager manager, Club club, Player p)
+    {
+        if (p.InjuredGames != 0 || p.UnsolicitedOffer is not null)
+            return;
+        var x = Math.Max(0x28, 0x140 - 2 * p.Strain + (SeasonCalendar.Events(day) == DayEvents.None ? 0x32 : 0));
+        var difficulty = TrainingRules.LevelValue(manager.Level);
+        if (TransferRules.Random16(Random, 0, 30 * difficulty + x + 100) != 0)
+            return;
+        var kind = PlayerInjuries.Inflict(p, inMatch: false, difficulty, Random);
+        Notify(manager, "Verletzung außerhalb des Spieles:", $"{p.Name} {InjuryKinds.Name(kind)}");
+        PayInsurance(manager, p, careerEnd: false);
+        PlayerInjuries.RefillLineup(club);
     }
 
     private void NotifyClub(Club club, string[] text, Player? about = null)

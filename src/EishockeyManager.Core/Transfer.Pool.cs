@@ -963,7 +963,12 @@ public sealed partial class TransferMarket
             TransferPoolRules.RollMarketStrengths(p, game.Clubs[stand], random, game);
             TransferPoolRules.RollSlotFields(p, random);
             p.ContractYears = 0;
-            p.MonthlySalary = 0;
+            // [ORIGINAL] #897: Datei 0x497A1 (call 0x118:0x70, Art 1) schreibt +0x28 = Wert(Gehalt) des neuen Platzes, ohne Zufall,
+            // nach +0x2C = Wert(Preis) (0x4975C); Beleg: an allen Ständen FILE01–FILE49A ist +0x28 jedes Poolangebots ≠ 0
+            // (HokImportWerteTests) und stimmt mit Wert(Gehalt) im Verein des Platzes und dem Level des ziehenden Managers überein.
+            // [APPROX] Level: Manager am Zug (ActiveManager), beim Spielstart der erste Manager; das Original liest DGROUP [0xA70D].
+            p.MonthlySalary = Math.Max(Contracts.MinSalary,
+                game.PlayerValueOf(p, game.Clubs[slot.Club], PlayerValueKind.Salary, random, ActorLevel(game)) / 3);
             slot.Owner = PoolOwner.Market;
             _listings.Add(new TransferListing
             {
@@ -975,6 +980,10 @@ public sealed partial class TransferMarket
             });
         }
     }
+
+    /// <summary>Level des Managers, in dessen Zug der Listenwechsel läuft (<see cref="ChangeList"/>); ohne Manager 3.</summary>
+    private static int ActorLevel(GameState game) =>
+        game.Managers.Count == 0 ? 3 : game.ActiveManager.Level;
 
     /// <summary>
     /// Platz, den der Listenwechsel nicht räumt: eigener Spieler eines Managers ([ORIGINAL] Besitzer ≠ 4, 0x425F0) oder
