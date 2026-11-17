@@ -36,17 +36,6 @@ public class ZufallsstromSpielstartTests
         return (game, steps);
     }
 
-    /// <summary>
-    /// Strom nach der Spielvorbereitung plus der eine Wurf, mit dem die Pokalquelle <c>CupRandom</c> ihre Saat zieht (ohne
-    /// Gegenstück im Original; entfällt mit Teil 4 der Spur).
-    /// </summary>
-    private static RngState AfterCupSeed(Steps steps)
-    {
-        var sim = GameRandom.FromState(steps.Stream[NewGame.StartStep.Rest]);
-        _ = sim.Next();
-        return sim.Capture();
-    }
-
     private static int R(Random random, int a, int b) => TransferRules.Random16(random, a, b);
 
     /// <summary>
@@ -85,7 +74,7 @@ public class ZufallsstromSpielstartTests
             TransferPoolRules.RollRoleValue(layout, i, sim);
 
         Assert.Equal(expected, steps.Squads[NewGame.StartStep.Managers].Select(p => (p.Strain, p.Trend, p.Control, p.Age, p.Over, p.Under)).ToList());
-        Assert.Equal(sim.Capture(), steps.Stream[NewGame.StartStep.Managers]);
+        Assert.Equal(sim.Capture(), steps.Stream[NewGame.StartStep.EuropeanCup]); // danach lost der Europapokal (Datei 0x298B1, Teil 4)
         // bis zum Ende des Spielstarts unverändert (kein zweiter Wurf, keine eigene Quelle)
         Assert.Equal(expected, steps.Squads[NewGame.StartStep.Done].Select(p => (p.Strain, p.Trend, p.Control, p.Age, p.Over, p.Under)).ToList());
         var seats = TransferMarket.ManagerSquadIndices(game, layout).ToList();
@@ -150,7 +139,7 @@ public class ZufallsstromSpielstartTests
             Assert.Equal(1, game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.Pool.Select(o => o.Player)).Distinct()
                 .Count(p => p.Name == name));
         Assert.NotEqual(steps.Stream[NewGame.StartStep.Nationals], steps.Stream[NewGame.StartStep.Rest]); // Datei 0x2A0B5 → 0x5ACA0
-        Assert.Equal(AfterCupSeed(steps), steps.Stream[NewGame.StartStep.Drift]);
+        Assert.Equal(steps.Stream[NewGame.StartStep.Rest], steps.Stream[NewGame.StartStep.Drift]);
     }
 
     /// <summary>
@@ -228,7 +217,7 @@ public class ZufallsstromSpielstartTests
     }
 
     /// <summary>
-    /// Nach der Spielvorbereitung zieht bis zur Wanderung (Datei 0x43A73) nur die Saat der Pokalquelle aus dem Strom: keine Mischung vor dem Spielplan
+    /// Nach der Spielvorbereitung zieht bis zur Wanderung (Datei 0x43A73) nichts aus dem Strom (Teil 4: auch keine Saat einer Pokalquelle mehr): keine Mischung vor dem Spielplan
     /// (das Original mischt dort nicht), Computerkader aus der eigenen Quelle (ohne Gegenstück), Tendenz und +0x19 nicht ein
     /// zweites Mal. Der Markt (Datei 0x43A83 → 0x057E3, Datei 0x43A9F → 0x494EF) zieht nach der Wanderung aus dem Strom.
     /// </summary>
@@ -237,7 +226,7 @@ public class ZufallsstromSpielstartTests
     {
         var (game, steps) = Create(3, GameDuration.Unbegrenzt, 2, 14);
 
-        Assert.Equal(AfterCupSeed(steps), steps.Stream[NewGame.StartStep.Drift]);
+        Assert.Equal(steps.Stream[NewGame.StartStep.Rest], steps.Stream[NewGame.StartStep.Drift]);
         Assert.NotEqual(steps.Stream[NewGame.StartStep.Drift], steps.Stream[NewGame.StartStep.Market]);
         Assert.NotEqual(steps.Stream[NewGame.StartStep.Market], steps.Stream[NewGame.StartStep.Turn]);
         Assert.NotEmpty(game.TransferMarket.Listings);

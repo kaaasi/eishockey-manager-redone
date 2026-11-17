@@ -116,7 +116,7 @@ public static class HokCompareClasses
         Set(NotInHok,
             "GameState.CurrentRecord", "GameState.History", "GameState.NationalBookings", "GameState.NationalBudget",
             "GameState.Random", "GameState.RetiredPlayers", "GameState._contractRandom", "GameState._contractTurnFactor",
-            "GameState._cupRandom", "GameState._eternal", "GameState._financeRandom", "GameState._germanyRatings",
+            "GameState._eternal", "GameState._financeRandom", "GameState._germanyRatings",
             "GameState._managerBalance", "GameState._managerHistory", "GameState._nationalForm", "GameState._nextLeagueSlots",
             "GameState._readyManagers", "GameState._seasonEndYouthPending",
             "GameState._worldCupRankings",

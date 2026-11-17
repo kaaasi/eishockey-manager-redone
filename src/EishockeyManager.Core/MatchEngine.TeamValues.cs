@@ -178,11 +178,10 @@ public static partial class MatchEngine
     ///   Aufstellung 0x426BC <c>0x952C(m, 0)</c> (Datei 0x2A067–0x2A078, Schleife ab Manager <c>[bp−0x64]</c> = 0 beim neuen
     ///   Spiel bis DGROUP 0x386, Datei 0x29B57–0x2A0A3; A519/A080). Im Modus „nur Weltkugel“ nicht (#747, wie
     ///   <see cref="GameState.UpdateManagerTeamValues"/>).</item>
-    /// <item>[ORIGINAL] Wanderung des Spielstarts Modus 10 (Datei 0x43A73, nach 0x28165 und vor der Europapokal-Tabelle 0x341AB
-    ///   bei Datei 0x43A8C; A108).</item>
+    /// <item>[ORIGINAL] Wanderung des Spielstarts Modus 10 (Datei 0x43A73, nach 0x28165 und vor der Auslosung des DEB-Pokals
+    ///   0x341AB(0, 0) bei Datei 0x43A8C; A108). Der Europapokal ist dann schon ausgelost (Datei 0x298B1 in 0x28165; Spur
+    ///   zufallsstrom, Teil 4).</item>
     /// </list>
-    /// [APPROX] Das Remake lost den Europapokal schon in <see cref="GameState.InitializeCompetitions"/> vor diesem Schritt aus;
-    /// die Auslosung liest nur die Gegner (Index &gt; 64), die nicht wandern, und zieht aus <see cref="GameState.CupRandom"/>.
     /// </summary>
     internal static void StartGame(GameState game)
     {

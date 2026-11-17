@@ -216,7 +216,8 @@ public class AbgleichRestPreparationTests(ITestOutputHelper output)
     public void MultiSeason_PreparedFieldsStayInRange(bool active)
     {
         // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 22 statt 21 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 21 (und 25) stehen im passiven Lauf am Ende der Saison 1994 zwei Computervereine nicht auf dem Grundwert (Verein 5, Bundesliga, und Verein 14, 2. Liga – beide zuletzt Gegner des Managervereins, der in dieser Saison absteigt); die Probe erlaubt einen je Managerverein. 22–24, 26–28 grün; alter Code 21–28 grün. Die Probe hängt an der Saat.
-        var game = TestGames.Create(22);
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 23 statt 22 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; unter 21–28 sind 22, 24, 25 rot (passiv: zwei Computervereine nicht auf dem Grundwert, wie der Saatfall 21 aus Teil 3 – bitte im Erstreview mitprüfen).
+        var game = TestGames.Create(23);
         var manager = game.ActiveManager;
         var managedClub = game.Clubs[manager.ClubIndex];
         if (active)

@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 53) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 54) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -491,7 +491,6 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState.TransferMarket` | B | `5DC3` Satz 4, `far:8253` | Zeilen `TransferMarket` |
 | `GameState._contractRandom` | N | – | null (wird bei Bedarf aus `Random` gebildet) |
 | `GameState._contractTurnFactor` | N | – | 0 = im Zug neu ziehen |
-| `GameState._cupRandom` | N | – | null |
 | `GameState._eternal` | U | `AB7B`? | Ewige Tabelle: Ort nicht belegt; leer |
 | `GameState._financeRandom` | N | – | null |
 | `GameState._germanyRatings` | U | – | null (neu berechnet beim nächsten Länderspiel) |
@@ -1081,6 +1080,8 @@ liegt bei den genannten Spuren.
   (Sicherung 0x22C des Schalters „WM-Spiele“), Migration null.
 - Schema 53 (Runde 21, Spur `zufallsstrom`, N3 = B): `GameState._trendRandom` und `_turnRandom` entfallen (gemeinsamer Strom
   `GameState.Random`). Migration: beide Objekte entfernen, Objektnummern neu (`SaveGame.Migration.Zufallsstrom.cs`).
+- Schema 54 (Runde 21, Spur `zufallsstrom` Teil 4): übrige eigene Zufallsquellen entfallen – `GameState._cupRandom`
+  (Pokalauslosungen und Pokalspiele aus `GameState.Random`). Migration wie Schema 53 (dieselbe Datei).
 
 ### Zugang (Teil 3)
 

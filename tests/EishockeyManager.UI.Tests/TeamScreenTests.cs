@@ -131,7 +131,8 @@ public class TeamScreenTests
         // Verkauf. Die Probe hängt an der Saat.
         // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 1995 statt 1994 – Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) und der Tageslauf 0x07169 (Datei 0x07402–0x07AEF) ziehen aus dem gemeinsamen Strom, anderer Zufallsverlauf;
         // bei Saat 1994 bietet der Sponsor nach dem Kauf einen Zuschuss an (wie oben), 1993, 1995, 1996 nicht.
-        var d = FlowTests.CreateDriver(1995);
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1996 statt 1995 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 1995 bietet der Sponsor nach dem Kauf einen Zuschuss an (wie oben), 1993, 1994, 1996–1998 nicht.
+        var d = FlowTests.CreateDriver(1996);
         d.StartNewGame();
         d.OpenTile("Transfer");
         var screen = Assert.IsType<TransferScreen>(d.Host.Current);

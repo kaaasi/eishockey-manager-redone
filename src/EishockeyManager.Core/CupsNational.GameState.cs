@@ -47,7 +47,7 @@ public sealed partial class GameState
     {
         if (NationalCoach?.Nation == NationalTeams.Germany)
             return;
-        var r = CupRandom;
+        var r = Random; // Spur zufallsstrom Teil 4 (N3 = B): [ORIGINAL] Würfe Datei 0x554FD, 0x5552A, 0x55557 im Tageslauf
         // Reihenfolge wie im Original: je Abwehr/Sturm Kondition, Technik, Form (Form führt das Remake nicht).
         int[] condition = new int[2], technique = new int[2];
         for (var i = 0; i < 2; i++)
@@ -247,7 +247,7 @@ public sealed partial class GameState
             foreach (var member in coach.Squad)
                 member.Player.Strain = NationalCoach.FriendlyEnergy; // Kaderplatz +0x13 (A184)
 
-        var random = CupRandom;
+        var random = Random; // Spur zufallsstrom Teil 4 (N3 = B): gemeinsamer Strom (Freundschaftsspiel 0x3C05E → 0x30365)
         // Reihenfolge der Zufallszahlen wie im Original: x vor dem Spiel, Bonus danach.
         var xRoll = random.Next(0, 51);
         var (homeClub, awayClub) = home ? (coach.Nation, opponent) : (opponent, coach.Nation);

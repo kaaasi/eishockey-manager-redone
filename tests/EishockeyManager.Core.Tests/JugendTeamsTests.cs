@@ -275,8 +275,9 @@ public class JugendTeamsTests
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Tageslauf 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
+    // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigene Quelle CupRandom entfällt; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609) und Pokalspiele ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
     private const string ExpectedActive =
-        "0:Schueler:2/11/62;0:Jugend:2/11/63;0:Junioren:2/11/62;1:Schueler:2/6/69;1:Jugend:1/11/72;1:Junioren:1/11/74;2:Schueler:1/11/83;2:Jugend:1/6/79;2:Junioren:1/6/79;3:Schueler:1/6/85;3:Jugend:1/6/83;3:Junioren:1/6/82";
+        "0:Schueler:2/11/60;0:Jugend:2/11/64;0:Junioren:2/11/65;1:Schueler:1/12/68;1:Jugend:1/12/72;1:Junioren:1/11/72;2:Schueler:1/6/78;2:Jugend:1/6/78;2:Junioren:1/6/80;3:Schueler:1/6/82;3:Jugend:1/6/82;3:Junioren:1/6/81";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -358,8 +359,9 @@ public class JugendTeamsTests
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Tageslauf 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
+    // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigene Quelle CupRandom entfällt; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609) und Pokalspiele ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/64;0:Jugend:2/2/68;0:Junioren:2/2/68;1:Schueler:3/2/54;1:Jugend:3/2/53;1:Junioren:2/6/52;2:Schueler:3/6/48;2:Jugend:3/6/44;2:Junioren:3/2/43;3:Schueler:3/6/45;3:Jugend:3/6/42;3:Junioren:3/6/41";
+        "0:Schueler:2/2/67;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:3/2/55;1:Jugend:3/2/56;1:Junioren:3/2/56;2:Schueler:3/6/48;2:Jugend:3/6/45;2:Junioren:3/6/45;3:Schueler:3/6/42;3:Jugend:3/6/40;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

@@ -285,10 +285,11 @@ public class RngTwinProbeTests
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Verträge und Angebote des Tageslaufs 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Kaderplatzfelder des Markts und Starttendenz (Datei 0x42E6B), Laufbahnende freier Poolplätze (Datei 0x27897) ziehen aus dem gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
-    [InlineData(false, 3, "4489A8687A3AFF49")]
-    [InlineData(true, 3, "C56702A1DC836BF5")]
-    [InlineData(false, 11, "A120AE3D661A579E")]
-    [InlineData(true, 11, "03822BEF380BEBDF")]
+    // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigene Quelle CupRandom entfällt; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609) und Pokalspiele ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
+    [InlineData(false, 3, "E022E5CB56EBC062")]
+    [InlineData(true, 3, "8113086203997010")]
+    [InlineData(false, 11, "AB132F20B905D69D")]
+    [InlineData(true, 11, "D5044F9103A5CE5C")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -381,8 +382,9 @@ public class RngTwinProbeTests
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Verträge und Angebote des Tageslaufs 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Kaderplatzfelder des Markts und Starttendenz (Datei 0x42E6B), Laufbahnende freier Poolplätze (Datei 0x27897) ziehen aus dem gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – Spielstart in der Reihenfolge des Originals aus dem gemeinsamen Strom (siehe oben).
-    [InlineData(false, "521372EA6EC50EB8")]
-    [InlineData(true, "0DB9738A6DAAE3DB")]
+    // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigene Quelle CupRandom entfällt; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609) und Pokalspiele ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
+    [InlineData(false, "83F94BD298712328")]
+    [InlineData(true, "E6F805D9DFA7F294")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -444,7 +446,7 @@ public class RngTwinProbeTests
     {
         var sb = Dump(game);
         sb.Append(game.Random.Next()).Append('|').Append(game.FinanceRandom.Next()).Append('|')
-          .Append(game.CupRandom.Next()).Append('|').Append(game.ContractRandom.Next());
+          .Append(game.ContractRandom.Next());
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
     }
 

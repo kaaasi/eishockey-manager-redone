@@ -518,8 +518,7 @@ public sealed partial class GameState
         CurrentRecord = null;
         CurrentDay = 0;
         Phase = SeasonPhase.Running;
-        foreach (var competition in Competitions)
-            competition.StartSeason(this);
+        StartCompetitionSeasons(); // Spur zufallsstrom Teil 4: Reihenfolge des Originals, Datei 0x565F6–0x56609 (Cups.GameState.cs)
         OnNewSeasonManager();
         OnNewSeasonTeam();
         // #699 Punkt 2: Tag 0 vor dem ersten Menü – mit Verhandlungen aus der Oberfläche erst nach diesen

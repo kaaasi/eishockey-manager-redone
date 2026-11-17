@@ -89,6 +89,9 @@ public sealed partial class EuropeanCup : ISeasonCompetition
         return list;
     }
 
+    /// <summary>Genug Gegner für eine Auslosung (synthetische Spielstände ohne Europapokal-Gegner losen nicht).</summary>
+    internal static bool CanDraw(GameState game) => game.Clubs.Count >= FirstOpponent + Teams;
+
     public void StartSeason(GameState game)
     {
         _draw.Clear();
@@ -97,17 +100,19 @@ public sealed partial class EuropeanCup : ISeasonCompetition
         Winner = null;
         GermanEntrants = Entrants(game);
 
-        var random = game.CupRandom;
+        // Spur zufallsstrom, Teil 4 (N3 = B): aus dem gemeinsamen Strom (vorher CupRandom).
+        var random = game.Random;
         for (var slot = 0; slot < Teams; slot++)
         {
             int club;
             while (true)
             {
-                club = random.Next(FirstOpponent, Math.Min(LastOpponent, game.Clubs.Count - 1) + 1); // random(64, 149)
-                if (_draw.Contains(club))
-                    continue;
-                // [ORIGINAL] 0x4D316 < 0x46 und random(0, 3) ≠ 0 → neu ziehen (Datei 0x34401–0x3441C).
+                club = random.Next(FirstOpponent, Math.Min(LastOpponent, game.Clubs.Count - 1) + 1); // random(64, 149), Datei 0x343C9
+                // [ORIGINAL] 0x4D316 < 0x46 und random(0, 3) ≠ 0 → neu ziehen (Datei 0x34401–0x3441C) – vor der Prüfung auf
+                // Doppelte (Datei 0x3441E–0x344D0): auch ein schwacher, schon gezogener Verein würfelt.
                 if (SpectatorRules.Strength(game, game.Clubs[club]) < WeakOpponent && random.Next(0, 4) != 0)
+                    continue;
+                if (_draw.Contains(club))
                     continue;
                 break;
             }
@@ -141,7 +146,7 @@ public sealed partial class EuropeanCup : ISeasonCompetition
         var date = DateIndex(day);
         if (date < 0 || Winner is not null)
             return;
-        var played = GroupsOn(date).SelectMany(g => g.Play(date % GroupDates, day, game, game.CupRandom)).ToList();
+        var played = GroupsOn(date).SelectMany(g => g.Play(date % GroupDates, day, game, game.Random)).ToList();
         game.SettleCupMatches(played, importance: SpectatorRules.EuropeanCupImportance(date)); // Spur heimspiel-statistik
 
         var managerClubs = game.ActiveManagers.Select(m => m.ClubIndex).ToHashSet();

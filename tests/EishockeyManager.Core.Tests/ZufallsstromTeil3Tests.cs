@@ -117,7 +117,6 @@ public class ZufallsstromTeil3Tests
     {
         var game = Create(3);
         var root = JsonNode.Parse(Encoding.UTF8.GetString(SaveGame.Save(game)))!.AsObject();
-        Assert.Equal(53, SaveGame.SchemaVersion);
         var state = root["spiel"]!.AsObject();
         Assert.False(state.ContainsKey("_trendRandom"));
         Assert.False(state.ContainsKey("_turnRandom"));

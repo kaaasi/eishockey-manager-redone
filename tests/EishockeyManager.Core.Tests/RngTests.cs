@@ -135,7 +135,7 @@ public class RngTests
         var fresh = TestGames.Create(7);
         var full = fresh.CaptureRng();
         Assert.Equal(full, fresh.CaptureRng()); // Abbild verbraucht nichts
-        var lazy = full with { Finance = null, Cup = null, Contract = null };
+        var lazy = full with { Finance = null, Contract = null };
         fresh.RestoreRng(lazy);
         Assert.Equal(lazy, fresh.CaptureRng()); // bleibt „nicht erzeugt“, bis darauf zugegriffen wird
 
@@ -178,5 +178,5 @@ public class RngTests
     }
 
     private static int[] Draw(GameState game) =>
-        [game.Random.Next(), game.FinanceRandom.Next(), game.CupRandom.Next(), game.ContractRandom.Next(), game.Random.Next()];
+        [game.Random.Next(), game.FinanceRandom.Next(), game.ContractRandom.Next(), game.Random.Next()];
 }

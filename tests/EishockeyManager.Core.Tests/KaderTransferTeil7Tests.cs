@@ -145,7 +145,8 @@ public class KaderTransferTeil7Tests
         // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Saat 2 statt 1 – die Würfe des Verlängerungsangebots (Datei 0x0781E, 0x07833) kommen
         // aus dem gemeinsamen Strom statt aus ContractRandom; bei Saat 1 meldet sich nur ein Spieler (Grenze 3), Saaten 2–8: nur 5 darunter.
         // Die Probe hängt an der Saat, die Grenzen bleiben.
-        var game = TestGames.Create(2);
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1 statt 2 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 2 meldet sich nur ein Spieler (Grenze 3), unter 1–8 erfüllen 1, 3, 4, 5, 7, 8 die Grenzen. Die Probe hängt an der Saat.
+        var game = TestGames.Create(1);
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var twoYears = club.Players.Where(p => p.Role == PlayerRole.Forward).Take(3).ToList();
         foreach (var p in club.Players)

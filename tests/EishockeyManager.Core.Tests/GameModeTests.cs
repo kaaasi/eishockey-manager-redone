@@ -43,7 +43,7 @@ public class GameModeTests
                 break;
             game.StartNextSeason();
         }
-        parts.Add($"R{game.Random.Next()} C{game.CupRandom.Next()}");
+        parts.Add($"R{game.Random.Next()}"); // Spur zufallsstrom Teil 4: CupRandom entfällt
         return string.Join("|", parts);
     }
 
@@ -473,8 +473,9 @@ public class GameModeTests
     // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): neu – Tageslauf 0x07169 (Datei 0x07402–0x07AEF), Pool (Datei 0x29896), Starttendenz (Datei 0x42E6B) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
+    // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigene Quelle CupRandom entfällt; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609) und Pokalspiele ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=15,GermanChampion=1,EuropeanCupWinner=2|1144216,400000|WorldChampion=58,CupWinner=15,GermanChampion=15,EuropeanCupWinner=1|2371757,400000|WorldChampion=52,CupWinner=7,GermanChampion=15,EuropeanCupWinner=15|2677209,500000|WorldChampion=52,CupWinner=10,GermanChampion=3,EuropeanCupWinner=15|3038420,400000|WorldChampion=57,CupWinner=6,GermanChampion=6,EuropeanCupWinner=3|3099684,400000|R82747972 C783911961";
+        "WorldChampion=52,CupWinner=14,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=53,CupWinner=17,GermanChampion=1,EuropeanCupWinner=1|2390415,400000|WorldChampion=63,CupWinner=1,GermanChampion=1,EuropeanCupWinner=1|3112466,400000|WorldChampion=54,CupWinner=8,GermanChampion=9,EuropeanCupWinner=1|3564058,400000|WorldChampion=53,CupWinner=11,GermanChampion=8,EuropeanCupWinner=9|3787874,400000|R1926853881";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

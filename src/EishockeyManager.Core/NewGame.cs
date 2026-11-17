@@ -27,8 +27,10 @@ public static class NewGame
     /// [APPROX] Ohne Gegenstück im Original und deshalb außerhalb des Stroms: die Kader der Computervereine (eigene Quelle aus der
     /// Saat, <see cref="SquadSetup.FinishStartSquads"/>) und die Ligamischung vor der Spielvorbereitung (aus der Saat abgeleitet, weil
     /// die Vereinsauswahl sie vor dem Spielstart zeigt, <see cref="StartOrder"/>). Die Zufallswahl eines Vereins (ohne Gegenstück)
-    /// zieht vor dem Pool aus dem Strom (<see cref="AssignClubs"/>). Werbeangebote, Pokalauslosung: eigene Quellen
-    /// (<see cref="GameState.InitializeManagerSystems"/>).
+    /// zieht vor dem Pool aus dem Strom (<see cref="AssignClubs"/>). Teil 4: Europapokal (Datei 0x298B1, nach dem Pool) und
+    /// DEB-Pokal (Datei 0x43A8C, zwischen 0x057E3 und 0x494EF) losen an den Stellen des Originals aus dem Strom; die Länderreihenfolge
+    /// der WM gehört zur Mischung vor der Spielvorbereitung (<see cref="GameState.InitializeCompetitions"/>). Werbeangebote: eigene
+    /// Quelle (<see cref="GameState.InitializeManagerSystems"/>).
     /// </summary>
     /// <param name="observer">Nur Tests: wird an den Grenzen der Schritte gerufen (Strom und Zustand dort).</param>
     internal static GameState Create(ClubDatabase database, GameSetup setup, int seed, Action<StartStep, GameState>? observer)
@@ -72,6 +74,9 @@ public static class NewGame
         observer?.Invoke(StartStep.Pool, game);
         var held = SquadSetup.BuildStartPool(game); // Datei 0x29896: Pool mit den Kaderplätzen der Manager
 
+        observer?.Invoke(StartStep.EuropeanCup, game);
+        game.DrawStartEuropeanCup(); // Datei 0x298B1 → 0x3139F(0) → 0x341AB(1, 0): nach dem Pool, vor der Managerschleife
+
         observer?.Invoke(StartStep.Managers, game);
         // Zufällig zugeteilte Vereine (ohne Gegenstück im Original) verdrängt kein Platztausch.
         var earlier = managers.Where((_, i) => setup.Managers[i].ClubIndex is null).Select(m => m.ClubIndex).ToHashSet();
@@ -114,12 +119,26 @@ public static class NewGame
 
         SquadSetup.FinishStartSquads(game, seed); // Paket „mannschaft“: Computerkader, Rückennummern, Aufstellung
         game.AssignStartPlayerIds(); // Spur „speichern“: dauerhafte Spieler-IDs, verbraucht keinen Zufall
-        game.InitializeManagerSystems();
+        GameState.s_startDrawsAtOriginalPlace = true;
+        try
+        {
+            game.InitializeManagerSystems();
+        }
+        finally
+        {
+            GameState.s_startDrawsAtOriginalPlace = false;
+        }
         game.InitializeLeagueSlots(places); // S-K6/R-K5: Satzfolge = Startmischung mit den Plätzen nach dem Managertausch
         observer?.Invoke(StartStep.Drift, game);
         MatchEngine.StartGame(game); // Spur start-lader: Teamwerte der Managervereine (0x2A073), Wanderung des Spielstarts (0x43A73)
         observer?.Invoke(StartStep.Market, game);
-        game.TransferMarket.OpenStartMarket(game); // Datei 0x43A83 (0x057E3), 0x43A9F (0x494EF)
+        // Datei 0x43A83 (0x057E3), 0x43A8C (0x341AB(0, 0): DEB-Pokal), 0x43A9F (0x494EF)
+        game.TransferMarket.OpenStartMarket(game, () =>
+        {
+            observer?.Invoke(StartStep.DebCup, game);
+            game.DrawStartDebCup();
+            observer?.Invoke(StartStep.Listing, game);
+        });
         observer?.Invoke(StartStep.Turn, game);
         game.BeginFirstTurn(); // ui-rest Teil 4 (R12U-04): Faktor des ersten Managerzugs (0x44E3F)
         observer?.Invoke(StartStep.Done, game);
@@ -131,6 +150,8 @@ public static class NewGame
     {
         /// <summary>Vor dem Poolaufbau (Datei 0x29896).</summary>
         Pool,
+        /// <summary>Nach dem Poolaufbau, vor der Auslosung des Europapokals (Datei 0x298B1).</summary>
+        EuropeanCup,
         /// <summary>Vor der Managerschleife (Datei 0x29B57).</summary>
         Managers,
         /// <summary>Vor dem Benennen der Nationalspieler (Datei 0x2A0B5).</summary>
@@ -141,6 +162,10 @@ public static class NewGame
         Drift,
         /// <summary>Vor dem Verteilen des Pools (Datei 0x43A83).</summary>
         Market,
+        /// <summary>Nach dem Verteilen des Pools, vor der Auslosung des DEB-Pokals (Datei 0x43A8C).</summary>
+        DebCup,
+        /// <summary>Vor dem ersten Listenwechsel (Datei 0x43A9F).</summary>
+        Listing,
         /// <summary>Vor dem Faktor des ersten Managerzugs (Datei 0x44E3F).</summary>
         Turn,
         /// <summary>Spielstart abgeschlossen.</summary>
