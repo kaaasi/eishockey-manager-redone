@@ -126,6 +126,11 @@ public class StatisticsHistoryTests
                         record.Titles.GetValueOrDefault(Title.CupWinner, -1) == club,
                         record.Titles.GetValueOrDefault(Title.EuropeanCupWinner, -1) == club);
                 }
+            // Runde 22, einzelpunkte A698 (R15-E2 = C): Nachrücker in die Oberliga (vorher ohne Liga, nicht in den Abschlusstabellen)
+            // bekommen 12 − Platzfeld (+ 3 bei Platzfeld 0, Neulinge also 15) Punkte (Datei 0x566E4–0x56718; Probe FILE14 TEV Miesbach). Rückschaltprobe: alter Code +
+            // dieser Test → rot (Summe um 15 je Nachrücker zu klein).
+            foreach (var newcomer in record.PromotedInto[League.Oberliga].Where(c => !record.FinalTables.Values.Any(t => t.Contains(c))))
+                seasonPoints += GameState.EternalPoints(League.Oberliga, game.Clubs[newcomer].StoredTableRank, false, false, false);
             var total = game.EternalTable.Sum(e => e.Points);
             Assert.Equal(previousTotal + seasonPoints, total);
             previousTotal = total;
