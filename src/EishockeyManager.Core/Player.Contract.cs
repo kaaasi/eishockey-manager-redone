@@ -279,8 +279,10 @@ public enum NegotiationResult
 
 /// <summary>
 /// Gehälter und Vertragsverhandlung. Verhandlung nach em.exe 0x4A1DB/0x49A3B (<see cref="ContractRules"/>,
-/// <see cref="Negotiate"/>). Startgehalt der Manager-Kader und Gehalt nach einem Kauf = Wert(Gehalt) (<see cref="ValueSalary"/>).
-/// [APPROX] Computervereine, Leihen, Talente und Verlängerungen der Computervereine nutzen weiter <see cref="Demand"/>.
+/// <see cref="Negotiate"/>). Startgehalt der Manager-Kader und Gehalt nach einem Kauf = Wert(Gehalt) (<see cref="ValueSalary"/>), nach
+/// einer Leihe Wert(Gehalt) · random(90, 115) / 100 (<see cref="LoanSalary"/>, A118), nach der Talentsuche Wert(Gehalt) · 80 / 100
+/// (<c>FinanceTalent.cs</c>). [APPROX] Nur Spieler der Computervereine tragen <see cref="Demand"/> (A120): Computervereine haben im
+/// Original keine Kaderplätze und damit kein Gehalt (Poolsatz 0x21 Byte ohne +0x28); ihr Gehalt bucht nichts.
 /// </summary>
 public static class Contracts
 {
@@ -309,8 +311,11 @@ public static class Contracts
     public const int CareerEndPayoutFactor = 60;
 
     /// <summary>
-    /// Gehaltsforderung aus Stärke und Talent, auf 100 DM gerundet. Torhüter verdienen ein Viertel mehr.
-    /// [APPROX] So liegen Feldspieler der Stärke 35 bei 900–1.300 DM, Torhüter bei 1.100–1.600 DM.
+    /// Gehalt eines Spielers eines Computervereins aus Stärke und Talent, auf 100 DM gerundet; Torhüter verdienen ein Viertel mehr.
+    /// [APPROX] Ohne Gegenstück im Original (A120): Computervereine haben dort keine Kaderplätze und kein Gehaltsfeld; das Remake braucht
+    /// einen Wert für den Vertrag (Anzeige, Leihvertrag des Stammvereins), Geld bewegt er nicht. Kaderplätze der Manager bekommen stets
+    /// Wert(Gehalt) (<see cref="ValueSalary"/>, <see cref="LoanSalary"/>, Talentsuche). Feldspieler der Stärke 35 liegen bei
+    /// 900–1.300 DM, Torhüter bei 1.100–1.600 DM.
     /// </summary>
     public static int Demand(Player p)
     {
@@ -340,6 +345,30 @@ public static class Contracts
         var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
         return Math.Max(MinSalary, value / 3);
     }
+
+    /// <summary>
+    /// Gehalt eines geliehenen Spielers im Kader des Managers in DM (A118). [ORIGINAL] Die Leihe legt den Kaderplatz mit 0x42CB1 an
+    /// (Aufruf Datei 0x477E7 mit Argument [bp−0xC] · 99, [bp−0xC] = Leihe wie bei der Leihgebühr Preis / 3, Datei 0x47564–0x4757F):
+    /// +0x28 = Wert(Gehalt) (0x118:0x70 Art 1, Datei 0x42F11) · random(90, 115) / 100 (Datei 0x42F1F–0x42F4D, 32 Bit, abgeschnitten).
+    /// Datei 0x4783A sichert +0x28, 0x47907 kopiert den Markt-Platz über den neuen Platz, Datei 0x47929–0x47933 schreibt das gesicherte
+    /// Gehalt zurück. Zieht genau einen Wurf aus <paramref name="random"/>. [APPROX] Ganze DM (Drittel abgerundet, mindestens
+    /// <see cref="MinSalary"/>); Eingänge von Wert(Gehalt) wie bei <see cref="ValueSalary"/>.
+    /// </summary>
+    public static int LoanSalary(GameState game, Manager manager, Player p, Random random)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(manager);
+        var club = game.Clubs[manager.ClubIndex];
+        long thirds = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
+        thirds = thirds * TransferRules.Random16(random, LoanSalaryMinPercent, LoanSalaryMaxPercent) / 100;
+        return (int)Math.Max(MinSalary, thirds / 3);
+    }
+
+    /// <summary>Grenzen des Zufallsfaktors beim Leihgehalt in Prozent. [ORIGINAL] Datei 0x42F2C/0x42F30: random(0x5A, 0x73).</summary>
+    public const int LoanSalaryMinPercent = 90;
+
+    /// <inheritdoc cref="LoanSalaryMinPercent"/>
+    public const int LoanSalaryMaxPercent = 115;
 
     /// <summary>
     /// Startpreis eines Kaderplatzes des Managers in DM: Wert(Preis) (0x118:0x70 Art 0) im Verein des Managers / 3.

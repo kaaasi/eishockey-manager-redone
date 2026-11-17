@@ -170,7 +170,9 @@ public static class PlayerFactory
 
     /// <summary>
     /// Nimmt einen Spieler in einen Kader auf: nach Spielerart einsortiert (<see cref="InsertSlot"/>), Nr. = Kaderplatz + 1 (<see cref="Club.RenumberPlayers"/>), neuer Vertrag zur Gehaltsforderung,
-    /// ohne Versicherung und ohne abgelehntes Angebot. Gemeinsamer Abschluss für Transfer, Leihe und Talentsuche.
+    /// ohne Versicherung und ohne abgelehntes Angebot. Gemeinsamer Abschluss für Transfer, Leihe und Talentsuche. Das Gehalt
+    /// <see cref="Contracts.Demand"/> bleibt nur bei Computervereinen; Kaderplätze der Manager setzen die Aufrufer danach auf
+    /// Wert(Gehalt) (Kauf <c>Transfer.Purchase.cs</c>, Leihe <see cref="Contracts.LoanSalary"/>, Talentsuche; A118/A120).
     /// </summary>
     /// <param name="managerSquad">Kader eines Managervereins (Kaderplätze des Originals, <see cref="InsertSlot"/>); <c>false</c> für
     /// Computervereine.</param>
