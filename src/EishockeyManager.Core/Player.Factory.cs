@@ -187,9 +187,11 @@ public static class PlayerFactory
         // [ORIGINAL] neuer Kaderplatz (Datei 0x42CB1): Spiele für den Verein +0x1C = 0; die Saisonspiele (+0x06) bleiben (FILE07).
         // A135: alle Vereinszähler +0x1C–+0x26 je Wettbewerb.
         p.StartClubCounters();
-        // [ORIGINAL] A066: Form aus dem Pool (Datei 0x42EFF–0x42F06). [APPROX] Computervereine haben keine Kaderplätze; ihr Spieler
-        // trägt im Remake ebenfalls die Poolwerte.
-        p.AdoptPoolForm();
+        // [ORIGINAL] A066/A714: Kondition, Technik und Form aus dem Pool (Datei 0x42EC9–0x42F06); die Leihe kopiert den Markt-Platz
+        // darüber (Datei 0x47907) und behält dessen Werte. [APPROX] Computervereine haben keine Kaderplätze; ihr Spieler trägt im Remake
+        // ebenfalls die Poolwerte (Spur kaderplatz-werte: die Werte des Managerkaders entfallen beim Verkauf, Datei 0x46F3C–0x46FCF).
+        if (!loan)
+            p.AdoptPoolValues();
         if (!club.Players.Contains(p))
             InsertSlot(club, p, managerSquad);
         club.RenumberPlayers();

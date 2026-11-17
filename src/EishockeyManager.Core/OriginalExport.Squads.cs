@@ -201,8 +201,9 @@ public sealed partial class GameState
             OriginalSaveWriter.Name(p.Name, 0x12).CopyTo(e);
         e[0x12] = OriginalExport.Byte(p.Talent);
         e[0x14] = OriginalExport.Byte(p.Age);
-        e[0x15] = OriginalExport.Byte(p.Condition);
-        e[0x16] = OriginalExport.Byte(p.Technique);
+        // [ORIGINAL] Pool +0x15/+0x16 = Poolwerte (Drift 0x054D9 auch bei Spielern mit Kaderplatz, A714; Spur kaderplatz-werte).
+        e[0x15] = OriginalExport.Byte(p.PoolStrengths.Condition);
+        e[0x16] = OriginalExport.Byte(p.PoolStrengths.Technique);
         e[0x17] = OriginalExport.Byte(p.PoolForm ?? p.Form); // A066 (kader-rest)
         e[0x18] = RoleValue(p.Role);
         e[0x1A] = owner;

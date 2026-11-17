@@ -225,6 +225,7 @@ public static class HokCompareClasses
             "Player.ClubGoalsCarry", "Player.ClubCupGoalsCarry", "Player.ClubEuropeGoalsCarry", "Player.CupGames",
             "Player.EuropeGames", "Player.CupGoals", "Player.EuropeGoals", "Player.Games", "Player.GoalieMinutes", "Player.Goals",
             "Player.GoalsAgainst", "Player.InjuredGames", "Player.InjuryKind", "Player.Penalties2", "Player.Penalties5", "Player.PoolForm",
+            "Player.PoolCondition", "Player.PoolTechnique",
             "Player.Trend", "Player.TrendControl", "Player.TrendScore", "Player.UnsolicitedOffer");
         Set(Range(15), "Player.Condition", "Player.Form");
         Set(Range(10), "Player.Technique");

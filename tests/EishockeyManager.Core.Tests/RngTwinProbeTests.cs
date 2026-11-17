@@ -197,6 +197,16 @@ public class RngTwinProbeTests
     // (Datei 0x439BB vor der Spielvorbereitung 0x43A61), Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073) und
     // Wanderung des Spielstarts (Datei 0x43A73) in NewGame.Create statt beim ersten Spiel; anderer Zufallsverlauf ab dem
     // Spielstart. Rückschaltprobe: src/ von 40f67fc (ohne start-lader) + dieser Test → rot (alte Werte).
+    // Runde 22, Spur kaderplatz-werte Teil 1 (A674, A545, A714; R21-D2 = A): neu – Kauf und Leihe legen einen neuen Kaderplatz an
+    // (Datei 0x477E7 → 0x42CB1: Belastung, Tendenz, bei der Leihe Leihgehalt random(90, 115) aus dem gemeinsamen Strom; +0x19 = 0,
+    // Zähler aus dem Pool), die Drift 0x054D9 trifft auch die Poolwerte der Kaderspieler, ein Verkauf an einen Computerverein
+    // lässt die Poolwerte gelten (0x46F3C–0x46FCF). Anderer Zufallsverlauf ab dem ersten Kauf bzw. Saisonwechsel.
+    // Rückschaltprobe: src/ von 191f3ee + dieser Test → rot (alte Werte).
+    // Runde 22, Spur kaderplatz-werte Teil 1 (A674, A545, A714; R21-D2 = A): neu – Kauf und Leihe legen einen neuen Kaderplatz an
+    // (Datei 0x477E7 → 0x42CB1: Belastung, Tendenz, bei der Leihe Leihgehalt random(90, 115) aus dem gemeinsamen Strom; +0x19 = 0,
+    // Zähler aus dem Pool), die Drift 0x054D9 trifft auch die Poolwerte der Kaderspieler, ein Verkauf an einen Computerverein
+    // lässt die Poolwerte gelten (0x46F3C–0x46FCF). Anderer Zufallsverlauf ab dem ersten Kauf bzw. Saisonwechsel.
+    // Rückschaltprobe: src/ von 191f3ee + dieser Test → rot (alte Werte).
     [Theory]
     // Nachprüfung #681 (R14NT4N-01): neu – der Tageslauf von Tag 216 (Wechsel nach den Spielen des 13. April, Zähler 217) rechnet wie im Original den Takt des Hauptwegs (Datei 0x55204–0x552D3: Wanderung, Talentsuche, Training/Markt/Verträge nach den Remake-Regeln des Hauptwegs, Heilung, Aufstellungsautomatik), erst danach die Schleife; anderer Zufallsverbrauch ab dem 14. April jeder Saison. Gegenprobe: nur Core-Änderung zurück (Testdateien neu) → alter Wert.
     // Merge #669 (kader-start) in #672: neu ermittelt, beide Änderungen wirken (jeweils allein → deren Wert).
@@ -282,10 +292,10 @@ public class RngTwinProbeTests
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
     // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
-    [InlineData(false, 3, "CEFB6E7715D853B5")]
-    [InlineData(true, 3, "54EF76A14C0EE2E2")]
-    [InlineData(false, 11, "4EF0A98604525856")]
-    [InlineData(true, 11, "4FF756754A0B22BF")]
+    [InlineData(false, 3, "40005082A668682A")]
+    [InlineData(true, 3, "DDC893CF0E580CD3")]
+    [InlineData(false, 11, "EC254D3811A79407")]
+    [InlineData(true, 11, "F68F99246F023979")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -379,8 +389,8 @@ public class RngTwinProbeTests
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – Spielstart in der Reihenfolge des Originals aus dem gemeinsamen Strom (siehe oben).
     // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
-    [InlineData(false, "1FCB226E6231E9D9")]
-    [InlineData(true, "15E34D07E713C35A")]
+    [InlineData(false, "95A62F878A2B3032")]
+    [InlineData(true, "B0897DAACA4092D6")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

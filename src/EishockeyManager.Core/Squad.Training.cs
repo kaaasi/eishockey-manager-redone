@@ -221,8 +221,9 @@ public static class TrainingRules
     public const int MinStrain = 50, MaxStrain = 150;
 
     /// <summary>
-    /// Belastung eines Spielers ohne Kaderplatz-Startwert. [APPROX] Entspricht der früheren Energie 0 des Remakes (Belastung
-    /// 150), damit Spieler ohne gesetzten Wert sich wie bisher verhalten (z. B. Poolspieler vor dem Tausch, Transfer.Pool).
+    /// Belastung eines Spielers ohne Kaderplatz. [ORIGINAL] Spur kaderplatz-werte (A690): Jeder neue Kaderplatz zieht
+    /// random(80, 120) (Datei 0x42E4C–0x42E5E; Markt, Kauf, Start, Talent, neuer Manager), gelesen wird +0x13 nur am Kaderplatz.
+    /// [APPROX] Platzhalter 150 (frühere Energie 0) für Spieler ohne Kaderplatz, den keine Regel liest.
     /// </summary>
     public const int DefaultStrain = 150;
 
@@ -399,8 +400,10 @@ public sealed partial class Player
     /// <summary>
     /// Unterzahl: unteres Halbbyte von Kaderplatz +0x19 (0–15), vom Training verändert, wirkt in der Abwehr in Unterzahl.
     /// [ORIGINAL] Startwerte und Schreiber siehe <see cref="HiddenSkills"/> (docs/analyse/re-nachtrag.md Abschnitt 6).
-    /// [APPROX] Vorgabe 7 für Spieler, die nie in einen Managerkader oder den Markt kamen (Computervereine; im Original ohne
-    /// Kaderplatz) und für Spielstände vor Teil 7.
+    /// [ORIGINAL] Spur kaderplatz-werte (A691): Jeder Eintritt in einen Kaderplatz schreibt den Wert (Startwurf bzw. 0 beim Kauf,
+    /// <see cref="Player.ApplyNewSlot"/>); gelesen wird er nur am Kaderplatz (Spiel Datei 0x09A32–0x09AE5, Training 0x06AA4–0x06B01).
+    /// [APPROX] Platzhalter 7 für Spieler ohne Kaderplatz (Computervereine, freie Poolplätze), den keine Regel liest, und für
+    /// Spielstände vor Teil 7.
     /// </summary>
     public int HiddenSkill1 { get; set; } = 7;
 

@@ -198,11 +198,11 @@ public static class TransferPoolRules
             var values = MatchEngine.TeamValuesOf(club);
             (condition, techniqueBase) = (club.Strength + values.AttackCondition, club.Strength + values.AttackTechnique);
         }
-        p.Condition = Math.Clamp(condition + TransferRules.Random16(random, 10 * t, 14) - 10, 10, 99);
+        var newCondition = Math.Clamp(condition + TransferRules.Random16(random, 10 * t, 14) - 10, 10, 99);
         var technique = techniqueBase + TransferRules.Random16(random, 10 * t, 14) - 10;
         if (TransferRules.Random16(random, 0, 4) == 0)
             technique += TransferRules.Random16(random, 12, 20);
-        p.Technique = Math.Clamp(technique, 10, 99);
+        p.SetPoolStrengths(newCondition, Math.Clamp(technique, 10, 99), hasSlot: false); // Pool +0x15/+0x16 eines freien Platzes
     }
 
     /// <summary>
@@ -211,14 +211,15 @@ public static class TransferPoolRules
     /// Datei 0x497C7–0x49803: +0x19 = random(3, 12) · 16 + random(3, 12) (Über-/Unterzahl, <see cref="HiddenSkills"/>).
     /// Spur zufallsstrom (A708, N3 = B): Energie, Tendenz und +0x19 ziehen in dieser Reihenfolge aus derselben Quelle
     /// <paramref name="random"/> – im Spiel der gemeinsame Strom <see cref="GameState.Random"/> (Listenwechsel 0x494EF).
+    /// Spur kaderplatz-werte (Teil 1): Der Markt-Platz ist ein neu angelegter Kaderplatz (<see cref="Player.ApplyNewSlot"/>):
+    /// Strafen, Pokalzähler, Verletzung und +0x18 = 0, Liga-Tore/-Spiele aus dem Pool (A545).
     /// </summary>
     public static void RollSlotFields(Player p, Random random)
     {
-        // [ORIGINAL] Belastung des neuen Kaderplatzes random(80, 120) (Datei 0x42E4C–0x42E5E; A184, Integration Runde 12, R12I-01).
-        p.Strain = TransferRules.Random16(random, PlayerFactory.StartStrainMin, PlayerFactory.StartStrainMax);
-        p.AdoptPoolForm(); // [ORIGINAL] A066: Kaderplatz +0x12 = Pool +0x17 (Datei 0x42EFF–0x42F06)
-        p.RollTrend(random); // [ORIGINAL] Datei 0x42E6B → 0x4907A direkt nach der Energie
-        HiddenSkills.Roll(p, random); // Spur wettbewerbe-spiel, Teil 7: +0x19 wie gezogen (A185, A186)
+        // [ORIGINAL] Belastung random(80, 120) (Datei 0x42E4C–0x42E5E; A184, R12I-01), dann 0x42E6B → 0x4907A (Tendenz);
+        // A066: Kaderplatz +0x12 = Pool +0x17 (Datei 0x42EFF–0x42F06) – alles in 0x42CB1 (Squad.SlotValues.cs).
+        p.ApplyNewSlot(SquadSlotRules.Roll(random), fromManager: false);
+        HiddenSkills.Roll(p, random); // Spur wettbewerbe-spiel, Teil 7: +0x19 wie gezogen (A185, A186), Datei 0x497C7–0x49803
     }
 
     /// <summary>

@@ -73,11 +73,18 @@ public sealed partial class Player
     /// </summary>
     public void RollTrend(Random random)
     {
+        var (score, control) = DrawTrend(random);
+        SetTrendScore(score, control);
+    }
+
+    /// <summary>Zieht Tendenzwert und Steuerbyte wie <see cref="RollTrend"/>, ohne sie zu setzen (Spur kaderplatz-werte, Kauf).</summary>
+    public static (int Score, int Control) DrawTrend(Random random)
+    {
         var score = TransferRules.Random16(random, 35, 65);
         var control = TransferRules.Random16(random, 1, 13);
         control |= TransferRules.Random16(random, 1, 3) << 4;
         control |= TransferRules.Random16(random, 0, 1) << 7;
-        SetTrendScore(score, control);
+        return (score, control);
     }
 }
 

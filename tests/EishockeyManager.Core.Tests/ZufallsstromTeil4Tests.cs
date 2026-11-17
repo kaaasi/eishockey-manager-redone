@@ -398,7 +398,7 @@ public class ZufallsstromTeil4Tests
     {
         var (game, _) = Create(3, null, 2);
         var root = JsonNode.Parse(Encoding.UTF8.GetString(SaveGame.Save(game)))!.AsObject();
-        Assert.Equal(54, SaveGame.SchemaVersion);
+        Assert.True(SaveGame.SchemaVersion >= 54); // kaderplatz-werte: Schema 55 hängt eine weitere Migration an (Runde 22)
         var state = root["spiel"]!.AsObject();
         foreach (var field in RemovedFields)
             Assert.False(state.ContainsKey(field));

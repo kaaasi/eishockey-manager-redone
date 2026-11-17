@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 54) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 55) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -712,6 +712,8 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Player.ContractYears` | B | `5DC3+0x0B` | 0 = „kein V.“ |
 | `Player.Form` | B | `5DC3+0x12` | Kader; Pool `+0x17`, solange `PoolForm` null ist |
 | `Player.PoolForm` | B | `far:8253+0x17` | nur wenn ≠ Kader `+0x12` (Verletzung senkt nur den Pool, em.exe Datei 0x05B34–0x05B7C; neuer Kaderplatz übernimmt ihn, Datei 0x42EFF; A066, Schema 50) |
+| `Player.PoolCondition` | B | `far:8253+0x15` | nur wenn ≠ Kader `+0x10` (Drift 0x054D9 auch bei Spielern mit Kaderplatz, A714; neuer Kaderplatz übernimmt ihn, Datei 0x42EC9; Spur `kaderplatz-werte`, Schema 55) |
+| `Player.PoolTechnique` | B | `far:8253+0x16` | nur wenn ≠ Kader `+0x11` (wie `PoolCondition`; Datei 0x42EE4) |
 | `Player.Games` | B | `5DC3+0x06` | Summe `+0x06` … `+0x08` |
 | `Player.GoalieMinutes` | B | `far:8253+0x1F` | Torhüter |
 | `Player.Goals` | B | `5DC3+0x03` | Summe `+0x03` … `+0x05` (Feldspieler) |
@@ -1083,6 +1085,8 @@ liegt bei den genannten Spuren.
   (Pokalauslosungen und Pokalspiele) und `GameState._financeRandom` (Werbung, Börse, Zuschauer, Talentsuche, Jugend, Baufirmen)
   ziehen aus `GameState.Random`. Migration wie Schema 53 (dieselbe Datei). `GameState._contractRandom` bleibt als Quelle der
   Computerkader (`ComputerSquadRandom`, ohne Gegenstück im Original).
+- Schema 55 (Runde 22, Spur `kaderplatz-werte` Teil 1, vorläufig): `Player.PoolCondition`/`PoolTechnique` – Poolwerte
+  +0x15/+0x16 neben dem Kaderplatz (Drift A714). Migration: null (`SaveGame.Migration.KaderplatzWerte.cs`).
 
 ### Zugang (Teil 3)
 
