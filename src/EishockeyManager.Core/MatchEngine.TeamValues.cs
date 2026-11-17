@@ -49,8 +49,11 @@ public static partial class MatchEngine
     /// <item>Nationalteams (Index 52 … 63): Kondition und Technik aus DGROUP 0x4C4E überschrieben (ohne Streuung) – im
     ///   Remake über <c>RatedNation</c>, hier Abweichung 0.</item>
     /// </list>
-    /// [APPROX] Für Byte 1 (Sturm) nimmt das Remake wie bisher die Vereinsstärke (Byte 0; bei den Vereinen 0 … 63 sind
-    /// beide gleich).
+    /// [ORIGINAL] A105/A836: Byte 1 (Sturm) ist bei den Europapokal-Gegnern (Index ab 64) eigen (kb\23.vga 0x16C, z. B. 79/72);
+    /// der Lader nimmt es für den Sturm (Datei 0x2F004–0x2F009: Byte <c>[bp−0x8] + si</c>, si = Teil). Das Remake führt die
+    /// Teamwerte als Abweichung von <see cref="Club.Strength"/> (Byte 0); die Sturmwerte enthalten deshalb Byte 1 − Byte 0
+    /// (bei den Vereinen 0 … 63 sind beide gleich). [APPROX] Ohne Datenbankbytes (Rückfall <see cref="EnsureTeamValues"/>,
+    /// Aufbauten ohne <see cref="NewGame.Create"/>) gilt Byte 0 auch für den Sturm.
     /// [ORIGINAL] Zeitpunkt (Spur start-lader, A106): einmal beim Programmstart, Datei 0x439BB <c>call 0xE0:0x75</c> in 0x437D5,
     /// vor der Spielvorbereitung 0x28165 (Datei 0x43A61); danach wandern Kondition, Technik und Form mit
     /// <see cref="DriftTeamValues"/> (Spielstart, Saisonwechsel, zweimal je Woche; <c>docs/spielberechnung.md</c> §15). Das
@@ -65,20 +68,25 @@ public static partial class MatchEngine
 
     /// <summary>Lader 0x2EF1B über eine Vereinsliste (siehe <see cref="LoadTeamValues(GameState)"/>), für den Programmstart vor
     /// dem Aufbau des Spielstands (<see cref="NewGame.Create"/>).</summary>
-    public static void LoadTeamValues(IEnumerable<Club> clubs, Random random)
+    /// <param name="attackBytes">Datenbankbyte 1 (Sturm) je Vereinsindex (A105/A836); ohne Eintrag Byte 0.</param>
+    public static void LoadTeamValues(IEnumerable<Club> clubs, Random random, IReadOnlyDictionary<int, int>? attackBytes = null)
     {
         foreach (var club in clubs.OrderBy(c => c.Index))
         {
             var dayForm = OriginalMatch.Rnd(random, DayFormMin, DayFormMax);
             var v = club.Strength;
-            var t = Math.Max(0, v / 10);
-            int Spread() => -OriginalMatch.Rnd(random, 0, t) + OriginalMatch.Rnd(random, 0, t);
+            var attack = attackBytes is not null && attackBytes.TryGetValue(club.Index, out var a) ? a : v;
+            int Spread(int value)
+            {
+                var t = Math.Max(0, value / 10);
+                return -OriginalMatch.Rnd(random, 0, t) + OriginalMatch.Rnd(random, 0, t);
+            }
             int Form() => OriginalMatch.Rnd(random, 45, 55) - (club.Index > 64 ? 5 : 0);
-            var dc = Spread();
-            var dt = Spread();
+            var dc = Spread(v);
+            var dt = Spread(v);
             var df = Form();
-            var ac = Spread();
-            var at = Spread();
+            var ac = attack - v + Spread(attack);
+            var at = attack - v + Spread(attack);
             var af = Form();
             if (club.Index is >= NationalTeams.First and <= NationalTeams.Last)
                 dc = dt = ac = at = 0;

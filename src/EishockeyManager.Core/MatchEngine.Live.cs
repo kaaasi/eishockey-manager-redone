@@ -285,8 +285,8 @@ public static partial class MatchEngine
     /// <item>Teamwerte: Kondition und Technik je Teil aus den Vereinsfeldern 0x18–0x1B (<see cref="ClubFieldValues"/>).
     ///   [ORIGINAL] Der Lader 0x2EF1B setzt sie beim Programmstart aus den Stärkebytes der Datenbank
     ///   (v − random(0, v/10) + random(0, v/10), <see cref="LoadTeamValues(GameState)"/>), danach wandern sie
-    ///   (<see cref="DriftTeamValues"/>). [APPROX] Byte 0 auch für den Sturm (Byte 1 weicht nur bei den Europapokal-Gegnern ab
-    ///   und wird im Remake nicht geführt).</item>
+    ///   (<see cref="DriftTeamValues"/>). [ORIGINAL] A836: der Sturm aus Byte 1 (weicht nur bei den Europapokal-Gegnern ab; im
+    ///   Lader als Abweichung von Byte 0 gezogen, <see cref="LoadTeamValues(IEnumerable{Club}, Random, IReadOnlyDictionary{int, int})"/>).</item>
     /// <item>Form 0x1C/0x1D: [ORIGINAL] random(45, 55), Europapokal-Gegner (Index &gt; 64) 5 weniger, aus dem Lader.
     ///   Tagesform 0x17: [ORIGINAL] random(47, 53) aus dem Lader, nach Ligaspielen nachgeführt (<see cref="UpdateDayForm"/>).</item>
     /// <item>Einsatz 0x26 und Angriff 0x2C: hier vorläufig Automatik bzw. eigene Taktik beim Stand 0:0 gegen den Teamwert;

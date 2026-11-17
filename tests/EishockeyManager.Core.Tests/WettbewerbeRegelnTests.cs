@@ -1,4 +1,5 @@
 using EishockeyManager.Core;
+using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core.Tests;
 
@@ -79,5 +80,37 @@ public class WettbewerbeRegelnTests
         var report = MatchEngine.PlayWithEvents(game, home, away, MatchCompetition.League, knockOut: false, new Random(1));
         Assert.True(report.Forfeit);
         Assert.Equal((homeGoals, awayGoals), (report.HomeGoals, report.AwayGoals));
+    }
+
+    /// <summary>
+    /// A105/A836: [ORIGINAL] Der Lader 0x2EF1B nimmt für den Sturm Datenbankbyte 1 (Datei 0x2F004–0x2F009, Byte k je Teil); bei
+    /// den Europapokal-Gegnern weicht es von Byte 0 ab (kb\23.vga 0x16C). Vorher lag der Sturm um Byte 0.
+    /// </summary>
+    [Fact]
+    public void Loader_AttackFromSecondDatabaseByte()
+    {
+        var data = new byte[ClubDatabase.FileLength];
+        var template = TestGames.CreateDatabase();
+        for (var i = 0; i < ClubDatabase.TotalClubs; i++)
+        {
+            var at = ClubDatabase.StrengthOffset + i * 3;
+            data[at] = template.Clubs[i].Strengths.Defense;
+            data[at + 1] = template.Clubs[i].Strengths.Attack;
+        }
+        for (var i = 0; i < ClubDatabase.ClubsWithSquad; i++)
+            System.Text.Encoding.ASCII.GetBytes($"VEREIN {i}").CopyTo(data, ClubDatabase.SquadOffset + i * ClubDatabase.SquadRecordLength);
+        const int european = 70;
+        data[ClubDatabase.StrengthOffset + european * 3] = 79;
+        data[ClubDatabase.StrengthOffset + european * 3 + 1] = 40;
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = 2 });
+        var game = NewGame.Create(ClubDatabase.Parse(data), setup, 3);
+        var club = game.Clubs[european];
+        Assert.Equal(79, club.Strength);
+        var (defense, attack) = MatchEngine.ClubFieldValues(club);
+        Assert.InRange(defense.Condition, 79 - 7, 79 + 7);
+        Assert.InRange(defense.Technique, 79 - 7, 79 + 7);
+        Assert.InRange(attack.Condition, 40 - 4, 40 + 4);
+        Assert.InRange(attack.Technique, 40 - 4, 40 + 4);
     }
 }
