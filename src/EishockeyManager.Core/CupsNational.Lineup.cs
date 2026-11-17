@@ -213,11 +213,10 @@ public sealed partial class NationalCoach
     /// <item>[ORIGINAL] Rechtsklick sonst: Reservist heraus (Datei 0x40F59), nicht Eingesetzter einsetzen (Datei 0x41208).</item>
     /// <item>[ORIGINAL] Linksklick sonst: keine Reihe gewählt → „Keine Reihe / ausgewählt !“; Torhüter nur in den Torhüterplatz,
     ///   Feldspieler nicht dorthin → „Der darf da / nicht rein !“ (Datei 0x40E77–0x40EB9); dann der erste freie Platz der Art in
-    ///   der Reihe (Sturm Plätze 0–2, Abwehr 3–4, Datei 0x412A1–0x41381), eingesetzt (Datei 0x415B2), sonst „Kein / Platz mehr !“.
-    ///   [APPROX] Ist die eigene Hälfte der Reihe voll, versucht das Original die andere Hälfte (Verteidiger in den Sturm und
-    ///   umgekehrt, Datei 0x414D3–0x414ED) und öffnet in Reihe 1 einen sechsten Feldspielerplatz (Datei 0x413E8–0x414B4). Beides
-    ///   übernimmt das Remake nicht: seine Aufstellung hat feste Plätze je Art (<see cref="LineupSlot"/>); es meldet gleich
-    ///   „Kein / Platz mehr !“.</item>
+    ///   der Reihe (Sturm Plätze 0–2, Abwehr 3–4, Datei 0x412A1–0x41381), eingesetzt (Datei 0x415B2). [ORIGINAL] Ist die eigene
+    ///   Hälfte voll, die andere Hälfte (Verteidiger in den Sturm und umgekehrt, Datei 0x414D3–0x414ED; A490,
+    ///   <see cref="Core.Lineup.SearchSlots"/>), sonst „Kein / Platz mehr !“. [APPROX] Den sechsten Feldspielerplatz in Reihe 1
+    ///   ohne Torhüter (Datei 0x413E8–0x414B4) hat das Remake nicht (wie <see cref="Club.ClickPlayer"/>).</item>
     /// </list>
     /// </summary>
     /// <param name="player">angeklickter Spieler (muss im Kader stehen).</param>
@@ -247,23 +246,18 @@ public sealed partial class NationalCoach
             return LineupResult.NoLineSelected;
         if ((player.Role == PlayerRole.Goalkeeper) != (l == GoalkeeperLine))
             return LineupResult.WrongRole;
-        foreach (var slot in SlotsOf(l, player.Role))
-            if (Formation[slot] is null)
-                return Assign(slot, player);
-        return LineupResult.NoRoom;
-    }
-
-    /// <summary>Plätze einer Reihe für eine Art in der Reihenfolge der Suche des Originals (Datei 0x412C9–0x41386).</summary>
-    private static IEnumerable<LineupSlot> SlotsOf(int line, PlayerRole role)
-    {
-        if (line == GoalkeeperLine)
+        foreach (var slot in Core.Lineup.SearchSlots(l, player.Role))
         {
-            yield return LineupSlot.Goalkeeper;
-            yield break;
+            if (Formation[slot] is not null)
+                continue;
+            if (slot.Role == player.Role)
+                return Assign(slot, player);
+            // [ORIGINAL] andere Hälfte der Reihe (Datei 0x414D3–0x414ED), eingesetzt wie bei Assign (Datei 0x415B2).
+            Formation.PlaceSkater(slot, player);
+            _dressed.Add(player);
+            return LineupResult.Assigned;
         }
-        var count = role == PlayerRole.Forward ? Core.Lineup.ForwardsPerBlock : Core.Lineup.DefendersPerBlock;
-        for (var i = 0; i < count; i++)
-            yield return role == PlayerRole.Forward ? LineupSlot.Forward(line, i) : LineupSlot.Defender(line, i);
+        return LineupResult.NoRoom;
     }
 
     /// <summary>

@@ -148,12 +148,20 @@ public class NationalteamRunde13Tests
     /// <summary>
     /// A010: Regressionstest. [ORIGINAL] Volle Reihe → „Kein / Platz mehr !“, keine Verdrängung (DOSBox `file19_08`: RESERVE-
     /// Verteidiger RYAN bei voller Reihe 1). Formation und Zahl der Eingesetzten bleiben, der Reservist bleibt Reservist.
+    /// Angepasst in Spur kader-regeln (R15-E2 = C, A490): Bei voller Abwehrhälfte weicht das Original in die Sturmhälfte aus
+    /// (Datei 0x414D3–0x414ED); „voll“ heißt deshalb beide Hälften, mit Torhüter (ohne Torhüter öffnet Reihe 1 einen sechsten
+    /// Platz, Datei 0x413DD). Vorher war nur die Abwehrhälfte besetzt.
     /// </summary>
     [Fact]
     public void A010_FullLine_NoRoom_NothingChanges()
     {
         var (_, coach) = Coach();
         coach.ClearFormation();
+        int? goalLine = NationalCoach.GoalkeeperLine;
+        Assert.Equal(LineupResult.Assigned, coach.ClickPlayer(First(coach, PlayerRole.Goalkeeper), ref goalLine, right: false));
+        int? forwardLine = 0;
+        for (var i = 0; i < Lineup.ForwardsPerBlock; i++)
+            Assert.Equal(LineupResult.Assigned, coach.ClickPlayer(First(coach, PlayerRole.Forward, i), ref forwardLine, right: false));
         var d0 = First(coach, PlayerRole.Defender);
         var d1 = First(coach, PlayerRole.Defender, 1);
         var reserve = First(coach, PlayerRole.Defender, 2);

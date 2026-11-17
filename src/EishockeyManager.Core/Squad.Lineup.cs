@@ -156,6 +156,35 @@ public sealed class Lineup
             yield return role == PlayerRole.Forward ? LineupSlot.Forward(line, i) : LineupSlot.Defender(line, i);
     }
 
+    /// <summary>
+    /// Plätze, die ein Klick in Reihe <paramref name="line"/> nacheinander versucht (A683, A490). [ORIGINAL] Datei 0x412A1–0x41386:
+    /// erst die eigene Hälfte (Sturm Plätze 0–2, Abwehr 3–4); ist sie voll, Hälfte = 3 − Hälfte und ein zweiter Versuch (Datei
+    /// 0x414D3–0x414ED): Ein Stürmer kommt auf einen freien Verteidigerplatz und umgekehrt. Die Torhüterreihe hat keine andere
+    /// Hälfte (Datei 0x413C0). Der sechste Feldspielerplatz in Reihe 1 fehlt hier (<see cref="Club.ClickPlayer"/>).
+    /// </summary>
+    public static IEnumerable<LineupSlot> SearchSlots(int line, PlayerRole role)
+    {
+        var own = SlotsOfLine(line, role);
+        if (line == GoalkeeperLine || role == PlayerRole.Goalkeeper)
+            return own;
+        return own.Concat(SlotsOfLine(line, role == PlayerRole.Forward ? PlayerRole.Defender : PlayerRole.Forward));
+    }
+
+    /// <summary>
+    /// Setzt einen Feldspieler auf einen freien Feldspielerplatz, auch der anderen Art (andere Hälfte der Reihe, Datei 0x414D3;
+    /// im Original bestimmt +0x15 den Platz, nicht die Rolle). Steht er schon woanders, wird sein alter Platz frei.
+    /// </summary>
+    /// <returns>false bei besetztem Platz, Torhüter auf einer Seite oder nicht einsatzfähigem Spieler.</returns>
+    public bool PlaceSkater(LineupSlot slot, Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        if (slot.Role == PlayerRole.Goalkeeper || player.Role == PlayerRole.Goalkeeper || !player.Available || this[slot] is not null)
+            return false;
+        Remove(player);
+        this[slot] = player;
+        return true;
+    }
+
     /// <summary>Reihe eines Platzes (0–3, Torhüter <see cref="GoalkeeperLine"/>).</summary>
     public static int LineOf(LineupSlot slot) => slot.Role == PlayerRole.Goalkeeper ? GoalkeeperLine : slot.Block;
 
@@ -437,14 +466,16 @@ public sealed partial class Club
     /// <item>[ORIGINAL] Rechtsklick sonst: Reservist heraus (Datei 0x40F59), nicht Eingesetzter einsetzen (Datei 0x41208).</item>
     /// <item>[ORIGINAL] Linksklick sonst (auch auf einen Reservisten, Datei 0x40F1E–0x40F32): ohne Reihe „Keine Reihe /
     ///   ausgewählt !“, Torhüter nur in die Torhüterreihe, Feldspieler nicht dorthin („Der darf da / nicht rein !“, Datei
-    ///   0x40E77–0x40EB9); dann der erste freie Platz der Art in der Reihe (Datei 0x412A1–0x41381), eingesetzt (Datei 0x415B2),
-    ///   sonst „Kein / Platz mehr !“ (Datei 0x414BC–0x414C6). Niemand wird verdrängt.</item>
-    /// <item>[APPROX] Wie beim Nationalteam: Ist die eigene Hälfte der Reihe voll, versucht das Original die andere Hälfte
-    ///   (Datei 0x414D3–0x414ED) und öffnet in Reihe 1 einen sechsten Feldspielerplatz (Datei 0x413E8–0x414B4, Meldung „Schon 6
-    ///   Feldspieler“ Datei 0x40EF7). Das Remake hat keine Plätze außerhalb der Art: <see cref="Lineup"/> führt je Reihe drei
-    ///   Stürmer- und zwei Verteidigerplätze, und <see cref="Lineup.Fits"/> lässt nur die passende Art zu (auch für die
-    ///   automatische Aufstellung). Ein Ausweichen in die andere Hälfte oder auf einen sechsten Platz ist so nicht darstellbar;
-    ///   es meldet gleich „Kein / Platz mehr !“ (Review R14KS-06).</item>
+    ///   0x40E77–0x40EB9); dann der erste freie Platz der Art in der Reihe (Datei 0x412A1–0x41381), eingesetzt (Datei 0x415B2).
+    ///   Niemand wird verdrängt.</item>
+    /// <item>[ORIGINAL] Ist die eigene Hälfte der Reihe voll, versucht das Original die andere Hälfte (Hälfte = 3 − Hälfte, Datei
+    ///   0x414D3–0x414ED; A683): ein Stürmer auf einen freien Verteidigerplatz und umgekehrt (<see cref="Lineup.SearchSlots"/>,
+    ///   <see cref="Lineup.PlaceSkater"/>). Sonst „Kein / Platz mehr !“ (Datei 0x414BC–0x414C6).</item>
+    /// <item>[APPROX] Sind in Reihe 1 beide Hälften voll und ist kein Torhüter aufgestellt (Gitter Torhüterreihe Platz 4 = 0,
+    ///   <c>[bp−0x2A]</c>, Datei 0x413DD), öffnet das Original einen sechsten Feldspielerplatz (Abwehrhälfte Plätze 3–5, Datei
+    ///   0x413E8–0x414B4 und 0x412CF–0x412DB; Meldung „Schon 6 Feldspieler“ Datei 0x40EF7 beim Torhüter). Das Remake hat diesen
+    ///   Platz nicht (<see cref="LineupSlot"/>: zwei Verteidigerplätze je Reihe; das Spiel ohne Torhüter mit sechs Feldspielern
+    ///   bräuchten Spielrechnung und Aufstellungsbild) und meldet „Kein / Platz mehr !“.</item>
     /// </list>
     /// </summary>
     /// <param name="player">angeklickter Spieler (muss im Kader stehen).</param>
@@ -479,9 +510,18 @@ public sealed partial class Club
             return LineupResult.NoLineSelected;
         if ((player.Role == PlayerRole.Goalkeeper) != (l == Lineup.GoalkeeperLine))
             return LineupResult.WrongRole;
-        foreach (var slot in Lineup.SlotsOfLine(l, player.Role))
-            if (Lineup[slot] is null)
+        foreach (var slot in Lineup.SearchSlots(l, player.Role))
+        {
+            if (Lineup[slot] is not null)
+                continue;
+            if (slot.Role == player.Role)
                 return AssignToLineup(slot, player);
+            // [ORIGINAL] andere Hälfte der Reihe (Datei 0x414D3–0x414ED), sonst wie AssignToLineup: eingesetzt (Datei 0x415B2).
+            TakeOverDressed();
+            Lineup.PlaceSkater(slot, player);
+            _dressed.Add(player.Id);
+            return LineupResult.Assigned;
+        }
         return LineupResult.NoRoom;
     }
 }
