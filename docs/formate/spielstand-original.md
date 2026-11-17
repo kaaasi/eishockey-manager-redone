@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 60) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 61) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -868,6 +868,10 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `NationalBooking.Kind` | N | – | Carryover |
 | `NationalBooking.Season` | N | – | laufende Saison |
 | `SeasonRecord.FinalTables` | N | – | nur in `CurrentRecord` (null) |
+| `SeasonRecord.InnerMoves` | N | – | Platztausch innerhalb der unteren Liga einer Aufstiegsrunde (A665, Datei 0x5636D / 0x36169; Spur `einzelpunkte`, Schema 61); wie oben |
+| `InnerMove.Club` | N | – | wie oben |
+| `InnerMove.Lower` | N | – | wie oben |
+| `InnerMove.Slot` | N | – | wie oben |
 | `SeasonRecord.LeftOberliga` | N | – | wie oben |
 | `SeasonRecord.Managers` | N | – | wie oben |
 | `SeasonRecord.PromotedInto` | N | – | wie oben |
@@ -1139,6 +1143,7 @@ liegt bei den genannten Spuren.
   `Lineup.GoalieStandIn` (Feldspieler im Tor, A672). Migration: false bzw. niemand (`SaveGame.Migration.Einzelpunkte.cs`).
 - Schema 60 (Runde 22, Spur `einzelpunkte`, nach `kader-regeln`): `SponsorContract.Cancellable` (Bit 0x80 der Option, „Kündbar.“, A582). Migration:
   false (`SaveGame.Migration.Einzelpunkte.cs`).
+- Schema 61 (Runde 22, Spur `einzelpunkte`, nach `kader-regeln`): `SeasonRecord.InnerMoves` (A665). Migration: leer (`SaveGame.Migration.Einzelpunkte.cs`).
 
 ### Zugang (Teil 3)
 

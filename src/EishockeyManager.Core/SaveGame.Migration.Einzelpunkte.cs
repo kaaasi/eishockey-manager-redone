@@ -74,4 +74,35 @@ public static partial class SaveGame
                 break;
         }
     }
+
+    /// <summary>
+    /// Schema 60 → 61 (A665): Jeder Saisonrückblick bekommt <c>InnerMoves</c> = leer. [APPROX] Ältere Stände haben keine Platzverschiebung
+    /// innerhalb der unteren Liga gespeichert; der Sonderfall (Zwangsabsteiger schon unter den Plätzen 3/4) bleibt dort wie bisher.
+    /// </summary>
+    private static JsonObject MigrateInnerMoves(JsonObject root)
+    {
+        AddInnerMoves(root);
+        return root;
+    }
+
+    private static void AddInnerMoves(JsonNode? node)
+    {
+        switch (node)
+        {
+            case JsonObject obj:
+                if (obj.ContainsKey("FinalTables") && obj.ContainsKey("PromotedInto") && obj.ContainsKey("RelegatedInto")
+                    && !obj.ContainsKey("InnerMoves"))
+                {
+                    obj["InnerMoves"] = new JsonArray();
+                    SortFields(obj);
+                }
+                foreach (var child in obj.Select(kv => kv.Value).ToList())
+                    AddInnerMoves(child);
+                break;
+            case JsonArray array:
+                foreach (var child in array)
+                    AddInnerMoves(child);
+                break;
+        }
+    }
 }

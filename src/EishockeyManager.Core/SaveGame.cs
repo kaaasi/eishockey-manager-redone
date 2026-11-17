@@ -45,7 +45,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 60;
+    public const int SchemaVersion = 61;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -143,6 +143,8 @@ public static partial class SaveGame
     /// (<c>SaveGame.Migration.Einzelpunkte.cs</c>).
     /// 59 → 60 (Runde 22, Spur einzelpunkte Teil 1 Fortsetzung, nach `kader-regeln`): <c>SponsorContract.Cancellable</c> (A582, „Kündbar.“)
     /// (<c>SaveGame.Migration.Einzelpunkte.cs</c>).
+    /// 60 → 61 (Runde 22, Spur einzelpunkte Teil 2 Fortsetzung, nach `kader-regeln`): <c>SeasonRecord.InnerMoves</c> (A665, Platztausch innerhalb
+    /// der unteren Liga) (<c>SaveGame.Migration.Einzelpunkte.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
@@ -206,6 +208,7 @@ public static partial class SaveGame
             [57] = MigrateKaderRegeln,
             [58] = MigrateEinzelpunkte,
             [59] = MigrateKuendbar,
+            [60] = MigrateInnerMoves,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

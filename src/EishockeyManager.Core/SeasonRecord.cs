@@ -57,6 +57,13 @@ public enum SeasonEvent
     YouthJoined,
 }
 
+/// <summary>
+/// Platz, den der Tausch einer Aufstiegsrunde einem Verein der unteren Liga zuweist (A665): Der Verein <paramref name="Club"/> nimmt den
+/// Listenplatz von <paramref name="Slot"/> in der Liga <paramref name="Lower"/> ein. Nur gespeichert, wenn der Tausch einen Verein
+/// <b>innerhalb</b> der unteren Liga verschiebt (Zwangsabsteiger schon unter den Plätzen 3/4 der Gruppentabelle).
+/// </summary>
+public sealed record InnerMove(League Lower, int Slot, int Club);
+
 /// <summary>Abschneiden eines Managers in einer Saison (Fenster „Saisonende“).</summary>
 public sealed record ManagerSeasonResult(int Manager, int Club, League League, int Rank, long Premium, IReadOnlyList<SeasonEvent> Events);
 
@@ -77,6 +84,12 @@ public sealed class SeasonRecord
 
     /// <summary>Vereine, die in der nächsten Saison neu in dieser Liga spielen, weil sie abgestiegen sind (rot, Pfeil nach unten).</summary>
     public Dictionary<League, List<int>> RelegatedInto { get; } = Enum.GetValues<League>().ToDictionary(l => l, _ => new List<int>());
+
+    /// <summary>
+    /// Platzverschiebungen innerhalb der unteren Liga einer Aufstiegsrunde (A665, [ORIGINAL] Platztausch 0x36169, Datei 0x5636D);
+    /// bestimmen die Startordnung und Satzfolge der Folgesaison (<c>LeagueTable.SuccessorOrder</c>). Meist leer.
+    /// </summary>
+    public List<InnerMove> InnerMoves { get; } = [];
 
     /// <summary>Vereine, die die Oberliga verlassen (ohne Liga in der nächsten Saison).</summary>
     public List<int> LeftOberliga { get; } = [];

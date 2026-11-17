@@ -297,4 +297,43 @@ public class EinzelpunkteTests
         Assert.Equal(interest, v.BankInterest);
         Assert.Equal(0, v.ManagerLoans); // ein Manager: keine anderen Sätze
     }
+
+    /// <summary>
+    /// A665, Datei 0x5636D (Platztausch 0x36169): Steht der Zwangsabsteiger (Verein 3, Bundesliga) schon auf Platz 4 der Gruppentabelle und
+    /// überschreibt Platz 3, steht er doppelt in den Plätzen 3/4. Der Tausch setzt dann Verein 12 (Zweiter) auf den Platz von 3, Verein 11
+    /// (Erster) auf den Platz von 12 – ein Verein der 2. Liga wechselt innerhalb der Liga – und 3 auf den Platz von 11. Die Startordnung der 2. Liga
+    /// war vorher [10, 11, 3, 13] (12 → 3), richtig ist [10, 3, 11, 13].
+    /// </summary>
+    [Fact]
+    public void ForcedRelegationAlreadyInBottomPlaces_MovesClubWithinLowerLeague()
+    {
+        int[] places = [11, 12, 5, 3]; // Verein 11 und 12 der 2. Liga vorn, Bundesligisten 5 und 3 hinten
+        GameState.InsertForcedRelegation(places, 0, 3, c => c < 10);
+        Assert.Equal([11, 12, 3, 3], places); // Platz 3 mit dem Zwangsabsteiger überschrieben, er steht jetzt doppelt
+
+        var moves = GameState.InnerMoves(places, c => c < 10);
+        Assert.Equal([(11, 3), (12, 11)], moves);
+
+        var (promoted, relegated) = GameState.RelegationExchange(places, c => c < 10);
+        Assert.Equal([12], promoted);
+        Assert.Equal([3], relegated);
+
+        var record = new SeasonRecord
+        {
+            Season = 1,
+            FinalTables = new Dictionary<League, IReadOnlyList<int>>
+            {
+                [League.Bundesliga] = Enumerable.Range(0, 4).ToList(),
+                [League.ZweiteLiga] = new[] { 10, 11, 12, 13 },
+                [League.Oberliga] = new[] { 20, 21, 22, 23 },
+            },
+        };
+        record.PromotedInto[League.Bundesliga].AddRange(promoted);
+        record.RelegatedInto[League.ZweiteLiga].AddRange(relegated);
+        record.InnerMoves.AddRange(moves.Select(m => new InnerMove(League.ZweiteLiga, m.Slot, m.Club)));
+
+        Assert.Equal([10, 3, 11, 13], LeagueTable.SuccessorOrder(record, League.ZweiteLiga, [10, 11, 3, 13]));
+        // Ohne Sonderfall (Zwangsabsteiger nicht unten) bleibt es bei den Paaren: keine Platzverschiebung gespeichert.
+        Assert.Empty(GameState.InnerMoves([11, 12, 5, 3], c => c < 10));
+    }
 }
