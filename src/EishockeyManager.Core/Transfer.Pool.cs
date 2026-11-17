@@ -837,8 +837,10 @@ public sealed partial class TransferMarket
                 {
                     // [ORIGINAL] R15-E3 = C: Vertragsende im Managerkader (Datei 0x27DE3–0x27E9D) lässt Pool +0x1A beim Manager;
                     // der Platz bleibt vergeben und kommt nie wieder in den Listenwechsel (FILE46 Pool 196 KJELLBERG: +0x1A = 0,
-                    // Alter 32 → 33 wie im Kader). [APPROX] Das Original altert den Platz danach jede Saison weiter (0x274A7 alle
-                    // Poolplätze); das Remake lässt das Alter des unsichtbaren Spielers stehen.
+                    // Alter 32 → 33 wie im Kader). [ORIGINAL] A391: Den Platz altert danach jede Saison die Schleife 0x274A7 über
+                    // alle Poolplätze (<see cref="AgeLostPlayers"/>, vor dem Kaderlauf des Saisonwechsels). [APPROX] Die Neuanlage bei
+                    // Alter > random(37, 42) (Datei 0x2787A) trifft den verlorenen Platz im Remake nicht (unsichtbar, Schleifenkopf
+                    // nicht gelesen): der Spieler altert weiter.
                     continue;
                 }
                 Rename(game, slot, $"POOLSPIELER {slot.Index}");
@@ -867,6 +869,22 @@ public sealed partial class TransferMarket
             slot.Owner = PoolOwner.Taken;
             slot.Manager = manager;
         }
+    }
+
+    /// <summary>
+    /// A391: Saisonwechsel, vor dem Kaderlauf: Die Plätze der Spieler, die nach einem früheren Vertragsende nirgends mehr im Spiel
+    /// sind (<see cref="IsLost"/>), altern um ein Jahr. [ORIGINAL] Datei 0x274A7 (<c>inc</c> Pool +0x14) liegt in der Schleife über
+    /// alle 200 Poolplätze und überspringt einen Platz nur bei DGROUP 0xA70E ≠ 0 (Datei 0x2748E–0x27494) – Kaderplatz und Besitzer
+    /// spielen keine Rolle; im Modus „nur Weltkugel“ läuft sie nicht (#732). Wer erst in diesem Saisonwechsel verloren geht, steht
+    /// noch im Kader und altert dort einmal (FILE44 → FILE46 KJELLBERG 32 → 33), deshalb vor dem Kaderlauf.
+    /// </summary>
+    internal void AgeLostPlayers(GameState game)
+    {
+        if (game.WorldOnly)
+            return;
+        foreach (var slot in _pool)
+            if (slot.Owner == PoolOwner.Taken && IsLost(game, slot.Player))
+                slot.Player.Age++;
     }
 
     /// <summary>Spieler eines vergebenen Platzes ist nirgends mehr im Spiel (R15-E3 = C, Vertragsende im Managerkader).</summary>

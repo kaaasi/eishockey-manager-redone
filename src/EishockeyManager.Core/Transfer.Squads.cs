@@ -300,6 +300,7 @@ public sealed partial class GameState
     /// <summary>Saisonwechsel: Pool altert, Alte hören auf; danach höchstens <see cref="TransferMarket.MaxFreeAgents"/>.</summary>
     private void AgeFreeAgents()
     {
+        TransferMarket.AgeLostPlayers(this); // A391: Plätze früher verlorener Spieler vor dem Kaderlauf
         foreach (var p in TransferMarket.FreeAgents.ToArray())
         {
             p.Age++;

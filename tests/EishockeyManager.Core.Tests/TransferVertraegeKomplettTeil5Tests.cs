@@ -143,7 +143,8 @@ public class TransferVertraegeKomplettTeil5Tests
         // und zugleich der erste Platz des Benennens der Nationalspieler (0x5ACA0: 179 … 199). Die Umverteilung des Spielstarts
         // (Datei 0x43A83 → 0x057E3, jetzt aus dem gemeinsamen Strom nach der Wanderung) hängt ihn bei Saat 5 an einen Ligaverein
         // (nachgestellt: vor dem Verteilen Verein 55, danach 12); mit der früheren eigenen Quelle traf Saat 5 das nicht. FILE05
-        // oben prüft ebenfalls erst ab 180. Ob 0x057E3 Platz 179 erreichen darf, ist als Restlücke im PR #905 gemeldet.
+        // oben prüft ebenfalls erst ab 180. Runde 22, Spur transfer-pool (#897): kein Fehler – die Soll-Rechnung 0x05521 zieht
+        // random(1, 0xB3) einschließlich 179 und gibt dem Spieler über 0x059B8 einen Ligaverein (TransferPoolSpurTests).
         Assert.All(pool.Where(s => s.Index >= 180), s => Assert.InRange(s.Club, NationalTeams.First, NationalTeams.Last));
         // [APPROX] Das Remake trifft öfter einen schon vergebenen Namen (dann 0–35).
         var league = pool.Count(s => s.Index < 179);
