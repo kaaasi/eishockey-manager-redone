@@ -1,6 +1,9 @@
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
+using EishockeyManager.Tests.Support;
+using EishockeyManager.UI.Screens.ManagerArea;
 using EishockeyManager.UI.Screens.Team;
+using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.UI.Tests;
 
@@ -49,5 +52,33 @@ public class EinzelpunkteBedienungTests
         Assert.Equal("1( 1)", PlayerDataWindow.CompetitionCell(p, 2, goals: true));
         Assert.Equal("2( 2)", PlayerDataWindow.CompetitionCell(p, 2, goals: false));
         Assert.Equal("-( -)", PlayerDataWindow.CompetitionCell(new Player { Name = "N", Role = PlayerRole.Forward }, 1, goals: true));
+    }
+
+    /// <summary>
+    /// A582, em.exe 0x2AC84: Im Vertragsfeld eines kündbaren Vertrags (Bit 0x80 der Option) steht bei x 275 „Kündbar.“; die Fläche zählt
+    /// als frei, ein geblättertes Angebot ist annehmbar. Vorher: kein Hinweis, „Annehmen“ fehlte.
+    /// </summary>
+    [GameDataFact]
+    public void CancellableContract_ShowsKuendbar_AndOfferIsAcceptable()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        d.OpenTile("Werbung");
+        var screen = Assert.IsType<AdvertisingScreen>(d.Host.Current);
+        var game = d.Host.Game!;
+        var ads = game.Ads(game.ActiveManager);
+        ads.Contracts.Add(new SponsorContract
+        {
+            Kind = AdSlotKind.Fernsehen, Sponsor = 1, Boards = [], MonthlyAmount = 9_000, MonthsLeft = 5, Cancellable = true,
+        });
+
+        var tv = AdvertisingScreen.TvPanel;
+        d.Click(tv.X + tv.W / 2, tv.Y + tv.H / 2);
+        Assert.Contains(new AdvertisingScreen.PanelText(275, 189, "Kündbar."), screen.PanelTexts());
+
+        ads.Offers[AdSlotKind.Fernsehen][0] = new SponsorOffer(AdSlotKind.Fernsehen, 0, 12, 0, 4_000);
+        var arrow = AdvertisingScreen.ArrowDown;
+        d.Click(arrow.X + arrow.W / 2, arrow.Y + arrow.H / 2);
+        Assert.NotNull(screen.CurrentOffer());
     }
 }

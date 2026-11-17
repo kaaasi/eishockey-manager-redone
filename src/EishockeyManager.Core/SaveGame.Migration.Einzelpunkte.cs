@@ -43,4 +43,35 @@ public static partial class SaveGame
                 break;
         }
     }
+
+    /// <summary>
+    /// Schema 57 → 58 (A582): Jeder Werbevertrag bekommt <c>Cancellable</c> = false. [APPROX] Ältere Stände kennen „Kündbar.“ nicht; das
+    /// Kennzeichen entsteht beim nächsten Aufstieg.
+    /// </summary>
+    private static JsonObject MigrateKuendbar(JsonObject root)
+    {
+        AddCancellable(root);
+        return root;
+    }
+
+    private static void AddCancellable(JsonNode? node)
+    {
+        switch (node)
+        {
+            case JsonObject obj:
+                if (obj.ContainsKey("Kind") && obj.ContainsKey("Sponsor") && obj.ContainsKey("MonthlyAmount") && obj.ContainsKey("MonthsLeft")
+                    && !obj.ContainsKey("Cancellable"))
+                {
+                    obj["Cancellable"] = false;
+                    SortFields(obj);
+                }
+                foreach (var child in obj.Select(kv => kv.Value).ToList())
+                    AddCancellable(child);
+                break;
+            case JsonArray array:
+                foreach (var child in array)
+                    AddCancellable(child);
+                break;
+        }
+    }
 }

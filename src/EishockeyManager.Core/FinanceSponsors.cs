@@ -91,6 +91,13 @@ public sealed class SponsorContract
     /// <summary>Bewertung des Vereins beim Angebot ([ORIGINAL] Vertragsfeld +8), Maßstab der Verlängerung (0x2B773).</summary>
     public int SignedRating { get; init; }
 
+    /// <summary>
+    /// „Kündbar.“ ([ORIGINAL] Bit 0x80 des Vertragsfeldes +6): Beim Aufstieg setzt em.exe 0x2713F es in allen elf Verträgen. Solche
+    /// Verträge zählen im Werbebildschirm als freie Fläche bzw. freie Bande (0x2BAF3, 0x2BECD) und werden beim Annehmen eines
+    /// Angebots überschrieben (0x2BB3E); sie zahlen bis dahin weiter.
+    /// </summary>
+    public bool Cancellable { get; set; }
+
     public Sponsor Partner => Core.Sponsor.For(Kind)[Sponsor];
 
     public bool Covers(AdSlot slot) => slot.Kind == Kind && (Kind != AdSlotKind.Bande || Boards.Contains(slot.Index));
@@ -110,11 +117,14 @@ public sealed class Sponsoring
 
     public SponsorContract? ContractAt(AdSlot slot) => Contracts.FirstOrDefault(c => c.Covers(slot));
 
+    /// <summary>Fläche ohne Vertrag oder mit „kündbarem“ Vertrag ([ORIGINAL] 0x2BAF3/0x2BECD, <see cref="SponsorContract.Cancellable"/>).</summary>
+    public bool IsFree(AdSlot slot) => ContractAt(slot) is not { Cancellable: false };
+
     public SponsorOffer? OfferFrom(AdSlotKind kind, int sponsor) =>
         Offers.TryGetValue(kind, out var byKind) && byKind.TryGetValue(sponsor, out var offer) ? offer : null;
 
     public IEnumerable<int> FreeBoards() =>
-        Enumerable.Range(0, BoardCount).Where(b => ContractAt(new AdSlot(AdSlotKind.Bande, b)) is null);
+        Enumerable.Range(0, BoardCount).Where(b => IsFree(new AdSlot(AdSlotKind.Bande, b)));
 }
 
 /// <summary>
@@ -321,7 +331,7 @@ public sealed partial class GameState
     {
         var sponsoring = Ads(manager);
         var offer = sponsoring.OfferFrom(slot.Kind, sponsor);
-        if (offer is null || sponsoring.ContractAt(slot) is not null || !IsAdSlotAvailable(manager, slot))
+        if (offer is null || !sponsoring.IsFree(slot) || !IsAdSlotAvailable(manager, slot))
             return null;
 
         int[] boards = [];
@@ -333,6 +343,10 @@ public sealed partial class GameState
                 return null;
             boards = ordered;
         }
+
+        // [ORIGINAL] 0x2BB3E: Das Angebot überschreibt die Flächen eines kündbaren Vertrags. Das Remake führt eine Bande mit mehreren
+        // Feldern als einen Vertrag ([APPROX]); der Rest bleibt mit den übrigen Feldern bestehen.
+        OverwriteCancellable(sponsoring, slot.Kind == AdSlotKind.Bande ? boards.Select(b => new AdSlot(slot.Kind, b)) : [slot]);
 
         var contract = new SponsorContract
         {
@@ -347,6 +361,33 @@ public sealed partial class GameState
         sponsoring.Contracts.Add(contract);
         sponsoring.Offers[slot.Kind].Remove(sponsor);
         return contract;
+    }
+
+    private static void OverwriteCancellable(Sponsoring sponsoring, IEnumerable<AdSlot> slots)
+    {
+        foreach (var slot in slots)
+        {
+            if (sponsoring.ContractAt(slot) is not { Cancellable: true } old)
+                continue;
+            sponsoring.Contracts.Remove(old);
+            if (old.Kind != AdSlotKind.Bande || old.Boards.Where(b => b != slot.Index).ToArray() is not { Length: > 0 } rest)
+                continue;
+            sponsoring.Contracts.Add(new SponsorContract
+            {
+                Kind = old.Kind, Sponsor = old.Sponsor, Boards = rest, MonthlyAmount = old.MonthlyAmount, MonthsLeft = old.MonthsLeft,
+                OptionMonths = old.OptionMonths, SignedRating = old.SignedRating, Cancellable = true,
+            });
+        }
+    }
+
+    /// <summary>
+    /// Aufstieg: alle Werbeverträge des Managers werden „kündbar“ ([ORIGINAL] em.exe 0x2713F in der Schleife über 11 Verträge, hinter der
+    /// Aufstiegsprämie 0x270A8).
+    /// </summary>
+    private void MarkContractsCancellable(Manager manager)
+    {
+        foreach (var contract in Finance(manager).Sponsoring.Contracts)
+            contract.Cancellable = true;
     }
 
     /// <summary>

@@ -474,7 +474,11 @@ public sealed partial class GameState
             }
             // Spur statistiken (#135): Einzelprämien; Fair-Play über die Liga der nächsten Saison (S-K6-c, SeasonFlow.FairPlay.cs)
             events.AddRange(SeasonEndSinglePremiums(record, manager, league));
-            var premium = SeasonPremium(league, rank, PremiumEvents(record, club.Index, events)); // ohne Aufstieg beim Doppeltausch
+            var premiumEvents = PremiumEvents(record, club.Index, events); // ohne Aufstieg beim Doppeltausch
+            var premium = SeasonPremium(league, rank, premiumEvents);
+            // [ORIGINAL] A582, Datei 0x2713F: im Zweig der Aufstiegsprämie (Bit 1 ohne Bit 2, 0x270A8) werden alle Werbeverträge „kündbar“.
+            if (premiumEvents.Contains(SeasonEvent.Promotion))
+                MarkContractsCancellable(manager);
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
             // Spur kader-rest Teil 3: Jugend am Saisonende mit Ereignissymbol 9 je Neuzugang, nach den Prämien (Datei 0x2728C–0x2730F).
