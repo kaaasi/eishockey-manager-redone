@@ -10,8 +10,8 @@ namespace EishockeyManager.UI.Screens.Team;
 /// </summary>
 /// <remarks>
 /// Das Fenster ist die Funktion 0x041AC („Spielerdaten“, Spur spielerinfo); Felder und Regeln in
-/// <see cref="PlayerDataWindow"/>. [APPROX] Unterzahl/Überzahl gibt es in den Spielerdaten des Remakes nicht; sie werden
-/// aus Technik bzw. Kondition und Technik abgeleitet. Tore/Spiele nur Liga (Pokale folgen mit dem Paket „wettbewerbe“).
+/// <see cref="PlayerDataWindow"/>. Unterzahl und Überzahl sind die verdeckten Fähigkeiten des Kaderplatzes
+/// (<see cref="Player.HiddenSkill1"/>/<see cref="Player.HiddenSkill2"/>, A371; [ORIGINAL] Datei 0x4B09–0x4B52).
 /// </remarks>
 public sealed class PlayerInfoPopup
 {
@@ -79,14 +79,21 @@ public sealed class PlayerInfoPopup
     /// </summary>
     public static int ExhaustionBarPixels(Player p) => PlayerDataWindow.BarPixels((100 - p.Strain) * 94 / 100);
 
+    /// <summary>
+    /// Zeigerlänge von Unterzahl und Überzahl in Pixeln. [ORIGINAL] A371, em.exe Datei 0x4B09–0x4B23 und 0x4B4A–0x4B52: Halbbyte
+    /// (0–15) von Kaderplatz +0x19 · 94 / 15 (<see cref="Player.HiddenSkill1"/> unten, <see cref="Player.HiddenSkill2"/> oben), im
+    /// Balken auf 1 … 94 begrenzt. Spieler ohne Kaderplatz zeigen den Platzhalter 7 (Vorgabe 7, kein Original-Fall).
+    /// </summary>
+    public static int HiddenSkillBarPixels(int skill) => PlayerDataWindow.BarPixels(skill * 94 / 15);
+
     /// <summary>Zeigerlängen der vier Balken in Pixeln (1–94).</summary>
     public static int[] BarPixelLengths(Player p)
     {
         var values = BarValues(p);
         return
         [
-            PlayerDataWindow.BarPixelsFromPercent(values[0]),
-            PlayerDataWindow.BarPixelsFromPercent(values[1]),
+            HiddenSkillBarPixels(p.HiddenSkill1),
+            HiddenSkillBarPixels(p.HiddenSkill2),
             PlayerDataWindow.BarPixelsFromPercent(values[2]),
             ExhaustionBarPixels(p),
         ];
@@ -95,8 +102,8 @@ public sealed class PlayerInfoPopup
     /// <summary>Werte der Balken Unterzahl, Überzahl und Tendenz (0–99) auf der Skala des Remakes.</summary>
     public static int[] BarValues(Player p) =>
     [
-        p.Technique,
-        (p.Condition + p.Technique) / 2,
+        p.HiddenSkill1 * 99 / 15, // [ORIGINAL] A371: Halbbyte +0x19 (siehe HiddenSkillBarPixels)
+        p.HiddenSkill2 * 99 / 15,
         // [ORIGINAL] Balken (+0x0E − 30) · 100 / 38 (0x041AC); [APPROX] ohne Wert die Stufe
         p.TrendScore != 0
             ? Math.Clamp((p.TrendScore - 30) * 100 / 38, 0, 99)
