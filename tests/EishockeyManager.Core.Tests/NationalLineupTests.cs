@@ -44,6 +44,9 @@ public class NationalLineupTests
         var coach = Nominated(game);
 
         coach.AutoFormation();
+        // Spur national Teil 1 (A494): [ORIGINAL] Die Stärke vor dem Spiel liest die Vereinsfelder des Landes, die 0x952C beim
+        // Verlassen der Aufstellung schreibt (Datei 0x41506; im Spiel davor der Tageslauf 0x54F9C/0x555D6).
+        game.OnNationalLineupLeft();
         var auto = game.NationalMatchStrength(NationalTeams.Germany);
 
         // Den schwächsten Torhüter ins Tor, den schwächsten Stürmer in Reihe 1.
@@ -60,6 +63,7 @@ public class NationalLineupTests
         // Sturm der Reihe 2 leeren: drei Lücken zählen 0 – die WM-Stärke sinkt sicher.
         for (var i = 0; i < Lineup.ForwardsPerBlock; i++)
             coach.ClearSlot(LineupSlot.Forward(1, i));
+        game.OnNationalLineupLeft();
         var changed = game.NationalMatchStrength(NationalTeams.Germany);
         Assert.True(changed < auto, $"{changed} < {auto}");
         Assert.True(coach.Lineup().Players.Sum(NationalCoach.Value) < swapped);
@@ -77,7 +81,15 @@ public class NationalLineupTests
         var game = Create();
         var coach = Nominated(game);
         coach.AutoFormation();
-        var before = game.NationalMatchStrength(NationalTeams.Germany);
+        // Spur national Teil 1 (A494): [ORIGINAL] Die Taktik wirkt nicht mehr auf die Stärke vor dem Spiel (stehender Einsatz 0x26,
+        // Datei 0x9C66), sondern in der Minutenrechnung (Einsatz der Taktik, 0x98F8) – dort prüft der Test weiter.
+        int Strength()
+        {
+            var team = MatchEngine.NationalLiveTeam(game, NationalTeams.Germany, 0, 0, managerMatch: true);
+            return OriginalMinutes.Strengths(team, team, 0).Normal;
+        }
+        var field = game.NationalMatchStrength(NationalTeams.Germany);
+        var before = Strength();
         coach.Tactics.EffortMode = TacticMode.Semi;
         for (var b = 0; b < Tactics.Blocks; b++)
         {
@@ -87,7 +99,8 @@ public class NationalLineupTests
         }
         // Spur wettbewerbe-spiel, Teil 3 (A014): [ORIGINAL] kein Zuschlag mehr (vorher + 2), der Einsatz 100 statt 80 der
         // Automatik wirkt über die Kondition (0x98F8: Kondition − (100 − Einsatz · Kondition / 100) / 4).
-        Assert.True(game.NationalMatchStrength(NationalTeams.Germany) > before);
+        Assert.True(Strength() > before);
+        Assert.Equal(field, game.NationalMatchStrength(NationalTeams.Germany));
     }
 
     /// <summary>Kaderfeld 0x0A „eingesetzt“: neue Kaderspieler nicht eingesetzt; Platz setzen/leeren; Grenze 22.</summary>
@@ -254,6 +267,7 @@ public class NationalLineupTests
                 // #192: Die Taktik gehört zum Nationalteam und bleibt über den Saisonwechsel stehen (Spur nationalteam).
                 Assert.Equal(change == 0 ? TacticMode.Auto : TacticMode.Manual, coach.Tactics.EffortMode);
                 coach.Tactics.EffortMode = TacticMode.Auto;
+                game.OnNationalLineupLeft();
                 var auto = game.NationalMatchStrength(NationalTeams.Germany);
                 MakeRoom(coach);
                 Assert.Equal(LineupResult.Assigned,
@@ -266,6 +280,7 @@ public class NationalLineupTests
                 }
                 coach.Tactics.EffortMode = TacticMode.Manual;
                 coach.Tactics.SetEffort(0, ScoreSituation.Base, 0);
+                game.OnNationalLineupLeft(); // A494: Stärke vor dem Spiel aus den Vereinsfeldern (0x952C beim Verlassen, Datei 0x41506)
                 Assert.NotEqual(auto, game.NationalMatchStrength(NationalTeams.Germany));
                 caps = coach.Rows.ToDictionary(p => p, p => p.Caps);
             }
@@ -275,11 +290,18 @@ public class NationalLineupTests
             Assert.Same(coach, game.NationalCoach);
             if (caps is not null)
             {
+                // Spur national Teil 1 (A424): [ORIGINAL] Spieler des Bundestrainers verletzen sich im Spiel (0x38B8F mit Satz 5); ein
+                // Verletzter fällt aus der Aufstellung des Spiels (Lineup) und zählt danach keine Länderspiele mehr.
+                var formation = coach.Rows.Where(p => coach.Formation.FindSlot(p) is { } slot
+                    && (slot.Role == PlayerRole.Goalkeeper || slot.Block < NationalCoach.Lines)).ToHashSet(); // Reihen 1–3 und Torhüter
                 var playing = coach.Lineup().Players.ToHashSet();
-                Assert.Equal(16, playing.Count);
+                Assert.Equal(16, formation.Count);
+                Assert.Equal(formation.Count(p => p.Available), playing.Count);
                 foreach (var (p, before) in caps)
                     if (playing.Contains(p))
                         Assert.True(p.Caps > before, $"{p.Name}: keine Länderspiele gezählt");
+                    else if (formation.Contains(p))
+                        Assert.True(p.Caps >= before, p.Name);
                     else
                         Assert.Equal(before, p.Caps);
             }

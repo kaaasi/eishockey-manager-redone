@@ -10,7 +10,8 @@ Europapokal 0x341AB(1, 0) beim Spielstart nach dem Poolaufbau (Datei 0x298B1), z
 0x341AB(0, 0) beim Spielstart zwischen 0x057E3 und 0x494EF (Datei 0x43A8C), zum Saisonwechsel Datei 0x56609. Die Auslosungen
 prüfen den Spielmodus nicht – ohne angemeldeten Wettbewerb zieht das Remake dieselben Würfe in ein verworfenes Objekt.
 `[APPROX]` Länderreihenfolge der WM: beim Spielstart aus dem Zustand des Stroms abgeleitet (0x35EDD läuft vor der
-Spielvorbereitung, Datei 0x43A17), zum Saisonwechsel beim Saisonstart der WM statt am 29. April (Datei 0x5644E).
+Spielvorbereitung, Datei 0x43A17). `[ORIGINAL]` Zum Saisonwechsel am 29. April (Datei 0x5644E, 40 Würfe aus dem Strom, auch
+ohne WM; Spur national Teil 2, A825), übernommen beim Saisonstart der WM (`WorldCup.NextOrder`).
 Heimspiele gehen über die gemeinsame Spielabrechnung `SettleHomeMatch` (genau einmal je ausgetragenem Spiel).
 
 ## DEB-Pokal (`Core/CupsDeb.cs`, `Core/Cups.cs`)
@@ -280,7 +281,7 @@ Länderteams und Gemischtes. Am ersten WM-Termin wählt das Original den Kader a
 | Bonus: x = (Kosten in Drittel-DM / 2000 + random(0, 50)) / 50; b = eigene Tore − Gegentore; auswärts mit x &gt; 0 b += random(1, x), sonst b −= 1; x &lt; 2: b −= 2 − x − (auswärts ? 1 : 0); x &gt; 2: b += x; b auf (x &gt; 2 ? 1 : 0) … (x &lt; 2 ? 1 : 2) begrenzt; x &gt; 3: b + 1 | 0x3BFCC–0x3C183 |
 | Bonus auf drei Werte jedes Kaderspielers, einer eins weniger (x &gt; 2: der erste, sonst der zweite), höchstens 99 | 0x3C18C |
 | Länderspiele zählen für die Spieler der Aufstellung des Managers 5 | 0x872B |
-| `[APPROX]` Kandidaten: alle deutschen Spieler (keine Ausländer) der Ligavereine und des Transfermarkts, nach Summe absteigend – das Original listet seine 200 ausführlich geführten Spieler (Kader der Manager, Transfermarkt) | 0x3C5C9 |
+| `[ORIGINAL]` Kandidaten: Poolplätze 1 … 0xB3 in Poolfolge ohne Ausländer (Pool +0x13); „auto“ bei Gleichstand der frühere Platz; jeder Aufgenommene bekommt einen eigenen Kaderplatz im Satz 5 (0x42CB1: Poolwerte, Belastung random(80, 120)), Bonus, Belastung, Verletzung und Zähler der Länderspiele bleiben dort (Spur national Teil 3, A020/A487/A412) | 0x3C5C9, 0x3CC01, 0x3CABF |
 | Stärke des Nationalteams wie ein Managerverein aus dem Kader des Bundestrainers (0x98F8 mit Manager 5, + Länderspiele / 8, alle vier Blöcke; `docs/spielberechnung.md` §20). `[APPROX]` ohne Aufstellung die Automatik (bester Torhüter, je Reihe 2 Verteidiger + 3 Stürmer). Aufstellung und Taktik: Abschnitt „Aufstellung und Taktik des Nationalteams“ | 0x98F8, 0x55494 |
 | `[APPROX]` Felder 0x10–0x12 des Kaderplatzes als Kondition, Technik, Form gedeutet (Spaltenfolge „KO TE FO“) | – |
 | `[APPROX]` Energie 70 aller Kaderspieler (Kaderfeld 0x13) setzt das Original beim Öffnen von „WM Vorbereitung“, das Remake beim ersten Freundschaftsspiel der Saison vor dem Spiel (Bildschirme ändern beim Öffnen nichts; Nutzerentscheidung PR #189). Erneutes Öffnen setzt im Original wieder 70, im Remake nicht; Abzug je Spiel fehlt (Spur `spielberechnung`) | 0x3BB51; DOSBox: nach drei Freundschaftsspielen Energie aller Eingesetzten 46, Datum unverändert, Deutschland +3/+3/+5 (`docs/dosbox-befunde.md`) |

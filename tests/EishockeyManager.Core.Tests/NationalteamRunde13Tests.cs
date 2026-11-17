@@ -49,13 +49,18 @@ public class NationalteamRunde13Tests
         var game = GameModeTests.Create(7, false, true, 2);
         game.Continue();
         var forwards = game.NationalCandidates().Select(c => c.Player).Where(p => p.Role == PlayerRole.Forward).ToList();
-        var (early, late) = forwards.SelectMany(a => forwards.Select(b => (a, b)))
-            .First(t => t.a.Id < t.b.Id && string.CompareOrdinal(t.a.Name, t.b.Name) > 0);
+        // A487 (Spur national Teil 3): Gleichstand in der Folge der Kandidatenliste (Poolfolge, Datei 0x3CC01) statt nach der ID;
+        // der Kader führt eigene Kaderplätze (A412), verglichen wird über den Spieler im Verein/Pool.
+        var (early, late) = forwards.SelectMany((a, i) => forwards.Skip(i + 1).Select(b => (a, b)))
+            .First(t => string.CompareOrdinal(t.a.Name, t.b.Name) > 0);
         foreach (var p in new[] { early, late })
+        {
             p.Condition = p.Technique = p.Form = Player.MaxValue;
+            p.PoolForm = null;
+        }
 
         game.AutoNominate();
-        var rows = game.NationalCoach!.Rows.Where(p => p.Role == PlayerRole.Forward).ToList();
+        var rows = game.NationalCoach!.Rows.Where(p => p.Role == PlayerRole.Forward).Select(game.NationalCoach.SourceOf).ToList();
         Assert.Equal([early, late], rows.Take(2));
         // [ORIGINAL] Plätze 0–2 Torhüter, 3–12 Verteidiger, 13–28 Stürmer (FILE18, Satz 5).
         Assert.Equal(Enumerable.Repeat(PlayerRole.Goalkeeper, 3).Concat(Enumerable.Repeat(PlayerRole.Defender, 10))

@@ -155,8 +155,10 @@ public sealed class OriginalImportPoolTests
         }
         Assert.Equal("HEISS", coach.Formation.Goalkeeper?.Name);
         Assert.Equal(new[] { "ZERWESZ", "JOORIS" }, coach.Formation.Block(0).Where(p => p.Role == PlayerRole.Forward).Select(p => p.Name).Take(2));
-        // KÜNAST (Besitzer 0, Kader des Managers) und MERK (Markt) sind dieselben Spieler wie im Pool bzw. auf der Liste.
-        Assert.Contains(game.TransferMarket.Listings, l => l.Player == coach.Squad[1].Player);
+        // KÜNAST (Besitzer 0, Kader des Managers) und MERK (Markt) sind dieselben Spieler wie im Pool bzw. auf der Liste. A412 (Spur
+        // national Teil 3): Der Kaderplatz des Satzes 5 ist eine eigene Kopie, sein Spieler im Verein/Pool (Source) steht auf der Liste.
+        Assert.Contains(game.TransferMarket.Listings, l => l.Player == coach.Squad[1].Source);
+        Assert.NotSame(coach.Squad[1].Source, coach.Squad[1].Player);
         Assert.Empty(game.ValidatePlayerIdentity());
 
         var tactics = coach.Tactics;

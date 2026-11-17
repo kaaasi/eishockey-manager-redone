@@ -152,7 +152,7 @@ public sealed class TacticsScreen : Screen
         s.Palette = Assets.Palette;
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
         if (InMatch && Host.Game is { } game)
-            Live.LiveIntervention.DrawHeader(s, Assets, game);
+            Live.LiveIntervention.DrawHeader(s, Assets, game, Tactics); // A455: Nationalteam mit Land und Bundestrainer
 
         // Torwartwechsel
         Widgets.Frame(s, Assets, GoaliePanel, FrameStyle.Orange);

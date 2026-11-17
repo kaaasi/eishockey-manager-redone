@@ -416,6 +416,13 @@ public sealed partial class GameState
         // [ORIGINAL] Ligamischung am 29. April nach Austausch und Ewiger Tabelle, vor dem Fenster mit den Prämien (Datei 0x5644E vor
         // 0x5645D; Spur saison Teil 3, S-K6-a, SeasonFlow.LeagueSlots.cs). Verbraucht keinen Zufall.
         PrepareNextLeagueSlots(record);
+        // A825 (Spur national Teil 2): [ORIGINAL] 0x35EDD mischt am 29. April auch die Länder (Datei 0x5644E, 40 Würfe aus dem
+        // gemeinsamen Strom, ohne Modusprüfung; CupsWorld.cs). Die Ligamischung zieht im Remake nicht aus dem Strom (SlotSeed), die
+        // Länder deshalb hinter ihr, damit ihr Startwert gleich bleibt.
+        if (WorldCup is { } worldCup)
+            worldCup.MixForNextSeason(Random);
+        else
+            Core.WorldCup.MixThrows(Random);
 
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –
         // kein Platz, keine Prämie (Prämien gibt es nur aus der Vereinssaison).

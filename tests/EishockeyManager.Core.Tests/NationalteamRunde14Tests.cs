@@ -169,8 +169,12 @@ public class NationalteamRunde14Tests
         static int[] Snapshot(IEnumerable<Player> players) =>
             players.SelectMany(p => new[] { p.Condition, p.Technique }).ToArray();
 
-        int clubChecked = 0, nationChecked = 0;
-        for (var guard = 0; guard < 400 && game.Phase == SeasonPhase.Running && (clubChecked < 3 || nationChecked < 3); guard++)
+        // A412 (Spur national Teil 3, R15-E2 = C): [ORIGINAL] Der WM-Kader ist ein eigener Satz 5, den das Training 0x0659C nicht
+        // erreicht (Takt 0x07169 je Manager m < DGROUP [0x386], Datei 0x07172) – die Werte der Aufgestellten ändert der Takt nicht mehr,
+        // die Länderwerte bleiben die der letzten 0x952C-Rechnung. Vorher (ein Wertesatz je Spieler) prüfte der Test hier auch
+        // Halte, an denen das Vereinstraining die Nationalspieler änderte; mit altem Code wäre „Nationalteam unverändert“ rot.
+        int clubChecked = 0, nationHalts = 0;
+        for (var guard = 0; guard < 400 && game.Phase == SeasonPhase.Running && (clubChecked < 3 || nationHalts < 3); guard++)
         {
             var clubBefore = Snapshot(club.Players);
             var nationPlayers = LineupSlot.All.Select(s => coach.Formation[s]).OfType<Player>().ToList();
@@ -189,15 +193,13 @@ public class NationalteamRunde14Tests
                     (b + v.DefenseCondition, b + v.AttackCondition, b + v.DefenseTechnique, b + v.AttackTechnique));
                 clubChecked++;
             }
-            if (!nationBefore.SequenceEqual(Snapshot(nationPlayers)))
-            {
-                var (d, a, _) = MatchEngine.LineupTeamValues(coach.Formation);
-                Assert.Equal((d.Condition, d.Technique, a.Condition, a.Technique), game.NationalRatings(NationalTeams.Germany));
-                Assert.NotNull(germany.TeamValues);
-                nationChecked++;
-            }
+            Assert.Equal(nationBefore, Snapshot(nationPlayers));
+            var (nd, na, _) = MatchEngine.LineupTeamValues(coach.Formation);
+            Assert.Equal((nd.Condition, nd.Technique, na.Condition, na.Technique), game.NationalRatings(NationalTeams.Germany));
+            Assert.NotNull(germany.TeamValues);
+            nationHalts++;
         }
-        Assert.True(clubChecked >= 3 && nationChecked >= 3, $"Halte mit Training: Verein {clubChecked}, Nationalteam {nationChecked}");
+        Assert.True(clubChecked >= 3 && nationHalts >= 3, $"Halte mit Training: Verein {clubChecked}, Nationalteam {nationHalts}");
     }
 
     // ---- R14NT-01/02: WM-Schleife des Originals nach der Ernennung ------------------------------------------------
@@ -360,10 +362,12 @@ public class NationalteamRunde14Tests
         var seen = LineupSlot.All.Select(s => coach.Formation[s]).ToList();
         foreach (var p in seen.OfType<Player>())
             p.Form = 1; // nach dem Menü: eine neue Automatik nähme jetzt andere Spieler
+        // Spur national Teil 3 (A412): Werte der gesehenen Aufstellung vor dem Spieltag; eine Verletzung im WM-Spiel trifft jetzt den
+        // eigenen Kaderplatz und änderte die Rechnung danach (die Nominierung zieht 0x42CB1-Würfe, andere Spielverläufe).
+        var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
         game.Continue();
         Assert.True(game.CurrentDay > day);
         Assert.Equal(seen, LineupSlot.All.Select(s => coach.Formation[s]).ToList());
-        var (defense, attack, _) = MatchEngine.LineupTeamValues(coach.Formation);
         Assert.Equal((defense.Form, attack.Form), (germany.TeamValues!.Value.DefenseForm, germany.TeamValues.Value.AttackForm));
     }
 
@@ -471,12 +475,13 @@ public class NationalteamRunde14Tests
         var (f, d1, g, d2) = (Pick(PlayerRole.Forward), Pick(PlayerRole.Defender), Pick(PlayerRole.Goalkeeper), Pick(PlayerRole.Defender, 1));
         foreach (var p in new[] { f, d1, g, d2 })
             Assert.Equal(NominationResult.Added, game.ToggleNomination(p));
-        Assert.Equal([g, d1, d2, f], coach.Squad.Select(m => m.Player));
+        // A412 (Spur national Teil 3): eigene Kaderplätze des Satzes 5, Vergleich über den Spieler im Verein/Pool.
+        Assert.Equal([g, d1, d2, f], coach.Squad.Select(m => m.Source));
 
         // Entlassen und wieder aufnehmen: wieder hinter dem letzten seiner Art.
         Assert.Equal(NominationResult.Removed, game.ToggleNomination(d1));
         Assert.Equal(NominationResult.Added, game.ToggleNomination(d1));
-        Assert.Equal([g, d2, d1, f], coach.Squad.Select(m => m.Player));
+        Assert.Equal([g, d2, d1, f], coach.Squad.Select(m => m.Source));
     }
 
     /// <summary>

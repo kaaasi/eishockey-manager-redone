@@ -113,16 +113,19 @@ public class NationalCoachTests
         Assert.Equal(NationalCoach.MaxSquad, squad.Count);
         Assert.Equal([3, 10, 16], new[] { PlayerRole.Goalkeeper, PlayerRole.Defender, PlayerRole.Forward }
             .Select(r => squad.Count(m => m.Player.Role == r)));
-        Assert.DoesNotContain(squad, m => m.Player == injured);
+        Assert.DoesNotContain(squad, m => m.Source == injured);
+        // A020/A412 (Spur national Teil 3): Kandidaten aus dem Pool (Verein = Poolverein, Datei 0x3C5C9), eigener Kaderplatz je
+        // Mitglied; die Summe ist die der Grundstärken des Pools (Datei 0x3CC01). Bis Runde 22 Verein = Kader des Spielers.
         foreach (var role in Enum.GetValues<PlayerRole>())
         {
-            var weakestIn = squad.Where(m => m.Player.Role == role).Min(m => Sum(m.Player));
+            var weakestIn = squad.Where(m => m.Source.Role == role).Min(m => Sum(m.Source));
             var bestOut = candidates.Where(c => c.Player.Role == role && !game.NationalCoach.Contains(c.Player) && c.Player != injured)
                 .Select(c => Sum(c.Player)).DefaultIfEmpty(0).Max();
             Assert.True(weakestIn >= bestOut, $"{role}: {weakestIn} < {bestOut}");
         }
-        Assert.All(squad, m => Assert.Contains(game.Clubs[m.Club].Players, p => p == m.Player));
-        static int Sum(Player p) => p.Condition + p.Technique + p.Form;
+        Assert.All(squad, m => Assert.Contains(candidates, c => c.Player == m.Source && c.Club == m.Club));
+        Assert.All(squad, m => Assert.NotSame(m.Source, m.Player));
+        static int Sum(Player p) => p.Condition + p.Technique + (p.PoolForm ?? p.Form);
     }
 
     [Fact]
@@ -195,7 +198,15 @@ public class NationalCoachTests
     {
         var game = Create();
         game.AppointNationalCoach(game.Managers[0]);
-        Assert.Equal(0, game.NationalMatchStrength(NationalTeams.Germany)); // leerer Kader
+        // Spur national Teil 1 (A494): [ORIGINAL] Die Stärke vor dem Spiel kommt aus den Vereinsfeldern (GameState.NationalMatchStrength,
+        // Datei 0x36B8E/0x097DC); aus dem Kader rechnet die Minutenrechnung der Managerpaarung (0x98F8 mit Manager 5) – sie prüft
+        // der Test hier (Rückschaltprobe entfällt: dieselbe Rechnung wie vorher, nur über die Minutenmannschaft).
+        int SquadStrength()
+        {
+            var team = MatchEngine.NationalLiveTeam(game, NationalTeams.Germany, 0, 0, managerMatch: true);
+            return OriginalMinutes.Strengths(team, team, 0).Normal;
+        }
+        Assert.Equal(0, SquadStrength()); // leerer Kader
         game.AutoNominate();
         var lineup = game.NationalCoach!.Lineup();
         Assert.NotNull(lineup.Goalkeeper);
@@ -203,7 +214,7 @@ public class NationalCoachTests
         Assert.Equal(9, lineup.Forwards.Count);
         // Spur wettbewerbe-spiel, Teil 3: Stärke 0x368B1 aus dem Kader (0x98F8 mit Manager 5) statt Mittel der 16 Plätze;
         // die Formel prüft WettbewerbeSpiel3Tests.
-        Assert.True(game.NationalMatchStrength(NationalTeams.Germany) > 0);
+        Assert.True(SquadStrength() > 0);
     }
 
     // ---- Korrekturen an der WM ---------------------------------------------------------------------------------

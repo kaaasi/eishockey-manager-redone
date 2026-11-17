@@ -2,8 +2,24 @@ using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core;
 
-/// <summary>Spieler im WM-Kader und sein Verein (im Original wird der Verein während der Nominierung gemerkt).</summary>
-public sealed record NationalSquadMember(Player Player, int Club);
+/// <summary>
+/// Spieler im WM-Kader und sein Verein (im Original wird der Verein während der Nominierung gemerkt). In der Kandidatenliste ist
+/// <see cref="Player"/> der Spieler selbst; im Kader (<see cref="NationalCoach.Squad"/>) sein Kaderplatz im Satz 5 und
+/// <see cref="Source"/> der Spieler im Verein bzw. Pool.
+/// <list type="bullet">
+/// <item>A412 (Spur national Teil 3): [ORIGINAL] Die Aufnahme legt einen eigenen Kaderplatz im Satz 5 an (Datei 0x3CABF → 0x42CB1
+///   für Manager 5): Werte aus dem Pool +0x15–0x17 (Datei 0x42EC3–0x42F06), Belastung random(80, 120) (Datei 0x42E4C), Tendenz
+///   0x4907A, Gehaltswurf random(90, 115) (Datei 0x42F25–0x42F34), Vertrag +0x0B = 1, +0x19 = 0x77, +0x0C = Verein + 0x80, Tore
+///   +0x03–0x05 = 0 (Datei 0x3CB2C–0x3CBCE). Bonus, Belastung, Verletzung und Zähler der Länderspiele treffen diesen Platz; der
+///   Vereinsplatz bzw. Poolspieler bleibt unberührt, am Saisonende entfällt der Platz (Datei 0x557B0). Bis Runde 22 verwies der
+///   WM-Kader auf den Spieler selbst (ein Wertesatz).</item>
+/// </list>
+/// </summary>
+public sealed record NationalSquadMember(Player Player, int Club)
+{
+    /// <summary>Spieler im Verein bzw. Pool, aus dem der Kaderplatz entstand (in der Kandidatenliste = <see cref="Player"/>).</summary>
+    public Player Source { get; init; } = Player;
+}
 
 /// <summary>Ein Freundschaftsspiel der „WM Vorbereitung“ (Heim, Gast, Ergebnis) und der Wertebonus für den Kader.</summary>
 public sealed record FriendlyMatch(int Home, int Away, int HomeGoals, int AwayGoals, int Bonus);
@@ -53,9 +69,8 @@ public enum FriendlyResult
 /// <item>[ORIGINAL] „WM Vorbereitung“ (Datei 0x3B8F7): Kosten je Gegner aus DGROUP 0x26C (Drittel-DM, im Spielstand
 ///   gesichert), Heimspiel doppelt; höchstens 8 Spiele je Saison (DGROUP 0xD0C1, Saisonbeginn 0); das Spiel wird
 ///   sofort ausgetragen (Datei 0x3C05E). Wertebonus siehe <see cref="FriendlyBonus"/>.</item>
-/// <item>[APPROX] Kandidaten: Das Original listet seine 200 ausführlich geführten Spieler (Kader der Manager und
-///   Transfermarkt). Das Remake führt alle Kader vollständig; angeboten werden deutsche Spieler (keine Ausländer) der
-///   Ligavereine und des Transfermarkts, nach Kondition + Technik + Form absteigend.</item>
+/// <item>[ORIGINAL] Kandidaten: die Ligaplätze des Spielerpools 1 … 0xB3 in Poolfolge ohne Ausländer (Datei 0x3C5C9, A020;
+///   <see cref="GameState.NationalCandidates"/>).</item>
 /// </list>
 /// </remarks>
 public sealed partial class NationalCoach
@@ -70,7 +85,8 @@ public sealed partial class NationalCoach
     /// [ORIGINAL] Belastung (Kaderplatz +0x13 = 0x5DD6 − 0x5DC3) der Kaderspieler zu Beginn der Freundschaftsspiele: Datei
     /// 0x3BB51 (<c>mov byte [bx+0x5DD6],0x46</c>, Schleife über die 29 Plätze ab 0x3BB22); die Spalte E zeigt 70 · 10 / 15 =
     /// 46 (A184, Runde 12; vorher als Energie gelesen). Name aus Kompatibilität. Zeitpunkt siehe
-    /// <see cref="GameState.PlayFriendly"/> ([APPROX]).
+    /// <see cref="GameState.PlayFriendly"/>: vor dem ersten Spiel ([APPROX], Öffnen des Bildschirms) und nach jedem Spiel
+    /// ([ORIGINAL] Neuzeichnen Datei 0x3C291 → 0x3B929; A551, Spur national Teil 1).
     /// </summary>
     public const int FriendlyEnergy = 70;
 
@@ -108,7 +124,26 @@ public sealed partial class NationalCoach
     /// <summary>Freundschaftsspiele dieser Saison (höchstens 8), älteste zuerst.</summary>
     public IReadOnlyList<FriendlyMatch> Friendlies => _friendlies;
 
-    public bool Contains(Player player) => _squad.Any(m => m.Player == player);
+    /// <summary>Steht der Spieler (Kaderplatz des Satzes 5 oder Spieler im Verein/Pool) im WM-Kader?</summary>
+    public bool Contains(Player player) => Member(player) is not null;
+
+    /// <summary>Eintrag des Kaders zum Kaderplatz oder zum Spieler im Verein/Pool, sonst null.</summary>
+    public NationalSquadMember? Member(Player player) => _squad.FirstOrDefault(m => m.Player == player || m.Source == player);
+
+    /// <summary>Kaderplatz des Satzes 5 zum Spieler (Platz selbst oder Spieler im Verein/Pool); sonst der Spieler.</summary>
+    public Player SlotOf(Player player) => Member(player)?.Player ?? player;
+
+    /// <summary>Spieler im Verein/Pool zum Kaderplatz des Satzes 5; sonst der Spieler.</summary>
+    public Player SourceOf(Player player) => Member(player)?.Source ?? player;
+
+    /// <summary>Länderspiel zählen: am Kaderplatz und am Spieler im Verein/Pool (Anzeige „Länderspiele“ im Spielerfenster).</summary>
+    internal void CountCap(Player player)
+    {
+        var slot = SlotOf(player);
+        slot.Caps++;
+        if (SourceOf(player) is { } source && source != slot)
+            source.Caps++;
+    }
 
     /// <summary>Kosten eines Freundschaftsspiels in DM; Heimspiel doppelt (Datei 0x3BE78).</summary>
     public static long FriendlyCost(int opponent, bool home)
@@ -203,16 +238,18 @@ public sealed partial class NationalCoach
     /// ist, sonst hinten an – wie <see cref="PlayerFactory.InsertSlot"/> (#623, Spur nationalteam Runde 14). „auto“ nimmt je Art
     /// nacheinander auf und bleibt damit unverändert.
     /// </summary>
-    internal void Add(Player player, int club)
+    internal void Add(Player player, int club, Player? slot = null)
     {
         var at = _squad.FindIndex(m => m.Player.Role > player.Role);
-        _squad.Insert(at < 0 ? _squad.Count : at, new NationalSquadMember(player, club));
+        _squad.Insert(at < 0 ? _squad.Count : at, new NationalSquadMember(slot ?? player, club) { Source = player });
     }
 
     internal void Remove(Player player)
     {
-        _squad.RemoveAll(m => m.Player == player);
-        ReleaseFromFormation(player);
+        if (Member(player) is not { } member)
+            return;
+        _squad.Remove(member);
+        ReleaseFromFormation(member.Player);
     }
 
     internal void ClearSquad()

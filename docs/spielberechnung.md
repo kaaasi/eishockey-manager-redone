@@ -681,9 +681,9 @@ Tests `SpielberechnungKomplett4Tests`. Regeln, Zustand, Saisonwechsel und Anzeig
   (keine Strafe), wird nur der zuletzt gezählte Wert ([bp−0xa]/[bp−0xb]) zurückgenommen (0x35C7B–0x35CB2).
 - Kein Zufallszug: Ergebnisse, Zufallsverbrauch und Abdrücke ändern sich nicht. Gezählt wird in jedem Spiel der
   Minutenrechnung mit Manager (Liga, Play-offs, Pokale; 0xA484 prüft keinen Wettbewerb).
-- `[APPROX]` Nationalteam: das Original zählt für Vereinsfeld 0x16 = 6 in den Satz des Bundestrainers (Manager 5); das
-  Remake führt ihn nicht (`LiveTeam.PowerPlayCounts` = null), die Rücknahme trifft wie im Original den zuletzt gezählten
-  Verein.
+- `[ORIGINAL]` Nationalteam: das Original zählt für Vereinsfeld 0x16 = 6 in den Satz des Bundestrainers (Manager 5); das
+  Remake seit Runde 22 ebenso (`NationalCoach.PowerPlayCounts`, Spur national Teil 1, A097). Die Rücknahme trifft wie im
+  Original den zuletzt gezählten Verein.
 
 **Länderwerte (#193) im Stärkevergleich.** 0x952C mit Manager 5 schreibt die Teamwerte des Landes (Vereinsfelder
 0x18–0x1D, Kondition, Technik, Form) aus der Aufstellung des Bundestrainers: im Tageslauf 0x54F9C–0x54FBF (Schalter 1)
@@ -746,13 +746,15 @@ Tests `WettbewerbeSpiel3Tests`.
   `GameState.NationalMatchStrength` (Reihe 0, Energie der Spielvorbereitung, Minute 0, gleich viele Feldspieler).
 - **„Stärke:“ und Stärketabelle:** 0x952C mit Manager 5 schreibt die Felder 0x18–0x1D des Landes aus der Aufstellung des
   Bundestrainers (Tageslauf jeden Tag, nach Freundschaftsspielen); `NationalInfoStrength` nimmt sie (A019).
-- `[APPROX]` Einsatz 0x26 in `NationalMatchStrength`: Taktik beim Stand 0:0 gegen gleich starken Gegner (Original: zuletzt
-  gesetzter Wert). Länderwerte mit Bundestrainer aus der aktuellen Aufstellung statt dem Stand des letzten Tageslaufs.
-  Ohne eigene Aufstellung (passiver Bundestrainer) spielt die Automatik `NationalCoach.Lineup` mit drei Reihen (Original:
-  ohne Aufstellung kein Spieler auf dem Eis, nicht nachgebaut). „5 − Level“ aus dem Level des Managers, der Bundestrainer
-  ist. Die von 0x554CF für Deutschland ausgewürfelte Form verwirft das Remake (die Wanderung zieht sie zweimal je Woche neu).
-  Managerwert der Strafen 20 (A084, DOSBox-Probe offen); keine Verletzungen und Über-/Unterzahl-Zähler des Bundestrainers.
-  Tagesform nach WM-Gruppenspielen (0x4F527 auch bei Code 8) weiter nicht nachgeführt.
+- **Runde 22, Spur national Teil 1** (A424, A097, A551, A109, A494): Die Spielvorbereitung 0x8365 bereitet auch Länderspiele
+  vor (WM und Freundschaftsspiel, Datei 0x36F27/0x36F5A) – Stärke mit dem stehenden Einsatz 0x26 des letzten Spiels und, auch
+  beim Land des Bundestrainers, aus den Vereinsfeldern 0x18–0x1D (Beleg DOSBox FILE18 → FILE19, Deutschland – Schweden);
+  `MatchEngine.PrepareNationalMatch`. Tagesform der Länder nach jedem WM-Gruppentermin (0x30852 → 0x50283 → 0x4F527). Das Land
+  des Bundestrainers spielt mit Satz 5: Verletzungen (0x38B8F), eigener Managerwert (0x952C mit Manager 5), Über-/Unterzahl-Zähler,
+  Belastungszug 0x8C53. `[APPROX]` bleibt: der WM-Kader ist ein Verweis auf die Spieler (Verletzung und Belastung treffen den
+  Spieler, im Original den Kaderplatz in Satz 5; Teil 3 der Spur), ohne eigene Aufstellung spielt die Automatik
+  `NationalCoach.Lineup` mit drei Reihen, „5 − Level“ aus dem Level des Managers, der Bundestrainer ist; die von 0x554CF für
+  Deutschland ausgewürfelte Form verwirft das Remake; Managerwert der Strafen siehe A084.
 
 ## 21. Teamwerte in der Stärketabelle 0x51206 (Runde 11, Spur wettbewerbe-spiel Teil 4; Inventur P1 Nr. 5, P2 Nr. 16)
 

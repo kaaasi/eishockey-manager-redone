@@ -19,9 +19,8 @@ public sealed partial class GameState
     /// <item>[ORIGINAL] Anzeige unter „AUTOM.“ der Nationalteam-Taktik aus dem Vereinssatz des Landes (+0x26–0x2B Einsatz, +0x35–0x3A
     ///   Angriff, Spielvorbereitung 0x8365; FILE19), eigene Werte aus Satz 5 – ohne Bundestrainer in der Taktik des Landes
     ///   (<c>_vacantNationalTactics</c>).</item>
-    /// <item>[APPROX] Das Remake führt einen Wertesatz je Spieler: Die Werte des Satzes 5 gelten für Pool- und Marktspieler; Spieler
-    ///   eines übernommenen Managerkaders behalten die Werte ihres Vereinsplatzes – außer im Modus „nur Weltkugel“ (#732): Dort
-    ///   zählen nur Länderspiele, die Werte des Satzes 5 gelten auch für Spieler des Kaders von Satz 0.</item>
+    /// <item>[ORIGINAL] Jeder Platz des Satzes 5 wird ein eigener Kaderplatz (<see cref="NationalSquadMember"/>, A412): Werte,
+    ///   Belastung, Zähler und Verletzung aus Satz 5; der Spieler im Verein bzw. Pool behält seine eigenen (Satz 0–4, Pool).</item>
     /// <item>[APPROX] Pool +0x1D eines Nominierten zeigt das Land (FILE18: alle 54); Verein des Mitglieds ist bei Kaderspielern
     ///   eines Managers dessen Verein, sonst der Poolverein.</item>
     /// </list>
@@ -61,16 +60,15 @@ public sealed partial class GameState
             var e = OriginalImport.PoolEntry(save, index);
             var club = Clubs.FirstOrDefault(c => c.Players.Contains(player))?.Index
                        ?? (e[0x1D] < clubOf.Length ? clubOf[e[0x1D]] : coach.Nation);
-            // #732: Im Modus „nur Weltkugel“ gelten die Werte des Satzes 5 auch für Spieler aus dem Kader von Satz 0 (dort gibt es
-            // keine Vereinsspiele; vor Teil 3 übernahm der Import diesen Kader nicht, FILE18).
-            if (WorldOnly || !squadPlayers.ContainsValue(player))
-            {
-                player.Condition = s[0x10];
-                player.Technique = s[0x11];
-                player.Form = s[0x12];
-                player.Strain = s[0x13];
-            }
-            coach.Add(player, club);
+            // A412 (Spur national Teil 3): [ORIGINAL] Satz 5 ist ein eigener Kaderplatz (Werte, Belastung, Zähler, Verletzung); der
+            // Spieler im Verein bzw. Pool behält seine Werte. Bis Runde 22 schrieb der Import die Werte des Satzes 5 in den Spieler
+            // (Pool- und Marktspieler; im Modus „nur Weltkugel“ auch Spieler aus dem Kader von Satz 0, #732).
+            var slot = player.CopyForNationalSlot();
+            ApplySlot(slot, s, e, clubOf, club: null);
+            slot.PoolForm = null;
+            AssignPlayerId(slot);
+            coach.Add(player, club, slot);
+            player = slot;
             lines.Add((player, s[0x15] & 0x0F, s[0x0A] != 0));
         }
 
@@ -96,6 +94,17 @@ public sealed partial class GameState
         ApplyTacticValues(save, coach.Tactics, OriginalImport.NationalRecord);
         coach.Tactics.ImportAutoLine(nationRecord.Slice(0x26, Tactics.Situations), nationRecord.Slice(0x35, Tactics.Situations));
         coach.TakeOverAutoLineup(_nationalAutoLineupSaved); // nach dem Aufstellen: Assign/Dress dürfen den Wert nicht verändern
+        // A494 (Spur national Teil 1): [ORIGINAL] Kondition und Technik des Landes (+0x18 KA, +0x19 KS, +0x1A TA, +0x1B TS) hat 0x952C
+        // mit Manager 5 aus der Aufstellung geschrieben; die Spielvorbereitung 0x8365 vergleicht damit (FILE18 → FILE19: 88/83 und
+        // 90/87 gegen SCHWEDEN 95/100 und 88/98 → Deutschland ungleich und schwächer). Vorher galt nach dem Import die Tabelle
+        // DGROUP 0x4C4E bis zum nächsten 0x952C. Die Form 0x1C/0x1D steht im Vereinsplatz (ApplyTeamValues).
+        _germanyRatings = (nationRecord[0x18], nationRecord[0x1A], nationRecord[0x19], nationRecord[0x1B]);
+        // A097 (Spur national Teil 1): [ORIGINAL] Über-/Unterzahl-Zähler des Satzes 5 (965B + 5 · 0x1AF + 0x177, sechs Wörter wie bei
+        // den Vereinsmanagern, OriginalImport.Rest.cs).
+        var coachRecord = save.Block("965B").AsSpan(OriginalImport.NationalRecord * OriginalSaveGame.ManagerRecordLength,
+            OriginalSaveGame.ManagerRecordLength);
+        for (var k = 0; k < coach.PowerPlayCounts.Length; k++)
+            coach.PowerPlayCounts[k] = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(coachRecord[(0x177 + 2 * k)..]);
     }
 
     /// <summary>

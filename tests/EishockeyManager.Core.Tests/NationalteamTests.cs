@@ -157,14 +157,19 @@ public class NationalteamTests
         AssertAutoLine(game.NationalCoach!.Tactics);
     }
 
-    /// <summary>[ORIGINAL] Freundschaftsspiele rufen die Spielvorbereitung 0x8365 nicht auf: Anzeige bleibt 0.</summary>
+    /// <summary>
+    /// [ORIGINAL] Auch Freundschaftsspiele laufen über den Spieltagsablauf 0x36B5D (Datei 0x30365, A008/A110) und damit über die
+    /// Spielvorbereitung 0x8365 (Datei 0x36F27/0x36F5A): Die Anzeige zeigt danach die Zeile des Spiels. Spur national Teil 1 (A494;
+    /// DOSBox FILE18 → FILE19, Satz 54: 0x2D = 40, 0x27–0x2A = 20/20/15/20); bis dahin hieß der Test <c>Friendly_DoesNotWriteAutoLine</c>
+    /// (Annahme Runde 8, das Freundschaftsspiel rufe 0x8365 nicht). Rückschaltprobe: alter Code → Anzeige 0 → rot.
+    /// </summary>
     [Fact]
-    public void Friendly_DoesNotWriteAutoLine()
+    public void Friendly_WritesAutoLine()
     {
         var game = Mode1();
         game.AutoNominate();
         Assert.Equal(FriendlyResult.Played, game.PlayFriendly(53, home: false));
-        AssertZero(game.NationalCoach!.Tactics);
+        AssertAutoLine(game.NationalCoach!.Tactics);
     }
 
     /// <summary>[ORIGINAL] Einsatz und Angriff getrennt: Bei „SEMI“ schreibt die Automatik nur den anderen Wert.</summary>

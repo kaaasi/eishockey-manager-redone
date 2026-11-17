@@ -338,6 +338,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel; mit und ohne Anzeige weiter gleich. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
+    // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
+    // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15597 | 1994: DEB 9, DM 1, Tab 15690 | 1995: DEB 5, DM 1, Tab 16090 | 1996: DEB 12, DM 12, Tab 15936";
+        "1993: DEB 6, DM 5, Tab 15597 | 1994: DEB 8, DM 6, Tab 15707 | 1995: DEB 6, DM 0, Tab 15763 | 1996: DEB 10, DM 1, Tab 15982";
 }

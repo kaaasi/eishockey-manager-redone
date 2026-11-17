@@ -20,8 +20,9 @@ public static class CompetitionSlots
     public const int Count = 3;
 
     /// <summary>
-    /// Zähler eines Wettbewerbs (siehe <see cref="CompetitionSlot"/>). [APPROX] Die WM des Bundestrainers zählt wie bisher
-    /// in der Liga; welches Feld das Original bei Länderspielen bucht, ist nicht gelesen.
+    /// Zähler eines Wettbewerbs (siehe <see cref="CompetitionSlot"/>). Die WM des Bundestrainers bucht das Original am Satz 5
+    /// (Spiele Europapokal, Tore Liga; A628, <see cref="MatchEngine.CreditWorldCupSquad"/>), nicht über diese Zuordnung.
+    /// [APPROX] Freundschaftsspiele des Bundestrainers zählen hier in der Liga; welches Feld das Original dort bucht, ist nicht gelesen.
     /// </summary>
     public static CompetitionSlot Of(MatchCompetition competition) => competition switch
     {
