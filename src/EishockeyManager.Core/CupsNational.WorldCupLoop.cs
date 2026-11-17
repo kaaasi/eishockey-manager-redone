@@ -78,7 +78,8 @@ public sealed partial class GameState
     ///   (<see cref="AdvanceFinance"/> mit <c>clubDay: false</c>; darin der Stadionbau am Zähler ≡ 0, Datei 0x556B5–0x556CD), Heilung
     ///   je Kaderplatz der Manager (0x07C12, Datei 0x556D2–0x55712, nach dem Weiterzählen, Zähler <see cref="DayCounter.Of"/>(day)
     ///   ≡ 0 mod 7; <see cref="HealManagerSquads"/>). [APPROX] Spieler ohne Kaderplatz eines Managers heilen ebenso
-    ///   (<see cref="HealUnmanaged"/>; das Original kennt für sie keine Verletzung).</item>
+    ///   (<see cref="HealUnmanaged"/>; das Original kennt für sie keine Verletzung). Der WM-Kader heilt nie (A497,
+    ///   <see cref="HoldsWorldCupInjury"/>).</item>
     /// </list>
     /// Kein Training und kein Markt an den übrigen Tagen, keine Talentsuche, keine Jugendteams, keine Wanderung, keine
     /// Aufstellungsautomatik außer in Schritt (c) und nach einer Heilung, keine Neuaufstellung „Tag mit Ereignis“ (0x54D41, R14NT-02).
@@ -113,8 +114,9 @@ public sealed partial class GameState
     /// <item>[ORIGINAL] Schritt (d): Tagesabschluss 0x3ED01/0x3F833 je Manager ohne Modusprüfung (Datei 0x5568B–0x5569F) samt
     ///   Stadionbau 0x3D316 am Zähler ≡ 0 (<see cref="AdvanceFinance"/> mit <c>clubDay: false</c>; #732, abgleich-rest Teil 3,
     ///   R16-D2 = A) – Satz 0 bucht also auch im Modus 1 (FILE19 → FILE20 ohne Monatsletzten: Konto 500.000 DM unverändert; FILE20 →
-    ///   FILE21 −2.030.327 DM). Heilung 0x07C12 (Datei 0x556D2–0x55712; [APPROX] wie <see cref="HealInjuries"/> für alle Spieler,
-    ///   das Original für die Kaderplätze von Manager 0).</item>
+    ///   FILE21 −2.030.327 DM). Heilung 0x07C12 (Datei 0x556D2–0x55712) je Kaderplatz der Manager wie in den übrigen Modi
+    ///   (<see cref="HealManagerSquads"/>, A497 Spur national Teil 2; vorher alle Spieler), der WM-Kader nie
+    ///   (<see cref="HoldsWorldCupInjury"/>); [APPROX] Spieler ohne Kaderplatz eines Managers wie dort (<see cref="HealUnmanaged"/>).</item>
     /// <item>[ORIGINAL] Am ersten WM-Tag nichts: Der Sprung Datei 0x54CF7–0x54D38 zählt ohne Tageslauf bis zum ersten WM-Tag, die
     ///   Schleife beginnt mit dessen Spielen; (c) und (d) gibt es erst danach. Der Finanztag springt deshalb ohne Abrechnung auf den
     ///   Vortag (die übersprungene Vereinssaison bucht nichts).</item>
@@ -127,7 +129,8 @@ public sealed partial class GameState
             WorldCupLoopStepC(day);
             FinanceDay = Math.Max(FinanceDay, FinanceTarget(day) - 1); // Sprung ohne Tagesabschluss (Datei 0x54CF7–0x54D38)
             AdvanceFinance(day, clubDay: false); // #732: Schritt (d), 0x3ED01/0x3F833 je Manager (Datei 0x5568B–0x5569F)
-            HealInjuries(day);
+            HealManagerSquads(day); // A497: 0x07C12 je Kaderplatz der Manager (Datei 0x556D2–0x55712), nicht Satz 5
+            HealUnmanaged(day);
         }
     }
 
@@ -140,9 +143,55 @@ public sealed partial class GameState
     {
         var previous = day - 1;
         if (previous > SeasonCalendar.ClubSeasonEnd && MatchEngine.IsDriftDay(Counter(previous))
-            && WorldCupPlayedOn(previous))
+            && WorldCupPlayedOn(previous) && _worldCupLastPenaltyCoachDay != previous)
             WorldCupLoopDailyRun(previous);
     }
+
+    /// <summary>
+    /// WM-Tag, an dem die letzte Strafe der Spiele das Land des Bundestrainers traf (A498), sonst 0. [ORIGINAL] Jede verhängte Strafe
+    /// schreibt DGROUP 0xA70E := Vereinsfeld +0x16 des bestraften Vereins, bei ≠ 0 minus 1 (Datei 0x35AA8–0x35AC6, nach Strafbank
+    /// und Strafminuten, vor der Spielerwahl 0x378C5); 0x36B5D setzt es vor den Spielen auf 0 (Datei 0x36B7A). Für das Land des
+    /// Bundestrainers (+0x16 = 6, Datei 0x55494) bleibt 0xA70E = 5 ≥ Zahl der Manager, und Schritt (c) endet in 0x07169 sofort
+    /// (Datei 0x07172–0x0717B → 0x07C0C).
+    /// </summary>
+    private int _worldCupLastPenaltyCoachDay;
+
+    /// <summary>Lesezugriff für Tests (<see cref="_worldCupLastPenaltyCoachDay"/>).</summary>
+    internal int WorldCupLastPenaltyCoachDay => _worldCupLastPenaltyCoachDay;
+
+    /// <summary>
+    /// Merkt nach den WM-Spielen eines Tages, ob die letzte Strafe das Land des Bundestrainers traf (A498,
+    /// <see cref="_worldCupLastPenaltyCoachDay"/>). Reihenfolge des Originals: Minute für Minute alle Paarungen in der Reihenfolge
+    /// des Termins (0x37A62), je Paarung Heim vor Gast mit dem Kettenwurf gleich nach der auslösenden Strafe – also die Strafe mit
+    /// der höchsten Minute, bei gleicher Minute die der späteren Paarung, innerhalb der Paarung die zuletzt eingetragene.
+    /// Paarungen auf dem schnellen Weg (0x3731F) haben keine Strafen.
+    /// [APPROX] Bleibt eine Strafe ohne Spieler aus 0x378C5 (Datei 0x35B33, kein Ereignis), schreibt das Original 0xA70E trotzdem;
+    /// das Remake sieht nur die eingetragenen Strafen. Die Paarungsfolge des Termins ist die des Remakes (Gruppe 1, Gruppe 2).
+    /// </summary>
+    internal void NoteWorldCupPenalties(int day, IReadOnlyList<(int Home, int Away, MatchReport Report)> pairings)
+    {
+        // Durchlauf in Paarungs- und Ereignisfolge: Bei gleicher Minute ist die spätere Paarung bzw. das spätere Ereignis später.
+        (int Minute, int Club)? last = null;
+        foreach (var (home, away, report) in pairings)
+            foreach (var e in report.Events)
+                if (e.Kind == MatchEventKind.Penalty && (last is not { } l || e.Minute >= l.Minute))
+                    last = (e.Minute, e.Side == 0 ? home : away);
+        _worldCupLastPenaltyCoachDay = NationalCoach is { } coach && last is { } hit && hit.Club == coach.Nation ? day : 0;
+    }
+
+    /// <summary>
+    /// Behält der Spieler seine Verletzung (A497, Spur national Teil 2)? [ORIGINAL] Die Heilung 0x07C12 hat nur die Aufrufer 0x07169
+    /// und die WM-Schleife (Datei 0x55683–0x5571F), beide je Manager m &lt; DGROUP [0x386] (Datei 0x07172) – den Satz 5 des
+    /// Bundestrainers (WM-Kader) heilt nie jemand, seine Verletzungen aus den WM-Spielen bleiben. [APPROX] Das Remake führt den
+    /// Satz 5 noch nicht als eigene Kaderplätze (Teil 3): Der Spieler im WM-Kader heilt deshalb nach dem 13. April (Tag
+    /// <see cref="SeasonCalendar.ClubSeasonEnd"/>) bis zum Saisonwechsel auch an seinem Vereinsplatz nicht; in der Sommerpause
+    /// (Tag 0) heilt er wieder.
+    /// </summary>
+    internal bool HoldsWorldCupInjury(Player player) =>
+        NationalCoach is { } coach && CurrentDay > SeasonCalendar.ClubSeasonEnd && coach.Contains(player);
+
+    /// <summary>Heilung eines Kaderplatzes (<see cref="PlayerInjuries.Heal"/>) außer im WM-Kader (<see cref="HoldsWorldCupInjury"/>).</summary>
+    private bool HealSlot(Player player) => !HoldsWorldCupInjury(player) && PlayerInjuries.Heal(player);
 
     /// <summary>
     /// Hatte der Schleifentag WM-Spiele? [ORIGINAL] Datei 0x555DD–0x555ED: Modus ≠ 2 (DGROUP 0xD0B9) und Tagesbyte ≠ 0; in der
@@ -154,6 +203,9 @@ public sealed partial class GameState
     /// <summary>Grenze und Abzug des Markt-Verfalls in 0x07169. [ORIGINAL] Datei 0x071BB–0x071C8: +0x13 &gt; 0x38 → +0x13 − 10.</summary>
     public const int MarketDecayAbove = 0x38, MarketDecay = 10;
 
+    /// <summary>Kleinste Belastung nach dem Markt-Verfall ohne Untergrenze (A499): 0x39 − 10 = 47.</summary>
+    public const int MinMarketStrain = MarketDecayAbove + 1 - MarketDecay;
+
     /// <summary>
     /// Schritt (c) der WM-Schleife: Tagesablauf 0x07169 (Datei 0x5565C) für den Manager DGROUP 0xA70E nach den WM-Spielen des
     /// Tages <paramref name="day"/> (Zähler <see cref="DayCounter.Of"/>(day)).
@@ -163,14 +215,14 @@ public sealed partial class GameState
     ///   Bundestrainer 0 (Datei 0x35AB8–0x35AC3). 0x07169 endet bei 0xA70E ≥ Zahl der Manager sofort (Datei 0x07172–0x0717B →
     ///   0x07C0C). Also wirkt (c) nur nach WM-Spielen und nur für Manager 0; an den übrigen Tagen mit Zähler ≡ 0/4 (Tage 223 und
     ///   227, ohne WM-Spiele) nichts.</item>
-    /// <item>[APPROX] Mit Bundestrainer: Traf die letzte Strafe des Spieltags Deutschland (Feld +0x16 = 6 nach Datei 0x55494),
-    ///   bliebe 0xA70E = 5 und (c) wirkungslos; das Remake rechnet immer Manager 0.</item>
+    /// <item>[ORIGINAL] Mit Bundestrainer: Traf die letzte Strafe des Spieltags sein Land (Feld +0x16 = 6 nach Datei 0x55494),
+    ///   bleibt 0xA70E = 5 und (c) wirkungslos (A498, Spur national Teil 2; <see cref="NoteWorldCupPenalties"/>; vorher [APPROX]
+    ///   immer Manager 0).</item>
     /// <item>[ORIGINAL] Markt (nur Manager 0, Datei 0x0718F–0x071CC): Belastung +0x13 der Marktspieler über 0x38 sinkt um 10
     ///   (<see cref="MarketDecayAbove"/>). Belege (Modus 1, <c>emtool hok dump</c>): FILE18 (Zähler 217) → FILE48 (219) alle
     ///   Marktspieler E −6/−7 (eine Ausführung), FILE19 (217) → FILE20 (231) E −13/−14 (zwei), Liste gleich. Kein Listenwechsel
-    ///   (0x494EF hat nur die Aufrufer 0x437D5 und 0x54E7C im Hauptweg). [APPROX] Untergrenze 50 (<see cref="TrainingRules.MinStrain"/>):
-    ///   Das Original zieht ohne Grenze ab (57–59 → 47–49); im Remake ist der Marktspieler zugleich Spieler seines Vereins, dessen
-    ///   Belastung in 50 … 150 bleibt (<see cref="PlayerFactory.Validate"/>, Dateien kader-start).</item>
+    ///   (0x494EF hat nur die Aufrufer 0x437D5 und 0x54E7C im Hauptweg). [ORIGINAL] Ohne Untergrenze (57–59 → 47–49; A499, Spur
+    ///   national Teil 2, vorher [APPROX] Untergrenze 50): bis <see cref="MinMarketStrain"/>.</item>
     /// <item>Inhalt für Manager 0 (nicht im Modus 1): Heilung seiner Kaderplätze (Datei 0x07B4E → 0x07C12 mit dem Zähler der Spiele,
     ///   <see cref="PlayerInjuries.IsHealingDay"/>), danach je Platz das Training (Datei 0x07B5E → 0x0659C,
     ///   <see cref="TrainingRules.Apply"/>, Kosten wie <see cref="TrainOneDay"/>), Tendenz (Datei 0x07B64–0x07BFC, #688),

@@ -180,4 +180,31 @@ public static partial class MatchEngine
         }
         return squad;
     }
+
+    /// <summary>
+    /// Zähler nach einem WM-Spiel des Landes des Bundestrainers (A628, Spur national Teil 2). [ORIGINAL] Der WM-Lauf 0x30E7B setzt den
+    /// Torindex DGROUP 0xD0BF = 0 (Datei 0x30EA6) und rechnet ab mit Wettbewerb 8 (Datei 0x30F5F/0x31025); die Abrechnung 0x544C0
+    /// zählt am Kaderplatz des Satzes 5 (DGROUP 0x5DC3 + 5 · 0x618) Spiele in +0x08/+0x20 (Europapokal, Datei 0x5494C–0x5499E), das
+    /// Poolfeld Spiele +0x1C nur bei Wettbewerb 0 (Datei 0x5492E–0x54948), Tore in +0x03/+0x22 (Datei 0x542F4–0x54333), Strafen in +0
+    /// bzw. +1 des Platzes aus 0x378C5 (Datei 0x35B7D–0x35B8E). Die Vereinsplätze der Spieler bleiben unberührt; am Spieler selbst
+    /// (Poolfelder) zählen nur Tore +0x1B (Datei 0x542C1–0x542F0) und Vorlagen +0x1F (Datei 0x5424E–0x5427A).
+    /// [APPROX] Das Remake führt den Satz 5 noch nicht als eigene Kaderplätze (Teil 3): Spiele, Tore je Wettbewerb und Strafen der WM
+    /// zählt es deshalb nirgends statt am Vereinsplatz (vorher Liga am Spieler); Vorlagen wie bisher am Spieler, ebenso Gegentore und
+    /// Minuten des Torhüters (Poolfelder +0x1B/+0x1F, für Länderspiele nicht gelesen). Das Spielerfeld Tore +0x1B führt das Remake
+    /// nicht getrennt (siehe <c>CreditLineup</c>). Wie jede Abrechnung 0x544C0 begrenzt sie danach die Belastung der Plätze.
+    /// </summary>
+    internal static void CreditWorldCupSquad(NationalCoach coach, int against, int side, MatchReport report)
+    {
+        // [ORIGINAL] Kaderplatzschleife Datei 0x548A8–0x549BB über alle Plätze des Satzes 5: Belastung auf 50 … 150 (0x549A2).
+        TrainingRules.ClampStrain(coach.Squad.Select(m => m.Player));
+        var national = coach.Lineup();
+        if (national.Goalkeeper is { } goalie)
+        {
+            goalie.GoalsAgainst += against;
+            goalie.GoalieMinutes += report.Overtime ? 70 : 60;
+        }
+        foreach (var e in report.Events)
+            if (e is { Kind: MatchEventKind.Goal, Player: not null, Assist: { } assist } && e.Side == side)
+                assist.Assists++;
+    }
 }

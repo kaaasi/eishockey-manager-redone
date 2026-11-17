@@ -86,14 +86,16 @@ public sealed partial class GameState
     /// gesperrte Plätze aus dem gemeinsamen Strom <see cref="Random"/> (Datei 0x071CC–0x07202, Aufruf 0x071EC). [APPROX] Das
     /// Original rechnet Verfall, Sperre und Gebotsverfall je Markt-Platz in einer Schleife (Datei 0x0719F–0x0727C, ein weiterer
     /// Wurf im Gebotsverfall Datei 0x07215 ff.); das Remake rechnet erst Verfall und Sperren aller Plätze, dann die Gebote
-    /// (<see cref="TransferMarket.CatchUpManagerDay"/>). Untergrenze 50 des Verfalls wie in der WM-Schleife (R14NT4N-03).
+    /// (<see cref="TransferMarket.CatchUpManagerDay"/>). [ORIGINAL] A499 (Spur national Teil 2): Der Verfall hat keine Untergrenze
+    /// (Datei 0x071BB–0x071C8: nur <c>cmp +0x13, 0x38</c>, dann −10), also 47 … 56 nach einem Abzug (vorher [APPROX] Untergrenze 50,
+    /// R14NT4N-03); Beleg FILE18 → FILE48 (57–59 → 47–49).
     /// </summary>
     internal void DailyRunMarket(int day, Manager manager)
     {
         if (Managers.Count > 0 && Managers[0] == manager)
             foreach (var listing in TransferMarket.Listings)
                 if (listing.Player.Strain > MarketDecayAbove)
-                    listing.Player.Strain = Math.Max(listing.Player.Strain - MarketDecay, TrainingRules.MinStrain);
+                    listing.Player.Strain -= MarketDecay;
         if (Managers.Count > 0 && Managers[0] == manager)
             TransferMarket.ReleaseBidLocks(Random);
         // #688 (R688-07): [ORIGINAL] Heilung je Markt-Platz mit Pool +0x1A = Manager vor dessen Angebotswurf (Datei 0x072A0–0x072CB).
@@ -121,7 +123,7 @@ public sealed partial class GameState
         foreach (var p in club.Players)
         {
             if (healing)
-                healed |= PlayerInjuries.Heal(p);
+                healed |= HealSlot(p); // A497: Satz 5 heilt nicht (CupsNational.WorldCupLoop.cs)
             TrainingRules.Apply(p, plan, manager.Level, Random);
             AdvanceTrend(p, Random);
         }
@@ -130,11 +132,11 @@ public sealed partial class GameState
         club.ApplyAutoLineup();
     }
 
-    private static void HealSquad(Club club)
+    private void HealSquad(Club club)
     {
         var healed = false;
         foreach (var p in club.Players)
-            healed |= PlayerInjuries.Heal(p);
+            healed |= HealSlot(p); // A497: Satz 5 heilt nicht (CupsNational.WorldCupLoop.cs)
         if (healed)
             PlayerInjuries.RefillLineup(club);
     }
@@ -164,7 +166,7 @@ public sealed partial class GameState
         foreach (var club in Clubs.Where(c => !managed.Contains(c)))
         {
             foreach (var p in club.Players)
-                PlayerInjuries.Heal(p);
+                HealSlot(p); // A497: Satz 5 heilt nicht (CupsNational.WorldCupLoop.cs)
             foreach (var listing in TransferMarket.OwnListingsOutsideSquad(club))
                 PlayerInjuries.Heal(listing.Player);
         }

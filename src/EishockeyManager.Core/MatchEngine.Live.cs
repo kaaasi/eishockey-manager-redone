@@ -448,6 +448,11 @@ public static partial class MatchEngine
             if (report.Forfeit)
                 return;
             var national = coach.Lineup();
+            if (competition == MatchCompetition.WorldCup)
+            {
+                CreditWorldCupSquad(coach, against, side, report); // A628: Satz 5, nicht der Vereinsplatz (MatchEngine.National.cs)
+                return;
+            }
             // R8W3I-06: Die Strafe zählt beim Spieler aus 0x378C5 (wie beim Managerverein), kein eigener Zufallszug mehr.
             CreditLineup(national.Players.ToList(), national.Goalkeeper, against, side, report);
             return;

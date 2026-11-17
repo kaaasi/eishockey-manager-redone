@@ -135,7 +135,7 @@ public static partial class SaveGame
     /// (<c>SaveGame.Migration.KaderplatzWerte.cs</c>).
     /// 55 → 56 (Runde 22, Spur hok-play-off-marken, Schema 56 nach `kaderplatz-werte`): Marken der Play-off-Spiele
     /// <c>PlayoffSeries.Marks</c>, A612 (<c>SaveGame.Migration.HokPlayOffMarken.cs</c>).
-    /// 56 → 57 (Runde 22, Spur national Teil 1, Schema 57 nach `hok-play-off-marken`): Über-/Unterzahl-Zähler des Bundestrainers
+    /// 56 → 57 (Runde 22, Spur national Teil 1, Schema 57 nach `hok-play-off-marken`): Über-/Unterzahl-Zähler des Bundestrainers, Teil 2 WM-Tag der letzten Strafe (A498)
     /// (<c>SaveGame.Migration.National.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =

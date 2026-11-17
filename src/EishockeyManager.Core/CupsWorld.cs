@@ -118,14 +118,51 @@ public sealed partial class WorldCup : ISeasonCompetition
     public static int DateIndex(int day) => SeasonCalendar.DaysOf(DayEvents.WorldCup).ToList().IndexOf(day);
 
     /// <summary>
-    /// Saisonwechsel. Spur zufallsstrom, Teil 4 (N3 = B): Länderreihenfolge aus <see cref="GameState.Random"/> (vorher CupRandom).
-    /// [APPROX] Das Original mischt am 29. April in 0x35EDD (Datei 0x5644E, lrandom 0xBFD5) nach der Ligamischung; das Remake zieht
-    /// die 40 Würfe beim Saisonstart der WM (Datei 0x565F6) – die Ligamischung selbst leitet <c>GameState.SlotSeed</c> ab.
+    /// Saisonwechsel: Gruppen aus der Länderreihenfolge, die am 29. April gemischt wurde (<see cref="MixForNextSeason"/>; A825, Spur
+    /// national Teil 2). [ORIGINAL] Der WM-Start 0x30E7B(0) beim Saisonwechsel (Datei 0x565F6) würfelt nicht.
+    /// [APPROX] Fehlt die Mischung (Spielstand vor Schema 55 oder Import nach dem 29. April), mischt das Remake hier wie bisher.
     /// </summary>
-    public void StartSeason(GameState game) => StartSeason(game, game.Random);
+    public void StartSeason(GameState game)
+    {
+        if (_nextOrder is { Count: Teams } next)
+        {
+            _order.Clear();
+            _order.AddRange(next);
+            _nextOrder = null;
+            StartSeason(game, null);
+        }
+        else
+            StartSeason(game, game.Random);
+    }
 
-    /// <param name="mix">Quelle der Länderreihenfolge (<see cref="Mix"/>).</param>
-    internal void StartSeason(GameState game, Random mix)
+    /// <summary>
+    /// Am 29. April gemischte Länderreihenfolge der nächsten Saison (<see cref="MixForNextSeason"/>), bis zum Saisonwechsel; sonst
+    /// null. <see cref="Order"/> bleibt bis dahin die der laufenden WM (Gruppen, Ausfuhr der Ländersätze).
+    /// </summary>
+    private List<int>? _nextOrder;
+
+    /// <summary>Lesezugriff auf <see cref="_nextOrder"/>.</summary>
+    public IReadOnlyList<int>? NextOrder => _nextOrder;
+
+    /// <summary>
+    /// 29. April: Länderreihenfolge der nächsten Saison mischen (A825, Spur national Teil 2). [ORIGINAL] Datei 0x5644E ruft 0x35EDD
+    /// nach der großen Wanderung 0x9D1B (Datei 0x56448) und vor dem Fenster 0x26F20 (Datei 0x5645D), ohne Modusprüfung; 0x35EDD tauscht
+    /// zuerst 20-mal zwei Ländersätze lrandom([0x6AD], [0x6AD] + 11) (Datei 0x35EE3–0x35FC9, lrandom 0xBFD5), dann die Ligen
+    /// (Datei 0x36013 ff.). Aus dem gemeinsamen Strom <see cref="GameState.Random"/> (Spur zufallsstrom Teil 4, N3 = B); vorher
+    /// [APPROX] erst beim Saisonstart der WM. Ohne WM (Modus „nur Verein“) zieht <see cref="GameState"/> dieselben 40 Würfe
+    /// (<see cref="MixThrows"/>).
+    /// </summary>
+    public void MixForNextSeason(Random random)
+    {
+        _nextOrder = [.. _order];
+        Mix(_nextOrder, random);
+    }
+
+    /// <summary>Die 40 Würfe von 0x35EDD ohne WM (siehe <see cref="MixForNextSeason"/>).</summary>
+    public static void MixThrows(Random random) => Mix(Enumerable.Range(0, Teams).ToList(), random);
+
+    /// <param name="mix">Quelle der Länderreihenfolge (<see cref="Mix"/>); null beim Saisonwechsel (schon am 29. April gemischt).</param>
+    internal void StartSeason(GameState game, Random? mix)
     {
         _groups.Clear();
         _knockout.Clear();
@@ -133,7 +170,8 @@ public sealed partial class WorldCup : ISeasonCompetition
         Array.Fill(_slots, null);
         Winner = null;
         Ranking = [];
-        Mix(_order, mix);
+        if (mix is not null)
+            Mix(_order, mix);
         _groups.Add(new CupGroup(1, _order.Take(GroupSize).ToList()));
         _groups.Add(new CupGroup(2, _order.Skip(GroupSize).ToList()));
         game.StartNationalSeason();
@@ -188,6 +226,8 @@ public sealed partial class WorldCup : ISeasonCompetition
             return;
         var random = game.Random; // Spur zufallsstrom Teil 4 (N3 = B): gemeinsamer Strom
         List<KnockoutMatch> played;
+        var reports = new List<(int Home, int Away, MatchReport Report)>(); // A498: Strafen des Termins
+
         if (date < GroupDates)
         {
             played = [];
@@ -197,6 +237,7 @@ public sealed partial class WorldCup : ISeasonCompetition
                     // Spielvorbereitung 0x8365 je Paarung in der Spielberechnung (#192, A494: MatchEngine.PrepareNationalMatch).
                     var report = MatchEngine.PlayWithEvents(game, game.RatedNation(home), game.RatedNation(away),
                         MatchCompetition.WorldCup, knockOut: false, random);
+                    reports.Add((home, away, report));
                     var (hg, ag) = (report.HomeGoals, report.AwayGoals);
                     var match = new KnockoutMatch(day, home, away, hg, ag);
                     group.Results.Add(match);
@@ -229,7 +270,10 @@ public sealed partial class WorldCup : ISeasonCompetition
                 .Select(p =>
                 {
                     // Spielvorbereitung 0x8365 je Paarung in der Spielberechnung (#192, A494: MatchEngine.PrepareNationalMatch).
-                    return CupMatch.Play(game, day, game.RatedNation(p.Home), game.RatedNation(p.Away), MatchCompetition.WorldCup, random);
+                    var (home, away) = (game.RatedNation(p.Home), game.RatedNation(p.Away));
+                    var report = MatchEngine.PlayWithEvents(game, home, away, MatchCompetition.WorldCup, knockOut: true, random);
+                    reports.Add((p.Home, p.Away, report));
+                    return CupMatch.FromReport(day, home, away, report);
                 }).ToList();
             played = results.Select(r => r.Match).ToList();
             while (_knockoutMarks.Count < _knockout.Count)
@@ -258,6 +302,7 @@ public sealed partial class WorldCup : ISeasonCompetition
                 game.RecordWorldCupRanking(Ranking); // WM-Statistik 0x3ADE1 (Spur nationalteam-2)
             }
         }
+        game.NoteWorldCupPenalties(day, reports); // A498: Schritt (c) der WM-Schleife (CupsNational.WorldCupLoop.cs)
         game.CountCaps(played);
         game.SettleCupMatches(played); // gemeinsame Spielabrechnung (Nationalteams haben keinen Manager)
         // Eigene Spiele: Vereine der Manager, im Modus „nur Weltkugel“ das Nationalteam des Bundestrainers.

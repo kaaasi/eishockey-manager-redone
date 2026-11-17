@@ -41,6 +41,8 @@ public class IntegrationRunde7NationalCountersTests
         for (var guard = 0; keeper.GoalieMinutes == 0 && guard < 400 && game.NationalCoach is not null; guard++)
             game.Continue();
         Assert.True(keeper.GoalieMinutes >= 60, "WM-Spiel des Bundestrainers zählt keine Torhüterminuten");
-        Assert.True(coach.Lineup().Players.Sum(p => p.Games) > 0);
+        // A628 (Spur national Teil 2, R15-E2 = C): [ORIGINAL] Spiele der WM bucht 0x544C0 am Kaderplatz des Satzes 5 (Datei
+        // 0x5492E–0x5499E), nicht am Vereinsplatz – vorher hier „> 0“ (Ligazähler am Spieler).
+        Assert.Equal(0, coach.Lineup().Players.Sum(p => p.Games));
     }
 }

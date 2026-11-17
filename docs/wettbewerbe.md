@@ -10,7 +10,8 @@ Europapokal 0x341AB(1, 0) beim Spielstart nach dem Poolaufbau (Datei 0x298B1), z
 0x341AB(0, 0) beim Spielstart zwischen 0x057E3 und 0x494EF (Datei 0x43A8C), zum Saisonwechsel Datei 0x56609. Die Auslosungen
 prüfen den Spielmodus nicht – ohne angemeldeten Wettbewerb zieht das Remake dieselben Würfe in ein verworfenes Objekt.
 `[APPROX]` Länderreihenfolge der WM: beim Spielstart aus dem Zustand des Stroms abgeleitet (0x35EDD läuft vor der
-Spielvorbereitung, Datei 0x43A17), zum Saisonwechsel beim Saisonstart der WM statt am 29. April (Datei 0x5644E).
+Spielvorbereitung, Datei 0x43A17). `[ORIGINAL]` Zum Saisonwechsel am 29. April (Datei 0x5644E, 40 Würfe aus dem Strom, auch
+ohne WM; Spur national Teil 2, A825), übernommen beim Saisonstart der WM (`WorldCup.NextOrder`).
 Heimspiele gehen über die gemeinsame Spielabrechnung `SettleHomeMatch` (genau einmal je ausgetragenem Spiel).
 
 ## DEB-Pokal (`Core/CupsDeb.cs`, `Core/Cups.cs`)

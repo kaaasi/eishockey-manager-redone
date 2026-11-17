@@ -508,6 +508,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._teamRecords` | B | `AB7B+0x1194` | DGROUP 0xBD0F + 0x10 · Verein + 2 · Art |
 | `GameState._vacantNationalTactics` | A | `far:9657+0x26`, `A6FB+5`, `CAE9` (+0x30 · 5) | ohne Bundestrainer: Modi und Werte des Satzes 5, Anzeige „AUTOM.“ aus dem Vereinssatz des Landes (+0x26–0x2B, +0x35–0x3A) |
 | `GameState._worldCupRankings` | U | – | leer |
+| `GameState._worldCupLastPenaltyCoachDay` | N | – | 0: Merker des Remakes, ob die letzte Strafe eines WM-Tags das Land des Bundestrainers traf (DGROUP 0xA70E nach den Spielen, Datei 0x35AB8; A498, Schema 57) |
 | `GameState._worldCupOptionBackup` | A | `021D+15` | DGROUP 0x22C: Sicherung des Schalters „WM-Spiele“ während der WM des Bundestrainers (Spur `zusehen` Teil 2, Schema 52; Datei 0x5541F/0x5575A). Import (Spur `zusehen-rest`, A834, `OriginalImport.Rest.cs`): mit Amt des Bundestrainers der Wert, sonst null (Sicherung im Remake nur während des Amts); Export unverändert nicht geschrieben |
 
 ### GameSetup, GameOptions, ManagerSetup
@@ -826,6 +827,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `WorldCup._knockout` | A | `5CFB` (+0x60 = Wettbewerb 3) | Paare ab DGROUP 0x5D5B |
 | `WorldCup._knockoutMarks` | U | – | Tore und Marken der WM-K.-o.-Spiele nicht im HOK (`5C4B` nach jedem Termin leer); Import 1:0, Marke 0 `[APPROX]` |
 | `WorldCup._order` | U | – | Auslosungsfolge: nicht belegt; Indexfolge |
+| `WorldCup._nextOrder` | N | – | null: am 29. April gemischte Folge der nächsten Saison (0x35EDD, Datei 0x5644E; A825, Schema 55); ein HOK nach dem 29. April führt die Sätze schon getauscht |
 | `WorldCup._slots` | U | – | leer bis zur Auslosung |
 | `Playoffs.Seeds` | A | `5CCB` | Plätze 1–8 der Abschlusstabelle |
 | `Playoffs._rounds` | B | `5CFB+0x40`, `CCB2`, `CCA4` | Runden 0 … 0x7B0 aus den Plätzen 0x5D3B, Spiele 0xCCB2; Siege ergeben sich aus den Spielen (0xCCA4 mit 0x14 = Gast des fünften Termins mit drei Siegen, auch bei vorher entschiedener Serie, danach getauscht; R14HN-02). Halbfinale/Endspiel des Remakes nach Tabelle DGROUP 0x144 wie das Original (#676) |

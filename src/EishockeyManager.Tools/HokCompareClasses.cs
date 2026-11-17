@@ -120,6 +120,7 @@ public static class HokCompareClasses
             "GameState._managerBalance", "GameState._managerHistory", "GameState._nationalForm", "GameState._nextLeagueSlots",
             "GameState._readyManagers", "GameState._seasonEndYouthPending",
             "GameState._worldCupRankings",
+            "GameState._worldCupLastPenaltyCoachDay", // A498: Merker des Remakes für DGROUP 0xA70E nach den WM-Spielen (Spur national Teil 2)
             "GameState.NextPlayerId",
             // Merker des Remakes „Saisonstatistik schon gebucht“: das HOK führt keine Saisonhistorie (History N), der Import setzt −1.
             "GameState.StatisticsRecordedSeason",
@@ -249,7 +250,7 @@ public static class HokCompareClasses
             "KnockoutMatch.PenaltyWinner", "CupTie.First", "CupTie.Games", "CupTie.Marks", "CupTie.Second",
             "CupGroup.Number", "CupGroup.Results", "CupGroup.Teams", "DebCup.Winner", "DebCup._draw", "DebCup._rounds",
             "EuropeanCup.FinalRound", "EuropeanCup.Winner", "EuropeanCup._draw", "EuropeanCup._groups",
-            "WorldCup.Ranking", "WorldCup._groups", "WorldCup._knockout",
+            "WorldCup.Ranking", "WorldCup._groups", "WorldCup._knockout", "WorldCup._nextOrder",
             "Playoffs.Seeds", "Playoffs._rounds", "PlayoffSeries.Games", "PlayoffSeries.HomeClub", "PlayoffSeries.AwayClub", "PlayoffSeries.Marks",
             "RelegationGroup.Clubs", "RelegationGroup.PlayedRounds", "RelegationGroup.Results", "RelegationGroup.Rounds",
             "RelegationGroup.Upper", "NationalCoach._dressed", "NationalCoach._friendlies", "NationalCoach.PowerPlayCounts",

@@ -256,18 +256,26 @@ public class NationalteamRunde14Teil4Tests
             coachSeasons += game.NationalCoach is null ? 0 : 1;
             var before = Window.Take(game);
             ClearLeagueForms(game);
+            var skipped = new HashSet<int>();
             Action<GameState> nominate = g =>
             {
+                // A498 (Spur national Teil 2): Tage, an denen Schritt (c) wegen der letzten Strafe beim Land des Bundestrainers entfällt.
+                if (g.WorldCupLastPenaltyCoachDay is > 0 and var d && g.CurrentDay == d + 1 && MatchEngine.IsDriftDay(g.Counter(d)))
+                    skipped.Add(d);
                 if (active && g.NationalTurn && g.NationalCoach!.Squad.Count == 0)
                     g.AutoNominate();
             };
             var hasCoach = game.NationalCoach is not null;
             var afterEntry = PlayEntryDay(game, nominate);
             PlayToSeasonOver(game, nominate);
+            if (game.WorldCupLastPenaltyCoachDay is > 0 and var last && MatchEngine.IsDriftDay(game.Counter(last)))
+                skipped.Add(last); // A498: letzter WM-Tag, sein Schritt (c) liegt im Tageswechsel zum 29. April
 
             // #688 (R688-04): Der Takt des Tageswechsels zu Tag 216 (Zähler 217, je ein Training beider Manager, eine Wanderung) liegt
             // vor dem Halt am 14. April, also vor diesem Fenster.
-            Assert.Equal([-3 * before.TrainingCost[0], 0], before.TrainingDelta(game));
+            // Spur national Teil 2 (A498, R15-E2 = C): [ORIGINAL] Traf die letzte Strafe eines WM-Tags das Land des Bundestrainers,
+            // entfällt (c) für Manager 0 (Datei 0x35AB8 → 0xA70E = 5, 0x07172); vorher immer drei Läufe.
+            Assert.Equal([-(3 - skipped.Count) * before.TrainingCost[0], 0], before.TrainingDelta(game));
             AssertLeagueFormsNotDrifted(game);
             if (hasCoach)
                 Assert.Equal(afterEntry, LeagueTeamValues(game));
@@ -394,13 +402,13 @@ public class NationalteamRunde14Teil4Tests
     }
 
     /// <summary>
-    /// R14NT4N-03 (Nachprüfung #681): [APPROX] Untergrenze 50 des Markt-Verfalls. Das Original zieht ohne Grenze ab (roh 57–59 →
-    /// 47–49, Datei 0x071BB–0x071C8); im Remake ist der Marktspieler zugleich Spieler seines Vereins, dessen Belastung die
-    /// Invariante 50 … 150 hält (<see cref="PlayerFactory.Validate"/>, geprüft u. a. in <c>WettbewerbeSpiel12Teil2Tests</c>).
-    /// Startwerte 57, 58, 59 fallen einmal auf 50 und bleiben dort (Mutation „ohne Untergrenze“ → 47–49, rot).
+    /// R14NT4N-03 (Nachprüfung #681), angepasst in Spur national Teil 2 (A499, R15-E2 = C): [ORIGINAL] Der Markt-Verfall hat keine
+    /// Untergrenze (roh 57–59 → 47–49, Datei 0x071BB–0x071C8; FILE18 → FILE48). Vorher [APPROX] Untergrenze 50 (Erwartung 50, 50, 50).
+    /// Startwerte 57, 58, 59 fallen einmal und bleiben dann stehen (≤ 0x38). Die übrigen (120) fallen je Ausführung von Schritt (c);
+    /// seit A498 entfällt (c) an Tagen, deren letzte Strafe das Land des Bundestrainers traf – deshalb 90 … 110 statt genau 90.
     /// </summary>
     [Fact]
-    public void WorldCupLoop_MarketDecay_FloorAtMinStrain()
+    public void WorldCupLoop_MarketDecay_WithoutFloor()
     {
         var game = GameModeTests.Create(7, false, true, 2);
         Assert.Equal(GameMode.WorldOnly, game.Mode);
@@ -417,8 +425,8 @@ public class NationalteamRunde14Teil4Tests
             game.Continue();
         }
 
-        Assert.Equal([TrainingRules.MinStrain, TrainingRules.MinStrain, TrainingRules.MinStrain, 90],
-            ListingStrains(game).Take(4));
+        Assert.Equal([47, 48, 49], ListingStrains(game).Take(3));
+        Assert.Contains(ListingStrains(game)[3], new[] { 90, 100, 110 });
     }
 
     /// <summary>
