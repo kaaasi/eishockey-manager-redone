@@ -490,16 +490,28 @@ public sealed partial class TransferMarket
         subsidy = null;
         if (!loan)
         {
+            // [ORIGINAL] Datei 0x477E7: der neue Kaderplatz (0x42CB1) zieht Belastung und Tendenz vor der Verhandlung 0x4786A
+            // (Spur kaderplatz-werte, A674). [APPROX] Startgehalt und Verhandlung sehen noch den Markt-Platz (Tendenz, Vereinsspiele).
+            var start = SquadSlotRules.Roll(game.Random);
             purchase = new TransferPurchase(listing, manager, offer, Contracts.PurchaseYears,
-                Contracts.ValueSalary(game, manager, listing.Player));
+                Contracts.ValueSalary(game, manager, listing.Player)) { NewSlot = start };
             return TransferResult.Accepted;
         }
         subsidy = Complete(game, listing, manager, offer, loan: true);
         return TransferResult.Accepted;
     }
 
-    private SponsorSubsidyOffer? Complete(GameState game, TransferListing listing, Manager manager, long offer, bool loan)
+    private SponsorSubsidyOffer? Complete(GameState game, TransferListing listing, Manager manager, long offer, bool loan,
+        SlotStart? newSlot = null)
     {
+        // [ORIGINAL] Spur kaderplatz-werte (A674, A545): Kauf 0x477E7 legt einen neuen Kaderplatz an (0x42CB1). Ohne Leihe bleibt er
+        // (Über-/Unterzahl 0, Belastung und Tendenz neu, Zähler aus dem Pool; vom Manager mit Strafen und Verletzung, 0x4787D–0x478CB);
+        // bei der Leihe kopiert 0x47907 den Markt-Platz darüber, verbraucht ist nur der Zufall (Belastung, Tendenz, Leihgehalt).
+        var start = newSlot ?? SquadSlotRules.Roll(game.Random);
+        if (loan)
+            SquadSlotRules.ConsumeLoanSalary(game.Random);
+        else
+            listing.Player.ApplyNewSlot(start, fromManager: listing.Seller is not null);
         game.Book(manager, FinanceCategory.Transfers, -offer);
         if (listing.Seller is { } seller)
             game.Book(seller, FinanceCategory.Transfers, offer);

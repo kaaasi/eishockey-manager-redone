@@ -91,6 +91,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     }
 
     /// <summary>K.-o.-Spiele haben immer einen Sieger: Verlängerung, danach Penaltyschießen (Minutenweg und schneller Weg).</summary>
+    // Runde 22, Spur kaderplatz-werte Teil 1 (A674, A545, A714; R21-D2 = A): neu – Kauf und Leihe legen einen neuen Kaderplatz an
+    // (Datei 0x477E7 → 0x42CB1: Belastung, Tendenz, bei der Leihe Leihgehalt random(90, 115) aus dem gemeinsamen Strom; +0x19 = 0,
+    // Zähler aus dem Pool), die Drift 0x054D9 trifft auch die Poolwerte der Kaderspieler, ein Verkauf an einen Computerverein
+    // lässt die Poolwerte gelten (0x46F3C–0x46FCF). Anderer Zufallsverlauf ab dem ersten Kauf bzw. Saisonwechsel.
+    // Rückschaltprobe: src/ von 191f3ee + dieser Test → rot (alte Werte).
     [Theory]
     [InlineData(2, 3)] // Managerpaarung: Minutenweg mit Verlängerung
     [InlineData(4, 5)] // ohne Manager im Pokal: schneller Weg mit Penaltymarke
@@ -293,8 +298,15 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
     // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
-    [InlineData(false, "FEEAB7ECC6CBA46E")]
-    [InlineData(true, "961F7CCC7A6D9056")]
+    // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): neu – die Spielabrechnung 0x544C0 würfelt vor jedem
+    // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
+    // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
+    // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    // Runde 22, Spur kaderplatz-werte Fixlauf (Review #927 R923-01; R21-D2 = A, R15-E2 = C): neu (nur aktiv) – das Training schreibt
+    // nur den Kaderplatz, der Poolwert (+0x15/+0x16) folgt ihm nicht mehr (Player.SetSlotStrengths); Drift am Saisonwechsel und
+    // Abgabe an Computervereine (Join → AdoptPoolValues) starten von anderen Werten. Rückschaltprobe: src/ von c3ea6c2 → alte Werte.
+    [InlineData(false, "2EA53A1F1C98A9D3")]
+    [InlineData(true, "1FA484C83034BA37")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

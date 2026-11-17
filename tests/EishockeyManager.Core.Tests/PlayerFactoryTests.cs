@@ -83,7 +83,10 @@ public class PlayerFactoryTests
         // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (A130, R15-E2 = C): Saat 4 statt 3 (Vorgabe) – mit der Startbelastung 80–120
         // (Datei 0x42E4C) und dem Spielplan über die Satzfolge bleiben bei Saat 3 alle 15 Suchen erfolglos (Saaten 1–20: nur 3, 11,
         // 12, 19 ohne Erfolg). Die Probe hängt an der Saat.
-        var game = TestGames.Create(4);
+        // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): Saat 5 statt 4 – die Spielabrechnung 0x544C0 würfelt vor jedem Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7) aus dem gemeinsamen Strom, anderer Zufallsverlauf ab dem ersten Managerspiel; bei Saat 4 läuft eine
+        // Suche über das Saisonende (Continue im Saisonende), unter 1–24 nur bei 4 nicht. Rückschaltprobe: src/ von faa64d2 mit Saat 5
+        // ebenfalls grün – die Probe hängt an der Saat.
+        var game = TestGames.Create(5);
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];
         // Die Finanz-Zufallsquelle hängt nicht vom Spielstand-Seed ab: mehrere Suchen in einem Spiel statt mehrerer Spiele.

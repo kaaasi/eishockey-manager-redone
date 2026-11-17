@@ -308,9 +308,11 @@ am Zug (Datei 0x7B29–0x7C04, nach der Heilung 0x7C12): t = +0x0E; mit random(0
 
 Seit Runde 21 (Spur `zufallsstrom`, N3 = B) zieht die Tendenz überall aus dem gemeinsamen Strom `GameState.Random` an der Stelle
 des Originals (Spielstart, neuer Manager, Markt, Talent, Tageslauf je Kaderplatz nach dem Training); die eigene Quelle
-`GameState.TrendRandom` ist entfallen (Spielstand Schema 53). `[APPROX]`: ein Kauf übernimmt Tendenz und Steuerbyte vom Markt-Platz (das Original legt
-beim Kauf 0x477E7 einen neuen Kaderplatz an, würfelt also neu, und kopiert den Markt-Platz darüber nur bei [bp−0x11] ≠ 0 oder
-einer Leihe, Datei 0x478CF–0x47907; Bedeutung von [bp−0x11] nicht geprüft), Startkader und ältere Spielstände ohne Wert (0 → Mitte der Stufe);
+`GameState.TrendRandom` ist entfallen (Spielstand Schema 53). Seit Runde 22 (Spur `kaderplatz-werte`) legt der Kauf wie im Original
+einen neuen Kaderplatz an (0x477E7 → 0x42CB1: Belastung und Tendenz neu, +0x19 = 0, Zähler aus dem Pool; `Squad.SlotValues.cs`) und
+kopiert den Markt-Platz nur bei einer Leihe ([bp−0xC]) oder beim Zurückziehen des eigenen Angebots ([bp−0x11] = 1, 0x474E4) darüber
+(Datei 0x478CF–0x47907); Beleg FILE05 → FILE07 (DAFFNER). `[APPROX]`: Startgehalt und Verhandlung sehen noch den Markt-Platz,
+das Zurückziehen verbraucht den Zufall von 0x42CB1 nicht; Startkader und ältere Spielstände ohne Wert (0 → Mitte der Stufe);
 die Änderung je Takt (A134, seit #688) überspringt Plätze ohne Wert oder Steuerbyte (0). Die Frage an den Verkäufer zeigt das Fragefenster des Transferbildschirms mit dem Namen des
 Verkäufers als Kopf, bis der Baustein 0x4C246 (Spur `ui-meldungen`) angeschlossen ist; ohne Oberfläche (`TransferMarket.Buy`)
 bleibt die simulierte Antwort. Länderwerte aus der Aufstellung eines Bundestrainers (0x952C) gehen in die Grundstärken nicht ein.
@@ -343,8 +345,8 @@ Beleg FILE01–FILE07 (Spielstart, Köln = Verein 2): 146 der 154 freien Ligapl�
 noch bei ihrem Datenbankverein.
 
 `[APPROX]`: Gruppe einer Liga = Vereine mit dieser Liga, Gruppe 3 = Vereine ohne Liga unter 48, Platz in der Liga nach Vereinsindex
-(das Original ordnet die Sätze beim Ligawechsel um, 0x35EDD); Verein 150 gibt es im Remake nicht (149); die Drift wirkt nur auf
-freie Plätze (Markt- und Kaderspieler führen ihre Werte am Spieler, im Original im Kaderplatz), gezogen wird für jeden Platz; die
+(das Original ordnet die Sätze beim Ligawechsel um, 0x35EDD); Verein 150 gibt es im Remake nicht (149); die Drift wirkt wie im Original auf
+alle Plätze (Markt- und Kaderspieler: Poolwerte `Player.PoolCondition`/`PoolTechnique` neben dem Kaderplatz, Spur `kaderplatz-werte`); die
 Managerkader stammen im Remake nicht aus dem Pool, k[l] zählt sie trotzdem (das Soll ist dadurch dasselbe, der Pool hat aber mehr
 freie Spieler); Spielstart mit der Quelle des Kaderaufbaus, Saisonwechsel mit der Hauptquelle, im Modus „nur Weltkugel“ ohne
 Saisonumverteilung (Tageslauf 0x54C9F fehlt dort, 0x54CEE); Schleifen ohne Grenze im Original enden nach 100.000 Versuchen.

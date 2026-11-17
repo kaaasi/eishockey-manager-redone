@@ -549,11 +549,15 @@ public sealed partial class GameState
         p.Technique = slot[0x11];
         p.Form = slot[0x12];
         p.PoolForm = entry[0x17] != slot[0x12] ? entry[0x17] : null; // A066 (kader-rest): Poolform nach einer Verletzung
+        // A714 (kaderplatz-werte): Poolwerte nach der Drift, wenn sie vom Kaderplatz abweichen.
+        p.PoolCondition = entry[0x15] != slot[0x10] ? entry[0x15] : null;
+        p.PoolTechnique = entry[0x16] != slot[0x11] ? entry[0x16] : null;
         p.Strain = slot[0x13];
         p.TrendControl = slot[0x14];
         // [ORIGINAL] Tendenzwert Kaderplatz +0x0E (30 … 68, Start random(35, 65) Datei 0x4907A; Anzeige (Wert − 30) / 13, 0x41AE0 –
         // Player.Slot.cs); die Stufe folgt daraus (R14HI-04). [APPROX] 0 (nicht gesetzt) lässt die Stufe des Nachspielens stehen.
         p.TrendScore = slot[0x0E];
+        p.PlayedLine = slot[0x02]; // A093 (kaderplatz-werte): eingespielte Reihe, Stand a093 FILE73/FILE74
         if (p.TrendScore != 0)
             p.Trend = Player.TrendOf(p.TrendScore);
         p.Penalties5 = slot[0x00];

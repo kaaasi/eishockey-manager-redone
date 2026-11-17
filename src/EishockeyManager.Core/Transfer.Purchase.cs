@@ -11,6 +11,12 @@ namespace EishockeyManager.Core;
 /// </remarks>
 public sealed record TransferPurchase(TransferListing Listing, Manager Buyer, long Offer, int Years, int Salary)
 {
+    /// <summary>
+    /// Zufallswerte des neuen Kaderplatzes, gezogen beim Annehmen vor der Verhandlung ([ORIGINAL] Datei 0x477E7 → 0x42CB1 vor 0x4786A;
+    /// Spur kaderplatz-werte). Null: beim Abschluss ziehen.
+    /// </summary>
+    public SlotStart? NewSlot { get; init; }
+
     public Player Player => Listing.Player;
 }
 
@@ -50,7 +56,7 @@ public sealed partial class TransferMarket
             _ = ContractRules.LockDays(game.Random); // Spur zufallsstrom Teil 4: Wurf Datei 0x4AD3E aus dem gemeinsamen Strom
             return result;
         }
-        subsidy = Complete(game, listing, manager, purchase.Offer, loan: false);
+        subsidy = Complete(game, listing, manager, purchase.Offer, loan: false, purchase.NewSlot);
         var p = listing.Player;
         p.ContractYears = newYears;
         Contracts.ApplyInsurance(game, manager, p, insured, accepted: true, lockOnFailure: false);

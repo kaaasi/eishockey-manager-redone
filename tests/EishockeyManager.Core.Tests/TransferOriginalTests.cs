@@ -50,7 +50,10 @@ public class TransferOriginalTests
             var twin = GameRandom.FromState(game.Random.Capture());
             var expected = TransferRules.Accepts(TransferRules.Thirds(listing.Price), TransferRules.Thirds(offer), false, twin);
             if (expected)
+            {
+                _ = SquadSlotRules.Roll(twin); // kaderplatz-werte: neuer Kaderplatz 0x477E7 → 0x42CB1 (Belastung, Tendenz)
                 _ = ComputerClubTransferRules.SponsorSubsidy(offer, twin); // Kader-Transfer Teil 3: Zuschuss 0x47A34
+            }
 
             var result = game.TransferMarket.Buy(game, manager, listing, offer, loan: false);
 

@@ -156,9 +156,11 @@ public sealed partial class TransferMarket
     ///   sind jeder andere, werden verworfen; sonst neuer Verein über 0x059B8 (Datei 0x0564C–0x05712).</item>
     /// <item>Soll nach <see cref="PoolDistributionRules.Quotas"/> mit den Auslandsspielern nach der Rückholung.</item>
     /// </list>
-    /// [APPROX] Die Drift wirkt nur auf freie Plätze: Spieler auf dem Markt und in Managerkadern führen ihre Werte im Remake am
-    /// Spieler selbst (im Original im Kaderplatz +0x10/+0x11); gezogen wird für jeden Platz. Ohne passenden Verein (synthetische
-    /// Datenbank) bleibt der Verein; nach 100.000 verworfenen Zügen endet die Schleife (im Original ohne Grenze).
+    /// [ORIGINAL] Die Drift wirkt auf jeden Poolsatz (+0x15/+0x16), auch von Spielern auf dem Markt und in Managerkadern; deren
+    /// Kaderplatz (+0x10/+0x11) bleibt, der Poolwert steht abweichend in <see cref="Player.PoolCondition"/>/<see cref="Player.PoolTechnique"/>
+    /// und gilt erst wieder mit einem neuen Kaderplatz bzw. ohne Kaderplatz (Spur kaderplatz-werte, A714; <see cref="SlottedPlayers"/>).
+    /// [APPROX] Ohne passenden Verein (synthetische Datenbank) bleibt der Verein; nach 100.000 verworfenen Zügen endet die Schleife
+    /// (im Original ohne Grenze).
     /// </summary>
     internal int[] PoolQuotas(GameState game, Random random)
     {
@@ -169,12 +171,13 @@ public sealed partial class TransferMarket
                 slots[(int)league] += game.Clubs[m.ClubIndex].Players.Count;
 
         var foreign = 0;
+        var slotted = SlottedPlayers(game);
         foreach (var slot in _pool)
         {
-            var condition = PoolDistributionRules.Drift(slot.Player.Condition, random);
-            var technique = PoolDistributionRules.Drift(slot.Player.Technique, random);
-            if (slot.Owner == PoolOwner.Free)
-                (slot.Player.Condition, slot.Player.Technique) = (condition, technique);
+            var (poolCondition, poolTechnique) = slot.Player.PoolStrengths;
+            var condition = PoolDistributionRules.Drift(poolCondition, random);
+            var technique = PoolDistributionRules.Drift(poolTechnique, random);
+            slot.Player.SetPoolStrengths(condition, technique, slotted.Contains(slot.Player));
             if (slot.Index <= layout.LeagueLast && IsForeignPoolClub(slot.Club))
                 foreign++;
         }
@@ -224,6 +227,21 @@ public sealed partial class TransferMarket
                 return members[position].Index;
         }
         return members.Count > 0 ? members[0].Index : 0;
+    }
+
+    /// <summary>
+    /// Spieler mit Kaderplatz (Satz 0–4): in einem Managerkader oder auf dem Markt. [APPROX] Ein an einen Computerverein verkaufter
+    /// Spieler hält im Remake seinen Poolplatz bis zum Saisonwechsel (<see cref="PoolOwner.Taken"/>), hat aber keinen Kaderplatz mehr.
+    /// </summary>
+    internal HashSet<Player> SlottedPlayers(GameState game)
+    {
+        var set = new HashSet<Player>(ReferenceEqualityComparer.Instance);
+        foreach (var m in game.ActiveManagers)
+            foreach (var p in game.Clubs[m.ClubIndex].Players)
+                set.Add(p);
+        foreach (var listing in _listings)
+            set.Add(listing.Player);
+        return set;
     }
 
     /// <summary>Gruppe eines Vereins für 0x07C7E: Liga 0 … 2, 3 = ohne Liga (unter 48), sonst −1 (Nationalteams, Ausland).</summary>

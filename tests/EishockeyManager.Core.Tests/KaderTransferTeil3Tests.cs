@@ -186,11 +186,14 @@ public class KaderTransferTeil3Tests
             var player = game.Clubs[a.ClubIndex].Players.First(p => p.Role == PlayerRole.Forward);
             Assert.Equal(TransferResult.Accepted, market.Offer(game, a, player));
             var listing = market.ListingOf(player)!;
-            var state = game.Random.Capture();
+            var twin = GameRandom.FromState(game.Random.Capture());
+            // kaderplatz-werte: der neue Kaderplatz der Leihe zieht Belastung, Tendenz und Leihgehalt (0x477E7 → 0x42CB1).
+            _ = SquadSlotRules.Roll(twin);
+            SquadSlotRules.ConsumeLoanSalary(twin);
             if (market.Bid(game, b, listing, listing.LoanFee, loan: true, out _, out var subsidy) == TransferResult.Accepted)
             {
                 Assert.Null(subsidy);
-                Assert.Equal(state, game.Random.Capture()); // kein Wurf random(0, 6)
+                Assert.Equal(twin.Capture(), game.Random.Capture()); // kein Wurf random(0, 6)
                 return;
             }
         }
@@ -245,11 +248,13 @@ public class KaderTransferTeil3Tests
                     {
                         var buyer = bid.Buyer;
                         var before = buyer.TeamValues;
+                        // kaderplatz-werte: 0x47462 misst die Stärke am Kaderplatz; danach gelten die Poolwerte (0x474B1).
+                        var strength = bid.Listing.Player.Strength;
                         if (market.Accept(game, bid) == TransferResult.Accepted)
                         {
                             sold++;
                             if (before is { } values)
-                                AssertStrengthened(values, buyer.TeamValues!.Value, buyer.Strength, bid.Listing.Player.Strength);
+                                AssertStrengthened(values, buyer.TeamValues!.Value, buyer.Strength, strength);
                         }
                     }
                 }

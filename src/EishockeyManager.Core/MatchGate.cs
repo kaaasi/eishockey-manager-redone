@@ -71,7 +71,9 @@ public sealed partial class GameState
 
     /// <summary>
     /// Vorbereitung der Spielabrechnung vor den Minuten (Aufruf aus <c>MatchEngine.BeginMatch</c>, nur ohne Spielwertung):
-    /// Zuschauer für jeden Manager des Heimvereins. Ohne Manager in der Paarung nichts.
+    /// Zuschauer für jeden Manager des Heimvereins, danach je Manager der Paarung die eingespielte Reihe
+    /// (<see cref="SquadSlotRules.RollPlayedLines"/>, A093). Ohne Manager in der Paarung nichts. [APPROX] Eine Spielwertung bereitet
+    /// nichts vor; im Original würfeln dort die Manager mit kleinerem Index als der nicht spielfähige noch (Datei 0x547AA).
     /// </summary>
     internal void PrepareMatchGate(Club home, Club away, MatchCompetition competition)
     {
@@ -81,9 +83,14 @@ public sealed partial class GameState
         var importance = GateImportance(competition);
         var spectators = new List<(Manager, int)>();
         foreach (var manager in Managers)
+        {
             if (manager.ClubIndex == home.Index)
                 spectators.Add((manager, Spectators(home, away, Finance(manager).Stadium, tableMatchDay, Random, importance,
                     manager.Level)));
+            // A093 (kaderplatz-werte): [ORIGINAL] in derselben Managerrunde nach den Zuschauern (Datei 0x548A8).
+            if (manager.ClubIndex == home.Index || manager.ClubIndex == away.Index)
+                SquadSlotRules.RollPlayedLines(Clubs[manager.ClubIndex], Random);
+        }
         Prepared.Add(new PreparedGate(home.Index, away.Index, tableMatchDay, importance, spectators));
         GateCounters.GetValue(this, _ => new GateCounter()).Prepared++;
     }

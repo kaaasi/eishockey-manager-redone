@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(54, SaveGame.SchemaVersion);
+        Assert.Equal(55, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -72,7 +72,9 @@ public class SaveGameTests
     //    GameState._worldCupOptionBackup: Sicherung 0x22C des Schalters „WM-Spiele“ (Spur zusehen Teil 2, A541).
     // 53 GameState._trendRandom und _turnRandom entfallen: gemeinsamer Zufallsstrom (Spur zufallsstrom Runde 21, N3 = B; A725, A533).
     // 54 GameState._cupRandom und _financeRandom entfallen (Spur zufallsstrom Teil 4).
-    private const string ExpectedSchemaFingerprint = "C6318916E73C9013";
+    // 55 Player.PoolCondition/PoolTechnique: Poolwerte +0x15/+0x16 neben dem Kaderplatz (Spur kaderplatz-werte Runde 22, A714; vorläufig).
+    //    Player.PlayedLine: eingespielte Reihe, Kaderplatz +0x02 (Spur kaderplatz-werte Teil 2, A093; dieselbe Migration).
+    private const string ExpectedSchemaFingerprint = "23EEF9A925B15E06";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

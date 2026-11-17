@@ -201,8 +201,9 @@ public sealed partial class GameState
             OriginalSaveWriter.Name(p.Name, 0x12).CopyTo(e);
         e[0x12] = OriginalExport.Byte(p.Talent);
         e[0x14] = OriginalExport.Byte(p.Age);
-        e[0x15] = OriginalExport.Byte(p.Condition);
-        e[0x16] = OriginalExport.Byte(p.Technique);
+        // [ORIGINAL] Pool +0x15/+0x16 = Poolwerte (Drift 0x054D9 auch bei Spielern mit Kaderplatz, A714; Spur kaderplatz-werte).
+        e[0x15] = OriginalExport.Byte(p.PoolStrengths.Condition);
+        e[0x16] = OriginalExport.Byte(p.PoolStrengths.Technique);
         e[0x17] = OriginalExport.Byte(p.PoolForm ?? p.Form); // A066 (kader-rest)
         e[0x18] = RoleValue(p.Role);
         e[0x1A] = owner;
@@ -253,6 +254,7 @@ public sealed partial class GameState
         if (club is not null && p.OnLoan && p.Loan is { } loan)
             s[0x0C] = (byte)(0x80 | (slotOf[loan.Origin.Index] & 0x7F));
         s[0x0E] = OriginalExport.Byte(p.TrendScore);
+        s[0x02] = OriginalExport.Byte(p.PlayedLine); // A093: eingespielte Reihe (Squad.SlotValues.cs)
         s[0x0F] = (byte)poolIndex;
         s[0x10] = OriginalExport.Byte(p.Condition);
         s[0x11] = OriginalExport.Byte(p.Technique);
