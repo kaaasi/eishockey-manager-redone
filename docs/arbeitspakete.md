@@ -79,7 +79,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
   bei +0x02 = 0, Vergleich [+0x11]·[bp−0xA]/100, Datei 0x09A54–0x09A8A; nur „im Spiel“, Schalter 0x977F ≠ 0) mit Stand `a093`
   (FILE71–74); 3. erwartete Werte (R21-D2), Mehrsaisonprobe.
 - **Dateien:** `Core/Squad.HiddenSkills.cs`, `Core/Squad.Training.cs`, Stellen oben, `Core/SaveGame.Migration.KaderplatzWerte.cs`,
-  zugehörige Tests. **Erstreview:** Opus 5.5. **Status:** Teil 1 fertig (PR #923, Draft), Teile 2–3 offen.
+  zugehörige Tests. **Erstreview:** Opus 5.5. **Status:** Teile 1–3 fertig (PR #923), wartet auf Erstreview.
 
 ### Spur `national` – Satz des Bundestrainers und WM (Welle 1)
 
