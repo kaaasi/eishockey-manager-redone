@@ -463,7 +463,7 @@ public static partial class MatchEngine
         {
             MatchStatistics.CreditSkaters(club.Players, goals, random);
             if (competition == MatchCompetition.League)
-                MatchStatistics.CreditGoalies(GoaliesOf(club), against, random);
+                MatchStatistics.CreditGoalies(GoaliesOf(game, club), against, random);
             return;
         }
         if (report.Forfeit)
@@ -510,15 +510,14 @@ public static partial class MatchEngine
         }
     }
 
-    /// <summary>Torhüter eines Vereins: der aufgestellte zuerst, dann die übrigen in Kaderreihenfolge.</summary>
-    private static List<Player> GoaliesOf(Club club)
-    {
-        var list = new List<Player>();
-        if (club.Lineup.Goalkeeper is { } g)
-            list.Add(g);
-        list.AddRange(club.Players.Where(p => p.Role == PlayerRole.Goalkeeper && p != club.Lineup.Goalkeeper));
-        return list;
-    }
+    /// <summary>
+    /// Torhüter eines Computervereins in Poolreihenfolge. [ORIGINAL] A104 (Review #884 P2-2): Gegentore und Minuten (Datei 0x4DB6)
+    /// gehen an die ersten Torhüter des Vereins in der Reihenfolge des Spielerpools, nicht an den aufgestellten.
+    /// [APPROX] Torhüter ohne Poolplatz (Datenbankspieler eines Computervereins) folgen in Kaderreihenfolge.
+    /// </summary>
+    private static List<Player> GoaliesOf(GameState game, Club club) =>
+        club.Players.Where(p => p.Role == PlayerRole.Goalkeeper)
+            .OrderBy(p => game.TransferMarket.PoolIndexOf(p)).ToList();
 }
 
 public sealed partial class GameState
