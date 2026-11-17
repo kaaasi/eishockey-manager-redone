@@ -503,6 +503,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._nextLeagueSlots` | N | – | leer (wird am 29. April gebildet) |
 | `GameState._readyManagers` | N | – | leer |
 | `GameState._seasonEndYouthPending` | N | – | false (nur Migration vor Schema 50 vom Bildschirm „Saisonende“, Spur kader-rest Teil 3) |
+| `GameState._youthOfDayDone` | N | – | false (nur Migration vor Schema 57 nach dem Tageswechsel eines Tages ab 1: Jugend des Tages schon gerechnet, Spur `wettbewerbe-regeln` Teil 2, A384/A670) |
 | `GameState._stocks` | B | `D0F4`, `01FD`, `A891`, `A895` | Zeilen `Stock` |
 | `GameState._teamRecordOpponents` | B | `AB7B+0xF94` | DGROUP 0xBB0F + 8 · Verein + Art (64 Vereine) |
 | `GameState._teamRecords` | B | `AB7B+0x1194` | DGROUP 0xBD0F + 0x10 · Verein + 2 · Art |
@@ -1126,6 +1127,8 @@ liegt bei den genannten Spuren.
   (`SaveGame.Migration.HokPlayOffMarken.cs`).
 - Schema 57 (Runde 22, Spur `wettbewerbe-regeln` Teil 1, vorläufig): `Tactics._goaliePulledAtEnd` – Vereinsfeld 0x2C Bit 3 nach
   dem letzten Spiel (A838). Migration: false (`SaveGame.Migration.WettbewerbeRegeln.cs`).
+  Teil 2: `GameState._youthOfDayDone` (Jugendteams nach den Menüs, A384/A670). Migration: true bei `DayOpened` und Tag ab 1, sonst
+  false.
 
 ### Zugang (Teil 3)
 

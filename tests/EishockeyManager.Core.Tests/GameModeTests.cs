@@ -482,8 +482,12 @@ public class GameModeTests
     // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
     // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
     // Rückschaltprobe: beide zurückgeschaltet → alte Werte (jede allein nicht); src/ von ce658d4 + dieser Test → rot.
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
+    // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=12,GermanChampion=0,EuropeanCupWinner=2|1200000,400000|WorldChampion=60,CupWinner=11,GermanChampion=9,EuropeanCupWinner=0|2282204,400000|WorldChampion=53,CupWinner=9,GermanChampion=9,EuropeanCupWinner=9|2198401,500000|WorldChampion=52,CupWinner=9,GermanChampion=17,EuropeanCupWinner=9|2110154,500000|WorldChampion=52,CupWinner=0,GermanChampion=18,EuropeanCupWinner=9|2207768,500000|R3864491";
+        "WorldChampion=54,CupWinner=12,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=17,GermanChampion=3,EuropeanCupWinner=1|2408603,400000|WorldChampion=55,CupWinner=0,GermanChampion=0,EuropeanCupWinner=3|2372502,500000|WorldChampion=54,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2547266,500000|WorldChampion=52,CupWinner=11,GermanChampion=19,EuropeanCupWinner=0|2403079,500000|R1792396225";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

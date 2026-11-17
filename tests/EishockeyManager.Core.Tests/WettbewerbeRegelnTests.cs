@@ -287,4 +287,72 @@ public class WettbewerbeRegelnTests
         }
         Assert.Equal(1, penalties);
     }
+
+    private static (int, int)[] YouthOf(GameState game) =>
+        game.Finance(game.Managers[0]).Youth.Select(t => (t.Strength, t.Position)).ToArray();
+
+    /// <summary>
+    /// Halt an einem Ligaspieltag ab Tag 6 (nicht dem letzten), an dem die Jugendrechnung des Tages Stärke oder Platz ändert.
+    /// </summary>
+    private static GameState HaltOnLeagueDay(int seed)
+    {
+        var game = TestGames.Create(seed);
+        var me = game.Managers[0];
+        foreach (var kind in Enum.GetValues<YouthTeamKind>())
+            game.SetYouthFunding(me, kind, YouthTeam.MaxFunding(kind));
+        var leagueDays = SeasonCalendar.DaysOf(DayEvents.League).ToList();
+        for (var guard = 0; ; guard++)
+        {
+            Assert.True(guard < 400);
+            me.Money = Math.Max(me.Money, 5_000_000);
+            game.Continue();
+            var at = leagueDays.IndexOf(game.CurrentDay);
+            if (game.CurrentDay <= 5 || at < 0 || at + 1 >= leagueDays.Count)
+                continue;
+            var probe = SaveGame.Load(SaveGame.Save(game)).Game!; // nur ein Halt, an dem die Jugend des Tages etwas bewegt
+            probe.DailyYouth(probe.CurrentDay);
+            if (!YouthOf(probe).SequenceEqual(YouthOf(game)))
+                return game;
+        }
+    }
+
+    /// <summary>
+    /// A384/A670: [ORIGINAL] Jugendteams nach den Managermenüs, vor den Ligaspielen (Datei 0x55003–0x5502C: Kalenderbits 0–2,
+    /// je Manager 0x39DEC bei Datei 0x5501C, dann 0x35EA4 bei Datei 0x55039) – an jedem Tag, nicht nur an Tag 0. Vom Halt eines
+    /// Ligaspieltags bis zum nächsten Halt (ohne Ligaspieltag dazwischen) rechnet die Zeitleiste also genau die Jugend dieses
+    /// Tags, aus dem Zufallszustand des Menüs. Vorher lief sie im Tageswechsel vor dem Menü: am Halt schon gerechnet, dafür die des nächsten Tags vor dessen
+    /// Halt.
+    /// </summary>
+    [Fact]
+    public void Youth_RunsAfterTheMenus()
+    {
+        var game = HaltOnLeagueDay(5);
+        var saved = SaveGame.Save(game);
+        var expected = SaveGame.Load(saved).Game!;
+        expected.DailyYouth(expected.CurrentDay);
+        var played = SaveGame.Load(saved).Game!;
+        played.Continue();
+        Assert.DoesNotContain(SeasonCalendar.DaysOf(DayEvents.League), d => d > game.CurrentDay && d < played.CurrentDay);
+        Assert.NotEqual(YouthOf(game), YouthOf(expected));
+        Assert.Equal(YouthOf(expected), YouthOf(played));
+    }
+
+    /// <summary>
+    /// A384/A670, Migration 56 → 57: Ein älterer Stand nach dem Tageswechsel eines Ligaspieltags hat dessen Jugend schon gerechnet
+    /// – sie läuft nicht noch einmal (<c>_youthOfDayDone</c>).
+    /// </summary>
+    [Fact]
+    public void Youth_OldSaveAfterDayOpen_NotTwice()
+    {
+        var game = HaltOnLeagueDay(5);
+        var json = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
+        json["schema"] = 56;
+        json["spiel"]!.AsObject().Remove("_youthOfDayDone");
+        var old = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString())).Game!;
+        old.Continue();
+        Assert.Equal(YouthOf(game), YouthOf(old)); // bis zum nächsten Halt keine weitere Jugendrechnung
+        var fresh = SaveGame.Load(SaveGame.Save(game)).Game!;
+        fresh.Continue();
+        Assert.NotEqual(YouthOf(game), YouthOf(fresh));
+    }
 }

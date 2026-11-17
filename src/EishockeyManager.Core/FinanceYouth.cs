@@ -163,7 +163,7 @@ public sealed partial class GameState
     /// (Stub 0xF8:0x2F), danach erst die Spiele (0xF0:0x3E). Der Zähler DGROUP 0x7A9 (Bundesliga) steht dann auf dem
     /// noch nicht gespielten Spieltag; das Remake bestimmt ihn aus dem Datum, damit ein Nachholen ihn nicht verschiebt.
     /// </summary>
-    private void DailyYouth(int day)
+    internal void DailyYouth(int day)
     {
         var index = SeasonCalendar.DaysOf(DayEvents.League).ToList().IndexOf(day);
         if (index < 0)

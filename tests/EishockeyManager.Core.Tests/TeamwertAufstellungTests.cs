@@ -208,7 +208,11 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         // Runde 22, Spur wettbewerbe-regeln Teil 1 (R15-E2 = C): Saat 20 statt 16 – mit #925/A838 anderer Zufallsverlauf, Saat 16 passiv
         // 186 Schritte; von 16–30 erreichen nur 20, 22, 24, 27, 29 passiv und aktiv mehr als 200. Die Probe hängt an der Saat.
         // Rückschaltprobe: alter Code mit Saat 20 ebenfalls grün.
-        var game = TestGames.Create(20);
+        // Runde 22, Spur wettbewerbe-regeln Teil 2 (R15-E2 = C): Saat 36 statt 20 – Jugend nach den Menüs (A384/A670) und
+        // Ligamischung aus dem gemeinsamen Strom (#897 `SlotSeed`), anderer Zufallsverlauf; von 20–50 erreichen 31, 34, 36, 40, 42, 43
+        // und 48 passiv und aktiv mehr als 200 Schritte, mit altem Code davon nur 36. Die Probe hängt an der Saat. Rückschaltprobe:
+        // alter Code mit Saat 36 ebenfalls grün.
+        var game = TestGames.Create(36);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();

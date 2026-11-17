@@ -261,6 +261,7 @@ public sealed partial class GameState
 
     private void ProcessDayCore(int day, List<SeasonStep> steps)
     {
+        var youthDone = TakeYouthOfDayDone();
         OnDayManager(day);
         CleanLineups();
         CheckDismissed();
@@ -277,10 +278,7 @@ public sealed partial class GameState
             }
             return;
         }
-        // [ORIGINAL] Jugendteams von Tag 0 (Datei 0x55008–0x5502C, 0x39DEC) nach dem ersten Menü vor den Spielen (#699 Punkt 2):
-        // Der Tageswechsel zu Tag 0 vor dem Menü rechnet sie nicht (AdvanceFinance), die übrigen Tage dort ([APPROX]).
-        if (day == 0 && !WorldOnly)
-            DailyYouth(0);
+        YouthAfterMenus(day, youthDone); // Spur wettbewerbe-regeln Teil 2 (A384/A670): nach den Menüs, vor den Spielen
         MarkShortHandedClubs(); // Spur heimspiel-statistik (#165): Wertung 0:2/2:0 vor den Spielen des Tages
         ManagerDayFlag = Options.ManagerDayMinuteLoop && ManagerPlaysOn(day); // Merker vor den ersten Spielen des Tages (R14S-01)
 
@@ -414,7 +412,8 @@ public sealed partial class GameState
         // (Spur saisonwechsel Teil 3, S-K4; StatisticsHistory.cs). Ewige Bilanz und „Früher“ hängen nicht am Austausch.
         RecordSeasonStatistics();
         // [ORIGINAL] Ligamischung am 29. April nach Austausch und Ewiger Tabelle, vor dem Fenster mit den Prämien (Datei 0x5644E vor
-        // 0x5645D; Spur saison Teil 3, S-K6-a, SeasonFlow.LeagueSlots.cs). Verbraucht keinen Zufall.
+        // 0x5645D; Spur saison Teil 3, S-K6-a, SeasonFlow.LeagueSlots.cs). Zieht seit Spur wettbewerbe-regeln Teil 2 (#897, N3 = B)
+        // 3 · 55 · 2 Würfe aus dem gemeinsamen Strom.
         PrepareNextLeagueSlots(record);
 
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –

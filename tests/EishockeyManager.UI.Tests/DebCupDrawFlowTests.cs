@@ -342,6 +342,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Datei 0x376E1–0x377A3), Abwehrreihe 2 nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D) und Sturm der
     // Europapokal-Gegner aus Datenbankbyte 1 (A105/A836, Datei 0x2F004–0x2F009); andere Ergebnisse und Zufallsverlauf, mit und ohne
     // Anzeige weiter gleich. Rückschaltprobe: src/ von ce658d4 + dieser Test → rot (alte Werte).
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C; ändert schon 1993) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`,
+    // N3 = B; Datei 0x5644E; ab 1994); mit und ohne Anzeige weiter gleich. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
     private const string Reference =
-        "1993: DEB 5, DM 1, Tab 15587 | 1994: DEB 19, DM 1, Tab 15500 | 1995: DEB 17, DM 9, Tab 15106 | 1996: DEB 5, DM 9, Tab 15259";
+        "1993: DEB 5, DM 1, Tab 15582 | 1994: DEB 2, DM 1, Tab 16035 | 1995: DEB 7, DM 2, Tab 15831 | 1996: DEB 7, DM 2, Tab 15951";
 }

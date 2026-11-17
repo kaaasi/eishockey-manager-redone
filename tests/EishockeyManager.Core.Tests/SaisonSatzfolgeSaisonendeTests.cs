@@ -95,30 +95,28 @@ public class SaisonSatzfolgeSaisonendeTests
     }
 
     /// <summary>
-    /// Die Bildung am 29. April zieht keinen Zufall (Startwert aus dem Zufallszustand, ohne Zug). #620 (R13GN-03): Der frühere
-    /// Vergleich zweier gleich gesäter Spiele blieb auch mit einer Mischung aus <c>GameState.Random</c> grün. Jetzt wird die
-    /// Bildung am Saisonende noch einmal direkt aufgerufen: Zufallszustand und Folge bleiben gleich.
+    /// Die Bildung am 29. April zieht ihre Tausche aus dem gemeinsamen Strom: genau 3 · 55 · 2 Würfe random(0, 11).
+    /// Runde 22, Spur wettbewerbe-regeln Teil 2 (#897, N3 = B; R15-E2 = C): vorher „zieht keinen Zufall“ (Startwert aus dem
+    /// Stromzustand ohne Zug, <c>SlotSeed</c>). [ORIGINAL] Datei 0x36013/0x3602E: zwei Würfe je Tausch, 55 Tausche je Liga
+    /// (Datei 0x35FD2), aufgerufen am 29. April bei Datei 0x5644E. Rückschaltprobe: alter Code + dieser Test → rot (Zustand
+    /// unverändert).
     /// </summary>
     [Fact]
-    public void Preparing_NextSlots_DoesNotAdvanceGameRandom()
+    public void Preparing_NextSlots_DrawsTheSwapsFromGameRandom()
     {
         var game = Create(seed: 9, 5);
         PlayToSeasonEnd(game);
-        var random = game.Random.Capture();
+        var before = game.Random.Capture();
         var prepare = typeof(GameState).GetMethod("PrepareNextLeagueSlots",
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
-        // Runde 21, Spur zufallsstrom (A533, R21-D2 = A): Nach der Bildung am 29. April zieht der nächste Managerzug seinen Faktor
-        // aus dem gemeinsamen Strom (Datei 0x44E3F, vorher eigene Quelle TurnRandom); der Startwert der Mischung leitet sich aus
-        // dem Stand des Stroms ab, eine erneute Bildung ergibt deshalb eine andere Folge als die vom 29. April. Geprüft wird
-        // unverändert, dass die Bildung nichts zieht: zweimal direkt aufgerufen, gleicher Zufallszustand, gleiche Folge.
-        prepare.Invoke(game, [game.History[^1]]);
-        var slots = Enum.GetValues<League>().ToDictionary(l => l, l => game.NextLeagueSlots(l).ToArray());
-        Assert.All(slots.Values, s => Assert.Equal(GameState.ClubsPerLeague, s.Length));
-        Assert.Equal(random, game.Random.Capture());
-        prepare.Invoke(game, [game.History[^1]]);
-        Assert.Equal(random, game.Random.Capture());
+        var record = game.History[^1];
+        prepare.Invoke(game, [record]);
+        var expected = GameRandom.FromState(before);
+        for (var n = 0; n < 3 * GameState.LeagueSlotSwaps * 2; n++)
+            expected.Next(GameState.ClubsPerLeague);
+        Assert.Equal(expected.Capture(), game.Random.Capture());
         foreach (var league in Enum.GetValues<League>())
-            Assert.Equal(slots[league], game.NextLeagueSlots(league));
+            Assert.Equal(GameState.ClubsPerLeague, game.NextLeagueSlots(league).Count);
     }
 
     /// <summary>

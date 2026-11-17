@@ -309,8 +309,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Datei 0x376E1–0x377A3), Abwehrreihe 2 nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D) und mit der
     // Originaldatenbank der Sturm der Europapokal-Gegner aus Datenbankbyte 1 (A105/A836, Datei 0x2F004–0x2F009); andere Ergebnisse
     // und anderer Zufallsverlauf. Rückschaltprobe: alle drei zurückgeschaltet → alte Werte; src/ von ce658d4 + dieser Test → rot.
-    [InlineData(false, "15876655870FFF8A")]
-    [InlineData(true, "29538729EB6783E9")]
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
+    // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
+    [InlineData(false, "56223B70A0EA53DC")]
+    [InlineData(true, "1C055AF287FB4482")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -400,8 +404,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
     // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Ligamischung am 29. April aus dem gemeinsamen Strom
+    // (#897 `SlotSeed`, N3 = B; Datei 0x5644E, 0x36013/0x3602E); die Jugend (A384/A670) läuft im Modus „nur Weltkugel“ nicht.
+    // Rückschaltprobe: nur die Mischung zurückgeschaltet → Wert von Teil 1.
     private const string WorldOnlyReference =
-        "WorldChampion=54|500000|WorldChampion=63|-1523793|WorldChampion=52|-4542850|WorldChampion=52|-9221265|WorldChampion=52|-16471899|R1456588541";
+        "WorldChampion=54|500000|WorldChampion=52|-1524728|WorldChampion=52|-4548147|WorldChampion=63|-9228109|WorldChampion=54|-16478081|R1697353754";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

@@ -303,10 +303,14 @@ public class RngTwinProbeTests
     // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
     // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
     // Rückschaltprobe: beide zurückgeschaltet → alte Werte (jede allein nicht); src/ von ce658d4 + dieser Test → rot.
-    [InlineData(false, 3, "EC748908824D980A")]
-    [InlineData(true, 3, "853C924DD82024E9")]
-    [InlineData(false, 11, "874622D5CD50643F")]
-    [InlineData(true, 11, "A61688DE6A532AFA")]
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
+    // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
+    [InlineData(false, 3, "A4FAD37FED84F5DE")]
+    [InlineData(true, 3, "D80C71D506C65AD3")]
+    [InlineData(false, 11, "79AEB2DC0E29FDF7")]
+    [InlineData(true, 11, "C71317658185DEA0")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -408,8 +412,12 @@ public class RngTwinProbeTests
     // Datei 0x376E1–0x377A3), Abwehrreihe 2 nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D) und mit der
     // Originaldatenbank der Sturm der Europapokal-Gegner aus Datenbankbyte 1 (A105/A836, Datei 0x2F004–0x2F009); andere Ergebnisse
     // und anderer Zufallsverlauf. Rückschaltprobe: alle drei zurückgeschaltet → alte Werte; src/ von ce658d4 + dieser Test → rot.
-    [InlineData(false, "537EEE14227FC7E8")]
-    [InlineData(true, "C9E4F8E4C3BAC1BE")]
+    // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): neu – Jugendteams nach den Menüs vor den Ligaspielen
+    // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
+    // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
+    // zurückgeschaltet → Werte von Teil 1.
+    [InlineData(false, "FA147A41BDF8CD54")]
+    [InlineData(true, "DF4C53F4E2266076")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
