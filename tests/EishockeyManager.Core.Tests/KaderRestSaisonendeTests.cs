@@ -53,10 +53,12 @@ public class KaderRestSaisonendeTests
     [InlineData(true)]
     public void SeasonEnd_YouthJoinedBeforeWindow_Symbol9PerNewcomer(bool active)
     {
+        // A665 (Spur einzelpunkte): Die Platzverschiebung bei Zwangsabstieg ändert die Folge der Seeds 3 und 7 (Manager pleite, Zwangsabsteiger
+        // schon unter den Plätzen 3/4); die Behauptung „Summe > 0“ hängt von der Zufallsfolge ab, daher mehr Seeds.
         var total = 0;
         // Runde 22, Spur national Teil 1 (A109, A424, A494, A551; R15-E2 = C): Saat 9 dazu – Länderspiele mit Spielvorbereitung 0x8365 und stehendem Einsatz 0x26, Tagesform nach WM-Gruppenterminen, Verletzungen und Belastung im Satz 5 ändern den Zufallsverbrauch ab der ersten WM; mit 3, 5, 7 rückt beim aktiven
         // Lauf keine Jugend nach (Vorbedingung „total > 0“). Die Probe hängt an der Saat; die Regel je Neuzugang bleibt.
-        foreach (var seed in new[] { 3, 5, 7, 9 })
+        foreach (var seed in new[] { 3, 5, 7, 9, 13, 15, 17 })
         {
             var game = TestGames.Create(seed);
             var manager = game.Managers[0];

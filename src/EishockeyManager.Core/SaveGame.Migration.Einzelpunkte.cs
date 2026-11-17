@@ -81,11 +81,14 @@ public static partial class SaveGame
     /// </summary>
     private static JsonObject MigrateInnerMoves(JsonObject root)
     {
-        AddInnerMoves(root);
+        var added = false;
+        AddInnerMoves(root, ref added);
+        if (added)
+            Renumber(root, new Dictionary<int, int>(), [0]); // neue Objektnummern wie in MigrateHokPlayOffMarken
         return root;
     }
 
-    private static void AddInnerMoves(JsonNode? node)
+    private static void AddInnerMoves(JsonNode? node, ref bool added)
     {
         switch (node)
         {
@@ -93,15 +96,16 @@ public static partial class SaveGame
                 if (obj.ContainsKey("FinalTables") && obj.ContainsKey("PromotedInto") && obj.ContainsKey("RelegatedInto")
                     && !obj.ContainsKey("InnerMoves"))
                 {
-                    obj["InnerMoves"] = new JsonArray();
+                    obj["InnerMoves"] = new JsonObject { ["$id"] = NewObjectId, ["items"] = new JsonArray() }; // Liste wie in den übrigen Migrationen
                     SortFields(obj);
+                    added = true;
                 }
                 foreach (var child in obj.Select(kv => kv.Value).ToList())
-                    AddInnerMoves(child);
+                    AddInnerMoves(child, ref added);
                 break;
             case JsonArray array:
                 foreach (var child in array)
-                    AddInnerMoves(child);
+                    AddInnerMoves(child, ref added);
                 break;
         }
     }
