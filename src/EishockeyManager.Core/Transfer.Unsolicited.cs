@@ -145,7 +145,8 @@ public sealed partial class GameState
     /// <summary>
     /// Anklicken eines Spielers mit Angebot im eigenen Kader der Transferliste. [ORIGINAL] Datei 0x46E04–0x46ED2: Höhe nach
     /// <see cref="UnsolicitedOfferRules.AmountThirds"/>, Bit 0x40 und die Meldung werden vor der Antwort gelöscht – das Angebot
-    /// verfällt also auch bei „Behalten“. Liefert null ohne Angebot. Zufall der Verträge (<see cref="ContractRandom"/>).
+    /// verfällt also auch bei „Behalten“. Liefert null ohne Angebot. [ORIGINAL] Spur zufallsstrom, Teil 4 (N3 = B): Wert(Preis) und
+    /// Faktor (Datei 0x46E0E–0x46E84) aus dem gemeinsamen Strom <see cref="Random"/> (vorher ContractRandom).
     /// </summary>
     public UnsolicitedOffer? OpenUnsolicitedOffer(Manager manager, Player player)
     {
@@ -153,9 +154,9 @@ public sealed partial class GameState
         if (player.UnsolicitedOffer is not { } buyer || !club.Players.Contains(player))
             return null;
         player.UnsolicitedOffer = null;
-        var value = PlayerValueOf(player, club, PlayerValueKind.Price, ContractRandom, manager.Level);
+        var value = PlayerValueOf(player, club, PlayerValueKind.Price, Random, manager.Level);
         var amount = UnsolicitedOfferRules.AmountThirds(value, buyer.Index >= UnsolicitedOfferRules.FirstForeignClub,
-            ContractRandom) / 3;
+            Random) / 3;
         return new UnsolicitedOffer(manager, player, buyer, amount);
     }
 

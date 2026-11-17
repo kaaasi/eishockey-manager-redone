@@ -9,7 +9,7 @@ namespace EishockeyManager.Core.Tests;
 /// Spur zufallsstrom, Teil 4 (N3 = B „alle Stellen“): Die übrigen eigenen Zufallsquellen entfallen, die Stellen ziehen aus dem
 /// gemeinsamen Strom <see cref="GameState.Random"/> an der Stelle des Originals. Jede Probe rechnet die Würfe mit einer Kopie des
 /// Stroms nach (Fundstellen in em.exe). Vor Teil 4 rot: gezogen wurde aus <c>CupRandom</c> (Saat aus einem Wurf des Stroms nach
-/// der Spielvorbereitung, ohne Gegenstück).
+/// der Spielvorbereitung, ohne Gegenstück) bzw. <c>ContractRandom</c> (Saat aus Saison und Managern).
 /// </summary>
 public class ZufallsstromTeil4Tests
 {
@@ -200,6 +200,64 @@ public class ZufallsstromTeil4Tests
 
         Assert.NotEmpty(Results(a, kind));
         Assert.NotEqual(Results(a, kind), Results(b, kind));
+    }
+
+    // ---- ContractRandom ----------------------------------------------------------------------------------------------
+
+    private static int R(Random random, int a, int b) => TransferRules.Random16(random, a, b);
+
+    /// <summary>
+    /// Verhandlung „Mach' ich!“ (Datei 0x4AB66): Annahme 0x49A3B (random(85, 115), random(W − 6, W + 4)) und Sperre random(10, 18)
+    /// (Datei 0x4AD3E) ziehen aus dem gemeinsamen Strom; die Quelle der Computerkader bleibt unberührt. Vorher aus
+    /// <c>ContractRandom</c>; der Strom blieb stehen.
+    /// </summary>
+    [Fact]
+    public void Negotiation_AcceptanceAndLock_DrawFromSharedStream()
+    {
+        var (game, _) = Create(3, null, 2);
+        var manager = game.ActiveManager;
+        var club = game.Clubs[manager.ClubIndex];
+        var p = club.Players.First(x => x.Role == Formats.PlayerRole.Forward);
+        p.ContractYears = 2;
+        var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, new Random(0), manager.Level);
+        var offer = Math.Max(1, value / 30); // weit unter dem Wert: 0x49A3B lehnt nach seinen Würfen ab
+        var sim = GameRandom.FromState(game.Random.Capture());
+        var computer = game.ComputerSquadRandom.Capture();
+        var accepted = ContractRules.Accepts(2, p.MonthlySalary * 3, 3, offer * 3, value, game.ContractSeasonRemaining, false, p.Age, sim);
+
+        var result = Contracts.Negotiate(game, manager, p, 3, offer, false, demandFilled: false);
+
+        Assert.False(accepted);
+        Assert.Equal(NegotiationResult.NotInterested, result);
+        Assert.Equal(R(sim, 10, 18), p.NegotiationLock);
+        Assert.Equal(sim.Capture(), game.Random.Capture());
+        Assert.Equal(computer, game.ComputerSquadRandom.Capture());
+    }
+
+    /// <summary>
+    /// Anklicken eines unaufgeforderten Angebots (Datei 0x46E04–0x46ED2): Wert(Preis) und Faktor random(87, 125) bzw.
+    /// random(112, 155) aus dem gemeinsamen Strom. Vorher aus <c>ContractRandom</c>.
+    /// </summary>
+    [Fact]
+    public void UnsolicitedOffer_Amount_DrawsFromSharedStream()
+    {
+        var (game, _) = Create(3, null, 2);
+        var manager = game.ActiveManager;
+        var club = game.Clubs[manager.ClubIndex];
+        var p = club.Players.First(x => x.Role == Formats.PlayerRole.Forward);
+        var buyer = game.Clubs[20];
+        p.UnsolicitedOffer = buyer;
+        var sim = GameRandom.FromState(game.Random.Capture());
+        var computer = game.ComputerSquadRandom.Capture();
+        var value = game.PlayerValueOf(p, club, PlayerValueKind.Price, sim, manager.Level);
+        var expected = UnsolicitedOfferRules.AmountThirds(value, false, sim) / 3;
+
+        var offer = game.OpenUnsolicitedOffer(manager, p);
+
+        Assert.Equal(expected, offer!.Amount);
+        Assert.Equal(sim.Capture(), game.Random.Capture());
+        Assert.NotEqual(GameRandom.FromState(sim.Capture()).Next(), GameRandom.FromState(computer).Next()); // Probe: zwei verschiedene Folgen
+        Assert.Equal(computer, game.ComputerSquadRandom.Capture());
     }
 
     /// <summary>

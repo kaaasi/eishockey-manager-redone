@@ -178,5 +178,5 @@ public class RngTests
     }
 
     private static int[] Draw(GameState game) =>
-        [game.Random.Next(), game.FinanceRandom.Next(), game.ContractRandom.Next(), game.Random.Next()];
+        [game.Random.Next(), game.FinanceRandom.Next(), game.ComputerSquadRandom.Next(), game.Random.Next()];
 }

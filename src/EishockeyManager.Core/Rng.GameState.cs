@@ -9,7 +9,7 @@ public sealed record RngSnapshot(RngState Random, RngState? Finance, RngState? C
 /// <summary>Spielstand – Teil der Spur „speichern“: Sichern und Wiederherstellen der Zufallsquellen.</summary>
 public sealed partial class GameState
 {
-    /// <summary>Kopie des Zustands von <see cref="Random"/>, <see cref="FinanceRandom"/>, und <see cref="ContractRandom"/>. Erzeugt keine noch nicht erzeugte Quelle (zustandsrein).</summary>
+    /// <summary>Kopie des Zustands von <see cref="Random"/>, <see cref="FinanceRandom"/>, und <see cref="ComputerSquadRandom"/>. Erzeugt keine noch nicht erzeugte Quelle (zustandsrein).</summary>
     public RngSnapshot CaptureRng() =>
         new(Random.Capture(), _financeRandom?.Capture(), _contractRandom?.Capture());
 

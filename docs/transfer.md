@@ -49,7 +49,7 @@ Stubeinträge Ov 0x118 (Stub-Segment 0x14C7, Datei 0x16A70): 0x2A → 0x465F1 Tr
 | Wechsel der Liste | 0x494EF (Stub 0x5C) | gerufen beim Saisonstart (0x43A9F) und täglich mit random(0, Managerzahl + 2) = 0 (0x54E71); Ablauf und Umsetzung in Teil 5 (unten) |
 
 Abbildung im Remake: Tageszähler &gt; 232 = Phase `SeasonOver`; [0xE1A4] je Saison und Tag aus eigenem Startwert
-(`GameState.ContractTurnFactor`, `[APPROX]`); Zufall der Verhandlung aus `ContractRandom`; Kaderplatz 3 = vierter Spieler
+(`GameState.ContractTurnFactor`, `[APPROX]`); Zufall der Verhandlung aus dem gemeinsamen Strom `GameState.Random` (Runde 21, Spur `zufallsstrom` Teil 4; vorher `ContractRandom`); Kaderplatz 3 = vierter Spieler
 in `Club.Players` (`[APPROX]`).
 
 ## Belegt und umgesetzt (Spur `transfer-vertraege-komplett`, Teil 1: Kauf und Saisonende)
@@ -171,7 +171,7 @@ Damit ist die offene Frage zum Verhandlungsfenster geklärt: Der hellere „Mach
 kein anderes Argument. Das Remake zeichnet Knöpfe der Verhandlungs- und Angebotsfenster unter gedrückter Maustaste ebenso.
 
 `[APPROX]`: Zufall des Tageswurfs aus einer je Saison und Tag abgeleiteten Quelle (wie `ContractTurnFactor`), Höhe beim Anklicken aus
-`ContractRandom`; „offene Meldung“ = noch nicht angeklicktes Angebot; Rücktritt = Ankündigung `Retiring`. Das Original übergibt
+dem gemeinsamen Strom (Runde 21, Spur `zufallsstrom`: Tageswurf Teil 1, Höhe Teil 4); „offene Meldung“ = noch nicht angeklicktes Angebot; Rücktritt = Ankündigung `Retiring`. Das Original übergibt
 dem Bieter die **Nummer des Kaderplatzes** statt der Poolnummer (0x07A81), misst also die Grundstärken eines fremden
 Pooleintrags; das Remake nimmt die Stärke des Spielers. Vereinsstärke aus Stärke und Teamwerten des Laders (`ClubTeamValues`).
 Ein voller Computerkader, ein Nationalteam oder ein Europapokal-Gegner gibt den Spieler in den Pool der Vertragslosen. Das

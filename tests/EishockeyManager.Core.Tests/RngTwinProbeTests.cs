@@ -446,7 +446,7 @@ public class RngTwinProbeTests
     {
         var sb = Dump(game);
         sb.Append(game.Random.Next()).Append('|').Append(game.FinanceRandom.Next()).Append('|')
-          .Append(game.ContractRandom.Next());
+          .Append(game.ComputerSquadRandom.Next());
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
     }
 

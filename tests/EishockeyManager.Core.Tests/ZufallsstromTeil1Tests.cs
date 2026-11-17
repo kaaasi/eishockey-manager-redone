@@ -42,7 +42,7 @@ public class ZufallsstromTeil1Tests
                 p.Notice = ContractNotice.None;
                 p.UnsolicitedOffer = null;
             }
-        var contract = game.ContractRandom.Capture();
+        var contract = game.ComputerSquadRandom.Capture();
         var sim = Copy(game.Random);
         var rolled = 0;
         foreach (var manager in game.Managers)
@@ -66,7 +66,7 @@ public class ZufallsstromTeil1Tests
             game.AnnounceContractEnds(game.CurrentDay, manager);
             Assert.Equal(sim.Capture(), game.Random.Capture());
         }
-        Assert.Equal(contract, game.ContractRandom.Capture());
+        Assert.Equal(contract, game.ComputerSquadRandom.Capture());
     }
 
     /// <summary>
@@ -202,7 +202,7 @@ public class ZufallsstromTeil1Tests
             && !game.Clubs.Any(c => c.Players.Contains(s.Player)) && !game.TransferMarket.FreeAgents.Contains(s.Player));
         var old = slot.Player;
         old.Age = 50; // über random(37, 42): hört immer auf
-        var contract = game.ContractRandom.Capture();
+        var contract = game.ComputerSquadRandom.Capture();
         var sim = Copy(game.Random);
         R(sim, 37, 42);
         var names = game.Clubs.SelectMany(c => c.Players).Concat(game.TransferMarket.FreeAgents).ToList();
@@ -220,6 +220,6 @@ public class ZufallsstromTeil1Tests
         Assert.NotSame(old, p);
         Assert.Equal((name, age, condition, technique, form, talent), (p.Name, p.Age, p.Condition, p.Technique, p.Form, p.Talent));
         Assert.Equal(sim.Capture(), game.Random.Capture());
-        Assert.Equal(contract, game.ContractRandom.Capture());
+        Assert.Equal(contract, game.ComputerSquadRandom.Capture());
     }
 }

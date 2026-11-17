@@ -136,7 +136,7 @@ public sealed partial class GameState
     {
         var club = Clubs[manager.ClubIndex];
         // [ORIGINAL] 0x27DE3–0x27E1C: Wert(Preis) / 2 in Drittel-DM aufs Konto (Anzeige / 3).
-        var value = PlayerValueOf(p, club, PlayerValueKind.Price, ContractRandom, manager.Level);
+        var value = PlayerValueOf(p, club, PlayerValueKind.Price, Random, manager.Level); // Spur zufallsstrom Teil 4 (N3 = B): gemeinsamer Strom
         var compensation = RenewalCompensation(value);
         if (compensation > 0)
             Book(manager, FinanceCategory.Transfers, compensation);

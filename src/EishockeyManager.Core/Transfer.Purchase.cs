@@ -47,7 +47,7 @@ public sealed partial class TransferMarket
             purchase.Salary, years, salary, demandFilled);
         if (result != NegotiationResult.Accepted)
         {
-            _ = ContractRules.LockDays(game.ContractRandom);
+            _ = ContractRules.LockDays(game.Random); // Spur zufallsstrom Teil 4: Wurf Datei 0x4AD3E aus dem gemeinsamen Strom
             return result;
         }
         subsidy = Complete(game, listing, manager, purchase.Offer, loan: false);

@@ -114,9 +114,15 @@ public sealed partial class GameState
     public List<Player> RetiredPlayers { get; } = [];
 
     /// <summary>
-    /// Eigene Zufallsquelle des Kaderlebenszyklus, damit Spielergebnisse, Markt und Finanzen ihre Folgen behalten.
+    /// Eigene Zufallsquelle der Computerkader zum Saisonwechsel (Laufbahnende, Verlängern, Auffüllen, Vertragslose). Spur
+    /// zufallsstrom, Teil 4 (N3 = B): Die frühere Quelle <c>ContractRandom</c> ist für alle Stellen mit Gegenstück im Original
+    /// entfernt – Verhandlung (Datei 0x49A3B, 0x4AD3E), unaufgefordertes Angebot (Datei 0x46E0E) und Ablöse am Saisonende (Datei
+    /// 0x27DE3) ziehen aus <see cref="Random"/>. [APPROX] Die Kader der Computervereine haben im Original kein Gegenstück (dort
+    /// gibt es nur Teamwerte und den Spielerpool); ihre Würfe bleiben deshalb außerhalb des gemeinsamen Stroms, damit er nur Würfe
+    /// des Originals trägt (Leitstelle 17.11.2026, wie <see cref="SquadSetup.ComputerSquadSource"/>). Das Feld behält seinen Namen
+    /// (kein Wechsel im Spielstand).
     /// </summary>
-    public GameRandom ContractRandom
+    internal GameRandom ComputerSquadRandom
     {
         get => _contractRandom ??= new GameRandom(unchecked(Season * 104_729 + Managers.Sum(m => m.ClubIndex * 37 + m.Head) + 5));
         init => _contractRandom = value;
@@ -219,7 +225,7 @@ public sealed partial class GameState
     /// <summary>Saisonwechsel, Computerverein: Laufbahnende bei Alter &gt; random(37, 42) mit Nachfolger (U5), sonst auslaufende Verträge verlängern oder freigeben.</summary>
     private void ComputerContractDecision(Club owner, Club current, Player p)
     {
-        if (SquadRules.CareerEnds(p.Age, ContractRandom))
+        if (SquadRules.CareerEnds(p.Age, ComputerSquadRandom))
         {
             current.RemovePlayer(p);
             Retire(owner, p);
@@ -227,18 +233,18 @@ public sealed partial class GameState
             if (owner.Players.Count < PlayerFactory.MaxNumber)
             {
                 var names = Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents).ToList();
-                var successor = PlayerFactory.CreateRenewal(this, PlayerFactory.TalentName(names, ContractRandom), p.Role,
-                    ContractRandom);
-                PlayerFactory.Join(owner, successor, SquadSetup.Between(ContractRandom, SquadRules.ComputerMinYears,
+                var successor = PlayerFactory.CreateRenewal(this, PlayerFactory.TalentName(names, ComputerSquadRandom), p.Role,
+                    ComputerSquadRandom);
+                PlayerFactory.Join(owner, successor, SquadSetup.Between(ComputerSquadRandom, SquadRules.ComputerMinYears,
                     SquadRules.ComputerMaxYears), loan: false, managerSquad: false);
             }
             return;
         }
         if (p.ContractYears > 0)
             return;
-        if (ContractRandom.NextDouble() < SquadRules.ComputerExtendChance)
+        if (ComputerSquadRandom.NextDouble() < SquadRules.ComputerExtendChance)
         {
-            p.ContractYears = SquadSetup.Between(ContractRandom, SquadRules.ComputerMinYears, SquadRules.ComputerMaxYears);
+            p.ContractYears = SquadSetup.Between(ComputerSquadRandom, SquadRules.ComputerMinYears, SquadRules.ComputerMaxYears);
             p.MonthlySalary = Contracts.Demand(p);
         }
     }
@@ -252,7 +258,7 @@ public sealed partial class GameState
         var order = before.Keys.OrderBy(c => c.Index).ToList();
         for (var i = order.Count - 1; i > 0; i--)
         {
-            var j = ContractRandom.Next(i + 1);
+            var j = ComputerSquadRandom.Next(i + 1);
             (order[i], order[j]) = (order[j], order[i]);
         }
         var names = Clubs.SelectMany(c => c.Players).Concat(TransferMarket.FreeAgents).ToList();
@@ -277,15 +283,15 @@ public sealed partial class GameState
                 .Where(p => p.Role == role && p.Age <= SquadRules.FreeAgentMaxAge)
                 .OrderBy(p => Math.Abs(p.Strength - level)).ThenBy(p => p.Name, StringComparer.Ordinal)
                 .Take(3).ToList();
-            var years = SquadSetup.Between(ContractRandom, SquadRules.ComputerMinYears, SquadRules.ComputerMaxYears);
-            if (candidates.Count > 0 && ContractRandom.NextDouble() < SquadRules.FreeAgentShare)
+            var years = SquadSetup.Between(ComputerSquadRandom, SquadRules.ComputerMinYears, SquadRules.ComputerMaxYears);
+            if (candidates.Count > 0 && ComputerSquadRandom.NextDouble() < SquadRules.FreeAgentShare)
             {
-                var p = candidates[ContractRandom.Next(candidates.Count)];
+                var p = candidates[ComputerSquadRandom.Next(candidates.Count)];
                 TransferMarket.Sign(p);
                 PlayerFactory.Join(club, p, years, loan: false, managerSquad: false);
                 return;
             }
-            var talent = PlayerFactory.CreateTalent(this, PlayerFactory.TalentName(names, ContractRandom), role, club.Strength, ContractRandom);
+            var talent = PlayerFactory.CreateTalent(this, PlayerFactory.TalentName(names, ComputerSquadRandom), role, club.Strength, ComputerSquadRandom);
             PlayerFactory.Join(club, talent, Math.Max(2, years), loan: false, managerSquad: false);
             names.Add(talent);
         }
@@ -299,7 +305,7 @@ public sealed partial class GameState
             p.Age++;
             p.NegotiationLock = 0;
             p.Notice = ContractNotice.None;
-            if (SquadRules.CareerEnds(p.Age, ContractRandom))
+            if (SquadRules.CareerEnds(p.Age, ComputerSquadRandom))
             {
                 TransferMarket.Sign(p);
                 Retire(null, p);

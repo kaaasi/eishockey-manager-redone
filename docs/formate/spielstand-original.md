@@ -489,7 +489,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState.StatisticsRecordedSeason` | A | `03BD` | Saison − 1 (Statistik der laufenden Saison noch offen) |
 | `GameState.TrainedUntil` | A | `03B7`, `03BD` | (Saison, `CurrentDay`) |
 | `GameState.TransferMarket` | B | `5DC3` Satz 4, `far:8253` | Zeilen `TransferMarket` |
-| `GameState._contractRandom` | N | – | null (wird bei Bedarf aus `Random` gebildet) |
+| `GameState._contractRandom` | N | – | null (Quelle der Computerkader `ComputerSquadRandom`, wird bei Bedarf gebildet) |
 | `GameState._contractTurnFactor` | N | – | 0 = im Zug neu ziehen |
 | `GameState._eternal` | U | `AB7B`? | Ewige Tabelle: Ort nicht belegt; leer |
 | `GameState._financeRandom` | N | – | null |

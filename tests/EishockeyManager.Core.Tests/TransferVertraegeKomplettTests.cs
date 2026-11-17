@@ -56,9 +56,9 @@ public class TransferVertraegeKomplettTests
         var (game, manager, club, listing) = Market();
         var p = listing.Player;
         game.TransferMarket.Bid(game, manager, listing, listing.Price * 2, loan: false, out var purchase);
-        var contractRandom = game.ContractRandom.Capture();
+        var stream = game.Random.Capture(); // Spur zufallsstrom Teil 4: der Wurf Datei 0x4AD3E kommt aus dem gemeinsamen Strom
         Assert.Equal(NegotiationResult.TooLong, game.TransferMarket.Sign(game, purchase!, 5, 0, false, false));
-        Assert.NotEqual(contractRandom, game.ContractRandom.Capture());
+        Assert.NotEqual(stream, game.Random.Capture());
         Assert.DoesNotContain(p, club.Players);
         Assert.Contains(listing, game.TransferMarket.Listings);
         Assert.Equal(10_000_000, manager.Money);

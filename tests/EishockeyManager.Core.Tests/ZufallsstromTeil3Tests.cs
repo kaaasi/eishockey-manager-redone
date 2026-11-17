@@ -42,7 +42,7 @@ public class ZufallsstromTeil3Tests
         Assert.Equal(3, locked.Count);
         foreach (var listing in locked)
             listing.RejectedBy = 0x81;
-        var contract = game.ContractRandom.Capture();
+        var contract = game.ComputerSquadRandom.Capture();
         var sim = Copy(game.Random);
         var expected = locked.Select(_ => TransferRules.Random16(sim, 0, 2) == 0 ? 0x80 : 0x81).ToList();
 
@@ -56,7 +56,7 @@ public class ZufallsstromTeil3Tests
         for (var run = 0; run < 40; run++)
             game.AnnounceContractEnds(day, manager);
         Assert.All(locked, l => Assert.Equal(0x81, l.RejectedBy));
-        Assert.Equal(contract, game.ContractRandom.Capture());
+        Assert.Equal(contract, game.ComputerSquadRandom.Capture());
     }
 
     /// <summary>

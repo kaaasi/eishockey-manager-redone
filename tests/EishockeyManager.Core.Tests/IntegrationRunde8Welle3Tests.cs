@@ -126,7 +126,7 @@ public class IntegrationRunde8Welle3Tests
         var q = players[1];
         q.ContractYears = 3;
         var demandQ = Contracts.DemandAfterYears(game, manager, q, 2)!.Value;
-        var twin = GameRandom.FromState(game.ContractRandom.Capture());
+        var twin = GameRandom.FromState(game.Random.Capture());
         Assert.Equal(NegotiationResult.NotInterested, Contracts.Negotiate(game, manager, q, 2, demandQ - 1, false, demandFilled: false));
         Assert.Equal(SquadSetup.Between(twin, 10, 18), q.NegotiationLock); // nur der Zug der Sperre (0x4AD3E)
     }
