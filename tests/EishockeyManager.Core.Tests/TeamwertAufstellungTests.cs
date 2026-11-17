@@ -20,7 +20,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     /// Gegner wie im Original. Sie hängt nur an den Stärken 0x368B1 vor dem Spiel (ohne Zufall): ausgeglichen bei
     /// |Differenz der doppelten Stärken| &lt; 25, Angriffszeile nach Favorit. Vorher verglich das Remake die Stärke aus den
     /// Spielern auf dem Eis (z. B. FILE31: KAUFBEUREN Angriff 5 6 4 4 0 statt 4 5 6 7 4, LANDSHUT Grundwert 60 statt 40).
-    /// FILE50 → FILE61/66/67 sind drei DOSBox-Läufe desselben Spieltags, FILE72 → FILE73 hat zwei Managervereine.
+    /// FILE50 → FILE61/66/67 sind drei DOSBox-Läufe desselben Spieltags, FILE72 → FILE73 hat zwei Managervereine. FILE73 entstand
+    /// ohne erneutes Laden (Tausch bleibt, 0x375/0x376 = 0/0); der Import von FILE72 bildet das Laden nach (Automatik, Tausch
+    /// verworfen, #908, <c>ZusehenRestAufstellungTests</c>). Die Zeile der Automatik hängt nicht am Tausch.
     /// </summary>
     [GameDataTheory]
     [InlineData("FILE30", "FILE31", 1)]
@@ -143,7 +145,7 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     /// <summary>
     /// A544 (rot vor dem Fix: Datenbankstärke + 2 · Veränderung der eigenen Bewertung): Der Teamwert eines Managervereins ist das
     /// Mittel seiner Vereinsfelder Kondition/Technik – geschrieben von 0x952C aus der Aufstellung an Tagen mit Ereignis (Datei
-    /// 0x54DAA/0x54FBF), nicht bei jeder Umstellung.
+    /// 0x54DAA/0x54FBF) und beim Verlassen der Aufstellung (A858), nicht bei jeder Umstellung im Kern.
     /// </summary>
     [Fact]
     public void A544_TeamValue_ManagerClub_IsMeanOfLineupFields()
@@ -158,8 +160,8 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
 
         foreach (var player in club.Lineup.Players.OrderByDescending(p => p.Technique + p.Condition).Take(8).ToList())
             club.Lineup.Remove(player);
-        // Felder bis zum nächsten Schreiben unverändert. [APPROX] Das Original schreibt sie auch beim Verlassen der Aufstellung (Datei
-        // 0x41506–0x4151A), das Remake nicht (nur Bundestrainer); Ursache und Runde 22: Issue #908 (Review #906 P3-1).
+        // Felder bis zum nächsten Schreiben unverändert: ohne Bildschirm kein Verlassen der Aufstellung (Datei 0x41513–0x4151A,
+        // GameState.OnLineupLeft, A858; ZusehenRestAufstellungTests). Vor jedem Spiel schreibt der Tageslauf neu (Datei 0x54FBF).
         Assert.Equal(expected, MatchEngine.TeamValue(game, club));
         game.UpdateManagerTeamValues();
         var (d, a, _) = MatchEngine.ClubLineupTeamValues(club);

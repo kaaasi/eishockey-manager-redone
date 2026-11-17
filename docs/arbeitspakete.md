@@ -99,7 +99,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
   (Aufruf in `LineupScreen.cs`, Kern in `GameState.DailyRun.cs`); der Bundestrainerfall (`OnNationalLineupLeft`) bleibt unberührt.
 - **Dateien:** `Core/GameState.Watch.cs`, `Core/MatchEngine.Scoreboard.cs`, `Core/Squad.Strength.cs`, `UI/Screens/Team/LineupScreen.cs`,
   `Core/GameState.DailyRun.cs` (nur A858), Stellen oben, Tests.
-  **Erstreview:** Opus 5.5. **Status:** PR #922 (Draft), Teile 1–2 fertig, Teil 3 offen.
+  **Erstreview:** Opus 5.5. **Status:** PR #922, Teile 1–3 fertig (Teil 3: A858 umgesetzt; #908-Import bleibt – FILE73 ohne Laden entstanden, Beleg im PR), Review offen.
 
 ### Spur `hok-play-off-marken` – Marken der Play-off-Spiele (Welle 1, R21-E2 = A)
 

@@ -275,6 +275,10 @@ public sealed partial class GameState
         // aufstellt (Datei 0x54D84–0x54D9E). Ein Umschalten im gesicherten Zug (0x375 ≠ 0x376: FILE06, FILE24, FILE32) ist damit
         // verworfen (FILE24 → FILE25, FILE47 „beim erneuten Laden wieder eingesetzt“). [APPROX] Lädt der Stand an einem Tag ohne
         // Ereignis mit Menü (0x54EA0, [bp-0x1A]), zeigt das Original bis zum nächsten Ereignistag noch 0x375; nicht nachgebildet.
+        // #908 (Spur zusehen-rest Teil 3): Der Import bildet das Laden nach, nicht das Weiterspielen in derselben Sitzung. FILE72
+        // (Manager 1: 0x375/0x376 = 0/1, Reihentausch) → FILE73 (0/0, Tausch bleibt) ist ohne Laden entstanden: Nach einem Laden
+        // holte der Schleifenkopf 0x376 = 1 zurück und stellte neu auf (Datei 0x54D84–0x54D9E), der Spieltag sicherte dann 0x376 = 1
+        // (Datei 0x54FDC). Beleg ZusehenRestAufstellungTests.
         club.AutoLineupEnabled = save.Block("0375")[2 * m + 1] != 0;
     }
 
