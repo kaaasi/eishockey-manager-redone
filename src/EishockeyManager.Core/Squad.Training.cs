@@ -333,8 +333,8 @@ public static class TrainingRules
             changes[effect] = Round((int)(acc[effect] * 100 / Norm[effect, group]), false, random);
         }
 
-        p.Condition = Player.Clamp(p.Condition + changes[0]);
-        p.Technique = Player.Clamp(p.Technique + changes[1]);
+        // Review #927 R923-01: nur der Kaderplatz (+0x10/+0x11), der Poolsatz bleibt (Player.SetSlotStrengths).
+        p.SetSlotStrengths(Player.Clamp(p.Condition + changes[0]), Player.Clamp(p.Technique + changes[1]));
         if (group != 0)
         {
             p.HiddenSkill1 = Math.Clamp(p.HiddenSkill1 + changes[2], 0, 15);

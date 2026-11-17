@@ -302,8 +302,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    // Runde 22, Spur kaderplatz-werte Fixlauf (Review #927 R923-01; R21-D2 = A, R15-E2 = C): neu (nur aktiv) – das Training schreibt
+    // nur den Kaderplatz, der Poolwert (+0x15/+0x16) folgt ihm nicht mehr (Player.SetSlotStrengths); Drift am Saisonwechsel und
+    // Abgabe an Computervereine (Join → AdoptPoolValues) starten von anderen Werten. Rückschaltprobe: src/ von c3ea6c2 → alte Werte.
     [InlineData(false, "2EA53A1F1C98A9D3")]
-    [InlineData(true, "42A789990CC93BB3")]
+    [InlineData(true, "1FA484C83034BA37")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -76,6 +76,7 @@ public sealed partial class Player
 {
     /// <summary>
     /// Kondition im Poolsatz (Pool +0x15), wenn sie von der des Kaderplatzes (+0x10, <see cref="Condition"/>) abweicht; sonst null.
+    /// Wer den Kaderplatz eines Spielers mit Kaderplatz ändert, schreibt über <see cref="SetSlotStrengths"/> (hält den Poolwert fest).
     /// [ORIGINAL] Die Drift 0x054D9 ändert den Poolsatz jedes Platzes 1 … 199, auch von Spielern mit Kaderplatz (Datei 0x0564C–0x05712,
     /// A714); der Kaderplatz übernimmt den Poolwert erst, wenn er neu angelegt wird (0x42EC9). Spieler ohne Kaderplatz (Computervereine,
     /// freie Poolplätze) tragen den Poolwert direkt in <see cref="Condition"/>.
@@ -111,6 +112,21 @@ public sealed partial class Player
         }
         PoolCondition = condition == Condition ? null : condition;
         PoolTechnique = technique == Technique ? null : technique;
+    }
+
+    /// <summary>
+    /// Schreibt Kondition und Technik in den Kaderplatz (+0x10/+0x11); der Poolsatz (+0x15/+0x16) bleibt. [ORIGINAL] Das Training
+    /// (Funktion Datei 0x659C, <see cref="TrainingRules.Apply"/>) ändert nur den Kaderplatz: zwischen zwei Ständen derselben Saison
+    /// ändert sich Pool +0x15/+0x16 nie, auch nicht bei vorher gleichen Werten (FILE50→FILE63, FILE02→FILE03, FILE71→FILE74;
+    /// Review #927 R923-01). War der Poolwert gleich dem Kaderplatz (null), wird er vor dem Schreiben festgehalten.
+    /// </summary>
+    public void SetSlotStrengths(int condition, int technique)
+    {
+        if (condition != Condition)
+            PoolCondition ??= Condition;
+        if (technique != Technique)
+            PoolTechnique ??= Technique;
+        (Condition, Technique) = (condition, technique);
     }
 
     /// <summary>
