@@ -43,6 +43,15 @@ public sealed class LiveSession : ILiveMatchDriver
     private readonly List<LiveMatch> _shown = [];
     private (int Day, MatchCompetition Competition)? _shownKey;
 
+    /// <summary>
+    /// Tormeldungen der Paarungen ohne Reihe (A832, <see cref="LiveScoreboard.Notices"/>), die seit dem vorigen Halt desselben
+    /// Ablaufs gerechnet wurden; der Live-Bildschirm zeigt sie in ihrer Minute (<see cref="LiveGoalNotice"/>).
+    /// </summary>
+    public IReadOnlyList<GoalNotice> PendingNotices { get; private set; } = [];
+
+    private LiveScoreboard? _noticeBoard;
+    private int _noticesTaken;
+
     /// <summary>Spieltage (<see cref="GameState.Day"/>) und Wettbewerbe, in denen eine Paarung live lief.</summary>
     public HashSet<(int Day, MatchCompetition Competition)> LiveDays { get; } = [];
 
@@ -97,6 +106,12 @@ public sealed class LiveSession : ILiveMatchDriver
             _shown.Clear();
         _shownKey = key;
         _shown.Add(day.Matches[0]);
+        var board = _game.LiveScoreboard;
+        if (!ReferenceEquals(board, _noticeBoard))
+            _noticesTaken = 0;
+        _noticeBoard = board;
+        PendingNotices = board is null ? [] : [.. board.Notices.Skip(_noticesTaken)];
+        _noticesTaken = board?.Notices.Count ?? 0;
         _toUi.Release();
         while (true)
         {

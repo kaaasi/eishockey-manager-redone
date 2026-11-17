@@ -118,6 +118,19 @@ public static partial class OriginalMinutes
     }
 
     /// <summary>
+    /// Tormeldung nach einem Tor einer Paarung ohne Reihe (Spur zusehen-rest, A832; Ziel <see cref="MatchEngine.NoticeTarget"/>).
+    /// [ORIGINAL] Datei 0xABF8–0xAC10: Spielstand aus dem Ergebnisbyte vor dem Tor, die Seite des Schützen + 1, das Heimbyte
+    /// ohne die Marke 30 (<c>sub 0x1E</c> solange &gt; 0x1D); der Bericht des Remakes zählt das Tor schon und führt keine
+    /// Marke, das ist derselbe Stand. Nicht nach dem Abbruch in der Verlängerung (0xA642–0xA650 kehrt vorher zurück).
+    /// </summary>
+    internal static void GoalNotice(int minute, int homeGoals, int awayGoals)
+    {
+        if (Display is not { Notice: { } target })
+            return;
+        target.Board.AddNotice(new GoalNotice(minute, target.HomeClub, target.AwayClub, homeGoals, awayGoals));
+    }
+
+    /// <summary>
     /// Strafgrund des Reporters nach einer Strafe mit Spieler (Datei 0x35C1C–0x35C73 → 0x52520): Managerpaarung, Live-Anzeige
     /// am Spieltag, Geschwindigkeit unter 70; 2 Minuten ziehen random(0, 12).
     /// </summary>

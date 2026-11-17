@@ -157,6 +157,8 @@ public sealed class LiveMatchScreen : Screen
             foreach (var message in Messages(day.Matches[0], minute))
                 foreach (var f in message)
                     yield return f;
+            foreach (var f in Notices(minute)) // Spur zusehen-rest, A832 (LiveGoalNotice.cs)
+                yield return f;
             yield return true; // [ORIGINAL] 0x3854A: Anzeigetafel am Minutenende
             if (minute is 60 or 70 && _clock.WaitsForClick(minute, display: true))
             {
@@ -357,6 +359,22 @@ public sealed class LiveMatchScreen : Screen
         }
     }
 
+    private readonly LiveGoalNotice _notice = new();
+
+    /// <summary>Laufende Tormeldung (A832).</summary>
+    public LiveGoalNotice GoalNotice => _notice;
+
+    /// <summary>Tormeldungen der Minute aus <see cref="LiveSession.PendingNotices"/> (A832, <see cref="LiveGoalNotice"/>).</summary>
+    private IEnumerable<bool> Notices(int minute)
+    {
+        foreach (var notice in _session.PendingNotices.Where(n => n.Minute == minute))
+        {
+            foreach (var f in _notice.Show(notice))
+                yield return f;
+            _reporter.ClearLines();
+        }
+    }
+
     private string ClubName(LiveMatch match, int side) => (side == 0 ? match.Home : match.Away).Name;
 
     public override void Draw(Surface s)
@@ -367,6 +385,7 @@ public sealed class LiveMatchScreen : Screen
             DrawBoard(s, Assets, _session.Shown[p], p, MinuteOf(_session.Shown[p]));
         LiveWidgets.Clock(s, Assets, 0, DisplayMinute);
         DrawReporter(s, Assets, _reporter);
+        _notice.Draw(s, Assets, Game);
     }
 
     private int MinuteOf(LiveMatch match) => match.Running ? DisplayMinute : match.LastMinute;

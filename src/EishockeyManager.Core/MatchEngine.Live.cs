@@ -69,7 +69,8 @@ public static partial class MatchEngine
         var match = BeginMatch(game, home, away, competition, knockOut, random);
         if (match.Report is null)
             FinishMinuteLoop(match, PlayWithScoreboard(match.Row,
-                () => OriginalMinutes.Play(match.HomeTeam, match.AwayTeam, match.Rules, random), game.Options, match.DayActive));
+                () => OriginalMinutes.Play(match.HomeTeam, match.AwayTeam, match.Rules, random), game.Options, match.DayActive,
+                NoticeTarget(match))); // A832: Tormeldung der Paarungen ohne Reihe (MatchEngine.Scoreboard.cs)
         return EndMatch(match);
     }
 

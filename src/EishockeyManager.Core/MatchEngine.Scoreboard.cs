@@ -5,6 +5,11 @@ namespace EishockeyManager.Core;
 /// <summary>Eine Torchance einer Anzeigereihe: Minute (1 … 70), Seite (0 Heim, 1 Gast), Tor oder vergeben.</summary>
 public readonly record struct ScoreboardChance(int Minute, int Side, bool Goal);
 
+/// <summary>
+/// Tormeldung einer Paarung ohne Anzeigereihe (Spur zusehen-rest, A832): Minute, Vereine und Spielstand nach dem Tor.
+/// </summary>
+public readonly record struct GoalNotice(int Minute, int HomeClub, int AwayClub, int HomeGoals, int AwayGoals);
+
 /// <summary>Eine Strafe einer Anzeigereihe: Minute, Seite und Minuten (2 oder 5).</summary>
 public readonly record struct ScoreboardPenalty(int Minute, int Side, int Minutes);
 
@@ -134,6 +139,7 @@ public sealed class LiveScoreboard
     public const int MaxRows = 4;
 
     private readonly List<LiveScoreboardRow> rows = [];
+    private readonly List<GoalNotice> notices = [];
 
     internal LiveScoreboard(int season, int day, MatchCompetition competition)
     {
@@ -154,6 +160,14 @@ public sealed class LiveScoreboard
 
     /// <summary>Reihe eines Vereins (Heim oder Gast) oder null.</summary>
     public LiveScoreboardRow? RowOf(int club) => rows.FirstOrDefault(r => r.HomeClub == club || r.AwayClub == club);
+
+    /// <summary>
+    /// Tormeldungen der markierten Paarungen ohne Reihe in der Reihenfolge der Tore (Spur zusehen-rest, A832; siehe
+    /// <see cref="MatchEngine.NoticeTarget"/>); gelten nur mit <see cref="Active"/>. Darstellungszustand wie die Reihen.
+    /// </summary>
+    public IReadOnlyList<GoalNotice> Notices => notices;
+
+    internal void AddNotice(GoalNotice notice) => notices.Add(notice);
 
     internal bool Matches(int season, int day, MatchCompetition competition, int home, int away) =>
         Season == season && Day == day && Competition == competition && RowOf(home) is null && RowOf(away) is null;
@@ -194,10 +208,10 @@ public static partial class MatchEngine
     /// (<c>MatchEngine.GoalScene.cs</c>), am Ende Strafminuten übernehmen.
     /// </summary>
     internal static MatchReport PlayWithScoreboard(LiveScoreboardRow? row, Func<MatchReport> play, GameOptions? options = null,
-        bool dayActive = false)
+        bool dayActive = false, GoalNoticeTarget? notice = null)
     {
         var previous = OriginalMinutes.Display;
-        OriginalMinutes.Display = new LiveDisplay(row, dayActive || row is not null, options);
+        OriginalMinutes.Display = new LiveDisplay(row, dayActive || row is not null, options, notice);
         try
         {
             var report = play();
@@ -212,10 +226,36 @@ public static partial class MatchEngine
 }
 
 /// <summary>
-/// Anzeigezustand der laufenden Paarung für den Spielkern: Reihe (oder null), Live-Anzeige am Spieltag (DGROUP 0x5A56) und
-/// die Optionen (Geschwindigkeit DGROUP 0x262, Darstellung 0x226).
+/// Anzeigezustand der laufenden Paarung für den Spielkern: Reihe (oder null), Live-Anzeige am Spieltag (DGROUP 0x5A56),
+/// die Optionen (Geschwindigkeit DGROUP 0x262, Darstellung 0x226) und das Ziel der Tormeldung (A832, sonst null).
 /// </summary>
-internal sealed record LiveDisplay(LiveScoreboardRow? Row, bool DayActive, GameOptions? Options);
+internal sealed record LiveDisplay(LiveScoreboardRow? Row, bool DayActive, GameOptions? Options,
+    GoalNoticeTarget? Notice = null);
+
+/// <summary>Reihenliste und Vereine, für die eine Paarung ohne Reihe ihre Tore meldet (A832).</summary>
+internal sealed record GoalNoticeTarget(LiveScoreboard Board, int HomeClub, int AwayClub);
+
+public static partial class MatchEngine
+{
+    /// <summary>
+    /// Ziel der Tormeldung einer Paarung (Spur zusehen-rest, A832). [ORIGINAL] Abschluss 0xA484, Datei 0xAB47–0xABF5: Steht die
+    /// Paarung nicht in der Reihenliste (Byte [bp−9] = 0x1E), meldet sie ein Tor nur, wenn an diesem Spieltag die Live-Anzeige
+    /// läuft (DGROUP 0x5A56 ≠ 0, Datei 0xABB4) und Heim- oder Gastverein zum Zusehen markiert ist (Vereinsfeld 0x34
+    /// <c>test 0xC0</c>, Modus ≠ 0, Datei 0xABD7/0xABEE). 0x5A56 setzt die Spielabrechnung 0x544C0, die für alle Paarungen vor
+    /// der Minutenschleife läuft (Datei 0x54C63–0x54C94): Es gilt also für den ganzen Ablauf, sobald eine Paarung eine Reihe hat.
+    /// [APPROX] Das Remake rechnet die Paarungen nacheinander (<c>MatchEngine.LiveDriver.cs</c>) und weiß bei früheren Paarungen
+    /// noch nicht, ob eine Reihe folgt: Es legt die Meldung für jede markierte Paarung ohne Reihe in der Reihenliste des Ablaufs
+    /// ab; angezeigt wird sie nur mit Live-Bildschirm, also nur mit Reihe (<see cref="LiveScoreboard.Active"/>). Die Markierung
+    /// gilt zu Beginn der Paarung.
+    /// </summary>
+    internal static GoalNoticeTarget? NoticeTarget(MatchSetup match)
+    {
+        if (match.Row is not null || (match.Home.WatchMode == 0 && match.Away.WatchMode == 0)
+            || CurrentScoreboard(match.Game) is not { } board)
+            return null;
+        return new GoalNoticeTarget(board, match.Home.Index, match.Away.Index);
+    }
+}
 
 public static partial class OriginalMinutes
 {

@@ -560,6 +560,9 @@ public static partial class OriginalMinutes
         // Spur livespiel-kern (A1/A4): [ORIGINAL] Torszene 0x53C57 bei Paarung mit Anzeigereihe (Datei 0xAB47–0xAB90).
         if (!aborted)
             GoalScene(minute, side, goal, shooter, random);
+        // Spur zusehen-rest (A832): [ORIGINAL] Tormeldung der Paarung ohne Reihe (Datei 0xAB47–0xAB4B → 0xABB4).
+        if (!aborted && goal)
+            GoalNotice(minute, report.HomeGoals, report.AwayGoals);
         // [ORIGINAL] 0xAB47–0xAB90: in der Managerpaarung nach jedem Abschluss Szene/Torschütze 0x541D9 (ScoringPlayers).
         var players = rules.ManagerMatch && !aborted ? ScoringPlayers(shooter, goal, random) : null;
         if (!goal)
