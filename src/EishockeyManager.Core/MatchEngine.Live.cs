@@ -424,7 +424,7 @@ public static partial class MatchEngine
     /// <item>Vereine ohne Manager: [ORIGINAL] 0x5028 aus dem Endstand (Tore, Vorlagen, Spiele), in der Liga Torhüter
     ///   0x4DB6 (<see cref="MatchStatistics"/>); keine Strafen je Spieler. Gilt auch für eine Spielwertung 0:2 (das
     ///   Original wertet das gespeicherte Ergebnis).</item>
-    /// <item>Managervereine: Spiele + 1 für die Aufstellung; Torhüter der Aufstellung bekommt die Gegentore
+    /// <item>Managervereine: Spiele + 1 für die Aufstellung; Torhüter der Aufstellung bekommt die Gegentore (nur Liga, #897)
     ///   ([ORIGINAL] 0xA3F7: Torhüter auf dem Eis) und die Spielminuten 60/70 ([ORIGINAL] 0x874D zählt je Minute).
     ///   [ORIGINAL] Torschütze und Vorlage aus 0x541D9/0x386D1 im Spiel (<see cref="OriginalMinutes.ScoringPlayers"/>,
     ///   Teil 3); die Strafe bekommt der Spieler aus 0x378C5 (Managerverein und Nationalteam des Bundestrainers).
@@ -449,7 +449,7 @@ public static partial class MatchEngine
                 return;
             var national = coach.Lineup();
             // R8W3I-06: Die Strafe zählt beim Spieler aus 0x378C5 (wie beim Managerverein), kein eigener Zufallszug mehr.
-            CreditLineup(national.Players.ToList(), national.Goalkeeper, against, side, report);
+            CreditLineup(national.Players.ToList(), national.Goalkeeper, against, side, report, league: false);
             return;
         }
         if (club.Index >= FirstForeignClub || club.Players.Count == 0)
@@ -466,20 +466,24 @@ public static partial class MatchEngine
         // [ORIGINAL] Spielabrechnung 0x544C0, Kaderplatzschleife ab Datei 0x548A8: Belastung aller Spieler 50 … 150
         // (Datei 0x549A2–0x549BB; A184, Runde 12). Bei „nicht spielfähig“ endet die Abrechnung vorher.
         TrainingRules.ClampStrain(club.Players);
-        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report, CompetitionSlots.Of(competition));
+        CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report,
+            competition == MatchCompetition.League, CompetitionSlots.Of(competition));
         PlayerInjuries.AfterMatch(club, injured: report.Events.Any(e => e.Kind == MatchEventKind.Injury && e.Side == side));
     }
 
     /// <summary>Zähler einer gemanagten Mannschaft aus ihrer Aufstellung (Managerverein oder Nationalteam des Bundestrainers).</summary>
+    /// <param name="league">#897: [ORIGINAL] Gegentore nur im Ligaspiel – 0xA3F7 (je Tor aus 0xA484) bricht bei Wettbewerbscode
+    /// DGROUP 0xD0C2 ≠ 7 ab (Datei 0x0A3FD–0x0A402); Pokal, Europapokal, Play-offs und Länderspiele zählen keine.</param>
     private static void CreditLineup(List<Player> lineup, Player? keeper, int against, int side, MatchReport report,
-        CompetitionSlot slot = CompetitionSlot.League)
+        bool league, CompetitionSlot slot = CompetitionSlot.League)
     {
         // [ORIGINAL] A135: Spiele je Wettbewerb (+0x06/+0x1C + Wettbewerb, Datei 0x5494C–0x5499E), Tore +0x03/+0x22 + Wettbewerb.
         foreach (var p in lineup)
             p.CountGame(slot);
         if (keeper is { } goalie)
         {
-            goalie.GoalsAgainst += against;
+            if (league)
+                goalie.GoalsAgainst += against;
             goalie.GoalieMinutes += report.Overtime ? 70 : 60;
         }
         foreach (var e in report.Events)
