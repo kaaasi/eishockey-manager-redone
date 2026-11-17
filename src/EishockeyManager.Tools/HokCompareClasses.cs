@@ -250,7 +250,7 @@ public static class HokCompareClasses
             "CupGroup.Number", "CupGroup.Results", "CupGroup.Teams", "DebCup.Winner", "DebCup._draw", "DebCup._rounds",
             "EuropeanCup.FinalRound", "EuropeanCup.Winner", "EuropeanCup._draw", "EuropeanCup._groups",
             "WorldCup.Ranking", "WorldCup._groups", "WorldCup._knockout",
-            "Playoffs.Seeds", "Playoffs._rounds", "PlayoffSeries.Games", "PlayoffSeries.HomeClub", "PlayoffSeries.AwayClub",
+            "Playoffs.Seeds", "Playoffs._rounds", "PlayoffSeries.Games", "PlayoffSeries.HomeClub", "PlayoffSeries.AwayClub", "PlayoffSeries.Marks",
             "RelegationGroup.Clubs", "RelegationGroup.PlayedRounds", "RelegationGroup.Results", "RelegationGroup.Rounds",
             "RelegationGroup.Upper", "NationalCoach._dressed", "NationalCoach._friendlies",
             "FriendlyMatch.Away", "FriendlyMatch.AwayGoals", "FriendlyMatch.Home", "FriendlyMatch.HomeGoals");

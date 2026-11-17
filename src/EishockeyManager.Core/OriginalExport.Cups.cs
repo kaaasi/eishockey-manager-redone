@@ -274,7 +274,9 @@ public sealed partial class Playoffs
     /// Play-offs (Umkehrung von <c>ImportOriginal</c>): Plätze 0x5D3B (Viertelfinale 0–7, Halbfinale 8–11, Endspiel 12–13, Verlierer 23),
     /// Runde 0x7B0, Spiel der Runde 0xCCA3, Anfang der Runde 0xCFFA, Spiele 0xCCB2 + 14 · Spiel + Platz (100 = nicht ausgetragen),
     /// Siege 0xCCA4 + Platz. In der laufenden Runde nach ungerader Spielzahl getauscht (0x31505).
-    /// [APPROX] Marken (+30) und das Siegbyte 0x14 des fünften Termins schreibt der Export nicht.
+    /// [ORIGINAL] Marken (+30, <see cref="PlayoffSeries.Marks"/>) im Torbyte des Gastes, im fünften Spiel ohne Seriensieg des Gastes
+    /// beim Heimverein (0x31701–0x31734 schiebt sie mit dem Tausch 0x316C9, den das fünfte Spiel nur bei Siegbyte 0x14 macht).
+    /// [APPROX] Das Siegbyte 0x14 des fünften Termins schreibt der Export nicht.
     /// </summary>
     internal void ExportOriginal(OriginalSaveWriter w, int[] slotOf)
     {
@@ -320,8 +322,13 @@ public sealed partial class Playoffs
                     var (hg, ag) = (m.HomeGoals, m.AwayGoals);
                     if (hg == ag && m.PenaltyWinner is { } pw)
                         (hg, ag) = pw == m.Home ? (hg + 1, ag) : (hg, ag + 1);
-                    goals[OriginalImport.PlayoffSlotCount * g + a] = OriginalExport.Byte(homeFirst ? hg : ag);
-                    goals[OriginalImport.PlayoffSlotCount * g + b] = OriginalExport.Byte(homeFirst ? ag : hg);
+                    var (fg, sg) = homeFirst ? (hg, ag) : (ag, hg);
+                    var marks = 30 * s.MarksOf(g);
+                    // Gast trägt die Marken nach dem Tausch; das fünfte Spiel tauscht nur, wenn der Gast damit die Serie gewinnt.
+                    var onAway = g < DatesPerRound - 1 || s.Wins(m.Away) >= PlayoffSeries.WinsNeeded;
+                    var onFirst = (onAway ? m.Away : m.Home) == s.HomeClub;
+                    goals[OriginalImport.PlayoffSlotCount * g + a] = OriginalExport.Byte(fg + (onFirst ? marks : 0));
+                    goals[OriginalImport.PlayoffSlotCount * g + b] = OriginalExport.Byte(sg + (onFirst ? 0 : marks));
                 }
             }
         }

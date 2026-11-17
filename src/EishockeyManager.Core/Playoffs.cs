@@ -28,7 +28,15 @@ public sealed record KnockoutMatch(int Day, int Home, int Away, int HomeGoals, i
     /// Bleibt es danach unentschieden, entscheidet das Penaltyschießen wie in <see cref="Play(int, Club, Club, Random)"/>
     /// ([APPROX]); der schnelle Weg der Pokale bringt seinen Sieger mit ([ORIGINAL] 0x376F0).
     /// </summary>
-    public static KnockoutMatch Play(GameState game, int day, Club home, Club away, MatchCompetition competition, Random random)
+    public static KnockoutMatch Play(GameState game, int day, Club home, Club away, MatchCompetition competition, Random random) =>
+        PlayWithMarks(game, day, home, away, competition, random).Match;
+
+    /// <summary>
+    /// Wie <see cref="Play(GameState, int, Club, Club, MatchCompetition, Random)"/>, dazu die Marken des Spiels für
+    /// <see cref="PlayoffSeries.Marks"/> (<see cref="PlayoffSeries.MarksFromReport"/>).
+    /// </summary>
+    public static (KnockoutMatch Match, int Marks) PlayWithMarks(GameState game, int day, Club home, Club away,
+        MatchCompetition competition, Random random)
     {
         var report = MatchEngine.PlayWithEvents(game, home, away, competition, knockOut: true, random);
         int? penalty = null;
@@ -44,7 +52,8 @@ public sealed record KnockoutMatch(int Day, int Home, int Away, int HomeGoals, i
                 penalty = random.NextDouble() < pHome ? home.Index : away.Index;
             }
         }
-        return new KnockoutMatch(day, home.Index, away.Index, report.HomeGoals, report.AwayGoals, penalty);
+        return (new KnockoutMatch(day, home.Index, away.Index, report.HomeGoals, report.AwayGoals, penalty),
+            PlayoffSeries.MarksFromReport(report));
     }
 }
 
@@ -64,6 +73,49 @@ public sealed class PlayoffSeries(int homeClub, int awayClub)
     /// <summary>Zweiter Verein der Paarung (Platz 2k + 1), Heimrecht in Spiel 2 und 4. Bis Schema 43 <c>LowerSeed</c>.</summary>
     public int AwayClub { get; } = awayClub;
     public List<KnockoutMatch> Games { get; } = [];
+
+    /// <summary>
+    /// Marken je Spiel in <see cref="Games"/> (A612, Spur hok-play-off-marken): im Original + 30 je Marke in einem Torbyte des
+    /// Spiels (DGROUP 0xCCB2 + 14 · Spiel + Platz). [ORIGINAL] Bedeutung (em.exe, <c>docs/formate/spielstand-original.md</c>
+    /// „Marken der Play-off-Spiele“): Buchführung des Gleichstands, ohne Wirkung auf die Wertung – 0x315E9 zieht sie vor dem
+    /// Siegvergleich ab (Schleife 0x31622–0x31631), und nach dem Spieltag liest sie niemand mehr. 0x32AA3 setzt eine Marke auf das
+    /// Heimbyte jeder offenen Paarung mit Gleichstand; der schnelle Weg (0x376F0–0x377A3) setzt danach eine zweite und würfelt
+    /// random(0, 2) je Seite dazu. Zwei Marken = nach 60 Minuten unentschieden; eine Marke im schnellen Weg = Zusatzwurf, den der
+    /// Gleichstand einer noch nicht gerechneten Paarung desselben Termins auslöste (die erste offene Paarung der Runde, FILE22/FILE44).
+    /// </summary>
+    public List<int> Marks { get; } = [];
+
+    /// <summary>
+    /// Marken des Spiels <paramref name="index"/>; fehlt der Eintrag (Spielstand vor Schema 55), 2 bei Penaltysieger
+    /// (Gleichstand nach 60 Minuten, siehe <see cref="MarksFromReport"/>), sonst 0.
+    /// </summary>
+    public int MarksOf(int index) =>
+        index < Marks.Count ? Marks[index] : Games[index].PenaltyWinner is null ? 0 : TieMarks;
+
+    /// <summary>Trägt ein gespieltes Spiel mit seinen Marken ein.</summary>
+    public void Add(KnockoutMatch match, int marks)
+    {
+        while (Marks.Count < Games.Count)
+            Marks.Add(MarksOf(Marks.Count));
+        Games.Add(match);
+        Marks.Add(marks);
+    }
+
+    /// <summary>Marken eines Spiels mit Gleichstand nach 60 Minuten.</summary>
+    public const int TieMarks = 2;
+
+    /// <summary>
+    /// Marken eines im Remake gespielten Play-off-Spiels. [ORIGINAL] Schneller Weg, Gleichstand: 0x32AA3 (Schalter 0) + 30, dann
+    /// 0x37761 + 30 – zwei Marken (FILE44: Viertelfinale 2–7 Spiel 3 „2:4“, Halbfinale 2 Spiel 3 „5:3“ mit 0x40/0x3F). Minutenweg,
+    /// Penaltyschießen: 0x32AA3 nach 60 Minuten (Schalter 0) und nach der Verlängerung (Schalter 1, Datei 0x32D72) je + 30, 0x3901B
+    /// nimmt eine ab (0x39088) und setzt sie wieder (0x39789) – zwei Marken. [APPROX] Minutenweg, Tor in der Verlängerung: zwei
+    /// Marken wie beim Pokal (<see cref="CupMatch.FromReport"/>); 0x38402 setzt + 30 auf den Stand aus DGROUP 0xA0BF, dessen Marken
+    /// nicht verfolgt sind (A482). [APPROX] Die eine Marke des schnellen Wegs (Zusatzwurf der ersten offenen Paarung, siehe
+    /// <see cref="Marks"/>) bildet das Remake nicht nach: dazu gehören die Zusatztore, und die rechnet
+    /// <see cref="OriginalMinutes.FastCupResultWithTie"/> nur bei eigenem Gleichstand (Befund an die Leitstelle, PR der Spur).
+    /// </summary>
+    public static int MarksFromReport(MatchReport report) =>
+        !report.Forfeit && (report.Overtime || report.ShootoutGoals is not null || report.ShootoutHomeWins is not null) ? TieMarks : 0;
 
     public int Wins(int club) => Games.Count(g => g.Winner == club);
     public bool IsDecided => Wins(HomeClub) >= WinsNeeded || Wins(AwayClub) >= WinsNeeded;
@@ -153,8 +205,8 @@ public sealed partial class Playoffs
         foreach (var series in _rounds[round].Where(s => !s.IsDecided))
         {
             var (home, away) = series.NextPairing;
-            var match = KnockoutMatch.Play(game, day, clubs[home], clubs[away], MatchCompetition.Playoff, random);
-            series.Games.Add(match);
+            var (match, marks) = KnockoutMatch.PlayWithMarks(game, day, clubs[home], clubs[away], MatchCompetition.Playoff, random);
+            series.Add(match, marks);
             played.Add(match);
         }
         return played;
