@@ -255,4 +255,46 @@ public class EinzelpunkteTests
         Assert.Equal(promote, events.Contains(SeasonEvent.Promotion));
         Assert.All(ads.Contracts, c => Assert.Equal(promote, c.Cancellable));
     }
+
+    /// <summary>
+    /// #897, Datei 0x57F96/0x57C64: Zeile 3 der Finanzübersicht = Σ Darlehen mit den anderen Managern (vorzeichenbehaftet), Zeile 4 =
+    /// Σ ihrer Monatszinsen (Darlehen · 25 / 1000, je Satz abgeschnitten). Vorher Forderungen bzw. Schulden getrennt.
+    /// </summary>
+    [Fact]
+    public void FinanceOverview_ManagerRows_AreSignedSumAndInterest()
+    {
+        var setup = new GameSetup();
+        for (var i = 0; i < 3; i++)
+            setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = 2 + 3 * i });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
+        var me = game.Managers[0];
+        game.LendBetweenManagers(lender: 0, borrower: 1, 50_000);  // M0 hat 50.000 verliehen
+        game.LendBetweenManagers(lender: 2, borrower: 0, 30_100);  // M0 schuldet M2 30.100
+
+        var v = game.FinanceOverviewLoans(me);
+        Assert.Equal(50_000 - 30_100, v.ManagerLoans);
+        Assert.Equal(50_000 * 25 / 1000 + (-30_100) * 25 / 1000, v.ManagerInterest); // 1.250 − 752 (−752,5 abgeschnitten)
+        Assert.Equal(498, v.ManagerInterest);
+    }
+
+    /// <summary>
+    /// #897, Datei 0x57F96/0x57C64 (Satz 4): Zeile 6 = Darlehen Bank als ein Saldo, Zeile 7 = Monatszins (Saldo · 1 / 100, bei
+    /// negativem Saldo · 4 / 100). Vorher Sparbuch und Kredit als zwei Zeilen.
+    /// </summary>
+    [Theory]
+    [InlineData(100_000L, 0L, 100_000L, 1_000L)]
+    [InlineData(0L, 100_000L, -100_000L, -4_000L)]
+    [InlineData(50_000L, 70_000L, -20_000L, -800L)]
+    [InlineData(0L, 0L, 0L, 0L)]
+    public void FinanceOverview_BankRows_AreBalanceAndInterest(long savings, long credit, long loan, long interest)
+    {
+        var game = TestGames.Create();
+        var bank = game.Finance(game.Managers[0]).Bank;
+        (bank.Savings, bank.Credit) = (savings, credit);
+
+        var v = game.FinanceOverviewLoans(game.Managers[0]);
+        Assert.Equal(loan, v.BankLoan);
+        Assert.Equal(interest, v.BankInterest);
+        Assert.Equal(0, v.ManagerLoans); // ein Manager: keine anderen Sätze
+    }
 }

@@ -803,16 +803,18 @@ public sealed class FinanceScreen : Screen
         void Value(int baseline, long amount) =>
             s.TextRight(mini, ValueRight, Competitions.CompetitionWidgets.Top(mini, baseline), ManagerText.Money(amount), SummaryValueColor(amount));
 
-        var finance = Game.Finance(Me);
         Label(109, "Kontostand:");
         // [APPROX] Lage des Kontostands zentriert wie im Video (5:40–6:20); das Original füllt die Zahl auf (DGROUP 0x374 = 9).
         s.TextCentered(mini, 278, Competitions.CompetitionWidgets.Top(mini, 117), ManagerText.Money(Me.Money), SummaryValueColor(Me.Money));
         Label(127, "Untereinander:");
-        Value(135, Game.ManagerReceivables(Me));
-        Value(143, -Game.ManagerDebts(Me));
+        // [ORIGINAL] #897, Datei 0x57F96 / 0x57C64: Zeile 3 = Σ Darlehen mit den anderen Managern, Zeile 4 = Σ ihrer Monatszinsen,
+        // Zeile 6 = Darlehen Bank (Saldo), Zeile 7 = Monatszins Bank. Vorher Forderungen/Schulden bzw. Sparbuch/Kredit.
+        var loans = Game.FinanceOverviewLoans(Me);
+        Value(135, loans.ManagerLoans);
+        Value(143, loans.ManagerInterest);
         Label(153, "Bank:");
-        Value(161, finance.Bank.Savings);
-        Value(169, -finance.Bank.Credit);
+        Value(161, loans.BankLoan);
+        Value(169, loans.BankInterest);
         Label(179, "Aktien:");
         Label(189, "Kaufpreis:");
         var cost = Game.DepotPurchaseCost(Me);
