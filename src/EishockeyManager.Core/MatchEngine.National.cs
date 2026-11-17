@@ -28,7 +28,7 @@ public static partial class MatchEngine
         var coach = game.NationalCoach is { } c && c.Nation == nation ? c : null;
         var managed = coach is not null;
         var tactics = managed ? coach!.Tactics : new Tactics();
-        var squad = managed && managerMatch ? NationalSquad(game, coach!) : null;
+        var squad = managed ? NationalSquad(game, coach!) : null;
         return new LiveTeam
         {
             Defense = defense,
@@ -40,7 +40,9 @@ public static partial class MatchEngine
             Tactics = managerMatch ? tactics : null,
             Managed = managed,
             LineChange = managed ? tactics.LineChange : null,
-            Squad = squad,
+            Squad = managerMatch ? squad : null,
+            // A837/A840: [ORIGINAL] 0x35AB8–0x35B2C wählt den Strafspieler (0x378C5) auch ohne Reihe (Vereinsfeld 0x16 = 6).
+            PenaltySquad = managerMatch ? null : squad,
             PenaltyManagerValue = managed ? NationalPenaltyManagerValue(game) : 20,
             TacticsStrength = ownStrength,
             TacticsOpponentStrength = opponentStrength,

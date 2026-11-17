@@ -118,10 +118,13 @@ public sealed partial class LiveScoreboardRow
 /// <item>[ORIGINAL] Zum Zusehen markiert (Bit 7) ist ein Verein im Modus 2 der Markierung <see cref="Club.WatchMode"/>
 ///   (Schalter 0x0AE2B, <see cref="GameState.SetWatchMode"/>): Spielstart und neuer Manager markieren den Managerverein, die
 ///   Ernennung zum Bundestrainer das eigene Land, der dritte Knopf des Vereinsfensters schaltet um (Spur zusehen, Teil 1).</item>
-/// <item>[APPROX] Die Regeln der Managerpaarung (<see cref="MatchRules.ManagerMatch"/>: Energie 0x87F7, Eingriff, Torschützen)
-///   hängen im Remake weiter an <see cref="MatchEngine.IsManaged"/>; im Original prüft 0x52B91 die Reihenliste (F167). Ein
-///   markierter Verein ohne Manager bekommt also die Reihe und die Anzeige, aber keine Managerregeln; ein Managerverein ohne
-///   Reihe (abgelehnt, mehr als vier Reihen) behält sie.</item>
+/// <item>[ORIGINAL] A840 (Spur zusehen-rest, Teil 2): Die Regeln der Managerpaarung (<see cref="MatchRules.ManagerMatch"/>:
+///   Energie 0x87F7, Seitentausch, 0x80CB, Reihenwechsel 0x8EF2, Taktik 0x939A, Eingriff, Torschützen 0x541D9) hängen an
+///   der Reihe: 0x52B91 sucht den Verein in den fünf Paaren 0x233/0x234 (Merker [bp-0xF] Datei 0x37E7B Liga, 0x38277
+///   Pokal). Ein markierter Verein ohne Manager bekommt also mit der Reihe auch die Managerregeln (beide Vereine der
+///   Paarung), ein Managerverein ohne Reihe (Markierung aus, mehr als vier Reihen) spielt mit den Vereinsfeldern (0x977F
+///   Datei 0x097E6) und behält nur, was an Vereinsfeld 0x16 hängt: Verletzungen 0x38B8F (Datei 0x37ECF), Strafspieler
+///   0x378C5 (dort ohne Reihe aus dem ganzen Kader, Datei 0x379A3) und die Neuzählung 0x38A36.</item>
 /// <item>[APPROX] Höchstens <see cref="MaxRows"/> Reihen: 0x544C0 prüft die Grenze nicht, die Anzeige (0x233, fünf Wörter mit
 ///   Endmarke DGROUP 0x23B) und die Zähler (Datei 0x53CC8) kennen nur vier; mehr markierte Paarungen verhindert im Original
 ///   die Grenze in 0xAE2B.</item>
@@ -198,10 +201,22 @@ public static partial class MatchEngine
             board = new LiveScoreboard(game.Season, game.Day, competition);
             Scoreboards.AddOrUpdate(game, board);
         }
-        if (!home.WatchedLive && !away.WatchedLive)
+        if (!WatchedLive(game, home) && !WatchedLive(game, away))
             return null;
         return board.Add(home.Index, away.Index);
     }
+
+    /// <summary>
+    /// Markierung zum Zusehen (Vereinsfeld 0x34 Bit 7) des Vereinssatzes. Länder spielen im Remake mit einem eigenen
+    /// Vereinsobjekt ohne Kader (<c>GameState.RatedNation</c>); die Markierung steht am Vereinsplatz 52–63 in
+    /// <see cref="GameState.Clubs"/> (A837: [ORIGINAL] 0x544C0 liest Feld 0x34 des Satzes, Datei 0x54BF7–0x54C23).
+    /// </summary>
+    internal static bool WatchedLive(GameState game, Club club) => Watched(game, club).WatchedLive;
+
+    private static Club Watched(GameState game, Club club) =>
+        club.Index is >= NationalTeams.First and <= NationalTeams.Last && club.Index < game.Clubs.Count
+            ? game.Clubs[club.Index]
+            : club;
 
     /// <summary>
     /// Spiel mit Anzeigezustand: Chancen über <see cref="OriginalMinutes.GoalScene"/> zählen, Züge der Anzeige nach R18-D3
@@ -250,7 +265,7 @@ public static partial class MatchEngine
     /// </summary>
     internal static GoalNoticeTarget? NoticeTarget(MatchSetup match)
     {
-        if (match.Row is not null || (match.Home.WatchMode == 0 && match.Away.WatchMode == 0)
+        if (match.Row is not null || (Watched(match.Game, match.Home).WatchMode == 0 && Watched(match.Game, match.Away).WatchMode == 0)
             || CurrentScoreboard(match.Game) is not { } board)
             return null;
         return new GoalNoticeTarget(board, match.Home.Index, match.Away.Index);

@@ -158,7 +158,8 @@ public static partial class MatchEngine
     /// </summary>
     public static void RecountSkaters(LiveTeam team)
     {
-        if (team.InjuryManager is null || team.Squad is not { } squad)
+        // A840: [ORIGINAL] 0x38A36 prüft Vereinsfeld 0x16, nicht die Reihenliste – ohne Reihe zählt der Kader der Strafen.
+        if (team.InjuryManager is null || team.PenaltyPlayers is not { } squad)
             return;
         var goalies = CountOnIce(squad, 0, 0, team.DefenseLine);
         if (goalies == 0)
@@ -600,7 +601,7 @@ public static partial class OriginalMinutes
     /// Bestrafter Spieler eines Managervereins bzw. des Nationalteams des Bundestrainers. [ORIGINAL] Datei 0x378C5:
     /// n = Kaderplätze − 1, unter 5 keiner. Höchstens 150 Versuche (R8W3I-03: der Zähler [bp-0xb] wird vor jedem Zug
     /// geprüft, 0x378ED springt zur Prüfung 0x37A2A, `cmp al,0x96; jnc` an 0x37A30 vor dem Zug 0x378FC): Platz
-    /// random(0, n); eingesetzt und aufgestellt, in der Managerpaarung nur auf dem Eis (Reihe = Reihe des Teils; Schalter
+    /// random(0, n); eingesetzt und aufgestellt, in der Managerpaarung (Reihenliste 0x52B91) nur auf dem Eis (Reihe = Reihe des Teils; Schalter
     /// DGROUP 0x4E80 [APPROX] aus); Technik &lt; Kondition → mit random(0, 10) &gt; 3, sonst &gt; 7; ein Torhüter bleibt mit
     /// random(0, 2) ≠ 0 verschont.
     /// </summary>
@@ -618,7 +619,9 @@ public static partial class OriginalMinutes
             var p = squad.Players[OriginalMatch.Rnd(random, 0, n)];
             var line = p.Position & 0x7F;
             var picked = false;
-            if (p.Dressed && line != 0 && team.Line(p.Part) + 1 == line)
+            // A840: [ORIGINAL] Datei 0x3797F–0x379AB: ein Spieler außerhalb der Reihe auf dem Eis scheidet nur aus, wenn der
+            // Verein in der Reihenliste steht (0x52B91 ≠ 0); ohne Reihe (nur PenaltySquad) zählt jeder aufgestellte Spieler.
+            if (p.Dressed && line != 0 && (team.Squad is null || team.Line(p.Part) + 1 == line))
             {
                 picked = p.Player.Technique - p.Player.Condition < 0
                     ? OriginalMatch.Rnd(random, 0, 10) > 3
