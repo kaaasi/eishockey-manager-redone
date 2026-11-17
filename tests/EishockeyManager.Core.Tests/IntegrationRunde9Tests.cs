@@ -19,10 +19,10 @@ public class IntegrationRunde9Tests
     [InlineData(MatchCompetition.WorldCup)]
     public void CupMatchWithoutManager_FollowsDisplaySwitch(MatchCompetition competition)
     {
-        // Runde 21, Spur zufallsstrom (A107, R21-D2 = A): jeder Lauf auf einem frischen Spielstand. Das Spiel schreibt in den
-        // Spielstand (Tagesform, Zähler); der zweite Lauf auf demselben Stand las bisher zufällig Werte, mit denen er gleich viele
-        // Würfe verbrauchte. Mit der Wanderung in Satzfolge (Datei 0x9D1B) haben die beiden Vereine andere Teamwerte, und der
-        // Vergleich „gleicher Schalter, gleiche Folge“ gilt nur noch für gleiche Ausgangsstände.
+        // Runde 21, Spur zufallsstrom (A107): jeder Lauf auf einem frischen Spielstand. Das Spiel schreibt in den Spielstand
+        // (Tagesform, Zähler); ein zweiter Lauf auf demselben Stand startet damit nicht vom selben Ausgangsstand wie der erste, der
+        // Vergleich „gleicher Schalter, gleiche Folge“ gilt nur für gleiche Ausgangsstände. Die Base-Fassung (ein Spielstand für
+        // beide Läufe) ist auf dem Head ebenfalls grün (Erstreview #909 P3-1); die Umstellung ist nicht nötig, sondern sauberer.
         int NextAfterMatch(bool display)
         {
             var game = TestGames.Create(3);
@@ -52,7 +52,7 @@ public class IntegrationRunde9Tests
     [Fact]
     public void WorldCupKnockoutWithoutManager_AlwaysFastPath()
     {
-        // Runde 21, Spur zufallsstrom (A107, R21-D2 = A): jeder Lauf auf einem frischen Spielstand, Begründung wie oben.
+        // Runde 21, Spur zufallsstrom (A107): jeder Lauf auf einem frischen Spielstand, Begründung wie oben.
         int NextAfterMatch(bool display)
         {
             var game = TestGames.Create(3);

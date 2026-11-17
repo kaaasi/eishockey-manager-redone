@@ -41,8 +41,7 @@ public class WettbewerbeSpiel1Tests
     // Rückschaltprobe: alter Code mit Saat 4 ebenfalls grün – die Probe hängt an der Saat.
     [InlineData(4, true)]
     [InlineData(11, true)]
-    // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): schneller Weg mit Saat 6 statt 5 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 5 und 7 gibt es kein Penaltyschießen (Vorbedingung); 6, 8, 9 grün. Die Probe hängt an der Saat.
-    [InlineData(6, false)]
+    [InlineData(5, false)] // #621 (R13GN-04): Saat wieder 5 – die Änderung 5 → 4 (L13) war nicht nötig
     public void DebCup_NoMatchEndsLevel_ShootoutInFinalScore(int seed, bool minuteLoop)
     {
         var game = SeasonWithCups(seed);

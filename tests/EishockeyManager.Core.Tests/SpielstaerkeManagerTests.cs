@@ -104,7 +104,7 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
     /// Abweichung und Form. Rückschaltprobe: MatchEngine.Live.cs von f3490bd mit diesen Werten rot (69/69/50 statt 67/71/46).
     /// </summary>
     [Fact]
-    public void LiveTeam_ManagedClub_OnlyDayForm()
+    public void LiveTeam_ManagedClub_UsesClubFieldsAndDayForm()
     {
         var game = Game();
         var club = game.Clubs[game.Managers[0].ClubIndex];

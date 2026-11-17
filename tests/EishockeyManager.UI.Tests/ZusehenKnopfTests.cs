@@ -100,6 +100,18 @@ public class ZusehenKnopfTests
         AssertSymbol(d, GameState.WatchGoals);
     }
 
+    /// <summary>
+    /// Review #907 P3-4 (#902): feste Sollwerte der Symbolraster (Datei 0x4C110–0x4C13A: x = 19, y = 36 + 11 · Modus, 12 × 10); der
+    /// Vergleich in <see cref="AssertSymbol"/> liest dieselbe Funktion und hielte die Konstante nicht fest.
+    /// </summary>
+    [Fact]
+    public void WatchSymbol_HasFixedRasterPerMode()
+    {
+        Assert.Equal(new Rect(19, 36, 12, 10), TeamInfoWindow.WatchSymbol(0));
+        Assert.Equal(new Rect(19, 47, 12, 10), TeamInfoWindow.WatchSymbol(1));
+        Assert.Equal(new Rect(19, 58, 12, 10), TeamInfoWindow.WatchSymbol(2));
+    }
+
     private static void AssertSymbol(ScreenDriver d, int mode)
     {
         var sheet = d.Host.Assets.Image(TeamInfoWindow.WatchSymbolImage);

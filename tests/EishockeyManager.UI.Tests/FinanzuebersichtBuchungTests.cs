@@ -69,7 +69,9 @@ public class FinanzuebersichtBuchungTests
         switch (id)
         {
             case "A192":
-                // Core/StadiumStatistics.cs (SettleMatchGate, intern): Book(Strafen, −ShortHandedPenalty).
+                // Core/StadiumStatistics.cs (SettleMatchGate, intern): Book(Strafen, −ShortHandedPenalty). Hier nur über Book (Kategorie
+                // und Betrag stehen im Test, Review #901 P3-1, #902); den echten Pfad und die Kategorie prüft
+                // HeimspielStatistikTests.ShortHanded_AtHome_PaysPenalty_… (Book.Current(Strafen)) in Core.Tests.
                 game.Book(me, FinanceCategory.Strafen, -GameState.ShortHandedPenalty);
                 return (FinanceCategory.Strafen, -GameState.ShortHandedPenalty);
             case "A207":
@@ -96,7 +98,10 @@ public class FinanzuebersichtBuchungTests
                 game.AcceptSponsorSubsidy(new SponsorSubsidyOffer(me, 40_000));
                 return (FinanceCategory.Transfers, 40_000);
             case "A716":
-                // Core/Transfer.SeasonEnd.cs (Leave, privat): Book(Transfers, Ablöse).
+                // Core/Transfer.SeasonEnd.cs (Leave, privat): Book(Transfers, Ablöse). Hier nur über Book (Review #901 P3-1, #902); den
+                // echten Pfad und die Kategorie prüfen TransferVertraegeKomplettTests.SeasonEnd_PlayerLeaves_WithCompensation,
+                // TagestaktSommerpauseReviewTests.File44_… und KaderStartTeil4Tests.ManagerLoan_ExpiringLoanSlot_… (Mutation
+                // Transfers → Unterhalt: 6 Core-Tests rot).
                 game.Book(me, FinanceCategory.Transfers, 75_000);
                 return (FinanceCategory.Transfers, 75_000);
             default:

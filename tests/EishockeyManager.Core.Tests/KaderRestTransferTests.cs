@@ -12,8 +12,7 @@ public class KaderRestTransferTests
 {
     private static (GameState Game, Manager Manager, Club Club, TransferMarket Market) NewGame()
     {
-        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 5 statt 4 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 4 stehen schon 10 Spieler auf dem Markt (MarketFull). Die Probe hängt an der Saat.
-        var game = TestGames.Create(5); // Saat 4: mit dem Lader beim Spielstart (Spur start-lader, Datei 0x439BB) stehen bei Saat 3 schon 10 Spieler auf dem Markt.
+        var game = TestGames.Create(4); // Saat 4: mit dem Lader beim Spielstart (Spur start-lader, Datei 0x439BB) stehen bei Saat 3 schon 10 Spieler auf dem Markt.
         var manager = game.ActiveManager;
         return (game, manager, game.Clubs[manager.ClubIndex], game.TransferMarket);
     }

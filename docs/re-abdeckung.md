@@ -152,7 +152,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 8614 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 9063 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -160,10 +160,10 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 318 | 259856 | 84 % | 293 | 245877 | 94 % |
-| genähert | 5 | 1900 | 1 % | 3 | 1038 | 0 % |
-| dokumentiert | 121 | 22088 | 7 % | 68 | 13986 | 5 % |
-| unbekannt | 235 | 25681 | 8 % | 0 | 0 | 0 % |
+| umgesetzt | 322 | 260620 | 84 % | 297 | 246641 | 95 % |
+| genähert | 3 | 1477 | 0 % | 1 | 615 | 0 % |
+| dokumentiert | 121 | 22585 | 7 % | 66 | 13645 | 5 % |
+| unbekannt | 233 | 24843 | 8 % | 0 | 0 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
 ### Übersicht je Bereich
@@ -176,14 +176,14 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Basis 0x238 | 0x04180–0x064E9 | 9066 | 15 | 96 % | 0 % | 4 % | 0 % | Spiellogik Basis (Saisonende, Statistik) |
 | Basis 0x46e | 0x064E0–0x080CA | 7147 | 14 | 95 % | 0 % | 5 % | 0 % | Spiellogik Basis (Training, Spieler) |
 | Basis 0x62c | 0x080C0–0x0AE2A | 11627 | 16 | 98 % | 0 % | 2 % | 0 % | Spiellogik Basis (Spielberechnung, Zufall) |
-| Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 54 % | 14 % | 32 % | 0 % | Fensterverwaltung („Zu viele Fenster auf !“) |
+| Basis 0x902 | 0x0AE20–0x0B7F9 | 2522 | 11 | 68 % | 0 % | 32 % | 0 % | Fensterverwaltung („Zu viele Fenster auf !“) |
 | Basis 0x99f | 0x0B7F0–0x0C79E | 4015 | 23 | 34 % | 0 % | 66 % | 0 % | Bilder laden (kb\…vga), Texte, Geldausgabe |
 | Basis 0xa99 | 0x0C790–0x0D9F1 | 4706 | 34 | 4 % | 0 % | 29 % | 67 % | Speicher (EMS INT 67h, XMS INT 2Fh), Datei |
 | Basis 0xbbf | 0x0D9F0–0x12F58 | 21865 | 78 | 59 % | 0 % | 7 % | 35 % | Grafik und Maus (VGA-Ports, INT 10h, INT 33h) |
 | Basis 0x1115 | 0x12F50–0x13DD0 | 3713 | 37 | 11 % | 0 % | 20 % | 69 % | Dateizugriff (Hüllen um die C-Laufzeit) |
 | Basis 0x11fd | 0x13DD0–0x143A5 | 1494 | 33 | 0 % | 0 % | 44 % | 56 % | Timer und Interrupts (PIC 0x20/0x21, PIT 0x40/0x43) |
 | Basis 0x125b | 0x143B0–0x14D6C | 2493 | 21 | 0 % | 0 % | 9 % | 91 % | Sound Blaster digital (DMA-Ports 0x02–0x0C) |
-| Basis 0x12f7 | 0x14D70–0x1621B | 5292 | 19 | 0 % | 0 % | 44 % | 56 % | FM-Treiber SBFMDRV (CmfPlayer.cs), Tastatur (Port 0x60, INT 16h) |
+| Basis 0x12f7 | 0x14D70–0x1621B | 5292 | 19 | 0 % | 0 % | 59 % | 41 % | FM-Treiber SBFMDRV (CmfPlayer.cs), Tastatur (Port 0x60, INT 16h) |
 | Ov 0xc0 (337B) | 0x255C0–0x25DB0 | 2033 | 14 | 0 % | 30 % | 70 % | 0 % | „Alles klar!“ |
 | Ov 0xc8 (33FB) | 0x25E30–0x26E6A | 4155 | 2 | 100 % | 0 % | 0 % | 0 % | „Die besten“, „Ereignisse“ |
 | Ov 0xd0 (34FF) | 0x26F20–0x27F8A | 4203 | 1 | 100 % | 0 % | 0 % | 0 % | „Erhaltene Prämien:“ |
@@ -197,7 +197,7 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Ov 0x110 (502F) | 0x43150–0x45DC3 | 11380 | 20 | 90 % | 0 % | 10 % | 0 % | „autosave.hok“, „Saisonende“, „.Spieltag“ |
 | Ov 0x118 (52F7) | 0x46000–0x4ADE1 | 19938 | 18 | 99 % | 0 % | 1 % | 0 % | „ART   NAME              “, „Grundwert“, „Vertragsverhandlung“ |
 | Ov 0x120 (57D6) | 0x4B0F0–0x4D1B6 | 8391 | 23 | 64 % | 0 % | 36 % | 0 % | „Wer weiß...“, „An Alle:“, „Keine Nachricht für Sie “ |
-| Ov 0x128 (59E3) | 0x4D2F0–0x51BED | 18686 | 18 | 96 % | 0 % | 4 % | 0 % | „Bundesliga“, „PL. TD      VEREIN      “, „Play-Off“ |
+| Ov 0x128 (59E3) | 0x4D2F0–0x51BED | 18686 | 18 | 98 % | 0 % | 2 % | 0 % | „Bundesliga“, „PL. TD      VEREIN      “, „Play-Off“ |
 | Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 100 % | 0 % | 0 % | 0 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
 | Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 96 % | 0 % | 4 % | 0 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |
 | Ov 0x140 (66C3) | 0x5A820–0x5E932 | 16659 | 21 | 98 % | 0 % | 2 % | 0 % | „VERZEICHNIS:“, „Spielstand aus“, „Speichern“ |
@@ -214,8 +214,6 @@ Der Status gilt je Funktion: schon eine Fundstelle zählt die ganze Funktion. Di
 | # | Datei | Bereich | Größe | Status | Aufrufer | Vermutung (automatisch) |
 |---:|---|---|---:|---|---|---|
 | 1 | 0x25B4A | Ov 0xc0 (337B)+0x58A | 615 | genähert | 0x0B019, 0x0C17D, 0x0C729 … | „Alles klar!“, „LIB-Error“, „GRAFIK-Error“, „DISK-Error“ |
-| 2 | 0x0AE2B | Basis 0x902+0xB | 354 | genähert | 0x28165, 0x2CD1C, 0x4D385 … | gerufen von 0x28165 (Suchen Sie sich einen) |
-| 3 | 0x52B91 | Ov 0x130 (5E73)+0xD01 | 69 | genähert | 0x0977F, 0x378C5, 0x37A62 … | gerufen von 0x0977F (umgesetzt) |
 
 ### Funktionen mit Zugriff auf offene Globale
 
@@ -234,8 +232,6 @@ Vermutung = automatisch abgeleitete Hinweise (benutzte Texte, auch über Zeigert
 
 | Datei | Bereich | Größe | Status | Aufrufer | Vermutung |
 |---|---|---:|---|---:|---|
-| 0x0AE2B | Basis 0x902+0xB | 354 | genähert | 4 | gerufen von 0x28165 (Suchen Sie sich einen) |
 | 0x25B4A | Ov 0xc0 (337B)+0x58A | 615 | genähert | 15 | „Alles klar!“, „LIB-Error“, „GRAFIK-Error“ |
-| 0x52B91 | Ov 0x130 (5E73)+0xD01 | 69 | genähert | 4 | gerufen von 0x0977F (umgesetzt) |
 
 <!-- END generiert -->

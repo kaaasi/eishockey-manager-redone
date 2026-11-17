@@ -125,9 +125,8 @@ public class EuropeanCupTests
     {
         var germanTrophies = 0;
         var foreignWinners = 0;
-        // Bis beide Fälle (deutscher und ausländischer Sieger) vorkamen, höchstens 32 Saisons
-        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): höchstens 32 statt 16 Saisons – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; unter den Saaten 1–16 gibt es keinen deutschen Sieger mehr (17–32: ja). Die Probe hängt an der Saat.
-        for (var seed = 1; seed <= 32 && (germanTrophies == 0 || foreignWinners == 0 || seed <= 4); seed++)
+        // Bis beide Fälle (deutscher und ausländischer Sieger) vorkamen, höchstens 16 Saisons
+        for (var seed = 1; seed <= 16 && (germanTrophies == 0 || foreignWinners == 0 || seed <= 4); seed++)
         {
             var game = Create(seed, true, 30);
             var steps = PlayToSeasonEnd(game);

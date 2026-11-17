@@ -153,7 +153,7 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
      Spuren einordnen (CSV), Generator ohne „unklassifiziert“; Zusammenfassung und Klasse-V-Themen in `restliste-v1.md` nachziehen.
   3. **Funktionskarte** neu (`funktionskarte.py --write`).
   P3 aus Erstreviews der Runde (Label `P3`) nimmt die Spur mit.
-- **Voraussetzung:** `zufallsstrom` gemergt. **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** offen.
+- **Voraussetzung:** `zufallsstrom` gemergt. **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** fertig – Review (PR #910, Claude Code, 17.11.2026): Teil 1 (P3 aus #882 und #902; Drift-Wächter ZIMMERMANN 90–125, Rundlauf Export 0x2E/0x30, Bestenliste am Spielende Farbe 10, neun fremde Testdateien auf die Base-Fassung zurückgesetzt, Probe `DrawNextRound`), Teil 2 (Markerliste: 49 neue IDs A822–A870 eingeordnet, 41 entfallene Zeilen entfernt, V 100 → 67), Teil 3 (Funktionskarte neu).
 
 ### Gesamtreview Runde 21 (R21-D4 = A)
 
@@ -168,7 +168,7 @@ der neuen Felder (Zusehen).
 
 ### Vormerkungen (nach Runde 20)
 
-- **#882:** P3 aus Erstreview #881 (gesammelt, nächste `pruefung-karte`).
+- **#882, #902:** P3 der Runden 20/21 erledigt in `pruefung-karte` (PR #910); offen für Runde 22: #908, Erstreview-Hinweise #899/#896/#897.
 - **Testlücke Gesamtreview #848:** Speichern/Laden mitten in einer angehaltenen Live-Paarung (über die Oberfläche nicht
   erreichbar; prüfen, sobald ein Speicherweg im Live-Spiel dazukommt).
 - **Vor v1.0 (R20-D3-Zusatz, Nutzer 15.11.2026):** Liste aller noch abweichenden Bereiche und Funktionen an den Nutzer

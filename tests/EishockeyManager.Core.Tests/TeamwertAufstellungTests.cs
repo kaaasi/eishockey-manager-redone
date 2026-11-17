@@ -65,6 +65,28 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// Review #906 P3-2 (#902): Die Vorbereitung rechnet für einen Managerverein mit Squad auf einer Kopie ohne Spieler
+    /// (<c>PrepareFromClubFields</c>) und überträgt das Ergebnis mit <c>CopyPreparation</c> auf die Mannschaft der Paarung: Einsatz
+    /// (Modus AUTOM.) und die Stärken der Zeile der Automatik stehen danach an der Mannschaft des Managervereins.
+    /// </summary>
+    [Fact]
+    public void BeginMatch_ManagedClub_TakesEffortAndStrengthsOfPreparation()
+    {
+        var game = TestGames.Create(5);
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        var opponent = game.Clubs.First(c => c != club && c.Players.Count > 0 && c.League == club.League);
+        Assert.Equal(TacticMode.Auto, club.Tactics.EffortMode);
+
+        var setup = MatchEngine.BeginMatch(game, club, opponent, MatchCompetition.League, knockOut: false, new Random(1));
+
+        var team = setup.HomeTeam;
+        Assert.NotNull(team.Squad);
+        Assert.Equal(Tactics.PreparedEffort(team.TacticsStrength, team.TacticsOpponentStrength), team.Effort);
+        Assert.Equal(Tactics.PreparedEffort(setup.AwayTeam.TacticsStrength, setup.AwayTeam.TacticsOpponentStrength), setup.AwayTeam.Effort);
+        Assert.True(team.TacticsStrength > 0 && team.TacticsOpponentStrength > 0);
+    }
+
+    /// <summary>
     /// A080 (rot vor dem Fix: Teamwert, Teamwert, 50): Die Vereinsfelder 0x18–0x1D eines Managervereins in der Spielberechnung
     /// sind die aus der Aufstellung geschriebenen (Datei 0x097FD–0x0983D liest 0x18/0x1A/0x1C + Teil), mit Form.
     /// </summary>
@@ -136,7 +158,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
 
         foreach (var player in club.Lineup.Players.OrderByDescending(p => p.Technique + p.Condition).Take(8).ToList())
             club.Lineup.Remove(player);
-        Assert.Equal(expected, MatchEngine.TeamValue(game, club)); // Felder bis zum nächsten Schreiben unverändert
+        // Felder bis zum nächsten Schreiben unverändert. [APPROX] Das Original schreibt sie auch beim Verlassen der Aufstellung (Datei
+        // 0x41506–0x4151A), das Remake nicht (nur Bundestrainer); Ursache und Runde 22: Issue #908 (Review #906 P3-1).
+        Assert.Equal(expected, MatchEngine.TeamValue(game, club));
         game.UpdateManagerTeamValues();
         var (d, a, _) = MatchEngine.ClubLineupTeamValues(club);
         var weaker = (int)Math.Round((d.Condition + d.Technique + a.Condition + a.Technique) / 4.0);
