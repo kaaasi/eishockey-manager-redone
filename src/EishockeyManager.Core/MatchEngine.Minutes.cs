@@ -469,8 +469,9 @@ public static partial class OriginalMinutes
     /// <summary>Eine Spielminute einer Paarung ohne Manager (Reihenfolge der Züge wie im Original).</summary>
     public static void PlayMinute(LiveTeam home, LiveTeam away, MatchRules rules, int minute, int periodEnd, MatchReport report, Random random)
     {
-        // [ORIGINAL] 0x37ECF–0x37F06: hat einer der Vereine einen Manager, vor den Torchancen Verletzungen 0x38B8F.
-        if (rules.ManagerMatch)
+        // [ORIGINAL] 0x37ECF–0x37F06: hat einer der Vereine einen Manager (Vereinsfeld 0x16, nicht die Reihenliste – A840),
+        // vor den Torchancen Verletzungen 0x38B8F.
+        if (home.Managed || away.Managed)
             Injuries(home, away, minute, report, random);
         var h = Strengths(home, away, minute);
         var a = Strengths(away, home, minute);
@@ -560,6 +561,9 @@ public static partial class OriginalMinutes
         // Spur livespiel-kern (A1/A4): [ORIGINAL] Torszene 0x53C57 bei Paarung mit Anzeigereihe (Datei 0xAB47–0xAB90).
         if (!aborted)
             GoalScene(minute, side, goal, shooter, random);
+        // Spur zusehen-rest (A832): [ORIGINAL] Tormeldung der Paarung ohne Reihe (Datei 0xAB47–0xAB4B → 0xABB4).
+        if (!aborted && goal)
+            GoalNotice(minute, report.HomeGoals, report.AwayGoals);
         // [ORIGINAL] 0xAB47–0xAB90: in der Managerpaarung nach jedem Abschluss Szene/Torschütze 0x541D9 (ScoringPlayers).
         var players = rules.ManagerMatch && !aborted ? ScoringPlayers(shooter, goal, random) : null;
         if (!goal)

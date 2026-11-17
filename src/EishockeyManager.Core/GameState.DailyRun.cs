@@ -236,8 +236,7 @@ public sealed partial class GameState
     /// 0x54DAA) und nach den Zügen vor den Spielen (Datei 0x54FBF, <see cref="OnDayNationalTeam"/>). Beleg: In allen Ständen mit
     /// „automatisch aufstellen“ stehen die Felder genau auf diesen Werten (FILE02/03/05/13/14/16A/17/24/25/36/37,
     /// <c>AbgleichFixLineupTests</c>). Die Wanderung (Datei 0x55292) bewegt sie bis zum nächsten Tag mit Ereignis wie bei allen Vereinen.
-    /// [APPROX] Das Verlassen der Aufstellung (Datei 0x41506) rechnet im Remake erst am nächsten Tag mit Ereignis; die Felder lesen
-    /// außer den Spielen (die den Kader selbst rechnen) nur Zuschauer und Anzeigen. Nicht im Modus „nur Weltkugel“ (#747: dort trägt
+    /// Dazu das Verlassen der Vereinsaufstellung (Datei 0x41506–0x4151A, <see cref="OnLineupLeft"/>, A858). Nicht im Modus „nur Weltkugel“ (#747: dort trägt
     /// der Satz des Managervereins das Land). Je Manager <see cref="WriteLineupTeamValues"/> (dort das [APPROX] für noch nicht
     /// gezogene Teamwerte).
     /// </summary>
@@ -250,6 +249,26 @@ public sealed partial class GameState
             if (manager.ClubIndex is >= 0 and < NationalTeams.First)
                 WriteLineupTeamValues(Clubs[manager.ClubIndex]); // eine Rechnung mit dem Hinzufügen (Review #870 P3-3)
         }
+    }
+
+    /// <summary>
+    /// Ereignis „Vereinsaufstellung verlassen“ (A858, Spur zusehen-rest Teil 3). [ORIGINAL] Am Ende der Aufstellung 0x40364
+    /// (Datei 0x41513–0x4151A: <c>push 0</c>, <c>push [0xA70E]</c>, <c>call 0x28:0x146C</c>) ruft das Original 0x952C für den
+    /// Manager am Zug ohne Bedingung – derselbe Aufruf wie beim Bundestrainer (<see cref="OnNationalLineupLeft"/>). Die Felder
+    /// 0x18–0x1D des Managervereins stehen danach auf den Werten der neuen Aufstellung (<see cref="UpdateManagerTeamValues"/>).
+    /// Beleg DOSBox `a093`: FILE71 → FILE72 nur Reihentausch bei EC HEDOS MÜNCHEN ohne Spiel, Felder 68 70 69 69 55 48 →
+    /// 69 70 69 70 55 48 (Kondition A/S, Technik A/S, Form A/S) – genau die Rechnung aus der getauschten Aufstellung
+    /// (<c>ZusehenRestAufstellungTests</c>). [APPROX] Der Bildschirm meldet es nur nach einer Änderung (AGENTS.md: kein
+    /// Spielzustand durch bloßes Öffnen); ohne Änderung unterscheidet sich das Original nur, wenn die Wanderung 0x9D1B die Felder
+    /// seit dem letzten Tag mit Ereignis bewegt hat – dann setzt es sie schon beim Verlassen zurück, das Remake erst am nächsten
+    /// Tag mit Ereignis.
+    /// </summary>
+    public void OnLineupLeft(Club club)
+    {
+        ArgumentNullException.ThrowIfNull(club);
+        if (WorldOnly || club.Index >= NationalTeams.First || !ActiveManagers.Any(m => m.ClubIndex == club.Index))
+            return;
+        WriteLineupTeamValues(club);
     }
 
     /// <summary>

@@ -8,8 +8,8 @@ namespace EishockeyManager.Core;
 ///   0x4C10A–0x4C14A). Modus 2 (Bit 7) gibt der Paarung eine Reihe der Live-Anzeige (Spielabrechnung Datei 0x54BF7–0x54C23,
 ///   <see cref="LiveScoreboard"/>); der Abschluss 0xA484 prüft beide Bits (<c>test 0xC0</c>, Datei 0xABD7/0xABEE) für die
 ///   Tormeldung der Paarungen ohne Reihe.</item>
-/// <item>[APPROX] Die Tormeldung selbst (Datei 0xABB4–0xAD71: Text DGROUP 0x495C mit den Vereinsnamen, Pause 0x130EE) zeigt das
-///   Remake noch nicht; Modus 1 wirkt daher nur auf das Symbol des Knopfs.</item>
+/// <item>[ORIGINAL] Tormeldung der Paarungen ohne Reihe (Datei 0xABB4–0xAD71, Spur zusehen-rest A832): Kern
+///   <see cref="MatchEngine.NoticeTarget"/>, Anzeige <c>LiveGoalNotice</c> (dort die [APPROX] der Reihenfolge).</item>
 /// <item>[ORIGINAL] Der Lader 0x2EF1B setzt die Bits beim Laden der Datenbank auf 0 (Datei 0x2EFA8): ein neuer
 ///   <see cref="Club"/> beginnt mit Modus 0.</item>
 /// <item>[ORIGINAL] Die Markierung gehört zum Vereinssatz (wie Name und Logo) und wandert beim Platztausch 0x36169 mit dem Verein
@@ -110,9 +110,8 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Spielstart (Datei 0x298EA/0x29C1C: 0x0AE2B(Verein des Managers, 1, 2) je Manager in Managerfolge). [APPROX] Nach dem
-    /// Import eines Original-Spielstands (<c>OriginalImport</c>) und für einen dort schon ernannten Bundestrainer setzt das Remake
-    /// die Markierungen ebenso, statt die Bits des Spielstands zu lesen (Vereinsfeld 0x34 wird noch nicht übernommen).
+    /// Spielstart (Datei 0x298EA/0x29C1C: 0x0AE2B(Verein des Managers, 1, 2) je Manager in Managerfolge). Beim Import eines
+    /// Original-Spielstands ersetzt danach Vereinsfeld 0x34 Bits 6–7 die Markierungen (A834, <c>OriginalImport.Rest.cs</c>).
     /// </summary>
     internal void MarkStartWatches()
     {
@@ -144,6 +143,12 @@ public sealed partial class GameState
         _worldCupOptionBackup ??= Options.ShowWorldCup;
         Options.ShowWorldCup = true;
     }
+
+    /// <summary>Sicherung aus dem HOK übernehmen (A834, <c>OriginalImport.Rest.cs</c>); null = keine offen.</summary>
+    internal void ImportWorldCupOptionBackup(bool? backup) => _worldCupOptionBackup = backup;
+
+    /// <summary>Offene Sicherung des Schalters „WM-Spiele“ (DGROUP 0x22C) oder null.</summary>
+    public bool? WorldCupOptionBackup => _worldCupOptionBackup;
 
     /// <summary>[ORIGINAL] Datei 0x55757–0x5575A: Schalter nach der WM zurückstellen (vor dem Amtsende 0x5580E).</summary>
     internal void RestoreWorldCupOption()

@@ -78,6 +78,32 @@ public sealed partial class GameState
         ApplyNationalAccount(records);
         ApplyStocks(save);
         ApplyTeamTables(save, clubOf);
+        ApplyWatches(save, clubOf);
+    }
+
+    /// <summary>
+    /// Markierung zum Zusehen und Sicherung des Schalters „WM-Spiele“ aus dem HOK (Spur zusehen-rest, A834).
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] Vereinsfeld 0x34 Bits 6–7 (<see cref="Club.WatchMode"/>, Schreiber 0x0AE2B) je Satzplatz; ersetzt die
+    ///   Markierung aus Aufbau und Nachspielen (<see cref="MarkStartWatches"/>, Ernennung, Schalter „WM-Spiele“). An allen Ständen
+    ///   stehen die Managervereine im Modus 2, dazu teils ein Land (FILE11, FILE18–FILE21, FILE47–FILE49A, FILE54); Modus 1 und
+    ///   weitere Vereine (Vereinsfenster) kommen an keinem Stand vor. Sätze über die Vereinsliste hinaus (Europapokal-Gegner)
+    ///   führt das Remake nicht.</item>
+    /// <item>[ORIGINAL] DGROUP 0x22C (Block 0x21D + 15, HOK 0x0A5D7) ist die Sicherung aus Datei 0x5541F; das Remake führt sie nur
+    ///   während des Amts des Bundestrainers (<c>GameState.Watch.cs</c>), also hier nur mit Amt (Satz des Landes DGROUP 0x6AC
+    ///   +0x16 = 6 wie <c>ApplyNationalCoachOffice</c>), sonst keine offene Sicherung. FILE18–FILE21, FILE47/FILE48: 1,
+    ///   FILE49/FILE49A: 0.</item>
+    /// </list>
+    /// </summary>
+    private void ApplyWatches(OriginalSaveGame save, int[] clubOf)
+    {
+        var records = save.Block("far:9657");
+        for (var slot = 0; slot < clubOf.Length; slot++)
+            if (clubOf[slot] < Clubs.Count)
+                Clubs[clubOf[slot]].WatchMode = records[slot * OriginalSaveGame.ClubRecordLength + 0x34] >> 6;
+        var nation = save.Block("06AC")[0];
+        var inOffice = records[nation * OriginalSaveGame.ClubRecordLength + 0x16] == 6;
+        ImportWorldCupOptionBackup(inOffice ? save.Block("021D")[0x22C - 0x21D] != 0 : null);
     }
 
     /// <summary>
@@ -249,6 +275,10 @@ public sealed partial class GameState
         // aufstellt (Datei 0x54D84–0x54D9E). Ein Umschalten im gesicherten Zug (0x375 ≠ 0x376: FILE06, FILE24, FILE32) ist damit
         // verworfen (FILE24 → FILE25, FILE47 „beim erneuten Laden wieder eingesetzt“). [APPROX] Lädt der Stand an einem Tag ohne
         // Ereignis mit Menü (0x54EA0, [bp-0x1A]), zeigt das Original bis zum nächsten Ereignistag noch 0x375; nicht nachgebildet.
+        // #908 (Spur zusehen-rest Teil 3): Der Import bildet das Laden nach, nicht das Weiterspielen in derselben Sitzung. FILE72
+        // (Manager 1: 0x375/0x376 = 0/1, Reihentausch) → FILE73 (0/0, Tausch bleibt) ist ohne Laden entstanden: Nach einem Laden
+        // holte der Schleifenkopf 0x376 = 1 zurück und stellte neu auf (Datei 0x54D84–0x54D9E), der Spieltag sicherte dann 0x376 = 1
+        // (Datei 0x54FDC). Beleg ZusehenRestAufstellungTests.
         club.AutoLineupEnabled = save.Block("0375")[2 * m + 1] != 0;
     }
 

@@ -159,7 +159,7 @@ public static partial class OriginalMinutes
             teams.Add((away, 1));
         foreach (var (team, side) in teams.OrderBy(t => t.Team.InjuryManager))
         {
-            var squad = team.Squad!;
+            var squad = team.PenaltyPlayers!; // A840: ohne Reihe der Kader der Strafen (Vereinsfeld 0x16)
             if (team.ManagerValue == 100 || LineupPlayers(squad) < MinimumLineupForInjuries)
                 return;
             var v = Math.Clamp(60 - team.ManagerValue, 0, 40);

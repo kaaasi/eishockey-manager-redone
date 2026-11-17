@@ -69,7 +69,8 @@ public static partial class MatchEngine
         var match = BeginMatch(game, home, away, competition, knockOut, random);
         if (match.Report is null)
             FinishMinuteLoop(match, PlayWithScoreboard(match.Row,
-                () => OriginalMinutes.Play(match.HomeTeam, match.AwayTeam, match.Rules, random), game.Options, match.DayActive));
+                () => OriginalMinutes.Play(match.HomeTeam, match.AwayTeam, match.Rules, random), game.Options, match.DayActive,
+                NoticeTarget(match))); // A832: Tormeldung der Paarungen ohne Reihe (MatchEngine.Scoreboard.cs)
         return EndMatch(match);
     }
 
@@ -115,15 +116,20 @@ public static partial class MatchEngine
         }
         var homeManaged = IsManaged(game, home);
         var awayManaged = IsManaged(game, away);
-        var managerMatch = homeManaged || awayManaged;
+        // Spur livespiel-kern A1: [ORIGINAL] Anzeigereihe aus der Spielabrechnung 0x544C0 (nach der Spielwertung, vor dem Spiel).
+        game.PrepareMatchGate(home, away, competition); // #837: [ORIGINAL] Zuschauer aus 0x544C0 vor dem Spiel (MatchGate.cs)
+        var scoreboardRow = ScoreboardRow(game, home, away, competition);
+        // A837/A840 (Spur zusehen-rest, Teil 2): [ORIGINAL] Managerpaarung = Paarung steht in der Reihenliste DGROUP 0x233
+        // (0x52B91, Datei 0x37E7B Liga bzw. 0x38277 Pokal: Merker [bp-0xF] je Minute; 0x977F Datei 0x097E6). Die Reihe hängt
+        // 0x544C0 an, wenn Heim- oder Gastverein zum Zusehen markiert ist (LiveScoreboard); beide Vereine der Paarung stehen
+        // dann in der Liste. Vereinsfeld 0x16 (IsManaged) entscheidet nur Verletzungen (0x37ECF), Strafspieler (0x35AB8) und
+        // den schnellen Pokalweg unten.
+        var managerMatch = scoreboardRow is not null;
         var rules = new MatchRules(
             WorldCup: competition == MatchCompetition.WorldCup, // [ORIGINAL] DGROUP 0x12B nur in der WM (A008: nicht im Freundschaftsspiel)
             Playoff: competition is MatchCompetition.Playoff or MatchCompetition.Relegation,
             KnockOut: knockOut,
             ManagerMatch: managerMatch);
-        // Spur livespiel-kern A1: [ORIGINAL] Anzeigereihe aus der Spielabrechnung 0x544C0 (nach der Spielwertung, vor dem Spiel).
-        game.PrepareMatchGate(home, away, competition); // #837: [ORIGINAL] Zuschauer aus 0x544C0 vor dem Spiel (MatchGate.cs)
-        var scoreboardRow = ScoreboardRow(game, home, away, competition);
         var homeTeam = LiveTeamOf(game, home, away, homeManaged, managerMatch);
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
         PrepareFromClubFields(game, home, away, homeTeam, awayTeam, homeManaged, awayManaged);
@@ -147,7 +153,9 @@ public static partial class MatchEngine
         if (GameState.ManagerDayFlag)
             minuteLoop = true; // [ORIGINAL] Merker 0x36FEA: Managerverein spielt an diesem Tag → alle Paarungen Minute für Minute
         LastRules = rules;
-        if (!managerMatch && competition is MatchCompetition.DebCup or MatchCompetition.EuropeanCup or MatchCompetition.WorldCup
+        // [APPROX] Der schnelle Pokalweg hängt wie bisher am Manager (Vereinsfeld 0x16), nicht an der Reihe: das Original
+        // entscheidet je Spieltag über den Merker 0x36FEA (siehe oben), nicht über die Reihenliste.
+        if (!homeManaged && !awayManaged && competition is MatchCompetition.DebCup or MatchCompetition.EuropeanCup or MatchCompetition.WorldCup
                 or MatchCompetition.Playoff or MatchCompetition.Relegation or MatchCompetition.Friendly
             && !minuteLoop)
         {
@@ -290,9 +298,10 @@ public static partial class MatchEngine
     ///   Verein nicht in der Liste DGROUP 0x233 steht, also in der Spielvorbereitung (<see cref="PrepareFromClubFields"/>). In der
     ///   Managerpaarung Reihenwerte aus den eingesetzten Spielern (<see cref="LiveSquad"/>, <see cref="ManagedLineValues"/>,
     ///   0x98F8); Strafen mit dem Managerwert des nächsten Managersatzes (0x35890, <see cref="ManagedTeamValues"/>).
-    ///   [APPROX] Im Remake ist jedes Spiel eines Managervereins eine Managerpaarung; im Original nur mit Live-Anzeige (Verein
-    ///   zum Zusehen markiert, Liste 0x233 aus 0x5353C) – ohne sie spielt der Managerverein auch die Minuten mit den
-    ///   Vereinsfeldern.</item>
+    ///   [ORIGINAL] A837: Managerpaarung nur mit Reihe (Verein zum Zusehen markiert, Liste 0x233, 0x52B91; <paramref name="managerMatch"/>)
+    ///   – ohne sie spielt der Managerverein die Minuten mit den Vereinsfeldern (0x977F, Datei 0x097E6–0x0984F), ohne
+    ///   Taktik je Minute; Strafen und Verletzungen wählen dann ihre Spieler aus dem ganzen Kader
+    ///   (<see cref="LiveTeam.PenaltySquad"/>, 0x378C5 Datei 0x379A3).</item>
     /// <item>Nationalteams (Vereinsplätze 52–63 ohne Kader, auch das Land des Bundestrainers): [ORIGINAL] eigene Teamwerte,
     ///   beim Bundestrainer Kader, Taktik und Strafspieler – <see cref="NationalLiveTeam"/> (Spur wettbewerbe-spiel, Teil 3).</item>
     /// </list>
@@ -359,11 +368,14 @@ public static partial class MatchEngine
             Managed = managed,
             LineChange = managed ? club.Tactics.LineChange : null,
             Squad = managerMatch ? squad : null,
+            PenaltySquad = managerMatch ? null : squad, // A837: [ORIGINAL] 0x378C5 für Vereinsfeld 0x16 ≠ 0 auch ohne Reihe
             PenaltyManagerValue = penaltyValue,
             TacticsStrength = value,
             TacticsOpponentStrength = opponentValue,
             FewFitPlayers = fewFit,
-            InjuryManager = managerMatch && squad is not null ? injuryManager : null,
+            // A840: [ORIGINAL] Verletzungen 0x38B8F für jeden Verein mit Vereinsfeld 0x16 ≠ 0 (Datei 0x37ECF–0x37F06), der Merker
+            // [bp-0xF] geht als Argument mit, 0x38B8F liest ihn nicht.
+            InjuryManager = squad is not null ? injuryManager : null,
             ManagerValue = ownValue,
             // Teil 4: [ORIGINAL] Zähler des Managers (Vereinsfeld 0x16 = Manager + 1 → DGROUP 0x97D2 + 0x1AF · Manager).
             PowerPlayCounts = managed ? manager?.PowerPlayCounts : null,

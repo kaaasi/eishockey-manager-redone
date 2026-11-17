@@ -97,6 +97,9 @@ public sealed class LiveReporter
     /// <summary>Inhalt des Kastens (leer = nur der Hintergrund aus kb\19).</summary>
     public IReadOnlyList<ReporterLine> Lines => _lines;
 
+    /// <summary>Reporterkasten leeren (Tormeldung A832: Rechteck aus der Hintergrundkopie, <see cref="LiveGoalNotice"/>).</summary>
+    public void ClearLines() => _lines.Clear();
+
     /// <summary>Offener Mund 0 … 6 oder −1 (geschlossen).</summary>
     public int Mouth { get; private set; } = -1;
 

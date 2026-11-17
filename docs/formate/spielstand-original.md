@@ -508,7 +508,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._teamRecords` | B | `AB7B+0x1194` | DGROUP 0xBD0F + 0x10 · Verein + 2 · Art |
 | `GameState._vacantNationalTactics` | A | `far:9657+0x26`, `A6FB+5`, `CAE9` (+0x30 · 5) | ohne Bundestrainer: Modi und Werte des Satzes 5, Anzeige „AUTOM.“ aus dem Vereinssatz des Landes (+0x26–0x2B, +0x35–0x3A) |
 | `GameState._worldCupRankings` | U | – | leer |
-| `GameState._worldCupOptionBackup` | U | `021D+15` | DGROUP 0x22C: Sicherung des Schalters „WM-Spiele“ während der WM des Bundestrainers (Spur `zusehen` Teil 2, Schema 52; Datei 0x5541F/0x5575A). Ort belegt, der Import liest ihn nicht: null |
+| `GameState._worldCupOptionBackup` | A | `021D+15` | DGROUP 0x22C: Sicherung des Schalters „WM-Spiele“ während der WM des Bundestrainers (Spur `zusehen` Teil 2, Schema 52; Datei 0x5541F/0x5575A). Import (Spur `zusehen-rest`, A834, `OriginalImport.Rest.cs`): mit Amt des Bundestrainers der Wert, sonst null (Sicherung im Remake nur während des Amts); Export unverändert nicht geschrieben |
 
 ### GameSetup, GameOptions, ManagerSetup
 
@@ -659,7 +659,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Club.ReferenceRating` | N | – | neu aus der Auto-Aufstellung |
 | `Club.SeriesCurrent` | B | `AB7B+0xA00` | DGROUP 0xB57B + 0x15 · Satz (64 Sätze) |
 | `Club.Strength` | A | `far:9657` | Datenbankstärke `kb\23` |
-| `Club.WatchMode` | U | `far:9657+0x34` Bits 6–7 | Markierung zum Zusehen (Spur `zusehen`, Schema 52; Schreiber 0x0AE2B). Ort belegt, der Import liest die Bits noch nicht: setzt `[APPROX]` die Managervereine und das Land des Bundestrainers auf Modus 2 (`GameState.MarkStartWatches`) |
+| `Club.WatchMode` | A | `far:9657+0x34` Bits 6–7 | Markierung zum Zusehen (Spur `zusehen`, Schema 52; Schreiber 0x0AE2B). Import je Satzplatz (Spur `zusehen-rest`, A834, `OriginalImport.Rest.cs`); der Export schreibt weiter Bit 7 nur für die Managervereine (`OriginalExport.League.cs`) |
 | `Club.Tactics` | B | `A6FB`, `A707`, `A701`, `CAE9` | Zeilen `Tactics` (Managervereine); sonst Automatik |
 | `Club.TeamValues` | B | `far:9657+0x17` | Zeilen `ClubTeamValues` |
 | `Club._autoLineup` | B | `0375+0` | 0x375 + 2 · m (aktuell); 0x376 + 2 · m sichert den Wert über die Spiele des Tages (re-runde-14.md, Taktik 375h) |
