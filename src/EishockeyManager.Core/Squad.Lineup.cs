@@ -416,14 +416,31 @@ public sealed partial class Club
     }
 
     /// <summary>
-    /// Auto-Aufstellung („A“): Einstellung „automatisch aufstellen“ ein und sofort neu aufstellen (Datei 0x426BC,
-    /// <see cref="AutoLineupRule"/>). [APPROX] Im Original schaltet der Taktikbildschirm die Einstellung ein, gefolgt von
-    /// derselben Neuaufstellung (Datei 0x48E62, <c>docs/analyse/re-geld.md</c> Taktik Schritt 5).
+    /// Einstellung ein und sofort neu aufstellen (Datei 0x426BC, <see cref="AutoLineupRule"/>); die Kurzform für Spielaufbau, Skripte
+    /// und Tests. [ORIGINAL] A681 (Teil-V A673): Der Weg des Originals ist der Taktikbildschirm, es gibt keine Taste „A“ in der
+    /// Aufstellung – Knopf 0 schaltet um (<see cref="SetAutoLineup"/>), beim Verlassen folgt die Neuaufstellung
+    /// (<see cref="CloseTactics"/>; Datei 0x47CA0, 0x48E62 Schritt 5, <c>docs/analyse/re-geld.md</c>).
     /// </summary>
     public void AutoLineup()
     {
         _autoLineup = true;
         ApplyAutoLineup();
+    }
+
+    /// <summary>
+    /// Taktikbildschirm, Knopf 0 (oben links, „AUTOM.“/„MANUELL“): schaltet die Einstellung um. [ORIGINAL] A673/A681: Datei
+    /// 0x47CA0–0x47CE5 (Zeiger DGROUP 0x375 + 2 · Manager), Aufruf der Neuaufstellung erst beim Verlassen (<see cref="CloseTactics"/>).
+    /// </summary>
+    public void SetAutoLineup(bool on) => _autoLineup = on;
+
+    /// <summary>
+    /// Verlassen des Taktikbildschirms (Datei 0x48E62 Schritt 5): wurde „automatisch aufstellen“ dort eingeschaltet
+    /// (<paramref name="autoAtOpen"/> war aus), folgt sofort die Neuaufstellung (Datei 0x426BC).
+    /// </summary>
+    public void CloseTactics(bool autoAtOpen)
+    {
+        if (_autoLineup && !autoAtOpen)
+            ApplyAutoLineup();
     }
 
     /// <summary>Rechtsklick in der Kaderliste: eingesetzten, nicht aufgestellten Spieler herausnehmen (Datei 0x40F45–0x40F59).</summary>

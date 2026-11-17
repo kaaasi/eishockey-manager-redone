@@ -80,4 +80,32 @@ public class EinzelpunkteTests
         multi.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 6, StartLeague = League.Bundesliga });
         Assert.All(NewGame.Create(TestGames.CreateDatabase(), multi, 3).Managers, m => Assert.False(m.OneSeasonFlag));
     }
+
+    /// <summary>
+    /// A492, Datei 0x47CA0 (Knopf 0 → DGROUP 0x375 + 2 · m bzw. 0x37F des Bundestrainers) und 0x48E62 Schritt 5: Die Nationalaufstellung
+    /// schaltet „automatisch aufstellen“ nur im Taktikbildschirm ein; beim Verlassen folgt die Neuaufstellung, nur wenn die
+    /// Einstellung dort eingeschaltet wurde. Vorher schaltete „A“ in der Aufstellung ein.
+    /// </summary>
+    [Fact]
+    public void NationalCoach_TacticsSwitch_LinesUpOnLeaveOnlyIfSwitchedOn()
+    {
+        var game = TestGames.Create();
+        game.AppointNationalCoach(game.Managers[0]);
+        game.AutoNominate();
+        var coach = game.NationalCoach!;
+        coach.BeginTurn(); // Zug des Bundestrainers: die aktuelle Einstellung (0x37F) gilt
+        coach.SwitchOffAutoLineup();
+        var slot = LineupSlot.All.First(s => coach.Formation[s] is not null);
+        coach.ClearSlot(slot);
+
+        coach.CloseTactics(autoAtOpen: false); // Einstellung aus: nichts
+        Assert.Null(coach.Formation[slot]);
+
+        coach.SetAutoLineup(true);
+        coach.CloseTactics(autoAtOpen: true); // war schon an: nichts
+        Assert.Null(coach.Formation[slot]);
+
+        coach.CloseTactics(autoAtOpen: false); // im Bildschirm eingeschaltet: Neuaufstellung
+        Assert.NotNull(coach.Formation[slot]);
+    }
 }

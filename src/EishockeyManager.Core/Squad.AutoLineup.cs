@@ -160,8 +160,8 @@ public sealed partial class Club
     /// <summary>
     /// Einstellung „automatisch aufstellen“ (DGROUP 0x375 + 2 · Manager). [ORIGINAL] Startwert 1 (statisch, Datei
     /// 0x16DD0 + 0x375); ein Eingriff in der Aufstellung schaltet sie ab (Datei 0x40ADE, 0x40DE4).
-    /// [APPROX] Das Remake führt sie je Verein statt je Manager und schaltet sie mit „A“ in der Aufstellung wieder ein (im
-    /// Original kippt sie der Taktikbildschirm, Datei 0x47F4E/0x49058).
+    /// [APPROX] Das Remake führt sie je Verein statt je Manager. [ORIGINAL] A681: Eingeschaltet wird sie im Taktikbildschirm (Knopf 0,
+    /// Datei 0x47CA0/0x47F4E/0x49058), beim Verlassen folgt die Neuaufstellung (<see cref="CloseTactics"/>).
     /// </summary>
     private bool _autoLineup = true;
 
