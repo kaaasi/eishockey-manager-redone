@@ -42,6 +42,35 @@ public class ReiheBeiSpielbeginnTests
     }
 
     /// <summary>
+    /// Review #881 P3-2 (#882): Rundlauf Original-Spielstand → Remake → Export (<c>OriginalExport.League.cs</c> 0x2E/0x30) → Import.
+    /// Die Reihen auf dem Eis der Vereine stehen im Satz wie im Original (FILE61: KÖLNER EC und ESV KAUFBEUREN 1/1, FILE50: Köln
+    /// 0/2); Mutation <c>r[0x30] = 0</c> oder <c>r[0x2E] = 0</c> im Export macht den Test rot.
+    /// </summary>
+    [GameDataTheory]
+    [InlineData("FILE50.HOK", "KÖLNER EC", 0, 2)]
+    [InlineData("FILE61.HOK", "KÖLNER EC", 1, 1)]
+    [InlineData("FILE63.HOK", "ESV KAUFBEUREN", 1, 1)]
+    public void Export_WritesMatchLines_RoundTrip(string saveName, string clubName, int defense, int attack)
+    {
+        var raw = OriginalExportTests.RawDatabase();
+        var original = OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave(saveName)));
+        var game = GameState.ImportOriginal(original, ClubDatabase.Parse(raw), HokCompare.DefaultSeed);
+        var club = game.Clubs.Single(c => c.Name == clubName);
+        Assert.Equal((defense, attack), (club.Tactics.MatchDefenseLine, club.Tactics.MatchAttackLine));
+
+        var again = GameState.ImportOriginal(OriginalSaveGame.Read(OriginalExport.Export(game, raw)),
+            ClubDatabase.Parse(raw), HokCompare.DefaultSeed);
+        var wrong = game.Clubs.Where(c => !TransferMarket.IsNationalTeam(c) && c.Index < again.Clubs.Count)
+            .Where(c => (c.Tactics.MatchDefenseLine, c.Tactics.MatchAttackLine) !=
+                (again.Clubs[c.Index].Tactics.MatchDefenseLine, again.Clubs[c.Index].Tactics.MatchAttackLine))
+            .Select(c => $"{c.Name}: {c.Tactics.MatchDefenseLine}/{c.Tactics.MatchAttackLine} → " +
+                $"{again.Clubs[c.Index].Tactics.MatchDefenseLine}/{again.Clubs[c.Index].Tactics.MatchAttackLine}").ToList();
+        Assert.True(wrong.Count == 0, string.Join("; ", wrong));
+        var after = again.Clubs[club.Index].Tactics;
+        Assert.Equal((defense, attack), (after.MatchDefenseLine, after.MatchAttackLine));
+    }
+
+    /// <summary>
     /// Die Reihen am Ende eines Managerspiels stehen im Verein (Vereinsfelder 0x2E/0x30) und sind die Reihen beim Anpfiff des
     /// nächsten Spiels; ein Computerverein ohne Managerpaarung wechselt nicht und behält seine Reihen.
     /// </summary>

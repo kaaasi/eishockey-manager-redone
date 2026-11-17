@@ -115,8 +115,6 @@ public class WorldCupTests
         // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): Saat 4 statt 8 – mit der Spielvorbereitung aus den Vereinsfeldern
         // des Managervereins (Datei 0x097F3–0x0984F, anderer Einsatz der Automatik, anderer Zufallsverlauf) wird der Manager bei 8
         // (und 2, 10, 11, 15) Bundestrainer; Saaten 1, 3–7, 9, 12–14, 16 ohne Ernennung. Die Probe hängt an der Saat.
-        // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 5 statt 4 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 4 (und 6, 8) wird der Manager Bundestrainer (Phase bleibt ClubSeasonOver); 5, 7, 9 ohne Ernennung. Die Probe hängt an der Saat.
-        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 4 statt 5 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; bei Saat 5 (und 7) wird der Manager Bundestrainer, 1–4, 6, 8 ohne Ernennung. Die Probe hängt an der Saat.
         var game = Create(4, true, 30);
         while (game.Phase == SeasonPhase.Running)
             game.Continue();

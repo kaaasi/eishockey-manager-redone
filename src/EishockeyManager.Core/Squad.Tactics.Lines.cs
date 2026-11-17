@@ -7,8 +7,10 @@ namespace EishockeyManager.Core;
 /// [ORIGINAL] Vereinsfelder 0x2E (Abwehr) und 0x30 (Sturm) bleiben im Vereinssatz zwischen den Spielen stehen: Die
 /// Spielvorbereitung 0x84D7 (Datei 0x84EB–0x857D, Argument 0) setzt je Verein nur die Minuten auf dem Eis 0x2F/0x31 auf 0
 /// (Datei 0x853F) und bei Computervereinen den Wechselmodus 0x2C Bits 0–2 (Datei 0x8521), die Reihen nicht. Geschrieben werden
-/// sie nur im Reihenwechsel 0x8EF2 (Datei 0x91CF/0x91E3, Managerpaarungen), in der Neuzählung 0x388F6 (Datei 0x38A2A) und bei
-/// gesetztem 0x2C Bit 3 in 0x84D7 selbst (Datei 0x857D). Beleg: DOSBox `runde-19`, KÖLNER EC in FILE50 mit 0/2 beginnt Spieltag
+/// sie nur im Reihenwechsel 0x8EF2 (Datei 0x91CF/0x91E3, Managerpaarungen), im Eingriffsmenü 0x38D96 (Datei 0x38FAA,
+/// <c>mov [es:bx+0x2e+2·Teil],al</c>; Remake <c>MatchEngine.Intervention.cs</c>, landet über <c>KeepMatchFields</c> im Feld), in
+/// der Neuzählung 0x388F6 (Datei 0x38A2A) und bei gesetztem 0x2C Bit 3 in 0x84D7 selbst (Datei 0x857D; für jeden Verein, auch
+/// Managervereine, und nicht an 0x16 gebunden). Beleg: DOSBox `runde-19`, KÖLNER EC in FILE50 mit 0/2 beginnt Spieltag
 /// 2 mit Abwehr 0 und Sturm 2 bis Minute 3 (<c>docs/analyse/abgleich-dosbox.md</c> §4.1). Beim Spielstart stehen beide Felder
 /// aller Vereine auf 0 (FILE02).
 /// </remarks>

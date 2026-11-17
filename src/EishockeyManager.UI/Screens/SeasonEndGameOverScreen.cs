@@ -53,7 +53,7 @@ public sealed class SeasonEndGameOverScreen : Screen
         if (_dismissedManager is not null || _highscoreShown || HighscoreRules.Key(Game.Setup) is null)
             return;
         _highscoreShown = true;
-        Host.Show(new Statistics.HighscoreScreen(Host, this));
+        Host.Show(new Statistics.HighscoreScreen(Host, this, atGameEnd: true));
     }
 
     public override void Update(InputState input)

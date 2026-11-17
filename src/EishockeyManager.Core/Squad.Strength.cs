@@ -89,6 +89,9 @@ public static class TeamStrength
     /// dazwischen bewegt von der Wanderung 0x9D1B. [APPROX] Das Mittel der vier Felder als eine Zahl gibt es im Original nicht;
     /// das Remake braucht sie nur, wo es Vereine im Maßstab der Datenbankstärke vergleicht (Spiele gegen Nationalteams ohne
     /// Spielvorbereitung 0x8365, siehe <see cref="MatchEngine.TeamValue"/>).
+    /// [APPROX] Das Original ruft 0x952C auch beim Verlassen der Vereinsaufstellung (Datei 0x41506–0x4151A); das Remake nur für
+    /// den Bundestrainer (<c>OnNationalLineupLeft</c>). Zwischen zwei Schreibzeitpunkten bleiben die Felder deshalb nach einer
+    /// Änderung der Aufstellung stehen (Issue #908, Review #906 P3-1; Runde 22).
     /// </summary>
     public static int FieldValue(Club club)
     {

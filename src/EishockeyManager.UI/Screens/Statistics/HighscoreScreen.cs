@@ -147,14 +147,21 @@ public sealed class HighscoreScreen : Screen
     private readonly Screen _back;
 
     /// <param name="table">Nur für Bildschirmfotos: feste Liste statt der des laufenden Spiels (dann ohne Eintragen).</param>
-    public HighscoreScreen(ScreenHost host, Screen back, HighscoreTable? table = null) : base(host)
+    /// <param name="atGameEnd">
+    /// Anzeige am Spielende (<see cref="SeasonEndGameOverScreen"/>). [ORIGINAL] <c>file54_4</c> (Review #881 P3-4, #882): Der Eintrag der
+    /// Sitzung steht dort in Farbe 10 (130, 211, 227), nicht in Farbe 7. [APPROX] Ursache: Im Original steht an der Stelle der Sitzungs-
+    /// kennung DGROUP 0x2C4, deren Herkunft nicht geprüft ist; das Remake behält Farbe 7 für Einträge der Sitzung im Menü.
+    /// </param>
+    public HighscoreScreen(ScreenHost host, Screen back, HighscoreTable? table = null, bool atGameEnd = false) : base(host)
     {
         _back = back;
+        _atGameEnd = atGameEnd;
         _showTitles = host.Game is not { WorldOnly: true };
         Table = table ?? HighscoreStore.For(host).Record() ?? new HighscoreTable();
     }
 
     private readonly bool _showTitles;
+    private readonly bool _atGameEnd;
 
     public HighscoreTable Table { get; }
 
@@ -178,7 +185,7 @@ public sealed class HighscoreScreen : Screen
             if (entry.IsEmpty)
                 continue;
             var y = FirstBaseline + RowPitch * i;
-            var color = entry.Stamp == HighscoreStore.SessionStamp ? NewRowColor : RowColor;
+            var color = !_atGameEnd && entry.Stamp == HighscoreStore.SessionStamp ? NewRowColor : RowColor;
             CompetitionWidgets.Centered(s, mini, NameX, 0, y, Shorten(mini, entry.Name), color, RowShadow, left: true);
             CompetitionWidgets.Centered(s, mini, ClubX, 0, y, entry.Club, color, RowShadow, left: true);
             CompetitionWidgets.Centered(s, mini, ScoreX, 0, y, CompetitionWidgets.Number(entry.Score, 5), color, RowShadow, left: true);

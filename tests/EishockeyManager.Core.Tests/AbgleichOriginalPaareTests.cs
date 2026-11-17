@@ -94,15 +94,10 @@ public class AbgleichOriginalPaareTests
                 new("Invariante.PoolMittel.Strain", Chance, Optional: true),
                 // Zufall: Wanderung der Teamwerte des Leerplatzes, seit #784 nur Saat 3 (12 → −4).
                 new("Clubs[51 LEER4].TeamValues.AttackCondition", Chance, Optional: true),
-                // Runde 21, Spur zufallsstrom Teil 2 (A107, R21-D2 = A): Die kleine Wanderung geht in der Satzfolge des Originals
-                // (Datei 0x09D23–0x09D33) statt nach Vereinsindex; je Verein fallen damit andere Würfe. Abwehr-Kondition FRANKFURT
-                // nur bei der Standardsaat außerhalb (Original −9, Remake 8), Leerplatz LEER3 nur bei Saat 77 (18 zu 2) – Werte der
-                // Wanderung wie LEER4 oben, die übrigen Prüfsaaten treffen.
-                new("Clubs[13 ESC FRANKFURT].TeamValues.DefenseCondition", Chance, Optional: true),
-                new("Clubs[50 LEER3].TeamValues.DefenseCondition", Chance, Optional: true),
-                // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): Mit Pokalen und Finanzen im gemeinsamen Strom fallen bis zur
-                // Wanderung andere Würfe; Leerplatz LEER4 liegt bei den Saaten 3 und 77 in der Abwehr-Kondition außerhalb (Original
-                // 10, Remake −6) – dasselbe Zufallsmuster wie LEER4.AttackCondition oben, kein neu eingetragener Originalwert.
+                // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, Erstreview #909 P3-1: als einziges Muster nötig, Base-Liste sonst
+                // grün): Mit Pokalen und Finanzen im gemeinsamen Strom fallen bis zur Wanderung andere Würfe; Leerplatz LEER4 liegt
+                // bei den Saaten 3 und 77 in der Abwehr-Kondition außerhalb (Original 10, Remake −6) – dasselbe Zufallsmuster wie
+                // LEER4.AttackCondition oben, kein neu eingetragener Originalwert.
                 new("Clubs[51 LEER4].TeamValues.DefenseCondition", Chance, Optional: true)],
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
@@ -136,11 +131,7 @@ public class AbgleichOriginalPaareTests
                 new("Clubs[14 SV BAYREUTH].Players[*].HiddenSkill*", Chance, Optional: true),
                 // Zufall: LANDSHUT steigt im Original in die Oberliga ab (Teamwerte auf deren Obergrenze, alle −33), im Remake
                 // nicht (Liga über den Saisonwechsel zufallsabhängig); Abstand 21–51 je Saat.
-                new($"{Landshut}.TeamValues.*", Chance, Optional: true),
-                // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Mit den Würfen des Tageslaufs 0x07169 im gemeinsamen Strom (Datei
-                // 0x07402–0x07AEF) verläuft die Saison anders; bei Prüfsaat 3 stehen bei RATINGEN alle vier
-                // Teamwerte auf −35 (Original 13/5/6/5) – vermutlich wie LANDSHUT die Liga über den Saisonwechsel (nicht getrennt geprüft); übrige Saaten treffen nicht.
-                new("Clubs[10 EC RATINGEN].TeamValues.*", Chance, Optional: true)],
+                new($"{Landshut}.TeamValues.*", Chance, Optional: true)],
             // „nur Weltkugel“ (#732): Alter und Laufzeit des Managerkaders behoben durch abgleich-fix (0x26F20 läuft im Modus 1 nicht,
             // AbgleichFixWorldOnlyTests); Gehalt, Preis und Konto durch abgleich-rest Teil 3 (Import des Kaders von Satz 0,
             // Tagesabschluss für Satz 0 in Sommerpause und WM-Schleife; AbgleichRestWorldOnlyTests). Teamwerte des Managervereins
@@ -164,11 +155,8 @@ public class AbgleichOriginalPaareTests
             // (FILE50) bzw. mit Klicks auf die Reihenknöpfe und Torwartwechsel CISSEWSKI → HEISS in Minute 26 (FILE51, Klicks laut
             // Nutzer ohne Wirkung). Nach einem Spieltag keine Abweichung, auch nicht in der Belastung (alle Kölner ±7 bei allen
             // Prüfsaaten); Reihen je Minute: AbgleichDosboxLinesTests.
-            // Runde 21, Spur zufallsstrom Teil 1 (R21-D2 = A): Der Tageslauf 0x07169 vor dem Spieltag zieht Verträge und Angebote aus
-            // dem gemeinsamen Strom (Datei 0x07402–0x07AEF), das Spiel danach verläuft anders; bei der Standardsaat kippt MENDE (Original
-            // 123) über 127 → 50, die fünf Prüfsaaten treffen nicht. Derselbe Sägezahn wie in FILE50→FILE61 (#730), kein neuer Befund.
-            ["FILE02→FILE50"] = [StrainSawtooth("5 KÖLNER EC")],
-            ["FILE02→FILE51"] = [StrainSawtooth("5 KÖLNER EC")],
+            ["FILE02→FILE50"] = [],
+            ["FILE02→FILE51"] = [],
             // DOSBox `runde-19` (#730, Spur abgleich-dosbox-19 Teil 1): Spieltag 2 (FILE50→61, Auswärtsspiel EC RATINGEN) und 3
             // (FILE61→63, Heimspiel ESV KAUFBEUREN) desselben Laufs ohne Mausklick. Nur der Sägezahn weicht ab (MENDE 123→127 im
             // Original, im Remake bei 3 von 6 Saaten über 127 → 50; SIKORA, BRANDL je einmal); Reihen je Minute:
@@ -245,8 +233,12 @@ public class AbgleichOriginalPaareTests
     // DOSBox `runde-17` (abgleich-dosbox Teil 2): REZNICEK (Original 50) im Remake 120–125 bei 5 von 6 Saaten (nicht 2).
     [InlineData("FILE52", "FILE53", "23 ES WEIßWASSER", "REZNICEK", 110, StrainSawtoothMax, 5)]
     // Ehemals Pflichteintrag in Expected (Review #870 P3-2): ZIMMERMANN (Original 50) im Remake 97–122 bei 39 von 40 Saaten; seit
-    // #872 (Reihen aus dem Vorspiel, Runde 20 Teil 2) bei 5 von 6 Prüfsaaten (nicht 77), wie HOCK und REZNICEK.
-    [InlineData("FILE16A", "FILE17", "14 SV BAYREUTH", "ZIMMERMANN", 90, StrainSawtoothMax, 5)]
+    // #872 (Reihen aus dem Vorspiel, Runde 20 Teil 2) bei 5 von 6 Prüfsaaten (nicht 77), wie HOCK und REZNICEK. Bereich (Review #881
+    // P3-1, #882: auf 90–110 eng genug, dass eine Drift bis zum Sägezahn-Maximum auffällt): Zum Review lagen die Abweichungen bei
+    // 96–99, mit dem gemeinsamen Zufallsstrom (Runde 21, zufallsstrom) bei den Prüfsaaten 1993, 4711, 1, 2, 3, 77 jetzt bei 99, 97, 102,
+    // 122, 108, 115; 90–110 träfe nur 4 von 6. Bereich daher 90–125 (Maximum der Messung 122 mit Rand 3); die Untergrenze 100 macht
+    // den Wächter rot. Eine Drift über 125 (Sägezahn-Maximum 127) fällt auf.
+    [InlineData("FILE16A", "FILE17", "14 SV BAYREUTH", "ZIMMERMANN", 90, 125, 5)]
     public void Strain_DeviatesAtMostSeeds_DriftGuard(string a, string b, string club, string player, int min, int max, int minSeeds)
     {
         var known = StrainOf(club, min, max, player).Single();

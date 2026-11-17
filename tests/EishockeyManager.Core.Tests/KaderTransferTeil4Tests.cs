@@ -79,8 +79,7 @@ public class KaderTransferTeil4Tests
     /// Spielerstärke (|Δ| &lt; random(2, 10) in den ersten 100 Versuchen).
     /// </summary>
     [Theory]
-    // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 5 statt 4 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 4 stehen schon 10 Spieler auf dem Markt (MarketFull), 1–3 und 5–10 nicht.
-    [InlineData(5)] // bis Spur start-lader 3: mit dem Lader beim Spielstart (Datei 0x439BB) stehen dort schon 10 Spieler auf dem Markt
+    [InlineData(4)] // bis Spur start-lader 3: mit dem Lader beim Spielstart (Datei 0x439BB) stehen dort schon 10 Spieler auf dem Markt
     [InlineData(7)]
     [InlineData(11)]
     public void MarketBidder_FollowsOriginal(int seed)

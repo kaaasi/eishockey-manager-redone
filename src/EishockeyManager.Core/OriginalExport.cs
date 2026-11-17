@@ -187,9 +187,9 @@ public sealed partial class GameState
     /// <summary>Alle Blöcke eines HOK aus dem Spielstand (siehe <see cref="OriginalExport"/>).</summary>
     internal void WriteOriginal(OriginalSaveWriter w, byte[]? clubDatabase)
     {
-        // Vor dem ersten Spiel sind die Teamwerte noch nicht gezogen (MatchEngine.LoadTeamValues [APPROX]: beim ersten Spiel); das
-        // Original hat sie schon beim Spielstart (FILE01). Der Export zieht sie wie das erste Spiel und stellt danach Teamwerte und
-        // Zufallszustand wieder her, damit der Spielstand unverändert bleibt (Review 2026-11-10 B1, Export_IsPure).
+        // Neue Spiele ziehen die Teamwerte seit Spur start-lader beim Spielstart (NewGame.Create, Datei 0x439BB). Fehlen sie noch
+        // (Spielstände älterer Schemata, synthetische Aufbauten), zieht der Export sie wie das erste Spiel und stellt danach Teamwerte
+        // und Zufallszustand wieder her, damit der Spielstand unverändert bleibt (Review 2026-11-10 B1, Export_IsPure; #903 P3).
         if (Clubs.Any(c => c.TeamValues is null))
         {
             var random = Random.Capture();

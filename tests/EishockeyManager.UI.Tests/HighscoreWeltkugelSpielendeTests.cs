@@ -53,7 +53,8 @@ public sealed class HighscoreWeltkugelSpielendeTests : IDisposable
     }
 
     /// <summary>
-    /// Wie FILE54 → <c>file54_4</c>: Am Spielende steht der Manager als einziger Eintrag auf Platz 1 mit Verein DEUTSCHLAND und
+    /// Wie FILE54 → <c>file54_4</c>: Am Spielende steht der Manager als Eintrag dieser Sitzung auf Platz 1 (in der Datei des Originals folgt ein älterer Eintrag „fsdfsd“
+    /// aus einer früheren Sitzung, hier eine neue Liste) mit Verein DEUTSCHLAND und
     /// 5 Punkten (Vierter), die Liste ist als <c>h.30000</c> gespeichert, und ein Klick führt zu „Das wars…“. Rot, wenn die
     /// Punkte wieder „Weltmeistertitel + 1“ zählten (1), der Eintrag am Spielende fehlte oder doppelt käme.
     /// </summary>
@@ -100,10 +101,23 @@ public sealed class HighscoreWeltkugelSpielendeTests : IDisposable
 
         byte[] Render(HighscoreTable table)
         {
-            d.Host.Show(new HighscoreScreen(d.Host, d.Host.Current!, table));
+            d.Host.Show(new HighscoreScreen(d.Host, d.Host.Current!, table, atGameEnd: true));
             d.Frame();
             return (byte[])d.Surface.Pixels.Clone();
         }
+
+        // Review #881 P3-4: Schriftfarbe der Zeile wie im Original (file54_4: Farbe 10), nicht die der Sitzung (7).
+        int Count(byte[] pixels, byte color)
+        {
+            var n = 0;
+            for (var y = HighscoreScreen.FirstBaseline - 8; y <= HighscoreScreen.FirstBaseline + 2; y++)
+                for (var x = HighscoreScreen.NameX; x < HighscoreScreen.TitlesX; x++)
+                    if (pixels[y * Surface.Width + x] == color)
+                        n++;
+            return n;
+        }
+        Assert.True(Count(shown, HighscoreScreen.RowColor) > 20, "Zeile nicht in Farbe 10");
+        Assert.Equal(0, Count(shown, HighscoreScreen.NewRowColor));
 
         var empty = Render(new HighscoreTable());
         var six = new HighscoreTable();

@@ -28,6 +28,53 @@ public sealed class ZusehenWatchTests
         Assert.All(game.Managers, m => Assert.Equal(GameState.WatchLive, game.Clubs[m.ClubIndex].WatchMode));
     }
 
+    /// <summary>
+    /// Review #907 P3-2 (#902): Aufrufer „neuer Manager“ – [ORIGINAL] Datei 0x29C1C markiert den Verein des nachgerückten Managers
+    /// (0x0AE2B(Verein, 1, 2)); Mutation: Zeile <c>SetWatchMode</c> in <c>AddManager</c> entfernt → rot.
+    /// </summary>
+    [Fact]
+    public void AddManager_MarksNewManagerClubLive()
+    {
+        var game = Game(1, 2);
+        var manager = game.AddManager(new ManagerSetup { Name = "Neu", Head = 4, ClubIndex = 7 });
+        Assert.NotEqual(2, manager.ClubIndex);
+        Assert.Equal(GameState.WatchLive, game.Clubs[manager.ClubIndex].WatchMode);
+    }
+
+    /// <summary>
+    /// Review #907 P3-3 (#902): Der Live-Treiber richtet sich nach der Markierung (Vereinsfeld 0x34 Bit 7), nicht nach dem
+    /// Manager: Eine Paarung zweier Computervereine mit markiertem Verein läuft über den Treiber (Mutation <c>IsManaged</c> statt
+    /// <c>WatchedLive</c> in <c>MatchEngine.LiveDriver.cs</c> → rot).
+    /// </summary>
+    [Fact]
+    public void LiveDriver_RunsPairingOfWatchedComputerClub()
+    {
+        var game = Game(3, 2);
+        var managerClub = game.Managers[0].ClubIndex;
+        var watched = game.Clubs.Where(c => c.Index != managerClub && c.Index < NationalTeams.First && c.League == game.Clubs[managerClub].League)
+            .Take(3).ToList();
+        foreach (var c in watched)
+            Assert.Equal(GameState.WatchLive, game.SetWatchMode(c, evict: false, GameState.WatchLive));
+        var driver = new CountingDriver();
+        using (MatchEngine.UseLiveDriver(driver))
+            for (var i = 0; i < 3; i++)
+                game.Continue();
+        Assert.Contains(driver.Runs, r => r.Home != managerClub && r.Away != managerClub);
+    }
+
+    private sealed class CountingDriver : ILiveMatchDriver
+    {
+        public List<(int Home, int Away)> Runs { get; } = [];
+
+        public void Run(LiveMatchDay day)
+        {
+            while (day.Step())
+            {
+            }
+            Runs.Add((day.Matches[0].Home.Index, day.Matches[0].Away.Index));
+        }
+    }
+
     /// <summary>[ORIGINAL] Dritter Knopf Datei 0x4E440–0x4E46A: 0 → 1 → 2 → 0.</summary>
     [Fact]
     public void Toggle_CyclesThroughModes()

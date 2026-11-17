@@ -131,6 +131,8 @@ public sealed partial class GameState
     /// Spieler den Platz seines Namens beim eigenen Verein, sonst den ersten freien Ligaplatz seiner Art (kein Markt, nicht vergeben,
     /// kein Managerverein, nicht der erste Platz der Art; FILE01/05/09: Managerkader ab Torhüter 2, Verteidiger 22, Stürmer 98) –
     /// dessen Poolspieler entfällt im Export. Ist keiner frei, entfällt der Spieler. Jeder Index gehört genau einem Spieler (R727P-04).
+    /// [APPROX] Restlücke (PR #895, #902): Plätze auf dem Markt überspringt die Suche; das Original setzt den Managerkader vor dem
+    /// Listenwechsel, die FILE01-Plätze 22–31 hängen daher am Zufall und lassen sich hier nicht bitgenau nachbilden (offen, Runde 22).
     /// </summary>
     private void AddUnseatedSquadPlayers(Dictionary<Player, int> map, HashSet<int> managed, List<Player> missing)
     {

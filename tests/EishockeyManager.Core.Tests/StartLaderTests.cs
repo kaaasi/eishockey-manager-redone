@@ -134,8 +134,11 @@ public class StartLaderTests
 
     /// <summary>
     /// A519/A080: Beim Spielstart schreibt die Spielvorbereitung die Teamwerte der Managervereine aus der Aufstellung (Datei 0x2A073),
-    /// erst danach wandert alles (Datei 0x43A73). Gegenprobe über die Wanderung: Kondition und Technik weichen von der Aufstellung
-    /// höchstens um einen Schritt der großen Wanderung ab (s − 1 … s + 1 mit s = −6 … 12) oder liegen auf einer Liga-Grenze.
+    /// erst danach wandert alles (Datei 0x43A73). Kondition und Technik weichen von der Aufstellung höchstens um einen Schritt der
+    /// großen Wanderung ab (s − 1 … s + 1 mit s = −6 … 12) oder liegen auf einer Liga-Grenze. Der Aufruf von
+    /// <c>UpdateManagerTeamValues</c> in <c>StartGame</c> bildet nur die Reihenfolge des Originals ab (äquivalente Mutation: Die
+    /// Tageseröffnung <c>OpenStartDay</c> überschreibt die Werte wieder, Review #903 P3-2); der Test prüft den Wertebereich nach der
+    /// Wanderung, nicht die Reihenfolge.
     /// </summary>
     [Fact]
     public void A080_ManagerClubs_StartFromLineupThenDrift()
@@ -158,6 +161,28 @@ public class StartLaderTests
             Near(defense.Technique, b + v.DefenseTechnique);
             Near(attack.Technique, b + v.AttackTechnique);
         }
+    }
+
+    /// <summary>
+    /// Review #903 P3-3 (#902): Platztausch beim Spielstart – nach <c>Club.SwapStartSlot</c> tragen beide Plätze die Laderwerte
+    /// (und die Stärke) ihres Platzes, die Vereine tauschen sie (Datei 0x36169: Werte des Laders stehen schon im Vereinssatz).
+    /// </summary>
+    [Fact]
+    public void SwapStartSlot_ExchangesLoaderValuesAndStrength_BetweenSlots()
+    {
+        var game = TestGames.Create(5);
+        var (a, b) = (game.Clubs[0], game.Clubs[1]);
+        var (valuesA, valuesB) = (a.TeamValues, b.TeamValues);
+        var (strengthA, strengthB) = (a.Strength, b.Strength);
+        Assert.NotNull(valuesA);
+        Assert.NotNull(valuesB);
+        Assert.NotEqual(valuesA, valuesB);
+
+        Club.SwapStartSlot(a, b);
+
+        Assert.Equal(valuesB, a.TeamValues);
+        Assert.Equal(valuesA, b.TeamValues);
+        Assert.Equal((strengthB, strengthA), (a.Strength, b.Strength));
     }
 
     /// <summary>

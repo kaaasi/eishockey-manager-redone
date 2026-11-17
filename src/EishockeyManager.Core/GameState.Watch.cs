@@ -130,8 +130,9 @@ public sealed partial class GameState
     /// [ORIGINAL] Tagesfunktion 0x54C9F, Eintritt in die WM-Schleife Datei 0x553FF (13. April bzw. Modus 1 über 0x54D38): Datei
     /// 0x5541F sichert 0x229 nach 0x22C vor der Ernennungsschleife, jede Ernennung setzt nach 0x0AE2B(Deutschland, 1, 2) den
     /// Schalter auf 1 (Datei 0x5545F); nach dem letzten Schleifentag stellt Datei 0x55757–0x5575A ihn zurück, bevor das Amt endet
-    /// (0x5580E). Die Schleife 0x55570–0x55740 springt nur nach 0x55570 zurück, nie vor 0x5541F: die Sicherung läuft je Saison
-    /// genau einmal, die Rückstellung wirkt. Der HOK-Block 0x0A5D7 (16 Byte ab 0x21D) enthält 0x22C.
+    /// (0x5580E). Die Schleife 0x55570–0x55740 springt nach 0x55570 zurück und, wenn sich der Tagescode im Menü ändert (Laden), mit
+    /// 0x555B4 und 0x5566D (<c>jmp 0x54EDC</c>) zum „nächsten Manager“ der Tagesschleife – von dort ist 0x5541F wieder erreichbar;
+    /// im normalen Ablauf bis zum Ende der WM läuft die Sicherung je Saison genau einmal, die Rückstellung wirkt (Review #907 P3-1). Der HOK-Block 0x0A5D7 (16 Byte ab 0x21D) enthält 0x22C.
     /// [APPROX] Das Remake sichert erst bei der Ernennung (<see cref="AppointNationalCoach"/>): Ohne Ernennung gibt es in der
     /// Schleife kein Menü, in dem der Schalter sich ändern könnte – Sicherung und Rückstellung sind dann wirkungslos.
     /// </remarks>
