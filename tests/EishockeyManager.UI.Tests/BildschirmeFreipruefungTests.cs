@@ -65,6 +65,9 @@ public class BildschirmeFreipruefungTests
     private static readonly Dictionary<string, string> NeedsNationalCoach = new(StringComparer.Ordinal)
     {
         ["EishockeyManager.UI.Screens.Competitions.NationalLineupScreen.Tactics"] = "braucht einen ernannten Bundestrainer",
+        // Spur national Teil 4 (A455): Eingriff beim Nationalteam im Live-Spiel, nur mit Bundestrainer erreichbar.
+        ["EishockeyManager.UI.Screens.Live.LiveIntervention.OpenNational"] = "braucht einen ernannten Bundestrainer",
+        ["EishockeyManager.UI.Screens.Live.LiveIntervention.NationalTactics"] = "braucht einen ernannten Bundestrainer",
     };
 
     private static string? PreconditionReason(string type, string sig, StateKind kind)

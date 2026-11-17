@@ -341,6 +341,10 @@ public sealed partial class GameState
         Index = club,
         Name = Clubs[club].Name,
         Strength = Clubs[club].Strength, // Datenbankwert, wirkt nicht (NationalTeamRatings)
+        // A455 (Spur national Teil 4): [ORIGINAL] Die Markierung zum Zusehen (Vereinsfeld 0x34 Bit 7, 0x0AE2B) sitzt am Vereinsplatz
+        // des Landes; die Ernennung markiert Deutschland (Datei 0x5545F), also läuft dessen Länderspiel mit Anzeigereihe
+        // (Liste 0x233, 0x52B91) und Live-Bildschirm wie eine Managerpaarung.
+        WatchMode = Clubs[club].WatchMode,
     };
 
     /// <summary>WM-Spiel des Bundestrainers: Länderspiele für die Aufstellung zählen.</summary>

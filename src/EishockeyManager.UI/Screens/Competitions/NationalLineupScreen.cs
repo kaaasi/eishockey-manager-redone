@@ -46,6 +46,18 @@ public sealed class NationalLineupScreen : Screen
         _message = new(() => host.Game?.ActiveManager.Name ?? "");
     }
 
+    /// <summary>Aufstellung mit eigenem Weg zur Taktik (Eingriff im Spiel, <see cref="Live.LiveIntervention.OpenNational"/>).</summary>
+    public NationalLineupScreen(ScreenHost host, Screen back, Func<Screen> tactics) : this(host, back) => _tactics = tactics;
+
+    private readonly Func<Screen>? _tactics;
+
+    /// <summary>
+    /// Kennwert „im Spiel“ (Eingriff über Kopf/Logo, A455, Spur national Teil 4): Regeln von
+    /// <see cref="NationalCoach.ClickPlayerInMatch"/> und <see cref="NationalCoach.ClearSlotInMatch"/>, Kopfzeile 0x40290 mit Land
+    /// und Bundestrainer. [ORIGINAL] Derselbe Bildschirm 0x40364 wie beim Verein (<see cref="LineupScreen.InMatch"/>).
+    /// </summary>
+    public bool InMatch { get; init; }
+
     private NationalCoach? Coach => Host.Game?.NationalCoach;
 
     /// <summary>Gewählte Reihe 0–3 bzw. <see cref="NationalCoach.GoalkeeperLine"/>, null = keine (DGROUP [bp−9] = 0xFF).</summary>
@@ -67,7 +79,8 @@ public sealed class NationalLineupScreen : Screen
         }
 
         var rows = coach.Rows;
-        switch (input.Text.ToUpperInvariant())
+        // [APPROX] Wie beim Verein (LineupScreen) gibt es die Remake-Tasten A und C im Spiel nicht.
+        switch (InMatch ? "" : input.Text.ToUpperInvariant())
         {
             case "A":
                 coach.AutoFormation();
@@ -81,7 +94,7 @@ public sealed class NationalLineupScreen : Screen
 
         if (input.LeftClick && TeamUi.SwitchButton.Contains(input.MouseX, input.MouseY))
         {
-            Leave(Tactics(Host, _back));
+            Leave(_tactics?.Invoke() ?? Tactics(Host, _back));
             return;
         }
 
@@ -102,7 +115,9 @@ public sealed class NationalLineupScreen : Screen
             return;
         }
         var selected = _selectedLine;
-        var result = coach.ClickPlayer(player, ref selected, right: input.RightClick);
+        var result = InMatch
+            ? coach.ClickPlayerInMatch(player, ref selected, right: input.RightClick)
+            : coach.ClickPlayer(player, ref selected, right: input.RightClick);
         _selectedLine = selected;
         if (result is LineupResult.Assigned or LineupResult.TakenOut or LineupResult.Dressed or LineupResult.Undressed)
             _changed = true;
@@ -129,7 +144,10 @@ public sealed class NationalLineupScreen : Screen
             _message.ShowShort("Spieler ist", "noch gesperrt !"); // ersetzt die Kurzmeldung davor
             return;
         }
-        coach.ClearSlot(slot);
+        if (InMatch)
+            coach.ClearSlotInMatch(slot); // [ORIGINAL] Datei 0x40CFD: im Spiel bleibt der Spieler eingesetzt
+        else
+            coach.ClearSlot(slot);
         _changed = true;
         if (wasAuto)
             _message.ShowShort("Auto-Aufstellung", "ist deaktiviert !");
@@ -209,6 +227,8 @@ public sealed class NationalLineupScreen : Screen
         var mini = Assets.Mini;
         s.Palette = Assets.Palette;
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
+        if (InMatch && Host.Game is { } game)
+            Live.LiveIntervention.DrawHeader(s, Assets, game, national: true);
         Widgets.Frame(s, Assets, LineupScreen.Window, FrameStyle.Orange);
         if (Coach is not { } coach)
             return;

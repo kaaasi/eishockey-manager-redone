@@ -181,6 +181,30 @@ public static partial class MatchEngine
     }
 
     /// <summary>
+    /// Aufstellung des Bundestrainers nach dem Eingriff im Spiel in den Spielkader übernehmen (A455, Spur national Teil 4; Gegenstück
+    /// zu <see cref="LiveLineup.Apply"/>). [ORIGINAL] Aufstellung und Minutenrechnung schreiben dieselben Kaderplätze des Satzes 5
+    /// (DGROUP 0x5DC3 + 5 · 0x618); nach der Rückkehr zählt 0x5434C die Feldspieler des Vereins des Satzes
+    /// (DGROUP 0x966F + 5 · 0x1AF = 0x9EDA, also des Landes) neu (Datei 0x5438D–0x54419 → 0x38A36). Platz +0x15 und eingesetzt
+    /// +0x0A wie in <see cref="NationalSquad"/>, Spieler auf der Strafbank und im Spiel Verletzte bleiben draußen wie beim Verein
+    /// (<see cref="LiveLineup.Apply"/>, dort auch das [APPROX] zur Strafbank); Energie und Zähler des Spiels bleiben.
+    /// </summary>
+    public static void ApplyNationalLineup(LiveTeam team, NationalCoach coach)
+    {
+        if (!team.Managed || team.Squad is not { NationalCoach: true } squad)
+            return;
+        var standIn = coach.UsesStandInLineup ? coach.StandInFormation() : default;
+        var formation = standIn.Formation ?? coach.Formation;
+        var boxed = team.Box.Occupants.Where(o => o is not null).ToHashSet();
+        foreach (var p in squad.Players)
+        {
+            p.Position = formation.FindSlot(p.Player) is { } slot ? LiveSquad.PositionOf(slot) : 0;
+            if (!boxed.Contains(p))
+                p.Dressed = p.Player.Available && (standIn.Dressed is { } dressed ? dressed.Contains(p.Player) : coach.IsDressed(p.Player));
+        }
+        MatchIntervention.AfterLineup(team);
+    }
+
+    /// <summary>
     /// Zähler nach einem WM-Spiel des Landes des Bundestrainers (A628, Spur national Teil 2). [ORIGINAL] Der WM-Lauf 0x30E7B setzt den
     /// Torindex DGROUP 0xD0BF = 0 (Datei 0x30EA6) und rechnet ab mit Wettbewerb 8 (Datei 0x30F5F/0x31025); die Abrechnung 0x544C0
     /// zählt am Kaderplatz des Satzes 5 (DGROUP 0x5DC3 + 5 · 0x618) Spiele in +0x08/+0x20 (Europapokal, Datei 0x5494C–0x5499E), das
