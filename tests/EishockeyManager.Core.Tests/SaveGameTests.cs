@@ -76,7 +76,7 @@ public class SaveGameTests
     //    Player.PlayedLine: eingespielte Reihe, Kaderplatz +0x02 (Spur kaderplatz-werte Teil 2, A093; dieselbe Migration).
         // 56 PlayoffSeries.Marks: Marken der Play-off-Spiele (Spur hok-play-off-marken Runde 22, A612; vorläufig).
     // 57 Tactics._goaliePulledAtEnd: Vereinsfeld 0x2C Bit 3 nach dem letzten Spiel (Spur wettbewerbe-regeln Runde 22, A838; vorläufig).
-    private const string ExpectedSchemaFingerprint = "8A838380EB901D57";
+    private const string ExpectedSchemaFingerprint = "19699A653BC9ED17";
 
     // ---------- Abnahme 3: Roundtrip ----------
 
