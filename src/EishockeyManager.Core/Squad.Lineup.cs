@@ -64,6 +64,19 @@ public sealed class Lineup
     private readonly Player?[,] _forwards = new Player?[Blocks, ForwardsPerBlock];
     private readonly Player?[,] _defenders = new Player?[Blocks, DefendersPerBlock];
     private Player? _goalkeeper;
+    private Player? _goalieStandIn;
+
+    /// <summary>
+    /// Feldspieler im Tor. [ORIGINAL] A672: Ohne freien Torhüter schreibt die Auto-Aufstellung dem Feldspieler aus der Torhütersuche
+    /// +0x15 = 1 (Datei 0x42718–0x42777): er steht in der ersten Abwehrreihe, hat aber keinen Platz der Aufstellung.
+    /// </summary>
+    public Player? GoalieStandIn => _goalieStandIn;
+
+    internal void PlaceGoalieStandIn(Player player) => _goalieStandIn = player;
+
+    /// <summary>Kaderplatz +0x15 des Spielers: Platz der Aufstellung (<see cref="LiveSquad.PositionOf"/>), Feldspieler im Tor 1, sonst 0 (Reserve).</summary>
+    public int PositionOf(Player player) =>
+        FindSlot(player) is { } slot ? LiveSquad.PositionOf(slot) : ReferenceEquals(player, _goalieStandIn) ? 1 : 0;
 
     public Player? this[LineupSlot slot]
     {
@@ -124,6 +137,8 @@ public sealed class Lineup
     {
         if (!Fits(slot, player))
             return false;
+        if (ReferenceEquals(player, _goalieStandIn))
+            _goalieStandIn = null;
         var previous = FindSlot(player);
         var occupant = this[slot];
         if (previous is { } p)
@@ -196,12 +211,15 @@ public sealed class Lineup
 
     public void Remove(Player player)
     {
+        if (ReferenceEquals(player, _goalieStandIn))
+            _goalieStandIn = null;
         if (FindSlot(player) is { } slot)
             this[slot] = null;
     }
 
     public void ClearAll()
     {
+        _goalieStandIn = null;
         foreach (var slot in LineupSlot.All)
             this[slot] = null;
     }

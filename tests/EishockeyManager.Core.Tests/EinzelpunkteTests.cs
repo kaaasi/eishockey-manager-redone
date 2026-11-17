@@ -35,4 +35,49 @@ public class EinzelpunkteTests
         Assert.True(inPool[0].GoalieMinutes > other.GoalieMinutes, $"{inPool[0].GoalieMinutes} / {other.GoalieMinutes}");
         Assert.True(inPool[0].GoalsAgainst > other.GoalsAgainst);
     }
+
+    /// <summary>
+    /// A672, Datei 0x42718–0x42777: Ohne freien Torhüter bekommt der Feldspieler aus der Torhütersuche +0x15 = 1 (erste
+    /// Abwehrreihe). Vorher blieb er ohne Platz (Position 0) und stand in der Spielrechnung auf der Reserve.
+    /// </summary>
+    [Fact]
+    public void AutoLineup_WithoutGoalie_FieldPlayerStandsInFirstDefenceLine()
+    {
+        var game = TestGames.Create();
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        foreach (var g in club.Players.Where(p => p.Role == PlayerRole.Goalkeeper))
+            g.InjuredGames = 5;
+        Assert.True(club.ApplyAutoLineup());
+
+        Assert.Null(club.Lineup.Goalkeeper);
+        var squad = LiveSquad.Create(club, 1, null);
+        var standIn = Assert.Single(squad.Players, p => p.Position == 1 && !p.Goalie && club.Lineup.FindSlot(p.Player) is null);
+        Assert.True(club.IsDressed(standIn.Player));
+        Assert.Same(standIn.Player, club.Lineup.GoalieStandIn);
+        // Nach einem Eingriff von Hand ist er wieder Reserve.
+        club.Lineup.ClearAll();
+        Assert.Equal(0, club.Lineup.PositionOf(standIn.Player));
+    }
+
+    /// <summary>
+    /// A847, Datei 0x29D23 (einziger Schreiber), 0x5D351: „eine Saison, ein Manager“ setzt das Managerbyte 0x9744 = 1; die
+    /// Bestenliste zählt es als viertes Pokalbyte mit 150 Summenpunkten. Vorher fehlten diese Punkte.
+    /// </summary>
+    [Fact]
+    public void OneSeasonSingleManager_SetsFlag_HighscoreCountsIt()
+    {
+        var setup = new GameSetup { Duration = GameDuration.EineSaison };
+        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = 5, StartLeague = League.Bundesliga });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
+        Assert.True(game.Managers[0].OneSeasonFlag);
+        var with = HighscoreRules.Points(HighscoreRules.Inputs(game, 0));
+        game.Managers[0].OneSeasonFlag = false;
+        var without = HighscoreRules.Points(HighscoreRules.Inputs(game, 0));
+        Assert.InRange(with - without, 7, 8); // 150 Summenpunkte, geteilt (etwa 7 Punkte)
+
+        var multi = new GameSetup { Duration = GameDuration.EineSaison };
+        multi.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 5, StartLeague = League.Bundesliga });
+        multi.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 6, StartLeague = League.Bundesliga });
+        Assert.All(NewGame.Create(TestGames.CreateDatabase(), multi, 3).Managers, m => Assert.False(m.OneSeasonFlag));
+    }
 }

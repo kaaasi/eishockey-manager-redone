@@ -230,8 +230,8 @@ public sealed class HighscoreInputs
 /// <list type="bullet">
 /// <item>Spielerwerte nach 0x49D36 (<see cref="PlayerValue"/>, Spur spielerwert) mit den Eingängen des Remakes (dort [APPROX]); die
 ///   Bewertung und die Spielerwerte rechnen mit festen Zufallsströmen, damit das Öffnen des Bildschirms nichts verändert.</item>
-/// <item>Der Europapokal-Stand (Gruppe 1, Endrunde 2) und die weiteren Pokalbytes (nur 0x9744 = 1 bei einem Manager im Spieljahr 1994
-///   ist belegt) sind nicht abgebildet; Meister-Kennzahl 0x80 | 0x35 statt der Play-Off-Stufe des Brackets.</item>
+/// <item>Der Europapokal-Stand (Gruppe 1, Endrunde 2) und die zwei weiteren Pokalbytes sind nicht abgebildet (das vierte, 0x9744 = 1
+///   bei einem Manager im Spieljahr 1994, schon: <see cref="Manager.OneSeasonFlag"/>, A847); Meister-Kennzahl 0x80 | 0x35 statt der Play-Off-Stufe des Brackets.</item>
 /// </list>
 /// Die Formel enthält Eigenheiten, die wie im Original übernommen sind: Der Meister erhält durch die Kennzahl 0x80 + … einen
 /// <i>negativen</i> Ligaterm (36 − 181) · 7, und die Europapokal-Wertung entfällt für ausgeschiedene DEB-Teilnehmer.
@@ -387,6 +387,7 @@ public static class HighscoreRules
             cups[0] = deb.Rounds.Select((r, i) => (r, i)).LastOrDefault(x => x.r.Any(t => t.Involves(club.Index))).i + 1;
         if (game.EuropeanCup is { } europe && europe.Draw.Contains(club.Index))
             cups[1] = europe.FinalRound?.Contains(club.Index) ?? false ? 2 : 1;
+        cups[3] = m.OneSeasonFlag ? 1 : 0; // [ORIGINAL] A847: viertes Byte (0x9744), Datei 0x5D351
 
         return new HighscoreInputs
         {

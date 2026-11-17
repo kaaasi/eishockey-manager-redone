@@ -67,8 +67,7 @@ public static class SquadSlotRules
         {
             if (TransferRules.Random16(random, 0, 4) != 0)
                 continue;
-            var place = club.Lineup.FindSlot(players[i]);
-            players[i].PlayedLine = place is { } s ? LiveSquad.PositionOf(s) & 0x7F : 0;
+            players[i].PlayedLine = club.Lineup.PositionOf(players[i]) & 0x7F;
         }
     }
 }
