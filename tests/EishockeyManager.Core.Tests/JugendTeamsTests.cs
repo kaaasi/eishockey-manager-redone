@@ -196,6 +196,7 @@ public class JugendTeamsTests
         // Integration Runde 12: neu ermittelt, weil wettbewerbe-spiel (A184 Belastung, A174 Computervereine) die Ligaergebnisse und
         // damit den Zufallsverbrauch vor der Jugendrechnung ändert; Richtung (aktiv ≥ +15, passiv ≤ −15) unverändert geprüft.
         // Integration Runde 12 (+ kader-transfer): erneut neu, U4/U5/U9 ändern Ligaergebnisse und Zufallsverbrauch.
+        // Runde 22, Spur einzelpunkte (A421): neu – andere Werbeangebote verschieben Konten und Ligaverlauf (Bisect: 7b428f4); Richtung unverändert geprüft.
         Assert.Equal(active ? ExpectedActive : ExpectedPassive, run);
     }
 
