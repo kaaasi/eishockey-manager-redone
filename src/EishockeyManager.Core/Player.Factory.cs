@@ -241,7 +241,9 @@ public static class PlayerFactory
         Check(p.Form is >= 1 and <= Player.MaxValue, $"Form {p.Form}");
         // A184 (Spur wettbewerbe-spiel, Runde 12): Belastung (Kaderplatz +0x13) statt Energie; gültig 50 … 150 wie nach Training
         // und Spiel (Datei 0x6B13, 0x549A2). Belastung 150 hieß vorher Energie 0 und war ungültig.
-        Check(p.Strain is >= TrainingRules.MinStrain and <= TrainingRules.MaxStrain, $"Belastung {p.Strain}");
+        // A499 (Spur national Teil 2): [ORIGINAL] Marktspieler verlieren in 0x07169 ohne Untergrenze 10 (Datei 0x071BB–0x071C8), also
+        // bis GameState.MinMarketStrain = 47; Training und Spiel heben die Belastung wieder auf 50 … 150.
+        Check(p.Strain is >= GameState.MinMarketStrain and <= TrainingRules.MaxStrain, $"Belastung {p.Strain}");
         Check(p.Number is >= 1 and <= MaxNumber, $"Rückennummer {p.Number}");
         Check(club.Players.Count(q => q.Number == p.Number) <= 1, $"Rückennummer {p.Number} doppelt");
         Check(p.ContractYears is >= Contracts.MinYears and <= Contracts.MaxYears, $"Vertragsdauer {p.ContractYears}");

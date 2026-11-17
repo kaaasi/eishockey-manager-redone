@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(57, SaveGame.SchemaVersion);
+        Assert.Equal(58, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -74,10 +74,14 @@ public class SaveGameTests
     // 54 GameState._cupRandom und _financeRandom entfallen (Spur zufallsstrom Teil 4).
     // 55 Player.PoolCondition/PoolTechnique: Poolwerte +0x15/+0x16 neben dem Kaderplatz (Spur kaderplatz-werte Runde 22, A714; vorläufig).
     //    Player.PlayedLine: eingespielte Reihe, Kaderplatz +0x02 (Spur kaderplatz-werte Teil 2, A093; dieselbe Migration).
-        // 56 PlayoffSeries.Marks: Marken der Play-off-Spiele (Spur hok-play-off-marken Runde 22, A612; vorläufig).
-    // 57 Tactics._goaliePulledAtEnd: Vereinsfeld 0x2C Bit 3 nach dem letzten Spiel (Spur wettbewerbe-regeln Runde 22, A838; vorläufig).
+    // 56 PlayoffSeries.Marks: Marken der Play-off-Spiele (Spur hok-play-off-marken Runde 22, A612; vorläufig).
+    // 57 NationalCoach.PowerPlayCounts: Über-/Unterzahl-Zähler des Satzes 5 (Spur national Runde 22 Teil 1, A097; Schema 57 nach hok-play-off-marken);
+    //    GameState._worldCupLastPenaltyCoachDay: WM-Tag der letzten Strafe beim Land des Bundestrainers (Teil 2, A498),
+    //    WorldCup._nextOrder: am 29. April gemischte Länderreihenfolge (Teil 2, A825),
+    //    NationalSquadMember.Source: Spieler im Verein/Pool zum eigenen Kaderplatz des Satzes 5 (Teil 3, A412).
+    // 58 Tactics._goaliePulledAtEnd: Vereinsfeld 0x2C Bit 3 nach dem letzten Spiel (Spur wettbewerbe-regeln Runde 22, A838; vorläufig, nach national).
     //    GameState._youthOfDayDone: Jugend des Tages im alten Stand schon gerechnet (Teil 2, A384/A670; dieselbe Migration).
-    private const string ExpectedSchemaFingerprint = "03F458095433F84F";
+    private const string ExpectedSchemaFingerprint = "9E4768CB7E35455D";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

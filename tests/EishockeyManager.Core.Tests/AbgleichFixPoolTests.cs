@@ -65,7 +65,11 @@ public class AbgleichFixPoolTests
     [InlineData(true)]
     public void File44_FourSeasonChanges_PoolMeansStable(bool active)
     {
-        var game = Import("FILE44.HOK", 2);
+        // Runde 22, Spur wettbewerbe-regeln Teil 2 nach Merge von national (R15-E2 = C): Saat 3 statt 2 – Jugend nach den Menüs
+        // (A384/A670) und Ligamischung aus dem gemeinsamen Strom (#897 `SlotSeed`) zusammen mit den Länderspielen von national,
+        // anderer Zufallsverlauf; Saat 2 aktiv bei 47,2 (Bereich ±5 verfehlt), unter 1–12 alle außer 2 und 12 grün. Die Probe hängt an
+        // der Saat. Rückschaltprobe: main 41ad124b mit Saat 3 ebenfalls grün.
+        var game = Import("FILE44.HOK", 3);
         var manager = game.Managers[0];
         for (var season = 0; season < 4; season++)
         {

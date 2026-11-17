@@ -411,9 +411,16 @@ public sealed partial class GameState
         // [ORIGINAL] Ewige Tabelle nach dem Austausch (Datei 0x563AF ruft 0x5667A), mit der Liga der nächsten Saison
         // (Spur saisonwechsel Teil 3, S-K4; StatisticsHistory.cs). Ewige Bilanz und „Früher“ hängen nicht am Austausch.
         RecordSeasonStatistics();
+        // A825 (Spur national Teil 2): [ORIGINAL] 0x35EDD mischt am 29. April zuerst die Länder (Datei 0x5644E, 0x35EE3–0x35FC9: 40 Würfe
+        // aus dem gemeinsamen Strom, ohne Modusprüfung; CupsWorld.cs), danach die Ligen (Datei 0x36013 ff.).
+        if (WorldCup is { } worldCup)
+            worldCup.MixForNextSeason(Random);
+        else
+            Core.WorldCup.MixThrows(Random);
         // [ORIGINAL] Ligamischung am 29. April nach Austausch und Ewiger Tabelle, vor dem Fenster mit den Prämien (Datei 0x5644E vor
-        // 0x5645D; Spur saison Teil 3, S-K6-a, SeasonFlow.LeagueSlots.cs). Zieht seit Spur wettbewerbe-regeln Teil 2 (#897, N3 = B)
-        // 3 · 55 · 2 Würfe aus dem gemeinsamen Strom.
+        // 0x5645D; Spur saison Teil 3, S-K6-a, SeasonFlow.LeagueSlots.cs), im selben Aufruf 0x35EDD hinter den Ländern. Zieht seit Spur
+        // wettbewerbe-regeln Teil 2 (#897, N3 = B) 3 · 55 · 2 Würfe aus dem gemeinsamen Strom (vorher abgeleitete Quelle SlotSeed, die
+        // Länder standen deshalb dahinter).
         PrepareNextLeagueSlots(record);
 
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –

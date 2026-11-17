@@ -136,8 +136,9 @@ public static partial class OriginalMinutes
     /// <list type="number">
     /// <item>Feldspieler beider Vereine neu zählen (0x38A36, Datei 0x38BA9–0x38BBA; <see cref="MatchEngine.RecountSkaters"/>,
     ///   nur Managervereine).</item>
-    /// <item>Manager m = 0 … Zahl der Manager − 1 (Satz aktiv, DGROUP 0xA729 + m) und der Bundestrainer (5, nur mit einem
-    ///   Verein ≤ 0x3F – also nie mit dem Nationalteam), dessen Verein spielt, in dieser Reihenfolge.</item>
+    /// <item>Manager m = 0 … Zahl der Manager − 1 (Satz aktiv, DGROUP 0xA729 + m) und der Bundestrainer (5, nur mit Verein
+    ///   DGROUP 0x9EDA ≤ 0x3F, Datei 0x38BE3–0x38BF0: im Amt das Land 54, sonst 0xFD), dessen Verein spielt, in dieser
+    ///   Reihenfolge (A424, Spur national Teil 1; vorher hier als „nie mit dem Nationalteam“ gelesen).</item>
     /// <item>Managerwert des Managers am Zug (DGROUP 0x974B + 0x1AF · [0xA70E]) = 100 oder weniger als 4 eingesetzte Spieler
     ///   der Aufstellung → Ende der Funktion (auch für die übrigen Manager). [ORIGINAL] A071: [0xA70E] ist der Merker des
     ///   Spieltagsablaufs (<see cref="LiveTeam.TurnManager"/>, <see cref="TurnManagerRegister"/>), nicht der jeweilige Manager;

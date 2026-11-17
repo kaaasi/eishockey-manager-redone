@@ -478,6 +478,7 @@ public class GameModeTests
     // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e. Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
     // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
     // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
     // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
@@ -486,8 +487,9 @@ public class GameModeTests
     // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
     // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
     // zurückgeschaltet → Werte von Teil 1.
+    // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=12,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=17,GermanChampion=3,EuropeanCupWinner=1|2408603,400000|WorldChampion=55,CupWinner=0,GermanChampion=0,EuropeanCupWinner=3|2372502,500000|WorldChampion=54,CupWinner=0,GermanChampion=0,EuropeanCupWinner=0|2547266,500000|WorldChampion=52,CupWinner=11,GermanChampion=19,EuropeanCupWinner=0|2403079,500000|R1792396225";
+        "WorldChampion=63,CupWinner=12,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=14,GermanChampion=1,EuropeanCupWinner=1|2441544,400000|WorldChampion=55,CupWinner=5,GermanChampion=1,EuropeanCupWinner=1|2723167,400000|WorldChampion=52,CupWinner=13,GermanChampion=13,EuropeanCupWinner=1|3364665,500000|WorldChampion=63,CupWinner=13,GermanChampion=5,EuropeanCupWinner=1|3193548,400000|R316742386";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -142,18 +142,19 @@ public class ZufallsstromTeil4Tests
     }
 
     /// <summary>
-    /// Saisonwechsel: Wettbewerbe in der Reihenfolge des Originals – WM (Datei 0x565F6, Länderreihenfolge [APPROX] hier), Europapokal
-    /// (Datei 0x565FF), DEB-Pokal (Datei 0x56609) – aus dem gemeinsamen Strom. Vorher DEB-Pokal vor Europapokal aus
-    /// <c>CupRandom</c>.
+    /// Saisonwechsel: Wettbewerbe in der Reihenfolge des Originals – WM (Datei 0x565F6, ohne Würfe), Europapokal (Datei 0x565FF),
+    /// DEB-Pokal (Datei 0x56609) – aus dem gemeinsamen Strom. Vorher DEB-Pokal vor Europapokal aus <c>CupRandom</c>.
+    /// Angepasst in Spur national Teil 2 (A825, R15-E2 = C): Die Länder mischt 0x35EDD schon am 29. April (Datei 0x5644E,
+    /// <see cref="WorldCup.MixForNextSeason"/>); vorher erwartete dieser Test die 40 Würfe hier ([APPROX] des Remakes).
     /// </summary>
     [Fact]
     public void SeasonStart_Cups_DrawInOriginalOrderFromSharedStream()
     {
         var (game, _) = Create(5, null, 2);
+        game.WorldCup!.MixForNextSeason(new GameRandom(1)); // Stand nach dem 29. April (eigene Quelle: der Strom hier bleibt)
         var strength = game.Clubs.Where(c => c.Index >= EuropeanCup.FirstOpponent).ToDictionary(c => c.Index, c => SpectatorRules.Strength(game, c));
         var sim = GameRandom.FromState(game.Random.Capture());
-        var order = game.WorldCup!.Order.ToList();
-        WorldCup.Mix(order, sim);
+        var order = game.WorldCup.NextOrder!.ToList();
         var europe = SimulateEuropeDraw(sim, strength, game.Clubs.Count, EuropeanCup.Entrants(game));
         var deb = SimulateDebDraw(sim, game);
 

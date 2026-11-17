@@ -16,7 +16,7 @@ namespace EishockeyManager.Core;
 /// einem eigenen Generator x = (16 · x + 167) mod 4.000.000, dessen Zustand (DGROUP 0xE017) nicht im Spielstand steht
 /// (docs/analyse/re-runde-13.md, S-K6-b). Spur wettbewerbe-regeln Teil 2 (#897, N3 = B: eigene Zufallsquellen auf
 /// <see cref="GameState.Random"/>): Die 3 · 55 Tausche ziehen je zwei Würfe random(0, 11) aus dem gemeinsamen Strom, am 29. April
-/// an der Stelle der Mischung (Datei 0x5644E). Bis Runde 22 eine abgeleitete Quelle (Startwert aus Saison und Stromzustand,
+/// an der Stelle der Mischung (Datei 0x5644E), nach den 40 Würfen der Länder (A825, Datei 0x35EE3–0x35FC9). Bis Runde 22 eine abgeleitete Quelle (Startwert aus Saison und Stromzustand,
 /// ohne Weiterschalten). [APPROX] lrandom ist nicht nachgebaut (Folge nicht zugexakt, N3 = B), und die Teamwert-Wanderung, die
 /// im Original unmittelbar davor zieht (Datei 0x56448), läuft im Remake erst in <see cref="StartNextSeason"/> nach der Mischung.
 /// [ORIGINAL] Zeitpunkt (Spur saison Teil 3, S-K6-a, re-runde-13.md; Entscheidung Leitstelle L5): em.exe mischt am 29. April

@@ -48,15 +48,26 @@ public sealed partial class GameState
         if (NationalCoach?.Nation == NationalTeams.Germany)
             return;
         var r = Random; // Spur zufallsstrom Teil 4 (N3 = B): [ORIGINAL] Würfe Datei 0x554FD, 0x5552A, 0x55557 im Tageslauf
-        // Reihenfolge wie im Original: je Abwehr/Sturm Kondition, Technik, Form (Form führt das Remake nicht).
-        int[] condition = new int[2], technique = new int[2];
+        // Reihenfolge wie im Original: je Abwehr/Sturm Kondition, Technik, Form.
+        int[] condition = new int[2], technique = new int[2], form = new int[2];
         for (var i = 0; i < 2; i++)
         {
             condition[i] = r.Next(84, 95);
             technique[i] = r.Next(79, 90);
-            _ = r.Next(45, 56);
+            form[i] = r.Next(45, 56);
         }
         _germanyRatings = (condition[0], technique[0], condition[1], technique[1]);
+        // A493 (Spur national Teil 3): [ORIGINAL] Die Form schreibt 0x554CF in die Vereinsfelder des Landes +0x1C + i (Datei
+        // 0x55557–0x55560; i = 0 Abwehr, 1 Sturm), wie Kondition +0x18 + i und Technik +0x1A + i. Im Remake steht sie im Vereinsplatz
+        // (wie UpdateNationalTeamValues); die nächste Wanderung der Teamwerte würfelt sie wie bei allen Plätzen weiter. Bis Runde 22
+        // verworfen.
+        if (NationalTeams.Germany < Clubs.Count)
+        {
+            var club = Clubs[NationalTeams.Germany];
+            if (club.TeamValues is null)
+                MatchEngine.EnsureTeamValues(this);
+            club.TeamValues = MatchEngine.TeamValuesOf(club) with { DefenseForm = form[0], AttackForm = form[1] };
+        }
     }
 
     /// <summary>
@@ -152,9 +163,25 @@ public sealed partial class GameState
         return NationalCoach;
     }
 
-    /// <summary>Kandidaten für den WM-Kader mit ihrem Verein (siehe <see cref="Core.NationalCoach"/>, [APPROX]).</summary>
+    /// <summary>
+    /// Kandidaten für den WM-Kader mit ihrem Verein, in der Reihenfolge der Liste „Spieler in WM-Kader“.
+    /// <list type="bullet">
+    /// <item>A020 (Spur national Teil 3): [ORIGINAL] Die Liste läuft über die Poolplätze 1 … 0xB3 (Datei 0x3C5C9–0x3C5D0, Seiten zu
+    ///   15 Zeilen ab Datei 0x3C826) in Poolfolge und zeigt Name, Verein Pool +0x1D und die Grundstärken Pool +0x15–0x17 (Datei
+    ///   0x3C6DC/0x3C71F/0x3C762); „auto“ durchsucht dieselben Plätze (Datei 0x3CC01). Pool +0x13 ≠ 0 (Ausländer; FILE05 DOROCHIN,
+    ///   CHAIDAROV, FILE18 BIAKIN, GARDNER) steht in Farbe 3 und lässt sich nicht aufnehmen (Datei 0x3C952–0x3C95A geht in den
+    ///   Zweig „herausnehmen“, der in Satz 5 nichts findet). Die Poolplätze sind die Kader der Manager, der Markt und die
+    ///   Poolspieler der Computervereine – die übrigen Spieler der Computerkader führt nur das Remake (Kader vollständig) und
+    ///   bietet sie deshalb nicht an. Bis Runde 22 alle deutschen Spieler der Ligavereine und des Markts, nach Stärke sortiert.</item>
+    /// <item>[APPROX] Ohne Pool (Spielstände ohne <see cref="TransferMarket.Pool"/>, Proben) wie bis Runde 22 alle deutschen Spieler
+    ///   der Ligavereine und des Markts nach Kondition + Technik + Form. Spieler eines Managerkaders ohne Poolplatz (neues Spiel
+    ///   „nur Weltkugel“, <see cref="TransferMarket.SeatManagerSquads"/>) stehen hinter den Poolplätzen, in Kaderfolge.</item>
+    /// </list>
+    /// </summary>
     public IReadOnlyList<NationalSquadMember> NationalCandidates()
     {
+        if (TransferMarket.Pool.Count > 0)
+            return PoolNationalCandidates();
         var list = new List<NationalSquadMember>();
         foreach (var club in Clubs)
             if (club.League is not null)
@@ -167,6 +194,30 @@ public sealed partial class GameState
         return list.OrderByDescending(c => c.Player.Condition + c.Player.Technique + c.Player.Form)
             .ThenBy(c => c.Player.Name, StringComparer.Ordinal).ToList();
     }
+
+    /// <summary>Kandidaten aus dem Pool (A020, siehe <see cref="NationalCandidates"/>).</summary>
+    private List<NationalSquadMember> PoolNationalCandidates()
+    {
+        var last = TransferMarket.PoolLayout.LeagueLast;
+        var list = new List<NationalSquadMember>();
+        var seen = new HashSet<Player>(ReferenceEqualityComparer.Instance);
+        foreach (var slot in TransferMarket.Pool.Where(s => s.Index >= 1 && s.Index <= last).OrderBy(s => s.Index))
+            if (!slot.Player.IsForeigner && seen.Add(slot.Player))
+                list.Add(new NationalSquadMember(slot.Player, (uint)slot.Club < (uint)Clubs.Count ? slot.Club : NationalTeams.Germany));
+        foreach (var manager in Managers)
+            if ((uint)manager.ClubIndex < (uint)Clubs.Count && Clubs[manager.ClubIndex] is { } club)
+                foreach (var p in club.Players)
+                    if (!p.IsForeigner && seen.Add(p))
+                        list.Add(new NationalSquadMember(p, club.Index));
+        return list;
+    }
+
+    /// <summary>
+    /// Summe der Grundstärken eines Kandidaten (Pool +0x15–0x17), nach der „auto“ wählt (Datei 0x3CC01) und die Liste ST zeigt.
+    /// [APPROX] Kondition und Technik führt das Remake nur einmal je Spieler (Kaderplatz = Pool), die Form des Pools eigens
+    /// (<see cref="Player.PoolForm"/>, A066).
+    /// </summary>
+    internal static int NationalCandidateSum(Player p) => p.Condition + p.Technique + (p.PoolForm ?? p.Form);
 
     /// <summary>
     /// Klick auf einen Spieler in „Spieler in WM-Kader“ (Datei 0x3C928): Kaderspieler werden entlassen, andere
@@ -194,7 +245,7 @@ public sealed partial class GameState
             return NominationResult.SquadFull;
         var club = NationalCandidates().FirstOrDefault(c => c.Player == player)
             ?? throw new ArgumentException("Spieler steht nicht zur Auswahl.", nameof(player));
-        coach.Add(player, club.Club);
+        coach.Add(player, club.Club, NewNationalSlot(player)); // A412: eigener Kaderplatz im Satz 5
         return NominationResult.Added;
     }
 
@@ -205,8 +256,11 @@ public sealed partial class GameState
     ///   Gleichstand gewinnt der zuerst durchsuchte Spieler (Datei 0x3CC01: Schleife über Pool 1 … 0xB3, strikter Vergleich
     ///   Datei 0x3CCBA–0x3CCC4). Beleg DOSBox FILE18, Satz 5: LEDLIN (Pool 129) vor DEISENBERGER (169), je 228; LEE (114) vor
     ///   KUHNKE (166), je 220 – nicht nach dem Namen (A085, Spur nationalteam Runde 13).</item>
-    /// <item>[APPROX] Einen Poolindex führt das Remake nicht: Gleichstand nach <see cref="Player.Id"/> (Anlagereihenfolge der
-    ///   Spieler) statt nach dem Pool des Originals; bis Runde 13 nach dem Namen.</item>
+    /// <item>A487 (Spur national Teil 3): [ORIGINAL] Gleichstand in Poolfolge – die Kandidaten stehen in der Folge der Poolplätze
+    ///   (<see cref="NationalCandidates"/>, A020), die Auswahl ist stabil. Summe aus den Grundstärken des Pools
+    ///   (<see cref="NationalCandidateSum"/>). Bis Runde 22 nach <see cref="Player.Id"/>, bis Runde 13 nach dem Namen.</item>
+    /// <item>[APPROX] Verletzte überspringt das Remake: 0x3CC01 prüft keine Verletzung (der neue Kaderplatz des Satzes 5 ist
+    ///   unverletzt), das Remake führt aber einen Wertesatz je Spieler, die Verletzung des Vereinsplatzes ginge mit.</item>
     /// </list>
     /// </summary>
     public void AutoNominate()
@@ -217,10 +271,9 @@ public sealed partial class GameState
         PlayerRole[] roles = [PlayerRole.Goalkeeper, PlayerRole.Defender, PlayerRole.Forward];
         for (var r = 0; r < roles.Length; r++)
             foreach (var c in candidates.Where(c => c.Player.Role == roles[r] && c.Player.InjuredGames == 0)
-                         .OrderByDescending(c => c.Player.Condition + c.Player.Technique + c.Player.Form)
-                         .ThenBy(c => c.Player.Id)
+                         .OrderByDescending(c => NationalCandidateSum(c.Player)) // stabil: Poolfolge bei Gleichstand
                          .Take(NationalCoach.AutoSquad[r]))
-                coach.Add(c.Player, c.Club);
+                coach.Add(c.Player, c.Club, NewNationalSlot(c.Player));
     }
 
     /// <summary>
@@ -261,9 +314,15 @@ public sealed partial class GameState
         var (own, against) = home ? (hg, ag) : (ag, hg);
         var (x, bonus) = NationalCoach.FriendlyBonus(cost, xRoll, home, own, against, random);
         foreach (var member in coach.Squad)
+        {
             NationalCoach.ApplyBonus(member.Player, x, bonus);
+            // A551 (Spur national Teil 1): [ORIGINAL] Nach dem Spiel zeichnet „WM Vorbereitung“ neu (Datei 0x3C291: Merker [bp−5] = 1,
+            // 0x3C34D → 0x3B929) und setzt dabei die Belastung aller belegten Plätze des Satzes 5 wieder auf 70 (0x3BB51). Die
+            // Belastungszüge des Spiels (0x8C53) bleiben deshalb nicht stehen: DOSBox FILE18 → FILE19 alle 29 Plätze +0x13 = 70.
+            member.Player.Strain = NationalCoach.FriendlyEnergy;
+        }
         foreach (var p in lineup.Players)
-            p.Caps++;
+            coach.CountCap(p);
         coach.AddFriendly(new FriendlyMatch(homeClub, awayClub, hg, ag, bonus));
         EnterNationalResult(homeClub, awayClub, hg, ag, NationalMatchKind.Friendly); // 0x50283, Code 0xD (Datei 0x303BA)
         // A009 (Spur nationalteam Runde 13): [ORIGINAL] Das Freundschaftsspiel schreibt die Länderwerte nicht neu (kein Aufrufer
@@ -282,6 +341,10 @@ public sealed partial class GameState
         Index = club,
         Name = Clubs[club].Name,
         Strength = Clubs[club].Strength, // Datenbankwert, wirkt nicht (NationalTeamRatings)
+        // A455 (Spur national Teil 4): [ORIGINAL] Die Markierung zum Zusehen (Vereinsfeld 0x34 Bit 7, 0x0AE2B) sitzt am Vereinsplatz
+        // des Landes; die Ernennung markiert Deutschland (Datei 0x5545F), also läuft dessen Länderspiel mit Anzeigereihe
+        // (Liste 0x233, 0x52B91) und Live-Bildschirm wie eine Managerpaarung.
+        WatchMode = Clubs[club].WatchMode,
     };
 
     /// <summary>WM-Spiel des Bundestrainers: Länderspiele für die Aufstellung zählen.</summary>
@@ -290,7 +353,7 @@ public sealed partial class GameState
         if (NationalCoach is not { } coach || !matches.Any(m => m.Home == coach.Nation || m.Away == coach.Nation))
             return;
         foreach (var p in coach.Lineup().Players)
-            p.Caps++;
+            coach.CountCap(p);
     }
 
     /// <summary>

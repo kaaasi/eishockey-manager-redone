@@ -113,7 +113,11 @@ public class KaderplatzWerteFixTests
         // grün (Probe unverändert, nur die Saat).
         var setup = new GameSetup();
         setup.AddManager(new ManagerSetup { Name = "Joerg", Head = 6, ClubIndex = 2 });
-        var game = NewGame.Create(database, setup, 7);
+        // Runde 22, Spur wettbewerbe-regeln Teil 2 nach Merge von national (R15-E2 = C): Saat 9 statt 7 – Jugend nach den Menüs
+        // (A384/A670) und Ligamischung aus dem gemeinsamen Strom (#897 `SlotSeed`), anderer Zufallsverlauf; bei Saat 7 aktiv kein Spieler
+        // mit abweichendem Poolwert, unter 1–13 erfüllen 6, 9, 10, 12 die Vorbedingung. Rückschaltprobe: main 41ad124b mit Saat 9
+        // ebenfalls grün.
+        var game = NewGame.Create(database, setup, 9);
         RngTwinProbeTests.Run(game, active);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         Assert.Contains(club.Players, p => p.PoolCondition is not null || p.PoolTechnique is not null);

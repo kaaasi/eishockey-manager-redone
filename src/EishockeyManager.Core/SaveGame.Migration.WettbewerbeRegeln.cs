@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Migration der Spur wettbewerbe-regeln (Runde 22, Teil 1; Schema 56 → 57, vorläufig – die Leitstelle nummeriert beim Merge):
+/// Migration der Spur wettbewerbe-regeln (Runde 22, Teile 1–2; Schema 57 → 58 nach `national`, vorläufig – die Leitstelle nummeriert beim Merge):
 /// Vereinsfeld 0x2C Bit 3 am Ende des letzten Spiels (<c>Tactics._goaliePulledAtEnd</c>, A838). [APPROX] Ältere Stände kennen
 /// es nicht: false (Torhüter im Tor) – der seltene Fall eines Spielendes ohne Torhüter beginnt das nächste Spiel mit der
 /// gespeicherten Reihe.

@@ -45,8 +45,14 @@ public class Nationalteam2Tests
             for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
             {
                 Assert.True(guard < 3000, "Saisonende nicht erreicht");
-                var strengths = Enumerable.Range(NationalTeams.First, NationalTeams.Last - NationalTeams.First + 1)
-                    .ToDictionary(c => c, game.NationalMatchStrength);
+                // Spur national Teil 1 (A494): [ORIGINAL] Die Vorbereitung liest die Vereinsfelder, die der Tageslauf vor den Spielen
+                // mit 0x952C(5) schreibt (hier vorweggenommen, ohne Zufall), und den stehenden Einsatz 0x26; als Gast vergleicht
+                // Deutschland mit dem schon geschriebenen Grundwert des Heimlandes (#784, Datei 0x36F27 vor 0x36F5A).
+                game.UpdateNationalTeamValues();
+                var nations = Enumerable.Range(NationalTeams.First, NationalTeams.Last - NationalTeams.First + 1).ToList();
+                var strengths = nations.ToDictionary(c => c, game.NationalMatchStrength);
+                var rewritten = nations.ToDictionary(c => c, c => game.NationalMatchStrength(c,
+                    Tactics.PreparedEffort(strengths[c], strengths[NationalTeams.Germany])));
                 var played = GermanGroupMatches(game).Count;
                 var (effortBefore, attackBefore) = (ShownEffort(tactics), ShownAttack(tactics));
                 game.Continue();
@@ -56,8 +62,9 @@ public class Nationalteam2Tests
                 var match = matches[^1];
                 var home = match.Home == NationalTeams.Germany;
                 var opponent = home ? match.Away : match.Home;
-                var (effort, attack) = (EffortLine(strengths[NationalTeams.Germany], strengths[opponent]),
-                    AttackLine(strengths[NationalTeams.Germany], strengths[opponent]));
+                var opponentStrength = home ? strengths[opponent] : rewritten[opponent];
+                var (effort, attack) = (EffortLine(strengths[NationalTeams.Germany], opponentStrength),
+                    AttackLine(strengths[NationalTeams.Germany], opponentStrength));
                 if (effort.SequenceEqual(effortBefore) && attack.SequenceEqual(attackBefore))
                     continue;
                 Assert.Equal(effort, ShownEffort(tactics));

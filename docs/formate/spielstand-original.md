@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 57) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 58) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -503,12 +503,13 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._nextLeagueSlots` | N | – | leer (wird am 29. April gebildet) |
 | `GameState._readyManagers` | N | – | leer |
 | `GameState._seasonEndYouthPending` | N | – | false (nur Migration vor Schema 50 vom Bildschirm „Saisonende“, Spur kader-rest Teil 3) |
-| `GameState._youthOfDayDone` | N | – | false (nur Migration vor Schema 57 nach dem Tageswechsel eines Tages ab 1: Jugend des Tages schon gerechnet, Spur `wettbewerbe-regeln` Teil 2, A384/A670) |
+| `GameState._youthOfDayDone` | N | – | false (nur Migration vor Schema 58 nach dem Tageswechsel eines Tages ab 1: Jugend des Tages schon gerechnet, Spur `wettbewerbe-regeln` Teil 2, A384/A670) |
 | `GameState._stocks` | B | `D0F4`, `01FD`, `A891`, `A895` | Zeilen `Stock` |
 | `GameState._teamRecordOpponents` | B | `AB7B+0xF94` | DGROUP 0xBB0F + 8 · Verein + Art (64 Vereine) |
 | `GameState._teamRecords` | B | `AB7B+0x1194` | DGROUP 0xBD0F + 0x10 · Verein + 2 · Art |
 | `GameState._vacantNationalTactics` | A | `far:9657+0x26`, `A6FB+5`, `CAE9` (+0x30 · 5) | ohne Bundestrainer: Modi und Werte des Satzes 5, Anzeige „AUTOM.“ aus dem Vereinssatz des Landes (+0x26–0x2B, +0x35–0x3A) |
 | `GameState._worldCupRankings` | U | – | leer |
+| `GameState._worldCupLastPenaltyCoachDay` | N | – | 0: Merker des Remakes, ob die letzte Strafe eines WM-Tags das Land des Bundestrainers traf (DGROUP 0xA70E nach den Spielen, Datei 0x35AB8; A498, Schema 57) |
 | `GameState._worldCupOptionBackup` | A | `021D+15` | DGROUP 0x22C: Sicherung des Schalters „WM-Spiele“ während der WM des Bundestrainers (Spur `zusehen` Teil 2, Schema 52; Datei 0x5541F/0x5575A). Import (Spur `zusehen-rest`, A834, `OriginalImport.Rest.cs`): mit Amt des Bundestrainers der Wert, sonst null (Sicherung im Remake nur während des Amts); Export unverändert nicht geschrieben |
 
 ### GameSetup, GameOptions, ManagerSetup
@@ -686,7 +687,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Tactics._matchEffort` | U | `far:9657+0x26` | Einsatz nach dem letzten Spiel (#772); Ort belegt, Import liest ihn noch nicht (Stelle für `pool`), Vorgabe 0 |
 | `Tactics._matchAttackLine` | B | `far:9657+0x30` | Sturmreihe auf dem Eis nach dem letzten Spiel (#872, Schema 51); 0x84D7 setzt sie nicht zurück |
 | `Tactics._matchDefenseLine` | B | `far:9657+0x2E` | Abwehrreihe auf dem Eis nach dem letzten Spiel (#872, Schema 51) |
-| `Tactics._goaliePulledAtEnd` | U | `far:9657+0x2C` Bit 3 | Torhüter draußen am Ende des letzten Spiels (A838, Spur `wettbewerbe-regeln`, Schema 57; 0x84D7(0) setzt danach Abwehrreihe 2, Datei 0x857D). Ort belegt, der Import liest das Bit nicht: false |
+| `Tactics._goaliePulledAtEnd` | U | `far:9657+0x2C` Bit 3 | Torhüter draußen am Ende des letzten Spiels (A838, Spur `wettbewerbe-regeln`, Schema 58; 0x84D7(0) setzt danach Abwehrreihe 2, Datei 0x857D). Ort belegt, der Import liest das Bit nicht: false |
 | `Tactics._shownAutoAttack` | A | `far:9657+0x35` | nur Nationalteam: Vereinssatz +0x35–0x3A |
 | `Tactics._shownAutoEffort` | A | `far:9657+0x26` | nur Nationalteam: Vereinssatz +0x26–0x2B |
 | `Lineup._defenders` | A | `5DC3+0x15` | Reihe 1–3 ohne Sturm-Bit, Nationalteam Satz 5 |
@@ -828,6 +829,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `WorldCup._knockout` | A | `5CFB` (+0x60 = Wettbewerb 3) | Paare ab DGROUP 0x5D5B |
 | `WorldCup._knockoutMarks` | U | – | Tore und Marken der WM-K.-o.-Spiele nicht im HOK (`5C4B` nach jedem Termin leer); Import 1:0, Marke 0 `[APPROX]` |
 | `WorldCup._order` | U | – | Auslosungsfolge: nicht belegt; Indexfolge |
+| `WorldCup._nextOrder` | N | – | null: am 29. April gemischte Folge der nächsten Saison (0x35EDD, Datei 0x5644E; A825, Schema 55); ein HOK nach dem 29. April führt die Sätze schon getauscht |
 | `WorldCup._slots` | U | – | leer bis zur Auslosung |
 | `Playoffs.Seeds` | A | `5CCB` | Plätze 1–8 der Abschlusstabelle |
 | `Playoffs._rounds` | B | `5CFB+0x40`, `CCB2`, `CCA4` | Runden 0 … 0x7B0 aus den Plätzen 0x5D3B, Spiele 0xCCB2; Siege ergeben sich aus den Spielen (0xCCA4 mit 0x14 = Gast des fünften Termins mit drei Siegen, auch bei vorher entschiedener Serie, danach getauscht; R14HN-02). Halbfinale/Endspiel des Remakes nach Tabelle DGROUP 0x144 wie das Original (#676) |
@@ -846,12 +848,14 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `NationalCoach._turnOpen` | N | – | Zugzustand des Bundestrainers liegt nicht im Spielstand; Import `false`, der nächste Menüaufbau beginnt den Zug |
 | `NationalCoach.Manager` | B | `965B+0xEB` | Satz 5 (0x554B1); `D0BA` ist an allen Ständen 0 (Kennzeichen, siehe `GameState.NationalCoach`) |
 | `NationalCoach.Nation` | B | `06AC` | Land (Regel 1) |
+| `NationalCoach.PowerPlayCounts` | B | `965B+0x177` | Satz 5: sechs Wörter (DGROUP 0x97D2 + 5 · 0x1AF + 2 · k), Zähler des Landes mit Vereinsfeld 0x16 = 6 (A097, Schema 57) |
 | `NationalCoach.Tactics` | B | `A6FB+5` | Modi und Werte des Satzes 5 (`A707+5`, `CAE9+0xF0`) |
 | `NationalCoach._dressed` | A | `5DC3+0x0A` | Satz 5 |
 | `NationalCoach._friendlies` | B | `D0C1`, `D0DB`, `D0D3`, `D0CB`, `D0C3` | Zahl, je Spiel Heim, Gast, Heimtore, Gasttore (0x3C248–0x3C288; FILE19 Deutschland – Schweden 2:1) |
 | `NationalCoach._squad` | B | `5DC3` | Satz 5 |
 | `NationalSquadMember.Club` | B | `far:8253+0x1D` | Verein des Spielers |
-| `NationalSquadMember.Player` | B | `5DC3+0x0F` | Satz 5, Poolindex |
+| `NationalSquadMember.Player` | B | `5DC3` | Satz 5: eigener Kaderplatz (Werte `+0x10`–`+0x13`, Zähler, Verletzung; A412, Schema 57) |
+| `NationalSquadMember.Source` | B | `5DC3+0x0F` | Satz 5, Poolindex → Spieler im Verein bzw. Pool (A412) |
 | `FriendlyMatch.Away` | B | `D0D3` | Gast (Satzplatz, Regel 1; 0x3C260) |
 | `FriendlyMatch.AwayGoals` | B | `D0C3` | Gasttore (0x3C284, unteres Byte des Ergebnisses von 0x30365) |
 | `FriendlyMatch.Bonus` | U | – | Wertebonus des Spiels nicht im HOK: 0 `[APPROX]` (`026C` sind die Kosten je Nationalteam, im Remake Formel) |
@@ -955,7 +959,7 @@ unteren Halbbyte (FILE03: Feld 2 = Platz in der Tabelle `5CCB` nach dem 3. Spiel
 | Pool | `far:8253` + 33 · i, i = 1–199 | Name, Talent, Alter, Grundwerte `+0x15`–`+0x17`, Art aus `+0x18`, Verein `+0x1D` (Regel 1); Besitzer `+0x1A` 0–3 → vergeben (derselbe Spieler wie im Managerkader), 4 → Markt, sonst frei | FILE05: 25 vergeben, 7 Markt; Besitzer an allen Ständen nur 0, 1, 4, 6 |
 | Transferliste | `5DC3` Satz 4 in Platzfolge | `+0x0F` Poolindex, Preis `+0x2C` / 3, Sperre `+0x1A`, Werte `+0x10`–`+0x14`, `+0x19`; Besitzer 4 → Poolangebot (Herkunft = Poolverein), 0–3 → Angebot des Managers, Spieler nur auf dem Markt-Platz, nicht im Kader (A380, #676); Poolindex 0 = Rest des aufgerückten Satzes, kein Eintrag `[APPROX]` | FILE05 (KÜNAST 435.000 DM … D.HEGEN), FILE41 (HOHENADL Platz 7, Besitzer 0, 316.000 DM; Platz 11 mit Index 0) |
 | Managerkader | `5DC3` Satz m + Marktplätze mit Besitzer m | Angebote des Managers folgen hinter den eigenen Plätzen | FILE40 → FILE41 (L7) |
-| Nationalkader | `5DC3` Satz 5 (29 Plätze) | Poolindex → Spieler; Werte `+0x10`–`+0x13` für Pool- und Marktspieler `[APPROX]` (ein Wertesatz je Spieler); Reihe `+0x15` (Bit 0x80 Sturm), eingesetzt `+0x0A`; Bundestrainer aus dem Nachspielen `[APPROX]` (`D0BA` an allen Ständen 0) | FILE18–FILE20, FILE47–FILE49A (Pool `+0x1D` der Nominierten = Land 54) |
+| Nationalkader | `5DC3` Satz 5 (29 Plätze) | Poolindex → Spieler; eigener Kaderplatz mit Werten `+0x10`–`+0x13`, Zählern und Verletzung (A412); Reihe `+0x15` (Bit 0x80 Sturm), eingesetzt `+0x0A`; Bundestrainer aus dem Nachspielen `[APPROX]` (`D0BA` an allen Ständen 0) | FILE18–FILE20, FILE47–FILE49A (Pool `+0x1D` der Nominierten = Land 54) |
 | Taktik Bundestrainer | `A6FB`/`A707`/`A701` + 5, `CAE9` + 0xF0, `CC43` + 0x28 | wie Teil 4a | FILE18 |
 | Nachrichten | `D294` + 0x71 · k, k < 24 | `+0` Bits 0–2 Manager, Bit 3 ohne Spieler, oberes Halbbyte Restlaufzeit; `+1` Schlüssel = Tag + 1; `+2` Poolspieler; ab `+3` Text („^“ trennt Zeilen); Nachrichten des Nachspielens entfallen | FILE20 (zwei Verletzungsmeldungen), FILE48; Satz mit Spieler an keinem Stand |
 
@@ -1125,7 +1129,7 @@ liegt bei den genannten Spuren.
 - Schema 56 (Runde 22, Spur `hok-play-off-marken`, A612; nach `kaderplatz-werte`): `PlayoffSeries.Marks` (Marken der Play-off-Spiele,
   Abschnitt „Marken der Play-off-Spiele“). Migration: je Spiel 2 bei Penaltysieger, sonst 0
   (`SaveGame.Migration.HokPlayOffMarken.cs`).
-- Schema 57 (Runde 22, Spur `wettbewerbe-regeln` Teil 1, vorläufig): `Tactics._goaliePulledAtEnd` – Vereinsfeld 0x2C Bit 3 nach
+- Schema 58 (Runde 22, Spur `wettbewerbe-regeln` Teile 1–2, vorläufig, nach `national` 57): `Tactics._goaliePulledAtEnd` – Vereinsfeld 0x2C Bit 3 nach
   dem letzten Spiel (A838). Migration: false (`SaveGame.Migration.WettbewerbeRegeln.cs`).
   Teil 2: `GameState._youthOfDayDone` (Jugendteams nach den Menüs, A384/A670). Migration: true bei `DayOpened` und Tag ab 1, sonst
   false.

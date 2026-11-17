@@ -45,7 +45,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 57;
+    public const int SchemaVersion = 58;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -135,8 +135,10 @@ public static partial class SaveGame
     /// (<c>SaveGame.Migration.KaderplatzWerte.cs</c>).
     /// 55 → 56 (Runde 22, Spur hok-play-off-marken, Schema 56 nach `kaderplatz-werte`): Marken der Play-off-Spiele
     /// <c>PlayoffSeries.Marks</c>, A612 (<c>SaveGame.Migration.HokPlayOffMarken.cs</c>).
-    /// 56 → 57 (Runde 22, Spur wettbewerbe-regeln Teil 1, vorläufig): <c>Tactics._goaliePulledAtEnd</c>, A838
-    /// (<c>SaveGame.Migration.WettbewerbeRegeln.cs</c>).
+    /// 56 → 57 (Runde 22, Spur national Teil 1, Schema 57 nach `hok-play-off-marken`): Über-/Unterzahl-Zähler des Bundestrainers, Teil 2 WM-Tag der letzten Strafe (A498)
+    /// (<c>SaveGame.Migration.National.cs</c>).
+    /// 57 → 58 (Runde 22, Spur wettbewerbe-regeln Teile 1–2, vorläufig, nach `national`): <c>Tactics._goaliePulledAtEnd</c>, A838, und
+    /// <c>GameState._youthOfDayDone</c>, A384/A670 (<c>SaveGame.Migration.WettbewerbeRegeln.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
@@ -196,7 +198,8 @@ public static partial class SaveGame
             [53] = MigrateZufallsstromQuellen,
             [54] = MigrateKaderplatzWerte,
             [55] = MigrateHokPlayOffMarken,
-            [56] = MigrateWettbewerbeRegeln,
+            [56] = MigrateNational,
+            [57] = MigrateWettbewerbeRegeln,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

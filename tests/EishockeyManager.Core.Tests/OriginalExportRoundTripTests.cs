@@ -111,7 +111,9 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("far:9657", 0x3D, 0x26, 0x3A, "Automatik-Anzeige der Computervereine (vor jedem Spiel neu, 0x8365) und ungedeutete Bytes"),
         // Pool und Kaderplätze
         new("far:8253", 33, 0x13, 0x13, "ungedeutet"),
-        new("far:8253", 33, 0x15, 0x17, "Grundwerte vergebener und gelisteter Poolspieler: das Remake führt einen Wertesatz je Spieler"),
+        // Spur national Teil 3 (A412, R15-E2 = C): Regel „+0x15–0x17 Grundwerte vergebener und gelisteter Poolspieler“ entfällt – seit Satz 5
+        // eigene Kaderplätze führt (Import schreibt dessen Werte nicht mehr in den Poolspieler) und Spur kaderplatz-werte die Poolwerte
+        // getrennt hält, geben alle Stände die Grundwerte unverändert aus (0 Treffer, tote Regel nach B5).
         new("far:8253", 33, 0x18, 0x18, "Rollenwert: das Remake führt nur die Art (Feldkarte Player.Role)"),
         // Spur pool (#743, Teil 3, R727N2-01): Besitzer +0x1A nicht mehr in der Regel – vorher deckte 0x19–0x1C ihn mit ab, ein falscher
         // Besitzer (Marktzwilling, verlorener Spieler, „nur Weltkugel“) blieb unbemerkt.

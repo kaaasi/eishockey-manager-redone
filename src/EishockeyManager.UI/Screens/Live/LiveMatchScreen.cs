@@ -243,36 +243,49 @@ public sealed class LiveMatchScreen : Screen
         }
     }
 
-    private (LiveTeam Team, Club Club, int Manager)? _intervention;
+    private (LiveTeam Team, Club Club, int Manager, NationalCoach? Coach)? _intervention;
 
     /// <summary>
     /// [ORIGINAL] Datei 0x5434C (§4, §10, §15): DGROUP 0xA70E = Manager des angeklickten Vereins (alter Wert gesichert), dann
     /// Aufstellung bzw. Taktik mit Kennwert „im Spiel“ (0x48E28). Das Remake setzt dafür <see cref="GameState.CurrentManager"/>
-    /// und stellt ihn bei der Rückkehr zurück (<see cref="EndIntervention"/>). [APPROX] Das Nationalteam des Bundestrainers
-    /// (kein Vereinsmanager) öffnet nichts.
+    /// und stellt ihn bei der Rückkehr zurück (<see cref="EndIntervention"/>).
+    /// [ORIGINAL] Das Land des Bundestrainers (Vereinsfeld 0x16 = 6, Datei 0x38E5F–0x38EC8 und 0x38FC0–0x38FED) öffnet über
+    /// 0x5434C mit Manager 5 Aufstellung bzw. Taktik des Nationalteams (A455, Spur national Teil 4;
+    /// <see cref="LiveIntervention.OpenNational"/>); aktiver Manager ist im Remake der Manager, der Bundestrainer ist.
     /// </summary>
     private void BeginIntervention(LiveTeam team, Club club, InterventionMode mode)
     {
+        if (Game.NationalCoach is { } coach && coach.Nation == club.Index && coach.Manager < Game.Managers.Count)
+        {
+            _intervention = (team, club, Game.CurrentManager, coach);
+            Game.CurrentManager = coach.Manager;
+            Host.Show(LiveIntervention.OpenNational(Host, this, mode));
+            return;
+        }
         var managers = Game.Managers.ToList();
         var manager = managers.FindIndex(m => Game.ActiveManagers.Contains(m) && m.ClubIndex == club.Index);
         if (manager < 0)
             return;
-        _intervention = (team, club, Game.CurrentManager);
+        _intervention = (team, club, Game.CurrentManager, null);
         Game.CurrentManager = manager;
         Host.Show(LiveIntervention.Open(Host, this, mode));
     }
 
     /// <summary>
     /// [ORIGINAL] Datei 0x5438D–0x54419 nach Aufstellung/Taktik: Feldspieler des Managervereins neu zählen (0x38A36), Live-Bildschirm
-    /// neu aufbauen 0x5353C(Pokal, 1), DGROUP 0xA70E zurück. Die Aufstellung übernimmt <see cref="LiveLineup.Apply"/> in den
-    /// Spielkader (das Original schreibt dieselben Kaderplätze); der Neuaufbau ist das nächste Bild.
+    /// neu aufbauen 0x5353C(Pokal, 1), DGROUP 0xA70E zurück. Die Aufstellung übernimmt <see cref="LiveLineup.Apply"/> bzw. beim
+    /// Nationalteam <see cref="MatchEngine.ApplyNationalLineup"/> in den Spielkader (das Original schreibt dieselben Kaderplätze);
+    /// der Neuaufbau ist das nächste Bild.
     /// </summary>
     private void EndIntervention()
     {
         if (_intervention is not { } open)
             return;
         _intervention = null;
-        LiveLineup.Apply(open.Team, open.Club);
+        if (open.Coach is { } coach)
+            MatchEngine.ApplyNationalLineup(open.Team, coach);
+        else
+            LiveLineup.Apply(open.Team, open.Club);
         Game.CurrentManager = open.Manager;
         _input = new InputState(); // [ORIGINAL] Maus leeren (38h:8A7h vor dem Einblenden, Datei 0x5438D–0x54419)
         Interventions++;

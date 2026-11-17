@@ -222,10 +222,13 @@ public class WeltkugelDosboxTests
         Assert.All(coach.Squad, m => Assert.Equal(46, TrainingRules.ExhaustionDisplay(m.Player))); // DOSBox: Spalte E 46
         Assert.Equal(55, outsider.Energy);
 
-        // Nur beim ersten Spiel der Saison: ein zweites Spiel setzt nicht erneut.
+        // Spur national Teil 1 (A551): [ORIGINAL] Nach jedem Spiel zeichnet „WM Vorbereitung“ neu (Datei 0x3C291 → 0x3B929) und setzt
+        // die Belastung wieder auf 70 (0x3BB51) – auch nach dem zweiten Spiel (DOSBox 25 → 45: nach drei Spielen alle 46; FILE19
+        // alle +0x13 = 70). Bis dahin prüfte der Test „ein zweites Spiel setzt nicht erneut“ (Energie 40 bliebe); Rückschaltprobe:
+        // alter Code → 40 → rot.
         coach.Squad[0].Player.Energy = 40;
         Assert.Equal(FriendlyResult.Played, game.PlayFriendly(opponent, home: false));
-        Assert.Equal(40, coach.Squad[0].Player.Energy);
+        Assert.Equal(150 - NationalCoach.FriendlyEnergy, coach.Squad[0].Player.Energy);
     }
 
     /// <summary>Abgelehntes erstes Freundschaftsspiel (kein Geld) setzt keine Energie.</summary>

@@ -237,8 +237,8 @@ public static partial class MatchEngine
     /// <summary>
     /// Tagesform nach einem Ligaspiel. [ORIGINAL] em.exe Datei 0x4F527 (Ov 0x128, gerufen aus der Tabellenrechnung
     /// 0x50283 mit d = eigene − gegnerische Tore, nur bei Wettbewerbscode [0xD0C2] = 7 Liga bzw. 8 WM-Gruppe):
-    /// r = random(0, 2 · |d|), 0x17 + r bei d &gt; 0, sonst − r; begrenzt auf 47 … 53 (0x120:0x52).
-    /// [APPROX] WM-Spiele ohne Nachführung (Nationalteams spielen im Remake als <c>RatedNation</c> ohne eigene Werte).
+    /// r = random(0, 2 · |d|), 0x17 + r bei d &gt; 0, sonst − r; begrenzt auf 47 … 53 (0x120:0x52). WM-Gruppe: nach allen Spielen
+    /// des Termins (A109, <c>WorldCup.PlayDay</c>).
     /// </summary>
     public static void UpdateDayForm(Club club, int goalDifference, Random random)
     {

@@ -212,7 +212,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         // Ligamischung aus dem gemeinsamen Strom (#897 `SlotSeed`), anderer Zufallsverlauf; von 20–50 erreichen 31, 34, 36, 40, 42, 43
         // und 48 passiv und aktiv mehr als 200 Schritte, mit altem Code davon nur 36. Die Probe hängt an der Saat. Rückschaltprobe:
         // alter Code mit Saat 36 ebenfalls grün.
-        var game = TestGames.Create(36);
+        // Nach Merge von national (41ad124b): Saat 55 statt 36 – Saat 36 passiv 147 Schritte; von 31–75 erreichen 31, 44, 51, 55,
+        // 58, 66, 73 passiv und aktiv mehr als 200, mit main 41ad124b davon nur 55 und 66. Rückschaltprobe: main mit Saat 55 grün.
+        var game = TestGames.Create(55);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();

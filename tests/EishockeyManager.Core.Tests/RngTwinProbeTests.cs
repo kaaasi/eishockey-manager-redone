@@ -299,6 +299,9 @@ public class RngTwinProbeTests
     // Runde 22, Spur kaderplatz-werte Fixlauf (Review #927 R923-01; R21-D2 = A, R15-E2 = C): neu (nur aktiv) – das Training schreibt
     // nur den Kaderplatz, der Poolwert (+0x15/+0x16) folgt ihm nicht mehr (Player.SetSlotStrengths); Drift am Saisonwechsel und
     // Abgabe an Computervereine (Join → AdoptPoolValues) starten von anderen Werten. Rückschaltprobe: src/ von c3ea6c2 → alte Werte.
+    // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
+    // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
+    // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
     // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
     // Datei 0x376E1–0x377A3: erste Paarung eines Termins auch bei klarem Ergebnis, eigener Gleichstand nur ein Wurf) und Abwehrreihe 2
     // nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D); andere Play-off-Ergebnisse und Reihen, anderer Zufallsverlauf.
@@ -307,10 +310,11 @@ public class RngTwinProbeTests
     // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
     // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
     // zurückgeschaltet → Werte von Teil 1.
-    [InlineData(false, 3, "A4FAD37FED84F5DE")]
-    [InlineData(true, 3, "D80C71D506C65AD3")]
-    [InlineData(false, 11, "79AEB2DC0E29FDF7")]
-    [InlineData(true, 11, "C71317658185DEA0")]
+    // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
+    [InlineData(false, 3, "BE8FEF3CC00F2782")]
+    [InlineData(true, 3, "41CF28A3DDC2E95E")]
+    [InlineData(false, 11, "8C78E87A00D50711")]
+    [InlineData(true, 11, "B52677EE16B7FE09")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -408,6 +412,9 @@ public class RngTwinProbeTests
     // Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7, eingespielte Reihe +0x02) aus dem gemeinsamen
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
+    // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
+    // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
+    // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
     // Runde 22, Spur wettbewerbe-regeln Teil 1 (R21-D2 = A, R15-E2 = C): neu – schneller Weg der Play-offs mit Zusatzwurf (#925/A873,
     // Datei 0x376E1–0x377A3), Abwehrreihe 2 nach einem Spielende ohne Torhüter (A838, Datei 0x855D–0x857D) und mit der
     // Originaldatenbank der Sturm der Europapokal-Gegner aus Datenbankbyte 1 (A105/A836, Datei 0x2F004–0x2F009); andere Ergebnisse
@@ -416,8 +423,9 @@ public class RngTwinProbeTests
     // (A384/A670, Datei 0x55003–0x5502C) und Ligamischung am 29. April aus dem gemeinsamen Strom (#897 `SlotSeed`, N3 = B; Datei
     // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
     // zurückgeschaltet → Werte von Teil 1.
-    [InlineData(false, "FA147A41BDF8CD54")]
-    [InlineData(true, "DF4C53F4E2266076")]
+    // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
+    [InlineData(false, "764F9B2FCE509AAC")]
+    [InlineData(true, "BAE86BAD03B83EA1")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

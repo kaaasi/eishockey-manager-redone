@@ -24,13 +24,16 @@ public static partial class MatchEngine
     /// Managerverein dabei aus den Vereinsfeldern 0x18–0x1D, weil die Liste DGROUP 0x233 (0x52B91) erst die Live-Anzeige 0x5353C
     /// füllt; das Remake rechnet die Vorbereitung ebenso (<c>MatchEngine.PrepareFromClubFields</c>, Spur teamwert-aufstellung, A080).
     /// [APPROX] Managervereine mit „SEMI“/„MANUELL“ behalten Einsatz und Angriff der eigenen Werte beim Stand 0:0
-    /// (Taktikbildschirm Datei 0x48E62 für 0x26; ob er die Angriffsbits schreibt, ist nicht gelesen). Nationalteams wie
-    /// bisher (<see cref="NationalLiveTeam"/>).
+    /// (Taktikbildschirm Datei 0x48E62 für 0x26; ob er die Angriffsbits schreibt, ist nicht gelesen). Länderspiele (WM und
+    /// Freundschaftsspiel, Datei 0x36F27/0x36F5A) bereitet 0x8365 ebenso vor (A494, <see cref="PrepareNationalMatch"/>).
     /// </summary>
     public static void PrepareMatch(GameState game, Club home, Club away, LiveTeam homeTeam, LiveTeam awayTeam)
     {
         if (IsNation(home) || IsNation(away))
+        {
+            PrepareNationalMatch(game, home, away, homeTeam, awayTeam);
             return;
+        }
         // [ORIGINAL] 0x8365 schreibt nur den Satz des ersten Arguments (Datei 0x83DA–0x847D über [bp-0x8]) und läuft je Paarung
         // zweimal: zuerst für den Heimverein (Datei 0x36D12, Paarungsbyte DGROUP 0x5D7B), dann für den Gast (Datei 0x36D49).
         // Der zweite Stärkevergleich liest 0x26 des Heimvereins schon mit dessen neuem Grundwert (#784, Beleg FILE30→31).
@@ -71,12 +74,16 @@ public static partial class MatchEngine
 
     /// <summary>
     /// [ORIGINAL] Vereinsfelder 0x26 und 0x2C (Bits 4–6) bleiben nach dem Spiel stehen (<see cref="Tactics.MatchEffort"/>), ebenso
-    /// die Reihen auf dem Eis 0x2E/0x30 (<see cref="Tactics.MatchDefenseLine"/>, #872).
+    /// die Reihen auf dem Eis 0x2E/0x30 (<see cref="Tactics.MatchDefenseLine"/>, #872). Länder: Einsatz und Angriff im Satz des
+    /// Landes (A494, <see cref="GameState.NationFieldTactics"/>); [APPROX] die Reihen 0x2E/0x30 der Länder führt das Remake nicht.
     /// </summary>
-    private static void KeepMatchFields(Club club, LiveTeam team)
+    private static void KeepMatchFields(GameState game, Club club, LiveTeam team)
     {
         if (IsNation(club))
+        {
+            game.NationFieldTactics(club.Index).RecordMatchFields(team.Effort, team.AttackLevel);
             return;
+        }
         club.Tactics.RecordMatchFields(team.Effort, team.AttackLevel);
         club.Tactics.RecordMatchLines(team.DefenseLine, team.AttackLine);
         club.Tactics.RecordGoaliePulled(team.GoaliePulled); // A838: 0x2C Bit 3 bleibt stehen (Squad.Tactics.GoaliePulled.cs)

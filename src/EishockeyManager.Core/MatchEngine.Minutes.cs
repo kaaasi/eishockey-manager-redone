@@ -281,8 +281,9 @@ public sealed class LiveTeam
     public int PenaltyMinutes { get; set; }
 
     /// <summary>
-    /// Managersatz (0 … Zahl der Manager − 1) für die Verletzungen im Spiel (0x38B8F), nur Managervereine mit Kader in der
-    /// Managerpaarung; null sonst (auch das Nationalteam des Bundestrainers, siehe <see cref="OriginalMinutes.Injuries"/>).
+    /// Managersatz (0 … Zahl der Manager − 1, Bundestrainer 5 = <see cref="NationalCoach.ManagerRecord"/>) für die Verletzungen
+    /// im Spiel (0x38B8F), nur Managervereine bzw. das Land des Bundestrainers mit Kader in der Managerpaarung; null sonst
+    /// (siehe <see cref="OriginalMinutes.Injuries"/>).
     /// </summary>
     public int? InjuryManager { get; init; }
 
@@ -298,8 +299,8 @@ public sealed class LiveTeam
     /// <summary>
     /// Über-/Unterzahl-Zähler des Managers (DGROUP 0x97D2 + 0x1AF · Manager, <see cref="Manager.PowerPlayCounts"/>), die
     /// die Minutenrechnung fortschreibt (<see cref="OriginalMinutes.GoalScored"/>, <see cref="OriginalMinutes.Penalty"/>);
-    /// null bei Computervereinen. [APPROX] Auch beim Nationalteam null: das Original zählt dort (Vereinsfeld 0x16 = 6) in
-    /// den Satz des Bundestrainers (Manager 5), den das Remake nicht führt.
+    /// null bei Computervereinen. [ORIGINAL] Land des Bundestrainers (Vereinsfeld 0x16 = 6): Satz 5
+    /// (<see cref="NationalCoach.PowerPlayCounts"/>, A097, Spur national Teil 1); andere Länder null.
     /// </summary>
     public int[]? PowerPlayCounts { get; init; }
 }

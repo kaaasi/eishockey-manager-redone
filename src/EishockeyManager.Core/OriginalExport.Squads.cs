@@ -122,6 +122,11 @@ public sealed partial class GameState
             }
         if (missing.Count > 0)
             AddUnseatedSquadPlayers(map, managed, missing);
+        // A412 (Spur national Teil 3): Kaderplätze des Satzes 5 verweisen auf den Poolplatz ihres Spielers (+0x0F).
+        if (NationalCoach is { } coach)
+            foreach (var member in coach.Squad)
+                if (map.TryGetValue(member.Source, out var index))
+                    map.TryAdd(member.Player, index);
         return map;
     }
 

@@ -40,10 +40,17 @@ public class IntegrationRunde7NationalCountersTests
         game.Continue();
         game.AutoNominate();
         var coach = game.NationalCoach!;
-        var keeper = coach.Lineup().Goalkeeper!;
+        // A412 (Spur national Teil 3): Gegentore und Minuten des Torhüters sind Poolfelder (+0x1F) und zählen am Spieler im
+        // Verein/Pool, Spiele am eigenen Kaderplatz des Satzes 5 (+0x08, Europapokal-Feld, Wettbewerb 8).
+        var keeper = coach.SourceOf(coach.Lineup().Goalkeeper!);
+        var lineup = coach.Lineup().Players.ToList();
+        var sources = lineup.Select(coach.SourceOf).ToList();
         for (var guard = 0; keeper.GoalieMinutes == 0 && guard < 400 && game.NationalCoach is not null; guard++)
             game.Continue();
         Assert.True(keeper.GoalieMinutes >= 60, "WM-Spiel des Bundestrainers zählt keine Torhüterminuten");
-        Assert.True(coach.Lineup().Players.Sum(p => p.Games) > 0);
+        // A628 (Spur national Teil 2, R15-E2 = C): [ORIGINAL] Spiele der WM bucht 0x544C0 am Kaderplatz des Satzes 5 (Datei
+        // 0x5492E–0x5499E), nicht am Vereinsplatz – vorher hier „> 0“ (Ligazähler am Spieler).
+        Assert.Equal(0, sources.Sum(p => p.Games));
+        Assert.True(lineup.Sum(p => p.EuropeGames) > 0, "Satz 5 zählt die WM-Spiele nicht");
     }
 }

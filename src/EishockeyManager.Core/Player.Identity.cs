@@ -90,8 +90,17 @@ public sealed partial class GameState
         foreach (var bid in TransferMarket.Bids.Where(b => !TransferMarket.Listings.Contains(b.Listing)))
             problems.Add($"Gebot auf {bid.Listing.Player.Name} (ID {bid.Listing.Player.Id}) ohne Angebot.");
         if (NationalCoach is { } coach)
-            foreach (var member in coach.Squad.Where(m => !known.Contains(m.Player)))
-                problems.Add($"Nationalkader: {member.Player.Name} (ID {member.Player.Id}) fehlt im Spielstand.");
+        {
+            // A412 (Spur national Teil 3): Der Kaderplatz des Satzes 5 ist ein eigener Spieler mit eigener ID, sein Spieler im
+            // Verein/Pool muss im Spielstand stehen. Ein vergebener Poolplatz ohne Kader (Vertragsende im Managerkader, Verkauf an einen
+            // Computerverein: PoolOwner.Taken, Transfer.KeepLostSlot) bleibt Kandidat, wie im Original (Pool 1 … 0xB3, A020).
+            var pooled = new HashSet<Player>(TransferMarket.Pool.Select(slot => slot.Player), ReferenceEqualityComparer.Instance);
+            foreach (var member in coach.Squad.Where(m => !known.Contains(m.Source) && !pooled.Contains(m.Source)))
+                problems.Add($"Nationalkader: {member.Source.Name} (ID {member.Source.Id}) fehlt im Spielstand.");
+            foreach (var member in coach.Squad.Where(m => m.Player != m.Source))
+                if (member.Player.Id <= 0 || member.Player.Id >= NextPlayerId || ids.ContainsKey(member.Player.Id))
+                    problems.Add($"Nationalkader: Kaderplatz {member.Player.Name} hat die ungültige ID {member.Player.Id}.");
+        }
         return problems;
     }
 }

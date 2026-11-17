@@ -77,7 +77,9 @@ public sealed class PlayoffSemifinalTests
         // kein schlechter Platzierter Heimrecht (gleicher Grund wie oben). Rückschaltprobe: siehe PR.
         // Runde 21, Spur start-lader (R21-D2 = A): Saat 9 → 11. Mit dem Lader beim Spielstart (Datei 0x439BB) hat bei Saat 9 in fünf
         // Saisons kein schlechter Platzierter Heimrecht (gleicher Grund wie oben; Saat 10: 1 Fall, 11: 4 Fälle).
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 11);
+        // Runde 22, Spur national Teil 1 (A109, A424, A494, A551; R15-E2 = C): Saat 11 → 10. Länderspiele mit Spielvorbereitung 0x8365 und stehendem Einsatz 0x26, Tagesform nach WM-Gruppenterminen, Verletzungen und Belastung im Satz 5 ändern den Zufallsverbrauch ab der ersten WM; bei Saat 11 hat in fünf
+        // Saisons kein schlechter Platzierter Heimrecht (gleicher Grund wie oben; Saat 9, 11, 13 ohne, 8, 10, 12, 14, 15 mit Fall).
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 10);
         var active = game.Managers[1];
         var upsets = 0;
         var transfers = 0;
