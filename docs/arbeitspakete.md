@@ -62,7 +62,13 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
   (`kaderplatz-werte` A714, `transfer-pool` A713), `Core/Squad.Lineup.cs` (`kader-regeln` A683, `einzelpunkte` A681),
   `Core/SeasonFlow.cs` (`wettbewerbe-regeln` A670, `einzelpunkte` A671), `UI/Screens/Live/LiveMatchScreen.cs` (`national` A455,
   `wettbewerbe-regeln` A456), `Core/OriginalImport.Rest.cs` nur `zusehen-rest` (#908), `Core/OriginalImport.Playoffs.cs`,
-  `Core/OriginalExport.Cups.cs`, `Core/Playoffs.cs` nur `hok-play-off-marken`.
+  `Core/OriginalExport.Cups.cs`, `Core/Playoffs.cs` nur `hok-play-off-marken`; `Core/Transfer.Contract.cs` nur `einzelpunkte` (A206),
+  `Core/MatchEngine.Statistics.cs` nur `einzelpunkte` (A104) (Review #918 P3-1); `UI/Screens/Team/LineupScreen.cs` und
+  `Core/GameState.DailyRun.cs` (`UpdateManagerTeamValues`) nur `zusehen-rest` (A858), `Core/CupsNational.GameState.cs` nur
+  `national` (P3-2).
+- **Schema und Import (P3-3):** Die Schemanummer (`Core/SaveGame.cs`: `SchemaVersion`, Migrationstabelle) vergibt jede Spur mit
+  Migration beim Rebase in Integrationsfolge (nächste freie Nummer); in `SaveGame.cs` nur diese Stellen. `Core/OriginalImport.cs`
+  nur `kaderplatz-werte` (Import der Kaderplatzwerte, z. B. HiddenSkill); übrige Spuren nur ihre `OriginalImport.<Teil>.cs`.
 - `docs/analyse/restliste-v1.md` (generierter Block, Zahlen), `restliste-v1-klassen.csv`, `markerliste.py --write`,
   `funktionskarte.py --write` allein `pruefung-karte` (Welle 3) und danach `marker-x` (Welle 4, R22-D3 = B).
 
@@ -88,8 +94,10 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
 
 - **Teile:** 1. A832 Tormeldung, A834 Import der Markierung 0x34/0x22C; 2. A837/A840 Managerregeln an der Reihenliste statt am
   Manager; 3. #908: Reihentausch beim HOK-Import (0x375/0x376, FILE72 → FILE73 behält den Tausch wie im Original) und A858 0x952C
-  beim Verlassen der Vereinsaufstellung (Datei 0x41506–0x4151A); Kommentar `Squad.Strength.cs:88`/`TeamwertAufstellungTests.cs:139`.
-- **Dateien:** `Core/GameState.Watch.cs`, `Core/MatchEngine.Scoreboard.cs`, `Core/Squad.Strength.cs`, Stellen oben, Tests.
+  beim Verlassen der Vereinsaufstellung (Datei 0x41506–0x4151A); Kommentar `Squad.Strength.cs:88`/`TeamwertAufstellungTests.cs:139`. A858 nur der Vereinsfall
+  (Aufruf in `LineupScreen.cs`, Kern in `GameState.DailyRun.cs`); der Bundestrainerfall (`OnNationalLineupLeft`) bleibt unberührt.
+- **Dateien:** `Core/GameState.Watch.cs`, `Core/MatchEngine.Scoreboard.cs`, `Core/Squad.Strength.cs`, `UI/Screens/Team/LineupScreen.cs`,
+  `Core/GameState.DailyRun.cs` (nur A858), Stellen oben, Tests.
   **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
 
 ### Spur `hok-play-off-marken` – Marken der Play-off-Spiele (Welle 1, R21-E2 = A)
@@ -103,7 +111,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
 - **Teile:** A391 Poolplatz eines verlorenen Spielers und #897 Poolplatz 179; A713 Verteilung am Saisonwechsel; A731 Angebote für
   eigene Spieler; #897 `TransferMarket.ChangeList` Gehalt = Wert(Gehalt) statt 0 (0x497A1); A864 Verletzung außerhalb des Spiels
   (Datei 0x07462–0x07548, Wurf im Strom). Ohne A247, A701, A715 (N2 = B). Mehrsaisonprobe.
-- **Dateien:** `Core/Transfer*.cs` (PoolDistribution nur A713), Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+- **Dateien:** `Core/Transfer*.cs` (PoolDistribution nur A713, ohne `Transfer.Contract.cs`), Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
 
 ### Spur `kader-regeln` – Level, Gehalt, Aufstellen, Talente (Welle 2)
 
@@ -118,7 +126,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
 - **Teile:** 1. Spielrechnung und Wertung (A071, A105, A191, A549, A553, A836, A838; #897 Gegentore des Managertorhüters nur in der
   Liga, 0xA3F7); 2. Tagesablauf (A670 mit A384; #897 `SlotSeed`: Ligamischung am 29. April aus `lrandom`, Datei 0x5644E); 3. Live-
   Einzelregeln (A443, A456, A677, Teil-V A808) und A101 Penaltyschießen (Rechnung, Anzeige mit Markierung aus `zusehen`).
-- **Dateien:** `Core/MatchEngine.*.cs` (Stellen oben), `Core/SeasonFlow.LeagueSlots.cs`, `Core/GameState.Manager.cs`,
+- **Dateien:** `Core/MatchEngine.*.cs` (Stellen oben, ohne `MatchEngine.Statistics.cs`), `Core/SeasonFlow.LeagueSlots.cs`, `Core/GameState.Manager.cs`,
   `Core/StadiumStatistics.cs`, `Core/Squad.Lineup.InMatch.cs`, `UI/Screens/Team/PlayerHintLine.cs` (A808), Tests.
   **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
 
