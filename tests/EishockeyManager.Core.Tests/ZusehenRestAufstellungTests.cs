@@ -66,7 +66,9 @@ public class ZusehenRestAufstellungTests
     /// Manager 1 = 0/0 und den Tausch (LUTZ 2A, SCHUSTER 1A, VOLLAND 1S, BIRK 2S). Nach einem Laden von FILE72 hätte der
     /// Schleifenkopf 0x375 = 1 gesetzt, 0x54FDC also 0x376 = 1 gesichert – FILE73 zeigte 1/1 und die Automatik.
     /// Das Remake ohne Laden: FILE71, Tausch von Hand (Automatik aus), Verlassen, bis zum Halt von FILE73 spielen – Tausch und
-    /// Einstellung bleiben wie im Original.
+    /// Einstellung bleiben wie im Original. Sollwerte bleiben die Reihen aus FILE73; ein Spieler, den der Zufall des Remakes am
+    /// Spieltag verletzt oder sperrt, wird nur auf „nicht aufgestellt“ geprüft (R21-D2: seit dem Wurf von A093 vor jedem Spiel,
+    /// Datei 0x5482D, verschiebt sich der Zufallsstrom und VOLLAND verletzt sich mit Saat 1 – im Original nicht).
     /// </summary>
     [GameDataFact]
     public void ContinueWithoutLoading_File71SwapToFile73_KeepsSwap()
@@ -83,8 +85,24 @@ public class ZusehenRestAufstellungTests
         Assert.Null(HokCompare.PlayTo(game, target));
 
         Assert.False(club.AutoLineupEnabled);
+        var checkedNames = 0;
         foreach (var name in new[] { "LUTZ", "SCHUSTER", "BIRK", "VOLLAND" })
-            Assert.Equal(original.Lineup.FindSlot(Player(original, name))!.Value.Block, club.Lineup.FindSlot(Player(club, name))?.Block);
+        {
+            var expected = original.Lineup.FindSlot(Player(original, name))!.Value.Block;
+            var player = Player(club, name);
+            if (player.InjuredGames > 0 || player.SuspendedGames > 0)
+            {
+                // Zufall des Remakes (Verletzung oder Sperre am Spieltag, im Original nicht gezogen): Der Spieler verlässt im Remake
+                // die Aufstellung ([APPROX] Squad.Lineup.cs) – kein Aufschluss über den Tausch, aber auch kein Ersatz durch die
+                // Automatik an seiner Stelle.
+                Assert.Null(club.Lineup.FindSlot(player));
+                continue;
+            }
+            Assert.Equal(expected, club.Lineup.FindSlot(player)?.Block);
+            checkedNames++;
+        }
+        // Ein zurückgenommener Tausch fiele schon an einem Paar auf (LUTZ/SCHUSTER bzw. BIRK/VOLLAND tauschen die Reihe).
+        Assert.True(checkedNames >= 3, $"nur {checkedNames} der getauschten Spieler spielberechtigt");
     }
 
     private static void Swap(Club club)
