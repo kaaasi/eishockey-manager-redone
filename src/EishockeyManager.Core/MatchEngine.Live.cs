@@ -105,7 +105,7 @@ public static partial class MatchEngine
         EnsureTeamValues(game);
         if (home.ForfeitsMatch || away.ForfeitsMatch)
         {
-            var forfeit = home.ForfeitsMatch
+            var forfeit = game.HomeForfeits(home, away) // A191: Manager in Indexreihenfolge (0x544C0)
                 ? new MatchReport { HomeGoals = 0, AwayGoals = 2, Forfeit = true }
                 : new MatchReport { HomeGoals = 2, AwayGoals = 0, Forfeit = true };
             return new MatchSetup

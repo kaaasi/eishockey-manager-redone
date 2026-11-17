@@ -138,8 +138,7 @@ public sealed partial class GameState
     /// Taktik-Befund 375h, Runde 14; berichtigt A190 aus Integration Runde 11);
     /// gespielte Paarungen rechnet seit #837 die Vorbereitung vor dem Spiel ab (<c>MatchGate.cs</c>, [ORIGINAL] wie 0x544C0), die
     /// Abrechnung danach prüft nur noch gewertete oder nicht vorbereitete Spiele (Stand nach dem Spiel, [APPROX]).
-    /// [APPROX] Sind beide Vereine Managervereine und beide nicht spielfähig, prüft das Original die Manager in
-    /// Indexreihenfolge; das Remake wertet dann immer 0:2 (Heimverein zuerst).
+    /// Sind beide Vereine nicht spielfähig, entscheidet <see cref="HomeForfeits"/> (A191).
     /// </summary>
     internal void MarkShortHandedClubs()
     {
@@ -148,6 +147,29 @@ public sealed partial class GameState
             club.ForfeitsMatch = false;
         foreach (var manager in ActiveManagers)
             Clubs[manager.ClubIndex].ForfeitsMatch = IsShortHanded(Clubs[manager.ClubIndex]);
+    }
+
+    /// <summary>
+    /// Spielwertung: true, wenn der Heimverein das Spiel 0:2 verliert, false bei 2:0 bzw. ohne Wertung. A191: [ORIGINAL] 0x544C0
+    /// prüft die Manager in Indexreihenfolge (Schleife [bp−0x1] ab Datei 0x544D1): der erste Manager mit dem Heimverein und
+    /// Managerwert 100 (Datei 0x5457D–0x5459C) → Rückgabe 1 (0:2), mit dem Gastverein → Gastzweig ab Datei 0x54767, Rückgabe 2
+    /// (2:0). Sind beide Managervereine nicht spielfähig, verliert also der Verein des Managers mit dem kleineren Index – nicht
+    /// immer der Heimverein. Die Strafe zahlt nur dieser Manager (<see cref="SettleMatchGate"/> endet ebenso nach der ersten).
+    /// </summary>
+    internal bool HomeForfeits(Club home, Club away)
+    {
+        if (!home.ForfeitsMatch)
+            return false;
+        if (!away.ForfeitsMatch)
+            return true;
+        foreach (var manager in ActiveManagers)
+        {
+            if (manager.ClubIndex == home.Index)
+                return true;
+            if (manager.ClubIndex == away.Index)
+                return false;
+        }
+        return true;
     }
 
     /// <summary>

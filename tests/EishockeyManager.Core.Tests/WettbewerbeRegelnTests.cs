@@ -53,4 +53,31 @@ public class WettbewerbeRegelnTests
         Assert.Same(MatchEngine.MinuteCountersOf(manager), counters);
         Assert.Contains(counters.Cast<int>(), c => c != 0);
     }
+
+    private static GameState TwoManagers(int firstClub, int secondClub)
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Eins", Head = 0, ClubIndex = firstClub });
+        setup.Managers.Add(new ManagerSetup { Name = "Zwei", Head = 1, ClubIndex = secondClub });
+        return NewGame.Create(TestGames.CreateDatabase(), setup, 3);
+    }
+
+    /// <summary>
+    /// A191: [ORIGINAL] Sind beide Managervereine nicht spielfähig, verliert der Verein des Managers mit dem kleineren Index
+    /// (0x544C0, Schleife über die Manager: Heimzweig Datei 0x5457D–0x5459C → 1, Gastzweig ab 0x54767 → 2). Vorher immer 0:2.
+    /// </summary>
+    [Theory]
+    [InlineData(false, 0, 2)]
+    [InlineData(true, 2, 0)]
+    public void BothShortHanded_FirstManagerLoses(bool firstManagerAway, int homeGoals, int awayGoals)
+    {
+        var game = TwoManagers(2, 3);
+        MatchEngine.EnsureTeamValues(game);
+        var (first, second) = (game.Clubs[game.Managers[0].ClubIndex], game.Clubs[game.Managers[1].ClubIndex]);
+        first.ForfeitsMatch = second.ForfeitsMatch = true;
+        var (home, away) = firstManagerAway ? (second, first) : (first, second);
+        var report = MatchEngine.PlayWithEvents(game, home, away, MatchCompetition.League, knockOut: false, new Random(1));
+        Assert.True(report.Forfeit);
+        Assert.Equal((homeGoals, awayGoals), (report.HomeGoals, report.AwayGoals));
+    }
 }
