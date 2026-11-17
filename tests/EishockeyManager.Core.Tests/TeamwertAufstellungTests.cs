@@ -205,7 +205,10 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): Saat 16 statt 10 – die Spielabrechnung 0x544C0 würfelt vor jedem Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7) aus dem gemeinsamen Strom, anderer Zufallsverlauf ab dem ersten Managerspiel; bei Saat 10 zählt der passive Lauf nur 141 Schritte mit Kader, unter 5–24
         // erreichen nur 16, 17, 20 und 22 passiv und aktiv mehr als 200. Rückschaltprobe: src/ von faa64d2 mit
         // Saat 16 passiv rot (alter Zufallsverlauf, dort hielt Saat 10) – die Probe hängt an der Saat.
-        var game = TestGames.Create(16);
+        // Runde 22, Spur wettbewerbe-regeln Teil 1 (R15-E2 = C): Saat 20 statt 16 – mit #925/A838 anderer Zufallsverlauf, Saat 16 passiv
+        // 186 Schritte; von 16–30 erreichen nur 20, 22, 24, 27, 29 passiv und aktiv mehr als 200. Die Probe hängt an der Saat.
+        // Rückschaltprobe: alter Code mit Saat 20 ebenfalls grün.
+        var game = TestGames.Create(20);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();
