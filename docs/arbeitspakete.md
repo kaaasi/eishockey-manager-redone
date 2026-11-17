@@ -112,7 +112,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
 - **Teile:** A391 Poolplatz eines verlorenen Spielers und #897 Poolplatz 179; A713 Verteilung am Saisonwechsel; A731 Angebote für
   eigene Spieler; #897 `TransferMarket.ChangeList` Gehalt = Wert(Gehalt) statt 0 (0x497A1); A864 Verletzung außerhalb des Spiels
   (Datei 0x07462–0x07548, Wurf im Strom). Ohne A247, A701, A715 (N2 = B). Mehrsaisonprobe.
-- **Dateien:** `Core/Transfer*.cs` (PoolDistribution nur A713, ohne `Transfer.Contract.cs`), Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+- **Dateien:** `Core/Transfer*.cs` (PoolDistribution nur A713, ohne `Transfer.Contract.cs`), Tests. **Erstreview:** Opus 5.5. **Status:** in Arbeit (Claude Code, Draft-PR, Base `ce658d4`).
 
 ### Spur `kader-regeln` – Level, Gehalt, Aufstellen, Talente (Welle 2)
 
