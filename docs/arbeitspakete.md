@@ -105,7 +105,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
 
 - **Teile:** 1. em.exe 0x32AA3/0x38402/0x376F0 lesen (Bedeutung der Marken, auch bei klaren Serien wie 4:2); 2. Modell
   (`Core/Playoffs.cs`), Export, Import, Migration; roter Test mit Original-Spielstand. Details: PR #892 „Restlücken“. Fixes #896.
-- **Erstreview:** Opus 5.5. **Status:** in Arbeit (Claude Code, geplanter Lauf 17.11.2026), Draft-PR folgt.
+- **Erstreview:** Opus 5.5. **Status:** Teile 1–2 fertig (PR #924, 17.11.2026), wartet auf Erstreview; Schema 55 vorläufig.
 
 ### Spur `transfer-pool` – Transfer und Pool (Welle 2)
 
