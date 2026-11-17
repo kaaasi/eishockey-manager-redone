@@ -70,7 +70,8 @@ public sealed partial class NationalCoach
     /// [ORIGINAL] Belastung (Kaderplatz +0x13 = 0x5DD6 − 0x5DC3) der Kaderspieler zu Beginn der Freundschaftsspiele: Datei
     /// 0x3BB51 (<c>mov byte [bx+0x5DD6],0x46</c>, Schleife über die 29 Plätze ab 0x3BB22); die Spalte E zeigt 70 · 10 / 15 =
     /// 46 (A184, Runde 12; vorher als Energie gelesen). Name aus Kompatibilität. Zeitpunkt siehe
-    /// <see cref="GameState.PlayFriendly"/> ([APPROX]).
+    /// <see cref="GameState.PlayFriendly"/>: vor dem ersten Spiel ([APPROX], Öffnen des Bildschirms) und nach jedem Spiel
+    /// ([ORIGINAL] Neuzeichnen Datei 0x3C291 → 0x3B929; A551, Spur national Teil 1).
     /// </summary>
     public const int FriendlyEnergy = 70;
 

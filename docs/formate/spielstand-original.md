@@ -844,6 +844,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `NationalCoach._turnOpen` | N | – | Zugzustand des Bundestrainers liegt nicht im Spielstand; Import `false`, der nächste Menüaufbau beginnt den Zug |
 | `NationalCoach.Manager` | B | `965B+0xEB` | Satz 5 (0x554B1); `D0BA` ist an allen Ständen 0 (Kennzeichen, siehe `GameState.NationalCoach`) |
 | `NationalCoach.Nation` | B | `06AC` | Land (Regel 1) |
+| `NationalCoach.PowerPlayCounts` | B | `965B+0x177` | Satz 5: sechs Wörter (DGROUP 0x97D2 + 5 · 0x1AF + 2 · k), Zähler des Landes mit Vereinsfeld 0x16 = 6 (A097, Schema 55) |
 | `NationalCoach.Tactics` | B | `A6FB+5` | Modi und Werte des Satzes 5 (`A707+5`, `CAE9+0xF0`) |
 | `NationalCoach._dressed` | A | `5DC3+0x0A` | Satz 5 |
 | `NationalCoach._friendlies` | B | `D0C1`, `D0DB`, `D0D3`, `D0CB`, `D0C3` | Zahl, je Spiel Heim, Gast, Heimtore, Gasttore (0x3C248–0x3C288; FILE19 Deutschland – Schweden 2:1) |

@@ -252,7 +252,7 @@ public static class HokCompareClasses
             "WorldCup.Ranking", "WorldCup._groups", "WorldCup._knockout",
             "Playoffs.Seeds", "Playoffs._rounds", "PlayoffSeries.Games", "PlayoffSeries.HomeClub", "PlayoffSeries.AwayClub", "PlayoffSeries.Marks",
             "RelegationGroup.Clubs", "RelegationGroup.PlayedRounds", "RelegationGroup.Results", "RelegationGroup.Rounds",
-            "RelegationGroup.Upper", "NationalCoach._dressed", "NationalCoach._friendlies",
+            "RelegationGroup.Upper", "NationalCoach._dressed", "NationalCoach._friendlies", "NationalCoach.PowerPlayCounts",
             "FriendlyMatch.Away", "FriendlyMatch.AwayGoals", "FriendlyMatch.Home", "FriendlyMatch.HomeGoals");
         Set(InSeason, "EuropeanCup.GermanEntrants");
         Set(Exact, "NationalCoach.Formation", "NationalCoach._autoLineup", "NationalCoach._autoLineupSaved", "NationalCoach.Manager",

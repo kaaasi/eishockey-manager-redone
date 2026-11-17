@@ -396,8 +396,9 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 21, Spur zufallsstrom Teile 2 und 3 (R21-D2 = A): neu – Talent (Datei 0x06D7F), +0x19 des Spielstarts (Datei 0x299BF), Wanderung in Satzfolge (Datei 0x9D1B), Lösen der Sperre (Datei 0x071EC), Tendenz im Tageslauf (Datei 0x07B77) und Faktor je Managerzug (Datei 0x44E3F) im gemeinsamen Strom.
     // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): neu – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83/0x43A9F nach der Wanderung, keine Mischung vor dem Spielplan); anderer Zufallsverlauf ab dem Spielstart.
     // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
+    // Spur national Runde 22 Teil 1 (A109, A424, A494, A551): neu – Länderspiele mit Spielvorbereitung 0x8365 und stehendem Einsatz 0x26, Tagesform nach WM-Gruppenterminen, Verletzungen und Belastung im Satz 5; anderer Zufallsverbrauch ab der ersten WM. Rückschaltprobe: Core-Änderung zurück → alter Wert.
     private const string WorldOnlyReference =
-        "WorldChampion=54|500000|WorldChampion=63|-1523793|WorldChampion=52|-4542850|WorldChampion=52|-9221265|WorldChampion=52|-16471899|R1456588541";
+        "WorldChampion=55|500000|WorldChampion=52|-1524166|WorldChampion=53|-4537278|WorldChampion=63|-9205297|WorldChampion=53|-16437131|R561569843";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

@@ -195,7 +195,15 @@ public class NationalCoachTests
     {
         var game = Create();
         game.AppointNationalCoach(game.Managers[0]);
-        Assert.Equal(0, game.NationalMatchStrength(NationalTeams.Germany)); // leerer Kader
+        // Spur national Teil 1 (A494): [ORIGINAL] Die Stärke vor dem Spiel kommt aus den Vereinsfeldern (GameState.NationalMatchStrength,
+        // Datei 0x36B8E/0x097DC); aus dem Kader rechnet die Minutenrechnung der Managerpaarung (0x98F8 mit Manager 5) – sie prüft
+        // der Test hier (Rückschaltprobe entfällt: dieselbe Rechnung wie vorher, nur über die Minutenmannschaft).
+        int SquadStrength()
+        {
+            var team = MatchEngine.NationalLiveTeam(game, NationalTeams.Germany, 0, 0, managerMatch: true);
+            return OriginalMinutes.Strengths(team, team, 0).Normal;
+        }
+        Assert.Equal(0, SquadStrength()); // leerer Kader
         game.AutoNominate();
         var lineup = game.NationalCoach!.Lineup();
         Assert.NotNull(lineup.Goalkeeper);
@@ -203,7 +211,7 @@ public class NationalCoachTests
         Assert.Equal(9, lineup.Forwards.Count);
         // Spur wettbewerbe-spiel, Teil 3: Stärke 0x368B1 aus dem Kader (0x98F8 mit Manager 5) statt Mittel der 16 Plätze;
         // die Formel prüft WettbewerbeSpiel3Tests.
-        Assert.True(game.NationalMatchStrength(NationalTeams.Germany) > 0);
+        Assert.True(SquadStrength() > 0);
     }
 
     // ---- Korrekturen an der WM ---------------------------------------------------------------------------------

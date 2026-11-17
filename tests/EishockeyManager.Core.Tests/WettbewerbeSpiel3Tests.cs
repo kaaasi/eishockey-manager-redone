@@ -46,8 +46,10 @@ public class WettbewerbeSpiel3Tests
         var game = TestGames.Create(3);
         game.Clubs[Nation].TeamValues = new ClubTeamValues(0, 0, 0, 0, 48, 52, 51);
         var (cd, td, ca, ta) = NationalTeamRatings.Of(Nation);
-        var effort = new Tactics().EffectiveEffort(0, 0);
-        Assert.Equal(80, effort); // Automatik, ausgeglichen: 60 + 20
+        // Spur national Teil 1 (A494): [ORIGINAL] Einsatz = stehendes Vereinsfeld 0x26 aus dem letzten Spiel (Datei 0x9C66), nicht
+        // mehr die Automatik beim Stand 0:0 (80). 55 unterscheidet beide (Rückschaltprobe: alter Code rechnet mit 80 → rot).
+        const int effort = 55;
+        game.NationFieldTactics(Nation).RecordMatchFields(effort, 0);
 
         // 0x977F, Reihe 0: Wert + 4; Technik · (90 / 4 + 75) %; Kondition − (100 − Einsatz · Kondition / 100) / 4.
         PartValues Line(int c, int t, int f)
@@ -89,7 +91,12 @@ public class WettbewerbeSpiel3Tests
         // Abwehr: Technik (90 · 1,4 + 2 · (57 + 2) · 0,8) / 3 = (126 + 47 + 47) / 3 = 73, Kondition 220 / 3 = 73, Form 43.
         // Sturm: Technik 3 · (80 + 1) / 3 = 81, Kondition 75, Form 55. Bei Einsatz 80: Kondition 63 bzw. 65.
         // 0x368B1: (73 + 63 + 43) / 2 + (81 + 65 + 55) / 2 + (52 − 44) / 2 = 89 + 100 + 4 = 193.
-        Assert.Equal(expected, game.NationalMatchStrength(NationalTeams.Germany));
+        // Spur national Teil 1 (A494): [ORIGINAL] Die Stärke vor dem Spiel (GameState.NationalMatchStrength) rechnet aus den
+        // Vereinsfeldern mit dem stehenden Einsatz 0x26 (Datei 0x36B8E, 0x097DC, 0x9C66; FILE18 → FILE19). Die Formel aus den
+        // Spielern gilt in der Minutenrechnung der Managerpaarung (0x98F8 mit Manager 5) – dort prüft sie dieser Test weiter.
+        var team = MatchEngine.NationalLiveTeam(game, NationalTeams.Germany, 0, 0, managerMatch: true);
+        Assert.Equal(effort, team.Effort);
+        Assert.Equal(expected, OriginalMinutes.Strengths(team, team, 0).Normal);
     }
 
     /// <summary>Regressionstest (vorher rot, A079/A022): Das Land des Bundestrainers spielt mit Kader, Taktik und vierter Reihe.</summary>

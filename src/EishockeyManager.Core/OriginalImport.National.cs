@@ -96,6 +96,17 @@ public sealed partial class GameState
         ApplyTacticValues(save, coach.Tactics, OriginalImport.NationalRecord);
         coach.Tactics.ImportAutoLine(nationRecord.Slice(0x26, Tactics.Situations), nationRecord.Slice(0x35, Tactics.Situations));
         coach.TakeOverAutoLineup(_nationalAutoLineupSaved); // nach dem Aufstellen: Assign/Dress dürfen den Wert nicht verändern
+        // A494 (Spur national Teil 1): [ORIGINAL] Kondition und Technik des Landes (+0x18 KA, +0x19 KS, +0x1A TA, +0x1B TS) hat 0x952C
+        // mit Manager 5 aus der Aufstellung geschrieben; die Spielvorbereitung 0x8365 vergleicht damit (FILE18 → FILE19: 88/83 und
+        // 90/87 gegen SCHWEDEN 95/100 und 88/98 → Deutschland ungleich und schwächer). Vorher galt nach dem Import die Tabelle
+        // DGROUP 0x4C4E bis zum nächsten 0x952C. Die Form 0x1C/0x1D steht im Vereinsplatz (ApplyTeamValues).
+        _germanyRatings = (nationRecord[0x18], nationRecord[0x1A], nationRecord[0x19], nationRecord[0x1B]);
+        // A097 (Spur national Teil 1): [ORIGINAL] Über-/Unterzahl-Zähler des Satzes 5 (965B + 5 · 0x1AF + 0x177, sechs Wörter wie bei
+        // den Vereinsmanagern, OriginalImport.Rest.cs).
+        var coachRecord = save.Block("965B").AsSpan(OriginalImport.NationalRecord * OriginalSaveGame.ManagerRecordLength,
+            OriginalSaveGame.ManagerRecordLength);
+        for (var k = 0; k < coach.PowerPlayCounts.Length; k++)
+            coach.PowerPlayCounts[k] = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(coachRecord[(0x177 + 2 * k)..]);
     }
 
     /// <summary>

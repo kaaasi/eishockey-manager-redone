@@ -194,7 +194,7 @@ public sealed partial class WorldCup : ISeasonCompetition
             foreach (var group in _groups)
                 foreach (var (home, away) in group.Pairings(date))
                 {
-                    game.PrepareNationalTactics(home, away); // Spielvorbereitung 0x8365 je Paarung (#192)
+                    // Spielvorbereitung 0x8365 je Paarung in der Spielberechnung (#192, A494: MatchEngine.PrepareNationalMatch).
                     var report = MatchEngine.PlayWithEvents(game, game.RatedNation(home), game.RatedNation(away),
                         MatchCompetition.WorldCup, knockOut: false, random);
                     var (hg, ag) = (report.HomeGoals, report.AwayGoals);
@@ -203,6 +203,14 @@ public sealed partial class WorldCup : ISeasonCompetition
                     played.Add(match);
                     game.EnterNationalResult(home, away, hg, ag, NationalMatchKind.WorldCupGroup); // 0x50283, Code 8
                 }
+            // A109 (Spur national Teil 1): [ORIGINAL] Nach allen Spielen des Termins (0x36B5D, Datei 0x30F65) trägt 0x30852
+            // (Datei 0x30F7E, Schleife Gruppe, Paarung) jedes Ergebnis über 0x50283 mit Code 8 ein; dort Tagesform 0x4F527 des
+            // Heimlandes (Datei 0x50586), dann des Gastes (Datei 0x5059F). Die WM-Endrunde (Code 10) führt sie nicht nach.
+            foreach (var m in played)
+            {
+                MatchEngine.UpdateDayForm(game.Clubs[m.Home], m.HomeGoals - m.AwayGoals, random);
+                MatchEngine.UpdateDayForm(game.Clubs[m.Away], m.AwayGoals - m.HomeGoals, random);
+            }
             if (date == GroupDates - 1)
             {
                 var a = _groups[0].Table(game.Clubs).Select(r => r.Club.Index).ToList();
@@ -220,7 +228,7 @@ public sealed partial class WorldCup : ISeasonCompetition
             var results = KnockoutPairings(stage)
                 .Select(p =>
                 {
-                    game.PrepareNationalTactics(p.Home, p.Away); // Spielvorbereitung 0x8365 je Paarung (#192)
+                    // Spielvorbereitung 0x8365 je Paarung in der Spielberechnung (#192, A494: MatchEngine.PrepareNationalMatch).
                     return CupMatch.Play(game, day, game.RatedNation(p.Home), game.RatedNation(p.Away), MatchCompetition.WorldCup, random);
                 }).ToList();
             played = results.Select(r => r.Match).ToList();

@@ -261,7 +261,13 @@ public sealed partial class GameState
         var (own, against) = home ? (hg, ag) : (ag, hg);
         var (x, bonus) = NationalCoach.FriendlyBonus(cost, xRoll, home, own, against, random);
         foreach (var member in coach.Squad)
+        {
             NationalCoach.ApplyBonus(member.Player, x, bonus);
+            // A551 (Spur national Teil 1): [ORIGINAL] Nach dem Spiel zeichnet „WM Vorbereitung“ neu (Datei 0x3C291: Merker [bp−5] = 1,
+            // 0x3C34D → 0x3B929) und setzt dabei die Belastung aller belegten Plätze des Satzes 5 wieder auf 70 (0x3BB51). Die
+            // Belastungszüge des Spiels (0x8C53) bleiben deshalb nicht stehen: DOSBox FILE18 → FILE19 alle 29 Plätze +0x13 = 70.
+            member.Player.Strain = NationalCoach.FriendlyEnergy;
+        }
         foreach (var p in lineup.Players)
             p.Caps++;
         coach.AddFriendly(new FriendlyMatch(homeClub, awayClub, hg, ag, bonus));

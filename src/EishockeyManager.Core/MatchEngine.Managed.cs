@@ -397,10 +397,10 @@ public static partial class OriginalMinutes
                     minutes = ++team.OnIceMinutes[part];
                     started[part] = true;
                 }
-                // [ORIGINAL] Datei 0x8C53–0x8C82: lrandom(0, 4 + (Kondition > Technik)) = 0 → Belastung (+0x13) + 1, Byte (A184).
-                // [APPROX] Das Nationalteam hat im Original eigene Kaderplätze (Satz des Bundestrainers); die + 1 trifft dort nur
-                // die Kopie. Im Remake ist der Spieler derselbe wie im Verein – der Zug bleibt, die Belastung im Verein nicht.
-                if (OriginalMatch.Rnd(random, 0, 4 + (p.Player.Condition > p.Player.Technique ? 1 : 0)) == 0 && !squad.NationalCoach)
+                // [ORIGINAL] Datei 0x8C53–0x8C82: lrandom(0, 4 + (Kondition > Technik)) = 0 → Belastung (+0x13) + 1, Byte (A184),
+                // auch beim Nationalteam (A551, Spur national Teil 1): dort der Kaderplatz in Satz 5. [APPROX] Das Remake führt den
+                // WM-Kader als Verweis auf die Spieler (wie die Belastung 70 der Freundschaftsspiele, GameState.PlayFriendly).
+                if (OriginalMatch.Rnd(random, 0, 4 + (p.Player.Condition > p.Player.Technique ? 1 : 0)) == 0)
                     p.Player.Strain = (p.Player.Strain + 1) & 0xFF;
                 p.Energy = Math.Clamp(p.Energy - Drain(team.Effort, minutes, random), 1, 99);
             }

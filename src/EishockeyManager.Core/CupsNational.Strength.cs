@@ -70,13 +70,23 @@ public sealed partial class GameState
     /// <summary>
     /// Spielstärke eines Nationalteams vor dem Spiel. [ORIGINAL] 0x368B1(Verein, 1, 0, 0, 1) wie in der Spielvorbereitung
     /// 0x8365 (Datei 0x83AD/0x83CA): Gewichtung 1, Minute 0, gleich viele Feldspieler, Reihe 0 auf dem Eis, Energie der
-    /// Spielvorbereitung; beim Land des Bundestrainers aus dessen Kader (0x98F8 mit Manager 5, + Länderspiele / 8).
-    /// [APPROX] Einsatz 0x26 (wirkt über die Kondition): der Einsatz der Taktik beim Stand 0:0 gegen einen gleich starken
-    /// Gegner; das Original liest den zuletzt gesetzten Wert.
+    /// Spielvorbereitung. [ORIGINAL] Auch beim Land des Bundestrainers aus den Vereinsfeldern 0x18–0x1D, die 0x952C mit Manager 5
+    /// schreibt (<see cref="NationalTeamValues"/>): Der Spieltagsablauf leert die Liste DGROUP 0x233 vor der Vorbereitung (Datei
+    /// 0x36B8E–0x36BBF), 0x977F nimmt die Spieler erst mit Eintrag dort (Datei 0x097DC–0x097F0; wie A080 bei den Vereinen). Beleg
+    /// FILE18 → FILE19 (A494, Spur national Teil 1): nur mit den Vereinsfeldern ist SCHWEDEN gegen Deutschland mit Einsatz 40
+    /// ausgeglichen (225 gegen 219; aus dem Kader wären es 16 Punkte Abstand). Vorher rechnete das Remake hier aus dem Kader
+    /// (0x98F8 mit Manager 5, + Länderspiele / 8) – so bleibt es in der Minutenrechnung (<see cref="MatchEngine.NationalSquad"/>).
+    /// [ORIGINAL] Einsatz 0x26 (wirkt über die Kondition, Datei 0x9C66): der stehende Wert aus dem letzten Spiel des Landes
+    /// (A494, Spur national Teil 1; <see cref="NationFieldTactics"/>, Schreiber 0x8365 und 0x939A), beim Spielstart 0 (FILE02).
+    /// Vorher nahm das Remake den Einsatz der Taktik beim Stand 0:0 gegen einen gleich starken Gegner.
     /// </summary>
-    public int NationalMatchStrength(int nation)
+    public int NationalMatchStrength(int nation) => NationalMatchStrength(nation, NationFieldTactics(nation).MatchEffort);
+
+    /// <summary>Stärke wie <see cref="NationalMatchStrength(int)"/> mit vorgegebenem Einsatz 0x26 (zweiter Vergleich in 0x8365, #784).</summary>
+    internal int NationalMatchStrength(int nation, int fieldEffort)
     {
-        var team = MatchEngine.NationalLiveTeam(this, nation, 0, 0, managerMatch: true);
+        var team = MatchEngine.NationalLiveTeam(this, nation, 0, 0, managerMatch: false);
+        team.Effort = fieldEffort;
         return OriginalMinutes.Strengths(team, team, 0).Normal;
     }
 }

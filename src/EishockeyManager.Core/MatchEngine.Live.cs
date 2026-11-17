@@ -250,8 +250,8 @@ public static partial class MatchEngine
         var report = match.Report ?? throw new InvalidOperationException("Paarung ist noch nicht fertig gerechnet.");
         if (!match.Forfeit)
         {
-            KeepMatchFields(match.Home, match.HomeTeam);
-            KeepMatchFields(match.Away, match.AwayTeam);
+            KeepMatchFields(match.Game, match.Home, match.HomeTeam);
+            KeepMatchFields(match.Game, match.Away, match.AwayTeam);
         }
         CreditPlayers(match.Game, match.Home, match.Away, match.Competition, report, match.Random);
         AfterMatch(match.Home, match.Away, match.Competition, report, match.Random);

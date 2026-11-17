@@ -10,9 +10,10 @@ namespace EishockeyManager.Core;
 ///   Ernennung nicht zurückgesetzt (keine Schreibstelle außer Spielvorbereitung 0x8365, Taktikbildschirm 0x48607 ff.
 ///   und Laden). Das Remake führt deshalb eine Taktik je Nationalteam Deutschland, die beim Amtsantritt an den
 ///   Bundestrainer geht und beim Saisonwechsel zurück in den Spielstand.</item>
-/// <item>[ORIGINAL] Vor jedem WM-Spiel des Landes schreibt die Automatik ihre Zeile (<see cref="Tactics.RecordAutoLine"/>),
-///   mit und ohne Bundestrainer. Freundschaftsspiele rufen 0x8365 nicht auf (Aufrufe nur aus dem Spieltagsablauf,
-///   Datei 0x36F27/0x36F5A; `docs/dosbox-befunde.md`).</item>
+/// <item>[ORIGINAL] Vor jedem Länderspiel schreibt die Automatik ihre Zeile (<see cref="Tactics.RecordAutoLine"/>), mit und
+///   ohne Bundestrainer: 0x8365 aus dem Spieltagsablauf (Datei 0x36F27/0x36F5A), über den auch WM-Endrunde und
+///   Freundschaftsspiel laufen (Datei 0x30365 → 0x36B5D, A008/A110; A494, Spur national Teil 1 – vorher hier ohne
+///   Freundschaftsspiele gelesen). Ablauf: <see cref="MatchEngine.PrepareNationalMatch"/>.</item>
 /// <item>[ORIGINAL] Stärken für die Automatik: <see cref="NationalMatchStrength"/> beider Länder – die doppelten Stärken
 ///   aus 0x149D:0x61 = 0x368B1 (Datei 0x83AD/0x83CA, Argumente Verein, 1, 0, 0, 1; Spur wettbewerbe-spiel, Teil 3, A015).</item>
 /// </list>
@@ -42,17 +43,12 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Spielvorbereitung 0x8365 vor einem WM-Spiel: Automatik des eigenen Landes für die Anzeige festhalten.
-    /// [ORIGINAL] Ohne Bundestrainer steht im Vereinsfeld 0x16 Deutschlands 0: die Tagesfunktion setzt es am Tagesende
-    /// auf 0 (Datei 0x5540E, Satz 0x3D Bytes ab DGROUP 0x9657, Land DGROUP 0x6AC) und nur bei der Ernennung auf 6
-    /// (Manager 5 + 1, Datei 0x55494), 0x55752 wieder auf 0. Dann schreibt 0x8365 ohne Blick auf die Modi (R8-B04).
+    /// Satz eines Landes mit den Vereinsfeldern der Spielvorbereitung (0x26 Einsatz, 0x2C Angriff, Zeile „AUTOM.“; A494).
+    /// [ORIGINAL] Deutschland: die Taktik des Nationalteams (<see cref="NationalTactics"/>, Vereinssatz des Landes DGROUP 0x6AC);
+    /// die übrigen Länder: ihr Vereinsplatz (<see cref="Club.Tactics"/>). Ohne Bundestrainer steht im Vereinsfeld 0x16 Deutschlands
+    /// 0: die Tagesfunktion setzt es am Tagesende auf 0 (Datei 0x5540E, Satz 0x3D Bytes ab DGROUP 0x9657, Land DGROUP 0x6AC) und
+    /// nur bei der Ernennung auf 6 (Manager 5 + 1, Datei 0x55494), 0x55752 wieder auf 0. Dann schreibt 0x8365 ohne Blick auf die
+    /// Modi (R8-B04).
     /// </summary>
-    internal void PrepareNationalTactics(int home, int away)
-    {
-        var unmanaged = NationalCoach is null;
-        if (home == NationalTeams.Germany)
-            NationalTactics.RecordAutoLine(NationalMatchStrength(home), NationalMatchStrength(away), unmanaged);
-        else if (away == NationalTeams.Germany)
-            NationalTactics.RecordAutoLine(NationalMatchStrength(away), NationalMatchStrength(home), unmanaged);
-    }
+    public Tactics NationFieldTactics(int nation) => nation == NationalTeams.Germany ? NationalTactics : Clubs[nation].Tactics;
 }
