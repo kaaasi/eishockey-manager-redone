@@ -513,9 +513,10 @@ public class RngTwinProbeTests
     /// </summary>
     // Spur zusehen (Runde 21): Club.WatchMode/WatchedLive (Markierung zum Zusehen, neu im Zustand) stehen nicht im Abdruck, damit
     // die Abdrücke vergleichbar bleiben; die Spielwirkung (Reihen der Live-Anzeige) prüft ZusehenWatchTests.
+    // Runde 22, Spur einzelpunkte: Manager.OneSeasonFlag (A847, Managerbyte 0x9744, nur Bestenliste) steht nicht im Abdruck.
     private static readonly HashSet<string> Excluded =
         ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked", "PurchasePrice", "InjuryKind",
-         "InjuryName", "HasNewMessage", "WatchMode", "WatchedLive"];
+         "InjuryName", "HasNewMessage", "WatchMode", "WatchedLive", "OneSeasonFlag"];
 
     /// <summary>
     /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:
