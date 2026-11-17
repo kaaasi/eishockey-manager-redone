@@ -94,7 +94,6 @@ public static partial class MatchEngine
             Difficulty = manager is null ? 2 : TrainingRules.LevelValue(manager.Level),
             Tactics = coach.Tactics,
             NationalCoach = true,
-            MinuteCounters = MinuteCountersOf(coach), // A549: Satz 5 läuft ins nächste Spiel weiter
         };
         var positions = new Dictionary<Player, int>();
         // A024: leere Formation mit Einstellung → Aufstellung der Neuaufstellung 0x426BC (Plätze und eingesetzt wie dort).
