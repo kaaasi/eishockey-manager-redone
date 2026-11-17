@@ -33,9 +33,15 @@ public class WaveBReviewScreenTests
 
         d.OpenTile("Transfer");
         var screen = Assert.IsType<TransferScreen>(d.Host.Current);
+        Assert.Null(screen.Dialog); // A731: Öffnen zeigt kein Angebot, erst das Anklicken
+        var first = TransferScreen.EntryBuy(market.Listings.ToList().IndexOf(bids[0].Listing));
+        d.Click(first.X + 3, first.Y + 3);
         Assert.Same(bids[0], screen.Dialog!.Bid);
         var confirm = screen.Dialog.ConfirmButton;
         d.Click(confirm.X + 5, confirm.Y + 5);
+        Assert.Null(screen.Dialog); // das Original kehrt nach der Antwort in die Liste zurück (kein Kettenfenster)
+        var second = TransferScreen.EntryBuy(market.Listings.ToList().IndexOf(bids[1].Listing));
+        d.Click(second.X + 3, second.Y + 3);
         Assert.Same(bids[1], screen.Dialog!.Bid); // nächstes Gebot
 
         // Ungültig wird das zweite Gebot, weil der Spieler inzwischen in einem fremden Kader steht.

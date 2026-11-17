@@ -43,7 +43,23 @@ public sealed class TransferListing
 }
 
 /// <summary>Angebot eines Computervereins für einen Spieler, den ein Manager auf den Markt gesetzt hat.</summary>
-public sealed record TransferBid(TransferListing Listing, Club Buyer, long Amount);
+public sealed record TransferBid(TransferListing Listing, Club Buyer)
+{
+    /// <summary>Bereits gewürfeltes Angebot (z. B. aus einem Altstand oder Test).</summary>
+    public TransferBid(TransferListing listing, Club buyer, long amount) : this(listing, buyer)
+    {
+        Amount = amount;
+    }
+
+    /// <summary>Ablöse in DM; erst nach <see cref="TransferMarket.RollBid"/> gültig (vorher 0, daher kein eigenes Speicherfeld).</summary>
+    public long Amount { get; internal set; }
+
+    /// <summary>
+    /// Ist die Höhe gewürfelt? [ORIGINAL] Der Wurf fällt beim Anklicken des Spielers mit Angebot (Datei 0x47347), nicht beim
+    /// Entstehen des Angebots (A731).
+    /// </summary>
+    public bool IsRolled => Amount > 0;
+}
 
 /// <summary>Ergebnis von Kauf, Leihe oder Verkauf (Meldungstexte aus em.exe).</summary>
 public enum TransferResult
@@ -283,9 +299,8 @@ public sealed partial class TransferMarket
     /// Ein Markttag in einem Zug (Tests, Werkzeuge; die Zeitleiste rechnet seit #678 <see cref="ListChangeTurn"/> und
     /// <see cref="CatchUpManagerDay"/> getrennt): Listenwechsel mit <see cref="ListChangeRoll"/> ([ORIGINAL] 0x54E71). Angebote für eigene Spieler auf dem Markt
     /// nach dem Original (<see cref="TransferRules.BidRoll"/>, Datei 0x072DD); bietender Verein nach 0x059B8
-    /// (<see cref="UnsolicitedOfferRules.Bidder"/> mit Europapokal-Schalter 0, Aufruf 0x07364; A257). [APPROX] Die Höhe
-    /// (<see cref="TransferRules.BidAmountThirds"/>) wird schon beim Angebot statt beim Anklicken (0x47347) gewürfelt; Bieter
-    /// mit der Stärke des Spielers wie bei <see cref="UnsolicitedOfferRules.Bidder"/>.
+    /// (<see cref="UnsolicitedOfferRules.Bidder"/> mit Europapokal-Schalter 0, Aufruf 0x07364; A257). [ORIGINAL] Die Höhe
+    /// (<see cref="TransferRules.BidAmountThirds"/>) wird erst beim Anklicken gewürfelt (<see cref="RollBid"/>, 0x47347, A731).
     /// </summary>
     public void AdvanceDay(GameState game, Random random)
     {
@@ -317,9 +332,7 @@ public sealed partial class TransferMarket
             if (index < 0)
                 continue;
             var buyer = game.Clubs.First(c => c.Index == index);
-            var withOffer = PlayerValue.Compute(PlayerValue.Inputs(listing.Player, listing.From, buyer), PlayerValueKind.Price,
-                (a, b) => TransferRules.Random16(random, a, b));
-            _bids.Add(new TransferBid(listing, buyer, TransferRules.BidAmountThirds(withOffer, random) / 3));
+            _bids.Add(new TransferBid(listing, buyer)); // Höhe erst beim Anklicken (RollBid, A731)
         }
     }
 
@@ -648,6 +661,7 @@ public sealed partial class TransferMarket
         // TransferBid ist ein record: Wertgleichheit reicht nicht als Nachweis eines offenen Gebots.
         if (!_bids.Any(open => ReferenceEquals(open, bid)))
             return TransferResult.Impossible;
+        RollBid(game, bid); // [APPROX] Aufrufer ohne Anklicken (Tests, Werkzeuge): Wurf erst hier
         if (bid.Amount <= 0
             || bid.Listing.Seller is not { } seller || !IsCurrentListing(game, bid.Listing)
             || !game.Clubs.Contains(bid.Buyer) || bid.Buyer == bid.Listing.From
@@ -681,6 +695,22 @@ public sealed partial class TransferMarket
         return listing.From.Players.Contains(listing.Player) && CanLeave(listing.From, listing.Player)
             && game.Clubs.Where(c => c != listing.From).All(c => !c.Players.Contains(listing.Player))
             && !IsManaged(game, listing.From);
+    }
+
+    /// <summary>
+    /// Höhe des Angebots würfeln, wenn der Manager den Spieler mit Angebot anklickt. [ORIGINAL] Datei 0x47347–0x47379 (Klickzweig
+    /// der Transferliste 0x465F1, Kaderplatz +0x09 Bit 0x80): Wert mit Angebot (0x49D36, Art 0) und danach
+    /// <see cref="TransferRules.BidAmountThirds"/>; das Bit fällt nach der Antwort (0x4740B), das Angebot wird also je Angebot
+    /// einmal gewürfelt. Ein bereits gewürfeltes Angebot bleibt unverändert und zieht keinen Zufall (A731).
+    /// </summary>
+    public void RollBid(GameState game, TransferBid bid)
+    {
+        if (bid.IsRolled || !_bids.Any(open => ReferenceEquals(open, bid)))
+            return;
+        var random = game.Random;
+        var withOffer = PlayerValue.Compute(PlayerValue.Inputs(bid.Listing.Player, bid.Listing.From, bid.Buyer),
+            PlayerValueKind.Price, (a, b) => TransferRules.Random16(random, a, b));
+        bid.Amount = TransferRules.BidAmountThirds(withOffer, random) / 3;
     }
 
     /// <summary>Gebot ablehnen.</summary>

@@ -135,6 +135,7 @@ public class TransferTests
         for (var day = 0; day < 40 && market.Bids.Count == 0; day++)
             market.AdvanceDay(game, game.Random);
         var bid = Assert.Single(market.Bids);
+        market.RollBid(game, bid); // A731: Höhe fällt erst beim Anklicken
         var money = manager.Money;
         var fee = TransferMarket.TransferFee(bid); // Teil 5: 0x49332, Restlaufzeit vor dem Wechsel
         market.Accept(game, bid);

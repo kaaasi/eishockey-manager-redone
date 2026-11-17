@@ -257,4 +257,61 @@ public class TransferPoolSpurTests
         Assert.True(compared > 0, "Kein verlorener Pool-Spieler verglichen");
         Assert.True(outside > 0, "Keine Verletzung außerhalb des Spieles in vier Saisons");
     }
+    private static (GameState Game, TransferBid Bid) WithBid(int seed)
+    {
+        var game = TestGames.Create(seed);
+        var manager = game.ActiveManager;
+        var club = game.Clubs[manager.ClubIndex];
+        var player = club.Players.OrderByDescending(p => p.Condition + p.Technique).First(p => TransferMarket.CanLeave(club, p));
+        Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, player));
+        for (var day = 0; day < 300 && game.TransferMarket.Bids.Count == 0; day++)
+            game.TransferMarket.AdvanceDay(game, game.Random);
+        return (game, Assert.Single(game.TransferMarket.Bids));
+    }
+
+    /// <summary>
+    /// A731: Die Höhe des Angebots für einen eigenen Marktspieler fällt erst beim Anklicken. [ORIGINAL] Datei 0x47347 (call
+    /// 0x49D36, Art 0) und 0x47353–0x47379 liegen im Klickzweig der Transferliste (Sprünge 0x4718E/0x471AB → 0x47314, Test
+    /// Bit 0x80 bei 0x47334); der Tageswurf 0x072DD setzt nur das Bit. Das Bit fällt nach der Antwort (0x4740B): ein Wurf je
+    /// Angebot. Vorher rot: Höhe stand schon nach dem Tageswurf fest.
+    /// </summary>
+    [Fact]
+    public void A731_BidAmount_IsRolledOnClick_NotWhenOfferArises()
+    {
+        var (game, bid) = WithBid(3);
+        Assert.False(bid.IsRolled);
+        Assert.Equal(0, bid.Amount);
+
+        game.TransferMarket.RollBid(game, bid);
+        Assert.True(bid.IsRolled);
+        Assert.True(bid.Amount > 0);
+        Assert.Equal(0, bid.Amount % 100);
+    }
+
+    /// <summary>A731: Ein zweiter Aufruf zieht keinen Zufall und ändert die Höhe nicht (ein Wurf je Angebot).</summary>
+    [Fact]
+    public void A731_RollBid_IsOncePerOffer_AndConsumesRandomOnlyOnce()
+    {
+        var (once, bidOnce) = WithBid(3);
+        var (twice, bidTwice) = WithBid(3);
+        once.TransferMarket.RollBid(once, bidOnce);
+        twice.TransferMarket.RollBid(twice, bidTwice);
+        var amount = bidTwice.Amount;
+        twice.TransferMarket.RollBid(twice, bidTwice);
+        Assert.Equal(amount, bidTwice.Amount);
+        Assert.Equal(bidOnce.Amount, bidTwice.Amount);
+        Assert.Equal(once.Random.Next(), twice.Random.Next());
+    }
+
+    /// <summary>A731: Das Entstehen des Angebots verbraucht für die Höhe keinen Zufall (Strom wie ohne Wurf bis zum Anklicken).</summary>
+    [Fact]
+    public void A731_OfferArising_DoesNotDrawAmount_StreamContinuesAfterClick()
+    {
+        var (a, bidA) = WithBid(5);
+        var (b, bidB) = WithBid(5);
+        Assert.Equal(a.Random.Next(), b.Random.Next()); // gleicher Stand ohne Anklicken
+        a.TransferMarket.RollBid(a, bidA);
+        Assert.NotEqual(0, bidA.Amount);
+        Assert.False(bidB.IsRolled);
+    }
 }

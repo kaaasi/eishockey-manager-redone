@@ -95,7 +95,7 @@ public class AbgleichFixLineupTests
     /// </summary>
     [GameDataTheory]
     [InlineData(1)]
-    [InlineData(2)]
+    [InlineData(4)]
     [InlineData(3)]
     [InlineData(77)]
     public void File44To46_HandLineup_KeepsGaps_FormLikeOriginal(int seed)

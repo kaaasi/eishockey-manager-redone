@@ -54,6 +54,7 @@ public class TransferVertraegeKomplettTeil5Tests
         for (var day = 0; day < 200 && game.TransferMarket.Bids.Count == 0; day++)
             game.TransferMarket.AdvanceDay(game, game.Random);
         var bid = Assert.Single(game.TransferMarket.Bids);
+        game.TransferMarket.RollBid(game, bid); // A731: Höhe fällt erst beim Anklicken
         var expected = (TransferRules.Thirds(bid.Amount) - TransferRules.Thirds(bid.Amount) / 7 * 2) / 3;
         Assert.Equal(expected, TransferMarket.TransferFee(bid));
         Assert.Equal(214_286, UnsolicitedOfferRules.MarketTransferFeeThirds(900_000, 2) / 3);
@@ -521,6 +522,7 @@ public class TransferVertraegeKomplettTeil5Tests
                     foreach (var bid in market.Bids.Where(b => b.Listing.Seller == manager).ToList())
                     {
                         var before = manager.Money;
+                        market.RollBid(game, bid); // A731: Höhe fällt erst beim Anklicken
                         var fee = TransferMarket.TransferFee(bid);
                         if (market.Accept(game, bid) == TransferResult.Accepted)
                         {
