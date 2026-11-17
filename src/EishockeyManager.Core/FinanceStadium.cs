@@ -541,7 +541,7 @@ public sealed partial class GameState
                 Stadium.StandingProject => (StadiumProject.Stehplaetze, default),
                 _ => (StadiumProject.Feature, (StadiumFeature)p),
             };
-            if (stadium.IsOffended(project, feature) && SquadSetup.Between(FinanceRandom, 0, 10) == 0)
+            if (stadium.IsOffended(project, feature) && SquadSetup.Between(Random, 0, 10) == 0)
                 stadium.SetOffended(p, false);
         }
     }

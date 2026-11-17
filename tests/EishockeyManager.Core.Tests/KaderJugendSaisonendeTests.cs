@@ -86,7 +86,10 @@ public class KaderJugendSaisonendeTests
     public void File44_FourSeasonChanges_YouthJoinsFrom1995(bool active)
     {
         // Je Lauf kommt mit Wahrscheinlichkeit (2/3)³ ≈ 0,3 niemand (drei Wechsel ab 1995); vier Saaten zusammen.
-        var youth = new[] { 4711, 1, 2, 3 }.Sum(seed => FourSeasonChanges(seed, active));
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saaten 4711, 5, 6, 7 statt 4711, 1, 2, 3 – die Würfe der Jugend am
+        // Saisonende (Datei 0x06D7F ff.) kommen aus dem gemeinsamen Strom statt aus FinanceRandom; passiv kommt bei 4711 und 1–4
+        // niemand, bei 5–11 je 1–3 Spieler (aktiv 4711: 2, 5: 1, 6: 2, 7: 0). Die Probe hängt an den Saaten.
+        var youth = new[] { 4711, 5, 6, 7 }.Sum(seed => FourSeasonChanges(seed, active));
         Assert.True(youth > 0, "Keine Jugend am Saisonende 1995–1997");
     }
 

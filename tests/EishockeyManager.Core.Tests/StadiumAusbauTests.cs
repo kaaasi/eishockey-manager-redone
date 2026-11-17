@@ -224,10 +224,10 @@ public class StadiumAusbauTests
         var me = game.ActiveManager;
         var stadium = game.Finance(me).Stadium;
         me.Money = 519_999;
-        var rng = game.FinanceRandom.Capture();
+        var rng = game.Random.Capture(); // Spur zufallsstrom Teil 4: gemeinsamer Strom
         Assert.Null(game.QuoteConstruction(me, StadiumProject.Feature, StadiumFeature.Kino, 1));
         Assert.False(stadium.IsOffended(StadiumProject.Feature, StadiumFeature.Kino));
-        Assert.Equal(rng, game.FinanceRandom.Capture());
+        Assert.Equal(rng, game.Random.Capture());
         me.Money = 520_000;
         Assert.NotNull(game.QuoteConstruction(me, StadiumProject.Feature, StadiumFeature.Kino, 1));
     }

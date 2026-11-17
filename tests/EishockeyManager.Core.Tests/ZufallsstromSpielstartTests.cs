@@ -14,6 +14,11 @@ namespace EishockeyManager.Core.Tests;
 /// </summary>
 public class ZufallsstromSpielstartTests
 {
+    /// <summary>Strom je Manager vor (Offers) und nach (ManagerDone) seinen Werbeangeboten (Teil 4, Datei 0x2A03B–0x2A061).</summary>
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<object, List<(RngState Before, RngState After)>> s_offers = new();
+
+    private static List<(RngState Before, RngState After)> Offers(Steps steps) => s_offers.GetOrCreateValue(steps);
+
     private sealed record Steps(Dictionary<NewGame.StartStep, RngState> Stream,
         Dictionary<NewGame.StartStep, List<(int Strain, int Trend, int Control, int Age, int Over, int Under, int Condition, int Technique, int Form)>> Squads);
 
@@ -29,6 +34,10 @@ public class ZufallsstromSpielstartTests
         var game = NewGame.Create(database, setup, seed, (step, g) =>
         {
             steps.Stream[step] = g.Random.Capture();
+            if (step == NewGame.StartStep.Offers)
+                Offers(steps).Add((g.Random.Capture(), default!));
+            else if (step == NewGame.StartStep.ManagerDone)
+                Offers(steps)[^1] = (Offers(steps)[^1].Before, g.Random.Capture());
             steps.Squads[step] = g.Managers.SelectMany(m => g.Clubs[m.ClubIndex].Players)
                 .Select(p => (p.Strain, p.TrendScore, p.TrendControl, p.Age, p.HiddenSkill2, p.HiddenSkill1, p.Condition, p.Technique, p.Form))
                 .ToList();
@@ -159,8 +168,12 @@ public class ZufallsstromSpielstartTests
         var start = SquadSetup.StartBase(League.Bundesliga, StartStrength.Mittelfeld);
         var expected = new List<(int, int, int)>();
         var earlier = new List<int>();
-        foreach (var club in new[] { 2, 14 })
+        foreach (var (club, index) in new[] { 2, 14 }.Select((c, i) => (c, i)))
         {
+            // Teil 4 (A464 Rest): Nach Preis und Gehalt zieht jeder Manager seine Werbeangebote (Datei 0x2A03B–0x2A061) – der
+            // nächste Durchlauf beginnt nach ihnen.
+            if (index > 0)
+                sim = GameRandom.FromState(Offers(steps)[index - 1].After);
             int r;
             do
                 r = sim.Next(12);
@@ -175,10 +188,11 @@ public class ZufallsstromSpielstartTests
                 R(sim, start - 2, start + 2);
                 expected.Add((condition, technique, R(sim, 40, 60)));
             }
+            Assert.Equal(sim.Capture(), Offers(steps)[index].Before);
         }
 
         Assert.Equal(expected, steps.Squads[NewGame.StartStep.Nationals].Select(p => (p.Condition, p.Technique, p.Form)).ToList());
-        Assert.Equal(sim.Capture(), steps.Stream[NewGame.StartStep.Nationals]);
+        Assert.Equal(Offers(steps)[^1].After, steps.Stream[NewGame.StartStep.Nationals]);
         Assert.Equal(places.Take(12), game.LeagueSlots(League.Bundesliga));
         Assert.Equal(places.Skip(12).Take(12), game.LeagueSlots(League.ZweiteLiga));
         Assert.Equal(League.Bundesliga, game.Clubs[14].League);
@@ -212,7 +226,7 @@ public class ZufallsstromSpielstartTests
             R(sim, 40, 60);
         }
 
-        Assert.Equal(sim.Capture(), steps.Stream[NewGame.StartStep.Nationals]);
+        Assert.Equal(sim.Capture(), Offers(steps)[0].Before); // danach die Werbeangebote (Teil 4, Datei 0x2A03B–0x2A061)
         Assert.Equal(2, game.LeagueSlots(League.Bundesliga)[0]);
     }
 

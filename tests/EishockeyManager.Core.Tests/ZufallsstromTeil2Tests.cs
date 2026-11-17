@@ -44,7 +44,6 @@ public class ZufallsstromTeil2Tests
     {
         var game = Create(3);
         var manager = game.Managers[0];
-        var finance = game.FinanceRandom.Capture();
         var sim = Copy(game.Random);
         const int s = 60;
         var last = game.TransferMarket.PoolLayout.LeagueLast;
@@ -73,7 +72,6 @@ public class ZufallsstromTeil2Tests
         Assert.Equal((over, under), (p.HiddenSkill2, p.HiddenSkill1));
         Assert.Equal(years, p.ContractYears);
         Assert.Equal(sim.Capture(), game.Random.Capture());
-        Assert.Equal(finance, game.FinanceRandom.Capture());
     }
 
     /// <summary>
@@ -86,7 +84,6 @@ public class ZufallsstromTeil2Tests
         var game = Create(3);
         var manager = game.Managers[0];
         manager.Money = 50_000_000;
-        var finance = game.FinanceRandom.Capture();
         var sim = Copy(game.Random);
         var (weeks, discount) = Stadium.DrawOffer(sim, StadiumProject.Feature, StadiumFeature.Kino);
 
@@ -99,7 +96,6 @@ public class ZufallsstromTeil2Tests
         _ = Stadium.DrawWeeksLeft(sim, weeks);
         Assert.True(game.AnswerConstruction(manager, quote, accept: true));
         Assert.Equal(sim.Capture(), game.Random.Capture());
-        Assert.Equal(finance, game.FinanceRandom.Capture());
     }
 
     /// <summary>

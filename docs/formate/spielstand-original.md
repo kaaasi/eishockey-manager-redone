@@ -492,7 +492,6 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._contractRandom` | N | – | null (Quelle der Computerkader `ComputerSquadRandom`, wird bei Bedarf gebildet) |
 | `GameState._contractTurnFactor` | N | – | 0 = im Zug neu ziehen |
 | `GameState._eternal` | U | `AB7B`? | Ewige Tabelle: Ort nicht belegt; leer |
-| `GameState._financeRandom` | N | – | null |
 | `GameState._germanyRatings` | U | – | null (neu berechnet beim nächsten Länderspiel) |
 | `GameState._headToHead` | B | `AB7B+0x000` | DGROUP 0xAB7B + 0x280 · m + 10 · Verein: im Original **4** Manager-Plätze (0xA00 Byte), im Remake 6; Plätze 4–5 leer |
 | `GameState._leagueSlots` | A | `far:9657` | Regel 2 |
@@ -1081,7 +1080,9 @@ liegt bei den genannten Spuren.
 - Schema 53 (Runde 21, Spur `zufallsstrom`, N3 = B): `GameState._trendRandom` und `_turnRandom` entfallen (gemeinsamer Strom
   `GameState.Random`). Migration: beide Objekte entfernen, Objektnummern neu (`SaveGame.Migration.Zufallsstrom.cs`).
 - Schema 54 (Runde 21, Spur `zufallsstrom` Teil 4): übrige eigene Zufallsquellen entfallen – `GameState._cupRandom`
-  (Pokalauslosungen und Pokalspiele aus `GameState.Random`). Migration wie Schema 53 (dieselbe Datei).
+  (Pokalauslosungen und Pokalspiele) und `GameState._financeRandom` (Werbung, Börse, Zuschauer, Talentsuche, Jugend, Baufirmen)
+  ziehen aus `GameState.Random`. Migration wie Schema 53 (dieselbe Datei). `GameState._contractRandom` bleibt als Quelle der
+  Computerkader (`ComputerSquadRandom`, ohne Gegenstück im Original).
 
 ### Zugang (Teil 3)
 

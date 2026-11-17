@@ -9,7 +9,7 @@ namespace EishockeyManager.Core.Tests;
 /// Spur zufallsstrom, Teil 4 (N3 = B „alle Stellen“): Die übrigen eigenen Zufallsquellen entfallen, die Stellen ziehen aus dem
 /// gemeinsamen Strom <see cref="GameState.Random"/> an der Stelle des Originals. Jede Probe rechnet die Würfe mit einer Kopie des
 /// Stroms nach (Fundstellen in em.exe). Vor Teil 4 rot: gezogen wurde aus <c>CupRandom</c> (Saat aus einem Wurf des Stroms nach
-/// der Spielvorbereitung, ohne Gegenstück) bzw. <c>ContractRandom</c> (Saat aus Saison und Managern).
+/// der Spielvorbereitung, ohne Gegenstück) bzw. <c>ContractRandom</c> und <c>FinanceRandom</c> (Saat aus Saison und Managern).
 /// </summary>
 public class ZufallsstromTeil4Tests
 {
@@ -260,8 +260,137 @@ public class ZufallsstromTeil4Tests
         Assert.Equal(computer, game.ComputerSquadRandom.Capture());
     }
 
+    // ---- FinanceRandom, A464 Rest -------------------------------------------------------------------------------------
+
+    /// <summary>Werbeangebote 0x3FB47 nachgerechnet (Würfe in der Reihenfolge von <see cref="GameState.RefreshSponsorOffers"/>).</summary>
+    private static List<(AdSlotKind Kind, int Partner, int Months, int Boards, long Amount, int Option)> SimulateOffers(Random sim, int rating)
+    {
+        var offers = new List<(AdSlotKind, int, int, int, long, int)>();
+        var w = 10 * rating;
+        foreach (var kind in Enum.GetValues<AdSlotKind>())
+            for (var p = 0; p < Sponsor.For(kind).Length; p++)
+            {
+                if (SquadSetup.Between(sim, 0, 2 * p / 3) != 0)
+                    continue;
+                if (SquadSetup.Between(sim, 0, 5 - w / 200) != 0 && SquadSetup.Between(sim, 0, 4) <= p)
+                    continue;
+                var m = SquadSetup.Between(sim, 20, 22);
+                var amount = SponsorRules.OfferAmountThirds(rating, kind, p, m, sim);
+                var boards = kind == AdSlotKind.Bande ? SponsorRules.Boards(m, sim) : 1;
+                var (months, option) = SponsorRules.Duration(sim);
+                offers.Add((kind, p, months, boards, FinanceRules.ToMarks(amount), option));
+            }
+        return offers;
+    }
+
     /// <summary>
-    /// Spielstand Schema 53 mit der entfallenen Quelle <c>_cupRandom</c> lädt nach der Migration 53 → 54; der gemeinsame Strom
+    /// Spielstart, A464 Rest: Werbebewertung 0x3F833 (Datei 0x2A03B) und Werbeangebote 0x3FB47 (Datei 0x2A061) fallen in der
+    /// Managerschleife nach Preis und Gehalt aus dem gemeinsamen Strom; danach folgen die Nationalspieler (Datei 0x2A0B5). Vorher
+    /// nach der Spielvorbereitung aus <c>FinanceRandom</c>; der Strom zog zwischen Startwerten und Nationalspielern nichts.
+    /// </summary>
+    [Fact]
+    public void GameStart_SponsorOffers_DrawnInManagerLoopFromSharedStream()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Trainer", Head = 0, ClubIndex = 2 });
+        RngState? after = null, atNationals = null;
+        var rating = -1;
+        List<(AdSlotKind, int, int, int, long, int)>? expected = null, actual = null;
+        NewGame.Create(TestGames.CreateDatabase(), setup, 3, (step, g) =>
+        {
+            if (step == NewGame.StartStep.Offers)
+            {
+                Assert.All(g.Clubs[2].Players, p => Assert.True(p.MonthlySalary > 0)); // nach Preis und Gehalt (Datei 0x29EE4)
+                var sim = GameRandom.FromState(g.Random.Capture());
+                rating = SponsorRating.Compute(g, g.Managers[0], sim);
+                expected = SimulateOffers(sim, rating);
+                after = sim.Capture();
+            }
+            else if (step == NewGame.StartStep.Nationals)
+            {
+                atNationals = g.Random.Capture();
+                actual = g.Ads(g.Managers[0]).Offers.SelectMany(k => k.Value.Values)
+                    .Select(o => (o.Kind, o.Sponsor, o.Months, o.Boards, o.MonthlyAmount, o.OptionMonths)).ToList();
+                Assert.Equal(rating, g.Finance(g.Managers[0]).SponsorRating);
+            }
+        });
+
+        Assert.NotEmpty(expected!);
+        Assert.Equal(expected, actual);
+        Assert.Equal(after, atNationals);
+    }
+
+    /// <summary>
+    /// Spielstart: Die 90 Börsentage (0x5784A, Datei 0x43AD5–0x43AE0) laufen nach dem ersten Listenwechsel (Datei 0x43A9F) aus dem
+    /// gemeinsamen Strom. Vorher beim ersten Zugriff aus <c>FinanceRandom</c>.
+    /// </summary>
+    [Fact]
+    public void GameStart_StockDays_DrawnAfterFirstListingFromSharedStream()
+    {
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Trainer", Head = 0, ClubIndex = 2 });
+        RngState? before = null, atTurn = null;
+        List<(long Base, int Price)>? actual = null;
+        NewGame.Create(TestGames.CreateDatabase(), setup, 3, (step, g) =>
+        {
+            if (step == NewGame.StartStep.Stocks)
+                before = g.Random.Capture();
+            else if (step == NewGame.StartStep.Turn)
+            {
+                atTurn = g.Random.Capture();
+                actual = g.Stocks.Stocks.Select(k => ((long)k.Base, (int)k.Price)).ToList();
+            }
+        });
+        var sim = GameRandom.FromState(before!);
+        var expected = StockMarket.Create(sim);
+
+        Assert.Equal(expected.Stocks.Select(k => ((long)k.Base, (int)k.Price)).ToList(), actual);
+        Assert.Equal(sim.Capture(), atTurn);
+        Assert.NotEqual(before, atTurn);
+    }
+
+    /// <summary>
+    /// Talentsuche starten (Datei 0x06FA5 ff.): Dauer random(MinTicks, MaxTicks), Zuschlag bei random(0, 3) = 0 – aus dem
+    /// gemeinsamen Strom. Vorher aus <c>FinanceRandom</c>.
+    /// </summary>
+    [Fact]
+    public void TalentSearch_Start_DrawsFromSharedStream()
+    {
+        var (game, _) = Create(3, null, 2);
+        var manager = game.ActiveManager;
+        manager.Money = 10_000_000;
+        var sim = GameRandom.FromState(game.Random.Capture());
+        var ticks = R(sim, TalentScout.MinTicks, TalentScout.MaxTicks);
+        if (R(sim, 0, 3) == 0)
+            ticks += TalentScout.ExtraTicks;
+
+        Assert.Equal(TalentSearchStart.Started, game.StartTalentSearch(manager));
+
+        Assert.Equal(ticks, game.Finance(manager).TalentSearch!.TicksLeft);
+        Assert.Equal(sim.Capture(), game.Random.Capture());
+    }
+
+    /// <summary>
+    /// Börsentag im Tagesabschluss (0x5784A): Kurse aus dem gemeinsamen Strom – ein Zwilling, dessen Börse mit einer Kopie des
+    /// Stroms rechnet, hat dieselben Kurse und denselben Stromzustand. Vorher aus <c>FinanceRandom</c>.
+    /// </summary>
+    [Fact]
+    public void StockDay_DrawsFromSharedStream()
+    {
+        var (a, _) = Create(3, null, 2);
+        var (b, _) = Create(3, null, 2);
+        var sim = GameRandom.FromState(b.Random.Capture());
+        b.Stocks.Advance(sim);
+
+        a.AdvanceStocks();
+
+        Assert.Equal(b.Stocks.Stocks.Select(k => k.Price), a.Stocks.Stocks.Select(k => k.Price));
+        Assert.Equal(sim.Capture(), a.Random.Capture());
+        Assert.NotEqual(b.Random.Capture(), a.Random.Capture());
+    }
+
+    /// <summary>
+    /// Spielstand Schema 53 mit den entfallenen Quellen <c>_cupRandom</c> und <c>_financeRandom</c> lädt nach der Migration 53 → 54; der gemeinsame Strom
     /// bleibt.
     /// </summary>
     [Fact]
@@ -318,5 +447,5 @@ public class ZufallsstromTeil4Tests
         Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded.Game));
     }
 
-    private static readonly string[] RemovedFields = ["_cupRandom"];
+    private static readonly string[] RemovedFields = ["_cupRandom", "_financeRandom"];
 }

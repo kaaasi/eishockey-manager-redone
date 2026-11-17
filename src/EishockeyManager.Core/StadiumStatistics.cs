@@ -178,7 +178,7 @@ public sealed partial class GameState
                     PenalizeShortHanded(manager);
                     return;
                 }
-                var spectators = Spectators(Clubs[home], Clubs[away], Finance(manager).Stadium, tableMatchDay, FinanceRandom, importance, manager.Level);
+                var spectators = Spectators(Clubs[home], Clubs[away], Finance(manager).Stadium, tableMatchDay, Random, importance, manager.Level);
                 BookGate(manager, spectators, away, leagueMatch);
             }
             if (manager.ClubIndex == away && !manager.Dismissed && IsShortHanded(Clubs[away]))

@@ -70,8 +70,9 @@ public sealed partial class GameState
     /// <para>Zufall (Spur zufallsstrom, A464, N3 = B): Vereinswahl, Kader, Platztausch und Startwerte ziehen aus dem gemeinsamen
     /// Strom <see cref="Random"/>, in der Reihenfolge der Spielvorbereitung im Hinzufügen-Modus ([ORIGINAL] Datei 0x2993A–0x29EF7:
     /// je Kaderplatz Poolindex, 0x42CB1 mit Energie und Tendenz, +0x19, Alter; dann Platztausch; dann je Platz Kondition, Technik,
-    /// dritter Wurf, Form). Wie im Original verschiebt das Hinzufügen damit alle späteren Würfe. [APPROX] Die Werbeangebote des
-    /// Neuen (<see cref="RenewOffers"/>) ziehen wie alle Werbeangebote aus <see cref="FinanceRandom"/>.</para>
+    /// dritter Wurf, Form). Wie im Original verschiebt das Hinzufügen damit alle späteren Würfe. Teil 4 (A464 Rest): Die
+    /// Werbeangebote des Neuen (<see cref="RenewOffers"/>; [ORIGINAL] Bewertung 0x3F833 Datei 0x2A03B, Angebote 0x3FB47 Datei
+    /// 0x2A061, nach Preis und Gehalt und vor den Teamwerten Datei 0x2A073) ziehen aus demselben Strom.</para>
     /// </summary>
     /// <exception cref="InvalidOperationException">Kein Platz für einen weiteren Manager oder Modus „nur Weltkugel“.</exception>
     /// <exception cref="ArgumentException">Name leer, Verein nicht wählbar oder schon vergeben.</exception>

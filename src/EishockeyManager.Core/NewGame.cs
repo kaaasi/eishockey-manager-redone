@@ -29,8 +29,8 @@ public static class NewGame
     /// die Vereinsauswahl sie vor dem Spielstart zeigt, <see cref="StartOrder"/>). Die Zufallswahl eines Vereins (ohne Gegenstück)
     /// zieht vor dem Pool aus dem Strom (<see cref="AssignClubs"/>). Teil 4: Europapokal (Datei 0x298B1, nach dem Pool) und
     /// DEB-Pokal (Datei 0x43A8C, zwischen 0x057E3 und 0x494EF) losen an den Stellen des Originals aus dem Strom; die Länderreihenfolge
-    /// der WM gehört zur Mischung vor der Spielvorbereitung (<see cref="GameState.InitializeCompetitions"/>). Werbeangebote: eigene
-    /// Quelle (<see cref="GameState.InitializeManagerSystems"/>).
+    /// der WM gehört zur Mischung vor der Spielvorbereitung (<see cref="GameState.InitializeCompetitions"/>). Werbeangebote je
+    /// Manager in der Managerschleife (Datei 0x2A03B–0x2A061), 90 Börsentage nach dem ersten Listenwechsel (Datei 0x43AD5).
     /// </summary>
     /// <param name="observer">Nur Tests: wird an den Grenzen der Schritte gerufen (Strom und Zustand dort).</param>
     internal static GameState Create(ClubDatabase database, GameSetup setup, int seed, Action<StartStep, GameState>? observer)
@@ -107,6 +107,11 @@ public static class NewGame
             }
             if (!game.WorldOnly)
                 game.RollStartValues(managers[i], SquadSetup.StartBase(clubs[managers[i].ClubIndex].League ?? m.StartLeague, m.StartStrength));
+            // Teil 4 (A464 Rest): [ORIGINAL] Werbebewertung 0x3F833 (Datei 0x2A03B) und Werbeangebote 0x3FB47 (Datei 0x2A061) je
+            // Manager nach Preis und Gehalt, vor den Teamwerten (Datei 0x2A073).
+            observer?.Invoke(StartStep.Offers, game);
+            game.RenewOffers(managers[i]);
+            observer?.Invoke(StartStep.ManagerDone, game);
         }
 
         observer?.Invoke(StartStep.Nationals, game);
@@ -139,6 +144,8 @@ public static class NewGame
             game.DrawStartDebCup();
             observer?.Invoke(StartStep.Listing, game);
         });
+        observer?.Invoke(StartStep.Stocks, game);
+        game.CreateStartStocks(); // Datei 0x43AA4–0x43AE0: Startkurse, 90 Börsentage 0x5784A
         observer?.Invoke(StartStep.Turn, game);
         game.BeginFirstTurn(); // ui-rest Teil 4 (R12U-04): Faktor des ersten Managerzugs (0x44E3F)
         observer?.Invoke(StartStep.Done, game);
@@ -154,6 +161,10 @@ public static class NewGame
         EuropeanCup,
         /// <summary>Vor der Managerschleife (Datei 0x29B57).</summary>
         Managers,
+        /// <summary>Je Manager vor Werbebewertung und Werbeangeboten (Datei 0x2A03B).</summary>
+        Offers,
+        /// <summary>Je Manager nach den Werbeangeboten (Ende des Schleifendurchlaufs, Datei 0x2A0A3).</summary>
+        ManagerDone,
         /// <summary>Vor dem Benennen der Nationalspieler (Datei 0x2A0B5).</summary>
         Nationals,
         /// <summary>Nach der Spielvorbereitung, vor Computerkadern und Wanderung.</summary>
@@ -166,6 +177,8 @@ public static class NewGame
         DebCup,
         /// <summary>Vor dem ersten Listenwechsel (Datei 0x43A9F).</summary>
         Listing,
+        /// <summary>Vor den 90 Börsentagen des Spielstarts (Datei 0x43AD5).</summary>
+        Stocks,
         /// <summary>Vor dem Faktor des ersten Managerzugs (Datei 0x44E3F).</summary>
         Turn,
         /// <summary>Spielstart abgeschlossen.</summary>

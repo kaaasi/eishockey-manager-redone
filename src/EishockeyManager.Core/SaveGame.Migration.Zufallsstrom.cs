@@ -25,7 +25,7 @@ public static partial class SaveGame
 
     /// <summary>
     /// Migration Schema 53 → 54 (Runde 21, Spur zufallsstrom, Teil 4, N3 = B): Die übrigen eigenen Zufallsquellen entfallen –
-    /// Pokale (<c>GameState._cupRandom</c>). Alle Stellen ziehen aus dem gemeinsamen Strom <c>GameState.Random</c>. [APPROX] wie
+    /// Pokale (<c>GameState._cupRandom</c>) und Finanzen (<c>GameState._financeRandom</c>). Alle Stellen ziehen aus dem gemeinsamen Strom <c>GameState.Random</c>. [APPROX] wie
     /// 52 → 53: Ein älterer Stand setzt seine Folge mit anderen Würfen fort (der Zustand der entfallenen Quellen wird verworfen).
     /// </summary>
     private static JsonObject MigrateZufallsstromQuellen(JsonObject root)
@@ -42,5 +42,5 @@ public static partial class SaveGame
     }
 
     /// <summary>Felder der mit Schema 54 entfallenen Quellen.</summary>
-    private static readonly string[] RemovedSources = ["_cupRandom"];
+    private static readonly string[] RemovedSources = ["_cupRandom", "_financeRandom"];
 }

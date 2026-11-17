@@ -48,8 +48,8 @@ public sealed partial class GameState
         if (manager.Money <= price)
             return TalentSearchStart.NotEnoughMoney;
         Book(manager, FinanceCategory.Talentsuche, -price);
-        var ticks = TransferRules.Random16(FinanceRandom, TalentScout.MinTicks, TalentScout.MaxTicks);
-        if (TransferRules.Random16(FinanceRandom, 0, 3) == 0)
+        var ticks = TransferRules.Random16(Random, TalentScout.MinTicks, TalentScout.MaxTicks);
+        if (TransferRules.Random16(Random, 0, 3) == 0)
             ticks += TalentScout.ExtraTicks;
         finance.TalentSearch = new TalentSearch { TicksLeft = ticks };
         return TalentSearchStart.Started;
@@ -62,10 +62,10 @@ public sealed partial class GameState
     /// </summary>
     private void RollTalentSearchPrice(Manager manager)
     {
-        if (TransferRules.Random16(FinanceRandom, 0, 1) == 0)
+        if (TransferRules.Random16(Random, 0, 1) == 0)
             return;
         Finance(manager).TalentPrice = TalentScout.PriceBase
-            + TalentScout.PriceStep * TransferRules.Random16(FinanceRandom, 0, TalentScout.PriceSteps);
+            + TalentScout.PriceStep * TransferRules.Random16(Random, 0, TalentScout.PriceSteps);
     }
 
     /// <summary>
@@ -86,12 +86,12 @@ public sealed partial class GameState
             if (finance.TalentSearch is not { } search || --search.TicksLeft > 0)
                 continue;
             finance.TalentSearch = null;
-            if (TransferRules.Random16(FinanceRandom, 0, TalentScout.SuccessDie(manager.Level)) != 0)
+            if (TransferRules.Random16(Random, 0, TalentScout.SuccessDie(manager.Level)) != 0)
             {
                 Notify(manager, "Ihr Talentspäher gibt die", "Suche ohne Erfolg auf... Pech...");
                 continue;
             }
-            var s = TransferRules.Random16(FinanceRandom, TalentScout.MinStrength, TalentScout.MaxStrength);
+            var s = TransferRules.Random16(Random, TalentScout.MinStrength, TalentScout.MaxStrength);
             if (JoinScoutedTalent(manager, s) is not null)
                 Notify(manager, "Ihre Talentsuche war ein Erfolg.", "Ein junger Spieler stößt zu Ihrem Kader.");
         }
@@ -188,7 +188,7 @@ public sealed partial class GameState
     public List<Player> JoinSeasonEndYouth(Manager manager, int aprilYear)
     {
         var joined = new List<Player>();
-        var random = FinanceRandom;
+        var random = Random;
         var count = TransferRules.Random16(random, 0, SeasonEndYouth.MaxCount);
         if (TransferRules.Random16(random, 0, 1) != 0)
             count = 0;

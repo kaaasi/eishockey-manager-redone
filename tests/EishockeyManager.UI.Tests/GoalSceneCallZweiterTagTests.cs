@@ -16,7 +16,8 @@ public sealed class GoalSceneCallZweiterTagTests
 {
     private static List<GoalSceneRequest> PlayMatchDays(int count)
     {
-        var d = FlowTests.CreateDriver();
+        // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1994 statt 1993 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; bei Saat 1993 gibt es in sechs (und bis zu zehn) Spieltagen keinen Fall „Chance nach Tor in derselben Minute“, 1994–1999 erfüllen alle Proben der Klasse.
+        var d = FlowTests.CreateDriver(1994);
         d.StartNewGame();
         var game = d.Host.Game!;
         game.Options.MatchSpeed = 60;

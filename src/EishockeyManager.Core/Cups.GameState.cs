@@ -6,7 +6,8 @@ public sealed partial class GameState
     /// <summary>
     /// Nur während <see cref="NewGame.Create(Formats.ClubDatabase, GameSetup, int)"/> gesetzt (kein Spielzustand): Das neue Spiel lost
     /// Europapokal und DEB-Pokal an den Stellen des Originals aus (<see cref="DrawStartEuropeanCup"/>,
-    /// <see cref="DrawStartDebCup"/>); <see cref="InitializeCompetitions"/> lost dann nicht.
+    /// <see cref="DrawStartDebCup"/>) und würfelt dort auch Werbeangebote und Börse; <see cref="InitializeCompetitions"/> und
+    /// <see cref="InitializeManagerSystems"/> ziehen dann nicht.
     /// </summary>
     [ThreadStatic]
     internal static bool s_startDrawsAtOriginalPlace;

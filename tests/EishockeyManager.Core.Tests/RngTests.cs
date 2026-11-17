@@ -125,21 +125,21 @@ public class RngTests
     }
 
     /// <summary>
-    /// Spielstand: Abbild aller vier Quellen sichern, weiterspielen, zurücksetzen – die Folgen wiederholen sich.
+    /// Spielstand: Abbild der Quellen (gemeinsamer Strom, Computerkader) sichern, weiterspielen, zurücksetzen – die Folgen wiederholen sich.
     /// Noch nicht erzeugte Quellen bleiben „nicht erzeugt“ und entstehen danach wie bisher aus dem Saison-Seed.
     /// </summary>
     [Fact]
     public void GameState_CaptureRestore_RepeatsAllSources_AndKeepsLazyCreation()
     {
-        // „Noch nicht erzeugt“ (je nach Spielstart schon belegt) wird über ein Abbild ohne die drei Quellen hergestellt.
+        // „Noch nicht erzeugt“ (je nach Spielstart schon belegt) wird über ein Abbild ohne die verzögert erzeugte Quelle hergestellt.
         var fresh = TestGames.Create(7);
         var full = fresh.CaptureRng();
         Assert.Equal(full, fresh.CaptureRng()); // Abbild verbraucht nichts
-        var lazy = full with { Finance = null, Contract = null };
+        var lazy = full with { ComputerSquads = null };
         fresh.RestoreRng(lazy);
         Assert.Equal(lazy, fresh.CaptureRng()); // bleibt „nicht erzeugt“, bis darauf zugegriffen wird
 
-        var expected = Draw(fresh); // erzeugt die drei Quellen neu aus dem Saison-Seed
+        var expected = Draw(fresh); // erzeugt die Quelle neu aus dem Saison-Seed
         var twin = TestGames.Create(7);
         twin.RestoreRng(lazy);
         Assert.Equal(expected, Draw(twin));
@@ -148,7 +148,7 @@ public class RngTests
         for (var i = 0; i < 3; i++)
             TestSeason.PlayMatchDay(game);
         var snapshot = game.CaptureRng();
-        Assert.NotNull(snapshot.Finance);
+        // Spur zufallsstrom Teil 4: FinanceRandom entfällt (gemeinsamer Strom); übrig ist die Quelle der Computerkader.
         var first = Draw(game);
         game.RestoreRng(snapshot);
         Assert.Equal(first, Draw(game));
@@ -178,5 +178,5 @@ public class RngTests
     }
 
     private static int[] Draw(GameState game) =>
-        [game.Random.Next(), game.FinanceRandom.Next(), game.ComputerSquadRandom.Next(), game.Random.Next()];
+        [game.Random.Next(), game.ComputerSquadRandom.Next(), game.Random.Next()];
 }

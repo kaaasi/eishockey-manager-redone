@@ -9,7 +9,7 @@ namespace EishockeyManager.Core;
 /// +1 ausverkauft, Datei 0x54A30–0x54B24); den Satz liest die Zuschauerzeile des Live-Bildschirms (Datei 0x53A11–0x53B37).
 /// <list type="bullet">
 /// <item>Das Remake rechnet die Zuschauer deshalb in der Vorbereitung jedes nicht gewerteten Spiels
-///   (<see cref="MatchEngine"/>.BeginMatch, mit und ohne Anzeige gleich) aus <see cref="FinanceRandom"/> und merkt sie bis
+///   (<see cref="MatchEngine"/>.BeginMatch, mit und ohne Anzeige gleich) aus <see cref="GameState.Random"/> und merkt sie bis
 ///   zur Spielabrechnung des Wettbewerbs (<see cref="SettleMatchGate"/>), die Eintritt, <see cref="ManagerFinance.LastHomeGame"/>
 ///   und Statistik daraus bucht. Die Ziehungen bleiben in derselben Reihenfolge (Paarung für Paarung, Manager in
 ///   Indexreihenfolge); geändert hat sich nur der Zeitpunkt: Stärke (0x4D316) der Mannschaften vor statt nach dem Spiel.</item>
@@ -82,7 +82,7 @@ public sealed partial class GameState
         var spectators = new List<(Manager, int)>();
         foreach (var manager in Managers)
             if (manager.ClubIndex == home.Index)
-                spectators.Add((manager, Spectators(home, away, Finance(manager).Stadium, tableMatchDay, FinanceRandom, importance,
+                spectators.Add((manager, Spectators(home, away, Finance(manager).Stadium, tableMatchDay, Random, importance,
                     manager.Level)));
         Prepared.Add(new PreparedGate(home.Index, away.Index, tableMatchDay, importance, spectators));
         GateCounters.GetValue(this, _ => new GateCounter()).Prepared++;

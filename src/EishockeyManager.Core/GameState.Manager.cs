@@ -27,25 +27,25 @@ public sealed partial class Manager
 public sealed partial class GameState
 {
     private StockMarket? _stocks;
-    private GameRandom? _financeRandom;
 
     /// <summary>Letzter abgerechneter Tag (−1 = noch keiner).</summary>
     public int FinanceDay { get; set; } = -1;
 
     /// <summary>
-    /// Eigene Zufallsquelle der Finanzen, damit das Öffnen von Bildschirmen die Spielergebnisse nicht verändert.
+    /// Börse. Spur zufallsstrom, Teil 4 (N3 = B): Die eigene Quelle <c>FinanceRandom</c> ist entfernt – Werbeangebote, Bewertung,
+    /// Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom <see cref="Random"/>. [ORIGINAL] Das
+    /// neue Spiel rechnet die 90 Börsentage des Spielstarts nach dem ersten Listenwechsel (Datei 0x43AD5–0x43AE0 nach 0x43A9F;
+    /// <see cref="CreateStartStocks"/>). [APPROX] Ohne diesen Schritt (Import eines Originalspielstands, von Hand gebaute
+    /// Spielstände) entsteht die Börse beim ersten Zugriff aus dem Strom.
     /// </summary>
-    public GameRandom FinanceRandom
-    {
-        get => _financeRandom ??= new GameRandom(unchecked(Season * 7919 + Managers.Sum(m => m.ClubIndex * 31 + m.Head)));
-        init => _financeRandom = value;
-    }
-
     public StockMarket Stocks
     {
-        get => _stocks ??= StockMarket.Create(FinanceRandom);
+        get => _stocks ??= StockMarket.Create(Random);
         set => _stocks = value;
     }
+
+    /// <summary>Spielstart: Kurse = Basiswert / 50, dann 90 Börsentage aus dem Strom ([ORIGINAL] Datei 0x43AA4–0x43AE0).</summary>
+    internal void CreateStartStocks() => _stocks = StockMarket.Create(Random);
 
     /// <summary>Finanzdaten eines Managers (beim ersten Zugriff angelegt).</summary>
     public ManagerFinance Finance(Manager manager) =>

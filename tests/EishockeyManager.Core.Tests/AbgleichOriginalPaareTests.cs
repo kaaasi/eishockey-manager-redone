@@ -99,7 +99,11 @@ public class AbgleichOriginalPaareTests
                 // nur bei der Standardsaat außerhalb (Original −9, Remake 8), Leerplatz LEER3 nur bei Saat 77 (18 zu 2) – Werte der
                 // Wanderung wie LEER4 oben, die übrigen Prüfsaaten treffen.
                 new("Clubs[13 ESC FRANKFURT].TeamValues.DefenseCondition", Chance, Optional: true),
-                new("Clubs[50 LEER3].TeamValues.DefenseCondition", Chance, Optional: true)],
+                new("Clubs[50 LEER3].TeamValues.DefenseCondition", Chance, Optional: true),
+                // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): Mit Pokalen und Finanzen im gemeinsamen Strom fallen bis zur
+                // Wanderung andere Würfe; Leerplatz LEER4 liegt bei den Saaten 3 und 77 in der Abwehr-Kondition außerhalb (Original
+                // 10, Remake −6) – dasselbe Zufallsmuster wie LEER4.AttackCondition oben, kein neu eingetragener Originalwert.
+                new("Clubs[51 LEER4].TeamValues.DefenseCondition", Chance, Optional: true)],
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
                 // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1; Pflicht über

@@ -139,9 +139,9 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
      samt A464 Rest (Werbeangebote des Neuen) – je Stelle Fundstelle, roter Test, Marker; Migration im Spielstand wie bei
      `TrendRandom`.
 - **Voraussetzung:** `start-lader` gemergt; Integration nach `teamwert-aufstellung`. **Modell:** Claude Opus 5.5. **Erstreview:**
-  Claude Opus 5.5. **Status:** in Arbeit (Draft-PR #905 `paket/zufallsstrom`, Claude Code, 16.11.2026): Teile 1–3 fertig
-  (Teil 3 mit Spielstart A558 in der Reihenfolge des Originals, Schema 53 nach Rebase auf `zusehen`, Mehrsaisonprobe
-  `ZufallsstromMehrsaisonTests`); offen Teil 4.
+  Claude Opus 5.5. **Status:** fertig – Review (PR #905 `paket/zufallsstrom`, Claude Code, 17.11.2026): Teile 1–4
+  (Teil 4: `CupRandom` und `FinanceRandom` entfernt, Stellen von `ContractRandom` mit Gegenstück im Strom, Computerkader in
+  `ComputerSquadRandom` außerhalb; Schema 54; Proben `ZufallsstromTeil4Tests`).
 
 ### Spur `pruefung-karte` – P3 und Markerliste (Welle 3, R21-D3 = A)
 
