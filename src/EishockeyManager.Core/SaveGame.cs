@@ -45,7 +45,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 55;
+    public const int SchemaVersion = 56;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -133,6 +133,8 @@ public static partial class SaveGame
     /// 53 → 54 (Runde 21, Spur zufallsstrom Teil 4): übrige eigene Zufallsquellen entfallen (dieselbe Datei).
     /// 54 → 55 (Runde 22, Spur kaderplatz-werte Teil 1, vorläufig): <c>Player.PoolCondition</c>/<c>PoolTechnique</c>, A714
     /// (<c>SaveGame.Migration.KaderplatzWerte.cs</c>).
+    /// 55 → 56 (Runde 22, Spur hok-play-off-marken, Schema 56 nach `kaderplatz-werte`): Marken der Play-off-Spiele
+    /// <c>PlayoffSeries.Marks</c>, A612 (<c>SaveGame.Migration.HokPlayOffMarken.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
@@ -191,6 +193,7 @@ public static partial class SaveGame
             [52] = MigrateZufallsstrom,
             [53] = MigrateZufallsstromQuellen,
             [54] = MigrateKaderplatzWerte,
+            [55] = MigrateHokPlayOffMarken,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

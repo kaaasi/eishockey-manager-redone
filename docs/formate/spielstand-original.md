@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 55) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 56) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -829,7 +829,8 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `WorldCup._slots` | U | – | leer bis zur Auslosung |
 | `Playoffs.Seeds` | A | `5CCB` | Plätze 1–8 der Abschlusstabelle |
 | `Playoffs._rounds` | B | `5CFB+0x40`, `CCB2`, `CCA4` | Runden 0 … 0x7B0 aus den Plätzen 0x5D3B, Spiele 0xCCB2; Siege ergeben sich aus den Spielen (0xCCA4 mit 0x14 = Gast des fünften Termins mit drei Siegen, auch bei vorher entschiedener Serie, danach getauscht; R14HN-02). Halbfinale/Endspiel des Remakes nach Tabelle DGROUP 0x144 wie das Original (#676) |
-| `PlayoffSeries.Games` | B | `CCB2` | 14 · Spiel + Platz, Tore modulo 30 (Marken abgezogen `[APPROX]`), 100 = nicht ausgetragen; Heimrecht Spiel 1/3/5 beim Platz 2k |
+| `PlayoffSeries.Games` | B | `CCB2` | 14 · Spiel + Platz, Tore modulo 30, 100 = nicht ausgetragen; Heimrecht Spiel 1/3/5 beim Platz 2k |
+| `PlayoffSeries.Marks` | B | `CCB2` | Torbyte div 30 beider Vereine (A612, „Marken der Play-off-Spiele“) |
 | `PlayoffSeries.HomeClub` | B | `5CFB+0x40` | Platz 2k (nach ungerader Spielzahl der laufenden Runde bzw. Siegbyte 0x14 im fertigen Endspiel getauscht) |
 | `PlayoffSeries.AwayClub` | B | `5CFB+0x40` | Platz 2k + 1 |
 | `RelegationGroup.Clubs` | B | `CFFC` | Teilnehmer DGROUP 0xCFF4 + 8 + 4 · Gruppe (zwei Letzte oben, zwei Erste unten, 0x30511) |
@@ -1007,7 +1008,7 @@ Saisonwechsel). Zuordnung aus em.exe (Overlay 0xE8, Datei-Offsets):
   (0x3168B–0x316BF), danach wird getauscht – auch wenn die Serie schon vorher entschieden war (FILE22 Endspiel 3:0; R14HN-02). Nach jedem der ersten vier Spiele tauschen Heim und Gast samt Siegen und bisherigen Spielen (0x31505, Aufruf
   0x316C9); beim Rundenwechsel stellt 0x31C3A–0x31C46 die Setzreihenfolge wieder her. Im Import: Paarung (2k, 2k + 1) in
   Setzreihenfolge, in der laufenden Runde nach ungerader Spielzahl getauscht, im fertigen Endspiel bei Siegbyte 0x14. Meister
-  `D0E6` (0x31CBF). `[APPROX]` Die Marken stehen an FILE22/FILE44 auch bei klaren Ergebnissen (4:2) und werden nicht gedeutet.
+  `D0E6` (0x31CBF). Marken: Abschnitt „Marken der Play-off-Spiele“.
 - **Aufstiegsrunden** = Wettbewerb 1 der Gruppentabellen (0x30852, Aufruf 0x38691): Teilnehmer `CFFC` + 4 · Gruppe (Gruppe 0
   Bundesliga/2. Liga, 1 = 2. Liga/Oberliga: die zwei Letzten der oberen, dann die zwei Ersten der unteren Liga, 0x30511),
   Paarungen `CED8` und Tore `CDB8` + 0x48 + 0x24 · Gruppe + 6 · Termin (zwei Paare, drittes Paar Füllwert), Punkte `CD58`,
@@ -1015,6 +1016,36 @@ Saisonwechsel). Zuordnung aus em.exe (Overlay 0xE8, Datei-Offsets):
   Terminzähler im HOK). Belege FILE44 (Platzliste 3 2 0 1: EC Kassel und ES Weißwasser steigen auf, wie FILE46) und FILE22
   (ERC Schwenningen, wie FILE23). Der Saisonrückblick (Meister, Auf-/Absteiger vom 13. April) wird nach dem Import neu
   eingetragen.
+
+### Marken der Play-off-Spiele (A612, Spur hok-play-off-marken, Runde 22)
+
+`PlayoffSeries.Marks` (Import `OriginalImport.Playoffs.cs`, Export `OriginalExport.Cups.cs`, Migration 55 → 56
+`SaveGame.Migration.HokPlayOffMarken.cs`, Tests `HokPlayOffMarkenTests`). Zuordnung aus em.exe (Datei-Offsets):
+
+- **Wirkung:** keine auf die Wertung. 0x315E9 zieht die Marken vor dem Siegvergleich ab (0x31622–0x31631; Gleichstand zählt für den
+  Gast, 0x3166E). Zeile 2 von DGROUP 0x5C4B (= 0x5C8B, Tore des Termins) wird beim Play-off-Start (0x319E5–0x319F8) und nach jedem
+  Spiel (0x317B2–0x317C8) auf 0:0 gesetzt, bei entschiedener Serie Heimbyte 100 (0x3182D). Nach dem Termin liest die Marken in
+  `CCB2` niemand mehr (Leser: 0x31505, 0x315E9, 0x31934, 0x32AA3 und 0x44A48 nur Vergleich mit 100, 0x36B5D/0x37A62/0x3A88A
+  Kopie aus Zeile 2); am Termin zeigt 0x32E23 (Aufruf 0x3AA97) sie als Punkte.
+- **Setzen:** 0x32AA3(Maske, Grenze, Schalter, Zeile) gibt jeder offenen Paarung der Zeile 2 (Serienbytes `CCB2` des Spiels
+  ≤ 99, Plätze ≠ 0xFF) mit Heimbyte − 30 · Schalter = Gastbyte + 30 aufs Heimbyte (0x32D22–0x32D84) und meldet, ob es eine gab.
+  - *Schneller Weg* (0x3731F, ohne Zusehen/Anzeige; Dispatch 0x36FEA–0x37085): nach **jeder** Paarung ruft 0x376E1 0x32AA3 mit
+    Schalter 0 über **alle** Paarungen bis zur Grenze. Meldet es eine, würfelt 0x376F0 für die eben gerechnete Paarung random(0, 2)
+    je Seite dazu, wiederholt nur bei Gleichheit **mit** Marke (0x37748) und setzt + 30 (0x37761). Eigener Gleichstand → zwei Marken
+    in einem Wurf (Gleichstand kann bleiben); Gleichstand einer noch nicht gerechneten Paarung (0:0 aus 0x317B2) → eine Marke und
+    Zusatztore für ein klares Ergebnis. Das trifft die erste offene Paarung einer Runde, solange dahinter eine offene folgt.
+  - *Minutenweg:* nach 60 Minuten Schalter 0 (0x37211), nach der Verlängerung Schalter 1 (0x3728B, + 30) und Penaltyschießen
+    0x3901B (nimmt eine Marke ab, 0x39088, setzt sie wieder, 0x39789) – zwei Marken. Tor in der Verlängerung: 0x38402 + 30 auf den
+    Stand aus DGROUP 0xA0BF (dessen Marken nicht verfolgt, A482).
+- **Lage im HOK:** nach dem Spiel tauscht 0x316C9/0x31505 Plätze, Siege und frühere Spiele, 0x316D4–0x316FB die Tore des Termins,
+  0x31701–0x31734 schiebt die Marken auf das neue Byte 2k = Gast des Spiels. Das fünfte Spiel tauscht nur bei Siegbyte 0x14
+  (0x3168B–0x316BF), sonst bleiben sie beim Heimverein. Spätere Tauschvorgänge nehmen sie mit dem Byte mit.
+- **Beleg FILE22/FILE44:** eine Marke an jedem Spiel von Viertelfinale 1–8 und Halbfinale 1 (FILE22: Spiel 4 des Halbfinales ohne,
+  das zweite Halbfinale war entschieden), zwei bei FILE44 Viertelfinale 2–7 Spiel 3 (2:4, 0x40) und Halbfinale 2 Spiel 3 (5:3,
+  0x3F), Endspiel ohne. Alle Marken auf dem Byte des Gastes.
+- **Remake:** `PlayoffSeries.MarksFromReport` – zwei Marken, wenn das eigene Spiel nach 60 Minuten unentschieden stand, sonst 0.
+  `[APPROX]` Die eine Marke samt Zusatzwurf des schnellen Wegs rechnet das Remake nicht (`OriginalMinutes.FastCupResultWithTie`
+  würfelt nur bei eigenem Gleichstand und bis ungleich; Befund an die Leitstelle).
 
 ### Feldbelege aus der DOSBox-Aufnahme `runde-13` (re-runde-14.md, Leitstelle L7)
 
@@ -1089,6 +1120,9 @@ liegt bei den genannten Spuren.
 - Schema 55 (Runde 22, Spur `kaderplatz-werte` Teil 1, vorläufig): `Player.PoolCondition`/`PoolTechnique` – Poolwerte
   +0x15/+0x16 neben dem Kaderplatz (Drift A714); Teil 2 `Player.PlayedLine` (Kaderplatz +0x02, A093). Migration: null bzw. 0
   (`SaveGame.Migration.KaderplatzWerte.cs`).
+- Schema 56 (Runde 22, Spur `hok-play-off-marken`, A612; nach `kaderplatz-werte`): `PlayoffSeries.Marks` (Marken der Play-off-Spiele,
+  Abschnitt „Marken der Play-off-Spiele“). Migration: je Spiel 2 bei Penaltysieger, sonst 0
+  (`SaveGame.Migration.HokPlayOffMarken.cs`).
 
 ### Zugang (Teil 3)
 

@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(55, SaveGame.SchemaVersion);
+        Assert.Equal(56, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -74,7 +74,8 @@ public class SaveGameTests
     // 54 GameState._cupRandom und _financeRandom entfallen (Spur zufallsstrom Teil 4).
     // 55 Player.PoolCondition/PoolTechnique: Poolwerte +0x15/+0x16 neben dem Kaderplatz (Spur kaderplatz-werte Runde 22, A714; vorläufig).
     //    Player.PlayedLine: eingespielte Reihe, Kaderplatz +0x02 (Spur kaderplatz-werte Teil 2, A093; dieselbe Migration).
-    private const string ExpectedSchemaFingerprint = "23EEF9A925B15E06";
+        // 56 PlayoffSeries.Marks: Marken der Play-off-Spiele (Spur hok-play-off-marken Runde 22, A612; vorläufig).
+    private const string ExpectedSchemaFingerprint = "9FBAC9A191BA23F2";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

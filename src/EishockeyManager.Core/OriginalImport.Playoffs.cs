@@ -22,8 +22,11 @@ namespace EishockeyManager.Core;
 ///   Liga, 0x30511), Paarungen <c>CED8</c> und Tore <c>CDB8</c> + 0x48 + 0x24 · Gruppe + 6 · Termin (zwei Paare, drittes Paar
 ///   Füllwert), Punkte <c>CD58</c>, Tore <c>CD28</c>, Gegentore <c>CCF8</c> und Platzliste <c>CD88</c> je + 12 + 6 · Gruppe + Platz.</item>
 /// </list>
-/// [APPROX] Die Marken (+30) der Play-off-Spiele führt <see cref="PlayoffSeries"/> nicht; an FILE22/FILE44 stehen sie auch bei
-/// klaren Ergebnissen (4:2). Sie werden abgezogen und nicht gedeutet. Einen Zähler der gespielten Aufstiegsrunden-Termine führt das
+/// [ORIGINAL] Marken (+30) der Play-off-Spiele (A612, Spur hok-play-off-marken): <see cref="PlayoffSeries.Marks"/> = Torbyte div 30
+/// beider Vereine (nur eines trägt sie: nach dem Spiel schiebt 0x31701–0x31734 sie mit dem Tausch 0x31505 auf das Byte des Gastes,
+/// ohne Tausch im fünften Spiel bleiben sie beim Heimverein); Tore modulo 30. Bedeutung siehe <see cref="PlayoffSeries.Marks"/>;
+/// an FILE22/FILE44 eine Marke an jedem Spiel der ersten offenen Paarung einer Runde (Zusatzwurf des schnellen Wegs), zwei bei
+/// Gleichstand nach 60 Minuten. Einen Zähler der gespielten Aufstiegsrunden-Termine führt das
 /// HOK nicht; er folgt aus der Punktsumme der Gruppe (zwei Punkte je Spiel).
 /// </summary>
 public static partial class OriginalImport
@@ -42,6 +45,13 @@ public static partial class OriginalImport
 
     /// <summary>Spiel der laufenden Play-off-Runde DGROUP 0xCCA3 (0–4; 5 nach dem Endspiel).</summary>
     public static int PlayoffGame(OriginalSaveGame save) => save.Block("CCA3")[0];
+
+    /// <summary>Marken eines Play-off-Spiels (Platz 2k und 2k + 1 zusammen, DGROUP 0xCCB2 + 14 · Spiel + Platz, je 30 eine Marke).</summary>
+    public static int PlayoffMarks(OriginalSaveGame save, int game, int slot)
+    {
+        var results = save.Block("CCB2");
+        return results[PlayoffSlotCount * game + slot] / 30 + results[PlayoffSlotCount * game + slot + 1] / 30;
+    }
 
     /// <summary>Tore eines Play-off-Spiels: (Platz 2k, Platz 2k + 1) aus DGROUP 0xCCB2 + 14 · Spiel + Platz, Marken abgezogen; null = nicht ausgetragen.</summary>
     public static (int First, int Second)? PlayoffGoals(OriginalSaveGame save, int game, int slot)
@@ -130,8 +140,10 @@ public sealed partial class Playoffs
                         break;
                     var (a, b) = swapped ? (goals.Second, goals.First) : (goals.First, goals.Second);
                     var (home, away, hg, ag) = g % 2 == 0 ? (first, second, a, b) : (second, first, b, a);
-                    // Gleichstand gibt es nach dem Penaltyschießen nicht (Treffer stehen im Ergebnis); zur Sicherheit wie 0x3166E: Gast.
-                    s.Games.Add(new KnockoutMatch(days[DatesPerRound * r + g], home, away, hg, ag, hg == ag ? away : null));
+                    // [ORIGINAL] Gleichstand zählt für den Gast (0x3166E): nach dem Penaltyschießen stehen die Treffer im Ergebnis, im
+                    // schnellen Weg kann ein Gleichstand mit zwei Marken bleiben (random(0, 2) je Seite gleich, 0x37748 vergleicht mit Marke).
+                    s.Add(new KnockoutMatch(days[DatesPerRound * r + g], home, away, hg, ag, hg == ag ? away : null),
+                        OriginalImport.PlayoffMarks(save, g, p));
                 }
                 series.Add(s);
             }
