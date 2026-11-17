@@ -171,11 +171,13 @@ public static partial class MatchEngine
                 new MatchSide(h.Normal, homeTeam.Box.Skaters, homeTeam.AttackLevel),
                 new MatchSide(a.Normal, awayTeam.Box.Skaters, awayTeam.AttackLevel),
                 home.Index < FirstForeignClub, away.Index < FirstForeignClub,
-                rules.WorldCup, rules.Playoff, knockOut, random);
+                rules.WorldCup, rules.Playoff, knockOut, random,
+                playoffExtraRoll: competition == MatchCompetition.Playoff && knockOut && FirstPlayoffPairingOfDate(game, home, away));
             report = new MatchReport { HomeGoals = hg, AwayGoals = ag };
             if (shootout)
             {
-                // [ORIGINAL] 0x376F0–0x377A3: random(0, 2) je Seite bis ungleich, Heim + 30 als Penaltymarke.
+                // [ORIGINAL] 0x376F0–0x377A3: random(0, 2) je Seite bis ungleich, Heim + 30 als Penaltymarke (Play-offs: ein
+                // Wurf, Gleichstand bleibt und zählt für den Gast, #925).
                 // Der Bericht hält den Gleichstand (Spielerzähler nur für echte Tore) und die Zusatztore getrennt; den
                 // Endstand mit Marke bildet CupMatch.FromReport (Spur wettbewerbe-spiel, Teil 1).
                 report.ShootoutHomeWins = hg > ag;

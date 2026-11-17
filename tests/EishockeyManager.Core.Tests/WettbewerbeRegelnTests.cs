@@ -139,4 +139,78 @@ public class WettbewerbeRegelnTests
         club.Tactics.RecordGoaliePulled(true);
         Assert.True(SaveGame.Load(SaveGame.Save(game)).Game!.Clubs[4].Tactics.GoaliePulledAtEnd);
     }
+
+    /// <summary>
+    /// #925 (A873), schneller Weg der Play-offs: [ORIGINAL] bei eigenem Gleichstand genau ein Zusatzwurf random(0, 2) je Seite
+    /// (Vergleich 0x37748 mit Marke), der Gleichstand kann bleiben und zählt für den Gast (0x3166E); der DEB-Pokal würfelt weiter bis
+    /// ungleich. Vorher würfelten auch die Play-offs bis ungleich.
+    /// </summary>
+    [Fact]
+    public void FastPath_PlayoffTie_OneRollAndTieCanStay()
+    {
+        var side = new MatchSide(50);
+        int stayed = 0, rolled = 0;
+        for (var seed = 0; seed < 3000; seed++)
+        {
+            var plain = OriginalMinutes.FastCupResultWithTie(side, side, true, true, false, true, knockOut: false, new Random(seed));
+            if (plain.Home != plain.Away)
+                continue;
+            var playoff = OriginalMinutes.FastCupResultWithTie(side, side, true, true, false, true, knockOut: true, new Random(seed));
+            Assert.True(playoff.Shootout);
+            Assert.Equal(plain.Home, playoff.Tie);
+            rolled++;
+            if (playoff.Home == playoff.Away)
+                stayed++;
+            var cup = OriginalMinutes.FastCupResultWithTie(side, side, true, true, false, false, knockOut: true, new Random(seed));
+            Assert.NotEqual(cup.Home, cup.Away);
+        }
+        Assert.True(rolled > 50);
+        Assert.InRange(stayed, rolled / 6, rolled / 2); // x = y mit 1/3
+    }
+
+    /// <summary>
+    /// #925 (A873): [ORIGINAL] Die erste gerechnete Play-off-Paarung eines Termins würfelt auch bei klarem Ergebnis dazu, weil
+    /// 0x32AA3 die noch nicht gerechneten (0:0) als Gleichstand meldet (Datei 0x376E1–0x377A3); die Zusatztore zählen, bis ungleich.
+    /// </summary>
+    [Fact]
+    public void FastPath_PlayoffExtraRoll_OnClearResult()
+    {
+        var side = new MatchSide(50);
+        int changed = 0, clear = 0;
+        for (var seed = 0; seed < 500; seed++)
+        {
+            var plain = OriginalMinutes.FastCupResultWithTie(side, side, true, true, false, true, knockOut: true, new Random(seed));
+            if (plain.Shootout)
+                continue;
+            clear++;
+            var extra = OriginalMinutes.FastCupResultWithTie(side, side, true, true, false, true, knockOut: true, new Random(seed),
+                playoffExtraRoll: true);
+            Assert.False(extra.Shootout);
+            Assert.NotEqual(extra.Home, extra.Away);
+            Assert.InRange(extra.Home - plain.Home, 0, 2);
+            Assert.InRange(extra.Away - plain.Away, 0, 2);
+            if ((extra.Home, extra.Away) != (plain.Home, plain.Away))
+                changed++;
+        }
+        Assert.True(clear > 100);
+        Assert.True(changed > clear / 2);
+    }
+
+    /// <summary>#925 (A873): Nur die erste Paarung eines Play-off-Termins bekommt den Zusatzwurf (Reihenfolge der Plätze).</summary>
+    [Fact]
+    public void FirstPlayoffPairingOfDate_OnlyBeforeAnyGameOfTheDate()
+    {
+        var game = TestGames.Create(3);
+        var playoffs = new Playoffs([10, 11, 12, 13, 14, 15, 16, 17]);
+        typeof(GameState).GetProperty(nameof(GameState.Playoffs))!.SetValue(game, playoffs);
+        var round = playoffs.Rounds[0];
+        Assert.True(MatchEngine.FirstPlayoffPairingOfDate(game, game.Clubs[10], game.Clubs[17]));
+        Assert.True(MatchEngine.FirstPlayoffPairingOfDate(game, game.Clubs[11], game.Clubs[16]));
+        round[0].Games.Add(new KnockoutMatch(1, 10, 17, 3, 1));
+        Assert.False(MatchEngine.FirstPlayoffPairingOfDate(game, game.Clubs[11], game.Clubs[16]));
+        Assert.False(MatchEngine.FirstPlayoffPairingOfDate(game, game.Clubs[13], game.Clubs[14]));
+        foreach (var s in round.Skip(1))
+            s.Games.Add(new KnockoutMatch(1, s.HomeClub, s.AwayClub, 2, 1));
+        Assert.True(MatchEngine.FirstPlayoffPairingOfDate(game, game.Clubs[17], game.Clubs[10]));
+    }
 }
