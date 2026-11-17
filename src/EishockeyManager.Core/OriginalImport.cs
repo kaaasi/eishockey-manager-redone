@@ -166,7 +166,7 @@ public sealed partial class GameState
             setup.ToggleClubCompetitions();
         // Start-Liga DGROUP 0x11A, ein Wert für alle Manager (Schema 42, kader-start #605): auch ohne Manager gesetzt.
         setup.StartLeague = (League)Math.Clamp((int)setupBlock[2], 0, 2);
-        // [ORIGINAL] Level und Start-Stärke ein Wert für alle (DGROUP 0x118/0x11B, Spur kader-regeln A054/A518, Schema 57).
+        // [ORIGINAL] Level und Start-Stärke ein Wert für alle (DGROUP 0x118/0x11B, Spur kader-regeln A054/A518, Schema 58).
         setup.Level = Math.Clamp((int)setupBlock[0], 0, ManagerSetup.LevelCount - 1);
         setup.StartStrength = (StartStrength)Math.Clamp((int)setupBlock[3], 0, 2);
 

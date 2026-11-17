@@ -40,12 +40,13 @@ public sealed partial class NationalCoach
             return right ? LineupResult.Unchanged : LineupResult.NoLineSelected;
         if ((player.Role == PlayerRole.Goalkeeper) != (l == GoalkeeperLine))
             return LineupResult.WrongRole;
-        foreach (var slot in SlotsOf(l, player.Role))
+        foreach (var slot in Core.Lineup.SearchSlots(l, player.Role))
         {
             if (Formation[slot] is not null)
                 continue;
-            // [ORIGINAL] Datei 0x41533: Platz +0x15 und eingesetzt +0x0A = 1, ohne Grenze 22 (Datei 0x40E2A).
-            if (!Formation.Assign(slot, player))
+            // [ORIGINAL] Datei 0x41533: Platz +0x15 und eingesetzt +0x0A = 1, ohne Grenze 22 (Datei 0x40E2A); andere Hälfte der
+            // Reihe wie beim Linksklick (Datei 0x414D3, A683/A490).
+            if (!(slot.Role == player.Role ? Formation.Assign(slot, player) : Formation.PlaceSkater(slot, player)))
                 return LineupResult.WrongRole;
             _dressed.Add(player);
             return LineupResult.Assigned;
