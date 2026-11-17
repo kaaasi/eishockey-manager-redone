@@ -200,3 +200,46 @@ Zweck: fünf unabhängige Läufe desselben Spiels (`abgleich-dosbox.md` §4.4). 
 1. FILE50 laden, bis vor den 2. Spieltag spielen (nichts ändern), den 2. Spieltag **ohne** Mausklick spielen, im Hauptmenü danach
    sichern als **FILE66**.
 2. Schritt 1 noch viermal wiederholen, jeweils neu aus FILE50: **FILE67**, **FILE68**, **FILE69**, **FILE70**.
+
+## Aufnahme `runde-22` (Plan Leitstelle 17.11.2026, R22-D4 = A; nach Lust des Nutzers, Auswertung Runde 23)
+
+Die 21 D der Restliste (`docs/analyse/restliste-v1.md` „DOSBox-Sammelliste“; was je ID abzulesen ist, steht im Feld „Beleg“ von
+`restliste-v1-klassen.csv`). Nummern ab **FILE75** (Vorschlag; höchste vorhandene laut README bestimmen, die Nummern rücken auf).
+Sitzungen sind unabhängig und einzeln aufnehmbar; Reihenfolge nach Lust.
+
+### Sitzung 1 – Neues Spiel mit zwei Managern (Start, Hot-Seat, Bank, Werbung)
+
+1. Neues Spiel, zwei Manager in Vereinen derselben Liga. Im ersten Hauptmenü sichern als **FILE75** (A427 Startwerte der
+   Computervereinsspieler). Vor dem ersten Spieltag die Bestenliste öffnen und fotografieren (A065).
+2. An drei Tagen hintereinander notieren, welcher Manager zuerst am Zug ist (A057).
+3. Manager 1: Sparbuch anlegen, Manager 2 ein Darlehen geben, einen Spieler an Manager 2 verleihen; mehrere Werbeverträge mit
+   Banden abschließen. Danach sichern als **FILE76** (A402, A613, A614, A629).
+4. Vertragsverhandlung mit einem Spieler: einmal Gehalt 0, einmal ein sehr hohes Gehalt eingeben, Meldung je fotografieren (A117).
+
+### Sitzung 2 – Saisonwechsel mit Pool und Leihe, Fortsetzung von FILE76
+
+1. Bis kurz vor dem 29. April spielen. Vorher den Kader eines Managers auf 29 Spieler auffüllen und einen eigenen Spieler auf die
+   Transferliste setzen (A706); sichern als **FILE77** (Pool vor dem Wechsel: A128, A131, A132, A630; Leihe A629).
+2. Nach dem Saisonwechsel im ersten Hauptmenü sichern als **FILE78**; Kader und Transferliste beider Manager fotografieren.
+
+### Sitzung 3 – Spiel und Sperre
+
+1. Managerpaarung mit vierter Reihe und Reihenmodus 2 bzw. 3 spielen, Reihenwechsel im Live-Spiel fotografieren (A095).
+2. Nach einer Matchstrafe (gesperrter Spieler) im Hauptmenü sichern als **FILE79** (A625).
+3. Optional (A259, im Original evtl. nicht erreichbar): Gebot eines Computervereins offen lassen, bis dessen Kader voll ist, dann
+   annehmen; Meldung fotografieren.
+
+### Sitzung 4 – Modus „nur Weltkugel“, Start FILE18
+
+1. FILE18 laden, über einen Trainingstag bzw. einen Vertragsablauf spielen, davor/danach sichern als **FILE80/FILE81** (A408,
+   Pool belegt: A411).
+2. Einen Listenwechsel mit einem Poolspieler eines Nationalteams abwarten, davor/danach sichern als **FILE82/FILE83** (A707).
+
+### Sitzung 5 – Doppelter Zwangsabstieg (A667)
+
+1. Stand kurz vor dem Saisonende mit Bundesliga-Zwangsabsteiger auf Platz 3 und 4 der Aufstiegsrunde (Leitstelle legt ihn auf
+   Wunsch per `hok-patch` ab); vor und nach dem Saisonwechsel sichern als **FILE84/FILE85**, Ligatabellen fotografieren.
+
+### Sitzung 6 – KAPUTT.HOK (A599)
+
+1. `KAPUTT.HOK` laden, alles nach dem Bildschirm „Der kleine Mogelguru“ fotografieren (bis zum Hauptmenü bzw. Programmende).
