@@ -197,7 +197,9 @@ public class TagestaktHauptwegTests
         // der WM-Schleife); unter 1–12 erfüllen 2, 4, 6, 8, 10, 12. Rückschaltprobe: alter Code mit 2/4 ebenfalls grün – die Probe hängt an der Saat.
         // Fixlauf kader-rest nach Rebase auf main 1d83cc0 (A130, R15-E2 = C): Saaten 8/10 statt 2/4 – mit der Startbelastung 80–120
         // (Datei 0x42E4C) fehlt bei 2 und 4 dieselbe Vorbedingung; unter 1–16 erfüllen 7, 8, 10–14. Die Probe hängt an der Saat.
-        foreach (var seed in new[] { 8, 10 })
+        // Spur einzelpunkte Fixlauf (A672, A665; R21-D2 = A, R15-E2 = C): Saaten 3/4 statt 8/10 – der Feldspieler im Tor (Datei 0x42718) und der
+        // Platztausch ändern den Zufallsverbrauch; bei 8 und 10 fehlt dieselbe Vorbedingung. Unter 1–16 erfüllen 1, 3, 4, 7, 9, 11, 14, 15.
+        foreach (var seed in new[] { 3, 4 })
         {
             var second = Enumerable.Range(0, 200).First(i => NewGame.DatabaseLeague(i) == League.ZweiteLiga);
             var game = GameModeTests.Create(seed, true, true, 2, second);

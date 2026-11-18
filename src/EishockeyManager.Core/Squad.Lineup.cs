@@ -64,6 +64,19 @@ public sealed class Lineup
     private readonly Player?[,] _forwards = new Player?[Blocks, ForwardsPerBlock];
     private readonly Player?[,] _defenders = new Player?[Blocks, DefendersPerBlock];
     private Player? _goalkeeper;
+    private Player? _goalieStandIn;
+
+    /// <summary>
+    /// Feldspieler im Tor. [ORIGINAL] A672: Ohne freien Torhüter schreibt die Auto-Aufstellung dem Feldspieler aus der Torhütersuche
+    /// +0x15 = 1 (Datei 0x42718–0x42777): er steht in der ersten Abwehrreihe, hat aber keinen Platz der Aufstellung.
+    /// </summary>
+    public Player? GoalieStandIn => _goalieStandIn;
+
+    internal void PlaceGoalieStandIn(Player player) => _goalieStandIn = player;
+
+    /// <summary>Kaderplatz +0x15 des Spielers: Platz der Aufstellung (<see cref="LiveSquad.PositionOf"/>), Feldspieler im Tor 1, sonst 0 (Reserve).</summary>
+    public int PositionOf(Player player) =>
+        FindSlot(player) is { } slot ? LiveSquad.PositionOf(slot) : ReferenceEquals(player, _goalieStandIn) ? 1 : 0;
 
     public Player? this[LineupSlot slot]
     {
@@ -124,6 +137,8 @@ public sealed class Lineup
     {
         if (!Fits(slot, player))
             return false;
+        if (ReferenceEquals(player, _goalieStandIn))
+            _goalieStandIn = null;
         var previous = FindSlot(player);
         var occupant = this[slot];
         if (previous is { } p)
@@ -196,12 +211,15 @@ public sealed class Lineup
 
     public void Remove(Player player)
     {
+        if (ReferenceEquals(player, _goalieStandIn))
+            _goalieStandIn = null;
         if (FindSlot(player) is { } slot)
             this[slot] = null;
     }
 
     public void ClearAll()
     {
+        _goalieStandIn = null;
         foreach (var slot in LineupSlot.All)
             this[slot] = null;
     }
@@ -398,14 +416,31 @@ public sealed partial class Club
     }
 
     /// <summary>
-    /// Auto-Aufstellung („A“): Einstellung „automatisch aufstellen“ ein und sofort neu aufstellen (Datei 0x426BC,
-    /// <see cref="AutoLineupRule"/>). [APPROX] Im Original schaltet der Taktikbildschirm die Einstellung ein, gefolgt von
-    /// derselben Neuaufstellung (Datei 0x48E62, <c>docs/analyse/re-geld.md</c> Taktik Schritt 5).
+    /// Einstellung ein und sofort neu aufstellen (Datei 0x426BC, <see cref="AutoLineupRule"/>); die Kurzform für Spielaufbau, Skripte
+    /// und Tests. [ORIGINAL] A681 (Teil-V A673): Der Weg des Originals ist der Taktikbildschirm, es gibt keine Taste „A“ in der
+    /// Aufstellung – Knopf 0 schaltet um (<see cref="SetAutoLineup"/>), beim Verlassen folgt die Neuaufstellung
+    /// (<see cref="CloseTactics"/>; Datei 0x47CA0, 0x48E62 Schritt 5, <c>docs/analyse/re-geld.md</c>).
     /// </summary>
     public void AutoLineup()
     {
         _autoLineup = true;
         ApplyAutoLineup();
+    }
+
+    /// <summary>
+    /// Taktikbildschirm, Knopf 0 (oben links, „AUTOM.“/„MANUELL“): schaltet die Einstellung um. [ORIGINAL] A673/A681: Datei
+    /// 0x47CA0–0x47CE5 (Zeiger DGROUP 0x375 + 2 · Manager), Aufruf der Neuaufstellung erst beim Verlassen (<see cref="CloseTactics"/>).
+    /// </summary>
+    public void SetAutoLineup(bool on) => _autoLineup = on;
+
+    /// <summary>
+    /// Verlassen des Taktikbildschirms (Datei 0x48E62 Schritt 5): wurde „automatisch aufstellen“ dort eingeschaltet
+    /// (<paramref name="autoAtOpen"/> war aus), folgt sofort die Neuaufstellung (Datei 0x426BC).
+    /// </summary>
+    public void CloseTactics(bool autoAtOpen)
+    {
+        if (_autoLineup && !autoAtOpen)
+            ApplyAutoLineup();
     }
 
     /// <summary>Rechtsklick in der Kaderliste: eingesetzten, nicht aufgestellten Spieler herausnehmen (Datei 0x40F45–0x40F59).</summary>

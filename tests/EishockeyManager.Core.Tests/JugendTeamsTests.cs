@@ -196,6 +196,7 @@ public class JugendTeamsTests
         // Integration Runde 12: neu ermittelt, weil wettbewerbe-spiel (A184 Belastung, A174 Computervereine) die Ligaergebnisse und
         // damit den Zufallsverbrauch vor der Jugendrechnung ändert; Richtung (aktiv ≥ +15, passiv ≤ −15) unverändert geprüft.
         // Integration Runde 12 (+ kader-transfer): erneut neu, U4/U5/U9 ändern Ligaergebnisse und Zufallsverbrauch.
+        // Runde 22, Spur einzelpunkte (A421): neu – andere Werbeangebote verschieben Konten und Ligaverlauf (Bisect: 7b428f4); Richtung unverändert geprüft.
         Assert.Equal(active ? ExpectedActive : ExpectedPassive, run);
     }
 
@@ -288,7 +289,7 @@ public class JugendTeamsTests
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e. Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
     private const string ExpectedActive =
-        "0:Schueler:2/11/61;0:Jugend:2/11/65;0:Junioren:2/11/66;1:Schueler:1/11/74;1:Jugend:1/11/74;1:Junioren:1/11/74;2:Schueler:1/6/79;2:Jugend:1/6/81;2:Junioren:1/6/81;3:Schueler:1/6/83;3:Jugend:1/6/84;3:Junioren:1/6/85";
+        "0:Schueler:2/11/61;0:Jugend:2/11/63;0:Junioren:2/11/64;1:Schueler:1/11/74;1:Jugend:1/11/74;1:Junioren:1/11/72;2:Schueler:1/6/78;2:Jugend:1/6/78;2:Junioren:1/6/79;3:Schueler:1/6/85;3:Jugend:1/6/83;3:Junioren:1/6/84";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -377,7 +378,7 @@ public class JugendTeamsTests
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e. Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
     private const string ExpectedPassive =
-        "0:Schueler:2/2/65;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:3/2/52;1:Jugend:3/2/56;1:Junioren:3/2/55;2:Schueler:3/6/47;2:Jugend:3/6/47;2:Junioren:3/6/46;3:Schueler:3/6/42;3:Jugend:3/6/42;3:Junioren:3/6/42";
+        "0:Schueler:2/2/63;0:Jugend:2/2/67;0:Junioren:2/2/69;1:Schueler:3/2/50;1:Jugend:3/2/54;1:Junioren:3/2/58;2:Schueler:3/6/42;2:Jugend:3/6/47;2:Junioren:3/6/48;3:Schueler:3/6/40;3:Jugend:3/6/41;3:Junioren:3/6/44";
 }
 
 public class JugendTeamsMigrationTests

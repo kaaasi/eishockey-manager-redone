@@ -142,12 +142,10 @@ public sealed class LineupScreen : Screen
             return;
         }
 
-        // [APPROX] Die Remake-Tasten A und C gibt es im Spiel nicht (sie würden die Regeln „im Spiel“ umgehen).
+        // [APPROX] Die Remake-Taste C gibt es im Spiel nicht (sie würde die Regeln „im Spiel“ umgehen). [ORIGINAL] A681: Eine Taste
+        // „A“ gibt es nicht; „automatisch aufstellen“ schaltet der Knopf im Taktikbildschirm (Datei 0x47CA0).
         switch (InMatch ? "" : input.Text.ToUpperInvariant())
         {
-            case "A":
-                Club.AutoLineup();
-                return;
             case "C":
                 Club.ClearLineup();
                 return;

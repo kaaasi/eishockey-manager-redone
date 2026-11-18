@@ -88,11 +88,10 @@ public sealed class LiveSquad
         var squad = new LiveSquad { Difficulty = difficulty, Tactics = tactics };
         foreach (var p in club.Players)
         {
-            var slot = club.Lineup.FindSlot(p);
             squad.Players.Add(new LivePlayer
             {
                 Player = p,
-                Position = slot is { } s ? PositionOf(s) : 0,
+                Position = club.Lineup.PositionOf(p),
                 Dressed = p.Available && club.IsDressed(p),
                 Energy = MatchEngine.PreparedPlayerEnergy(p),
             });

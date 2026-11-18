@@ -286,6 +286,9 @@ public sealed partial class TransferMarket
 
     private PoolSlot? SlotOf(Player player) => _pool.FirstOrDefault(s => ReferenceEquals(s.Player, player));
 
+    /// <summary>Poolindex eines Spielers (1 … Größe − 1) oder <see cref="int.MaxValue"/>, wenn er im Pool nicht steht.</summary>
+    internal int PoolIndexOf(Player player) => SlotOf(player)?.Index ?? int.MaxValue;
+
     /// <summary>
     /// Spielstart, vor dem Aufbau der Kader (<see cref="SquadSetup.Initialize"/>): Datenbankspieler festhalten, den Pool
     /// bauen (<see cref="BuildPool"/>) und die so vergebenen Datenbankspieler aus den Kadern der Computervereine nehmen.

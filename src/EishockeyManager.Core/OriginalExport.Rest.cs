@@ -69,7 +69,7 @@ public sealed partial class GameState
 
     /// <summary>
     /// Werbeverträge 0xC15B + 0x6E · m (11 Flächen zu 10 Byte) und Angebote 0xC313 + 0x1F4 · m + 0x64 · Art + 10 · Partner.
-    /// [APPROX] Logo +7 = Partner (FILE05); Option +6 ohne Bit 0x80 („Kündbar.“ führt das Remake nicht).
+    /// [APPROX] Logo +7 = Partner (FILE05); Option +6 mit Bit 0x80 = „Kündbar.“ (A582).
     /// </summary>
     private static void WriteSponsoring(OriginalSaveWriter w, int m, Sponsoring sponsoring)
     {
@@ -83,7 +83,7 @@ public sealed partial class GameState
                 OriginalExport.Write32(contracts, at, OriginalExport.Thirds(c.MonthlyAmount));
                 contracts[at + 4] = OriginalExport.Byte(c.Sponsor);
                 contracts[at + 5] = OriginalExport.Byte(c.MonthsLeft);
-                contracts[at + 6] = OriginalExport.Byte(c.OptionMonths & 0x7F);
+                contracts[at + 6] = (byte)(OriginalExport.Byte(c.OptionMonths & 0x7F) | (c.Cancellable ? 0x80 : 0)); // [ORIGINAL] Bit 0x80 = „Kündbar.“ (0x2713F)
                 contracts[at + 7] = OriginalExport.Byte(c.Sponsor);
                 contracts[at + 8] = OriginalExport.Byte(c.SignedRating);
             }

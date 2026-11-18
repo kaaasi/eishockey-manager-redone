@@ -309,7 +309,7 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
     // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
     [InlineData(false, "0552878CD8AB9728")]
-    [InlineData(true, "85481C6B7583D617")]
+    [InlineData(true, "EACF6A39362CBCE1")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

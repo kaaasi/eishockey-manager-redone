@@ -174,7 +174,7 @@ public sealed partial class GameState
 
     /// <summary>
     /// Werbung: Verträge DGROUP 0xC15B + 0x6E · Manager (11 Flächen zu 10 Byte: +0 Betrag Drittel-DM, +4 Partner, +5 Restmonate,
-    /// +6 Option, Bit 0x80 = „Kündbar.“ nach Aufstieg – im Remake nicht geführt, finanzen-rekonstruktion.md; +7 Logo, +8 Bewertung), Angebote 0xC313 + 0x1F4 · Manager + 0x64 · Art + 10 · Partner (+0 Betrag, +4 Banden,
+    /// +6 Option, Bit 0x80 = „Kündbar.“ nach Aufstieg (A582, finanzen-rekonstruktion.md); +7 Logo, +8 Bewertung), Angebote 0xC313 + 0x1F4 · Manager + 0x64 · Art + 10 · Partner (+0 Betrag, +4 Banden,
     /// +5 Laufzeit, +6 Option, +7 Logo, +8 Bewertung). [ORIGINAL] Aufbau em.exe 0x3FB47/0x3FD52, 0x2A9AD (FinanceSponsors.cs), Angebote an
     /// FILE05 (Logo +7 = Partnerindex, Fernsehen nur Partner 0–4). [APPROX] Ein Angebot mit Betrag 0 gilt als gelöscht; Bandenflächen
     /// desselben Partners mit gleichem Betrag und gleicher Restlaufzeit bilden einen Vertrag. Verträge an keinem Stand belegt.
@@ -211,7 +211,7 @@ public sealed partial class GameState
                 Boards = [],
                 MonthlyAmount = amount / 3,
                 MonthsLeft = c[5],
-                OptionMonths = c[6] & 0x7F,
+                OptionMonths = c[6] & 0x7F, Cancellable = (c[6] & 0x80) != 0,
                 SignedRating = c[8],
             });
         }
@@ -226,6 +226,7 @@ public sealed partial class GameState
             {
                 Kind = contract.Kind, Sponsor = contract.Sponsor, Boards = areas.ToArray(), MonthlyAmount = contract.MonthlyAmount,
                 MonthsLeft = contract.MonthsLeft, OptionMonths = contract.OptionMonths, SignedRating = contract.SignedRating,
+                Cancellable = contract.Cancellable,
             };
         }
 

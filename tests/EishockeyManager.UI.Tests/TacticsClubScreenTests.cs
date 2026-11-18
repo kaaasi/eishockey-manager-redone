@@ -151,24 +151,56 @@ public class TacticsClubScreenTests
         Assert.Equal(last, t.LineChange); // Ende: kein Umlauf
     }
 
-    /// <summary>R14UR-09 / A373: Torwart-Pfeil oben links – untere Hälfte = nächster Wert, obere = voriger, kein Umlauf.</summary>
+    /// <summary>
+    /// R14UR-09 / A373: Pfeil oben links – untere Hälfte = nächster Wert, obere = voriger, kein Umlauf. Runde 22, einzelpunkte
+    /// A673/A681 (R15-E2 = C): Der Knopf ist der Schalter „automatisch aufstellen“ (Datei 0x47CA0: Knopf 0 → DGROUP 0x375 + 2 · m,
+    /// Werte „AUTOM.“, „MANUELL“), nicht das tote Feld <c>Tactics.Goalie</c>. Rückschaltprobe: alter Code + dieser Test → rot.
+    /// </summary>
     [GameDataFact]
-    public void Tactics_GoalieArrows_LowerHalfIsNext_NoWrap()
+    public void Tactics_TopLeftArrows_SwitchAutoLineup_LowerHalfIsNext_NoWrap()
     {
         var (d, _, club) = Start();
         d.OpenTile("Taktik");
-        var t = club.Tactics;
         var arrows = TacticsScreen.GoalieArrows;
-        var values = Enum.GetValues<GoalieMode>();
-        t.Goalie = values[0];
+        Assert.True(club.AutoLineupEnabled);
 
         d.Click(arrows.X + 4, arrows.Y + 2); // obere Hälfte am Anfang: unverändert (kein Umlauf)
-        Assert.Equal(values[0], t.Goalie);
-        d.Click(arrows.X + 4, arrows.Y + arrows.H - 2); // untere Hälfte: nächster Wert
-        Assert.Equal(values[1], t.Goalie);
+        Assert.True(club.AutoLineupEnabled);
+        d.Click(arrows.X + 4, arrows.Y + arrows.H - 2); // untere Hälfte: nächster Wert „MANUELL“
+        Assert.False(club.AutoLineupEnabled);
         d.Click(arrows.X + 4, arrows.Y + arrows.H - 2); // am Ende: kein Umlauf
-        Assert.Equal(values[^1], t.Goalie);
-        d.Click(arrows.X + 4, arrows.Y + 2); // obere Hälfte: voriger Wert
-        Assert.Equal(values[^2], t.Goalie);
+        Assert.False(club.AutoLineupEnabled);
+        d.Click(arrows.X + 4, arrows.Y + 2); // obere Hälfte: voriger Wert „AUTOM.“
+        Assert.True(club.AutoLineupEnabled);
+    }
+
+    /// <summary>
+    /// A681 (Teil-V A673), Datei 0x47CA0 und 0x48E62 Schritt 5: Wer „automatisch aufstellen“ im Taktikbildschirm einschaltet, bekommt
+    /// beim Verlassen die Neuaufstellung (0x426BC); Einschalten allein stellt nicht auf. Die Taste „A“ gibt es in der Aufstellung nicht.
+    /// </summary>
+    [GameDataFact]
+    public void Tactics_SwitchOn_LinesUpOnLeave_KeyAIsGone()
+    {
+        var (d, _, club) = Start();
+        var arrows = TacticsScreen.GoalieArrows;
+        d.OpenTile("Taktik");
+        d.Click(arrows.X + 4, arrows.Y + arrows.H - 2); // MANUELL
+        Assert.False(club.AutoLineupEnabled);
+        d.Press(Key.Escape);
+        var slot = LineupSlot.All.First(s => club.Lineup[s] is not null);
+        club.ClearLineupSlot(slot);
+
+        d.OpenTile("Aufstellung");
+        d.Type("A"); // keine Wirkung mehr
+        Assert.False(club.AutoLineupEnabled);
+        Assert.Null(club.Lineup[slot]);
+        d.Press(Key.Escape);
+
+        d.OpenTile("Taktik");
+        d.Click(arrows.X + 4, arrows.Y + 2); // AUTOM.
+        Assert.True(club.AutoLineupEnabled);
+        Assert.Null(club.Lineup[slot]); // noch nicht neu aufgestellt
+        d.Press(Key.Escape);
+        Assert.NotNull(club.Lineup[slot]);
     }
 }

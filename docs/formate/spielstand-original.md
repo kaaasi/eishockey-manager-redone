@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 58) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 61) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -547,6 +547,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Manager.FinanceData` | B | `965B` | Zeilen `ManagerFinance` |
 | `Manager.Head` | B | `0178+m` | wie `ManagerSetup.Head` |
 | `Manager.Level` | B | `0118+0` | Level |
+| `Manager.OneSeasonFlag` | U | `965B+0xE9` | Managerbyte DGROUP 0x9744 + 0x1AF · m, viertes Pokalbyte der Bestenliste (A847, Datei 0x29D23/0x5D351; Spur `einzelpunkte`, Schema 56); der Import liest es noch nicht: false `[APPROX]` |
 | `Manager.Money` | B | `965B+0x18F` | Konto / 3 |
 | `Manager.Name` | B | `965B+0x00` | Name |
 | `Manager.PowerPlayCounts` | B | `965B+0x177` | sechs Wörter (DGROUP 0x97D2 + 2 · k) |
@@ -614,10 +615,11 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Sponsoring.Contracts` | B | `C15B` | 11 Flächen zu 10 Byte je Manager; belegte Flächen |
 | `Sponsoring.Offers` | B | `C313` | 500 · m + 100 · Art + 10 · Partner |
 | `SponsorContract.Boards` | A | `C15B` | Bandenflächen 0–6 desselben Partners |
+| `SponsorContract.Cancellable` | B | `C15B+6` | Bit 0x80 „Kündbar.“ (A582, Datei 0x2713F; Spur `einzelpunkte`, Schema 58) |
 | `SponsorContract.Kind` | A | `C15B` | Flächenindex: 0–6 Bande, 7 Trikot, 8 Fernsehen, 9/10 Eis |
 | `SponsorContract.MonthlyAmount` | B | `C15B+0` | Betrag / 3 |
 | `SponsorContract.MonthsLeft` | B | `C15B+5` | Restmonate |
-| `SponsorContract.OptionMonths` | B | `C15B+6` | Option (ohne Bit 0x80) |
+| `SponsorContract.OptionMonths` | B | `C15B+6` | Option (Bits 0–6) |
 | `SponsorContract.SignedRating` | B | `C15B+8` | Bewertung beim Angebot |
 | `SponsorContract.Sponsor` | B | `C15B+4` | Partner |
 | `SponsorOffer.Boards` | B | `C313+4` | Banden |
@@ -692,6 +694,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Tactics._shownAutoEffort` | A | `far:9657+0x26` | nur Nationalteam: Vereinssatz +0x26–0x2B |
 | `Lineup._defenders` | A | `5DC3+0x15` | Reihe 1–3 ohne Sturm-Bit, Nationalteam Satz 5 |
 | `Lineup._forwards` | A | `5DC3+0x15` | Reihe 1–3 mit Bit 0x80 |
+| `Lineup._goalieStandIn` | U | `5DC3+0x15` | Feldspieler mit +0x15 = 1 ohne Torhüter in der Aufstellung (A672, Datei 0x42718–0x42777; Spur `einzelpunkte`, Schema 56); der Import legt ihn noch nicht an: niemand `[APPROX]` |
 | `Lineup._goalkeeper` | A | `5DC3+0x15` | Torhüter mit Reihe 1 |
 
 ### Spieler, Pool, Transfermarkt
@@ -865,6 +868,10 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `NationalBooking.Kind` | N | – | Carryover |
 | `NationalBooking.Season` | N | – | laufende Saison |
 | `SeasonRecord.FinalTables` | N | – | nur in `CurrentRecord` (null) |
+| `SeasonRecord.InnerMoves` | N | – | Platztausch innerhalb der unteren Liga einer Aufstiegsrunde (A665, Datei 0x5636D / 0x36169; Spur `einzelpunkte`, Schema 61); wie oben |
+| `InnerMove.Club` | N | – | wie oben |
+| `InnerMove.Lower` | N | – | wie oben |
+| `InnerMove.Slot` | N | – | wie oben |
 | `SeasonRecord.LeftOberliga` | N | – | wie oben |
 | `SeasonRecord.Managers` | N | – | wie oben |
 | `SeasonRecord.PromotedInto` | N | – | wie oben |
@@ -935,7 +942,7 @@ sich aus der Tabelle, geprüft).
 | Börse | `D0F4`, `01FD`, `A891`, `A895` | Verlauf 36 Wörter / 3, Kurs = letzter Wert; Basiswert, Restdauer, Tendenz | FILE01: 84 / 119 / 135 / 147 DM |
 | Aktienbesitz | `D214` + 32 · m + 8 · i | +0 Kaufpreis / 3, +4 Stück | an keinem Stand belegt (alle 0) |
 | Werbeangebote | `C313` + 0x1F4 · m + 0x64 · k + 10 · p | Art k 0 Bande, 1 Trikot, 2 Fernsehen, 3/4 Eis; Betrag 0 = kein Angebot `[APPROX]`; +4 Banden, +5 Laufzeit, +6 Option, +7 Logo (= p), +8 Bewertung | FILE05 |
-| Werbeverträge | `C15B` + 0x6E · m + 10 · Fläche | Flächen 0–6 Bande (gleicher Partner, Betrag, Restlaufzeit = ein Vertrag `[APPROX]`), 7 Trikot, 8 Fernsehen, 9/10 Eis; +6 ohne Bit 0x80 („Kündbar.“, im Remake nicht geführt) | finanzen-rekonstruktion.md; an keinem Stand ein Vertrag |
+| Werbeverträge | `C15B` + 0x6E · m + 10 · Fläche | Flächen 0–6 Bande (gleicher Partner, Betrag, Restlaufzeit = ein Vertrag `[APPROX]`), 7 Trikot, 8 Fernsehen, 9/10 Eis; +6 Bit 0x80 = „Kündbar.“ (`SponsorContract.Cancellable`, A582) | finanzen-rekonstruktion.md; an keinem Stand ein Vertrag |
 | Training | `A8A1` + 28 · m | Einheit Tag · 4 + Einheit; Preisindex `02BC` (überall 100) | FILE05 = Standardplan, FILE08 Einheit 8 = 1, FILE09 alles frei |
 | Taktik | `A6FB`, `A707`, `A701`, `CAE9` + 0x30 · m, `CC43` + 8 · m | Modi; Einsatz Block · 6 + Spielstand, Angriff + 0x18; Minuten 4 · Teil + Reihe | FILE24/FILE40 (Block 0 mit Automatikwerten) |
 | automatisch aufstellen | `0375` + 2 · m | ≠ 0 → `AutoLineupEnabled` | FILE34–41 = 0 (Handmodus), FILE05 = 1 |
@@ -1132,6 +1139,11 @@ liegt bei den genannten Spuren.
 - Schema 58 (Runde 22, Spur `kader-regeln` Teil 1, nach `national`): `GameSetup._level`/`_startStrength` – Level und Start-Stärke ein
   Wert je Spiel (DGROUP 0x118/0x11B, A054/A518). Migration: Werte von Manager 0 für alle Manager, auch `Manager.Level`
   (`SaveGame.Migration.KaderRegeln.cs`).
+- Schema 59 (Runde 22, Spur `einzelpunkte` Teil 1, nach `kader-regeln`): `Manager.OneSeasonFlag` (Managerbyte 0x9744, A847) und
+  `Lineup.GoalieStandIn` (Feldspieler im Tor, A672). Migration: false bzw. niemand (`SaveGame.Migration.Einzelpunkte.cs`).
+- Schema 60 (Runde 22, Spur `einzelpunkte`, nach `kader-regeln`): `SponsorContract.Cancellable` (Bit 0x80 der Option, „Kündbar.“, A582). Migration:
+  false (`SaveGame.Migration.Einzelpunkte.cs`).
+- Schema 61 (Runde 22, Spur `einzelpunkte`, nach `kader-regeln`): `SeasonRecord.InnerMoves` (A665). Migration: leer (`SaveGame.Migration.Einzelpunkte.cs`).
 
 ### Zugang (Teil 3)
 

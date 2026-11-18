@@ -261,7 +261,7 @@ public sealed class AdvertisingScreen : Screen
     /// <summary>Angebot des gezeigten Partners für die gewählte (freie) Fläche.</summary>
     public SponsorOffer? CurrentOffer()
     {
-        if (_slot is not { } slot || Cursor < 0 || Ads.ContractAt(slot) is not null || !Game.IsAdSlotAvailable(Me, slot))
+        if (_slot is not { } slot || Cursor < 0 || !Ads.IsFree(slot) || !Game.IsAdSlotAvailable(Me, slot))
             return null;
         var offer = Ads.OfferFrom(slot.Kind, Cursor);
         if (offer is null || (slot.Kind == AdSlotKind.Bande && Ads.FreeBoards().Count() < offer.Boards))
@@ -367,6 +367,7 @@ public sealed class AdvertisingScreen : Screen
             yield break;
         var offerMode = Cursor >= 0;
         string name;
+        var cancellable = false;
         int months, option, boards;
         long amount;
         if (offerMode)
@@ -390,6 +391,7 @@ public sealed class AdvertisingScreen : Screen
             name = contract.Partner.Name;
             // [ORIGINAL] 0x2AD15: im Vertrag die Zahl der Banden desselben Partners.
             (months, option, boards, amount) = (contract.MonthsLeft, contract.OptionMonths, contract.Boards.Length, contract.MonthlyAmount);
+            cancellable = contract.Cancellable;
         }
 
         yield return new(LabelX, NameLine, name);
@@ -397,10 +399,13 @@ public sealed class AdvertisingScreen : Screen
         // [ORIGINAL] 0x2AB6F–0x2AC27: „: n“, mit Option „ - n+Option“, „ Monat“ und „e“ bei n > 1 oder Option.
         var duration = $": {months}" + (option > 0 ? $" - {months + option}" : "") + " Monat" + (months > 1 || option > 0 ? "e" : "");
         yield return new(ValueX, DurationLine, duration);
-        // [ORIGINAL] 0x2AC51: im Vertrag „! Option !“, wenn die Laufzeit abgelaufen ist und eine Option besteht.
-        // „Kündbar.“ (Bit 0x80 der Option, gesetzt beim Aufstieg 0x2713F) kennt das Remake noch nicht (Restlücke).
+        // [ORIGINAL] 0x2AC5A–0x2AC82: im Vertrag „! Option !“, wenn die Laufzeit abgelaufen ist (+0x05 = 0) und eine Option besteht
+        // (+0x06 & 0x7F ≠ 0); dann entfällt der Kündbar-Zweig (jmp 0x2ACAE). Erst danach (0x2AC84) „Kündbar.“ (Bit 0x80 der Option,
+        // gesetzt beim Aufstieg 0x2713F) bei x 275.
         if (!offerMode && option > 0 && months == 0)
             yield return new(NoteX, DurationLine, "! Option !");
+        else if (!offerMode && cancellable)
+            yield return new(NoteX, DurationLine, "Kündbar.");
         if (slot.Kind == AdSlotKind.Bande)
         {
             yield return new(LabelX, BoardsLine, "Banden");

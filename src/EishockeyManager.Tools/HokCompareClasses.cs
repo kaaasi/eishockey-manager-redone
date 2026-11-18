@@ -141,7 +141,7 @@ public static class HokCompareClasses
             "WorldCup.Winner", "WorldCup._knockoutMarks", "WorldCup._order", "WorldCup._slots",
             "NationalCoach._turnOpen", "FriendlyMatch.Bonus",
             "NationalBooking.Amount", "NationalBooking.Kind", "NationalBooking.Season",
-            "SeasonRecord.FinalTables", "SeasonRecord.LeftOberliga", "SeasonRecord.Managers", "SeasonRecord.PromotedInto",
+            "SeasonRecord.FinalTables", "SeasonRecord.InnerMoves", "InnerMove.Club", "InnerMove.Lower", "InnerMove.Slot", "SeasonRecord.LeftOberliga", "SeasonRecord.Managers", "SeasonRecord.PromotedInto",
             "SeasonRecord.RelegatedInto", "SeasonRecord.Season", "SeasonRecord.Titles",
             "ManagerSeasonResult.Club", "ManagerSeasonResult.Events", "ManagerSeasonResult.League", "ManagerSeasonResult.Manager",
             "ManagerSeasonResult.Premium", "ManagerSeasonResult.Rank",
@@ -179,7 +179,7 @@ public static class HokCompareClasses
             "Stadium.Seats", "Stadium.SeatsTarget", "Stadium.Standing", "Stadium.StandingTarget", "Stadium.TicketPrice",
             "Stadium._levels", "Stadium._targets", "Stadium._weeksLeft",
             "YouthTeam.Funding", "YouthTeam.Kind", "TrainingPlan.PriceIndex", "TrainingPlan._units", "TalentSearch.TicksLeft",
-            "SponsorContract.Boards", "SponsorContract.Kind", "SponsorContract.MonthlyAmount", "SponsorContract.MonthsLeft",
+            "SponsorContract.Boards", "SponsorContract.Cancellable", "SponsorContract.Kind", "SponsorContract.MonthlyAmount", "SponsorContract.MonthsLeft",
             "SponsorContract.OptionMonths", "SponsorContract.SignedRating", "SponsorContract.Sponsor",
             "StockHolding.Count", "StockHolding.PurchaseCost", "Stock.Name");
         Set(InSeason, "ManagerFinance.CostLeague", "YouthTeam.League");
@@ -211,9 +211,11 @@ public static class HokCompareClasses
         Set(Random, "Tactics._matchAttackLine", "Tactics._matchDefenseLine");
         // Spur zusehen (Runde 21): Markierung zum Zusehen far:9657+0x34 Bits 6–7; Feldkarte U (der Import liest sie nicht).
         Set(NotInHok, "Club.WatchMode", "GameState._worldCupOptionBackup"); // Teil 2: DGROUP 0x22C (021D+15), Feldkarte U
+        // A847 (Spur einzelpunkte): Managerbyte 0x9744; Export und Import behandeln es noch nicht.
+        Set(NotInHok, "Manager.OneSeasonFlag");
         Set(InSeason, "Club.League");
         Set(Random, "Club.ForfeitsMatch", "Club.LeaguePenaltyMinutes", "Club.Lineup", "Club.SeriesCurrent", "Club._dressed",
-            "Club._rankSlots", "Club._tableRank", "Lineup._defenders", "Lineup._forwards", "Lineup._goalkeeper");
+            "Club._rankSlots", "Club._tableRank", "Lineup._defenders", "Lineup._forwards", "Lineup._goalkeeper", "Lineup._goalieStandIn"); // A672: Platz +0x15 = 1 (Aufstellung, Zufall)
         Set(Range(15), "ClubTeamValues.AttackForm", "ClubTeamValues.DayForm", "ClubTeamValues.DefenseForm");
         Set(TeamStrength, "ClubTeamValues.AttackCondition", "ClubTeamValues.AttackTechnique", "ClubTeamValues.DefenseCondition",
             "ClubTeamValues.DefenseTechnique");

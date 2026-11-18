@@ -112,6 +112,19 @@ public sealed partial class GameState
         return at;
     }
 
+    /// <summary>
+    /// Platzverschiebungen innerhalb der unteren Liga (A665): Steht der Zwangsabsteiger schon auf Platz 3/4 (oder doppelt), tauscht
+    /// <see cref="RelegationPlaces"/> einen Verein der unteren Liga auf den Platz eines anderen (Datei 0x5636D, zweiter Tausch auf
+    /// demselben Platz). Liefert (Platz, Verein, der ihn einnimmt) aller Plätze der unteren Liga, aber nur, wenn mindestens einer
+    /// davon wieder von einem Verein der unteren Liga eingenommen wird; sonst leer (die Paare aus Auf-/Absteigerlisten genügen).
+    /// </summary>
+    public static List<(int Slot, int Club)> InnerMoves(IReadOnlyList<int> places, Func<int, bool> isUpper)
+    {
+        var at = RelegationPlaces(places, isUpper);
+        var lower = at.Where(kv => !isUpper(kv.Key)).Select(kv => (Slot: kv.Key, Club: kv.Value)).ToList();
+        return lower.Any(m => !isUpper(m.Club)) ? lower : [];
+    }
+
     /// <summary>Auf- und Absteiger einer Aufstiegsrunde in den Saisonrückblick eintragen (ersetzt frühere Einträge der Gruppe).</summary>
     private void RecordRelegationGroup(SeasonRecord record, RelegationGroup group, IReadOnlyList<int> places)
     {
@@ -120,6 +133,8 @@ public sealed partial class GameState
         record.PromotedInto[group.Upper].AddRange(promoted);
         record.RelegatedInto[group.Lower].Clear();
         record.RelegatedInto[group.Lower].AddRange(relegated);
+        record.InnerMoves.RemoveAll(m => m.Lower == group.Lower);
+        record.InnerMoves.AddRange(InnerMoves(places, c => Clubs[c].League == group.Upper).Select(m => new InnerMove(group.Lower, m.Slot, m.Club)));
     }
 
     /// <summary>

@@ -25,7 +25,7 @@ public static class LiveLineup
         var boxed = team.Box.Occupants.Where(o => o is not null).ToHashSet();
         foreach (var p in squad.Players)
         {
-            p.Position = club.Lineup.FindSlot(p.Player) is { } slot ? LiveSquad.PositionOf(slot) : 0;
+            p.Position = club.Lineup.PositionOf(p.Player);
             if (!boxed.Contains(p))
                 p.Dressed = p.Player.Available && club.IsDressed(p.Player);
         }

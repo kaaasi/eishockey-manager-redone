@@ -91,7 +91,8 @@ public class PlayerInfoWindowTests
         f.Goals = 4;
         Assert.Equal(3, PlayerDataWindow.CompetitionColumns(f));
         Assert.Equal("Tore:", PlayerDataWindow.GoalsLabel(f));
-        Assert.Equal("4( -)", PlayerDataWindow.CompetitionCell(f, 0, goals: true));
+        // Runde 22, einzelpunkte A367 (R15-E2 = C): in Klammern der Zähler beim Verein (Datei 0x4651–0x469B), ohne Übertrag = Saisonwert.
+        Assert.Equal("4( 4)", PlayerDataWindow.CompetitionCell(f, 0, goals: true));
         Assert.Equal("-( -)", PlayerDataWindow.CompetitionCell(f, 1, goals: true));
     }
 

@@ -56,6 +56,20 @@ public sealed partial class NationalCoach
     /// </summary>
     public void SwitchOffAutoLineup() => DisableAutoLineup();
 
+    /// <summary>
+    /// Taktikbildschirm, Knopf 0: schaltet die Einstellung des Bundestrainers um (DGROUP 0x37F; Datei 0x47CA0). [ORIGINAL] A492:
+    /// Außerhalb eines Zugs gilt die gesicherte Einstellung (0x380), sie folgt dann gleich.
+    /// </summary>
+    public void SetAutoLineup(bool on)
+    {
+        _autoLineup = on;
+        if (!_turnOpen)
+            _autoLineupSaved = on;
+    }
+
+    /// <summary>Verlassen des Taktikbildschirms: eingeschaltet → sofort neu aufstellen (Datei 0x48E62 Schritt 5, 0x426BC für Satz 5).</summary>
+    public void CloseTactics(bool autoAtOpen) => ApplyAutoLineup(AutoLineupEnabled && !autoAtOpen);
+
     /// <summary>Zuganfang (Datei 0x55599/0x5559C): 0x37F := 0x380, dann Neuaufstellung wie beim ersten Aufbau des Menüs.</summary>
     internal void BeginTurn()
     {
