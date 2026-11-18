@@ -34,6 +34,15 @@ public sealed class LivePlayer
 
     /// <summary>Tore dieses Spiels (Gewicht der Schützenwahl 0x386D1, Kaderplatz +0x03 wächst im Original sofort).</summary>
     public int MatchGoals { get; set; }
+
+    /// <summary>
+    /// A677: Kennzeichen „hat gespielt“ (Spielerfeld +0x1A Bit 7): beim Anlegen für die Aufgestellten, im Spiel für jeden neu
+    /// Aufgestellten (<see cref="LiveLineup.Apply"/>). Am Spielende zählt je Kennzeichen ein Spiel (<c>MatchEngine.CreditLineup</c>).
+    /// </summary>
+    public bool Played { get; set; }
+
+    /// <summary>A677: erst im Spiel aufgestellt – das Spiel zählt im Wettbewerb nach DGROUP 0xD0C2 (Datei 0x415CD–0x41606).</summary>
+    public bool PlayedFromBench { get; set; }
 }
 
 /// <summary>Kader eines Managervereins in der Minutenrechnung.</summary>
@@ -93,6 +102,7 @@ public sealed class LiveSquad
                 Position = slot is { } s ? PositionOf(s) : 0,
                 Dressed = p.Available && club.IsDressed(p),
                 Energy = MatchEngine.PreparedPlayerEnergy(p),
+                Played = slot is not null, // A677: wie bisher die Aufstellung (CreditLineup), jetzt zu Spielbeginn festgehalten
             });
         }
         return squad;

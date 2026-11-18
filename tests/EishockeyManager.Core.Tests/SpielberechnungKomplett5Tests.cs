@@ -46,6 +46,10 @@ public class SpielberechnungKomplett5Tests
         var game = TestGames.Create(3);
         MatchEngine.EnsureTeamValues(game);
         var club = game.Clubs[game.Managers[0].ClubIndex];
+        // Spur wettbewerbe-regeln (A101, R15-E2 = C): Der Managerverein ist zum Zusehen markiert (Vereinsfeld 0x34 Bit 7); dann
+        // schießt das Original Schuss für Schuss (Datei 0x390CB/0x390FA → 0x3917E, WettbewerbeRegelnLiveTests). Dieser Test
+        // prüft den Zweig ohne Markierung random(2, 5).
+        game.SetWatchMode(club, evict: false, GameState.WatchOff);
         var ties = 0;
         for (var seed = 0; seed < 400 && ties < 3; seed++)
         {

@@ -576,6 +576,8 @@ public static partial class OriginalMinutes
             GoalNotice(minute, report.HomeGoals, report.AwayGoals);
         // [ORIGINAL] 0xAB47–0xAB90: in der Managerpaarung nach jedem Abschluss Szene/Torschütze 0x541D9 (ScoringPlayers).
         var players = rules.ManagerMatch && !aborted ? ScoringPlayers(shooter, goal, random) : null;
+        if (players is { } named)
+            NameChance(side, named.Scorer.Player, named.Assist.Player); // A456: auch die vergebene Chance hat einen Schützen
         if (!goal)
             return;
         if (players is { } scoring)

@@ -1,4 +1,5 @@
 using EishockeyManager.Core;
+using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core.Tests;
 
@@ -101,5 +102,147 @@ public class WettbewerbeRegelnLiveTests
         game.OnTacticsLeft(opponent);
 
         Assert.Equal((33, 4), (opponent.Tactics.MatchEffort, opponent.Tactics.MatchAttack));
+    }
+
+    /// <summary>
+    /// A101: [ORIGINAL] Ist ein Verein zum Zusehen markiert (Vereinsfeld 0x34 Bit 7, Datei 0x390CB/0x390FA), schießt 0x3901B
+    /// Schuss für Schuss: erster Schütze random(0, 1) (Datei 0x39021), Treffer random(0, 10) &gt; 6 (Datei 0x39429–0x39443),
+    /// mindestens fünf Runden, dann ganze Runden bis ungleich (Datei 0x394EA–0x39547). Vorher (rot): immer random(2, 5) je Seite.
+    /// </summary>
+    [Fact]
+    public void Shootout_Watched_ShotByShot()
+    {
+        var below = 0;
+        for (var seed = 0; seed < 200; seed++)
+        {
+            var actual = OriginalMinutes.Shootout(new Random(seed), watched: true);
+            var r = new Random(seed);
+            var first = r.Next(0, 2);
+            var goals = new int[2];
+            var shots = new int[2];
+            var side = first;
+            while (true)
+            {
+                if (r.Next(0, 11) > 6)
+                    goals[side]++;
+                shots[side]++;
+                side ^= 1;
+                if (side == first && shots[first] >= 5 && goals[0] != goals[1])
+                    break;
+            }
+            Assert.Equal((goals[0], goals[1]), actual);
+            Assert.Equal(shots[0], shots[1]);
+            if (Math.Min(actual.Home, actual.Away) < 2)
+                below++;
+        }
+        Assert.True(below > 0, "random(2, 5) gäbe nie weniger als zwei Treffer");
+    }
+
+    /// <summary>A101: Ohne Markierung bleibt random(2, 5) je Seite (Datei 0x39105–0x39179), Heim zuerst, bis ungleich.</summary>
+    [Fact]
+    public void Shootout_NotWatched_Unchanged()
+    {
+        for (var seed = 0; seed < 50; seed++)
+        {
+            var actual = OriginalMinutes.Shootout(new Random(seed));
+            var r = new Random(seed);
+            r.Next(0, 2);
+            int h, a;
+            do
+            {
+                h = r.Next(2, 6);
+                a = r.Next(2, 6);
+            }
+            while (h == a);
+            Assert.Equal((h, a), actual);
+        }
+    }
+
+    /// <summary>
+    /// A456: [ORIGINAL] 0x53C57 ruft 0x541D9 auch für vergebene Chancen (Art 0, Datei 0x5406C–0x5407F) und meldet Schütze
+    /// [0xE2A7] und Vorlage [0xE2A6] (Datei 0x54089–0x54096). Die Anzeigereihe der Managerpaarung führt sie an jeder Chance des
+    /// Managervereins; der Gegner ohne Kader hat keinen. Vorher (rot): vergebene Chancen ohne Schützen.
+    /// </summary>
+    [Fact]
+    public void MissedChances_OfManagedClub_HaveShooter()
+    {
+        const int managed = 2;
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "M", Head = 0, ClubIndex = managed });
+        var game = Core.NewGame.Create(TestGames.CreateDatabase(), setup, 5);
+        var league = game.Clubs[managed].League!.Value;
+        var (home, away) = game.Schedules[league][0].Matches.First(m => m.Home == managed || m.Away == managed);
+        MatchEngine.PlayWithEvents(game, game.Clubs[home], game.Clubs[away], MatchCompetition.League, knockOut: false,
+            new GameRandom(3));
+        var row = game.LiveScoreboard!.RowOf(managed)!;
+        var side = home == managed ? 0 : 1;
+        var own = row.ChanceList.Where(c => c.Side == side && c.Minute <= 60).ToList();
+        Assert.Contains(own, c => !c.Goal);
+        Assert.All(own, c => Assert.NotNull(c.Shooter));
+        Assert.All(own, c => Assert.Contains(game.Clubs[managed].Players, p => p.Name == c.Shooter));
+        Assert.All(row.ChanceList.Where(c => c.Side != side), c => Assert.Null(c.Shooter));
+    }
+
+    private static (GameState Game, Club Club, LiveMatchDay Day, LiveTeam Team) LiveManagedMatch(MatchCompetition competition)
+    {
+        const int managed = 2;
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "M", Head = 0, ClubIndex = managed });
+        var game = Core.NewGame.Create(TestGames.CreateDatabase(), setup, 5);
+        var league = game.Clubs[managed].League!.Value;
+        var (home, away) = game.Schedules[league][0].Matches.First(m => m.Home == managed || m.Away == managed);
+        var day = LiveMatchDay.Begin(game, [new LiveFixture(game.Clubs[home], game.Clubs[away], competition,
+            KnockOut: false, new GameRandom(7))]);
+        for (var i = 0; i < 10; i++)
+            day.Step();
+        var club = game.Clubs[managed];
+        club.AutoLineupEnabled = false;
+        return (game, club, day, day.MatchOf(managed)!.TeamOf(managed)!);
+    }
+
+    /// <summary>
+    /// A677: [ORIGINAL] Spiele zählen die Aufgestellten bei Spielbeginn (0x544C0 setzt +0x1A Bit 7, Datei 0x54910–0x54973) und
+    /// jeder im Spiel neu Aufgestellte ohne Bit 7 (Datei 0x415B7–0x41622). Herausgenommene behalten ihr Spiel. Vorher (rot):
+    /// gezählt wurde die Aufstellung am Spielende – der Herausgenommene ohne Spiel.
+    /// </summary>
+    [Fact]
+    public void Games_StartLineupAndPlacedInMatch()
+    {
+        var (_, club, day, team) = LiveManagedMatch(MatchCompetition.League);
+        var takenOut = club.Lineup[LineupSlot.Forward(2, 0)]!;
+        var bench = club.Players.First(p => p.Available && p.Role == PlayerRole.Forward && !club.Lineup.Contains(p));
+        var others = club.Lineup.Players.Where(p => p != takenOut).ToList();
+        var before = club.Players.ToDictionary(p => p, p => p.Games);
+        int? line = 2;
+        Assert.Equal(LineupResult.TakenOut, club.ClickPlayerInMatch(takenOut, ref line, right: false));
+        Assert.Equal(LineupResult.Assigned, club.ClickPlayerInMatch(bench, ref line, right: false));
+        LiveLineup.Apply(team, club);
+        day.Finish();
+
+        Assert.Equal(before[takenOut] + 1, takenOut.Games);
+        Assert.Equal(before[bench] + 1, bench.Games);
+        Assert.All(others, p => Assert.Equal(before[p] + 1, p.Games));
+        Assert.All(club.Players.Where(p => p != bench && p != takenOut && !others.Contains(p)),
+            p => Assert.Equal(before[p], p.Games));
+    }
+
+    /// <summary>
+    /// A677: [ORIGINAL] Das Aufstellen im Spiel bucht nach DGROUP 0xD0C2: 7 Liga, 6 DEB-Pokal, sonst Feld 2 (Europapokal), Datei
+    /// 0x415CD–0x41606 – im Play-off-Spiel also +0x08, die Aufgestellten bei Spielbeginn in der Liga (CompetitionSlots).
+    /// </summary>
+    [Theory]
+    [InlineData(MatchCompetition.DebCup, 1, 0)]
+    [InlineData(MatchCompetition.Playoff, 0, 1)]
+    public void Games_PlacedInMatch_CompetitionField(MatchCompetition competition, int cup, int europe)
+    {
+        var (_, club, day, team) = LiveManagedMatch(competition);
+        var bench = club.Players.First(p => p.Available && p.Role == PlayerRole.Forward && !club.Lineup.Contains(p));
+        var (cupBefore, europeBefore) = (bench.CupGames, bench.EuropeGames);
+        club.ClearLineupSlotInMatch(LineupSlot.Forward(2, 0));
+        int? line = 2;
+        Assert.Equal(LineupResult.Assigned, club.ClickPlayerInMatch(bench, ref line, right: false));
+        LiveLineup.Apply(team, club);
+        day.Finish();
+        Assert.Equal((cupBefore + cup, europeBefore + europe), (bench.CupGames, bench.EuropeGames));
     }
 }

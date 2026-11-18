@@ -248,7 +248,7 @@ public static partial class MatchEngine
             // überspringt 0x32D13–0x32D1F, Europapokal (0x314A4), WM-Gruppe (0x30F58) und Freundschaftsspiel (0x30395)
             // haben keinen K.-o.-Merker. Das ist genau knockOut des Remakes (Liga, Aufstiegsrunde, Gruppen: false).
             // [APPROX] Plätze mit Ergebnisbyte > 0x63 (DGROUP 0xD014/0xCCB2, Paarung ohne Spiel) führt das Remake nicht.
-            var goals = OriginalMinutes.Shootout(match.Random);
+            var goals = OriginalMinutes.Shootout(match.Random, match.Home.WatchedLive || match.Away.WatchedLive); // A101
             report.ShootoutGoals = goals;
             report.ShootoutHomeWins = goals.Home > goals.Away;
         }
@@ -263,7 +263,7 @@ public static partial class MatchEngine
             KeepMatchFields(match.Game, match.Home, match.HomeTeam);
             KeepMatchFields(match.Game, match.Away, match.AwayTeam);
         }
-        CreditPlayers(match.Game, match.Home, match.Away, match.Competition, report, match.Random);
+        CreditPlayers(match.Game, match.Home, match.Away, match.Competition, report, match.Random, match.HomeTeam, match.AwayTeam);
         AfterMatch(match.Home, match.Away, match.Competition, report, match.Random);
         return report;
     }
@@ -441,14 +441,18 @@ public static partial class MatchEngine
     ///   Bei einer Spielwertung zählt nichts.</item>
     /// </list>
     /// </summary>
-    public static void CreditPlayers(GameState game, Club home, Club away, MatchCompetition competition, MatchReport report, Random random)
+    /// <param name="homeTeam">Spielkader des Spiels (A677: Kennzeichen „hat gespielt“, <see cref="LivePlayer.Played"/>); ohne
+    /// ihn zählt die Aufstellung am Spielende.</param>
+    /// <param name="awayTeam">wie <paramref name="homeTeam"/>.</param>
+    public static void CreditPlayers(GameState game, Club home, Club away, MatchCompetition competition, MatchReport report, Random random,
+        LiveTeam? homeTeam = null, LiveTeam? awayTeam = null)
     {
-        Credit(game, home, report.HomeGoals, report.AwayGoals, 0, competition, report, random);
-        Credit(game, away, report.AwayGoals, report.HomeGoals, 1, competition, report, random);
+        Credit(game, home, report.HomeGoals, report.AwayGoals, 0, competition, report, random, homeTeam);
+        Credit(game, away, report.AwayGoals, report.HomeGoals, 1, competition, report, random, awayTeam);
     }
 
     private static void Credit(GameState game, Club club, int goals, int against, int side, MatchCompetition competition,
-        MatchReport report, Random random)
+        MatchReport report, Random random, LiveTeam? team)
     {
         // Review-Befund R7-03 (#201): Das Nationalteam des Bundestrainers (RatedNation ohne Kader) zählt über die
         // Aufstellung des Bundestrainers wie ein Managerverein ([ORIGINAL] Ereignisse im Spiel 0x541D9/0x35818; die
@@ -482,19 +486,33 @@ public static partial class MatchEngine
         // (Datei 0x549A2–0x549BB; A184, Runde 12). Bei „nicht spielfähig“ endet die Abrechnung vorher.
         TrainingRules.ClampStrain(club.Players);
         CreditLineup(club.Lineup.Players.ToList(), club.Lineup.Goalkeeper, against, side, report,
-            competition == MatchCompetition.League, CompetitionSlots.Of(competition));
+            competition == MatchCompetition.League, CompetitionSlots.Of(competition), team?.PenaltyPlayers, competition);
         PlayerInjuries.AfterMatch(club, injured: report.Events.Any(e => e.Kind == MatchEventKind.Injury && e.Side == side));
     }
 
     /// <summary>Zähler einer gemanagten Mannschaft aus ihrer Aufstellung (Managerverein oder Nationalteam des Bundestrainers).</summary>
     /// <param name="league">#897: [ORIGINAL] Gegentore nur im Ligaspiel – 0xA3F7 (je Tor aus 0xA484) bricht bei Wettbewerbscode
     /// DGROUP 0xD0C2 ≠ 7 ab (Datei 0x0A3FD–0x0A402); Pokal, Europapokal, Play-offs und Länderspiele zählen keine.</param>
+    /// <param name="squad">A677: Spielkader mit dem Kennzeichen „hat gespielt“; dann zählen dessen Spieler statt
+    /// <paramref name="lineup"/>.</param>
     private static void CreditLineup(List<Player> lineup, Player? keeper, int against, int side, MatchReport report,
-        bool league, CompetitionSlot slot = CompetitionSlot.League)
+        bool league, CompetitionSlot slot = CompetitionSlot.League, LiveSquad? squad = null,
+        MatchCompetition competition = MatchCompetition.League)
     {
         // [ORIGINAL] A135: Spiele je Wettbewerb (+0x06/+0x1C + Wettbewerb, Datei 0x5494C–0x5499E), Tore +0x03/+0x22 + Wettbewerb.
-        foreach (var p in lineup)
-            p.CountGame(slot);
+        // A677: [ORIGINAL] Die Spielabrechnung 0x544C0 zählt vor dem Spiel die Aufgestellten und setzt +0x1A Bit 7 (Datei
+        // 0x54910–0x54973); im Spiel zählt das Aufstellen 0x41533 jeden neu Aufgestellten ohne Bit 7 sofort, im Wettbewerb
+        // nach DGROUP 0xD0C2: 7 Liga, 6 DEB-Pokal, sonst Feld 2 (Europapokal, auch Play-offs; Datei 0x415CD–0x41622).
+        if (squad is not null)
+        {
+            foreach (var p in squad.Players.Where(p => p.Played))
+                p.Player.CountGame(p.PlayedFromBench ? InMatchSlot(competition) : slot);
+        }
+        else
+        {
+            foreach (var p in lineup)
+                p.CountGame(slot);
+        }
         if (keeper is { } goalie)
         {
             if (league)
@@ -523,6 +541,14 @@ public static partial class MatchEngine
                 penalized.Penalties2++;
         }
     }
+
+    /// <summary>A677: [ORIGINAL] Wettbewerbsfeld des Aufstellens im Spiel nach DGROUP 0xD0C2 (Datei 0x415E9–0x41606).</summary>
+    internal static CompetitionSlot InMatchSlot(MatchCompetition competition) => competition switch
+    {
+        MatchCompetition.League => CompetitionSlot.League,
+        MatchCompetition.DebCup => CompetitionSlot.Cup,
+        _ => CompetitionSlot.Europe,
+    };
 
     /// <summary>Torhüter eines Vereins: der aufgestellte zuerst, dann die übrigen in Kaderreihenfolge.</summary>
     private static List<Player> GoaliesOf(Club club)
