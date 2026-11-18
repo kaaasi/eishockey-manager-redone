@@ -302,10 +302,13 @@ public class RngTwinProbeTests
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
     // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
     // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
-    [InlineData(false, 3, "69A0E2ADAA1ABA2A")]
-    [InlineData(true, 3, "BF64AD7B4F78A84A")]
-    [InlineData(false, 11, "A3A036D2D712FEF4")]
-    [InlineData(true, 11, "5DBC028EC7A06953")]
+    // Spur einzelpunkte Fixlauf-Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): alle vier Werte neu – der Feldspieler im Tor (A672,
+    // Datei 0x42718–0x42777) und der Platztausch bei Zwangsabstieg (A665) ändern die Spielrechnung bzw. den Zufallsverbrauch ab der ersten
+    // Saison. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot (alte Werte).
+    [InlineData(false, 3, "006E34E023BC08F7")]
+    [InlineData(true, 3, "3403870719DD20D4")]
+    [InlineData(false, 11, "C7B444B89A940BB5")]
+    [InlineData(true, 11, "6607EEBACAB1A1A6")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);

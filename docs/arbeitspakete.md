@@ -139,7 +139,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
 - **Dateien:** `UI/Screens/Team/PlayerDataWindow.cs`, `PlayerInfoPopup.cs`, `UI/Screens/Manager/FinanceScreen.cs`,
   `Core/OriginalExport.Rest.cs`, `Core/MatchEngine.Statistics.cs`, `Core/NewGame.cs`, `Core/Transfer.Contract.cs`,
   `Core/FinanceSponsorRating.cs`, `Core/StatisticsHistory.cs`, `Core/SeasonFlow.Zwangsabstieg.cs`, `Core/Squad.AutoLineup.cs`,
-  Stellen oben. **Erstreview:** Opus 5.5. **Status:** alle Teile umgesetzt (Claude Code, Draft-PR #934): A367, A371, A582 (Schema 58), A104, A847, A492/A673/A681, A672, A206, A421, A671, A698, A665 (Schema 59), #897; wartet auf Review (Fortsetzung 1).
+  Stellen oben. **Erstreview:** Opus 5.5. **Status:** alle Teile umgesetzt (Claude Code, Draft-PR #934): A367, A371, A582, A104, A847, A492/A673/A681, A672, A206, A421, A671, A698, A665, #897 (Schemata 59–61 nach `kader-regeln`); Fixlauf zu Review #943 (P2-1, P3-1, P3-2; P3-3/P3-4 beantwortet) auf `main` 4a3a724 rebased; wartet auf Delta-Prüfung der Leitstelle.
 
 ### Spur `pruefung-karte` – P3 und Markerliste (Welle 3)
 

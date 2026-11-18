@@ -399,13 +399,13 @@ public sealed class AdvertisingScreen : Screen
         // [ORIGINAL] 0x2AB6F–0x2AC27: „: n“, mit Option „ - n+Option“, „ Monat“ und „e“ bei n > 1 oder Option.
         var duration = $": {months}" + (option > 0 ? $" - {months + option}" : "") + " Monat" + (months > 1 || option > 0 ? "e" : "");
         yield return new(ValueX, DurationLine, duration);
-        // [ORIGINAL] 0x2AC51: im Vertrag „! Option !“, wenn die Laufzeit abgelaufen ist und eine Option besteht.
-        // [ORIGINAL] 0x2AC84: „Kündbar.“ (Bit 0x80 der Option, gesetzt beim Aufstieg 0x2713F) bei x 275. [APPROX] Vorrang vor
-        // „! Option !“ (Reihenfolge beider Texte nicht aus dem Video belegt).
-        if (!offerMode && cancellable)
-            yield return new(NoteX, DurationLine, "Kündbar.");
-        else if (!offerMode && option > 0 && months == 0)
+        // [ORIGINAL] 0x2AC5A–0x2AC82: im Vertrag „! Option !“, wenn die Laufzeit abgelaufen ist (+0x05 = 0) und eine Option besteht
+        // (+0x06 & 0x7F ≠ 0); dann entfällt der Kündbar-Zweig (jmp 0x2ACAE). Erst danach (0x2AC84) „Kündbar.“ (Bit 0x80 der Option,
+        // gesetzt beim Aufstieg 0x2713F) bei x 275.
+        if (!offerMode && option > 0 && months == 0)
             yield return new(NoteX, DurationLine, "! Option !");
+        else if (!offerMode && cancellable)
+            yield return new(NoteX, DurationLine, "Kündbar.");
         if (slot.Kind == AdSlotKind.Bande)
         {
             yield return new(LabelX, BoardsLine, "Banden");

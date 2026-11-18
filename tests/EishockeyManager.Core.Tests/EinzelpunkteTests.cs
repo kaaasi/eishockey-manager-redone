@@ -150,6 +150,29 @@ public class EinzelpunkteTests
     }
 
     /// <summary>
+    /// Review #943 P3-4 (Verdacht, beantwortet): Das Original nimmt den Zweig 0x56238 nur bei freiem Statusbit 0x04 (Zwangsabstieg). Das Remake
+    /// prüft das Bit nicht, weil es im Zweig nie gesetzt sein kann: Im Modus „nur Weltkugel“ gibt es keinen Zwangsabstieg
+    /// (<c>ApplyForcedRelegation</c> endet dort sofort), und Oberligisten steigen nie zwangsweise ab (Ligaprüfung davor). Selbst mit
+    /// tiefen Schulden bleibt das Ergebnis gleich: Konto 400.000 DM, kein Zwangsabstiegsereignis.
+    /// </summary>
+    [Fact]
+    public void WorldOnly_ManagerInDebt_NoForcedRelegation_SameAsWithoutBit()
+    {
+        const int club = 35;
+        var game = GameModeTests.Create(41, flag: false, globe: true, club);
+        Assert.True(game.WorldOnly);
+        for (var guard = 0; game.History.Count == 0; guard++)
+        {
+            Assert.True(guard < 3000, "Saisonende nicht erreicht");
+            game.Managers[0].Money = -50_000_000;
+            game.Continue();
+        }
+        Assert.Contains(club, game.History[^1].LeftOberliga);
+        Assert.Equal(GameState.OberligaKeptMoney, game.Managers[0].Money);
+        Assert.All(game.History[^1].Managers, m => Assert.DoesNotContain(SeasonEvent.ForcedRelegation, m.Events));
+    }
+
+    /// <summary>
     /// A698, Datei 0x566E4–0x56718, 0x5677A–0x56793, 0x364B7–0x3653A, 0x51115 (Probe FILE14 8257: TEV MIESBACH Platzfeld 0, Ewige Punkte
     /// 15; FILE13: 0): Ein Nachrücker in die Oberliga ohne Ligavergangenheit bekommt 12 − 0 + 3 = 15 Punkte. Vorher 0.
     /// </summary>
@@ -170,9 +193,69 @@ public class EinzelpunkteTests
         Assert.All(newcomers, c => Assert.Equal(15, game.Eternal(c).Points));
     }
 
-    private static SponsorContract Contract(AdSlotKind kind, int sponsor, int[] boards, bool cancellable = false) => new()
+    /// <summary>
+    /// Review #943 P3-2: Migration 58 → 59 → 60 → 61 (<c>SaveGame.Migration.Einzelpunkte.cs</c>). Ein gespeicherter Stand nach einer Saison
+    /// (Saisonrückblick mit <c>InnerMoves</c>, Werbevertrag, Aufstellungen) verliert die vier Felder und trägt Schema 58; Laden gelingt,
+    /// Felder stehen mit den Vorgaben da (<c>OneSeasonFlag</c> false, kein Feldspieler im Tor, nicht kündbar, keine Platzverschiebung),
+    /// und Speichern → Laden → Speichern ist byte-gleich (Objektnummern der neuen Liste bleiben stabil). Rückmutation: Migration 60 → 61
+    /// ohne <c>Renumber</c> oder ohne <c>InnerMoves</c> → Laden scheitert bzw. der Stand ändert sich beim erneuten Speichern.
+    /// </summary>
+    [Fact]
+    public void Migration_58To61_AddsFieldsWithDefaults_RoundtripStable()
     {
-        Kind = kind, Sponsor = sponsor, Boards = boards, MonthlyAmount = 1_000, MonthsLeft = 6, Cancellable = cancellable,
+        var game = TestGames.Create(3);
+        var ads = game.Ads(game.Managers[0]);
+        ads.Contracts.Clear();
+        ads.Contracts.Add(Contract(AdSlotKind.Trikot, 1, [], monthsLeft: 60));
+        TestSeason.PlayRegularSeason(game);
+        for (var guard = 0; game.History.Count == 0; guard++)
+        {
+            Assert.True(guard < 1000, "Saisonende nicht erreicht");
+            game.Continue();
+        }
+        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
+        Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
+        var removed = new Dictionary<string, int>();
+        Strip(root, removed);
+        Assert.All(new[] { "OneSeasonFlag", "_goalieStandIn", "Cancellable", "InnerMoves" }, k => Assert.True(removed.GetValueOrDefault(k) > 0, k));
+        root["schema"] = 58;
+
+        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
+
+        Assert.True(result.Success, result.Error);
+        var loaded = result.Game!;
+        Assert.All(loaded.Managers, m => Assert.False(m.OneSeasonFlag));
+        Assert.All(loaded.Ads(loaded.Managers[0]).Contracts, c => Assert.False(c.Cancellable));
+        Assert.NotEmpty(loaded.History);
+        Assert.All(loaded.History, r => Assert.Empty(r.InnerMoves));
+        Assert.Empty(loaded.ValidatePlayerIdentity());
+        var again = SaveGame.Save(loaded);
+        var twice = SaveGame.Load(again);
+        Assert.True(twice.Success, twice.Error);
+        Assert.Equal(again, SaveGame.Save(twice.Game!));
+    }
+
+    private static void Strip(System.Text.Json.Nodes.JsonNode? node, Dictionary<string, int> removed)
+    {
+        switch (node)
+        {
+            case System.Text.Json.Nodes.JsonObject obj:
+                foreach (var key in new[] { "OneSeasonFlag", "_goalieStandIn", "Cancellable", "InnerMoves" })
+                    if (obj.Remove(key))
+                        removed[key] = removed.GetValueOrDefault(key) + 1;
+                foreach (var child in obj.Select(kv => kv.Value).ToList())
+                    Strip(child, removed);
+                break;
+            case System.Text.Json.Nodes.JsonArray array:
+                foreach (var child in array)
+                    Strip(child, removed);
+                break;
+        }
+    }
+
+    private static SponsorContract Contract(AdSlotKind kind, int sponsor, int[] boards, bool cancellable = false, int monthsLeft = 6) => new()
+    {
+        Kind = kind, Sponsor = sponsor, Boards = boards, MonthlyAmount = 1_000, MonthsLeft = monthsLeft, Cancellable = cancellable,
     };
 
     /// <summary>
@@ -225,8 +308,10 @@ public class EinzelpunkteTests
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 4);
         var ads = game.Ads(game.Managers[0]);
         ads.Contracts.Clear();
-        ads.Contracts.Add(Contract(AdSlotKind.Trikot, 1, []));
-        ads.Contracts.Add(Contract(AdSlotKind.Bande, 2, [0, 1]));
+        // Mindestens 13 Restmonate: Verträge mit 6 Monaten laufen bis zum Saisonende aus, dann ist die Liste leer und der Test prüft nichts
+        // (Review #943 P2-1; Rückmutation MarkContractsCancellable → {} wird rot).
+        ads.Contracts.Add(Contract(AdSlotKind.Trikot, 1, [], monthsLeft: 60));
+        ads.Contracts.Add(Contract(AdSlotKind.Bande, 2, [0, 1], monthsLeft: 60));
 
         for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
         {
@@ -253,6 +338,7 @@ public class EinzelpunkteTests
 
         var events = game.History[^1].Managers.Single().Events;
         Assert.Equal(promote, events.Contains(SeasonEvent.Promotion));
+        Assert.NotEmpty(ads.Contracts);
         Assert.All(ads.Contracts, c => Assert.Equal(promote, c.Cancellable));
     }
 
