@@ -317,8 +317,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
     // zurückgeschaltet → Werte von Teil 1.
     // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
-    [InlineData(false, "9DCFA6DA424C2156")]
-    [InlineData(true, "F01D47A55FBEF437")]
+    // Runde 22, Spur wettbewerbe-regeln Teil 3 (A101; R21-D2 = A, R15-E2 = C): neu – Penaltyschießen der zum Zusehen markierten
+    // Managervereine Schuss für Schuss (Datei 0x390CB → 0x39429–0x39547), anderer Zufallsverbrauch ab dem ersten Penaltyschießen.
+    // Rückschaltprobe: Shootout(…, watched: false) → Werte davor (A553, A456, A677 ändern den Wert nicht).
+    [InlineData(false, "759636B029A88263")]
+    [InlineData(true, "A9E4001C13DD3A0E")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

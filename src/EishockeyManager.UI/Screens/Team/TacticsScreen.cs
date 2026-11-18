@@ -57,7 +57,12 @@ public sealed class TacticsScreen : Screen
     private readonly Func<Screen>? _lineup;
     private int _block;
 
-    public TacticsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
+    public TacticsScreen(ScreenHost host, Screen back) : base(host)
+    {
+        _back = back;
+        if (host.Game is { } game && game.ActiveManager?.ClubIndex is >= 0 and var c && c < game.Clubs.Count)
+            _opened = Snapshot(game.Clubs[c].Tactics); // A553: Stand beim Öffnen
+    }
 
     /// <summary>Taktik eines anderen Teams (Spur nationalteam-2: Nationalteam) mit eigenem Weg zur Aufstellung.</summary>
     public TacticsScreen(ScreenHost host, Screen back, Func<Tactics> tactics, Func<Screen> lineup) : this(host, back)
@@ -73,20 +78,31 @@ public sealed class TacticsScreen : Screen
 
     /// <summary>
     /// Verlassen (A553, Spur wettbewerbe-regeln): [ORIGINAL] 0x48E62 beim Verlassen (Aufruf Datei 0x48E19) schreibt Vereinsfeld
-    /// 0x26 (<see cref="GameState.OnTacticsLeft"/>); nur der Vereinsbildschirm außerhalb des Spiels.
+    /// 0x26 (<see cref="GameState.OnTacticsLeft"/>); nur der Vereinsbildschirm außerhalb des Spiels. [APPROX] Hier nur nach einer
+    /// Änderung von Modus, Einsatz oder Angriff (AGENTS.md §4, wie die Aufstellung A858); das Original schreibt auch ohne – dann
+    /// unterscheidet es sich nur, wenn 0x26 seit dem letzten Verlassen vom Spielende überschrieben wurde.
     /// </summary>
     private void Leave(Screen next)
     {
-        if (_tactics is null && !InMatch && Host.Game is { } game)
+        if (_tactics is null && !InMatch && Host.Game is { } game && _opened is { } opened && opened != Snapshot(Tactics))
             game.OnTacticsLeft(TeamUi.OwnClub(Host));
+        _opened = null;
         Host.Show(next);
     }
+
+    /// <summary>Modi, Einsatz und Angriff beim ersten Aufbau (Vergleich beim Verlassen, A553).</summary>
+    private string? _opened;
+
+    private static string Snapshot(Tactics t) => string.Join(",",
+        Enumerable.Range(0, Tactics.Blocks).SelectMany(b => Enum.GetValues<ScoreSituation>()
+            .SelectMany(s => new[] { t.Effort(b, s), t.Attack(b, s) })).Prepend((int)t.AttackMode).Prepend((int)t.EffortMode));
 
     /// <summary>Gewählter Block (0–3).</summary>
     public int Block => _block;
 
     public override void Update(InputState input)
     {
+        _opened ??= Snapshot(Tactics);
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
             Leave(_back);

@@ -488,8 +488,11 @@ public class GameModeTests
     // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
     // zurückgeschaltet → Werte von Teil 1.
     // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
+    // Runde 22, Spur wettbewerbe-regeln Teil 3 (A101; R21-D2 = A, R15-E2 = C): neu – Penaltyschießen der zum Zusehen markierten
+    // Managervereine Schuss für Schuss (Datei 0x390CB → 0x39429–0x39547), anderer Zufallsverbrauch ab dem ersten Penaltyschießen.
+    // Rückschaltprobe: Shootout(…, watched: false) → Werte davor (A553, A456, A677 ändern den Wert nicht).
     internal const string Mode4Reference =
-        "WorldChampion=63,CupWinner=12,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=14,GermanChampion=1,EuropeanCupWinner=1|2441544,400000|WorldChampion=55,CupWinner=5,GermanChampion=1,EuropeanCupWinner=1|2723167,400000|WorldChampion=52,CupWinner=13,GermanChampion=13,EuropeanCupWinner=1|3364665,500000|WorldChampion=63,CupWinner=13,GermanChampion=5,EuropeanCupWinner=1|3193548,400000|R316742386";
+        "WorldChampion=55,CupWinner=1,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=55,CupWinner=18,GermanChampion=3,EuropeanCupWinner=1|2261134,400000|WorldChampion=52,CupWinner=10,GermanChampion=9,EuropeanCupWinner=3|2317659,400000|WorldChampion=52,CupWinner=9,GermanChampion=17,EuropeanCupWinner=9|2967000,400000|WorldChampion=52,CupWinner=24,GermanChampion=1,EuropeanCupWinner=17|3945889,400000|R1328048798";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

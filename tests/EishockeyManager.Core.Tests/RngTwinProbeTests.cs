@@ -311,10 +311,13 @@ public class RngTwinProbeTests
     // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
     // zurückgeschaltet → Werte von Teil 1.
     // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
+    // Runde 22, Spur wettbewerbe-regeln Teil 3 (A101; R21-D2 = A, R15-E2 = C): neu – Penaltyschießen der zum Zusehen markierten
+    // Managervereine Schuss für Schuss (Datei 0x390CB → 0x39429–0x39547), anderer Zufallsverbrauch ab dem ersten Penaltyschießen.
+    // Rückschaltprobe: Shootout(…, watched: false) → Werte davor (A553, A456, A677 ändern den Wert nicht).
     [InlineData(false, 3, "BE8FEF3CC00F2782")]
     [InlineData(true, 3, "41CF28A3DDC2E95E")]
-    [InlineData(false, 11, "8C78E87A00D50711")]
-    [InlineData(true, 11, "B52677EE16B7FE09")]
+    [InlineData(false, 11, "CEFADFBBE239EF19")]
+    [InlineData(true, 11, "E99F3EEA40BA9660")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -424,8 +427,11 @@ public class RngTwinProbeTests
     // 0x5644E, 0x36013/0x3602E); andere Lage der Würfe, anderer Zufallsverlauf. Rückschaltprobe: jede allein ändert den Wert, beide
     // zurückgeschaltet → Werte von Teil 1.
     // Runde 22, Spur wettbewerbe-regeln nach Merge von national (41ad124b, R21-D2 = A): Teile 1–2 auf den Stand von national neu ermittelt.
-    [InlineData(false, "764F9B2FCE509AAC")]
-    [InlineData(true, "BAE86BAD03B83EA1")]
+    // Runde 22, Spur wettbewerbe-regeln Teil 3 (A101; R21-D2 = A, R15-E2 = C): neu – Penaltyschießen der zum Zusehen markierten
+    // Managervereine Schuss für Schuss (Datei 0x390CB → 0x39429–0x39547), anderer Zufallsverbrauch ab dem ersten Penaltyschießen.
+    // Rückschaltprobe: Shootout(…, watched: false) → Werte davor (A553, A456, A677 ändern den Wert nicht).
+    [InlineData(false, "08EBAFB2C4246EE9")]
+    [InlineData(true, "305E937C47E2594B")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();
