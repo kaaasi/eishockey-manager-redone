@@ -301,10 +301,10 @@ public sealed class OriginalExportTests
 
     internal static byte[] RawDatabase() => File.ReadAllBytes(TestGameData.Load().GraphicsPath(23));
 
-    internal static GameState NewGameForExport(ClubDatabase database)
+    internal static GameState NewGameForExport(ClubDatabase database, int? seed = null)
     {
         var setup = new GameSetup();
         setup.AddManager(new ManagerSetup { Name = "Joerg", Head = 6, ClubIndex = 2 });
-        return NewGame.Create(database, setup, Seed);
+        return NewGame.Create(database, setup, seed ?? Seed);
     }
 }

@@ -77,12 +77,11 @@ public sealed class TransferScreen : Screen
     /// <summary>Offene Meldung (z. B. „Der Transfer findet nicht statt.“).</summary>
     public MessageBox Message => _message;
 
-    public override void Enter() => ShowNextBid();
-
-    private void ShowNextBid()
+    // A731: Öffnen ändert keinen Zustand; das Angebotsfenster erscheint erst beim Anklicken (OpenBid, Datei 0x47347).
+    private void OpenBid(TransferBid bid)
     {
-        if (Market.Bids.FirstOrDefault(b => b.Listing.Seller == Manager) is { } bid)
-            _dialog = TransferDialog.ForBid(bid);
+        Market.RollBid(Game, bid); // [ORIGINAL] Wurf der Höhe beim Anklicken (Datei 0x47347–0x47379)
+        _dialog = TransferDialog.ForBid(bid);
     }
 
     /// <summary>
@@ -183,7 +182,7 @@ public sealed class TransferScreen : Screen
                 if (EntryBuy(i).Contains(x, y) || EntryLoan(i).Contains(x, y))
                 {
                     if (Market.Bids.FirstOrDefault(b => b.Listing == l) is { } bid)
-                        _dialog = TransferDialog.ForBid(bid);
+                        OpenBid(bid);
                     else if (Market.Withdraw(l) is var back && back != TransferResult.Accepted)
                         Say(TransferMarket.Message(back));
                     return;
@@ -268,7 +267,6 @@ public sealed class TransferScreen : Screen
                 var accepted = Market.Accept(Game, d.Bid!);
                 if (accepted != TransferResult.Accepted)
                     Say(TransferMarket.Message(accepted)); // „Der Transfer findet nicht statt.“
-                ShowNextBid();
                 break;
             case TransferDialog.DialogKind.Talent:
                 Say(TalentScout.Message(TalentScout.Search(Game, Manager)));
@@ -358,7 +356,6 @@ public sealed class TransferScreen : Screen
         else if (d.Kind == TransferDialog.DialogKind.Bid)
         {
             Market.Decline(d.Bid!);
-            ShowNextBid();
         }
         else if (d.Kind == TransferDialog.DialogKind.Subsidy)
             AnswerSubsidy(d.Subsidy!, accept: false);

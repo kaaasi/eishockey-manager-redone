@@ -33,7 +33,7 @@ public class ZufallsstromTeil1Tests
     [Fact]
     public void DailyRun_ContractsAndOffers_DrawFromSharedStreamInOriginalOrder()
     {
-        var game = Create(3, 2, 14);
+        var game = Create(3, 2, 15);
         foreach (var manager in game.Managers)
             foreach (var p in game.Clubs[manager.ClubIndex].Players)
             {
@@ -50,6 +50,11 @@ public class ZufallsstromTeil1Tests
             var club = game.Clubs[manager.ClubIndex];
             foreach (var p in club.Players)
             {
+                // Runde 22, Spur transfer-pool (A864, R15-E2 = C): vor dem Ruhestandswurf der Wurf der Verletzung außerhalb des Spiels
+                // (Datei 0x07462–0x07548, nur ohne Verletzung und ohne Angebot +0x09; Wurf random(0, 30 · (5 − Level) + x + 100)).
+                // Die Saat trifft ihn nicht (sonst folgte die Art; TransferPoolSpurTests prüft die Verletzung selbst).
+                var x = Math.Max(0x28, 0x140 - 2 * p.Strain + (SeasonCalendar.Events(game.CurrentDay) == DayEvents.None ? 0x32 : 0));
+                Assert.NotEqual(0, R(sim, 0, 30 * TrainingRules.LevelValue(manager.Level) + x + 100));
                 R(sim, 350, 450);
                 R(sim, 0, 3);
                 if (R(sim, 0, SquadRules.OfferLimit(p)) == 0)
@@ -135,7 +140,7 @@ public class ZufallsstromTeil1Tests
     [Fact]
     public void GameStart_SquadTrend_FromSharedStreamInSlotOrder()
     {
-        var game = Create(3, 2, 14);
+        var game = Create(3, 2, 15);
         var untouched = game.Random.Capture();
         game.ApplyStartSalaries();
         Assert.Equal(untouched, game.Random.Capture());

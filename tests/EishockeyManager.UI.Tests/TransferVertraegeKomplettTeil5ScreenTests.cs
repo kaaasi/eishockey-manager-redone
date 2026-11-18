@@ -30,6 +30,12 @@ public class TransferVertraegeKomplettTeil5ScreenTests
         var bid = Assert.Single(game.TransferMarket.Bids);
         d.OpenTile("Transfer");
         var screen = Assert.IsType<TransferScreen>(d.Host.Current);
+        // A731: Öffnen zeigt kein Fenster; erst das Anklicken würfelt die Höhe und öffnet es (Datei 0x47347).
+        Assert.Null(screen.Dialog);
+        Assert.False(bid.IsRolled);
+        var buy = TransferScreen.EntryBuy(game.TransferMarket.Listings.ToList().IndexOf(bid.Listing));
+        d.Click(buy.X + 3, buy.Y + 3);
+        Assert.True(bid.IsRolled);
         return (d, screen, bid);
     }
 

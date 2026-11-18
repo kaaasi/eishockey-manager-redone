@@ -302,10 +302,13 @@ public class RngTwinProbeTests
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
     // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
     // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
-    [InlineData(false, 3, "69A0E2ADAA1ABA2A")]
-    [InlineData(true, 3, "BF64AD7B4F78A84A")]
-    [InlineData(false, 11, "A3A036D2D712FEF4")]
-    [InlineData(true, 11, "5DBC028EC7A06953")]
+    // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
+    // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
+    // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
+    [InlineData(false, 3, "E8E0122BD8C46A9E")]
+    [InlineData(true, 3, "127D002E5E749011")]
+    [InlineData(false, 11, "7A6A202ECE12E57E")]
+    [InlineData(true, 11, "53B9546931FCA2D4")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -406,8 +409,11 @@ public class RngTwinProbeTests
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
     // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
     // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
-    [InlineData(false, "FF39B78F56FB89AF")]
-    [InlineData(true, "D6B147FE3DC24932")]
+    // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
+    // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
+    // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
+    [InlineData(false, "0902BF3F4ED37F04")]
+    [InlineData(true, "5E38DD9E979BD05B")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

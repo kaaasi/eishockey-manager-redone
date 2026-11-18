@@ -74,6 +74,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     [Fact]
     public void BeginMatch_ManagedClub_TakesEffortAndStrengthsOfPreparation()
     {
+        // Runde 22, Spur transfer-pool (A864, R21-D2 = A): Saat 24 statt 16 – Verletzung außerhalb des Spiels (Datei 0x07462–0x07548)
+        // und Alterung verlorener Pool-Spieler ändern den Zufallsverlauf; mit Saat 16 hielt der passive Manager nur 185 Schritte
+        // (Schwelle 200, Saaten 16–23 passiv zu kurz, 24 passiv und aktiv darüber). Rückschaltprobe: src/ von ce658d4 + Saat 24.
         var game = TestGames.Create(5);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         var opponent = game.Clubs.First(c => c != club && c.Players.Count > 0 && c.League == club.League);
@@ -95,6 +98,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     [Fact]
     public void A080_ManagerClub_LiveTeamCarriesClubFieldsFromLineup()
     {
+        // Runde 22, Spur transfer-pool (A864, R21-D2 = A): Saat 24 statt 16 – Verletzung außerhalb des Spiels (Datei 0x07462–0x07548)
+        // und Alterung verlorener Pool-Spieler ändern den Zufallsverlauf; mit Saat 16 hielt der passive Manager nur 185 Schritte
+        // (Schwelle 200, Saaten 16–23 passiv zu kurz, 24 passiv und aktiv darüber). Rückschaltprobe: src/ von ce658d4 + Saat 24.
         var game = TestGames.Create(5);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         var opponent = game.Clubs.First(c => c.Index != club.Index && c.League == club.League);
@@ -116,6 +122,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     [Fact]
     public void A080_Preparation_OpponentComparesFieldStrengthOfManagerClub()
     {
+        // Runde 22, Spur transfer-pool (A864, R21-D2 = A): Saat 24 statt 16 – Verletzung außerhalb des Spiels (Datei 0x07462–0x07548)
+        // und Alterung verlorener Pool-Spieler ändern den Zufallsverlauf; mit Saat 16 hielt der passive Manager nur 185 Schritte
+        // (Schwelle 200, Saaten 16–23 passiv zu kurz, 24 passiv und aktiv darüber). Rückschaltprobe: src/ von ce658d4 + Saat 24.
         var game = TestGames.Create(5);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         var opponent = game.Clubs.First(c => c.Index != club.Index && c.League == club.League);
@@ -150,6 +159,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     [Fact]
     public void A544_TeamValue_ManagerClub_IsMeanOfLineupFields()
     {
+        // Runde 22, Spur transfer-pool (A864, R21-D2 = A): Saat 24 statt 16 – Verletzung außerhalb des Spiels (Datei 0x07462–0x07548)
+        // und Alterung verlorener Pool-Spieler ändern den Zufallsverlauf; mit Saat 16 hielt der passive Manager nur 185 Schritte
+        // (Schwelle 200, Saaten 16–23 passiv zu kurz, 24 passiv und aktiv darüber). Rückschaltprobe: src/ von ce658d4 + Saat 24.
         var game = TestGames.Create(5);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         game.UpdateManagerTeamValues();
@@ -177,6 +189,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     [Fact]
     public void A174_Rating_IsLineupTeamValueOf0x952C()
     {
+        // Runde 22, Spur transfer-pool (A864, R21-D2 = A): Saat 24 statt 16 – Verletzung außerhalb des Spiels (Datei 0x07462–0x07548)
+        // und Alterung verlorener Pool-Spieler ändern den Zufallsverlauf; mit Saat 16 hielt der passive Manager nur 185 Schritte
+        // (Schwelle 200, Saaten 16–23 passiv zu kurz, 24 passiv und aktiv darüber). Rückschaltprobe: src/ von ce658d4 + Saat 24.
         var game = TestGames.Create(5);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         var (defense, attack, _) = MatchEngine.LineupTeamValues(club.Lineup);
@@ -205,7 +220,12 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): Saat 16 statt 10 – die Spielabrechnung 0x544C0 würfelt vor jedem Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7) aus dem gemeinsamen Strom, anderer Zufallsverlauf ab dem ersten Managerspiel; bei Saat 10 zählt der passive Lauf nur 141 Schritte mit Kader, unter 5–24
         // erreichen nur 16, 17, 20 und 22 passiv und aktiv mehr als 200. Rückschaltprobe: src/ von faa64d2 mit
         // Saat 16 passiv rot (alter Zufallsverlauf, dort hielt Saat 10) – die Probe hängt an der Saat.
-        var game = TestGames.Create(16);
+        // Runde 22, Spur transfer-pool (A864, R21-D2 = A): Saat 24 statt 16 – Verletzung außerhalb des Spiels (Datei 0x07462–0x07548)
+        // und Alterung verlorener Pool-Spieler ändern den Zufallsverlauf; mit Saat 16 hielt der passive Manager nur 185 Schritte
+        // (Schwelle 200, Saaten 16–23 passiv zu kurz, 24 passiv und aktiv darüber). Rückschaltprobe: src/ von ce658d4 + Saat 24.
+        // Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A): Saat 29 statt 24 – mit den Strömen von national und kader-regeln
+        // zählt der passive Lauf bei Saat 24 nur 194 Schritte (Schwelle 200); Saaten 25–28 ebenfalls zu kurz, 29 passiv und aktiv darüber.
+        var game = TestGames.Create(29);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();

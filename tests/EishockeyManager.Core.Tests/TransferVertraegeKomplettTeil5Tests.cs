@@ -54,6 +54,7 @@ public class TransferVertraegeKomplettTeil5Tests
         for (var day = 0; day < 200 && game.TransferMarket.Bids.Count == 0; day++)
             game.TransferMarket.AdvanceDay(game, game.Random);
         var bid = Assert.Single(game.TransferMarket.Bids);
+        game.TransferMarket.RollBid(game, bid); // A731: Höhe fällt erst beim Anklicken
         var expected = (TransferRules.Thirds(bid.Amount) - TransferRules.Thirds(bid.Amount) / 7 * 2) / 3;
         Assert.Equal(expected, TransferMarket.TransferFee(bid));
         Assert.Equal(214_286, UnsolicitedOfferRules.MarketTransferFeeThirds(900_000, 2) / 3);
@@ -143,7 +144,8 @@ public class TransferVertraegeKomplettTeil5Tests
         // und zugleich der erste Platz des Benennens der Nationalspieler (0x5ACA0: 179 … 199). Die Umverteilung des Spielstarts
         // (Datei 0x43A83 → 0x057E3, jetzt aus dem gemeinsamen Strom nach der Wanderung) hängt ihn bei Saat 5 an einen Ligaverein
         // (nachgestellt: vor dem Verteilen Verein 55, danach 12); mit der früheren eigenen Quelle traf Saat 5 das nicht. FILE05
-        // oben prüft ebenfalls erst ab 180. Ob 0x057E3 Platz 179 erreichen darf, ist als Restlücke im PR #905 gemeldet.
+        // oben prüft ebenfalls erst ab 180. Runde 22, Spur transfer-pool (#897): kein Fehler – die Soll-Rechnung 0x05521 zieht
+        // random(1, 0xB3) einschließlich 179 und gibt dem Spieler über 0x059B8 einen Ligaverein (TransferPoolSpurTests).
         Assert.All(pool.Where(s => s.Index >= 180), s => Assert.InRange(s.Club, NationalTeams.First, NationalTeams.Last));
         // [APPROX] Das Remake trifft öfter einen schon vergebenen Namen (dann 0–35).
         var league = pool.Count(s => s.Index < 179);
@@ -520,6 +522,7 @@ public class TransferVertraegeKomplettTeil5Tests
                     foreach (var bid in market.Bids.Where(b => b.Listing.Seller == manager).ToList())
                     {
                         var before = manager.Money;
+                        market.RollBid(game, bid); // A731: Höhe fällt erst beim Anklicken
                         var fee = TransferMarket.TransferFee(bid);
                         if (market.Accept(game, bid) == TransferResult.Accepted)
                         {

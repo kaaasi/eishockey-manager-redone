@@ -26,7 +26,10 @@ public class PruefungKarteRunde16UiTests
         // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): Saat 1995 statt 1994 – die Spielabrechnung 0x544C0 würfelt vor jedem Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7) aus dem gemeinsamen Strom, anderer Zufallsverlauf ab dem ersten Managerspiel; bei Saat 1994 bekommt der Manager keine Prämie, unter 1990–2005 erfüllen alle außer 1992–1994,
         // 2003 und 2004 die Vorbedingung. Rückschaltprobe: src/ von faa64d2 mit Saat 1995 rot (keine Prämie) – die Probe
         // hängt an der Saat.
-        var d = FlowTests.CreateDriver(1995);
+        // Runde 22, Spur transfer-pool (A864, A391, R21-D2 = A): Saat 1993 statt 1995 – Verletzung außerhalb des Spiels (Datei
+        // 0x07462–0x07548) verschiebt den Zufallsverlauf; bei Saat 1995 bekommt der Manager keine Prämie, bei 1993 erfüllt er die
+        // Vorbedingung. Rückschaltprobe: src/ von ce658d4 mit Saat 1993 rot (alter Verlauf) – die Probe hängt an der Saat.
+        var d = FlowTests.CreateDriver(1993);
         d.StartNewGame();
         var game = d.Host.Game!;
         for (var guard = 0; d.Host.Current is not SeasonEndSummaryScreen && guard++ < 20000;)

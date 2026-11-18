@@ -77,8 +77,18 @@ public sealed class GoalSceneCallTests
             }
         }
         var rows = live!.Session.Shown.Select(m => m.Row!).ToList();
-        return new Run(SaveGame.Save(game), live.ScenesShown, rows.Sum(r => r.ChanceList.Count), rows.Sum(r => r.Scenes.Count));
+        return new Run(Normalized(game), live.ScenesShown, rows.Sum(r => r.ChanceList.Count), rows.Sum(r => r.Scenes.Count));
     }
+
+    /// <summary>
+    /// Spielstand ohne das Kennzeichen „neue Nachricht“ (Manager._newMessage): Es gehört zur Sitzung, nicht zum Spielverlauf –
+    /// das Hauptmenü der Anzeige-Läufe löscht es im Ereignis OnMainMenu (Datei 0x44E22), der Lauf ohne Anzeige baut kein Hauptmenü.
+    /// Seit Runde 22 (transfer-pool, A864) meldet schon der erste Tageslauf „Verletzung außerhalb des Spieles“; vorher blieb das
+    /// Kennzeichen an diesem Tag ungesetzt. Alle übrigen Felder bleiben im Vergleich.
+    /// </summary>
+    private static byte[] Normalized(GameState game) =>
+        System.Text.Encoding.UTF8.GetBytes(System.Text.Encoding.UTF8.GetString(SaveGame.Save(game))
+            .Replace("\"_newMessage\": true", "\"_newMessage\": false"));
 
     private static byte[] Reference(int liveMode)
     {
@@ -88,7 +98,7 @@ public sealed class GoalSceneCallTests
         game.Options.MatchSpeed = 60;
         game.Options.LiveMode = liveMode;
         game.Continue();
-        return SaveGame.Save(game);
+        return Normalized(game);
     }
 
     /// <summary>

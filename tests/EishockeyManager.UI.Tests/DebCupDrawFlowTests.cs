@@ -341,6 +341,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
     // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
     // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
+    // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels (A864),
+    // Alterung verlorener Pool-Spieler (A391) und Gruppe 3 der Poolverteilung (A713) ändern den Zufallsverlauf; neu gegen 4a3a724.
+    // Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15597 | 1994: DEB 8, DM 6, Tab 15707 | 1995: DEB 6, DM 0, Tab 15763 | 1996: DEB 10, DM 1, Tab 15982";
+        "1993: DEB 9, DM 2, Tab 15635 | 1994: DEB 2, DM 9, Tab 15973 | 1995: DEB 4, DM 8, Tab 15334 | 1996: DEB 23, DM 23, Tab 16116";
 }
