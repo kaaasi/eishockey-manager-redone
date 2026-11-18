@@ -308,8 +308,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene
     // Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e.
     // Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
-    [InlineData(false, "0552878CD8AB9728")]
-    [InlineData(true, "85481C6B7583D617")]
+    // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
+    // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
+    // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
+    [InlineData(false, "DEBBB32C1DDD032C")]
+    [InlineData(true, "A4D5185CBCE8CE9B")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

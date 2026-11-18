@@ -89,22 +89,38 @@ public class TransferPoolSpurTests
     }
 
     /// <summary>
-    /// A713: Die vierte Gruppe der Verteilung am Saisonwechsel sind die Vereine 36 … 42 ohne Liga, nicht alle Vereine ohne Liga
-    /// unter 48. [ORIGINAL] Datei 0x07C7E, Indexbereiche DGROUP 0x7C6/0x7C7 (0 … 11, 12 … 23, 24 … 35, 36 … 42;
-    /// <c>docs/transfer.md</c> „Saisonwechsel“). Vereine 43 … 47 und Nationalteams gehören zu keiner Gruppe (−1).
-    /// Rot vorher: Verein 44 lag in Gruppe 3.
+    /// A713 (Review P2-1): Die vierte Gruppe der Verteilung am Saisonwechsel hält immer sieben Vereine ohne Liga, auch nach einem
+    /// Austausch der Oberliga. [ORIGINAL] Datei 0x07C7E, DGROUP 0x7C6/0x7C7 = Satzpositionen 36 … 42 nach der Umordnung 0x35EDD
+    /// (0 … 11, 12 … 23, 24 … 35, 36 … 42; <c>docs/transfer.md</c> „Saisonwechsel“); Positionen 43 … 47 und Nationalteams gehören
+    /// zu keiner Gruppe (−1). [APPROX] Das Remake wählt die sieben Vereine ohne Liga mit dem niedrigsten Index (A715).
+    /// Rot vorher: nach dem Tausch (Verein 20 ohne Liga, Verein 38 in der Liga) hatte Gruppe 3 nur noch sechs Vereine, Verein 20
+    /// lag in keiner Gruppe.
     /// </summary>
     [Fact]
-    public void A713_FourthGroup_IsClubs36To42WithoutLeague()
+    public void A713_FourthGroup_IsSevenClubsWithoutLeague_AlsoAfterExchange()
     {
         var game = Create();
-        foreach (var club in game.Clubs.Where(c => c.League is null && c.Index < NewGame.SelectableClubs))
-            Assert.Equal(club.Index <= 42 ? 3 : -1, TransferMarket.PoolGroup(game, club.Index));
-        foreach (var club in game.Clubs.Where(c => c.League is { } l))
+        AssertFourthGroup(game, expectMovedGroup: false);
+        // Austausch wie beim Saisonwechsel: ein Oberligist steigt ab (Index < 36), ein Verein ohne Liga (Index 36 … 42) steigt auf.
+        var down = game.Clubs.First(c => c.League == League.Oberliga && c.Index < NewGame.SelectableClubs && c.Index != 5);
+        var up = game.Clubs.First(c => c.League is null && c.Index is >= 36 and <= 42);
+        (down.League, up.League) = (null, League.Oberliga);
+        AssertFourthGroup(game, expectMovedGroup: true);
+        Assert.Equal(3, TransferMarket.PoolGroup(game, down.Index));
+        Assert.NotEqual(3, TransferMarket.PoolGroup(game, up.Index));
+    }
+
+    private static void AssertFourthGroup(GameState game, bool expectMovedGroup)
+    {
+        var withoutLeague = game.Clubs.Where(c => c.League is null && c.Index < PoolDistributionRules.NoLeagueClubs).ToList();
+        Assert.True(withoutLeague.Count > PoolDistributionRules.NoLeagueCount, "Es gibt Vereine ohne Liga ohne Gruppe");
+        var grouped = withoutLeague.Where(c => TransferMarket.PoolGroup(game, c.Index) == 3).Select(c => c.Index).ToList();
+        Assert.Equal(withoutLeague.Take(PoolDistributionRules.NoLeagueCount).Select(c => c.Index), grouped);
+        Assert.All(withoutLeague.Skip(PoolDistributionRules.NoLeagueCount), c => Assert.Equal(-1, TransferMarket.PoolGroup(game, c.Index)));
+        foreach (var club in game.Clubs.Where(c => c.League is { } && c.Index < PoolDistributionRules.NoLeagueClubs))
             Assert.Equal((int)club.League!.Value, TransferMarket.PoolGroup(game, club.Index));
         Assert.Equal(-1, TransferMarket.PoolGroup(game, NationalTeams.First));
-        // Es gibt Vereine ohne Liga hinter 42, sonst prüfte der Test nichts.
-        Assert.Contains(game.Clubs, c => c.League is null && c.Index is > 42 and < NewGame.SelectableClubs);
+        Assert.Equal(expectMovedGroup, grouped.Any(i => i < 36));
     }
 
     /// <summary>
@@ -238,6 +254,12 @@ public class TransferPoolSpurTests
                 season = g.Season;
                 var pool = g.TransferMarket.Pool;
                 Assert.Equal(poolSize, pool.Count);
+                // A713 (Review P2-1): Gruppe 3 hat nach jedem Austausch sieben Vereine, kein Poolplatz ≤ 179 liegt bei einem Verein ohne
+                // Liga und ohne Gruppe.
+                Assert.Equal(PoolDistributionRules.NoLeagueCount,
+                    g.Clubs.Count(c => c.Index < PoolDistributionRules.NoLeagueClubs && TransferMarket.PoolGroup(g, c.Index) == 3));
+                Assert.All(pool.Take(179).Where(x => x.Club < PoolDistributionRules.NoLeagueClubs && g.Clubs[x.Club].League is null),
+                    x => Assert.Equal(3, TransferMarket.PoolGroup(g, x.Club)));
                 Assert.Equal(pool.Count, pool.Select(x => x.Player).Distinct().Count());
                 foreach (var slot in pool.Where(x => x.Owner == PoolOwner.Taken && before.ContainsKey(x.Player)
                                                      && !g.Clubs.Any(c => c.Players.Contains(x.Player))))

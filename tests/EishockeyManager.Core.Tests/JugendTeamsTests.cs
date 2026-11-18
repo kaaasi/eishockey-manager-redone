@@ -287,8 +287,11 @@ public class JugendTeamsTests
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e. Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
+    // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
+    // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
+    // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
     private const string ExpectedActive =
-        "0:Schueler:2/11/61;0:Jugend:2/11/65;0:Junioren:2/11/66;1:Schueler:1/11/74;1:Jugend:1/11/74;1:Junioren:1/11/74;2:Schueler:1/6/79;2:Jugend:1/6/81;2:Junioren:1/6/81;3:Schueler:1/6/83;3:Jugend:1/6/84;3:Junioren:1/6/85";
+        "0:Schueler:2/11/62;0:Jugend:2/11/62;0:Junioren:2/11/61;1:Schueler:1/11/72;1:Jugend:1/11/71;1:Junioren:2/6/69;2:Schueler:2/2/74;2:Jugend:1/6/79;2:Junioren:1/12/78;3:Schueler:1/11/76;3:Jugend:1/6/82;3:Junioren:1/6/83";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -376,8 +379,11 @@ public class JugendTeamsTests
     // Strom, bei Level 4/5 kostet Spielen außerhalb der eingespielten Reihe 10 Technik (Datei 0x09A65); anderer Zufallsverlauf ab dem
     // ersten Managerspiel. Rückschaltprobe: src/ von faa64d2 + dieser Test → rot (alte Werte).
     // Spur national Rebase auf Schema 57 (Runde 22, R21-D2 = A, R15-E2 = C): Länderspiele mit Spielvorbereitung 0x8365, Satz 5 als eigene Kaderplätze (A412) und WM-Tagesform ändern den Zufallsverbrauch ab der ersten WM zusätzlich zu kaderplatz-werte; neu gegen c58e738e. Rückschaltprobe: src/ von c58e738e + dieser Test → rot (alte Werte).
+    // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
+    // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
+    // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/65;0:Jugend:2/2/67;0:Junioren:2/2/70;1:Schueler:3/2/52;1:Jugend:3/2/56;1:Junioren:3/2/55;2:Schueler:3/6/47;2:Jugend:3/6/47;2:Junioren:3/6/46;3:Schueler:3/6/42;3:Jugend:3/6/42;3:Junioren:3/6/42";
+        "0:Schueler:2/2/62;0:Jugend:1/6/67;0:Junioren:1/6/74;1:Schueler:3/2/50;1:Jugend:2/2/52;1:Junioren:2/2/58;2:Schueler:3/6/45;2:Jugend:2/6/46;2:Junioren:3/2/47;3:Schueler:3/6/41;3:Jugend:3/2/43;3:Junioren:3/6/43";
 }
 
 public class JugendTeamsMigrationTests

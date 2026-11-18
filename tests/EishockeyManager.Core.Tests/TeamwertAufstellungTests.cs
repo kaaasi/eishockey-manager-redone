@@ -223,7 +223,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         // Runde 22, Spur transfer-pool (A864, R21-D2 = A): Saat 24 statt 16 – Verletzung außerhalb des Spiels (Datei 0x07462–0x07548)
         // und Alterung verlorener Pool-Spieler ändern den Zufallsverlauf; mit Saat 16 hielt der passive Manager nur 185 Schritte
         // (Schwelle 200, Saaten 16–23 passiv zu kurz, 24 passiv und aktiv darüber). Rückschaltprobe: src/ von ce658d4 + Saat 24.
-        var game = TestGames.Create(24);
+        // Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A): Saat 29 statt 24 – mit den Strömen von national und kader-regeln
+        // zählt der passive Lauf bei Saat 24 nur 194 Schritte (Schwelle 200); Saaten 25–28 ebenfalls zu kurz, 29 passiv und aktiv darüber.
+        var game = TestGames.Create(29);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();

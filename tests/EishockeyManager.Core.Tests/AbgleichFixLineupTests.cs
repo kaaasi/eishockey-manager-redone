@@ -95,6 +95,9 @@ public class AbgleichFixLineupTests
     /// </summary>
     [GameDataTheory]
     [InlineData(1)]
+    // Runde 22, Spur transfer-pool (A864, R21-D2 = A): Saat 2 → 4 (Review P3-1). Mit Saat 2 verletzt der neue Wurf außerhalb des
+    // Spiels (Datei 0x07462–0x07548) im Tageslauf einen Aufgestellten: „Expected 11, Actual 10“, die Lücke hat FILE46 nicht. Das
+    // ist ein Zufallsfeld, kein Fehler der Aufstellung; Saat 4 zieht ihn nicht. Rückschaltprobe: src/ von ce658d4 + Saat 2 → grün.
     [InlineData(4)]
     [InlineData(3)]
     [InlineData(77)]
