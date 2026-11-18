@@ -81,4 +81,28 @@ public class EinzelpunkteBedienungTests
         d.Click(arrow.X + arrow.W / 2, arrow.Y + arrow.H / 2);
         Assert.NotNull(screen.CurrentOffer());
     }
+
+    /// <summary>
+    /// A582/P3-1 des Reviews (Fixlauf), em.exe 0x2AC5A–0x2AC82: Bei Laufzeit 0 und Option hat „! Option !“ Vorrang vor „Kündbar.“ (der
+    /// Kündbar-Zweig 0x2AC84 wird übersprungen). Vorher zeigte das Remake „Kündbar.“. Rückschaltprobe: AdvertisingScreen.cs von 32aadc4 → rot.
+    /// </summary>
+    [GameDataFact]
+    public void ExpiredOptionContract_ShowsOption_NotKuendbar()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        d.OpenTile("Werbung");
+        var screen = Assert.IsType<AdvertisingScreen>(d.Host.Current);
+        var game = d.Host.Game!;
+        var ads = game.Ads(game.ActiveManager);
+        ads.Contracts.Add(new SponsorContract
+        {
+            Kind = AdSlotKind.Fernsehen, Sponsor = 1, Boards = [], MonthlyAmount = 9_000, MonthsLeft = 0, OptionMonths = 12, Cancellable = true,
+        });
+
+        var tv = AdvertisingScreen.TvPanel;
+        d.Click(tv.X + tv.W / 2, tv.Y + tv.H / 2);
+        Assert.Contains(new AdvertisingScreen.PanelText(275, 189, "! Option !"), screen.PanelTexts());
+        Assert.DoesNotContain(screen.PanelTexts(), t => t.Text == "Kündbar.");
+    }
 }

@@ -45,7 +45,7 @@ public static partial class SaveGame
     }
 
     /// <summary>
-    /// Schema 57 → 58 (A582): Jeder Werbevertrag bekommt <c>Cancellable</c> = false. [APPROX] Ältere Stände kennen „Kündbar.“ nicht; das
+    /// Schema 59 → 60 (A582): Jeder Werbevertrag bekommt <c>Cancellable</c> = false. [APPROX] Ältere Stände kennen „Kündbar.“ nicht; das
     /// Kennzeichen entsteht beim nächsten Aufstieg.
     /// </summary>
     private static JsonObject MigrateKuendbar(JsonObject root)
