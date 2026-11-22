@@ -338,7 +338,7 @@ public class WettbewerbeRegelnTests
     }
 
     /// <summary>
-    /// A384/A670, Migration 56 → 57: Ein älterer Stand nach dem Tageswechsel eines Ligaspieltags hat dessen Jugend schon gerechnet
+    /// A384/A670, Migration 61 → 62: Ein älterer Stand nach dem Tageswechsel eines Ligaspieltags hat dessen Jugend schon gerechnet
     /// – sie läuft nicht noch einmal (<c>_youthOfDayDone</c>).
     /// </summary>
     [Fact]
@@ -346,7 +346,7 @@ public class WettbewerbeRegelnTests
     {
         var game = HaltOnLeagueDay(5);
         var json = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        json["schema"] = 56;
+        json["schema"] = 61;
         json["spiel"]!.AsObject().Remove("_youthOfDayDone");
         var old = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString())).Game!;
         old.Continue();

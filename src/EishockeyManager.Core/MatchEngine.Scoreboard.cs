@@ -2,8 +2,11 @@ using System.Runtime.CompilerServices;
 
 namespace EishockeyManager.Core;
 
-/// <summary>Eine Torchance einer Anzeigereihe: Minute (1 … 70), Seite (0 Heim, 1 Gast), Tor oder vergeben.</summary>
-public readonly record struct ScoreboardChance(int Minute, int Side, bool Goal);
+/// <summary>
+/// Eine Torchance einer Anzeigereihe: Minute (1 … 70), Seite (0 Heim, 1 Gast), Tor oder vergeben. A456: in der Managerpaarung
+/// Namen von Schütze und Vorlage aus 0x541D9 (<see cref="OriginalMinutes.ScoringPlayers"/>), auch bei vergebener Chance.
+/// </summary>
+public readonly record struct ScoreboardChance(int Minute, int Side, bool Goal, string? Shooter = null, string? Assist = null);
 
 /// <summary>
 /// Tormeldung einer Paarung ohne Anzeigereihe (Spur zusehen-rest, A832): Minute, Vereine und Spielstand nach dem Tor.
@@ -91,6 +94,18 @@ public sealed partial class LiveScoreboardRow
         & 0xFF;
 
     internal void AddChance(int minute, int side, bool goal) => chances.Add(new ScoreboardChance(minute, side, goal));
+
+    /// <summary>
+    /// A456: [ORIGINAL] Die Szene 0x53C57 ruft 0x541D9 für Art 0 (vergeben) und 1 (Tor) ohne Bedingung (Datei 0x5406C–0x5407F)
+    /// und liest danach Schütze [0xE2A7] und Vorlage [0xE2A6] für die Meldung 0x52520 (Datei 0x54089–0x54096). Das Remake wählt
+    /// sie nach der Szenenwahl (gleiche Zufallsfolge) und trägt sie an der letzten Chance der Seite nach.
+    /// </summary>
+    internal void NameLastChance(int side, Player shooter, Player assist)
+    {
+        var i = chances.FindLastIndex(c => c.Side == side);
+        if (i >= 0)
+            chances[i] = chances[i] with { Shooter = shooter.Name, Assist = assist.Name };
+    }
 
     internal void Finish(MatchReport report)
     {

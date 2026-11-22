@@ -8,7 +8,9 @@ namespace EishockeyManager.UI.Screens.Team;
 /// </summary>
 /// <param name="Dressed">Spieler ist eingesetzt (Kaderplatz +0x0A ≠ 0).</param>
 /// <param name="Line">Reihe, in der er aufgestellt ist (Kaderplatz +0x15 &amp; 0x7F), 0 = in keiner.</param>
-public readonly record struct PlayerHintInfo(bool Dressed, int Line);
+/// <param name="PenaltyMinutes">A808: im Spiel auf der Strafbank (Status +0x09 Bit 0) mit +0x0D = 2 bzw. 5 Minuten
+/// (<see cref="MatchEngine.PenaltyBoxMinutes"/>), sonst 0.</param>
+public readonly record struct PlayerHintInfo(bool Dressed, int Line, int PenaltyMinutes = 0);
 
 /// <summary>Maße einer Spielerliste für die Hinweiszeile (die acht Argumente von 0x41683).</summary>
 /// <param name="OriginX">Linker Rand der Spalten (Argument bp+6).</param>
@@ -80,9 +82,11 @@ public static class PlayerHintLine
     /// <paramref name="showExhaustion"/> hängt die Tendenz „ (Erschöpfung: n)“ an – nur in der Aufstellung (Rand 0xE9,
     /// Adresse 0x487); n = Belastung +0x13 (<see cref="Player.Strain"/>) · 10 / 15 wie Spalte E (#805).
     /// Die Verletzungsart (Kaderplatz +0x17) steht in <see cref="Player.InjuryKind"/> (Spur kader-transfer, Teil 2).
-    /// [APPROX] Die Sperre in Minuten (+0x0D mit +0x09 Bit 0) ist im Original die Strafbank im laufenden Spiel (Strafe 0x35C02:
-    /// +0x0D = 2 bzw. 5, je Minute −1 an 0x5488C/0x5490C, Ende 0x35795, nach dem Spiel gelöscht 0x551E0); das Remake zeigt die
-    /// verbleibenden Spiele aus <see cref="Player.SuspendedGames"/>. Unbekannte Art (ältere Spielstände): „Verletzt.“ ohne Klammer.
+    /// A808: [ORIGINAL] Die Sperre in Minuten (+0x0D mit +0x09 Bit 0) ist die Strafbank im laufenden Spiel (Strafe 0x35C02:
+    /// +0x0D = 2 bzw. 5, Ende 0x35795; die Abzüge 0x5488C/0x5490C laufen erst in der Spielabrechnung nach dem Spiel), im Remake
+    /// <see cref="PlayerHintInfo.PenaltyMinutes"/>. [APPROX] Außerhalb davon zeigt das Remake die verbleibenden Spiele aus
+    /// <see cref="Player.SuspendedGames"/> (im Original kommt Status 1 ohne Strafbank nicht vor). Unbekannte Art (ältere
+    /// Spielstände): „Verletzt.“ ohne Klammer.
     /// </summary>
     public static string? Text(Player p, int column, PlayerHintInfo info, bool showExhaustion)
     {
@@ -133,10 +137,13 @@ public static class PlayerHintLine
     /// </summary>
     private static string Status(Player p, PlayerHintInfo info)
     {
-        if (info.Dressed && info.Line == 0)
+        // A808: [ORIGINAL] Auf der Strafbank ist +0x0A = 0 (Datei 0x35BFD), also nie „RESERVE“; Status 1 → Minuten aus +0x0D.
+        if (info.Dressed && info.Line == 0 && info.PenaltyMinutes == 0)
             return "RESERVE";
         if (p.InjuredGames > 0)
             return p.InjuryName is { } kind ? $"Verletzt.({kind})" : "Verletzt.";
+        if (info.PenaltyMinutes > 0)
+            return $"Noch {info.PenaltyMinutes} Minuten Gesperrt.";
         if (p.SuspendedGames > 0)
             return $"Noch {p.SuspendedGames} Minuten Gesperrt.";
         return info.Dressed ? "IM TEAM" : "Hängt halt so rum...";

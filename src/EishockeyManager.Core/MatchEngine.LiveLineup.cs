@@ -9,9 +9,16 @@ namespace EishockeyManager.Core;
 /// <item>[ORIGINAL] Platz +0x15 aus der Aufstellung (<see cref="LiveSquad.PositionOf"/>); Energie (+0x1B) und Tore des Spiels
 ///   bleiben.</item>
 /// <item>[ORIGINAL] Eingesetzt +0x0A wie in der Aufstellung, außer für Spieler auf der Strafbank (dort +0x0A = 0 bis zum
-///   Freiwerden 0x35691) und im Spiel Verletzte (Datei 0x5C50 → +0x0A = 0). [APPROX] Das Original lässt die Aufstellung auch
-///   einen Bestraften wieder einsetzen (0x41533 schreibt +0x0A = 1 ohne Blick auf die Strafbank); das Remake hält ihn draußen,
-///   bis er frei wird.</item>
+///   Freiwerden 0x35691) und im Spiel Verletzte (Datei 0x5C50 → +0x0A = 0).</item>
+/// <item>A443: [ORIGINAL] Das Aufstellen 0x41533 schreibt +0x0A = 1 ohne Blick auf die Strafbank (Datei 0x415AF–0x415B2), aber
+///   der Klick der Aufstellung erreicht es für einen Bestraften nicht: Jede Strafe setzt Status +0x09 Bit 0 und +0x0D = Minuten
+///   (Datei 0x35BFD–0x35C0C), und der Klick auf einen Spieler mit Status 1 oder 2 meldet nur und bricht ab (Datei
+///   0x40DAF–0x40E2A). Ein Bestrafter bleibt also bis zum Freiwerden draußen – wie hier. A808: Die Aufstellung im Spiel sperrt
+///   den Klick ebenso (<see cref="Club.ClickPlayerInMatch"/> über <see cref="MatchEngine.PenaltyBoxMinutes"/>); der Abgleich
+///   hält ihn zusätzlich draußen, falls er vor der Strafe aufgestellt war und seinen Platz behält.</item>
+/// <item>A677: [ORIGINAL] Ein im Spiel neu Aufgestellter ohne Kennzeichen „hat gespielt“ (+0x1A Bit 7) bekommt es und ein Spiel
+///   (Datei 0x415B7–0x41622, <see cref="LivePlayer.Played"/>); wer herausgenommen wird, behält sein Spiel. [APPROX] Das Remake
+///   zählt beide am Spielende (die Spalte SP zeigt das Spiel erst danach), ein Hinein und Hinaus im selben Eingriff zählt nicht.</item>
 /// <item>[ORIGINAL] Danach Feldspieler neu zählen 0x38A36 (Datei 0x5438D–0x54419, <see cref="MatchIntervention.AfterLineup"/>).</item>
 /// </list>
 /// </summary>
@@ -25,9 +32,13 @@ public static class LiveLineup
         var boxed = team.Box.Occupants.Where(o => o is not null).ToHashSet();
         foreach (var p in squad.Players)
         {
-            p.Position = club.Lineup.PositionOf(p.Player);
+            var position = club.Lineup.PositionOf(p.Player);
+            var touched = position != p.Position;
+            p.Position = position;
             if (!boxed.Contains(p))
                 p.Dressed = p.Player.Available && club.IsDressed(p.Player);
+            if (touched && position != 0 && p.Dressed && !p.Played) // A677
+                p.Played = p.PlayedFromBench = true;
         }
         MatchIntervention.AfterLineup(team);
     }

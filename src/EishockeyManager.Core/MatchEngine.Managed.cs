@@ -34,6 +34,21 @@ public sealed class LivePlayer
 
     /// <summary>Tore dieses Spiels (Gewicht der Schützenwahl 0x386D1, Kaderplatz +0x03 wächst im Original sofort).</summary>
     public int MatchGoals { get; set; }
+
+    /// <summary>
+    /// A677: Kennzeichen „hat gespielt“ (Spielerfeld +0x1A Bit 7): beim Anlegen für die Aufgestellten, im Spiel für jeden neu
+    /// Aufgestellten (<see cref="LiveLineup.Apply"/>). Am Spielende zählt je Kennzeichen ein Spiel (<c>MatchEngine.CreditLineup</c>).
+    /// </summary>
+    public bool Played { get; set; }
+
+    /// <summary>A677: erst im Spiel aufgestellt – das Spiel zählt im Wettbewerb nach DGROUP 0xD0C2 (Datei 0x415CD–0x41606).</summary>
+    public bool PlayedFromBench { get; set; }
+
+    /// <summary>
+    /// A808: Minuten der Strafe, mit der der Spieler zuletzt auf die Strafbank ging (Kaderplatz +0x0D = Strafcode &amp; 7, Datei
+    /// 0x35C07–0x35C0C); gilt nur, solange er auf einem Platz sitzt (<see cref="MatchEngine.PenaltyBoxMinutes"/>).
+    /// </summary>
+    public int PenaltyMinutes { get; set; }
 }
 
 /// <summary>Kader eines Managervereins in der Minutenrechnung.</summary>
@@ -92,6 +107,10 @@ public sealed class LiveSquad
                 Position = club.Lineup.PositionOf(p),
                 Dressed = p.Available && club.IsDressed(p),
                 Energy = MatchEngine.PreparedPlayerEnergy(p),
+                // A677: wie bisher die Aufstellung (CreditLineup), jetzt zu Spielbeginn festgehalten. [APPROX] Rebase auf main f7f0410:
+                // der Feldspieler im Tor (A672, Platz +0x15 = 1 ohne Aufstellungsplatz) zählt wie auf main nicht; ob 0x54910 ihn über
+                // +0x15 mitzählt, ist nicht gelesen.
+                Played = club.Lineup.FindSlot(p) is not null,
             });
         }
         return squad;

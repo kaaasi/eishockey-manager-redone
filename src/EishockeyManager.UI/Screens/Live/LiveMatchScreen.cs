@@ -300,7 +300,7 @@ public sealed class LiveMatchScreen : Screen
     /// <summary>
     /// Meldungen einer Minute (§5): Chancen der Reihe (Torszene 0x53C57 → 0x52520 Ereignis 0/1), Strafen (0x35818 → Ereignis
     /// 2/3 mit Strafgrund aus dem Kern), Verletzungen (Ereignis 4). [APPROX] Reihenfolge innerhalb der Minute: Chancen, Strafen,
-    /// Verletzungen; vergebene Chancen ohne Schützen (der Kern führt ihn nicht).
+    /// Verletzungen. Vergebene Chancen nennen Schütze und Vorlage (A456, <see cref="ScoreboardChance.Shooter"/>).
     /// </summary>
     private IEnumerable<IEnumerable<bool>> Messages(LiveMatch match, int minute)
     {
@@ -322,8 +322,9 @@ public sealed class LiveMatchScreen : Screen
             MatchEvent? goal = null;
             if (c.Goal && goals.Count > 0)
                 goal = goals.Dequeue();
+            // A456: [ORIGINAL] auch die vergebene Chance meldet Schütze und Vorlage aus 0x541D9 (ScoreboardChance.Shooter).
             yield return _reporter.Message(ClubName(match, c.Side), c.Goal ? ReporterEvent.Goal : ReporterEvent.ChanceMissed,
-                goal?.Player?.Name, goal?.Assist?.Name, null);
+                goal?.Player?.Name ?? c.Shooter, goal?.Assist?.Name ?? c.Assist, null);
         }
         var reasons = new Queue<ScoreboardPenaltyReason>(row.PenaltyReasons.Where(r => r.Minute == minute));
         foreach (var e in events.Where(e => e.Kind == MatchEventKind.Penalty))

@@ -117,6 +117,13 @@ public static partial class OriginalMinutes
         row.AddScene(new ScoreboardScene(minute, side, goal, choice));
     }
 
+    /// <summary>Schütze und Vorlage der eben gerechneten Chance an der Anzeigereihe (A456, <see cref="LiveScoreboardRow.NameLastChance"/>).</summary>
+    internal static void NameChance(int side, Player shooter, Player assist)
+    {
+        if (Display is { Row: { } row })
+            row.NameLastChance(side, shooter, assist);
+    }
+
     /// <summary>
     /// Tormeldung nach einem Tor einer Paarung ohne Reihe (Spur zusehen-rest, A832; Ziel <see cref="MatchEngine.NoticeTarget"/>).
     /// [ORIGINAL] Datei 0xABF8–0xAC10: Spielstand aus dem Ergebnisbyte vor dem Tor, die Seite des Schützen + 1, das Heimbyte
