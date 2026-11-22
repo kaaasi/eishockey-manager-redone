@@ -21,14 +21,29 @@ public class ZusehenRestAufstellungTests
     {
         var game = Import("FILE71");
         var club = Club(game);
-        var file72 = MatchEngine.ClubFieldValues(Club(Import("FILE72")));
+        // #930: Der Import von FILE72 bildet das Laden nach und schreibt die Felder neu (68 69 55 / 70 69 48); der Sollwert dieses
+        // Tests sind die gesicherten Rohbytes 0x18–0x1D von FILE72: 69 70 69 70 55 48 (Fundstelle: A858, Datei 0x41513).
+        var file72 = (new PartValues(69, 69, 55), new PartValues(70, 70, 48));
         Assert.NotEqual(file72, MatchEngine.ClubFieldValues(club));
 
         Swap(club);
         game.OnLineupLeft(club);
 
         Assert.Equal(file72, MatchEngine.ClubFieldValues(club));
-        Assert.Equal((new PartValues(69, 69, 55), new PartValues(70, 70, 48)), file72); // Rohbytes 0x18–0x1D: 69 70 69 70 55 48
+    }
+
+    /// <summary>
+    /// #930 (Review #929 P3-1, rot vor dem Fix: 69 69 55 / 70 70 48): Der Import von FILE72 bildet das Laden nach. 0x375 ≠ 0x376
+    /// (Manager 1: 0/1) – der Schleifenkopf stellt neu auf (0x426BC) und schreibt dann 0x952C(1, 0) (Datei 0x54DAA): die
+    /// Vereinsfelder stehen auf den Werten der neuen Aufstellung, 68 69 55 / 70 69 48.
+    /// </summary>
+    [GameDataFact]
+    public void Import_File72_LikeLoading_WritesClubFieldsAfterRelineup()
+    {
+        var club = Club(Import("FILE72"));
+
+        Assert.Equal((new PartValues(68, 69, 55), new PartValues(70, 69, 48)), MatchEngine.ClubFieldValues(club));
+        Assert.Equal(MatchEngine.ClubLineupTeamValues(club) is var (d, a, _) ? (d, a) : default, MatchEngine.ClubFieldValues(club));
     }
 
     /// <summary>A858: Für einen Computerverein rechnet das Ereignis nichts (0x952C nur mit dem Managersatz [0xA70E]).</summary>

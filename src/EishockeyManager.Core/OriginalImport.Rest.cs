@@ -281,6 +281,31 @@ public sealed partial class GameState
         // holte der Schleifenkopf 0x376 = 1 zurück und stellte neu auf (Datei 0x54D84–0x54D9E), der Spieltag sicherte dann 0x376 = 1
         // (Datei 0x54FDC). Beleg ZusehenRestAufstellungTests.
         club.AutoLineupEnabled = save.Block("0375")[2 * m + 1] != 0;
+        // #930 (Review #929 P3-1): bei 0x375 ≠ 0x376 holt der Schleifenkopf 0x376 zurück und stellt neu auf (Datei 0x54D84–0x54D9E),
+        // danach schreibt 0x952C(m, 0) die Vereinsfelder 0x18–0x1D aus der neuen Aufstellung (Datei 0x54DAA); siehe
+        // ApplyLoadLineupValues.
+        if (save.Block("0375")[2 * m] != save.Block("0375")[2 * m + 1])
+            _loadLineupReset.Add(club);
+    }
+
+    private readonly List<Club> _loadLineupReset = [];
+
+    /// <summary>
+    /// #930 (Review #929 P3-1, FILE72 München 69 69 55 / 70 70 48 statt 68 69 55 / 70 69 48): Nach dem Laden eines Stands mit
+    /// 0x375 ≠ 0x376 an einem Tag mit Ereignis folgt auf die Neuaufstellung 0x426BC (nur mit „automatisch aufstellen“) im selben
+    /// Schleifendurchlauf <c>0x952C(m, 0)</c> (Datei 0x54DAA): die Vereinsfelder stehen danach auf den Werten der neuen
+    /// Aufstellung (<see cref="WriteLineupTeamValues"/>). [APPROX] Nur für Sätze mit 0x375 ≠ 0x376 (übrige Sätze behalten die
+    /// gesicherten Felder, auch wenn die Wanderung 0x9D1B sie seit dem letzten Ereignistag bewegt hat – nicht belegt).
+    /// </summary>
+    private void ApplyLoadLineupValues()
+    {
+        if (!WorldOnly && IsListChangeDay(CurrentDay))
+            foreach (var club in _loadLineupReset)
+            {
+                club.ApplyAutoLineup();
+                WriteLineupTeamValues(club);
+            }
+        _loadLineupReset.Clear();
     }
 
     /// <summary>Modi, Werte und Minuten des Satzes <paramref name="m"/> (0–3 Manager, 5 Bundestrainer; Teil 4b).</summary>
