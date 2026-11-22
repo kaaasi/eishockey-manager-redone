@@ -99,19 +99,7 @@ public sealed class HokPlayOffMarkenTests
     {
         var raw = OriginalExportTests.RawDatabase();
         var database = ClubDatabase.Parse(raw);
-        // Continue hält nach jedem Spiel des Managervereins: ein Bundesligist, der die Play-offs erreicht, liefert eine offene Runde.
-        GameState? game = null;
-        for (var club = 0; club < 12 && game is null; club++)
-        {
-            var setup = new GameSetup();
-            setup.AddManager(new ManagerSetup { Name = "Joerg", Head = 6, ClubIndex = club });
-            var candidate = NewGame.Create(database, setup, Seed);
-            TestSeason.PlayRegularSeason(candidate);
-            PlayPlayoffGames(candidate, 2 * 4);
-            if (candidate.Playoffs!.Rounds.Count == 1 && candidate.Playoffs.Rounds[0].Any(x => !x.IsDecided))
-                game = candidate;
-        }
-        Assert.NotNull(game);
+        var game = OpenQuarterFinal(database);
         var round = game.Playoffs!.Rounds[0];
         var n = 0;
         foreach (var s in round)
@@ -142,6 +130,72 @@ public sealed class HokPlayOffMarkenTests
     }
 
     /// <summary>
+    /// R924-02 (#928): <c>PlayoffSeries.MarksFromReport</c> – zwei Marken bei Verlängerung, Penaltyschießen (Sieger bzw. Zusatztore),
+    /// sonst 0, auch bei Spielwertung. Mutation <c>false &amp;&amp; (…)</c> in <c>Playoffs.cs</c> muss rot werden.
+    /// </summary>
+    [Fact]
+    public void MarksFromReport_TieAfterSixtyMinutes_TwoMarks()
+    {
+        Assert.Equal(0, PlayoffSeries.MarksFromReport(new MatchReport { HomeGoals = 3, AwayGoals = 1 }));
+        Assert.Equal(PlayoffSeries.TieMarks, PlayoffSeries.MarksFromReport(new MatchReport { HomeGoals = 2, AwayGoals = 2, Overtime = true }));
+        Assert.Equal(PlayoffSeries.TieMarks, PlayoffSeries.MarksFromReport(new MatchReport { HomeGoals = 2, AwayGoals = 2, ShootoutHomeWins = true }));
+        Assert.Equal(PlayoffSeries.TieMarks, PlayoffSeries.MarksFromReport(new MatchReport { HomeGoals = 2, AwayGoals = 2, ShootoutGoals = (1, 0) }));
+        Assert.Equal(0, PlayoffSeries.MarksFromReport(new MatchReport { HomeGoals = 2, AwayGoals = 0, Forfeit = true, Overtime = true }));
+    }
+
+    /// <summary>
+    /// R924-01 (#928): Fünftes Spiel mit 2:2 vor dem Spiel und Heimsieg: Der Tausch 0x316C9 entfällt (Siegbyte 0x14 nur bei Seriensieg
+    /// des Gastes, Datei 0x3168B → 0x3173A), die Marken bleiben beim Heimverein (0x31701–0x31734). Mutation
+    /// <c>var onAway = true;</c> in <c>OriginalExport.Cups.cs</c> muss rot werden.
+    /// </summary>
+    [GameDataFact]
+    public void Export_PlayoffMarks_FifthGameHomeWin_StayOnHomeByte()
+    {
+        var raw = OriginalExportTests.RawDatabase();
+        var database = ClubDatabase.Parse(raw);
+        var game = OpenQuarterFinal(database);
+        var series = game.Playoffs!.Rounds[0][0];
+        var (h, a) = (series.HomeClub, series.AwayClub);
+        series.Games.Clear();
+        series.Marks.Clear();
+        // Spiel 1 H, 2 A, 3 A, 4 H gewonnen (2:2), Spiel 5 (Heimrecht H) gewinnt H.
+        int[] winners = [h, a, a, h, h];
+        for (var g = 0; g < winners.Length; g++)
+        {
+            var (home, away) = g % 2 == 0 ? (h, a) : (a, h);
+            var homeWins = winners[g] == home;
+            series.Games.Add(new KnockoutMatch(g, home, away, homeWins ? 2 : 1, homeWins ? 1 : 2));
+            series.Marks.Add(g == 4 ? PlayoffSeries.TieMarks : 0);
+        }
+        Assert.Equal(3, series.Wins(h));
+        Assert.Equal(2, series.Wins(a));
+
+        var save = OriginalSaveGame.Read(OriginalExport.Export(game, raw));
+        var results = save.Block("CCB2");
+
+        // Länge der laufenden Runde = 5 Spiele (ungerade): Tausch, der Heimverein der Paarung steht auf Platz p + 1.
+        Assert.Equal(PlayoffSeries.TieMarks, results[14 * 4 + 1] / 30);
+        Assert.Equal(0, results[14 * 4 + 0] / 30);
+    }
+
+    /// <summary>Spielstand mit mindestens einer offenen Viertelfinalrunde (Termine 1–2 gespielt).</summary>
+    private static GameState OpenQuarterFinal(ClubDatabase database)
+    {
+        // Continue hält nach jedem Spiel des Managervereins: ein Bundesligist, der die Play-offs erreicht, liefert eine offene Runde.
+        for (var club = 0; club < 12; club++)
+        {
+            var setup = new GameSetup();
+            setup.AddManager(new ManagerSetup { Name = "Joerg", Head = 6, ClubIndex = club });
+            var candidate = NewGame.Create(database, setup, Seed);
+            TestSeason.PlayRegularSeason(candidate);
+            PlayPlayoffGames(candidate, 2 * 4);
+            if (candidate.Playoffs!.Rounds.Count == 1 && candidate.Playoffs.Rounds[0].Any(x => !x.IsDecided))
+                return candidate;
+        }
+        throw new InvalidOperationException("Keine offene Viertelfinalrunde gefunden.");
+    }
+
+    /// <summary>
     /// Migration 55 → 56 (<c>SaveGame.Migration.HokPlayOffMarken.cs</c>): ein Stand ohne <c>Marks</c> bekommt je Spiel zwei Marken bei
     /// Penaltysieger, sonst 0, und lädt. Synthetisch (ohne Originaldaten): Hauptrunde und drei Play-off-Termine.
     /// </summary>
@@ -152,6 +206,9 @@ public sealed class HokPlayOffMarkenTests
         TestSeason.PlayRegularSeason(game);
         PlayPlayoffGames(game, 2 * 4);
         Assert.NotEmpty(game.PlayoffResults);
+        // R924-03 (#928): at least one game with a penalty winner, so the branch "penalty winner → 2 marks" runs.
+        var first = game.Playoffs!.Rounds[0][0];
+        first.Games[0] = first.Games[0] with { HomeGoals = 2, AwayGoals = 2, PenaltyWinner = first.Games[0].Home };
         var root = JsonNode.Parse(Encoding.UTF8.GetString(SaveGame.Save(game)))!.AsObject();
         root["schema"] = 55;
         var removed = 0;
@@ -168,6 +225,7 @@ public sealed class HokPlayOffMarkenTests
             for (var g = 0; g < s.Games.Count; g++)
                 Assert.Equal(s.Games[g].PenaltyWinner is null ? 0 : PlayoffSeries.TieMarks, s.Marks[g]);
         }
+        Assert.Equal(PlayoffSeries.TieMarks, loaded.Game.Playoffs.Rounds[0][0].Marks[0]);
     }
 
     /// <summary>

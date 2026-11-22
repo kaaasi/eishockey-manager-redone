@@ -360,6 +360,7 @@ public sealed partial class GameState
             CurrentManager = current;
             BeginManagerTurn();
         }
+        ApplyLoadLineupValues(save); // #930 (OriginalImport.Rest.cs)
     }
 
     /// <summary>

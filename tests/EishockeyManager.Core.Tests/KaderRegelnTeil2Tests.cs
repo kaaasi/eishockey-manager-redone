@@ -131,6 +131,7 @@ public class KaderRegelnTeil2Tests
         for (var change = 0; change < 4; change++)
         {
             var loanedThisSeason = false;
+            var loanedPlayers = new List<Player>();
             for (var day = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; day++)
             {
                 Assert.True(day < 1000, "Saisonende nicht erreicht");
@@ -145,6 +146,7 @@ public class KaderRegelnTeil2Tests
                     {
                         loans++;
                         loanedThisSeason = true;
+                        loanedPlayers.Add(p);
                         Assert.InRange(p.MonthlySalary, (int)Math.Max(Contracts.MinSalary, thirds * 90 / 100 / 3),
                             (int)Math.Max(Contracts.MinSalary, thirds * 115 / 100 / 3));
                     }
@@ -153,6 +155,14 @@ public class KaderRegelnTeil2Tests
             }
             game.StartNextSeason();
             Assert.All(game.Managers, m => Assert.Equal(game.Setup.Level, m.Level));
+            // #941 (Review #940 P3-2): Nach Ablauf der Leihe ist der Spieler nicht mehr im Managerkader, nicht mehr verliehen
+            // und trägt kein Leihgehalt mehr.
+            foreach (var returned in loanedPlayers)
+            {
+                Assert.DoesNotContain(returned, club.Players);
+                Assert.False(returned.OnLoan);
+                Assert.Null(returned.Loan);
+            }
             var saved = SaveGame.Save(game);
             var loaded = SaveGame.Load(saved);
             Assert.True(loaded.Success, loaded.Error);

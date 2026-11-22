@@ -52,7 +52,10 @@ public static class CupMatch
             return (new KnockoutMatch(day, home.Index, away.Index, hg + goals.Home, ag + goals.Away, winner), 1);
         }
         // Beide Wege liefern bei Gleichstand immer Penaltytore; bleibt nur der Sieger, gilt er mit Gleichstand.
+        // #945 (Review #944 P3-1): [ORIGINAL] Bleibt der Gleichstand nach dem einen Zusatzwurf der Play-offs (x = y), stehen die
+        // Zusatztore im Ergebnisbyte (Heim + x + 30, Gast + y, Datei 0x3775D–0x3779F); das Spiel zählt für den Gast (0x3166E).
         var fallback = report.ShootoutHomeWins is false ? away.Index : home.Index;
-        return (new KnockoutMatch(day, home.Index, away.Index, hg, ag, fallback), 1);
+        var (extraHome, extraAway) = report.ShootoutGoals ?? (0, 0);
+        return (new KnockoutMatch(day, home.Index, away.Index, hg + extraHome, ag + extraAway, fallback), 1);
     }
 }

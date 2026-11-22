@@ -141,6 +141,44 @@ public class WettbewerbeRegelnTests
     }
 
     /// <summary>
+    /// #945 P3-2 (Review #944): Das Löschen des Bits 3 beim Spielbeginn (Datei 0x84C7) hängt nicht an <c>KeepMatchFields</c>:
+    /// <c>StartMatchAfterPulledGoalie</c> setzt Abwehrreihe 2 und löscht das Bit – auch ohne Spielende dazwischen. Mutation
+    /// „<c>_goaliePulledAtEnd = false;</c> entfernt“ muss rot werden.
+    /// </summary>
+    [Fact]
+    public void StartMatchAfterPulledGoalie_ClearsBit_WithoutMatchEnd()
+    {
+        var tactics = TestGames.Create(3).Clubs[4].Tactics;
+        tactics.RecordMatchLines(0, 1);
+        tactics.RecordGoaliePulled(true);
+
+        tactics.StartMatchAfterPulledGoalie();
+
+        Assert.Equal(2, tactics.MatchDefenseLine);
+        Assert.False(tactics.GoaliePulledAtEnd);
+        tactics.RecordMatchLines(1, 1); // second start without a new bit leaves the line alone
+        tactics.StartMatchAfterPulledGoalie();
+        Assert.Equal(1, tactics.MatchDefenseLine);
+    }
+
+    /// <summary>
+    /// #945 P3-1 (Review #944, rot vor dem Fix: 3:3): Bleibt der Gleichstand nach dem einen Zusatzwurf der Play-offs (x = y), bleiben
+    /// die Zusatztore im Endstand (0x376F0–0x377A3 schreibt Heim + x + 30 und Gast + y, Datei 0x3775D–0x3779F); das Spiel zählt für
+    /// den Gast (0x3166E). Wurf 2:2 nach 3:3 → Endstand 5:5, Sieger Gast, eine Marke.
+    /// </summary>
+    [Fact]
+    public void FromReport_ShootoutTieStays_KeepsExtraGoalsInScore()
+    {
+        var game = TestGames.Create(3);
+        var (home, away) = (game.Clubs[4], game.Clubs[5]);
+
+        var (match, marks) = CupMatch.FromReport(1, home, away,
+            new MatchReport { HomeGoals = 3, AwayGoals = 3, ShootoutHomeWins = false, ShootoutGoals = (2, 2) });
+
+        Assert.Equal((5, 5, (int?)away.Index, 1), (match.HomeGoals, match.AwayGoals, match.PenaltyWinner, marks));
+    }
+
+    /// <summary>
     /// #925 (A873), schneller Weg der Play-offs: [ORIGINAL] bei eigenem Gleichstand genau ein Zusatzwurf random(0, 2) je Seite
     /// (Vergleich 0x37748 mit Marke), der Gleichstand kann bleiben und zählt für den Gast (0x3166E); der DEB-Pokal würfelt weiter bis
     /// ungleich. Vorher würfelten auch die Play-offs bis ungleich.

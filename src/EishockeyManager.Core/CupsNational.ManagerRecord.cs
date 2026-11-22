@@ -15,8 +15,12 @@ namespace EishockeyManager.Core;
 ///   (<see cref="MatchEngine.ManagedTeamValues"/>); die Verletzungen im Spiel 0x38B8F lesen ihn für Satz 5, solange der Verein
 ///   des Bundestrainers DGROUP 0x9EDA ≤ 0x3F ist (Datei 0x38BE3–0x38BF0) – also mit Amt (Land 54), ohne Amt steht dort 0xFD
 ///   (Datei 0x5580E).</item>
-/// <item>[APPROX] Ein neues Amt beginnt mit leeren Zählern; das Remake legt den Bundestrainer je Saison neu an. Ob das Original
-///   den Satz 5 bei der Ernennung oder beim Saisonwechsel leert, ist nicht gelesen.</item>
+/// <item>[APPROX] Ein neues Amt beginnt mit leeren Zählern; das Remake legt den Bundestrainer je Saison neu an. [ORIGINAL] Das
+///   Original leert den Satz 5 weder bei der Ernennung noch beim Saisonwechsel: FILE19 <c>1,0,0,1,3,5</c> → FILE20
+///   <c>1,0,0,90,3,5</c> → FILE21 (14.04.1995, neues Amt, Kader leer) <c>1,0,0,90,3,5</c> (Review #937 P3-1, #938). Zurückgestellt
+///   (Leitstelle 22.11.2026): Die Zähler werden nirgends gelesen und nicht exportiert; ein Übertrag über den Saisonwechsel
+///   (wie <c>_nationalAutoLineupSaved</c>) braucht ein Spielstandfeld samt Schema und gehört zum Export der Zähler (Spur
+///   hok-export, Restlücke).</item>
 /// </list>
 /// </remarks>
 public sealed partial class NationalCoach
