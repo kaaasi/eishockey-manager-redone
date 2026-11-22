@@ -96,6 +96,12 @@ rendern, mit dem Videobild vergleichen, Test schreiben.
   - Während der Arbeit nur betroffene Tests (`dotnet test <projekt> --filter …`), die volle Prüfung erst vor dem Push.
 - Tests mit Originaldaten **nur** mit `[GameDataFact]`/`[GameDataTheory]` und `TestGameData.Load()`
   (`tests/EishockeyManager.UI.Tests/Support/GameDataFact.cs`). Nie „ohne Daten einfach `return`“.
+- **Hängeschutz:** `tools/pruefen.sh` und die CI brechen einen Testlauf ohne Fortschritt nach 20 Minuten ab und nennen die
+  hängenden Tests (`--blame-hang-timeout`; Kurzlimit für Proben: `EM_HANG_TIMEOUT=30s`). Ein Hänger ist ein Fehler im Test, kein
+  Grund, das Limit zu erhöhen.
+- **„Original zieht endlos“:** Vermerkt ein Befund, dass das Original endlos zieht oder nur unter einer Bedingung endet, braucht der
+  Test eine Machbarkeitsprüfung im Aufbau (Bedingung vorab herstellbar?) oder einen Abbruchzähler. Das Erstreview prüft das mit
+  (`zusammenarbeit.md` §5). Empfehlung für Testaufbauten: eigener Zufallsstartwert je Testfall statt einer fortlaufenden Folge.
 - Zeit in Tests nur über die Zeitleiste: `TestSeason.PlayMatchDay(game)` / `PlayRegularSeason(game)`.
 - **Mehrsaisonprobe:** Wer Saisonwechsel, Kader oder Geld berührt, liefert einen Test über mindestens 4 Saisonwechsel (passiver und
   aktiver Manager).

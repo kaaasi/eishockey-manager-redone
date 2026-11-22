@@ -42,12 +42,14 @@ jobs:
       - name: Test (synthetisch)
         run: >
           dotnet test EishockeyManager.slnx -c Release --no-build --verbosity normal
+          --blame-hang-timeout 20m --blame-hang-dump-type none
           --filter "Category!=Originaldaten" --logger "trx;LogFilePrefix=synthetisch" --results-directory TestResults/synthetisch
 
       - name: Test (Originaldaten)
         if: success() || failure()
         run: >
           dotnet test EishockeyManager.slnx -c Release --no-build --verbosity normal
+          --blame-hang-timeout 20m --blame-hang-dump-type none
           --filter "Category=Originaldaten" --logger "trx;LogFilePrefix=originaldaten" --results-directory TestResults/originaldaten
 
       - name: Testbericht
