@@ -123,7 +123,7 @@ Markerzeile bleibt in ihrer Klasse (E/K), der genannte Teil ist Auftrag der Spur
 | `zusehen-rest` | A832 Tormeldung, A834 Import der Markierung 0x34/0x22C, A837/A840 Managerregeln an der Reihenliste, #899/#908 | – |
 | `einzelpunkte` | A367, A371, A582, A104, A847, A206, A421, A671, A698, A672, A492; Teil-V A673/A681 (ohne A775, N2 = B) | – |
 | `hok-play-off-marken` | A612 (#896) | em.exe 0x32AA3/0x38402/0x376F0 zuerst |
-| `marker-x` | 89 Einträge der Klasse X auf `[ORIGINAL]` (bzw. Nicht-Marker umformulieren); danach Generatorlauf | zuletzt in der Runde (Wortlaut ändert die IDs) |
+| `marker-x` | 96 Einträge der Klasse X (72 Markerzeilen, 24 Funktionen ohne Marker) auf `[ORIGINAL]` (bzw. Nicht-Marker umformulieren); danach Generatorlauf | zuletzt in der Runde (Wortlaut ändert die IDs); umgesetzt 22.11.2026: 72 Markerzeilen → X = 0, die 24 Funktionszeilen haben keine Markerzeile und bleiben X |
 
 Neue Befunde ohne Markerzeile (#897): Finanzübersicht Zeilen 3/4 und 6/7 (Original Σ Darlehen und Monatszins, Remake
 Forderungen/Schulden, #893), Gegentore des Managertorhüters nur in der Liga (#892), `TransferMarket.ChangeList` schreibt Gehalt 0
