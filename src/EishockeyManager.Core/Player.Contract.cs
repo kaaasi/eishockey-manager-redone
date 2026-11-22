@@ -335,7 +335,7 @@ public static class Contracts
     /// Start- und Wechselgehalt eines Kaderplatzes des Managers in DM: Wert(Gehalt) (0x118:0x70 Art 1) im Verein des Managers.
     /// [ORIGINAL] Spielstart Datei 0x29EE4–0x29EF3, Kauf Datei 0x42F11–0x42F65 (Kaderplatz aus 0x108:0x5C = 0x42CB1, ohne Leihe),
     /// Listenwechsel Datei 0x497A1. Wert(Gehalt) ist ein Vielfaches von 300 Drittel-DM, also ganze 100 DM. Rein, ohne Zufall.
-    /// [APPROX] Tore und Spiele gehen mit den Zählern des Remakes ein (wie bei allen Aufrufen von <see cref="PlayerValue"/>).
+    /// [ORIGINAL] Tore und Spiele gehen als Zähler je Wettbewerb ein (DGROUP 0xD0BF, A135, spielberechnung.md §17) (wie bei allen Aufrufen von <see cref="PlayerValue"/>).
     /// </summary>
     public static int ValueSalary(GameState game, Manager manager, Player p)
     {
@@ -541,7 +541,7 @@ public static class Contracts
     /// [ORIGINAL] Kaderplatz +0x18 &gt; 99 (Angebot, Tagesablauf) → beim Öffnen +0x0B = +0x18 − 100 (Datei 0x4A3AF); „Mach'
     /// ich!“ ohne Eingaben nimmt das Angebot damit zum bisherigen Gehalt an.
     /// </summary>
-    /// <remarks>[APPROX] Das Remake behält die Ankündigung bis zum Saisonwechsel (Spur „kader“); das Angebot gilt nur, solange
+    /// <remarks>[ORIGINAL] Ein offenes Angebot verfällt mit random(0, 5) = 0 je Lauf (Datei 0x0767A–0x076E3, Transfer.Squads.cs; vorher bis zum Saisonwechsel behalten, Spur „kader“); das Angebot gilt nur, solange
     /// der Spieler im letzten Vertragsjahr ist. Am Saisonende (Laufzeit 0, Angebot 1 Jahr) ist es das Angebot +0x18 = 101 des
     /// Originals (Datei 0x27D15, <see cref="GameState.IsRenewalPending"/>).</remarks>
     public static int CurrentYears(Player p) =>

@@ -83,7 +83,7 @@ public static class TalentScout
     public static string[] Message(TalentSearchStart result) => result switch
     {
         // [ORIGINAL] Nach dem Start keine Meldung: Datei 0x46A14–0x46A38 übermalt nur die Stelle des Knopfs (0x30:0x800) und
-        // zeichnet die Kontozeile neu (0x463CC); Spur kader-rest, Teil 2 (A244). Bis Runde 17 [APPROX] „Ihr 'Spion' geht auf
+        // zeichnet die Kontozeile neu (0x463CC); Spur kader-rest, Teil 2 (A244). Bis Runde 17 als Näherung „Ihr 'Spion' geht auf
         // Talentsuche.“ Eine leere Meldung öffnet kein Fenster (MessageBox.Visible).
         TalentSearchStart.Started => [],
         // [APPROX] Nur für den Anschluss im Remake; das Original zeigt den Knopf bei laufender Suche nicht (siehe Enum).

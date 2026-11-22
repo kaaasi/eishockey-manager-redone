@@ -16,8 +16,8 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   0x5128 … 0x512C).</item>
 /// <item>Zustand der Oberfläche, kein Spielzustand: nicht im Spielstand (L11). Gemerkt je <see cref="GameState"/>-Objekt.
 ///   [APPROX] Nach dem Laden beginnt die Seite mit dem Startwert; das Original behält das globale Byte des laufenden Programms.
-///   [APPROX] „Erster Aufbau eines Zugs“ wird beim Öffnen der Kachel erkannt (erster Aufruf an diesem Tag im Zug des
-///   Bundestrainers); da sich die WM-Stufe innerhalb eines Zugs nicht ändert, gleicht das dem Setzen beim Aufbau.</item>
+///   [ORIGINAL] „Erster Aufbau eines Zugs“ wird beim Öffnen der Kachel erkannt (erster Aufruf an diesem Tag im Zug des
+///   Bundestrainers); da sich die WM-Stufe innerhalb eines Zugs nicht ändert, gleicht das dem Setzen beim Aufbau (Datei 0x44B15–0x44B1C: WM-Stufe DGROUP 0x7AE = 5 → Seite 10).</item>
 /// </list>
 /// </summary>
 internal static class WorldCupPairingsPages

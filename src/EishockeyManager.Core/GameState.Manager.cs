@@ -157,7 +157,7 @@ public sealed partial class GameState
             // danach die Werbebewertung neu (0x5569F). Zuerst die „beleidigten“ Baufirmen (0x3ED19, Spur geld).
             // Spur tagesablauf (#699 Punkt 2): auch an Tag 0 (10. September, Zähler 1) – der erste Tageswechsel des Spiels und
             // jeder Saison läuft vor dem ersten Menü (Datei 0x54D5C → 0x55073 → 0x55204, je Manager 0x3ED01/0x3F833 bei Datei
-            // 0x5522B/0x55230). Vorher [APPROX] erst ab Tag 1.
+            // 0x5522B/0x55230). Vorher als Näherung erst ab Tag 1.
             DailyStadium();
             AccrueDailyInterest(date);
             DailySponsorOffers(date);

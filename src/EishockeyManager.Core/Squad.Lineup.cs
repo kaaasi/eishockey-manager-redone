@@ -319,7 +319,7 @@ public sealed class Lineup
 ///   A091: Kauf und Leihe hinten in der Art-Gruppe, Verkauf und Transferliste rücken auf (FILE35/37A/41). Bewusste Modellabweichung: Ein Verletzter behält im Original seine Reihe +0x15 und verliert nur +0x0A
 ///   (Datei 0x5C50, FILE24 STEFAN); das Remake nimmt ihn aus der Aufstellung (<see cref="RefillLineup"/>). Gleichwertig,
 ///   solange kein Leser +0x15 ohne +0x0A auswertet; betrifft auch Export und Import von Spielständen.</item>
-/// <item>[APPROX] Eingesetzt wirkt bisher nur auf die Anzeige; die Spielstärke kommt weiter aus der Aufstellung.</item>
+/// <item>Eingesetzt wirkt seit PR #440 im Spiel (<c>LiveSquad.Create</c>).</item>
 /// </list>
 /// </remarks>
 public sealed partial class Club
@@ -463,7 +463,7 @@ public sealed partial class Club
     /// (Datei 0x426C4–0x426E4), und im Verletzungsweg schreibt sonst niemand +0x15 (Schreiber nur 0x426BC, Oberfläche, Transfer,
     /// Saisonwechsel): Die Lücke bleibt, niemand rückt nach. Beleg FILE44 → FILE46 (KÖLN, Handbetrieb): 11 Aufgestellte im
     /// Original. Der Verletzte verliert „eingesetzt“ (Datei 0x5C50); das Remake nimmt ihn zudem aus seinem Platz (Modellabweichung
-    /// der Klassenbemerkung). Bis Fortsetzung 3 füllte das Remake die Lücke mit Reservisten ([APPROX]).
+    /// der Klassenbemerkung). Bis Fortsetzung 3 füllte das Remake die Lücke mit Reservisten (als Näherung).
     /// </summary>
     public void RefillLineup()
     {

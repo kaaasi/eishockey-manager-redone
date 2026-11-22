@@ -157,7 +157,7 @@ public sealed class NationalLineupScreen : Screen
 
     /// <summary>
     /// Verlassen (Datei 0x41506–0x4151A): 0x952C schreibt die Länderwerte aus der Aufstellung
-    /// (<see cref="GameState.OnNationalLineupLeft"/>), hier nur nach einer Änderung (siehe dort, [APPROX]).
+    /// (<see cref="GameState.OnNationalLineupLeft"/>), hier nur nach einer Änderung (siehe dort).
     /// </summary>
     private void Leave(Screen next)
     {

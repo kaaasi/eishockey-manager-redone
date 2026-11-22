@@ -51,7 +51,7 @@ public sealed partial class GameState
     /// Tausch nur bei echt mehr Minuten). Bei Gleichstand um Platz 1 steht der Verein mit dem kleineren Index vorn
     /// (das entscheidet die Fair-Play-Prämie); dahinter ist die Sortierung nicht stabil und wird genau so nachgebildet.
     /// [ORIGINAL] Indexfolge = Satzfolge der Liga nach der Ligamischung Datei 0x35EDD (<see cref="LeagueSlots"/>, S-K6,
-    /// Spur saisonwechsel Teil 3; vorher `[APPROX]` Vereinsindex, A194).
+    /// Spur saisonwechsel Teil 3; vorher als Näherung Vereinsindex, A194).
     /// </summary>
     public IReadOnlyList<FairPlayRow> FairPlayTable(League league)
     {
@@ -348,7 +348,7 @@ public sealed partial class GameState
     /// führt je Partner ein Feld, gespiegelt im Satz des anderen (Buchung Datei 0x591E2–0x5932B; Bank: FILE08 Manager 0 Eintrag 4
     /// = −2.103.000, Satz 4 Eintrag 0 = +2.103.000) – also schon den Saldo: im Remake <see cref="ManagerLoanNet"/> (Kredite
     /// zwischen zwei Managern verrechnet, <c>ShiftLoan</c> hält nur eine Richtung) und <see cref="BankAccount.Balance"/>
-    /// (Sparbuch − Kredit). Spur kader-rest, Teil 3 (A196); bis dahin als [APPROX] geführt.
+    /// (Sparbuch − Kredit). Spur kader-rest, Teil 3 (A196); bis dahin als Näherung geführt.
     /// </summary>
     public long TotalDebts(Manager manager)
     {

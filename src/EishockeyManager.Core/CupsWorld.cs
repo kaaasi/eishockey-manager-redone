@@ -61,7 +61,7 @@ public static class NationalTeamRatings
 ///   <see cref="MatchEngine.NationalLiveTeam"/>).</item>
 /// </list>
 /// [ORIGINAL] Unentschieden im K.-o.: schneller Weg random(0, 2) je Seite bis ungleich, Endstand mit Marke + 30 (0x376F0;
-/// <see cref="CupMatch"/>, <see cref="MarksOf"/>). [APPROX] Plätze 9–12 nach Gruppenplatz (WM-Tabelle nicht gelesen).
+/// <see cref="CupMatch"/>, <see cref="MarksOf"/>). [ORIGINAL] Plätze 9–12 nach Gruppenplatz: em.exe kennt dafür keine Reihenfolge (alle Platzcode 0x0B; Datei 0x31266–0x31291, 0x312A5–0x31351, Highscore 0x5D5D7), die Reihenfolge ist ohne Wirkung.
 /// </remarks>
 public sealed partial class WorldCup : ISeasonCompetition
 {
@@ -149,7 +149,7 @@ public sealed partial class WorldCup : ISeasonCompetition
     /// nach der großen Wanderung 0x9D1B (Datei 0x56448) und vor dem Fenster 0x26F20 (Datei 0x5645D), ohne Modusprüfung; 0x35EDD tauscht
     /// zuerst 20-mal zwei Ländersätze lrandom([0x6AD], [0x6AD] + 11) (Datei 0x35EE3–0x35FC9, lrandom 0xBFD5), dann die Ligen
     /// (Datei 0x36013 ff.). Aus dem gemeinsamen Strom <see cref="GameState.Random"/> (Spur zufallsstrom Teil 4, N3 = B); vorher
-    /// [APPROX] erst beim Saisonstart der WM. Ohne WM (Modus „nur Verein“) zieht <see cref="GameState"/> dieselben 40 Würfe
+    /// als Näherung erst beim Saisonstart der WM. Ohne WM (Modus „nur Verein“) zieht <see cref="GameState"/> dieselben 40 Würfe
     /// (<see cref="MixThrows"/>).
     /// </summary>
     public void MixForNextSeason(Random random)

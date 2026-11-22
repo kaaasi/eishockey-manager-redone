@@ -7,7 +7,7 @@ namespace EishockeyManager.Core;
 /// <remarks>
 /// [ORIGINAL] DOSBox-Beleg FILE16 → FILE17 (Spur saisonwechsel Teil 5, D3; re-saisonwechsel.md, „Auswertung D3“): Zweitligist mit
 /// Konto −1.234.094 DM am 14. April steigt zwangsweise ab, Ereignisse zeigen Symbol 0 ohne Pfeile und keine Aufstiegsprämie
-/// (`file16_9`). [APPROX] Nicht belegt sind die Einzelheiten aus dem Disassembly: genaue Grenze, Ausnahme Meister/Europacupsieger,
+/// (`file16_9`). [ORIGINAL] Die Einzelheiten stammen aus dem Disassembly (Datei 0x55F22–0x55F87, ohne DOSBox-Beleg): genaue Grenze, Ausnahme Meister/Europacupsieger,
 /// höchstens zwei je Liga, Bundesligist als Zwangsabsteiger, Reihenfolge der Plätze beim Einschub. Am 29. April
 /// (Saisonwechsel, Datei 0x54C9F) prüft em.exe vor dem Austausch je Manager in Managerreihenfolge:
 /// Konto &lt; −2.000.000 Drittel-DM (Datei 0x55F22–0x55F34, Grenze FFE1 7B80 hex, „gleich“ zählt nicht), weder Deutscher
@@ -42,7 +42,7 @@ public sealed partial class GameState
     /// <param name="club">Verein des Managers.</param>
     /// <param name="isUpper">Verein gehört zur oberen Liga der Gruppe (em.exe: Vereinsindex &lt; Ligagrenze DGROUP 0x7C1 + Liga).</param>
     /// <remarks>
-    /// [APPROX] Disassembly ohne DOSBox-Beleg (K3), Datei 0x55FC8–0x560B4: Ab Platz <c>count + 3</c> (Index q = count + 2)
+    /// [ORIGINAL] Disassembly ohne DOSBox-Beleg (K3), Datei 0x55FC8–0x560B4: Ab Platz <c>count + 3</c> (Index q = count + 2)
     /// sucht em.exe den nächsten Verein der oberen Liga bis Platz 4 und überschreibt ihn mit dem Zwangsabsteiger – der
     /// überschriebene Verein fehlt danach in der Tabelle und bleibt oben. Findet es keinen (q = 4), schreibt es den Verein von
     /// Platz <c>count + 3</c> auf Platz <c>count + 1</c> und den Zwangsabsteiger auf Platz <c>count + 3</c> (Datei
@@ -76,11 +76,11 @@ public sealed partial class GameState
     /// [ORIGINAL] Datei 0x56157–0x56235 (Teil 1 der Spur wettbewerbe-komplett): je Paar der nächste Verein der unteren Liga
     /// unter den Plätzen 1–2 (Zeiger [bp−4]) und der nächste Verein der oberen Liga unter den Plätzen 3–4 (Zeiger [bp−5]);
     /// fehlt einer, endet die Gruppe. Datei 0x5636D tauscht die beiden Vereinsplätze (0x36169). Ohne Zwangsabstieg ist das „die
-    /// ersten beiden spielen oben“. [APPROX] (K3, ohne Beleg) Mit Zwangsabstieg kann derselbe Platz zweimal vorkommen
+    /// ersten beiden spielen oben“. [ORIGINAL] (K3, Disassembly Datei 0x56157–0x56235, Tausch 0x5636D mit call 0x36169, ohne DOSBox-Beleg) Mit Zwangsabstieg kann derselbe Platz zweimal vorkommen
     /// (Zwangsabsteiger auf Platz 3 und 4); dann wirken beide Tausche nacheinander auf die Plätze, wie in em.exe. Das Ergebnis
-    /// ist die Wanderung zwischen den Ligen. [APPROX] Das Remake hält keine Vereinsplätze; die Startordnung der Folgesaison
+    /// ist die Wanderung zwischen den Ligen. [ORIGINAL] Das Remake hält keine Vereinsplätze, bildet den Platztausch aber nach (A665, Spur einzelpunkte, <see cref="InnerMoves"/>); die Startordnung der Folgesaison
     /// (<see cref="LeagueTable.SuccessorOrder"/>) paart Auf- und Absteiger in Listenreihenfolge. Nur im Fall mit doppeltem Platz
-    /// weicht sie ab (em.exe verschiebt dort auch einen Verein innerhalb der unteren Liga).
+    /// verschiebt sie auch einen Verein innerhalb der unteren Liga (Datei 0x5636D, call 0x36169).
     /// </remarks>
     public static (List<int> Promoted, List<int> Relegated) RelegationExchange(IReadOnlyList<int> places, Func<int, bool> isUpper)
     {
@@ -229,7 +229,7 @@ public sealed partial class GameState
     /// </summary>
     /// <remarks>
     /// Paarindex: Der erste Tausch paart <c>down[k]</c> mit <c>up[k]</c> (<see cref="RelegationPlaces"/>); <c>up[k]</c> ist der
-    /// Zwangsabsteiger, erkennbar am Ereignis <see cref="SeasonEvent.ForcedRelegation"/> seines Managers. [APPROX] Ohne
+    /// Zwangsabsteiger, erkennbar am Ereignis <see cref="SeasonEvent.ForcedRelegation"/> seines Managers. [ORIGINAL] Managerreihenfolge wie die Prüfschleife je Manager (Datei 0x55F17 ff., DGROUP 0xA70E). Ohne
     /// Ereignis (synthetische Rückblicke) oder bei zwei Zwangsabsteigern in einer Gruppe in Reihenfolge der Manager.
     /// </remarks>
     private static List<(int Club, int OberligaIndex, int PairIndex)> DoubleMoves(SeasonRecord record)

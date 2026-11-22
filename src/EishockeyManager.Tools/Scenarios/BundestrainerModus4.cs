@@ -29,7 +29,7 @@ internal static class BundestrainerModus4Scenarios
             if (game.CurrentDay == SeasonCalendar.ClubSeasonEnd + 1)
             {
                 if (game.NationalCoach is null)
-                    game.AppointNationalCoach(game.Managers[0]); // [APPROX] siehe Klassenkommentar (R14NT-03)
+                    game.AppointNationalCoach(game.Managers[0]); // Näherung, siehe Klassenkommentar (R14NT-03)
                 d.Move(10, 230); d.Save("01_verein_erster_wm_tag");
             }
             d.PlayMatchDay();

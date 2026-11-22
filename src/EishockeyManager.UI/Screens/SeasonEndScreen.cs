@@ -53,8 +53,8 @@ public sealed class SeasonEndScreen : Screen
         if (!(input.LeftClick || input.RightClick || input.Keys.Count > 0))
             return;
         // [ORIGINAL] Datei 0x5641A–0x56444: in der letzten Saison endet das Programm nach Austausch und Highscore, vor dem
-        // Fenster „Ereignisse“ (Datei 0x5645D → 0x26F20) – hier direkt zum Spielende (S-K5). [APPROX] ob das Fenster mit den
-        // Titelträgern (dieser Bildschirm) davor noch erscheint: im Video nicht belegbar (kein Spielende aufgenommen).
+        // Fenster „Ereignisse“ (Datei 0x5645D → 0x26F20) – hier direkt zum Spielende (S-K5). [ORIGINAL] Das Fenster mit den
+        // Titelträgern (dieser Bildschirm) erscheint davor noch (Datei 0x563AF → 0x5667A, dort 0x56682 Aufruf 0x4C747 ohne Bedingung, vor der Prüfung 0x5641A).
         if (Game.IsGameOver)
             Host.Show(new SeasonEndGameOverScreen(Host, null, null));
         else

@@ -25,7 +25,7 @@ public enum InterventionMode
 ///   den Stand. Das Nachführen 0x939A überschreibt Einsatz und Angriff in der nächsten geraden Minute, außer bei „MANUELL“
 ///   (<see cref="OriginalMinutes.FollowTactics"/>, A176); die Reihe gilt bis zum nächsten Reihenwechsel 0x8EF2.</item>
 /// <item>[ORIGINAL] Eingriff über Kopf/Logo (Datei 0x38FC0–0x38FED → 0x5434C): Aufstellung bzw. Taktik mit Kennzeichen „im
-///   Spiel“ (DGROUP 0x2D6 + Manager, von der Spielabrechnung Datei 0x54821 auf 5 gesetzt; [APPROX] Rücksetzen nicht gefunden, es
+///   Spiel“ (DGROUP 0x2D6 + Manager, von der Spielabrechnung Datei 0x54821 auf 5 gesetzt; [ORIGINAL] kein Rücksetzen (einziger Schreiber Datei 0x54821, einziger Leser 0x54376, Startwert 5), es
 ///   gilt „≠ 0 = im Spiel“), danach Feldspieler neu zählen 0x38A36 (Datei 0x5438D–0x54419, <see cref="MatchEngine.RecountSkaters"/>).</item>
 /// </list>
 /// </summary>

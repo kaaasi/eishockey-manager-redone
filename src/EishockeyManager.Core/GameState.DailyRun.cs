@@ -87,7 +87,7 @@ public sealed partial class GameState
     /// Original rechnet Verfall, Sperre und Gebotsverfall je Markt-Platz in einer Schleife (Datei 0x0719F–0x0727C, ein weiterer
     /// Wurf im Gebotsverfall Datei 0x07215 ff.); das Remake rechnet erst Verfall und Sperren aller Plätze, dann die Gebote
     /// (<see cref="TransferMarket.CatchUpManagerDay"/>). [ORIGINAL] A499 (Spur national Teil 2): Der Verfall hat keine Untergrenze
-    /// (Datei 0x071BB–0x071C8: nur <c>cmp +0x13, 0x38</c>, dann −10), also 47 … 56 nach einem Abzug (vorher [APPROX] Untergrenze 50,
+    /// (Datei 0x071BB–0x071C8: nur <c>cmp +0x13, 0x38</c>, dann −10), also 47 … 56 nach einem Abzug (vorher als Näherung Untergrenze 50,
     /// R14NT4N-03); Beleg FILE18 → FILE48 (57–59 → 47–49).
     /// </summary>
     internal void DailyRunMarket(int day, Manager manager)
@@ -239,7 +239,7 @@ public sealed partial class GameState
     /// „automatisch aufstellen“ stehen die Felder genau auf diesen Werten (FILE02/03/05/13/14/16A/17/24/25/36/37,
     /// <c>AbgleichFixLineupTests</c>). Die Wanderung (Datei 0x55292) bewegt sie bis zum nächsten Tag mit Ereignis wie bei allen Vereinen.
     /// Dazu das Verlassen der Vereinsaufstellung (Datei 0x41506–0x4151A, <see cref="OnLineupLeft"/>, A858). Nicht im Modus „nur Weltkugel“ (#747: dort trägt
-    /// der Satz des Managervereins das Land). Je Manager <see cref="WriteLineupTeamValues"/> (dort das [APPROX] für noch nicht
+    /// der Satz des Managervereins das Land). Je Manager <see cref="WriteLineupTeamValues"/> (dort der Hinweis auf noch nicht
     /// gezogene Teamwerte).
     /// </summary>
     internal void UpdateManagerTeamValues()

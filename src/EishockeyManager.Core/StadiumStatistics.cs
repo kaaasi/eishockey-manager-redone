@@ -123,7 +123,7 @@ public sealed partial class GameState
     /// [ORIGINAL] A189, Verletzte: +0x15 bleibt, +0x0A = 0 (Datei 0x5C50, FILE05 → FILE24 STEFAN 3S, CHAIDAROV 1S);
     /// gezählt wird beides, der Verletzte zählt also nicht – wie hier über <see cref="Player.Available"/>. Auch im Handmodus
     /// und bei Verletzung außerhalb des Spiels belegt (FILE36 MENDE, FILE37 HEISS: +0x0A gelöscht, Reihe bleibt; re-runde-14.md).
-    /// [APPROX] Gesperrte: kein Stand mit Sperre über Spiele (FILE34–41: „GESP.“ nur im Spiel); die Auswahl 0x42838 schließt +0x09 &amp; 3 (beide Bits) aus.
+    /// [ORIGINAL] Gesperrte: kein Stand mit Sperre über Spiele (FILE34–41: „GESP.“ nur im Spiel); die Auswahl 0x42838 schließt +0x09 &amp; 3 (beide Bits) aus; die Sperre löscht +0x0A (Datei 0x35BFD–0x35C0C, 0x07612–0x0761C), Zählung Datei 0x3896F–0x38986.
     /// </summary>
     public bool IsShortHanded(Club club) => club.Lineup.Players.Count(p => p.Available) < MinimumPlayers;
 

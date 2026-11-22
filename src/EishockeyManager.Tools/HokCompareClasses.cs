@@ -51,7 +51,7 @@ public sealed record HokCompareRule(HokCompareClass Class, string Note = "", dou
 ///   Alter, Bau, Einstellungen, Kredit, Sponsorverträge). <c>SeasonBound</c>, wo die Ligazusammensetzung eingeht.</item>
 /// <item><b>Random</b>: Ergebnisse und alles, was aus ihnen folgt (Tabelle, Statistik, Zuschauer, Geld), Spielerwerte mit
 ///   Zufallsanteil (Form, Kondition, Verletzung), Markt, Pool, Aktienkurse, Nachrichten, Angebote. Bereiche sind erste
-///   Schätzungen `[APPROX]` und werden an den Paaren (Teil 2) nachgezogen.</item>
+///   Schätzungen (je Bereich als Näherung markiert) und werden an den Paaren (Teil 2) nachgezogen.</item>
 /// </list>
 /// Nutzereingriffe je Paar stehen in <see cref="Interventions"/> (Pfadmuster mit <c>*</c>).
 /// </remarks>

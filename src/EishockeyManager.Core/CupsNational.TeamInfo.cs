@@ -182,7 +182,7 @@ public sealed partial class GameState
     /// Ergebnis eines Länderspiels eintragen (0x50283 für Länder). Kopf-an-Kopf über <see cref="RecordMeeting"/> (Deutschland =
     /// DGROUP 0x6AC → Platz 0, Heim: Seite 0 mit lo = Heimtore, hi = Gasttore; Gast: Seite 1 mit lo = Gasttore, hi = Heimtore);
     /// nur bei WM-Gruppenspielen Rekorde, Serien und Bilanz.
-    /// [APPROX] Länder haben im Remake keinen Manager (Vereinsfeld 0x16), es zählt nur Deutschland.
+    /// [ORIGINAL] Länder haben keinen Manager (Vereinsfeld 0x16 = 0, Datei 0x842B, 0x55494), es zählt nur Deutschland (DGROUP 0x6AC schreibt in die Tabelle von Manager 0, Datei 0x502B4–0x502C8).
     /// </summary>
     public void EnterNationalResult(int home, int away, int hg, int ag, NationalMatchKind kind)
     {

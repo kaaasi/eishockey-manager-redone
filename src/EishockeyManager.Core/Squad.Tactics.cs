@@ -97,8 +97,8 @@ public enum ScoreSituation
 ///   das Laden (Datei 0x5C38C, 0x5CD7D) – sie beginnen ebenfalls bei 0.</item>
 /// <item>[ORIGINAL] „MANUELL“: vor dem Spiel die eigenen Werte wie „SEMI“ (Vereinsfeld 0x26 = Grundwert + „Unentschieden“,
 ///   Datei 0x48E62); im Spiel schreibt 0x939A weder Einsatz (Datei 0x9516) noch Angriff (Datei 0x94E2) – kein
-///   Nachführen nach dem Spielstand und kein Energieabzug (<see cref="OriginalMinutes.FollowTactics"/>). [APPROX] Das
-///   Live-Spiel, in dem das Original die Werte bei „MANUELL“ setzt, hat das Remake nicht.</item>
+///   Nachführen nach dem Spielstand und kein Energieabzug (<see cref="OriginalMinutes.FollowTactics"/>). Das Live-Spiel mit Eingriff
+///   (<c>MatchIntervention.SetEffort</c>, <c>SetAttack</c>, LiveMatchScreen) setzt die Werte bei „MANUELL“ wie das Original.</item>
 /// <item>[ORIGINAL] Der Einsatz wirkt nur über Vereinsfeld 0x26 in der Spielberechnung (0x368B1/0x977F, Energie
 ///   0x87F7), nicht als Zuschlag auf eine Spielstärke (A178, A182).</item>
 /// </list>

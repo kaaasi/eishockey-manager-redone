@@ -343,8 +343,8 @@ public static partial class MatchEngine
         if (managed && manager is not null && club.Players.Count > 0)
         {
             squad = LiveSquad.Create(club, TrainingRules.LevelValue(manager.Level), club.Tactics, MinuteCountersOf(manager)); // A549
-            // Teil 3: eigener Managerwert und Managersatz für die Verletzungen 0x38B8F ([APPROX] aus demselben Stand wie
-            // der Wert der Strafen, R8W3I-05).
+            // Teil 3: eigener Managerwert und Managersatz für die Verletzungen 0x38B8F ([ORIGINAL] aus demselben Stand wie
+            // der Wert der Strafen, R8W3I-05; 0x974B nur von 0x952C im Tageslauf, Datei 0x54F9C–0x54FBF).
             ownValue = ManagedTeamValues(squad, nineOrMore: !game.IsShortHanded(club)).ManagerValue;
             injuryManager = game.Managers.ToList().IndexOf(manager);
             // [ORIGINAL] Strafen lesen den Managerwert über Vereinsfeld 0x16 = Manager + 1 (Datei 0x35890), also den Satz
@@ -352,7 +352,7 @@ public static partial class MatchEngine
             // DGROUP 0x974B + 0x1AF · m = 0 über alle Spieltage (FILE03/05/31/32/36/41, Manager 1–5; re-runde-14.md).
             // R8W3I-05: [ORIGINAL] gelesen wird der gespeicherte Wert DGROUP 0x974B, den nur 0x952C schreibt – mit Schalter 1
             // im Tageslauf 0x54C9F für jeden Manager vor den Spielen des Tages (0x54F9C–0x54FBF), bei weniger als neun
-            // aufgestellten und eingesetzten Spielern 100 (0x9698–0x96A8). [APPROX] Das Remake rechnet ihn hier aus
+            // aufgestellten und eingesetzten Spielern 100 (0x9698–0x96A8). [ORIGINAL] Das Remake rechnet ihn hier aus
             // demselben Stand: zwischen Tageslauf und Spiel ändert sich die Aufstellung nicht (wie bei
             // GameState.MarkShortHandedClubs); weniger als neun = GameState.IsShortHanded.
             var index = game.Managers.ToList().IndexOf(manager);
@@ -422,7 +422,7 @@ public static partial class MatchEngine
 
     /// <summary>
     /// Teamwert eines Managervereins (A544, Spur teamwert-aufstellung): aus den Vereinsfeldern 0x18–0x1B, die 0x952C aus der
-    /// Aufstellung schreibt (<see cref="TeamStrength.FieldValue"/>, dort Fundstellen und das [APPROX] der einen Zahl). Vorher
+    /// Aufstellung schreibt (<see cref="TeamStrength.FieldValue"/>, dort Fundstellen und die Näherung der einen Zahl). Vorher
     /// Datenbankstärke plus Veränderung der Aufstellung nach einer eigenen Gewichtung; die Datenbankstärke geht bei
     /// Managervereinen nicht mehr ein (im Original spielt sie für sie keine Rolle, <c>docs/spielberechnung.md</c> §14).
     /// </summary>
@@ -574,7 +574,7 @@ public sealed partial class GameState
     /// Tore Liga/Pokal +0x03/+0x04 (<see cref="Player.Goals"/>, <see cref="Player.CupGoals"/>) und Spiele Liga/Pokal +0x06/+0x07
     /// (<see cref="Player.Games"/>, <see cref="Player.CupGames"/>) → 0; die Zähler beim Verein +0x1C–+0x26 bleiben
     /// (<see cref="CarryGamesForClub"/>), ebenso +0x02.
-    /// [APPROX] Europapokal +0x05/+0x08 nur nach dem Code (am Stand schon vorher 0, R14RD2-05.5); Vorlagen, Gegentore und
+    /// [ORIGINAL] Europapokal +0x05/+0x08 nur nach dem Code (Datei 0x27A0C–0x27AA8, A088; am Stand schon vorher 0, R14RD2-05.5); Vorlagen, Gegentore und
     /// Torhüterminuten haben kein belegtes Feld im Kaderplatz; Spieler der Computervereine, im Pool und auf dem Markt (im Original
     /// ohne Kaderplatz bzw. Pool +0x1B/+0x1F) nicht verglichen.
     /// </summary>

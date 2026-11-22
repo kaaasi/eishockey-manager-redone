@@ -245,7 +245,7 @@ public sealed partial class GameState
         setup[2] = (byte)Setup.StartLeague;
         setup[3] = (byte)(Setup.Managers.Count > 0 ? (int)Setup.Managers[0].StartStrength : (int)StartStrength.Mittelfeld);
         w.Block("0ED8")[0] = (byte)(5 - level);
-        // [ORIGINAL] Spielende: Dauer 0 → 1994 (FILE09, FILE29), Dauer 3 „∞“ → 22222 (FILE01); [APPROX] 1/2 → 1996/1998 (FILE28: 1996).
+        // [ORIGINAL] Spielende: Dauer 0 → 1994 (FILE09, FILE29), Dauer 3 „∞“ → 22222 (FILE01); [ORIGINAL] 1/2 → 1996/1998 (FILE28: 1996; Datei 0x29876–0x2987F: 0x5A14 := 1994 + 2 · Dauer).
         OriginalExport.Write16(w.Block("5A14"), 0, Setup.Duration switch
         {
             GameDuration.EineSaison => FirstSeason + 1,

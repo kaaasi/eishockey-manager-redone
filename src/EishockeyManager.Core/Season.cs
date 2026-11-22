@@ -200,7 +200,7 @@ public static class LeagueTable
     /// (<see cref="SuccessorOrder"/>).
     /// [APPROX] Dass eine angesehene Heim-/Auswärtstabelle die Ausgangsreihenfolge des nächsten Sortierens ändert, bildet
     /// das Remake nicht nach – Bildschirme verändern keinen Spielzustand (wirkt nur bei vollem Gleichstand).
-    /// [APPROX] DGROUP 0x6B0 (schaltet im Vergleich die Spiele ab) gilt als 0: kein Code schreibt die Stelle.
+    /// [ORIGINAL] DGROUP 0x6B0 (schaltet im Vergleich die Spiele ab) gilt als 0: kein Code schreibt die Stelle (em.exe nur lesend, u. a. Datei 0x50E67).
     /// </remarks>
     private static List<TableRow> ComputeRanks(GameState game, League league, TableView view, int upToMatchDay)
     {

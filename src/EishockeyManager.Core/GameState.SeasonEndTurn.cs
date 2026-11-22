@@ -19,7 +19,7 @@ namespace EishockeyManager.Core;
 /// nächste Verhandlung (<see cref="SwitchToRenewalManager"/>; Manager ohne Verhandlung zeigt auch das Original nicht),
 /// danach der erste Manager (<see cref="ReturnToFirstActiveManager"/>).
 /// [APPROX] Entlassene Manager: Das Original zählt alle [0x386] Manager; das Remake führt Entlassene (Entlassung selbst ist
-/// [APPROX], SeasonDismissal.cs) ohne Seite und beginnt beim ersten nicht entlassenen.
+/// [ORIGINAL], SeasonDismissal.cs) ohne Seite und beginnt beim ersten nicht entlassenen.
 /// </remarks>
 public sealed partial class GameState
 {
