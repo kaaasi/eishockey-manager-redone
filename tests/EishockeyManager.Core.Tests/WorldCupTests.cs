@@ -115,7 +115,10 @@ public class WorldCupTests
         // Runde 21, Spur teamwert-aufstellung (A080, R21-D2 = A): Saat 4 statt 8 – mit der Spielvorbereitung aus den Vereinsfeldern
         // des Managervereins (Datei 0x097F3–0x0984F, anderer Einsatz der Automatik, anderer Zufallsverlauf) wird der Manager bei 8
         // (und 2, 10, 11, 15) Bundestrainer; Saaten 1, 3–7, 9, 12–14, 16 ohne Ernennung. Die Probe hängt an der Saat.
-        var game = Create(4, true, 30);
+        // Runde 22, Spur wettbewerbe-regeln Teil 1 (R15-E2 = C): Saat 6 statt 4 – mit #925/A838 (Play-off-Zusatzwurf, Startreihe)
+        // anderer Zufallsverlauf, der Manager wird bei 4 (und 7, 8, 13, 15) Bundestrainer; Saaten 1–3, 5, 6, 9–12, 14, 16 ohne
+        // Ernennung. Die Probe hängt an der Saat. Rückschaltprobe: alter Code mit Saat 6 ebenfalls grün.
+        var game = Create(6, true, 30);
         while (game.Phase == SeasonPhase.Running)
             game.Continue();
         Assert.Equal(SeasonCalendar.ClubSeasonEnd + 1, game.CurrentDay);

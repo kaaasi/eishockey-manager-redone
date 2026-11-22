@@ -290,6 +290,12 @@ public sealed class LiveTeam
     /// <summary>Managerwert des eigenen Managers (DGROUP 0x974B + 0x1AF · Manager, 0x952C) für die Verletzungen.</summary>
     public int ManagerValue { get; init; } = 20;
 
+    /// <summary>Vereinsfeld 0x16 − 1: Managersatz des Vereins, null ohne Manager (A071, <see cref="TurnManagerRegister"/>).</summary>
+    public int? ManagerSlot { get; init; }
+
+    /// <summary>Merker „Manager am Zug“ DGROUP 0xA70E des Spieltagsablaufs (A071); null außerhalb der Minutenschleife.</summary>
+    public TurnManagerRegister? TurnManager { get; set; }
+
     /// <summary>
     /// Über-/Unterzahl-Zähler des Managers (DGROUP 0x97D2 + 0x1AF · Manager, <see cref="Manager.PowerPlayCounts"/>), die
     /// die Minutenrechnung fortschreibt (<see cref="OriginalMinutes.GoalScored"/>, <see cref="OriginalMinutes.Penalty"/>);
@@ -398,6 +404,9 @@ public static partial class OriginalMinutes
         var minutes = OriginalMatch.PenaltyMinutes(effort, count == 0, random);
         if (minutes == 0 || club.FewFitPlayers)
             return 0;
+        // A071: [ORIGINAL] Datei 0x35ABC–0x35AC6: [0xA70E] = Vereinsfeld 0x16 des bestraften Vereins (− 1 bei einem Manager).
+        if (club.TurnManager is { } turn)
+            turn.Manager = club.ManagerSlot ?? 0;
         club.Box.Add(count, minutes == 5 ? 13 : 2);
         club.PenaltyMinutes += minutes;
         var chain = !chained && OriginalMatch.Rnd(random, 0, 3) == 0 && count == 0;
@@ -604,9 +613,25 @@ public static partial class OriginalMinutes
     [ThreadStatic]
     public static int MinuteLoopCalls;
 
-    /// <summary>Wie <see cref="FastCupResult"/>, zusätzlich der Gleichstand vor dem Penaltyschießen.</summary>
+    /// <summary>
+    /// Wie <see cref="FastCupResult"/>, zusätzlich der Gleichstand vor dem Penaltyschießen.
+    /// #925 (A873), Play-offs (<paramref name="playoff"/> und <paramref name="knockOut"/>): [ORIGINAL] Nach dem Eintragen ruft
+    /// 0x376E1 die Markierung 0x32AA3 über alle offenen Paarungen der Zeile 2 (Gleichstand → Heimbyte + 30, Datei 0x32C8E–0x32D84;
+    /// Paarungen mit Ergebnisbyte &gt; 0x63 und die Aufstiegsrunde ausgenommen). Meldet sie eine, würfelt 0x376F0 für die eben
+    /// gerechnete Paarung random(0, 2) je Seite dazu (Datei 0x376F0–0x377A3):
+    /// <list type="bullet">
+    /// <item>eigener Gleichstand: das eigene Heimbyte trägt schon die Marke, der Vergleich 0x37748 ist also nie gleich – genau ein
+    ///   Wurf; bleibt es gleich (x = y), zählt der Gleichstand für den Gast (Datei 0x3166E <c>jnc</c>).</item>
+    /// <item>sonst nur bei <paramref name="playoffExtraRoll"/>: eine noch nicht gerechnete Paarung des Termins steht auf 0:0 (Zeile 2
+    ///   leer seit dem letzten Termin), also bei der ersten gerechneten Paarung eines Termins – dann wird bis ungleich gewürfelt
+    ///   und die Zusatztore zählen zum Ergebnis (Wertung 0x315E9 nach Abzug der Marke).</item>
+    /// </list>
+    /// DEB-Pokal, Europapokal und WM-Endrunde wie bisher (A003: eine Marke, bis ungleich; Prüfung am Video vor einer Änderung,
+    /// #925).
+    /// </summary>
     public static (int Home, int Away, bool Shootout, int Tie) FastCupResultWithTie(MatchSide home, MatchSide away,
-        bool homeIsClub, bool awayIsClub, bool worldCup, bool playoff, bool knockOut, Random random)
+        bool homeIsClub, bool awayIsClub, bool worldCup, bool playoff, bool knockOut, Random random,
+        bool playoffExtraRoll = false)
     {
         FastCupCalls++;
         var si = home.Strength + (homeIsClub ? 6 : 0);
@@ -643,6 +668,20 @@ public static partial class OriginalMinutes
             if (h >= g && si < di)
                 continue;
             break;
+        }
+        if (knockOut && playoff)
+        {
+            var ownTie = h == g;
+            if (!ownTie && !playoffExtraRoll)
+                return (h, g, false, 0);
+            int px, py;
+            do
+            {
+                px = OriginalMatch.Rnd(random, 0, 2);
+                py = OriginalMatch.Rnd(random, 0, 2);
+            }
+            while (!ownTie && h + px == g + py);
+            return (h + px, g + py, ownTie, ownTie ? h : 0);
         }
         if (!knockOut || h != g)
             return (h, g, false, 0);

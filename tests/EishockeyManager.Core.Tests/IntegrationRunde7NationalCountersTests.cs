@@ -24,7 +24,10 @@ public class IntegrationRunde7NationalCountersTests
         var own = match.Home == coach.Nation ? match.HomeGoals : match.AwayGoals;
         var against = match.Home == coach.Nation ? match.AwayGoals : match.HomeGoals;
         Assert.All(lineup.Players, p => Assert.True(p.Games > 0, $"{p.Name} ohne Spiel"));
-        Assert.Equal(against, lineup.Goalkeeper!.GoalsAgainst);
+        // Spur wettbewerbe-regeln (#897): [ORIGINAL] Gegentore zählt 0xA3F7 nur bei Wettbewerbscode 7 (Liga, Datei 0x0A3FD);
+        // das Freundschaftsspiel hat Code 0xD (Datei 0x30390) – vorher hier `against`.
+        Assert.True(against >= 0);
+        Assert.Equal(0, lineup.Goalkeeper!.GoalsAgainst);
         Assert.Contains(lineup.Goalkeeper.GoalieMinutes, new[] { 60, 70 });
         Assert.InRange(lineup.Players.Sum(p => p.Goals), 0, own);
         Assert.True(coach.Squad.Sum(m => m.Player.GoalieMinutes) > 0);

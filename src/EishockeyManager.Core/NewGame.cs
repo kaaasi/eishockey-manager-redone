@@ -57,7 +57,8 @@ public static class NewGame
             return club;
         }).ToList();
         // Spur start-lader (A106): [ORIGINAL] Lader 0x2EF1B beim Programmstart vor der Spielvorbereitung (Datei 0x439BB).
-        MatchEngine.LoadTeamValues(clubs, random);
+        MatchEngine.LoadTeamValues(clubs, random, database.Clubs
+            .Where(c => c.Strengths.Defense == c.Strength && c.Strengths.Attack != 0).ToDictionary(c => c.Index, c => (int)c.Strengths.Attack)); // A105/A836
 
         var places = StartOrder(seed); // R-K5: Ligamischung vor der Spielvorbereitung (Datei 0x43A17)
         var managers = AssignClubs(clubs, setup, random, places);

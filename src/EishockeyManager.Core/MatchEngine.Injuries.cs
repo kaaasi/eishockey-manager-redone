@@ -140,8 +140,9 @@ public static partial class OriginalMinutes
     ///   DGROUP 0x9EDA ≤ 0x3F, Datei 0x38BE3–0x38BF0: im Amt das Land 54, sonst 0xFD), dessen Verein spielt, in dieser
     ///   Reihenfolge (A424, Spur national Teil 1; vorher hier als „nie mit dem Nationalteam“ gelesen).</item>
     /// <item>Managerwert des Managers am Zug (DGROUP 0x974B + 0x1AF · [0xA70E]) = 100 oder weniger als 4 eingesetzte Spieler
-    ///   der Aufstellung → Ende der Funktion (auch für die übrigen Manager). [APPROX] Der Manager am Zug ist im Remake der
-    ///   jeweilige Manager.</item>
+    ///   der Aufstellung → Ende der Funktion (auch für die übrigen Manager). [ORIGINAL] A071: [0xA70E] ist der Merker des
+    ///   Spieltagsablaufs (<see cref="LiveTeam.TurnManager"/>, <see cref="TurnManagerRegister"/>), nicht der jeweilige Manager;
+    ///   ohne Merker (Aufbauten ohne <see cref="MatchEngine.BeginMatch"/>) der eigene Wert.</item>
     /// <item>random(0, 20 · clamp(60 − M, 0, 40) + 200 · (5 − Level) + 200) = 0 (M = Managerwert des Managers, Schalter
     ///   DGROUP 0x4E80 [APPROX] aus) → Spieler 0x378C5 (<see cref="PenalizedPlayer"/>; keiner → nächster Manager).</item>
     /// <item>Ereignis 4 (0x130:0x7F = 0x53C57 → 0x5411E): Verletzung 0x05B1A mit Schalter Spiel
@@ -161,7 +162,9 @@ public static partial class OriginalMinutes
         foreach (var (team, side) in teams.OrderBy(t => t.Team.InjuryManager))
         {
             var squad = team.PenaltyPlayers!; // A840: ohne Reihe der Kader der Strafen (Vereinsfeld 0x16)
-            if (team.ManagerValue == 100 || LineupPlayers(squad) < MinimumLineupForInjuries)
+            var turn = team.TurnManager;
+            var gate = turn is null ? team.ManagerValue : turn.ManagerValue(turn.Manager);
+            if (gate == 100 || LineupPlayers(squad) < MinimumLineupForInjuries)
                 return;
             var v = Math.Clamp(60 - team.ManagerValue, 0, 40);
             if (OriginalMatch.Rnd(random, 0, 20 * v + 200 * squad.Difficulty + 200) != 0)
@@ -171,6 +174,9 @@ public static partial class OriginalMinutes
                 continue;
             PlayerInjuries.Inflict(player.Player, inMatch: true, squad.Difficulty, random);
             player.Dressed = false;
+            // A071: [ORIGINAL] ohne Live-Anzeige setzt die Verletzung [0xA70E] = m (Datei 0x54197–0x5419A).
+            if (turn is not null && !turn.LiveDisplay)
+                turn.Manager = team.InjuryManager!.Value;
             report.Events.Add(new MatchEvent(minute, side, MatchEventKind.Injury, Player: player.Player));
         }
     }
