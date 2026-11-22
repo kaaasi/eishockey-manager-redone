@@ -97,7 +97,7 @@ gepushte Stand; der Nachfolger schreibt zuerst einen Übernahmekommentar („üb
   9. **Länge (Nutzer 10.11.2026):** Review-Bericht höchstens 120 Zeilen (Gesamtreview: je Teil), nur Urteil, Befunde mit Beleg,
      Prüftabelle; keine Nacherzählung. PR-Beschreibungen ebenso knapp.
 
-  **Modellwahl (Nutzer 09.11.2026):** Claude Opus 5.5 überall, wo es Nacharbeit vermeidet – Spielregeln, Spielkern, Disassembly,
+  **Modellwahl (Nutzer 09.11.2026, ergänzt 17.11.2026: je Lauf möglichst wenig Tokens für ein brauchbares Ergebnis – Haiku, Sonnet, Opus; Fable nur in Ausnahmefällen):** Claude Opus 5.5 überall, wo es Nacharbeit vermeidet – Spielregeln, Spielkern, Disassembly,
   Import, Erstreviews und Nachprüfungen von Code. Claude Sonnet 5.5 nur für Mechanisches: Integrationen ohne eigene Regeländerung,
   reine Doku-Prüfungen (auch Nachprüfungen reiner Doku-PRs), Kommentare, einfache Testergänzungen. Im Zweifel Opus. Die
   Leitstelle setzt das Modell ([anhang.md](anhang.md) F).
