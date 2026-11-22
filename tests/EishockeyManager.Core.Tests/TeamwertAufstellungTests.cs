@@ -92,6 +92,38 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// #912 (Review #911 P3-1): Der Sollwert kommt aus einer eigenen Vorbereitung ohne Squad (<c>PrepareMatch</c> auf
+    /// <c>LiveTeamOf(..., managerMatch: false)</c>), nicht aus den Feldern, die <c>LiveTeamOf</c> beim Aufbau setzt. Mutation
+    /// `CopyPreparation` ohne <c>TacticsStrength</c>/<c>TacticsOpponentStrength</c> (<c>MatchEngine.Live.cs</c>) muss rot werden.
+    /// </summary>
+    [Fact]
+    public void BeginMatch_ManagedClub_StrengthsEqualPreparationWithoutSquad()
+    {
+        var game = TestGames.Create(5);
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        var opponent = game.Clubs.First(c => c != club && c.Players.Count > 0 && c.League == club.League);
+        // Player on the ice (line 0) is weakened only; the club fields (mean of lines 0–2) keep the old strength, so the value
+        // taken over at build time and the prepared strength 0x368B1 differ.
+        foreach (var p in club.Lineup.Block(0))
+        {
+            p.Technique = Math.Max(1, p.Technique - 40);
+            p.Condition = Math.Max(1, p.Condition - 40);
+        }
+        game.UpdateManagerTeamValues();
+        var homeFields = MatchEngine.LiveTeamOf(game, club, opponent, managed: true, managerMatch: false);
+        var awayFields = MatchEngine.LiveTeamOf(game, opponent, club, managed: false, managerMatch: false);
+        MatchEngine.PrepareMatch(game, club, opponent, homeFields, awayFields);
+
+        var setup = MatchEngine.BeginMatch(game, club, opponent, MatchCompetition.League, knockOut: false, new Random(1));
+
+        Assert.NotNull(setup.HomeTeam.Squad);
+        Assert.Equal(homeFields.TacticsStrength, setup.HomeTeam.TacticsStrength);
+        Assert.Equal(homeFields.TacticsOpponentStrength, setup.HomeTeam.TacticsOpponentStrength);
+        Assert.Equal(awayFields.TacticsStrength, setup.AwayTeam.TacticsStrength);
+        Assert.Equal(awayFields.TacticsOpponentStrength, setup.AwayTeam.TacticsOpponentStrength);
+    }
+
+    /// <summary>
     /// A080 (rot vor dem Fix: Teamwert, Teamwert, 50): Die Vereinsfelder 0x18–0x1D eines Managervereins in der Spielberechnung
     /// sind die aus der Aufstellung geschriebenen (Datei 0x097FD–0x0983D liest 0x18/0x1A/0x1C + Teil), mit Form.
     /// </summary>
