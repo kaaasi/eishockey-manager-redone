@@ -17,10 +17,15 @@ if args[0] in ("build", "--version"):
 if args[0] == "test" and os.getenv("DOUBLE_ARGS"):
     with open(os.environ["DOUBLE_ARGS"], "a") as f: f.write(" ".join(args) + "\n")
 n = int(os.environ["DOUBLE_PROJEKTE"]); mode = os.environ["DOUBLE_MODUS"]
-line = "{}!  - Failed: {:>5}, Passed: {:>5}, Skipped: {:>5}, Total: {:>5}, Duration: 1 s - P{}.dll (net10.0)"
+def block(outcome, failed, passed, skipped, total, i):
+    # Ergebnisblock des Konsolenloggers (verbosity=normal), je Testprojekt
+    print(f"Test Run {outcome}.\nTotal tests: {total}\n     Passed: {passed}")
+    if failed: print(f"     Failed: {failed}")
+    if skipped: print(f"    Skipped: {skipped}")
+    print(" Total time: 1 Seconds")
 pflicht = os.getenv("EM_REQUIRE_GAMEDATA") == "1" and os.getenv("EM_SKIP_GAMEDATA") == "1"
 if not pflicht:
-    for i in range(n): print(line.format("Passed", 0, 7, 0, 7, i))
+    for i in range(n): block("Successful", 0, 7, 0, 7, i)
     sys.exit(0)
 ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"
 def trx(path, outcome, msg):
@@ -29,7 +34,7 @@ def trx(path, outcome, msg):
                     f'<ResultSummary outcome="{outcome}"/></TestRun>')
 out = pathlib.Path(args[args.index("--results-directory") + 1]) if "--results-directory" in args else None
 if mode == "gruen":
-    for i in range(n): print(line.format("Passed", 0, 7, 0, 7, i))
+    for i in range(n): block("Successful", 0, 7, 0, 7, i)
     sys.exit(0)
 if mode == "absturz":
     print("Testhost crashed"); sys.exit(1)
@@ -42,7 +47,7 @@ for i in range(n):
         "Testhost crashed" if aborted else "Originaldaten fehlen (Ordner gamedata), aber EM_REQUIRE_GAMEDATA=1 …")
     if mode == "anderer-fehler" and i == 0:
         trx(out / f"p{i}.trx", "Failed", "Assert.Equal() Failure")
-    print(line.format("Failed", 1, 6, 0, 7, i))
+    block("Failed", 1, 6, 0, 7, i)
 sys.exit(1)
 DOUBLE
 chmod +x "$TMP/bin/dotnet"

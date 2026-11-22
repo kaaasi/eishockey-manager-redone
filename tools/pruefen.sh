@@ -21,20 +21,26 @@ LOG="$(mktemp -d)"
 STATUS=0
 TESTOPT=(--blame-hang-timeout "${EM_HANG_TIMEOUT:-20m}" --blame-hang-dump-type none --logger "console;verbosity=normal")
 
-# Jedes Testprojekt muss eine Ergebniszeile liefern; fehlt eine, ist ein Projekt abgestürzt oder nicht geladen.
 PROJEKTE=$(ls tests/*/*.csproj 2>/dev/null | wc -l)
+# Jedes Testprojekt muss einen Ergebnisblock liefern („Test Run Successful./Failed.“ mit Total/Passed/Failed/Skipped, Format des
+# Konsolenloggers mit verbosity=normal); fehlt einer („Test Run Aborted.“, Absturz, Hänger), ist ein Projekt nicht durchgelaufen.
 ergebnisse_da() {
-  local n; n=$(grep -cE "^(Passed|Failed)! " "$1")
+  local n; n=$(grep -cE "^Test Run (Successful|Failed)\." "$1")
   if [ "$n" -ne "$PROJEKTE" ]; then
-    echo "FEHLER: $2 lieferte Ergebnisse für $n von $PROJEKTE Testprojekten (Absturz oder Ladefehler) – Protokoll: $1"
+    echo "FEHLER: $2 lieferte Ergebnisse für $n von $PROJEKTE Testprojekten (Absturz, Hänger oder Ladefehler) – Protokoll: $1"
+    grep -E "Test Run Aborted|inactivity|running when the crash occurred" -A1 "$1" | head -12
     tail -15 "$1"; STATUS=1; return 1
   fi
 }
 
-# Summiert die Zeilen „Passed!/Failed! - Failed: x, Passed: y, Skipped: z“ aller Testprojekte.
+# Summiert die Ergebnisblöcke aller Testprojekte (bestanden, fehlgeschlagen, übersprungen).
 summe() {
-  grep -E "^(Passed|Failed)! " "$1" | sed -E 's/.*Failed: *([0-9]+), Passed: *([0-9]+), Skipped: *([0-9]+).*/\1 \2 \3/' |
-    awk '{f+=$1; p+=$2; s+=$3} END {printf "%d %d %d", p, f, s}'
+  awk '/^Test Run (Successful|Failed)\./ {blk=1; next}
+       blk && /^ +Passed: *[0-9]+ *$/  {p+=$2}
+       blk && /^ +Failed: *[0-9]+ *$/  {f+=$2}
+       blk && /^ +Skipped: *[0-9]+ *$/ {s+=$2}
+       /^ Total time/ {blk=0}
+       END {printf "%d %d %d", p, f, s}' "$1"
 }
 
 echo "== Build (Release, Warnungen = Fehler)"
