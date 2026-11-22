@@ -103,9 +103,12 @@ Dokumentieren, ob nur Codelesen oder auch Ausführung am nachgewiesenen Checkout
 - **CI hängt (Erfahrung Runde 16):** Stehen `pull_request`-Läufe ohne Job auf `queued` (z. B. Actions-Budget), lassen sie sich
   weder abbrechen noch neu starten; Ersatz ist ein Lauf per `workflow_dispatch` auf dem Branch (`gh workflow run build.yml --ref
   <branch>`), der denselben Head baut und für §6 Nr. 3 zählt. Seit R16-E3 (12.11.2026) ist das Code-Repo öffentlich.
-- **Ende eines Laufs (Erfahrung Runde 12):** Läufe melden ihr Ende nicht. Vor jeder Statusauskunft `list_triggers`
-  (`last_run.status`/`finished_at`) prüfen, nicht nur den PR; ein Draft-PR heißt nicht „läuft noch“. Bei ChatGPT/Codex-Reviews Titel
-  und Head-SHA der Review-Datei vor der Auswertung prüfen.
+- **Ende eines Laufs (Nutzer 22.11.2026):** Läufe melden ihr Ende selbst – die Leitstelle legt jeden Lauf mit
+  Push-Benachrichtigung an (`create_trigger` mit `notifications: {push: true}`). Solange Läufe offen sind, plant die Leitstelle
+  zusätzlich eigene Rückmeldungen in ihre Sitzung (`send_later`, etwa 60–90 Minuten) und arbeitet dann Fertiges ab (Erfahrung
+  Runde 22: Läufe warteten sonst tagelang). Vor jeder Statusauskunft `list_triggers` (`last_run.status`/`finished_at`) prüfen,
+  nicht nur den PR; ein Draft-PR heißt nicht „läuft noch“. Bei ChatGPT/Codex-Reviews Titel und Head-SHA der Review-Datei vor der
+  Auswertung prüfen.
 
 ## G. Claude Code: Git im flachen Klon (Erfahrung Runde 11)
 
