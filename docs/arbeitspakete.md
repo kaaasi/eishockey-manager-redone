@@ -146,7 +146,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
 - **Teile:** 1. #912 (Sollwert aus Vorbereitung ohne Squad), #914 (je Schema 51–53 eine echte Spielstanddatei als Testdatei, ohne
   Originaldaten), übrige P3 der Runde; A059 Folgeverdacht (#897, #899 P3-3) als E nach R21-E1 = A vermerken; 2. Lauf
   `markerliste.py --write` (alle neuen Marker nach PR-Angaben einordnen, Ziel V = 0) und `funktionskarte.py --write`.
-- **Voraussetzung:** Welle 2 gemergt. **Erstreview:** Sonnet 5.5. **Status:** Teil 1 in Arbeit (Claude Code, Draft-PR, Leitstelle 22.11.2026: alle offenen P3 der Runde, siehe PR).
+- **Voraussetzung:** Welle 2 gemergt. **Erstreview:** Sonnet 5.5. **Status:** alle Teile umgesetzt (Claude Code, Draft-PR #946): Teil 1 #912, #914 (echte Stände Schema 51–53), #928, #930, #941, #945, #938 (P3-2; Zähler Satz 5 über den Saisonwechsel mit Beleg zurückgestellt, A876), A059-Folgeverdacht als E vermerkt; #925-Rest (DEB-Pokal) ohne Beleg Video/0x32B5F Restlücke; Teil 2 `markerliste.py --write` (90 neue IDs, V 67 → 5: #939 A875/A937 sowie A873, A913, A951), Teil 3 `funktionskarte.py --write`; wartet auf Review (Sonnet 5.5).
 
 ### Spur `marker-x` – X-Marker auf `[ORIGINAL]` (Welle 4, R22-D3 = B)
 

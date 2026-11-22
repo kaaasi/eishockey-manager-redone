@@ -287,8 +287,9 @@ public sealed partial class GameState
     /// #930 (Review #929 P3-1, FILE72 München 69 69 55 / 70 70 48 statt 68 69 55 / 70 69 48): Nach dem Laden eines Stands mit
     /// 0x375 ≠ 0x376 an einem Tag mit Ereignis folgt auf die Neuaufstellung 0x426BC (nur mit „automatisch aufstellen“) im selben
     /// Schleifendurchlauf <c>0x952C(m, 0)</c> (Datei 0x54DAA): die Vereinsfelder stehen danach auf den Werten der neuen
-    /// Aufstellung (<see cref="WriteLineupTeamValues"/>). [APPROX] Nur für Sätze mit 0x375 ≠ 0x376 (übrige Sätze behalten die
-    /// gesicherten Felder, auch wenn die Wanderung 0x9D1B sie seit dem letzten Ereignistag bewegt hat – nicht belegt).
+    /// Aufstellung (<see cref="WriteLineupTeamValues"/>). [APPROX] Nur für den Manager am Zug mit 0x375 ≠ 0x376 (dessen Neuaufstellung
+    /// läuft beim Beginn des Zugs; die der übrigen Sätze bildet der Import nicht nach, FILE06 <c>OriginalExportRoundTripTests</c>);
+    /// übrige Sätze behalten die gesicherten Felder, auch wenn die Wanderung 0x9D1B sie seit dem letzten Ereignistag bewegt hat.
     /// </summary>
     private void ApplyLoadLineupValues(OriginalSaveGame save)
     {
@@ -296,11 +297,9 @@ public sealed partial class GameState
             return;
         for (var m = 0; m < Managers.Count; m++)
         {
-            if (save.Block("0375")[2 * m] == save.Block("0375")[2 * m + 1])
+            if (m != CurrentManager || save.Block("0375")[2 * m] == save.Block("0375")[2 * m + 1])
                 continue;
-            var club = Clubs[Managers[m].ClubIndex];
-            club.ApplyAutoLineup();
-            WriteLineupTeamValues(club);
+            WriteLineupTeamValues(Clubs[Managers[m].ClubIndex]);
         }
     }
 
