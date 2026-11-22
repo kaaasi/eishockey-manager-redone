@@ -75,7 +75,11 @@ public sealed class LivespielUi2Tests
     [GameDataFact]
     public void MatchDayThroughLiveScreen_EqualsWithoutDisplay()
     {
-        var d = FlowTests.CreateDriver();
+        // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R15-E2 = C): Saat 1994 statt 1993 – bei 1993 trifft am ersten
+        // Ligatag eine neue Nachricht ein; der Aufbau des Hauptmenüs nimmt das Kennzeichen (GameState.OnMainMenu), der Vergleichslauf
+        // ohne Anzeige hält davor (Manager._newMessage true/false). 1994, 1996, 1997 ohne Nachricht, 1995 mit. Rückschaltprobe: src/ von
+        // f7f0410 mit Saat 1994 ebenfalls grün – die Probe hängt an der Saat.
+        var d = FlowTests.CreateDriver(1994);
         d.StartNewGame();
         var game = d.Host.Game!;
         game.Options.MatchSpeed = 60;

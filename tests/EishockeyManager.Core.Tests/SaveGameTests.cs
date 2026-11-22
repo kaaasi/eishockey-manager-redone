@@ -85,7 +85,7 @@ public class SaveGameTests
     // 61 SeasonRecord.InnerMoves: Platztausch innerhalb der unteren Liga einer Aufstiegsrunde (Spur einzelpunkte, A665).
     // 62 Tactics._goaliePulledAtEnd: Vereinsfeld 0x2C Bit 3 nach dem letzten Spiel (Spur wettbewerbe-regeln Runde 22, A838).
     //    GameState._youthOfDayDone: Jugend des Tages im alten Stand schon gerechnet (Teil 2, A384/A670; dieselbe Migration).
-    private const string ExpectedSchemaFingerprint = "DFE7B708B51F9490";
+    private const string ExpectedSchemaFingerprint = "3C0CE25F9E6A6BEC";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

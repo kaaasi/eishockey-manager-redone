@@ -344,6 +344,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels (A864),
     // Alterung verlorener Pool-Spieler (A391) und Gruppe 3 der Poolverteilung (A713) ändern den Zufallsverlauf; neu gegen 4a3a724.
     // Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
+    // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R21-D2 = A, R15-E2 = C): neu – die Regeln der Spur (Teil 1
+    // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
+    // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
     private const string Reference =
-        "1993: DEB 9, DM 2, Tab 15635 | 1994: DEB 2, DM 9, Tab 15973 | 1995: DEB 4, DM 8, Tab 15334 | 1996: DEB 23, DM 23, Tab 16116";
+        "1993: DEB 6, DM 6, Tab 15539 | 1994: DEB 1, DM 9, Tab 15823 | 1995: DEB 21, DM 2, Tab 15765 | 1996: DEB 4, DM 9, Tab 15160";
 }

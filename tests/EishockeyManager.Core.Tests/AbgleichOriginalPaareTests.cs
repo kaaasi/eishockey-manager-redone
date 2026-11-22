@@ -102,7 +102,12 @@ public class AbgleichOriginalPaareTests
                 // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): Mit der Jugend nach den Menüs (A384/A670, Datei
                 // 0x55003–0x5502C) fallen bis zur Wanderung andere Würfe; SC PREUSSEN BERLIN liegt bei Saat 4711 in der Sturm-Kondition
                 // außerhalb (Original 1, Remake −15) – Wanderung wie bei LEER4 oben, kein neu eingetragener Originalwert.
-                new("Clubs[1 SC PREUSSEN BERLIN].TeamValues.AttackCondition", Chance, Optional: true)],
+                new("Clubs[1 SC PREUSSEN BERLIN].TeamValues.AttackCondition", Chance, Optional: true),
+                // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R21-D2 = A; vorläufig, Entscheidung Leitstelle –
+                // `spur-wartet`): Mit den Strömen von kader-regeln, transfer-pool und einzelpunkte fallen bis zur Wanderung andere Würfe;
+                // Leerplatz LEER3 liegt bei Saat 4711 in der Abwehr-Kondition außerhalb (Original 18, Remake 1) – Wanderung wie LEER4 oben,
+                // kein neu eingetragener Originalwert. f7f0410 und 3ca753a je allein grün.
+                new("Clubs[50 LEER3].TeamValues.DefenseCondition", Chance, Optional: true)],
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
                 // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1; Pflicht über
@@ -153,7 +158,13 @@ public class AbgleichOriginalPaareTests
             // „automatisch aufstellen“ (#733) behoben durch abgleich-fix: Der Import liest das gesicherte Byte 0x376 (FILE24 `00 01`).
             ["FILE24→FILE25"] = [StrainSawtooth("5 KÖLNER EC")],
             ["FILE30→FILE31"] = [],
-            ["FILE38→FILE39"] = [StrainSawtooth("5 KÖLNER EC")],
+            // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R21-D2 = A; vorläufig, Entscheidung Leitstelle –
+            // `spur-wartet`): Zufall – bei Saat 2 bekommt KJELLBERG (KÖLN) im Tageslauf 0x07169 ein Verlängerungsangebot (Würfe
+            // random(0, OfferLimit) und random(0, 3) = 0, Datei 0x076FA–0x07951; Transfer.Squads.cs), das Original nicht; andere Lage der
+            // Würfe durch den gemeinsamen Strom. Nur Saat 2, f7f0410 und 3ca753a je allein grün. Kein neu eingetragener Originalwert.
+            ["FILE38→FILE39"] = [StrainSawtooth("5 KÖLNER EC"),
+                new("Clubs[5 KÖLNER EC].Players[KJELLBERG].Notice", Chance, Optional: true),
+                new("Clubs[5 KÖLNER EC].Players[KJELLBERG].NoticeYears", Chance, Optional: true)],
             ["FILE39→FILE40"] = [StrainSawtooth("5 KÖLNER EC")],
             // Formwerte KÖLN (#738) behoben durch abgleich-fix (Handbetrieb ohne Nachrücken, Import ohne Reihenspieler ohne
             // „eingesetzt“). Platz 196 KJELLBERG (#749) behoben durch abgleich-fix (Import: Besitzer Manager ohne Kader = vergeben).

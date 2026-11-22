@@ -311,8 +311,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
     // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
     // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
-    [InlineData(false, "DEBBB32C1DDD032C")]
-    [InlineData(true, "A4D5185CBCE8CE9B")]
+    // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R21-D2 = A, R15-E2 = C): neu – die Regeln der Spur (Teil 1
+    // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
+    // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
+    [InlineData(false, "D4275E7222A6F2C8")]
+    [InlineData(true, "D9C872850E776F4E")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -404,8 +408,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A): neu – die eigenen Quellen CupRandom und FinanceRandom entfallen; Auslosungen (Europapokal Datei 0x298B1/0x565FF, DEB-Pokal Datei 0x43A8C/0x56609), Pokalspiele, Werbeangebote (Spielstart Datei 0x2A03B–0x2A061), Börse (Spielstart Datei 0x43AD5), Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom. Rückschaltprobe: src/ von 637d0bc → alte Werte.
     // Spur national Runde 22 Teil 1 (A109, A424, A494, A551): neu – Länderspiele mit Spielvorbereitung 0x8365 und stehendem Einsatz 0x26, Tagesform nach WM-Gruppenterminen, Verletzungen und Belastung im Satz 5; anderer Zufallsverbrauch ab der ersten WM. Rückschaltprobe: Core-Änderung zurück → alter Wert.
     // Runde 22, Spur national Teil 2 (A498, A825; R21-D2 = A): neu – die Länder mischt 0x35EDD am 29. April aus dem gemeinsamen Strom (Datei 0x5644E, auch ohne WM 40 Würfe), Schritt (c) der WM-Schleife entfällt nach der letzten Strafe beim Land des Bundestrainers (Datei 0x35AB8 → 0xA70E = 5); anderer Zufallsverbrauch ab dem ersten 29. April bzw. der ersten WM. Rückschaltprobe: SeasonFlow.cs/CupsWorld.cs/CupsNational.WorldCupLoop.cs von fbdc326 → alte Werte.
+    // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R21-D2 = A, R15-E2 = C): neu – die Regeln der Spur (Teil 1
+    // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
+    // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
     private const string WorldOnlyReference =
-        "WorldChampion=55|500000|WorldChampion=52|-1524166|WorldChampion=54|-4543621|WorldChampion=52|-9222640|WorldChampion=52|-16470944|R1556152998";
+        "WorldChampion=55|500000|WorldChampion=53|-1521730|WorldChampion=52|-4539081|WorldChampion=52|-9211561|WorldChampion=52|-16453791|R594569882";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

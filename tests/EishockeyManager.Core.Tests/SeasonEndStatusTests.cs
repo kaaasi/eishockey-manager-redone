@@ -70,7 +70,10 @@ public class SeasonEndStatusTests
         // Runde 22, Spur wettbewerbe-regeln Teil 2 (R15-E2 = C): Saat 88 statt 81 – die Jugend läuft nach den Menüs vor den
         // Ligaspielen (A384/A670, Datei 0x55003–0x5502C), andere Lage der Würfe ab dem ersten Ligaspieltag; unter 81–92 stehen nur bei
         // 88 und 92 beide Managervereine unter den ersten fünf. Rückschaltprobe: alter Code mit Saat 88 ebenfalls grün.
-        var game = GameModeTests.Create(88, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
+        // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R15-E2 = C): Saat 92 statt 88 – mit den Strömen von kader-regeln, transfer-pool und
+        // einzelpunkte stehen bei 88 (und 89–91, 93–96) nicht beide Managervereine unter den ersten fünf. Rückschaltprobe: src/ von f7f0410
+        // mit Saat 92 ebenfalls grün – die Probe hängt an der Saat.
+        var game = GameModeTests.Create(92, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];

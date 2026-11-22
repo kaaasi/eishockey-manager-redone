@@ -489,8 +489,12 @@ public class GameModeTests
     // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (Runde 22, R21-D2 = A, R15-E2 = C): neu – A672 (Feldspieler im Tor, Datei 0x42718–0x42777),
     // A665 (Platztausch bei Zwangsabstieg), A582 (Kündbar der Werbeverträge) und A104 ändern Spielrechnung bzw. Zufallsverbrauch; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von 21f341a + dieser Test → rot (alte Werte).
+    // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R21-D2 = A, R15-E2 = C): neu – die Regeln der Spur (Teil 1
+    // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
+    // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
     internal const string Mode4Reference =
-        "WorldChampion=53,CupWinner=5,GermanChampion=4,EuropeanCupWinner=2|1198157,400000|WorldChampion=52,CupWinner=1,GermanChampion=6,EuropeanCupWinner=4|2466212,400000|WorldChampion=52,CupWinner=17,GermanChampion=19,EuropeanCupWinner=6|2579277,400000|WorldChampion=52,CupWinner=19,GermanChampion=17,EuropeanCupWinner=19|2497769,500000|WorldChampion=63,CupWinner=19,GermanChampion=6,EuropeanCupWinner=17|2553927,400000|R345808903";
+        "WorldChampion=52,CupWinner=13,GermanChampion=1,EuropeanCupWinner=2|1100320,400000|WorldChampion=52,CupWinner=1,GermanChampion=6,EuropeanCupWinner=1|2219424,400000|WorldChampion=53,CupWinner=4,GermanChampion=5,EuropeanCupWinner=1|2321675,400000|WorldChampion=54,CupWinner=1,GermanChampion=1,EuropeanCupWinner=5|2394415,400000|WorldChampion=55,CupWinner=5,GermanChampion=5,EuropeanCupWinner=5|2412395,500000|R1503688066";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
