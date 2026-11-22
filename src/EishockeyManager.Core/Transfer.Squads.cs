@@ -148,8 +148,8 @@ public sealed partial class GameState
     /// (0x075CA), Verfall des unaufgeforderten Angebots random(0, 3) (0x0762D, der Wurf fällt für jeden Platz), Verfall des
     /// Verlängerungsangebots random(0, 5) und Sperre random(9, 17) (0x07692, 0x076B9), Verlängerungsangebot (0x0781E, 0x07833,
     /// 0x07876); danach die zweite Schleife über dieselben Plätze mit dem Angebotswurf (Datei 0x07996–0x07AEF,
-    /// <see cref="RollUnsolicitedOffers"/>). [APPROX] Die Verletzung außerhalb des Spiels (Datei 0x07462–0x07548, random bei 0x0748C
-    /// vor dem Ruhestand) rechnet das Remake nicht; ihr Wurf fehlt im Strom.
+    /// <see cref="RollUnsolicitedOffers"/>). [ORIGINAL] Die Verletzung außerhalb des Spiels (Datei 0x07462–0x07548, random bei 0x0748C
+    /// vor dem Ruhestand) rechnet das Remake je Kaderplatz (<c>RollInjuryOutsideMatch</c>, A864, Spur transfer-pool).
     /// #678: [ORIGINAL] 0x07169 rechnet die Kaderplätze des Managers DGROUP 0xA70E (Satz 0x5DC3 + Manager · 0x618, Datei 0x07402);
     /// mit <paramref name="only"/> nur dessen Plätze (Hauptweg je Manager, WM-Schleife Schritt (c) nur Manager 0).
     /// </summary>

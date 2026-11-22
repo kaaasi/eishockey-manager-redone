@@ -33,7 +33,7 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   [APPROX] Die weiteren Argumente (Lage y &gt; 140, Wert 1) wertet das Fenster des Remakes nicht aus.</item>
 /// <item>[ORIGINAL] Spielplan aus dem Spielkern nach der Satzfolge der Liga (<see cref="Schedule.ForSlots"/>, Datei 0x4E7C7, Tabelle
 ///   DGROUP 0x2DC; A113, Spur wettbewerbe-rest #790).</item>
-/// <item>[APPROX] Die Stärkewerte stammen aus dem Remake (<see cref="StrengthTable"/>).</item>
+/// <item>[ORIGINAL] Die Stärkewerte (cs:0x26, Felder 0x18–0x1D / 6, A282, PR #792) kommen aus <see cref="StrengthTable"/> (dort markiert).</item>
 /// </list>
 /// </remarks>
 /// <summary>Eine Begegnung der Seite: Vereine, Platz und Stärke beider, Ergebnis (null = nicht gespielt).</summary>

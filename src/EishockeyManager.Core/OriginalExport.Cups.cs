@@ -31,7 +31,7 @@ public sealed partial class GameState
         w.Block("0387")[0] = (byte)slotOf[DebCup?.Winner ?? Holder(Title.CupWinner, InitialDebCupWinner)];
         w.Block("D0E6")[0] = (byte)slotOf[Playoffs?.Champion ?? Holder(Title.GermanChampion, EuropeanCup.InitialChampion)];
         w.Block("0388")[0] = (byte)slotOf[EuropeanCup?.Winner ?? Holder(Title.EuropeanCupWinner, EuropeanCup.InitialWinner)];
-        // [APPROX] DGROUP 0xCFF8 (4 Byte): +2 Anfang der laufenden Play-off-Runde, sonst 0xFF (FILE01: 00 00 FF 00).
+        // [ORIGINAL] DGROUP 0xCFF8 (4 Byte): +2 Anfang der laufenden Play-off-Runde, sonst 0xFF (FILE01: 00 00 FF 00; Datei 0x298B7 setzt DGROUP 0xCFFA beim Spielstart auf 0xFF, 0x31965/0x31C7A setzen bzw. erhöhen es in den Play-offs).
         w.Block("CFF8")[2] = 0xFF;
         // [ORIGINAL] Unbelegte K.-o.-Plätze der WM/Endrunde 0x5D5B ff. stehen auf 0xFF (FILE01).
         w.Block("5CFB").AsSpan(0x60, 32).Fill(0xFF);

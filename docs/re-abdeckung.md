@@ -152,7 +152,7 @@ weil Geld und Kader berührt sind). Alternativ als erster Teil von `transfer-ori
 
 <!-- BEGIN generiert: tools/reverse-engineering/funktionskarte.py – nicht von Hand ändern -->
 
-Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 9553 Zuordnungen von Fundstellen zu Funktionen.
+Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegmente, 17 Overlays), 309525 Byte Code; 9519 Zuordnungen von Fundstellen zu Funktionen.
 
 ### Anteile je Status (Bytes)
 
@@ -160,9 +160,9 @@ Erzeugt aus `em.exe` (387968 Byte): 679 Funktionen in 29 Bereichen (12 Basissegm
 
 | Status | Funktionen | Bytes | Anteil | Funktionen Spielcode | Bytes Spielcode | Anteil Spielcode |
 |---|---:|---:|---:|---:|---:|---:|
-| umgesetzt | 323 | 260698 | 84 % | 298 | 246719 | 95 % |
+| umgesetzt | 325 | 262266 | 85 % | 300 | 248287 | 95 % |
 | genähert | 3 | 1477 | 0 % | 1 | 615 | 0 % |
-| dokumentiert | 119 | 22140 | 7 % | 65 | 13567 | 5 % |
+| dokumentiert | 117 | 20572 | 7 % | 63 | 11999 | 5 % |
 | unbekannt | 234 | 25210 | 8 % | 0 | 0 | 0 % |
 | **Summe** | 679 | 309525 | 100 % | 364 | 260901 | 100 % |
 
@@ -190,13 +190,13 @@ Basissegment (Segmentwert, Rolle vermutet) oder Overlay (Stub-Selektor, in Klamm
 | Ov 0xd8 (3606) | 0x28030–0x2A0C2 | 8339 | 4 | 98 % | 0 % | 2 % | 0 % | „Suchen Sie sich einen“ |
 | Ov 0xe0 (3810) | 0x2A1E0–0x2F1EE | 20495 | 18 | 96 % | 0 % | 4 % | 0 % | „JWE Service GmbH“, „(noch keine...)“, „Im ersten Jahr gibt's hi“ |
 | Ov 0xe8 (3D11) | 0x2F530–0x352A2 | 23923 | 33 | 97 % | 0 % | 3 % | 0 % | „Endrunde“, „Jugendteams“, „.Spieltag“ |
-| Ov 0xf0 (42E9) | 0x35540–0x397BA | 17019 | 26 | 98 % | 0 % | 2 % | 0 % | „Spiele laufen“, „!    Penaltyschiessen   “, „DEB-Pokal“ |
+| Ov 0xf0 (42E9) | 0x35540–0x397BA | 17019 | 26 | 99 % | 0 % | 1 % | 0 % | „Spiele laufen“, „!    Penaltyschiessen   “, „DEB-Pokal“ |
 | Ov 0xf8 (4711) | 0x399D0–0x3CD71 | 13218 | 18 | 100 % | 0 % | 0 % | 0 % | „WM Vorbereitung“, „WM-Statistik“, „Spieler in WM-Kader“ |
 | Ov 0x100 (4A4C) | 0x3CFA0–0x3FDDD | 11838 | 13 | 100 % | 0 % | 0 % | 0 % | „Überdachung“, „bittet Sie an den Verhan“, „Sitzplätze“ |
 | Ov 0x108 (4D30) | 0x3FFE0–0x42FC4 | 12261 | 13 | 100 % | 0 % | 0 % | 0 % | „Platz mehr !“, „Rückennummer des Spieler“, „Schon 11 Mann auf“ |
 | Ov 0x110 (502F) | 0x43150–0x45DC3 | 11380 | 20 | 90 % | 0 % | 10 % | 0 % | „autosave.hok“, „Saisonende“, „.Spieltag“ |
 | Ov 0x118 (52F7) | 0x46000–0x4ADE1 | 19938 | 18 | 99 % | 0 % | 1 % | 0 % | „ART   NAME              “, „Grundwert“, „Vertragsverhandlung“ |
-| Ov 0x120 (57D6) | 0x4B0F0–0x4D1B6 | 8391 | 23 | 64 % | 0 % | 36 % | 0 % | „Wer weiß...“, „An Alle:“, „Keine Nachricht für Sie “ |
+| Ov 0x120 (57D6) | 0x4B0F0–0x4D1B6 | 8391 | 23 | 81 % | 0 % | 19 % | 0 % | „Wer weiß...“, „An Alle:“, „Keine Nachricht für Sie “ |
 | Ov 0x128 (59E3) | 0x4D2F0–0x51BED | 18686 | 18 | 98 % | 0 % | 2 % | 0 % | „Bundesliga“, „PL. TD      VEREIN      “, „Play-Off“ |
 | Ov 0x130 (5E73) | 0x51E90–0x57170 | 21217 | 29 | 100 % | 0 % | 0 % | 0 % | „Sie haben zu wenig Speic“, „Strafzeit:“, „ZUSCHAUER“ |
 | Ov 0x138 (63A2) | 0x57480–0x5A68A | 12811 | 14 | 96 % | 0 % | 4 % | 0 % | „Herrenhäuser“, „Kosten pro Woche:“, „Kontostand:“ |

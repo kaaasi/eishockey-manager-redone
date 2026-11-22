@@ -57,8 +57,8 @@ public sealed class GameOptions
     /// <summary>
     /// Index 9 (DGROUP 0x226): Darstellung des Live-Spiels, 0–2; im Optionsbildschirm beschriftet mit „Torszenen“ (Loch,
     /// Pinguin, Pinguin mit rotem Punkt; DOSBox-Bilder 48–51). [ORIGINAL] Bei 2 bleibt das Eisfeld während des ganzen
-    /// Spiels an, Eingriffe sind dann nicht möglich (Meldung „Neuer Spielmodus:“, Datei 0x2D4EE). [APPROX] Die Bedeutung
-    /// von 0 und 1 ist nicht belegt; die Auswertung gehört zum Live-Ablauf (Folgepaket <c>livespiel</c>).
+    /// Spiels an, Eingriffe sind dann nicht möglich (Meldung „Neuer Spielmodus:“, Datei 0x2D4EE). [ORIGINAL] Die Bedeutung
+    /// von 0 und 1: 0 = Torszenen aus, ungleich 0 = an (re-livespiel.md §1); die Auswertung gehört zum Live-Ablauf (Folgepaket <c>livespiel</c>).
     /// </summary>
     public int LiveMode { get; set; }
 
@@ -97,8 +97,8 @@ public sealed class GameOptions
 
     /// <summary>
     /// [ORIGINAL] Klick auf Index 9: <c>inc</c>, bei 3 → 0 (Datei 0x2D32A ff.). Das Original setzt 2 außerdem sofort auf 0
-    /// zurück, wenn DGROUP 0x5A56 ≠ 0 – dafür steht <paramref name="permanentRinkBlocked"/> ([APPROX] Bedeutung von 0x5A56
-    /// nicht belegt).
+    /// zurück, wenn DGROUP 0x5A56 ≠ 0 – dafür steht <paramref name="permanentRinkBlocked"/> ([ORIGINAL] Bedeutung von 0x5A56
+    /// siehe re-livespiel.md §13 A1, Datei 0x54BF7–0x54C23, 0x54C63–0x54C94; 0x36B5D löscht).
     /// </summary>
     public void NextLiveMode(bool permanentRinkBlocked = false)
     {

@@ -433,7 +433,7 @@ public sealed class SaveLoadScreen : Screen
         if (result.WrongVersion)
         {
             // [ORIGINAL] Datei 0x5C559: Kennung stimmt, Version nicht → Kurzmeldung (0x0C0B8), Datei schließen, zurück zur
-            // Auswahl (Integration Runde 12, Anschluss ui-meldungen Teil 3, UM-4). [APPROX] Der Grund (Schema) entfällt wie im
+            // Auswahl (Integration Runde 12, Anschluss ui-meldungen Teil 3, UM-4). [ORIGINAL] Der Grund (Schema) entfällt wie im
             // Original; das Remake unterscheidet „fehlt“, „neuer“ und „ohne Migration“ nur in SaveLoadResult.Error.
             var text = ShortMessageTexts.WrongVersion;
             _message.ShowShort(text.Line1, text.Line2);
@@ -668,7 +668,7 @@ public sealed class SaveLoadScreen : Screen
     /// Trennbalken einer Spalte: 5 × 113 Pixel bei (42 + 80 · Spalte | 54), abgeschrägt (hell 1 oben und links, dunkel 6 rechts und
     /// unten, Füllung 3). [ORIGINAL] am DOSBox-Bild <c>a338_1</c> Pixel für Pixel gemessen; das Löschen des Markers mit Farbe 3
     /// (Datei 0x5E334–0x5E377) stellt die Füllung wieder her. Vorher nach dem unscharfen Video um 1 Pixel versetzt und mit
-    /// anderen Farben [APPROX].
+    /// anderen Farben (Näherung).
     /// </summary>
     private static void DrawBar(Surface s, int x)
     {

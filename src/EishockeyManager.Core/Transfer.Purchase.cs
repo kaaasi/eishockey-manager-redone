@@ -28,8 +28,8 @@ public sealed partial class TransferMarket
     /// Transfer nicht statt (Meldung des Dialogs, dann „Der Transfer findet nicht statt.“). [ORIGINAL] Datei 0x4786A ruft den
     /// Dialog 0x4A1DB mit dem neuen Kaderplatz; die Sperre nach einer gescheiterten Verhandlung zieht das Original
     /// (random(10, 18), 0x4AD3E), sie verfällt mit dem freigegebenen Platz (0x47A51) – das Remake zieht sie ebenso und
-    /// verwirft sie. Die Verfügbarkeit (Leihe, Ruhestand, Sperre) prüft der Dialog am neuen Kaderplatz nicht: [APPROX] der
-    /// Platz ist frisch angelegt (0x108:0x5C).
+    /// verwirft sie. Die Verfügbarkeit (Leihe, Ruhestand, Sperre) prüft der Dialog am neuen Kaderplatz nicht: [ORIGINAL] der
+    /// Platz ist frisch angelegt (0x108:0x5C, Datei 0x42CB1).
     /// </summary>
     public NegotiationResult Sign(GameState game, TransferPurchase purchase, int years, int salary, bool insured,
         bool demandFilled) => Sign(game, purchase, years, salary, insured, demandFilled, out _);

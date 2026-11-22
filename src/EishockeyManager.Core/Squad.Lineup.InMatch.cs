@@ -16,14 +16,14 @@ namespace EishockeyManager.Core;
 ///   der Linksklick in die gewählte Reihe.</item>
 /// <item>[ORIGINAL] Datei 0x4135E und 0x413E8 reichen den Kennwert an das Aufstellen 0x41533 weiter: im Spiel bekommt ein neu
 ///   Aufgestellter ohne Kennzeichen „hat gespielt“ (Spielerfeld +0x1A Bit 7) das Kennzeichen und sofort ein Spiel im
-///   laufenden Wettbewerb (+0x06 + k, +0x1C + 2k nach DGROUP 0xD0C2, Datei 0x415B7–0x41622). [APPROX] Das Remake zählt die Spiele
-///   eines Managervereins am Spielende aus der Aufstellung (<c>MatchEngine.CreditLineup</c>, Datei 0x5494C): Wer während des
-///   Spiels herausgenommen wird, zählt nicht, wer hineinkommt, zählt erst am Ende.</item>
+///   laufenden Wettbewerb (+0x06 + k, +0x1C + 2k nach DGROUP 0xD0C2, Datei 0x415B7–0x41622). Das Remake zählt die Spiele
+///   eines Managervereins am Spielende aus der Aufstellung (<c>MatchEngine.CreditLineup</c>, Datei 0x5494C; ein im Spiel neu Aufgestellter zählt mit dem Wettbewerbsfeld, <c>PlayedFromBench</c>): Wer während des
+///   Spiels herausgenommen wird, zählt nicht, wer hineinkommt, zählt erst am Ende (Zählzeitpunkt, A898).</item>
 /// <item>A808: [ORIGINAL] Datei 0x40DAF–0x40E2A: ein Spieler auf der Strafbank (Status +0x09 &amp; 3 = 1, Datei 0x35C02) ergibt für
 ///   beide Tasten nur die Meldung „Spieler ist“ / „Gesperrt.“ (<see cref="LineupResult.Suspended"/>, Abfrage
 ///   <see cref="MatchEngine.PenaltyBoxMinutes"/>); er bleibt draußen, bis die Strafbank ihn freigibt.</item>
 /// <item>[APPROX] Bei Rechtsklick ohne gewählte Reihe meldet das Original nichts (Meldung „Keine Reihe“ nur für die linke Taste,
-///   Datei 0x40E63); Art-Prüfung und Plätze wie beim Linksklick (<see cref="ClickPlayer"/>, auch dessen [APPROX] zum sechsten
+///   Datei 0x40E63); Art-Prüfung und Plätze wie beim Linksklick (<see cref="ClickPlayer"/>, auch dessen Näherung zum sechsten
 ///   Feldspielerplatz 0x413E8–0x414B4).</item>
 /// </list>
 /// </summary>

@@ -188,7 +188,7 @@ public sealed partial class TransferMarket
     /// (Datei 0x563AF–0x565A7) ruft den Listenwechsel 0x494EF nicht (Aufrufer nur Spielstart Datei 0x43A9F und Hauptweg 0x54E7C);
     /// Belege FILE44 (14.04.1994) → FILE46/FILE44A (10.09.1994) und FILE22 → FILE23: Liste gleich, Alter + 1, nur der eigene
     /// HOHENADL ist in den Kader zurückgekehrt (<see cref="ReturnListedPlayers"/>, vorher im Saisonhaken der Manager). Vorher
-    /// [APPROX] neue Liste per <see cref="ChangeList"/>.
+    /// als Näherung neue Liste per <see cref="ChangeList"/>.
     /// [ORIGINAL] Vertragslose stehen nicht auf der Liste (R204, siehe unten); wer bei Vertragsende einen Managerverein verlässt,
     /// ist ganz verloren (R15-E3 = C, <see cref="GameState"/> Leave in Transfer.SeasonEnd.cs; Pool +0x1A bleibt Manager).
     /// [APPROX] Neue Listing-Identitäten (eine noch gehaltene Referenz aus der Vorsaison ist ungültig), Spieltag des Eintrags 0;
@@ -222,7 +222,7 @@ public sealed partial class TransferMarket
         // einem Managerverein (Datei 0x27DE3–0x27E9D) gibt nur den Kaderplatz frei (0x108:0x48 = Datei 0x425B6, ohne Pool +0x1A);
         // der Spieler ist ganz verloren, der Listenwechsel zieht nur Besitzer 6. Beleg FILE44 → FILE46: KJELLBERG weder im Kader
         // noch auf der Liste, Pool +0x1A = 0. Bis Runde 15 setzte das Remake sie zusätzlich auf die freien der zehn Plätze und
-        // ließ sie vertragslos ([APPROX]; Einstellung nach v1.0 vorgemerkt).
+        // ließ sie vertragslos (Näherung, inzwischen behoben: R204, R15-E3 = C).
         StartPoolSeason(game, game.Random);
         // [ORIGINAL] 0x07C7E nach den neuen Namen (Spur kader-transfer, Teil 5); Teil des Tageslaufs 0x54C9F, den es im Modus
         // „nur Weltkugel“ nicht gibt (0x54CEE).
@@ -576,7 +576,7 @@ public sealed partial class TransferMarket
     /// [ORIGINAL] Reihenfolge der Prüfungen (Spur kader-rest, Teil 2, A253): Ruhestand +0x18 Bit 0x80 (Datei 0x46DD8,
     /// <see cref="TransferResult.Retiring"/>), drei eigene Markt-Plätze (0x47027), Besitz Pool +0x1A (0x47040,
     /// <see cref="TransferResult.OnlyLoaned"/>), voller Markt (0x42CB1). Eine Mindestbesetzung je Art gibt es nicht (bis Runde 17
-    /// [APPROX] 2/4/6 wie <see cref="CanLeave"/>). Der Zweig mit Kaderplatz +0x09 Bit 0x40 (Datei 0x46E04, Angebot für den
+    /// als Näherung 2/4/6 wie <see cref="CanLeave"/>). Der Zweig mit Kaderplatz +0x09 Bit 0x40 (Datei 0x46E04, Angebot für den
     /// Spieler) gehört zu <c>Transfer.Unsolicited.cs</c>.
     /// </summary>
     public TransferResult Offer(GameState game, Manager manager, Player player)

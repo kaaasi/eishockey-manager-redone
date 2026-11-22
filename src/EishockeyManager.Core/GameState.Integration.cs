@@ -38,7 +38,7 @@ public sealed partial class GameState
         ApplyAutoLineups();
         // Integration Runde 11: Bezugspunkt der Spielstärke ist die Aufstellung beim Spielstart (Club.ReferenceRating) –
         // nach der Neuaufstellung der Managervereine neu bewerten, damit die Stärke zu Beginn der Datenbankstärke gleicht.
-        // [APPROX] wie die Stärkeformel selbst (TeamStrength).
+        // Näherung wie die Stärkeformel selbst (TeamStrength, dort markiert).
         foreach (var club in Clubs)
             if (Managers.Any(m => m.ClubIndex == club.Index))
                 club.ReferenceRating = TeamStrength.Rating(club.Lineup);
@@ -120,11 +120,11 @@ public sealed partial class GameState
         HealUnmanaged(day);
 
         // #678: Training, Markt (Verfall, Gebote, Angebote), Verträge, Heilung und Aufstellung nur am Takttag, je Manager
-        // (0x07169, Datei 0x552A6; GameState.DailyRun.cs). Vorher [APPROX] Training Mi/So, Markt und Verträge täglich.
+        // (0x07169, Datei 0x552A6; GameState.DailyRun.cs). Vorher als Näherung Training Mi/So, Markt und Verträge täglich.
         MainPathDailyRun(day);
 
         // #688 (R688-07): an Tagen mit Ereignis vor den Zügen je Satz die Neuaufstellung (Datei 0x54D68–0x54DBA, 0x426BC bei
-        // 0x54D9E). Vorher [APPROX] täglich am Ende des Tageslaufs.
+        // 0x54D9E). Vorher als Näherung täglich am Ende des Tageslaufs.
         MainPathEventDayLineups(day);
 
         // #678: Listenwechsel 0x494EF in den Managerzügen der Tage mit Ereignis (Datei 0x54E71; nicht am Eintrittstag).

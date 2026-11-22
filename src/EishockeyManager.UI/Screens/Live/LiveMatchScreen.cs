@@ -131,7 +131,7 @@ public sealed class LiveMatchScreen : Screen
             return;
         Done = true;
         WaitingForClick = false;
-        // [APPROX] Enter/Escape: restliche Minuten ohne Anzeige (siehe Klasse).
+        // Enter/Escape: restliche Minuten ohne Anzeige (Näherung, siehe Klasse).
         while (_session.Step())
             DisplayMinute = _session.Day?.Minute ?? DisplayMinute;
         _clock.EndMatchDay();

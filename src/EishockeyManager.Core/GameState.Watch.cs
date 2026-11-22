@@ -9,7 +9,7 @@ namespace EishockeyManager.Core;
 ///   <see cref="LiveScoreboard"/>); der Abschluss 0xA484 prüft beide Bits (<c>test 0xC0</c>, Datei 0xABD7/0xABEE) für die
 ///   Tormeldung der Paarungen ohne Reihe.</item>
 /// <item>[ORIGINAL] Tormeldung der Paarungen ohne Reihe (Datei 0xABB4–0xAD71, Spur zusehen-rest A832): Kern
-///   <see cref="MatchEngine.NoticeTarget"/>, Anzeige <c>LiveGoalNotice</c> (dort die [APPROX] der Reihenfolge).</item>
+///   <see cref="MatchEngine.NoticeTarget"/>, Anzeige <c>LiveGoalNotice</c> (dort die Näherung der Reihenfolge).</item>
 /// <item>[ORIGINAL] Der Lader 0x2EF1B setzt die Bits beim Laden der Datenbank auf 0 (Datei 0x2EFA8): ein neuer
 ///   <see cref="Club"/> beginnt mit Modus 0.</item>
 /// <item>[ORIGINAL] Die Markierung gehört zum Vereinssatz (wie Name und Logo) und wandert beim Platztausch 0x36169 mit dem Verein

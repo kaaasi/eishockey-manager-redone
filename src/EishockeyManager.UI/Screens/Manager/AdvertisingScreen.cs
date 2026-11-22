@@ -323,7 +323,7 @@ public sealed class AdvertisingScreen : Screen
                         DrawLogo(s, AdSlotKind.Bande, contract.Sponsor, BoardRect(b).X + 1, BoardRect(b).Y + 1);
                     break;
                 case AdSlotKind.Eisflaeche or AdSlotKind.Eisflaeche2:
-                    // [APPROX] Im Video ist die Eisfläche nicht belegt; Logo der Firma auf der eigenen Tafel angenommen.
+                    // [ORIGINAL] Logo der Firma auf der eigenen Tafel (Datei 0x2A6A2 Bit 3: 33 × 23 nach (268 | 92 + 36 · i), re-rest.md §D).
                     var (x, y) = IceBoards[contract.Kind == AdSlotKind.Eisflaeche ? 0 : 1];
                     DrawLogo(s, AdSlotKind.Bande, contract.Sponsor, x, y);
                     break;

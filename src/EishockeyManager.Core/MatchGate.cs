@@ -15,7 +15,7 @@ namespace EishockeyManager.Core;
 ///   Indexreihenfolge); geändert hat sich nur der Zeitpunkt: Stärke (0x4D316) der Mannschaften vor statt nach dem Spiel.</item>
 /// <item>[ORIGINAL] „Weniger als neun Spieler“ prüft 0x544C0 ebenfalls vor dem Spiel (Managerwert 0x974B aus 0x952C am
 ///   Tagesanfang, <see cref="MarkShortHandedClubs"/>): Ein vorbereitetes Spiel war nicht gewertet, also keine Strafe, auch
-///   wenn sich im Spiel jemand verletzt (vorher [APPROX] „Stand nach dem Spiel“).</item>
+///   wenn sich im Spiel jemand verletzt (vorher als Näherung „Stand nach dem Spiel“).</item>
 /// <item>[APPROX] Die gemerkten Werte sind kein Spielstand (das Original rechnet Abrechnung und Spiel ohne Unterbrechung
 ///   für die Sicherung); sie verfallen am nächsten Tagesanfang. Fehlt ein Wert (Spielwertung, direkter Aufruf ohne Spiel),
 ///   rechnet die Abrechnung wie bisher.</item>

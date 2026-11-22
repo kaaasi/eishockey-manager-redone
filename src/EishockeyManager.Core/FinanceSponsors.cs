@@ -36,7 +36,7 @@ public sealed record Sponsor(string Name, bool IsTelevision, string InfoTitle, s
     [
         new("JWE Service GmbH", false, "J.W.E. Service GmbH",
             ["Telekommunikation vom Fachbetrieb.", "Telefone, Anrufbeantworter, Telefax", "Beratung - Verkauf - Installation", "Telefon/Fax: 0511/602094"]),
-        // [APPROX] Aufteilung Titel/Zeilen bei CCH und KRON nicht im Video zu sehen; nach dem Muster von JWE und Herrenhäuser.
+        // [ORIGINAL] Aufteilung Titel/Zeilen bei CCH und KRON wie bei JWE und Herrenhäuser: Zeigertabelle DGROUP 0x10A1, je Firma 5 Zeiger, Zeile 0 = Titel (Datei 0x2BD79).
         new("CCH", false, "Computer Center Holstein",
             ["Ihr Lieferant fuer PCs und PC Zubehoer", "Max-Planck-Str. 9", "2420 Eutin", "Tel.: 04521-74300"]),
         new("Korona Soft", false, "", ["Der Computerspiele Blitzversand", "Tel.: 05241-1828"]),

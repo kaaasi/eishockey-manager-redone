@@ -166,7 +166,7 @@ public sealed partial class GameState
     /// „Verein ist gerade im Wettbewerb“ für die Werbebewertung. [ORIGINAL] 0x110:0x61 (Datei 0x44A48) mit Flag 1:
     /// 1, sobald der Verein in den Paarungen der laufenden Runde steht (Meisterrunde Maske 0x40, DEB-Pokal 0x08 mit
     /// Runde [0x5CF3], Europapokal 0x20 mit Termin [0x7AF]).
-    /// [APPROX] Abbildung auf das Remake: Meisterrunde = Paarungen der laufenden Playoff-Runde oder eine Relegationsrunde
+    /// [ORIGINAL] Abbildung auf das Remake (Datei 0x44A48 sucht in den Paarungslisten, DEB-Pokal 0x44D75–0x44E17, Play-offs 0x5D3B; Stand Runde 17 PR #790): Meisterrunde = Paarungen der laufenden Playoff-Runde oder eine Relegationsrunde
     /// des Vereins (Liste 0x5D3B); Pokal = Paarungen der zuletzt ausgelosten Runde; Europapokal = Gruppe bzw. Endrunde,
     /// Termin = Zahl der schon gespielten Europapokaltermine.
     /// A037 (Spur wettbewerbe-rest, Teil 2): [ORIGINAL] Es gibt keine Teilnahmebits, die nach dem Ausscheiden zurückgesetzt würden –

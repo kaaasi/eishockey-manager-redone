@@ -620,7 +620,7 @@ public static partial class OriginalMinutes
     /// n = Kaderplätze − 1, unter 5 keiner. Höchstens 150 Versuche (R8W3I-03: der Zähler [bp-0xb] wird vor jedem Zug
     /// geprüft, 0x378ED springt zur Prüfung 0x37A2A, `cmp al,0x96; jnc` an 0x37A30 vor dem Zug 0x378FC): Platz
     /// random(0, n); eingesetzt und aufgestellt, in der Managerpaarung (Reihenliste 0x52B91) nur auf dem Eis (Reihe = Reihe des Teils; Schalter
-    /// DGROUP 0x4E80 [APPROX] aus); Technik &lt; Kondition → mit random(0, 10) &gt; 3, sonst &gt; 7; ein Torhüter bleibt mit
+    /// DGROUP 0x4E80 [ORIGINAL] immer aus: ohne Schreiber, Startwert 0, Datei 0x16DD0 + 0x4E80; Leser Datei 0x3797F, 0x379C7, 0x379E3); Technik &lt; Kondition → mit random(0, 10) &gt; 3, sonst &gt; 7; ein Torhüter bleibt mit
     /// random(0, 2) ≠ 0 verschont.
     /// </summary>
     /// <returns>Der Kaderplatz oder null (Original 100).</returns>

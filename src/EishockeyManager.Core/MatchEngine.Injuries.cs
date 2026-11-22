@@ -99,7 +99,7 @@ public static class PlayerInjuries
     /// holt der Tageslauf die Einstellung zurück und stellt neu auf (Datei 0x54D8C–0x54D9E, 0x552F9–0x5530B: 0x375 := 0x376,
     /// dann 0x426BC) – auch ohne Verletzung. Mit der Einstellung stellt das Remake daher nach jedem Spiel ganz neu auf
     /// (<see cref="Club.ApplyAutoLineup"/>); ohne sie nur nach einer Verletzung wie <see cref="RefillLineup"/>.
-    /// [APPROX] Das Remake stellt direkt nach dem Spiel des Vereins statt nach allen Spielen des Tages auf; gleichwertig, weil
+    /// [ORIGINAL] Das Remake stellt direkt nach dem Spiel des Vereins statt nach allen Spielen des Tages auf; gleichwertig, weil
     /// ein Verein je Tag nur ein Spiel hat und die Regel <see cref="AutoLineupRule"/> ohne Zufall arbeitet. Das Remake führt
     /// das gesicherte Byte 0x376 nicht: Im Spiel wird es nach den Managerzügen aus 0x375 geschrieben (Datei 0x54FDC) und steht
     /// nur während der Spiele anders. Beim Laden gilt es dagegen (#733, Datei 0x54D84: FILE24 0x375 = 0, 0x376 = 1 → FILE25 an);
@@ -144,7 +144,7 @@ public static partial class OriginalMinutes
     ///   Spieltagsablaufs (<see cref="LiveTeam.TurnManager"/>, <see cref="TurnManagerRegister"/>), nicht der jeweilige Manager;
     ///   ohne Merker (Aufbauten ohne <see cref="MatchEngine.BeginMatch"/>) der eigene Wert.</item>
     /// <item>random(0, 20 · clamp(60 − M, 0, 40) + 200 · (5 − Level) + 200) = 0 (M = Managerwert des Managers, Schalter
-    ///   DGROUP 0x4E80 [APPROX] aus) → Spieler 0x378C5 (<see cref="PenalizedPlayer"/>; keiner → nächster Manager).</item>
+    ///   DGROUP 0x4E80 [ORIGINAL] immer aus: ohne Schreiber, Startwert 0, Datei 0x16DD0 + 0x4E80; Leser Datei 0x3797F) → Spieler 0x378C5 (<see cref="PenalizedPlayer"/>; keiner → nächster Manager).</item>
     /// <item>Ereignis 4 (0x130:0x7F = 0x53C57 → 0x5411E): Verletzung 0x05B1A mit Schalter Spiel
     ///   (<see cref="PlayerInjuries.Inflict"/>), der Spieler geht vom Eis (+0x0A = 0). Versicherte Spieler: Zahlung 0x07089
     ///   (Kaderplatz +0x30 · 4 an den Manager) – Anschluss in Spur transfer-vertraege-komplett (Teil 2), hier nicht.</item>
@@ -184,8 +184,8 @@ public static partial class OriginalMinutes
     /// <summary>
     /// Torschütze und Vorlage eines Abschlusses einer gemanagten Mannschaft. [ORIGINAL] Datei 0xAB47–0xAB90: in der
     /// Managerpaarung ruft jeder Abschluss (auch ohne Tor; nicht der Abbruch in der Verlängerung 0xA64E) die Szene
-    /// 0x14E1:0x7F (0x53C57) mit Art 1 = Tor bzw. 0 = kein Tor; ohne Torszenen (DGROUP 0x226 = 0, [APPROX] wie im Remake
-    /// üblich) direkt 0x541D9(Verein, Art, 0): Manager des Vereins (erster Satz mit diesem Verein, auch der Bundestrainer
+    /// 0x14E1:0x7F (0x53C57) mit Art 1 = Tor bzw. 0 = kein Tor; ohne Torszenen (DGROUP 0x226 = 0)
+    /// direkt 0x541D9(Verein, Art, 0): Manager des Vereins (erster Satz mit diesem Verein, auch der Bundestrainer
     /// mit dem Nationalteam), mehr als 3 eingesetzte Spieler der Aufstellung → Schütze 0x386D1(m, 0, Art), Vorlage
     /// 0x386D1(m, 1, 1) bis ungleich dem Schützen. Nur bei einem Tor zählen Vorlage (Spielerfeld 0x1F) und Tor (Spielerfeld
     /// 0x1B in Wettbewerb 0, Kaderplatz +0x22/+0x03 je Wettbewerb DGROUP 0xD0BF).
@@ -215,7 +215,7 @@ public static partial class OriginalMinutes
     ///   gewählt, wenn random(0, 3000) &lt; w.</item>
     /// <item>Ohne Treffer der erste Feldspieler unter den Plätzen 0 … n − 1 (sonst n).</item>
     /// </list>
-    /// [APPROX] Tore (+0x03, Wettbewerb 0) = Tore der Saison (<see cref="Player.Goals"/>) samt den Toren dieses Spiels.
+    /// [ORIGINAL] Tore (+0x03, Wettbewerb 0) = Tore der Saison (<see cref="Player.Goals"/>) samt den Toren dieses Spiels; Zähler je Wettbewerb DGROUP 0xD0BF (A135).
     /// </summary>
     public static int ScorerIndex(LiveTeam team, LiveSquad squad, bool assist, bool formula, Random random)
     {

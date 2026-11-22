@@ -226,7 +226,7 @@ public sealed class HighscoreInputs
 ///   10 · (Kennzahl &amp; 7) – auch „nicht im Wettbewerb“ (0x1E → 60); Europapokal nur, wenn die DEB-Kennzahl ein Sieger ist
 ///   oder ≥ 8: Sieger 130, sonst 20 · (Kennzahl &amp; 7) (Eigenheit des Originals, Bit-Verschiebung nach der Maskierung).</item>
 /// </list>
-/// [APPROX]
+/// Weitere Näherungen des Remakes (je Eintrag dort markiert):
 /// <list type="bullet">
 /// <item>Spielerwerte nach 0x49D36 (<see cref="PlayerValue"/>, Spur spielerwert) mit den Eingängen des Remakes (dort [APPROX]); die
 ///   Bewertung und die Spielerwerte rechnen mit festen Zufallsströmen, damit das Öffnen des Bildschirms nichts verändert.</item>
@@ -281,7 +281,7 @@ public static class HighscoreRules
         }
 
         var history = game.ManagerHistory(manager);
-        // [APPROX] Titelzähler aus dem Saisonverlauf; das Original liest die Bytes Manager + 0x15–0x17 (0x5D545–0x5D56D).
+        // [ORIGINAL] Titelzähler aus dem Saisonverlauf; das Original liest die Bytes Manager + 0x15–0x17 (0x5D545–0x5D56D), die nur beim Saisonwechsel steigen (Datei 0x55BFA Meister, 0x55D22 Pokal, 0x55DBD Europapokal).
         var a = (byte)Math.Min(255, history.Count(h => h.LeagueOutcome == LeagueOutcome.GermanChampion));
         var b = (byte)Math.Min(255, history.Count(h => h.Deb == CupOutcome.Winner));
         var c = (byte)Math.Min(255, history.Count(h => h.Europe == CupOutcome.Winner));
@@ -296,7 +296,7 @@ public static class HighscoreRules
     /// 1 … 8 und für alle übrigen Teilnehmer 11 (Datei 0x31266–0x31291), also zählt Platz 9 … 12 je WM −2 – anders als die
     /// WM-Statistik (<see cref="GameState.WorldCupPoints"/>), die nur Platz 1 … 8 zählt. Höchstens 16 WMs (Datei 0x311F8).
     /// Belegt mit FILE54 (Platz 4 → 5) und FILE20 (Gruppe → 1), <c>docs/analyse/abgleich-dosbox.md</c> §3.3.
-    /// [APPROX] Land DGROUP 0x6AC ist hier immer Deutschland (Verein der Zeile wie bisher).
+    /// [ORIGINAL] Land DGROUP 0x6AC ist hier immer Deutschland (einziger Schreiber Datei 0x35FAC in der Ligamischung 0x35EDD; Verein der Zeile wie bisher).
     /// </summary>
     public static int WorldOnlyScore(GameState game)
     {

@@ -215,13 +215,13 @@ public sealed partial class GameState
     ///   0x07C0C). Also wirkt (c) nur nach WM-Spielen und nur für Manager 0; an den übrigen Tagen mit Zähler ≡ 0/4 (Tage 223 und
     ///   227, ohne WM-Spiele) nichts.</item>
     /// <item>[ORIGINAL] Mit Bundestrainer: Traf die letzte Strafe des Spieltags sein Land (Feld +0x16 = 6 nach Datei 0x55494),
-    ///   bleibt 0xA70E = 5 und (c) wirkungslos (A498, Spur national Teil 2; <see cref="NoteWorldCupPenalties"/>; vorher [APPROX]
+    ///   bleibt 0xA70E = 5 und (c) wirkungslos (A498, Spur national Teil 2; <see cref="NoteWorldCupPenalties"/>; vorher als Näherung
     ///   immer Manager 0).</item>
     /// <item>[ORIGINAL] Markt (nur Manager 0, Datei 0x0718F–0x071CC): Belastung +0x13 der Marktspieler über 0x38 sinkt um 10
     ///   (<see cref="MarketDecayAbove"/>). Belege (Modus 1, <c>emtool hok dump</c>): FILE18 (Zähler 217) → FILE48 (219) alle
     ///   Marktspieler E −6/−7 (eine Ausführung), FILE19 (217) → FILE20 (231) E −13/−14 (zwei), Liste gleich. Kein Listenwechsel
     ///   (0x494EF hat nur die Aufrufer 0x437D5 und 0x54E7C im Hauptweg). [ORIGINAL] Ohne Untergrenze (57–59 → 47–49; A499, Spur
-    ///   national Teil 2, vorher [APPROX] Untergrenze 50): bis <see cref="MinMarketStrain"/>.</item>
+    ///   national Teil 2, vorher als Näherung Untergrenze 50): bis <see cref="MinMarketStrain"/>.</item>
     /// <item>Inhalt für Manager 0 (nicht im Modus 1): Heilung seiner Kaderplätze (Datei 0x07B4E → 0x07C12 mit dem Zähler der Spiele,
     ///   <see cref="PlayerInjuries.IsHealingDay"/>), danach je Platz das Training (Datei 0x07B5E → 0x0659C,
     ///   <see cref="TrainingRules.Apply"/>, Kosten wie <see cref="TrainOneDay"/>), Tendenz (Datei 0x07B64–0x07BFC, #688),

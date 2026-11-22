@@ -425,7 +425,7 @@ public sealed partial class GameState
     /// <summary>
     /// Trainingstage des Hauptwegs: die Takttage des Tageszählers (<see cref="IsDailyRunDay"/>, #678), im Tageswechsel
     /// <c>OnDayOpen(day)</c> vor dem Menü (#688) Mittwoch und Samstag. [ORIGINAL] Training 0x0659C nur in 0x07169 (Datei 0x07B5E), das der Hauptweg
-    /// bei Zähler 0x3B7 ≡ 0/4 (mod 7) ruft (Datei 0x55253–0x552A6); vorher [APPROX] Mittwoch und Sonntag.
+    /// bei Zähler 0x3B7 ≡ 0/4 (mod 7) ruft (Datei 0x55253–0x552A6); vorher als Näherung Mittwoch und Sonntag.
     /// </summary>
     public static bool IsTrainingDay(int day) => IsDailyRunDay(day);
 

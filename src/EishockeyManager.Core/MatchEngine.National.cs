@@ -124,7 +124,7 @@ public static partial class MatchEngine
     /// <b>Heimtore der sechsten Paarung des 13. Bundesliga-Spieltags</b> (Schreiber 0x369C7, Datei 0x36A54; Lage wie
     /// <c>OriginalExport.WriteLeague</c>). Ein Querverweis auf 0xA160–0xA170 fehlt im ganzen Programm (disasm.py --xref),
     /// der Wert entsteht nur über diese Adressrechnung. Nicht gespielt (oder nach dem Saisonwechsel geleert, Datei 0x565C2):
-    /// 0. [APPROX] Ergebnismarken des Originals (z. B. 0x5A bei Wertung, 0x36A05) führt das Remake nicht; es nimmt die Tore
+    /// 0. [ORIGINAL] Ergebnismarken (z. B. 0x5A bei Wertung, 0x36A05) stehen nur während des Spieltagslaufs (Datei 0x36ADC, 0x385A0 → 0x36A54, Wertung 0x36DE9); am Ende desselben Laufs stehen die Tore (0x37A62), das Remake nimmt die Tore
     /// aus <see cref="GameState.Results"/>, begrenzt auf ein Byte.
     /// </summary>
     public static int NationalPenaltyManagerValue(GameState game)
@@ -186,7 +186,7 @@ public static partial class MatchEngine
     /// (DGROUP 0x5DC3 + 5 · 0x618); nach der Rückkehr zählt 0x5434C die Feldspieler des Vereins des Satzes
     /// (DGROUP 0x966F + 5 · 0x1AF = 0x9EDA, also des Landes) neu (Datei 0x5438D–0x54419 → 0x38A36). Platz +0x15 und eingesetzt
     /// +0x0A wie in <see cref="NationalSquad"/>, Spieler auf der Strafbank und im Spiel Verletzte bleiben draußen wie beim Verein
-    /// (<see cref="LiveLineup.Apply"/>, dort auch das [APPROX] zur Strafbank); Energie und Zähler des Spiels bleiben.
+    /// (<see cref="LiveLineup.Apply"/>, dort auch die Näherung zur Strafbank); Energie und Zähler des Spiels bleiben.
     /// </summary>
     public static void ApplyNationalLineup(LiveTeam team, NationalCoach coach)
     {

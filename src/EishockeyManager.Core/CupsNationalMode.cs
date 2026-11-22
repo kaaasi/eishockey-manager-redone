@@ -132,7 +132,7 @@ public sealed partial class GameState
     /// nach einer angesehenen Heim- oder Auswärtstabelle stellt 0x50256 (Liga, 1, Gesamt) die Gesamtordnung wieder her
     /// (`docs/reverse-engineering.md`, Abschnitt Tabellen). Abweichen kann nur die Reihenfolge vollständig gleicher
     /// Vereine (Sortierung nicht stabil); <see cref="FinalTables"/> nutzt dieselbe Sortierung (`LeagueTable.Compute`, Gesamt), den
-    /// Einfluss angesehener Heim-/Auswärtstabellen auf Gleichstände führt `Season.cs` als [APPROX].
+    /// Einfluss angesehener Heim-/Auswärtstabellen auf Gleichstände führt `Season.cs` gesondert (dort markiert).
     /// </remarks>
     internal void OnNationalMarkerDay()
     {
