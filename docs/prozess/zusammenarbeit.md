@@ -63,6 +63,8 @@ gepushte Stand; der Nachfolger schreibt zuerst einen Übernahmekommentar („üb
 - **Sparsame Kette (Nutzer 09.11.2026):**
   1. **Erstreview** (Spur- oder Integrations-PR): vollständig (Claude: Opus 5.5) – alle drei Läufe von `tools/pruefen.sh`,
      Mutationen, Pixelvergleich, Fehlerfälle/Fuzzing, Fundstellen in em.exe.
+     Bei Tests zu Befunden „Original zieht endlos / endet nur unter Bedingung“ prüft es zusätzlich, dass der Test eine
+     Machbarkeitsprüfung im Aufbau oder einen Abbruchzähler hat (`AGENTS.md` §5, Hängeschutz).
   2. **Fixlauf:** `tools/pruefen.sh --schnell` (den Lauf ohne Daten übernimmt die CI).
   3. **Nachprüfung** nur, wenn der Fixlauf **P0/P1** behebt: nur Delta, Gegenbeispiele und Rückmutationen dieser Befunde (keine
      erneute Vollprüfung, kein Pixelvergleich außerhalb der Befunde).

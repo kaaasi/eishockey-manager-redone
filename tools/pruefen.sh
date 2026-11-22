@@ -8,6 +8,8 @@
 #   1. mit Originaldaten   EM_REQUIRE_GAMEDATA=1 – scheitert, wenn gamedata/ fehlt (nur wenn vorhanden)
 #   2. ohne Originaldaten  EM_SKIP_GAMEDATA=1   – wie die CI: Originaldaten-Tests sichtbar übersprungen
 #   3. Pflichtlauf ohne Daten (beide Variablen) – MUSS scheitern; sonst laufen Originaldaten-Tests still leer
+# Hängeschutz (Issue #935): Jeder Testlauf bricht nach EM_HANG_TIMEOUT (Standard 20m) ohne Fortschritt eines Tests ab und nennt die
+# hängenden Tests (--blame-hang-timeout, ohne Dump); Fortschritt je Test steht in der Logdatei des Laufs (console;verbosity=normal).
 # Exit-Code 0 nur, wenn Build ohne Warnungen, Lauf 1 (falls Daten da) und Lauf 2 grün sind und Lauf 3 scheitert.
 set -uo pipefail
 
@@ -17,6 +19,7 @@ SLN=EishockeyManager.slnx
 QUICK=0; [ "${1:-}" = "--schnell" ] && QUICK=1
 LOG="$(mktemp -d)"
 STATUS=0
+TESTOPT=(--blame-hang-timeout "${EM_HANG_TIMEOUT:-20m}" --blame-hang-dump-type none --logger "console;verbosity=normal")
 
 # Jedes Testprojekt muss eine Ergebniszeile liefern; fehlt eine, ist ein Projekt abgestürzt oder nicht geladen.
 PROJEKTE=$(ls tests/*/*.csproj 2>/dev/null | wc -l)
@@ -44,7 +47,7 @@ ROWS=()
 
 if [ $HAVE_DATA = 1 ]; then
   echo "== Tests mit Originaldaten"
-  EM_REQUIRE_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q > "$LOG/mit.txt" 2>&1
+  EM_REQUIRE_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q "${TESTOPT[@]}" > "$LOG/mit.txt" 2>&1
   rc=$?; ergebnisse_da "$LOG/mit.txt" "Lauf mit Originaldaten"; read -r p f s <<< "$(summe "$LOG/mit.txt")"
   ROWS+=("| Mit Originaldaten (\`EM_REQUIRE_GAMEDATA=1\`) | $p | $f | $s |")
   [ $rc -ne 0 ] && STATUS=1
@@ -57,7 +60,7 @@ fi
 
 if [ $QUICK = 0 ] || [ $HAVE_DATA = 0 ]; then
   echo "== Tests ohne Originaldaten"
-  EM_SKIP_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q > "$LOG/ohne.txt" 2>&1
+  EM_SKIP_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q "${TESTOPT[@]}" > "$LOG/ohne.txt" 2>&1
   rc=$?; ergebnisse_da "$LOG/ohne.txt" "Lauf ohne Originaldaten"; read -r p f s <<< "$(summe "$LOG/ohne.txt")"
   ROWS+=("| Ohne Originaldaten (\`EM_SKIP_GAMEDATA=1\`) | $p | $f | $s |")
   [ $rc -ne 0 ] && STATUS=1
@@ -65,7 +68,7 @@ fi
 
 if [ $QUICK = 0 ]; then
   echo "== Pflichtlauf ohne Daten (muss scheitern)"
-  EM_SKIP_GAMEDATA=1 EM_REQUIRE_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q \
+  EM_SKIP_GAMEDATA=1 EM_REQUIRE_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q "${TESTOPT[@]}" \
     --logger "trx;LogFilePrefix=pflicht" --results-directory "$LOG/pflicht" > "$LOG/pflicht.txt" 2>&1
   rc=$?; read -r p f s <<< "$(summe "$LOG/pflicht.txt")"
   ergebnisse_da "$LOG/pflicht.txt" "Pflichtlauf ohne Daten"; vollstaendig=$?
