@@ -154,7 +154,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
   Feld „Beleg“ bzw. Nicht-Marker (Rückblicke, Verweise) ohne `[APPROX]` umformulieren; nur Kommentare, kein Verhalten;
   2. zweiter Lauf `markerliste.py --write` (X = 0, entfallene IDs) und `funktionskarte.py --write`.
 - **Dateien:** Kommentarzeilen unter `src/`, `docs/analyse/restliste-v1*.{md,csv}`. **Tests:** `--schnell` (nur Kommentare).
-- **Voraussetzung:** `pruefung-karte` gemergt. **Erstreview:** Sonnet 5.5. **Status:** alle Teile umgesetzt (Claude Code, Draft-PR #PRNR): 72 X-Markerzeilen in 46 Dateien nur als Kommentar umformuliert (Code je Zeile unverändert geprüft), `markerliste.py --write` (X 72 → 0, 572 Markerzeilen) und `funktionskarte.py --write`; dazu #951 P3-1…3 (Vermerke in der CSV); 24 X-Funktionszeilen (F-IDs) haben keine Markerzeile und bleiben; wartet auf Review (Sonnet 5.5).
+- **Voraussetzung:** `pruefung-karte` gemergt. **Erstreview:** Sonnet 5.5. **Status:** alle Teile umgesetzt (Claude Code, Draft-PR #952): 72 X-Markerzeilen in 46 Dateien nur als Kommentar umformuliert (Code je Zeile unverändert geprüft), `markerliste.py --write` (X 72 → 0, 572 Markerzeilen) und `funktionskarte.py --write`; dazu #951 P3-1…3 (Vermerke in der CSV); 24 X-Funktionszeilen (F-IDs) haben keine Markerzeile und bleiben; wartet auf Review (Sonnet 5.5).
 
 ### Gesamtreview Runde 22 (R22-D5)
 
