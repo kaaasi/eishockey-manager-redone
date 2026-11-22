@@ -137,11 +137,14 @@ public sealed partial class GameState
     public bool AfterSeasonEnd => Phase == SeasonPhase.SeasonOver || HasPendingRenewals;
 
     /// <summary>
-    /// Restanteil der Saison für die Gehaltsrechnung (nächster Spieltag = gespielte + 1). [APPROX] Während der Verhandlungen am
-    /// Saisonende (Spieltage schon zurückgesetzt) wie in der Phase <see cref="SeasonPhase.SeasonOver"/>: nächster Spieltag 45.
+    /// Restanteil der Saison für die Gehaltsrechnung (nächster Spieltag = gespielte + 1). [ORIGINAL] A206 (#899 P3-2): Während der
+    /// Verhandlungen am Saisonende steht der nächste Spieltag je Liga auf 1 (Schleife Datei 0x5613E für Liga 0–2, Aufruf des Fensters
+    /// 0x5645D; Rücksetzung auf 0 erst für Liga 3–7, Datei 0x565E0), der Rest also bei 98 statt −2 (Spieltag 45; Rest aus DGROUP
+    /// 0x7A9 + Liga, Datei 0x4A851–0x4A8A6). In der Phase <see cref="SeasonPhase.SeasonOver"/> davor gilt noch der Zähler der letzten
+    /// Spiele (gespielte + 1 = 45).
     /// </summary>
     public int ContractSeasonRemaining => ContractRules.SeasonRemaining(
-        (Phase != SeasonPhase.SeasonOver && HasPendingRenewals ? ContractRules.SeasonMatchDays : PlayedMatchDays) + 1);
+        Phase != SeasonPhase.SeasonOver && HasPendingRenewals ? 1 : PlayedMatchDays + 1);
 
     /// <summary>
     /// Je Lauf von 0x07169 am Takttag (Datei 0x76E5–0x76F6; #678, R688-09): Verhandlungssperren der Spieler des Managers zählen um eins

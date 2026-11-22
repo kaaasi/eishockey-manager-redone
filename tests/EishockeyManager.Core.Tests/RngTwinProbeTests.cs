@@ -305,10 +305,13 @@ public class RngTwinProbeTests
     // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
     // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
     // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
-    [InlineData(false, 3, "E8E0122BD8C46A9E")]
-    [InlineData(true, 3, "127D002E5E749011")]
-    [InlineData(false, 11, "7A6A202ECE12E57E")]
-    [InlineData(true, 11, "53B9546931FCA2D4")]
+    // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (Runde 22, R21-D2 = A, R15-E2 = C): neu – A672 (Feldspieler im Tor, Datei 0x42718–0x42777),
+    // A665 (Platztausch bei Zwangsabstieg), A582 (Kündbar der Werbeverträge) und A104 ändern Spielrechnung bzw. Zufallsverbrauch; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von 21f341a + dieser Test → rot (alte Werte).
+    [InlineData(false, 3, "220B33CCE78A3A29")]
+    [InlineData(true, 3, "3A8096F9CC81C37D")]
+    [InlineData(false, 11, "6DBADD4F89A2793B")]
+    [InlineData(true, 11, "967ED0063850E948")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -519,9 +522,10 @@ public class RngTwinProbeTests
     /// </summary>
     // Spur zusehen (Runde 21): Club.WatchMode/WatchedLive (Markierung zum Zusehen, neu im Zustand) stehen nicht im Abdruck, damit
     // die Abdrücke vergleichbar bleiben; die Spielwirkung (Reihen der Live-Anzeige) prüft ZusehenWatchTests.
+    // Runde 22, Spur einzelpunkte: Manager.OneSeasonFlag (A847, Managerbyte 0x9744, nur Bestenliste) steht nicht im Abdruck.
     private static readonly HashSet<string> Excluded =
         ["Id", "DressedCount", "LeaguePenaltyMinutes", "InsurancePremium", "InsuranceLocked", "PurchasePrice", "InjuryKind",
-         "InjuryName", "HasNewMessage", "WatchMode", "WatchedLive"];
+         "InjuryName", "HasNewMessage", "WatchMode", "WatchedLive", "OneSeasonFlag"];
 
     /// <summary>
     /// Umbenannte Felder stehen unter ihrem alten Namen im Abdruck, damit die Abdrücke vergleichbar bleiben:

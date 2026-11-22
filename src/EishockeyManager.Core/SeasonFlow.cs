@@ -426,6 +426,11 @@ public sealed partial class GameState
 
         // Spur wettbewerbe-weltkugel: Im Modus „nur Weltkugel“ führt kein Manager einen Verein durch die Saison –
         // kein Platz, keine Prämie (Prämien gibt es nur aus der Vereinssaison).
+        // [ORIGINAL] A671: Das Konto von Satz 0 setzt Datei 0x56287–0x56334 trotzdem auf 400.000 DM, wenn sein Verein in der Oberliga
+        // Letzter oder Vorletzter ist – die Prüfung (Vereinsfeld 0x16, Datei 0x296EC) kennt den Modus nicht. Ohne Spiele (Modus ohne
+        // Vereinssaison) gilt die Startordnung der Tabelle; der Doppeltausch des Vereins (KeptInOberliga) braucht eine Vereinssaison.
+        if (WorldOnly && Managers.Count > 0 && record.LeftOberliga.Contains(Managers[0].ClubIndex))
+            Managers[0].Money = OberligaKeptMoney;
         for (var i = 0; i < Managers.Count && !WorldOnly; i++)
         {
             var manager = Managers[i];
@@ -469,7 +474,11 @@ public sealed partial class GameState
             }
             // Spur statistiken (#135): Einzelprämien; Fair-Play über die Liga der nächsten Saison (S-K6-c, SeasonFlow.FairPlay.cs)
             events.AddRange(SeasonEndSinglePremiums(record, manager, league));
-            var premium = SeasonPremium(league, rank, PremiumEvents(record, club.Index, events)); // ohne Aufstieg beim Doppeltausch
+            var premiumEvents = PremiumEvents(record, club.Index, events); // ohne Aufstieg beim Doppeltausch
+            var premium = SeasonPremium(league, rank, premiumEvents);
+            // [ORIGINAL] A582, Datei 0x2713F: im Zweig der Aufstiegsprämie (Bit 1 ohne Bit 2, 0x270A8) werden alle Werbeverträge „kündbar“.
+            if (premiumEvents.Contains(SeasonEvent.Promotion))
+                MarkContractsCancellable(manager);
             if (premium > 0)
                 Book(manager, FinanceCategory.Praemien, premium); // Finanzbuch „Prämien“ (Paket „wirtschaft“)
             // Spur kader-rest Teil 3: Jugend am Saisonende mit Ereignissymbol 9 je Neuzugang, nach den Prämien (Datei 0x2728C–0x2730F).

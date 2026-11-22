@@ -116,8 +116,7 @@ public static class MatchStatistics
     /// (random(0, 8) = 0) ein Wechsel: der erste bekommt random(0, 100) % der Gegentore, der zweite den Rest; Minuten
     /// dann random(2, 100) · 60 / 100 und der Rest bis 60. Sonst alles für den ersten. Gegentore nur, solange das Byte
     /// nicht über 255 steigt (übernommen).
-    /// [APPROX] Reihenfolge: der aufgestellte Torhüter zuerst, dann die übrigen in Kaderreihenfolge (Original: Reihenfolge
-    /// im Spielerpool).
+    /// Reihenfolge: <see cref="GameState"/> übergibt die Torhüter in Poolreihenfolge (A104).
     /// </summary>
     public static void CreditGoalies(IReadOnlyList<Player> goalies, int goalsAgainst, Random random)
     {

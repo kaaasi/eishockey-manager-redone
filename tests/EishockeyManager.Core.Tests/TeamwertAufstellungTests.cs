@@ -225,7 +225,9 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         // (Schwelle 200, Saaten 16–23 passiv zu kurz, 24 passiv und aktiv darüber). Rückschaltprobe: src/ von ce658d4 + Saat 24.
         // Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A): Saat 29 statt 24 – mit den Strömen von national und kader-regeln
         // zählt der passive Lauf bei Saat 24 nur 194 Schritte (Schwelle 200); Saaten 25–28 ebenfalls zu kurz, 29 passiv und aktiv darüber.
-        var game = TestGames.Create(29);
+        // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (Runde 22, R21-D2 = A): Saat 30 statt 29 – A672/A665/A582 ändern den Zufallsverlauf; bei Saat 29
+        // zählt der passive Lauf nur 190 Schritte (Schwelle 200); Saat 30 passiv 242, aktiv 243. Rückschaltprobe: src/ von 21f341a + Saat 30 passiv rot (zu wenige Schritte) – die Probe hängt an der Saat.
+        var game = TestGames.Create(30);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();

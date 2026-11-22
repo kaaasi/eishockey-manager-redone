@@ -156,7 +156,9 @@ public sealed partial class GameState
         foreach (var league in Enum.GetValues<League>())
         {
             var members = membersOf[league];
-            var order = StoredSlots(league).Select(c => partner.TryGetValue(c, out var p) && !members.Contains(c) ? p : c)
+            // [ORIGINAL] A665: Platztausch innerhalb der unteren Liga (Datei 0x5636D, 0x36169) gilt auch für Vereine, die in der Liga bleiben.
+            var inner = record.InnerMoves.Where(m => m.Lower == league).ToDictionary(m => m.Slot, m => m.Club);
+            var order = StoredSlots(league).Select(c => inner.TryGetValue(c, out var q) ? q : partner.TryGetValue(c, out var p) && !members.Contains(c) ? p : c)
                 .Where(members.Contains).Distinct().ToList();
             order.AddRange(members.Where(c => !order.Contains(c)).Order());
             if (order.Count != ClubsPerLeague)

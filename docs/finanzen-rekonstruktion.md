@@ -537,10 +537,10 @@ Schatten). Umgesetzt in `UI/Screens/Manager/AdvertisingScreen.cs` (`PanelTexts`,
 | Auswahlrahmen | Farbe 0x12 (0x2B63F) | 110 | – |
 
 **Restlücken (nicht umgesetzt, weil Spielzustand und Schema betroffen):**
-- **Kündbar:** Beim Aufstieg setzt 0x2713F (Saisonende, nach der Aufstiegsprämie 0x270A8) in allen elf Verträgen Bit 0x80
-  der Option. Solche Verträge zeigen im Vertragsfeld „Kündbar.“ (x 275, 0x2AC84), zählen als freie Fläche bzw. freie Bande
-  (0x2BAF3, 0x2BECD) und werden beim Annehmen eines neuen Angebots überschrieben (0x2BB3E). Braucht ein Vertragsfeld im
-  Spielstand (Schema) und einen Anschluss am Saisonende.
+- **Kündbar** (umgesetzt, A582, Spur `einzelpunkte`): Beim Aufstieg (Zweig der Aufstiegsprämie 0x270A8, gemeinsamer Abschluss 0x27131)
+  setzt 0x2713F in allen elf Verträgen Bit 0x80 der Option (`SponsorContract.Cancellable`, `GameState.MarkContractsCancellable`).
+  Solche Verträge zeigen im Vertragsfeld „Kündbar.“ (x 275, 0x2AC84), zählen als freie Fläche bzw. freie Bande (0x2BAF3, 0x2BECD,
+  `Sponsoring.IsFree`) und werden beim Annehmen eines neuen Angebots überschrieben (0x2BB3E). `[APPROX]` „Kündbar.“ hat Vorrang vor „! Option !“.
 - **Verfall offener Optionen:** Beim Verlassen des Hauptmenüs (Ende des Zuges, 0x45996–0x45A4F) löscht das Original jeden
   Vertrag mit Restlaufzeit 0 und Option ≠ 0. Wer die Verlängerung nicht im selben Zug durch Klick verhandelt, verliert den
   Vertrag; im Remake bleibt er bis zum Klick und zahlt weiter.

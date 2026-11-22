@@ -136,7 +136,9 @@ public class TransferVertraegeKomplettTests
         Assert.Equal(1, Contracts.CurrentYears(p));
         var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, new Random(0), manager.Level);
         Assert.Equal(value * (147 - p.Age) / 100 / 3, p.MonthlySalary);
-        Assert.Equal(ContractRules.SeasonRemaining(ContractRules.SeasonMatchDays + 1), game.ContractSeasonRemaining);
+        // Runde 22, einzelpunkte A206 (R15-E2 = C): nächster Spieltag 1 → Rest 98 (Datei 0x5613E, 0x4A851–0x4A8A6), vorher 45 → −2.
+        // Rückschaltprobe: alter Code + dieser Test → rot.
+        Assert.Equal(98, game.ContractSeasonRemaining);
     }
 
     /// <summary>[ORIGINAL] 0x27D99–0x27EDF: „Mach' ich!“ ohne Eingaben nimmt das Angebot an – 1 Jahr zum neuen Gehalt,

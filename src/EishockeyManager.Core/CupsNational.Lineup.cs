@@ -283,8 +283,9 @@ public sealed partial class NationalCoach
     /// (<see cref="Core.Lineup.AutoFill"/>) und Rest nach Kondition + Technik + Form.
     /// [APPROX] Innerhalb eines Blocks nach Rückennummer des Vereins sortiert (wie beim Verein,
     /// <see cref="Core.Lineup.SortBlocksByNumber"/>). Wann die Einstellung wirkt, steht in <c>CupsNational.AutoLineup.cs</c> (A009).
-    /// [APPROX] Wie beim Verein (<see cref="Club.AutoLineup"/>) schaltet „A“ die Einstellung wieder ein; im Original kippt sie
-    /// der Taktikbildschirm (Datei 0x47F4E/0x49058 mit DGROUP 0xA70E).
+    /// [ORIGINAL] A492: Eine Taste „A“ gibt es in der Nationalaufstellung nicht; die Einstellung schaltet allein der Knopf im
+    /// Taktikbildschirm (<see cref="SetAutoLineup"/>, Datei 0x47CA0/0x47CB2 mit DGROUP 0xA70E, Datei 0x40ADE/0x40DE4 schreiben nur 0);
+    /// diese Methode ist die Neuaufstellung ohne Oberflächenweg.
     /// </summary>
     public void AutoFormation()
     {

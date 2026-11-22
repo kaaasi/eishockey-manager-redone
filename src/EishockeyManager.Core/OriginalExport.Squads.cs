@@ -71,8 +71,7 @@ public sealed partial class GameState
                 WriteSlot(squad.AsSpan(at, OriginalSaveGame.SquadSlotLength), p, index, slotOf, club);
                 var s = squad.AsSpan(at, OriginalSaveGame.SquadSlotLength);
                 s[0x0A] = (byte)(club.IsDressed(p) ? 1 : 0);
-                if (club.Lineup.FindSlot(p) is { } place)
-                    s[0x15] = (byte)((place.Role == PlayerRole.Goalkeeper ? 1 : place.Block + 1) | (place.Role == PlayerRole.Forward ? 0x80 : 0));
+                s[0x15] = (byte)club.Lineup.PositionOf(p); // 0 Reserve, sonst Teil (Bit 7) und Reihe + 1; Feldspieler im Tor 1 (A672)
             }
         }
 

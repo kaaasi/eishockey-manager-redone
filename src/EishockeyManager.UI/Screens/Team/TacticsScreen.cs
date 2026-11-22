@@ -55,15 +55,49 @@ public sealed class TacticsScreen : Screen
     private readonly Screen _back;
     private readonly Func<Tactics>? _tactics;
     private readonly Func<Screen>? _lineup;
+    private readonly AutoLineupSwitch? _auto;
+    private bool? _autoAtOpen;
     private int _block;
 
     public TacticsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
     /// <summary>Taktik eines anderen Teams (Spur nationalteam-2: Nationalteam) mit eigenem Weg zur Aufstellung.</summary>
-    public TacticsScreen(ScreenHost host, Screen back, Func<Tactics> tactics, Func<Screen> lineup) : this(host, back)
+    public TacticsScreen(ScreenHost host, Screen back, Func<Tactics> tactics, Func<Screen> lineup, AutoLineupSwitch? auto = null)
+        : this(host, back)
     {
         _tactics = tactics;
         _lineup = lineup;
+        _auto = auto;
+    }
+
+    /// <summary>
+    /// Einstellung „automatisch aufstellen“ des gezeigten Teams (Knopf oben links, „AUTOM.“/„MANUELL“). [ORIGINAL] A673/A681/A492:
+    /// Knopf 0 des Taktikbildschirms zeigt und schaltet DGROUP 0x375 + 2 · Manager (Datei 0x47CA0–0x47CE5, Lage 71 | 42); wurde sie
+    /// im Bildschirm eingeschaltet, folgt beim Verlassen die Neuaufstellung (Datei 0x48E62 Schritt 5). Ohne <c>auto</c> der eigene Verein.
+    /// </summary>
+    private bool AutoSetting => _auto?.Get() ?? TeamUi.OwnClub(Host).AutoLineupEnabled;
+
+    private void SetAutoSetting(bool on)
+    {
+        _autoAtOpen ??= AutoSetting;
+        if (_auto is { } auto)
+            auto.Set(on);
+        else
+            TeamUi.OwnClub(Host).SetAutoLineup(on);
+    }
+
+    /// <summary>Verlassen des Bildschirms: eine eingeschaltete Einstellung stellt neu auf, dann folgt <paramref name="show"/>.</summary>
+    private void Close(Func<Screen?> show)
+    {
+        if (_autoAtOpen is { } was)
+        {
+            if (_auto is { } auto)
+                auto.Close(was);
+            else
+                TeamUi.OwnClub(Host).CloseTactics(was);
+        }
+        if (show() is { } next)
+            Host.Show(next);
     }
 
     private Tactics Tactics => _tactics?.Invoke() ?? TeamUi.OwnClub(Host).Tactics;
@@ -78,7 +112,7 @@ public sealed class TacticsScreen : Screen
     {
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
-            Host.Show(_back);
+            Close(() => _back);
             return;
         }
         if (!input.LeftClick)
@@ -90,10 +124,8 @@ public sealed class TacticsScreen : Screen
 
         if (TeamUi.SwitchButton.Contains(x, y))
         {
-            if (_lineup is not null)
-                Host.Show(_lineup());
-            else if (MenuEntries.TryCreate("Aufstellung", Host, _back, out var lineup))
-                Host.Show(lineup!);
+            Close(() => _lineup is not null ? _lineup()
+                : MenuEntries.TryCreate("Aufstellung", Host, _back, out var lineup) ? lineup : null);
             return;
         }
 
@@ -102,7 +134,7 @@ public sealed class TacticsScreen : Screen
                 _block = b;
 
         if (Step(GoalieArrows, x, y) is { } g)
-            t.Goalie = Next(t.Goalie, -g);
+            SetAutoSetting(Math.Clamp((AutoSetting ? 0 : 1) - g, 0, 1) == 0); // zwei Werte „AUTOM.“, „MANUELL“ (DGROUP 0x5306), kein Umlauf
         if (Step(LineChangeArrows, x, y) is { } l)
             t.LineChange = Next(t.LineChange, -l);
         if (Step(EffortArrows, x, y) is { } e)
@@ -157,7 +189,7 @@ public sealed class TacticsScreen : Screen
         // Torwartwechsel
         Widgets.Frame(s, Assets, GoaliePanel, FrameStyle.Orange);
         s.Blit(Assets.Image(9), new Rect(0, 0, 57, 24), 13, 39);
-        ModeButton(s, GoalieButton, Tactics.ModeText(t.Goalie));
+        ModeButton(s, GoalieButton, Tactics.ModeText(AutoSetting ? GoalieMode.Auto : GoalieMode.Manual));
         TeamUi.Arrows(s, Assets, GoalieArrows.X, GoalieArrows.Y);
 
         // Linienwechsel

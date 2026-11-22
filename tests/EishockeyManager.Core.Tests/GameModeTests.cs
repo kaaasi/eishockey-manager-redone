@@ -486,8 +486,11 @@ public class GameModeTests
     // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
     // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
     // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
+    // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (Runde 22, R21-D2 = A, R15-E2 = C): neu – A672 (Feldspieler im Tor, Datei 0x42718–0x42777),
+    // A665 (Platztausch bei Zwangsabstieg), A582 (Kündbar der Werbeverträge) und A104 ändern Spielrechnung bzw. Zufallsverbrauch; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von 21f341a + dieser Test → rot (alte Werte).
     internal const string Mode4Reference =
-        "WorldChampion=55,CupWinner=16,GermanChampion=1,EuropeanCupWinner=2|1196344,400000|WorldChampion=54,CupWinner=0,GermanChampion=12,EuropeanCupWinner=1|2324166,400000|WorldChampion=52,CupWinner=7,GermanChampion=0,EuropeanCupWinner=12|2430668,400000|WorldChampion=54,CupWinner=0,GermanChampion=7,EuropeanCupWinner=0|2623583,500000|WorldChampion=53,CupWinner=7,GermanChampion=7,EuropeanCupWinner=7|2591835,400000|R305463612";
+        "WorldChampion=53,CupWinner=5,GermanChampion=4,EuropeanCupWinner=2|1198157,400000|WorldChampion=52,CupWinner=1,GermanChampion=6,EuropeanCupWinner=4|2466212,400000|WorldChampion=52,CupWinner=17,GermanChampion=19,EuropeanCupWinner=6|2579277,400000|WorldChampion=52,CupWinner=19,GermanChampion=17,EuropeanCupWinner=19|2497769,500000|WorldChampion=63,CupWinner=19,GermanChampion=6,EuropeanCupWinner=17|2553927,400000|R345808903";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

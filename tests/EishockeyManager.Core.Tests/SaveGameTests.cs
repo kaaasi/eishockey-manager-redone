@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(58, SaveGame.SchemaVersion);
+        Assert.Equal(61, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -80,7 +80,10 @@ public class SaveGameTests
     //    WorldCup._nextOrder: am 29. April gemischte Länderreihenfolge (Teil 2, A825),
     //    NationalSquadMember.Source: Spieler im Verein/Pool zum eigenen Kaderplatz des Satzes 5 (Teil 3, A412).
     // 58 GameSetup._level/_startStrength: Level und Start-Stärke ein Wert je Spiel (Spur kader-regeln Runde 22, A054/A518; Schema 58 nach national).
-    private const string ExpectedSchemaFingerprint = "E08A38F1A51BA025";
+    // 59 Manager.OneSeasonFlag (A847, Managerbyte 0x9744) und Lineup.GoalieStandIn (A672, Feldspieler im Tor) (Spur einzelpunkte Runde 22; Schema 59 nach kader-regeln).
+    // 60 SponsorContract.Cancellable: „Kündbar.“ nach Aufstieg, Bit 0x80 der Option (Spur einzelpunkte, A582).
+    // 61 SeasonRecord.InnerMoves: Platztausch innerhalb der unteren Liga einer Aufstiegsrunde (Spur einzelpunkte, A665).
+    private const string ExpectedSchemaFingerprint = "DFE7B708B51F9490";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

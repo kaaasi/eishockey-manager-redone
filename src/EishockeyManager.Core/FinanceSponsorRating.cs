@@ -176,8 +176,10 @@ public sealed partial class GameState
     /// Meisterrunde (0x40, Datei 0x44B9A–0x44CDF) zuerst die Aufstiegsgruppen über 0x31CD5 zur Runde 2 · [0x7B0] + ([0xCCA3] &gt; 0)
     /// + ([0xCCA3] &gt; 2), sonst die Play-off-Liste DGROUP 0x5D3B (mit Flag 1 auch bei entschiedener Serie 0xCCDC/0xCCEA = 100);
     /// Europapokal (0x20, Datei 0x44CEB–0x44D63) über 0x31CD5 zum Termin [0x7AF] (Gruppen 2/3, ab Termin 6 die Endrunde).
-    /// [APPROX] Was 0x31CD5 (Datei 0x31CD5, 3,5 KB, zugleich Anzeige) nach dem letzten Termin bzw. der letzten Runde liefert,
-    /// ist nicht gelesen; das Remake zählt Gruppe, Endrunde und Aufstiegsgruppe bis zum Saisonwechsel.
+    /// [ORIGINAL] A421: Nach dem letzten Europapokal-Termin findet 0x31CD5 keinen Treffer mehr (Suchschleife Datei 0x32650–0x3266B,
+    /// Aufruf 0x44CEB–0x44D63; <c>re-vor-dosbox</c>): Der Europapokal zählt nur, solange Termine ausstehen.
+    /// [APPROX] Für die Aufstiegsgruppe (Wertebereich von DGROUP 0x7B0 nach der letzten Runde) gilt weiter: Das Remake zählt sie bis
+    /// zum Saisonwechsel (nicht gelesen).
     /// </summary>
     public CompetitionParticipation CurrentParticipation(int club)
     {
@@ -188,9 +190,10 @@ public sealed partial class GameState
         var inCup = cupRound > 0 && DebCup!.Rounds[^1].Any(t => t.Involves(club));
 
         var europe = EuropeanCup;
-        var inEurope = europe is not null
+        var europeDates = SeasonCalendar.DaysOf(DayEvents.EuropeanCup).ToList();
+        var europeRound = europe is null ? 0 : europeDates.Count(d => d < Day);
+        var inEurope = europe is not null && europeRound < europeDates.Count // [ORIGINAL] A421: nach dem letzten Termin kein Treffer
             && (europe.FinalRound is { } final ? final.Contains(club) : europe.Groups.Any(g => g.Contains(club)));
-        var europeRound = europe is null ? 0 : SeasonCalendar.DaysOf(DayEvents.EuropeanCup).Count(d => d < Day);
 
         return new CompetitionParticipation(championship, inCup, cupRound, inEurope, europeRound);
     }
