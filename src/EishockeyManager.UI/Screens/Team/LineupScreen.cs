@@ -196,7 +196,7 @@ public sealed class LineupScreen : Screen
             _selectedLine = line;
         if (!OnSlot(x, y, out var slot) || Club.Lineup[slot] is not { } placed)
             return;
-        if (placed.InjuredGames > 0 || placed.SuspendedGames > 0)
+        if (placed.InjuredGames > 0 || placed.SuspendedGames > 0 || PenaltyMinutes(placed) > 0) // A808: Strafbank im Spiel
         {
             Club.AutoLineupEnabled = false;
             _message.ShowShort("Spieler ist", "noch gesperrt !");
@@ -375,8 +375,15 @@ public sealed class LineupScreen : Screen
         if (row < 0 || column < 0)
             return null;
         var p = rows[row];
-        return PlayerHintLine.Text(p, column, new PlayerHintInfo(Club.IsDressed(p), LineOf(p)), showExhaustion: true);
+        return PlayerHintLine.Text(p, column, new PlayerHintInfo(Club.IsDressed(p), LineOf(p), PenaltyMinutes(p)),
+            showExhaustion: true);
     }
+
+    /// <summary>
+    /// A808 (Dateigrenze erweitert, Entscheidung Leitstelle 22.11.2026): Strafbank-Stand im Spiel aus dem Spielkern
+    /// (<see cref="MatchEngine.PenaltyBoxMinutes"/>); außerhalb des Spiels 0. Nur Abfrage, keine Änderung am Spielzustand.
+    /// </summary>
+    private int PenaltyMinutes(Player p) => InMatch ? MatchEngine.PenaltyBoxMinutes(Club, p) : 0;
 
     /// <summary>Reihe (1–4), in der der Spieler aufgestellt ist, sonst 0 (Kaderplatz +0x15 &amp; 0x7F).</summary>
     private int LineOf(Player p)

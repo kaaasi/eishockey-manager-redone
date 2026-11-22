@@ -79,7 +79,9 @@ public sealed class PlayoffSemifinalTests
         // Saisons kein schlechter Platzierter Heimrecht (gleicher Grund wie oben; Saat 10: 1 Fall, 11: 4 Fälle).
         // Runde 22, Spur national Teil 1 (A109, A424, A494, A551; R15-E2 = C): Saat 11 → 10. Länderspiele mit Spielvorbereitung 0x8365 und stehendem Einsatz 0x26, Tagesform nach WM-Gruppenterminen, Verletzungen und Belastung im Satz 5 ändern den Zufallsverbrauch ab der ersten WM; bei Saat 11 hat in fünf
         // Saisons kein schlechter Platzierter Heimrecht (gleicher Grund wie oben; Saat 9, 11, 13 ohne, 8, 10, 12, 14, 15 mit Fall).
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 10);
+        // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R15-E2 = C): Saat 10 → 8. Bei Saat 10 (auch 11, 12) hat in fünf Saisons kein
+        // schlechter Platzierter Heimrecht (gleicher Grund wie oben; 8, 13, 14, 15 mit Fall). Rückschaltprobe: src/ von f7f0410 mit Saat 8 grün.
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 8);
         var active = game.Managers[1];
         var upsets = 0;
         var transfers = 0;

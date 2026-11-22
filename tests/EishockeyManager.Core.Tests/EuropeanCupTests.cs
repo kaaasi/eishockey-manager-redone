@@ -126,7 +126,10 @@ public class EuropeanCupTests
         var germanTrophies = 0;
         var foreignWinners = 0;
         // Bis beide Fälle (deutscher und ausländischer Sieger) vorkamen, höchstens 16 Saisons
-        for (var seed = 1; seed <= 16 && (germanTrophies == 0 || foreignWinners == 0 || seed <= 4); seed++)
+        // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R15-E2 = C): höchstens 30 statt 16 Saisons – unter den Saaten 1–40 gewinnt
+        // ein deutscher Verein nur bei 30 (f7f0410: 13, 15, 30; 3ca753a: 3, 13, 20, 23, 31); seltenes Ereignis, keine Regeländerung am
+        // Europapokal. Rückschaltprobe: src/ von f7f0410 mit 30 ebenfalls grün.
+        for (var seed = 1; seed <= 30 && (germanTrophies == 0 || foreignWinners == 0 || seed <= 4); seed++)
         {
             var game = Create(seed, true, 30);
             var steps = PlayToSeasonEnd(game);

@@ -122,15 +122,13 @@ public class JugendTeamsTests
             Assert.True(guard < 1000);
             me.Money = Math.Max(me.Money, 1_000_000);
             var before = youth.Select(t => (t.Strength, t.Position)).ToArray();
-            var from = game.FinanceDay;
+            var from = game.CurrentDay;
             game.Continue();
-            var days = Enumerable.Range(from + 1, game.FinanceDay - from).Count(leagueDays.Contains);
-            // Runde 21, Spur zufallsstrom Teil 4 (R15-E2 = C): Der erste Schritt rechnet auch den Ligaspieltag von Tag 0
-            // (DailyYouth(0), SeasonFlow.cs) – zwei Jugendrechnungen bei einem gezählten Tag. Bisher fiel das nicht auf, weil
-            // FinanceRandom nicht von der Saat abhing (Saaten 1–16 gleich); mit den Würfen aus dem gemeinsamen Strom (Datei 0x39DEC)
-            // ändert sich die Stärke bei Saat 5 in beiden Rechnungen. Rückschaltprobe: alter Code + dieser Test → grün.
-            if (guard == 0 && leagueDays.Contains(0))
-                days++;
+            // Runde 22, Spur wettbewerbe-regeln Teil 2 (A384/A670, R15-E2 = C): Die Jugend eines Tages läuft nach dessen Menüs
+            // (Datei 0x55003–0x5502C), ein Fortsetzen rechnet also die Ligaspieltage vom Halt (einschließlich) bis zum nächsten
+            // Halt (ausschließlich); vorher die Tage nach dem Halt bis einschließlich des nächsten (Finanztag), dazu Tag 0 im ersten
+            // Schritt. Rückschaltprobe: alter Code + dieser Test → rot (Stärke ändert sich an einem Halt ohne gezählten Tag).
+            var days = Enumerable.Range(from, game.CurrentDay - from).Count(leagueDays.Contains);
             for (var t = 0; t < youth.Length; t++)
             {
                 Assert.InRange(youth[t].Strength, YouthTeam.MinStrength, YouthTeam.MaxStrength);
@@ -294,8 +292,12 @@ public class JugendTeamsTests
     // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (Runde 22, R21-D2 = A, R15-E2 = C): neu – A672 (Feldspieler im Tor, Datei 0x42718–0x42777),
     // A665 (Platztausch bei Zwangsabstieg), A582 (Kündbar der Werbeverträge) und A104 ändern Spielrechnung bzw. Zufallsverbrauch; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von 21f341a + dieser Test → rot (alte Werte).
+    // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R21-D2 = A, R15-E2 = C): neu – die Regeln der Spur (Teil 1
+    // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
+    // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
     private const string ExpectedActive =
-        "0:Schueler:2/11/62;0:Jugend:2/11/64;0:Junioren:2/11/63;1:Schueler:1/11/77;1:Jugend:1/11/76;1:Junioren:1/12/72;2:Schueler:1/6/82;2:Jugend:1/6/82;2:Junioren:1/6/80;3:Schueler:1/6/85;3:Jugend:1/6/84;3:Junioren:1/6/82";
+        "0:Schueler:2/11/63;0:Jugend:2/11/65;0:Junioren:3/6/65;1:Schueler:2/6/78;1:Jugend:2/6/72;1:Junioren:2/11/74;2:Schueler:1/11/82;2:Jugend:1/11/81;2:Junioren:1/11/76;3:Schueler:1/6/85;3:Jugend:1/6/84;3:Junioren:1/6/83";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -389,8 +391,12 @@ public class JugendTeamsTests
     // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (Runde 22, R21-D2 = A, R15-E2 = C): neu – A672 (Feldspieler im Tor, Datei 0x42718–0x42777),
     // A665 (Platztausch bei Zwangsabstieg), A582 (Kündbar der Werbeverträge) und A104 ändern Spielrechnung bzw. Zufallsverbrauch; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von 21f341a + dieser Test → rot (alte Werte).
+    // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R21-D2 = A, R15-E2 = C): neu – die Regeln der Spur (Teil 1
+    // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
+    // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/63;0:Jugend:2/2/65;0:Junioren:1/6/73;1:Schueler:3/2/54;1:Jugend:3/2/54;1:Junioren:2/2/61;2:Schueler:3/6/45;2:Jugend:3/6/48;2:Junioren:3/2/49;3:Schueler:3/6/43;3:Jugend:3/6/45;3:Junioren:3/6/44";
+        "0:Schueler:2/2/72;0:Jugend:2/2/73;0:Junioren:1/6/74;1:Schueler:2/6/62;1:Jugend:2/6/60;1:Junioren:2/2/56;2:Schueler:3/2/47;2:Jugend:3/2/47;2:Junioren:3/2/46;3:Schueler:3/6/45;3:Jugend:3/6/43;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

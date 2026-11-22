@@ -118,7 +118,7 @@ public static class HokCompareClasses
             "GameState.Random", "GameState.RetiredPlayers", "GameState._contractRandom", "GameState._contractTurnFactor",
             "GameState._eternal", "GameState._germanyRatings",
             "GameState._managerBalance", "GameState._managerHistory", "GameState._nationalForm", "GameState._nextLeagueSlots",
-            "GameState._readyManagers", "GameState._seasonEndYouthPending",
+            "GameState._readyManagers", "GameState._seasonEndYouthPending", "GameState._youthOfDayDone",
             "GameState._worldCupRankings",
             "GameState._worldCupLastPenaltyCoachDay", // A498: Merker des Remakes für DGROUP 0xA70E nach den WM-Spielen (Spur national Teil 2)
             "GameState.NextPlayerId",
@@ -209,6 +209,8 @@ public static class HokCompareClasses
         Set(Random, "Tactics._matchAttack", "Tactics._matchEffort");
         // #872 (Runde 20, pruefung-karte): Reihen auf dem Eis 0x2E/0x30 nach dem letzten Spiel (Reihenwechsel je Minute, Zufall).
         Set(Random, "Tactics._matchAttackLine", "Tactics._matchDefenseLine");
+        // A838 (Runde 22, wettbewerbe-regeln): 0x2C Bit 3 nach dem letzten Spiel (Torhüter herausgenommen, Zufall); Import liest es nicht.
+        Set(Random, "Tactics._goaliePulledAtEnd");
         // Spur zusehen (Runde 21): Markierung zum Zusehen far:9657+0x34 Bits 6–7; Feldkarte U (der Import liest sie nicht).
         Set(NotInHok, "Club.WatchMode", "GameState._worldCupOptionBackup"); // Teil 2: DGROUP 0x22C (021D+15), Feldkarte U
         // A847 (Spur einzelpunkte): Managerbyte 0x9744; Export und Import behandeln es noch nicht.

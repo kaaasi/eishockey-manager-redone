@@ -75,7 +75,11 @@ public sealed class LivespielUi2Tests
     [GameDataFact]
     public void MatchDayThroughLiveScreen_EqualsWithoutDisplay()
     {
-        var d = FlowTests.CreateDriver();
+        // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R15-E2 = C): Saat 1994 statt 1993 – bei 1993 trifft am ersten
+        // Ligatag eine neue Nachricht ein; der Aufbau des Hauptmenüs nimmt das Kennzeichen (GameState.OnMainMenu), der Vergleichslauf
+        // ohne Anzeige hält davor (Manager._newMessage true/false). 1994, 1996, 1997 ohne Nachricht, 1995 mit. Rückschaltprobe: src/ von
+        // f7f0410 mit Saat 1994 ebenfalls grün – die Probe hängt an der Saat.
+        var d = FlowTests.CreateDriver(1994);
         d.StartNewGame();
         var game = d.Host.Game!;
         game.Options.MatchSpeed = 60;
@@ -300,7 +304,8 @@ public sealed class LivespielUi2Tests
         // Runde 21, Spur zufallsstrom Teil 3 Spielstart (R21-D2 = A, nach Rebase auf zusehen): Saat 1996 statt 1995 – der Spielstart zieht in der Reihenfolge des Originals aus dem gemeinsamen Strom (Kaderplätze der Manager im Poolaufbau Datei 0x5B0BB–0x5B2BE, Platzwahl Datei 0x29C91 nach dem Pool, Startwerte Datei 0x29DA4, Markt Datei 0x43A83 nach der Wanderung), anderer Zufallsverlauf; bei Saat 1995 und 1999 erreicht Verein 42 die Play-offs nicht (nächster Spieltag 216); 1996–1998 erfüllen die Vorbedingung. Die Probe hängt an der Saat.
         // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1997 statt 1996 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 1996 erreicht Verein 42 die Play-offs nicht (nächster Spieltag 216), 1994, 1995, 1997, 1999, 2000 erfüllen die Vorbedingung.
         // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1996 statt 1997 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; bei Saat 1997 erreicht Verein 42 die Play-offs nicht, unter 1993–2000 erfüllen 1996, 1998, 1999 die Vorbedingung.
-        var game = NewGame.Create(d.Host.Assets.Database, setup, 1996);
+        // Runde 22, Spur wettbewerbe-regeln Teil 2 (R15-E2 = C): Saat 1995 statt 1996 – Jugend nach den Menüs vor den Ligaspielen (A384/A670, Datei 0x55003–0x5502C), andere Lage der Würfe ab dem ersten Ligaspieltag; bei Saat 1996 erreicht Verein 42 die Play-offs nicht (nächster Spieltag 216), unter 1990–2005 erfüllen 1995, 1997, 1999, 2001–2005 die Vorbedingung. Rückschaltprobe: alter Code mit Saat 1995 ebenfalls grün.
+        var game = NewGame.Create(d.Host.Assets.Database, setup, 1995);
         d.Host.Game = game;
         d.Host.Show(new MainMenuScreen(d.Host));
         d.Frame();

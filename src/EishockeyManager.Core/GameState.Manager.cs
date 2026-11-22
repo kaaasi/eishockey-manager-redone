@@ -134,9 +134,9 @@ public sealed partial class GameState
     public void AdvanceFinanceTo(int day) => AdvanceFinance(day, clubDay: true);
 
     /// <summary>
-    /// Gemeinsamer Kern des Tageswechsels der Finanzen. <paramref name="clubDay"/>: Tageslauf des Hauptwegs mit Jugendteams
-    /// (0x39DEC, Datei 0x5501C; ab Tag 1, die von Tag 0 rechnet <c>ProcessDayCore</c> nach dem ersten Menü) und Talentsuche (0x06FA5, Datei 0x5528A); false für die WM-Schleife (Datei 0x55570–0x55740 ruft
-    /// beide nicht; Spur nationalteam, Review #674 R14NT4-02/-07). Sonst gleich, damit beide Wege nicht auseinanderlaufen.
+    /// Gemeinsamer Kern des Tageswechsels der Finanzen. <paramref name="clubDay"/>: Tageslauf des Hauptwegs mit Talentsuche
+    /// (0x06FA5, Datei 0x5528A); false für die WM-Schleife (Datei 0x55570–0x55740 ruft sie nicht; Spur nationalteam, Review #674
+    /// R14NT4-02/-07). Die Jugendteams rechnet seit Spur wettbewerbe-regeln Teil 2 <c>ProcessDayCore</c> nach den Menüs (A384/A670). Sonst gleich, damit beide Wege nicht auseinanderlaufen.
     /// </summary>
     internal void AdvanceFinance(int day, bool clubDay)
     {
@@ -147,12 +147,8 @@ public sealed partial class GameState
             FinanceDay++;
             var date = SeasonCalendar.LayoutDate(FinanceDay);
             ExpireMessages();
-            // [ORIGINAL] Tagesablauf 0x55008: an Ligaspieltagen die Jugendteams (0x39DEC) vor den Spielen (Spur geld Teil 3).
-            // [APPROX] Das Original rechnet sie nach den Menüs (Datei 0x55008 hinter 0x54EB2), das Remake im Tageswechsel davor.
-            // Tag 0 nicht hier (Spur tagesablauf, #699 Punkt 2): Sein Tageswechsel liegt vor dem ersten Menü, das im Original die
-            // Startwerte zeigt (FILE01, FILE10, FILE27: Stärke 80/66, Platz 6) – die Jugend von Tag 0 rechnet ProcessDayCore.
-            if (clubDay && FinanceDay > 0)
-                DailyYouth(FinanceDay);
+            // Jugendteams (0x39DEC) nicht im Tageswechsel: Spur wettbewerbe-regeln Teil 2 (A384/A670) – sie laufen nach den Menüs
+            // vor den Ligaspielen (Datei 0x55003–0x5502C, YouthAfterMenus in ProcessDayCore).
             // [ORIGINAL] Tageslauf 0x54C9F, Datei 0x5528A: Talentsuche an Tagen mit Zähler 0x3B7 ≡ 0, 4 (mod 7) (Spur geld Teil 6).
             if (clubDay)
                 DailyTalentSearch(FinanceDay);

@@ -19,6 +19,9 @@ namespace EishockeyManager.Core;
 ///   laufenden Wettbewerb (+0x06 + k, +0x1C + 2k nach DGROUP 0xD0C2, Datei 0x415B7–0x41622). [APPROX] Das Remake zählt die Spiele
 ///   eines Managervereins am Spielende aus der Aufstellung (<c>MatchEngine.CreditLineup</c>, Datei 0x5494C): Wer während des
 ///   Spiels herausgenommen wird, zählt nicht, wer hineinkommt, zählt erst am Ende.</item>
+/// <item>A808: [ORIGINAL] Datei 0x40DAF–0x40E2A: ein Spieler auf der Strafbank (Status +0x09 &amp; 3 = 1, Datei 0x35C02) ergibt für
+///   beide Tasten nur die Meldung „Spieler ist“ / „Gesperrt.“ (<see cref="LineupResult.Suspended"/>, Abfrage
+///   <see cref="MatchEngine.PenaltyBoxMinutes"/>); er bleibt draußen, bis die Strafbank ihn freigibt.</item>
 /// <item>[APPROX] Bei Rechtsklick ohne gewählte Reihe meldet das Original nichts (Meldung „Keine Reihe“ nur für die linke Taste,
 ///   Datei 0x40E63); Art-Prüfung und Plätze wie beim Linksklick (<see cref="ClickPlayer"/>, auch dessen [APPROX] zum sechsten
 ///   Feldspielerplatz 0x413E8–0x414B4).</item>
@@ -35,6 +38,9 @@ public sealed partial class Club
         if (player.InjuredGames > 0)
             return LineupResult.Injured;
         if (player.SuspendedGames > 0)
+            return LineupResult.Suspended;
+        // A808: [ORIGINAL] Status 1 (Strafbank, +0x09 Bit 0) meldet nur „Gesperrt.“ und bricht ab (Datei 0x40DAF–0x40E2A).
+        if (MatchEngine.PenaltyBoxMinutes(this, player) > 0)
             return LineupResult.Suspended;
         if (Lineup.FindSlot(player) is { } from)
         {

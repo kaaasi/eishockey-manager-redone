@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(61, SaveGame.SchemaVersion);
+        Assert.Equal(62, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -83,7 +83,9 @@ public class SaveGameTests
     // 59 Manager.OneSeasonFlag (A847, Managerbyte 0x9744) und Lineup.GoalieStandIn (A672, Feldspieler im Tor) (Spur einzelpunkte Runde 22; Schema 59 nach kader-regeln).
     // 60 SponsorContract.Cancellable: „Kündbar.“ nach Aufstieg, Bit 0x80 der Option (Spur einzelpunkte, A582).
     // 61 SeasonRecord.InnerMoves: Platztausch innerhalb der unteren Liga einer Aufstiegsrunde (Spur einzelpunkte, A665).
-    private const string ExpectedSchemaFingerprint = "DFE7B708B51F9490";
+    // 62 Tactics._goaliePulledAtEnd: Vereinsfeld 0x2C Bit 3 nach dem letzten Spiel (Spur wettbewerbe-regeln Runde 22, A838).
+    //    GameState._youthOfDayDone: Jugend des Tages im alten Stand schon gerechnet (Teil 2, A384/A670; dieselbe Migration).
+    private const string ExpectedSchemaFingerprint = "3C0CE25F9E6A6BEC";
 
     // ---------- Abnahme 3: Roundtrip ----------
 

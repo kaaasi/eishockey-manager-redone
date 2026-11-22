@@ -23,8 +23,9 @@ public static partial class MatchEngine
     /// (<see cref="Tactics.MatchDefenseLine"/>, #872; Computervereine wechseln Reihen nur in Managerpaarungen). 0x977F bildet den
     /// Managerverein dabei aus den Vereinsfeldern 0x18–0x1D, weil die Liste DGROUP 0x233 (0x52B91) erst die Live-Anzeige 0x5353C
     /// füllt; das Remake rechnet die Vorbereitung ebenso (<c>MatchEngine.PrepareFromClubFields</c>, Spur teamwert-aufstellung, A080).
-    /// [APPROX] Managervereine mit „SEMI“/„MANUELL“ behalten Einsatz und Angriff der eigenen Werte beim Stand 0:0
-    /// (Taktikbildschirm Datei 0x48E62 für 0x26; ob er die Angriffsbits schreibt, ist nicht gelesen). Länderspiele (WM und
+    /// [ORIGINAL] Managervereine mit „SEMI“/„MANUELL“ beginnen mit 0x26/0x2C vom Ende des Vorspiels bzw. vom letzten Verlassen
+    /// des Taktikbildschirms (A553, Datei 0x4902B–0x4903E, <see cref="GameState.OnTacticsLeft"/>; die Angriffsbits schreibt er
+    /// nicht), bis 0x939A sie in der ersten geraden Minute nachführt (außer „MANUELL“). Länderspiele (WM und
     /// Freundschaftsspiel, Datei 0x36F27/0x36F5A) bereitet 0x8365 ebenso vor (A494, <see cref="PrepareNationalMatch"/>).
     /// </summary>
     public static void PrepareMatch(GameState game, Club home, Club away, LiveTeam homeTeam, LiveTeam awayTeam)
@@ -86,5 +87,6 @@ public static partial class MatchEngine
         }
         club.Tactics.RecordMatchFields(team.Effort, team.AttackLevel);
         club.Tactics.RecordMatchLines(team.DefenseLine, team.AttackLine);
+        club.Tactics.RecordGoaliePulled(team.GoaliePulled); // A838: 0x2C Bit 3 bleibt stehen (Squad.Tactics.GoaliePulled.cs)
     }
 }

@@ -308,10 +308,14 @@ public class RngTwinProbeTests
     // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (Runde 22, R21-D2 = A, R15-E2 = C): neu – A672 (Feldspieler im Tor, Datei 0x42718–0x42777),
     // A665 (Platztausch bei Zwangsabstieg), A582 (Kündbar der Werbeverträge) und A104 ändern Spielrechnung bzw. Zufallsverbrauch; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von 21f341a + dieser Test → rot (alte Werte).
-    [InlineData(false, 3, "220B33CCE78A3A29")]
-    [InlineData(true, 3, "3A8096F9CC81C37D")]
-    [InlineData(false, 11, "6DBADD4F89A2793B")]
-    [InlineData(true, 11, "967ED0063850E948")]
+    // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R21-D2 = A, R15-E2 = C): neu – die Regeln der Spur (Teil 1
+    // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
+    // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
+    [InlineData(false, 3, "01B6261E9CBBCE94")]
+    [InlineData(true, 3, "F2FEEB9FFBD324CA")]
+    [InlineData(false, 11, "6AEE65C74DC93257")]
+    [InlineData(true, 11, "EEC117151416D579")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -415,8 +419,12 @@ public class RngTwinProbeTests
     // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
     // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
     // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
-    [InlineData(false, "0902BF3F4ED37F04")]
-    [InlineData(true, "5E38DD9E979BD05B")]
+    // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R21-D2 = A, R15-E2 = C): neu – die Regeln der Spur (Teil 1
+    // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
+    // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
+    [InlineData(false, "F57E5D70BE67DFAC")]
+    [InlineData(true, "AF2AF2EEDFD9E119")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

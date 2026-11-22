@@ -144,7 +144,10 @@ public class KaderTransferTeil7Tests
         // mit kader-rest (keine Änderung, nur Kommentar zusammengeführt).
         // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): Saat 3 statt 1 – die Spielabrechnung 0x544C0 würfelt vor jedem Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7) aus dem gemeinsamen Strom, anderer Zufallsverlauf ab dem ersten Managerspiel; bei Saat 1 melden sich nur zwei Spieler (Grenze 3), unter 1–24 erfüllen
         // alle außer 1, 2, 5, 11, 12, 21 die Grenzen. Rückschaltprobe: src/ von faa64d2 mit Saat 3 ebenfalls grün – die Probe hängt an der Saat.
-        var game = TestGames.Create(3);
+        // Runde 22, Spur wettbewerbe-regeln Teil 1 (R15-E2 = C): Saat 7 statt 3 – mit #925/A838 anderer Zufallsverlauf, bei Saat 3 meldet
+        // sich nur einer (Grenze 3); Saaten 1–30: 0–7. Saat 7: 6 (alter Code 5). Die Probe hängt an der Saat. Rückschaltprobe: alter
+        // Code mit Saat 7 ebenfalls grün.
+        var game = TestGames.Create(7);
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         var twoYears = club.Players.Where(p => p.Role == PlayerRole.Forward).Take(3).ToList();
         foreach (var p in club.Players)

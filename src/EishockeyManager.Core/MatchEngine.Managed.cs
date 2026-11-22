@@ -34,6 +34,21 @@ public sealed class LivePlayer
 
     /// <summary>Tore dieses Spiels (Gewicht der Schützenwahl 0x386D1, Kaderplatz +0x03 wächst im Original sofort).</summary>
     public int MatchGoals { get; set; }
+
+    /// <summary>
+    /// A677: Kennzeichen „hat gespielt“ (Spielerfeld +0x1A Bit 7): beim Anlegen für die Aufgestellten, im Spiel für jeden neu
+    /// Aufgestellten (<see cref="LiveLineup.Apply"/>). Am Spielende zählt je Kennzeichen ein Spiel (<c>MatchEngine.CreditLineup</c>).
+    /// </summary>
+    public bool Played { get; set; }
+
+    /// <summary>A677: erst im Spiel aufgestellt – das Spiel zählt im Wettbewerb nach DGROUP 0xD0C2 (Datei 0x415CD–0x41606).</summary>
+    public bool PlayedFromBench { get; set; }
+
+    /// <summary>
+    /// A808: Minuten der Strafe, mit der der Spieler zuletzt auf die Strafbank ging (Kaderplatz +0x0D = Strafcode &amp; 7, Datei
+    /// 0x35C07–0x35C0C); gilt nur, solange er auf einem Platz sitzt (<see cref="MatchEngine.PenaltyBoxMinutes"/>).
+    /// </summary>
+    public int PenaltyMinutes { get; set; }
 }
 
 /// <summary>Kader eines Managervereins in der Minutenrechnung.</summary>
@@ -69,12 +84,10 @@ public sealed class LiveSquad
     public int[] SkatersPerPart { get; } = [2, 3];
 
     /// <summary>
-    /// Minutenzähler der Minuten-Vorgabe je Teil und Reihe (DGROUP 0x4926 + 8 · Manager + 4 · Teil + Reihe).
-    /// [APPROX] Im Original schreibt nur 0x8EF2 den Zähler (Datei 0x911C + 1, Datei 0x9166 = 0 beim Wechsel; kein weiterer
-    /// Leser, Schreiber oder Blockzugriff auf DGROUP 0x4926–0x4955): er läuft über das Spielende in das nächste Spiel
-    /// weiter und gehört nicht zum Spielstand. Das Remake beginnt jedes Spiel bei 0.
+    /// Minutenzähler der Minuten-Vorgabe je Teil und Reihe (DGROUP 0x4926 + 8 · Manager + 4 · Teil + Reihe). Im Spiel der Satz
+    /// des Managers (<see cref="MatchEngine.MinuteCountersOf"/>, A549: läuft ins nächste Spiel weiter); ohne Manager neu.
     /// </summary>
-    public int[,] MinuteCounters { get; } = new int[2, 4];
+    public int[,] MinuteCounters { get; init; } = new int[2, 4];
 
     /// <summary>
     /// Kader eines Managervereins für ein Spiel. [ORIGINAL] Reihenfolge der Kaderplätze (<see cref="Club.Players"/>, A091):
@@ -83,9 +96,9 @@ public sealed class LiveSquad
     /// (+0x0A) sind die im Verein eingesetzten spielfähigen Spieler (<see cref="Club.IsDressed"/>; A168); die Energie im
     /// Spiel setzt die Spielvorbereitung (<see cref="MatchEngine.PreparedPlayerEnergy"/>).
     /// </summary>
-    public static LiveSquad Create(Club club, int difficulty, Tactics? tactics)
+    public static LiveSquad Create(Club club, int difficulty, Tactics? tactics, int[,]? minuteCounters = null)
     {
-        var squad = new LiveSquad { Difficulty = difficulty, Tactics = tactics };
+        var squad = new LiveSquad { Difficulty = difficulty, Tactics = tactics, MinuteCounters = minuteCounters ?? new int[2, 4] };
         foreach (var p in club.Players)
         {
             squad.Players.Add(new LivePlayer
@@ -94,6 +107,10 @@ public sealed class LiveSquad
                 Position = club.Lineup.PositionOf(p),
                 Dressed = p.Available && club.IsDressed(p),
                 Energy = MatchEngine.PreparedPlayerEnergy(p),
+                // A677: wie bisher die Aufstellung (CreditLineup), jetzt zu Spielbeginn festgehalten. [APPROX] Rebase auf main f7f0410:
+                // der Feldspieler im Tor (A672, Platz +0x15 = 1 ohne Aufstellungsplatz) zählt wie auf main nicht; ob 0x54910 ihn über
+                // +0x15 mitzählt, ist nicht gelesen.
+                Played = club.Lineup.FindSlot(p) is not null,
             });
         }
         return squad;
@@ -347,6 +364,9 @@ public static partial class OriginalMinutes
     /// </remarks>
     public static void DrainEnergy(LiveTeam team, Random random)
     {
+        // A071: [ORIGINAL] Datei 0x08830–0x08A3E: [0xA70E] = Vereinsfeld 0x16 (− 1 bei einem Manager).
+        if (team.TurnManager is { } turn)
+            turn.Manager = team.ManagerSlot ?? 0;
         if (team.Squad is not { } squad)
         {
             for (var part = 0; part < 2; part++)
