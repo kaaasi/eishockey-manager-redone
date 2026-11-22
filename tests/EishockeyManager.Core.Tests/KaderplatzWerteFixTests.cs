@@ -107,7 +107,11 @@ public class KaderplatzWerteFixTests
     {
         var raw = OriginalExportTests.RawDatabase();
         var database = ClubDatabase.Parse(raw);
-        var game = OriginalExportTests.NewGameForExport(database);
+        // Fixlauf Rebase auf main 4a3a724 (Spur transfer-pool, A864/A391, R21-D2 = A, R15-E2 = C): Saat 2 statt der gemeinsamen – die
+        // Verletzung außerhalb des Spiels und die Alterung verlorener Pool-Spieler ändern den Zufallsverlauf; beim passiven Manager
+        // trägt nach vier Saisonwechseln mit der gemeinsamen Saat kein Spieler mehr einen abweichenden Poolwert (Vorbedingung der
+        // Probe). Rückschaltprobe: src/ von ce658d4 + gemeinsame Saat → grün (alter Zufallsverlauf). Die Probe hängt an der Saat.
+        var game = OriginalExportTests.NewGameForExport(database, 2);
         RngTwinProbeTests.Run(game, active);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         Assert.Contains(club.Players, p => p.PoolCondition is not null || p.PoolTechnique is not null);

@@ -20,6 +20,15 @@ public static class PoolDistributionRules
     /// </summary>
     public static readonly IReadOnlyList<int> ClubTurns = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8, 9, 10, 11];
 
+    /// <summary>
+    /// Größe der vierten Gruppe von 0x07C7E: Vereine ohne Liga. [ORIGINAL] DGROUP 0x7C6/0x7C7: Satzpositionen 36 … 42 = 7 Vereine
+    /// (A713).
+    /// </summary>
+    public const int NoLeagueCount = 7;
+
+    /// <summary>Vereine der Datenbank (Satzpositionen 0 … 47); Gruppe 3 wählt nur unter ihnen (<see cref="NoLeagueCount"/>).</summary>
+    public const int NoLeagueClubs = 48;
+
     /// <summary>Erster und letzter Verein für einen Spieler „im Ausland“ (Datei 0x07EF1: random(64, 150)).</summary>
     public const int FirstForeign = 64;
 
@@ -93,7 +102,7 @@ public sealed partial class TransferMarket
     ///   <see cref="NextPoolClub"/>(l); Rest q − 1, s[l] − 1 (Datei 0x07DEB–0x07E93).</item>
     /// </list>
     /// [APPROX] Gruppe einer Liga = Vereine mit dieser Liga (im Original Indexbereiche DGROUP 0x7C6/0x7C7 nach der Ligamischung),
-    /// Gruppe 3 = Vereine ohne Liga (Index &lt; 48; im Original 36 … 42). Vergebene Plätze (Besitzer 0–3) sind Spieler im Kader eines
+    /// Gruppe 3 = sieben Vereine ohne Liga (<see cref="PoolGroup"/>). Vergebene Plätze (Besitzer 0–3) sind Spieler im Kader eines
     /// Managers.
     /// </summary>
     internal void DistributePoolAtSeasonChange(GameState game, Random random)
@@ -244,9 +253,27 @@ public sealed partial class TransferMarket
         return set;
     }
 
-    /// <summary>Gruppe eines Vereins für 0x07C7E: Liga 0 … 2, 3 = ohne Liga (unter 48), sonst −1 (Nationalteams, Ausland).</summary>
-    private static int PoolGroup(GameState game, int club) =>
-        game.Clubs[club].League is { } league ? (int)league : club < NewGame.SelectableClubs ? 3 : -1;
+    /// <summary>
+    /// Gruppe eines Vereins für 0x07C7E: Liga 0 … 2, 3 = die ersten <see cref="PoolDistributionRules.NoLeagueCount"/> Vereine ohne
+    /// Liga (Index &lt; 48, nach Vereinsindex), sonst −1 (übrige Vereine ohne Liga, Nationalteams, Ausland). [ORIGINAL] A713: Die
+    /// Gruppen sind Satzpositionen DGROUP 0x7C6/0x7C7 (0 … 11, 12 … 23, 24 … 35, 36 … 42; Datei 0x07C7E, <c>docs/transfer.md</c>)
+    /// nach der Umordnung der Vereinssätze beim Ligawechsel (0x35EDD): Die Positionen 36 … 42 halten immer sieben Vereine ohne
+    /// Liga. [APPROX] Das Remake ordnet die Sätze nicht um (A715), sondern führt Ligen über <see cref="Club.League"/>: Gruppe 0 … 2
+    /// = Vereine mit dieser Liga, Gruppe 3 = die sieben Vereine ohne Liga mit dem niedrigsten Index (Reihenfolge der Umordnung
+    /// unbelegt), damit sie nach Auf- und Abstieg stets sieben bleibt.
+    /// </summary>
+    internal static int PoolGroup(GameState game, int club)
+    {
+        if (game.Clubs[club].League is { } league)
+            return (int)league;
+        if (club >= PoolDistributionRules.NoLeagueClubs)
+            return -1;
+        var rank = 0;
+        for (var i = 0; i < club; i++)
+            if (game.Clubs[i].League is null)
+                rank++;
+        return rank < PoolDistributionRules.NoLeagueCount ? 3 : -1;
+    }
 
     private static bool IsForeignPoolClub(int club) => club >= PoolDistributionRules.FirstForeign;
 

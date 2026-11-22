@@ -208,6 +208,7 @@ public class TransferOriginalTests
 
             var bid = Assert.Single(market.Bids);
             Assert.Same(player, bid.Listing.Player);
+            market.RollBid(game, bid); // A731: Höhe fällt erst beim Anklicken
             Assert.Equal(0, bid.Amount % 100);
             if (bid.Amount % 1000 != 0)
                 notThousands++;
@@ -320,6 +321,7 @@ public class TransferOriginalTests
             foreach (var bid in market.Bids.Where(b => b.Listing.Seller == manager).ToList())
             {
                 var before = manager.Money;
+                market.RollBid(game, bid); // A731: Höhe fällt erst beim Anklicken
                 var fee = TransferMarket.TransferFee(bid); // vor dem Wechsel: Restlaufzeit des Verkäufers
                 if (market.Accept(game, bid) == TransferResult.Accepted)
                 {

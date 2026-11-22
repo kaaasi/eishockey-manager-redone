@@ -86,7 +86,11 @@ public class PlayerFactoryTests
         // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): Saat 5 statt 4 – die Spielabrechnung 0x544C0 würfelt vor jedem Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7) aus dem gemeinsamen Strom, anderer Zufallsverlauf ab dem ersten Managerspiel; bei Saat 4 läuft eine
         // Suche über das Saisonende (Continue im Saisonende), unter 1–24 nur bei 4 nicht. Rückschaltprobe: src/ von faa64d2 mit Saat 5
         // ebenfalls grün – die Probe hängt an der Saat.
-        var game = TestGames.Create(5);
+        // Fixlauf Rebase auf main 4a3a724 (Spur transfer-pool, A864/A391, R21-D2 = A, R15-E2 = C): Saat 1 statt 5 – die Verletzung außerhalb
+        // des Spiels (Datei 0x07462–0x07548) und die Alterung verlorener Pool-Spieler ändern den Zufallsverlauf; bei Saat 5 läuft eine
+        // Suche über das Saisonende (Continue im Saisonende), bei Saat 1 nicht. Rückschaltprobe: src/ von ce658d4 + Saat 5 → grün
+        // (alter Zufallsverlauf). Die Probe hängt an der Saat.
+        var game = TestGames.Create(1);
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];
         // Die Finanz-Zufallsquelle hängt nicht vom Spielstand-Seed ab: mehrere Suchen in einem Spiel statt mehrerer Spiele.
