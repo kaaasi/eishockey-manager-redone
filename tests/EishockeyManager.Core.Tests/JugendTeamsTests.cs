@@ -291,8 +291,11 @@ public class JugendTeamsTests
     // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
     // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
     // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
+    // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (Runde 22, R21-D2 = A, R15-E2 = C): neu – A672 (Feldspieler im Tor, Datei 0x42718–0x42777),
+    // A665 (Platztausch bei Zwangsabstieg), A582 (Kündbar der Werbeverträge) und A104 ändern Spielrechnung bzw. Zufallsverbrauch; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von 21f341a + dieser Test → rot (alte Werte).
     private const string ExpectedActive =
-        "0:Schueler:2/11/62;0:Jugend:2/11/62;0:Junioren:2/11/61;1:Schueler:1/11/72;1:Jugend:1/11/71;1:Junioren:2/6/69;2:Schueler:2/2/74;2:Jugend:1/6/79;2:Junioren:1/12/78;3:Schueler:1/11/76;3:Jugend:1/6/82;3:Junioren:1/6/83";
+        "0:Schueler:2/11/62;0:Jugend:2/11/64;0:Junioren:2/11/63;1:Schueler:1/11/77;1:Jugend:1/11/76;1:Junioren:1/12/72;2:Schueler:1/6/82;2:Jugend:1/6/82;2:Junioren:1/6/80;3:Schueler:1/6/85;3:Jugend:1/6/84;3:Junioren:1/6/82";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -383,8 +386,11 @@ public class JugendTeamsTests
     // Spur transfer-pool Fixlauf Rebase auf main 4a3a724 (Runde 22, R21-D2 = A, R15-E2 = C): Verletzung außerhalb des Spiels je Kaderplatz
     // im Tageslauf (A864, Datei 0x07462–0x07548), Alterung verlorener Pool-Spieler (A391, Datei 0x274A7) und Gruppe 3 der Poolverteilung
     // (A713, Datei 0x07C7E) ändern den Zufallsverlauf; neu gegen 4a3a724. Rückschaltprobe: src/ von 4a3a724 + dieser Test → rot.
+    // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (Runde 22, R21-D2 = A, R15-E2 = C): neu – A672 (Feldspieler im Tor, Datei 0x42718–0x42777),
+    // A665 (Platztausch bei Zwangsabstieg), A582 (Kündbar der Werbeverträge) und A104 ändern Spielrechnung bzw. Zufallsverbrauch; kein Originalsollwert,
+    // nur interner Abdruck. Rückschaltprobe: src/ von 21f341a + dieser Test → rot (alte Werte).
     private const string ExpectedPassive =
-        "0:Schueler:2/2/62;0:Jugend:1/6/67;0:Junioren:1/6/74;1:Schueler:3/2/50;1:Jugend:2/2/52;1:Junioren:2/2/58;2:Schueler:3/6/45;2:Jugend:2/6/46;2:Junioren:3/2/47;3:Schueler:3/6/41;3:Jugend:3/2/43;3:Junioren:3/6/43";
+        "0:Schueler:2/2/63;0:Jugend:2/2/65;0:Junioren:1/6/73;1:Schueler:3/2/54;1:Jugend:3/2/54;1:Junioren:2/2/61;2:Schueler:3/6/45;2:Jugend:3/6/48;2:Junioren:3/2/49;3:Schueler:3/6/43;3:Jugend:3/6/45;3:Junioren:3/6/44";
 }
 
 public class JugendTeamsMigrationTests
