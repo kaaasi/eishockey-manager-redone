@@ -122,15 +122,13 @@ public class JugendTeamsTests
             Assert.True(guard < 1000);
             me.Money = Math.Max(me.Money, 1_000_000);
             var before = youth.Select(t => (t.Strength, t.Position)).ToArray();
-            var from = game.FinanceDay;
+            var from = game.CurrentDay;
             game.Continue();
-            var days = Enumerable.Range(from + 1, game.FinanceDay - from).Count(leagueDays.Contains);
-            // Runde 21, Spur zufallsstrom Teil 4 (R15-E2 = C): Der erste Schritt rechnet auch den Ligaspieltag von Tag 0
-            // (DailyYouth(0), SeasonFlow.cs) – zwei Jugendrechnungen bei einem gezählten Tag. Bisher fiel das nicht auf, weil
-            // FinanceRandom nicht von der Saat abhing (Saaten 1–16 gleich); mit den Würfen aus dem gemeinsamen Strom (Datei 0x39DEC)
-            // ändert sich die Stärke bei Saat 5 in beiden Rechnungen. Rückschaltprobe: alter Code + dieser Test → grün.
-            if (guard == 0 && leagueDays.Contains(0))
-                days++;
+            // Runde 22, Spur wettbewerbe-regeln Teil 2 (A384/A670, R15-E2 = C): Die Jugend eines Tages läuft nach dessen Menüs
+            // (Datei 0x55003–0x5502C), ein Fortsetzen rechnet also die Ligaspieltage vom Halt (einschließlich) bis zum nächsten
+            // Halt (ausschließlich); vorher die Tage nach dem Halt bis einschließlich des nächsten (Finanztag), dazu Tag 0 im ersten
+            // Schritt. Rückschaltprobe: alter Code + dieser Test → rot (Stärke ändert sich an einem Halt ohne gezählten Tag).
+            var days = Enumerable.Range(from, game.CurrentDay - from).Count(leagueDays.Contains);
             for (var t = 0; t < youth.Length; t++)
             {
                 Assert.InRange(youth[t].Strength, YouthTeam.MinStrength, YouthTeam.MaxStrength);

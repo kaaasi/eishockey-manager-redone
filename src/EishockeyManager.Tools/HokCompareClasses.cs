@@ -118,7 +118,7 @@ public static class HokCompareClasses
             "GameState.Random", "GameState.RetiredPlayers", "GameState._contractRandom", "GameState._contractTurnFactor",
             "GameState._eternal", "GameState._germanyRatings",
             "GameState._managerBalance", "GameState._managerHistory", "GameState._nationalForm", "GameState._nextLeagueSlots",
-            "GameState._readyManagers", "GameState._seasonEndYouthPending",
+            "GameState._readyManagers", "GameState._seasonEndYouthPending", "GameState._youthOfDayDone",
             "GameState._worldCupRankings",
             "GameState._worldCupLastPenaltyCoachDay", // A498: Merker des Remakes für DGROUP 0xA70E nach den WM-Spielen (Spur national Teil 2)
             "GameState.NextPlayerId",

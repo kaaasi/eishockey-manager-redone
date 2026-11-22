@@ -98,7 +98,11 @@ public class AbgleichOriginalPaareTests
                 // grün): Mit Pokalen und Finanzen im gemeinsamen Strom fallen bis zur Wanderung andere Würfe; Leerplatz LEER4 liegt
                 // bei den Saaten 3 und 77 in der Abwehr-Kondition außerhalb (Original 10, Remake −6) – dasselbe Zufallsmuster wie
                 // LEER4.AttackCondition oben, kein neu eingetragener Originalwert.
-                new("Clubs[51 LEER4].TeamValues.DefenseCondition", Chance, Optional: true)],
+                new("Clubs[51 LEER4].TeamValues.DefenseCondition", Chance, Optional: true),
+                // Runde 22, Spur wettbewerbe-regeln Teil 2 (R21-D2 = A, R15-E2 = C): Mit der Jugend nach den Menüs (A384/A670, Datei
+                // 0x55003–0x5502C) fallen bis zur Wanderung andere Würfe; SC PREUSSEN BERLIN liegt bei Saat 4711 in der Sturm-Kondition
+                // außerhalb (Original 1, Remake −15) – Wanderung wie bei LEER4 oben, kein neu eingetragener Originalwert.
+                new("Clubs[1 SC PREUSSEN BERLIN].TeamValues.AttackCondition", Chance, Optional: true)],
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
                 // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1; Pflicht über

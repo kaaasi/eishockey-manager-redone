@@ -12,12 +12,13 @@ namespace EishockeyManager.Core;
 /// Das Remake behält feste Vereinsindizes und führt die Satzfolge als eigene Liste (<see cref="LeagueSlots"/>); was im
 /// Original nach Satzplatz innerhalb der Liga geht (Fair-Play-Folge 0x2A1E0, A194), richtet sich danach – seit Runde 17 auch
 /// der Liga-Spielplan (Datei 0x4E7C7, A113; GameState.Spielplan.cs).
-/// [APPROX] Zufallsquelle: Das Original zieht aus lrandom (Datei 0xBFD5, <c>0x38:0x7E5</c>; Datei 0x36013/0x3602E:
-/// lrandom(b, b + 11)), einem eigenen Generator x = (16 · x + 167) mod 4.000.000, dessen Zustand (DGROUP 0xE017) nicht im
-/// Spielstand steht und den sich die Mischung mit Spielberechnung und Teamwert-Wanderung (Datei 0x56448, unmittelbar davor)
-/// teilt – zugexakt nicht nachbildbar (docs/analyse/re-runde-13.md, S-K6-b). Das Remake leitet die Mischung aus dem Zustand
-/// von <see cref="GameState.Random"/> ab, ohne ihn weiterzuschalten – sonst verschöben sich alle übrigen Spielverläufe
-/// (Liga, Pokale, Transfers); die Verteilung der Satzfolge (55 Zufallstausche) ist dieselbe.
+/// Zufallsquelle: Das Original zieht aus lrandom (Datei 0xBFD5, <c>0x38:0x7E5</c>; Datei 0x36013/0x3602E: lrandom(b, b + 11)),
+/// einem eigenen Generator x = (16 · x + 167) mod 4.000.000, dessen Zustand (DGROUP 0xE017) nicht im Spielstand steht
+/// (docs/analyse/re-runde-13.md, S-K6-b). Spur wettbewerbe-regeln Teil 2 (#897, N3 = B: eigene Zufallsquellen auf
+/// <see cref="GameState.Random"/>): Die 3 · 55 Tausche ziehen je zwei Würfe random(0, 11) aus dem gemeinsamen Strom, am 29. April
+/// an der Stelle der Mischung (Datei 0x5644E), nach den 40 Würfen der Länder (A825, Datei 0x35EE3–0x35FC9). Bis Runde 22 eine abgeleitete Quelle (Startwert aus Saison und Stromzustand,
+/// ohne Weiterschalten). [APPROX] lrandom ist nicht nachgebaut (Folge nicht zugexakt, N3 = B), und die Teamwert-Wanderung, die
+/// im Original unmittelbar davor zieht (Datei 0x56448), läuft im Remake erst in <see cref="StartNextSeason"/> nach der Mischung.
 /// [ORIGINAL] Zeitpunkt (Spur saison Teil 3, S-K6-a, re-runde-13.md; Entscheidung Leitstelle L5): em.exe mischt am 29. April
 /// nach Auf- und Abstieg, Ewiger Tabelle und Teamwert-Wanderung, vor dem Fenster „Saisonende“ mit den Prämien (Datei 0x5644E
 /// vor 0x5645D). Das Remake bildet die Satzfolge der nächsten Saison daher schon in <see cref="FinishSeason"/>
@@ -180,26 +181,16 @@ public sealed partial class GameState
 
     private void Mix(List<int> slots)
     {
-        var random = new GameRandom(SlotSeed());
         for (var league = 0; league < 3; league++)
         {
             var b = league * ClubsPerLeague;
             for (var n = 0; n < LeagueSlotSwaps; n++)
             {
-                var x = b + random.Next(ClubsPerLeague);
-                var y = b + random.Next(ClubsPerLeague);
+                // [ORIGINAL] Datei 0x36013/0x3602E: zwei Würfe random(b, b + 11), dann Tausch 0x36169 (auch derselbe Platz).
+                var x = b + Random.Next(ClubsPerLeague);
+                var y = b + Random.Next(ClubsPerLeague);
                 (slots[x], slots[y]) = (slots[y], slots[x]);
             }
         }
-    }
-
-    /// <summary>Startwert der Mischung aus dem Zufallszustand und der Saison; schaltet <see cref="Random"/> nicht weiter.</summary>
-    private int SlotSeed()
-    {
-        var state = Random.Capture();
-        var hash = unchecked(Season * 7919 + state.Next * 31 + state.NextP);
-        foreach (var value in state.SeedArray)
-            hash = unchecked(hash * 31 + value);
-        return hash & int.MaxValue;
     }
 }
