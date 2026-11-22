@@ -146,7 +146,7 @@ Befund (nur Rebase/erwartete Werte) Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtre
 - **Teile:** 1. #912 (Sollwert aus Vorbereitung ohne Squad), #914 (je Schema 51–53 eine echte Spielstanddatei als Testdatei, ohne
   Originaldaten), übrige P3 der Runde; A059 Folgeverdacht (#897, #899 P3-3) als E nach R21-E1 = A vermerken; 2. Lauf
   `markerliste.py --write` (alle neuen Marker nach PR-Angaben einordnen, Ziel V = 0) und `funktionskarte.py --write`.
-- **Voraussetzung:** Welle 2 gemergt. **Erstreview:** Sonnet 5.5. **Status:** wartet auf Go.
+- **Voraussetzung:** Welle 2 gemergt. **Erstreview:** Sonnet 5.5. **Status:** Teil 1 in Arbeit (Claude Code, Draft-PR, Leitstelle 22.11.2026: alle offenen P3 der Runde, siehe PR).
 
 ### Spur `marker-x` – X-Marker auf `[ORIGINAL]` (Welle 4, R22-D3 = B)
 
