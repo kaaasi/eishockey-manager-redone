@@ -103,9 +103,10 @@ Dokumentieren, ob nur Codelesen oder auch Ausführung am nachgewiesenen Checkout
 - **Integration (Erfahrung Runde 22):**
   - Spuren mit Migration nacheinander mergen; den Rebase-Fixlauf der nächsten erst nach dem vorherigen Merge anlegen (sonst
     doppelte Schemanummer).
-  - Nach jedem Merge die übrigen offenen PRs auf Konflikte prüfen; auch ohne Konflikt `tools/pruefen.sh --schnell` auf `main` + PR
-    (#922 wurde nach #923 rot).
-  - Hat ein Lauf nur einen Teil der Tests nachgeprüft, vor dem Merge selbst einen vollen `--schnell`-Lauf.
+  - Nach jedem Merge die übrigen offenen PRs auf Konflikte prüfen; ohne Konflikt gilt `leitstelle-start.md` Schritt 2 (#922 wurde
+    nach #923 rot).
+  - Hat ein Lauf nur einen Teil der Tests nachgeprüft (kein voller `--schnell` auf dem Head), vor dem Merge selbst einen vollen
+    `--schnell`-Lauf.
   - Braucht eine Originalregel einen Aufruf beim Klicken oder Verlassen eines Bildschirms außerhalb der Dateigrenzen, entscheidet
     die Leitstelle: minimaler Aufruf eines Kern-Ereignisses im Bildschirm (Muster A858/A553/A808); der Lauf blockiert dafür nicht.
 - **CI hängt (Erfahrung Runde 16):** Stehen `pull_request`-Läufe ohne Job auf `queued` (z. B. Actions-Budget), lassen sie sich
