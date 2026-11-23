@@ -180,8 +180,9 @@ public class WettbewerbeRegelnTests
 
     /// <summary>
     /// #925 (A873), schneller Weg der Play-offs: [ORIGINAL] bei eigenem Gleichstand genau ein Zusatzwurf random(0, 2) je Seite
-    /// (Vergleich 0x37748 mit Marke), der Gleichstand kann bleiben und zählt für den Gast (0x3166E); der DEB-Pokal würfelt weiter bis
-    /// ungleich. Vorher würfelten auch die Play-offs bis ungleich.
+    /// (Vergleich 0x37748 mit Marke), der Gleichstand kann bleiben und zählt für den Gast (0x3166E); ohne <c>debCup</c> (WM-Endrunde)
+    /// würfelt der Pokalweg weiter bis ungleich (DEB-Pokal seit Spur re-reste Teil 2 wie die Play-offs, <c>ReResteTests</c>). Vorher
+    /// würfelten auch die Play-offs bis ungleich.
     /// </summary>
     [Fact]
     public void FastPath_PlayoffTie_OneRollAndTieCanStay()

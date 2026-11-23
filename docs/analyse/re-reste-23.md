@@ -142,11 +142,24 @@ ndisasm -b16 -o 0x54DB1 -e 0x54DB1 em.exe | head -3   # inc byte [0xa70e] / cmp 
 ndisasm -b16 -o 0x426CC -e 0x426CC em.exe | head -3   # mov al,[bx+0x375] / dec al … (0 → Ende ohne Neuaufstellung)
 ```
 
+## Teil 2 – Umsetzung (23.11.2026)
+
+- **#925 (b) umgesetzt:** `OriginalMinutes.FastCupResultWithTie(…, debCup: true)` würfelt im DEB-Pokal genau einmal (Vergleich mit
+  markiertem Heimbyte); `MatchReport.FastCupPath` kennzeichnet den schnellen Weg; `CupMatch.FromReport(…, debCup: true)` setzt zwei
+  Marken und wertet den stehenden Gleichstand für den Heimverein (0x34C76). Anschluss in `MatchEngine.Live.cs` (nur die Übergabe
+  `debCup`/`FastCupPath`, minimal). Regressionstests `ReResteTests` (rot vorher: 3/3). Angepasste fremde Tests (R15-E2 = C):
+  `WettbewerbeSpiel1Tests.DebCup_NoMatchEndsLevel_ShootoutInFinalScore` (schneller Weg: Marken 0/2, Gleichstand für Heim; Rückschaltprobe
+  alter Code → rot), `FastPath_ReportCarriesExtraGoals` (x = y erlaubt; Rückschaltprobe grün, nur gelockert). WM-Endrunde und
+  Europapokal unverändert (Zeilen 2/3 in 0x32AA3 nicht gelesen – Restlücke).
+- **#938 P3-3:** nicht belegt, keine Änderung am Zug; Kommentar an 0x8C53 in `MatchEngine.Managed.cs` ergänzt. Vermerk E (A883).
+- **A876, A917:** Vermerk K bestätigt (siehe §3, §4), keine Code-Änderung; Folgearbeiten (Übertrag Satz 5, Eingesetzt-Byte im
+  Export) Entscheidung Leitstelle.
+
 ## Übersicht für `pruefung-karte`
 
 | Punkt | Ergebnis | Klasse | Teil 2 |
 |---|---|---|---|
-| #925 (b) DEB-Pokal | gilt: eine Wurfrunde, zwei Marken, Gleichstand zählt für den Heimverein (0x34C7A) | V (S) | ja: `MatchEngine.Minutes.cs`, `Cups.Tiebreak.cs`, Test |
-| #938 P3-3 | Zug stimmt; Messung durch Rücksetzung in „WM Vorbereitung“ (0x3BB51, A883 E) erklärbar | nicht belegt | nur Kommentar 0x8C53 |
+| #925 (b) DEB-Pokal | gilt: eine Wurfrunde, zwei Marken, Gleichstand zählt für den Heimverein (0x34C7A) | V (S) → umgesetzt | `MatchEngine.Minutes.cs`, `Cups.Tiebreak.cs`, `MatchEngine.Live.cs`, `ReResteTests` |
+| #938 P3-3 | Zug stimmt; Messung durch Rücksetzung in „WM Vorbereitung“ (0x3BB51, A883 E) erklärbar | nicht belegt | Kommentar 0x8C53 ergänzt |
 | A876 | Saisonwechsel setzt nur Sätze 0 … [0x386] − 1 zurück (0x55858); Satz 5 bleibt | K bestätigt | nein (Datei `v-rest`) |
 | A917 | Original schreibt an Ereignistagen alle Sätze neu (0x54D68–0x54DBA) | K bestätigt | nein (Eingesetzt-Byte fehlt) |

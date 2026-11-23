@@ -417,6 +417,9 @@ public static partial class OriginalMinutes
                 }
                 // [ORIGINAL] Datei 0x8C53–0x8C82: lrandom(0, 4 + (Kondition > Technik)) = 0 → Belastung (+0x13) + 1, Byte (A184),
                 // auch beim Nationalteam (A551, Spur national Teil 1): dort der Kaderplatz in Satz 5 (eigener Platz seit Teil 3, A412).
+                // #938 P3-3 nicht belegt (Spur re-reste, docs/analyse/re-reste-23.md §2): Zug, Bedingung und Byte-Zähler stimmen mit
+                // 0x8C53–0x8C82 überein; die Messung FILE19 → FILE20 (JOORIS 76 nach fünf WM-Spielen) erklärt die Rücksetzung aller
+                // belegten Plätze des Satzes 5 auf 70 beim Aufbau von „WM Vorbereitung“ (0x3BB20–0x3BB5A, A883 Klasse E).
                 if (OriginalMatch.Rnd(random, 0, 4 + (p.Player.Condition > p.Player.Technique ? 1 : 0)) == 0)
                     p.Player.Strain = (p.Player.Strain + 1) & 0xFF;
                 p.Energy = Math.Clamp(p.Energy - Drain(team.Effort, minutes, random), 1, 99);

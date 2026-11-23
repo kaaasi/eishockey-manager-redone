@@ -179,12 +179,14 @@ public static partial class MatchEngine
                 new MatchSide(a.Normal, awayTeam.Box.Skaters, awayTeam.AttackLevel),
                 home.Index < FirstForeignClub, away.Index < FirstForeignClub,
                 rules.WorldCup, rules.Playoff, knockOut, random,
-                playoffExtraRoll: competition == MatchCompetition.Playoff && knockOut && FirstPlayoffPairingOfDate(game, home, away));
-            report = new MatchReport { HomeGoals = hg, AwayGoals = ag };
+                playoffExtraRoll: competition == MatchCompetition.Playoff && knockOut && FirstPlayoffPairingOfDate(game, home, away),
+                debCup: competition == MatchCompetition.DebCup);
+            report = new MatchReport { HomeGoals = hg, AwayGoals = ag, FastCupPath = true };
             if (shootout)
             {
-                // [ORIGINAL] 0x376F0–0x377A3: random(0, 2) je Seite bis ungleich, Heim + 30 als Penaltymarke (Play-offs: ein
-                // Wurf, Gleichstand bleibt und zählt für den Gast, #925).
+                // [ORIGINAL] 0x376F0–0x377A3: random(0, 2) je Seite bis ungleich, Heim + 30 als Penaltymarke (Play-offs und
+                // DEB-Pokal: ein Wurf, Gleichstand bleibt und zählt für den Gast bzw. im DEB-Pokal für den Heimverein, #925 (b),
+                // Spur re-reste Teil 2).
                 // Der Bericht hält den Gleichstand (Spielerzähler nur für echte Tore) und die Zusatztore getrennt; den
                 // Endstand mit Marke bildet CupMatch.FromReport (Spur wettbewerbe-spiel, Teil 1).
                 report.ShootoutHomeWins = hg > ag;
